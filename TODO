@@ -1,0 +1,19 @@
+Short term
+----------
+
+ fix --nmenus > 1, audio pointers for them
+      switch labels for palettes
+      windows packaging
+      debian packaging
+
+
+Long term
+---------
+
+-add options for swift reencoding of VOBS (video import)
+-possibly make blank screen subvobs in the event of no pics in some slideshow tracks.
+-add multi-videolink groups
+-add album text and group text to text table
+-add automatic import of mono or stereo wavs for multichannel authoring.
+
+

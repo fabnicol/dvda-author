@@ -1,0 +1,141 @@
+## dvda-author configuration file version 09.10 
+
+# Important syntactic changes wrt priori versions
+# Use command line switches between brackets: [switch]
+# You may skip any number of blank characters and lines excep when indicated
+# You may comment with character #
+## Do use the = sign for optional arguments, ie:
+
+#[pause=0]
+
+# For arguments or switches, always go to the following line
+
+# using fixwav as a header-checker, cautiously pruning silence at end of files
+# use commas to separate fixwav suboptions as on command line
+
+#[fixwav]	 prune,cautious
+
+#start disc at once
+
+[autoplay]
+
+# I/O parameters
+## audio input directory
+
+
+[g]
+       /home/fab/a.wav
+       /home/fab/a.wav
+[g] 
+       /home/fab/a.wav
+
+[output] 
+       /home/fab/DVD
+
+# Menu authoring
+# suboption syntax is simplified for lexer. Do not skip any line after [screentext]
+# Skip ONE blank line between album text and group text; skip ONE blank line between
+# group text and track text. Skip no lines between tracks.
+# No need for quotes anywhere.
+
+[screentext] 
+      Bach trial
+
+        Group 1
+
+                trial track 1
+		trial track 2
+
+        Group 2
+
+                trial track 1
+
+
+[topmenu]
+
+[ncolumns]
+  2
+
+[background]	
+         /home/fab/A.jpg,/home/fab/B.jpg
+
+[highlightformat]
+           -1
+
+
+# Slideshow authoring
+# suboption syntax is simplified for lexer. Skip ONE blank line between pictures paths when changing tracks
+# Do not skip white lines between picture paths.
+# No need for quotes. First picture track can start at following line or after skipped lines
+
+
+[stillpics]
+
+          /home/fab/A.jpg
+          /home/fab/B.jpg
+          /home/fab/C.jpg
+          /home/fab/A.jpg
+
+          /home/fab/A.jpg
+          /home/fab/B.jpg
+          /home/fab/C.jpg
+
+          /home/fab/A.jpg
+
+# Picture options
+# Skip ONE blank line between picture options. Rank should be mentioned, even if consecutive.
+# First picture options can start at following line or after any number of white lines.
+
+[stilloptions]
+
+               rank=0
+               start=1
+               starteffect=fade
+               lag=5
+               endeffect=dissolve
+
+               rank=1
+               start=15
+               starteffect=fade
+               lag=5
+               endeffect=fade
+
+               rank=2
+               start=25
+               starteffect=fade
+               lag=5
+
+               rank=3
+               start=40
+               starteffect=fade
+
+               rank=4
+               start=1
+               starteffect=fade
+
+               rank=5
+               start=20
+               starteffect=fade
+
+               rank=6
+               start=1
+               starteffect=fade
+
+               rank=7
+               start=20
+               starteffect=fade
+
+[log] 
+         /home/fab/lognew
+
+[cdrecord]
+
+[menustyle]
+        hierarchical
+
+[colors]
+        refresh
+
+[debug]
+
+## end of config file

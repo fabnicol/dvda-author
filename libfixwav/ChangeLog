@@ -1,0 +1,4 @@
+30 May 2009  Fabrice Nicol
+	* Redesign fixwav library from scratch compared with priori versions
+	* New features: continuous padding, pruning-and-padding, 
+	* Perform all writing operations at last stage (no adjustment).

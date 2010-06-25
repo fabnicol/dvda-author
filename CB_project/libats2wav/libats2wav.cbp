@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="libats2wav" />
+		<Option pch_mode="2" />
+		<Option compiler="cygwin" />
+		<Build>
+			<Target title="Release">
+				<Option output="libats2wav" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="obj\Release\" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-march=i686" />
+					<Add option="-O3" />
+					<Add option="-std=c99 -Wextra -pedantic -Wall -DCB" />
+					<Add option="-D_LARGEFILE_SOURCE" />
+					<Add option="-D_LARGE_FILES" />
+					<Add option="-D_FILE_OFFSET_BITS=64" />
+					<Add option="-DEXTENDED" />
+					<Add option="-D_GNU_SOURCE" />
+					<Add option="-DALWAYS_INLINE" />
+					<Add option="-DCB" />
+					<Add directory="..\..\libutils\src\include" />
+					<Add directory="..\..\src\include" />
+					<Add directory="..\..\libats2wav\src\include" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="-Xlinker --warn-unresolved-symbols" />
+					<Add library="..\libc_utils\libc_utils.a" />
+					<Add directory="..\libats2wav" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-march=i686" />
+			<Add option="-O3" />
+		</Compiler>
+		<Linker>
+			<Add option="-s" />
+		</Linker>
+		<Unit filename="..\..\libats2wav\src\include\libats2wav.h" />
+		<Unit filename="..\..\libats2wav\src\libats2wav.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Extensions>
+			<envvars />
+			<code_completion />
+			<lib_finder disable_auto="1" />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

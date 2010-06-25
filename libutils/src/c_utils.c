@@ -1,0 +1,842 @@
+/*
+
+File:   c_utils.c
+Purpose: utility library
+
+Copyright Fabrice Nicol <fabnicol@users.sourceforge.net>, 2008
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+*/
+
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <stdlib.h>
+#include <stdio.h>
+//#ifdef __WIN32__
+//#include <io.h>
+//#else
+//#include <unistd.h>
+//#endif
+#include <dirent.h>
+#include <stdarg.h>
+#include <sys/time.h>
+#include <errno.h>
+#include <string.h>
+#include <time.h>
+#include <ctype.h>
+#include <sys/stat.h>
+
+
+/* printf is a public macro
+ * foutput_c is a private one
+ * using both public and private macros */
+//#include "ports.h"
+#include "c_utils.h"
+#include "private_c_utils.h"
+// here include your main application's header containing a globalData structure with main application globals.
+#include "structures.h"
+#undef __MS_types__
+extern globalData globals;
+
+void pause_dos_type()
+{
+    char reply;
+    char buffer[150];
+    puts("Press twice on Enter to continue...");
+
+    do {
+	    scanf("%c", &reply);
+	    fgets(buffer, 150, stdin);
+	    if (reply == '\n') return;
+    } while(1);
+
+
+
+}
+
+// allocates heap memory to produce the result of the concatenation of two strings and returns the length of the concatenate
+// the result of the concatenation is placed into dest which is reallocated
+// returns -1 if either argument is null or 0 on error
+
+char * concatenate(char* dest, char* str1, char* str2)
+{
+if ((!str1) || (!str2)) return -1;
+errno=0;
+uint16_t s1=strlen(str1);
+uint16_t s2=strlen(str2);
+
+dest=realloc(dest, (s1+s2+1)*sizeof(char));
+
+ memcpy(dest, str1, s1);
+ memcpy(dest+s1, str2, s2);
+ dest[s1+s2]=0;
+ if (errno) return NULL;
+ else return dest;
+
+}
+
+_Bool clean_directory(char* path)
+{
+
+errno=0;
+if (path == NULL) return (EXIT_FAILURE);
+int s=strlen(path);	    // This is brute-force handling with shell. TODO: turn into C.
+
+if (globals.veryverbose) printf("%s%s\n", "[INF]  Cleaning directory ", path);
+#ifndef __WIN32__
+    char cleancommand[50+2*s];
+    sprintf(cleancommand,  "if test -d %s ; then rm -rf %s 2> /dev/null; fi", path, path);
+#else
+    char cleancommand[25+s];
+    sprintf(cleancommand, "%s%s%s%s%s", "if exist ",path," del /Q /S /F ", path, " > null");
+#endif
+    if (globals.veryverbose) printf("[INF]  Running %s\n       ... \n", cleancommand);
+    system(cleancommand);
+if (globals.veryverbose)
+{
+if (errno)
+  { printf("%s%s\n", "[MSG]  Failed to clean directory ", path); return 0; }
+else
+  { printf("%s\n", "[MSG]  OK."); return 1;}
+}
+
+}
+
+
+/*********************************************************************************************************
+ * function: clean_exit
+ *   logs time; flushes all streams;  erase empty backup dirs; closes log;
+  **********************************************************************************************************/
+
+
+
+void clean_exit(int message, const char *default_directory)
+{
+
+    fflush(NULL);
+
+
+    if (globals.logfile)
+    {
+
+        fclose(globals.journal);
+    }
+
+    exit(message);
+}
+
+/****************************************************************
+* function: secure_mkdir
+*   Creates directories.
+****************************************************************/
+
+int secure_mkdir (const char *path, mode_t mode, const char* default_directory)
+{
+
+    int i=0, len;
+    len = strlen (path);
+
+    // requires std=c99
+
+
+    if  ((len<1) && (globals.debugging))
+    {
+        printf("%s\n","[ERR]  Path length could not be allocated by secure_mkdir:\n       Your compiler may not be C99-compliant");
+        clean_exit(EXIT_FAILURE,default_directory);
+    }
+
+    char d[len+1];
+    memset(d, 0, len+1);
+
+    memmove(d, path, len+1);
+
+    if (d == NULL)
+    {
+        perror("[MSG] Error: could not allocate directory path string");
+        clean_exit(EXIT_FAILURE, default_directory);
+    }
+
+
+    for (i = 1; i < len; i++)
+    {
+        if (('/' == d[i]) || ('\\' == d[i]))
+        {
+#if defined __WIN32__ || defined __CYGWIN__
+            if (d[i-1] == ':') continue;
+#endif
+            d[i] = '\0';
+
+            if ((MKDIR(d, mode) == -1) && (EEXIST != errno))
+
+            {
+                printf( "Impossible to create directory '%s'\n", d);
+                printf("%s", "Backup directories will be used.\n " );
+
+                clean_exit(EXIT_FAILURE, default_directory);
+
+            }
+            d[i] = '/';
+
+
+        }
+
+    }
+    // loop stops before end of string as dirpaths can optionally end in '/' under *nix
+
+    if  (MKDIR(path, mode) == -1)
+    {
+        if (EEXIST == errno)
+        {
+            errno=0;
+            //  Output directory already created
+            return(0);
+        }
+        printf("[ERR]  Impossible to create directory '%s'\n", path);
+        printf("       permission was: %d\n       %s\n", mode, strerror(errno));
+        printf( "%s", "       Backup directories will be used.\n");
+        errno=0;
+
+        clean_exit(EXIT_FAILURE, default_directory);
+    }
+
+    return(errno);
+}
+
+char* get_command_line(char** args)
+{
+// You should always use arrays with this function, not pointers
+    if (args == NULL) return NULL;
+    uint16_t tot=0, i=1, j, shift=0;
+    uint16_t size[BUFSIZ*10];
+    while (args[i])
+    {
+        size[i]=strlen(args[i]);
+        tot+=size[i];
+        i++;
+    }
+
+    char* cml=calloc(tot+i, sizeof(char));
+    if (cml == NULL) perror("[ERR]  get_command_line");
+
+    for (j=1; j< i; j++)
+    {
+        memcpy(cml+shift, args[j], size[j]);
+        shift+=size[j]+1;
+        cml[shift-1]=0x20;
+    }
+    cml[shift-1]=0;
+    if (globals.debugging) fprintf(stderr, "[INF]  Command line: %s\n", cml);
+
+    return cml;
+}
+
+
+void starter(compute_t *timer)
+{
+// The Mingw compiler does not support getrusage
+#ifndef __MINGW32__
+    getrusage(RUSAGE_SELF, timer->start);
+    getrusage(RUSAGE_SELF, timer->nothing);
+    timer->nothing->ru_utime.tv_sec -= timer->start->ru_utime.tv_sec;
+    timer->nothing->ru_stime.tv_sec -= timer->start->ru_stime.tv_sec;
+
+#endif
+
+}
+
+void print_commandline(int argc, char * const argv[])
+{
+    int i=0;
+
+    if (globals.debugging) printf("%s \n", "[INF]  Running:");
+
+    for (i=0; i < argc ; i++)
+        printf("%s ",  argv[i]);
+    printf("%s", "\n\n");
+
+}
+
+char* print_time(int verbose)
+{
+    char outstr[200];
+    time_t t;
+    struct tm *tmp;
+
+    t = time(NULL);
+    tmp = localtime(&t);
+    if (tmp == NULL)
+    {
+        perror("localtime");
+        exit(EXIT_FAILURE);
+    }
+
+
+    if (verbose)
+    {
+        if (strftime(outstr, sizeof(outstr), "%d %b, %Hh %Mm %Ss", tmp) == 0)
+        {
+            printf("%s\n", "strftime returned 0");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    else
+        if (strftime(outstr, sizeof(outstr), "%Hh %Mm %Ss", tmp) == 0)
+        {
+            printf("%s\n", "strftime returned 0");
+            exit(EXIT_FAILURE);
+        }
+
+    if (verbose)
+    {
+        printf("\nCurrent time is: %s", outstr);
+        return NULL;
+    }
+    else
+        return(strdup(outstr));
+}
+
+void change_directory(const char * filename)
+{
+    if (chdir(filename) == -1)
+    {
+        if (errno == ENOTDIR)
+            printf("[ERR]  %s is not a directory\n", filename);
+        printf("[ERR]  input file %s does not comply with chdir  specifications\n.", filename);
+        exit(EXIT_FAILURE);
+    }
+    else if (globals.veryverbose)
+        printf("[MSG]  Current working directoy is now %s\n", filename);
+}
+
+int copy_directory(const char* src, const char* dest, mode_t mode)
+{
+
+    DIR *dir_src;
+
+    struct  stat buf;
+    struct dirent *f;
+    char path[BUFSIZ];
+
+    if (stat(dest, &buf) == -1)
+    {
+        perror("[ERR]  copy_directory could not stat file");
+        exit(EXIT_FAILURE);
+    }
+
+
+    printf("%c", '\n');
+
+    if (globals.debugging)  printf("%s%s\n", "[INF]  Creating dir=", dest);
+
+    secure_mkdir(dest, mode, "./");
+
+    if (globals.debugging)   printf("[INF]  Copying in %s ...\n", src);
+    change_directory(src);
+
+    dir_src=opendir(".");
+
+    while ((f=readdir(dir_src)) != NULL)
+    {
+        if (f->d_name[0] == '.') continue;
+        STRING_WRITE(path, "%s%c%s", dest, '/', f->d_name)
+        if (stat(f->d_name, &buf) == -1)
+        {
+            perror("[ERR] stat ");
+            exit(EXIT_FAILURE);
+        }
+
+        /*  Note: on my implementation of Linux (Ubuntu), S_ISDIR and S_ISREG(buf.st_mode) are seemingly buggy
+         *  Resorting to masks S_ISDIR and S_IFREG as a way out */
+
+        if (S_IFDIR & buf.st_mode)
+        {
+
+            if (globals.debugging) printf("%s %s %s %s\n", "[INF]  Copying dir=", f->d_name, " to=", path);
+
+            errno=copy_directory(f->d_name, path, mode);
+
+            continue;
+        }
+        if (S_IFREG & buf.st_mode)
+        {
+            if (globals.debugging) printf("%s%s to= %s\n", "[INF]  Copying file=", f->d_name, path);
+            errno=copy_file(f->d_name, path);
+        }
+        /* does not copy other types of files(symlink, sockets etc). */
+
+        else continue;
+    }
+
+    if (globals.debugging)   printf("%s", "[INF]  Done. Backtracking... \n\n");
+    closedir(dir_src);
+    return(errno);
+}
+
+int copy_file_no_p(FILE *infile, FILE *outfile)
+{
+
+
+    char buf[BUFSIZ];
+    clearerr(infile);
+    clearerr(outfile);
+    size_t chunk;
+
+
+
+    while (!feof(infile))
+    {
+
+        chunk=fread(buf, sizeof(char), BUFSIZ, infile);
+
+        if (ferror(infile))
+        {
+            fprintf(stderr, "[ERR]  Read error\n");
+            return(-1);
+        }
+
+
+        fwrite(buf, chunk* sizeof(char), 1 , outfile);
+
+        if (ferror(outfile))
+        {
+            fprintf(stderr, "[ERR]  Write error\n");
+            return(-1);
+        }
+    }
+    return(0);
+}
+
+
+// Adapted from Yve Mettier's O'Reilly "C en action" book, chapter 10.
+
+int copy_file(const char *existing_file, const char *new_file)
+{
+
+    FILE *fn, *fe;
+    int errorlevel;
+
+    if (NULL == (fe = fopen(existing_file, "rb")))
+    {
+        fprintf(stderr, "[ERR]  Impossible to open file '%s' in read mode\n", existing_file);
+        return(-1);
+    }
+    if (NULL == (fn = fopen(new_file, "wb")))
+    {
+        fprintf(stderr, "[ERR]  Impossible to open file '%s' in write mode\n", new_file);
+        fclose(fe);
+        return(-1);
+    }
+
+
+    errorlevel=copy_file_no_p(fe, fn);
+    fclose(fe);
+    fclose(fn);
+
+    return(errorlevel);
+
+}
+
+int cat_file(const char *existing_file, const char *new_file)
+{
+
+    FILE *fn, *fe;
+    int errorlevel;
+
+    if (NULL == (fe = fopen(existing_file, "rb")))
+    {
+        fprintf(stderr, "[ERR]  Impossible to open file '%s' \n in read mode.\n", existing_file);
+        return(-1);
+    }
+    if (NULL == (fn = fopen(new_file, "ab")))
+    {
+        fprintf(stderr, "[ERR]  Impossible to open file '%s' in append mode.\n", new_file);
+        fclose(fe);
+        return(-1);
+    }
+
+
+    errorlevel=copy_file_no_p(fe, fn);
+    fclose(fe);
+    fclose(fn);
+
+    return(errorlevel);
+
+}
+int copy_file_p(FILE *infile, FILE *outfile, uint32_t position,uint64_t output_size)
+{
+
+
+    char buf[BUFSIZ];
+    clearerr(infile);
+    clearerr(outfile);
+    size_t chunk=0;
+    uint64_t count=0;
+
+    if (fseek(infile, position, SEEK_SET) == -1) return -1;
+    end_seek(outfile);
+    if (output_size)
+    {
+
+    while ((output_size > count)&&(!feof(infile)))
+    {
+
+        chunk= ((output_size-count) < BUFSIZ) ? fread(buf, sizeof(char), (size_t) output_size -count, infile) : fread(buf, sizeof(char), BUFSIZ, infile) ;
+
+        count+=chunk*sizeof(char);
+
+
+        if (ferror(infile))
+        {
+            fprintf(stderr, "Read error\n");
+            return(-1);
+        }
+
+
+        fwrite(buf, chunk* sizeof(char), 1 , outfile);
+
+
+        if (ferror(outfile))
+        {
+            fprintf(stderr, "Write error\n");
+            return(-1);
+        }
+    }
+    return((count < output_size) ? PAD : NO_PAD);
+   }
+
+   while (!feof(infile))
+    {
+
+        chunk= fread(buf, sizeof(char), BUFSIZ, infile) ;
+
+        count+=chunk*sizeof(char);
+
+
+        if (ferror(infile))
+        {
+            fprintf(stderr, "Read error\n");
+            return(-1);
+        }
+
+
+        fwrite(buf, chunk* sizeof(char), 1 , outfile);
+
+
+        if (ferror(outfile))
+        {
+            fprintf(stderr, "Write error\n");
+            return(-1);
+        }
+    }
+    return(NO_PAD);
+
+}
+
+
+
+int get_endianness()
+{
+    long i=1;
+    const char *p=(const char *) &i;
+    if (p[0] == 1) return LITTLE_ENDIAN;
+    return BIG_ENDIAN;
+}
+
+
+ALWAYS_INLINE_GCC inline uint8_t read_info_chunk(uint8_t* pt, uint8_t* chunk)
+{
+    pt+=4;
+    /* there may be non-printable characters after I... info chunk labels */
+    while (!isprint(*pt)) pt++;
+
+    /* this functin should be called only when it it certain that there will be at least one 0 in the area pointed to by pt within the size of chunk */
+    int result=snprintf((char *) chunk, MAX_LIST_SIZE, "%s", pt);
+    if (result >0)
+        return(1);
+    else
+        return(0);
+
+}
+
+void parse_wav_header(FILE * infile, infochunk* ichunk)
+{
+    uint8_t haystack[MAX_HEADER_SIZE]={0};
+    int count;
+    if ((count=fread(haystack, 1, MAX_HEADER_SIZE, infile)) != MAX_HEADER_SIZE)
+    {
+        printf("[ERR]  Could not read %d characters from input file\n", MAX_HEADER_SIZE);
+        printf("[ERR]  Just read %d\n", count);
+        ichunk->span=0;
+        return;
+    }
+    uint8_t *pt=&haystack[0];
+    uint8_t span=0;
+
+    fseek(infile, 0, SEEK_SET);
+    // PATCH 09.07
+
+    do
+    {
+        if ((pt=memchr(haystack+span+1, 'd', MAX_HEADER_SIZE-1-span)) == NULL)
+        {
+            printf("[WAR]  Could not find substring 'data' among %d characters\n", MAX_HEADER_SIZE);
+            if (globals.debugging)
+            {
+                hexdump_header(infile, MAX_HEADER_SIZE);
+            }
+            ichunk->span=0;
+            return;
+        }
+
+        span=pt-haystack;
+
+        if ((*(pt + 1) == 'a') && (*(pt + 2) == 't') && (*(pt + 3) == 'a')) break;
+
+    }
+    while ( span < MAX_HEADER_SIZE-7);
+
+    pt=&haystack[0];
+
+    if (span > 36)
+    {
+        /* header is non-standard, looking for INFO chunks */
+        /* The RIFF standard defines the following chunks, of which only INAM, IART, ICMT, ICOP, ICRD, IGNR will be parsed */
+        /*
+        IARL  Archival Location. Indicates where the subject of the file is archived.
+        IART  Artist. Lists the artist of the original subject of the file. For example, "Michaelangelo."
+        ICMS  Commissioned. Lists the name of the person or organization that commissioned the subject of the file. For example, "Pope Julian II."
+        ICMT  Comments. Provides general comments about the file or the subject of the file. If the comment is several sentences long, end each sentence with a period. Do not include newline characters.
+        ICOP  Copyright. Records the copyright information for the file. For example, "Copyright Encyclopedia International 1991." If there are multiple copyrights, separate them by a semicolon followed by space.
+        ICRD  Creation date. Specifies the date the subject of the file was created. List dates in year-month-day format, padding one-digit months and days with a zero on the left. For example, "1553-05-03" for May 3, 1553.
+        ICRP  Cropped. Describes whether an image has been cropped and, if so, how it was cropped. For example, "lower right corner."
+        IDIM  Dimensions. Specifies the size of the original subject of the file. For example, "8.5 in h, 11 in w."
+        IDPI  Dots Per Inch. Stores dots per inch setting of the digitizer used to produce the file, such as "300."
+        IENG  Engineer. Stores the name of the engineer who worked on the file. If there are multiple engineers, separate the names by a semicolon and a blank. For example, "Smith, John; Adams, Joe."
+        IGNR  Genre. Describes the original work, such as, "landscape," "portrait," "still life," etc.
+        IKEY  Keywords. Provides a list of keywords that refer to the file or subject of the file. Separate multiple keywords with a semicolon and a blank. For example, "Seattle; aerial view; scenery."
+        ILGT  Lightness. Describes the changes in lightness settings on the digitizer required to produce the file. Note that the format of this information depends on hardware used.
+        IMED  Medium. Describes the original subject of the file, such as, "computer image," "drawing," "lithograph," and so forth.
+        INAM  Name. Stores the title of the subject of the file, such as, "Seattle From Above."
+        IPLT  Palette Setting. Specifies the number of colors requested when digitizing an image, such as "256."
+        IPRD  Product. Specifies the name of the title the file was originally intended for, such as "Encyclopedia of Pacific Northwest Geography."
+        ISBJ  Subject. Describes the conbittents of the file, such as "Aerial view of Seattle."
+        ISFT  Software. Identifies the name of the software package used to create the file, such as "Microsoft WaveEdit."
+        ISHP  Sharpness. Identifies the changes in sharpness for the digitizer required to produce the file (the format depends on the hardware used).
+        ISRC  Source. Identifies the name of the person or organization who supplied the original subject of the file. For example, "Trey Research."
+        ISRF  Source Form. Identifies the original form of the material that was digitized, such as "slide," "paper," "map," and so forth. This is not necessarily the same as IMED.
+        */
+
+        uint8_t infoindex=0;
+
+        do
+        {
+            if ((pt=memchr(haystack+infoindex+1, 0x49, span-1-infoindex)) == NULL)
+            {
+
+                if (globals.debugging)
+                {
+                    if (ichunk->found)
+                        printf("[MSG]  Found %d info chunks among %d characters\n       INAM %s\n       IART %s\n       ICMT %s\n       ICOP %s\n       ICRD %s\n       IGNR %s\n",
+                               ichunk->found, span, ichunk->INAM, ichunk->IART, ichunk->ICMT, ichunk->ICOP, ichunk->ICRD, ichunk->IGNR);
+                    else
+                        printf("[MSG]  Could not find info chunks among %d characters\n", span);
+
+                }
+                break;
+            }
+
+
+            infoindex=pt-haystack;
+
+            if ((*(pt + 1) == 'N') && (*(pt + 2) == 'A') && (*(pt + 3) == 'M'))
+                ichunk->found=read_info_chunk(pt, ichunk->INAM);
+            else
+                if ((*(pt + 1) == 'A') && (*(pt + 2) == 'R') && (*(pt + 3) == 'T'))
+                    ichunk->found+=read_info_chunk(pt, ichunk->IART);
+                else
+                    if ((*(pt + 1) == 'C'))
+                    {
+                        if ((*(pt + 2) == 'M') && (*(pt + 3) == 'T'))
+                            ichunk->found+=read_info_chunk(pt, ichunk->ICMT);
+                        else
+                            if ((*(pt + 2) == 'O') && (*(pt + 3) == 'P'))
+                                ichunk->found+=read_info_chunk(pt, ichunk->ICOP);
+                            else
+                                if ((*(pt + 2) == 'R') && (*(pt + 3) == 'D'))
+                                    ichunk->found+=read_info_chunk(pt, ichunk->ICRD);
+                    }
+                    else
+                        if ((*(pt + 1) == 'G') && (*(pt + 2) == 'N') && (*(pt + 3) == 'R'))
+                            ichunk->found+=read_info_chunk(pt, ichunk->IGNR);
+
+        }
+        while (infoindex < span-4);
+    }
+
+
+    if (globals.debugging)
+    {
+        if (span != 36) printf( "[MSG]  Size of header is non-standard (scanned %d characters)\n", span );
+        else printf("%s", "[MSG]  Size of header is standard\n");
+
+        if (span < 36)
+        {
+            printf( "[MSF]  Size of header is too short, some audio will be lost (%d bytes).\n", 36-span );
+        }
+    }
+
+    ichunk->span=span;
+
+    return;
+}
+
+
+FILE * secure_open(char *path, char *context)
+{
+    FILE *f;
+
+    if ( (f=fopen( path, context ))  == NULL )
+    {
+        printf("[ERR]  Could not open '%s'\n", path);
+        exit(EXIT_FAILURE);
+    }
+    return f;
+
+}
+
+
+int end_seek(FILE *outfile)
+{
+    if ( fseek(outfile, 0, SEEK_END) == -1)
+    {
+        printf( "\n%s\n", "[ERR]  Error seeking to end of output file" );
+        printf( "%s\n", "     File was not changed\n" );
+        return(FAIL);
+    }
+    return(0);
+}
+
+
+
+/*********************************************************************
+* Function: hexdump_header
+*
+* Purpose:  This function displays the first HEADER_SIZE bytes of the file
+*           in both hexadecimal and ASCII
+*********************************************************************/
+
+
+void hexdump_header(FILE* infile, uint8_t header_size)
+{
+    unsigned char data[ HEX_COLUMNS ];
+    size_t i, size=0, count=0, input=0;
+    printf( "%c", '\n' );
+    do
+    {
+
+        memset(data, 0, HEX_COLUMNS);
+
+        /* Print the base address. */
+        printf("%08lX:  ", (long unsigned)count);
+
+
+        input= Min(header_size -count, HEX_COLUMNS);
+        count+=HEX_COLUMNS;
+
+
+        size = fread(data, 1, input, infile);
+
+        if ( size ==  input)
+        {
+
+            /* Print the hex values. */
+            for ( i = 0; i < HEX_COLUMNS; i++ )
+                printf("%02X ", data[i]);
+
+            /* Print the characters. */
+            for ( i = 0; i < HEX_COLUMNS; i++ )
+                printf("%c", (i < input)? (isprint(data[i]) ? data[i] : '.') : ' ');
+
+            printf("%c", '\n');
+        }
+        else
+        {
+            printf("%s\n", "[ERR]  Header was not properly read by hexdump_header()");
+        }
+
+        /* break on partial buffer */
+    }
+    while ( count < header_size );
+
+
+    printf( "%c", '\n' );
+
+}
+
+
+void fread_endian(uint32_t * p, int t, FILE *f)
+{
+
+    /*  CPU_IS_LITTLE_ENDIAN or CPU_IS_BIG_ENDIAN are defined by  configure script */
+
+#if !defined    CPU_IS_LITTLE_ENDIAN    &&  !defined    CPU_IS_BIG_ENDIAN
+
+    /* it is necessary to test endianness here */
+    static char u;
+    static _Bool little;
+
+    /* testing just on first entry */
+
+    if  (!u)   little=(get_endianness() == LITTLE_ENDIAN) ;
+
+    /* fread fills in MSB first so shift one byte for each  one-byte scan  */
+
+    if (little)
+    {
+        fread(p+t, 4 ,1,  f) ;
+        p[t]= (p[t] << 8  &  0xFF0000)  |   (p[t]<<16 & 0xFF00)  |   (p[t]<<24 & 0xFF) |  (p[t] & 0xFF000000);
+    }
+    else
+        /*Big endian  case*/
+        fread(p+t, 1 ,4,  f) ;
+    fflush(f);
+
+#elif   defined CPU_IS_BIG_ENDIAN
+    fread(p+t, 1 ,4,  f) ;
+#elif   defined CPU_IS_LITTLE_ENDIAN
+    fread(p+t, 4 ,1,  f) ;
+    p[t]= (p[t] << 8  &  0xFF0000)  |   (p[t]<<16 & 0xFF00)  |   (p[t]<<24 & 0xFF) |  (p[t] & 0xFF000000);
+#endif
+
+    return;
+
+}
+
+
+int fn_puts(char* s, uint32_t k)
+{
+    if (globals.veryverbose)
+        printf("%s\n", s);
+    int d=strlen(s);
+    if (d)
+        return (d);
+    else
+        return 0;
+}
+

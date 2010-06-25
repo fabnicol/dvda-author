@@ -1,0 +1,10 @@
+prefix=/usr
+exec_prefix=/usr
+libdir=/usr/lib
+includedir=/usr/include/libpng14
+
+Name: libpng
+Description: Loads and saves PNG files
+Version: 1.4.2
+Libs: -L${libdir} -lpng14 -lz -lm
+Cflags: -I${includedir}
