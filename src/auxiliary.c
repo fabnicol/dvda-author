@@ -1,0 +1,599 @@
+/*
+File:    auxiliary.c
+Purpose: on-line help and auxiliary functions
+
+dvda-author  - Author a DVD-Audio DVD
+
+(C) Dave Chapman <dave@dchapman.com> 2005
+(C) Revised version with zone-to-zone linking Fabrice Nicol <fabnicol@users.sourceforge.net> 2007, 2008
+
+The latest version can be found at http://dvd-audio.sourceforge.net
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+*/
+
+/* do not use code beautifiers/formatters for this file*/
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
+
+#include <stdarg.h>
+#include <sys/time.h>
+#include <errno.h>
+#include <unistd.h>
+#include <string.h>
+#ifdef HAVE_IBERTY_BUILD
+#include "strdup.h"
+#endif
+#include <time.h>
+#include "structures.h"
+#include "ports.h"
+#include "audio2.h"
+#include "auxiliary.h"
+#include "c_utils.h"
+#include "file_input_parsing.h"
+#include "ports.h"
+#include "commonvars.h"
+
+extern globalData globals;
+extern char* INDIR, *OUTDIR, *LOGFILE, *TEMPDIR, *LINKDIR, *WORKDIR;
+
+void version()
+{
+
+    printf("%s%s%s", "dvda-author version ", VERSION, "\nCopyright  2005 Dave Chapman; 2007-2010 Fabrice Nicol;\n2008-2009 Lee and Tim Feldkamp\n\n");
+    printf("%s","See file AUTHORS for other contributors.\n\n");
+    printf("%s","Latest version available from http://dvd-audio.sourceforge.net/\n\n");
+    printf("%s","This is free software; see the source for copying conditions.\n\nWritten by Dave Chapman, Fabrice Nicol, Lee and Tim Feldkamp.\n");
+    return;
+}
+
+void help()
+{
+
+#ifdef __WIN32__
+    system("mode con cols=85 lines=50");
+    system("title DVD-A author Help");
+#endif
+
+// Use double \n for help2man to work correctly between options
+// there is a bug that moves around options in help2man when a : is used on the first line of option comment so do not use it
+
+printf("%s", "\ndvda-author "VERSION" creates high-resolution DVD-Audio discs\n\nfrom .wav, .flac and other audio files.\n\n");
+printf("%s","Usage: dvda-author [OPTION]...\n");
+
+printf("%s","\nOptions:\n\n");
+printf("%s","Output options\n\n");
+
+printf("%s","-h, --help               Diplay this help.\n\n");
+printf("%s","-v, --version            Diplay version.\n\n");
+printf("%s","-q, --quiet              Quiet mode.\n\n");
+printf("%s","-d, --debug              Increased verbosity (debugging level)\n\n");
+printf("%s","-t, --veryverbose        Like -d with enhanced verbosity for sample counts.\n\n");
+printf("%s","-P, --pause              Insert a final pause before exiting.\n\n");
+printf("%s","-P0, --pause=0           Suppress a final pause before exiting"J"if specified in configuration file.\n\n");
+printf("%s","-l, --log(=f)            Ouput a log to filepath."J"Unless f is specified, log is created as log.txt in the temporary directory.\n\n");
+printf("%s","-L, --logrefresh(=f)     Same as -l but prior log will be erased on launching again.\n\n");
+printf("%s","-k, --text               Generates text table in IFO files"J"Under development, implemented for 1-group discs."J"Use file information as arguments separated by commas.\n\n");
+printf("%s","-W, --disable-lexer      Deactivates configuration file parsing.\n\n");
+
+printf("%s","Playback options\n\n");
+
+printf("%s","-a, --autoplay           Launches playback on loading disc.\n\n");
+
+printf("%s","Authoring options\n\n");
+
+printf("%s","   Soundfile authoring\n\n");
+
+printf("%s","\n\nSupported audio types:   .wav\n");
+#ifndef WITHOUT_FLAC
+printf("%s",    J".flac and .oga (Ogg FLAC, see below)\n");
+#endif
+#ifndef WITHOUT_SOX
+printf("%s", J"SoX-supported formats with -S enabled\n");
+
+printf("%s", J"except for lossy formats.\n");
+#endif
+
+printf("%s","-i, --input directory    Input directory with audio files."J"Each subdirectory is a group.\n\n");
+printf("%s","-o, --output directory   Output directory.\n\n");
+printf("%s","-x, --extract disc[list] Extract DVD-Audio to directory -o."J"Groups are labelled g1, g2..."J"Optional comma-separated list of groups to be extracted\n"J"may be appended to disc path.\n\n");
+printf("%s","-p, --startsector NNN    Specify the number of the first sector"J"of the AUDIO_PP.IFO file in the output of mkisofs.\n\n");
+printf("%s","                         If NNN=0, falling back on 281 (default).\n"J"Without -p start sector will be computed automatically.\n\n");
+printf("%s","-g                       You may specify up to 9 groups of tracks."J"Minimum: one group.\n");
+printf("%s","                         Enter full path to files if input directory is not set"J"by [-i].\n\n");
+printf("%s","-j,                      Like -g with special processing to avoid gaps."J"Minimum: one group.\n");
+printf("%s","-s,                      Like -g with all tracks merged into one single track."J"Minimum: one group.\n");
+printf("%s","-z, --newtitle           Separate two consecutive titles when files have same audio"J"characteritics within a group.\n");
+printf("%s","-Z, --playlist           You may specify up to 9 group copies."J"Total number of groups and copy groups should not exceed 9.\n");
+printf("%s","-n, --no-videozone       Do not generate an empty VIDEO_TS directory.\n\n");
+printf("%s","-w, --rights             Access rights to directories created (octal values)\n\n");
+printf("%s","-U, --PTS-factor (-)lag  Enter lag to be added/substracted (-) to title length,"J"in 10E-2 second.\n\n");
+printf("%s","-c, --cga                Enter channel group assignment right after group (-g, -j or -s).\n\n");
+#ifndef WITHOUT_FIXWAV
+printf("%s","-F, --fixwav(options)    Bad wav headers will be fixed by fixwav\n\n");
+printf("%s","-f, --fixwav-virtual(options)  Use .wav header repair utility "J"without any write operation.\n\n");
+#endif
+#ifndef WITHOUT_SOX
+printf("%s","-S, --sox                Use SoX to convert files to .wav."J"By default, only flac, Ogg FLAC "J"and .wav files are accepted.\n\n");
+#endif
+#if 0
+printf("%s","    --no-padding         Block padding of audio files by dvda-author.\n\n");
+printf("%s","    --minimal-padding    Only pad for evenness of sample count.\n\n");
+printf("%s","-C, --pad-cont           When padding, pad with last known byte, not 0.\n\n");
+printf("%s","-L, --lossy-rounding     Sample count rounding will be performed by cutting audio files.\n\n");
+#endif
+
+printf("%s","   Menu authoring\n\n");
+
+printf("%s","-m, --topmenu(=mpgfile)  Generates top menu from mpgfile."J"Without argument, automatic menu generation is launched.\n\n");
+printf("%s","-u, --duration hh:mm:ss Duration of top menu file, if provided."J"It is mandatory when --topmenu has an argument file.\n\n");
+
+printf("%s","-M, --xml filepath       Generates dvdauthor xml project"J"to filepath.\n\n");
+printf("%s","-H, --spuxml filepath    Generates spumux xml project"J"to filepath.\n\n");
+printf("%s","-G, --image file         Menu Background image for customized menu authoring.\n\n");
+printf("%s","-E, --highlight file     Menu Highlight image for customized menu authoring.\n\n");
+printf("%s","-e, --select  file       Menu Select image "J"image that appears on pressing Enter with remote control\n");
+printf("%s","                         usually Background with a change in text color.\n\n");
+printf("%s","-N, --blankscreen file   For automatic menu authoring, you can replace black video background with this image.\n\n");
+printf("%s","-O, --screentext string  Text for top menu. Format is"J"\"album_text=group1_text=text(track11),text(track21),...,text(trackn1):group2_text=text(track12),text(track22)...,text(trackn2):...\""J"with text(tracknk) the text for track n of group k and"J"groupk_text the text for group k.\n\n");
+printf("%s","-U, --loop               loop background video.\n\n");
+printf("%s","-K, --highlightformat    -1 for automatic menu authoring"J"with little square before titles, 0 for underlining, 1 for button highlight.\n\n");
+printf("%s","-J, --font a,b,c         Font name,font size,font width"J"(number of pixels for width of font size 10)."J"Font name should be compatible with Image magick specifications (mogrify -list font).\n\n");
+printf("%s","-Y, --topmenu-palette string     Text for system palette. Format is "J"\"textcolor,backgroundcolor,highlightcolor,select action color\" "J"in alpha-YCrCb 32-bit hexa coding; backgroundcolor should be 0x008080, highlightcolor defines the colors of the underline or mobile highlight motif, select color"J"turns the text into another color, currently also the album and group text color.\n\n");
+printf("%s","-y, --topmenu-colors string     Text for menu colors. Format is"J"either \"norefresh\", to block the refreshing of menu images, or textcolor:backgroundcolor:highlightcolor:select action color in rgb values a,b,c between 0 and 255.\n\n");
+printf("%s","-b, --background         Background jpg files (comma-separated) to create a background mpg file"J"into which titles are multiplexed.\n\n");
+printf("%s","-0, --menustyle desc     Specifies top menu style"J"By default, tracks are listed under group headers."J"If desc='hierarchical', the first menu screen lists groups."J"If desc='active', all tracks will have an associated still picture with menu links that remain active while listening to the track.\n\n");
+printf("%s","-1, --stillvob f         Import already authored still pictures vob.\n\n");
+printf("%s","-2, --stilloptions ...   Still picture options (add after --stillpics). Each option applies to ranked pic, e.g."J"rank=0,manual,starteffect=fade,rank=1,starteffect=dissolve."J"Suboptions are:"J"rank=[number], starteffect=[effect], endeffect=[effect]"J"manual, lag=[number], start=[number], active"J"See details below. \n\n");
+printf("%s","-3, --stillpics          Background jpg files to create one or more still pictures"J"for each track.See usage below."J"If a track has no still picture, use two hyphens in a row."J"You may otherwise indicate a directory containing pictures"J"named pic_abc.jpg, with a,b,c between 0 and 9.\n\n");
+printf("%s","-3, --stillpics dir/     Directory for background jpg files to create one still picture for each track."J"Pics should be named pic_000.jpg, ..., up to pic_999.jpg (maximum).\n\n");
+printf("%s","-4, --norm               Argument is 'ntsc', 'pal' or 'secam', depending on TV standard.\n\n");
+printf("%s","-5, --aspect             Set the playback aspect ratio code of the encoded video. By default, this value is inferred from  the input header.\n\n");
+printf("%s","                         1  - 1:1 display"J"2  - 4:3 display"J"3  - 16:9 display"J"4  - 2.21:1 display\n\n");
+printf("%s","-6, --nmenus int         Generates int top menus (default 1).\n\n");
+printf("%s","-7, --ncolumns int       Top menus will have at most int columns (default 3).\n\n");
+printf("%s","-8, --activemenu-palette string     Text for menu colors. Format is"J"either \"norefresh\", to block the refreshing of menu images, or textcolor:backgroundcolor:highlightcolor:select action color"J"in alpha-YCrCb 32-bit hexa coding. Here textcolor is the non-highlighted text, highlightcolor is the underline or mobile motif colors, the highlighted text has the same color as the group and album texts and select action color is on pressing the highlighted track.\n\n");
+printf("%s","-B, --background-mpg f   Background mpg file f"J"into which titles are multiplexed.\n\n");
+printf("%s","-Q, --soundtrack file    Background wav file f"J"to be multiplexed into background menu that must be supplied with -B or created with -b."J"By default a silent track will be multiplexed.\n\n");
+printf("%s","-A, --topvob f           Import already authored top vob menu f.\n\n");
+
+printf("%s","   Disc authoring\n\n");
+printf("%s","-I, --mkisofs(=file)     Run mkisofs to author disc image using file"J"as an ISO image. If file is empty, use tempdir/dvd.iso.\n\n");
+printf("%s","-r, --cdrecord(=a,b,c)   Run cdrecord to burn disc image."J"Unless specified, --mkisofs will be automatically triggered with default tempdir/dvd.iso value."J"Device is of the form a,b,c, see cdrecord -scanbus. It can be omitted"J"if there is just one writer.\n\n");
+printf("%s","-R, --growisofs /dev/dvd Run growisofs to burn disc image."J"Device is of the form /dev/scd0 under many GNU/Linux distributions."J"It cannot be omitted.\n\n");
+
+printf("%s","-V, --videodir directory Path to VIDEO_TS directory\n\n");
+printf("%s","-T, --videolink rank     Rank of video titleset linked to in video zone"J"(XX in VTS_XX_0.IFO)."J"In this case the path to the VIDEO_TS linked to"J"must be indicated.\n\n");
+
+printf("%s","Software configuration\n\n");
+
+printf("%s","-D, --tempdir directory  Temporary directory.\n\n");
+printf("%s","-X, --workdir directory  Working directory: current directory in command line relative paths."J"With Code::Blocks and similar IDE, specify your root package directory as argument to --workdir.\n\n");
+printf("%s","-W, --bindir path        Path to auxiliary binaries.\n\n");
+printf("%s","    --no-refresh-tempdir Do not erase and recreate the temporary directory on launch.\n\n");
+printf("%s","    --no-refresh-outdir  Do not erase and recreate the output directory on launch.\n\n");
+
+
+printf("%s","Sub-options\n\n");
+#ifndef WITHOUT_FIXWAV
+
+printf("%s", "\n    fixwav sub-options:\n\n"\
+"simple-mode"\
+K"Deactivate default automatic mode and advanced options.\n"\
+K"User will be asked for more information.\n\n"\
+"prepend"\
+K"Prepend header to raw file\n\n"\
+"in-place"\
+K"Correct header in the original file (not advised)\n\n"\
+"cautious"\
+K"Be cautious when overwriting files in-place\n\n"\
+"interactive"\
+K"Request information from user.\n\n"\
+"padding"\
+K"Pad files according to WAV standard\n\n"\
+"prune"\
+K"Cuts off silence at end of files\n\n"\
+"force"\
+K"Launches fixwav before SoX for mangled headers\n\n"\
+"output=sf"\
+K"Copy corrected file to new filepath with string suffix sf\n\n"\
+"infodir=db\n"\
+K"Copy info chunks from wav headers to file db"SEPARATOR"database\n\n"\
+"  Sub-options should be separated by commas and appended\n\n\
+  after short option or after = sign if long option is used:\n\n\
+  -f/-Fsuboption or --fixwav(-virtual)=suboption\n\n\
+  without any whitespace in between them.\n\n\
+  Example: --fixwav=simple-mode,prepend,interactive,output=new\n\
+");
+#endif
+printf("%s", "\n    Still pictures:\n\n"\
+K"p11,p21,...,pn1-p22,p22,...,pn2-...\n\n"\
+K"with tracks separated by hyphens and pictures by commas.\n\n"\
+K" Examples: -g ~/a.wav --stillpics image1.jpg,image2.jpg,image3.jpg-image4.jpg,image5.jpg,image6.jpg\n\n"\
+K" If there are no pics for a track use -- as below (no pics for second track):\n\n"\
+K"           -g ~/a.wav ~/b.wav ~/c.wav --stillpics image1.jpg,image2.jpg,image3.jpg--image4.jpg,image5.jpg,image6.jpg\n\n"
+);
+printf("%s", "\n    Still picture transition effects:\n\n"\
+"rank=k"\
+K"k is the absolute rank of stillpic (0-based) to which the following options apply (order-dependent).\n\n"\
+"start=k"\
+K"picture starts at k sec from start of track.\n\n"\
+"manual"\
+K"Enable browsable (manual advance) pictures (experimental).\n\n"\
+"starteffect=effect"\
+K"transition effect at start of pic: cut (default), fade, dissolve, top-wipe, bottom-wipe, left-wipe, right-wipe.\n\n"\
+"endeffect=effect"\
+K"like starteffect at end of pic show (under development)\n\n"\
+"lag=k"\
+K"k is the duration of transition effect in multiples of 0.32 second (k < 16).\n\n"\
+"active"\
+K"menu links will be displayed on still picture and remain active while listening.\n\n"\
+K" Example: --stilloptions rank=0,start=03,starteffect=fade,lag=12,rank=1,start=20,starteffect=dissolve,lag=15\n\n"\
+"\n\n"\
+K"Transition effects like fade or dissolve may vary depending on hardware.\n\n"\
+K"End effects may be visible only when several pictures are used for a track slide.\n\n"\
+K"If a track has just one still pic, only start effects may be visible.\n\n"
+);
+
+printf("%s","\n\nNote: for optional arguments noted (=...) above, usage is either"J" -xY, with x the option flag and Y the argument, or"J" --option=argument.\n");
+printf("%s","\n\nThere must be a maximum of 9 audio groups.\n\n");
+printf("%s","Each subdirectory of an audio input directory will contain titles\n\nfor a separate audio group.\n\n\
+A number between 1 and 9 must be included as the second character of the\n\nsubdirectory relative name.\n\n");
+printf("%s", "Full Input/Output paths must be specified unless default settings are set.\n\n");
+printf("\n%s", "By default, defaults are set in /full path to dvda-author folder/defaults\n\n");
+
+
+
+printf("%s", "Examples:\n");
+printf("%s", "\n\
+-creates a 3-group DVD-Audio disc (legacy syntax):\n\n\
+  dvda-author -g file1.wav file2.flac -g file3.flac -g file4.wav\n\n");
+printf("%s", "-creates a hybrid DVD disc with both AUDIO_TS mirroring audio_input_directory\n\n\
+  and VIDEO_TS imported from directory VID, outputs disc structure to directory\n\n");
+printf("%s", " DVD_HYBRID and links video titleset #2 of VIDEO_TS to AUDIO_TS:\n\n");
+printf("%s","  dvda-author -i ~"SEPARATOR"audio"SEPARATOR"audio_input_directory"K"-o DVD_HYBRID -V Video"SEPARATOR"VID -T 2 \n\n");
+printf("%s", "-creates an audio folder from an existing DVD-Audio disc:\n\n\
+  dvda-author --extract /media/cdrom0,1,3,5,6,7 -o dir\n\n");
+printf("%s","will extract titlesets 1,3,5,6,7 of the disc to\n\n\
+dir"SEPARATOR"g1, dir"SEPARATOR"g3, dir"SEPARATOR"g5, dir"SEPARATOR"g6, dir"SEPARATOR"g7 respectively.\n\n");
+printf("%s", "\nRequired compile-time constants:\n\n_GNU_SOURCE, __CB__ if compiling with Code::Blocks or similar IDE.\n\n");
+
+printf("%s", "Optional compile-time constants:\n\nLONG_OPTIONS for the above long options (starting with --)\n\n\
+SHORT_OPTIONS_ONLY to block all long options.\n\n\
+LOCALE to recompile for another locale than the default \"C\".\n\n\
+SETTINGSFILE to specify default filepath of the configuration file.\n\n\
+FLAC__HAS_OGG to enable Ogg FLAC support.\n\n\
+_LARGEFILE_SOURCE,_LARGE_FILES,_FILE_OFFSET_BITS=64\n\n\
+to enable large file support.\n\n\
+ALWAYS_INLINE forces code inlining.\n\n\
+WITHOUT_SOX to compile without SoX code\n\n\
+WITHOUT_FLAC to compile without FLAC/OggFLAC code\n\n\
+WITHOUT_FIXWAV to compile without fixwav code\n\n");
+
+printf("%s", "\nReport bugs to fabnicol@users.sourceforge.net\n");
+return;
+}
+
+void check_settings_file()
+{
+
+    /* If a command-line build system is not used, e.g. with editors like Code::Blocks, it is unwieldy to define SETTINGSFILE so creating automatically to avoid crashes */
+    /* It may also be useful if configuration file was installed in a directory with inappropriate access rights */
+
+    if (fopen(SETTINGSFILE, "r") ==  NULL)
+    {
+        printf("[WAR]  Could not open settings file, creating one in %s...\n", SETTINGSFILE);
+        FILE* settingsfile=fopen(SETTINGSFILE, "w");
+        if (settingsfile == NULL)
+        {
+           printf("[ERR]  Could not create settings file in path %s\n       Check that you have adequate administrative rights\n       Exiting...\n", SETTINGSFILE);
+           clean_exit(EXIT_FAILURE, DEFAULT);
+        }
+
+        fprintf(settingsfile, "%s","\
+## dvda-author configuration file\n\
+## These parameters override hard-code defaults.\n\
+## Comment out parameters with # to unselect them.\n\
+## lexer will skip lines beginning with # or without any content or with just white space or tabs.\n\
+## Extra white space or tabs will be skipped.\n\
+## debugging verbosity level\n\
+#	debug");
+
+
+        fclose(settingsfile);
+    }
+
+}
+
+_Bool increment_ngroups_check_ceiling(uint8_t *ngroups, uint8_t * nvideolinking_groups)
+{
+
+    if (*ngroups < 9)
+    {
+        if (nvideolinking_groups != NULL)
+        {
+            if (*nvideolinking_groups + *ngroups < 9)
+                ++*nvideolinking_groups;
+            else
+            {
+                printf("[ERR]  DVD-Audio only supports up to 9 groups; audio groups=%d; video-linking groups=%d\n", *ngroups, *nvideolinking_groups);
+                clean_exit(EXIT_SUCCESS, DEFAULT);
+            }
+        }
+        ++*ngroups;
+    }
+    else
+    {
+        if (nvideolinking_groups != NULL)
+            printf("[ERR]  DVD-Audio only supports up to 9 groups; audio groups=%d; video-linking groups=%d\n", *ngroups, *nvideolinking_groups);
+        else
+            printf("[ERR]  DVD-Audio only supports up to 9 groups; audio groups=%d\n", *ngroups);
+        clean_exit(EXIT_SUCCESS, DEFAULT);
+    }
+    return 1;
+}
+
+fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t* ntracks,  uint8_t  ngroups, uint8_t n_g_groups, uint8_t nvideolinking_groups)
+{
+
+    float memory=0;
+    int i, j;
+
+    /*   n_g_groups: number of g-type audio groups ('Dave code usage')
+     *   nvideolinking_groups: number of video-linking groups
+     *   ngroups   : total number of groups
+     *   ngroups = n_g_groups + nvideolinking_groups
+     */
+
+    /* It is crucial to use calloc as boolean flags are used */
+
+    if ((files= (fileinfo_t **) calloc(ngroups, sizeof(fileinfo_t *))) == NULL)
+        EXIT_ON_RUNTIME_ERROR
+
+        for (i=0 ; i < n_g_groups; i++)
+        {
+            if ((files[i]=(fileinfo_t *) calloc(ntracks[i], sizeof(fileinfo_t))) == NULL)
+                EXIT_ON_RUNTIME_ERROR
+                memory+=(float) (ntracks[i])*sizeof(fileinfo_t)/1024;
+            if (globals.debugging)
+                printf("[MSG]  g-type  audio group  :  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i,  ntracks[i], memory);
+        }
+
+    for (i=n_g_groups ; i < ngroups-nvideolinking_groups; i++)
+    {
+
+        if ((files[i]=(fileinfo_t *) calloc(ntracks[i], sizeof(fileinfo_t)) )== NULL)
+            EXIT_ON_RUNTIME_ERROR
+
+            for (j=0; j < ntracks[i]; j++)
+                if ((files[i][j].filename=calloc(CHAR_BUFSIZ, sizeof(char)) )== NULL)
+                    EXIT_ON_RUNTIME_ERROR
+                    memory+=(float) (ntracks[i])*(sizeof(fileinfo_t) + CHAR_BUFSIZ)/1024; // CHAR_BUFSIZ characters assigned later on by strdup
+
+        if (globals.debugging)
+            printf("[MSG]  Directory audio group:  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i,  ntracks[i], memory);
+    }
+    for (i=ngroups-nvideolinking_groups ; i < ngroups; i++)
+    {
+        if ((files[i]=(fileinfo_t *) calloc(1, sizeof(fileinfo_t))) == NULL)
+            EXIT_ON_RUNTIME_ERROR
+            memory+=(float) sizeof(fileinfo_t)/1024;
+        /* sanity check: 0 tracks should be allocated */
+        if (globals.debugging)
+            printf("[MSG]  Video-linking group  :  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i, ntracks[i], memory);
+    }
+
+    return files;
+}
+
+
+void free_memory(command_t *command)
+{
+    int i, j;
+    if (command)
+    {
+        short int naudio_groups=command->ngroups-command->nvideolinking_groups;
+
+        for (i=command->n_g_groups; i < naudio_groups ; i++)
+        {
+
+            for (j=0; j < command->ntracks[i]; j++)
+            {
+                if (globals.debugging)
+                    printf("[INF]  Freeing i=%d  j=%d\n",i, j );
+                FREE(command->files[i][j].filename)
+                //FREE(command->files[i][j].filetitle)
+
+            }
+
+
+        }
+
+        for (i=0; i < naudio_groups ; i++)
+           for (j=0; j < command->ntracks[i]; j++)
+              FREE(command->files[i][j].audio)
+
+        for (i=0; i < command->ngroups; i++)
+            FREE(command->files[i])
+        FREE(command->files)
+     }
+
+    FREE(globals.settings.outdir)
+    FREE(globals.settings.workdir)
+    FREE(globals.settings.tempdir)
+    FREE(globals.settings.indir)
+    FREE(globals.settings.linkdir)
+    FREE(globals.settings.logfile)
+    FREE(globals.settings.settingsfile)
+    //FREE(globals.settings.fixwav_database)
+    FREE(globals.settings.dvdisopath)
+    FREE(globals.settings.stillpicdir)
+    FREE(globals.xml)
+
+
+
+
+    //FREE(command->img->selectpic)
+    //FREE(command->img->imagepic)
+    //FREE(command->img->backgroundmpg)
+    FREE(command->img->soundtrack)
+    FREE(command->img->textcolor_palette)
+    //FREE(command->img->highlightcolor_pic/palette)  : do not free
+    //FREE(command->img->selectfgcolor_pic/palette)
+    FREE(command->img->textcolor_pic)
+    FREE(command->img->textfont)
+//    FREE(command->img->blankscreen)
+    FREE(command->img->screentextchain)
+    FREE(command->img->norm)
+    FREE(command->img->framerate)
+//    FREE(command->img->stillpicvobsize)
+    FREE(command->img->aspectratio)
+    j=0;
+    FREE2(command->textable)
+   // FREE2(command->img->backgroundpic)
+
+
+
+}
+
+void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size)
+{
+  char outfile[strlen(audiotsdir)+strlen(basename)+1+1];
+  sprintf(outfile, "%s"SEPARATOR"%s",audiotsdir, basename);
+  printf("[INF]  Creating %s\n",outfile);
+
+  unlink(outfile); // I sometimes had issues under linux when unlink was not called in rare cases. Reset errno to 0 just after.
+  errno=0;
+  FILE* f=fopen(outfile,"wb");
+  if (f == NULL)
+    fprintf(stderr, "[ERR] %s could not be opened properly.\n", basename);
+  if (errno) perror("[ERR] ");
+  errno=0;
+  if (  fwrite(array, 1, size, f) == size )
+    printf("%s%s%s\n", "[MSG]  ", outfile," was created.");
+  else
+    fprintf(stderr, "[ERR]  %s could not be created properly -- fwrite error.\n", basename);
+
+  if (fclose(f)== EOF)
+    fprintf(stderr, "[ERR]  %s could not be closed properly.", basename);
+
+}
+// fn_strtok is a strtok replacement function that, unlike strtok, takes care of the input chain and can be invoked safely in loops or whose delimiting char can be changed without
+// using strtok_r to get safe.
+// It is mingwin32 portable, unlike strtok_r (current version 4.4).
+// It fills in an array of strings with extracted substrings, heap-allocating just what is requested: do not forget to free memory when possible.
+// Array is NULL-terminated.
+// Also, for each substring s, action f can optionally be performed on s, which may save loops.
+// action f is always performed when f is not NULL, and breaks the extraction loop if f returns 0 on string. f takes a counter as third arg.
+// function's last arg is the remainder of non-cut chain (after all f-loops)
+// Returns -1 on error or number of extracted substrings (without NULL)
+// remainder should be allocated prior to call
+
+char** fn_strtok(char* chain, char delim, char** array, uint32_t count, int  (*f)(char*, uint32_t ), char* remainder)
+{
+  if (chain == NULL) return NULL;
+  //
+  char *s=strdup(chain);
+
+  if (s == NULL) return NULL;
+  errno=0;
+
+  uint32_t j=1, k=0;
+  int32_t cut[strlen(s)/2];
+  cut[0]=-1;
+  do  if (s[j] == delim)
+      {
+        cut[++k]=j;
+
+      }
+  while (s[j++] != '\0');
+  cut[k+1]=j-1;
+  // exactly k=size-2 cuts, k+1 substrings and array filled with k+1 substrings and NULL-terminating pointer, so array is sized size*sizeof(char)
+  uint32_t size=k+2;
+  array=(char**) calloc(size, sizeof(char*));
+  if (array == NULL)
+  {
+      perror("[ERR]  fn_strtok");
+      return NULL;
+  }
+  k=0;
+
+  while (k<= (size-2))
+    {
+
+      array[k]=calloc(cut[k+1]-cut[k], sizeof (char));
+      if (array[k] == NULL)
+         { perror("[ERR]  fn_strtok, array[k]"); return NULL;}
+
+      memcpy(array[k], s+cut[k]+1, cut[k+1]-cut[k]-1);
+      array[k][cut[k+1]-cut[k]-1]=0;
+      k++;
+      if ((*f) && ((*f)(array[k-1], count) == 0)) break;
+
+    }
+  array[k]=NULL;
+  if ((remainder) && (s[cut[k]] !='\0'))
+   strcpy(remainder, s+cut[k]+1);
+  else remainder=NULL;
+  free(s);
+
+  if (errno) return NULL;
+  else return array;
+}
+
+// This loop cut may be useful to use with fn_strtok
+
+int cutloop(char* s, uint32_t count)
+{
+    static uint32_t loop;
+    loop++;
+    if (globals.debugging) fn_puts(s, loop);
+    return (count > loop);
+}
+
+int arraylength(void ** tab)
+  {
+int w=0;
+if (tab) while (tab[w] != NULL)  w++;
+return w;
+}
+
+ // if installed with autotools, if bindir overrides then use override, otherwise use config.h value;
+// if not installed with autotools, then use command line value or last-resort hard-code set defaults and test for result
+
+char* create_binary_path(char* local_variable, char* symbolic_constant, char* basename)
+{
+
+    if (symbolic_constant[0])
+    {
+        if (globals.settings.bindir == NULL)
+            local_variable=strdup(symbolic_constant);
+        else
+            local_variable=concatenate(local_variable, globals.settings.bindir, basename);
+    }
+    else
+        local_variable=concatenate(local_variable, globals.settings.bindir, basename);
+
+    return local_variable;
+
+}
+

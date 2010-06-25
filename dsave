@@ -1,0 +1,8 @@
+#!/bin/bash
+make dist
+a=$(grep .*  ex | sed -r "s/ex:(.*)-(.*)\.(.*)/\1-\2\.$(date)/" )
+echo $a > ex2 
+mv ex2 ex
+find . -name "dvda-author*.tar.lzma" -exec mv {} ~/Archive/dvda-author/"dvda-author-$a.tar.lzma" \;
+echo Version $a archived.
+

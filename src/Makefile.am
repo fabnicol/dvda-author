@@ -1,0 +1,90 @@
+SUBDIRS=include
+CAT=/bin/cat
+
+## src/ output executable will be 'dvda'
+
+## libc_utils is always rebuilt, libFLAC and libfixwav are shipped with package for i386*-*[cygwin linux] distributions
+## to avoid conflicts, we take care to add either -l to LDFLAGS links of libs to LDADD, except for static build.
+## if giving FLAC or Ogg as input, do also give the other one for compatibility reasons.
+## Definitions: WITH_LIB: activates this capability
+##              HAVE_LIB_BUILD: recurses subdirs to build capability locally
+#               HAVE_EXTERNAL_LIB: use specified lib, e.g. --with-lib=/full/path/to/lib
+##              HAVE_LIB: LIB has been tested to be system-installed, so linking should be OK (in principle)
+
+
+
+
+bin_PROGRAMS=dvda
+
+dvda_SOURCES=amg2.c ats.c atsi2.c audio.c auxiliary.c dvda-author2.c  \
+             file_input_parsing.c samg2.c videoimport.c launch_manager.c command_line_parsing.c  \
+             lexer.c menu.c asvs.c xml.c
+
+AM_LDFLAGS= -lm -L/usr/local/lib -L/usr/lib
+
+AM_CPPFLAGS=-I${top_srcdir}/libutils/src/include -I${top_srcdir}/src/include -I${top_srcdir}/libats2wav/src/include -I${top_srcdir}   ${DEBUG_FLAGS}
+
+LDADD=${top_builddir}/libutils/src/libc_utils.a  ${top_builddir}/libats2wav/src/libats2wav.a  
+
+# Symbol SOX_LIB_DEPS will be replaced by sox dependencies after configure in libsox by target do_sox_lib_deps_subst
+# left-align if conditions
+
+
+if WITH_FLAC
+if HAVE_EXTERNAL_FLAC
+    LDADD        += ${FLAC_LIB} 
+endif
+if HAVE_EXTERNAL_OGG
+    LDADD       +=  ${LIBOGG_LIB}
+endif
+if HAVE_FLAC_BUILD
+    LDADD       +=  ${FLAC_LIB}
+endif
+if HAVE_LIBOGG_BUILD
+    LDADD       +=  ${LIBOGG_LIB}
+endif
+if HAVE_FLAC
+    AM_LDFLAGS   += ${FLAC_LINK} ${LIBOGG_LINK}
+endif
+endif
+
+if WITH_SOX
+    dvda_SOURCES += libsoxconvert.c
+if HAVE_SOX_BUILD
+    AM_CPPFLAGS  += -I${top_srcdir}/${MAYBE_SOX}/src
+    AM_LDFLAGS   += SOX_LIB_DEPS
+endif
+if HAVE_EXTERNAL_SOX
+    AM_LDFLAGS   += -ldl
+    LDADD        += ${SOX_LIB}
+endif
+if HAVE_SOX
+    AM_LDFLAGS   += ${SOX_LINK}
+endif
+if HAVE_STATIC_SOX
+    LDADD        += ${SOX_LIB}
+endif
+endif
+
+if HAVE_IBERTY_BUILD
+     LDADD       += ${IBERTY_LIB}
+     AM_CPPFLAGS +=-I${top_srcdir}/libglibc/src/include
+else
+if  HAVE_EXTERNAL_IBERTY
+     LDADD       += ${IBERTY_LIB}
+     AM_CPPFLAGS +=-I${top_srcdir}/libglibc/src/include
+endif
+if HAVE_IBERTY
+     AM_LDFLAGS  += ${IBERTY_LINK}
+endif
+endif
+
+if WITH_FIXWAV
+     LDADD       +=${FIXWAV_LIB}
+     AM_CPPFLAGS +=-I${top_srcdir}/libfixwav/src/include
+endif
+
+## canonical names cannot contain hyphens, so using program_transform_name
+## remark: AC_ARG_PROGRAM was tested useless here
+
+program_transform_name='s/dvda/dvda-author/g'

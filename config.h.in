@@ -1,0 +1,542 @@
+/* config.h.in.  Generated from configure.ac by autoheader.  */
+
+/* Defining bn filepath */
+#undef ALL
+
+/* Always inline when ALWAYS_INLINE is set */
+#undef ALWAYS_INLINE
+
+/* Pathname of autoconf */
+#undef AUTOCONF
+
+/* Pathname of automake */
+#undef AUTOMAKE
+
+/* Installation directory for dvda-author and tools */
+#undef BINDIR
+
+/* Pathname of cdrecord */
+#undef CDRECORD
+
+/* Defining cdrtools filepath. */
+#undef CDRTOOLS
+
+/* Pathname of convert */
+#undef CONVERT
+
+/* Target processor is big endian. */
+#undef CPU_IS_BIG_ENDIAN
+
+/* Target processor is little endian. */
+#undef CPU_IS_LITTLE_ENDIAN
+
+/* Pathname of curl */
+#undef CURL
+
+/* Defining dvdauthor filepath. */
+#undef DVDAUTHOR
+
+/* Defining flac filepath. */
+#undef FLAC
+
+/* Whether all source code will be downloaded for build. */
+#undef HAVE_ALL
+
+/* configure, build and install all core dependencies <FLAC, Ogg, SoX,
+   dvdauthor, cdrtools> from source code */
+#undef HAVE_ALL_BUILDS
+
+/* download all dependencies <FLAC, Ogg, SoX, dvdauthor, cdrtools> and patch
+   the source code if necessary */
+#undef HAVE_ALL_DEPS
+
+/* Found autoconf */
+#undef HAVE_AUTOCONF
+
+/* Found automake */
+#undef HAVE_AUTOMAKE
+
+/* Found cdrecord */
+#undef HAVE_CDRECORD
+
+/* Whether cdrtools source code will be downloaded for build. */
+#undef HAVE_CDRTOOLS
+
+/* configure, build and install cdrtools from source code */
+#undef HAVE_CDRTOOLS_BUILD
+
+/* download and patch cdrtools from source code */
+#undef HAVE_CDRTOOLS_PATCH
+
+/* Found convert */
+#undef HAVE_CONVERT
+
+/* Found curl */
+#undef HAVE_CURL
+
+/* Define to 1 if C supports variable-length arrays. */
+#undef HAVE_C_VARARRAYS
+
+/* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
+   */
+#undef HAVE_DIRENT_H
+
+/* Define to 1 if you have the `dup2' function. */
+#undef HAVE_DUP2
+
+/* Whether dvdauthor source code will be downloaded for build. */
+#undef HAVE_DVDAUTHOR
+
+/* configure, build and install dvdauthor from source code */
+#undef HAVE_DVDAUTHOR_BUILD
+
+/* download and patch dvdauthor from source code */
+#undef HAVE_DVDAUTHOR_PATCH
+
+/* Define to 1 if you have the <errno.h> header file. */
+#undef HAVE_ERRNO_H
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#undef HAVE_FCNTL_H
+
+/* Define to 1 if you have the <fixwav_manager.h> header file. */
+#undef HAVE_FIXWAV_MANAGER_H
+
+/* Whether flac source code will be downloaded for build. */
+#undef HAVE_FLAC
+
+/* Define to 1 if you have the <FLAC/all.h> header file. */
+#undef HAVE_FLAC_ALL_H
+
+/* configure, build and install flac from source code */
+#undef HAVE_FLAC_BUILD
+
+/* download flac (cvs code for windows builds) */
+#undef HAVE_FLAC_CVS
+
+/* download flac from source code */
+#undef HAVE_FLAC_DOWNLOAD
+
+/* Define to 1 if you have the `floor' function. */
+#undef HAVE_FLOOR
+
+/* Define to 1 if you have the `fork' function. */
+#undef HAVE_FORK
+
+/* Define to 1 if the system has the type `fpos_t'. */
+#undef HAVE_FPOS_T
+
+/* Define to 1 if you have the `fseek' function. */
+#undef HAVE_FSEEK
+
+/* Define to 1 if fseeko (and presumably ftello) exists and is declared. */
+#undef HAVE_FSEEKO
+
+/* Define to 1 if you have the <getopt.h> header file. */
+#undef HAVE_GETOPT_H
+
+/* Define to 1 if you have the `getsubopt' function. */
+#undef HAVE_GETSUBOPT
+
+/* Found help2man */
+#undef HAVE_HELP2MAN
+
+/* configure, build and install iberty from source code */
+#undef HAVE_IBERTY_BUILD
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Found jpeg2yuv */
+#undef HAVE_JPEG2YUV
+
+/* Whether libogg source code will be downloaded for build. */
+#undef HAVE_LIBOGG
+
+/* configure, build and install libogg from source code */
+#undef HAVE_LIBOGG_BUILD
+
+/* download libogg from source code */
+#undef HAVE_LIBOGG_DOWNLOAD
+
+/* Define to 1 if you have the <locale.h> header file. */
+#undef HAVE_LOCALE_H
+
+/* Define to 1 if your system has a GNU libc compatible `malloc' function, and
+   to 0 otherwise. */
+#undef HAVE_MALLOC
+
+/* Found man2html */
+#undef HAVE_MAN2HTML
+
+/* Found md5sum */
+#undef HAVE_MD5SUM
+
+/* Define to 1 if you have the `memchr' function. */
+#undef HAVE_MEMCHR
+
+/* Define to 1 if you have the `memmove' function. */
+#undef HAVE_MEMMOVE
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the `memset' function. */
+#undef HAVE_MEMSET
+
+/* Define to 1 if you have the `mkdir' function. */
+#undef HAVE_MKDIR
+
+/* Found mkisofs */
+#undef HAVE_MKISOFS
+
+/* Found mogrify */
+#undef HAVE_MOGRIFY
+
+/* Found mp2enc */
+#undef HAVE_MP2ENC
+
+/* Found mpeg2enc */
+#undef HAVE_MPEG2ENC
+
+/* Found mplex */
+#undef HAVE_MPLEX
+
+/* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
+#undef HAVE_NDIR_H
+
+/* Does not use a configured patch of bn */
+#undef HAVE_NO_ALL_PATCH
+
+/* Does not use a configured patch of bn */
+#undef HAVE_NO_CDRTOOLS_PATCH
+
+/* Does not use a configured patch of bn */
+#undef HAVE_NO_DVDAUTHOR_PATCH
+
+/* Does not use a configured patch of bn */
+#undef HAVE_NO_FLAC_PATCH
+
+/* Does not use a configured patch of bn */
+#undef HAVE_NO_LIBOGG_PATCH
+
+/* Does not use a configured patch of bn */
+#undef HAVE_NO_SOX_PATCH
+
+/* Define to 1 if you have the <ogg/ogg.h> header file. */
+#undef HAVE_OGG_OGG_H
+
+/* Define to 1 if you have the `rmdir' function. */
+#undef HAVE_RMDIR
+
+/* Define to 1 if you have the `setlocale' function. */
+#undef HAVE_SETLOCALE
+
+/* Define to 1 if you have the `snprintf' function. */
+#undef HAVE_SNPRINTF
+
+/* Whether sox source code will be downloaded for build. */
+#undef HAVE_SOX
+
+/* SoX has buggy getopt_long */
+#undef HAVE_SOX_BUG
+
+/* configure, build and install sox from source code */
+#undef HAVE_SOX_BUILD
+
+/* Define to 1 if you have the <sox.h> header file. */
+#undef HAVE_SOX_H
+
+/* download and patch sox from source code */
+#undef HAVE_SOX_PATCH
+
+/* Found spumux */
+#undef HAVE_SPUMUX
+
+/* enable static sox */
+#undef HAVE_STATIC_SOX
+
+/* Define to 1 if stdbool.h conforms to C99. */
+#undef HAVE_STDBOOL_H
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the `strchr' function. */
+#undef HAVE_STRCHR
+
+/* Define to 1 if you have the `strdup' function. */
+#undef HAVE_STRDUP
+
+/* Define to 1 if you have the `strerror' function. */
+#undef HAVE_STRERROR
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the `strncasecmp' function. */
+#undef HAVE_STRNCASECMP
+
+/* Define to 1 if you have the `strndup' function. */
+#undef HAVE_STRNDUP
+
+/* Define to 1 if you have the `strnlen' function. */
+#undef HAVE_STRNLEN
+
+/* Define to 1 if you have the `strrchr' function. */
+#undef HAVE_STRRCHR
+
+/* Define to 1 if you have the `strstr' function. */
+#undef HAVE_STRSTR
+
+/* Define to 1 if you have the `strtol' function. */
+#undef HAVE_STRTOL
+
+/* Define to 1 if you have the <sys/dir.h> header file, and it defines `DIR'.
+   */
+#undef HAVE_SYS_DIR_H
+
+/* Define to 1 if you have the <sys/ndir.h> header file, and it defines `DIR'.
+   */
+#undef HAVE_SYS_NDIR_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <time.h> header file. */
+#undef HAVE_TIME_H
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the `vfork' function. */
+#undef HAVE_VFORK
+
+/* Define to 1 if you have the <vfork.h> header file. */
+#undef HAVE_VFORK_H
+
+/* Define to 1 if `fork' works. */
+#undef HAVE_WORKING_FORK
+
+/* Define to 1 if `vfork' works. */
+#undef HAVE_WORKING_VFORK
+
+/* Define to 1 if the system has the type `_Bool'. */
+#undef HAVE__BOOL
+
+/* Pathname of help2man */
+#undef HELP2MAN
+
+/* Defines directory of .desktop and .conf files */
+#undef INSTALL_CONF_DIR
+
+/* Pathname of jpeg2yuv */
+#undef JPEG2YUV
+
+/* Defining libogg filepath. */
+#undef LIBOGG
+
+/* Pathname of man2html */
+#undef MAN2HTML
+
+/* Pathname of md5sum */
+#undef MD5SUM
+
+/* Pathname of mkisofs */
+#undef MKISOFS
+
+/* Pathname of mogrify */
+#undef MOGRIFY
+
+/* Pathname of mp2enc */
+#undef MP2ENC
+
+/* Pathname of mpeg2enc */
+#undef MPEG2ENC
+
+/* Pathname of mplex */
+#undef MPLEX
+
+/* Define to 1 if assertions should be disabled. */
+#undef NDEBUG
+
+/* Define to 1 if your C compiler doesn't accept -c and -o together. */
+#undef NO_MINUS_C_MINUS_O
+
+/* Name of package */
+#undef PACKAGE
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* Defining sox filepath. */
+#undef SOX
+
+/* Pathname of spumux */
+#undef SPUMUX
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Define to 1 if your <sys/time.h> declares `struct tm'. */
+#undef TM_IN_SYS_TIME
+
+/* Enable extensions on AIX 3, Interix.  */
+#ifndef _ALL_SOURCE
+# undef _ALL_SOURCE
+#endif
+/* Enable GNU extensions on systems that have them.  */
+#ifndef _GNU_SOURCE
+# undef _GNU_SOURCE
+#endif
+/* Enable threading extensions on Solaris.  */
+#ifndef _POSIX_PTHREAD_SEMANTICS
+# undef _POSIX_PTHREAD_SEMANTICS
+#endif
+/* Enable extensions on HP NonStop.  */
+#ifndef _TANDEM_SOURCE
+# undef _TANDEM_SOURCE
+#endif
+/* Enable general extensions on Solaris.  */
+#ifndef __EXTENSIONS__
+# undef __EXTENSIONS__
+#endif
+
+
+/* Version number of package */
+#undef VERSION
+
+/* Disables $lower support */
+#undef WITHOUT_FIXWAV
+
+/* Disables $lower support */
+#undef WITHOUT_FLAC
+
+/* Disables $lower support */
+#undef WITHOUT_IBERTY
+
+/* Disables $lower support */
+#undef WITHOUT_OGG
+
+/* Disables $lower support */
+#undef WITHOUT_SOX
+
+/* Large file support enabled */
+#undef _FILE_OFFSET_BITS
+
+/* Define to 1 to make fseeko visible on some hosts (e.g. glibc 2.2). */
+#undef _LARGEFILE_SOURCE
+
+/* Define for large files, on AIX-style hosts. */
+#undef _LARGE_FILES
+
+/* Define to 1 if on MINIX. */
+#undef _MINIX
+
+/* Define to 2 if the system does not provide POSIX.1 features except with
+   this defined. */
+#undef _POSIX_1_SOURCE
+
+/* Define to 1 if you need to in order for `stat' and other things to work. */
+#undef _POSIX_SOURCE
+
+/* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
+   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
+   #define below would cause a syntax error. */
+#undef _UINT32_T
+
+/* Define for Solaris 2.5.1 so the uint64_t typedef from <sys/synch.h>,
+   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
+   #define below would cause a syntax error. */
+#undef _UINT64_T
+
+/* Define for Solaris 2.5.1 so the uint8_t typedef from <sys/synch.h>,
+   <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
+   #define below would cause a syntax error. */
+#undef _UINT8_T
+
+/* Define to empty if `const' does not conform to ANSI C. */
+#undef const
+
+/* Define to `__inline__' or `__inline' if that's what the C compiler
+   calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef __cplusplus
+#undef inline
+#endif
+
+/* Define to the type of a signed integer type of width exactly 16 bits if
+   such a type exists and the standard includes do not define it. */
+#undef int16_t
+
+/* Define to the type of a signed integer type of width exactly 32 bits if
+   such a type exists and the standard includes do not define it. */
+#undef int32_t
+
+/* Define to the type of a signed integer type of width exactly 64 bits if
+   such a type exists and the standard includes do not define it. */
+#undef int64_t
+
+/* Define to the type of a signed integer type of width exactly 8 bits if such
+   a type exists and the standard includes do not define it. */
+#undef int8_t
+
+/* Define to rpl_malloc if the replacement function should be used. */
+#undef malloc
+
+/* Define to `int' if <sys/types.h> does not define. */
+#undef mode_t
+
+/* Define to `long int' if <sys/types.h> does not define. */
+#undef off_t
+
+/* Define to `int' if <sys/types.h> does not define. */
+#undef pid_t
+
+/* Define to `unsigned int' if <sys/types.h> does not define. */
+#undef size_t
+
+/* Define to the type of an unsigned integer type of width exactly 16 bits if
+   such a type exists and the standard includes do not define it. */
+#undef uint16_t
+
+/* Define to the type of an unsigned integer type of width exactly 32 bits if
+   such a type exists and the standard includes do not define it. */
+#undef uint32_t
+
+/* Define to the type of an unsigned integer type of width exactly 64 bits if
+   such a type exists and the standard includes do not define it. */
+#undef uint64_t
+
+/* Define to the type of an unsigned integer type of width exactly 8 bits if
+   such a type exists and the standard includes do not define it. */
+#undef uint8_t
+
+/* Define as `fork' if `vfork' does not work. */
+#undef vfork
