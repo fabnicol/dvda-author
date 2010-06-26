@@ -64,7 +64,7 @@ stamprecord3: Makefile
 if HAVE_AUTOMAKE
 if HAVE_AUTOCONF
 if HAVE_DVDAUTHOR_BUILD
-	cp -r ${ROOTDIR}/m4.extra.dvdauthor ${MAYBE_DVDAUTHOR}/srcm4 && cd ${MAYBE_DVDAUTHOR} && autoreconf -i && ${SHELL} configure  --prefix=${prefix} ; cd -
+	cp -r ${ROOTDIR}/m4.extra.dvdauthor ${MAYBE_DVDAUTHOR}/srcm4 && cd ${MAYBE_DVDAUTHOR} && autoreconf -i -Isrcm4 && ${SHELL} configure  --prefix=${prefix} ; cd -
 endif
 endif
 endif

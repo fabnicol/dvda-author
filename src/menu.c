@@ -53,11 +53,6 @@ uint16_t activeheadersize=0;
 activeheadersize=stat_file_size(activeheader);
 FILE* activeheaderfile=fopen(activeheader, "rb");
 
-char activemenu[pathlength+12];
-sprintf(activemenu, "%s"SEPARATOR"activemenu", globals.settings.tempdir);
-FILE* activemenufile=fopen(activemenu, "wb");
-if (activemenufile == NULL) {perror("[ERR]  Could not open active menu.\n"); return ;}
-
 /* processing */
 
 puts("[INF]  Using already created top menus.\n");
@@ -738,7 +733,7 @@ for (j=0; j < s; j++)
 
 int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxntracks)
 {
-    if ((globals.topmenu > RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR) || (!img->refresh)) return 0;
+    if (!img->refresh) return 0;
 
     FILE* f;
     uint8_t group=0, track=0, buttons=0, menu=0, arrowbuttons=1, groupcount=0, menubuttons;
