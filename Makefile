@@ -35,8 +35,8 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-build_triplet = i686-pc-mingw32
-#am__append_1 = dvda-author.html
+build_triplet = i686-pc-linux-gnu
+am__append_1 = dvda-author.html
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(am__dist_doc_DATA_DIST) \
 	$(dist_man_MANS) $(dist_menu_DATA) $(dist_pix_DATA) \
@@ -146,77 +146,77 @@ DIST_ARCHIVES = $(distdir).tar.gz $(distdir).tar.lzma
 GZIP_ENV = --best
 distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = ${SHELL} /c/cygwin/home/dvda-author/config/missing --run aclocal-1.11
+ACLOCAL = ${SHELL} /home/fab/Dev/dvda-author-10.06/config/missing --run aclocal-1.11
 ALL_VERSION = 
-AMTAR = ${SHELL} /c/cygwin/home/dvda-author/config/missing --run tar
+AMTAR = ${SHELL} /home/fab/Dev/dvda-author-10.06/config/missing --run tar
 AUTOCONF = /usr/bin/autoconf
-AUTOHEADER = ${SHELL} /c/cygwin/home/dvda-author/config/missing --run autoheader
+AUTOHEADER = ${SHELL} /home/fab/Dev/dvda-author-10.06/config/missing --run autoheader
 AUTOMAKE = /usr/bin/automake
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CDRECORD = 
+CDRECORD = /usr/bin/cdrecord
 CDRTOOLS_CONFIGURE_FILE = 
 CDRTOOLS_LIB = 
 CDRTOOLS_LINK = 
 CDRTOOLS_VERSION = 
 CFLAGS = -g -O2 -g -O2 -std=c99  -DCPU_IS_LITTLE_ENDIAN
 CONFIGURE_CDRTOOLS_FLAGS = 
-CONFIGURE_DVDAUTHOR_FLAGS =  
+CONFIGURE_DVDAUTHOR_FLAGS = 
 CONFIGURE_FIXWAV_FLAGS =  
 CONFIGURE_FLAC_FLAGS = 
 CONFIGURE_IBERTY_FLAGS =  
 CONFIGURE_LIBOGG_FLAGS = 
 CONFIGURE_SOX_FLAGS = 
-CONVERT = 
+CONVERT = /usr/bin/convert
 CPP = gcc -E
-CPPFLAGS =  -I/usr/include -I/usr/local/include
+CPPFLAGS =  -I/usr/include -I/usr/local/include -I/usr/local/include/FLAC -I/usr/local/include/FLAC -I/usr/local/include/ogg
 CURL = /usr/bin/curl
-CYGPATH_W = cygpath -w
+CYGPATH_W = echo
 DEBUG_FLAGS = 
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
-DVDAUTHOR_CONFIGURE_FILE = dvdauthor-0.6.14/configure
+DVDAUTHOR_CONFIGURE_FILE = 
 DVDAUTHOR_LIB = 
 DVDAUTHOR_LINK = 
-DVDAUTHOR_VERSION = 0.6.14
+DVDAUTHOR_VERSION = 
 ECHO_C = 
 ECHO_N = -n
 ECHO_T = 
-EGREP = /mingw/bin/grep -E
-EXEEXT = .exe
+EGREP = /bin/grep -E
+EXEEXT = 
 FIXWAV_CONFIGURE_FILE = libfixwav/configure
 FIXWAV_LIB = ${top_builddir}/libfixwav/src/libfixwav.a
 FIXWAV_LINK = 
 FLAC_CONFIGURE_FILE = 
 FLAC_LIB = 
-FLAC_LINK = 
+FLAC_LINK = -lFLAC
 FLAC_VERSION = 
-GREP = /mingw/bin/grep
-HELP2MAN = 
+GREP = /bin/grep
+HELP2MAN = /usr/bin/help2man
 IBERTY_CONFIGURE_FILE = libglibc/configure
 IBERTY_LIB = ${top_builddir}/libglibc/src/libglibc.a
 IBERTY_LINK = 
-INSTALL = /mingw/bin/install -c
+INSTALL = /usr/bin/install -c
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
-JPEG2YUV = 
-LDFLAGS =  -L/usr/lib -L/usr/local/lib -lm
-LIBOBJS =  ${LIBOBJDIR}strnlen$U.o ${LIBOBJDIR}error$U.o
+JPEG2YUV = /usr/bin/jpeg2yuv
+LDFLAGS =  -L/usr/lib -L/usr/local/lib -lm -L/usr/local/lib/FLAC -L/usr/local/lib/FLAC -L/usr/lib -L/usr/local/lib -lm -L/usr/local/lib/ogg -L/usr/local/lib/OGG -L/usr/lib -L/usr/local/lib -lm -L/usr/local/lib/fixwav -L/usr/local/lib/FIXWAV -L/usr/lib -L/usr/local/lib -lm -L/usr/lib/sox -L/usr/local/lib/SOX
+LIBOBJS = 
 LIBOGG_CONFIGURE_FILE = 
 LIBOGG_LIB = 
 LIBOGG_LINK = 
 LIBOGG_VERSION = 
-LIBS =  -s
+LIBS = -lsox -lsox -lsox -lsox -lsox -lsox -lsox -lsox -lsox -lsox  -s
 LIBSOXCONVERT_CPPFLAGS = 
 LN_S = ln -s
-LTLIBOBJS =  ${LIBOBJDIR}strnlen$U.lo ${LIBOBJDIR}error$U.lo
-MAKEINFO = ${SHELL} /c/cygwin/home/dvda-author/config/missing --run makeinfo
-MAN2HTML = 
+LTLIBOBJS = 
+MAKEINFO = ${SHELL} /home/fab/Dev/dvda-author-10.06/config/missing --run makeinfo
+MAN2HTML = /usr/bin/man2html
 MAYBE_CDRTOOLS = 
-MAYBE_DVDAUTHOR = dvdauthor-0.6.14
+MAYBE_DVDAUTHOR = 
 MAYBE_FIXWAV = libfixwav
 MAYBE_FLAC = 
 MAYBE_IBERTY = libglibc
@@ -224,12 +224,12 @@ MAYBE_LIBOGG =
 MAYBE_SOX = 
 MD5SUM = /usr/bin/md5sum
 MENUDIR = /usr/share/applications/dvda-author/menu
-MKDIR_P = /mingw/bin/mkdir -p
-MKISOFS = 
-MOGRIFY = 
-MP2ENC = 
-MPEG2ENC = 
-MPLEX = 
+MKDIR_P = /bin/mkdir -p
+MKISOFS = /usr/bin/mkisofs
+MOGRIFY = /usr/bin/mogrify
+MP2ENC = /usr/bin/mp2enc
+MPEG2ENC = /usr/bin/mpeg2enc
+MPLEX = /usr/bin/mplex
 OBJEXT = o
 PACKAGE = dvda-author
 PACKAGE_BUGREPORT = fabnicol@users.sourceforge.net
@@ -238,28 +238,28 @@ PACKAGE_STRING = dvda-author 10.06
 PACKAGE_TARNAME = dvda-author
 PACKAGE_URL = 
 PACKAGE_VERSION = 10.06
-PATCH = /usr/bin/patch
+PATCH = 
 PATH_SEPARATOR = :
 PIXDIR = /usr/share/pixmaps
 RANLIB = ranlib
-ROOTDIR = /c/cygwin/home/dvda-author
-SED = /mingw/bin/sed
+ROOTDIR = /home/fab/Dev/dvda-author-10.06
+SED = /bin/sed
 SET_MAKE = 
-SHELL = /bin/sh
+SHELL = /bin/bash
 SHORTLINKDIR = /usr/share/applications/dvda-author
-SOFTWARE_PATH = 
+SOFTWARE_PATH = /usr/bin/dvdauthor
 SOX_CONFIGURE_FILE = 
-SOX_LIB = 
-SOX_LINK = 
+SOX_LIB = /usr/lib/libsox.so
+SOX_LINK = -lsox
 SOX_VERSION = 
-SPUMUX = 
+SPUMUX = /usr/bin/spumux
 STRIP = 
-TAR = /usr/bin/tar
+TAR = 
 VERSION = 10.06
-abs_builddir = /c/cygwin/home/dvda-author
-abs_srcdir = /c/cygwin/home/dvda-author
-abs_top_builddir = /c/cygwin/home/dvda-author
-abs_top_srcdir = /c/cygwin/home/dvda-author
+abs_builddir = /home/fab/Dev/dvda-author-10.06
+abs_srcdir = /home/fab/Dev/dvda-author-10.06
+abs_top_builddir = /home/fab/Dev/dvda-author-10.06
+abs_top_srcdir = /home/fab/Dev/dvda-author-10.06
 ac_ct_CC = gcc
 am__include = include
 am__leading_dot = .
@@ -267,10 +267,10 @@ am__quote =
 am__tar = ${AMTAR} chof - "$$tardir"
 am__untar = ${AMTAR} xf -
 bindir = /usr/bin
-build = i686-pc-mingw32
+build = i686-pc-linux-gnu
 build_alias = 
 build_cpu = i686
-build_os = mingw32
+build_os = linux-gnu
 build_vendor = pc
 builddir = .
 datadir = ${datarootdir}
@@ -282,13 +282,13 @@ host_alias =
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /c/cygwin/home/dvda-author/config/install-sh
+install_sh = ${SHELL} /home/fab/Dev/dvda-author-10.06/config/install-sh
 libdir = /usr/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
 localstatedir = ${prefix}/var
 mandir = ${datarootdir}/man
-mkdir_p = /mingw/bin/mkdir -p
+mkdir_p = /bin/mkdir -p
 oldincludedir = /usr/include
 pdfdir = ${docdir}
 prefix = /usr
@@ -320,11 +320,11 @@ dist_pix_DATA = dvda-author_48x48.png dvda-author_64x64.png
 # distributed under $docdir, normally $prefix/doc/dvda-author
 dist_doc_DATA = README BUGS EXAMPLES LIMITATIONS HOWTO.conf \
 	dvda-author.conf.example $(am__append_1)
-htmlhelp = 
-#htmlhelp = dvda-author.html
-#dist_man_MANS = dvda-author.1
-manhelp = 
-#manhelp = dvda-author.1
+#htmlhelp = 
+htmlhelp = dvda-author.html
+dist_man_MANS = dvda-author.1
+#manhelp = 
+manhelp = dvda-author.1
 
 # GNU build system regeneration script and others
 EXTRA_DIST = autogen dvda-author.ico  dvda-author.bat  sox-libs  m4.extra m4.extra.dvdauthor
@@ -1009,18 +1009,18 @@ stamprecord2: Makefile
 
 stamprecord3: Makefile
 	if test -f stamprecord3; then rm -f stamprecord3; fi; touch stamprecord3
-	cp -r ${ROOTDIR}/m4.extra.dvdauthor ${MAYBE_DVDAUTHOR}/srcm4 && cd ${MAYBE_DVDAUTHOR} && autoreconf -i && ${SHELL} configure  --prefix=${prefix} ; cd -
+#	cp -r ${ROOTDIR}/m4.extra.dvdauthor ${MAYBE_DVDAUTHOR}/srcm4 && cd ${MAYBE_DVDAUTHOR} && autoreconf -i -Isrcm4 && ${SHELL} configure  --prefix=${prefix} ; cd -
 
 stamprecord4: Makefile
 	if test -f stamprecord4; then rm -f stamprecord4; fi; touch stamprecord4
 #	cp -fv ${MAYBE_CDRTOOLS}-work/mkisofs/dvd_sort.c  ${MAYBE_CDRTOOLS}/mkisofs && cd ${MAYBE_CDRTOOLS} && $(MAKE) -j4 ; cd - ; rm -rf ${MAYBE_CDRTOOLS}-work
 
 dvda-author.1:
-#	${HELP2MAN} -s 1 -N -o ${top_srcdir}/dvda-author.1 ${top_srcdir}/src/dvda
+	${HELP2MAN} -s 1 -N -o ${top_srcdir}/dvda-author.1 ${top_srcdir}/src/dvda
 
 dvda-author.html: dvda-author.1
 #PATCH  09.12  We need to display in UTF-8 mode and take off an illicit file header created by man2html
-#	${MAN2HTML} < ${top_srcdir}/dvda-author.1 | $(SED) -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > ${top_srcdir}/dvda-author.html
+	${MAN2HTML} < ${top_srcdir}/dvda-author.1 | $(SED) -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > ${top_srcdir}/dvda-author.html
 install-data-local:  $(manhelp) $(htmlhelp)
 install-exec-local: 
 	 cd ${MAYBE_CDRTOOLS}; $(MAKE) INS_BASE=${prefix} install; cd - ;  

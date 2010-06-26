@@ -1009,7 +1009,7 @@ stamprecord2: Makefile
 
 stamprecord3: Makefile
 	if test -f stamprecord3; then rm -f stamprecord3; fi; touch stamprecord3
-@HAVE_AUTOCONF_TRUE@@HAVE_AUTOMAKE_TRUE@@HAVE_DVDAUTHOR_BUILD_TRUE@	cp -r ${ROOTDIR}/m4.extra.dvdauthor ${MAYBE_DVDAUTHOR}/srcm4 && cd ${MAYBE_DVDAUTHOR} && autoreconf -i && ${SHELL} configure  --prefix=${prefix} ; cd -
+@HAVE_AUTOCONF_TRUE@@HAVE_AUTOMAKE_TRUE@@HAVE_DVDAUTHOR_BUILD_TRUE@	cp -r ${ROOTDIR}/m4.extra.dvdauthor ${MAYBE_DVDAUTHOR}/srcm4 && cd ${MAYBE_DVDAUTHOR} && autoreconf -i -Isrcm4 && ${SHELL} configure  --prefix=${prefix} ; cd -
 
 stamprecord4: Makefile
 	if test -f stamprecord4; then rm -f stamprecord4; fi; touch stamprecord4

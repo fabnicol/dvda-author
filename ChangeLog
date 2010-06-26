@@ -1,14 +1,20 @@
+2010-06-26  Fabrice NICOL
+	* Fix --topvob in new context
+	* Dev: test multi-screen menus with active menus --> new algorithm in view
+	* Cygwin builds for dvdauthor.
+
+
 2010-06-24  Fabrice NICOL
-    * Fix AUDIO_SV overgeneration with --menustyle hierarchical
-    * fix bug in new-style call to MP2ENC
-    * fix --nmenus > 2 (has to specify default relation between img->nmenus and img->ncolumns)
-    * restrict active menus to simple screens
-    * fix regression and redesign: --log(=file), --logrefresh(=file) with optional arguments.
-    * clean up deprecated switches: --lossy-rounding, --pad-cont, --minimal-padding, --no-padding
+	* Fix AUDIO_SV overgeneration with --menustyle hierarchical
+	* fix bug in new-style call to MP2ENC
+	* fix --nmenus > 2 (has to specify default relation between img->nmenus and img->ncolumns)
+	* restrict active menus to simple screens
+	* fix regression and redesign: --log(=file), --logrefresh(=file) with optional arguments.
+	* clean up deprecated switches: --lossy-rounding, --pad-cont, --minimal-padding, --no-padding
 
 2010-06-23  Fabrice NICOL
-    * Generalize binary path creation (for autotools-based builds, for IDEs, *nix/Windows)
-    * fix --bindir etc. accordingly
+	* Generalize binary path creation (for autotools-based builds, for IDEs, *nix/Windows)
+	* fix --bindir etc. accordingly
 
 2010-06-20  Fabrice NICOL
 	* Fix --topvob

@@ -301,7 +301,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR 0
 #define RUN_SPUMUX_DVDAUTHOR    1 // automate some of the authoring process (run spumux and dvdauthor)
 #define RUN_DVDAUTHOR       2 // input menu is given, run dvdauthor
-#define VOB_TYPE            3
+#define TS_VOB_TYPE            3
 #define ACTIVE_MENU_ONLY    4
 #define NO_MENU             5  // do not do anything
 

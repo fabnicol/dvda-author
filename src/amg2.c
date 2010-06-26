@@ -158,19 +158,30 @@ return track;
 
 }
 
+
+void allocate_topmenu(command_t* command)
+{
+int menu;
+        img->topmenu=realloc(img->topmenu, img->nmenus*sizeof(char *));
+        if (img->topmenu == NULL) perror("[ERR]  img->topmenu 1\n");
+
+        int s=strlen(globals.settings.tempdir);
+
+        for (menu=0; menu < img->nmenus; menu++)
+           {
+             if (img->topmenu[menu] == NULL) img->topmenu[menu]=calloc(s+13, sizeof(char));
+             if (img->topmenu[menu] == NULL)  perror("[ERR] img->topmenu is null");
+             if (img->topmenu[menu]) snprintf(img->topmenu[menu], s+11, "%s"SEPARATOR"%s%d", globals.settings.tempdir,"topmenu", menu);
+           }
+}
+
+
 uint32_t create_topmenu(char* audiotsdir, command_t* command)
 {
     // Here authoring top VOB
     // first generate pics if necessary and background mpg from them
 
     int menu;
-    static _Bool done;
-    if (img->active)
-    {
-	    // This is to control that we do not do it twice
-	    if (done) return 0;
-	    done++;
-    }
 
     char outfile[strlen(audiotsdir)+14];
     sprintf(outfile, "%s"SEPARATOR"AUDIO_TS.VOB", audiotsdir);
@@ -195,22 +206,13 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
 
     case RUN_SPUMUX_DVDAUTHOR:
 
-		if (img->topmenu == NULL) img->topmenu=calloc(img->nmenus,sizeof(char *));
-		if (img->topmenu == NULL) perror("[ERR]  img->topmenu 1\n");
-		if (globals.spu_xml == NULL) globals.spu_xml=calloc(img->nmenus,sizeof(char *));
-		if (globals.spu_xml == NULL) perror("[ERR]  spuxml\n");
-		if (globals.debugging) printf("%s\n", "[INF]  Generating Xml project for spumux...");
-		errno=generate_spumux_xml(ngroups, ntracks, maxntracks, img);
-		if (errno) perror("[ERR]  AMG:spumux_xml");
+                allocate_topmenu(command);
 
-		int s=strlen(globals.settings.tempdir);
-
-		for (menu=0; menu < img->nmenus; menu++)
-		   {
-		     if (img->topmenu[menu] == NULL) img->topmenu[menu]=calloc(s+13, sizeof(char));
-		     if (img->topmenu[menu] == NULL)  perror("[ERR] img->topmenu is null");
-		     if (img->topmenu[menu]) snprintf(img->topmenu[menu], s+11, "%s"SEPARATOR"%s%d", globals.settings.tempdir,"topmenu", menu);
-		   }
+                if (globals.spu_xml == NULL) globals.spu_xml=calloc(img->nmenus,sizeof(char *));
+                if (globals.spu_xml == NULL) perror("[ERR]  spuxml\n");
+                if (globals.debugging) printf("%s\n", "[INF]  Generating Xml project for spumux...");
+                errno=generate_spumux_xml(ngroups, ntracks, maxntracks, img);
+                if (errno) perror("[ERR]  AMG:spumux_xml");
 
 		launch_spumux(img);
 
@@ -238,17 +240,16 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
 		launch_dvdauthor();
 		break;
 
-	case VOB_TYPE:
+	case TS_VOB_TYPE:
 		if (img->menuvobsize == NULL)
 		   img->menuvobsize=calloc(img->nmenus, sizeof(uint32_t*));
 		if (img->menuvobsize == NULL) perror("[ERR]  menuvobsize\n");
 
 		img->menuvobsize[0]=stat_file_size(img->tsvob)/(0x800*img->nmenus);
-
                 for (menu=0; menu < img->nmenus; menu++)
                 {
 		    img->menuvobsize[menu]=img->menuvobsize[0];
-		    if (globals.veryverbose) printf("[MSG]  Top menu is: %s with size %"PRIu32" KB\n", img->topmenu[menu], img->menuvobsize[menu]);
+		    if (globals.veryverbose) printf("[MSG]  Top menu is: %s with size %d KB\n", outfile,img->menuvobsize[menu]);
                 }
 
 		copy_file(img->tsvob, outfile);

@@ -699,7 +699,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             printf("%s%s\n", "[PAR]  topmenu VOB: ", optarg);
             img->tsvob=strdup(optarg);
-            globals.topmenu=Min(globals.topmenu, VOB_TYPE);
+            globals.topmenu=Min(globals.topmenu, TS_VOB_TYPE);
 
             break;
 
@@ -1501,7 +1501,7 @@ if (globals.topmenu == NO_MENU) goto standard_checks;
                 #define RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR 0
                 #define RUN_SPUMUX_DVDAUTHOR    1 // automate some of the authoring process (run spumux and dvdauthor)
                 */
-            case VOB_TYPE:
+            case TS_VOB_TYPE:
 
                 if (img->tsvob)
                 {
@@ -1593,7 +1593,7 @@ if (globals.topmenu == NO_MENU) goto standard_checks;
 
 
 
-    if (globals.topmenu < RUN_SPUMUX_DVDAUTHOR) normalize_temporary_paths(globals.settings.tempdir, img);
+    if (globals.topmenu <= ACTIVE_MENU_ONLY) normalize_temporary_paths(globals.settings.tempdir, img);
 
     maxbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)/img->nmenus;
     resbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)%img->nmenus;
