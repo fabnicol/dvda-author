@@ -75,7 +75,7 @@ void pause_dos_type()
 
 char * concatenate(char* dest, char* str1, char* str2)
 {
-if ((!str1) || (!str2)) return -1;
+if ((!str1) || (!str2)) return NULL;
 errno=0;
 uint16_t s1=strlen(str1);
 uint16_t s2=strlen(str2);
@@ -395,10 +395,11 @@ int copy_file_no_p(FILE *infile, FILE *outfile)
     char buf[BUFSIZ];
     clearerr(infile);
     clearerr(outfile);
+    double counter=0;
     size_t chunk;
 
-
-
+    if (globals.veryverbose) printf("%s","       |");
+    errno=0;
     while (!feof(infile))
     {
 
@@ -412,6 +413,8 @@ int copy_file_no_p(FILE *infile, FILE *outfile)
 
 
         fwrite(buf, chunk* sizeof(char), 1 , outfile);
+        counter++;
+        if (globals.veryverbose) putchar('-');
 
         if (ferror(outfile))
         {
@@ -419,7 +422,21 @@ int copy_file_no_p(FILE *infile, FILE *outfile)
             return(-1);
         }
     }
-    return(0);
+
+
+
+    if (globals.veryverbose)
+    {
+     putchar('|');
+     counter=counter-1;
+     counter=(counter*sizeof(char)*BUFSIZ+chunk)/1024;
+     printf("\n[MSG]  Copied %.2lf KB.\n", counter);
+    if (!errno) puts("\n[MSG]  Copy completed.");
+    else
+    puts("\n[ERR]  Copy failed.");
+
+    }
+    return(errno);
 }
 
 
@@ -430,7 +447,7 @@ int copy_file(const char *existing_file, const char *new_file)
 
     FILE *fn, *fe;
     int errorlevel;
-
+    if (globals.veryverbose) printf("[INF]  Copying file %s\n", existing_file);
     if (NULL == (fe = fopen(existing_file, "rb")))
     {
         fprintf(stderr, "[ERR]  Impossible to open file '%s' in read mode\n", existing_file);
@@ -447,6 +464,8 @@ int copy_file(const char *existing_file, const char *new_file)
     errorlevel=copy_file_no_p(fe, fn);
     fclose(fe);
     fclose(fn);
+    if (globals.veryverbose)
+      if (errorlevel == 0) printf("[INF]  File was copied as: %s\n", new_file);
 
     return(errorlevel);
 

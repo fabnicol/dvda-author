@@ -125,7 +125,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile, uint8_t 
     {
         if (globals.debugging) printf("%s%u\n", "[INF]  Creating still picture #", rank+1);
         sprintf(img->backgroundmpg[rank], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "background_still_", rank, ".mpg");
-        snprintf(pic, sizeof(pic), "%spic_%03u.jpg", globals.settings.stillpicdir, rank);  // here stillpic[0] is a subdir.
+        snprintf(pic, sizeof(pic), "%s/pic_%03u.jpg", globals.settings.stillpicdir, rank);  // here stillpic[0] is a subdir.
     }
     else if (img->action == ANIMATEDVIDEO)
     {
@@ -1025,7 +1025,7 @@ int create_stillpic_directory(char* string, uint32_t count)
     {
         char dest[strlen(globals.settings.tempdir)+13];
         sprintf(dest, "%s"SEPARATOR"pic_%03d.jpg", globals.settings.tempdir, k);
-        if (globals.veryverbose) printf("[INF]  Picture %s will be copied to temporary directory.\n", string);
+        if (globals.veryverbose) printf("[INF]  Picture %s will be copied to temporary directory as %s.\n", string, dest);
         copy_file(string, dest);
         if (k == 0) globals.settings.stillpicdir=strdup(globals.settings.tempdir);
         k++;
