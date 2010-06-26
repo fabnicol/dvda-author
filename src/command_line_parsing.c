@@ -658,10 +658,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     /* COMMAND-LINE  PARSING: fourth pass for main arguments and non-g filename assignment */
     // Changing scanning variable names for ngroups_scan and nvideolinking_groups_scan
-
+   if (totntracks == 0)
+        for (k=0; k < ngroups-nvideolinking_groups; k++)
+            totntracks+=ntracks[k];
     ngroups_scan=0;
     int nvideolinking_groups_scan=0, strlength=0;
-    char* piccolorchain, *activepiccolorchain, *palettecolorchain, *fontchain, *durationchain=NULL,  *h, *min, *sec, **textable=NULL, **tab=NULL,**tab2=NULL;
+    char* piccolorchain, *activepiccolorchain, *palettecolorchain, *fontchain, *durationchain=NULL,  *h, *min, *sec, **textable=NULL, **tab=NULL,**tab2=NULL, *stillpic_string=NULL;
     uint16_t npics[totntracks];
 
     optind=0;
@@ -713,8 +715,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             {
                 img->active=1;
                 globals.topmenu=Min(globals.topmenu, ACTIVE_MENU_ONLY);
-                for (k=0; k < ngroups-nvideolinking_groups; k++)
-                totntracks+=ntracks[k];
                 img->npics =(uint16_t*) calloc(totntracks, sizeof(uint16_t));
                 for (k=0; k < totntracks; k++)
                     img->npics[k]=1;
@@ -731,9 +731,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 printf("%s%s\n", "[PAR]  still pictures VOB: ", optarg);
                 img->stillvob=strndup(optarg, MAX_OPTION_LENGTH);
             }
-            for (k=0; k < ngroups-nvideolinking_groups; k++)
-                totntracks+=ntracks[k];
-            img->npics =(uint16_t*) calloc(totntracks, sizeof(uint16_t));
+               img->npics =(uint16_t*) calloc(totntracks, sizeof(uint16_t));
             for (k=0; k < totntracks; k++)
                 img->npics[k]=1;
             img->stillpicvobsize=(uint32_t*) calloc(totntracks, sizeof(uint32_t));
@@ -1273,75 +1271,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case '3':
 
-            for (k=0; k < ngroups-nvideolinking_groups; k++)
-                totntracks+=ntracks[k];
-
-            // heap-allocations is not possible if char** is not returned by function
-            // A simple char* would well be allocated by function, not a char**.
-
-            tab=fn_strtok(optarg, '-', tab, 0,NULL,NULL);
-            uint16_t dim,DIM=0,w;
-
-            img->npics =(uint16_t*) calloc(totntracks, sizeof(uint16_t));
-            if (img->npics == NULL)
-            {
-                perror("[ERR] img->npics");
-                break;
-            }
-            if (tab)
-                w=arraylength((void**) tab);
-            else
-            {
-                perror("[ERR]  tab");
-                break;
-            }
-            if (w > totntracks)
-            {
-                perror("[ERR]  Too many tracks on --stillpics");
-                break;
-            }
-            else if (w < totntracks)
-            {
-                perror("[ERR]  You forgot at least one track on --stillpics");
-                break;
-            }
-
-            for (k=0; k < totntracks; k++)
-            {
-                tab2=fn_strtok(tab[k], ',', tab2, -1,create_stillpic_directory,NULL);
-                dim=0;
-                w=0;
-                if (tab2) while (tab2[w] != NULL)
-                    {
-                        if (tab2[w][0] != 0) dim++;
-                        w++;
-                    }
-                else
-                {
-                    perror("[ERR]  tab2");
-                    break ;
-                }
-                npics[k]=(k)? dim+npics[k-1]: dim;
-                img->npics[k]=dim;
-                DIM+=dim;
-                if (globals.veryverbose) printf("  --> npics[%d] = %d\n", k, dim);
-                FREE(tab2)
-                if (img->npics[k] > 99)
-                {
-                    printf("[ERR]  The maximum number of pics per track is 99.\n");
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE("Exiting...");
-                }
-            }
-
-            FREE(tab)
-            img->stillpicvobsize=(uint32_t*) calloc(DIM, sizeof(uint32_t));
-            if (img->stillpicvobsize == NULL)
-            {
-                perror("[ERR]  still pic vob size array");
-                break;
-            }
-            img->count=DIM;
-            if (globals.veryverbose) printf("[MSG]  Total of %d pictures\n", img->count);
+            stillpic_string=strdup(optarg);
             break;
 
         case 'J':
@@ -1485,7 +1415,7 @@ if (user_command_line)
 
 #endif
 
-if (globals.topmenu == NO_MENU) goto standard_checks;
+if (globals.topmenu == NO_MENU) goto stillpic_parsing;
 
 
         // Coherence checks
@@ -1551,9 +1481,7 @@ if (globals.topmenu == NO_MENU) goto standard_checks;
         }
     }
 
-    if (totntracks == 0)
-        for (k=0; k < ngroups-nvideolinking_groups; k++)
-            totntracks+=ntracks[k];
+
 
 
     // put this check befor the img->ncolumns check
@@ -1609,6 +1537,83 @@ if (globals.topmenu == NO_MENU) goto standard_checks;
 
 #endif
 #endif
+
+// This had to be postponed after command line parsing owing to tempdir chain user input
+
+stillpic_parsing:
+
+if (stillpic_string)
+{
+            // heap-allocations is not possible if char** is not returned by function
+            // A simple char* would well be allocated by function, not a char**.
+
+            tab=fn_strtok(stillpic_string, '-', tab, 0,NULL,NULL);
+            uint16_t dim,DIM=0,w;
+
+            img->npics =(uint16_t*) calloc(totntracks, sizeof(uint16_t));
+            if (img->npics == NULL)
+            {
+                perror("[ERR] img->npics");
+                goto standard_checks;
+            }
+            if (tab)
+                w=arraylength((void**) tab);
+            else
+            {
+                perror("[ERR]  tab");
+                goto standard_checks;
+            }
+            if (w > totntracks)
+            {
+                perror("[ERR]  Too many tracks on --stillpics");
+                goto standard_checks;
+            }
+            else if (w < totntracks)
+            {
+                perror("[ERR]  You forgot at least one track on --stillpics");
+                goto standard_checks;
+            }
+
+            for (k=0; k < totntracks; k++)
+            {
+                tab2=fn_strtok(tab[k], ',', tab2, -1,create_stillpic_directory,NULL);
+                dim=0;
+                w=0;
+                if (tab2) while (tab2[w] != NULL)
+                    {
+                        if (tab2[w][0] != 0) dim++;
+                        w++;
+                    }
+                else
+                {
+                    perror("[ERR]  tab2");
+                    goto standard_checks;
+                }
+                npics[k]=(k)? dim+npics[k-1]: dim;
+                img->npics[k]=dim;
+                DIM+=dim;
+                if (globals.veryverbose) printf("  --> npics[%d] = %d\n", k, dim);
+                FREE(tab2)
+                if (img->npics[k] > 99)
+                {
+                    printf("[ERR]  The maximum number of pics per track is 99.\n");
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE("Exiting...");
+                }
+            }
+
+            FREE(tab)
+            img->stillpicvobsize=(uint32_t*) calloc(DIM, sizeof(uint32_t));
+            if (img->stillpicvobsize == NULL)
+            {
+                perror("[ERR]  still pic vob size array");
+                goto standard_checks;
+            }
+            img->count=DIM;
+            if (globals.veryverbose) printf("[MSG]  Total of %d pictures\n", img->count);
+            free(stillpic_string);
+
+}
+
 standard_checks:
 
     if (nplaygroups > ngroups-nvideolinking_groups)
@@ -1622,8 +1627,6 @@ standard_checks:
         if (globals.debugging) printf("%s\n", "[ERR]  There cannot be more copy groups than audio groups. Limiting to 9 groups...");
         nplaygroups=MAX(0, 9-ngroups);
     }
-
-
 
 
     // ngroups does not include copy groups from then on -- nplaygroups are just virtual (no added bytes to disc)
