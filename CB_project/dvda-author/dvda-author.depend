@@ -4529,7 +4529,7 @@
 	"commonvars.h"
 	"structures.h"
 
-1277562599 /home/fab/Dev/dvda-author-10.06/src/include/commonvars.h
+1277604267 /home/fab/Dev/dvda-author-10.06/src/include/commonvars.h
 	"config.h"
 
 1277481601 source:/home/fab/Dev/dvda-author-10.06/src/atsi2.c
@@ -4739,7 +4739,7 @@
 1277481601 /home/fab/Dev/dvda-author-10.06/src/include/videoimport.h
 	<inttypes.h>
 
-1277602636 source:/home/fab/Dev/dvda-author-10.06/src/amg2.c
+1277605522 source:/home/fab/Dev/dvda-author-10.06/src/amg2.c
 	"commonvars.h"
 	<stdio.h>
 	<stdlib.h>
@@ -4792,7 +4792,7 @@
 	"winport.h"
 	"auxiliary.h"
 
-1277577068 source:/home/fab/Dev/dvda-author-10.06/src/command_line_parsing.c
+1277604267 source:/home/fab/Dev/dvda-author-10.06/src/command_line_parsing.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -4820,7 +4820,7 @@
 1277481601 /home/fab/Dev/dvda-author-10.06/libfixwav/src/include/fixwav_auxiliary.h
 	"fixwav_manager.h"
 
-1277602549 source:/home/fab/Dev/dvda-author-10.06/src/dvda-author2.c
+1277604267 source:/home/fab/Dev/dvda-author-10.06/src/dvda-author2.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -4883,7 +4883,7 @@
 	"audio2.h"
 	"structures.h"
 
-1277595161 source:/home/fab/Dev/dvda-author-10.06/src/menu.c
+1277604267 source:/home/fab/Dev/dvda-author-10.06/src/menu.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -4903,7 +4903,7 @@
 	"auxiliary.h"
 	"amg.h"
 
-1277601773 source:/home/fab/Dev/dvda-author-10.06/src/xml.c
+1277604267 source:/home/fab/Dev/dvda-author-10.06/src/xml.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
