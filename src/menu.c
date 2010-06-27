@@ -149,7 +149,6 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     mpeg2enc=create_binary_path(mpeg2enc,MPEG2ENC, SEPARATOR MPEG2ENC_BASENAME);
     mplex=create_binary_path(mplex, MPLEX, SEPARATOR MPLEX_BASENAME);
 
-
     char *argsmp2enc[]= {MP2ENC, "-o", mp2track , NULL};
     char *argsjpeg2yuv[]= {JPEG2YUV, "-f", img->framerate, "-I", "p", "-n", "1", "-j", pic, "-A", img->aspectratio, NULL};
     char *argsmpeg2enc[]= {MPEG2ENC,  "-f", "8", "-n", img->norm,  "-o", tempfile ,"-a", img->aspect, NULL};
@@ -333,11 +332,9 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     jpegcl=get_command_line(argsjpeg2yuv);
     char* mpegcl=get_command_line(argsmpeg2enc);
     char* mplexcl=get_command_line(argsmplex);
-    uint16_t sizejpegcl=strlen(jpegcl);
-    uint16_t sizempegcl=strlen(mpegcl);
-    uint16_t sizemplexcl=strlen(mplexcl);
-    char cml2[strlen(mpeg2enc)+1+sizejpegcl+3+sizempegcl+1];
-    char cml3[strlen(mplex)+1+sizemplexcl];
+
+    char cml2[strlen(jpeg2yuv)+1+strlen(jpegcl)+3+strlen(mpeg2enc)+1+strlen(mpegcl)+1];
+    char cml3[strlen(mplex)+1+strlen(mplexcl)+1];
     sprintf(cml2, "%s %s | %s %s", jpeg2yuv, jpegcl, mpeg2enc, mpegcl);
     sprintf(cml3, "%s %s",mplex, mplexcl);
     system(cml2);
