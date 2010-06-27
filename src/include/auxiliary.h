@@ -35,7 +35,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "structures.h"
 
 // debugging macros
-#define prs(X) printf("PRS: %s : %s\n", #X, X);
+#define prs(X) do {if (X) printf("PRS: %s : %s\n", #X, X);} while (0);
 #define prd(X) printf("PRD: %s : %d\n", #X, X);
 #define pr(X) printf("PR: %s\n", #X);
 /* All macros are below except for OS-specific macros in ports.h*/

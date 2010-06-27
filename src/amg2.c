@@ -191,7 +191,6 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
     img->action=ANIMATEDVIDEO;
 
 
-
     switch(globals.topmenu)
     {
     case ACTIVE_MENU_ONLY:  // If only active menus, no top menus, create automatic top menus to be unlinked later on

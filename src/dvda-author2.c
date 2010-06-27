@@ -53,19 +53,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 globalData globals;
 char *home, *TEMPDIRROOT, *TEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
-int tempdirstrlen=0;
-
-ALWAYS_INLINE_GCC void copy_last_known_pic_to_tempdir(char* image, int menu, char* rootname, char* extension)
-{
-        char* img_save=NULL;
-
-            if (image) img_save=strdup(image);
-            image=realloc(image, (tempdirstrlen+13)*sizeof(char));
-            sprintf(image, "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, rootname, menu, extension);
-            if (img_save) copy_file(img_save, image);
-        FREE (img_save);
-}
-
 
 void normalize_temporary_paths(pic* img)
 {
@@ -75,11 +62,11 @@ void normalize_temporary_paths(pic* img)
     if (img == NULL)
     {
 
-        tempdirstrlen=strlen(globals.settings.tempdir);
-        globals.settings.logfile=realloc(globals.settings.logfile, (tempdirstrlen+10)*sizeof(char));
-        globals.settings.indir=realloc(globals.settings.indir, (tempdirstrlen+10)*sizeof(char));
-        globals.settings.outdir=realloc(globals.settings.outdir, (tempdirstrlen+10)*sizeof(char));
-        globals.settings.linkdir=realloc(globals.settings.linkdir, (tempdirstrlen+10)*sizeof(char));
+        s=strlen(globals.settings.tempdir);
+        globals.settings.logfile=realloc(globals.settings.logfile, (s+10)*sizeof(char));
+        globals.settings.indir=realloc(globals.settings.indir, (s+10)*sizeof(char));
+        globals.settings.outdir=realloc(globals.settings.outdir, (s+10)*sizeof(char));
+        globals.settings.linkdir=realloc(globals.settings.linkdir, (s+10)*sizeof(char));
         globals.settings.indir=calloc(s+10,1);
 
         sprintf(globals.settings.logfile, "%s"SEPARATOR"%s", globals.settings.tempdir, "log.txt");
@@ -92,39 +79,49 @@ void normalize_temporary_paths(pic* img)
     else
     {
 
-        int menu;
 
+
+        int menu;
             img->backgroundpic=realloc(img->backgroundpic,(img->nmenus+1)*sizeof(char*));
             img->imagepic=realloc(img->imagepic,(img->nmenus+1)*sizeof(char*));
             img->highlightpic=realloc(img->highlightpic,(img->nmenus+1)*sizeof(char*));
             img->selectpic=realloc(img->selectpic, (img->nmenus+1)*sizeof(char*));
 
 
+        // useless to realloc for just one menu !
+
+        char* img_save=NULL;
+
+
         for (menu=0;  menu < img->nmenus; menu++)
         {
-           copy_last_known_pic_to_tempdir(img->backgroundpic[menu], menu, "bgpic", ".jpg");
-           copy_last_known_pic_to_tempdir(img->imagepic[menu], menu, "impic", ".png");
-           copy_last_known_pic_to_tempdir(img->highlightpic[menu], menu, "hlpic", ".png");
-           copy_last_known_pic_to_tempdir(img->selectpic[menu], menu, "slpic", ".png");
+
+            if (img->backgroundpic[menu]) img_save=strdup(img->backgroundpic[menu]);
+            img->backgroundpic[menu]=realloc(img->backgroundpic[menu], (s+13)*sizeof(char));
+            sprintf(img->backgroundpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "bgpic", menu, ".jpg");
+            if (img_save) copy_file(img_save, img->backgroundpic[menu]);
+
+
+            img->imagepic[menu]=calloc(s+13, sizeof(char));
+            sprintf(img->imagepic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "impic", menu, ".png");
+
+
+            img->highlightpic[menu]=calloc(s+13,sizeof(char));
+            sprintf(img->highlightpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "hlpic", menu, ".png");
+
+             img->selectpic[menu]=calloc(s+13,sizeof(char));
+             sprintf(img->selectpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "slpic", menu, ".png");
+
+
         }
-
-
-prd(menu)
-prs(img->selectpic[menu])
-prs(img->highlightpic[menu])
-prs(img->backgroundpic[menu])
-prs(img->imagepic[menu])
-pause_dos_type();
-
-
         img->backgroundpic[img->nmenus]=NULL;
         img->imagepic[img->nmenus]=NULL;
         img->highlightpic[img->nmenus]=NULL;
         img->selectpic[img->nmenus]=NULL;
 
 
-    }
 
+    }
 }
 
 
@@ -168,9 +165,9 @@ int main(int argc,  char* const argv[])
 
 
     BGPIC[0]=strdup(DEFAULT_BACKGROUNDPIC);
-    IMPIC[0]=calloc(homelength+30, sizeof(char));
-    HLPIC[0]=calloc(homelength+30, sizeof(char));
-    SLPIC[0]=calloc(homelength+30, sizeof(char));
+//    IMPIC[0]=calloc(homelength+30, sizeof(char));
+//    HLPIC[0]=calloc(homelength+30, sizeof(char));
+//    SLPIC[0]=calloc(homelength+30, sizeof(char));
 
 
     sprintf(TEMPDIRROOT, "%s%s%s", home,(home[0] == 0)? "" : SEPARATOR , TEMPDIR_SUBFOLDER_PREFIX DVDA_AUTHOR_BASENAME);
@@ -259,9 +256,12 @@ int main(int argc,  char* const argv[])
         0, // no loop
         0,  // list menus, not hierarchical
         0, // no active menus
-        &HLPIC[0], //highlightpic
-        &SLPIC[0], //selectpic
-        &IMPIC[0], //imagepic
+//        &HLPIC[0], //highlightpic
+//        &SLPIC[0], //selectpic
+//        &IMPIC[0], //imagepic
+NULL,
+NULL,
+NULL,
         &BGPIC[0], // black screen for jpg video mpg authoring
         strdup(DEFAULT_BLANKSCREEN), // black screen for png authoring
         NULL, //backgroundmpg
