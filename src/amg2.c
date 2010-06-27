@@ -211,14 +211,8 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
 
         allocate_topmenus(command);
 
-
-        if (globals.spu_xml == NULL) globals.spu_xml=calloc(img->nmenus,sizeof(char *));
-        if (globals.spu_xml == NULL) perror("[ERR]  spuxml\n");
-        if (globals.debugging) printf("%s\n", "[INF]  Generating Xml project for spumux...");
         errno=generate_spumux_xml(ngroups, ntracks, maxntracks, img);
         if (errno) perror("[ERR]  AMG:spumux_xml");
-
-
 
         launch_spumux(img);
 
@@ -342,7 +336,7 @@ int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles
 }
 
 uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *videotitlelength, uint32_t* relative_sector_pointer_VTSI,
-                    uint8_t *numtitles, uint8_t** ntitletracks, uint64_t** titlelength, uint16_t ** ntitlepics)
+                    uint8_t *numtitles, uint8_t** ntitletracks, uint64_t** titlelength)
 {
     errno=0;
 

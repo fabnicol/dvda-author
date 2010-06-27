@@ -58,7 +58,7 @@ FILE* activeheaderfile=fopen(activeheader, "rb");
 puts("[INF]  Using already created top menus.\n");
 uint64_t tsvobsize=0;
 tsvobsize=stat_file_size(img->tsvob);
-if (tsvobsize <= activeheadersize) {perror("[ERR]  AUDIO_TS.VOB is too small.\n"); prd(tsvobsize) prd(activeheadersize) exit(EXIT_FAILURE) ;}
+if (tsvobsize <= activeheadersize) {perror("[ERR]  AUDIO_TS.VOB is too small.\n");  exit(EXIT_FAILURE) ;}
 uint8_t tsvobpt[tsvobsize];
 memset(tsvobpt, 0, tsvobsize);
 FILE * tsvobfile=fopen(img->tsvob, "rb");
@@ -111,7 +111,7 @@ return;
 
 
 
-int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile, uint8_t ngroups, uint8_t* ntracks)
+int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 {
     char pic[CHAR_BUFSIZ*10];
 
@@ -433,7 +433,7 @@ int generate_background_mpg(pic* img, uint8_t ngroups, uint8_t* ntracks)
 
         while(rank < img->nmenus)
         {
-            create_mpg(img, rank, mp2track, tempfile, ngroups, ntracks);
+            create_mpg(img, rank, mp2track, tempfile);
             fflush(NULL);
             rank++;
         }
@@ -446,7 +446,7 @@ int generate_background_mpg(pic* img, uint8_t ngroups, uint8_t* ntracks)
         if (img->backgroundmpg)
         while (rank < img->count)
         {
-            create_mpg(img, rank, mp2track, tempfile, ngroups, ntracks);
+            create_mpg(img, rank, mp2track, tempfile);
             img->stillpicvobsize[rank]=(uint32_t) (stat_file_size(img->backgroundmpg[rank])/0x800);
             if (img->stillpicvobsize[rank] > 1024) printf("[WAR]  Size of slideshow in excess of the 2MB track limit... some stillpics may not be displayed.\n");
             if (rank) cat_file(img->backgroundmpg[rank], img->backgroundmpg[0]);
@@ -605,7 +605,7 @@ ALWAYS_INLINE_GCC uint16_t y(uint8_t track, uint8_t maxnumtracks)
 }
 
 
-int prepare_img(char* text, int8_t group, pic *img, uint8_t maxnumtracks, char* command, char* command2, int menu, char* albumcolor)
+int prepare_img(char* text, int8_t group, pic *img, char* command, char* command2, int menu, char* albumcolor)
 {
 
     int size=strlen(globals.settings.tempdir)+11;
@@ -651,7 +651,7 @@ int prepare_img(char* text, int8_t group, pic *img, uint8_t maxnumtracks, char* 
 }
 
 
-int mogrify_img(char* text, int8_t group, int8_t track, pic *img, uint8_t maxnumtracks, char* command, char* command2, int menu, int8_t offset, char* textcolor)
+int mogrify_img(char* text, int8_t group, int8_t track, pic *img, uint8_t maxnumtracks, char* command, char* command2,  int8_t offset, char* textcolor)
 {
     errno=0;
     uint16_t x0, y0;
@@ -771,7 +771,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
         char remainder[strlen(img->screentextchain)];
         basemotif=fn_strtok(img->screentextchain, '=', basemotif, 1, cutloop, remainder) ;
         albumtext=basemotif[0];
-        grouparray=fn_strtok(remainder, ':', grouparray, 0, fn_puts, NULL) ;
+        grouparray=fn_strtok(remainder, ':', grouparray, 0, NULL, NULL) ;
 
         dim=arraylength((void **)grouparray);
         tracktext=calloc(dim, sizeof(char**));
@@ -783,7 +783,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
         {
             char rem[strlen(grouparray[k])];
             grouptext[k]=fn_strtok(grouparray[k], '=', grouptext[k], 1, cutloop, rem);
-            tracktext[k]=fn_strtok(rem, ',', tracktext[k], 0,fn_puts, NULL);
+            tracktext[k]=fn_strtok(rem, ',', tracktext[k], 0,NULL, NULL);
             free(grouparray[k]);
         }
 
@@ -870,7 +870,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
 
         compute_pointsize(img, 10, maxntracks);
 
-        prepare_img(albumtext, -1, img, maxntracks, command1, command2, menu, img->albumcolor);
+        prepare_img(albumtext, -1, img, command1, command2, menu, img->albumcolor);
 
         if (img->hierarchical)
         {
@@ -883,7 +883,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
                     /* Vicious issue here: use DEFAULT_GROUP_HEADER such that the underline for highlighting does not cut a letter.
                     			   With lower-case "group", this happens as the underline cuts the 'p'. Two ways out: underline lower or use another label/use uppercase
                     			   Note: This issue was tested to cause spumux crash */
-                    mogrify_img(grouptext[groupcount][0], 0, groupcount, img, maxntracks, command1, command2, menu,0, img->textcolor_pic);
+                    mogrify_img(grouptext[groupcount][0], 0, groupcount, img, maxntracks, command1, command2, 0, img->textcolor_pic);
                     groupcount++;
                     buttons++;
 
@@ -894,13 +894,13 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
 
             else if (groupcount < ngroups)
             {
-                mogrify_img(grouptext[groupcount][0], 0, -1, img, maxntracks, command1, command2, menu,0, img->groupcolor);
+                mogrify_img(grouptext[groupcount][0], 0, -1, img, maxntracks, command1, command2, 0, img->groupcolor);
                 offset=track;
 
                 do
                 {
                     buttons++;
-                    mogrify_img(tracktext[groupcount][track], 0, track, img, maxntracks, command1, command2, menu, offset, img->textcolor_pic);
+                    mogrify_img(tracktext[groupcount][track], 0, track, img, maxntracks, command1, command2, offset, img->textcolor_pic);
                     track++;
                 }
                 while ((buttons < menubuttons) && (track < ntracks[groupcount]));
@@ -919,14 +919,14 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
             do
             {
 
-                mogrify_img(grouptext[groupcount][0], group, -1, img, maxntracks, command1, command2, menu,0, img->groupcolor);
+                mogrify_img(grouptext[groupcount][0], group, -1, img, maxntracks, command1, command2, 0, img->groupcolor);
                 offset=track;
 
                 do
                 {
 
                     buttons++;
-                    mogrify_img(tracktext[groupcount][track], group, track, img, maxntracks, command1, command2, menu, offset, img->textcolor_pic);
+                    mogrify_img(tracktext[groupcount][track], group, track, img, maxntracks, command1, command2, offset, img->textcolor_pic);
                     track++;
                 }
                 while ((buttons < menubuttons) && (track < ntracks[groupcount]));
@@ -952,11 +952,11 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
                 char arrowstring[9]= {0};
                 strcpy(arrowstring, (menu == img->nmenus-1)? DEFAULT_PREVIOUS:DEFAULT_NEXT);
                 buttons++;
-                mogrify_img(arrowstring, img->ncolumns-1, maxntracks, img, maxntracks, command1, command2, menu, offset, img->arrowcolor);
+                mogrify_img(arrowstring, img->ncolumns-1, maxntracks, img, maxntracks, command1, command2, offset, img->arrowcolor);
                 if ((menu) && (menu < img->nmenus-1))
                 {
                     buttons++;
-                    mogrify_img(DEFAULT_PREVIOUS, img->ncolumns-1, maxntracks+1, img, maxntracks, command1, command2, menu, offset, img->arrowcolor);
+                    mogrify_img(DEFAULT_PREVIOUS, img->ncolumns-1, maxntracks+1, img, maxntracks, command1, command2, offset, img->arrowcolor);
                 }
             }
             while  (buttons < menubuttons+arrowbuttons);

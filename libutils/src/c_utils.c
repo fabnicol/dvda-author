@@ -27,11 +27,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include <stdlib.h>
 #include <stdio.h>
-//#ifdef __WIN32__
-//#include <io.h>
-//#else
-//#include <unistd.h>
-//#endif
+#ifdef __WIN32__
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
 #include <dirent.h>
 #include <stdarg.h>
 #include <sys/time.h>
@@ -107,14 +107,20 @@ if (globals.veryverbose) printf("%s%s\n", "[INF]  Cleaning directory ", path);
 #endif
     if (globals.veryverbose) printf("[INF]  Running %s\n       ... \n", cleancommand);
     system(cleancommand);
-if (globals.veryverbose)
-{
-if (errno)
-  { printf("%s%s\n", "[MSG]  Failed to clean directory ", path); return 0; }
-else
-  { printf("%s\n", "[MSG]  OK."); return 1;}
-}
 
+
+if (errno)
+{
+if (globals.veryverbose)
+   printf("%s%s\n", "[MSG]  Failed to clean directory ", path);
+return 0;
+}
+else
+{
+if (globals.veryverbose)
+   printf("%s\n", "[MSG]  OK.");
+ return 1;
+}
 }
 
 
@@ -125,7 +131,7 @@ else
 
 
 
-void clean_exit(int message, const char *default_directory)
+void clean_exit(int message)
 {
 
     fflush(NULL);
@@ -157,7 +163,7 @@ int secure_mkdir (const char *path, mode_t mode, const char* default_directory)
     if  ((len<1) && (globals.debugging))
     {
         printf("%s\n","[ERR]  Path length could not be allocated by secure_mkdir:\n       Your compiler may not be C99-compliant");
-        clean_exit(EXIT_FAILURE,default_directory);
+        clean_exit(EXIT_FAILURE);
     }
 
     char d[len+1];
@@ -168,7 +174,7 @@ int secure_mkdir (const char *path, mode_t mode, const char* default_directory)
     if (d == NULL)
     {
         perror("[MSG] Error: could not allocate directory path string");
-        clean_exit(EXIT_FAILURE, default_directory);
+        clean_exit(EXIT_FAILURE);
     }
 
 
@@ -187,7 +193,7 @@ int secure_mkdir (const char *path, mode_t mode, const char* default_directory)
                 printf( "Impossible to create directory '%s'\n", d);
                 printf("%s", "Backup directories will be used.\n " );
 
-                clean_exit(EXIT_FAILURE, default_directory);
+                clean_exit(EXIT_FAILURE);
 
             }
             d[i] = '/';
@@ -211,7 +217,7 @@ int secure_mkdir (const char *path, mode_t mode, const char* default_directory)
         printf( "%s", "       Backup directories will be used.\n");
         errno=0;
 
-        clean_exit(EXIT_FAILURE, default_directory);
+        clean_exit(EXIT_FAILURE);
     }
 
     return(errno);
@@ -848,14 +854,5 @@ void fread_endian(uint32_t * p, int t, FILE *f)
 }
 
 
-int fn_puts(char* s, uint32_t k)
-{
-    if (globals.veryverbose)
-        printf("%s\n", s);
-    int d=strlen(s);
-    if (d)
-        return (d);
-    else
-        return 0;
-}
+
 

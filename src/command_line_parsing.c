@@ -222,13 +222,13 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                     case 'h' :
                     globals.silence=0;
                     help();
-                    clean_exit(EXIT_SUCCESS, DEFAULT);
+                    clean_exit(EXIT_SUCCESS);
                     break;
 
                 case 'v' :
                     globals.silence=0;
                     version();
-                    clean_exit(EXIT_SUCCESS, DEFAULT);
+                    clean_exit(EXIT_SUCCESS);
                     break;
 
                 case 'q' :
@@ -543,7 +543,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             if ((optarg != NULL) && (strstr(optarg, "help")))
             {
-                clean_exit(EXIT_SUCCESS, DEFAULT);
+                clean_exit(EXIT_SUCCESS);
             }
             break;
 
@@ -856,7 +856,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             {
             case   EINVAL :
                 printf( "%s\n",  "[ERR]  Incorrect offset value");
-                clean_exit(EXIT_SUCCESS, DEFAULT);
+                clean_exit(EXIT_SUCCESS);
                 break;
             case   ERANGE :
                 EXIT_ON_RUNTIME_ERROR_VERBOSE( "[ERR]  Offset range--overflowing LONG INT.");
@@ -1036,7 +1036,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case 'H' :
             printf("%s%s\n", "[PAR]  spumux Xml project: ", optarg);
-            int static spurank;
+            static int spurank;
             while (spurank >= img->nmenus) 	img->nmenus++;
             if (img->nmenus) globals.spu_xml=realloc(globals.spu_xml, img->nmenus*sizeof(char*));
             globals.spu_xml[spurank++]=strndup(optarg, MAX_OPTION_LENGTH);
