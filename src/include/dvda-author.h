@@ -34,7 +34,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 // g, j, s are treated by getopt as non-argumental although they take a non-limited number of (non-getopt compliant) arguments
 
 #define ALLOWED_OPTIONS  "\3\4\50123456789aA:b:B:c:dD:e:E:f::F::g:G:hH:i:I::j:J:k:K:l::L::m::M:nN:o:O:p:P::qQ:r::R:s:S::tT:u:U::vV:w:Wx:X:y:Y:z:Z:"
-void normalize_temporary_paths(char* path, pic* img);
+void normalize_temporary_paths(pic* img);
 
 
 #endif // DVDA-AUTHOR_H_INCLUDED

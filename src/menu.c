@@ -358,7 +358,8 @@ free(mplex);
 }
 
 
-ALWAYS_INLINE_GCC char** readjust_pic_arrays(char** picarray, int nmenus, uint8_t counterposition)
+//ALWAYS_INLINE_GCC
+char** readjust_pic_arrays(char** picarray, int nmenus, uint8_t counterposition)
 {
 
     int L=arraylength((void**)picarray), k=L;
@@ -375,9 +376,12 @@ ALWAYS_INLINE_GCC char** readjust_pic_arrays(char** picarray, int nmenus, uint8_
     }
 
     if (picarray== NULL) EXIT_ON_RUNTIME_ERROR
+prd(nmenus)
 
     while(nmenus > k)
     {
+prd(k)
+prs(picarray[k-1])
 
        picarray[k]=strdup(picarray[k-1]);
 
@@ -412,15 +416,18 @@ int generate_background_mpg(pic* img, uint8_t ngroups, uint8_t* ntracks)
     if (img->backgroundmpg == NULL) printf("%s", "[MSG]  backgroundmpg will be allocated.\n");
 
     if (globals.debugging) printf("[INF]  Launching mjpegtools to create background mpg with nmenus=%d\n", img->nmenus);
-
+#if 0
+prs(img->backgroundpic[img->nmenus-1])
     img->backgroundpic=readjust_pic_arrays(img->backgroundpic, img->nmenus, 0);
 
+
+
     img->highlightpic=readjust_pic_arrays(img->highlightpic, img->nmenus, 5);
-
+    prs(img->highlightpic[img->nmenus-1])
     img->selectpic=readjust_pic_arrays(img->selectpic, img->nmenus, 5);
-
+    prs(img->selectpic[img->nmenus-1])
     img->imagepic=readjust_pic_arrays(img->imagepic, img->nmenus, 5);
-
+#endif
     /* now authoring AUDIO_TS.VOB */
     rank=0;
 
@@ -563,8 +570,6 @@ int launch_dvdauthor()
 
     errno=0;
 
-    printf("%s %s\n",globals.settings.outdir, globals.xml);
-
     if (globals.debugging) printf("%s\n", "[INF]  Launching dvdauthor to add virtual machine commands to top menu");
 
     char *args[]= {DVDAUTHOR_BASENAME, "-o", globals.settings.outdir, "-x", globals.xml, NULL};
@@ -602,7 +607,7 @@ ALWAYS_INLINE_GCC uint16_t y(uint8_t track, uint8_t maxnumtracks)
 }
 
 
-int prepare_img(char* text, int8_t group, pic *img, char* command, char* command2, int menu, char* albumcolor)
+int prepare_overlay_img(char* text, int8_t group, pic *img, char* command, char* command2, int menu, char* albumcolor)
 {
 
     int size=strlen(globals.settings.tempdir)+11;
@@ -635,7 +640,12 @@ int prepare_img(char* text, int8_t group, pic *img, char* command, char* command
         return -1;
     }
     // will overwrite older files
-
+prd(menu)
+prs(img->selectpic[menu])
+prs(img->highlightpic[menu])
+prs(img->backgroundpic[menu])
+prs(img->imagepic[menu])
+pause_dos_type();
     copy_file(picture_save, img->imagepic[menu]);
     if (globals.debugging) printf("[INF]  copying %s to %s for menu #%d\n", picture_save, img->imagepic[menu], menu);
     copy_file(picture_save, img->highlightpic[menu]);
@@ -643,6 +653,7 @@ int prepare_img(char* text, int8_t group, pic *img, char* command, char* command
     errno=0;
     snprintf(command, CHAR_BUFSIZ, "%s %s", mogrify, "+antialias");
     snprintf(command2, CHAR_BUFSIZ, "%s %s", mogrify, "+antialias");
+
 
     return errno;
 }
@@ -867,7 +878,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
 
         compute_pointsize(img, 10, maxntracks);
 
-        prepare_img(albumtext, -1, img, command1, command2, menu, img->albumcolor);
+        prepare_overlay_img(albumtext, -1, img, command1, command2, menu, img->albumcolor);
 
         if (img->hierarchical)
         {
@@ -959,14 +970,14 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
             while  (buttons < menubuttons+arrowbuttons);
 
         strcat(command2, img->imagepic[menu]);
-        if (globals.veryverbose) printf("[INF] Menu: %d/%d, groupcount: %d/%d.\n      Launching mogrify (image) with command line: %s\n", menu, img->nmenus, groupcount, ngroups, command2);
+        if (globals.veryverbose) printf("[INF]  Menu: %d/%d, groupcount: %d/%d.\n      Launching mogrify (image) with command line: %s\n", menu, img->nmenus, groupcount, ngroups, command2);
         if (system(command2) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
         free(command2);
 
         copy_file(img->imagepic[menu], img->highlightpic[menu]);
 
         strcat(command1, img->highlightpic[menu]);
-        if (globals.veryverbose) printf("[INF] Menu: %d/%d, groupcount: %d/%d.\n      Launching mogrify (highlight) with command line: %s\n", menu, img->nmenus, groupcount, ngroups,command1);
+        if (globals.veryverbose) printf("[INF]  Menu: %d/%d, groupcount: %d/%d.\n      Launching mogrify (highlight) with command line: %s\n", menu, img->nmenus, groupcount, ngroups,command1);
         if (system(command1) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
         free(command1);
         char command3[500];
@@ -974,7 +985,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
         convert=create_binary_path(convert, CONVERT, SEPARATOR CONVERT_BASENAME);
 
         snprintf(command3, sizeof(command3), "%s %s \"rgb(%s)\"  %s \"rgb(%s)\" %s %s", convert, "-fill", img->selectfgcolor_pic, "-opaque", img->textcolor_pic, img->imagepic[menu], img->selectpic[menu]);
-        if (globals.veryverbose) printf("[INF] Menu: %d/%d, groupcount: %d/%d.\n      Launching convert (select) with command line: %s\n",menu, img->nmenus, groupcount, ngroups,command3);
+        if (globals.veryverbose) printf("[INF]  Menu: %d/%d, groupcount: %d/%d.\n      Launching convert (select) with command line: %s\n",menu, img->nmenus, groupcount, ngroups,command3);
         if (system(command3) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
 
         menu++;
