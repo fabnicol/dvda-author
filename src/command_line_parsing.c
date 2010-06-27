@@ -1375,6 +1375,7 @@ if (user_command_line)
         if (globals.debugging)
         printf("[MSG]  Output directory %s has been preserved.\n", globals.settings.outdir);
     }
+    change_directory(globals.settings.workdir);
 
     errno=secure_mkdir(globals.settings.outdir, 0777, OUTDIR);
     if (errno)

@@ -626,7 +626,7 @@ int wav_getinfo(fileinfo_t* info)
         rewind(fp);
 
     /* PATCH: real size on disc is needed */
-#if !defined MKDIR & defined __WIN32__
+#if defined __WIN32__
     info->file_size = read_file_size(fp, (TCHAR*) info->filename);
 #else
     info->file_size = read_file_size(fp, info->filename);

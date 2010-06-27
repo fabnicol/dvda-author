@@ -541,7 +541,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
     uint8_t audio_buf[AUDIO_BUFFER_SIZE];
     uint64_t pack_in_title=0;
 
-    STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/ATS_%02d_%d.AOB",audiotsdir,titleset,fileno)
+    STRING_WRITE_CHAR_BUFSIZ(outfile, "%s"SEPARATOR"ATS_%02d_%d.AOB",audiotsdir,titleset,fileno)
     fpout=secure_open(outfile,"wb+");
 
     /* Open the first file and initialise the input audio buffer */
@@ -578,7 +578,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
         {
             fclose(fpout);
             fileno++;
-            STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/ATS_%02d_%d.AOB",audiotsdir,titleset,fileno)
+            STRING_WRITE_CHAR_BUFSIZ(outfile, "%s"SEPARATOR"ATS_%02d_%d.AOB",audiotsdir,titleset,fileno)
             fpout=fopen(outfile,"wb+");
         }
 
