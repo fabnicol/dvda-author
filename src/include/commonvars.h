@@ -227,6 +227,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 #endif
 
+#ifndef DEFAULT_WORKDIR
+#ifdef __WIN32__
+#define DEFAULT_WORKDIR "C:\\"
+#endif
+#endif
+
 
 #define TOPMENU_MIN_SIZE  32
 #define DEFAULT_MENU_NCOLUMNS 3

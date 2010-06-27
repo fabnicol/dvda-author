@@ -306,7 +306,7 @@ void check_settings_file()
         if (settingsfile == NULL)
         {
            printf("[ERR]  Could not create settings file in path %s\n       Check that you have adequate administrative rights\n       Exiting...\n", SETTINGSFILE);
-           clean_exit(EXIT_FAILURE, DEFAULT);
+           clean_exit(EXIT_FAILURE);
         }
 
         fprintf(settingsfile, "%s","\
@@ -336,7 +336,7 @@ _Bool increment_ngroups_check_ceiling(uint8_t *ngroups, uint8_t * nvideolinking_
             else
             {
                 printf("[ERR]  DVD-Audio only supports up to 9 groups; audio groups=%d; video-linking groups=%d\n", *ngroups, *nvideolinking_groups);
-                clean_exit(EXIT_SUCCESS, DEFAULT);
+                clean_exit(EXIT_SUCCESS);
             }
         }
         ++*ngroups;
@@ -347,7 +347,7 @@ _Bool increment_ngroups_check_ceiling(uint8_t *ngroups, uint8_t * nvideolinking_
             printf("[ERR]  DVD-Audio only supports up to 9 groups; audio groups=%d; video-linking groups=%d\n", *ngroups, *nvideolinking_groups);
         else
             printf("[ERR]  DVD-Audio only supports up to 9 groups; audio groups=%d\n", *ngroups);
-        clean_exit(EXIT_SUCCESS, DEFAULT);
+        clean_exit(EXIT_SUCCESS);
     }
     return 1;
 }
@@ -566,7 +566,6 @@ int cutloop(char* s, uint32_t count)
 {
     static uint32_t loop;
     loop++;
-    if (globals.debugging) fn_puts(s, loop);
     return (count > loop);
 }
 

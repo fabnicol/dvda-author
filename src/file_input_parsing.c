@@ -59,7 +59,7 @@ int read_tracks(char  *full_path, uint8_t *ntracks, char * parent_directory, cha
     else
     {
         printf("[MSG]  Error: Too many input files specified - group %d, track %d\n",ngroups_scan,ntracks[ngroups_scan]);
-        clean_exit(EXIT_SUCCESS, DEFAULT);
+        clean_exit(EXIT_SUCCESS);
     }
 
     return(ntracks[ngroups_scan]);

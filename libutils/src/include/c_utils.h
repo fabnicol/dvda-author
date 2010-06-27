@@ -132,7 +132,7 @@ typedef struct
 char* concatenate(char* dest, char* str1, char* str2);
 void pause_dos_type();
 _Bool clean_directory(char* path);
-void clean_exit(int message, const char* default_directory);
+void clean_exit(int message);
 void help();
 void starter(compute_t *timer);
 char* print_time(int);
@@ -203,5 +203,5 @@ ALWAYS_INLINE_GCC inline static uint16_t uint16_read_reverse(uint8_t* buf)
 }
 
 
-int fn_puts(char* s, uint32_t );
+
 #endif // C_UTILS_H_INCLUDED

@@ -210,14 +210,17 @@ int main(int argc,  char* const argv[])
         /*access rights*/ DEFAULT_ACCESS_RIGHTS,
         /* it is necessary to use strdup as these settings may be overridden dynamically */
 // Paths:
-// By default, the "home" path is the working directory and EXECDIR as defined above the directory where auxiliary binaries are placed
 
         {
             strdup(SETTINGSFILE),
             strdup(DEFAULT_LOGFILE),  // logfile path
             NULL, // input directory path
             NULL,// output directory path
-            strdup(home),// working directory
+            #ifdef __WIN32__
+            strdup(DEFAULT_WORKDIR),// working directory: under Windows, c:\ if not defined at compile time, otherwise 'home' environment variable
+            #else
+            strdup(home),
+            #endif
             NULL,// temporary directory
             NULL,   // videolinked directory path
             EXECDIR, //bindir

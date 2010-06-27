@@ -584,8 +584,8 @@ int launch_manager(command_t *command)
         relative_sector_pointer_VTSI,
         numtitles,
         ntitletracks,
-        titlelength,
-        ntitlepics);
+        titlelength
+        );
 
 
     // Lax behaviour
