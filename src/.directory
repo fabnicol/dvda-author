@@ -1,5 +1,7 @@
 [Dolphin]
-AdditionalInfo=35
-SortOrder=1
-Timestamp=2010,6,21,1,20,49
+AdditionalInfo=3
+Timestamp=2010,6,27,4,4,45
 ViewMode=1
+
+[Settings]
+ShowDotFiles=true

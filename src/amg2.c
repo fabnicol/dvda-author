@@ -96,19 +96,19 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *
 
     for (j=0; j < naudio_groups; j++)
     {
-         // slightly overallocated as ntracks > ntitles
+        // slightly overallocated as ntracks > ntitles
         if (((ntitletracks[j]=calloc(ntracks[j], sizeof(uint8_t))) == NULL) || ((ntitlepics[j]=calloc(ntracks[j], sizeof(uint64_t))) ==  NULL) || ((titlelength[j]=calloc(ntracks[j], sizeof(uint64_t))) ==  NULL))
             EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Memory shortage on creating track tables")
-       // Allocating default values
+            // Allocating default values
 
-    }
+        }
     j=0;
     while  ((titleset < naudio_groups ) && (j < ntracks[titleset]) )
     {
         while ((j == 0) || ((j < ntracks[titleset])
-                 &&(files[titleset][j].samplerate==files[titleset][j-1].samplerate)
-                 &&(files[titleset][j].bitspersample==files[titleset][j-1].bitspersample)
-                 &&(files[titleset][j].channels==files[titleset][j-1].channels)))
+                            &&(files[titleset][j].samplerate==files[titleset][j-1].samplerate)
+                            &&(files[titleset][j].bitspersample==files[titleset][j-1].bitspersample)
+                            &&(files[titleset][j].channels==files[titleset][j-1].channels)))
         {
             /* counts the number of tracks with same-type audio characteristics, per titleset and title
             *  into ntitletracks[titleset][numtitles[titleset]], and corresponding PTS length in titlelength[titleset][numtitles[titleset]] */
@@ -120,16 +120,21 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *
             u=0;
             if (img)
             {
-             if (img->npics)
-                while (u < img->npics[track]) {ntitlepics[titleset][numtitles[titleset]]++; u++;}
-	     else
-	        {
-	        	ntitlepics[titleset][numtitles[titleset]]++;
-		        u++;
-		}
+                if (img->npics)
+                    while (u < img->npics[track])
+                    {
+                        ntitlepics[titleset][numtitles[titleset]]++;
+                        u++;
+                    }
+                else
+                {
+                    ntitlepics[titleset][numtitles[titleset]]++;
+                    u++;
+                }
             }
 
-            j++; track++;
+            j++;
+            track++;
             // PATCH 02 Dec 09
             if ((j < ntracks[titleset]) && (files[titleset][j].newtitle)) break;
 
@@ -151,29 +156,26 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *
             continue;
         }
     }
-return track;
+    return track;
 
 
 
 
 }
 
-
-void allocate_topmenu(command_t* command)
+void allocate_topmenus(command_t *command)
 {
-int menu, s;
 
-s=strlen(globals.settings.tempdir);
-
-img->topmenu=realloc(img->topmenu,(img->nmenus)*sizeof(char*));
-if (img->topmenu == NULL) perror("[ERR]  img->topmenu 1\n");
-for (menu=0; menu < img->nmenus; menu++)
-   {
-     if (img->topmenu[menu] == NULL) img->topmenu[menu]=calloc(s+13, sizeof(char));
-     if (img->topmenu[menu] == NULL)  perror("[ERR] img->topmenu is null");
-     if (img->topmenu[menu]) snprintf(img->topmenu[menu], s+11, "%s"SEPARATOR"%s%d", globals.settings.tempdir,"topmenu", menu);
-   }
-return;
+    if (img->topmenu == NULL) img->topmenu=calloc(img->nmenus,sizeof(char *));
+    if (img->topmenu == NULL) perror("[ERR]  img->topmenu 1\n");
+    int menu, s=strlen(globals.settings.tempdir);
+    for (menu=0; menu < img->nmenus; menu++)
+    {
+        if (img->topmenu[menu] == NULL) img->topmenu[menu]=calloc(s+13, sizeof(char));
+        if (img->topmenu[menu] == NULL)  perror("[ERR] img->topmenu is null");
+        if (img->topmenu[menu]) snprintf(img->topmenu[menu], s+11, "%s"SEPARATOR"%s%d", globals.settings.tempdir,"topmenu", menu);
+    }
+    return;
 }
 
 
@@ -192,78 +194,83 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
 
     switch(globals.topmenu)
     {
-  	case ACTIVE_MENU_ONLY:  // If only active menus, no top menus, create automatic top menus to be unlinked later on
-                                // unless some extra info is given (then globals.topmenu < ACTIVE_MENU_ONLY)
-   	case AUTOMATIC_MENU:
-   	case RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR :
+    case ACTIVE_MENU_ONLY:  // If only active menus, no top menus, create automatic top menus to be unlinked later on
+        // unless some extra info is given (then globals.topmenu < ACTIVE_MENU_ONLY)
+    case AUTOMATIC_MENU:
+    case RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR :
 
-		generate_background_mpg(img, ngroups, ntracks); // do not break;
+        generate_background_mpg(img, ngroups, ntracks); // do not break;
 
-	case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
+    case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
 
-		generate_menu_pics(img, ngroups, ntracks, maxntracks);
+        generate_menu_pics(img, ngroups, ntracks, maxntracks);
 
-    // calling xml project file subroutine for dvdauthor
+        // calling xml project file subroutine for dvdauthor
 
     case RUN_SPUMUX_DVDAUTHOR:
 
-                allocate_topmenu(command);
-                if (globals.debugging) printf("%s\n", "[INF]  Generating Xml project for spumux...");
-                errno=generate_spumux_xml(ngroups, ntracks, maxntracks, img);
-                if (errno) perror("[ERR]  AMG:spumux_xml");
-
-		launch_spumux(img);
+        allocate_topmenus(command);
 
 
-       case  RUN_DVDAUTHOR :
-
-		if (!globals.xml)
-		{
-		    if (globals.debugging) printf("%s\n", "[INF]  Generating AMGM Xml project for dvdauthor (patched)...");
-		    errno=generate_amgm_xml(ngroups, ntracks, img);
-		    if (errno) perror("[ERR]  AMG:amgm_xml");
-		}
-		for (menu=0; menu < img->nmenus; menu++)
-		 if (img->topmenu[menu])
-		 {
-			if (img->menuvobsize == NULL) img->menuvobsize=calloc(img->nmenus, sizeof(uint32_t*));
-			if (img->menuvobsize == NULL) perror("[ERR]  menuvobsize\n");
-
-			img->menuvobsize[menu]=stat_file_size(img->topmenu[menu])/0x800;
-			if (globals.veryverbose) printf("[MSG]  Top menu is: %s with size %"PRIu32" KB\n", img->topmenu[menu], img->menuvobsize[menu]);
-		 }
+        if (globals.spu_xml == NULL) globals.spu_xml=calloc(img->nmenus,sizeof(char *));
+        if (globals.spu_xml == NULL) perror("[ERR]  spuxml\n");
+        if (globals.debugging) printf("%s\n", "[INF]  Generating Xml project for spumux...");
+        errno=generate_spumux_xml(ngroups, ntracks, maxntracks, img);
+        if (errno) perror("[ERR]  AMG:spumux_xml");
 
 
 
-		launch_dvdauthor();
-		break;
+        launch_spumux(img);
 
-	case TS_VOB_TYPE:
-		if (img->menuvobsize == NULL)
-		   img->menuvobsize=calloc(img->nmenus, sizeof(uint32_t*));
-		if (img->menuvobsize == NULL) perror("[ERR]  menuvobsize\n");
+    case  RUN_DVDAUTHOR :
 
-		img->menuvobsize[0]=stat_file_size(img->tsvob)/(0x800*img->nmenus);
-                for (menu=0; menu < img->nmenus; menu++)
-                {
-		    img->menuvobsize[menu]=img->menuvobsize[0];
-		    if (globals.veryverbose) printf("[MSG]  Top menu is: %s with size %d KB\n", outfile,img->menuvobsize[menu]);
-                }
+        if (!globals.xml)
+        {
+            if (globals.debugging) printf("%s\n", "[INF]  Generating AMGM Xml project for dvdauthor (patched)...");
+            errno=generate_amgm_xml(ngroups, ntracks, img);
+            if (errno) perror("[ERR]  AMG:amgm_xml");
+        }
+        for (menu=0; menu < img->nmenus; menu++)
+            if (img->topmenu[menu])
+            {
+                if (img->menuvobsize == NULL) img->menuvobsize=calloc(img->nmenus, sizeof(uint32_t*));
+                if (img->menuvobsize == NULL) perror("[ERR]  menuvobsize\n");
 
-		copy_file(img->tsvob, outfile);
+                img->menuvobsize[menu]=stat_file_size(img->topmenu[menu])/0x800;
+                if (globals.veryverbose) printf("[MSG]  Top menu is: %s with size %"PRIu32" KB\n", img->topmenu[menu], img->menuvobsize[menu]);
+            }
 
-		break;
+
+
+        launch_dvdauthor();
+        break;
+
+    case TS_VOB_TYPE:
+        if (img->menuvobsize == NULL)
+            img->menuvobsize=calloc(img->nmenus, sizeof(uint32_t*));
+        if (img->menuvobsize == NULL) perror("[ERR]  menuvobsize\n");
+
+        img->menuvobsize[0]=stat_file_size(img->tsvob)/(0x800*img->nmenus);
+        for (menu=0; menu < img->nmenus; menu++)
+        {
+            img->menuvobsize[menu]=img->menuvobsize[0];
+            if (globals.veryverbose) printf("[MSG]  Top menu is: %s with size %d KB\n", outfile,img->menuvobsize[menu]);
+        }
+
+        copy_file(img->tsvob, outfile);
+
+        break;
 
 
 
-	default:
-	        printf("%s\n", "[WAR]  Incoherence of menu status in create_topmenu");
-	        exit(EXIT_FAILURE);
+    default:
+        printf("%s\n", "[WAR]  Incoherence of menu status in create_topmenu");
+        exit(EXIT_FAILURE);
 
-	break;
+        break;
     }
 
-        // launch dvdauthor before create_amg, so that the size of AUDIO_TS.VOB can be assessed dynamically
+    // launch dvdauthor before create_amg, so that the size of AUDIO_TS.VOB can be assessed dynamically
 
 
 
@@ -293,19 +300,21 @@ int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles
     {
         generate_background_mpg(image, naudio_groups, numtracks);
         if (image->backgroundmpg == NULL)
-         {
-	  image->backgroundmpg=calloc(1, sizeof(char*));
-	  image->backgroundmpg[0]=calloc(strlen(TEMPDIR)+15, sizeof(char));
-          sprintf(image->backgroundmpg[0], "%s%s", TEMPDIR, "background.mpg");
-         }
+        {
+            image->backgroundmpg=calloc(1, sizeof(char*));
+            image->backgroundmpg[0]=calloc(strlen(TEMPDIR)+15, sizeof(char));
+            sprintf(image->backgroundmpg[0], "%s%s", TEMPDIR, "background.mpg");
+        }
 
         image->stillvob=image->backgroundmpg[0];
     }
     else
     {
-     uint32_t s=stat_file_size(image->stillvob)/(totntracks*0x800);
-     for (k=0; k < totntracks; k++)
-        { image->stillpicvobsize[k]=s; }    // hypothesise VOB made from totntracks pics of same size, with just one pic per track
+        uint32_t s=stat_file_size(image->stillvob)/(totntracks*0x800);
+        for (k=0; k < totntracks; k++)
+        {
+            image->stillpicvobsize[k]=s;    // hypothesise VOB made from totntracks pics of same size, with just one pic per track
+        }
 
     }
 
@@ -313,9 +322,9 @@ int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles
 
     if (!image->active)
     {
-	    STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/AUDIO_SV.VOB", audiotsdir)
-	    copy_file(image->stillvob, outfile);
-	    image->stillvob=strdup(outfile);
+        STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/AUDIO_SV.VOB", audiotsdir)
+        copy_file(image->stillvob, outfile);
+        image->stillvob=strdup(outfile);
     }
 
 
@@ -632,102 +641,103 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
         for (j=1; j <= img->nmenus; j++)
         {
 
-		uint32_copy(&amg[i], 0x00000101); // cf PGC cell data structure // reserved: normal cell (0000) + 1s of still time + 1 post command
-		i+=4;
-		amg[i++]=BCD_REVERSE(img->h);       //  It should be possible to automate this either by generating a temporary dvd-video-like ifo with dvdauthor and the using videoimport.c, or by retrieving the pointers to values by return of dvdauthor (harder). == TODO ==
-		amg[i++]=BCD_REVERSE(img->min);
-		amg[i++]=BCD_REVERSE(img->sec);
-		amg[i]=0xC1; // hour, minute, second, frames in BCD. The frame part will be ignored (C1 seems to be ok for PAL)
-		i+=5;
-		amg[i]=(img->sec+img->min+img->h)? 0x80 : 0;  // Audio stream status : 0x80 for present, other reservedn except for bits 0 to 2 (stream number).
-		i+=0x10;
-		uint32_copy(&amg[i], 0x80000000); // additional bits mask the menu.
-		i+=0x80;
+            uint32_copy(&amg[i], 0x00000101); // cf PGC cell data structure // reserved: normal cell (0000) + 1s of still time + 1 post command
+            i+=4;
+            amg[i++]=BCD_REVERSE(img->h);       //  It should be possible to automate this either by generating a temporary dvd-video-like ifo with dvdauthor and the using videoimport.c, or by retrieving the pointers to values by return of dvdauthor (harder). == TODO ==
+            amg[i++]=BCD_REVERSE(img->min);
+            amg[i++]=BCD_REVERSE(img->sec);
+            amg[i]=0xC1; // hour, minute, second, frames in BCD. The frame part will be ignored (C1 seems to be ok for PAL)
+            i+=5;
+            amg[i]=(img->sec+img->min+img->h)? 0x80 : 0;  // Audio stream status : 0x80 for present, other reservedn except for bits 0 to 2 (stream number).
+            i+=0x10;
+            uint32_copy(&amg[i], 0x80000000); // additional bits mask the menu.
+            i+=0x80;
 
 
-		if (j < img->nmenus) uint16_copy(&amg[i], j+1);
-		i+=2;
-		if (j > 1) uint16_copy(&amg[i], j-1);
-		i+=2;
-		uint16_copy(&amg[i], 1);
-		i+=4; // 2 bytes of padding
-		uint32_copy(&amg[i], (uint32_t) strtol(img->textcolor_palette,NULL,16)); // highlight motif colour
-		i+=4;
-		uint32_copy(&amg[i], (uint32_t) strtol(img->highlightcolor_palette,NULL,16)); // Colors (a, Y, Cr, Cb): Pattern:: display background (black)    Type 1 (hier level 1)
-		i+=4;
-		uint32_copy(&amg[i], (uint32_t) strtol(img->selectfgcolor_palette, NULL, 16)); // Colors (a, Y, Cr, Cb): Pattern:: display foreground(red)
-		i+=4;
-		uint32_copy(&amg[i], (uint32_t) strtol(img->bgcolor_palette,NULL,16)); // Colors (a, Y, Cr, Cb): Pattern:: select (action) foreground (green)
-		i+=4;
+            if (j < img->nmenus) uint16_copy(&amg[i], j+1);
+            i+=2;
+            if (j > 1) uint16_copy(&amg[i], j-1);
+            i+=2;
+            uint16_copy(&amg[i], 1);
+            i+=4; // 2 bytes of padding
+            uint32_copy(&amg[i], (uint32_t) strtol(img->textcolor_palette,NULL,16)); // highlight motif colour
+            i+=4;
+            uint32_copy(&amg[i], (uint32_t) strtol(img->highlightcolor_palette,NULL,16)); // Colors (a, Y, Cr, Cb): Pattern:: display background (black)    Type 1 (hier level 1)
+            i+=4;
+            uint32_copy(&amg[i], (uint32_t) strtol(img->selectfgcolor_palette, NULL, 16)); // Colors (a, Y, Cr, Cb): Pattern:: display foreground(red)
+            i+=4;
+            uint32_copy(&amg[i], (uint32_t) strtol(img->bgcolor_palette,NULL,16)); // Colors (a, Y, Cr, Cb): Pattern:: select (action) foreground (green)
+            i+=4;
 
-		// other possible streams (lower hierarchical levels)
-		uint32_copy(&amg[i], 0x00108080);
-		i+=4;
-		uint32_copy(&amg[i], 0x00108080); // Colors (a, Y, Cr, Cb)
-		i+=4;
-		uint32_copy(&amg[i], 0x00108080); // Colors (a, Y, Cr, Cb)
-		i+=4;
-		uint32_copy(&amg[i], 0x00108080); // Colors (a, Y, Cr, Cb)
-		i+=4;
-		uint32_copy(&amg[i], 0x00108080);
-		i+=4;
-		uint32_copy(&amg[i], 0x00108080); // Colors (a, Y, Cr, Cb)   3rd level
-		i+=4;
-		uint32_copy(&amg[i], 0x00108080); // Colors (a, Y, Cr, Cb)
-		i+=4;
-		uint32_copy(&amg[i], 0x00108080); // Colors (a, Y, Cr, Cb)
-		i+=4;
-		uint32_copy(&amg[i], 0x00108080);  // black
-		i+=4;
-		uint32_copy(&amg[i], 0x00108080);
-		i+=4;
-		uint32_copy(&amg[i], 0x00108080);
-		i+=4;
-		uint32_copy(&amg[i], 0x00108080);  // Unknown
-		i+=4;
-		uint32_copy(&amg[i], 0x00EC0114);
-		i+=4;
-		uint32_copy(&amg[i], 0x0116012E);
-		i+=4;
-		uint32_copy(&amg[i], 0x00010003);
-		i+=4;
-		uint32_copy(&amg[i], 0x00000027);
-		if (img->loop)
-		{
-		    uint16_copy(&amg[i+0xC], 0x2004);
-		    amg[i+7]=1;
-		}
-		i+=0x24;
-		uint32_copy(&amg[i], 0x01000200);
-		i+=4;
-		if (img->loop) uint16_copy(&amg[i], 0x0001);
-		else uint16_copy(&amg[i], 0xFF00);
-		i+=2;
-		amg[i++]=BCD_REVERSE(img->h);
-		amg[i++]=BCD_REVERSE(img->min);
-		amg[i++]=BCD_REVERSE(img->sec);
-		amg[i++]=0xC1;
-		if (j > 1)
-		{
-			menuvobsize_sum+=img->menuvobsize[j-2]-1;
-			uint32_copy(&amg[i], menuvobsize_sum); // in the course of processing dvdauthor over topmenus, one data sector added by spumux is lost
-			i+=8; // 4 bytes of padding
-			uint32_copy(&amg[i], menuvobsize_sum);  // repeat
-			i+=4;
-		} else i+=12;
-		uint32_copy(&amg[i], menuvobsize_sum+img->menuvobsize[img->nmenus-1]-1-1);
-		i+=4;
-		uint32_copy(&amg[i], 0x00010001);
-		i+=4;
+            // other possible streams (lower hierarchical levels)
+            uint32_copy(&amg[i], 0x00108080);
+            i+=4;
+            uint32_copy(&amg[i], 0x00108080); // Colors (a, Y, Cr, Cb)
+            i+=4;
+            uint32_copy(&amg[i], 0x00108080); // Colors (a, Y, Cr, Cb)
+            i+=4;
+            uint32_copy(&amg[i], 0x00108080); // Colors (a, Y, Cr, Cb)
+            i+=4;
+            uint32_copy(&amg[i], 0x00108080);
+            i+=4;
+            uint32_copy(&amg[i], 0x00108080); // Colors (a, Y, Cr, Cb)   3rd level
+            i+=4;
+            uint32_copy(&amg[i], 0x00108080); // Colors (a, Y, Cr, Cb)
+            i+=4;
+            uint32_copy(&amg[i], 0x00108080); // Colors (a, Y, Cr, Cb)
+            i+=4;
+            uint32_copy(&amg[i], 0x00108080);  // black
+            i+=4;
+            uint32_copy(&amg[i], 0x00108080);
+            i+=4;
+            uint32_copy(&amg[i], 0x00108080);
+            i+=4;
+            uint32_copy(&amg[i], 0x00108080);  // Unknown
+            i+=4;
+            uint32_copy(&amg[i], 0x00EC0114);
+            i+=4;
+            uint32_copy(&amg[i], 0x0116012E);
+            i+=4;
+            uint32_copy(&amg[i], 0x00010003);
+            i+=4;
+            uint32_copy(&amg[i], 0x00000027);
+            if (img->loop)
+            {
+                uint16_copy(&amg[i+0xC], 0x2004);
+                amg[i+7]=1;
+            }
+            i+=0x24;
+            uint32_copy(&amg[i], 0x01000200);
+            i+=4;
+            if (img->loop) uint16_copy(&amg[i], 0x0001);
+            else uint16_copy(&amg[i], 0xFF00);
+            i+=2;
+            amg[i++]=BCD_REVERSE(img->h);
+            amg[i++]=BCD_REVERSE(img->min);
+            amg[i++]=BCD_REVERSE(img->sec);
+            amg[i++]=0xC1;
+            if (j > 1)
+            {
+                menuvobsize_sum+=img->menuvobsize[j-2]-1;
+                uint32_copy(&amg[i], menuvobsize_sum); // in the course of processing dvdauthor over topmenus, one data sector added by spumux is lost
+                i+=8; // 4 bytes of padding
+                uint32_copy(&amg[i], menuvobsize_sum);  // repeat
+                i+=4;
+            }
+            else i+=12;
+            uint32_copy(&amg[i], menuvobsize_sum+img->menuvobsize[img->nmenus-1]-1-1);
+            i+=4;
+            uint32_copy(&amg[i], 0x00010001);
+            i+=4;
         }
 
         /* coherence test */
 
-		if (globals.veryverbose)
-		{
-		  if (sectors->topvob == menuvobsize_sum+img->nmenus-1+img->menuvobsize[img->nmenus-1]-1) printf("[MSG]  Menu vob size coherence test...OK\n");
-		 else printf("[MSG]  Menu vob size coherence test failed: sectors->topvob=%u against %llu\n", sectors->topvob, menuvobsize_sum+img->nmenus-1+img->menuvobsize[img->nmenus-1]-1);
-		}
+        if (globals.veryverbose)
+        {
+            if (sectors->topvob == menuvobsize_sum+img->nmenus-1+img->menuvobsize[img->nmenus-1]-1) printf("[MSG]  Menu vob size coherence test...OK\n");
+            else printf("[MSG]  Menu vob size coherence test failed: sectors->topvob=%u against %llu\n", sectors->topvob, menuvobsize_sum+img->nmenus-1+img->menuvobsize[img->nmenus-1]-1);
+        }
 
 
 
@@ -780,51 +790,50 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
 
         while(trackindex < 2)
         {
-	  if (textable[trackindex]!= NULL)
-	     lcount+=strlen(textable[trackindex])+1;
-	  if (trackindex < ntracks[0]-2)
-	  {
- 	    i+=8;
-	    amg[i+1]=0x3;
-	    amg[i+5]=0x38;
-	  }
-	  else
-	  if (trackindex == (ntracks[0]-2))
-	  {
-            i+=8;
-	    amg[i+1]=0x2;
-	    amg[i+5]=0x3;
-	    amg[i+9]=0x38;
-	  }
-	  else
-	  {
- 	    i+=0xC;
-	    amg[i+1]=0x3;
-	    amg[i+5]=0x38;
-	  }
-	  amg[i]=lcount;
-	  trackindex++;
+            if (textable[trackindex]!= NULL)
+                lcount+=strlen(textable[trackindex])+1;
+            if (trackindex < ntracks[0]-2)
+            {
+                i+=8;
+                amg[i+1]=0x3;
+                amg[i+5]=0x38;
+            }
+            else if (trackindex == (ntracks[0]-2))
+            {
+                i+=8;
+                amg[i+1]=0x2;
+                amg[i+5]=0x3;
+                amg[i+9]=0x38;
+            }
+            else
+            {
+                i+=0xC;
+                amg[i+1]=0x3;
+                amg[i+5]=0x38;
+            }
+            amg[i]=lcount;
+            trackindex++;
         }
 
         for(trackindex=0; trackindex < ntracks[0]-1; trackindex++)
         {
-	  i+=8;
-	  if (textable[trackindex]) lcount+=strlen(textable[trackindex])+1;
-	  amg[i]=lcount;
-	  if (trackindex < ntracks[0]-2)
-	  {
-           amg[i+1]=0x3;
-    	   amg[i+5]=0x38;
-	  }
+            i+=8;
+            if (textable[trackindex]) lcount+=strlen(textable[trackindex])+1;
+            amg[i]=lcount;
+            if (trackindex < ntracks[0]-2)
+            {
+                amg[i+1]=0x3;
+                amg[i+5]=0x38;
+            }
         }
-	i++;
+        i++;
         for (trackindex=0; trackindex < ntracks[0]; trackindex++)
         {
-          c=(textable[trackindex]) ? strlen(textable[trackindex]) : 0;
-          if (c) memcpy(&amg[i], textable[trackindex], c);
-          i+=c;
-          amg[i]=0x9;
-          i++;
+            c=(textable[trackindex]) ? strlen(textable[trackindex]) : 0;
+            if (c) memcpy(&amg[i], textable[trackindex], c);
+            i+=c;
+            amg[i]=0x9;
+            i++;
         }
         amg[d+0x13]=i-1;
         amg[d+0x1F]=i-1-0x1C;
