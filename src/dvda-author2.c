@@ -81,13 +81,10 @@ void normalize_temporary_paths(char* path, pic* img)
 
         int menu;
 
-        // You cannot use realloc here
-        FREE(img->imagepic)
-        FREE(img->highlightpic)
-        FREE(img->selectpic)
-        img->imagepic=calloc(img->nmenus,sizeof(char*));
-        img->highlightpic=calloc(img->nmenus,sizeof(char*));
-        img->selectpic=calloc(img->nmenus,sizeof(char*));
+
+        img->imagepic=realloc(img->imagepic,(img->nmenus+1)*sizeof(char*));
+        img->highlightpic=realloc(img->highlightpic,(img->nmenus+1)*sizeof(char*));
+        img->selectpic=realloc(img->selectpic, (img->nmenus+1)*sizeof(char*));
 
         // here you can
         for (menu=0;  menu < img->nmenus; menu++)
@@ -100,6 +97,11 @@ void normalize_temporary_paths(char* path, pic* img)
             sprintf(img->highlightpic[menu], "%s"SEPARATOR"%s%d%s", path, "hlpic", menu, ".png");
             sprintf(img->selectpic[menu], "%s"SEPARATOR"%s%d%s", path, "slpic", menu, ".png");
         }
+
+        img->imagepic[img->nmenus]=NULL;
+        img->highlightpic[img->nmenus]=NULL;
+        img->selectpic[img->nmenus]=NULL;
+
     }
 }
 
@@ -204,7 +206,7 @@ int main(int argc,  char* const argv[])
         /*xml filepath*/  NULL,
         /*spumux xml*/    NULL,
         /*cdrecord dev*/  NULL,
-        /*journal (log)*/ DEFAULT_LOGFILE,
+        /*journal (log)*/ NULL, //(FILE*)
         /*access rights*/ DEFAULT_ACCESS_RIGHTS,
         /* it is necessary to use strdup as these settings may be overridden dynamically */
 // Paths:
@@ -212,7 +214,7 @@ int main(int argc,  char* const argv[])
 
         {
             strdup(SETTINGSFILE),
-            NULL,  // logfile path
+            strdup(DEFAULT_LOGFILE),  // logfile path
             NULL, // input directory path
             NULL,// output directory path
             strdup(home),// working directory

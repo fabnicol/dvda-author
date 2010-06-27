@@ -371,17 +371,25 @@ ALWAYS_INLINE_GCC char** readjust_pic_arrays(char** picarray, int nmenus, uint8_
 
     if (nmenus > L)
     {
-        picarray=(char**) realloc(picarray,nmenus*sizeof(char*));
+
+        for(k=0; k < L; k++) FREE(picarray[k]);
+        free(picarray);
+        picarray=(char**) calloc(nmenus+1, sizeof(char*));
     }
 
     if (picarray== NULL) EXIT_ON_RUNTIME_ERROR
 
-        while(nmenus > k)
-        {
-            picarray[k]=strdup(picarray[k-1]);
-            if (counterposition) picarray[k][strlen(picarray[k])-counterposition]='0'+k; // adds a counter to filepaths
-            k++ ;
-        }
+    while(nmenus > k)
+    {
+
+       picarray[k]=strdup(picarray[k-1]);
+
+       if (counterposition) picarray[k][strlen(picarray[k])-counterposition]='0'+k; // adds a counter to filepaths
+       prs(picarray[k])
+       k++ ;
+       picarray[nmenus]=NULL;
+    }
+
 
     return picarray;
     // It is necessary to return, as a function can modify a *, not a ** without returning. Same request as for fn_strtok.
@@ -409,8 +417,11 @@ int generate_background_mpg(pic* img, uint8_t ngroups, uint8_t* ntracks)
     if (globals.debugging) printf("[INF]  Launching mjpegtools to create background mpg with nmenus=%d\n", img->nmenus);
 
     img->backgroundpic=readjust_pic_arrays(img->backgroundpic, img->nmenus, 0);
+
     img->highlightpic=readjust_pic_arrays(img->highlightpic, img->nmenus, 5);
+
     img->selectpic=readjust_pic_arrays(img->selectpic, img->nmenus, 5);
+
     img->imagepic=readjust_pic_arrays(img->imagepic, img->nmenus, 5);
 
     /* now authoring AUDIO_TS.VOB */
@@ -419,6 +430,7 @@ int generate_background_mpg(pic* img, uint8_t ngroups, uint8_t* ntracks)
     if (img->action == ANIMATEDVIDEO)
     {
         img->backgroundmpg=realloc(img->backgroundmpg, img->nmenus*sizeof(char*));
+
         while(rank < img->nmenus)
         {
             create_mpg(img, rank, mp2track, tempfile, ngroups, ntracks);
@@ -734,7 +746,7 @@ for (j=0; j < s; j++)
 int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxntracks)
 {
     if (!img->refresh) return 0;
-
+    errno=0;
     FILE* f;
     uint8_t group=0, track=0, buttons=0, menu=0, arrowbuttons=1, groupcount=0, menubuttons;
 
