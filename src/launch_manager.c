@@ -719,6 +719,11 @@ SUMMARY:
     while (waitpid(-1, NULL, 0) >0);
 #endif
 
+
+   if (globals.loghtml)
+       htmlize(globals.settings.logfile);
+
+
     for (j=0; j < naudio_groups; j++)
     {
         FREE(ntitletracks[j])

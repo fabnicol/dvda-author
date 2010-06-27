@@ -124,6 +124,86 @@ if (globals.veryverbose)
 }
 
 
+void htmlize(char* logpath)
+{
+        FILE* src=fopen(logpath, "rb");
+        char* loghtmlpath=calloc(strlen(logpath)+6, 1);
+        loghtmlpath=strcat(logpath, ".html");
+        FILE* dest=fopen(loghtmlpath, "wb");
+
+
+        if (src == NULL) return;
+        #define NAVY            "<p><span style=\"color: navy; font-size: 10pt; \">"
+        #define RED             "<p><span style=\"color: red;  font-size: 12pt  \">"
+        #define GREY            "<p><span style=\"color: grey; font-size: 8pt;  \">"
+        #define GREEN           "<p><span style=\"color: green; font-size: 10pt;\">"
+        #define ORANGE          "<p><span style=\"color: orange;font-size: 12pt;\">"
+        #define CLOSETAG        "</span><p/>"
+        #define HEADER "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">\n\
+<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n\
+<HTML><HEAD><TITLE>dvda-author "VERSION" Html log</TITLE>\n\
+</HEAD><BODY>\n"
+
+        int length=strlen(NAVY);
+        char line[1000];
+
+        fwrite(HEADER, strlen(HEADER), 1, dest);
+
+        do
+        {
+
+                fgets(line, 1000, src);
+                int linelength=strlen(line);
+                if (linelength > 0)
+                {
+                if ((line[0] == '[') && (line[1] == 'I') && (line[2]=='N') && (line[3] == 'F') && (line[4]==']'))
+                {
+                        fwrite(NAVY, length, 1, dest);
+                        fwrite(line, linelength, 1, dest);
+                        fwrite(CLOSETAG, 11, 1, dest);
+                        fputc('\n', dest);
+                }else
+                if ((line[0] == '[') && (line[1] == 'M') && (line[2]=='S') && (line[3] == 'G') && (line[4]==']'))
+                {
+                        fwrite(GREEN, length, 1, dest);
+                        fwrite(line, linelength, 1, dest);
+                        fwrite(CLOSETAG, 11, 1, dest);
+                        fputc('\n', dest);
+                }else
+                if ((line[0] == '[') && (line[1] == 'W') && (line[2]=='A') && (line[3] == 'R') && (line[4]==']'))
+                {
+                        fwrite(ORANGE, length, 1, dest);
+                        fwrite(line, linelength, 1, dest);
+                        fwrite(CLOSETAG, 11, 1, dest);
+                        fputc('\n', dest);
+                }else
+                if ((line[0] == '[') && (line[1] == 'E') && (line[2]=='R') && (line[3] == 'R') && (line[4]==']'))
+                {
+                        fwrite(RED, length, 1, dest);
+                        fwrite(line, linelength, 1, dest);
+                        fwrite(CLOSETAG, 11, 1, dest);
+                        fputc('\n', dest);
+                }
+                else
+                {
+                        fwrite(GREY, length, 1, dest);
+                        fwrite(line, linelength, 1, dest);
+                        fwrite(CLOSETAG, 11, 1, dest);
+                        fputc('\n', dest);
+                }
+                }
+
+        }while (!feof(src));
+
+        fwrite("</BODY></HTML>\n", 15, 1, dest);
+
+        fclose(src);
+        fclose(dest);
+
+}
+
+
+
 /*********************************************************************************************************
  * function: clean_exit
  *   logs time; flushes all streams;  erase empty backup dirs; closes log;

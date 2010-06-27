@@ -1,1 +1,56 @@
 # depslib dependency file v1.0
+1277481601 source:/home/fab/Dev/dvda-author-10.06/libutils/src/winport.c
+	<config.h>
+	<sys/types.h>
+	<stdio.h>
+	<sys/stat.h>
+	<stdint.h>
+	"winport.h"
+	"private_c_utils.h"
+	"c_utils.h"
+	"structures.h"
+	<unistd.h>
+	<windows.h>
+	<winbase.h>
+	<tchar.h>
+
+1277481601 /home/fab/Dev/dvda-author-10.06/libutils/src/include/winport.h
+	"config.h"
+	"c_utils.h"
+	<sys/types.h>
+	<stdint.h>
+	<stdio.h>
+	<tchar.h>
+	<windows.h>
+	<sys/stat.h>
+	<string.h>
+	<sys/resource.h>
+	<sys/stat.h>
+
+1277668174 /home/fab/Dev/dvda-author-10.06/libutils/src/include/c_utils.h
+	<sys/types.h>
+	<sys/stat.h>
+	<string.h>
+	<stdint.h>
+	<sys/resource.h>
+
+1277481601 /home/fab/Dev/dvda-author-10.06/libutils/src/private/private_c_utils.h
+
+1277667741 /home/fab/Dev/dvda-author-10.06/src/include/structures.h
+	"stream_decoder.h"
+	"inttypes.h"
+
+1277481601 /home/fab/Dev/dvda-author-10.06/libutils/src/include/stream_decoder.h
+	<stdio.h>
+	"export.h"
+	"format.h"
+
+1277481601 /home/fab/Dev/dvda-author-10.06/libutils/src/include/export.h
+
+1277481601 /home/fab/Dev/dvda-author-10.06/libutils/src/include/format.h
+	"export.h"
+	"ordinals.h"
+
+1277481601 /home/fab/Dev/dvda-author-10.06/libutils/src/include/ordinals.h
+	<inttypes.h>
+

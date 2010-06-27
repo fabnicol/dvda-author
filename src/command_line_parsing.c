@@ -135,6 +135,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"rights", required_argument, NULL, 'w'},
      //   {"no-padding", no_argument, NULL, '\1'},
      //   {"minimal-padding", no_argument, NULL, '\2'},
+        {"loghtml", no_argument, NULL, '\1'},
         {"extract", required_argument, NULL, 'x'},
         {"disable-lexer", no_argument, NULL, 'W'},
         {"pad-cont", no_argument, NULL, 'C'},
@@ -261,7 +262,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                     {
                       free(globals.settings.logfile);
                       globals.settings.logfile=strndup(optarg, MAX_OPTION_LENGTH);
+                      prs(optarg)
                     }
+
+                case '\1' :
+                    globals.loghtml=1;
 
                     break;
 
@@ -282,10 +287,13 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     SINGLE_DOTS
 
+
 #ifndef __WIN32__
     if (globals.logfile)
     {
-
+prs(globals.settings.logfile)
+pause_dos_type();
+     if (user_command_line)
         switch (fork())
         {
         case -1 :

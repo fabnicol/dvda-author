@@ -199,6 +199,7 @@ typedef struct
     _Bool silence;
     _Bool enable_lexer;
     _Bool logfile;
+    _Bool loghtml;
     _Bool videozone;
     _Bool videolinking;
     _Bool playlist;
