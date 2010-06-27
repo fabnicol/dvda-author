@@ -214,8 +214,9 @@ int  generate_spumux_xml(uint8_t ngroups, uint8_t *ntracks, uint16_t maxntracks,
     FILE *spu_xmlfile;
     if (globals.debugging) printf("[MSG]  Max ntracks: %d\n", maxntracks);
 
-    if (globals.spu_xml == NULL) globals.spu_xml=(char**)malloc(img->nmenus*sizeof(char *));
+    if (globals.spu_xml == NULL) globals.spu_xml=calloc(img->nmenus,sizeof(char *));
     if (globals.spu_xml == NULL) perror("[ERR]  spuxml\n");
+    if (globals.debugging) printf("%s\n", "[INF]  Generating Xml project for spumux...");
 
 
     do
