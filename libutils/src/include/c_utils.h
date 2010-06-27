@@ -66,8 +66,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #define ERR_STRING_LENGTH   "ERR: string was truncated, maximum length is %d"
 
-
-
 #define Min(X ,Y)    (((X) <= (Y))  ? (X):(Y))
 #define MAX(X ,Y)    (((X) <= (Y))  ? (Y):(X))
 
@@ -128,6 +126,8 @@ typedef struct
 
 
 /* Prototypes */
+
+void htmlize(char* logpath);
 
 char* concatenate(char* dest, char* str1, char* str2);
 void pause_dos_type();

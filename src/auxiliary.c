@@ -92,6 +92,7 @@ printf("%s","-P, --pause              Insert a final pause before exiting.\n\n")
 printf("%s","-P0, --pause=0           Suppress a final pause before exiting"J"if specified in configuration file.\n\n");
 printf("%s","-l, --log(=f)            Ouput a log to filepath."J"Unless f is specified, log is created as log.txt in the temporary directory.\n\n");
 printf("%s","-L, --logrefresh(=f)     Same as -l but prior log will be erased on launching again.\n\n");
+printf("%s","    --loghtml            Transform the log into HTML format, with colorized messages.\n\n");
 printf("%s","-k, --text               Generates text table in IFO files"J"Under development, implemented for 1-group discs."J"Use file information as arguments separated by commas.\n\n");
 printf("%s","-W, --disable-lexer      Deactivates configuration file parsing.\n\n");
 
