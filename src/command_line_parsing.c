@@ -342,7 +342,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                     FREE(globals.settings.tempdir);
                     globals.settings.tempdir=strndup(optarg, MAX_OPTION_LENGTH);
                     printf("%s%s\n", "[PAR]  Temporary directory is: ", optarg);
-                    normalize_temporary_paths(globals.settings.tempdir, NULL);
+                    normalize_temporary_paths(NULL);
                     break;
 
 
@@ -1522,7 +1522,7 @@ if (globals.topmenu == NO_MENU) goto stillpic_parsing;
 
 
 
-    if (globals.topmenu <= ACTIVE_MENU_ONLY) normalize_temporary_paths(globals.settings.tempdir, img);
+    if (globals.topmenu <= ACTIVE_MENU_ONLY) normalize_temporary_paths(img);
 
     maxbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)/img->nmenus;
     resbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)%img->nmenus;

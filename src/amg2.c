@@ -199,6 +199,8 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
     case AUTOMATIC_MENU:
     case RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR :
 
+        // do not overwrite !
+
         generate_background_mpg(img, ngroups, ntracks); // do not break;
 
     case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
