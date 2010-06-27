@@ -1043,26 +1043,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             globals.topmenu=Min(globals.topmenu, RUN_SPUMUX_DVDAUTHOR);
             break;
 
-        case 'E':
-            printf("%s%s\n", "[PAR]  highlight picture: ", optarg);
-            img->highlightpic[0]=strndup(optarg, MAX_OPTION_LENGTH);
-            globals.topmenu=Min(globals.topmenu, RUN_SPUMUX_DVDAUTHOR);
-            img->refresh=1;
-            break;
 
-        case 'e' :
-            printf("%s%s\n", "[PAR]  select action picture: ", optarg);
-            img->selectpic[0]=strndup(optarg, MAX_OPTION_LENGTH);
-            globals.topmenu=Min(globals.topmenu, RUN_SPUMUX_DVDAUTHOR);
-            img->refresh=1;
-            break;
 
-        case 'G' :
-            printf("%s%s\n", "[PAR]  topmenu image: ", optarg);
-            img->imagepic[0]=strndup(optarg, MAX_OPTION_LENGTH);
-            globals.topmenu=Min(globals.topmenu, RUN_SPUMUX_DVDAUTHOR);
-            img->refresh=1;
-            break;
 
         case 'B':
             printf("%s%s\n", "[PAR]  background mpg video: ", optarg);
@@ -1095,23 +1077,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             break;
 
-
-        case 'b':
-
-            if (img->backgroundmpg)
-            {
-                printf("%s\n", "[ERR]  Background mpg file already specified, skipping...");
-                break;
-            }
-            printf("%s%s\n", "[PAR]  background jpg file(s) for generating mpg video: ", optarg);
-            free(img->backgroundpic);
-            char* str=strdup(optarg);
-            if (str == NULL) perror("[ERR]  strdup (-b switch)");
-
-            img->backgroundpic=fn_strtok(str,',',img->backgroundpic,0,NULL,NULL);
-
-            free(str);
-            break;
 
 
         case 'Q':
@@ -1470,7 +1435,7 @@ if (globals.topmenu == NO_MENU) goto stillpic_parsing;
         }
 
 
-    if (img->backgroundpic == NULL)  perror("[ERR]  menu allocation");
+
 
     if (globals.topmenu <= RUN_SPUMUX_DVDAUTHOR)
     {
@@ -1478,7 +1443,7 @@ if (globals.topmenu == NO_MENU) goto stillpic_parsing;
         {
             printf("%s\n", "[WAR]  You need all subtitle images");
             printf("%s\n", "[WAR]  Continuing with menu picture authoring...");
-            globals.topmenu=RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR;
+            globals.topmenu=Min(RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR, globals.topmenu);
         }
     }
 
@@ -1538,6 +1503,116 @@ if (globals.topmenu == NO_MENU) goto stillpic_parsing;
 
 #endif
 #endif
+
+// Now possible overrides once img->nmenus and default tempdir values are known:
+char * str=NULL;
+optind=0;
+opterr=1;
+
+#ifdef LONG_OPTIONS
+    while ((c=getopt_long(argc, argv, ALLOWED_OPTIONS, longopts, &longindex)) != -1)
+#else
+    while ((c=getopt(argc, argv, ALLOWED_OPTIONS)) != -1)
+#endif
+    {
+        switch (c)
+        {
+
+        case 'b':
+
+            if (img->backgroundmpg)
+            {
+                printf("%s\n", "[ERR]  Background mpg file already specified, skipping...");
+                break;
+            }
+            printf("%s%s\n", "[PAR]  background jpg file(s) for generating mpg video: ", optarg);
+
+            str=strdup(optarg);
+
+            img->backgroundpic=fn_strtok(str,',',img->backgroundpic,0,NULL,NULL);
+            int backgroundpic_arraylength=0;
+            if ((backgroundpic_arraylength=arraylength(img->backgroundpic)) < img->nmenus)
+            {
+                    int u;
+                    printf("%s\n","[WAR]  You did not give enough filenames, completing with last one");
+                    for (u=0; u + backgroundpic_arraylength < img->nmenus; u++)
+                     copy_file(img->backgroundpic[backgroundpic_arraylength-1], img->backgroundpic[u+backgroundpic_arraylength]);
+            }
+
+
+            free(str);
+            globals.topmenu=Min(globals.topmenu, RUN_SPUMUX_DVDAUTHOR);
+            img->refresh=1;
+
+            break;
+
+        case 'E':
+            printf("%s%s\n", "[PAR]  highlight png file(s) for generating mpg video: ", optarg);
+            str=strdup(optarg);
+
+            img->highlightpic=fn_strtok(str,',',img->highlightpic,0,NULL,NULL);
+            int highlight_arraylength=0;
+            if ((highlight_arraylength=arraylength(img->highlightpic)) < img->nmenus)
+            {
+                    int u;
+                    printf("%s\n","[WAR]  You did not give enough filenames, completing with last one");
+                    for (u=0; u + highlight_arraylength < img->nmenus; u++)
+                     copy_file(img->highlightpic[highlight_arraylength-1], img->highlightpic[u+highlight_arraylength]);
+            }
+
+
+            free(str);
+
+            globals.topmenu=Min(globals.topmenu, RUN_SPUMUX_DVDAUTHOR);
+            img->refresh=1;
+            break;
+
+        case 'e' :
+            printf("%s%s\n", "[PAR]  select png file(s) for generating mpg video: ", optarg);
+            str=strdup(optarg);
+
+            img->selectpic=fn_strtok(str,',',img->selectpic,0,NULL,NULL);
+            int select_arraylength=0;
+            if ((select_arraylength=arraylength(img->selectpic)) < img->nmenus)
+            {
+                    int u;
+                    printf("%s\n","[WAR]  You did not give enough filenames, completing with last one");
+                    for (u=0; u + select_arraylength < img->nmenus; u++)
+                     copy_file(img->selectpic[select_arraylength-1], img->selectpic[u+select_arraylength]);
+            }
+
+
+            free(str);
+
+            globals.topmenu=Min(globals.topmenu, RUN_SPUMUX_DVDAUTHOR);
+            img->refresh=1;
+            break;
+
+
+        case 'G' :
+            printf("%s%s\n", "[PAR]  image png file(s) for generating mpg video: ", optarg);
+            str=strdup(optarg);
+
+            img->imagepic=fn_strtok(str,',',img->imagepic,0,NULL,NULL);
+            int image_arraylength=0;
+            if ((image_arraylength=arraylength(img->imagepic)) < img->nmenus)
+            {
+                    int u;
+                    printf("%s\n","[WAR]  You did not give enough filenames, completing with last one");
+                    for (u=0; u + image_arraylength < img->nmenus; u++)
+                     copy_file(img->imagepic[image_arraylength -1], img->imagepic[u+image_arraylength ]);
+            }
+
+
+            free(str);
+
+            globals.topmenu=Min(globals.topmenu, RUN_SPUMUX_DVDAUTHOR);
+            img->refresh=1;
+            break;
+            break;
+
+        }
+    }
 
 // This had to be postponed after command line parsing owing to tempdir chain user input
 

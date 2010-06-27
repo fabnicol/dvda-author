@@ -350,50 +350,10 @@ free(jpeg2yuv);
 free(mpeg2enc);
 free(mplex);
 
-
  return errno;
 
 
 
-}
-
-
-//ALWAYS_INLINE_GCC
-char** readjust_pic_arrays(char** picarray, int nmenus, uint8_t counterposition)
-{
-
-    int L=arraylength((void**)picarray), k=L;
-
-    /* Should there be many menus, it is necessary to ensure that background pics come in the same number
-     * as the number of menus and if not to duplicate the last background */
-
-    if (nmenus > L)
-    {
-
-        for(k=0; k < L; k++) FREE(picarray[k]);
-        free(picarray);
-        picarray=(char**) calloc(nmenus+1, sizeof(char*));
-    }
-
-    if (picarray== NULL) EXIT_ON_RUNTIME_ERROR
-prd(nmenus)
-
-    while(nmenus > k)
-    {
-prd(k)
-prs(picarray[k-1])
-
-       picarray[k]=strdup(picarray[k-1]);
-
-       if (counterposition) picarray[k][strlen(picarray[k])-counterposition]='0'+k; // adds a counter to filepaths
-       prs(picarray[k])
-       k++ ;
-       picarray[nmenus]=NULL;
-    }
-
-
-    return picarray;
-    // It is necessary to return, as a function can modify a *, not a ** without returning. Same request as for fn_strtok.
 }
 
 
@@ -416,18 +376,7 @@ int generate_background_mpg(pic* img, uint8_t ngroups, uint8_t* ntracks)
     if (img->backgroundmpg == NULL) printf("%s", "[MSG]  backgroundmpg will be allocated.\n");
 
     if (globals.debugging) printf("[INF]  Launching mjpegtools to create background mpg with nmenus=%d\n", img->nmenus);
-#if 0
-prs(img->backgroundpic[img->nmenus-1])
-    img->backgroundpic=readjust_pic_arrays(img->backgroundpic, img->nmenus, 0);
 
-
-
-    img->highlightpic=readjust_pic_arrays(img->highlightpic, img->nmenus, 5);
-    prs(img->highlightpic[img->nmenus-1])
-    img->selectpic=readjust_pic_arrays(img->selectpic, img->nmenus, 5);
-    prs(img->selectpic[img->nmenus-1])
-    img->imagepic=readjust_pic_arrays(img->imagepic, img->nmenus, 5);
-#endif
     /* now authoring AUDIO_TS.VOB */
     rank=0;
 
@@ -496,6 +445,7 @@ int launch_spumux(pic* img)
         if (pipe(firsttubeerr) == -1)
             perror("[ERR]  Pipe issue with spumux (firsttubeerr[2])");
         char c;
+
 
         switch (fork())
         {
@@ -639,13 +589,8 @@ int prepare_overlay_img(char* text, int8_t group, pic *img, char* command, char*
         EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  pic pathnames");
         return -1;
     }
-    // will overwrite older files
-prd(menu)
-prs(img->selectpic[menu])
-prs(img->highlightpic[menu])
-prs(img->backgroundpic[menu])
-prs(img->imagepic[menu])
-pause_dos_type();
+
+
     copy_file(picture_save, img->imagepic[menu]);
     if (globals.debugging) printf("[INF]  copying %s to %s for menu #%d\n", picture_save, img->imagepic[menu], menu);
     copy_file(picture_save, img->highlightpic[menu]);
