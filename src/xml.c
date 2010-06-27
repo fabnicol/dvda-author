@@ -213,6 +213,11 @@ int  generate_spumux_xml(uint8_t ngroups, uint8_t *ntracks, uint16_t maxntracks,
     errno=0;
     FILE *spu_xmlfile;
     if (globals.debugging) printf("[MSG]  Max ntracks: %d\n", maxntracks);
+
+    if (globals.spu_xml == NULL) globals.spu_xml=(char**)malloc(img->nmenus*sizeof(char *));
+    if (globals.spu_xml == NULL) perror("[ERR]  spuxml\n");
+
+
     do
     {
         // Writing XML code

@@ -161,18 +161,19 @@ return track;
 
 void allocate_topmenu(command_t* command)
 {
-int menu;
-        img->topmenu=realloc(img->topmenu, img->nmenus*sizeof(char *));
-        if (img->topmenu == NULL) perror("[ERR]  img->topmenu 1\n");
+int menu, s;
 
-        int s=strlen(globals.settings.tempdir);
+s=strlen(globals.settings.tempdir);
 
-        for (menu=0; menu < img->nmenus; menu++)
-           {
-             if (img->topmenu[menu] == NULL) img->topmenu[menu]=calloc(s+13, sizeof(char));
-             if (img->topmenu[menu] == NULL)  perror("[ERR] img->topmenu is null");
-             if (img->topmenu[menu]) snprintf(img->topmenu[menu], s+11, "%s"SEPARATOR"%s%d", globals.settings.tempdir,"topmenu", menu);
-           }
+img->topmenu=realloc(img->topmenu,(img->nmenus)*sizeof(char*));
+if (img->topmenu == NULL) perror("[ERR]  img->topmenu 1\n");
+for (menu=0; menu < img->nmenus; menu++)
+   {
+     if (img->topmenu[menu] == NULL) img->topmenu[menu]=calloc(s+13, sizeof(char));
+     if (img->topmenu[menu] == NULL)  perror("[ERR] img->topmenu is null");
+     if (img->topmenu[menu]) snprintf(img->topmenu[menu], s+11, "%s"SEPARATOR"%s%d", globals.settings.tempdir,"topmenu", menu);
+   }
+return;
 }
 
 
@@ -181,7 +182,7 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
     // Here authoring top VOB
     // first generate pics if necessary and background mpg from them
 
-    int menu;
+    int menu=0;
 
     char outfile[strlen(audiotsdir)+14];
     sprintf(outfile, "%s"SEPARATOR"AUDIO_TS.VOB", audiotsdir);
@@ -207,9 +208,6 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
     case RUN_SPUMUX_DVDAUTHOR:
 
                 allocate_topmenu(command);
-
-                if (globals.spu_xml == NULL) globals.spu_xml=calloc(img->nmenus,sizeof(char *));
-                if (globals.spu_xml == NULL) perror("[ERR]  spuxml\n");
                 if (globals.debugging) printf("%s\n", "[INF]  Generating Xml project for spumux...");
                 errno=generate_spumux_xml(ngroups, ntracks, maxntracks, img);
                 if (errno) perror("[ERR]  AMG:spumux_xml");
