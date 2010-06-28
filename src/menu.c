@@ -237,9 +237,8 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
         if ((errno)||(f == NULL))
         {
             printf("[ERR]  menu input files: background pic: %s", pic);
-            globals.topmenu=NO_MENU;
-
-            return(errno);
+            perror("background");
+            clean_exit(EXIT_FAILURE);
         }
         fclose(f);
         errno=0;
