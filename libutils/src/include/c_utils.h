@@ -28,6 +28,14 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #ifndef C_UTILS_H_INCLUDED
 #define C_UTILS_H_INCLUDED
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifndef VERSION
+#define VERSION "10.06"
+#endif
+
 
 #include <sys/types.h>
 #ifndef __WIN32__

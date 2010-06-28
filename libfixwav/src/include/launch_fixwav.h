@@ -13,7 +13,7 @@ void create_output_filename(char* filename, char** buffer);
 #undef VERSION
 #endif
 #ifndef VERSION
-#define VERSION  "0.2"
+#define VERSION  "10.06"
 #endif
 
 #define FIXWAV_HEADER    printf("\n\n%s%s%s\n\n", "__________________________  FIXWAV ",VERSION," __________________________");

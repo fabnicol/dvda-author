@@ -63,13 +63,11 @@ void normalize_temporary_paths(pic* img)
     {
 
         s=strlen(globals.settings.tempdir);
-        globals.settings.logfile=realloc(globals.settings.logfile, (s+10)*sizeof(char));
         globals.settings.indir=realloc(globals.settings.indir, (s+10)*sizeof(char));
         globals.settings.outdir=realloc(globals.settings.outdir, (s+10)*sizeof(char));
         globals.settings.linkdir=realloc(globals.settings.linkdir, (s+10)*sizeof(char));
         globals.settings.indir=calloc(s+10,1);
 
-        sprintf(globals.settings.logfile, "%s"SEPARATOR"%s", globals.settings.tempdir, "log.txt");
         sprintf(globals.settings.indir, "%s"SEPARATOR"%s", globals.settings.tempdir, "audio");
         sprintf(globals.settings.outdir, "%s"SEPARATOR"%s", globals.settings.tempdir, "output");
         sprintf(globals.settings.linkdir, "%s"SEPARATOR"%s", globals.settings.tempdir, "VIDEO_TS");
@@ -82,24 +80,28 @@ void normalize_temporary_paths(pic* img)
 
 
         int menu;
-            img->backgroundpic=realloc(img->backgroundpic,(img->nmenus+1)*sizeof(char*));
-            img->imagepic=realloc(img->imagepic,(img->nmenus+1)*sizeof(char*));
-            img->highlightpic=realloc(img->highlightpic,(img->nmenus+1)*sizeof(char*));
-            img->selectpic=realloc(img->selectpic, (img->nmenus+1)*sizeof(char*));
+        char img_save[CHAR_BUFSIZ];
+
+        if (img->backgroundpic[0]) strcpy(img_save, img->backgroundpic[0]);
+
+           img->backgroundpic=calloc(img->nmenus+1,sizeof(char*));
+           img->imagepic=calloc(img->nmenus+1,sizeof(char*));
+           img->highlightpic=calloc(img->nmenus+1,sizeof(char*));
+           img->selectpic=calloc(img->nmenus+1, sizeof(char*));
 
 
         // useless to realloc for just one menu !
 
-        char* img_save=NULL;
+
 
 
         for (menu=0;  menu < img->nmenus; menu++)
         {
 
-            if (img->backgroundpic[menu]) img_save=strdup(img->backgroundpic[menu]);
-            img->backgroundpic[menu]=realloc(img->backgroundpic[menu], (s+13)*sizeof(char));
+
+            img->backgroundpic[menu]=calloc(s+13, sizeof(char));
             sprintf(img->backgroundpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "bgpic", menu, ".jpg");
-            if (img_save) copy_file(img_save, img->backgroundpic[menu]);
+            if (img->backgroundpic[menu]) copy_file(img_save, img->backgroundpic[menu]);
 
 
             img->imagepic[menu]=calloc(s+13, sizeof(char));
@@ -186,7 +188,7 @@ int main(int argc,  char* const argv[])
         /*autoplay*/    0,  // no autoplay
         /*text table*/  0,  // no text table
         /*silence*/     0,
-        1,  // enabling lexer
+                        1,  // enabling lexer
         /*logfile*/	0,  // no log
         /*loghtml*/     0,  //text log
         /*videozone*/   1,  // generates video zone
@@ -232,7 +234,7 @@ int main(int argc,  char* const argv[])
 
         {
             strdup(SETTINGSFILE),
-            strdup(DEFAULT_LOGFILE),  // logfile path
+            NULL,  // logfile path should be supplied on command line
             NULL, // input directory path
             NULL,// output directory path
             #ifdef __WIN32__

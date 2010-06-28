@@ -119,8 +119,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"fixwav-virtual", optional_argument, NULL, 'f'},
         {"help", no_argument, NULL, 'h'},
         {"input", required_argument, NULL, 'i'},
-        {"log", optional_argument, NULL, 'l'},
-        {"logrefresh", optional_argument, NULL, 'L'},
+        {"log", required_argument, NULL, 'l'},
+        {"logrefresh", required_argument, NULL, 'L'},
         {"no-videozone", no_argument, NULL, 'n'},
         {"output", required_argument, NULL, 'o'},
         {"autoplay", no_argument, NULL, 'a'},
@@ -254,18 +254,22 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                case 'L':
                     logrefresh=1; // no break
 
-                case 'l' :
+               case 'l' :
 
-                    globals.logfile=1;
+
 
                     if (optarg)
                     {
-                      free(globals.settings.logfile);
                       globals.settings.logfile=strndup(optarg, MAX_OPTION_LENGTH);
-                      prs(optarg)
+                      globals.logfile=1;
+                      if (optarg[0] == '-')
+                          { globals.logfile=0; printf("%s\n", "[ERR]  Enter a log path next time!"); exit(EXIT_FAILURE);}
+
                     }
 
-                case '\1' :
+                    break;
+
+              case '\1' :
                     globals.loghtml=1;
 
                     break;
@@ -291,8 +295,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 #ifndef __WIN32__
     if (globals.logfile)
     {
-prs(globals.settings.logfile)
-pause_dos_type();
      if (user_command_line)
         switch (fork())
         {
@@ -716,7 +718,6 @@ pause_dos_type();
         case '0':
             if (strcmp(optarg, "hierarchical") == 0)
             {
-
                 img->hierarchical=1;
             }
             else if (strcmp(optarg, "active") == 0)
@@ -1382,6 +1383,7 @@ if (user_command_line)
         printf("[PAR]  Temporary directory %s has been preserved.\n", globals.settings.tempdir);
     }
     errno=0;
+
 }
 
 #ifdef __WIN32__
@@ -1395,7 +1397,7 @@ if (globals.topmenu == NO_MENU) goto stillpic_parsing;
         // Coherence checks
 
 
-        if ((globals.topmenu < ACTIVE_MENU_ONLY) && (globals.topmenu > AUTOMATIC_MENU))
+        if ((globals.topmenu <= ACTIVE_MENU_ONLY) && (globals.topmenu > AUTOMATIC_MENU))
         {
             printf("%s\n", "[WAR]  Top menu authoring is not automatic.\n       You must give extra information\n");
             switch (globals.topmenu)
@@ -1431,7 +1433,11 @@ if (globals.topmenu == NO_MENU) goto stillpic_parsing;
                 }
                 else errno=1;
                 break;
+
+            default:  errno=1;
             }
+
+
             if (errno)
             {
 
@@ -1454,6 +1460,7 @@ if (globals.topmenu == NO_MENU) goto stillpic_parsing;
             globals.topmenu=Min(RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR, globals.topmenu);
         }
     }
+
 
 
 
@@ -1735,8 +1742,6 @@ standard_checks:
         files,
         textable,
     };
-
-
 
 
     errno=0;

@@ -126,13 +126,14 @@ if (globals.veryverbose)
 
 void htmlize(char* logpath)
 {
+
         FILE* src=fopen(logpath, "rb");
+        if (src == NULL) return;
         char* loghtmlpath=calloc(strlen(logpath)+6, 1);
         loghtmlpath=strcat(logpath, ".html");
         FILE* dest=fopen(loghtmlpath, "wb");
+        if (dest == NULL) return;
 
-
-        if (src == NULL) return;
         #define NAVY            "<p><span style=\"color: navy; font-size: 10pt; \">"
         #define RED             "<p><span style=\"color: red;  font-size: 12pt  \">"
         #define GREY            "<p><span style=\"color: grey; font-size: 8pt;  \">"
@@ -141,7 +142,7 @@ void htmlize(char* logpath)
         #define CLOSETAG        "</span><p/>"
         #define HEADER "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">\n\
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n\
-<HTML><HEAD><TITLE>dvda-author "VERSION" Html log</TITLE>\n\
+<HTML><HEAD><TITLE>dvda-author " VERSION " Html log</TITLE>\n\
 </HEAD><BODY>\n"
 
         int length=strlen(NAVY);
@@ -199,6 +200,13 @@ void htmlize(char* logpath)
 
         fclose(src);
         fclose(dest);
+        #undef NAVY
+        #undef RED
+        #undef GREY
+        #undef GREEN
+        #undef ORANGE
+        #undef CLOSETAG
+        #undef HEADER
 
 }
 
@@ -213,13 +221,10 @@ void htmlize(char* logpath)
 
 void clean_exit(int message)
 {
-
     fflush(NULL);
-
 
     if (globals.logfile)
     {
-
         fclose(globals.journal);
     }
 

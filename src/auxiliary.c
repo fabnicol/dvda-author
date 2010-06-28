@@ -90,9 +90,9 @@ printf("%s","-d, --debug              Increased verbosity (debugging level)\n\n"
 printf("%s","-t, --veryverbose        Like -d with enhanced verbosity for sample counts.\n\n");
 printf("%s","-P, --pause              Insert a final pause before exiting.\n\n");
 printf("%s","-P0, --pause=0           Suppress a final pause before exiting"J"if specified in configuration file.\n\n");
-printf("%s","-l, --log(=f)            Ouput a log to filepath."J"Unless f is specified, log is created as log.txt in the temporary directory.\n\n");
-printf("%s","-L, --logrefresh(=f)     Same as -l but prior log will be erased on launching again.\n\n");
-printf("%s","    --loghtml            Transform the log into HTML format, with colorized messages.\n\n");
+printf("%s","-l, --log  path          Ouput a log to filepath."J"Argument must be supplied.\n\n");
+printf("%s","-L, --logrefresh path    Same as -l but prior log will be erased on launching again.\n\n");
+printf("%s","    --loghtml            Transform the log into HTML format, with colorized messages, adjacent to log with extension .html added.\n\n");
 printf("%s","-k, --text               Generates text table in IFO files"J"Under development, implemented for 1-group discs."J"Use file information as arguments separated by commas.\n\n");
 printf("%s","-W, --disable-lexer      Deactivates configuration file parsing.\n\n");
 
@@ -443,7 +443,7 @@ void free_memory(command_t *command)
     FREE(globals.settings.tempdir)
     FREE(globals.settings.indir)
     FREE(globals.settings.linkdir)
-    FREE(globals.settings.logfile)
+    //FREE(globals.settings.logfile)
     FREE(globals.settings.settingsfile)
     //FREE(globals.settings.fixwav_database)
     FREE(globals.settings.dvdisopath)

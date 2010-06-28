@@ -26,11 +26,14 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #ifndef COMMONVARS_H_INCLUDED
 #define COMMONVARS_H_INCLUDED
 
-#if HAVE_CONFIG_H && !defined __CB__
+#if HAVE_CONFIG_H
 #include "config.h"
-#else
+#endif
+
+#ifndef VERSION
 #define VERSION "10.06"
 #endif
+
 
 
 // With Code::Blocks and similar IDE, specify your root package directory as argument to --workdir
