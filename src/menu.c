@@ -555,15 +555,21 @@ int launch_dvdauthor()
 }
 
 
-ALWAYS_INLINE_GCC  uint16_t x(uint8_t group, uint8_t ngroups)
+
+uint16_t x(uint8_t group, uint8_t ngroups)
 {
-    return   (20+((norm_x-20)*group)/ngroups + EMPIRICAL_X_SHIFT);
+    return  Min(norm_x, (20+((norm_x-20)*group)/ngroups + EMPIRICAL_X_SHIFT));
 }
 
 // text is within button (i,j) with left-justified spacing of 10 pixels wrt left border
-ALWAYS_INLINE_GCC uint16_t y(uint8_t track, uint8_t maxnumtracks)
+uint16_t y(uint8_t track, uint8_t maxnumtracks)
 {
-    return (56+((norm_y-60)*track+(norm_y-60)/2)/maxnumtracks);    // = 1/2 (y0[j] + y1[j]
+
+    int labelheight=(norm_y-56-40-maxnumtracks*12)/maxnumtracks;
+    int y_top=56 + track*(labelheight+12)+ labelheight/2 ;
+
+    return y_top;
+
 }
 
 

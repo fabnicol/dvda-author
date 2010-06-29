@@ -165,17 +165,6 @@ int  generate_amgm_xml(uint8_t ngroups, uint8_t *ntracks, pic* img)
 
 
 
-static inline uint16_t x(uint8_t group, uint8_t ngroups)
-{
-    return  Min(norm_x, (20+((norm_x-20)*group)/ngroups + EMPIRICAL_X_SHIFT));
-}
-
-// text is within button (i,j) with left-justified spacing of 10 pixels wrt left border
-static inline uint16_t y(uint8_t track, uint8_t maxnumtracks)
-{
-    return Min(norm_y, (56+((norm_y-60)*track+(norm_y-60)/2)/maxnumtracks));    // = 1/2 (y0[j] + y1[j]
-}
-
 
 
 static inline void compute_coordinates(uint8_t ncol, uint8_t maxntracks, uint16_t* x0, uint16_t* y0, uint16_t* x1, uint16_t* y1)
