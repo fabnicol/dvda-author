@@ -6,6 +6,7 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+#include <math.h>
 #include <sys/types.h>
 #ifndef __WIN32__
 #include <sys/wait.h>
@@ -671,7 +672,7 @@ int mogrify_img(char* text, int8_t group, int8_t track, pic *img, uint8_t maxnum
 
     strcat(command, str);
     snprintf(str2, 10*CHAR_BUFSIZ, " %s \"rgb(%s)\" %s %s %s %d %s %s %d%c%d %s%s%s ",
-             "-fill", textcolor, "-font", img->textfont, "-pointsize", img->pointsize,
+             "-fill", textcolor, "-font", img->textfont, "-pointsize", (int) floor(img->pointsize*(1 -(track == -1)*0.2)),
              "-draw", " \"text ", x0, ',' , y0, "\'", text, "\'\"");
 
     strcat(command2, str2);

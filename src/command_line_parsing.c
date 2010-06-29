@@ -725,10 +725,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             printf("[PAR]  Using data directory %s\n", optarg);
             strlength=strlen(optarg);
-            img->blankscreen=realloc(img->blankscreen, (strlength+1+1+5+strlen(DEFAULT_BLANKSCREEN))*sizeof(char));
-            if (img->blankscreen) sprintf(img->blankscreen, "%s"SEPARATOR"%s", optarg, "menu"SEPARATOR"black_" NORM ".png");
-            img->backgroundpic[0]=realloc(img->backgroundpic[0], (strlength+1+1+5+strlen(DEFAULT_BACKGROUNDPIC))*sizeof(char));
-            if (img->backgroundpic[0]) sprintf(img->backgroundpic[0], "%s"SEPARATOR"%s", optarg, "menu"SEPARATOR"black_" NORM ".jpg");
             img->soundtrack=realloc(img->soundtrack, (strlength+1+1+16)*sizeof(char)); // "silence.wav"
             if (img->soundtrack) sprintf(img->soundtrack, "%s"SEPARATOR"%s", optarg, "menu"SEPARATOR"silence.wav");
             img->activeheader=realloc(img->activeheader, (strlength+1+1+17)*sizeof(char));  // activeheader
@@ -1308,6 +1304,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             {
                 img->framerate[0]='3';
                 img->framerate[1]='0';
+                free(img->blankscreen);
+                img->blankscreen=strdup(DEFAULT_BLANKSCREEN_NTSC);
+                img->backgroundpic[0]=strdup(DEFAULT_BACKGROUNDPIC_NTSC);
+                system("pwd");
+                prs(img->blankscreen)
             }
             else if ((strcasecmp(optarg,"pal") != 0) && (strcasecmp(optarg,"secam") != 0))
              { printf("%s\n","[ERR]  Only options are 'ntsc', 'secam' or (default) 'pal'."); clean_exit(EXIT_FAILURE);}
@@ -1705,6 +1706,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         }
     }
+
+
 
 // This had to be postponed after command line parsing owing to tempdir chain user input
 

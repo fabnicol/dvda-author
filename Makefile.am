@@ -1,6 +1,6 @@
 
 
-# downloaded binaries will be built locally, to avoid possible versioning issues with already installed one 
+# downloaded binaries will be built locally, to avoid possible versioning issues with already installed one
 # passing right flags to make distcheck when configuring nested packages We do not configure libogg, because install is forced under _build/_inst instead of local/
 
 DISTCHECK_CONFIGURE_FLAGS=--enable-all-deps --enable-all-builds
@@ -88,7 +88,7 @@ endif
 
 
 SUBDIRS=${MAYBE_IBERTY} libutils ${MAYBE_LIBOGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} libats2wav  ${MAYBE_SOX}  ${MAYBE_DVDAUTHOR} src
-DIST_SUBDIRS=libglibc  libutils libfixwav src CB_project libats2wav images 
+DIST_SUBDIRS=libglibc  libutils libfixwav src CB_project libats2wav images
 
 #normally is ${prefix}/share/applications/dvda-author-${VERSION}
 sysconfdir=${SHORTLINKDIR}
@@ -96,7 +96,7 @@ sysconfdir=${SHORTLINKDIR}
 dist_sysconf_DATA=dvda-author.desktop dvda-author.conf
 menudir=${MENUDIR}
 # distributed under $menudir=$sysconfdir/menu
-dist_menu_DATA=menu/black_PAL_720x576.jpg menu/black_PAL_720x576.png menu/silence.wav menu/activeheader
+dist_menu_DATA=menu/black_PAL_720x576.jpg menu/black_PAL_720x576.png menu/black_NTSC_720x480.jpg menu/black_NTSC_720x480.png menu/silence.wav menu/activeheader
 # normally $prefix/share/pixmaps/dvda-author
 pixdir=${PIXDIR}
 # distributed under $pixdir
@@ -125,8 +125,8 @@ endif
 # GNU build system regeneration script and others
 EXTRA_DIST=autogen dvda-author.ico  dvda-author.bat  sox-libs  m4.extra m4.extra.dvdauthor
 install-data-local:  $(manhelp) $(htmlhelp)
-install-exec-local: 
-	 cd ${MAYBE_CDRTOOLS}; $(MAKE) INS_BASE=${prefix} install; cd - ;  
+install-exec-local:
+	 cd ${MAYBE_CDRTOOLS}; $(MAKE) INS_BASE=${prefix} install; cd - ;
 
 # redefining install is necessary to rename nested package directories for later builds with --enable-all-builds, which request lib* labelling
 
@@ -141,5 +141,5 @@ if HAVE_SOX_BUILD
 	if test -d sox-${SOX_VERSION}; then mv sox-${SOX_VERSION}/ libsox/; fi
 endif
 
-clean-local: 
+clean-local:
 	  rm -f dvda-author.1 dvda-author.html
