@@ -1,3 +1,10 @@
+2010-06-28  Fabrice NICOL  <fabnicol@users.sourceforge.net>
+ 	* Cut down --topmenu-palette to 3 suboptions, change in separators (, -> :)
+	* Add: --background-colors in rgb mode, as meny menus.
+	* Redesign of temporary file memory allocation and override on command line.
+	* Redesign of log output with Windows porting by CreateThread
+	* Add: Html log (new switch --loghtml)
+
 2010-06-26  Fabrice NICOL
 	* Fix --topvob in new context
 	* Dev: test multi-screen menus with active menus --> new algorithm in view
@@ -5,9 +12,9 @@
 
 
 2010-06-24  Fabrice NICOL
-	* Fix AUDIO_SV overgeneration with --menustyle hierarchical
-	* fix bug in new-style call to MP2ENC
-	* fix --nmenus > 2 (has to specify default relation between img->nmenus and img->ncolumns)
+	* Fix: AUDIO_SV overgeneration with --menustyle hierarchical
+	* fix: bug in new-style call to MP2ENC
+	* fix: --nmenus > 2 (has to specify default relation between img->nmenus and img->ncolumns)
 	* restrict active menus to simple screens
 	* fix regression and redesign: --log(=file), --logrefresh(=file) with optional arguments.
 	* clean up deprecated switches: --lossy-rounding, --pad-cont, --minimal-padding, --no-padding
@@ -24,12 +31,12 @@
 	  default behaviour being erasure on launch (new for tempdir).
 
 2010-06-19  Fabrice NICOL
-	* Add --datadir and improve behaviour of --workdir
-	* Recast --palette and --colors into --topmenu-palette and --topmenu-colors
-	* Add --activemenu-palette and revise information on palette customization and defaults in commonvars.h
-	* Change --logrefresh into --log=refresh
-	* Change short options into -0 to -9
-	* Fix home environment variable trouble
+	* Add: --datadir and improve behaviour of --workdir
+	* Recast: --palette and --colors into --topmenu-palette and --topmenu-colors
+	* Add: --activemenu-palette and revise information on palette customization and defaults in commonvars.h
+	* Change: --logrefresh into --log=refresh
+	* Change: short options into -0 to -9
+	* Fix: home environment variable trouble
 	* Windows porting enhancement or bug fixes
 	* More tests
 
@@ -37,14 +44,14 @@
 	* Stabilize and fix --menustyle active
 
 2010-06-14  Fabrice NICOL
-	* Fix very serious regression that introduced a 2-sector shift in pointers to audio files (recent 09.09 releases)
-	* Fix regression in -V (arbitrary exit) and EXIT_ON_ERROR...
-	* Fix bug in nvideolinking_groups
-	* Add -I paths to autogen
-	* Fix inapropriate behaviour of cdrtools patching for dvd_sort.c in /mkisofs
+	* Fix: very serious regression that introduced a 2-sector shift in pointers to audio files (recent 09.09 releases)
+	* Fix: regression in -V (arbitrary exit) and EXIT_ON_ERROR...
+	* Fix: bug in nvideolinking_groups
+	* Add: -I paths to autogen
+	* Fix: inapropriate behaviour of cdrtools patching for dvd_sort.c in /mkisofs
 	* Syntax change: --colors refresh replaced by --colors norefresh, as refreshing menu pics is now default
-	* Add --logrefresh for generating logs from a truncated file
-	* Add blank=fast to cdrtools command-lines.
+	* Add: --logrefresh for generating logs from a truncated file
+	* Add: blank=fast to cdrtools command-lines.
 
 2010-06-03  Fabrice NICOL
 	* Upgrade to sox-14.3.1
@@ -186,7 +193,7 @@
 	* add multichannel support
 	* add startsector pp approximation
 
-2008-12-25  Fabrice Nicol <fabnicol@users.sourceforge.net>
+2008-12-25  Fabrice Nicol
 	* enhance configure script (--without-module options)
 	* add multiformat support based on SoX 14.1
 	* code refactoring of Chapman code for (lib)ats2wav

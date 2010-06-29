@@ -144,12 +144,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"version", no_argument, NULL, 'v'},
         {"videodir", required_argument, NULL, 'V'},
         {"rights", required_argument, NULL, 'w'},
-     //   {"no-padding", no_argument, NULL, '\1'},
-     //   {"minimal-padding", no_argument, NULL, '\2'},
+        //   {"no-padding", no_argument, NULL, '\1'},
+        //   {"minimal-padding", no_argument, NULL, '\2'},
         {"extract", required_argument, NULL, 'x'},
         {"disable-lexer", no_argument, NULL, 'W'},
         {"pad-cont", no_argument, NULL, 'C'},
-     //   {"lossy-rounding", no_argument, NULL, 'L'},
+        //   {"lossy-rounding", no_argument, NULL, 'L'},
         {"playlist", required_argument, NULL, 'Z'},
         {"cga", required_argument, NULL, 'c'},
         {"topmenu", optional_argument, NULL, 'm'},
@@ -263,25 +263,29 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                     break;
 
 
-               case 'L':
+                case 'L':
                     logrefresh=1; // no break
 
-               case 'l' :
+                case 'l' :
 
 
 
                     if (optarg)
                     {
-                      globals.settings.logfile=strndup(optarg, MAX_OPTION_LENGTH);
-                      globals.logfile=1;
-                      if (optarg[0] == '-')
-                          { globals.logfile=0; printf("%s\n", "[ERR]  Enter a log path next time!"); exit(EXIT_FAILURE);}
+                        globals.settings.logfile=strndup(optarg, MAX_OPTION_LENGTH);
+                        globals.logfile=1;
+                        if (optarg[0] == '-')
+                        {
+                            globals.logfile=0;
+                            printf("%s\n", "[ERR]  Enter a log path next time!");
+                            exit(EXIT_FAILURE);
+                        }
 
                     }
 
                     break;
 
-              case 1 :
+                case 1 :
                     globals.loghtml=1;
 
                     break;
@@ -298,20 +302,20 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 #ifndef __WIN32__
     if (globals.logfile)
     {
-     if (user_command_line)
-        switch (fork())
-        {
-        case -1 :
-            break;
-        case  0 :
+        if (user_command_line)
+            switch (fork())
+            {
+            case -1 :
+                break;
+            case  0 :
 
-            if (logrefresh)
-                freopen(globals.settings.logfile, "wb", stdout);
-            else
-                freopen(globals.settings.logfile, "ab", stdout);
+                if (logrefresh)
+                    freopen(globals.settings.logfile, "wb", stdout);
+                else
+                    freopen(globals.settings.logfile, "ab", stdout);
 
 
-        }
+            }
     }
 #else
 
@@ -321,9 +325,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     HANDLE a_thread;
     DWORD a_threadId;
 
-  // Create a new thread.
+    // Create a new thread.
     a_thread = CreateThread(NULL, 0, logthread_function, NULL,
-0, &a_threadId);
+                            0, &a_threadId);
 
     if (a_thread == NULL)
     {
@@ -443,7 +447,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 
                 if (argv[k][0] !='-')
-                     ntracks[n_g_groups]++;
+                    ntracks[n_g_groups]++;
                 else
                 {
                     if (argv[k][1] == 'z')
@@ -693,7 +697,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     /* COMMAND-LINE  PARSING: fourth pass for main arguments and non-g filename assignment */
     // Changing scanning variable names for ngroups_scan and nvideolinking_groups_scan
-   if (totntracks == 0)
+    if (totntracks == 0)
         for (k=0; k < ngroups-nvideolinking_groups; k++)
             totntracks+=ntracks[k];
     ngroups_scan=0;
@@ -713,7 +717,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         switch (c)
         {
 
-       // case 'g': c=0; break;
+            // case 'g': c=0; break;
         case '9':
             /* --datadir is the directory  where the menu/ files are located. Under* nix it automatically installed under /usr/share/applications/dvda-author by the autotools
                With other building modes or platforms however, it may be useful to indicate where the menu/ directory will be*/
@@ -729,6 +733,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if (img->soundtrack) sprintf(img->soundtrack, "%s"SEPARATOR"%s", optarg, "menu"SEPARATOR"silence.wav");
             img->activeheader=realloc(img->activeheader, (strlength+1+1+17)*sizeof(char));  // activeheader
             if (img->activeheader) sprintf(img->activeheader, "%s"SEPARATOR"%s", optarg, "menu"SEPARATOR"activeheader");
+            globals.settings.datadir=calloc(strlength+1+4+1, sizeof(char));
+            sprintf(globals.settings.datadir, "%s%s%s", optarg, SEPARATOR, "menu");
             break;
 
 
@@ -765,7 +771,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 printf("%s%s\n", "[PAR]  still pictures VOB: ", optarg);
                 img->stillvob=strndup(optarg, MAX_OPTION_LENGTH);
             }
-               img->npics =(uint16_t*) calloc(totntracks, sizeof(uint16_t));
+            img->npics =(uint16_t*) calloc(totntracks, sizeof(uint16_t));
             for (k=0; k < totntracks; k++)
                 img->npics[k]=1;
             img->stillpicvobsize=(uint32_t*) calloc(totntracks, sizeof(uint32_t));
@@ -1299,7 +1305,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             /* default is PAL, 25 */
             if (strcasecmp(optarg,"ntsc") == 0)
             {
-                img->framerate[1]='4';
+                img->framerate[0]='3';
+                img->framerate[1]='0';
                 img->norm[0]='n';
             }
             else if (strcasecmp(optarg,"pal") == 0)
@@ -1308,6 +1315,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 img->norm[0]='s';
             else
                 printf("%s\n","[ERR]  Only options are 'ntsc', 'secam' or (default) 'pal'.");
+
             break;
 
         case '5':
@@ -1331,11 +1339,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             printf("[PAR]  Using %d menu screens.\n", img->nmenus);
             break;
 
-        case 'N':
-            printf("[PAR]  Using %s top menu background picture.\n", optarg);
-            free(img->blankscreen);
-            img->blankscreen=strdup(optarg);
-            break;
 
 
         case '7':
@@ -1357,119 +1360,119 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         }
     }
-
+    change_directory(globals.settings.workdir);
 // Cleaning operations
-if (user_command_line)
-{
-    errno=0;
-    if (refresh_outdir)
+    if (user_command_line)
     {
+        errno=0;
+        if (refresh_outdir)
+        {
             clean_directory(globals.settings.outdir);
             if (errno) perror("[ERR]  clean");
-    }
-    else
-    {
-        if (globals.debugging)
-        printf("[MSG]  Output directory %s has been preserved.\n", globals.settings.outdir);
-    }
-    change_directory(globals.settings.workdir);
+        }
+        else
+        {
+            if (globals.debugging)
+                printf("[MSG]  Output directory %s has been preserved.\n", globals.settings.outdir);
+        }
 
-    errno=secure_mkdir(globals.settings.outdir, 0777, OUTDIR);
-    if (errno)
-    {
+
+        errno=secure_mkdir(globals.settings.outdir, 0777, OUTDIR);
+        if (errno)
+        {
             if (errno != EEXIST) perror("[WAR]  mkdir outdir");  // EEXIST error messages are often spurious
-    }
-     else
-    {
-    }
+        }
+        else
+        {
+        }
 
-    errno=0;
-    if (refresh_tempdir)
-    {
+        errno=0;
+        if (refresh_tempdir)
+        {
             clean_directory(globals.settings.tempdir);
             if (errno) perror("[ERR]  clean");
-    }
-    errno=secure_mkdir(globals.settings.tempdir, globals.access_rights, TEMPDIR);
-    if (errno)
-    {
+        }
+        errno=secure_mkdir(globals.settings.tempdir, globals.access_rights, TEMPDIR);
+        if (errno)
+        {
             if (errno != EEXIST) perror("[WAR]  mkdir temp");
-    }
-    else
-    if (refresh_tempdir)
-    {
-       if (globals.debugging)
-        printf("[PAR]  Temporary directory %s has been removed and recreated.\n", globals.settings.tempdir);
-    }
-    else
-    {
-       if (globals.debugging)
-        printf("[PAR]  Temporary directory %s has been preserved.\n", globals.settings.tempdir);
-    }
-    errno=0;
+        }
+        else if (refresh_tempdir)
+        {
+            if (globals.debugging)
+                printf("[PAR]  Temporary directory %s has been removed and recreated.\n", globals.settings.tempdir);
+        }
+        else
+        {
+            if (globals.debugging)
+                printf("[PAR]  Temporary directory %s has been preserved.\n", globals.settings.tempdir);
+        }
+        errno=0;
 
-}
+    }
 
 #ifdef __WIN32__
 #else
 
 #endif
 
-if (globals.topmenu == NO_MENU) goto stillpic_parsing;
+    if (globals.topmenu == NO_MENU) goto stillpic_parsing;
 
 
-        // Coherence checks
+    // Coherence checks
 
 
-        if ((globals.topmenu <= ACTIVE_MENU_ONLY) && (globals.topmenu > AUTOMATIC_MENU))
+    if ((globals.topmenu <= ACTIVE_MENU_ONLY) && (globals.topmenu > AUTOMATIC_MENU))
+    {
+        printf("%s\n", "[WAR]  Top menu authoring is not automatic.\n       You must give extra information\n");
+        switch (globals.topmenu)
         {
-            printf("%s\n", "[WAR]  Top menu authoring is not automatic.\n       You must give extra information\n");
-            switch (globals.topmenu)
+            /* other tests to be added for :
+            #define RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR -1
+            #define RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR 0
+            #define RUN_SPUMUX_DVDAUTHOR    1 // automate some of the authoring process (run spumux and dvdauthor)
+            */
+        case TS_VOB_TYPE:
+
+            if (img->tsvob)
             {
-                /* other tests to be added for :
-                #define RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR -1
-                #define RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR 0
-                #define RUN_SPUMUX_DVDAUTHOR    1 // automate some of the authoring process (run spumux and dvdauthor)
-                */
-            case TS_VOB_TYPE:
-
-                if (img->tsvob)
-                {
-                    errno=0;
-                    FILE *f;
-                    if ((f=fopen(img->tsvob, "rb")) != NULL)
-                    {
-                        fclose(f);
-                        puts("[MSG]  --> top vob requirement...OK");
-                    }
-
-                }
-                break;
-
-            case RUN_DVDAUTHOR:
-
-                if ((img->backgroundmpg) && (globals.xml))
-                {
-                    errno=0;
-                    if (fopen(globals.xml, "rb") != NULL)
-                        fclose(fopen(globals.xml, "rb"));
-                    if (!errno) puts("[MSG]  --> dvdauthor requirement...OK");
-                }
-                else errno=1;
-                break;
-
-            default:  errno=1;
-            }
-
-
-            if (errno)
-            {
-
-                printf("%s\n", "[WAR]  Not enough information. Continuing with automatic menu authoring...");
-                globals.topmenu=AUTOMATIC_MENU;
                 errno=0;
-            }
+                FILE *f;
+                if ((f=fopen(img->tsvob, "rb")) != NULL)
+                {
+                    fclose(f);
+                    puts("[MSG]  --> top vob requirement...OK");
+                }
 
+            }
+            break;
+
+        case RUN_DVDAUTHOR:
+
+            if ((img->backgroundmpg) && (globals.xml))
+            {
+                errno=0;
+                if (fopen(globals.xml, "rb") != NULL)
+                    fclose(fopen(globals.xml, "rb"));
+                if (!errno) puts("[MSG]  --> dvdauthor requirement...OK");
+            }
+            else errno=1;
+            break;
+
+        default:
+            errno=1;
         }
+
+
+        if (errno)
+        {
+
+            printf("%s\n", "[WAR]  Not enough information. Continuing with automatic menu authoring...");
+            globals.topmenu=AUTOMATIC_MENU;
+            errno=0;
+        }
+
+    }
 
 
 
@@ -1491,7 +1494,7 @@ if (globals.topmenu == NO_MENU) goto stillpic_parsing;
     // put this check befor the img->ncolumns check
     // LIMITATION hopefully to be relaxed later on
 
-   if ((img->nmenus > 1)&&(img->active))
+    if ((img->nmenus > 1)&&(img->active))
     {
         printf("%s", "[WAR]  Active menus can only be used with simple menus for version "VERSION"\n       Using img->nmenus=1...\n");
         img->nmenus=1;
@@ -1499,7 +1502,8 @@ if (globals.topmenu == NO_MENU) goto stillpic_parsing;
     if ((img->hierarchical)&&(img->active))
     {
         printf("%s", "[WAR]  Active menus cannot be used with hierarchical menus for version "VERSION"\n       Choosing hierarchical menus...\n");
-        img->active=0; img->hierarchical=1;
+        img->active=0;
+        img->hierarchical=1;
     }
 
 
@@ -1514,13 +1518,13 @@ if (globals.topmenu == NO_MENU) goto stillpic_parsing;
     }
     else
     {
-     if ((img->hierarchical) && (img->nmenus == 1))
-     {
-       printf("%s", "[WAR]  Hierarchical menus should have at least two screens...\n       Incrementing value for --nmenus=1->2\n");
-       img->nmenus++;
-     }
+        if ((img->hierarchical) && (img->nmenus == 1))
+        {
+            printf("%s", "[WAR]  Hierarchical menus should have at least two screens...\n       Incrementing value for --nmenus=1->2\n");
+            img->nmenus++;
+        }
 
-     img->ncolumns=ngroups/(img->nmenus-img->hierarchical)+(ngroups%(img->nmenus-img->hierarchical) >0);
+        img->ncolumns=ngroups/(img->nmenus-img->hierarchical)+(ngroups%(img->nmenus-img->hierarchical) >0);
     }
 
 
@@ -1543,9 +1547,9 @@ if (globals.topmenu == NO_MENU) goto stillpic_parsing;
 #endif
 
 // Now possible overrides once img->nmenus and default tempdir values are known:
-char * str=NULL;
-optind=0;
-opterr=1;
+    char * str=NULL;
+    optind=0;
+    opterr=1;
 
 #ifdef LONG_OPTIONS
     while ((c=getopt_long(argc, argv, ALLOWED_OPTIONS, longopts, &longindex)) != -1)
@@ -1571,16 +1575,51 @@ opterr=1;
             int backgroundpic_arraylength=0;
             if ((backgroundpic_arraylength=arraylength(img->backgroundpic)) < img->nmenus)
             {
-                    int u;
-                    printf("%s\n","[WAR]  You did not give enough filenames, completing with last one");
-                    for (u=0; u + backgroundpic_arraylength < img->nmenus; u++)
-                     copy_file(img->backgroundpic[backgroundpic_arraylength-1], img->backgroundpic[u+backgroundpic_arraylength]);
+                int u;
+                printf("%s\n","[WAR]  You did not give enough filenames, completing with last one");
+                for (u=0; u + backgroundpic_arraylength < img->nmenus; u++)
+                    copy_file(img->backgroundpic[backgroundpic_arraylength-1], img->backgroundpic[u+backgroundpic_arraylength]);
             }
 
 
             free(str);
             globals.topmenu=Min(globals.topmenu, RUN_SPUMUX_DVDAUTHOR);
             img->refresh=1;
+
+            break;
+
+        case 'N':
+
+            printf("[PAR]  Using %s top menu background picture.\n", optarg);
+
+
+            img->blankscreen=realloc(img->blankscreen, (strlen(globals.settings.datadir)+1+strlen(optarg)+1)*sizeof(char));
+            sprintf(img->blankscreen, "%s%s%s", globals.settings.datadir, SEPARATOR, optarg);
+            int len, len2;
+            len=strlen(img->blankscreen);
+            len2=strlen(img->backgroundpic[0]);
+            if  ((img->blankscreen[len-1] != 'g') || (img->blankscreen[len-2] != 'n') || (img->blankscreen[len-3] != 'p'))
+                { printf("[ERR]  You should use a .png background picture... exiting."); clean_exit(EXIT_FAILURE);}
+             // note that within a switch, some compilers do not authorize char dest[len+1]
+
+            img->backgroundpic[0][len2-2]='p';
+            img->backgroundpic[0][len2-3]='j';
+
+            if (globals.veryverbose) printf("%s\n", "[INF]  Converting overlay .png blankscreen to .jg blankscreen for mpg authoring...");
+            if (img->blankscreen)
+            {
+                char* convert=NULL;
+                char cl[500]; //do not use command as an array name !
+                convert=create_binary_path(convert, CONVERT, SEPARATOR CONVERT_BASENAME);
+
+                snprintf(cl, 500, "%s %s %s", convert, img->blankscreen , img->backgroundpic[0]);
+
+                if (globals.veryverbose) printf("[INF]  Launching convert with command line %s\n",  cl);
+                unlink(img->backgroundpic[0]);
+                errno=0;
+                if (system(cl) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
+                    fflush(NULL);
+            }
 
             break;
 
@@ -1592,10 +1631,10 @@ opterr=1;
             int highlight_arraylength=0;
             if ((highlight_arraylength=arraylength(img->highlightpic)) < img->nmenus)
             {
-                    int u;
-                    printf("%s\n","[WAR]  You did not give enough filenames, completing with last one");
-                    for (u=0; u + highlight_arraylength < img->nmenus; u++)
-                     copy_file(img->highlightpic[highlight_arraylength-1], img->highlightpic[u+highlight_arraylength]);
+                int u;
+                printf("%s\n","[WAR]  You did not give enough filenames, completing with last one");
+                for (u=0; u + highlight_arraylength < img->nmenus; u++)
+                    copy_file(img->highlightpic[highlight_arraylength-1], img->highlightpic[u+highlight_arraylength]);
             }
 
 
@@ -1613,10 +1652,10 @@ opterr=1;
             int select_arraylength=0;
             if ((select_arraylength=arraylength(img->selectpic)) < img->nmenus)
             {
-                    int u;
-                    printf("%s\n","[WAR]  You did not give enough filenames, completing with last one");
-                    for (u=0; u + select_arraylength < img->nmenus; u++)
-                     copy_file(img->selectpic[select_arraylength-1], img->selectpic[u+select_arraylength]);
+                int u;
+                printf("%s\n","[WAR]  You did not give enough filenames, completing with last one");
+                for (u=0; u + select_arraylength < img->nmenus; u++)
+                    copy_file(img->selectpic[select_arraylength-1], img->selectpic[u+select_arraylength]);
             }
 
 
@@ -1635,10 +1674,10 @@ opterr=1;
             int image_arraylength=0;
             if ((image_arraylength=arraylength(img->imagepic)) < img->nmenus)
             {
-                    int u;
-                    printf("%s\n","[WAR]  You did not give enough filenames, completing with last one");
-                    for (u=0; u + image_arraylength < img->nmenus; u++)
-                     copy_file(img->imagepic[image_arraylength -1], img->imagepic[u+image_arraylength ]);
+                int u;
+                printf("%s\n","[WAR]  You did not give enough filenames, completing with last one");
+                for (u=0; u + image_arraylength < img->nmenus; u++)
+                    copy_file(img->imagepic[image_arraylength -1], img->imagepic[u+image_arraylength ]);
             }
 
 
@@ -1657,10 +1696,10 @@ opterr=1;
             int bgcolors_arraylength=0;
             if ((bgcolors_arraylength=arraylength(img->backgroundcolors)) < img->nmenus)
             {
-                    int u;
-                    printf("%s\n","[WAR]  You did not give enough colors, completing with last one");
-                    for (u=0; u + bgcolors_arraylength < img->nmenus; u++)
-                      img->backgroundcolors[u+bgcolors_arraylength]=img->backgroundcolors[bgcolors_arraylength -1];
+                int u;
+                printf("%s\n","[WAR]  You did not give enough colors, completing with last one");
+                for (u=0; u + bgcolors_arraylength < img->nmenus; u++)
+                    img->backgroundcolors[u+bgcolors_arraylength]=img->backgroundcolors[bgcolors_arraylength -1];
             }
 
             free(str);
@@ -1675,77 +1714,77 @@ opterr=1;
 
 stillpic_parsing:
 
-if (stillpic_string)
-{
-            // heap-allocations is not possible if char** is not returned by function
-            // A simple char* would well be allocated by function, not a char**.
+    if (stillpic_string)
+    {
+        // heap-allocations is not possible if char** is not returned by function
+        // A simple char* would well be allocated by function, not a char**.
 
-            tab=fn_strtok(stillpic_string, '-', tab, 0,NULL,NULL);
-            uint16_t dim,DIM=0,w;
+        tab=fn_strtok(stillpic_string, '-', tab, 0,NULL,NULL);
+        uint16_t dim,DIM=0,w;
 
-            img->npics =(uint16_t*) calloc(totntracks, sizeof(uint16_t));
-            if (img->npics == NULL)
-            {
-                perror("[ERR] img->npics");
-                goto standard_checks;
-            }
-            if (tab)
-                w=arraylength(tab);
+        img->npics =(uint16_t*) calloc(totntracks, sizeof(uint16_t));
+        if (img->npics == NULL)
+        {
+            perror("[ERR] img->npics");
+            goto standard_checks;
+        }
+        if (tab)
+            w=arraylength(tab);
+        else
+        {
+            perror("[ERR]  tab");
+            goto standard_checks;
+        }
+        if (w > totntracks)
+        {
+            perror("[ERR]  Too many tracks on --stillpics");
+            goto standard_checks;
+        }
+        else if (w < totntracks)
+        {
+            perror("[ERR]  You forgot at least one track on --stillpics");
+            goto standard_checks;
+        }
+
+        for (k=0; k < totntracks; k++)
+        {
+            tab2=fn_strtok(tab[k], ',', tab2, -1,create_stillpic_directory,NULL);
+            dim=0;
+            w=0;
+            if (tab2) while (tab2[w] != NULL)
+                {
+                    if (tab2[w][0] != 0) dim++;
+                    w++;
+                }
             else
             {
-                perror("[ERR]  tab");
+                perror("[ERR]  tab2");
                 goto standard_checks;
             }
-            if (w > totntracks)
+            npics[k]=(k)? dim+npics[k-1]: dim;
+            img->npics[k]=dim;
+            DIM+=dim;
+            if (globals.veryverbose) printf("  --> npics[%d] = %d\n", k, dim);
+            FREE(tab2)
+            if (img->npics[k] > 99)
             {
-                perror("[ERR]  Too many tracks on --stillpics");
-                goto standard_checks;
+                printf("[ERR]  The maximum number of pics per track is 99.\n");
+                EXIT_ON_RUNTIME_ERROR_VERBOSE("Exiting...");
             }
-            else if (w < totntracks)
-            {
-                perror("[ERR]  You forgot at least one track on --stillpics");
-                goto standard_checks;
-            }
+        }
 
-            for (k=0; k < totntracks; k++)
-            {
-                tab2=fn_strtok(tab[k], ',', tab2, -1,create_stillpic_directory,NULL);
-                dim=0;
-                w=0;
-                if (tab2) while (tab2[w] != NULL)
-                    {
-                        if (tab2[w][0] != 0) dim++;
-                        w++;
-                    }
-                else
-                {
-                    perror("[ERR]  tab2");
-                    goto standard_checks;
-                }
-                npics[k]=(k)? dim+npics[k-1]: dim;
-                img->npics[k]=dim;
-                DIM+=dim;
-                if (globals.veryverbose) printf("  --> npics[%d] = %d\n", k, dim);
-                FREE(tab2)
-                if (img->npics[k] > 99)
-                {
-                    printf("[ERR]  The maximum number of pics per track is 99.\n");
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE("Exiting...");
-                }
-            }
+        FREE(tab)
+        img->stillpicvobsize=(uint32_t*) calloc(DIM, sizeof(uint32_t));
+        if (img->stillpicvobsize == NULL)
+        {
+            perror("[ERR]  still pic vob size array");
+            goto standard_checks;
+        }
+        img->count=DIM;
+        if (globals.veryverbose) printf("[MSG]  Total of %d pictures\n", img->count);
+        free(stillpic_string);
 
-            FREE(tab)
-            img->stillpicvobsize=(uint32_t*) calloc(DIM, sizeof(uint32_t));
-            if (img->stillpicvobsize == NULL)
-            {
-                perror("[ERR]  still pic vob size array");
-                goto standard_checks;
-            }
-            img->count=DIM;
-            if (globals.veryverbose) printf("[MSG]  Total of %d pictures\n", img->count);
-            free(stillpic_string);
-
-}
+    }
 
 standard_checks:
 
