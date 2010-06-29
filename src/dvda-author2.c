@@ -76,45 +76,36 @@ void normalize_temporary_paths(pic* img)
     }
     else
     {
-
-
-
         int menu;
         char img_save[CHAR_BUFSIZ];
-
         if (img->backgroundpic[0]) strcpy(img_save, img->backgroundpic[0]);
 
            img->backgroundpic=calloc(img->nmenus+1,sizeof(char*));
+           img->backgroundmpg=calloc(img->nmenus+1,sizeof(char*));
            img->imagepic=calloc(img->nmenus+1,sizeof(char*));
            img->highlightpic=calloc(img->nmenus+1,sizeof(char*));
            img->selectpic=calloc(img->nmenus+1, sizeof(char*));
 
-
         // useless to realloc for just one menu !
-
-
-
 
         for (menu=0;  menu < img->nmenus; menu++)
         {
+
+            img->backgroundmpg[menu]=(char*)calloc(26+s, sizeof(char));
 
 
             img->backgroundpic[menu]=calloc(s+13, sizeof(char));
             sprintf(img->backgroundpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "bgpic", menu, ".jpg");
             if (img->backgroundpic[menu]) copy_file(img_save, img->backgroundpic[menu]);
 
-
             img->imagepic[menu]=calloc(s+13, sizeof(char));
             sprintf(img->imagepic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "impic", menu, ".png");
-
 
             img->highlightpic[menu]=calloc(s+13,sizeof(char));
             sprintf(img->highlightpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "hlpic", menu, ".png");
 
              img->selectpic[menu]=calloc(s+13,sizeof(char));
              sprintf(img->selectpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "slpic", menu, ".png");
-
-
         }
         img->backgroundpic[img->nmenus]=NULL;
         img->imagepic[img->nmenus]=NULL;
@@ -161,9 +152,6 @@ int main(int argc,  char* const argv[])
     char *EXECDIR=calloc(MAX(homelength, 20)+4+25, sizeof(char));  // /usr/local/bin or /usr/bin under *NIX, "home" directory/bin otherwise (win32...)
                                                                  // 4 for "/bin and be liberal and allow 25 more characters for the executable name.
     char **BGPIC=calloc(2, sizeof(char*));
-    char **IMPIC=calloc(2, sizeof(char*));
-    char **HLPIC=calloc(2, sizeof(char*));
-    char **SLPIC=calloc(2, sizeof(char*));
 
 
     BGPIC[0]=strdup(DEFAULT_BACKGROUNDPIC);
@@ -259,15 +247,13 @@ int main(int argc,  char* const argv[])
         0, // no loop
         0,  // list menus, not hierarchical
         0, // no active menus
-//        &HLPIC[0], //highlightpic
-//        &SLPIC[0], //selectpic
-//        &IMPIC[0], //imagepic
-NULL,
-NULL,
-NULL,
+        NULL,
+        NULL,
+        NULL,
         &BGPIC[0], // black screen for jpg video mpg authoring
         strdup(DEFAULT_BLANKSCREEN), // black screen for png authoring
         NULL, //backgroundmpg
+        NULL, //backgroundcolors
         strdup(DEFAULT_ACTIVEHEADER),
         NULL, //topmenu
         NULL, //stillvob
@@ -406,6 +392,9 @@ launch:
     COMPUTE_EXECTIME
 
     FREE(home)
+
+    fflush(NULL);
+    if ((globals.loghtml) && (globals.logfile)) htmlize(globals.settings.logfile);
 
     if (globals.end_pause) pause_dos_type();
 

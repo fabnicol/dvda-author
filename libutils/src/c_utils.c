@@ -123,6 +123,8 @@ if (globals.veryverbose)
 }
 }
 
+/* This postprocessing procedure converts a tagged log (with [INF], [WAR], [ERR], [MSG]) into an Html logpage */
+/* To be launched at end of program, not in a thread */
 
 void htmlize(char* logpath)
 {
@@ -136,10 +138,11 @@ void htmlize(char* logpath)
 
         #define NAVY            "<p><span style=\"color: navy; font-size: 10pt; \">"
         #define RED             "<p><span style=\"color: red;  font-size: 12pt  \">"
-        #define GREY            "<p><span style=\"color: grey; font-size: 8pt;  \">"
+        #define GREY            "<br/><span style=\"color: grey; font-size: 8pt;\">"
         #define GREEN           "<p><span style=\"color: green; font-size: 10pt;\">"
         #define ORANGE          "<p><span style=\"color: orange;font-size: 12pt;\">"
-        #define CLOSETAG        "</span><p/>"
+        #define CLOSETAG1        "</span>"
+        #define CLOSETAG2        "</span></p>"
         #define HEADER "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">\n\
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n\
 <HTML><HEAD><TITLE>dvda-author " VERSION " Html log</TITLE>\n\
@@ -161,36 +164,42 @@ void htmlize(char* logpath)
                 {
                         fwrite(NAVY, length, 1, dest);
                         fwrite(line, linelength, 1, dest);
-                        fwrite(CLOSETAG, 11, 1, dest);
+                        fwrite(CLOSETAG2, 11, 1, dest);
                         fputc('\n', dest);
                 }else
                 if ((line[0] == '[') && (line[1] == 'M') && (line[2]=='S') && (line[3] == 'G') && (line[4]==']'))
                 {
                         fwrite(GREEN, length, 1, dest);
                         fwrite(line, linelength, 1, dest);
-                        fwrite(CLOSETAG, 11, 1, dest);
+                        fwrite(CLOSETAG2, 11, 1, dest);
                         fputc('\n', dest);
                 }else
                 if ((line[0] == '[') && (line[1] == 'W') && (line[2]=='A') && (line[3] == 'R') && (line[4]==']'))
                 {
                         fwrite(ORANGE, length, 1, dest);
                         fwrite(line, linelength, 1, dest);
-                        fwrite(CLOSETAG, 11, 1, dest);
+                        fwrite(CLOSETAG2, 11, 1, dest);
                         fputc('\n', dest);
                 }else
                 if ((line[0] == '[') && (line[1] == 'E') && (line[2]=='R') && (line[3] == 'R') && (line[4]==']'))
                 {
                         fwrite(RED, length, 1, dest);
                         fwrite(line, linelength, 1, dest);
-                        fwrite(CLOSETAG, 11, 1, dest);
+                        fwrite(CLOSETAG2, 11, 1, dest);
                         fputc('\n', dest);
                 }
                 else
                 {
+                       // Skipping white lines (spaces and tabs) or line feeds, yet not justifying
+                       int u=0;
+                       while ((line[u]) && (isspace(line[u]))) u++;
+                       if (line[u])
+                       {
                         fwrite(GREY, length, 1, dest);
                         fwrite(line, linelength, 1, dest);
-                        fwrite(CLOSETAG, 11, 1, dest);
+                        fwrite(CLOSETAG1, 7, 1, dest);
                         fputc('\n', dest);
+                       }
                 }
                 }
 

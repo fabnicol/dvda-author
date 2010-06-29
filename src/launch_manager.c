@@ -379,7 +379,6 @@ int launch_manager(command_t *command)
     }
 
 
-
     for (i=0; i < nplaygroups; i++)
     {
         int nfiles=ntracks[playtitleset[i]];
@@ -538,7 +537,7 @@ int launch_manager(command_t *command)
 
     memset(relative_sector_pointer_VTSI, 0, nvideolinking_groups*4);
     memset(videotitlelength, 0, nvideolinking_groups*4);
-EXIT_ON_RUNTIME_ERROR_VERBOSE("OUT")
+
 //  relative_sector_pointer_VTSI=absolute_se+relative_sector_pointer_in_VTS
 
     /*
@@ -720,8 +719,8 @@ SUMMARY:
 #endif
 
 
-   if ((globals.loghtml) && (globals.logfile))
-       htmlize(globals.settings.logfile);
+
+
 
 
     for (j=0; j < naudio_groups; j++)

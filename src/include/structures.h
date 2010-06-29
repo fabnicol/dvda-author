@@ -104,6 +104,7 @@ typedef struct
     char** backgroundpic; // The background of the top menu, type is .jpg. There can be many.
     char* blankscreen;    // In principe blank for adding titles yet can have some background, type is .png
     char** backgroundmpg;
+    char** backgroundcolors;
     char* activeheader;
     char** topmenu;
     char* stillvob;
