@@ -186,6 +186,7 @@ typedef struct
     char  *tempdir;
     char  *linkdir;
     char  *bindir;
+    char  *datadir;
     char  *fixwav_database;
     char  *dvdisopath;
     char  *stillpicdir;

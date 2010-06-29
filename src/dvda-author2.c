@@ -151,6 +151,8 @@ int main(int argc,  char* const argv[])
 
     char *EXECDIR=calloc(MAX(homelength, 20)+4+25, sizeof(char));  // /usr/local/bin or /usr/bin under *NIX, "home" directory/bin otherwise (win32...)
                                                                  // 4 for "/bin and be liberal and allow 25 more characters for the executable name.
+
+    char *DATADIR=NULL;
     char **BGPIC=calloc(2, sizeof(char*));
 
 
@@ -233,6 +235,7 @@ int main(int argc,  char* const argv[])
             NULL,// temporary directory
             NULL,   // videolinked directory path
             EXECDIR, //bindir
+            DATADIR,
             /*fixwav_database*/
             strdup(STANDARD_FIXWAV_DATABASE_PATH),
             NULL,
