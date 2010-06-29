@@ -285,12 +285,16 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #ifdef INSTALL_CONF_DIR
 #define DEFAULT_BLANKSCREEN INSTALL_CONF_DIR "/menu/black_" NORM ".png"    // In principle blank for preparing titles yet can have some background
+#define DEFAULT_BLANKSCREEN_NTSC INSTALL_CONF_DIR "/menu/black_" "NTSC_720x480" ".png"    // In principle blank for preparing titles yet can have some background
 #define DEFAULT_BACKGROUNDPIC INSTALL_CONF_DIR "/menu/black_" NORM ".jpg"  // for mpeg authoring, background.
+#define DEFAULT_BACKGROUNDPIC_NTSC INSTALL_CONF_DIR "/menu/black_" "NTSC_720x480" ".jpg"  // for mpeg authoring
 #define ACTIVEHEADER INSTALL_CONF_DIR "/menu/activeheader"
 #define DEFAULT_ACTIVEHEADER INSTALL_CONF_DIR "/menu/activeheader"
 #else
 #define DEFAULT_BLANKSCREEN  "menu/black_" NORM ".png"
+#define DEFAULT_BLANKSCREEN_NTSC  "/menu/black_" "NTSC_720x480" ".png"    // In principle blank for preparing titles yet can have some background
 #define DEFAULT_BACKGROUNDPIC  "menu/black_" NORM ".jpg"  // for mpeg authoring
+#define DEFAULT_BACKGROUNDPIC_NTSC  "menu/black_" "NTSC_720x480" ".jpg"  // for mpeg authoring
 #define DEFAULT_ACTIVEHEADER "menu/activeheader"
 #endif
 #define DEFAULT_ASPECT_RATIO  "4:3"
@@ -347,7 +351,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
 #define PAL_FRAME_RATE "25"
-#define PAL_NORM  "p"
+#define PAL_NORM  "pal"
 #define PAL_X 720   // ntsc 720
 #define PAL_Y 576   // ntsc 480
 #define NTSC_Y 480

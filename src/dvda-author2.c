@@ -80,11 +80,11 @@ void normalize_temporary_paths(pic* img)
         char img_save[CHAR_BUFSIZ];
         if (img->backgroundpic[0]) strcpy(img_save, img->backgroundpic[0]);
 
-           img->backgroundpic=calloc(img->nmenus+1,sizeof(char*));
-           img->backgroundmpg=calloc(img->nmenus+1,sizeof(char*));
-           img->imagepic=calloc(img->nmenus+1,sizeof(char*));
-           img->highlightpic=calloc(img->nmenus+1,sizeof(char*));
-           img->selectpic=calloc(img->nmenus+1, sizeof(char*));
+        img->backgroundpic=calloc(img->nmenus+1,sizeof(char*));
+        img->backgroundmpg=calloc(img->nmenus+1,sizeof(char*));
+        img->imagepic=calloc(img->nmenus+1,sizeof(char*));
+        img->highlightpic=calloc(img->nmenus+1,sizeof(char*));
+        img->selectpic=calloc(img->nmenus+1, sizeof(char*));
 
         // useless to realloc for just one menu !
 
@@ -104,8 +104,8 @@ void normalize_temporary_paths(pic* img)
             img->highlightpic[menu]=calloc(s+13,sizeof(char));
             sprintf(img->highlightpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "hlpic", menu, ".png");
 
-             img->selectpic[menu]=calloc(s+13,sizeof(char));
-             sprintf(img->selectpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "slpic", menu, ".png");
+            img->selectpic[menu]=calloc(s+13,sizeof(char));
+            sprintf(img->selectpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "slpic", menu, ".png");
         }
         img->backgroundpic[img->nmenus]=NULL;
         img->imagepic[img->nmenus]=NULL;
@@ -150,7 +150,7 @@ int main(int argc,  char* const argv[])
     TEMPDIR=calloc(homelength+20, sizeof(char));
 
     char *EXECDIR=calloc(MAX(homelength, 20)+4+25, sizeof(char));  // /usr/local/bin or /usr/bin under *NIX, "home" directory/bin otherwise (win32...)
-                                                                 // 4 for "/bin and be liberal and allow 25 more characters for the executable name.
+    // 4 for "/bin and be liberal and allow 25 more characters for the executable name.
 
     char *DATADIR=NULL;
     char **BGPIC=calloc(2, sizeof(char*));
@@ -178,7 +178,7 @@ int main(int argc,  char* const argv[])
         /*autoplay*/    0,  // no autoplay
         /*text table*/  0,  // no text table
         /*silence*/     0,
-                        1,  // enabling lexer
+        1,  // enabling lexer
         /*logfile*/	0,  // no log
         /*loghtml*/     0,  //text log
         /*videozone*/   1,  // generates video zone
@@ -188,12 +188,12 @@ int main(int argc,  char* const argv[])
         /*end_pause*/   0,  // no end pause
         /*very verbose*/0,  // not very verbose
         /*debugging*/   0,  // no debugging-level verbosity
-        #if 0
+#if 0
         /*padding*/     1,  // always padding
         /*padding_continuous*/    0,  // no continuous padding
         /*minimal_padding*/       0,  // no minimal padding
         /*lossy_rounding*/ 0,  // No audio loss
-        #endif
+#endif
         /*rungrowisofs*/   0,  // Do not burn with growisofs
 #ifndef WITHOUT_SOX
         /*sox_enable*/     0,  // no use of SoX
@@ -227,11 +227,11 @@ int main(int argc,  char* const argv[])
             NULL,  // logfile path should be supplied on command line
             NULL, // input directory path
             NULL,// output directory path
-            #ifdef __WIN32__
+#ifdef __WIN32__
             strdup(DEFAULT_WORKDIR),// working directory: under Windows, c:\ if not defined at compile time, otherwise 'home' environment variable
-            #else
+#else
             strdup(home),
-            #endif
+#endif
             NULL,// temporary directory
             NULL,   // videolinked directory path
             EXECDIR, //bindir
@@ -306,11 +306,11 @@ int main(int argc,  char* const argv[])
 
     globals=globals_init;
     globals.settings.tempdir=TEMPDIR;
-     #ifdef BINDIR
+#ifdef BINDIR
     memcpy(globals.settings.bindir, BINDIR, strlen(BINDIR));
-    #else
+#else
     memcpy(globals.settings.bindir, home, homelength);
-    #endif
+#endif
     normalize_temporary_paths(NULL);
 
     // Null arg is no longer supported, yet...
