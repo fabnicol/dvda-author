@@ -36,11 +36,12 @@ int  generate_amgm_xml(uint8_t ngroups, uint8_t *ntracks, pic* img)
 
     xmlfile=secure_open(globals.xml, "wb");
 
-    fprintf(xmlfile, "%s\n",
+    fprintf(xmlfile, "%s%s%s\n",
             "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n\
 <dvdauthor jumppad=\"1\">\n\
  <amgm>\n\
    <menus>\n\
+   <video format=\"",img->norm,"\" />\n\
    <audio format=\"mp2\" lang=\"en\" />");
     fprintf(xmlfile, "%s\n","   <pgc>");
     do
