@@ -160,9 +160,13 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     mpeg2enc=create_binary_path(mpeg2enc,MPEG2ENC, SEPARATOR MPEG2ENC_BASENAME);
     mplex=create_binary_path(mplex, MPLEX, SEPARATOR MPLEX_BASENAME);
 
+    char norm[2];
+    norm[0]=img->norm[0];
+    norm[1]=0;
+
     char *argsmp2enc[]= {MP2ENC, "-o", mp2track , NULL};
     char *argsjpeg2yuv[]= {JPEG2YUV, "-f", img->framerate, "-I", "p", "-n", "1", "-j", pic, "-A", img->aspectratio, NULL};
-    char *argsmpeg2enc[]= {MPEG2ENC,  "-f", "8", "-n", img->norm,  "-o", tempfile ,"-a", img->aspect, NULL};
+    char *argsmpeg2enc[]= {MPEG2ENC,  "-f", "8", "-n", norm,  "-o", tempfile ,"-a", img->aspect, NULL};
     char *argsmplex[]= {MPLEX, "-f", "8",  "-o", img->backgroundmpg[rank], tempfile, mp2track, NULL};
     //////////////////////////
 
@@ -375,7 +379,7 @@ int generate_background_mpg(pic* img, uint8_t ngroups, uint8_t* ntracks)
     char* mp2track;
     errno=0;
 
-    if (strcasecmp(img->norm, "n") == 0) norm_y=NTSC_Y;  //   x  value is the same as for PAL (720)
+    if (strcasecmp(img->norm, "ntsc") == 0) norm_y=NTSC_Y;  //   x  value is the same as for PAL (720)
     memset(tempfile, '0', sizeof(tempfile));
     sprintf(tempfile, "%s"SEPARATOR"%s", globals.settings.tempdir, "temp.m2v");
 

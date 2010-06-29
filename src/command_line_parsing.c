@@ -1303,18 +1303,14 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case '4':
             /* default is PAL, 25 */
+            img->norm=strdup(optarg);
             if (strcasecmp(optarg,"ntsc") == 0)
             {
                 img->framerate[0]='3';
                 img->framerate[1]='0';
-                img->norm[0]='n';
             }
-            else if (strcasecmp(optarg,"pal") == 0)
-                img->norm[0]='p';
-            else if (strcasecmp(optarg,"secam") == 0)
-                img->norm[0]='s';
-            else
-                printf("%s\n","[ERR]  Only options are 'ntsc', 'secam' or (default) 'pal'.");
+            else if ((strcasecmp(optarg,"pal") != 0) && (strcasecmp(optarg,"secam") != 0))
+             { printf("%s\n","[ERR]  Only options are 'ntsc', 'secam' or (default) 'pal'."); clean_exit(EXIT_FAILURE);}
 
             break;
 
