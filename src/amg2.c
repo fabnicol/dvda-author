@@ -655,15 +655,14 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
             i+=2;
             uint16_copy(&amg[i], 1);
             i+=4; // 2 bytes of padding
-            uint32_copy(&amg[i], (uint32_t) strtol(img->textcolor_palette,NULL,16)); // highlight motif colour
+            uint32_copy(&amg[i], (uint32_t) strtoul(img->textcolor_palette,NULL,16)); // highlight motif colour
             i+=4;
-            uint32_copy(&amg[i], (uint32_t) strtol(img->highlightcolor_palette,NULL,16)); // Colors (a, Y, Cr, Cb): Pattern:: display background (black)    Type 1 (hier level 1)
+            uint32_copy(&amg[i], (uint32_t) strtoul(img->highlightcolor_palette,NULL,16)); // Colors (a, Y, Cr, Cb): Pattern:: display background (black)    Type 1 (hier level 1)
             i+=4;
-            uint32_copy(&amg[i], (uint32_t) strtol(img->selectfgcolor_palette, NULL, 16)); // Colors (a, Y, Cr, Cb): Pattern:: display foreground(red)
+            uint32_copy(&amg[i], (uint32_t) strtoul(img->selectfgcolor_palette, NULL, 16)); // Colors (a, Y, Cr, Cb): Pattern:: display foreground(red)
             i+=4;
-            uint32_copy(&amg[i], (uint32_t) strtol(img->bgcolor_palette,NULL,16)); // Colors (a, Y, Cr, Cb): Pattern:: select (action) foreground (green)
+            //uint32_copy(&amg[i], (uint32_t) strtoul(img->bgcolor_palette,NULL,16)); // Colors (a, Y, Cr, Cb): Pattern:: select (action) foreground (green)
             i+=4;
-
             // other possible streams (lower hierarchical levels)
             uint32_copy(&amg[i], 0x00108080);
             i+=4;

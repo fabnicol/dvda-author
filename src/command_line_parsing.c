@@ -40,6 +40,17 @@ uint8_t maxbuttons; // to be used in xml.c and menu.c as extern globals
 uint8_t resbuttons; // to be used in xml.c and menu.c as extern globals
 
 
+#ifdef __WIN32__
+DWORD WINAPI log_thread_function()
+{
+    if (logrefresh)
+        freopen(globals.settings.logfile, "wb", stdout);
+    else
+        freopen(globals.settings.logfile, "ab", stdout);
+    return 0;
+}
+#endif
+
 command_t *command_line_parsing(int argc, char* const argv[], command_t *command)
 {
 
@@ -135,7 +146,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"rights", required_argument, NULL, 'w'},
      //   {"no-padding", no_argument, NULL, '\1'},
      //   {"minimal-padding", no_argument, NULL, '\2'},
-        {"loghtml", no_argument, NULL, '\1'},
         {"extract", required_argument, NULL, 'x'},
         {"disable-lexer", no_argument, NULL, 'W'},
         {"pad-cont", no_argument, NULL, 'C'},
@@ -160,6 +170,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"select", required_argument, NULL, 'e'},
         {"image", required_argument, NULL, 'G'},
         {"background", required_argument, NULL, 'b'},
+        {"background-colors", required_argument, NULL, 2},
         {"background-mpg", required_argument, NULL, 'B'},
         {"soundtrack", required_argument, NULL, 'Q'},
         {"topmenu-colors", required_argument, NULL, 'y'},
@@ -175,9 +186,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"nmenus", required_argument, NULL, '6'},
         {"ncolumns", required_argument, NULL, '7'},
         {"activemenu-palette", required_argument, NULL, '8'},
-        {"no-refresh-tempdir",no_argument, NULL, '\4'},
-        {"no-refresh-outdir",no_argument, NULL, '\5'},
-        {"bindir",required_argument, NULL, '\3'},
+        {"loghtml", no_argument, NULL, 1},
+        {"bindir",required_argument, NULL, 3},
+        {"no-refresh-tempdir",no_argument, NULL, 4},
+        {"no-refresh-outdir",no_argument, NULL, 5},
         {NULL, 0, NULL, 0}
     };
 #endif
@@ -269,7 +281,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                     break;
 
-              case '\1' :
+              case 1 :
                     globals.loghtml=1;
 
                     break;
@@ -282,15 +294,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     if (globals.silence)
         freopen(LOGFILE, "ab", stdout); // to hush up stdout only.
-
-
-    if (((user_command_line) || (!globals.enable_lexer)) && (!globals.silence))
-    {
-        HEADER(PROGRAM, VERSION)
-    }
-
-    SINGLE_DOTS
-
 
 #ifndef __WIN32__
     if (globals.logfile)
@@ -309,11 +312,33 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 
         }
-
-
     }
+#else
+
+#include <windows.h>
+
+
+    HANDLE a_thread;
+    DWORD a_threadId;
+
+  // Create a new thread.
+    a_thread = CreateThread(NULL, 0, logthread_function, NULL,
+0, &a_threadId);
+
+    if (a_thread == NULL)
+    {
+        perror("[ERR]  Thread creation failed");
+        htmlize(globals.settings.logfile)
+        return(EXIT_FAILURE);
+    }
+
 #endif
 
+    if (((user_command_line) || (!globals.enable_lexer)) && (!globals.silence))
+    {
+        HEADER(PROGRAM, VERSION)
+        SINGLE_DOTS
+    }
 
     optind=0;
     opterr=1;
@@ -504,11 +529,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
 
-        case '\5':
+        case 5:
             refresh_outdir=0;
             break;
 
-        case '\4':
+        case 4:
             refresh_tempdir=0;
             break;
 
@@ -859,7 +884,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case 'p' :
 
-            startsector=(int32_t) strtol(optarg, NULL, 10);
+            startsector=(int32_t) strtoul(optarg, NULL, 10);
             errmsg=errno;
             switch (errmsg)
             {
@@ -939,7 +964,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 #endif
 #if 0
-        case '\1' :
+        case 1 :
             globals.padding=0;
             if (globals.lossy_rounding)
             {
@@ -950,7 +975,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             printf("%s\n", "[PAR]  No audio padding will be performed by core dvda-processes.");
             break;
 
-        case '\2' :
+        case 2 :
             globals.minimal_padding=1;
             printf("%s\n", "[PAR]  Minimal padding of audio samples (for evenness).");
             break;
@@ -1108,20 +1133,18 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if (palettecolorchain)
             {
                 free(img->textcolor_palette);
-                img->textcolor_palette= strtok(palettecolorchain, ",");
-                img->bgcolor_palette=strdup(strtok(NULL, ","));
-                img->highlightcolor_palette=strdup(strtok(NULL, ","));
-                img->selectfgcolor_palette=strdup(strtok(NULL, ","));
-                if ((img->selectfgcolor_palette == NULL)|| (img->highlightcolor_palette ==NULL) || (img->bgcolor_palette == NULL) || (img->textcolor_palette ==NULL))
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Color chain is illegal: enter text,background,highlight,select color separated by a colon");
+                img->textcolor_palette= strtok(palettecolorchain, ":");
+                //img->bgcolor_palette=strdup(strtok(NULL, ":"));
+                img->highlightcolor_palette=strdup(strtok(NULL, ":"));
+                img->selectfgcolor_palette=strdup(strtok(NULL, ":"));
+                if ((img->selectfgcolor_palette == NULL)|| (img->highlightcolor_palette ==NULL) ||  (img->textcolor_palette ==NULL))
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Color chain is illegal: enter text:highlight:select color separated by a colon");
                 errno=0;
-                if (img->textcolor_palette) printf("[PAR]  Top menu palette text color: %s %lx\n", img->textcolor_palette, strtol(img->textcolor_palette,NULL,16));
-                if (img->textcolor_palette) printf("[PAR]  Top menu palette background color: %s %lx\n", img->bgcolor_palette, strtol(img->bgcolor_palette,NULL,16));
-                if (img->textcolor_palette) printf("[PAR]  Top menu palette highlight color: %s %lx\n", img->highlightcolor_palette, strtol(img->highlightcolor_palette,NULL,16));
-                if (img->textcolor_palette) printf("[PAR]  Top menu palette select action color: %s %lx\n", img->selectfgcolor_palette, strtol(img->selectfgcolor_palette,NULL,16));
+                if (img->textcolor_palette) printf("[PAR]  Top menu palette text color: %s %lx\n", img->textcolor_palette, strtoul(img->textcolor_palette,NULL,16));
+                //if (img->textcolor_palette) printf("[PAR]  Top menu palette background color: %s %lx\n", img->bgcolor_palette, strtoul(img->bgcolor_palette,NULL,16));
+                if (img->textcolor_palette) printf("[PAR]  Top menu palette highlight color: %s %lx\n", img->highlightcolor_palette, strtoul(img->highlightcolor_palette,NULL,16));
+                if (img->textcolor_palette) printf("[PAR]  Top menu palette select action color: %s %lx\n", img->selectfgcolor_palette, strtoul(img->selectfgcolor_palette,NULL,16));
 
-                strtol(img->highlightcolor_palette,NULL,16), strtol(img->textcolor_palette,NULL,16),
-                       strtol(img->selectfgcolor_palette,NULL,16), strtol(img->bgcolor_palette,NULL,16);
                 if (errno == ERANGE)
                 {
                     EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one YCrCb coding overflows: check switch --palette")
@@ -1322,7 +1345,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
 
-        case '\3':
+        case 3:
 
             strlength=strlen(optarg);
             globals.settings.bindir=realloc(globals.settings.bindir, (strlength+25)*sizeof(char)); // 25 char for later application names
@@ -1624,7 +1647,26 @@ opterr=1;
             globals.topmenu=Min(globals.topmenu, RUN_SPUMUX_DVDAUTHOR);
             img->refresh=1;
             break;
+
+        case 2:
+
+            printf("%s%s\n", "[PAR]  Background color(s) for top (and active) menus : ", optarg);
+            str=strdup(optarg);
+
+            img->backgroundcolors=fn_strtok(str,':', img->backgroundcolors,0,NULL,NULL);
+            int bgcolors_arraylength=0;
+            if ((bgcolors_arraylength=arraylength(img->backgroundcolors)) < img->nmenus)
+            {
+                    int u;
+                    printf("%s\n","[WAR]  You did not give enough colors, completing with last one");
+                    for (u=0; u + bgcolors_arraylength < img->nmenus; u++)
+                      img->backgroundcolors[u+bgcolors_arraylength]=img->backgroundcolors[bgcolors_arraylength -1];
+            }
+
+            free(str);
+            globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             break;
+
 
         }
     }
@@ -1648,7 +1690,7 @@ if (stillpic_string)
                 goto standard_checks;
             }
             if (tab)
-                w=arraylength((void**) tab);
+                w=arraylength(tab);
             else
             {
                 perror("[ERR]  tab");

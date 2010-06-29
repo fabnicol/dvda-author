@@ -159,9 +159,11 @@ printf("%s","-O, --screentext string  Text for top menu. Format is"J"\"album_tex
 printf("%s","-U, --loop               loop background video.\n\n");
 printf("%s","-K, --highlightformat    -1 for automatic menu authoring"J"with little square before titles, 0 for underlining, 1 for button highlight.\n\n");
 printf("%s","-J, --font a,b,c         Font name,font size,font width"J"(number of pixels for width of font size 10)."J"Font name should be compatible with Image magick specifications (mogrify -list font).\n\n");
-printf("%s","-Y, --topmenu-palette string     Text for system palette. Format is "J"\"textcolor,backgroundcolor,highlightcolor,select action color\" "J"in alpha-YCrCb 32-bit hexa coding; backgroundcolor should be 0x008080, highlightcolor defines the colors of the underline or mobile highlight motif, select color"J"turns the text into another color, currently also the album and group text color.\n\n");
-printf("%s","-y, --topmenu-colors string     Text for menu colors. Format is"J"either \"norefresh\", to block the refreshing of menu images, or textcolor:backgroundcolor:highlightcolor:select action color in rgb values a,b,c between 0 and 255.\n\n");
-printf("%s","-b, --background         Background jpg files (comma-separated) to create a background mpg file"J"into which titles are multiplexed.\n\n");
+printf("%s","-Y, --topmenu-palette string     Text for system palette. Format is"J"either \"norefresh\", to block the refreshing of menu images, or:"J"textcolor:highlight_color:select_action color"J"in alpha-YCrCb 32-bit hexa coding. Here textcolor is the non-highlighted text for tracks, "J","J"highlight_color is the underline or mobile motif color,"J"and select_action_color is album and group labels"J"as well as color of tracks on pressing the highlighted track.\n\n");
+printf("%s","-8, --activemenu-palette string     Text for menu colors. Format is:"J"textcolor:highlight_text_color:highlight_color:select_action color"J"in alpha-YCrCb 32-bit hexa coding. Here textcolor is the non-highlighted text for tracks, "J"highlight_text_color is the color of album and group labels and highlighted text,"J"highlight_color is the underline or mobile motif color,"J"and select_action_color is on pressing the highlighted track.\n\n");
+printf("%s","-y, --topmenu-colors string     Text for menu colors. This is a developer's switch. "J"Use the -palette switches for modifying display colors. "J"This switch determines the colors of pictures generated in the temporary directory before creating the mpg background files."J" Format is either \"norefresh\", to block the refreshing of menu images, or "J"textcolor:backgroundcolor:highlightcolor:select action color in rgb values a,b,c between 0 and 255.\n\n");
+printf("%s","-b, --background         Background jpg files (comma-separated) to create a background mpg file"J"into which titles are multiplexed."J"Specify as many files as there are menus, or the last file will be duplicated for missing menu files.\n\n");
+printf("%s","    --background-colors  Background RGB colors to colorize background mpg files"J"into which titles are multiplexed."J"Specify as many colors as there are menus, or the last color will be duplicated for missing menu colors."J"Syntax is r,g,b:r2,g2,b2:...:rk,gkbk for --nmenus=k.\n\n");
 printf("%s","-0, --menustyle desc     Specifies top menu style"J"By default, tracks are listed under group headers."J"If desc='hierarchical', the first menu screen lists groups."J"If desc='active', all tracks will have an associated still picture with menu links that remain active while listening to the track.\n\n");
 printf("%s","-1, --stillvob f         Import already authored still pictures vob.\n\n");
 printf("%s","-2, --stilloptions ...   Still picture options (add after --stillpics). Each option applies to ranked pic, e.g."J"rank=0,manual,starteffect=fade,rank=1,starteffect=dissolve."J"Suboptions are:"J"rank=[number], starteffect=[effect], endeffect=[effect]"J"manual, lag=[number], start=[number], active"J"See details below. \n\n");
@@ -172,7 +174,7 @@ printf("%s","-5, --aspect             Set the playback aspect ratio code of the 
 printf("%s","                         1  - 1:1 display"J"2  - 4:3 display"J"3  - 16:9 display"J"4  - 2.21:1 display\n\n");
 printf("%s","-6, --nmenus int         Generates int top menus (default 1).\n\n");
 printf("%s","-7, --ncolumns int       Top menus will have at most int columns (default 3).\n\n");
-printf("%s","-8, --activemenu-palette string     Text for menu colors. Format is"J"either \"norefresh\", to block the refreshing of menu images, or textcolor:backgroundcolor:highlightcolor:select action color"J"in alpha-YCrCb 32-bit hexa coding. Here textcolor is the non-highlighted text, highlightcolor is the underline or mobile motif colors, the highlighted text has the same color as the group and album texts and select action color is on pressing the highlighted track.\n\n");
+
 printf("%s","-B, --background-mpg f   Background mpg file f"J"into which titles are multiplexed.\n\n");
 printf("%s","-Q, --soundtrack file    Background wav file f"J"to be multiplexed into background menu that must be supplied with -B or created with -b."J"By default a silent track will be multiplexed.\n\n");
 printf("%s","-A, --topvob f           Import already authored top vob menu f.\n\n");
@@ -570,7 +572,7 @@ int cutloop(char* s, uint32_t count)
     return (count > loop);
 }
 
-int arraylength(void ** tab)
+int arraylength(char ** tab)
   {
 int w=0;
 if (tab) while (tab[w] != NULL)  w++;

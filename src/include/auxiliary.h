@@ -77,6 +77,6 @@ void check_settings_file();
 void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size);
 char** fn_strtok(char* chain, char delim, char** array, uint32_t count, int  (*f)(char*, uint32_t ), char* remainder);
 int cutloop(char* s, uint32_t count);
-int arraylength(void ** tab);
+int arraylength(char ** tab);
 char* create_binary_path(char* local_variable, char* symbolic_constant, char* basename);
 #endif // AUXILIARY_H_INCLUDED

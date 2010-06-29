@@ -63,13 +63,11 @@ uint8_t tsvobpt[tsvobsize];
 memset(tsvobpt, 0, tsvobsize);
 FILE * tsvobfile=fopen(img->tsvob, "rb");
 
-fread(tsvobpt, activeheadersize, 1, activeheaderfile);
+if (fread(tsvobpt, activeheadersize, 1, activeheaderfile) == 0) perror("[ERR]  fread [active menu authoring, stage 1]");
 
-if (0 == fseek(tsvobfile, ACTIVEHEADER_INSERTOFFSET, SEEK_SET)) EXIT_ON_RUNTIME_ERROR_VERBOSE("fseek1")
+if (-1 == fseek(tsvobfile, ACTIVEHEADER_INSERTOFFSET, SEEK_SET)) perror("[ERR]  fseek [active menu authoring, stage 2]");
 
-
-fread(tsvobpt+activeheadersize+32, 0x314-ACTIVEHEADER_INSERTOFFSET, 1, tsvobfile);
-
+if (fread(tsvobpt+activeheadersize+32, 0x314-ACTIVEHEADER_INSERTOFFSET, 1, tsvobfile) == 0) perror("[ERR]  fread [active menu authoring, stage 3]");
 //nlinks=1;
 i=activeheadersize;
 
@@ -83,8 +81,8 @@ i=0x314;
 uint32_copy(&tsvobpt[i], 0x01BE04E8);
 i+=4;
 while (i < 0x800) { tsvobpt[i]=0xFF; i++; }
-if (0 == fseek(tsvobfile, 0x800, SEEK_SET)) EXIT_ON_RUNTIME_ERROR_VERBOSE("fseek2");
-fread(tsvobpt+0x800, tsvobsize-0x800, 1, tsvobfile);
+if (-1 == fseek(tsvobfile, 0x800, SEEK_SET)) perror("[ERR]  fseek [active menu authoring, stage 4]");
+if (fread(tsvobpt+0x800, tsvobsize-0x800, 1, tsvobfile) == 0) perror("[ERR]  fread, stage 1, create_activemenu");
 
 
 /* writing */
@@ -117,10 +115,6 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
     errno=0;
 
-
-    img->backgroundmpg[rank]=(char*)calloc(26+strlen(globals.settings.tempdir), sizeof(char));
-    if (img->backgroundmpg[rank] == NULL) perror("[ERR]  background mpg allocation\n");
-
     if (img->action == STILLPICS)
     {
         if (globals.debugging) printf("%s%u\n", "[INF]  Creating still picture #", rank+1);
@@ -129,12 +123,29 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     }
     else if (img->action == ANIMATEDVIDEO)
     {
+        if (globals.debugging) printf("[INF]  Creating animated rank #%u out of %s\n", rank+1, img->backgroundpic[rank]);
         sprintf(img->backgroundmpg[rank], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "background_movie_",rank, ".mpg");
         snprintf(pic, sizeof(pic), "%s", img->backgroundpic[rank]);
-        if (globals.debugging) printf("[INF]  Creating animated menu #%u out of %s\n", rank+1, img->backgroundpic[rank]);
     }
 
-    /////   command lines /////
+    /// Colorizing if need be ///
+
+   if (img->backgroundcolors)
+   {
+        if (globals.veryverbose) printf("%s\n", "[INF]  Colorizing background jpg files prior to multiplexing...");
+        char* mogrify=NULL;
+        char command[500];
+
+        mogrify=create_binary_path(mogrify, MOGRIFY, SEPARATOR MOGRIFY_BASENAME);
+
+        snprintf(command, 500, "%s -fill \"rgb(%s)\" -colorize 66%% %s", mogrify, img->backgroundcolors[rank], img->backgroundpic[rank]);
+
+        if (globals.debugging) printf("[INF]  Launching mogrify to colorize menu: %d with command line %s\n", rank, command);
+        if (system(command) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
+        fflush(NULL);
+   }
+
+   ///   command lines ///
 
     char* mp2enc=NULL;
     char* jpeg2yuv=NULL;
@@ -725,7 +736,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
         albumtext=basemotif[0];
         grouparray=fn_strtok(remainder, ':', grouparray, 0, NULL, NULL) ;
 
-        dim=arraylength((void **)grouparray);
+        dim=arraylength(grouparray);
         tracktext=calloc(dim, sizeof(char**));
         if (tracktext == NULL) perror("[ERR]  Track text allocation");
         grouptext=calloc(dim, sizeof(char**));

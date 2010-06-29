@@ -268,10 +268,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define DEFAULT_BGCOLOR_PIC   "0,0,0"  // black
 #define DEFAULT_HCOLOR_PIC   "255,0,0"  //red
 #define DEFAULT_SELCOLOR_PIC  "0,0,255"  // blue
-#define DEFAULT_ACTIVETEXTCOLOR_PALETTE "0xE6807F"  // pure white : non-highlighted text
-#define DEFAULT_ACTIVEBGCOLOR_PALETTE   "0x51F05A"  // background and highlighted text
-#define DEFAULT_ACTIVEHCOLOR_PALETTE    "0x902235"	//green	album, group text and underline color
-#define DEFAULT_ACTIVESELCOLOR_PALETTE "0x88B33A"  // ochre : the text turns ochre on pressing the remote for the highlighted text "0x286DF0"  // blue
+#define DEFAULT_ACTIVETEXTCOLOR_PALETTE "0x80E6807F"  // pure white : non-highlighted text
+#define DEFAULT_ACTIVEBGCOLOR_PALETTE   "0x8051F05A"  // background and highlighted text
+#define DEFAULT_ACTIVEHCOLOR_PALETTE    "0x80902235"	//green	album, group text and underline color
+#define DEFAULT_ACTIVESELCOLOR_PALETTE "0x8088B33A"  // ochre : the text turns ochre on pressing the remote for the highlighted text "0x286DF0"  // blue
 
 // Experience teaches this:
 #ifdef __WIN32__

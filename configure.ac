@@ -157,7 +157,7 @@ AC_FUNC_STRNLEN
 AC_FUNC_FSEEKO
 
 #checks only
-AC_CHECK_FUNCS([floor memmove memset mkdir rmdir setlocale strerror strtol snprintf fseek setlocale strchr strdup strndup strstr strnlen getsubopt memchr dup2 strncasecmp strrchr])
+AC_CHECK_FUNCS([floor memmove memset mkdir rmdir setlocale strerror strtol strtoul snprintf fseek setlocale strchr strdup strndup strstr strnlen getsubopt memchr dup2 strncasecmp strrchr])
 
 # using -liberty to bootstrap GNU libc usage
 

@@ -620,7 +620,7 @@
 1277674369 /home/fab/Dev/dvda-author-10.06/src/include/commonvars.h
 	"config.h"
 
-1277667741 /home/fab/Dev/dvda-author-10.06/src/include/structures.h
+1277755871 /home/fab/Dev/dvda-author-10.06/src/include/structures.h
 	"stream_decoder.h"
 	"inttypes.h"
 
@@ -646,7 +646,7 @@
 	<stdint.h>
 	<sys/resource.h>
 
-1277682221 /home/fab/Dev/dvda-author-10.06/src/include/auxiliary.h
+1277748911 /home/fab/Dev/dvda-author-10.06/src/include/auxiliary.h
 	<sys/stat.h>
 	<sys/types.h>
 	<dirent.h>
@@ -720,7 +720,7 @@
 	"structures.h"
 	"auxiliary.h"
 
-1277674802 source:/home/fab/Dev/dvda-author-10.06/src/auxiliary.c
+1277755286 source:/home/fab/Dev/dvda-author-10.06/src/auxiliary.c
 	"config.h"
 	<stdlib.h>
 	<stdio.h>
@@ -762,7 +762,7 @@
 1277481601 /home/fab/Dev/dvda-author-10.06/src/include/file_input_parsing.h
 	"auxiliary.h"
 
-1277681422 source:/home/fab/Dev/dvda-author-10.06/src/dvda-author2.c
+1277757008 source:/home/fab/Dev/dvda-author-10.06/src/dvda-author2.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -801,7 +801,7 @@
 1277481601 /home/fab/Dev/dvda-author-10.06/src/include/lexer.h
 	"structures.h"
 
-1277674939 /home/fab/Dev/dvda-author-10.06/src/include/dvda-author.h
+1277754559 /home/fab/Dev/dvda-author-10.06/src/include/dvda-author.h
 	"commonvars.h"
 	"structures.h"
 
@@ -829,7 +829,7 @@
 	<stdint.h>
 	"structures.h"
 
-1277676390 source:/home/fab/Dev/dvda-author-10.06/src/launch_manager.c
+1277745344 source:/home/fab/Dev/dvda-author-10.06/src/launch_manager.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -990,7 +990,7 @@
 
 1277481601 /home/fab/Dev/dvda-author-10.06/src/include/multichannel.h
 
-1277679076 source:/home/fab/Dev/dvda-author-10.06/src/command_line_parsing.c
+1277757952 source:/home/fab/Dev/dvda-author-10.06/src/command_line_parsing.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -1014,11 +1014,12 @@
 	"fixwav_manager.h"
 	"command_line_parsing.h"
 	"menu.h"
+	<windows.h>
 
 1277481601 /home/fab/Dev/dvda-author-10.06/libfixwav/src/include/fixwav_auxiliary.h
 	"fixwav_manager.h"
 
-1277681378 source:/home/fab/Dev/dvda-author-10.06/src/menu.c
+1277748911 source:/home/fab/Dev/dvda-author-10.06/src/menu.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>

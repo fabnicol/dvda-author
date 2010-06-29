@@ -60,13 +60,13 @@ int create_asvs(char* audiotsdir,int naudio_groups, uint8_t *numtitles, uint16_t
     uint16_copy(&asvs[0xE], 0x0012);  // DVD Spec
     asvs[0x13]=2; // unknown
     asvs[0x18]=0x53; // unknown
-    asvs[0x19]=0x1; // activates buttons
+    asvs[0x19]=0x1; // activates buttons // numbre of menus ?
 
-    uint32_copy(&asvs[0x20], (uint32_t) strtol(img->activetextcolor_palette,NULL,16));   // This palette is taken as is from a commercial DVD: unselected text (display)
+    uint32_copy(&asvs[0x20], (uint32_t) strtoul(img->activetextcolor_palette,NULL,16));   // This palette is taken as is from a commercial DVD: unselected text (display)
     //uint32_copy(&asvs[0x24], (uint32_t) 0x80E6807F);
-    uint32_copy(&asvs[0x28], (uint32_t) strtol(img->activebgcolor_palette,NULL,16)); // album, group headers and highlighted text
-    uint32_copy(&asvs[0x2C], (uint32_t) strtol(img->activehighlightcolor_palette,NULL,16)); //highlight motif
-    uint32_copy(&asvs[0x30], (uint32_t) strtol(img->activeselectfgcolor_palette,NULL,16)); // select action text only
+    uint32_copy(&asvs[0x28], (uint32_t) strtoul(img->activebgcolor_palette,NULL,16)); // album, group headers and highlighted text
+    uint32_copy(&asvs[0x2C], (uint32_t) strtoul(img->activehighlightcolor_palette,NULL,16)); //highlight motif
+    uint32_copy(&asvs[0x30], (uint32_t) strtoul(img->activeselectfgcolor_palette,NULL,16)); // select action text only
    /*
     uint32_copy(&asvs[0x34], 0x007C6355);
     uint32_copy(&asvs[0x38], 0x006ADDCA);
