@@ -37,6 +37,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 
 
+#ifdef __WIN32__
+#define SEPARATOR "\\"
+#else
+#define SEPARATOR  "/"
+#endif
+
 #include <sys/types.h>
 #ifndef __WIN32__
 #include <sys/stat.h>
@@ -113,6 +119,17 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
 typedef struct
+{
+ _Bool    exists;
+ char*    extension;
+ char*    rawfilename;
+ char*    filename;
+ char*    path;
+ uint16_t separators;
+ uint16_t length;
+}path_t;
+
+typedef struct
  {
     struct rusage *nothing;
     struct rusage *start;
@@ -159,6 +176,7 @@ int end_seek(FILE* outfile);
 void parse_wav_header(FILE * infile, infochunk* ichunk);
 char* get_command_line(char* args[]);
 // These functions should be inlined hence in a header file
+int copy_file2dir(const char *existing_file, const char *new_dir);
 
 ALWAYS_INLINE_GCC inline static void  uint32_copy(uint8_t* buf, uint32_t x)
 {

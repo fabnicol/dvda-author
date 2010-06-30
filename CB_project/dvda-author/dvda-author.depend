@@ -1039,3 +1039,510 @@
 	"auxiliary.h"
 	"amg.h"
 
+1277892018 source:c:\cygwin2\home\dvda-author\libglibc\src\getopt.c
+	<config.h>
+	<stdio.h>
+	<stdlib.h>
+	<unistd.h>
+	<string.h>
+	<unixlib.h>
+	<libintl.h>
+	<wchar.h>
+	"getopt.h"
+	"getopt_int.h"
+
+1277892018 c:\cygwin2\home\dvda-author\libglibc\src\include\getopt.h
+	<ctype.h>
+
+1277892018 c:\cygwin2\home\dvda-author\libglibc\src\include\getopt_int.h
+
+1277892018 source:c:\cygwin2\home\dvda-author\libglibc\src\getopt1.c
+	<config.h>
+	"getopt.h"
+	"getopt_int.h"
+	<stdio.h>
+	<stdlib.h>
+
+1277892018 source:c:\cygwin2\home\dvda-author\libglibc\src\getsubopt.c
+	<stdlib.h>
+	<string.h>
+	<string.h>
+	"strchrnul.h"
+
+1277892018 c:\cygwin2\home\dvda-author\libglibc\src\include\strchrnul.h
+
+1277892018 source:c:\cygwin2\home\dvda-author\libglibc\src\malloc.c
+	<config.h>
+	<sys/types.h>
+
+1277892018 source:c:\cygwin2\home\dvda-author\libglibc\src\strchrnul.c
+	<string.h>
+	<stdlib.h>
+
+1277892018 source:c:\cygwin2\home\dvda-author\libglibc\src\strdup.c
+	<config.h>
+	"string.h"
+	<stdlib.h>
+	<string.h>
+
+1277892018 source:c:\cygwin2\home\dvda-author\libglibc\src\strndup.c
+	"config.h"
+	<stdio.h>
+	<sys/types.h>
+	<stdlib.h>
+	<string.h>
+	"strnlen.h"
+
+1277892018 c:\cygwin2\home\dvda-author\libglibc\src\include\strnlen.h
+	<stdlib.h>
+
+1277892018 source:c:\cygwin2\home\dvda-author\libglibc\src\strnlen.c
+	<config.h>
+	<string.h>
+	"strnlen.h"
+
+1277892020 source:c:\cygwin2\home\dvda-author\src\amg2.c
+	"commonvars.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<math.h>
+	"errno.h"
+	<unistd.h>
+	<sys/types.h>
+	<sys/wait.h>
+	<sys/stat.h>
+	<fcntl.h>
+	"structures.h"
+	"c_utils.h"
+	"auxiliary.h"
+	"amg.h"
+	"winport.h"
+	"xml.h"
+	"menu.h"
+	"launch_manager.h"
+	"asvs.h"
+
+1277897852 c:\cygwin2\home\dvda-author\src\include\commonvars.h
+	"config.h"
+
+1277892020 c:\cygwin2\home\dvda-author\src\include\structures.h
+	"stream_decoder.h"
+	"inttypes.h"
+
+1277892019 c:\cygwin2\home\dvda-author\libutils\src\include\stream_decoder.h
+	<stdio.h>
+	"export.h"
+	"format.h"
+
+1277892019 c:\cygwin2\home\dvda-author\libutils\src\include\export.h
+
+1277892019 c:\cygwin2\home\dvda-author\libutils\src\include\format.h
+	"export.h"
+	"ordinals.h"
+
+1277892019 c:\cygwin2\home\dvda-author\libutils\src\include\ordinals.h
+	<inttypes.h>
+
+1277908005 c:\cygwin2\home\dvda-author\libutils\src\include\c_utils.h
+	"config.h"
+	<sys/types.h>
+	<sys/stat.h>
+	<string.h>
+	<stdint.h>
+	<sys/resource.h>
+
+1277892020 c:\cygwin2\home\dvda-author\src\include\auxiliary.h
+	<sys/stat.h>
+	<sys/types.h>
+	<dirent.h>
+	<errno.h>
+	"audio2.h"
+	"c_utils.h"
+	"commonvars.h"
+	"structures.h"
+
+1277892020 c:\cygwin2\home\dvda-author\src\include\audio2.h
+	<stdio.h>
+	<stdint.h>
+	<sys/types.h>
+	<sys/stat.h>
+	"structures.h"
+
+1277892020 c:\cygwin2\home\dvda-author\src\include\amg.h
+	<stdio.h>
+	<stdint.h>
+	<inttypes.h>
+	"audio2.h"
+	"structures.h"
+
+1277892019 c:\cygwin2\home\dvda-author\libutils\src\include\winport.h
+	"config.h"
+	"c_utils.h"
+	<sys/types.h>
+	<stdint.h>
+	<stdio.h>
+	<tchar.h>
+	<windows.h>
+	<sys/stat.h>
+	<string.h>
+	<sys/resource.h>
+	<sys/stat.h>
+
+1277892020 c:\cygwin2\home\dvda-author\src\include\xml.h
+
+1277892020 c:\cygwin2\home\dvda-author\src\include\menu.h
+
+1277892020 c:\cygwin2\home\dvda-author\src\include\launch_manager.h
+	"structures.h"
+	"commonvars.h"
+
+1277892020 c:\cygwin2\home\dvda-author\src\include\asvs.h
+
+1277892020 source:c:\cygwin2\home\dvda-author\src\asvs.c
+	"commonvars.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<math.h>
+	<errno.h>
+	<stdint.h>
+	<unistd.h>
+	"structures.h"
+	"c_utils.h"
+	"winport.h"
+	"auxiliary.h"
+
+1277892020 source:c:\cygwin2\home\dvda-author\src\ats.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<math.h>
+	<errno.h>
+	"structures.h"
+	"audio2.h"
+	"c_utils.h"
+	"auxiliary.h"
+	"commonvars.h"
+
+1277892020 source:c:\cygwin2\home\dvda-author\src\atsi2.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<math.h>
+	"errno.h"
+	"structures.h"
+	"audio2.h"
+	"c_utils.h"
+	"commonvars.h"
+	"structures.h"
+	"auxiliary.h"
+
+1277892020 source:c:\cygwin2\home\dvda-author\src\audio.c
+	"config.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<errno.h>
+	<unistd.h>
+	"structures.h"
+	"export.h"
+	"audio2.h"
+	"stream_decoder.h"
+	"c_utils.h"
+	"fixwav.h"
+	"fixwav_manager.h"
+	"auxiliary.h"
+	"command_line_parsing.h"
+	"winport.h"
+	"sox.h"
+	"libsoxconvert.h"
+	"multichannel.h"
+	"commonvars.h"
+
+1277892018 c:\cygwin2\home\dvda-author\libfixwav\src\include\fixwav.h
+	<assert.h>
+	<stdint.h>
+
+1277892018 c:\cygwin2\home\dvda-author\libfixwav\src\include\fixwav_manager.h
+	<sys/stat.h>
+	<sys/types.h>
+
+1277892020 c:\cygwin2\home\dvda-author\src\include\command_line_parsing.h
+	"structures.h"
+	"commonvars.h"
+	"fixwav_manager.h"
+
+1277892019 c:\cygwin2\home\dvda-author\libs\include\libsoxconvert\sox.h
+	<limits.h>
+	<stdarg.h>
+	<stddef.h>
+	<stdio.h>
+	<stdlib.h>
+	"soxstdint.h"
+
+1277892019 c:\cygwin2\home\dvda-author\libs\include\libsoxconvert\soxstdint.h
+	<stdint.h>
+
+1277892020 c:\cygwin2\home\dvda-author\src\include\libsoxconvert.h
+
+1277892020 c:\cygwin2\home\dvda-author\src\include\multichannel.h
+
+1277892020 source:c:\cygwin2\home\dvda-author\src\auxiliary.c
+	"config.h"
+	<stdlib.h>
+	<stdio.h>
+	<sys/stat.h>
+	<sys/types.h>
+	<dirent.h>
+	<stdarg.h>
+	<sys/time.h>
+	<errno.h>
+	<unistd.h>
+	<string.h>
+	"strdup.h"
+	<time.h>
+	"structures.h"
+	"ports.h"
+	"audio2.h"
+	"auxiliary.h"
+	"c_utils.h"
+	"file_input_parsing.h"
+	"ports.h"
+	"commonvars.h"
+
+1277892018 c:\cygwin2\home\dvda-author\libglibc\src\include\strdup.h
+
+1277892020 c:\cygwin2\home\dvda-author\src\include\ports.h
+	<io.h>
+	<sys/resource.h>
+	"commonvars.h"
+	"libglibc/src/include/strndup.h"
+	"libglibc/src/include/getsubopt.h"
+	"libglibc/src/include/strdup.h"
+
+1277892018 c:\cygwin2\home\dvda-author\\libglibc\src\include\strndup.h
+
+1277892018 c:\cygwin2\home\dvda-author\\libglibc\src\include\getsubopt.h
+
+1277892018 c:\cygwin2\home\dvda-author\\libglibc\src\include\strdup.h
+
+1277892020 c:\cygwin2\home\dvda-author\src\include\file_input_parsing.h
+	"auxiliary.h"
+
+1277897726 source:c:\cygwin2\home\dvda-author\src\dvda-author2.c
+	"config.h"
+	<stdio.h>
+	<stdlib.h>
+	<stdint.h>
+	<unistd.h>
+	<getopt.h>
+	<sys/stat.h>
+	<sys/types.h>
+	<dirent.h>
+	<locale.h>
+	<errno.h>
+	<inttypes.h>
+	<string.h>
+	"commonvars.h"
+	"structures.h"
+	"c_utils.h"
+	"audio2.h"
+	"auxiliary.h"
+	"ports.h"
+	"file_input_parsing.h"
+	"launch_manager.h"
+	"command_line_parsing.h"
+	"lexer.h"
+	"commonvars.h"
+	"dvda-author.h"
+
+1277892020 c:\cygwin2\home\dvda-author\src\include\lexer.h
+	"structures.h"
+
+1277892020 c:\cygwin2\home\dvda-author\src\include\dvda-author.h
+	"commonvars.h"
+	"structures.h"
+
+1277892020 source:c:\cygwin2\home\dvda-author\src\file_input_parsing.c
+	"config.h"
+	<stdio.h>
+	<stdlib.h>
+	<errno.h>
+	"structures.h"
+	"file_input_parsing.h"
+	"c_utils.h"
+	"libats2wav.h"
+	"ports.h"
+	"commonvars.h"
+
+1277892017 c:\cygwin2\home\dvda-author\libats2wav\src\include\libats2wav.h
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<fcntl.h>
+	<unistd.h>
+	<inttypes.h>
+	<stdint.h>
+	"structures.h"
+
+1277892020 source:c:\cygwin2\home\dvda-author\src\launch_manager.c
+	"config.h"
+	<stdio.h>
+	<stdlib.h>
+	<errno.h>
+	<string.h>
+	<unistd.h>
+	<sys/types.h>
+	<sys/wait.h>
+	"strdup.h"
+	"structures.h"
+	"audio2.h"
+	"ats.h"
+	"atsi.h"
+	"amg.h"
+	"samg.h"
+	"asvs.h"
+	"videoimport.h"
+	"c_utils.h"
+	"ports.h"
+	"auxiliary.h"
+	"commonvars.h"
+	"menu.h"
+	"winport.h"
+
+1277892020 c:\cygwin2\home\dvda-author\src\include\ats.h
+	<stdio.h>
+	<stdint.h>
+	"audio2.h"
+
+1277892020 c:\cygwin2\home\dvda-author\src\include\atsi.h
+	<stdio.h>
+	<stdint.h>
+	"audio2.h"
+	"structures.h"
+
+1277892020 c:\cygwin2\home\dvda-author\src\include\samg.h
+	<stdio.h>
+	<stdint.h>
+	"audio2.h"
+
+1277892020 c:\cygwin2\home\dvda-author\src\include\videoimport.h
+	<inttypes.h>
+
+1277892020 source:c:\cygwin2\home\dvda-author\src\lexer.c
+	"config.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<ctype.h>
+	"structures.h"
+	"lexer.h"
+	"dvda-author.h"
+	"auxiliary.h"
+	"c_utils.h"
+
+1277892020 source:c:\cygwin2\home\dvda-author\src\libsoxconvert.c
+	<sox.h>
+	<stdio.h>
+	<errno.h>
+	"c_utils.h"
+	"structures.h"
+	"libsoxconvert.h"
+
+1277892020 source:c:\cygwin2\home\dvda-author\src\menu.c
+	"config.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<errno.h>
+	<unistd.h>
+	<math.h>
+	<sys/types.h>
+	<sys/wait.h>
+	<sys/stat.h>
+	<fcntl.h>
+	"structures.h"
+	"c_utils.h"
+	"commonvars.h"
+	"menu.h"
+	"launch_manager.h"
+	"winport.h"
+	"auxiliary.h"
+	"amg.h"
+
+1277892020 source:c:\cygwin2\home\dvda-author\src\samg2.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<math.h>
+	<errno.h>
+	"structures.h"
+	"audio2.h"
+	"samg.h"
+	"commonvars.h"
+	"c_utils.h"
+	"auxiliary.h"
+
+1277892020 source:c:\cygwin2\home\dvda-author\src\videoimport.c
+	<stdio.h>
+	<stdlib.h>
+	<sys/stat.h>
+	<sys/types.h>
+	<stdarg.h>
+	<sys/time.h>
+	<errno.h>
+	<unistd.h>
+	<string.h>
+	"structures.h"
+	"commonvars.h"
+	"videoimport.h"
+	"auxiliary.h"
+	"c_utils.h"
+	"ports.h"
+
+1277892020 source:c:\cygwin2\home\dvda-author\src\xml.c
+	"config.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<errno.h>
+	"structures.h"
+	"c_utils.h"
+	"commonvars.h"
+	"menu.h"
+	"launch_manager.h"
+	"winport.h"
+	"auxiliary.h"
+
+1277893136 source:c:\cygwin2\home\dvda-author\src\command_line_parsing.c
+	"config.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<stdint.h>
+	<unistd.h>
+	<fcntl.h>
+	"getopt.h"
+	<sys/time.h>
+	"dvda-author.h"
+	"commonvars.h"
+	"structures.h"
+	"c_utils.h"
+	"audio2.h"
+	"auxiliary.h"
+	"ports.h"
+	"file_input_parsing.h"
+	"launch_manager.h"
+	"dvda-author.h"
+	"fixwav_auxiliary.h"
+	"fixwav_manager.h"
+	"command_line_parsing.h"
+	"menu.h"
+	<windows.h>
+
+1277892018 c:\cygwin2\home\dvda-author\libfixwav\src\include\fixwav_auxiliary.h
+	"fixwav_manager.h"
+
