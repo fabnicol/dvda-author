@@ -69,6 +69,51 @@ void pause_dos_type()
 
 }
 
+
+
+
+struct path_t *parse_filepath(char* filepath)
+{
+    path_t *chain=calloc(1, sizeof(path_t));
+    if (chain == NULL) return NULL;
+    int u, last_separator_position, dot_position;
+    for (u=0; filepath[u] != '\0'; u++)
+    {
+        switch (filepath[u])
+        {
+          case  '.' :          chain->extension=strdup(filepath+u);
+                               dot_position=u;
+
+
+                    break;
+          case  '/' :
+          #ifdef __WIN32__
+          case  '\\':
+          #endif
+                              chain->separators++;
+                              last_separator_position=u;
+                    break;
+          case  '\0':
+                    chain->length=u;
+                    break;
+
+        }
+    }
+        chain->filename=strdup(filepath+last_separator_position+1);
+        chain->path=strdup(filepath);
+        chain->path[last_separator_position]=0;
+        chain->rawfilename=strdup(filepath);
+        chain->rawfilename[dot_position]=0;
+        errno=0;
+        FILE* f=fopen(filepath, "rb");
+        if ((errno) || (f == NULL)) chain->exists=0;
+        else chain->exists=1;
+
+
+return chain;
+}
+
+
 // allocates heap memory to produce the result of the concatenation of two strings and returns the length of the concatenate
 // the result of the concatenation is placed into dest which is reallocated
 // returns -1 if either argument is null or 0 on error
@@ -570,6 +615,42 @@ int copy_file(const char *existing_file, const char *new_file)
     return(errorlevel);
 
 }
+
+
+int copy_file2dir(const char *existing_file, const char *new_dir)
+{
+// existence of new_dir is not tested
+// existence of dile dest is tested and if exists, duplication generates file counter in filename
+// to ensure continuity of counters, copy file operations should come in a "closely-knit loop" without
+// copy file operations in between for other files
+
+    static uint32_t counter;
+    int errorlevel;
+    if (globals.veryverbose) printf("[INF]  Copying file %s to directory %s\n", existing_file, new_dir);
+    path_t* filestruct=parse_filepath(existing_file);
+
+    char dest[filestruct->length+strlen(new_dir)+1+1+6]; // 6-digit counter
+
+
+    if (filestruct->exists)
+     {
+          counter++;
+          sprintf(dest, "%s%s%s%d%s", new_dir, SEPARATOR, filestruct->rawfilename, counter, filestruct->extension);
+     }
+     else
+          sprintf(dest, "%s%s%s", new_dir, SEPARATOR, filestruct->filename);
+
+    errorlevel=copy_file(existing_file, dest);
+
+    if (globals.veryverbose)
+      if (errorlevel == 0) printf("[INF]  File was copied as: %s\n", dest);
+    errno=0;
+    return(errorlevel);
+
+}
+
+
+
 
 int cat_file(const char *existing_file, const char *new_file)
 {

@@ -77,8 +77,6 @@ void normalize_temporary_paths(pic* img)
     else
     {
         int menu;
-        char img_save[CHAR_BUFSIZ];
-        if (img->backgroundpic[0]) strcpy(img_save, img->backgroundpic[0]);
 
         img->backgroundpic=calloc(img->nmenus+1,sizeof(char*));
         img->backgroundmpg=calloc(img->nmenus+1,sizeof(char*));
@@ -96,7 +94,6 @@ void normalize_temporary_paths(pic* img)
 
             img->backgroundpic[menu]=calloc(s+13, sizeof(char));
             sprintf(img->backgroundpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "bgpic", menu, ".jpg");
-            if (img->backgroundpic[menu]) copy_file(img_save, img->backgroundpic[menu]);
 
             img->imagepic[menu]=calloc(s+13, sizeof(char));
             sprintf(img->imagepic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "impic", menu, ".png");
