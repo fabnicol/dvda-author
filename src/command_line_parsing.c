@@ -321,6 +321,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 
             }
+    }
 
 #else
 
@@ -737,7 +738,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 img->activeheader=realloc(img->activeheader, (strlength+1+1+17)*sizeof(char));  // activeheader
                 if (img->activeheader) sprintf(img->activeheader, "%s"SEPARATOR"%s", optarg, "menu"SEPARATOR"activeheader");
                 globals.settings.datadir=calloc(strlength+1+4+1, sizeof(char));
-                sprintf(globals.settings.datadir, "%s%s%s", optarg, SEPARATOR, "menu");
+                sprintf(globals.settings.datadir, "%s%s", optarg, SEPARATOR);
                 break;
 
 
@@ -1727,14 +1728,18 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 if (globals.topmenu <= ACTIVE_MENU_ONLY)
 {
  int u;
+ change_directory(globals.settings.datadir);
  if (duplicate_blankscreen)
-    copy_file2dir(img->blankscreen, globals.settings.datadir);
+    errno=copy_file2dir(img->blankscreen, globals.settings.tempdir);
 
- copy_file2dir(img->backgroundpic[0], globals.settings.datadir);
+ errno=copy_file2dir(img->backgroundpic[0], globals.settings.tempdir);
 
  if (duplicate_backgroundpics)
   for (u=1; u < img->nmenus; u++)
-    copy_file2dir(img->backgroundpic[0], globals.settings.datadir);
+    errno=copy_file2dir(img->backgroundpic[0], globals.settings.tempdir);
+
+if (errno)  EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Failed to copy background pictures to temporary directory.")
+change_directory(globals.settings.workdir);
 }
 
 // This had to be postponed after command line parsing owing to tempdir chain user input

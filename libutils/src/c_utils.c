@@ -76,12 +76,12 @@ struct path_t *parse_filepath(char* filepath)
 {
     path_t *chain=calloc(1, sizeof(path_t));
     if (chain == NULL) return NULL;
-    int u, last_separator_position, dot_position;
+    int u, last_separator_position=0, dot_position=0;
     for (u=0; filepath[u] != '\0'; u++)
     {
         switch (filepath[u])
         {
-          case  '.' :          chain->extension=strdup(filepath+u);
+          case  '.' :
                                dot_position=u;
 
 
@@ -99,15 +99,20 @@ struct path_t *parse_filepath(char* filepath)
 
         }
     }
+        chain->extension=strdup(filepath+dot_position);
         chain->filename=strdup(filepath+last_separator_position+1);
+        puts(chain->filename);
         chain->path=strdup(filepath);
         chain->path[last_separator_position]=0;
         chain->rawfilename=strdup(filepath);
         chain->rawfilename[dot_position]=0;
+        chain->rawfilename += last_separator_position+1;
+
         errno=0;
         FILE* f=fopen(filepath, "rb");
         if ((errno) || (f == NULL)) chain->exists=0;
         else chain->exists=1;
+        errno=0;
 
 
 return chain;
@@ -627,24 +632,28 @@ int copy_file2dir(const char *existing_file, const char *new_dir)
     static uint32_t counter;
     int errorlevel;
     if (globals.veryverbose) printf("[INF]  Copying file %s to directory %s\n", existing_file, new_dir);
+
     path_t* filestruct=parse_filepath(existing_file);
+    if (!filestruct) return -1;
 
-    char dest[filestruct->length+strlen(new_dir)+1+1+6]; // 6-digit counter
+    char dest[filestruct->length+strlen(new_dir)+1+6+2]; // 6-digit counter +1 underscore; size is a maximum
+    sprintf(dest, "%s%s%s", new_dir, SEPARATOR, filestruct->filename);
+
+    path_t *filedest=parse_filepath(dest);
+    if (!filedest) return -1;
 
 
-    if (filestruct->exists)
+    if (filedest->exists)
      {
           counter++;
-          sprintf(dest, "%s%s%s%d%s", new_dir, SEPARATOR, filestruct->rawfilename, counter, filestruct->extension);
+          // overwrite
+          sprintf(dest, "%s%s%s_%d%s", new_dir, SEPARATOR, filestruct->rawfilename, counter, filestruct->extension);
      }
-     else
-          sprintf(dest, "%s%s%s", new_dir, SEPARATOR, filestruct->filename);
 
     errorlevel=copy_file(existing_file, dest);
-
-    if (globals.veryverbose)
-      if (errorlevel == 0) printf("[INF]  File was copied as: %s\n", dest);
     errno=0;
+    free(filestruct);
+    free(filedest);
     return(errorlevel);
 
 }
