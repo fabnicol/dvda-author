@@ -36,6 +36,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define ALLOWED_OPTIONS  "\1\2\3\4\50123456789aA:b:B:c:dD:e:E:f::F::g:G:hH:i:I::j:J:k:K:l:L:m::M:nN:o:O:p:P::qQ:r::R:s:S::tT:u:U::vV:w:Wx:X:y:Y:z:Z:"
 void normalize_temporary_paths(pic* img);
 
-
+command_t* lexer_analysis(command_t* command, lexer_t* lexer, const char* config_file, _Bool config_type);
 #endif // DVDA-AUTHOR_H_INCLUDED
 

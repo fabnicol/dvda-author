@@ -27,11 +27,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include <stdlib.h>
 #include <stdio.h>
-#ifdef __WIN32__
-#include <io.h>
-#else
+//#ifdef __WIN32__
+//#include <io.h>
+//#else
 #include <unistd.h>
-#endif
+//#endif
 #include <dirent.h>
 #include <stdarg.h>
 #include <sys/time.h>
@@ -74,7 +74,7 @@ void pause_dos_type()
 
 
 
-struct path_t *parse_filepath(char* filepath)
+path_t *parse_filepath(const char* filepath)
 {
     path_t *chain=calloc(1, sizeof(path_t));
     if (chain == NULL) return NULL;
@@ -641,7 +641,8 @@ char* copy_file2dir(const char *existing_file, const char *new_dir)
     path_t* filestruct=parse_filepath(existing_file);
     if (!filestruct) return NULL;
 
-    char dest[filestruct->length+strlen(new_dir)+1+6+2]; // 6-digit counter +1 underscore; size is a maximum
+    char* dest=calloc(filestruct->length+strlen(new_dir)+1+6+2, sizeof(char)); // 6-digit counter +1 underscore; size is a maximum
+    if (dest == NULL) return NULL;
     sprintf(dest, "%s%s%s", new_dir, SEPARATOR, filestruct->filename);
 
     path_t *filedest=parse_filepath(dest);
