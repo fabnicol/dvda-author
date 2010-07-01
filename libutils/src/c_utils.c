@@ -59,11 +59,13 @@ void pause_dos_type()
     char buffer[150];
     puts("Press twice on Enter to continue...");
 
-    do {
-	    scanf("%c", &reply);
-	    fgets(buffer, 150, stdin);
-	    if (reply == '\n') return;
-    } while(1);
+    do
+    {
+        scanf("%c", &reply);
+        fgets(buffer, 150, stdin);
+        if (reply == '\n') return;
+    }
+    while(1);
 
 
 
@@ -77,45 +79,48 @@ struct path_t *parse_filepath(char* filepath)
     path_t *chain=calloc(1, sizeof(path_t));
     if (chain == NULL) return NULL;
     int u, last_separator_position=0, dot_position=0;
-    for (u=0; filepath[u] != '\0'; u++)
+    for (u=0; chain->length ==0 ; u++)
     {
         switch (filepath[u])
         {
-          case  '.' :
-                               dot_position=u;
+        case  '.' :
+            dot_position=u;
 
 
-                    break;
-          case  '/' :
-          #ifdef __WIN32__
-          case  '\\':
-          #endif
-                              chain->separators++;
-                              last_separator_position=u;
-                    break;
-          case  '\0':
-                    chain->length=u;
-                    break;
+            break;
+        case  '/' :
+#ifdef __WIN32__
+        case  '\\':
+#endif
+            chain->separators++;
+            last_separator_position=u;
+            break;
+        case  '\0':
+            chain->length=u;
+            break;
 
         }
     }
-        chain->extension=strdup(filepath+dot_position);
-        chain->filename=strdup(filepath+last_separator_position+1);
-        puts(chain->filename);
-        chain->path=strdup(filepath);
-        chain->path[last_separator_position]=0;
-        chain->rawfilename=strdup(filepath);
-        chain->rawfilename[dot_position]=0;
-        chain->rawfilename += last_separator_position+1;
 
-        errno=0;
-        FILE* f=fopen(filepath, "rb");
-        if ((errno) || (f == NULL)) chain->exists=0;
-        else chain->exists=1;
-        errno=0;
+    chain->extension=strdup(filepath+dot_position);
+    chain->filename=strdup(filepath+last_separator_position+1);
+    chain->path=strdup(filepath);
+    chain->path[last_separator_position]=0;
+    chain->rawfilename=strdup(filepath);
+    chain->rawfilename[dot_position]=0;
+    chain->rawfilename += last_separator_position+1;
+    if (globals.veryverbose)
+        printf("[MSG]  Path analysis:\n       path: %s\n       raw filename: %s\n       extension: %s\n       filename: %s\n       length %d\n",
+               chain->path, chain->rawfilename, chain->extension, chain->filename, chain->length);
+
+    errno=0;
+    FILE* f=fopen(filepath, "rb");
+    if ((errno) || (f == NULL)) chain->exists=0;
+    else chain->exists=1;
+    errno=0;
 
 
-return chain;
+    return chain;
 }
 
 
@@ -125,29 +130,29 @@ return chain;
 
 char * concatenate(char* dest, char* str1, char* str2)
 {
-if ((!str1) || (!str2)) return NULL;
-errno=0;
-uint16_t s1=strlen(str1);
-uint16_t s2=strlen(str2);
+    if ((!str1) || (!str2)) return NULL;
+    errno=0;
+    uint16_t s1=strlen(str1);
+    uint16_t s2=strlen(str2);
 
-dest=realloc(dest, (s1+s2+1)*sizeof(char));
+    dest=realloc(dest, (s1+s2+1)*sizeof(char));
 
- memcpy(dest, str1, s1);
- memcpy(dest+s1, str2, s2);
- dest[s1+s2]=0;
- if (errno) return NULL;
- else return dest;
+    memcpy(dest, str1, s1);
+    memcpy(dest+s1, str2, s2);
+    dest[s1+s2]=0;
+    if (errno) return NULL;
+    else return dest;
 
 }
 
 _Bool clean_directory(char* path)
 {
 
-errno=0;
-if (path == NULL) return (EXIT_FAILURE);
-int s=strlen(path);	    // This is brute-force handling with shell. TODO: turn into C.
+    errno=0;
+    if (path == NULL) return (EXIT_FAILURE);
+    int s=strlen(path);	    // This is brute-force handling with shell. TODO: turn into C.
 
-if (globals.veryverbose) printf("%s%s\n", "[INF]  Cleaning directory ", path);
+    if (globals.veryverbose) printf("%s%s\n", "[INF]  Cleaning directory ", path);
 #ifndef __WIN32__
     char cleancommand[50+2*s];
     sprintf(cleancommand,  "if test -d %s ; then rm -rf %s 2> /dev/null; fi", path, path);
@@ -159,18 +164,18 @@ if (globals.veryverbose) printf("%s%s\n", "[INF]  Cleaning directory ", path);
     system(cleancommand);
 
 
-if (errno)
-{
-if (globals.veryverbose)
-   printf("%s%s\n", "[MSG]  Failed to clean directory ", path);
-return 0;
-}
-else
-{
-if (globals.veryverbose)
-   printf("%s\n", "[MSG]  OK.");
- return 1;
-}
+    if (errno)
+    {
+        if (globals.veryverbose)
+            printf("%s%s\n", "[MSG]  Failed to clean directory ", path);
+        return 0;
+    }
+    else
+    {
+        if (globals.veryverbose)
+            printf("%s\n", "[MSG]  OK.");
+        return 1;
+    }
 }
 
 /* This postprocessing procedure converts a tagged log (with [INF], [WAR], [ERR], [MSG]) into an Html logpage */
@@ -179,93 +184,94 @@ if (globals.veryverbose)
 void htmlize(char* logpath)
 {
 
-        FILE* src=fopen(logpath, "rb");
-        if (src == NULL) return;
-        char* loghtmlpath=calloc(strlen(logpath)+6, 1);
-        loghtmlpath=strcat(logpath, ".html");
-        FILE* dest=fopen(loghtmlpath, "wb");
-        if (dest == NULL) return;
+    FILE* src=fopen(logpath, "rb");
+    if (src == NULL) return;
+    char* loghtmlpath=calloc(strlen(logpath)+6, 1);
+    loghtmlpath=strcat(logpath, ".html");
+    FILE* dest=fopen(loghtmlpath, "wb");
+    if (dest == NULL) return;
 
-        #define NAVY            "<p><span style=\"color: navy; font-size: 10pt; \">"
-        #define RED             "<p><span style=\"color: red;  font-size: 12pt  \">"
-        #define GREY            "<br/><span style=\"color: grey; font-size: 8pt;\">"
-        #define GREEN           "<p><span style=\"color: green; font-size: 10pt;\">"
-        #define ORANGE          "<p><span style=\"color: orange;font-size: 12pt;\">"
-        #define CLOSETAG1        "</span>"
-        #define CLOSETAG2        "</span></p>"
-        #define HEADER "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">\n\
+#define NAVY            "<p><span style=\"color: navy; font-size: 10pt; \">"
+#define RED             "<p><span style=\"color: red;  font-size: 12pt  \">"
+#define GREY            "<br/><span style=\"color: grey; font-size: 8pt;\">"
+#define GREEN           "<p><span style=\"color: green; font-size: 10pt;\">"
+#define ORANGE          "<p><span style=\"color: orange;font-size: 12pt;\">"
+#define CLOSETAG1        "</span>"
+#define CLOSETAG2        "</span></p>"
+#define HEADER "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">\n\
 <!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n\
 <HTML><HEAD><TITLE>dvda-author " VERSION " Html log</TITLE>\n\
 </HEAD><BODY>\n"
 
-        int length=strlen(NAVY);
-        char line[1000];
+    int length=strlen(NAVY);
+    char line[1000];
 
-        fwrite(HEADER, strlen(HEADER), 1, dest);
+    fwrite(HEADER, strlen(HEADER), 1, dest);
 
-        do
+    do
+    {
+
+        fgets(line, 1000, src);
+        int linelength=strlen(line);
+        if (linelength > 0)
         {
-
-                fgets(line, 1000, src);
-                int linelength=strlen(line);
-                if (linelength > 0)
+            if ((line[0] == '[') && (line[1] == 'I') && (line[2]=='N') && (line[3] == 'F') && (line[4]==']'))
+            {
+                fwrite(NAVY, length, 1, dest);
+                fwrite(line, linelength, 1, dest);
+                fwrite(CLOSETAG2, 11, 1, dest);
+                fputc('\n', dest);
+            }
+            else if ((line[0] == '[') && (line[1] == 'M') && (line[2]=='S') && (line[3] == 'G') && (line[4]==']'))
+            {
+                fwrite(GREEN, length, 1, dest);
+                fwrite(line, linelength, 1, dest);
+                fwrite(CLOSETAG2, 11, 1, dest);
+                fputc('\n', dest);
+            }
+            else if ((line[0] == '[') && (line[1] == 'W') && (line[2]=='A') && (line[3] == 'R') && (line[4]==']'))
+            {
+                fwrite(ORANGE, length, 1, dest);
+                fwrite(line, linelength, 1, dest);
+                fwrite(CLOSETAG2, 11, 1, dest);
+                fputc('\n', dest);
+            }
+            else if ((line[0] == '[') && (line[1] == 'E') && (line[2]=='R') && (line[3] == 'R') && (line[4]==']'))
+            {
+                fwrite(RED, length, 1, dest);
+                fwrite(line, linelength, 1, dest);
+                fwrite(CLOSETAG2, 11, 1, dest);
+                fputc('\n', dest);
+            }
+            else
+            {
+                // Skipping white lines (spaces and tabs) or line feeds, yet not justifying
+                int u=0;
+                while ((line[u]) && (isspace(line[u]))) u++;
+                if (line[u])
                 {
-                if ((line[0] == '[') && (line[1] == 'I') && (line[2]=='N') && (line[3] == 'F') && (line[4]==']'))
-                {
-                        fwrite(NAVY, length, 1, dest);
-                        fwrite(line, linelength, 1, dest);
-                        fwrite(CLOSETAG2, 11, 1, dest);
-                        fputc('\n', dest);
-                }else
-                if ((line[0] == '[') && (line[1] == 'M') && (line[2]=='S') && (line[3] == 'G') && (line[4]==']'))
-                {
-                        fwrite(GREEN, length, 1, dest);
-                        fwrite(line, linelength, 1, dest);
-                        fwrite(CLOSETAG2, 11, 1, dest);
-                        fputc('\n', dest);
-                }else
-                if ((line[0] == '[') && (line[1] == 'W') && (line[2]=='A') && (line[3] == 'R') && (line[4]==']'))
-                {
-                        fwrite(ORANGE, length, 1, dest);
-                        fwrite(line, linelength, 1, dest);
-                        fwrite(CLOSETAG2, 11, 1, dest);
-                        fputc('\n', dest);
-                }else
-                if ((line[0] == '[') && (line[1] == 'E') && (line[2]=='R') && (line[3] == 'R') && (line[4]==']'))
-                {
-                        fwrite(RED, length, 1, dest);
-                        fwrite(line, linelength, 1, dest);
-                        fwrite(CLOSETAG2, 11, 1, dest);
-                        fputc('\n', dest);
+                    fwrite(GREY, length, 1, dest);
+                    fwrite(line, linelength, 1, dest);
+                    fwrite(CLOSETAG1, 7, 1, dest);
+                    fputc('\n', dest);
                 }
-                else
-                {
-                       // Skipping white lines (spaces and tabs) or line feeds, yet not justifying
-                       int u=0;
-                       while ((line[u]) && (isspace(line[u]))) u++;
-                       if (line[u])
-                       {
-                        fwrite(GREY, length, 1, dest);
-                        fwrite(line, linelength, 1, dest);
-                        fwrite(CLOSETAG1, 7, 1, dest);
-                        fputc('\n', dest);
-                       }
-                }
-                }
+            }
+        }
 
-        }while (!feof(src));
+    }
+    while (!feof(src));
 
-        fwrite("</BODY></HTML>\n", 15, 1, dest);
+    fwrite("</BODY></HTML>\n", 15, 1, dest);
 
-        fclose(src);
-        fclose(dest);
-        #undef NAVY
-        #undef RED
-        #undef GREY
-        #undef GREEN
-        #undef ORANGE
-        #undef CLOSETAG
-        #undef HEADER
+    fclose(src);
+    fclose(dest);
+#undef NAVY
+#undef RED
+#undef GREY
+#undef GREEN
+#undef ORANGE
+#undef CLOSETAG
+#undef HEADER
 
 }
 
@@ -445,12 +451,11 @@ char* print_time(int verbose)
         }
     }
 
-    else
-        if (strftime(outstr, sizeof(outstr), "%Hh %Mm %Ss", tmp) == 0)
-        {
-            printf("%s\n", "strftime returned 0");
-            exit(EXIT_FAILURE);
-        }
+    else if (strftime(outstr, sizeof(outstr), "%Hh %Mm %Ss", tmp) == 0)
+    {
+        printf("%s\n", "strftime returned 0");
+        exit(EXIT_FAILURE);
+    }
 
     if (verbose)
     {
@@ -577,13 +582,13 @@ int copy_file_no_p(FILE *infile, FILE *outfile)
 
     if (globals.veryverbose)
     {
-     putchar('|');
-     counter=counter-1;
-     counter=(counter*sizeof(char)*BUFSIZ+chunk)/1024;
-     printf("\n[MSG]  Copied %.2lf KB.\n", counter);
-    if (!errno) puts("\n[MSG]  Copy completed.");
-    else
-    puts("\n[ERR]  Copy failed.");
+        putchar('|');
+        counter=counter-1;
+        counter=(counter*sizeof(char)*BUFSIZ+chunk)/1024;
+        printf("\n[MSG]  Copied %.2lf KB.\n", counter);
+        if (!errno) puts("\n[MSG]  Copy completed.");
+        else
+            puts("\n[ERR]  Copy failed.");
 
     }
     return(errno);
@@ -615,7 +620,7 @@ int copy_file(const char *existing_file, const char *new_file)
     fclose(fe);
     fclose(fn);
     if (globals.veryverbose)
-      if (errorlevel == 0) printf("[INF]  File was copied as: %s\n", new_file);
+        if (errorlevel == 0) printf("[INF]  File was copied as: %s\n", new_file);
 
     return(errorlevel);
 
@@ -644,11 +649,11 @@ int copy_file2dir(const char *existing_file, const char *new_dir)
 
 
     if (filedest->exists)
-     {
-          counter++;
-          // overwrite
-          sprintf(dest, "%s%s%s_%d%s", new_dir, SEPARATOR, filestruct->rawfilename, counter, filestruct->extension);
-     }
+    {
+        counter++;
+        // overwrite
+        sprintf(dest, "%s%s%s_%d%s", new_dir, SEPARATOR, filestruct->rawfilename, counter, filestruct->extension);
+    }
 
     errorlevel=copy_file(existing_file, dest);
     errno=0;
@@ -702,34 +707,34 @@ int copy_file_p(FILE *infile, FILE *outfile, uint32_t position,uint64_t output_s
     if (output_size)
     {
 
-    while ((output_size > count)&&(!feof(infile)))
-    {
-
-        chunk= ((output_size-count) < BUFSIZ) ? fread(buf, sizeof(char), (size_t) output_size -count, infile) : fread(buf, sizeof(char), BUFSIZ, infile) ;
-
-        count+=chunk*sizeof(char);
-
-
-        if (ferror(infile))
+        while ((output_size > count)&&(!feof(infile)))
         {
-            fprintf(stderr, "Read error\n");
-            return(-1);
+
+            chunk= ((output_size-count) < BUFSIZ) ? fread(buf, sizeof(char), (size_t) output_size -count, infile) : fread(buf, sizeof(char), BUFSIZ, infile) ;
+
+            count+=chunk*sizeof(char);
+
+
+            if (ferror(infile))
+            {
+                fprintf(stderr, "Read error\n");
+                return(-1);
+            }
+
+
+            fwrite(buf, chunk* sizeof(char), 1 , outfile);
+
+
+            if (ferror(outfile))
+            {
+                fprintf(stderr, "Write error\n");
+                return(-1);
+            }
         }
-
-
-        fwrite(buf, chunk* sizeof(char), 1 , outfile);
-
-
-        if (ferror(outfile))
-        {
-            fprintf(stderr, "Write error\n");
-            return(-1);
-        }
+        return((count < output_size) ? PAD : NO_PAD);
     }
-    return((count < output_size) ? PAD : NO_PAD);
-   }
 
-   while (!feof(infile))
+    while (!feof(infile))
     {
 
         chunk= fread(buf, sizeof(char), BUFSIZ, infile) ;
@@ -785,7 +790,7 @@ ALWAYS_INLINE_GCC inline uint8_t read_info_chunk(uint8_t* pt, uint8_t* chunk)
 
 void parse_wav_header(FILE * infile, infochunk* ichunk)
 {
-    uint8_t haystack[MAX_HEADER_SIZE]={0};
+    uint8_t haystack[MAX_HEADER_SIZE]= {0};
     int count;
     if ((count=fread(haystack, 1, MAX_HEADER_SIZE, infile)) != MAX_HEADER_SIZE)
     {
@@ -875,24 +880,19 @@ void parse_wav_header(FILE * infile, infochunk* ichunk)
 
             if ((*(pt + 1) == 'N') && (*(pt + 2) == 'A') && (*(pt + 3) == 'M'))
                 ichunk->found=read_info_chunk(pt, ichunk->INAM);
-            else
-                if ((*(pt + 1) == 'A') && (*(pt + 2) == 'R') && (*(pt + 3) == 'T'))
-                    ichunk->found+=read_info_chunk(pt, ichunk->IART);
-                else
-                    if ((*(pt + 1) == 'C'))
-                    {
-                        if ((*(pt + 2) == 'M') && (*(pt + 3) == 'T'))
-                            ichunk->found+=read_info_chunk(pt, ichunk->ICMT);
-                        else
-                            if ((*(pt + 2) == 'O') && (*(pt + 3) == 'P'))
-                                ichunk->found+=read_info_chunk(pt, ichunk->ICOP);
-                            else
-                                if ((*(pt + 2) == 'R') && (*(pt + 3) == 'D'))
-                                    ichunk->found+=read_info_chunk(pt, ichunk->ICRD);
-                    }
-                    else
-                        if ((*(pt + 1) == 'G') && (*(pt + 2) == 'N') && (*(pt + 3) == 'R'))
-                            ichunk->found+=read_info_chunk(pt, ichunk->IGNR);
+            else if ((*(pt + 1) == 'A') && (*(pt + 2) == 'R') && (*(pt + 3) == 'T'))
+                ichunk->found+=read_info_chunk(pt, ichunk->IART);
+            else if ((*(pt + 1) == 'C'))
+            {
+                if ((*(pt + 2) == 'M') && (*(pt + 3) == 'T'))
+                    ichunk->found+=read_info_chunk(pt, ichunk->ICMT);
+                else if ((*(pt + 2) == 'O') && (*(pt + 3) == 'P'))
+                    ichunk->found+=read_info_chunk(pt, ichunk->ICOP);
+                else if ((*(pt + 2) == 'R') && (*(pt + 3) == 'D'))
+                    ichunk->found+=read_info_chunk(pt, ichunk->ICRD);
+            }
+            else if ((*(pt + 1) == 'G') && (*(pt + 2) == 'N') && (*(pt + 3) == 'R'))
+                ichunk->found+=read_info_chunk(pt, ichunk->IGNR);
 
         }
         while (infoindex < span-4);

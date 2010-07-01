@@ -304,7 +304,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     if (globals.logfile)
     {
-#ifdef TEST
+
 #ifndef __WIN32__
 
         if (user_command_line)
@@ -344,7 +344,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         }
     }
 #endif
-#endif
+
 
         if (((user_command_line) || (!globals.enable_lexer)) && (!globals.silence))
         {
