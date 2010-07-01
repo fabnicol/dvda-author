@@ -1468,8 +1468,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 
 
-        if (globals.topmenu <= ACTIVE_MENU_ONLY) normalize_temporary_paths(img);
-
         maxbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)/img->nmenus;
         resbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)%img->nmenus;
 
@@ -1728,18 +1726,27 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 if (globals.topmenu <= ACTIVE_MENU_ONLY)
 {
  int u;
+ char* dest;
  change_directory(globals.settings.datadir);
  if (duplicate_blankscreen)
-    errno=copy_file2dir(img->blankscreen, globals.settings.tempdir);
+    dest=copy_file2dir(img->blankscreen, globals.settings.tempdir);
 
- errno=copy_file2dir(img->backgroundpic[0], globals.settings.tempdir);
+ dest=copy_file2dir_rename(img->backgroundpic[0], globals.settings.tempdir, "bgpic0.jpg");
 
  if (duplicate_backgroundpics)
   for (u=1; u < img->nmenus; u++)
-    errno=copy_file2dir(img->backgroundpic[0], globals.settings.tempdir);
+  {
+     char name[13];
+     sprintf(name, "%s%d%s", "bgpic", u,".jpg");
+     dest=copy_file2dir_rename(img->backgroundpic[0], globals.settings.tempdir, name);
+  }
 
-if (errno)  EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Failed to copy background pictures to temporary directory.")
+if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Failed to copy background pictures to temporary directory.")
+
+normalize_temporary_paths(img);
+
 change_directory(globals.settings.workdir);
+
 }
 
 // This had to be postponed after command line parsing owing to tempdir chain user input

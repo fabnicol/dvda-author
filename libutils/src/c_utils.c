@@ -627,7 +627,7 @@ int copy_file(const char *existing_file, const char *new_file)
 }
 
 
-int copy_file2dir(const char *existing_file, const char *new_dir)
+char* copy_file2dir(const char *existing_file, const char *new_dir)
 {
 // existence of new_dir is not tested
 // existence of dile dest is tested and if exists, duplication generates file counter in filename
@@ -639,13 +639,13 @@ int copy_file2dir(const char *existing_file, const char *new_dir)
     if (globals.veryverbose) printf("[INF]  Copying file %s to directory %s\n", existing_file, new_dir);
 
     path_t* filestruct=parse_filepath(existing_file);
-    if (!filestruct) return -1;
+    if (!filestruct) return NULL;
 
     char dest[filestruct->length+strlen(new_dir)+1+6+2]; // 6-digit counter +1 underscore; size is a maximum
     sprintf(dest, "%s%s%s", new_dir, SEPARATOR, filestruct->filename);
 
     path_t *filedest=parse_filepath(dest);
-    if (!filedest) return -1;
+    if (!filedest) return NULL;
 
 
     if (filedest->exists)
@@ -656,15 +656,47 @@ int copy_file2dir(const char *existing_file, const char *new_dir)
     }
 
     errorlevel=copy_file(existing_file, dest);
-    errno=0;
+
     free(filestruct);
     free(filedest);
-    return(errorlevel);
+    errno=0;
+    if (errorlevel) return NULL;
+    else return(dest);
 
 }
 
 
 
+char* copy_file2dir_rename(const char *existing_file, const char *new_dir, char* newfilename)
+{
+// existence of new_dir is not tested
+// existence of dile dest is tested and if exists, copy overwrites it
+
+    static uint32_t counter;
+    int errorlevel;
+    if (globals.veryverbose) printf("[INF]  Copying file %s to directory %s\n", existing_file, new_dir);
+
+    char dest[strlen(newfilename)+strlen(new_dir)+1+1];
+    sprintf(dest, "%s%s%s", new_dir, SEPARATOR, newfilename);
+
+    path_t *filedest=parse_filepath(dest);
+    if (!filedest) return NULL;
+
+
+    if (filedest->exists)
+    {
+        //overwrite
+        unlink(dest);
+    }
+
+    errorlevel=copy_file(existing_file, dest);
+
+    free(filedest);
+    errno=0;
+    if (errorlevel) return NULL;
+    else return(dest);
+
+}
 
 int cat_file(const char *existing_file, const char *new_file)
 {
