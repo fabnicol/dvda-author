@@ -113,7 +113,7 @@ printf("%s", J"SoX-supported formats with -S enabled\n");
 
 printf("%s", J"except for lossy formats.\n");
 #endif
-
+printf("%s","    --project [file]     Launches a dvda-author project."J"The project file should have the same syntax as dvda-author.conf [see fileHOW_TO.conf]"J"By default, launches dvda-author.dap in the current directory.\n\n");
 printf("%s","-i, --input directory    Input directory with audio files."J"Each subdirectory is a group.\n\n");
 printf("%s","-o, --output directory   Output directory.\n\n");
 printf("%s","-x, --extract disc[list] Extract DVD-Audio to directory -o."J"Groups are labelled g1, g2..."J"Optional comma-separated list of groups to be extracted\n"J"may be appended to disc path.\n\n");
@@ -190,7 +190,7 @@ printf("%s","-T, --videolink rank     Rank of video titleset linked to in video 
 printf("%s","Software configuration\n\n");
 
 printf("%s","-D, --tempdir directory  Temporary directory.\n\n");
-printf("%s","-X, --workdir directory  Working directory: current directory in command line relative paths."J"With Code::Blocks and similar IDE, specify your root package directory as argument to --workdir.\n\n");
+printf("%s","-X, --workdir directory  Working directory: current directory in command line relative paths."J"By default, the current directory."J"With Code::Blocks and similar IDE, you may have to specify your root package directory as argument to --workdir.\n\n");
 printf("%s","-W, --bindir path        Path to auxiliary binaries.\n\n");
 printf("%s","    --no-refresh-tempdir Do not erase and recreate the temporary directory on launch.\n\n");
 printf("%s","    --no-refresh-outdir  Do not erase and recreate the output directory on launch.\n\n");

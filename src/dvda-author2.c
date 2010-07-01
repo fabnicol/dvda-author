@@ -54,6 +54,39 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 globalData globals;
 char *home, *TEMPDIRROOT, *TEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
 
+ command_t* lexer_analysis(command_t* command, lexer_t* lexer, const char* config_file, _Bool config_type)
+ {
+    int i;
+    lexer->nlines=MAX_LEXER_LINES;
+
+    lexer->commandline=(char** ) calloc(MAX_LEXER_LINES, sizeof(char *));
+    if (lexer->commandline == NULL) perror("[ERR]  lexer");
+    for (i=0; i < MAX_LEXER_LINES; i++)
+    {
+        lexer->commandline[i]=(char* ) calloc(2*MAX_OPTION_LENGTH, sizeof(char));
+        if (lexer->commandline[i] == NULL) perror("[ERR]  lexer");
+    }
+
+    if (config_type == CONFIGURATION_FILE) check_settings_file();
+
+    errno=0;
+
+    config_lexer(config_file, lexer);
+
+
+    if (command == NULL)
+        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not allocate command-line structure")
+
+        command=command_line_parsing(lexer->nlines, lexer->commandline, command);
+
+    for (i=0; i < MAX_LEXER_LINES; i++)
+        FREE(lexer->commandline[i])
+
+        FREE(lexer->commandline)
+
+        return command;
+ }
+
 void normalize_temporary_paths(pic* img)
 {
     static size_t s;
@@ -123,6 +156,12 @@ int main(int argc,  char* const argv[])
 
     lexer_t   lexer_init;
     lexer_t   *lexer=&lexer_init;
+   /* create a static command_t structure
+    *  in command_line_parsing.c from default command line created by lexer.
+    */
+
+
+
 
 #ifndef __MINGW32__
     struct rusage nothing, start;
@@ -136,7 +175,7 @@ int main(int argc,  char* const argv[])
 
     setlocale(LC_ALL, "LOCALE");
 
-    char* h = getenv("HOME");
+    char* h = getenv("PWD");
     home=strdup((h)? h : TEMPDIR_SUBFOLDER_PREFIX);
     int homelength=strlen(home);
 
@@ -326,65 +365,59 @@ int main(int argc,  char* const argv[])
     /* Lexer extracts default command line from dvda-author.conf and returns corresponding argc, argv
        yet this is useless if command line is just "--version" or "--help" or equivalents */
 
+
+    _Bool project_flag=0;
+    char* project_filepath=NULL;
     command_t command0, *command=NULL;
-
-    for (i=1; i < argc ; i++)
-        if (strcmp(argv[i],"--disable-lexer") *strcmp(argv[i] , "-W") *strcmp(argv[i], "--version")*strcmp(argv[i], "--help")*strcmp(argv[i], "-v")*strcmp(argv[i], "-h") == 0)
-        {
-            globals.enable_lexer=0;
-
-            {
-
-                command0.img=&img0;
-                command=&command0;
-                goto launch;
-            }
-
-        }
-
-    lexer->nlines=MAX_LEXER_LINES;
-
-    lexer->commandline=(char** ) calloc(MAX_LEXER_LINES, sizeof(char *));
-    if (lexer->commandline == NULL) perror("[ERR]  lexer");
-    for (i=0; i < MAX_LEXER_LINES; i++)
-    {
-        lexer->commandline[i]=(char* ) calloc(2*MAX_OPTION_LENGTH, sizeof(char));
-        if (lexer->commandline[i] == NULL) perror("[ERR]  lexer");
-    }
-
-    check_settings_file();
-
-    errno=0;
-    config_lexer(SETTINGSFILE, lexer);
-
-    /* create a static command_t structure
-    *  in command_line_parsing.c from default command line created by lexer.
-    */
-
-
     command0.img=&img0;
     command=&command0;
 
-    if (command == NULL)
-        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not allocate command-line structure")
+    for (i=1; i < argc ; i++)
+        if (strcmp(argv[i],"--disable-lexer") == 0 || strcmp(argv[i] , "-W") ==0 || strcmp(argv[i], "--version") ==0 || strcmp(argv[i], "--help") ==0 || strcmp(argv[i], "-v") ==0 || strcmp(argv[i], "-h") == 0)
+        {
+            globals.enable_lexer=0;
+                goto launch;
+        }
+        else
+        if (strcmp(argv[i], "--project") == 0)
+        {
+           project_flag=1;
+           if (i+1 < argc && argv[i+1][0] != '-')
+               project_filepath=strdup(argv[i+1]);
+           else
+              project_filepath=strdup(DEFAULT_DVDA_AUTHOR_PROJECT_FILENAME);
 
-        command_line_parsing(lexer->nlines, lexer->commandline, command);
+           path_t *pstruct=parse_filepath(project_filepath);
+           if (pstruct && pstruct->exists)
+           {
+             //if (globals.debugging)
+             printf("[INF]  Parsing project file %s\n", project_filepath);
+           }
+           else
+           {
+            printf("[ERR]  Failed to parse project file %s\n       Exiting...\n", project_filepath);
+            clean_exit(EXIT_FAILURE);
+           }
+           free(pstruct);
+        }
 
-    for (i=0; i < MAX_LEXER_LINES; i++)
-        FREE(lexer->commandline[i])
-
-        FREE(lexer->commandline)
+    lexer_analysis(command, lexer, SETTINGSFILE, CONFIGURATION_FILE);
 
         /* launch core processes after parsing user command-line, possibly overriding defaut values */
 
 
 launch:
 
-        launch_manager(command_line_parsing(argc, argv, command));
+        if (project_flag)
+
+          launch_manager(lexer_analysis(command, lexer, project_filepath, PROJECT_FILE));
+        else
+
+          launch_manager(command_line_parsing(argc, argv, command));
+
     // allocated in command_line_parsing()
 
     /* Compute execution time and exit */
-
 
     COMPUTE_EXECTIME
 
