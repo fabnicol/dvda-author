@@ -52,7 +52,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 /*  Global  options */
 
 globalData globals;
-char *home, *TEMPDIRROOT, *TEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
+char *currentdir, *TEMPDIRROOT, *TEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
 
  command_t* lexer_analysis(command_t* command, lexer_t* lexer, const char* config_file, _Bool config_type)
  {
@@ -176,26 +176,31 @@ int main(int argc,  char* const argv[])
     setlocale(LC_ALL, "LOCALE");
 
     char* h = getenv("PWD");
-    home=strdup((h)? h : TEMPDIR_SUBFOLDER_PREFIX);
-    int homelength=strlen(home);
+    currentdir=strdup((h)? h : TEMPDIR_SUBFOLDER_PREFIX);
+    int currentdirlength=strlen(currentdir);
 
-    char TEMPDIRROOT[homelength+14];
-    TEMPDIR=calloc(homelength+20, sizeof(char));
+    char TEMPDIRROOT[currentdirlength+14];
+    TEMPDIR=calloc(currentdirlength+20, sizeof(char));
 
-    char *EXECDIR=calloc(MAX(homelength, 20)+4+25, sizeof(char));  // /usr/local/bin or /usr/bin under *NIX, "home" directory/bin otherwise (win32...)
+    char *EXECDIR=calloc(MAX(currentdirlength, 20)+4+25, sizeof(char));  // /usr/local/bin or /usr/bin under *NIX, "currentdir" directory/bin otherwise (win32...)
     // 4 for "/bin and be liberal and allow 25 more characters for the executable name.
 
-    char *DATADIR=NULL;
+    char *DATADIR;
+    #ifdef __WIN32__
+    DATADIR=strdup(currentdir);
+    #else
+    DATADIR=strdup(INSTALL_CONF_DIR);
+    #endif
     char **BGPIC=calloc(2, sizeof(char*));
 
 
     BGPIC[0]=strdup(DEFAULT_BACKGROUNDPIC);
-//    IMPIC[0]=calloc(homelength+30, sizeof(char));
-//    HLPIC[0]=calloc(homelength+30, sizeof(char));
-//    SLPIC[0]=calloc(homelength+30, sizeof(char));
+//    IMPIC[0]=calloc(currentdirlength+30, sizeof(char));
+//    HLPIC[0]=calloc(currentdirlength+30, sizeof(char));
+//    SLPIC[0]=calloc(currentdirlength+30, sizeof(char));
 
 
-    sprintf(TEMPDIRROOT, "%s%s%s", home,(home[0] == 0)? "" : SEPARATOR , TEMPDIR_SUBFOLDER_PREFIX DVDA_AUTHOR_BASENAME);
+    sprintf(TEMPDIRROOT, "%s%s%s", currentdir,(currentdir[0] == 0)? "" : SEPARATOR , TEMPDIR_SUBFOLDER_PREFIX DVDA_AUTHOR_BASENAME);
 
     sprintf(TEMPDIR, "%s"SEPARATOR"%s", TEMPDIRROOT, "temp");
 
@@ -261,9 +266,9 @@ int main(int argc,  char* const argv[])
             NULL, // input directory path
             NULL,// output directory path
 #ifdef __WIN32__
-            strdup(DEFAULT_WORKDIR),// working directory: under Windows, c:\ if not defined at compile time, otherwise 'home' environment variable
+            strdup(DEFAULT_WORKDIR),// working directory: under Windows, c:\ if not defined at compile time, otherwise 'currentdir' environment variable
 #else
-            strdup(home),
+            strdup(currentdir),
 #endif
             NULL,// temporary directory
             NULL,   // videolinked directory path
@@ -342,7 +347,7 @@ int main(int argc,  char* const argv[])
 #ifdef BINDIR
     memcpy(globals.settings.bindir, BINDIR, strlen(BINDIR));
 #else
-    memcpy(globals.settings.bindir, home, homelength);
+    memcpy(globals.settings.bindir, currentdir, currentdirlength);
 #endif
     normalize_temporary_paths(NULL);
 
@@ -421,7 +426,7 @@ launch:
 
     COMPUTE_EXECTIME
 
-    FREE(home)
+    FREE(currentdir)
 
     fflush(NULL);
     if ((globals.loghtml) && (globals.logfile)) htmlize(globals.settings.logfile);

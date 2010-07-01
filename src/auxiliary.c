@@ -52,6 +52,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "file_input_parsing.h"
 #include "ports.h"
 #include "commonvars.h"
+#include "menu.h"
 
 extern globalData globals;
 extern char* INDIR, *OUTDIR, *LOGFILE, *TEMPDIR, *LINKDIR, *WORKDIR;
@@ -113,7 +114,7 @@ printf("%s", J"SoX-supported formats with -S enabled\n");
 
 printf("%s", J"except for lossy formats.\n");
 #endif
-printf("%s","    --project [file]     Launches a dvda-author project."J"The project file should have the same syntax as dvda-author.conf [see fileHOW_TO.conf]"J"By default, launches dvda-author.dap in the current directory.\n\n");
+printf("%s","    --project [file]     Launches a dvda-author project."J"The project file should have the same syntax as dvda-author.conf [see file HOW_TO.conf]"J"By default, launches dvda-author.dap in the current directory.\n\n");
 printf("%s","-i, --input directory    Input directory with audio files."J"Each subdirectory is a group.\n\n");
 printf("%s","-o, --output directory   Output directory.\n\n");
 printf("%s","-x, --extract disc[list] Extract DVD-Audio to directory -o."J"Groups are labelled g1, g2..."J"Optional comma-separated list of groups to be extracted\n"J"may be appended to disc path.\n\n");
@@ -412,6 +413,9 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t* ntracks,  uin
 void free_memory(command_t *command)
 {
     int i, j;
+
+    initialize_binary_paths(FREE_BINARY_PATH_SPACE);
+
     if (command)
     {
         short int naudio_groups=command->ngroups-command->nvideolinking_groups;
