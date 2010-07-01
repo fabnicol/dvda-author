@@ -709,8 +709,13 @@ HAVE_FLAC_BUILD_FALSE
 HAVE_FLAC_BUILD_TRUE
 HAVE_LIBOGG_BUILD_FALSE
 HAVE_LIBOGG_BUILD_TRUE
+HAVE_IBERTY_BUILD_FALSE
+HAVE_IBERTY_BUILD_TRUE
 HAVE_SOX_BUILD_FALSE
 HAVE_SOX_BUILD_TRUE
+HAVE_SMAKE_FALSE
+HAVE_SMAKE_TRUE
+SMAKE
 HAVE_AUTOMAKE_FALSE
 HAVE_AUTOMAKE_TRUE
 HAVE_AUTOCONF_FALSE
@@ -754,8 +759,6 @@ MAN2HTML
 HAVE_HELP2MAN_FALSE
 HAVE_HELP2MAN_TRUE
 HELP2MAN
-HAVE_IBERTY_BUILD_FALSE
-HAVE_IBERTY_BUILD_TRUE
 SED
 RANLIB
 build_os
@@ -4622,8 +4625,8 @@ CPPFLAGS="$CPPFLAGS -I/usr/include -I/usr/local/include"
 FLAC_BUILD=no
 STATIC_SOX=no
 SOX_BUILD=no
-#supposing there is no SoX bug. This will be tested later by sox-debug.m4
-circumvent_sox_bug=no
+
+
 #preserving user CFLAGS input
 cflags_save="$CFLAGS -std=c99"
 #redefine CFLAGS to avoid systematic -g -O2 introduced by AC_PROG_CC
@@ -4817,154 +4820,6 @@ fi
 #======================================
 
 # insert lib-specific tests here
-
-
-  if  test x$SOX_LIB_INPUT != x ; then :
-  # looking into --with-sox specified lib
-
-   as_ac_Lib=`$as_echo "ac_cv_lib_$SOX_LIB_INPUT''_getopt_long" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for getopt_long in -l$SOX_LIB_INPUT" >&5
-$as_echo_n "checking for getopt_long in -l$SOX_LIB_INPUT... " >&6; }
-if { as_var=$as_ac_Lib; eval "test \"\${$as_var+set}\" = set"; }; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-l$SOX_LIB_INPUT  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char getopt_long ();
-int
-main ()
-{
-return getopt_long ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  eval "$as_ac_Lib=yes"
-else
-  eval "$as_ac_Lib=no"
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-eval ac_res=\$$as_ac_Lib
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-eval as_val=\$$as_ac_Lib
-   if test "x$as_val" = x""yes; then :
-
-                 { $as_echo "$as_me:${as_lineno-$LINENO}: getopt_long detected in SoX code...
- circumventing SoX bug by using glibc." >&5
-$as_echo "$as_me: getopt_long detected in SoX code...
- circumventing SoX bug by using glibc." >&6;}
-                 IBERTY_BUILD=yes
-                 circumvent_sox_bug=yes
-
-else
-   { $as_echo "$as_me:${as_lineno-$LINENO}: getopt_long not detected in SoX code... OK" >&5
-$as_echo "$as_me: getopt_long not detected in SoX code... OK" >&6;}
-
-fi
-
-
-else
-
-
-# looking into installed lib
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing getopt_long" >&5
-$as_echo_n "checking for library containing getopt_long... " >&6; }
-if test "${ac_cv_search_getopt_long+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char getopt_long ();
-int
-main ()
-{
-return getopt_long ();
-  ;
-  return 0;
-}
-_ACEOF
-for ac_lib in '' ; do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_search_getopt_long=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext
-  if test "${ac_cv_search_getopt_long+set}" = set; then :
-  break
-fi
-done
-if test "${ac_cv_search_getopt_long+set}" = set; then :
-
-else
-  ac_cv_search_getopt_long=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_getopt_long" >&5
-$as_echo "$ac_cv_search_getopt_long" >&6; }
-ac_res=$ac_cv_search_getopt_long
-if test "$ac_res" != no; then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-   { $as_echo "$as_me:${as_lineno-$LINENO}: getopt_long detected in SoX code...
-   circumventing SoX bug by using glibc." >&5
-$as_echo "$as_me: getopt_long detected in SoX code...
-   circumventing SoX bug by using glibc." >&6;}
-			             IBERTY_BUILD=yes
-			             circumvent_sox_bug=yes
-
-$as_echo "#define HAVE_SOX_BUG 1" >>confdefs.h
-
-
-else
-   { $as_echo "$as_me:${as_lineno-$LINENO}: getopt_long not detected in SoX code... OK" >&5
-$as_echo "$as_me: getopt_long not detected in SoX code... OK" >&6;}
-fi
-
-
-fi
-
-   if test $IBERTY_BUILD = xyes || test x$ALL_BUILDS = xyes; then
-  HAVE_IBERTY_BUILD_TRUE=
-  HAVE_IBERTY_BUILD_FALSE='#'
-else
-  HAVE_IBERTY_BUILD_TRUE='#'
-  HAVE_IBERTY_BUILD_FALSE=
-fi
-
-
-$as_echo "#define HAVE_IBERTY_BUILD 1" >>confdefs.h
-
-
-
 
 # invoking main M4sh subroutine
 
@@ -6124,6 +5979,83 @@ _ACEOF
 else
   HAVE_AUTOMAKE_TRUE='#'
   HAVE_AUTOMAKE_FALSE=
+fi
+
+
+
+
+
+#don't quote here
+# Extract the first word of "smake", so it can be a program name with args.
+set dummy smake; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_path_SMAKE+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $SMAKE in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_SMAKE="$SMAKE" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="$bindir:/usr/bin:/usr/local/bin"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_SMAKE="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+SMAKE=$ac_cv_path_SMAKE
+if test -n "$SMAKE"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $SMAKE" >&5
+$as_echo "$SMAKE" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+if test x$SMAKE = x ; then :
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: ===INF===  No using smake instead of GNU make" >&5
+$as_echo "$as_me: ===INF===  No using smake instead of GNU make" >&6;}
+   auxbool=0
+
+else
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: ===INF===  using smake instead of GNU make" >&5
+$as_echo "$as_me: ===INF===  using smake instead of GNU make" >&6;}
+   auxbool=1
+
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SMAKE $auxbool
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define SMAKE "$SMAKE"
+_ACEOF
+
+ if test $auxbool = 1; then
+  HAVE_SMAKE_TRUE=
+  HAVE_SMAKE_FALSE='#'
+else
+  HAVE_SMAKE_TRUE='#'
+  HAVE_SMAKE_FALSE=
 fi
 
 
@@ -7859,7 +7791,7 @@ else
                  { $as_echo "$as_me:${as_lineno-$LINENO}: ===INF===  Downloading cdrtools. Make sure you have a functional internet connection." >&5
 $as_echo "$as_me: ===INF===  Downloading cdrtools. Make sure you have a functional internet connection." >&6;}
 
-                version=2.01.01a58
+                version=3.00
                 CDRTOOLS_VERSION=$version
 
 					    if test  -f "cdrtools-$version.tar.gz"; then :
@@ -7884,7 +7816,7 @@ fi
 
 
       filename=cdrtools-$version.tar.$type
-      MD5=6a17354df11c325bba9941d69e9c0294
+      MD5=bb21cefefcfbb76cf249120e8978ffdd
 
       # first trying to download from main site unless SF_MIRRORS is set
       if test x"$SF_MIRROR" = x ; then :
@@ -8151,13 +8083,13 @@ fi
 
                 # outputs variable $filename
 
-                if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != x6a17354df11c325bba9941d69e9c0294 ; then :
+                if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != xbb21cefefcfbb76cf249120e8978ffdd ; then :
 
                  type=bz2
 
 
       filename=cdrtools-$version.tar.$type
-      MD5=6a17354df11c325bba9941d69e9c0294
+      MD5=bb21cefefcfbb76cf249120e8978ffdd
 
       # first trying to download from main site unless SF_MIRRORS is set
       if test x"$SF_MIRROR" = x ; then :
@@ -8424,9 +8356,9 @@ fi
 
 fi
 
-                dir="cdrtools-2.01.01"
+                dir="cdrtools-3.00"
 
-      	        if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != x6a17354df11c325bba9941d69e9c0294 ; then :
+      	        if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != xbb21cefefcfbb76cf249120e8978ffdd ; then :
 
                         { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ===ERR===  Download failure" >&5
 $as_echo "$as_me: WARNING: ===ERR===  Download failure" >&2;}
@@ -14114,7 +14046,7 @@ else
                  { $as_echo "$as_me:${as_lineno-$LINENO}: ===INF===  Downloading cdrtools. Make sure you have a functional internet connection." >&5
 $as_echo "$as_me: ===INF===  Downloading cdrtools. Make sure you have a functional internet connection." >&6;}
 
-                version=2.01.01a58
+                version=3.00
                 CDRTOOLS_VERSION=$version
 
 					    if test  -f "cdrtools-$version.tar.gz"; then :
@@ -14139,7 +14071,7 @@ fi
 
 
       filename=cdrtools-$version.tar.$type
-      MD5=6a17354df11c325bba9941d69e9c0294
+      MD5=bb21cefefcfbb76cf249120e8978ffdd
 
       # first trying to download from main site unless SF_MIRRORS is set
       if test x"$SF_MIRROR" = x ; then :
@@ -14406,13 +14338,13 @@ fi
 
                 # outputs variable $filename
 
-                if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != x6a17354df11c325bba9941d69e9c0294 ; then :
+                if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != xbb21cefefcfbb76cf249120e8978ffdd ; then :
 
                  type=bz2
 
 
       filename=cdrtools-$version.tar.$type
-      MD5=6a17354df11c325bba9941d69e9c0294
+      MD5=bb21cefefcfbb76cf249120e8978ffdd
 
       # first trying to download from main site unless SF_MIRRORS is set
       if test x"$SF_MIRROR" = x ; then :
@@ -14679,9 +14611,9 @@ fi
 
 fi
 
-                dir="cdrtools-2.01.01"
+                dir="cdrtools-3.00"
 
-      	        if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != x6a17354df11c325bba9941d69e9c0294 ; then :
+      	        if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != xbb21cefefcfbb76cf249120e8978ffdd ; then :
 
                         { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ===ERR===  Download failure" >&5
 $as_echo "$as_me: WARNING: ===ERR===  Download failure" >&2;}
@@ -18476,7 +18408,7 @@ else
                  { $as_echo "$as_me:${as_lineno-$LINENO}: ===INF===  Downloading cdrtools. Make sure you have a functional internet connection." >&5
 $as_echo "$as_me: ===INF===  Downloading cdrtools. Make sure you have a functional internet connection." >&6;}
 
-                version=2.01.01a58
+                version=3.00
                 CDRTOOLS_VERSION=$version
 
 					    if test  -f "cdrtools-$version.tar.gz"; then :
@@ -18501,7 +18433,7 @@ fi
 
 
       filename=cdrtools-$version.tar.$type
-      MD5=6a17354df11c325bba9941d69e9c0294
+      MD5=bb21cefefcfbb76cf249120e8978ffdd
 
       # first trying to download from main site unless SF_MIRRORS is set
       if test x"$SF_MIRROR" = x ; then :
@@ -18768,13 +18700,13 @@ fi
 
                 # outputs variable $filename
 
-                if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != x6a17354df11c325bba9941d69e9c0294 ; then :
+                if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != xbb21cefefcfbb76cf249120e8978ffdd ; then :
 
                  type=bz2
 
 
       filename=cdrtools-$version.tar.$type
-      MD5=6a17354df11c325bba9941d69e9c0294
+      MD5=bb21cefefcfbb76cf249120e8978ffdd
 
       # first trying to download from main site unless SF_MIRRORS is set
       if test x"$SF_MIRROR" = x ; then :
@@ -19041,9 +18973,9 @@ fi
 
 fi
 
-                dir="cdrtools-2.01.01"
+                dir="cdrtools-3.00"
 
-      	        if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != x6a17354df11c325bba9941d69e9c0294 ; then :
+      	        if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != xbb21cefefcfbb76cf249120e8978ffdd ; then :
 
                         { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ===ERR===  Download failure" >&5
 $as_echo "$as_me: WARNING: ===ERR===  Download failure" >&2;}
@@ -20369,7 +20301,7 @@ else
                  { $as_echo "$as_me:${as_lineno-$LINENO}: ===INF===  Downloading cdrtools. Make sure you have a functional internet connection." >&5
 $as_echo "$as_me: ===INF===  Downloading cdrtools. Make sure you have a functional internet connection." >&6;}
 
-                version=2.01.01a58
+                version=3.00
                 CDRTOOLS_VERSION=$version
 
 					    if test  -f "cdrtools-$version.tar.gz"; then :
@@ -20394,7 +20326,7 @@ fi
 
 
       filename=cdrtools-$version.tar.$type
-      MD5=6a17354df11c325bba9941d69e9c0294
+      MD5=bb21cefefcfbb76cf249120e8978ffdd
 
       # first trying to download from main site unless SF_MIRRORS is set
       if test x"$SF_MIRROR" = x ; then :
@@ -20661,13 +20593,13 @@ fi
 
                 # outputs variable $filename
 
-                if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != x6a17354df11c325bba9941d69e9c0294 ; then :
+                if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != xbb21cefefcfbb76cf249120e8978ffdd ; then :
 
                  type=bz2
 
 
       filename=cdrtools-$version.tar.$type
-      MD5=6a17354df11c325bba9941d69e9c0294
+      MD5=bb21cefefcfbb76cf249120e8978ffdd
 
       # first trying to download from main site unless SF_MIRRORS is set
       if test x"$SF_MIRROR" = x ; then :
@@ -20934,9 +20866,9 @@ fi
 
 fi
 
-                dir="cdrtools-2.01.01"
+                dir="cdrtools-3.00"
 
-      	        if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != x6a17354df11c325bba9941d69e9c0294 ; then :
+      	        if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != xbb21cefefcfbb76cf249120e8978ffdd ; then :
 
                         { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ===ERR===  Download failure" >&5
 $as_echo "$as_me: WARNING: ===ERR===  Download failure" >&2;}
@@ -26624,7 +26556,7 @@ else
                  { $as_echo "$as_me:${as_lineno-$LINENO}: ===INF===  Downloading cdrtools. Make sure you have a functional internet connection." >&5
 $as_echo "$as_me: ===INF===  Downloading cdrtools. Make sure you have a functional internet connection." >&6;}
 
-                version=2.01.01a58
+                version=3.00
                 CDRTOOLS_VERSION=$version
 
 					    if test  -f "cdrtools-$version.tar.gz"; then :
@@ -26649,7 +26581,7 @@ fi
 
 
       filename=cdrtools-$version.tar.$type
-      MD5=6a17354df11c325bba9941d69e9c0294
+      MD5=bb21cefefcfbb76cf249120e8978ffdd
 
       # first trying to download from main site unless SF_MIRRORS is set
       if test x"$SF_MIRROR" = x ; then :
@@ -26916,13 +26848,13 @@ fi
 
                 # outputs variable $filename
 
-                if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != x6a17354df11c325bba9941d69e9c0294 ; then :
+                if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != xbb21cefefcfbb76cf249120e8978ffdd ; then :
 
                  type=bz2
 
 
       filename=cdrtools-$version.tar.$type
-      MD5=6a17354df11c325bba9941d69e9c0294
+      MD5=bb21cefefcfbb76cf249120e8978ffdd
 
       # first trying to download from main site unless SF_MIRRORS is set
       if test x"$SF_MIRROR" = x ; then :
@@ -27189,9 +27121,9 @@ fi
 
 fi
 
-                dir="cdrtools-2.01.01"
+                dir="cdrtools-3.00"
 
-      	        if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != x6a17354df11c325bba9941d69e9c0294 ; then :
+      	        if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != xbb21cefefcfbb76cf249120e8978ffdd ; then :
 
                         { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ===ERR===  Download failure" >&5
 $as_echo "$as_me: WARNING: ===ERR===  Download failure" >&2;}
@@ -32879,7 +32811,7 @@ else
                  { $as_echo "$as_me:${as_lineno-$LINENO}: ===INF===  Downloading cdrtools. Make sure you have a functional internet connection." >&5
 $as_echo "$as_me: ===INF===  Downloading cdrtools. Make sure you have a functional internet connection." >&6;}
 
-                version=2.01.01a58
+                version=3.00
                 CDRTOOLS_VERSION=$version
 
 					    if test  -f "cdrtools-$version.tar.gz"; then :
@@ -32904,7 +32836,7 @@ fi
 
 
       filename=cdrtools-$version.tar.$type
-      MD5=6a17354df11c325bba9941d69e9c0294
+      MD5=bb21cefefcfbb76cf249120e8978ffdd
 
       # first trying to download from main site unless SF_MIRRORS is set
       if test x"$SF_MIRROR" = x ; then :
@@ -33171,13 +33103,13 @@ fi
 
                 # outputs variable $filename
 
-                if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != x6a17354df11c325bba9941d69e9c0294 ; then :
+                if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != xbb21cefefcfbb76cf249120e8978ffdd ; then :
 
                  type=bz2
 
 
       filename=cdrtools-$version.tar.$type
-      MD5=6a17354df11c325bba9941d69e9c0294
+      MD5=bb21cefefcfbb76cf249120e8978ffdd
 
       # first trying to download from main site unless SF_MIRRORS is set
       if test x"$SF_MIRROR" = x ; then :
@@ -33444,9 +33376,9 @@ fi
 
 fi
 
-                dir="cdrtools-2.01.01"
+                dir="cdrtools-3.00"
 
-      	        if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != x6a17354df11c325bba9941d69e9c0294 ; then :
+      	        if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != xbb21cefefcfbb76cf249120e8978ffdd ; then :
 
                         { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ===ERR===  Download failure" >&5
 $as_echo "$as_me: WARNING: ===ERR===  Download failure" >&2;}
@@ -39134,7 +39066,7 @@ else
                  { $as_echo "$as_me:${as_lineno-$LINENO}: ===INF===  Downloading cdrtools. Make sure you have a functional internet connection." >&5
 $as_echo "$as_me: ===INF===  Downloading cdrtools. Make sure you have a functional internet connection." >&6;}
 
-                version=2.01.01a58
+                version=3.00
                 CDRTOOLS_VERSION=$version
 
 					    if test  -f "cdrtools-$version.tar.gz"; then :
@@ -39159,7 +39091,7 @@ fi
 
 
       filename=cdrtools-$version.tar.$type
-      MD5=6a17354df11c325bba9941d69e9c0294
+      MD5=bb21cefefcfbb76cf249120e8978ffdd
 
       # first trying to download from main site unless SF_MIRRORS is set
       if test x"$SF_MIRROR" = x ; then :
@@ -39426,13 +39358,13 @@ fi
 
                 # outputs variable $filename
 
-                if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != x6a17354df11c325bba9941d69e9c0294 ; then :
+                if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != xbb21cefefcfbb76cf249120e8978ffdd ; then :
 
                  type=bz2
 
 
       filename=cdrtools-$version.tar.$type
-      MD5=6a17354df11c325bba9941d69e9c0294
+      MD5=bb21cefefcfbb76cf249120e8978ffdd
 
       # first trying to download from main site unless SF_MIRRORS is set
       if test x"$SF_MIRROR" = x ; then :
@@ -39699,9 +39631,9 @@ fi
 
 fi
 
-                dir="cdrtools-2.01.01"
+                dir="cdrtools-3.00"
 
-      	        if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != x6a17354df11c325bba9941d69e9c0294 ; then :
+      	        if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != xbb21cefefcfbb76cf249120e8978ffdd ; then :
 
                         { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ===ERR===  Download failure" >&5
 $as_echo "$as_me: WARNING: ===ERR===  Download failure" >&2;}
@@ -45389,7 +45321,7 @@ else
                  { $as_echo "$as_me:${as_lineno-$LINENO}: ===INF===  Downloading cdrtools. Make sure you have a functional internet connection." >&5
 $as_echo "$as_me: ===INF===  Downloading cdrtools. Make sure you have a functional internet connection." >&6;}
 
-                version=2.01.01a58
+                version=3.00
                 CDRTOOLS_VERSION=$version
 
 					    if test  -f "cdrtools-$version.tar.gz"; then :
@@ -45414,7 +45346,7 @@ fi
 
 
       filename=cdrtools-$version.tar.$type
-      MD5=6a17354df11c325bba9941d69e9c0294
+      MD5=bb21cefefcfbb76cf249120e8978ffdd
 
       # first trying to download from main site unless SF_MIRRORS is set
       if test x"$SF_MIRROR" = x ; then :
@@ -45681,13 +45613,13 @@ fi
 
                 # outputs variable $filename
 
-                if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != x6a17354df11c325bba9941d69e9c0294 ; then :
+                if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != xbb21cefefcfbb76cf249120e8978ffdd ; then :
 
                  type=bz2
 
 
       filename=cdrtools-$version.tar.$type
-      MD5=6a17354df11c325bba9941d69e9c0294
+      MD5=bb21cefefcfbb76cf249120e8978ffdd
 
       # first trying to download from main site unless SF_MIRRORS is set
       if test x"$SF_MIRROR" = x ; then :
@@ -45954,9 +45886,9 @@ fi
 
 fi
 
-                dir="cdrtools-2.01.01"
+                dir="cdrtools-3.00"
 
-      	        if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != x6a17354df11c325bba9941d69e9c0294 ; then :
+      	        if  test  x$($MD5SUM -b $filename | $SED "s/ .*//g") != xbb21cefefcfbb76cf249120e8978ffdd ; then :
 
                         { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ===ERR===  Download failure" >&5
 $as_echo "$as_me: WARNING: ===ERR===  Download failure" >&2;}
@@ -55108,10 +55040,6 @@ else
   am__EXEEXT_FALSE=
 fi
 
-if test -z "${HAVE_IBERTY_BUILD_TRUE}" && test -z "${HAVE_IBERTY_BUILD_FALSE}"; then
-  as_fn_error "conditional \"HAVE_IBERTY_BUILD\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
 if test -z "${HAVE_HELP2MAN_TRUE}" && test -z "${HAVE_HELP2MAN_FALSE}"; then
   as_fn_error "conditional \"HAVE_HELP2MAN\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -55170,6 +55098,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_AUTOMAKE_TRUE}" && test -z "${HAVE_AUTOMAKE_FALSE}"; then
   as_fn_error "conditional \"HAVE_AUTOMAKE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_SMAKE_TRUE}" && test -z "${HAVE_SMAKE_FALSE}"; then
+  as_fn_error "conditional \"HAVE_SMAKE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_SOX_BUILD_TRUE}" && test -z "${HAVE_SOX_BUILD_FALSE}"; then
@@ -56777,12 +56709,10 @@ if  test x$IBERTY_BUILD = xyes ; then :
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: GNU lib sources in glibc/ will be recompiled for enhanced portability." >&5
 $as_echo "GNU lib sources in glibc/ will be recompiled for enhanced portability." >&6; }
-  if  test x$circumvent_sox_bug = xyes ; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result:   This is made necessary by SoX bug in versions <= 14.3" >&5
-$as_echo "  This is made necessary by SoX bug in versions <= 14.3" >&6; }
-fi
 
 fi
+
+
 
 
 if test x$ac_cv_c_big_endian = xyes; then :
@@ -56812,6 +56742,11 @@ $as_echo "  Man page will not be generated" >&6; }
 
 fi
 
+if  test x$SMAKE != x; then :
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: smake will be used instead of GNU make" >&5
+$as_echo "smake will be used instead of GNU make" >&6; }
+                              MAKE=$SMAKE
+fi
 
 if  test x$MP2ENC = x -o x$JPEG2YUV = x -o x$MPEG2ENC = x -o x$MPLEX = x; then :
 
@@ -56835,6 +56770,7 @@ fi
     mpeg2enc: .....................$MPEG2ENC
     mplex: ........................$MPLEX
     mogrify:.......................$MOGRIFY
+    make:..........................$MAKE
 
   These tools should all be installed to enable advanced dvda-author features.
 
@@ -56864,6 +56800,7 @@ $as_echo "
     mpeg2enc: .....................$MPEG2ENC
     mplex: ........................$MPLEX
     mogrify:.......................$MOGRIFY
+    make:..........................$MAKE
 
   These tools should all be installed to enable advanced dvda-author features.
 

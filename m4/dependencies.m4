@@ -30,7 +30,8 @@ m4_map([DVDA_TEST_AUX],[
 	[[cdrecord],  [recording software: cdrecord]],
         [[md5sum],    [MD5 checksum utility]],
 	[[autoconf],  [configure system build: autoconf]],
-	[[automake],  [make system build: automake]]])  
+	[[automake],  [make system build: automake]],
+        [[smake],     [using smake instead of GNU make]]])  
 
 
   m4_define([SOX_STATIC_MSG],
@@ -79,7 +80,7 @@ m4_map([DVDA_TEST_AUX],[
 
     m4_define([DOWNLOAD_OPTIONS],[
             [[dvdauthor-patch],[0.6.14],     [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [dvdauthor/0.6.14],                       [bd646b47950c4091ffd781d43fd2c5e9]],
-            [[cdrtools-patch], [2.01.01,a58],[http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches/mkisofs],[ftp://ftp.berlios.de/pub/cdrecord/alpha],[6a17354df11c325bba9941d69e9c0294]],
+            [[cdrtools-patch], [3.00],       [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches/mkisofs],[ftp://ftp.berlios.de/pub/cdrecord/alpha],[bb21cefefcfbb76cf249120e8978ffdd]],
             [[sox-patch],      [14.3.1],     [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [sox/14.3.1],                             [b99871c7bbae84feac9d0d1f010331ba]],
             [[flac-download],  [1.2.1],      [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [flac-src/flac-1.2.1-src],                [153c8b15a54da428d1f0fadc756c22c7]],
             [[libogg-download],[1.1.4],      [http://dvd-audio.sourceforge.net/utils],[],                                                [http://downloads.xiph.org/releases/ogg],[10200ec22543841d9d1c23e0aed4e5e9]],

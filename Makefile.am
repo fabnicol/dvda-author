@@ -1,4 +1,9 @@
 
+if HAVE_SMAKE
+MAKE=${SMAKE}
+else
+MAKE="${MAKE} -j4"
+endif
 
 # downloaded binaries will be built locally, to avoid possible versioning issues with already installed one
 # passing right flags to make distcheck when configuring nested packages We do not configure libogg, because install is forced under _build/_inst instead of local/
@@ -37,7 +42,7 @@ endif
 stamprecord0: Makefile
 	if test -f stamprecord0; then rm -f stamprecord0; fi; touch stamprecord0
 if HAVE_LIBOGG_BUILD
-	cd ${MAYBE_LIBOGG} &&  ${SHELL} configure ${CONFIGURE_LIBOGG_FLAGS} && $(MAKE) -j4 && $(MAKE) install ; cd -
+	cd ${MAYBE_LIBOGG} &&  ${SHELL} configure ${CONFIGURE_LIBOGG_FLAGS} && $(MAKE) && $(MAKE) install ; cd -
 endif
 
 
@@ -72,7 +77,7 @@ endif
 stamprecord4: Makefile
 	if test -f stamprecord4; then rm -f stamprecord4; fi; touch stamprecord4
 if HAVE_CDRTOOLS_BUILD
-	cp -fv ${MAYBE_CDRTOOLS}-work/mkisofs/dvd_sort.c  ${MAYBE_CDRTOOLS}/mkisofs && cd ${MAYBE_CDRTOOLS} && $(MAKE) -j4 ; cd - ; rm -rf ${MAYBE_CDRTOOLS}-work
+	cd ${MAYBE_CDRTOOLS} && $(MAKE) ; cd - ; 
 endif
 
 dvda-author.1:

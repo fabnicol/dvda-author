@@ -44,8 +44,8 @@ CPPFLAGS="$CPPFLAGS -I/usr/include -I/usr/local/include"
 FLAC_BUILD=no
 STATIC_SOX=no
 SOX_BUILD=no
-#supposing there is no SoX bug. This will be tested later by sox-debug.m4
-circumvent_sox_bug=no
+
+
 #preserving user CFLAGS input
 cflags_save="$CFLAGS -std=c99"
 #redefine CFLAGS to avoid systematic -g -O2 introduced by AC_PROG_CC
@@ -136,8 +136,6 @@ AC_ARG_WITH([debug-flags],
 #======================================
 
 # insert lib-specific tests here
-SOX_DEBUG_TEST
-
 
 # invoking main M4sh subroutine
 DVDA_CHECK_DEPENDENCIES
@@ -318,10 +316,11 @@ AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],[
 AS_IF([ test x$IBIBERTY_LIB -o x$IBIBERTY_LINK != x ],[AC_MSG_RESULT([libiberty.a will be linked to])])
 
 AS_IF([ test x$IBERTY_BUILD = xyes ],
-[
+ [
   AC_MSG_RESULT([GNU lib sources in glibc/ will be recompiled for enhanced portability.])
-  AS_IF([ test x$circumvent_sox_bug = xyes ],[AC_MSG_RESULT([  This is made necessary by SoX bug in versions <= 14.3])])
-])
+ ])
+
+
 
 
 AS_IF([test x$ac_cv_c_big_endian = xyes], [AC_MSG_RESULT([  Machine is big- endian])],[AC_MSG_RESULT([  Machine is little-endian])])
@@ -335,6 +334,8 @@ AS_IF([ test x$HELP2MAN != x ],
   AC_MSG_RESULT([  Man page will not be generated])
 ])
 
+AS_IF([ test x$SMAKE != x], [ AC_MSG_RESULT([smake will be used instead of GNU make])
+                              MAKE=$SMAKE])
 
 AS_IF([ test x$MP2ENC = x -o x$JPEG2YUV = x -o x$MPEG2ENC = x -o x$MPLEX = x],[
  AC_MSG_RESULT([  You will have to author top menus from available MPEG background files, as tools are missing to automate generation.])])
@@ -355,6 +356,7 @@ AC_MSG_RESULT([[
     mpeg2enc: .....................$MPEG2ENC
     mplex: ........................$MPLEX
     mogrify:.......................$MOGRIFY
+    make:..........................$MAKE
 
   These tools should all be installed to enable advanced dvda-author features.
 

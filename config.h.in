@@ -232,14 +232,14 @@
 /* Define to 1 if you have the `setlocale' function. */
 #undef HAVE_SETLOCALE
 
+/* Found smake */
+#undef HAVE_SMAKE
+
 /* Define to 1 if you have the `snprintf' function. */
 #undef HAVE_SNPRINTF
 
 /* Whether sox source code will be downloaded for build. */
 #undef HAVE_SOX
-
-/* SoX has buggy getopt_long */
-#undef HAVE_SOX_BUG
 
 /* configure, build and install sox from source code */
 #undef HAVE_SOX_BUILD
@@ -398,6 +398,9 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
+
+/* Pathname of smake */
+#undef SMAKE
 
 /* Defining sox filepath. */
 #undef SOX
