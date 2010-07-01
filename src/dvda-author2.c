@@ -104,12 +104,10 @@ void normalize_temporary_paths(pic* img)
             img->selectpic[menu]=calloc(s+13,sizeof(char));
             sprintf(img->selectpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "slpic", menu, ".png");
         }
-        img->backgroundpic[img->nmenus]=NULL;
+     //   img->backgroundpic[img->nmenus]=NULL;
         img->imagepic[img->nmenus]=NULL;
         img->highlightpic[img->nmenus]=NULL;
         img->selectpic[img->nmenus]=NULL;
-
-
 
     }
 }
@@ -137,7 +135,6 @@ int main(int argc,  char* const argv[])
     // Locale, time and log management
 
     setlocale(LC_ALL, "LOCALE");
-
 
     char* h = getenv("HOME");
     home=strdup((h)? h : TEMPDIR_SUBFOLDER_PREFIX);

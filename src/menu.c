@@ -44,14 +44,11 @@ if (img->tsvob == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  No matrix AUDIO_TS
 
 uint8_t j;
 uint64_t i;
-uint32_t pathlength=strlen(globals.settings.tempdir);
-
-char activeheader[pathlength+14];
-sprintf(activeheader, "%s"SEPARATOR"activeheader", globals.settings.tempdir);
-copy_file(img->activeheader, activeheader);
-
 uint16_t activeheadersize=0;
+
+char* activeheader=copy_file2dir(img->activeheader, globals.settings.tempdir);
 activeheadersize=stat_file_size(activeheader);
+
 FILE* activeheaderfile=fopen(activeheader, "rb");
 
 /* processing */
@@ -590,9 +587,10 @@ int prepare_overlay_img(char* text, int8_t group, pic *img, char* command, char*
     sprintf(picture_save, "%s"SEPARATOR"%s", globals.settings.tempdir, "svpic.png");
     unlink(picture_save);
     errno=0;
-
+    change_directory(globals.settings.datadir);
     if (img->blankscreen)
         copy_file(img->blankscreen, picture_save);
+    change_directory(globals.settings.workdir);
 
     if ((group == -1)&&(text))  // album text
     {

@@ -181,7 +181,6 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 		<Unit filename="../../m4/auxiliary.m4" />
 		<Unit filename="../../m4/dependencies.m4" />
 		<Unit filename="../../m4/dvda.m4" />
-		<Unit filename="../../m4/sox-debug.m4" />
 		<Unit filename="../../script.in" />
 		<Unit filename="../../src/Makefile.am" />
 		<Unit filename="../../src/amg2.c">
