@@ -50,6 +50,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * GNU Autoconf scripts define _LONG_OPTIONS among others in config.h thanks to
  * macro AC_USE_SYSTEM_EXTENSIONS in the top configure.ac */
 
+#define FREE_BINARY_PATH_SPACE 4
 
 #define CONFIGURATION_FILE 1
 #define PROJECT_FILE 0
@@ -241,11 +242,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #ifndef DEFAULT_SOUNDTRACK
 /* either define SETTINGSFILE at compile time or let configure find the right install dir */
-#ifdef INSTALL_CONF_DIR
-#define DEFAULT_SOUNDTRACK   INSTALL_CONF_DIR "/menu/silence.wav"  // to install with autotools build system or with #define elsewhere
-#else
-#define DEFAULT_SOUNDTRACK    "silence.wav" // as used in /src, will refer to root directory dvda-author.conf
-#endif
+#define DEFAULT_SOUNDTRACK   "menu/silence.wav"  // to install with autotools build system or with #define elsewhere
 #endif
 
 #ifndef NORM
@@ -259,10 +256,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define DEFAULT_ALBUMCOLOR "0,0,255" //blue              //Theoretical values, there are fewer possibilities for now, see comments below
 #define DEFAULT_GROUPCOLOR  "0,0,255" // must be the same
 #define DEFAULT_ARROWCOLOR "255,255,255"           //red
-#define DEFAULT_TEXTCOLOR_PALETTE "0xE6807F"  // pure white text, highlighted or not highlighted
-#define DEFAULT_BGCOLOR_PALETTE   "0x286DF0"  // album, group and select action text (turns navy blue on pressing the highlighted track)
-#define DEFAULT_HCOLOR_PALETTE    "0x51F05A"  //red underline
-#define DEFAULT_SELCOLOR_PALETTE  "0x88B33A"  // ochre background
+#define DEFAULT_TEXTCOLOR_PALETTE "0x80E6807F"  // pure white text, highlighted or not highlighted
+#define DEFAULT_BGCOLOR_PALETTE   "0x80286DF0"  // album, group and select action text (turns navy blue on pressing the highlighted track)
+#define DEFAULT_HCOLOR_PALETTE    "0x8051F05A"  //red underline
+#define DEFAULT_SELCOLOR_PALETTE  "0x8088B33A"  // ochre background
 #define DEFAULT_TEXTCOLOR_PIC "255,255,255"  // white  //
 #define DEFAULT_BGCOLOR_PIC   "0,0,0"  // black
 #define DEFAULT_HCOLOR_PIC   "255,0,0"  //red
@@ -282,20 +279,14 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define DEFAULT_SVHIGHLIGHTTEXT
 #define DEFAULT_SVHIGHLIGHTMOTIF	"0x51F05A"  //red		//    SVHIGHLIGHTMOTIF
 
-#ifdef INSTALL_CONF_DIR
-#define DEFAULT_BLANKSCREEN INSTALL_CONF_DIR "/menu/black_" NORM ".png"    // In principle blank for preparing titles yet can have some background
-#define DEFAULT_BLANKSCREEN_NTSC INSTALL_CONF_DIR "/menu/black_" "NTSC_720x480" ".png"    // In principle blank for preparing titles yet can have some background
-#define DEFAULT_BACKGROUNDPIC INSTALL_CONF_DIR "/menu/black_" NORM ".jpg"  // for mpeg authoring, background.
-#define DEFAULT_BACKGROUNDPIC_NTSC INSTALL_CONF_DIR "/menu/black_" "NTSC_720x480" ".jpg"  // for mpeg authoring
-#define ACTIVEHEADER INSTALL_CONF_DIR "/menu/activeheader"
-#define DEFAULT_ACTIVEHEADER INSTALL_CONF_DIR "/menu/activeheader"
-#else
+
+
 #define DEFAULT_BLANKSCREEN  "menu/black_" NORM ".png"
-#define DEFAULT_BLANKSCREEN_NTSC  "/menu/black_" "NTSC_720x480" ".png"    // In principle blank for preparing titles yet can have some background
+#define DEFAULT_BLANKSCREEN_NTSC  "menu/black_" "NTSC_720x480" ".png"    // In principle blank for preparing titles yet can have some background
 #define DEFAULT_BACKGROUNDPIC  "menu/black_" NORM ".jpg"  // for mpeg authoring
 #define DEFAULT_BACKGROUNDPIC_NTSC  "menu/black_" "NTSC_720x480" ".jpg"  // for mpeg authoring
 #define DEFAULT_ACTIVEHEADER "menu/activeheader"
-#endif
+
 #define DEFAULT_ASPECT_RATIO  "4:3"
 #define DEFAULT_POINTSIZE 25
 #define DEFAULT_FONTWIDTH 6  // 6 pixels for size 10 in Courier

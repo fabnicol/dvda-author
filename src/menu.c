@@ -40,96 +40,179 @@ void create_activemenu(pic* img,uint16_t totntracks)
 {
 
 
-if (img->tsvob == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  No matrix AUDIO_TS.VOB available for generating active menus.")
+    if (img->tsvob == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  No matrix AUDIO_TS.VOB available for generating active menus.")
 
-uint8_t j;
-uint64_t i;
-uint16_t activeheadersize=0;
+        uint8_t j;
+    uint64_t i;
+    uint16_t activeheadersize=0;
 
-char* activeheader=copy_file2dir(img->activeheader, globals.settings.tempdir);
-activeheadersize=stat_file_size(activeheader);
+    char* activeheader=copy_file2dir(img->activeheader, globals.settings.tempdir);
+    activeheadersize=stat_file_size(activeheader);
 
-FILE* activeheaderfile=fopen(activeheader, "rb");
+    FILE* activeheaderfile=fopen(activeheader, "rb");
 
-/* processing */
+    /* processing */
 
-puts("[INF]  Using already created top menus.\n");
-uint64_t tsvobsize=0;
-tsvobsize=stat_file_size(img->tsvob);
-if (tsvobsize <= activeheadersize) {perror("[ERR]  AUDIO_TS.VOB is too small.\n");  exit(EXIT_FAILURE) ;}
-uint8_t tsvobpt[tsvobsize];
-memset(tsvobpt, 0, tsvobsize);
-FILE * tsvobfile=fopen(img->tsvob, "rb");
+    puts("[INF]  Using already created top menus.\n");
+    uint64_t tsvobsize=0;
+    tsvobsize=stat_file_size(img->tsvob);
+    if (tsvobsize <= activeheadersize)
+    {
+        perror("[ERR]  AUDIO_TS.VOB is too small.\n");
+        exit(EXIT_FAILURE) ;
+    }
+    uint8_t tsvobpt[tsvobsize];
+    memset(tsvobpt, 0, tsvobsize);
+    FILE * tsvobfile=fopen(img->tsvob, "rb");
 
-if (fread(tsvobpt, activeheadersize, 1, activeheaderfile) == 0) perror("[ERR]  fread [active menu authoring, stage 1]");
+    if (fread(tsvobpt, activeheadersize, 1, activeheaderfile) == 0) perror("[ERR]  fread [active menu authoring, stage 1]");
 
-if (-1 == fseek(tsvobfile, ACTIVEHEADER_INSERTOFFSET, SEEK_SET)) perror("[ERR]  fseek [active menu authoring, stage 2]");
+    if (-1 == fseek(tsvobfile, ACTIVEHEADER_INSERTOFFSET, SEEK_SET)) perror("[ERR]  fseek [active menu authoring, stage 2]");
 
-if (fread(tsvobpt+activeheadersize+32, 0x314-ACTIVEHEADER_INSERTOFFSET, 1, tsvobfile) == 0) perror("[ERR]  fread [active menu authoring, stage 3]");
+    if (fread(tsvobpt+activeheadersize+32, 0x314-ACTIVEHEADER_INSERTOFFSET, 1, tsvobfile) == 0) perror("[ERR]  fread [active menu authoring, stage 3]");
 //nlinks=1;
-i=activeheadersize;
+    i=activeheadersize;
 
-tsvobpt[i]=0x10;
-tsvobpt[i+3]=(uint8_t) totntracks; // A max of 256 links ?
-tsvobpt[i+4]=(uint8_t) totntracks;
-uint32_copy(&tsvobpt[i+8],   0x32FFDD00);//uint32_copy(&tsvobpt[i+8],   0x0010B0B0);
-uint32_copy(&tsvobpt[i+12],   0x34FFDD00);//uint32_copy(&tsvobpt[i+12],   0x0020B090);
+    tsvobpt[i]=0x10;
+    tsvobpt[i+3]=(uint8_t) totntracks; // A max of 256 links ?
+    tsvobpt[i+4]=(uint8_t) totntracks;
+    uint32_copy(&tsvobpt[i+8],   0x32FFDD00);//uint32_copy(&tsvobpt[i+8],   0x0010B0B0);
+    uint32_copy(&tsvobpt[i+12],   0x34FFDD00);//uint32_copy(&tsvobpt[i+12],   0x0020B090);
 
-i=0x314;
-uint32_copy(&tsvobpt[i], 0x01BE04E8);
-i+=4;
-while (i < 0x800) { tsvobpt[i]=0xFF; i++; }
-if (-1 == fseek(tsvobfile, 0x800, SEEK_SET)) perror("[ERR]  fseek [active menu authoring, stage 4]");
-if (fread(tsvobpt+0x800, tsvobsize-0x800, 1, tsvobfile) == 0) perror("[ERR]  fread, stage 1, create_activemenu");
+    i=0x314;
+    uint32_copy(&tsvobpt[i], 0x01BE04E8);
+    i+=4;
+    while (i < 0x800)
+    {
+        tsvobpt[i]=0xFF;
+        i++;
+    }
+    if (-1 == fseek(tsvobfile, 0x800, SEEK_SET)) perror("[ERR]  fseek [active menu authoring, stage 4]");
+    if (fread(tsvobpt+0x800, tsvobsize-0x800, 1, tsvobfile) == 0) perror("[ERR]  fread, stage 1, create_activemenu");
 
 
-/* writing */
-if (img->stillvob == NULL)
+    /* writing */
+    if (img->stillvob == NULL)
+    {
+        if (img->stillvob == NULL) img->stillvob=strdup(img->tsvob);
+        if (img->stillvob)
+        {
+            img->stillvob[strlen(img->stillvob)-5]='V';
+            img->stillvob[strlen(img->stillvob)-6]='S';
+        }
+        else
+        {
+            perror("[ERR]   stillvob string allocation.\n");
+            return;
+        }
+    }
+
+
+    FILE* svvobfile=fopen(img->stillvob, "wb");
+    for (j=0; j < totntracks; j++)
+        fwrite(tsvobpt, tsvobsize, 1, svvobfile);
+
+    fclose(svvobfile);
+    if (globals.topmenu == ACTIVE_MENU_ONLY) unlink(img->tsvob);
+    return;
+}
+
+char* mp2enc=NULL;
+char* jpeg2yuv=NULL;
+char* mpeg2enc=NULL;
+char* mplex=NULL;
+char* mogrify=NULL;
+char* dvdauthor=NULL;
+char* spumux=NULL;
+char* convert=NULL;
+
+
+void initialize_binary_paths(char level)
 {
-   if (img->stillvob == NULL) img->stillvob=strdup(img->tsvob);
-   if (img->stillvob)
-   {
-      img->stillvob[strlen(img->stillvob)-5]='V';
-      img->stillvob[strlen(img->stillvob)-6]='S';
-   }
-   else { perror("[ERR]   stillvob string allocation.\n"); return;}
+    ///   saves ressources by ensuring this is done just once  ///
+    static uint16_t count1, count2, count3, count4;
+    switch (level)
+    {
+    case 0:
+        if (!count1)
+        {
+            // if installed with autotools, if bindir overrides then use override, otherwise use config.h value;
+            // if not installed with autotools, then use command line value or last-resort hard-code set defaults and test for result
+
+            mp2enc=create_binary_path(mp2enc, MP2ENC, SEPARATOR MP2ENC_BASENAME);
+            jpeg2yuv=create_binary_path(jpeg2yuv,JPEG2YUV, SEPARATOR JPEG2YUV_BASENAME);
+            mpeg2enc=create_binary_path(mpeg2enc,MPEG2ENC, SEPARATOR MPEG2ENC_BASENAME);
+            mplex=create_binary_path(mplex, MPLEX, SEPARATOR MPLEX_BASENAME);
+            count1++;
+        }
+        break;
+    case 1:
+        if (!count2)
+        {
+            spumux=create_binary_path(spumux, SPUMUX, SEPARATOR SPUMUX_BASENAME);
+            count2++;
+        }
+        break;
+
+    case 2:
+        if (!count3)
+        {
+            dvdauthor=create_binary_path(dvdauthor,DVDAUTHOR, SEPARATOR DVDAUTHOR_BASENAME);
+            count3++;
+        }
+
+        break;
+
+    case 3:
+        if (!count4)
+        {
+            mogrify=create_binary_path(mogrify, MOGRIFY, SEPARATOR MOGRIFY_BASENAME);
+            convert=create_binary_path(convert, CONVERT, SEPARATOR CONVERT_BASENAME);
+            count4++;
+        }
+        break;
+    case 4:
+        if (count1) { free(mp2enc); free(jpeg2yuv); free(mpeg2enc); free(mplex); }
+        if (count2) free(spumux);
+        if (count3) free(dvdauthor);
+        if (count4) {free(mogrify); free(convert);}
+        break;
+
+    }
+
 }
-
-
-FILE* svvobfile=fopen(img->stillvob, "wb");
-for (j=0; j < totntracks; j++)
-  fwrite(tsvobpt, tsvobsize, 1, svvobfile);
-
-fclose(svvobfile);
-if (globals.topmenu == ACTIVE_MENU_ONLY) unlink(img->tsvob);
-return;
-}
-
-
 
 int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 {
-    char pic[CHAR_BUFSIZ*10];
+
 
     errno=0;
+    static int s;
+    if(s==0) s=strlen(globals.settings.tempdir);
+    char pic[s+13];
+
+    FREE(img->backgroundmpg[rank])
+
+    img->backgroundmpg[rank]=calloc(1+ s + 17+3+ 4+1, sizeof(char));
 
     if (img->action == STILLPICS)
     {
         if (globals.debugging) printf("%s%u\n", "[INF]  Creating still picture #", rank+1);
+
         sprintf(img->backgroundmpg[rank], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "background_still_", rank, ".mpg");
-        snprintf(pic, sizeof(pic), "%s/pic_%03u.jpg", globals.settings.stillpicdir, rank);  // here stillpic[0] is a subdir.
+        snprintf(pic, sizeof(pic), "%s"SEPARATOR"pic_%03u.jpg", globals.settings.stillpicdir, rank);  // here stillpic[0] is a subdir.
     }
     else if (img->action == ANIMATEDVIDEO)
     {
-        if (globals.debugging) printf("[INF]  Creating animated rank #%u out of %s\n", rank+1, img->backgroundpic[rank]);
+        if (globals.debugging) printf("[INF]  Creating animated menu rank #%u out of %s\n", rank+1, img->backgroundpic[rank]);
         sprintf(img->backgroundmpg[rank], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "background_movie_",rank, ".mpg");
         snprintf(pic, sizeof(pic), "%s", img->backgroundpic[rank]);
     }
 
     /// Colorizing if need be ///
 
-   if (img->backgroundcolors)
-   {
+    if (img->backgroundcolors)
+    {
         if (globals.veryverbose) printf("%s\n", "[INF]  Colorizing background jpg files prior to multiplexing...");
         char* mogrify=NULL;
         char command[500];
@@ -140,23 +223,10 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
         if (globals.debugging) printf("[INF]  Launching mogrify to colorize menu: %d with command line %s\n", rank, command);
         if (system(command) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
-        fflush(NULL);
-   }
+            fflush(NULL);
+    }
 
-   ///   command lines ///
-
-    char* mp2enc=NULL;
-    char* jpeg2yuv=NULL;
-    char* mpeg2enc=NULL;
-    char* mplex=NULL;
-
-        // if installed with autotools, if bindir overrides then use override, otherwise use config.h value;
-       // if not installed with autotools, then use command line value or last-resort hard-code set defaults and test for result
-
-    mp2enc=create_binary_path(mp2enc, MP2ENC, SEPARATOR MP2ENC_BASENAME);
-    jpeg2yuv=create_binary_path(jpeg2yuv,JPEG2YUV, SEPARATOR JPEG2YUV_BASENAME);
-    mpeg2enc=create_binary_path(mpeg2enc,MPEG2ENC, SEPARATOR MPEG2ENC_BASENAME);
-    mplex=create_binary_path(mplex, MPLEX, SEPARATOR MPLEX_BASENAME);
+    initialize_binary_paths(0);
 
     char norm[2];
     norm[0]=img->norm[0];
@@ -237,7 +307,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     }
 
     if (globals.debugging)
-    printf("%s\n", "[INF]  Running jpeg2yuv...");
+        printf("%s\n", "[INF]  Running jpeg2yuv...");
 
     // Owing to the piping of the stdout streams (necessary for coherence of output) existence checks must be tightened up.
     // System will freeze should an input file not exit, as mjpegtools to not always exit on system error. This may cause a loop in the piping of jpeg2yuv to mpeg2enc
@@ -357,12 +427,9 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 #endif
 
 
-free(mp2enc);
-free(jpeg2yuv);
-free(mpeg2enc);
-free(mplex);
 
- return errno;
+
+    return errno;
 
 
 
@@ -394,7 +461,8 @@ int generate_background_mpg(pic* img, uint8_t ngroups, uint8_t* ntracks)
 
     if (img->action == ANIMATEDVIDEO)
     {
-        img->backgroundmpg=realloc(img->backgroundmpg, img->nmenus*sizeof(char*));
+        FREE(img->backgroundmpg);
+        img->backgroundmpg=calloc(img->nmenus, sizeof(char*));
 
         while(rank < img->nmenus)
         {
@@ -407,23 +475,24 @@ int generate_background_mpg(pic* img, uint8_t ngroups, uint8_t* ntracks)
 
     if (img->action == STILLPICS)
     {
-        img->backgroundmpg=realloc(img->backgroundmpg, img->count*sizeof(char*));
+        free(img->backgroundmpg);
+        img->backgroundmpg=calloc(img->count, sizeof(char*));
         if (img->backgroundmpg)
-        while (rank < img->count)
-        {
-            create_mpg(img, rank, mp2track, tempfile);
-            img->stillpicvobsize[rank]=(uint32_t) (stat_file_size(img->backgroundmpg[rank])/0x800);
-            if (img->stillpicvobsize[rank] > 1024) printf("[WAR]  Size of slideshow in excess of the 2MB track limit... some stillpics may not be displayed.\n");
-            if (rank) cat_file(img->backgroundmpg[rank], img->backgroundmpg[0]);
-            rank++;
-        }
+            while (rank < img->count)
+            {
+                create_mpg(img, rank, mp2track, tempfile);
+                img->stillpicvobsize[rank]=(uint32_t) (stat_file_size(img->backgroundmpg[rank])/0x800);
+                if (img->stillpicvobsize[rank] > 1024) printf("[WAR]  Size of slideshow in excess of the 2MB track limit... some stillpics may not be displayed.\n");
+                if (rank) cat_file(img->backgroundmpg[rank], img->backgroundmpg[0]);
+                rank++;
+            }
         // The first backgroundmpg file is the one that is used to create AUDIO_SV.VOB in amg2.c
     }
 
     FREE(mp2track)
 
     if ((globals.debugging) && (!errno))
-    printf("%s\n", "[INF]  MPG background authoring OK.");
+        printf("%s\n", "[INF]  MPG background authoring OK.");
     return errno;
 
 }
@@ -437,9 +506,9 @@ int launch_spumux(pic* img)
 
     if (globals.debugging) printf("%s\n", "[INF]  Launching spumux to create buttons");
     int menu=0;
-    char* spumux=NULL;
 
-    spumux=create_binary_path(spumux, SPUMUX, SEPARATOR SPUMUX_BASENAME);
+
+    initialize_binary_paths(1);
 
 
     while (menu < img->nmenus)
@@ -517,7 +586,7 @@ int launch_spumux(pic* img)
         menu++;
     }
 
-    free(spumux);
+
     return errno;
 }
 
@@ -526,9 +595,7 @@ int launch_spumux(pic* img)
 int launch_dvdauthor()
 {
 
-    char* dvdauthor=NULL;
-
-    dvdauthor=create_binary_path(dvdauthor,DVDAUTHOR, SEPARATOR DVDAUTHOR_BASENAME);
+    initialize_binary_paths(2);
 
     errno=0;
 
@@ -539,12 +606,12 @@ int launch_dvdauthor()
 #ifndef __WIN32__
     run(dvdauthor, args, 0);
 #else
-        char* s=get_command_line(args);
-        uint16_t size=strlen(s);
-        char cml[strlen(dvdauthor)+1+size+1];
-        sprintf(cml, "%s %s", dvdauthor, s);
-        system(cml);
-        free(s);
+    char* s=get_command_line(args);
+    uint16_t size=strlen(s);
+    char cml[strlen(dvdauthor)+1+size+1];
+    sprintf(cml, "%s %s", dvdauthor, s);
+    system(cml);
+    free(s);
 #endif
 
 
@@ -552,8 +619,8 @@ int launch_dvdauthor()
     sync();
 #endif
 
-   free(dvdauthor);
-   return errno;
+
+    return errno;
 }
 
 
@@ -580,9 +647,8 @@ int prepare_overlay_img(char* text, int8_t group, pic *img, char* command, char*
 
     int size=strlen(globals.settings.tempdir)+11;
     char picture_save[size];
-    char* mogrify=NULL;
 
-    mogrify=create_binary_path(mogrify, MOGRIFY, SEPARATOR MOGRIFY_BASENAME);
+    initialize_binary_paths(3);
 
     sprintf(picture_save, "%s"SEPARATOR"%s", globals.settings.tempdir, "svpic.png");
     unlink(picture_save);
@@ -600,7 +666,7 @@ int prepare_overlay_img(char* text, int8_t group, pic *img, char* command, char*
                  "-draw", " \"text ", x0, ',' , ALBUM_TEXT_Y0,  '\'', text, "\'\"", picture_save);
         if (globals.debugging) printf("%s%s\n", "[INF]  Launching mogrify (title) with command line: ", command);
         if (system(command) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
-        fflush(NULL);
+            fflush(NULL);
     }
 
     if ((img->imagepic[menu]==NULL) || (img->highlightpic[menu]==NULL) || (img->imagepic[menu]==NULL))
@@ -658,6 +724,7 @@ int mogrify_img(char* text, int8_t group, int8_t track, pic *img, uint8_t maxnum
     }
     if (img->highlightformat == BUTTON)
     {
+
         deltax0=-4;
         deltay0=-4-EVEN((img->fontwidth*img->pointsize)/5);
         deltax1=EVEN((img->fontwidth * img->pointsize *strlen(text))/10)+4;
@@ -702,15 +769,15 @@ void compute_pointsize(pic* img, uint16_t maxtracklength, uint8_t maxnumtracks)
 ALWAYS_INLINE_GCC  void test_underline(char* text,pic* img)
 {
 
-int j, s=strlen(text);
+    int j, s=strlen(text);
 
-for (j=0; j < s; j++)
-   if ((text[j]== 'g') || (text[j]== 'j') || (text[j]== 'p') || (text[j]== 'q') || (text[j]== 'y'))
-       {
-       	if (globals.debugging)
-       	 printf("[INF]  Switching to little squares rather than underlining motifs for highlight\n       as %c could cut underlines\n", text[j]);
-       	 img->highlightformat=-1;
-       }
+    for (j=0; j < s; j++)
+        if ((text[j]== 'g') || (text[j]== 'j') || (text[j]== 'p') || (text[j]== 'q') || (text[j]== 'y'))
+        {
+            if (globals.debugging)
+                printf("[INF]  Switching to little squares rather than underlining motifs for highlight\n       as %c could cut underlines\n", text[j]);
+            img->highlightformat=-1;
+        }
 
 }
 
@@ -767,7 +834,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
             {
                 maxtracklength=MAX(maxtracklength,strlen(tracktext[group][track]));
                 if (strlen(tracktext[group][track]) > size) tracktext[group][track][size]='\0';
-		test_underline(tracktext[group][track],img);
+                test_underline(tracktext[group][track],img);
                 track++;
 
             }
@@ -797,7 +864,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
                 sprintf(tracktext[k][j], "%s%d", DEFAULT_TRACK_HEADER, j+1);
             }
             tracktext[k][ntracks[k]]=NULL;
-	    grouptext[k][1]=NULL;
+            grouptext[k][1]=NULL;
         }
 
 
@@ -945,8 +1012,6 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
         if (system(command1) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
         free(command1);
         char command3[500];
-        char* convert=NULL;
-        convert=create_binary_path(convert, CONVERT, SEPARATOR CONVERT_BASENAME);
 
         snprintf(command3, sizeof(command3), "%s %s \"rgb(%s)\"  %s \"rgb(%s)\" %s %s", convert, "-fill", img->selectfgcolor_pic, "-opaque", img->textcolor_pic, img->imagepic[menu], img->selectpic[menu]);
         if (globals.veryverbose) printf("[INF]  Menu: %d/%d, groupcount: %d/%d.\n      Launching convert (select) with command line: %s\n",menu, img->nmenus, groupcount, ngroups,command3);
@@ -967,7 +1032,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
 
     if (img->screentextchain)
     {
-    	free(basemotif[0]);
+        free(basemotif[0]);
         free(basemotif[1]);
         free(basemotif);
     }

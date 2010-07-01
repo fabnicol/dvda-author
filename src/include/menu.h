@@ -13,4 +13,5 @@ int create_stillpic_directory(char* string, uint32_t count);
 void create_activemenu(pic* img,uint16_t totntracks);
 uint16_t x(uint8_t group, uint8_t ngroups);
 uint16_t y(uint8_t track, uint8_t maxnumtracks);
+void initialize_binary_paths(char level);
 #endif // HAVE_MENU_C

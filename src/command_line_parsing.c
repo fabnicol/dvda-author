@@ -737,8 +737,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 if (img->soundtrack) sprintf(img->soundtrack, "%s"SEPARATOR"%s", optarg, "menu"SEPARATOR"silence.wav");
                 img->activeheader=realloc(img->activeheader, (strlength+1+1+17)*sizeof(char));  // activeheader
                 if (img->activeheader) sprintf(img->activeheader, "%s"SEPARATOR"%s", optarg, "menu"SEPARATOR"activeheader");
-                globals.settings.datadir=calloc(strlength+1+4+1, sizeof(char));
-                sprintf(globals.settings.datadir, "%s%s", optarg, SEPARATOR);
+                free(globals.settings.datadir);
+                globals.settings.datadir=strdup(optarg);
+
                 break;
 
 

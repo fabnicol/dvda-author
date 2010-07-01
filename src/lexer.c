@@ -111,7 +111,8 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
 
         case '#' :
             continue;
-        case '[':
+
+         case '[':
              chain++;
              while ((chain[u] != ']') && (chain[u] != '\0')) {T[u]=chain[u]; u++;}
              if (chain[u] != ']')  EXIT_ON_RUNTIME_ERROR
@@ -122,7 +123,11 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
              j++;i++;
              break;
 
-         default:
+        case '/' :
+             if (*(chain+1) == '/') continue; // no break
+
+
+        default:
              if ((flag == SHORTOPTION) ||  (flag == LONGOPTION)) flag=ARG;
              break;
         }
