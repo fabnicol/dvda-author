@@ -661,7 +661,7 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
             i+=4;
             uint32_copy(&amg[i], (uint32_t) strtoul(img->selectfgcolor_palette, NULL, 16)); // Colors (a, Y, Cr, Cb): Pattern:: display foreground(red)
             i+=4;
-            //uint32_copy(&amg[i], (uint32_t) strtoul(img->bgcolor_palette,NULL,16)); // Colors (a, Y, Cr, Cb): Pattern:: select (action) foreground (green)
+            uint32_copy(&amg[i], (uint32_t) strtoul(img->bgcolor_palette,NULL,16)); // Colors (a, Y, Cr, Cb): Pattern:: select (action) foreground (green)
             i+=4;
             // other possible streams (lower hierarchical levels)
             uint32_copy(&amg[i], 0x00108080);

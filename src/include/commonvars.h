@@ -256,18 +256,18 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define DEFAULT_ALBUMCOLOR "0,0,255" //blue              //Theoretical values, there are fewer possibilities for now, see comments below
 #define DEFAULT_GROUPCOLOR  "0,0,255" // must be the same
 #define DEFAULT_ARROWCOLOR "255,255,255"           //red
-#define DEFAULT_TEXTCOLOR_PALETTE "0x80E6807F"  // pure white text, highlighted or not highlighted
-#define DEFAULT_BGCOLOR_PALETTE   "0x80286DF0"  // album, group and select action text (turns navy blue on pressing the highlighted track)
-#define DEFAULT_HCOLOR_PALETTE    "0x8051F05A"  //red underline
-#define DEFAULT_SELCOLOR_PALETTE  "0x8088B33A"  // ochre background
+#define DEFAULT_TEXTCOLOR_PALETTE "0xE6807F"  // pure white text, highlighted or not highlighted
+#define DEFAULT_BGCOLOR_PALETTE   "0x286DF0"  // album, group and select action text (turns navy blue on pressing the highlighted track)
+#define DEFAULT_HCOLOR_PALETTE    "0x51F05A"  //red underline
+#define DEFAULT_SELCOLOR_PALETTE  "0x88B33A"  // ochre background
 #define DEFAULT_TEXTCOLOR_PIC "255,255,255"  // white  //
 #define DEFAULT_BGCOLOR_PIC   "0,0,0"  // black
 #define DEFAULT_HCOLOR_PIC   "255,0,0"  //red
 #define DEFAULT_SELCOLOR_PIC  "0,0,255"  // blue
-#define DEFAULT_ACTIVETEXTCOLOR_PALETTE "0x80E6807F"  // pure white : non-highlighted text
-#define DEFAULT_ACTIVEBGCOLOR_PALETTE   "0x8051F05A"  // background and highlighted text
-#define DEFAULT_ACTIVEHCOLOR_PALETTE    "0x80902235"	//green	album, group text and underline color
-#define DEFAULT_ACTIVESELCOLOR_PALETTE "0x8088B33A"  // ochre : the text turns ochre on pressing the remote for the highlighted text "0x286DF0"  // blue
+#define DEFAULT_ACTIVETEXTCOLOR_PALETTE "0xE6807F"  // pure white : non-highlighted text
+#define DEFAULT_ACTIVEBGCOLOR_PALETTE   "0x51F05A"  // background and highlighted text
+#define DEFAULT_ACTIVEHCOLOR_PALETTE    "0x902235"	//green	album, group text and underline color
+#define DEFAULT_ACTIVESELCOLOR_PALETTE "0x88B33A"  // ochre : the text turns ochre on pressing the remote for the highlighted text "0x286DF0"  // blue
 
 // Experience teaches this:
 #ifdef __WIN32__

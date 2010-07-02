@@ -61,7 +61,7 @@
 #        3
 
 [highlightformat]
-        0
+        1
 
 # Slideshow authoring
 # suboption syntax is simplified for lexer. Skip ONE blank line between pictures paths when changing tracks
