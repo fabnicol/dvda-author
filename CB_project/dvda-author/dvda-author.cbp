@@ -94,8 +94,8 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 		</Option>
 		<Build>
 			<Target title="Release">
-				<Option output="bin\Release\dvda-author" prefix_auto="1" extension_auto="1" />
-				<Option object_output="obj\Release\" />
+				<Option output="bin/Release/dvda-author" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Option parameters="--project ~/Dev/dvda-author-10.06/dvda-author3.dap" />
@@ -115,32 +115,32 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 					<Add option="-DALWAYS_INLINE" />
 					<Add option="-DHAVE_UNISTD_H" />
 					<Add option="-DHAVE_DVDAUTHOR_PATCH" />
-					<Add directory="..\..\src\include" />
-					<Add directory="..\..\libutils\src\include" />
-					<Add directory="..\..\libfixwav\src\include" />
-					<Add directory="..\..\libats2wav" />
-					<Add directory="..\..\" />
-					<Add directory="..\..\libats2wav\src\include" />
-					<Add directory="..\..\libglibc\src\include" />
-					<Add directory="..\..\libs\include" />
-					<Add directory="..\..\libs\include\libsoxconvert" />
+					<Add directory="../../src/include" />
+					<Add directory="../../libutils/src/include" />
+					<Add directory="../../libfixwav/src/include" />
+					<Add directory="../../libats2wav" />
+					<Add directory="../../" />
+					<Add directory="../../libats2wav/src/include" />
+					<Add directory="../../libiberty/src/include" />
+					<Add directory="../../libs/include" />
+					<Add directory="../../libs/include/libsoxconvert" />
 				</Compiler>
 				<Linker>
 					<Add option="-lFLAC -lsox -logg" />
 					<Add option="-Xlinker --allow-multiple-definition" />
-					<Add library="..\libc_utils\libc_utils.a" />
-					<Add library="..\libfixwav\bin\Release\libfixwav-1.3.a" />
-					<Add library="..\libats2wav\libats2wav.a" />
-					<Add directory="..\libutils" />
-					<Add directory="..\..\libutils\include" />
-					<Add directory="..\libogg" />
-					<Add directory="..\libfixwav\bin\Release" />
-					<Add directory="..\libats2wav" />
-					<Add directory="\usr\lib" />
-					<Add directory="\usr\lib\sox" />
-					<Add directory="\usr\local\lib" />
-					<Add directory="..\..\libs" />
-					<Add directory="..\..\libglibc" />
+					<Add library="../libc_utils/libc_utils.a" />
+					<Add library="../libfixwav/bin/Release/libfixwav-1.3.a" />
+					<Add library="../libats2wav/libats2wav.a" />
+					<Add directory="../libutils" />
+					<Add directory="../../libutils/include" />
+					<Add directory="../libogg" />
+					<Add directory="../libfixwav/bin/Release" />
+					<Add directory="../libats2wav" />
+					<Add directory="/usr/lib" />
+					<Add directory="/usr/lib/sox" />
+					<Add directory="/usr/local/lib" />
+					<Add directory="../../libs" />
+					<Add directory="../../libiberty" />
 				</Linker>
 			</Target>
 		</Build>
@@ -149,128 +149,128 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 			<Add option="-g" />
 			<Add option="-D_GNU_SOURCE" />
 		</Compiler>
-		<Unit filename="..\..\ChangeLog" />
-		<Unit filename="..\..\EXAMPLES" />
-		<Unit filename="..\..\INSTALL" />
-		<Unit filename="..\..\Makefile.am" />
-		<Unit filename="..\..\README" />
-		<Unit filename="..\..\autogen" />
-		<Unit filename="..\..\configure.ac" />
-		<Unit filename="..\..\dvda-author.dap" />
-		<Unit filename="..\..\dvda-author.nsi.in" />
-		<Unit filename="..\..\dvda-author2.dap" />
-		<Unit filename="..\..\dvda-author3.dap" />
-		<Unit filename="..\..\libats2wav\src\Makefile.am" />
-		<Unit filename="..\..\libfixwav\Makefile.am" />
-		<Unit filename="..\..\libfixwav\src\Makefile.am" />
-		<Unit filename="..\..\libiberty\Makefile.am" />
-		<Unit filename="..\..\libiberty\src\Makefile.am" />
-		<Unit filename="..\..\libiberty\src\getopt.c">
+		<Unit filename="../../ChangeLog" />
+		<Unit filename="../../EXAMPLES" />
+		<Unit filename="../../INSTALL" />
+		<Unit filename="../../Makefile.am" />
+		<Unit filename="../../README" />
+		<Unit filename="../../autogen" />
+		<Unit filename="../../configure.ac" />
+		<Unit filename="../../dvda-author.dap" />
+		<Unit filename="../../dvda-author.nsi.in" />
+		<Unit filename="../../dvda-author2.dap" />
+		<Unit filename="../../dvda-author3.dap" />
+		<Unit filename="../../libats2wav/src/Makefile.am" />
+		<Unit filename="../../libfixwav/Makefile.am" />
+		<Unit filename="../../libfixwav/src/Makefile.am" />
+		<Unit filename="../../libiberty/Makefile.am" />
+		<Unit filename="../../libiberty/src/Makefile.am" />
+		<Unit filename="../../libiberty/src/getopt.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\libiberty\src\getopt1.c">
+		<Unit filename="../../libiberty/src/getopt1.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\libiberty\src\getsubopt.c">
+		<Unit filename="../../libiberty/src/getsubopt.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\libiberty\src\include\getopt.h" />
-		<Unit filename="..\..\libiberty\src\include\getopt_int.h" />
-		<Unit filename="..\..\libiberty\src\include\getsubopt.h" />
-		<Unit filename="..\..\libiberty\src\include\strchrnul.h" />
-		<Unit filename="..\..\libiberty\src\include\strdup.h" />
-		<Unit filename="..\..\libiberty\src\include\strndup.h" />
-		<Unit filename="..\..\libiberty\src\include\strnlen.h" />
-		<Unit filename="..\..\libiberty\src\malloc.c">
+		<Unit filename="../../libiberty/src/include/getopt.h" />
+		<Unit filename="../../libiberty/src/include/getopt_int.h" />
+		<Unit filename="../../libiberty/src/include/getsubopt.h" />
+		<Unit filename="../../libiberty/src/include/strchrnul.h" />
+		<Unit filename="../../libiberty/src/include/strdup.h" />
+		<Unit filename="../../libiberty/src/include/strndup.h" />
+		<Unit filename="../../libiberty/src/include/strnlen.h" />
+		<Unit filename="../../libiberty/src/malloc.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\libiberty\src\strchrnul.c">
+		<Unit filename="../../libiberty/src/strchrnul.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\libiberty\src\strdup.c">
+		<Unit filename="../../libiberty/src/strdup.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\libiberty\src\strndup.c">
+		<Unit filename="../../libiberty/src/strndup.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\libiberty\src\strnlen.c">
+		<Unit filename="../../libiberty/src/strnlen.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\libutils\src\Makefile.am" />
-		<Unit filename="..\..\m4\acinclude.m4" />
-		<Unit filename="..\..\m4\auxiliary.m4" />
-		<Unit filename="..\..\m4\dependencies.m4" />
-		<Unit filename="..\..\m4\dvda.m4" />
-		<Unit filename="..\..\script.in" />
-		<Unit filename="..\..\src\Makefile.am" />
-		<Unit filename="..\..\src\amg2.c">
+		<Unit filename="../../libutils/src/Makefile.am" />
+		<Unit filename="../../m4/acinclude.m4" />
+		<Unit filename="../../m4/auxiliary.m4" />
+		<Unit filename="../../m4/dependencies.m4" />
+		<Unit filename="../../m4/dvda.m4" />
+		<Unit filename="../../script.in" />
+		<Unit filename="../../src/Makefile.am" />
+		<Unit filename="../../src/amg2.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\src\asvs.c">
+		<Unit filename="../../src/asvs.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\src\ats.c">
+		<Unit filename="../../src/ats.c">
 			<Option compilerVar="CC" />
 			<Option compiler="gcc" use="0" buildCommand="$compiler $options -ftree-parallelize-loops=4 $includes -c $file -o $object " />
 		</Unit>
-		<Unit filename="..\..\src\atsi2.c">
+		<Unit filename="../../src/atsi2.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\src\audio.c">
+		<Unit filename="../../src/audio.c">
 			<Option compilerVar="CC" />
 			<Option compiler="gcc" use="0" buildCommand="$compiler $options -ftree-parallelize-loops=4 $includes -c $file -o $object" />
 		</Unit>
-		<Unit filename="..\..\src\auxiliary.c">
+		<Unit filename="../../src/auxiliary.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\src\command_line_parsing.c">
+		<Unit filename="../../src/command_line_parsing.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\src\dvda-author2.c">
+		<Unit filename="../../src/dvda-author2.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\src\file_input_parsing.c">
+		<Unit filename="../../src/file_input_parsing.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\src\include\amg.h" />
-		<Unit filename="..\..\src\include\asvs.h" />
-		<Unit filename="..\..\src\include\ats.h" />
-		<Unit filename="..\..\src\include\atsi.h" />
-		<Unit filename="..\..\src\include\audio2.h" />
-		<Unit filename="..\..\src\include\auxiliary.h" />
-		<Unit filename="..\..\src\include\command_line_parsing.h" />
-		<Unit filename="..\..\src\include\commonvars.h" />
-		<Unit filename="..\..\src\include\dvda-author.h" />
-		<Unit filename="..\..\src\include\file_input_parsing.h" />
-		<Unit filename="..\..\src\include\launch_manager.h" />
-		<Unit filename="..\..\src\include\lexer.h" />
-		<Unit filename="..\..\src\include\libsoxconvert.h" />
-		<Unit filename="..\..\src\include\menu.h" />
-		<Unit filename="..\..\src\include\multichannel.h" />
-		<Unit filename="..\..\src\include\ports.h" />
-		<Unit filename="..\..\src\include\samg.h" />
-		<Unit filename="..\..\src\include\structures.h" />
-		<Unit filename="..\..\src\include\videoimport.h" />
-		<Unit filename="..\..\src\include\xml.h" />
-		<Unit filename="..\..\src\launch_manager.c">
+		<Unit filename="../../src/include/amg.h" />
+		<Unit filename="../../src/include/asvs.h" />
+		<Unit filename="../../src/include/ats.h" />
+		<Unit filename="../../src/include/atsi.h" />
+		<Unit filename="../../src/include/audio2.h" />
+		<Unit filename="../../src/include/auxiliary.h" />
+		<Unit filename="../../src/include/command_line_parsing.h" />
+		<Unit filename="../../src/include/commonvars.h" />
+		<Unit filename="../../src/include/dvda-author.h" />
+		<Unit filename="../../src/include/file_input_parsing.h" />
+		<Unit filename="../../src/include/launch_manager.h" />
+		<Unit filename="../../src/include/lexer.h" />
+		<Unit filename="../../src/include/libsoxconvert.h" />
+		<Unit filename="../../src/include/menu.h" />
+		<Unit filename="../../src/include/multichannel.h" />
+		<Unit filename="../../src/include/ports.h" />
+		<Unit filename="../../src/include/samg.h" />
+		<Unit filename="../../src/include/structures.h" />
+		<Unit filename="../../src/include/videoimport.h" />
+		<Unit filename="../../src/include/xml.h" />
+		<Unit filename="../../src/launch_manager.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\src\lexer.c">
+		<Unit filename="../../src/lexer.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\src\libsoxconvert.c">
+		<Unit filename="../../src/libsoxconvert.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\src\menu.c">
+		<Unit filename="../../src/menu.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\src\samg2.c">
+		<Unit filename="../../src/samg2.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\src\videoimport.c">
+		<Unit filename="../../src/videoimport.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="..\..\src\xml.c">
+		<Unit filename="../../src/xml.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Extensions>

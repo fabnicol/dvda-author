@@ -5,17 +5,17 @@
 *
 *******************************************************************/
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE 1
 #endif
-
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -35,6 +35,7 @@
 #include "structures.h"
 #include "winport.h"
 #include "commonvars.h"
+#include "libiberty.h"
 
 
 extern globalData globals;
@@ -206,7 +207,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
       secure_mkdir(info->database, 0755, DEFAULT_DATABASE_FOLDER);
       FILE* database = secure_open(databasepath, "ab");
       fprintf(database, "Filename    %s\nArtist      %s\nDate        %s\nStyle       %s\nComment     %s\nCopyright   %s\n\n", ichunk.INAM, ichunk.IART, ichunk.ICRD, ichunk.IGNR, ichunk.ICMT, ichunk.ICOP);
-      info->filetitle=strdup(ichunk.INAM);
+      info->filetitle=strdup((const char*) ichunk.INAM);
       fclose(database);
    }
 

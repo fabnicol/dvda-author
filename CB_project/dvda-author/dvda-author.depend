@@ -543,7 +543,7 @@
 	"getopt.h"
 	"getopt_int.h"
 
-1277987022 /home/fab/Dev/dvda-author-10.06//config.h
+1278108632 /home/fab/Dev/dvda-author-10.06//config.h
 
 1277481601 /home/fab/Dev/dvda-author-10.06/libglibc/src/include/getopt.h
 	<ctype.h>
@@ -790,7 +790,7 @@
 	"commonvars.h"
 	"dvda-author.h"
 
-1278107096 /home/fab/Dev/dvda-author-10.06/src/include/command_line_parsing.h
+1278109328 /home/fab/Dev/dvda-author-10.06/src/include/command_line_parsing.h
 	"structures.h"
 	"commonvars.h"
 	"fixwav_manager.h"
@@ -802,7 +802,7 @@
 1277481601 /home/fab/Dev/dvda-author-10.06/src/include/lexer.h
 	"structures.h"
 
-1278106901 /home/fab/Dev/dvda-author-10.06/src/include/dvda-author.h
+1278109016 /home/fab/Dev/dvda-author-10.06/src/include/dvda-author.h
 	"commonvars.h"
 	"structures.h"
 
@@ -1629,4 +1629,13 @@
 1278107096 /home/fab/Dev/dvda-author-10.06//libiberty/src/include/getsubopt.h
 
 1278107827 /home/fab/Dev/dvda-author-10.06//libiberty/src/include/strdup.h
+
+1278108009 source:/home/fab/Dev/dvda-author-10.06/libiberty/src/strndup.c
+	"config.h"
+	<string.h>
+	"strndup.h"
+	"strnlen.h"
+	"malloc.h"
+	<stdio.h>
+	<sys/types.h>
 
