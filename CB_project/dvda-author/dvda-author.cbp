@@ -98,7 +98,7 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="-g ~/a.wav   --tempdir ~/temp -l log --topmenu -t --datadir ~/Dev/dvda-author-10.06" />
+				<Option parameters="--project ~/Dev/dvda-author-10.06/dvda-author3.dap" />
 				<Option projectCompilerOptionsRelation="2" />
 				<Compiler>
 					<Add option="-march=i686" />
@@ -152,6 +152,9 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 		<Unit filename="../../ChangeLog" />
 		<Unit filename="../../Makefile.am" />
 		<Unit filename="../../configure.ac" />
+		<Unit filename="../../dvda-author.dap" />
+		<Unit filename="../../dvda-author2.dap" />
+		<Unit filename="../../dvda-author3.dap" />
 		<Unit filename="../../libglibc/src/getsubopt.c">
 			<Option compilerVar="CC" />
 		</Unit>
