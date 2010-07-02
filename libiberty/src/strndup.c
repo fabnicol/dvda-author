@@ -19,6 +19,7 @@
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+#include <string.h>
 #include "strndup.h"
 #include "strnlen.h"
 #include "malloc.h"
@@ -35,6 +36,7 @@
 
 #include <stdio.h>
 #include <sys/types.h>
+
 
 char * __strndup (const char *s , size_t n)
 

@@ -3,7 +3,7 @@
 #ifdef strdup
 #undef strdup
 #endif
-#define strdup __strdup
-char * __strdup (const char *s);
+
+char * strdup (const char *s);
 
 #endif // STRDUP_H_INCLUDED
