@@ -41,8 +41,8 @@ endif
 
 stamprecord0: Makefile
 	if test -f stamprecord0; then rm -f stamprecord0; fi; touch stamprecord0
-if HAVE_LIBOGG_BUILD
-	cd ${MAYBE_LIBOGG} &&  ${SHELL} configure ${CONFIGURE_LIBOGG_FLAGS} && $(MAKE) && $(MAKE) install ; cd -
+if HAVE_OGG_BUILD
+	cd ${MAYBE_OGG} &&  ${SHELL} configure ${CONFIGURE_OGG_FLAGS} && $(MAKE) && $(MAKE) install ; cd -
 endif
 
 
@@ -77,7 +77,7 @@ endif
 stamprecord4: Makefile
 	if test -f stamprecord4; then rm -f stamprecord4; fi; touch stamprecord4
 if HAVE_CDRTOOLS_BUILD
-	cd ${MAYBE_CDRTOOLS} && $(MAKE) ; cd - ; 
+	cd ${MAYBE_CDRTOOLS} && $(MAKE) ; cd - ;
 endif
 
 dvda-author.1:
@@ -92,8 +92,8 @@ if HAVE_MAN2HTML
 endif
 
 
-SUBDIRS=${MAYBE_IBERTY} libutils ${MAYBE_LIBOGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} libats2wav  ${MAYBE_SOX}  ${MAYBE_DVDAUTHOR} src
-DIST_SUBDIRS=libglibc  libutils libfixwav src CB_project libats2wav images
+SUBDIRS=${MAYBE_IBERTY} libutils ${MAYBE_OGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} libats2wav  ${MAYBE_SOX}  ${MAYBE_DVDAUTHOR} src
+DIST_SUBDIRS=libiberty libutils libfixwav src CB_project libats2wav images
 
 #normally is ${prefix}/share/applications/dvda-author-${VERSION}
 sysconfdir=${SHORTLINKDIR}
@@ -136,8 +136,8 @@ install-exec-local:
 # redefining install is necessary to rename nested package directories for later builds with --enable-all-builds, which request lib* labelling
 
 install: install-exec install-am
-if HAVE_LIBOGG_BUILD
-	if test -d libogg-${LIBOGG_VERSION}; then mv libogg-${LIBOGG_VERSION}/ libogg/; fi
+if HAVE_OGG_BUILD
+	if test -d libogg-${OGG_VERSION}; then mv libogg-${OGG_VERSION}/ libogg/; fi
 endif
 if HAVE_FLAC_BUILD
 	if test -d flac-${FLAC_VERSION}; then mv flac-${FLAC_VERSION}/ libFLAC/; fi

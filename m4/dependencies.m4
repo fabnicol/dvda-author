@@ -10,7 +10,7 @@
 
 AC_DEFUN([DVDA_CHECK_DEPENDENCIES],
 [
-  
+
 # ====== Auxiliary tools: man page and html doc, mjpegtools, ImageMagick ========= #
 
 #mkisofs and cdrecord are tested by DVDA_DOWNLOAD
@@ -31,7 +31,7 @@ m4_map([DVDA_TEST_AUX],[
         [[md5sum],    [MD5 checksum utility]],
 	[[autoconf],  [configure system build: autoconf]],
 	[[automake],  [make system build: automake]],
-        [[smake],     [using smake instead of GNU make]]])  
+        [[smake],     [using smake instead of GNU make]]])
 
 
   m4_define([SOX_STATIC_MSG],
@@ -45,7 +45,7 @@ m4_map([DVDA_TEST_AUX],[
 
     AS_CASE([${build}],
             [*-*-mingw32*],[
-		    DVDA_INF([MinGW detected: libsox and glibc will be built from source])
+		    DVDA_INF([MinGW detected: libsox and libiberty will be built from source])
 		    DVDA_ARG_ENABLE([sox-build])
 		    DVDA_ARG_ENABLE([iberty-build])],
 
@@ -61,7 +61,7 @@ m4_map([DVDA_TEST_AUX],[
 
 
 
-    m4_map([DVDA_ARG_ENABLE],[[[libogg-build]],[[flac-build]],[[sox-build]],[[all-builds]],[[dvdauthor-build]],[[cdrtools-build]],[[static-sox],  
+    m4_map([DVDA_ARG_ENABLE],[[[iberty-build]],[[ogg-build]],[[flac-build]],[[sox-build]],[[all-builds]],[[dvdauthor-build]],[[cdrtools-build]],[[static-sox],
                               [DVDA_INF([SOX_STATIC_MSG])
 			      SOX_LINK="$SOX_LINK -lasound -lpng -lz -lltdl -lmagic -lsamplerate"
 			      SOX_LIB="/usr/lib/libsox.a `find /usr/lib/sox/ -regex lib.*a`"]]] )
@@ -72,7 +72,7 @@ m4_map([DVDA_TEST_AUX],[
 
     m4_define([SF_MIRRORLIST],[kent,garr,voxel,free_fr])
 
-    # basename(-patch), version=[untarred directory version name,appended label], root download site, root site for patch download, mirror root characteristics, MD5SUM for main package 
+    # basename(-patch), version=[untarred directory version name,appended label], root download site, root site for patch download, mirror root characteristics, MD5SUM for main package
     # download site = for Sourceforge:
     #     http://sourceforge.net/projects/basename/basename/mirror root characteristics/basename-version.tar.[bz2|gz]/download?use_mirror=$SF_MIRROR
     #               = for cdrtools:
@@ -83,7 +83,7 @@ m4_map([DVDA_TEST_AUX],[
             [[cdrtools-patch], [3.00],       [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches/mkisofs],[ftp://ftp.berlios.de/pub/cdrecord/alpha],[bb21cefefcfbb76cf249120e8978ffdd]],
             [[sox-patch],      [14.3.1],     [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [sox/14.3.1],                             [b99871c7bbae84feac9d0d1f010331ba]],
             [[flac-download],  [1.2.1],      [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [flac-src/flac-1.2.1-src],                [153c8b15a54da428d1f0fadc756c22c7]],
-            [[libogg-download],[1.1.4],      [http://dvd-audio.sourceforge.net/utils],[],                                                [http://downloads.xiph.org/releases/ogg],[10200ec22543841d9d1c23e0aed4e5e9]],
+            [[ogg-download],[1.1.4],      [http://dvd-audio.sourceforge.net/utils],[],                                                [http://downloads.xiph.org/releases/ogg],[10200ec22543841d9d1c23e0aed4e5e9]],
             [[flac-cvs],       [1.2.1,.cvs], [http://dvd-audio.sourceforge.net/utils],[],        [],                [f30ddcec01ad901c767f019d9cc84047]]])
 
     m4_map([DVDA_ARG_ENABLE_DOWNLOAD],[
@@ -110,7 +110,7 @@ m4_map([DVDA_TEST_AUX],[
 
     # to be invoked after ENABLE and WITH features
     # insert here application-specific macros that cannot be inserted in anothor file
-   
+
     DISABLE_OGG_TEST
 
     # installing binaries, normally executables
@@ -122,11 +122,11 @@ m4_map([DVDA_TEST_AUX],[
     DVDA_CONF_SUBDIRS_LOCAL_INSTALL([
      [[[FLAC],[libFLAC]],[--disable-shared --disable-thorough-tests --disable-oggtest --disable-cpplibs --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]],
      [[[SOX],[libsox]],  [--without-mad --without-flac --without-lame --prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]],
-     [[[LIBOGG],[libogg]],  [--prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]]])
+     [[[OGG],[libogg]],  [--prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]]])
 
     # auxiliary libs that remain within package, not installed
 
-    DVDA_CONF_SUBDIRS_NOINSTALL([[[[IBERTY],[libglibc]]], [[[FIXWAV],[libfixwav]]]])
+    DVDA_CONF_SUBDIRS_NOINSTALL([[[[IBERTY],[libiberty]]], [[[FIXWAV],[libfixwav]]]])
 
 
 

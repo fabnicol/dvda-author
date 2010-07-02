@@ -6,15 +6,15 @@ dvda-author  version 10.06 (June 2010)
 --------------
 
 
-dvda-author creates high-definition DVD-Audio disc structures from either WAV, 
+dvda-author creates high-definition DVD-Audio disc structures from either WAV,
 FLAC/Ogg FLAC, or SoX-14.3.1-supported audio formats (.au, .aiff, .gsm, etc.)
 
 This version supports multichannel audio up to 5.1.
 
 Switch -x enables extraction of audio content from DVD-Audio structures into .wav files.
 
-It can also create "hybrid" or "universal" DVD-Audio/Video disc structures, 
-which contain both DVD-Audio and DVD-Video zones. 
+It can also create "hybrid" or "universal" DVD-Audio/Video disc structures,
+which contain both DVD-Audio and DVD-Video zones.
 
 A navigation feature makes it possible to start playing a video
 title from within audio zone or an audio title from within video zone.
@@ -28,7 +28,7 @@ See man page, html page or website for details.
 2. WEBSITE
 -----------
 
-The latest version of the software is available at the following internet 
+The latest version of the software is available at the following internet
 address:
 
   http://dvd-audio.sourceforge.net/
@@ -58,7 +58,7 @@ Source code directories are:
 	amg2.c                 creates AUDIO_TS.IFO
 	asvs.c                 creates AUDIO_SV.IFO
 	ats.c                  creates AOB files
-	atsi2.c                creates ATS_XX.0.IFO files 
+	atsi2.c                creates ATS_XX.0.IFO files
 	audio.c                core audio processing
 	auxiliary.c            help and auxiliary functions
 	command_line_parsing.c command-line parser
@@ -86,7 +86,7 @@ Source code directories are:
   images
       NSIS compiler images for Windows installers.
 
-  libglibc
+  libiberty
       GNU libc code for function replacement (alternative to -liberty).
 
   m4, m4.extra, m4.extra.dvdauthor
@@ -119,14 +119,14 @@ Important DATA-type files are:
       Code::Blocks Xml project files
   BUGS
   LIMITATIONS
-  HOWTO.conf  
+  HOWTO.conf
       Help file on how to generate a configuration file and use it
   dvda-author.conf.example
       Example of a complex configuration file project
 
 
-  
-5. INSTALLATION 
+
+5. INSTALLATION
 ---------------
 
 See file INSTALL included in this distribution.
@@ -140,7 +140,7 @@ is in the same directory as the main executable (see INSTALL for other options).
 By default, binaries will install under /usr/bin.
 
 This version will use either libiberty.a if already installed on your platform
-or source code for a few GNU libc functions located in glibc/ The list of functions
+or source code for a few GNU libc functions located in libiberty/ The list of functions
 used depends on platforms.
 
 

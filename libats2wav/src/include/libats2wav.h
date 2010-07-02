@@ -12,7 +12,7 @@
 #include <inttypes.h>
 #include <stdint.h>
 #include "structures.h"
-
+#include "libiberty.h"
 
 typedef struct
 {
@@ -29,7 +29,7 @@ typedef struct
     uint64_t numbytes;
     uint64_t byteswritten;
     uint64_t pts_length;
-    
+
 } _fileinfo_t;
 
 #define BUFFER_SIZE 3*2048

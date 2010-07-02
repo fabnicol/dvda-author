@@ -17,6 +17,7 @@
 #include <assert.h>
 #include <sys/stat.h>
 #include <errno.h>
+#include "libiberty.h"
 // Requested by truncate()
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE

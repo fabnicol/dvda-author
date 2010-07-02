@@ -5,12 +5,12 @@
 		<Option title="libc_utils" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
-		<Option virtualFolders="Headers/private/;" />
+		<Option virtualFolders="Headers\private\;" />
 		<Build>
 			<Target title="Release">
 				<Option output="libc_utils" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="" />
-				<Option object_output="obj/Release/" />
+				<Option object_output="obj\Release\" />
 				<Option type="2" />
 				<Option compiler="gcc" />
 				<Option createDefFile="1" />
@@ -21,9 +21,9 @@
 					<Add option="-D_LARGEFILE_SOURCE" />
 					<Add option="-D_LARGE_FILES" />
 					<Add option="-DALWAYS_INLINE" />
-					<Add directory="../../libutils/src/include" />
-					<Add directory="../../libutils/src/private" />
-					<Add directory="../../src/include" />
+					<Add directory="..\..\libutils\src\include" />
+					<Add directory="..\..\libutils\src\private" />
+					<Add directory="..\..\src\include" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -31,18 +31,19 @@
 				</Linker>
 			</Target>
 		</Build>
-		<Unit filename="../../libutils/src/c_utils.c">
+		<Unit filename="..\..\libutils\src\c_utils.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../libutils/src/include/c_utils.h" />
-		<Unit filename="../../libutils/src/include/export.h" />
-		<Unit filename="../../libutils/src/include/format.h" />
-		<Unit filename="../../libutils/src/include/ordinals.h" />
-		<Unit filename="../../libutils/src/include/stream_decoder.h" />
-		<Unit filename="../../libutils/src/include/stream_encoder.h" />
-		<Unit filename="../../libutils/src/include/winport.h" />
-		<Unit filename="../../libutils/src/private/private_c_utils.h" />
-		<Unit filename="../../libutils/src/winport.c">
+		<Unit filename="..\..\libutils\src\include\c_utils.h" />
+		<Unit filename="..\..\libutils\src\include\export.h" />
+		<Unit filename="..\..\libutils\src\include\format.h" />
+		<Unit filename="..\..\libutils\src\include\libiberty.h" />
+		<Unit filename="..\..\libutils\src\include\ordinals.h" />
+		<Unit filename="..\..\libutils\src\include\stream_decoder.h" />
+		<Unit filename="..\..\libutils\src\include\stream_encoder.h" />
+		<Unit filename="..\..\libutils\src\include\winport.h" />
+		<Unit filename="..\..\libutils\src\private\private_c_utils.h" />
+		<Unit filename="..\..\libutils\src\winport.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Extensions>

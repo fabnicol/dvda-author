@@ -50,6 +50,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "private_c_utils.h"
 // here include your main application's header containing a globalData structure with main application globals.
 #include "structures.h"
+#include "libiberty.h"
+
+
 #undef __MS_types__
 extern globalData globals;
 
@@ -677,7 +680,7 @@ char* copy_file2dir_rename(const char *existing_file, const char *new_dir, char*
     int errorlevel;
     if (globals.veryverbose) printf("[INF]  Copying file %s to directory %s\n", existing_file, new_dir);
 
-    char dest[strlen(newfilename)+strlen(new_dir)+1+1];
+    char *dest=calloc(strlen(newfilename)+strlen(new_dir)+1+1, sizeof(char));
     sprintf(dest, "%s%s%s", new_dir, SEPARATOR, newfilename);
 
     path_t *filedest=parse_filepath(dest);

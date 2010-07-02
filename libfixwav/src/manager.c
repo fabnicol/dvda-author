@@ -36,6 +36,7 @@
 #include "winport.h"
 #include "commonvars.h"
 
+
 extern globalData globals;
 
 WaveHeader  *fixwav(WaveData *info, WaveHeader *header)

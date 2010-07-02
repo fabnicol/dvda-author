@@ -10,9 +10,6 @@
 #ifndef __WIN32__
 #include <sys/wait.h>
 #endif
-#ifdef HAVE_IBERTY_BUILD
-#include "strdup.h"
-#endif
 #include "structures.h"
 #include "audio2.h"
 #include "ats.h"
