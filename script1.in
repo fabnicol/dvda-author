@@ -1,0 +1,1 @@
+cp @ROOTDIR@/sox-libs @ROOTDIR@/@MAYBE_SOX@/sox-libs.in && cd @MAYBE_SOX@ && ./configure @CONFIGURE_SOX_FLAGS@  && make -j4 && make install; cd @ROOTDIR@

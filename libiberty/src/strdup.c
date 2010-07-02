@@ -28,13 +28,13 @@
 #ifdef strdup
 #undef strdup
 #endif
-#define strdup __strdup
+
 
 #include "strdup.h"
 
 /* Duplicate S, returning an identical malloc'd string.  */
 char *
-__strdup (const char *s)
+strdup (const char *s)
 {
     size_t len = strlen (s) + 1;
     void *new = malloc (len);
