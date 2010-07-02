@@ -19,6 +19,7 @@
 #include "fixwav_manager.h"
 #include "c_utils.h"
 #include "structures.h"
+#include "libiberty.h"
 
 extern globalData globals;
 
@@ -45,7 +46,7 @@ int readHeader(FILE * infile, WaveHeader *header)
   if ( count != 1)
     {
       fprintf( stderr, "[ERR]  Failed to read header from input file\n       Size is: %d, read: %d bytes\n", header->header_size, count );
-      
+
       return(FAIL);
     }
 
@@ -71,7 +72,7 @@ int readHeader(FILE * infile, WaveHeader *header)
 
 #endif
 
-  
+
 #define READ_4_bytes uint32_read_reverse(p), p+=4;
 #define READ_2_bytes uint16_read_reverse(p), p+=2;
 

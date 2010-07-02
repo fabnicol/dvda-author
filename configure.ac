@@ -249,9 +249,9 @@ AC_CONFIG_FILES([Makefile
          CB_project/libc_utils/Makefile
          CB_project/libfixwav/Makefile
          CB_project/libats2wav/Makefile
-         libglibc/Makefile
-         libglibc/src/Makefile
-         libglibc/src/include/Makefile
+         libiberty/Makefile
+         libiberty/src/Makefile
+         libiberty/src/include/Makefile
          libats2wav/Makefile
          libats2wav/src/Makefile
          libats2wav/src/include/Makefile
@@ -286,7 +286,7 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
     Dependencies:
                     fixwav..........$(echo $FIXWAV_LIB)
                     flac............$(echo $FLAC_LIB) $FLAC_LINK
-                    ogg.............$(echo $LIBOGG_LIB) $LIBOGG_LINK
+                    ogg.............$(echo $OGG_LIB) $LIBOGG_LINK
                     sox.............$(echo $SOX_LIB) $SOX_LINK
 
 
@@ -298,7 +298,7 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
                     libutils .......yes
 
     Ogg FLAC support:
-                     ...............$LIBOGG_BUILD
+                     ...............$OGG_BUILD
 
     Static sox build:
                      ...............$STATIC_SOX
@@ -317,7 +317,7 @@ AS_IF([ test x$IBIBERTY_LIB -o x$IBIBERTY_LINK != x ],[AC_MSG_RESULT([libiberty.
 
 AS_IF([ test x$IBERTY_BUILD = xyes ],
  [
-  AC_MSG_RESULT([GNU lib sources in glibc/ will be recompiled for enhanced portability.])
+  AC_MSG_RESULT([GNU lib sources in libiberty/ will be recompiled for enhanced portability.])
  ])
 
 

@@ -12,7 +12,7 @@ Two building options are shipped:
    obtained with:
         ./configure --enable-all-deps --enable-all-builds && make && make install
 
- - Code::Blocks workspace projects for Windows/Mingwin platforms 
+ - Code::Blocks workspace projects for Windows/Mingwin platforms
    (dvda-author-09.09.workspace)
 
 
@@ -26,10 +26,10 @@ Code::Blocks install
   4. If you later install the main executable in CB_project/dvda-author
      in another directory, please copy file dvda-author.conf in the same directory,
      unless you have added a define constant in commonvars.h:
-     
-     SETTINGSFILE="full//path/to/dvda-author.conf" 
-     
- 
+
+     SETTINGSFILE="full//path/to/dvda-author.conf"
+
+
 
 
 GNU Basic Installation
@@ -62,17 +62,17 @@ ________________________________________________________________________________
 
 _____________________________________________________________________________________
 
-With Apple and Darwin-based systems (e.g Mac) 
+With Apple and Darwin-based systems (e.g Mac)
 ---------------------------------------------
 
 The building/installation procedure unrolls as for Unix platforms.
-However, you may have to use --with-config=.  for a successful build (see below 
+However, you may have to use --with-config=.  for a successful build (see below
 "Installation directories for auxilliary files")
 _____________________________________________________________________________________
 
 
 Briefly, the shell commands `./configure; make; make install' should
-configure, build, and install this package. 
+configure, build, and install this package.
 By default, binaries (fixwav and dvda-author) will install under /usr/bin.
 
 The simplest way to compile this package is:
@@ -82,9 +82,9 @@ The simplest way to compile this package is:
 
      Running `configure' might take a while.  While running, it prints
      some messages telling which features it is checking for.
-	 On Windows platforms (MSYS build), you should specify the path to 
+	 On Windows platforms (MSYS build), you should specify the path to
 	 the configuration file as follows:
-	 
+
 	 ./configure --prefix=/mingw --with-conf='/path to directory of dvda-author.conf'
 
   2. Type `make' to compile the package. WITH MULTICORE CPUs it is advised to build
@@ -102,7 +102,7 @@ The simplest way to compile this package is:
      a different kind of computer), type `make distclean'.  There is
      also a `make maintainer-clean' target, but that is intended mainly
      for the package's developers. If you use it, you should regenerate the
-     build system by running ./autogen in the package root directory 
+     build system by running ./autogen in the package root directory
      (See Build system regeneration).
 
   6. You can also type `make uninstall' to remove the installed
@@ -114,18 +114,18 @@ KDE/GNOME Platforms
 
 A desktop file will be installed under:
 
-  /usr/share/applications/dvda-author.desktop 
+  /usr/share/applications/dvda-author.desktop
 
 thereby providing a menu link to the application in the audio media section.
 
 An icon will be available under /usr/share/pixmaps/dvda-author.png
-which should be in the OS VPATH to be visible in the menu. 
+which should be in the OS VPATH to be visible in the menu.
 The link will open an x-terinal with the application help. It will later be used
 to launch a graphical interface.
 
 A man page is installed under /usr/local/share/man/man1/dvda-author.1
 
-Check that /usr/local/share/man/man1 is in your PATH for man for otherwise copy 
+Check that /usr/local/share/man/man1 is in your PATH for man for otherwise copy
 to /usr/share/man/man1
 
 An html version is shipped with this package.
@@ -140,9 +140,9 @@ Dependencies for the building process are the following libraries:
   - libats2wav a DVD-Audio titleset extracter.
   - libFLAC version 1.2.1, which itself depends on libogg version 1.1.3. If Ogg is not installed
     on system, install it manually, or FLAC will be automatically configured without Ogg support.
-    If libogg is installed on system, default configuration for FLAC is with Ogg support, 
+    If libogg is installed on system, default configuration for FLAC is with Ogg support,
     unless --disable-ogg-flac is added on command line.
-  - libsox 14.3.1, a general-purpose audio format converter 
+  - libsox 14.3.1, a general-purpose audio format converter
   - libiberty.a if --enable-iberty-build is not used and if it is installed in a system path, and if
     there is no SoX bug (see file BUGS )
   - dvdauthor version 0.6.14, patched version.
@@ -150,7 +150,7 @@ Dependencies for the building process are the following libraries:
 A patched version of mkisofs is needed to create an ISO image file that is DVD-Audio compliant.
 
 To generate the documentation, you will need help2man for the man page and man2html
-for the html man page. If these applications are installed, the autotools building 
+for the html man page. If these applications are installed, the autotools building
 system automatically creates them. The Code::Blocks project also has a script for
 generating these pages. Most *nix platforms propose these tools. Currently source
 code for man2html is hosted by http://savannah.nongnu.org/projects/man2html and source
@@ -158,7 +158,7 @@ code for help2man is hosted by http://ftp.gnu.org/gnu/help2man. You may need to 
 Perl to run man2html.
 
 This version will use either libiberty.a if already installed on your platform
-or source code for a few GNU libc functions located in glibc/ The list of functions
+or source code for a few GNU libc functions located in libiberty/ The list of functions
 used depends on platforms. The GNU build system will give a priority to -liberty linking,
 building GNU libc source code as a fallback option.
 
@@ -206,13 +206,13 @@ Then add --enable-X-build to build the X sub-package.
 More specifically, from the top source directory:
 
 
-- You can force rebuilding of (l)iberty/glibc source code using configure option:
+- You can force rebuilding of libiberty(l) source code using configure option:
 
 	 --enable-iberty-build
 
 - To build the FLAC 1.2.1 library, run:
 
-	./configure --enable-flac-download --enable-flac-build  
+	./configure --enable-flac-download --enable-flac-build
 
   for a windows (mingw32/MSYS) build use:
 
@@ -220,24 +220,24 @@ More specifically, from the top source directory:
 
   as (patched) CVS code is necessary owing to a bug in the standard flac package build system
   for windows builds. The patched CVS flac package can only be downloaded from the dvd-audio site repository.
-  Alternatively, you can dowload it manually using: 
+  Alternatively, you can dowload it manually using:
 
   curl -O http://dvd-audio.sourceforge.net/utils/flac-1.2.1.cvs.tar.gz
-       
+
 	Note: a) add --disable-ogg-flac  if you wish to deactivate Ogg FLAC support (enabled by default).
-              b) dependencies to Ogg are now managed by the full (downloaded) FLAC package. 
+              b) dependencies to Ogg are now managed by the full (downloaded) FLAC package.
 
 - To build and patch the libsox library:
 
-	./configure --enable-sox-patch  --enable-sox-build 
+	./configure --enable-sox-patch  --enable-sox-build
 
 - To build and patch dvdauthor (only necessary if you need DVD-Audio menus):
 
-	./configure --enable-dvdauthor-patch  --enable-dvdauthor-build 
+	./configure --enable-dvdauthor-patch  --enable-dvdauthor-build
 
 - To build and patch mkisofs (and original Schily version of cdrecord in addition):
 
-	./configure --enable-cdrtools-patch  --enable-cdrtools-build 
+	./configure --enable-cdrtools-patch  --enable-cdrtools-build
 
 - To avoid repreating -build enable options, you may just add to command line:
 
@@ -254,13 +254,13 @@ or equivalently with:
 
         ./configure --enable-all-deps --enable-all-builds
 
-The autotools scripts are configured to only build from source the libraries that 
+The autotools scripts are configured to only build from source the libraries that
 cannot be found in /usr/lib, /usr/local/lib or in the path indicated by the --with-...
 configuration option.
 
 If your libFLAC library is installed in a non-standard directory (i.e. not /usr/lib
 or /usr/local/lib) you may have to use configure options --with-flac=/full/path/to/libFLAC.so
-to help out the linking process. You may equally 
+to help out the linking process. You may equally
 indicate the path to libsox using --with-sox=/full/path/to/libsox.so (preferably use dynamic libs).
 
 
@@ -293,37 +293,37 @@ depending on you requirements. The resulting executable will be smaller, which m
 have a positive effect on running times, depending on modules and hardware:
 
 - to compile without the SoX module configure with:
-    
+
     --without-sox
 
 - to compile with SoX module and build a statically-linked binary, first installed all SoX
   libs on your system and use --disable-sox-shared. Should this fail, try the more restrictive
   option --enable-static-sox, which will look into /usr/lib to find libsox.a and apply tested
-  building options on an Ubuntu (09.04) platform. 
+  building options on an Ubuntu (09.04) platform.
   When patching and building SoX code with --enable-sox-patch --enable-sox-build, static linking
   is forced to the locally-built library.
- 
+
 - to compile without the fixwav module configure with:
-    
+
     --without-fixwav
 
 - to compile without FLAC/Ogg FLAC:
-    
+
     --without-flac
- 
+
  Alternatively, you may add, repectively:
- 
+
  #define WITHOUT_SOX
  #define WITHOUT_FIXWAV
  #define WITHOUT_FLAC
- 
+
  to src/commonvars.h code.
 
 Users who would like to build this package with other tools should at least define
 the symbolic constants _GNU_SOURCE and __CB__ at compile time.
 
 Optional Symbolic constants can be defined at compile time to specify some features:
-  
+
   LONG_OPTIONS for command-line long options (starting with --).
   SHORT_OPTIONS_ONLY to block all such long options.
   LOCALE=locale to recompile for another locale than the default "C".
@@ -333,8 +333,8 @@ Optional Symbolic constants can be defined at compile time to specify some featu
   WITHOUT_SOX to compile without SoX code
   WITHOUT_FLAC to compile without FLAC/OggFLAC code
   WITHOUT_FIXWAV to compile without fixwav code
-  
-  
+
+
 Required compile-time constants:
 
   _GNU_SOURCE, __CB__ if compiling with Code::Blocks or similar IDE.
@@ -367,7 +367,7 @@ By default, `make install' installs the package's commands under
 can specify an installation prefix other than `/usr' by giving
 `configure' the option `--prefix=PREFIX'.
 
-You can cause programs to be installed with an extra prefix or suffix 
+You can cause programs to be installed with an extra prefix or suffix
 on their names by giving `configure' the
 option `--program-prefix=PREFIX' or `--program-suffix=SUFFIX'.
 
@@ -476,17 +476,17 @@ an Autoconf bug.  Until the bug is fixed you can use this workaround:
 Build system regeneration
 =========================
 
-Users who are conversant with Autoconf scripts should not use `autoreconf` 
+Users who are conversant with Autoconf scripts should not use `autoreconf`
 to regenerate the build system after modifications of configure.ac or Makefile.am
 files included within this package.
 
-They should run ./autogen from the top package directory instead. 
+They should run ./autogen from the top package directory instead.
 
 
 Installation directories for auxilliary files
 =============================================
 
-For *nix compatible platforms (including Cygwin and MSYS), if --prefix=directory is not 
+For *nix compatible platforms (including Cygwin and MSYS), if --prefix=directory is not
 used as indicated above, the following installation directories are used:
 
  for binaries: /usr/bin
@@ -498,11 +498,11 @@ used as indicated above, the following installation directories are used:
 Also see fixwav man page and README in fixwav/
 
 If --prefix is used, the above directories are replaced with $prefix/<dir> instead of /usr/<dir>
-The KDE/gnome .desktop file is adjusted by configure to integrate a link to the .png image (icon) 
+The KDE/gnome .desktop file is adjusted by configure to integrate a link to the .png image (icon)
 in $prefix/pixmaps.
 
 Configure option --with-config='full path to directory containing dvda-author.conf'
-makes it possible to change the default path to the directory containing 
+makes it possible to change the default path to the directory containing
 dvda-author.conf (mainly uselful on non *nix platforms).
 
 See file BUGS for additional advice.

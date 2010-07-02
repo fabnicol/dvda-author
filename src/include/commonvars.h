@@ -34,6 +34,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define VERSION "10.06"
 #endif
 
+#include "libiberty.h"
 
 
 // With Code::Blocks and similar IDE, specify your root package directory as argument to --workdir

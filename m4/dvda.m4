@@ -461,9 +461,11 @@ m4_foreach([LIST], [CHECKLIST],
                 [
                  UPPERBASENAME[_LIB]="${prefix}/lib/lib$1.so"
                   AS_IF([test -f $UPPERBASENAME[_LIB]],
-                      [ DVDA_INF([Using installed dynamic lib$1 library...])]
+                      [ DVDA_INF([Using installed dynamic lib$1 library...])
+
+                      ]
                       ,[ DVDA_ERR([Could not find UPPERBASENAME lib, retry with --libdir=DIR, root directory for $1 lib])
-                         UPPERBASENAME[_LIB]=
+                         UPPERBASENEME[_LIB]=
                        ])
                 ],
                 [test $4 = static],

@@ -7,7 +7,7 @@
   SoX redefines getopt_log in its source code and this causes runtime stack overflows owing to dvda-author code calling the SoX intervening function instead of the right one
   bug corrected by SoX developers as of end of May 2009 by replacing getopt_long with lsx_getopt_long
   does not arise if in-tree code is built however.
-  glibc will be compiled with a name replacement for getopt_long (getopt_long_surrogate)  */
+  libibertyc will be compiled with a name replacement for getopt_long (getopt_long_surrogate)  */
 #ifdef HAVE_SOX_BUG
 #ifdef getopt_long
 #undef getopt_long

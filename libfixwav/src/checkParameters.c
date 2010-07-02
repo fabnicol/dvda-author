@@ -23,6 +23,7 @@
 #include    "fixwav_manager.h"
 #include    "c_utils.h"
 #include    "structures.h"
+#include "libiberty.h"
 
 
 extern globalData globals;
@@ -39,8 +40,8 @@ int user_control(WaveData *info, WaveHeader *header)
 
   if (info->interactive)
     {
-      
-      
+
+
       if (!info->prepend)
       {  // useless if prepending, as 'header' info is always wrong
           printf( "\n%s\n", "[INT]  Is the file recorded in " );
@@ -70,7 +71,7 @@ int user_control(WaveData *info, WaveHeader *header)
         }
 
       /* The Sample Rate is the number of samples per second */
-      if (!info->prepend) 
+      if (!info->prepend)
       {
           printf( "[INT]  Is the number of samples per second = %"PRIu32"?  [y/n] ", header->sample_fq );
           ok=isok();

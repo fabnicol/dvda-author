@@ -24,7 +24,7 @@ AM_LDFLAGS= -lm -L/usr/local/lib -L/usr/lib
 
 AM_CPPFLAGS=-I${top_srcdir}/libutils/src/include -I${top_srcdir}/src/include -I${top_srcdir}/libats2wav/src/include -I${top_srcdir}   ${DEBUG_FLAGS}
 
-LDADD=${top_builddir}/libutils/src/libc_utils.a  ${top_builddir}/libats2wav/src/libats2wav.a  
+LDADD=${top_builddir}/libutils/src/libc_utils.a  ${top_builddir}/libats2wav/src/libats2wav.a
 
 # Symbol SOX_LIB_DEPS will be replaced by sox dependencies after configure in libsox by target do_sox_lib_deps_subst
 # left-align if conditions
@@ -32,19 +32,19 @@ LDADD=${top_builddir}/libutils/src/libc_utils.a  ${top_builddir}/libats2wav/src/
 
 if WITH_FLAC
 if HAVE_EXTERNAL_FLAC
-    LDADD        += ${FLAC_LIB} 
+    LDADD        += ${FLAC_LIB}
 endif
 if HAVE_EXTERNAL_OGG
-    LDADD       +=  ${LIBOGG_LIB}
+    LDADD       +=  ${OGG_LIB}
 endif
 if HAVE_FLAC_BUILD
     LDADD       +=  ${FLAC_LIB}
 endif
-if HAVE_LIBOGG_BUILD
-    LDADD       +=  ${LIBOGG_LIB}
+if HAVE_OGG_BUILD
+    LDADD       +=  ${OGG_LIB}
 endif
 if HAVE_FLAC
-    AM_LDFLAGS   += ${FLAC_LINK} ${LIBOGG_LINK}
+    AM_LDFLAGS   += ${FLAC_LINK} ${OGG_LINK}
 endif
 endif
 
@@ -68,11 +68,11 @@ endif
 
 if HAVE_IBERTY_BUILD
      LDADD       += ${IBERTY_LIB}
-     AM_CPPFLAGS +=-I${top_srcdir}/libglibc/src/include
+     AM_CPPFLAGS +=-I${top_srcdir}/libiberty/src/include
 else
 if  HAVE_EXTERNAL_IBERTY
      LDADD       += ${IBERTY_LIB}
-     AM_CPPFLAGS +=-I${top_srcdir}/libglibc/src/include
+     AM_CPPFLAGS +=-I${top_srcdir}/libiberty/src/include
 endif
 if HAVE_IBERTY
      AM_LDFLAGS  += ${IBERTY_LINK}

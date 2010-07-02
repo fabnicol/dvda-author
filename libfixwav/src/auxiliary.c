@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "libiberty.h"
 #include "fixwav.h"
 #include "fixwav_manager.h"
 #include "fixwav_auxiliary.h"
