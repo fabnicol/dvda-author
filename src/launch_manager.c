@@ -244,7 +244,7 @@ int launch_manager(command_t *command)
 
 
     // Late initialization
-    sectors.amg=SIZE_AMG+globals.text+(globals.topmenu < ACTIVE_MENU_ONLY);
+    sectors.amg=SIZE_AMG+globals.text+(globals.topmenu <= TS_VOB_TYPE);
     sectors.samg=SIZE_SAMG;
     sectors.asvs= ((img->count) || (img->stillvob) || (img->active))? SIZE_ASVS : 0;
     sectors.topvob=0;

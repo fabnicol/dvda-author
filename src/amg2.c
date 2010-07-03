@@ -193,8 +193,9 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
 
     switch(globals.topmenu)
     {
-    case ACTIVE_MENU_ONLY:  // If only active menus, no top menus, create automatic top menus to be unlinked later on
+         // If only active menus, no top menus, create automatic top menus to be unlinked later on
         // unless some extra info is given (then globals.topmenu < ACTIVE_MENU_ONLY)
+    case TEMPORARY_AUTOMATIC_MENU:
     case AUTOMATIC_MENU:
     case RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR :
 
@@ -344,7 +345,7 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
 
     uint16_t i,j=0,k=0,titleset=0, totalplaylisttitles=0, totalaudiotitles=0, titleintitleset;
 
-    _Bool menusector=(globals.topmenu < ACTIVE_MENU_ONLY);  // there is a _TS.VOB in these cases
+    _Bool menusector=(globals.topmenu <= TS_VOB_TYPE);  // there is a _TS.VOB in these cases
     uint8_t naudio_groups=ngroups-vgroups-nplaygroups;  // CHECK
 
     uint8_t amg[sectors->amg*2048];

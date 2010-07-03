@@ -297,7 +297,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define ACTIVEHEADER_INSERTOFFSET  0xBB
 
 
-
+#define TEMPORARY_AUTOMATIC_MENU -5
 #define AUTOMATIC_MENU     -4 // automate all menu authoring process
 
 // for values higher than -2 and lower than 4 top menu is generated
@@ -306,7 +306,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define RUN_SPUMUX_DVDAUTHOR    1 // automate some of the authoring process (run spumux and dvdauthor)
 #define RUN_DVDAUTHOR       2 // input menu is given, run dvdauthor
 #define TS_VOB_TYPE            3
-#define ACTIVE_MENU_ONLY    4
 #define NO_MENU             5  // do not do anything
 
 

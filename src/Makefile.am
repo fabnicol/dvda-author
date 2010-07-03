@@ -13,7 +13,6 @@ CAT=/bin/cat
 
 
 
-
 bin_PROGRAMS=dvda
 
 dvda_SOURCES=amg2.c ats.c atsi2.c audio.c auxiliary.c dvda-author2.c  \

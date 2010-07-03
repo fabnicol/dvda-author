@@ -143,7 +143,7 @@ printf("%s","-L, --lossy-rounding     Sample count rounding will be performed by
 
 printf("%s","   Menu authoring\n\n");
 
-printf("%s","-m, --topmenu(=mpgfile)  Generates top menu from mpgfile."J"Without argument, automatic menu generation is launched.\n\n");
+printf("%s","-m, --topmenu(=mpgfiles) Generates top menu from comma-separated list of mpgfiles."J"Without argument, automatic menu generation is launched.\n\n");
 printf("%s","-u, --duration hh:mm:ss Duration of top menu file, if provided."J"It is mandatory when --topmenu has an argument file.\n\n");
 
 printf("%s","-M, --xml filepath       Generates dvdauthor xml project"J"to filepath.\n\n");
@@ -162,6 +162,9 @@ printf("%s","-8, --activemenu-palette string     Text for menu colors. Format is
 printf("%s","-y, --topmenu-colors string     Text for menu colors. This is a developer's switch. "J"Use the -palette switches for modifying display colors. "J"This switch determines the colors of pictures generated in the temporary directory before creating the mpg background files."J" Format is either \"norefresh\", to block the refreshing of menu images, or "J"textcolor:backgroundcolor:highlightcolor:select action color in rgb values a,b,c between 0 and 255.\n\n");
 printf("%s","-b, --background         Background jpg files (comma-separated) to create a background mpg file"J"into which titles are multiplexed."J"Specify as many files as there are menus, or the last file will be duplicated for missing menu files.\n\n");
 printf("%s","    --background-colors  Background RGB colors to colorize background mpg files"J"into which titles are multiplexed."J"Specify as many colors as there are menus, or the last color will be duplicated for missing menu colors."J"Syntax is r,g,b:r2,g2,b2:...:rk,gkbk for --nmenus=k.\n\n");
+printf("%s","-B, --background-mpg list  Background mpg file(s) in a comma-separated list"J"into which titles are multiplexed.\n\n");
+printf("%s","-Q, --soundtrack file    Background wav file f"J"to be multiplexed into background menu that must be supplied with -B or created with -b."J"By default a silent track will be multiplexed.\n\n");
+printf("%s","-A, --topvob f           Import already authored top vob menu f.\n\n");
 printf("%s","-0, --menustyle desc     Specifies top menu style"J"By default, tracks are listed under group headers."J"If desc='hierarchical', the first menu screen lists groups."J"If desc='active', all tracks will have an associated still picture with menu links that remain active while listening to the track.\n\n");
 printf("%s","-1, --stillvob f         Import already authored still pictures vob.\n\n");
 printf("%s","-2, --stilloptions ...   Still picture options (add after --stillpics). Each option applies to ranked pic, e.g."J"rank=0,manual,starteffect=fade,rank=1,starteffect=dissolve."J"Suboptions are:"J"rank=[number], starteffect=[effect], endeffect=[effect]"J"manual, lag=[number], start=[number], active"J"See details below. \n\n");
@@ -173,9 +176,6 @@ printf("%s","                         1  - 1:1 display"J"2  - 4:3 display"J"3  -
 printf("%s","-6, --nmenus int         Generates int top menus (default 1).\n\n");
 printf("%s","-7, --ncolumns int       Top menus will have at most int columns (default 3).\n\n");
 
-printf("%s","-B, --background-mpg f   Background mpg file f"J"into which titles are multiplexed.\n\n");
-printf("%s","-Q, --soundtrack file    Background wav file f"J"to be multiplexed into background menu that must be supplied with -B or created with -b."J"By default a silent track will be multiplexed.\n\n");
-printf("%s","-A, --topvob f           Import already authored top vob menu f.\n\n");
 
 printf("%s","   Disc authoring\n\n");
 printf("%s","-I, --mkisofs(=file)     Run mkisofs to author disc image using file"J"as an ISO image. If file is empty, use tempdir/dvd.iso.\n\n");

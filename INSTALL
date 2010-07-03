@@ -216,13 +216,11 @@ More specifically, from the top source directory:
 
   for a windows (mingw32/MSYS) build use:
 
-        ./configure --enable-flac-cvs --enable-flac-build
+  curl -O http://dvd-audio.sourceforge.net/utils/flac-1.2.1.cvs.tar.gz
 
   as (patched) CVS code is necessary owing to a bug in the standard flac package build system
   for windows builds. The patched CVS flac package can only be downloaded from the dvd-audio site repository.
   Alternatively, you can dowload it manually using:
-
-  curl -O http://dvd-audio.sourceforge.net/utils/flac-1.2.1.cvs.tar.gz
 
 	Note: a) add --disable-ogg-flac  if you wish to deactivate Ogg FLAC support (enabled by default).
               b) dependencies to Ogg are now managed by the full (downloaded) FLAC package.
@@ -238,6 +236,14 @@ More specifically, from the top source directory:
 - To build and patch mkisofs (and original Schily version of cdrecord in addition):
 
 	./configure --enable-cdrtools-patch  --enable-cdrtools-build
+
+- To build and patch mjpegtools (owing to source code bug), if you need to enable menu authoring only:
+
+        ./configure --enable-mjpegtools-patch --enable-mjpegtools-build  
+
+- To build help2man:
+
+	./configure --enable-help2man-download  --enable-help2man-build
 
 - To avoid repreating -build enable options, you may just add to command line:
 

@@ -1,8 +1,7 @@
-
 if HAVE_SMAKE
-MAKE=${SMAKE}
+MAKETOOL=${SMAKE}
 else
-MAKE="${MAKE} -j4"
+MAKETOOL=make
 endif
 
 # downloaded binaries will be built locally, to avoid possible versioning issues with already installed one
@@ -24,7 +23,7 @@ ACLOCAL_AMFLAGS=-I m4 --install
 .PHONY: do_sox_lib_deps_subst
 
 
-all: stamprecord0 stamprecord1 stamprecord2 stamprecord3 stamprecord4 do_sox_lib_deps_subst
+all: stamprecord0 stamprecord1 stamprecord2 stamprecord3 stamprecord4 stamprecord5 stamprecord6 do_sox_lib_deps_subst
 
 
 # directly patching the Makefile appears to be more efficient. You nee a GNU-compliant make.
@@ -42,7 +41,7 @@ endif
 stamprecord0: Makefile
 	if test -f stamprecord0; then rm -f stamprecord0; fi; touch stamprecord0
 if HAVE_OGG_BUILD
-	cd ${MAYBE_OGG} &&  ${SHELL} configure ${CONFIGURE_OGG_FLAGS} && $(MAKE) && $(MAKE) install ; cd -
+	cd ${MAYBE_OGG} &&  ${SHELL} configure ${CONFIGURE_OGG_FLAGS} && $(MAKETOOL) -j4 && $(MAKETOOL) install ; cd -
 endif
 
 
@@ -69,7 +68,7 @@ stamprecord3: Makefile
 if HAVE_AUTOMAKE
 if HAVE_AUTOCONF
 if HAVE_DVDAUTHOR_BUILD
-	cp -r ${ROOTDIR}/m4.extra.dvdauthor ${MAYBE_DVDAUTHOR}/srcm4 && cd ${MAYBE_DVDAUTHOR} && autoreconf -i -Isrcm4 && ${SHELL} configure  --prefix=${prefix} ; cd -
+	cp -r ${ROOTDIR}/m4.extra.dvdauthor ${MAYBE_DVDAUTHOR}/srcm4 && cd ${MAYBE_DVDAUTHOR} && autoreconf -i -Isrcm4 && ${SHELL} configure  --prefix=${prefix} && $(MAKETOOL) -j4 ; cd -
 endif
 endif
 endif
@@ -77,8 +76,22 @@ endif
 stamprecord4: Makefile
 	if test -f stamprecord4; then rm -f stamprecord4; fi; touch stamprecord4
 if HAVE_CDRTOOLS_BUILD
-	cd ${MAYBE_CDRTOOLS} && $(MAKE) ; cd - ;
+	cd ${MAYBE_CDRTOOLS} && $(MAKETOOL) -j4 ; cd - ;
 endif
+
+stamprecord5: Makefile
+	if test -f stamprecord5; then rm -f stamprecord5; fi; touch stamprecord5
+if HAVE_MJPEGTOOLS_BUILD
+	cd ${MAYBE_MJPEGTOOLS} && ${SHELL} configure --prefix=${prefix} && $(MAKETOOL) -j4 ; cd - ;
+endif
+
+
+stamprecord6: Makefile
+	if test -f stamprecord6; then rm -f stamprecord6; fi; touch stamprecord6
+if HAVE_HELP2MAN_BUILD
+	cd ${MAYBE_HELP2MAN} && ${SHELL} configure --prefix=${prefix} && $(MAKETOOL) -j4 ; cd - ;
+endif
+
 
 dvda-author.1:
 if HAVE_HELP2MAN
@@ -92,7 +105,7 @@ if HAVE_MAN2HTML
 endif
 
 
-SUBDIRS=${MAYBE_IBERTY} libutils ${MAYBE_OGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} libats2wav  ${MAYBE_SOX}  ${MAYBE_DVDAUTHOR} src
+SUBDIRS=${MAYBE_IBERTY} libutils ${MAYBE_OGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} libats2wav  ${MAYBE_SOX} src
 DIST_SUBDIRS=libiberty libutils libfixwav src CB_project libats2wav images
 
 #normally is ${prefix}/share/applications/dvda-author-${VERSION}
@@ -131,7 +144,19 @@ endif
 EXTRA_DIST=autogen dvda-author.ico  dvda-author.bat  sox-libs  m4.extra m4.extra.dvdauthor
 install-data-local:  $(manhelp) $(htmlhelp)
 install-exec-local:
-	 cd ${MAYBE_CDRTOOLS}; $(MAKE) INS_BASE=${prefix} install; cd - ;
+if HAVE_CDRTOOLS_BUILD
+	 cd ${MAYBE_CDRTOOLS}; $(MAKETOOL) INS_BASE=${prefix} install; cd - ;
+endif
+if HAVE_DVDAUTHOR_BUILD
+	 cd ${MAYBE_DVDAUTHOR}; $(MAKETOOL)  install; cd - ;
+endif
+if HAVE_HELP2MAN_BUILD
+	 cd ${MAYBE_HELP2MAN}; $(MAKETOOL) install; cd - ;
+endif
+if HAVE_MJPEGTOOLS_BUILD
+	 cd ${MAYBE_MJPEGTOOLS}; $(MAKETOOL) install; cd - ;
+endif
+          
 
 # redefining install is necessary to rename nested package directories for later builds with --enable-all-builds, which request lib* labelling
 

@@ -85,16 +85,17 @@ AC_DEFUN([LOOP_MIRRORS],
         AS_IF([test [x]m4_bpatsubst([$3],[tp:],[]) != x],
          [  DVDA_CURL([$3/$filename], [$filename])],
          [
-            AS_IF([test x"$SF_MIRROR" != x ],  [DVDA_CURL([http://sourceforge.net/projects/bn/files/$3/$filename/download?use_mirror=]$SF_MIRROR,[$filename])],[
+            AS_IF([test x"$SF_MIRROR" != x ],  [DVDA_CURL([http://sourceforge.net/projects/root/files/$3/$filename/download?use_mirror=]$SF_MIRROR,[$filename])],[
 
 	    m4_foreach([mirror],[SF_MIRRORLIST],[
 	    MD5_BREAK([$filename],[$MD5])
 
 	    AC_MSG_NOTICE([Connecting to mirror:]mirror[...])
 	    # This mirroring is Sourceforge-specific and should be twisted for other mirroring patterns.
-	    DVDA_CURL([http://sourceforge.net/projects/bn/files/$3/$filename/download?use_mirror=]mirror,[$filename])
+	    DVDA_CURL([http://sourceforge.net/projects/root/files/$3/$filename/download?use_mirror=]mirror,[$filename])
 
-	    # eg: http://downloads.sourceforge.net/project/flac/flac-src/flac-1.2.1-src/flac-1.2.1.tar.gz?use_mirror=freefr
+	    # eg: 
+            #     http://sourceforge.net/projects/mjpeg/files/mjpegtools/1.9.0/mjpegtools-1.9.0.tar.gz/download?use_mirror=kent
 
 	    ])])
          ])
@@ -104,7 +105,7 @@ AC_DEFUN([LOOP_MIRRORS],
         # last resort attempt, if everything has failed, use the Sourceforge network, except for cdrtools:
 
         AC_MSG_NOTICE([MD5SUM: not equal to  $MD5, downloading however from network...])
-        AS_IF([test bn != cdrtools], [DVDA_CURL([http://downloads.sourceforge.net/project/bn/$3/$filename],[$filename])])
+        AS_IF([test bn != cdrtools], [DVDA_CURL([http://downloads.sourceforge.net/project/root/$3/$filename],[$filename])])
 
         break
       done
@@ -120,6 +121,7 @@ AC_DEFUN([DVDA_DOWNLOAD],
 [
   m4_pushdef([bn], basename([$1]))
   m4_pushdef([upper], [upperbasename([$1])])
+  m4_pushdef([root], [$5])
   errorcode=0
   AC_PATH_PROG([TAR], [tar], [], [$bindir:/bin:/sbin:/usr/bin:/usr/local/bin])
   AS_IF([ test x$TAR = x],[DVDA_ERR([tar is requested, please install it.]
@@ -147,19 +149,19 @@ AC_DEFUN([DVDA_DOWNLOAD],
                 DVDA_CLEAN([bn-$version.tar.bz2])
 
                 type=gz
-                LOOP_MIRRORS([$version],[$3],[$5],[$type],[$6])
+                LOOP_MIRRORS([$version],[$3],[$6],[$type],[$7])
 
                 # outputs variable $filename
 
-                AS_IF([ test  [x]MD5_CHECK([$filename]) != x$6 ],
+                AS_IF([ test  [x]MD5_CHECK([$filename]) != x$7 ],
                 [
                  type=bz2
-                 LOOP_MIRRORS([$version],[$3],[$5],[$type],[$6])
+                 LOOP_MIRRORS([$version],[$3],[$6],[$type],[$7])
                 ])
 
                 dir="bn[-]m4_argn(1,$2)"
 
-      	        AS_IF([ test  [x]MD5_CHECK([$filename]) != x$6 ],[DVDA_ERR([Download failure])],
+      	        AS_IF([ test  [x]MD5_CHECK([$filename]) != x$7 ],[DVDA_ERR([Download failure])],
                   [
 
                    AS_IF([test -d  $dir],
@@ -205,6 +207,7 @@ AC_SUBST(upper[_VERSION])
 m4_popdef([site])
 m4_popdef([bn])
 m4_popdef([upper])
+m4_popdef([root])
 ])#DVDA_DOWNLOAD
 
 # DVDA_TEST_SOFTWARE_VERSION(SOFTWARE[-PATCH])
