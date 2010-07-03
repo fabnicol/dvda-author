@@ -733,7 +733,7 @@ int mogrify_img(char* text, int8_t group, int8_t track, pic *img, uint8_t maxnum
 
     if (track!=-1)
         snprintf(str, 10*CHAR_BUFSIZ, " %s \"rgb(%s)\" %s %s %d%s%d %d%s%d%s ",
-                 "-fill", img->highlightcolor_pic, "-colorize 50%% -draw", " \"rectangle ", x0+deltax0, ",", y0+deltay0,  x0+ deltax1, ",", y0+deltay1, "\"");   // conversion works badly with -colors < 4
+                 "-fill", img->highlightcolor_pic, "-draw", " \"rectangle ", x0+deltax0, ",", y0+deltay0,  x0+ deltax1, ",", y0+deltay1, "\"");   // conversion works badly with -colors < 4
 
     strcat(command, str);
     snprintf(str2, 10*CHAR_BUFSIZ, " %s \"rgb(%s)\" %s %s %s %d %s %s %d%c%d %s%s%s ",
@@ -741,6 +741,9 @@ int mogrify_img(char* text, int8_t group, int8_t track, pic *img, uint8_t maxnum
              "-draw", " \"text ", x0, ',' , y0, "\'", text, "\'\"");
 
     strcat(command2, str2);
+
+    if (img->highlightformat == 1) strcat(command, str2); // because text will be overlayed. A more efficient method would be to use convert -composite for many tracks. For just a frew tracks, this is moot.
+
 
     if (errno) perror("[ERR]  mogrify");
     FREE(str)
