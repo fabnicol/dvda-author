@@ -471,6 +471,13 @@ char* print_time(int verbose)
 
 void change_directory(const char * filename)
 {
+    char* dir=strdup(getenv("PWD"));
+    if (strcmp(dir, filename) == 0)
+    {
+       if (globals.veryverbose) printf("[MSG]  Remaining in %s\n", dir);
+       return;
+    }
+
     if (chdir(filename) == -1)
     {
         if (errno == ENOTDIR)

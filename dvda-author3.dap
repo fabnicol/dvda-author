@@ -49,14 +49,18 @@
         Groupe 2
 
                 trial track3
+#
+#[norm]
+#        pal
 
-[norm]
-        pal
+[background-mpg]
+/home/fab/background.B.1925s.mpg
 
-[topmenu]
+#
+#[topmenu]
 
-[menustyle]
-        active
+#[menustyle]
+ #       hierarchical
 #[nmenus]
 #        3
 
@@ -67,66 +71,66 @@
 # suboption syntax is simplified for lexer. Skip ONE blank line between pictures paths when changing tracks
 # Do not skip white lines between picture paths.
 # No need for quotes. First picture track can start at following line or after skipped lines
+#
+#
+#[stillpics]
+#
+#          /home/fab/A.jpg
+#          /home/fab/B.jpg
+#          /home/fab/C.jpg
+#          /home/fab/A.jpg
+#
+#          /home/fab/A.jpg
+#          /home/fab/B.jpg
+#          /home/fab/C.jpg
+#
+#          /home/fab/A.jpg
+#
+## Picture options
+## Skip ONE blank line between picture options. Rank should be mentioned, even if consecutive.
+## First picture options can start at following line or after any number of white lines.
+#
+#[stilloptions]
+#
+#               rank=0
+#               start=1
+#               starteffect=fade
+#               lag=5
+#               endeffect=dissolve
+#
+#               rank=1
+#               start=15
+#               starteffect=fade
+#               lag=5
+#               endeffect=fade
+#
+#               rank=2
+#               start=25
+#               starteffect=fade
+#               lag=5
+#
+#               rank=3
+#               start=40
+#               starteffect=fade
+#
+#               rank=4
+#               start=1
+#               starteffect=fade
+#
+#               rank=5
+#               start=20
+#               starteffect=fade
+#
+#               rank=6
+#               start=1
+#               starteffect=fade
+#
+#               rank=7
+#               start=20
+#               starteffect=fade
 
-
-[stillpics]
-
-          /home/fab/A.jpg
-          /home/fab/B.jpg
-          /home/fab/C.jpg
-          /home/fab/A.jpg
-
-          /home/fab/A.jpg
-          /home/fab/B.jpg
-          /home/fab/C.jpg
-
-          /home/fab/A.jpg
-
-# Picture options
-# Skip ONE blank line between picture options. Rank should be mentioned, even if consecutive.
-# First picture options can start at following line or after any number of white lines.
-
-[stilloptions]
-
-               rank=0
-               start=1
-               starteffect=fade
-               lag=5
-               endeffect=dissolve
-
-               rank=1
-               start=15
-               starteffect=fade
-               lag=5
-               endeffect=fade
-
-               rank=2
-               start=25
-               starteffect=fade
-               lag=5
-
-               rank=3
-               start=40
-               starteffect=fade
-
-               rank=4
-               start=1
-               starteffect=fade
-
-               rank=5
-               start=20
-               starteffect=fade
-
-               rank=6
-               start=1
-               starteffect=fade
-
-               rank=7
-               start=20
-               starteffect=fade
-
-[background-colors]
- 100,50,20
+//[background-colors]
+// 100,50,20
 
 [cdrecord]
 

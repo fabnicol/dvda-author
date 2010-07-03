@@ -113,7 +113,7 @@ void create_activemenu(pic* img,uint16_t totntracks)
         fwrite(tsvobpt, tsvobsize, 1, svvobfile);
 
     fclose(svvobfile);
-    if (globals.topmenu == ACTIVE_MENU_ONLY) unlink(img->tsvob);
+    if (globals.topmenu == TEMPORARY_AUTOMATIC_MENU) unlink(img->tsvob);
     return;
 }
 

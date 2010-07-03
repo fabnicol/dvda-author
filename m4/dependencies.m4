@@ -31,7 +31,8 @@ m4_map([DVDA_TEST_AUX],[
         [[md5sum],    [MD5 checksum utility]],
 	[[autoconf],  [configure system build: autoconf]],
 	[[automake],  [make system build: automake]],
-        [[smake],     [using smake instead of GNU make]]])
+        [[smake],     [using smake instead of GNU make]],
+        [[make],      [whether make is installed]]])
 
 
   m4_define([SOX_STATIC_MSG],
@@ -39,6 +40,17 @@ m4_map([DVDA_TEST_AUX],[
       libasound libpng libz libltdl libmagic libsamplerate, using "-dev" packages.
     Warning: Availability will not be tested. An error message 'Cannot find -l...' at the
     end of compiling stage will indicate that you need to install the corresponding library.])
+
+
+  #===================== build features ==============================================#
+
+
+
+    m4_map([DVDA_ARG_ENABLE],[[[iberty-build]],[[ogg-build]],[[flac-build]],[[sox-build]],[[help2man-build]], [[mjpegtools-build]], [[all-builds]],[[dvdauthor-build]],[[cdrtools-build]],[[static-sox],
+                              [DVDA_INF([SOX_STATIC_MSG])
+			      SOX_LINK="$SOX_LINK -lasound -lpng -lz -lltdl -lmagic -lsamplerate"
+			      SOX_LIB="/usr/lib/libsox.a `find /usr/lib/sox/ -regex lib.*a`"]]] )
+
 
   #=================  platform-specific features =====================================#
 
@@ -57,14 +69,6 @@ m4_map([DVDA_TEST_AUX],[
 
     # put feature specific parameters after global parameters to redefine X_LIBs.
 
-  #===================== build features ==============================================#
-
-
-
-    m4_map([DVDA_ARG_ENABLE],[[[iberty-build]],[[ogg-build]],[[flac-build]],[[sox-build]],[[all-builds]],[[dvdauthor-build]],[[cdrtools-build]],[[static-sox],
-                              [DVDA_INF([SOX_STATIC_MSG])
-			      SOX_LINK="$SOX_LINK -lasound -lpng -lz -lltdl -lmagic -lsamplerate"
-			      SOX_LIB="/usr/lib/libsox.a `find /usr/lib/sox/ -regex lib.*a`"]]] )
 
     # downloading (patched) version of source code
     # from sourceforge mirror network except for cdrtools (berlios)
@@ -79,12 +83,13 @@ m4_map([DVDA_TEST_AUX],[
     #     mirror root characteristics/basename-version.tar.[bz2|gz]
 
     m4_define([DOWNLOAD_OPTIONS],[
-            [[dvdauthor-patch],[0.6.14],     [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [dvdauthor/0.6.14],                       [bd646b47950c4091ffd781d43fd2c5e9]],
-            [[cdrtools-patch], [3.00],       [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches/mkisofs],[ftp://ftp.berlios.de/pub/cdrecord/alpha],[bb21cefefcfbb76cf249120e8978ffdd]],
-            [[sox-patch],      [14.3.1],     [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [sox/14.3.1],                             [b99871c7bbae84feac9d0d1f010331ba]],
-            [[flac-download],  [1.2.1],      [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [flac-src/flac-1.2.1-src],                [153c8b15a54da428d1f0fadc756c22c7]],
-            [[ogg-download],[1.1.4],      [http://dvd-audio.sourceforge.net/utils],[],                                                [http://downloads.xiph.org/releases/ogg],[10200ec22543841d9d1c23e0aed4e5e9]],
-            [[flac-cvs],       [1.2.1,.cvs], [http://dvd-audio.sourceforge.net/utils],[],        [],                [f30ddcec01ad901c767f019d9cc84047]]])
+            [[dvdauthor-patch],[0.6.14],     [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [dvdauthor], [dvdauthor/0.6.14],                       [bd646b47950c4091ffd781d43fd2c5e9]],
+            [[cdrtools-patch], [3.00],       [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches/mkisofs],[], [ftp://ftp.berlios.de/pub/cdrecord/alpha],         [bb21cefefcfbb76cf249120e8978ffdd]],
+            [[sox-patch],      [14.3.1],     [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [sox],  [sox/14.3.1],                             [b99871c7bbae84feac9d0d1f010331ba]],
+            [[flac-download],  [1.2.1],      [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [flac], [flac-src/flac-1.2.1-src],                [153c8b15a54da428d1f0fadc756c22c7]],
+            [[ogg-download],   [1.1.4],      [http://dvd-audio.sourceforge.net/utils],[],                                                [],     [],                                       [6c68b14485fccdb6a2a14109185dd816]],
+            [[mjpegtools-patch], [1.9.0],    [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches/mjpegtools], [mjpeg],[mjpegtools/1.9.0], [309a6fcf0900a010d6a9c1e91afc2f5c]],
+            [[help2man-download],[1.36.4],   [http://dvd-audio.sourceforge.net/utils],[], [],[], [d31a0a38c2ec71faa06723f6b8bd3076] ]])
 
     m4_map([DVDA_ARG_ENABLE_DOWNLOAD],[
             DOWNLOAD_OPTIONS,
@@ -115,7 +120,7 @@ m4_map([DVDA_TEST_AUX],[
 
     # installing binaries, normally executables
 
-    DVDA_CONF_SUBDIRS([[[[DVDAUTHOR],[dvdauthor-0.6.14]]], [[[CDRTOOLS],[cdrtools-2.01.01]]]])
+    DVDA_CONF_SUBDIRS([[[[DVDAUTHOR],[dvdauthor-0.6.14]]], [[[CDRTOOLS],[cdrtools-3.00]]], [[[MJPEGTOOLS], [mjpegtools-1.9.0]]], [[[HELP2MAN], [help2man-1.36.4]]]])
 
     # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
 

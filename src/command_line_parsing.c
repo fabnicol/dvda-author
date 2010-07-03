@@ -83,9 +83,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     // this trick is OK is only long options are used for non-print short options.
     if (!user_command_line)
     {
-      for (k=0; k < 30; k++)
-        ALLOWED_OPTIONS[k]=k;
-      strcat(ALLOWED_OPTIONS, ALLOWED_OPTIONS_PRINT);
+        for (k=0; k < 30; k++)
+            ALLOWED_OPTIONS[k]=k;
+        strcat(ALLOWED_OPTIONS, ALLOWED_OPTIONS_PRINT);
     }
 
 
@@ -94,7 +94,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     int errmsg;
     _Bool allocate_files=0, logrefresh=0, refresh_tempdir=1, refresh_outdir=1;  // refreshing output and temporary directories by default
-    _Bool duplicate_backgroundpics=0, duplicate_blankscreen=0;
     DIR *dir;
     parse_t  audiodir;
     extractlist extract;
@@ -725,7 +724,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     ngroups_scan=0;
     int nvideolinking_groups_scan=0, strlength=0;
     char* piccolorchain, *activepiccolorchain, *palettecolorchain, *fontchain, *durationchain=NULL,
-        *h, *min, *sec, **textable=NULL, **tab=NULL,**tab2=NULL, *stillpic_string=NULL, *still_options_string=NULL;
+                                                                                *h, *min, *sec, **textable=NULL, **tab=NULL,**tab2=NULL, *stillpic_string=NULL, *still_options_string=NULL;
     uint16_t npics[totntracks];
 
     optind=0;
@@ -774,7 +773,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             else if (strcmp(optarg, "active") == 0)
             {
                 img->active=1;
-                globals.topmenu=Min(globals.topmenu, ACTIVE_MENU_ONLY);
+
                 img->npics =(uint16_t*) calloc(totntracks, sizeof(uint16_t));
                 for (k=0; k < totntracks; k++)
                     img->npics[k]=1;
@@ -1066,12 +1065,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             if (optarg)
             {
-                if (img->backgroundmpg == NULL)
-                    img->backgroundmpg=calloc(1, sizeof(char*));
-                if (img->backgroundmpg == NULL) perror("[ERR]  img->backgroundmpg\n");
-                img->backgroundmpg[0]=strndup(optarg, MAX_OPTION_LENGTH);
-                printf("[PAR]  Top background mpg file %s will be used\n", img->backgroundmpg[0]);
-                printf("%s", "[PAR]  Lower-level authoring options are overruled.\n");
+                printf("[PAR]  File(s) %s will be used as (spumuxed) top menu\n", optarg);
+                img->topmenu=fn_strtok(optarg, ',' , img->topmenu, 0,NULL,NULL);
                 globals.topmenu=Min(globals.topmenu, RUN_DVDAUTHOR);
             }
             else
@@ -1111,9 +1106,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if (img->backgroundmpg == NULL)
                 img->backgroundmpg=calloc(1, sizeof(char*));
             if (img->backgroundmpg == NULL) perror("[ERR]  img->backgroundmpg\n");
-            img->backgroundmpg[0]=strndup(optarg, MAX_OPTION_LENGTH);
-            printf("[PAR]  Top background mpg file %s will be used\n", img->backgroundmpg[0]);
-            printf("%s", "[PAR]  Lower-level authoring options are overruled.\n");
+
+            img->backgroundmpg=fn_strtok(optarg, ',' , img->backgroundmpg, 0,NULL,NULL);
+
+            printf("[PAR]  Top background mpg file(s) %s will be used\n", optarg);
 
             globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             break;
@@ -1283,7 +1279,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'O':
             img->screentextchain=strndup(optarg, MAX_OPTION_LENGTH);
             if (globals.veryverbose) printf("%s %s\n", "[PAR]  Screen textchain is:", img->screentextchain);
-            globals.topmenu=Min(globals.topmenu, AUTOMATIC_MENU);
+            globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             img->refresh=1;
             break;
 
@@ -1449,18 +1445,22 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     // put this check befor the img->ncolumns check
     // LIMITATION hopefully to be relaxed later on
 
-    if ((img->nmenus > 1)&&(img->active))
+    if (img->active)
     {
-        printf("%s", "[WAR]  Active menus can only be used with simple menus for version "VERSION"\n       Using img->nmenus=1...\n");
-        img->nmenus=1;
+        if (globals.topmenu == NO_MENU)
+            globals.topmenu=TEMPORARY_AUTOMATIC_MENU; // you need to create a TS_VOB at least temporarily
+        if (img->nmenus > 1)
+        {
+            printf("%s", "[WAR]  Active menus can only be used with simple menus for version "VERSION"\n       Using img->nmenus=1...\n");
+            img->nmenus=1;
+        }
+        if (img->hierarchical)
+        {
+            printf("%s", "[WAR]  Active menus cannot be used with hierarchical menus for version "VERSION"\n       Choosing hierarchical menus...\n");
+            img->active=0;
+            img->hierarchical=1;
+        }
     }
-    if ((img->hierarchical)&&(img->active))
-    {
-        printf("%s", "[WAR]  Active menus cannot be used with hierarchical menus for version "VERSION"\n       Choosing hierarchical menus...\n");
-        img->active=0;
-        img->hierarchical=1;
-    }
-
 
     if (img->nmenus == 0)
     {
@@ -1500,8 +1500,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 #endif
 
 
-    duplicate_backgroundpics=(img->nmenus > 1);
-    duplicate_blankscreen=(globals.topmenu <= ACTIVE_MENU_ONLY);
 
 // Now possible overrides once img->nmenus and default tempdir values are known:
     char * str=NULL;
@@ -1542,7 +1540,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             free(str);
             globals.topmenu=Min(globals.topmenu, RUN_SPUMUX_DVDAUTHOR);
             img->refresh=1;
-            duplicate_backgroundpics=0;
 
             break;
 
@@ -1674,96 +1671,96 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 
 
-    if ((globals.topmenu <= ACTIVE_MENU_ONLY) && (globals.topmenu > AUTOMATIC_MENU))
+    char* dest;
+
+    switch (globals.topmenu)
     {
-        printf("%s\n", "[WAR]  Top menu authoring is not automatic.\n       You must give extra information\n");
-        switch (globals.topmenu)
-        {
-            /* other tests to be added for :
-            #define RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR -1
-            #define RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR 0
-            #define RUN_SPUMUX_DVDAUTHOR    1 // automate some of the authoring process (run spumux and dvdauthor)
-            */
-        case TS_VOB_TYPE:
 
-            if (img->tsvob)
-            {
-                errno=0;
-                FILE *f;
-                if ((f=fopen(img->tsvob, "rb")) != NULL)
-                {
-                    fclose(f);
-                    puts("[MSG]  --> top vob requirement...OK");
-                }
+    case TEMPORARY_AUTOMATIC_MENU:
+    case AUTOMATIC_MENU:
 
-            }
-            break;
+    case RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR :
 
-        case RUN_DVDAUTHOR:
-
-            if ((img->backgroundmpg) && (globals.xml))
-            {
-                errno=0;
-                if (fopen(globals.xml, "rb") != NULL)
-                    fclose(fopen(globals.xml, "rb"));
-                if (!errno) puts("[MSG]  --> dvdauthor requirement...OK");
-            }
-            else errno=1;
-            break;
-
-        default:
-            errno=1;
-        }
-
-
-        if (errno)
-        {
-
-            printf("%s\n", "[WAR]  Not enough information. Continuing with automatic menu authoring...");
-            globals.topmenu=AUTOMATIC_MENU;
-            errno=0;
-        }
-
-    }
-
-
-
-
-    if (globals.topmenu <= RUN_SPUMUX_DVDAUTHOR)
-    {
-        if ((img->imagepic==NULL) && (img->selectpic==NULL)&& (img->highlightpic==NULL))
-        {
-            printf("%s\n", "[WAR]  You need all subtitle images");
-            printf("%s\n", "[WAR]  Continuing with menu picture authoring...");
-            globals.topmenu=Min(RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR, globals.topmenu);
-        }
-    }
-
-    if (globals.topmenu <= ACTIVE_MENU_ONLY)
-    {
-        int u;
-        char* dest;
         change_directory(globals.settings.datadir);
-        if (duplicate_blankscreen)
-            dest=copy_file2dir(img->blankscreen, globals.settings.tempdir);
 
         dest=copy_file2dir_rename(img->backgroundpic[0], globals.settings.tempdir, "bgpic0.jpg");
 
-        if (duplicate_backgroundpics)
+        if (img->nmenus > 1)
             for (u=1; u < img->nmenus; u++)
             {
                 char name[13];
                 sprintf(name, "%s%d%s", "bgpic", u,".jpg");
                 dest=copy_file2dir_rename(img->backgroundpic[0], globals.settings.tempdir, name);
             }
+        if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Failed to copy background .jpg pictures to temporary directory.")
 
-        if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Failed to copy background pictures to temporary directory.")
+     case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
+
+        change_directory(globals.settings.datadir);
+
+        dest=copy_file2dir(img->blankscreen, globals.settings.tempdir);
+
+        if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Failed to copy background .png blankscreen to temporary directory.")
 
             normalize_temporary_paths(img);
 
         change_directory(globals.settings.workdir);
 
+    case RUN_SPUMUX_DVDAUTHOR:
+
+        if ((img->imagepic==NULL) && (img->selectpic==NULL)&& (img->highlightpic==NULL))
+        {
+            printf("%s\n", "[WAR]  You need all subtitle images");
+            printf("%s\n", "[WAR]  Continuing with menu picture authoring...");
+            globals.topmenu=Min(RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR, globals.topmenu);
+        }
+        break;
+
+
+    case RUN_DVDAUTHOR:
+
+        if ((img->backgroundmpg) && (globals.xml))
+        {
+            errno=0;
+            if (fopen(globals.xml, "rb") != NULL)
+                fclose(fopen(globals.xml, "rb"));
+            if (!errno) puts("[MSG]  --> dvdauthor requirement...OK");
+        }
+        else errno=1;
+        break;
+
+    case TS_VOB_TYPE:
+
+        if (img->tsvob)
+        {
+            errno=0;
+            FILE *f;
+            if ((f=fopen(img->tsvob, "rb")) != NULL)
+            {
+                fclose(f);
+                puts("[MSG]  --> top vob requirement...OK");
+            }
+
+        }
+        break;
+
+
+
+
+
+    default:
+        errno=1;
     }
+
+
+    if (errno)
+    {
+
+        printf("%s\n", "[WAR]  Not enough information. Continuing with automatic menu authoring...");
+        globals.topmenu=AUTOMATIC_MENU;
+        errno=0;
+    }
+
 
 // This had to be postponed after command line parsing owing to tempdir chain user input
 
@@ -1840,7 +1837,7 @@ stillpic_parsing:
         free(stillpic_string);
 
         if (still_options_string)
-           still_options_parsing(still_options_string, img);
+            still_options_parsing(still_options_string, img);
 
     }
 

@@ -289,7 +289,6 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
                     ogg.............$(echo $OGG_LIB) $LIBOGG_LINK
                     sox.............$(echo $SOX_LIB) $SOX_LINK
 
-
     Build libraries:
                     libFLAC ........$FLAC_BUILD
                     libsox  ........$SOX_BUILD
@@ -303,8 +302,14 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
     Static sox build:
                      ...............$STATIC_SOX
 
-
+    Binary tools build:
+                    mkisofs (cdrtools)
+                                ....$CDRTOOLS_BUILD
+                    mjpegtools  ....$MJPEGTOOLS_BUILD
+                    dvdauthor   ....$DVDAUTHOR_BUILD
+                    help2man    ....$HELP2MAN_BUILD
 ])
+
 
 AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],[
   AC_MSG_RESULT([
@@ -313,11 +318,11 @@ AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],[
 ])
 ])
 
-AS_IF([ test x$IBIBERTY_LIB -o x$IBIBERTY_LINK != x ],[AC_MSG_RESULT([libiberty.a will be linked to])])
+AS_IF([ test x$IBIBERTY_LIB -o x$IBIBERTY_LINK != x ],[AC_MSG_RESULT([  libiberty.a will be linked to])])
 
 AS_IF([ test x$IBERTY_BUILD = xyes ],
  [
-  AC_MSG_RESULT([GNU lib sources in libiberty/ will be recompiled for enhanced portability.])
+  AC_MSG_RESULT([  GNU lib sources in libiberty/ will be recompiled for enhanced portability.])
  ])
 
 
@@ -334,8 +339,10 @@ AS_IF([ test x$HELP2MAN != x ],
   AC_MSG_RESULT([  Man page will not be generated])
 ])
 
-AS_IF([ test x$SMAKE != x], [ AC_MSG_RESULT([smake will be used instead of GNU make])
-                              MAKE=$SMAKE])
+AS_IF([ test x$SMAKE != x ], [ AC_MSG_RESULT([smake will be used instead of GNU make])
+                              make=$SMAKE
+                             ],
+                             [make="$MAKE -j4"])
 
 AS_IF([ test x$MP2ENC = x -o x$JPEG2YUV = x -o x$MPEG2ENC = x -o x$MPLEX = x],[
  AC_MSG_RESULT([  You will have to author top menus from available MPEG background files, as tools are missing to automate generation.])])
@@ -343,7 +350,9 @@ AS_IF([ test x$MP2ENC = x -o x$JPEG2YUV = x -o x$MPEG2ENC = x -o x$MPLEX = x],[
 
 AC_MSG_RESULT([[
 
-  Auxiliary tools:
+  Using $make as a system build tool.
+
+  Auxiliary tools (already installed):
     curl: .........................$CURL
     help2man: .....................$HELP2MAN
     man2html: .....................$MAN2HTML
@@ -356,7 +365,8 @@ AC_MSG_RESULT([[
     mpeg2enc: .....................$MPEG2ENC
     mplex: ........................$MPLEX
     mogrify:.......................$MOGRIFY
-    make:..........................$MAKE
+    convert:.......................$CONVERT
+    make:..........................$make
 
   These tools should all be installed to enable advanced dvda-author features.
 
