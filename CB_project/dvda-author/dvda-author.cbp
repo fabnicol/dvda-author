@@ -151,6 +151,7 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 		</Compiler>
 		<Unit filename="../../ChangeLog" />
 		<Unit filename="../../EXAMPLES" />
+		<Unit filename="../../HOWTO.conf" />
 		<Unit filename="../../INSTALL" />
 		<Unit filename="../../Makefile.am" />
 		<Unit filename="../../README" />
