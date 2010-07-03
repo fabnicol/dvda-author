@@ -1078,7 +1078,9 @@ int create_stillpic_directory(char* string, uint32_t count)
         char dest[strlen(globals.settings.tempdir)+13];
         sprintf(dest, "%s"SEPARATOR"pic_%03d.jpg", globals.settings.tempdir, k);
         if (globals.veryverbose) printf("[INF]  Picture %s will be copied to temporary directory as %s.\n", string, dest);
+
         copy_file(string, dest);
+
         if (k == 0) globals.settings.stillpicdir=strdup(globals.settings.tempdir);
         k++;
         return 1;

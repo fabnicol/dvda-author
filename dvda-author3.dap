@@ -125,6 +125,8 @@
                start=20
                starteffect=fade
 
+[background-colors]
+ 100,50,20
 
 [cdrecord]
 

@@ -1769,7 +1769,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 stillpic_parsing:
 
-    if (stillpic_string)
+    if ((stillpic_string) && !img->active)
     {
         // heap-allocations is not possible if char** is not returned by function
         // A simple char* would well be allocated by function, not a char**.
