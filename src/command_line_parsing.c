@@ -284,7 +284,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                 case 'l' :
 
-
+                     #ifdef __WIN32__
+                     printf("[WAR]  This option is currenlty unsupported for Windows.\n\n");
+                     break;
+                     #endif
 
                     if (optarg)
                     {
@@ -338,7 +341,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 #else
 
-
+#if 0
 
 
         HANDLE a_thread;
@@ -356,6 +359,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             return(EXIT_FAILURE);
         }
     }
+#endif
 #endif
 
 
@@ -1132,7 +1136,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 
         case 'Q':
-
+#if 0
             if (img->backgroundmpg)
             {
                 printf("%s\n", "[ERR]  Background mpg file already specified, skipping...");
@@ -1142,6 +1146,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             printf("%s%s\n", "[PAR]  soundtrack to be muxed into background mpg video: ", optarg);
             img->soundtrack=strndup(optarg, MAX_OPTION_LENGTH);
             globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+#endif
+            printf("[WARN]  This option is under development, pending further developments of dependencies (lplex).\n ");
             break;
 
 
@@ -1483,6 +1489,13 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         }
 
         img->ncolumns=ngroups/(img->nmenus-img->hierarchical)+(ngroups%(img->nmenus-img->hierarchical) >0);
+
+        if ((img->ncolumns)*ngroups < img->nmenus-1)
+        {
+            printf("%s", "[WAR]  Hierarchical menus should have at most %d*%d+1=%d menus...\n       Resetting value for --nmenus=%d\n", img->ncolumns, ngroups, img->ncolumns*ngroups+1, img->ncolumns*ngroups+1);
+            img->nmenus=ngroups*img->ncolumns+1;
+        }
+
     }
 
 
@@ -1585,12 +1598,13 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                     fflush(NULL);
 
             }
-            globals.topmenu=Min(globals.topmenu, RUN_SPUMUX_DVDAUTHOR);
+            globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR );
 
             break;
 
         case 'E':
             printf("%s%s\n", "[PAR]  highlight png file(s) for generating mpg video: ", optarg);
+            printf("%s\n", "[WAR]  Check that your image doe not have more than 4 colors, including transparency.");
             str=strdup(optarg);
 
             img->highlightpic=fn_strtok(str,',',img->highlightpic,0,NULL,NULL);
@@ -1606,12 +1620,13 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             free(str);
 
-            globals.topmenu=Min(globals.topmenu, RUN_SPUMUX_DVDAUTHOR);
+            globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR );
             img->refresh=1;
             break;
 
         case 'e' :
             printf("%s%s\n", "[PAR]  select png file(s) for generating mpg video: ", optarg);
+            printf("%s\n", "[WAR]  Check that your image doe not have more than 4 colors, including transparency.");
             str=strdup(optarg);
 
             img->selectpic=fn_strtok(str,',',img->selectpic,0,NULL,NULL);
@@ -1627,13 +1642,14 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             free(str);
 
-            globals.topmenu=Min(globals.topmenu, RUN_SPUMUX_DVDAUTHOR);
+            globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR );
             img->refresh=1;
             break;
 
 
         case 'G' :
             printf("%s%s\n", "[PAR]  image png file(s) for generating mpg video: ", optarg);
+            printf("%s\n", "[WAR]  Check that your image doe not have more than 4 colors, including transparency.");
             str=strdup(optarg);
 
             img->imagepic=fn_strtok(str,',',img->imagepic,0,NULL,NULL);
@@ -1649,7 +1665,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             free(str);
 
-            globals.topmenu=Min(globals.topmenu, RUN_SPUMUX_DVDAUTHOR);
+            globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR );
             img->refresh=1;
             break;
 
@@ -1677,7 +1693,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         }
     }
 
-// Now copying to temporary directory, depending on type of menu creation, trying to minimize work, depending of type of disc build.
+   // Now copying to temporary directory, depending on type of menu creation, trying to minimize work, depending of type of disc build.
 
     char* dest;
 

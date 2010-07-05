@@ -2,19 +2,19 @@
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Release" />
 	<File name="../../ChangeLog" open="1" top="0" tabpos="1">
-		<Cursor position="509" topLine="0" />
+		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../EXAMPLES" open="1" top="0" tabpos="2">
-		<Cursor position="1270" topLine="0" />
+		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../HOWTO.conf" open="1" top="0" tabpos="3">
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../INSTALL" open="1" top="0" tabpos="4">
-		<Cursor position="10306" topLine="200" />
+		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../Makefile.am" open="1" top="0" tabpos="5">
-		<Cursor position="3479" topLine="72" />
+		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../README" open="1" top="0" tabpos="6">
 		<Cursor position="0" topLine="0" />
@@ -23,7 +23,7 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../configure.ac" open="1" top="0" tabpos="8">
-		<Cursor position="8054" topLine="225" />
+		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../dvda-author.dap" open="1" top="0" tabpos="9">
 		<Cursor position="0" topLine="0" />
@@ -31,11 +31,11 @@
 	<File name="../../dvda-author.nsi.in" open="1" top="0" tabpos="10">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../dvda-author2.dap" open="1" top="0" tabpos="11">
-		<Cursor position="1108" topLine="12" />
+	<File name="../../dvda-author2.dap" open="1" top="1" tabpos="11">
+		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../dvda-author3.dap" open="1" top="0" tabpos="12">
-		<Cursor position="1342" topLine="33" />
+		<Cursor position="2103" topLine="88" />
 	</File>
 	<File name="../../libats2wav/src/Makefile.am" open="1" top="0" tabpos="13">
 		<Cursor position="0" topLine="0" />
@@ -107,129 +107,129 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../m4/dependencies.m4" open="1" top="0" tabpos="36">
-		<Cursor position="1980" topLine="13" />
+		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../m4/dvda.m4" open="1" top="0" tabpos="37">
-		<Cursor position="23955" topLine="561" />
+		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../script.in" open="1" top="0" tabpos="38">
-		<Cursor position="133" topLine="0" />
-	</File>
-	<File name="../../script1.in" open="1" top="0" tabpos="76">
-		<Cursor position="144" topLine="0" />
-	</File>
-	<File name="../../script2.in" open="1" top="0" tabpos="77">
-		<Cursor position="83" topLine="0" />
-	</File>
-	<File name="../../src/Makefile.am" open="1" top="0" tabpos="39">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/amg2.c" open="1" top="0" tabpos="40">
-		<Cursor position="8431" topLine="221" />
-	</File>
-	<File name="../../src/asvs.c" open="1" top="0" tabpos="41">
+	<File name="../../script1.in" open="1" top="0" tabpos="39">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/ats.c" open="1" top="0" tabpos="42">
+	<File name="../../script2.in" open="1" top="0" tabpos="40">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/atsi2.c" open="1" top="0" tabpos="43">
+	<File name="../../src/Makefile.am" open="1" top="0" tabpos="41">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/audio.c" open="1" top="0" tabpos="44">
+	<File name="../../src/amg2.c" open="1" top="0" tabpos="42">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/auxiliary.c" open="1" top="0" tabpos="45">
-		<Cursor position="3425" topLine="78" />
-	</File>
-	<File name="../../src/command_line_parsing.c" open="1" top="0" tabpos="46">
-		<Cursor position="60522" topLine="1732" />
-	</File>
-	<File name="../../src/dvda-author2.c" open="1" top="0" tabpos="47">
-		<Cursor position="4876" topLine="30" />
-	</File>
-	<File name="../../src/file_input_parsing.c" open="1" top="0" tabpos="48">
+	<File name="../../src/asvs.c" open="1" top="0" tabpos="43">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/amg.h" open="1" top="0" tabpos="49">
-		<Cursor position="1417" topLine="0" />
-	</File>
-	<File name="../../src/include/asvs.h" open="1" top="0" tabpos="50">
+	<File name="../../src/ats.c" open="1" top="0" tabpos="44">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/ats.h" open="1" top="0" tabpos="51">
+	<File name="../../src/atsi2.c" open="1" top="0" tabpos="45">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/atsi.h" open="1" top="0" tabpos="52">
+	<File name="../../src/audio.c" open="1" top="0" tabpos="46">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/audio2.h" open="1" top="0" tabpos="53">
+	<File name="../../src/auxiliary.c" open="1" top="0" tabpos="47">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/auxiliary.h" open="1" top="1" tabpos="54">
-		<Cursor position="1419" topLine="25" />
+	<File name="../../src/command_line_parsing.c" open="1" top="0" tabpos="48">
+		<Cursor position="51719" topLine="1447" />
 	</File>
-	<File name="../../src/include/command_line_parsing.h" open="1" top="0" tabpos="55">
+	<File name="../../src/dvda-author2.c" open="1" top="0" tabpos="49">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/commonvars.h" open="1" top="0" tabpos="56">
-		<Cursor position="0" topLine="61" />
-	</File>
-	<File name="../../src/include/dvda-author.h" open="1" top="0" tabpos="57">
+	<File name="../../src/file_input_parsing.c" open="1" top="0" tabpos="50">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/file_input_parsing.h" open="1" top="0" tabpos="58">
+	<File name="../../src/include/amg.h" open="1" top="0" tabpos="51">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/launch_manager.h" open="1" top="0" tabpos="59">
+	<File name="../../src/include/asvs.h" open="1" top="0" tabpos="52">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/lexer.h" open="1" top="0" tabpos="60">
+	<File name="../../src/include/ats.h" open="1" top="0" tabpos="53">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/libsoxconvert.h" open="1" top="0" tabpos="61">
+	<File name="../../src/include/atsi.h" open="1" top="0" tabpos="54">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/menu.h" open="1" top="0" tabpos="62">
+	<File name="../../src/include/audio2.h" open="1" top="0" tabpos="55">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/multichannel.h" open="1" top="0" tabpos="63">
+	<File name="../../src/include/auxiliary.h" open="1" top="0" tabpos="56">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/ports.h" open="1" top="0" tabpos="64">
+	<File name="../../src/include/command_line_parsing.h" open="1" top="0" tabpos="57">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/samg.h" open="1" top="0" tabpos="65">
+	<File name="../../src/include/commonvars.h" open="1" top="0" tabpos="58">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/structures.h" open="1" top="0" tabpos="66">
+	<File name="../../src/include/dvda-author.h" open="1" top="0" tabpos="59">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/videoimport.h" open="1" top="0" tabpos="67">
+	<File name="../../src/include/file_input_parsing.h" open="1" top="0" tabpos="60">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/xml.h" open="1" top="0" tabpos="68">
+	<File name="../../src/include/launch_manager.h" open="1" top="0" tabpos="61">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/launch_manager.c" open="1" top="0" tabpos="69">
-		<Cursor position="20708" topLine="643" />
-	</File>
-	<File name="../../src/lexer.c" open="1" top="0" tabpos="70">
+	<File name="../../src/include/lexer.h" open="1" top="0" tabpos="62">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/libsoxconvert.c" open="1" top="0" tabpos="71">
+	<File name="../../src/include/libsoxconvert.h" open="1" top="0" tabpos="63">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/menu.c" open="1" top="0" tabpos="72">
-		<Cursor position="16233" topLine="524" />
-	</File>
-	<File name="../../src/samg2.c" open="1" top="0" tabpos="73">
-		<Cursor position="6881" topLine="225" />
-	</File>
-	<File name="../../src/videoimport.c" open="1" top="0" tabpos="74">
+	<File name="../../src/include/menu.h" open="1" top="0" tabpos="64">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/xml.c" open="1" top="0" tabpos="75">
-		<Cursor position="0" topLine="228" />
+	<File name="../../src/include/multichannel.h" open="1" top="0" tabpos="65">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="../../src/include/ports.h" open="1" top="0" tabpos="66">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="../../src/include/samg.h" open="1" top="0" tabpos="67">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="../../src/include/structures.h" open="1" top="0" tabpos="68">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="../../src/include/videoimport.h" open="1" top="0" tabpos="69">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="../../src/include/xml.h" open="1" top="0" tabpos="70">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="../../src/launch_manager.c" open="1" top="0" tabpos="71">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="../../src/lexer.c" open="1" top="0" tabpos="72">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="../../src/libsoxconvert.c" open="1" top="0" tabpos="73">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="../../src/menu.c" open="1" top="0" tabpos="74">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="../../src/samg2.c" open="1" top="0" tabpos="75">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="../../src/videoimport.c" open="1" top="0" tabpos="76">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="../../src/xml.c" open="1" top="0" tabpos="77">
+		<Cursor position="3434" topLine="87" />
 	</File>
 </CodeBlocks_layout_file>
