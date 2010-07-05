@@ -41,13 +41,16 @@ m4_map([DVDA_TEST_AUX],[
     Warning: Availability will not be tested. An error message 'Cannot find -l...' at the
     end of compiling stage will indicate that you need to install the corresponding library.])
 
+  m4_define([MAGICK_MSG],
+    [With GNU/Linux you will need to run sudo ldconfig after make install.])
+
 
   #===================== build features ==============================================#
 
 
 
-    m4_map([DVDA_ARG_ENABLE],[[[iberty-build]],[[ogg-build]],[[flac-build]],[[sox-build]],[[help2man-build]], [[mjpegtools-build]], [[all-builds]],[[dvdauthor-build]],[[cdrtools-build]],[[static-sox],
-                              [DVDA_INF([SOX_STATIC_MSG])
+    m4_map([DVDA_ARG_ENABLE],[[[iberty-build]],[[ogg-build]],[[flac-build]],[[sox-build]],[[help2man-build]], [[mjpegtools-build]], [[magick-build],[DVDA_INF([MAGICK_MSG])]], [[all-builds]],[[dvdauthor-build]],[[cdrtools-build]],[[static-sox],[
+                              DVDA_INF([SOX_STATIC_MSG])
 			      SOX_LINK="$SOX_LINK -lasound -lpng -lz -lltdl -lmagic -lsamplerate"
 			      SOX_LIB="/usr/lib/libsox.a `find /usr/lib/sox/ -regex lib.*a`"]]] )
 
@@ -89,7 +92,8 @@ m4_map([DVDA_TEST_AUX],[
             [[flac-download],  [1.2.1],      [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [flac], [flac-src/flac-1.2.1-src],                [153c8b15a54da428d1f0fadc756c22c7]],
             [[ogg-download],   [1.1.4],      [http://dvd-audio.sourceforge.net/utils],[],                                                [],     [],                                       [6c68b14485fccdb6a2a14109185dd816]],
             [[mjpegtools-patch], [1.9.0],    [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches/mjpegtools], [mjpeg],[mjpegtools/1.9.0], [309a6fcf0900a010d6a9c1e91afc2f5c]],
-            [[help2man-download],[1.36.4],   [http://dvd-audio.sourceforge.net/utils],[], [],[], [d31a0a38c2ec71faa06723f6b8bd3076] ]])
+            [[help2man-download],[1.36.4],   [http://dvd-audio.sourceforge.net/utils],[],[],[], [d31a0a38c2ec71faa06723f6b8bd3076]],
+            [[magick-download], [6.6.3],     [http://dvd-audio.sourceforge.net/utils],[],[],[], [2984b2c8c3fb9fc5335e6f42fea7911c]]])
 
     m4_map([DVDA_ARG_ENABLE_DOWNLOAD],[
             DOWNLOAD_OPTIONS,
@@ -120,7 +124,7 @@ m4_map([DVDA_TEST_AUX],[
 
     # installing binaries, normally executables
 
-    DVDA_CONF_SUBDIRS([[[[DVDAUTHOR],[dvdauthor-0.6.14]]], [[[CDRTOOLS],[cdrtools-3.00]]], [[[MJPEGTOOLS], [mjpegtools-1.9.0]]], [[[HELP2MAN], [help2man-1.36.4]]]])
+    DVDA_CONF_SUBDIRS([[[[DVDAUTHOR],[dvdauthor-0.6.14]]], [[[CDRTOOLS],[cdrtools-3.00]]], [[[MJPEGTOOLS], [mjpegtools-1.9.0]]], [[[HELP2MAN], [help2man-1.36.4]]], [[[MAGICK], [magick-6.6.3]]]])
 
     # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
 

@@ -238,7 +238,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
                 break;
             default:
                 printf("[ERR]  samg: Unsupported number of channels (%d)\n",files[g][j].channels);
-                exit(0);
+                clean_exit(EXIT_FAILURE);
             }
 
             samg[i]=files[g][j].cga;

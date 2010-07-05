@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
-	<ActiveTarget name="Release" />
+	<ActiveTarget name="" />
 	<File name="../../libutils/src/c_utils.c" open="1" top="0" tabpos="1">
-		<Cursor position="13932" topLine="396" />
+		<Cursor position="12335" topLine="459" />
 	</File>
 	<File name="../../libutils/src/include/c_utils.h" open="1" top="0" tabpos="2">
 		<Cursor position="0" topLine="0" />

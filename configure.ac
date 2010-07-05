@@ -258,6 +258,7 @@ AC_CONFIG_FILES([Makefile
          images/Makefile
          script
          script1
+         script2
          EXAMPLES
 
 ])
@@ -308,6 +309,7 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
                     mjpegtools  ....$MJPEGTOOLS_BUILD
                     dvdauthor   ....$DVDAUTHOR_BUILD
                     help2man    ....$HELP2MAN_BUILD
+                    ImageMagick ....$MAGICK_BUILD
 ])
 
 
@@ -380,5 +382,9 @@ AC_MSG_RESULT([[
     Configuration files: ......... $SHORTLINKDIR
     Images directory: ............ $MENUDIR
 
+    You may now build by typing 'make' and install with 'make install'.
+
 ]])
+
+AS_IF([ test x$MAGICK_BUILD = xyes ], [DVDA_INF([MAGICK_MSG])])
 

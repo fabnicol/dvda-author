@@ -172,10 +172,20 @@ void initialize_binary_paths(char level)
         }
         break;
     case 4:
-        if (count1) { free(mp2enc); free(jpeg2yuv); free(mpeg2enc); free(mplex); }
+        if (count1)
+        {
+            free(mp2enc);
+            free(jpeg2yuv);
+            free(mpeg2enc);
+            free(mplex);
+        }
         if (count2) free(spumux);
         if (count3) free(dvdauthor);
-        if (count4) {free(mogrify); free(convert);}
+        if (count4)
+        {
+            free(mogrify);
+            free(convert);
+        }
         break;
 
     }
@@ -200,6 +210,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
         if (globals.debugging) printf("%s%u\n", "[INF]  Creating still picture #", rank+1);
 
         sprintf(img->backgroundmpg[rank], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "background_still_", rank, ".mpg");
+
         snprintf(pic, sizeof(pic), "%s"SEPARATOR"pic_%03u.jpg", globals.settings.stillpicdir, rank);  // here stillpic[0] is a subdir.
     }
     else if (img->action == ANIMATEDVIDEO)
@@ -207,24 +218,25 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
         if (globals.debugging) printf("[INF]  Creating animated menu rank #%u out of %s\n", rank+1, img->backgroundpic[rank]);
         sprintf(img->backgroundmpg[rank], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "background_movie_",rank, ".mpg");
         snprintf(pic, sizeof(pic), "%s", img->backgroundpic[rank]);
+        if (img->backgroundcolors)
+        {
+            if (globals.veryverbose) printf("%s\n", "[INF]  Colorizing background jpg files prior to multiplexing...");
+            char* mogrify=NULL;
+            char command[500];
+
+            mogrify=create_binary_path(mogrify, MOGRIFY, SEPARATOR MOGRIFY_BASENAME);
+
+            snprintf(command, 500, "%s -fill \"rgb(%s)\" -colorize 66%% %s", mogrify, img->backgroundcolors[rank], img->backgroundpic[rank]);
+
+            if (globals.debugging) printf("[INF]  Launching mogrify to colorize menu: %d with command line %s\n", rank, command);
+            if (system(command) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
+                fflush(NULL);
+        }
+
     }
 
     /// Colorizing if need be ///
 
-    if (img->backgroundcolors)
-    {
-        if (globals.veryverbose) printf("%s\n", "[INF]  Colorizing background jpg files prior to multiplexing...");
-        char* mogrify=NULL;
-        char command[500];
-
-        mogrify=create_binary_path(mogrify, MOGRIFY, SEPARATOR MOGRIFY_BASENAME);
-
-        snprintf(command, 500, "%s -fill \"rgb(%s)\" -colorize 66%% %s", mogrify, img->backgroundcolors[rank], img->backgroundpic[rank]);
-
-        if (globals.debugging) printf("[INF]  Launching mogrify to colorize menu: %d with command line %s\n", rank, command);
-        if (system(command) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
-            fflush(NULL);
-    }
 
     initialize_binary_paths(0);
 
@@ -236,6 +248,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     char *argsjpeg2yuv[]= {JPEG2YUV, "-f", img->framerate, "-I", "p", "-n", "1", "-j", pic, "-A", img->aspectratio, NULL};
     char *argsmpeg2enc[]= {MPEG2ENC,  "-f", "8", "-n", norm,  "-o", tempfile ,"-a", img->aspect, NULL};
     char *argsmplex[]= {MPLEX, "-f", "8",  "-o", img->backgroundmpg[rank], tempfile, mp2track, NULL};
+
     //////////////////////////
 
     if (img->action==ANIMATEDVIDEO )
@@ -313,19 +326,26 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     // System will freeze should an input file not exit, as mjpegtools to not always exit on system error. This may cause a loop in the piping of jpeg2yuv to mpeg2enc
     // Tight system error strategy in order here
     errno=0;
-    if (img->action == ANIMATEDVIDEO)
-    {
-        FILE *f=fopen(pic, "rb");
-        printf("opening: %s\n", pic);
-        if ((errno)||(f == NULL))
+
+
+    FILE *f=fopen(pic, "rb");
+    printf("opening: %s\n", pic);
+    if ((errno)||(f == NULL))
         {
-            printf("[ERR]  menu input files: background pic: %s", pic);
-            perror("background");
+            if (img->action == ANIMATEDVIDEO)
+            {
+               printf("[ERR]  menu input files: background pic: %s", pic);
+               perror("background");
+            }
+            else
+            {
+               printf("[ERR]  still pic: %s", pic);
+            }
             clean_exit(EXIT_FAILURE);
         }
-        fclose(f);
-        errno=0;
-    }
+    fclose(f);
+    errno=0;
+
 
 //    if (mp2track)
 //    {
@@ -475,7 +495,7 @@ int generate_background_mpg(pic* img, uint8_t ngroups, uint8_t* ntracks)
 
     if (img->action == STILLPICS)
     {
-        free(img->backgroundmpg);
+        FREE(img->backgroundmpg);
         img->backgroundmpg=calloc(img->count, sizeof(char*));
         if (img->backgroundmpg)
             while (rank < img->count)
@@ -515,6 +535,8 @@ int launch_spumux(pic* img)
     {
         if (globals.debugging) printf("[INF]  Creating menu %d from Xml file %s\n",menu+1, globals.spu_xml[menu]);
         char *argsspumux[]= {"spumux", "-v", "2", globals.spu_xml[menu], NULL};
+
+        prs(img->backgroundmpg[menu])
 
         // This is to hush up dvdauthor's stdout messages, which interfere out of sequential order with main application stdout messages
         // and anyway could not be logged by  -l;

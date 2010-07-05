@@ -27,6 +27,9 @@
        /home/fab/a.wav
        /home/fab/a.wav
 [g]
+
+
+
        /home/fab/a.wav
 
 [output]
@@ -38,91 +41,11 @@
 # group text and track text. Skip no lines between tracks.
 # No need for quotes anywhere.
 
-[screentext]
-      Bach trial
+#[topvob]
+#    /home/fab/Dev/dvda-author-10.06/AUDIO_TS.VOB
 
-        Groupe 1
-
-                trial track1
-		trial track2
-
-        Groupe 2
-
-                trial track3
-
-
-[topmenu]
-
-[nmenus]
-     3
-
-[highlightformat]
-  0
-
-# Slideshow authoring
-# suboption syntax is simplified for lexer. Skip ONE blank line between pictures paths when changing tracks
-# Do not skip white lines between picture paths.
-# No need for quotes. First picture track can start at following line or after skipped lines
-
-
-[stillpics]
-
-          /home/fab/A.jpg
-          /home/fab/B.jpg
-          /home/fab/C.jpg
-          /home/fab/A.jpg
-
-          /home/fab/A.jpg
-          /home/fab/B.jpg
-          /home/fab/C.jpg
-
-          /home/fab/A.jpg
-
-# Picture options
-# Skip ONE blank line between picture options. Rank should be mentioned, even if consecutive.
-# First picture options can start at following line or after any number of white lines.
-#
-#[stilloptions]
-#
-#               rank=0
-#               start=1
-#               starteffect=fade
-#               lag=5
-#               endeffect=dissolve
-#
-#               rank=1
-#               start=15
-#               starteffect=fade
-#               lag=5
-#               endeffect=fade
-#
-#               rank=2
-#               start=25
-#               starteffect=fade
-#               lag=5
-#
-#               rank=3
-#               start=40
-#               starteffect=fade
-#
-#               rank=4
-#               start=1
-#               starteffect=fade
-#
-#               rank=5
-#               start=20
-#               starteffect=fade
-#
-#               rank=6
-#               start=1
-#               starteffect=fade
-#
-#               rank=7
-#               start=20
-#               starteffect=fade
-
-
-[cdrecord]
+[background-mpg]
+   /home/fab/Dev/test/background.mpg
 
 [veryverbose]
 
@@ -133,5 +56,9 @@
 [datadir]
  /home/fab/Dev/dvda-author-10.06
 
+[duration]
+  0:1:17
+
+[cdrecord]
 
 ## end of config file
