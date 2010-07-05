@@ -205,7 +205,8 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
 
     case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
 
-        generate_menu_pics(img, ngroups, ntracks, maxntracks);
+        if ((!img->highlightpic)||(!img->selectpic)||(!img->imagepic))
+            generate_menu_pics(img, ngroups, ntracks, maxntracks);
 
         // calling xml project file subroutine for dvdauthor
 

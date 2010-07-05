@@ -22,6 +22,8 @@
 # I/O parameters
 ## audio input directory
 
+[logrefresh]
+   /home/fab/log
 
 [g]
        /home/fab/a.wav
@@ -38,19 +40,30 @@
 # group text and track text. Skip no lines between tracks.
 # No need for quotes anywhere.
 ##
-[screentext]
-      Bach trial
-
-        Groupe 1
-
-                trial track1
-		trial track2
-
-        Groupe 2
-
-                trial track3
+#[screentext]
+#      Bach trial
+#
+#        Groupe 1
+#
+#                trial track1
+#		trial track2
+#
+#        Groupe 2
+#
+#                trial track3
 
 [topmenu]
+
+[highlight]
+  /home/fab/Dev/test/highlight.png
+
+[image]
+  /home/fab/Dev/test/image.png
+
+
+[select]
+  /home/fab/Dev/test/select.png
+
 #
 #
 #
@@ -61,13 +74,13 @@
 #/home/fab/background.B.1925s.mpg
 
 
-[menustyle]
-        hierarchical
+#[menustyle]
+#        hierarchical
 [nmenus]
-        3
-
-[highlightformat]
         1
+
+#[highlightformat]
+#        1
 
 # Slideshow authoring
 # suboption syntax is simplified for lexer. Skip ONE blank line between pictures paths when changing tracks

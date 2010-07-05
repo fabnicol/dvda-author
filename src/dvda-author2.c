@@ -109,6 +109,14 @@ void normalize_temporary_paths(pic* img)
     }
     else
     {
+
+        if ((img->imagepic) && (img->highlightpic) && (img->selectpic)) return;
+        else if ((img->imagepic) || (img->highlightpic) || (img->selectpic))
+        {
+              printf("[WAR]  You should enter three menu-authoring custom-made .png pictures, for main image, highlight and select action.\nn       Reverting to automatic mode.\n\n");
+              globals.topmenu=AUTOMATIC_MENU;
+        }
+
         int menu;
 
         img->backgroundpic=calloc(img->nmenus+1,sizeof(char*));
