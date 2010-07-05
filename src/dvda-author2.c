@@ -112,7 +112,7 @@ void normalize_temporary_paths(pic* img)
         int menu;
 
         img->backgroundpic=calloc(img->nmenus+1,sizeof(char*));
-        img->backgroundmpg=calloc(img->nmenus+1,sizeof(char*));
+  //      img->backgroundmpg=calloc(img->nmenus+1,sizeof(char*));
         img->imagepic=calloc(img->nmenus+1,sizeof(char*));
         img->highlightpic=calloc(img->nmenus+1,sizeof(char*));
         img->selectpic=calloc(img->nmenus+1, sizeof(char*));
@@ -121,9 +121,8 @@ void normalize_temporary_paths(pic* img)
 
         for (menu=0;  menu < img->nmenus; menu++)
         {
-
-            img->backgroundmpg[menu]=(char*)calloc(26+s, sizeof(char));
-
+    //        img->backgroundmpg[menu]=(char*)calloc(26+s, sizeof(char));
+    //        sprintf(img->backgroundmpg[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "background", menu, ".mpg");
 
             img->backgroundpic[menu]=calloc(s+13, sizeof(char));
             sprintf(img->backgroundpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "bgpic", menu, ".jpg");
@@ -137,11 +136,11 @@ void normalize_temporary_paths(pic* img)
             img->selectpic[menu]=calloc(s+13,sizeof(char));
             sprintf(img->selectpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "slpic", menu, ".png");
         }
-     //   img->backgroundpic[img->nmenus]=NULL;
+
         img->imagepic[img->nmenus]=NULL;
         img->highlightpic[img->nmenus]=NULL;
         img->selectpic[img->nmenus]=NULL;
-
+//        img->backgroundmpg[img->nmenus]=NULL;
     }
 }
 

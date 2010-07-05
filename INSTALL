@@ -239,11 +239,16 @@ More specifically, from the top source directory:
 
 - To build and patch mjpegtools (owing to source code bug), if you need to enable menu authoring only:
 
-        ./configure --enable-mjpegtools-patch --enable-mjpegtools-build  
+        ./configure --enable-mjpegtools-patch --enable-mjpegtools-build
 
 - To build help2man:
 
 	./configure --enable-help2man-download  --enable-help2man-build
+
+- To build ImageMagick:
+
+	./configure --enable-magick-download  --enable-magick-build
+
 
 - To avoid repreating -build enable options, you may just add to command line:
 

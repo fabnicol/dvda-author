@@ -37,7 +37,7 @@
 # Skip ONE blank line between album text and group text; skip ONE blank line between
 # group text and track text. Skip no lines between tracks.
 # No need for quotes anywhere.
-
+##
 [screentext]
       Bach trial
 
@@ -49,20 +49,22 @@
         Groupe 2
 
                 trial track3
+
+[topmenu]
+#
+#
 #
 #[norm]
-#        pal
+#        ntsc
 
-[background-mpg]
-/home/fab/background.B.1925s.mpg
+#[background-mpg]
+#/home/fab/background.B.1925s.mpg
 
-#
-#[topmenu]
 
-#[menustyle]
- #       hierarchical
-#[nmenus]
-#        3
+[menustyle]
+        hierarchical
+[nmenus]
+        3
 
 [highlightformat]
         1
@@ -72,65 +74,66 @@
 # Do not skip white lines between picture paths.
 # No need for quotes. First picture track can start at following line or after skipped lines
 #
-#
-#[stillpics]
-#
-#          /home/fab/A.jpg
-#          /home/fab/B.jpg
-#          /home/fab/C.jpg
-#          /home/fab/A.jpg
-#
-#          /home/fab/A.jpg
-#          /home/fab/B.jpg
-#          /home/fab/C.jpg
-#
-#          /home/fab/A.jpg
-#
-## Picture options
-## Skip ONE blank line between picture options. Rank should be mentioned, even if consecutive.
-## First picture options can start at following line or after any number of white lines.
-#
-#[stilloptions]
-#
-#               rank=0
-#               start=1
-#               starteffect=fade
-#               lag=5
-#               endeffect=dissolve
-#
-#               rank=1
-#               start=15
-#               starteffect=fade
-#               lag=5
-#               endeffect=fade
-#
-#               rank=2
-#               start=25
-#               starteffect=fade
-#               lag=5
-#
-#               rank=3
-#               start=40
-#               starteffect=fade
-#
-#               rank=4
-#               start=1
-#               starteffect=fade
-#
-#               rank=5
-#               start=20
-#               starteffect=fade
-#
-#               rank=6
-#               start=1
-#               starteffect=fade
-#
-#               rank=7
-#               start=20
-#               starteffect=fade
 
-//[background-colors]
-// 100,50,20
+[stillpics]
+
+          /home/fab/A.jpg
+          /home/fab/B.jpg
+          /home/fab/C.jpg
+          /home/fab/A.jpg
+
+          /home/fab/A.jpg
+          /home/fab/B.jpg
+          /home/fab/C.jpg
+
+          /home/fab/A.jpg
+
+# Picture options
+# Skip ONE blank line between picture options. Rank should be mentioned, even if consecutive.
+# First picture options can start at following line or after any number of white lines.
+
+[stilloptions]
+
+               rank=0
+               start=1
+               starteffect=fade
+               lag=5
+               endeffect=dissolve
+
+               rank=1
+               start=15
+               starteffect=fade
+               lag=5
+               endeffect=fade
+
+               rank=2
+               start=25
+               starteffect=fade
+               lag=5
+
+               rank=3
+               start=40
+               starteffect=fade
+
+               rank=4
+               start=1
+               starteffect=fade
+
+               rank=5
+               start=20
+               starteffect=fade
+
+               rank=6
+               start=1
+               starteffect=fade
+
+               rank=7
+               start=20
+               starteffect=fade
+#
+#[background-colors]
+#  100,50,20
+
 
 [cdrecord]
 

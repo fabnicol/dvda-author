@@ -1098,9 +1098,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             globals.topmenu=Min(globals.topmenu, RUN_SPUMUX_DVDAUTHOR);
             break;
 
-
-
-
         case 'B':
             printf("%s%s\n", "[PAR]  background mpg video: ", optarg);
             if (img->backgroundmpg == NULL)
@@ -1134,7 +1131,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
 
-
         case 'Q':
 
             if (img->backgroundmpg)
@@ -1147,7 +1143,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             img->soundtrack=strndup(optarg, MAX_OPTION_LENGTH);
             globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             break;
-
 
 
         case 'Y':
@@ -1381,8 +1376,16 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         }
     }
+
+
+
+
     change_directory(globals.settings.workdir);
+
+/* Here it is necessary to chack and normalize: temporary directory, number of menus before copying files and allocating new memory */
+
 // Cleaning operations
+
     if (user_command_line)
     {
         errno=0;
@@ -1484,6 +1487,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 
 
+
     maxbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)/img->nmenus;
     resbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)%img->nmenus;
 
@@ -1501,7 +1505,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 
 
-// Now possible overrides once img->nmenus and default tempdir values are known:
+/* Fifth pass: it is now possible to safely copy files to temporary directory for menu and still pic creation  */
+
+// First parsing for input files (pics and mpgs)
+
     char * str=NULL;
     optind=0;
     opterr=1;
@@ -1648,6 +1655,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case 2:
 
+
             printf("%s%s\n", "[PAR]  Background color(s) for top (and active) menus : ", optarg);
             str=strdup(optarg);
 
@@ -1669,9 +1677,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         }
     }
 
-
+// Now copying to temporary directory, depending on type of menu creation, trying to minimize work, depending of type of disc build.
 
     char* dest;
+
+   // Operations related to top menu creation
 
     switch (globals.topmenu)
     {
@@ -1702,7 +1712,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Failed to copy background .png blankscreen to temporary directory.")
 
-            normalize_temporary_paths(img);
+        normalize_temporary_paths(img);
 
         change_directory(globals.settings.workdir);
 
@@ -1734,6 +1744,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         if (img->tsvob)
         {
             errno=0;
+            prs(img->tsvob)
             FILE *f;
             if ((f=fopen(img->tsvob, "rb")) != NULL)
             {
@@ -1741,28 +1752,25 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 puts("[MSG]  --> top vob requirement...OK");
             }
 
+
         }
         break;
-
-
-
-
 
     default:
         errno=1;
     }
 
 
-    if (errno)
-    {
 
+    if ((errno)&&(user_command_line))
+    {
         printf("%s\n", "[WAR]  Not enough information. Continuing with automatic menu authoring...");
         globals.topmenu=AUTOMATIC_MENU;
         errno=0;
     }
 
 
-// This had to be postponed after command line parsing owing to tempdir chain user input
+    // Operations related to stills
 
 stillpic_parsing:
 
@@ -1841,6 +1849,9 @@ stillpic_parsing:
 
     }
 
+
+    // Final standard checks
+
 standard_checks:
 
     if (nplaygroups > ngroups-nvideolinking_groups)
@@ -1861,8 +1872,6 @@ standard_checks:
     // number of audio groups=ngroups-nvideolinking_groups
 
     // End of coherence checks
-
-
 
     command_t command0=
     {
@@ -1886,6 +1895,8 @@ standard_checks:
 
     return(command);
 }
+
+
 
 #ifndef WITHOUT_FIXWAV
 void fixwav_parsing(char *ssopt)

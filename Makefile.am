@@ -23,7 +23,7 @@ ACLOCAL_AMFLAGS=-I m4 --install
 .PHONY: do_sox_lib_deps_subst
 
 
-all: stamprecord0 stamprecord1 stamprecord2 stamprecord3 stamprecord4 stamprecord5 stamprecord6 do_sox_lib_deps_subst
+all: stamprecord0 stamprecord1 stamprecord2 stamprecord3 stamprecord4 stamprecord5 stamprecord6 stamprecord7 do_sox_lib_deps_subst
 
 
 # directly patching the Makefile appears to be more efficient. You nee a GNU-compliant make.
@@ -41,7 +41,7 @@ endif
 stamprecord0: Makefile
 	if test -f stamprecord0; then rm -f stamprecord0; fi; touch stamprecord0
 if HAVE_OGG_BUILD
-	cd ${MAYBE_OGG} &&  ${SHELL} configure ${CONFIGURE_OGG_FLAGS} && $(MAKETOOL) -j4 && $(MAKETOOL) install ; cd -
+	cd ${MAYBE_OGG} &&  ${SHELL} configure ${CONFIGURE_OGG_FLAGS} && $(MAKETOOL) -j4 -k && $(MAKETOOL) install ; cd -
 endif
 
 
@@ -68,7 +68,7 @@ stamprecord3: Makefile
 if HAVE_AUTOMAKE
 if HAVE_AUTOCONF
 if HAVE_DVDAUTHOR_BUILD
-	cp -r ${ROOTDIR}/m4.extra.dvdauthor ${MAYBE_DVDAUTHOR}/srcm4 && cd ${MAYBE_DVDAUTHOR} && autoreconf -i -Isrcm4 && ${SHELL} configure  --prefix=${prefix} && $(MAKETOOL) -j4 ; cd -
+	cp -r ${ROOTDIR}/m4.extra.dvdauthor ${MAYBE_DVDAUTHOR}/srcm4 && cd ${MAYBE_DVDAUTHOR} && autoreconf -i -Isrcm4 && ${SHELL} configure  --prefix=${prefix} && $(MAKETOOL) -j4 -k ; cd -
 endif
 endif
 endif
@@ -76,22 +76,28 @@ endif
 stamprecord4: Makefile
 	if test -f stamprecord4; then rm -f stamprecord4; fi; touch stamprecord4
 if HAVE_CDRTOOLS_BUILD
-	cd ${MAYBE_CDRTOOLS} && $(MAKETOOL) -j4 ; cd - ;
+	cd ${MAYBE_CDRTOOLS} && $(MAKETOOL) -j4 -k ; cd - ;
 endif
 
 stamprecord5: Makefile
 	if test -f stamprecord5; then rm -f stamprecord5; fi; touch stamprecord5
 if HAVE_MJPEGTOOLS_BUILD
-	cd ${MAYBE_MJPEGTOOLS} && ${SHELL} configure --prefix=${prefix} && $(MAKETOOL) -j4 ; cd - ;
+	cd ${MAYBE_MJPEGTOOLS} && ${SHELL} configure --prefix=${prefix} && $(MAKETOOL) -j4 -k ; cd - ;
 endif
 
 
 stamprecord6: Makefile
 	if test -f stamprecord6; then rm -f stamprecord6; fi; touch stamprecord6
 if HAVE_HELP2MAN_BUILD
-	cd ${MAYBE_HELP2MAN} && ${SHELL} configure --prefix=${prefix} && $(MAKETOOL) -j4 ; cd - ;
+	cd ${MAYBE_HELP2MAN} && ${SHELL} configure --prefix=${prefix} && $(MAKETOOL) -j4 -k ; cd - ;
 endif
 
+stamprecord7: Makefile
+	if test -f stamprecord7; then rm -f stamprecord7; fi; touch stamprecord7
+#Here again a script is oddly requested.
+if HAVE_MAGICK_BUILD
+	chmod +x script2 && ${SHELL} script2
+endif
 
 dvda-author.1:
 if HAVE_HELP2MAN
@@ -156,7 +162,10 @@ endif
 if HAVE_MJPEGTOOLS_BUILD
 	 cd ${MAYBE_MJPEGTOOLS}; $(MAKETOOL) install; cd - ;
 endif
-          
+if HAVE_MAGICK_BUILD
+	 cd ${MAYBE_MAGICK}; $(MAKETOOL) install; cd - ;
+endif
+
 
 # redefining install is necessary to rename nested package directories for later builds with --enable-all-builds, which request lib* labelling
 
