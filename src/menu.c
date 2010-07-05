@@ -536,8 +536,6 @@ int launch_spumux(pic* img)
         if (globals.debugging) printf("[INF]  Creating menu %d from Xml file %s\n",menu+1, globals.spu_xml[menu]);
         char *argsspumux[]= {"spumux", "-v", "2", globals.spu_xml[menu], NULL};
 
-        prs(img->backgroundmpg[menu])
-
         // This is to hush up dvdauthor's stdout messages, which interfere out of sequential order with main application stdout messages
         // and anyway could not be logged by  -l;
         // with normal verbosity, stdout messages end up in a tube's dead end, otherwise they are retrieved at the other end on stdout.

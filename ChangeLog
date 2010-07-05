@@ -1,3 +1,8 @@
+2010-07-05  Fabrice Nicol
+	* Add several --enable configure options for auxiliary builds
+	* Fix NTSC and temporary directory issues
+	* TODO: build on windows
+
 2010-06-28  Fabrice NICOL  <fabnicol@users.sourceforge.net>
  	* Cut down --topmenu-palette to 3 suboptions, change in separators (, -> :)
 	* Add: --background-colors in rgb mode, as meny menus.

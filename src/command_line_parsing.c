@@ -1324,7 +1324,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 img->blankscreen=strdup(DEFAULT_BLANKSCREEN_NTSC);
                 img->backgroundpic[0]=strdup(DEFAULT_BACKGROUNDPIC_NTSC);
                 system("pwd");
-                prs(img->blankscreen)
+
             }
             else if ((strcasecmp(optarg,"pal") != 0) && (strcasecmp(optarg,"secam") != 0))
             {
@@ -1744,7 +1744,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         if (img->tsvob)
         {
             errno=0;
-            prs(img->tsvob)
+
             FILE *f;
             if ((f=fopen(img->tsvob, "rb")) != NULL)
             {
