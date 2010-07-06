@@ -23,7 +23,7 @@ ACLOCAL_AMFLAGS=-I m4 --install
 .PHONY: do_sox_lib_deps_subst
 
 
-all: stamprecord0 stamprecord1 stamprecord2 stamprecord3 stamprecord4 stamprecord5 stamprecord6 stamprecord7 do_sox_lib_deps_subst
+all: stamprecord0 stamprecord1 stamprecord2 stamprecord3 stamprecord4 stamprecord5 stamprecord6 stamprecord7 stamprecord8 do_sox_lib_deps_subst
 
 
 # directly patching the Makefile appears to be more efficient. You nee a GNU-compliant make.
@@ -99,6 +99,12 @@ if HAVE_MAGICK_BUILD
 	chmod +x script2 && ${SHELL} script2
 endif
 
+stamprecord8: Makefile
+	if test -f stamprecord8; then rm -f stamprecord8; fi; touch stamprecord8
+if HAVE_LPLEX_BUILD
+	cd ${MAYBE_LPLEX} && ${SHELL} configure ${CONFIGURE_LPLEX_FLAGS} && $(MAKETOOL) -j4 -k ; cd - ;
+endif
+
 dvda-author.1:
 if HAVE_HELP2MAN
 	${HELP2MAN} -s 1 -N -o ${top_srcdir}/dvda-author.1 ${top_srcdir}/src/dvda
@@ -165,7 +171,9 @@ endif
 if HAVE_MAGICK_BUILD
 	 cd ${MAYBE_MAGICK}; $(MAKETOOL) install; cd - ;
 endif
-
+if HAVE_LPLEX_BUILD
+	 cd ${MAYBE_LPLEX}; $(MAKETOOL) install; cd - ;
+endif
 
 # redefining install is necessary to rename nested package directories for later builds with --enable-all-builds, which request lib* labelling
 

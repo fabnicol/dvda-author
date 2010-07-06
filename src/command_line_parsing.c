@@ -25,7 +25,9 @@
 #endif
 #include "command_line_parsing.h"
 #include "menu.h"
-
+#if defined HAVE_LPLEX || HAVE_LPLEX_BUILD
+#include "sound.h"
+#endif
 
 
 /*  #define _GNU_SOURCE must appear before <string.h> and <getopt.h> for strndup  and getopt_long*/
@@ -1136,29 +1138,37 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 
         case 'Q':
-#if 0
+
+#if defined HAVE_LPLEX || HAVE_LPLEX_BUILD
+
             if (img->backgroundmpg)
             {
                 printf("%s\n", "[ERR]  Background mpg file already specified, skipping...");
                 break;
             }
-            free(img->soundtrack);
+
             printf("%s%s\n", "[PAR]  soundtrack to be muxed into background mpg video: ", optarg);
 
-            errno=audit_soudtrack(optarg);
+            errno=audit_soundtrack(optarg);
 
             if (errno) { printf("%s", "[WAR]  Resetting soundtrack input to default soundtrack...\n"); }
             else
             {
+              free(img->soundtrack);
               img->audioformat=strdup("pcm");
               img->soundtrack=strdup(optarg);
+              launch_lplex_soundtrack(img);
             }
             errno=0;
 
 
             globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
-#endif
+
             printf("[WARN]  This option is under development, pending further developments of dependencies (lplex).\n ");
+#else
+            printf("%s", "[ERR]  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+#endif
+
             break;
 
 
@@ -1340,7 +1350,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 free(img->blankscreen);
                 img->blankscreen=strdup(DEFAULT_BLANKSCREEN_NTSC);
                 img->backgroundpic[0]=strdup(DEFAULT_BACKGROUNDPIC_NTSC);
-                system("pwd");
+
 
             }
             else if ((strcasecmp(optarg,"pal") != 0) && (strcasecmp(optarg,"secam") != 0))

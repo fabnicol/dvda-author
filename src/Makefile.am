@@ -17,7 +17,7 @@ bin_PROGRAMS=dvda
 
 dvda_SOURCES=amg2.c ats.c atsi2.c audio.c auxiliary.c dvda-author2.c  \
              file_input_parsing.c samg2.c videoimport.c launch_manager.c command_line_parsing.c  \
-             lexer.c menu.c asvs.c xml.c
+             lexer.c menu.c asvs.c xml.c sound.c
 
 AM_LDFLAGS= -lm -L/usr/local/lib -L/usr/lib
 

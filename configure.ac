@@ -310,6 +310,7 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
                     dvdauthor   ....$DVDAUTHOR_BUILD
                     help2man    ....$HELP2MAN_BUILD
                     ImageMagick ....$MAGICK_BUILD
+                    lplex       ....$LPLEX_BUILD
 ])
 
 
@@ -369,6 +370,7 @@ AC_MSG_RESULT([[
     mogrify:.......................$MOGRIFY
     convert:.......................$CONVERT
     make:..........................$make
+    lplex: ........................$LPLEX
 
   These tools should all be installed to enable advanced dvda-author features.
 

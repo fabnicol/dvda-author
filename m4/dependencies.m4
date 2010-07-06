@@ -32,6 +32,7 @@ m4_map([DVDA_TEST_AUX],[
 	[[autoconf],  [configure system build: autoconf]],
 	[[automake],  [make system build: automake]],
         [[smake],     [using smake instead of GNU make]],
+        [[lplex],     [using lplex to mux lpcm audio and video]],
         [[make],      [whether make is installed]]])
 
 
@@ -49,7 +50,7 @@ m4_map([DVDA_TEST_AUX],[
 
 
 
-    m4_map([DVDA_ARG_ENABLE],[[[iberty-build]],[[ogg-build]],[[flac-build]],[[sox-build]],[[help2man-build]], [[mjpegtools-build]], [[magick-build],[DVDA_INF([MAGICK_MSG])]], [[all-builds]],[[dvdauthor-build]],[[cdrtools-build]],[[static-sox],[
+    m4_map([DVDA_ARG_ENABLE],[[[iberty-build]],[[ogg-build]],[[flac-build]],[[sox-build]],[[help2man-build]],[[lplex-build]],[[mjpegtools-build]], [[magick-build],[DVDA_INF([MAGICK_MSG])]], [[all-builds]],[[dvdauthor-build]],[[cdrtools-build]],[[static-sox],[
                               DVDA_INF([SOX_STATIC_MSG])
 			      SOX_LINK="$SOX_LINK -lasound -lpng -lz -lltdl -lmagic -lsamplerate"
 			      SOX_LIB="/usr/lib/libsox.a `find /usr/lib/sox/ -regex lib.*a`"]]] )
@@ -93,7 +94,8 @@ m4_map([DVDA_TEST_AUX],[
             [[ogg-download],   [1.1.4],      [http://dvd-audio.sourceforge.net/utils],[],                                                [],     [],                                       [6c68b14485fccdb6a2a14109185dd816]],
             [[mjpegtools-patch], [1.9.0],    [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches/mjpegtools], [mjpeg],[mjpegtools/1.9.0], [309a6fcf0900a010d6a9c1e91afc2f5c]],
             [[help2man-download],[1.36.4],   [http://dvd-audio.sourceforge.net/utils],[],[],[], [d31a0a38c2ec71faa06723f6b8bd3076]],
-            [[magick-download], [6.6.3],     [http://dvd-audio.sourceforge.net/utils],[],[],[], [2984b2c8c3fb9fc5335e6f42fea7911c]]])
+            [[magick-download], [6.6.3],     [http://dvd-audio.sourceforge.net/utils],[],[],[], [2984b2c8c3fb9fc5335e6f42fea7911c]],
+            [[lplex-download], [0.3],    [http://dvd-audio.sourceforge.net/utils],[],[],[],[cd0c5e72460a7ab5e57f660d84ff48ce]]])
 
     m4_map([DVDA_ARG_ENABLE_DOWNLOAD],[
             DOWNLOAD_OPTIONS,
@@ -124,7 +126,7 @@ m4_map([DVDA_TEST_AUX],[
 
     # installing binaries, normally executables
 
-    DVDA_CONF_SUBDIRS([[[[DVDAUTHOR],[dvdauthor-0.6.14]]], [[[CDRTOOLS],[cdrtools-3.00]]], [[[MJPEGTOOLS], [mjpegtools-1.9.0]]], [[[HELP2MAN], [help2man-1.36.4]]], [[[MAGICK], [magick-6.6.3]]]])
+    DVDA_CONF_SUBDIRS([[[[DVDAUTHOR],[dvdauthor-0.6.14]]], [[[CDRTOOLS],[cdrtools-3.00]]], [[[MJPEGTOOLS], [mjpegtools-1.9.0]]], [[[LPLEX], [lplex-0.3]], [--prefix=$prefix --disable-shared]],[[[HELP2MAN], [help2man-1.36.4]]], [[[MAGICK], [magick-6.6.3]]]])
 
     # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
 
@@ -137,6 +139,7 @@ m4_map([DVDA_TEST_AUX],[
 
     DVDA_CONF_SUBDIRS_NOINSTALL([[[[IBERTY],[libiberty]]], [[[FIXWAV],[libfixwav]]]])
 
+    #DVDA_CONFIG([[[[LPLEX],[lplex]],  [--prefix=$prefix --disable-shared]]])
 
 
 

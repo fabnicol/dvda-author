@@ -1639,3 +1639,18 @@
 	<stdio.h>
 	<sys/types.h>
 
+1278443991 source:/home/fab/Dev/dvda-author-10.06/src/sound.c
+	"config.h"
+	"sound.h"
+	"fixwav.h"
+	"c_utils.h"
+	"auxiliary.h"
+	"fixwav_manager.h"
+	"launch_manager.h"
+	<errno.h>
+	<stdlib.h>
+
+1278442868 /home/fab/Dev/dvda-author-10.06/src/sound.h
+	"structures.h"
+	<stdio.h>
+
