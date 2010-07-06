@@ -26,10 +26,8 @@
 [g]
        /home/fab/a.wav
        /home/fab/a.wav
+
 [g]
-
-
-
        /home/fab/a.wav
 
 [output]
@@ -41,17 +39,18 @@
 # group text and track text. Skip no lines between tracks.
 # No need for quotes anywhere.
 
-#[topvob]
-#    /home/fab/Dev/dvda-author-10.06/AUDIO_TS.VOB
-
 #[background-mpg]
 #   /home/fab/Dev/test/background2.mpg
 
-[topvob]
-   /home/fab/Dev/test/AUDIO_TS.VOB
+#[topvob]
+#   /home/fab/Dev/test/AUDIO_TS.VOB
+
+[topmenu]
+
+[soundtrack]
+  /home/fab/audionew/a.wav
 
 [veryverbose]
-
 
 [tempdir]
   /home/fab/tempdir3

@@ -260,7 +260,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
         sprintf(soundtrack, "%s"SEPARATOR"%s", globals.settings.tempdir, "soundtrack");
         unlink(soundtrack);
         errno=0;
-        copy_file(img->soundtrack, soundtrack);
+        copy_file(img->soundtrack[0], soundtrack);
 
 
         // using freopen to redirect is safer here

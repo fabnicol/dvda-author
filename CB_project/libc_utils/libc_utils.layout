@@ -2,10 +2,10 @@
 <CodeBlocks_layout_file>
 	<ActiveTarget name="" />
 	<File name="../../libutils/src/c_utils.c" open="1" top="0" tabpos="1">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="10324" topLine="355" />
 	</File>
 	<File name="../../libutils/src/include/c_utils.h" open="1" top="0" tabpos="2">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="3470" topLine="115" />
 	</File>
 	<File name="../../libutils/src/include/export.h" open="1" top="0" tabpos="3">
 		<Cursor position="0" topLine="0" />

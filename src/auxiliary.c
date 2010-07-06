@@ -163,7 +163,8 @@ printf("%s","-y, --topmenu-colors string     Text for menu colors. This is a dev
 printf("%s","-b, --background         Background jpg files (comma-separated) to create a background mpg file"J"into which titles are multiplexed."J"Specify as many files as there are menus, or the last file will be duplicated for missing menu files.\n\n");
 printf("%s","    --background-colors  Background RGB colors to colorize background mpg files"J"into which titles are multiplexed."J"Specify as many colors as there are menus, or the last color will be duplicated for missing menu colors."J"Syntax is r,g,b:r2,g2,b2:...:rk,gkbk for --nmenus=k.\n\n");
 printf("%s","-B, --background-mpg list  Background mpg file(s) in a comma-separated list"J"into which titles are multiplexed.\n\n");
-printf("%s","-Q, --soundtrack file    Background wav file f"J"to be multiplexed into background menu that must be supplied with -B or created with -b."J"By default a silent track will be multiplexed.\n\n");
+printf("%s","    --topmenu-slides file(s) .jpg image files to be multiplexed with sound tracks (see option below) into a slideshow."J"By default a black screen will be used."J"Each menu screen should have at least one associated .jpg slide. List of slides is comma-separated for each menu."J"Menu lists are colon-separated: menu1_pic1,menu1_pic2:menu2_pic1,menu2_pic2, etc.\n\n");
+printf("%s","-Q, --soundtracks file(s)Background wav file(s)"J"to be multiplexed into a slideshow, with option --topmenu-slides."J"By default a silent track will be multiplexed."J"Each menu screen should have its own sound track. List of tracks is comma-separated.\n\n");
 printf("%s","-A, --topvob f           Import already authored top vob menu f.\n\n");
 printf("%s","-0, --menustyle desc     Specifies top menu style"J"By default, tracks are listed under group headers."J"If desc='hierarchical', the first menu screen lists groups."J"If desc='active', all tracks will have an associated still picture with menu links that remain active while listening to the track.\n\n");
 printf("%s","-1, --stillvob f         Import already authored still pictures vob.\n\n");
@@ -507,9 +508,9 @@ void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size)
 // It fills in an array of strings with extracted substrings, heap-allocating just what is requested: do not forget to free memory when possible.
 // Array is NULL-terminated.
 // Also, for each substring s, action f can optionally be performed on s, which may save loops.
-// action f is always performed when f is not NULL, and breaks the extraction loop if f returns 0 on string. f takes a counter as third arg.
+// action f is always performed when f is not NULL, and breaks the extraction loop if f returns 0 on string. f takes a counter as second arg.
 // function's last arg is the remainder of non-cut chain (after all f-loops)
-// Returns -1 on error or number of extracted substrings (without NULL)
+// Returns NULL on error or array of extracted strings
 // remainder should be allocated prior to call
 
 char** fn_strtok(char* chain, char delim, char** array, uint32_t count, int  (*f)(char*, uint32_t ), char* remainder)
@@ -570,7 +571,10 @@ int cutloop(char* s, uint32_t count)
 {
     static uint32_t loop;
     loop++;
-    return (count > loop);
+    if (count > loop) return 1;
+    else
+     loop=0;
+    return 0;
 }
 
 int arraylength(char ** tab)

@@ -190,7 +190,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"background", required_argument, NULL, 'b'},
         {"background-colors", required_argument, NULL, 2},
         {"background-mpg", required_argument, NULL, 'B'},
-        {"soundtrack", required_argument, NULL, 'Q'},
+        {"soundtracks", required_argument, NULL, 'Q'},
         {"topmenu-colors", required_argument, NULL, 'y'},
         {"topmenu-palette", required_argument, NULL, 'Y'},
         {"blankscreen", required_argument, NULL, 'N'},
@@ -208,6 +208,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"bindir",required_argument, NULL, 3},
         {"no-refresh-tempdir",no_argument, NULL, 4},
         {"no-refresh-outdir",no_argument, NULL, 5},
+        {"topmenu-slides",required_argument, NULL, 6},
         {NULL, 0, NULL, 0}
     };
 #endif
@@ -286,10 +287,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                 case 'l' :
 
-                     #ifdef __WIN32__
-                     printf("[WAR]  This option is currenlty unsupported for Windows.\n\n");
-                     break;
-                     #endif
+#ifdef __WIN32__
+                    printf("[WAR]  This option is currenlty unsupported for Windows.\n\n");
+                    break;
+#endif
 
                     if (optarg)
                     {
@@ -754,7 +755,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             printf("[PAR]  Using data directory %s\n", optarg);
             strlength=strlen(optarg);
             img->soundtrack=realloc(img->soundtrack, (strlength+1+1+16)*sizeof(char)); // "silence.wav"
-            if (img->soundtrack) sprintf(img->soundtrack, "%s"SEPARATOR"%s", optarg, "menu"SEPARATOR"silence.wav");
+            if (img->soundtrack[0]) sprintf(img->soundtrack[0], "%s"SEPARATOR"%s", optarg, "menu"SEPARATOR"silence.wav");
             img->activeheader=realloc(img->activeheader, (strlength+1+1+17)*sizeof(char));  // activeheader
             if (img->activeheader) sprintf(img->activeheader, "%s"SEPARATOR"%s", optarg, "menu"SEPARATOR"activeheader");
             free(globals.settings.datadir);
@@ -1137,39 +1138,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
 
-        case 'Q':
 
-#if defined HAVE_LPLEX || HAVE_LPLEX_BUILD
-
-            if (img->backgroundmpg)
-            {
-                printf("%s\n", "[ERR]  Background mpg file already specified, skipping...");
-                break;
-            }
-
-            printf("%s%s\n", "[PAR]  soundtrack to be muxed into background mpg video: ", optarg);
-
-            errno=audit_soundtrack(optarg);
-
-            if (errno) { printf("%s", "[WAR]  Resetting soundtrack input to default soundtrack...\n"); }
-            else
-            {
-              free(img->soundtrack);
-              img->audioformat=strdup("pcm");
-              img->soundtrack=strdup(optarg);
-              launch_lplex_soundtrack(img);
-            }
-            errno=0;
-
-
-            globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
-
-            printf("[WARN]  This option is under development, pending further developments of dependencies (lplex).\n ");
-#else
-            printf("%s", "[ERR]  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
-#endif
-
-            break;
 
 
         case 'Y':
@@ -1409,7 +1378,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     change_directory(globals.settings.workdir);
 
-/* Here it is necessary to chack and normalize: temporary directory, number of menus before copying files and allocating new memory */
+    /* Here it is necessary to chack and normalize: temporary directory, number of menus before copying files and allocating new memory */
 
 // Cleaning operations
 
@@ -1539,7 +1508,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 
 
-/* Fifth pass: it is now possible to safely copy files to temporary directory for menu and still pic creation  */
+    /* Fifth pass: it is now possible to safely copy files to temporary directory for menu and still pic creation  */
 
 // First parsing for input files (pics and mpgs)
 
@@ -1555,6 +1524,74 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     {
         switch (c)
         {
+        case 'Q':
+
+#if defined HAVE_LPLEX || HAVE_LPLEX_BUILD
+
+            if (img->backgroundmpg)
+            {
+                printf("%s\n", "[ERR]  Background mpg file already specified, skipping...");
+                break;
+            }
+
+            printf("%s%s\n", "[PAR]  soundtrack to be muxed into background mpg video: ", optarg);
+
+            if (errno)
+            {
+                printf("%s", "[WAR]  Resetting soundtrack input to default soundtrack...\n");
+            }
+            else
+            {
+                free(img->soundtrack);
+                img->audioformat=strdup("pcm");
+
+                img->soundtrack=fn_strtok(optarg, ',', img->soundtrack, img->nmenus, cutloop, NULL);
+
+                for (u=0; u < img->nmenus; u++)
+                      errno+=audit_soundtrack(img->soundtrack[u]);
+
+
+
+                launch_lplex_soundtrack(img);
+                globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+            }
+            errno=0;
+#else
+            printf("%s", "[ERR]  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+#endif
+            break;
+
+
+        case 6 :
+
+            img->topmenu_slide=calloc(img->nmenus, sizeof(char**));
+
+            if (!img->topmenu_slide) break;
+            else
+            {
+
+            char** str=NULL;
+            errno=0;
+
+            str=fn_strtok(optarg, ':', str, img->nmenus, cutloop, NULL);
+
+            if (!str)
+            {
+               img->topmenu_slide[0]=calloc(1, sizeof(char*));
+               img->topmenu_slide[0][0]=strdup(img->backgroundpic[0]);
+               img->topmenu_nslides[0]=1;
+               errno=0;
+            }
+
+
+            for (u=0; u < img->nmenus; u++)
+             {
+               img->topmenu_slide[u]=fn_strtok(str[u], ',', img->topmenu_slide[u], 0,NULL, NULL);
+               img->topmenu_nslides[u]=arraylength(img->topmenu_slide[u]);
+            }
+            }
+
+            break;
 
         case 'b':
 
@@ -1718,35 +1755,35 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     _Bool menupic_input_coherence_test=0;
 
     if ((img->imagepic) && (img->highlightpic) && (img->selectpic))
-       {
-               for (u=0;  u < img->nmenus; u++)
-               {
-                if ((img->imagepic[u]) && (img->highlightpic[u]) && (img->selectpic[u]))
-                {
-                   path_t *i,*h,*s;
-                   i=parse_filepath(img->imagepic[u]);
-                   h=parse_filepath(img->highlightpic[u]);
-                   s=parse_filepath(img->selectpic[u]);
+    {
+        for (u=0;  u < img->nmenus; u++)
+        {
+            if ((img->imagepic[u]) && (img->highlightpic[u]) && (img->selectpic[u]))
+            {
+                path_t *i,*h,*s;
+                i=parse_filepath(img->imagepic[u]);
+                h=parse_filepath(img->highlightpic[u]);
+                s=parse_filepath(img->selectpic[u]);
 
-                   if ((i->exists) && (h->exists) && (s->exists))
-                       menupic_input_coherence_test=1;
-                }
-                else
+                if ((i->exists) && (h->exists) && (s->exists))
+                    menupic_input_coherence_test=1;
+            }
+            else
+            {
+                if ((img->imagepic[u]) || (img->highlightpic[u]) || (img->selectpic[u]))
                 {
-                        if ((img->imagepic[u]) || (img->highlightpic[u]) || (img->selectpic[u]))
-                        {
-                              printf("[WAR]  You should enter three menu-authoring custom-made .png pictures, for main image, highlight and select action.\nn       Reverting to automatic mode.\n\n");
-                              globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
-                        }
+                    printf("[WAR]  You should enter three menu-authoring custom-made .png pictures, for main image, highlight and select action.\nn       Reverting to automatic mode.\n\n");
+                    globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
                 }
-               }
-       }
+            }
+        }
+    }
 
-   // Now copying to temporary directory, depending on type of menu creation, trying to minimize work, depending of type of disc build.
+    // Now copying to temporary directory, depending on type of menu creation, trying to minimize work, depending of type of disc build.
 
     char* dest;
 
-   // Operations related to top menu creation
+    // Operations related to top menu creation
 
     switch (globals.topmenu)
     {
@@ -1769,7 +1806,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
         if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Failed to copy background .jpg pictures to temporary directory.")
 
-     case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
+        case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
 
         change_directory(globals.settings.datadir);
 
@@ -1777,8 +1814,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Failed to copy background .png blankscreen to temporary directory.")
 
-        if (!menupic_input_coherence_test)
-            normalize_temporary_paths(img);
+            if (!menupic_input_coherence_test)
+                normalize_temporary_paths(img);
 
         change_directory(globals.settings.workdir);
 
