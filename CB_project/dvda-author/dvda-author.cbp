@@ -98,7 +98,7 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="--project ~/Dev/dvda-author-10.06/dvda-author3.dap" />
+				<Option parameters="--project ~/Dev/dvda-author-10.06/dvda-author2.dap" />
 				<Option projectCompilerOptionsRelation="2" />
 				<Compiler>
 					<Add option="-march=i686" />

@@ -183,7 +183,6 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
 {
     // Here authoring top VOB
     // first generate pics if necessary and background mpg from them
-
     int menu=0;
 
     char outfile[strlen(audiotsdir)+14];
@@ -205,7 +204,6 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
 
     case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
 
-        if ((!img->highlightpic)||(!img->selectpic)||(!img->imagepic))
             generate_menu_pics(img, ngroups, ntracks, maxntracks);
 
         // calling xml project file subroutine for dvdauthor

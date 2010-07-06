@@ -1144,7 +1144,18 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
             free(img->soundtrack);
             printf("%s%s\n", "[PAR]  soundtrack to be muxed into background mpg video: ", optarg);
-            img->soundtrack=strndup(optarg, MAX_OPTION_LENGTH);
+
+            errno=audit_soudtrack(optarg);
+
+            if (errno) { printf("%s", "[WAR]  Resetting soundtrack input to default soundtrack...\n"); }
+            else
+            {
+              img->audioformat=strdup("pcm");
+              img->soundtrack=strdup(optarg);
+            }
+            errno=0;
+
+
             globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
 #endif
             printf("[WARN]  This option is under development, pending further developments of dependencies (lplex).\n ");
@@ -1492,7 +1503,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         if ((img->ncolumns)*ngroups < img->nmenus-1)
         {
-            printf("%s", "[WAR]  Hierarchical menus should have at most %d*%d+1=%d menus...\n       Resetting value for --nmenus=%d\n", img->ncolumns, ngroups, img->ncolumns*ngroups+1, img->ncolumns*ngroups+1);
+            printf("[WAR]  Hierarchical menus should have at most %d*%d+1=%d menus...\n       Resetting value for --nmenus=%d\n", img->ncolumns, ngroups, img->ncolumns*ngroups+1, img->ncolumns*ngroups+1);
             img->nmenus=ngroups*img->ncolumns+1;
         }
 
@@ -1693,6 +1704,34 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         }
     }
 
+
+    _Bool menupic_input_coherence_test=0;
+
+    if ((img->imagepic) && (img->highlightpic) && (img->selectpic))
+       {
+               for (u=0;  u < img->nmenus; u++)
+               {
+                if ((img->imagepic[u]) && (img->highlightpic[u]) && (img->selectpic[u]))
+                {
+                   path_t *i,*h,*s;
+                   i=parse_filepath(img->imagepic[u]);
+                   h=parse_filepath(img->highlightpic[u]);
+                   s=parse_filepath(img->selectpic[u]);
+
+                   if ((i->exists) && (h->exists) && (s->exists))
+                       menupic_input_coherence_test=1;
+                }
+                else
+                {
+                        if ((img->imagepic[u]) || (img->highlightpic[u]) || (img->selectpic[u]))
+                        {
+                              printf("[WAR]  You should enter three menu-authoring custom-made .png pictures, for main image, highlight and select action.\nn       Reverting to automatic mode.\n\n");
+                              globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+                        }
+                }
+               }
+       }
+
    // Now copying to temporary directory, depending on type of menu creation, trying to minimize work, depending of type of disc build.
 
     char* dest;
@@ -1728,7 +1767,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Failed to copy background .png blankscreen to temporary directory.")
 
-        normalize_temporary_paths(img);
+        if (!menupic_input_coherence_test)
+            normalize_temporary_paths(img);
 
         change_directory(globals.settings.workdir);
 
