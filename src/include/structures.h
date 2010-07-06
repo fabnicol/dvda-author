@@ -107,9 +107,10 @@ typedef struct
     char** backgroundcolors;
     char* activeheader;
     char** topmenu;
+    char*** topmenu_slide;
     char* stillvob;
     char* tsvob;
-    char* soundtrack;
+    char** soundtrack;
     char* audioformat;
     char* albumcolor;
     char* groupcolor;
@@ -147,6 +148,7 @@ typedef struct
     uint8_t ncolumns;
     uint16_t count;
     uint16_t* npics;
+    uint16_t* topmenu_nslides;
     uint32_t* stillpicvobsize;
     uint32_t* menuvobsize;
     stilloptions** options;

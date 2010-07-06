@@ -115,6 +115,7 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 					<Add option="-DALWAYS_INLINE" />
 					<Add option="-DHAVE_UNISTD_H" />
 					<Add option="-DHAVE_DVDAUTHOR_PATCH" />
+					<Add option="-DHAVE_LPLEX" />
 					<Add directory="../../src/include" />
 					<Add directory="../../libutils/src/include" />
 					<Add directory="../../libfixwav/src/include" />
@@ -252,6 +253,7 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 		<Unit filename="../../src/include/multichannel.h" />
 		<Unit filename="../../src/include/ports.h" />
 		<Unit filename="../../src/include/samg.h" />
+		<Unit filename="../../src/include/sound.h" />
 		<Unit filename="../../src/include/structures.h" />
 		<Unit filename="../../src/include/videoimport.h" />
 		<Unit filename="../../src/include/xml.h" />
@@ -268,6 +270,9 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../src/samg2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/sound.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../src/videoimport.c">

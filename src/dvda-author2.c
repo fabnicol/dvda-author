@@ -186,12 +186,15 @@ int main(int argc,  char* const argv[])
     // 4 for "/bin and be liberal and allow 25 more characters for the executable name.
 
     char *DATADIR;
+
     #ifdef __WIN32__
     DATADIR=strdup(currentdir);
     #else
     DATADIR=strdup(INSTALL_CONF_DIR);
     #endif
     char **BGPIC=calloc(2, sizeof(char*));
+    char* SNDT[1];
+    SNDT[0]=strdup(DEFAULT_SOUNDTRACK);
 
 
     BGPIC[0]=strdup(DEFAULT_BACKGROUNDPIC);
@@ -297,9 +300,10 @@ int main(int argc,  char* const argv[])
         NULL, //backgroundcolors
         strdup(DEFAULT_ACTIVEHEADER),
         NULL, //topmenu
+        NULL,
         NULL, //stillvob
         NULL, //tsvob
-        strdup(DEFAULT_SOUNDTRACK), //soundtrack  silence.wav
+        &SNDT[0], //soundtrack  silence.wav
         strdup(DEFAULT_AUDIOFORMAT),
         strdup(DEFAULT_ALBUMCOLOR), //top menu pic textcolor
         strdup(DEFAULT_GROUPCOLOR), //top menu pic textcolor
@@ -337,6 +341,7 @@ int main(int argc,  char* const argv[])
         DEFAULT_MENU_NCOLUMNS,
         0,  // pic count
         NULL, // npics table
+        NULL,
         NULL, // no still pic vob size
         NULL, // no menu vob size
         NULL // still pic options

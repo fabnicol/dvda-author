@@ -543,7 +543,7 @@
 	"getopt.h"
 	"getopt_int.h"
 
-1278298419 /home/fab/Dev/dvda-author-10.06//config.h
+1278447106 /home/fab/Dev/dvda-author-10.06//config.h
 
 1277481601 /home/fab/Dev/dvda-author-10.06/libglibc/src/include/getopt.h
 	<ctype.h>
@@ -617,11 +617,11 @@
 	"launch_manager.h"
 	"asvs.h"
 
-1278444263 /home/fab/Dev/dvda-author-10.06/src/include/commonvars.h
+1278449526 /home/fab/Dev/dvda-author-10.06/src/include/commonvars.h
 	"config.h"
 	"libiberty.h"
 
-1278372278 /home/fab/Dev/dvda-author-10.06/src/include/structures.h
+1278455115 /home/fab/Dev/dvda-author-10.06/src/include/structures.h
 	"stream_decoder.h"
 	"inttypes.h"
 
@@ -721,7 +721,7 @@
 	"structures.h"
 	"auxiliary.h"
 
-1278175315 source:/home/fab/Dev/dvda-author-10.06/src/auxiliary.c
+1278458604 source:/home/fab/Dev/dvda-author-10.06/src/auxiliary.c
 	"config.h"
 	<stdlib.h>
 	<stdio.h>
@@ -763,7 +763,7 @@
 1277481601 /home/fab/Dev/dvda-author-10.06/src/include/file_input_parsing.h
 	"auxiliary.h"
 
-1278372323 source:/home/fab/Dev/dvda-author-10.06/src/dvda-author2.c
+1278455513 source:/home/fab/Dev/dvda-author-10.06/src/dvda-author2.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -991,7 +991,7 @@
 
 1277481601 /home/fab/Dev/dvda-author-10.06/src/include/multichannel.h
 
-1278443479 source:/home/fab/Dev/dvda-author-10.06/src/command_line_parsing.c
+1278455436 source:/home/fab/Dev/dvda-author-10.06/src/command_line_parsing.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -1015,12 +1015,13 @@
 	"fixwav_manager.h"
 	"command_line_parsing.h"
 	"menu.h"
+	"sound.h"
 	<windows.h>
 
 1277481601 /home/fab/Dev/dvda-author-10.06/libfixwav/src/include/fixwav_auxiliary.h
 	"fixwav_manager.h"
 
-1278299320 source:/home/fab/Dev/dvda-author-10.06/src/menu.c
+1278455577 source:/home/fab/Dev/dvda-author-10.06/src/menu.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -1639,7 +1640,7 @@
 	<stdio.h>
 	<sys/types.h>
 
-1278443991 source:/home/fab/Dev/dvda-author-10.06/src/sound.c
+1278455745 source:/home/fab/Dev/dvda-author-10.06/src/sound.c
 	"config.h"
 	"sound.h"
 	"fixwav.h"
@@ -1651,6 +1652,10 @@
 	<stdlib.h>
 
 1278442868 /home/fab/Dev/dvda-author-10.06/src/sound.h
+	"structures.h"
+	<stdio.h>
+
+1278443068 /home/fab/Dev/dvda-author-10.06/src/include/sound.h
 	"structures.h"
 	<stdio.h>
 

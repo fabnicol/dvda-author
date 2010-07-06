@@ -139,7 +139,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 
 #ifndef LPLEX_BASENAME
-#define LPLEX_BASENAME "cdrecord"
+#define LPLEX_BASENAME "lplex"
 #endif
 
 #ifndef CDRECORD_BASENAME
