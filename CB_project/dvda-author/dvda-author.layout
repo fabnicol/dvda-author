@@ -2,7 +2,7 @@
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Release" />
 	<File name="../../ChangeLog" open="1" top="0" tabpos="1">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="4661" topLine="105" />
 	</File>
 	<File name="../../EXAMPLES" open="1" top="0" tabpos="2">
 		<Cursor position="0" topLine="0" />
@@ -32,10 +32,10 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../dvda-author2.dap" open="1" top="1" tabpos="11">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="1303" topLine="0" />
 	</File>
 	<File name="../../dvda-author3.dap" open="1" top="0" tabpos="12">
-		<Cursor position="2103" topLine="88" />
+		<Cursor position="1350" topLine="30" />
 	</File>
 	<File name="../../libats2wav/src/Makefile.am" open="1" top="0" tabpos="13">
 		<Cursor position="0" topLine="0" />
@@ -125,7 +125,7 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../src/amg2.c" open="1" top="0" tabpos="42">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="7229" topLine="180" />
 	</File>
 	<File name="../../src/asvs.c" open="1" top="0" tabpos="43">
 		<Cursor position="0" topLine="0" />
@@ -137,16 +137,16 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../src/audio.c" open="1" top="0" tabpos="46">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="12729" topLine="357" />
 	</File>
 	<File name="../../src/auxiliary.c" open="1" top="0" tabpos="47">
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../src/command_line_parsing.c" open="1" top="0" tabpos="48">
-		<Cursor position="51719" topLine="1447" />
+		<Cursor position="38780" topLine="1120" />
 	</File>
 	<File name="../../src/dvda-author2.c" open="1" top="0" tabpos="49">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="9915" topLine="277" />
 	</File>
 	<File name="../../src/file_input_parsing.c" open="1" top="0" tabpos="50">
 		<Cursor position="0" topLine="0" />
@@ -173,7 +173,7 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../src/include/commonvars.h" open="1" top="0" tabpos="58">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="8326" topLine="264" />
 	</File>
 	<File name="../../src/include/dvda-author.h" open="1" top="0" tabpos="59">
 		<Cursor position="0" topLine="0" />
@@ -203,7 +203,7 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../src/include/structures.h" open="1" top="0" tabpos="68">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="2615" topLine="93" />
 	</File>
 	<File name="../../src/include/videoimport.h" open="1" top="0" tabpos="69">
 		<Cursor position="0" topLine="0" />
@@ -230,6 +230,6 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../src/xml.c" open="1" top="0" tabpos="77">
-		<Cursor position="3434" topLine="87" />
+		<Cursor position="1190" topLine="33" />
 	</File>
 </CodeBlocks_layout_file>

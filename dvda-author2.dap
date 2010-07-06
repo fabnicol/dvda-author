@@ -44,8 +44,11 @@
 #[topvob]
 #    /home/fab/Dev/dvda-author-10.06/AUDIO_TS.VOB
 
-[background-mpg]
-   /home/fab/Dev/test/background.mpg
+#[background-mpg]
+#   /home/fab/Dev/test/background2.mpg
+
+[topvob]
+   /home/fab/Dev/test/AUDIO_TS.VOB
 
 [veryverbose]
 

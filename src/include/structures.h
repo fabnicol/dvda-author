@@ -110,6 +110,7 @@ typedef struct
     char* stillvob;
     char* tsvob;
     char* soundtrack;
+    char* audioformat;
     char* albumcolor;
     char* groupcolor;
     char* arrowcolor;

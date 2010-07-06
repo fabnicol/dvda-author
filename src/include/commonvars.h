@@ -138,6 +138,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define MKISOFS_BASENAME "mkisofs" PATCH_LABEL
 #endif
 
+#ifndef LPLEX_BASENAME
+#define LPLEX_BASENAME "cdrecord"
+#endif
+
 #ifndef CDRECORD_BASENAME
 #define CDRECORD_BASENAME "cdrecord"
 #endif
@@ -179,6 +183,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #ifndef MPLEX_BASENAME
 #define MPLEX_BASENAME  "mplex"
+#endif
+
+#ifndef LPLEX
+#define LPLEX ""
 #endif
 
 #ifndef MKISOFS
@@ -295,6 +303,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define MAX_LEXER_LINES  100
 #define MAXSTILLPICVOBSIZE  20*1024*1024  // 20 MB limit for stillvobs
 #define ACTIVEHEADER_INSERTOFFSET  0xBB
+#define DEFAULT_AUDIOFORMAT  "mp2"
 
 
 #define TEMPORARY_AUTOMATIC_MENU -5
