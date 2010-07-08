@@ -110,7 +110,7 @@ typedef struct
     char*** topmenu_slide;
     char* stillvob;
     char* tsvob;
-    char** soundtrack;
+    char*** soundtrack;
     char* audioformat;
     char* albumcolor;
     char* groupcolor;
@@ -177,6 +177,7 @@ typedef struct
 {
     uint8_t ngroups;
     uint8_t *ntracks;
+
 } parse_t;
 
 typedef struct

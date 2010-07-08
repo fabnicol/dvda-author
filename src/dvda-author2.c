@@ -192,9 +192,10 @@ int main(int argc,  char* const argv[])
     #else
     DATADIR=strdup(INSTALL_CONF_DIR);
     #endif
-    char **BGPIC=calloc(2, sizeof(char*));
-    char* SNDT[1];
-    SNDT[0]=strdup(DEFAULT_SOUNDTRACK);
+    char **BGPIC=calloc(1, sizeof(char*));
+    char ***SNDT=calloc(1, sizeof(char**));
+    SNDT[0]=calloc(1, sizeof(char*));
+    SNDT[0][0]=strdup(DEFAULT_SOUNDTRACK);
 
 
     BGPIC[0]=strdup(DEFAULT_BACKGROUNDPIC);
@@ -294,7 +295,7 @@ int main(int argc,  char* const argv[])
         NULL,
         NULL,
         NULL,
-        &BGPIC[0], // black screen for jpg video mpg authoring
+        BGPIC, // black screen for jpg video mpg authoring
         strdup(DEFAULT_BLANKSCREEN), // black screen for png authoring
         NULL, //backgroundmpg
         NULL, //backgroundcolors
@@ -303,7 +304,7 @@ int main(int argc,  char* const argv[])
         NULL,
         NULL, //stillvob
         NULL, //tsvob
-        &SNDT[0], //soundtrack  silence.wav
+        SNDT, //soundtrack  silence.wav
         strdup(DEFAULT_AUDIOFORMAT),
         strdup(DEFAULT_ALBUMCOLOR), //top menu pic textcolor
         strdup(DEFAULT_GROUPCOLOR), //top menu pic textcolor

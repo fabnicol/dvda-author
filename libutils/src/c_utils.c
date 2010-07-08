@@ -82,7 +82,7 @@ path_t *parse_filepath(const char* filepath)
     path_t *chain=calloc(1, sizeof(path_t));
     if (chain == NULL) return NULL;
     int u, last_separator_position=0, dot_position=0;
-    for (u=0; chain->length ==0 ; u++)
+    for (u=0; chain->length == 0 ; u++)
     {
         switch (filepath[u])
         {
@@ -112,9 +112,22 @@ path_t *parse_filepath(const char* filepath)
     chain->rawfilename=strdup(filepath);
     chain->rawfilename[dot_position]=0;
     chain->rawfilename += last_separator_position+1;
-    if (globals.veryverbose)
-        printf("[MSG]  Path analysis:\n       path: %s\n       raw filename: %s\n       extension: %s\n       filename: %s\n       length %d\n",
-               chain->path, chain->rawfilename, chain->extension, chain->filename, chain->length);
+    if (last_separator_position >1)
+
+        {
+         for (u=last_separator_position-1; u>=0 ; u--)
+            {
+                if (chain->path[u] == '/'
+#ifdef __WIN32__
+                        || chain->path[u] == '\\'
+#endif
+                   )
+                    { last_separator_position=u; break;}
+            }
+
+         chain->directory=strdup(chain->path+last_separator_position+1);  // directory in which filepath is placed, without leading path.
+        }
+    else chain->directory=NULL; // We're at the root.
 
     errno=0;
     FILE* f=fopen(filepath, "rb");
@@ -474,8 +487,8 @@ void change_directory(const char * filename)
     char* dir=strdup(getenv("PWD"));
     if (strcmp(dir, filename) == 0)
     {
-       if (globals.veryverbose) printf("[MSG]  Remaining in %s\n", dir);
-       return;
+        if (globals.veryverbose) printf("[MSG]  Remaining in %s\n", dir);
+        return;
     }
 
     if (chdir(filename) == -1)

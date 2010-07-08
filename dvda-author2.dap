@@ -42,13 +42,18 @@
 #[background-mpg]
 #   /home/fab/Dev/test/background2.mpg
 
+
+#
 #[topvob]
 #   /home/fab/Dev/test/AUDIO_TS.VOB
 
-[topmenu]
+#[topmenu]
 
-[soundtrack]
-  /home/fab/audionew/a.wav
+[soundtracks]
+  /home/fab/audionew/a.wav,/home/fab/audionew/a.wav,/home/fab/audionew/a.wav
+
+[topmenu-slides]
+  /home/fab/A.jpg,/home/fab/B.jpg,/home/fab/A.jpg
 
 [veryverbose]
 
