@@ -121,6 +121,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 typedef struct
 {
  _Bool    exists;
+ char*    directory;
  char*    extension;
  char*    rawfilename;
  char*    filename;

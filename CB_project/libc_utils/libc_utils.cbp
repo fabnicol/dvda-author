@@ -18,6 +18,7 @@
 					<Add option="-march=i686" />
 					<Add option="-O3" />
 					<Add option="-w" />
+					<Add option="-g" />
 					<Add option="-D_LARGEFILE_SOURCE" />
 					<Add option="-D_LARGE_FILES" />
 					<Add option="-DALWAYS_INLINE" />
@@ -27,7 +28,6 @@
 					<Add directory="../../libiberty/src/include" />
 				</Compiler>
 				<Linker>
-					<Add option="-s" />
 					<Add option="-Xlinker --warn-unresolved-symbols" />
 				</Linker>
 			</Target>

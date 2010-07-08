@@ -733,7 +733,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     char* piccolorchain, *activepiccolorchain, *palettecolorchain, *fontchain, *durationchain=NULL,
                                                                                 *h, *min, *sec, **textable=NULL, **tab=NULL,**tab2=NULL, *stillpic_string=NULL, *still_options_string=NULL;
     uint16_t npics[totntracks];
-
     optind=0;
     opterr=1;
 
@@ -754,8 +753,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             printf("[PAR]  Using data directory %s\n", optarg);
             strlength=strlen(optarg);
-            img->soundtrack=realloc(img->soundtrack, (strlength+1+1+16)*sizeof(char)); // "silence.wav"
-            if (img->soundtrack[0]) sprintf(img->soundtrack[0], "%s"SEPARATOR"%s", optarg, "menu"SEPARATOR"silence.wav");
+            img->soundtrack[0][0]=realloc(img->soundtrack[0][0], (strlength+1+1+16)*sizeof(char)); // "silence.wav"
+            if (img->soundtrack[0][0]) sprintf(img->soundtrack[0][0], "%s"SEPARATOR"%s", optarg, "menu"SEPARATOR"silence.wav");
             img->activeheader=realloc(img->activeheader, (strlength+1+1+17)*sizeof(char));  // activeheader
             if (img->activeheader) sprintf(img->activeheader, "%s"SEPARATOR"%s", optarg, "menu"SEPARATOR"activeheader");
             free(globals.settings.datadir);
@@ -1436,8 +1435,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 #endif
 
-    if (globals.topmenu == NO_MENU) goto stillpic_parsing;
-
 
     // Coherence checks
 
@@ -1461,38 +1458,42 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         }
     }
 
-    if (img->nmenus == 0)
+    if (ngroups)
     {
-        if (img->ncolumns == 0) img->ncolumns=DEFAULT_MENU_NCOLUMNS;  // just in case, not to divide by zero, yet should not arise unless...
-        if (img->hierarchical) img->nmenus=ngroups+1; // list of groups and one menu per group only (--> limitation to be indicated)
+
+        if (img->nmenus == 0)
+        {
+            if (img->ncolumns == 0) img->ncolumns=DEFAULT_MENU_NCOLUMNS;  // just in case, not to divide by zero, yet should not arise unless...
+            if (img->hierarchical) img->nmenus=ngroups+1; // list of groups and one menu per group only (--> limitation to be indicated)
+            else
+
+                img->nmenus=ngroups/img->ncolumns + (ngroups%img->ncolumns > 0);  // number of columns cannot be higher than img->ncolumns; adjusting number of menus to ensure this.
+            printf("[MSG]  With %d columns, number of menus will be %d\n", img->ncolumns, img->nmenus);
+        }
         else
-
-            img->nmenus=ngroups/img->ncolumns + (ngroups%img->ncolumns > 0);  // number of columns cannot be higher than img->ncolumns; adjusting number of menus to ensure this.
-        printf("[MSG]  With %d columns, number of menus will be %d\n", img->ncolumns, img->nmenus);
-    }
-    else
-    {
-        if ((img->hierarchical) && (img->nmenus == 1))
         {
-            printf("%s", "[WAR]  Hierarchical menus should have at least two screens...\n       Incrementing value for --nmenus=1->2\n");
-            img->nmenus++;
+            if ((img->hierarchical) && (img->nmenus == 1))
+            {
+                printf("%s", "[WAR]  Hierarchical menus should have at least two screens...\n       Incrementing value for --nmenus=1->2\n");
+                img->nmenus++;
+            }
+
+            img->ncolumns=ngroups/(img->nmenus-img->hierarchical)+(ngroups%(img->nmenus-img->hierarchical) >0);
+
+            if ((img->ncolumns)*ngroups < img->nmenus-1)
+            {
+                printf("[WAR]  Hierarchical menus should have at most %d*%d+1=%d menus...\n       Resetting value for --nmenus=%d\n", img->ncolumns, ngroups, img->ncolumns*ngroups+1, img->ncolumns*ngroups+1);
+                img->nmenus=ngroups*img->ncolumns+1;
+            }
+
         }
 
-        img->ncolumns=ngroups/(img->nmenus-img->hierarchical)+(ngroups%(img->nmenus-img->hierarchical) >0);
 
-        if ((img->ncolumns)*ngroups < img->nmenus-1)
-        {
-            printf("[WAR]  Hierarchical menus should have at most %d*%d+1=%d menus...\n       Resetting value for --nmenus=%d\n", img->ncolumns, ngroups, img->ncolumns*ngroups+1, img->ncolumns*ngroups+1);
-            img->nmenus=ngroups*img->ncolumns+1;
-        }
 
+
+        maxbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)/img->nmenus;
+        resbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)%img->nmenus;
     }
-
-
-
-
-    maxbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)/img->nmenus;
-    resbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)%img->nmenus;
 
 #ifndef __CB__
 #if !defined HAVE_MPEG2ENC || !defined HAVE_JPEG2YUV || !defined HAVE_MPLEX
@@ -1515,6 +1516,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     char * str=NULL;
     optind=0;
     opterr=1;
+    _Bool soundtracks_flag=0;
 
 #ifdef LONG_OPTIONS
     while ((c=getopt_long(argc, argv, ALLOWED_OPTIONS, longopts, &longindex)) != -1)
@@ -1534,28 +1536,40 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 break;
             }
 
-            printf("%s%s\n", "[PAR]  soundtrack to be muxed into background mpg video: ", optarg);
+            printf("%s%s\n", "[PAR]  Soundtrack(s) to be muxed into background mpg video: ", optarg);
 
-            if (errno)
+            if (!optarg)
             {
                 printf("%s", "[WAR]  Resetting soundtrack input to default soundtrack...\n");
             }
             else
             {
-                free(img->soundtrack);
+                free(img->soundtrack[0][0]);
                 img->audioformat=strdup("pcm");
+                char** str=NULL;
+                errno=0;
 
-                img->soundtrack=fn_strtok(optarg, ',', img->soundtrack, img->nmenus, cutloop, NULL);
+                str=fn_strtok(optarg, ':', str, img->nmenus, cutloop, NULL);
+
+                img->soundtrack=(char ***) calloc(img->nmenus, sizeof(char**));
+
+                if (!img->soundtrack) break;
 
                 for (u=0; u < img->nmenus; u++)
-                      errno+=audit_soundtrack(img->soundtrack[u]);
+                {
+                    img->soundtrack[u]  =fn_strtok(str[u], ',', img->soundtrack[u], 0,NULL, NULL);
+                }
 
+                int v;
+                for (u=0; u < img->nmenus; u++)
+                    for (v=0; v < arraylength(img->soundtrack[u]); v++)
+                        errno+=audit_soundtrack(img->soundtrack[u][v]);
 
-
-                launch_lplex_soundtrack(img);
-                globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             }
-            errno=0;
+
+            soundtracks_flag=1;
+            globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+
 #else
             printf("%s", "[ERR]  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
 #endif
@@ -1564,32 +1578,33 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case 6 :
 
-            img->topmenu_slide=calloc(img->nmenus, sizeof(char**));
+            img->topmenu_slide=calloc(img->nmenus, sizeof(char***));
+            img->topmenu_nslides=calloc(img->nmenus, sizeof(uint16_t));
 
             if (!img->topmenu_slide) break;
             else
             {
 
-            char** str=NULL;
-            errno=0;
+                char** str=NULL;
+                errno=0;
 
-            str=fn_strtok(optarg, ':', str, img->nmenus, cutloop, NULL);
+                str=fn_strtok(optarg, ':', str, img->nmenus, cutloop, NULL);
 
-            if (!str)
-            {
-               img->topmenu_slide[0]=calloc(1, sizeof(char*));
-               img->topmenu_slide[0][0]=strdup(img->backgroundpic[0]);
-               img->topmenu_nslides[0]=1;
-               errno=0;
+                if (!str)
+                {
+                    img->topmenu_slide[0]   =calloc(1, sizeof(char**));
+                    img->topmenu_slide[0][0]=strdup(img->backgroundpic[0]);
+                    img->topmenu_nslides[0] =1;
+                    errno=0;
+                }
+
+                for (u=0; u < img->nmenus; u++)
+                {
+                    img->topmenu_slide[u]  =fn_strtok(str[u], ',', img->topmenu_slide[u], 0,NULL, NULL);
+                    img->topmenu_nslides[u]=arraylength(img->topmenu_slide[u]);
+                }
             }
-
-
-            for (u=0; u < img->nmenus; u++)
-             {
-               img->topmenu_slide[u]=fn_strtok(str[u], ',', img->topmenu_slide[u], 0,NULL, NULL);
-               img->topmenu_nslides[u]=arraylength(img->topmenu_slide[u]);
-            }
-            }
+            globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
 
             break;
 
@@ -1752,6 +1767,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     }
 
 
+
+
     _Bool menupic_input_coherence_test=0;
 
     if ((img->imagepic) && (img->highlightpic) && (img->selectpic))
@@ -1779,11 +1796,17 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         }
     }
 
-    // Now copying to temporary directory, depending on type of menu creation, trying to minimize work, depending of type of disc build.
+// Now copying to temporary directory, depending on type of menu creation, trying to minimize work, depending of type of disc build.
 
     char* dest;
 
-    // Operations related to top menu creation
+// Operations related to top menu creation
+
+
+
+    if ((soundtracks_flag) && (img->topmenu_slide))  launch_lplex_soundtrack(img);
+
+
 
     switch (globals.topmenu)
     {
@@ -1873,9 +1896,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     }
 
 
-    // Operations related to stills
+// Operations related to stills
 
-stillpic_parsing:
 
     if ((stillpic_string) && !img->active)
     {
@@ -1953,7 +1975,7 @@ stillpic_parsing:
     }
 
 
-    // Final standard checks
+// Final standard checks
 
 standard_checks:
 
@@ -1970,11 +1992,11 @@ standard_checks:
     }
 
 
-    // ngroups does not include copy groups from then on -- nplaygroups are just virtual (no added bytes to disc)
-    // number of groups=ngroups+nplaygroups
-    // number of audio groups=ngroups-nvideolinking_groups
+// ngroups does not include copy groups from then on -- nplaygroups are just virtual (no added bytes to disc)
+// number of groups=ngroups+nplaygroups
+// number of audio groups=ngroups-nvideolinking_groups
 
-    // End of coherence checks
+// End of coherence checks
 
     command_t command0=
     {

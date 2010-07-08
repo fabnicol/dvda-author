@@ -62,6 +62,7 @@ int audit_soundtrack(char* path)
     free(s);
 
     return errno;
+
 }
 
 int launch_lplex_soundtrack(pic* img)
@@ -71,32 +72,53 @@ int launch_lplex_soundtrack(pic* img)
     char* lplex=NULL;
     lplex=create_binary_path(lplex, LPLEX, SEPARATOR LPLEX_BASENAME);
 
+    img->backgroundmpg=calloc(img->nmenus, sizeof(char*));
+
     if(!lplex) return -1;
 
-    char **args=calloc(2*img->nmenus+12+1+1, sizeof(char*));
 
     char *args0[12]= {LPLEX_BASENAME, "--create", "mpeg", "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm, "seamless"};
 
-    for (u=0; u < 12; u++) args[u]=args0[u];
 
-    for (menu=0; menu < img->nmenus; menu++);
+    for (menu=0; menu < img->nmenus; menu++)
     {
+        char* args[img->topmenu_nslides[menu]*3+12+1];
+
+        for (u=0; u < 12; u++) args[u]=args0[u];
+
         for (u=0; u < img->topmenu_nslides[menu]; u++)
         {
-            args[12+tot]=strdup("jpg");
+            args[12+tot]="jpg";
             args[12+tot+1]=img->topmenu_slide[menu][u];
-            tot +=2;
+            args[12+tot+2]=img->soundtrack[menu][u];
+            tot +=3;
         }
-        args[12+tot]=img->soundtrack[menu];
-        tot++;
+
+        args[12+tot]=NULL;
+
+        printf("[INF]  Launching lplex to create top menu #%d with soundtrack...\n", menu);
+        get_command_line(args);
+
+        run(lplex, args, 0);
+
+        tot=0;
+
+        path_t* aux=parse_filepath(img->soundtrack[menu][0]);
+
+        //path_t* aux=parse_filepath("/home/fab/A.jpg");
+
+
+        if (aux->directory == NULL) { printf("%s", "[ERR]  Use non-root audio folder, with appropriate access rights.\n"); return -1;}
+
+        char adjacent[2*strlen(aux->directory)+strlen(globals.settings.tempdir)+4+20+2+1];
+
+        sprintf(adjacent, "%s%s%s%s%s%s%s", globals.settings.tempdir, SEPARATOR, aux->directory, "_DVD", SEPARATOR, aux->directory, "_DVD_title_01-00.mpg");
+
+        img->backgroundmpg[menu]=strdup(adjacent);
+
+        free(aux);
+
     }
-
-    args[12+tot]=NULL;
-
-    printf("[INF]  Launching lplex to create top menu #%d with soundtrack...\n", menu);
-    get_command_line(args);
-
-    run(lplex, args, 0);
 
     return errno;
 }
