@@ -68,28 +68,27 @@ stamprecord3: Makefile
 if HAVE_AUTOMAKE
 if HAVE_AUTOCONF
 if HAVE_DVDAUTHOR_BUILD
-	cp -r ${ROOTDIR}/m4.extra.dvdauthor ${MAYBE_DVDAUTHOR}/srcm4 && cd ${MAYBE_DVDAUTHOR} && autoreconf -i -Isrcm4 && ${SHELL} configure  --prefix=${prefix} && $(MAKETOOL) -j4 -k ; cd -
+	cp -r ${ROOTDIR}/m4.extra.dvdauthor ${MAYBE_DVDAUTHOR}/srcm4 && cd ${MAYBE_DVDAUTHOR} && autoreconf -i -Isrcm4 && ${SHELL} configure  --prefix=${prefix} ; cd -
 endif
 endif
 endif
 
+#cdrtools must be compiled with special make install parameters hence should not be included in the SUBDIRS list. Building/cleaning will need prior configuration.
 stamprecord4: Makefile
 	if test -f stamprecord4; then rm -f stamprecord4; fi; touch stamprecord4
-if HAVE_CDRTOOLS_BUILD
-	cd ${MAYBE_CDRTOOLS} && $(MAKETOOL) -j4 -k ; cd - ;
-endif
+	cd ${MAYBE_CDRTOOLS} && $(MAKETOOL) ; cd -
 
 stamprecord5: Makefile
 	if test -f stamprecord5; then rm -f stamprecord5; fi; touch stamprecord5
 if HAVE_MJPEGTOOLS_BUILD
-	cd ${MAYBE_MJPEGTOOLS} && ${SHELL} configure --prefix=${prefix} && $(MAKETOOL) -j4 -k ; cd - ;
+	cd ${MAYBE_MJPEGTOOLS} && ${SHELL} configure --prefix=${prefix} ; cd -
 endif
 
 
 stamprecord6: Makefile
 	if test -f stamprecord6; then rm -f stamprecord6; fi; touch stamprecord6
 if HAVE_HELP2MAN_BUILD
-	cd ${MAYBE_HELP2MAN} && ${SHELL} configure --prefix=${prefix} && $(MAKETOOL) -j4 -k ; cd - ;
+	cd ${MAYBE_HELP2MAN} && ${SHELL} configure --prefix=${prefix} ; cd -
 endif
 
 stamprecord7: Makefile
@@ -102,8 +101,9 @@ endif
 stamprecord8: Makefile
 	if test -f stamprecord8; then rm -f stamprecord8; fi; touch stamprecord8
 if HAVE_LPLEX_BUILD
-	cd ${MAYBE_LPLEX} && ${SHELL} configure ${CONFIGURE_LPLEX_FLAGS} && $(MAKETOOL) -j4 -k ; cd - ;
+	chmod +x script3 && ${SHELL} script3
 endif
+
 
 dvda-author.1:
 if HAVE_HELP2MAN
@@ -117,7 +117,7 @@ if HAVE_MAN2HTML
 endif
 
 
-SUBDIRS=${MAYBE_IBERTY} libutils ${MAYBE_OGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} libats2wav  ${MAYBE_SOX} src
+SUBDIRS=${MAYBE_IBERTY} libutils ${MAYBE_OGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} libats2wav ${MAYBE_SOX}  ${MAYBE_LPLEX} ${MAYBE_DVDAUTHOR} ${MAYBE_HELP2MAN} ${MAYBE_MJPEGTOOLS} ${MAYBE_MAGICK} src
 DIST_SUBDIRS=libiberty libutils libfixwav src CB_project libats2wav images
 
 #normally is ${prefix}/share/applications/dvda-author-${VERSION}
@@ -132,9 +132,6 @@ pixdir=${PIXDIR}
 # distributed under $pixdir
 dist_pix_DATA=dvda-author_48x48.png dvda-author_64x64.png
 # distributed under $docdir, normally $prefix/doc/dvda-author
-if HAVE_HELP2MAN
-
-endif
 
 dist_doc_DATA=README  BUGS EXAMPLES LIMITATIONS HOWTO.conf dvda-author.conf.example
 
@@ -157,7 +154,7 @@ EXTRA_DIST=autogen dvda-author.ico  dvda-author.bat  sox-libs  m4.extra m4.extra
 install-data-local:  $(manhelp) $(htmlhelp)
 install-exec-local:
 if HAVE_CDRTOOLS_BUILD
-	 cd ${MAYBE_CDRTOOLS}; $(MAKETOOL) INS_BASE=${prefix} install; cd - ;
+	cd ${MAYBE_CDRTOOLS}; $(MAKETOOL) INS_BASE=${prefix} install; cd -
 endif
 if HAVE_DVDAUTHOR_BUILD
 	 cd ${MAYBE_DVDAUTHOR}; $(MAKETOOL)  install; cd - ;
@@ -172,12 +169,13 @@ if HAVE_MAGICK_BUILD
 	 cd ${MAYBE_MAGICK}; $(MAKETOOL) install; cd - ;
 endif
 if HAVE_LPLEX_BUILD
-	 cd ${MAYBE_LPLEX}; $(MAKETOOL) install; cd - ;
+	 cd ${MAYBE_LPLEX}; $(MAKETOOL)  install; cd - ;
 endif
+
 
 # redefining install is necessary to rename nested package directories for later builds with --enable-all-builds, which request lib* labelling
 
-install: install-exec install-am
+install: install-exec-local install-data-local install-am
 if HAVE_OGG_BUILD
 	if test -d libogg-${OGG_VERSION}; then mv libogg-${OGG_VERSION}/ libogg/; fi
 endif

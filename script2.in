@@ -1,1 +1,1 @@
-	cd @MAYBE_MAGICK@ &&  ./configure --prefix=${prefix} && make -j4 -k ; cd @ROOTDIR@
+	cd @MAYBE_MAGICK@ &&  ./configure --prefix=${prefix} ; cd @ROOTDIR@

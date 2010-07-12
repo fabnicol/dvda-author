@@ -95,7 +95,7 @@ m4_map([DVDA_TEST_AUX],[
             [[mjpegtools-patch], [1.9.0],    [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches/mjpegtools], [mjpeg],[mjpegtools/1.9.0], [309a6fcf0900a010d6a9c1e91afc2f5c]],
             [[help2man-download],[1.36.4],   [http://dvd-audio.sourceforge.net/utils],[],[],[], [d31a0a38c2ec71faa06723f6b8bd3076]],
             [[magick-download], [6.6.3],     [http://dvd-audio.sourceforge.net/utils],[],[],[], [2984b2c8c3fb9fc5335e6f42fea7911c]],
-            [[lplex-download], [0.3],    [http://dvd-audio.sourceforge.net/utils],[],[],[],[cd0c5e72460a7ab5e57f660d84ff48ce]]])
+            [[lplex-download], [0.3],    [http://dvd-audio.sourceforge.net/utils],[],[],[],[951b0895b24c6e2edced44f6540e94f3]]])
 
     m4_map([DVDA_ARG_ENABLE_DOWNLOAD],[
             DOWNLOAD_OPTIONS,

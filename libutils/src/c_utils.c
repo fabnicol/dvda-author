@@ -412,7 +412,7 @@ char* get_command_line(char** args)
         cml[shift-1]=0x20;
     }
     cml[shift-1]=0;
-    if (globals.debugging) fprintf(stderr, "[INF]  Command line: %s\n", cml);
+    if (globals.debugging) printf("[INF]  Command line: %s\n", cml);
 
     return cml;
 }

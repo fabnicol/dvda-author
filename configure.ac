@@ -259,6 +259,7 @@ AC_CONFIG_FILES([Makefile
          script
          script1
          script2
+         script3
          EXAMPLES
 
 ])
