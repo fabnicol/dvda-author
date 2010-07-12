@@ -10,6 +10,7 @@
 #include "launch_manager.h"
 #include <errno.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 extern globalData globals;
 
@@ -114,7 +115,7 @@ int launch_lplex_soundtrack(pic* img)
 
         sprintf(adjacent, "%s%s%s%s%s%s%s", globals.settings.tempdir, SEPARATOR, aux->directory, "_DVD", SEPARATOR, aux->directory, "_DVD_title_01-00.mpg");
 
-        #idndef __WIN32__
+        #ifndef __WIN32__
 
         // This is crucial for *nix otherwise lplex still holds the file streams blocked (tested)
 
