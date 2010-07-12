@@ -216,6 +216,7 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
         if (errno) perror("[ERR]  AMG:spumux_xml");
 
         launch_spumux(img);
+        if (errno) perror("[ERR]  AMG:spumux");
 
     case  RUN_DVDAUTHOR :
 

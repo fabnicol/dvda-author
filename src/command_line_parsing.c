@@ -1828,14 +1828,16 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 dest=copy_file2dir_rename(img->backgroundpic[0], globals.settings.tempdir, name);
             }
         if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Failed to copy background .jpg pictures to temporary directory.")
+        free(dest);
 
-        case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
+    case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
 
         change_directory(globals.settings.datadir);
 
         dest=copy_file2dir(img->blankscreen, globals.settings.tempdir);
 
         if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Failed to copy background .png blankscreen to temporary directory.")
+        free(dest);
 
             if (!menupic_input_coherence_test)
                 normalize_temporary_paths(img);

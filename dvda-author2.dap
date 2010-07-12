@@ -21,12 +21,14 @@
 [output]
        /home/fab/DVD
 
+[nmenus]
+    2
 
 [soundtracks]
-  /home/fab/audionew/a.wav,/home/fab/audionew/a.wav,/home/fab/audionew/a.wav
+  /home/fab/audionew/a.wav,/home/fab/audionew/a.wav,/home/fab/audionew/a.wav:/home/fab/audionew/a.wav
 
 [topmenu-slides]
-  /home/fab/A.jpg,/home/fab/B.jpg,/home/fab/A.jpg
+  /home/fab/C.jpg,/home/fab/B.jpg,/home/fab/C.jpg:/home/fab/A.jpg
 
 [norm]
   pal
@@ -42,6 +44,6 @@
 [duration]
   0:1:17
 
-#[cdrecord]
+//[cdrecord]
 
 ## end of config file

@@ -694,7 +694,7 @@ char* copy_file2dir(const char *existing_file, const char *new_dir)
 char* copy_file2dir_rename(const char *existing_file, const char *new_dir, char* newfilename)
 {
 // existence of new_dir is not tested
-// existence of dile dest is tested and if exists, copy overwrites it
+// existence of file dest is tested and if exists, copy overwrites it
 
     static uint32_t counter;
     int errorlevel;
