@@ -548,6 +548,9 @@ int launch_spumux(pic* img)
         char c;
 
 
+prs(img->backgroundmpg[menu])
+
+
         switch (fork())
         {
 
@@ -558,6 +561,7 @@ int launch_spumux(pic* img)
         case 0:
             close(firsttubeerr[0]);
             dup2(firsttubeerr[1], STDERR_FILENO);
+
 
             if (freopen(img->backgroundmpg[menu], "rb", stdin) == NULL)
             {
