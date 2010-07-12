@@ -13,8 +13,8 @@
 	<File name="../../INSTALL" open="1" top="0" tabpos="4">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../Makefile.am" open="1" top="1" tabpos="5">
-		<Cursor position="6014" topLine="138" />
+	<File name="../../Makefile.am" open="1" top="0" tabpos="5">
+		<Cursor position="4609" topLine="113" />
 	</File>
 	<File name="../../README" open="1" top="0" tabpos="6">
 		<Cursor position="0" topLine="0" />
@@ -32,7 +32,7 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../dvda-author2.dap" open="1" top="0" tabpos="11">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="799" topLine="15" />
 	</File>
 	<File name="../../dvda-author3.dap" open="1" top="0" tabpos="12">
 		<Cursor position="0" topLine="0" />
@@ -125,7 +125,7 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../src/amg2.c" open="1" top="0" tabpos="42">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="7624" topLine="205" />
 	</File>
 	<File name="../../src/asvs.c" open="1" top="0" tabpos="43">
 		<Cursor position="0" topLine="0" />
@@ -143,10 +143,10 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../src/command_line_parsing.c" open="1" top="0" tabpos="48">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="51556" topLine="1476" />
 	</File>
 	<File name="../../src/dvda-author2.c" open="1" top="0" tabpos="49">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="4928" topLine="148" />
 	</File>
 	<File name="../../src/file_input_parsing.c" open="1" top="0" tabpos="50">
 		<Cursor position="0" topLine="0" />
@@ -223,19 +223,19 @@
 	<File name="../../src/libsoxconvert.c" open="1" top="0" tabpos="74">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/menu.c" open="1" top="0" tabpos="75">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/menu.c" open="1" top="1" tabpos="75">
+		<Cursor position="25212" topLine="806" />
 	</File>
 	<File name="../../src/samg2.c" open="1" top="0" tabpos="76">
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../src/sound.c" open="1" top="0" tabpos="77">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="3397" topLine="98" />
 	</File>
 	<File name="../../src/videoimport.c" open="1" top="0" tabpos="78">
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../src/xml.c" open="1" top="0" tabpos="79">
-		<Cursor position="672" topLine="33" />
+		<Cursor position="1320" topLine="33" />
 	</File>
 </CodeBlocks_layout_file>

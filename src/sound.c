@@ -114,9 +114,21 @@ int launch_lplex_soundtrack(pic* img)
 
         sprintf(adjacent, "%s%s%s%s%s%s%s", globals.settings.tempdir, SEPARATOR, aux->directory, "_DVD", SEPARATOR, aux->directory, "_DVD_title_01-00.mpg");
 
-        img->backgroundmpg[menu]=strdup(adjacent);
+        #idndef __WIN32__
+
+        // This is crucial for *nix otherwise lplex still holds the file streams blocked (tested)
+
+        sync();
+
+       // End of *nix code
+       #endif
+
+        char* dest=copy_file2dir(adjacent, globals.settings.tempdir); // automatic renaming of dest
+
+        img->backgroundmpg[menu]=strdup(dest);
 
         free(aux);
+        free(dest);
 
     }
 

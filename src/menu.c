@@ -113,6 +113,7 @@ void create_activemenu(pic* img,uint16_t totntracks)
         fwrite(tsvobpt, tsvobsize, 1, svvobfile);
 
     fclose(svvobfile);
+    free(activeheader);
     if (globals.topmenu == TEMPORARY_AUTOMATIC_MENU) unlink(img->tsvob);
     return;
 }
@@ -540,15 +541,12 @@ int launch_spumux(pic* img)
         // and anyway could not be logged by  -l;
         // with normal verbosity, stdout messages end up in a tube's dead end, otherwise they are retrieved at the other end on stdout.
         errno=0;
-#ifndef __WIN32__
+#ifdef __WIN32__
 
         int firsttubeerr[2];
         if (pipe(firsttubeerr) == -1)
             perror("[ERR]  Pipe issue with spumux (firsttubeerr[2])");
         char c;
-
-
-prs(img->backgroundmpg[menu])
 
 
         switch (fork())
