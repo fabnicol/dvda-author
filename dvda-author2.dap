@@ -21,12 +21,18 @@
 [output]
        DVD
 
-
 [soundtracks]
+<<<<<<< HEAD
   audio\a.wav,audio\a.wav,audio\a.wav
 
 [topmenu-slides]
   A.jpg,B.jpg,A.jpg
+=======
+  /home/fab/audionew/a.wav,/home/fab/audionew/a.wav,/home/fab/audionew/a.wav:/home/fab/audionew/a.wav
+
+[topmenu-slides]
+  /home/fab/C.jpg,/home/fab/B.jpg,/home/fab/C.jpg:/home/fab/A.jpg
+>>>>>>> new
 
 [norm]
   pal
@@ -50,6 +56,6 @@
   c:\
 
 
-#[cdrecord]
+//[cdrecord]
 
 ## end of config file

@@ -14,4 +14,5 @@ void create_activemenu(pic* img,uint16_t totntracks);
 uint16_t x(uint8_t group, uint8_t ngroups);
 uint16_t y(uint8_t track, uint8_t maxnumtracks);
 void initialize_binary_paths(char level);
+void menu_characteristics_coherence_test(pic* img, uint8_t ngroups);
 #endif // HAVE_MENU_C

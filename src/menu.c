@@ -33,8 +33,68 @@ extern uint16_t totntracks;
 uint8_t maxbuttons, resbuttons;
 
 
-/* patches AUDIO_TS.VOB into an active-menu type AUDIO_SV.VOB at minor processing cost */
 
+void menu_characteristics_coherence_test(pic* img, uint8_t ngroups)
+{
+    if (img->active)
+    {
+        if (globals.topmenu == NO_MENU)
+            globals.topmenu=TEMPORARY_AUTOMATIC_MENU; // you need to create a TS_VOB at least temporarily
+        if (img->nmenus > 1)
+        {
+            printf("%s", "[WAR]  Active menus can only be used with simple menus for version "VERSION"\n       Using img->nmenus=1...\n");
+            img->nmenus=1;
+        }
+        if (img->hierarchical)
+        {
+            printf("%s", "[WAR]  Active menus cannot be used with hierarchical menus for version "VERSION"\n       Choosing hierarchical menus...\n");
+            img->active=0;
+            img->hierarchical=1;
+        }
+    }
+
+   // default values must be set even if globals.topmenu = NO_MENU
+
+    if (ngroups)
+    {
+
+        if (img->nmenus == 0)
+        {
+            if (img->ncolumns == 0) img->ncolumns=DEFAULT_MENU_NCOLUMNS;  // just in case, not to divide by zero, yet should not arise unless...
+            if (img->hierarchical) img->nmenus=ngroups+1; // list of groups and one menu per group only (--> limitation to be indicated)
+            else
+
+                img->nmenus=ngroups/img->ncolumns + (ngroups%img->ncolumns > 0);  // number of columns cannot be higher than img->ncolumns; adjusting number of menus to ensure this.
+            if (globals.topmenu != NO_MENU) printf("[MSG]  With %d columns, number of menus will be %d\n", img->ncolumns, img->nmenus);
+        }
+        else
+        {
+            if ((img->hierarchical) && (img->nmenus == 1))
+            {
+                printf("%s", "[WAR]  Hierarchical menus should have at least two screens...\n       Incrementing value for --nmenus=1->2\n");
+                img->nmenus++;
+            }
+
+            img->ncolumns=ngroups/(img->nmenus-img->hierarchical)+(ngroups%(img->nmenus-img->hierarchical) >0);
+
+            if ((img->ncolumns)*ngroups < img->nmenus-1)
+            {
+                printf("[WAR]  Hierarchical menus should have at most %d*%d+1=%d menus...\n       Resetting value for --nmenus=%d\n", img->ncolumns, ngroups, img->ncolumns*ngroups+1, img->ncolumns*ngroups+1);
+                img->nmenus=ngroups*img->ncolumns+1;
+            }
+
+        }
+
+        maxbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)/img->nmenus;
+        resbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)%img->nmenus;
+    }
+
+
+}
+
+
+
+/* patches AUDIO_TS.VOB into an active-menu type AUDIO_SV.VOB at minor processing cost */
 
 void create_activemenu(pic* img,uint16_t totntracks)
 {
@@ -113,6 +173,7 @@ void create_activemenu(pic* img,uint16_t totntracks)
         fwrite(tsvobpt, tsvobsize, 1, svvobfile);
 
     fclose(svvobfile);
+    free(activeheader);
     if (globals.topmenu == TEMPORARY_AUTOMATIC_MENU) unlink(img->tsvob);
     return;
 }
@@ -540,15 +601,12 @@ int launch_spumux(pic* img)
         // and anyway could not be logged by  -l;
         // with normal verbosity, stdout messages end up in a tube's dead end, otherwise they are retrieved at the other end on stdout.
         errno=0;
-#ifndef __WIN32__
+#ifdef __WIN32__
 
         int firsttubeerr[2];
         if (pipe(firsttubeerr) == -1)
             perror("[ERR]  Pipe issue with spumux (firsttubeerr[2])");
         char c;
-
-
-prs(img->backgroundmpg[menu])
 
 
         switch (fork())
