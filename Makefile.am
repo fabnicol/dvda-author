@@ -175,7 +175,7 @@ endif
 
 # redefining install is necessary to rename nested package directories for later builds with --enable-all-builds, which request lib* labelling
 
-install: install-exec-local install-data-local install-am
+install: install-exec install-data-local install-am
 if HAVE_OGG_BUILD
 	if test -d libogg-${OGG_VERSION}; then mv libogg-${OGG_VERSION}/ libogg/; fi
 endif

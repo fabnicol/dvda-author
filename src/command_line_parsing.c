@@ -1431,70 +1431,13 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     }
 
-#ifdef __WIN32__
-#else
+   // Coherence checks
 
-#endif
+   // You first have to test here.
 
-
-    // Coherence checks
-
-    // put this check befor the img->ncolumns check
-    // LIMITATION hopefully to be relaxed later on
-
-    if (img->active)
-    {
-        if (globals.topmenu == NO_MENU)
-            globals.topmenu=TEMPORARY_AUTOMATIC_MENU; // you need to create a TS_VOB at least temporarily
-        if (img->nmenus > 1)
-        {
-            printf("%s", "[WAR]  Active menus can only be used with simple menus for version "VERSION"\n       Using img->nmenus=1...\n");
-            img->nmenus=1;
-        }
-        if (img->hierarchical)
-        {
-            printf("%s", "[WAR]  Active menus cannot be used with hierarchical menus for version "VERSION"\n       Choosing hierarchical menus...\n");
-            img->active=0;
-            img->hierarchical=1;
-        }
-    }
-
-    if (ngroups)
-    {
-
-        if (img->nmenus == 0)
-        {
-            if (img->ncolumns == 0) img->ncolumns=DEFAULT_MENU_NCOLUMNS;  // just in case, not to divide by zero, yet should not arise unless...
-            if (img->hierarchical) img->nmenus=ngroups+1; // list of groups and one menu per group only (--> limitation to be indicated)
-            else
-
-                img->nmenus=ngroups/img->ncolumns + (ngroups%img->ncolumns > 0);  // number of columns cannot be higher than img->ncolumns; adjusting number of menus to ensure this.
-            printf("[MSG]  With %d columns, number of menus will be %d\n", img->ncolumns, img->nmenus);
-        }
-        else
-        {
-            if ((img->hierarchical) && (img->nmenus == 1))
-            {
-                printf("%s", "[WAR]  Hierarchical menus should have at least two screens...\n       Incrementing value for --nmenus=1->2\n");
-                img->nmenus++;
-            }
-
-            img->ncolumns=ngroups/(img->nmenus-img->hierarchical)+(ngroups%(img->nmenus-img->hierarchical) >0);
-
-            if ((img->ncolumns)*ngroups < img->nmenus-1)
-            {
-                printf("[WAR]  Hierarchical menus should have at most %d*%d+1=%d menus...\n       Resetting value for --nmenus=%d\n", img->ncolumns, ngroups, img->ncolumns*ngroups+1, img->ncolumns*ngroups+1);
-                img->nmenus=ngroups*img->ncolumns+1;
-            }
-
-        }
+     menu_characteristics_coherence_test(img, ngroups);
 
 
-
-
-        maxbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)/img->nmenus;
-        resbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)%img->nmenus;
-    }
 
 #ifndef __CB__
 #if !defined HAVE_MPEG2ENC || !defined HAVE_JPEG2YUV || !defined HAVE_MPLEX
@@ -1797,6 +1740,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         }
     }
 
+
+
+
 // Now copying to temporary directory, depending on type of menu creation, trying to minimize work, depending of type of disc build.
 
     char* dest;
@@ -1829,14 +1775,16 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 dest=copy_file2dir_rename(img->backgroundpic[0], globals.settings.tempdir, name);
             }
         if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Failed to copy background .jpg pictures to temporary directory.")
+        free(dest);
 
-        case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
+    case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
 
         change_directory(globals.settings.datadir);
 
         dest=copy_file2dir(img->blankscreen, globals.settings.tempdir);
 
         if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Failed to copy background .png blankscreen to temporary directory.")
+        free(dest);
 
             if (!menupic_input_coherence_test)
                 normalize_temporary_paths(img);
@@ -1882,7 +1830,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         }
         break;
-
+    case NO_MENU:
+       break;
     default:
         errno=1;
     }
@@ -1893,8 +1842,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     {
         printf("%s\n", "[WAR]  Not enough information. Continuing with automatic menu authoring...");
         globals.topmenu=AUTOMATIC_MENU;
+        // retest now
+        menu_characteristics_coherence_test(img, ngroups);
         errno=0;
     }
+
+
 
 
 // Operations related to stills
