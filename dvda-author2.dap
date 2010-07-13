@@ -21,9 +21,6 @@
 [output]
        /home/fab/DVD
 
-[nmenus]
-    2
-
 [soundtracks]
   /home/fab/audionew/a.wav,/home/fab/audionew/a.wav,/home/fab/audionew/a.wav:/home/fab/audionew/a.wav
 
