@@ -543,7 +543,7 @@
 	"getopt.h"
 	"getopt_int.h"
 
-1278892469 /home/fab/Dev/dvda-author-10.06//config.h
+1279047398 /home/fab/Dev/dvda-author-10.06//config.h
 
 1277481601 /home/fab/Dev/dvda-author-10.06/libglibc/src/include/getopt.h
 	<ctype.h>
@@ -686,7 +686,7 @@
 
 1277849046 /home/fab/Dev/dvda-author-10.06/src/include/xml.h
 
-1278121614 /home/fab/Dev/dvda-author-10.06/src/include/menu.h
+1279050294 /home/fab/Dev/dvda-author-10.06/src/include/menu.h
 
 1277481601 /home/fab/Dev/dvda-author-10.06/src/include/launch_manager.h
 	"structures.h"
@@ -991,7 +991,7 @@
 
 1277481601 /home/fab/Dev/dvda-author-10.06/src/include/multichannel.h
 
-1278549046 source:/home/fab/Dev/dvda-author-10.06/src/command_line_parsing.c
+1279050427 source:/home/fab/Dev/dvda-author-10.06/src/command_line_parsing.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -1021,7 +1021,7 @@
 1277481601 /home/fab/Dev/dvda-author-10.06/libfixwav/src/include/fixwav_auxiliary.h
 	"fixwav_manager.h"
 
-1278891590 source:/home/fab/Dev/dvda-author-10.06/src/menu.c
+1279050309 source:/home/fab/Dev/dvda-author-10.06/src/menu.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -1640,7 +1640,7 @@
 	<stdio.h>
 	<sys/types.h>
 
-1278552533 source:/home/fab/Dev/dvda-author-10.06/src/sound.c
+1278979080 source:/home/fab/Dev/dvda-author-10.06/src/sound.c
 	"config.h"
 	"sound.h"
 	"fixwav.h"
@@ -1650,6 +1650,7 @@
 	"launch_manager.h"
 	<errno.h>
 	<stdlib.h>
+	<unistd.h>
 
 1278442868 /home/fab/Dev/dvda-author-10.06/src/sound.h
 	"structures.h"
