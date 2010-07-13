@@ -601,7 +601,7 @@ int launch_spumux(pic* img)
         // and anyway could not be logged by  -l;
         // with normal verbosity, stdout messages end up in a tube's dead end, otherwise they are retrieved at the other end on stdout.
         errno=0;
-#ifdef __WIN32__
+#ifndef __WIN32__
 
         int firsttubeerr[2];
         if (pipe(firsttubeerr) == -1)
