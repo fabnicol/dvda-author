@@ -172,7 +172,7 @@ command_t *assign_audio_characteristics(uint8_t* I, command_t *command)
 
 int run(char* application, char* args[], int option)
 {
-#if !defined __WIN32__ || defined MKDIR
+#if !defined __WIN32__
     int pid;
     int tube[2];
     char c;

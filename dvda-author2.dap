@@ -8,24 +8,25 @@
 # I/O parameters
 ## audio input directory
 
-//[logrefresh]
-//      /home/fab/log
+#[logrefresh]
+#      /home/fab/log
 
 [g]
-       audio\a.wav
-       audio\a.wav
+       /home/fab/audionew/a.wav
+       /home/fab/audionew/a.wav
 
 [g]
-       audio\a.wav
+       /home/fab/audionew/a.wav
 
 [output]
-       DVD
-
+       /home/fab/DVD
+[nmenus]
+ 2
 [soundtracks]
   /home/fab/audionew/a.wav,/home/fab/audionew/a.wav,/home/fab/audionew/a.wav:/home/fab/audionew/a.wav
 
 [topmenu-slides]
-  /home/fab/C.jpg,/home/fab/B.jpg,/home/fab/C.jpg:/home/fab/A.jpg
+  /home/fab/C.jpg,/home/fab/B.jpg,/home/fab/C.jpg:/home/fab/B.jpg
 
 [norm]
   pal
@@ -33,22 +34,17 @@
 [veryverbose]
 
 [tempdir]
-  tempdir3
-
-[datadir]
- cygwin2\home\dvda-author\master\master
-
-[bindir]
- cygwin2\home\dvda-author\master\master\bin
+  /home/fab/tempdir3
 
 [duration]
-  0:1:17
+  0:3:51
 
+[datadir]
+ /home/fab/Dev/dvda-author-10.06
 
-[workdir]
-  c:\
+# [bindir]
+# /usr/bin
 
-
-//[cdrecord]
+[cdrecord]
 
 ## end of config file
