@@ -175,8 +175,9 @@ int main(int argc,  char* const argv[])
 
     setlocale(LC_ALL, "LOCALE");
 
-    char* h = getenv("PWD");
+    char* h = fn_get_current_dir_name ();
     currentdir=strdup((h)? h : TEMPDIR_SUBFOLDER_PREFIX);
+    free(h);
     int currentdirlength=strlen(currentdir);
 
     char TEMPDIRROOT[currentdirlength+14];
