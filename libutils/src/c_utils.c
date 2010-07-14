@@ -134,8 +134,11 @@ path_t *parse_filepath(const char* filepath)
     if ((errno) || (f == NULL))
     {
         chain->exists=0;
-        printf("%s%s\n", "[ERR]  For file: ", filepath);
-        perror("[ERR]  parse_filepath");
+        if (globals.veryverbose)
+	{
+	  printf("%s%s\n", "[MSG]  For file: ", filepath);
+          perror("[MSG]  parse_filepath");
+	}
     }
     else
     {
@@ -493,12 +496,6 @@ char* print_time(int verbose)
 
 void change_directory(const char * filename)
 {
-    char* dir=strdup(getenv("PWD"));
-    if (strcmp(dir, filename) == 0)
-    {
-        if (globals.veryverbose) printf("[MSG]  Remaining in %s\n", dir);
-        return;
-    }
 
     if (chdir(filename) == -1)
     {
@@ -508,7 +505,7 @@ void change_directory(const char * filename)
         exit(EXIT_FAILURE);
     }
     else if (globals.veryverbose)
-        printf("[MSG]  Current working directoy is now %s\n", filename);
+        printf("[MSG]  Current working directory is now %s\n", filename);
 }
 
 int copy_directory(const char* src, const char* dest, mode_t mode)

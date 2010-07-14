@@ -99,6 +99,7 @@ int launch_lplex_soundtrack(pic* img)
 
         printf("[INF]  Launching lplex to create top menu #%d with soundtrack...\n", menu);
         get_command_line(args);
+        change_directory(globals.settings.workdir);
 
         run(lplex, args, 0);
 
@@ -109,7 +110,18 @@ int launch_lplex_soundtrack(pic* img)
         //path_t* aux=parse_filepath("/home/fab/A.jpg");
 
 
-        if (aux->directory == NULL) { printf("%s", "[ERR]  Use non-root audio folder, with appropriate access rights.\n"); return -1;}
+        if (aux->directory == NULL)
+        {
+                free(aux); // resorting to relative filenames withing current working dir
+                aux=parse_filepath(globals.settings.workdir);
+                if (aux->filename == NULL)
+                  { printf("%s", "[ERR]  Use non-root audio folder, with appropriate access rights.\n"); return -1;}
+                else
+                {
+                  aux->directory=aux->filename;
+                  printf("[ING]  Using filepaths relative to %s.\n", globals.settings.workdir);
+                }
+        }
 
         char adjacent[2*strlen(aux->directory)+strlen(globals.settings.tempdir)+4+20+2+1];
 
