@@ -180,6 +180,9 @@ char* get_command_line(char* args[]);
 char* copy_file2dir(const char *existing_file, const char *new_dir);
 char* copy_file2dir_rename(const char *existing_file, const char *new_dir, char* newfilename);
 path_t *parse_filepath(const char* filepath);
+char *fn_get_current_dir_name (void);
+int  rmdir_global(char* path);
+int  rmdir_recursive (char *root, char *dirname);
 
 ALWAYS_INLINE_GCC inline static void  uint32_copy(uint8_t* buf, uint32_t x)
 {
