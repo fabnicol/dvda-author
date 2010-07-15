@@ -1,3 +1,10 @@
+2010-07-15  Fabrice Nicol
+	* Fix several serious regressions (--extract, -i)
+	* Add --soundtracks, --topmenu-slides and lplex support (--enable-lplex-build/download)
+	* tested OK: multipmenu with 1 slide per menu/one menu with several slides. 
+	* Fix some relative path issues
+	* enable sibling builds
+
 2010-07-05  Fabrice Nicol
 	* Add several --enable configure options for auxiliary builds
 	* Fix NTSC and temporary directory issues
