@@ -35,9 +35,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "structures.h"
 
 // debugging macros
-#define prs(X) do {if (X) printf("PRS: %s : %s\n", #X, X);} while (0);
-#define prd(X) printf("PRD: %s : %d\n", #X, X);
-#define pr(X) printf("PR: %s\n", #X);
+#define prs(X) do {if (X) foutput("PRS: %s : %s\n", #X, X);} while (0);
+#define prd(X) foutput("PRD: %s : %d\n", #X, X);
+#define pr(X) foutput("PR: %s\n", #X);
 /* All macros are below except for OS-specific macros in ports.h*/
 
 // Binary-coded digital numbers are hex numbers that should be read as their decimal values
@@ -51,10 +51,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #define HEADER(X, Y)      do{ \
 						  DOUBLE_DOTS \
-                          printf("\n\n%s\n",     " -----------------   "X" "Y"   -----------------");\
+                          foutput("\n\n%s\n",     " -----------------   "X" "Y"   -----------------");\
                           print_time(1);\
                           DOUBLE_DOTS \
-                          printf("\n%s\n", INFO_GNU);}while(0);
+                          foutput("\n%s\n", INFO_GNU);}while(0);
 
 
 #define FREE(X)  if (X != NULL) free(X);

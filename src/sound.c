@@ -45,18 +45,18 @@ int audit_soundtrack(char* path)
 
         if ((waveheader.sample_fq == 48000) && (waveheader.bit_p_spl == 16) && (waveheader.channels == 2))
         {
-            if (globals.veryverbose) printf("%s", "[MSG]  LPCM requirements [fq=48k, bps=16, c=2] are satisfied by soundtrack input\n");
+            if (globals.veryverbose) foutput("%s", "[MSG]  LPCM requirements [fq=48k, bps=16, c=2] are satisfied by soundtrack input\n");
             errno=0;
         }
         else
         {
-            printf("%s", "[ERR]  LPCM requirements [fq=48k, bps=16, c=2] are not satisfied by soundtrack input\n");
+            foutput("%s", "[ERR]  LPCM requirements [fq=48k, bps=16, c=2] are not satisfied by soundtrack input\n");
             errno=1;
         }
     }
     else
     {
-        printf("[ERR]  File %s does not exist.\n", path);
+        foutput("[ERR]  File %s does not exist.\n", path);
         errno=1;
     }
 
@@ -97,7 +97,7 @@ int launch_lplex_soundtrack(pic* img)
 
         args[12+tot]=NULL;
 
-        printf("[INF]  Launching lplex to create top menu #%d with soundtrack...\n", menu);
+        foutput("[INF]  Launching lplex to create top menu #%d with soundtrack...\n", menu);
         get_command_line(args);
         change_directory(globals.settings.workdir);
 
@@ -115,11 +115,11 @@ int launch_lplex_soundtrack(pic* img)
                 free(aux); // resorting to relative filenames withing current working dir
                 aux=parse_filepath(globals.settings.workdir);
                 if (aux->filename == NULL)
-                  { printf("%s", "[ERR]  Use non-root audio folder, with appropriate access rights.\n"); return -1;}
+                  { foutput("%s", "[ERR]  Use non-root audio folder, with appropriate access rights.\n"); return -1;}
                 else
                 {
                   aux->directory=aux->filename;
-                  printf("[ING]  Using filepaths relative to %s.\n", globals.settings.workdir);
+                  foutput("[ING]  Using filepaths relative to %s.\n", globals.settings.workdir);
                 }
         }
 

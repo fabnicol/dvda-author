@@ -42,12 +42,12 @@ void menu_characteristics_coherence_test(pic* img, uint8_t ngroups)
             globals.topmenu=TEMPORARY_AUTOMATIC_MENU; // you need to create a TS_VOB at least temporarily
         if (img->nmenus > 1)
         {
-            printf("%s", "[WAR]  Active menus can only be used with simple menus for version "VERSION"\n       Using img->nmenus=1...\n");
+            foutput("%s", "[WAR]  Active menus can only be used with simple menus for version "VERSION"\n       Using img->nmenus=1...\n");
             img->nmenus=1;
         }
         if (img->hierarchical)
         {
-            printf("%s", "[WAR]  Active menus cannot be used with hierarchical menus for version "VERSION"\n       Choosing hierarchical menus...\n");
+            foutput("%s", "[WAR]  Active menus cannot be used with hierarchical menus for version "VERSION"\n       Choosing hierarchical menus...\n");
             img->active=0;
             img->hierarchical=1;
         }
@@ -65,13 +65,13 @@ void menu_characteristics_coherence_test(pic* img, uint8_t ngroups)
             else
 
                 img->nmenus=ngroups/img->ncolumns + (ngroups%img->ncolumns > 0);  // number of columns cannot be higher than img->ncolumns; adjusting number of menus to ensure this.
-            if (globals.topmenu != NO_MENU) printf("[MSG]  With %d columns, number of menus will be %d\n", img->ncolumns, img->nmenus);
+            if (globals.topmenu != NO_MENU) foutput("[MSG]  With %d columns, number of menus will be %d\n", img->ncolumns, img->nmenus);
         }
         else
         {
             if ((img->hierarchical) && (img->nmenus == 1))
             {
-                printf("%s", "[WAR]  Hierarchical menus should have at least two screens...\n       Incrementing value for --nmenus=1->2\n");
+                foutput("%s", "[WAR]  Hierarchical menus should have at least two screens...\n       Incrementing value for --nmenus=1->2\n");
                 img->nmenus++;
             }
 
@@ -79,7 +79,7 @@ void menu_characteristics_coherence_test(pic* img, uint8_t ngroups)
 
             if ((img->ncolumns)*ngroups < img->nmenus-1)
             {
-                printf("[WAR]  Hierarchical menus should have at most %d*%d+1=%d menus...\n       Resetting value for --nmenus=%d\n", img->ncolumns, ngroups, img->ncolumns*ngroups+1, img->ncolumns*ngroups+1);
+                foutput("[WAR]  Hierarchical menus should have at most %d*%d+1=%d menus...\n       Resetting value for --nmenus=%d\n", img->ncolumns, ngroups, img->ncolumns*ngroups+1, img->ncolumns*ngroups+1);
                 img->nmenus=ngroups*img->ncolumns+1;
             }
 
@@ -268,7 +268,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
     if (img->action == STILLPICS)
     {
-        if (globals.debugging) printf("%s%u\n", "[INF]  Creating still picture #", rank+1);
+        if (globals.debugging) foutput("%s%u\n", "[INF]  Creating still picture #", rank+1);
 
         sprintf(img->backgroundmpg[rank], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "background_still_", rank, ".mpg");
 
@@ -276,12 +276,12 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     }
     else if (img->action == ANIMATEDVIDEO)
     {
-        if (globals.debugging) printf("[INF]  Creating animated menu rank #%u out of %s\n", rank+1, img->backgroundpic[rank]);
+        if (globals.debugging) foutput("[INF]  Creating animated menu rank #%u out of %s\n", rank+1, img->backgroundpic[rank]);
         sprintf(img->backgroundmpg[rank], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "background_movie_",rank, ".mpg");
         snprintf(pic, sizeof(pic), "%s", img->backgroundpic[rank]);
         if (img->backgroundcolors)
         {
-            if (globals.veryverbose) printf("%s\n", "[INF]  Colorizing background jpg files prior to multiplexing...");
+            if (globals.veryverbose) foutput("%s\n", "[INF]  Colorizing background jpg files prior to multiplexing...");
             char* mogrify=NULL;
             char command[500];
 
@@ -289,7 +289,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
             snprintf(command, 500, "%s -fill \"rgb(%s)\" -colorize 66%% %s", mogrify, img->backgroundcolors[rank], img->backgroundpic[rank]);
 
-            if (globals.debugging) printf("[INF]  Launching mogrify to colorize menu: %d with command line %s\n", rank, command);
+            if (globals.debugging) foutput("[INF]  Launching mogrify to colorize menu: %d with command line %s\n", rank, command);
             if (system(command) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
                 fflush(NULL);
         }
@@ -314,7 +314,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
     if (img->action==ANIMATEDVIDEO )
     {
-        if (globals.debugging) printf("%s\n", "[INF]  Running mp2enc...");
+        if (globals.debugging) foutput("%s\n", "[INF]  Running mp2enc...");
 
 
         char soundtrack[strlen(globals.settings.tempdir)+11];
@@ -333,7 +333,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
         switch (pid1=fork())
         {
         case -1:
-            printf("%s\n", "[ERR]  Could not launch "MP2ENC);
+            foutput("%s\n", "[ERR]  Could not launch "MP2ENC);
             break;
 
         case 0:
@@ -344,7 +344,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
             if (errno) perror(MP2ENC);
             execv(mp2enc, argsmp2enc);
-            printf("%s\n", "[ERR]  Runtime failure in mp2enc child process");
+            foutput("%s\n", "[ERR]  Runtime failure in mp2enc child process");
             return errno;
 
             break;
@@ -382,7 +382,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     }
 
     if (globals.debugging)
-        printf("%s\n", "[INF]  Running jpeg2yuv...");
+        foutput("%s\n", "[INF]  Running jpeg2yuv...");
 
     // Owing to the piping of the stdout streams (necessary for coherence of output) existence checks must be tightened up.
     // System will freeze should an input file not exit, as mjpegtools to not always exit on system error. This may cause a loop in the piping of jpeg2yuv to mpeg2enc
@@ -391,17 +391,17 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
 
     FILE *f=fopen(pic, "rb");
-    printf("opening: %s\n", pic);
+    foutput("opening: %s\n", pic);
     if ((errno)||(f == NULL))
         {
             if (img->action == ANIMATEDVIDEO)
             {
-               printf("[ERR]  menu input files: background pic: %s", pic);
+               foutput("[ERR]  menu input files: background pic: %s", pic);
                perror("background");
             }
             else
             {
-               printf("[ERR]  still pic: %s", pic);
+               foutput("[ERR]  still pic: %s", pic);
             }
             clean_exit(EXIT_FAILURE);
         }
@@ -438,7 +438,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
         // Piping stdout is required here as STDOUT is not a possible duplicate for stdout
         dup2(tubeerr[1], STDERR_FILENO);
         execv(jpeg2yuv, argsjpeg2yuv);
-        printf("%s\n", "[ERR]  Runtime failure in jpeg2yuv child process");
+        foutput("%s\n", "[ERR]  Runtime failure in jpeg2yuv child process");
         perror("menu1");
 
         return errno;
@@ -448,12 +448,12 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
         close(tube[1]);
         close(tubeerr[1]);
         dup2(tube[0], STDIN_FILENO);
-        if (globals.debugging) printf("%s\n", "[INF]  Piping to mpeg2enc...");
+        if (globals.debugging) foutput("%s\n", "[INF]  Piping to mpeg2enc...");
 
         switch (pid2 = fork())
         {
         case -1:
-            printf("%s\n", "[ERR]  Could not launch mpeg2enc");
+            foutput("%s\n", "[ERR]  Could not launch mpeg2enc");
             break;
 
         case 0:
@@ -466,7 +466,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
             dup2(tubeerr2[1], STDERR_FILENO);
             // End of comment
             execv(mpeg2enc, argsmpeg2enc);
-            printf("%s\n", "[ERR]  Runtime failure in mpeg2enc parent process");
+            foutput("%s\n", "[ERR]  Runtime failure in mpeg2enc parent process");
             perror("menu2");
             return errno;
 
@@ -474,14 +474,14 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
             waitpid(pid2, NULL, 0);
             dup2(tubeerr[0], STDIN_FILENO);
 
-            while (read(tubeerr[0], &c, 1) == 1) putchar(c);
+            while (read(tubeerr[0], &c, 1) == 1) foutput("%c",c);
             close(tubeerr[0]);
             close(tubeerr2[1]);
             dup2(tubeerr2[0], STDIN_FILENO);
 
-            while (read(tubeerr2[0], &c, 1) == 1) putchar(c);
+            while (read(tubeerr2[0], &c, 1) == 1) foutput("%c",c);
             close(tubeerr2[0]);
-            if (globals.debugging) printf("%s\n", "[INF]  Running mplex...");
+            if (globals.debugging) foutput("%s\n", "[INF]  Running mplex...");
             run(mplex, argsmplex, 0);
         }
         close(tube[0]);
@@ -534,9 +534,9 @@ int generate_background_mpg(pic* img, uint8_t ngroups, uint8_t* ntracks)
     if (mp2track)
         sprintf(mp2track, "%s"SEPARATOR"%s", globals.settings.tempdir, "mp2track.mp2");
 
-    if (img->backgroundmpg == NULL) printf("%s", "[MSG]  backgroundmpg will be allocated.\n");
+    if (img->backgroundmpg == NULL) foutput("%s", "[MSG]  backgroundmpg will be allocated.\n");
 
-    if (globals.debugging) printf("[INF]  Launching mjpegtools to create background mpg with nmenus=%d\n", img->nmenus);
+    if (globals.debugging) foutput("[INF]  Launching mjpegtools to create background mpg with nmenus=%d\n", img->nmenus);
 
     /* now authoring AUDIO_TS.VOB */
     rank=0;
@@ -564,7 +564,7 @@ int generate_background_mpg(pic* img, uint8_t ngroups, uint8_t* ntracks)
             {
                 create_mpg(img, rank, mp2track, tempfile);
                 img->stillpicvobsize[rank]=(uint32_t) (stat_file_size(img->backgroundmpg[rank])/0x800);
-                if (img->stillpicvobsize[rank] > 1024) printf("[WAR]  Size of slideshow in excess of the 2MB track limit... some stillpics may not be displayed.\n");
+                if (img->stillpicvobsize[rank] > 1024) foutput("%s","[WAR]  Size of slideshow in excess of the 2MB track limit... some stillpics may not be displayed.\n");
                 if (rank) cat_file(img->backgroundmpg[rank], img->backgroundmpg[0]);
                 rank++;
             }
@@ -574,7 +574,7 @@ int generate_background_mpg(pic* img, uint8_t ngroups, uint8_t* ntracks)
     FREE(mp2track)
 
     if ((globals.debugging) && (!errno))
-        printf("%s\n", "[INF]  MPG background authoring OK.");
+        foutput("%s\n", "[INF]  MPG background authoring OK.");
     return errno;
 
 }
@@ -586,7 +586,7 @@ int launch_spumux(pic* img)
 
     //sprintf(spumuxcommand, "%s%s%s%s%s%s%s", "spumux -v 0 ", globals.spu_xml, " < ", img->backgroundmpg, (globals.debugging)? "" : " 2>null ", " 1> ", img->topmenu);
 
-    if (globals.debugging) printf("%s\n", "[INF]  Launching spumux to create buttons");
+    if (globals.debugging) foutput("%s\n", "[INF]  Launching spumux to create buttons");
     int menu=0;
 
 
@@ -595,7 +595,7 @@ int launch_spumux(pic* img)
 
     while (menu < img->nmenus)
     {
-        if (globals.debugging) printf("[INF]  Creating menu %d from Xml file %s\n",menu+1, globals.spu_xml[menu]);
+        if (globals.debugging) foutput("[INF]  Creating menu %d from Xml file %s\n",menu+1, globals.spu_xml[menu]);
         char *argsspumux[]= {"spumux", "-v", "2", globals.spu_xml[menu], NULL};
 
         // This is to hush up dvdauthor's stdout messages, which interfere out of sequential order with main application stdout messages
@@ -614,7 +614,7 @@ int launch_spumux(pic* img)
         {
 
         case -1:
-            printf("%s\n", "[ERR]  Could not launch spumux");
+            foutput("%s\n", "[ERR]  Could not launch spumux");
             break;
 
         case 0:
@@ -642,11 +642,11 @@ int launch_spumux(pic* img)
             dup2(firsttubeerr[0], STDIN_FILENO);
             wait(NULL);
 
-            while (read(firsttubeerr[0], &c, 1) == 1) putchar(c);
+            while (read(firsttubeerr[0], &c, 1) == 1) foutput("%c",c);
 
             if (errno)
             {
-                printf("%s\n", "[ERR]  Runtime failure in spumux child process");
+                foutput("%s\n", "[ERR]  Runtime failure in spumux child process");
                 perror("[ERR]  spumux");
                 return errno;
             }
@@ -682,7 +682,7 @@ int launch_dvdauthor()
 
     errno=0;
 
-    if (globals.debugging) printf("%s\n", "[INF]  Launching dvdauthor to add virtual machine commands to top menu");
+    if (globals.debugging) foutput("%s\n", "[INF]  Launching dvdauthor to add virtual machine commands to top menu");
 
     char *args[]= {DVDAUTHOR_BASENAME, "-o", globals.settings.outdir, "-x", globals.xml, NULL};
 
@@ -747,7 +747,7 @@ int prepare_overlay_img(char* text, int8_t group, pic *img, char* command, char*
         snprintf(command, 2*CHAR_BUFSIZ, "%s %s %s \"rgb(%s)\" %s %s %s %d %s %s %d%c%d %c%s%s %s", mogrify,
                  "+antialias", "-fill", albumcolor, "-font", img->textfont, "-pointsize", DEFAULT_POINTSIZE,
                  "-draw", " \"text ", x0, ',' , ALBUM_TEXT_Y0,  '\'', text, "\'\"", picture_save);
-        if (globals.debugging) printf("%s%s\n", "[INF]  Launching mogrify (title) with command line: ", command);
+        if (globals.debugging) foutput("%s%s\n", "[INF]  Launching mogrify (title) with command line: ", command);
         if (system(command) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
             fflush(NULL);
     }
@@ -760,7 +760,7 @@ int prepare_overlay_img(char* text, int8_t group, pic *img, char* command, char*
 
 
     copy_file(picture_save, img->imagepic[menu]);
-    if (globals.debugging) printf("[INF]  copying %s to %s for menu #%d\n", picture_save, img->imagepic[menu], menu);
+    if (globals.debugging) foutput("[INF]  copying %s to %s for menu #%d\n", picture_save, img->imagepic[menu], menu);
     copy_file(picture_save, img->highlightpic[menu]);
     copy_file(picture_save, img->selectpic[menu]);
     errno=0;
@@ -861,7 +861,7 @@ ALWAYS_INLINE_GCC  void test_underline(char* text,pic* img)
         if ((text[j]== 'g') || (text[j]== 'j') || (text[j]== 'p') || (text[j]== 'q') || (text[j]== 'y'))
         {
             if (globals.debugging)
-                printf("[INF]  Switching to little squares rather than underlining motifs for highlight\n       as %c could cut underlines\n", text[j]);
+                foutput("[INF]  Switching to little squares rather than underlining motifs for highlight\n       as %c could cut underlines\n", text[j]);
             img->highlightformat=-1;
         }
 
@@ -957,7 +957,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
     }
 
 
-    if (ngroups > img->ncolumns*img->nmenus) printf("[WARN]  Limiting menu to %d groups...\n", img->ncolumns*img->nmenus);
+    if (ngroups > img->ncolumns*img->nmenus) foutput("[WARN]  Limiting menu to %d groups...\n", img->ncolumns*img->nmenus);
 
     track=group=0;
     int8_t offset=0;
@@ -978,7 +978,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
         char picture_save[CHAR_BUFSIZ+14];
         sprintf(picture_save, "%s/%s%d", globals.settings.tempdir, "svpic",menu);
 
-        if (globals.debugging)  printf("%s\n", "[INF]  Authoring top menu streams...");
+        if (globals.debugging)  foutput("%s\n", "[INF]  Authoring top menu streams...");
 
         if (img->hierarchical)
         {
@@ -1087,20 +1087,20 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
             while  (buttons < menubuttons+arrowbuttons);
 
         strcat(command2, img->imagepic[menu]);
-        if (globals.veryverbose) printf("[INF]  Menu: %d/%d, groupcount: %d/%d.\n      Launching mogrify (image) with command line: %s\n", menu, img->nmenus, groupcount, ngroups, command2);
+        if (globals.veryverbose) foutput("[INF]  Menu: %d/%d, groupcount: %d/%d.\n       Launching mogrify (image) with command line: %s\n", menu, img->nmenus, groupcount, ngroups, command2);
         if (system(command2) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
         free(command2);
 
         copy_file(img->imagepic[menu], img->highlightpic[menu]);
 
         strcat(command1, img->highlightpic[menu]);
-        if (globals.veryverbose) printf("[INF]  Menu: %d/%d, groupcount: %d/%d.\n      Launching mogrify (highlight) with command line: %s\n", menu, img->nmenus, groupcount, ngroups,command1);
+        if (globals.veryverbose) foutput("[INF]  Menu: %d/%d, groupcount: %d/%d.\n       Launching mogrify (highlight) with command line: %s\n", menu, img->nmenus, groupcount, ngroups,command1);
         if (system(command1) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
         free(command1);
         char command3[500];
 
         snprintf(command3, sizeof(command3), "%s %s \"rgb(%s)\"  %s \"rgb(%s)\" %s %s", convert, "-fill", img->selectfgcolor_pic, "-opaque", img->textcolor_pic, img->imagepic[menu], img->selectpic[menu]);
-        if (globals.veryverbose) printf("[INF]  Menu: %d/%d, groupcount: %d/%d.\n      Launching convert (select) with command line: %s\n",menu, img->nmenus, groupcount, ngroups,command3);
+        if (globals.veryverbose) foutput("[INF]  Menu: %d/%d, groupcount: %d/%d.\n       Launching convert (select) with command line: %s\n",menu, img->nmenus, groupcount, ngroups,command3);
         if (system(command3) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
 
         menu++;
@@ -1125,7 +1125,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
 
     if (globals.debugging)
         if (!errno)
-            printf("%s\n", "[MSG]  Top menu pictures were authored.");
+            foutput("%s\n", "[MSG]  Top menu pictures were authored.");
 
     return errno;
 }
@@ -1137,13 +1137,13 @@ int create_stillpic_directory(char* string, uint32_t count)
     change_directory(globals.settings.workdir);
     if (k == count)
     {
-        if (globals.debugging) printf("[WAR]  Too many pics, only %d sound track%s skipping others...\n", count, (count == 1)?",":"s,");
+        if (globals.debugging) foutput("[WAR]  Too many pics, only %d sound track%s skipping others...\n", count, (count == 1)?",":"s,");
         return 0;
     }
 
     if (*string == '\0')
     {
-        if (globals.debugging) printf("[INF]  Jumping one track for picture rank=%d\n", k);
+        if (globals.debugging) foutput("[INF]  Jumping one track for picture rank=%d\n", k);
         return 1;
     }
     if (stat(string, &buf) == -1)
@@ -1152,7 +1152,7 @@ int create_stillpic_directory(char* string, uint32_t count)
     }
     if (S_IFDIR & buf.st_mode)
     {
-        if (globals.debugging) printf("[INF]  Directory %s will be parsed for still pics\n", string);
+        if (globals.debugging) foutput("[INF]  Directory %s will be parsed for still pics\n", string);
         globals.settings.stillpicdir=strdup(string);
         return 0;
     }
@@ -1160,7 +1160,7 @@ int create_stillpic_directory(char* string, uint32_t count)
     {
         char dest[strlen(globals.settings.tempdir)+13];
         sprintf(dest, "%s"SEPARATOR"pic_%03d.jpg", globals.settings.tempdir, k);
-        if (globals.veryverbose) printf("[INF]  Picture %s will be copied to temporary directory as %s.\n", string, dest);
+        if (globals.veryverbose) foutput("[INF]  Picture %s will be copied to temporary directory as %s.\n", string, dest);
 
         copy_file(string, dest);
 

@@ -58,7 +58,7 @@ int read_tracks(char  *full_path, uint8_t *ntracks, char * parent_directory, cha
         }
     else
     {
-        printf("[MSG]  Error: Too many input files specified - group %d, track %d\n",ngroups_scan,ntracks[ngroups_scan]);
+        foutput("[MSG]  Error: Too many input files specified - group %d, track %d\n",ngroups_scan,ntracks[ngroups_scan]);
         clean_exit(EXIT_SUCCESS);
     }
 
@@ -80,7 +80,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
     int totng;
     int ng = 0;
 
-    if (globals.debugging) printf("%s\n", "[INF]  Parsing audio input directory");
+    if (globals.debugging) foutput("%s\n", "[INF]  Parsing audio input directory");
 
 
     while ((rootdirent=readdir(dir) )!= NULL)
@@ -89,7 +89,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
 
         if (ng > (MAX_GROUPS-1))
         {
-            printf("%s\n", "[MSG]  Warning: Too many groups ( > 9 ) specified in directory, rest ignored.");
+            foutput("%s\n", "[MSG]  Warning: Too many groups ( > 9 ) specified in directory, rest ignored.");
             break;
         }
         strcpy(gnames[ng], rootdirent->d_name);
@@ -140,7 +140,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
 
             if (nt > (MAX_GROUP_ITEMS-1))
             {
-                printf("[MSG]  Warning: Too many input files (>99) specified in group %d, rest ignored.\n",ngroups_scan);
+                foutput("[MSG]  Warning: Too many input files (>99) specified in group %d, rest ignored.\n",ngroups_scan);
                 break;
             }
 
@@ -159,7 +159,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
 
         cgafile=fopen(CGA_FILE, "rb");
         if (cgafile != NULL)
-            if (globals.debugging) printf("%s", "[MSG]  Channel assignment file was opened\n");
+            if (globals.debugging) foutput("%s", "[MSG]  Channel assignment file was opened\n");
 
 
         do
@@ -184,7 +184,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
                 read_tracks(buf, ntracks, gnames[ng], tnames[nt], ngroups_scan);
 
                 if (globals.debugging)
-                    printf("[INF]  Copying directory files[%d][%d]\n", n_g_groups+ngroups_scan-1, ntracks[n_g_groups+ngroups_scan-1]-1);
+                    foutput("[INF]  Copying directory files[%d][%d]\n", n_g_groups+ngroups_scan-1, ntracks[n_g_groups+ngroups_scan-1]-1);
 
                 // reads in filenames
                 memmove(files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].filename, buf, CHAR_BUFSIZ);
@@ -199,7 +199,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
                 if (check_cga_assignment(cgaint))
                     files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgaint;
                 else
-                    if (globals.debugging) printf("%s", "[ERR]  Found illegal channel group assignement value, using standard settings.");
+                    if (globals.debugging) foutput("%s", "[ERR]  Found illegal channel group assignement value, using standard settings.");
 
 
             }
@@ -212,12 +212,12 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
         ng++;
     }
 
-    if (action != READTRACKS) printf("[MSG]  %d groups/subdirectories were parsed; ngroups=%d\n", control, ngroups);
+    if (action != READTRACKS) foutput("[MSG]  %d groups/subdirectories were parsed; ngroups=%d\n", control, ngroups);
 
     /* Controlling for contiguousness of ngroups_scan values; a crash may occur if not ensured; letting it go however */
 
     /* with sort, the above comment and the next code could be removed. */
-    if (ngroups != control) printf("%s", "[WAR]  Critical -- Groups are not labelled contiguously (g1, ... ,gn).\n");
+    if (ngroups != control) foutput("%s", "[WAR]  Critical -- Groups are not labelled contiguously (g1, ... ,gn).\n");
 
     audiodir.ngroups=ngroups+n_g_groups;
     audiodir.ntracks=ntracks;
@@ -257,7 +257,7 @@ int parse_disk(DIR* dir, mode_t mode, const char* default_directory, extractlist
     struct dirent *rootdirent;
 
     if (globals.debugging)
-        printf("[INF]  Extracting to %s\n", globals.settings.outdir);
+        foutput("[INF]  Extracting to %s\n", globals.settings.outdir);
 
 
     while ((rootdirent=readdir(dir) )!= NULL)
@@ -299,7 +299,7 @@ int parse_disk(DIR* dir, mode_t mode, const char* default_directory, extractlist
 
 
         if (globals.debugging)
-            printf("[INF]  Extracting titleset %s ...\n", rootdirent->d_name);
+            foutput("[INF]  Extracting titleset %s ...\n", rootdirent->d_name);
 
         char output_buf[strlen(globals.settings.outdir) + 3 + 1];
         STRING_WRITE_CHAR_BUFSIZ(output_buf, "%s%s%d", globals.settings.outdir, "/g", ngroups_scan)
@@ -310,18 +310,18 @@ int parse_disk(DIR* dir, mode_t mode, const char* default_directory, extractlist
             default_directory);
 
         if (globals.debugging)
-            printf("[INF]  Extracting to directory %s ...\n", output_buf);
+            foutput("[INF]  Extracting to directory %s ...\n", output_buf);
 
         if (ats2wav(rootdirent->d_name, output_buf,  extract) == EXIT_SUCCESS)
         {
             control++;
             if  (globals.debugging)
 
-                printf("%s\n", "[INF]  Extraction completed.");
+                foutput("%s\n", "[INF]  Extraction completed.");
         }
         else
         {
-            printf("[INF]  Error extracting audio in titleset %d\n", ngroups_scan);
+            foutput("[INF]  Error extracting audio in titleset %d\n", ngroups_scan);
             continue;
         }
 
@@ -332,13 +332,13 @@ int parse_disk(DIR* dir, mode_t mode, const char* default_directory, extractlist
         switch (control)
         {
         case 1:
-            printf("%s", "[MSG]  One group was extracted.\n");
+            foutput("%s", "[MSG]  One group was extracted.\n");
             break;
         case 0:
-            printf("%s", "[MSG]  No group was extracted.\n");
+            foutput("%s", "[MSG]  No group was extracted.\n");
             break;
         default:
-            printf("\n[MSG]  %d groups were extracted.\n", control);
+            foutput("\n[MSG]  %d groups were extracted.\n", control);
         }
 
 
