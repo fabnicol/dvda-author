@@ -680,7 +680,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     ngroups_scan=0;
     int nvideolinking_groups_scan=0, strlength=0;
     char* piccolorchain, *activepiccolorchain, *palettecolorchain, *fontchain, *durationchain=NULL,
-                                                                                *h, *min, *sec, **textable=NULL, **tab=NULL,**tab2=NULL, *stillpic_string=NULL, *still_options_string=NULL;
+         *h, *min, *sec, **textable=NULL, **tab=NULL,**tab2=NULL, *stillpic_string=NULL, *still_options_string=NULL;
+    _Bool extract_audio_flag=0;
     uint16_t npics[totntracks];
     optind=0;
     opterr=1;
@@ -800,8 +801,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case 'x' :
 
-            extract_list_parsing(optarg, &extract);
-            ats2wav_parsing(optarg, &extract);
+            extract_audio_flag=1;
+            FREE(globals.settings.indir)
+            globals.settings.indir=strdup(optarg);
+
             break;
 
         case 'T':
@@ -1084,9 +1087,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             img->sec=atoi(sec);
 
             break;
-
-
-
 
 
         case 'Y':
@@ -1378,6 +1378,14 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         errno=0;
 
     }
+
+
+     if (extract_audio_flag)
+     {
+            extract_list_parsing(globals.settings.indir, &extract);
+            ats2wav_parsing(globals.settings.indir, &extract);
+            return(NULL);
+     }
 
     // Coherence checks
 

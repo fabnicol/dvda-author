@@ -68,10 +68,16 @@ static uint8_t  T[2][6][36]={{ {0}, {0},
 
 ALWAYS_INLINE_GCC void calc_size(_fileinfo_t* info)
 {
-    uint64_t x;
+    uint64_t x=0;
 
     info->numsamples=(info->pts_length*info->samplerate)/90000;
+    if (info->samplerate)
     x=(90000*info->numsamples)/info->samplerate;
+    else
+    {
+    foutput("%s", "[ERR]  Found null samplerate. Exiting...\n");
+    clean_exit(EXIT_FAILURE);
+    }
 
     // Adjust for rounding errors:
     if (x < info->pts_length)
@@ -90,7 +96,7 @@ ALWAYS_INLINE_GCC void calc_size(_fileinfo_t* info)
 ALWAYS_INLINE_GCC int setinfo(_fileinfo_t* info, uint8_t buf[4])
 {
 
-    switch ((buf[0]&0xf0) || (buf[0]&0x0f))
+    switch (buf[0]&0xf0)
     {
     case 0x00:
         info->bitspersample=16;
@@ -110,7 +116,7 @@ ALWAYS_INLINE_GCC int setinfo(_fileinfo_t* info, uint8_t buf[4])
         break;
     }
 
-    switch ((buf[1]&0xf0) || (buf[1]&0x0f))
+    switch (buf[1]&0xf0)
     {
     case 0x00:
         info->samplerate=48000;
@@ -375,7 +381,7 @@ ALWAYS_INLINE_GCC static void wav_close(_fileinfo_t* info , const char* filename
 
     // ChunkSize
 
-    uint32_copy_reverse(wav_header+4, filesize-8);
+    uint32_copy_reverse(wav_header+4, filesize-8+44);
 
     wav_header[22]=info->channels;
 
@@ -390,8 +396,7 @@ ALWAYS_INLINE_GCC static void wav_close(_fileinfo_t* info , const char* filename
     wav_header[34]=info->bitspersample;
 
     // Subchunk2Size
-    uint32_copy_reverse(wav_header+40, (uint32_t) filesize-44);
-
+    uint32_copy_reverse(wav_header+40, (uint32_t) filesize);
 
     fwrite(wav_header,sizeof(wav_header), 1, info->fpout);
     fclose(info->fpout);
@@ -553,7 +558,7 @@ int ats2wav(const char* filename, const char* outdir, extractlist *extract)
     while (t < ntracks)
     {
 
-        if (!extract->extracttrackintitleset[ats-1][t])
+        if ((extract) && (!extract->extracttrackintitleset[ats-1][t]))
         {
             t++;
             continue;

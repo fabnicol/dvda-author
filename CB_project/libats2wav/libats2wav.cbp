@@ -15,7 +15,7 @@
 				<Option createDefFile="1" />
 				<Compiler>
 					<Add option="-march=i686" />
-					<Add option="-O3" />
+					<Add option="-g" />
 					<Add option="-std=c99 -Wextra -pedantic -Wall -DCB" />
 					<Add option="-D_LARGEFILE_SOURCE" />
 					<Add option="-D_LARGE_FILES" />
@@ -30,7 +30,6 @@
 					<Add directory="../../libiberty/src/include" />
 				</Compiler>
 				<Linker>
-					<Add option="-s" />
 					<Add option="-Xlinker --warn-unresolved-symbols" />
 					<Add library="../libc_utils/libc_utils.a" />
 					<Add directory="../libats2wav" />
