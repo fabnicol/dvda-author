@@ -96,6 +96,17 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 													 if    ( ( chres = snprintf(X, CHAR_BUFSIZ*sizeof(char) , Z, __VA_ARGS__) ) >=  CHAR_BUFSIZ )  \
 														   printf("\n"ERR_STRING_LENGTH"\n", CHAR_BUFSIZ);\
 														   else   if (chres < 0 ) printf( "\n[ERR] Error message:  %s\nCheck source code %s, line %d",  strerror(errno), __FILE__, __LINE__); } while(0);
+
+#ifdef foutput
+#undef foutput
+#endif
+
+#define foutput(X,...)   do { if (!globals.silence) printf(X, __VA_ARGS__);\
+							   if (!globals.logfile) break;\
+							   fprintf(globals.journal, X, __VA_ARGS__);} while(0)
+
+
+
 /* ERROR MANAGEMENT
 
     Error management conventions:
@@ -105,7 +116,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 	EXIT_ON_ERROR_VERBOSE  is a macro for commented EXIT_FAILURE (one argument string)
 	in other contexts (EXIT_SUCCESS, complex EXIT_FAILURE... )  clean_exit is used, see auxiliaray.c
 */
-
 
 #ifdef ALWAYS_INLINE
 #define ALWAYS_INLINE_GCC __attribute__((always_inline))
@@ -120,7 +130,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 typedef struct
 {
- _Bool    exists;
+ _Bool    isfile;
  char*    directory;
  char*    extension;
  char*    rawfilename;
@@ -180,6 +190,9 @@ char* get_command_line(char* args[]);
 char* copy_file2dir(const char *existing_file, const char *new_dir);
 char* copy_file2dir_rename(const char *existing_file, const char *new_dir, char* newfilename);
 path_t *parse_filepath(const char* filepath);
+char *fn_get_current_dir_name (void);
+int  rmdir_global(char* path);
+int  rmdir_recursive (char *root, char *dirname);
 
 ALWAYS_INLINE_GCC inline static void  uint32_copy(uint8_t* buf, uint32_t x)
 {

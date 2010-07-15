@@ -74,7 +74,188 @@ void pause_dos_type()
 
 }
 
+// From Yves Mettier's "C en action" (2009, ENI)
+// Patched somehow.
 
+char *fn_get_current_dir_name (void)
+{
+  char *cwd;
+  int len = 64;
+  char* r;
+  if (NULL == (cwd = malloc (len * sizeof *cwd)))
+    {
+      printf ("%s", "[ERR]  Not enough memory for my_get_cwd.\n");
+      exit (EXIT_FAILURE);
+    }
+  while ((NULL == (r = getcwd (cwd, len))) && (ERANGE == errno))
+    {
+      len += 32;
+      if(NULL == (cwd = realloc (cwd, len * sizeof *cwd)))
+        {
+          printf ("%s", "[ERR]  Not enough memory for my_get_cwd.\n");
+          exit (EXIT_FAILURE);
+        }
+    }
+  if (r)
+    return (cwd);
+  free (cwd);
+  return (NULL);
+}
+
+
+
+void action_dir_post (const char *root, const char *dir)
+{
+if (rmdir (dir))
+    {
+      printf ("[ERR]  Impossible to erase directory %s/%s \n"
+                       "(errno = %s)\n", root, dir, strerror (errno));
+      exit (EXIT_FAILURE);
+    }
+}
+
+
+void action_file (const char *file)
+{
+  if (unlink (file))
+    {
+      printf ("[ERR]  Impossible to erase file %s \n"
+                       "(errno = %s)\n", file, strerror (errno));
+      exit (EXIT_FAILURE);
+    }
+}
+
+
+typedef struct slist_t
+{
+  char *name;
+  int is_dir;
+  struct slist_t *next;
+} slist_t;
+
+
+int rmdir_recursive (char *root, char *dirname)
+{
+  slist_t *names = NULL;
+  slist_t *sl;
+
+  DIR *FD;
+  struct dirent *f;
+  int cwdlen = 32;
+  char *cwd;
+  char *new_root;
+
+
+  if (root)
+    {
+      int rootlen = strlen (root);
+      int dirnamelen = strlen (dirname);
+      if (NULL ==
+          (new_root =
+           malloc ((rootlen + dirnamelen + 2) * sizeof *new_root)))
+        {
+          printf ("%s", "[ERR]  malloc issue\n");
+          exit (EXIT_FAILURE);
+        }
+      memcpy (new_root, root, rootlen);
+      new_root[rootlen] = '/';
+      memcpy (new_root + rootlen + 1, dirname, dirnamelen);
+      new_root[rootlen + dirnamelen + 1] = '\0';
+    }
+  else
+    new_root = strdup (dirname);
+
+
+  cwd=fn_get_current_dir_name();
+
+
+  if (chdir (dirname) == -1)
+    {
+      printf ("%s", "[ERR]  chdir() issue\n");
+      return (-1);
+    }
+
+
+  if (NULL == (FD = opendir (".")))
+    {
+      printf ("%s", "[ERR]  opendir() issue\n");
+      return (-1);
+    }
+  sl = names;
+  while ((f = readdir (FD)))
+    {
+      struct stat st;
+      slist_t *n;
+      if (!strcmp (f->d_name, "."))
+        continue;
+      if (!strcmp (f->d_name, ".."))
+        continue;
+      if (stat (f->d_name, &st))
+        continue;
+      if (NULL == (n = malloc (sizeof *n)))
+        {
+          printf ("%s", "[ERR]  memory issue\n");
+          exit (EXIT_FAILURE);
+        }
+      n->name = strdup (f->d_name);
+      if (S_ISDIR (st.st_mode))
+        n->is_dir = 1;
+      else
+        n->is_dir = 0;
+      n->next = NULL;
+      if (sl)
+        {
+          sl->next = n;
+          sl = n;
+        }
+      else
+        {
+          names = n;
+          sl = n;
+        }
+    }
+  closedir (FD);
+
+
+  for (sl = names; sl; sl = sl->next)
+    {
+      if (!sl->is_dir)
+         action_file (sl->name);
+    }
+
+
+  for (sl = names; sl; sl = sl->next)
+    {
+      if (sl->is_dir)
+        {
+         // action_dir_pre (new_root, sl->name);
+          rmdir_recursive (new_root, sl->name);
+          action_dir_post (new_root, sl->name);
+        }
+    }
+
+
+  free (new_root);
+  while (names)
+    {
+      slist_t *prev;
+      free (names->name);
+      prev = names;
+      names = names->next;
+      free (prev);
+    }
+  chdir (cwd);
+  free (cwd);
+  return (0);
+}
+
+// End of Yves Mettier code
+
+int rmdir_global(char* path)
+{
+        int error=rmdir_recursive(NULL, path);
+        return (error);
+}
 
 
 path_t *parse_filepath(const char* filepath)
@@ -133,13 +314,15 @@ path_t *parse_filepath(const char* filepath)
     FILE* f=fopen(filepath, "rb");
     if ((errno) || (f == NULL))
     {
-        chain->exists=0;
-        printf("%s%s\n", "[ERR]  For file: ", filepath);
-        perror("[ERR]  parse_filepath");
+        chain->isfile=0;
+        if (globals.veryverbose)
+	{
+	  printf("[MSG]  Path %s is not a file\n", filepath);
+	}
     }
     else
     {
-        chain->exists=1;
+        chain->isfile=1;
         fclose(f);
     }
     errno=0;
@@ -178,16 +361,8 @@ _Bool clean_directory(char* path)
     int s=strlen(path);	    // This is brute-force handling with shell. TODO: turn into C.
 
     if (globals.veryverbose) printf("%s%s\n", "[INF]  Cleaning directory ", path);
-#ifndef __WIN32__
-    char cleancommand[50+2*s];
-    sprintf(cleancommand,  "if test -d %s ; then rm -rf %s 2> /dev/null; fi", path, path);
-#else
-    char cleancommand[25+s];
-    sprintf(cleancommand, "%s%s%s%s%s", "if exist ",path," del /Q /S /F ", path, " > null");
-#endif
-    if (globals.veryverbose) printf("[INF]  Running %s\n       ... \n", cleancommand);
-    system(cleancommand);
 
+    errno=rmdir_global(path);
 
     if (errno)
     {
@@ -493,12 +668,6 @@ char* print_time(int verbose)
 
 void change_directory(const char * filename)
 {
-    char* dir=strdup(getenv("PWD"));
-    if (strcmp(dir, filename) == 0)
-    {
-        if (globals.veryverbose) printf("[MSG]  Remaining in %s\n", dir);
-        return;
-    }
 
     if (chdir(filename) == -1)
     {
@@ -508,7 +677,7 @@ void change_directory(const char * filename)
         exit(EXIT_FAILURE);
     }
     else if (globals.veryverbose)
-        printf("[MSG]  Current working directoy is now %s\n", filename);
+        printf("[MSG]  Current working directory is now %s\n", filename);
 }
 
 int copy_directory(const char* src, const char* dest, mode_t mode)
@@ -681,7 +850,7 @@ char* copy_file2dir(const char *existing_file, const char *new_dir)
     if (!filedest) return NULL;
 
 
-    if (filedest->exists)
+    if (filedest->isfile)
     {
         counter++;
         // overwrite
@@ -703,7 +872,7 @@ char* copy_file2dir(const char *existing_file, const char *new_dir)
 char* copy_file2dir_rename(const char *existing_file, const char *new_dir, char* newfilename)
 {
 // existence of new_dir is not tested
-// existence of dile dest is tested and if exists, copy overwrites it
+// existence of file dest is tested and if exists, copy overwrites it
 
     static uint32_t counter;
     int errorlevel;
@@ -716,7 +885,7 @@ char* copy_file2dir_rename(const char *existing_file, const char *new_dir, char*
     if (!filedest) return NULL;
 
 
-    if (filedest->exists)
+    if (filedest->isfile)
     {
         //overwrite
         unlink(dest);

@@ -1,0 +1,1 @@
+cd @MAYBE_LPLEX@ && ./configure @CONFIGURE_LPLEX_FLAGS@ ; cd - ;

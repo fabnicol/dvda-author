@@ -1,1 +1,1 @@
-EXTRA_DIST=libc_utils.depend libc_utils.cbp 
+EXTRA_DIST=libc_utils.cbp 

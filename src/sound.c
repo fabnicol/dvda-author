@@ -10,6 +10,7 @@
 #include "launch_manager.h"
 #include <errno.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 extern globalData globals;
 
@@ -18,7 +19,7 @@ int audit_soundtrack(char* path)
 
     path_t *s=parse_filepath(path);
     errno=0;
-    if (s->exists)
+    if (s->isfile)
     {
         WaveHeader waveheader;
         WaveData wavedata=
@@ -44,18 +45,18 @@ int audit_soundtrack(char* path)
 
         if ((waveheader.sample_fq == 48000) && (waveheader.bit_p_spl == 16) && (waveheader.channels == 2))
         {
-            if (globals.veryverbose) printf("%s", "[MSG]  LPCM requirements [fq=48k, bps=16, c=2] are satisfied by soundtrack input\n");
+            if (globals.veryverbose) foutput("%s", "[MSG]  LPCM requirements [fq=48k, bps=16, c=2] are satisfied by soundtrack input\n");
             errno=0;
         }
         else
         {
-            printf("%s", "[ERR]  LPCM requirements [fq=48k, bps=16, c=2] are not satisfied by soundtrack input\n");
+            foutput("%s", "[ERR]  LPCM requirements [fq=48k, bps=16, c=2] are not satisfied by soundtrack input\n");
             errno=1;
         }
     }
     else
     {
-        printf("[ERR]  File %s does not exist.\n", path);
+        foutput("[ERR]  File %s does not exist.\n", path);
         errno=1;
     }
 
@@ -96,8 +97,9 @@ int launch_lplex_soundtrack(pic* img)
 
         args[12+tot]=NULL;
 
-        printf("[INF]  Launching lplex to create top menu #%d with soundtrack...\n", menu);
+        foutput("[INF]  Launching lplex to create top menu #%d with soundtrack...\n", menu);
         get_command_line(args);
+        change_directory(globals.settings.workdir);
 
         run(lplex, args, 0);
 
@@ -108,15 +110,38 @@ int launch_lplex_soundtrack(pic* img)
         //path_t* aux=parse_filepath("/home/fab/A.jpg");
 
 
-        if (aux->directory == NULL) { printf("%s", "[ERR]  Use non-root audio folder, with appropriate access rights.\n"); return -1;}
+        if (aux->directory == NULL)
+        {
+                free(aux); // resorting to relative filenames withing current working dir
+                aux=parse_filepath(globals.settings.workdir);
+                if (aux->filename == NULL)
+                  { foutput("%s", "[ERR]  Use non-root audio folder, with appropriate access rights.\n"); return -1;}
+                else
+                {
+                  aux->directory=aux->filename;
+                  foutput("[ING]  Using filepaths relative to %s.\n", globals.settings.workdir);
+                }
+        }
 
         char adjacent[2*strlen(aux->directory)+strlen(globals.settings.tempdir)+4+20+2+1];
 
         sprintf(adjacent, "%s%s%s%s%s%s%s", globals.settings.tempdir, SEPARATOR, aux->directory, "_DVD", SEPARATOR, aux->directory, "_DVD_title_01-00.mpg");
 
-        img->backgroundmpg[menu]=strdup(adjacent);
+        #ifndef __WIN32__
+
+        // This is crucial for *nix otherwise lplex still holds the file streams blocked (tested)
+
+        sync();
+
+       // End of *nix code
+       #endif
+
+        char* dest=copy_file2dir(adjacent, globals.settings.tempdir); // automatic renaming of dest
+
+        img->backgroundmpg[menu]=strdup(dest);
 
         free(aux);
+        free(dest);
 
     }
 

@@ -57,10 +57,10 @@ extern char* INDIR, *OUTDIR, *LOGFILE, *TEMPDIR, *LINKDIR, *WORKDIR;
 void version()
 {
 
-    printf("%s%s%s", "dvda-author version ", VERSION, "\nCopyright  2005 Dave Chapman; 2007-2010 Fabrice Nicol;\n2008-2009 Lee and Tim Feldkamp\n\n");
-    printf("%s","See file AUTHORS for other contributors.\n\n");
-    printf("%s","Latest version available from http://dvd-audio.sourceforge.net/\n\n");
-    printf("%s","This is free software; see the source for copying conditions.\n\nWritten by Dave Chapman, Fabrice Nicol, Lee and Tim Feldkamp.\n");
+    foutput("%s%s%s", "dvda-author version ", VERSION, "\nCopyright  2005 Dave Chapman; 2007-2010 Fabrice Nicol;\n2008-2009 Lee and Tim Feldkamp\n\n");
+    foutput("%s","See file AUTHORS for other contributors.\n\n");
+    foutput("%s","Latest version available from http://dvd-audio.sourceforge.net/\n\n");
+    foutput("%s","This is free software; see the source for copying conditions.\n\nWritten by Dave Chapman, Fabrice Nicol, Lee and Tim Feldkamp.\n");
     return;
 }
 
@@ -303,11 +303,11 @@ void check_settings_file()
 
     if (fopen(SETTINGSFILE, "r") ==  NULL)
     {
-        printf("[WAR]  Could not open settings file, creating one in %s...\n", SETTINGSFILE);
+        foutput("[WAR]  Could not open settings file, creating one in %s...\n", SETTINGSFILE);
         FILE* settingsfile=fopen(SETTINGSFILE, "w");
         if (settingsfile == NULL)
         {
-           printf("[ERR]  Could not create settings file in path %s\n       Check that you have adequate administrative rights\n       Exiting...\n", SETTINGSFILE);
+           foutput("[ERR]  Could not create settings file in path %s\n       Check that you have adequate administrative rights\n       Exiting...\n", SETTINGSFILE);
            clean_exit(EXIT_FAILURE);
         }
 
@@ -337,7 +337,7 @@ _Bool increment_ngroups_check_ceiling(uint8_t *ngroups, uint8_t * nvideolinking_
                 ++*nvideolinking_groups;
             else
             {
-                printf("[ERR]  DVD-Audio only supports up to 9 groups; audio groups=%d; video-linking groups=%d\n", *ngroups, *nvideolinking_groups);
+                foutput("[ERR]  DVD-Audio only supports up to 9 groups; audio groups=%d; video-linking groups=%d\n", *ngroups, *nvideolinking_groups);
                 clean_exit(EXIT_SUCCESS);
             }
         }
@@ -346,9 +346,9 @@ _Bool increment_ngroups_check_ceiling(uint8_t *ngroups, uint8_t * nvideolinking_
     else
     {
         if (nvideolinking_groups != NULL)
-            printf("[ERR]  DVD-Audio only supports up to 9 groups; audio groups=%d; video-linking groups=%d\n", *ngroups, *nvideolinking_groups);
+            foutput("[ERR]  DVD-Audio only supports up to 9 groups; audio groups=%d; video-linking groups=%d\n", *ngroups, *nvideolinking_groups);
         else
-            printf("[ERR]  DVD-Audio only supports up to 9 groups; audio groups=%d\n", *ngroups);
+            foutput("[ERR]  DVD-Audio only supports up to 9 groups; audio groups=%d\n", *ngroups);
         clean_exit(EXIT_SUCCESS);
     }
     return 1;
@@ -377,7 +377,7 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t* ntracks,  uin
                 EXIT_ON_RUNTIME_ERROR
                 memory+=(float) (ntracks[i])*sizeof(fileinfo_t)/1024;
             if (globals.debugging)
-                printf("[MSG]  g-type  audio group  :  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i,  ntracks[i], memory);
+                foutput("[MSG]  g-type  audio group  :  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i,  ntracks[i], memory);
         }
 
     for (i=n_g_groups ; i < ngroups-nvideolinking_groups; i++)
@@ -392,7 +392,7 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t* ntracks,  uin
                     memory+=(float) (ntracks[i])*(sizeof(fileinfo_t) + CHAR_BUFSIZ)/1024; // CHAR_BUFSIZ characters assigned later on by strdup
 
         if (globals.debugging)
-            printf("[MSG]  Directory audio group:  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i,  ntracks[i], memory);
+            foutput("[MSG]  Directory audio group:  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i,  ntracks[i], memory);
     }
     for (i=ngroups-nvideolinking_groups ; i < ngroups; i++)
     {
@@ -401,7 +401,7 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t* ntracks,  uin
             memory+=(float) sizeof(fileinfo_t)/1024;
         /* sanity check: 0 tracks should be allocated */
         if (globals.debugging)
-            printf("[MSG]  Video-linking group  :  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i, ntracks[i], memory);
+            foutput("[MSG]  Video-linking group  :  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i, ntracks[i], memory);
     }
 
     return files;
@@ -424,7 +424,7 @@ void free_memory(command_t *command)
             for (j=0; j < command->ntracks[i]; j++)
             {
                 if (globals.debugging)
-                    printf("[INF]  Freeing i=%d  j=%d\n",i, j );
+                    foutput("[INF]  Freeing i=%d  j=%d\n",i, j );
                 FREE(command->files[i][j].filename)
                 //FREE(command->files[i][j].filetitle)
 
@@ -484,7 +484,7 @@ void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size)
 {
   char outfile[strlen(audiotsdir)+strlen(basename)+1+1];
   sprintf(outfile, "%s"SEPARATOR"%s",audiotsdir, basename);
-  printf("[INF]  Creating %s\n",outfile);
+  foutput("[INF]  Creating %s\n",outfile);
 
   unlink(outfile); // I sometimes had issues under linux when unlink was not called in rare cases. Reset errno to 0 just after.
   errno=0;
@@ -494,7 +494,7 @@ void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size)
   if (errno) perror("[ERR] ");
   errno=0;
   if (  fwrite(array, 1, size, f) == size )
-    printf("%s%s%s\n", "[MSG]  ", outfile," was created.");
+    foutput("%s%s%s\n", "[MSG]  ", outfile," was created.");
   else
     fprintf(stderr, "[ERR]  %s could not be created properly -- fwrite error.\n", basename);
 
