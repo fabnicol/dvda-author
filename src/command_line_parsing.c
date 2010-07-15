@@ -1726,7 +1726,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 h=parse_filepath(img->highlightpic[u]);
                 s=parse_filepath(img->selectpic[u]);
 
-                if ((i->exists) && (h->exists) && (s->exists))
+                if ((i->isfile) && (h->isfile) && (s->isfile))
                     menupic_input_coherence_test=1;
             }
             else

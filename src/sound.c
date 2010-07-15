@@ -19,7 +19,7 @@ int audit_soundtrack(char* path)
 
     path_t *s=parse_filepath(path);
     errno=0;
-    if (s->exists)
+    if (s->isfile)
     {
         WaveHeader waveheader;
         WaveData wavedata=

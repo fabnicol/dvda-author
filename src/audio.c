@@ -604,7 +604,6 @@ int wav_getinfo(fileinfo_t* info)
     {
         if (globals.debugging) printf("[INF]  Opening %s to get info\n", info->filename);
         change_directory(globals.settings.workdir);
-        system("pwd");
         fp=secure_open(info->filename, "rb");
 
     }
