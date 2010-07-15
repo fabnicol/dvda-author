@@ -1,1 +1,1 @@
-	cd @MAYBE_MAGICK@ &&  ./configure --prefix=${prefix} ; cd @ROOTDIR@
+	cd @MAYBE_MAGICK@ &&  ./configure --prefix=${prefix} ; cd - 

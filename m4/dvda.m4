@@ -567,7 +567,7 @@ AC_DEFUN([DVDA_CONFIG],[
     m4_pushdef([FL], m4_unquote(m4_cdr(ALIST)))
     m4_pushdef([VAR],m4_car(LIST))
     m4_pushdef([CDR],m4_unquote(m4_cdr(LIST)))
-
+    
 
     AS_IF([test x$VAR[_BUILD] = xyes || test x$ALL_BUILDS = xyes],
            [
@@ -579,6 +579,7 @@ AC_DEFUN([DVDA_CONFIG],[
 	      [CONFIGURE_]VAR[_FLAGS]="FL $VAR[_FLAGS]"
 	      AC_SUBST([CONFIGURE_]VAR[_FLAGS])
 	      AC_MSG_NOTICE([CONFIGURE_]VAR[_FLAGS]=$[CONFIGURE_]VAR[_FLAGS])
+              AS_IF([test -d  $ROOTDIR/$[MAYBE_]VAR && ! test -d  $[MAYBE_]VAR ], [cp -r $ROOTDIR/$[MAYBE_]VAR  $PWD])
 	      # sanity checks
               AS_IF([test x$VAR[_BUILD] = xyes && ! test -d $[MAYBE_]VAR],
                        [

@@ -64,31 +64,31 @@ command_t *assign_audio_characteristics(uint8_t* I, command_t *command)
     switch (error)
     {
     case AFMT_WAVE:
-        if (globals.debugging) printf("[MSG]  Found WAVE format for %s\n", files[i][j].filename);
+        if (globals.debugging) foutput("[MSG]  Found WAVE format for %s\n", files[i][j].filename);
         files[i][j].type=AFMT_WAVE;
         j++;
         break;
     case AFMT_WAVE_FIXED:
-        if (globals.debugging) printf("[MSG]  Found WAVE format (fixed) for %s\n", files[i][j].filename);
+        if (globals.debugging) foutput("[MSG]  Found WAVE format (fixed) for %s\n", files[i][j].filename);
         files[i][j].type=AFMT_WAVE;
         j++;
         break;
     case AFMT_WAVE_GOOD_HEADER:
-        if (globals.debugging) printf("[MSG]  Found WAVE format (original) for %s\n", files[i][j].filename);
+        if (globals.debugging) foutput("[MSG]  Found WAVE format (original) for %s\n", files[i][j].filename);
         files[i][j].type=AFMT_WAVE;
         j++;
         break;
 
 #ifndef WITHOUT_FLAC
     case AFMT_FLAC:
-        if (globals.debugging) printf("[MSG]  Found FLAC format for %s\n", files[i][j].filename);
+        if (globals.debugging) foutput("[MSG]  Found FLAC format for %s\n", files[i][j].filename);
         error=flac_getinfo(&files[i][j]);
         j++;
         break;
 #if !defined WITHOUT_OGG
 #if HAVE_OGG_FLAC
     case AFMT_OGG_FLAC:
-        if (globals.debugging) printf("[MSG]  Found Ogg FLAC format for %s\n", files[i][j].filename);
+        if (globals.debugging) foutput("[MSG]  Found Ogg FLAC format for %s\n", files[i][j].filename);
         error=flac_getinfo(&files[i][j]);
         j++;
         break;
@@ -97,7 +97,7 @@ command_t *assign_audio_characteristics(uint8_t* I, command_t *command)
 #endif
 
     case NO_AFMT_FOUND:
-        if (globals.debugging) printf("[ERR]  No compatible format was found for %s\n       Skipping file...\n", files[i][j].filename);
+        if (globals.debugging) foutput("[ERR]  No compatible format was found for %s\n       Skipping file...\n", files[i][j].filename);
 
         // House-cleaning rules: getting rid of files with unknown format
 
@@ -126,7 +126,7 @@ command_t *assign_audio_characteristics(uint8_t* I, command_t *command)
             {
                 ntracks[l]=ntracks[l+1];
                 if (globals.debugging)
-                    printf("[INF]  Shifting track count for group=%d->%d\n", l+1, l+2);
+                    foutput("[INF]  Shifting track count for group=%d->%d\n", l+1, l+2);
             }
             // delta is a flag for group demotion
             delta=1;
@@ -141,7 +141,7 @@ command_t *assign_audio_characteristics(uint8_t* I, command_t *command)
             int i_shift=i+delta;
             int l_shift=l+1-delta;
             if (globals.debugging)
-                printf("[INF]  Shifting indices for group=%d->%d, track=%d->%d\n", i+1, i_shift+1, l+1, l_shift+1);
+                foutput("[INF]  Shifting indices for group=%d->%d, track=%d->%d\n", i+1, i_shift+1, l+1, l_shift+1);
 
             files[i][l]=files[i_shift][l_shift];
         }
@@ -172,7 +172,7 @@ command_t *assign_audio_characteristics(uint8_t* I, command_t *command)
 
 int run(char* application, char* args[], int option)
 {
-#if !defined __WIN32__ || defined MKDIR
+#if !defined __WIN32__
     int pid;
     int tube[2];
     char c;
@@ -189,20 +189,20 @@ int run(char* application, char* args[], int option)
     switch (pid = fork())
     {
     case -1:
-        printf("%s%s\n", "[ERR]  Could not launch ", application);
+        foutput("%s%s\n", "[ERR]  Could not launch ", application);
         break;
     case 0:
         close(tube[0]);
         dup2(tube[1], STDERR_FILENO);
         execv(application, args);
-        printf("%s%s%s\n", "[ERR]  Runtime failure in ", application," child process");
+        foutput("%s%s%s\n", "[ERR]  Runtime failure in ", application," child process");
         perror("");
         return errno;
 
     default:
         close(tube[1]);
         dup2(tube[0], STDIN_FILENO);
-        while (read(tube[0], &c, 1) == 1) putchar(c);
+        while (read(tube[0], &c, 1) == 1) foutput("%c", c);
         if (option != NOWAIT) waitpid(pid, NULL, option);
         close(tube[0]);
 
@@ -212,7 +212,7 @@ char* s=get_command_line(args);
 char cml[strlen(application)+1+strlen(s)+1];
 sprintf(cml, "%s %s",  application, s);
 free(s);
-if (globals.debugging) printf("[INF]  Running: %s\n ", cml);
+if (globals.debugging) foutput("[INF]  Running: %s\n ", cml);
 system(cml);
 #endif
 
@@ -273,8 +273,8 @@ int launch_manager(command_t *command)
     assign_audio_characteristics(indices, command);
 
 
-    printf("\n%s\n", "DVD Layout:\n\n");
-    printf("%s\n", "Group  Track    Rate Bits  Ch        Length  Filename\n");
+    foutput("\n%s\n", "DVD Layout:\n\n");
+    foutput("%s\n", "Group  Track    Rate Bits  Ch        Length  Filename\n");
 
     // ngroups does not include copy groups from then on -- nplaygroups are just virtual (no added bytes to disc)
     // number of groups=ngroups+nplaygroups
@@ -312,7 +312,7 @@ int launch_manager(command_t *command)
 
             files[i][0].PTS_length = tl;
             files[i][0].last_sector = files[i][nfiles[i]-1].last_sector;
-            if (globals.debugging) printf("[MSG]  group %d will be single-track\n", i);
+            if (globals.debugging) foutput("[MSG]  group %d will be single-track\n", i);
 
         }
 
@@ -330,7 +330,7 @@ int launch_manager(command_t *command)
                             || (files[i][j].channels!=files[i][j-1].channels)
                             || (files[i][j].newtitle)))
                 {
-                    printf("[WAR]  File %s (group %d, track %d) cannot be merged\n       into a single track, stopping here...\n", files[i][j].filename, i, j);
+                    foutput("[WAR]  File %s (group %d, track %d) cannot be merged\n       into a single track, stopping here...\n", files[i][j].filename, i, j);
                     //nfiles=j+1;
                     break;
                 }
@@ -367,8 +367,8 @@ int launch_manager(command_t *command)
             }
 
 
-            printf("%c%c  %d     %02d  %6"PRIu32"   %02d   %d   %10"PRIu64"   ",joinmark[i][j], singlestar[i], i+1, j+1, files[i][j].samplerate, files[i][j].bitspersample, files[i][j].channels, files[i][j].numsamples);
-            printf("%s\n",files[i][j].filename);
+            foutput("%c%c  %d     %02d  %6"PRIu32"   %02d   %d   %10"PRIu64"   ",joinmark[i][j], singlestar[i], i+1, j+1, files[i][j].samplerate, files[i][j].bitspersample, files[i][j].channels, files[i][j].numsamples);
+            foutput("%s\n",files[i][j].filename);
             totalsize+=files[i][j].numbytes;
 
         }
@@ -383,8 +383,8 @@ int launch_manager(command_t *command)
         for (j=0; j < nfiles;  j++)
         {
 
-            printf("%c%c  %d     %02d  %6"PRIu32"   %02d   %d   %10"PRIu64"   ",'D', singlestar[i], i+1, j+1, files[i][j].samplerate, files[i][j].bitspersample, files[i][j].channels, files[i][j].numsamples);
-            printf("%s\n",files[i][j].filename);
+            foutput("%c%c  %d     %02d  %6"PRIu32"   %02d   %d   %10"PRIu64"   ",'D', singlestar[i], i+1, j+1, files[i][j].samplerate, files[i][j].bitspersample, files[i][j].channels, files[i][j].numsamples);
+            foutput("%s\n",files[i][j].filename);
 
         }
     }
@@ -398,9 +398,9 @@ int launch_manager(command_t *command)
     if (nplaygroups)
         printf ("\n%s\n", "a D flag indicates a duplicated group (followed by original group rank).");
 
-    printf("%c\n", '\n');
+    foutput("%c\n", '\n');
 
-    printf("[MSG]  Size of raw PCM data: %"PRIu64" bytes (%.2f  MB)\n",totalsize, (float) totalsize/(1024*1024));
+    foutput("[MSG]  Size of raw PCM data: %"PRIu64" bytes (%.2f  MB)\n",totalsize, (float) totalsize/(1024*1024));
 
 
     /* This approximation was contributed by Lee and Tim feldkamp */
@@ -415,17 +415,17 @@ int launch_manager(command_t *command)
     case -1:
 
         startsector=approximation; /* automatic computing of startsector (Lee and Tim Feldman) */
-        printf("[MSG]  Using start sector based on AOBs: %d\n",approximation);
+        foutput("[MSG]  Using start sector based on AOBs: %d\n",approximation);
         break;
 
     case  0:
         startsector=STARTSECTOR; /* default value is 281 (Dave Chapman setting) */
-        printf("%s", "[MSG]  Using default start sector 281\n");
+        foutput("%s", "[MSG]  Using default start sector 281\n");
         break;
 
     default:
 
-        printf("[MSG]  Using specified start sector %d instead of estimated %d\n",startsector,approximation);
+        foutput("[MSG]  Using specified start sector %d instead of estimated %d\n",startsector,approximation);
     }
 
     /* main reference track tables */
@@ -440,7 +440,7 @@ int launch_manager(command_t *command)
     if (globals.veryverbose)
     {
 	    if (totntracks == totntracks0)
-		 printf("%s\n", "[INF]  Coherence check on total of tracks... OK");
+		 foutput("%s\n", "[INF]  Coherence check on total of tracks... OK");
 	    else
 		printf("[INF]  Total of tracks is not coherent: totntracks=%d, return of create_tracktables=%d\n", totntracks, totntracks0);
     }
@@ -461,7 +461,7 @@ int launch_manager(command_t *command)
 
     if (img->active)
         {
-            if (globals.debugging) printf("%s", "[INF]  Adding active menu.\n");
+            if (globals.debugging) foutput("%s", "[INF]  Adding active menu.\n");
 
             create_activemenu(img, totntracks);
         }
@@ -484,7 +484,7 @@ int launch_manager(command_t *command)
             ntracks);
         if (img->stillvob)
              sectors.stillvob=stat_file_size(img->stillvob)/0x800;  //expressed in sectors
-        if (globals.debugging) printf("[MSG]  Size of AUDIO_SV.VOB is: %u sectors\n" , sectors.stillvob);
+        if (globals.debugging) foutput("[MSG]  Size of AUDIO_SV.VOB is: %u sectors\n" , sectors.stillvob);
 
     }
 
@@ -512,19 +512,19 @@ int launch_manager(command_t *command)
 
     if (globals.debugging)
     {
-        printf("       Sector pointer to VIDEO_TS from AUDIO_TS= %"PRIu64" sectors\n", sector_pointer_VIDEO_TS);
-        printf( "%s", "[INF]  Checking coherence of pointers...");
+        foutput("       Sector pointer to VIDEO_TS from AUDIO_TS= %"PRIu64" sectors\n", sector_pointer_VIDEO_TS);
+        foutput( "%s", "[INF]  Checking coherence of pointers...");
 
         if (sectors.samg + startsector + sector_pointer_VIDEO_TS != last_sector+1+sectors.atsi[naudio_groups-1])
-            printf("\n[WAR]  Pointers to VIDEO_TS are not coherent %"PRIu64" , %"PRIu32"\n",
+            foutput("\n[WAR]  Pointers to VIDEO_TS are not coherent %"PRIu64" , %"PRIu32"\n",
                    sectors.samg + startsector + sector_pointer_VIDEO_TS, (uint32_t) last_sector+1+sectors.atsi[naudio_groups-1]);
         else
-            printf("%s\n", "    OK");
+            foutput("%s\n", "    OK");
     }
 
-    printf("[MSG]  Total size of AUDIO_TS: %"PRIu64" sectors\n", sector_pointer_VIDEO_TS + sectors.samg);
+    foutput("[MSG]  Total size of AUDIO_TS: %"PRIu64" sectors\n", sector_pointer_VIDEO_TS + sectors.samg);
 
-    printf("[MSG]  Start offset of  VIDEO_TS in ISO file: %"PRIu64" sectors,  offset %"PRIu64"\n\n", sector_pointer_VIDEO_TS + sectors.samg + startsector,
+    foutput("[MSG]  Start offset of  VIDEO_TS in ISO file: %"PRIu64" sectors,  offset %"PRIu64"\n\n", sector_pointer_VIDEO_TS + sectors.samg + startsector,
            (sector_pointer_VIDEO_TS + sectors.samg + startsector)*2048);
 
     /* Creating AUDIO_TS.IFO */
@@ -588,8 +588,8 @@ int launch_manager(command_t *command)
 
     if (numtitles == NULL)
     {
-        printf("%s\n", "[ERR]  Critical error: failed to generate AUDIO_TS.IFO");
-        printf("%s\n", "[ERR]  Continuing with non-compliant DVD-Audio structure...");
+        foutput("%s\n", "[ERR]  Critical error: failed to generate AUDIO_TS.IFO");
+        foutput("%s\n", "[ERR]  Continuing with non-compliant DVD-Audio structure...");
         goto SUMMARY;
     }
 
@@ -607,22 +607,22 @@ SUMMARY:
 
     errno=0;
 
-    printf("%c\n", '\n');
-    printf("%s\n" , "Group   Title  Track  First Sect   Last Sect  First PTS  PTS length cga\n");
+    foutput("%c\n", '\n');
+    foutput("%s\n" , "Group   Title  Track  First Sect   Last Sect  First PTS  PTS length cga\n");
 
     for (i=0; i <naudio_groups; i++)
     {
         for (j=0; j < ntracks[i]; j++)
         {
-            printf("    %d  %2d /%2d    %2d  %10"PRIu32"  %10"PRIu32"  %10"PRIu64"  ",i+1, title[i][j]+1,numtitles[i], j+1,files[i][j].first_sector,files[i][j].last_sector,files[i][j].first_PTS);
-            printf("%10"PRIu64"  %2d\n",files[i][j].PTS_length, files[i][j].cga);
+            foutput("    %d  %2d /%2d    %2d  %10"PRIu32"  %10"PRIu32"  %10"PRIu64"  ",i+1, title[i][j]+1,numtitles[i], j+1,files[i][j].first_sector,files[i][j].last_sector,files[i][j].first_PTS);
+            foutput("%10"PRIu64"  %2d\n",files[i][j].PTS_length, files[i][j].cga);
         }
     }
 
-    printf("\nTotal number of tracks: %d.\n", totntracks);
+    foutput("\nTotal number of tracks: %d.\n", totntracks);
     /* freeing */
 
-    printf("%c", '\n');
+    foutput("%c", '\n');
 
     // Crucial, otherwise the ISO file may well be unordered even if AUDIO_TS files are OK after exit
     fflush(NULL);
@@ -646,18 +646,18 @@ SUMMARY:
         errno=0;
         if ((mkisofs=create_binary_path(mkisofs, MKISOFS, SEPARATOR MKISOFS_BASENAME)))
         {
-           printf("%s\n", "[INF]  Launching mkisofs to create image");
+           foutput("%s\n", "[INF]  Launching mkisofs to create image");
            run(mkisofs, args, 0);
         }
         else
-                printf("%s\n", "[ERR]  Could not access mkisofs binary.");
+                foutput("%s\n", "[ERR]  Could not access mkisofs binary.");
 
         FREE(mkisofs);
 
         size=stat_file_size(dvdisopath)/1024;
-        if ((!errno) && (size > 4*SIZE_AMG + 2*SIZE_SAMG +1))  printf("[MSG]  Image was created with size %llu KB.", size);
+        if ((!errno) && (size > 4*SIZE_AMG + 2*SIZE_SAMG +1))  foutput("[MSG]  Image was created with size %llu KB.", size);
         else
-            printf("%s\n", "[ERR]  ISO file creation failed -- fix issue.");
+            foutput("%s\n", "[ERR]  ISO file creation failed -- fix issue.");
 
     }
 
@@ -676,7 +676,7 @@ SUMMARY:
 
         if (globals.rungrowisofs)
         {
-            printf("\n%s\n", "[INF]  Launching growisofs to burn disc");
+            foutput("\n%s\n", "[INF]  Launching growisofs to burn disc");
             char string[strlen(globals.cdrecorddevice)+2+strlen(dvdisoinput)];
             sprintf(string, "%s%c%s", globals.cdrecorddevice, '=', dvdisoinput);
             char *args[]={"growisofs", "-Z", string, NULL};
@@ -700,11 +700,11 @@ SUMMARY:
 
             if ((cdrecord=create_binary_path(cdrecord, CDRECORD, SEPARATOR CDRECORD_BASENAME)))
             {
-               printf("\n%s\n", "[INF]  Launching cdrecord to burn disc");
+               foutput("\n%s\n", "[INF]  Launching cdrecord to burn disc");
                run(cdrecord, args, NOWAIT);
             }
             else
-               printf("%s\n", "[ERR]  Could not access to cdrecord binary.");
+               foutput("%s\n", "[ERR]  Could not access to cdrecord binary.");
 
             FREE(cdrecord);
         }

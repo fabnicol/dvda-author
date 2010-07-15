@@ -102,7 +102,7 @@ int loop=0;
 		    if (j) uint16_copy(&asvs[t], totpicsectors);
 		    t+=2;
 		    totpicsectors+=img->stillpicvobsize[j];     //pic [] is 0-based: pic[0] for first track
-		    if (totpicsectors > 1024) printf("[ERR]  Exceeding stillpic buffer limit (2 MB) at pic #%d.\n", j);
+		    if (totpicsectors > 1024) foutput("[ERR]  Exceeding stillpic buffer limit (2 MB) at pic #%d.\n", j);
 		}
 		k+=4;
 		img->stillpicvobsize+=npics;

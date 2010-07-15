@@ -107,13 +107,13 @@ endif
 
 dvda-author.1:
 if HAVE_HELP2MAN
-	${HELP2MAN} -s 1 -N -o ${top_srcdir}/dvda-author.1 ${top_srcdir}/src/dvda
+	${HELP2MAN} -s 1 -N -o ${PWD}/dvda-author.1 ${PWD}/src/dvda
 endif
 
 dvda-author.html: dvda-author.1
 #PATCH  09.12  We need to display in UTF-8 mode and take off an illicit file header created by man2html
 if HAVE_MAN2HTML
-	${MAN2HTML} < ${top_srcdir}/dvda-author.1 | $(SED) -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > ${top_srcdir}/dvda-author.html
+	${MAN2HTML} < ${PWD}/dvda-author.1 | $(SED) -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > ${PWD}/dvda-author.html
 endif
 
 
@@ -175,7 +175,7 @@ endif
 
 # redefining install is necessary to rename nested package directories for later builds with --enable-all-builds, which request lib* labelling
 
-install: install-exec-local install-data-local install-am
+install: install-exec install-data-local install-am
 if HAVE_OGG_BUILD
 	if test -d libogg-${OGG_VERSION}; then mv libogg-${OGG_VERSION}/ libogg/; fi
 endif

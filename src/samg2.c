@@ -237,7 +237,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
                 samg[i]=20;
                 break;
             default:
-                printf("[ERR]  samg: Unsupported number of channels (%d)\n",files[g][j].channels);
+                foutput("[ERR]  samg: Unsupported number of channels (%d)\n",files[g][j].channels);
                 clean_exit(EXIT_FAILURE);
             }
 
@@ -268,7 +268,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
     }
 
 
-    printf("[MSG]  SAMG pointers\n       Last audio group=%d\n       Last audio track=%d\n       Absolute sector pointer to last AOB sector=%"PRIu32"\n", last_audio_group, last_audio_track, last_sector);
+    foutput("[MSG]  SAMG pointers\n       Last audio group=%d\n       Last audio track=%d\n       Absolute sector pointer to last AOB sector=%"PRIu32"\n", last_audio_group, last_audio_track, last_sector);
     for (i=1; i < 8; i++)
         memcpy(samg+i*sizeofsamg,samg, sizeofsamg);
 

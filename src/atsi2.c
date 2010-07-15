@@ -345,7 +345,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
             uint16_t r, u=0,  trackcount_save=trackcount;
             s+=(j)? ntitlepics[j-1]  : 0;
             if (ntitlepics[j]) pictitlecount++;
-             if (globals.veryverbose) printf("[MSG]  pictitlecount=%d for ntitlepics[%d]=%d\n", pictitlecount,j,ntitlepics[j]);
+             if (globals.veryverbose) foutput("[MSG]  pictitlecount=%d for ntitlepics[%d]=%d\n", pictitlecount,j,ntitlepics[j]);
 	    for (r=0; r < ntitletracks[j]; r++)
 	    {
 		trackcount++;
@@ -357,7 +357,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
 		i++;
 		uint16_copy(&atsi[i], 0x06*ntitletracks[j]); // track rank index
 		i+=2;
-		if (globals.veryverbose) printf("[MSG]  ntitlepics[%d]=%d, ntitletracks[%d]=%d\n", j, ntitlepics[j], j, ntitletracks[j]);
+		if (globals.veryverbose) foutput("[MSG]  ntitlepics[%d]=%d, ntitletracks[%d]=%d\n", j, ntitlepics[j], j, ntitletracks[j]);
 		//if (ntitlepics[j] > ntitletracks[j])  // conditions to be tested
 		 uint16_copy(&atsi[i],(ntitletracks[j]-1)*0x6+0x0F+(ntitlepics[j] -1)*0xA ); // track rank index (backup)
 		//else
@@ -372,7 +372,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
 		if (img->npics[trackcount-1] == 0)
 		{
 	             if (globals.debugging)
-		       printf("[INF]  Skipping track with no pics, t=%d, trackcount=%d\n", t, trackcount);
+		       foutput("[INF]  Skipping track with no pics, t=%d, trackcount=%d\n", t, trackcount);
 		     continue;
 		}
 		uint16_t  pictrackcount=0;

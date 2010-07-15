@@ -390,7 +390,7 @@ ALWAYS_INLINE_GCC  uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_title)
 
     if (info->bytespersecond == 0)
     {
-        printf("[WAR]  file %s has bytes per second=0\n", info->filename);
+        foutput("[WAR]  file %s has bytes per second=0\n", info->filename);
         return 0;
     }
 
@@ -488,7 +488,7 @@ ALWAYS_INLINE_GCC int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audi
     }
   else if (bytesinbuffer < lpcm_payload)   // Last packet in title
     {
-      printf("[INF]  Writing last packet - pack=%lld, bytesinbuffer=%d\n",pack_in_title,bytesinbuffer);
+      foutput("[INF]  Writing last packet - pack=%lld, bytesinbuffer=%d\n",pack_in_title,bytesinbuffer);
       audio_bytes=bytesinbuffer;
       write_pack_header(fp,SCR);
 
@@ -557,7 +557,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
     files[i].first_sector=0;
     files[i].first_PTS=calc_PTS_start(&files[i],pack_in_title);
 
-    printf("[INF]  Processing %s\n",files[i].filename);
+    foutput("[INF]  Processing %s\n",files[i].filename);
 
     while (bytesinbuf)
     {
@@ -615,13 +615,13 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                     files[i].first_sector=files[i-1].last_sector+1;
                     if (audio_open(&files[i])!=0)
                     {
-                        printf("[ERR]  Could not open %s\n",files[i].filename);
+                        foutput("[ERR]  Could not open %s\n",files[i].filename);
                         EXIT_ON_RUNTIME_ERROR
                     }
 
                     n=audio_read(&files[i],&audio_buf[bytesinbuf],sizeof(audio_buf)-bytesinbuf);
                     bytesinbuf+=n;
-                    printf("[INF]  Processing %s\n",files[i].filename);
+                    foutput("[INF]  Processing %s\n",files[i].filename);
                 }
                 else
                 {
