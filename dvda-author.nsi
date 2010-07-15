@@ -12,7 +12,7 @@
 !include "MUI2.nsh"
 !include "x64.nsh"
 
-!define version  "10.06"
+!define version  "10.06.win32"
 !define prodname "dvda-author"
 !define setup    "${prodname}-${version}.win32.installer.exe"
 !define srcdir   "${prodname}-${version}"
@@ -27,7 +27,7 @@
 !define m4       "${srcdir}\m4"
 !define m4extra  "${srcdir}\m4.extra"
 !define m4extradvdauthor  "${srcdir}\m4.extra.dvdauthor"
-!define libglibc "${srcdir}\libglibc"
+!define libiberty "${srcdir}\libiberty"
 !define libs "${srcdir}\libs"
 !define bin "${srcdir}\bin"
 !define menu "${srcdir}\menu"
@@ -271,10 +271,10 @@ Section $(Sec3Name) sec3 ; source code
   File  /r "${m4}"
   File  /r "${m4extra}"
   File  /r "${m4extradvdauthor}"
-  File  /r "${libglibc}"
+  File  /r "${libiberty}"
   File  /r "${libs}"
   File  /r "${menu}"
-  File  /r "${bin}"*
+  File  /r "${bin}"
   
   
 SectionEnd
