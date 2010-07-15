@@ -456,11 +456,12 @@ void free_memory(command_t *command)
 
 
 
-
+if (command)
+{
     //FREE(command->img->selectpic)
     //FREE(command->img->imagepic)
     //FREE(command->img->backgroundmpg)
-    FREE(command->img->soundtrack)
+    FREE(command->img->soundtrack[0][0])
     FREE(command->img->textcolor_palette)
     //FREE(command->img->highlightcolor_pic/palette)  : do not free
     //FREE(command->img->selectfgcolor_pic/palette)
@@ -472,10 +473,11 @@ void free_memory(command_t *command)
     FREE(command->img->framerate)
 //    FREE(command->img->stillpicvobsize)
     FREE(command->img->aspectratio)
+
     j=0;
     FREE2(command->textable)
    // FREE2(command->img->backgroundpic)
-
+}
 
 
 }
