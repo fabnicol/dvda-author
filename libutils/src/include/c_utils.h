@@ -96,6 +96,17 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 													 if    ( ( chres = snprintf(X, CHAR_BUFSIZ*sizeof(char) , Z, __VA_ARGS__) ) >=  CHAR_BUFSIZ )  \
 														   printf("\n"ERR_STRING_LENGTH"\n", CHAR_BUFSIZ);\
 														   else   if (chres < 0 ) printf( "\n[ERR] Error message:  %s\nCheck source code %s, line %d",  strerror(errno), __FILE__, __LINE__); } while(0);
+
+#ifdef foutput
+#undef foutput
+#endif
+
+#define foutput(X,...)   do { if (!globals.silence) printf(X, __VA_ARGS__);\
+							   if (!globals.logfile) break;\
+							   fprintf(globals.journal, X, __VA_ARGS__);} while(0)
+
+
+
 /* ERROR MANAGEMENT
 
     Error management conventions:
@@ -105,7 +116,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 	EXIT_ON_ERROR_VERBOSE  is a macro for commented EXIT_FAILURE (one argument string)
 	in other contexts (EXIT_SUCCESS, complex EXIT_FAILURE... )  clean_exit is used, see auxiliaray.c
 */
-
 
 #ifdef ALWAYS_INLINE
 #define ALWAYS_INLINE_GCC __attribute__((always_inline))

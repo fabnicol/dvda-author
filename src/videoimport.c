@@ -85,7 +85,7 @@ void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank,
 
     relative_sector_pointer_VTSI[0] += sector_pointer_VIDEO_TS + 1;
 
-    printf("[MSG]  Maximum rank of VTSI:  %d\n", maximum_VTSI_rank);
+    foutput("[MSG]  Maximum rank of VTSI:  %d\n", maximum_VTSI_rank);
 
     for (k=1; k< maximum_VTSI_rank; k++)
     {
@@ -94,7 +94,7 @@ void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank,
 
         if ((temp_file=fopen (temp, "rb")) == NULL)
         {
-            printf("[ERR]  Impossible to open file '%s'\n", temp);
+            foutput("[ERR]  Impossible to open file '%s'\n", temp);
             EXIT_ON_RUNTIME_ERROR
         }
 
@@ -109,7 +109,7 @@ void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank,
         relative_sector_pointer_VTSI[k] += relative_sector_pointer_VTSI[k-1] +1;
 
 
-        if (globals.debugging) printf("[INF]  Retrieving relative sector pointer to VTSI %d : %"PRIu32"\n", k+1, relative_sector_pointer_VTSI[k]);
+        if (globals.debugging) foutput("[INF]  Retrieving relative sector pointer to VTSI %d : %"PRIu32"\n", k+1, relative_sector_pointer_VTSI[k]);
 
         fclose(temp_file);
 
@@ -143,7 +143,7 @@ void get_video_PTS_ticks(char* path_to_VIDEO_TS, uint32_t *videotitlelength, uin
 
         if ((temp_file=fopen (temp, "rb")) == NULL)
         {
-            printf("[ERR]  Impossible to open file '%s'\n", temp);
+            foutput("[ERR]  Impossible to open file '%s'\n", temp);
             EXIT_ON_RUNTIME_ERROR
         }
 
@@ -166,7 +166,7 @@ void get_video_PTS_ticks(char* path_to_VIDEO_TS, uint32_t *videotitlelength, uin
                     /* frames will not be considered */
 
                     videotitlelength[k] = 90000 *(3600 * BCD(hours)  + 60 *BCD(minutes)  + BCD(seconds));
-        if (globals.debugging) printf("\n[MSG]  Linked video group=%d \n       hours=%x  minutes=%x  seconds=%x\n       PTS ticks=%"PRIu32" length (seconds)=%"PRIu32" \n", VTSI_rank[k], hours, minutes, seconds, videotitlelength[k], videotitlelength[k]/90000);
+        if (globals.debugging) foutput("\n[MSG]  Linked video group=%d \n       hours=%x  minutes=%x  seconds=%x\n       PTS ticks=%"PRIu32" length (seconds)=%"PRIu32" \n", VTSI_rank[k], hours, minutes, seconds, videotitlelength[k], videotitlelength[k]/90000);
 
     }
 

@@ -42,17 +42,6 @@ uint8_t maxbuttons; // to be used in xml.c and menu.c as extern globals
 uint8_t resbuttons; // to be used in xml.c and menu.c as extern globals
 
 
-#ifdef __WIN32__
-#include <windows.h>
-DWORD WINAPI log_thread_function()
-{
-    //if (logrefresh)
-    freopen(globals.settings.logfile, "wb", stdout);
-    //else
-    //  freopen(globals.settings.logfile, "ab", stdout);
-    return 0;
-}
-#endif
 
 command_t *command_line_parsing(int argc, char* const argv[], command_t *command)
 {
@@ -287,22 +276,19 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                 case 'l' :
 
-#ifdef __WIN32__
-                    printf("[WAR]  This option is currenlty unsupported for Windows.\n\n");
-                    break;
-#endif
-
                     if (optarg)
                     {
-                        globals.settings.logfile=strndup(optarg, MAX_OPTION_LENGTH);
+                        globals.settings.logfile=strdup(optarg);
                         globals.logfile=1;
+
                         if (optarg[0] == '-')
                         {
                             globals.logfile=0;
-                            printf("%s\n", "[ERR]  Enter a log path next time!");
+                            foutput("%s\n", "[ERR]  Enter a log path next time!");
                             exit(EXIT_FAILURE);
                         }
-
+                        else
+                            globals.logfile=1;
                     }
 
                     break;
@@ -318,57 +304,19 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 
 
-    if (globals.silence)
-        freopen(LOGFILE, "ab", stdout); // to hush up stdout only.
-
-    if (globals.logfile)
-    {
-
-#ifndef __WIN32__
-
-        if (user_command_line)
-            switch (fork())
-            {
-            case -1 :
-                break;
-            case  0 :
-
-                if (logrefresh)
-                    freopen(globals.settings.logfile, "wb", stdout);
-                else
-                    freopen(globals.settings.logfile, "ab", stdout);
-
-
-            }
-    }
-
-#else
-
-#if 0
-
-
-        HANDLE a_thread;
-        DWORD a_threadId;
-        SECURITY_ATTRIBUTES sattr= {sizeof(sattr), NULL, TRUE};
-
-        // Create a new thread.
-        a_thread = CreateThread(&sattr, 0, log_thread_function, NULL,
-                                0, &a_threadId);
-
-        if (a_thread == NULL)
-        {
-            perror("[ERR]  Thread creation failed");
-            htmlize(globals.settings.logfile);
-            return(EXIT_FAILURE);
-        }
-
-#endif
-}
-#endif
-
 
     if (((user_command_line) || (!globals.enable_lexer)) && (!globals.silence))
     {
+
+        if (globals.logfile)
+        {
+            if (logrefresh)
+                globals.journal=fopen(globals.settings.logfile, "wb");
+            else
+                globals.journal=fopen(globals.settings.logfile, "ab");
+
+        }
+
         HEADER(PROGRAM, VERSION)
         SINGLE_DOTS
     }
@@ -401,7 +349,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                     memset(ntracks, 0, 9);
                     ngroups=nvideolinking_groups=n_g_groups=0;
                     if (globals.veryverbose)
-                        printf("%s\n", "[INF]  Overriding configuration file specifications for audio input");
+                        foutput("%s\n", "[INF]  Overriding configuration file specifications for audio input");
                     // Useless to continue parsing
                     //reset++;
                     break;
@@ -409,7 +357,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 case 'D' :
                     FREE(globals.settings.tempdir);
                     globals.settings.tempdir=strndup(optarg, MAX_OPTION_LENGTH);
-                    printf("%s%s\n", "[PAR]  Temporary directory is: ", optarg);
+                    foutput("%s%s\n", "[PAR]  Temporary directory is: ", optarg);
                     normalize_temporary_paths(NULL);
                     break;
 
@@ -417,7 +365,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 case 'X':
                     free(globals.settings.workdir);
                     globals.settings.workdir=strndup(optarg, MAX_OPTION_LENGTH);
-                    printf("%s%s\n", "[PAR]  Working directory is: ", optarg);
+                    foutput("%s%s\n", "[PAR]  Working directory is: ", optarg);
                     // WARNING never launch a command line with --mkisofs in the WORKDIR directory
                     change_directory(globals.settings.workdir);
                     //reset++;
@@ -435,20 +383,20 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     if ((globals.debugging) && (user_command_line))
     {
-        printf("%s\n", "[INF]  Parsing user command line");
+        foutput("%s\n", "[INF]  Parsing user command line");
         print_commandline(argc, argv);
 
-        printf("%c", '\n');
+        foutput("%c", '\n');
     }
 
-    if (globals.logfile) printf("%s%s\n", "[PAR]  Log file is: ", globals.settings.logfile);
+    if (globals.logfile) foutput("%s%s\n", "[PAR]  Log file is: ", globals.settings.logfile);
 
 
     /* COMMAND-LINE PARSING: second pass to determine memory allocation (thereby avoiding heap loss)
      * We give up getopt here to allow for legacy "Dave" syntax with multiple tracks as -g arguments
      * (not compatible with getopt or heavy to implement with it.  */
 
-    if (globals.debugging) printf("%s\n", "[INF]  First scan of track list for memory allocation...");
+    if (globals.debugging) foutput("%s\n", "[INF]  First scan of track list for memory allocation...");
 
     // n_g_groups count command-line groups of type -g, -j (join groups), -s (single track groups)
 
@@ -461,7 +409,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {
 
         case 'j' :
-            printf("%s\n", "[PAR]  Join group");
+            foutput("%s\n", "[PAR]  Join group");
         case 's' :
         case 'g' :
 
@@ -518,11 +466,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'w':
             /* input must be in octal form */
             globals.access_rights=(mode_t) strtol(optarg, NULL, 8);
-            printf("[PAR]  Access rights (octal mode)=%o\n", globals.access_rights);
+            foutput("[PAR]  Access rights (octal mode)=%o\n", globals.access_rights);
             break;
 
         case 's' :
-            printf("%s\n", "[PAR]  Single track group");
+            foutput("%s\n", "[PAR]  Single track group");
         case 'g' :
         case 'j' :
             u++;
@@ -534,7 +482,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             allocate_files=1;
             globals.settings.indir=strndup(optarg, MAX_OPTION_LENGTH);
 
-            printf("%s%s\n", "[PAR]  Input directory is: ", 	optarg);
+            foutput("%s%s\n", "[PAR]  Input directory is: ", 	optarg);
             DIR *dir;
 
             if ((dir=opendir(optarg)) == NULL)
@@ -548,7 +496,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             memmove(ntracks, audiodir.ntracks, 9*sizeof(uint8_t));
 
             if (closedir(dir) == -1)
-                printf( "%s\n", "[ERR]  Impossible to close dir");
+                foutput( "%s\n", "[ERR]  Impossible to close dir");
 
             change_directory(globals.settings.workdir);
 
@@ -557,7 +505,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'o' :
 
             globals.settings.outdir=strndup(optarg, MAX_OPTION_LENGTH);
-            printf("%s%s\n", "[PAR]  Output directory is: ", optarg);
+            foutput("%s%s\n", "[PAR]  Output directory is: ", optarg);
 
             break;
 
@@ -577,7 +525,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             if (nvideolinking_groups == MAXIMUM_LINKED_VTS)
             {
-                printf("[ERR]  Error: there must be a maximum of %d video linking groups\n      Ignoring additional links...\n\n", MAXIMUM_LINKED_VTS);
+                foutput("[ERR]  Error: there must be a maximum of %d video linking groups\n      Ignoring additional links...\n\n", MAXIMUM_LINKED_VTS);
                 break;
             }
 
@@ -654,7 +602,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     int m, ngroups_scan=0;
 
-    if ((n_g_groups)&&(globals.debugging)) printf("%s", "[INF]  Assigning command-line filenames...\n");
+    if ((n_g_groups)&&(globals.debugging)) foutput("%s", "[INF]  Assigning command-line filenames...\n");
 
     for (k=0; k < argc; k++)
     {
@@ -666,9 +614,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             files[ngroups_scan][0].single_track=1;   // no break
         case 'j' :
             files[ngroups_scan][0].contin=1;
-            if (globals.debugging) printf("%s%d\n", "[MSG]  Continuity requested for group ", ngroups_scan+1);
+            if (globals.debugging) foutput("%s%d\n", "[MSG]  Continuity requested for group ", ngroups_scan+1);
             files[ngroups_scan][0].join_flag=1;     //  no break
-            if (globals.debugging) printf("%s%d\n", "[MSG]  Join flag set for group ", ngroups_scan+1);
+            if (globals.debugging) foutput("%s%d\n", "[MSG]  Join flag set for group ", ngroups_scan+1);
 
         case 'g' :
 
@@ -678,7 +626,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 if (argv[m+k][0] !='-')
                 {
                     if (globals.veryverbose)
-                        printf("       files[%d][%d].filename=%s\n", ngroups_scan, m, argv[m+k]);
+                        foutput("       files[%d][%d].filename=%s\n", ngroups_scan, m, argv[m+k]);
                     files[ngroups_scan][m].filename=strdup(argv[m+k]);
                     /* to create distinct titles out of a series of audio files which have same audio characteristics, use -| in between the series of files
                        of each title within the same group. This is not authorized to cleave groups, only titles */
@@ -694,7 +642,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                             files[ngroups_scan][m].newtitle= 1;
                             k++;
                             if (globals.veryverbose)
-                                printf("       files[%d][%d].filename=%s\n", ngroups_scan, m, argv[m+k]);
+                                foutput("       files[%d][%d].filename=%s\n", ngroups_scan, m, argv[m+k]);
                             if ((m+k) < argc) files[ngroups_scan][m].filename=strdup(argv[m+k]);
                         }
                     }
@@ -713,12 +661,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             globals.cga=1;
             for (m=0; (m+k < argc)&&(argv[m+k][0] !='-'); m++)
             {
-                if (globals.debugging) printf("       files[%d][%d].cga=%s\n", ngroups_scan, m, argv[m+k]);
+                if (globals.debugging) foutput("       files[%d][%d].cga=%s\n", ngroups_scan, m, argv[m+k]);
                 uint8_t cgaint=atoi(argv[m+k]);
 
                 if (check_cga_assignment(cgaint))
                     files[ngroups_scan][m].cga=cgaint;
-                else if (globals.debugging) printf("%s", "[ERR]  Found illegal channel group assignement value, using standard settings.");
+                else if (globals.debugging) foutput("%s", "[ERR]  Found illegal channel group assignement value, using standard settings.");
             }
             k+=m-1;
         }
@@ -752,7 +700,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                With other building modes or platforms however, it may be useful to indicate where the menu/ directory will be*/
             // We use realloc here to allow for prior allocation (.conf file etc.) without memory loss
 
-            printf("[PAR]  Using data directory %s\n", optarg);
+            foutput("[PAR]  Using data directory %s\n", optarg);
             strlength=strlen(optarg);
             img->soundtrack[0][0]=realloc(img->soundtrack[0][0], (strlength+1+1+16)*sizeof(char)); // "silence.wav"
             if (img->soundtrack[0][0]) sprintf(img->soundtrack[0][0], "%s"SEPARATOR"%s", optarg, "menu"SEPARATOR"silence.wav");
@@ -766,7 +714,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case 'A':
 
-            printf("%s%s\n", "[PAR]  topmenu VOB: ", optarg);
+            foutput("%s%s\n", "[PAR]  topmenu VOB: ", optarg);
             img->tsvob=strdup(optarg);
             globals.topmenu=Min(globals.topmenu, TS_VOB_TYPE);
 
@@ -794,7 +742,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             if (!img->active)
             {
-                printf("%s%s\n", "[PAR]  still pictures VOB: ", optarg);
+                foutput("%s%s\n", "[PAR]  still pictures VOB: ", optarg);
                 img->stillvob=strndup(optarg, MAX_OPTION_LENGTH);
             }
             img->npics =(uint16_t*) calloc(totntracks, sizeof(uint16_t));
@@ -806,30 +754,30 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             //  'x' Must come AFTER 'o' and 'w'
 
         case 'I':
-            printf("%s\n", "[PAR]  Run mkisofs to author disc image.");
+            foutput("%s\n", "[PAR]  Run mkisofs to author disc image.");
             globals.runmkisofs=1;
             if (optarg)
             {
                 free(globals.settings.dvdisopath);
                 globals.settings.dvdisopath=strndup(optarg, MAX_OPTION_LENGTH);
-                printf("%s%s\n", "[PAR]  ISO file path is: ", optarg);
+                foutput("%s%s\n", "[PAR]  ISO file path is: ", optarg);
             }
             break;
 
         case 'r':
-            printf("%s\n", "[PAR]  Make ISO image then run cdrecord to burn disc image.");
+            foutput("%s\n", "[PAR]  Make ISO image then run cdrecord to burn disc image.");
             globals.runmkisofs=1;
             if ((optarg) && (strlen(optarg) >4 ) )
                 globals.cdrecorddevice=strndup(optarg, MAX_OPTION_LENGTH);
             else
             {
-                printf("%s%s%s\n", "[WAR]  Device command ", (optarg)?optarg:"", " will be interpolated.\n       Run cdrecord -scanbus to check for available drivers");
+                foutput("%s%s%s\n", "[WAR]  Device command ", (optarg)?optarg:"", " will be interpolated.\n       Run cdrecord -scanbus to check for available drivers");
                 globals.cdrecorddevice=strdup("");
             }
             break;
 
         case 'R':
-            printf("%s\n", "[PAR]  Make ISO image the run growisofs to burn disc image.");
+            foutput("%s\n", "[PAR]  Make ISO image the run growisofs to burn disc image.");
             globals.runmkisofs=1;
             globals.rungrowisofs=1;
             if ((optarg) && (strlen(optarg) >4 ) )
@@ -838,16 +786,16 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 
         case 'a' :
-            printf("%s\n", "[PAR]  Autoplay on.");
+            foutput("%s\n", "[PAR]  Autoplay on.");
             globals.autoplay=1;
             break;
 
         case 't' :
-            printf("%s\n", "[PAR]  Enhanced debugging-level verbosity");
+            foutput("%s\n", "[PAR]  Enhanced debugging-level verbosity");
             break;
 
         case 'd' :
-            printf("%s\n", "[PAR]  Debugging-level verbosity");
+            foutput("%s\n", "[PAR]  Debugging-level verbosity");
             break;
 
         case 'x' :
@@ -876,7 +824,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             globals.videozone=1;
             free(globals.settings.linkdir);
             globals.settings.linkdir=strndup(optarg, MAX_OPTION_LENGTH);
-            printf("%s%s\n", "[PAR]  VIDEO_TS input directory is: ", optarg);
+            foutput("%s%s\n", "[PAR]  VIDEO_TS input directory is: ", optarg);
 
             break;
 
@@ -885,11 +833,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             if (globals.videolinking)
             {
-                printf("%s\n", "[WAR]  You cannot delete video zone with -n if -V is activated too.\n      Ignoring -n...");
+                foutput("%s\n", "[WAR]  You cannot delete video zone with -n if -V is activated too.\n      Ignoring -n...");
                 break;
             }
             globals.videozone=0;
-            printf("%s\n", "[PAR]  No video zone");
+            foutput("%s\n", "[PAR]  No video zone");
             break;
 
         case 'i' :
@@ -905,7 +853,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             change_directory(globals.settings.workdir);
 
             if (closedir(dir) == -1)
-                printf( "%s\n", "[ERR]  Impossible to close dir");
+                foutput( "%s\n", "[ERR]  Impossible to close dir");
 
             /* all-important, otherwise irrelevant EXIT_ON_RUNTIME_ERROR will be generated*/
 
@@ -921,7 +869,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             switch (errmsg)
             {
             case   EINVAL :
-                printf( "%s\n",  "[ERR]  Incorrect offset value");
+                foutput( "%s\n",  "[ERR]  Incorrect offset value");
                 clean_exit(EXIT_SUCCESS);
                 break;
             case   ERANGE :
@@ -931,10 +879,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             errno=0;
 
             if (startsector)
-                printf("[MSG]  Using start sector: %"PRId32"\n", startsector);
+                foutput("[MSG]  Using start sector: %"PRId32"\n", startsector);
             else
             {
-                printf("[ERR]  Illegal negative start sector of %"PRId32"...falling back on automatic start sector\n", startsector);
+                foutput("[ERR]  Illegal negative start sector of %"PRId32"...falling back on automatic start sector\n", startsector);
                 startsector=-1;
             }
 
@@ -944,26 +892,26 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if ((optarg != NULL) && (strcmp(optarg, "0") == 0))
             {
                 globals.end_pause=0;
-                printf("%s\n", "[PAR]  End pause will be suppressed.");
+                foutput("%s\n", "[PAR]  End pause will be suppressed.");
             }
             else
             {
                 globals.end_pause=1;
-                printf("%s\n", "[PAR]  Adding end pause.");
+                foutput("%s\n", "[PAR]  Adding end pause.");
             }
             break;
 
 
         case 'U':
 
-            printf("%s", "[PAR]  Loop menu background video\n");
+            foutput("%s", "[PAR]  Loop menu background video\n");
             img->loop=1;
             break;
 
 #ifndef WITHOUT_FIXWAV
         case 'f':
             globals.fixwav_virtual_enable=1;
-            printf("%s\n", "[PAR]  Virtual fixwav enabled.");
+            foutput("%s\n", "[PAR]  Virtual fixwav enabled.");
             // case 'F' must follow breakless
 
         case 'F':
@@ -973,10 +921,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             globals.fixwav_enable=1;
             globals.fixwav_parameters=optarg;
             globals.fixwav_automatic=1; /* default */
-            printf("%s\n", "[PAR]  Bad wav headers will be fixed by fixwav");
+            foutput("%s\n", "[PAR]  Bad wav headers will be fixed by fixwav");
             if (optarg != NULL)
             {
-                printf("%s%s\n", "[PAR]  fixwav command line: ", optarg);
+                foutput("%s%s\n", "[PAR]  fixwav command line: ", optarg);
                 /* sub-option analysis */
                 fixwav_parsing(globals.fixwav_parameters);
             }
@@ -991,7 +939,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             /* Uses sox to convert different input formats */
             globals.sox_enable=1;
-            printf("%s\n", "[PAR]  Audio formats other than WAV and FLAC will be converted by sox tool.");
+            foutput("%s\n", "[PAR]  Audio formats other than WAV and FLAC will be converted by sox tool.");
 
             break;
 #endif
@@ -1001,15 +949,15 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if (globals.lossy_rounding)
             {
                 globals.lossy_rounding=0;
-                printf("%s\n", "[PAR]  --lossy-rounding was neutralized.");
+                foutput("%s\n", "[PAR]  --lossy-rounding was neutralized.");
             }
 
-            printf("%s\n", "[PAR]  No audio padding will be performed by core dvda-processes.");
+            foutput("%s\n", "[PAR]  No audio padding will be performed by core dvda-processes.");
             break;
 
         case 2 :
             globals.minimal_padding=1;
-            printf("%s\n", "[PAR]  Minimal padding of audio samples (for evenness).");
+            foutput("%s\n", "[PAR]  Minimal padding of audio samples (for evenness).");
             break;
 
         case 'L' :
@@ -1017,15 +965,15 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if (globals.padding)
             {
                 globals.padding=0;
-                printf("%s\n", "[PAR]  Default padding was neutralized.");
+                foutput("%s\n", "[PAR]  Default padding was neutralized.");
             }
             if (globals.padding_continuous)
             {
                 globals.padding_continuous=0;
-                printf("%s\n", "[PAR]  --pad-cont was neutralized");
+                foutput("%s\n", "[PAR]  --pad-cont was neutralized");
             }
 
-            printf("%s\n", "[PAR]  Sample count rounding will be performed by cutting audio files.");
+            foutput("%s\n", "[PAR]  Sample count rounding will be performed by cutting audio files.");
             break;
 #endif
 #if 0
@@ -1035,28 +983,28 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if (globals.padding == 0)
             {
                 globals.padding=1;
-                printf("%s\n", "[PAR]  --no-padding was neutralized");
+                foutput("%s\n", "[PAR]  --no-padding was neutralized");
             }
             if (globals.lossy_rounding)
             {
                 globals.lossy_rounding=0;
-                printf("%s\n", "[PAR]  --lossy-rounding was neutralized");
+                foutput("%s\n", "[PAR]  --lossy-rounding was neutralized");
             }
-            printf("%s\n", "[PAR]  Pad with last known byte, if padding, not 0s.");
+            foutput("%s\n", "[PAR]  Pad with last known byte, if padding, not 0s.");
             break;
 #endif
         case 'W' :
-            printf("%s\n", "[PAR]  Lexer was deactivated");
+            foutput("%s\n", "[PAR]  Lexer was deactivated");
             globals.enable_lexer=0;
             break;
 
         case 'Z' :
-            printf("%s%d\n", "[PAR]  Duplicate group #", nplaygroups+1);
+            foutput("%s%d\n", "[PAR]  Duplicate group #", nplaygroups+1);
             globals.playlist=1;
             nplaygroups++;
             if (nplaygroups > 8)
             {
-                if (globals.debugging) printf("%s\n", "[ERR]  There cannot be more than 9 copy groups. Skipping...");
+                if (globals.debugging) foutput("%s\n", "[ERR]  There cannot be more than 9 copy groups. Skipping...");
                 break;
             }
             playtitleset[nplaygroups]=atoi(optarg);
@@ -1064,7 +1012,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case 'c' :
-            printf("%s\n", "[PAR]  Channel group assignement activated.");
+            foutput("%s\n", "[PAR]  Channel group assignement activated.");
             globals.cga=1;
             break;
 
@@ -1072,32 +1020,32 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             if (optarg)
             {
-                printf("[PAR]  File(s) %s will be used as (spumuxed) top menu\n", optarg);
+                foutput("[PAR]  File(s) %s will be used as (spumuxed) top menu\n", optarg);
                 img->topmenu=fn_strtok(optarg, ',' , img->topmenu, 0,NULL,NULL);
                 globals.topmenu=Min(globals.topmenu, RUN_DVDAUTHOR);
             }
             else
             {
-                printf("%s\n", "[PAR]  Automatic generation of top menu...");
+                foutput("%s\n", "[PAR]  Automatic generation of top menu...");
                 globals.topmenu=Min(globals.topmenu, AUTOMATIC_MENU);
             }
 
             break;
 
         case 'k' :
-            printf("%s","[PAR]  Generates text table in IFO files.\n\n");
+            foutput("%s","[PAR]  Generates text table in IFO files.\n\n");
             globals.text=1;
             textable=fn_strtok(optarg, ',' , textable, 0,NULL,NULL);
             break;
 
         case 'M' :
-            printf("%s%s\n", "[PAR]  dvdauthor Xml project: ", optarg);
+            foutput("%s%s\n", "[PAR]  dvdauthor Xml project: ", optarg);
             globals.xml=strndup(optarg, MAX_OPTION_LENGTH);
             globals.topmenu=Min(globals.topmenu, RUN_DVDAUTHOR);
             break;
 
         case 'H' :
-            printf("%s%s\n", "[PAR]  spumux Xml project: ", optarg);
+            foutput("%s%s\n", "[PAR]  spumux Xml project: ", optarg);
             static int spurank;
             while (spurank >= img->nmenus) 	img->nmenus++;
             if (img->nmenus) globals.spu_xml=realloc(globals.spu_xml, img->nmenus*sizeof(char*));
@@ -1106,21 +1054,21 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case 'B':
-            printf("%s%s\n", "[PAR]  background mpg video: ", optarg);
+            foutput("%s%s\n", "[PAR]  background mpg video: ", optarg);
             if (img->backgroundmpg == NULL)
                 img->backgroundmpg=calloc(1, sizeof(char*));
             if (img->backgroundmpg == NULL) perror("[ERR]  img->backgroundmpg\n");
 
             img->backgroundmpg=fn_strtok(optarg, ',' , img->backgroundmpg, 0,NULL,NULL);
 
-            printf("[PAR]  Top background mpg file(s) %s will be used\n", optarg);
+            foutput("[PAR]  Top background mpg file(s) %s will be used\n", optarg);
 
             globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             break;
 
         case 'u':
 
-            printf("%s%s\n", "[PAR]  duration of background mpg video: ", optarg);
+            foutput("%s%s\n", "[PAR]  duration of background mpg video: ", optarg);
             durationchain=strndup(optarg, MAX_OPTION_LENGTH);
 
             h=strtok(durationchain, ":");
@@ -1128,7 +1076,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             sec=strtok(NULL, ":");
             if ((h == NULL) || (min == NULL) || (sec == NULL))
             {
-                printf("%s\n", "[ERR]  format must be --duration hh:mm:ss");
+                foutput("%s\n", "[ERR]  format must be --duration hh:mm:ss");
                 break;
             }
             img->h=atoi(h);
@@ -1153,10 +1101,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 if ((img->selectfgcolor_palette == NULL)|| (img->highlightcolor_palette ==NULL) ||  (img->textcolor_palette ==NULL))
                     EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Color chain is illegal: enter text:highlight:select color separated by a colon");
                 errno=0;
-                if (img->textcolor_palette) printf("[PAR]  Top menu palette text color: %s %lx\n", img->textcolor_palette, strtoul(img->textcolor_palette,NULL,16));
-                //if (img->textcolor_palette) printf("[PAR]  Top menu palette background color: %s %lx\n", img->bgcolor_palette, strtoul(img->bgcolor_palette,NULL,16));
-                if (img->textcolor_palette) printf("[PAR]  Top menu palette highlight color: %s %lx\n", img->highlightcolor_palette, strtoul(img->highlightcolor_palette,NULL,16));
-                if (img->textcolor_palette) printf("[PAR]  Top menu palette select action color: %s %lx\n", img->selectfgcolor_palette, strtoul(img->selectfgcolor_palette,NULL,16));
+                if (img->textcolor_palette) foutput("[PAR]  Top menu palette text color: %s %lx\n", img->textcolor_palette, strtoul(img->textcolor_palette,NULL,16));
+                //if (img->textcolor_palette) foutput("[PAR]  Top menu palette background color: %s %lx\n", img->bgcolor_palette, strtoul(img->bgcolor_palette,NULL,16));
+                if (img->textcolor_palette) foutput("[PAR]  Top menu palette highlight color: %s %lx\n", img->highlightcolor_palette, strtoul(img->highlightcolor_palette,NULL,16));
+                if (img->textcolor_palette) foutput("[PAR]  Top menu palette select action color: %s %lx\n", img->selectfgcolor_palette, strtoul(img->selectfgcolor_palette,NULL,16));
 
                 if (errno == ERANGE)
                 {
@@ -1181,7 +1129,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 if (strcmp(piccolorchain, "norefresh") == 0)
                 {
                     img->refresh=0;
-                    printf("%s\n", "[PAR]  Menu pics will not be refreshed...");
+                    foutput("%s\n", "[PAR]  Menu pics will not be refreshed...");
                     break;
                 }
 
@@ -1193,10 +1141,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 img->selectfgcolor_pic=strdup(strtok(NULL, ":"));
                 if ((img->selectfgcolor_pic == NULL)|| (img->highlightcolor_pic ==NULL) || (img->bgcolor_pic == NULL) || (img->textcolor_pic ==NULL))
                     EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Picture color chain is illegal: enter text,background,highlight,select color\n        separated by a colon, with rgb components by commas");
-                if (img->textcolor_pic) printf("[PAR]  Top menu text color: rgb(%s)\n", img->textcolor_pic);
-                if (img->bgcolor_pic) printf("[PAR]  Top menu background color: rgb(%s)\n", img->bgcolor_pic);
-                if (img->highlightcolor_pic) printf("[PAR]  Top menu highlight color: rgb(%s)\n", img->highlightcolor_pic);
-                if (img->selectfgcolor_pic) printf("[PAR]  Top menu select action color: rgb(%s)\n", img->selectfgcolor_pic);
+                if (img->textcolor_pic) foutput("[PAR]  Top menu text color: rgb(%s)\n", img->textcolor_pic);
+                if (img->bgcolor_pic) foutput("[PAR]  Top menu background color: rgb(%s)\n", img->bgcolor_pic);
+                if (img->highlightcolor_pic) foutput("[PAR]  Top menu highlight color: rgb(%s)\n", img->highlightcolor_pic);
+                if (img->selectfgcolor_pic) foutput("[PAR]  Top menu select action color: rgb(%s)\n", img->selectfgcolor_pic);
 
             }
             else
@@ -1204,7 +1152,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             if ((strcmp(img->selectfgcolor_pic, img->highlightcolor_pic) == 0) || (strcmp(img->textcolor_pic, img->highlightcolor_pic) == 0) || (strcmp(img->textcolor_pic, img->selectfgcolor_pic) == 0))
             {
-                printf("%s\n", "[WAR]  You should use different color values for menu pics: resetting to defaults");
+                foutput("%s\n", "[WAR]  You should use different color values for menu pics: resetting to defaults");
                 free(img->textcolor_pic);
                 free(img->highlightcolor_pic);
                 free(img->selectfgcolor_pic);
@@ -1228,7 +1176,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 if (strcmp(activepiccolorchain, "norefresh") == 0)
                 {
                     img->refresh=0;
-                    printf("%s\n", "[PAR]  Active menu pics will not be refreshed...");
+                    foutput("%s\n", "[PAR]  Active menu pics will not be refreshed...");
                     break;
                 }
 
@@ -1241,10 +1189,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 img->activeselectfgcolor_palette=strdup(strtok(NULL, ":"));
                 if ((img->activeselectfgcolor_palette == NULL)|| (img->activehighlightcolor_palette ==NULL) || (img->activebgcolor_palette == NULL) || (img->activetextcolor_palette ==NULL))
                     EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Active picture color chain is illegal: enter text,background,highlight,select color\n        separated by a colon, with rgb components by commas");
-                if (img->activetextcolor_palette) printf("[PAR]  Active menu text color: rgb(%s)\n", img->activetextcolor_palette);
-                if (img->activebgcolor_palette) printf("[PAR]  Active menu background color: rgb(%s)\n", img->activebgcolor_palette);
-                if (img->activehighlightcolor_palette) printf("[PAR]  Active menu highlight color: rgb(%s)\n", img->activehighlightcolor_palette);
-                if (img->activeselectfgcolor_palette) printf("[PAR]  Active menu select action color: rgb(%s)\n", img->activeselectfgcolor_palette);
+                if (img->activetextcolor_palette) foutput("[PAR]  Active menu text color: rgb(%s)\n", img->activetextcolor_palette);
+                if (img->activebgcolor_palette) foutput("[PAR]  Active menu background color: rgb(%s)\n", img->activebgcolor_palette);
+                if (img->activehighlightcolor_palette) foutput("[PAR]  Active menu highlight color: rgb(%s)\n", img->activehighlightcolor_palette);
+                if (img->activeselectfgcolor_palette) foutput("[PAR]  Active menu select action color: rgb(%s)\n", img->activeselectfgcolor_palette);
 
             }
             else
@@ -1252,7 +1200,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             if ((strcmp(img->activeselectfgcolor_palette, img->activehighlightcolor_palette) == 0) || (strcmp(img->activetextcolor_palette, img->activehighlightcolor_palette) == 0) || (strcmp(img->activetextcolor_palette, img->activeselectfgcolor_palette) == 0))
             {
-                printf("%s\n", "[WAR]  You should use different color values for active menu pics: resetting to defaults");
+                foutput("%s\n", "[WAR]  You should use different color values for active menu pics: resetting to defaults");
                 free(img->activetextcolor_palette);
                 free(img->activehighlightcolor_palette);
                 free(img->activeselectfgcolor_palette);
@@ -1269,7 +1217,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case 'O':
             img->screentextchain=strndup(optarg, MAX_OPTION_LENGTH);
-            if (globals.veryverbose) printf("%s %s\n", "[PAR]  Screen textchain is:", img->screentextchain);
+            if (globals.veryverbose) foutput("%s %s\n", "[PAR]  Screen textchain is:", img->screentextchain);
             globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             img->refresh=1;
             break;
@@ -1296,9 +1244,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 if ((img->textfont == NULL)|| (img->pointsize <1) || (img->fontwidth < 1) )
                     EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Font chain is illegal: enter font,font size,font width (width in pixels for size=10)");
 
-                if (img->textfont) printf("[PAR]  Font: %s\n", img->textfont);
-                if (img->pointsize) printf("[PAR]  Point size: %d\n", img->pointsize);
-                if (img->fontwidth) printf("[PAR]  Font width: %d\n", img->fontwidth);
+                if (img->textfont) foutput("[PAR]  Font: %s\n", img->textfont);
+                if (img->pointsize) foutput("[PAR]  Point size: %d\n", img->pointsize);
+                if (img->fontwidth) foutput("[PAR]  Font width: %d\n", img->fontwidth);
 
             }
             globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
@@ -1324,7 +1272,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
             else if ((strcasecmp(optarg,"pal") != 0) && (strcasecmp(optarg,"secam") != 0))
             {
-                printf("%s\n","[ERR]  Only options are 'ntsc', 'secam' or (default) 'pal'.");
+                foutput("%s\n","[ERR]  Only options are 'ntsc', 'secam' or (default) 'pal'.");
                 clean_exit(EXIT_FAILURE);
             }
 
@@ -1342,20 +1290,20 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             else if (optarg[0] == '4')
                 img->aspectratio=strdup("2.21:1");
             else
-                printf("%s\n","[ERR]  Only aspect ratios are 1 (1:1), 2 (4:3), 3 (16:9) or 4 (2.21:1).");
-            printf("[PAR]  Using aspect ratio: %s\n", img->aspectratio);
+                foutput("%s\n","[ERR]  Only aspect ratios are 1 (1:1), 2 (4:3), 3 (16:9) or 4 (2.21:1).");
+            foutput("[PAR]  Using aspect ratio: %s\n", img->aspectratio);
             break;
 
         case '6':
             img->nmenus=atoi(optarg);
-            printf("[PAR]  Using %d menu screens.\n", img->nmenus);
+            foutput("[PAR]  Using %d menu screens.\n", img->nmenus);
             break;
 
 
 
         case '7':
             img->ncolumns=atoi(optarg);
-            printf("[PAR]  Using %d menu columns.\n", img->ncolumns);
+            foutput("[PAR]  Using %d menu columns.\n", img->ncolumns);
 
             break;
 
@@ -1365,7 +1313,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             strlength=strlen(optarg);
             globals.settings.bindir=realloc(globals.settings.bindir, (strlength+25)*sizeof(char)); // 25 char for later application names
             memcpy(globals.settings.bindir, optarg, strlength);
-            printf("[PAR]  Using directory %s for auxiliary binaries.\n", optarg);
+            foutput("[PAR]  Using directory %s for auxiliary binaries.\n", optarg);
             break;
 
 
@@ -1393,7 +1341,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         else
         {
             if (globals.debugging)
-                printf("[MSG]  Output directory %s has been preserved.\n", globals.settings.outdir);
+                foutput("[MSG]  Output directory %s has been preserved.\n", globals.settings.outdir);
         }
 
 
@@ -1420,22 +1368,22 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         else if (refresh_tempdir)
         {
             if (globals.debugging)
-                printf("[PAR]  Temporary directory %s has been removed and recreated.\n", globals.settings.tempdir);
+                foutput("[PAR]  Temporary directory %s has been removed and recreated.\n", globals.settings.tempdir);
         }
         else
         {
             if (globals.debugging)
-                printf("[PAR]  Temporary directory %s has been preserved.\n", globals.settings.tempdir);
+                foutput("[PAR]  Temporary directory %s has been preserved.\n", globals.settings.tempdir);
         }
         errno=0;
 
     }
 
-   // Coherence checks
+    // Coherence checks
 
-   // You first have to test here.
+    // You first have to test here.
 
-     menu_characteristics_coherence_test(img, ngroups);
+    menu_characteristics_coherence_test(img, ngroups);
 
 
 
@@ -1443,8 +1391,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 #if !defined HAVE_MPEG2ENC || !defined HAVE_JPEG2YUV || !defined HAVE_MPLEX
     if (globals.topmenu <= RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR)
     {
-        printf("%s\n", "[ERR]  You need mplex, mpeg2enc and jpeg2yuv to author\n       a background screen, please install these applications.");
-        printf("%s\n", "[WAR]  Continuing without menu authoring...");
+        foutput("%s\n", "[ERR]  You need mplex, mpeg2enc and jpeg2yuv to author\n       a background screen, please install these applications.");
+        foutput("%s\n", "[WAR]  Continuing without menu authoring...");
         globals.topmenu=NO_MENU;
     }
 
@@ -1476,15 +1424,15 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             if (img->backgroundmpg)
             {
-                printf("%s\n", "[ERR]  Background mpg file already specified, skipping...");
+                foutput("%s\n", "[ERR]  Background mpg file already specified, skipping...");
                 break;
             }
 
-            printf("%s%s\n", "[PAR]  Soundtrack(s) to be muxed into background mpg video: ", optarg);
+            foutput("%s%s\n", "[PAR]  Soundtrack(s) to be muxed into background mpg video: ", optarg);
 
             if (!optarg)
             {
-                printf("%s", "[WAR]  Resetting soundtrack input to default soundtrack...\n");
+                foutput("%s", "[WAR]  Resetting soundtrack input to default soundtrack...\n");
             }
             else
             {
@@ -1515,7 +1463,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
 
 #else
-            printf("%s", "[ERR]  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+            foutput("%s", "[ERR]  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
 #endif
             break;
 
@@ -1556,10 +1504,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             if (img->backgroundmpg)
             {
-                printf("%s\n", "[ERR]  Background mpg file already specified, skipping...");
+                foutput("%s\n", "[ERR]  Background mpg file already specified, skipping...");
                 break;
             }
-            printf("%s%s\n", "[PAR]  background jpg file(s) for generating mpg video: ", optarg);
+            foutput("%s%s\n", "[PAR]  background jpg file(s) for generating mpg video: ", optarg);
 
             str=strdup(optarg);
 
@@ -1568,7 +1516,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if ((backgroundpic_arraylength=arraylength(img->backgroundpic)) < img->nmenus)
             {
                 int u;
-                printf("%s\n","[WAR]  You did not give enough filenames, completing with last one");
+                foutput("%s\n","[WAR]  You did not give enough filenames, completing with last one");
                 for (u=0; u + backgroundpic_arraylength < img->nmenus; u++)
                     copy_file(img->backgroundpic[backgroundpic_arraylength-1], img->backgroundpic[u+backgroundpic_arraylength]);
             }
@@ -1582,7 +1530,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case 'N':
 
-            printf("[PAR]  Using %s top menu background picture.\n", optarg);
+            foutput("[PAR]  Using %s top menu background picture.\n", optarg);
 
 
             img->blankscreen=strdup(optarg);
@@ -1591,7 +1539,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             len2=strlen(img->backgroundpic[0]);
             if  ((img->blankscreen[len-1] != 'g') || (img->blankscreen[len-2] != 'n') || (img->blankscreen[len-3] != 'p'))
             {
-                printf("[ERR]  You should use a .png background picture... exiting.");
+                foutput("%s\n", "[ERR]  You should use a .png background picture... exiting.");
                 clean_exit(EXIT_FAILURE);
             }
             // note that within a switch, some compilers do not authorize char dest[len+1]
@@ -1599,7 +1547,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             img->backgroundpic[0][len2-2]='p';
             img->backgroundpic[0][len2-3]='j';
 
-            if (globals.veryverbose) printf("%s\n", "[INF]  Converting overlay .png blankscreen to .jg blankscreen for mpg authoring...");
+            if (globals.veryverbose) foutput("%s\n", "[INF]  Converting overlay .png blankscreen to .jg blankscreen for mpg authoring...");
             if (img->blankscreen)
             {
                 char* convert=NULL;
@@ -1608,7 +1556,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                 snprintf(cl, 500, "%s %s %s", convert, img->blankscreen , img->backgroundpic[0]);
 
-                if (globals.veryverbose) printf("[INF]  Launching convert with command line %s\n",  cl);
+                if (globals.veryverbose) foutput("[INF]  Launching convert with command line %s\n",  cl);
                 unlink(img->backgroundpic[0]);
                 errno=0;
                 if (system(cl) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
@@ -1620,8 +1568,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case 'E':
-            printf("%s%s\n", "[PAR]  highlight png file(s) for generating mpg video: ", optarg);
-            printf("%s\n", "[WAR]  Check that your image doe not have more than 4 colors, including transparency.");
+            foutput("%s%s\n", "[PAR]  highlight png file(s) for generating mpg video: ", optarg);
+            foutput("%s\n", "[WAR]  Check that your image doe not have more than 4 colors, including transparency.");
             str=strdup(optarg);
 
             img->highlightpic=fn_strtok(str,',',img->highlightpic,0,NULL,NULL);
@@ -1629,7 +1577,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if ((highlight_arraylength=arraylength(img->highlightpic)) < img->nmenus)
             {
                 int u;
-                printf("%s\n","[WAR]  You did not give enough filenames, completing with last one");
+                foutput("%s\n","[WAR]  You did not give enough filenames, completing with last one");
                 for (u=0; u + highlight_arraylength < img->nmenus; u++)
                     copy_file(img->highlightpic[highlight_arraylength-1], img->highlightpic[u+highlight_arraylength]);
             }
@@ -1642,8 +1590,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case 'e' :
-            printf("%s%s\n", "[PAR]  select png file(s) for generating mpg video: ", optarg);
-            printf("%s\n", "[WAR]  Check that your image doe not have more than 4 colors, including transparency.");
+            foutput("%s%s\n", "[PAR]  select png file(s) for generating mpg video: ", optarg);
+            foutput("%s\n", "[WAR]  Check that your image doe not have more than 4 colors, including transparency.");
             str=strdup(optarg);
 
             img->selectpic=fn_strtok(str,',',img->selectpic,0,NULL,NULL);
@@ -1651,7 +1599,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if ((select_arraylength=arraylength(img->selectpic)) < img->nmenus)
             {
                 int u;
-                printf("%s\n","[WAR]  You did not give enough filenames, completing with last one");
+                foutput("%s\n","[WAR]  You did not give enough filenames, completing with last one");
                 for (u=0; u + select_arraylength < img->nmenus; u++)
                     copy_file(img->selectpic[select_arraylength-1], img->selectpic[u+select_arraylength]);
             }
@@ -1665,8 +1613,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 
         case 'G' :
-            printf("%s%s\n", "[PAR]  image png file(s) for generating mpg video: ", optarg);
-            printf("%s\n", "[WAR]  Check that your image doe not have more than 4 colors, including transparency.");
+            foutput("%s%s\n", "[PAR]  image png file(s) for generating mpg video: ", optarg);
+            foutput("%s\n", "[WAR]  Check that your image doe not have more than 4 colors, including transparency.");
             str=strdup(optarg);
 
             img->imagepic=fn_strtok(str,',',img->imagepic,0,NULL,NULL);
@@ -1674,7 +1622,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if ((image_arraylength=arraylength(img->imagepic)) < img->nmenus)
             {
                 int u;
-                printf("%s\n","[WAR]  You did not give enough filenames, completing with last one");
+                foutput("%s\n","[WAR]  You did not give enough filenames, completing with last one");
                 for (u=0; u + image_arraylength < img->nmenus; u++)
                     copy_file(img->imagepic[image_arraylength -1], img->imagepic[u+image_arraylength ]);
             }
@@ -1689,7 +1637,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 2:
 
 
-            printf("%s%s\n", "[PAR]  Background color(s) for top (and active) menus : ", optarg);
+            foutput("%s%s\n", "[PAR]  Background color(s) for top (and active) menus : ", optarg);
             str=strdup(optarg);
 
             img->backgroundcolors=fn_strtok(str,':', img->backgroundcolors,0,NULL,NULL);
@@ -1697,7 +1645,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if ((bgcolors_arraylength=arraylength(img->backgroundcolors)) < img->nmenus)
             {
                 int u;
-                printf("%s\n","[WAR]  You did not give enough colors, completing with last one");
+                foutput("%s\n","[WAR]  You did not give enough colors, completing with last one");
                 for (u=0; u + bgcolors_arraylength < img->nmenus; u++)
                     img->backgroundcolors[u+bgcolors_arraylength]=img->backgroundcolors[bgcolors_arraylength -1];
             }
@@ -1733,7 +1681,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             {
                 if ((img->imagepic[u]) || (img->highlightpic[u]) || (img->selectpic[u]))
                 {
-                    printf("[WAR]  You should enter three menu-authoring custom-made .png pictures, for main image, highlight and select action.\nn       Reverting to automatic mode.\n\n");
+                    foutput("%s","[WAR]  You should enter three menu-authoring custom-made .png pictures, for main image, highlight and select action.\nn       Reverting to automatic mode.\n\n");
                     globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
                 }
             }
@@ -1775,7 +1723,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 dest=copy_file2dir_rename(img->backgroundpic[0], globals.settings.tempdir, name);
             }
         if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Failed to copy background .jpg pictures to temporary directory.")
-        free(dest);
+            free(dest);
 
     case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
 
@@ -1784,10 +1732,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         dest=copy_file2dir(img->blankscreen, globals.settings.tempdir);
 
         if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Failed to copy background .png blankscreen to temporary directory.")
-        free(dest);
+            free(dest);
 
-            if (!menupic_input_coherence_test)
-                normalize_temporary_paths(img);
+        if (!menupic_input_coherence_test)
+            normalize_temporary_paths(img);
 
         change_directory(globals.settings.workdir);
 
@@ -1795,8 +1743,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         if ((img->imagepic==NULL) && (img->selectpic==NULL)&& (img->highlightpic==NULL))
         {
-            printf("%s\n", "[WAR]  You need all subtitle images");
-            printf("%s\n", "[WAR]  Continuing with menu picture authoring...");
+            foutput("%s\n", "[WAR]  You need all subtitle images");
+            foutput("%s\n", "[WAR]  Continuing with menu picture authoring...");
             globals.topmenu=Min(RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR, globals.topmenu);
         }
         break;
@@ -1831,7 +1779,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         }
         break;
     case NO_MENU:
-       break;
+        break;
     default:
         errno=1;
     }
@@ -1840,7 +1788,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     if ((errno)&&(user_command_line))
     {
-        printf("%s\n", "[WAR]  Not enough information. Continuing with automatic menu authoring...");
+        foutput("%s\n", "[WAR]  Not enough information. Continuing with automatic menu authoring...");
         globals.topmenu=AUTOMATIC_MENU;
         // retest now
         menu_characteristics_coherence_test(img, ngroups);
@@ -1903,11 +1851,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             npics[k]=(k)? dim+npics[k-1]: dim;
             img->npics[k]=dim;
             DIM+=dim;
-            if (globals.veryverbose) printf("  --> npics[%d] = %d\n", k, dim);
+            if (globals.veryverbose) foutput("  --> npics[%d] = %d\n", k, dim);
             FREE(tab2)
             if (img->npics[k] > 99)
             {
-                printf("[ERR]  The maximum number of pics per track is 99.\n");
+                foutput("%s", "[ERR]  The maximum number of pics per track is 99.\n");
                 EXIT_ON_RUNTIME_ERROR_VERBOSE("Exiting...");
             }
         }
@@ -1920,7 +1868,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             goto standard_checks;
         }
         img->count=DIM;
-        if (globals.veryverbose) printf("[MSG]  Total of %d pictures\n", img->count);
+        if (globals.veryverbose) foutput("[MSG]  Total of %d pictures\n", img->count);
         free(stillpic_string);
 
         if (still_options_string)
@@ -1935,13 +1883,13 @@ standard_checks:
 
     if (nplaygroups > ngroups-nvideolinking_groups)
     {
-        if (globals.debugging) printf("[ERR]  There cannot be more copy groups than audio groups. Limiting to %d groups...\n", ngroups-nvideolinking_groups);
+        if (globals.debugging) foutput("[ERR]  There cannot be more copy groups than audio groups. Limiting to %d groups...\n", ngroups-nvideolinking_groups);
         nplaygroups=ngroups-nvideolinking_groups;
     }
 
     if ( nplaygroups+ngroups > 8)
     {
-        if (globals.debugging) printf("%s\n", "[ERR]  There cannot be more copy groups than audio groups. Limiting to 9 groups...");
+        if (globals.debugging) foutput("%s\n", "[ERR]  There cannot be more copy groups than audio groups. Limiting to 9 groups...");
         nplaygroups=MAX(0, 9-ngroups);
     }
 
@@ -1991,32 +1939,32 @@ void fixwav_parsing(char *ssopt)
         switch (subopt)
         {
         case 0:
-            printf("%s\n", "[PAR]  Fixwav: simple mode activated, advanced features deactivated.");
+            foutput("%s\n", "[PAR]  Fixwav: simple mode activated, advanced features deactivated.");
             globals.fixwav_automatic=0;
             break;
 
         case 1:
-            printf("%s\n", "[PAR]  Fixwav: prepending header to raw file.");
+            foutput("%s\n", "[PAR]  Fixwav: prepending header to raw file.");
             globals.fixwav_prepend=1;
             break;
 
         case 2:
-            printf("%s\n", "[PAR]  Fixwav: file header will be repaired in place.");
+            foutput("%s\n", "[PAR]  Fixwav: file header will be repaired in place.");
             globals.fixwav_in_place=1;
             break;
 
         case 3:
-            printf("%s\n", "[PAR]  Fixwav: interactive mode activated.");
+            foutput("%s\n", "[PAR]  Fixwav: interactive mode activated.");
             globals.fixwav_interactive=1;
             break;
 
         case 4:
-            printf("%s\n", "[PAR]  Fixwav: padding activated.");
+            foutput("%s\n", "[PAR]  Fixwav: padding activated.");
             globals.fixwav_padding=1;
             break;
 
         case 5:
-            printf("%s\n", "[PAR]  Fixwav: pruning silence at end of files.");
+            foutput("%s\n", "[PAR]  Fixwav: pruning silence at end of files.");
             globals.fixwav_prune=1;
             break;
 
@@ -2024,24 +1972,24 @@ void fixwav_parsing(char *ssopt)
 
             FREE(globals.fixwav_suffix)
             globals.fixwav_suffix=strndup(value, MAX_OPTION_LENGTH);
-            printf("[PAR]  Fixwav output suffix: %s\n", globals.fixwav_suffix);
+            foutput("[PAR]  Fixwav output suffix: %s\n", globals.fixwav_suffix);
             break;
 
         case 7:
             globals.fixwav_force=1;
-            printf("%s", "[PAR]  Fixwav will be launched before SoX for seriously mangled headers.\n");
+            foutput("%s", "[PAR]  Fixwav will be launched before SoX for seriously mangled headers.\n");
             break;
 
         case 8:
             globals.fixwav_cautious=1;
-            printf("%s", "[PAR]  Fixwav will ask user permission to overwrite files in place.\n");
+            foutput("%s", "[PAR]  Fixwav will ask user permission to overwrite files in place.\n");
             break;
 
         case 9:
             FREE(globals.settings.fixwav_database)
             globals.settings.fixwav_database=strndup(value, MAX_OPTION_LENGTH);
             secure_mkdir(globals.settings.fixwav_database, 0755, DEFAULT_DATABASE_FOLDER);
-            printf("%s       %s%s", "[PAR]  Fixwav will output info chunk from wav headers to:\n", globals.settings.fixwav_database, SEPARATOR "database\n");
+            foutput("%s       %s%s", "[PAR]  Fixwav will output info chunk from wav headers to:\n", globals.settings.fixwav_database, SEPARATOR "database\n");
             break;
         }
     }
@@ -2071,7 +2019,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
     strtok(chain, ",");
 
     if (globals.debugging)
-        printf("%s\n", "[INF]  Analysing --extract suboptions...");
+        foutput("%s\n", "[INF]  Analysing --extract suboptions...");
 
 
     control=1;
@@ -2092,7 +2040,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
         char colon=*(subchunk+1);
         if ((colon != ':') || (strlen(subchunk) < 3))
         {
-            printf("%s\n", "[WAR]  Incorrect --extract suboptions, format is --extract=group1:track1,...,groupN:trackN\n       Skipping...");
+            foutput("%s\n", "[WAR]  Incorrect --extract suboptions, format is --extract=group1:track1,...,groupN:trackN\n       Skipping...");
             return;
         }
         int trackindex=atoi(subchunk+2);
@@ -2100,7 +2048,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
         if ((groupindex > 8) || (groupindex < 0) || (nextractgroup == 8) || (trackindex > 98))
         {
             groupindex=0;
-            printf("%s\n", "[WAR]  Incorrect --extract suboption, exceeding limits reset to 0.");
+            foutput("%s\n", "[WAR]  Incorrect --extract suboption, exceeding limits reset to 0.");
             nextractgroup=0;
             trackindex=0;
         }
@@ -2113,12 +2061,12 @@ void extract_list_parsing(const char *arg, extractlist* extract)
 
     if (globals.debugging)
     {
-        printf("%s","[PAR]  EXTRACTING: titleset   |   track\n");
+        foutput("%s","[PAR]  EXTRACTING: titleset   |   track\n");
         int k;
         for (j=0; j < 9; j++)
             for (k=0; k < 99; j++)
                 if ((extract->extracttitleset[j]) && (extract->extracttrackintitleset[j][k]))
-                    printf( "[PAR]                   %02d      |      %02d\n", j, k );
+                    foutput( "[PAR]                   %02d      |      %02d\n", j, k );
     }
 
     /* all-important, otherwise irrelevant EXIT_ON_RUNTIME_ERROR will be generated*/
@@ -2148,7 +2096,7 @@ void ats2wav_parsing(const char * arg, extractlist* extract)
     if ((dir=opendir(globals.settings.indir)) == NULL)
         EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not open output directory")
 
-        printf("[INF]  Extracting audio from %s\n", globals.settings.indir);
+        foutput("[INF]  Extracting audio from %s\n", globals.settings.indir);
 
 
     if (extract->nextractgroup[0])
@@ -2161,7 +2109,7 @@ void ats2wav_parsing(const char * arg, extractlist* extract)
         parse_disk(dir, globals.access_rights, OUTDIR, NULL);
 
     if (closedir(dir) == -1)
-        printf( "%s\n", "[ERR]  Impossible to close dir");
+        foutput( "%s\n", "[ERR]  Impossible to close dir");
 
     /* all-important, otherwise irrelevant EXIT_ON_RUNTIME_ERROR will be generated*/
 
@@ -2200,20 +2148,20 @@ void still_options_parsing(char *ssopt, pic* img)
             temp=atoi(value);
             if (temp > img->count)
             {
-                printf("%s\n", "[WAR]  Too many options, skipping...");
+                foutput("%s\n", "[WAR]  Too many options, skipping...");
                 break;
             }
             rank=temp;
-            printf("%s%d\n", "[PAR]  Options for still #", rank);
+            foutput("%s%d\n", "[PAR]  Options for still #", rank);
             break;
 
         case 1:
-            printf("[PAR]  #%d: Manual browsing enabled.\n", rank);
+            foutput("[PAR]  #%d: Manual browsing enabled.\n", rank);
             img->options[rank]->manual=1;
             break;
 
         case 2:
-            printf("[PAR]  #%d: start effect is: %s.\n", rank, value);    //  or: cut, fade, dissolve, top, bottom, left, right
+            foutput("[PAR]  #%d: start effect is: %s.\n", rank, value);    //  or: cut, fade, dissolve, top, bottom, left, right
             switch (value[0])
             {
             case 'c':
@@ -2242,7 +2190,7 @@ void still_options_parsing(char *ssopt, pic* img)
             break;
 
         case 3:
-            printf("[PAR]  #%d: end effect is: %s.\n", rank, value);
+            foutput("[PAR]  #%d: end effect is: %s.\n", rank, value);
             switch (value[0])
             {
             case 'c':
@@ -2273,10 +2221,10 @@ void still_options_parsing(char *ssopt, pic* img)
             lag=atoi(value);
             if (lag > 15)
             {
-                printf("%s", "[WAR]  Lag should be lower than 16, skipping...\n");
+                foutput("%s", "[WAR]  Lag should be lower than 16, skipping...\n");
                 break;
             }
-            printf("[PAR]  #%d: effect lag is: %d*0.32s=%fs.\n", rank, lag, (float) lag*0.32);
+            foutput("[PAR]  #%d: effect lag is: %d*0.32s=%fs.\n", rank, lag, (float) lag*0.32);
             img->options[rank]->lag=lag;
             break;
 
@@ -2287,7 +2235,7 @@ void still_options_parsing(char *ssopt, pic* img)
         case 6:
             img->options[rank]->manual=1;
             img->options[rank]->active=1;
-            printf("[PAR]  Using active menus for #%d.\n", rank);
+            foutput("[PAR]  Using active menus for #%d.\n", rank);
             break;
 
         }

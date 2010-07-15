@@ -363,7 +363,7 @@ int main(int argc,  char* const argv[])
 
     if (argc == 1)
     {
-        printf("\n%s", "dvda-author syntax:\n------------------\n");
+        foutput("\n%s", "dvda-author syntax:\n------------------\n");
         help();
         return(errno);
     }
@@ -404,11 +404,11 @@ int main(int argc,  char* const argv[])
            if (pstruct && pstruct->isfile)
            {
              //if (globals.debugging)
-             printf("[INF]  Parsing project file %s\n", project_filepath);
+             foutput("[INF]  Parsing project file %s\n", project_filepath);
            }
            else
            {
-            printf("[ERR]  Failed to parse project file %s\n       Exiting...\n", project_filepath);
+            foutput("[ERR]  Failed to parse project file %s\n       Exiting...\n", project_filepath);
             clean_exit(EXIT_FAILURE);
            }
            free(pstruct);
@@ -438,6 +438,7 @@ launch:
 
     fflush(NULL);
     if ((globals.loghtml) && (globals.logfile)) htmlize(globals.settings.logfile);
+    if ((globals.logfile) && (globals.journal)) fclose(globals.journal);
 
     if (globals.end_pause) pause_dos_type();
 

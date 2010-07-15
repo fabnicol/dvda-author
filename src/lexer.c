@@ -56,7 +56,7 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
 
     if (defaults == NULL)
     {
-        if (globals.debugging) printf("[ERR]  fopen(%s, \"rb\") crashed\n", path);
+        if (globals.debugging) foutput("[ERR]  fopen(%s, \"rb\") crashed\n", path);
         EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not open default file dvda-author.conf")
 
     }
@@ -71,7 +71,7 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
 
         if (NULL==fgets(chain, 500, defaults))
           {
-            if (globals.debugging) printf("Could not get chain at line %d\n",i);
+            if (globals.debugging) foutput("Could not get chain at line %d\n",i);
             continue;
           }
 
