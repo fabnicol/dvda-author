@@ -67,7 +67,7 @@ S is the table of direct conversion (WAV to AOB) and _S the table of reverse con
 
 /* with static array execution time will be comparable to explicit hard-code value assignment */
 
-static short int  S[2][6][36]=
+static uint8_t  S[2][6][36]=
 {{      {0}, {0},
         {5, 4, 11, 10, 1, 0, 3, 2, 7, 6, 9, 8},
         {5, 4, 7, 6, 13, 12, 15, 14, 1,  0, 3, 2, 9, 8, 11, 10},

@@ -50,7 +50,7 @@ static unsigned char wav_header[44]={'R','I','F','F',    //  0 - ChunkID
                                     };
 
 
-static short int  _S[2][6][36]={{ {0}, {0},
+static uint8_t  T[2][6][36]={{ {0}, {0},
         {5, 4, 7, 6, 1, 0, 9, 8, 11, 10, 3, 2},
         {9, 8, 11, 10, 1, 0, 3, 2, 13, 12, 15, 14, 5, 4 ,7, 6},
         {13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 17, 16, 19, 18, 7, 6, 9, 8, 11, 10},
@@ -182,7 +182,7 @@ extraction:
 AOB: 0  1  2  3  4  5  6  7  8  9  10  11
 WAV: 5  4  7  6  1  0  9  8  11  10  3  2
 
-These values are encoded in _S matrix to be found in src/include/multichannel.h
+These values are encoded in T matrix to be found in src/include/multichannel.h
 
  */
 
@@ -272,7 +272,7 @@ ALWAYS_INLINE_GCC static void deinterleave_24_bit_sample_extended(uint8_t channe
     uint8_t _buf[size];
 
     for (i=0; i < count ; i += size)
-        permutation(buf+i, _buf, 1, channels, _S, size);
+        permutation(buf+i, _buf, 1, channels, T, size);
 
 }
 
@@ -298,7 +298,7 @@ ALWAYS_INLINE_GCC static void deinterleave_sample_extended(uint8_t channels, int
 
     default:
         for (i=0; i < count ; i += size)
-            permutation(buf+i, _buf, 0, channels, _S, size);
+            permutation(buf+i, _buf, 0, channels, T, size);
 
     }
 }
