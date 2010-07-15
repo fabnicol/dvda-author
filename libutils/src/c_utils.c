@@ -145,12 +145,6 @@ int rmdir_recursive (char *root, char *dirname)
   char *cwd;
   char *new_root;
 
-  if (NULL == (cwd = malloc (cwdlen * sizeof *cwd)))
-    {
-      printf ("%s", "[ERR]  malloc issue\n");
-      exit (EXIT_FAILURE);
-    }
-
 
   if (root)
     {
@@ -172,17 +166,14 @@ int rmdir_recursive (char *root, char *dirname)
     new_root = strdup (dirname);
 
 
-  while (NULL == (cwd = getcwd (cwd, cwdlen)))
+  cwd=fn_get_current_dir_name();
+
+
+  if (chdir (dirname) == -1)
     {
-      if (ERANGE != errno)
-        {
-          printf ("%s", "[ERR]  getcwd issue\n");
-          exit (EXIT_FAILURE);
-        }
-      cwdlen += 32;
-      cwd = realloc (cwd, cwdlen * sizeof *cwd);
+      printf ("%s", "[ERR]  chdir() issue\n");
+      return (-1);
     }
-  chdir (dirname);
 
 
   if (NULL == (FD = opendir (".")))
@@ -228,10 +219,8 @@ int rmdir_recursive (char *root, char *dirname)
 
   for (sl = names; sl; sl = sl->next)
     {
-      //if (sl->is_dir)
-        //action_dir (sl->name);
-      //else
-        action_file (sl->name);
+      if (!sl->is_dir)
+         action_file (sl->name);
     }
 
 
@@ -264,11 +253,7 @@ int rmdir_recursive (char *root, char *dirname)
 
 int rmdir_global(char* path)
 {
-        path_t* filestruct=parse_filepath(path);
-        char*   root=filestruct->path;
-        char*   dirname=filestruct->filename;
-        int error=rmdir_recursive(root, dirname);
-        free(filestruct);
+        int error=rmdir_recursive(NULL, path);
         return (error);
 }
 
@@ -329,16 +314,15 @@ path_t *parse_filepath(const char* filepath)
     FILE* f=fopen(filepath, "rb");
     if ((errno) || (f == NULL))
     {
-        chain->exists=0;
+        chain->isfile=0;
         if (globals.veryverbose)
 	{
-	  printf("%s%s\n", "[MSG]  For file: ", filepath);
-          perror("[MSG]  parse_filepath");
+	  printf("[MSG]  Path %s is not a file\n", filepath);
 	}
     }
     else
     {
-        chain->exists=1;
+        chain->isfile=1;
         fclose(f);
     }
     errno=0;
@@ -378,7 +362,7 @@ _Bool clean_directory(char* path)
 
     if (globals.veryverbose) printf("%s%s\n", "[INF]  Cleaning directory ", path);
 
-    rmdir_global(path);
+    errno=rmdir_global(path);
 
     if (errno)
     {
@@ -866,7 +850,7 @@ char* copy_file2dir(const char *existing_file, const char *new_dir)
     if (!filedest) return NULL;
 
 
-    if (filedest->exists)
+    if (filedest->isfile)
     {
         counter++;
         // overwrite
@@ -901,7 +885,7 @@ char* copy_file2dir_rename(const char *existing_file, const char *new_dir, char*
     if (!filedest) return NULL;
 
 
-    if (filedest->exists)
+    if (filedest->isfile)
     {
         //overwrite
         unlink(dest);

@@ -401,7 +401,7 @@ int main(int argc,  char* const argv[])
               project_filepath=strdup(DEFAULT_DVDA_AUTHOR_PROJECT_FILENAME);
 
            path_t *pstruct=parse_filepath(project_filepath);
-           if (pstruct && pstruct->exists)
+           if (pstruct && pstruct->isfile)
            {
              //if (globals.debugging)
              printf("[INF]  Parsing project file %s\n", project_filepath);
