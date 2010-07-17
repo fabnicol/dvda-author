@@ -83,6 +83,13 @@ int launch_lplex_soundtrack(pic* img)
 
     for (menu=0; menu < img->nmenus; menu++)
     {
+
+        if ((img->topmenu_nslides[menu] > 1) && img->nmenus > 1)
+          {
+                  foutput("%s\n", "[WAR]  Software limitation: you cannot author discs\n       with several slides for several menus.\n       Resetting slide number to 1.\n");
+                  img->topmenu_nslides[menu] =1;
+          }
+
         char* args[img->topmenu_nslides[menu]*3+12+1];
 
         for (u=0; u < 12; u++) args[u]=args0[u];

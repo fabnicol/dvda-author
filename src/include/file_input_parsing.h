@@ -33,6 +33,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 int read_tracks(char full_path[CHAR_BUFSIZ], uint8_t *ntracks, char * parent_directory, char* filename, uint8_t ngroups_scan);
 parse_t parse_directory(DIR *dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fileinfo_t **files);
 int parse_disk(DIR* dir,  mode_t mode, const char* default_directory, extractlist *extract);
+static uint8_t cgadef[]={0, 1, 2, 3, 6, 20};
 
 ALWAYS_INLINE_GCC inline static _Bool check_cga_assignment(int cgaint)
 {
@@ -42,12 +43,12 @@ ALWAYS_INLINE_GCC inline static _Bool check_cga_assignment(int cgaint)
 
     */
 
-    static uint8_t cga_table[]={0, 1, 2, 3, 6, 20};
-    static uint8_t cga_size=sizeof(cga_table);
+
+    static uint8_t cga_size=sizeof(cgadef);
 
 
     for (k=0; k<cga_size; k++)
-        if (cgaint == cga_table[k]) return 1;
+        if (cgaint == cgadef[k]) return 1;
 
     return 0;
 }
