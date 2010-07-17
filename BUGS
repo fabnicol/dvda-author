@@ -2,25 +2,25 @@
 long option --fixwav is not available in combination with sub-options.
 Usage: Replace --fixwavprune,interactive with -Fprune,interactive.
 
-2. Still under Windows, 
+2. Still under Windows,
    cannot output to D:\ (or partition other than C:) folder if program installed under C:\
- 
-3. From version 08.09: take care to place dvda-author.conf in the same directory as the main executable, 
+
+3. From version 08.09: take care to place dvda-author.conf in the same directory as the main executable,
   unless the application was successfully built with --with-config=/path/to/dvda-author.conf/directory
   at configure stage. Should this crash, check that you built with administrative rights. See INSTALL for details.
 
 4. If using SoX, the configure script will automatically build glibc objects, among others getop1.c and getopt.c
    This is made necessary by a bug in SoX, versions < 14.3, which redefines getopt_long in own source code,
    causing stack segfaults due to runtime calls by dvda-author routines which should be linked to libc getopt_long,
-   not SoX-redefined getopt_long. This does not occur if --enable-sox-build is used or if the Code::Blocks project is 
-   used (full build). Another way out is to compile with CPPFLAGS=-DSHORT_OPTIONS_ONLY 
+   not SoX-redefined getopt_long. This does not occur if --enable-sox-build is used or if the Code::Blocks project is
+   used (full build). Another way out is to compile with CPPFLAGS=-DSHORT_OPTIONS_ONLY
    (or simply in adding #define SHORT_OPTIONS_ONLY 1 in commonvars.h), thereby using getopt instead of getopt_long.
    A renaming turnaround has been implemented as of version 09.05, which, however, does not work for MSYS builds.
 
-5. If your platform has libavformat, libavcodec, liavutil, the libsox package will be configured for then 
+5. If your platform has libavformat, libavcodec, liavutil, the libsox package will be configured for then
    which is recognizable by ld links -lavformat -lavcodec etc. in the final make output. On some platforms, eg Ubuntu,
    system-installed packages for these shared libraries are numbered (e.g. libavformat.so.52) and do not have a proper
-   "standard" link of the form libavformat.so under usual library pathc (/usr/lib, /usr/local/lib). This may cause a crash at 
+   "standard" link of the form libavformat.so under usual library pathc (/usr/lib, /usr/local/lib). This may cause a crash at
     linking time. The solution consists in either copying numbered libraries to their standard names or creating a link to numbered
     libraries using standard names.
 
@@ -31,3 +31,5 @@ Usage: Replace --fixwavprune,interactive with -Fprune,interactive.
 
 7. Version 09.09 was an unstable development version that was provided for experimental purposes, "as is".
    Many bugs have been corrected as of version 10.06.
+
+8. A serious regression has flawed --extract and -i between version 09.05 and 10.06 build 200 included. Fixed.

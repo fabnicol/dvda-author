@@ -24,6 +24,7 @@
 #include "commonvars.h"
 #include "menu.h"
 #include "winport.h"
+#include "file_input_parsing.h"
 
 /* Remark on data structures:
  *   - command-line data belong to 'command' structures
@@ -239,7 +240,6 @@ int launch_manager(command_t *command)
     uint32_t  last_sector;
     uint64_t totalsize=0;
     uint64_t sector_pointer_VIDEO_TS=0;
-    short int cgadef[] = {0, 1, 2, 3, 6, 20};
     sect sectors;
 
 

@@ -156,10 +156,12 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
         nt = 0;
 
         FILE* cgafile;
-
+        _Bool read_cga_file=0;
         cgafile=fopen(CGA_FILE, "rb");
         if (cgafile != NULL)
-            if (globals.debugging) foutput("%s", "[MSG]  Channel assignment file was opened\n");
+            { if (globals.debugging) foutput("%s", "[MSG]  Channel assignment file was opened\n"); read_cga_file=1;}
+        else
+            {if (globals.debugging) foutput("%s", "[MSG]  Automatic channel assignment.\n"); }
 
 
         do
@@ -188,18 +190,28 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
 
                 // reads in filenames
                 memmove(files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].filename, buf, CHAR_BUFSIZ);
-                // reads in channel assignement from file cgafile
-                // file cgafile.cga must contain left-aligned figures with at most two digits aligned in a single column, corresponding to cga values.
-                char cga[4]; // 2 digits+newline+\0
-                fgets(cga, 3, cgafile);
-                cga[3]='\0'; // cut at newline
-                uint8_t cgaint=(uint8_t) atoi(cga);
 
-                // performs checks on channel assignement
-                if (check_cga_assignment(cgaint))
-                    files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgaint;
+                if (read_cga_file)
+                {
+                    // reads in channel assignement from file cgafile
+                    // file cgafile.cga must contain left-aligned figures with at most two digits aligned in a single column, corresponding to cga values.
+                    char cga[4]; // 2 digits+newline+\0
+                    fgets(cga, 3, cgafile);
+                    cga[3]='\0'; // cut at newline
+                    uint8_t cgaint=(uint8_t) atoi(cga);
+
+                    // performs checks on channel assignement
+                    if (check_cga_assignment(cgaint))
+                        files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgaint;
+                    else
+                    {
+                        if (globals.debugging) foutput("%s", "[ERR]  Found illegal channel group assignement value, using standard settings.");
+                        files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgadef[files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].channels-1];
+                    }
+                }
                 else
-                    if (globals.debugging) foutput("%s", "[ERR]  Found illegal channel group assignement value, using standard settings.");
+                        files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgadef[files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].channels-1];
+
 
 
             }
@@ -274,7 +286,7 @@ int parse_disk(DIR* dir, mode_t mode, const char* default_directory, extractlist
             if (strcmp(strtok(d_name_duplicate , "_"), "ATS")) continue;
         /* ngroups_scan is XX in ATS_XX_0.IFO  */
 
-        char buffer[3]={0,0,0};
+        char buffer[3]= {0,0,0};
 
         memcpy(buffer, strtok(NULL , "_"), 3);
         ngroups_scan= (char) atoi(&buffer[0]);
