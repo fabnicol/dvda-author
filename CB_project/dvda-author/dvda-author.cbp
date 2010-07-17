@@ -98,7 +98,7 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="-g ~/audiosource/g1/*.wav -o ~/DVD2 -t --fixwav" />
+				<Option parameters="-i ~/audiosource -o ~/DVD3 -t " />
 				<Option projectCompilerOptionsRelation="2" />
 				<Compiler>
 					<Add option="-march=i686" />
@@ -150,10 +150,12 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 			<Add option="-g" />
 			<Add option="-D_GNU_SOURCE" />
 		</Compiler>
+		<Unit filename="../../BUGS" />
 		<Unit filename="../../ChangeLog" />
 		<Unit filename="../../EXAMPLES" />
 		<Unit filename="../../HOWTO.conf" />
 		<Unit filename="../../INSTALL" />
+		<Unit filename="../../LIMITATIONS" />
 		<Unit filename="../../Makefile.am" />
 		<Unit filename="../../README" />
 		<Unit filename="../../autogen" />
