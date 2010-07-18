@@ -74,8 +74,44 @@ void pause_dos_type()
 
 }
 
+
+void erase_file(const char* path)
+{
+FILE *f;
+ 
+if  ((f=fopen(path, "rb")) != NULL) {fclose(f); unlink(path);};
+errno=0;
+}
+
+
+#if HAVE_CURL
+int download_file_from_http_server( const char* file, const char* server)
+{
+  
+ char command[strlen(server) + 1 + 1 + 2*strlen(file) +30];
+ 
+ sprintf(command, "curl -f -s -S -o %s --location %s/%s", file, server, file);
+ if (globals.veryverbose) printf("[INF]  downloading: %s\n", command);
+ return system(command);
+  
+}
+
+int download_rename_from_http_server( const char* name, const char* fullpath)
+{
+ char command[30+1+strlen(name)+strlen(fullpath)];
+ sprintf(command, "curl -f -s -S -o %s --location %s", name, fullpath);
+ if (globals.veryverbose) printf("[INF]  downloading: %s\n", command);
+ return system(command);
+  
+}
+
+#endif
+
+
 // From Yves Mettier's "C en action" (2009, ENI)
 // Patched somehow.
+
+
 
 char *fn_get_current_dir_name (void)
 {
@@ -336,7 +372,7 @@ path_t *parse_filepath(const char* filepath)
 // the result of the concatenation is placed into dest which is reallocated
 // returns -1 if either argument is null or 0 on error
 
-char * concatenate(char* dest, char* str1, char* str2)
+char * concatenate(char* dest, const char* str1, const char* str2)
 {
     if ((!str1) || (!str2)) return NULL;
     errno=0;

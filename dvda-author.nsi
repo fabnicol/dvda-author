@@ -12,7 +12,7 @@
 !include "MUI2.nsh"
 !include "x64.nsh"
 
-!define version  "10.06"
+!define version  "10.06-300"
 !define prodname "dvda-author"
 !define setup    "${prodname}-${version}.win32.installer.exe"
 !define srcdir   "${prodname}-${version}"

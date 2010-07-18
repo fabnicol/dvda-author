@@ -74,7 +74,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     // this trick is OK is only long options are used for non-print short options.
     if (!user_command_line)
     {
-        for (k=0; k < 30; k++)
+        
+      for (k=0; k < 30; k++)
             ALLOWED_OPTIONS[k]=k;
         strcat(ALLOWED_OPTIONS, ALLOWED_OPTIONS_PRINT);
     }
@@ -85,6 +86,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     int errmsg;
     _Bool allocate_files=0, logrefresh=0, refresh_tempdir=1, refresh_outdir=1;  // refreshing output and temporary directories by default
+    _Bool download_new_version_flag=0, check_version_flag=0;
     DIR *dir;
     parse_t  audiodir;
     extractlist extract;
@@ -116,7 +118,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     /* you can alter this by commenting out #q in dvda-author.conf before install */
     /* for parsing user command line, revert to default verbose mode, unless -q is set */
 
-    if (user_command_line) globals.silence=0;
+    if (user_command_line) 
+      
+    {
+      globals.silence=0;
+             
+    }
 
 
 
@@ -177,7 +184,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"select", required_argument, NULL, 'e'},
         {"image", required_argument, NULL, 'G'},
         {"background", required_argument, NULL, 'b'},
-        {"background-colors", required_argument, NULL, 2},
         {"background-mpg", required_argument, NULL, 'B'},
         {"soundtracks", required_argument, NULL, 'Q'},
         {"topmenu-colors", required_argument, NULL, 'y'},
@@ -194,10 +200,13 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"ncolumns", required_argument, NULL, '7'},
         {"activemenu-palette", required_argument, NULL, '8'},
         {"loghtml", no_argument, NULL, 1},
+	{"background-colors", required_argument, NULL, 2},
         {"bindir",required_argument, NULL, 3},
         {"no-refresh-tempdir",no_argument, NULL, 4},
         {"no-refresh-outdir",no_argument, NULL, 5},
         {"topmenu-slides",required_argument, NULL, 6},
+	{"download",no_argument, NULL, 7},
+	{"check-version",no_argument, NULL, 8},
         {NULL, 0, NULL, 0}
     };
 #endif
@@ -295,6 +304,15 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                 case 1 :
                     globals.loghtml=1;
+		    break;
+		    
+		case 7:
+		    download_new_version_flag=1;
+		    check_version_flag=1;
+		    break;
+		    
+		case 8:
+		    check_version_flag=1;
 
                     break;
 
@@ -319,6 +337,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         HEADER(PROGRAM, VERSION)
         SINGLE_DOTS
+        
+         if (check_version_flag) download_latest_version(download_new_version_flag);
+        
+   
     }
 
     optind=0;

@@ -165,7 +165,7 @@ typedef struct
 
 void htmlize(char* logpath);
 
-char* concatenate(char* dest, char* str1, char* str2);
+char* concatenate(char* dest, const char* str1, const char* str2);
 void pause_dos_type();
 _Bool clean_directory(char* path);
 void clean_exit(int message);
@@ -193,6 +193,13 @@ path_t *parse_filepath(const char* filepath);
 char *fn_get_current_dir_name (void);
 int  rmdir_global(char* path);
 int  rmdir_recursive (char *root, char *dirname);
+#if HAVE_CURL
+int download_file_from_http_server( const char* file, const char* server);
+int download_rename_from_http_server( const char* name, const char* fullpath);
+#endif
+void erase_file(const char* path);
+
+
 
 ALWAYS_INLINE_GCC inline static void  uint32_copy(uint8_t* buf, uint32_t x)
 {
