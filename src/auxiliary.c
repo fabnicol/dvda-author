@@ -83,6 +83,7 @@ printf("%s","Output options\n\n");
 
 printf("%s","-h, --help               Diplay this help.\n\n");
 printf("%s","-v, --version            Diplay version.\n\n");
+
 printf("%s","-q, --quiet              Quiet mode.\n\n");
 printf("%s","-d, --debug              Increased verbosity (debugging level)\n\n");
 printf("%s","-t, --veryverbose        Like -d with enhanced verbosity for sample counts.\n\n");
@@ -134,18 +135,15 @@ printf("%s","-f, --fixwav-virtual(options)  Use .wav header repair utility "J"wi
 #ifndef WITHOUT_SOX
 printf("%s","-S, --sox                Use SoX to convert files to .wav."J"By default, only flac, Ogg FLAC "J"and .wav files are accepted.\n\n");
 #endif
-#if 0
 printf("%s","    --no-padding         Block padding of audio files by dvda-author.\n\n");
 printf("%s","    --minimal-padding    Only pad for evenness of sample count.\n\n");
 printf("%s","-C, --pad-cont           When padding, pad with last known byte, not 0.\n\n");
 printf("%s","-L, --lossy-rounding     Sample count rounding will be performed by cutting audio files.\n\n");
-#endif
 
 printf("%s","   Menu authoring\n\n");
 
 printf("%s","-m, --topmenu(=mpgfiles) Generates top menu from comma-separated list of mpgfiles."J"Without argument, automatic menu generation is launched.\n\n");
 printf("%s","-u, --duration hh:mm:ss Duration of top menu file, if provided."J"It is mandatory when --topmenu has an argument file.\n\n");
-
 printf("%s","-M, --xml filepath       Generates dvdauthor xml project"J"to filepath.\n\n");
 printf("%s","-H, --spuxml filepath    Generates spumux xml project"J"to filepath.\n\n");
 printf("%s","-G, --image file         Menu Background image for customized menu authoring.\n\n");
@@ -164,7 +162,7 @@ printf("%s","-b, --background         Background jpg files (comma-separated) to 
 printf("%s","    --background-colors  Background RGB colors to colorize background mpg files"J"into which titles are multiplexed."J"Specify as many colors as there are menus, or the last color will be duplicated for missing menu colors."J"Syntax is r,g,b:r2,g2,b2:...:rk,gkbk for --nmenus=k.\n\n");
 printf("%s","-B, --background-mpg list  Background mpg file(s) in a comma-separated list"J"into which titles are multiplexed.\n\n");
 printf("%s","    --topmenu-slides file(s) .jpg image files to be multiplexed with sound tracks (see option below) into a slideshow."J"By default a black screen will be used."J"Each menu screen should have at least one associated .jpg slide. List of slides is comma-separated for each menu."J"Menu lists are colon-separated: menu1_pic1,menu1_pic2:menu2_pic1,menu2_pic2, etc.\n\n");
-printf("%s","-Q, --soundtracks file(s)Background wav file(s)"J"to be multiplexed into a slideshow, with option --topmenu-slides."J"By default a silent track will be multiplexed."J"Each menu screen should have its own sound track. List of tracks is comma-separated.\n\n");
+printf("%s","-Q, --soundtracks file(s)  Background wav file(s)"J"to be multiplexed into a slideshow, with option --topmenu-slides."J"By default a silent track will be multiplexed."J"Each menu screen should have its own sound track. List of tracks follows same usage as for --topmenu-slides."J"Note that currently with several menus there can be only one track/slide per menu.\n\n");
 printf("%s","-A, --topvob f           Import already authored top vob menu f.\n\n");
 printf("%s","-0, --menustyle desc     Specifies top menu style"J"By default, tracks are listed under group headers."J"If desc='hierarchical', the first menu screen lists groups."J"If desc='active', all tracks will have an associated still picture with menu links that remain active while listening to the track.\n\n");
 printf("%s","-1, --stillvob f         Import already authored still pictures vob.\n\n");
@@ -176,7 +174,6 @@ printf("%s","-5, --aspect             Set the playback aspect ratio code of the 
 printf("%s","                         1  - 1:1 display"J"2  - 4:3 display"J"3  - 16:9 display"J"4  - 2.21:1 display\n\n");
 printf("%s","-6, --nmenus int         Generates int top menus (default 1).\n\n");
 printf("%s","-7, --ncolumns int       Top menus will have at most int columns (default 3).\n\n");
-
 
 printf("%s","   Disc authoring\n\n");
 printf("%s","-I, --mkisofs(=file)     Run mkisofs to author disc image using file"J"as an ISO image. If file is empty, use tempdir/dvd.iso.\n\n");
@@ -193,6 +190,10 @@ printf("%s","-X, --workdir directory  Working directory: current directory in co
 printf("%s","-W, --bindir path        Path to auxiliary binaries.\n\n");
 printf("%s","    --no-refresh-tempdir Do not erase and recreate the temporary directory on launch.\n\n");
 printf("%s","    --no-refresh-outdir  Do not erase and recreate the output directory on launch.\n\n");
+#if HAVE_CURL
+printf("%s","    --download  Download the latest version of dvda-author. Triggers --check-version.\n\n");
+printf("%s","    --check-version  Only check whether this is the latest version of dvda-author, does not download.\n\n");
+#endif
 
 
 printf("%s","Sub-options\n\n");
@@ -262,7 +263,6 @@ printf("%s","Each subdirectory of an audio input directory will contain titles\n
 A number between 1 and 9 must be included as the second character of the\n\nsubdirectory relative name.\n\n");
 printf("%s", "Full Input/Output paths must be specified unless default settings are set.\n\n");
 printf("\n%s", "By default, defaults are set in /full path to dvda-author folder/defaults\n\n");
-
 
 
 printf("%s", "Examples:\n");
@@ -606,3 +606,65 @@ char* create_binary_path(char* local_variable, char* symbolic_constant, char* ba
 
 }
 
+void download_latest_version(_Bool download_new_version_flag)
+{
+   #if HAVE_CURL
+      erase_file("version.current");
+      FILE* versionfile;
+      int error=download_file_from_http_server("version.current", "dvd-audio.sourceforge.net");
+      if ((error == 0) && (NULL != (versionfile=fopen("version.current", "rb"))))
+      {
+	char year[5]={0};
+	char month[5]={0};
+	char build[6]={0};
+	
+	fgets(year, 5, versionfile);
+	fgets(month, 5, versionfile);
+	fgets(build, 6, versionfile);
+	year[2]=0;
+	month[2]=0;
+	build[3]=0;
+	char* version=strdup(VERSION);
+	char this_year[3]={version[0], version[1], '\0'};
+	char this_month[3]={version[3], version[4], '\0'};
+	char this_build[4]={version[6], version[7], version[8], '\0'};
+	if (globals.veryverbose)
+	{
+	foutput("[MSG]  Current version is: %s-%s ", year, month);
+	foutput("build %s\n", build);
+	foutput("[MSG]  Software version is: %s-%s ", this_year, this_month);
+	foutput("build %s\n", this_build);
+	}
+	
+	if (atoi(this_year) < atoi(year) || atoi(this_month) < atoi(month) || atoi(this_build) < atoi(build))
+	  foutput("[INF]  A more recent version has been released (%s-%s build %s)\n       Download it from http://dvd-audio.sourceforge.net\n       You can also trigger download by relaunching with dvda-author --download.\n", year, month, build);
+	else 
+	  foutput("%s", "[MSG]  This version is the latest version available.\n");
+	
+	if (download_new_version_flag)
+	{
+	  char dvda_author_fullpath[350]={0};
+	  unlink("dvda-author-update.tar.gz");
+	  errno=0;
+	  sprintf(dvda_author_fullpath, "http://sourceforge.net/projects/dvd-audio/files/dvda-author/%s-%s.%s/%s-%s.%s-%s.tar.gz/download", "dvda-author", year, month, "dvda-author", year, month, build);
+	  error=download_rename_from_http_server("dvda-author-update.tar.gz", dvda_author_fullpath);
+	  FILE* package;
+	  if ((error == 0) && (NULL != (package=fopen("dvda-author-update.tar.gz", "rb"))))
+	  {
+	    
+	    fclose(package);
+	    foutput("[MSG]  New version %s-%s build %s was downloaded as dvda-author-update.tar.gz\n", year, month, build);
+	    
+	  }
+	  else
+	    foutput("%s", "[MSG]  Failed to download new version.\n");
+	  
+	  exit(EXIT_SUCCESS);
+	    
+	}
+	free(version);
+	
+		
+      }
+     #endif
+}

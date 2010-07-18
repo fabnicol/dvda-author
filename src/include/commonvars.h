@@ -31,7 +31,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 
 #ifndef VERSION
-#define VERSION "10.06"
+#define VERSION "10.06-300"
 #endif
 
 #include "libiberty.h"

@@ -79,4 +79,5 @@ char** fn_strtok(char* chain, char delim, char** array, uint32_t count, int  (*f
 int cutloop(char* s, uint32_t count);
 int arraylength(char ** tab);
 char* create_binary_path(char* local_variable, char* symbolic_constant, char* basename);
+void download_latest_version(_Bool );
 #endif // AUXILIARY_H_INCLUDED
