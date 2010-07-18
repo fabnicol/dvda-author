@@ -606,7 +606,7 @@ char* create_binary_path(char* local_variable, char* symbolic_constant, char* ba
 
 }
 
-void download_latest_version(_Bool download_new_version_flag)
+void download_latest_version(_Bool download_new_version_flag,_Bool force_download_flag)
 {
    #if HAVE_CURL
       erase_file("version.current");
@@ -639,7 +639,24 @@ void download_latest_version(_Bool download_new_version_flag)
 	if (atoi(this_year) < atoi(year) || atoi(this_month) < atoi(month) || atoi(this_build) < atoi(build))
 	  foutput("[INF]  A more recent version has been released (%s-%s build %s)\n       Download it from http://dvd-audio.sourceforge.net\n       You can also trigger download by relaunching with dvda-author --download.\n", year, month, build);
 	else 
+	{
 	  foutput("%s", "[MSG]  This version is the latest version available.\n");
+	  if (download_new_version_flag)
+	  {
+	       
+	    if (!force_download_flag) 
+	    {
+	      foutput("%s", "[MSG]  You do not need to download the new package.\n");
+	      foutput("%s", "[MSG]  To force downloading use --download=force instead\n       Now exiting...\n");
+	      clean_exit(EXIT_SUCCESS);
+	    }
+	    else
+	      foutput("%s", "[MSG]  Downloading the current package anyhow.\n");
+	      
+	  }
+	}
+	  
+	  
 	
 	if (download_new_version_flag)
 	{
