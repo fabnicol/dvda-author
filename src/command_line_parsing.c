@@ -86,7 +86,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     int errmsg;
     _Bool allocate_files=0, logrefresh=0, refresh_tempdir=1, refresh_outdir=1;  // refreshing output and temporary directories by default
-    _Bool download_new_version_flag=0, check_version_flag=0;
+    _Bool download_new_version_flag=0, check_version_flag=0, force_download_flag=0;
     DIR *dir;
     parse_t  audiodir;
     extractlist extract;
@@ -205,7 +205,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"no-refresh-tempdir",no_argument, NULL, 4},
         {"no-refresh-outdir",no_argument, NULL, 5},
         {"topmenu-slides",required_argument, NULL, 6},
-	{"download",no_argument, NULL, 7},
+	{"download",optional_argument, NULL, 7},
 	{"check-version",no_argument, NULL, 8},
         {NULL, 0, NULL, 0}
     };
@@ -309,6 +309,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 		case 7:
 		    download_new_version_flag=1;
 		    check_version_flag=1;
+		    if (optarg) force_download_flag=1;
 		    break;
 		    
 		case 8:
@@ -338,7 +339,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         HEADER(PROGRAM, VERSION)
         SINGLE_DOTS
         
-         if (check_version_flag) download_latest_version(download_new_version_flag);
+         if (check_version_flag) 
+	 {
+	   download_latest_version(download_new_version_flag, force_download_flag);
+	   if (argc < 4) clean_exit(EXIT_SUCCESS);
+	 }
         
    
     }
