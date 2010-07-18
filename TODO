@@ -1,10 +1,8 @@
 Short term
 ----------
 
- fix --nmenus > 1, audio pointers for them
-      switch labels for palettes
-      windows packaging
-      debian packaging
+fix lack of relative paths for -x -o 
+add sanity check if -o . ! (avoid cur dir erasure...)
 
 
 Long term
