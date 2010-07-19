@@ -167,6 +167,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define MPEG2ENC_BASENAME "mpeg2enc"
 #endif
 
+#ifndef MPEG2DEC_BASENAME
+#define MPEG2DEC_BASENAME "mpeg2dec"
+#endif
+
+
 #ifndef MOGRIFY_BASENAME
 #define MOGRIFY_BASENAME "mogrify"
 #endif
@@ -213,6 +218,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #ifndef MPEG2ENC
 #define MPEG2ENC ""
+#endif
+
+
+#ifndef MPEG2DEC
+#define MPEG2DEC ""
 #endif
 
 #ifndef MOGRIFY

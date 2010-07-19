@@ -45,7 +45,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "auxiliary.h"
 #include "c_utils.h"
 #include "ports.h"
-
+#include "menu.h"
 
 
 
@@ -175,3 +175,13 @@ void get_video_PTS_ticks(char* path_to_VIDEO_TS, uint32_t *videotitlelength, uin
 
 }
 
+extern char *mpeg2dec, *mpeg2enc;
+void import_topmenu(char* video_vob_path)
+{
+ initialize_binary_paths(0);
+ initialize_binary_paths(5);
+ char* args[19]={mpeg2dec, "-s", "-o", "pgmpipe", video_vob_path,"|", "pgmtoy4m", "-i", "t", "-a", "10:11", "-r", "30000:1001", "|", mpeg2enc, "-f", "8", "-o", "newvideo.m2v"};
+ char* cml=get_command_line(args);
+ errno=system(cml);
+ free(cml);
+}
