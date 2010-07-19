@@ -92,7 +92,7 @@ int download_file_from_http_server( const char* file, const char* server)
 
  sprintf(command, "curl -f -s -S -o %s --location %s/%s", file, server, file);
  if (globals.veryverbose) printf("[INF]  downloading: %s\n", command);
- return system(quote(command));
+ return system(win32quote(command));
 
 }
 
@@ -101,7 +101,7 @@ int download_rename_from_http_server( const char* name, const char* fullpath)
  char command[30+1+strlen(name)+strlen(fullpath)];
  sprintf(command, "curl -f -s -S -o %s --location %s", name, fullpath);
  if (globals.veryverbose) printf("[INF]  downloading: %s\n", command);
- return system(quote(command));
+ return system(win32quote(command));
 
 }
 
@@ -622,7 +622,7 @@ char* get_command_line(char** args)
         i++;
     }
 
-    char* cml=calloc(tot+i, sizeof(char));
+    char* cml=calloc(tot+i+2*i, sizeof(char)); // 2*i for quotes, i for spaces
     if (cml == NULL) perror("[ERR]  get_command_line");
 
     for (j=1; j< i; j++)
@@ -1308,8 +1308,12 @@ void fread_endian(uint32_t * p, int t, FILE *f)
 
 }
 
-char* quote(char* path)
+
+char* win32quote(char* path)
 {
+// comment: this function leaks some memory if path has been allocated on heap. Yet using free(path) could
+// yield segfaults, should path not be allocated with malloc() or strdup() but using static arrays. Preferring safety here.
+#ifdef __WIN32__
     if (!path) return NULL;
     int size=strlen(path)+2+1;
     char buff[size];
@@ -1319,8 +1323,26 @@ char* quote(char* path)
     buff[size-2]='"';
     char* result=strdup(buff);
     if (result) return (result);
-    else printf("[ERR]  Could not allocate quoted string for %s.\n", path);
+    else { printf("[ERR]  Could not allocate quoted string for %s.\n", path); return NULL; }
+#else
+    return path;
+#endif
 }
 
 
+char* quote(char* path)
+{
+// comment: this function leaks some memory if path has been allocated on heap. Yet using free(path) could
+// yield segfaults, should path not be allocated with malloc() or strdup() but using static arrays. Preferring safety here.
+    if (!path) return NULL;
+    int size=strlen(path)+2+1;
+    char buff[size];
+    strcpy(buff+1, path);
+    buff[0]='"';
+    buff[size-1]=0;
+    buff[size-2]='"';
+    char* result=strdup(buff);
+    if (result) return (result);
+    else { printf("[ERR]  Could not allocate quoted string for %s.\n", path); return NULL; }
+}
 

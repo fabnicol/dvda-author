@@ -29,5 +29,5 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank, uint64_t absolute_sector_pointer_VIDEO_TS, uint32_t *relative_sector_pointer_VTSI);
 void get_video_PTS_ticks(char * path_to_VIDEO_TS, uint32_t *videotitlelength, uint8_t nvideolinking_groups, uint8_t* VTSI_rank);
 void fread_endian(uint32_t * p, int t, FILE *f);
-void import_topmenu(char* video_vob_path);
+void import_topmenu(char* video_vob_path, pic* img);
 #endif // VIDEOIMPORT_H_INCLUDED

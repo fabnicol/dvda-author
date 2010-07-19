@@ -176,12 +176,12 @@ void get_video_PTS_ticks(char* path_to_VIDEO_TS, uint32_t *videotitlelength, uin
 }
 
 extern char *mpeg2dec, *mpeg2enc;
-void import_topmenu(char* video_vob_path)
+void import_topmenu(char* video_vob_path, pic* img)
 {
- initialize_binary_paths(0);
- initialize_binary_paths(5);
- char* args[19]={mpeg2dec, "-s", "-o", "pgmpipe", video_vob_path,"|", "pgmtoy4m", "-i", "t", "-a", "10:11", "-r", "30000:1001", "|", mpeg2enc, "-f", "8", "-o", "newvideo.m2v"};
+ initialize_binary_paths(CREATE_MJPEGTOOLS);
+ initialize_binary_paths(CREATE_MPEG2DEC);
+ char* args[19]={mpeg2dec, "-s", "-o", "pgmpipe", quote(video_vob_path),"|", "pgmtoy4m", "-i", "t", "-a", "10:11", "-r", "30000:1001", "|", mpeg2enc, "-f", "8", "-o", "newvideo.m2v"};
  char* cml=get_command_line(args);
- errno=system(quote(cml));
+ errno=system(win32quote(cml));
  free(cml);
 }

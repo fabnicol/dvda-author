@@ -241,6 +241,14 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define MPLEX ""
 #endif
 
+
+#define CREATE_MPEG2DEC 5
+#define FREE_MEMORY     4
+#define CREATE_IMAGEMAGICK 3
+#define CREATE_DVDAUTHOR 2
+#define CREATE_SPUMUX 1
+#define CREATE_MJPEGTOOLS 0
+
 #ifndef TEMPDIR_SUBFOLDER_PREFIX
 #ifdef __WIN32__
 #define TEMPDIR_SUBFOLDER_PREFIX ""   //[Windows hates dots]

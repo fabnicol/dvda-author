@@ -195,7 +195,7 @@ void initialize_binary_paths(char level)
     static uint16_t count1, count2, count3, count4, count5;
     switch (level)
     {
-    case 0:
+    case CREATE_MJPEGTOOLS:
         if (!count1)
         {
             // if installed with autotools, if bindir overrides then use override, otherwise use config.h value;
@@ -209,7 +209,7 @@ void initialize_binary_paths(char level)
         }
         break;
 
-    case 1:
+    case CREATE_SPUMUX:
         if (!count2)
         {
             spumux=create_binary_path(spumux, SPUMUX, SEPARATOR SPUMUX_BASENAME);
@@ -217,7 +217,7 @@ void initialize_binary_paths(char level)
         }
         break;
 
-    case 2:
+    case CREATE_DVDAUTHOR:
         if (!count3)
         {
             dvdauthor=create_binary_path(dvdauthor,DVDAUTHOR, SEPARATOR DVDAUTHOR_BASENAME);
@@ -225,7 +225,7 @@ void initialize_binary_paths(char level)
         }
         break;
 
-    case 3:
+    case CREATE_IMAGEMAGICK:
         if (!count4)
         {
             mogrify=create_binary_path(mogrify, MOGRIFY, SEPARATOR MOGRIFY_BASENAME);
@@ -234,7 +234,16 @@ void initialize_binary_paths(char level)
         }
         break;
 
-    case 4:
+
+    case CREATE_MPEG2DEC:
+        if (!count5)
+        {
+         mpeg2dec=create_binary_path(mpeg2dec, MPEG2DEC, SEPARATOR MPEG2DEC_BASENAME);
+         count5++;
+        }
+        break;
+
+    case FREE_MEMORY:
         if (count1)
         {
             free(mp2enc);
@@ -251,19 +260,9 @@ void initialize_binary_paths(char level)
         }
         if (count5) free(mpeg2dec);
         break;
-
-    case 5:
-        if (!count5)
-        {
-         mpeg2dec=create_binary_path(mpeg2dec, MPEG2DEC, SEPARATOR MPEG2DEC_BASENAME);
-         count5++;
-        }
-        break;
-
-
     }
-
 }
+
 
 int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 {
@@ -302,7 +301,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
             snprintf(command, 500, "%s -fill \"rgb(%s)\" -colorize 66%% %s", mogrify, img->backgroundcolors[rank], img->backgroundpic[rank]);
 
             if (globals.debugging) foutput("[INF]  Launching mogrify to colorize menu: %d with command line %s\n", rank, command);
-            if (system(quote(command)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
+            if (system(win32quote(command)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
                 fflush(NULL);
         }
 
@@ -365,9 +364,9 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
         char* s=get_command_line(argsmp2enc);
         uint16_t size=strlen(s);
         char cml[strlen(mp2enc)+1+size+3+strlen(img->soundtrack[0][0])+1+2];
-        sprintf(cml, "%s %s < %s", mp2enc, s, quote(img->soundtrack[0][0]));
+        sprintf(cml, "%s %s < %s", mp2enc, s, win32quote(img->soundtrack[0][0]));
         free(s);
-        system(quote(cml));
+        system(win32quote(cml));
 #endif
     }
 
@@ -510,8 +509,8 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     char cml3[strlen(mplex)+1+strlen(mplexcl)+1];
     sprintf(cml2, "%s %s | %s %s", jpeg2yuv, jpegcl, mpeg2enc, mpegcl);
     sprintf(cml3, "%s %s",mplex, mplexcl);
-    system(quote(cml2));
-    system(quote(cml3));
+    system(win32quote(cml2));
+    system(win32quote(cml3));
     free(jpegcl);
     free(mpegcl);
     free(mplexcl);
@@ -667,8 +666,8 @@ int launch_spumux(pic* img)
         char* s=get_command_line(argsspumux);
         uint16_t size=strlen(s);
         char cml[strlen(spumux)+1+size+3+strlen(img->backgroundmpg[menu])+2+3+strlen(img->topmenu[menu])+2+1];
-        sprintf(cml, "%s %s < %s > %s", spumux, s, quote(img->backgroundmpg[menu]), quote(img->topmenu[menu]));
-        system(quote(cml));
+        sprintf(cml, "%s %s < %s > %s", spumux, s, win32quote(img->backgroundmpg[menu]), win32quote(img->topmenu[menu]));
+        system(win32quote(cml));
         free(s);
 
 #endif
@@ -702,7 +701,7 @@ int launch_dvdauthor()
     uint16_t size=strlen(s);
     char cml[strlen(dvdauthor)+1+size+1];
     sprintf(cml, "%s %s", dvdauthor, s);
-    system(quote(cml));
+    system(win32quote(cml));
     free(s);
 #endif
 
@@ -757,7 +756,7 @@ int prepare_overlay_img(char* text, int8_t group, pic *img, char* command, char*
                  "+antialias", "-fill", albumcolor, "-font", img->textfont, "-pointsize", DEFAULT_POINTSIZE,
                  "-draw", " \"text ", x0, ',' , ALBUM_TEXT_Y0,  '\'', text, "\'\"", quote(picture_save));
         if (globals.debugging) foutput("%s%s\n", "[INF]  Launching mogrify (title) with command line: ", command);
-        if (system(quote(command)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
+        if (system(win32quote(command)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
             fflush(NULL);
     }
 
@@ -1097,20 +1096,20 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
 
         strcat(command2, quote(img->imagepic[menu]));
         if (globals.veryverbose) foutput("[INF]  Menu: %d/%d, groupcount: %d/%d.\n       Launching mogrify (image) with command line: %s\n", menu, img->nmenus, groupcount, ngroups, command2);
-        if (system(quote(command2)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
+        if (system(win32quote(command2)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
         free(command2);
 
         copy_file(img->imagepic[menu], img->highlightpic[menu]);
 
         strcat(command1, quote(img->highlightpic[menu]));
         if (globals.veryverbose) foutput("[INF]  Menu: %d/%d, groupcount: %d/%d.\n       Launching mogrify (highlight) with command line: %s\n", menu, img->nmenus, groupcount, ngroups,command1);
-        if (system(quote(command1)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
+        if (system(win32quote(command1)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
         free(command1);
         char command3[500];
 
         snprintf(command3, sizeof(command3), "%s %s \"rgb(%s)\"  %s \"rgb(%s)\" %s %s", convert, "-fill", quote(img->selectfgcolor_pic), "-opaque", quote(img->textcolor_pic), quote(img->imagepic[menu]), quote(img->selectpic[menu]));
         if (globals.veryverbose) foutput("[INF]  Menu: %d/%d, groupcount: %d/%d.\n       Launching convert (select) with command line: %s\n",menu, img->nmenus, groupcount, ngroups,command3);
-        if (system(quote(command3)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
+        if (system(win32quote(command3)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
 
         menu++;
         group=0;
