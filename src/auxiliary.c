@@ -598,10 +598,10 @@ char* create_binary_path(char* local_variable, char* symbolic_constant, char* ba
         if (globals.settings.bindir == NULL)
             local_variable=strdup(symbolic_constant);
         else
-            local_variable=quote(concatenate(local_variable, globals.settings.bindir, basename));
+            local_variable=win32quote(concatenate(local_variable, globals.settings.bindir, basename));
     }
     else
-        local_variable=quote(concatenate(local_variable, globals.settings.bindir, basename));
+        local_variable=win32quote(concatenate(local_variable, globals.settings.bindir, basename));
 
     return local_variable;
 
@@ -652,7 +652,7 @@ void download_latest_version(_Bool download_new_version_flag,_Bool force_downloa
 	      clean_exit(EXIT_SUCCESS);
 	    }
 	    else
-	      foutput("%s", "[MSG]  Downloading the current package anyhow.\n");
+	      foutput("%s", "[MSG]  Downloading the current package anyhow. Please wait...\n");
 
 	  }
 	}

@@ -199,7 +199,7 @@ int download_rename_from_http_server( const char* name, const char* fullpath);
 #endif
 void erase_file(const char* path);
 char* quote(char* path);
-
+char* win32quote(char* path);
 
 ALWAYS_INLINE_GCC inline static void  uint32_copy(uint8_t* buf, uint32_t x)
 {

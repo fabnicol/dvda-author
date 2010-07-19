@@ -1,3 +1,8 @@
+2010-07-18  Fabrice Nicol
+	* Add --enable-core-build for minimal build without dependencies
+	* Add  --enable-mpeg2dec-download --enable-mpeg2dec-build for deps requested by --import-topmenu
+	* Add --import-topmenu for authoring topmenus from video VOBS (on-going dev) using mpeg2dec
+
 2010-07-15  Fabrice Nicol
 	* Fix several serious regressions (--extract, -i)
 	* Add --soundtracks, --topmenu-slides and lplex support (--enable-lplex-build/download)

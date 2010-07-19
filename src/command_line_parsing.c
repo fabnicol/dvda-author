@@ -1344,6 +1344,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("[PAR]  Using directory %s for auxiliary binaries.\n", optarg);
             break;
 
+        case 9:
+            import_topmenu(optarg, img);
+            globals.topmenu=RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR;
+            break;
+
 
 
         }
@@ -1595,7 +1600,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 if (globals.veryverbose) foutput("[INF]  Launching convert with command line %s\n",  cl);
                 unlink(img->backgroundpic[0]);
                 errno=0;
-                if (system(quote(cl)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
+                if (system(win32quote(cl)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
                     fflush(NULL);
 
             }
