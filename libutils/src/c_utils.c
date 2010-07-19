@@ -627,8 +627,9 @@ char* get_command_line(char** args)
 
     for (j=1; j< i; j++)
     {
-        memcpy(cml+shift, args[j], size[j]);
-        shift+=size[j]+1;
+        _Bool do_quote=(args[j][0] != '"') ;
+        memcpy(cml+shift, (do_quote)? quote(args[j]): args[j] , size[j]+2*do_quote);
+        shift+=size[j]+1+2*do_quote;
         cml[shift-1]=0x20;
     }
     cml[shift-1]=0;
