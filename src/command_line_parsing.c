@@ -1595,7 +1595,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 if (globals.veryverbose) foutput("[INF]  Launching convert with command line %s\n",  cl);
                 unlink(img->backgroundpic[0]);
                 errno=0;
-                if (system(cl) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
+                if (system(quote(cl)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
                     fflush(NULL);
 
             }

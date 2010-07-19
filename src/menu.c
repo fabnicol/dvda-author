@@ -302,7 +302,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
             snprintf(command, 500, "%s -fill \"rgb(%s)\" -colorize 66%% %s", mogrify, img->backgroundcolors[rank], img->backgroundpic[rank]);
 
             if (globals.debugging) foutput("[INF]  Launching mogrify to colorize menu: %d with command line %s\n", rank, command);
-            if (system(command) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
+            if (system(quote(command)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
                 fflush(NULL);
         }
 
@@ -370,7 +370,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
         char cml[strlen(mp2enc)+1+size+3+strlen(img->soundtrack[0][0])+1];
         sprintf(cml, "%s %s < %s", mp2enc, s, img->soundtrack[0][0]);
         free(s);
-        system(cml);
+        system(quote(cml));
 #endif
     }
 
@@ -513,8 +513,8 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     char cml3[strlen(mplex)+1+strlen(mplexcl)+1];
     sprintf(cml2, "%s %s | %s %s", jpeg2yuv, jpegcl, mpeg2enc, mpegcl);
     sprintf(cml3, "%s %s",mplex, mplexcl);
-    system(cml2);
-    system(cml3);
+    system(quote(cml2));
+    system(quote(cml3));
     free(jpegcl);
     free(mpegcl);
     free(mplexcl);
@@ -671,7 +671,7 @@ int launch_spumux(pic* img)
         uint16_t size=strlen(s);
         char cml[strlen(spumux)+1+size+3+strlen(img->backgroundmpg[menu])+3+strlen(img->topmenu[menu])+1];
         sprintf(cml, "%s %s < %s > %s", spumux, s, img->backgroundmpg[menu], img->topmenu[menu]);
-        system(cml);
+        system(quote(cml));
         free(s);
 
 #endif
@@ -705,7 +705,7 @@ int launch_dvdauthor()
     uint16_t size=strlen(s);
     char cml[strlen(dvdauthor)+1+size+1];
     sprintf(cml, "%s %s", dvdauthor, s);
-    system(cml);
+    system(quote(cml));
     free(s);
 #endif
 
@@ -760,7 +760,7 @@ int prepare_overlay_img(char* text, int8_t group, pic *img, char* command, char*
                  "+antialias", "-fill", albumcolor, "-font", img->textfont, "-pointsize", DEFAULT_POINTSIZE,
                  "-draw", " \"text ", x0, ',' , ALBUM_TEXT_Y0,  '\'', text, "\'\"", picture_save);
         if (globals.debugging) foutput("%s%s\n", "[INF]  Launching mogrify (title) with command line: ", command);
-        if (system(command) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
+        if (system(quote(command)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
             fflush(NULL);
     }
 
@@ -1100,20 +1100,20 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
 
         strcat(command2, img->imagepic[menu]);
         if (globals.veryverbose) foutput("[INF]  Menu: %d/%d, groupcount: %d/%d.\n       Launching mogrify (image) with command line: %s\n", menu, img->nmenus, groupcount, ngroups, command2);
-        if (system(command2) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
+        if (system(quote(command2)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
         free(command2);
 
         copy_file(img->imagepic[menu], img->highlightpic[menu]);
 
         strcat(command1, img->highlightpic[menu]);
         if (globals.veryverbose) foutput("[INF]  Menu: %d/%d, groupcount: %d/%d.\n       Launching mogrify (highlight) with command line: %s\n", menu, img->nmenus, groupcount, ngroups,command1);
-        if (system(command1) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
+        if (system(quote(command1)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
         free(command1);
         char command3[500];
 
         snprintf(command3, sizeof(command3), "%s %s \"rgb(%s)\"  %s \"rgb(%s)\" %s %s", convert, "-fill", img->selectfgcolor_pic, "-opaque", img->textcolor_pic, img->imagepic[menu], img->selectpic[menu]);
         if (globals.veryverbose) foutput("[INF]  Menu: %d/%d, groupcount: %d/%d.\n       Launching convert (select) with command line: %s\n",menu, img->nmenus, groupcount, ngroups,command3);
-        if (system(command3) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
+        if (system(quote(command3)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
 
         menu++;
         group=0;
