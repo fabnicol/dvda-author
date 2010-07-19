@@ -182,6 +182,6 @@ void import_topmenu(char* video_vob_path)
  initialize_binary_paths(5);
  char* args[19]={mpeg2dec, "-s", "-o", "pgmpipe", video_vob_path,"|", "pgmtoy4m", "-i", "t", "-a", "10:11", "-r", "30000:1001", "|", mpeg2enc, "-f", "8", "-o", "newvideo.m2v"};
  char* cml=get_command_line(args);
- errno=system(cml);
+ errno=system(quote(cml));
  free(cml);
 }

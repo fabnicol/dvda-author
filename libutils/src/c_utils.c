@@ -78,7 +78,7 @@ void pause_dos_type()
 void erase_file(const char* path)
 {
 FILE *f;
- 
+
 if  ((f=fopen(path, "rb")) != NULL) {fclose(f); unlink(path);};
 errno=0;
 }
@@ -87,13 +87,13 @@ errno=0;
 #if HAVE_CURL
 int download_file_from_http_server( const char* file, const char* server)
 {
-  
+
  char command[strlen(server) + 1 + 1 + 2*strlen(file) +30];
- 
+
  sprintf(command, "curl -f -s -S -o %s --location %s/%s", file, server, file);
  if (globals.veryverbose) printf("[INF]  downloading: %s\n", command);
- return system(command);
-  
+ return system(quote(command));
+
 }
 
 int download_rename_from_http_server( const char* name, const char* fullpath)
@@ -101,8 +101,8 @@ int download_rename_from_http_server( const char* name, const char* fullpath)
  char command[30+1+strlen(name)+strlen(fullpath)];
  sprintf(command, "curl -f -s -S -o %s --location %s", name, fullpath);
  if (globals.veryverbose) printf("[INF]  downloading: %s\n", command);
- return system(command);
-  
+ return system(quote(command));
+
 }
 
 #endif
@@ -1307,6 +1307,19 @@ void fread_endian(uint32_t * p, int t, FILE *f)
 
 }
 
+char* quote(char* path)
+{
+    if (!path) return NULL;
+    int size=strlen(path)+2+1;
+    char buff[size];
+    strcpy(buff+1, path);
+    buff[0]='"';
+    buff[size-1]=0;
+    buff[size-2]='"';
+    char* result=strdup(buff);
+    if (result) return (result);
+    else printf("[ERR]  Could not allocate quoted string for %s.\n", path);
+}
 
 
 

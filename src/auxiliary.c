@@ -164,6 +164,7 @@ printf("%s","-B, --background-mpg list  Background mpg file(s) in a comma-separa
 printf("%s","    --topmenu-slides file(s) .jpg image files to be multiplexed with sound tracks (see option below) into a slideshow."J"By default a black screen will be used."J"Each menu screen should have at least one associated .jpg slide. List of slides is comma-separated for each menu."J"Menu lists are colon-separated: menu1_pic1,menu1_pic2:menu2_pic1,menu2_pic2, etc.\n\n");
 printf("%s","-Q, --soundtracks file(s)  Background wav file(s)"J"to be multiplexed into a slideshow, with option --topmenu-slides."J"By default a silent track will be multiplexed."J"Each menu screen should have its own sound track. List of tracks follows same usage as for --topmenu-slides."J"Note that currently with several menus there can be only one track/slide per menu.\n\n");
 printf("%s","-A, --topvob f           Import already authored top vob menu f.\n\n");
+printf("%s","-A, --import-topmenu f   Import VIDEO_TS stream (VOB format) into AUDIO_TS top menu (AUDIO_TS.VOB).\n\n");
 printf("%s","-0, --menustyle desc     Specifies top menu style"J"By default, tracks are listed under group headers."J"If desc='hierarchical', the first menu screen lists groups."J"If desc='active', all tracks will have an associated still picture with menu links that remain active while listening to the track.\n\n");
 printf("%s","-1, --stillvob f         Import already authored still pictures vob.\n\n");
 printf("%s","-2, --stilloptions ...   Still picture options (add after --stillpics). Each option applies to ranked pic, e.g."J"rank=0,manual,starteffect=fade,rank=1,starteffect=dissolve."J"Suboptions are:"J"rank=[number], starteffect=[effect], endeffect=[effect]"J"manual, lag=[number], start=[number], active"J"See details below. \n\n");
@@ -597,10 +598,10 @@ char* create_binary_path(char* local_variable, char* symbolic_constant, char* ba
         if (globals.settings.bindir == NULL)
             local_variable=strdup(symbolic_constant);
         else
-            local_variable=concatenate(local_variable, globals.settings.bindir, basename);
+            local_variable=quote(concatenate(local_variable, globals.settings.bindir, basename));
     }
     else
-        local_variable=concatenate(local_variable, globals.settings.bindir, basename);
+        local_variable=quote(concatenate(local_variable, globals.settings.bindir, basename));
 
     return local_variable;
 
@@ -617,7 +618,7 @@ void download_latest_version(_Bool download_new_version_flag,_Bool force_downloa
 	char year[5]={0};
 	char month[5]={0};
 	char build[6]={0};
-	
+
 	fgets(year, 5, versionfile);
 	fgets(month, 5, versionfile);
 	fgets(build, 6, versionfile);
@@ -635,16 +636,16 @@ void download_latest_version(_Bool download_new_version_flag,_Bool force_downloa
 	foutput("[MSG]  Software version is: %s-%s ", this_year, this_month);
 	foutput("build %s\n", this_build);
 	}
-	
+
 	if (atoi(this_year) < atoi(year) || atoi(this_month) < atoi(month) || atoi(this_build) < atoi(build))
 	  foutput("[INF]  A more recent version has been released (%s-%s build %s)\n       Download it from http://dvd-audio.sourceforge.net\n       You can also trigger download by relaunching with dvda-author --download.\n", year, month, build);
-	else 
+	else
 	{
 	  foutput("%s", "[MSG]  This version is the latest version available.\n");
 	  if (download_new_version_flag)
 	  {
-	       
-	    if (!force_download_flag) 
+
+	    if (!force_download_flag)
 	    {
 	      foutput("%s", "[MSG]  You do not need to download the new package.\n");
 	      foutput("%s", "[MSG]  To force downloading use --download=force instead\n       Now exiting...\n");
@@ -652,12 +653,12 @@ void download_latest_version(_Bool download_new_version_flag,_Bool force_downloa
 	    }
 	    else
 	      foutput("%s", "[MSG]  Downloading the current package anyhow.\n");
-	      
+
 	  }
 	}
-	  
-	  
-	
+
+
+
 	if (download_new_version_flag)
 	{
 	  char dvda_author_fullpath[350]={0};
@@ -668,20 +669,20 @@ void download_latest_version(_Bool download_new_version_flag,_Bool force_downloa
 	  FILE* package;
 	  if ((error == 0) && (NULL != (package=fopen("dvda-author-update.tar.gz", "rb"))))
 	  {
-	    
+
 	    fclose(package);
 	    foutput("[MSG]  New version %s-%s build %s was downloaded as dvda-author-update.tar.gz\n", year, month, build);
-	    
+
 	  }
 	  else
 	    foutput("%s", "[MSG]  Failed to download new version.\n");
-	  
+
 	  exit(EXIT_SUCCESS);
-	    
+
 	}
 	free(version);
-	
-		
+
+
       }
      #endif
 }
