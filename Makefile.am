@@ -23,7 +23,7 @@ ACLOCAL_AMFLAGS=-I m4 --install
 .PHONY: do_sox_lib_deps_subst
 
 
-all: stamprecord0 stamprecord1 stamprecord2 stamprecord3 stamprecord4 stamprecord5 stamprecord6 stamprecord7 stamprecord8 do_sox_lib_deps_subst
+all: stamprecord0 stamprecord1 stamprecord2 stamprecord3 stamprecord4 stamprecord5 stamprecord6 stamprecord7 stamprecord8 stamprecord9 do_sox_lib_deps_subst
 
 
 # directly patching the Makefile appears to be more efficient. You nee a GNU-compliant make.
@@ -104,6 +104,12 @@ if HAVE_LPLEX_BUILD
 	chmod +x script3 && ${SHELL} script3
 endif
 
+stamprecord9: Makefile
+	if test -f stamprecord9; then rm -f stamprecord9; fi; touch stamprecord9
+if HAVE_MPEG2DEC_BUILD
+	chmod +x script4 && ${SHELL} script4
+endif
+
 
 dvda-author.1:
 if HAVE_HELP2MAN
@@ -117,7 +123,7 @@ if HAVE_MAN2HTML
 endif
 
 
-SUBDIRS=${MAYBE_IBERTY} libutils ${MAYBE_OGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} libats2wav ${MAYBE_SOX}  ${MAYBE_LPLEX} ${MAYBE_DVDAUTHOR} ${MAYBE_HELP2MAN} ${MAYBE_MJPEGTOOLS} ${MAYBE_MAGICK} src
+SUBDIRS=${MAYBE_IBERTY} libutils ${MAYBE_OGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} libats2wav ${MAYBE_SOX}  ${MAYBE_LPLEX} ${MAYBE_DVDAUTHOR} ${MAYBE_HELP2MAN} ${MAYBE_MJPEGTOOLS} ${MAYBE_MAGICK} ${MAYBE_MPEG2DEC} src
 DIST_SUBDIRS=libiberty libutils libfixwav src CB_project libats2wav images
 
 #normally is ${prefix}/share/applications/dvda-author-${VERSION}
@@ -168,10 +174,6 @@ endif
 if HAVE_MAGICK_BUILD
 	 cd ${MAYBE_MAGICK}; $(MAKETOOL) install; cd - ;
 endif
-if HAVE_LPLEX_BUILD
-	 cd ${MAYBE_LPLEX}; $(MAKETOOL)  install; cd - ;
-endif
-
 
 # redefining install is necessary to rename nested package directories for later builds with --enable-all-builds, which request lib* labelling
 

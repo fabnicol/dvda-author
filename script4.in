@@ -1,0 +1,1 @@
+cd @MAYBE_MPEG2DEC@ && ./configure @CONFIGURE_MPEG2DEC_FLAGS@ ; cd - ;
