@@ -260,6 +260,7 @@ AC_CONFIG_FILES([Makefile
          script1
          script2
          script3
+         script4
          EXAMPLES
 
 ])
@@ -308,6 +309,7 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
                     mkisofs (cdrtools)
                                 ....$CDRTOOLS_BUILD
                     mjpegtools  ....$MJPEGTOOLS_BUILD
+                    mpeg2dec    ....$MPEG2DEC_BUILD
                     dvdauthor   ....$DVDAUTHOR_BUILD
                     help2man    ....$HELP2MAN_BUILD
                     ImageMagick ....$MAGICK_BUILD
@@ -367,6 +369,7 @@ AC_MSG_RESULT([[
     mp2enc: .......................$MP2ENC
     jpeg2yuv: .....................$JPEG2YUV
     mpeg2enc: .....................$MPEG2ENC
+    mpeg2dec: .....................$MPEG2DEC
     mplex: ........................$MPLEX
     mogrify:.......................$MOGRIFY
     convert:.......................$CONVERT

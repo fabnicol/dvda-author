@@ -520,6 +520,7 @@ AC_DEFUN([DVDA_ARG_WITH],
 [
 m4_pushdef([CAPNAME],[upperbasename([$1])])
 m4_pushdef([lower],m4_tolower([$1]))
+AS_IF([test x$[withval_]CAPNAME != xno],[
 AC_ARG_WITH([lower], [AS_HELP_STRING([--with-]lower,[full pathname of library or --without-]lower)],
    [
     [withval_]CAPNAME=$withval
@@ -536,6 +537,11 @@ AC_ARG_WITH([lower], [AS_HELP_STRING([--with-]lower,[full pathname of library or
      [withval_]CAPNAME=
      CAPNAME[_LIB_INPUT]=
    ])
+],
+[
+   AC_DEFINE([WITHOUT_]CAPNAME,[1],[Disables $lower support])
+   CAPNAME[_BUILD]=no
+])
 
 # do not simply use the withval variable as --without-X options might interfere globally
 
@@ -571,7 +577,7 @@ AC_DEFUN([DVDA_CONFIG],[
 
     AS_IF([test x$VAR[_BUILD] = xyes || test x$ALL_BUILDS = xyes],
            [
-	      AS_IF([test x$[MAYBE_]VAR = x],[ [MAYBE_]VAR=CDR])
+	      [MAYBE_]VAR=CDR
 	      VAR[_BUILD]=yes
 	      VAR[_CONFIGURE_FILE]="[$MAYBE_]VAR"/configure
 	      m4_ifvaln([$2],[$2],[VAR[_LIB]="\${ROOTDIR}[/local/lib/]CDR[.a]"])

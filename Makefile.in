@@ -43,9 +43,10 @@ DIST_COMMON = README $(am__configure_deps) $(am__dist_doc_DATA_DIST) \
 	$(srcdir)/dvda-author.desktop.in $(srcdir)/dvda-author.nsi.in \
 	$(srcdir)/dvda-author.spec.in $(srcdir)/script.in \
 	$(srcdir)/script1.in $(srcdir)/script2.in $(srcdir)/script3.in \
-	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
-	TODO config/compile config/config.guess config/config.sub \
-	config/depcomp config/install-sh config/missing
+	$(srcdir)/script4.in $(top_srcdir)/configure AUTHORS COPYING \
+	ChangeLog INSTALL NEWS TODO config/compile config/config.guess \
+	config/config.sub config/depcomp config/install-sh \
+	config/missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/acinclude.m4 \
 	$(top_srcdir)/m4/dependencies.m4 $(top_srcdir)/m4/dvda.m4 \
@@ -59,7 +60,7 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = dvda-author.desktop dvda-author-shared.spec \
 	dvda-author.spec dvda-author.nsi script script1 script2 \
-	script3 EXAMPLES
+	script3 script4 EXAMPLES
 CONFIG_CLEAN_VPATH_FILES =
 SOURCES =
 DIST_SOURCES =
@@ -168,6 +169,7 @@ CONFIGURE_IBERTY_FLAGS = @CONFIGURE_IBERTY_FLAGS@
 CONFIGURE_LPLEX_FLAGS = @CONFIGURE_LPLEX_FLAGS@
 CONFIGURE_MAGICK_FLAGS = @CONFIGURE_MAGICK_FLAGS@
 CONFIGURE_MJPEGTOOLS_FLAGS = @CONFIGURE_MJPEGTOOLS_FLAGS@
+CONFIGURE_MPEG2DEC_FLAGS = @CONFIGURE_MPEG2DEC_FLAGS@
 CONFIGURE_OGG_FLAGS = @CONFIGURE_OGG_FLAGS@
 CONFIGURE_SOX_FLAGS = @CONFIGURE_SOX_FLAGS@
 CONVERT = @CONVERT@
@@ -236,6 +238,7 @@ MAYBE_IBERTY = @MAYBE_IBERTY@
 MAYBE_LPLEX = @MAYBE_LPLEX@
 MAYBE_MAGICK = @MAYBE_MAGICK@
 MAYBE_MJPEGTOOLS = @MAYBE_MJPEGTOOLS@
+MAYBE_MPEG2DEC = @MAYBE_MPEG2DEC@
 MAYBE_OGG = @MAYBE_OGG@
 MAYBE_SOX = @MAYBE_SOX@
 MD5SUM = @MD5SUM@
@@ -248,6 +251,11 @@ MKDIR_P = @MKDIR_P@
 MKISOFS = @MKISOFS@
 MOGRIFY = @MOGRIFY@
 MP2ENC = @MP2ENC@
+MPEG2DEC = @MPEG2DEC@
+MPEG2DEC_CONFIGURE_FILE = @MPEG2DEC_CONFIGURE_FILE@
+MPEG2DEC_LIB = @MPEG2DEC_LIB@
+MPEG2DEC_LINK = @MPEG2DEC_LINK@
+MPEG2DEC_VERSION = @MPEG2DEC_VERSION@
 MPEG2ENC = @MPEG2ENC@
 MPLEX = @MPLEX@
 OBJEXT = @OBJEXT@
@@ -336,7 +344,7 @@ top_srcdir = @top_srcdir@
 # passing right flags to make distcheck when configuring nested packages We do not configure libogg, because install is forced under _build/_inst instead of local/
 DISTCHECK_CONFIGURE_FLAGS = --enable-all-deps --enable-all-builds
 ACLOCAL_AMFLAGS = -I m4 --install
-SUBDIRS = ${MAYBE_IBERTY} libutils ${MAYBE_OGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} libats2wav ${MAYBE_SOX}  ${MAYBE_LPLEX} ${MAYBE_DVDAUTHOR} ${MAYBE_HELP2MAN} ${MAYBE_MJPEGTOOLS} ${MAYBE_MAGICK} src
+SUBDIRS = ${MAYBE_IBERTY} libutils ${MAYBE_OGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} libats2wav ${MAYBE_SOX}  ${MAYBE_LPLEX} ${MAYBE_DVDAUTHOR} ${MAYBE_HELP2MAN} ${MAYBE_MJPEGTOOLS} ${MAYBE_MAGICK} ${MAYBE_MPEG2DEC} src
 DIST_SUBDIRS = libiberty libutils libfixwav src CB_project libats2wav images
 # distributed under $sysconfdir, normally
 dist_sysconf_DATA = dvda-author.desktop dvda-author.conf
@@ -428,6 +436,8 @@ script1: $(top_builddir)/config.status $(srcdir)/script1.in
 script2: $(top_builddir)/config.status $(srcdir)/script2.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 script3: $(top_builddir)/config.status $(srcdir)/script3.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+script4: $(top_builddir)/config.status $(srcdir)/script4.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 EXAMPLES: $(top_builddir)/config.status $(srcdir)/EXAMPLES.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
@@ -1016,7 +1026,7 @@ uninstall-man: uninstall-man1
 
 .PHONY: do_sox_lib_deps_subst
 
-all: stamprecord0 stamprecord1 stamprecord2 stamprecord3 stamprecord4 stamprecord5 stamprecord6 stamprecord7 stamprecord8 do_sox_lib_deps_subst
+all: stamprecord0 stamprecord1 stamprecord2 stamprecord3 stamprecord4 stamprecord5 stamprecord6 stamprecord7 stamprecord8 stamprecord9 do_sox_lib_deps_subst
 
 # directly patching the Makefile appears to be more efficient. You nee a GNU-compliant make.
 do_sox_lib_deps_subst: src/Makefile stamprecord2
@@ -1067,6 +1077,10 @@ stamprecord8: Makefile
 	if test -f stamprecord8; then rm -f stamprecord8; fi; touch stamprecord8
 @HAVE_LPLEX_BUILD_TRUE@	chmod +x script3 && ${SHELL} script3
 
+stamprecord9: Makefile
+	if test -f stamprecord9; then rm -f stamprecord9; fi; touch stamprecord9
+@HAVE_MPEG2DEC_BUILD_TRUE@	chmod +x script4 && ${SHELL} script4
+
 dvda-author.1:
 @HAVE_HELP2MAN_TRUE@	${HELP2MAN} -s 1 -N -o ${PWD}/dvda-author.1 ${PWD}/src/dvda
 
@@ -1080,7 +1094,6 @@ install-exec-local:
 @HAVE_HELP2MAN_BUILD_TRUE@	 cd ${MAYBE_HELP2MAN}; $(MAKETOOL) install; cd - ;
 @HAVE_MJPEGTOOLS_BUILD_TRUE@	 cd ${MAYBE_MJPEGTOOLS}; $(MAKETOOL) install; cd - ;
 @HAVE_MAGICK_BUILD_TRUE@	 cd ${MAYBE_MAGICK}; $(MAKETOOL) install; cd - ;
-@HAVE_LPLEX_BUILD_TRUE@	 cd ${MAYBE_LPLEX}; $(MAKETOOL)  install; cd - ;
 
 # redefining install is necessary to rename nested package directories for later builds with --enable-all-builds, which request lib* labelling
 

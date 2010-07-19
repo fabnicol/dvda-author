@@ -71,6 +71,9 @@
 /* Found convert */
 #undef HAVE_CONVERT
 
+/* configure, build and install core from source code */
+#undef HAVE_CORE_BUILD
+
 /* Found curl */
 #undef HAVE_CURL
 
@@ -220,6 +223,15 @@
 /* Found mp2enc */
 #undef HAVE_MP2ENC
 
+/* Whether mpeg2dec source code will be downloaded for build. */
+#undef HAVE_MPEG2DEC
+
+/* configure, build and install mpeg2dec from source code */
+#undef HAVE_MPEG2DEC_BUILD
+
+/* download mpeg2dec from source code */
+#undef HAVE_MPEG2DEC_DOWNLOAD
+
 /* Found mpeg2enc */
 #undef HAVE_MPEG2ENC
 
@@ -252,6 +264,9 @@
 
 /* Does not use a configured patch of bn */
 #undef HAVE_NO_MJPEGTOOLS_PATCH
+
+/* Does not use a configured patch of bn */
+#undef HAVE_NO_MPEG2DEC_PATCH
 
 /* Does not use a configured patch of bn */
 #undef HAVE_NO_OGG_PATCH
@@ -419,6 +434,9 @@
 
 /* Pathname of mp2enc */
 #undef MP2ENC
+
+/* Defining mpeg2dec filepath. */
+#undef MPEG2DEC
 
 /* Pathname of mpeg2enc */
 #undef MPEG2ENC
