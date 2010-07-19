@@ -186,12 +186,13 @@ char* mogrify=NULL;
 char* dvdauthor=NULL;
 char* spumux=NULL;
 char* convert=NULL;
+char* mpeg2dec=NULL;
 
 
 void initialize_binary_paths(char level)
 {
     ///   saves ressources by ensuring this is done just once  ///
-    static uint16_t count1, count2, count3, count4;
+    static uint16_t count1, count2, count3, count4, count5;
     switch (level)
     {
     case 0:
@@ -207,6 +208,7 @@ void initialize_binary_paths(char level)
             count1++;
         }
         break;
+
     case 1:
         if (!count2)
         {
@@ -221,7 +223,6 @@ void initialize_binary_paths(char level)
             dvdauthor=create_binary_path(dvdauthor,DVDAUTHOR, SEPARATOR DVDAUTHOR_BASENAME);
             count3++;
         }
-
         break;
 
     case 3:
@@ -232,6 +233,7 @@ void initialize_binary_paths(char level)
             count4++;
         }
         break;
+
     case 4:
         if (count1)
         {
@@ -247,7 +249,17 @@ void initialize_binary_paths(char level)
             free(mogrify);
             free(convert);
         }
+        if (count5) free(mpeg2dec);
         break;
+
+    case 5:
+        if (!count5)
+        {
+         mpeg2dec=create_binary_path(mpeg2dec, MPEG2DEC, SEPARATOR MPEG2DEC_BASENAME);
+         count5++;
+        }
+        break;
+
 
     }
 

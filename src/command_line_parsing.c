@@ -74,7 +74,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     // this trick is OK is only long options are used for non-print short options.
     if (!user_command_line)
     {
-        
+
       for (k=0; k < 30; k++)
             ALLOWED_OPTIONS[k]=k;
         strcat(ALLOWED_OPTIONS, ALLOWED_OPTIONS_PRINT);
@@ -118,11 +118,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     /* you can alter this by commenting out #q in dvda-author.conf before install */
     /* for parsing user command line, revert to default verbose mode, unless -q is set */
 
-    if (user_command_line) 
-      
+    if (user_command_line)
+
     {
       globals.silence=0;
-             
+
     }
 
 
@@ -207,6 +207,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"topmenu-slides",required_argument, NULL, 6},
 	{"download",optional_argument, NULL, 7},
 	{"check-version",no_argument, NULL, 8},
+	{"import-topmenu",required_argument, NULL, 9},
         {NULL, 0, NULL, 0}
     };
 #endif
@@ -305,13 +306,13 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 case 1 :
                     globals.loghtml=1;
 		    break;
-		    
+
 		case 7:
 		    download_new_version_flag=1;
 		    check_version_flag=1;
 		    if (optarg) force_download_flag=1;
 		    break;
-		    
+
 		case 8:
 		    check_version_flag=1;
 
@@ -338,14 +339,14 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         HEADER(PROGRAM, VERSION)
         SINGLE_DOTS
-        
-         if (check_version_flag) 
+
+         if (check_version_flag)
 	 {
 	   download_latest_version(download_new_version_flag, force_download_flag);
 	   if (argc < 4) clean_exit(EXIT_SUCCESS);
 	 }
-        
-   
+
+
     }
 
     optind=0;
