@@ -308,9 +308,6 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
     }
 
-    /// Colorizing if need be ///
-
-
     initialize_binary_paths(0);
 
     char norm[2];
@@ -367,8 +364,8 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 #else
         char* s=get_command_line(argsmp2enc);
         uint16_t size=strlen(s);
-        char cml[strlen(mp2enc)+1+size+3+strlen(img->soundtrack[0][0])+1];
-        sprintf(cml, "%s %s < %s", mp2enc, s, img->soundtrack[0][0]);
+        char cml[strlen(mp2enc)+1+size+3+strlen(img->soundtrack[0][0])+1+2];
+        sprintf(cml, "%s %s < %s", mp2enc, s, quote(img->soundtrack[0][0]));
         free(s);
         system(quote(cml));
 #endif
@@ -669,8 +666,8 @@ int launch_spumux(pic* img)
 
         char* s=get_command_line(argsspumux);
         uint16_t size=strlen(s);
-        char cml[strlen(spumux)+1+size+3+strlen(img->backgroundmpg[menu])+3+strlen(img->topmenu[menu])+1];
-        sprintf(cml, "%s %s < %s > %s", spumux, s, img->backgroundmpg[menu], img->topmenu[menu]);
+        char cml[strlen(spumux)+1+size+3+strlen(img->backgroundmpg[menu])+2+3+strlen(img->topmenu[menu])+2+1];
+        sprintf(cml, "%s %s < %s > %s", spumux, s, quote(img->backgroundmpg[menu]), quote(img->topmenu[menu]));
         system(quote(cml));
         free(s);
 
@@ -758,7 +755,7 @@ int prepare_overlay_img(char* text, int8_t group, pic *img, char* command, char*
         uint16_t x0= EVEN(x( (group>0)?group:0, img->ncolumns)) ;
         snprintf(command, 2*CHAR_BUFSIZ, "%s %s %s \"rgb(%s)\" %s %s %s %d %s %s %d%c%d %c%s%s %s", mogrify,
                  "+antialias", "-fill", albumcolor, "-font", img->textfont, "-pointsize", DEFAULT_POINTSIZE,
-                 "-draw", " \"text ", x0, ',' , ALBUM_TEXT_Y0,  '\'', text, "\'\"", picture_save);
+                 "-draw", " \"text ", x0, ',' , ALBUM_TEXT_Y0,  '\'', text, "\'\"", quote(picture_save));
         if (globals.debugging) foutput("%s%s\n", "[INF]  Launching mogrify (title) with command line: ", command);
         if (system(quote(command)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
             fflush(NULL);
@@ -828,7 +825,7 @@ int mogrify_img(char* text, int8_t group, int8_t track, pic *img, uint8_t maxnum
 
     if (track!=-1)
         snprintf(str, 10*CHAR_BUFSIZ, " %s \"rgb(%s)\" %s %s %d%s%d %d%s%d%s ",
-                 "-fill", img->highlightcolor_pic, "-draw", " \"rectangle ", x0+deltax0, ",", y0+deltay0,  x0+ deltax1, ",", y0+deltay1, "\"");   // conversion works badly with -colors < 4
+                 "-fill", quote(img->highlightcolor_pic), "-draw", " \"rectangle ", x0+deltax0, ",", y0+deltay0,  x0+ deltax1, ",", y0+deltay1, "\"");   // conversion works badly with -colors < 4
 
     strcat(command, str);
     snprintf(str2, 10*CHAR_BUFSIZ, " %s \"rgb(%s)\" %s %s %s %d %s %s %d%c%d %s%s%s ",
@@ -1098,20 +1095,20 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
             }
             while  (buttons < menubuttons+arrowbuttons);
 
-        strcat(command2, img->imagepic[menu]);
+        strcat(command2, quote(img->imagepic[menu]));
         if (globals.veryverbose) foutput("[INF]  Menu: %d/%d, groupcount: %d/%d.\n       Launching mogrify (image) with command line: %s\n", menu, img->nmenus, groupcount, ngroups, command2);
         if (system(quote(command2)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
         free(command2);
 
         copy_file(img->imagepic[menu], img->highlightpic[menu]);
 
-        strcat(command1, img->highlightpic[menu]);
+        strcat(command1, quote(img->highlightpic[menu]));
         if (globals.veryverbose) foutput("[INF]  Menu: %d/%d, groupcount: %d/%d.\n       Launching mogrify (highlight) with command line: %s\n", menu, img->nmenus, groupcount, ngroups,command1);
         if (system(quote(command1)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
         free(command1);
         char command3[500];
 
-        snprintf(command3, sizeof(command3), "%s %s \"rgb(%s)\"  %s \"rgb(%s)\" %s %s", convert, "-fill", img->selectfgcolor_pic, "-opaque", img->textcolor_pic, img->imagepic[menu], img->selectpic[menu]);
+        snprintf(command3, sizeof(command3), "%s %s \"rgb(%s)\"  %s \"rgb(%s)\" %s %s", convert, "-fill", quote(img->selectfgcolor_pic), "-opaque", quote(img->textcolor_pic), quote(img->imagepic[menu]), quote(img->selectpic[menu]));
         if (globals.veryverbose) foutput("[INF]  Menu: %d/%d, groupcount: %d/%d.\n       Launching convert (select) with command line: %s\n",menu, img->nmenus, groupcount, ngroups,command3);
         if (system(quote(command3)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed");
 
