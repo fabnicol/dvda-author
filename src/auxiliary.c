@@ -192,8 +192,9 @@ printf("%s","-W, --bindir path        Path to auxiliary binaries.\n\n");
 printf("%s","    --no-refresh-tempdir Do not erase and recreate the temporary directory on launch.\n\n");
 printf("%s","    --no-refresh-outdir  Do not erase and recreate the output directory on launch.\n\n");
 #if HAVE_CURL
-printf("%s","    --download  Download the latest version of dvda-author. Triggers --check-version.\n\n");
 printf("%s","    --check-version  Only check whether this is the latest version of dvda-author, does not download.\n\n");
+printf("%s","    --download  Download the latest version of dvda-author. Triggers --check-version.\n\n");
+printf("%s","    --download=force  Download the latest version of dvda-author even if the current one is the same."J"Maybe useful for reinstalling or in case of impaired source code.\n\n");
 #endif
 
 
