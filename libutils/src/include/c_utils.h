@@ -32,10 +32,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "config.h"
 #endif
 
-#ifndef VERSION
-#define VERSION "10.06"
-#endif
-
+#include "version.h"
 
 #ifdef __WIN32__
 #define SEPARATOR "\\"
@@ -194,8 +191,8 @@ char *fn_get_current_dir_name (void);
 int  rmdir_global(char* path);
 int  rmdir_recursive (char *root, char *dirname);
 #if HAVE_CURL
-int download_file_from_http_server( const char* file, const char* server);
-int download_rename_from_http_server( const char* name, const char* fullpath);
+int download_file_from_http_server(const char* bindir, const char* file, const char* server);
+int download_rename_from_http_server(const char* bindir, const char* name, const char* fullpath);
 #endif
 void erase_file(const char* path);
 char* quote(char* path);
