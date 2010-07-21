@@ -153,9 +153,10 @@ AC_PROG_CC_STDC
 AC_FUNC_MALLOC
 AC_FUNC_STRNLEN
 AC_FUNC_FSEEKO
+AC_FUNC_REALLOC
 
 #checks only
-AC_CHECK_FUNCS([floor memmove memset mkdir rmdir setlocale strerror strtol strtoul snprintf fseek setlocale strchr strdup strndup strstr strnlen getsubopt memchr dup2 strncasecmp strrchr])
+AC_CHECK_FUNCS([strcasecmp select getcwd floor memmove memset mkdir rmdir setlocale strerror strtol strtoul snprintf fseek setlocale strchr strdup strndup strstr strnlen getsubopt memchr dup2 strncasecmp strrchr])
 
 # using -liberty to bootstrap GNU libc usage
 
@@ -202,6 +203,7 @@ AC_HEADER_ASSERT
 AC_HEADER_STDBOOL
 AC_CHECK_HEADERS([errno.h sys/stat.h time.h inttypes.h locale.h stdint.h stdlib.h string.h sys/time.h unistd.h fcntl.h])
 AC_FUNC_ERROR_AT_LINE
+AC_FUNC_REALLOC
 AC_FUNC_FORK
 AC_C_CONST
 AC_TYPE_INT8_T

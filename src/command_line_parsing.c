@@ -1344,12 +1344,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("[PAR]  Using directory %s for auxiliary binaries.\n", optarg);
             break;
 
-        case 9:
-            import_topmenu(optarg, img);
-            globals.topmenu=RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR;
-            break;
-
-
 
         }
     }
@@ -1693,6 +1687,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             free(str);
             globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+            break;
+
+        case 9:
+            import_topmenu(optarg, img);
+            globals.topmenu=RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR;
             break;
 
 

@@ -361,10 +361,10 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
             waitpid(pid1, NULL, 0);
         }
 #else
-        char* s=get_command_line(argsmp2enc);
+        char* s=get_full_command_line(argsmp2enc);
         uint16_t size=strlen(s);
-        char cml[strlen(mp2enc)+1+size+3+strlen(img->soundtrack[0][0])+1+2];
-        sprintf(cml, "%s %s < %s", mp2enc, s, win32quote(img->soundtrack[0][0]));
+        char cml[size+3+strlen(img->soundtrack[0][0])+1+2];
+        sprintf(cml, "%s < %s", s, win32quote(img->soundtrack[0][0]));
         free(s);
         system(win32quote(cml));
 #endif
@@ -501,16 +501,16 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 // This is unsatisfactory yet will do for porting purposes.
 
     char* jpegcl;
-    jpegcl=get_command_line(argsjpeg2yuv);
-    char* mpegcl=get_command_line(argsmpeg2enc);
-    char* mplexcl=get_command_line(argsmplex);
+    jpegcl=get_full_command_line(argsjpeg2yuv);
+    char* mpegcl=get_full_command_line(argsmpeg2enc);
+    char* mplexcl=get_full_command_line(argsmplex);
 
-    char cml2[strlen(jpeg2yuv)+1+strlen(jpegcl)+3+strlen(mpeg2enc)+1+strlen(mpegcl)+1];
-    char cml3[strlen(mplex)+1+strlen(mplexcl)+1];
-    sprintf(cml2, "%s %s | %s %s", jpeg2yuv, jpegcl, mpeg2enc, mpegcl);
-    sprintf(cml3, "%s %s",mplex, mplexcl);
+    char cml2[strlen(jpegcl)+3+strlen(mpegcl)+1];
+
+    sprintf(cml2, "%s | %s", jpegcl, mpegcl);
+
     system(win32quote(cml2));
-    system(win32quote(cml3));
+    system(win32quote(mplexcl));
     free(jpegcl);
     free(mpegcl);
     free(mplexcl);
@@ -663,10 +663,10 @@ int launch_spumux(pic* img)
 
 #else
 
-        char* s=get_command_line(argsspumux);
+        char* s=get_full_command_line(argsspumux);
         uint16_t size=strlen(s);
-        char cml[strlen(spumux)+1+size+3+strlen(img->backgroundmpg[menu])+2+3+strlen(img->topmenu[menu])+2+1];
-        sprintf(cml, "%s %s < %s > %s", spumux, s, win32quote(img->backgroundmpg[menu]), win32quote(img->topmenu[menu]));
+        char cml[size+3+strlen(img->backgroundmpg[menu])+2+3+strlen(img->topmenu[menu])+2+1];
+        sprintf(cml, "%s < %s > %s", s, win32quote(img->backgroundmpg[menu]), win32quote(img->topmenu[menu]));
         system(win32quote(cml));
         free(s);
 
@@ -697,11 +697,8 @@ int launch_dvdauthor()
 #ifndef __WIN32__
     run(dvdauthor, args, 0);
 #else
-    char* s=get_command_line(args);
-    uint16_t size=strlen(s);
-    char cml[strlen(dvdauthor)+1+size+1];
-    sprintf(cml, "%s %s", dvdauthor, s);
-    system(win32quote(cml));
+    char* s=get_full_command_line(args);
+    system(win32quote(s));
     free(s);
 #endif
 
