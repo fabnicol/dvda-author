@@ -6,20 +6,19 @@
 ;_____________________________________________________________________________________________
 
 
-; Compile from without this directory 
+; Compile from without this directory
 ; Modern interface settings
 
 !include "MUI2.nsh"
 !include "x64.nsh"
 
-!define version  "10.06-300"
+!define version  "10.06.win32"
 !define prodname "dvda-author"
-!define setup    "${prodname}-${version}.win32.installer.exe"
+!define setup    "${prodname}-${version}.installer.exe"
 !define srcdir   "${prodname}-${version}"
 !define website  "http://dvd-audio.sourceforge.net"
-
 !define project  "${srcdir}\CB_project"
-!define utils "${srcdir}\libutils"  
+!define utils "${srcdir}\libutils"
 !define source   "${srcdir}\src"
 !define images   "${srcdir}\images"
 !define libats2wav   "${srcdir}\libats2wav"
@@ -31,7 +30,7 @@
 !define libs "${srcdir}\libs"
 !define bin "${srcdir}\bin"
 !define menu "${srcdir}\menu"
-!define exec     "${prodname}.bat"
+!define exec     "${prodname}-launch.bat"
 !define binary   "${prodname}.exe"
 !define icon     "${prodname}.ico"
 !define regkey   "Software\${prodname}-${version}"
@@ -104,8 +103,8 @@
  LangString DESC_sec2 ${LANG_FRENCH} "Installer le projet Code::Blocks"
  LangString DESC_sec3 ${LANG_FRENCH} "Installer le code source"
  LangString DESC_sec4 ${LANG_FRENCH} "Installer le système de compilation GNU"
- 
- 
+
+
  LicenseLangString myLicenseData ${LANG_ENGLISH} "${srcdir}\COPYING"
  LicenseLangString myLicenseData ${LANG_FRENCH} "${srcdir}\COPYING"
  LicenseData $(myLicenseData)
@@ -113,14 +112,14 @@
  LangString Name ${LANG_FRENCH}  "${prodname} version française"
  Name $(Name)
 
-; MUI macros   
+; MUI macros
 
 
 !define MUI_FINISHPAGE_TITLE $(title1)
 !define MUI_FINISHPAGE_TEXT  $(text1)
 !define MUI_FINISHPAGE_BUTTON  "OK"
-!define MUI_FINISHPAGE_CANCEL_ENABLED 
-!define MUI_FINISHPAGE_RUN 
+!define MUI_FINISHPAGE_CANCEL_ENABLED
+!define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_TEXT $(text2)
 !define MUI_FINISHPAGE_RUN_FUNCTION "Launch_${prodname}"
 !define MUI_FINISHPAGE_LINK $(link1)
@@ -188,13 +187,13 @@ Function .onInit
 ;       advsplash::show Delay FadeIn FadeOut KeyColor FileName
 
   !insertmacro MUI_LANGDLL_DISPLAY
-  
-  
+
+
 ;Remember the installer language
-  !define MUI_LANGDLL_REGISTRY_ROOT "HKCU" 
-  !define MUI_LANGDLL_REGISTRY_KEY "Software\Modern UI Test" 
+  !define MUI_LANGDLL_REGISTRY_ROOT "HKCU"
+  !define MUI_LANGDLL_REGISTRY_KEY "Software\Modern UI Test"
   !define MUI_LANGDLL_REGISTRY_VALUENAME "Installer Language"
-  
+
 FunctionEnd
 
 
@@ -224,9 +223,9 @@ Section  ; allways done
   !ifdef icon
     WriteRegStr HKCR "${prodname}\DefaultIcon" "" "$INSTDIR\${icon}"
   !endif
-  
+
   CreateShortCut "${startmenu}\${uninstaller}.lnk" "$INSTDIR\${uninstaller}"
-  
+
   !ifdef website
   WriteINIStr "${startmenu}\${prodname} website.url" "InternetShortcut" "URL" ${website}
   !endif
@@ -237,19 +236,19 @@ Section  ; allways done
   SetOutPath $INSTDIR
 
   WriteUninstaller "${uninstaller}"
-  
+
   SetOutPath $INSTDIR ; for working directory
   File "${srcdir}\README" "${srcdir}\INSTALL" "${srcdir}\AUTHORS" "${srcdir}\NEWS" "${srcdir}\ChangeLog"
   File "${srcdir}\${srcdir}.html"
-  
+
 SectionEnd
 
 
 Section  $(Sec1Name) sec1 ; binary
 
   SetOutPath $INSTDIR ; for working directory
-  File  "${srcdir}\${binary}"   "${srcdir}\${prodname}.bat"
-  
+  File  "${project}\${prodname}\bin\Release\${binary}"   "${srcdir}\${prodname}-launch.bat"
+
 SectionEnd
 
 Section $(Sec2Name) sec2 ;Code::Blocks project
@@ -261,7 +260,7 @@ SectionEnd
 
 
 Section $(Sec3Name) sec3 ; source code
- 
+
   SetOutPath $INSTDIR ; for working directory
   File  /r "${source}"
   File  /r "${utils}"
@@ -275,16 +274,16 @@ Section $(Sec3Name) sec3 ; source code
   File  /r "${libs}"
   File  /r "${menu}"
   File  /r "${bin}"
-  
-  
+
+
 SectionEnd
 
 
 Section $(Sec4Name) sec4  ; GNU build system
-  
+
  SetOutPath $INSTDIR ; for working directory
  ; one can only exclude by name (limitation reported in bugs site)
- File  /x "${srcdir}\${binary}" /x "${srcdir}\${prodname}.bat"  "${srcdir}\*.*"   
+ File  /x "${project}\${prodname}\bin\Release\${binary}" /x "${srcdir}\${prodname}-launch.bat"  "${srcdir}\*.*"
 
 SectionEnd
 
@@ -300,7 +299,7 @@ Section "Uninstall"
 
   DeleteRegKey HKLM "${uninstkey}"
   DeleteRegKey HKLM "${regkey}"
-  
+
   Delete "${startmenu}\*.*"
   Delete "${startmenu}"
 
