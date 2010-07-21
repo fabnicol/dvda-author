@@ -187,14 +187,17 @@ char* dvdauthor=NULL;
 char* spumux=NULL;
 char* convert=NULL;
 char* mpeg2dec=NULL;
-
+char* curl=NULL;
 
 void initialize_binary_paths(char level)
 {
     ///   saves ressources by ensuring this is done just once  ///
-    static uint16_t count1, count2, count3, count4, count5;
+    static uint16_t count1, count2, count3, count4, count5, count6;
     switch (level)
     {
+
+
+
     case CREATE_MJPEGTOOLS:
         if (!count1)
         {
@@ -243,6 +246,14 @@ void initialize_binary_paths(char level)
         }
         break;
 
+    case CREATE_CURL:
+     if (!count6)
+     {
+         curl=create_binary_path(curl, CURL, SEPARATOR CURL_BASENAME);
+         count6++;
+     }
+     break;
+
     case FREE_MEMORY:
         if (count1)
         {
@@ -259,6 +270,7 @@ void initialize_binary_paths(char level)
             free(convert);
         }
         if (count5) free(mpeg2dec);
+        if (count6) free(curl);
         break;
     }
 }

@@ -28,6 +28,7 @@
 #if defined HAVE_LPLEX || HAVE_LPLEX_BUILD
 #include "sound.h"
 #endif
+#include "videoimport.h"
 
 
 /*  #define _GNU_SOURCE must appear before <string.h> and <getopt.h> for strndup  and getopt_long*/
@@ -75,7 +76,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     if (!user_command_line)
     {
 
-      for (k=0; k < 30; k++)
+        for (k=0; k < 30; k++)
             ALLOWED_OPTIONS[k]=k;
         strcat(ALLOWED_OPTIONS, ALLOWED_OPTIONS_PRINT);
     }
@@ -121,7 +122,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     if (user_command_line)
 
     {
-      globals.silence=0;
+        globals.silence=0;
 
     }
 
@@ -138,7 +139,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     static struct option  longopts[]=
     {
 
-        {"debug", no_argument, NULL, 'd'},
+        {"debug", no_argument, NULL, 'd'
+        },
         {"veryverbose", no_argument, NULL, 't'},
         {"fixwav", optional_argument, NULL, 'F'},
         {"fixwav-virtual", optional_argument, NULL, 'f'},
@@ -200,14 +202,14 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"ncolumns", required_argument, NULL, '7'},
         {"activemenu-palette", required_argument, NULL, '8'},
         {"loghtml", no_argument, NULL, 1},
-	{"background-colors", required_argument, NULL, 2},
+        {"background-colors", required_argument, NULL, 2},
         {"bindir",required_argument, NULL, 3},
         {"no-refresh-tempdir",no_argument, NULL, 4},
         {"no-refresh-outdir",no_argument, NULL, 5},
         {"topmenu-slides",required_argument, NULL, 6},
-	{"download",optional_argument, NULL, 7},
-	{"check-version",no_argument, NULL, 8},
-	{"import-topmenu",required_argument, NULL, 9},
+        {"download",optional_argument, NULL, 7},
+        {"check-version",no_argument, NULL, 8},
+        {"import-topmenu",required_argument, NULL, 9},
         {NULL, 0, NULL, 0}
     };
 #endif
@@ -305,16 +307,16 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                 case 1 :
                     globals.loghtml=1;
-		    break;
+                    break;
 
-		case 7:
-		    download_new_version_flag=1;
-		    check_version_flag=1;
-		    if (optarg) force_download_flag=1;
-		    break;
+                case 7:
+                    download_new_version_flag=1;
+                    check_version_flag=1;
+                    if (optarg) force_download_flag=1;
+                    break;
 
-		case 8:
-		    check_version_flag=1;
+                case 8:
+                    check_version_flag=1;
 
                     break;
 
@@ -339,13 +341,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         HEADER(PROGRAM, VERSION)
         SINGLE_DOTS
-
-         if (check_version_flag)
-	 {
-	   download_latest_version(download_new_version_flag, force_download_flag);
-	   if (argc < 4) clean_exit(EXIT_SUCCESS);
-	 }
-
 
     }
 
@@ -708,7 +703,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     ngroups_scan=0;
     int nvideolinking_groups_scan=0, strlength=0;
     char* piccolorchain, *activepiccolorchain, *palettecolorchain, *fontchain, *durationchain=NULL,
-         *h, *min, *sec, **textable=NULL, **tab=NULL,**tab2=NULL, *stillpic_string=NULL, *still_options_string=NULL;
+            *h, *min, *sec, **textable=NULL, **tab=NULL,**tab2=NULL, *stillpic_string=NULL, *still_options_string=NULL;
     _Bool extract_audio_flag=0;
     uint16_t npics[totntracks];
     optind=0;
@@ -1344,12 +1339,24 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("[PAR]  Using directory %s for auxiliary binaries.\n", optarg);
             break;
 
+        case 9:
+            import_topmenu(optarg, img);
+            globals.topmenu=RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR;
+            break;
+
+
 
         }
     }
 
 
-
+    if (check_version_flag)
+        {
+            change_directory(globals.settings.bindir);
+            system("echo %CD%");
+            download_latest_version(download_new_version_flag, force_download_flag);
+            if (ngroups == 0) clean_exit(EXIT_SUCCESS);
+        }
 
     change_directory(globals.settings.workdir);
 
@@ -1407,12 +1414,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     }
 
 
-     if (extract_audio_flag)
-     {
-            extract_list_parsing(globals.settings.indir, &extract);
-            ats2wav_parsing(globals.settings.indir, &extract);
-            return(NULL);
-     }
+    if (extract_audio_flag)
+    {
+        extract_list_parsing(globals.settings.indir, &extract);
+        ats2wav_parsing(globals.settings.indir, &extract);
+        return(NULL);
+    }
 
     // Coherence checks
 
@@ -1687,11 +1694,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             free(str);
             globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
-            break;
-
-        case 9:
-            import_topmenu(optarg, img);
-            globals.topmenu=RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR;
             break;
 
 
@@ -1972,7 +1974,7 @@ void fixwav_parsing(char *ssopt)
     char * chain=ssopt;
     char* value=NULL;
     char* tokens[]=
-    { "simple-mode","prepend","in-place","interactive","padding","prune","output","force", "cautious", "infodir", NULL};
+        { "simple-mode","prepend","in-place","interactive","padding","prune","output","force", "cautious", "infodir", NULL};
 
     while ((subopt = getsubopt(&chain, tokens, &value)) != -1)
     {

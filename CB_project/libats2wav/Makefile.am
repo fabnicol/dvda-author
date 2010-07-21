@@ -1,1 +1,0 @@
-EXTRA_DIST=libats2wav.cbp

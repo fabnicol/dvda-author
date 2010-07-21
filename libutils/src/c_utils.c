@@ -85,9 +85,8 @@ errno=0;
 
 
 #if HAVE_CURL
-int download_file_from_http_server( const char* file, const char* server)
+int download_file_from_http_server( const char* bindir, const char* file, const char* server)
 {
-
  char command[strlen(server) + 1 + 1 + 2*strlen(file) +30];
 
  sprintf(command, "curl -f -s -S -o %s --location %s/%s", file, server, file);
@@ -96,8 +95,9 @@ int download_file_from_http_server( const char* file, const char* server)
 
 }
 
-int download_rename_from_http_server( const char* name, const char* fullpath)
+int download_rename_from_http_server(const char* bindir, const char* name, const char* fullpath)
 {
+
  char command[30+1+strlen(name)+strlen(fullpath)];
  sprintf(command, "curl -f -s -S -o %s --location %s", name, fullpath);
  if (globals.veryverbose) printf("[INF]  downloading: %s\n", command);

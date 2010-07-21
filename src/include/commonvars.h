@@ -30,10 +30,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "config.h"
 #endif
 
-#ifndef VERSION
-#define VERSION "10.06-300"
-#endif
-
 #include "libiberty.h"
 
 
@@ -116,8 +112,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #ifndef BINDIR
 #ifndef __WIN32__
 #define BINDIR "/usr/bin"
-#else
-#define BINDIR ""
 #endif
 #endif
 
@@ -190,6 +184,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define MPLEX_BASENAME  "mplex"
 #endif
 
+#ifndef CURL_BASENAME
+#define CURL_BASENAME "curl"
+#endif
+
 #ifndef LPLEX
 #define LPLEX ""
 #endif
@@ -241,7 +239,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define MPLEX ""
 #endif
 
+#ifndef CURL
+#define CURL ""
+#endif
 
+
+#define CREATE_CURL     6
 #define CREATE_MPEG2DEC 5
 #define FREE_MEMORY     4
 #define CREATE_IMAGEMAGICK 3

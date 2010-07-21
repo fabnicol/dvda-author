@@ -119,7 +119,7 @@ endif
 dvda-author.html: dvda-author.1
 #PATCH  09.12  We need to display in UTF-8 mode and take off an illicit file header created by man2html
 if HAVE_MAN2HTML
-	${MAN2HTML} < ${PWD}/dvda-author.1 | $(SED) -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > ${PWD}/dvda-author.html
+	${MAN2HTML} < ${PWD}/dvda-author.1 | $(SED) -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > ${PWD}/dvda-author-@VERSION@.html
 endif
 
 
@@ -142,8 +142,8 @@ dist_pix_DATA=dvda-author_48x48.png dvda-author_64x64.png
 dist_doc_DATA=README  BUGS EXAMPLES LIMITATIONS HOWTO.conf dvda-author.conf.example
 
 if HAVE_MAN2HTML
-  dist_doc_DATA += dvda-author.html
-  htmlhelp=dvda-author.html
+  dist_doc_DATA += dvda-author-@VERSION@.html
+  htmlhelp=dvda-author-@VERSION@.html
 else
   htmlhelp=
 endif
