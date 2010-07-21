@@ -186,6 +186,12 @@ int main(int argc,  char* const argv[])
     char *EXECDIR=calloc(MAX(currentdirlength, 20)+4+25, sizeof(char));  // /usr/local/bin or /usr/bin under *NIX, "currentdir" directory/bin otherwise (win32...)
     // 4 for "/bin and be liberal and allow 25 more characters for the executable name.
 
+#ifdef BINDIR
+    memcpy(EXECDIR, BINDIR, strlen(BINDIR));
+#else
+    sprintf(EXECDIR, "%s/bin", currentdir);
+#endif
+
     char *DATADIR;
 
     #ifdef __WIN32__
@@ -352,11 +358,6 @@ int main(int argc,  char* const argv[])
 
     globals=globals_init;
     globals.settings.tempdir=TEMPDIR;
-#ifdef BINDIR
-    memcpy(globals.settings.bindir, BINDIR, strlen(BINDIR));
-#else
-    memcpy(globals.settings.bindir, currentdir, currentdirlength);
-#endif
     normalize_temporary_paths(NULL);
 
     // Null arg is no longer supported, yet...
