@@ -211,7 +211,7 @@ int run(char* application, char* args[], int option)
 #else
 char* s=get_command_line(args);
 char cml[strlen(application)+1+strlen(s)+1+2];
-sprintf(cml, "\"%s %s\"",  application, s);
+sprintf(cml, "\"%s\" %s",  application, s);
 free(s);
 if (globals.debugging) foutput("[INF]  Running: %s\n ", cml);
 system(cml);

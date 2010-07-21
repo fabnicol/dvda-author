@@ -609,11 +609,11 @@ int secure_mkdir (const char *path, mode_t mode, const char* default_directory)
     return(errno);
 }
 
-char* get_command_line(char** args)
+
+char* get_cl(char** args, uint16_t start)
 {
-// You should always use arrays with this function, not pointers
     if (args == NULL) return NULL;
-    uint16_t tot=0, i=1, j, shift=0;
+    uint16_t tot=0, i=start, j, shift=0;
     uint16_t size[BUFSIZ*10];
     while (args[i])
     {
@@ -625,9 +625,9 @@ char* get_command_line(char** args)
     char* cml=calloc(tot+i+2*i, sizeof(char)); // 2*i for quotes, i for spaces
     if (cml == NULL) perror("[ERR]  get_command_line");
 
-    for (j=1; j< i; j++)
+    for (j=start; j< i; j++)
     {
-        _Bool do_quote=(args[j][0] != '"') ;
+        _Bool do_quote=((args[j][0] != '"')&&(args[j][0] != '-')&&(args[j][0] != '|')) ;
         memcpy(cml+shift, (do_quote)? quote(args[j]): args[j] , size[j]+2*do_quote);
         shift+=size[j]+1+2*do_quote;
         cml[shift-1]=0x20;
@@ -636,6 +636,18 @@ char* get_command_line(char** args)
     if (globals.debugging) printf("[INF]  Command line: %s\n", cml);
 
     return cml;
+}
+
+
+char* get_command_line(char** args)
+{
+// You should always use arrays with this function, not pointers
+   return get_cl(args, 1);
+}
+
+char* get_full_command_line(char** args)
+{
+  return get_cl(args, 0);
 }
 
 

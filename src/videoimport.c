@@ -180,8 +180,14 @@ void import_topmenu(char* video_vob_path, pic* img)
 {
  initialize_binary_paths(CREATE_MJPEGTOOLS);
  initialize_binary_paths(CREATE_MPEG2DEC);
- char* args[19]={mpeg2dec, "-s", "-o", "pgmpipe", quote(video_vob_path),"|", "pgmtoy4m", "-i", "t", "-a", "10:11", "-r", "30000:1001", "|", mpeg2enc, "-f", "8", "-o", "newvideo.m2v"};
- char* cml=get_command_line(args);
+ char framerate[strlen(img->framerate)+3];
+ sprintf(framerate, "%s%s", img->framerate, ":1");
+ char imported_topmenu[strlen(globals.settings.tempdir)+28+1];
+ sprintf(imported_topmenu, "%s%s", globals.settings.tempdir, "/imported_topmenu_video.m2v");
+ if (framerate == NULL) exit(0);
+ char* args[]={mpeg2dec, "-s", "-o", "pgmpipe", quote(video_vob_path),"|", "pgmtoy4m", "-i", "p", "-r", framerate, "|", mpeg2enc, "-f", "8", "-o", imported_topmenu,NULL};
+ char* cml=get_full_command_line(args);
  errno=system(win32quote(cml));
  free(cml);
+
 }
