@@ -3,18 +3,11 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+#include "c_utils.h"
 
 void create_output_filename(char* filename, char** buffer);
 
 
-
-// Undefining VERSION config.h if lying around and working with IDE
-#if defined VERSION && defined __CB__
-#undef VERSION
-#endif
-#ifndef VERSION
-#define VERSION  "10.06"
-#endif
 
 #define FIXWAV_HEADER    printf("\n\n%s%s%s\n\n", "__________________________  FIXWAV ",VERSION," __________________________");
 
