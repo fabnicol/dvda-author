@@ -1352,8 +1352,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     if (check_version_flag)
         {
+            #ifdef __WIN32__
             change_directory(globals.settings.bindir);
-            system("echo %CD%");
+            #endif
             download_latest_version(download_new_version_flag, force_download_flag);
             if (ngroups == 0) clean_exit(EXIT_SUCCESS);
         }
@@ -2188,9 +2189,9 @@ void still_options_parsing(char *ssopt, pic* img)
         {
         case 0:
             temp=atoi(value);
-            if (temp > img->count)
+            if (temp >= img->count)
             {
-                foutput("%s\n", "[WAR]  Too many options, skipping...");
+                foutput("[WAR]  Index %d should be lower than %d. Start at index 0. Skipping...\n", temp, img->count);
                 break;
             }
             rank=temp;

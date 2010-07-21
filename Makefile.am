@@ -116,7 +116,7 @@ if HAVE_HELP2MAN
 	${HELP2MAN} -s 1 -N -o ${PWD}/dvda-author.1 ${PWD}/src/dvda
 endif
 
-dvda-author.html: dvda-author.1
+dvda-author-@VERSION@.html: dvda-author.1
 #PATCH  09.12  We need to display in UTF-8 mode and take off an illicit file header created by man2html
 if HAVE_MAN2HTML
 	${MAN2HTML} < ${PWD}/dvda-author.1 | $(SED) -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > ${PWD}/dvda-author-@VERSION@.html
@@ -156,7 +156,7 @@ else
 endif
 
 # GNU build system regeneration script and others
-EXTRA_DIST=autogen dvda-author.ico  dvda-author.bat  sox-libs  m4.extra m4.extra.dvdauthor
+EXTRA_DIST=autogen dvda-author.ico  dvda-author-launch.bat  sox-libs  m4.extra m4.extra.dvdauthor
 install-data-local:  $(manhelp) $(htmlhelp)
 install-exec-local:
 if HAVE_CDRTOOLS_BUILD
@@ -189,4 +189,4 @@ if HAVE_SOX_BUILD
 endif
 
 clean-local:
-	  rm -f dvda-author.1 dvda-author.html
+	  rm -f dvda-author.1 dvda-author-@VERSION@.html
