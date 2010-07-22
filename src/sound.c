@@ -68,7 +68,7 @@ int audit_soundtrack(char* path)
 
 }
 
-int launch_lplex_soundtrack(pic* img)
+int launch_lplex_soundtrack(pic* img, char* create_mode)
 {
     errno=0;
     int u, menu, tot=0;
@@ -80,17 +80,17 @@ int launch_lplex_soundtrack(pic* img)
     if(!lplex) return -1;
 
 
-    char *args0[12]= {LPLEX_BASENAME, "--create", "mpeg", "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm, "seamless"};
+    char *args0[12]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm, "seamless"};
 
 
     for (menu=0; menu < img->nmenus; menu++)
     {
 
         if ((img->topmenu_nslides[menu] > 1) && img->nmenus > 1)
-          {
-                  foutput("%s\n", "[WAR]  Software limitation: you cannot author discs\n       with several slides for several menus.\n       Resetting slide number to 1.\n");
-                  img->topmenu_nslides[menu] =1;
-          }
+        {
+            foutput("%s\n", "[WAR]  Software limitation: you cannot author discs\n       with several slides for several menus.\n       Resetting slide number to 1.\n");
+            img->topmenu_nslides[menu] =1;
+        }
 
         char* args[img->topmenu_nslides[menu]*3+12+1];
 
@@ -105,9 +105,12 @@ int launch_lplex_soundtrack(pic* img)
         }
 
         args[12+tot]=NULL;
+        if (globals.debugging)
+        {
+            foutput("[INF]  Launching lplex to create top menu #%d with soundtrack...\n", menu);
+            foutput("[INF]  with command line %s\n", get_full_command_line(args));
+        }
 
-        foutput("[INF]  Launching lplex to create top menu #%d with soundtrack...\n", menu);
-        get_command_line(args);
         change_directory(globals.settings.workdir);
 
         run(lplex, args, 0);
@@ -121,29 +124,32 @@ int launch_lplex_soundtrack(pic* img)
 
         if (aux->directory == NULL)
         {
-                free(aux); // resorting to relative filenames withing current working dir
-                aux=parse_filepath(globals.settings.workdir);
-                if (aux->filename == NULL)
-                  { foutput("%s", "[ERR]  Use non-root audio folder, with appropriate access rights.\n"); return -1;}
-                else
-                {
-                  aux->directory=aux->filename;
-                  foutput("[ING]  Using filepaths relative to %s.\n", globals.settings.workdir);
-                }
+            free(aux); // resorting to relative filenames withing current working dir
+            aux=parse_filepath(globals.settings.workdir);
+            if (aux->filename == NULL)
+            {
+                foutput("%s", "[ERR]  Use non-root audio folder, with appropriate access rights.\n");
+                return -1;
+            }
+            else
+            {
+                aux->directory=aux->filename;
+                foutput("[ING]  Using filepaths relative to %s.\n", globals.settings.workdir);
+            }
         }
 
         char adjacent[2*strlen(aux->directory)+strlen(globals.settings.tempdir)+4+20+2+1];
 
         sprintf(adjacent, "%s%s%s%s%s%s%s", globals.settings.tempdir, SEPARATOR, aux->directory, "_DVD", SEPARATOR, aux->directory, "_DVD_title_01-00.mpg");
 
-        #ifndef __WIN32__
+#ifndef __WIN32__
 
         // This is crucial for *nix otherwise lplex still holds the file streams blocked (tested)
 
         sync();
 
-       // End of *nix code
-       #endif
+        // End of *nix code
+#endif
 
         char* dest=copy_file2dir(adjacent, globals.settings.tempdir); // automatic renaming of dest
 
