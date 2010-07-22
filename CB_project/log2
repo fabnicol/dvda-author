@@ -1,0 +1,1 @@
+[INF]  Command line: --create mpeg --verbose true --workPath /home/fab/tempdir3 -x false --video pal seamless jpg /home/fab/A.jpg /home/fab/audionew/a.wav jpg /home/fab/B.jpg /home/fab/audionew/a.wav jpg /home/fab/A.jpg /home/fab/audionew/a.wav
