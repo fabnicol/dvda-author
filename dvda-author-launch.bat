@@ -1,2 +1,4 @@
 @echo off
-start /HIGH cmd.exe /K cd "%~dp0"
+cd "%~dp0" 
+set path=%path%;%CD%\bin;%CD%\CB_project\dvda-author\bin\Release
+start /HIGH cmd.exe

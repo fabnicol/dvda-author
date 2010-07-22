@@ -165,6 +165,14 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define MPEG2DEC_BASENAME "mpeg2dec"
 #endif
 
+#ifndef EXTRACT_AC3_BASENAME
+#define EXTRACT_AC3_BASENAME "extract_ac3"
+#endif
+
+#ifndef AC3_DEC_BASENAME
+#define AC3_DEC_BASENAME "ac3_dec"
+#endif
+
 
 #ifndef MOGRIFY_BASENAME
 #define MOGRIFY_BASENAME "mogrify"
@@ -249,7 +257,16 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define CURL ""
 #endif
 
+#ifndef EXTRACT_AC3
+#define EXTRACT_AC3 ""
+#endif
 
+#ifndef AC3_DEC
+#define AC3_DEC ""
+#endif
+
+
+#define CREATE_EXTRACT_AC3 7
 #define CREATE_CURL     6
 #define CREATE_MPEG2DEC 5
 #define FREE_MEMORY     4

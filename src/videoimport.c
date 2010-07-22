@@ -175,7 +175,7 @@ void get_video_PTS_ticks(char* path_to_VIDEO_TS, uint32_t *videotitlelength, uin
 
 }
 
-extern char *mpeg2dec, *mpeg2enc, *pgmtoy4m, *mplex;
+extern char *mpeg2dec, *mpeg2enc, *pgmtoy4m, *mplex, *extract_ac3, *ac3_dec;
 void import_topmenu(char* video_vob_path, pic* img, _Bool MIX_TYPE)
 {
  initialize_binary_paths(CREATE_MJPEGTOOLS);
@@ -184,11 +184,21 @@ void import_topmenu(char* video_vob_path, pic* img, _Bool MIX_TYPE)
  // Limitation to be removed later?
 
  img->nmenus=1;
+ int s=strlen(globals.settings.tempdir);
 
  if (MIX_TYPE == USE_VTS_SOUNDTRACK)
  {
    // FREE(img->soundtrack[0]
   // extract lpcm from VTS or else convert mp2/ac3 to lpcm  then assign img->soundtrack[0]=result
+  initialize_binary_paths(CREATE_EXTRACT_AC3);
+  FREE(img->soundtrack[0][0])
+  img->soundtrack[0][0]=calloc(1+ s + 20+3+ 4+1, sizeof(char));
+  sprintf(img->soundtrack[0][0], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "extracted_soundtrack",0, ".wav");
+
+  char* argsextract[]={extract_ac3, video_vob_path,  "−s", "|", ac3_dec, "−o", "wav", "−p", img->soundtrack[0][0]};
+  char* cml=get_full_command_line(argsextract);
+  errno=system(win32quote(cml));
+  free(cml);
  }
 
 
@@ -202,7 +212,7 @@ void import_topmenu(char* video_vob_path, pic* img, _Bool MIX_TYPE)
  errno=system(win32quote(cml));
  free(cml);
 
- int s=strlen(globals.settings.tempdir);
+
  img->backgroundmpg=calloc(img->nmenus, sizeof(char*));
  FREE(img->backgroundmpg[0])
  img->backgroundmpg[0]=calloc(1+ s + 17+3+ 4+1, sizeof(char));
@@ -211,10 +221,8 @@ void import_topmenu(char* video_vob_path, pic* img, _Bool MIX_TYPE)
 
  launch_lplex_soundtrack(img, "lpcm");
 
- char* argsmplex[]={mplex, "-f", "8", "-L", "48000:2:16", "-o", img->backgroundmpg[0], imported_topmenu, img->soundtrack[0]};
+ char* argsmplex[]={mplex, "-f", "8", "-L", "48000:2:16", "-o", img->backgroundmpg[0], imported_topmenu, img->soundtrack[0][0]};
  run(mplex, argsmplex, 0);
-
-
 
 
 }
