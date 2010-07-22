@@ -98,7 +98,7 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters='-g ~/audionew/a.wav  --topmenu-slides ~/pics/A.jpg  --mkisofs --tempdir &quot;/home/fab/new temp dir&quot;  -t --soundtracks ~/audionew/a.wav --datadir ~/Dev/dvda-author-10.06 --bindir /usr/bin' />
+				<Option parameters="-g ~/audionew/a.wav  --import-topmenu ~/Dev/test/VTS_01_1.VOB  --bindir /usr/bin -t --tempdir ~/tempnew5" />
 				<Option projectCompilerOptionsRelation="2" />
 				<Compiler>
 					<Add option="-march=i686" />
@@ -257,6 +257,7 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 		<Unit filename="../../src/include/samg.h" />
 		<Unit filename="../../src/include/sound.h" />
 		<Unit filename="../../src/include/structures.h" />
+		<Unit filename="../../src/include/version.h" />
 		<Unit filename="../../src/include/videoimport.h" />
 		<Unit filename="../../src/include/xml.h" />
 		<Unit filename="../../src/launch_manager.c">

@@ -33,7 +33,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
-@HAVE_MAN2HTML_TRUE@am__append_1 = dvda-author.html
+@HAVE_MAN2HTML_TRUE@am__append_1 = dvda-author-@VERSION@.html
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(am__dist_doc_DATA_DIST) \
 	$(dist_man_MANS) $(dist_menu_DATA) $(dist_pix_DATA) \
@@ -99,7 +99,7 @@ am__installdirs = "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(docdir)" \
 NROFF = nroff
 MANS = $(dist_man_MANS)
 am__dist_doc_DATA_DIST = README BUGS EXAMPLES LIMITATIONS HOWTO.conf \
-	dvda-author.conf.example dvda-author.html
+	dvda-author.conf.example dvda-author-@VERSION@.html
 DATA = $(dist_doc_DATA) $(dist_menu_DATA) $(dist_pix_DATA) \
 	$(dist_sysconf_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
@@ -359,13 +359,13 @@ dist_pix_DATA = dvda-author_48x48.png dvda-author_64x64.png
 dist_doc_DATA = README BUGS EXAMPLES LIMITATIONS HOWTO.conf \
 	dvda-author.conf.example $(am__append_1)
 @HAVE_MAN2HTML_FALSE@htmlhelp = 
-@HAVE_MAN2HTML_TRUE@htmlhelp = dvda-author.html
+@HAVE_MAN2HTML_TRUE@htmlhelp = dvda-author-@VERSION@.html
 @HAVE_HELP2MAN_TRUE@dist_man_MANS = dvda-author.1
 @HAVE_HELP2MAN_FALSE@manhelp = 
 @HAVE_HELP2MAN_TRUE@manhelp = dvda-author.1
 
 # GNU build system regeneration script and others
-EXTRA_DIST = autogen dvda-author.ico  dvda-author.bat  sox-libs  m4.extra m4.extra.dvdauthor
+EXTRA_DIST = autogen dvda-author.ico  dvda-author-launch.bat  sox-libs  m4.extra m4.extra.dvdauthor
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -1084,9 +1084,9 @@ stamprecord9: Makefile
 dvda-author.1:
 @HAVE_HELP2MAN_TRUE@	${HELP2MAN} -s 1 -N -o ${PWD}/dvda-author.1 ${PWD}/src/dvda
 
-dvda-author.html: dvda-author.1
+dvda-author-@VERSION@.html: dvda-author.1
 #PATCH  09.12  We need to display in UTF-8 mode and take off an illicit file header created by man2html
-@HAVE_MAN2HTML_TRUE@	${MAN2HTML} < ${PWD}/dvda-author.1 | $(SED) -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > ${PWD}/dvda-author.html
+@HAVE_MAN2HTML_TRUE@	${MAN2HTML} < ${PWD}/dvda-author.1 | $(SED) -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > ${PWD}/dvda-author-@VERSION@.html
 install-data-local:  $(manhelp) $(htmlhelp)
 install-exec-local:
 @HAVE_CDRTOOLS_BUILD_TRUE@	cd ${MAYBE_CDRTOOLS}; $(MAKETOOL) INS_BASE=${prefix} install; cd -
@@ -1103,7 +1103,7 @@ install: install-exec install-data-local install-am
 @HAVE_SOX_BUILD_TRUE@	if test -d sox-${SOX_VERSION}; then mv sox-${SOX_VERSION}/ libsox/; fi
 
 clean-local:
-	  rm -f dvda-author.1 dvda-author.html
+	  rm -f dvda-author.1 dvda-author-@VERSION@.html
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
