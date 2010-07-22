@@ -196,7 +196,10 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
                     // reads in channel assignement from file cgafile
                     // file cgafile.cga must contain left-aligned figures with at most two digits aligned in a single column, corresponding to cga values.
                     char cga[4]; // 2 digits+newline+\0
-                    fgets(cga, 3, cgafile);
+
+                    if (NULL == fgets(cga, 3, cgafile))
+                    { perror("[ERR]  fgets"); clean_exit(EXIT_FAILURE);}
+
                     cga[3]='\0'; // cut at newline
                     uint8_t cgaint=(uint8_t) atoi(cga);
 

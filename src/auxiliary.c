@@ -570,8 +570,9 @@ char** fn_strtok(char* chain, char delim, char** array, uint32_t count, int  (*f
 }
 
 // This loop cut may be useful to use with fn_strtok
+// first arg is spurious
 
-int cutloop(char* s, uint32_t count)
+int cutloop(char* c,  uint32_t count)
 {
     static uint32_t loop;
     loop++;

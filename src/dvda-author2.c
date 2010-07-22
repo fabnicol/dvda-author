@@ -52,7 +52,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 /*  Global  options */
 
 globalData globals;
-char *currentdir, *TEMPDIRROOT, *TEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
+char *currentdir, *TEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
 
  command_t* lexer_analysis(command_t* command, lexer_t* lexer, const char* config_file, _Bool config_type)
  {

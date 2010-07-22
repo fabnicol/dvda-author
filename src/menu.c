@@ -96,7 +96,7 @@ void menu_characteristics_coherence_test(pic* img, uint8_t ngroups)
 
 /* patches AUDIO_TS.VOB into an active-menu type AUDIO_SV.VOB at minor processing cost */
 
-void create_activemenu(pic* img,uint16_t totntracks)
+void create_activemenu(pic* img)
 {
 
 
@@ -290,7 +290,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     errno=0;
     static int s;
     if(s==0) s=strlen(globals.settings.tempdir);
-    char pic[s+13];
+    char pict[s+13];
 
     FREE(img->backgroundmpg[rank])
 
@@ -298,21 +298,20 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
     if (img->action == STILLPICS)
     {
-        if (globals.debugging) foutput("%s%u\n", "[INF]  Creating still picture #", rank+1);
+        if (globals.debugging) foutput("%s%u\n", "[INF]  Creating still pictture #", rank+1);
 
         sprintf(img->backgroundmpg[rank], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "background_still_", rank, ".mpg");
 
-        snprintf(pic, sizeof(pic), "%s"SEPARATOR"pic_%03u.jpg", globals.settings.stillpicdir, rank);  // here stillpic[0] is a subdir.
+        snprintf(pict, sizeof(pict), "%s"SEPARATOR"pic_%03u.jpg", globals.settings.stillpicdir, rank);  // here stillpic[0] is a subdir.
     }
     else if (img->action == ANIMATEDVIDEO)
     {
         if (globals.debugging) foutput("[INF]  Creating animated menu rank #%u out of %s\n", rank+1, img->backgroundpic[rank]);
         sprintf(img->backgroundmpg[rank], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "background_movie_",rank, ".mpg");
-        snprintf(pic, sizeof(pic), "%s", img->backgroundpic[rank]);
+        snprintf(pict, sizeof(pict), "%s", img->backgroundpic[rank]);
         if (img->backgroundcolors)
         {
             if (globals.veryverbose) foutput("%s\n", "[INF]  Colorizing background jpg files prior to multiplexing...");
-            char* mogrify=NULL;
             char command[500];
 
             mogrify=create_binary_path(mogrify, MOGRIFY, SEPARATOR MOGRIFY_BASENAME);
@@ -333,7 +332,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     norm[1]=0;
 
     char *argsmp2enc[]= {MP2ENC, "-o", mp2track , NULL};
-    char *argsjpeg2yuv[]= {JPEG2YUV, "-f", img->framerate, "-I", "p", "-n", "1", "-j", pic, "-A", img->aspectratio, NULL};
+    char *argsjpeg2yuv[]= {JPEG2YUV, "-f", img->framerate, "-I", "p", "-n", "1", "-j", pict, "-A", img->aspectratio, NULL};
     char *argsmpeg2enc[]= {MPEG2ENC,  "-f", "8", "-n", norm,  "-o", tempfile ,"-a", img->aspect, NULL};
     char *argsmplex[]= {MPLEX, "-f", "8",  "-o", img->backgroundmpg[rank], tempfile, mp2track, NULL};
 
@@ -366,7 +365,9 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
         case 0:
 
 
-            freopen(soundtrack, "rb", stdin);
+            if (NULL == freopen(soundtrack, "rb", stdin))
+            {perror("[ERR]  freopen"); clean_exit(EXIT_FAILURE);}
+
             dup2(STDOUT_FILENO, STDERR_FILENO);
 
             if (errno) perror(MP2ENC);
@@ -417,18 +418,18 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     errno=0;
 
 
-    FILE *f=fopen(pic, "rb");
-    foutput("opening: %s\n", pic);
+    FILE *f=fopen(pict, "rb");
+    foutput("opening: %s\n", pict);
     if ((errno)||(f == NULL))
         {
             if (img->action == ANIMATEDVIDEO)
             {
-               foutput("[ERR]  menu input files: background pic: %s", pic);
+               foutput("[ERR]  menu input files: background pic: %s", pict);
                perror("background");
             }
             else
             {
-               foutput("[ERR]  still pic: %s", pic);
+               foutput("[ERR]  still pic: %s", pict);
             }
             clean_exit(EXIT_FAILURE);
         }
@@ -546,7 +547,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
 
 
-int generate_background_mpg(pic* img, uint8_t ngroups, uint8_t* ntracks)
+int generate_background_mpg(pic* img)
 {
     uint16_t rank=0;
     char tempfile[CHAR_BUFSIZ*10];
