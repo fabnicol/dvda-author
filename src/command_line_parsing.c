@@ -506,7 +506,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             globals.settings.indir=strndup(optarg, MAX_OPTION_LENGTH);
 
             foutput("%s%s\n", "[PAR]  Input directory is: ", 	optarg);
-            DIR *dir;
 
             if ((dir=opendir(optarg)) == NULL)
                 EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Input directory could not be opened")
@@ -1475,10 +1474,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             {
                 free(img->soundtrack[0][0]);
                 img->audioformat=strdup("pcm");
-                char** str=NULL;
                 errno=0;
 
-                str=fn_strtok(optarg, ':', str, img->nmenus, cutloop, NULL);
+                char** array=fn_strtok(optarg, ':', array, img->nmenus, cutloop, NULL);
 
                 img->soundtrack=(char ***) calloc(img->nmenus, sizeof(char**));
 
@@ -1486,7 +1484,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                 for (u=0; u < img->nmenus; u++)
                 {
-                    img->soundtrack[u]  =fn_strtok(str[u], ',', img->soundtrack[u], 0,NULL, NULL);
+                    img->soundtrack[u]  =fn_strtok(array[u], ',', img->soundtrack[u], 0,NULL, NULL);
                 }
 
                 int v;
@@ -1514,12 +1512,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             else
             {
 
-                char** str=NULL;
+
                 errno=0;
 
-                str=fn_strtok(optarg, ':', str, img->nmenus, cutloop, NULL);
+                char** array=fn_strtok(optarg, ':', array, img->nmenus, cutloop, NULL);
 
-                if (!str)
+                if (!array)
                 {
                     img->topmenu_slide[0]   =calloc(1, sizeof(char**));
                     img->topmenu_slide[0][0]=strdup(img->backgroundpic[0]);
@@ -1529,7 +1527,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                 for (u=0; u < img->nmenus; u++)
                 {
-                    img->topmenu_slide[u]  =fn_strtok(str[u], ',', img->topmenu_slide[u], 0,NULL, NULL);
+                    img->topmenu_slide[u]  =fn_strtok(array[u], ',', img->topmenu_slide[u], 0,NULL, NULL);
                     img->topmenu_nslides[u]=arraylength(img->topmenu_slide[u]);
                 }
             }
@@ -1552,7 +1550,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             int backgroundpic_arraylength=0;
             if ((backgroundpic_arraylength=arraylength(img->backgroundpic)) < img->nmenus)
             {
-                int u;
+
                 foutput("%s\n","[WAR]  You did not give enough filenames, completing with last one");
                 for (u=0; u + backgroundpic_arraylength < img->nmenus; u++)
                     copy_file(img->backgroundpic[backgroundpic_arraylength-1], img->backgroundpic[u+backgroundpic_arraylength]);
@@ -1613,7 +1611,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             int highlight_arraylength=0;
             if ((highlight_arraylength=arraylength(img->highlightpic)) < img->nmenus)
             {
-                int u;
+
                 foutput("%s\n","[WAR]  You did not give enough filenames, completing with last one");
                 for (u=0; u + highlight_arraylength < img->nmenus; u++)
                     copy_file(img->highlightpic[highlight_arraylength-1], img->highlightpic[u+highlight_arraylength]);
@@ -1635,7 +1633,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             int select_arraylength=0;
             if ((select_arraylength=arraylength(img->selectpic)) < img->nmenus)
             {
-                int u;
+
                 foutput("%s\n","[WAR]  You did not give enough filenames, completing with last one");
                 for (u=0; u + select_arraylength < img->nmenus; u++)
                     copy_file(img->selectpic[select_arraylength-1], img->selectpic[u+select_arraylength]);
@@ -1659,7 +1657,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             int image_arraylength=0;
             if ((image_arraylength=arraylength(img->imagepic)) < img->nmenus)
             {
-                int u;
+
                 foutput("%s\n","[WAR]  You did not give enough filenames, completing with last one");
                 for (u=0; u + image_arraylength < img->nmenus; u++)
                     copy_file(img->imagepic[image_arraylength -1], img->imagepic[u+image_arraylength ]);
@@ -1681,7 +1679,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             int bgcolors_arraylength=0;
             if ((bgcolors_arraylength=arraylength(img->backgroundcolors)) < img->nmenus)
             {
-                int u;
+
                 foutput("%s\n","[WAR]  You did not give enough colors, completing with last one");
                 for (u=0; u + bgcolors_arraylength < img->nmenus; u++)
                     img->backgroundcolors[u+bgcolors_arraylength]=img->backgroundcolors[bgcolors_arraylength -1];

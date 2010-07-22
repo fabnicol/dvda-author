@@ -49,12 +49,15 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "auxiliary.h"
 #include "command_line_parsing.h"
 #include "winport.h"
+#include "audio.h"
 #ifndef WITHOUT_SOX
 #include "sox.h"
 #include "libsoxconvert.h"
 #endif
 #include "multichannel.h"
 #include "commonvars.h"
+
+
 
 extern globalData globals;
 
@@ -634,7 +637,12 @@ int wav_getinfo(fileinfo_t* info)
     info->file_size = read_file_size(fp, info->filename);
 #endif
 
-    fread(header, info->header_size,1,fp);
+    if (info->header_size > fread(header, info->header_size,1,fp))
+    {
+            foutput("[ERR]  Could not read header of size %d\n", info->header_size);
+            perror("       ");
+            clean_exit(EXIT_FAILURE);
+    }
 
     fclose(fp);
 
