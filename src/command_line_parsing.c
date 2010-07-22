@@ -703,8 +703,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     ngroups_scan=0;
     int nvideolinking_groups_scan=0, strlength=0;
     char* piccolorchain, *activepiccolorchain, *palettecolorchain, *fontchain, *durationchain=NULL,
-            *h, *min, *sec, **textable=NULL, **tab=NULL,**tab2=NULL, *stillpic_string=NULL, *still_options_string=NULL;
-    _Bool extract_audio_flag=0;
+            *h, *min, *sec, **textable=NULL, **tab=NULL,**tab2=NULL, *stillpic_string=NULL, *still_options_string=NULL, *import_topmenu_path=NULL;
+    _Bool extract_audio_flag=0, import_topmenu_flag=0;
     uint16_t npics[totntracks];
     optind=0;
     opterr=1;
@@ -1340,12 +1340,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case 9:
-            import_topmenu(optarg, img);
+            import_topmenu_flag=1;
+            import_topmenu_path=strdup(optarg);
+
             globals.topmenu=RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR;
             break;
-
-
-
         }
     }
 
@@ -1362,8 +1361,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     change_directory(globals.settings.workdir);
 
     /* Here it is necessary to chack and normalize: temporary directory, number of menus before copying files and allocating new memory */
+   // Cleaning operations
 
-// Cleaning operations
 
     if (user_command_line)
     {
@@ -1422,13 +1421,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         return(NULL);
     }
 
-    // Coherence checks
 
+    // Coherence checks
     // You first have to test here.
 
     menu_characteristics_coherence_test(img, ngroups);
-
-
 
 #ifndef __CB__
 #if !defined HAVE_MPEG2ENC || !defined HAVE_JPEG2YUV || !defined HAVE_MPLEX
@@ -1442,11 +1439,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 #endif
 #endif
 
-
-
     /* Fifth pass: it is now possible to safely copy files to temporary directory for menu and still pic creation  */
-
-// First parsing for input files (pics and mpgs)
+   // First parsing for input files (pics and mpgs)
 
     char * str=NULL;
     optind=0;
@@ -1656,6 +1650,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 
         case 'G' :
+
             foutput("%s%s\n", "[PAR]  image png file(s) for generating mpg video: ", optarg);
             foutput("%s\n", "[WAR]  Check that your image doe not have more than 4 colors, including transparency.");
             str=strdup(optarg);
@@ -1679,7 +1674,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case 2:
 
-
             foutput("%s%s\n", "[PAR]  Background color(s) for top (and active) menus : ", optarg);
             str=strdup(optarg);
 
@@ -1700,8 +1694,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         }
     }
-
-
 
 
     _Bool menupic_input_coherence_test=0;
@@ -1740,9 +1732,19 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 // Operations related to top menu creation
 
+// TODO: consider adding silence.wav to silent slideshows.
 
-
-    if ((soundtracks_flag) && (img->topmenu_slide))  launch_lplex_soundtrack(img);
+    if (soundtracks_flag)
+    {
+     if (img->topmenu_slide)
+         launch_lplex_soundtrack(img, "mpeg");
+     else
+         if (import_topmenu_flag)
+           import_topmenu(import_topmenu_path, img, MIX_NEW_SOUNDTRACK);
+    }
+    else
+       if (import_topmenu_flag)
+           import_topmenu(import_topmenu_path, img, USE_VTS_SOUNDTRACK);
 
 
 

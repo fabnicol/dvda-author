@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 
-int launch_lplex_soundtrack(pic* img);
+int launch_lplex_soundtrack(pic* img, char* create_mode);
 int audit_soundtrack(char* path);
 
 #endif
