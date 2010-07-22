@@ -43,10 +43,10 @@ DIST_COMMON = README $(am__configure_deps) $(am__dist_doc_DATA_DIST) \
 	$(srcdir)/dvda-author.desktop.in $(srcdir)/dvda-author.nsi.in \
 	$(srcdir)/dvda-author.spec.in $(srcdir)/script.in \
 	$(srcdir)/script1.in $(srcdir)/script2.in $(srcdir)/script3.in \
-	$(srcdir)/script4.in $(top_srcdir)/configure AUTHORS COPYING \
-	ChangeLog INSTALL NEWS TODO config/compile config/config.guess \
-	config/config.sub config/depcomp config/install-sh \
-	config/missing
+	$(srcdir)/script4.in $(srcdir)/script5.in \
+	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
+	TODO config/compile config/config.guess config/config.sub \
+	config/depcomp config/install-sh config/missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/acinclude.m4 \
 	$(top_srcdir)/m4/dependencies.m4 $(top_srcdir)/m4/dvda.m4 \
@@ -60,7 +60,7 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = dvda-author.desktop dvda-author-shared.spec \
 	dvda-author.spec dvda-author.nsi script script1 script2 \
-	script3 script4 EXAMPLES
+	script3 script4 script5 EXAMPLES
 CONFIG_CLEAN_VPATH_FILES =
 SOURCES =
 DIST_SOURCES =
@@ -145,6 +145,11 @@ DIST_ARCHIVES = $(distdir).tar.gz $(distdir).tar.lzma
 GZIP_ENV = --best
 distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
+AC3DEC = @AC3DEC@
+AC3DEC_CONFIGURE_FILE = @AC3DEC_CONFIGURE_FILE@
+AC3DEC_LIB = @AC3DEC_LIB@
+AC3DEC_LINK = @AC3DEC_LINK@
+AC3DEC_VERSION = @AC3DEC_VERSION@
 ACLOCAL = @ACLOCAL@
 ALL_VERSION = @ALL_VERSION@
 AMTAR = @AMTAR@
@@ -160,6 +165,7 @@ CDRTOOLS_LIB = @CDRTOOLS_LIB@
 CDRTOOLS_LINK = @CDRTOOLS_LINK@
 CDRTOOLS_VERSION = @CDRTOOLS_VERSION@
 CFLAGS = @CFLAGS@
+CONFIGURE_AC3DEC_FLAGS = @CONFIGURE_AC3DEC_FLAGS@
 CONFIGURE_CDRTOOLS_FLAGS = @CONFIGURE_CDRTOOLS_FLAGS@
 CONFIGURE_DVDAUTHOR_FLAGS = @CONFIGURE_DVDAUTHOR_FLAGS@
 CONFIGURE_FIXWAV_FLAGS = @CONFIGURE_FIXWAV_FLAGS@
@@ -229,6 +235,7 @@ MAGICK_VERSION = @MAGICK_VERSION@
 MAKE = @MAKE@
 MAKEINFO = @MAKEINFO@
 MAN2HTML = @MAN2HTML@
+MAYBE_AC3DEC = @MAYBE_AC3DEC@
 MAYBE_CDRTOOLS = @MAYBE_CDRTOOLS@
 MAYBE_DVDAUTHOR = @MAYBE_DVDAUTHOR@
 MAYBE_FIXWAV = @MAYBE_FIXWAV@
@@ -344,7 +351,7 @@ top_srcdir = @top_srcdir@
 # passing right flags to make distcheck when configuring nested packages We do not configure libogg, because install is forced under _build/_inst instead of local/
 DISTCHECK_CONFIGURE_FLAGS = --enable-all-deps --enable-all-builds
 ACLOCAL_AMFLAGS = -I m4 --install
-SUBDIRS = ${MAYBE_IBERTY} libutils ${MAYBE_OGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} libats2wav ${MAYBE_SOX}  ${MAYBE_LPLEX} ${MAYBE_DVDAUTHOR} ${MAYBE_HELP2MAN} ${MAYBE_MJPEGTOOLS} ${MAYBE_MAGICK} ${MAYBE_MPEG2DEC} src
+SUBDIRS = ${MAYBE_IBERTY} libutils ${MAYBE_OGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} libats2wav ${MAYBE_SOX}  ${MAYBE_LPLEX} ${MAYBE_DVDAUTHOR} ${MAYBE_HELP2MAN} ${MAYBE_MJPEGTOOLS} ${MAYBE_MAGICK} ${MAYBE_MPEG2DEC} ${MAYBE_AC3DEC} src
 DIST_SUBDIRS = libiberty libutils libfixwav src CB_project libats2wav images
 # distributed under $sysconfdir, normally
 dist_sysconf_DATA = dvda-author.desktop dvda-author.conf
@@ -438,6 +445,8 @@ script2: $(top_builddir)/config.status $(srcdir)/script2.in
 script3: $(top_builddir)/config.status $(srcdir)/script3.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 script4: $(top_builddir)/config.status $(srcdir)/script4.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+script5: $(top_builddir)/config.status $(srcdir)/script5.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 EXAMPLES: $(top_builddir)/config.status $(srcdir)/EXAMPLES.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
@@ -1026,7 +1035,7 @@ uninstall-man: uninstall-man1
 
 .PHONY: do_sox_lib_deps_subst
 
-all: stamprecord0 stamprecord1 stamprecord2 stamprecord3 stamprecord4 stamprecord5 stamprecord6 stamprecord7 stamprecord8 stamprecord9 do_sox_lib_deps_subst
+all: stamprecord0 stamprecord1 stamprecord2 stamprecord3 stamprecord4 stamprecord5 stamprecord6 stamprecord7 stamprecord8 stamprecord9 stamprecord10 do_sox_lib_deps_subst
 
 # directly patching the Makefile appears to be more efficient. You nee a GNU-compliant make.
 do_sox_lib_deps_subst: src/Makefile stamprecord2
@@ -1080,6 +1089,10 @@ stamprecord8: Makefile
 stamprecord9: Makefile
 	if test -f stamprecord9; then rm -f stamprecord9; fi; touch stamprecord9
 @HAVE_MPEG2DEC_BUILD_TRUE@	chmod +x script4 && ${SHELL} script4
+
+stamprecord10: Makefile
+	if test -f stamprecord10; then rm -f stamprecord10; fi; touch stamprecord10
+@HAVE_AC3DEC_BUILD_TRUE@	chmod +x script5 && ${SHELL} script5
 
 dvda-author.1:
 @HAVE_HELP2MAN_TRUE@	${HELP2MAN} -s 1 -N -o ${PWD}/dvda-author.1 ${PWD}/src/dvda
