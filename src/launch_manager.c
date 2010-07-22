@@ -25,6 +25,7 @@
 #include "menu.h"
 #include "winport.h"
 #include "file_input_parsing.h"
+#include "launch_manager.h"
 
 /* Remark on data structures:
  *   - command-line data belong to 'command' structures
@@ -54,7 +55,6 @@ command_t *assign_audio_characteristics(uint8_t* I, command_t *command)
     short int i, j, l, delta=0, error=0;
     i=I[0];
     j=I[1];
-    extern globalData globals;
 
     // retrieving information as to sound file format
 
@@ -166,58 +166,6 @@ command_t *assign_audio_characteristics(uint8_t* I, command_t *command)
 // recursion
     if (files[I[0]][I[1]].filename) assign_audio_characteristics(I, command);
     return(command);
-}
-
-// Launches an application in a fork and duplicates its stdout into stdout; waits for it to return;
-#define NOWAIT -1
-
-int run(char* application, char* args[], int option)
-{
-#if !defined __WIN32__
-    int pid;
-    int tube[2];
-    char c;
-
-    char msg[strlen(application)+1+7];
-    memset(msg, '0', sizeof(msg));
-
-    if (pipe(tube))
-    {
-        perror("[ERR]  ");
-        return errno;
-    }
-
-    switch (pid = fork())
-    {
-    case -1:
-        foutput("%s%s\n", "[ERR]  Could not launch ", application);
-        break;
-    case 0:
-        close(tube[0]);
-        dup2(tube[1], STDERR_FILENO);
-        execv(application, args);
-        foutput("%s%s%s\n", "[ERR]  Runtime failure in ", application," child process");
-        perror("");
-        return errno;
-
-    default:
-        close(tube[1]);
-        dup2(tube[0], STDIN_FILENO);
-        while (read(tube[0], &c, 1) == 1) foutput("%c", c);
-        if (option != NOWAIT) waitpid(pid, NULL, option);
-        close(tube[0]);
-
-    }
-#else
-char* s=get_command_line(args);
-char cml[strlen(application)+1+strlen(s)+1+2];
-sprintf(cml, "\"%s\" %s",  application, s);
-free(s);
-if (globals.debugging) foutput("[INF]  Running: %s\n ", cml);
-system(cml);
-#endif
-
-    return errno;
 }
 
 
@@ -378,9 +326,9 @@ int launch_manager(command_t *command)
 
     for (i=0; i < nplaygroups; i++)
     {
-        int nfiles=ntracks[playtitleset[i]];
+        int numfiles=ntracks[playtitleset[i]];
 
-        for (j=0; j < nfiles;  j++)
+        for (j=0; j < numfiles;  j++)
         {
 
             foutput("%c%c  %d     %02d  %6"PRIu32"   %02d   %d   %10"PRIu64"   ",'D', singlestar[i], i+1, j+1, files[i][j].samplerate, files[i][j].bitspersample, files[i][j].channels, files[i][j].numsamples);
@@ -463,7 +411,7 @@ int launch_manager(command_t *command)
         {
             if (globals.debugging) foutput("%s", "[INF]  Adding active menu.\n");
 
-            create_activemenu(img, totntracks);
+            create_activemenu(img);
         }
 
     if ((img->count) || (img->stillvob) || (img->active))
@@ -480,8 +428,7 @@ int launch_manager(command_t *command)
             ntitlepics,
             img,
             &sectors,
-            totntracks,
-            ntracks);
+            totntracks);
         if (img->stillvob)
              sectors.stillvob=stat_file_size(img->stillvob)/0x800;  //expressed in sectors
         if (globals.debugging) foutput("[MSG]  Size of AUDIO_SV.VOB is: %u sectors\n" , sectors.stillvob);
