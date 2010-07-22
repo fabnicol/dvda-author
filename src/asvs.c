@@ -40,7 +40,7 @@ with current title starting at pic n
 #include "c_utils.h"
 #include "winport.h"
 #include "auxiliary.h"
-
+#include "asvs.h"
 
 
 extern globalData globals;
@@ -51,7 +51,7 @@ int create_asvs(char* audiotsdir,int naudio_groups, uint8_t *numtitles, uint16_t
     uint8_t asvs[sectors_asvs*2048];
     memset(asvs,0,sectors_asvs*2048);
 
-    uint16_t pic=0, npics=0, totnumtitles=0, k, j, t;
+    uint16_t pict=0, npics=0, totnumtitles=0, k, j, t;
     errno=0;
     uint32_t totpicsectors=0;
 
@@ -93,16 +93,16 @@ int loop=0;
         {
 		asvs[k]=npics;
 		k+=2;
-		uint16_copy(&asvs[k], pic+1);   // 1-based
-		pic+=npics;
+		uint16_copy(&asvs[k], pict+1);   // 1-based
+		pict+=npics;
 		k+=2;
 		uint32_copy(&asvs[k], totpicsectors);
 		for (j=0; j < npics; j++)
 		{
 		    if (j) uint16_copy(&asvs[t], totpicsectors);
 		    t+=2;
-		    totpicsectors+=img->stillpicvobsize[j];     //pic [] is 0-based: pic[0] for first track
-		    if (totpicsectors > 1024) foutput("[ERR]  Exceeding stillpic buffer limit (2 MB) at pic #%d.\n", j);
+		    totpicsectors+=img->stillpicvobsize[j];     //pict [] is 0-based: pict[0] for first track
+		    if (totpicsectors > 1024) foutput("[ERR]  Exceeding stillpic buffer limit (2 MB) at pict #%d.\n", j);
 		}
 		k+=4;
 		img->stillpicvobsize+=npics;

@@ -103,6 +103,8 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 				<Compiler>
 					<Add option="-march=i686" />
 					<Add option="-O3" />
+					<Add option="-Wextra" />
+					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="-std=c99" />
 					<Add option="-D__CB__" />
