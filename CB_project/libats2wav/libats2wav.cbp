@@ -15,6 +15,7 @@
 				<Option createDefFile="1" />
 				<Compiler>
 					<Add option="-march=i686" />
+					<Add option="-O3" />
 					<Add option="-g" />
 					<Add option="-std=c99 -Wextra -pedantic -Wall -DCB" />
 					<Add option="-D_LARGEFILE_SOURCE" />
