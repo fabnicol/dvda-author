@@ -189,6 +189,8 @@ char* convert=NULL;
 char* mpeg2dec=NULL;
 char* pgmtoy4m=NULL;
 char* curl=NULL;
+char* extract_ac3=NULL;
+char* ac3_dec=NULL;
 
 void initialize_binary_paths(char level)
 {
@@ -197,7 +199,10 @@ void initialize_binary_paths(char level)
     switch (level)
     {
 
-
+    case CREATE_EXTRACT_AC3:
+          extract_ac3=create_binary_path(extract_ac3, EXTRACT_AC3, SEPARATOR EXTRACT_AC3_BASENAME);
+          ac3_dec=create_binary_path(ac3_dec, AC3_DEC, SEPARATOR AC3_DEC_BASENAME);
+          break;
 
     case CREATE_MJPEGTOOLS:
         if (!count1)
