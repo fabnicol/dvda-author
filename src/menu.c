@@ -187,6 +187,7 @@ char* dvdauthor=NULL;
 char* spumux=NULL;
 char* convert=NULL;
 char* mpeg2dec=NULL;
+char* pgmtoy4m=NULL;
 char* curl=NULL;
 
 void initialize_binary_paths(char level)
@@ -208,6 +209,7 @@ void initialize_binary_paths(char level)
             jpeg2yuv=create_binary_path(jpeg2yuv,JPEG2YUV, SEPARATOR JPEG2YUV_BASENAME);
             mpeg2enc=create_binary_path(mpeg2enc,MPEG2ENC, SEPARATOR MPEG2ENC_BASENAME);
             mplex=create_binary_path(mplex, MPLEX, SEPARATOR MPLEX_BASENAME);
+            pgmtoy4m=create_binary_path(pgmtoy4m, PGMTOY4M, SEPARATOR PGMTOY4M_BASENAME);
             count1++;
         }
         break;

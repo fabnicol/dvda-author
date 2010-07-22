@@ -68,7 +68,7 @@ int audit_soundtrack(char* path)
 
 }
 
-int launch_lplex_soundtrack(pic* img)
+int launch_lplex_soundtrack(pic* img, char* create_mode)
 {
     errno=0;
     int u, menu, tot=0;
@@ -80,7 +80,7 @@ int launch_lplex_soundtrack(pic* img)
     if(!lplex) return -1;
 
 
-    char *args0[12]= {LPLEX_BASENAME, "--create", "mpeg", "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm, "seamless"};
+    char *args0[12]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm, "seamless"};
 
 
     for (menu=0; menu < img->nmenus; menu++)

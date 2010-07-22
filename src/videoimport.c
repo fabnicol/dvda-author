@@ -46,7 +46,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "c_utils.h"
 #include "ports.h"
 #include "menu.h"
-
+#include "sound.h"
 
 
 extern globalData globals;
@@ -175,19 +175,46 @@ void get_video_PTS_ticks(char* path_to_VIDEO_TS, uint32_t *videotitlelength, uin
 
 }
 
-extern char *mpeg2dec, *mpeg2enc;
-void import_topmenu(char* video_vob_path, pic* img)
+extern char *mpeg2dec, *mpeg2enc, *pgmtoy4m, *mplex;
+void import_topmenu(char* video_vob_path, pic* img, _Bool MIX_TYPE)
 {
  initialize_binary_paths(CREATE_MJPEGTOOLS);
  initialize_binary_paths(CREATE_MPEG2DEC);
+
+ // Limitation to be removed later?
+
+ img->nmenus=1;
+
+ if (MIX_TYPE == USE_VTS_SOUNDTRACK)
+ {
+   // FREE(img->soundtrack[0]
+  // extract lpcm from VTS or else convert mp2/ac3 to lpcm  then assign img->soundtrack[0]=result
+ }
+
+
  char framerate[strlen(img->framerate)+3];
  sprintf(framerate, "%s%s", img->framerate, ":1");
  char imported_topmenu[strlen(globals.settings.tempdir)+28+1];
  sprintf(imported_topmenu, "%s%s", globals.settings.tempdir, "/imported_topmenu_video.m2v");
  if (framerate == NULL) exit(0);
- char* args[]={mpeg2dec, "-s", "-o", "pgmpipe", quote(video_vob_path),"|", "pgmtoy4m", "-i", "p", "-r", framerate, "|", mpeg2enc, "-f", "8", "-o", imported_topmenu,NULL};
+ char* args[]={mpeg2dec, "-s", "-o", "pgmpipe", quote(video_vob_path),"|", pgmtoy4m, "-i", "p", "-r", framerate, "|", mpeg2enc, "-f", "8", "-o", quote(imported_topmenu),NULL};
  char* cml=get_full_command_line(args);
  errno=system(win32quote(cml));
  free(cml);
+
+ int s=strlen(globals.settings.tempdir);
+ img->backgroundmpg=calloc(img->nmenus, sizeof(char*));
+ FREE(img->backgroundmpg[0])
+ img->backgroundmpg[0]=calloc(1+ s + 17+3+ 4+1, sizeof(char));
+
+ sprintf(img->backgroundmpg[0], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "background_movie_",0, ".mpg");
+
+ launch_lplex_soundtrack(img, "lpcm");
+
+ char* argsmplex[]={mplex, "-f", "8", "-L", "48000:2:16", "-o", img->backgroundmpg[0], imported_topmenu, img->soundtrack[0]};
+ run(mplex, argsmplex, 0);
+
+
+
 
 }

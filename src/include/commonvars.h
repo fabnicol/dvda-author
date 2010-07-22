@@ -179,6 +179,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define MP2ENC_BASENAME  "mp2enc"
 #endif
 
+#ifndef PGMTOY4M_BASENAME
+#define PGMTOY4M_BASENAME  "pgmtoy4m"
+#endif
 
 #ifndef MPLEX_BASENAME
 #define MPLEX_BASENAME  "mplex"
@@ -218,6 +221,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define MPEG2ENC ""
 #endif
 
+#ifndef PGMTOY4M
+#define PGMTOY4M ""
+#endif
 
 #ifndef MPEG2DEC
 #define MPEG2DEC ""
@@ -338,7 +344,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define TS_VOB_TYPE            3
 #define NO_MENU             5  // do not do anything
 
-
+#define MIX_NEW_SOUNDTRACK 1
+#define USE_VTS_SOUNDTRACK 0
 
 #define ANIMATEDVIDEO 1
 #define STILLPICS     2
