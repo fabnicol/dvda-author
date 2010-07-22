@@ -40,7 +40,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <time.h>
 #include <ctype.h>
 #include <sys/stat.h>
-
+#include <sys/wait.h>
+#include <sys/types.h>
 
 /* printf is a public macro
  * foutput_c is a private one
