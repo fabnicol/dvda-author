@@ -41,7 +41,7 @@ endif
 stamprecord0: Makefile
 	if test -f stamprecord0; then rm -f stamprecord0; fi; touch stamprecord0
 if HAVE_OGG_BUILD
-	cd ${MAYBE_OGG} &&  ${SHELL} configure ${CONFIGURE_OGG_FLAGS} && $(MAKETOOL) -j4 -k && $(MAKETOOL) install ; cd -
+	cd ${MAYBE_OGG} &&  ${SHELL} configure ${CONFIGURE_OGG_FLAGS} && $(MAKETOOL)  -k && $(MAKETOOL) install ; cd -
 endif
 
 

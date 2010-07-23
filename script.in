@@ -1,2 +1,2 @@
 cd @MAYBE_FLAC@ && cp @ROOTDIR@/m4.extra/iconv.m4 m4/ ; cp @ROOTDIR@/m4.extra/codeset.m4 m4/
-./configure  @CONFIGURE_FLAC_FLAGS@  && make -j4 -k && make install; cd - 
+./configure  @CONFIGURE_FLAC_FLAGS@  && make  -j4 -k && make install; cd - 

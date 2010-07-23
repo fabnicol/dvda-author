@@ -52,14 +52,31 @@ m4_map([DVDA_TEST_AUX],[
 
 
 
-    m4_map([DVDA_ARG_ENABLE],[[[iberty-build]],[[ogg-build]],[[flac-build]],[[sox-build]],[[help2man-build]],[[lplex-build]],[[mpeg2dec-build]],[[ac3dec-build]],[[mjpegtools-build]],[[core-build],[withval_FIXWAV=no
-                      withval_FLAC=no
-                      withval_OGG=no
-                      withval_SOX=no
-                      withval_IBERTY=no]],[[magick-build],[DVDA_INF([MAGICK_MSG])]], [[all-builds]],[[dvdauthor-build]],[[cdrtools-build]],[[static-sox],[DVDA_INF([SOX_STATIC_MSG])
-		      SOX_LINK="$SOX_LINK -lasound -lpng -lz -lltdl -lmagic -lsamplerate"
-		      SOX_LIB="/usr/lib/libsox.a `find /usr/lib/sox/ -regex lib.*a`"]]])
-
+    m4_map([DVDA_ARG_ENABLE],
+           [
+             [[iberty-build]],
+             [[ogg-build]],
+             [[flac-build]],
+             [[sox-build]],
+             [[help2man-build]],
+             [[lplex-build]],
+             [[mpeg2dec-build]],
+             [[ac3dec-build]],
+             [[mjpegtools-build]],
+             [[core-build],
+              [withval_FIXWAV=no
+               withval_FLAC=no
+               withval_OGG=no
+               withval_SOX=no
+               withval_IBERTY=no]],
+             [[magick-build],[DVDA_INF([MAGICK_MSG])]],
+             [[dvdauthor-build]],
+             [[cdrtools-build]],
+             [[static-sox],
+              [DVDA_INF([SOX_STATIC_MSG])
+	       SOX_LINK="$SOX_LINK -lasound -lpng -lz -lltdl -lmagic -lsamplerate"
+               SOX_LIB="/usr/lib/libsox.a $(find /usr/lib/sox/ -regex lib.*a)"]],
+             [[all-builds]]])
 
   #=================  platform-specific features =====================================#
 
@@ -138,9 +155,9 @@ m4_map([DVDA_TEST_AUX],[
     # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
 
     DVDA_CONF_SUBDIRS_LOCAL_INSTALL([
-     [[[FLAC],[libFLAC]],[--disable-shared --disable-thorough-tests --disable-oggtest --disable-cpplibs --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]],
-     [[[SOX],[libsox]],  [--without-mad --without-flac --without-lame --prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]],
-     [[[OGG],[libogg]],  [--prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]]])
+     [[[FLAC],[flac-1.2.1]],[--disable-shared --disable-thorough-tests --disable-oggtest --disable-cpplibs --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]],
+     [[[SOX],[sox-14.3.1]],  [--without-mad --without-flac --without-lame --prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]],
+     [[[OGG],[ogg-1.1.4]],  [--prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]]])
 
     # auxiliary libs that remain within package, not installed
 
