@@ -575,7 +575,7 @@ AC_DEFUN([DVDA_CONFIG],[
     m4_pushdef([CDR],m4_unquote(m4_cdr(LIST)))
     
 
-    AS_IF([test x$VAR[_BUILD] = xyes || test x$ALL_BUILDS = xyes],
+    AS_IF([test x$VAR[_BUILD] = xyes || test x$ALL_BUILDS = xyes -a x$[withval_]VAR != xno],
            [
 	      [MAYBE_]VAR=CDR
 	      VAR[_BUILD]=yes
@@ -586,13 +586,6 @@ AC_DEFUN([DVDA_CONFIG],[
 	      AC_SUBST([CONFIGURE_]VAR[_FLAGS])
 	      AC_MSG_NOTICE([CONFIGURE_]VAR[_FLAGS]=$[CONFIGURE_]VAR[_FLAGS])
               AS_IF([test -d  $ROOTDIR/$[MAYBE_]VAR && ! test -d  $[MAYBE_]VAR ], [cp -r $ROOTDIR/$[MAYBE_]VAR  $PWD])
-	      # sanity checks
-              AS_IF([test x$VAR[_BUILD] = xyes && ! test -d $[MAYBE_]VAR],
-                       [
-                        m4_pushdef([var], m4_tolower(VAR))
-                        AC_MSG_NOTICE([Directory ]$[MAYBE_]VAR[ does not exist, reconfigure with --enable-]var[-build, otherwise using --without-]var[...])
-                        AS_EXIT
-                       ])
            ])
 
     AM_CONDITIONAL([HAVE_]VAR[_BUILD], [test x$VAR[_BUILD] = xyes || test x$ALL_BUILDS = xyes])
@@ -604,7 +597,6 @@ AC_DEFUN([DVDA_CONFIG],[
     m4_popdef([CDR])
     m4_popdef([FL])
     m4_popdef([LIST])
-    m4_popdef([var])
     ])])dnl
 
 AC_DEFUN([DVDA_CONF_SUBDIRS],               [DVDA_CONFIG([$1],[#])])

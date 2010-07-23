@@ -352,7 +352,7 @@ AS_IF([ test x$HELP2MAN != x ],
 AS_IF([ test x$SMAKE != x ], [ AC_MSG_RESULT([smake will be used instead of GNU make])
                               make=$SMAKE
                              ],
-                             [make="$MAKE -j4"])
+                             [make="$MAKE"])
 
 AS_IF([ test x$MP2ENC = x -o x$JPEG2YUV = x -o x$MPEG2ENC = x -o x$MPLEX = x],[
  AC_MSG_RESULT([  You will have to author top menus from available MPEG background files, as tools are missing to automate generation.])])
