@@ -1,1 +1,1 @@
-cd @MAYBE_LPLEX@ && ./configure @CONFIGURE_LPLEX_FLAGS@ ; cd - ;
+cd @MAYBE_LPLEX@ && ./configure @CONFIGURE_LPLEX_FLAGS@ ; make -j4; cd - ;

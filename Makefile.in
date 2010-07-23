@@ -1048,7 +1048,7 @@ do_sox_lib_deps_subst: src/Makefile stamprecord2
 
 stamprecord0: Makefile
 	if test -f stamprecord0; then rm -f stamprecord0; fi; touch stamprecord0
-@HAVE_OGG_BUILD_TRUE@	cd ${MAYBE_OGG} &&  ${SHELL} configure ${CONFIGURE_OGG_FLAGS} && $(MAKETOOL) -j4 -k && $(MAKETOOL) install ; cd -
+@HAVE_OGG_BUILD_TRUE@	cd ${MAYBE_OGG} &&  ${SHELL} configure ${CONFIGURE_OGG_FLAGS} && $(MAKETOOL)  -k && $(MAKETOOL) install ; cd -
 
 stamprecord1: Makefile
 	if test -f stamprecord1; then rm -f stamprecord1; fi; touch stamprecord1
