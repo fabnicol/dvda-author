@@ -49,10 +49,16 @@ endif
 
 if WITH_SOX
     dvda_SOURCES += libsoxconvert.c
+
 if HAVE_SOX_BUILD
     AM_CPPFLAGS  += -I${top_srcdir}/${MAYBE_SOX}/src
     AM_LDFLAGS   += SOX_LIB_DEPS
+if HAVE_STATIC_SOX
+    LDADD        += ${SOX_LIB}
 endif
+
+else
+
 if HAVE_EXTERNAL_SOX
     AM_LDFLAGS   += -ldl
     LDADD        += ${SOX_LIB}
@@ -60,9 +66,8 @@ endif
 if HAVE_SOX
     AM_LDFLAGS   += ${SOX_LINK}
 endif
-if HAVE_STATIC_SOX
-    LDADD        += ${SOX_LIB}
 endif
+
 endif
 
 if HAVE_IBERTY_BUILD
