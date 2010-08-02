@@ -16,6 +16,8 @@
 
 extern globalData globals;
 
+// Checks whether video soundtracks comply with standard for AUDIO_TS.VOB authoring
+
 int audit_soundtrack(char* path)
 {
 #if HAVE_FIXWAV

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Release" />
-	<File name="../../BUGS" open="1" top="0" tabpos="1">
+	<File name="../../BUGS" open="1" top="1" tabpos="1">
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../ChangeLog" open="1" top="0" tabpos="2">
@@ -59,7 +59,7 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../libiberty/src/getopt.c" open="1" top="0" tabpos="20">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="8365" topLine="247" />
 	</File>
 	<File name="../../libiberty/src/getopt1.c" open="1" top="0" tabpos="21">
 		<Cursor position="0" topLine="0" />
@@ -131,7 +131,7 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../src/amg2.c" open="1" top="0" tabpos="44">
-		<Cursor position="0" topLine="632" />
+		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../src/asvs.c" open="1" top="0" tabpos="45">
 		<Cursor position="0" topLine="0" />
@@ -143,16 +143,16 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../src/audio.c" open="1" top="0" tabpos="48">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="3145" topLine="82" />
 	</File>
 	<File name="../../src/auxiliary.c" open="1" top="0" tabpos="49">
-		<Cursor position="0" topLine="0" />
+		<Cursor position="31386" topLine="605" />
 	</File>
-	<File name="../../src/command_line_parsing.c" open="1" top="1" tabpos="50">
-		<Cursor position="58366" topLine="1656" />
+	<File name="../../src/command_line_parsing.c" open="1" top="0" tabpos="50">
+		<Cursor position="61258" topLine="1705" />
 	</File>
 	<File name="../../src/dvda-author2.c" open="1" top="0" tabpos="51">
-		<Cursor position="11511" topLine="309" />
+		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../src/file_input_parsing.c" open="1" top="0" tabpos="52">
 		<Cursor position="0" topLine="0" />
@@ -179,7 +179,7 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../src/include/commonvars.h" open="1" top="0" tabpos="60">
-		<Cursor position="10124" topLine="352" />
+		<Cursor position="5512" topLine="236" />
 	</File>
 	<File name="../../src/include/dvda-author.h" open="1" top="0" tabpos="61">
 		<Cursor position="0" topLine="0" />
@@ -203,7 +203,7 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../src/include/ports.h" open="1" top="0" tabpos="68">
-		<Cursor position="1079" topLine="21" />
+		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../src/include/samg.h" open="1" top="0" tabpos="69">
 		<Cursor position="0" topLine="0" />
@@ -212,36 +212,39 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../src/include/structures.h" open="1" top="0" tabpos="71">
-		<Cursor position="0" topLine="99" />
-	</File>
-	<File name="../../src/include/videoimport.h" open="1" top="0" tabpos="72">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/xml.h" open="1" top="0" tabpos="73">
+	<File name="../../src/include/version.h" open="1" top="0" tabpos="72">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/launch_manager.c" open="1" top="0" tabpos="74">
-		<Cursor position="6062" topLine="203" />
-	</File>
-	<File name="../../src/lexer.c" open="1" top="0" tabpos="75">
+	<File name="../../src/include/videoimport.h" open="1" top="0" tabpos="73">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/libsoxconvert.c" open="1" top="0" tabpos="76">
+	<File name="../../src/include/xml.h" open="1" top="0" tabpos="74">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/menu.c" open="1" top="0" tabpos="77">
-		<Cursor position="20947" topLine="645" />
-	</File>
-	<File name="../../src/samg2.c" open="1" top="0" tabpos="78">
+	<File name="../../src/launch_manager.c" open="1" top="0" tabpos="75">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/sound.c" open="1" top="0" tabpos="79">
-		<Cursor position="4124" topLine="119" />
+	<File name="../../src/lexer.c" open="1" top="0" tabpos="76">
+		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/videoimport.c" open="1" top="0" tabpos="80">
-		<Cursor position="5235" topLine="142" />
+	<File name="../../src/libsoxconvert.c" open="1" top="0" tabpos="77">
+		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../src/xml.c" open="1" top="0" tabpos="81">
-		<Cursor position="301" topLine="304" />
+	<File name="../../src/menu.c" open="1" top="0" tabpos="78">
+		<Cursor position="8883" topLine="252" />
+	</File>
+	<File name="../../src/samg2.c" open="1" top="0" tabpos="79">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="../../src/sound.c" open="1" top="0" tabpos="80">
+		<Cursor position="1794" topLine="100" />
+	</File>
+	<File name="../../src/videoimport.c" open="1" top="0" tabpos="81">
+		<Cursor position="7093" topLine="159" />
+	</File>
+	<File name="../../src/xml.c" open="1" top="0" tabpos="82">
+		<Cursor position="0" topLine="299" />
 	</File>
 </CodeBlocks_layout_file>

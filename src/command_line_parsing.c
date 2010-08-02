@@ -1476,7 +1476,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 img->audioformat=strdup("pcm");
                 errno=0;
 
-                char** array=fn_strtok(optarg, ':', array, img->nmenus, cutloop, NULL);
+                char** array=NULL;
+                array=fn_strtok(optarg, ':', array, img->nmenus, cutloop, NULL);
 
                 img->soundtrack=(char ***) calloc(img->nmenus, sizeof(char**));
 
@@ -1515,7 +1516,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                 errno=0;
 
-                char** array=fn_strtok(optarg, ':', array, img->nmenus, cutloop, NULL);
+                char** array=NULL;
+                array=fn_strtok(optarg, ':', array, img->nmenus, cutloop, NULL);
 
                 if (!array)
                 {
