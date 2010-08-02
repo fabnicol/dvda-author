@@ -53,7 +53,7 @@ void menu_characteristics_coherence_test(pic* img, uint8_t ngroups)
         }
     }
 
-   // default values must be set even if globals.topmenu = NO_MENU
+    // default values must be set even if globals.topmenu = NO_MENU
 
     if (ngroups)
     {
@@ -190,19 +190,23 @@ char* mpeg2dec=NULL;
 char* pgmtoy4m=NULL;
 char* curl=NULL;
 char* extract_ac3=NULL;
-char* ac3_dec=NULL;
+char* ac3dec=NULL;
 
 void initialize_binary_paths(char level)
 {
     ///   saves ressources by ensuring this is done just once  ///
-    static uint16_t count1, count2, count3, count4, count5, count6;
+    static uint16_t count1, count2, count3, count4, count5, count6, count7;
     switch (level)
     {
 
     case CREATE_EXTRACT_AC3:
-          extract_ac3=create_binary_path(extract_ac3, EXTRACT_AC3, SEPARATOR EXTRACT_AC3_BASENAME);
-          ac3_dec=create_binary_path(ac3_dec, AC3_DEC, SEPARATOR AC3_DEC_BASENAME);
-          break;
+        if (!count7)
+        {
+            extract_ac3=create_binary_path(extract_ac3, EXTRACT_AC3, SEPARATOR EXTRACT_AC3_BASENAME);
+            ac3dec=create_binary_path(ac3dec, AC3DEC, SEPARATOR AC3DEC_BASENAME);
+            count7++;
+        }
+        break;
 
     case CREATE_MJPEGTOOLS:
         if (!count1)
@@ -248,18 +252,18 @@ void initialize_binary_paths(char level)
     case CREATE_MPEG2DEC:
         if (!count5)
         {
-         mpeg2dec=create_binary_path(mpeg2dec, MPEG2DEC, SEPARATOR MPEG2DEC_BASENAME);
-         count5++;
+            mpeg2dec=create_binary_path(mpeg2dec, MPEG2DEC, SEPARATOR MPEG2DEC_BASENAME);
+            count5++;
         }
         break;
 
     case CREATE_CURL:
-     if (!count6)
-     {
-         curl=create_binary_path(curl, CURL, SEPARATOR CURL_BASENAME);
-         count6++;
-     }
-     break;
+        if (!count6)
+        {
+            curl=create_binary_path(curl, CURL, SEPARATOR CURL_BASENAME);
+            count6++;
+        }
+        break;
 
     case FREE_MEMORY:
         if (count1)
@@ -278,6 +282,7 @@ void initialize_binary_paths(char level)
         }
         if (count5) free(mpeg2dec);
         if (count6) free(curl);
+        if (count7) { free(ac3dec); free(extract_ac3); }
         break;
     }
 }
@@ -366,7 +371,10 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
 
             if (NULL == freopen(soundtrack, "rb", stdin))
-            {perror("[ERR]  freopen"); clean_exit(EXIT_FAILURE);}
+            {
+                perror("[ERR]  freopen");
+                clean_exit(EXIT_FAILURE);
+            }
 
             dup2(STDOUT_FILENO, STDERR_FILENO);
 
@@ -421,18 +429,18 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     FILE *f=fopen(pict, "rb");
     foutput("opening: %s\n", pict);
     if ((errno)||(f == NULL))
+    {
+        if (img->action == ANIMATEDVIDEO)
         {
-            if (img->action == ANIMATEDVIDEO)
-            {
-               foutput("[ERR]  menu input files: background pic: %s", pict);
-               perror("background");
-            }
-            else
-            {
-               foutput("[ERR]  still pic: %s", pict);
-            }
-            clean_exit(EXIT_FAILURE);
+            foutput("[ERR]  menu input files: background pic: %s", pict);
+            perror("background");
         }
+        else
+        {
+            foutput("[ERR]  still pic: %s", pict);
+        }
+        clean_exit(EXIT_FAILURE);
+    }
     fclose(f);
     errno=0;
 

@@ -169,8 +169,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define EXTRACT_AC3_BASENAME "extract_ac3"
 #endif
 
-#ifndef AC3_DEC_BASENAME
-#define AC3_DEC_BASENAME "ac3_dec"
+#ifndef AC3DEC_BASENAME
+#define AC3DEC_BASENAME "ac3dec"
 #endif
 
 
@@ -261,8 +261,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define EXTRACT_AC3 ""
 #endif
 
-#ifndef AC3_DEC
-#define AC3_DEC ""
+#ifndef AC3DEC
+#define AC3DEC ""
 #endif
 
 

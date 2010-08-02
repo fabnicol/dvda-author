@@ -22,6 +22,8 @@
 					<Add option="-D_LARGEFILE_SOURCE" />
 					<Add option="-D_LARGE_FILES" />
 					<Add option="-DALWAYS_INLINE" />
+					<Add option="-DHAVE_CURL=1" />
+					<Add option="-DHAVE_FIXWAV=1" />
 					<Add directory="../../libutils/src/include" />
 					<Add directory="../../libutils/src/private" />
 					<Add directory="../../src/include" />
