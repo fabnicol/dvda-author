@@ -627,9 +627,10 @@ void download_latest_version(_Bool download_new_version_flag,_Bool force_downloa
 	char month[5]={0};
 	char build[6]={0};
 
-	fgets(year, 5, versionfile);
-	fgets(month, 5, versionfile);
-	fgets(build, 6, versionfile);
+	if (NULL == fgets(year, 5, versionfile)) clean_exit(EXIT_FAILURE);
+	if (NULL == fgets(month, 5, versionfile)) clean_exit(EXIT_FAILURE);
+	if (NULL == fgets(build, 6, versionfile)) clean_exit(EXIT_FAILURE);
+
 	year[2]=0;
 	month[2]=0;
 	build[3]=0;

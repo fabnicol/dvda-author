@@ -175,7 +175,8 @@ void get_video_PTS_ticks(char* path_to_VIDEO_TS, uint32_t *videotitlelength, uin
 
 }
 
-extern char *mpeg2dec, *mpeg2enc, *pgmtoy4m, *mplex, *extract_ac3, *ac3_dec;
+
+extern char *mpeg2dec, *mpeg2enc, *pgmtoy4m, *mplex, *extract_ac3, *ac3dec;
 void import_topmenu(char* video_vob_path, pic* img, _Bool MIX_TYPE)
 {
  initialize_binary_paths(CREATE_MJPEGTOOLS);
@@ -194,8 +195,10 @@ void import_topmenu(char* video_vob_path, pic* img, _Bool MIX_TYPE)
   FREE(img->soundtrack[0][0])
   img->soundtrack[0][0]=calloc(1+ s + 20+3+ 4+1, sizeof(char));
   sprintf(img->soundtrack[0][0], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "extracted_soundtrack",0, ".wav");
+prs(ac3dec)
+prs(video_vob_path)
 
-  char* argsextract[]={extract_ac3, video_vob_path,  "−s", "|", ac3_dec, "−o", "wav", "−p", img->soundtrack[0][0]};
+  char* argsextract[]={extract_ac3, video_vob_path, "-",  "-s", "|", ac3dec, "-o", "wav", "-p", img->soundtrack[0][0], NULL};
   char* cml=get_full_command_line(argsextract);
   errno=system(win32quote(cml));
   free(cml);
@@ -221,7 +224,7 @@ void import_topmenu(char* video_vob_path, pic* img, _Bool MIX_TYPE)
 
  launch_lplex_soundtrack(img, "lpcm");
 
- char* argsmplex[]={mplex, "-f", "8", "-L", "48000:2:16", "-o", img->backgroundmpg[0], imported_topmenu, img->soundtrack[0][0]};
+ char* argsmplex[]={mplex, "-f", "8", "-L", "48000:2:16", "-o", img->backgroundmpg[0], imported_topmenu, img->soundtrack[0][0], NULL};
  run(mplex, argsmplex, 0);
 
 
