@@ -1,49 +1,49 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="" />
-	<File name="../../libfixwav/src/auxiliary.c" open="1" top="0" tabpos="1">
+	<File name="..\..\libfixwav\src\auxiliary.c" open="1" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../libfixwav/src/checkData.c" open="1" top="0" tabpos="2">
+	<File name="..\..\libfixwav\src\checkData.c" open="1" top="0" tabpos="2">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../libfixwav/src/checkParameters.c" open="1" top="0" tabpos="3">
+	<File name="..\..\libfixwav\src\checkParameters.c" open="1" top="0" tabpos="3">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../libfixwav/src/include/audio.h" open="1" top="0" tabpos="4">
+	<File name="..\..\libfixwav\src\include\audio.h" open="1" top="0" tabpos="4">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../libfixwav/src/include/checkData.h" open="1" top="0" tabpos="5">
+	<File name="..\..\libfixwav\src\include\checkData.h" open="1" top="0" tabpos="5">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../libfixwav/src/include/checkParameters.h" open="1" top="0" tabpos="6">
+	<File name="..\..\libfixwav\src\include\checkParameters.h" open="1" top="0" tabpos="6">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../libfixwav/src/include/fixwav.h" open="1" top="0" tabpos="7">
+	<File name="..\..\libfixwav\src\include\fixwav.h" open="1" top="0" tabpos="7">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../libfixwav/src/include/fixwav_auxiliary.h" open="1" top="0" tabpos="8">
+	<File name="..\..\libfixwav\src\include\fixwav_auxiliary.h" open="1" top="0" tabpos="8">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../libfixwav/src/include/fixwav_manager.h" open="1" top="0" tabpos="9">
+	<File name="..\..\libfixwav\src\include\fixwav_manager.h" open="1" top="0" tabpos="9">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../libfixwav/src/include/launch_fixwav.h" open="1" top="0" tabpos="10">
+	<File name="..\..\libfixwav\src\include\launch_fixwav.h" open="1" top="0" tabpos="10">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../libfixwav/src/include/readHeader.h" open="1" top="0" tabpos="11">
+	<File name="..\..\libfixwav\src\include\readHeader.h" open="1" top="0" tabpos="11">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../libfixwav/src/include/repair.h" open="1" top="0" tabpos="12">
+	<File name="..\..\libfixwav\src\include\repair.h" open="1" top="0" tabpos="12">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../libfixwav/src/manager.c" open="1" top="0" tabpos="13">
+	<File name="..\..\libfixwav\src\manager.c" open="1" top="0" tabpos="13">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../libfixwav/src/readHeader.c" open="1" top="0" tabpos="14">
+	<File name="..\..\libfixwav\src\readHeader.c" open="1" top="0" tabpos="14">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../libfixwav/src/repair.c" open="1" top="0" tabpos="15">
+	<File name="..\..\libfixwav\src\repair.c" open="1" top="0" tabpos="15">
 		<Cursor position="0" topLine="0" />
 	</File>
 </CodeBlocks_layout_file>

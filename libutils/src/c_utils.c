@@ -131,8 +131,17 @@ path_t *parse_filepath(const char* filepath)
 
     errno=0;
     FILE* f=fopen(filepath, "rb");
-    if ((errno) || (f == NULL)) chain->exists=0;
-    else chain->exists=1;
+    if ((errno) || (f == NULL))
+    {
+        chain->exists=0;
+        printf("%s%s\n", "[ERR]  For file: ", filepath);
+        perror("[ERR]  parse_filepath");
+    }
+    else
+    {
+        chain->exists=1;
+        fclose(f);
+    }
     errno=0;
 
 
