@@ -361,8 +361,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             htmlize(globals.settings.logfile);
             return(EXIT_FAILURE);
         }
-    }
+
 #endif
+}
 #endif
 
 

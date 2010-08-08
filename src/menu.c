@@ -293,8 +293,8 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 #else
         char* s=get_command_line(argsmp2enc);
         uint16_t size=strlen(s);
-        char cml[strlen(mp2enc)+1+size+3+strlen(img->soundtrack)+1];
-        sprintf(cml, "%s %s < %s", mp2enc, s, img->soundtrack);
+        char cml[strlen(mp2enc)+1+size+3+strlen(img->soundtrack[0][0])+1];
+        sprintf(cml, "%s %s < %s", mp2enc, s, img->soundtrack[0][0]);
         free(s);
         system(cml);
 #endif
