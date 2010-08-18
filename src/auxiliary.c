@@ -604,7 +604,7 @@ char* create_binary_path(char* local_variable, char* symbolic_constant, char* ba
     }
     else
         local_variable=win32quote(concatenate(local_variable, globals.settings.bindir, basename));
-
+    if (globals.debugging) foutput("[MSG]  Path to %s is %s from bindir=%s and basename=%s\n", basename, local_variable,globals.settings.bindir, basename);
     return local_variable;
 
 }
