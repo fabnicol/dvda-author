@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="libc_utils" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Option virtualFolders="Headers\private\;" />
+		<Build>
+			<Target title="Release">
+				<Option output="libc_utils" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="obj\Release\" />
+				<Option type="2" />
+				<Option compiler="gcc" />
+				<Option parameters="-g c:\audio\a.wav -t" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-w" />
+					<Add option="-D_LARGEFILE_SOURCE" />
+					<Add option="-D_LARGE_FILES" />
+					<Add option="-DALWAYS_INLINE" />
+					<Add option="-DHAVE_CURL=1" />
+					<Add option="-DHAVE_FIXWAV=1" />
+					<Add directory="..\..\libutils\src\include" />
+					<Add directory="..\..\libutils\src\private" />
+					<Add directory="..\..\src\include" />
+					<Add directory="..\..\libiberty\src\include" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="-Xlinker --warn-unresolved-symbols" />
+				</Linker>
+			</Target>
+		</Build>
+		<Unit filename="..\..\libutils\src\c_utils.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="..\..\libutils\src\include\c_utils.h" />
+		<Unit filename="..\..\libutils\src\include\export.h" />
+		<Unit filename="..\..\libutils\src\include\format.h" />
+		<Unit filename="..\..\libutils\src\include\libiberty.h" />
+		<Unit filename="..\..\libutils\src\include\ordinals.h" />
+		<Unit filename="..\..\libutils\src\include\stream_decoder.h" />
+		<Unit filename="..\..\libutils\src\include\stream_encoder.h" />
+		<Unit filename="..\..\libutils\src\include\winport.h" />
+		<Unit filename="..\..\libutils\src\private\private_c_utils.h" />
+		<Unit filename="..\..\libutils\src\winport.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
