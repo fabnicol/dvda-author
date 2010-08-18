@@ -1,0 +1,1 @@
+cp /home/dvda-author/master/dvda-author-10.06.win32/sox-libs $PWD//sox-libs.in && cd  && ./configure   && make -j4 -k && make install; cd - 

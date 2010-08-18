@@ -36,7 +36,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "c_utils.h"
 #include "auxiliary.h"
 #include "commonvars.h"
-
+#include "ats.h"
 
 
 extern globalData globals;
@@ -536,12 +536,12 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
 
     FILE* fpout;
     char outfile[CHAR_BUFSIZ+13+1];
-    int i=0, pack=0, pack_in_file=0, fileno=1;
+    int i=0, pack=0, pack_in_file=0, filenum=1;
     uint32_t bytesinbuf=0, n=0, lpcm_payload=0;
     uint8_t audio_buf[AUDIO_BUFFER_SIZE];
     uint64_t pack_in_title=0;
 
-    STRING_WRITE_CHAR_BUFSIZ(outfile, "%s"SEPARATOR"ATS_%02d_%d.AOB",audiotsdir,titleset,fileno)
+    STRING_WRITE_CHAR_BUFSIZ(outfile, "%s"SEPARATOR"ATS_%02d_%d.AOB",audiotsdir,titleset,filenum)
     fpout=secure_open(outfile,"wb+");
 
     /* Open the first file and initialise the input audio buffer */
@@ -577,8 +577,8 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
         if ((pack > 0) && ((pack%(512*1024))==0))
         {
             fclose(fpout);
-            fileno++;
-            STRING_WRITE_CHAR_BUFSIZ(outfile, "%s"SEPARATOR"ATS_%02d_%d.AOB",audiotsdir,titleset,fileno)
+            filenum++;
+            STRING_WRITE_CHAR_BUFSIZ(outfile, "%s"SEPARATOR"ATS_%02d_%d.AOB",audiotsdir,titleset,filenum)
             fpout=fopen(outfile,"wb+");
         }
 
@@ -644,5 +644,5 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
 
     if (files[0].single_track) files[0].last_sector=files[ntracks-1].last_sector;
 
-    return(1-fileno);
+    return(1-filenum);
 }

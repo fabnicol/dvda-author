@@ -1,0 +1,1 @@
+	cd  &&  ./configure --prefix=${prefix} ; cd - 

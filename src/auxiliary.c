@@ -570,8 +570,9 @@ char** fn_strtok(char* chain, char delim, char** array, uint32_t count, int  (*f
 }
 
 // This loop cut may be useful to use with fn_strtok
+// first arg is spurious
 
-int cutloop(char* s, uint32_t count)
+int cutloop(char* c,  uint32_t count)
 {
     static uint32_t loop;
     loop++;
@@ -603,7 +604,7 @@ char* create_binary_path(char* local_variable, char* symbolic_constant, char* ba
     }
     else
         local_variable=win32quote(concatenate(local_variable, globals.settings.bindir, basename));
-
+    if (globals.debugging) foutput("[MSG]  Path to %s is %s from bindir=%s and basename=%s\n", basename, local_variable,globals.settings.bindir, basename);
     return local_variable;
 
 }
@@ -626,9 +627,10 @@ void download_latest_version(_Bool download_new_version_flag,_Bool force_downloa
 	char month[5]={0};
 	char build[6]={0};
 
-	fgets(year, 5, versionfile);
-	fgets(month, 5, versionfile);
-	fgets(build, 6, versionfile);
+	if (NULL == fgets(year, 5, versionfile)) clean_exit(EXIT_FAILURE);
+	if (NULL == fgets(month, 5, versionfile)) clean_exit(EXIT_FAILURE);
+	if (NULL == fgets(build, 6, versionfile)) clean_exit(EXIT_FAILURE);
+
 	year[2]=0;
 	month[2]=0;
 	build[3]=0;

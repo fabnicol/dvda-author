@@ -141,7 +141,7 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
 
 		strcpy(T, chain);
 
-		int u=strlen(T)-1;
+		u=strlen(T)-1;
 		while((u) && isblank(T[u])) u--;
 		if (u) T[u]='\0';
                 break;

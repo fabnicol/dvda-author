@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Release" />
+	<File name="..\..\dvda-author.nsi.in" open="0" top="0" tabpos="0">
+		<Cursor position="5493" topLine="120" />
+	</File>
+	<File name="..\..\src\amg2.c" open="0" top="0" tabpos="0">
+		<Cursor position="9602" topLine="265" />
+	</File>
+	<File name="..\..\src\atsi2.c" open="0" top="0" tabpos="1">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="..\..\src\audio.c" open="0" top="0" tabpos="2">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="..\..\src\auxiliary.c" open="0" top="0" tabpos="7">
+		<Cursor position="30987" topLine="609" />
+	</File>
+	<File name="..\..\src\command_line_parsing.c" open="0" top="0" tabpos="6">
+		<Cursor position="48849" topLine="1329" />
+	</File>
+	<File name="..\..\src\dvda-author2.c" open="0" top="0" tabpos="3">
+		<Cursor position="6129" topLine="203" />
+	</File>
+	<File name="..\..\src\file_input_parsing.c" open="0" top="0" tabpos="4">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="..\..\src\include\commonvars.h" open="0" top="0" tabpos="0">
+		<Cursor position="3387" topLine="96" />
+	</File>
+	<File name="..\..\src\menu.c" open="0" top="0" tabpos="8">
+		<Cursor position="22029" topLine="701" />
+	</File>
+	<File name="..\..\src\videoimport.c" open="0" top="0" tabpos="5">
+		<Cursor position="5288" topLine="152" />
+	</File>
+	<File name="..\..\src\xml.c" open="0" top="0" tabpos="0">
+		<Cursor position="7164" topLine="203" />
+	</File>
+</CodeBlocks_layout_file>

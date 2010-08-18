@@ -40,7 +40,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <time.h>
 #include <ctype.h>
 #include <sys/stat.h>
-
+#include <sys/wait.h>
+#include <sys/types.h>
 
 /* printf is a public macro
  * foutput_c is a private one
@@ -1358,3 +1359,55 @@ char* quote(char* path)
     else { printf("[ERR]  Could not allocate quoted string for %s.\n", path); return NULL; }
 }
 
+
+// Launches an application in a fork and duplicates its stdout into stdout; waits for it to return;
+
+
+int run(char* application, char* args[], int option)
+{
+#if !defined __WIN32__
+    int pid;
+    int tube[2];
+    char c;
+
+    char msg[strlen(application)+1+7];
+    memset(msg, '0', sizeof(msg));
+
+    if (pipe(tube))
+    {
+        perror("[ERR]  ");
+        return errno;
+    }
+
+    switch (pid = fork())
+    {
+    case -1:
+        foutput("%s%s\n", "[ERR]  Could not launch ", application);
+        break;
+    case 0:
+        close(tube[0]);
+        dup2(tube[1], STDERR_FILENO);
+        execv(application, args);
+        foutput("%s%s%s\n", "[ERR]  Runtime failure in ", application," child process");
+        perror("");
+        return errno;
+
+    default:
+        close(tube[1]);
+        dup2(tube[0], STDIN_FILENO);
+        while (read(tube[0], &c, 1) == 1) foutput("%c", c);
+        if (option != NOWAIT) waitpid(pid, NULL, option);
+        close(tube[0]);
+
+    }
+#else
+char* s=get_command_line(args);
+char cml[strlen(application)+1+strlen(s)+1+2];
+sprintf(cml, "\"%s\" %s",  application, s);
+free(s);
+if (globals.debugging) foutput("[INF]  Running: %s\n ", cml);
+system(cml);
+#endif
+
+    return errno;
+}

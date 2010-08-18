@@ -200,7 +200,7 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
 
         // do not overwrite !
 
-        generate_background_mpg(img, ngroups, ntracks); // do not break;
+        generate_background_mpg(img); // do not break;
 
     case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
 
@@ -285,7 +285,7 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
 }
 
 
-int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles, uint16_t **ntitlepics, pic* image, sect* sectors, uint16_t totntracks, uint8_t* numtracks)
+int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles, uint16_t **ntitlepics, pic* image, sect* sectors, uint16_t totntracks)
 {
     char outfile[strlen(audiotsdir)+14];
     int  k;
@@ -294,7 +294,7 @@ int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles
 
     if (image->stillvob == NULL)
     {
-        generate_background_mpg(image, naudio_groups, numtracks);
+        generate_background_mpg(image);
         if (image->backgroundmpg == NULL)
         {
             image->backgroundmpg=calloc(1, sizeof(char*));

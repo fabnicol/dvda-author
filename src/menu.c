@@ -53,7 +53,7 @@ void menu_characteristics_coherence_test(pic* img, uint8_t ngroups)
         }
     }
 
-   // default values must be set even if globals.topmenu = NO_MENU
+    // default values must be set even if globals.topmenu = NO_MENU
 
     if (ngroups)
     {
@@ -96,7 +96,7 @@ void menu_characteristics_coherence_test(pic* img, uint8_t ngroups)
 
 /* patches AUDIO_TS.VOB into an active-menu type AUDIO_SV.VOB at minor processing cost */
 
-void create_activemenu(pic* img,uint16_t totntracks)
+void create_activemenu(pic* img)
 {
 
 
@@ -190,19 +190,23 @@ char* mpeg2dec=NULL;
 char* pgmtoy4m=NULL;
 char* curl=NULL;
 char* extract_ac3=NULL;
-char* ac3_dec=NULL;
+char* ac3dec=NULL;
 
 void initialize_binary_paths(char level)
 {
     ///   saves ressources by ensuring this is done just once  ///
-    static uint16_t count1, count2, count3, count4, count5, count6;
+    static uint16_t count1, count2, count3, count4, count5, count6, count7;
     switch (level)
     {
 
     case CREATE_EXTRACT_AC3:
-          extract_ac3=create_binary_path(extract_ac3, EXTRACT_AC3, SEPARATOR EXTRACT_AC3_BASENAME);
-          ac3_dec=create_binary_path(ac3_dec, AC3_DEC, SEPARATOR AC3_DEC_BASENAME);
-          break;
+        if (!count7)
+        {
+            extract_ac3=create_binary_path(extract_ac3, EXTRACT_AC3, SEPARATOR EXTRACT_AC3_BASENAME);
+            ac3dec=create_binary_path(ac3dec, AC3DEC, SEPARATOR AC3DEC_BASENAME);
+            count7++;
+        }
+        break;
 
     case CREATE_MJPEGTOOLS:
         if (!count1)
@@ -248,18 +252,18 @@ void initialize_binary_paths(char level)
     case CREATE_MPEG2DEC:
         if (!count5)
         {
-         mpeg2dec=create_binary_path(mpeg2dec, MPEG2DEC, SEPARATOR MPEG2DEC_BASENAME);
-         count5++;
+            mpeg2dec=create_binary_path(mpeg2dec, MPEG2DEC, SEPARATOR MPEG2DEC_BASENAME);
+            count5++;
         }
         break;
 
     case CREATE_CURL:
-     if (!count6)
-     {
-         curl=create_binary_path(curl, CURL, SEPARATOR CURL_BASENAME);
-         count6++;
-     }
-     break;
+        if (!count6)
+        {
+            curl=create_binary_path(curl, CURL, SEPARATOR CURL_BASENAME);
+            count6++;
+        }
+        break;
 
     case FREE_MEMORY:
         if (count1)
@@ -278,6 +282,7 @@ void initialize_binary_paths(char level)
         }
         if (count5) free(mpeg2dec);
         if (count6) free(curl);
+        if (count7) { free(ac3dec); free(extract_ac3); }
         break;
     }
 }
@@ -290,7 +295,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     errno=0;
     static int s;
     if(s==0) s=strlen(globals.settings.tempdir);
-    char pic[s+13];
+    char pict[s+13];
 
     FREE(img->backgroundmpg[rank])
 
@@ -298,21 +303,20 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
     if (img->action == STILLPICS)
     {
-        if (globals.debugging) foutput("%s%u\n", "[INF]  Creating still picture #", rank+1);
+        if (globals.debugging) foutput("%s%u\n", "[INF]  Creating still pictture #", rank+1);
 
         sprintf(img->backgroundmpg[rank], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "background_still_", rank, ".mpg");
 
-        snprintf(pic, sizeof(pic), "%s"SEPARATOR"pic_%03u.jpg", globals.settings.stillpicdir, rank);  // here stillpic[0] is a subdir.
+        snprintf(pict, sizeof(pict), "%s"SEPARATOR"pic_%03u.jpg", globals.settings.stillpicdir, rank);  // here stillpic[0] is a subdir.
     }
     else if (img->action == ANIMATEDVIDEO)
     {
         if (globals.debugging) foutput("[INF]  Creating animated menu rank #%u out of %s\n", rank+1, img->backgroundpic[rank]);
         sprintf(img->backgroundmpg[rank], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "background_movie_",rank, ".mpg");
-        snprintf(pic, sizeof(pic), "%s", img->backgroundpic[rank]);
+        snprintf(pict, sizeof(pict), "%s", img->backgroundpic[rank]);
         if (img->backgroundcolors)
         {
             if (globals.veryverbose) foutput("%s\n", "[INF]  Colorizing background jpg files prior to multiplexing...");
-            char* mogrify=NULL;
             char command[500];
 
             mogrify=create_binary_path(mogrify, MOGRIFY, SEPARATOR MOGRIFY_BASENAME);
@@ -326,16 +330,16 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
     }
 
-    initialize_binary_paths(0);
+    initialize_binary_paths(CREATE_MJPEGTOOLS);
 
     char norm[2];
     norm[0]=img->norm[0];
     norm[1]=0;
 
-    char *argsmp2enc[]= {MP2ENC, "-o", mp2track , NULL};
-    char *argsjpeg2yuv[]= {JPEG2YUV, "-f", img->framerate, "-I", "p", "-n", "1", "-j", pic, "-A", img->aspectratio, NULL};
-    char *argsmpeg2enc[]= {MPEG2ENC,  "-f", "8", "-n", norm,  "-o", tempfile ,"-a", img->aspect, NULL};
-    char *argsmplex[]= {MPLEX, "-f", "8",  "-o", img->backgroundmpg[rank], tempfile, mp2track, NULL};
+    char *argsmp2enc[]= {MP2ENC_BASENAME, "-o", mp2track , NULL};
+    char *argsjpeg2yuv[]= {JPEG2YUV_BASENAME, "-f", img->framerate, "-I", "p", "-n", "1", "-j", pict, "-A", img->aspectratio, NULL};
+    char *argsmpeg2enc[]= {MPEG2ENC_BASENAME,  "-f", "8", "-n", norm,  "-o", tempfile ,"-a", img->aspect, NULL};
+    char *argsmplex[]= {MPLEX_BASENAME, "-f", "8",  "-o", img->backgroundmpg[rank], tempfile, mp2track, NULL};
 
     //////////////////////////
 
@@ -366,7 +370,12 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
         case 0:
 
 
-            freopen(soundtrack, "rb", stdin);
+            if (NULL == freopen(soundtrack, "rb", stdin))
+            {
+                perror("[ERR]  freopen");
+                clean_exit(EXIT_FAILURE);
+            }
+
             dup2(STDOUT_FILENO, STDERR_FILENO);
 
             if (errno) perror(MP2ENC);
@@ -380,10 +389,10 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
             waitpid(pid1, NULL, 0);
         }
 #else
-        char* s=get_full_command_line(argsmp2enc);
+        char* s=get_command_line(argsmp2enc);
         uint16_t size=strlen(s);
-        char cml[size+3+strlen(img->soundtrack[0][0])+1+2];
-        sprintf(cml, "%s < %s", s, win32quote(img->soundtrack[0][0]));
+        char cml[strlen(mp2enc)+size+3+strlen(img->soundtrack[0][0])+1+1+2];
+        sprintf(cml, "%s %s < %s", mp2enc, s, win32quote(img->soundtrack[0][0]));
         free(s);
         system(win32quote(cml));
 #endif
@@ -417,21 +426,21 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     errno=0;
 
 
-    FILE *f=fopen(pic, "rb");
-    foutput("opening: %s\n", pic);
+    FILE *f=fopen(pict, "rb");
+    foutput("opening: %s\n", pict);
     if ((errno)||(f == NULL))
+    {
+        if (img->action == ANIMATEDVIDEO)
         {
-            if (img->action == ANIMATEDVIDEO)
-            {
-               foutput("[ERR]  menu input files: background pic: %s", pic);
-               perror("background");
-            }
-            else
-            {
-               foutput("[ERR]  still pic: %s", pic);
-            }
-            clean_exit(EXIT_FAILURE);
+            foutput("[ERR]  menu input files: background pic: %s", pict);
+            perror("background");
         }
+        else
+        {
+            foutput("[ERR]  still pic: %s", pict);
+        }
+        clean_exit(EXIT_FAILURE);
+    }
     fclose(f);
     errno=0;
 
@@ -520,16 +529,20 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 // This is unsatisfactory yet will do for porting purposes.
 
     char* jpegcl;
-    jpegcl=get_full_command_line(argsjpeg2yuv);
-    char* mpegcl=get_full_command_line(argsmpeg2enc);
-    char* mplexcl=get_full_command_line(argsmplex);
+    jpegcl=get_command_line(argsjpeg2yuv);
+    char* mpegcl=get_command_line(argsmpeg2enc);
+    char* mplexcl=get_command_line(argsmplex);
 
-    char cml2[strlen(jpegcl)+3+strlen(mpegcl)+1];
+    char cml2[strlen(jpeg2yuv)+1+strlen(jpegcl)+3+strlen(mpeg2enc)+1+strlen(mpegcl)+1];
 
-    sprintf(cml2, "%s | %s", jpegcl, mpegcl);
+    sprintf(cml2, "%s %s | %s %s",jpeg2yuv, jpegcl,mpeg2enc, mpegcl);
 
     system(win32quote(cml2));
-    system(win32quote(mplexcl));
+
+    char cml3[strlen(mplex)+1+strlen(mplexcl)+1];
+
+    sprintf(cml3, "%s %s",mplex, mplexcl);
+    system(win32quote(cml3));
     free(jpegcl);
     free(mpegcl);
     free(mplexcl);
@@ -546,7 +559,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
 
 
-int generate_background_mpg(pic* img, uint8_t ngroups, uint8_t* ntracks)
+int generate_background_mpg(pic* img)
 {
     uint16_t rank=0;
     char tempfile[CHAR_BUFSIZ*10];
@@ -623,7 +636,7 @@ int launch_spumux(pic* img)
     while (menu < img->nmenus)
     {
         if (globals.debugging) foutput("[INF]  Creating menu %d from Xml file %s\n",menu+1, globals.spu_xml[menu]);
-        char *argsspumux[]= {"spumux", "-v", "2", globals.spu_xml[menu], NULL};
+        char *argsspumux[]= {SPUMUX_BASENAME, "-v", "2", globals.spu_xml[menu], NULL};
 
         // This is to hush up dvdauthor's stdout messages, which interfere out of sequential order with main application stdout messages
         // and anyway could not be logged by  -l;
@@ -682,10 +695,10 @@ int launch_spumux(pic* img)
 
 #else
 
-        char* s=get_full_command_line(argsspumux);
+        char* s=get_command_line(argsspumux);
         uint16_t size=strlen(s);
-        char cml[size+3+strlen(img->backgroundmpg[menu])+2+3+strlen(img->topmenu[menu])+2+1];
-        sprintf(cml, "%s < %s > %s", s, win32quote(img->backgroundmpg[menu]), win32quote(img->topmenu[menu]));
+        char cml[strlen(spumux)+1+size+3+strlen(img->backgroundmpg[menu])+2+3+strlen(img->topmenu[menu])+2+1];
+        sprintf(cml, "%s %s < %s > %s",spumux, s, win32quote(img->backgroundmpg[menu]), win32quote(img->topmenu[menu]));
         system(win32quote(cml));
         free(s);
 
@@ -716,8 +729,10 @@ int launch_dvdauthor()
 #ifndef __WIN32__
     run(dvdauthor, args, 0);
 #else
-    char* s=get_full_command_line(args);
-    system(win32quote(s));
+    char* s=get_command_line(args);
+    char cml[strlen(dvdauthor)+1+strlen(s)+1];
+    sprintf(cml, "%s %s", dvdauthor, s);
+    system(win32quote(cml));
     free(s);
 #endif
 

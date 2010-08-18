@@ -120,7 +120,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define ALWAYS_INLINE_GCC
 #endif
 
-
+#define NOWAIT -1
 
 /* Structures */
 
@@ -166,7 +166,6 @@ char* concatenate(char* dest, const char* str1, const char* str2);
 void pause_dos_type();
 _Bool clean_directory(char* path);
 void clean_exit(int message);
-void help();
 void starter(compute_t *timer);
 char* print_time(int);
 int secure_mkdir ( const char *path, mode_t mode, const char* default_directory);
@@ -198,6 +197,7 @@ int download_rename_from_http_server(const char* bindir, const char* name, const
 void erase_file(const char* path);
 char* quote(char* path);
 char* win32quote(char* path);
+int run(char* application, char* args[], int option);
 
 ALWAYS_INLINE_GCC inline static void  uint32_copy(uint8_t* buf, uint32_t x)
 {

@@ -34,7 +34,8 @@ m4_map([DVDA_TEST_AUX],[
         [[smake],     [using smake instead of GNU make]],
         [[lplex],     [using lplex to mux lpcm audio and video]],
         [[make],      [whether make is installed]],
-        [[mpeg2dec],  [whether mpeg2dec is installed]]])
+        [[mpeg2dec],  [whether mpeg2dec is installed]],
+        [[ac3dec],    [whether ac3dec is installed]]])
 
 
   m4_define([SOX_STATIC_MSG],
@@ -51,14 +52,31 @@ m4_map([DVDA_TEST_AUX],[
 
 
 
-    m4_map([DVDA_ARG_ENABLE],[[[iberty-build]],[[ogg-build]],[[flac-build]],[[sox-build]],[[help2man-build]],[[lplex-build]],[[mpeg2dec-build]],[[mjpegtools-build]],[[core-build],[withval_FIXWAV=no
-                      withval_FLAC=no
-                      withval_OGG=no
-                      withval_SOX=no
-                      withval_IBERTY=no]],[[magick-build],[DVDA_INF([MAGICK_MSG])]], [[all-builds]],[[dvdauthor-build]],[[cdrtools-build]],[[static-sox],[DVDA_INF([SOX_STATIC_MSG])
-		      SOX_LINK="$SOX_LINK -lasound -lpng -lz -lltdl -lmagic -lsamplerate"
-		      SOX_LIB="/usr/lib/libsox.a `find /usr/lib/sox/ -regex lib.*a`"]]])
-
+    m4_map([DVDA_ARG_ENABLE],
+           [
+             [[iberty-build]],
+             [[ogg-build]],
+             [[flac-build]],
+             [[sox-build]],
+             [[help2man-build]],
+             [[lplex-build]],
+             [[mpeg2dec-build]],
+             [[ac3dec-build]],
+             [[mjpegtools-build]],
+             [[core-build],
+              [withval_FIXWAV=no
+               withval_FLAC=no
+               withval_OGG=no
+               withval_SOX=no
+               withval_IBERTY=no]],
+             [[magick-build],[DVDA_INF([MAGICK_MSG])]],
+             [[dvdauthor-build]],
+             [[cdrtools-build]],
+             [[static-sox],
+              [DVDA_INF([SOX_STATIC_MSG])
+	       SOX_LINK="$SOX_LINK -lasound -lpng -lz -lltdl -lmagic -lsamplerate"
+               SOX_LIB="/usr/lib/libsox.a $(find /usr/lib/sox/ -regex lib.*a)"]],
+             [[all-builds]]])
 
   #=================  platform-specific features =====================================#
 
@@ -100,7 +118,8 @@ m4_map([DVDA_TEST_AUX],[
             [[help2man-download],[1.36.4],   [http://dvd-audio.sourceforge.net/utils],[],[],[], [d31a0a38c2ec71faa06723f6b8bd3076]],
             [[magick-download], [6.6.3],     [http://dvd-audio.sourceforge.net/utils],[],[],[], [2984b2c8c3fb9fc5335e6f42fea7911c]],
             [[lplex-download], [0.3],    [http://dvd-audio.sourceforge.net/utils],[],[],[],[ebcbd36b8ac64777fabf05615fb6c036]],
-            [[mpeg2dec-download], [0.2.1], [http://dvd-audio.sourceforge.net/utils],[],[],[],[a7caee4591e8addc3bddaf47d2d45ec0]]])
+            [[mpeg2dec-download], [0.2.1], [http://dvd-audio.sourceforge.net/utils],[],[],[],[a7caee4591e8addc3bddaf47d2d45ec0]],
+            [[ac3dec-download], [0.6.2-mjpegtools], [http://dvd-audio.sourceforge.net/utils],[],[],[], [884bbd39907d0b47d8eac875bcf40839]]])
 
     m4_map([DVDA_ARG_ENABLE_DOWNLOAD],[
             DOWNLOAD_OPTIONS,
@@ -113,7 +132,7 @@ m4_map([DVDA_TEST_AUX],[
 
 
     m4_map([DVDA_ARG_WITH],[
-      [[FLAC],  [[[FLAC/all.h],[FLAC__stream_decoder_init_file]]]],
+      [[flac],  [[[FLAC/all.h],[FLAC__stream_decoder_init_file]]]],
       [[ogg],   [[[ogg/ogg.h], [ogg_stream_init]]]],
       [[fixwav],[[[fixwav_manager.h],[fixwav]]]],
       [[sox],   [[[sox.h],     [sox_format_init  sox_open_read
@@ -131,14 +150,14 @@ m4_map([DVDA_TEST_AUX],[
 
     # installing binaries, normally executables
 
-    DVDA_CONF_SUBDIRS([[[[DVDAUTHOR],[dvdauthor-0.6.14]]], [[[CDRTOOLS],[cdrtools-3.00]]], [[[MJPEGTOOLS], [mjpegtools-1.9.0]]],[[[MPEG2DEC],[mpeg2dec-0.2.1-mjpegtools-0.7]], [--prefix=$prefix]],[[[LPLEX], [lplex-0.3]], [--prefix=$prefix --disable-shared]],[[[HELP2MAN], [help2man-1.36.4]]], [[[MAGICK], [magick-6.6.3]]]])
+    DVDA_CONF_SUBDIRS([[[[DVDAUTHOR],[dvdauthor-0.6.14]]], [[[CDRTOOLS],[cdrtools-3.00]]], [[[MJPEGTOOLS], [mjpegtools-1.9.0]]],[[[AC3DEC],[ac3dec-0.6.2-mjpegtools]],[--prefix=$prefix]],[[[MPEG2DEC],[mpeg2dec-0.2.1-mjpegtools-0.7]], [--prefix=$prefix]],[[[LPLEX], [lplex-0.3]], [--prefix=$prefix --disable-shared]],[[[HELP2MAN], [help2man-1.36.4]]], [[[MAGICK], [magick-6.6.3]]]])
 
     # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
 
     DVDA_CONF_SUBDIRS_LOCAL_INSTALL([
-     [[[FLAC],[libFLAC]],[--disable-shared --disable-thorough-tests --disable-oggtest --disable-cpplibs --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]],
-     [[[SOX],[libsox]],  [--without-mad --without-flac --without-lame --prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]],
-     [[[OGG],[libogg]],  [--prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]]])
+     [[[FLAC],[flac-1.2.1]],[--disable-shared --disable-thorough-tests --disable-oggtest --disable-cpplibs --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]],
+     [[[SOX],[sox-14.3.1]],  [--without-mad --without-flac --without-lame --prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]],
+     [[[OGG],[ogg-1.1.4]],  [--prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]]])
 
     # auxiliary libs that remain within package, not installed
 

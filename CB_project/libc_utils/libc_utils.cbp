@@ -13,14 +13,16 @@
 				<Option object_output="obj\Release\" />
 				<Option type="2" />
 				<Option compiler="gcc" />
+				<Option parameters="-g c:\audio\a.wav -t" />
 				<Option createDefFile="1" />
 				<Compiler>
-					<Add option="-march=i686" />
 					<Add option="-O3" />
 					<Add option="-w" />
 					<Add option="-D_LARGEFILE_SOURCE" />
 					<Add option="-D_LARGE_FILES" />
 					<Add option="-DALWAYS_INLINE" />
+					<Add option="-DHAVE_CURL=1" />
+					<Add option="-DHAVE_FIXWAV=1" />
 					<Add directory="..\..\libutils\src\include" />
 					<Add directory="..\..\libutils\src\private" />
 					<Add directory="..\..\src\include" />

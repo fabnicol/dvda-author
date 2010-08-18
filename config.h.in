@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Defining ac3dec filepath. */
+#undef AC3DEC
+
 /* Defining bn filepath */
 #undef ALL
 
@@ -38,6 +41,15 @@
 
 /* Defining flac filepath. */
 #undef FLAC
+
+/* Whether ac3dec source code will be downloaded for build. */
+#undef HAVE_AC3DEC
+
+/* configure, build and install ac3dec from source code */
+#undef HAVE_AC3DEC_BUILD
+
+/* download ac3dec from source code */
+#undef HAVE_AC3DEC_DOWNLOAD
 
 /* Whether all source code will be downloaded for build. */
 #undef HAVE_ALL
@@ -243,6 +255,9 @@
 
 /* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
 #undef HAVE_NDIR_H
+
+/* Does not use a configured patch of bn */
+#undef HAVE_NO_AC3DEC_PATCH
 
 /* Does not use a configured patch of bn */
 #undef HAVE_NO_ALL_PATCH

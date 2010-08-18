@@ -49,12 +49,15 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "auxiliary.h"
 #include "command_line_parsing.h"
 #include "winport.h"
+#include "audio.h"
 #ifndef WITHOUT_SOX
 #include "sox.h"
 #include "libsoxconvert.h"
 #endif
 #include "multichannel.h"
 #include "commonvars.h"
+
+
 
 extern globalData globals;
 
@@ -625,7 +628,8 @@ int wav_getinfo(fileinfo_t* info)
 
     if (header == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not allocate header memory")
 
-        rewind(fp);
+
+
 
     /* PATCH: real size on disc is needed */
 #if defined __WIN32__
@@ -634,7 +638,14 @@ int wav_getinfo(fileinfo_t* info)
     info->file_size = read_file_size(fp, info->filename);
 #endif
 
-    fread(header, info->header_size,1,fp);
+    fseek(fp, 0, SEEK_SET);
+
+    if (info->header_size > (span=fread(header, 1, info->header_size,fp)))
+    {
+            foutput("[ERR]  Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
+            perror("       ");
+            clean_exit(EXIT_FAILURE);
+    }
 
     fclose(fp);
 
