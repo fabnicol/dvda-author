@@ -1333,8 +1333,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 3:
 
             strlength=strlen(optarg);
-            globals.settings.bindir=realloc(globals.settings.bindir, (strlength+25)*sizeof(char)); // 25 char for later application names
-            memcpy(globals.settings.bindir, optarg, strlength);
+            globals.settings.bindir=realloc(globals.settings.bindir, (strlength+1)*sizeof(char));
+            strcpy(globals.settings.bindir, optarg);
+
             foutput("[PAR]  Using directory %s for auxiliary binaries.\n", optarg);
             break;
 
