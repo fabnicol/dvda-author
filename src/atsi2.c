@@ -36,6 +36,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "commonvars.h"
 #include "structures.h"
 #include "auxiliary.h"
+#include "atsi.h"
 
 
 extern globalData globals;

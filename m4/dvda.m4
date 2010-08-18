@@ -94,7 +94,7 @@ AC_DEFUN([LOOP_MIRRORS],
 	    # This mirroring is Sourceforge-specific and should be twisted for other mirroring patterns.
 	    DVDA_CURL([http://sourceforge.net/projects/root/files/$3/$filename/download?use_mirror=]mirror,[$filename])
 
-	    # eg: 
+	    # eg:
             #     http://sourceforge.net/projects/mjpeg/files/mjpegtools/1.9.0/mjpegtools-1.9.0.tar.gz/download?use_mirror=kent
 
 	    ])])
@@ -573,26 +573,19 @@ AC_DEFUN([DVDA_CONFIG],[
     m4_pushdef([FL], m4_unquote(m4_cdr(ALIST)))
     m4_pushdef([VAR],m4_car(LIST))
     m4_pushdef([CDR],m4_unquote(m4_cdr(LIST)))
-    
 
-    AS_IF([test x$VAR[_BUILD] = xyes || test x$ALL_BUILDS = xyes],
+
+    AS_IF([test x$VAR[_BUILD] = xyes || test x$ALL_BUILDS = xyes -a x$[withval_]VAR != xno],
            [
 	      [MAYBE_]VAR=CDR
 	      VAR[_BUILD]=yes
 	      VAR[_CONFIGURE_FILE]="[$MAYBE_]VAR"/configure
-	      m4_ifvaln([$2],[$2],[VAR[_LIB]="\${ROOTDIR}[/local/lib/]CDR[.a]"])
+	      m4_ifvaln([$2],[$2],[VAR[_LIB]="\${ROOTDIR}[/local/lib/lib]m4_tolower(VAR)[.a]"]) #do not quote VAR
 
 	      [CONFIGURE_]VAR[_FLAGS]="FL $VAR[_FLAGS]"
 	      AC_SUBST([CONFIGURE_]VAR[_FLAGS])
 	      AC_MSG_NOTICE([CONFIGURE_]VAR[_FLAGS]=$[CONFIGURE_]VAR[_FLAGS])
               AS_IF([test -d  $ROOTDIR/$[MAYBE_]VAR && ! test -d  $[MAYBE_]VAR ], [cp -r $ROOTDIR/$[MAYBE_]VAR  $PWD])
-	      # sanity checks
-              AS_IF([test x$VAR[_BUILD] = xyes && ! test -d $[MAYBE_]VAR],
-                       [
-                        m4_pushdef([var], m4_tolower(VAR))
-                        AC_MSG_NOTICE([Directory ]$[MAYBE_]VAR[ does not exist, reconfigure with --enable-]var[-build, otherwise using --without-]var[...])
-                        AS_EXIT
-                       ])
            ])
 
     AM_CONDITIONAL([HAVE_]VAR[_BUILD], [test x$VAR[_BUILD] = xyes || test x$ALL_BUILDS = xyes])
@@ -604,7 +597,6 @@ AC_DEFUN([DVDA_CONFIG],[
     m4_popdef([CDR])
     m4_popdef([FL])
     m4_popdef([LIST])
-    m4_popdef([var])
     ])])dnl
 
 AC_DEFUN([DVDA_CONF_SUBDIRS],               [DVDA_CONFIG([$1],[#])])

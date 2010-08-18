@@ -9,7 +9,7 @@
 
 
 
-AC_INIT([dvda-author],[10.06-300],[fabnicol@users.sourceforge.net])
+AC_INIT([dvda-author],[10.06-400],[fabnicol@users.sourceforge.net])
 # requested to define _GNU_SOURCE and check the availability of GNU extensions
 # This should be called before any macros that run the C   compiler.
 AC_USE_SYSTEM_EXTENSIONS
@@ -263,6 +263,7 @@ AC_CONFIG_FILES([Makefile
          script2
          script3
          script4
+         script5
          EXAMPLES
 
 ])
@@ -312,6 +313,7 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
                                 ....$CDRTOOLS_BUILD
                     mjpegtools  ....$MJPEGTOOLS_BUILD
                     mpeg2dec    ....$MPEG2DEC_BUILD
+                    ac3dec      ....$AC3DEC_BUILD
                     dvdauthor   ....$DVDAUTHOR_BUILD
                     help2man    ....$HELP2MAN_BUILD
                     ImageMagick ....$MAGICK_BUILD
@@ -350,7 +352,7 @@ AS_IF([ test x$HELP2MAN != x ],
 AS_IF([ test x$SMAKE != x ], [ AC_MSG_RESULT([smake will be used instead of GNU make])
                               make=$SMAKE
                              ],
-                             [make="$MAKE -j4"])
+                             [make="$MAKE"])
 
 AS_IF([ test x$MP2ENC = x -o x$JPEG2YUV = x -o x$MPEG2ENC = x -o x$MPLEX = x],[
  AC_MSG_RESULT([  You will have to author top menus from available MPEG background files, as tools are missing to automate generation.])])
@@ -372,6 +374,7 @@ AC_MSG_RESULT([[
     jpeg2yuv: .....................$JPEG2YUV
     mpeg2enc: .....................$MPEG2ENC
     mpeg2dec: .....................$MPEG2DEC
+    ac3dec: .......................$AC3DEC
     mplex: ........................$MPLEX
     mogrify:.......................$MOGRIFY
     convert:.......................$CONVERT

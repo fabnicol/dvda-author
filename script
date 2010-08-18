@@ -1,0 +1,2 @@
+cd  && cp /home/dvda-author/master/dvda-author-10.06.win32/m4.extra/iconv.m4 m4/ ; cp /home/dvda-author/master/dvda-author-10.06.win32/m4.extra/codeset.m4 m4/
+./configure    && make -j4 -k && make install; cd - 

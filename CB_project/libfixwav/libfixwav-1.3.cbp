@@ -16,10 +16,6 @@
 				<Compiler>
 					<Add option="-O3" />
 					<Add option="-Wredundant-decls" />
-					<Add option="-Winline" />
-					<Add option="-Wunreachable-code" />
-					<Add option="-Wextra" />
-					<Add option="-Wall" />
 					<Add option="-std=c99" />
 					<Add option="-D_GNU_SOURCE" />
 					<Add option="-D_LARGEFILE_SOURCE" />
