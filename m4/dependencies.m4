@@ -35,7 +35,7 @@ m4_map([DVDA_TEST_AUX],[
         [[lplex],     [using lplex to mux lpcm audio and video]],
         [[make],      [whether make is installed]],
         [[mpeg2dec],  [whether mpeg2dec is installed]],
-        [[ac3dec],    [whether ac3dec is installed]]])
+        [[a52dec],   [whether a52dec is installed]]])
 
 
   m4_define([SOX_STATIC_MSG],
@@ -61,7 +61,7 @@ m4_map([DVDA_TEST_AUX],[
              [[help2man-build]],
              [[lplex-build]],
              [[mpeg2dec-build]],
-             [[ac3dec-build]],
+             [[a52dec-build]],
              [[mjpegtools-build]],
              [[core-build],
               [withval_FIXWAV=no
@@ -119,7 +119,7 @@ m4_map([DVDA_TEST_AUX],[
             [[magick-download], [6.6.3],     [http://dvd-audio.sourceforge.net/utils],[],[],[], [2984b2c8c3fb9fc5335e6f42fea7911c]],
             [[lplex-download], [0.3],    [http://dvd-audio.sourceforge.net/utils],[],[],[],[ebcbd36b8ac64777fabf05615fb6c036]],
             [[mpeg2dec-download], [0.2.1], [http://dvd-audio.sourceforge.net/utils],[],[],[],[a7caee4591e8addc3bddaf47d2d45ec0]],
-            [[ac3dec-download], [0.6.2-mjpegtools], [http://dvd-audio.sourceforge.net/utils],[],[],[], [884bbd39907d0b47d8eac875bcf40839]]])
+            [[a52dec-download], [0.7.5-cvs], [http://dvd-audio.sourceforge.net/utils],[],[],[], [1729c7507f76b0d4cc04540926c5d0d7]]])
 
     m4_map([DVDA_ARG_ENABLE_DOWNLOAD],[
             DOWNLOAD_OPTIONS,
@@ -150,7 +150,7 @@ m4_map([DVDA_TEST_AUX],[
 
     # installing binaries, normally executables
 
-    DVDA_CONF_SUBDIRS([[[[DVDAUTHOR],[dvdauthor-0.6.14]]], [[[CDRTOOLS],[cdrtools-3.00]]], [[[MJPEGTOOLS], [mjpegtools-1.9.0]]],[[[AC3DEC],[ac3dec-0.6.2-mjpegtools]],[--prefix=$prefix]],[[[MPEG2DEC],[mpeg2dec-0.2.1-mjpegtools-0.7]], [--prefix=$prefix]],[[[LPLEX], [lplex-0.3]], [--prefix=$prefix --disable-shared]],[[[HELP2MAN], [help2man-1.36.4]]], [[[MAGICK], [magick-6.6.3]]]])
+    DVDA_CONF_SUBDIRS([[[[DVDAUTHOR],[dvdauthor-0.6.14]]], [[[CDRTOOLS],[cdrtools-3.00]]], [[[MJPEGTOOLS], [mjpegtools-1.9.0]]],[[[A52DEC],[a52dec-0.7.5-cvs]],[--prefix=$prefix]],[[[MPEG2DEC],[mpeg2dec-0.2.1-mjpegtools-0.7]], [--prefix=$prefix]],[[[LPLEX], [lplex-0.3]], [--prefix=$prefix --disable-shared]],[[[HELP2MAN], [help2man-1.36.4]]], [[[MAGICK], [magick-6.6.3]]]])
 
     # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
 
