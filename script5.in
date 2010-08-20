@@ -1,1 +1,1 @@
-cd @MAYBE_AC52DEC@ && ./configure @CONFIGURE_AC52DEC_FLAGS@ ; make -j4; cd - ;
+cd @MAYBE_A52DEC@ && ./configure @CONFIGURE_A52DEC_FLAGS@ ; make -j4; cd - ;
