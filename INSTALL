@@ -215,7 +215,7 @@ For menu authoring, add the following executables:
   - mp2enc, jpeg2yuv, mpeg2dec and mplex from the mjpegtools
   - mogrify and convert from ImageMagick
   - lplex (for top menu soundtrack authoring) from the Sourceforge audioplex project (http://audioplex.sourceforge.net)
-  - ac52dec (for video top menu conversion into audio top menu)
+  - a52dec (for video top menu conversion into audio top menu)
 
 
 A patched version of mkisofs is needed to create an ISO image file that is DVD-Audio compliant.

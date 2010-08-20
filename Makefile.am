@@ -112,7 +112,7 @@ endif
 
 stamprecord10: Makefile
 	if test -f stamprecord10; then rm -f stamprecord10; fi; touch stamprecord10
-if HAVE_AC52DEC_BUILD
+if HAVE_A52DEC_BUILD
 	chmod +x script5 && ${SHELL} script5
 endif
 
@@ -128,7 +128,7 @@ if HAVE_MAN2HTML
 endif
 
 
-SUBDIRS=${MAYBE_IBERTY} libutils ${MAYBE_OGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} libats2wav ${MAYBE_SOX}  ${MAYBE_LPLEX} ${MAYBE_DVDAUTHOR} ${MAYBE_HELP2MAN} ${MAYBE_MJPEGTOOLS} ${MAYBE_MAGICK} ${MAYBE_MPEG2DEC} ${MAYBE_AC3DEC} src
+SUBDIRS=${MAYBE_IBERTY} libutils ${MAYBE_OGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} libats2wav ${MAYBE_SOX}  ${MAYBE_LPLEX} ${MAYBE_DVDAUTHOR} ${MAYBE_HELP2MAN} ${MAYBE_MJPEGTOOLS} ${MAYBE_MAGICK} ${MAYBE_MPEG2DEC} ${MAYBE_A52DEC} src
 DIST_SUBDIRS=libiberty libutils libfixwav src CB_project libats2wav images
 
 #normally is ${prefix}/share/applications/dvda-author-${VERSION}

@@ -145,11 +145,11 @@ DIST_ARCHIVES = $(distdir).tar.gz $(distdir).tar.lzma
 GZIP_ENV = --best
 distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
-AC3DEC = @AC3DEC@
-AC3DEC_CONFIGURE_FILE = @AC3DEC_CONFIGURE_FILE@
-AC3DEC_LIB = @AC3DEC_LIB@
-AC3DEC_LINK = @AC3DEC_LINK@
-AC3DEC_VERSION = @AC3DEC_VERSION@
+A52DEC = @A52DEC@
+A52DEC_CONFIGURE_FILE = @A52DEC_CONFIGURE_FILE@
+A52DEC_LIB = @A52DEC_LIB@
+A52DEC_LINK = @A52DEC_LINK@
+A52DEC_VERSION = @A52DEC_VERSION@
 ACLOCAL = @ACLOCAL@
 ALL_VERSION = @ALL_VERSION@
 AMTAR = @AMTAR@
@@ -165,7 +165,7 @@ CDRTOOLS_LIB = @CDRTOOLS_LIB@
 CDRTOOLS_LINK = @CDRTOOLS_LINK@
 CDRTOOLS_VERSION = @CDRTOOLS_VERSION@
 CFLAGS = @CFLAGS@
-CONFIGURE_AC3DEC_FLAGS = @CONFIGURE_AC3DEC_FLAGS@
+CONFIGURE_A52DEC_FLAGS = @CONFIGURE_A52DEC_FLAGS@
 CONFIGURE_CDRTOOLS_FLAGS = @CONFIGURE_CDRTOOLS_FLAGS@
 CONFIGURE_DVDAUTHOR_FLAGS = @CONFIGURE_DVDAUTHOR_FLAGS@
 CONFIGURE_FIXWAV_FLAGS = @CONFIGURE_FIXWAV_FLAGS@
@@ -235,7 +235,7 @@ MAGICK_VERSION = @MAGICK_VERSION@
 MAKE = @MAKE@
 MAKEINFO = @MAKEINFO@
 MAN2HTML = @MAN2HTML@
-MAYBE_AC3DEC = @MAYBE_AC3DEC@
+MAYBE_A52DEC = @MAYBE_A52DEC@
 MAYBE_CDRTOOLS = @MAYBE_CDRTOOLS@
 MAYBE_DVDAUTHOR = @MAYBE_DVDAUTHOR@
 MAYBE_FIXWAV = @MAYBE_FIXWAV@
@@ -351,7 +351,7 @@ top_srcdir = @top_srcdir@
 # passing right flags to make distcheck when configuring nested packages We do not configure libogg, because install is forced under _build/_inst instead of local/
 DISTCHECK_CONFIGURE_FLAGS = --enable-all-deps --enable-all-builds
 ACLOCAL_AMFLAGS = -I m4 --install
-SUBDIRS = ${MAYBE_IBERTY} libutils ${MAYBE_OGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} libats2wav ${MAYBE_SOX}  ${MAYBE_LPLEX} ${MAYBE_DVDAUTHOR} ${MAYBE_HELP2MAN} ${MAYBE_MJPEGTOOLS} ${MAYBE_MAGICK} ${MAYBE_MPEG2DEC} ${MAYBE_AC3DEC} src
+SUBDIRS = ${MAYBE_IBERTY} libutils ${MAYBE_OGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} libats2wav ${MAYBE_SOX}  ${MAYBE_LPLEX} ${MAYBE_DVDAUTHOR} ${MAYBE_HELP2MAN} ${MAYBE_MJPEGTOOLS} ${MAYBE_MAGICK} ${MAYBE_MPEG2DEC} ${MAYBE_A52DEC} src
 DIST_SUBDIRS = libiberty libutils libfixwav src CB_project libats2wav images
 # distributed under $sysconfdir, normally
 dist_sysconf_DATA = dvda-author.desktop dvda-author.conf
@@ -1092,7 +1092,7 @@ stamprecord9: Makefile
 
 stamprecord10: Makefile
 	if test -f stamprecord10; then rm -f stamprecord10; fi; touch stamprecord10
-@HAVE_AC3DEC_BUILD_TRUE@	chmod +x script5 && ${SHELL} script5
+@HAVE_A52DEC_BUILD_TRUE@	chmod +x script5 && ${SHELL} script5
 
 dvda-author.1:
 @HAVE_HELP2MAN_TRUE@	${HELP2MAN} -s 1 -N -o ${PWD}/dvda-author.1 ${PWD}/src/dvda
