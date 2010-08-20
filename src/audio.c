@@ -45,11 +45,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #ifndef WITHOUT_FIXWAV
 #include "fixwav.h"
 #include "fixwav_manager.h"
+#include "audio.h"
 #endif
 #include "auxiliary.h"
 #include "command_line_parsing.h"
 #include "winport.h"
-#include "audio.h"
+
 #ifndef WITHOUT_SOX
 #include "sox.h"
 #include "libsoxconvert.h"
