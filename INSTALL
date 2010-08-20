@@ -1,5 +1,5 @@
-dvda-author 10.06 (June 2010)
-=================
+dvda-author 10.06-400 (August 2010)
+=====================
 
 
 Installation Instructions
@@ -14,6 +14,11 @@ Two building options are shipped:
 
  - Code::Blocks workspace projects for Windows/Mingwin platforms
    (dvda-author-09.09.workspace)
+
+To enable a core dvda-author build, without fixwav, FLAC, OggFLAC, SoX support and without
+menu authoring features, configure with --enable-core-build if you use the autotools,
+or add WITHOUT_FLAC WITHOUT_SOX WITHOUT_OGG WITHOUT_FIXWAV as symbolic constants either
+in source code or at building stage (CPPFLAGS="-DWITHOUT....").
 
 
 Code::Blocks install
@@ -130,8 +135,60 @@ to /usr/share/man/man1
 
 An html version is shipped with this package.
 
+Ubuntu 10.04 builds
+===================
+
+Starting from a basic live CDROM install of (K)ubuntu-10.04, the following packages
+should be added using apt-get install:
+
+for basic build (--enable-core-build):
+
+gcc
+g++
+binutils-dev
+
+to enable source code dependency building:
+
+curl
+patch
+autoconf
+libtool
+
+to enable sox build add:
+
+libavformat52
+libavformat-dev
+libsndfile1-dev
+
+optionally, to speed up building avoiding source code dependency building, add:
+
+libflac-dev libsox-dev
+
+to enable dvdauthor (patched) build, add:
+
+zlib1g-dev (for libz-dev)
+libpng-dev
+libxml2-dev
+flex
+bison
+
+to enable lplex build, add:
+
+libflac++-dev
+libdvdread-dev
+
+To build lplex on Ubuntu, you should take care to install ANSI WxWidgets 
+libraries from source code, building with ./configure --enable-unicode=no, 
+as the default repository Wx libs and built with unicode support.
+
+
 Dependencies
 ============
+
+
+
+1. Binary tools and linked libraries
+-------------------------------------
 
 Dependencies for the building process are the following libraries:
 
@@ -145,9 +202,24 @@ Dependencies for the building process are the following libraries:
   - libsox 14.3.1, a general-purpose audio format converter
   - libiberty.a if --enable-iberty-build is not used and if it is installed in a system path, and if
     there is no SoX bug (see file BUGS )
-  - dvdauthor version 0.6.14, patched version.
+
+Building dvdauthor requests linking to libpng12, libxml2 and libz.
+Building lplex requests linking to libdvdread(-dev) and libFLAC++.
+It should be noted that lplex requires ANSI builds of the wx widgets libraries, not the unicode builds.
+Should your platform only have unicode builds of wxwidgets libraries, download the WxAll package from the
+wxwidgets website and build with ./configure --enable-unicode=no
+
+For menu authoring, add the following executables:
+
+  - spumux and dvdauthor version 0.6.14, patched version,
+  - mp2enc, jpeg2yuv, mpeg2dec and mplex from the mjpegtools
+  - mogrify and convert from ImageMagick
+  - lplex (for top menu soundtrack authoring) from the Sourceforge audioplex project (http://audioplex.sourceforge.net)
+  - ac52dec (for video top menu conversion into audio top menu)
+
 
 A patched version of mkisofs is needed to create an ISO image file that is DVD-Audio compliant.
+cdrecord or growisofs are advised for burning the ISO, though other tools can be used.
 
 To generate the documentation, you will need help2man for the man page and man2html
 for the html man page. If these applications are installed, the autotools building
@@ -160,11 +232,30 @@ Perl to run man2html.
 This version will use either libiberty.a if already installed on your platform
 or source code for a few GNU libc functions located in libiberty/ The list of functions
 used depends on platforms. The GNU build system will give a priority to -liberty linking,
-building GNU libc source code as a fallback option.
+building GNU libc source code as a fallback option. Most often, libiberty.a can be found in a binutils-dev
+package on most *nix platforms.
 
 
 libc_utils.a, libfixwav.a and libats2wav.a will automatically build and link.
+All above dependencies (executables and libraries) can be rebuilt and/or linked to 
+if the package is built with the autotools system on a POSIX platform, using 
 
+./configure --enable-all-deps --enable-all-builds
+
+
+2. Building tools
+------------------
+
+A list of auxiliary tools, most often present on developers' platforms, is given at the end of the configure
+script: these include building tools such as:
+
+sed, patch, tar, autoconf, automake, m4, libtool, make, perl, gcc, g++ (the linker), curl and
+ideally smake for building cdrecord. flex and bison are used by dvdauthor.
+
+Other building tools may be needed for specific features, take care to check configuration
+messages (in config.log or in the make run output).
+
+        
 Building dependencies without the GNU build system
 --------------------------------------------------
 
@@ -192,6 +283,8 @@ In order to rebuild dependencies, you will need the following tools: curl, patch
 Please check that you have a functional internet connection before configuring as follows.
 
 In a nutshell, to download dependency X, use ./configure --enable-X-download, and --enable-X-patch when X needs patching.
+
+You can always check ./configure --help to have a list of possible configuration options.
 
 Packages will be downloaded from the dvd-audio project mirror repository, and in case of failure, from Sourceforge mirrors (first trying
 kent, garr, voxel and free_fr). Alternatively, you can specify the Sourceforge mirror that you would like to download your
