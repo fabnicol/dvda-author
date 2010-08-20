@@ -308,16 +308,7 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
     Static sox build:
                      ...............$STATIC_SOX
 
-    Binary tools build:
-                    mkisofs (cdrtools)
-                                ....$CDRTOOLS_BUILD
-                    mjpegtools  ....$MJPEGTOOLS_BUILD
-                    mpeg2dec    ....$MPEG2DEC_BUILD
-                    ac3dec      ....$AC3DEC_BUILD
-                    dvdauthor   ....$DVDAUTHOR_BUILD
-                    help2man    ....$HELP2MAN_BUILD
-                    ImageMagick ....$MAGICK_BUILD
-                    lplex       ....$LPLEX_BUILD
+                  
 ])
 
 
@@ -362,24 +353,30 @@ AC_MSG_RESULT([[
 
   Using $make as a system build tool.
 
-  Auxiliary tools (already installed):
-    curl: .........................$CURL
-    help2man: .....................$HELP2MAN
-    man2html: .....................$MAN2HTML
-    spumux: .......................$SPUMUX
-    dvdauthor: ....................$DVDAUTHOR
-    mkisofs: ......................$MKISOFS
-    cdrecord: .....................$CDRECORD
-    mp2enc: .......................$MP2ENC
-    jpeg2yuv: .....................$JPEG2YUV
-    mpeg2enc: .....................$MPEG2ENC
-    mpeg2dec: .....................$MPEG2DEC
-    ac3dec: .......................$AC3DEC
-    mplex: ........................$MPLEX
-    mogrify:.......................$MOGRIFY
-    convert:.......................$CONVERT
+  Auxiliary tools 
+                                   installed (path)/build (yes/no)
+    
+    help2man: .....................$HELP2MAN $HELP2MAN_BUILD
+    man2html: .....................$MAN2HTML $MAN2HTML_BUILD
+    spumux: .......................$SPUMUX $DVDAUTHOR_BUILD
+    dvdauthor: ....................$DVDAUTHOR $DVDAUTHOR_BUILD
+    mkisofs: ......................$MKISOFS $CDRTOOLS_BUILD
+    cdrecord: .....................$CDRECORD $CDRTOOLS_BUILD
+    mp2enc: .......................$MP2ENC $MJPEGTOOLS_BUILD
+    jpeg2yuv: .....................$JPEG2YUV $MJPEGTOOLS_BUILD
+    mpeg2enc: .....................$MPEG2ENC $MJPEGTOOLS_BUILD
+    mpeg2dec: .....................$MPEG2DEC $MPEG2DEC_BUILD
+    a52dec: .......................$A52DEC $A52DEC_BUILD
+    mplex: ........................$MPLEX $MJPEGTOOLS_BUILD
+    mogrify:.......................$MOGRIFY $MAGICK_BUILD
+    convert:.......................$CONVERT $MAGICK_BUILD
+    lplex: ........................$LPLEX $LPLEX_BUILD
+   
+   Building tools:
+
     make:..........................$make
-    lplex: ........................$LPLEX
+    curl: .........................$CURL
+    patch:.........................$PATCH
 
   These tools should all be installed to enable advanced dvda-author features.
 
