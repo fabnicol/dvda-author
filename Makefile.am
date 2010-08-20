@@ -112,7 +112,7 @@ endif
 
 stamprecord10: Makefile
 	if test -f stamprecord10; then rm -f stamprecord10; fi; touch stamprecord10
-if HAVE_AC3DEC_BUILD
+if HAVE_AC52DEC_BUILD
 	chmod +x script5 && ${SHELL} script5
 endif
 
