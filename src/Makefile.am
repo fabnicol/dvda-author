@@ -53,9 +53,7 @@ if WITH_SOX
 if HAVE_SOX_BUILD
     AM_CPPFLAGS  += -I${top_srcdir}/${MAYBE_SOX}/src
     AM_LDFLAGS   += SOX_LIB_DEPS
-if HAVE_STATIC_SOX
     LDADD        += ${SOX_LIB}
-endif
 
 else
 
