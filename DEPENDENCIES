@@ -1,0 +1,73 @@
+Dependencies
+============
+
+
+
+1. Binary tools and linked libraries
+-------------------------------------
+
+Dependencies for the building process are the following libraries:
+
+  - libc_utils, a general-purpose library used for security enhancement
+  - libfixwav, a special library designed for repairing WAV headers.
+  - libats2wav a DVD-Audio titleset extracter.
+  - libFLAC version 1.2.1, which itself depends on libogg version 1.1.3. If Ogg is not installed
+    on system, install it manually, or FLAC will be automatically configured without Ogg support.
+    If libogg is installed on system, default configuration for FLAC is with Ogg support,
+    unless --disable-ogg-flac is added on command line.
+  - libsox 14.3.1, a general-purpose audio format converter
+  - libiberty.a if --enable-iberty-build is not used and if it is installed in a system path, and if
+    there is no SoX bug (see file BUGS )
+
+Building dvdauthor requests linking to libpng12, libxml2 and libz.
+Building lplex requests linking to libdvdread(-dev) and libFLAC++.
+It should be noted that lplex requires ANSI builds of the wx widgets libraries, not the unicode builds.
+Should your platform only have unicode builds of wxwidgets libraries, download the WxAll package from the
+wxwidgets website and build with ./configure --enable-unicode=no
+
+For menu authoring, add the following executables:
+
+  - spumux and dvdauthor version 0.6.14, patched version,
+  - mp2enc, jpeg2yuv, mpeg2dec and mplex from the mjpegtools
+  - mogrify and convert from ImageMagick
+  - lplex (for top menu soundtrack authoring) from the Sourceforge audioplex project (http://audioplex.sourceforge.net)
+  - a52dec (for video top menu conversion into audio top menu)
+
+
+A patched version of mkisofs is needed to create an ISO image file that is DVD-Audio compliant.
+cdrecord or growisofs are advised for burning the ISO, though other tools can be used.
+
+To generate the documentation, you will need help2man for the man page and man2html
+for the html man page. If these applications are installed, the autotools building
+system automatically creates them. The Code::Blocks project also has a script for
+generating these pages. Most *nix platforms propose these tools. Currently source
+code for man2html is hosted by http://savannah.nongnu.org/projects/man2html and source
+code for help2man is hosted by http://ftp.gnu.org/gnu/help2man. You may need to install
+Perl to run man2html.
+
+This version will use either libiberty.a if already installed on your platform
+or source code for a few GNU libc functions located in libiberty/ The list of functions
+used depends on platforms. The GNU build system will give a priority to -liberty linking,
+building GNU libc source code as a fallback option. Most often, libiberty.a can be found in a binutils-dev
+package on most *nix platforms.
+
+
+libc_utils.a, libfixwav.a and libats2wav.a will automatically build and link.
+All above dependencies (executables and libraries) can be rebuilt and/or linked to 
+if the package is built with the autotools system on a POSIX platform, using 
+
+./configure --enable-all-deps --enable-all-builds
+
+
+2. Building tools
+------------------
+
+A list of auxiliary tools, most often present on developers' platforms, is given at the end of the configure
+script: these include building tools such as:
+
+sed, patch, tar, autoconf, automake, m4, libtool, make, perl, gcc, g++ (the linker), curl and
+ideally smake for building cdrecord. flex and bison are used by dvdauthor.
+
+Other building tools may be needed for specific features, take care to check configuration
+messages (in config.log or in the make run output).
+
