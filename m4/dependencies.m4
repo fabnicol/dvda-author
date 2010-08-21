@@ -132,7 +132,7 @@ m4_map([DVDA_TEST_AUX],[
 
 
     m4_map([DVDA_ARG_WITH],[
-      [[flac],  [[[FLAC/all.h],[FLAC__stream_decoder_init_file]]]],
+      [[FLAC],  [[[FLAC/all.h],[FLAC__stream_decoder_init_file]]]],
       [[ogg],   [[[ogg/ogg.h], [ogg_stream_init]]]],
       [[fixwav],[[[fixwav_manager.h],[fixwav]]]],
       [[sox],   [[[sox.h],     [sox_format_init  sox_open_read
