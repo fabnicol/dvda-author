@@ -404,7 +404,7 @@ int launch_manager(command_t *command)
     }
 
     /* creating system VOBs */
-
+#if !HAVE_CORE_BUILD
     if (globals.topmenu < NO_MENU)  sectors.topvob=create_topmenu(audiotsdir, command); // if no top menu is requested, but simply active ones, generate matrix top menu and unlink it at the end
 
     if (img->active)
@@ -434,7 +434,7 @@ int launch_manager(command_t *command)
         if (globals.debugging) foutput("[MSG]  Size of AUDIO_SV.VOB is: %u sectors\n" , sectors.stillvob);
 
     }
-
+#endif
 
 
 
@@ -445,7 +445,7 @@ int launch_manager(command_t *command)
     last_sector=create_samg(audiotsdir, command, &sectors);
 
     /*   sector_pointer_VIDEO_TS= number of sectors for AOBs + 2* sizeof amg + 2* size of ats*ngroups +system vobs +2*sizeof asvs */
-
+#if !HAVE_CORE_BUILD
     sector_pointer_VIDEO_TS= 2*(sectors.amg+sectors.asvs)+sectors.stillvob+sectors.topvob;
 
     for (i=0; i < naudio_groups; i++)
@@ -473,7 +473,7 @@ int launch_manager(command_t *command)
 
     foutput("[MSG]  Start offset of  VIDEO_TS in ISO file: %"PRIu64" sectors,  offset %"PRIu64"\n\n", sector_pointer_VIDEO_TS + sectors.samg + startsector,
            (sector_pointer_VIDEO_TS + sectors.samg + startsector)*2048);
-
+#endif
     /* Creating AUDIO_TS.IFO */
 
     uint32_t  relative_sector_pointer_VTSI[nvideolinking_groups];
@@ -502,7 +502,7 @@ int launch_manager(command_t *command)
     */
 
 // returns relative_sector_pointer_VTSI and videotitlelength
-
+#if !HAVE_CORE_BUILD
     if (globals.videolinking)
     {
 
@@ -515,7 +515,7 @@ int launch_manager(command_t *command)
             copy_directory(globals.settings.linkdir, newpath, globals.access_rights);
         change_directory(globals.settings.workdir);
     }
-
+#endif
 
     uint8_t *title[naudio_groups];
 
@@ -573,6 +573,8 @@ SUMMARY:
 
     // Crucial, otherwise the ISO file may well be unordered even if AUDIO_TS files are OK after exit
     fflush(NULL);
+    
+#if !HAVE_CORE_BUILD
     //
     if (globals.runmkisofs)
     {
@@ -656,6 +658,8 @@ SUMMARY:
             FREE(cdrecord);
         }
     }
+    
+    #endif
     // freeing files and heap-allocated globals
 
 #ifndef __WIN32__

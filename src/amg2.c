@@ -163,6 +163,7 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *
 
 }
 
+#if !HAVE_CORE_BUILD
 void allocate_topmenus(command_t *command)
 {
 
@@ -328,6 +329,8 @@ int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles
 #ifndef __WIN32__
     sync();
 #endif
+
+
     create_asvs(audiotsdir, naudio_groups, numtitles, ntitlepics, sectors->asvs, image);
 
     STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/AUDIO_SV.IFO", audiotsdir)
@@ -336,6 +339,7 @@ int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles
     return(errno);  //expressed in sectors
 
 }
+#endif
 
 uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *videotitlelength, uint32_t* relative_sector_pointer_VTSI,
                     uint8_t *numtitles, uint8_t** ntitletracks, uint64_t** titlelength)
