@@ -142,8 +142,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"debug", no_argument, NULL, 'd'
         },
         {"veryverbose", no_argument, NULL, 't'},
-        {"fixwav", optional_argument, NULL, 'F'},
-        {"fixwav-virtual", optional_argument, NULL, 'f'},
         {"help", no_argument, NULL, 'h'},
         {"input", required_argument, NULL, 'i'},
         {"log", required_argument, NULL, 'l'},
@@ -154,28 +152,38 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"startsector", required_argument, NULL, 'p'},
         {"pause", optional_argument, NULL, 'P'},
         {"quiet", no_argument, NULL, 'q'},
-        {"sox", optional_argument, NULL, 'S'},
-        {"videolink", required_argument, NULL, 'T'},
-        {"loop", optional_argument, NULL, 'U'},
         {"version", no_argument, NULL, 'v'},
-        {"videodir", required_argument, NULL, 'V'},
-        {"rights", required_argument, NULL, 'w'},
-        //   {"no-padding", no_argument, NULL, '\1'},
-        //   {"minimal-padding", no_argument, NULL, '\2'},
-        {"extract", required_argument, NULL, 'x'},
         {"disable-lexer", no_argument, NULL, 'W'},
-        {"pad-cont", no_argument, NULL, 'C'},
-        //   {"lossy-rounding", no_argument, NULL, 'L'},
         {"playlist", required_argument, NULL, 'Z'},
         {"cga", required_argument, NULL, 'c'},
-        {"topmenu", optional_argument, NULL, 'm'},
-        {"menustyle", required_argument, NULL, '0'},
-        {"xml", required_argument, NULL, 'M'},
-        {"spuxml", required_argument, NULL, 'H'},
         {"text", optional_argument, NULL, 'k'},
         {"tempdir", required_argument, NULL, 'D'},
         {"workdir", required_argument, NULL, 'X'},
         {"datadir", required_argument, NULL, '9'},
+        {"loghtml", no_argument, NULL, 1},
+        {"no-refresh-tempdir",no_argument, NULL, 4},
+        {"no-refresh-outdir",no_argument, NULL, 5},
+        {"extract", required_argument, NULL, 'x'},
+        
+#if !HAVE_CORE_BUILD
+        {"videodir", required_argument, NULL, 'V'},
+        {"fixwav", optional_argument, NULL, 'F'},
+        {"fixwav-virtual", optional_argument, NULL, 'f'},
+        {"sox", optional_argument, NULL, 'S'},
+        {"videolink", required_argument, NULL, 'T'},
+        {"loop", optional_argument, NULL, 'U'},
+        {"rights", required_argument, NULL, 'w'},
+        //   {"no-padding", no_argument, NULL, '\1'},
+        //   {"minimal-padding", no_argument, NULL, '\2'},
+
+        {"pad-cont", no_argument, NULL, 'C'},
+        //   {"lossy-rounding", no_argument, NULL, 'L'},
+
+        {"topmenu", optional_argument, NULL, 'm'},
+        {"menustyle", required_argument, NULL, '0'},
+        {"xml", required_argument, NULL, 'M'},
+        {"spuxml", required_argument, NULL, 'H'},
+
         {"topvob", required_argument, NULL, 'A'},
         {"stillvob", required_argument, NULL, '1'},
         {"stilloptions", required_argument, NULL, '2'},
@@ -201,15 +209,15 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"nmenus", required_argument, NULL, '6'},
         {"ncolumns", required_argument, NULL, '7'},
         {"activemenu-palette", required_argument, NULL, '8'},
-        {"loghtml", no_argument, NULL, 1},
+
         {"background-colors", required_argument, NULL, 2},
         {"bindir",required_argument, NULL, 3},
-        {"no-refresh-tempdir",no_argument, NULL, 4},
-        {"no-refresh-outdir",no_argument, NULL, 5},
+
         {"topmenu-slides",required_argument, NULL, 6},
         {"download",optional_argument, NULL, 7},
         {"check-version",no_argument, NULL, 8},
         {"import-topmenu",required_argument, NULL, 9},
+#endif
         {NULL, 0, NULL, 0}
     };
 #endif
@@ -540,6 +548,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             refresh_tempdir=0;
             break;
 
+#if! HAVE_CORE_BUILD
 
         case 'T':
 
@@ -586,7 +595,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
 #endif
-
+#endif
 
         }
     }
@@ -717,7 +726,136 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         switch (c)
         {
 
-            // case 'g': c=0; break;
+      
+
+        case 'a' :
+            foutput("%s\n", "[PAR]  Autoplay on.");
+            globals.autoplay=1;
+            break;
+
+        case 't' :
+            foutput("%s\n", "[PAR]  Enhanced debugging-level verbosity");
+            break;
+
+        case 'd' :
+            foutput("%s\n", "[PAR]  Debugging-level verbosity");
+            break;
+
+        case 'x' :
+
+            extract_audio_flag=1;
+            FREE(globals.settings.indir)
+            globals.settings.indir=strdup(optarg);
+
+            break;
+	    
+
+        case 'n' :
+            // There is no videozone in this case
+
+            if (globals.videolinking)
+            {
+                foutput("%s\n", "[WAR]  You cannot delete video zone with -n if -V is activated too.\n      Ignoring -n...");
+                break;
+            }
+            globals.videozone=0;
+            foutput("%s\n", "[PAR]  No video zone");
+            break;
+
+        case 'i' :
+
+
+            if ((dir=opendir(optarg)) == NULL)
+                EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Input directory could not be opened")
+
+                change_directory(globals.settings.indir);
+
+            parse_directory(dir, ntracks, n_g_groups, READTRACKS, files);
+
+            change_directory(globals.settings.workdir);
+
+            if (closedir(dir) == -1)
+                foutput( "%s\n", "[ERR]  Impossible to close dir");
+
+            /* all-important, otherwise irrelevant EXIT_ON_RUNTIME_ERROR will be generated*/
+
+            errno=0;
+
+            break;
+
+
+        case 'p' :
+
+            startsector=(int32_t) strtoul(optarg, NULL, 10);
+            errmsg=errno;
+            switch (errmsg)
+            {
+            case   EINVAL :
+                foutput( "%s\n",  "[ERR]  Incorrect offset value");
+                clean_exit(EXIT_SUCCESS);
+                break;
+            case   ERANGE :
+                EXIT_ON_RUNTIME_ERROR_VERBOSE( "[ERR]  Offset range--overflowing LONG INT.");
+                break;
+            }
+            errno=0;
+
+            if (startsector)
+                foutput("[MSG]  Using start sector: %"PRId32"\n", startsector);
+            else
+            {
+                foutput("[ERR]  Illegal negative start sector of %"PRId32"...falling back on automatic start sector\n", startsector);
+                startsector=-1;
+            }
+
+            break;
+
+        case 'P':
+            if ((optarg != NULL) && (strcmp(optarg, "0") == 0))
+            {
+                globals.end_pause=0;
+                foutput("%s\n", "[PAR]  End pause will be suppressed.");
+            }
+            else
+            {
+                globals.end_pause=1;
+                foutput("%s\n", "[PAR]  Adding end pause.");
+            }
+            break;
+
+	    
+        case 'W' :
+            foutput("%s\n", "[PAR]  Lexer was deactivated");
+            globals.enable_lexer=0;
+            break;
+
+        case 'Z' :
+            foutput("%s%d\n", "[PAR]  Duplicate group #", nplaygroups+1);
+            globals.playlist=1;
+            nplaygroups++;
+            if (nplaygroups > 8)
+            {
+                if (globals.debugging) foutput("%s\n", "[ERR]  There cannot be more than 9 copy groups. Skipping...");
+                break;
+            }
+            playtitleset[nplaygroups]=atoi(optarg);
+
+            break;
+
+        case 'c' :
+            foutput("%s\n", "[PAR]  Channel group assignement activated.");
+            globals.cga=1;
+            break;
+	    
+
+        case 'k' :
+            foutput("%s","[PAR]  Generates text table in IFO files.\n\n");
+            globals.text=1;
+            textable=fn_strtok(optarg, ',' , textable, 0,NULL,NULL);
+            break;
+	    
+#if !HAVE_CORE_BUILD
+	          // case 'g': c=0; break;
         case '9':
             /* --datadir is the directory  where the menu/ files are located. Under* nix it automatically installed under /usr/share/applications/dvda-author by the autotools
                With other building modes or platforms however, it may be useful to indicate where the menu/ directory will be*/
@@ -808,27 +946,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
 
-        case 'a' :
-            foutput("%s\n", "[PAR]  Autoplay on.");
-            globals.autoplay=1;
-            break;
-
-        case 't' :
-            foutput("%s\n", "[PAR]  Enhanced debugging-level verbosity");
-            break;
-
-        case 'd' :
-            foutput("%s\n", "[PAR]  Debugging-level verbosity");
-            break;
-
-        case 'x' :
-
-            extract_audio_flag=1;
-            FREE(globals.settings.indir)
-            globals.settings.indir=strdup(optarg);
-
-            break;
-
         case 'T':
 
             ngroups_scan++;
@@ -852,80 +969,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s%s\n", "[PAR]  VIDEO_TS input directory is: ", optarg);
 
             break;
-
-        case 'n' :
-            // There is no videozone in this case
-
-            if (globals.videolinking)
-            {
-                foutput("%s\n", "[WAR]  You cannot delete video zone with -n if -V is activated too.\n      Ignoring -n...");
-                break;
-            }
-            globals.videozone=0;
-            foutput("%s\n", "[PAR]  No video zone");
-            break;
-
-        case 'i' :
-
-
-            if ((dir=opendir(optarg)) == NULL)
-                EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Input directory could not be opened")
-
-                change_directory(globals.settings.indir);
-
-            parse_directory(dir, ntracks, n_g_groups, READTRACKS, files);
-
-            change_directory(globals.settings.workdir);
-
-            if (closedir(dir) == -1)
-                foutput( "%s\n", "[ERR]  Impossible to close dir");
-
-            /* all-important, otherwise irrelevant EXIT_ON_RUNTIME_ERROR will be generated*/
-
-            errno=0;
-
-            break;
-
-
-        case 'p' :
-
-            startsector=(int32_t) strtoul(optarg, NULL, 10);
-            errmsg=errno;
-            switch (errmsg)
-            {
-            case   EINVAL :
-                foutput( "%s\n",  "[ERR]  Incorrect offset value");
-                clean_exit(EXIT_SUCCESS);
-                break;
-            case   ERANGE :
-                EXIT_ON_RUNTIME_ERROR_VERBOSE( "[ERR]  Offset range--overflowing LONG INT.");
-                break;
-            }
-            errno=0;
-
-            if (startsector)
-                foutput("[MSG]  Using start sector: %"PRId32"\n", startsector);
-            else
-            {
-                foutput("[ERR]  Illegal negative start sector of %"PRId32"...falling back on automatic start sector\n", startsector);
-                startsector=-1;
-            }
-
-            break;
-
-        case 'P':
-            if ((optarg != NULL) && (strcmp(optarg, "0") == 0))
-            {
-                globals.end_pause=0;
-                foutput("%s\n", "[PAR]  End pause will be suppressed.");
-            }
-            else
-            {
-                globals.end_pause=1;
-                foutput("%s\n", "[PAR]  Adding end pause.");
-            }
-            break;
-
 
         case 'U':
 
@@ -1018,28 +1061,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s\n", "[PAR]  Pad with last known byte, if padding, not 0s.");
             break;
 #endif
-        case 'W' :
-            foutput("%s\n", "[PAR]  Lexer was deactivated");
-            globals.enable_lexer=0;
-            break;
 
-        case 'Z' :
-            foutput("%s%d\n", "[PAR]  Duplicate group #", nplaygroups+1);
-            globals.playlist=1;
-            nplaygroups++;
-            if (nplaygroups > 8)
-            {
-                if (globals.debugging) foutput("%s\n", "[ERR]  There cannot be more than 9 copy groups. Skipping...");
-                break;
-            }
-            playtitleset[nplaygroups]=atoi(optarg);
-
-            break;
-
-        case 'c' :
-            foutput("%s\n", "[PAR]  Channel group assignement activated.");
-            globals.cga=1;
-            break;
 
         case 'm' :
 
@@ -1055,12 +1077,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 globals.topmenu=Min(globals.topmenu, AUTOMATIC_MENU);
             }
 
-            break;
-
-        case 'k' :
-            foutput("%s","[PAR]  Generates text table in IFO files.\n\n");
-            globals.text=1;
-            textable=fn_strtok(optarg, ',' , textable, 0,NULL,NULL);
             break;
 
         case 'M' :
@@ -1345,6 +1361,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             globals.topmenu=RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR;
             break;
+#endif
         }
     }
 
@@ -1448,6 +1465,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     optind=0;
     opterr=1;
     _Bool soundtracks_flag=0;
+    
 
 #ifdef LONG_OPTIONS
     while ((c=getopt_long(argc, argv, ALLOWED_OPTIONS, longopts, &longindex)) != -1)
