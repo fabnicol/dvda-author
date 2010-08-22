@@ -83,7 +83,6 @@ printf("%s","Output options\n\n");
 
 printf("%s","-h, --help               Diplay this help.\n\n");
 printf("%s","-v, --version            Diplay version.\n\n");
-
 printf("%s","-q, --quiet              Quiet mode.\n\n");
 printf("%s","-d, --debug              Increased verbosity (debugging level)\n\n");
 printf("%s","-t, --veryverbose        Like -d with enhanced verbosity for sample counts.\n\n");
@@ -126,7 +125,6 @@ printf("%s","-z, --newtitle           Separate two consecutive titles when files
 printf("%s","-Z, --playlist           You may specify up to 9 group copies."J"Total number of groups and copy groups should not exceed 9.\n");
 printf("%s","-n, --no-videozone       Do not generate an empty VIDEO_TS directory.\n\n");
 printf("%s","-w, --rights             Access rights to directories created (octal values)\n\n");
-printf("%s","-U, --PTS-factor (-)lag  Enter lag to be added/substracted (-) to title length,"J"in 10E-2 second.\n\n");
 printf("%s","-c, --cga                Enter channel group assignment right after group (-g, -j or -s).\n\n");
 #ifndef WITHOUT_FIXWAV
 printf("%s","-F, --fixwav(options)    Bad wav headers will be fixed by fixwav\n\n");
@@ -176,7 +174,7 @@ printf("%s","-5, --aspect             Set the playback aspect ratio code of the 
 printf("%s","                         1  - 1:1 display"J"2  - 4:3 display"J"3  - 16:9 display"J"4  - 2.21:1 display\n\n");
 printf("%s","-6, --nmenus int         Generates int top menus (default 1).\n\n");
 printf("%s","-7, --ncolumns int       Top menus will have at most int columns (default 3).\n\n");
-#endif
+
 
 printf("%s","   Disc authoring\n\n");
 printf("%s","-I, --mkisofs(=file)     Run mkisofs to author disc image using file"J"as an ISO image. If file is empty, use tempdir/dvd.iso.\n\n");
@@ -185,20 +183,21 @@ printf("%s","-R, --growisofs /dev/dvd Run growisofs to burn disc image."J"Device
 
 printf("%s","-V, --videodir directory Path to VIDEO_TS directory\n\n");
 printf("%s","-T, --videolink rank     Rank of video titleset linked to in video zone"J"(XX in VTS_XX_0.IFO)."J"In this case the path to the VIDEO_TS linked to"J"must be indicated.\n\n");
+#endif
 
 printf("%s","Software configuration\n\n");
 
 printf("%s","-D, --tempdir directory  Temporary directory.\n\n");
 printf("%s","-X, --workdir directory  Working directory: current directory in command line relative paths."J"By default, the current directory."J"With Code::Blocks and similar IDE, you may have to specify your root package directory as argument to --workdir.\n\n");
-printf("%s","-W, --bindir path        Path to auxiliary binaries.\n\n");
 printf("%s","    --no-refresh-tempdir Do not erase and recreate the temporary directory on launch.\n\n");
 printf("%s","    --no-refresh-outdir  Do not erase and recreate the output directory on launch.\n\n");
+#if !HAVE_CORE_BUILD
+printf("%s","-W, --bindir path        Path to auxiliary binaries.\n\n");
 #if HAVE_CURL
 printf("%s","    --check-version  Only check whether this is the latest version of dvda-author, does not download.\n\n");
 printf("%s","    --download  Download the latest version of dvda-author. Triggers --check-version.\n\n");
 printf("%s","    --download=force  Download the latest version of dvda-author even if the current one is the same."J"Maybe useful for reinstalling or in case of impaired source code.\n\n");
 #endif
-
 
 printf("%s","Sub-options\n\n");
 #ifndef WITHOUT_FIXWAV
@@ -232,6 +231,7 @@ K"Copy info chunks from wav headers to file db"SEPARATOR"database\n\n"\
   Example: --fixwav=simple-mode,prepend,interactive,output=new\n\
 ");
 #endif
+
 printf("%s", "\n    Still pictures:\n\n"\
 K"p11,p21,...,pn1-p22,p22,...,pn2-...\n\n"\
 K"with tracks separated by hyphens and pictures by commas.\n\n"\
@@ -262,6 +262,8 @@ K"If a track has just one still pic, only start effects may be visible.\n\n"
 );
 
 printf("%s","\n\nNote: for optional arguments noted (=...) above, usage is either"J" -xY, with x the option flag and Y the argument, or"J" --option=argument.\n");
+#endif
+
 printf("%s","\n\nThere must be a maximum of 9 audio groups.\n\n");
 printf("%s","Each subdirectory of an audio input directory will contain titles\n\nfor a separate audio group.\n\n\
 A number between 1 and 9 must be included as the second character of the\n\nsubdirectory relative name.\n\n");
@@ -273,6 +275,7 @@ printf("%s", "Examples:\n");
 printf("%s", "\n\
 -creates a 3-group DVD-Audio disc (legacy syntax):\n\n\
   dvda-author -g file1.wav file2.flac -g file3.flac -g file4.wav\n\n");
+#if !HAVE_CORE_BUILD
 printf("%s", "-creates a hybrid DVD disc with both AUDIO_TS mirroring audio_input_directory\n\n\
   and VIDEO_TS imported from directory VID, outputs disc structure to directory\n\n");
 printf("%s", " DVD_HYBRID and links video titleset #2 of VIDEO_TS to AUDIO_TS:\n\n");
@@ -282,6 +285,7 @@ printf("%s", "-creates an audio folder from an existing DVD-Audio disc:\n\n\
 printf("%s","will extract titlesets 1,3,5,6,7 of the disc to\n\n\
 dir"SEPARATOR"g1, dir"SEPARATOR"g3, dir"SEPARATOR"g5, dir"SEPARATOR"g6, dir"SEPARATOR"g7 respectively.\n\n");
 printf("%s", "\nRequired compile-time constants:\n\n_GNU_SOURCE, __CB__ if compiling with Code::Blocks or similar IDE.\n\n");
+#endif
 
 printf("%s", "Optional compile-time constants:\n\nLONG_OPTIONS for the above long options (starting with --)\n\n\
 SHORT_OPTIONS_ONLY to block all long options.\n\n\
