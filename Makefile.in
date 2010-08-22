@@ -98,7 +98,8 @@ am__installdirs = "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(docdir)" \
 	"$(DESTDIR)$(sysconfdir)"
 NROFF = nroff
 MANS = $(dist_man_MANS)
-am__dist_doc_DATA_DIST = README BUGS EXAMPLES LIMITATIONS HOWTO.conf \
+am__dist_doc_DATA_DIST = README BUGS EXAMPLES LIMITATIONS \
+	BUILD.Windows BUILD.Ubuntu DEPENDENCIES HOWTO.conf \
 	dvda-author.conf.example dvda-author-@VERSION@.html
 DATA = $(dist_doc_DATA) $(dist_menu_DATA) $(dist_pix_DATA) \
 	$(dist_sysconf_DATA)
@@ -363,8 +364,9 @@ pixdir = ${PIXDIR}
 # distributed under $pixdir
 dist_pix_DATA = dvda-author_48x48.png dvda-author_64x64.png
 # distributed under $docdir, normally $prefix/doc/dvda-author
-dist_doc_DATA = README BUGS EXAMPLES LIMITATIONS HOWTO.conf \
-	dvda-author.conf.example $(am__append_1)
+dist_doc_DATA = README BUGS EXAMPLES LIMITATIONS BUILD.Windows \
+	BUILD.Ubuntu DEPENDENCIES HOWTO.conf dvda-author.conf.example \
+	$(am__append_1)
 @HAVE_MAN2HTML_FALSE@htmlhelp = 
 @HAVE_MAN2HTML_TRUE@htmlhelp = dvda-author-@VERSION@.html
 @HAVE_HELP2MAN_TRUE@dist_man_MANS = dvda-author.1

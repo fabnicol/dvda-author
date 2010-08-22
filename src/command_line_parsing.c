@@ -1349,6 +1349,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     }
 
 
+#if !HAVE_CORE_BUILD
     if (check_version_flag)
         {
             #ifdef __WIN32__
@@ -1357,6 +1358,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             download_latest_version(download_new_version_flag, force_download_flag);
             if (ngroups == 0) clean_exit(EXIT_SUCCESS);
         }
+#endif
 
     change_directory(globals.settings.workdir);
 
@@ -1424,7 +1426,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     // Coherence checks
     // You first have to test here.
-
+#if !HAVE_CORE_BUILD
     menu_characteristics_coherence_test(img, ngroups);
 
 #ifndef __CB__
@@ -1922,7 +1924,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     }
 
-
+#endif 
 // Final standard checks
 
 standard_checks:

@@ -135,6 +135,7 @@ printf("%s","-f, --fixwav-virtual(options)  Use .wav header repair utility "J"wi
 #ifndef WITHOUT_SOX
 printf("%s","-S, --sox                Use SoX to convert files to .wav."J"By default, only flac, Ogg FLAC "J"and .wav files are accepted.\n\n");
 #endif
+#if !HAVE_CORE_BUILD
 printf("%s","    --no-padding         Block padding of audio files by dvda-author.\n\n");
 printf("%s","    --minimal-padding    Only pad for evenness of sample count.\n\n");
 printf("%s","-C, --pad-cont           When padding, pad with last known byte, not 0.\n\n");
@@ -175,6 +176,7 @@ printf("%s","-5, --aspect             Set the playback aspect ratio code of the 
 printf("%s","                         1  - 1:1 display"J"2  - 4:3 display"J"3  - 16:9 display"J"4  - 2.21:1 display\n\n");
 printf("%s","-6, --nmenus int         Generates int top menus (default 1).\n\n");
 printf("%s","-7, --ncolumns int       Top menus will have at most int columns (default 3).\n\n");
+#endif
 
 printf("%s","   Disc authoring\n\n");
 printf("%s","-I, --mkisofs(=file)     Run mkisofs to author disc image using file"J"as an ISO image. If file is empty, use tempdir/dvd.iso.\n\n");
@@ -413,9 +415,9 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t* ntracks,  uin
 void free_memory(command_t *command)
 {
     int i, j;
-
+#if !HAVE_CORE_BUILD
     initialize_binary_paths(FREE_BINARY_PATH_SPACE);
-
+#endif
     if (command)
     {
         short int naudio_groups=command->ngroups-command->nvideolinking_groups;
@@ -591,7 +593,7 @@ return w;
 
  // if installed with autotools, if bindir overrides then use override, otherwise use config.h value;
 // if not installed with autotools, then use command line value or last-resort hard-code set defaults and test for result
-
+#if !HAVE_CORE_BUILD
 char* create_binary_path(char* local_variable, char* symbolic_constant, char* basename)
 {
 
@@ -696,3 +698,4 @@ void download_latest_version(_Bool download_new_version_flag,_Bool force_downloa
       }
      #endif
 }
+#endif
