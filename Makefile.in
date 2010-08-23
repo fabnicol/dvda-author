@@ -37,7 +37,7 @@ build_triplet = @build@
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(am__dist_doc_DATA_DIST) \
 	$(dist_man_MANS) $(dist_menu_DATA) $(dist_pix_DATA) \
-	$(dist_sysconf_DATA) $(srcdir)/BUILD.core.in \
+	$(dist_sysconf_DATA) $(srcdir)/BUILD.CoreVersion.in \
 	$(srcdir)/EXAMPLES.in $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(srcdir)/dvda-author-shared.spec.in \
@@ -61,7 +61,7 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = dvda-author.desktop dvda-author-shared.spec \
 	dvda-author.spec dvda-author.nsi script script1 script2 \
-	script3 script4 script5 EXAMPLES BUILD.core
+	script3 script4 script5 BUILD.CoreVersion EXAMPLES
 CONFIG_CLEAN_VPATH_FILES =
 SOURCES =
 DIST_SOURCES =
@@ -451,9 +451,9 @@ script4: $(top_builddir)/config.status $(srcdir)/script4.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 script5: $(top_builddir)/config.status $(srcdir)/script5.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-EXAMPLES: $(top_builddir)/config.status $(srcdir)/EXAMPLES.in
+BUILD.CoreVersion: $(top_builddir)/config.status $(srcdir)/BUILD.CoreVersion.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-BUILD.core: $(top_builddir)/config.status $(srcdir)/BUILD.core.in
+EXAMPLES: $(top_builddir)/config.status $(srcdir)/EXAMPLES.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 install-man1: $(dist_man_MANS)
 	@$(NORMAL_INSTALL)
