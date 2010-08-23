@@ -548,7 +548,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             refresh_tempdir=0;
             break;
 
-#if! HAVE_CORE_BUILD
+#if !HAVE_CORE_BUILD
 
         case 'T':
 
