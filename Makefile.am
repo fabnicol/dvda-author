@@ -144,7 +144,7 @@ pixdir=${PIXDIR}
 dist_pix_DATA=dvda-author_48x48.png dvda-author_64x64.png
 # distributed under $docdir, normally $prefix/doc/dvda-author
 
-dist_doc_DATA=README  BUGS EXAMPLES LIMITATIONS BUILD.Windows BUILD.Ubuntu BUILD.core DEPENDENCIES HOWTO.conf dvda-author.conf.example
+dist_doc_DATA=README  BUGS EXAMPLES LIMITATIONS BUILD.Windows BUILD.Ubuntu  DEPENDENCIES HOWTO.conf dvda-author.conf.example
 
 if HAVE_MAN2HTML
   dist_doc_DATA += dvda-author-@VERSION@.html

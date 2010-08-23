@@ -265,6 +265,7 @@ AC_CONFIG_FILES([Makefile
          script4
          script5
          EXAMPLES
+         BUILD.CoreVersion
 
 ])
 
