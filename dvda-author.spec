@@ -1,6 +1,6 @@
 Name: dvda-author
 Summary: dvda-author creates high-definition DVD-AUDIO discs
-Version: 10.06-400
+Version: 10.06-400.core
 Release: 1
 License: GPL v3
 Group: devel
