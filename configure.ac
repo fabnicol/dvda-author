@@ -9,7 +9,7 @@
 
 
 
-AC_INIT([dvda-author],[10.06-400],[fabnicol@users.sourceforge.net])
+AC_INIT([dvda-author],[10.06-400.core],[fabnicol@users.sourceforge.net])
 # requested to define _GNU_SOURCE and check the availability of GNU extensions
 # This should be called before any macros that run the C   compiler.
 AC_USE_SYSTEM_EXTENSIONS
