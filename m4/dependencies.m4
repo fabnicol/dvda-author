@@ -67,8 +67,7 @@ m4_map([DVDA_TEST_AUX],[
               [withval_FIXWAV=no
                withval_FLAC=no
                withval_OGG=no
-               withval_SOX=no
-               withval_IBERTY=no]],
+               withval_SOX=no]],
              [[magick-build],[DVDA_INF([MAGICK_MSG])]],
              [[dvdauthor-build]],
              [[cdrtools-build]],
