@@ -488,7 +488,7 @@ ALWAYS_INLINE_GCC int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audi
     }
   else if (bytesinbuffer < lpcm_payload)   // Last packet in title
     {
-      foutput("[INF]  Writing last packet - pack=%lld, bytesinbuffer=%d\n",pack_in_title,bytesinbuffer);
+      printf("[INF]  Writing last packet - pack=%lld, bytesinbuffer=%d\n",pack_in_title,bytesinbuffer);
       audio_bytes=bytesinbuffer;
       write_pack_header(fp,SCR);
 
@@ -556,8 +556,6 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
 
     files[i].first_sector=0;
     files[i].first_PTS=calc_PTS_start(&files[i],pack_in_title);
-
-    prs(files[i].filename)
 
     printf("[INF]  Processing %s\n",files[i].filename);
 
