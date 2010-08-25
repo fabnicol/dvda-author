@@ -42,6 +42,7 @@ DIST_COMMON = README $(am__configure_deps) $(am__dist_doc_DATA_DIST) \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(srcdir)/dvda-author-shared.spec.in \
 	$(srcdir)/dvda-author.desktop.in $(srcdir)/dvda-author.nsi.in \
+	$(srcdir)/dvda-author.spec.coreversion.in \
 	$(srcdir)/dvda-author.spec.in $(srcdir)/script.in \
 	$(srcdir)/script1.in $(srcdir)/script2.in $(srcdir)/script3.in \
 	$(srcdir)/script4.in $(srcdir)/script5.in \
@@ -60,8 +61,9 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = dvda-author.desktop dvda-author-shared.spec \
-	dvda-author.spec dvda-author.nsi script script1 script2 \
-	script3 script4 script5 COREBUILD EXAMPLES
+	dvda-author.spec dvda-author.spec.coreversion dvda-author.nsi \
+	script script1 script2 script3 script4 script5 COREBUILD \
+	EXAMPLES
 CONFIG_CLEAN_VPATH_FILES =
 SOURCES =
 DIST_SOURCES =
@@ -436,6 +438,8 @@ dvda-author.desktop: $(top_builddir)/config.status $(srcdir)/dvda-author.desktop
 dvda-author-shared.spec: $(top_builddir)/config.status $(srcdir)/dvda-author-shared.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 dvda-author.spec: $(top_builddir)/config.status $(srcdir)/dvda-author.spec.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+dvda-author.spec.coreversion: $(top_builddir)/config.status $(srcdir)/dvda-author.spec.coreversion.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 dvda-author.nsi: $(top_builddir)/config.status $(srcdir)/dvda-author.nsi.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
