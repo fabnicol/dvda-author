@@ -21,9 +21,6 @@ Dependencies for the building process are the following libraries:
 
 Building dvdauthor requests linking to libpng12, libxml2 and libz.
 Building lplex requests linking to libdvdread(-dev) and libFLAC++.
-It should be noted that lplex requires ANSI builds of the wx widgets libraries, not the unicode builds.
-Should your platform only have unicode builds of wxwidgets libraries, download the WxAll package from the
-wxwidgets website and build with ./configure --enable-unicode=no
 
 For menu authoring, add the following executables:
 
@@ -71,3 +68,7 @@ ideally smake for building cdrecord. flex and bison are used by dvdauthor.
 Other building tools may be needed for specific features, take care to check configuration
 messages (in config.log or in the make run output).
 
+3. lplex build
+--------------
+
+See file BUILD.lplex

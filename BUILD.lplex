@@ -1,0 +1,39 @@
+LPLEX BUILD
+===========
+
+If you intend to enable the top menu audio track authroing feature, you will have to build lplex.
+
+It should be noted that lplex requires ANSI builds of the wx widgets libraries, not the unicode builds.
+
+Should your platform only have unicode builds of wxwidgets libraries, download the WxAll package from the
+wxwidgets website and build with ./configure --enable-unicode=no. 
+
+Another way of building these ANSI libs is to download from the wxwidgets repository as follows:
+
+# The packages and the repository meta-data are digitally signed, so you'll need to import the key into your apt's list of trusted keys in order to not get warnings about it.
+
+    curl http://apt.wxwidgets.org/key.asc | sudo apt-key add - 
+
+#
+
+Add the following lines to your /etc/apt/sources.list file (or use the "software sources" program under the "system" menu). Replace the "DIST" text with whatever is appropriate for your system. (See the table below for a list of supported distributions and architectures.)
+
+    # wxWidgets/wxPython repository at apt.wxwidgets.org
+    deb http://apt.wxwidgets.org/ DIST-wx main
+    deb-src http://apt.wxwidgets.org/ DIST-wx main  
+
+For example, if your distro is Ubuntu Gutsy, then you would use the following configuration statements:
+
+    # wxWidgets/wxPython repository at apt.wxwidgets.org
+    deb http://apt.wxwidgets.org/ gutsy-wx main
+    deb-src http://apt.wxwidgets.org/ gutsy-wx main  
+
+# Run the this command to update your local copy of the package meta-data.
+
+    sudo apt-get update  
+
+# Upgrade with:
+
+    sudo apt-get install libwx.*2.8.*ansi.*
+
+You may have to remove libwx.*2.8.* packages prior to this.
