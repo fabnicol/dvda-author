@@ -360,6 +360,8 @@ int main(int argc,  char* const argv[])
     globals.settings.tempdir=TEMPDIR;
     normalize_temporary_paths(NULL);
 
+
+
     // Null arg is no longer supported, yet...
 
     if (argc == 1)

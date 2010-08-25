@@ -164,7 +164,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"no-refresh-tempdir",no_argument, NULL, 4},
         {"no-refresh-outdir",no_argument, NULL, 5},
         {"extract", required_argument, NULL, 'x'},
-        
+
 #if !HAVE_CORE_BUILD
         {"videodir", required_argument, NULL, 'V'},
         {"fixwav", optional_argument, NULL, 'F'},
@@ -709,11 +709,16 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         for (k=0; k < ngroups-nvideolinking_groups; k++)
             totntracks+=ntracks[k];
     ngroups_scan=0;
+    #if !HAVE_CORE_BUILD
     int nvideolinking_groups_scan=0, strlength=0;
     char* piccolorchain, *activepiccolorchain, *palettecolorchain, *fontchain, *durationchain=NULL,
-            *h, *min, *sec, **textable=NULL, **tab=NULL,**tab2=NULL, *stillpic_string=NULL, *still_options_string=NULL, *import_topmenu_path=NULL;
-    _Bool extract_audio_flag=0, import_topmenu_flag=0;
+            *h, *min, *sec, **tab=NULL,**tab2=NULL, *stillpic_string=NULL, *still_options_string=NULL, *import_topmenu_path=NULL;
+    _Bool import_topmenu_flag=0;
     uint16_t npics[totntracks];
+    #endif
+    char** textable=NULL;
+    _Bool extract_audio_flag=0;
+
     optind=0;
     opterr=1;
 
@@ -726,7 +731,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         switch (c)
         {
 
-      
+
 
         case 'a' :
             foutput("%s\n", "[PAR]  Autoplay on.");
@@ -748,7 +753,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             globals.settings.indir=strdup(optarg);
 
             break;
-	    
+
 
         case 'n' :
             // There is no videozone in this case
@@ -823,7 +828,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
             break;
 
-	    
+
         case 'W' :
             foutput("%s\n", "[PAR]  Lexer was deactivated");
             globals.enable_lexer=0;
@@ -846,14 +851,14 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s\n", "[PAR]  Channel group assignement activated.");
             globals.cga=1;
             break;
-	    
+
 
         case 'k' :
             foutput("%s","[PAR]  Generates text table in IFO files.\n\n");
             globals.text=1;
             textable=fn_strtok(optarg, ',' , textable, 0,NULL,NULL);
             break;
-	    
+
 #if !HAVE_CORE_BUILD
 	          // case 'g': c=0; break;
         case '9':
@@ -1376,10 +1381,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if (ngroups == 0) clean_exit(EXIT_SUCCESS);
         }
 #endif
-
+prs(globals.settings.workdir);
     change_directory(globals.settings.workdir);
 
-    /* Here it is necessary to chack and normalize: temporary directory, number of menus before copying files and allocating new memory */
+    /* Here it is necessary to check and normalize: temporary directory, number of menus before copying files and allocating new memory */
    // Cleaning operations
 
 
@@ -1465,7 +1470,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     optind=0;
     opterr=1;
     _Bool soundtracks_flag=0;
-    
+
 
 #ifdef LONG_OPTIONS
     while ((c=getopt_long(argc, argv, ALLOWED_OPTIONS, longopts, &longindex)) != -1)
@@ -1942,7 +1947,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     }
 
-#endif 
+#endif
 // Final standard checks
 
 standard_checks:
