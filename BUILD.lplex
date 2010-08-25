@@ -34,6 +34,6 @@ For example, if your distro is Ubuntu Gutsy, then you would use the following co
 
 # Upgrade with:
 
-    sudo apt-get install libwx.*2.8.*ansi.*
+    sudo apt-get install --reinstall ^libwx.*2.8.* ^wx.*2.8.*
 
-You may have to remove libwx.*2.8.* packages prior to this.
+  so that both unicode and ansi builds are installed.
