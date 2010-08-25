@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_workspace_file>
+	<Workspace title="Workspace">
+		<Project filename="libc_utils/libc_utils.core.cbp" />
+		<Project filename="libats2wav/libats2wav.cbp">
+			<Depends filename="libc_utils/libc_utils.core.cbp" />
+		</Project>
+		<Project filename="libfixwav/libfixwav-1.3.cbp">
+			<Depends filename="libc_utils/libc_utils.core.cbp" />
+		</Project>
+		<Project filename="dvda-author/dvda-author.core.cbp" active="1">
+			<Depends filename="libc_utils/libc_utils.core.cbp" />
+			<Depends filename="libats2wav/libats2wav.cbp" />
+		</Project>
+	</Workspace>
+</CodeBlocks_workspace_file>
