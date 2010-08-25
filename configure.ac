@@ -236,6 +236,7 @@ AC_CONFIG_FILES([Makefile
          dvda-author.desktop
          dvda-author-shared.spec
          dvda-author.spec
+         dvda-author.spec.coreversion
          dvda-author.nsi
          src/Makefile
          src/include/Makefile

@@ -557,7 +557,9 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
     files[i].first_sector=0;
     files[i].first_PTS=calc_PTS_start(&files[i],pack_in_title);
 
-    foutput("[INF]  Processing %s\n",files[i].filename);
+    prs(files[i].filename)
+
+    printf("[INF]  Processing %s\n",files[i].filename);
 
     while (bytesinbuf)
     {
