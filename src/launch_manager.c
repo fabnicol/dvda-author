@@ -138,7 +138,7 @@ command_t *assign_audio_characteristics(uint8_t* I, command_t *command)
 
         for (l=j; l < ntracks[i+delta]; l++)
         {
-            // a recursion is in unavoidable save for j=last track in group
+            // a recursion is unavoidable save for j=last track in group
             int i_shift=i+delta;
             int l_shift=l+1-delta;
             if (globals.debugging)
@@ -151,7 +151,7 @@ command_t *assign_audio_characteristics(uint8_t* I, command_t *command)
 
 // assigning channel
 // if AFMT was found, j will have been incremented earlier
-// otherwise i is necessary to reparse again files[i][j] as indices have been shifted
+// otherwise it is necessary to reparse again files[i][j] as indices have been shifted
 
     I[0]=i, I[1]=j;
 
@@ -573,7 +573,7 @@ SUMMARY:
 
     // Crucial, otherwise the ISO file may well be unordered even if AUDIO_TS files are OK after exit
     fflush(NULL);
-    
+
 #if !HAVE_CORE_BUILD
     //
     if (globals.runmkisofs)
@@ -658,7 +658,7 @@ SUMMARY:
             FREE(cdrecord);
         }
     }
-    
+
     #endif
     // freeing files and heap-allocated globals
 
