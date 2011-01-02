@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
-	<ActiveTarget name="Release" />
+	<ActiveTarget name="" />
 	<File name="../../libutils/src/c_utils.c" open="1" top="0" tabpos="1">
-		<Cursor position="15746" topLine="609" />
+		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../libutils/src/include/c_utils.h" open="1" top="0" tabpos="2">
-		<Cursor position="1432" topLine="46" />
+		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../libutils/src/include/export.h" open="1" top="0" tabpos="3">
 		<Cursor position="0" topLine="0" />
@@ -26,12 +26,12 @@
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../libutils/src/include/winport.h" open="1" top="0" tabpos="9">
-		<Cursor position="514" topLine="18" />
+		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../libutils/src/private/private_c_utils.h" open="1" top="0" tabpos="10">
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../libutils/src/winport.c" open="1" top="0" tabpos="11">
-		<Cursor position="1322" topLine="35" />
+		<Cursor position="0" topLine="0" />
 	</File>
 </CodeBlocks_layout_file>

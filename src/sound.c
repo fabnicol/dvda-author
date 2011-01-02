@@ -72,6 +72,7 @@ int audit_soundtrack(char* path)
 
 int launch_lplex_soundtrack(pic* img, char* create_mode)
 {
+#if HAVE_LPLEX
     errno=0;
     int u, menu, tot=0;
     char* lplex=NULL;
@@ -161,7 +162,7 @@ int launch_lplex_soundtrack(pic* img, char* create_mode)
         free(dest);
 
     }
-
+#endif
     return errno;
 }
 
