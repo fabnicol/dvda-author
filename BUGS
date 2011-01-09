@@ -33,3 +33,10 @@ Usage: Replace --fixwavprune,interactive with -Fprune,interactive.
    Many bugs have been corrected as of version 10.06.
 
 8. A serious regression has flawed --extract and -i between version 09.05 and 10.06 build 200 included. Fixed.
+
+9. Multiple definitions may arise at linking time, especially when building libiberty and other packages from source code.
+   To avoid this, the following option has been added to the gcc linker: -Xlinker --allow-multiple-definition
+   If using another compiler, you may have to replace this option with the corresponding one for your compiler in src/Makefile.am
+
+10. Some capabilities of SoX may have to be deactivated for compatibility reasons, platform-wise. On Ubuntu Linux I had to add 
+    --without-mad --without-oggvorbis to SoX configure command line as of Jan. 2011.
