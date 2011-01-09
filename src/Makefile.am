@@ -23,7 +23,7 @@ if !HAVE_CORE_BUILD
 dvda_SOURCES += menu.c asvs.c xml.c sound.c videoimport.c
 endif
 
-AM_LDFLAGS= -lm -L/usr/local/lib -L/usr/lib
+AM_LDFLAGS= -lm -L/usr/local/lib -L/usr/lib -Xlinker --allow-multiple-definition
 
 AM_CPPFLAGS=-I${top_srcdir}/libutils/src/include -I${top_srcdir}/src/include -I${top_srcdir}/libats2wav/src/include -I${top_srcdir}   ${DEBUG_FLAGS}
 
