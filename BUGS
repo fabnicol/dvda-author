@@ -40,3 +40,8 @@ Usage: Replace --fixwavprune,interactive with -Fprune,interactive.
 
 10. Some capabilities of SoX may have to be deactivated for compatibility reasons, platform-wise. On Ubuntu Linux I had to add 
     --without-mad --without-oggvorbis to SoX configure command line as of Jan. 2011.
+
+11. Due to linking  issues caused by SoX code (version 14.3) do not compile libiberty.a and SoX simultaneously. A segfault might arise
+    at exec time. Should libiberty AND SoX compiling be triggered by the autoconf program, rerun configure with either --without-sox
+    or --disable-libiberty --without-libiberty, or, alternatively, install the binutils-dev (or like) package of your *NIX platform
+    and rerun configure. This issue is not detected automatically as it may be unstable and disappear with later SoX versions.

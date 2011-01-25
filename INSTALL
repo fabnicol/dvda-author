@@ -198,6 +198,8 @@ More specifically, from the top source directory:
 
 	 --enable-iberty-build
 
+  See file BUGS for issues with libiberty building.
+
 - To build the FLAC 1.2.1 library, run:
 
 	./configure --enable-flac-download --enable-flac-build
@@ -216,6 +218,8 @@ More specifically, from the top source directory:
 - To build and patch the libsox library:
 
 	./configure --enable-sox-patch  --enable-sox-build
+
+  See file BUGS for issues with SoX building.
 
 - To build and patch dvdauthor (only necessary if you need DVD-Audio menus):
 
