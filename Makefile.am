@@ -30,7 +30,7 @@ all: stamprecord0 stamprecord1 stamprecord2 stamprecord3 stamprecord4 stamprecor
 do_sox_lib_deps_subst: src/Makefile stamprecord2
 if HAVE_SOX_BUILD
 	chmod +x ${MAYBE_SOX}/sox-libs
-	$(SED) -e "s,SOX_LIB_DEPS,$(shell cat ${MAYBE_SOX}/sox-libs | $(SED) "s,[@][^@]*[@],,g" ),g" < src/Makefile > src/Makefile.temp
+	$(SED) -e "s,SOX_LIB_DEPS,$(shell cat ${MAYBE_SOX}/sox-libs | $(SED) "s,[\.\.\/].*[a],,g" ),g" < src/Makefile > src/Makefile.temp
 	mv src/Makefile.temp src/Makefile
 endif
 
@@ -74,6 +74,7 @@ endif
 endif
 
 #cdrtools must be compiled with special make install parameters hence should not be included in the SUBDIRS list. Building/cleaning will need prior configuration.
+#mjpegtools has a libtool issue with SUBDIR build as of 2.0.0 so the same trick as with cdrtools will be used.
 stamprecord4: Makefile
 	if test -f stamprecord4; then rm -f stamprecord4; fi; touch stamprecord4
 	cd ${MAYBE_CDRTOOLS} && $(MAKETOOL) ; cd -
@@ -81,7 +82,7 @@ stamprecord4: Makefile
 stamprecord5: Makefile
 	if test -f stamprecord5; then rm -f stamprecord5; fi; touch stamprecord5
 if HAVE_MJPEGTOOLS_BUILD
-	cd ${MAYBE_MJPEGTOOLS} && ${SHELL} configure --prefix=${prefix} ; cd -
+	cd ${MAYBE_MJPEGTOOLS} && ${SHELL} configure --prefix=${prefix}  && $(MAKETOOL) ; cd -
 endif
 
 
@@ -128,7 +129,7 @@ if HAVE_MAN2HTML
 endif
 
 
-SUBDIRS=${MAYBE_IBERTY} libutils ${MAYBE_OGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} libats2wav ${MAYBE_SOX}  ${MAYBE_LPLEX} ${MAYBE_DVDAUTHOR} ${MAYBE_HELP2MAN} ${MAYBE_MJPEGTOOLS} ${MAYBE_MAGICK} ${MAYBE_MPEG2DEC} ${MAYBE_A52DEC} src
+SUBDIRS=${MAYBE_IBERTY} libutils ${MAYBE_OGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} libats2wav ${MAYBE_SOX}  ${MAYBE_LPLEX} ${MAYBE_DVDAUTHOR} ${MAYBE_HELP2MAN}  ${MAYBE_MAGICK} ${MAYBE_MPEG2DEC} ${MAYBE_A52DEC} src
 DIST_SUBDIRS=libiberty libutils libfixwav src CB_project libats2wav images
 
 #normally is ${prefix}/share/applications/dvda-author-${VERSION}
@@ -179,6 +180,9 @@ endif
 if HAVE_MAGICK_BUILD
 	 cd ${MAYBE_MAGICK}; $(MAKETOOL) install; cd - ;
 endif
+if HAVE_SOX
+	cd ${MAYBE_SOX}; $(MAKETOOL) install; cd -;
+endif 
 
 # redefining install is necessary to rename nested package directories for later builds with --enable-all-builds, which request lib* labelling
 
@@ -195,3 +199,21 @@ endif
 
 clean-local:
 	  rm -f dvda-author.1 dvda-author-@VERSION@.html
+if HAVE_CDRTOOLS_BUILD
+	cd ${MAYBE_CDRTOOLS}; $(MAKETOOL) INS_BASE=${prefix} clean; cd -
+endif
+if HAVE_DVDAUTHOR_BUILD
+	 cd ${MAYBE_DVDAUTHOR}; $(MAKETOOL)  clean; cd - ;
+endif
+if HAVE_HELP2MAN_BUILD
+	 cd ${MAYBE_HELP2MAN}; $(MAKETOOL) clean; cd - ;
+endif
+if HAVE_MJPEGTOOLS_BUILD
+	 cd ${MAYBE_MJPEGTOOLS}; $(MAKETOOL) clean; cd - ;
+endif
+if HAVE_MAGICK_BUILD
+	 cd ${MAYBE_MAGICK}; $(MAKETOOL) clean; cd - ;
+endif
+if HAVE_SOX
+	cd ${MAYBE_SOX}; $(MAKETOOL) clean; cd -;
+endif 
