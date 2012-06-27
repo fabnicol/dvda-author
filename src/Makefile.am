@@ -23,11 +23,12 @@ if !HAVE_CORE_BUILD
 dvda_SOURCES += menu.c asvs.c xml.c sound.c videoimport.c
 endif
 
-AM_LDFLAGS= -lm -L/usr/local/lib -L/usr/lib -Xlinker --allow-multiple-definition
 
+AM_LDFLAGS=-L/usr/local/lib -L/usr/lib -Xlinker --allow-multiple-definition
 AM_CPPFLAGS=-I${top_srcdir}/libutils/src/include -I${top_srcdir}/src/include -I${top_srcdir}/libats2wav/src/include -I${top_srcdir}   ${DEBUG_FLAGS}
 
-LDADD=${top_builddir}/libutils/src/libc_utils.a  ${top_builddir}/libats2wav/src/libats2wav.a
+dvda_LDADD= -lm ${top_builddir}/libutils/src/libc_utils.a  ${top_builddir}/libats2wav/src/libats2wav.a
+
 
 # Symbol SOX_LIB_DEPS will be replaced by sox dependencies after configure in libsox by target do_sox_lib_deps_subst
 # left-align if conditions
@@ -35,19 +36,19 @@ LDADD=${top_builddir}/libutils/src/libc_utils.a  ${top_builddir}/libats2wav/src/
 
 if WITH_FLAC
 if HAVE_EXTERNAL_FLAC
-    LDADD        += ${FLAC_LIB}
+    dvda_LDADD  += ${FLAC_LIB}
 endif
 if HAVE_EXTERNAL_OGG
-    LDADD       +=  ${OGG_LIB}
+    dvda_LDADD  +=  ${OGG_LIB}
 endif
 if HAVE_FLAC_BUILD
-    LDADD       +=  ${FLAC_LIB}
+    dvda_LDADD   +=  ${FLAC_LIB}
 endif
 if HAVE_OGG_BUILD
-    LDADD       +=  ${OGG_LIB}
+    dvda_LDADD   +=  ${OGG_LIB}
 endif
 if HAVE_FLAC
-    AM_LDFLAGS   += ${FLAC_LINK} ${OGG_LINK}
+    dvda_LDADD  += ${FLAC_LINK} ${OGG_LINK}
 endif
 endif
 
@@ -56,37 +57,37 @@ if WITH_SOX
 
 if HAVE_SOX_BUILD
     AM_CPPFLAGS  += -I${top_srcdir}/${MAYBE_SOX}/src
-    AM_LDFLAGS   += SOX_LIB_DEPS
-    LDADD        += ${SOX_LIB}
+    LIBS   += SOX_LIB_DEPS
+    dvda_LDADD   += ${SOX_LIB}
 
 else
 
 if HAVE_EXTERNAL_SOX
-    AM_LDFLAGS   += -ldl
-    LDADD        += ${SOX_LIB}
+    dvda_LDADD   += -ldl
+    dvda_LDADD   += ${SOX_LIB}
 endif
 if HAVE_SOX
-    AM_LDFLAGS   += ${SOX_LINK}
+    LIBS   += ${SOX_LINK}
 endif
 endif
 
 endif
 
 if HAVE_IBERTY_BUILD
-     LDADD       += ${IBERTY_LIB}
+     dvda_LDADD+= ${IBERTY_LIB}
      AM_CPPFLAGS +=-I${top_srcdir}/libiberty/src/include
 else
 if  HAVE_EXTERNAL_IBERTY
-     LDADD       += ${IBERTY_LIB}
+     dvda_LDADD+= ${IBERTY_LIB}
      AM_CPPFLAGS +=-I${top_srcdir}/libiberty/src/include
 endif
 if HAVE_IBERTY
-     AM_LDFLAGS  += ${IBERTY_LINK}
+     LIBS+= ${IBERTY_LINK}
 endif
 endif
 
 if WITH_FIXWAV
-     LDADD       +=${FIXWAV_LIB}
+     dvda_LDADD+=${FIXWAV_LIB}
      AM_CPPFLAGS +=-I${top_srcdir}/libfixwav/src/include
 endif
 

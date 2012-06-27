@@ -1381,7 +1381,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if (ngroups == 0) clean_exit(EXIT_SUCCESS);
         }
 #endif
-prs(globals.settings.workdir);
+
     change_directory(globals.settings.workdir);
 
     /* Here it is necessary to check and normalize: temporary directory, number of menus before copying files and allocating new memory */

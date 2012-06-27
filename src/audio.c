@@ -1001,7 +1001,31 @@ ALWAYS_INLINE_GCC  uint8_t read_count(uint32_t *bytesread, uint32_t count, uint8
 {
 
 
-    int n;
+  int n;
+
+  if ((info->type == AFMT_FLAC) || (info->type == AFMT_OGG_FLAC))
+  {
+      if (info->audio->n >= count)
+            {
+              n=count;
+              memcpy(buf,info->audio->buf,count);
+              memmove(info->audio->buf,&(info->audio->buf[count]),info->audio->n-count);
+              info->audio->n-=count;
+
+            }
+          else
+            {
+              n=info->audio->n;
+              memcpy(buf,info->audio->buf,info->audio->n);
+              info->audio->n=0;
+            }
+
+    *bytesread+=n;
+
+  }
+  else  //AFMT_WAV
+  {
+
 
     n=fread(buf+offset,1,count,info->audio->fp);
     if (info->audio->bytesread+n > info->numbytes)
@@ -1020,6 +1044,7 @@ ALWAYS_INLINE_GCC  uint8_t read_count(uint32_t *bytesread, uint32_t count, uint8
         info->audio->bytesread+=n;
         *bytesread+=n;
     }
+  }
 
     return n;
 }
@@ -1041,7 +1066,7 @@ ALWAYS_INLINE_GCC  static uint32_t read_track_file_into_buffer(uint8_t* buf, fil
 {
 
     static uint8_t fbuf[50];
-    uint32_t n=0,nc=0, bytesread;
+    uint32_t n=0,nc=0, bytesread=0;
     static uint8_t offset,rmdr;
 
 
@@ -1109,15 +1134,11 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
 ///////////////////////
 // copy offset bytes from buffer filled in last pass (remainder of non-whole modulo by info->sampleunitsize)
 
-
-    if (info->type == AFMT_WAVE)
-    {
-        n=read_track_file_into_buffer(buf, info, &count);
-    }
+    if ((info->type != AFMT_FLAC) && (info->type != AFMT_OGG_FLAC) && (info->type == AFMT_OGG_FLAC)) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Can only decode wav of flac streams...\n       Exiting...\n")
 
 #ifndef WITHOUT_FLAC
 
-    else if ((info->type==AFMT_FLAC) || (info->type==AFMT_OGG_FLAC))
+    if ((info->type == AFMT_FLAC) || (info->type == AFMT_OGG_FLAC))
     {
 
         count-= count%info->sampleunitsize;
@@ -1135,21 +1156,13 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
                     info->audio->eos=1;
                 }
         }
-        if (info->audio->n >= count)
-        {
-            n=count;
-            memcpy(buf,info->audio->buf,count);
-            memmove(info->audio->buf,&(info->audio->buf[count]),info->audio->n-count);
-            info->audio->n-=count;
-        }
-        else
-        {
-            n=info->audio->n;
-            memcpy(buf,info->audio->buf,info->audio->n);
-            info->audio->n=0;
-        }
+
     }
 #endif
+
+    n=read_track_file_into_buffer(buf, info, &count);
+
+
 
 
 
