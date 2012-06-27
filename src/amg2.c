@@ -105,10 +105,8 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *
     j=0;
     while  ((titleset < naudio_groups ) && (j < ntracks[titleset]) )
     {
-        while ((j == 0) || ((j < ntracks[titleset])
-                            &&(files[titleset][j].samplerate==files[titleset][j-1].samplerate)
-                            &&(files[titleset][j].bitspersample==files[titleset][j-1].bitspersample)
-                            &&(files[titleset][j].channels==files[titleset][j-1].channels)))
+        while ((j == 0) || (j < ntracks[titleset]))
+
         {
             /* counts the number of tracks with same-type audio characteristics, per titleset and title
             *  into ntitletracks[titleset][numtitles[titleset]], and corresponding PTS length in titlelength[titleset][numtitles[titleset]] */
@@ -133,17 +131,33 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *
                 }
             }
 
+
+
+            // PATCH 12.06
+
+            if ((files[titleset][j].samplerate != files[titleset][j-1].samplerate)
+                ||(files[titleset][j].bitspersample != files[titleset][j-1].bitspersample)
+                ||(files[titleset][j].channels != files[titleset][j-1].channels))
+
+                files[titleset][j].newtitle=1;
+
             j++;
             track++;
-            // PATCH 02 Dec 09
-            if ((j < ntracks[titleset]) && (files[titleset][j].newtitle)) break;
+
+            // PATCH 02 Dec 09 && 12.06
+            if (files[titleset][j-1].newtitle)
+            {
+                totaltitles++;
+                numtitles[titleset]++;
+                break;
+            }
+
 
         }
         //  a new title begins when audio characteristics change, (whatever the titleset), except on reaching end of titleset tracks
         //  or: incrementing on leaving out titleset (0-based values)
 
-        totaltitles++;
-        numtitles[titleset]++;
+
         /* In case we've processed the last title in titleset,
          *so we've reached the end of titleset: new initialization of j to continue the loop and start new titleset */
         if (j == ntracks[titleset])
@@ -156,6 +170,9 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *
             continue;
         }
     }
+
+    if (globals.debugging)  for (j=0; j < naudio_groups; j++) printf("[INF]  Number of titles for group %d is %d\n",j, numtitles[j] );
+
     return track;
 
 

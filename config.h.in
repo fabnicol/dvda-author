@@ -223,8 +223,8 @@
 /* configure, build and install mjpegtools from source code */
 #undef HAVE_MJPEGTOOLS_BUILD
 
-/* download and patch mjpegtools from source code */
-#undef HAVE_MJPEGTOOLS_PATCH
+/* download mjpegtools from source code */
+#undef HAVE_MJPEGTOOLS_DOWNLOAD
 
 /* Define to 1 if you have the `mkdir' function. */
 #undef HAVE_MKDIR

@@ -57,7 +57,7 @@ extern char* INDIR, *OUTDIR, *LOGFILE, *TEMPDIR, *LINKDIR, *WORKDIR;
 void version()
 {
 
-    foutput("%s%s%s", "dvda-author version ", VERSION, "\nCopyright  2005 Dave Chapman; 2007-2010 Fabrice Nicol;\n2008-2009 Lee and Tim Feldkamp\n\n");
+    foutput("%s%s%s", "dvda-author version ", VERSION, "\nCopyright  2005 Dave Chapman; 2007-2012 Fabrice Nicol;\n2008-2009 Lee and Tim Feldkamp\n\n");
     foutput("%s","See file AUTHORS for other contributors.\n\n");
     foutput("%s","Latest version available from http://dvd-audio.sourceforge.net/\n\n");
     foutput("%s","This is free software; see the source for copying conditions.\n\nWritten by Dave Chapman, Fabrice Nicol, Lee and Tim Feldkamp.\n");

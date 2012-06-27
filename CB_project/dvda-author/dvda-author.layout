@@ -1,250 +1,250 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Release" />
-	<File name="../../BUGS" open="1" top="0" tabpos="1">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libiberty/src/malloc.c" open="1" top="0" tabpos="30" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../ChangeLog" open="1" top="0" tabpos="2">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/libsoxconvert.c" open="1" top="0" tabpos="77" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../EXAMPLES" open="1" top="0" tabpos="3">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libiberty/src/include/strdup.h" open="1" top="0" tabpos="27" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../HOWTO.conf" open="1" top="0" tabpos="4">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/dvda-author.h" open="1" top="0" tabpos="61" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../INSTALL" open="1" top="0" tabpos="5">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/commonvars.h" open="1" top="0" tabpos="60" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../LIMITATIONS" open="1" top="0" tabpos="6">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/ports.h" open="1" top="0" tabpos="68" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../Makefile.am" open="1" top="0" tabpos="7">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/file_input_parsing.h" open="1" top="0" tabpos="62" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../README" open="1" top="0" tabpos="8">
-		<Cursor position="0" topLine="0" />
+	<File name="../../dvda-author.dap" open="1" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../autogen" open="1" top="0" tabpos="9">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/amg.h" open="1" top="0" tabpos="53" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../configure.ac" open="1" top="0" tabpos="10">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libiberty/src/strnlen.c" open="1" top="0" tabpos="34" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../dvda-author.dap" open="1" top="0" tabpos="11">
-		<Cursor position="0" topLine="0" />
+	<File name="../../dvda-author2.dap" open="1" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../dvda-author.nsi.in" open="1" top="0" tabpos="12">
-		<Cursor position="0" topLine="0" />
+	<File name="../../EXAMPLES" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../dvda-author2.dap" open="1" top="0" tabpos="13">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libiberty/src/getopt1.c" open="1" top="0" tabpos="21" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../dvda-author3.dap" open="1" top="0" tabpos="14">
-		<Cursor position="0" topLine="0" />
+	<File name="../../script.in" open="1" top="0" tabpos="40" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../libats2wav/src/Makefile.am" open="1" top="0" tabpos="15">
-		<Cursor position="0" topLine="0" />
+	<File name="../../m4/auxiliary.m4" open="1" top="0" tabpos="37" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../libfixwav/Makefile.am" open="1" top="0" tabpos="16">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/videoimport.c" open="1" top="0" tabpos="81" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="5989" topLine="180" />
 	</File>
-	<File name="../../libfixwav/src/Makefile.am" open="1" top="0" tabpos="17">
-		<Cursor position="0" topLine="0" />
+	<File name="../../m4/dvda.m4" open="1" top="0" tabpos="39" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../libiberty/Makefile.am" open="1" top="0" tabpos="18">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/multichannel.h" open="1" top="0" tabpos="67" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../libiberty/src/Makefile.am" open="1" top="0" tabpos="19">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libiberty/src/include/strnlen.h" open="1" top="0" tabpos="29" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../libiberty/src/getopt.c" open="1" top="0" tabpos="20">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/samg.h" open="1" top="0" tabpos="69" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../libiberty/src/getopt1.c" open="1" top="0" tabpos="21">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/atsi2.c" open="1" top="0" tabpos="47" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../libiberty/src/getsubopt.c" open="1" top="0" tabpos="22">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/ats.h" open="1" top="0" tabpos="55" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../libiberty/src/include/getopt.h" open="1" top="0" tabpos="23">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libiberty/src/include/strchrnul.h" open="1" top="0" tabpos="26" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../libiberty/src/include/getopt_int.h" open="1" top="0" tabpos="24">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libiberty/src/strdup.c" open="1" top="0" tabpos="32" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../libiberty/src/include/getsubopt.h" open="1" top="0" tabpos="25">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libiberty/src/strchrnul.c" open="1" top="0" tabpos="31" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../libiberty/src/include/strchrnul.h" open="1" top="0" tabpos="26">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/version.h" open="1" top="0" tabpos="72" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../libiberty/src/include/strdup.h" open="1" top="0" tabpos="27">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/audio2.h" open="1" top="0" tabpos="57" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../libiberty/src/include/strndup.h" open="1" top="0" tabpos="28">
-		<Cursor position="0" topLine="0" />
+	<File name="../../Makefile.am" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../libiberty/src/include/strnlen.h" open="1" top="0" tabpos="29">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/launch_manager.h" open="1" top="0" tabpos="63" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../libiberty/src/malloc.c" open="1" top="0" tabpos="30">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/libsoxconvert.h" open="1" top="0" tabpos="65" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../libiberty/src/strchrnul.c" open="1" top="0" tabpos="31">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/ats.c" open="1" top="0" tabpos="46" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../libiberty/src/strdup.c" open="1" top="0" tabpos="32">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/samg2.c" open="1" top="0" tabpos="79" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../libiberty/src/strndup.c" open="1" top="0" tabpos="33">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/videoimport.h" open="1" top="0" tabpos="73" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../libiberty/src/strnlen.c" open="1" top="0" tabpos="34">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libutils/src/Makefile.am" open="1" top="0" tabpos="35" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../libutils/src/Makefile.am" open="1" top="0" tabpos="35">
-		<Cursor position="0" topLine="0" />
+	<File name="../../ChangeLog" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../m4/acinclude.m4" open="1" top="0" tabpos="36">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/structures.h" open="1" top="0" tabpos="71" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="1916" topLine="0" />
 	</File>
-	<File name="../../m4/auxiliary.m4" open="1" top="0" tabpos="37">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/auxiliary.c" open="1" top="0" tabpos="49" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../m4/dependencies.m4" open="1" top="0" tabpos="38">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/launch_manager.c" open="1" top="0" tabpos="75" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="12145" topLine="529" />
 	</File>
-	<File name="../../m4/dvda.m4" open="1" top="0" tabpos="39">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libiberty/src/strndup.c" open="1" top="0" tabpos="33" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../script.in" open="1" top="0" tabpos="40">
-		<Cursor position="0" topLine="0" />
+	<File name="../../configure.ac" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../script1.in" open="1" top="0" tabpos="41">
-		<Cursor position="0" topLine="0" />
+	<File name="../../INSTALL" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../script2.in" open="1" top="0" tabpos="42">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/audio.c" open="1" top="0" tabpos="48" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="5438" topLine="141" />
 	</File>
-	<File name="../../src/Makefile.am" open="1" top="0" tabpos="43">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libiberty/src/include/getopt.h" open="1" top="0" tabpos="23" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="4202" topLine="114" />
 	</File>
-	<File name="../../src/amg2.c" open="1" top="0" tabpos="44">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/sound.h" open="1" top="0" tabpos="70" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/asvs.c" open="1" top="0" tabpos="45">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/file_input_parsing.c" open="1" top="0" tabpos="52" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="3722" topLine="98" />
 	</File>
-	<File name="../../src/ats.c" open="1" top="0" tabpos="46">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libfixwav/Makefile.am" open="1" top="0" tabpos="16" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/atsi2.c" open="1" top="0" tabpos="47">
-		<Cursor position="0" topLine="0" />
+	<File name="../../dvda-author3.dap" open="1" top="0" tabpos="14" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/audio.c" open="1" top="0" tabpos="48">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/auxiliary.h" open="1" top="0" tabpos="58" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="1195" topLine="22" />
 	</File>
-	<File name="../../src/auxiliary.c" open="1" top="0" tabpos="49">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libfixwav/src/Makefile.am" open="1" top="0" tabpos="17" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/command_line_parsing.c" open="1" top="0" tabpos="50">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/atsi.h" open="1" top="0" tabpos="56" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/dvda-author2.c" open="1" top="0" tabpos="51">
-		<Cursor position="0" topLine="0" />
+	<File name="../../HOWTO.conf" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/file_input_parsing.c" open="1" top="0" tabpos="52">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/asvs.c" open="1" top="0" tabpos="45" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/amg.h" open="1" top="0" tabpos="53">
-		<Cursor position="0" topLine="0" />
+	<File name="../../dvda-author.nsi.in" open="1" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/asvs.h" open="1" top="0" tabpos="54">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libiberty/src/getsubopt.c" open="1" top="0" tabpos="22" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/ats.h" open="1" top="0" tabpos="55">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/menu.c" open="1" top="0" tabpos="78" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/atsi.h" open="1" top="0" tabpos="56">
-		<Cursor position="0" topLine="0" />
+	<File name="../../m4/dependencies.m4" open="1" top="0" tabpos="38" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/audio2.h" open="1" top="0" tabpos="57">
-		<Cursor position="0" topLine="0" />
+	<File name="../../script2.in" open="1" top="0" tabpos="42" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/auxiliary.h" open="1" top="0" tabpos="58">
-		<Cursor position="0" topLine="0" />
+	<File name="../../BUGS" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/command_line_parsing.h" open="1" top="0" tabpos="59">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libiberty/src/getopt.c" open="1" top="0" tabpos="20" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/commonvars.h" open="1" top="0" tabpos="60">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/command_line_parsing.c" open="1" top="0" tabpos="50" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="47947" topLine="1368" />
 	</File>
-	<File name="../../src/include/dvda-author.h" open="1" top="0" tabpos="61">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libiberty/src/include/getopt_int.h" open="1" top="0" tabpos="24" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/file_input_parsing.h" open="1" top="0" tabpos="62">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/lexer.h" open="1" top="0" tabpos="64" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/launch_manager.h" open="1" top="0" tabpos="63">
-		<Cursor position="0" topLine="0" />
+	<File name="../../m4/acinclude.m4" open="1" top="0" tabpos="36" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/lexer.h" open="1" top="0" tabpos="64">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/menu.h" open="1" top="0" tabpos="66" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/libsoxconvert.h" open="1" top="0" tabpos="65">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/amg2.c" open="1" top="1" tabpos="44" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="5321" topLine="179" />
 	</File>
-	<File name="../../src/include/menu.h" open="1" top="0" tabpos="66">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libiberty/src/include/getsubopt.h" open="1" top="0" tabpos="25" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/multichannel.h" open="1" top="0" tabpos="67">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/xml.c" open="1" top="0" tabpos="82" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="5801" topLine="185" />
 	</File>
-	<File name="../../src/include/ports.h" open="1" top="0" tabpos="68">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/lexer.c" open="1" top="0" tabpos="76" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/samg.h" open="1" top="0" tabpos="69">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/asvs.h" open="1" top="0" tabpos="54" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/sound.h" open="1" top="0" tabpos="70">
-		<Cursor position="0" topLine="0" />
+	<File name="../../autogen" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/structures.h" open="1" top="0" tabpos="71">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libats2wav/src/Makefile.am" open="1" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/version.h" open="1" top="0" tabpos="72">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/sound.c" open="1" top="0" tabpos="80" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="1611" topLine="66" />
 	</File>
-	<File name="../../src/include/videoimport.h" open="1" top="0" tabpos="73">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libiberty/Makefile.am" open="1" top="0" tabpos="18" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/include/xml.h" open="1" top="0" tabpos="74">
-		<Cursor position="0" topLine="0" />
+	<File name="../../script1.in" open="1" top="0" tabpos="41" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/launch_manager.c" open="1" top="0" tabpos="75">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/dvda-author2.c" open="1" top="0" tabpos="51" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/lexer.c" open="1" top="0" tabpos="76">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/xml.h" open="1" top="0" tabpos="74" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/libsoxconvert.c" open="1" top="0" tabpos="77">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/Makefile.am" open="1" top="0" tabpos="43" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/menu.c" open="1" top="0" tabpos="78">
-		<Cursor position="0" topLine="0" />
+	<File name="../../src/include/command_line_parsing.h" open="1" top="0" tabpos="59" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/samg2.c" open="1" top="0" tabpos="79">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libiberty/src/Makefile.am" open="1" top="0" tabpos="19" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/sound.c" open="1" top="0" tabpos="80">
-		<Cursor position="0" topLine="0" />
+	<File name="../../README" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/videoimport.c" open="1" top="0" tabpos="81">
-		<Cursor position="0" topLine="0" />
+	<File name="../../LIMITATIONS" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
-	<File name="../../src/xml.c" open="1" top="1" tabpos="82">
-		<Cursor position="0" topLine="0" />
+	<File name="../../libiberty/src/include/strndup.h" open="1" top="0" tabpos="28" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor1 position="0" topLine="0" />
 	</File>
 </CodeBlocks_layout_file>
