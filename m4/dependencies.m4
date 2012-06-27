@@ -113,10 +113,10 @@ m4_map([DVDA_TEST_AUX],[
             [[sox-patch],      [14.3.1],     [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [sox],  [sox/14.3.1],                             [b99871c7bbae84feac9d0d1f010331ba]],
             [[flac-download],  [1.2.1],      [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [flac], [flac-src/flac-1.2.1-src],                [153c8b15a54da428d1f0fadc756c22c7]],
             [[ogg-download],   [1.1.4],      [http://dvd-audio.sourceforge.net/utils],[],                                                [],     [],                                       [6c68b14485fccdb6a2a14109185dd816]],
-            [[mjpegtools-patch], [1.9.0],    [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches/mjpegtools], [mjpeg],[mjpegtools/1.9.0], [309a6fcf0900a010d6a9c1e91afc2f5c]],
             [[help2man-download],[1.36.4],   [http://dvd-audio.sourceforge.net/utils],[],[],[], [d31a0a38c2ec71faa06723f6b8bd3076]],
             [[magick-download], [6.6.3],     [http://dvd-audio.sourceforge.net/utils],[],[],[], [2984b2c8c3fb9fc5335e6f42fea7911c]],
-            [[lplex-download], [0.3],    [http://dvd-audio.sourceforge.net/utils],[],[],[],[ebcbd36b8ac64777fabf05615fb6c036]],
+            [[lplex-download], [0.3],    [http://dvd-audio.sourceforge.net/utils],[],[],[],[]],
+            [[mjpegtools-download], [2.0.0],  [http://dvd-audio.sourceforge.net/utils],[], [mjpeg],[mjpegtools/2.0.0], [903e1e3b967eebcc5fe5626d7517dc46]],
             [[mpeg2dec-download], [0.2.1], [http://dvd-audio.sourceforge.net/utils],[],[],[],[a7caee4591e8addc3bddaf47d2d45ec0]],
             [[a52dec-download], [0.7.5-cvs], [http://dvd-audio.sourceforge.net/utils],[],[],[], [1729c7507f76b0d4cc04540926c5d0d7]]])
 
@@ -149,7 +149,7 @@ m4_map([DVDA_TEST_AUX],[
 
     # installing binaries, normally executables
 
-    DVDA_CONF_SUBDIRS([[[[DVDAUTHOR],[dvdauthor-0.6.14]]], [[[CDRTOOLS],[cdrtools-3.00]]], [[[MJPEGTOOLS], [mjpegtools-1.9.0]]],[[[A52DEC],[a52dec-0.7.5-cvs]],[--prefix=$prefix]],[[[MPEG2DEC],[mpeg2dec-0.2.1-mjpegtools-0.7]], [--prefix=$prefix]],[[[LPLEX], [lplex-0.3]], [--prefix=$prefix --disable-shared]],[[[HELP2MAN], [help2man-1.36.4]]], [[[MAGICK], [magick-6.6.3]]]])
+    DVDA_CONF_SUBDIRS([[[[DVDAUTHOR],[dvdauthor-0.6.14]]], [[[CDRTOOLS],[cdrtools-3.00]]], [[[MJPEGTOOLS], [mjpegtools-2.0.0]]],[[[A52DEC],[a52dec-0.7.5-cvs]],[--prefix=$prefix]],[[[MPEG2DEC],[mpeg2dec-0.2.1-mjpegtools-0.7]], [--prefix=$prefix]],[[[LPLEX], [lplex-0.3]], [--prefix=$prefix --disable-shared]],[[[HELP2MAN], [help2man-1.36.4]]], [[[MAGICK], [magick-6.6.3]]]])
 
     # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
 

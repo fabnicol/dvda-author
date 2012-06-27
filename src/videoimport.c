@@ -7,7 +7,7 @@ dvda-author  - Author a DVD-Audio DVD
 
  Author a DVD-Audio DVD
 
-Copyright Fabrice Nicol <fabnicol@users.sourceforge.net>, 2008
+Copyright Fabrice Nicol <fabnicol@users.sourceforge.net>, 2008-2012
 
 The latest version can be found at http://dvd-audio.sourceforge.net
 
@@ -195,8 +195,8 @@ void import_topmenu(char* video_vob_path, pic* img, _Bool MIX_TYPE)
   FREE(img->soundtrack[0][0])
   img->soundtrack[0][0]=calloc(1+ s + 20+3+ 4+1, sizeof(char));
   sprintf(img->soundtrack[0][0], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "extracted_soundtrack",0, ".wav");
-prs(ac3dec)
-prs(video_vob_path)
+
+
 
   char* argsextract[]={extract_ac3, video_vob_path, "-",  "-s", "|", ac3dec, "-o", "wav", "-p", img->soundtrack[0][0], NULL};
   char* cml=get_full_command_line(argsextract);
