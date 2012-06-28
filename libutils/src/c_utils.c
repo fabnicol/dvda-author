@@ -40,7 +40,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <time.h>
 #include <ctype.h>
 #include <sys/stat.h>
+#ifndef __WIN32__
 #include <sys/wait.h>
+#endif
 #include <sys/types.h>
 
 /* printf is a public macro
