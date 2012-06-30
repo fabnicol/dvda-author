@@ -119,6 +119,7 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 					<Add option="-DHAVE_DVDAUTHOR_PATCH=1" />
 					<Add option="-DHAVE_LPLEX=1" />
 					<Add option="-DHAVE_CURL=1" />
+					<Add option="-DDAVE_OFFSET=0" />
 					<Add directory="../../src/include" />
 					<Add directory="../../libutils/src/include" />
 					<Add directory="../../libfixwav/src/include" />
