@@ -421,7 +421,7 @@ FILE* open_aob(FILE* fp, const char* filename, char* atstemplate, int ats)
     if (fp==NULL)
     {
         printf("[ERR]  Cannot open %s\n",atsfilename);
-        exit(EXIT_FAILURE);
+
     }
 
     return(fp);
@@ -513,7 +513,7 @@ int ats2wav(const char* filename, const char* outdir, extractlist *extract)
 
     char atstemplate[512];
 
-    unsigned int n, payload_length;
+    unsigned int n=0, payload_length;
     int ats=1;
     _fileinfo_t files[99];
     int ntracks;
@@ -571,6 +571,7 @@ int ats2wav(const char* filename, const char* outdir, extractlist *extract)
             fclose(fp);
             ats++;
             fp=open_aob(fp, filename, atstemplate, ats);
+            if (fp == NULL) return(EXIT_SUCCESS);
         }
 
         i=0;
@@ -617,10 +618,17 @@ int ats2wav(const char* filename, const char* outdir, extractlist *extract)
 
                 payload_length=k-i;
 
-                convert_buffer(&files[t],&buf[i],payload_length);
-                n=write_data(&files[t],&buf[i],payload_length);
 
-                if ((n==0) && (globals.debugging))
+            int delta=(payload_length+files[t].byteswritten < files[t].numbytes)? payload_length : files[t].numbytes-files[t].byteswritten;
+
+
+                    convert_buffer(&files[t],&buf[i],delta);
+                    delta=write_data(&files[t],&buf[i],delta);
+                    files[t].byteswritten+=delta;
+
+
+
+                if (globals.veryverbose)
                 {
                     printf("[MSG]  Wrote %d bytes, written=%lld, size=%lld\n",n,files[t].byteswritten,files[t].numbytes);
                 }

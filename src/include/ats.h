@@ -32,6 +32,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <stdint.h>
 
 #include "audio2.h"
+#ifndef DAVE_OFFSET
+#define DAVE_OFFSET 0
+#endif
 
 int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks);
 void pack_scr(uint8_t scr_bytes[6],uint64_t SCR_base, uint16_t SCR_ext);
