@@ -271,7 +271,7 @@ int parse_disk(DIR* dir, mode_t mode, const char* default_directory, extractlist
     char ngroups_scan=0, control=0;
     struct dirent *rootdirent;
 
-    if (globals.debugging)
+    if ((globals.debugging)&& (!globals.nooutput))
         foutput("[INF]  Extracting to %s\n", globals.settings.outdir);
 
 
@@ -313,18 +313,19 @@ int parse_disk(DIR* dir, mode_t mode, const char* default_directory, extractlist
 
 
 
-        if (globals.debugging)
+        if ((globals.debugging)&& (!globals.nooutput))
             foutput("[INF]  Extracting titleset %s ...\n", rootdirent->d_name);
 
         char output_buf[strlen(globals.settings.outdir) + 3 + 1];
         STRING_WRITE_CHAR_BUFSIZ(output_buf, "%s%s%d", globals.settings.outdir, "/g", ngroups_scan)
 
-        secure_mkdir(
+        if (!globals.nooutput)
+            secure_mkdir(
             output_buf,
             mode,
             default_directory);
 
-        if (globals.debugging)
+        if ((globals.debugging)&& (!globals.nooutput))
             foutput("[INF]  Extracting to directory %s ...\n", output_buf);
 
         if (ats2wav(rootdirent->d_name, output_buf,  extract) == EXIT_SUCCESS)

@@ -109,7 +109,10 @@ void create_activemenu(pic* img)
     char* activeheader=copy_file2dir(img->activeheader, globals.settings.tempdir);
     activeheadersize=stat_file_size(activeheader);
 
-    FILE* activeheaderfile=fopen(activeheader, "rb");
+    FILE* activeheaderfile;
+
+    if (!globals.nooutput)
+        activeheaderfile=fopen(activeheader, "rb");
 
     /* processing */
 
@@ -168,9 +171,10 @@ void create_activemenu(pic* img)
     }
 
 
-    FILE* svvobfile=fopen(img->stillvob, "wb");
+    FILE* svvobfile;
+    if (!globals.nooutput) svvobfile=fopen(img->stillvob, "wb");
     for (j=0; j < totntracks; j++)
-        fwrite(tsvobpt, tsvobsize, 1, svvobfile);
+        if (!globals.nooutput) fwrite(tsvobpt, tsvobsize, 1, svvobfile);
 
     fclose(svvobfile);
     free(activeheader);
