@@ -741,6 +741,8 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
     struct dirent *f;
     char path[BUFSIZ];
 
+    if (globals.nooutput) return 0;
+
     if (stat(dest, &buf) == -1)
     {
         perror("[ERR]  copy_directory could not stat file");

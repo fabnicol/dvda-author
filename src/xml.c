@@ -221,7 +221,7 @@ int  generate_spumux_xml(uint8_t ngroups, uint8_t *ntracks, uint16_t maxntracks,
             globals.spu_xml[menu]=strdup(spu_xmlfilepath);
         }
 
-        spu_xmlfile=fopen(globals.spu_xml[menu], "wb");
+        if (!globals.nooutput) spu_xmlfile=fopen(globals.spu_xml[menu], "wb");
 
         /*  We take a basic picture of 720x576 and divide it into a maximum of 3 columns (max 3 groups) and 20 tracks per group
          *  Left/Right Border= 20, top border=56 pixels, bottom border=16 pix. Inter-column spacing=20 pixels, inter-line spacing=12 pixels

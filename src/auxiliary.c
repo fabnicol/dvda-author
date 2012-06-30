@@ -85,6 +85,7 @@ printf("%s","-h, --help               Diplay this help.\n\n");
 printf("%s","-v, --version            Diplay version.\n\n");
 printf("%s","-q, --quiet              Quiet mode.\n\n");
 printf("%s","-d, --debug              Increased verbosity (debugging level)\n\n");
+printf("%s","    --no-output          Does not produce any file structure except for --fixwav."J"Computations will be performed.\n\n\n\n");
 printf("%s","-t, --veryverbose        Like -d with enhanced verbosity for sample counts.\n\n");
 printf("%s","-P, --pause              Insert a final pause before exiting.\n\n");
 printf("%s","-P0, --pause=0           Suppress a final pause before exiting"J"if specified in configuration file.\n\n");
@@ -119,7 +120,7 @@ printf("%s","-p, --startsector NNN    Specify the number of the first sector"J"o
 printf("%s","                         If NNN=0, falling back on 281 (default).\n"J"Without -p start sector will be computed automatically.\n\n");
 printf("%s","-g                       You may specify up to 9 groups of tracks."J"Minimum: one group.\n");
 printf("%s","                         Enter full path to files if input directory is not set"J"by [-i].\n\n");
-printf("%s","-j,                      Like -g with special processing to avoid gaps."J"Minimum: one group.\n");
+printf("%s","-j, --joingaps           Like -g with special processing to avoid gaps."J"Minimum: one group.\n");
 printf("%s","-s,                      Like -g with all tracks merged into one single track."J"Minimum: one group.\n");
 printf("%s","-z, --newtitle           Separate two consecutive titles when files have same audio"J"characteritics within a group.\n");
 printf("%s","-Z, --playlist           You may specify up to 9 group copies."J"Total number of groups and copy groups should not exceed 9.\n");
@@ -127,7 +128,7 @@ printf("%s","-n, --no-videozone       Do not generate an empty VIDEO_TS director
 printf("%s","-w, --rights             Access rights to directories created (octal values)\n\n");
 printf("%s","-c, --cga                Enter channel group assignment right after group (-g, -j or -s).\n\n");
 #ifndef WITHOUT_FIXWAV
-printf("%s","-F, --fixwav(options)    Bad wav headers will be fixed by fixwav\n\n");
+printf("%s","-F, --fixwav(options)    Bad wav headers will be fixed by fixwav."J"Can be run alone without DVD-AUDIO output by adding --nooutput.\n\n");
 printf("%s","-f, --fixwav-virtual(options)  Use .wav header repair utility "J"without any write operation.\n\n");
 #endif
 #ifndef WITHOUT_SOX
@@ -498,18 +499,24 @@ void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size)
 
   unlink(outfile); // I sometimes had issues under linux when unlink was not called in rare cases. Reset errno to 0 just after.
   errno=0;
-  FILE* f=fopen(outfile,"wb");
+  FILE* f;
+  if (!globals.nooutput)
+  {
+      f=fopen(outfile,"wb");
   if (f == NULL)
     fprintf(stderr, "[ERR] %s could not be opened properly.\n", basename);
   if (errno) perror("[ERR] ");
   errno=0;
-  if (  fwrite(array, 1, size, f) == size )
+
+    if (fwrite(array, 1, size, f) == size )
     foutput("%s%s%s\n", "[MSG]  ", outfile," was created.");
-  else
+    else
     fprintf(stderr, "[ERR]  %s could not be created properly -- fwrite error.\n", basename);
 
-  if (fclose(f)== EOF)
+
+    if (fclose(f)== EOF)
     fprintf(stderr, "[ERR]  %s could not be closed properly.", basename);
+  }
 
 }
 // fn_strtok is a strtok replacement function that, unlike strtok, takes care of the input chain and can be invoked safely in loops or whose delimiting char can be changed without
