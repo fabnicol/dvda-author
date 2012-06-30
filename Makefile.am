@@ -180,7 +180,7 @@ endif
 if HAVE_MAGICK_BUILD
 	 cd ${MAYBE_MAGICK}; $(MAKETOOL) install; cd - ;
 endif
-if HAVE_SOX
+if HAVE_SOX_BUILD
 	cd ${MAYBE_SOX}; $(MAKETOOL) install; cd -;
 endif 
 
@@ -214,6 +214,6 @@ endif
 if HAVE_MAGICK_BUILD
 	 cd ${MAYBE_MAGICK}; $(MAKETOOL) clean; cd - ;
 endif
-if HAVE_SOX
+if HAVE_SOX_BUILD
 	cd ${MAYBE_SOX}; $(MAKETOOL) clean; cd -;
 endif 
