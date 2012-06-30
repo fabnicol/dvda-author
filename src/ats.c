@@ -492,7 +492,7 @@ ALWAYS_INLINE_GCC int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audi
       audio_bytes=bytesinbuffer;
       write_pack_header(fp,SCR);
 
-		int dave_offset = 6;  // value of 6 forces agreement with Dave's code; LF recommends value of 0 which is more consistent with middle pack treatment
+		int dave_offset = DAVE_OFFSET;  // value of 6 forces agreement with Dave's code; LF recommends value of 0 which is more consistent with middle pack treatment
 		write_audio_pes_header(fp,-dave_offset+info->midpack_audiopesheaderquantity-(lpcm_payload-audio_bytes),0,PTS);
 		write_lpcm_header(fp,-dave_offset+info->midpack_lpcm_headerquantity,info,pack_in_title,cc);
 
