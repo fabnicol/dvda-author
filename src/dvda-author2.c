@@ -223,6 +223,7 @@ int main(int argc,  char* const argv[])
     {
 
         /*top menu*/    NO_MENU,  // no top menu
+        /*nooutput*/    0,
         /*runmkisofs*/  0,  // do not run mkisofs
         /*autoplay*/    0,  // no autoplay
         /*text table*/  0,  // no text table

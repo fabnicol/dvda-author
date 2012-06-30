@@ -199,6 +199,7 @@ typedef struct
 typedef struct
 {
     int8_t topmenu;
+    _Bool nooutput;
     _Bool runmkisofs;
     _Bool autoplay;
     _Bool text;

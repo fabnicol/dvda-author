@@ -167,7 +167,7 @@ ALWAYS_INLINE_GCC unsigned int write_data(_fileinfo_t* info, uint8_t* buf, unsig
     n= (info->byteswritten+count > info->numbytes) ? info->numbytes-info->byteswritten : count;
 
 
-    fwrite(buf,n,1,info->fpout);
+    if (!globals.nooutput) fwrite(buf,n,1,info->fpout);
 
     info->byteswritten+=n;
 
@@ -350,7 +350,7 @@ ALWAYS_INLINE_GCC static void wav_open(_fileinfo_t* info, char* outfile)
         printf("[ERR]  Could not open %s\n",outfile);
         exit(EXIT_FAILURE);
     }
-    fwrite(wav_header,sizeof(wav_header),1,info->fpout);
+    if (!globals.nooutput) fwrite(wav_header,sizeof(wav_header),1,info->fpout);
 }
 
 
@@ -398,7 +398,7 @@ ALWAYS_INLINE_GCC static void wav_close(_fileinfo_t* info , const char* filename
     // Subchunk2Size
     uint32_copy_reverse(wav_header+40, (uint32_t) filesize);
 
-    fwrite(wav_header,sizeof(wav_header), 1, info->fpout);
+    if (!globals.nooutput) fwrite(wav_header,sizeof(wav_header), 1, info->fpout);
     fclose(info->fpout);
 }
 
@@ -633,7 +633,7 @@ int ats2wav(const char* filename, const char* outdir, extractlist *extract)
                     printf("[MSG]  Wrote %d bytes, written=%lld, size=%lld\n",n,files[t].byteswritten,files[t].numbytes);
                 }
 
-                if (files[t].byteswritten==files[t].numbytes)
+                if (files[t].byteswritten >=files[t].numbytes)
                 {
 				    wav_close(&files[t], filename);
 
@@ -644,6 +644,8 @@ int ats2wav(const char* filename, const char* outdir, extractlist *extract)
                         if (n < payload_length)
                         {
 							write_wav_file(outfile, outdir, length, files, t);
+
+
 
                             files[t].samplerate=files[t-1].samplerate;
                             files[t].bitspersample=files[t-1].bitspersample;

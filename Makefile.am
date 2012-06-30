@@ -119,13 +119,13 @@ endif
 
 dvda-author.1:
 if HAVE_HELP2MAN
-	${HELP2MAN} -s 1 -N -o ${PWD}/dvda-author.1 ${PWD}/src/dvda
+	${HELP2MAN} -s 1 -N -o dvda-author.1 src/dvda
 endif
 
 dvda-author-@VERSION@.html: dvda-author.1
 #PATCH  09.12  We need to display in UTF-8 mode and take off an illicit file header created by man2html
 if HAVE_MAN2HTML
-	${MAN2HTML} < ${PWD}/dvda-author.1 | $(SED) -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > ${PWD}/dvda-author-@VERSION@.html
+	${MAN2HTML} < dvda-author.1 | $(SED) -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > dvda-author-@VERSION@.html
 endif
 
 
