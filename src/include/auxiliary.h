@@ -29,6 +29,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <dirent.h>
 #include <errno.h>
 
+#pragma STDC FP_CONTRACT ON
+
 #include "audio2.h"
 #include "c_utils.h"
 #include "commonvars.h"
