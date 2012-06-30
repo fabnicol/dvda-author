@@ -168,14 +168,18 @@ AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],
  ])
 
 
-AS_IF([ test "x$ac_cv_prog_cc_stdc" = "xno" ],[AC_MSG_WARN([C compiler does not support ISO C99 standard])])
+AS_IF([ test "x$ac_cv_prog_cc_stdc" = "xno" ], [AC_MSG_WARN([Compiler does not support size-variable static arrays.
+Please install C99-compliant compiuler. Aborting...])
+                                                AS_EXIT])
 
 
 AC_C99_FLEXIBLE_ARRAY
 AC_C99_SIZE_VARIABLE_STATIC_ARRAY
+
 AS_IF([ test x$ac_cv_c99_flexible_array != xyes ], [AC_MSG_WARN([Compiler does not support feature known as the flexible array struct member])])
 
-AS_IF([ test x$ac_cv_c99_size_variable_static_array != xyes ],  [AC_MSG_WARN([Compiler does not support size-variable static arrays])])
+AS_IF([ test x$ac_cv_c99_size_variable_static_array != xyes ],  [AC_MSG_WARN([Compiler does not support size-variable static arrays. Aborting...])
+                                                                 AS_EXIT])
 
 AC_C_VARARRAYS
 AC_C_CONST
@@ -309,7 +313,7 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
     Static sox build:
                      ...............$STATIC_SOX
 
-                  
+
 ])
 
 
@@ -354,9 +358,9 @@ AC_MSG_RESULT([[
 
   Using $make as a system build tool.
 
-  Auxiliary tools 
+  Auxiliary tools
                                    installed (path)/build (yes/no)
-    
+
     help2man: .....................$HELP2MAN $HELP2MAN_BUILD
     man2html: .....................$MAN2HTML $MAN2HTML_BUILD
     spumux: .......................$SPUMUX $DVDAUTHOR_BUILD
@@ -372,7 +376,7 @@ AC_MSG_RESULT([[
     mogrify:.......................$MOGRIFY $MAGICK_BUILD
     convert:.......................$CONVERT $MAGICK_BUILD
     lplex: ........................$LPLEX $LPLEX_BUILD
-   
+
    Building tools:
 
     make:..........................$make
