@@ -122,11 +122,11 @@ ALWAYS_INLINE_GCC  void write_pack_header(FILE* fp,  uint64_t SCRint)
     * SCRint=floor(SCR);
     */
 
-    fwrite(pack_start_code,4,1,fp);
+    if (!globals.nooutput) fwrite (pack_start_code,4,1,fp);
     pack_scr(scr_bytes,(SCRint/300),(SCRint%300));
-    fwrite(scr_bytes,6,1,fp);
-    fwrite(program_mux_rate_bytes,3,1,fp);
-    fwrite(pack_stuffing_length_byte,1,1,fp);
+    if (!globals.nooutput) fwrite (scr_bytes,6,1,fp);
+    if (!globals.nooutput) fwrite (program_mux_rate_bytes,3,1,fp);
+    if (!globals.nooutput) fwrite (pack_stuffing_length_byte,1,1,fp);
 }
 
 ALWAYS_INLINE_GCC  void write_system_header(FILE* fp)
@@ -139,14 +139,14 @@ ALWAYS_INLINE_GCC  void write_system_header(FILE* fp)
     uint8_t stream_info1[3]={0xb8, 0xc0, 0x40};
     uint8_t stream_info2[3]={0xbd, 0xe0, 0x0a};
 
-    fwrite(system_header_start_code,4,1,fp);
-    fwrite(header_length,2,1,fp);
-    fwrite(rate_bound,3,1,fp);
-    fwrite(audio_bound,1,1,fp);
-    fwrite(video_bound,1,1,fp);
-    fwrite(packet_rate_restriction_flag,1,1,fp);
-    fwrite(stream_info1,3,1,fp);
-    fwrite(stream_info2,3,1,fp);
+    if (!globals.nooutput) fwrite (system_header_start_code,4,1,fp);
+    if (!globals.nooutput) fwrite (header_length,2,1,fp);
+    if (!globals.nooutput) fwrite (rate_bound,3,1,fp);
+    if (!globals.nooutput) fwrite (audio_bound,1,1,fp);
+    if (!globals.nooutput) fwrite (video_bound,1,1,fp);
+    if (!globals.nooutput) fwrite (packet_rate_restriction_flag,1,1,fp);
+    if (!globals.nooutput) fwrite (stream_info1,3,1,fp);
+    if (!globals.nooutput) fwrite (stream_info2,3,1,fp);
 }
 
 ALWAYS_INLINE_GCC  void write_pes_padding(FILE* fp,uint16_t length)
@@ -163,10 +163,10 @@ ALWAYS_INLINE_GCC  void write_pes_padding(FILE* fp,uint16_t length)
     length_bytes[0]=(length&0xff00)>>8;
     length_bytes[1]=(length&0xff);
 
-    fwrite(packet_start_code_prefix,3,1,fp);
-    fwrite(&stream_id,1,1,fp);
-    fwrite(length_bytes,2,1,fp);
-    fwrite(ff_buf,length,1,fp);
+    if (!globals.nooutput) fwrite (packet_start_code_prefix,3,1,fp);
+    if (!globals.nooutput) fwrite (&stream_id,1,1,fp);
+    if (!globals.nooutput) fwrite (length_bytes,2,1,fp);
+    if (!globals.nooutput) fwrite (ff_buf,length,1,fp);
 }
 
 ALWAYS_INLINE_GCC  void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uint8_t extension_flag, uint64_t PTS)
@@ -197,23 +197,23 @@ ALWAYS_INLINE_GCC  void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len
     PES_packet_len_bytes[0]=(PES_packet_len&0xff00)>>8;
     PES_packet_len_bytes[1]=PES_packet_len&0xff;
 
-    fwrite(packet_start_code_prefix,3,1,fp);
-    fwrite(stream_id,1,1,fp);
-    fwrite(PES_packet_len_bytes,2,1,fp);
-    fwrite(flags1,1,1,fp);
-    fwrite(flags2,1,1,fp);
-    fwrite(PES_header_data_length,1,1,fp);
+    if (!globals.nooutput) fwrite (packet_start_code_prefix,3,1,fp);
+    if (!globals.nooutput) fwrite (stream_id,1,1,fp);
+    if (!globals.nooutput) fwrite (PES_packet_len_bytes,2,1,fp);
+    if (!globals.nooutput) fwrite (flags1,1,1,fp);
+    if (!globals.nooutput) fwrite (flags2,1,1,fp);
+    if (!globals.nooutput) fwrite (PES_header_data_length,1,1,fp);
 
     pack_pts(PTS_DTS_data,PTS);
-    fwrite(PTS_DTS_data,5,1,fp);
+    if (!globals.nooutput) fwrite (PTS_DTS_data,5,1,fp);
 
     if (extension_flag)
     {
         PSTD_buffer_scalesize[0]=0x60|((PSTD&0x1f00)>>8);
         PSTD_buffer_scalesize[1]=PSTD&0xff;
 
-        fwrite(PES_extension_flags,1,1,fp);
-        fwrite(PSTD_buffer_scalesize,2,1,fp);
+        if (!globals.nooutput) fwrite (PES_extension_flags,1,1,fp);
+        if (!globals.nooutput) fwrite (PSTD_buffer_scalesize,2,1,fp);
     }
 }
 
@@ -345,17 +345,17 @@ ALWAYS_INLINE_GCC  void write_lpcm_header(FILE* fp, int header_length,fileinfo_t
     first_access_unit_pointer[0]=(frame_offset&0xff00)>>8;
     first_access_unit_pointer[1]=frame_offset&0xff;
 
-    fwrite(sub_stream_id,1,1,fp);
-    fwrite(continuity_counter,1,1,fp);
-    fwrite(LPCM_header_length,2,1,fp);
-    fwrite(first_access_unit_pointer,2,1,fp);
-    fwrite(unknown1,1,1,fp);
-    fwrite(sample_size,1,1,fp);
-    fwrite(sample_rate,1,1,fp);
-    fwrite(unknown2,1,1,fp);
-    fwrite(&channel_assignment,1,1,fp);
-    fwrite(unknown3,1,1,fp);
-    fwrite(zero,header_length-8,1,fp);
+    if (!globals.nooutput) fwrite (sub_stream_id,1,1,fp);
+    if (!globals.nooutput) fwrite (continuity_counter,1,1,fp);
+    if (!globals.nooutput) fwrite (LPCM_header_length,2,1,fp);
+    if (!globals.nooutput) fwrite (first_access_unit_pointer,2,1,fp);
+    if (!globals.nooutput) fwrite (unknown1,1,1,fp);
+    if (!globals.nooutput) fwrite (sample_size,1,1,fp);
+    if (!globals.nooutput) fwrite (sample_rate,1,1,fp);
+    if (!globals.nooutput) fwrite (unknown2,1,1,fp);
+    if (!globals.nooutput) fwrite (&channel_assignment,1,1,fp);
+    if (!globals.nooutput) fwrite (unknown3,1,1,fp);
+    if (!globals.nooutput) fwrite (zero,header_length-8,1,fp);
 }
 
 
@@ -484,7 +484,7 @@ ALWAYS_INLINE_GCC int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audi
           audio_bytes=1980;
           write_lpcm_header(fp,0x0f,info,pack_in_title,cc);
         }
-      fwrite(audio_buf,1,audio_bytes,fp);
+      if (!globals.nooutput) fwrite (audio_buf,1,audio_bytes,fp);
     }
   else if (bytesinbuffer < lpcm_payload)   // Last packet in title
     {
@@ -496,12 +496,12 @@ ALWAYS_INLINE_GCC int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audi
 		write_audio_pes_header(fp,-dave_offset+info->midpack_audiopesheaderquantity-(lpcm_payload-audio_bytes),0,PTS);
 		write_lpcm_header(fp,-dave_offset+info->midpack_lpcm_headerquantity,info,pack_in_title,cc);
 
-		fwrite(audio_buf,1,audio_bytes,fp);
+		if (!globals.nooutput) fwrite (audio_buf,1,audio_bytes,fp);
 		write_pes_padding(fp,dave_offset+2048-14-14-20-audio_bytes);
 
       // write_audio_pes_header(fp,2022-(2000-audio_bytes),0,PTS);
       // write_lpcm_header(fp,0x0a,info,pack_in_title,cc);
-      // fwrite(audio_buf,1,audio_bytes,fp);
+      // if (!globals.nooutput) fwrite (audio_buf,1,audio_bytes,fp);
       // write_pes_padding(fp,2000-audio_bytes+6);
     }
   else                             // A middle packet in the title.
@@ -517,7 +517,7 @@ ALWAYS_INLINE_GCC int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audi
         {
           write_lpcm_header(fp,0x0c,info,pack_in_title,cc);
         }
-      fwrite(audio_buf,1,audio_bytes,fp);
+      if (!globals.nooutput) fwrite (audio_buf,1,audio_bytes,fp);
     }
 
   if (cc==0x1f)
@@ -542,7 +542,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
     uint64_t pack_in_title=0;
 
     STRING_WRITE_CHAR_BUFSIZ(outfile, "%s"SEPARATOR"ATS_%02d_%d.AOB",audiotsdir,titleset,filenum)
-    fpout=secure_open(outfile,"wb+");
+    if (!globals.nooutput) fpout=secure_open(outfile,"wb+");
 
     /* Open the first file and initialise the input audio buffer */
     if (audio_open(&files[i])!=0)
@@ -579,7 +579,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
             fclose(fpout);
             filenum++;
             STRING_WRITE_CHAR_BUFSIZ(outfile, "%s"SEPARATOR"ATS_%02d_%d.AOB",audiotsdir,titleset,filenum)
-            fpout=fopen(outfile,"wb+");
+            if (!globals.nooutput) fpout=fopen(outfile,"wb+");
         }
 
         if (bytesinbuf < lpcm_payload)

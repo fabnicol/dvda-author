@@ -141,6 +141,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         {"debug", no_argument, NULL, 'd'
         },
+        {"no-output", no_argument, NULL, 10},
         {"veryverbose", no_argument, NULL, 't'},
         {"help", no_argument, NULL, 'h'},
         {"input", required_argument, NULL, 'i'},
@@ -530,6 +531,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             change_directory(globals.settings.workdir);
 
+            break;
+
+        case 10:
+            foutput("%s\n", "[PAR]  Will run with no output.");
+            globals.nooutput=1;
+            globals.logfile=0;
             break;
 
         case 'o' :
@@ -1391,26 +1398,26 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     if (user_command_line)
     {
         errno=0;
-        if (refresh_outdir)
+        if ((refresh_outdir) && (!globals.nooutput))
         {
             clean_directory(globals.settings.outdir);
             if (errno) perror("[ERR]  clean");
         }
         else
         {
-            if (globals.debugging)
+            if ((globals.debugging)&& (!globals.nooutput))
                 foutput("[MSG]  Output directory %s has been preserved.\n", globals.settings.outdir);
         }
 
 
-        errno=secure_mkdir(globals.settings.outdir, 0777, OUTDIR);
-        if (errno)
+        if (!globals.nooutput)
         {
-            if (errno != EEXIST) perror("[WAR]  mkdir outdir");  // EEXIST error messages are often spurious
-        }
-        else
-        {
-        }
+            errno=secure_mkdir(globals.settings.outdir, 0777, OUTDIR);
+            if (errno)
+            {
+                if (errno != EEXIST) perror("[WAR]  mkdir outdir");  // EEXIST error messages are often spurious
+            }
+
 
         errno=0;
         if (refresh_tempdir)
@@ -1434,6 +1441,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 foutput("[PAR]  Temporary directory %s has been preserved.\n", globals.settings.tempdir);
         }
         errno=0;
+        }
 
     }
 
@@ -2059,8 +2067,10 @@ void fixwav_parsing(char *ssopt)
         case 9:
             FREE(globals.settings.fixwav_database)
             globals.settings.fixwav_database=strndup(value, MAX_OPTION_LENGTH);
-            secure_mkdir(globals.settings.fixwav_database, 0755, DEFAULT_DATABASE_FOLDER);
-            foutput("%s       %s%s", "[PAR]  Fixwav will output info chunk from wav headers to:\n", globals.settings.fixwav_database, SEPARATOR "database\n");
+            if (!globals.nooutput) {
+                    secure_mkdir(globals.settings.fixwav_database, 0755, DEFAULT_DATABASE_FOLDER);
+                    foutput("%s       %s%s", "[PAR]  Fixwav will output info chunk from wav headers to:\n", globals.settings.fixwav_database, SEPARATOR "database\n");
+            }
             break;
         }
     }

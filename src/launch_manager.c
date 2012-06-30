@@ -204,13 +204,13 @@ int launch_manager(command_t *command)
     char videotsdir[pathlength+10];
     sprintf(audiotsdir, "%s"SEPARATOR"AUDIO_TS", globals.settings.outdir);
 
-    secure_mkdir(audiotsdir, globals.access_rights, DEFAULT);
+    if (!globals.nooutput) secure_mkdir(audiotsdir, globals.access_rights, DEFAULT);
     errno=0;
 
     if (globals.videozone)
     {
         STRING_WRITE_CHAR_BUFSIZ(videotsdir, "%s"SEPARATOR"VIDEO_TS", globals.settings.outdir)
-        secure_mkdir(videotsdir, globals.access_rights, DEFAULT);
+        if (!globals.nooutput) secure_mkdir(videotsdir, globals.access_rights, DEFAULT);
         errno=0;
     }
 

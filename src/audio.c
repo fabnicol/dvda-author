@@ -1026,6 +1026,7 @@ ALWAYS_INLINE_GCC  uint8_t read_count(uint32_t *bytesread, uint32_t count, uint8
   else  //AFMT_WAV
   {
 
+    /* read count bytes in file into buffer at an offset and increase bytesread counts accordingly, adjusting at end of audio files */
 
     n=fread(buf+offset,1,count,info->audio->fp);
     if (info->audio->bytesread+n > info->numbytes)
@@ -1045,7 +1046,7 @@ ALWAYS_INLINE_GCC  uint8_t read_count(uint32_t *bytesread, uint32_t count, uint8
         *bytesread+=n;
     }
   }
-
+   /* return last number of bytes read, also in pointer parameter n for total of bytes read, and in structure info->audio->bytesread */
     return n;
 }
 
@@ -1069,6 +1070,7 @@ ALWAYS_INLINE_GCC  static uint32_t read_track_file_into_buffer(uint8_t* buf, fil
     uint32_t n=0,nc=0, bytesread=0;
     static uint8_t offset,rmdr;
 
+/* if no gap filling operation, just use the number of 4-byte words passed as argument rounded down to an equal number of samples */
 
     if (info->joingap==0)
     {
@@ -1077,16 +1079,29 @@ ALWAYS_INLINE_GCC  static uint32_t read_track_file_into_buffer(uint8_t* buf, fil
         if (*count%info->sampleunitsize)
             foutput("[MSG]  Requested %d  bytes,sampleunitsize %d\n",*count,info->sampleunitsize);
 
+        /* read the audio with the rounded-up count into buffer and count the total number of bytes read  */
+
         read_count(&bytesread, *count, 0, buf, info);
+
+        /* Now assess if the number of bytes read comes in an integral number of samples */
         rmdr = bytesread % info->sampleunitsize;
+
+        /* if so, n = bytesread, otherwise pad the buffer accordingly with bytes in excess of sample count */
+
         n= (rmdr)? pad_sample(buf, n, rmdr, info) : bytesread;
 
     }
     else
+
+/* if using the gap filling operation, do not round-up the number of 4-byte words passed to an equal number of samples */
+
     {
+
 
         if (offset)
             memcpy(buf, fbuf, offset);
+
+         /* read the audio with the rounded-up count into buffer and count the total number of bytes read  */
 
         read_count(&bytesread, *count-(*count+offset)%info->sampleunitsize, offset, buf, info);
         nc = bytesread+offset;
@@ -1096,15 +1111,20 @@ ALWAYS_INLINE_GCC  static uint32_t read_track_file_into_buffer(uint8_t* buf, fil
             n=nc;
         else
         {
+
+            /* if option -j is used, the join-gap option is involved as follows:
+               in case you have a remainder, use it as an offset */
             if (info->contin_track)
             {
                 offset = rmdr;
                 n=nc-rmdr;
+                /* copy offset bytes of buf just before end of last read into fbuf *
+                   to use it for next buffer as a continuous gap filling fix */
                 memcpy(fbuf, buf+n, rmdr);
             }
             else
             {
-                // output everything
+                /* otherwise pad the buffer with rmdr bytes */
                 n=pad_sample(buf, nc, rmdr, info);
             }
         }
@@ -1160,13 +1180,13 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
     }
 #endif
 
+/* First read audio file into a buffer for count*4 bytes */
+
     n=read_track_file_into_buffer(buf, info, &count);
 
 
 
-
-
-    // Convert little-endian WAV samples to big-endian MPEG LPCM samples
+    // Convert little-endian WAV samples to big-endian MPEG LPCM samples in buffer
 
     if ((info->channels > 6) || (info->channels < 1))
     {
