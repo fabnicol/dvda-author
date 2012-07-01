@@ -139,9 +139,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     static struct option  longopts[]=
     {
 
-        {"debug", no_argument, NULL, 'd'
-        },
+        {"debug", no_argument, NULL, 'd'},
         {"no-output", no_argument, NULL, 10},
+        {"maxverbose", no_argument, NULL, 11},
         {"veryverbose", no_argument, NULL, 't'},
         {"help", no_argument, NULL, 'h'},
         {"input", required_argument, NULL, 'i'},
@@ -537,6 +537,13 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s\n", "[PAR]  Will run with no output.");
             globals.nooutput=1;
             globals.logfile=0;
+            break;
+
+        case 11:
+            foutput("%s\n", "[PAR]  Will run with maximal debugging information.");
+            globals.debugging=1;
+            globals.veryverbose=1;
+            globals.maxverbose=1;
             break;
 
         case 'o' :
