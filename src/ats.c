@@ -124,7 +124,7 @@ ALWAYS_INLINE_GCC  void write_pack_header(FILE* fp,  uint64_t SCRint)
 
     pack_scr(scr_bytes,(SCRint/300),(SCRint%300));
 
-    EXPLAIN("%s%d\n", "write PACK HEADER into file, size is: ", 4+6+3+1);
+    EXPLAIN("%s%d\n", "WRITE PACK HEADER into file, size is: ", 4+6+3+1);
 
     uint8_t tab[4+6+3+1]={0};
     memcpy(tab,pack_start_code,4);
@@ -151,7 +151,7 @@ ALWAYS_INLINE_GCC  void write_system_header(FILE* fp)
     uint8_t stream_info1[3]={0xb8, 0xc0, 0x40};
     uint8_t stream_info2[3]={0xbd, 0xe0, 0x0a};
 
-    EXPLAIN("%s%d\n","write SYSTEM HEADER, size is: ", 4+2+3+1+1+1+3+3)
+    EXPLAIN("%s%d\n","WRITE SYSTEM HEADER, size is: ", 4+2+3+1+1+1+3+3)
 
 
     uint8_t tab[4+2+3+1+1+1+3+3]={0};
@@ -234,7 +234,7 @@ ALWAYS_INLINE_GCC  void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len
     PES_packet_len_bytes[0]=(PES_packet_len&0xff00)>>8;
     PES_packet_len_bytes[1]=PES_packet_len&0xff;
 
-    EXPLAIN("%s%d%s%d%s%d\n","write AUDIO PES HEADER, PES_packet_len: ", PES_packet_len, " extension_flag: ", extension_flag, " size is: ", 3+1+2+1+1+1+5+(extension_flag)*3)
+    EXPLAIN("%s%d%s%d%s%d\n","WRITE AUDIO PES HEADER, PES_packet_len: ", PES_packet_len, " extension_flag: ", extension_flag, " size is: ", 3+1+2+1+1+1+5+(extension_flag)*3)
 
     pack_pts(PTS_DTS_data,PTS);
 
@@ -395,7 +395,7 @@ ALWAYS_INLINE_GCC  void write_lpcm_header(FILE* fp, int header_length,fileinfo_t
 
     int sizeoftab=1+1+2+2+1+1+1+1+1+1+header_length-8;
 
-    EXPLAIN("%s%d%s%d\n","write LPCM HEADER for ",info->bitspersample, " bits: size is ", sizeoftab)
+    EXPLAIN("%s%d%s%d\n","WRITE LPCM HEADER for ",info->bitspersample, " bits: size is ", sizeoftab)
 
     uint8_t tab[sizeoftab];
     memcpy(tab,sub_stream_id,1);
@@ -533,7 +533,7 @@ ALWAYS_INLINE_GCC int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audi
 
   if (pack_in_title==0)              // First packet in title
     {
-      EXPLAIN("%s\n","write PACK HEADER and PES HEADER: first-->")
+      EXPLAIN("%s\n","WRITE PACK HEADER and PES HEADER: first-->")
       write_pack_header(fp,SCR);
       write_system_header(fp);
       write_audio_pes_header(fp,2010,1,PTS);
@@ -548,7 +548,7 @@ ALWAYS_INLINE_GCC int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audi
           write_lpcm_header(fp,0x0f,info,pack_in_title,cc);
         }
 
-         EXPLAIN("%d%s\n", audio_bytes, " bytes of audio_buf in file (first)" )
+          EXPLAIN("%s%d%s\n","WRITE ", audio_bytes, " bytes of audio_buf in file (first)" )
 
       if (!globals.nooutput) fwrite (audio_buf,1,audio_bytes,fp);
     }
@@ -563,7 +563,7 @@ ALWAYS_INLINE_GCC int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audi
 		write_audio_pes_header(fp,-dave_offset+info->midpack_audiopesheaderquantity-(lpcm_payload-audio_bytes),0,PTS);
 		write_lpcm_header(fp,-dave_offset+info->midpack_lpcm_headerquantity,info,pack_in_title,cc);
 
-		 EXPLAIN("%d%s\n", audio_bytes, " bytes of audio_buf in file (last)" )
+		 EXPLAIN("%s%d%s\n","WRITE ", audio_bytes, " bytes of audio_buf in file (last)" )
 
 
 		if (!globals.nooutput) fwrite (audio_buf,1,audio_bytes,fp);
@@ -590,7 +590,7 @@ ALWAYS_INLINE_GCC int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audi
           write_lpcm_header(fp,0x0c,info,pack_in_title,cc);
         }
 
-        EXPLAIN("%d%s\n", audio_bytes, " bytes of audio_buf in file (middle)" )
+         EXPLAIN("%s%d%s\n","WRITE ", audio_bytes, " bytes of audio_buf in file (middle)" )
 
       if (!globals.nooutput) fwrite(audio_buf,1,audio_bytes,fp);
     }

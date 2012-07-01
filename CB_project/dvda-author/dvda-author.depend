@@ -1711,3 +1711,565 @@
 	"winport.h"
 	"auxiliary.h"
 
+1340527722 source:/home/fab/Dev/dvda-author-dev/libiberty/src/getopt1.c
+	<config.h>
+	"getopt.h"
+	"getopt_int.h"
+	<stdio.h>
+	<stdlib.h>
+
+1341073717 /home/fab/Dev/dvda-author-dev//config.h
+
+1340527722 /home/fab/Dev/dvda-author-dev/libiberty/src/include/getopt.h
+	<ctype.h>
+
+1340527722 /home/fab/Dev/dvda-author-dev/libiberty/src/include/getopt_int.h
+
+1341073732 source:/home/fab/Dev/dvda-author-dev/src/xml.c
+	"config.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<errno.h>
+	"structures.h"
+	"c_utils.h"
+	"commonvars.h"
+	"menu.h"
+	"launch_manager.h"
+	"winport.h"
+	"auxiliary.h"
+
+1341153796 /home/fab/Dev/dvda-author-dev/src/include/structures.h
+	"stream_decoder.h"
+	"inttypes.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/libutils/src/include/stream_decoder.h
+	<stdio.h>
+	"export.h"
+	"format.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/libutils/src/include/export.h
+
+1340527722 /home/fab/Dev/dvda-author-dev/libutils/src/include/format.h
+	"export.h"
+	"ordinals.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/libutils/src/include/ordinals.h
+	<inttypes.h>
+
+1341103340 /home/fab/Dev/dvda-author-dev/libutils/src/include/c_utils.h
+	"config.h"
+	"version.h"
+	<sys/types.h>
+	<sys/stat.h>
+	<string.h>
+	<stdint.h>
+	<sys/resource.h>
+
+1340527722 /home/fab/Dev/dvda-author-dev/src/include/version.h
+	"config.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/src/include/commonvars.h
+	"config.h"
+	"libiberty.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/libutils/src/include/libiberty.h
+	"strdup.h"
+	"getopt.h"
+	"getopt_int.h"
+	"strchrnul.h"
+	"strdup.h"
+	"strndup.h"
+	"strnlen.h"
+	"getsubopt.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/libiberty/src/include/strdup.h
+
+1340527722 /home/fab/Dev/dvda-author-dev/libiberty/src/include/strchrnul.h
+
+1340527722 /home/fab/Dev/dvda-author-dev/libiberty/src/include/strndup.h
+	<stdio.h>
+	<sys/types.h>
+
+1340527722 /home/fab/Dev/dvda-author-dev/libiberty/src/include/strnlen.h
+	<stdlib.h>
+
+1340527722 /home/fab/Dev/dvda-author-dev/libiberty/src/include/getsubopt.h
+
+1340527722 /home/fab/Dev/dvda-author-dev/src/include/menu.h
+
+1340527722 /home/fab/Dev/dvda-author-dev/src/include/launch_manager.h
+	"structures.h"
+	"commonvars.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/libutils/src/include/winport.h
+	"config.h"
+	"c_utils.h"
+	<sys/types.h>
+	<stdint.h>
+	<stdio.h>
+	<tchar.h>
+	<windows.h>
+	<sys/stat.h>
+	<string.h>
+	<sys/resource.h>
+	<sys/stat.h>
+
+1341098406 /home/fab/Dev/dvda-author-dev/src/include/auxiliary.h
+	<sys/stat.h>
+	<sys/types.h>
+	<dirent.h>
+	<errno.h>
+	"audio2.h"
+	"c_utils.h"
+	"commonvars.h"
+	"structures.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/src/include/audio2.h
+	<stdio.h>
+	<stdint.h>
+	<sys/types.h>
+	<sys/stat.h>
+	"structures.h"
+
+1340527722 source:/home/fab/Dev/dvda-author-dev/src/libsoxconvert.c
+	<sox.h>
+	<stdio.h>
+	<errno.h>
+	"c_utils.h"
+	"structures.h"
+	"libsoxconvert.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/libs/include/libsoxconvert/sox.h
+	<limits.h>
+	<stdarg.h>
+	<stddef.h>
+	<stdio.h>
+	<stdlib.h>
+	"soxstdint.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/libs/include/libsoxconvert/soxstdint.h
+	<stdint.h>
+
+1340527722 /home/fab/Dev/dvda-author-dev/src/include/libsoxconvert.h
+
+1341073732 source:/home/fab/Dev/dvda-author-dev/src/file_input_parsing.c
+	"config.h"
+	<stdio.h>
+	<stdlib.h>
+	<errno.h>
+	"structures.h"
+	"file_input_parsing.h"
+	"c_utils.h"
+	"libats2wav.h"
+	"ports.h"
+	"commonvars.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/src/include/file_input_parsing.h
+	"auxiliary.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/libats2wav/src/include/libats2wav.h
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<fcntl.h>
+	<unistd.h>
+	<inttypes.h>
+	<stdint.h>
+	"structures.h"
+	"libiberty.h"
+
+1341061284 /home/fab/Dev/dvda-author-dev/src/include/ports.h
+	<io.h>
+	<sys/resource.h>
+	"commonvars.h"
+	"libiberty/src/include/strndup.h"
+	"libiberty/src/include/getsubopt.h"
+	"libiberty/src/include/strdup.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev//libiberty/src/include/strndup.h
+	<stdio.h>
+	<sys/types.h>
+
+1340527722 /home/fab/Dev/dvda-author-dev//libiberty/src/include/getsubopt.h
+
+1340527722 /home/fab/Dev/dvda-author-dev//libiberty/src/include/strdup.h
+
+1341073653 source:/home/fab/Dev/dvda-author-dev/src/amg2.c
+	"commonvars.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<math.h>
+	"errno.h"
+	<unistd.h>
+	<sys/types.h>
+	<sys/wait.h>
+	<sys/stat.h>
+	<fcntl.h>
+	"structures.h"
+	"c_utils.h"
+	"auxiliary.h"
+	"amg.h"
+	"winport.h"
+	"xml.h"
+	"menu.h"
+	"launch_manager.h"
+	"asvs.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/src/include/amg.h
+	<stdio.h>
+	<stdint.h>
+	<inttypes.h>
+	"audio2.h"
+	"structures.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/src/include/xml.h
+
+1340527722 /home/fab/Dev/dvda-author-dev/src/include/asvs.h
+
+1340527722 source:/home/fab/Dev/dvda-author-dev/libiberty/src/strchrnul.c
+	<string.h>
+	<stdlib.h>
+	"strchrnul.h"
+
+1340527722 source:/home/fab/Dev/dvda-author-dev/libiberty/src/malloc.c
+	<config.h>
+	<sys/types.h>
+
+1340527722 source:/home/fab/Dev/dvda-author-dev/libiberty/src/strndup.c
+	"config.h"
+	<string.h>
+	"strndup.h"
+	"strnlen.h"
+	"malloc.h"
+	<stdio.h>
+	<sys/types.h>
+
+1340527722 source:/home/fab/Dev/dvda-author-dev/src/lexer.c
+	"config.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<ctype.h>
+	"structures.h"
+	"lexer.h"
+	"dvda-author.h"
+	"auxiliary.h"
+	"c_utils.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/src/include/lexer.h
+	"structures.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/src/include/dvda-author.h
+	"commonvars.h"
+	"structures.h"
+
+1341156241 source:/home/fab/Dev/dvda-author-dev/src/ats.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<math.h>
+	<errno.h>
+	"structures.h"
+	"audio2.h"
+	"c_utils.h"
+	"auxiliary.h"
+	"commonvars.h"
+	"ats.h"
+
+1341073732 /home/fab/Dev/dvda-author-dev/src/include/ats.h
+	<stdio.h>
+	<stdint.h>
+	"audio2.h"
+
+1341152352 source:/home/fab/Dev/dvda-author-dev/src/auxiliary.c
+	"config.h"
+	<stdlib.h>
+	<stdio.h>
+	<sys/stat.h>
+	<sys/types.h>
+	<dirent.h>
+	<stdarg.h>
+	<sys/time.h>
+	<errno.h>
+	<unistd.h>
+	<string.h>
+	<time.h>
+	"structures.h"
+	"ports.h"
+	"audio2.h"
+	"auxiliary.h"
+	"c_utils.h"
+	"file_input_parsing.h"
+	"ports.h"
+	"commonvars.h"
+	"menu.h"
+
+1340527722 source:/home/fab/Dev/dvda-author-dev/src/asvs.c
+	"commonvars.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<math.h>
+	<errno.h>
+	<stdint.h>
+	<unistd.h>
+	"structures.h"
+	"c_utils.h"
+	"winport.h"
+	"auxiliary.h"
+	"asvs.h"
+
+1341153844 source:/home/fab/Dev/dvda-author-dev/src/dvda-author2.c
+	"config.h"
+	<stdio.h>
+	<stdlib.h>
+	<stdint.h>
+	<unistd.h>
+	<getopt.h>
+	<sys/stat.h>
+	<sys/types.h>
+	<dirent.h>
+	<locale.h>
+	<errno.h>
+	<inttypes.h>
+	<string.h>
+	"commonvars.h"
+	"structures.h"
+	"c_utils.h"
+	"audio2.h"
+	"auxiliary.h"
+	"ports.h"
+	"file_input_parsing.h"
+	"launch_manager.h"
+	"command_line_parsing.h"
+	"lexer.h"
+	"commonvars.h"
+	"dvda-author.h"
+
+1341069139 /home/fab/Dev/dvda-author-dev/src/include/command_line_parsing.h
+	"structures.h"
+	"commonvars.h"
+	"fixwav_manager.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/libfixwav/src/include/fixwav_manager.h
+	<sys/stat.h>
+	<sys/types.h>
+
+1340527722 source:/home/fab/Dev/dvda-author-dev/src/atsi2.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<math.h>
+	"errno.h"
+	"structures.h"
+	"audio2.h"
+	"c_utils.h"
+	"commonvars.h"
+	"structures.h"
+	"auxiliary.h"
+	"atsi.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/src/include/atsi.h
+	<stdio.h>
+	<stdint.h>
+	"audio2.h"
+	"structures.h"
+
+1340527722 source:/home/fab/Dev/dvda-author-dev/src/samg2.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<math.h>
+	<errno.h>
+	"structures.h"
+	"audio2.h"
+	"samg.h"
+	"commonvars.h"
+	"c_utils.h"
+	"auxiliary.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/src/include/samg.h
+	<stdio.h>
+	<stdint.h>
+	"audio2.h"
+
+1340527722 source:/home/fab/Dev/dvda-author-dev/libiberty/src/strdup.c
+	<config.h>
+	<stdlib.h>
+	<string.h>
+	"strdup.h"
+
+1341160648 source:/home/fab/Dev/dvda-author-dev/src/audio.c
+	"config.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<errno.h>
+	<unistd.h>
+	"structures.h"
+	"export.h"
+	"audio2.h"
+	"stream_decoder.h"
+	"c_utils.h"
+	"fixwav.h"
+	"fixwav_manager.h"
+	"audio.h"
+	"auxiliary.h"
+	"command_line_parsing.h"
+	"winport.h"
+	"sox.h"
+	"libsoxconvert.h"
+	"multichannel.h"
+	"commonvars.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/libfixwav/src/include/fixwav.h
+	<assert.h>
+	<stdint.h>
+
+1340527722 /home/fab/Dev/dvda-author-dev/libfixwav/src/include/audio.h
+
+1340527722 /home/fab/Dev/dvda-author-dev/src/include/multichannel.h
+
+1341073653 source:/home/fab/Dev/dvda-author-dev/src/videoimport.c
+	<stdio.h>
+	<stdlib.h>
+	<sys/stat.h>
+	<sys/types.h>
+	<stdarg.h>
+	<sys/time.h>
+	<errno.h>
+	<unistd.h>
+	<string.h>
+	"structures.h"
+	"commonvars.h"
+	"videoimport.h"
+	"auxiliary.h"
+	"c_utils.h"
+	"ports.h"
+	"menu.h"
+	"sound.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/src/include/videoimport.h
+	<inttypes.h>
+
+1340527722 /home/fab/Dev/dvda-author-dev/src/include/sound.h
+	"structures.h"
+	<stdio.h>
+
+1341073732 source:/home/fab/Dev/dvda-author-dev/src/menu.c
+	"config.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<errno.h>
+	<unistd.h>
+	<math.h>
+	<sys/types.h>
+	<sys/wait.h>
+	<sys/stat.h>
+	<fcntl.h>
+	"structures.h"
+	"c_utils.h"
+	"commonvars.h"
+	"menu.h"
+	"launch_manager.h"
+	"winport.h"
+	"auxiliary.h"
+	"amg.h"
+
+1341073732 source:/home/fab/Dev/dvda-author-dev/src/launch_manager.c
+	"config.h"
+	<stdio.h>
+	<stdlib.h>
+	<errno.h>
+	<string.h>
+	<unistd.h>
+	<sys/types.h>
+	<sys/wait.h>
+	"structures.h"
+	"audio2.h"
+	"ats.h"
+	"atsi.h"
+	"amg.h"
+	"samg.h"
+	"asvs.h"
+	"videoimport.h"
+	"c_utils.h"
+	"ports.h"
+	"auxiliary.h"
+	"commonvars.h"
+	"menu.h"
+	"winport.h"
+	"file_input_parsing.h"
+	"launch_manager.h"
+
+1341073116 source:/home/fab/Dev/dvda-author-dev/src/sound.c
+	"config.h"
+	"sound.h"
+	"fixwav.h"
+	"fixwav_manager.h"
+	"c_utils.h"
+	"auxiliary.h"
+	"launch_manager.h"
+	<errno.h>
+	<stdlib.h>
+	<unistd.h>
+
+1340527722 source:/home/fab/Dev/dvda-author-dev/libiberty/src/strnlen.c
+	<config.h>
+	<string.h>
+	"strnlen.h"
+
+1340527722 source:/home/fab/Dev/dvda-author-dev/libiberty/src/getopt.c
+	<config.h>
+	<stdio.h>
+	<stdlib.h>
+	<unistd.h>
+	<string.h>
+	<unixlib.h>
+	<libintl.h>
+	<wchar.h>
+	"getopt.h"
+	"getopt_int.h"
+
+1341154589 source:/home/fab/Dev/dvda-author-dev/src/command_line_parsing.c
+	"config.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<stdint.h>
+	<unistd.h>
+	<fcntl.h>
+	"getopt.h"
+	<sys/time.h>
+	"dvda-author.h"
+	"commonvars.h"
+	"structures.h"
+	"c_utils.h"
+	"audio2.h"
+	"auxiliary.h"
+	"ports.h"
+	"file_input_parsing.h"
+	"launch_manager.h"
+	"dvda-author.h"
+	"fixwav_auxiliary.h"
+	"fixwav_manager.h"
+	"command_line_parsing.h"
+	"menu.h"
+	"sound.h"
+	"videoimport.h"
+
+1340527722 /home/fab/Dev/dvda-author-dev/libfixwav/src/include/fixwav_auxiliary.h
+	"fixwav_manager.h"
+
+1340527722 source:/home/fab/Dev/dvda-author-dev/libiberty/src/getsubopt.c
+	<stdlib.h>
+	<string.h>
+	<string.h>
+	"strchrnul.h"
+	"getsubopt.h"
+

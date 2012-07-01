@@ -1001,7 +1001,7 @@ ALWAYS_INLINE_GCC  uint8_t read_count(uint32_t *bytesread, uint32_t count, uint8
 {
 
 
-  int n;
+  int n=0;
 
   if ((info->type == AFMT_FLAC) || (info->type == AFMT_OGG_FLAC))
   {
@@ -1027,23 +1027,32 @@ ALWAYS_INLINE_GCC  uint8_t read_count(uint32_t *bytesread, uint32_t count, uint8
   {
 
     /* read count bytes in file into buffer at an offset and increase bytesread counts accordingly, adjusting at end of audio files */
+    *bytesread=0;
+//    n=fread(buf+offset,1,count-*bytesread,info->audio->fp);
+//    if (info->audio->bytesread+n > info->numbytes)
+//    {
+//        n=info->numbytes-info->audio->bytesread;
+//    }
+//    info->audio->bytesread+=n;
+//    *bytesread=n;
 
-    n=fread(buf+offset,1,count,info->audio->fp);
-    if (info->audio->bytesread+n > info->numbytes)
-    {
-        n=info->numbytes-info->audio->bytesread;
-    }
-    info->audio->bytesread+=n;
-    *bytesread=n;
+
+
     while ((info->audio->bytesread < info->numbytes) && (*bytesread < count))
     {
+
         n=fread(buf+*bytesread+offset,1,count-*bytesread,info->audio->fp);
+
+        EXPLAIN("%s%d%s%d%s%d%s%lld%s%d\n","READ ",n,"/", count-*bytesread, "B added to ",info->audio->bytesread, "B/", info->numbytes," into buffer at offset ", offset+*bytesread)
+
         if (info->audio->bytesread+n > info->numbytes)
         {
             n=info->numbytes-info->audio->bytesread;
+            EXPLAIN("%s%d%s%d\n","READ CUT",n-info->numbytes+info->audio->bytesread,"/", n)
         }
         info->audio->bytesread+=n;
         *bytesread+=n;
+
     }
   }
    /* return last number of bytes read, also in pointer parameter n for total of bytes read, and in structure info->audio->bytesread */

@@ -212,6 +212,7 @@ typedef struct
     _Bool playlist;
     _Bool cga;
     _Bool end_pause;
+    _Bool maxverbose;
     _Bool veryverbose;
     _Bool debugging;
     #if 0
