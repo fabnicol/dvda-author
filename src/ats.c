@@ -122,11 +122,23 @@ ALWAYS_INLINE_GCC  void write_pack_header(FILE* fp,  uint64_t SCRint)
     * SCRint=floor(SCR);
     */
 
-    if (!globals.nooutput) fwrite (pack_start_code,4,1,fp);
     pack_scr(scr_bytes,(SCRint/300),(SCRint%300));
-    if (!globals.nooutput) fwrite (scr_bytes,6,1,fp);
-    if (!globals.nooutput) fwrite (program_mux_rate_bytes,3,1,fp);
-    if (!globals.nooutput) fwrite (pack_stuffing_length_byte,1,1,fp);
+
+    EXPLAIN("%s%d\n", "write PACK HEADER into file, size is: ", 4+6+3+1);
+
+    uint8_t tab[4+6+3+1]={0};
+    memcpy(tab,pack_start_code,4);
+    memcpy(tab+4,scr_bytes,6);
+    memcpy(tab+4+6,program_mux_rate_bytes,3);
+    memcpy(tab+4+6+3,pack_stuffing_length_byte,1);
+    if (globals.veryverbose)
+    {
+        hexdump_pointer(tab, 4+6+3+1);
+    }
+
+    if (!globals.nooutput) fwrite (tab,4+6+3+1,1,fp);
+
+
 }
 
 ALWAYS_INLINE_GCC  void write_system_header(FILE* fp)
@@ -139,14 +151,26 @@ ALWAYS_INLINE_GCC  void write_system_header(FILE* fp)
     uint8_t stream_info1[3]={0xb8, 0xc0, 0x40};
     uint8_t stream_info2[3]={0xbd, 0xe0, 0x0a};
 
-    if (!globals.nooutput) fwrite (system_header_start_code,4,1,fp);
-    if (!globals.nooutput) fwrite (header_length,2,1,fp);
-    if (!globals.nooutput) fwrite (rate_bound,3,1,fp);
-    if (!globals.nooutput) fwrite (audio_bound,1,1,fp);
-    if (!globals.nooutput) fwrite (video_bound,1,1,fp);
-    if (!globals.nooutput) fwrite (packet_rate_restriction_flag,1,1,fp);
-    if (!globals.nooutput) fwrite (stream_info1,3,1,fp);
-    if (!globals.nooutput) fwrite (stream_info2,3,1,fp);
+    EXPLAIN("%s%d\n","write SYSTEM HEADER, size is: ", 4+2+3+1+1+1+3+3)
+
+
+    uint8_t tab[4+2+3+1+1+1+3+3]={0};
+    memcpy(tab,system_header_start_code,4);
+    memcpy(tab+4,header_length,2);
+    memcpy(tab+4+2,rate_bound,3);
+    memcpy(tab+4+2+3,audio_bound,1);
+    memcpy(tab+4+2+3+1,video_bound,1);
+    memcpy(tab+4+2+3+1+1,packet_rate_restriction_flag,1);
+    memcpy(tab+4+2+3+1+1+1,stream_info1,3);
+    memcpy(tab+4+2+3+1+1+3,stream_info2,3);
+
+    if (globals.veryverbose)
+    {
+        hexdump_pointer(tab, sizeof(tab));
+    }
+
+    if (!globals.nooutput) fwrite (tab,sizeof(tab),1,fp);
+
 }
 
 ALWAYS_INLINE_GCC  void write_pes_padding(FILE* fp,uint16_t length)
@@ -162,11 +186,24 @@ ALWAYS_INLINE_GCC  void write_pes_padding(FILE* fp,uint16_t length)
 
     length_bytes[0]=(length&0xff00)>>8;
     length_bytes[1]=(length&0xff);
+    EXPLAIN("%s%d\n", "PES padding, size is: ", 3+1+2+length)
 
-    if (!globals.nooutput) fwrite (packet_start_code_prefix,3,1,fp);
-    if (!globals.nooutput) fwrite (&stream_id,1,1,fp);
-    if (!globals.nooutput) fwrite (length_bytes,2,1,fp);
-    if (!globals.nooutput) fwrite (ff_buf,length,1,fp);
+
+    uint8_t tab[3+1+2+length];
+    memcpy(tab,packet_start_code_prefix,3);
+    memcpy(tab+3,&stream_id,1);
+    memcpy(tab+3+1,length_bytes,2);
+    memcpy(tab+3+1+2,ff_buf,length);
+
+
+    if (globals.veryverbose)
+    {
+        hexdump_pointer(tab, 3+1+2+length);
+    }
+
+    if (!globals.nooutput) fwrite (tab,3+1+2+length,1,fp);
+
+
 }
 
 ALWAYS_INLINE_GCC  void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uint8_t extension_flag, uint64_t PTS)
@@ -197,30 +234,41 @@ ALWAYS_INLINE_GCC  void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len
     PES_packet_len_bytes[0]=(PES_packet_len&0xff00)>>8;
     PES_packet_len_bytes[1]=PES_packet_len&0xff;
 
-    if (!globals.nooutput) fwrite (packet_start_code_prefix,3,1,fp);
-    if (!globals.nooutput) fwrite (stream_id,1,1,fp);
-    if (!globals.nooutput) fwrite (PES_packet_len_bytes,2,1,fp);
-    if (!globals.nooutput) fwrite (flags1,1,1,fp);
-    if (!globals.nooutput) fwrite (flags2,1,1,fp);
-    if (!globals.nooutput) fwrite (PES_header_data_length,1,1,fp);
+    EXPLAIN("%s%d%s%d%s%d\n","write AUDIO PES HEADER, PES_packet_len: ", PES_packet_len, " extension_flag: ", extension_flag, " size is: ", 3+1+2+1+1+1+5+(extension_flag)*3)
 
     pack_pts(PTS_DTS_data,PTS);
-    if (!globals.nooutput) fwrite (PTS_DTS_data,5,1,fp);
+
+    uint8_t tab[3+1+2+1+1+1+5+1+2]={0};
+    memcpy(tab,packet_start_code_prefix,3);
+    memcpy(tab+3,stream_id,1);
+    memcpy(tab+3+1,PES_packet_len_bytes,2);
+    memcpy(tab+3+1+2,flags1,1);
+    memcpy(tab+3+1+2+1,flags2,1);
+    memcpy(tab+3+1+2+1+1,PES_header_data_length,1);
+    memcpy(tab+3+1+2+1+1+1,PTS_DTS_data,5);
 
     if (extension_flag)
     {
         PSTD_buffer_scalesize[0]=0x60|((PSTD&0x1f00)>>8);
         PSTD_buffer_scalesize[1]=PSTD&0xff;
 
-        if (!globals.nooutput) fwrite (PES_extension_flags,1,1,fp);
-        if (!globals.nooutput) fwrite (PSTD_buffer_scalesize,2,1,fp);
+        memcpy(tab+3+1+2+1+1+5,PES_extension_flags,1);
+        memcpy(tab+3+1+2+1+1+1+5+1,PSTD_buffer_scalesize,2);
+
     }
+
+    if (globals.veryverbose)
+    {
+        hexdump_pointer(tab, sizeof(tab)-(!extension_flag*3));
+    }
+
+    if (!globals.nooutput) fwrite (tab,sizeof(tab)-(!extension_flag*3),1,fp);
 }
 
 ALWAYS_INLINE_GCC  void write_lpcm_header(FILE* fp, int header_length,fileinfo_t* info, uint64_t pack_in_title, uint8_t counter)
 {
     uint8_t sub_stream_id[1]={0xa0};
-    uint8_t continuity_counter[1]={0x00};
+
     uint8_t LPCM_header_length[2];
     uint8_t first_access_unit_pointer[2];
     uint8_t unknown1[1]={0x10};   // e.g. 0x10 for stereo, 0x00 for surround
@@ -237,7 +285,7 @@ ALWAYS_INLINE_GCC  void write_lpcm_header(FILE* fp, int header_length,fileinfo_t
     uint64_t bytes_written;
     uint64_t frames_written;
 
-    continuity_counter[0]=counter;
+
     LPCM_header_length[0]=(header_length&0xff00)>>8;
     LPCM_header_length[1]=header_length&0xff;
 
@@ -249,9 +297,9 @@ ALWAYS_INLINE_GCC  void write_lpcm_header(FILE* fp, int header_length,fileinfo_t
         case 16:
             sample_size[0]=0x0f;
             break;
-        case 20:
+        /*case 20:
             sample_size[0]=0x1f;
-            break;
+            break;*/
         case 24:
             sample_size[0]=0x2f;
             break;
@@ -290,9 +338,9 @@ ALWAYS_INLINE_GCC  void write_lpcm_header(FILE* fp, int header_length,fileinfo_t
         case 16:
             sample_size[0]=0x00;
             break;
-        case 20:
+        /*case 20:
             sample_size[0]=0x12;
-            break;
+            break;*/
         case 24:
             sample_size[0]=0x22;
             break;
@@ -345,17 +393,31 @@ ALWAYS_INLINE_GCC  void write_lpcm_header(FILE* fp, int header_length,fileinfo_t
     first_access_unit_pointer[0]=(frame_offset&0xff00)>>8;
     first_access_unit_pointer[1]=frame_offset&0xff;
 
-    if (!globals.nooutput) fwrite (sub_stream_id,1,1,fp);
-    if (!globals.nooutput) fwrite (continuity_counter,1,1,fp);
-    if (!globals.nooutput) fwrite (LPCM_header_length,2,1,fp);
-    if (!globals.nooutput) fwrite (first_access_unit_pointer,2,1,fp);
-    if (!globals.nooutput) fwrite (unknown1,1,1,fp);
-    if (!globals.nooutput) fwrite (sample_size,1,1,fp);
-    if (!globals.nooutput) fwrite (sample_rate,1,1,fp);
-    if (!globals.nooutput) fwrite (unknown2,1,1,fp);
-    if (!globals.nooutput) fwrite (&channel_assignment,1,1,fp);
-    if (!globals.nooutput) fwrite (unknown3,1,1,fp);
-    if (!globals.nooutput) fwrite (zero,header_length-8,1,fp);
+    int sizeoftab=1+1+2+2+1+1+1+1+1+1+header_length-8;
+
+    EXPLAIN("%s%d%s%d\n","write LPCM HEADER for ",info->bitspersample, " bits: size is ", sizeoftab)
+
+    uint8_t tab[sizeoftab];
+    memcpy(tab,sub_stream_id,1);
+    memcpy(tab+1,&counter,1);
+    memcpy(tab+1+1,LPCM_header_length,2);
+    memcpy(tab+1+1+2,first_access_unit_pointer,2);
+    memcpy(tab+1+1+2+2,unknown1,1);
+    memcpy(tab+1+1+2+2+1,sample_size,1);
+    memcpy(tab+1+1+2+2+1+1,sample_rate,1);
+    memcpy(tab+1+1+2+2+1+1+1,unknown2,1);
+    memcpy(tab+1+1+2+2+1+1+1+1,&channel_assignment,1);
+    memcpy(tab+1+1+2+2+1+1+1+1+1,unknown3,1);
+    memcpy(tab+1+1+2+2+1+1+1+1+1+1,zero,header_length-8);
+
+    if (globals.veryverbose)
+    {
+        hexdump_pointer(tab, sizeoftab);
+    }
+
+    if (!globals.nooutput) fwrite (tab,sizeoftab,1,fp);
+
+
 }
 
 
@@ -471,6 +533,7 @@ ALWAYS_INLINE_GCC int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audi
 
   if (pack_in_title==0)              // First packet in title
     {
+      EXPLAIN("%s\n","write PACK HEADER and PES HEADER: first-->")
       write_pack_header(fp,SCR);
       write_system_header(fp);
       write_audio_pes_header(fp,2010,1,PTS);
@@ -484,17 +547,24 @@ ALWAYS_INLINE_GCC int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audi
           audio_bytes=1980;
           write_lpcm_header(fp,0x0f,info,pack_in_title,cc);
         }
+
+         EXPLAIN("%d%s\n", audio_bytes, " bytes of audio_buf in file (first)" )
+
       if (!globals.nooutput) fwrite (audio_buf,1,audio_bytes,fp);
     }
   else if (bytesinbuffer < lpcm_payload)   // Last packet in title
     {
       printf("[INF]  Writing last packet - pack=%lld, bytesinbuffer=%d\n",pack_in_title,bytesinbuffer);
       audio_bytes=bytesinbuffer;
+      EXPLAIN("%s\n","write PACK HEADER and PES HEADER: last-->")
       write_pack_header(fp,SCR);
 
 		int dave_offset = DAVE_OFFSET;  // value of 6 forces agreement with Dave's code; LF recommends value of 0 which is more consistent with middle pack treatment
 		write_audio_pes_header(fp,-dave_offset+info->midpack_audiopesheaderquantity-(lpcm_payload-audio_bytes),0,PTS);
 		write_lpcm_header(fp,-dave_offset+info->midpack_lpcm_headerquantity,info,pack_in_title,cc);
+
+		 EXPLAIN("%d%s\n", audio_bytes, " bytes of audio_buf in file (last)" )
+
 
 		if (!globals.nooutput) fwrite (audio_buf,1,audio_bytes,fp);
 		write_pes_padding(fp,dave_offset+2048-14-14-20-audio_bytes);
@@ -507,6 +577,7 @@ ALWAYS_INLINE_GCC int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audi
   else                             // A middle packet in the title.
     {
       audio_bytes=lpcm_payload;
+      EXPLAIN("%s\n","write PACK HEADER and PES HEADER: middle-->")
       write_pack_header(fp,SCR);
       write_audio_pes_header(fp,2028,0,PTS);
       if (info->bitspersample==16)
@@ -515,9 +586,13 @@ ALWAYS_INLINE_GCC int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audi
         }
       else
         {
+
           write_lpcm_header(fp,0x0c,info,pack_in_title,cc);
         }
-      if (!globals.nooutput) fwrite (audio_buf,1,audio_bytes,fp);
+
+        EXPLAIN("%d%s\n", audio_bytes, " bytes of audio_buf in file (middle)" )
+
+      if (!globals.nooutput) fwrite(audio_buf,1,audio_bytes,fp);
     }
 
   if (cc==0x1f)
