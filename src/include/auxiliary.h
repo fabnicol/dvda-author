@@ -63,7 +63,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define FREE2(X) if (X) { int u=0; while (X[u]) {free(X[u]); u++;}; free(X); }
 #define EVEN(X)  (int16_t) ((X % 2) ? X+1 : X)
 
-
+#define EXPLAIN(X,...) do {if (globals.veryverbose) fprintf(stderr, "%s" X, "[DBG]  Now ", __VA_ARGS__);} while(0);
 
 
 
