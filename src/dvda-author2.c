@@ -236,6 +236,7 @@ int main(int argc,  char* const argv[])
         /*playlist*/    0,  // no playlist
         /*cga*/         0,  // no explicit channel group assignement
         /*end_pause*/   0,  // no end pause
+    /*devel verbosity*/ 0,
         /*very verbose*/0,  // not very verbose
         /*debugging*/   0,  // no debugging-level verbosity
 #if 0

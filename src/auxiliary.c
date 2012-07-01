@@ -85,8 +85,10 @@ printf("%s","-h, --help               Diplay this help.\n\n");
 printf("%s","-v, --version            Diplay version.\n\n");
 printf("%s","-q, --quiet              Quiet mode.\n\n");
 printf("%s","-d, --debug              Increased verbosity (debugging level)\n\n");
-printf("%s","    --no-output          Does not produce any file structure except for --fixwav."J"Computations will be performed.\n\n\n\n");
+
 printf("%s","-t, --veryverbose        Like -d with enhanced verbosity for sample counts.\n\n");
+printf("%s","  , --maxverbose         Like -t with maximum verbosity on audio buffers (devel info).\n\n");
+printf("%s","    --no-output          Does not produce any file structure except for --fixwav."J"Computations will be performed.\n\n\n\n");
 printf("%s","-P, --pause              Insert a final pause before exiting.\n\n");
 printf("%s","-P0, --pause=0           Suppress a final pause before exiting"J"if specified in configuration file.\n\n");
 printf("%s","-l, --log  path          Ouput a log to filepath."J"Argument must be supplied.\n\n");
