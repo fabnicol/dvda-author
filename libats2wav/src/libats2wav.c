@@ -561,7 +561,7 @@ int ats2wav(const char* filename, const char* outdir, extractlist *extract)
     t=0;
 
 
-    uint8_t offset=0, n=0;
+    uint8_t offset=0;
 
     while (t < ntracks)
     {
