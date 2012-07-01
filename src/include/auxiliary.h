@@ -64,7 +64,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define EVEN(X)  (int16_t) ((X % 2) ? X+1 : X)
 
 #define EXPLAIN(X,...) do {if (globals.veryverbose) fprintf(stderr, "%s" X, "[DBG]  Now ", __VA_ARGS__);} while(0);
-
+#define EXPLAIN_DEV(X,Y) do {if (globals.maxverbose) fprintf(stderr, "%s %s %d\n" , "[DEV]  ", #X, Y);} while(0);
 
 
 /* end of macros */
