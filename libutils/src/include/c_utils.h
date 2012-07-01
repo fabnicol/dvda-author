@@ -178,6 +178,7 @@ int copy_directory(const char* src, const char* dest, mode_t mode);
 
 int get_endianness();
 void hexdump_header(FILE* infile, uint8_t header_size);
+void hexdump_pointer(uint8_t* tab,  size_t tabsize);
 FILE* secure_open(char *path, char *context);
 int end_seek(FILE* outfile);
 void parse_wav_header(FILE * infile, infochunk* ichunk);

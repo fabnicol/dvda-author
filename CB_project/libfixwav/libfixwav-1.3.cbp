@@ -44,6 +44,33 @@
 		<Linker>
 			<Add option="-s" />
 		</Linker>
+		<Unit filename="../../libfixwav/src/auxiliary.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../libfixwav/src/checkData.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../libfixwav/src/checkParameters.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../libfixwav/src/include/audio.h" />
+		<Unit filename="../../libfixwav/src/include/checkData.h" />
+		<Unit filename="../../libfixwav/src/include/checkParameters.h" />
+		<Unit filename="../../libfixwav/src/include/fixwav.h" />
+		<Unit filename="../../libfixwav/src/include/fixwav_auxiliary.h" />
+		<Unit filename="../../libfixwav/src/include/fixwav_manager.h" />
+		<Unit filename="../../libfixwav/src/include/launch_fixwav.h" />
+		<Unit filename="../../libfixwav/src/include/readHeader.h" />
+		<Unit filename="../../libfixwav/src/include/repair.h" />
+		<Unit filename="../../libfixwav/src/manager.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../libfixwav/src/readHeader.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../libfixwav/src/repair.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Extensions>
 			<code_completion />
 			<envvars />
