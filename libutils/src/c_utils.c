@@ -1287,6 +1287,39 @@ void hexdump_header(FILE* infile, uint8_t header_size)
 }
 
 
+
+void hexdump_pointer(uint8_t* tab,  size_t tabsize)
+{
+
+    size_t i, count=0, input=0;
+    fprintf(stderr, "%c", '\n' );
+    do
+    {
+
+        /* Print the base address. */
+        fprintf(stderr,"%08lX:  ", (long unsigned)count);
+        input= Min(tabsize -count, HEX_COLUMNS);
+
+        for ( i = 0; i < input; i++ )
+            fprintf(stderr,"%02X ", tab[i+count]);
+        count+=HEX_COLUMNS;
+
+        /* Print the characters. */
+        for ( i = 0; i < HEX_COLUMNS; i++ )
+            fprintf(stderr,"%c", (i < input)? (isprint(tab[i]) ? tab[i] : '.') : ' ');
+
+        fprintf(stderr, "%c", '\n');
+
+
+        /* break on partial buffer */
+    }
+    while ( count < tabsize );
+
+
+    fprintf(stderr, "%c", '\n' );
+
+}
+
 void fread_endian(uint32_t * p, int t, FILE *f)
 {
 
