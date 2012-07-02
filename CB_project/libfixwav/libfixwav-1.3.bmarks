@@ -1,49 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <BrowseTracker_layout_file>
 	<ActiveTarget name="Release" />
-	<File name="../../fixwav/src/auxiliary.c" open="1" top="1" tabpos="1">
-		<Cursor position="1708" topLine="10" />
-	</File>
-	<File name="../../fixwav/src/checkData.c" open="1" top="0" tabpos="2">
-		<Cursor position="6620" topLine="186" />
-	</File>
-	<File name="../../fixwav/src/checkParameters.c" open="1" top="0" tabpos="3">
-		<Cursor position="9609" topLine="238" />
-	</File>
-	<File name="../../fixwav/src/include/audio.h" open="1" top="0" tabpos="4">
-		<Cursor position="143" topLine="0" />
-	</File>
-	<File name="../../fixwav/src/include/checkData.h" open="1" top="0" tabpos="5">
-		<Cursor position="115" topLine="0" />
-	</File>
-	<File name="../../fixwav/src/include/checkParameters.h" open="1" top="0" tabpos="6">
+	<File name="../../libfixwav/src/checkParameters.c" open="1" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
-	</File>
-	<File name="../../fixwav/src/include/fixwav.h" open="1" top="0" tabpos="7">
-		<Cursor position="778" topLine="0" />
-	</File>
-	<File name="../../fixwav/src/include/fixwav_auxiliary.h" open="1" top="0" tabpos="8">
-		<Cursor position="100" topLine="0" />
-	</File>
-	<File name="../../fixwav/src/include/fixwav_manager.h" open="1" top="0" tabpos="9">
-		<Cursor position="487" topLine="22" />
-	</File>
-	<File name="../../fixwav/src/include/launch_fixwav.h" open="1" top="0" tabpos="10">
-		<Cursor position="556" topLine="0" />
-	</File>
-	<File name="../../fixwav/src/include/readHeader.h" open="1" top="0" tabpos="11">
-		<Cursor position="90" topLine="0" />
-	</File>
-	<File name="../../fixwav/src/include/repair.h" open="1" top="0" tabpos="12">
-		<Cursor position="149" topLine="0" />
-	</File>
-	<File name="../../fixwav/src/manager.c" open="1" top="0" tabpos="13">
-		<Cursor position="11916" topLine="376" />
-	</File>
-	<File name="../../fixwav/src/readHeader.c" open="1" top="0" tabpos="14">
-		<Cursor position="3192" topLine="45" />
-	</File>
-	<File name="../../fixwav/src/repair.c" open="1" top="0" tabpos="15">
-		<Cursor position="9556" topLine="236" />
 	</File>
 </BrowseTracker_layout_file>

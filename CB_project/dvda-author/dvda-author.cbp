@@ -99,7 +99,7 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters=" --maxverbose -g /home/fab/Dev/audio/a2496.wav -o ~/build/temp2496.wav   -P 2&gt;lognew" />
+				<Option parameters=" --maxverbose -g /home/fab/Dev/audio/a2496.wav -o ~/build/temp2496.wav    2&gt;lognew" />
 				<Option projectCompilerOptionsRelation="2" />
 				<Compiler>
 					<Add option="-march=pentium4" />
