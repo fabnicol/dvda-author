@@ -499,6 +499,8 @@ memcpy(tmp, outdir, length);
 memcpy(&tmp[length], "/track%02d.wav", 14);
 tmp[length+14]=0;
 sprintf(outfile, tmp ,t+1);
+EXPLAIN_DEV(Creating new wav file: rank = , t+1)
+EXPLAIN_DEV(Writing default wav header: bytes =, 44)
 wav_open(&files[t],outfile);
 return;
 }
@@ -586,29 +588,31 @@ int ats2wav(const char* filename, const char* outdir, extractlist *extract)
         };
 
         offset=0;
+        unsigned int delta=0;
 
         i=0;
 
         /* Now parse buffer looking for 0x000001 sequences */
-
+    while (i < 2048-3)
+    {
 
         while ((buf[i]==0x00) && (buf[i+1]==0x00) && (buf[i+2]==0x01))
         {
-            i+=4;
+            i+=3;
 
-            switch (buf[i-1])
+            switch (buf[i])
             {
-            case 0xba:
-                i+=10;
-                break;
-            case 0xbb:
-                i+=14;
-                break;
+//            case 0xba:
+//                i+=11;
+//                break;
+//            case 0xbb:
+//                i+=15;
+//                break;
             case 0xbd:  // Audio PES Packet
 
-                k=i+2+uint16_read(buf+i);
-                i+=4;
-                i+=1+buf[i];
+                k=i+3+uint16_read(buf+i+1);
+
+                i+=6+buf[i+5];
 
 
                 if (files[t].started==0)
@@ -634,24 +638,36 @@ int ats2wav(const char* filename, const char* outdir, extractlist *extract)
 
                 payload_length=k-i;
 
+                EXPLAIN_DEV(Using payload_length =,payload_length)
 
-            int delta=(payload_length+files[t].byteswritten < files[t].numbytes)? payload_length : files[t].numbytes-files[t].byteswritten;
+                delta=(payload_length+files[t].byteswritten < files[t].numbytes)? payload_length : files[t].numbytes-files[t].byteswritten;
 
+                EXPLAIN_DEV(Filling buffer with:,payload_length)
 
-                    convert_buffer(&files[t],&buf[i],delta);
-                    delta=write_data(&files[t],&buf[i],delta);
-                    files[t].byteswritten+=delta;
+                convert_buffer(&files[t],&buf[i],delta);
 
+                EXPLAIN_DEV(Now writing bytes to wav file:,delta)
+
+                delta=write_data(&files[t],&buf[i],delta);
 
 
                 if (globals.veryverbose)
                 {
-                    printf("[MSG]  Wrote %d bytes, written=%lld, size=%lld\n",n,files[t].byteswritten,files[t].numbytes);
+                    fprintf(stderr, "[MSG]  Wrote %d bytes yielding %lld/%lld\n",delta,files[t].byteswritten,files[t].numbytes);
                 }
 
-                if (files[t].byteswritten >=files[t].numbytes)
+                delta= files[t].numbytes-files[t].byteswritten;
+
+                if (delta < 0) EXPLAIN_DEV(Extraction issue! Remaining bytes =, delta)
+                else
+                    if (delta > 0)
+                        EXPLAIN_DEV(Wav file not completed. Remaining bytes =, delta)
+                    else
                 {
-				    wav_close(&files[t], filename);
+
+                EXPLAIN_DEV(Wav file completed! Remaining bytes =, delta)
+
+                wav_close(&files[t], filename);
 
                     t++;
 
@@ -660,8 +676,6 @@ int ats2wav(const char* filename, const char* outdir, extractlist *extract)
                         if (n < payload_length)
                         {
 							write_wav_file(outfile, outdir, length, files, t);
-
-
 
                             files[t].samplerate=files[t-1].samplerate;
                             files[t].bitspersample=files[t-1].bitspersample;
@@ -680,11 +694,13 @@ int ats2wav(const char* filename, const char* outdir, extractlist *extract)
                 break;
             case 0xbe:  // Audio PES Packet
 
-                i+=2+uint16_read(buf+i);
+                i+=3+uint16_read(buf+i+1);
                 break;
             }
 
         }
+        i++;
+    }
     }
 
     return(EXIT_SUCCESS);

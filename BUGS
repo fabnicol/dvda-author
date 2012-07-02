@@ -38,7 +38,7 @@ Usage: Replace --fixwavprune,interactive with -Fprune,interactive.
    To avoid this, the following option has been added to the gcc linker: -Xlinker --allow-multiple-definition
    If using another compiler, you may have to replace this option with the corresponding one for your compiler in src/Makefile.am
 
-10. Some capabilities of SoX may have to be deactivated for compatibility reasons, platform-wise. On Ubuntu Linux I had to add 
+10. Some capabilities of SoX may have to be deactivated for compatibility reasons, platform-wise. On Ubuntu Linux I had to add
     --without-mad --without-oggvorbis to SoX configure command line as of Jan. 2011.
 
 11. Due to linking  issues caused by SoX code (version 14.3) do not compile libiberty.a and SoX simultaneously. A segfault might arise
