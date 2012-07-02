@@ -4,10 +4,10 @@
 	<File name="../../libutils/src/c_utils.c" open="1" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../libutils/src/winport.c" open="1" top="0" tabpos="11">
+	<File name="../../libutils/src/include/libiberty.h" open="1" top="0" tabpos="5">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../libutils/src/include/libiberty.h" open="1" top="0" tabpos="5">
+	<File name="../../libutils/src/include/winport.h" open="1" top="0" tabpos="9">
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../libutils/src/private/private_c_utils.h" open="1" top="0" tabpos="10">
@@ -16,19 +16,19 @@
 	<File name="../../libutils/src/include/ordinals.h" open="1" top="0" tabpos="6">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../libutils/src/include/winport.h" open="1" top="0" tabpos="9">
-		<Cursor position="0" topLine="0" />
-	</File>
 	<File name="../../libutils/src/include/format.h" open="1" top="0" tabpos="4">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../libutils/src/include/export.h" open="1" top="0" tabpos="3">
+	<File name="../../libutils/src/include/c_utils.h" open="1" top="0" tabpos="2">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="../../libutils/src/winport.c" open="1" top="0" tabpos="11">
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../libutils/src/include/stream_decoder.h" open="1" top="0" tabpos="7">
 		<Cursor position="0" topLine="0" />
 	</File>
-	<File name="../../libutils/src/include/c_utils.h" open="1" top="0" tabpos="2">
+	<File name="../../libutils/src/include/export.h" open="1" top="0" tabpos="3">
 		<Cursor position="0" topLine="0" />
 	</File>
 	<File name="../../libutils/src/include/stream_encoder.h" open="1" top="0" tabpos="8">
