@@ -110,7 +110,6 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 					<Add option="-D_GNU_SOURCE" />
 					<Add option="-DWITHOUT_FLAC" />
 					<Add option="-DWITHOUT_SOX" />
-					<Add option="-DWITHOUT_FIXWAV" />
 					<Add option="-DLONG_OPTIONS" />
 					<Add option="-D_LARGEFILE_SOURCE" />
 					<Add option="-D_LARGE_FILES" />
@@ -136,6 +135,7 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 					<Add option="-Xlinker --allow-multiple-definition" />
 					<Add library="../libc_utils/libc_utils.a" />
 					<Add library="../libats2wav/libats2wav.a" />
+					<Add library="../libfixwav/bin/Release/libfixwav-1.3.a" />
 					<Add directory="../libutils" />
 					<Add directory="../../libutils/include" />
 					<Add directory="../libogg" />
