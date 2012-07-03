@@ -45,7 +45,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 int wav_getinfo(fileinfo_t* info);
 int flac_getinfo(fileinfo_t* info);
-int audio_open(fileinfo_t* info);
+int audio_open(fileinfo_t* info, const char* ioflag);
 uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count);
 int audio_close(fileinfo_t* info);
 

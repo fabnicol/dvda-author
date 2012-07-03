@@ -161,7 +161,7 @@ ALWAYS_INLINE_GCC int setinfo(_fileinfo_t* info, uint8_t buf[4])
 
 }
 
-ALWAYS_INLINE_GCC unsigned int write_data(_fileinfo_t* info, uint8_t* buf, unsigned int count)
+ALWAYS_INLINE_GCC unsigned int process_data(_fileinfo_t* info, uint8_t* buf, unsigned int count)
 {
     unsigned int n;
 
@@ -483,7 +483,7 @@ int scan_ats_ifo(_fileinfo_t * files, uint8_t *buf)
     return(ntracks);
 }
 
-void write_wav_file(char* outfile, const char* outdir, int length, _fileinfo_t * files, int t)
+void process_wav_file(char* outfile, const char* outdir, int length, _fileinfo_t * files, int t)
 {
     char tmp[length+1+14];
     memcpy(tmp, outdir, length);
@@ -631,7 +631,7 @@ NEXT:
 
                     if (files[t].started==0)
                     {
-                        write_wav_file(outfile, outdir, length, files, t);
+                        process_wav_file(outfile, outdir, length, files, t);
 
                         if (!setinfo(&files[t],&buf[i+7]))
                         {
@@ -663,7 +663,7 @@ NEXT:
 
                     EXPLAIN_DEV("Now writing bytes to wav file: ",(int)delta)
 
-                    nbytesread=write_data(&files[t],&buf[i],delta);
+                    nbytesread=process_data(&files[t],&buf[i],delta);
 
 
                     if (globals.veryverbose)
@@ -700,7 +700,7 @@ NEXT:
                                 {
                                     if (nbytesread < payload_length)
                                     {
-                                        write_wav_file(outfile, outdir, length, files, t);
+                                        process_wav_file(outfile, outdir, length, files, t);
 
                                         files[t].samplerate=files[t-1].samplerate;
                                         files[t].bitspersample=files[t-1].bitspersample;
@@ -710,7 +710,7 @@ NEXT:
 
                                         printf("[INF]  Extracting %s\n       %dHz, %d bits/sample, %d channels - %lld samples\n",outfile,files[t].samplerate,files[t].bitspersample,files[t].channels,files[t].numsamples);
 
-                                        nbytesread=write_data(&files[t],&buf[i+nbytesread],payload_length-nbytesread);
+                                        nbytesread=process_data(&files[t],&buf[i+nbytesread],payload_length-nbytesread);
                                     }
                                 }
                             }

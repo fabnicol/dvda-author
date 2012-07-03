@@ -744,7 +744,7 @@ int wav_getinfo(fileinfo_t* info)
 
 
 
-int audio_open(fileinfo_t* info)
+int audio_open(fileinfo_t* info, const char* ioflag)
 {
 #ifndef WITHOUT_FLAC
     FLAC__StreamDecoderInitStatus result=0;
@@ -754,18 +754,33 @@ int audio_open(fileinfo_t* info)
 
     if (info->type==AFMT_WAVE)
     {
-        info->audio->fp=fopen(info->filename,"rb");
+        info->audio->fp=fopen(info->filename, ioflag);
         if (info->audio->fp==0)
         {
             return(1);
         }
+
+    if (ioflag[0] == 'r')
+    {
+
+
 #if defined __WIN32__ & !defined MKDIR
         info->file_size = read_file_size(info->audio->fp, (TCHAR*) info->filename);
 #else
         info->file_size = read_file_size(info->audio->fp, info->filename);
 #endif
-        fseek(info->audio->fp, info->header_size,SEEK_SET);
+    }
+    else
+    {
+        if (!globals.nooutput)
+        {
+            info->header_size=sizeof(wav_header);
+            fwrite(wav_header,info->header_size,1,info->fpout);
 
+            fseek(info->audio->fp, info->header_size,SEEK_SET);
+
+        }
+    }
 
         info->audio->bytesread=0;
     }
