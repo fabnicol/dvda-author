@@ -99,11 +99,12 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters=" --maxverbose -g /home/fab/Dev/audio/a2496.wav -o ~/build/temp2496.wav    2&gt;lognew" />
+				<Option parameters=" --maxverbose -o /home/fab/Dev/audio/temp2496.wav -x /home/fab/build/temp2496.wav    " />
 				<Option projectCompilerOptionsRelation="2" />
 				<Compiler>
-					<Add option="-march=pentium4" />
-					<Add option="-O3" />
+					<Add option="-march=core2" />
+					<Add option="-O" />
+					<Add option="-g" />
 					<Add option="-std=c99" />
 					<Add option="-D__CB__" />
 					<Add option="-D_FILE_OFFSET_BITS=64" />
@@ -130,7 +131,6 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 					<Add directory="../../libs/include/libsoxconvert" />
 				</Compiler>
 				<Linker>
-					<Add option="-s" />
 					<Add option="-lFLAC -lsox -logg" />
 					<Add option="-Xlinker --allow-multiple-definition" />
 					<Add library="../libc_utils/libc_utils.a" />
