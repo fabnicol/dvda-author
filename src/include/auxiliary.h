@@ -63,8 +63,17 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define FREE2(X) if (X) { int u=0; while (X[u]) {free(X[u]); u++;}; free(X); }
 #define EVEN(X)  (int16_t) ((X % 2) ? X+1 : X)
 
-#define EXPLAIN(X,...) do {if (globals.veryverbose) fprintf(stderr, "%s" X, "[DBG]  Now ", __VA_ARGS__);} while(0);
-#define EXPLAIN_DEV(X,Y) do {if (globals.maxverbose) fprintf(stderr, "%s %s %d\n" , "[DEV]  ", #X, Y);} while(0);
+#define EXPL(X,Y,Z,...)  do {if (Y) \
+                                {if (!globals.logfile) \
+                                    fprintf(stderr, "%s" X, Z, __VA_ARGS__);  \
+                                else \
+                                    foutput("%s" X, Z, __VA_ARGS__); \
+                                }\
+                            } while(0);
+
+#define EXPLAIN(X,...)       EXPL(X,globals.veryverbose, "[DBG]  Now ",__VA_ARGS__)
+
+#define EXPLAIN_DEV(...)     EXPL("%s %d\n", globals.maxverbose, "[DEV]  ",__VA_ARGS__ )
 
 
 /* end of macros */

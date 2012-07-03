@@ -426,15 +426,19 @@ void htmlize(char* logpath)
     FILE* src=fopen(logpath, "rb");
     if (src == NULL) return;
     char* loghtmlpath=calloc(strlen(logpath)+6, 1);
-    loghtmlpath=strcat(logpath, ".html");
+    if (loghtmlpath == NULL) return;
+    sprintf(loghtmlpath,"%s%s",logpath,".html");
+
     FILE* dest=fopen(loghtmlpath, "wb");
     if (dest == NULL) return;
 
-#define NAVY            "<p><span style=\"color: navy; font-size: 10pt; \">"
-#define RED             "<p><span style=\"color: red;  font-size: 12pt  \">"
-#define GREY            "<br/><span style=\"color: grey; font-size: 8pt;\">"
-#define GREEN           "<p><span style=\"color: green; font-size: 10pt;\">"
-#define ORANGE          "<p><span style=\"color: orange;font-size: 12pt;\">"
+#define NAVY            "<p><span style=\"color: navy; font-size: 10pt;  \">"
+#define RED             "<p><span style=\"color: red;  font-size: 12pt   \">"
+#define GREY            "<br/><span style=\"color: grey; font-size: 8pt; \">"
+#define GREEN           "<p><span style=\"color: green; font-size: 10pt; \">"
+#define ORANGE          "<p><span style=\"color: orange;font-size: 12pt; \">"
+#define MAROON          "<br/><span style=\"color: maroon;font-size: 8pt;\">"
+#define PURPLE          "<br/><span style=\"color: purple;font-size: 8pt;\">"
 #define CLOSETAG1        "</span>"
 #define CLOSETAG2        "</span></p>"
 #define HEADER "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">\n\
@@ -468,6 +472,21 @@ void htmlize(char* logpath)
                 fwrite(CLOSETAG2, 11, 1, dest);
                 fputc('\n', dest);
             }
+            else if ((line[0] == '[') && (line[1] == 'D') && (line[2]=='E') && (line[3] == 'V') && (line[4]==']'))
+            {
+                fwrite(PURPLE, length, 1, dest);
+                fwrite(line, linelength, 1, dest);
+                fwrite(CLOSETAG1, 7, 1, dest);
+                fputc('\n', dest);
+            }
+            else if ((line[0] == '[') && (line[1] == 'D') && (line[2]=='B') && (line[3] == 'G') && (line[4]==']'))
+            {
+                fwrite(MAROON, length, 1, dest);
+                fwrite(line, linelength, 1, dest);
+                fwrite(CLOSETAG1, 7, 1, dest);
+                fputc('\n', dest);
+            }
+
             else if ((line[0] == '[') && (line[1] == 'W') && (line[2]=='A') && (line[3] == 'R') && (line[4]==']'))
             {
                 fwrite(ORANGE, length, 1, dest);
@@ -501,7 +520,7 @@ void htmlize(char* logpath)
     while (!feof(src));
 
     fwrite("</BODY></HTML>\n", 15, 1, dest);
-
+    free(loghtmlpath);
     fclose(src);
     fclose(dest);
 #undef NAVY
@@ -1204,7 +1223,7 @@ void parse_wav_header(FILE * infile, infochunk* ichunk)
 }
 
 
-FILE * secure_open(char *path, char *context)
+FILE * secure_open(const char *path, const char *context)
 {
     FILE *f;
 
