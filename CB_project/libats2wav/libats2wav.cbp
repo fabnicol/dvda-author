@@ -7,7 +7,7 @@
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Release">
-				<Option output="libats2wav" prefix_auto="1" extension_auto="1" />
+				<Option output="ats2wav" prefix_auto="1" extension_auto="1" />
 				<Option working_dir="" />
 				<Option object_output="obj/Release/" />
 				<Option type="2" />
@@ -44,6 +44,9 @@
 		<Linker>
 			<Add option="-s" />
 		</Linker>
+		<Unit filename="../../libats2wav/src/decoder.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../../libats2wav/src/include/libats2wav.h" />
 		<Unit filename="../../libats2wav/src/libats2wav.c">
 			<Option compilerVar="CC" />
@@ -53,6 +56,15 @@
 			<code_completion />
 			<lib_finder disable_auto="1" />
 			<debugger />
+			<DoxyBlocks>
+				<comment_style block="0" line="0" />
+				<doxyfile_project />
+				<doxyfile_build />
+				<doxyfile_warnings />
+				<doxyfile_output />
+				<doxyfile_dot />
+				<general />
+			</DoxyBlocks>
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>
