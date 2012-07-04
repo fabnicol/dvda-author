@@ -1162,7 +1162,7 @@ ALWAYS_INLINE_GCC  static uint32_t read_track_file_into_buffer(uint8_t* buf, fil
 
 
 // Read numbytes of audio data, and convert it to DVD byte order
-uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
+uint32_t audio_process(fileinfo_t* info, uint8_t* buf, uint32_t count)
 {
     uint32_t  n=0;
 
