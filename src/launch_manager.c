@@ -396,7 +396,7 @@ int launch_manager(command_t *command)
 
     for (i=0; i < naudio_groups; i++)
     {
-        error=create_ats(audiotsdir,i+1,&files[i][0], nfiles[i]);
+        error=process_ats(audiotsdir,i+1,&files[i][0], nfiles[i], "w");
         ppadd-=error;
         /* Audio zone system file  parameters  */
 
