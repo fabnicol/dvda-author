@@ -840,7 +840,7 @@ int decode_ats(const char* filename, const char* outdir, extractlist *extract)
 
     /* Open the first file and initialise the input audio buffer */
     if (audio_open(&files[i], "wb+")!=0)
-        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not open wav file in create_ats.")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not open wav file in process_ats.")
 
 
     files[i].first_sector=0;
@@ -872,7 +872,7 @@ int decode_ats(const char* filename, const char* outdir, extractlist *extract)
 
         if (bytesinbuf < lpcm_payload)
         {
-            n=audio_read(&files[i],&audio_buf[bytesinbuf],sizeof(audio_buf)-bytesinbuf);
+            n=audio_process(&files[i],&audio_buf[bytesinbuf],sizeof(audio_buf)-bytesinbuf);
             bytesinbuf+=n;
             if (n==0)   /* We have reached the end of the input file */
             {
@@ -907,7 +907,7 @@ int decode_ats(const char* filename, const char* outdir, extractlist *extract)
                         EXIT_ON_RUNTIME_ERROR
                     }
 
-                    n=audio_read(&files[i],&audio_buf[bytesinbuf],sizeof(audio_buf)-bytesinbuf);
+                    n=audio_process(&files[i],&audio_buf[bytesinbuf],sizeof(audio_buf)-bytesinbuf);
                     bytesinbuf+=n;
                     foutput("[INF]  Processing %s\n",files[i].filename);
                 }
