@@ -73,13 +73,14 @@ S is the table of direct conversion (WAV to AOB) and _S the table of reverse con
 /* with static array execution time will be comparable to explicit hard-code value assignment */
 
 static uint8_t  S[2][6][36]=
-{{      {0}, {0},
+{
+    {   {0}, {0},
         {5, 4, 11, 10, 1, 0, 3, 2, 7, 6, 9, 8},
         {5, 4, 7, 6, 13, 12, 15, 14, 1,  0, 3, 2, 9, 8, 11, 10},
         {5, 4, 7, 6,  9,  8, 15, 14,17, 16, 19, 18, 1, 0, 3, 2, 11, 10, 13, 12},
         {5, 4, 7, 6, 17, 16, 19, 18, 1, 0, 3, 2, 9, 8, 11, 10, 13, 12, 15, 14, 21, 20, 23, 22}
     },
-    {      {2,  1,  5,  4,  0,  3},
+    {   {2,  1,  5,  4,  0,  3},
         {2, 1, 5, 4, 8, 7, 11, 10, 0, 3, 6, 9},
         {8, 7, 17, 16, 6, 15, 2, 1, 5, 4, 11, 10, 14, 13, 0, 3, 9, 12},
         {8,  7,  11,  10,  20,  19,  23,  22,  6,  9,  18,  21,  2,  1,  5,  4,  14,  13,  17,  16,  0,  3,  12,  15},
@@ -192,19 +193,21 @@ int calc_info(fileinfo_t* info)
 
     static uint16_t T[2][6][10]=     // 16-bit table
     {
-        {{	2,	2000, 16,  1984,  2010,	2028, 11, 16, 0, 0 },
+        {   {	2,	2000, 16,  1984,  2010,	2028, 11, 16, 0, 0 },
             {	4,	2000, 16,  1984,  2010,	2028, 11, 16, 0, 0 },
             { 12,	2004, 24,  1980,  2010,	2028, 15, 12, 0, 0 },
             { 16,	2000, 16,  1980,  2010,	2028, 11, 16, 0, 0 },
             { 20,	2000, 20,  1980,  2010, 2028, 15, 16, 0, 0 },
-            { 24,	1992, 24,  1992, 1993,  2014, 10, 10, 17, 14}},
+            { 24,	1992, 24,  1992, 1993,  2014, 10, 10, 17, 14}
+        },
         // 24-bit table
-        {{	6,	2004, 24,  1980,  2010,	2028, 15, 12,  0, 0 },
+        {   {	6,	2004, 24,  1980,  2010,	2028, 15, 12,  0, 0 },
             { 12,	2004, 24,  1980,  2010,	2028, 15, 12,  0, 0 },
             { 18,	1998, 18,  1980,  2010,	2026, 15, 16,  0, 2 },
             { 24,	1992, 24,  1968,  1993,	2014, 10, 10, 17, 14 },
             { 30,	1980,  0,  1980,  2010, 2008, 15, 16,  0, 20 },
-            { 36,	1980,  0,  1980,  2010, 2008, 15, 16,  0, 20 }}
+            { 36,	1980,  0,  1980,  2010, 2008, 15, 16,  0, 20 }
+        }
     };
 
 
@@ -582,7 +585,7 @@ int extract_audio_info(fileinfo_t *info, uint8_t * header)
         {
 
             foutput("[WAR]  Expected %"PRIu64" bytes but found %"PRIu64" on disc...patching data.\n",
-                   info->numbytes, info->file_size-info->header_size);
+                    info->numbytes, info->file_size-info->header_size);
             info->numbytes = info->file_size - info->header_size;
         }
 
@@ -656,9 +659,9 @@ int wav_getinfo(fileinfo_t* info)
 
     if (info->header_size > (span=fread(header, 1, info->header_size,fp)))
     {
-            foutput("[ERR]  Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
-            perror("       ");
-            clean_exit(EXIT_FAILURE);
+        foutput("[ERR]  Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
+        perror("       ");
+        clean_exit(EXIT_FAILURE);
     }
 
     fclose(fp);
@@ -764,36 +767,39 @@ int audio_open(fileinfo_t* info, const char* ioflag)
 #endif
 
     info->audio=malloc(sizeof(audio_input_t));
+    char ioflag_reverse[3]="rb";
+    if (ioflag[0] == 'r') ioflag_reverse[0]='w';
 
     if (info->type==AFMT_WAVE)
     {
-        info->audio->fp=fopen(info->filename, ioflag);
+        info->audio->fp=fopen(info->filename, ioflag_reverse);
         if (info->audio->fp==0)
         {
             return(1);
         }
 
-    if (ioflag[0] == 'r')
-    {
+        if (ioflag[0] == 'w')
+        {
 
 
 #if defined __WIN32__ & !defined MKDIR
-        info->file_size = read_file_size(info->audio->fp, (TCHAR*) info->filename);
+            info->file_size = read_file_size(info->audio->fp, (TCHAR*) info->filename);
 #else
-        info->file_size = read_file_size(info->audio->fp, info->filename);
+            info->file_size = read_file_size(info->audio->fp, info->filename);
 #endif
-    }
-    else
-    {
-        if (!globals.nooutput)
-        {
-            info->header_size=sizeof(wav_header);
-            fwrite(wav_header,info->header_size,1,info->audio->fp);
-
-           // fseek(info->audio->fp, info->header_size,SEEK_SET);
-
+            fseek(info->audio->fp, info->header_size,SEEK_SET);
         }
-    }
+        else
+        {
+            if (!globals.nooutput)
+            {
+                info->header_size=sizeof(wav_header);
+                fwrite(wav_header,info->header_size,1,info->audio->fp);
+
+                // fseek(info->audio->fp, info->header_size,SEEK_SET);
+
+            }
+        }
 
         info->audio->bytesread=0;
     }
@@ -989,7 +995,7 @@ ALWAYS_INLINE_GCC  static void interleave_16_bit_sample_extended(uint8_t channel
     {
     case 1:
     case 2:
-        for (i=0;i<count;i+=2)
+        for (i=0; i<count; i+=2)
         {
             buf_out[i]=buf_in[i+1];
             buf_out[i+1]=buf_in[i];
@@ -1154,33 +1160,33 @@ ALWAYS_INLINE_GCC  uint8_t read_count(uint32_t *bytesread, uint32_t count, uint8
 {
 
 
-  int n=0;
+    int n=0;
 
-  if ((info->type == AFMT_FLAC) || (info->type == AFMT_OGG_FLAC))
-  {
-      if (info->audio->n >= count)
-            {
-              n=count;
-              memcpy(buf,info->audio->buf,count);
-              memmove(info->audio->buf,&(info->audio->buf[count]),info->audio->n-count);
-              info->audio->n-=count;
+    if ((info->type == AFMT_FLAC) || (info->type == AFMT_OGG_FLAC))
+    {
+        if (info->audio->n >= count)
+        {
+            n=count;
+            memcpy(buf,info->audio->buf,count);
+            memmove(info->audio->buf,&(info->audio->buf[count]),info->audio->n-count);
+            info->audio->n-=count;
 
-            }
-          else
-            {
-              n=info->audio->n;
-              memcpy(buf,info->audio->buf,info->audio->n);
-              info->audio->n=0;
-            }
+        }
+        else
+        {
+            n=info->audio->n;
+            memcpy(buf,info->audio->buf,info->audio->n);
+            info->audio->n=0;
+        }
 
-    *bytesread+=n;
+        *bytesread+=n;
 
-  }
-  else  //AFMT_WAV
-  {
+    }
+    else  //AFMT_WAV
+    {
 
-    /* read count bytes in file into buffer at an offset and increase bytesread counts accordingly, adjusting at end of audio files */
-    *bytesread=0;
+        /* read count bytes in file into buffer at an offset and increase bytesread counts accordingly, adjusting at end of audio files */
+        *bytesread=0;
 //    n=fread(buf+offset,1,count-*bytesread,info->audio->fp);
 //    if (info->audio->bytesread+n > info->numbytes)
 //    {
@@ -1191,24 +1197,24 @@ ALWAYS_INLINE_GCC  uint8_t read_count(uint32_t *bytesread, uint32_t count, uint8
 
 
 
-    while ((info->audio->bytesread < info->numbytes) && (*bytesread < count))
-    {
-
-        n=fread(buf+*bytesread+offset,1,count-*bytesread,info->audio->fp);
-
-        EXPLAIN("%s%d%s%d%s%d%s%lld%s%d\n","READ ",n,"/", count-*bytesread, "B added to ",info->audio->bytesread, "B/", info->numbytes," into buffer at offset ", offset+*bytesread)
-
-        if (info->audio->bytesread+n > info->numbytes)
+        while ((info->audio->bytesread < info->numbytes) && (*bytesread < count))
         {
-            n=info->numbytes-info->audio->bytesread;
-            EXPLAIN("%s%lld%s%d\n","READ CUT",n-info->numbytes+info->audio->bytesread,"/", n)
-        }
-        info->audio->bytesread+=n;
-        *bytesread+=n;
 
+            n=fread(buf+*bytesread+offset,1,count-*bytesread,info->audio->fp);
+
+            EXPLAIN("%s%d%s%d%s%d%s%lld%s%d\n","READ ",n,"/", count-*bytesread, "B added to ",info->audio->bytesread, "B/", info->numbytes," into buffer at offset ", offset+*bytesread)
+
+            if (info->audio->bytesread+n > info->numbytes)
+            {
+                n=info->numbytes-info->audio->bytesread;
+                EXPLAIN("%s%lld%s%d\n","READ CUT",n-info->numbytes+info->audio->bytesread,"/", n)
+            }
+            info->audio->bytesread+=n;
+            *bytesread+=n;
+
+        }
     }
-  }
-   /* return last number of bytes read, also in pointer parameter n for total of bytes read, and in structure info->audio->bytesread */
+    /* return last number of bytes read, also in pointer parameter n for total of bytes read, and in structure info->audio->bytesread */
     return n;
 }
 
@@ -1232,7 +1238,7 @@ ALWAYS_INLINE_GCC  static uint32_t read_track_file_into_buffer(uint8_t* buf, fil
     uint32_t n=0,nc=0, bytesread=0;
     static uint8_t offset,rmdr;
 
-/* if no gap filling operation, just use the number of 4-byte words passed as argument rounded down to an equal number of samples */
+    /* if no gap filling operation, just use the number of 4-byte words passed as argument rounded down to an equal number of samples */
 
     if (info->joingap==0)
     {
@@ -1255,7 +1261,7 @@ ALWAYS_INLINE_GCC  static uint32_t read_track_file_into_buffer(uint8_t* buf, fil
     }
     else
 
-/* if using the gap filling operation, do not round-up the number of 4-byte words passed to an equal number of samples */
+        /* if using the gap filling operation, do not round-up the number of 4-byte words passed to an equal number of samples */
 
     {
 
@@ -1263,7 +1269,7 @@ ALWAYS_INLINE_GCC  static uint32_t read_track_file_into_buffer(uint8_t* buf, fil
         if (offset)
             memcpy(buf, fbuf, offset);
 
-         /* read the audio with the rounded-up count into buffer and count the total number of bytes read  */
+        /* read the audio with the rounded-up count into buffer and count the total number of bytes read  */
 
         read_count(&bytesread, *count-(*count+offset)%info->sampleunitsize, offset, buf, info);
         nc = bytesread+offset;
@@ -1304,49 +1310,49 @@ uint32_t audio_process(fileinfo_t* info, uint8_t* buf_in,uint8_t* buf_out, uint3
 {
     uint32_t  n=0;
 
-if (ioflag[0] == 'r')
-{
-
-
-    //PATCH: provided for null audio characteristics, to ensure non-zero divider
-
-    if (info->sampleunitsize == 0)
+    if (ioflag[0] == 'w')
     {
-        foutput("%s\n", "[ERR]  Sample unit size is null...");
-        return 0;
-    }
+
+
+        //PATCH: provided for null audio characteristics, to ensure non-zero divider
+
+        if (info->sampleunitsize == 0)
+        {
+            foutput("%s\n", "[ERR]  Sample unit size is null...");
+            return 0;
+        }
 
 ///////////////////////
 // copy offset bytes from buffer filled in last pass (remainder of non-whole modulo by info->sampleunitsize)
 
-    if ((info->type != AFMT_FLAC) && (info->type != AFMT_OGG_FLAC) && (info->type == AFMT_OGG_FLAC)) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Can only decode wav of flac streams...\n       Exiting...\n")
+        if ((info->type != AFMT_FLAC) && (info->type != AFMT_OGG_FLAC) && (info->type == AFMT_OGG_FLAC)) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Can only decode wav of flac streams...\n       Exiting...\n")
 
 #ifndef WITHOUT_FLAC
 
-    if ((info->type == AFMT_FLAC) || (info->type == AFMT_OGG_FLAC))
-    {
+            if ((info->type == AFMT_FLAC) || (info->type == AFMT_OGG_FLAC))
+            {
 
-        count-= count%info->sampleunitsize;
-	_Bool result;
+                count-= count%info->sampleunitsize;
+                _Bool result;
 
-        while ((info->audio->n < count) && (info->audio->eos==0))
-        {
-            result=FLAC__stream_decoder_process_single(info->audio->flac);
-
-            if (result==0)
-                EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Fatal error decoding FLAC file\n")
-
-                if (FLAC__stream_decoder_get_state(info->audio->flac)==FLAC__STREAM_DECODER_END_OF_STREAM)
+                while ((info->audio->n < count) && (info->audio->eos==0))
                 {
-                    info->audio->eos=1;
+                    result=FLAC__stream_decoder_process_single(info->audio->flac);
+
+                    if (result==0)
+                        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Fatal error decoding FLAC file\n")
+
+                        if (FLAC__stream_decoder_get_state(info->audio->flac)==FLAC__STREAM_DECODER_END_OF_STREAM)
+                        {
+                            info->audio->eos=1;
+                        }
                 }
-        }
 
-    }
+            }
 #endif
-}
+    }
 
-/* First read audio file into a buffer for count*4 bytes */
+    /* First read audio file into a buffer for count*4 bytes */
 
     n=read_track_file_into_buffer(buf_in, info, &count);
 
@@ -1367,7 +1373,7 @@ if (ioflag[0] == 'r')
 
 
         // Processing 16-bit audio
-        if (ioflag[0] == 'r')
+        if (ioflag[0] == 'w')
             interleave_24_bit_sample_extended(info->channels, count, buf_in, buf_out);
         else
             deinterleave_24_bit_sample_extended(info->channels, count, buf_in, buf_out);
@@ -1377,7 +1383,7 @@ if (ioflag[0] == 'r')
     case 16:
 
         // Processing 16-bit audio
-        if (ioflag[0] == 'r')
+        if (ioflag[0] == 'w')
             interleave_16_bit_sample_extended(info->channels, count, buf_in, buf_out);
         else
             deinterleave_16_bit_sample_extended(info->channels, count, buf_in, buf_out);
