@@ -400,8 +400,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define PAL_Y 576   // ntsc 480
 #define NTSC_Y 480
 
-#define INFO_EXECTIME1  "[MSG]  User execution time: %u minutes %u seconds\n"
-#define INFO_EXECTIME2  "[MSG]  System execution time: %u minutes %u seconds\n"
+#define INFO_EXECTIME1  "[MSG]  User execution time: %u minutes %u seconds %u microseconds\n"
+#define INFO_EXECTIME2  "[MSG]  System execution time: %u minutes %u seconds %u microseconds\n"
 
 #ifndef LOCALE
 #define LOCALE "C"

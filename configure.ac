@@ -255,13 +255,9 @@ AC_CONFIG_FILES([Makefile
          CB_project/dvda-author/Makefile
          CB_project/libc_utils/Makefile
          CB_project/libfixwav/Makefile
-         CB_project/libats2wav/Makefile
          libiberty/Makefile
          libiberty/src/Makefile
          libiberty/src/include/Makefile
-         libats2wav/Makefile
-         libats2wav/src/Makefile
-         libats2wav/src/include/Makefile
          images/Makefile
          script
          script1
@@ -304,7 +300,6 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
                     libFLAC ........$FLAC_BUILD
                     libsox  ........$SOX_BUILD
                     gnu libc .......$IBERTY_BUILD
-                    libats2wav .....yes
                     libutils .......yes
 
     Ogg FLAC support:
