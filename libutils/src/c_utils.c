@@ -80,31 +80,35 @@ void pause_dos_type()
 
 void erase_file(const char* path)
 {
-FILE *f;
+    FILE *f;
 
-if  ((f=fopen(path, "rb")) != NULL) {fclose(f); unlink(path);};
-errno=0;
+    if  ((f=fopen(path, "rb")) != NULL)
+    {
+        fclose(f);
+        unlink(path);
+    };
+    errno=0;
 }
 
 
 #if HAVE_CURL
 int download_file_from_http_server( const char* bindir, const char* file, const char* server)
 {
- char command[strlen(server) + 1 + 1 + 2*strlen(file) +30];
+    char command[strlen(server) + 1 + 1 + 2*strlen(file) +30];
 
- sprintf(command, "curl -f -s -S -o %s --location %s/%s", file, server, file);
- if (globals.veryverbose) printf("[INF]  downloading: %s\n", command);
- return system(win32quote(command));
+    sprintf(command, "curl -f -s -S -o %s --location %s/%s", file, server, file);
+    if (globals.veryverbose) printf("[INF]  downloading: %s\n", command);
+    return system(win32quote(command));
 
 }
 
 int download_rename_from_http_server(const char* bindir, const char* name, const char* fullpath)
 {
 
- char command[30+1+strlen(name)+strlen(fullpath)];
- sprintf(command, "curl -f -s -S -o %s --location %s", name, fullpath);
- if (globals.veryverbose) printf("[INF]  downloading: %s\n", command);
- return system(win32quote(command));
+    char command[30+1+strlen(name)+strlen(fullpath)];
+    sprintf(command, "curl -f -s -S -o %s --location %s", name, fullpath);
+    if (globals.veryverbose) printf("[INF]  downloading: %s\n", command);
+    return system(win32quote(command));
 
 }
 
@@ -118,182 +122,182 @@ int download_rename_from_http_server(const char* bindir, const char* name, const
 
 char *fn_get_current_dir_name (void)
 {
-  char *cwd;
-  int len = 64;
-  char* r;
-  if (NULL == (cwd = malloc (len * sizeof *cwd)))
+    char *cwd;
+    int len = 64;
+    char* r;
+    if (NULL == (cwd = malloc (len * sizeof *cwd)))
     {
-      printf ("%s", "[ERR]  Not enough memory for my_get_cwd.\n");
-      exit (EXIT_FAILURE);
+        printf ("%s", "[ERR]  Not enough memory for my_get_cwd.\n");
+        exit (EXIT_FAILURE);
     }
-  while ((NULL == (r = getcwd (cwd, len))) && (ERANGE == errno))
+    while ((NULL == (r = getcwd (cwd, len))) && (ERANGE == errno))
     {
-      len += 32;
-      if(NULL == (cwd = realloc (cwd, len * sizeof *cwd)))
+        len += 32;
+        if(NULL == (cwd = realloc (cwd, len * sizeof *cwd)))
         {
-          printf ("%s", "[ERR]  Not enough memory for my_get_cwd.\n");
-          exit (EXIT_FAILURE);
+            printf ("%s", "[ERR]  Not enough memory for my_get_cwd.\n");
+            exit (EXIT_FAILURE);
         }
     }
-  if (r)
-    return (cwd);
-  free (cwd);
-  return (NULL);
+    if (r)
+        return (cwd);
+    free (cwd);
+    return (NULL);
 }
 
 
 
 void action_dir_post (const char *root, const char *dir)
 {
-if (rmdir (dir))
+    if (rmdir (dir))
     {
-      printf ("[ERR]  Impossible to erase directory %s/%s \n"
-                       "(errno = %s)\n", root, dir, strerror (errno));
-      exit (EXIT_FAILURE);
+        printf ("[ERR]  Impossible to erase directory %s/%s \n"
+                "(errno = %s)\n", root, dir, strerror (errno));
+        exit (EXIT_FAILURE);
     }
 }
 
 
 void action_file (const char *file)
 {
-  if (unlink (file))
+    if (unlink (file))
     {
-      printf ("[ERR]  Impossible to erase file %s \n"
-                       "(errno = %s)\n", file, strerror (errno));
-      exit (EXIT_FAILURE);
+        printf ("[ERR]  Impossible to erase file %s \n"
+                "(errno = %s)\n", file, strerror (errno));
+        exit (EXIT_FAILURE);
     }
 }
 
 
 typedef struct slist_t
 {
-  char *name;
-  int is_dir;
-  struct slist_t *next;
+    char *name;
+    int is_dir;
+    struct slist_t *next;
 } slist_t;
 
 
 int rmdir_recursive (char *root, char *dirname)
 {
-  slist_t *names = NULL;
-  slist_t *sl;
+    slist_t *names = NULL;
+    slist_t *sl;
 
-  DIR *FD;
-  struct dirent *f;
-  int cwdlen = 32;
-  char *cwd;
-  char *new_root;
+    DIR *FD;
+    struct dirent *f;
+    int cwdlen = 32;
+    char *cwd;
+    char *new_root;
 
 
-  if (root)
+    if (root)
     {
-      int rootlen = strlen (root);
-      int dirnamelen = strlen (dirname);
-      if (NULL ==
-          (new_root =
-           malloc ((rootlen + dirnamelen + 2) * sizeof *new_root)))
+        int rootlen = strlen (root);
+        int dirnamelen = strlen (dirname);
+        if (NULL ==
+                (new_root =
+                     malloc ((rootlen + dirnamelen + 2) * sizeof *new_root)))
         {
-          printf ("%s", "[ERR]  malloc issue\n");
-          exit (EXIT_FAILURE);
+            printf ("%s", "[ERR]  malloc issue\n");
+            exit (EXIT_FAILURE);
         }
-      memcpy (new_root, root, rootlen);
-      new_root[rootlen] = '/';
-      memcpy (new_root + rootlen + 1, dirname, dirnamelen);
-      new_root[rootlen + dirnamelen + 1] = '\0';
+        memcpy (new_root, root, rootlen);
+        new_root[rootlen] = '/';
+        memcpy (new_root + rootlen + 1, dirname, dirnamelen);
+        new_root[rootlen + dirnamelen + 1] = '\0';
     }
-  else
-    new_root = strdup (dirname);
+    else
+        new_root = strdup (dirname);
 
 
-  cwd=fn_get_current_dir_name();
+    cwd=fn_get_current_dir_name();
 
 
-  if (chdir (dirname) == -1)
+    if (chdir (dirname) == -1)
     {
-      printf ("%s", "[ERR]  chdir() issue\n");
-      return (-1);
+        printf ("%s", "[ERR]  chdir() issue\n");
+        return (-1);
     }
 
 
-  if (NULL == (FD = opendir (".")))
+    if (NULL == (FD = opendir (".")))
     {
-      printf ("%s", "[ERR]  opendir() issue\n");
-      return (-1);
+        printf ("%s", "[ERR]  opendir() issue\n");
+        return (-1);
     }
-  sl = names;
-  while ((f = readdir (FD)))
+    sl = names;
+    while ((f = readdir (FD)))
     {
-      struct stat st;
-      slist_t *n;
-      if (!strcmp (f->d_name, "."))
-        continue;
-      if (!strcmp (f->d_name, ".."))
-        continue;
-      if (stat (f->d_name, &st))
-        continue;
-      if (NULL == (n = malloc (sizeof *n)))
+        struct stat st;
+        slist_t *n;
+        if (!strcmp (f->d_name, "."))
+            continue;
+        if (!strcmp (f->d_name, ".."))
+            continue;
+        if (stat (f->d_name, &st))
+            continue;
+        if (NULL == (n = malloc (sizeof *n)))
         {
-          printf ("%s", "[ERR]  memory issue\n");
-          exit (EXIT_FAILURE);
+            printf ("%s", "[ERR]  memory issue\n");
+            exit (EXIT_FAILURE);
         }
-      n->name = strdup (f->d_name);
-      if (S_ISDIR (st.st_mode))
-        n->is_dir = 1;
-      else
-        n->is_dir = 0;
-      n->next = NULL;
-      if (sl)
+        n->name = strdup (f->d_name);
+        if (S_ISDIR (st.st_mode))
+            n->is_dir = 1;
+        else
+            n->is_dir = 0;
+        n->next = NULL;
+        if (sl)
         {
-          sl->next = n;
-          sl = n;
+            sl->next = n;
+            sl = n;
         }
-      else
+        else
         {
-          names = n;
-          sl = n;
-        }
-    }
-  closedir (FD);
-
-
-  for (sl = names; sl; sl = sl->next)
-    {
-      if (!sl->is_dir)
-         action_file (sl->name);
-    }
-
-
-  for (sl = names; sl; sl = sl->next)
-    {
-      if (sl->is_dir)
-        {
-         // action_dir_pre (new_root, sl->name);
-          rmdir_recursive (new_root, sl->name);
-          action_dir_post (new_root, sl->name);
+            names = n;
+            sl = n;
         }
     }
+    closedir (FD);
 
 
-  free (new_root);
-  while (names)
+    for (sl = names; sl; sl = sl->next)
     {
-      slist_t *prev;
-      free (names->name);
-      prev = names;
-      names = names->next;
-      free (prev);
+        if (!sl->is_dir)
+            action_file (sl->name);
     }
-  chdir (cwd);
-  free (cwd);
-  return (0);
+
+
+    for (sl = names; sl; sl = sl->next)
+    {
+        if (sl->is_dir)
+        {
+            // action_dir_pre (new_root, sl->name);
+            rmdir_recursive (new_root, sl->name);
+            action_dir_post (new_root, sl->name);
+        }
+    }
+
+
+    free (new_root);
+    while (names)
+    {
+        slist_t *prev;
+        free (names->name);
+        prev = names;
+        names = names->next;
+        free (prev);
+    }
+    chdir (cwd);
+    free (cwd);
+    return (0);
 }
 
 // End of Yves Mettier code
 
 int rmdir_global(char* path)
 {
-        int error=rmdir_recursive(NULL, path);
-        return (error);
+    int error=rmdir_recursive(NULL, path);
+    return (error);
 }
 
 
@@ -334,19 +338,22 @@ path_t *parse_filepath(const char* filepath)
     chain->rawfilename += last_separator_position+1;
     if (last_separator_position >1)
 
+    {
+        for (u=last_separator_position-1; u>=0 ; u--)
         {
-         for (u=last_separator_position-1; u>=0 ; u--)
-            {
-                if (chain->path[u] == '/'
+            if (chain->path[u] == '/'
 #ifdef __WIN32__
-                        || chain->path[u] == '\\'
+                    || chain->path[u] == '\\'
 #endif
-                   )
-                    { last_separator_position=u; break;}
+               )
+            {
+                last_separator_position=u;
+                break;
             }
-
-         chain->directory=strdup(chain->path+last_separator_position+1);  // directory in which filepath is placed, without leading path.
         }
+
+        chain->directory=strdup(chain->path+last_separator_position+1);  // directory in which filepath is placed, without leading path.
+    }
     else chain->directory=NULL; // We're at the root.
 
     errno=0;
@@ -355,9 +362,9 @@ path_t *parse_filepath(const char* filepath)
     {
         chain->isfile=0;
         if (globals.veryverbose)
-	{
-	  printf("[MSG]  Path %s is not a file\n", filepath);
-	}
+        {
+            printf("[MSG]  Path %s is not a file\n", filepath);
+        }
     }
     else
     {
@@ -664,12 +671,12 @@ char* get_cl(char** args, uint16_t start)
 char* get_command_line(char** args)
 {
 // You should always use arrays with this function, not pointers
-   return get_cl(args, 1);
+    return get_cl(args, 1);
 }
 
 char* get_full_command_line(char** args)
 {
-  return get_cl(args, 0);
+    return get_cl(args, 0);
 }
 
 
@@ -1392,7 +1399,11 @@ char* win32quote(char* path)
     buff[size-2]='"';
     char* result=strdup(buff);
     if (result) return (result);
-    else { printf("[ERR]  Could not allocate quoted string for %s.\n", path); return NULL; }
+    else
+    {
+        printf("[ERR]  Could not allocate quoted string for %s.\n", path);
+        return NULL;
+    }
 #else
     return path;
 #endif
@@ -1412,7 +1423,11 @@ char* quote(char* path)
     buff[size-2]='"';
     char* result=strdup(buff);
     if (result) return (result);
-    else { printf("[ERR]  Could not allocate quoted string for %s.\n", path); return NULL; }
+    else
+    {
+        printf("[ERR]  Could not allocate quoted string for %s.\n", path);
+        return NULL;
+    }
 }
 
 
@@ -1457,12 +1472,12 @@ int run(char* application, char* args[], int option)
 
     }
 #else
-char* s=get_command_line(args);
-char cml[strlen(application)+1+strlen(s)+1+2];
-sprintf(cml, "\"%s\" %s",  application, s);
-free(s);
-if (globals.debugging) foutput("[INF]  Running: %s\n ", cml);
-system(cml);
+    char* s=get_command_line(args);
+    char cml[strlen(application)+1+strlen(s)+1+2];
+    sprintf(cml, "\"%s\" %s",  application, s);
+    free(s);
+    if (globals.debugging) foutput("[INF]  Running: %s\n ", cml);
+    system(cml);
 #endif
 
     return errno;
@@ -1471,21 +1486,29 @@ system(cml);
 void  parse_file_for_sequence(FILE* fp, uint8_t* tab, size_t sizeoftab, uint64_t* fileoffset)
 {
 
-    if (fp == NULL) { fileoffset=NULL; return;}
-    int i=0;
+    if (fp == NULL)
+    {
+        fileoffset=NULL;
+        return;
+    }
+    int i=0, c;
     while (i < sizeoftab)
+    {
+        if ((c=fgetc(fp)) == EOF) break;
+        else
         {
-            if (fgetc(fp) != (int) tab[i])
-                i=0;
-            else
+            if   (c == tab[i])
                 i++;
+            else
+                i=0;
         }
+    }
 
     if (i == sizeoftab)
     {
-      if (fgetpos(fp, *fileoffset) != 0)
-        fileoffset=NULL; // error
+        if (fgetpos(fp, *fileoffset) != 0)
+            fileoffset=NULL; // error
     }
-      else fileoffset=NULL; // not found
+    else fileoffset=NULL; // not found
 
 }

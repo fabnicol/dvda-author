@@ -21,7 +21,7 @@
 
 #ifndef MULTICHANNEL_H_INCLUDED
 #define MULTICHANNEL_H_INCLUDED
-// used for multichannel encoding/decoding, in audio.c and libats2wav.c
+// used for multichannel encoding/decoding, in audio.c and ats2wav.c
 
 
 

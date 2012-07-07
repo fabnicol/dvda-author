@@ -17,7 +17,7 @@ bin_PROGRAMS=dvda
 
 dvda_SOURCES=amg2.c ats.c atsi2.c audio.c auxiliary.c dvda-author2.c  \
              file_input_parsing.c samg2.c launch_manager.c command_line_parsing.c  \
-             lexer.c 
+             lexer.c ats2wav.c
 
 if !HAVE_CORE_BUILD
 dvda_SOURCES += menu.c asvs.c xml.c sound.c videoimport.c
@@ -25,9 +25,9 @@ endif
 
 
 AM_LDFLAGS=-L/usr/local/lib -L/usr/lib -Xlinker --allow-multiple-definition
-AM_CPPFLAGS=-I${top_srcdir}/libutils/src/include -I${top_srcdir}/src/include -I${top_srcdir}/libats2wav/src/include -I${top_srcdir}   ${DEBUG_FLAGS}
+AM_CPPFLAGS=-I${top_srcdir}/libutils/src/include -I${top_srcdir}/src/include -I${top_srcdir}   ${DEBUG_FLAGS}
 
-dvda_LDADD= -lm ${top_builddir}/libutils/src/libc_utils.a  ${top_builddir}/libats2wav/src/libats2wav.a
+dvda_LDADD= -lm ${top_builddir}/libutils/src/libc_utils.a  
 
 
 # Symbol SOX_LIB_DEPS will be replaced by sox dependencies after configure in libsox by target do_sox_lib_deps_subst

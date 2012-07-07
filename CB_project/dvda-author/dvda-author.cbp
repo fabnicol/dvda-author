@@ -103,8 +103,7 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 				<Option projectCompilerOptionsRelation="2" />
 				<Compiler>
 					<Add option="-march=core2" />
-					<Add option="-O" />
-					<Add option="-g" />
+					<Add option="-O3" />
 					<Add option="-std=c99" />
 					<Add option="-D__CB__" />
 					<Add option="-D_FILE_OFFSET_BITS=64" />
@@ -131,6 +130,7 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 					<Add directory="../../libs/include/libsoxconvert" />
 				</Compiler>
 				<Linker>
+					<Add option="-s" />
 					<Add option="-lFLAC -lsox -logg" />
 					<Add option="-Xlinker --allow-multiple-definition" />
 					<Add library="../libc_utils/libc_utils.a" />
@@ -154,34 +154,90 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 			<Add option="-g" />
 			<Add option="-D_GNU_SOURCE" />
 		</Compiler>
-		<Unit filename="../../BUGS" />
-		<Unit filename="../../ChangeLog" />
-		<Unit filename="../../EXAMPLES" />
-		<Unit filename="../../HOWTO.conf" />
-		<Unit filename="../../INSTALL" />
-		<Unit filename="../../LIMITATIONS" />
-		<Unit filename="../../Makefile.am" />
-		<Unit filename="../../README" />
-		<Unit filename="../../autogen" />
-		<Unit filename="../../configure.ac" />
-		<Unit filename="../../dvda-author.dap" />
-		<Unit filename="../../dvda-author.nsi.in" />
-		<Unit filename="../../dvda-author2.dap" />
-		<Unit filename="../../dvda-author3.dap" />
-		<Unit filename="../../libats2wav/src/Makefile.am" />
-		<Unit filename="../../libfixwav/Makefile.am" />
-		<Unit filename="../../libfixwav/src/Makefile.am" />
-		<Unit filename="../../libiberty/Makefile.am" />
-		<Unit filename="../../libiberty/src/Makefile.am" />
-		<Unit filename="../../libutils/src/Makefile.am" />
-		<Unit filename="../../m4/acinclude.m4" />
-		<Unit filename="../../m4/auxiliary.m4" />
-		<Unit filename="../../m4/dependencies.m4" />
-		<Unit filename="../../m4/dvda.m4" />
-		<Unit filename="../../script.in" />
-		<Unit filename="../../script1.in" />
-		<Unit filename="../../script2.in" />
-		<Unit filename="../../src/Makefile.am" />
+		<Unit filename="../../BUGS">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../ChangeLog">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../EXAMPLES">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../HOWTO.conf">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../INSTALL">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../LIMITATIONS">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../Makefile.am">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../README">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../autogen">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../configure.ac">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../dvda-author.dap">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../dvda-author.nsi.in">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../dvda-author2.dap">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../dvda-author3.dap">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../libats2wav/src/Makefile.am">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../libfixwav/Makefile.am">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../libfixwav/src/Makefile.am">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../libiberty/Makefile.am">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../libiberty/src/Makefile.am">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../libutils/src/Makefile.am">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../m4/acinclude.m4">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../m4/auxiliary.m4">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../m4/dependencies.m4">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../m4/dvda.m4">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../script.in">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../script1.in">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../script2.in">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="../../src/Makefile.am">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
 		<Unit filename="../../src/amg2.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -191,6 +247,9 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 		<Unit filename="../../src/ats.c">
 			<Option compilerVar="CC" />
 			<Option compiler="gcc" use="0" buildCommand="$compiler $options -ftree-parallelize-loops=4 $includes -c $file -o $object " />
+		</Unit>
+		<Unit filename="../../src/ats2wav.c">
+			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../src/atsi2.c">
 			<Option compilerVar="CC" />
@@ -214,6 +273,7 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 		<Unit filename="../../src/include/amg.h" />
 		<Unit filename="../../src/include/asvs.h" />
 		<Unit filename="../../src/include/ats.h" />
+		<Unit filename="../../src/include/ats2wav.h" />
 		<Unit filename="../../src/include/atsi.h" />
 		<Unit filename="../../src/include/audio2.h" />
 		<Unit filename="../../src/include/auxiliary.h" />
