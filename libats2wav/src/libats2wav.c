@@ -34,7 +34,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 extern globalData globals;
 
-static unsigned char wav_header[44]= {'R','I','F','F',   //  0 - ChunkID
+unsigned char wav_header[44]= {'R','I','F','F',   //  0 - ChunkID
                                       0,0,0,0,            //  4 - ChunkSize (filesize-8)
                                       'W','A','V','E',    //  8 - Format
                                       'f','m','t',' ',    // 12 - SubChunkID
@@ -48,22 +48,6 @@ static unsigned char wav_header[44]= {'R','I','F','F',   //  0 - ChunkID
                                       'd','a','t','a',    // 36 - Subchunk2ID
                                       0,0,0,0             // 40 - Subchunk2Size
                                      };
-
-
-static uint8_t  T[2][6][36]= {{ {0}, {0},
-        {5, 4, 7, 6, 1, 0, 9, 8, 11, 10, 3, 2},
-        {9, 8, 11, 10, 1, 0, 3, 2, 13, 12, 15, 14, 5, 4 ,7, 6},
-        {13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 17, 16, 19, 18, 7, 6, 9, 8, 11, 10},
-        {9, 8, 11, 10, 1, 0, 3, 2, 13, 12, 15, 14, 17, 16, 19, 18, 5, 4, 7, 6, 21, 20, 23, 22}
-    },
-    {   {4,  1,  0,  5,  3,  2},
-        {8, 1, 0, 9, 3, 2, 10, 5, 4, 11, 7, 6},
-        {14, 7, 6, 15, 9, 8, 4, 1, 0, 16, 11, 10, 17, 13, 12, 5, 3, 2},
-        {20, 13, 12, 21, 15, 14, 8, 1, 0, 9, 3, 2, 22, 17, 16, 23, 19, 18, 10, 5, 4, 11, 7, 6},
-        {26, 19, 18, 27, 21, 20, 12, 1, 0, 13, 3, 2, 14, 5,  4,  28, 23, 22, 29, 25, 24, 15,  7, 6,  16, 9, 8, 17, 11, 10},
-        {28, 13, 12, 29, 15, 14,  8, 1, 0,  9, 3, 2, 30, 17, 16, 31, 19, 18, 32, 21, 20, 33, 23, 22, 10, 5, 4, 11, 7,  6, 34, 25, 24, 35, 27, 26 }
-    }
-};
 
 
 
@@ -176,170 +160,7 @@ ALWAYS_INLINE_GCC unsigned int process_data(_fileinfo_t* info, uint8_t* buf, uns
     return(n);
 }
 
-/*	 Convert LPCM samples to little-endian WAV samples and deinterleave.
 
-Here the interleaving that is performed during dvd_audio authoring is reversed so as to recover the proper byte order
-for a wave file.  The transformation for each of the 12 cases is specified by the following.
-A "round trip," i.e., authoring followed by extraction, is now illustrated for the 16-bit, 3-channel case.
-
-authoring:
-WAV:  0  1  2  3  4  5  6  7  8  9 10 11
-AOB:  5  4 11  10 1  0  3  2  7  6  9  8
-
-extraction:
-AOB: 0  1  2  3  4  5  6  7  8  9  10  11
-WAV: 5  4  7  6  1  0  9  8  11  10  3  2
-
-These values are encoded in T matrix to be found in src/include/multichannel.h
-
- */
-
-/*
- 16-bit 1  channel
-AOB: 0  1
-WAV: 1  0
-
- 16-bit 2  channel
-AOB: 0  1
-WAV: 1  0
-*/
-
-/*
- 16-bit 3  channel
-AOB: 0  1  2  3  4  5  6  7  8  9  10  11
-WAV: 5  4  7  6  1  0  9  8  11  10  3  2
-*/
-
-/*
- 16-bit 4  channel
-AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15
-WAV: 9  8  11  10  1  0  3  2  13  12  15  14  5  4  7  6
-*/
-
-
-/*
- 16-bit 5  channel
-AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19
-WAV: 13  12  15  14  1  0  3  2  5  4  17  16  19  18  7  6  9  8  11  10
-*/
-
-
-/*
- 16-bit 6  channel
-AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23
-WAV: 9  8  11  10  1  0  3  2  13  12  15  14  17  16  19  18  5  4  7  6  21  20  23  22
-*/
-
-
-/*
- 24-bit 1  channel
-AOB: 0  1  2  3  4  5
-WAV: 4  1  0  5  3  2
-*/
-
-
-/*
- 24-bit 2  channel
-AOB: 0  1  2  3  4  5  6  7  8  9  10  11
-WAV: 8  1  0  9  3  2  10  5  4  11  7  6
-*/
-
-
-/*
- 24-bit 3  channel
-AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17
-WAV: 14  7  6  15  9  8  4  1  0  16  11  10  17  13  12  5  3  2
-*/
-
-
-/*
- 24-bit 4  channel
-AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23
-WAV: 20  13  12  21  15  14  8  1  0  9  3  2  22  17  16  23  19  18  10  5  4  11  7  6
-*/
-
-/*
- 24-bit 5  channel
-AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29
-WAV: 26  19  18  27  21  20  12  1  0  13  3  2  14  5  4  28  23  22  29  25  24  15  7  6  16  9  8  17  11  10
-*/
-/*
- 24-bit 6  channel
-AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35
-WAV: 28  13  12  29  15  14  8  1  0  9  3  2  30  17  16  31  19  18  32  21  20  33  23  22  10  5  4  11  7  6  34  25  24  35  27  26
-*/
-
-
-
-
-ALWAYS_INLINE_GCC static void deinterleave_24_bit_sample_extended(uint8_t channels, int count, uint8_t *buf)
-{
-    // Processing 16-bit case
-    int i, size=channels*6;
-    // Requires C99
-    uint8_t _buf[size];
-
-    for (i=0; i < count ; i += size)
-        permutation(buf+i, _buf, 1, channels, T, size);
-
-}
-
-ALWAYS_INLINE_GCC static void deinterleave_sample_extended(uint8_t channels, int count, uint8_t *buf)
-{
-
-    // Processing 16-bit case
-    int x,i, size=channels*4;
-    // Requires C99
-    uint8_t _buf[size];
-
-    switch (channels)
-    {
-    case 1:
-    case 2:
-        for (i=0; i<count; i+= 2 )
-        {
-            x= buf[i ];
-            buf[i ] = buf[i+ 1 ];
-            buf[i+ 1 ]=x;
-        }
-        break;
-
-    default:
-        for (i=0; i < count ; i += size)
-            permutation(buf+i, _buf, 0, channels, T, size);
-
-    }
-}
-
-
-
-ALWAYS_INLINE_GCC static void convert_buffer(_fileinfo_t* info, uint8_t* buf, int count)
-{
-
-    switch (info->bitspersample)
-    {
-
-    case 24:
-
-
-        deinterleave_24_bit_sample_extended(info->channels, count, buf);
-        break;
-
-    case 16:
-
-
-        deinterleave_sample_extended(info->channels, count, buf);
-        break;
-
-    default:
-        // FIX: Handle 20-bit audio and maybe convert other formats.
-        printf("[ERR]  %d bit %d channel audio is not supported\n",info->bitspersample,info->channels);
-        return;
-        //exit(EXIT_FAILURE);
-
-    }
-
-}
 
 
 ALWAYS_INLINE_GCC static void wav_open(_fileinfo_t* info, char* outfile)
@@ -500,6 +321,8 @@ void process_wav_file(char* outfile, const char* outdir, int length, _fileinfo_t
 
 int ats2wav(const char* filename, const char* outdir, extractlist *extract)
 {
+
+#if 0
     FILE* file=NULL;
     FILE* fp=NULL;
 
@@ -728,6 +551,8 @@ NEXT:
             i++;
         }
     }
-
+#endif
     return(EXIT_SUCCESS);
 }
+
+

@@ -24,7 +24,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 */
 
-
+#if 0
 
 #include "libats2wav.h"
 #include "c_utils.h"
@@ -937,3 +937,4 @@ int decode_ats(const char* filename, const char* outdir, extractlist *extract)
 
 /* Searches sequence of bytes tab[] in file pointer fp and when reaching it, returns, in last arg, pointer to file offset of last tab byte or NULL if fails to find before EOF is reached or if fp == NULL. */
 
+#endif

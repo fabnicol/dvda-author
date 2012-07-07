@@ -29,15 +29,15 @@
 // Performs permutation of buf by replacing buf[j] with associate value, depending on pits per second, channel number,
 // and whether one converts to AOB or extracts from AOB.
 
-ALWAYS_INLINE_GCC static inline void permutation(uint8_t *buf, uint8_t *_buf, int bits_per_second_flag, uint8_t channels, uint8_t reference_table[][6][36], int size)
+ALWAYS_INLINE_GCC static inline void permutation(uint8_t *buf_in, uint8_t *buf_out, int bits_per_second_flag, uint8_t channels, uint8_t reference_table[][6][36], int size)
 {
     int j;
 
 
     for (j=0; j < size ; j++)
-        _buf[j] = buf[reference_table[bits_per_second_flag][channels-1][j]];
+        buf_out[j] = buf_in[reference_table[bits_per_second_flag][channels-1][j]];
 
-    memcpy(buf,_buf, size);
+    //memcpy(buf,_buf, size);
 }
 
 
