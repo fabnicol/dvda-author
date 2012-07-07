@@ -61,6 +61,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
 extern globalData globals;
+extern unsigned char* wav_header;
 
 /*
 Multichannel reference tables are structured as follows:
@@ -84,6 +85,22 @@ static uint8_t  S[2][6][36]=
         {8,  7,  11,  10,  20,  19,  23,  22,  6,  9,  18,  21,  2,  1,  5,  4,  14,  13,  17,  16,  0,  3,  12,  15},
         {8, 7, 11, 10, 14, 13, 23, 22, 26, 25, 29, 28, 6, 9, 12, 21, 24, 27, 2, 1, 5, 4, 17, 16, 20, 19, 0, 3, 15, 18},
         {8, 7, 11, 10, 26, 25, 29, 28, 6, 9, 24, 27, 2, 1, 5, 4, 14, 13, 17, 16, 20, 19, 23, 22, 32, 31, 35, 34, 0, 3, 12, 15, 18, 21, 30, 33 }
+    }
+};
+
+
+static uint8_t  R[2][6][36]= {{ {0}, {0},
+        {5, 4, 7, 6, 1, 0, 9, 8, 11, 10, 3, 2},
+        {9, 8, 11, 10, 1, 0, 3, 2, 13, 12, 15, 14, 5, 4 ,7, 6},
+        {13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 17, 16, 19, 18, 7, 6, 9, 8, 11, 10},
+        {9, 8, 11, 10, 1, 0, 3, 2, 13, 12, 15, 14, 17, 16, 19, 18, 5, 4, 7, 6, 21, 20, 23, 22}
+    },
+    {   {4,  1,  0,  5,  3,  2},
+        {8, 1, 0, 9, 3, 2, 10, 5, 4, 11, 7, 6},
+        {14, 7, 6, 15, 9, 8, 4, 1, 0, 16, 11, 10, 17, 13, 12, 5, 3, 2},
+        {20, 13, 12, 21, 15, 14, 8, 1, 0, 9, 3, 2, 22, 17, 16, 23, 19, 18, 10, 5, 4, 11, 7, 6},
+        {26, 19, 18, 27, 21, 20, 12, 1, 0, 13, 3, 2, 14, 5,  4,  28, 23, 22, 29, 25, 24, 15,  7, 6,  16, 9, 8, 17, 11, 10},
+        {28, 13, 12, 29, 15, 14,  8, 1, 0,  9, 3, 2, 30, 17, 16, 31, 19, 18, 32, 21, 20, 33, 23, 22, 10, 5, 4, 11, 7,  6, 34, 25, 24, 35, 27, 26 }
     }
 };
 
@@ -775,9 +792,9 @@ int audio_open(fileinfo_t* info, const char* ioflag)
         if (!globals.nooutput)
         {
             info->header_size=sizeof(wav_header);
-            fwrite(wav_header,info->header_size,1,info->fpout);
+            fwrite(wav_header,info->header_size,1,info->audio->fp);
 
-            fseek(info->audio->fp, info->header_size,SEEK_SET);
+           // fseek(info->audio->fp, info->header_size,SEEK_SET);
 
         }
     }
@@ -969,48 +986,173 @@ Now follows the actual manipulation code.  Note that performing the transformati
 */
 
 
-ALWAYS_INLINE_GCC  static void interleave_16_bit_sample_extended(uint8_t channels, int count, uint8_t * buf)
+ALWAYS_INLINE_GCC  static void interleave_16_bit_sample_extended(uint8_t channels, int count, uint8_t * buf_in, uint8_t * buf_out )
+{
+    int i, size=channels*4;
+    switch (channels)
+    {
+    case 1:
+    case 2:
+        for (i=0;i<count;i+=2)
+        {
+            buf_out[i]=buf_in[i+1];
+            buf_out[i+1]=buf_in[i];
+        }
+
+        break;
+
+    default:
+        for (i=0; i < count; i += size)
+            permutation(buf_in+i,buf_out+i, 0, channels, S, size);
+        break;
+    }
+}
+
+
+ALWAYS_INLINE_GCC  static void interleave_24_bit_sample_extended(uint8_t channels, int count, uint8_t * buf_in, uint8_t* buf_out)
+
 {
 
-    int x,i, size=channels*4;
-    uint8_t _buf[size];
+    int i, size=channels*6;
+
+    for (i=0; i < count; i += size)
+        permutation(buf_in+i,buf_out+i, 1, channels, S, size);
+
+
+}
+
+/*	 Convert LPCM samples to little-endian WAV samples and deinterleave.
+
+Here the interleaving that is performed during dvd_audio authoring is reversed so as to recover the proper byte order
+for a wave file.  The transformation for each of the 12 cases is specified by the following.
+A "round trip," i.e., authoring followed by extraction, is now illustrated for the 16-bit, 3-channel case.
+
+authoring:
+WAV:  0  1  2  3  4  5  6  7  8  9 10 11
+AOB:  5  4 11  10 1  0  3  2  7  6  9  8
+
+extraction:
+AOB: 0  1  2  3  4  5  6  7  8  9  10  11
+WAV: 5  4  7  6  1  0  9  8  11  10  3  2
+
+These values are encoded in T matrix to be found in src/include/multichannel.h
+
+ */
+
+/*
+ 16-bit 1  channel
+AOB: 0  1
+WAV: 1  0
+
+ 16-bit 2  channel
+AOB: 0  1
+WAV: 1  0
+*/
+
+/*
+ 16-bit 3  channel
+AOB: 0  1  2  3  4  5  6  7  8  9  10  11
+WAV: 5  4  7  6  1  0  9  8  11  10  3  2
+*/
+
+/*
+ 16-bit 4  channel
+AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15
+WAV: 9  8  11  10  1  0  3  2  13  12  15  14  5  4  7  6
+*/
+
+
+/*
+ 16-bit 5  channel
+AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19
+WAV: 13  12  15  14  1  0  3  2  5  4  17  16  19  18  7  6  9  8  11  10
+*/
+
+
+/*
+ 16-bit 6  channel
+AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23
+WAV: 9  8  11  10  1  0  3  2  13  12  15  14  17  16  19  18  5  4  7  6  21  20  23  22
+*/
+
+
+/*
+ 24-bit 1  channel
+AOB: 0  1  2  3  4  5
+WAV: 4  1  0  5  3  2
+*/
+
+
+/*
+ 24-bit 2  channel
+AOB: 0  1  2  3  4  5  6  7  8  9  10  11
+WAV: 8  1  0  9  3  2  10  5  4  11  7  6
+*/
+
+
+/*
+ 24-bit 3  channel
+AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17
+WAV: 14  7  6  15  9  8  4  1  0  16  11  10  17  13  12  5  3  2
+*/
+
+
+/*
+ 24-bit 4  channel
+AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23
+WAV: 20  13  12  21  15  14  8  1  0  9  3  2  22  17  16  23  19  18  10  5  4  11  7  6
+*/
+
+/*
+ 24-bit 5  channel
+AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29
+WAV: 26  19  18  27  21  20  12  1  0  13  3  2  14  5  4  28  23  22  29  25  24  15  7  6  16  9  8  17  11  10
+*/
+/*
+ 24-bit 6  channel
+AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35
+WAV: 28  13  12  29  15  14  8  1  0  9  3  2  30  17  16  31  19  18  32  21  20  33  23  22  10  5  4  11  7  6  34  25  24  35  27  26
+*/
+
+
+ALWAYS_INLINE_GCC static void deinterleave_24_bit_sample_extended(uint8_t channels, int count, uint8_t *buf_in, uint8_t *buf_out)
+{
+    // Processing 16-bit case
+    int i, size=channels*6;
+    // Requires C99
+
+    for (i=0; i < count ; i += size)
+        permutation(buf_in+i, buf_out+i, 1, channels, R, size);
+
+}
+
+ALWAYS_INLINE_GCC static void deinterleave_16_bit_sample_extended(uint8_t channels, int count, uint8_t *buf_in, uint8_t *buf_out)
+{
+
+    // Processing 16-bit case
+    int i, size=channels*4;
+    // Requires C99
 
     switch (channels)
     {
     case 1:
     case 2:
-
-        for (i=0;i<count;i+=2)
-            x=buf[i+1], buf[i+1]=buf[i], buf[i]=x;
+        for (i=0; i<count; i+= 2 )
+        {
+            buf_out[i ] = buf_in[i+1];
+            buf_out[i+1] = buf_in[i];
+        }
         break;
 
     default:
+        for (i=0; i < count ; i += size)
+            permutation(buf_in+i, buf_out+i, 0, channels, R, size);
 
-        for (i=0; i < count; i += size)
-
-            permutation(buf+i,_buf, 0, channels, S, size);
-
-
-
-        break;
     }
-
 }
 
 
-ALWAYS_INLINE_GCC  static void interleave_24_bit_sample_extended(uint8_t channels, int count, uint8_t * buf)
 
-{
-
-    int i, size=channels*6;
-    uint8_t _buf[size];
-
-
-    for (i=0; i < count; i += size)
-        permutation(buf+i,_buf, 1, channels, S, size);
-
-
-}
 
 ALWAYS_INLINE_GCC  uint8_t read_count(uint32_t *bytesread, uint32_t count, uint8_t  offset, uint8_t * buf, fileinfo_t* info)
 {
@@ -1063,7 +1205,7 @@ ALWAYS_INLINE_GCC  uint8_t read_count(uint32_t *bytesread, uint32_t count, uint8
         if (info->audio->bytesread+n > info->numbytes)
         {
             n=info->numbytes-info->audio->bytesread;
-            EXPLAIN("%s%d%s%d\n","READ CUT",n-info->numbytes+info->audio->bytesread,"/", n)
+            EXPLAIN("%s%lld%s%d\n","READ CUT",n-info->numbytes+info->audio->bytesread,"/", n)
         }
         info->audio->bytesread+=n;
         *bytesread+=n;
@@ -1162,9 +1304,12 @@ ALWAYS_INLINE_GCC  static uint32_t read_track_file_into_buffer(uint8_t* buf, fil
 
 
 // Read numbytes of audio data, and convert it to DVD byte order
-uint32_t audio_process(fileinfo_t* info, uint8_t* buf, uint32_t count)
+uint32_t audio_process(fileinfo_t* info, uint8_t* buf_in,uint8_t* buf_out, uint32_t count, const char* ioflag)
 {
     uint32_t  n=0;
+
+if (ioflag[0] == 'r')
+{
 
 
     //PATCH: provided for null audio characteristics, to ensure non-zero divider
@@ -1203,10 +1348,11 @@ uint32_t audio_process(fileinfo_t* info, uint8_t* buf, uint32_t count)
 
     }
 #endif
+}
 
 /* First read audio file into a buffer for count*4 bytes */
 
-    n=read_track_file_into_buffer(buf, info, &count);
+    n=read_track_file_into_buffer(buf_in, info, &count);
 
 
 
@@ -1225,15 +1371,21 @@ uint32_t audio_process(fileinfo_t* info, uint8_t* buf, uint32_t count)
 
 
         // Processing 16-bit audio
-        interleave_24_bit_sample_extended(info->channels, count, buf);
-
+        if (ioflag[0] == 'r')
+            interleave_24_bit_sample_extended(info->channels, count, buf_in, buf_out);
+        else
+            deinterleave_24_bit_sample_extended(info->channels, count, buf_in, buf_out);
 
         break;
 
     case 16:
 
         // Processing 16-bit audio
-        interleave_16_bit_sample_extended(info->channels, count, buf);
+        if (ioflag[0] == 'r')
+            interleave_16_bit_sample_extended(info->channels, count, buf_in, buf_out);
+        else
+            deinterleave_16_bit_sample_extended(info->channels, count, buf_in, buf_out);
+
 
         break;
 
@@ -1261,7 +1413,7 @@ uint32_t audio_process(fileinfo_t* info, uint8_t* buf, uint32_t count)
     return(n);
 }
 
-int audio_close(fileinfo_t* info)
+int audio_close(fileinfo_t* info,const char* ioflag)
 {
     if (info->type==AFMT_WAVE)
     {

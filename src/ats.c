@@ -44,7 +44,29 @@ extern globalData globals;
 uint8_t pack_start_code[4]={0x00,0x00,0x01,0xBA};
 uint8_t system_header_start_code[4]={0x00,0x00,0x01,0xBB};
 uint8_t program_mux_rate_bytes[3]={0x01,0x89,0xc3};
-fpos_t fileoffset;
+uint64_t fileoffset;
+
+
+
+
+inline   void  write_search_sequence(uint8_t* sequence, size_t sizeofsequence , FILE* filepointer, const char* ioflag)
+{
+
+            if (globals.veryverbose)
+                    hexdump_pointer(sequence, sizeofsequence);
+
+            if (ioflag[0] == 'w')
+                {
+                   if (!globals.nooutput)
+                    fwrite (sequence,sizeofsequence,1,filepointer);
+
+                    fileoffset+=  sizeofsequence;
+                }
+            else
+                parse_file_for_sequence(filepointer, sequence, sizeofsequence, &fileoffset+1) ;
+}
+
+
 
 /* pack_scr was taken from mplex (part of the mjpegtools) */
 #define MARKER_MPEG2_SCR 1
@@ -113,12 +135,6 @@ ALWAYS_INLINE_GCC  void pack_pts(uint8_t PTS_DTS_data[10],uint32_t pts)
 }
 
 
-#define INPUT_OUTPUT_SELECT(X,Y,Z)    if (globals.veryverbose)       hexdump_pointer(X, sizeof(X);\
-                                    if (ioflag[0] == 'w') {\
-                                       if (!globals.nooutput) fwrite (X,sizeof(X),1,Z);\
-                                        Y+=sizeof(X);\
-                                    }\
-                                    else  parse_file_for_sequence(Z, X, sizeof(X), &Y+1) ;\
 
 
    // parse AOB until finds PACK HEADER bytes and return pointer to pack header sequence last offset+1
@@ -142,9 +158,11 @@ ALWAYS_INLINE_GCC  void process_pack_header(FILE* fp,  uint64_t SCRint, const ch
 
     pack_scr(scr_bytes,(SCRint/300),(SCRint%300));
 
-    IO= (ioflag[0] == 'w')? WRITE : READ;
+    if (globals.veryverbose) {
+            IO= (ioflag[0] == 'w')? WRITE : READ;
 
-    EXPLAIN("%s%s%d\n", IO, " PACK HEADER into file, size is: ", 4+6+3+1);
+            EXPLAIN("%s%s%d\n", IO, " PACK HEADER into file, size is: ", 4+6+3+1);
+    }
 
     uint8_t tab[4+6+3+1]={0};
 
@@ -154,15 +172,13 @@ ALWAYS_INLINE_GCC  void process_pack_header(FILE* fp,  uint64_t SCRint, const ch
     memcpy(tab+4+6,program_mux_rate_bytes,3);
     memcpy(tab+4+6+3,pack_stuffing_length_byte,1);
 
-    INPUT_OUTPUT_SELECT(tab,sizeof(tab), fileoffset, fp)
-
-    return fileoffset;
+    write_search_sequence(tab,sizeof(tab), fp,ioflag);
 
 
 
 }
 
-ALWAYS_INLINE_GCC  void process_system_header(FILE* fp)
+ALWAYS_INLINE_GCC  void process_system_header(FILE* fp,const char* ioflag)
 {
     uint8_t header_length[2]={0x00,0x0c};
     uint8_t rate_bound[3]={0x80,0xc4,0xe1};
@@ -185,12 +201,12 @@ ALWAYS_INLINE_GCC  void process_system_header(FILE* fp)
     memcpy(tab+4+2+3+1+1+1,stream_info1,3);
     memcpy(tab+4+2+3+1+1+3,stream_info2,3);
 
-    INPUT_OUTPUT_SELECT(tab,sizeof(tab), fileoffset,fp)
+    write_search_sequence(tab,sizeof(tab), fp,ioflag);
 
 
 }
 
-ALWAYS_INLINE_GCC  void process_pes_padding(FILE* fp,uint16_t length)
+ALWAYS_INLINE_GCC  void process_pes_padding(FILE* fp,uint16_t length,const char* ioflag)
 {
     uint8_t packet_start_code_prefix[3]={0x00,0x00,0x01};
     uint8_t stream_id[1]={0xbe};
@@ -212,11 +228,11 @@ ALWAYS_INLINE_GCC  void process_pes_padding(FILE* fp,uint16_t length)
     memcpy(tab+3+1,length_bytes,2);
     memcpy(tab+3+1+2,ff_buf,length);
 
-    INPUT_OUTPUT_SELECT(tab, sizeof(tab),fileoffset,fp)
+    write_search_sequence(tab, sizeof(tab),fp,ioflag);
 
 }
 
-ALWAYS_INLINE_GCC  void process_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uint8_t extension_flag, uint64_t PTS)
+ALWAYS_INLINE_GCC  void process_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uint8_t extension_flag, uint64_t PTS,const char* ioflag)
 {
     uint8_t packet_start_code_prefix[3]={0x00,0x00,0x01};
     uint8_t stream_id[1]={0xbd}; // private_stream_1
@@ -267,11 +283,11 @@ ALWAYS_INLINE_GCC  void process_audio_pes_header(FILE* fp, uint16_t PES_packet_l
 
     }
 
-    INPUT_OUTPUT_SELECT(tab, sizeof(tab)-(!extension_flag*3), fileoffset,fp)
+    write_search_sequence(tab, sizeof(tab)-(!extension_flag*3), fp,ioflag);
 
 }
 
-ALWAYS_INLINE_GCC  void process_lpcm_header(FILE* fp, int header_length,fileinfo_t* info, uint64_t pack_in_title, uint8_t counter)
+ALWAYS_INLINE_GCC  void process_lpcm_header(FILE* fp, int header_length,fileinfo_t* info, uint64_t pack_in_title, uint8_t counter,const char* ioflag)
 {
     uint8_t sub_stream_id[1]={0xa0};
 
@@ -416,7 +432,7 @@ ALWAYS_INLINE_GCC  void process_lpcm_header(FILE* fp, int header_length,fileinfo
     memcpy(tab+1+1+2+2+1+1+1+1+1,unknown3,1);
     memcpy(tab+1+1+2+2+1+1+1+1+1+1,zero,header_length-8);
 
-    INPUT_OUTPUT_SELECT(tab, sizeoftab, fileoffset,fp)
+    write_search_sequence(tab, sizeoftab,fp, ioflag);
 
 }
 
@@ -506,7 +522,7 @@ ALWAYS_INLINE_GCC uint64_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
 // Lee Feldkamp patch for version 09.09 build 12
 // corrects differences with canon version starting with version 08.12 subsequent to multichannel authoring
 
-ALWAYS_INLINE_GCC int process_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf, int bytesinbuffer, uint64_t pack_in_title,int pack_in_file,ioflag)
+ALWAYS_INLINE_GCC int process_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf, int bytesinbuffer, uint64_t pack_in_title,int pack_in_file,const char* ioflag)
 {
   uint64_t PTS;
   uint64_t SCR;
@@ -601,14 +617,15 @@ ALWAYS_INLINE_GCC int process_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* au
   return(audio_bytes);
 }
 
-int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,char* ioflag)
+int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,const char* ioflag)
 {
 
     FILE* aobfilepointer;
     char aobfile[CHAR_BUFSIZ+13+1];
     int i=0, pack=0, pack_in_file=0, filenum=1;
     uint32_t bytesinbuf=0, n=0, lpcm_payload=0;
-    uint8_t audio_buf[AUDIO_BUFFER_SIZE];
+    uint8_t audio_buf_in[AUDIO_BUFFER_SIZE];
+    uint8_t audio_buf_out[AUDIO_BUFFER_SIZE];
     uint64_t pack_in_title=0;
 
     STRING_WRITE_CHAR_BUFSIZ(aobfile, "%s"SEPARATOR"ATS_%02d_%d.AOB",audiotsdir,titleset,filenum)
@@ -616,12 +633,11 @@ int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,cha
 
     /* Open the first file and initialise the input audio buffer */
 
-    char* ioflag_files=(ioflag[0]='w')? "rb" : "wb+";
 
-    if (audio_open(&files[i], ioflag_files)!=0)
+    if (audio_open(&files[i], ioflag)!=0)
         EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not open file in process_ats.")
 
-    n=audio_process(&files[i],audio_buf,sizeof(audio_buf)-bytesinbuf,ioflag);
+    n=audio_process(&files[i],audio_buf_in,audio_buf_out,AUDIO_BUFFER_SIZE-bytesinbuf,ioflag);
     bytesinbuf=n;
 
     lpcm_payload = files[i].lpcm_payload;
@@ -636,9 +652,9 @@ int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,cha
         if (bytesinbuf >= lpcm_payload)
         {
             //pack_in_file is not used in write_pes_packet
-            n=process_pes_packet(aobfilepointer,&files[i],audio_buf,bytesinbuf,pack_in_title,pack_in_file,ioflag);
+            n=process_pes_packet(aobfilepointer,&files[i],audio_buf_out,bytesinbuf,pack_in_title,pack_in_file,ioflag);
 
-            memmove(audio_buf,&audio_buf[n],bytesinbuf-n);// could be replaced with audio_buf << 32*n
+            memmove(audio_buf_out,&audio_buf_out[n],bytesinbuf-n);// could be replaced with audio_buf << 32*n
             bytesinbuf -= n;
 
             pack++;
@@ -656,7 +672,7 @@ int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,cha
 
         if (bytesinbuf < lpcm_payload)
         {
-            n=audio_process(&files[i],&audio_buf[bytesinbuf],sizeof(audio_buf)-bytesinbuf,ioflag);
+            n=audio_process(&files[i],&audio_buf_in[bytesinbuf],&audio_buf_out[bytesinbuf],AUDIO_BUFFER_SIZE-bytesinbuf,ioflag);
             bytesinbuf+=n;
             if (n==0)   /* We have reached the end of the input file */
             {
@@ -670,7 +686,7 @@ int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,cha
                     /* If the current track is a different audio format, we must start a new title. */
                     if ((files[i].samplerate!=files[i-1].samplerate) || (files[i].channels!=files[i-1].channels) || (files[i].bitspersample!=files[i-1].bitspersample) || (files[i].newtitle))
                     {
-                        n=process_pes_packet(aobfilepointer,&files[i-1],audio_buf,bytesinbuf,pack_in_title,pack_in_file,ioflag); // Empty audio buffer.
+                        n=process_pes_packet(aobfilepointer,&files[i-1],audio_buf_out,bytesinbuf,pack_in_title,pack_in_file,ioflag); // Empty audio buffer.
                         pack++;
                         pack_in_title=0;
                         pack_in_file=0;
@@ -691,7 +707,7 @@ int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,cha
                         EXIT_ON_RUNTIME_ERROR
                     }
 
-                    n=audio_process(&files[i],&audio_buf[bytesinbuf],sizeof(audio_buf)-bytesinbuf,ioflag);
+                    n=audio_process(&files[i],&audio_buf_in[bytesinbuf],&audio_buf_out[bytesinbuf],AUDIO_BUFFER_SIZE-bytesinbuf,ioflag);
                     bytesinbuf+=n;
                     foutput("[INF]  Processing %s\n",files[i].filename);
                 }
@@ -704,7 +720,7 @@ int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,cha
                     }
                     else
                     {
-                        n=process_pes_packet(aobfilepointer,&files[i-1],audio_buf,bytesinbuf,pack_in_title,pack_in_file,ioflag); // Empty audio buffer.
+                        n=process_pes_packet(aobfilepointer,&files[i-1],audio_buf_out,bytesinbuf,pack_in_title,pack_in_file,ioflag); // Empty audio buffer.
                         bytesinbuf=0;
                         pack++;
                         pack_in_title++;
