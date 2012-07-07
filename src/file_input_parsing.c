@@ -32,7 +32,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "structures.h"
 #include "file_input_parsing.h"
 #include "c_utils.h"
-#include "libats2wav.h"
+#include "ats2wav.h"
 #include "ports.h"
 #include "commonvars.h"
 

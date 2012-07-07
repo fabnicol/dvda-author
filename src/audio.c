@@ -644,10 +644,6 @@ int wav_getinfo(fileinfo_t* info)
     uint8_t header[info->header_size];
     memset(header, 0, info->header_size);
 
-    if (header == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not allocate header memory")
-
-
-
 
     /* PATCH: real size on disc is needed */
 #if defined __WIN32__

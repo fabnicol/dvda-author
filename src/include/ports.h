@@ -44,8 +44,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 	struct rusage end;\
 	getrusage(RUSAGE_SELF, &end);\
 	unsigned int SEC1=end.ru_utime.tv_sec - timer.start->ru_utime.tv_sec - timer.nothing->ru_utime.tv_sec, SEC2=end.ru_stime.tv_sec- timer.start->ru_stime.tv_sec - timer.nothing->ru_stime.tv_sec;\
-				printf(INFO_EXECTIME1, SEC1/60, SEC1%60 );\
-				printf(INFO_EXECTIME2, SEC2/60, SEC2%60 );\
+    unsigned int MICRSEC1=end.ru_utime.tv_usec - timer.start->ru_utime.tv_usec - timer.nothing->ru_utime.tv_usec, MICRSEC2=end.ru_stime.tv_usec- timer.start->ru_stime.tv_usec - timer.nothing->ru_stime.tv_usec;\
+				printf(INFO_EXECTIME1, SEC1/60, SEC1%60, MICRSEC1 );\
+				printf(INFO_EXECTIME2, SEC2/60, SEC2%60, MICRSEC2 );\
 				} while(0);
 
 
