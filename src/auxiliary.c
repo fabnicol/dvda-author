@@ -312,10 +312,10 @@ void check_settings_file()
     /* If a command-line build system is not used, e.g. with editors like Code::Blocks, it is unwieldy to define SETTINGSFILE so creating automatically to avoid crashes */
     /* It may also be useful if configuration file was installed in a directory with inappropriate access rights */
 
-    if (fopen(SETTINGSFILE, "r") ==  NULL)
+    if (fopen(SETTINGSFILE, "rb") ==  NULL)
     {
         foutput("[WAR]  Could not open settings file, creating one in %s...\n", SETTINGSFILE);
-        FILE* settingsfile=fopen(SETTINGSFILE, "w");
+        FILE* settingsfile=fopen(SETTINGSFILE, "wb");
         if (settingsfile == NULL)
         {
            foutput("[ERR]  Could not create settings file in path %s\n       Check that you have adequate administrative rights\n       Exiting...\n", SETTINGSFILE);

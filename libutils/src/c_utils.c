@@ -1467,14 +1467,15 @@ system(cml);
 
     return errno;
 }
-void  parse_file_for_sequence(file* fp, uint8_t* tab, size_t, sizeoftab, uint64_t* fileoffset);
+
+void  parse_file_for_sequence(FILE* fp, uint8_t* tab, size_t sizeoftab, uint64_t* fileoffset)
 {
 
     if (fp == NULL) { fileoffset=NULL; return;}
     int i=0;
     while (i < sizeoftab)
         {
-            while (fgetc(fp) != (int) tab[i])
+            if (fgetc(fp) != (int) tab[i])
                 i=0;
             else
                 i++;
@@ -1485,6 +1486,6 @@ void  parse_file_for_sequence(file* fp, uint8_t* tab, size_t, sizeoftab, uint64_
       if (fgetpos(fp, *fileoffset) != 0)
         fileoffset=NULL; // error
     }
-      else fileoffset=NULL;
+      else fileoffset=NULL; // not found
 
 }

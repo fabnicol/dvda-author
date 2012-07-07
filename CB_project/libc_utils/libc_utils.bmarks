@@ -1,59 +1,40 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <BrowseTracker_layout_file>
 	<ActiveTarget name="Release" />
-	<File name="../../libutils/src/include/export.h" open="1" top="0" tabpos="3">
+	<File name="../../libutils/src/include/winport.h" open="1" top="0" tabpos="9">
 		<Cursor position="0" topLine="0" />
-		<BrowseMarks positions="" />
-		<Book_Marks positions="" />
-	</File>
-	<File name="../../libutils/src/include/c_utils.h" open="1" top="0" tabpos="2">
-		<Cursor position="2333" topLine="62" />
-		<BrowseMarks positions="" />
-		<Book_Marks positions="" />
-	</File>
-	<File name="../../libutils/src/include/libiberty.h" open="1" top="0" tabpos="5">
-		<Cursor position="0" topLine="0" />
-		<BrowseMarks positions="" />
-		<Book_Marks positions="" />
-	</File>
-	<File name="../../libutils/src/c_utils.c" open="1" top="0" tabpos="1">
-		<Cursor position="38245" topLine="1380" />
-		<BrowseMarks positions="10592" />
-		<Book_Marks positions="10549" />
 	</File>
 	<File name="../../libutils/src/include/format.h" open="1" top="0" tabpos="4">
 		<Cursor position="0" topLine="0" />
-		<BrowseMarks positions="" />
-		<Book_Marks positions="" />
+	</File>
+	<File name="../../libutils/src/include/libiberty.h" open="1" top="0" tabpos="5">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="../../libutils/src/include/export.h" open="1" top="0" tabpos="3">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="../../libutils/src/c_utils.c" open="1" top="0" tabpos="1">
+		<Cursor position="35253" topLine="1293" />
+		<BrowseMarks positions="10592" />
+		<Book_Marks positions="10549" />
 	</File>
 	<File name="../../libutils/src/winport.c" open="1" top="0" tabpos="11">
 		<Cursor position="0" topLine="0" />
-		<BrowseMarks positions="" />
-		<Book_Marks positions="" />
+	</File>
+	<File name="../../libutils/src/include/stream_encoder.h" open="1" top="0" tabpos="8">
+		<Cursor position="10447" topLine="179" />
 	</File>
 	<File name="../../libutils/src/include/ordinals.h" open="1" top="0" tabpos="6">
 		<Cursor position="0" topLine="0" />
-		<BrowseMarks positions="" />
-		<Book_Marks positions="" />
 	</File>
-	<File name="../../libutils/src/include/winport.h" open="1" top="0" tabpos="9">
-		<Cursor position="0" topLine="0" />
-		<BrowseMarks positions="" />
-		<Book_Marks positions="" />
-	</File>
-	<File name="../../libutils/src/include/stream_encoder.h" open="1" top="0" tabpos="8">
-		<Cursor position="73993" topLine="1517" />
-		<BrowseMarks positions="" />
-		<Book_Marks positions="" />
+	<File name="../../libutils/src/include/c_utils.h" open="1" top="0" tabpos="2">
+		<Cursor position="4960" topLine="164" />
+		<BrowseMarks positions="5971" />
 	</File>
 	<File name="../../libutils/src/private/private_c_utils.h" open="1" top="0" tabpos="10">
 		<Cursor position="0" topLine="0" />
-		<BrowseMarks positions="" />
-		<Book_Marks positions="" />
 	</File>
 	<File name="../../libutils/src/include/stream_decoder.h" open="1" top="0" tabpos="7">
 		<Cursor position="60083" topLine="1304" />
-		<BrowseMarks positions="" />
-		<Book_Marks positions="" />
 	</File>
 </BrowseTracker_layout_file>
