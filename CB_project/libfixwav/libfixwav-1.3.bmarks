@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <BrowseTracker_layout_file>
 	<ActiveTarget name="Release" />
-	<File name="../../libfixwav/src/include/repair.h" open="0" top="0" tabpos="0">
-		<Cursor position="159" topLine="0" />
+	<File name="../../libfixwav/src/repair.c" open="0" top="0" tabpos="0">
+		<Cursor position="8814" topLine="238" />
 	</File>
 	<File name="../../libfixwav/src/checkParameters.c" open="1" top="0" tabpos="1">
 		<Cursor position="0" topLine="0" />
+		<BrowseMarks positions="" />
+		<Book_Marks positions="" />
 	</File>
 	<File name="../../libfixwav/src/manager.c" open="0" top="0" tabpos="0">
 		<Cursor position="9387" topLine="315" />
 	</File>
-	<File name="../../libfixwav/src/repair.c" open="0" top="0" tabpos="0">
-		<Cursor position="8814" topLine="238" />
+	<File name="../../libfixwav/src/include/repair.h" open="0" top="0" tabpos="0">
+		<Cursor position="159" topLine="0" />
 	</File>
 </BrowseTracker_layout_file>

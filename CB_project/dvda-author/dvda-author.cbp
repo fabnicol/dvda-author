@@ -104,6 +104,7 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 				<Compiler>
 					<Add option="-march=core2" />
 					<Add option="-O3" />
+					<Add option="-g" />
 					<Add option="-std=c99" />
 					<Add option="-D__CB__" />
 					<Add option="-D_FILE_OFFSET_BITS=64" />
@@ -122,19 +123,15 @@ c:\dvda-author-10.06\spumux -v 2 c:\newtempdir\spu_xmltemp_3.xml < c:\newtempdir
 					<Add directory="../../src/include" />
 					<Add directory="../../libutils/src/include" />
 					<Add directory="../../libfixwav/src/include" />
-					<Add directory="../../libats2wav" />
 					<Add directory="../../" />
-					<Add directory="../../libats2wav/src/include" />
 					<Add directory="../../libiberty/src/include" />
 					<Add directory="../../libs/include" />
 					<Add directory="../../libs/include/libsoxconvert" />
 				</Compiler>
 				<Linker>
-					<Add option="-s" />
 					<Add option="-lFLAC -lsox -logg" />
 					<Add option="-Xlinker --allow-multiple-definition" />
 					<Add library="../libc_utils/libc_utils.a" />
-					<Add library="../libats2wav/libats2wav.a" />
 					<Add library="../libfixwav/bin/Release/libfixwav-1.3.a" />
 					<Add directory="../libutils" />
 					<Add directory="../../libutils/include" />
