@@ -62,7 +62,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 extern globalData globals;
 extern unsigned char* wav_header;
-
+extern uint64_t fileoffset;
 /*
 Multichannel reference tables are structured as follows:
   { { 16-bit  { channels { permutated values }}}, { 24-bit  { channels { permutated values }}} }
@@ -770,16 +770,17 @@ int audio_open(fileinfo_t* info, const char* ioflag)
     char ioflag_reverse[3]="rb";
     if (ioflag[0] == 'r') ioflag_reverse[0]='w';
 
-    if (info->type==AFMT_WAVE)
+    if (ioflag[0] == 'w')
     {
-        info->audio->fp=fopen(info->filename, ioflag_reverse);
-        if (info->audio->fp==0)
+        if (info->type==AFMT_WAVE)
         {
-            return(1);
-        }
+            info->audio->fp=fopen(info->filename, ioflag_reverse);
+            if (info->audio->fp==0)
+            {
+                return(1);
+            }
 
-        if (ioflag[0] == 'w')
-        {
+
 
 
 #if defined __WIN32__ & !defined MKDIR
@@ -788,51 +789,23 @@ int audio_open(fileinfo_t* info, const char* ioflag)
             info->file_size = read_file_size(info->audio->fp, info->filename);
 #endif
             fseek(info->audio->fp, info->header_size,SEEK_SET);
+
+            info->audio->bytesread=0;
         }
+#ifndef WITHOUT_FLAC
         else
         {
-            if (!globals.nooutput)
-            {
-                info->header_size=sizeof(wav_header);
-                fwrite(wav_header,info->header_size,1,info->audio->fp);
+            info->audio->flac=FLAC__stream_decoder_new();
+            info->audio->n=0;
+            info->audio->eos=0;
 
-                // fseek(info->audio->fp, info->header_size,SEEK_SET);
-
-            }
-        }
-
-        info->audio->bytesread=0;
-    }
-#ifndef WITHOUT_FLAC
-    else
-    {
-        info->audio->flac=FLAC__stream_decoder_new();
-        info->audio->n=0;
-        info->audio->eos=0;
-
-        if (info->audio->flac!=NULL)
-        {
-
-            if  (info->type==AFMT_FLAC)
+            if (info->audio->flac!=NULL)
             {
 
-                result=/*FLAC__StreamDecoderInitStatus*/ FLAC__stream_decoder_init_file  	(
-                            /*FLAC__StreamDecoder *  */ 	 info->audio->flac,
-                            /*char * */ 	info->filename,
-                            /*FLAC__StreamDecoderWriteCallback */ 	flac_write_callback,
-                            /*FLAC__StreamDecoderMetadataCallback */ 	flac_metadata_callback,
-                            /*FLAC__StreamDecoderErrorCallback  */	flac_error_callback,
-                            (void *) info
-                        );
-                if ((globals.debugging) && (result == FLAC__STREAM_DECODER_INIT_STATUS_OK))
-                    foutput("%s\n", "[MSG]  FLAC decoder was initialized");
-            }
-            else
-
-                if  (info->type==AFMT_OGG_FLAC)
+                if  (info->type==AFMT_FLAC)
                 {
 
-                    result=/*FLAC__StreamDecoderInitStatus*/ FLAC__stream_decoder_init_ogg_file  	(
+                    result=/*FLAC__StreamDecoderInitStatus*/ FLAC__stream_decoder_init_file  	(
                                 /*FLAC__StreamDecoder *  */ 	 info->audio->flac,
                                 /*char * */ 	info->filename,
                                 /*FLAC__StreamDecoderWriteCallback */ 	flac_write_callback,
@@ -840,62 +813,100 @@ int audio_open(fileinfo_t* info, const char* ioflag)
                                 /*FLAC__StreamDecoderErrorCallback  */	flac_error_callback,
                                 (void *) info
                             );
-
                     if ((globals.debugging) && (result == FLAC__STREAM_DECODER_INIT_STATUS_OK))
-                        foutput("%s\n", "[MSG]  OGG_FLAC decoder was initialized");
+                        foutput("%s\n", "[MSG]  FLAC decoder was initialized");
                 }
                 else
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Type of file unknown")
 
-
-
-                    if (result!=FLAC__STREAM_DECODER_INIT_STATUS_OK)
+                    if  (info->type==AFMT_OGG_FLAC)
                     {
-                        FLAC__stream_decoder_delete(info->audio->flac);
 
-                        /* error diagnosis */
+                        result=/*FLAC__StreamDecoderInitStatus*/ FLAC__stream_decoder_init_ogg_file  	(
+                                    /*FLAC__StreamDecoder *  */ 	 info->audio->flac,
+                                    /*char * */ 	info->filename,
+                                    /*FLAC__StreamDecoderWriteCallback */ 	flac_write_callback,
+                                    /*FLAC__StreamDecoderMetadataCallback */ 	flac_metadata_callback,
+                                    /*FLAC__StreamDecoderErrorCallback  */	flac_error_callback,
+                                    (void *) info
+                                );
 
-                        if (globals.debugging)
-
-                            switch (result)
-                            {
-                            case   FLAC__STREAM_DECODER_INIT_STATUS_UNSUPPORTED_CONTAINER  :
-                                printf ("%s\n", "[ERR]  The library was not compiled with support\n       for the given container format. ");
-                                break;
-                            case   FLAC__STREAM_DECODER_INIT_STATUS_INVALID_CALLBACKS :
-                                foutput("%s\n",  "[ERR]  A required callback was not supplied.");
-                                break;
-                            case   FLAC__STREAM_DECODER_INIT_STATUS_MEMORY_ALLOCATION_ERROR :
-                                foutput("%s\n", "[ERR]  An error occurred allocating memory.");
-                                break;
-                            case   FLAC__STREAM_DECODER_INIT_STATUS_ERROR_OPENING_FILE :
-                                foutput("%s\n", "[ERR]  fopen() failed in FLAC__stream_decoder_init_file()\n       or FLAC__stream_decoder_init_ogg_file(). ");
-                                break;
-                            case   FLAC__STREAM_DECODER_INIT_STATUS_ALREADY_INITIALIZED :
-                                foutput("%s\n", "[ERR]  FLAC__stream_decoder_init_*() was called when the decoder was already initialized,\n       usually because FLAC__stream_decoder_finish() was not called.");
-                                break;
-                            default :
-                                foutput("%s\n", "[ERR]  Error unknown by FLAC API.");
-                            }
-
-                        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Failed to initialise FLAC decoder\n");
+                        if ((globals.debugging) && (result == FLAC__STREAM_DECODER_INIT_STATUS_OK))
+                            foutput("%s\n", "[MSG]  OGG_FLAC decoder was initialized");
                     }
+                    else
+                        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Type of file unknown")
 
 
-            if (!FLAC__stream_decoder_process_until_end_of_metadata(info->audio->flac))
+
+                        if (result!=FLAC__STREAM_DECODER_INIT_STATUS_OK)
+                        {
+                            FLAC__stream_decoder_delete(info->audio->flac);
+
+                            /* error diagnosis */
+
+                            if (globals.debugging)
+
+                                switch (result)
+                                {
+                                case   FLAC__STREAM_DECODER_INIT_STATUS_UNSUPPORTED_CONTAINER  :
+                                    printf ("%s\n", "[ERR]  The library was not compiled with support\n       for the given container format. ");
+                                    break;
+                                case   FLAC__STREAM_DECODER_INIT_STATUS_INVALID_CALLBACKS :
+                                    foutput("%s\n",  "[ERR]  A required callback was not supplied.");
+                                    break;
+                                case   FLAC__STREAM_DECODER_INIT_STATUS_MEMORY_ALLOCATION_ERROR :
+                                    foutput("%s\n", "[ERR]  An error occurred allocating memory.");
+                                    break;
+                                case   FLAC__STREAM_DECODER_INIT_STATUS_ERROR_OPENING_FILE :
+                                    foutput("%s\n", "[ERR]  fopen() failed in FLAC__stream_decoder_init_file()\n       or FLAC__stream_decoder_init_ogg_file(). ");
+                                    break;
+                                case   FLAC__STREAM_DECODER_INIT_STATUS_ALREADY_INITIALIZED :
+                                    foutput("%s\n", "[ERR]  FLAC__stream_decoder_init_*() was called when the decoder was already initialized,\n       usually because FLAC__stream_decoder_finish() was not called.");
+                                    break;
+                                default :
+                                    foutput("%s\n", "[ERR]  Error unknown by FLAC API.");
+                                }
+
+                            EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Failed to initialise FLAC decoder\n");
+                        }
+
+
+                if (!FLAC__stream_decoder_process_until_end_of_metadata(info->audio->flac))
+                {
+                    FLAC__stream_decoder_delete(info->audio->flac);
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE( "[ERR]  Failed to read metadata from FLAC file\n")
+
+                }
+
+
+
+            }
+            else    EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not initialise FLAC decoder")
+
+            }
+#endif
+    }
+    else
+    {
+
+        info->type=AFMT_WAVE;
+
+        info->audio->fp=fopen(info->filename, ioflag_reverse);
+        if (info->audio->fp==0)
             {
-                FLAC__stream_decoder_delete(info->audio->flac);
-                EXIT_ON_RUNTIME_ERROR_VERBOSE( "[ERR]  Failed to read metadata from FLAC file\n")
-
+                return(1);
             }
 
 
+        if (!globals.nooutput)
+        {
+            info->header_size=sizeof(wav_header);
+            fwrite(wav_header,info->header_size,1,info->audio->fp);
+            fileoffset+=info->header_size;
 
+            // fseek(info->audio->fp, info->header_size,SEEK_SET);
         }
-        else    EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not initialise FLAC decoder")
-
-        }
-#endif
+    }
 
     return(0);
 }
@@ -1306,7 +1317,7 @@ ALWAYS_INLINE_GCC  static uint32_t read_track_file_into_buffer(uint8_t* buf, fil
 
 
 // Read numbytes of audio data, and convert it to DVD byte order
-uint32_t audio_process(fileinfo_t* info, uint8_t* buf_in,uint8_t* buf_out, uint32_t count, const char* ioflag)
+uint32_t process_audio(fileinfo_t* info, uint8_t* buf_in,uint8_t* buf_out, uint32_t count, const char* ioflag)
 {
     uint32_t  n=0;
 

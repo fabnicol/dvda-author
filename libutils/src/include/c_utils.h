@@ -199,7 +199,7 @@ void erase_file(const char* path);
 char* quote(char* path);
 char* win32quote(char* path);
 int run(char* application, char* args[], int option);
-void  parse_file_for_sequence(FILE* fp, uint8_t* tab, size_t sizeoftab, uint64_t* fileoffset);
+uint64_t  parse_file_for_sequence(FILE* fp, uint8_t* tab, size_t sizeoftab);
 
 ALWAYS_INLINE_GCC inline static void  uint32_copy(uint8_t* buf, uint32_t x)
 {

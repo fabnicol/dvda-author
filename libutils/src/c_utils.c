@@ -1483,13 +1483,13 @@ int run(char* application, char* args[], int option)
     return errno;
 }
 
-void  parse_file_for_sequence(FILE* fp, uint8_t* tab, size_t sizeoftab, uint64_t* fileoffset)
+  uint64_t parse_file_for_sequence(FILE* fp, uint8_t* tab, size_t sizeoftab)
 {
 
     if (fp == NULL)
     {
-        fileoffset=NULL;
-        return;
+
+        return -1;
     }
     int i=0, c;
     while (i < sizeoftab)
@@ -1503,12 +1503,15 @@ void  parse_file_for_sequence(FILE* fp, uint8_t* tab, size_t sizeoftab, uint64_t
                 i=0;
         }
     }
+    long  fileoffset;
 
     if (i == sizeoftab)
     {
-        if (fgetpos(fp, *fileoffset) != 0)
-            fileoffset=NULL; // error
+        if ((fileoffset=ftell(fp)) < sizeoftab*8)
+            return -1; // error
     }
-    else fileoffset=NULL; // not found
+    else fileoffset=0; // not found
+
+    return (uint64_t) fileoffset;
 
 }

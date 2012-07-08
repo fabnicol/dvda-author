@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <BrowseTracker_layout_file>
 	<ActiveTarget name="Release" />
+	<File name="../../libats2wav/src/libats2wav.c" open="1" top="0" tabpos="2">
+		<Cursor position="10552" topLine="416" />
+		<BrowseMarks positions="8030" />
+		<Book_Marks positions="17110,12901" />
+	</File>
 	<File name="../../libats2wav/src/include/libats2wav.h" open="1" top="0" tabpos="1">
 		<Cursor position="618" topLine="0" />
-	</File>
-	<File name="../../libats2wav/src/decoder.c" open="1" top="0" tabpos="3">
-		<Cursor position="11014" topLine="413" />
-		<BrowseMarks positions="15506,25600" />
+		<BrowseMarks positions="" />
 		<Book_Marks positions="" />
 	</File>
-	<File name="../../libats2wav/src/libats2wav.c" open="1" top="0" tabpos="2">
-		<Cursor position="2292" topLine="41" />
-		<BrowseMarks positions="8086" />
-		<Book_Marks positions="17110,12901" />
+	<File name="../../libats2wav/src/decoder.c" open="1" top="0" tabpos="3">
+		<Cursor position="21931" topLine="817" />
+		<BrowseMarks positions="15506,25600" />
+		<Book_Marks positions="" />
 	</File>
 </BrowseTracker_layout_file>

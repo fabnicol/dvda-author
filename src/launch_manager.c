@@ -49,7 +49,7 @@ extern char* INDIR, *OUTDIR, *LOGDIR, *LINKDIR, *WORKDIR, *TEMPDIR;
 // This function cleans up the list of input files by filtering out non-compliant audio input (format undefined or impossible to correct by other options)
 // Group and track numbers are readjusted and shifted down (recursively) when one or more files are rejected
 
-command_t *assign_audio_characteristics(uint8_t* I, command_t *command)
+command_t *scan_wavfile_audio_characteristics(uint8_t* I, command_t *command)
 {
 
     short int i, j, l, delta=0, error=0;
@@ -164,7 +164,7 @@ command_t *assign_audio_characteristics(uint8_t* I, command_t *command)
 
         return command;
 // recursion
-    if (files[I[0]][I[1]].filename) assign_audio_characteristics(I, command);
+    if (files[I[0]][I[1]].filename) scan_wavfile_audio_characteristics(I, command);
     return(command);
 }
 
@@ -218,7 +218,9 @@ int launch_manager(command_t *command)
 
     SINGLE_DOTS
     change_directory(globals.settings.workdir);
-    assign_audio_characteristics(indices, command);
+
+
+    scan_wavfile_audio_characteristics(indices, command);
 
 
     foutput("\n%s\n", "DVD Layout:\n\n");
