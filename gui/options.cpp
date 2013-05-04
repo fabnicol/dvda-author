@@ -306,7 +306,7 @@ advancedPage::advancedPage()
   fixWavOnlyBox=new FCheckBox("Only fix wav headers,\ndo not process audio",
                                flags::disabled|flags::dvdaCommandLine,
                               "fixWavOnly",
-                              "Only fix wav headers",
+                              "Only fix wav headers: to activate this box, the No-output button must be checked in the Output tab\nfurther down the icon list selector",
                               "fixwav",
                               &controlledObjects);
 
@@ -1457,8 +1457,8 @@ options::options(dvda* parent)
   contentsWidget->setIconSize(QSize(64,64));
   contentsWidget->setMovement(QListView::Static);
   contentsWidget->setFixedWidth(116);
-  contentsWidget->setFixedHeight(634);
-  contentsWidget->setSpacing(12);
+  contentsWidget->setFixedHeight(713);
+  contentsWidget->setSpacing(13);
 
   pagesWidget = new QStackedWidget;
 

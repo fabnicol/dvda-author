@@ -24,7 +24,8 @@ SOURCES += \
     forms.cpp \
     main.cpp \
     viewer.cpp \
-    browser.cpp 
+    browser.cpp \ 
+    fcolor.cpp
 
 
 HEADERS  += \
@@ -38,7 +39,8 @@ HEADERS  += \
     enums.h \
     forms.h \
     viewer.h \
-    browser.h
+    browser.h \
+    fcolor.h
 
 RESOURCES += \
     ../share/dvda-author-gui-12.12/dvda-author-gui.qrc

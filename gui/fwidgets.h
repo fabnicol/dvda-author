@@ -319,7 +319,7 @@ class FColorButton :  public QWidget, virtual public FAbstractWidget
  Q_OBJECT
 
 private:
-  //colorRect* rectIcon;
+  colorRect* rectIcon;
   QPushButton *button;
   FAbstractWidget *palette;
 
@@ -327,10 +327,10 @@ public:
   FColorButton(FAbstractWidget* parent, const char* text, const char* color);
   int buttonWidth()   const ;
   void setMinimumButtonWidth(const int w);
-  void setBrush(const QBrush &brush)
+  void setBrush(const QColor &brush)
   {
-//      rectIcon->setBrush(brush);
-//      rectIcon->update();
+      rectIcon->setBrush(brush);
+      rectIcon->update();
   }
 
   virtual void setWidgetFromXml(FStringList&);

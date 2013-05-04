@@ -31,8 +31,8 @@ FListWidget* fileListWidget;
 FListFrame(QObject* parent,  QAbstractItemView * fileTreeView, short import_type, const QString &hashKey,
             const QString &description, const QString &command_line, int commandLineType, const QStringList &separator, const QStringList &xml_tags,
             int mainTabWidgetRank=-1, QIcon* icon=NULL, QTabWidget* parentTabWidget=NULL,
-           QStringList* terms=NULL, QStringList* translation=NULL, QStringList* slotL=NULL,
-           QWidget* controlledWidget=NULL);
+           QStringList* terms=NULL, QStringList* translation=NULL, QStringList* slotL=NULL);
+//,           QWidget* controlledWidget=NULL);
 
 QString frameHashKey;
 QLabel* fileLabel;

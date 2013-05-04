@@ -4,8 +4,8 @@
 FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_type, const QString &hashKey,
                          const QString &description, const QString &command_line, int cli_type, const QStringList &separator, const QStringList &xml_tags,
                          int mainTabWidgetRank, QIcon *icon, QTabWidget *parentTabWidget,
-                         QStringList* terms, QStringList* translation, QStringList* slotL,
-                         QWidget* controlledWidget)
+                         QStringList* terms, QStringList* translation, QStringList* slotL)
+
 {
 
  importType=import_type;

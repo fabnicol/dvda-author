@@ -543,7 +543,7 @@ void FRadioBox::refreshWidgetDisplay()
 {
    rank=commandLineList[0].toQString().toUInt();
 
-  for (uint i=0 ; i < size ; i++)
+  for (int i=0 ; i < size ; i++)
      radioButtonList[i]->setChecked(rank == i);
 
   if ((enabledObjects != NULL) && (!enabledObjects->isEmpty()))
@@ -584,7 +584,7 @@ void FRadioBox::setWidgetFromXml(FStringList &s)
   commandLineList[0]=FString(st, flags::multimodal);
   hash::qstring[hashKey]=st;
   rank=st.toUInt();
-  for (uint i=0; i < size ; i++)
+  for (int i=0; i < size ; i++)
     radioButtonList[i]->setChecked(i == rank);
 }
 
@@ -709,24 +709,23 @@ FColorButton::FColorButton(FAbstractWidget* parent, const char* text, const char
   button=new QPushButton(strtext);
 
   newLayout->addWidget(button, 0, 0,  Qt::AlignHCenter);
-  //newLayout->addWidget(rectIcon=new colorRect(QColor(color),99),  1, 0, Qt::AlignHCenter);
+  newLayout->addWidget(rectIcon=new colorRect(QColor(color)));
+          //,  1, 0, Qt::AlignHCenter);
   newLayout->setContentsMargins(0,0,0,0);
   newLayout->setColumnMinimumWidth(0, 150);
   newLayout->setRowMinimumHeight(1, 20);
   setLayout(newLayout);
-  //commandLineList=QList<FString>() << (RGBStr2YUVStr(color+1));
+  commandLineList=QList<FString>() << RGBStr2YCrCbStr(color+1);
   connect(button, SIGNAL(clicked()), this, SLOT(changeColors()));
 
-  //rectIcon->update();
+  rectIcon->update();
 }
 
 void FColorButton::changeColors()
 {
-int red, green, blue;
-//getRGBColors(&red, &green, &blue);
-QRgb rgb(red << 16 | green << 8 | blue);
-setBrush(QColor(rgb));
-//commandLineList[0]=RGB2YCrCbStr((qreal)red, (qreal)green, (qreal)blue);
+  QColor color;
+  setBrush(color=QColorDialog::getColor(Qt::green, this, tr("Select Color"))) ;
+  commandLineList[0]=RGB2YCrCbStr(color);
 }
 
  int FColorButton::buttonWidth() const

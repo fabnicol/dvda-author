@@ -1,8 +1,7 @@
 #ifndef BROWSER_H
 #define BROWSER_H
 
-#include <QWidget>
-#include <QtGui>
+#include <QtWidgets>
 #include <QtWebKitWidgets>
 #include <QWebView>
 #include "common.h"
