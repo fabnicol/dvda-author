@@ -51,7 +51,7 @@ MainWindow::MainWindow()
 
   dialog=new options(dvda_author);
 //  dialog->setAcceptDrops(true);
-  dialog->setParent(dvda_author, Qt::WindowStaysOnTopHint|Qt::Window);
+  dialog->setParent(dvda_author, Qt::Window);
   dvda_author->parent=this;
 
   createActions();

@@ -78,6 +78,8 @@ ImageViewer::ImageViewer(const QString &imagePath)
         imageLabel->adjustSize();
 
     setWindowTitle(tr("Image Viewer"));
+    setWindowIcon(QIcon(":/images/dvda-author.png"));
+
     resize(500, 400);
 
 }

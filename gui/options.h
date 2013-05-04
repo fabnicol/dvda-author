@@ -4,6 +4,7 @@
 #include "common.h"
 #include "lplex.h"
 #include "dvda-author-gui.h"
+#include "viewer.h"
 //#include "forms.h"
 
 
@@ -162,6 +163,7 @@ private:
     int groupRank;
     QDialog *newWidget;
     QVBoxLayout *newLayout;
+    ImageViewer *v;
 };
 
 class videoMenuPage : public common

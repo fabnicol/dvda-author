@@ -302,7 +302,7 @@ class FLineEdit : public QLineEdit, virtual public FAbstractWidget
 public:
   FLineEdit(const QString &defaultstring, int status, const QString &hashKey, const QString &description, const QString &commandLine);
   FLineEdit(const QString &defaultstring, const QString &hashKey, const QString &description, const QString &commandLine):
-    FLineEdit(defaultstring, flags::defaultStatus|flags::defaultCommandLine, hashKey, description, commandLine){}
+      FLineEdit(defaultstring, flags::defaultStatus|flags::defaultCommandLine, hashKey, description, commandLine){}
 
   virtual void setWidgetFromXml(FStringList&);
   virtual FString setXmlFromWidget();
@@ -319,20 +319,15 @@ class FColorButton :  public QWidget, virtual public FAbstractWidget
  Q_OBJECT
 
 private:
-  colorRect* rectIcon;
+
   QPushButton *button;
   FAbstractWidget *palette;
 
 public:
   FColorButton(FAbstractWidget* parent, const char* text, const char* color);
+  QLabel *colorLabel;
   int buttonWidth()   const ;
   void setMinimumButtonWidth(const int w);
-  void setBrush(const QColor &brush)
-  {
-      rectIcon->setBrush(brush);
-      rectIcon->update();
-  }
-
   virtual void setWidgetFromXml(FStringList&);
   virtual void refreshWidgetDisplay();
   virtual FString setXmlFromWidget();
@@ -356,10 +351,13 @@ class FPalette :  public QWidget, virtual public FAbstractWidget
     virtual void refreshWidgetDisplay();
     void refreshComponent(short i);
     void setToolTip(const QString &);
-    FColorButton *button[3];
+
     virtual FString setXmlFromWidget();
     void setMinimumButtonWidth(const int w);
     virtual bool isAbstractEnabled() {return (this->isEnabled());}
+
+   FColorButton *button[3];
+
 };
 
 
