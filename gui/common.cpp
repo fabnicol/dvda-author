@@ -119,14 +119,14 @@ return string;
 
 QString common::generateDatadirPath(QString &path)
 {
-  QString pathstr= QDir::cleanPath( QDir::currentPath() + "/"+ DATADIR+ "/" + path);
+  QString pathstr= QDir::cleanPath(  QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + path);
   return pathstr;
 }
 
 QString common::generateDatadirPath(const char* path)
 {
   const QString str= QString(path);
-  QString pathstr= QDir::cleanPath( QDir::currentPath() + "/"+ DATADIR+ "/" + str);
+  QString pathstr= QDir::cleanPath(  QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/" + str);
   return pathstr;
 }
 

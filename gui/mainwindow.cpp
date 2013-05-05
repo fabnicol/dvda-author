@@ -39,14 +39,20 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 
+// createFontDataBase looks to be fast enough to be run on each launch.
+// Should it slow down application launch on some platform, one option could be to launch it just once then on user demand
 
 void createFontDataBase()
 {
     QFontDatabase database;
+
+    QDir dir;
+    if (! dir.mkpath(QDir::cleanPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation)))) return;
+
     QString fontPath=common::generateDatadirPath("fonts");
 
     QStringList fontList=database.families();
-
+    int rank=0;
     foreach (const QString &family, fontList)
     {
         QString style;
@@ -65,8 +71,12 @@ void createFontDataBase()
                 common::writeFile(fontSizes, sizeList);
             }
             else
-                fontList.removeAll(family);
+                fontList.removeAt(rank);
         }
+        else
+            fontList.removeAt(rank);
+
+        rank++;
      }
 
      common::writeFile(fontPath, fontList);

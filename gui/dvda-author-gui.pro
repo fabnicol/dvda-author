@@ -47,12 +47,6 @@ RESOURCES += \
     ../share/dvda-author-gui-12.12/dvda-author-gui.qrc
 
 
-unix:HOME=$$system(echo $HOME)
-
-win32: RCC_DIR = "C:\Program Files\dvda-author-gui"
-unix: RCC_DIR = "$$HOME/.dvda-author-gui"
-
-
 
 
 

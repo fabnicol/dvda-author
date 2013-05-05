@@ -25,36 +25,11 @@
 #define VIDEO 1
 #define AUDIO 0
 
-/* Build with autoconf DATADIR set by autoconf/qmake or define DATADIR directly in DEFINES=-DDATADIR="..."  or just with DEFINES=-DLOCAL_BUILD */
-
-
-#ifdef Q_OS_WIN32
-   #ifdef LOCAL_BUILD
-     #define PREFIX ".."
-   #else
-     #define PREFIX "C:/Program Files/dvda-author-gui"
-   #endif
-#else
-  #ifdef Q_OS_UNIX
-     #ifdef LOCAL_BUILD
-       #define PREFIX ".."
-     #else
-       #define PREFIX "/home/.dvda-author-gui"
-     #endif
-  #endif
-#endif
-
-#ifndef DATADIR
-#ifdef PREFIX
-  #define DATADIR  PREFIX "/share/dvda-author-gui-" VERSION
-#else
-  #error  "Build using command line: make DEFINES=-DPREFIX='\"any-old-path\"'"
-#endif
-#endif
 
 #define Max(X,Y) ((X>Y)? X : Y)
 #define Q(X) QMessageBox::about(NULL, "", X);
 #define q(X) QMessageBox::about(NULL, "", QString::number(X));
+
 
 
 
