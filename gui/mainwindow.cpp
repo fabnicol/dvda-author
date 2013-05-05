@@ -5,6 +5,7 @@
 #include "dvda-author-gui.h"
 #include "options.h"
 #include "browser.h"
+#include "common.h"
 
 
 /* AUTHOR NOTE
@@ -39,9 +40,44 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
 
+void createFontDataBase()
+{
+    QFontDatabase database;
+    QString fontPath=common::generateDatadirPath("fonts");
+
+    QStringList fontList=database.families();
+
+    foreach (const QString &family, fontList)
+    {
+        QString style;
+        QStringListIterator i(QStringList()<< "Normal" << "Regular" << "Light" << "Italic" << "Medium" << "Bold");
+        while ((i.hasNext()) && (!database.styles(family).contains(style=i.next(), Qt::CaseInsensitive)));
+        if (!style.isEmpty())
+        {
+            QStringList sizeList;
+
+            foreach (int points, database.smoothSizes(family, style))
+                sizeList << QString::number(points) ;
+
+            if (!sizeList.isEmpty())
+            {
+                QString fontSizes=common::generateDatadirPath(QString(family+".sizes").toUtf8());
+                common::writeFile(fontSizes, sizeList);
+            }
+            else
+                fontList.removeAll(family);
+        }
+     }
+
+     common::writeFile(fontPath, fontList);
+
+}
+
 
 MainWindow::MainWindow()
 {
+
+  createFontDataBase();
 
   setGeometry(QRect(200, 200,1000,400));
   recentFiles=QStringList() ;
@@ -70,6 +106,7 @@ MainWindow::MainWindow()
         dvda_author->setCurrentFile(defaultPath);
         settings->setValue("default",defaultPath);
     }
+
 
   setCentralWidget(dvda_author);
   dvda_author->setAcceptDrops(false);

@@ -72,6 +72,20 @@ qint64 common::recursiveDirectorySize(const QString &path, const QString &extens
 
 }
 
+void common::writeFile(QString & path, const QStringList &list, QFlags<QIODevice::OpenModeFlag> flag)
+{
+    QFile data(path);
+    if (data.open(flag))
+    {
+        QTextStream out(&data);
+        QStringListIterator i(list);
+        while (i.hasNext())
+            out << i.next() << "\n";
+    }
+    data.close();
+}
+
+
 int common::readFile(QString &path, QStringList &list, int start, int stop, int width)
 {
 QFile file(path);
@@ -103,9 +117,16 @@ QString string=L.join("\n");
 return string;
 }
 
+QString common::generateDatadirPath(QString &path)
+{
+  QString pathstr= QDir::cleanPath( QDir::currentPath() + "/"+ DATADIR+ "/" + path);
+  return pathstr;
+}
+
 QString common::generateDatadirPath(const char* path)
 {
-  QString pathstr= QDir::cleanPath( QDir::currentPath() + "/"+ DATADIR+ "/" + QString(path));
+  const QString str= QString(path);
+  QString pathstr= QDir::cleanPath( QDir::currentPath() + "/"+ DATADIR+ "/" + str);
   return pathstr;
 }
 

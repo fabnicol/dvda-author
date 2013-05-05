@@ -387,16 +387,7 @@ void advancedPage::on_extraAudioFilters_changed(const QString &line)
 }
 
 
-void Dialog::setFont()
-{
-    const QFontDialog::FontDialogOptions options = QFlag(fontDialogOptionsWidget->value());
-    bool ok;
-    QFont font = QFontDialog::getFont(&ok, QFont(fontLabel->text()), this, "Select Font", options);
-    if (ok) {
-        fontLabel->setText(font.key());
-        fontLabel->setFont(font);
-    }
-}
+
 
 audioMenuPage::audioMenuPage(dvda* parent, standardPage* standardTab)
 {

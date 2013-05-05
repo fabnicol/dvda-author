@@ -4,6 +4,7 @@
 class flags
 {
 public:
+    enum {flush=0xF00};
     enum {importFiles, importNames, typeIn, isEmbedded};
     enum font {boldTitle, regularTitle, italicTitle};
     enum commandLineType {dvdaCommandLine, createDisc, createIso, dvdaExtract, lplexFiles, hasListCommandLine, noCommandLine};
