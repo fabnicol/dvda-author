@@ -99,7 +99,7 @@ if (file.open(QIODevice::ReadOnly | QIODevice::Text))
   {
       QString line = in.readLine(width);
       list << line;
-      if (j == stop) break;
+      if  (j == stop) break;
       j++;
   }
 }

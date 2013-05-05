@@ -80,14 +80,14 @@ public:
   bool removeDirectory(const QString &path);
   bool remove(const QString &path);
 
-  int readFile(QString &path, QStringList &list, int start=0, int stop=0, int width=0);
-  int readFile(const char* path, QStringList &list, int start=0, int stop=0, int width=0)
+  int readFile(QString &path, QStringList &list, int start=0, int stop=-1, int width=0);
+  int readFile(const char* path, QStringList &list, int start=0, int stop=-1, int width=0)
   {
     QString pathstr=QString(path);
     return readFile(pathstr, list, start, stop, width);
   }
-  QString readFile(QString &path,  int start=0, int stop=0, int width=0);
-  QString readFile(const char* path,  int start=0, int stop=0, int width=0)
+  QString readFile(QString &path,  int start=0, int stop=-1, int width=0);
+  QString readFile(const char* path,  int start=0, int stop=-1, int width=0)
   {
     QString pathstr=QString(path);
     return readFile(pathstr, start, stop, width);

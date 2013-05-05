@@ -479,30 +479,31 @@ audioMenuPage::audioMenuPage(dvda* parent, standardPage* standardTab)
               << QIcon(":/images/track-icon-button.png") ;
 
     highlightFormatFComboBox=new FComboBox({"  leading square", "  underline",  "  button box"},
-    {"-1", "0",  "1"}, // translation into xml
+                                            {"-1", "0",  "1"}, // translation into xml
                                            flags::defaultStatus,
                                            "highlightFormat",
                                            "Highlight format",
                                            "highlightformat",
                                            iconList);
 
-    QString path=generateDatadirPath("fonts");
+    QString fontPath=generateDatadirPath("fonts");
 
-    QStringList fontList=QStringList();
-    if (common::readFile(path, fontList) == 0)
-        QMessageBox::warning(this, tr("Error"), tr("Failed to open font list file in ") +path);
+    fontList=QStringList();
+
+    if (common::readFile(fontPath, fontList) == 0)
+        QMessageBox::warning(this, tr("Error"), tr("Failed to open font list file in ") +fontPath);
 
     fontFComboBox=new FComboBox(fontList,
                                 "font",
                                 "Font",
                                 "fontname");
 
-    QStringList fontSizeList;
-    for (int i=6; i <= 50; i++) fontSizeList << QString::number(i);
-    fontSizeFComboBox=new FComboBox(fontSizeList,
-                                    "fontSize",
-                                    "Font size",
-                                    "fontsize");
+    fontSizeFComboBox=new FComboBox(QStringList(),
+                "fontSize",
+                "Font size",
+                "fontsize");
+
+    readFontSizes(0);
 
     fontFComboBox->setMaximumWidth(250);
 
@@ -637,7 +638,23 @@ audioMenuPage::audioMenuPage(dvda* parent, standardPage* standardTab)
     connect(slides->embeddingTabWidget, SIGNAL(currentChanged(int)), this, SLOT(on_frameTab_changed(int )));
     connect(slidesButton, SIGNAL(clicked()), this, SLOT(on_slidesButton_clicked()));
     connect(audioMenuCheckBox, SIGNAL(clicked(bool)), this, SLOT(setMinimumNMenu(bool)));
+    connect(fontFComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(readFontSizes(int)));
 
+}
+
+void audioMenuPage::readFontSizes(int rank)
+{
+    QString sizeFileName =fontList.at(rank) + QString(".sizes");
+    QString sizeFilePath = common::generateDatadirPath(sizeFileName);
+    QStringList fontSizeList;
+    common::readFile(sizeFilePath, fontSizeList);
+    if (!fontSizeList.isEmpty())
+    {
+        fontSizeFComboBox->clear();
+        fontSizeFComboBox->addItems(fontSizeList);
+    }
+
+    fontSizeFComboBox->setCurrentIndex(4);
 }
 
 void audioMenuPage::setMinimumNMenu(bool value)

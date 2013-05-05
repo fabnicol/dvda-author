@@ -150,6 +150,7 @@ private slots:
     void on_frameTab_changed(int);
     void on_slidesButton_clicked();
     void setMinimumNMenu(bool value);
+    void readFontSizes(int rank);
 
 
 private:
@@ -164,6 +165,7 @@ private:
     QDialog *newWidget;
     QVBoxLayout *newLayout;
     ImageViewer *v;
+    QStringList fontList;
 };
 
 class videoMenuPage : public common
