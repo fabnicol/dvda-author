@@ -79,15 +79,15 @@ protected :
   enum audioCharacteristics   { isWav=AFMT_WAVE, isFlac=AFMT_FLAC, isOggFlac=AFMT_OGG_FLAC, isDVDAudioCompliant,  isDVDVideoCompliant, isNonCompliant};
   struct fileinfo_t
   {
-     u_int8_t header_size;
-     u_int8_t type;
-     u_int8_t bitspersample;
-     u_int8_t channels;
+     quint8 header_size;
+     quint8 type;
+     quint8 bitspersample;
+     quint8 channels;
      audioCharacteristics compliance;
-     u_int32_t samplerate;
-     u_int64_t numsamples;
-     u_int64_t numbytes; // theoretical file size
-     u_int64_t file_size; // file size on disc
+     quint32 samplerate;
+     quint64 numsamples;
+     quint64 numbytes; // theoretical file size
+     quint64 file_size; // file size on disc
      QByteArray filename;
   };
 
