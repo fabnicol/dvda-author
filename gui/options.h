@@ -145,7 +145,7 @@ public:
     FPalette *palette;
 
 private slots:
-    void on_openAudioMenuButton_clicked();
+    void launchImageViewer();
     void on_audioMenuButton_clicked();
     void on_frameTab_changed(int);
     void on_slidesButton_clicked();
@@ -205,6 +205,8 @@ void on_nextStep_clicked();
 void on_clearList_clicked();
 void on_applyAllEffectsToOneFile_clicked();
 void on_applyAllEffects_clicked();
+void launchVideoPlayer();
+void importSlideshow();
 
 private:
 dvda* parentLocal;
@@ -214,7 +216,8 @@ QListWidget  *stilloptionListWidget;
 QToolButton *nextStep, *clearList,  *applyAllEffects, *applyEffectsToOneFile;
 
 QLabel* stilloptionListLabel;
-
+FLineEdit* videoFileLineEdit;
+QPushButton *videoPlayerButton;
 
 static bool  selectFilesView;
 

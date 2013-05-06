@@ -30,7 +30,7 @@ void dvda::initialize()
   memset(inputSize,0,2*99*sizeof(quint64));
 
   myTimerId=isVideo=0;
-  tempdir=QDir::homePath ()+QDir::separator()+"tempdir";
+  tempdir=QDir::homePath ()+QDir::separator()+"tempdir";  // should be equal to main app globals.settings.tempdir=TEMPDIR
 
   extraAudioFilters=QStringList() << "*.wav" << "*.flac";
 
@@ -39,7 +39,6 @@ void dvda::initialize()
   hash::description["recent"]="Recent file";
 
 }
-
 
 
 void dvda::on_playItem_changed()

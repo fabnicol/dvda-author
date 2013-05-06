@@ -4,13 +4,13 @@ greaterThan(QT_MAJOR_VERSION, 4)
 
 TEMPLATE = app
 
-QT       += core gui xml widgets webkitwidgets multimedia
+QT       += core gui xml widgets webkitwidgets multimedia multimediawidgets
+
 QMAKE_CXXFLAGS +=  -std=c++11
 
 TARGET = dvda-author-gui
 
 VPATH = .
-
 
 SOURCES += \
     options.cpp \
@@ -25,7 +25,8 @@ SOURCES += \
     main.cpp \
     viewer.cpp \
     browser.cpp \ 
-    fcolor.cpp
+    fcolor.cpp \
+    videoplayer.cpp
 
 
 HEADERS  += \
@@ -40,7 +41,8 @@ HEADERS  += \
     forms.h \
     viewer.h \
     browser.h \
-    fcolor.h
+    fcolor.h \
+    videoplayer.h
 
 
 RESOURCES += \

@@ -4,7 +4,7 @@
 #include "dvda-author-gui.h"
 #include "forms.h"
 #include "options.h"
-
+#include "videoplayer.h"
 
 #define v(X) *FString(#X)
 
@@ -633,7 +633,7 @@ audioMenuPage::audioMenuPage(dvda* parent, standardPage* standardTab)
     setLayout(mainLayout);
 
     on_frameTab_changed(0);
-    connect(openAudioMenuButton, SIGNAL(clicked(bool)), this, SLOT(on_openAudioMenuButton_clicked()));
+    connect(openAudioMenuButton, SIGNAL(clicked(bool)), this, SLOT(launchImageViewer()));
     connect(audioMenuButton, SIGNAL(clicked()), this, SLOT(on_audioMenuButton_clicked()));
     connect(slides->embeddingTabWidget, SIGNAL(currentChanged(int)), this, SLOT(on_frameTab_changed(int )));
     connect(slidesButton, SIGNAL(clicked()), this, SLOT(on_slidesButton_clicked()));
@@ -699,7 +699,7 @@ void audioMenuPage::on_frameTab_changed(int index)
 }
 
 
-void audioMenuPage::on_openAudioMenuButton_clicked()
+void audioMenuPage::launchImageViewer()
 {
     v = new ImageViewer(audioMenuLineEdit->setXmlFromWidget());
     v->setGeometry(400,300, 200/3*16,600);
@@ -976,7 +976,7 @@ outputPage::outputPage(options* parent)
     logBox = new FCheckBox(tr("&Log file"),
                            "log",
                            "Create log file",
-    {
+                           {
                                logButton,
                                openLogButton,
                                openHtmlLogButton,
@@ -1084,22 +1084,19 @@ outputPage::outputPage(options* parent)
 
     QLabel* workDirLabel = new QLabel(tr("Working directory"));
     QPushButton *openWorkDirButton = new QPushButton("...");
-
     workDirLineEdit = new FLineEdit(QDir::currentPath (), "workDir", "Working directory", "workdir");
-
     workDirLabel->setBuddy(workDirLineEdit);
+
     QLabel* tempDirLabel = new QLabel(tr("Temporary directory"));
-
     tempDirLineEdit = new FLineEdit(common::tempdir, "tempDir", "Temporary directory", "tempdir");
-
     tempDirLabel->setBuddy(tempDirLineEdit);
     QPushButton *openTempDirButton = new QPushButton("...");
+
     QLabel* binDirLabel = new QLabel(tr("Binary directory"));
     QPushButton *openBinDirButton = new QPushButton("...");
-
     binDirLineEdit = new FLineEdit(QDir::currentPath ()+QDir::separator()+"bindir", "binDir", "Binary directory", "bindir");
-
     binDirLabel->setBuddy(binDirLineEdit);
+
 
     QGroupBox *auxdirGroupBox = new QGroupBox(tr("Auxiliary directories"));
     QGridLayout *auxdirLayout = new QGridLayout;
@@ -1307,7 +1304,6 @@ stillPage::stillPage(dvda* parent, standardPage* standardTab)
     QGridLayout  *stillLayout=new QGridLayout;
     QGridLayout  *headerLayout=new QGridLayout;
     QVBoxLayout  *mainVLayout = new QVBoxLayout;
-
     QGridLayout  *paletteLayout = new QGridLayout;
 
     headerLayout->addWidget(slides->fileLabel, 0,1,1,1, Qt::AlignHCenter);
@@ -1333,11 +1329,13 @@ stillPage::stillPage(dvda* parent, standardPage* standardTab)
     FCheckBox *addPaletteCheckBox = new FCheckBox("Change default text color",
                                                   "addPalette",
                                                   "User active menu palette",
-    {
+                                                 {
                                                       paletteGroupBox,
                                                       palette,
                                                       standardTab
                                                   });
+
+
 
     paletteLayout->addWidget(palette->button[0], 0,0, Qt::AlignHCenter);
     paletteLayout->addWidget(palette->button[1], 0,1, Qt::AlignHCenter);
@@ -1350,11 +1348,41 @@ stillPage::stillPage(dvda* parent, standardPage* standardTab)
     mainVLayout->addStretch();
     mainVLayout->addWidget(addPaletteCheckBox);
     mainVLayout->addWidget(paletteGroupBox);
+    mainVLayout->addSpacing(10);
+
+    // En fait il faudrait  autant de lignes d'importation que de slideshows soit de tracks (au moins)  background_still_k.mpg
+    videoFilePath=common::tempdir+QDir::separator()+"background_still_0.mpg"; // yields AUDIO_SV.VOB later on in amg2.c
+
+    videoPlayerButton= new QPushButton;
+
+    videoPlayerButton->setText(tr("Play slideshow"));
+    videoPlayerButton->setEnabled( (QFileInfo(videoFilePath).exists()));
+
+    QPushButton *importSlideShowButton= new QPushButton;
+     importSlideShowButton->setText(tr("Import  slideshow"));
+
+
+     videoFileLineEdit = new FLineEdit(videoFilePath,
+                                     flags::dvdaCommandLine,
+                                     "background-mpg",                          //TODO: check this is the right dvda option!
+                                     "Path to .mpg slideshow",
+                                     "background slideshow");
+
+
+    videoPlayerButton->setMaximumSize(videoPlayerButton->sizeHint());
+    importSlideShowButton->setMaximumSize(importSlideShowButton->sizeHint());
+
+    mainVLayout->addWidget(videoPlayerButton);
+    QHBoxLayout *bottomHLayout=new QHBoxLayout;
+    bottomHLayout->addWidget(importSlideShowButton);
+    bottomHLayout->addWidget(videoFileLineEdit);
+    bottomHLayout->addSpacing(100);
 
     QVBoxLayout  *mainLayout = new QVBoxLayout;
     FRichLabel *stillLabel = new FRichLabel("Track slideshow options", ":/images/64x64/still.png");
     mainLayout->addWidget(stillLabel);
     mainLayout->addLayout(mainVLayout);
+    mainLayout->addLayout(bottomHLayout);
     mainLayout->setMargin(20);
 
     setLayout(mainLayout);
@@ -1363,9 +1391,28 @@ stillPage::stillPage(dvda* parent, standardPage* standardTab)
     connect(applyAllEffects, SIGNAL(clicked()), this,  SLOT(on_applyAllEffects_clicked()));
     connect(applyEffectsToOneFile, SIGNAL(clicked()), this,  SLOT(on_applyAllEffectsToOneFile_clicked()));
     connect(selectoptionListWidget->clearList, SIGNAL(clicked()), this, SLOT(on_clearList_clicked()));
+    connect(videoPlayerButton, SIGNAL(clicked()), this, SLOT(launchVideoPlayer()));
+    connect(importSlideShowButton, SIGNAL(clicked()), this, SLOT(importSlideshow()));
+}
+
+void stillPage::importSlideshow()
+{
+    QString importedVideoFilePath= QFileDialog::getOpenFileName(this, "Import slideshow", QDir::currentPath(), "(*.mpg)" );
+    if (!importedVideoFilePath.isEmpty()) videoFilePath=importedVideoFilePath;
+    if (QFileInfo(videoFilePath).exists())
+    {
+        videoPlayerButton->setEnabled(true);
+        videoFileLineEdit->setText(videoFilePath);
+    }
 
 }
 
+void stillPage::launchVideoPlayer()
+{
+    VideoPlayer *player=new VideoPlayer(videoFilePath);
+    player->resize(800, 450);
+    player->show();
+}
 
 void stillPage::on_applyAllEffectsToOneFile_clicked()
 {
@@ -1383,7 +1430,6 @@ void stillPage::on_applyAllEffectsToOneFile_clicked()
     //        + "," + rankedOptions.join(",");
     //  applyEffectsToOneFile->setIcon(applyEffectsToOneFileToggledIcon);
 }
-
 
 void stillPage::on_applyAllEffects_clicked()
 {

@@ -25,7 +25,6 @@ bool common::remove(const QString &path)
     return false;
 }
 
-
 bool common::removeDirectory(const QString &path)
 {
     if (path.isEmpty()) return false;
