@@ -291,9 +291,11 @@ advancedPage::advancedPage()
     fixWavOnlyBox=new FCheckBox("Only fix wav headers,\ndo not process audio",
                                 flags::disabled|flags::dvdaCommandLine,
                                 "fixWavOnly",
-                                "Only fix wav headers: to activate this box, the No-output button must be checked in the Output tab\nfurther down the icon list selector",
+                                "Only fix wav headers",
                                 "fixwav",
                                 &controlledObjects);
+
+    setWhatsThisText(fixWavOnlyBox, 78,79);
 
     fixwavBox = new FCheckBox("Fix corrupt wav headers\nand process audio",
                               "fixwav",
@@ -301,7 +303,7 @@ advancedPage::advancedPage()
                               "fixwav",
                               &controlledObjects);
 
-    fixwavBox->setWhatsThis(tr("Check this box to fix corrupt or non-standard wav headers\nthat may account for processing issues.\nAudio input files will not be modified.\nCorrected files will be generated in your input directory\nwith a timestamp filename suffix.\nAllow for processing time in case of larger files."));
+    setWhatsThisText(fixwavBox, 82,90);
 
     startsectorLabel = new QLabel(tr("&Start sector"));
     startsectorLineEdit = new FLineEdit("281", "startsector", "Start sector number","startsector");
@@ -309,7 +311,8 @@ advancedPage::advancedPage()
     startsectorLineEdit->setFixedWidth(50);
     startsectorLabel->setBuddy(startsectorLineEdit);
     startsectorLabel->setAlignment(Qt::AlignRight);
-    startsectorLabel->setWhatsThis(tr("Start sector (2048 B) of disc system files.\nSee DVD Audio Tools website\n   http://dvd-audio.sourceforge.net\nfor details."));
+
+    setWhatsThisText(startsectorLabel, 93,96);
     startsectorLineEdit->setAlignment(Qt::AlignRight);
 
     QLabel *extraAudioFiltersLabel = new QLabel(tr("Display audio formats"));

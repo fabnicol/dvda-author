@@ -102,6 +102,7 @@ if (file.open(QIODevice::ReadOnly | QIODevice::Text))
       j++;
   }
 }
+else QMessageBox::warning(this, tr("Warning"), tr("WhatsThis file could not be opened: ") + path );
 file.close();
 return j;
 
