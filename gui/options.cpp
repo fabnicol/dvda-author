@@ -158,7 +158,6 @@ optionsPage::optionsPage()
                                     "Path to ISO image",
                                     "mkisofs");
 
-    QLabel *dvdwriterLabel = new QLabel(tr("DVD writer:"));
 
     dvdwriterComboBox = new FComboBox("",
                                       createDisc,
@@ -168,20 +167,17 @@ optionsPage::optionsPage()
 
     dvdwriterComboBox->setMinimumContentsLength(35);
 
+
     cdrecordBox= new FCheckBox("Burn to DVD-Audio/Video disc",
                                "burnDisc",
                                "Burn disc image to DVD",
-    {
-                                   dvdwriterComboBox,
-                                   dvdwriterLabel
-                               }
-                               );
+                                {dvdwriterComboBox});
 
     mkisofsBox =new FCheckBox("Create ISO file",
                               flags::checked|flags::enabled|flags::dvdaCommandLine,
                               "runMkisofs",
                               "Create disc image using mkisofs",
-    {
+                              {
                                   mkisofsButton,
                                   cdrecordBox,
                                   mkisofsLabel,
@@ -194,14 +190,13 @@ optionsPage::optionsPage()
                                "autoplay");
 
     QGridLayout *gridLayout=new QGridLayout;
-    FRichLabel* mainLabel= new FRichLabel("General options", ":/images/64x64/configure.png");
+    FRichLabel* mainLabel= new FRichLabel("Disc options", ":/images/64x64/configure.png");
 
     gridLayout->addWidget(mkisofsBox,1,1);
     gridLayout->addWidget(mkisofsLabel,2,1, Qt::AlignRight);
     gridLayout->addWidget(mkisofsLineEdit,2,2);
     gridLayout->addWidget(mkisofsButton,2,3);
     gridLayout->addWidget(cdrecordBox,3,1);
-    gridLayout->addWidget(dvdwriterLabel,4,1,Qt::AlignRight);
     gridLayout->addWidget(dvdwriterComboBox,4,2);
     gridLayout->addWidget(playbackBox,5,1);
     gridLayout->setRowMinimumHeight(6,50);
@@ -235,19 +230,38 @@ void optionsPage::dvdwriterCheckEditStatus(bool checked)
         dvdwriterComboBox->setEditable(true);
     else
         dvdwriterComboBox->addItems(dvdwriterPaths);
+
+        dvdwriterComboBox->setItemIcon(0, style()->standardIcon(QStyle::SP_DriveDVDIcon));
+        dvdwriterComboBox->setIconSize(QSize(32,32));
 }
+
+
+/* Under *nix platforms cdrecord should not be placed in a root-access directory
+ * but under the default /opt/schily/bin install directory
+ * unless it is locally available under ../bindir
+ * For the latter method define CDRECORD_LOCAL_PATH
+ * or just define any CDRECORD_PATH adding an explicit path string
+ */
 
 struct optionsPage::dvdwriterAddress optionsPage::generateDvdwriterPaths()
 {
     QProcess process;
-    process.start("cdrecord -scanbus");
+#ifndef CDRECORD_PATH
+ #ifdef CDRECORD_LOCAL_PATH
+    process.start(QDir::currentPath ()+QDir::separator()+"bindir"+ QString("/cdrecord"),  QStringList() << "-scanbus");   //"k3b");
+ #else
+    #define CDRECORD_PATH "/opt/schily/bin"
+     process.start(QString(CDRECORD_PATH) + QString("/cdrecord"),  QStringList() << "-scanbus");
+ #endif
+#endif
+
     QStringList dvdwriterNameList=QStringList(), dvdwriterBusList=QStringList();
 
     if (process.waitForFinished(500))
     {
         QByteArray array=process.readAllStandardOutput();
 
-        int start=0, startIndex, endIndex;
+        int start=100, startIndex, endIndex;
         while (start < array.size())
         {
             startIndex=array.indexOf(") ", start)+2;
@@ -255,12 +269,21 @@ struct optionsPage::dvdwriterAddress optionsPage::generateDvdwriterPaths()
 
             if (array.at(startIndex)   != '*')
             {
-                dvdwriterNameList << QString(array.mid(startIndex, endIndex-startIndex));
-                dvdwriterBusList <<   QString(array.mid(startIndex-11, 5));
+                QString name = QString(array.mid(startIndex, endIndex-startIndex)).remove('\'');
+                if (name.contains("DVD", Qt::CaseInsensitive))
+                {
+                    dvdwriterNameList << name;
+                    dvdwriterBusList <<   QString(array.mid(startIndex-11, 5)).remove('\'');
+                }
+
             }
             start=endIndex+1;
         }
+
     }
+    else
+        QMessageBox::warning(this, tr("cdrecord"), tr("cdrecord could not be located."));
+
     dvdwriterAddress S={dvdwriterBusList, dvdwriterNameList};
     return S;
 }
@@ -989,7 +1012,7 @@ outputPage::outputPage(options* parent)
                                logrefreshBox
                            }) ;
 
-    logBox->setWhatsThis(tr("Check this box to create a log file of dvda-author run output.\nLog will be generated in current directory unless path is selected."));
+    setWhatsThisText(logBox, 99,101);
 
     logLayout->addWidget(logBox,1,1);
     logLayout->addWidget(logButton,1,3,1,1);
@@ -1029,8 +1052,9 @@ outputPage::outputPage(options* parent)
           parent->audioMenuTab ,
           parent->videoMenuTab ,
           parent->videolinkTab ,
-          // parent->standardTab ,
-          parent->stillTab
+          parent->standardTab ,
+          parent->stillTab,
+          parent->lplexTab,
         },
         {
             parent->advancedTab->fixWavOnlyBox
@@ -1050,14 +1074,14 @@ outputPage::outputPage(options* parent)
     createDVDFilesRadioBox = new FRadioBox({ "Output mode" , "Create DVD files", "No output"},
                                            "createDVDFiles",
                                            "Create DVD Files",
-    { "" , "no-output"},
+                                           { "" , "no-output"},
                                            createDVDFilesEnabledObjects,
                                            createDVDFilesDisabledObjects);
 
     parent->advancedTab->fixWavOnlyBox->disabledObjects=new Q2ListWidget;
     //parent->advancedTab->fixWavOnlyBox->disabledObjects->append(createDVDFilesRadioBox);
 
-    createDVDFilesRadioBox->setWhatsThis(tr("If this box is unchecked, no DVD files will be created."));
+    setWhatsThisText(createDVDFilesRadioBox, 104, 105);
 
     targetDirButton->setToolTip(tr("Browse output directory for DVD-Audio disc files."));
 
@@ -1516,28 +1540,26 @@ options::options(dvda* parent)
 
     pagesWidget = new QStackedWidget;
 
-    pagesWidget->addWidget(optionsTab = new optionsPage);
-
-    pagesWidget->addWidget(advancedTab = new advancedPage);
-
+    optionsTab = new optionsPage;
+    advancedTab = new advancedPage;
     standardTab = new standardPage;
     audioMenuTab = new audioMenuPage(parent, standardTab);
-
-    pagesWidget->addWidget(audioMenuTab );
-    pagesWidget->addWidget(videoMenuTab = new videoMenuPage);
-    pagesWidget->addWidget(videolinkTab = new videolinkPage);
-
+    videoMenuTab = new videoMenuPage;
+    videolinkTab = new videolinkPage;
     stillTab = new stillPage(parent, standardTab);
-
-    pagesWidget->addWidget(stillTab);
-    pagesWidget->addWidget(standardTab);
-
+    lplexTab = new lplexPage;
     // outputTab must be created after all those that it enables e.g all DVD-A tabs
     outputTab= new outputPage(this);
 
     pagesWidget->addWidget(outputTab);
-
-    pagesWidget->addWidget(lplexTab = new lplexPage);
+    pagesWidget->addWidget(optionsTab);
+    pagesWidget->addWidget(advancedTab);
+    pagesWidget->addWidget(audioMenuTab );
+    pagesWidget->addWidget(videoMenuTab);
+    pagesWidget->addWidget(videolinkTab);
+    pagesWidget->addWidget(stillTab);
+    pagesWidget->addWidget(standardTab);
+    pagesWidget->addWidget(lplexTab);
 
     closeButton = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     connect(closeButton, SIGNAL(accepted()), this, SLOT(closeOptions()));
@@ -1595,17 +1617,17 @@ inline void options::createIcon(const char* path, const char* text)
 
 void options::createIcons()
 {
-
     QList<const char*> iconList=QList<const char*>() <<
-                                                        ":/images/64x64/configure.png" <<  "General" <<
+                                                        ":/images/64x64/configure.png" << "General" <<
+                                                        ":/images/64x64/dvd-audio2.png" <<  "Disc" <<
                                                         ":/images/64x64/audio-processing.png" << "Audio\nProcessing" <<
                                                         ":/images/64x64/audio-menu.png" << "DVD-A\nMenu" <<
                                                         ":/images/64x64/video-menu.png" << "DVD-V\nMenu" <<
                                                         ":/images/64x64/link.png" << "Video\nLink" <<
                                                         ":/images/64x64/still.png" << "Track\nSlides" <<
                                                         ":/images/64x64/pal.png" << "Norm" <<
-                                                        ":/images/64x64/system-file-manager.png" << "Output" <<
-                                                        ":/images/64x64/lplex.png" << "lplex";
+                                                        ":/images/64x64/lplex.png" << "lplex" ;
+
 
     for (int i=0; i < iconList.size()/2 ; i++) createIcon(iconList[2*i], iconList[2*i+1]);
 
