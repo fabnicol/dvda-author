@@ -66,5 +66,6 @@
         <file>images/error.png</file>
         <file>images/64x64/dvd-audio.png</file>
         <file>images/64x64/dvd-video.png</file>
+        <file>images/64x64/dvd-audio2.png</file>
     </qresource>
 </RCC>
