@@ -14,7 +14,9 @@ Q_OBJECT
 
 private:
   inline void updateIndexInfo();
+#if 0
   void deleteGroups(QList<int> &L);
+#endif
 
 public:
 

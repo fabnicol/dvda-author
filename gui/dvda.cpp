@@ -1337,7 +1337,6 @@ bool dvda::refreshProjectManager()
 
   if (RefreshFlag&Create)
     {
-
       QStringList labels;
       labels << tr("Setting") << tr("Value/Path") << tr("Size");
       managerWidget=new QTreeWidget;
@@ -1345,13 +1344,11 @@ bool dvda::refreshProjectManager()
       managerLayout->addWidget(managerWidget);
       managerWidget->hide();
       managerWidget->setHeaderLabels(labels);
-
     }
 
   if (RefreshFlag&UpdateTree)
     {
       managerWidget->clear();
-
     }
 
   if (projectName.isEmpty())
@@ -1529,8 +1526,10 @@ void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
                 }
               else
                 {
-                  QString header=QString();
-                  QString secondColumn=QString();
+                  QString header;
+                  QString secondColumn;
+                  QString thirdColumn;
+                  qint64 allSizes=0;
                   int j=0;
                   int depth=0;
 
@@ -1541,6 +1540,7 @@ void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
                       header = (j ==0)? "":"\n";
 
                       secondColumn +=  header + childNode.toElement().tagName() +" "+ QString::number(++j);
+                      thirdColumn     += header ;
 
                       QDomNode grandChildNode =childNode.firstChild();
                       int i=0;
@@ -1559,36 +1559,39 @@ void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
                             }
                           else
                             {
-                              if  (grandChildNode.toElement().tagName() == "file")
-                                {
-                                  item->setTextColor(1,QColor("navy"));
-                                  //                                  if (!size.isEmpty())
-                                  //                                    {
-                                  //                                      if (isContinuation) allSizes+="\n";
-                                  //                                      allSizes += size+" B";
-                                  //                                    }
 
-                                  //                                  item->setTextColor(2,QColor("red"));
-                                  //                                  item->setText(2,allSizes);
-                                  //                                  item->setTextAlignment(2,Qt::AlignRight);
-
-
-                                }
 
                               QDomNode grandChildChildNode =grandChildNode.firstChild();
                               depth=2;
                               while ((!grandChildChildNode.isNull()) && (grandChildChildNode.nodeType() == QDomNode::TextNode))
                                 {
                                   QString text=grandChildChildNode.toText().data();
+                                  qint64 byteCount=QFileInfo(text).size();
+                                  // force coertion into float or double using .0
+                                  double s=byteCount/1048576.0;
+                                  allSizes+=byteCount;
+                                  QString size=QString::number(s , 'f', 1);
                                   textStringList << text;
-//                                  if ((dvda::RefreshFlag & UpdateTabs)&&(!isRecent))
-//                                    assignGroupFiles(isVideo, group_index, /*size.toLongLong()*/0 ,QDir::toNativeSeparators(text));
-                                  secondColumn +=  "\n "+grandChildNode.toElement().tagName() +QString::number(i+1) +":  "+ text  ;
+                                  if ((dvda::RefreshFlag & UpdateTabs)&&(!isRecent))
+                                    assignGroupFiles(isVideo, group_index, byteCount,QDir::toNativeSeparators(text));
+
+                                  secondColumn +=  "\n "+grandChildNode.toElement().tagName() +QString::number(i+1) +": "+ text  ;
+                                  thirdColumn    +=  "\n "+ size + " MB" ;
+
                                   grandChildChildNode=grandChildChildNode.nextSibling();
                                 }
                               i++;
 
-                              //textStringList.clear();
+                              textStringList.clear();
+                              if  (grandChildNode.toElement().tagName() == "file")
+                                {
+                                  item->setTextColor(1,QColor("navy"));
+                                  item->setTextColor(2,QColor("grey"));
+                                  item->setTextAlignment(2,Qt::AlignRight);
+                                  item->setText(1, "\n"+QDir::toNativeSeparators(secondColumn));
+                                  item->setText(2, tr("Total size: ")+QString::number(allSizes/1048576.0, 'f', 1) +"MB"+ "\n"+ thirdColumn);
+                                }
+
                             }
 
                           grandChildNode=grandChildNode.nextSibling();
@@ -1607,15 +1610,14 @@ void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
                       textStringList.clear();
                     }
 
-                  item->setText(1, QDir::toNativeSeparators(secondColumn));
 
 
                }
 
-//               if ((tagName == "value") &&  ((dvda::RefreshFlag&0xF000) == UpdateTabs))
-//                 {
-//                     assignVariables(textInfo);
-//                 }
+               if ((tagName == "value") &&  ((dvda::RefreshFlag&0xF000) == UpdateTabs))
+                 {
+                     assignVariables(textInfo);
+                 }
 
               childNode = childNode.nextSibling();
             }

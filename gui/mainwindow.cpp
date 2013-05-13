@@ -130,6 +130,7 @@ MainWindow::MainWindow()
   fileTreeViewDockWidget= new QDockWidget;
   fileTreeViewDockWidget->setWidget(dvda_author->fileTreeView);
   fileTreeViewDockWidget->setMinimumHeight((unsigned) (height()*0.3));
+  fileTreeViewDockWidget->setFeatures(QDockWidget::AllDockWidgetFeatures);
   addDockWidget(Qt::LeftDockWidgetArea, fileTreeViewDockWidget);
 
   setWindowIcon(QIcon(":/images/dvda-author.png"));

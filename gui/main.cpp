@@ -35,9 +35,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-//    dvda dvda_author(0);
-  //  dvda_author.show();
-
     MainWindow *mainWin=new MainWindow;
     mainWin->show();
     return app.exec();

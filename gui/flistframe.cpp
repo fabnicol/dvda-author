@@ -262,8 +262,6 @@ void FListFrame::deleteGroup()
 
  hash::fstringlist[frameHashKey]->removeAt(currentIndex);
 
- fileListWidget->rank--;
-
  if (currentIndex <fileListWidget->rank)
    {
 
@@ -272,9 +270,11 @@ void FListFrame::deleteGroup()
          mainTabWidget->setTabText(j,  tags[1] + " " + QString::number(j+1));
        }
    }
+
+ fileListWidget->rank--;
 }
 
-
+#if 0
 void FListFrame::deleteGroups(QList<int> &L)
 {
 
@@ -294,7 +294,7 @@ void FListFrame::deleteGroups(QList<int> &L)
        }
    }
 }
-
+#endif
 
 void FListFrame::addDirectoryToListWidget(QDir& dir, int filerank)
 {
