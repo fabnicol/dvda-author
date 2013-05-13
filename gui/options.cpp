@@ -241,6 +241,9 @@ void optionsPage::dvdwriterCheckEditStatus(bool checked)
  * unless it is locally available under ../bindir
  * For the latter method define CDRECORD_LOCAL_PATH
  * or just define any CDRECORD_PATH adding an explicit path string
+ *
+ * If using QtCreator under Windows, place bindir/ adjacent to the makefiles and the release/ or debug/ folder
+ * under the build directory
  */
 
 struct optionsPage::dvdwriterAddress optionsPage::generateDvdwriterPaths()
@@ -248,7 +251,7 @@ struct optionsPage::dvdwriterAddress optionsPage::generateDvdwriterPaths()
     QProcess process;
 #ifndef CDRECORD_PATH
  #ifdef CDRECORD_LOCAL_PATH
-    process.start(QDir::currentPath ()+QDir::separator()+"bindir"+ QString("/cdrecord"),  QStringList() << "-scanbus");   //"k3b");
+    process.start(QDir::toNativeSeparators(QDir::currentPath ()+"/bindir/"+ QString("cdrecord.exe")),  QStringList() << "-scanbus");   //"k3b");
  #else
     #define CDRECORD_PATH "/opt/schily/bin"
      process.start(QString(CDRECORD_PATH) + QString("/cdrecord"),  QStringList() << "-scanbus");
@@ -257,7 +260,7 @@ struct optionsPage::dvdwriterAddress optionsPage::generateDvdwriterPaths()
 
     QStringList dvdwriterNameList=QStringList(), dvdwriterBusList=QStringList();
 
-    if (process.waitForFinished(500))
+    if (process.waitForFinished(800))
     {
         QByteArray array=process.readAllStandardOutput();
 
@@ -282,7 +285,9 @@ struct optionsPage::dvdwriterAddress optionsPage::generateDvdwriterPaths()
 
     }
     else
-        QMessageBox::warning(this, tr("cdrecord"), tr("cdrecord could not be located."));
+    {
+        QMessageBox::warning(this, tr("cdrecord"), tr("cdrecord could not be located or crashed."));
+    }
 
     dvdwriterAddress S={dvdwriterBusList, dvdwriterNameList};
     return S;
@@ -1535,7 +1540,7 @@ options::options(dvda* parent)
     contentsWidget->setIconSize(QSize(64,64));
     contentsWidget->setMovement(QListView::Static);
     contentsWidget->setFixedWidth(116);
-    contentsWidget->setFixedHeight(713);
+    contentsWidget->setFixedHeight(690);
     contentsWidget->setSpacing(13);
 
     pagesWidget = new QStackedWidget;

@@ -141,7 +141,8 @@ dvda::dvda()
 
   mainTabWidget=project[AUDIO]->embeddingTabWidget;
 
-  mainTabWidget->setIconSize(QSize(128, 48));
+  mainTabWidget->setIconSize(QSize(64, 64));
+  mainTabWidget->setMovable(true);
   mainTabWidget->setMinimumWidth(250);
 //  tabWidget[VIDEO]->setToolTip(tr("List files in each video titleset tab"));
 
@@ -160,7 +161,7 @@ dvda::dvda()
 
   project[VIDEO]->fileListWidget->properties= new FStringList(QList<QStringList>() << QStringList({"size=\"0\""}) << QStringList({"rank=\"0\"", "count=\"0\""}));
   project[AUDIO]->fileListWidget->properties= new FStringList(QList<QStringList>() << QStringList({"size=\"0\""}) << QStringList({"rank=\"0\"", "count=\"0\""}));
-  project[VIDEO]->embeddingTabWidget->setIconSize(QSize(128, 48));
+  project[VIDEO]->embeddingTabWidget->setIconSize(QSize(64, 64));
 
   project[AUDIO]->model=model;
   project[VIDEO]->model=model;

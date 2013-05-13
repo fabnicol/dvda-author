@@ -12,6 +12,9 @@ TARGET = dvda-author-gui
 
 VPATH = .
 
+
+win32:DEFINES += CDRECORD_LOCAL_PATH
+
 SOURCES += \
     options.cpp \
     mainwindow.cpp \
@@ -46,7 +49,8 @@ HEADERS  += \
 
 
 RESOURCES += \
-    ../../../../.local/share/dvda-author-gui/dvda-author-gui.qrc
+    ../share/dvda-author-gui-12.12/dvda-author-gui.qrc
+
 
 
 
