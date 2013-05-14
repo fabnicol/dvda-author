@@ -367,7 +367,7 @@ void FListFrame::on_importFromMainTree_clicked()
          if (info.isFile())
            {
              QString filepath=info.canonicalFilePath();
-             currentListWidget->addItem(filepath);
+             //currentListWidget->addItem(filepath);
              addStringToListWidget(filepath, currentIndex);
            }
          else if (info.isDir())
@@ -385,7 +385,7 @@ void FListFrame::on_importFromMainTree_clicked()
        {
          QString name=index.data().toString();
 
-         currentListWidget->addItem(name);
+        // currentListWidget->addItem(name);
          addStringToListWidget(name, currentIndex);
        }
   }
