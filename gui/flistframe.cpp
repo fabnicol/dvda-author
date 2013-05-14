@@ -321,7 +321,7 @@ bool FListFrame::addStringToListWidget(QString filepath, int file)
 {
  if ((filepath.isEmpty()) || (fileListWidget->rank >= (*hash::fstringlist[frameHashKey]).count() ) || (signalList == NULL)) return false;
  // normaly it should be useless to call updateIndexInfo() here
-
+ fileListWidget->addItem(new QListWidgetItem);
  (*hash::fstringlist[frameHashKey])[currentIndex] << filepath;
  *(fileListWidget->signalList) << filepath;
  *signalList << filepath; //make a copy. Necessary to avoid losing dragged and dropped files to list widget directly.

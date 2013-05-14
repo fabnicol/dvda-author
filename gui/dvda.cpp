@@ -1326,8 +1326,7 @@ void dvda::assignGroupFiles(int isVideo, uint group_index, qint64 size, QString 
   inputSize[isVideo][group_index]+=size;
   inputSizeCount+=size;
   outputTextEdit->append(QString(MSG_HTML_TAG "Added file %4 to "+group_type+" %1:\n"+group_type+" size %2, total size %3\n").arg(QString::number(group_index+1),
-                                                                                                                     QString::number(inputSize[isVideo][group_index]), QString::number(inputSizeCount), file));
-  showFilenameOnly();
+                                                                                                                 QString::number(inputSize[isVideo][group_index]), QString::number(inputSizeCount), file));
 
 }
 
@@ -1461,6 +1460,9 @@ void dvda::DomParser(QIODevice* file)
   // References are needed here otherwise variables to be equated to booleanList members will not be as l-values.
   // Equating booleanList0=booleanList will not do either as references cannot be l-values.
 
+  if (dvda::RefreshFlag & UpdateTabs)
+          showFilenameOnly();
+
      emit(is_signalList_changed(project[AUDIO]->signalList->size()));
 }
 
@@ -1580,6 +1582,7 @@ void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
 
                                   grandChildChildNode=grandChildChildNode.nextSibling();
                                 }
+
                               i++;
 
                               textStringList.clear();
