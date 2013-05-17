@@ -362,7 +362,7 @@ void dvda::refreshRowPresentation()
 void dvda::refreshRowPresentation(uint ZONE, uint j)
 {
   QString localTag=(ZONE == AUDIO)? "DVD-A" : "DVD-V";
-
+  Q(hash::fstringlist[localTag]->at(j).join(','))
   for (int r=0; r < hash::fstringlist[localTag]->at(j).size(); r++ )
     {
       //resetting text
@@ -469,6 +469,7 @@ void dvda::clearProjectData()
         {
           project[ZONE]->on_clearList_clicked();
           rowFileSize[ZONE][i].clear();
+          hash::fstringlist[(ZONE == VIDEO)?"DVD-V":"DVD-A"]->removeAt(rank[ZONE]);
         }
       project[ZONE]->signalList->clear();
     }
@@ -502,7 +503,7 @@ void dvda::clearProjectData()
         }
     }
 
-  refreshProjectManager();
+refreshProjectManager();
 
 project[AUDIO]->embeddingTabWidget->setCurrentIndex(0);
 project[VIDEO]->embeddingTabWidget->setCurrentIndex(0);
@@ -1236,7 +1237,7 @@ QString  dvda::makeString()
       QString xml=widget->setXmlFromWidget().toQString();
 
       L << "  <switch hashKey=\""<< widget->getHashKey() << "\">\n" << "    <value>"
-         << QDir::toNativeSeparators(xml)<< "</value>\n  </switch>\n";
+         << xml << "</value>\n  </switch>\n";
     }
   return L.join("");
 }

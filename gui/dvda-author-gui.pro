@@ -6,14 +6,13 @@ TEMPLATE = app
 
 QT       += core gui xml widgets webkitwidgets multimedia multimediawidgets
 
-QMAKE_CXXFLAGS +=  -std=c++11
-
 TARGET = dvda-author-gui
 
 VPATH = .
 
+DEFINES += CDRECORD_LOCAL_PATH
 
-win32:DEFINES += CDRECORD_LOCAL_PATH
+QMAKE_CXXFLAGS += -std=c++11
 
 SOURCES += \
     options.cpp \

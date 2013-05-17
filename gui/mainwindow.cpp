@@ -310,7 +310,7 @@ void MainWindow::createActions()
   actionList << openAction << saveAction << closeAction << exitAction << separator[0] <<
                 burnAction << encodeAction << decodeAction << separator[1] <<
                 displayOutputAction << displayFileTreeViewAction << displayManagerAction << displayConsoleAction <<
-                clearOutputTextAction << clearOutputTextAction << separator[2] <<
+                clearOutputTextAction <<  separator[2] <<
                 optionsAction << helpAction << aboutAction;
 
 }
