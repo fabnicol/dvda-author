@@ -362,10 +362,18 @@ void dvda::refreshRowPresentation()
 void dvda::refreshRowPresentation(uint ZONE, uint j)
 {
   QString localTag=(ZONE == AUDIO)? "DVD-A" : "DVD-V";
-  Q(hash::fstringlist[localTag]->at(j).join(','))
+  //Q(hash::fstringlist[localTag]->at(j).join(','))
   for (int r=0; r < hash::fstringlist[localTag]->at(j).size(); r++ )
     {
       //resetting text
+#ifdef DEBUG
+      if (project[ZONE]->currentListWidget->item(r) == NULL)
+      {
+          Q("item " + QString::number(r) + " has not been allocated yet.");
+          return;
+      }
+#endif
+
       project[ZONE]->currentListWidget->item(r)->setText(hash::fstringlist.value(localTag)->at(j).at(r).section('/',-1));
       project[ZONE]->currentListWidget->item(r)->setTextColor(QColor((r % 2)?"white":"navy"));
       project[ZONE]->currentListWidget->item(r)->setToolTip(QString::number(rowFileSize[ZONE][j][r]/1024)+" KB");

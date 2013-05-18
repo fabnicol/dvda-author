@@ -18,19 +18,24 @@ browser::browser(const QUrl &urlPath,  QWidget *parent) :  QWidget(parent)
     homeButton->setIcon(style()->standardIcon(QStyle::SP_DirHomeIcon));
     homeButton->setToolTip(tr("Home"));
     backButton->setIcon(style()->standardIcon(QStyle::SP_ArrowBack));
-    backButton->setToolTip(tr("Back"));
+    backButton->setToolTip(tr("Back (Ctrl + <)"));
+    backButton->setShortcut(QKeySequence("Ctrl+<"));
+
     forwardButton->setIcon(style()->standardIcon(QStyle::SP_ArrowForward));
-    forwardButton->setToolTip(tr("Forward"));
+    forwardButton->setToolTip(tr("Forward (Ctrl + >)"));
+    forwardButton->setShortcut(QKeySequence("Ctrl+>"));
+
     closeButton->setIcon(style()->standardIcon(QStyle::SP_DialogCloseButton));
-    closeButton->setToolTip(tr("Close"));
-    closeButton->setShortcut(QKeySequence("Esc"));
+    closeButton->setToolTip(tr("Close (Ctrl + Q)"));
+    closeButton->setShortcut(QKeySequence("Ctrl+Q"));
 
     QHBoxLayout *buttonLayout = new QHBoxLayout;
     buttonLayout->addWidget(homeButton);
     buttonLayout->addWidget(backButton);
     buttonLayout->addWidget(forwardButton);
-    buttonLayout->addStretch();
     buttonLayout->addWidget(closeButton);
+    buttonLayout->addStretch();
+
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addLayout(buttonLayout);

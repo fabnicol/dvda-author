@@ -287,6 +287,7 @@ void MainWindow::createActions()
 
   exitAction = new QAction(tr("&Exit"), this);
   exitAction->setIcon(QIcon(":/images/application-exit.png"));
+  exitAction->setShortcut(QKeySequence("Ctrl+Q"));
   connect(exitAction, SIGNAL(triggered()), this, SLOT(on_exitButton_clicked()));
 
   aboutAction=new QAction(tr("&About"), this);

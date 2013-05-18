@@ -151,10 +151,15 @@ inline void FListFrame::updateIndexInfo()
 void FListFrame::on_clearList_clicked()
 {
   updateIndexInfo();
+  if (hash::fstringlist[frameHashKey]->count() < currentIndex+1) return;
 
   fileListWidget->clear();
   for (int j=1; currentIndex +j < cumulativePicCount.count() ; j++)
-    cumulativePicCount[currentIndex+j] -= hash::fstringlist[frameHashKey]->at(currentIndex).count();
+      if  (cumulativePicCount.count() < currentIndex+j+1)
+          return;
+        else
+          cumulativePicCount[currentIndex+j] -= hash::fstringlist[frameHashKey]->at(currentIndex).count();
+
   hash::fstringlist[frameHashKey]->value(currentIndex).clear();
 }
 
@@ -319,9 +324,10 @@ void FListFrame::addDirectoryToListWidget(QDir& dir, int filerank)
 
 bool FListFrame::addStringToListWidget(QString filepath, int file)
 {
- if ((filepath.isEmpty()) || (fileListWidget->rank >= (*hash::fstringlist[frameHashKey]).count() ) || (signalList == NULL)) return false;
+ //if ((filepath.isEmpty()) || (fileListWidget->rank >= (*hash::fstringlist[frameHashKey]).count() ) || (signalList == NULL)) return false;
  // normaly it should be useless to call updateIndexInfo() here
- fileListWidget->addItem(new QListWidgetItem);
+ //fileListWidget->addItem(new QListWidgetItem);
+ currentListWidget->addItem(filepath);
  (*hash::fstringlist[frameHashKey])[currentIndex] << filepath;
  *(fileListWidget->signalList) << filepath;
  *signalList << filepath; //make a copy. Necessary to avoid losing dragged and dropped files to list widget directly.
@@ -368,7 +374,7 @@ void FListFrame::on_importFromMainTree_clicked()
            {
              QString filepath=info.canonicalFilePath();
              //currentListWidget->addItem(filepath);
-             addStringToListWidget(filepath, currentIndex);
+            addStringToListWidget(filepath, currentIndex);
            }
          else if (info.isDir())
            {
@@ -385,7 +391,7 @@ void FListFrame::on_importFromMainTree_clicked()
        {
          QString name=index.data().toString();
 
-        // currentListWidget->addItem(name);
+         //
          addStringToListWidget(name, currentIndex);
        }
   }

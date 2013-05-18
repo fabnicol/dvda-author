@@ -2,16 +2,10 @@
 #define FSTRING_H
 
 #include <QtCore>
-#ifdef DEBUG_MODE
-#include <QtGui/QMessageBox>
-#define Q(X) QMessageBox::about(NULL, "", X);
-#define q(X) QMessageBox::about(NULL, "", QString::number(X));
-#endif
 #include "enums.h"
 
 class FString;
 class FStringList;
-//class flags;
 
 class hash : public QHash<QString, QString>
 {

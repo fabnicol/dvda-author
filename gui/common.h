@@ -4,9 +4,6 @@
 #include <QtWidgets>
 
 #include "fwidgets.h"
-//#include "fwidgets_global.h"
-
-
 
 #define AFMT_WAVE 1
 #define AFMT_FLAC 2
