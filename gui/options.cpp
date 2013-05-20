@@ -1279,7 +1279,7 @@ stillPage::stillPage(dvda* parent, standardPage* standardTab)
     slides->model=parent->model;
 
     stilloptionListLabel = new QLabel("Available transition effects");
-    stilloptionListWidget =new FListWidget;
+    stilloptionListWidget =new QListWidget;
     stilloptionListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
     QStringList stilloptionListText= { "manual browse" , "active browse" , "fade start" ,  "dissolve start" ,  "top-wipe start" ,  "bottom-wipe start" ,
@@ -1521,7 +1521,7 @@ void stillPage::on_nextStep_clicked()
 void stillPage::refreshApplyEffectsIcon()
 {
 
-    if (hash::fstringlist[slides->frameHashKey][slides->mainTabWidget->currentIndex()].isEmpty())
+    if (hash::fstringlist[slides->hashKey()][slides->mainTabWidget->currentIndex()].isEmpty())
         applyEffectsToOneFile->setIcon(applyEffectsToOneFileUntoggledIcon);
     else
         applyEffectsToOneFile->setIcon(applyEffectsToOneFileToggledIcon);
@@ -1595,15 +1595,16 @@ options::options(dvda* parent)
     refreshOptionFields();
 }
 
+/* implement a global clear() function for the FStringList of data in an FListFrame ; it will be used as dvda::clearData() too. Usage below is faulty. */
 
 void options::clearOptionData()
 {
     hash::fstringlist.clear();
-    stillTab->slides->fileListWidget->clear();
-    stillTab->selectoptionListWidget->fileListWidget->clear();
-    audioMenuTab->slides->fileListWidget->clear();
-    audioMenuTab->soundtracks->fileListWidget->clear();
-    audioMenuTab->screentext->fileListWidget->clear();
+    stillTab->slides->fileListWidget->currentListWidget->clear();
+    stillTab->selectoptionListWidget->fileListWidget->currentListWidget->clear();
+    audioMenuTab->slides->fileListWidget->currentListWidget->clear();
+    audioMenuTab->soundtracks->fileListWidget->currentListWidget->clear();
+    audioMenuTab->screentext->fileListWidget->currentListWidget->clear();
     options::RefreshFlag = UpdateOptionTabs;
 }
 

@@ -124,29 +124,31 @@ protected:
 };
 
 
-class FListWidget : public QListWidget, virtual public FAbstractWidget
+class FListWidget : public QWidget, virtual public FAbstractWidget
 {
   Q_OBJECT
 
   friend class FAbstractWidget;
 
 public:
-  FListWidget() : QListWidget() {}
+  FListWidget()  {}
 
   FListWidget(const QString& hashKey,int status,const QString& description,const QString& commandLine,const QStringList& sep,
-              const QStringList &taglist,  FStringList *propertyList=NULL, const QList<QString> *terms=NULL, const QList<QString> *translation=NULL, QWidget* controlledWidget=NULL);
+              const QStringList &taglist,  const QList<QString> *terms=NULL, const QList<QString> *translation=NULL, QWidget* controlledWidget=NULL);
 
   FListWidget(const QString& hashKey,int status,const QString& description,const QString& commandLine,const QStringList& sep,
-              const QStringList &taglist, const QList<QWidget*> &enabledObjects, FStringList *propertyList=NULL, const QList<QString> *terms=NULL, const QList<QString> *translation=NULL, QWidget* controlledWidget=NULL);
+              const QStringList &taglist, const QList<QWidget*> &enabledObjects, const QList<QString> *terms=NULL, const QList<QString> *translation=NULL, QWidget* controlledWidget=NULL);
 
   virtual void setWidgetFromXml(FStringList & );
   virtual FString setXmlFromWidget();
+
   virtual void refreshWidgetDisplay();
   virtual bool isAbstractEnabled() {return this->isEnabled();}
 
   int rank;
   QStringList *signalList;
-  FStringList *properties;
+  QListWidget* currentListWidget;
+
 
 private:
   QStringList separator;
@@ -158,16 +160,6 @@ private:
   QHash<QString, QString> *listWidgetTranslationHash;
   FString translate(FStringList &s);
 
-  void startDrag();
-  QPoint startPos;
-
-protected:
-  void addDraggedFiles(QList<QUrl> urls);
-  void mousePressEvent(QMouseEvent *event);
-  void mouseMoveEvent(QMouseEvent *event);
-  void dragMoveEvent(QDragMoveEvent *event);
-  void dragEnterEvent(QDragEnterEvent *event);
-  void dropEvent(QDropEvent *event);
 
 signals:
   void  open_tabs_signal(int);

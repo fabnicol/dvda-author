@@ -58,7 +58,7 @@ void dvda::on_playItemButton_clicked()
   if (row < 0)
     {
       row=0;
-      project[isVideo]->fileListWidget->setCurrentRow(0);
+      project[isVideo]->fileListWidget->currentListWidget->setCurrentRow(0);
     }
   updateIndexChangeInfo();
 
@@ -130,7 +130,7 @@ dvda::dvda()
                                 fileTreeView,
                                 importFiles,
                                 "DVD-A",
-                                "audio group",
+                                "DVD-Audio",
                                 "g",
                                 dvdaCommandLine | hasListCommandLine|flags::enabled,
                                {" ", " -g "},
@@ -150,7 +150,7 @@ dvda::dvda()
                                 fileTreeView,
                                 importFiles,
                                 "DVD-V",
-                                "video titleset",
+                                "DVD-Video",
                                 "",
                                 lplexFiles | hasListCommandLine|flags::enabled,
                                {" ", " -ts "},
@@ -159,8 +159,7 @@ dvda::dvda()
                                 iconDVDV,
                                 mainTabWidget);
 
-  project[VIDEO]->fileListWidget->properties= new FStringList(QList<QStringList>() << QStringList({"size=\"0\""}) << QStringList({"rank=\"0\"", "count=\"0\""}));
-  project[AUDIO]->fileListWidget->properties= new FStringList(QList<QStringList>() << QStringList({"size=\"0\""}) << QStringList({"rank=\"0\"", "count=\"0\""}));
+
   project[VIDEO]->embeddingTabWidget->setIconSize(QSize(64, 64));
 
   project[AUDIO]->model=model;
@@ -334,8 +333,6 @@ uint dvda::addStringToListWidget(QString filepath)
 
   updateIndexInfo();
 
-  project[isVideo]->fileListWidget->properties->value(0)[0]="count=" + QString("\"")+ QString::number(row)+ QString("\"");
-
   QString msg=QString(MSG_HTML_TAG "Added file %4 to " + groupType +" %1\n"+groupType+" size:  %2, total size: %3\n");
 
   QFileInfo fileInfo(filepath);
@@ -367,16 +364,16 @@ void dvda::refreshRowPresentation(uint ZONE, uint j)
     {
       //resetting text
 #ifdef DEBUG
-      if (project[ZONE]->currentListWidget->item(r) == NULL)
+      if (project[ZONE]->fileListWidget->currentListWidget->item(r) == NULL)
       {
           Q("item " + QString::number(r) + " has not been allocated yet.");
           return;
       }
 #endif
 
-      project[ZONE]->currentListWidget->item(r)->setText(hash::fstringlist.value(localTag)->at(j).at(r).section('/',-1));
-      project[ZONE]->currentListWidget->item(r)->setTextColor(QColor((r % 2)?"white":"navy"));
-      project[ZONE]->currentListWidget->item(r)->setToolTip(QString::number(rowFileSize[ZONE][j][r]/1024)+" KB");
+      project[ZONE]->fileListWidget->currentListWidget->item(r)->setText(hash::fstringlist.value(localTag)->at(j).at(r).section('/',-1));
+      project[ZONE]->fileListWidget->currentListWidget->item(r)->setTextColor(QColor((r % 2)?"white":"navy"));
+      project[ZONE]->fileListWidget->currentListWidget->item(r)->setToolTip(QString::number(rowFileSize[ZONE][j][r]/1024)+" KB");
     }
 }
 
@@ -388,10 +385,10 @@ void dvda::showFilenameOnly()
   QFont font=QFont("Courier",10);
 
   updateIndexInfo();
-  project[isVideo]->currentListWidget=qobject_cast<QListWidget*>(project[isVideo]->mainTabWidget->currentWidget());
-  project[isVideo]->currentListWidget->setPalette(palette);
-  project[isVideo]->currentListWidget->setAlternatingRowColors(true);
-  project[isVideo]->currentListWidget->setFont(font);
+  project[isVideo]->fileListWidget->currentListWidget=qobject_cast<QListWidget*>(project[isVideo]->mainTabWidget->currentWidget());
+  project[isVideo]->fileListWidget->currentListWidget->setPalette(palette);
+  project[isVideo]->fileListWidget->currentListWidget->setAlternatingRowColors(true);
+  project[isVideo]->fileListWidget->currentListWidget->setFont(font);
   refreshRowPresentation(isVideo, currentIndex);
   //          project[ZONE][j]->sortItems(); TODO: if sort then reset tool tip after sort.
 
@@ -454,6 +451,11 @@ void dvda::recentProjectFile()
 {
   clearProjectData();
 
+  hash::initialize(project[AUDIO]->hashKey());
+  hash::initialize(project[VIDEO]->hashKey());
+
+  refreshProjectManager();
+
   if (!projectName.isEmpty())
     {
       setCurrentFile(projectName);
@@ -464,6 +466,7 @@ void dvda::closeProject()
 {
   projectName="";
   clearProjectData();
+  refreshProjectManager();
 }
 
 void dvda::clearProjectData()
@@ -510,8 +513,6 @@ void dvda::clearProjectData()
           break;
         }
     }
-
-refreshProjectManager();
 
 project[AUDIO]->embeddingTabWidget->setCurrentIndex(0);
 project[VIDEO]->embeddingTabWidget->setCurrentIndex(0);
@@ -693,7 +694,7 @@ void dvda::on_moveDownItemButton_clicked()
   updateIndexInfo();
 
   if (row < 0) return;
-  if (row == project[isVideo]->currentListWidget->count() -1) return;
+  if (row == project[isVideo]->fileListWidget->currentListWidget->count() -1) return;
 
   rowFileSize[isVideo][currentIndex].swap(row, row+1);
 
@@ -1228,13 +1229,37 @@ void dvda::saveProject()
   refreshProjectManager();
 }
 
-QString  dvda::makeString()
+/* Remember that the first two elements of the FAvstractWidgetList are DVD-A and DVD-V respectively, which cuts down parsing time */
+
+QString  dvda::makeDataString()
+{
+  QStringList L=QStringList();
+
+  for (short ZONE =AUDIO; ZONE <= VIDEO; ZONE++ )
+    {
+       FAbstractWidget *DVD_ZONE=FAbstractWidget::abstractWidgetList.at(ZONE);
+      QString hK=DVD_ZONE->getHashKey();
+      QString xml=DVD_ZONE->setXmlFromWidget().toQString();
+
+      L << "  <switch hashKey=\""<< hK << "\">\n" << "    <value>"
+         << xml << "</value>\n  </switch>\n";
+    }
+
+  return L.join("");
+}
+
+QString  dvda::makeSystemString()
 {
   QStringList L=QStringList();
   QListIterator<FAbstractWidget*> w(FAbstractWidget::abstractWidgetList);
+
+  w.next();
+  w.next();
+
   while (w.hasNext())
     {
       FAbstractWidget* widget=w.next();
+      QString hK=widget->getHashKey();
 
       if  (widget->getHashKey().isEmpty())
         {
@@ -1244,11 +1269,13 @@ QString  dvda::makeString()
 
       QString xml=widget->setXmlFromWidget().toQString();
 
-      L << "  <switch hashKey=\""<< widget->getHashKey() << "\">\n" << "    <value>"
+      L << "  <switch hashKey=\""<< hK << "\">\n" << "    <value>"
          << xml << "</value>\n  </switch>\n";
     }
   return L.join("");
 }
+
+
 
 void dvda::writeProjectFile()
 {
@@ -1267,15 +1294,10 @@ void dvda::writeProjectFile()
 
   QTextStream out(&projectFile);
 
-  out.setCodec("UTF-8");
-  out << "<?xml version=\"1.0\"?>\n" <<"<project>\n";
-  out << " <system>\n";
+ out << "<?xml version=\"1.0\"?>\n" <<"<project>\n";
+ out << " <data>\n";
 
-  out << dvda::makeString();
-
-  out << " </system>\n";
-  out << " <data>\n";
-
+ out << dvda::makeDataString();
   for (int i=0; (i < parent->recentFiles.count()) && (i < MaxRecentFiles);  i++)
     {
       out << "  <switch hashKey=\"recent\"" <<   " rank=\"" << QString::number(i) << "\">\n"
@@ -1283,6 +1305,13 @@ void dvda::writeProjectFile()
     }
 
   out << " </data>\n";
+
+  out.setCodec("UTF-8");
+  out << " <system>\n";
+
+  out << dvda::makeSystemString();
+
+  out << " </system>\n";
   out << "</project>\n";
   out.flush();
 }
@@ -1436,8 +1465,8 @@ void dvda::DomParser(QIODevice* file)
   if (root.tagName() != "project") return;
 
   QDomNode node=root.firstChild();
-  if (node.toElement().tagName() != "system") return;
-  item->setText(0,"system");
+  if (node.toElement().tagName() != "data") return;
+  item->setText(0,"data");
   item->setExpanded(true);
 
   QDomNode subnode=node.firstChild();
@@ -1453,8 +1482,8 @@ void dvda::DomParser(QIODevice* file)
 
   QTreeWidgetItem *item2=new QTreeWidgetItem(managerWidget);
 
-  if (node.toElement().tagName() != "data") return;
-  item2->setText(0,"data");
+  if (node.toElement().tagName() != "system") return;
+  item2->setText(0,"system");
   item2->setExpanded(true);
 
   subnode=node.firstChild();

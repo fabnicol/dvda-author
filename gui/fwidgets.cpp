@@ -125,6 +125,8 @@ return (QStringList("--"+optionLabel+"="+commandLineList[0].toQString()));
 
 }
 
+/* caution : abstractWidgetList must have its first two elements as respectively being with "DVD-A" and "DVD-V" hashKeys. */
+
 QList<FAbstractWidget*> FAbstractWidget::abstractWidgetList= QList<FAbstractWidget*>();
 
 template <typename W> void FAbstractWidget::setProtectedFields(W* w, const QString &defaultValue, const QString &hashKey,
@@ -172,22 +174,25 @@ FListWidget::FListWidget(const QString& hashKey,
                          const QString& commandLine,
                          const QStringList& sep,
                          const QStringList &taglist,
-                         FStringList *propertyList,
                          const QList<QString> *terms,
                          const QList<QString>*translation,
-                         QWidget* controlledWidget) : QListWidget()
+                         QWidget* controlledWidget)
 
 {
     setAcceptDrops(true);
     componentList=QList<QWidget*>() << this;
-    hash::fstringlist[hashKey]=new FStringList;
-    *hash::fstringlist[hashKey] << QStringList();
+
+    hash::initialize(hashKey);
+
+    rank=0;
+    setObjectName(hashKey+" "+description);
+    currentListWidget=new QListWidget;
+
     Q2ListWidget *controlledListWidget=new Q2ListWidget;
     *controlledListWidget << (QList<QWidget*>() << controlledWidget);
 
     setProtectedFields(this, "", hashKey, description, commandLine, status, controlledListWidget);
     separator=sep;
-    properties=propertyList;
     rank=0;
     tags=taglist;
     signalList=new QStringList;
@@ -203,92 +208,11 @@ FListWidget::FListWidget(const QString& hashKey,
 
     }
 
-    connect(this, SIGNAL(currentRowChanged(int)), SIGNAL(is_signalList_changed(int)));
+    connect(currentListWidget, SIGNAL(currentRowChanged(int)), SIGNAL(is_signalList_changed(int)));
 
 }
 
 
-void FListWidget::mousePressEvent(QMouseEvent *event)
-{
-    if (event->button() ==  Qt::LeftButton)
-        startPos = event->pos();
-
-    QListWidget::mousePressEvent(event);
-}
-
-void FListWidget::mouseMoveEvent(QMouseEvent *event)
-{
-    if (event->buttons()  & Qt::LeftButton)
-    {
-        int distance = (event->pos() - startPos).manhattanLength();
-        if (distance >= QApplication::startDragDistance()) startDrag();
-    }
-    QListWidget::mouseMoveEvent(event);
-}
-
-void FListWidget::startDrag()
-{
-    QDrag *drag = new QDrag(this);
-    QMimeData *mimeData = new QMimeData;
-    QList<QUrl> urls= QList<QUrl>();
-    QList<QListWidgetItem*> itemList = this->selectedItems();
-    QListIterator<QListWidgetItem*> w(itemList);
-    while (w.hasNext())
-        urls << QUrl(w.next()->text());
-
-    mimeData->setUrls(urls);
-    drag->setMimeData(mimeData);
-
-    drag->setPixmap(QPixmap(":/images/dvda-author.png"));
-    drag->start(Qt::CopyAction);
-
-}
-
-void FListWidget::dragEnterEvent(QDragEnterEvent *event)
-{
-    if (event->source() != this)
-    {
-        event->setDropAction(Qt::CopyAction);
-        event->accept();
-    }
-}
-
-void FListWidget::dragMoveEvent(QDragMoveEvent *event)
-{
-    if (event->source() != this)
-    {
-        event->setDropAction(Qt::CopyAction);
-        event->accept();
-    }
-}
-
-void FListWidget::dropEvent(QDropEvent *event)
-{
-
-    if (event->source() != this)
-    {
-        QList<QUrl> urls=event->mimeData()->urls();
-        if (urls.isEmpty()) return;
-
-        QString fileName = urls.first().toLocalFile();
-        if (fileName.isEmpty()) return;
-
-        addDraggedFiles(urls);
-    }
-
-}
-
-void FListWidget::addDraggedFiles(QList<QUrl> urls)
-{
-    uint size=urls.size();
-
-    for (uint i = 0; i < size; i++)
-    {
-        QString str = (QString) urls.at(i).toLocalFile();
-        addItem(str);
-        *signalList << str;
-    }
-}
 
 FString FListWidget::translate(FStringList &s)
 {
@@ -322,11 +246,9 @@ void FListWidget::setWidgetFromXml(FStringList &s)
         if (hash::fstringlist.contains(hashKey))
             *hash::fstringlist[hashKey]=s;
         else return;
-        this->addItems(s.at(0));
+        currentListWidget->addItems(s.at(0));
 
         if (s.count() > 1) { emit(open_tabs_signal(s.count()-1)) ;}
-
-
     }
     else
     {
@@ -387,14 +309,15 @@ FString FListWidget::setXmlFromWidget()
             commandLineList[0]=hash::fstringlist[hashKey]->join(separator);
     }
 
-    return hash::fstringlist[hashKey]->setTags(tags, properties);
+    return hash::fstringlist[hashKey]->setTags(tags);
 }
+
 
 void FListWidget::refreshWidgetDisplay()
 {
-    clear();
+    currentListWidget->clear();
     if ((hash::fstringlist.contains(hashKey)) && (hash::fstringlist[hashKey]->count() > rank ))
-        addItems(hash::fstringlist[hashKey]->at(rank));
+    currentListWidget->addItems(hash::fstringlist[hashKey]->at(rank));
 }
 
 
@@ -781,7 +704,9 @@ FPalette::FPalette(const char* textR,
     button[0]=new FColorButton(this, textR, DEFAULT_COLOR_0); // red RGB
     button[1]=new FColorButton(this, textG, DEFAULT_COLOR_1); // green RGB
     button[2]=new FColorButton(this, textB, DEFAULT_COLOR_2); //blue RGB
-    hash::fstringlist[hashKey]=new FStringList;
+
+    hash::initialize(hashKey);
+
     FAbstractWidget::setProtectedFields(this, "000000:000000:000000",  hashKey, description, commandLine, status);
     setMinimumButtonWidth(buttonWidth);
 }

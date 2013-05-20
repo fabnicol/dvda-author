@@ -4,6 +4,12 @@ QHash<QString,QString>    hash::description;
 QHash<QString, QString >   hash::qstring;
 QHash<QString, FStringList* >   hash::fstringlist;
 
+void hash::initialize(const QString &hashKey)
+{
+    hash::fstringlist[hashKey]=new FStringList;
+    *hash::fstringlist[hashKey] << QStringList();
+}
+
 FString   FString::operator & (FString  s)
 {
   if (x * s.x == 1) return "yes";

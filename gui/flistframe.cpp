@@ -25,12 +25,10 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
                                   command_line,
                                   separator,
                                   tags,
-                                  NULL,
                                   terms,
                                   translation);
 
- fileListWidget->rank=0;
- fileListWidget->setObjectName(hashKey+" "+description);
+ widgetContainer = QList<QListWidget*>() << fileListWidget->currentListWidget;
 
  if (mainTabWidgetRank != -1)
    {
@@ -57,11 +55,11 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
  else
   {
      embeddingTabWidget = new QTabWidget(this);
-     embeddingTabWidget->addTab(fileListWidget, xml_tags[1]+" "+ QString::number(fileListWidget->rank+1));
+     embeddingTabWidget->addTab(fileListWidget->currentListWidget, xml_tags[1]+" 1");
      mainTabWidget=embeddingTabWidget;
   }
 
- mainTabWidget->addTab(fileListWidget, xml_tags[1]+" "+ QString::number(fileListWidget->rank+1));
+ mainTabWidget->addTab(fileListWidget->currentListWidget, xml_tags[1]+" 1");
  cumulativePicCount =QList<int>() << 0 << 0;
  importFromMainTree = new QToolButton;
 
@@ -142,9 +140,9 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
 
 inline void FListFrame::updateIndexInfo()
 {
-  currentListWidget=qobject_cast<QListWidget*>(mainTabWidget->currentWidget());
-  if (currentListWidget == NULL) return;
-  row=currentListWidget->currentRow();
+  fileListWidget->currentListWidget=qobject_cast<QListWidget*>(mainTabWidget->currentWidget());
+  if (fileListWidget->currentListWidget == NULL) return;
+  row=fileListWidget->currentListWidget->currentRow();
   currentIndex=mainTabWidget->currentIndex();
 }
 
@@ -153,7 +151,7 @@ void FListFrame::on_clearList_clicked()
   updateIndexInfo();
   if (hash::fstringlist[frameHashKey]->count() < currentIndex+1) return;
 
-  fileListWidget->clear();
+  fileListWidget->currentListWidget->clear();
   for (int j=1; currentIndex +j < cumulativePicCount.count() ; j++)
       if  (cumulativePicCount.count() < currentIndex+j+1)
           return;
@@ -171,11 +169,11 @@ void FListFrame::on_moveUpItemButton_clicked()
 
   int currentIndex=mainTabWidget->currentIndex();
 
-  QListWidgetItem *temp=currentListWidget->takeItem(row);
-  QListWidgetItem *temp2=currentListWidget->takeItem(row-1);
-  currentListWidget->insertItem(row-1, temp);
-  currentListWidget->insertItem(row, temp2);
-  currentListWidget ->setCurrentRow(row-1);
+  QListWidgetItem *temp=fileListWidget->currentListWidget->takeItem(row);
+  QListWidgetItem *temp2=fileListWidget->currentListWidget->takeItem(row-1);
+  fileListWidget->currentListWidget->insertItem(row-1, temp);
+  fileListWidget->currentListWidget->insertItem(row, temp2);
+  fileListWidget->currentListWidget ->setCurrentRow(row-1);
 
    (*hash::fstringlist[frameHashKey])[currentIndex].swap(row, row-1);
 }
@@ -187,11 +185,11 @@ void FListFrame::on_retrieveItemButton_clicked()
   if (hash::fstringlist[frameHashKey]->at(currentIndex).isEmpty()) return;
   if (row <0) return;
 
-   currentListWidget->takeItem(row);
+   fileListWidget->currentListWidget->takeItem(row);
 
   (*hash::fstringlist[frameHashKey])[currentIndex].removeAt(row);
 
-   if (row) currentListWidget->setCurrentRow(row-1);
+   if (row) fileListWidget->currentListWidget->setCurrentRow(row-1);
    row--;
 }
 
@@ -201,13 +199,13 @@ void FListFrame::on_moveDownItemButton_clicked()
   updateIndexInfo();
 
   if (row < 0) return;
-  if (row == currentListWidget->count() -1) return;
+  if (row == fileListWidget->currentListWidget->count() -1) return;
 
-  QListWidgetItem *temp=currentListWidget->takeItem(row+1);
-  QListWidgetItem *temp2=currentListWidget->takeItem(row);
-  currentListWidget->insertItem(row, temp);
-  currentListWidget->insertItem(row+1, temp2);
-  currentListWidget->setCurrentRow(row+1);
+  QListWidgetItem *temp=fileListWidget->currentListWidget->takeItem(row+1);
+  QListWidgetItem *temp2=fileListWidget->currentListWidget->takeItem(row);
+  fileListWidget->currentListWidget->insertItem(row, temp);
+  fileListWidget->currentListWidget->insertItem(row+1, temp2);
+  fileListWidget->currentListWidget->setCurrentRow(row+1);
 
    (*hash::fstringlist[frameHashKey])[currentIndex].swap(row, row+1);
 }
@@ -240,20 +238,22 @@ void FListFrame::addGroup()
 
    fileListWidget->rank++;
 
- mainTabWidget->insertTab(fileListWidget->rank, new QListWidget, tags[1] + " "+ QString::number(fileListWidget->rank+1));
+ fileListWidget->currentListWidget=new QListWidget;
+ widgetContainer.append(fileListWidget->currentListWidget);
+ mainTabWidget->insertTab(fileListWidget->rank ,widgetContainer.at(fileListWidget->rank) , tags[1] + " "+ QString::number(fileListWidget->rank+1));
  mainTabWidget->setCurrentIndex(fileListWidget->rank);
 }
+
+/* Unlike addGroup, this function is just used for reading groups from Xml */
 
 void FListFrame::addGroups(int n)
 {
  for (int j=1; j<= n; j++)
    {
-     QListWidget* widget =new QListWidget;
-      widget->addItems((*hash::fstringlist[frameHashKey])[j]);
-      mainTabWidget->insertTab(j, widget, tags[1] + " "+ QString::number(j+1));
+     addGroup();
+     widgetContainer.last()->addItems((*hash::fstringlist[frameHashKey])[j]);
       *signalList << hash::fstringlist.value(frameHashKey)->at(j);
    }
-
 }
 
 
@@ -275,6 +275,8 @@ void FListFrame::deleteGroup()
          mainTabWidget->setTabText(j,  tags[1] + " " + QString::number(j+1));
        }
    }
+
+ if (fileListWidget->rank < widgetContainer.size()) widgetContainer.removeAt(fileListWidget->rank);
 
  fileListWidget->rank--;
 }
@@ -324,10 +326,11 @@ void FListFrame::addDirectoryToListWidget(QDir& dir, int filerank)
 
 bool FListFrame::addStringToListWidget(QString filepath, int file)
 {
- //if ((filepath.isEmpty()) || (fileListWidget->rank >= (*hash::fstringlist[frameHashKey]).count() ) || (signalList == NULL)) return false;
- // normaly it should be useless to call updateIndexInfo() here
- //fileListWidget->addItem(new QListWidgetItem);
- currentListWidget->addItem(filepath);
+  // normaly it should be useless to call updateIndexInfo() here
+ updateIndexInfo();
+ if ((filepath.isEmpty()) || (currentIndex >= (*hash::fstringlist[frameHashKey]).count() ) || (signalList == NULL)) return false;
+
+ fileListWidget->currentListWidget->addItem(filepath);
  (*hash::fstringlist[frameHashKey])[currentIndex] << filepath;
  *(fileListWidget->signalList) << filepath;
  *signalList << filepath; //make a copy. Necessary to avoid losing dragged and dropped files to list widget directly.
@@ -373,7 +376,7 @@ void FListFrame::on_importFromMainTree_clicked()
          if (info.isFile())
            {
              QString filepath=info.canonicalFilePath();
-             //currentListWidget->addItem(filepath);
+             //fileListWidget->currentListWidget->addItem(filepath);
             addStringToListWidget(filepath, currentIndex);
            }
          else if (info.isDir())
@@ -396,3 +399,87 @@ void FListFrame::on_importFromMainTree_clicked()
        }
   }
 }
+
+
+void FListFrame::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() ==  Qt::LeftButton)
+        startPos = event->pos();
+
+    QWidget::mousePressEvent(event);
+}
+
+void FListFrame::mouseMoveEvent(QMouseEvent *event)
+{
+    if (event->buttons()  & Qt::LeftButton)
+    {
+        int distance = (event->pos() - startPos).manhattanLength();
+        if (distance >= QApplication::startDragDistance()) startDrag();
+    }
+    QWidget::mouseMoveEvent(event);
+}
+
+void FListFrame::startDrag()
+{
+    QDrag *drag = new QDrag(this);
+    QMimeData *mimeData = new QMimeData;
+    QList<QUrl> urls= QList<QUrl>();
+    QList<QListWidgetItem*> itemList = fileListWidget->currentListWidget->selectedItems();
+    QListIterator<QListWidgetItem*> w(itemList);
+    while (w.hasNext())
+        urls << QUrl(w.next()->text());
+
+    mimeData->setUrls(urls);
+    drag->setMimeData(mimeData);
+
+    drag->setPixmap(QPixmap(":/images/dvda-author.png"));
+    drag->start(Qt::CopyAction);
+
+}
+
+void FListFrame::dragEnterEvent(QDragEnterEvent *event)
+{
+    if (event->source() != this)
+    {
+        event->setDropAction(Qt::CopyAction);
+        event->accept();
+    }
+}
+
+void FListFrame::dragMoveEvent(QDragMoveEvent *event)
+{
+    if (event->source() != this)
+    {
+        event->setDropAction(Qt::CopyAction);
+        event->accept();
+    }
+}
+
+void FListFrame::dropEvent(QDropEvent *event)
+{
+
+    if (event->source() != this)
+    {
+        QList<QUrl> urls=event->mimeData()->urls();
+        if (urls.isEmpty()) return;
+
+        QString fileName = urls.first().toLocalFile();
+        if (fileName.isEmpty()) return;
+
+        addDraggedFiles(urls);
+    }
+
+}
+
+void FListFrame::addDraggedFiles(QList<QUrl> urls)
+{
+    uint size=urls.size();
+
+    for (uint i = 0; i < size; i++)
+    {
+        QString str = (QString) urls.at(i).toLocalFile();
+        fileListWidget->currentListWidget->addItem(str);
+        *signalList << str;
+    }
+}
+

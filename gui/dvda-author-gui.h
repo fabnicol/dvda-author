@@ -237,7 +237,8 @@ private:
     void refreshRowPresentation(uint, uint);
     void updateIndexChangeInfo();
 
-    QString  makeString( );
+    QString  makeDataString( );
+    QString  makeSystemString( );
     QStringList createCommandLineString(int commandLineType);
 
     QTextEdit *console;

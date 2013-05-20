@@ -18,9 +18,14 @@ private:
   void deleteGroups(QList<int> &L);
 #endif
 
+ QList<QListWidget*> widgetContainer;
+ QString frameHashKey;
+
+ void startDrag();
+ QPoint startPos;
+
 public:
 
-  QListWidget* currentListWidget;
   int row, currentIndex;
 
 bool addStringToListWidget(QString , int );
@@ -36,7 +41,7 @@ FListFrame(QObject* parent,  QAbstractItemView * fileTreeView, short import_type
            QStringList* terms=NULL, QStringList* translation=NULL, QStringList* slotL=NULL);
 //,           QWidget* controlledWidget=NULL);
 
-QString frameHashKey;
+
 QLabel* fileLabel;
 QString fileLabelText;
 QStringList *signalList;
@@ -63,6 +68,12 @@ void on_embeddingTabIndex_changed(int =0);
 protected:
 short importType;
 QStringList tags;
+void addDraggedFiles(QList<QUrl> urls);
+void mousePressEvent(QMouseEvent *event);
+void mouseMoveEvent(QMouseEvent *event);
+void dragMoveEvent(QDragMoveEvent *event);
+void dragEnterEvent(QDragEnterEvent *event);
+void dropEvent(QDropEvent *event);
 
 public:
 QToolButton *importFromMainTree,  *moveDownItemButton, *moveUpItemButton, *retrieveItemButton, *clearList;
@@ -72,6 +83,8 @@ QStringList* slotList;
 
 QList<int> cumulativePicCount;
 int slotListSize;
+
+QString &hashKey() {return frameHashKey;}
 
 void addDirectoryToListWidget(QDir&, int);
 

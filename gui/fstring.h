@@ -21,6 +21,8 @@ public:
    * (or more generally, text phrases) grouped into a QStringList for each associated file in a list of files */
   static QHash<QString, FStringList *> fstringlist;
 
+  static void initialize(const QString& hashKey);
+
 };
 
 class FString : public QString

@@ -13,6 +13,7 @@ VPATH = .
 DEFINES += CDRECORD_LOCAL_PATH
 
 QMAKE_CXXFLAGS += -std=c++11
+#QMAKE_LFLAGS = -Wl,--no-keep-memory
 
 SOURCES += \
     options.cpp \
