@@ -253,10 +253,11 @@ void FListFrame::addGroup()
 
 void FListFrame::addGroups(int n)
 {
- for (int j=1; j<= n; j++)
+    q(n)
+    for (int j=0; j < n; j++)
    {
-     addGroup();
-     widgetContainer.last()->addItems((*hash::FStringListHash[frameHashKey])[j]);
+     if (j) addGroup();
+     widgetContainer[j]->addItems((*hash::FStringListHash[frameHashKey])[j]);
       *signalList << hash::FStringListHash.value(frameHashKey)->at(j);
    }
 }

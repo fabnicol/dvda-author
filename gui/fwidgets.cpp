@@ -245,10 +245,9 @@ void FListWidget::setWidgetFromXml(FStringList &s)
     {
         if (hash::FStringListHash.contains(hashKey))
             *hash::FStringListHash[hashKey]=s;
-        else return;
-        currentListWidget->addItems(s.at(0));
-
-        if (s.count() > 1) { emit(open_tabs_signal(s.count()-1)) ;}
+        else
+            return;
+        emit(open_tabs_signal(s.count())) ;
     }
     else
     {

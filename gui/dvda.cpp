@@ -1665,6 +1665,7 @@ void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
                if ((tagName == "value") &&  ((dvda::RefreshFlag&0xF000) == UpdateTabs))
                  {
                      assignVariables(textInfo);
+                     Q(textInfo.join(";,"))
                  }
 
               childNode = childNode.nextSibling();

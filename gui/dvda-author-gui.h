@@ -182,7 +182,7 @@ private slots:
     void requestSaveProject();
     void writeProjectFile();
     void assignGroupFiles(int isVideo, uint group_index, qint64 size,  QString file);
-    void assignVariables(FStringList &value);
+
     void openProjectFile();
     void on_playItemButton_clicked();
     void on_playItem_changed();
@@ -239,6 +239,7 @@ private:
 
     QString  makeDataString( );
     QString  makeSystemString( );
+    void assignVariables(FStringList &value);
     QStringList createCommandLineString(int commandLineType);
 
     QTextEdit *console;
