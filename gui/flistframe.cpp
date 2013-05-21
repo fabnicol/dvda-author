@@ -309,17 +309,16 @@ void FListFrame::deleteGroups(QList<int> &L)
 }
 #endif
 
-void FListFrame::addDirectoryToListWidget(QDir& dir, int filerank)
+void FListFrame::addDirectoryToListWidget(const QFileInfo& info, int filerank)
 {
  QStringList filters;
  filters+="*";
-
+ QDir dir=QDir(info.canonicalFilePath());
  foreach (QFileInfo file, dir.entryInfoList(filters,QDir::AllDirs | QDir::NoDotAndDotDot|QDir::Files))
    {
      if (file.isDir())
        {
-         QDir dir=QDir(file.canonicalFilePath());
-         addDirectoryToListWidget(dir, filerank);
+         addDirectoryToListWidget(file, filerank);
        }
      else
        {
@@ -379,7 +378,7 @@ void FListFrame::on_importFromMainTree_clicked()
 
      if (importType == flags::importFiles)
        {
-         QFileInfo info=model->fileInfo(index);
+         const QFileInfo info=model->fileInfo(index);
 
          if (info.isFile())
            {
@@ -389,8 +388,7 @@ void FListFrame::on_importFromMainTree_clicked()
            }
          else if (info.isDir())
            {
-             QDir dir=info.absoluteDir();
-             addDirectoryToListWidget(dir, currentIndex);
+             addDirectoryToListWidget(info, currentIndex);
            }
          else
            {

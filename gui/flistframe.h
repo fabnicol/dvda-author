@@ -35,7 +35,7 @@ int slotListSize;
 
 QString &hashKey() {return frameHashKey;}
 
-void addDirectoryToListWidget(QDir&, int);
+void addDirectoryToListWidget(const QFileInfo&, int);
 
 int row, currentIndex;
 

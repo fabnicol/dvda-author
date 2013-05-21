@@ -372,7 +372,7 @@ void dvda::refreshRowPresentation(uint ZONE, uint j)
 
       project[ZONE]->fileListWidget->currentListWidget->item(r)->setText(hash::FStringListHash.value(localTag)->at(j).at(r).section('/',-1));
       project[ZONE]->fileListWidget->currentListWidget->item(r)->setTextColor(QColor((r % 2)?"white":"navy"));
-      project[ZONE]->fileListWidget->currentListWidget->item(r)->setToolTip(QString::number(rowFileSize[ZONE][j][r]/1024)+" KB");
+      //project[ZONE]->fileListWidget->currentListWidget->item(r)->setToolTip(QString::number(rowFileSize[ZONE][j][r]/1024)+" KB");
     }
 }
 
@@ -466,6 +466,27 @@ void dvda::closeProject()
   projectName="";
   clearProjectData();
   refreshProjectManager();
+
+  for (int ZONE : {AUDIO, VIDEO})
+  {
+    for  (int i = project[ZONE]->fileListWidget->rank; i >=0;   i--)
+    {
+      project[ZONE]->mainTabWidget->removeTab(i+1);
+    }
+
+    project[ZONE]->fileListWidget->rank=0;
+  }
+
+  for (int ZONE : {AUDIO, VIDEO})
+  {
+    for  (int i = project[ZONE]->fileListWidget->rank; i >=0;   i--)
+    {
+      project[ZONE]->mainTabWidget->removeTab(i+1);
+    }
+
+    project[ZONE]->fileListWidget->rank=0;
+  }
+
 }
 
 void dvda::clearProjectData()
@@ -473,7 +494,7 @@ void dvda::clearProjectData()
   RefreshFlag = (RefreshFlag == NoCreate)? CreateTreeAndRefreshAll : RefreshAll ;
   memset(inputSize, 0, 2*99*sizeof(quint64));
 
-  for (uint ZONE=AUDIO; ZONE <=VIDEO; ZONE++)
+  for (int ZONE : {AUDIO, VIDEO})
     {
       for (uint i=0; i <= rank[ZONE]; i++)
         {
@@ -514,7 +535,7 @@ void dvda::clearProjectData()
         }
     }
 
-  for (int ZONE=AUDIO; ZONE <= VIDEO; ZONE++)
+  for (int ZONE : {AUDIO, VIDEO})
   {
       project[ZONE]->embeddingTabWidget->setCurrentIndex(0);
       project[ZONE]->initializeWidgetContainer();
@@ -1242,7 +1263,7 @@ QString  dvda::makeDataString()
 {
   QStringList L=QStringList();
 
-  for (short ZONE =AUDIO; ZONE <= VIDEO; ZONE++ )
+  for (int ZONE : {AUDIO, VIDEO})
     {
        FAbstractWidget *DVD_ZONE=FAbstractWidget::abstractWidgetList.at(ZONE);
       QString hK=DVD_ZONE->getHashKey();
