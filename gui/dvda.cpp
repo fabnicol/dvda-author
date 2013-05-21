@@ -45,7 +45,7 @@ void dvda::on_playItem_changed()
 {
   if (!myMusic ) return;
 
-  myMusic->setMedia(QUrl::fromLocalFile(hash::fstringlist.value((isVideo)? "DVD-A" : "DVD-V")->at(currentIndex).at(row)));
+  myMusic->setMedia(QUrl::fromLocalFile(hash::FStringListHash.value((isVideo)? "DVD-A" : "DVD-V")->at(currentIndex).at(row)));
   myMusic->play();
 }
 
@@ -70,7 +70,7 @@ void dvda::on_playItemButton_clicked()
   if (count % 2 == 0)
     {
       myMusic->play();
-      outputTextEdit->append(tr(INFORMATION_HTML_TAG "Playing...\n   file %1\n   in %2 %3   row %4" "<br>").arg(hash::fstringlist.value(tag)->at(currentIndex).at(row),groupType,QString::number(currentIndex+1),QString::number(row+1)));
+      outputTextEdit->append(tr(INFORMATION_HTML_TAG "Playing...\n   file %1\n   in %2 %3   row %4" "<br>").arg(hash::FStringListHash.value(tag)->at(currentIndex).at(row),groupType,QString::number(currentIndex+1),QString::number(row+1)));
       playItemButton->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
       playItemButton->setToolTip(tr("Stop playing"));
     }
@@ -125,18 +125,17 @@ dvda::dvda()
   QIcon* iconDVDA = new QIcon(":/images/64x64/dvd-audio.png");
   QIcon* iconDVDV = new QIcon(":/images/64x64/dvd-video.png");
 
-
-  project[AUDIO]=new FListFrame(NULL,
-                                fileTreeView,
-                                importFiles,
-                                "DVD-A",
-                                "DVD-Audio",
-                                "g",
-                                dvdaCommandLine | hasListCommandLine|flags::enabled,
-                               {" ", " -g "},
-                               {"file", "group"},
-                                0,
-                                iconDVDA);
+  project[AUDIO]=new FListFrame(NULL,      // no parent widget
+                                fileTreeView,                   // files may be imported from this tree view
+                                importFiles,                     // FListFrame type
+                                "DVD-A",                          // superordinate xml tag
+                                "DVD-Audio",                   // project manager widget on-screen tag
+                                "g",                                  // command line label
+                                dvdaCommandLine | hasListCommandLine|flags::enabled,  // command line characteristic features
+                               {" ", " -g "},                       // command line separators
+                               {"file", "group"},                // subordinate xml tags
+                                0,                                     // rank
+                                iconDVDA);                      //tab icon
 
 
   mainTabWidget=project[AUDIO]->embeddingTabWidget;
@@ -147,17 +146,17 @@ dvda::dvda()
 //  tabWidget[VIDEO]->setToolTip(tr("List files in each video titleset tab"));
 
   project[VIDEO]=new FListFrame(NULL,
-                                fileTreeView,
-                                importFiles,
-                                "DVD-V",
-                                "DVD-Video",
-                                "",
-                                lplexFiles | hasListCommandLine|flags::enabled,
-                               {" ", " -ts "},
-                               {"file", "titleset"},
-                                1,
-                                iconDVDV,
-                                mainTabWidget);
+                                fileTreeView,                   // files may be imported from this tree view
+                                importFiles,                     // FListFrame type
+                                "DVD-V",                          // superordinate xml tag
+                                "DVD-Video",                   // project manager widget on-screen tag
+                                "",                                   // command line label
+                                lplexFiles | hasListCommandLine|flags::enabled,  // command line characteristic features
+                               {" ", " -ts "},                     // command line separators
+                               {"file", "titleset"},             // subordinate xml tags
+                                1,                                    // rank
+                                iconDVDV,                      // tab icon
+                                mainTabWidget);             // parent tab under which this frame is inserted
 
 
   project[VIDEO]->embeddingTabWidget->setIconSize(QSize(64, 64));
@@ -359,8 +358,8 @@ void dvda::refreshRowPresentation()
 void dvda::refreshRowPresentation(uint ZONE, uint j)
 {
   QString localTag=(ZONE == AUDIO)? "DVD-A" : "DVD-V";
-  //Q(hash::fstringlist[localTag]->at(j).join(','))
-  for (int r=0; r < hash::fstringlist[localTag]->at(j).size(); r++ )
+
+  for (int r=0; r < hash::FStringListHash[localTag]->at(j).size(); r++ )
     {
       //resetting text
 #ifdef DEBUG
@@ -371,7 +370,7 @@ void dvda::refreshRowPresentation(uint ZONE, uint j)
       }
 #endif
 
-      project[ZONE]->fileListWidget->currentListWidget->item(r)->setText(hash::fstringlist.value(localTag)->at(j).at(r).section('/',-1));
+      project[ZONE]->fileListWidget->currentListWidget->item(r)->setText(hash::FStringListHash.value(localTag)->at(j).at(r).section('/',-1));
       project[ZONE]->fileListWidget->currentListWidget->item(r)->setTextColor(QColor((r % 2)?"white":"navy"));
       project[ZONE]->fileListWidget->currentListWidget->item(r)->setToolTip(QString::number(rowFileSize[ZONE][j][r]/1024)+" KB");
     }
@@ -435,7 +434,7 @@ void dvda::on_openProjectButton_clicked()
 
   if (projectName.isEmpty()) return;
 
-  recentProjectFile();
+  initializeProject();
   managerWidget->show();
 
 }
@@ -443,20 +442,20 @@ void dvda::on_openProjectButton_clicked()
 void dvda::openProjectFile()
 {
   projectName=qobject_cast<QAction *>(sender())->data().toString();
-  recentProjectFile();
+  initializeProject();
 }
 
 
-void dvda::recentProjectFile()
+void dvda::initializeProject(const bool cleardata)
 {
-  clearProjectData();
 
-  hash::initialize(project[AUDIO]->hashKey());
-  hash::initialize(project[VIDEO]->hashKey());
+    if (cleardata)
+    {
+        clearProjectData();
+        refreshProjectManager();
+    }
 
-  refreshProjectManager();
-
-  if (!projectName.isEmpty())
+    if (!projectName.isEmpty())
     {
       setCurrentFile(projectName);
     }
@@ -478,11 +477,12 @@ void dvda::clearProjectData()
     {
       for (uint i=0; i <= rank[ZONE]; i++)
         {
-          project[ZONE]->on_clearList_clicked();
+          project[ZONE]->on_clearList_clicked(i);
           rowFileSize[ZONE][i].clear();
-          hash::fstringlist[(ZONE == VIDEO)?"DVD-V":"DVD-A"]->removeAt(rank[ZONE]);
         }
+
       project[ZONE]->signalList->clear();
+      project[ZONE]->clearWidgetContainer();
     }
 
   inputSizeCount=inputTotalSize=0;
@@ -514,8 +514,15 @@ void dvda::clearProjectData()
         }
     }
 
-project[AUDIO]->embeddingTabWidget->setCurrentIndex(0);
-project[VIDEO]->embeddingTabWidget->setCurrentIndex(0);
+  for (int ZONE=AUDIO; ZONE <= VIDEO; ZONE++)
+  {
+      project[ZONE]->embeddingTabWidget->setCurrentIndex(0);
+      project[ZONE]->initializeWidgetContainer();
+  }
+
+/* cleanly wipe out main hash */
+hash::initializeFStringListHashes();
+
 }
 
 

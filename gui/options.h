@@ -46,7 +46,9 @@ private:
 private slots:
 
     void on_videolinkButton_clicked();
+  #if 0
     void titlesetLink(int);
+  #endif
 
 };
 

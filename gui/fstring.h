@@ -16,12 +16,18 @@ public:
   /* hash::description converts a string like "targetDir" into its (sentence-like) description for display in project manager (first column)*/
   static QHash<QString,QString> description;
 
-  /* hash::fstringlist is only used for FListWidget objects. It is used for storing information for xml project parsing/writing.
+  /* hash::FStringListHash is only used for FListWidget objects. It is used for storing information for xml project parsing/writing.
    *It converts a string label like "audioMenu" into a pointer to an FStringList object that contains a set of file paths
    * (or more generally, text phrases) grouped into a QStringList for each associated file in a list of files */
-  static QHash<QString, FStringList *> fstringlist;
+  static QHash<QString, FStringList *> FStringListHash;
 
-  static void initialize(const QString& hashKey);
+  static void initializeFStringListHash(const QString& hashKey);
+  static void initializeFStringListHashes()
+  {
+   hash::initializeFStringListHash("DVD-A");
+   hash::initializeFStringListHash("DVD-V");
+  }
+
 
 };
 
@@ -30,7 +36,7 @@ class FString : public QString
 private:
  int x;
  QString p;
- inline void testBool(QString &s, flags::status flag=flags::defaultStatus)
+ void testBool(QString &s, flags::status flag=flags::defaultStatus)
  {
  if (s.isEmpty())
    x=2;

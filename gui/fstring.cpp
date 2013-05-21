@@ -2,12 +2,12 @@
 
 QHash<QString,QString>    hash::description;
 QHash<QString, QString >   hash::qstring;
-QHash<QString, FStringList* >   hash::fstringlist;
+QHash<QString, FStringList* >   hash::FStringListHash;
 
-void hash::initialize(const QString &hashKey)
+void hash::initializeFStringListHash(const QString &hashKey)
 {
-    hash::fstringlist[hashKey]=new FStringList;
-    *hash::fstringlist[hashKey] << QStringList();
+    hash::FStringListHash[hashKey]=new FStringList;
+    *hash::FStringListHash[hashKey] << QStringList();
 }
 
 FString   FString::operator & (FString  s)

@@ -25,10 +25,32 @@ private:
  QPoint startPos;
 
 public:
+QToolButton *importFromMainTree,  *moveDownItemButton, *moveUpItemButton, *retrieveItemButton, *clearList;
 
-  int row, currentIndex;
+QAbstractItemView *fileTreeView;
+QStringList* slotList;
+
+QList<int> cumulativePicCount;
+int slotListSize;
+
+QString &hashKey() {return frameHashKey;}
+
+void addDirectoryToListWidget(QDir&, int);
+
+int row, currentIndex;
 
 bool addStringToListWidget(QString , int );
+
+void initializeWidgetContainer()
+{
+    widgetContainer = QList<QListWidget*>() << fileListWidget->currentListWidget;
+}
+
+void clearWidgetContainer()
+{
+    widgetContainer.clear(); ;
+}
+
 
 QTabWidget* mainTabWidget, *embeddingTabWidget;
 QToolButton *addGroupButton, *deleteGroupButton;
@@ -39,8 +61,6 @@ FListFrame(QObject* parent,  QAbstractItemView * fileTreeView, short import_type
             const QString &description, const QString &command_line, int commandLineType, const QStringList &separator, const QStringList &xml_tags,
             int mainTabWidgetRank=-1, QIcon* icon=NULL, QTabWidget* parentTabWidget=NULL,
            QStringList* terms=NULL, QStringList* translation=NULL, QStringList* slotL=NULL);
-//,           QWidget* controlledWidget=NULL);
-
 
 QLabel* fileLabel;
 QString fileLabelText;
@@ -52,7 +72,7 @@ public slots:
 void addGroup();
 void deleteGroup();
 void on_retrieveItemButton_clicked();
- void on_clearList_clicked();
+ void on_clearList_clicked(int currentIndex=-1);
 
 protected slots:
 
@@ -75,22 +95,18 @@ void dragMoveEvent(QDragMoveEvent *event);
 void dragEnterEvent(QDragEnterEvent *event);
 void dropEvent(QDropEvent *event);
 
-public:
-QToolButton *importFromMainTree,  *moveDownItemButton, *moveUpItemButton, *retrieveItemButton, *clearList;
-
-QAbstractItemView *fileTreeView;
-QStringList* slotList;
-
-QList<int> cumulativePicCount;
-int slotListSize;
-
-QString &hashKey() {return frameHashKey;}
-
-void addDirectoryToListWidget(QDir&, int);
-
 signals:
 void is_signalList_changed(int);
 
 };
+
+inline void FListFrame::updateIndexInfo()
+{
+  fileListWidget->currentListWidget=qobject_cast<QListWidget*>(mainTabWidget->currentWidget());
+  if (fileListWidget->currentListWidget == NULL) return;
+  row=fileListWidget->currentListWidget->currentRow();
+  currentIndex=mainTabWidget->currentIndex();
+}
+
 
 #endif // FLISTFRAME_H

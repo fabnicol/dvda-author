@@ -1,4 +1,8 @@
 #include "flistframe.h"
+#if DEBUG_MODE
+#include "common.h"
+#endif
+
 #include <QMessageBox>
 
 FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_type, const QString &hashKey,
@@ -28,7 +32,7 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
                                   terms,
                                   translation);
 
- widgetContainer = QList<QListWidget*>() << fileListWidget->currentListWidget;
+ initializeWidgetContainer();
 
  if (mainTabWidgetRank != -1)
    {
@@ -138,27 +142,28 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
 
 }
 
-inline void FListFrame::updateIndexInfo()
-{
-  fileListWidget->currentListWidget=qobject_cast<QListWidget*>(mainTabWidget->currentWidget());
-  if (fileListWidget->currentListWidget == NULL) return;
-  row=fileListWidget->currentListWidget->currentRow();
-  currentIndex=mainTabWidget->currentIndex();
-}
 
-void FListFrame::on_clearList_clicked()
-{
-  updateIndexInfo();
-  if (hash::fstringlist[frameHashKey]->count() < currentIndex+1) return;
 
-  fileListWidget->currentListWidget->clear();
+void FListFrame::on_clearList_clicked(int currentIndex)
+{
+    if (currentIndex == -1)
+    {
+       updateIndexInfo();
+       currentIndex=this->currentIndex;
+    }
+
+  if (hash::FStringListHash[frameHashKey]->count() < currentIndex+1) return;
+
+  widgetContainer[currentIndex]->clear();
+
+  /* warning : use *[], not ->value, to modifie any list content, even subordinate */
+
+  (*hash::FStringListHash[frameHashKey])[currentIndex].clear();
+
   for (int j=1; currentIndex +j < cumulativePicCount.count() ; j++)
-      if  (cumulativePicCount.count() < currentIndex+j+1)
-          return;
-        else
-          cumulativePicCount[currentIndex+j] -= hash::fstringlist[frameHashKey]->at(currentIndex).count();
+      if  (cumulativePicCount.count() >= currentIndex+j+1)
+          cumulativePicCount[currentIndex+j] -= hash::FStringListHash[frameHashKey]->at(currentIndex).count();
 
-  hash::fstringlist[frameHashKey]->value(currentIndex).clear();
 }
 
 void FListFrame::on_moveUpItemButton_clicked()
@@ -175,19 +180,19 @@ void FListFrame::on_moveUpItemButton_clicked()
   fileListWidget->currentListWidget->insertItem(row, temp2);
   fileListWidget->currentListWidget ->setCurrentRow(row-1);
 
-   (*hash::fstringlist[frameHashKey])[currentIndex].swap(row, row-1);
+   (*hash::FStringListHash[frameHashKey])[currentIndex].swap(row, row-1);
 }
 
 void FListFrame::on_retrieveItemButton_clicked()
 {
   updateIndexInfo();
 
-  if (hash::fstringlist[frameHashKey]->at(currentIndex).isEmpty()) return;
+  if (hash::FStringListHash[frameHashKey]->at(currentIndex).isEmpty()) return;
   if (row <0) return;
 
    fileListWidget->currentListWidget->takeItem(row);
 
-  (*hash::fstringlist[frameHashKey])[currentIndex].removeAt(row);
+  (*hash::FStringListHash[frameHashKey])[currentIndex].removeAt(row);
 
    if (row) fileListWidget->currentListWidget->setCurrentRow(row-1);
    row--;
@@ -207,7 +212,7 @@ void FListFrame::on_moveDownItemButton_clicked()
   fileListWidget->currentListWidget->insertItem(row+1, temp2);
   fileListWidget->currentListWidget->setCurrentRow(row+1);
 
-   (*hash::fstringlist[frameHashKey])[currentIndex].swap(row, row+1);
+   (*hash::FStringListHash[frameHashKey])[currentIndex].swap(row, row+1);
 }
 
 void FListFrame::on_mainTabIndex_changed(int index)
@@ -232,9 +237,9 @@ void FListFrame::addGroup()
    slotListSize=(slotList)? slotList->size() : 0;
    if ((slotListSize) && (fileListWidget->rank >= slotListSize-1)) return;
 
-   if ((hash::fstringlist[frameHashKey]->size() < slotListSize) || slotListSize == 0) hash::fstringlist[frameHashKey]->append(QStringList());
+   if ((hash::FStringListHash[frameHashKey]->size() < slotListSize) || slotListSize == 0) hash::FStringListHash[frameHashKey]->append(QStringList());
 
-   if (cumulativePicCount.count() <  slotListSize+1) cumulativePicCount.append(cumulativePicCount[fileListWidget->rank]+hash::fstringlist[frameHashKey]->at(fileListWidget->rank).count());
+   if (cumulativePicCount.count() <  slotListSize+1) cumulativePicCount.append(cumulativePicCount[fileListWidget->rank]+hash::FStringListHash[frameHashKey]->at(fileListWidget->rank).count());
 
    fileListWidget->rank++;
 
@@ -251,8 +256,8 @@ void FListFrame::addGroups(int n)
  for (int j=1; j<= n; j++)
    {
      addGroup();
-     widgetContainer.last()->addItems((*hash::fstringlist[frameHashKey])[j]);
-      *signalList << hash::fstringlist.value(frameHashKey)->at(j);
+     widgetContainer.last()->addItems((*hash::FStringListHash[frameHashKey])[j]);
+      *signalList << hash::FStringListHash.value(frameHashKey)->at(j);
    }
 }
 
@@ -265,7 +270,7 @@ void FListFrame::deleteGroup()
 
  mainTabWidget->removeTab(currentIndex);
 
- hash::fstringlist[frameHashKey]->removeAt(currentIndex);
+ hash::FStringListHash[frameHashKey]->removeAt(currentIndex);
 
  if (currentIndex <fileListWidget->rank)
    {
@@ -288,7 +293,7 @@ void FListFrame::deleteGroups(QList<int> &L)
  foreach (int j,  L)
    {
      mainTabWidget->removeTab(j);
-     hash::fstringlist[frameHashKey]->removeAt(j);
+     hash::FStringListHash[frameHashKey]->removeAt(j);
      fileListWidget->rank--;
    }
 
@@ -328,15 +333,17 @@ bool FListFrame::addStringToListWidget(QString filepath, int file)
 {
   // normaly it should be useless to call updateIndexInfo() here
  updateIndexInfo();
- if ((filepath.isEmpty()) || (currentIndex >= (*hash::fstringlist[frameHashKey]).count() ) || (signalList == NULL)) return false;
+ if ((filepath.isEmpty()) || (currentIndex >= (*hash::FStringListHash[frameHashKey]).count() ) || (signalList == NULL)) return false;
 
  fileListWidget->currentListWidget->addItem(filepath);
- (*hash::fstringlist[frameHashKey])[currentIndex] << filepath;
+ (*hash::FStringListHash[frameHashKey])[currentIndex] << filepath;
+
  *(fileListWidget->signalList) << filepath;
  *signalList << filepath; //make a copy. Necessary to avoid losing dragged and dropped files to list widget directly.
+
  for (int j=1; file+j < cumulativePicCount.count() ;  j++)
    cumulativePicCount[file+j]++;
- //Q(signalList->join(" "))
+
  emit(is_signalList_changed(!signalList->isEmpty()));
  return true;
 }

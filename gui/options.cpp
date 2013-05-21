@@ -932,7 +932,9 @@ videolinkPage::videolinkPage()
     setLayout(allLayout);
 
     connect(videoZoneButton, SIGNAL(clicked()), this, SLOT(on_videolinkButton_clicked()));
+#if 0
     connect(videolinkSpinBox, SIGNAL(currentIndexChanged(int)), this, SLOT(titlesetLink(int)));
+   #endif
 }
 
 
@@ -957,11 +959,14 @@ void videolinkPage::on_videolinkButton_clicked()
 
 }
 
+#if 0
 void videolinkPage::titlesetLink(int x)
 {
     x=2;
     //common::videolinkRank=QString::number(x);
 }
+
+#endif
 
 outputPage::outputPage(options* parent)
 {
@@ -1457,7 +1462,7 @@ void stillPage::on_applyAllEffectsToOneFile_clicked()
     //  while (w.hasNext())
     //    rankedOptions << listWidgetTranslationHash[w.next()->text()] ;
 
-    //  for (int r=0;  r < hash::fstringlist[slides->frameHashKey]->at(slides->fileNumber).count();  r++)
+    //  for (int r=0;  r < hash::FStringListHash[slides->frameHashKey]->at(slides->fileNumber).count();  r++)
     //    optionClChunkList[slides->fileNumber] << "rank=" + QString::number(slides->cumulativePicCount[slides->fileNumber] + r)
     //        + "," + rankedOptions.join(",");
     //  applyEffectsToOneFile->setIcon(applyEffectsToOneFileToggledIcon);
@@ -1521,7 +1526,7 @@ void stillPage::on_nextStep_clicked()
 void stillPage::refreshApplyEffectsIcon()
 {
 
-    if (hash::fstringlist[slides->hashKey()][slides->mainTabWidget->currentIndex()].isEmpty())
+    if (hash::FStringListHash[slides->hashKey()][slides->mainTabWidget->currentIndex()].isEmpty())
         applyEffectsToOneFile->setIcon(applyEffectsToOneFileUntoggledIcon);
     else
         applyEffectsToOneFile->setIcon(applyEffectsToOneFileToggledIcon);
@@ -1599,7 +1604,7 @@ options::options(dvda* parent)
 
 void options::clearOptionData()
 {
-    hash::fstringlist.clear();
+    hash::FStringListHash.clear();
     stillTab->slides->fileListWidget->currentListWidget->clear();
     stillTab->selectoptionListWidget->fileListWidget->currentListWidget->clear();
     audioMenuTab->slides->fileListWidget->currentListWidget->clear();
@@ -1609,7 +1614,7 @@ void options::clearOptionData()
 }
 
 
-inline void options::createIcon(const char* path, const char* text)
+void options::createIcon(const char* path, const char* text)
 {
     QListWidgetItem *button = new QListWidgetItem(contentsWidget);
     QString strpath=QString(path);

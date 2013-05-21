@@ -151,7 +151,7 @@ public:
     QToolButton *audioFilterButton;
 
 //    void addDraggedFiles(QList<QUrl> urls);
-    void recentProjectFile();
+    void initializeProject(const bool cleardata=true);
     void DomParser(QIODevice*);
 
 private slots:

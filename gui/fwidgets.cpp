@@ -182,7 +182,7 @@ FListWidget::FListWidget(const QString& hashKey,
     setAcceptDrops(true);
     componentList=QList<QWidget*>() << this;
 
-    hash::initialize(hashKey);
+    hash::initializeFStringListHash(hashKey);
 
     rank=0;
     setObjectName(hashKey+" "+description);
@@ -243,8 +243,8 @@ void FListWidget::setWidgetFromXml(FStringList &s)
 
     if (s.isFilled())
     {
-        if (hash::fstringlist.contains(hashKey))
-            *hash::fstringlist[hashKey]=s;
+        if (hash::FStringListHash.contains(hashKey))
+            *hash::FStringListHash[hashKey]=s;
         else return;
         currentListWidget->addItems(s.at(0));
 
@@ -270,7 +270,7 @@ void FListWidget::setWidgetFromXml(FStringList &s)
         if ((commandLineType & flags::commandLineDepthMask) == flags::hasListCommandLine)
         {
             if (separator.size() < 2) commandLineList=QList<FString>();
-            FStringListIterator i(hash::fstringlist[hashKey]);
+            FStringListIterator i(hash::FStringListHash[hashKey]);
             while (i.hasNext())
             {
                 commandLineList << separator[1] ;
@@ -280,22 +280,22 @@ void FListWidget::setWidgetFromXml(FStringList &s)
             }
         }
         else
-            commandLineList[0]= hash::fstringlist[hashKey]->join(separator);
+            commandLineList[0]= hash::FStringListHash[hashKey]->join(separator);
     }
 }
 
 FString FListWidget::setXmlFromWidget()
 {
-    if (!hash::fstringlist.contains(hashKey)) return FStringList().setEmptyTags(tags);
+    if (!hash::FStringListHash.contains(hashKey)) return FStringList().setEmptyTags(tags);
 
     if (listWidgetTranslationHash)
-        commandLineList=QList<FString>() << translate(*hash::fstringlist[hashKey]);
+        commandLineList=QList<FString>() << translate(*hash::FStringListHash[hashKey]);
     else
     {
         if ((commandLineType & flags::commandLineDepthMask)  == hasListCommandLine)
         {
             if (separator.size() < 2) commandLineList=QList<FString>();
-            FStringListIterator i(hash::fstringlist[hashKey]);
+            FStringListIterator i(hash::FStringListHash[hashKey]);
             while (i.hasNext())
             {
                 commandLineList << separator[1] ;
@@ -306,18 +306,18 @@ FString FListWidget::setXmlFromWidget()
         }
 
         else
-            commandLineList[0]=hash::fstringlist[hashKey]->join(separator);
+            commandLineList[0]=hash::FStringListHash[hashKey]->join(separator);
     }
 
-    return hash::fstringlist[hashKey]->setTags(tags);
+    return hash::FStringListHash[hashKey]->setTags(tags);
 }
 
 
 void FListWidget::refreshWidgetDisplay()
 {
     currentListWidget->clear();
-    if ((hash::fstringlist.contains(hashKey)) && (hash::fstringlist[hashKey]->count() > rank ))
-    currentListWidget->addItems(hash::fstringlist[hashKey]->at(rank));
+    if ((hash::FStringListHash.contains(hashKey)) && (hash::FStringListHash[hashKey]->count() > rank ))
+    currentListWidget->addItems(hash::FStringListHash[hashKey]->at(rank));
 }
 
 
@@ -577,9 +577,7 @@ void FComboBox::refreshWidgetDisplay()
 
 FString FComboBox::setXmlFromWidget()
 {
-
     commandLineList[0]= (comboBoxTranslationHash)? comboBoxTranslationHash->value(currentText()) : currentText();
-
     if (commandLineList[0].isEmpty()) commandLineList[0]="none";
     hash::qstring[hashKey]=commandLineList[0];
     return commandLineList[0];
@@ -705,7 +703,7 @@ FPalette::FPalette(const char* textR,
     button[1]=new FColorButton(this, textG, DEFAULT_COLOR_1); // green RGB
     button[2]=new FColorButton(this, textB, DEFAULT_COLOR_2); //blue RGB
 
-    hash::initialize(hashKey);
+    hash::initializeFStringListHash(hashKey);
 
     FAbstractWidget::setProtectedFields(this, "000000:000000:000000",  hashKey, description, commandLine, status);
     setMinimumButtonWidth(buttonWidth);
@@ -718,24 +716,24 @@ FString FPalette::setXmlFromWidget()
     FStringList L=FStringList(button[0]->setXmlFromWidget(), button[1]->setXmlFromWidget(), button[2]->setXmlFromWidget());
     commandLineList[0]=L[0][0] + ":"+ L[1][0] + ":"+ L[2][0];
 
-    if (hash::fstringlist.contains(hashKey))  *hash::fstringlist[hashKey]=L;
+    if (hash::FStringListHash.contains(hashKey))  *hash::FStringListHash[hashKey]=L;
     return L.setTags({ "YCrCb"});
 }
 
 void FPalette::setWidgetFromXml(FStringList &s)
 {
-    if (hash::fstringlist.contains(hashKey)) *hash::fstringlist[hashKey]=s;
+    if (hash::FStringListHash.contains(hashKey)) *hash::FStringListHash[hashKey]=s;
     commandLineList[0]=s.join(":");
     refreshWidgetDisplay();
 }
 
 void FPalette::refreshComponent(short i)
 {
-    if (!hash::fstringlist.contains(hashKey)) return;
-    if (hash::fstringlist[hashKey]->size() != 1) return;
-    if  (hash::fstringlist[hashKey]->at(0).size() != 3) return;
+    if (!hash::FStringListHash.contains(hashKey)) return;
+    if (hash::FStringListHash[hashKey]->size() != 1) return;
+    if  (hash::FStringListHash[hashKey]->at(0).size() != 3) return;
 
-    FString str=hash::fstringlist[hashKey]->at(0).at(i);
+    FString str=hash::FStringListHash[hashKey]->at(0).at(i);
 
     if ((str.size()) < 6) return;
     button[i]->colorLabel->setPalette(QPalette(YCrCbStr2QColor(str)));
