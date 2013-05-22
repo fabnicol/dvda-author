@@ -24,7 +24,7 @@ lplexPage::lplexPage()
   lplexVideoType->setMinimumWidth(lplexComboBoxWidth);
 
   QLabel *lplexBackgroundLabel = new QLabel(tr("Path to background"));
-  QPushButton *lplexBackgroundButton=new QPushButton("...");
+  QToolButton *lplexBackgroundButton=new QToolButton;
   /* connect to ... */
   lplexBackgroundLineEdit = new FLineEdit(generateDatadirPath("black.jpg"),
                                           lplexFiles,
@@ -74,7 +74,7 @@ lplexPage::lplexPage()
 
   lplexDirLineEdit->setMinimumWidth(lplexLineEditWidth);
   QLabel *lplexDirLabel = new QLabel(tr("Path to output directory"));
-  QPushButton *lplexDirButton=new QPushButton("...");
+  QToolButton *lplexDirButton=new QToolButton;
   lplexDirButton->setMaximumWidth(40);
 
   QGroupBox *lplexBox = new QGroupBox(tr("Video options"));
@@ -143,7 +143,7 @@ lplexPage::lplexPage()
   lplexInfoDirLineEdit->setMinimumWidth(lplexLineEditWidth);
   QLabel *lplexInfoDirLabel = new QLabel(tr("Path to Info directory"));
 
-  QPushButton *lplexInfoDirButton=new QPushButton("...");
+  QToolButton *lplexInfoDirButton=new QToolButton;
   lplexInfoDirButton->setMaximumWidth(40);
 
   /* connect to  QFileDialog::getExistingDirectory(this, "Browse Info directory"); */

@@ -148,7 +148,7 @@ optionsPage::optionsPage()
 {
 
     mainBox = new QGroupBox(tr("Disc options"));
-    mkisofsButton = new QPushButton(tr("..."));
+    mkisofsButton = new QToolButton;
     mkisofsButton->setToolTip(tr("Select or type in .iso filename for disc image.\nThis file will be used for disc burning."));
 
     QLabel *mkisofsLabel = new QLabel(tr("Path to ISO file:"));
@@ -756,8 +756,8 @@ videoMenuPage::videoMenuPage()
                                         "videodir");
 
     QLabel *videoImportLabel = new QLabel(tr("Video directory"));
-    QPushButton *videoImportButton;
-    videoImportButton = new QPushButton(tr("..."));
+    QToolButton *videoImportButton;
+    videoImportButton = new QToolButton;
     videoImportButton->setToolTip(tr("Import DVD-Video directory to project"));
     videoImportButton->setFixedWidth(buttonwidth);
 
@@ -785,7 +785,7 @@ videoMenuPage::videoMenuPage()
     videoImportBox->setLayout(videoImportLayout);
 
     QLabel *videoMenuImportLabel = new QLabel(tr("Authored DVD-Video menu"));
-    QPushButton *videoMenuImportButton = new QPushButton(tr("..."));
+    QToolButton *videoMenuImportButton = new QToolButton;
     videoMenuImportButton->setToolTip(tr("Import DVD-Video menu"));
     videoMenuImportButton->setFixedWidth(buttonwidth);
 
@@ -1043,7 +1043,7 @@ outputPage::outputPage(options* parent)
     logGroupBox->setLayout(logLayout);
 
     targetDirLabel = new QLabel(tr("Output directory"));
-    targetDirButton = new QPushButton(tr("..."));
+    targetDirButton = new QToolButton;
     openTargetDirButton = new QPushButton(tr("Open"));
 
     targetDirLineEdit = new FLineEdit(tempdir+QDir::separator()+"output", "targetDir", "DVD-A file directory", "o");
@@ -1120,17 +1120,17 @@ outputPage::outputPage(options* parent)
     outputGroupBox->setLayout(mainTargetLayout);
 
     QLabel* workDirLabel = new QLabel(tr("Working directory"));
-    QPushButton *openWorkDirButton = new QPushButton("...");
+    QToolButton *openWorkDirButton = new QToolButton;
     workDirLineEdit = new FLineEdit(QDir::currentPath (), "workDir", "Working directory", "workdir");
     workDirLabel->setBuddy(workDirLineEdit);
 
     QLabel* tempDirLabel = new QLabel(tr("Temporary directory"));
     tempDirLineEdit = new FLineEdit(common::tempdir, "tempDir", "Temporary directory", "tempdir");
     tempDirLabel->setBuddy(tempDirLineEdit);
-    QPushButton *openTempDirButton = new QPushButton("...");
+    QToolButton *openTempDirButton = new QToolButton;
 
     QLabel* binDirLabel = new QLabel(tr("Binary directory"));
-    QPushButton *openBinDirButton = new QPushButton("...");
+    QToolButton *openBinDirButton = new QToolButton;
     binDirLineEdit = new FLineEdit(QDir::currentPath ()+QDir::separator()+"bindir", "binDir", "Binary directory", "bindir");
     binDirLabel->setBuddy(binDirLineEdit);
 

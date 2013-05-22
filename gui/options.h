@@ -65,7 +65,7 @@ public:
     QGroupBox *mainBox;
 
 private:
-    QPushButton   *mkisofsButton;
+    QToolButton   *mkisofsButton;
 
     struct dvdwriterAddress
     {
@@ -114,7 +114,8 @@ public:
     FRadioBox *createDVDFilesRadioBox;
 
 private:
-    QPushButton *logButton,*openLogButton ,*openHtmlLogButton ,*targetDirButton, *openTargetDirButton;
+    QPushButton *logButton,*openLogButton ,*openHtmlLogButton , *openTargetDirButton;
+    QToolButton *targetDirButton;
     QFileDialog logDialog;
     QLabel *targetDirLabel;
     FLineEdit* targetDirLineEdit, *binDirLineEdit, *tempDirLineEdit, *workDirLineEdit;

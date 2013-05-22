@@ -67,5 +67,26 @@
         <file>images/64x64/dvd-audio.png</file>
         <file>images/64x64/dvd-video.png</file>
         <file>images/64x64/dvd-audio2.png</file>
+        <file>images/accessories-text-editor.png</file>
+        <file>images/arrow-left.png</file>
+        <file>images/audio_file_icon.jpg</file>
+        <file>images/breakpoint.png</file>
+        <file>images/BuildSettings.png</file>
+        <file>images/dialog-information.xcf</file>
+        <file>images/document-open-folder.png</file>
+        <file>images/document-open.png</file>
+        <file>images/drive-optical.png</file>
+        <file>images/editcut.png</file>
+        <file>images/folder.png</file>
+        <file>images/input.png</file>
+        <file>images/kpresenter.png</file>
+        <file>images/list-add.png</file>
+        <file>images/lplex.xcf</file>
+        <file>images/mode_Project.png</file>
+        <file>images/output-new.png</file>
+        <file>images/Sans titre.xcf</file>
+        <file>images/stop.png</file>
+        <file>images/track-icon-button.xcf</file>
+        <file>images/window-close.png</file>
     </qresource>
 </RCC>

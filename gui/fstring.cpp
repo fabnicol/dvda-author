@@ -222,7 +222,7 @@ inline QStringList setDistributedTags(const QString & tag,const QStringList &pro
   while (i.hasNext())
     {
       QString item=i.next();
-      S << QString("<") + tag+" "+  properties.join(" ") + QString(">")+ item +QString("</")+tag+QString(">");
+      S << QString("<") + tag+ (properties.isEmpty() ? "": " ")+  properties.join(" ") + QString(">")+ item +QString("</")+tag+QString(">");
     }
   return S;
 }

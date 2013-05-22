@@ -1321,20 +1321,19 @@ void dvda::writeProjectFile()
     }
 
   QTextStream out(&projectFile);
-
- out << "<?xml version=\"1.0\"?>\n" <<"<project>\n";
- out << " <data>\n";
-
- out << dvda::makeDataString();
-  for (int i=0; (i < parent->recentFiles.count()) && (i < MaxRecentFiles);  i++)
-    {
-      out << "  <switch hashKey=\"recent\"" <<   " rank=\"" << QString::number(i) << "\">\n"
-          <<  "    <file>" << QDir::toNativeSeparators(parent->recentFiles.at(i)) << "</file>\n  </switch>\n";
-    }
-
-  out << " </data>\n";
-
   out.setCodec("UTF-8");
+
+  out << "<?xml version=\"1.0\"?>\n" <<"<project>\n";
+  out << " <data>\n";
+
+  out << dvda::makeDataString();
+  out << "  <switch hashKey=\"recent\">\n";
+
+  /* We just preserve the latest file to date */
+
+  out    <<  "    <recent>" << QDir::toNativeSeparators(parent->recentFiles.at(0)) << "</recent>\n";
+
+  out << "  </switch>\n </data>\n";
   out << " <system>\n";
 
   out << dvda::makeSystemString();
@@ -1533,24 +1532,24 @@ void dvda::DomParser(QIODevice* file)
 }
 
 
+inline bool parseTextNode(const QDomNode& childNode, QTreeWidgetItem* item, FStringList& info)
+{
+    if  (childNode.nodeType() == QDomNode::TextNode)
+      {
+        QString string=childNode.toText().data();
+        item->setText(1, string);
+        info << (QStringList() << string);
+        return true;
+      }
+    return false;
+}
+
+
 void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
 {
-  QString labelVariable=element.attribute("hashKey");
-  QString groupIndexString;
-  QString firstColumnText;
+  QString hashKeyVariable=element.attribute("hashKey");
   int group_index=0;
-  QStringList embeddedTags={"menu" ,  "track" ,  "slide" , "YCrCb", "group", "titleset"};
-
-  if ((labelVariable == "titleset") || (labelVariable =="group") || (labelVariable =="recent"))
-    {
-      groupIndexString = element.attribute("rank");
-      group_index=groupIndexString.toInt();
-      firstColumnText = hash::description[labelVariable] + " "+QString::number(group_index + 1);
-    }
-  else
-    firstColumnText = hash::description[labelVariable];
-
-  if (firstColumnText.isEmpty()) return;
+  QStringList embeddedTags={"menu" ,  "file" ,  "slide" , "YCrCb", "group", "titleset"};
 
   QTreeWidgetItem *item;
 
@@ -1559,10 +1558,8 @@ void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
   else
     item = new QTreeWidgetItem(managerWidget);
 
-  item->setText(0, firstColumnText);
+  item->setText(0, hash::description[hashKeyVariable]);
 
-  bool isRecent=(labelVariable == "recent");
-  QString allFiles,allSizes;
   QDomNode node=element.firstChild();
 
   while (!node.isNull())
@@ -1570,29 +1567,17 @@ void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
       QString tagName=node.toElement().tagName();
       if (tagName.isEmpty()) break;
       QDomNode childNode =node.firstChild();
-      FStringList textInfo=FStringList();
-
-      if ((tagName == "value") || (tagName == "recent"))
+      FStringList firstLevelTextInfo;
+      QStringList secondLevelTextInfo;
+      if (tagName == "value")
         {
-          QStringList textStringList= QStringList() ;
+
+          secondLevelTextInfo.clear();
 
           while (!childNode.isNull())
             {
 
-
-              if  (childNode.nodeType() == QDomNode::TextNode)
-                {
-                  QString textInfoString;
-                  textInfoString=childNode.toText().data();
-                  if (isRecent)
-                    {
-                      if (!textInfoString.isEmpty())
-                        setCurrentFile(textInfoString);
-                    }
-                  item->setText(1, textInfoString);
-                  textInfo << (QStringList() << textInfoString);
-                }
-              else
+              if (parseTextNode(childNode, item, firstLevelTextInfo) == false)
                 {
                   QString header;
                   QString secondColumn;
@@ -1620,7 +1605,7 @@ void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
                             {
                               static int k;
                               QString text=grandChildNode.toText().data();
-                              textStringList << text;
+                              secondLevelTextInfo << text;
                               secondColumn +=  " "+ QString((k==0)?"Track":((k==1)?"Highlight":"Album/Group")) + "  "+  text  ;
                               k++;
 
@@ -1639,8 +1624,8 @@ void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
                                   double s=byteCount/1048576.0;
                                   allSizes+=byteCount;
                                   QString size=QString::number(s , 'f', 1);
-                                  textStringList << text;
-                                  if ((dvda::RefreshFlag & UpdateTabs)&&(!isRecent))
+                                  secondLevelTextInfo << text;
+                                  if (dvda::RefreshFlag & UpdateTabs)
                                     assignGroupFiles(isVideo, group_index, byteCount,QDir::toNativeSeparators(text));
 
                                   secondColumn +=  "\n "+grandChildNode.toElement().tagName() +QString::number(i+1) +": "+ text  ;
@@ -1651,7 +1636,7 @@ void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
 
                               i++;
 
-                              textStringList.clear();
+                              secondLevelTextInfo.clear();
                               if  (grandChildNode.toElement().tagName() == "file")
                                 {
                                   item->setTextColor(1,QColor("navy"));
@@ -1668,29 +1653,32 @@ void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
 
                       if (depth == 2)
                         {
-                          textInfo << textStringList;
-                          textStringList.clear();
+                          firstLevelTextInfo << secondLevelTextInfo;
+                          secondLevelTextInfo.clear();
                         }
                       childNode=childNode.nextSibling();
                     }
                   if (depth == 1)
                     {
-                      textInfo << textStringList;
-                      textStringList.clear();
+                      firstLevelTextInfo << secondLevelTextInfo;
+                      secondLevelTextInfo.clear();
                     }
-
-
 
                }
 
-               if ((tagName == "value") &&  ((dvda::RefreshFlag&0xF000) == UpdateTabs))
+               if ((dvda::RefreshFlag&0xF000) == UpdateTabs)
                  {
-                     assignVariables(textInfo);
-                     Q(textInfo.join(";,"))
+                     assignVariables(firstLevelTextInfo);
                  }
 
               childNode = childNode.nextSibling();
             }
+        }
+      else if (tagName == "recent")
+        {
+          QString filename;
+          if ((parseTextNode(childNode, item, firstLevelTextInfo)) && (!(filename=firstLevelTextInfo.last().last()).isEmpty()))
+                      setCurrentFile(filename);
         }
 
       node=node.nextSibling();
