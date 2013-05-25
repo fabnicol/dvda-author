@@ -63,6 +63,9 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
      mainTabWidget=embeddingTabWidget;
   }
 
+ fileListWidget->currentListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
+ fileListWidget->currentListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+
  mainTabWidget->addTab(fileListWidget->currentListWidget, xml_tags[1]+" 1");
  cumulativePicCount =QList<int>() << 0 << 0;
  importFromMainTree = new QToolButton;
@@ -190,12 +193,19 @@ void FListFrame::on_retrieveItemButton_clicked()
   if (hash::FStringListHash[frameHashKey]->at(currentIndex).isEmpty()) return;
   if (row <0) return;
 
-   fileListWidget->currentListWidget->takeItem(row);
+  QModelIndexList L=fileListWidget->currentListWidget->selectionModel()->selectedRows();
+  int size=L.size();
+  int  rank=0, localrow;
+  while (rank < size)
+  {
+      localrow=L[rank].row() - rank;
+      fileListWidget->currentListWidget->takeItem(localrow);
+      (*hash::FStringListHash[frameHashKey])[currentIndex].removeAt(localrow);
+      rank++;
+  }
 
-  (*hash::FStringListHash[frameHashKey])[currentIndex].removeAt(row);
-
-   if (row) fileListWidget->currentListWidget->setCurrentRow(row-1);
-   row--;
+   if (localrow) fileListWidget->currentListWidget->setCurrentRow(localrow-1);
+   row=localrow-1;
 }
 
 void FListFrame::on_moveDownItemButton_clicked()

@@ -359,6 +359,15 @@ void dvda::refreshRowPresentation(uint ZONE, uint j)
 {
   QString localTag=(ZONE == AUDIO)? "DVD-A" : "DVD-V";
 
+  QPalette palette;
+  palette.setColor(QPalette::AlternateBase,QColor("silver"));
+  QFont font=QFont("Courier",10);
+
+  project[isVideo]->fileListWidget->currentListWidget=qobject_cast<QListWidget*>(project[isVideo]->mainTabWidget->currentWidget());
+  project[isVideo]->fileListWidget->currentListWidget->setPalette(palette);
+  project[isVideo]->fileListWidget->currentListWidget->setAlternatingRowColors(true);
+  project[isVideo]->fileListWidget->currentListWidget->setFont(font);
+
   for (int r=0; r < hash::FStringListHash[localTag]->at(j).size(); r++ )
     {
       //resetting text
@@ -371,27 +380,17 @@ void dvda::refreshRowPresentation(uint ZONE, uint j)
 #endif
 
       project[ZONE]->fileListWidget->currentListWidget->item(r)->setText(hash::FStringListHash.value(localTag)->at(j).at(r).section('/',-1));
-      project[ZONE]->fileListWidget->currentListWidget->item(r)->setTextColor(QColor((r % 2)?"white":"navy"));
-      //project[ZONE]->fileListWidget->currentListWidget->item(r)->setToolTip(QString::number(rowFileSize[ZONE][j][r]/1024)+" KB");
+      project[ZONE]->fileListWidget->currentListWidget->item(r)->setTextColor(QColor("navy"));
+      project[ZONE]->fileListWidget->currentListWidget->item(r)->setToolTip(QString::number(rowFileSize[ZONE][j][r]/1024)+" KB");
     }
 }
 
 //TODO insert button somewhere or right-click option, and back to sort by name
 void dvda::showFilenameOnly()
 {
-  QPalette palette;
-  palette.setColor(QPalette::AlternateBase,QColor("silver"));
-  QFont font=QFont("Courier",10);
-
   updateIndexInfo();
-  project[isVideo]->fileListWidget->currentListWidget=qobject_cast<QListWidget*>(project[isVideo]->mainTabWidget->currentWidget());
-  project[isVideo]->fileListWidget->currentListWidget->setPalette(palette);
-  project[isVideo]->fileListWidget->currentListWidget->setAlternatingRowColors(true);
-  project[isVideo]->fileListWidget->currentListWidget->setFont(font);
   refreshRowPresentation(isVideo, currentIndex);
-  //          project[ZONE][j]->sortItems(); TODO: if sort then reset tool tip after sort.
-
-}
+ }
 
 
 void dvda::addDirectoryToListWidget(QDir dir)
