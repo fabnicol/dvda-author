@@ -127,7 +127,7 @@ return (QStringList("--"+optionLabel+"="+commandLineList[0].toQString()));
 
 /* caution : abstractWidgetList must have its first two elements as respectively being with "DVD-A" and "DVD-V" hashKeys. */
 
-QList<FAbstractWidget*> FAbstractWidget::abstractWidgetList= QList<FAbstractWidget*>();
+QList<FAbstractWidget*> Abstract::abstractWidgetList= QList<FAbstractWidget*>();
 
 template <typename W> void FAbstractWidget::setProtectedFields(W* w, const QString &defaultValue, const QString &hashKey,
                                                                const QString &description, const QString &option, int status,
@@ -161,7 +161,7 @@ template <typename W> void FAbstractWidget::setProtectedFields(W* w, const QStri
 
     w->setEnabled((status & flags::enabledMask) ==  flags::enabled);
 
-    FAbstractWidget::abstractWidgetList.append(w);
+    Abstract::abstractWidgetList.append(w);
 
     FAbstractConnection::meta_connect(w, enabledObjects, disabledObjects);
 
@@ -621,9 +621,9 @@ void FLineEdit::setWidgetFromXml(FStringList &s)
 }
 
 
-FColorButton::FColorButton(FAbstractWidget* parent, const char* text, const char* color)
+FColorButton::FColorButton(const char* text, const char* color)
 {
-    palette=parent;
+
     QGridLayout *newLayout=new QGridLayout;
     QString strtext=QString(text);
     button=new QPushButton(strtext);
@@ -698,9 +698,9 @@ FPalette::FPalette(const char* textR,
                    const QString &commandLine,
                    int buttonWidth)
 {
-    button[0]=new FColorButton(this, textR, DEFAULT_COLOR_0); // red RGB
-    button[1]=new FColorButton(this, textG, DEFAULT_COLOR_1); // green RGB
-    button[2]=new FColorButton(this, textB, DEFAULT_COLOR_2); //blue RGB
+    button[0]=new FColorButton(textR, DEFAULT_COLOR_0); // red RGB
+    button[1]=new FColorButton(textG, DEFAULT_COLOR_1); // green RGB
+    button[2]=new FColorButton( textB, DEFAULT_COLOR_2); //blue RGB
 
     hash::initializeFStringListHash(hashKey);
 

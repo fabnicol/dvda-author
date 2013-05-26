@@ -41,6 +41,12 @@ public:
   }
 };
 
+
+struct Abstract
+{
+    static QList<FAbstractWidget*> abstractWidgetList;
+};
+
 class FAbstractWidget : public flags
 {
 
@@ -50,7 +56,6 @@ public:
 
   virtual QList<QWidget*> getComponentList() { return componentList;}
 
-  static QList<FAbstractWidget*> abstractWidgetList;
 
   /* is used for .dvp Xml project writing: refresh Widget information and injects current Widget state into hash::qstring as left-valued of <...hashKey=...> */
   virtual FString setXmlFromWidget()=0;
@@ -75,7 +80,7 @@ public:
 
   // isEnabled() cannot be used as it would trigger lexical ambiguity with QWidget-inherited isEnabled() in subclasses
   // yet using virtual derivation makes it possible to invoke the QWidget-inherited isEnabled().
-  virtual bool isAbstractEnabled()=0;
+  virtual bool isAbstractEnabled() =0;
   bool isAbstractDisabled() {return !isAbstractEnabled();}
 
 
@@ -313,10 +318,9 @@ class FColorButton :  public QWidget, virtual public FAbstractWidget
 private:
 
   QPushButton *button;
-  FAbstractWidget *palette;
 
 public:
-  FColorButton(FAbstractWidget* parent, const char* text, const char* color);
+  FColorButton( const char* text, const char* color);
   QLabel *colorLabel;
   int buttonWidth()   const ;
   void setMinimumButtonWidth(const int w);
