@@ -1,7 +1,7 @@
 #include "fwidgets.h"
 #include "fcolor.h"
 
-void applyListFunction(QStringList *L, QHash<QString, QString> *H,  const QStringList *M)
+void applyHashToStringList(QStringList *L, QHash<QString, QString> *H,  const QStringList *M)
 {
     if ((H == NULL) || (M == NULL) || (L == NULL)) return;
     QStringListIterator j(*M);
@@ -10,7 +10,7 @@ void applyListFunction(QStringList *L, QHash<QString, QString> *H,  const QStrin
         *L << (*H) [j.next()];
 }
 
-template <typename T, typename U> void applyListFunction(QHash<T, U > *H, const QList<T> *L, const QList<U> *M)
+template <typename T, typename U> void createHash(QHash<T, U > *H, const QList<T> *L, const QList<U> *M)
 {
     if ((H == NULL) || (L == NULL) || (M == NULL)) return;
     QListIterator<T> i(*L);
@@ -181,6 +181,7 @@ FListWidget::FListWidget(const QString& hashKey,
 {
     setAcceptDrops(true);
     componentList=QList<QWidget*>() << this;
+    depth=2;
 
     hash::initializeFStringListHash(hashKey);
 
@@ -204,7 +205,7 @@ FListWidget::FListWidget(const QString& hashKey,
     else
     {
         listWidgetTranslationHash=new QHash<QString, QString>;
-        applyListFunction(listWidgetTranslationHash, translation, terms);
+        createHash(listWidgetTranslationHash, translation, terms);
 
     }
 
@@ -226,7 +227,7 @@ FString FListWidget::translate(FStringList &s)
         QStringList terms=  QStringList();
 
         translation=i.next();
-        applyListFunction(&terms, listWidgetTranslationHash, &translation) ;
+        applyHashToStringList(&terms, listWidgetTranslationHash, &translation) ;
 
         L[j++]=terms;
 
@@ -333,6 +334,7 @@ FCheckBox::FCheckBox(const QString &boxLabel, int status, const QString &hashKey
                      const QList<QWidget*> &enabledObjects, const QList<QWidget*> &disabledObjects) : QCheckBox(boxLabel)
 {
     componentList={this};
+    depth=0;
     bool mode= ((status & flags::widgetMask) == flags::checked) ;
 
     Q2ListWidget *dObjects=new Q2ListWidget, *eObjects=new Q2ListWidget;
@@ -402,7 +404,7 @@ FRadioBox::FRadioBox(const QStringList &boxLabelList, int status,const QString &
                      const QStringList &stringList, const Q2ListWidget *enabledObjects,  const Q2ListWidget *disabledObjects)
 {
     /* button 0 should have special controlling properties (either enabling or disabling) over subordinate widgets */
-
+    depth=0;
     optionLabelStringList=stringList;
     size=optionLabelStringList.size();
     if (size <  status) return;
@@ -520,9 +522,11 @@ FComboBox::FComboBox(const QStringList &labelList,
                      QList<QIcon> *iconList) : QComboBox()
 {
 
+    depth=0;
     addItems(labelList);
     if (labelList.isEmpty())
         return;
+
 
     setProtectedFields(this, labelList.at(0), hashKey, description, commandLine, status);
     if (iconList)
@@ -544,7 +548,7 @@ FComboBox::FComboBox(const QStringList &labelList,
     else
     {
         comboBoxTranslationHash=new QHash<QString, QString>;
-        applyListFunction(comboBoxTranslationHash, &labelList, &translation);
+        createHash(comboBoxTranslationHash, &labelList, &translation);
     }
 
     connect(this, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(fromCurrentIndex(const QString &)));
@@ -596,6 +600,7 @@ void FComboBox::setWidgetFromXml(FStringList &s)
 
 FLineEdit::FLineEdit(const QString &defaultString, int status, const QString &hashKey, const QString &description, const QString &commandLine):QLineEdit()
 {
+    depth=0;
     FAbstractWidget::setProtectedFields(this, defaultString, hashKey, description, commandLine, status);
 }
 
@@ -623,7 +628,7 @@ void FLineEdit::setWidgetFromXml(FStringList &s)
 
 FColorButton::FColorButton(const char* text, const char* color)
 {
-
+    depth=0;
     QGridLayout *newLayout=new QGridLayout;
     QString strtext=QString(text);
     button=new QPushButton(strtext);
@@ -698,6 +703,7 @@ FPalette::FPalette(const char* textR,
                    const QString &commandLine,
                    int buttonWidth)
 {
+    depth=1;
     button[0]=new FColorButton(textR, DEFAULT_COLOR_0); // red RGB
     button[1]=new FColorButton(textG, DEFAULT_COLOR_1); // green RGB
     button[2]=new FColorButton( textB, DEFAULT_COLOR_2); //blue RGB

@@ -1258,6 +1258,9 @@ void dvda::saveProject()
 
 /* Remember that the first two elements of the FAvstractWidgetList are DVD-A and DVD-V respectively, which cuts down parsing time */
 
+#define createXmlChunk(L, hK, depth, xml)  L << "  <switch hashKey=\""<< hK << "\" depth=\""<< depth << "\"  >\n" << "    <value>" \
+                                                                      << xml << "</value>\n  </switch>\n";
+
 QString  dvda::makeDataString()
 {
   QStringList L=QStringList();
@@ -1266,11 +1269,11 @@ QString  dvda::makeDataString()
     {
        FAbstractWidget *DVD_ZONE=Abstract::abstractWidgetList.at(ZONE);
       QString hK=DVD_ZONE->getHashKey();
-      QString xml=QString();
-              //=DVD_ZONE->setXmlFromWidget().toQString();
+      QString xml=DVD_ZONE->setXmlFromWidget().toQString();
+      QString depth=widget->getDepth();
 
-      L << "  <switch hashKey=\""<< hK << "\">\n" << "    <value>"
-         << xml << "</value>\n  </switch>\n";
+      createXmlChunk(L, hK, depth, xml)
+
     }
 
   return L.join("");
@@ -1295,11 +1298,10 @@ QString  dvda::makeSystemString()
           continue;
         }
 
-      QString xml=QString();
-              //=widget->setXmlFromWidget().toQString();
+      QString xml=widget->setXmlFromWidget().toQString();
+      QString depth=widget->getDepth();
 
-      L << "  <switch hashKey=\""<< hK << "\">\n" << "    <value>"
-         << xml << "</value>\n  </switch>\n";
+      createXmlChunk(L, hK, depth, xml)
     }
   return L.join("");
 }
@@ -1546,6 +1548,201 @@ inline bool parseTextNode(const QDomNode& childNode, QTreeWidgetItem* item, FStr
 }
 
 
+
+struct XmlMethod
+{
+
+    /* parses < tag> text </tag> */
+
+QString stackTextData(const QDomNode & node)
+    {
+        QDomNode  childNode=node.firstChild();
+        QString stackedInfo;
+
+        while ((!childNode.isNull()) && (childNode.nodeType() == QDomNode::TextNode))
+          {
+            stackedInfo += childNode.toText().data();
+
+            childNode=childNode.nextSibling();
+          }
+        return stackedInfo;
+    }
+
+/* parses < tag1>
+                     <tag>  text </tag>
+                     ....
+                     <tag'> text </tag'>
+                </tag1>
+*/
+
+QStringList stackFirstLevelData(const QDomNode & node, const QStringList &domain)
+    {
+        QDomNode  childNode=node.firstChild();
+        QStringList stackedInfo;
+
+        while ((!childNode.isNull()) && (childNode.nodeType() != QDomNode::TextNode) && (domain.contains(childNode.toElement().tagName())))
+          {
+            stackedInfo << stackXmlText(childNode);
+            childNode=childNode.nextSibling();
+          }
+        return stackedInfo;
+    }
+
+/* parses
+ *            <tag2>
+ *               < tag1>
+                     <tag>  text </tag>
+                     ....
+                     <tag'> text </tag'>
+                 </tag1>
+                 ...
+                 < tag14>
+                     <tag>  text </tag>
+                     ....
+                     <tag'> text </tag'>
+                 </tag1'>
+               </tag2>
+*/
+
+
+QList<QStringList> stackSecondLevelData(const QDomNode & node)
+    {
+        QDomNode  childNode=node.firstChild();
+        QList<QStringList> stackedInfo;
+
+        while ((!childNode.isNull()) && (childNode.nodeType() != QDomNode::TextNode) )
+          {
+            stackedInfo << stackXmlFirstLevel(childNode);
+            childNode=childNode.nextSibling();
+          }
+        return stackedInfo;
+    }
+
+/* computes sizes and sends filenames to main tab Widget */
+
+QList<QStringList> processSecondLevelData(QList<QStringList> &L)
+    {
+        QListIterator<QStringList> i(L);
+        int group_index=0;
+
+        QList<QStringList> stackedSizeInfo2 ;
+        while (i.hasNext())
+        {
+               QStringListIterator w(i.next());
+               QStringList stackedSizeInfo1;
+               while (w.hasNext())
+               {
+                   QSTring text=w.next();
+                   qint64 byteCount=QFileInfo(text).size();
+                    // force coertion into float or double using .0
+                   double s=byteCount/1048576.0;
+                   allSizes+=byteCount;
+                   stackedSizeInfo1 <<  size=QString::number(s , 'f', 1);
+
+                   if (dvda::RefreshFlag & UpdateTabs)
+                     assignGroupFiles(isVideo, group_index, byteCount,QDir::toNativeSeparators(text));
+               }
+
+               stackedSizeInfo2 << stackedSizeInfo1;
+               group_index++;
+        }
+
+        return stackedSizeInfo2;
+    }
+
+/* displays on manager tree window */
+
+void displayFirstLevelData(const QTreeWidget *managerWidget,
+                                              const QString &tag,
+                                              const QString & value)
+
+    {
+      int k=0;
+      QString  firstColumn, secondColumn;
+
+      QListIterator<QStringList> i(stackedInfo), j(stackedSizeInfo);
+
+      while ((i.hasNext()) && (j.hasNext()))
+       {
+           QTreeWidgetItem* item = new QTreeWidgetItem(managerWidget);
+           if (!tags.at(0).isEmpty())
+           {
+               firstColumn = "\n "+ tags.at(0) +" "+QString::number(++k);
+               item->setText(0, firstColumn) ;
+           }
+
+           QStringListIterator w(i.next()), z(j.next());
+           while ((w.hasNext()) && (z.hasNext()))
+           {
+               QTreeWidgetItem* item2 = new QTreeWidgetItem(item);
+               if (!tags.at(1).isEmpty())
+                     secondColumn =  tags.at(1) +": "+QString::number(++k) ;
+               secondColumn += w.next() + "\n";
+               thirdColumn += z.next() + " MB" +"\n";;
+               item2->setText(1,secondColumn) ;
+               item2->setText(2, thirdColumn) ;
+           }
+         }
+
+    }
+
+
+
+void displaySecondLevelData(const QTreeWidget *managerWidget,
+                                              const QStringList &tags,
+                                              const QList<QStringList> & stackedInfo,
+                                              const QList<QStringList> & stackedSizeInfo)
+
+    {
+      int k=0, l=0;
+      QString  firstColumn, secondColumn, thirdColumn;
+
+      QListIterator<QStringList> i(stackedInfo), j(stackedSizeInfo);
+
+      while ((i.hasNext()) && (j.hasNext()))
+       {
+           QTreeWidgetItem* item = new QTreeWidgetItem(managerWidget);
+           if (!tags.at(0).isEmpty())
+           {
+               firstColumn = "\n "+ tags.at(0) +" "+QString::number(++k);
+               item->setText(0, firstColumn) ;
+           }
+
+           QStringListIterator w(i.next()), z(j.next());
+           while ((w.hasNext()) && (z.hasNext()))
+           {
+               QTreeWidgetItem* item2 = new QTreeWidgetItem(item);
+               if (!tags.at(1).isEmpty())
+                   secondColumn =  tags.at(1) +" "+QString::number(++l)+": " ;
+               secondColumn += w.next() + "\n";
+               thirdColumn += z.next() + " MB" +"\n";;
+               item2->setText(1,secondColumn) ;
+               item2->setText(2, thirdColumn) ;
+           }
+         }
+
+    }
+
+};
+
+
+
+void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
+{
+  QString hashKeyVariable=element.attribute("hashKey");
+  int group_index=0;
+
+
+  item->setText(0, hash::description[hashKeyVariable]);
+
+  /* tester la depth
+   * envoyer les rang 1 en simple et deux en double */
+
+}
+
+
+
+
 void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
 {
   QString hashKeyVariable=element.attribute("hashKey");
@@ -1617,23 +1814,8 @@ void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
 
                               QDomNode grandChildChildNode =grandChildNode.firstChild();
                               depth=2;
-                              while ((!grandChildChildNode.isNull()) && (grandChildChildNode.nodeType() == QDomNode::TextNode))
-                                {
-                                  QString text=grandChildChildNode.toText().data();
-                                  qint64 byteCount=QFileInfo(text).size();
-                                  // force coertion into float or double using .0
-                                  double s=byteCount/1048576.0;
-                                  allSizes+=byteCount;
-                                  QString size=QString::number(s , 'f', 1);
-                                  secondLevelTextInfo << text;
-                                  if (dvda::RefreshFlag & UpdateTabs)
-                                    assignGroupFiles(isVideo, group_index, byteCount,QDir::toNativeSeparators(text));
 
-                                  secondColumn +=  "\n "+grandChildNode.toElement().tagName() +QString::number(i+1) +": "+ text  ;
-                                  thirdColumn    +=  "\n "+ size + " MB" ;
-
-                                  grandChildChildNode=grandChildChildNode.nextSibling();
-                                }
+                              stackXmlData(grandChildChildNode, 0);
 
                               i++;
 
@@ -1643,7 +1825,7 @@ void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
                                   item->setTextColor(1,QColor("navy"));
                                   item->setTextColor(2,QColor("grey"));
                                   item->setTextAlignment(2,Qt::AlignRight);
-                                  item->setText(1, "\n"+QDir::toNativeSeparators(secondColumn));
+                                  item->setText(0, "\n"+QDir::toNativeSeparators(secondColumn));
                                   item->setText(2, tr("Total size: ")+QString::number(allSizes/1048576.0, 'f', 1) +"MB"+ "\n"+ thirdColumn);
                                 }
 
@@ -1658,6 +1840,8 @@ void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
                           secondLevelTextInfo.clear();
                         }
                       childNode=childNode.nextSibling();
+
+
                     }
                   if (depth == 1)
                     {

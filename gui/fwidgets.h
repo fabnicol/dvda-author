@@ -76,6 +76,8 @@ public:
   /* accessor to privale hashKey value */
   virtual QString getHashKey()  {return hashKey; }
 
+ virtual QString getDepth()  {return depth; }
+
   virtual QString getDescription()  { return description; }
 
 
@@ -93,6 +95,7 @@ public:
 
 protected:
   QString hashKey;
+  QString depth;
   QString description;
   QString optionLabel;
   QList<FString> commandLineList;
@@ -166,8 +169,8 @@ private:
   QStringList separator;
   QStringList tags;
 
-  template <typename T, typename U> friend void applyListFunction(QHash<T, U > *H, QList<T> *L, QList<U> *M);
-  friend  void applyListFunction(QStringList *L, QHash<QString, QString> *H,  const QStringList *M);
+  template <typename T, typename U> friend void createHash(QHash<T, U > *H, QList<T> *L, QList<U> *M);
+  friend  void applyHashToStringList(QStringList *L, QHash<QString, QString> *H,  const QStringList *M);
 
   QHash<QString, QString> *listWidgetTranslationHash;
   FString translate(FStringList &s);
