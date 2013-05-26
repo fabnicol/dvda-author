@@ -840,7 +840,7 @@ float dvda::discShare(qint64 directorySize)
 
 QStringList dvda::createCommandLineString(int commandLineType)
 {
- QListIterator<FAbstractWidget*> w(FAbstractWidget::abstractWidgetList);
+ QListIterator<FAbstractWidget*> w(Abstract::abstractWidgetList);
  QStringList commandLine;
 
   while (w.hasNext())
@@ -957,7 +957,7 @@ void dvda::runLplex()
   QString command;
 
 
-  QListIterator<FAbstractWidget*> w(FAbstractWidget::abstractWidgetList);
+  QListIterator<FAbstractWidget*> w(Abstract::abstractWidgetList);
 
   while (w.hasNext())
     {
@@ -1196,7 +1196,7 @@ void dvda::extract()
       return;
     }
 
-  QListIterator<FAbstractWidget*> w(FAbstractWidget::abstractWidgetList);
+  QListIterator<FAbstractWidget*> w(Abstract::abstractWidgetList);
 
   while (w.hasNext())
     {
@@ -1237,7 +1237,7 @@ void dvda::requestSaveProject()
 
 void dvda::saveProject()
 {
-  QListIterator<FAbstractWidget*>  w(FAbstractWidget::abstractWidgetList);
+  QListIterator<FAbstractWidget*>  w(Abstract::abstractWidgetList);
   if ((projectName == NULL)||(projectName.isEmpty()))
     {
       projectName=QDir::currentPath()+"/"+ "default.dvp";
@@ -1264,7 +1264,7 @@ QString  dvda::makeDataString()
 
   for (int ZONE : {AUDIO, VIDEO})
     {
-       FAbstractWidget *DVD_ZONE=FAbstractWidget::abstractWidgetList.at(ZONE);
+       FAbstractWidget *DVD_ZONE=Abstract::abstractWidgetList.at(ZONE);
       QString hK=DVD_ZONE->getHashKey();
       QString xml=QString();
               //=DVD_ZONE->setXmlFromWidget().toQString();
@@ -1279,7 +1279,7 @@ QString  dvda::makeDataString()
 QString  dvda::makeSystemString()
 {
   QStringList L=QStringList();
-  QListIterator<FAbstractWidget*> w(FAbstractWidget::abstractWidgetList);
+  QListIterator<FAbstractWidget*> w(Abstract::abstractWidgetList);
 
   w.next();
   w.next();
@@ -1364,7 +1364,7 @@ void dvda::setCurrentFile(const QString &fileName)
 
 void dvda::assignVariables(FStringList &value)
 {
-  static QListIterator<FAbstractWidget*> w(FAbstractWidget::abstractWidgetList);
+  static QListIterator<FAbstractWidget*> w(Abstract::abstractWidgetList);
 
   if (!w.hasNext())
     {

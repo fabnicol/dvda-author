@@ -1661,7 +1661,7 @@ void options::changePage(QListWidgetItem *current, QListWidgetItem *previous)
 void options::refreshOptionFields()
 {
 
-    QListIterator<FAbstractWidget*>  j(FAbstractWidget::abstractWidgetList);
+    QListIterator<FAbstractWidget*>  j(Abstract::abstractWidgetList);
 
     while (j.hasNext())
         j.next()->refreshWidgetDisplay();
