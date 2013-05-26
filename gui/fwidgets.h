@@ -41,6 +41,13 @@ public:
   }
 };
 
+/* Note :
+ *     Windows instantiation request non-recursive abstract class pointer lists, ie,
+ *     a list of pointers to FAbstractWidget cannot be a member of FAbstractWidget
+ *     This compiles but leads to severe runtime crashes (Qt5.0.2 + mingw-g++4.7 + windows XP or 7)
+ *     Both compiles and runs OK under Linux however (Qt5.0.2 + g++4.7 or 4.8 + Ubuntu 13.04).
+ *     The following one-member abstract structure works out this intriguing issue that remains poorly understood  */
+
 
 struct Abstract
 {
