@@ -1266,7 +1266,8 @@ QString  dvda::makeDataString()
     {
        FAbstractWidget *DVD_ZONE=FAbstractWidget::abstractWidgetList.at(ZONE);
       QString hK=DVD_ZONE->getHashKey();
-      QString xml=DVD_ZONE->setXmlFromWidget().toQString();
+      QString xml=QString();
+              //=DVD_ZONE->setXmlFromWidget().toQString();
 
       L << "  <switch hashKey=\""<< hK << "\">\n" << "    <value>"
          << xml << "</value>\n  </switch>\n";
@@ -1294,7 +1295,8 @@ QString  dvda::makeSystemString()
           continue;
         }
 
-      QString xml=widget->setXmlFromWidget().toQString();
+      QString xml=QString();
+              //=widget->setXmlFromWidget().toQString();
 
       L << "  <switch hashKey=\""<< hK << "\">\n" << "    <value>"
          << xml << "</value>\n  </switch>\n";
@@ -1330,7 +1332,7 @@ void dvda::writeProjectFile()
 
   /* We just preserve the latest file to date */
 
-  out    <<  "    <recent>" << QDir::toNativeSeparators(parent->recentFiles.at(0)) << "</recent>\n";
+  out    <<  "    <recent>" << parent->recentFiles.at(0) << "</recent>\n";
 
   out << "  </switch>\n </data>\n";
   out << " <system>\n";

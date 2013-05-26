@@ -732,7 +732,7 @@ void audioMenuPage::on_frameTab_changed(int index)
 
 void audioMenuPage::launchImageViewer()
 {
-    v = new ImageViewer(audioMenuLineEdit->setXmlFromWidget());
+    v = new ImageViewer(audioMenuLineEdit->text());
     v->setGeometry(400,300, 200/3*16,600);
     v->show();
 }

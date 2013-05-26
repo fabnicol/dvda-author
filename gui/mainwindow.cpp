@@ -90,7 +90,7 @@ MainWindow::MainWindow()
   createFontDataBase();
 
   setGeometry(QRect(200, 200,1000,400));
-  recentFiles=QStringList() ;
+  recentFiles=QStringList()<<QString("default") ;
   FString str=FString();
 
   dvda_author=new dvda;
@@ -144,27 +144,27 @@ void MainWindow::updateRecentFileActions()
 {
 QMutableStringListIterator i(recentFiles);
 
-while (i.hasNext())
-{
- if (!QFile::exists(i.next())) i.remove();
- }
+// while (i.hasNext())
+// {
+////   if (!QFile::exists(i.next())) i.remove();
+// }
 
 
- for (int j=0 ; j<MaxRecentFiles ; ++j)
- {
-   if (j < recentFiles.count())
-   {
-     QString  text = tr("&%1 %2").arg(j+1).arg(strippedName(recentFiles[j]));
-     recentFileActions[j]->setText(text);
-     recentFileActions[j]->setData(QVariant(recentFiles[j]));
-     recentFileActions[j]->setVisible(true);
-   } else
+// for (int j=0 ; j<MaxRecentFiles ; ++j)
+// {
+//   if (j < recentFiles.count())
+//   {
+//     QString  text = tr("&%1 %2").arg(j+1).arg(strippedName(recentFiles[j]));
+//     recentFileActions[j]->setText(text);
+//     recentFileActions[j]->setData(QVariant(recentFiles[j]));
+//     recentFileActions[j]->setVisible(true);
+//   } else
 
-   {
-    recentFileActions[j]->setVisible(false);
-   }
+//   {
+//    recentFileActions[j]->setVisible(false);
+//   }
 
- }
+// }
 
  separatorAction->setVisible(!recentFiles.isEmpty());
 }
