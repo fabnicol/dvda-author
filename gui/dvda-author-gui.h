@@ -7,6 +7,7 @@
 #include <QProcess>
 #include <QtGui>
 #include <QMediaPlayer>
+#include <QDomNode>
 
 #include "common.h"
 #include "flistframe.h"
@@ -150,6 +151,8 @@ public:
 
     QToolButton *audioFilterButton;
 
+    int getZone() {return isVideo;}
+
 //    void addDraggedFiles(QList<QUrl> urls);
     void initializeProject(const bool cleardata=true);
     void DomParser(QIODevice*);
@@ -181,7 +184,7 @@ private slots:
     void on_helpButton_clicked();
     void requestSaveProject();
     void writeProjectFile();
-    void assignGroupFiles(int isVideo, uint group_index, qint64 size,  QString file);
+    void assignGroupFiles(const int isVideo, uint group_index, qint64 size,  QString file);
 
     void openProjectFile();
     void on_playItemButton_clicked();
@@ -232,7 +235,8 @@ private:
     float discShare(qint64 directorySize);
     void setDialogFromProject();
     void clearProjectData();
-    void parseEntry(const QDomElement &element, QTreeWidgetItem *parent);
+    QList<QStringList> processSecondLevelData(QList<QStringList> &L);
+    void parseEntry(const QDomNode &, QTreeWidgetItem *parent);
     void refreshRowPresentation();
     void refreshRowPresentation(uint, uint);
     void updateIndexChangeInfo();

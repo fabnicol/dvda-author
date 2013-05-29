@@ -10,7 +10,7 @@ class FStringList;
 class hash : public QHash<QString, QString>
 {
 public:
-  /* hash::qstring converts a string label like "targetDir" into its associated path, yes/no value, or QString number. To be inserted within <value> tags. */
+  /* hash::qstring converts a string label like "targetDir" into its associated path, yes/no value, or QString number. To be inserted within <switch> tags. */
   static QHash<QString,QString> qstring;
 
   /* hash::description converts a string like "targetDir" into its (sentence-like) description for display in project manager (first column)*/

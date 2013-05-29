@@ -12,7 +12,7 @@ public:
         defaultStatus,
         defaultCommandLine,
         commandLineMask=0xF,
-        commandLineDepthMask=0xF,
+        commandLinewidgetDepthMask=0xF,
         untoggledCommandLine=0x00,
         toggledCommandLine=0x10,
         commandLineToggleMask=0xF0,

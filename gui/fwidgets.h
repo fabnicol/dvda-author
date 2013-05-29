@@ -76,7 +76,7 @@ public:
   /* accessor to privale hashKey value */
   virtual QString getHashKey()  {return hashKey; }
 
- virtual QString getDepth()  {return depth; }
+ virtual QString getDepth()  {return widgetDepth; }
 
   virtual QString getDescription()  { return description; }
 
@@ -95,7 +95,7 @@ public:
 
 protected:
   QString hashKey;
-  QString depth;
+  QString widgetDepth;
   QString description;
   QString optionLabel;
   QList<FString> commandLineList;
