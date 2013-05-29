@@ -1606,7 +1606,7 @@ inline QList<QStringList> stackSecondLevelData(const QDomNode & node, QStringLis
 
         while (!childNode.isNull())
           {
-            QStringList L;
+            QStringList L={QString(), QString()};
             stackedInfo << stackFirstLevelData(childNode, L);
             tags[1]=L.at(0);
             tags[2]=L.at(1);
@@ -1722,7 +1722,7 @@ void dvda::parseEntry(const QDomNode &node, QTreeWidgetItem *itemParent)
   XmlMethod::itemParent = itemParent;
 
   QString tag, textData;
-  QStringList firstLevelData, tags;
+  QStringList firstLevelData, tags={QString(),QString(),QString()} ;
   QList<QStringList> secondLevelData;
 
 

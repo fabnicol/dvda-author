@@ -181,7 +181,7 @@ FListWidget::FListWidget(const QString& hashKey,
 {
     setAcceptDrops(true);
     componentList=QList<QWidget*>() << this;
-    widgetDepth=2;
+    widgetDepth="2";
 
     hash::initializeFStringListHash(hashKey);
 
@@ -703,7 +703,7 @@ FPalette::FPalette(const char* textR,
                    const QString &commandLine,
                    int buttonWidth)
 {
-    widgetDepth=1;
+    widgetDepth="1";
     button[0]=new FColorButton(textR, DEFAULT_COLOR_0); // red RGB
     button[1]=new FColorButton(textG, DEFAULT_COLOR_1); // green RGB
     button[2]=new FColorButton( textB, DEFAULT_COLOR_2); //blue RGB
