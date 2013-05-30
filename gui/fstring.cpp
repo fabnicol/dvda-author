@@ -251,36 +251,35 @@ QString FStringList::setTags(const QStringList  &tags, const FStringList *proper
 
   QStringList S;
 
-  if (tags.length() < 3 )
+  if (tags.length() >= 3 ) return setEmptyTags(tags);
+
+  for (int i=0; i < size(); i++)
     {
-
-      for (int i=0; i < size(); i++)
-        {
-          QStringList tagged=this->at(i);
-          if  (tagged.isEmpty()) continue;
-          QString str;
-          if  (properties)
-            str=setDistributedTags(tags[0], properties->at(0), tagged).join("\n      ");
-          else
-            str=setDistributedTags(tags[0], QStringList(), tagged).join("\n      ");
-          S << "\n      "   + str   + "\n     ";
-        }
-
-      if (tags.length() == 1)
-        {
-          return S.join("");
-        }
+      QStringList tagged=this->at(i);
+      if  (tagged.isEmpty()) continue;
+      QString str;
+      if  (properties)
+        str=setDistributedTags(tags[0], properties->at(0), tagged).join("\n      ");
       else
-        if (tags.length() == 2)
-          {
-          QString str;
-          if (properties)
-             str=setDistributedTags(tags[1],  properties->at(1),  S).join("\n     ");
-         else
-             str=setDistributedTags(tags[1],  QStringList(),  S).join("\n     ");
-
-          return ( "\n     " + str  + "\n    ");
-          }
+        str=setDistributedTags(tags[0], QStringList(), tagged).join("\n      ");
+      S << "\n      "   + str   + "\n     ";
     }
-  return setEmptyTags(tags);
+
+  if (tags.length() == 1)
+    {
+      return S.join("");
+    }
+  else
+    if (tags.length() == 2)
+      {
+      QString str;
+      if (properties)
+         str=setDistributedTags(tags[1],  properties->at(1),  S).join("\n     ");
+     else
+         str=setDistributedTags(tags[1],  QStringList(),  S).join("\n     ");
+
+      return (str);
+      }
+
+
 }

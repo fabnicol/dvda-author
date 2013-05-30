@@ -623,17 +623,13 @@ void dvda::addGroup()
   updateIndexInfo();
 
   addGroup(rank[isVideo]+1, isVideo);
-
-}
+ }
 
 void dvda::addGroup(int group_index, int isVideo)
 {
-  QString number;
 
-  if (group_index < 9*isVideo*10+9)
-    number=QString::number(group_index+1);
-  else
-    {
+  if (group_index >= 9*isVideo*10+9)
+   {
       QMessageBox::information(this, tr("Group"), tr(QString("A maximum of %1 "+ groupType + "s can be created.").toUtf8()).arg(QString::number(9*isVideo*10+9)));
       return;
     }
@@ -1380,15 +1376,19 @@ void dvda::assignVariables(FStringList &value)
 
 void dvda::assignGroupFiles(const int isVideo, uint group_index, qint64 size, QString file)
 {
+  updateIndexInfo();
 
   if (group_index > rank[isVideo])
     {
-      addGroup(group_index, isVideo);
+        /* call the FListFrame function. The dvda auxiliary function will be managed by it */
+      project[isVideo]->addGroup();
       outputTextEdit->append(MSG_HTML_TAG "Adding group " + QString::number(group_index));
     }
+
   QString group_type=(isVideo)?"titleset":"group";
 
   project[isVideo]->addStringToListWidget(file.section('/',-1), currentIndex);
+
   if (!isVideo) *(project[isVideo]->signalList) << file;
   rowFileSize[isVideo][group_index].append(size);
   inputSize[isVideo][group_index]+=size;
@@ -1703,8 +1703,8 @@ QList<QStringList> dvda::processSecondLevelData(QList<QStringList> &L)
                    //allSizes+=byteCount;
                    stackedSizeInfo1 <<  QString::number(s , 'f', 1);
 
-                   //if (dvda_author::RefreshFlag & UpdateTabs)
-                   assignGroupFiles(getZone(), group_index, byteCount,QDir::toNativeSeparators(text));
+                   if (dvda::RefreshFlag & UpdateTabs)
+                       assignGroupFiles(getZone(), group_index, byteCount,QDir::toNativeSeparators(text));
                }
 
                stackedSizeInfo2 << stackedSizeInfo1;
