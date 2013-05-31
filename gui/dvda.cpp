@@ -1549,7 +1549,7 @@ namespace XmlMethod
 
         while ((!childNode.isNull()) && (childNode.nodeType() == QDomNode::TextNode))
           {
-            stackedInfo += childNode.toText().data();
+            stackedInfo += childNode.toText().data().simplified();
 
             childNode=childNode.nextSibling();
           }
@@ -1628,6 +1628,7 @@ inline void displayTextData(const QString &firstColumn,
            item->setText(0, firstColumn);
            item->setText(1, secondColumn);
            if (!thirdColumn.isEmpty()) item->setText(2, thirdColumn);
+
 }
 
 
@@ -1640,8 +1641,9 @@ inline void displaySecondLevelData(    const QStringList &tags,
                                               const QList<QStringList> &stackedInfo,
                                               const QList<QStringList> &stackedSizeInfo)
     {
-      int k=0;
-      QString  firstColumn=tags.at(0), secondColumn=tags.at(1), thirdColumn;
+      int k=0, count=0, l;
+      double filesizecount=0;
+      QString  firstColumn, root=tags.at(0), secondColumn=tags.at(1), thirdColumn;
 
       QListIterator<QStringList> i(stackedInfo), j(stackedSizeInfo);
 
@@ -1649,19 +1651,26 @@ inline void displaySecondLevelData(    const QStringList &tags,
        {
           if ((!tags.at(0).isEmpty()) && (stackedInfo.size() > 1))
            {
-               firstColumn += " "+QString::number(++k);
+               firstColumn = root + " "+QString::number(++k);
            }
 
           displayTextData(firstColumn, "", "");
 
            QStringListIterator w(i.next()), z(j.next());
+           l=0;
            while ((w.hasNext()) && (z.hasNext()))
            {
-              if ((!tags.at(1).isEmpty()) && (stackedSizeInfo.size() > 1))
-                   secondColumn =  tags.at(1) +" " +QString::number(++k) + ": ";
+              ++count;
+               if ((!tags.at(1).isEmpty()) && (stackedSizeInfo.size() > 1))
+                   secondColumn =  tags.at(1) +" " +QString::number(++l) + "/"+ QString::number(count) +": ";
                secondColumn += w.next()  ;
+
                if (z.hasNext())
-                   thirdColumn    = z.next() + " MB" ;
+               {
+                   QString filesize=z.next();
+                   filesizecount += filesize.toDouble();
+                   thirdColumn    = filesize + "/"+ QString::number(filesizecount)+ " MB" ;
+               }
 
                displayTextData("", secondColumn, thirdColumn);
            }
