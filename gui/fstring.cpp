@@ -265,6 +265,8 @@ QString FStringList::setTags(const QStringList  &tags, const FStringList *proper
       S << "\n      "   + str   + "\n     ";
     }
 
+  QString str;
+
   if (tags.length() == 1)
     {
       return S.join("");
@@ -272,14 +274,12 @@ QString FStringList::setTags(const QStringList  &tags, const FStringList *proper
   else
     if (tags.length() == 2)
       {
-      QString str;
+
       if (properties)
          str=setDistributedTags(tags[1],  properties->at(1),  S).join("\n     ");
      else
          str=setDistributedTags(tags[1],  QStringList(),  S).join("\n     ");
-
-      return (str);
       }
 
-
+   return (str);
 }

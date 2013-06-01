@@ -184,7 +184,7 @@ private slots:
     void on_helpButton_clicked();
     void requestSaveProject();
     void writeProjectFile();
-    void assignGroupFiles(const int isVideo, uint group_index, qint64 size,  QString file);
+    void assignGroupFiles(const int isVideo, int group_index, qint64 size,  QString file);
 
     void openProjectFile();
     void on_playItemButton_clicked();
@@ -235,8 +235,11 @@ private:
     float discShare(qint64 directorySize);
     void setDialogFromProject();
     void clearProjectData();
-    QList<QStringList> processSecondLevelData(QList<QStringList> &L);
+    QList<QStringList> processSecondLevelData(QList<QStringList> &L, bool isFile=true);
     void parseEntry(const QDomNode &, QTreeWidgetItem *parent);
+    void parseXmlNodes(const QDomNode &node, const QString &maintag);
+
+    QString makeParserString(int start, int end=Abstract::abstractWidgetList.size()-1);
     void refreshRowPresentation();
     void refreshRowPresentation(uint, uint);
     void updateIndexChangeInfo();

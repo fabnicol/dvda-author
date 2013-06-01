@@ -12,6 +12,7 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
 
 {
 
+ currentIndex=0;  // necessary for project parsing
  importType=import_type;
  tags=xml_tags;
  signalList= new QStringList;
