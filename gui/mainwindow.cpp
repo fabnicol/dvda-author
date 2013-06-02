@@ -2,7 +2,7 @@
 #include <QFile>
 #include <QtGui>
 #include <QtXml>
-#include "dvda-author-gui.h"
+#include "dvda.h"
 #include "options.h"
 #include "browser.h"
 #include "common.h"

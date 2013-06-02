@@ -45,7 +45,8 @@ HEADERS  += \
     viewer.h \
     browser.h \
     fcolor.h \
-    videoplayer.h
+    videoplayer.h \
+    dvda.h
 
 
 RESOURCES += \

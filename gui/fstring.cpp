@@ -54,7 +54,7 @@ FString   FString::operator ! ()
     }
 }
 
-QString FString::toQString()
+QString FString::toQString() const
 {
   return p;
 }
@@ -112,7 +112,7 @@ bool FString::isBoolean()
   return ((x == 0) | (x == 1));
 }
 
-FStringList FString::split(QString &sep)
+FStringList FString::split(const QString &sep) const
 {
    QStringList Q=QStringList();
   for (int i=0; i < sep.size(); i++)
@@ -121,7 +121,7 @@ FStringList FString::split(QString &sep)
 }
 
 
-FStringList FString::split(QStringList &separator)
+FStringList FString::split(const QStringList &separator) const
 {
   if (this->isEmpty()) return FStringList();
 
@@ -165,51 +165,41 @@ QStringList FStringList::join()
   return S;
 }
 
-FString FStringList::join(QStringList &separator)
+FString  FStringList::join(const QStringList &separator) const
 {
   if (this == NULL) return "";
-  if (this->count() == 0) return "";
+  if (this->size() == 0) return "";
 
   QStringList S;
-  QString sep;
+  QString sep, str;
   FStringListIterator i(this);
-  short length=separator.length();
 
-  if (length == 0)
+   switch(separator.length())
     {
-      QString str=QString();
-      for (int i=0; i < this->count() ; i++)
+     case 0:
+      for (int i=0; i < size() ; i++)
         str += this->at(i).join("");
       return FString(str);
-    }
 
-  if (length == 1)
-    {
-      if (count() == 1)
-        {
-          sep=QString(separator[0]);
-          return this->at(0).join(sep);
-        }
+    case 1:
+       if (size() == 1)
+          return this->at(0).join(separator[0]);
       return "";
-    }
 
-  if (length == 2)
-    {
+   case 2:
       sep=QString(separator[0]);
-      if (count() == 1)
+      if (size() == 1)
         {
           return this->at(0).join(sep);
         }
-
       S=QStringList();
-
       while (i.hasNext())
         S  << i.next().join(sep);
       sep=QString(separator[1]);
       return FString(S.join(sep));
-    }
+   }
 
-  return ("");
+   return ("");
 }
 
 

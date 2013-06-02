@@ -1,7 +1,7 @@
 #include <QtGui>
 #include <QFile>
 
-#include "dvda-author-gui.h"
+#include "dvda.h"
 #include "forms.h"
 #include "options.h"
 #include "videoplayer.h"

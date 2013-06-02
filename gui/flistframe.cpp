@@ -264,7 +264,6 @@ void FListFrame::addGroup()
 
 void FListFrame::addGroups(int n)
 {
-    q(n)
     for (int j=0; j < n; j++)
    {
      if (j) addGroup();

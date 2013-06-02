@@ -92,8 +92,8 @@ public:
   }
 
 
-  FStringList split(QString &);
-  FStringList split(QStringList &separator);
+  FStringList split(const QString &) const;
+  FStringList split(const QStringList &separator) const;
 
   short toBool();
   bool isBoolean();
@@ -103,7 +103,7 @@ public:
   void setMultimodal();
   bool isFilled();
   void fromBool(bool);
-  QString toQString();
+  QString toQString() const;
   QString& toQStringRef();
 };
 
@@ -116,21 +116,20 @@ private:
 public:
 
   FStringList( ) : QList<QStringList>() { }
-  FStringList(QString &s) : QList<QStringList>()  { this->append(QStringList(s)); }
   FStringList(QString s) : QList<QStringList>()  { this->append(QStringList(s)); }
   FStringList(FString &s):FStringList(s.toQString()) {}
-  FStringList(FString *s):FStringList(s->toQString()) {}
+  FStringList(const FString *s):FStringList(s->toQString()) {}
   FStringList(const QStringList &L): QList<QStringList>() {this->append(L);}
   FStringList(const  QList<QStringList> &s) : QList<QStringList>(s) {}
   FStringList(QString a, QString b, QString c):QList<QStringList>()  { this->append(QStringList(a));this->append(QStringList(b));this->append(QStringList(c)); }
-  FString join(QStringList &);
-  FString join(const char* s) {QStringList strL=QStringList((QString(s))); return join(strL);}
-  QStringList join();
+  FString join(const QStringList &) const ;
+  FString join(const char* s) const {QStringList strL=QStringList((QString(s))); return join(strL);}
+  QStringList join() ;
   QString setEmptyTags(const QStringList &);
   QString setTags(const QStringList &tags, const FStringList *properties=NULL);
-  FString toFString() { return ((this->isEmpty()) || this->at(0).isEmpty())?  "" : FString(this->at(0).at(0)); }
+  FString toFString() const { return ((this->isEmpty()) || this->at(0).isEmpty())?  "" : FString(this->at(0).at(0)); }
   bool hasNoString() { return (isEmpty() || (this->at(0).isEmpty()) || (this->at(0).at(0).isEmpty())); }
-  bool isFilled() { return (!isEmpty() && (!this->at(0).isEmpty()) && (!this->at(0).at(0).isEmpty())); }
+  bool  isFilled() const { return (!isEmpty() && (!this->at(0).isEmpty()) && (!this->at(0).at(0).isEmpty())); }
 
   /* copy constructor */
   FStringList(const FStringList  & L):QList<QStringList>(L)  { }
@@ -141,7 +140,8 @@ class FStringListIterator : public QListIterator<QStringList>
 public:
   FStringListIterator(FStringList list) : QListIterator(list) {}
   FStringListIterator(FStringList *list) : QListIterator(*list) {}
-};
+  FStringListIterator(const FStringList *list) : QListIterator(*list) {}
+ };
 
 
 #endif // FSTRING_H

@@ -6,7 +6,7 @@
 #include <QtXml>
 #include <QSettings>
 
-#include "dvda-author-gui.h"
+#include "dvda.h"
 #include "options.h"
 #include "browser.h"
 #include "fstring.h"
@@ -766,8 +766,6 @@ void dvda::addSelectedFileToProject()
 
   saveProject();
   showFilenameOnly();
- // Q("signal: " + project[AUDIO]->signalList->join(" "))
-
 }
 
 
@@ -1356,18 +1354,19 @@ void dvda::setCurrentFile(const QString &fileName)
 }
 
 
-void dvda::assignVariables(FStringList &value)
+void dvda::assignVariables(const QList<FStringList> &value)
 {
-  static QListIterator<FAbstractWidget*> w(Abstract::abstractWidgetList);
+  QListIterator<FAbstractWidget*> w(Abstract::abstractWidgetList);
+  QListIterator<FStringList> z(value);
 
-  if (!w.hasNext())
-    {
-       w.toFront();
-    }
+  while ((w.hasNext()) && (z.hasNext()))// && (!z.peekNext().isEmpty()))
+  {
+     #ifdef DEBUG
+      Q(z.peekNext().join({" ## ", " @@ "}))
+      #endif
 
-    if (w.hasNext())
-      w.next()->setWidgetFromXml(value);
-
+      w.next()->setWidgetFromXml(z.next());
+  }
 }
 
 void dvda::assignGroupFiles(const int isVideo, int group_index, qint64 size, QString file)
@@ -1383,7 +1382,7 @@ void dvda::assignGroupFiles(const int isVideo, int group_index, qint64 size, QSt
 
   QString group_type=(isVideo)?"titleset":"group";
 
-  project[isVideo]->addStringToListWidget(file.section('/',-1), currentIndex);
+ // project[isVideo]->addStringToListWidget(file.section('/',-1), currentIndex);
 
   if (!isVideo) *(project[isVideo]->signalList) << file;
   rowFileSize[isVideo][group_index].append(size);
@@ -1665,6 +1664,11 @@ void dvda::DomParser(QIODevice* file)
       node = node.nextSibling();
   }
 
+  if ((dvda::RefreshFlag&0xF000) == UpdateTabs)
+  {
+      assignVariables(xmlDataWrapper);
+  }
+
   parent->updateRecentFileActions();
 
    emit(is_signalList_changed(project[AUDIO]->signalList->size()));
@@ -1685,14 +1689,16 @@ void dvda::parseXmlNodes(const QDomNode &node, const QString &maintag)
 
     while (!subnode.isNull())
       {
-          parseEntry(subnode, item);
+          FStringList str=parseEntry(subnode, item);
+          xmlDataWrapper <<   str;
+
           subnode=subnode.nextSibling();
       }
 
- }
+}
 
 
-void dvda::parseEntry(const QDomNode &node, QTreeWidgetItem *itemParent)
+FStringList dvda::parseEntry(const QDomNode &node, QTreeWidgetItem *itemParent)
 {
   /* first examine the <hashKey widgetDepth=... > node */
 
@@ -1701,7 +1707,6 @@ void dvda::parseEntry(const QDomNode &node, QTreeWidgetItem *itemParent)
   QString tag, textData;
   QStringList firstLevelData, tags={QString(),QString(),QString()} ;
   QList<QStringList> secondLevelData;
-
 
   /* then process the  node according to its predicted widgetDepth */
 
@@ -1714,12 +1719,13 @@ void dvda::parseEntry(const QDomNode &node, QTreeWidgetItem *itemParent)
                 /* recent file resetting following project */
                 if (tag == "file")
                       parent->recentFiles.append(textData);
-                 break;
+
+                return FStringList(textData);
 
       case 1 :
                 firstLevelData=XmlMethod::stackFirstLevelData(node, tags);
                 XmlMethod::displayFirstLevelData({hash::description[tags.at(0)], hash::description[tags.at(1)]}, firstLevelData);
-          break;
+                return FStringList(firstLevelData);
 
        case 2 :
               secondLevelData=XmlMethod::stackSecondLevelData(node, tags);
@@ -1727,14 +1733,10 @@ void dvda::parseEntry(const QDomNode &node, QTreeWidgetItem *itemParent)
                           {tags.at(1), tags.at(2)},
                           secondLevelData,
                           processSecondLevelData(secondLevelData, tags.at(2) == "file"));
-          break;
+              return FStringList(secondLevelData);
       }
 
-//  FStringList
-//  if ((dvda::RefreshFlag&0xF000) == UpdateTabs)
-//    {
-//        assignVariables(firstLevelTextInfo);
-//    }
+  return FStringList();
 }
 
 
@@ -1777,132 +1779,132 @@ inline QList<QStringList> dvda::processSecondLevelData(QList<QStringList> &L, bo
 
 
 
-/*
-void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
-{
-  QString hashKeyVariable=element.attribute("hashKey");
-  int group_index=0;
-  QStringList embeddedTags={"menu" ,  "file" ,  "slide" , "YCrCb", "group", "titleset"};
 
-  QTreeWidgetItem *item;
+//void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
+//{
+//  QString hashKeyVariable=element.attribute("hashKey");
+//  int group_index=0;
+//  QStringList embeddedTags={"menu" ,  "file" ,  "slide" , "YCrCb", "group", "titleset"};
 
-  if (itemParent)
-    item = new QTreeWidgetItem(itemParent);
-  else
-    item = new QTreeWidgetItem(managerWidget);
+//  QTreeWidgetItem *item;
 
-  item->setText(0, hash::description[hashKeyVariable]);
+//  if (itemParent)
+//    item = new QTreeWidgetItem(itemParent);
+//  else
+//    item = new QTreeWidgetItem(managerWidget);
 
-  QDomNode node=element.firstChild();
+//  item->setText(0, hash::description[hashKeyVariable]);
 
-  while (!node.isNull())
-    {
-      QString tagName=node.toElement().tagName();
-      if (tagName.isEmpty()) break;
-      QDomNode childNode =node.firstChild();
-      FStringList firstLevelTextInfo;
-      QStringList secondLevelTextInfo;
-      if (tagName == "value")
-        {
+//  QDomNode node=element.firstChild();
 
-          secondLevelTextInfo.clear();
+//  while (!node.isNull())
+//    {
+//      QString tagName=node.toElement().tagName();
+//      if (tagName.isEmpty()) break;
+//      QDomNode childNode =node.firstChild();
+//      FStringList firstLevelTextInfo;
+//      QStringList secondLevelTextInfo;
+//      if (tagName == "value")
+//        {
 
-          while (!childNode.isNull())
-            {
+//          secondLevelTextInfo.clear();
 
-              if (parseTextNode(childNode, item, firstLevelTextInfo) == false)
-                {
-                  QString header;
-                  QString secondColumn;
-                  QString thirdColumn;
-                  qint64 allSizes=0;
-                  int j=0;
-                  int depth=0;
+//          while (!childNode.isNull())
+//            {
 
-                  while (!(childNode.isNull()) && (embeddedTags.contains(childNode.toElement().tagName())))
-                    {
+//              if (parseTextNode(childNode, item, firstLevelTextInfo) == false)
+//                {
+//                  QString header;
+//                  QString secondColumn;
+//                  QString thirdColumn;
+//                  qint64 allSizes=0;
+//                  int j=0;
+//                  int depth=0;
 
-                      depth=1;
-                      header = (j ==0)? "":"\n";
+//                  while (!(childNode.isNull()) && (embeddedTags.contains(childNode.toElement().tagName())))
+//                    {
 
-                      secondColumn +=  header + childNode.toElement().tagName() +" "+ QString::number(++j);
-                      thirdColumn     += header ;
+//                      depth=1;
+//                      header = (j ==0)? "":"\n";
 
-                      QDomNode grandChildNode =childNode.firstChild();
-                      int i=0;
+//                      secondColumn +=  header + childNode.toElement().tagName() +" "+ QString::number(++j);
+//                      thirdColumn     += header ;
 
-                      while (!(grandChildNode.isNull()) )
-                        {
+//                      QDomNode grandChildNode =childNode.firstChild();
+//                      int i=0;
 
-                          if (grandChildNode.nodeType() == QDomNode::TextNode)
-                            {
-                              static int k;
-                              QString text=grandChildNode.toText().data();
-                              secondLevelTextInfo << text;
-                              secondColumn +=  " "+ QString((k==0)?"Track":((k==1)?"Highlight":"Album/Group")) + "  "+  text  ;
-                              k++;
+//                      while (!(grandChildNode.isNull()) )
+//                        {
 
-                            }
-                          else
-                            {
+//                          if (grandChildNode.nodeType() == QDomNode::TextNode)
+//                            {
+//                              static int k;
+//                              QString text=grandChildNode.toText().data();
+//                              secondLevelTextInfo << text;
+//                              secondColumn +=  " "+ QString((k==0)?"Track":((k==1)?"Highlight":"Album/Group")) + "  "+  text  ;
+//                              k++;
 
-
-                              QDomNode grandChildChildNode =grandChildNode.firstChild();
-                              depth=2;
-
-                              stackXmlData(grandChildChildNode, 0);
-
-                              i++;
-
-                              secondLevelTextInfo.clear();
-                              if  (grandChildNode.toElement().tagName() == "file")
-                                {
-                                  item->setTextColor(1,QColor("navy"));
-                                  item->setTextColor(2,QColor("grey"));
-                                  item->setTextAlignment(2,Qt::AlignRight);
-                                  item->setText(0, "\n"+QDir::toNativeSeparators(secondColumn));
-                                  item->setText(2, tr("Total size: ")+QString::number(allSizes/1048576.0, 'f', 1) +"MB"+ "\n"+ thirdColumn);
-                                }
-
-                            }
-
-                          grandChildNode=grandChildNode.nextSibling();
-                       }
-
-                      if (depth == 2)
-                        {
-                          firstLevelTextInfo << secondLevelTextInfo;
-                          secondLevelTextInfo.clear();
-                        }
-                      childNode=childNode.nextSibling();
+//                            }
+//                          else
+//                            {
 
 
-                    }
-                  if (depth == 1)
-                    {
-                      firstLevelTextInfo << secondLevelTextInfo;
-                      secondLevelTextInfo.clear();
-                    }
+//                              QDomNode grandChildChildNode =grandChildNode.firstChild();
+//                              depth=2;
 
-               }
+//                              stackXmlData(grandChildChildNode, 0);
 
-               if ((dvda::RefreshFlag&0xF000) == UpdateTabs)
-                 {
-                     assignVariables(firstLevelTextInfo);
-                 }
+//                              i++;
 
-              childNode = childNode.nextSibling();
-            }
-        }
-      else if (tagName == "recent")
-        {
-          QString filename;
-          if ((parseTextNode(childNode, item, firstLevelTextInfo)) && (!(filename=firstLevelTextInfo.last().last()).isEmpty()))
-                      setCurrentFile(filename);
-        }
+//                              secondLevelTextInfo.clear();
+//                              if  (grandChildNode.toElement().tagName() == "file")
+//                                {
+//                                  item->setTextColor(1,QColor("navy"));
+//                                  item->setTextColor(2,QColor("grey"));
+//                                  item->setTextAlignment(2,Qt::AlignRight);
+//                                  item->setText(0, "\n"+QDir::toNativeSeparators(secondColumn));
+//                                  item->setText(2, tr("Total size: ")+QString::number(allSizes/1048576.0, 'f', 1) +"MB"+ "\n"+ thirdColumn);
+//                                }
 
-      node=node.nextSibling();
-    }
-}
+//                            }
 
-*/
+//                          grandChildNode=grandChildNode.nextSibling();
+//                       }
+
+//                      if (depth == 2)
+//                        {
+//                          firstLevelTextInfo << secondLevelTextInfo;
+//                          secondLevelTextInfo.clear();
+//                        }
+//                      childNode=childNode.nextSibling();
+
+
+//                    }
+//                  if (depth == 1)
+//                    {
+//                      firstLevelTextInfo << secondLevelTextInfo;
+//                      secondLevelTextInfo.clear();
+//                    }
+
+//               }
+
+//               if ((dvda::RefreshFlag&0xF000) == UpdateTabs)
+//                 {
+//                     assignVariables(firstLevelTextInfo);
+//                 }
+
+//              childNode = childNode.nextSibling();
+//            }
+//        }
+//      else if (tagName == "recent")
+//        {
+//          QString filename;
+//          if ((parseTextNode(childNode, item, firstLevelTextInfo)) && (!(filename=firstLevelTextInfo.last().last()).isEmpty()))
+//                      setCurrentFile(filename);
+//        }
+
+//      node=node.nextSibling();
+//    }
+//}
+
+

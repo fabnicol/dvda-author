@@ -215,7 +215,7 @@ FListWidget::FListWidget(const QString& hashKey,
 
 
 
-FString FListWidget::translate(FStringList &s)
+FString FListWidget::translate(const FStringList &s)
 {
     FStringListIterator i(s)  ;
     FStringList L=FStringList();
@@ -237,7 +237,7 @@ FString FListWidget::translate(FStringList &s)
 }
 
 
-void FListWidget::setWidgetFromXml(FStringList &s)
+void FListWidget::setWidgetFromXml(const FStringList &s)
 {
 
     /* for display */
@@ -325,6 +325,7 @@ FCheckBox::FCheckBox(const QString &boxLabel, int status,const QString &hashKey,
                      const QString &commandLineString, const Q2ListWidget* controlledObjects) : QCheckBox(boxLabel)
 {
     componentList={this};
+    widgetDepth="0";
     bool mode= ((status & flags::widgetMask) == flags::checked) ;
     FAbstractWidget::setProtectedFields(this, FString(mode), hashKey, description, commandLineString, status, controlledObjects);
 }
@@ -391,7 +392,7 @@ FString FCheckBox::setXmlFromWidget()
     return commandLineList[0];
 }
 
-void FCheckBox::setWidgetFromXml(FStringList &s)
+void FCheckBox::setWidgetFromXml(const FStringList &s)
 {
     QString st=s.toFString();
     commandLineList[0]=FString(st);
@@ -502,7 +503,7 @@ FString FRadioBox::setXmlFromWidget()
     return commandLineList[0];
 }
 
-void FRadioBox::setWidgetFromXml(FStringList &s)
+void FRadioBox::setWidgetFromXml(const FStringList &s)
 {
     QString st=s.toFString();
     commandLineList[0]=FString(st, flags::multimodal);
@@ -587,7 +588,7 @@ FString FComboBox::setXmlFromWidget()
 }
 
 
-void FComboBox::setWidgetFromXml(FStringList &s)
+void FComboBox::setWidgetFromXml(const FStringList &s)
 {
     commandLineList[0] = s.toFString();
 
@@ -618,7 +619,7 @@ FString FLineEdit::setXmlFromWidget()
     return commandLineList[0];
 }
 
-void FLineEdit::setWidgetFromXml(FStringList &s)
+void FLineEdit::setWidgetFromXml(const FStringList &s)
 {
     commandLineList[0] = s.toFString();
     hash::qstring[hashKey]=commandLineList[0].toQString();
@@ -681,7 +682,7 @@ FString FColorButton::setXmlFromWidget()
     return commandLineList[0];
 }
 
-void FColorButton::setWidgetFromXml(FStringList &s)
+void FColorButton::setWidgetFromXml(const FStringList &s)
 {
     commandLineList[0] = s.toFString();
     hash::qstring[hashKey]=commandLineList[0];
@@ -725,7 +726,7 @@ FString FPalette::setXmlFromWidget()
     return L.setTags({ "YCrCb"});
 }
 
-void FPalette::setWidgetFromXml(FStringList &s)
+void FPalette::setWidgetFromXml(const FStringList &s)
 {
     if (hash::FStringListHash.contains(hashKey)) *hash::FStringListHash[hashKey]=s;
     commandLineList[0]=s.join(":");
