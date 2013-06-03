@@ -1,0 +1,6 @@
+sudo mount -t vfat /dev/sdb1 /key 
+echo "Enter commit msg:"
+read msg 
+git commit -a -m "$msg" 
+git push origin master
+
