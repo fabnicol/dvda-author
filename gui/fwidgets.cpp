@@ -1,5 +1,6 @@
 #include "fwidgets.h"
 #include "fcolor.h"
+#include "common.h"
 
 void applyHashToStringList(QStringList *L, QHash<QString, QString> *H,  const QStringList *M)
 {
@@ -194,7 +195,7 @@ FListWidget::FListWidget(const QString& hashKey,
 
     setProtectedFields(this, "", hashKey, description, commandLine, status, controlledListWidget);
     separator=sep;
-    rank=0;
+
     tags=taglist;
     signalList=new QStringList;
 
@@ -244,11 +245,14 @@ void FListWidget::setWidgetFromXml(const FStringList &s)
 
     if (s.isFilled())
     {
+        int size=s.size()-1;
         if (hash::FStringListHash.contains(hashKey))
             *hash::FStringListHash[hashKey]=s;
         else
             return;
-        emit(open_tabs_signal(s.count())) ;
+        /* add as many groups as there are QStringLists in excess of 1 */
+        if (size) emit(open_tabs_signal(size)) ;
+
     }
     else
     {

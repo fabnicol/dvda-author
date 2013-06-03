@@ -246,25 +246,25 @@ void FListFrame::on_embeddingTabIndex_changed(int index)
 void FListFrame::addGroup()
 {
    slotListSize=(slotList)? slotList->size() : 0;
-   if ((slotListSize) && (fileListWidget->rank >= slotListSize-1)) return;
+   if ((slotListSize) && (getRank() >= slotListSize-1)) return;
 
    if ((hash::FStringListHash[frameHashKey]->size() < slotListSize) || slotListSize == 0) hash::FStringListHash[frameHashKey]->append(QStringList());
 
-   if (cumulativePicCount.count() <  slotListSize+1) cumulativePicCount.append(cumulativePicCount[fileListWidget->rank]+hash::FStringListHash[frameHashKey]->at(fileListWidget->rank).count());
+   if (cumulativePicCount.count() <  slotListSize+1) cumulativePicCount.append(cumulativePicCount[getRank()]+hash::FStringListHash[frameHashKey]->at(getRank()).count());
 
-   fileListWidget->rank++;
+   incrementRank();
 
  fileListWidget->currentListWidget=new QListWidget;
  widgetContainer.append(fileListWidget->currentListWidget);
- mainTabWidget->insertTab(fileListWidget->rank ,widgetContainer.at(fileListWidget->rank) , tags[1] + " "+ QString::number(fileListWidget->rank+1));
- mainTabWidget->setCurrentIndex(fileListWidget->rank);
+ mainTabWidget->insertTab(getRank() ,widgetContainer.at(getRank()) , tags[1] + " "+ QString::number(getRank()+1));
+ mainTabWidget->setCurrentIndex(getRank());
 }
 
 /* Unlike addGroup, this function is just used for reading groups from Xml */
 
 void FListFrame::addGroups(int n)
 {
-    for (int j=0; j < n; j++)
+    for (int j=0; j <= n; j++)
    {
      if (j) addGroup();
      widgetContainer[j]->addItems((*hash::FStringListHash[frameHashKey])[j]);
@@ -277,24 +277,24 @@ void FListFrame::deleteGroup()
 {
  updateIndexInfo();
 
- if (fileListWidget->rank < 1) return;
+ if (getRank() < 1) return;
 
  mainTabWidget->removeTab(currentIndex);
 
  hash::FStringListHash[frameHashKey]->removeAt(currentIndex);
 
- if (currentIndex <fileListWidget->rank)
+ if (currentIndex <getRank())
    {
 
-     for (int j=currentIndex; j < fileListWidget->rank+1 ; j++)
+     for (int j=currentIndex; j < getRank()+1 ; j++)
        {
          mainTabWidget->setTabText(j,  tags[1] + " " + QString::number(j+1));
        }
    }
 
- if (fileListWidget->rank < widgetContainer.size()) widgetContainer.removeAt(fileListWidget->rank);
+ if (getRank() < widgetContainer.size()) widgetContainer.removeAt(getRank());
 
- fileListWidget->rank--;
+ decrementRank();
 }
 
 #if 0
@@ -305,13 +305,13 @@ void FListFrame::deleteGroups(QList<int> &L)
    {
      mainTabWidget->removeTab(j);
      hash::FStringListHash[frameHashKey]->removeAt(j);
-     fileListWidget->rank--;
+     getRank()--;
    }
 
- if (L[0] <fileListWidget->rank)
+ if (L[0] <getRank())
    {
 
-     for (int j=L[0]; j < fileListWidget->rank+1 ; j++)
+     for (int j=L[0]; j < getRank() +1 ; j++)
        {
          mainTabWidget->setTabText(j,  tags[1] + " " + QString::number(j+1));
        }

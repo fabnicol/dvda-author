@@ -32,6 +32,10 @@ QStringList* slotList;
 
 QList<int> cumulativePicCount;
 int slotListSize;
+int getRank() {return fileListWidget->rank;}
+void setRank(int r) {fileListWidget->rank=r;}
+void decrementRank() {fileListWidget->rank--;}
+void incrementRank() {fileListWidget->rank++;}
 
 QString &hashKey() {return frameHashKey;}
 
@@ -51,6 +55,7 @@ void clearWidgetContainer()
     widgetContainer.clear(); ;
 }
 
+QList<QListWidget*>  getWidgetContainer() {return widgetContainer;}
 
 QTabWidget* mainTabWidget, *embeddingTabWidget;
 QToolButton *addGroupButton, *deleteGroupButton;
