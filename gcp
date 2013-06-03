@@ -13,7 +13,7 @@ read msg
 git commit -a -m "$msg" 
 cd /key/dvda-author-gui/key
 git pull  -f 
-cd-
+cd -
 name=archive.`date | sed -r "s/[ ,:+]/-/g" | sed -r "s/[()]//g"`.zip
 echo "Saving $name..." 
 git archive -o "$name" HEAD 
