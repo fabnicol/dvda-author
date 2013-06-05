@@ -1,5 +1,6 @@
 #ifndef DVDA_H
 #define DVDA_H
+
 #include "fstring.h"
 #include "dvda-author-gui.h"
 
@@ -66,7 +67,7 @@ private slots:
     void on_helpButton_clicked();
     void requestSaveProject();
     void writeProjectFile();
-    void assignGroupFiles(const int isVideo, const int group_index, QString &size,  QString file);
+    void assignGroupFiles(const int isVideo, const int group_index, QString size,  QString file);
 
     void openProjectFile();
     void on_playItemButton_clicked();
@@ -96,7 +97,7 @@ private:
     QString tag;
 
     QList<FStringList> xmlDataWrapper;
-    QList< QList<QStringList> > fileSizeDataBase;
+    QHash <int,  QList<QStringList>  > fileSizeDataBase;
 
     QDialog *consoleDialog;
     QIcon iconShowMaximized, iconShowNormal;

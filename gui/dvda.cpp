@@ -358,7 +358,6 @@ void dvda::refreshRowPresentation()
 void dvda::refreshRowPresentation(uint ZONE, uint j)
 {
   QString localTag=(ZONE == AUDIO)? "DVD-A" : "DVD-V";
-
   QPalette palette;
   palette.setColor(QPalette::AlternateBase,QColor("silver"));
   QFont font=QFont("Courier",10);
@@ -373,7 +372,7 @@ void dvda::refreshRowPresentation(uint ZONE, uint j)
 
       project[ZONE]->fileListWidget->currentListWidget->item(r)->setText(hash::FStringListHash.value(localTag)->at(j).at(r).section('/',-1));
       project[ZONE]->fileListWidget->currentListWidget->item(r)->setTextColor(QColor("navy"));
-      project[ZONE]->fileListWidget->currentListWidget->item(r)->setToolTip(fileSizeDataBase[ZONE][j][r]+" MB");
+      project[ZONE]->fileListWidget->currentListWidget->item(r)->setToolTip(fileSizeDataBase[ZONE].at(j).at(r)+" MB");
     }
 }
 
@@ -494,9 +493,10 @@ void dvda::clearProjectData()
 
       project[ZONE]->signalList->clear();
       project[ZONE]->clearWidgetContainer();
+      fileSizeDataBase[ZONE].clear();
     }
 
-  fileSizeDataBase.clear();
+
   inputSizeCount=inputTotalSize=0;
 
   QMessageBox::StandardButton choice=QMessageBox::Cancel;
@@ -1356,7 +1356,7 @@ void dvda::assignVariables(const QList<FStringList> &value)
   }
 }
 
-void dvda::assignGroupFiles(const int ZONE, const int group_index, QString &size, QString file)
+void dvda::assignGroupFiles(const int ZONE, const int group_index, QString size, QString file)
 {
   updateIndexInfo();
 
@@ -1521,6 +1521,7 @@ inline QStringList stackFirstLevelData(const QDomNode & node, QStringList &tags)
 
 inline QList<QStringList> stackSecondLevelData(const QDomNode & node, QStringList &tags)
     {
+        tags[0]=node.toElement().tagName();
         QDomNode  childNode=node.firstChild();
         QList<QStringList> stackedInfo;
 
@@ -1569,13 +1570,13 @@ inline void displaySecondLevelData(    const QStringList &tags,
     {
       int k=0, count=0, l;
       double filesizecount=0;
-      QString  firstColumn, root=tags.at(0), secondColumn=tags.at(1), thirdColumn;
+      QString  firstColumn, root=tags.at(1), secondColumn=tags.at(2), thirdColumn;
 
       QListIterator<QStringList> i(stackedInfo), j(stackedSizeInfo);
 
       while ((i.hasNext()) && (j.hasNext()))
        {
-          if (!tags.at(0).isEmpty() )
+          if (!root.isEmpty())
            {
                firstColumn = root + " "+QString::number(++k);
            }
@@ -1587,8 +1588,8 @@ inline void displaySecondLevelData(    const QStringList &tags,
            while ((w.hasNext()) && (z.hasNext()))
            {
               ++count;
-               if (!tags.at(1).isEmpty())
-                   secondColumn =  tags.at(1) +" " +QString::number(++l) + "/"+ QString::number(count) +": ";
+               if (!tags.at(2).isEmpty())
+                   secondColumn =  tags.at(2) +" " +QString::number(++l) + "/"+ QString::number(count) +": ";
                secondColumn += w.next()  ;
 
                if ((stackedSizeInfo.size() > 0) && (z.hasNext()))
@@ -1668,7 +1669,7 @@ void dvda::DomParser(QIODevice* file)
               for (QString text : xmlDataWrapper[ZONE][group_index])
               {
                  if (!text.isEmpty())
-                         assignGroupFiles(ZONE, group_index, fileSizeDataBase[ZONE][group_index][r],QDir::toNativeSeparators(text));
+                         assignGroupFiles(ZONE, group_index, fileSizeDataBase[ZONE].at(group_index).at(r),QDir::toNativeSeparators(text));
                   r++;
               }
               refreshRowPresentation(ZONE, group_index);
@@ -1736,24 +1737,32 @@ FStringList dvda::parseEntry(const QDomNode &node, QTreeWidgetItem *itemParent)
 
       case 1 :
                 firstLevelData=XmlMethod::stackFirstLevelData(node, tags);
-                XmlMethod::displayFirstLevelData({hash::description[tags.at(0)], hash::description[tags.at(1)]}, firstLevelData);
+                XmlMethod::displayFirstLevelData({"", hash::description[tags.at(0)], hash::description[tags.at(1)]}, firstLevelData);
                 return FStringList(firstLevelData);
 
        case 2 :
               secondLevelData=XmlMethod::stackSecondLevelData(node, tags);
               fileSizeData=processSecondLevelData(secondLevelData, tags.at(2) == "file");
               XmlMethod::displaySecondLevelData(
-                          {tags.at(1), tags.at(2)},
+                          {tags.at(0), tags.at(1), tags.at(2)},
                           secondLevelData,
                           fileSizeData);
-              fileSizeDataBase << fileSizeData;
+
+              if (tags.at(0) == "DVD-A")
+              {
+                  fileSizeDataBase[AUDIO] =  fileSizeData;
+              }
+              else
+              if (tags.at(0) == "DVD-V")
+               {
+                   fileSizeDataBase[VIDEO] =  fileSizeData;
+               }
+
               return FStringList(secondLevelData);
       }
 
   return FStringList();
 }
-
-
 
 
 inline QList<QStringList> dvda::processSecondLevelData(QList<QStringList> &L, bool isFile)
