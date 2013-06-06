@@ -168,6 +168,38 @@ template <typename W> void FAbstractWidget::setProtectedFields(W* w, const QStri
 
 }
 
+/* using above function with controlled object encapsulation */
+
+template <typename W> void FAbstractWidget::setProtectedFields(W* w, const QString &defaultValue, const QString &hashKey,
+                                            const QString &description, const QString &optionLabel, int status, const  Q2ListWidget* controlledObjects)
+{
+  if (controlledObjects == NULL)
+    setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status,NULL,NULL);
+  else
+    {
+      switch (controlledObjects->size())
+        {
+        case 1:
+         setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status,  &(*(new Q2ListWidget) << controlledObjects[0]),  NULL);
+          break;
+
+        case 2:
+          if (controlledObjects[0][0][0] == NULL)
+              setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status, NULL,  &(*(new Q2ListWidget) << controlledObjects[1]));
+          else
+            {
+              Q2ListWidget *L1=new Q2ListWidget, *L2=new Q2ListWidget;
+              *L1 << controlledObjects[0];
+              *L2 << controlledObjects[1];
+              setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status, L1, L2);
+            }
+          break;
+
+        default:
+          break;
+        }
+    }
+}
 
 FListWidget::FListWidget(const QString& hashKey,
                          int status,
@@ -189,6 +221,8 @@ FListWidget::FListWidget(const QString& hashKey,
     rank=0;
     setObjectName(hashKey+" "+description);
     currentListWidget=new QListWidget;
+    currentListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    currentListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
 
     Q2ListWidget *controlledListWidget=new Q2ListWidget;
     *controlledListWidget << (QList<QWidget*>() << controlledWidget);

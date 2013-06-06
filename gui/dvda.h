@@ -25,7 +25,6 @@ public:
     QString projectName;
     QString curFile;
     QString groupType;
-    unsigned int rank[2];
     FListFrame *project[2];
 
     QToolButton *audioFilterButton;
@@ -59,7 +58,6 @@ private slots:
     void process2Finished(int exitCode,  QProcess::ExitStatus exitStatus);
     void process3Finished(int exitCode,  QProcess::ExitStatus exitStatus);
     void addGroup();
-    void addGroup(int,int);
     void deleteGroup();
     void killMkisofs();
     void killDvda();

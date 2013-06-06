@@ -106,35 +106,8 @@ protected:
 
 
   template <typename W> void setProtectedFields(W* w, const QString &defaultValue, const QString &hashKey,
-                                              const QString &description, const QString &optionLabel, int status, const  Q2ListWidget* controlledObjects=NULL)
-  {
-    if (controlledObjects == NULL)
-      setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status,NULL,NULL);
-    else
-      {
-        switch (controlledObjects->size())
-          {
-          case 1:
-           setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status,  &(*(new Q2ListWidget) << controlledObjects[0]),  NULL);
-            break;
+                                              const QString &description, const QString &optionLabel, int status, const  Q2ListWidget* controlledObjects=NULL);
 
-          case 2:
-            if (controlledObjects[0][0][0] == NULL)
-                setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status, NULL,  &(*(new Q2ListWidget) << controlledObjects[1]));
-            else
-              {
-                Q2ListWidget *L1=new Q2ListWidget, *L2=new Q2ListWidget;
-                *L1 << controlledObjects[0];
-                *L2 << controlledObjects[1];
-                setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status, L1, L2);
-              }
-            break;
-
-          default:
-            break;
-          }
-      }
-  }
 
 };
 

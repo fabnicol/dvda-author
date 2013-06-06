@@ -234,10 +234,17 @@ inline QStringList setDistributedTags(const QString & tag,const QStringList &pro
 QString FStringList::setTags(const QStringList  &tags, const FStringList *properties )
 {
   if ((this == NULL) ||  this->hasNoString())
-    return setEmptyTags(tags);
+  {
+      // should trigger a crash
+      return setEmptyTags(tags);
+  }
+
+
+    // deactivated
 
   if ((properties) && (properties->size() != 2) )
       return setEmptyTags(tags);
+   // deactivated
 
   QStringList S;
 

@@ -64,8 +64,6 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
      mainTabWidget=embeddingTabWidget;
   }
 
- fileListWidget->currentListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
- fileListWidget->currentListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
 
  mainTabWidget->addTab(fileListWidget->currentListWidget, xml_tags[1]+" 1");
  cumulativePicCount =QList<int>() << 0 << 0;
@@ -245,16 +243,26 @@ void FListFrame::on_embeddingTabIndex_changed(int index)
 
 void FListFrame::addGroup()
 {
+
+    int size=hash::FStringListHash[frameHashKey]->size();
+
+    // do not create an new group over an empty group (strict behaviour)
+
+    if (hash::FStringListHash[frameHashKey]->at(size-1).isEmpty()) return;
+
    slotListSize=(slotList)? slotList->size() : 0;
    if ((slotListSize) && (getRank() >= slotListSize-1)) return;
 
-   if ((hash::FStringListHash[frameHashKey]->size() < slotListSize) || slotListSize == 0) hash::FStringListHash[frameHashKey]->append(QStringList());
+   if ((size < slotListSize) || slotListSize == 0) hash::FStringListHash[frameHashKey]->append(QStringList());
 
    if (cumulativePicCount.count() <  slotListSize+1) cumulativePicCount.append(cumulativePicCount[getRank()]+hash::FStringListHash[frameHashKey]->at(getRank()).count());
 
    incrementRank();
 
  fileListWidget->currentListWidget=new QListWidget;
+ fileListWidget->currentListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
+ fileListWidget->currentListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+
  widgetContainer.append(fileListWidget->currentListWidget);
  mainTabWidget->insertTab(getRank() ,widgetContainer.at(getRank()) , tags[1] + " "+ QString::number(getRank()+1));
  mainTabWidget->setCurrentIndex(getRank());
