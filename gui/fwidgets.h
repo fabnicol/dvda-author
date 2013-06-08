@@ -2,7 +2,15 @@
 #define FWIDGETS_H
 
 #include <QDrag>
-#include <QtWidgets>
+#include <QListWidget>
+#include <QCheckBox>
+#include <QRadioButton>
+#include <QComboBox>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QGroupBox>
+#include <QButtonGroup>
+#include <QLabel>
 #include <QVBoxLayout>
 #include <QGridLayout>
 #include <QMouseEvent>
@@ -16,15 +24,6 @@
 class FStringList;
 class common;
 class FAbstractWidget;
-class QToolDirButton;
-
-template <typename W> void setProtectedFields1(W* w, const QString defaultValue, const QString hashKey,
-                                                               const QString description, const QString optionLabel, int status, const  Q2ListWidget* controlledObjects=NULL);
-
-template <typename W> void setProtectedFields(W* w, const QString defaultValue, const QString hashKey,
-                                                               const QString description, const QString option, int status,
-                                                               const Q2ListWidget* enabledObjects, const Q2ListWidget* disabledObjects);
-
 
 class QToolDirButton : public QToolButton
 {
@@ -49,6 +48,7 @@ public:
     QToolDirButton(QString  st, actionType  type=actionType::Select):QToolDirButton(type){setToolTip(st);}
 
 };
+
 
 
 class FAbstractConnection : QObject
@@ -123,14 +123,15 @@ protected:
   QString optionLabel;
   QList<FString> commandLineList;
   QList<QWidget*> componentList;
+/*
+  template <typename W> void setProtectedFields(W* w, const QString &defaultValue, const QString &,
+                                              const QString &, const QString&, int, const Q2ListWidget*, const  Q2ListWidget*);
 
-  template <typename W> void setProtectedFields(W* w, const QString defaultValue, const QString ,
-                                              const QString , const QString, int, const Q2ListWidget*, const  Q2ListWidget*);
 
+  template <typename W> void setProtectedFields(W* w, const QString &defaultValue, const QString &hashKey,
+                                              const QString &description, const QString &optionLabel, int status, const  Q2ListWidget* controlledObjects=NULL);
 
-  template <typename W> void setProtectedFields(W* w, const QString defaultValue, const QString hashKey,
-                                              const QString description, const QString optionLabel, int status, const  Q2ListWidget* controlledObjects=NULL);
-
+*/
 };
 
 
@@ -220,20 +221,16 @@ private slots:
   void uncheckDisabledBox();
 };
 
-class FRadioBox :  virtual public FAbstractWidget, public QWidget
+
+class FRadioBox : public QWidget, virtual public FAbstractWidget
 {
   Q_OBJECT
 
-
-//    template <typename W> friend void setProtectedFields1(W* w, const QString defaultValue, const QString ,
-//                                                const QString , const QString, int, const Q2ListWidget*, const  Q2ListWidget*);
-
-friend class FAbstractWidget;
+  friend class FAbstractWidget;
 
 public:
-
    FRadioBox(const QStringList &boxLabelList, int status, const QString &hashKey, const QString &description,
-                     const QStringList &optionLabelStringList, const Q2ListWidget* enabledObjects=NULL,  const Q2ListWidget* disabledObjects=NULL);
+                     const QStringList &optionLabelStringList, const Q2ListWidget* enabledObjects=NULL,  const Q2ListWidget* disabledObjects=NULL) ;
 
    FRadioBox(const QStringList &boxLabelList, const QString &hashKey, const QString &description,
                      const QStringList &optionLabelStringList, const Q2ListWidget* enabledObjects=NULL,  const Q2ListWidget* disabledObjects=NULL) :

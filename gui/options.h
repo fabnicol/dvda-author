@@ -119,6 +119,9 @@ class outputPage : public common
 public:
     outputPage(options* parent);
 
+    FString
+       logPath;
+
     FCheckBox
       *logBox,
       *debugBox,

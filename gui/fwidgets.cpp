@@ -2,6 +2,43 @@
 #include "fcolor.h"
 #include "common.h"
 
+
+#define FCore2(defaultStatus, hK, desc, opt, stat)\
+{\
+this->commandLineList= QList<FString>() << defaultStatus;\
+if (((stat) & flags::widgetMask) == flags::multimodal) { this->commandLineList[0].setMultimodal(); }\
+this->hashKey=hK;\
+this->setToolTip(desc);\
+this->commandLineType=stat | flags::multimodal;\
+if (!hK.isEmpty())\
+{\
+    if (!desc.isEmpty())\
+    {\
+        this->description=desc;\
+        hash::description[hK]=desc;\
+    }\
+    if (((stat) & flags::commandLinewidgetDepthMask) == flags::hasListCommandLine)\
+        hash::qstring[hK]=this->commandLineList[0];\
+}\
+\
+this->optionLabel=opt;\
+\
+this->setEnabled((((stat) | flags::multimodal)& flags::enabledMask) ==  flags::enabled);\
+\
+Abstract::abstractWidgetList.append(this);\
+\
+FAbstractConnection::meta_connect(this, this->enabledObjects, this->disabledObjects);\
+}
+
+
+#define FCore(defaultStatus, hashKey, decription, option, status, EO, DO)\
+{\
+this->enabledObjects=EO; \
+this->disabledObjects=DO;\
+FCore2(defaultStatus, hashKey, decription, option, status)\
+}
+
+
 void applyHashToStringList(QStringList *L, QHash<QString, QString> *H,  const QStringList *M)
 {
     if ((H == NULL) || (M == NULL) || (L == NULL)) return;
@@ -90,75 +127,6 @@ void FAbstractConnection::meta_connect(FAbstractWidget* w,  const Q2ListWidget *
     }
 }
 
-template <typename W> void setProtectedFields1(W* w, const QString defaultValue, const QString hashKey,
-                                                               const QString description, const QString option, int status,
-                                                               const Q2ListWidget* enabledObjects, const Q2ListWidget* disabledObjects)
-{
-    w->enabledObjects=enabledObjects;
-    w->disabledObjects=disabledObjects;
-
-    w->commandLineList= QList<FString>() << defaultValue;
-    if ((status & flags::widgetMask) == flags::multimodal) { w->commandLineList[0].setMultimodal(); }
-
-    w->hashKey=hashKey;
-    w->setToolTip(description);
-    //w->setObjectName(hashKey);
-    w->commandLineType=status;
-
-    if (!hashKey.isEmpty())
-    {
-        if (!description.isEmpty())
-        {
-            w->description=description;
-            hash::description[hashKey]=description;
-        }
-        if ((status & flags::commandLinewidgetDepthMask) == flags::hasListCommandLine)
-            hash::qstring[hashKey]=w->commandLineList[0];
-    }
-
-    w->optionLabel=option;
-
-    // Take care to settle enabled status before meta-connection
-
-    w->setEnabled((status & flags::enabledMask) ==  flags::enabled);
-
-    Abstract::abstractWidgetList.append(w);
-
-    FAbstractConnection::meta_connect(w, enabledObjects, disabledObjects);
-
-}
-
-template <typename W> void setProtectedFields(W* w, const QString defaultValue, const QString hashKey,
-                                            const QString description, const QString optionLabel, int status, const  Q2ListWidget* controlledObjects)
-{
-  if (controlledObjects == NULL)
-    setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status,NULL,NULL);
-  else
-    {
-      switch (controlledObjects->size())
-        {
-        case 1:
-         setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status,  &(*(new Q2ListWidget) << controlledObjects[0]),  NULL);
-          break;
-
-        case 2:
-          if (controlledObjects[0][0][0] == NULL)
-              setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status, NULL,  &(*(new Q2ListWidget) << controlledObjects[1]));
-          else
-            {
-              Q2ListWidget *L1=new Q2ListWidget, *L2=new Q2ListWidget;
-              *L1 << controlledObjects[0];
-              *L2 << controlledObjects[1];
-              setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status, L1, L2);
-            }
-          break;
-
-        default:
-          break;
-        }
-    }
-}
-
 
 QStringList FAbstractWidget::commandLineStringList()
 {
@@ -199,75 +167,37 @@ return (QStringList("--"+optionLabel+"="+commandLineList[0].toQString()));
 
 QList<FAbstractWidget*> Abstract::abstractWidgetList= QList<FAbstractWidget*>();
 
-template <typename W> void FAbstractWidget::setProtectedFields(W* w, const QString defaultValue, const QString hashKey,
-                                                               const QString description, const QString option, int status,
-                                                               const Q2ListWidget* enabledObjects, const Q2ListWidget* disabledObjects)
-{
-    w->enabledObjects=enabledObjects;
-    w->disabledObjects=disabledObjects;
-
-    w->commandLineList= QList<FString>() << defaultValue;
-    if ((status & flags::widgetMask) == flags::multimodal) { w->commandLineList[0].setMultimodal(); }
-
-    w->hashKey=hashKey;
-    //w->setToolTip(description);
-    //w->setObjectName(hashKey);
-    w->commandLineType=status;
-
-    if (!hashKey.isEmpty())
-    {
-        if (!description.isEmpty())
-        {
-            w->description=description;
-            hash::description[hashKey]=description;
-        }
-        if ((status & flags::commandLinewidgetDepthMask) == flags::hasListCommandLine)
-            hash::qstring[hashKey]=w->commandLineList[0];
-    }
-
-    optionLabel=option;
-
-    // Take care to settle enabled status before meta-connection
-
-    w->setEnabled((status & flags::enabledMask) ==  flags::enabled);
-
-    Abstract::abstractWidgetList.append(w);
-
-    FAbstractConnection::meta_connect(w, enabledObjects, disabledObjects);
-
-}
 
 /* using above function with controlled object encapsulation */
 
-template <typename W> void FAbstractWidget::setProtectedFields(W* w, const QString defaultValue, const QString hashKey,
-                                            const QString description, const QString optionLabel, int status, const  Q2ListWidget* controlledObjects)
-{
-  if (controlledObjects == NULL)
-    setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status,NULL,NULL);
-  else
-    {
-      switch (controlledObjects->size())
-        {
-        case 1:
-         setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status,  &(*(new Q2ListWidget) << controlledObjects[0]),  NULL);
-          break;
-
-        case 2:
-          if (controlledObjects[0][0][0] == NULL)
-              setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status, NULL,  &(*(new Q2ListWidget) << controlledObjects[1]));
-          else
-            {
-              Q2ListWidget *L1=new Q2ListWidget, *L2=new Q2ListWidget;
-              *L1 << controlledObjects[0];
-              *L2 << controlledObjects[1];
-              setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status, L1, L2);
-            }
-          break;
-
-        default:
-          break;
-        }
-    }
+#define FCore3(defaultValue, hashKey, description, optionLabel, status, controlledObjects)\
+{\
+  if (controlledObjects == NULL)\
+   {FCore( defaultValue, hashKey, description, optionLabel, status,NULL,NULL)}\
+  else\
+    {\
+      switch (controlledObjects->size())\
+        {\
+        case 1:\
+         {FCore(defaultValue, hashKey, description, optionLabel, status,  &(*(new Q2ListWidget) << controlledObjects[0]),  NULL)}\
+          break;\
+\
+        case 2:\
+          if (controlledObjects[0][0][0] == NULL)\
+              {FCore(defaultValue, hashKey, description, optionLabel, status, NULL,  &(*(new Q2ListWidget) << controlledObjects[1]))}\
+          else\
+            {\
+              Q2ListWidget *L1=new Q2ListWidget, *L2=new Q2ListWidget;\
+              *L1 << controlledObjects[0];\
+              *L2 << controlledObjects[1];\
+              { FCore(defaultValue, hashKey, description, optionLabel, status, L1, L2)}\
+            }\
+          break;\
+\
+        default:\
+          break;\
+        }\
+    }\
 }
 
 FListWidget::FListWidget(const QString& hashKey,
@@ -296,7 +226,7 @@ FListWidget::FListWidget(const QString& hashKey,
     Q2ListWidget *controlledListWidget=new Q2ListWidget;
     *controlledListWidget << (QList<QWidget*>() << controlledWidget);
 
-    setProtectedFields(this, "", hashKey, description, commandLine, status, controlledListWidget);
+    FCore3("", hashKey, description, commandLine, status, controlledListWidget)
     separator=sep;
 
     tags=taglist;
@@ -434,7 +364,7 @@ FCheckBox::FCheckBox(const QString &boxLabel, int status,const QString &hashKey,
     componentList={this};
     widgetDepth="0";
     bool mode= ((status & flags::widgetMask) == flags::checked) ;
-    FAbstractWidget::setProtectedFields(this, FString(mode), hashKey, description, commandLineString, status, controlledObjects);
+    FCore3(FString(mode), hashKey, description, commandLineString, status, controlledObjects)
 }
 
 
@@ -452,7 +382,7 @@ FCheckBox::FCheckBox(const QString &boxLabel, int status, const QString &hashKey
     if (disabledObjects.isEmpty()) dObjects=NULL;
     else
         *dObjects << disabledObjects;
-    FAbstractWidget::setProtectedFields(this, FString(mode), hashKey, description, "", status, eObjects, dObjects);
+    FCore(FString(mode), hashKey, description, "", status, eObjects, dObjects);
 }
 
 void FCheckBox::uncheckDisabledBox()
@@ -508,9 +438,9 @@ void FCheckBox::setWidgetFromXml(const FStringList &s)
 }
 
 
+
 FRadioBox::FRadioBox(const QStringList &boxLabelList, int status,const QString &hashKey, const QString &description,
                      const QStringList &stringList, const Q2ListWidget *enabledObjects,  const Q2ListWidget *disabledObjects)
-
 {
     /* button 0 should have special controlling properties (either enabling or disabling) over subordinate widgets */
     widgetDepth="0";
@@ -537,14 +467,10 @@ FRadioBox::FRadioBox(const QStringList &boxLabelList, int status,const QString &
     }
 
 
-  FAbstractWidget::setProtectedFields(this, "0", hashKey, description, optionLabelStringList[status], status | flags::multimodal, enabledObjects, disabledObjects);
-//setProtectedFields(this, "0", hashKey, description, optionLabelStringList[status], status | flags::multimodal, enabledObjects, disabledObjects);
+    FCore("0", hashKey, description, optionLabelStringList[status], status | flags::multimodal, enabledObjects, disabledObjects)
 
-    Abstract::abstractWidgetList.append(this);
 
-    FAbstractConnection::meta_connect(this, enabledObjects, disabledObjects);
-
-   connect(this->radioButtonList.at(0), SIGNAL(toggled(bool)), this, SIGNAL(toggled(bool)));
+    connect(this->radioButtonList.at(0), SIGNAL(toggled(bool)), this, SIGNAL(toggled(bool)));
 
     for (int i=0; i < size; i++)
     {
@@ -640,9 +566,11 @@ FComboBox::FComboBox(const QStringList &labelList,
     addItems(labelList);
     if (labelList.isEmpty())
         return;
+    enabledObjects=NULL;
+    disabledObjects=NULL;
 
+    FCore2( labelList.at(0), hashKey, description, commandLine, status)
 
-    setProtectedFields(this, labelList.at(0), hashKey, description, commandLine, status);
     if (iconList)
     {
         int j=0;
@@ -715,7 +643,7 @@ void FComboBox::setWidgetFromXml(const FStringList &s)
 FLineEdit::FLineEdit(const QString &defaultString, int status, const QString &hashKey, const QString &description, const QString &commandLine):QLineEdit()
 {
     widgetDepth="0";
-    FAbstractWidget::setProtectedFields(this, defaultString, hashKey, description, commandLine, status);
+    FCore(defaultString, hashKey, description, commandLine, status, NULL, NULL);
 }
 
 
@@ -824,7 +752,7 @@ FPalette::FPalette(const char* textR,
 
     hash::initializeFStringListHash(hashKey);
 
-    FAbstractWidget::setProtectedFields(this, "000000:000000:000000",  hashKey, description, commandLine, status);
+    FCore( "000000:000000:000000",  hashKey, description, commandLine, status, NULL, NULL);
     setMinimumButtonWidth(buttonWidth);
 }
 

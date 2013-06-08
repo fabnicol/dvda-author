@@ -2,7 +2,7 @@
 
 
 QStringList common::extraAudioFilters=QStringList();
-FString common::htmlLogPath, common::logPath;
+FString common::htmlLogPath;
 QString common::tempdir;
 
 common::common()

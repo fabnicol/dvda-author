@@ -71,7 +71,6 @@ void openDir(QString path);
 
 protected :
   QString  videoFilePath;
-  static FString    logPath;
   static FString    htmlLogPath;
   static QStringList extraAudioFilters;
   enum audioCharacteristics   { isWav=AFMT_WAVE, isFlac=AFMT_FLAC, isOggFlac=AFMT_OGG_FLAC, isDVDAudioCompliant,  isDVDVideoCompliant, isNonCompliant};
