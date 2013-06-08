@@ -90,6 +90,75 @@ void FAbstractConnection::meta_connect(FAbstractWidget* w,  const Q2ListWidget *
     }
 }
 
+template <typename W> void setProtectedFields1(W* w, const QString defaultValue, const QString hashKey,
+                                                               const QString description, const QString option, int status,
+                                                               const Q2ListWidget* enabledObjects, const Q2ListWidget* disabledObjects)
+{
+    w->enabledObjects=enabledObjects;
+    w->disabledObjects=disabledObjects;
+
+    w->commandLineList= QList<FString>() << defaultValue;
+    if ((status & flags::widgetMask) == flags::multimodal) { w->commandLineList[0].setMultimodal(); }
+
+    w->hashKey=hashKey;
+    w->setToolTip(description);
+    //w->setObjectName(hashKey);
+    w->commandLineType=status;
+
+    if (!hashKey.isEmpty())
+    {
+        if (!description.isEmpty())
+        {
+            w->description=description;
+            hash::description[hashKey]=description;
+        }
+        if ((status & flags::commandLinewidgetDepthMask) == flags::hasListCommandLine)
+            hash::qstring[hashKey]=w->commandLineList[0];
+    }
+
+    w->optionLabel=option;
+
+    // Take care to settle enabled status before meta-connection
+
+    w->setEnabled((status & flags::enabledMask) ==  flags::enabled);
+
+    Abstract::abstractWidgetList.append(w);
+
+    FAbstractConnection::meta_connect(w, enabledObjects, disabledObjects);
+
+}
+
+template <typename W> void setProtectedFields(W* w, const QString defaultValue, const QString hashKey,
+                                            const QString description, const QString optionLabel, int status, const  Q2ListWidget* controlledObjects)
+{
+  if (controlledObjects == NULL)
+    setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status,NULL,NULL);
+  else
+    {
+      switch (controlledObjects->size())
+        {
+        case 1:
+         setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status,  &(*(new Q2ListWidget) << controlledObjects[0]),  NULL);
+          break;
+
+        case 2:
+          if (controlledObjects[0][0][0] == NULL)
+              setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status, NULL,  &(*(new Q2ListWidget) << controlledObjects[1]));
+          else
+            {
+              Q2ListWidget *L1=new Q2ListWidget, *L2=new Q2ListWidget;
+              *L1 << controlledObjects[0];
+              *L2 << controlledObjects[1];
+              setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status, L1, L2);
+            }
+          break;
+
+        default:
+          break;
+        }
+    }
+}
+
 
 QStringList FAbstractWidget::commandLineStringList()
 {
@@ -130,8 +199,8 @@ return (QStringList("--"+optionLabel+"="+commandLineList[0].toQString()));
 
 QList<FAbstractWidget*> Abstract::abstractWidgetList= QList<FAbstractWidget*>();
 
-template <typename W> void FAbstractWidget::setProtectedFields(W* w, const QString &defaultValue, const QString &hashKey,
-                                                               const QString &description, const QString &option, int status,
+template <typename W> void FAbstractWidget::setProtectedFields(W* w, const QString defaultValue, const QString hashKey,
+                                                               const QString description, const QString option, int status,
                                                                const Q2ListWidget* enabledObjects, const Q2ListWidget* disabledObjects)
 {
     w->enabledObjects=enabledObjects;
@@ -141,7 +210,7 @@ template <typename W> void FAbstractWidget::setProtectedFields(W* w, const QStri
     if ((status & flags::widgetMask) == flags::multimodal) { w->commandLineList[0].setMultimodal(); }
 
     w->hashKey=hashKey;
-    w->setToolTip(description);
+    //w->setToolTip(description);
     //w->setObjectName(hashKey);
     w->commandLineType=status;
 
@@ -170,8 +239,8 @@ template <typename W> void FAbstractWidget::setProtectedFields(W* w, const QStri
 
 /* using above function with controlled object encapsulation */
 
-template <typename W> void FAbstractWidget::setProtectedFields(W* w, const QString &defaultValue, const QString &hashKey,
-                                            const QString &description, const QString &optionLabel, int status, const  Q2ListWidget* controlledObjects)
+template <typename W> void FAbstractWidget::setProtectedFields(W* w, const QString defaultValue, const QString hashKey,
+                                            const QString description, const QString optionLabel, int status, const  Q2ListWidget* controlledObjects)
 {
   if (controlledObjects == NULL)
     setProtectedFields(w , defaultValue, hashKey, description, optionLabel, status,NULL,NULL);
@@ -441,6 +510,7 @@ void FCheckBox::setWidgetFromXml(const FStringList &s)
 
 FRadioBox::FRadioBox(const QStringList &boxLabelList, int status,const QString &hashKey, const QString &description,
                      const QStringList &stringList, const Q2ListWidget *enabledObjects,  const Q2ListWidget *disabledObjects)
+
 {
     /* button 0 should have special controlling properties (either enabling or disabling) over subordinate widgets */
     widgetDepth="0";
@@ -467,9 +537,14 @@ FRadioBox::FRadioBox(const QStringList &boxLabelList, int status,const QString &
     }
 
 
-    FAbstractWidget::setProtectedFields(this, "0", hashKey, description, optionLabelStringList[status], status | flags::multimodal, enabledObjects, disabledObjects);
+  FAbstractWidget::setProtectedFields(this, "0", hashKey, description, optionLabelStringList[status], status | flags::multimodal, enabledObjects, disabledObjects);
+//setProtectedFields(this, "0", hashKey, description, optionLabelStringList[status], status | flags::multimodal, enabledObjects, disabledObjects);
 
-    connect(this->radioButtonList.at(0), SIGNAL(toggled(bool)), this, SIGNAL(toggled(bool)));
+    Abstract::abstractWidgetList.append(this);
+
+    FAbstractConnection::meta_connect(this, enabledObjects, disabledObjects);
+
+   connect(this->radioButtonList.at(0), SIGNAL(toggled(bool)), this, SIGNAL(toggled(bool)));
 
     for (int i=0; i < size; i++)
     {

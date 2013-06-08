@@ -168,13 +168,13 @@ dvda::dvda()
 
   mkdirButton = new QToolButton(this);
   mkdirButton->setToolTip(tr("Create Directory..."));
-  const QIcon iconCreate = QIcon(QString::fromUtf8( ":/images/folder-new.png"));
+  const QIcon iconCreate = QIcon( ":/images/folder-new.png");
   mkdirButton->setIcon(iconCreate);
   mkdirButton->setIconSize(QSize(22, 22));
 
   removeButton = new QToolButton(this);
   removeButton->setToolTip(tr("Remove directory or file..."));
-  const QIcon iconRemove = QIcon(QString::fromUtf8( ":/images/edit-delete.png"));
+  const QIcon iconRemove = QIcon(":/images/edit-delete.png");
   removeButton->setIcon(iconRemove);
   removeButton->setIconSize(QSize(22, 22));
 
@@ -185,7 +185,7 @@ dvda::dvda()
 
   killButton = new QToolButton(this);
   killButton->setToolTip(tr("Kill dvda-author"));
-  const QIcon iconKill = QIcon(QString::fromUtf8( ":/images/process-stop.png"));
+  const QIcon iconKill = QIcon(":/images/process-stop.png");
   killButton->setIcon(iconKill);
   killButton->setIconSize(QSize(22,22));
 

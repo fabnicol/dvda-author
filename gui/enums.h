@@ -25,4 +25,7 @@ public:
         multimodal=0x2000
     };
 };
+
+enum actionType {Select, OpenFolder, BrowseFile};
+
 #endif // ENUMS_H

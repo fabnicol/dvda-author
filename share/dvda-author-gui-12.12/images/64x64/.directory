@@ -1,10 +1,6 @@
 [Dolphin]
 PreviewsShown=true
-SortOrder=1
-Timestamp=2012,10,29,0,4,0
+Timestamp=2013,6,7,23,16,43
 Version=3
 ViewMode=1
 VisibleRoles=Details_size,Details_date,Details_type,CustomizedDetails
-
-[Settings]
-HiddenFilesShown=true

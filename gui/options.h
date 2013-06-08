@@ -18,9 +18,17 @@ public :
     FLineEdit* normTypeLineEdit;
 
 private:
-    QListWidget* normWidget, *aspectRatioWidget;
-    QGroupBox *normTypeBox, *aspectRatioBox;
-    FString aspectRatioMsg, standardMsg;
+    QListWidget
+      *normWidget,
+      *aspectRatioWidget;
+
+    QGroupBox
+      *normTypeBox,
+      *aspectRatioBox;
+
+    FString
+      aspectRatioMsg,
+      standardMsg;
 
 public slots:
     void changeAspectRatio(QListWidgetItem*,QListWidgetItem*);
@@ -41,7 +49,7 @@ public:
 
 private:
 
-    QPushButton   *videoZoneButton;
+    QToolDirButton   *videoZoneButton;
 
 private slots:
 
@@ -65,7 +73,7 @@ public:
     QGroupBox *mainBox;
 
 private:
-    QToolButton   *mkisofsButton;
+    QToolDirButton   *mkisofsButton;
 
     struct dvdwriterAddress
     {
@@ -110,15 +118,35 @@ class outputPage : public common
 
 public:
     outputPage(options* parent);
-    FCheckBox  *logBox, *debugBox,  *htmlFormatBox, *veryverboseBox, *logrefreshBox;
-    FRadioBox *createDVDFilesRadioBox;
+
+    FCheckBox
+      *logBox,
+      *debugBox,
+      *htmlFormatBox,
+      *veryverboseBox,
+      *logrefreshBox;
+
+    FRadioBox
+      *createDVDFilesRadioBox;
 
 private:
-    QPushButton *logButton,*openLogButton ,*openHtmlLogButton , *openTargetDirButton;
-    QToolButton *targetDirButton;
+    QToolDirButton
+      *logButton,
+      *openTargetDirButton,
+      *openLogButton ,
+      *openHtmlLogButton,
+      *targetDirButton;
+
     QFileDialog logDialog;
+
     QLabel *targetDirLabel;
-    FLineEdit* targetDirLineEdit, *binDirLineEdit, *tempDirLineEdit, *workDirLineEdit;
+
+    FLineEdit
+      * targetDirLineEdit,
+      *binDirLineEdit,
+      *tempDirLineEdit,
+      *workDirLineEdit;
+
     void selectOutput(const  QString &path);
 
 private slots:
@@ -128,7 +156,6 @@ private slots:
     void on_openWorkDirButton_clicked();
     void on_openTempDirButton_clicked();
     void on_openBinDirButton_clicked();
-
     void on_openTargetDirButton_clicked();
     void selectOutput();
 };
@@ -141,8 +168,16 @@ class audioMenuPage : public common
 
 public:
     audioMenuPage(dvda* parent, standardPage* standardTab);
-    FLineEdit * audioMenuLineEdit;
-    FComboBox* menuStyleFComboBox, *highlightFormatFComboBox, *fontFComboBox, *fontSizeFComboBox, *nmenuFComboBox;
+
+    FLineEdit   * audioMenuLineEdit;
+
+    FComboBox
+      *menuStyleFComboBox,
+      *highlightFormatFComboBox,
+      *fontFComboBox,
+      *fontSizeFComboBox,
+      *nmenuFComboBox;
+
     FCheckBox *loopVideoBox;
     FListFrame* slides, * soundtracks, *screentext;
     FPalette *palette;
@@ -158,12 +193,19 @@ private slots:
 
 private:
 
-    QGroupBox *slidesBox;
-    QPushButton *openAudioMenuButton;
-    QPushButton *audioMenuButton;
+    QGroupBox
+       *slidesBox;
+
+    QPushButton
+       *slidesButton;
+
+    QToolDirButton
+       *audioMenuButton,
+       *openAudioMenuButton;
+
     FCheckBox *audioMenuCheckBox;
     QToolButton  *clearList ;
-    QPushButton* slidesButton;
+
     int groupRank;
     QDialog *newWidget;
     QVBoxLayout *newLayout;
@@ -185,9 +227,13 @@ private slots:
 
 private:
 
-    FCheckBox *videoImportCheckBox, *audioExportCheckBox;
+    FCheckBox
+      *videoImportCheckBox,
+      *audioExportCheckBox;
     FRadioBox *audioExportRadioBox;
-    FLineEdit  *videoImportLineEdit, *videoMenuImportLineEdit;
+    FLineEdit
+    *videoImportLineEdit,
+    *videoMenuImportLineEdit;
 };
 
 
@@ -212,15 +258,28 @@ void launchVideoPlayer();
 void importSlideshow();
 
 private:
-dvda* parentLocal;
-QIcon applyEffectsToOneFileUntoggledIcon;
-QIcon applyEffectsToOneFileToggledIcon;
-QListWidget  *stilloptionListWidget;
-QToolButton *nextStep, *clearList,  *applyAllEffects, *applyEffectsToOneFile;
 
-QLabel* stilloptionListLabel;
-FLineEdit* videoFileLineEdit;
-QPushButton *videoPlayerButton;
+    dvda* parentLocal;
+
+    QIcon
+        applyEffectsToOneFileUntoggledIcon,
+        applyEffectsToOneFileToggledIcon;
+
+    QListWidget
+       *stilloptionListWidget;
+
+    QToolButton
+       *applyAllEffects,
+       *applyEffectsToOneFile,
+       *clearList,
+       *nextStep;
+
+    QLabel
+       * stilloptionListLabel;
+    FLineEdit
+       * videoFileLineEdit;
+    QPushButton
+       *videoPlayerButton;
 
 static bool  selectFilesView;
 
