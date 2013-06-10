@@ -88,7 +88,7 @@ public:
 
 
   /* is used for .dvp Xml project writing: refresh Widget information and injects current Widget state into hash::qstring as left-valued of <...hashKey=...> */
-  virtual FString setXmlFromWidget()=0;
+ virtual FString setXmlFromWidget()=0 ;
 
   /* does the reverse of setXmlFromWidget : reads left value of <...hashKey=...> and injects it into commandLineList. Refreshes Widget state accordingly */
   virtual void setWidgetFromXml(const FStringList& )=0;
@@ -150,11 +150,11 @@ public:
   FListWidget(const QString& hashKey,int status,const QString& description,const QString& commandLine,const QStringList& sep,
               const QStringList &taglist, const QList<QWidget*> &enabledObjects, const QList<QString> *terms=NULL, const QList<QString> *translation=NULL, QWidget* controlledWidget=NULL);
 
-  virtual void setWidgetFromXml(const FStringList & );
-  virtual FString setXmlFromWidget();
+  void setWidgetFromXml(const FStringList & );
+  FString setXmlFromWidget();
 
-  virtual void refreshWidgetDisplay();
-  virtual bool isAbstractEnabled() {return this->isEnabled();}
+  void refreshWidgetDisplay();
+  bool isAbstractEnabled() {return this->isEnabled();}
 
   int rank;
   QStringList *signalList;
@@ -211,10 +211,10 @@ public:
                 FCheckBox(boxLabel, flags::defaultStatus| flags::unchecked|flags::defaultCommandLine, hashKey, description,  commandLineString, controlledObjects){}
 
 
-  virtual void setWidgetFromXml(const FStringList& );
-  virtual FString setXmlFromWidget();
-  virtual void refreshWidgetDisplay();
-  virtual bool isAbstractEnabled() {return this->isEnabled();}
+  void setWidgetFromXml(const FStringList& );
+  FString setXmlFromWidget();
+  void refreshWidgetDisplay();
+  bool isAbstractEnabled() {return this->isEnabled();}
 
 
 private slots:
@@ -237,10 +237,10 @@ public:
      FRadioBox(boxLabelList, flags::defaultStatus,hashKey, description,  optionLabelStringList, enabledObjects,  disabledObjects) {}
 
 
-  virtual void setWidgetFromXml(const FStringList& );
-  virtual FString setXmlFromWidget();
-  virtual void refreshWidgetDisplay();
-  virtual bool isAbstractEnabled() { return this->radioGroupBox->isEnabled();}
+  void setWidgetFromXml(const FStringList& );
+  FString setXmlFromWidget();
+  void refreshWidgetDisplay();
+  bool isAbstractEnabled() { return this->radioGroupBox->isEnabled();}
   void setToolTip(const QString & description) {this->radioGroupBox->setToolTip(description);}
   void setEnabled(bool enabled) {this->radioGroupBox->setEnabled(enabled);}
 
@@ -280,10 +280,10 @@ public:
   FComboBox(const char* str, int status, const QString &hashKey, const QString &description, const QString &commandLine,  QList<QIcon> *iconList=NULL):
     FComboBox(QStringList(str),  status, hashKey, description, commandLine,  iconList){}
 
-  virtual void setWidgetFromXml(const FStringList&);
-  virtual FString setXmlFromWidget();
-  virtual void refreshWidgetDisplay();
-  virtual bool isAbstractEnabled() {return this->isEnabled();}
+  void setWidgetFromXml(const FStringList&);
+  FString setXmlFromWidget();
+  void refreshWidgetDisplay();
+  bool isAbstractEnabled() {return this->isEnabled();}
   QStringList *signalList;
 
 private slots:
@@ -307,10 +307,10 @@ public:
   FLineEdit(const QString &defaultstring, const QString &hashKey, const QString &description, const QString &commandLine):
       FLineEdit(defaultstring, flags::defaultStatus|flags::defaultCommandLine, hashKey, description, commandLine){}
 
-  virtual void setWidgetFromXml(const FStringList&);
-  virtual FString setXmlFromWidget();
-  virtual void refreshWidgetDisplay();
-  virtual bool isAbstractEnabled() {return this->isEnabled();}
+  void setWidgetFromXml(const FStringList&);
+  FString setXmlFromWidget();
+  void refreshWidgetDisplay();
+  bool isAbstractEnabled() {return this->isEnabled();}
 
 
 };
@@ -330,10 +330,10 @@ public:
   QLabel *colorLabel;
   int buttonWidth()   const ;
   void setMinimumButtonWidth(const int w);
-  virtual void setWidgetFromXml(const FStringList&);
-  virtual void refreshWidgetDisplay();
-  virtual FString setXmlFromWidget();
-  virtual bool isAbstractEnabled() {return this->isEnabled();}
+  void setWidgetFromXml(const FStringList&);
+  void refreshWidgetDisplay();
+  FString setXmlFromWidget();
+  bool isAbstractEnabled() {return this->isEnabled();}
 
 public slots:
   void changeColors();
@@ -349,14 +349,14 @@ class FPalette :  public QWidget, virtual public FAbstractWidget
     FPalette(const char* textR, const char* textG, const char* textB, int status , const QString &hashKey,const QString &description, const QString &commandLine, int buttonWidth=150);
     FPalette(const char* textR, const char* textG, const char* textB,  const QString &hashKey,const QString &description, const QString &commandLine):
       FPalette(textR, textG, textB, flags::defaultStatus|flags::defaultCommandLine,hashKey,description,commandLine) {}
-    virtual void setWidgetFromXml(const FStringList&);
-    virtual void refreshWidgetDisplay();
+    void setWidgetFromXml(const FStringList&);
+    void refreshWidgetDisplay();
     void refreshComponent(short i);
     void setToolTip(const QString &);
 
-    virtual FString setXmlFromWidget();
+    FString setXmlFromWidget();
     void setMinimumButtonWidth(const int w);
-    virtual bool isAbstractEnabled() {return (this->isEnabled());}
+    bool isAbstractEnabled() {return (this->isEnabled());}
 
    FColorButton *button[3];
 

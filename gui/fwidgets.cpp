@@ -3,6 +3,39 @@
 #include "common.h"
 
 
+
+/* using above function with controlled object encapsulation */
+
+#define FCore3(defaultValue, hashKey, description, optionLabel, status, controlledObjects)\
+{\
+  if (controlledObjects == NULL)\
+   {FCore( defaultValue, hashKey, description, optionLabel, status,NULL,NULL)}\
+  else\
+    {\
+      switch (controlledObjects->size())\
+        {\
+        case 1:\
+         {FCore(defaultValue, hashKey, description, optionLabel, status,  &(*(new Q2ListWidget) << controlledObjects[0]),  NULL)}\
+          break;\
+\
+        case 2:\
+          if (controlledObjects[0][0][0] == NULL)\
+              {FCore(defaultValue, hashKey, description, optionLabel, status, NULL,  &(*(new Q2ListWidget) << controlledObjects[1]))}\
+          else\
+            {\
+              Q2ListWidget *L1=new Q2ListWidget, *L2=new Q2ListWidget;\
+              *L1 << controlledObjects[0];\
+              *L2 << controlledObjects[1];\
+              { FCore(defaultValue, hashKey, description, optionLabel, status, L1, L2)}\
+            }\
+          break;\
+\
+        default:\
+          break;\
+        }\
+    }\
+}
+
 #define FCore2(defaultStatus, hK, desc, opt, stat)\
 {\
 this->commandLineList= QList<FString>() << defaultStatus;\
@@ -168,37 +201,6 @@ return (QStringList("--"+optionLabel+"="+commandLineList[0].toQString()));
 QList<FAbstractWidget*> Abstract::abstractWidgetList= QList<FAbstractWidget*>();
 
 
-/* using above function with controlled object encapsulation */
-
-#define FCore3(defaultValue, hashKey, description, optionLabel, status, controlledObjects)\
-{\
-  if (controlledObjects == NULL)\
-   {FCore( defaultValue, hashKey, description, optionLabel, status,NULL,NULL)}\
-  else\
-    {\
-      switch (controlledObjects->size())\
-        {\
-        case 1:\
-         {FCore(defaultValue, hashKey, description, optionLabel, status,  &(*(new Q2ListWidget) << controlledObjects[0]),  NULL)}\
-          break;\
-\
-        case 2:\
-          if (controlledObjects[0][0][0] == NULL)\
-              {FCore(defaultValue, hashKey, description, optionLabel, status, NULL,  &(*(new Q2ListWidget) << controlledObjects[1]))}\
-          else\
-            {\
-              Q2ListWidget *L1=new Q2ListWidget, *L2=new Q2ListWidget;\
-              *L1 << controlledObjects[0];\
-              *L2 << controlledObjects[1];\
-              { FCore(defaultValue, hashKey, description, optionLabel, status, L1, L2)}\
-            }\
-          break;\
-\
-        default:\
-          break;\
-        }\
-    }\
-}
 
 FListWidget::FListWidget(const QString& hashKey,
                          int status,
