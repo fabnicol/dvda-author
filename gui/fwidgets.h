@@ -94,14 +94,14 @@ public:
   virtual void setWidgetFromXml(const FStringList& )=0;
 
   /* Refreshes widget state from current value of commandLineList member to ensure coherence betwenn internal object state and on-screen display */
-  virtual void refreshWidgetDisplay()=0;
+ virtual void refreshWidgetDisplay()=0 ;
 
   /* accessor to privale hashKey value */
-  virtual QString getHashKey()  {return hashKey; }
+  virtual QString getHashKey() {return hashKey; }
 
  virtual QString getDepth()  {return widgetDepth; }
 
-  virtual QString getDescription()  { return description; }
+  virtual QString getDescription() { return description; }
 
 
   /* command-line interface maker */
@@ -116,13 +116,13 @@ public:
   bool isAbstractDisabled() {return !isAbstractEnabled();}
 
 
-protected:
-  QString hashKey;
-  QString widgetDepth;
-  QString description;
-  QString optionLabel;
-  QList<FString> commandLineList;
-  QList<QWidget*> componentList;
+//protected:
+//  QString hashKey;
+//  QString widgetDepth;
+//  QString description;
+//  QString optionLabel;
+//  QList<FString> commandLineList;
+//  QList<QWidget*> componentList;
 /*
   template <typename W> void setProtectedFields(W* w, const QString &defaultValue, const QString &,
                                               const QString &, const QString&, int, const Q2ListWidget*, const  Q2ListWidget*);
@@ -159,7 +159,12 @@ public:
   int rank;
   QStringList *signalList;
   QListWidget* currentListWidget;
-
+  QString hashKey;
+  QString widgetDepth;
+  QString description;
+  QString optionLabel;
+  QList<FString> commandLineList;
+  QList<QWidget*> componentList;
 
 private:
   QStringList separator;
@@ -215,7 +220,12 @@ public:
   FString setXmlFromWidget();
   void refreshWidgetDisplay();
   bool isAbstractEnabled() {return this->isEnabled();}
-
+  QString hashKey;
+  QString widgetDepth;
+  QString description;
+  QString optionLabel;
+  QList<FString> commandLineList;
+  QList<QWidget*> componentList;
 
 private slots:
   void uncheckDisabledBox();
@@ -243,7 +253,12 @@ public:
   bool isAbstractEnabled() { return this->radioGroupBox->isEnabled();}
   void setToolTip(const QString & description) {this->radioGroupBox->setToolTip(description);}
   void setEnabled(bool enabled) {this->radioGroupBox->setEnabled(enabled);}
-
+  QString hashKey;
+  QString widgetDepth;
+  QString description;
+  QString optionLabel;
+  QList<FString> commandLineList;
+  QList<QWidget*> componentList;
 private:
   int size;
   QList<QRadioButton*> radioButtonList;
@@ -285,7 +300,12 @@ public:
   void refreshWidgetDisplay();
   bool isAbstractEnabled() {return this->isEnabled();}
   QStringList *signalList;
-
+  QString hashKey;
+  QString widgetDepth;
+  QString description;
+  QString optionLabel;
+  QList<FString> commandLineList;
+  QList<QWidget*> componentList;
 private slots:
   void fromCurrentIndex(const QString&);
 
@@ -306,7 +326,12 @@ public:
   FLineEdit(const QString &defaultstring, int status, const QString &hashKey, const QString &description, const QString &commandLine);
   FLineEdit(const QString &defaultstring, const QString &hashKey, const QString &description, const QString &commandLine):
       FLineEdit(defaultstring, flags::defaultStatus|flags::defaultCommandLine, hashKey, description, commandLine){}
-
+  QString hashKey;
+  QString widgetDepth;
+  QString description;
+  QString optionLabel;
+  QList<FString> commandLineList;
+  QList<QWidget*> componentList;
   void setWidgetFromXml(const FStringList&);
   FString setXmlFromWidget();
   void refreshWidgetDisplay();
@@ -334,7 +359,12 @@ public:
   void refreshWidgetDisplay();
   FString setXmlFromWidget();
   bool isAbstractEnabled() {return this->isEnabled();}
-
+  QString hashKey;
+  QString widgetDepth;
+  QString description;
+  QString optionLabel;
+  QList<FString> commandLineList;
+  QList<QWidget*> componentList;
 public slots:
   void changeColors();
 
@@ -357,7 +387,12 @@ class FPalette :  public QWidget, virtual public FAbstractWidget
     FString setXmlFromWidget();
     void setMinimumButtonWidth(const int w);
     bool isAbstractEnabled() {return (this->isEnabled());}
-
+    QString hashKey;
+    QString widgetDepth;
+    QString description;
+    QString optionLabel;
+    QList<FString> commandLineList;
+    QList<QWidget*> componentList;
    FColorButton *button[3];
 
 };
