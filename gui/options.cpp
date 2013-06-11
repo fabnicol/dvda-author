@@ -1500,7 +1500,7 @@ void stillPage::on_nextStep_clicked()
 void stillPage::refreshApplyEffectsIcon()
 {
 
-    if (hash::FStringListHash[slides->hashKey()][slides->mainTabWidget->currentIndex()].isEmpty())
+    if (hash::FStringListHash[slides->getHashKey()][slides->mainTabWidget->currentIndex()].isEmpty())
         applyEffectsToOneFile->setIcon(applyEffectsToOneFileUntoggledIcon);
     else
         applyEffectsToOneFile->setIcon(applyEffectsToOneFileToggledIcon);

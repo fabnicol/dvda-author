@@ -37,7 +37,7 @@ void setRank(int r) {fileListWidget->rank=r;}
 void decrementRank() {fileListWidget->rank--;}
 void incrementRank() {fileListWidget->rank++;}
 
-QString &hashKey() {return frameHashKey;}
+QString &getHashKey() {return frameHashKey;}
 
 void addDirectoryToListWidget(const QFileInfo&, int);
 
