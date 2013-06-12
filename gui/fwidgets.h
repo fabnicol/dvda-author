@@ -75,6 +75,7 @@ public:
 struct Abstract
 {
     static QList<FAbstractWidget*> abstractWidgetList;
+    static void refreshOptionFields();
 };
 
 class FAbstractWidget : public flags

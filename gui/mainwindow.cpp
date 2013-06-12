@@ -103,7 +103,6 @@ MainWindow::MainWindow()
   createActions();
   createMenus();
   createToolBars();
-  configureOptions();
 
   settings = new QSettings("dvda-author", "Free Software Inc");
   QString defaultPath= QDir::currentPath()+"/"+ QString("default.dvp");
@@ -133,6 +132,9 @@ MainWindow::MainWindow()
   fileTreeViewDockWidget->setMinimumHeight((unsigned) (height()*0.3));
   fileTreeViewDockWidget->setFeatures(QDockWidget::AllDockWidgetFeatures);
   addDockWidget(Qt::LeftDockWidgetArea, fileTreeViewDockWidget);
+
+  configureOptions();
+  Abstract::refreshOptionFields();
 
   setWindowIcon(QIcon(":/images/dvda-author.png"));
   setWindowTitle("dvda-author GUI "+ QString(VERSION));
@@ -321,10 +323,7 @@ void MainWindow::createActions()
 
 void MainWindow::configure()
 {
-    static bool value=true;
-    contentsWidget->setVisible(value);
-    value = ! value;
-
+     contentsWidget->setVisible(true);
 }
 
 void MainWindow::on_optionsButton_clicked()
@@ -405,11 +404,31 @@ void MainWindow::configureOptions()
     contentsWidget->setVisible(false);
 
     closeButton = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-    connect(closeButton, SIGNAL(accepted()), this, SLOT(accept()));
+
+    QHBoxLayout *layout=new QHBoxLayout;
+    QVBoxLayout *vlayout=new QVBoxLayout;
+
+    FCheckBox *defaultFileManagerWidgetLayoutBox=new FCheckBox("Display file manager",  "fileManagerDisplay", "Display file manager on left panel");
+    FCheckBox *defaultProjectManagerWidgetLayoutBox=new FCheckBox("Display project",  "projectManagerDisplay", "Display project manager on right panel");
+    FCheckBox *defaultConsoleLayoutBox=new FCheckBox("Launch console as tab",  "launchConsoleAsTab", "Add tab to bottom panel on console launch");
+    FCheckBox *defaultFullScreenLayout=new FCheckBox("Launch as full screen",  "fullScreenDisplay", "Full screen on launch");
+    FCheckBox *defaultLplexActivation=new FCheckBox("Activate video zone editing using Lplex",  "activateLplex", "Activate Lplex code");
+
+    vlayout->addWidget(defaultFileManagerWidgetLayoutBox);
+    vlayout->addWidget(defaultProjectManagerWidgetLayoutBox);
+    vlayout->addWidget(defaultConsoleLayoutBox);
+    vlayout->addWidget(defaultFullScreenLayout);
+    vlayout->addWidget(defaultLplexActivation);
+
+    vlayout->addWidget(closeButton);
+    contentsWidget->setLayout(vlayout);
+
+    connect(closeButton, SIGNAL(accepted()), contentsWidget, SLOT(accept()));
+    connect(closeButton, SIGNAL(rejected()), contentsWidget, SLOT(reject()));
+    connect(closeButton, SIGNAL(accepted()), dvda_author, SLOT(saveProject()));
 
     setWindowTitle(tr("Configure dvda-author GUI"));
     setWindowIcon(QIcon(":/images/dvda-author.png"));
-
 }
 
 

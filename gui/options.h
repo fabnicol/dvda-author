@@ -307,9 +307,6 @@ public:
     lplexPage *lplexTab;
     static RefreshManagerFilter RefreshFlag;
 
-public slots:
-
-    void refreshOptionFields();
 
 signals:
 

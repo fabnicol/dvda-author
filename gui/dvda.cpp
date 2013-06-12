@@ -370,6 +370,7 @@ void dvda::refreshRowPresentation(uint ZONE, uint j)
     {
 
       project[ZONE]->fileListWidget->currentListWidget->item(r)->setText(hash::FStringListHash.value(localTag)->at(j).at(r).section('/',-1));
+      //project[ZONE]->fileListWidget->currentListWidget->item(r)->setText("a");
       project[ZONE]->fileListWidget->currentListWidget->item(r)->setTextColor(QColor("navy"));
       project[ZONE]->fileListWidget->currentListWidget->item(r)->setToolTip(fileSizeDataBase[ZONE].at(j).at(r)+" MB");
     }
@@ -1339,13 +1340,16 @@ void dvda::setCurrentFile(const QString &fileName)
 
 void dvda::assignVariables(const QList<FStringList> &value)
 {
+
   QListIterator<FAbstractWidget*> w(Abstract::abstractWidgetList);
   QListIterator<FStringList> z(value);
+
 
   while ((w.hasNext()) && (z.hasNext()))// && (!z.peekNext().isEmpty()))
   {
       w.next()->setWidgetFromXml(z.next());
   }
+
 }
 
 void dvda::assignGroupFiles(const int ZONE, const int group_index, QString size, QString file)

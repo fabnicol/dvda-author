@@ -204,6 +204,7 @@ void dvda::DomParser(QIODevice* file)
 
   if ((dvda::RefreshFlag&0xF000) == UpdateTabs)
   {
+      Q(xmlDataWrapper[0].join({", ", ";"}))
       assignVariables(xmlDataWrapper);
 
       // adds extra information to main window and sets alternating row colors
@@ -214,7 +215,8 @@ void dvda::DomParser(QIODevice* file)
               int r=0;
               for (QString text : xmlDataWrapper[ZONE][group_index])
               {
-                 if (!text.isEmpty())
+
+                  if (!text.isEmpty())
                          assignGroupFiles(ZONE, group_index, fileSizeDataBase[ZONE].at(group_index).at(r),QDir::toNativeSeparators(text));
                   r++;
               }

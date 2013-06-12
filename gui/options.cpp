@@ -1571,7 +1571,7 @@ options::options(dvda* parent)
 
     setWindowTitle(tr("Options"));
     setWindowIcon(QIcon(":/images/dvda-author.png"));
-    refreshOptionFields();
+
 }
 
 
@@ -1633,15 +1633,6 @@ void options::changePage(QListWidgetItem *current, QListWidgetItem *previous)
 }
 
 
-void options::refreshOptionFields()
-{
-
-    QListIterator<FAbstractWidget*>  j(Abstract::abstractWidgetList);
-
-    while (j.hasNext())
-        j.next()->refreshWidgetDisplay();
-
-}
 
 
 void options::closeOptions()

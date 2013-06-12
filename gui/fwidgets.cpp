@@ -201,6 +201,12 @@ return (QStringList("--"+optionLabel+"="+commandLineList[0].toQString()));
 QList<FAbstractWidget*> Abstract::abstractWidgetList= QList<FAbstractWidget*>();
 
 
+void Abstract::refreshOptionFields()
+{
+    QListIterator<FAbstractWidget*>  j(Abstract::abstractWidgetList);
+    while (j.hasNext())
+        j.next()->refreshWidgetDisplay();
+}
 
 FListWidget::FListWidget(const QString& hashKey,
                          int status,
