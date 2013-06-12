@@ -1574,6 +1574,7 @@ options::options(dvda* parent)
     refreshOptionFields();
 }
 
+
 /* implement a global clear() function for the FStringList of data in an FListFrame ; it will be used as dvda::clearData() too. Usage below is faulty. */
 
 void options::clearOptionData()

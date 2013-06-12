@@ -88,5 +88,6 @@
         <file>images/stop.png</file>
         <file>images/track-icon-button.xcf</file>
         <file>images/window-close.png</file>
+        <file>images/configure-toolbars.png</file>
     </qresource>
 </RCC>

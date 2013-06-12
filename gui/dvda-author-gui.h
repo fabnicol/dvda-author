@@ -64,9 +64,12 @@ class MainWindow : public QMainWindow
    void on_displayFileTreeViewButton_clicked();
    void on_optionsButton_clicked();
    void showMainWidget();
+   void configure();
+   void configureOptions();
    void about();
 
   private :
+
 
    bool readFile(const QString &fileName);
    dvda *dvda_author;
@@ -96,6 +99,7 @@ class MainWindow : public QMainWindow
    QAction *saveAction;
    QAction *closeAction;
    QAction *burnAction;
+   QAction *configureAction;
    QAction *encodeAction;
    QAction *decodeAction;
    QAction *aboutAction;
@@ -110,6 +114,8 @@ class MainWindow : public QMainWindow
    QAction *clearOutputTextAction;
    QList<QAction*>  actionList;
 
+   QDialog *contentsWidget;
+   QDialogButtonBox *closeButton;
 };
 
 enum RefreshManagerFilter {

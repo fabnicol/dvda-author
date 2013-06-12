@@ -103,6 +103,7 @@ MainWindow::MainWindow()
   createActions();
   createMenus();
   createToolBars();
+  configureOptions();
 
   settings = new QSettings("dvda-author", "Free Software Inc");
   QString defaultPath= QDir::currentPath()+"/"+ QString("default.dvp");
@@ -181,7 +182,6 @@ void MainWindow::createMenus()
  fileMenu = menuBar()->addMenu("&File");
  editMenu = menuBar()->addMenu("&Edit");
  processMenu = menuBar()->addMenu("&Process");
-
  optionsMenu = menuBar()->addMenu("&Options");
  aboutMenu = menuBar()->addMenu("&Help");
 
@@ -208,17 +208,16 @@ void MainWindow::createMenus()
  processMenu->addAction(decodeAction);
 
  optionsMenu->addAction(optionsAction);
+ optionsMenu->addAction(configureAction);
 
  aboutMenu->addAction(helpAction);
  aboutMenu->addAction(aboutAction);
-
 }
 
 void MainWindow::about()
 {
-
- QUrl url=QUrl::fromLocalFile( dvda_author->generateDatadirPath("about.html") );
- browser::showPage(url);
+  QUrl url=QUrl::fromLocalFile( dvda_author->generateDatadirPath("about.html") );
+  browser::showPage(url);
 }
 
 void MainWindow::createActions()
@@ -239,6 +238,7 @@ void MainWindow::createActions()
   burnAction->setIcon(QIcon(":/images/burn.png"));
   connect(burnAction, SIGNAL(triggered()), dvda_author, SLOT(on_cdrecordButton_clicked()));
 
+
   encodeAction = new QAction(tr("Start c&reating disc files"), this);
   encodeAction->setIcon(QIcon(":/images/encode.png"));
   connect(encodeAction, SIGNAL(triggered()), dvda_author, SLOT(run()));
@@ -250,6 +250,10 @@ void MainWindow::createActions()
   optionsAction = new QAction(tr("&Options"), this);
   optionsAction->setIcon(QIcon(":/images/configure.png"));
   connect(optionsAction, SIGNAL(triggered()), this, SLOT(on_optionsButton_clicked()));
+
+  configureAction= new QAction(tr("&Configure"), this);
+  configureAction->setIcon(QIcon(":/images/configure-toolbars.png"));
+  connect(configureAction, SIGNAL(triggered()), this, SLOT(configure()));
 
   helpAction = new QAction(tr("&Help"), this);
   helpAction->setIcon(QIcon(":/images/help-contents.png"));
@@ -278,7 +282,6 @@ void MainWindow::createActions()
   const QIcon displayFileTreeView = QIcon(QString::fromUtf8( ":/images/view-list-tree.png"));
   displayFileTreeViewAction->setIcon(displayFileTreeView);
   connect(displayFileTreeViewAction, SIGNAL(triggered()), this, SLOT(on_displayFileTreeViewButton_clicked()));
-
 
   clearOutputTextAction = new QAction(tr("Clear message &window"), this);
   const QIcon clearOutputText = QIcon(QString::fromUtf8( ":/images/edit-clear.png"));
@@ -311,11 +314,18 @@ void MainWindow::createActions()
   actionList << openAction << saveAction << closeAction << exitAction << separator[0] <<
                 burnAction << encodeAction << decodeAction << separator[1] <<
                 displayOutputAction << displayFileTreeViewAction << displayManagerAction << displayConsoleAction <<
-                clearOutputTextAction <<  separator[2] <<
+                clearOutputTextAction <<  separator[2] << configureAction <<
                 optionsAction << helpAction << aboutAction;
 
 }
 
+void MainWindow::configure()
+{
+    static bool value=true;
+    contentsWidget->setVisible(value);
+    value = ! value;
+
+}
 
 void MainWindow::on_optionsButton_clicked()
 {
@@ -373,12 +383,12 @@ void MainWindow::createToolBars()
  editToolBar->addAction(displayConsoleAction);
  editToolBar->addAction(clearOutputTextAction);
 
-
  processToolBar->addAction(burnAction);
  processToolBar->addAction(encodeAction);
  processToolBar->addAction(decodeAction);
 
  optionsToolBar->addAction(optionsAction);
+ optionsToolBar->addAction(configureAction);
 
  aboutToolBar->addAction(helpAction);
  aboutToolBar->addAction(aboutAction);
@@ -386,6 +396,21 @@ void MainWindow::createToolBars()
 
 }
 
+
+void MainWindow::configureOptions()
+{
+    /* plain old data types must be 0-initialised even though the class instance was new-initialised. */
+
+    contentsWidget = new QDialog(this);
+    contentsWidget->setVisible(false);
+
+    closeButton = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    connect(closeButton, SIGNAL(accepted()), this, SLOT(accept()));
+
+    setWindowTitle(tr("Configure dvda-author GUI"));
+    setWindowIcon(QIcon(":/images/dvda-author.png"));
+
+}
 
 
 void MainWindow::showMainWidget()
