@@ -203,7 +203,7 @@ public:
             const QString &commandLineString,  const Q2ListWidget* controlledObjects =NULL) ;
 
   FCheckBox(const QString &boxLabel, int status, const QString &hashKey, const QString &description,
-            const Q2ListWidget* controlledObjects):
+            const Q2ListWidget* controlledObjects=NULL):
     FCheckBox(boxLabel,  status | flags::noCommandLine, hashKey, description, "",  controlledObjects){}
 
    FCheckBox(const QString &boxLabel, const QString &hashKey, const QString &description,

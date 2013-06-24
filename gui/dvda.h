@@ -38,6 +38,7 @@ public:
 public slots:
 
    void saveProject();
+    void on_openManagerWidgetButton_clicked();
 
 private slots:
 
@@ -46,7 +47,6 @@ private slots:
     void on_moveDownItemButton_clicked();
     void on_retrieveItemButton_clicked();
     void on_cdrecordButton_clicked();
-    void on_openManagerWidgetButton_clicked();
     void on_openProjectButton_clicked();
     void on_clearOutputTextButton_clicked();
     void remove();
@@ -66,7 +66,6 @@ private slots:
     void requestSaveProject();
     void writeProjectFile();
     void assignGroupFiles(const int isVideo, const int group_index, QString size,  QString file);
-
     void openProjectFile();
     void on_playItemButton_clicked();
     void on_playItem_changed();

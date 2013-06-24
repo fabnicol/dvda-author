@@ -131,14 +131,22 @@ MainWindow::MainWindow()
   fileTreeViewDockWidget->setWidget(dvda_author->fileTreeView);
   fileTreeViewDockWidget->setMinimumHeight((unsigned) (height()*0.3));
   fileTreeViewDockWidget->setFeatures(QDockWidget::AllDockWidgetFeatures);
+  fileTreeViewDockWidget->hide();
   addDockWidget(Qt::LeftDockWidgetArea, fileTreeViewDockWidget);
 
   configureOptions();
   Abstract::refreshOptionFields();
 
+
+  SETTINGS(defaultLplexActivation)
+  SETTINGS(defaultFullScreenLayout)
+  SETTINGS(defaultConsoleLayoutBox)
+  SETTINGS(defaultProjectManagerWidgetLayoutBox)
+  SETTINGS(defaultFileManagerWidgetLayoutBox)
+
+
   setWindowIcon(QIcon(":/images/dvda-author.png"));
   setWindowTitle("dvda-author GUI "+ QString(VERSION));
-
 }
 
 
@@ -253,7 +261,7 @@ void MainWindow::createActions()
   optionsAction->setIcon(QIcon(":/images/configure.png"));
   connect(optionsAction, SIGNAL(triggered()), this, SLOT(on_optionsButton_clicked()));
 
-  configureAction= new QAction(tr("&Configure"), this);
+  configureAction= new QAction(tr("&Configure interface"), this);
   configureAction->setIcon(QIcon(":/images/configure-toolbars.png"));
   connect(configureAction, SIGNAL(triggered()), this, SLOT(configure()));
 
@@ -341,10 +349,10 @@ void MainWindow::on_displayOutputButton_clicked()
 void MainWindow::on_displayFileTreeViewButton_clicked()
 {
   bool isHidden=fileTreeViewDockWidget->isHidden();
-  fileTreeViewDockWidget->setVisible(isHidden);
-  dvda_author->project[AUDIO]->importFromMainTree->setVisible(isHidden);
-  dvda_author->project[VIDEO]->importFromMainTree->setVisible(isHidden);
- }
+   fileTreeViewDockWidget->setVisible(isHidden);
+    dvda_author->project[AUDIO]->importFromMainTree->setVisible(isHidden);
+    dvda_author->project[VIDEO]->importFromMainTree->setVisible(isHidden);
+}
 
 void MainWindow::on_exitButton_clicked()
 {
@@ -405,14 +413,33 @@ void MainWindow::configureOptions()
 
     closeButton = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
-    QHBoxLayout *layout=new QHBoxLayout;
+    //QHBoxLayout *layout=new QHBoxLayout;
     QVBoxLayout *vlayout=new QVBoxLayout;
 
-    FCheckBox *defaultFileManagerWidgetLayoutBox=new FCheckBox("Display file manager",  "fileManagerDisplay", "Display file manager on left panel");
-    FCheckBox *defaultProjectManagerWidgetLayoutBox=new FCheckBox("Display project",  "projectManagerDisplay", "Display project manager on right panel");
-    FCheckBox *defaultConsoleLayoutBox=new FCheckBox("Launch console as tab",  "launchConsoleAsTab", "Add tab to bottom panel on console launch");
-    FCheckBox *defaultFullScreenLayout=new FCheckBox("Launch as full screen",  "fullScreenDisplay", "Full screen on launch");
-    FCheckBox *defaultLplexActivation=new FCheckBox("Activate video zone editing using Lplex",  "activateLplex", "Activate Lplex code");
+    defaultFileManagerWidgetLayoutBox=new FCheckBox("Display file manager",
+                                                                                                                           flags::noCommandLine|flags::checked,
+                                                                                                                           "fileManagerDisplay",
+                                                                                                                           "Display file manager on left panel");
+
+    defaultProjectManagerWidgetLayoutBox=new FCheckBox("Display project manager",
+                                                                                                                                 flags::noCommandLine|flags::checked,
+                                                                                                                                 "projectManagerDisplay",
+                                                                                                                                 "Display project manager on right panel");
+
+    defaultConsoleLayoutBox=new FCheckBox("Launch console as tab",
+                                                                                                       flags::noCommandLine|flags::checked,
+                                                                                                       "launchConsoleAsTab",
+                                                                                                       "Add tab to bottom output panel on launching console");
+
+    defaultFullScreenLayout=new FCheckBox("Launch as full screen",
+                                                                                                      flags::noCommandLine|flags::unchecked,
+                                                                                                      "fullScreenDisplay",
+                                                                                                      "Display interface full screen on launch");
+
+    defaultLplexActivation=new FCheckBox("Activate video zone editing using Lplex",
+                                                                                                  flags::noCommandLine|flags::checked,
+                                                                                                  "activateLplex",
+                                                                                                  "A DVD-Video zone can be created using Lplex");
 
     vlayout->addWidget(defaultFileManagerWidgetLayoutBox);
     vlayout->addWidget(defaultProjectManagerWidgetLayoutBox);
@@ -422,10 +449,23 @@ void MainWindow::configureOptions()
 
     vlayout->addWidget(closeButton);
     contentsWidget->setLayout(vlayout);
+    connect(closeButton, &QDialogButtonBox::accepted,
+                        [=] () {
+                           settings->setValue("defaultLplexActivation", defaultLplexActivation->isChecked());
+                           settings->setValue("defaultFullScreenLayout", defaultFullScreenLayout->isChecked());
+                           settings->setValue("defaultConsoleLayoutBox", defaultConsoleLayoutBox->isChecked());
+                           settings->setValue("defaultProjectManagerWidgetLayoutBox", defaultProjectManagerWidgetLayoutBox->isChecked());
+                           settings->setValue("defaultFileManagerWidgetLayoutBox", defaultFileManagerWidgetLayoutBox->isChecked());
+                           contentsWidget->accept();
+                        }
+                  );
 
-    connect(closeButton, SIGNAL(accepted()), contentsWidget, SLOT(accept()));
-    connect(closeButton, SIGNAL(rejected()), contentsWidget, SLOT(reject()));
-    connect(closeButton, SIGNAL(accepted()), dvda_author, SLOT(saveProject()));
+    connect(closeButton, &QDialogButtonBox::rejected, contentsWidget, &QDialog::reject);
+    connect(closeButton, &QDialogButtonBox::accepted, dvda_author, &dvda::saveProject);
+    connect(defaultFileManagerWidgetLayoutBox, &FCheckBox::toggled, this, &MainWindow::on_displayFileTreeViewButton_clicked);
+    connect(defaultProjectManagerWidgetLayoutBox, &FCheckBox::toggled, dvda_author, &dvda::on_openManagerWidgetButton_clicked);
+    //connect(defaultConsoleLayoutBox, &FCheckBox::toggled, this, &MainWindow:on_displayFileTreeViewButton_clicked);
+    connect(defaultFullScreenLayout, &FCheckBox::toggled, this, &MainWindow::showMainWidget);
 
     setWindowTitle(tr("Configure dvda-author GUI"));
     setWindowIcon(QIcon(":/images/dvda-author.png"));

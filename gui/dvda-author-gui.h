@@ -19,6 +19,7 @@
 #define INFORMATION_HTML_TAG "<img src=\":/images/information.png\"/> "
 #define NAVY_HTML_TAG "<span style=\"color: navy;\"> "
 
+#define SETTINGS(X)      { if (settings->value(#X).isValid())        X->setChecked(settings->value(#X).toBool());}
 
 class QAction;
 class QDirModel;
@@ -116,6 +117,12 @@ class MainWindow : public QMainWindow
 
    QDialog *contentsWidget;
    QDialogButtonBox *closeButton;
+
+   FCheckBox *defaultFullScreenLayout,
+                        *defaultLplexActivation,
+                        *defaultConsoleLayoutBox,
+                        *defaultProjectManagerWidgetLayoutBox,
+                        *defaultFileManagerWidgetLayoutBox;
 };
 
 enum RefreshManagerFilter {
