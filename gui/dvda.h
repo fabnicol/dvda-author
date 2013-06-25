@@ -38,10 +38,12 @@ public:
 public slots:
 
    void saveProject();
-    void on_openManagerWidgetButton_clicked();
+   void on_openManagerWidgetButton_clicked(bool );
+   void on_frameTab_changed(int index);
 
 private slots:
 
+    void on_openManagerWidgetButton_clicked();
     void on_importFromMainTree_clicked();
     void on_moveUpItemButton_clicked();
     void on_moveDownItemButton_clicked();
@@ -73,7 +75,7 @@ private slots:
     void on_displayConsoleButton_clicked();
     void closeProject();
     void feedConsole();
-    void on_frameTab_changed(int index);
+
 
 private:
 

@@ -62,15 +62,17 @@ class MainWindow : public QMainWindow
 
    void on_exitButton_clicked();
    void on_displayOutputButton_clicked();
+   void on_displayFileTreeViewButton_clicked(bool);
    void on_displayFileTreeViewButton_clicked();
    void on_optionsButton_clicked();
    void showMainWidget();
+   void showMainWidget(bool);
    void configure();
    void configureOptions();
    void about();
+   void on_activate_lplex(bool);
 
   private :
-
 
    bool readFile(const QString &fileName);
    dvda *dvda_author;

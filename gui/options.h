@@ -306,7 +306,7 @@ public:
     stillPage* stillTab;
     lplexPage *lplexTab;
     static RefreshManagerFilter RefreshFlag;
-
+    QListWidget *contentsWidget;
 
 signals:
 
@@ -316,7 +316,6 @@ signals:
 private:
 
     QDialogButtonBox *closeButton;
-    QListWidget *contentsWidget;
     QStackedWidget *pagesWidget;
 
     void createIcons();

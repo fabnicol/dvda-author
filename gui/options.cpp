@@ -1598,6 +1598,7 @@ void options::createIcon(const char* path, const char* text)
     button->setText(strtext);
     button->setTextAlignment(Qt::AlignHCenter);
     button->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    if (strtext !=  "lplex") flags::lplexRank++;
 }
 
 

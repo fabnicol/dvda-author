@@ -24,8 +24,10 @@ public:
         unchecked=0x1000,
         multimodal=0x2000
     };
+    static int lplexRank;
 };
 
 enum actionType {Select, OpenFolder, BrowseFile};
+
 
 #endif // ENUMS_H

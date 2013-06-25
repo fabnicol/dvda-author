@@ -13,7 +13,7 @@
 
 
 RefreshManagerFilter dvda::RefreshFlag=NoCreate;
-
+int flags::lplexRank=0;
 
 class hash;
 
@@ -131,7 +131,7 @@ dvda::dvda()
                                 "DVD-A",                          // superordinate xml tag
                                 "DVD-Audio",                   // project manager widget on-screen tag
                                 "g",                                  // command line label
-                                dvdaCommandLine | hasListCommandLine|flags::enabled,  // command line characteristic features
+                                dvdaCommandLine|hasListCommandLine|flags::enabled,  // command line characteristic features
                                {" ", " -g "},                       // command line separators
                                {"file", "group"},                // subordinate xml tags
                                 0,                                     // rank
@@ -278,13 +278,11 @@ dvda::dvda()
   setWindowTitle(tr("dvda-author"));
   const QIcon dvdaIcon=QIcon(QString::fromUtf8( ":/images/dvda-author.png"));
   setWindowIcon(dvdaIcon);
-  on_frameTab_changed(0);
 
   /* requested initialization */
   progress2=NULL;
   progress3=NULL;
 }
-
 
 
 void dvda::on_frameTab_changed(int index)
@@ -546,17 +544,23 @@ void dvda::on_helpButton_clicked()
 
 
 
-void dvda::on_openManagerWidgetButton_clicked()
+void dvda::on_openManagerWidgetButton_clicked(bool isHidden)
 {
+
   if (RefreshFlag == NoCreate)
     {
       RefreshFlag=Create;
       refreshProjectManager();
 
     }
+  managerWidget->setVisible(isHidden);
+ }
 
-  managerWidget->setVisible(managerWidget->isHidden());
+void dvda::on_openManagerWidgetButton_clicked()
+{
+    on_openManagerWidgetButton_clicked(managerWidget->isHidden());
 }
+
 
 void dvda::showEvent(QShowEvent *)
 {

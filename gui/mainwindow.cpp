@@ -42,6 +42,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 // createFontDataBase looks to be fast enough to be run on each launch.
 // Should it slow down application launch on some platform, one option could be to launch it just once then on user demand
 
+
+
 void createFontDataBase()
 {
     QFontDatabase database;
@@ -135,8 +137,8 @@ MainWindow::MainWindow()
   addDockWidget(Qt::LeftDockWidgetArea, fileTreeViewDockWidget);
 
   configureOptions();
-  Abstract::refreshOptionFields();
 
+  Abstract::refreshOptionFields();
 
   SETTINGS(defaultLplexActivation)
   SETTINGS(defaultFullScreenLayout)
@@ -192,7 +194,7 @@ void MainWindow::createMenus()
  fileMenu = menuBar()->addMenu("&File");
  editMenu = menuBar()->addMenu("&Edit");
  processMenu = menuBar()->addMenu("&Process");
- optionsMenu = menuBar()->addMenu("&Options");
+ optionsMenu = menuBar()->addMenu("&Configure");
  aboutMenu = menuBar()->addMenu("&Help");
 
  fileMenu->addAction(openAction);
@@ -244,7 +246,7 @@ void MainWindow::createActions()
   closeAction->setIcon(QIcon(":/images/document-close.png"));
   connect(closeAction, SIGNAL(triggered()), dvda_author, SLOT(closeProject()));
 
-  burnAction = new QAction(tr("&Burn DVD-Audio/Video files to disc"), this);
+  burnAction = new QAction(tr("&Burn files to disc"), this);
   burnAction->setIcon(QIcon(":/images/burn.png"));
   connect(burnAction, SIGNAL(triggered()), dvda_author, SLOT(on_cdrecordButton_clicked()));
 
@@ -257,7 +259,7 @@ void MainWindow::createActions()
   decodeAction->setIcon(QIcon(":/images/decode.png"));
   connect(decodeAction, SIGNAL(triggered()), dvda_author, SLOT(extract()));
 
-  optionsAction = new QAction(tr("&Options"), this);
+  optionsAction = new QAction(tr("&Processing options"), this);
   optionsAction->setIcon(QIcon(":/images/configure.png"));
   connect(optionsAction, SIGNAL(triggered()), this, SLOT(on_optionsButton_clicked()));
 
@@ -346,12 +348,16 @@ void MainWindow::on_displayOutputButton_clicked()
  }
 
 
+void MainWindow::on_displayFileTreeViewButton_clicked(bool isHidden)
+{
+   fileTreeViewDockWidget->setVisible(isHidden);
+   dvda_author->on_frameTab_changed(dvda_author->mainTabWidget->currentIndex());
+ }
+
 void MainWindow::on_displayFileTreeViewButton_clicked()
 {
   bool isHidden=fileTreeViewDockWidget->isHidden();
-   fileTreeViewDockWidget->setVisible(isHidden);
-    dvda_author->project[AUDIO]->importFromMainTree->setVisible(isHidden);
-    dvda_author->project[VIDEO]->importFromMainTree->setVisible(isHidden);
+  on_displayFileTreeViewButton_clicked(isHidden);
 }
 
 void MainWindow::on_exitButton_clicked()
@@ -460,23 +466,51 @@ void MainWindow::configureOptions()
                         }
                   );
 
+    /* note on connection syntax
+     * Here the new Qt5 connection syntax should be used with care and disregarded when both an action button and an FCheckBox activate a slot as the slots
+     * are overloaded (which could possibly be rewritten) and a) the action button uses the argumentless slot whilst
+     * b) the boolean version of slots must be used by the FcheckBox. The new Qt5 syntax cannot work this out as it does not manage overloading. */
+
     connect(closeButton, &QDialogButtonBox::rejected, contentsWidget, &QDialog::reject);
     connect(closeButton, &QDialogButtonBox::accepted, dvda_author, &dvda::saveProject);
-    connect(defaultFileManagerWidgetLayoutBox, &FCheckBox::toggled, this, &MainWindow::on_displayFileTreeViewButton_clicked);
-    connect(defaultProjectManagerWidgetLayoutBox, &FCheckBox::toggled, dvda_author, &dvda::on_openManagerWidgetButton_clicked);
+    connect(defaultFileManagerWidgetLayoutBox, SIGNAL(toggled(bool)), this, SLOT(on_displayFileTreeViewButton_clicked(bool)));
+    connect(defaultProjectManagerWidgetLayoutBox, SIGNAL(toggled(bool)), dvda_author, SLOT(on_openManagerWidgetButton_clicked(bool)));
+    connect(defaultLplexActivation, &FCheckBox::toggled, this, &MainWindow::on_activate_lplex);
     //connect(defaultConsoleLayoutBox, &FCheckBox::toggled, this, &MainWindow:on_displayFileTreeViewButton_clicked);
-    connect(defaultFullScreenLayout, &FCheckBox::toggled, this, &MainWindow::showMainWidget);
+    connect(defaultFullScreenLayout, SIGNAL(toggled(bool)), this, SLOT(showMainWidget(bool)));
 
     setWindowTitle(tr("Configure dvda-author GUI"));
     setWindowIcon(QIcon(":/images/dvda-author.png"));
 }
 
 
-void MainWindow::showMainWidget()
+
+void MainWindow::on_activate_lplex(bool active)
 {
-  Qt::WindowStates full=this->windowState() ^ Qt::WindowFullScreen;
-  setWindowState(full);
-  if (full) displayAction->setIcon(QIcon(":/images/show-normal.png"));
-  else displayAction->setIcon(QIcon(":/images/show-maximized.png"));
+    dvda_author->mainTabWidget->setTabEnabled(VIDEO, active);
+    dialog->contentsWidget->item(flags::lplexRank)->setHidden(!active);
+    dialog->contentsWidget->setCurrentRow(0);
+}
+
+void MainWindow::showMainWidget(bool full)
+{
+  if (full)
+  {
+      setWindowState(Qt::WindowFullScreen);
+      displayAction->setIcon(QIcon(":/images/show-normal.png"));
+  }
+  else
+  {
+      setWindowState(Qt::WindowNoState);
+      displayAction->setIcon(QIcon(":/images/show-maximized.png"));
+  }
 
 }
+
+void MainWindow::showMainWidget()
+{
+      showMainWidget(this->windowState() != Qt::WindowFullScreen);
+}
+
+
+
