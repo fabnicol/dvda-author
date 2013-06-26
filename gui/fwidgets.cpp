@@ -243,12 +243,12 @@ FListWidget::FListWidget(const QString& hashKey,
     /* if a hash has been activated, build the terms-translation hash table so that translated terms
    * can be translated back to original terms later on, so as to get the correct command line string chunks */
 
-    if ((terms == NULL) || (translation == NULL)) listWidgetTranslationHash=NULL;
+    if ((terms == NULL) || (translation == NULL))
+        listWidgetTranslationHash=NULL;
     else
     {
         listWidgetTranslationHash=new QHash<QString, QString>;
         createHash(listWidgetTranslationHash, translation, terms);
-
     }
 
     connect(currentListWidget, SIGNAL(currentRowChanged(int)), SIGNAL(is_signalList_changed(int)));
@@ -288,7 +288,9 @@ void FListWidget::setWidgetFromXml(const FStringList &s)
     {
         int size=s.size()-1;
         if (hash::FStringListHash.contains(hashKey))
+        {
             *hash::FStringListHash[hashKey]=s;
+        }
         else
             return;
         /* add as many groups as there are QStringLists in excess of 1 */

@@ -204,7 +204,7 @@ void dvda::DomParser(QIODevice* file)
 
   if ((dvda::RefreshFlag&0xF000) == UpdateTabs)
   {
-      Q(xmlDataWrapper[0].join({", ", ";"}))
+
       assignVariables(xmlDataWrapper);
 
       // adds extra information to main window and sets alternating row colors
