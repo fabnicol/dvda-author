@@ -630,7 +630,8 @@ void dvda::deleteGroup()
   updateIndexInfo();
   uint rank=(uint) project[isVideo]->getRank();
   inputSizeCount-=inputSize[isVideo][currentIndex];
-  fileSizeDataBase[isVideo][currentIndex].clear();
+  if ((uint) fileSizeDataBase[isVideo].size() > currentIndex)
+      fileSizeDataBase[isVideo][currentIndex].clear();
 
   if (rank > 0)
     {
