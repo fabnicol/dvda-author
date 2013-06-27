@@ -3,6 +3,9 @@
 
 #include "fstring.h"
 #include "dvda-author-gui.h"
+#include "flistframe.h"
+
+class MainWindow;
 
 class dvda : public common
 {
@@ -21,7 +24,6 @@ public:
     QTabWidget  *mainTabWidget;
     QTreeWidget *managerWidget;
     QTreeView *fileTreeView;
-    QString projectFile;
     QString projectName;
     QString curFile;
     QString groupType;
@@ -40,6 +42,7 @@ public slots:
    void saveProject();
    void on_openManagerWidgetButton_clicked(bool );
    void on_frameTab_changed(int index);
+   void on_openProjectButton_clicked();
 
 private slots:
 
@@ -49,7 +52,6 @@ private slots:
     void on_moveDownItemButton_clicked();
     void on_retrieveItemButton_clicked();
     void on_cdrecordButton_clicked();
-    void on_openProjectButton_clicked();
     void on_clearOutputTextButton_clicked();
     void remove();
     void extract();

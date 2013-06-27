@@ -48,6 +48,7 @@ bool addStringToListWidget(QString , int );
 void initializeWidgetContainer()
 {
     widgetContainer = QList<QListWidget*>() << fileListWidget->currentListWidget;
+    fileListWidget->rank=0;
 }
 
 void clearWidgetContainer()

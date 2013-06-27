@@ -2,9 +2,7 @@
 #define LPLEX_H
 
 
-#include <QtGui>
 #include "common.h"
-#include "dvda-author-gui.h"
 
 class lplexPage : public common
 {

@@ -1,12 +1,10 @@
-
+#include <QtGui>
 #include <QFile>
 
 #include "dvda.h"
 #include "forms.h"
 #include "options.h"
 #include "videoplayer.h"
-#include "browser.h"
-#include "dvda-author-gui.h"
 
 #define v(X) *FString(#X)
 
@@ -150,7 +148,8 @@ optionsPage::optionsPage()
 {
 
     mainBox = new QGroupBox(tr("Disc options"));
-    mkisofsButton = new QToolDirButton(tr("Select or type in .iso filename for disc image.\nThis file will be used for disc burning."));
+    mkisofsButton = new QToolButton;
+    mkisofsButton->setToolTip(tr("Select or type in .iso filename for disc image.\nThis file will be used for disc burning."));
 
     QLabel *mkisofsLabel = new QLabel(tr("Path to ISO file:"));
     mkisofsLineEdit = new FLineEdit(tempdir+QDir::separator()+"dvd.iso",
@@ -550,8 +549,10 @@ audioMenuPage::audioMenuPage(dvda* parent, standardPage* standardTab)
                                       "blankscreen");
 
     QLabel *audioMenuLabel = new QLabel(tr("Menu background"));
-    audioMenuButton = new QToolDirButton(tr("Select customized menu background image (*.png)"));
-    openAudioMenuButton = new QToolDirButton(tr("Open menu background file in image viewer"), actionType::OpenFolder);
+    audioMenuButton = new QPushButton(tr("Browse"));
+    audioMenuButton->setToolTip(tr("Select customized menu background image (*.png)"));
+    openAudioMenuButton = new QPushButton(tr("Open"));
+    openAudioMenuButton ->setToolTip(tr("Open menu background file in image viewer"));
 
     setWhatsThisText(slidesBox, 12, 20);
 
@@ -755,12 +756,14 @@ videoMenuPage::videoMenuPage()
                                         "videodir");
 
     QLabel *videoImportLabel = new QLabel(tr("Video directory"));
-    QToolDirButton *videoImportButton;
-
-    videoImportButton = new QToolDirButton(tr("Import DVD-Video directory to project"));
+    QToolButton *videoImportButton;
+    videoImportButton = new QToolButton;
+    videoImportButton->setToolTip(tr("Import DVD-Video directory to project"));
     videoImportButton->setFixedWidth(buttonwidth);
 
-    QToolDirButton *openVideoImportButton = new QToolDirButton(tr("Open DVD-Video directory "), actionType::OpenFolder);
+    QPushButton *openVideoImportButton;
+    openVideoImportButton = new QPushButton(tr("Open"));
+    openVideoImportButton ->setToolTip(tr("Open DVD-Video directory "));
     openVideoImportButton->setFixedWidth(buttonwidth);
 
     videoImportCheckBox= new FCheckBox("Import DVD-Video",
@@ -782,7 +785,8 @@ videoMenuPage::videoMenuPage()
     videoImportBox->setLayout(videoImportLayout);
 
     QLabel *videoMenuImportLabel = new QLabel(tr("Authored DVD-Video menu"));
-    QToolDirButton *videoMenuImportButton = new QToolDirButton(tr("Import DVD-Video menu"));
+    QToolButton *videoMenuImportButton = new QToolButton;
+    videoMenuImportButton->setToolTip(tr("Import DVD-Video menu"));
     videoMenuImportButton->setFixedWidth(buttonwidth);
 
     videoMenuImportLineEdit = new FLineEdit(tempdir+QDir::separator()+QString::fromUtf8("VIDEO_TS/VIDEO_TS.VOB"),
@@ -887,7 +891,8 @@ videolinkPage::videolinkPage()
                                       "Path to VIDEO_TS linked to",
                                       "V");
 
-    videoZoneButton = new  QToolDirButton(tr("Select customized menu background image (*.png)"));
+    videoZoneButton = new QPushButton(tr("Browse"));
+    videoZoneButton->setToolTip(tr("Select customized menu background image (*.png)"));
 
     videolinkCheckBox = new FCheckBox("Link Audio zone\nto Video zone",
                                       "videolink",
@@ -967,16 +972,17 @@ outputPage::outputPage(options* parent)
 {
     QGroupBox *logGroupBox = new QGroupBox(tr("dvda-author log parameters"));
     QGridLayout *logLayout=new QGridLayout;
-    logButton = new QToolDirButton(tr("Browse or type in filename for dvda-author log file."));
+    logButton = new QPushButton(tr("&Browse"));
+    logButton->setFixedWidth(110);
+    logButton->setToolTip(tr("Browse or type in filename for dvda-author log file."));
 
+    openLogButton = new QPushButton(tr("&Open log"));
+    openLogButton->setFixedWidth(110);
+    openLogButton->setToolTip(tr("Open log text file in system-selected text editor."));
 
-    openLogButton = new QToolDirButton(tr("  &Read log"), actionType::BrowseFile);
-
-    openLogButton->setToolTip(tr("Open log text file in text editor."));
-
-    openHtmlLogButton = new QToolDirButton(tr("  Browse &Html log"), actionType::BrowseFile);
-
-    openHtmlLogButton->setToolTip(tr("Open log.html file in browser."));
+    openHtmlLogButton = new QPushButton(tr("Open &Html log"));
+    openHtmlLogButton->setFixedWidth(110);
+    openHtmlLogButton->setToolTip(tr("Open log.html file in system-selected brower."));
 
     debugBox = new FCheckBox(tr("Debugging-level verbosity"),
                              flags::disabled|flags::dvdaCommandLine,
@@ -1019,24 +1025,27 @@ outputPage::outputPage(options* parent)
     setWhatsThisText(logBox, 99,101);
 
     logLayout->addWidget(logBox,1,1);
-    logLayout->addWidget(logButton,1,1,1,1,Qt::AlignRight);
-    logLayout->addWidget(openLogButton,2,1,1,1,Qt::AlignRight);
+    logLayout->addWidget(logButton,1,3,1,1);
+    logLayout->addWidget(openLogButton,2,3,1,1);
     logLayout->addWidget(debugBox,3,1);
     logLayout->addWidget(veryverboseBox,4,1);
     logLayout->addWidget(htmlFormatBox,5,1);
-    logLayout->addWidget(openHtmlLogButton,5,1,1,1,Qt::AlignRight);
-    logLayout->addWidget(logrefreshBox,6,1);
+    logLayout->addWidget(logrefreshBox,7,1);
+    logLayout->addWidget(openHtmlLogButton,6,3,1,1);
 
     logLayout->setRowMinimumHeight(0,20);
     logLayout->setRowMinimumHeight(5,20);
-    logLayout->setRowMinimumHeight(6,30);
+    logLayout->setRowMinimumHeight(7,30);
     logLayout->setColumnMinimumWidth(0,30);
-    logLayout->setColumnMinimumWidth(2,300);
+    logLayout->setColumnMinimumWidth(2,20);
+    logLayout->setColumnMinimumWidth(4,180);
+
     logGroupBox->setLayout(logLayout);
 
     targetDirLabel = new QLabel(tr("Output directory"));
-    targetDirButton = new QToolDirButton(tr("Browse output directory for DVD-Audio disc files."));
-    openTargetDirButton = new QToolDirButton(tr("Open output directory for DVD-Audio disc files."), actionType::OpenFolder);
+    targetDirButton = new QToolButton;
+    openTargetDirButton = new QPushButton(tr("Open"));
+
     targetDirLineEdit = new FLineEdit(tempdir+QDir::separator()+"output", "targetDir", "DVD-A file directory", "o");
 
     Q2ListWidget *createDVDFilesEnabledObjects= new Q2ListWidget;
@@ -1084,7 +1093,12 @@ outputPage::outputPage(options* parent)
 
     setWhatsThisText(createDVDFilesRadioBox, 104, 105);
 
+    targetDirButton->setToolTip(tr("Browse output directory for DVD-Audio disc files."));
+
+    openTargetDirButton->setToolTip(tr("Open output directory for DVD-Audio disc files."));
+
     QHBoxLayout *targetLayout = new QHBoxLayout;
+
     targetLayout->addWidget(createDVDFilesRadioBox);
     targetLayout->addStretch(4);
 
@@ -1094,28 +1108,32 @@ outputPage::outputPage(options* parent)
     targetDirLineEditLayout->addWidget(targetDirButton, 1,2);
     targetDirLineEditLayout->addWidget(openTargetDirButton, 1,3, Qt::AlignLeft);
     targetDirLineEditLayout->setColumnMinimumWidth(0,150);
+    targetDirLineEditLayout->setColumnMinimumWidth(4,60);
 
     QVBoxLayout *mainTargetLayout=new QVBoxLayout;
     mainTargetLayout->addLayout(targetLayout);
+    mainTargetLayout->addStretch(2);
     mainTargetLayout->addLayout(targetDirLineEditLayout);
+    mainTargetLayout->addStretch();
 
     QGroupBox *outputGroupBox = new QGroupBox(tr("DVD-Audio disc files"));
     outputGroupBox->setLayout(mainTargetLayout);
 
     QLabel* workDirLabel = new QLabel(tr("Working directory"));
-    QToolDirButton *openWorkDirButton = new QToolDirButton;
+    QToolButton *openWorkDirButton = new QToolButton;
     workDirLineEdit = new FLineEdit(QDir::currentPath (), "workDir", "Working directory", "workdir");
     workDirLabel->setBuddy(workDirLineEdit);
 
     QLabel* tempDirLabel = new QLabel(tr("Temporary directory"));
     tempDirLineEdit = new FLineEdit(common::tempdir, "tempDir", "Temporary directory", "tempdir");
     tempDirLabel->setBuddy(tempDirLineEdit);
-    QToolDirButton *openTempDirButton = new QToolDirButton;
+    QToolButton *openTempDirButton = new QToolButton;
 
     QLabel* binDirLabel = new QLabel(tr("Binary directory"));
-    QToolDirButton *openBinDirButton = new QToolDirButton;
+    QToolButton *openBinDirButton = new QToolButton;
     binDirLineEdit = new FLineEdit(QDir::currentPath ()+QDir::separator()+"bindir", "binDir", "Binary directory", "bindir");
     binDirLabel->setBuddy(binDirLineEdit);
+
 
     QGroupBox *auxdirGroupBox = new QGroupBox(tr("Auxiliary directories"));
     QGridLayout *auxdirLayout = new QGridLayout;
@@ -1132,6 +1150,7 @@ outputPage::outputPage(options* parent)
     auxdirLayout->addWidget(binDirLineEdit, 3,1);
     auxdirLayout->addWidget(openBinDirButton, 3,2);
 
+    auxdirLayout->setColumnMinimumWidth(4,60);
     auxdirLayout->setColumnMinimumWidth(0,150);
     auxdirGroupBox->setLayout(auxdirLayout);
 
@@ -1175,21 +1194,27 @@ void outputPage::on_openBinDirButton_clicked()
 
 void outputPage::on_logButton_clicked()
 {
-    logPath = QFileDialog::getSaveFileName(this,  tr("Set log file"), "dvda-author.log",tr("Log files (*.log)"));
+    FString logPath = QFileDialog::getSaveFileName(this,  tr("Set log file"), "dvda-author.log",tr("Log files (*.log)"));
     if (logPath.isFilled()) htmlLogPath = logPath+".html";
 }
 
 
 void outputPage::on_openLogButton_clicked()
 {
-    if (!QFileInfo(logPath).exists()) return;
-    browser::showPage(QUrl::fromLocalFile(logPath));
+    if ((v(log)).isFalse()) return;
+    if ((v(logPath)).isEmpty()) return;
+    QUrl url("file:///"+hash::qstring["logPath"]);
+    QDesktopServices::openUrl(url);
 }
 
 void outputPage::on_openHtmlLogButton_clicked()
 {
-      if (!QFileInfo(htmlLogPath).exists()) return;
-      browser::showPage(QUrl::fromLocalFile(htmlLogPath));
+    if ((v(htmlFormat)).isFalse()) return;
+    if ((v(logPath)).isEmpty()) return;
+    if (!QFileInfo(htmlLogPath).exists()) return;
+
+    QUrl url("file:///"+htmlLogPath);
+    QDesktopServices::openUrl(url);
 }
 
 void outputPage::on_openTargetDirButton_clicked()
@@ -1501,7 +1526,7 @@ void stillPage::on_nextStep_clicked()
 void stillPage::refreshApplyEffectsIcon()
 {
 
-    if (hash::FStringListHash[slides->getHashKey()][slides->mainTabWidget->currentIndex()].isEmpty())
+    if (hash::FStringListHash[slides->hashKey()][slides->mainTabWidget->currentIndex()].isEmpty())
         applyEffectsToOneFile->setIcon(applyEffectsToOneFileUntoggledIcon);
     else
         applyEffectsToOneFile->setIcon(applyEffectsToOneFileToggledIcon);
@@ -1572,9 +1597,8 @@ options::options(dvda* parent)
 
     setWindowTitle(tr("Options"));
     setWindowIcon(QIcon(":/images/dvda-author.png"));
-
+    refreshOptionFields();
 }
-
 
 /* implement a global clear() function for the FStringList of data in an FListFrame ; it will be used as dvda::clearData() too. Usage below is faulty. */
 
@@ -1599,7 +1623,6 @@ void options::createIcon(const char* path, const char* text)
     button->setText(strtext);
     button->setTextAlignment(Qt::AlignHCenter);
     button->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-    if (strtext !=  "lplex") flags::lplexRank++;
 }
 
 
@@ -1635,6 +1658,15 @@ void options::changePage(QListWidgetItem *current, QListWidgetItem *previous)
 }
 
 
+void options::refreshOptionFields()
+{
+
+    QListIterator<FAbstractWidget*>  j(Abstract::abstractWidgetList);
+
+    while (j.hasNext())
+        j.next()->refreshWidgetDisplay();
+
+}
 
 
 void options::closeOptions()

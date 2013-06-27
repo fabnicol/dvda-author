@@ -24,23 +24,5 @@ public:
         unchecked=0x1000,
         multimodal=0x2000
     };
-    static int lplexRank;
 };
-
-enum actionType {Select, OpenFolder, BrowseFile};
-
-enum RefreshManagerFilter {
-  NoCreate=0x0000,
-  Create=0x0001,
-  UpdateTree=0x0010,
-  SaveTree=0x0100,
-  UpdateTabs=0x1000,
-  SaveAndUpdateTree=0x0110,
-  RefreshAll=0x1010,
-  CreateTreeAndRefreshAll=0x1011,
-  CreateSaveAndUpdateTree=0x0111,
-  UpdateOptionTabs=0x2000
-};
-
-
 #endif // ENUMS_H

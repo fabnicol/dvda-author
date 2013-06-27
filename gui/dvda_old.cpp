@@ -1,4 +1,4 @@
-
+#include <QtGui>
 #include <QFile>
 #include <sys/stat.h>
 #include <errno.h>
@@ -6,14 +6,14 @@
 #include <QtXml>
 #include <QSettings>
 
-#include "dvda.h"
+#include "dvda-author-gui.h"
 #include "options.h"
 #include "browser.h"
 #include "fstring.h"
 
 
 RefreshManagerFilter dvda::RefreshFlag=NoCreate;
-int flags::lplexRank=0;
+
 
 class hash;
 
@@ -23,6 +23,7 @@ void dvda::initialize()
   adjustSize();
 
   myMusic=0;
+  rank[0]=rank[1]=0;
   maxRange=0;
 
   startProgressBar=startProgressBar2=startProgressBar3=0;
@@ -131,7 +132,7 @@ dvda::dvda()
                                 "DVD-A",                          // superordinate xml tag
                                 "DVD-Audio",                   // project manager widget on-screen tag
                                 "g",                                  // command line label
-                                dvdaCommandLine|hasListCommandLine|flags::enabled,  // command line characteristic features
+                                dvdaCommandLine | hasListCommandLine|flags::enabled,  // command line characteristic features
                                {" ", " -g "},                       // command line separators
                                {"file", "group"},                // subordinate xml tags
                                 0,                                     // rank
@@ -214,8 +215,8 @@ dvda::dvda()
   connect(&process2, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(process2Finished(int, QProcess::ExitStatus)));
   connect(&process2, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(on_cdrecordButton_clicked()));
   connect(&process3, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(process3Finished(int, QProcess::ExitStatus)));
-  connect(project[AUDIO]->importFromMainTree, SIGNAL(clicked()), this, SLOT(on_importFromMainTree_clicked()));
-  connect(project[VIDEO]->importFromMainTree, SIGNAL(clicked()), this, SLOT(on_importFromMainTree_clicked()));
+  connect(project[AUDIO]->importFromMainTree, SIGNAL(clicked()), this, SLOT(on_rightButton_clicked()));
+  connect(project[VIDEO]->importFromMainTree, SIGNAL(clicked()), this, SLOT(on_rightButton_clicked()));
   connect(project[AUDIO]->moveUpItemButton, SIGNAL(clicked()), this, SLOT(on_moveUpItemButton_clicked()));
   connect(project[VIDEO]->moveUpItemButton, SIGNAL(clicked()), this, SLOT(on_moveUpItemButton_clicked()));
   connect(project[AUDIO]->moveDownItemButton, SIGNAL(clicked()), this, SLOT(on_moveDownItemButton_clicked()));
@@ -278,11 +279,13 @@ dvda::dvda()
   setWindowTitle(tr("dvda-author"));
   const QIcon dvdaIcon=QIcon(QString::fromUtf8( ":/images/dvda-author.png"));
   setWindowIcon(dvdaIcon);
+  on_frameTab_changed(0);
 
   /* requested initialization */
   progress2=NULL;
   progress3=NULL;
 }
+
 
 
 void dvda::on_frameTab_changed(int index)
@@ -334,6 +337,7 @@ uint dvda::addStringToListWidget(QString filepath)
 
   QFileInfo fileInfo(filepath);
   quint64 size=(quint64) fileInfo.size();
+  rowFileSize[isVideo][currentIndex].append(size);
   inputSize[isVideo][currentIndex] += size;
   inputSizeCount += size;
 
@@ -355,22 +359,30 @@ void dvda::refreshRowPresentation()
 void dvda::refreshRowPresentation(uint ZONE, uint j)
 {
   QString localTag=(ZONE == AUDIO)? "DVD-A" : "DVD-V";
+
   QPalette palette;
   palette.setColor(QPalette::AlternateBase,QColor("silver"));
   QFont font=QFont("Courier",10);
 
-  project[ZONE]->fileListWidget->currentListWidget=project[ZONE]->getWidgetContainer().at(j);
-  project[ZONE]->fileListWidget->currentListWidget->setPalette(palette);
-  project[ZONE]->fileListWidget->currentListWidget->setAlternatingRowColors(true);
-  project[ZONE]->fileListWidget->currentListWidget->setFont(font);
+  project[isVideo]->fileListWidget->currentListWidget=qobject_cast<QListWidget*>(project[isVideo]->mainTabWidget->currentWidget());
+  project[isVideo]->fileListWidget->currentListWidget->setPalette(palette);
+  project[isVideo]->fileListWidget->currentListWidget->setAlternatingRowColors(true);
+  project[isVideo]->fileListWidget->currentListWidget->setFont(font);
 
   for (int r=0; r < hash::FStringListHash[localTag]->at(j).size(); r++ )
     {
+      //resetting text
+#ifdef DEBUG
+      if (project[ZONE]->fileListWidget->currentListWidget->item(r) == NULL)
+      {
+          Q("item " + QString::number(r) + " has not been allocated yet.");
+          return;
+      }
+#endif
 
       project[ZONE]->fileListWidget->currentListWidget->item(r)->setText(hash::FStringListHash.value(localTag)->at(j).at(r).section('/',-1));
-      //project[ZONE]->fileListWidget->currentListWidget->item(r)->setText("a");
       project[ZONE]->fileListWidget->currentListWidget->item(r)->setTextColor(QColor("navy"));
-      project[ZONE]->fileListWidget->currentListWidget->item(r)->setToolTip(fileSizeDataBase[ZONE].at(j).at(r)+" MB");
+      project[ZONE]->fileListWidget->currentListWidget->item(r)->setToolTip(QString::number(rowFileSize[ZONE][j][r]/1024)+" KB");
     }
 }
 
@@ -457,22 +469,22 @@ void dvda::closeProject()
 
   for (int ZONE : {AUDIO, VIDEO})
   {
-    for  (int i = project[ZONE]->getRank(); i >=0;   i--)
+    for  (int i = project[ZONE]->fileListWidget->rank; i >=0;   i--)
     {
       project[ZONE]->mainTabWidget->removeTab(i+1);
     }
 
-    project[ZONE]->setRank(0);
+    project[ZONE]->fileListWidget->rank=0;
   }
 
   for (int ZONE : {AUDIO, VIDEO})
   {
-    for  (int i = project[ZONE]->getRank(); i >=0;   i--)
+    for  (int i = project[ZONE]->fileListWidget->rank; i >=0;   i--)
     {
       project[ZONE]->mainTabWidget->removeTab(i+1);
     }
 
-    project[ZONE]->setRank(0);
+    project[ZONE]->fileListWidget->rank=0;
   }
 
 }
@@ -482,19 +494,17 @@ void dvda::clearProjectData()
   RefreshFlag = (RefreshFlag == NoCreate)? CreateTreeAndRefreshAll : RefreshAll ;
   memset(inputSize, 0, 2*99*sizeof(quint64));
 
-
   for (int ZONE : {AUDIO, VIDEO})
     {
-      for (int i=0; i <= project[ZONE]->getRank(); i++)
+      for (uint i=0; i <= rank[ZONE]; i++)
         {
           project[ZONE]->on_clearList_clicked(i);
+          rowFileSize[ZONE][i].clear();
         }
 
       project[ZONE]->signalList->clear();
       project[ZONE]->clearWidgetContainer();
-      fileSizeDataBase[ZONE].clear();
     }
-
 
   inputSizeCount=inputTotalSize=0;
 
@@ -525,7 +535,6 @@ void dvda::clearProjectData()
         }
     }
 
-
   for (int ZONE : {AUDIO, VIDEO})
   {
       project[ZONE]->embeddingTabWidget->setCurrentIndex(0);
@@ -546,23 +555,17 @@ void dvda::on_helpButton_clicked()
 
 
 
-void dvda::on_openManagerWidgetButton_clicked(bool isHidden)
+void dvda::on_openManagerWidgetButton_clicked()
 {
-
   if (RefreshFlag == NoCreate)
     {
       RefreshFlag=Create;
       refreshProjectManager();
 
     }
-  managerWidget->setVisible(isHidden);
- }
 
-void dvda::on_openManagerWidgetButton_clicked()
-{
-    on_openManagerWidgetButton_clicked(managerWidget->isHidden());
+  managerWidget->setVisible(managerWidget->isHidden());
 }
-
 
 void dvda::showEvent(QShowEvent *)
 {
@@ -619,41 +622,47 @@ void dvda::addGroup()
 {
   updateIndexInfo();
 
-  if (project[isVideo]->getRank() >=  9*(int) isVideo*10+9)
+  addGroup(rank[isVideo]+1, isVideo);
+ }
+
+void dvda::addGroup(int group_index, int isVideo)
+{
+
+  if (group_index >= 9*isVideo*10+9)
    {
       QMessageBox::information(this, tr("Group"), tr(QString("A maximum of %1 "+ groupType + "s can be created.").toUtf8()).arg(QString::number(9*isVideo*10+9)));
       return;
     }
 
+  rank[isVideo]++;
 }
 
 void dvda::deleteGroup()
 {
   updateIndexInfo();
-  uint rank=(uint) project[isVideo]->getRank();
-  inputSizeCount-=inputSize[isVideo][currentIndex];
-  if ((uint) fileSizeDataBase[isVideo].size() > currentIndex)
-      fileSizeDataBase[isVideo][currentIndex].clear();
 
-  if (rank > 0)
+  inputSizeCount-=inputSize[isVideo][currentIndex];
+  rowFileSize[isVideo][currentIndex].clear();
+
+  if (rank[isVideo] > 0)
     {
-      if (currentIndex < rank)
+      if (currentIndex < rank[isVideo])
         {
 
-          for (unsigned j=currentIndex; j < rank ; j++)
+          for (unsigned j=currentIndex; j < rank[isVideo] ; j++)
             {
-              fileSizeDataBase[isVideo][j]=fileSizeDataBase[isVideo][j+1];
+              rowFileSize[isVideo][j]=rowFileSize[isVideo][j+1];
               inputSize[isVideo][j]=inputSize[isVideo][j+1];
             }
         }
+      rank[isVideo]--;
     }else
     {
       inputSize[isVideo][currentIndex]=0;
     }
 
 
-  if (currentIndex) outputTextEdit->append(QString(MSG_HTML_TAG "Deleted "+groupType+" %1, total size: %2\n").
-                                                                           arg(QString::number(currentIndex+1), QString::number(inputSizeCount)));
+  if (currentIndex) outputTextEdit->append(QString(MSG_HTML_TAG "Deleted "+groupType+" %1, total size: %2\n").arg(QString::number(currentIndex+1), QString::number(inputSizeCount)));
 
   saveProject();
 }
@@ -687,7 +696,7 @@ void dvda::updateIndexInfo()
   // row = -1 if nothing selected
 }
 
-void dvda::on_importFromMainTree_clicked()
+void dvda::on_rightButton_clicked()
 {
   addSelectedFileToProject();
 }
@@ -697,7 +706,7 @@ void dvda::on_moveUpItemButton_clicked()
 {
   updateIndexInfo();
   if (row == 0) return;
-  fileSizeDataBase[isVideo][currentIndex].swap(row, row-1);
+  rowFileSize[isVideo][currentIndex].swap(row, row-1);
 
   RefreshFlag=SaveAndUpdateTree;
   saveProject();
@@ -711,7 +720,7 @@ void dvda::on_moveDownItemButton_clicked()
   if (row < 0) return;
   if (row == project[isVideo]->fileListWidget->currentListWidget->count() -1) return;
 
-  fileSizeDataBase[isVideo][currentIndex].swap(row, row+1);
+  rowFileSize[isVideo][currentIndex].swap(row, row+1);
 
   RefreshFlag=SaveAndUpdateTree;
   saveProject();
@@ -757,6 +766,8 @@ void dvda::addSelectedFileToProject()
 
   saveProject();
   showFilenameOnly();
+ // Q("signal: " + project[AUDIO]->signalList->join(" "))
+
 }
 
 
@@ -767,7 +778,7 @@ void dvda::on_retrieveItemButton_clicked()
 
   if (row <0) return;
 
-  quint64 size=(quint64) fileSizeDataBase[isVideo][currentIndex].takeAt(row).toInt();
+  quint64 size=rowFileSize[isVideo][currentIndex].takeAt(row);
 
   inputSize[isVideo][currentIndex]-=size;
   inputSizeCount-=size;
@@ -1244,48 +1255,54 @@ void dvda::saveProject()
 
 /* Remember that the first two elements of the FAvstractWidgetList are DVD-A and DVD-V respectively, which cuts down parsing time */
 
+#define createXmlChunk(L, hK, widgetDepth, xml)  L << "  <" << hK << " widgetDepth=\""<< widgetDepth << "\">\n   "\
+                                                                                << xml << "\n  </" << hK << ">\n";
 
-
-inline QString dvda::makeParserString(int start, int end)
+QString  dvda::makeDataString()
 {
+  QStringList L=QStringList();
 
-    QStringList L=QStringList();
+  for (int ZONE : {AUDIO, VIDEO})
+    {
+       FAbstractWidget *DVD_ZONE=Abstract::abstractWidgetList.at(ZONE);
+      QString hK=DVD_ZONE->getHashKey();
+      QString xml=DVD_ZONE->setXmlFromWidget().toQString();
+      QString widgetDepth=DVD_ZONE->getDepth();
 
-    for (int j=start; j <=end; j++)
-      {
+      createXmlChunk(L, hK, widgetDepth, xml)
 
-        FAbstractWidget* widget=Abstract::abstractWidgetList.at(j);
-        QString hK=widget->getHashKey();
+    }
 
-        if  (widget->getHashKey().isEmpty())
-          {
-            QMessageBox::warning(this, tr("Error"), tr(".dvp project parsing error"));
-            continue;
-          }
-
-        QString xml=widget->setXmlFromWidget().toQString();
-        QString widgetDepth=widget->getDepth();
-
-        L <<  "  <" + hK + " widgetDepth=\"" + widgetDepth +  "\">\n   "
-                                 + xml
-              +"\n  </" + hK + ">\n";
-
-      }
-
-    return L.join("");
-
+  return L.join("");
 }
 
-
-inline QString  dvda::makeDataString()
+QString  dvda::makeSystemString()
 {
-    return  makeParserString(0,1);
+  QStringList L=QStringList();
+  QListIterator<FAbstractWidget*> w(Abstract::abstractWidgetList);
+
+  w.next();
+  w.next();
+
+  while (w.hasNext())
+    {
+      FAbstractWidget* widget=w.next();
+      QString hK=widget->getHashKey();
+
+      if  (widget->getHashKey().isEmpty())
+        {
+          QMessageBox::warning(this, tr("Error"), tr(".dvp project parsing error"));
+          continue;
+        }
+
+      QString xml=widget->setXmlFromWidget().toQString();
+      QString widgetDepth=widget->getDepth();
+
+      createXmlChunk(L, hK, widgetDepth, xml)
+    }
+  return L.join("");
 }
 
-inline QString  dvda::makeSystemString()
-{
-    return makeParserString(2);
-}
 
 
 void dvda::writeProjectFile()
@@ -1311,19 +1328,17 @@ void dvda::writeProjectFile()
 
   out << dvda::makeDataString();
 
+  /* We just preserve the latest file to date */
+
+  out    <<  "   <recent>" << parent->recentFiles.at(0) << "</recent>\n";
+
   out << " </data>\n";
   out << " <system>\n";
 
   out << dvda::makeSystemString();
 
-  out << " </system>\n <recent>\n";
-
-  QStringListIterator w(parent->recentFiles);
-  QString str;
-  while (w.hasNext() && QFileInfo(str=w.next()).isFile())
-     out    <<  "  <file>" << str << "</file>\n";
-
-  out << " </recent>\n</project>\n";
+  out << " </system>\n";
+  out << "</project>\n";
   out.flush();
 }
 
@@ -1345,41 +1360,42 @@ void dvda::setCurrentFile(const QString &fileName)
 }
 
 
-void dvda::assignVariables(const QList<FStringList> &value)
+void dvda::assignVariables(FStringList &value)
 {
+  static QListIterator<FAbstractWidget*> w(Abstract::abstractWidgetList);
 
-  QListIterator<FAbstractWidget*> w(Abstract::abstractWidgetList);
-  QListIterator<FStringList> z(value);
+  if (!w.hasNext())
+    {
+       w.toFront();
+    }
 
-
-  while ((w.hasNext()) && (z.hasNext()))// && (!z.peekNext().isEmpty()))
-  {
-      w.next()->setWidgetFromXml(z.next());
-  }
+    if (w.hasNext())
+      w.next()->setWidgetFromXml(value);
 
 }
 
-void dvda::assignGroupFiles(const int ZONE, const int group_index, QString size, QString file)
+void dvda::assignGroupFiles(const int isVideo, uint group_index, qint64 size, QString file)
 {
+  updateIndexInfo();
 
-  if (group_index > project[ZONE]->getRank())
+  if (group_index > rank[isVideo])
     {
         /* call the FListFrame function. The dvda auxiliary function will be managed by it */
-
+      project[isVideo]->addGroup();
       outputTextEdit->append(MSG_HTML_TAG "Adding group " + QString::number(group_index));
     }
 
-  QString group_type=(ZONE)?"titleset":"group";
+  QString group_type=(isVideo)?"titleset":"group";
 
-  project[ZONE]->getWidgetContainer().at(group_index)->addItem(file);
+  project[isVideo]->addStringToListWidget(file.section('/',-1), currentIndex);
 
-  if (!ZONE) *(project[ZONE]->signalList) << file;
-  fileSizeDataBase[ZONE][group_index].append(size);
-  quint64 localsize=(quint64) size.toInt();
-  inputSize[ZONE][group_index]+=localsize;
-  inputSizeCount+=localsize;
-  outputTextEdit->append(QString(MSG_HTML_TAG "Added file %4 to "+group_type+" %1:\n"+group_type+" size %2 MB, total size %3 MB\n").arg(QString::number(group_index+1),
-                                                                                                                 QString::number(inputSize[ZONE][group_index]), QString::number(inputSizeCount), file));
+  if (!isVideo) *(project[isVideo]->signalList) << file;
+  rowFileSize[isVideo][group_index].append(size);
+  inputSize[isVideo][group_index]+=size;
+  inputSizeCount+=size;
+  outputTextEdit->append(QString(MSG_HTML_TAG "Added file %4 to "+group_type+" %1:\n"+group_type+" size %2, total size %3\n").arg(QString::number(group_index+1),
+                                                                                                                 QString::number(inputSize[isVideo][group_index]), QString::number(inputSizeCount), file));
+
 }
 
 bool dvda::refreshProjectManager()
@@ -1405,7 +1421,7 @@ bool dvda::refreshProjectManager()
   if (projectName.isEmpty())
     {
       managerWidget->setVisible(false);
-      //emit(is_signalList_changed(project[AUDIO]->signalList->size()));
+      emit(is_signalList_changed(project[AUDIO]->signalList->size()));
       return false;
     }
 
@@ -1449,8 +1465,418 @@ bool dvda::refreshProjectManager()
 
   if (file.isOpen()) file.close();
 
+
   return true;
 
+  //managerWidget->adjustSize();
 }
 
 
+void dvda::DomParser(QIODevice* file)
+{
+  // Beware: to be able to interactively modify managerWidget in the DomParser child class constructor,
+  // pass it as a parameter to the constructor otherwise the protected parent member will be accessible yet unaltered
+  file->seek(0);
+
+  QString errorStr;
+  int errorLine;
+  int errorColumn;
+
+  QTreeWidgetItem *item=new QTreeWidgetItem(managerWidget);
+
+  QDomDocument doc;
+  if (!doc.setContent(file, true, &errorStr, &errorLine, &errorColumn))
+    {
+      QMessageBox::warning(0, tr("DOM Parser"), tr("Parse error at line %1, " "column %2:\n%3").arg(errorLine).arg(errorColumn).arg(errorStr));
+      return;
+    }
+
+  QDomElement root=doc.documentElement();
+  if (root.tagName() != "project") return;
+
+  QDomNode node=root.firstChild();
+  if (node.toElement().tagName() != "data") return;
+  item->setText(0,"data");
+  item->setExpanded(true);
+
+  QDomNode subnode=node.firstChild();
+
+  while (!subnode.isNull())
+    {
+        parseEntry(subnode, item);
+        subnode=subnode.nextSibling();
+    }
+
+  node=node.nextSibling();
+
+  QTreeWidgetItem *item2=new QTreeWidgetItem(managerWidget);
+
+  if (node.toElement().tagName() != "system") return;
+  item2->setText(0,"system");
+  item2->setExpanded(true);
+
+  subnode=node.firstChild();
+
+  while (!subnode.isNull())
+    {
+        parseEntry(subnode, item2);
+        subnode=subnode.nextSibling();
+    }
+
+  // References are needed here otherwise variables to be equated to booleanList members will not be as l-values.
+  // Equating booleanList0=booleanList will not do either as references cannot be l-values.
+
+  if (dvda::RefreshFlag & UpdateTabs)
+          showFilenameOnly();
+
+     emit(is_signalList_changed(project[AUDIO]->signalList->size()));
+}
+
+
+
+namespace XmlMethod
+{
+    /* parses < tag> text </tag> */
+
+   QTreeWidgetItem *itemParent=NULL;
+
+  inline QString stackTextData(const QDomNode & node, QString &tag)
+    {
+        QDomNode  childNode=node.firstChild();
+        QString stackedInfo;
+
+        tag = node.toElement().tagName();
+
+        while ((!childNode.isNull()) && (childNode.nodeType() == QDomNode::TextNode))
+          {
+            stackedInfo += childNode.toText().data();
+
+            childNode=childNode.nextSibling();
+          }
+        return stackedInfo;
+    }
+
+/*
+ * parses < tags[0]>
+                     <tags[1]>  text </tags[1]>
+                     ....
+                     <tags[1]> text </tags[1]>
+                </tags[0]>
+     note: does not check subordinate tag uniformity
+*/
+
+inline QStringList stackFirstLevelData(const QDomNode & node, QStringList &tags)
+    {
+        QDomNode  childNode=node.firstChild();
+        QStringList stackedInfo;
+
+        tags[0]=node.toElement().tagName();
+
+        while (!childNode.isNull())
+          {
+            stackedInfo << stackTextData(childNode, tags[1]);
+            childNode=childNode.nextSibling();
+          }
+        return stackedInfo;
+    }
+
+/*
+ *   parses
+ *            <tags[0]>
+ *               <tags[1]>
+                     <tags[2]>  text </tags[2]>
+                     ....
+                     <tags[2]> text </tags[2]>
+                 </tags[1]>
+                 ...
+                 <tags[1]>
+                     <tags[2]>  text </tags[2]>
+                     ....
+                     <tags[2]> text </tags[2]>
+                 </tags[1]>
+               </tags[0]>
+*/
+
+
+inline QList<QStringList> stackSecondLevelData(const QDomNode & node, QStringList &tags)
+    {
+        tags[0]=node.toElement().tagName();
+        QDomNode  childNode=node.firstChild();
+        QList<QStringList> stackedInfo;
+
+        while (!childNode.isNull())
+          {
+            QStringList L={QString(), QString()};
+            stackedInfo << stackFirstLevelData(childNode, L);
+            tags[1]=L.at(0);
+            tags[2]=L.at(1);
+            childNode=childNode.nextSibling();
+          }
+        return stackedInfo;
+    }
+
+/* computes sizes and sends filenames to main tab Widget */
+
+
+/* displays on manager tree window */
+
+inline void displayTextData(const QString &firstColumn,
+                                 const QString &secondColumn,
+                                 const QString &thirdColumn)
+{
+          QTreeWidgetItem* item = new QTreeWidgetItem(XmlMethod::itemParent);
+           item->setText(0, firstColumn);
+           item->setText(1, secondColumn);
+           if (!thirdColumn.isEmpty()) item->setText(2, thirdColumn);
+}
+
+
+
+/* tags[0] k
+ *                       tags[1] 1 : xxx  ...  size MB
+ *                       tags[1] 2 : xxx  ...  size MB  */
+
+inline void displaySecondLevelData(    const QStringList &tags,
+                                              const QList<QStringList> &stackedInfo,
+                                              const QList<QStringList> &stackedSizeInfo)
+    {
+      int k=0;
+      QString  firstColumn=tags.at(0), secondColumn=tags.at(1), thirdColumn;
+
+      QListIterator<QStringList> i(stackedInfo), j(stackedSizeInfo);
+
+      while ((i.hasNext()) && (j.hasNext()))
+       {
+          if ((!tags.at(0).isEmpty()) && (stackedInfo.size() > 1))
+           {
+               firstColumn += " "+QString::number(++k);
+           }
+
+          displayTextData(firstColumn, "", "");
+
+           QStringListIterator w(i.next()), z(j.next());
+           while ((w.hasNext()) && (z.hasNext()))
+           {
+              if ((!tags.at(1).isEmpty()) && (stackedSizeInfo.size() > 1))
+                   secondColumn =  tags.at(1) +" " +QString::number(++k) + ": ";
+               secondColumn += w.next()  ;
+               if (z.hasNext())
+                   thirdColumn    = z.next() + " MB" ;
+
+               displayTextData("", secondColumn, thirdColumn);
+           }
+         }
+
+    }
+
+
+/* tags[0]
+ *                       tags[1] 1 : xxx  ...  (size MB)
+ *                       tags[1] 2 : xxx  ...  (size MB) ... */
+
+inline void displayFirstLevelData( const QStringList &tags,  const QStringList &stackedInfo)
+    {
+         displaySecondLevelData( tags, QList<QStringList>() << stackedInfo, QList<QStringList>());
+    }
+
+
+}  // end of XmlMethod namespace
+
+
+
+QList<QStringList> dvda::processSecondLevelData(QList<QStringList> &L)
+    {
+        QListIterator<QStringList> i(L);
+        int group_index=0;
+
+        QList<QStringList> stackedSizeInfo2 ;
+        while (i.hasNext())
+        {
+               QStringListIterator w(i.next());
+               QStringList stackedSizeInfo1;
+               while (w.hasNext())
+               {
+                   QString text=w.next();
+                   qint64 byteCount=QFileInfo(text).size();
+                    // force coertion into float or double using .0
+                   double s=byteCount/1048576.0;
+                   //allSizes+=byteCount;
+                   stackedSizeInfo1 <<  QString::number(s , 'f', 1);
+
+                   if (dvda::RefreshFlag & UpdateTabs)
+                       assignGroupFiles(getZone(), group_index, byteCount,QDir::toNativeSeparators(text));
+               }
+
+               stackedSizeInfo2 << stackedSizeInfo1;
+               group_index++;
+        }
+
+        return stackedSizeInfo2;
+    }
+
+
+void dvda::parseEntry(const QDomNode &node, QTreeWidgetItem *itemParent)
+{
+  /* first examine the <hashKey widgetDepth=... > node */
+
+  XmlMethod::itemParent = itemParent;
+
+  QString tag, textData;
+  QStringList firstLevelData, tags={QString(),QString(),QString()} ;
+  QList<QStringList> secondLevelData;
+
+
+  /* then process the  node according to its predicted widgetDepth */
+
+
+  switch (node.toElement().attribute("widgetDepth").toInt())
+      {
+      case 0 :
+                textData=XmlMethod::stackTextData(node, tag);
+                XmlMethod::displayTextData(hash::description[tag], textData, "");
+          break;
+
+      case 1 :
+                firstLevelData=XmlMethod::stackFirstLevelData(node, tags);
+                XmlMethod::displayFirstLevelData({hash::description[tags.at(0)], hash::description[tags.at(1)]}, firstLevelData);
+          break;
+
+       case 2 :
+              secondLevelData=XmlMethod::stackSecondLevelData(node, tags);
+              XmlMethod::displaySecondLevelData(
+                          {tags.at(1), tags.at(2)},
+                          secondLevelData,
+                          processSecondLevelData(secondLevelData));
+          break;
+      }
+}
+
+/*
+void dvda::parseEntry(const QDomElement &element, QTreeWidgetItem *itemParent)
+{
+  QString hashKeyVariable=element.attribute("hashKey");
+  int group_index=0;
+  QStringList embeddedTags={"menu" ,  "file" ,  "slide" , "YCrCb", "group", "titleset"};
+
+  QTreeWidgetItem *item;
+
+  if (itemParent)
+    item = new QTreeWidgetItem(itemParent);
+  else
+    item = new QTreeWidgetItem(managerWidget);
+
+  item->setText(0, hash::description[hashKeyVariable]);
+
+  QDomNode node=element.firstChild();
+
+  while (!node.isNull())
+    {
+      QString tagName=node.toElement().tagName();
+      if (tagName.isEmpty()) break;
+      QDomNode childNode =node.firstChild();
+      FStringList firstLevelTextInfo;
+      QStringList secondLevelTextInfo;
+      if (tagName == "value")
+        {
+
+          secondLevelTextInfo.clear();
+
+          while (!childNode.isNull())
+            {
+
+              if (parseTextNode(childNode, item, firstLevelTextInfo) == false)
+                {
+                  QString header;
+                  QString secondColumn;
+                  QString thirdColumn;
+                  qint64 allSizes=0;
+                  int j=0;
+                  int depth=0;
+
+                  while (!(childNode.isNull()) && (embeddedTags.contains(childNode.toElement().tagName())))
+                    {
+
+                      depth=1;
+                      header = (j ==0)? "":"\n";
+
+                      secondColumn +=  header + childNode.toElement().tagName() +" "+ QString::number(++j);
+                      thirdColumn     += header ;
+
+                      QDomNode grandChildNode =childNode.firstChild();
+                      int i=0;
+
+                      while (!(grandChildNode.isNull()) )
+                        {
+
+                          if (grandChildNode.nodeType() == QDomNode::TextNode)
+                            {
+                              static int k;
+                              QString text=grandChildNode.toText().data();
+                              secondLevelTextInfo << text;
+                              secondColumn +=  " "+ QString((k==0)?"Track":((k==1)?"Highlight":"Album/Group")) + "  "+  text  ;
+                              k++;
+
+                            }
+                          else
+                            {
+
+
+                              QDomNode grandChildChildNode =grandChildNode.firstChild();
+                              depth=2;
+
+                              stackXmlData(grandChildChildNode, 0);
+
+                              i++;
+
+                              secondLevelTextInfo.clear();
+                              if  (grandChildNode.toElement().tagName() == "file")
+                                {
+                                  item->setTextColor(1,QColor("navy"));
+                                  item->setTextColor(2,QColor("grey"));
+                                  item->setTextAlignment(2,Qt::AlignRight);
+                                  item->setText(0, "\n"+QDir::toNativeSeparators(secondColumn));
+                                  item->setText(2, tr("Total size: ")+QString::number(allSizes/1048576.0, 'f', 1) +"MB"+ "\n"+ thirdColumn);
+                                }
+
+                            }
+
+                          grandChildNode=grandChildNode.nextSibling();
+                       }
+
+                      if (depth == 2)
+                        {
+                          firstLevelTextInfo << secondLevelTextInfo;
+                          secondLevelTextInfo.clear();
+                        }
+                      childNode=childNode.nextSibling();
+
+
+                    }
+                  if (depth == 1)
+                    {
+                      firstLevelTextInfo << secondLevelTextInfo;
+                      secondLevelTextInfo.clear();
+                    }
+
+               }
+
+               if ((dvda::RefreshFlag&0xF000) == UpdateTabs)
+                 {
+                     assignVariables(firstLevelTextInfo);
+                 }
+
+              childNode = childNode.nextSibling();
+            }
+        }
+      else if (tagName == "recent")
+        {
+          QString filename;
+          if ((parseTextNode(childNode, item, firstLevelTextInfo)) && (!(filename=firstLevelTextInfo.last().last()).isEmpty()))
+                      setCurrentFile(filename);
+        }
+
+      node=node.nextSibling();
+    }
+}
+
+*/

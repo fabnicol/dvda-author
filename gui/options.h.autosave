@@ -1,7 +1,7 @@
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
-
+#include "common.h"
 #include "lplex.h"
 #include "viewer.h"
 #include "flistframe.h"

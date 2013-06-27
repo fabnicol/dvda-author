@@ -1,11 +1,4 @@
-#include <QtGui>
-#include <QFile>
-#include <QtGui>
-#include <QtXml>
 #include "dvda.h"
-#include "options.h"
-#include "browser.h"
-#include "common.h"
 
 
 /* AUTHOR NOTE
@@ -212,8 +205,8 @@ void MainWindow::createMenus()
  editMenu->addAction(displayFileTreeViewAction);
  editMenu->addAction(displayManagerAction);
  editMenu->addAction(displayConsoleAction);
-
  editMenu->addAction(clearOutputTextAction);
+  editMenu->addAction(editProjectAction);
 
  processMenu->addAction(burnAction);
  processMenu->addAction(encodeAction);
@@ -285,6 +278,10 @@ void MainWindow::createActions()
   displayConsoleAction->setIcon(consoleIcon);
   connect(displayConsoleAction, SIGNAL(triggered()), dvda_author, SLOT(on_displayConsoleButton_clicked()));
 
+  editProjectAction=new QAction(tr("Edit current project"), this);
+  editProjectAction->setIcon(style()->standardIcon(QStyle::SP_FileIcon));
+  connect(editProjectAction, SIGNAL(triggered()), this, SLOT(on_editProjectButton_clicked()));
+
   displayOutputAction  = new QAction(tr("Show/Close messages"), this);
   const QIcon displayOutput = QIcon(QString::fromUtf8( ":/images/display-output.png"));
   displayOutputAction->setIcon(displayOutput);
@@ -326,7 +323,7 @@ void MainWindow::createActions()
   actionList << openAction << saveAction << closeAction << exitAction << separator[0] <<
                 burnAction << encodeAction << decodeAction << separator[1] <<
                 displayOutputAction << displayFileTreeViewAction << displayManagerAction << displayConsoleAction <<
-                clearOutputTextAction <<  separator[2] << configureAction <<
+                clearOutputTextAction <<  editProjectAction << separator[2] << configureAction <<
                 optionsAction << helpAction << aboutAction;
 
 }
@@ -395,6 +392,7 @@ void MainWindow::createToolBars()
  editToolBar->addAction(displayManagerAction);
  editToolBar->addAction(displayConsoleAction);
  editToolBar->addAction(clearOutputTextAction);
+ editToolBar->addAction(editProjectAction);
 
  processToolBar->addAction(burnAction);
  processToolBar->addAction(encodeAction);
@@ -409,6 +407,69 @@ void MainWindow::createToolBars()
 
 }
 
+void MainWindow::on_editProjectButton_clicked()
+{
+
+    if (dvda_author->projectName.isEmpty()) return;
+    editWidget = new QMainWindow(this);
+    editWidget->setWindowTitle(tr("Editing project ")+dvda_author->projectName.left(8)+"..."+dvda_author->projectName.right(12));
+    QMenu *fileMenu = new QMenu(tr("&File"), this);
+    editWidget->menuBar()->addMenu(fileMenu);
+
+    QList<QAction*> actionList=QList<QAction*>()
+           << new QAction(tr("&New"),this)
+           << new QAction(tr("&Open"),this)
+           << new QAction(tr("&Save"),this)
+           << new QAction(tr("&Exit"),this);
+
+    for (QAction *a: actionList)
+            fileMenu->addAction(a);
+
+    QFont font;
+    font.setFamily("Courier");
+    font.setFixedPitch(true);
+    font.setPointSize(10);
+
+    editor = new QTextEdit;
+    editor->setFont(font);
+
+    highlighter = new Highlighter(editor->document());
+
+   const QString str=dvda_author->projectName;
+   QFile  *file=new QFile(str);
+   if (file->open(QFile::ReadWrite| QFile::Text))
+   {
+       editor->setPlainText(file->readAll());
+       file->close();
+   }
+
+   connect(actionList[0], &QAction::triggered, [=] () { editor->clear();});
+   connect(actionList[1], &QAction::triggered, [=] ()
+                                                                                     {
+                                                                                        file->~QFile();
+                                                                                        dvda_author->on_openProjectButton_clicked() ;
+                                                                                        editWidget->~QMainWindow();
+                                                                                        on_editProjectButton_clicked();
+                                                                                      });
+
+   connect(actionList[2], &QAction::triggered,  [=] ()
+                                                                                     {
+                                                                                        file->open(QFile::Truncate |QFile::WriteOnly| QFile::Text);
+                                                                                        file->write(editor->document()->toPlainText().toUtf8()) ;
+                                                                                      });
+
+   connect(actionList[3], &QAction::triggered,  [=] ()
+                                                                                      {
+                                                                                         file->close();
+                                                                                         file->~QFile();
+                                                                                         actionList.~QList();
+                                                                                         editWidget->~QMainWindow() ;
+                                                                                       });
+   editWidget->setCentralWidget(editor);
+   editWidget->setGeometry(200,200,600,800);
+   editWidget->show();
+
+}
 
 void MainWindow::configureOptions()
 {

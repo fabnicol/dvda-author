@@ -1,0 +1,211 @@
+<?xml version="1.0"?>
+<project>
+ <data>
+  <DVD-A widgetDepth="2">
+   <group>
+      <file>/home/fab/Dev/dvda-author-gui/key/gui/common.o</file>
+      <file>/home/fab/Dev/dvda-author-gui/key/gui/common.o</file>
+     </group>
+  </DVD-A>
+  <DVD-V widgetDepth="2">
+   <titleset><file></file></titleset>
+  </DVD-V>
+ </data>
+ <system>
+  <mkisofsPath widgetDepth="0">
+   /home/fab/tempdir/dvd.iso
+  </mkisofsPath>
+  <dvdwriterPath widgetDepth="0">
+   none
+  </dvdwriterPath>
+  <burnDisc widgetDepth="0">
+   no
+  </burnDisc>
+  <runMkisofs widgetDepth="0">
+   yes
+  </runMkisofs>
+  <playback widgetDepth="0">
+   no
+  </playback>
+  <padding widgetDepth="0">
+   no
+  </padding>
+  <prune widgetDepth="0">
+   no
+  </prune>
+  <fixWavOnly widgetDepth="0">
+   no
+  </fixWavOnly>
+  <fixwav widgetDepth="0">
+   no
+  </fixwav>
+  <startsector widgetDepth="0">
+   281
+  </startsector>
+  <sox widgetDepth="0">
+   no
+  </sox>
+  <normType widgetDepth="0">
+   PAL
+  </normType>
+  <aspectRatio widgetDepth="0">
+   16:9
+  </aspectRatio>
+  <numberOfMenus widgetDepth="0">
+   0
+  </numberOfMenus>
+  <audioMenuSlides widgetDepth="2">
+   <menu><slide></slide></menu>
+  </audioMenuSlides>
+  <audioMenuTracks widgetDepth="2">
+   <menu><track></track></menu>
+  </audioMenuTracks>
+  <audioMenuText widgetDepth="2">
+   <group><trackname></trackname></group>
+  </audioMenuText>
+  <loopVideo widgetDepth="0">
+   no
+  </loopVideo>
+  <menuStyle widgetDepth="0">
+   standard
+  </menuStyle>
+  <highlightFormat widgetDepth="0">
+   -1
+  </highlightFormat>
+  <font widgetDepth="0">
+   Abyssinica SIL
+  </font>
+  <audioBackgroundPath widgetDepth="0">
+   /home/fab/tempdir/audiobackground.png
+  </audioBackgroundPath>
+  <topmenuPalette widgetDepth="1">
+   
+      <YCrCb>000</YCrCb>
+     
+      <YCrCb>000</YCrCb>
+     
+      <YCrCb>000</YCrCb>
+     
+  </topmenuPalette>
+  <audioMenu widgetDepth="0">
+   no
+  </audioMenu>
+  <videoImport widgetDepth="0">
+   /home/fab/tempdir/VIDEO_TS
+  </videoImport>
+  <videoMenu widgetDepth="0">
+   no
+  </videoMenu>
+  <videoMenuImport widgetDepth="0">
+   /home/fab/tempdir/VIDEO_TS/VIDEO_TS.VOB
+  </videoMenuImport>
+  <hybridate widgetDepth="0">
+   0
+  </hybridate>
+  <createHybrid widgetDepth="0">
+   no
+  </createHybrid>
+  <videolinkRank widgetDepth="0">
+   0
+  </videolinkRank>
+  <videoZonePath widgetDepth="0">
+   /home/fab/tempdir/VIDEO_TS
+  </videoZonePath>
+  <videolink widgetDepth="0">
+   no
+  </videolink>
+  <trackSlides widgetDepth="2">
+   <track><slide></slide></track>
+  </trackSlides>
+  <slideOptions widgetDepth="2">
+   <slide><option></option></slide>
+  </slideOptions>
+  <activemenuPalette widgetDepth="1">
+   
+      <YCrCb>000</YCrCb>
+     
+      <YCrCb>000</YCrCb>
+     
+      <YCrCb>000</YCrCb>
+     
+  </activemenuPalette>
+  <addPalette widgetDepth="0">
+   no
+  </addPalette>
+  <background-mpg widgetDepth="0">
+   /home/fab/tempdir/background_still_0.mpg
+  </background-mpg>
+  <lplexVideoType widgetDepth="0">
+   ntsc
+  </lplexVideoType>
+  <lplexJpegPath widgetDepth="0">
+   /home/fab/.local/share/dvda-author-gui/black.jpg
+  </lplexJpegPath>
+  <lplexDisplayIsDVD-Audio widgetDepth="0">
+   no
+  </lplexDisplayIsDVD-Audio>
+  <lplexCreateType widgetDepth="0">
+   lpcm
+  </lplexCreateType>
+  <lplexMediaType widgetDepth="0">
+   dvd+r
+  </lplexMediaType>
+  <lplexDirPath widgetDepth="0">
+   /home/fab/tempdir
+  </lplexDirPath>
+  <lplexSpliceType widgetDepth="0">
+   seamless
+  </lplexSpliceType>
+  <lplexShiftType widgetDepth="0">
+   backward
+  </lplexShiftType>
+  <lplexMd5Aware widgetDepth="0">
+   yes
+  </lplexMd5Aware>
+  <lplexRescale widgetDepth="0">
+   yes
+  </lplexRescale>
+  <lplexInfoDirPath widgetDepth="0">
+   /home/fab/tempdir
+  </lplexInfoDirPath>
+  <lplexInfoDir widgetDepth="0">
+   yes
+  </lplexInfoDir>
+  <lplexInfoFiles widgetDepth="0">
+   no
+  </lplexInfoFiles>
+  <debug widgetDepth="0">
+   yes
+  </debug>
+  <veryverbose widgetDepth="0">
+   yes
+  </veryverbose>
+  <htmlFormat widgetDepth="0">
+   yes
+  </htmlFormat>
+  <logrefresh widgetDepth="0">
+   yes
+  </logrefresh>
+  <log widgetDepth="0">
+   no
+  </log>
+  <targetDir widgetDepth="0">
+   /home/fab/tempdir/output
+  </targetDir>
+  <createDVDFiles widgetDepth="0">
+   0
+  </createDVDFiles>
+  <workDir widgetDepth="0">
+   /home/fab/Dev/dvda-author-gui/key/gui
+  </workDir>
+  <tempDir widgetDepth="0">
+   /home/fab/tempdir
+  </tempDir>
+  <binDir widgetDepth="0">
+   /home/fab/Dev/dvda-author-gui/key/gui/bindir
+  </binDir>
+ </system>
+ <recent>
+  <file>/home/fab/Dev/dvda-author-gui/key/build-dvda-author-gui-Qt_5_02-Debug/default.dvp</file>
+ </recent>
+</project>

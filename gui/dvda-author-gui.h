@@ -2,15 +2,18 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
 #include <QDialog>
 #include <QProcess>
-#include <QtGui>
 #include <QMediaPlayer>
 #include <QDomNode>
+#include <QFile>
+#include <QtXml>
 
+#include "options.h"
+#include "browser.h"
 #include "common.h"
-#include "flistframe.h"
+#include "highlighter.h"
+#include "enums.h"
 
 #define PARAMETER_HTML_TAG "<img src=\":/images/configure.png\"  height=\"16\" width=\"16\"/> "
 #define MSG_HTML_TAG "<img src=\":/images/msg.png\"/> "
@@ -64,6 +67,7 @@ class MainWindow : public QMainWindow
    void on_displayOutputButton_clicked();
    void on_displayFileTreeViewButton_clicked(bool);
    void on_displayFileTreeViewButton_clicked();
+   void on_editProjectButton_clicked();
    void on_optionsButton_clicked();
    void showMainWidget();
    void showMainWidget(bool);
@@ -76,7 +80,7 @@ class MainWindow : public QMainWindow
 
    bool readFile(const QString &fileName);
    dvda *dvda_author;
-
+   QMainWindow *editWidget;
    void createActions();
    void createMenus();
    void createToolBars();
@@ -112,6 +116,7 @@ class MainWindow : public QMainWindow
    QAction *displayAction;
    QAction *displayManagerAction;
    QAction *displayConsoleAction;
+   QAction *editProjectAction;
    QAction *displayOutputAction;
    QAction *displayFileTreeViewAction;
    QAction *clearOutputTextAction;
@@ -125,19 +130,10 @@ class MainWindow : public QMainWindow
                         *defaultConsoleLayoutBox,
                         *defaultProjectManagerWidgetLayoutBox,
                         *defaultFileManagerWidgetLayoutBox;
-};
 
-enum RefreshManagerFilter {
-  NoCreate=0x0000,
-  Create=0x0001,
-  UpdateTree=0x0010,
-  SaveTree=0x0100,
-  UpdateTabs=0x1000,
-  SaveAndUpdateTree=0x0110,
-  RefreshAll=0x1010,
-  CreateTreeAndRefreshAll=0x1011,
-  CreateSaveAndUpdateTree=0x0111,
-  UpdateOptionTabs=0x2000
+
+   QTextEdit *editor;
+   Highlighter *highlighter;
 };
 
 

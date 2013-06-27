@@ -1,20 +1,7 @@
 #ifndef FWIDGETS_H
 #define FWIDGETS_H
 
-#include <QDrag>
-#include <QListWidget>
-#include <QCheckBox>
-#include <QRadioButton>
-#include <QComboBox>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QGroupBox>
-#include <QButtonGroup>
-#include <QLabel>
-#include <QVBoxLayout>
-#include <QGridLayout>
-#include <QMouseEvent>
-#include <QApplication>
+#include <QtWidgets>
 #include "fcolor.h"
 #include "fstring.h"
 
