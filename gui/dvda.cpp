@@ -655,7 +655,7 @@ void dvda::deleteGroup()
   if (currentIndex) outputTextEdit->append(QString(MSG_HTML_TAG "Deleted "+groupType+" %1, total size: %2\n").
                                                                            arg(QString::number(currentIndex+1), QString::number(inputSizeCount)));
 
-  saveProject();
+  if (parent->defaultSaveProjectBehavior) saveProject();
 }
 
 static bool firstSelection=true;
@@ -700,7 +700,7 @@ void dvda::on_moveUpItemButton_clicked()
   fileSizeDataBase[isVideo][currentIndex].swap(row, row-1);
 
   RefreshFlag=SaveAndUpdateTree;
-  saveProject();
+  if (parent->defaultSaveProjectBehavior) saveProject();
   refreshRowPresentation();
 }
 
@@ -714,7 +714,7 @@ void dvda::on_moveDownItemButton_clicked()
   fileSizeDataBase[isVideo][currentIndex].swap(row, row+1);
 
   RefreshFlag=SaveAndUpdateTree;
-  saveProject();
+  if (parent->defaultSaveProjectBehavior) saveProject();
   refreshRowPresentation();
 
 }
@@ -755,7 +755,7 @@ void dvda::addSelectedFileToProject()
         }
     }
 
-  saveProject();
+  if (parent->defaultSaveProjectBehavior) saveProject();
   showFilenameOnly();
 }
 
@@ -775,7 +775,7 @@ void dvda::on_retrieveItemButton_clicked()
   outputTextEdit->append(QString(MSG_HTML_TAG "Retrieved file from " + groupType  + " %1\n"+ groupType+ " size: %2, total size: %3\n").arg(QString::number(currentIndex+1),
                                                                                                                                  QString::number(inputSize[isVideo][currentIndex]), QString::number(inputSizeCount)));
   RefreshFlag=SaveAndUpdateTree;
-  saveProject();
+  if (parent->defaultSaveProjectBehavior) saveProject();
 
 }
 

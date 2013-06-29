@@ -36,7 +36,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 // Should it slow down application launch on some platform, one option could be to launch it just once then on user demand
 
 
-
 void createFontDataBase()
 {
     QFontDatabase database;
@@ -138,7 +137,7 @@ MainWindow::MainWindow()
   SETTINGS(defaultConsoleLayoutBox)
   SETTINGS(defaultProjectManagerWidgetLayoutBox)
   SETTINGS(defaultFileManagerWidgetLayoutBox)
-
+  SETTINGS(defaultSaveProjectBehavior)
 
   setWindowIcon(QIcon(":/images/dvda-author.png"));
   setWindowTitle("dvda-author GUI "+ QString(VERSION));
@@ -503,6 +502,11 @@ void MainWindow::configureOptions()
                                                                                                       "fullScreenDisplay",
                                                                                                       "Display interface full screen on launch");
 
+    defaultSaveProjectBehavior=new FCheckBox("Save .dvp project automatically",
+                                                                                                      flags::noCommandLine|flags::checked,
+                                                                                                      "saveProjectBehavior",
+                                                                                                      "If checked, saves project whenever a tab content is changed and on exiting the interface");
+
     defaultLplexActivation=new FCheckBox("Activate video zone editing using Lplex",
                                                                                                   flags::noCommandLine|flags::checked,
                                                                                                   "activateLplex",
@@ -512,6 +516,7 @@ void MainWindow::configureOptions()
     vlayout->addWidget(defaultProjectManagerWidgetLayoutBox);
     vlayout->addWidget(defaultConsoleLayoutBox);
     vlayout->addWidget(defaultFullScreenLayout);
+    vlayout->addWidget(defaultSaveProjectBehavior);
     vlayout->addWidget(defaultLplexActivation);
 
     vlayout->addWidget(closeButton);
@@ -523,6 +528,7 @@ void MainWindow::configureOptions()
                            settings->setValue("defaultConsoleLayoutBox", defaultConsoleLayoutBox->isChecked());
                            settings->setValue("defaultProjectManagerWidgetLayoutBox", defaultProjectManagerWidgetLayoutBox->isChecked());
                            settings->setValue("defaultFileManagerWidgetLayoutBox", defaultFileManagerWidgetLayoutBox->isChecked());
+                           settings->setValue("defaultSaveProjectBehavior", defaultSaveProjectBehavior->isChecked());
                            contentsWidget->accept();
                         }
                   );
@@ -533,7 +539,15 @@ void MainWindow::configureOptions()
      * b) the boolean version of slots must be used by the FcheckBox. The new Qt5 syntax cannot work this out as it does not manage overloading. */
 
     connect(closeButton, &QDialogButtonBox::rejected, contentsWidget, &QDialog::reject);
-    connect(closeButton, &QDialogButtonBox::accepted, dvda_author, &dvda::saveProject);
+    connect(closeButton, &QDialogButtonBox::accepted, [=] ()
+                                                                                                         {
+                                                                                                               if (    (defaultSaveProjectBehavior->isChecked())
+                                                                                                                    || (QMessageBox::Yes == QMessageBox::warning(this, tr("Save project"), tr("Project has not been saved.\nPress Yes to save current .dvp project file now\nor No to close dialog without saving project."), QMessageBox::Yes|QMessageBox::No))
+                                                                                                                   )
+                                                                                                                         dvda_author->saveProject();
+                                                                                                          });
+
+
     connect(defaultFileManagerWidgetLayoutBox, SIGNAL(toggled(bool)), this, SLOT(on_displayFileTreeViewButton_clicked(bool)));
     connect(defaultProjectManagerWidgetLayoutBox, SIGNAL(toggled(bool)), dvda_author, SLOT(on_openManagerWidgetButton_clicked(bool)));
     connect(defaultLplexActivation, &FCheckBox::toggled, this, &MainWindow::on_activate_lplex);

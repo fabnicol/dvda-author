@@ -55,6 +55,7 @@ class MainWindow : public QMainWindow
    QStringList recentFiles;
    void updateRecentFileActions();
    QString strippedName(const QString &fullFuleName);
+   FCheckBox *defaultSaveProjectBehavior;
 
   protected :
 
@@ -75,6 +76,7 @@ class MainWindow : public QMainWindow
    void configureOptions();
    void about();
    void on_activate_lplex(bool);
+
 
   private :
 

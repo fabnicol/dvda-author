@@ -25,6 +25,7 @@ public:
         multimodal=0x2000
     };
     static int lplexRank;
+
 };
 
 enum actionType {Select, OpenFolder, BrowseFile};
