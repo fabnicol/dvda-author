@@ -1371,8 +1371,6 @@ void dvda::assignGroupFiles(const int ZONE, const int group_index, QString size,
 
   QString group_type=(ZONE)?"titleset":"group";
 
-  project[ZONE]->getWidgetContainer().at(group_index)->addItem(file);
-
   if (!ZONE) *(project[ZONE]->signalList) << file;
   fileSizeDataBase[ZONE][group_index].append(size);
   quint64 localsize=(quint64) size.toInt();

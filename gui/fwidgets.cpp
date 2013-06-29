@@ -293,8 +293,10 @@ void FListWidget::setWidgetFromXml(const FStringList &s)
         }
         else
             return;
-        /* add as many groups as there are QStringLists in excess of 1 */
-        if (size) emit(open_tabs_signal(size)) ;
+
+        /* add as many groups as there are QStringLists in excess of 1 and fill in the tabs with files */
+
+         emit(open_tabs_signal(size)) ;
 
     }
     else
