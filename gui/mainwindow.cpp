@@ -419,6 +419,8 @@ void MainWindow::on_editProjectButton_clicked()
            << new QAction(tr("&New"),this)
            << new QAction(tr("&Open"),this)
            << new QAction(tr("&Save"),this)
+           << new QAction(tr("Save as..."),this)
+           << new QAction(tr("S&ave and exit"),this)
            << new QAction(tr("&Exit"),this);
 
     for (QAction *a: actionList)
@@ -455,11 +457,46 @@ void MainWindow::on_editProjectButton_clicked()
                                                                                      {
                                                                                         file->open(QFile::Truncate |QFile::WriteOnly| QFile::Text);
                                                                                         file->write(editor->document()->toPlainText().toUtf8()) ;
+                                                                                        file->close();
                                                                                       });
 
    connect(actionList[3], &QAction::triggered,  [=] ()
+                                                                                     {
+                                                                                       QString newstr=QFileDialog::getSaveFileName(this, tr("Save project as..."), QDir::currentPath(), tr("dvp projects (*.dvp)"));
+                                                                                       if (newstr.isEmpty()) return;
+                                                                                       if (newstr == str)
+                                                                                       {
+                                                                                           actionList[2]->trigger();
+                                                                                           return;
+                                                                                       }
+
+                                                                                       if  (QFileInfo(newstr).isFile())
+                                                                                       {
+                                                                                             if (QMessageBox::No == QMessageBox::warning(this, tr("Overwrite file?"), tr("File will be overwritten.\nPress Yess to confirm, No to cancel operation."), QMessageBox::Yes|QMessageBox::No))
+                                                                                                return;
+                                                                                             else
+                                                                                             {
+                                                                                                    QFile newfile(newstr);
+                                                                                                    newfile.remove();
+                                                                                             }
+                                                                                       }
+                                                                                       if (file->rename(newstr) ==false) return;
+                                                                                       if (file->open(QFile::WriteOnly | QFile::Truncate | QFile::Text))
+                                                                                       {
+                                                                                          file->write(editor->document()->toPlainText().toUtf8()) ;
+                                                                                          file->close();
+                                                                                       }
+                                                                                      });
+
+
+   connect(actionList[4], &QAction::triggered,  [=] ()
                                                                                       {
-                                                                                         file->close();
+                                                                                           actionList[2]->trigger();
+                                                                                           actionList[5]->trigger();
+                                                                                       });
+
+   connect(actionList[5], &QAction::triggered,  [=] ()
+                                                                                      {
                                                                                          file->~QFile();
                                                                                          actionList.~QList();
                                                                                          editWidget->~QMainWindow() ;

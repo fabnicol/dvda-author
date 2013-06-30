@@ -418,7 +418,7 @@ void dvda::addDirectoryToListWidget(QDir dir)
 void dvda::on_openProjectButton_clicked()
 {
 
-  projectName=QFileDialog::getOpenFileName(this,  tr("Open project"), QDir::currentPath(),  tr("Projects (*.dvp)"));
+  projectName=QFileDialog::getOpenFileName(this,  tr("Open project"), QDir::currentPath(),  tr("dvp projects (*.dvp)"));
 
   if (projectName.isEmpty()) return;
 
