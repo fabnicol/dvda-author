@@ -359,18 +359,18 @@ void dvda::refreshRowPresentation(uint ZONE, uint j)
   palette.setColor(QPalette::AlternateBase,QColor("silver"));
   QFont font=QFont("Courier",10);
 
-  project[ZONE]->fileListWidget->currentListWidget=project[ZONE]->getWidgetContainer().at(j);
-  project[ZONE]->fileListWidget->currentListWidget->setPalette(palette);
-  project[ZONE]->fileListWidget->currentListWidget->setAlternatingRowColors(true);
-  project[ZONE]->fileListWidget->currentListWidget->setFont(font);
+  QListWidget *widget=project[ZONE]->getWidgetContainer()[j];
+  widget->setPalette(palette);
+  widget->setAlternatingRowColors(true);
+  widget->setFont(font);
+
 
   for (int r=0; r < hash::FStringListHash[localTag]->at(j).size(); r++ )
     {
-
-      project[ZONE]->fileListWidget->currentListWidget->item(r)->setText(hash::FStringListHash.value(localTag)->at(j).at(r).section('/',-1));
-      //project[ZONE]->fileListWidget->currentListWidget->item(r)->setText("a");
-      project[ZONE]->fileListWidget->currentListWidget->item(r)->setTextColor(QColor("navy"));
-      project[ZONE]->fileListWidget->currentListWidget->item(r)->setToolTip(fileSizeDataBase[ZONE].at(j).at(r)+" MB");
+      widget->item(r)->setText(hash::FStringListHash.value(localTag)->at(j).at(r).section('/',-1));
+      Q(hash::FStringListHash.value(localTag)->at(j).at(r).section('/',-1))
+      widget->item(r)->setTextColor(QColor("navy"));
+      widget->item(r)->setToolTip(fileSizeDataBase[ZONE].at(j).at(r)+" MB");
     }
 }
 
@@ -417,13 +417,16 @@ void dvda::addDirectoryToListWidget(QDir dir)
 
 void dvda::on_openProjectButton_clicked()
 {
+  static bool must_close;
 
+  if (must_close) closeProject();
   projectName=QFileDialog::getOpenFileName(this,  tr("Open project"), QDir::currentPath(),  tr("dvp projects (*.dvp)"));
 
   if (projectName.isEmpty()) return;
 
   initializeProject();
   managerWidget->show();
+  must_close=true;
 
 }
 
@@ -457,22 +460,12 @@ void dvda::closeProject()
 
   for (int ZONE : {AUDIO, VIDEO})
   {
-    for  (int i = project[ZONE]->getRank(); i >=0;   i--)
+    for  (int i = project[ZONE]->getRank()+1; i >=0;   i--)
     {
-      project[ZONE]->mainTabWidget->removeTab(i+1);
+      project[ZONE]->mainTabWidget->removeTab(i);
     }
 
-    project[ZONE]->setRank(0);
-  }
-
-  for (int ZONE : {AUDIO, VIDEO})
-  {
-    for  (int i = project[ZONE]->getRank(); i >=0;   i--)
-    {
-      project[ZONE]->mainTabWidget->removeTab(i+1);
-    }
-
-    project[ZONE]->setRank(0);
+    project[ZONE]->addGroup(true);
   }
 
 }

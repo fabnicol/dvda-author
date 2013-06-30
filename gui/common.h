@@ -5,6 +5,7 @@
 
 #include "fwidgets.h"
 
+
 #define AFMT_WAVE 1
 #define AFMT_FLAC 2
 #define AFMT_OGG_FLAC 3

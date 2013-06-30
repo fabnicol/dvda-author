@@ -241,21 +241,22 @@ void FListFrame::on_embeddingTabIndex_changed(int index)
  if (index  > -1) fileLabel->setText(fileLabelText+" "+QString::number(mainTabWidget->currentIndex()+1)+"\n"+ slotList->at(mainTabWidget->currentIndex()));
 }
 
-void FListFrame::addGroup()
+void FListFrame::addGroup(bool force)
 {
 
     int size=hash::FStringListHash[frameHashKey]->size();
+    slotListSize=(slotList)? slotList->size() : 0;
 
     // do not create an new group over an empty group (strict behaviour)
-
-    if (hash::FStringListHash[frameHashKey]->at(size-1).isEmpty()) return;
-
-   slotListSize=(slotList)? slotList->size() : 0;
-   if ((slotListSize) && (getRank() >= slotListSize-1)) return;
+    if (!force)
+    {
+         if (hash::FStringListHash[frameHashKey]->at(size-1).isEmpty()) return;
+         if ((slotListSize) && (getRank() >= slotListSize-1)) return;
+         if (cumulativePicCount.count() <  slotListSize+1) cumulativePicCount.append(cumulativePicCount[getRank()]+hash::FStringListHash[frameHashKey]->at(getRank()).count());
+    }
+    else setRank(0);
 
    if ((size < slotListSize) || slotListSize == 0) hash::FStringListHash[frameHashKey]->append(QStringList());
-
-   if (cumulativePicCount.count() <  slotListSize+1) cumulativePicCount.append(cumulativePicCount[getRank()]+hash::FStringListHash[frameHashKey]->at(getRank()).count());
 
    incrementRank();
 
@@ -264,7 +265,7 @@ void FListFrame::addGroup()
  fileListWidget->currentListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
 
  widgetContainer.append(fileListWidget->currentListWidget);
- mainTabWidget->insertTab(getRank() ,widgetContainer.at(getRank()) , tags[1] + " "+ QString::number(getRank()+1));
+ mainTabWidget->insertTab(getRank() ,widgetContainer.at(getRank()) , tags[1] + " "+ QString::number(getRank()+(force == false)));
  mainTabWidget->setCurrentIndex(getRank());
 }
 
@@ -347,20 +348,20 @@ void FListFrame::addDirectoryToListWidget(const QFileInfo& info, int filerank)
 }
 
 
-bool FListFrame::addStringToListWidget(QString filepath, int file)
+bool FListFrame::addStringToListWidget(QString filepath, int index)
 {
   // normaly it should be useless to call updateIndexInfo() here
  updateIndexInfo();
  if ((filepath.isEmpty()) || (currentIndex >= (*hash::FStringListHash[frameHashKey]).count() ) || (signalList == NULL)) return false;
-
- fileListWidget->currentListWidget->addItem(filepath);
+ q(currentIndex)
+ widgetContainer[index]->addItem(filepath);
  (*hash::FStringListHash[frameHashKey])[currentIndex] << filepath;
 
  *(fileListWidget->signalList) << filepath;
  *signalList << filepath; //make a copy. Necessary to avoid losing dragged and dropped files to list widget directly.
 
- for (int j=1; file+j < cumulativePicCount.count() ;  j++)
-   cumulativePicCount[file+j]++;
+ for (int j=1; index+j < cumulativePicCount.count() ;  j++)
+   cumulativePicCount[index+j]++;
 
  emit(is_signalList_changed(!signalList->isEmpty()));
  return true;

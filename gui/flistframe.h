@@ -75,7 +75,7 @@ QFileSystemModel *model;
 QGroupBox *controlButtonBox, *tabBox;
 
 public slots:
-void addGroup();
+void addGroup(bool force=false);
 void deleteGroup();
 void on_retrieveItemButton_clicked();
  void on_clearList_clicked(int currentIndex=-1);
