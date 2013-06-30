@@ -1581,11 +1581,11 @@ options::options(dvda* parent)
 void options::clearOptionData()
 {
     hash::FStringListHash.clear();
-    stillTab->slides->fileListWidget->currentListWidget->clear();
-    stillTab->selectoptionListWidget->fileListWidget->currentListWidget->clear();
-    audioMenuTab->slides->fileListWidget->currentListWidget->clear();
-    audioMenuTab->soundtracks->fileListWidget->currentListWidget->clear();
-    audioMenuTab->screentext->fileListWidget->currentListWidget->clear();
+    stillTab->slides->getCurrentWidget()->clear();
+    stillTab->selectoptionListWidget->getCurrentWidget()->clear();
+    audioMenuTab->slides->getCurrentWidget()->clear();
+    audioMenuTab->soundtracks->getCurrentWidget()->clear();
+    audioMenuTab->screentext->getCurrentWidget()->clear();
     options::RefreshFlag = UpdateOptionTabs;
 }
 

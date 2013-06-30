@@ -58,7 +58,7 @@ void dvda::on_playItemButton_clicked()
   if (row < 0)
     {
       row=0;
-      project[isVideo]->fileListWidget->currentListWidget->setCurrentRow(0);
+      project[isVideo]->getCurrentWidget()->setCurrentRow(0);
     }
   updateIndexChangeInfo();
 
@@ -359,7 +359,8 @@ void dvda::refreshRowPresentation(uint ZONE, uint j)
   palette.setColor(QPalette::AlternateBase,QColor("silver"));
   QFont font=QFont("Courier",10);
 
-  QListWidget *widget=project[ZONE]->getWidgetContainer()[j];
+  QListWidget *widget=project[ZONE]->getWidgetContainer(j);
+  if (widget == nullptr) return;
   widget->setPalette(palette);
   widget->setAlternatingRowColors(true);
   widget->setFont(font);
@@ -663,8 +664,8 @@ void dvda::updateIndexChangeInfo()
 void dvda::updateIndexInfo()
 {
   isVideo=mainTabWidget->currentIndex();
-  currentIndex=project[isVideo]->currentIndex;
-  row=project[isVideo]->row;
+  currentIndex=project[isVideo]->getCurrentIndex();
+  row=project[isVideo]->getCurrentRow();
   groupType=(isVideo)?"titleset":"group";
   tag=(isVideo)? "DVD-V" : "DVD-A";
 
@@ -693,7 +694,7 @@ void dvda::on_moveDownItemButton_clicked()
   updateIndexInfo();
 
   if (row < 0) return;
-  if (row == project[isVideo]->fileListWidget->currentListWidget->count() -1) return;
+  if (row == project[isVideo]->getCurrentWidget()->count() -1) return;
 
   fileSizeDataBase[isVideo][currentIndex].swap(row, row+1);
 
