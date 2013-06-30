@@ -139,7 +139,6 @@ public:
   void refreshWidgetDisplay();
   bool isAbstractEnabled() {return this->isEnabled();}
 
-  int rank;
   QStringList *signalList;
   QListWidget* currentListWidget;
   QString getHashKey() {return hashKey; }

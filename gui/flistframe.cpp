@@ -241,41 +241,45 @@ void FListFrame::on_embeddingTabIndex_changed(int index)
  if (index  > -1) fileLabel->setText(fileLabelText+" "+QString::number(mainTabWidget->currentIndex()+1)+"\n"+ slotList->at(mainTabWidget->currentIndex()));
 }
 
-void FListFrame::addGroup(bool force)
+
+inline void FListFrame::addNewTab()
 {
+    mainTabWidget->insertTab(getRank() ,widgetContainer.at(getRank()) , tags[1] + " "+ QString::number(getRank()+1));
+    mainTabWidget->setCurrentIndex(getRank());
+}
 
-    int size=hash::FStringListHash[frameHashKey]->size();
-    slotListSize=(slotList)? slotList->size() : 0;
+void FListFrame::addGroup()
+{
+        int size=hash::FStringListHash[frameHashKey]->size();
+        slotListSize=(slotList)? slotList->size() : 0;
 
-    // do not create an new group over an empty group (strict behaviour)
-    if (!force)
-    {
-         if (hash::FStringListHash[frameHashKey]->at(size-1).isEmpty()) return;
-         if ((slotListSize) && (getRank() >= slotListSize-1)) return;
-         if (cumulativePicCount.count() <  slotListSize+1) cumulativePicCount.append(cumulativePicCount[getRank()]+hash::FStringListHash[frameHashKey]->at(getRank()).count());
-    }
-    else setRank(0);
+        // do not create an new group over an empty group (strict behaviour)
 
-   if ((size < slotListSize) || slotListSize == 0) hash::FStringListHash[frameHashKey]->append(QStringList());
+        if (hash::FStringListHash[frameHashKey]->at(size-1).isEmpty()) return;
+        if ((slotListSize) && (getRank() >= slotListSize-1)) return;
 
-   incrementRank();
+        if (cumulativePicCount.count() <  slotListSize+1) cumulativePicCount.append(cumulativePicCount[getRank()]+hash::FStringListHash[frameHashKey]->at(getRank()).count());
 
- fileListWidget->currentListWidget=new QListWidget;
- fileListWidget->currentListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
- fileListWidget->currentListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+        //TODO: check this out
+        //if ((size < slotListSize) || slotListSize == 0) hash::FStringListHash[frameHashKey]->append(QStringList());
 
- widgetContainer.append(fileListWidget->currentListWidget);
- mainTabWidget->insertTab(getRank() ,widgetContainer.at(getRank()) , tags[1] + " "+ QString::number(getRank()+(force == false)));
- mainTabWidget->setCurrentIndex(getRank());
+        fileListWidget->currentListWidget=new QListWidget;
+        fileListWidget->currentListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
+        fileListWidget->currentListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+        widgetContainer.append(fileListWidget->currentListWidget);
+
+        addNewTab();
 }
 
 /* Unlike addGroup, this function is just used for reading groups from Xml */
 
 void FListFrame::addGroups(int n)
 {
-    for (int j=0; j <= n; j++)
+   for (int j=0; j <= n; j++)
    {
      if (j) addGroup();
+
      widgetContainer[j]->addItems((*hash::FStringListHash[frameHashKey])[j]);
       *signalList << hash::FStringListHash.value(frameHashKey)->at(j);
    }
@@ -303,7 +307,6 @@ void FListFrame::deleteGroup()
 
  if (getRank() < widgetContainer.size()) widgetContainer.removeAt(getRank());
 
- decrementRank();
 }
 
 #if 0
@@ -353,7 +356,7 @@ bool FListFrame::addStringToListWidget(QString filepath, int index)
   // normaly it should be useless to call updateIndexInfo() here
  updateIndexInfo();
  if ((filepath.isEmpty()) || (currentIndex >= (*hash::FStringListHash[frameHashKey]).count() ) || (signalList == NULL)) return false;
- q(currentIndex)
+
  widgetContainer[index]->addItem(filepath);
  (*hash::FStringListHash[frameHashKey])[currentIndex] << filepath;
 

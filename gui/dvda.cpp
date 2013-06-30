@@ -368,7 +368,6 @@ void dvda::refreshRowPresentation(uint ZONE, uint j)
   for (int r=0; r < hash::FStringListHash[localTag]->at(j).size(); r++ )
     {
       widget->item(r)->setText(hash::FStringListHash.value(localTag)->at(j).at(r).section('/',-1));
-      Q(hash::FStringListHash.value(localTag)->at(j).at(r).section('/',-1))
       widget->item(r)->setTextColor(QColor("navy"));
       widget->item(r)->setToolTip(fileSizeDataBase[ZONE].at(j).at(r)+" MB");
     }
@@ -425,7 +424,6 @@ void dvda::on_openProjectButton_clicked()
   if (projectName.isEmpty()) return;
 
   initializeProject();
-  managerWidget->show();
   must_close=true;
 
 }
@@ -456,6 +454,7 @@ void dvda::closeProject()
 {
   projectName="";
   clearProjectData();
+
   refreshProjectManager();
 
   for (int ZONE : {AUDIO, VIDEO})
@@ -465,9 +464,8 @@ void dvda::closeProject()
       project[ZONE]->mainTabWidget->removeTab(i);
     }
 
-    project[ZONE]->addGroup(true);
+    project[ZONE]->addNewTab();
   }
-
 }
 
 void dvda::clearProjectData()
@@ -475,13 +473,10 @@ void dvda::clearProjectData()
   RefreshFlag = (RefreshFlag == NoCreate)? CreateTreeAndRefreshAll : RefreshAll ;
   memset(inputSize, 0, 2*99*sizeof(quint64));
 
-
   for (int ZONE : {AUDIO, VIDEO})
     {
       for (int i=0; i <= project[ZONE]->getRank(); i++)
-        {
-          project[ZONE]->on_clearList_clicked(i);
-        }
+             project[ZONE]->on_clearList_clicked(i);
 
       project[ZONE]->signalList->clear();
       project[ZONE]->clearWidgetContainer();
@@ -498,26 +493,23 @@ void dvda::clearProjectData()
       choice=QMessageBox::information(this, "New settings",
                                       "This project contains new option settings.\nPress OK to replace your option settings,\notherwise No to parse only file paths\nor Cancel to exit project parsing.\n",
                                       QMessageBox::Ok|QMessageBox::No|QMessageBox::Cancel);
-
       switch (choice)
         {
-        case QMessageBox::Ok  :
-          options::RefreshFlag = UpdateOptionTabs;
-          emit(clearOptionData());
-          break;
+            case QMessageBox::Ok  :
+              options::RefreshFlag = UpdateOptionTabs;
+              emit(clearOptionData());
+              break;
 
+            case QMessageBox::No :
+              options::RefreshFlag = NoCreate;
+              break;
 
-        case QMessageBox::No :
-          options::RefreshFlag = NoCreate;
-          break;
-
-        case QMessageBox::Cancel :
-        default:
-          return;
-          break;
+            case QMessageBox::Cancel :
+            default:
+              return;
+              break;
         }
     }
-
 
   for (int ZONE : {AUDIO, VIDEO})
   {
@@ -525,11 +517,10 @@ void dvda::clearProjectData()
       project[ZONE]->initializeWidgetContainer();
   }
 
-/* cleanly wipe out main hash */
-hash::initializeFStringListHashes();
+    /* cleanly wipe out main hash */
+        hash::initializeFStringListHashes();
 
 }
-
 
 void dvda::on_helpButton_clicked()
 {

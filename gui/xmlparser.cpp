@@ -193,6 +193,8 @@ void dvda::DomParser(QIODevice* file)
   /* this stacks data into relevant list structures, processes information
    * and displays it in the manager tree Widget  */
 
+  if (!xmlDataWrapper.isEmpty()) xmlDataWrapper.clear();
+
   for (QString maintag : {"data", "system", "recent"})
   {
       parseXmlNodes(node, maintag);
@@ -204,7 +206,6 @@ void dvda::DomParser(QIODevice* file)
 
   if ((dvda::RefreshFlag&0xF000) == UpdateTabs)
   {
-
       assignVariables(xmlDataWrapper);
 
       // adds extra information to main window and sets alternating row colors
@@ -215,7 +216,6 @@ void dvda::DomParser(QIODevice* file)
               int r=0;
               for (QString text : xmlDataWrapper[ZONE][group_index])
               {
-
                   if (!text.isEmpty())
                          assignGroupFiles(ZONE, group_index, fileSizeDataBase[ZONE].at(group_index).at(r),QDir::toNativeSeparators(text));
                   r++;

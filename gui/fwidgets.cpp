@@ -225,7 +225,6 @@ FListWidget::FListWidget(const QString& hashKey,
 
     hash::initializeFStringListHash(hashKey);
 
-    rank=0;
     setObjectName(hashKey+" "+description);
     currentListWidget=new QListWidget;
     currentListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -364,9 +363,9 @@ FString FListWidget::setXmlFromWidget()
 
 void FListWidget::refreshWidgetDisplay()
 {
-    currentListWidget->clear();
-    if ((hash::FStringListHash.contains(hashKey)) && (hash::FStringListHash[hashKey]->count() > rank ))
-    currentListWidget->addItems(hash::FStringListHash[hashKey]->at(rank));
+//    currentListWidget->clear();
+//    if ((hash::FStringListHash.contains(hashKey)) && (hash::FStringListHash[hashKey]->count() > rank ))
+//         currentListWidget->addItems(hash::FStringListHash[hashKey]->at(getank));
 }
 
 

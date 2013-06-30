@@ -13,6 +13,7 @@ Q_OBJECT
 
 
 private:
+
   inline void updateIndexInfo();
 #if 0
   void deleteGroups(QList<int> &L);
@@ -32,14 +33,12 @@ QStringList* slotList;
 
 QList<int> cumulativePicCount;
 int slotListSize;
-int getRank() {return fileListWidget->rank;}
-void setRank(int r) {fileListWidget->rank=r;}
-void decrementRank() {fileListWidget->rank--;}
-void incrementRank() {fileListWidget->rank++;}
+int getRank() {return widgetContainer.count()-1;}
 
 QString &getHashKey() {return frameHashKey;}
 
 void addDirectoryToListWidget(const QFileInfo&, int);
+inline void addNewTab();
 
 int row, currentIndex;
 
@@ -48,7 +47,6 @@ bool addStringToListWidget(QString , int );
 void initializeWidgetContainer()
 {
     widgetContainer = QList<QListWidget*>() << fileListWidget->currentListWidget;
-    fileListWidget->rank=0;
 }
 
 void clearWidgetContainer()
@@ -75,7 +73,7 @@ QFileSystemModel *model;
 QGroupBox *controlButtonBox, *tabBox;
 
 public slots:
-void addGroup(bool force=false);
+void addGroup();
 void deleteGroup();
 void on_retrieveItemButton_clicked();
  void on_clearList_clicked(int currentIndex=-1);
