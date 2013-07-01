@@ -66,13 +66,9 @@ private:
     };
     QVector<HighlightingRule> highlightingRules;
 
-
     QTextCharFormat keywordFormat;
-    QTextCharFormat classFormat;
-    QTextCharFormat groupFormat;
-    QTextCharFormat fileFormat;
-    QTextCharFormat quotationFormat;
-    QTextCharFormat functionFormat;
+
+    void createRulePattern(QColor color,  QFont::Weight weight,  QStringList list);
 };
 
 #endif // HIGHLIGHTER_H

@@ -1,6 +1,6 @@
 #include "fcolor.h"
 #include "fstring.h"
-
+#include "common.h"
 
 /* Society of Motion Picture and Television Engineers,
 "Television - Signal Parameters - 1125-Line High-Definition Production", SMPTE 240M-1999.
@@ -11,7 +11,8 @@ qreal Kry =0.212;
 qreal Kby =0.087;
 qreal Kgy= 0.701;
 
-#define CONV(X)  QString::number(qFloor(X), 16)
+inline int normalise (qreal X) {return qFloor((X <0)? X+256 : X);}
+inline QString CONV(qreal X)  { return  QString::number(normalise(X), 16);}
 
 QString  RGB2YCrCbStr(QColor& color)
 {
@@ -42,11 +43,11 @@ QColor YCrCbStr2QColor(QString str)
     qreal Cr = str.mid(2,2).toFloat();
     qreal Cb = str.mid(4,2).toFloat();
 
-    qreal red = Y + Cr;
-    qreal green = Y - (Kby / Kgy) *Cb - (Kry / Kgy) *Cr;
-    qreal blue = Y + Cb;
-
-    return QColor(qFloor(red), qFloor(green),qFloor(blue));
+    qreal red = normalise(Y + Cr);
+    qreal green = normalise(Y - (Kby / Kgy) *Cb - (Kry / Kgy) *Cr);
+    qreal blue = normalise(Y + Cb);
+    q(blue)
+    return QColor(red, green, blue);
 }
 
 

@@ -41,7 +41,23 @@
 #include "highlighter.h"
 #include "fwidgets.h"
 
-//! [0]
+inline void Highlighter::createRulePattern(QColor color,  QFont::Weight weight,  QStringList list)
+{
+    HighlightingRule rule;
+    QTextCharFormat classFormat;
+
+    classFormat.setForeground(color);
+    classFormat.setFontWeight(weight);
+    rule.format = classFormat;
+
+    for (QString a : list)
+    {
+        rule.pattern = QRegExp(a);
+        highlightingRules.append(rule);
+    }
+}
+
+
 Highlighter::Highlighter(QTextDocument *parent)
     : QSyntaxHighlighter(parent)
 {
@@ -57,54 +73,15 @@ Highlighter::Highlighter(QTextDocument *parent)
         highlightingRules.append(rule);
     }
 
-    classFormat.setFontWeight(QFont::Bold);
-    classFormat.setForeground(Qt::darkBlue);
-    rule.pattern = QRegExp("\\bwidgetDepth\\b");
-    rule.format = classFormat;
-    highlightingRules.append(rule);
+    createRulePattern(Qt::darkBlue, QFont::Bold, {"\\bwidgetDepth\\b"});
 
-    groupFormat.setFontWeight(QFont::Bold);
-    groupFormat.setForeground(QColor("maroon"));
-    rule.pattern = QRegExp("\\bgroup\\b");
-    rule.format = groupFormat;
-    highlightingRules.append(rule);
-    rule.pattern = QRegExp("\\btitleset\\b");
-    highlightingRules.append(rule);
-    rule.pattern = QRegExp("\\btrack\\b");
-    highlightingRules.append(rule);
-    rule.pattern = QRegExp("\\bmenu\\b");
-    highlightingRules.append(rule);
+    createRulePattern(QColor("maroon"), QFont::Bold, {"\\bgroup\\b", "\\btitleset\\b", "\\btrack\\b", "\\bmenu\\b", "\\bYCrCb\\b"});
 
-    fileFormat.setFontWeight(QFont::Bold);
-    fileFormat.setForeground(QColor("orange"));
-    rule.pattern = QRegExp("\\bfile\\b");
-    rule.format = fileFormat;
-    highlightingRules.append(rule);
-    rule.pattern = QRegExp("\\bslide\\b");
-    highlightingRules.append(rule);
+    createRulePattern(QColor("orange"), QFont::Bold, {"\\bfile\\b", "\\bslide\\b"});
 
-    quotationFormat.setForeground(Qt::darkGreen);
-    rule.pattern = QRegExp("\".*\"");
-    rule.format = quotationFormat;
-    highlightingRules.append(rule);
+    createRulePattern(Qt::darkGreen, QFont::Black, {"\".*\""});
 
-    functionFormat.setFontWeight(QFont::Black);
-    functionFormat.setForeground(Qt::red);
-    rule.pattern = QRegExp("<[/]?");
-    rule.format = functionFormat;
-    highlightingRules.append(rule);
-    rule.pattern = QRegExp(">");
-    highlightingRules.append(rule);
-    rule.pattern = QRegExp("data>");
-    highlightingRules.append(rule);
-    rule.pattern = QRegExp("system>");
-    highlightingRules.append(rule);
-    rule.pattern = QRegExp("recent>");
-    highlightingRules.append(rule);
-    rule.pattern = QRegExp("project>");
-    highlightingRules.append(rule);
-    rule.pattern = QRegExp("<\\?xml");
-    highlightingRules.append(rule);
+    createRulePattern(Qt::red, QFont::Black, {"<[/]?", ">", "data>", "system>", "recent>", "project>", "<\\?xml"});
 }
 
 void Highlighter::highlightBlock(const QString &text)

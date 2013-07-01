@@ -532,7 +532,7 @@ void MainWindow::configureOptions()
     defaultConsoleLayoutBox=new FCheckBox("Launch console as tab",
                                                                                                        flags::noCommandLine|flags::checked,
                                                                                                        "launchConsoleAsTab",
-                                                                                                       "Add tab to bottom output panel on launching console");
+                                                                                                       "Add tab to bottom output panel\non launching console");
 
     defaultFullScreenLayout=new FCheckBox("Launch as full screen",
                                                                                                       flags::noCommandLine|flags::unchecked,
@@ -542,12 +542,12 @@ void MainWindow::configureOptions()
     defaultSaveProjectBehavior=new FCheckBox("Save .dvp project automatically",
                                                                                                       flags::noCommandLine|flags::checked,
                                                                                                       "saveProjectBehavior",
-                                                                                                      "If checked, saves project whenever a tab content is changed and on exiting the interface");
+                                                                                                      "Saves project if a tab content is changed\nand on exiting the interface");
 
     defaultLplexActivation=new FCheckBox("Activate video zone editing using Lplex",
                                                                                                   flags::noCommandLine|flags::checked,
                                                                                                   "activateLplex",
-                                                                                                  "A DVD-Video zone can be created using Lplex");
+                                                                                                  "Create DVD-Video zone\nusing Lplex");
 
     vlayout->addWidget(defaultFileManagerWidgetLayoutBox);
     vlayout->addWidget(defaultProjectManagerWidgetLayoutBox);
