@@ -117,7 +117,12 @@ printf("%s", J"except for lossy formats.\n");
 printf("%s","    --project [file]     Launches a dvda-author project."J"The project file should have the same syntax as dvda-author.conf [see file HOW_TO.conf]"J"By default, launches dvda-author.dap in the current directory.\n\n");
 printf("%s","-i, --input directory    Input directory with audio files."J"Each subdirectory is a group.\n\n");
 printf("%s","-o, --output directory   Output directory.\n\n");
-printf("%s","-x, --extract disc[list] Extract DVD-Audio to directory -o."J"Groups are labelled g1, g2..."J"Optional comma-separated list of groups to be extracted\n"J"may be appended to disc path.\n\n");
+
+printf("%s","-x, --extract disc[list] Extract DVD-Audio to directory -o."J"Groups are labelled g1, g2..."J"Optional comma-separated list of groups to be extracted\n"J"may be appended to disc path.\n"J"Tracks to be extracted may be listed ranked per group and separated by colons.\n\n");
+
+printf("%s","    --play disc[list]    Play DVD-Audio tracks."J"Optional comma-separated list of groups to be played\n"J"may be appended to disc path.\n"J"Tracks to be played may be listed ranked per group and separated by colons.\n\n");
+
+printf("%s","    --player PLAYER      Using a player that can be launched"J"by invocation of PLAYER (launch name or path to binary)"J"Player must return at end of each file."J"Default is 'vlc (files) vlc://quit'\n\n");
 printf("%s","-p, --startsector NNN    Specify the number of the first sector"J"of the AUDIO_PP.IFO file in the output of mkisofs.\n\n");
 printf("%s","                         If NNN=0, falling back on 281 (default).\n"J"Without -p start sector will be computed automatically.\n\n");
 printf("%s","-g                       You may specify up to 9 groups of tracks."J"Minimum: one group.\n");
@@ -276,17 +281,20 @@ printf("\n%s", "By default, defaults are set in /full path to dvda-author folder
 
 printf("%s", "Examples:\n");
 printf("%s", "\n\
--creates a 3-group DVD-Audio disc (legacy syntax):\n\n\
+-create a 3-group DVD-Audio disc (legacy syntax):\n\n\
   dvda-author -g file1.wav file2.flac -g file3.flac -g file4.wav\n\n");
 #if !HAVE_CORE_BUILD
-printf("%s", "-creates a hybrid DVD disc with both AUDIO_TS mirroring audio_input_directory\n\n\
+printf("%s", "-create a hybrid DVD disc with both AUDIO_TS mirroring audio_input_directory\n\n\
   and VIDEO_TS imported from directory VID, outputs disc structure to directory\n\n");
 printf("%s", " DVD_HYBRID and links video titleset #2 of VIDEO_TS to AUDIO_TS:\n\n");
 printf("%s","  dvda-author -i ~"SEPARATOR"audio"SEPARATOR"audio_input_directory"K"-o DVD_HYBRID -V Video"SEPARATOR"VID -T 2 \n\n");
-printf("%s", "-creates an audio folder from an existing DVD-Audio disc:\n\n\
-  dvda-author --extract /media/cdrom0,1,3,5,6,7 -o dir\n\n");
-printf("%s","will extract titlesets 1,3,5,6,7 of the disc to\n\n\
+printf("%s", "-create an audio folder from an existing DVD-Audio disc:\n\n\
+  dvda-author --extract /media/cdrom0,1,3:2,5:3,6,7 -o dir\n\n");
+printf("%s","will extract titlesets 1,3 (track 2),5 (track 3), 6,7 of the disc to\n\n\
 dir"SEPARATOR"g1, dir"SEPARATOR"g3, dir"SEPARATOR"g5, dir"SEPARATOR"g6, dir"SEPARATOR"g7 respectively.\n\n");
+printf("%s", "-play group 1 and track 2 of group 3 of an existing DVD-Audio disc using VLC:\n\n\
+  dvda-author --play /media/cdrom0,1,3:2 --player /usr/bin/vlc\n\n");
+
 printf("%s", "\nRequired compile-time constants:\n\n_GNU_SOURCE, __CB__ if compiling with Code::Blocks or similar IDE.\n\n");
 #endif
 
