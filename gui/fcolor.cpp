@@ -16,13 +16,15 @@ inline QString CONV(qreal X)  { return  QString::number(normalise(X), 16);}
 
 QString  RGB2YCrCbStr(QColor& color)
 {
-    qreal red=color.red();
-    qreal green=color.green();
-    qreal blue=color.blue();
+    int red=color.red();
+    int green=color.green();
+    int blue=color.blue();
 
-    qreal Y = Kry * red + Kgy * green + Kby * blue ;
+    Q("output:" + QString::number(red)+" "+QString::number(green)+" "+QString::number(blue))
+
+    qreal Y   = Kry * red + Kgy * green + Kby * blue ;
     qreal Cb = blue - Y;
-    qreal Cr = red - Y ;
+    qreal Cr  = red - Y ;
 
     return CONV(Y) + CONV(Cr) + CONV(Cb);
 
@@ -38,15 +40,17 @@ QString  RGBStr2YCrCbStr(const char* s)
 QColor YCrCbStr2QColor(QString str)
 {
     if (str.length() < 6) return QColor(0,0,0);
+    Q("YCrCb=> "+str)
+    int Y =  str.mid(0,2).toInt(NULL, 16);
+    int Cr = str.mid(2,2).toInt(NULL, 16);
+    int Cb = str.mid(4,2).toInt(NULL, 16);
 
-    qreal Y =  str.mid(0,2).toFloat();
-    qreal Cr = str.mid(2,2).toFloat();
-    qreal Cb = str.mid(4,2).toFloat();
+    Q("YCrCb-->"+QString::number(Y,16)+QString::number(Cr,16)+QString::number(Cb,16))
 
-    qreal red = normalise(Y + Cr);
-    qreal green = normalise(Y - (Kby / Kgy) *Cb - (Kry / Kgy) *Cr);
-    qreal blue = normalise(Y + Cb);
-    q(blue)
+    int red = Y + Cr;
+    int green = normalise(Y - (Kby / Kgy) *Cb - (Kry / Kgy) *Cr);
+    int blue = Y + Cb;
+    Q("RGB: "+QString::number(red)+" "+QString::number(green)+" "+QString::number(blue))
     return QColor(red, green, blue);
 }
 
