@@ -660,7 +660,13 @@ ALWAYS_INLINE_GCC int process_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* au
     return(audio_bytes);
 }
 
-int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,const char* ioflag)
+inline void         write_aob_path(aobfile, audiotsdir, titleset, filenum)
+{
+    STRING_WRITE_CHAR_BUFSIZ(aobfile, "%s"SEPARATOR"ATS_%02d_%d.AOB",audiotsdir,titleset,filenum)
+}
+
+
+int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,const char* ioflag, char* player, extractlist* extract)
 {
 
     FILE* aobfilepointer;
@@ -671,9 +677,45 @@ int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,con
     uint8_t audio_buf_out[AUDIO_BUFFER_SIZE];
     uint64_t pack_in_title=0;
 
-    STRING_WRITE_CHAR_BUFSIZ(aobfile, "%s"SEPARATOR"ATS_%02d_%d.AOB",audiotsdir,titleset,filenum)
-    if (!globals.nooutput) aobfilepointer=secure_open(aobfile,ioflag);
 
+PLAYBACK: // newer versions of VLC play back AOB files, this jjust triggers playback of the requested sequence of AOBs corresponding to audio groups.
+
+    if (player)
+    {
+
+        while (filenum < )
+        if ((extract) && (!extract->extracttitleset[filenum-1]))
+        {
+            filenum++;
+            continue;
+        }
+
+      {
+                    write_aob_path(aobfile, audiotsdir, titleset, filenum);
+                    char* argsplayer[]={aobfile, "vlc://quit", NULL};
+                    if (strcmp(player, "vlc") != 0) argsplayer[1]=NULL;
+                    if (run(player, argsplayer, 0) == -1)  // will wait for player until ends
+                    {
+                        EXPLAIN_DEV("[ERR]  Could not play group:", i)
+                        EXIT_ON_RUNTIME_ERROR
+                    }
+                    else
+                    {
+                        EXPLAIN_DEV("[ERR]  Played group:", i)
+                        return;
+                    }
+                    filenum++;
+
+       }
+       return 1-filenum;
+
+    }
+
+EXTRACT:   //extraction file by file may be necessary even for playback on some players
+
+    write_aob_path(aobfile, audiotsdir, titleset, filenum);
+
+    if (!globals.nooutput) aobfilepointer=secure_open(aobfile,ioflag);
     /* Open the first file and initialise the input audio buffer */
 
 
@@ -709,16 +751,41 @@ int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,con
         {
             fclose(aobfilepointer);
             filenum++;
-            STRING_WRITE_CHAR_BUFSIZ(aobfile, "%s"SEPARATOR"ATS_%02d_%d.AOB",audiotsdir,titleset,filenum)
+            write_aob_path(aobfile, audiotsdir, titleset, filenum);
+
             if (!globals.nooutput) aobfilepointer=fopen(aobfile,ioflag);
         }
 
         if (bytesinbuf < lpcm_payload)
         {
+
+
+            if (player)
+            {
+                if (globals.debugging) foutput("[INF]  Extracting audio to buffer before playing with %s\n", player);
+            }
+
+
             n=process_audio(&files[i],&audio_buf_in[bytesinbuf],&audio_buf_out[bytesinbuf],AUDIO_BUFFER_SIZE-bytesinbuf,ioflag);
             bytesinbuf+=n;
             if (n==0)   /* We have reached the end of the input file */
             {
+                if (globals.veryverbose)
+                {
+                    foutput("[INF]  Audio processing g of track %d completed.\n", i);
+                    if (player)
+                        foutput("[INF]  Now playing with %s\n", player);
+                }
+
+                if (player)
+                {
+                    char* argsplayer[]={files[i].filename, "vlc://quit", NULL};
+                    if (run(player, argsplayer, 0) == -1)  // will wait for player until ends
+                        EXPLAIN_DEV("[ERR]  Could not play file", i)
+                        EXIT_ON_RUNTIME_ERROR
+
+                }
+
                 files[i].last_sector=pack;
                 audio_close(&files[i],ioflag);
                 i++;

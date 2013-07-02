@@ -165,6 +165,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"no-refresh-tempdir",no_argument, NULL, 4},
         {"no-refresh-outdir",no_argument, NULL, 5},
         {"extract", required_argument, NULL, 'x'},
+        {"play", required_argument, NULL, 12},
+        {"player", required_argument, NULL, 13},
 
 #if !HAVE_CORE_BUILD
         {"videodir", required_argument, NULL, 'V'},
@@ -726,12 +728,14 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     #if !HAVE_CORE_BUILD
     int nvideolinking_groups_scan=0, strlength=0;
     char* piccolorchain, *activepiccolorchain, *palettecolorchain, *fontchain, *durationchain=NULL,
-            *h, *min, *sec, **tab=NULL,**tab2=NULL, *stillpic_string=NULL, *still_options_string=NULL, *import_topmenu_path=NULL;
+            *h, *min, *sec, **tab=NULL,**tab2=NULL, *stillpic_string=NULL, *still_options_string=NULL, *import_topmenu_path=NULL, *player="vlc";
     _Bool import_topmenu_flag=0;
     uint16_t npics[totntracks];
     #endif
     char** textable=NULL;
     _Bool extract_audio_flag=0;
+
+
 
     optind=0;
     opterr=1;
@@ -760,16 +764,26 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s\n", "[PAR]  Debugging-level verbosity");
             break;
 
-        case 'x' :
+
+       case 12:
+
+        //no break with 'x'
+
+       case 'x' :
 
             extract_audio_flag=1;
+            player=NULL;
             FREE(globals.settings.indir)
             globals.settings.indir=strdup(optarg);
 
             break;
 
+       case  13:
 
-        case 'n' :
+            player=strdup(optarg);
+            break;
+
+       case 'n' :
             // There is no videozone in this case
 
             if (globals.videolinking)
@@ -1456,7 +1470,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     if (extract_audio_flag)
     {
         extract_list_parsing(globals.settings.indir, &extract);
-        ats2wav_parsing(globals.settings.indir, &extract);
+        ats2wav_parsing(globals.settings.indir, &extract, player);
         return(NULL);
     }
 
@@ -2107,7 +2121,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
     strtok(chain, ",");
 
     if (globals.debugging)
-        foutput("%s\n", "[INF]  Analysing --extract suboptions...");
+        foutput("%s\n", "[INF]  Analysing --extract/--play suboptions...");
 
 
     control=1;
@@ -2136,7 +2150,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
         if ((groupindex > 8) || (groupindex < 0) || (nextractgroup == 8) || (trackindex > 98))
         {
             groupindex=0;
-            foutput("%s\n", "[WAR]  Incorrect --extract suboption, exceeding limits reset to 0.");
+            foutput("%s\n", "[WAR]  Incorrect --extract/--play suboption, exceeding limits reset to 0.");
             nextractgroup=0;
             trackindex=0;
         }
@@ -2166,7 +2180,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
 }
 
 
-void ats2wav_parsing(const char * arg, extractlist* extract)
+void ats2wav_parsing(const char * arg, extractlist* extract, char* player)
 {
 
     char * chain, list[9];
@@ -2190,11 +2204,11 @@ void ats2wav_parsing(const char * arg, extractlist* extract)
     if (extract->nextractgroup[0])
     {
 
-        parse_disk(dir, globals.access_rights,  OUTDIR, extract);
+        parse_disk(dir, globals.access_rights,  OUTDIR, extract, player);
     }
     else
 
-        parse_disk(dir, globals.access_rights, OUTDIR, NULL);
+        parse_disk(dir, globals.access_rights, OUTDIR, NULL, player);
 
     if (closedir(dir) == -1)
         foutput( "%s\n", "[ERR]  Impossible to close dir");

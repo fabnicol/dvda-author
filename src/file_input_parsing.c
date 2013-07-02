@@ -159,9 +159,14 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
         _Bool read_cga_file=0;
         cgafile=fopen(CGA_FILE, "rb");
         if (cgafile != NULL)
-            { if (globals.debugging) foutput("%s", "[MSG]  Channel assignment file was opened\n"); read_cga_file=1;}
+        {
+            if (globals.debugging) foutput("%s", "[MSG]  Channel assignment file was opened\n");
+            read_cga_file=1;
+        }
         else
-            {if (globals.debugging) foutput("%s", "[MSG]  Automatic channel assignment.\n"); }
+        {
+            if (globals.debugging) foutput("%s", "[MSG]  Automatic channel assignment.\n");
+        }
 
 
         do
@@ -198,7 +203,10 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
                     char cga[4]; // 2 digits+newline+\0
 
                     if (NULL == fgets(cga, 3, cgafile))
-                    { perror("[ERR]  fgets"); clean_exit(EXIT_FAILURE);}
+                    {
+                        perror("[ERR]  fgets");
+                        clean_exit(EXIT_FAILURE);
+                    }
 
                     cga[3]='\0'; // cut at newline
                     uint8_t cgaint=(uint8_t) atoi(cga);
@@ -213,7 +221,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
                     }
                 }
                 else
-                        files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgadef[files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].channels-1];
+                    files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgadef[files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].channels-1];
 
 
 
@@ -265,7 +273,7 @@ static int check_ignored_extension(void *path)
     return (0);
 }
 
-int parse_disk(DIR* dir, mode_t mode, const char* default_directory, extractlist  *extract)
+int parse_disk(DIR* dir, mode_t mode, const char* default_directory, extractlist  *extract, const char* player)
 {
 
     char ngroups_scan=0, control=0;
@@ -312,34 +320,43 @@ int parse_disk(DIR* dir, mode_t mode, const char* default_directory, extractlist
         FREE(d_name_duplicate)
 
 
+        char  MSG[11]="Extracting";
+        if (player)
+            strcpy(MSG,"Playing");
 
         if ((globals.debugging)&& (!globals.nooutput))
-            foutput("[INF]  Extracting titleset %s ...\n", rootdirent->d_name);
+          foutput("[INF]  %s%s%s%s",MSG," titleset ", rootdirent->d_name," ...\n");
 
         char output_buf[strlen(globals.settings.outdir) + 3 + 1];
-        STRING_WRITE_CHAR_BUFSIZ(output_buf, "%s%s%d", globals.settings.outdir, "/g", ngroups_scan)
 
-        if (!globals.nooutput)
-            secure_mkdir(
-            output_buf,
-            mode,
-            default_directory);
-
-        if ((globals.debugging)&& (!globals.nooutput))
-            foutput("[INF]  Extracting to directory %s ...\n", output_buf);
-
-        if (ats2wav(rootdirent->d_name, output_buf,  extract) == EXIT_SUCCESS)
+        if (player == NULL)
         {
-            control++;
-            if  (globals.debugging)
+            STRING_WRITE_CHAR_BUFSIZ(output_buf, "%s%s%d", globals.settings.outdir, "/g", ngroups_scan)
+            if (!globals.nooutput)
+                secure_mkdir(
+                    output_buf,
+                    mode,
+                    default_directory);
 
-                foutput("%s\n", "[INF]  Extraction completed.");
+            if ((globals.debugging)&& (!globals.nooutput))
+                foutput("[INF]  Extracting to directory %s ...\n", output_buf);
         }
         else
-        {
-            foutput("[INF]  Error extracting audio in titleset %d\n", ngroups_scan);
-            continue;
-        }
+            STRING_WRITE_CHAR_BUFSIZ(output_buf, "%s", globals.settings.tempdir )
+
+            if (ats2wav(rootdirent->d_name, output_buf,  extract, player) == EXIT_SUCCESS)
+            {
+                control++;
+                if  (globals.debugging)
+                if (player == NULL)
+                    foutput("%s\n", "[INF]  Extraction completed.");
+            }
+            else
+            {
+                if (player == NULL) foutput("[INF]  Error extracting audio in titleset %d\n", ngroups_scan);
+                else   foutput("%s", "[INF]  Error playing audio.\n");
+                continue;
+            }
 
 
     }
@@ -348,13 +365,13 @@ int parse_disk(DIR* dir, mode_t mode, const char* default_directory, extractlist
         switch (control)
         {
         case 1:
-            foutput("%s", "[MSG]  One group was extracted.\n");
+            foutput("%s", "[MSG]  One group was extracted/played.\n");
             break;
         case 0:
-            foutput("%s", "[MSG]  No group was extracted.\n");
+            foutput("%s", "[MSG]  No group was extracted/played.\n");
             break;
         default:
-            foutput("\n[MSG]  %d groups were extracted.\n", control);
+            foutput("\n[MSG]  %d groups were extracted/played.\n", control);
         }
 
 

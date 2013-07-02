@@ -1718,7 +1718,7 @@
 	<stdio.h>
 	<stdlib.h>
 
-1341073717 /home/fab/Dev/dvda-author-dev//config.h
+1341788590 /home/fab/Dev/dvda-author-dev//config.h
 
 1340527722 /home/fab/Dev/dvda-author-dev/libiberty/src/include/getopt.h
 	<ctype.h>
@@ -1757,7 +1757,7 @@
 1340527722 /home/fab/Dev/dvda-author-dev/libutils/src/include/ordinals.h
 	<inttypes.h>
 
-1341604286 /home/fab/Dev/dvda-author-dev/libutils/src/include/c_utils.h
+1341706312 /home/fab/Dev/dvda-author-dev/libutils/src/include/c_utils.h
 	"config.h"
 	"version.h"
 	<sys/types.h>
@@ -1769,7 +1769,7 @@
 1340527722 /home/fab/Dev/dvda-author-dev/src/include/version.h
 	"config.h"
 
-1340527722 /home/fab/Dev/dvda-author-dev/src/include/commonvars.h
+1341688400 /home/fab/Dev/dvda-author-dev/src/include/commonvars.h
 	"config.h"
 	"libiberty.h"
 
@@ -1815,7 +1815,7 @@
 	<sys/resource.h>
 	<sys/stat.h>
 
-1341401511 /home/fab/Dev/dvda-author-dev/src/include/auxiliary.h
+1341753106 /home/fab/Dev/dvda-author-dev/src/include/auxiliary.h
 	<sys/stat.h>
 	<sys/types.h>
 	<dirent.h>
@@ -1825,7 +1825,7 @@
 	"commonvars.h"
 	"structures.h"
 
-1341606062 /home/fab/Dev/dvda-author-dev/src/include/audio2.h
+1341701318 /home/fab/Dev/dvda-author-dev/src/include/audio2.h
 	<stdio.h>
 	<stdint.h>
 	<sys/types.h>
@@ -1853,7 +1853,7 @@
 
 1340527722 /home/fab/Dev/dvda-author-dev/src/include/libsoxconvert.h
 
-1341073732 source:/home/fab/Dev/dvda-author-dev/src/file_input_parsing.c
+1341787376 source:/home/fab/Dev/dvda-author-dev/src/file_input_parsing.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -1861,11 +1861,11 @@
 	"structures.h"
 	"file_input_parsing.h"
 	"c_utils.h"
-	"libats2wav.h"
+	"ats2wav.h"
 	"ports.h"
 	"commonvars.h"
 
-1340527722 /home/fab/Dev/dvda-author-dev/src/include/file_input_parsing.h
+1341746881 /home/fab/Dev/dvda-author-dev/src/include/file_input_parsing.h
 	"auxiliary.h"
 
 1340527722 /home/fab/Dev/dvda-author-dev/libats2wav/src/include/libats2wav.h
@@ -1881,7 +1881,7 @@
 	"structures.h"
 	"libiberty.h"
 
-1341061284 /home/fab/Dev/dvda-author-dev/src/include/ports.h
+1341684396 /home/fab/Dev/dvda-author-dev/src/include/ports.h
 	<io.h>
 	<sys/resource.h>
 	"commonvars.h"
@@ -1967,7 +1967,7 @@
 	"commonvars.h"
 	"structures.h"
 
-1341605966 source:/home/fab/Dev/dvda-author-dev/src/ats.c
+1341786112 source:/home/fab/Dev/dvda-author-dev/src/ats.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -1980,12 +1980,12 @@
 	"commonvars.h"
 	"ats.h"
 
-1341604246 /home/fab/Dev/dvda-author-dev/src/include/ats.h
+1341786004 /home/fab/Dev/dvda-author-dev/src/include/ats.h
 	<stdio.h>
 	<stdint.h>
 	"audio2.h"
 
-1341152352 source:/home/fab/Dev/dvda-author-dev/src/auxiliary.c
+1341961471 source:/home/fab/Dev/dvda-author-dev/src/auxiliary.c
 	"config.h"
 	<stdlib.h>
 	<stdio.h>
@@ -2050,7 +2050,7 @@
 	"commonvars.h"
 	"dvda-author.h"
 
-1341069139 /home/fab/Dev/dvda-author-dev/src/include/command_line_parsing.h
+1341747953 /home/fab/Dev/dvda-author-dev/src/include/command_line_parsing.h
 	"structures.h"
 	"commonvars.h"
 	"fixwav_manager.h"
@@ -2103,7 +2103,7 @@
 	<string.h>
 	"strdup.h"
 
-1341176038 source:/home/fab/Dev/dvda-author-dev/src/audio.c
+1341705252 source:/home/fab/Dev/dvda-author-dev/src/audio.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -2132,7 +2132,7 @@
 
 1340527722 /home/fab/Dev/dvda-author-dev/libfixwav/src/include/audio.h
 
-1340527722 /home/fab/Dev/dvda-author-dev/src/include/multichannel.h
+1341689531 /home/fab/Dev/dvda-author-dev/src/include/multichannel.h
 
 1341073653 source:/home/fab/Dev/dvda-author-dev/src/videoimport.c
 	<stdio.h>
@@ -2181,7 +2181,7 @@
 	"auxiliary.h"
 	"amg.h"
 
-1341439203 source:/home/fab/Dev/dvda-author-dev/src/launch_manager.c
+1341787405 source:/home/fab/Dev/dvda-author-dev/src/launch_manager.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -2236,7 +2236,7 @@
 	"getopt.h"
 	"getopt_int.h"
 
-1341154589 source:/home/fab/Dev/dvda-author-dev/src/command_line_parsing.c
+1341753106 source:/home/fab/Dev/dvda-author-dev/src/command_line_parsing.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -2272,4 +2272,24 @@
 	<string.h>
 	"strchrnul.h"
 	"getsubopt.h"
+
+1341787214 /home/fab/Dev/dvda-author-dev/src/include/ats2wav.h
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<fcntl.h>
+	<unistd.h>
+	<inttypes.h>
+	<stdint.h>
+	"structures.h"
+	"libiberty.h"
+
+1341753106 source:/home/fab/Dev/dvda-author-dev/src/ats2wav.c
+	"ats2wav.h"
+	"c_utils.h"
+	"winport.h"
+	"multichannel.h"
+	"auxiliary.h"
 

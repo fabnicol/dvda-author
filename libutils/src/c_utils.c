@@ -1436,6 +1436,7 @@ char* quote(char* path)
 
 int run(char* application, char* args[], int option)
 {
+errno=0;
 #if !defined __WIN32__
     int pid;
     int tube[2];
@@ -1477,7 +1478,7 @@ int run(char* application, char* args[], int option)
     sprintf(cml, "\"%s\" %s",  application, s);
     free(s);
     if (globals.debugging) foutput("[INF]  Running: %s\n ", cml);
-    system(cml);
+    errno=system(cml);
 #endif
 
     return errno;

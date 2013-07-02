@@ -319,7 +319,7 @@ void process_wav_file(char* outfile, const char* outdir, int length, _fileinfo_t
 }
 
 
-int ats2wav(const char* filename, const char* outdir, extractlist *extract)
+int ats2wav(const char* filename, const char* outdir, extractlist *extract, char* player)
 {
 
 #if 0
