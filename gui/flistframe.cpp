@@ -137,7 +137,7 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
   if (parent) connect(parent, SIGNAL(is_signalList_changed(int)), this, SLOT(on_mainTabIndex_changed(int)));
  connect(importFromMainTree, SIGNAL(clicked()), this,  SLOT(on_importFromMainTree_clicked()));
  connect(moveUpItemButton, SIGNAL(clicked()), this, SLOT(on_moveUpItemButton_clicked()));
- connect(retrieveItemButton, SIGNAL(clicked()), this, SLOT(on_retrieveItemButton_clicked()));
+ connect(retrieveItemButton, SIGNAL(clicked()), this, SLOT(on_deleteItem_clicked()));
  connect(moveDownItemButton, SIGNAL(clicked()), this, SLOT(on_moveDownItemButton_clicked()));
  connect(fileListWidget, SIGNAL(open_tabs_signal(int)), this, SLOT(addGroups(int)));
  connect(clearList, SIGNAL(clicked()), this, SLOT(on_clearList_clicked()));
@@ -185,7 +185,7 @@ void FListFrame::on_moveUpItemButton_clicked()
    (*hash::FStringListHash[frameHashKey])[currentIndex].swap(row, row-1);
 }
 
-void FListFrame::on_retrieveItemButton_clicked()
+void FListFrame::on_deleteItem_clicked()
 {
   updateIndexInfo();
 
@@ -204,6 +204,7 @@ void FListFrame::on_retrieveItemButton_clicked()
   }
 
    if (localrow) fileListWidget->currentListWidget->setCurrentRow(localrow-1);
+   else if (localrow==0) fileListWidget->currentListWidget->setCurrentRow(0);
    row=localrow-1;
 }
 
@@ -261,7 +262,7 @@ void FListFrame::addGroup()
         if (cumulativePicCount.count() <  slotListSize+1) cumulativePicCount.append(cumulativePicCount[getRank()]+hash::FStringListHash[frameHashKey]->at(getRank()).count());
 
         //TODO: check this out
-        //if ((size < slotListSize) || slotListSize == 0) hash::FStringListHash[frameHashKey]->append(QStringList());
+        if ((size < slotListSize) || slotListSize == 0) hash::FStringListHash[frameHashKey]->append(QStringList());
 
         fileListWidget->currentListWidget=new QListWidget;
         fileListWidget->currentListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);

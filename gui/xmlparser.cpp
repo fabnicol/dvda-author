@@ -110,12 +110,12 @@ void displayTextData(const QString &firstColumn,
  *                       tags[1] 1 : xxx  ...  size MB
  *                       tags[1] 2 : xxx  ...  size MB  */
 
-inline void displaySecondLevelData(    const QStringList &tags,
+inline qint64 displaySecondLevelData(    const QStringList &tags,
                                               const QList<QStringList> &stackedInfo,
                                               const QList<QStringList> &stackedSizeInfo)
     {
       int k=0, count=0, l;
-      double filesizecount=0;
+      qint64 filesizecount=0;
       QString  firstColumn, root=tags.at(1), secondColumn=tags.at(2), thirdColumn;
 
       QListIterator<QStringList> i(stackedInfo), j(stackedSizeInfo);
@@ -140,15 +140,17 @@ inline void displaySecondLevelData(    const QStringList &tags,
 
                if ((stackedSizeInfo.size() > 0) && (z.hasNext()))
                {
-                   QString filesize=z.next();
-                   filesizecount += filesize.toDouble();
-                   thirdColumn    = filesize + "/"+  QString::number(filesizecount)+ " MB" ;
+                   qint64 msize=z.next().toLongLong();
+                   filesizecount += msize;
+                   // force coertion into float or double using .0
+                   thirdColumn    = QString::number(msize/1048576.0, 'f', 1) + "/"+  QString::number(filesizecount/1048576.0, 'f', 1)+ " MB" ;
                }
 
                displayTextData("", secondColumn, thirdColumn, (z.hasNext())? QColor("navy"): ((j.hasNext())? QColor("orange") :QColor("red")));
 
            }
          }
+      return filesizecount;
      }
 
 
@@ -156,9 +158,9 @@ inline void displaySecondLevelData(    const QStringList &tags,
  *                       tags[1] 1 : xxx  ...  (size MB)
  *                       tags[1] 2 : xxx  ...  (size MB) ... */
 
-inline void displayFirstLevelData( const QStringList &tags,  const QStringList &stackedInfo)
+inline qint64 displayFirstLevelData( const QStringList &tags,  const QStringList &stackedInfo)
     {
-         displaySecondLevelData( tags, QList<QStringList>() << stackedInfo, QList<QStringList>());
+         return displaySecondLevelData( tags, QList<QStringList>() << stackedInfo, QList<QStringList>());
     }
 
 
@@ -291,7 +293,7 @@ FStringList dvda::parseEntry(const QDomNode &node, QTreeWidgetItem *itemParent)
        case 2 :
               secondLevelData=XmlMethod::stackSecondLevelData(node, tags);
               fileSizeData=processSecondLevelData(secondLevelData, tags.at(2) == "file");
-              XmlMethod::displaySecondLevelData(
+              dvda::totalSize+=XmlMethod::displaySecondLevelData(
                           {tags.at(0), tags.at(1), tags.at(2)},
                           secondLevelData,
                           fileSizeData);
@@ -329,11 +331,7 @@ inline QList<QStringList> dvda::processSecondLevelData(QList<QStringList> &L, bo
                    if (isFile & QFileInfo(text).isFile())  // double check on file status. First check is for processing speed, so that QFileInfo is only called when necessary
                    {
                        // computing filesizes
-                           qint64 byteCount=QFileInfo(text).size();
-                      // force coertion into float or double using .0
-                          double s=byteCount/1048576.0;
-                           stackedSizeInfo1 <<  QString::number(s , 'f', 1);
-
+                        stackedSizeInfo1 <<  QString::number((long) QFileInfo(text).size());
                    }
                }
 

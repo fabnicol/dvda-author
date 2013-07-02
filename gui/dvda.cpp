@@ -14,7 +14,7 @@
 
 RefreshManagerFilter dvda::RefreshFlag=NoCreate;
 int flags::lplexRank=0;
-
+qint64   dvda::totalSize=0;
 class hash;
 
 
@@ -26,8 +26,6 @@ void dvda::initialize()
   maxRange=0;
 
   startProgressBar=startProgressBar2=startProgressBar3=0;
-  inputSizeCount=inputTotalSize=value=0;
-  memset(inputSize,0,2*99*sizeof(quint64));
 
   myTimerId=isVideo=0;
   tempdir=QDir::homePath ()+QDir::separator()+"tempdir";  // should be equal to main app globals.settings.tempdir=TEMPDIR
@@ -37,6 +35,7 @@ void dvda::initialize()
   hash::description["titleset"]="DVD-Video titleset";
   hash::description["group"]="DVD-Audio group";
   hash::description["recent"]="Recent file";
+
 
 }
 
@@ -220,8 +219,8 @@ dvda::dvda()
   connect(project[VIDEO]->moveUpItemButton, SIGNAL(clicked()), this, SLOT(on_moveUpItemButton_clicked()));
   connect(project[AUDIO]->moveDownItemButton, SIGNAL(clicked()), this, SLOT(on_moveDownItemButton_clicked()));
   connect(project[VIDEO]->moveDownItemButton, SIGNAL(clicked()), this, SLOT(on_moveDownItemButton_clicked()));
-  connect(project[AUDIO]->retrieveItemButton, SIGNAL(clicked()), this, SLOT(on_retrieveItemButton_clicked()));
-  connect(project[VIDEO]->retrieveItemButton, SIGNAL(clicked()), this, SLOT(on_retrieveItemButton_clicked()));
+  connect(project[AUDIO]->retrieveItemButton, SIGNAL(clicked()), this, SLOT(on_deleteItem_clicked()));
+  connect(project[VIDEO]->retrieveItemButton, SIGNAL(clicked()), this, SLOT(on_deleteItem_clicked()));
   connect(mainTabWidget, SIGNAL(currentChanged(int)), this, SLOT(on_frameTab_changed(int )));
   connect(playItemButton, SIGNAL(clicked()), this, SLOT(on_playItemButton_clicked()));
   connect(this, SIGNAL(hasIndexChangedSignal()), this, SLOT(on_playItem_changed()));
@@ -325,22 +324,11 @@ void dvda::on_clearOutputTextButton_clicked()
 }
 
 
-uint dvda::addStringToListWidget(QString filepath)
+void dvda::addStringToListWidget()
 {
-
-  updateIndexInfo();
-
-  QString msg=QString(MSG_HTML_TAG "Added file %4 to " + groupType +" %1\n"+groupType+" size:  %2, total size: %3\n");
-
-  QFileInfo fileInfo(filepath);
-  quint64 size=(quint64) fileInfo.size();
-  inputSize[isVideo][currentIndex] += size;
-  inputSizeCount += size;
-
-  outputTextEdit->append(msg.arg(QString::number(currentIndex+1), QString::number(inputSize[isVideo][currentIndex]), QString::number(inputSizeCount),fileInfo.fileName()));
-
-  return 0;
-
+    displayTotalSize();
+    RefreshFlag=SaveAndUpdateTree;
+    if (parent->defaultSaveProjectBehavior) saveProject();
 }
 
 
@@ -370,7 +358,7 @@ void dvda::refreshRowPresentation(uint ZONE, uint j)
     {
       widget->item(r)->setText(hash::FStringListHash.value(localTag)->at(j).at(r).section('/',-1));
       widget->item(r)->setTextColor(QColor("navy"));
-      widget->item(r)->setToolTip(fileSizeDataBase[ZONE].at(j).at(r)+" MB");
+      widget->item(r)->setToolTip(fileSizeDataBase[ZONE].at(j).at(r)+" B");
     }
 }
 
@@ -396,7 +384,7 @@ void dvda::addDirectoryToListWidget(QDir dir)
           addDirectoryToListWidget(QDir(file.canonicalFilePath()));
         }
       else
-        addStringToListWidget(file.canonicalFilePath());
+        addStringToListWidget();
     }
 }
 
@@ -472,7 +460,6 @@ void dvda::closeProject()
 void dvda::clearProjectData()
 {
   RefreshFlag = (RefreshFlag == NoCreate)? CreateTreeAndRefreshAll : RefreshAll ;
-  memset(inputSize, 0, 2*99*sizeof(quint64));
 
   for (int ZONE : {AUDIO, VIDEO})
     {
@@ -484,8 +471,6 @@ void dvda::clearProjectData()
       fileSizeDataBase[ZONE].clear();
     }
 
-
-  inputSizeCount=inputTotalSize=0;
 
   QMessageBox::StandardButton choice=QMessageBox::Cancel;
 
@@ -612,11 +597,17 @@ void dvda::addGroup()
 
 }
 
+
+void dvda::displayTotalSize()
+{
+      outputTextEdit->append(MSG_HTML_TAG "Total size:  " + QString::number(dvda::totalSize) + " B ("+QString::number(dvda::totalSize/(1024*1024))+" MB)");
+}
+
 void dvda::deleteGroup()
 {
   updateIndexInfo();
   uint rank=(uint) project[isVideo]->getRank();
-  inputSizeCount-=inputSize[isVideo][currentIndex];
+
   if ((uint) fileSizeDataBase[isVideo].size() > currentIndex)
       fileSizeDataBase[isVideo][currentIndex].clear();
 
@@ -628,19 +619,13 @@ void dvda::deleteGroup()
           for (unsigned j=currentIndex; j < rank ; j++)
             {
               fileSizeDataBase[isVideo][j]=fileSizeDataBase[isVideo][j+1];
-              inputSize[isVideo][j]=inputSize[isVideo][j+1];
-            }
+             }
         }
-    }else
-    {
-      inputSize[isVideo][currentIndex]=0;
     }
 
 
-  if (currentIndex) outputTextEdit->append(QString(MSG_HTML_TAG "Deleted "+groupType+" %1, total size: %2\n").
-                                                                           arg(QString::number(currentIndex+1), QString::number(inputSizeCount)));
-
   if (parent->defaultSaveProjectBehavior) saveProject();
+  displayTotalSize();
 }
 
 static bool firstSelection=true;
@@ -730,7 +715,7 @@ void dvda::addSelectedFileToProject()
              return;
           }
 
-          addStringToListWidget(path);
+          addStringToListWidget();
         }
       else
         {
@@ -745,20 +730,8 @@ void dvda::addSelectedFileToProject()
 }
 
 
-void dvda::on_retrieveItemButton_clicked()
+void dvda::on_deleteItem_clicked()
 {
-
-  updateIndexInfo();
-
-  if (row <0) return;
-
-  quint64 size=(quint64) fileSizeDataBase[isVideo][currentIndex].takeAt(row).toInt();
-
-  inputSize[isVideo][currentIndex]-=size;
-  inputSizeCount-=size;
-
-  outputTextEdit->append(QString(MSG_HTML_TAG "Retrieved file from " + groupType  + " %1\n"+ groupType+ " size: %2, total size: %3\n").arg(QString::number(currentIndex+1),
-                                                                                                                                 QString::number(inputSize[isVideo][currentIndex]), QString::number(inputSizeCount)));
   RefreshFlag=SaveAndUpdateTree;
   if (parent->defaultSaveProjectBehavior) saveProject();
 
@@ -804,8 +777,8 @@ void dvda::remove()
 
 float dvda::discShare(qint64 directorySize)
 {
-  if (inputTotalSize > 1024*1024*1024*4.7) outputTextEdit->append(tr(ERROR_HTML_TAG "total size exceeds 4.7 GB\n"));
-  float share=100* ((float) directorySize ) /((float) inputTotalSize);
+  if (dvda::totalSize > 1024*1024*1024*4.7) outputTextEdit->append(tr(ERROR_HTML_TAG "total size exceeds 4.7 GB\n"));
+  float share=100* ((float) directorySize ) /((float) dvda::totalSize);
   return share;
 }
 
@@ -866,9 +839,7 @@ void dvda::run()
     }
 
 
-  inputTotalSize=inputSizeCount;
-
-  if (inputTotalSize == 0)
+  if (dvda::totalSize == 0)
     {
       processFinished(EXIT_FAILURE,QProcess::NormalExit);
       return;
@@ -882,7 +853,7 @@ void dvda::run()
 
 
   outputTextEdit->append(tr(INFORMATION_HTML_TAG "Processing input directory..."));
-  outputTextEdit->append(tr(MSG_HTML_TAG "Size of input %1").arg(QString::number(inputTotalSize)));
+  outputTextEdit->append(tr(MSG_HTML_TAG "Size of input %1").arg(QString::number(dvda::totalSize)));
   command=args.join(" ");
   outputTextEdit->append(tr(MSG_HTML_TAG "Command line : dvda-author %1").arg(command));
 
@@ -1153,8 +1124,8 @@ void dvda::extract()
     {
 
       sourceDir=model->fileInfo(index).absoluteFilePath();
-      inputTotalSize=(sourceDir.isEmpty())? 0 : recursiveDirectorySize(sourceDir, "*.AOB");
-      if (inputTotalSize < 100)
+      dvda::totalSize=(sourceDir.isEmpty())? 0 : recursiveDirectorySize(sourceDir, "*.AOB");
+      if (dvda::totalSize < 100)
         {
           QMessageBox::warning(this, tr("Extract"), tr("Directory path is empty. Please select disc structure."), QMessageBox::Ok | QMessageBox::Cancel);
           return;
@@ -1178,7 +1149,7 @@ void dvda::extract()
 
     }
 
-  if (inputTotalSize == 0)
+  if (dvda::totalSize == 0)
     {
       processFinished(EXIT_FAILURE,QProcess::NormalExit);
       return;
@@ -1186,7 +1157,7 @@ void dvda::extract()
 
   outputTextEdit->append(tr(INFORMATION_HTML_TAG "Processing DVD-Audio structure %1").arg(sourceDir));
 
-  outputTextEdit->append(tr(MSG_HTML_TAG "Size of audio content %1").arg(QString::number(inputTotalSize)));
+  outputTextEdit->append(tr(MSG_HTML_TAG "Size of audio content %1").arg(QString::number(dvda::totalSize)));
 
   QString command=args.join(" ");
   outputTextEdit->append(tr(MSG_HTML_TAG "Command line : %1").arg(command));
@@ -1354,15 +1325,8 @@ void dvda::assignGroupFiles(const int ZONE, const int group_index, QString size,
       outputTextEdit->append(MSG_HTML_TAG "Adding group " + QString::number(group_index));
     }
 
-  QString group_type=(ZONE)?"titleset":"group";
-
   if (!ZONE) *(project[ZONE]->signalList) << file;
   fileSizeDataBase[ZONE][group_index].append(size);
-  quint64 localsize=(quint64) size.toInt();
-  inputSize[ZONE][group_index]+=localsize;
-  inputSizeCount+=localsize;
-  outputTextEdit->append(QString(MSG_HTML_TAG "Added file %4 to "+group_type+" %1:\n"+group_type+" size %2 MB, total size %3 MB\n").arg(QString::number(group_index+1),
-                                                                                                                 QString::number(inputSize[ZONE][group_index]), QString::number(inputSizeCount), file));
 }
 
 bool dvda::refreshProjectManager()

@@ -81,7 +81,7 @@ FListFrame(QObject* parent,  QAbstractItemView * fileTreeView, short import_type
 public slots:
     void addGroup();
     void deleteGroup();
-    void on_retrieveItemButton_clicked();
+    void on_deleteItem_clicked();
      void on_clearList_clicked(int currentIndex=-1);
 
 protected slots:

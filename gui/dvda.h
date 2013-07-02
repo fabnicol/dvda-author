@@ -50,7 +50,7 @@ private slots:
     void on_importFromMainTree_clicked();
     void on_moveUpItemButton_clicked();
     void on_moveDownItemButton_clicked();
-    void on_retrieveItemButton_clicked();
+    void on_deleteItem_clicked();
     void on_cdrecordButton_clicked();
     void on_clearOutputTextButton_clicked();
     void remove();
@@ -90,10 +90,8 @@ private:
     uint isVideo;
     uint currentIndex;
     uint test;
-    quint64 inputSizeCount;
-    quint64 inputSize[2][99];
-    qint64 inputTotalSize;
     qint64 value;
+    static qint64 totalSize;
 
     QString tag;
 
@@ -115,7 +113,7 @@ private:
 
     void addSelectedFileToProject();
     void addDirectoryToListWidget(QDir dir);
-    uint addStringToListWidget(QString filepath);
+    void addStringToListWidget();
     void assignVariables(const QList<FStringList> &value);
     void clearProjectData();
     QStringList createCommandLineString(int commandLineType);
@@ -138,6 +136,7 @@ private:
     void timerEvent(QTimerEvent *event);
     void updateIndexInfo();
     void updateIndexChangeInfo();
+    void displayTotalSize();
 
  protected:
 
