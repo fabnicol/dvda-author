@@ -2,9 +2,8 @@
 #include "fstring.h"
 
 
-/* Society of Motion Picture and Television Engineers,
-"Television - Signal Parameters - 1125-Line High-Definition Production", SMPTE 240M-1999.
-see file doc/rgb2yuv.pdf
+/*
+    see files in doc/
 */
 
 #include "common.h"
@@ -40,7 +39,7 @@ QString  RGBStr2YCrCbStr(const char* s)
 
 QColor YCrCbStr2QColor(QString str)
 {
-    Q("-->"+str)
+
     if (str.length() < 6) return QColor(0,0,0);
 
     qreal Y =  str.mid(0,2).toInt(NULL, 16);
