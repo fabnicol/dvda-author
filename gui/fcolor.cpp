@@ -1,33 +1,34 @@
 #include "fcolor.h"
 #include "fstring.h"
-#include "common.h"
+
 
 /* Society of Motion Picture and Television Engineers,
 "Television - Signal Parameters - 1125-Line High-Definition Production", SMPTE 240M-1999.
 see file doc/rgb2yuv.pdf
 */
 
-qreal Kry =0.212;
-qreal Kby =0.087;
-qreal Kgy= 0.701;
+#include "common.h"
 
-inline int normalise (qreal X) {return qFloor((X <0)? X+256 : X);}
-inline QString CONV(qreal X)  { return  QString::number(normalise(X), 16);}
+inline QString CONV(qreal X)
+ { return QString::number(qFloor(X), 16).rightJustified(2, '0', true);}
+
+inline qreal normalise(qreal X)
+{
+    if (X<0)   return 0;
+    return (X>255)?255:X;
+}
 
 QString  RGB2YCrCbStr(QColor& color)
 {
-    int red=color.red();
-    int green=color.green();
-    int blue=color.blue();
+    qreal red=color.red();
+    qreal green=color.green();
+    qreal blue=color.blue();
 
-    Q("output:" + QString::number(red)+" "+QString::number(green)+" "+QString::number(blue))
-
-    qreal Y   = Kry * red + Kgy * green + Kby * blue ;
-    qreal Cb = blue - Y;
-    qreal Cr  = red - Y ;
+    qreal Y = normalise(0.299 * red + 0.587 * green + 0.114 * blue) ;
+    qreal Cb = normalise(-0.1687 * red  - 0.3313 * green + 0.5 * blue + 128);
+    qreal Cr = normalise(0.5 * red - 0.4187 * green - 0.0813 * blue + 128) ;
 
     return CONV(Y) + CONV(Cr) + CONV(Cb);
-
 }
 
 QString  RGBStr2YCrCbStr(const char* s)
@@ -39,19 +40,18 @@ QString  RGBStr2YCrCbStr(const char* s)
 
 QColor YCrCbStr2QColor(QString str)
 {
+    Q("-->"+str)
     if (str.length() < 6) return QColor(0,0,0);
-    Q("YCrCb=> "+str)
-    int Y =  str.mid(0,2).toInt(NULL, 16);
-    int Cr = str.mid(2,2).toInt(NULL, 16);
-    int Cb = str.mid(4,2).toInt(NULL, 16);
 
-    Q("YCrCb-->"+QString::number(Y,16)+QString::number(Cr,16)+QString::number(Cb,16))
+    qreal Y =  str.mid(0,2).toInt(NULL, 16);
+    qreal Cr = str.mid(2,2).toInt(NULL, 16);
+    qreal Cb = str.mid(4,2).toInt(NULL, 16);
 
-    int red = Y + Cr;
-    int green = normalise(Y - (Kby / Kgy) *Cb - (Kry / Kgy) *Cr);
-    int blue = Y + Cb;
-    Q("RGB: "+QString::number(red)+" "+QString::number(green)+" "+QString::number(blue))
-    return QColor(red, green, blue);
+    qreal red = normalise(Y + 1.402 * (Cr-128));
+    qreal green = normalise( Y - 0.34414 * (Cb-128) - 0.71414 * (Cr-128));
+    qreal blue = normalise( Y + 1.772 * (Cb-128));
+
+    return QColor(qFloor(red), qFloor(green),qFloor(blue));
 }
 
 
