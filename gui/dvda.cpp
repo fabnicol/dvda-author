@@ -12,7 +12,7 @@
 #include "fstring.h"
 
 
-RefreshManagerFilter dvda::RefreshFlag=NoCreate;
+int dvda::RefreshFlag=NoCreate;
 int flags::lplexRank=0;
 qint64   dvda::totalSize=0;
 class hash;
@@ -104,7 +104,7 @@ dvda::dvda()
   fileTreeView->header()->setStretchLastSection(true);
   fileTreeView->header()->setSortIndicator(0, Qt::AscendingOrder);
   fileTreeView->header()->setSortIndicatorShown(true);
-//  fileTreeView->header()->setClickable(true);
+
   fileTreeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
   fileTreeView->setSelectionBehavior(QAbstractItemView::SelectItems);
 
@@ -118,8 +118,6 @@ dvda::dvda()
   audioFilterButton->setIcon(iconAudioFilter);
   audioFilterButton->setIconSize(QSize(22, 22));
   audioFilterButton->setCheckable(true);
-
-//  tabWidget[AUDIO]->setToolTip(tr("List files in each audio group tab"));
 
   QIcon* iconDVDA = new QIcon(":/images/64x64/dvd-audio.png");
   QIcon* iconDVDV = new QIcon(":/images/64x64/dvd-video.png");
@@ -142,7 +140,6 @@ dvda::dvda()
   mainTabWidget->setIconSize(QSize(64, 64));
   mainTabWidget->setMovable(true);
   mainTabWidget->setMinimumWidth(250);
-//  tabWidget[VIDEO]->setToolTip(tr("List files in each video titleset tab"));
 
   project[VIDEO]=new FListFrame(NULL,
                                 fileTreeView,                   // files may be imported from this tree view
@@ -241,11 +238,11 @@ dvda::dvda()
 
   projectLayout->addWidget(project[AUDIO]->importFromMainTree, 0,1);
   projectLayout->addWidget(project[VIDEO]->importFromMainTree, 0,1);
-  // set visible goo importFromMaintree and controlButtonBox !
+
+  // set visible importFromMaintree and controlButtonBox !
 
   projectLayout->addWidget(project[AUDIO]->tabBox, 0,2);
   projectLayout->addWidget(project[VIDEO]->tabBox, 0,2);
-//    projectLayout->addWidget(mainTabWidget, 0,2);
 
   updownLayout->addWidget(project[AUDIO]->controlButtonBox, 0,0);
   updownLayout->addWidget(project[VIDEO]->controlButtonBox, 0,0);
@@ -326,9 +323,10 @@ void dvda::on_clearOutputTextButton_clicked()
 
 void dvda::addStringToListWidget()
 {
+    RefreshFlag |= SaveTree|UpdateTree;
+    saveProject();
+    // in this order
     displayTotalSize();
-    RefreshFlag=SaveAndUpdateTree;
-    if (parent->defaultSaveProjectBehavior) saveProject();
 }
 
 
@@ -426,10 +424,10 @@ void dvda::openProjectFile()
 
 void dvda::initializeProject(const bool cleardata)
 {
-
     if (cleardata)
     {
         clearProjectData();
+        RefreshFlag |=  ParseXml;
         refreshProjectManager();
     }
 
@@ -459,7 +457,7 @@ void dvda::closeProject()
 
 void dvda::clearProjectData()
 {
-  RefreshFlag = (RefreshFlag == NoCreate)? CreateTreeAndRefreshAll : RefreshAll ;
+  RefreshFlag = ((RefreshFlag&CreateTreeMask) == NoCreate)? RefreshFlag|CreateTree|UpdateTabs|UpdateTree : RefreshFlag|UpdateTabs|UpdateTree ;
 
   for (int ZONE : {AUDIO, VIDEO})
     {
@@ -519,12 +517,11 @@ void dvda::on_helpButton_clicked()
 void dvda::on_openManagerWidgetButton_clicked(bool isHidden)
 {
 
-  if (RefreshFlag == NoCreate)
-    {
-      RefreshFlag=Create;
+  if ((RefreshFlag&CreateTreeMask) == NoCreate)
+     {
+      RefreshFlag |= CreateTree;
       refreshProjectManager();
-
-    }
+     }
   managerWidget->setVisible(isHidden);
  }
 
@@ -624,7 +621,7 @@ void dvda::deleteGroup()
     }
 
 
-  if (parent->defaultSaveProjectBehavior) saveProject();
+  saveProject();
   displayTotalSize();
 }
 
@@ -669,8 +666,8 @@ void dvda::on_moveUpItemButton_clicked()
   if (row == 0) return;
   fileSizeDataBase[isVideo][currentIndex].swap(row, row-1);
 
-  RefreshFlag=SaveAndUpdateTree;
-  if (parent->defaultSaveProjectBehavior) saveProject();
+  RefreshFlag |= SaveTree|UpdateTree;
+  saveProject();
   refreshRowPresentation();
 }
 
@@ -683,8 +680,8 @@ void dvda::on_moveDownItemButton_clicked()
 
   fileSizeDataBase[isVideo][currentIndex].swap(row, row+1);
 
-  RefreshFlag=SaveAndUpdateTree;
-  if (parent->defaultSaveProjectBehavior) saveProject();
+  RefreshFlag |= SaveTree | UpdateTree;
+  saveProject();
   refreshRowPresentation();
 
 }
@@ -725,16 +722,16 @@ void dvda::addSelectedFileToProject()
         }
     }
 
-  if (parent->defaultSaveProjectBehavior) saveProject();
+  saveProject();
   showFilenameOnly();
 }
 
 
 void dvda::on_deleteItem_clicked()
 {
-  RefreshFlag=SaveAndUpdateTree;
-  if (parent->defaultSaveProjectBehavior) saveProject();
-
+  RefreshFlag |= SaveTree | UpdateTree;
+  saveProject();
+  displayTotalSize();
 }
 
 
@@ -1171,30 +1168,34 @@ void dvda::extract()
 void dvda::requestSaveProject()
 {
   projectName=QFileDialog::getSaveFileName(this,  tr("Set project file name"), "default.dvp", tr("dvp projects (*.dvp)"));
-  saveProject();
-
+  saveProject(true);
 }
 
 
 
-void dvda::saveProject()
+void dvda::saveProject(bool requestSave)
 {
+
   QListIterator<FAbstractWidget*>  w(Abstract::abstractWidgetList);
-  if ((projectName == NULL)||(projectName.isEmpty()))
-    {
-      projectName=QDir::currentPath()+"/"+ "default.dvp";
-    }
 
   // On adding files or deleting files, or saving project, write project file and the update tree par reparsing project
   // Yet do not reparse tabs, as it should be useless (Tabs have been refreshed already)
 
-  RefreshFlag=(RefreshFlag == NoCreate)?CreateSaveAndUpdateTree:SaveAndUpdateTree;
-
-  // managerWidget == NULL test would not work
+  RefreshFlag |= SaveTree|UpdateTree ;
+  if ((RefreshFlag&CreateTreeMask) == NoCreate)   RefreshFlag |= CreateTree;
 
   audioFilterButton->setToolTip("Show audio files with extension "+ common::extraAudioFilters.join(", ")+"\nTo add extra file formats to this filter button go to Options>Audio Processing,\ncheck the \"Enable multiformat input\" box and fill in the file format field.");
 
-  writeProjectFile();
+  if (parent->defaultSaveProjectBehavior || requestSave)
+  {
+      if ((projectName == NULL)||(projectName.isEmpty()))
+        {
+          projectName=QDir::currentPath()+"/"+ "default.dvp";
+        }
+
+      writeProjectFile();
+  }
+
   refreshProjectManager();
 }
 
@@ -1333,18 +1334,17 @@ bool dvda::refreshProjectManager()
 {
   // Step 1: prior to parsing
 
-  if (RefreshFlag&Create)
-    {
+  if ((RefreshFlag&CreateTreeMask) == CreateTree)
+     {
       QStringList labels;
       labels << tr("Setting") << tr("Value/Path") << tr("Size");
       managerWidget=new QTreeWidget;
-
       managerLayout->addWidget(managerWidget);
       managerWidget->hide();
       managerWidget->setHeaderLabels(labels);
-    }
+     }
 
-  if (RefreshFlag&UpdateTree)
+  if ((RefreshFlag&UpdateTreeMask) == UpdateTree)
     {
       managerWidget->clear();
     }
@@ -1358,9 +1358,8 @@ bool dvda::refreshProjectManager()
 
   QFile file(projectName);
 
-  if (RefreshFlag&SaveTree)
+  if ((RefreshFlag&SaveTreeMask) == SaveTree)
     {
-
       if (!file.isOpen())
         file.open(QIODevice::ReadWrite);
       else
@@ -1369,32 +1368,39 @@ bool dvda::refreshProjectManager()
 
   // Step 2: parsing on opening .dvp project  (=update tree +refresh tabs) or adding/deleting tab files (=update tree)
 
-  if (RefreshFlag&UpdateTree)
-    {
-      if (!file.isOpen())
-        file.open(QIODevice::ReadWrite);
-      else
-        file.seek(0);
-
-      if (file.size() == 0)
-        {
-          outputTextEdit->append(WARNING_HTML_TAG "file is empty!");
-          return false;
-        }
+  if ((RefreshFlag&UpdateTreeMask) == UpdateTree)
+     {
       QPalette palette;
       palette.setColor(QPalette::AlternateBase,QColor("silver"));
       managerWidget->setPalette(palette);
       managerWidget->setAlternatingRowColors(true);
 
-      DomParser(&file);
+      if ((RefreshFlag&ParseXmlMask) == ParseXml)
+      {
+          if (!file.isOpen())
+            file.open(QIODevice::ReadWrite);
+          else
+            file.seek(0);
+
+          if (file.size() == 0)
+            {
+              outputTextEdit->append(WARNING_HTML_TAG "file is empty!");
+              return false;
+            }
+
+          DomParser(&file);
+      }
+      else
+          refreshProjectManagerValue();
 
       // Step3: adjusting project manager size
       managerWidget->resizeColumnToContents(0);
       managerWidget->resizeColumnToContents(1);
       managerWidget->resizeColumnToContents(2);
-    }
+     }
 
   if (file.isOpen()) file.close();
+  RefreshFlag &= CreateTreeMask|SaveTreeMask|UpdateTreeMask|UpdateTabMask ;
 
   return true;
 

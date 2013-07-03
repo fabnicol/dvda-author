@@ -1,6 +1,7 @@
 
 
-greaterThan(QT_MAJOR_VERSION, 4)
+greaterThan(QT_MAJOR_VERSION, 5)
+#use at least Qt5.1 with g++-4.8 for windows
 
 TEMPLATE = app
 

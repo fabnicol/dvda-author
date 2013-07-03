@@ -1508,7 +1508,7 @@ void stillPage::refreshApplyEffectsIcon()
 }
 
 
-RefreshManagerFilter options::RefreshFlag;
+int options::RefreshFlag;
 
 options::options(dvda* parent)
 {

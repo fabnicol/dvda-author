@@ -39,7 +39,7 @@ public:
 
 public slots:
 
-   void saveProject();
+   void saveProject(bool=false);
    void on_openManagerWidgetButton_clicked(bool );
    void on_frameTab_changed(int index);
    void on_openProjectButton_clicked();
@@ -137,12 +137,13 @@ private:
     void updateIndexInfo();
     void updateIndexChangeInfo();
     void displayTotalSize();
+    void refreshProjectManagerValue();
 
  protected:
 
     QString     outputType, sourceDir;
     unsigned int maxRange;
-    static RefreshManagerFilter  RefreshFlag;
+    static int RefreshFlag;
 
 signals:
 

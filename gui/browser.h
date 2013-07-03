@@ -5,6 +5,7 @@
 #include <QtWebKitWidgets>
 #include <QWebView>
 #include "common.h"
+
 class QToolButton;
 class QWebView;
 

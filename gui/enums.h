@@ -30,17 +30,19 @@ public:
 
 enum actionType {Select, OpenFolder, BrowseFile};
 
-enum RefreshManagerFilter {
+enum  {
   NoCreate=0x0000,
-  Create=0x0001,
+  CreateTree=0x0001,
+  CreateTreeMask=0x000F,
   UpdateTree=0x0010,
+  UpdateTreeMask=0x00F0,
   SaveTree=0x0100,
+  SaveTreeMask=0x0F00,
   UpdateTabs=0x1000,
-  SaveAndUpdateTree=0x0110,
-  RefreshAll=0x1010,
-  CreateTreeAndRefreshAll=0x1011,
-  CreateSaveAndUpdateTree=0x0111,
-  UpdateOptionTabs=0x2000
+  UpdateTabMask=0xF000,
+  UpdateOptionTabs=0x2000,
+  ParseXml=0x3000,
+  ParseXmlMask=0x3000
 };
 
 

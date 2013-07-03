@@ -1,7 +1,7 @@
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
-
+#include "common.h"
 #include "lplex.h"
 #include "viewer.h"
 #include "flistframe.h"
@@ -308,7 +308,7 @@ public:
     standardPage* standardTab;
     stillPage* stillTab;
     lplexPage *lplexTab;
-    static RefreshManagerFilter RefreshFlag;
+    static int RefreshFlag;
     QListWidget *contentsWidget;
 
 signals:

@@ -205,7 +205,7 @@ void MainWindow::createMenus()
  editMenu->addAction(displayManagerAction);
  editMenu->addAction(displayConsoleAction);
  editMenu->addAction(clearOutputTextAction);
-  editMenu->addAction(editProjectAction);
+ editMenu->addAction(editProjectAction);
 
  processMenu->addAction(burnAction);
  processMenu->addAction(encodeAction);

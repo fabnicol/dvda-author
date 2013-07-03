@@ -196,6 +196,7 @@ void dvda::DomParser(QIODevice* file)
    * and displays it in the manager tree Widget  */
 
   if (!xmlDataWrapper.isEmpty()) xmlDataWrapper.clear();
+  dvda::totalSize=0;
 
   for (QString maintag : {"data", "system", "recent"})
   {
@@ -206,7 +207,7 @@ void dvda::DomParser(QIODevice* file)
   /* this assigns values to widgets (line edits, checkboxes, list widgets etc.)
    * in the Options dialog and ensures fills in main tab widget */
 
-  if ((dvda::RefreshFlag&0xF000) == UpdateTabs)
+  if ((dvda::RefreshFlag&UpdateTabMask) == UpdateTabs)
   {
       assignVariables(xmlDataWrapper);
 
@@ -241,9 +242,7 @@ void dvda::DomParser(QIODevice* file)
 
 void dvda::parseXmlNodes(const QDomNode &node, const QString &maintag)
 {
-
     QTreeWidgetItem *item=new QTreeWidgetItem(managerWidget);
-
     if (node.toElement().tagName() != maintag) return;
     item->setText(0, maintag);
     item->setExpanded(true);
@@ -254,10 +253,8 @@ void dvda::parseXmlNodes(const QDomNode &node, const QString &maintag)
       {
           FStringList str=parseEntry(subnode, item);
           xmlDataWrapper <<   str;
-
           subnode=subnode.nextSibling();
       }
-
 }
 
 
@@ -341,3 +338,5 @@ inline QList<QStringList> dvda::processSecondLevelData(QList<QStringList> &L, bo
 
         return stackedSizeInfo2;
  }
+
+void dvda::refreshProjectManagerValue(){}
