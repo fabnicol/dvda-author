@@ -91,9 +91,9 @@ private:
     uint currentIndex;
     uint test;
     qint64 value;
-    static qint64 totalSize;
+    static qint64 totalSize[2];
 
-    QString tag;
+    QString zoneTag;
 
     QList<FStringList> xmlDataWrapper;
     QHash <int,  QList<QStringList>  > fileSizeDataBase;
@@ -112,8 +112,6 @@ private:
     QHBoxLayout *allLayout;
 
     void addSelectedFileToProject();
-    void addDirectoryToListWidget(QDir dir);
-    void addStringToListWidget();
     void assignVariables(const QList<FStringList> &value);
     void clearProjectData();
     QStringList createCommandLineString(int commandLineType);

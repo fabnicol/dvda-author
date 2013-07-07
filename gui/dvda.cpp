@@ -14,7 +14,7 @@
 
 int dvda::RefreshFlag=NoCreate;
 int flags::lplexRank=0;
-qint64   dvda::totalSize=0;
+qint64   dvda::totalSize[]={0,0};
 class hash;
 
 
@@ -44,7 +44,7 @@ void dvda::on_playItem_changed()
 {
   if (!myMusic ) return;
 
-  myMusic->setMedia(QUrl::fromLocalFile(hash::FStringListHash.value((isVideo)? "DVD-A" : "DVD-V")->at(currentIndex).at(row)));
+  myMusic->setMedia(QUrl::fromLocalFile(hash::FStringListHash.value(dvda::zoneTag)->at(currentIndex).at(row)));
   myMusic->play();
 }
 
@@ -69,7 +69,7 @@ void dvda::on_playItemButton_clicked()
   if (count % 2 == 0)
     {
       myMusic->play();
-      outputTextEdit->append(tr(INFORMATION_HTML_TAG "Playing...\n   file %1\n   in %2 %3   row %4" "<br>").arg(hash::FStringListHash.value(tag)->at(currentIndex).at(row),groupType,QString::number(currentIndex+1),QString::number(row+1)));
+      outputTextEdit->append(tr(INFORMATION_HTML_TAG "Playing...\n   file %1\n   in %2 %3   row %4" "<br>").arg(hash::FStringListHash.value(dvda::zoneTag)->at(currentIndex).at(row),groupType,QString::number(currentIndex+1),QString::number(row+1)));
       playItemButton->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
       playItemButton->setToolTip(tr("Stop playing"));
     }
@@ -234,19 +234,16 @@ dvda::dvda()
   mkdirLayout->addWidget(mkdirButton);
   mkdirLayout->addWidget(removeButton);
   mkdirLayout->addWidget(audioFilterButton);
-  projectLayout->addLayout(mkdirLayout,0,0);
 
+  projectLayout->addLayout(mkdirLayout,0,0);
   projectLayout->addWidget(project[AUDIO]->importFromMainTree, 0,1);
   projectLayout->addWidget(project[VIDEO]->importFromMainTree, 0,1);
-
   // set visible importFromMaintree and controlButtonBox !
-
   projectLayout->addWidget(project[AUDIO]->tabBox, 0,2);
   projectLayout->addWidget(project[VIDEO]->tabBox, 0,2);
 
   updownLayout->addWidget(project[AUDIO]->controlButtonBox, 0,0);
   updownLayout->addWidget(project[VIDEO]->controlButtonBox, 0,0);
-
   updownLayout->setRowMinimumHeight(1, 40);
   updownLayout->addWidget(playItemButton, 2, 0);
   updownLayout->setRowMinimumHeight(3, 40);
@@ -321,20 +318,12 @@ void dvda::on_clearOutputTextButton_clicked()
 }
 
 
-void dvda::addStringToListWidget()
-{
-    RefreshFlag |= SaveTree|UpdateTree;
-    saveProject();
-    // in this order
-    displayTotalSize();
-}
 
 
 void dvda::refreshRowPresentation()
 {
   // indexes are supposed to have been recently updated
   refreshRowPresentation(isVideo, currentIndex);
-
 }
 
 
@@ -351,12 +340,11 @@ void dvda::refreshRowPresentation(uint ZONE, uint j)
   widget->setAlternatingRowColors(true);
   widget->setFont(font);
 
-
   for (int r=0; r < hash::FStringListHash[localTag]->at(j).size(); r++ )
     {
       widget->item(r)->setText(hash::FStringListHash.value(localTag)->at(j).at(r).section('/',-1));
       widget->item(r)->setTextColor(QColor("navy"));
-      widget->item(r)->setToolTip(fileSizeDataBase[ZONE].at(j).at(r)+" B");
+      //widget->item(r)->setToolTip(fileSizeDataBase[ZONE].at(j).at(r)+" B");
     }
 }
 
@@ -368,23 +356,6 @@ void dvda::showFilenameOnly()
  }
 
 
-void dvda::addDirectoryToListWidget(QDir dir)
-{
-
-  QStringList filters;
-  filters+="*";
-
-  foreach (QFileInfo file, dir.entryInfoList(filters,QDir::AllDirs | QDir::NoDotAndDotDot|QDir::Files))
-    {
-      if (file.isDir())
-        {
-          outputTextEdit->insertHtml(QString("<b style='color:red;'>Recursing into subfolder " +file.fileName()+"...</b><br>"));
-          addDirectoryToListWidget(QDir(file.canonicalFilePath()));
-        }
-      else
-        addStringToListWidget();
-    }
-}
 
 //void dvda::addDraggedFiles(QList<QUrl> urls)
 //{
@@ -412,7 +383,6 @@ void dvda::on_openProjectButton_clicked()
 
   initializeProject();
   must_close=true;
-
 }
 
 void dvda::openProjectFile()
@@ -431,10 +401,8 @@ void dvda::initializeProject(const bool cleardata)
         refreshProjectManager();
     }
 
-    if (!projectName.isEmpty())
-    {
-      setCurrentFile(projectName);
-    }
+    if (projectName.isEmpty()) projectName=QDir::currentPath()+"/"+ "default.dvp";
+    setCurrentFile(projectName);
 }
 
 void dvda::closeProject()
@@ -512,15 +480,12 @@ void dvda::on_helpButton_clicked()
    browser::showPage(url);
 }
 
-
-
 void dvda::on_openManagerWidgetButton_clicked(bool isHidden)
 {
-
   if ((RefreshFlag&CreateTreeMask) == NoCreate)
      {
-      RefreshFlag |= CreateTree;
-      refreshProjectManager();
+          RefreshFlag |= CreateTree;
+          refreshProjectManager();
      }
   managerWidget->setVisible(isHidden);
  }
@@ -530,12 +495,10 @@ void dvda::on_openManagerWidgetButton_clicked()
     on_openManagerWidgetButton_clicked(managerWidget->isHidden());
 }
 
-
 void dvda::showEvent(QShowEvent *)
 {
   myTimerId=startTimer(3000);
 }
-
 
 void dvda::hideEvent(QHideEvent *)
 {
@@ -591,13 +554,13 @@ void dvda::addGroup()
       QMessageBox::information(this, tr("Group"), tr(QString("A maximum of %1 "+ groupType + "s can be created.").toUtf8()).arg(QString::number(9*isVideo*10+9)));
       return;
     }
-
 }
 
 
 void dvda::displayTotalSize()
 {
-      outputTextEdit->append(MSG_HTML_TAG "Total size:  " + QString::number(dvda::totalSize) + " B ("+QString::number(dvda::totalSize/(1024*1024))+" MB)");
+    qint64 tot=dvda::totalSize[AUDIO]+dvda::totalSize[VIDEO];
+    outputTextEdit->append(MSG_HTML_TAG "Total size:  " + QString::number(tot) + " B ("+QString::number(tot/(1024*1024))+" MB)");
 }
 
 void dvda::deleteGroup()
@@ -649,7 +612,7 @@ void dvda::updateIndexInfo()
   currentIndex=project[isVideo]->getCurrentIndex();
   row=project[isVideo]->getCurrentRow();
   groupType=(isVideo)?"titleset":"group";
-  tag=(isVideo)? "DVD-V" : "DVD-A";
+  zoneTag=(isVideo)? "DVD-V" : "DVD-A";
 
   // row = -1 if nothing selected
 }
@@ -674,16 +637,13 @@ void dvda::on_moveUpItemButton_clicked()
 void dvda::on_moveDownItemButton_clicked()
 {
   updateIndexInfo();
-
   if (row < 0) return;
   if (row == project[isVideo]->getCurrentWidget()->count() -1) return;
 
   fileSizeDataBase[isVideo][currentIndex].swap(row, row+1);
-
   RefreshFlag |= SaveTree | UpdateTree;
   saveProject();
   refreshRowPresentation();
-
 }
 
 void dvda::addSelectedFileToProject()
@@ -692,9 +652,7 @@ void dvda::addSelectedFileToProject()
   QModelIndexList  indexList=selectionModel->selectedIndexes();
 
   if (indexList.isEmpty()) return;
-
   updateIndexInfo();
-
   uint size=indexList.size();
 
   for (uint i = 0; i < size; i++)
@@ -711,8 +669,7 @@ void dvda::addSelectedFileToProject()
              outputTextEdit->append(tr(ERROR_HTML_TAG "Track does not comply with the standard.\n"));
              return;
           }
-
-          addStringToListWidget();
+              RefreshFlag |= SaveTree|UpdateTree;
         }
       else
         {
@@ -723,6 +680,8 @@ void dvda::addSelectedFileToProject()
     }
 
   saveProject();
+  // in this order
+  displayTotalSize();
   showFilenameOnly();
 }
 
@@ -753,7 +712,6 @@ void dvda::createDirectory()
 
 void dvda::remove()
 {
-
   bool ok;
   QModelIndex index  = fileTreeView->currentIndex();
 
@@ -764,18 +722,17 @@ void dvda::remove()
   else
     ok = model->remove(index);
   //update?
-
   if (!ok)
     QMessageBox::information(this, tr("Remove"),
                              tr("Failed to remove %1").arg(model->fileName(index)));
-
 }
 
 
 float dvda::discShare(qint64 directorySize)
 {
-  if (dvda::totalSize > 1024*1024*1024*4.7) outputTextEdit->append(tr(ERROR_HTML_TAG "total size exceeds 4.7 GB\n"));
-  float share=100* ((float) directorySize ) /((float) dvda::totalSize);
+  qint64 tot=dvda::totalSize[AUDIO]+dvda::totalSize[VIDEO];
+  if (tot > 1024*1024*1024*4.7) outputTextEdit->append(tr(ERROR_HTML_TAG "total size exceeds 4.7 GB\n"));
+  float share=100* ((float) directorySize ) /((float) tot);
   return share;
 }
 
@@ -836,7 +793,7 @@ void dvda::run()
     }
 
 
-  if (dvda::totalSize == 0)
+  if (dvda::totalSize[AUDIO] + dvda::totalSize[VIDEO] == 0)
     {
       processFinished(EXIT_FAILURE,QProcess::NormalExit);
       return;
@@ -850,7 +807,8 @@ void dvda::run()
 
 
   outputTextEdit->append(tr(INFORMATION_HTML_TAG "Processing input directory..."));
-  outputTextEdit->append(tr(MSG_HTML_TAG "Size of input %1").arg(QString::number(dvda::totalSize)));
+  outputTextEdit->append(tr(MSG_HTML_TAG "Size of Audio zone input %1").arg(QString::number(dvda::totalSize[AUDIO])));
+  outputTextEdit->append(tr(MSG_HTML_TAG "Size of Video zone input %1").arg(QString::number(dvda::totalSize[VIDEO])));
   command=args.join(" ");
   outputTextEdit->append(tr(MSG_HTML_TAG "Command line : dvda-author %1").arg(command));
 
@@ -1119,10 +1077,9 @@ void dvda::extract()
 
   else if  (model->fileInfo(index).isDir())
     {
-
       sourceDir=model->fileInfo(index).absoluteFilePath();
-      dvda::totalSize=(sourceDir.isEmpty())? 0 : recursiveDirectorySize(sourceDir, "*.AOB");
-      if (dvda::totalSize < 100)
+      dvda::totalSize[AUDIO]=(sourceDir.isEmpty())? 0 : recursiveDirectorySize(sourceDir, "*.AOB");
+      if (dvda::totalSize[AUDIO] < 100)
         {
           QMessageBox::warning(this, tr("Extract"), tr("Directory path is empty. Please select disc structure."), QMessageBox::Ok | QMessageBox::Cancel);
           return;
@@ -1146,7 +1103,7 @@ void dvda::extract()
 
     }
 
-  if (dvda::totalSize == 0)
+  if (dvda::totalSize[AUDIO] == 0)
     {
       processFinished(EXIT_FAILURE,QProcess::NormalExit);
       return;
@@ -1154,7 +1111,7 @@ void dvda::extract()
 
   outputTextEdit->append(tr(INFORMATION_HTML_TAG "Processing DVD-Audio structure %1").arg(sourceDir));
 
-  outputTextEdit->append(tr(MSG_HTML_TAG "Size of audio content %1").arg(QString::number(dvda::totalSize)));
+  outputTextEdit->append(tr(MSG_HTML_TAG "Size of audio content %1").arg(QString::number(dvda::totalSize[AUDIO])));
 
   QString command=args.join(" ");
   outputTextEdit->append(tr(MSG_HTML_TAG "Command line : %1").arg(command));
@@ -1175,14 +1132,13 @@ void dvda::requestSaveProject()
 
 void dvda::saveProject(bool requestSave)
 {
-
   QListIterator<FAbstractWidget*>  w(Abstract::abstractWidgetList);
 
   // On adding files or deleting files, or saving project, write project file and the update tree par reparsing project
   // Yet do not reparse tabs, as it should be useless (Tabs have been refreshed already)
 
-  RefreshFlag |= SaveTree|UpdateTree ;
-  if ((RefreshFlag&CreateTreeMask) == NoCreate)   RefreshFlag |= CreateTree;
+  RefreshFlag = SaveTree|UpdateTree ;
+  //if ((RefreshFlag&CreateTreeMask) == NoCreate)   RefreshFlag |= CreateTree;
 
   audioFilterButton->setToolTip("Show audio files with extension "+ common::extraAudioFilters.join(", ")+"\nTo add extra file formats to this filter button go to Options>Audio Processing,\ncheck the \"Enable multiformat input\" box and fill in the file format field.");
 
@@ -1192,7 +1148,6 @@ void dvda::saveProject(bool requestSave)
         {
           projectName=QDir::currentPath()+"/"+ "default.dvp";
         }
-
       writeProjectFile();
   }
 
@@ -1342,6 +1297,7 @@ bool dvda::refreshProjectManager()
       managerLayout->addWidget(managerWidget);
       managerWidget->hide();
       managerWidget->setHeaderLabels(labels);
+      RefreshFlag &= ~CreateTreeMask;
      }
 
   if ((RefreshFlag&UpdateTreeMask) == UpdateTree)
@@ -1353,7 +1309,7 @@ bool dvda::refreshProjectManager()
     {
       managerWidget->setVisible(false);
       //emit(is_signalList_changed(project[AUDIO]->signalList->size()));
-      return false;
+      //return false;
     }
 
   QFile file(projectName);
@@ -1375,7 +1331,7 @@ bool dvda::refreshProjectManager()
       managerWidget->setPalette(palette);
       managerWidget->setAlternatingRowColors(true);
 
-      if ((RefreshFlag&ParseXmlMask) == ParseXml)
+      if ((RefreshFlag&ParseXmlMask) == ParseXml)  // refresh display by parsing xml file again
       {
           if (!file.isOpen())
             file.open(QIODevice::ReadWrite);
@@ -1390,8 +1346,10 @@ bool dvda::refreshProjectManager()
 
           DomParser(&file);
       }
-      else
+      else  // refresh display using containers without parsing xml file
+      {
           refreshProjectManagerValue();
+      }
 
       // Step3: adjusting project manager size
       managerWidget->resizeColumnToContents(0);

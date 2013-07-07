@@ -196,7 +196,7 @@ void dvda::DomParser(QIODevice* file)
    * and displays it in the manager tree Widget  */
 
   if (!xmlDataWrapper.isEmpty()) xmlDataWrapper.clear();
-  dvda::totalSize=0;
+  dvda::totalSize[AUDIO]=dvda::totalSize[VIDEO]=0;
 
   for (QString maintag : {"data", "system", "recent"})
   {
@@ -225,7 +225,6 @@ void dvda::DomParser(QIODevice* file)
               }
               refreshRowPresentation(ZONE, group_index);
           }
-
   }
 
   /* resets recent files using the ones listed in the dvp project file */
@@ -237,8 +236,6 @@ void dvda::DomParser(QIODevice* file)
 
    emit(is_signalList_changed(project[AUDIO]->signalList->size()));
 }
-
-
 
 void dvda::parseXmlNodes(const QDomNode &node, const QString &maintag)
 {
@@ -256,7 +253,6 @@ void dvda::parseXmlNodes(const QDomNode &node, const QString &maintag)
           subnode=subnode.nextSibling();
       }
 }
-
 
 FStringList dvda::parseEntry(const QDomNode &node, QTreeWidgetItem *itemParent)
 {
@@ -290,20 +286,15 @@ FStringList dvda::parseEntry(const QDomNode &node, QTreeWidgetItem *itemParent)
        case 2 :
               secondLevelData=XmlMethod::stackSecondLevelData(node, tags);
               fileSizeData=processSecondLevelData(secondLevelData, tags.at(2) == "file");
-              dvda::totalSize+=XmlMethod::displaySecondLevelData(
-                          {tags.at(0), tags.at(1), tags.at(2)},
-                          secondLevelData,
-                          fileSizeData);
-
-              if (tags.at(0) == "DVD-A")
+              int ZONE=(tags.at(0) == "DVD-A")?AUDIO:((tags.at(0) == "DVD-V")?VIDEO:-1);
+              if (ZONE != -1)
               {
-                  fileSizeDataBase[AUDIO] =  fileSizeData;
+                  dvda::totalSize[ZONE]=XmlMethod::displaySecondLevelData(
+                          {tags.at(0), tags.at(1), tags.at(2)},
+                              secondLevelData,
+                              fileSizeData);
+                  fileSizeDataBase[ZONE] =  fileSizeData;
               }
-              else
-              if (tags.at(0) == "DVD-V")
-               {
-                   fileSizeDataBase[VIDEO] =  fileSizeData;
-               }
 
               return FStringList(secondLevelData);
       }
@@ -339,4 +330,52 @@ inline QList<QStringList> dvda::processSecondLevelData(QList<QStringList> &L, bo
         return stackedSizeInfo2;
  }
 
-void dvda::refreshProjectManagerValue(){}
+
+void dvda::refreshProjectManagerValue()
+{
+    updateIndexInfo();
+    static bool initialized;
+    if (!initialized)
+    {
+        xmlDataWrapper  << *(hash::FStringListHash["DVD-A"])
+                                        << *(hash::FStringListHash["DVD-V"]);
+
+//        for (int k=2; k <Abstract::abstractWidgetList.count(); k++)
+//        {
+//            if (Abstract::abstractWidgetList[k]->getDepth() == "1") continue;
+//            QString tag=Abstract::abstractWidgetList[k]->getHashKey();
+//           xmlDataWrapper << *(hash::FStringListHash[tag]);
+//        }
+    }
+     initialized=true;
+
+    managerWidget->show();
+    QTreeWidgetItem *item=new QTreeWidgetItem(managerWidget);
+    item->setText(0, "data");
+    item->setExpanded(true);
+    XmlMethod::itemParent=item;
+
+    xmlDataWrapper[isVideo][currentIndex]=hash::FStringListHash[dvda::zoneTag]->at(currentIndex);
+    QList<QStringList> fileSizeData=processSecondLevelData(xmlDataWrapper[isVideo]);
+    fileSizeDataBase[isVideo] =  fileSizeData;
+
+       dvda::totalSize[AUDIO]=XmlMethod::displaySecondLevelData(
+       {"DVD-A", "group", "file"},
+                xmlDataWrapper[AUDIO],
+                fileSizeData);
+
+       dvda::totalSize[VIDEO]=XmlMethod::displaySecondLevelData(
+       {"DVD-V", "titleset", "file"},
+                xmlDataWrapper[VIDEO],
+                fileSizeData);
+
+       item=new QTreeWidgetItem(managerWidget);
+       item->setText(0, "system");
+       item->setExpanded(true);
+       XmlMethod::itemParent=item;
+       for (int k=2; k <Abstract::abstractWidgetList.count(); k++)
+       {
+          XmlMethod::displayTextData(hash::description[Abstract::abstractWidgetList[k]->getHashKey()], Abstract::abstractWidgetList[k]->setXmlFromWidget().toQString(), "");
+       }
+
+}
