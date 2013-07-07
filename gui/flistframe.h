@@ -33,7 +33,7 @@ public:
                         *moveDownItemButton,
                         *moveUpItemButton,
                         *retrieveItemButton,
-                        *clearList,
+                        *clearListButton,
                         *addGroupButton,
                         *deleteGroupButton;
 

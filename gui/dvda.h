@@ -135,7 +135,7 @@ private:
     void updateIndexInfo();
     void updateIndexChangeInfo();
     void displayTotalSize();
-    void refreshProjectManagerValue();
+    void refreshProjectManagerValues(int= refreshAllZones );
 
  protected:
 

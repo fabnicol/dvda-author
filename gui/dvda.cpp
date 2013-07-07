@@ -134,7 +134,6 @@ dvda::dvda()
                                 0,                                     // rank
                                 iconDVDA);                      //tab icon
 
-
   mainTabWidget=project[AUDIO]->embeddingTabWidget;
 
   mainTabWidget->setIconSize(QSize(64, 64));
@@ -154,13 +153,7 @@ dvda::dvda()
                                 iconDVDV,                      // tab icon
                                 mainTabWidget);             // parent tab under which this frame is inserted
 
-
   project[VIDEO]->embeddingTabWidget->setIconSize(QSize(64, 64));
-
-  project[AUDIO]->model=model;
-  project[VIDEO]->model=model;
-  project[AUDIO]->slotList=NULL;
-  project[VIDEO]->slotList=NULL;
 
   mkdirButton = new QToolButton(this);
   mkdirButton->setToolTip(tr("Create Directory..."));
@@ -198,52 +191,46 @@ dvda::dvda()
   consoleDialog->setWindowTitle("Console");
   consoleDialog->setMinimumSize(800,600);
 
+  QGridLayout *projectLayout = new QGridLayout;
+  QGridLayout *updownLayout = new QGridLayout;
+  QVBoxLayout *mkdirLayout = new QVBoxLayout;
+  QHBoxLayout *progress1Layout= new QHBoxLayout;
+  progressLayout = new QVBoxLayout;
+  mkdirLayout->addWidget(mkdirButton);
+  mkdirLayout->addWidget(removeButton);
+  mkdirLayout->addWidget(audioFilterButton);
+  projectLayout->addLayout(mkdirLayout,0,0);
+
   connect(mkdirButton, SIGNAL(clicked()), this, SLOT(createDirectory()));
   connect(removeButton, SIGNAL(clicked()), this, SLOT(remove()));
-  connect(project[AUDIO]->addGroupButton, SIGNAL(clicked()), this, SLOT(addGroup()));
-  connect(project[VIDEO]->addGroupButton, SIGNAL(clicked()), this, SLOT(addGroup()));
-  connect(project[AUDIO]->deleteGroupButton, SIGNAL(clicked()), this, SLOT(deleteGroup()));
-  connect(project[VIDEO]->deleteGroupButton, SIGNAL(clicked()), this, SLOT(deleteGroup()));
   connect(killButton, SIGNAL(clicked()), this, SLOT(killDvda()));
   connect(&process, SIGNAL(readyReadStandardOutput ()), this, SLOT(feedConsole()));
   connect(&process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int, QProcess::ExitStatus)));
   connect(&process2, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(process2Finished(int, QProcess::ExitStatus)));
   connect(&process2, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(on_cdrecordButton_clicked()));
   connect(&process3, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(process3Finished(int, QProcess::ExitStatus)));
-  connect(project[AUDIO]->importFromMainTree, SIGNAL(clicked()), this, SLOT(on_importFromMainTree_clicked()));
-  connect(project[VIDEO]->importFromMainTree, SIGNAL(clicked()), this, SLOT(on_importFromMainTree_clicked()));
-  connect(project[AUDIO]->moveUpItemButton, SIGNAL(clicked()), this, SLOT(on_moveUpItemButton_clicked()));
-  connect(project[VIDEO]->moveUpItemButton, SIGNAL(clicked()), this, SLOT(on_moveUpItemButton_clicked()));
-  connect(project[AUDIO]->moveDownItemButton, SIGNAL(clicked()), this, SLOT(on_moveDownItemButton_clicked()));
-  connect(project[VIDEO]->moveDownItemButton, SIGNAL(clicked()), this, SLOT(on_moveDownItemButton_clicked()));
-  connect(project[AUDIO]->retrieveItemButton, SIGNAL(clicked()), this, SLOT(on_deleteItem_clicked()));
-  connect(project[VIDEO]->retrieveItemButton, SIGNAL(clicked()), this, SLOT(on_deleteItem_clicked()));
   connect(mainTabWidget, SIGNAL(currentChanged(int)), this, SLOT(on_frameTab_changed(int )));
   connect(playItemButton, SIGNAL(clicked()), this, SLOT(on_playItemButton_clicked()));
   connect(this, SIGNAL(hasIndexChangedSignal()), this, SLOT(on_playItem_changed()));
   connect(audioFilterButton, SIGNAL(toggled(bool)), this, SLOT(on_audioFilterButton_clicked(bool)));
 
-  QGridLayout *projectLayout = new QGridLayout;
+  for (int ZONE : {AUDIO, VIDEO})
+ {
+      project[ZONE]->model=model;
+      project[ZONE]->slotList=NULL;
+      connect(project[ZONE]->addGroupButton, SIGNAL(clicked()), this, SLOT(addGroup()));
+      connect(project[ZONE]->deleteGroupButton, SIGNAL(clicked()), this, SLOT(deleteGroup()));
+      connect(project[ZONE]->importFromMainTree, SIGNAL(clicked()), this, SLOT(on_importFromMainTree_clicked()));
+      connect(project[ZONE]->moveUpItemButton, SIGNAL(clicked()), this, SLOT(on_moveUpItemButton_clicked()));
+      connect(project[ZONE]->moveDownItemButton, SIGNAL(clicked()), this, SLOT(on_moveDownItemButton_clicked()));
+      connect(project[ZONE]->retrieveItemButton, SIGNAL(clicked()), this, SLOT(on_deleteItem_clicked()));
+      connect(project[ZONE]->clearListButton, SIGNAL(clicked()), this, SLOT(saveProject()));
+      projectLayout->addWidget(project[ZONE]->importFromMainTree, 0,1);
+      // set visible importFromMaintree and controlButtonBox !
+      projectLayout->addWidget(project[ZONE]->tabBox, 0,2);
+      updownLayout->addWidget(project[ZONE]->controlButtonBox, 0,0);
+  }
 
-  QGridLayout *updownLayout = new QGridLayout;
-  QVBoxLayout *mkdirLayout = new QVBoxLayout;
-  QHBoxLayout *progress1Layout= new QHBoxLayout;
-
-  progressLayout = new QVBoxLayout;
-
-  mkdirLayout->addWidget(mkdirButton);
-  mkdirLayout->addWidget(removeButton);
-  mkdirLayout->addWidget(audioFilterButton);
-
-  projectLayout->addLayout(mkdirLayout,0,0);
-  projectLayout->addWidget(project[AUDIO]->importFromMainTree, 0,1);
-  projectLayout->addWidget(project[VIDEO]->importFromMainTree, 0,1);
-  // set visible importFromMaintree and controlButtonBox !
-  projectLayout->addWidget(project[AUDIO]->tabBox, 0,2);
-  projectLayout->addWidget(project[VIDEO]->tabBox, 0,2);
-
-  updownLayout->addWidget(project[AUDIO]->controlButtonBox, 0,0);
-  updownLayout->addWidget(project[VIDEO]->controlButtonBox, 0,0);
   updownLayout->setRowMinimumHeight(1, 40);
   updownLayout->addWidget(playItemButton, 2, 0);
   updownLayout->setRowMinimumHeight(3, 40);
@@ -280,10 +267,11 @@ dvda::dvda()
 
 void dvda::on_frameTab_changed(int index)
 {
-  project[AUDIO]->controlButtonBox->setVisible(index == AUDIO);
-  project[VIDEO]->controlButtonBox->setVisible(index == VIDEO);
-  project[AUDIO]->importFromMainTree->setVisible(index == AUDIO);
-  project[VIDEO]->importFromMainTree->setVisible(index == VIDEO);
+    for (int ZONE: {AUDIO, VIDEO})
+    {
+        project[ZONE]->controlButtonBox->setVisible(index == ZONE);
+        project[ZONE]->importFromMainTree->setVisible(index == ZONE);
+    }
 }
 
 
@@ -316,8 +304,6 @@ void dvda::on_clearOutputTextButton_clicked()
 {
   outputTextEdit->clear();
 }
-
-
 
 
 void dvda::refreshRowPresentation()
@@ -423,6 +409,7 @@ void dvda::closeProject()
   }
 }
 
+
 void dvda::clearProjectData()
 {
   RefreshFlag = ((RefreshFlag&CreateTreeMask) == NoCreate)? RefreshFlag|CreateTree|UpdateTabs|UpdateTree : RefreshFlag|UpdateTabs|UpdateTree ;
@@ -471,7 +458,6 @@ void dvda::clearProjectData()
 
     /* cleanly wipe out main hash */
         hash::initializeFStringListHashes();
-
 }
 
 void dvda::on_helpButton_clicked()
@@ -582,7 +568,6 @@ void dvda::deleteGroup()
              }
         }
     }
-
 
   saveProject();
   displayTotalSize();
@@ -1157,7 +1142,6 @@ void dvda::saveProject(bool requestSave)
 /* Remember that the first two elements of the FAvstractWidgetList are DVD-A and DVD-V respectively, which cuts down parsing time */
 
 
-
 inline QString dvda::makeParserString(int start, int end)
 {
 
@@ -1202,18 +1186,17 @@ inline QString  dvda::makeSystemString()
 
 void dvda::writeProjectFile()
 {
-
   QFile projectFile;
   projectFile.setFileName(projectName);
   QErrorMessage *errorMessageDialog = new QErrorMessage(this);
   if (!projectFile.open(QIODevice::WriteOnly))
     {
-      errorMessageDialog->showMessage(tr("Cannot open file for writing\n")+ qPrintable(projectFile.errorString()));
-      QLabel *errorLabel = new QLabel;
-      errorLabel->setText(tr("If the box is unchecked, the message "
-                             "won't appear again."));
-      return;
-    }
+          errorMessageDialog->showMessage(tr("Cannot open file for writing\n")+ qPrintable(projectFile.errorString()));
+          QLabel *errorLabel = new QLabel;
+          errorLabel->setText(tr("If the box is unchecked, the message "
+                                 "won't appear again."));
+          return;
+     }
 
   QTextStream out(&projectFile);
   out.setCodec("UTF-8");
@@ -1348,7 +1331,7 @@ bool dvda::refreshProjectManager()
       }
       else  // refresh display using containers without parsing xml file
       {
-          refreshProjectManagerValue();
+          refreshProjectManagerValues(refreshProjectInteractiveMode);
       }
 
       // Step3: adjusting project manager size

@@ -1402,7 +1402,7 @@ stillPage::stillPage(dvda* parent, standardPage* standardTab)
     connect(nextStep, SIGNAL(clicked()), this,  SLOT(on_nextStep_clicked()));
     connect(applyAllEffects, SIGNAL(clicked()), this,  SLOT(on_applyAllEffects_clicked()));
     connect(applyEffectsToOneFile, SIGNAL(clicked()), this,  SLOT(on_applyAllEffectsToOneFile_clicked()));
-    connect(selectoptionListWidget->clearList, SIGNAL(clicked()), this, SLOT(on_clearList_clicked()));
+    connect(selectoptionListWidget->clearListButton, SIGNAL(clicked()), this, SLOT(on_clearList_clicked()));
     connect(videoPlayerButton, SIGNAL(clicked()), this, SLOT(launchVideoPlayer()));
     connect(importSlideShowButton, SIGNAL(clicked()), this, SLOT(importSlideshow()));
 }
@@ -1485,14 +1485,14 @@ void stillPage::on_nextStep_clicked()
         nextStep->setText("Browse files");
         nextStep->setArrowType(Qt::LeftArrow);
         nextStep->setToolTip(tr("Step 1: Select slide files"));
-        selectoptionListWidget->clearList->setToolTip(tr("Erase selected effect list"));
+        selectoptionListWidget->clearListButton->setToolTip(tr("Erase selected effect list"));
     }
     else
     {
         nextStep->setText("Effects");
         nextStep->setArrowType(Qt::RightArrow);
         nextStep->setToolTip(tr("Step 2: Select transition effects for slides"));
-        slides->clearList->setToolTip(tr("Erase file list"));
+        slides->clearListButton->setToolTip(tr("Erase file list"));
     }
 
     selectFilesView=filesView;

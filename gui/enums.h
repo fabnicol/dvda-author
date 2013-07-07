@@ -45,5 +45,18 @@ enum  {
   ParseXmlMask=0x3000
 };
 
+enum {
+    refreshProjectManagerFlag=0x000,
+    refreshProjectAudioZoneMask=0x00F,
+    refreshProjectVideoZoneMask=0x0F0,
+    refreshProjectSystemZoneMask=0xF00,
+    refreshProjectInteractiveMask=0xF000,
+    refreshAudioZone=0x001,
+    refreshVideoZone=0x010,
+    refreshSystemZone=0x100,
+    refreshProjectInteractiveMode=0x1000,
+    refreshAllZones=refreshAudioZone|refreshVideoZone|refreshSystemZone
+};
+
 
 #endif // ENUMS_H

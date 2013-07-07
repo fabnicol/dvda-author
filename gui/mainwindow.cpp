@@ -80,7 +80,6 @@ void createFontDataBase()
 
 MainWindow::MainWindow()
 {
-
   createFontDataBase();
 
   setGeometry(QRect(200, 200,1000,400));

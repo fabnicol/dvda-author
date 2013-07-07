@@ -105,11 +105,11 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
  moveDownItemButton->setIcon(iconDown);
  moveDownItemButton->setIconSize(QSize(22, 22));
 
- clearList=new QToolButton;
- clearList->setToolTip(tr("Erase selected menu file list"));
+ clearListButton=new QToolButton;
+ clearListButton->setToolTip(tr("Erase selected menu file list"));
  const QIcon clearIcon = QIcon(QString::fromUtf8( ":/images/edit-clear.png"));
- clearList->setIcon(clearIcon);
- clearList->setIconSize(QSize(22,22));
+ clearListButton->setIcon(clearIcon);
+ clearListButton->setIconSize(QSize(22,22));
 
  controlButtonBox=new QGroupBox(this);
  QGridLayout *controlButtonLayout=new QGridLayout;
@@ -118,7 +118,7 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
  controlButtonLayout->addWidget(retrieveItemButton, 2,1,1,1,Qt::AlignCenter);
  controlButtonLayout->addWidget(moveDownItemButton, 3,1,1,1,Qt::AlignCenter);
  controlButtonLayout->setRowMinimumHeight(4, 50);
- controlButtonLayout->addWidget(clearList, 4, 1,1,1, Qt::AlignTop);
+ controlButtonLayout->addWidget(clearListButton, 4, 1,1,1, Qt::AlignTop);
  controlButtonLayout->addWidget(addGroupButton, 5,1,1,1,Qt::AlignCenter);
  controlButtonLayout->addWidget(deleteGroupButton, 6,1,1,1,Qt::AlignCenter);
  controlButtonBox->setLayout(controlButtonLayout);
@@ -140,7 +140,7 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
  connect(retrieveItemButton, SIGNAL(clicked()), this, SLOT(on_deleteItem_clicked()));
  connect(moveDownItemButton, SIGNAL(clicked()), this, SLOT(on_moveDownItemButton_clicked()));
  connect(fileListWidget, SIGNAL(open_tabs_signal(int)), this, SLOT(addGroups(int)));
- connect(clearList, SIGNAL(clicked()), this, SLOT(on_clearList_clicked()));
+ connect(clearListButton, SIGNAL(clicked()), this, SLOT(on_clearList_clicked()));
 
 }
 

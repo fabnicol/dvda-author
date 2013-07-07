@@ -3,84 +3,91 @@
 
 namespace XmlMethod
 {
-    /* parses < tag> text </tag> */
 
    QTreeWidgetItem *itemParent=NULL;
 
-  inline QString stackTextData(const QDomNode & node, QString &tag)
+  inline void stackData(const QDomNode & node, QStringList tags, int level, QVariant &textData)
     {
-        QDomNode  childNode=node.firstChild();
-        QString stackedInfo;
+      QDomNode  childNode=node.firstChild();
+      QVariant stackedInfo;
 
-        tag = node.toElement().tagName();
+      switch(level)
+      {
+      /* parses < tag> text </tag> */
 
-        while ((!childNode.isNull()) && (childNode.nodeType() == QDomNode::TextNode))
-          {
-            stackedInfo += childNode.toText().data().simplified();
+           case 0:
+²
+                tags[0] = node.toElement().tagName();
 
-            childNode=childNode.nextSibling();
-          }
-        return stackedInfo;
-    }
+                while ((!childNode.isNull()) && (childNode.nodeType() == QDomNode::TextNode))
+                  {
+                    stackedInfo.toString() += childNode.toText().data().simplified();
 
-/*
- * parses < tags[0]>
-                     <tags[1]>  text </tags[1]>
-                     ....
-                     <tags[1]> text </tags[1]>
-                </tags[0]>
-     note: does not check subordinate tag uniformity
-*/
+                    childNode=childNode.nextSibling();
+                  }
+                textData=stackedInfo;
+                break;
 
-inline QStringList stackFirstLevelData(const QDomNode & node, QStringList &tags)
-    {
-        QDomNode  childNode=node.firstChild();
-        QStringList stackedInfo;
+        /*
+         * parses < tags[0]>
+                             <tags[1]>  text </tags[1]>
+                             ....
+                             <tags[1]> text </tags[1]>
+                        </tags[0]>
+             note: does not check subordinate tag uniformity
+        */
 
-        tags[0]=node.toElement().tagName();
+          case 1:
 
-        while (!childNode.isNull())
-          {
-            stackedInfo << stackTextData(childNode, tags[1]);
-            childNode=childNode.nextSibling();
-          }
-        return stackedInfo;
-    }
+                tags[0]=node.toElement().tagName();
 
-/*
- *   parses
- *            <tags[0]>
- *               <tags[1]>
-                     <tags[2]>  text </tags[2]>
-                     ....
-                     <tags[2]> text </tags[2]>
-                 </tags[1]>
-                 ...
-                 <tags[1]>
-                     <tags[2]>  text </tags[2]>
-                     ....
-                     <tags[2]> text </tags[2]>
-                 </tags[1]>
-               </tags[0]>
-*/
+                while (!childNode.isNull())
+                  {
+                    QVariant str;
+                    stackData(childNode, QStringList(tags[1]), 0, str);
+                    stackedInfo.toStringList() << str.toString();
+                    childNode=childNode.nextSibling();
+                  }
+                textData=QVariant(stackedInfo);
+                break;
 
+        /*
+         *   parses
+         *            <tags[0]>
+         *               <tags[1]>
+                             <tags[2]>  text </tags[2]>
+                             ....
+                             <tags[2]> text </tags[2]>
+                         </tags[1]>
+                         ...
+                         <tags[1]>
+                             <tags[2]>  text </tags[2]>
+                             ....
+                             <tags[2]> text </tags[2]>
+                         </tags[1]>
+                       </tags[0]>
+        */
 
-inline QList<QStringList> stackSecondLevelData(const QDomNode & node, QStringList &tags)
-    {
-        tags[0]=node.toElement().tagName();
-        QDomNode  childNode=node.firstChild();
-        QList<QStringList> stackedInfo;
+    case 2:
+            tags[0]=node.toElement().tagName();
+            QDomNode  childNode=node.firstChild();
+            QList<QVariant> stackedInfo;
 
         while (!childNode.isNull())
           {
             QStringList L={QString(), QString()};
-            stackedInfo << stackFirstLevelData(childNode, L);
+            QVariant M;
+            stackData(childNode, L,1, M);
+            stackedInfo << M.toStringList();
             tags[1]=L.at(0);
             tags[2]=L.at(1);
             childNode=childNode.nextSibling();
           }
-        return stackedInfo;
+
+        textData= QVariant(stackedInfo);
+        break;
     }
+  }
 
 /* computes sizes and sends filenames to main tab Widget */
 
@@ -204,6 +211,8 @@ void dvda::DomParser(QIODevice* file)
       node = node.nextSibling();
   }
 
+  refreshProjectManagerValues();
+
   /* this assigns values to widgets (line edits, checkboxes, list widgets etc.)
    * in the Options dialog and ensures fills in main tab widget */
 
@@ -248,58 +257,28 @@ void dvda::parseXmlNodes(const QDomNode &node, const QString &maintag)
 
     while (!subnode.isNull())
       {
-          FStringList str=parseEntry(subnode, item);
-          xmlDataWrapper <<   str;
+          xmlDataWrapper <<   parseEntry(subnode, item);
           subnode=subnode.nextSibling();
       }
 }
 
 FStringList dvda::parseEntry(const QDomNode &node, QTreeWidgetItem *itemParent)
 {
-  /* first examine the <hashKey widgetDepth=... > node */
+  QVariant textData;
+  QStringList tags={QString(),QString(),QString()} ;
+  int level=node.toElement().attribute("widgetDepth").toInt();
 
-  XmlMethod::itemParent = itemParent;
+   XmlMethod::itemParent = itemParent;
+   XmlMethod::stackData(node, tags, level, textData);
 
-  QString tag, textData;
-  QStringList firstLevelData, tags={QString(),QString(),QString()} ;
-  QList<QStringList> secondLevelData, fileSizeData;
-
-  /* then process the  node according to its predicted widgetDepth */
+   if ((level == 0) &&(tags[0] == "file"))
+                      parent->recentFiles.append(textData.toString());
 
 
-  switch (node.toElement().attribute("widgetDepth").toInt())
-      {
-      case 0 :
-                textData=XmlMethod::stackTextData(node, tag);
-                XmlMethod::displayTextData(hash::description[tag], textData, "");
-                /* recent file resetting following project */
-                if (tag == "file")
-                      parent->recentFiles.append(textData);
-
-                return FStringList(textData);
-
-      case 1 :
-                firstLevelData=XmlMethod::stackFirstLevelData(node, tags);
-                XmlMethod::displayFirstLevelData({"", hash::description[tags.at(0)], hash::description[tags.at(1)]}, firstLevelData);
-                return FStringList(firstLevelData);
-
-       case 2 :
-              secondLevelData=XmlMethod::stackSecondLevelData(node, tags);
-              fileSizeData=processSecondLevelData(secondLevelData, tags.at(2) == "file");
-              int ZONE=(tags.at(0) == "DVD-A")?AUDIO:((tags.at(0) == "DVD-V")?VIDEO:-1);
-              if (ZONE != -1)
-              {
-                  dvda::totalSize[ZONE]=XmlMethod::displaySecondLevelData(
-                          {tags.at(0), tags.at(1), tags.at(2)},
-                              secondLevelData,
-                              fileSizeData);
-                  fileSizeDataBase[ZONE] =  fileSizeData;
-              }
-
-              return FStringList(secondLevelData);
-      }
-
-  return FStringList();
+   if (level == 0) return FStringList(textData.toString());
+   if (level == 1) return FStringList(textData.toStringList());
+   if (level == 2) return FStringList(textData.toList());
+   return FStringList();
 }
 
 
@@ -331,23 +310,23 @@ inline QList<QStringList> dvda::processSecondLevelData(QList<QStringList> &L, bo
  }
 
 
-void dvda::refreshProjectManagerValue()
+void dvda::refreshProjectManagerValues(int refreshProjectManagerFlag)
 {
-    updateIndexInfo();
     static bool initialized;
-    if (!initialized)
-    {
-        xmlDataWrapper  << *(hash::FStringListHash["DVD-A"])
-                                        << *(hash::FStringListHash["DVD-V"]);
 
-//        for (int k=2; k <Abstract::abstractWidgetList.count(); k++)
-//        {
-//            if (Abstract::abstractWidgetList[k]->getDepth() == "1") continue;
-//            QString tag=Abstract::abstractWidgetList[k]->getHashKey();
-//           xmlDataWrapper << *(hash::FStringListHash[tag]);
-//        }
+    if (refreshProjectManagerFlag & refreshProjectInteractiveMask)
+    {
+            updateIndexInfo();
+
+            if (!initialized)
+            {
+                xmlDataWrapper  << *(hash::FStringListHash["DVD-A"])
+                                                << *(hash::FStringListHash["DVD-V"]);
+            }
+             initialized=true;
+             xmlDataWrapper[isVideo][currentIndex]=hash::FStringListHash[dvda::zoneTag]->at(currentIndex);
+             fileSizeDataBase[isVideo] = processSecondLevelData(xmlDataWrapper[isVideo]);
     }
-     initialized=true;
 
     managerWidget->show();
     QTreeWidgetItem *item=new QTreeWidgetItem(managerWidget);
@@ -355,24 +334,25 @@ void dvda::refreshProjectManagerValue()
     item->setExpanded(true);
     XmlMethod::itemParent=item;
 
-    xmlDataWrapper[isVideo][currentIndex]=hash::FStringListHash[dvda::zoneTag]->at(currentIndex);
-    QList<QStringList> fileSizeData=processSecondLevelData(xmlDataWrapper[isVideo]);
-    fileSizeDataBase[isVideo] =  fileSizeData;
+    if ((refreshProjectManagerFlag & refreshProjectAudioZoneMask) == refreshAudioZone)
 
-       dvda::totalSize[AUDIO]=XmlMethod::displaySecondLevelData(
-       {"DVD-A", "group", "file"},
-                xmlDataWrapper[AUDIO],
-                fileSizeData);
+        dvda::totalSize[AUDIO]=XmlMethod::displaySecondLevelData(
+                                                                 {"DVD-A", "group", "file"},
+                                                                   xmlDataWrapper[AUDIO],
+                                                                   fileSizeDataBase[AUDIO]=processSecondLevelData(xmlDataWrapper[AUDIO]));
 
+    if ((refreshProjectManagerFlag & refreshProjectVideoZoneMask) == refreshVideoZone)
        dvda::totalSize[VIDEO]=XmlMethod::displaySecondLevelData(
-       {"DVD-V", "titleset", "file"},
-                xmlDataWrapper[VIDEO],
-                fileSizeData);
+                                                                  {"DVD-V", "titleset", "file"},
+                                                                    xmlDataWrapper[VIDEO],
+                                                                    fileSizeDataBase[VIDEO]=processSecondLevelData(xmlDataWrapper[AUDIO]));
 
        item=new QTreeWidgetItem(managerWidget);
        item->setText(0, "system");
        item->setExpanded(true);
        XmlMethod::itemParent=item;
+
+       if ((refreshProjectManagerFlag & refreshProjectSystemZoneMask) == refreshSystemZone)
        for (int k=2; k <Abstract::abstractWidgetList.count(); k++)
        {
           XmlMethod::displayTextData(hash::description[Abstract::abstractWidgetList[k]->getHashKey()], Abstract::abstractWidgetList[k]->setXmlFromWidget().toQString(), "");

@@ -121,6 +121,18 @@ public:
   FStringList(const FString *s):FStringList(s->toQString()) {}
   FStringList(const QStringList &L): QList<QStringList>() {this->append(L);}
   FStringList(const  QList<QStringList> &s) : QList<QStringList>(s) {}
+  FStringList(const  QList<QVariant> &s) : QList<QStringList>()
+  {
+      QListIterator<QVariant> i(s);
+      while (i.hasNext())
+      {
+          QVariant v=i.next();
+          if (!v.isValid()) continue;
+          if (v.canConvert(QMetaType::QStringList))
+                        this->append(v.toStringList());
+      }
+  }
+
   FStringList(QString a, QString b, QString c):QList<QStringList>()  { this->append(QStringList(a));this->append(QStringList(b));this->append(QStringList(c)); }
   FString join(const QStringList &) const ;
   FString join(const char* s) const {QStringList strL=QStringList((QString(s))); return join(strL);}
