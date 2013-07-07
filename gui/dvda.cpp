@@ -1127,7 +1127,7 @@ void dvda::saveProject(bool requestSave)
 
   audioFilterButton->setToolTip("Show audio files with extension "+ common::extraAudioFilters.join(", ")+"\nTo add extra file formats to this filter button go to Options>Audio Processing,\ncheck the \"Enable multiformat input\" box and fill in the file format field.");
 
-  if (parent->defaultSaveProjectBehavior || requestSave)
+  if (parent->defaultSaveProjectBehavior->isChecked() || requestSave)
   {
       if ((projectName == NULL)||(projectName.isEmpty()))
         {
@@ -1331,7 +1331,7 @@ bool dvda::refreshProjectManager()
       }
       else  // refresh display using containers without parsing xml file
       {
-          refreshProjectManagerValues(refreshProjectInteractiveMode);
+          refreshProjectManagerValues(refreshProjectInteractiveMode | refreshAllZones);
       }
 
       // Step3: adjusting project manager size

@@ -16,7 +16,7 @@ namespace XmlMethod
       /* parses < tag> text </tag> */
 
            case 0:
-²
+
                 tags[0] = node.toElement().tagName();
 
                 while ((!childNode.isNull()) && (childNode.nodeType() == QDomNode::TextNode))
@@ -314,7 +314,7 @@ void dvda::refreshProjectManagerValues(int refreshProjectManagerFlag)
 {
     static bool initialized;
 
-    if (refreshProjectManagerFlag & refreshProjectInteractiveMask)
+    if ((refreshProjectManagerFlag & refreshProjectInteractiveMask) == refreshProjectInteractiveMode)
     {
             updateIndexInfo();
 
@@ -333,7 +333,7 @@ void dvda::refreshProjectManagerValues(int refreshProjectManagerFlag)
     item->setText(0, "data");
     item->setExpanded(true);
     XmlMethod::itemParent=item;
-
+    q(refreshProjectManagerFlag )
     if ((refreshProjectManagerFlag & refreshProjectAudioZoneMask) == refreshAudioZone)
 
         dvda::totalSize[AUDIO]=XmlMethod::displaySecondLevelData(
