@@ -358,7 +358,13 @@ bool FListFrame::addStringToListWidget(QString filepath, int index)
  updateIndexInfo();
  if ((filepath.isEmpty()) || (currentIndex >= (*hash::FStringListHash[frameHashKey]).count() ) || (signalList == NULL)) return false;
 
- widgetContainer[index]->addItem(filepath);
+ fileListWidget->currentListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+ fileListWidget->currentListWidget->addItem(filepath);
+ fileListWidget->currentListWidget->setCurrentRow(row+1);
+ fileListWidget->currentListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+// widgetContainer[index]->setCurrentRow(0);
+ QMessageBox::about(this, "", QString::number(row));
  (*hash::FStringListHash[frameHashKey])[currentIndex] << filepath;
 
  *(fileListWidget->signalList) << filepath;

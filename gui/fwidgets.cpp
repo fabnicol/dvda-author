@@ -764,24 +764,27 @@ FPalette::FPalette(const char* textR,
     hash::initializeFStringListHash(hashKey);
 
     FCore( "000000:000000:000000",  hashKey, description, commandLine, status, NULL, NULL);
+    refreshPaletteHash();
     setMinimumButtonWidth(buttonWidth);
 }
 
+void FPalette::refreshPaletteHash()
+{
+    FStringList L=FStringList(button[0]->setXmlFromWidget(), button[1]->setXmlFromWidget(), button[2]->setXmlFromWidget());
+    if (hash::FStringListHash.contains(hashKey))  *hash::FStringListHash[hashKey]=L;
+    commandLineList[0]=L[0][0] + ":"+ L[0][1] + ":"+ L[0][2];
+}
 
 FString FPalette::setXmlFromWidget()
 {
-
-    FStringList L=FStringList(button[0]->setXmlFromWidget(), button[1]->setXmlFromWidget(), button[2]->setXmlFromWidget());
-    commandLineList[0]=L[0][0] + ":"+ L[1][0] + ":"+ L[2][0];
-
-    if (hash::FStringListHash.contains(hashKey))  *hash::FStringListHash[hashKey]=L;
-    return L.setTags({ "YCrCb"});
+    refreshPaletteHash();
+    return hash::FStringListHash[hashKey]->setTags({ "YCrCb"});
 }
 
 void FPalette::setWidgetFromXml(const FStringList &s)
 {
     if (hash::FStringListHash.contains(hashKey)) *hash::FStringListHash[hashKey]=s;
-    commandLineList[0]=s.join(":");
+    commandLineList[0]=s[0].join(":");
     refreshWidgetDisplay();
 }
 

@@ -26,7 +26,6 @@ public:
     QTreeView *fileTreeView;
     QString projectName;
     QString curFile;
-    QString groupType;
     FListFrame *project[2];
 
     QToolButton *audioFilterButton;
@@ -89,11 +88,12 @@ private:
     int row;
     uint isVideo;
     uint currentIndex;
-    uint test;
     qint64 value;
     static qint64 totalSize[2];
 
-    QString zoneTag;
+
+    QString  zoneTag(){return ((mainTabWidget->currentIndex())? "DVD-V" : "DVD-A");}
+    QString  zoneGroupLabel(int ZONE){return ((ZONE)? "titleset" : "group");}
 
     QList<FStringList> xmlDataWrapper;
     QHash <int,  QList<QStringList>  > fileSizeDataBase;
@@ -145,7 +145,6 @@ private:
 
 signals:
 
-  void clearOptionData();
   void hasIndexChangedSignal();
   void is_signalList_changed(int);
 

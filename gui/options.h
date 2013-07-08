@@ -310,6 +310,7 @@ public:
     lplexPage *lplexTab;
     static int RefreshFlag;
     QListWidget *contentsWidget;
+     void clearOptionData();
 
 signals:
 
@@ -328,7 +329,6 @@ private slots:
 
     void closeOptions();
     void changePage(QListWidgetItem *current, QListWidgetItem *previous);
-    void clearOptionData();
 
 };
 #endif // OPTIONS_H

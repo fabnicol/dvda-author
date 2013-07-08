@@ -417,6 +417,7 @@ class FPalette :  public QWidget, virtual public FAbstractWidget
    QString optionLabel;
    QList<FString> commandLineList;
    QList<QWidget*> componentList;
+   void refreshPaletteHash();
 
 
 };

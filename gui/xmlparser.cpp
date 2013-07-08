@@ -120,10 +120,10 @@ void displayTextData(const QString &firstColumn,
 inline qint64 displaySecondLevelData(    const QStringList &tags,
                                               const QList<QStringList> &stackedInfo,
                                               const QList<QStringList> &stackedSizeInfo)
-    {
+  {
       int k=0, count=0, l;
       qint64 filesizecount=0;
-      QString  firstColumn, root=tags.at(1), secondColumn=tags.at(2), thirdColumn;
+      QString  firstColumn, root=tags.at(0), secondColumn=tags.at(1), thirdColumn;
 
       QListIterator<QStringList> i(stackedInfo), j(stackedSizeInfo);
 
@@ -141,8 +141,8 @@ inline qint64 displaySecondLevelData(    const QStringList &tags,
            while ((w.hasNext()) && (z.hasNext()))
            {
               ++count;
-               if (!tags.at(2).isEmpty())
-                   secondColumn =  tags.at(2) +" " +QString::number(++l) + "/"+ QString::number(count) +": ";
+               if (!tags.at(1).isEmpty())
+                   secondColumn =  tags.at(1) +" " +QString::number(++l) + "/"+ QString::number(count) +": ";
                secondColumn += w.next()  ;
 
                if ((stackedSizeInfo.size() > 0) && (z.hasNext()))
@@ -156,19 +156,25 @@ inline qint64 displaySecondLevelData(    const QStringList &tags,
                displayTextData("", secondColumn, thirdColumn, (z.hasNext())? QColor("navy"): ((j.hasNext())? QColor("orange") :QColor("red")));
 
            }
-         }
+       }
       return filesizecount;
-     }
+  }
 
 
 /* tags[0]
  *                       tags[1] 1 : xxx  ...  (size MB)
  *                       tags[1] 2 : xxx  ...  (size MB) ... */
 
-inline qint64 displayFirstLevelData( const QStringList &tags,  const QStringList &stackedInfo)
+inline void displayFirstLevelData( const QString &tag,  const QString &style, const QStringList &stackedInfo)
     {
-         return displaySecondLevelData( tags, QList<QStringList>() << stackedInfo, QList<QStringList>());
-    }
+       QStringListIterator i(stackedInfo);
+       int count=0;
+       while (i.hasNext())
+          {
+             ++count;
+             displayTextData((count>1)?"":tag, style+" "+QString::number(count)+": "+i.next(), "");
+           }
+     }
 
 
 }  // end of XmlMethod namespace
@@ -317,35 +323,37 @@ void dvda::refreshProjectManagerValues(int refreshProjectManagerFlag)
     if ((refreshProjectManagerFlag & refreshProjectInteractiveMask) == refreshProjectInteractiveMode)
     {
             updateIndexInfo();
-
             if (!initialized)
             {
+                for (int k=2; k <Abstract::abstractWidgetList.count(); k++)
                 xmlDataWrapper  << *(hash::FStringListHash["DVD-A"])
                                                 << *(hash::FStringListHash["DVD-V"]);
             }
+
              initialized=true;
-             xmlDataWrapper[isVideo][currentIndex]=hash::FStringListHash[dvda::zoneTag]->at(currentIndex);
-             fileSizeDataBase[isVideo] = processSecondLevelData(xmlDataWrapper[isVideo]);
+
+             if (currentIndex >= ((uint) xmlDataWrapper[isVideo].size()))
+                 xmlDataWrapper[isVideo] << (QList<QStringList>() << QStringList());
+            xmlDataWrapper[isVideo][currentIndex]=hash::FStringListHash[dvda::zoneTag()]->at(currentIndex);
+            fileSizeDataBase[isVideo] = processSecondLevelData(xmlDataWrapper[isVideo]);
     }
 
-    managerWidget->show();
+
     QTreeWidgetItem *item=new QTreeWidgetItem(managerWidget);
     item->setText(0, "data");
     item->setExpanded(true);
     XmlMethod::itemParent=item;
-    q(refreshProjectManagerFlag )
-    if ((refreshProjectManagerFlag & refreshProjectAudioZoneMask) == refreshAudioZone)
 
-        dvda::totalSize[AUDIO]=XmlMethod::displaySecondLevelData(
-                                                                 {"DVD-A", "group", "file"},
-                                                                   xmlDataWrapper[AUDIO],
-                                                                   fileSizeDataBase[AUDIO]=processSecondLevelData(xmlDataWrapper[AUDIO]));
+    bool test[2]={(refreshProjectManagerFlag & refreshProjectAudioZoneMask) == refreshAudioZone,
+                             (refreshProjectManagerFlag & refreshProjectVideoZoneMask) == refreshVideoZone};
 
-    if ((refreshProjectManagerFlag & refreshProjectVideoZoneMask) == refreshVideoZone)
-       dvda::totalSize[VIDEO]=XmlMethod::displaySecondLevelData(
-                                                                  {"DVD-V", "titleset", "file"},
-                                                                    xmlDataWrapper[VIDEO],
-                                                                    fileSizeDataBase[VIDEO]=processSecondLevelData(xmlDataWrapper[AUDIO]));
+    for (int ZONE: {AUDIO, VIDEO})
+             if (test[ZONE])
+                      dvda::totalSize[ZONE]=XmlMethod::displaySecondLevelData(
+                                                                {dvda::zoneGroupLabel(ZONE), "file"},
+                                                                   xmlDataWrapper[ZONE],
+                                                                   fileSizeDataBase[ZONE]=processSecondLevelData(xmlDataWrapper[ZONE]));
+
 
        item=new QTreeWidgetItem(managerWidget);
        item->setText(0, "system");
@@ -355,7 +363,15 @@ void dvda::refreshProjectManagerValues(int refreshProjectManagerFlag)
        if ((refreshProjectManagerFlag & refreshProjectSystemZoneMask) == refreshSystemZone)
        for (int k=2; k <Abstract::abstractWidgetList.count(); k++)
        {
-          XmlMethod::displayTextData(hash::description[Abstract::abstractWidgetList[k]->getHashKey()], Abstract::abstractWidgetList[k]->setXmlFromWidget().toQString(), "");
+           if (Abstract::abstractWidgetList[k]->getDepth() == "0")
+               XmlMethod::displayTextData(hash::description[Abstract::abstractWidgetList[k]->getHashKey()], Abstract::abstractWidgetList[k]->setXmlFromWidget().toQString(), "");
+           else if (Abstract::abstractWidgetList[k]->getDepth() == "1")
+           {
+               QString key=Abstract::abstractWidgetList[k]->getHashKey();
+               XmlMethod::displayFirstLevelData(hash::description[key],   "button", hash::FStringListHash[key]->at(0));
+           }
        }
+
+       options::RefreshFlag=hasSavedOptions;
 
 }

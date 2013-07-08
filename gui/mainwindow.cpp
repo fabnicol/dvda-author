@@ -8,7 +8,7 @@
 
 mainWindow.cpp  - Main Window for dvda-author-gui
 
-This application uses Qt4.8 . Check Qt's licensing details on http://qt.nokia.com
+This application uses Qt5.1 . Check Qt's licensing details on http://qt.nokia.com
 
 
 Copyright Fabrice Nicol <fabnicol@users.sourceforge.net> Feb 2009,2012
@@ -131,15 +131,16 @@ MainWindow::MainWindow()
 
   Abstract::refreshOptionFields();
 
-  SETTINGS(defaultLplexActivation)
-  SETTINGS(defaultFullScreenLayout)
-  SETTINGS(defaultConsoleLayoutBox)
-  SETTINGS(defaultProjectManagerWidgetLayoutBox)
-  SETTINGS(defaultFileManagerWidgetLayoutBox)
-  SETTINGS(defaultSaveProjectBehavior)
+  // NOTE: Using only FCheckBoxes. Change this if other FAbstractWidget subclasses are to be used
+
+  for (FCheckBox* a : widgetList)
+      {
+         if (settings->value(a->getHashKey()).isValid())
+             a->setChecked(settings->value(a->getHashKey()).toBool());
+       }
 
   setWindowIcon(QIcon(":/images/dvda-author.png"));
-  setWindowTitle("dvda-author GUI "+ QString(VERSION));
+  setWindowTitle("dvda-author interface  "+ QString(VERSION) +" version");
 }
 
 
@@ -190,6 +191,7 @@ void MainWindow::createMenus()
 
  fileMenu->addAction(openAction);
  fileMenu->addAction(saveAction);
+ fileMenu->addAction(saveAsAction);
  fileMenu->addAction(closeAction);
 
  separatorAction=fileMenu->addSeparator();
@@ -217,32 +219,36 @@ void MainWindow::createMenus()
  aboutMenu->addAction(aboutAction);
 }
 
-void MainWindow::about()
-{
-  QUrl url=QUrl::fromLocalFile( dvda_author->generateDatadirPath("about.html") );
-  browser::showPage(url);
-}
+
 
 void MainWindow::createActions()
 {
   openAction = new QAction(tr("&Open .dvp project file"), this);
+  openAction->setShortcut(QKeySequence("Ctrl+O"));
   openAction->setIcon(QIcon(":/images/open-project.png"));
   connect(openAction, SIGNAL(triggered()), dvda_author, SLOT(on_openProjectButton_clicked()));
 
-  saveAction = new QAction(tr("&Save project file as..."), this);
-  saveAction->setIcon(QIcon(":/images/document-save-as.png"));
-  connect(saveAction, SIGNAL(triggered()), dvda_author, SLOT(requestSaveProject()));
+  saveAction = new QAction(tr("&Save"), this);
+  saveAction->setShortcut(QKeySequence("Ctrl+S"));
+  saveAction->setIcon(style()->standardIcon(QStyle::SP_DialogSaveButton));
+  connect(saveAction, &QAction::triggered, [=] () {dvda_author->saveProject(true);});
+
+  saveAsAction = new QAction(tr("S&ave project file as..."), this);
+  saveAsAction->setIcon(QIcon(":/images/document-save-as.png"));
+  connect(saveAsAction, SIGNAL(triggered()), dvda_author, SLOT(requestSaveProject()));
 
   closeAction = new QAction(tr("&Close .dvp project file"), this);
+  closeAction->setShortcut(QKeySequence("Ctrl+W"));
   closeAction->setIcon(QIcon(":/images/document-close.png"));
   connect(closeAction, SIGNAL(triggered()), dvda_author, SLOT(closeProject()));
 
   burnAction = new QAction(tr("&Burn files to disc"), this);
+  burnAction->setShortcut(QKeySequence("Ctrl+B"));
   burnAction->setIcon(QIcon(":/images/burn.png"));
   connect(burnAction, SIGNAL(triggered()), dvda_author, SLOT(on_cdrecordButton_clicked()));
 
-
   encodeAction = new QAction(tr("Start c&reating disc files"), this);
+  encodeAction->setShortcut(QKeySequence("Ctrl+R"));
   encodeAction->setIcon(QIcon(":/images/encode.png"));
   connect(encodeAction, SIGNAL(triggered()), dvda_author, SLOT(run()));
 
@@ -251,6 +257,7 @@ void MainWindow::createActions()
   connect(decodeAction, SIGNAL(triggered()), dvda_author, SLOT(extract()));
 
   optionsAction = new QAction(tr("&Processing options"), this);
+  optionsAction->setShortcut(QKeySequence("Ctrl+P"));
   optionsAction->setIcon(QIcon(":/images/configure.png"));
   connect(optionsAction, SIGNAL(triggered()), this, SLOT(on_optionsButton_clicked()));
 
@@ -259,6 +266,7 @@ void MainWindow::createActions()
   connect(configureAction, SIGNAL(triggered()), this, SLOT(configure()));
 
   helpAction = new QAction(tr("&Help"), this);
+  helpAction->setShortcut(QKeySequence("Ctrl+H"));
   helpAction->setIcon(QIcon(":/images/help-contents.png"));
   connect(helpAction, SIGNAL(triggered()), dvda_author, SLOT(on_helpButton_clicked()));
 
@@ -271,19 +279,20 @@ void MainWindow::createActions()
   displayManagerAction->setIcon(iconViewList);
   connect(displayManagerAction, SIGNAL(triggered()), dvda_author, SLOT(on_openManagerWidgetButton_clicked()));
 
-  displayConsoleAction = new QAction(tr("Show/Close &console"), this);
+  displayConsoleAction = new QAction(tr("Show/Close console"), this);
   const QIcon consoleIcon = QIcon(QString::fromUtf8( ":/images/console.png"));
   displayConsoleAction->setIcon(consoleIcon);
   connect(displayConsoleAction, SIGNAL(triggered()), dvda_author, SLOT(on_displayConsoleButton_clicked()));
 
   editProjectAction=new QAction(tr("Edit current project"), this);
+  editProjectAction->setShortcut(QKeySequence("Ctrl+E"));
   editProjectAction->setIcon(style()->standardIcon(QStyle::SP_FileIcon));
   connect(editProjectAction, SIGNAL(triggered()), this, SLOT(on_editProjectButton_clicked()));
 
   displayOutputAction  = new QAction(tr("Show/Close messages"), this);
   const QIcon displayOutput = QIcon(QString::fromUtf8( ":/images/display-output.png"));
   displayOutputAction->setIcon(displayOutput);
-  connect(displayOutputAction, SIGNAL(triggered()), this, SLOT(on_displayOutputButton_clicked()));
+  connect(displayOutputAction, &QAction::triggered,  [=] () {outputTextEditDockWidget->setVisible(!outputTextEditDockWidget->isVisible());});
 
   displayFileTreeViewAction  = new QAction(tr("Show/Close file manager"), this);
   const QIcon displayFileTreeView = QIcon(QString::fromUtf8( ":/images/view-list-tree.png"));
@@ -298,11 +307,15 @@ void MainWindow::createActions()
   exitAction = new QAction(tr("&Exit"), this);
   exitAction->setIcon(QIcon(":/images/application-exit.png"));
   exitAction->setShortcut(QKeySequence("Ctrl+Q"));
-  connect(exitAction, SIGNAL(triggered()), this, SLOT(on_exitButton_clicked()));
+  connect(exitAction, &QAction::triggered,  [=] () { exit(1);});
 
   aboutAction=new QAction(tr("&About"), this);
   aboutAction->setIcon(QIcon(":/images/about.png"));
-  connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
+
+  connect(aboutAction, &QAction::triggered,  [=] () {
+                                                                                          QUrl url=QUrl::fromLocalFile( dvda_author->generateDatadirPath("about.html") );
+                                                                                           browser::showPage(url);
+                                                                                         });
 
   for (int i=0; i < MaxRecentFiles ; i++)
   {
@@ -318,7 +331,7 @@ void MainWindow::createActions()
       separator[i]->setSeparator(true);
     }
 
-  actionList << openAction << saveAction << closeAction << exitAction << separator[0] <<
+  actionList << openAction << saveAction << saveAsAction << closeAction << exitAction << separator[0] <<
                 burnAction << encodeAction << decodeAction << separator[1] <<
                 displayOutputAction << displayFileTreeViewAction << displayManagerAction << displayConsoleAction <<
                 clearOutputTextAction <<  editProjectAction << separator[2] << configureAction <<
@@ -337,11 +350,6 @@ void MainWindow::on_optionsButton_clicked()
 }
 
 
-void MainWindow::on_displayOutputButton_clicked()
-{
-  outputTextEditDockWidget->setVisible(!outputTextEditDockWidget->isVisible());
- }
-
 
 void MainWindow::on_displayFileTreeViewButton_clicked(bool isHidden)
 {
@@ -353,11 +361,6 @@ void MainWindow::on_displayFileTreeViewButton_clicked()
 {
   bool isHidden=fileTreeViewDockWidget->isHidden();
   on_displayFileTreeViewButton_clicked(isHidden);
-}
-
-void MainWindow::on_exitButton_clicked()
-{
-    exit(1);
 }
 
 
@@ -380,6 +383,7 @@ void MainWindow::createToolBars()
 
  fileToolBar->addAction(openAction);
  fileToolBar->addAction(saveAction);
+ fileToolBar->addAction(saveAsAction);
  fileToolBar->addAction(closeAction);
  fileToolBar->addAction(exitAction);
  fileToolBar->addSeparator();
@@ -419,11 +423,18 @@ void MainWindow::on_editProjectButton_clicked()
            << new QAction(tr("&Open"),this)
            << new QAction(tr("&Save"),this)
            << new QAction(tr("Save as..."),this)
+           << new QAction(tr("Refresh project"),this)
            << new QAction(tr("S&ave and exit"),this)
            << new QAction(tr("&Exit"),this);
 
+    const char* seq[]={"Ctrl+N","Ctrl+O","Ctrl+S","Ctrl+A","Ctrl+R","Ctrl+E","Ctrl+Q"};
+    int j=0;
+
     for (QAction *a: actionList)
+    {
             fileMenu->addAction(a);
+            a->setShortcut(QKeySequence(seq[j++]));
+    }
 
     QFont font;
     font.setFamily("Courier");
@@ -487,14 +498,25 @@ void MainWindow::on_editProjectButton_clicked()
                                                                                        }
                                                                                       });
 
-
    connect(actionList[4], &QAction::triggered,  [=] ()
-                                                                                      {
-                                                                                           actionList[2]->trigger();
-                                                                                           actionList[5]->trigger();
-                                                                                       });
+                                                                                     {
+                                                                                        dvda_author->saveProject(true);
+                                                                                        if (file->open(QFile::ReadWrite |  QFile::Text))
+                                                                                           {
+                                                                                               editor->clear();
+                                                                                               editor->setPlainText(file->readAll());
+                                                                                               file->close();
+                                                                                           }
+
+                                                                                      });
 
    connect(actionList[5], &QAction::triggered,  [=] ()
+                                                                                      {
+                                                                                           actionList[2]->trigger();
+                                                                                           actionList[6]->trigger();
+                                                                                       });
+
+   connect(actionList[6], &QAction::triggered,  [=] ()
                                                                                       {
                                                                                          file->~QFile();
                                                                                          actionList.~QList();
@@ -528,12 +550,12 @@ void MainWindow::configureOptions()
                                                                                                                                  "projectManagerDisplay",
                                                                                                                                  "Display project manager on right panel");
 
-    defaultConsoleLayoutBox=new FCheckBox("Launch console as tab",
+    defaultConsoleLayoutBox=new FCheckBox("Display console as bottom panel tab",
                                                                                                        flags::noCommandLine|flags::checked,
                                                                                                        "launchConsoleAsTab",
                                                                                                        "Add tab to bottom output panel\non launching console");
 
-    defaultFullScreenLayout=new FCheckBox("Launch as full screen",
+    defaultFullScreenLayout=new FCheckBox("Full screen",
                                                                                                       flags::noCommandLine|flags::unchecked,
                                                                                                       "fullScreenDisplay",
                                                                                                       "Display interface full screen on launch");
@@ -548,25 +570,29 @@ void MainWindow::configureOptions()
                                                                                                   "activateLplex",
                                                                                                   "Create DVD-Video zone\nusing Lplex");
 
-    vlayout->addWidget(defaultFileManagerWidgetLayoutBox);
-    vlayout->addWidget(defaultProjectManagerWidgetLayoutBox);
-    vlayout->addWidget(defaultConsoleLayoutBox);
-    vlayout->addWidget(defaultFullScreenLayout);
-    vlayout->addWidget(defaultSaveProjectBehavior);
-    vlayout->addWidget(defaultLplexActivation);
+    defaultOutputTextEditBox=new FCheckBox("Display message panel",
+                                                                                                  flags::noCommandLine|flags::checked,
+                                                                                                  "outputTextEdit",
+                                                                                                  "Display message panel");
 
+   widgetList <<  defaultFileManagerWidgetLayoutBox
+                       << defaultProjectManagerWidgetLayoutBox
+                       << defaultConsoleLayoutBox
+                       << defaultOutputTextEditBox
+                       << defaultFullScreenLayout
+                       << defaultSaveProjectBehavior
+                       << defaultLplexActivation;
+
+    for (FCheckBox* a : widgetList)   vlayout->addWidget(a);
     vlayout->addWidget(closeButton);
+
     contentsWidget->setLayout(vlayout);
     connect(closeButton, &QDialogButtonBox::accepted,
                         [=] () {
-                           settings->setValue("defaultLplexActivation", defaultLplexActivation->isChecked());
-                           settings->setValue("defaultFullScreenLayout", defaultFullScreenLayout->isChecked());
-                           settings->setValue("defaultConsoleLayoutBox", defaultConsoleLayoutBox->isChecked());
-                           settings->setValue("defaultProjectManagerWidgetLayoutBox", defaultProjectManagerWidgetLayoutBox->isChecked());
-                           settings->setValue("defaultFileManagerWidgetLayoutBox", defaultFileManagerWidgetLayoutBox->isChecked());
-                           settings->setValue("defaultSaveProjectBehavior", defaultSaveProjectBehavior->isChecked());
-                           contentsWidget->accept();
-                        }
+                                        for (FCheckBox* a : widgetList)
+                                            settings->setValue(a->getHashKey(), a->isChecked());
+                                        contentsWidget->accept();
+                                  }
                   );
 
     /* note on connection syntax
@@ -589,6 +615,7 @@ void MainWindow::configureOptions()
     connect(defaultLplexActivation, &FCheckBox::toggled, this, &MainWindow::on_activate_lplex);
     //connect(defaultConsoleLayoutBox, &FCheckBox::toggled, this, &MainWindow:on_displayFileTreeViewButton_clicked);
     connect(defaultFullScreenLayout, SIGNAL(toggled(bool)), this, SLOT(showMainWidget(bool)));
+    connect(defaultOutputTextEditBox, &FCheckBox::toggled, [=] () {outputTextEditDockWidget->setVisible(defaultOutputTextEditBox->isChecked());});
 
     setWindowTitle(tr("Configure dvda-author GUI"));
     setWindowIcon(QIcon(":/images/dvda-author.png"));

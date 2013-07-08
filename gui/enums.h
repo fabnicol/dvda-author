@@ -31,9 +31,9 @@ public:
 enum actionType {Select, OpenFolder, BrowseFile};
 
 enum  {
-  NoCreate=0x0000,
-  CreateTree=0x0001,
-  CreateTreeMask=0x000F,
+  hasUnsavedOptions=0x0,
+  hasSavedOptions=0x1,
+  hasSavedOptionsMask=0xF,
   UpdateTree=0x0010,
   UpdateTreeMask=0x00F0,
   SaveTree=0x0100,
@@ -41,8 +41,9 @@ enum  {
   UpdateTabs=0x1000,
   UpdateTabMask=0xF000,
   UpdateOptionTabs=0x2000,
-  ParseXml=0x3000,
-  ParseXmlMask=0x3000
+  KeepOptionTabs=0x3000,
+  ParseXml=0xF000,
+  ParseXmlMask=0xF000
 };
 
 enum {

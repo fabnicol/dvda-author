@@ -17,7 +17,7 @@
 #include "config.h"
 #endif
 #ifndef VERSION
-#define VERSION "12.12"
+#define VERSION "Crystal echo"
 #endif
 
 #define VIDEO 1

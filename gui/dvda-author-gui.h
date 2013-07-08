@@ -22,7 +22,7 @@
 #define INFORMATION_HTML_TAG "<img src=\":/images/information.png\"/> "
 #define NAVY_HTML_TAG "<span style=\"color: navy;\"> "
 
-#define SETTINGS(X)      { if (settings->value(#X).isValid())        X->setChecked(settings->value(#X).toBool());}
+
 
 class QAction;
 class QDirModel;
@@ -64,8 +64,6 @@ class MainWindow : public QMainWindow
 
   private slots:
 
-   void on_exitButton_clicked();
-   void on_displayOutputButton_clicked();
    void on_displayFileTreeViewButton_clicked(bool);
    void on_displayFileTreeViewButton_clicked();
    void on_editProjectButton_clicked();
@@ -74,7 +72,6 @@ class MainWindow : public QMainWindow
    void showMainWidget(bool);
    void configure();
    void configureOptions();
-   void about();
    void on_activate_lplex(bool);
 
 
@@ -105,6 +102,7 @@ class MainWindow : public QMainWindow
    QAction *recentFileActions[MaxRecentFiles];
    QAction *separatorAction;
    QAction *openAction;
+   QAction *saveAsAction;
    QAction *saveAction;
    QAction *closeAction;
    QAction *burnAction;
@@ -131,9 +129,11 @@ class MainWindow : public QMainWindow
                         *defaultLplexActivation,
                         *defaultConsoleLayoutBox,
                         *defaultProjectManagerWidgetLayoutBox,
-                        *defaultFileManagerWidgetLayoutBox;
+                        *defaultFileManagerWidgetLayoutBox,
+                        *defaultMessageLayoutBox,
+                        *defaultOutputTextEditBox;
 
-
+   QList<FCheckBox*> widgetList;
    QTextEdit *editor;
    Highlighter *highlighter;
 };

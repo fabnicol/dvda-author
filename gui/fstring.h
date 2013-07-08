@@ -16,7 +16,7 @@ public:
   /* hash::description converts a string like "targetDir" into its (sentence-like) description for display in project manager (first column)*/
   static QHash<QString,QString> description;
 
-  /* hash::FStringListHash is only used for FListWidget objects. It is used for storing information for xml project parsing/writing.
+  /* hash::FStringListHash  is used for storing information for xml project parsing/writing.
    *It converts a string label like "audioMenu" into a pointer to an FStringList object that contains a set of file paths
    * (or more generally, text phrases) grouped into a QStringList for each associated file in a list of files */
   static QHash<QString, FStringList *> FStringListHash;
@@ -133,7 +133,7 @@ public:
       }
   }
 
-  FStringList(QString a, QString b, QString c):QList<QStringList>()  { this->append(QStringList(a));this->append(QStringList(b));this->append(QStringList(c)); }
+  FStringList(QString a, QString b, QString c):QList<QStringList>()  { this->append(QStringList() << a << b << c);}
   FString join(const QStringList &) const ;
   FString join(const char* s) const {QStringList strL=QStringList((QString(s))); return join(strL);}
   QStringList join() ;

@@ -12,7 +12,7 @@
 #include "fstring.h"
 
 
-int dvda::RefreshFlag=NoCreate;
+int dvda::RefreshFlag=0;
 int flags::lplexRank=0;
 qint64   dvda::totalSize[]={0,0};
 class hash;
@@ -24,10 +24,9 @@ void dvda::initialize()
 
   myMusic=0;
   maxRange=0;
-
   startProgressBar=startProgressBar2=startProgressBar3=0;
-
   myTimerId=isVideo=0;
+
   tempdir=QDir::homePath ()+QDir::separator()+"tempdir";  // should be equal to main app globals.settings.tempdir=TEMPDIR
 
   extraAudioFilters=QStringList() << "*.wav" << "*.flac";
@@ -35,16 +34,13 @@ void dvda::initialize()
   hash::description["titleset"]="DVD-Video titleset";
   hash::description["group"]="DVD-Audio group";
   hash::description["recent"]="Recent file";
-
-
 }
 
 
 void dvda::on_playItem_changed()
 {
   if (!myMusic ) return;
-
-  myMusic->setMedia(QUrl::fromLocalFile(hash::FStringListHash.value(dvda::zoneTag)->at(currentIndex).at(row)));
+  myMusic->setMedia(QUrl::fromLocalFile(hash::FStringListHash.value(dvda::zoneTag())->at(currentIndex).at(row)));
   myMusic->play();
 }
 
@@ -52,7 +48,6 @@ void dvda::on_playItem_changed()
 void dvda::on_playItemButton_clicked()
 {
   static int count;
-
   updateIndexInfo();
   if (row < 0)
     {
@@ -69,7 +64,10 @@ void dvda::on_playItemButton_clicked()
   if (count % 2 == 0)
     {
       myMusic->play();
-      outputTextEdit->append(tr(INFORMATION_HTML_TAG "Playing...\n   file %1\n   in %2 %3   row %4" "<br>").arg(hash::FStringListHash.value(dvda::zoneTag)->at(currentIndex).at(row),groupType,QString::number(currentIndex+1),QString::number(row+1)));
+      outputTextEdit->append(tr(INFORMATION_HTML_TAG "Playing...\n   file %1\n   in %2 %3   row %4" "<br>")
+                                  .arg(hash::FStringListHash.value(dvda::zoneTag())->at(currentIndex).at(row),
+                                  zoneGroupLabel(isVideo),QString::number(currentIndex+1),QString::number(row+1)));
+
       playItemButton->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
       playItemButton->setToolTip(tr("Stop playing"));
     }
@@ -82,7 +80,6 @@ void dvda::on_playItemButton_clicked()
     }
   count++;
 }
-
 
 dvda::dvda()
 {
@@ -250,6 +247,13 @@ dvda::dvda()
   QHBoxLayout *allLayout =new QHBoxLayout;
 
   managerLayout =new QVBoxLayout;
+  QStringList labels;
+  labels << tr("Setting") << tr("Value/Path") << tr("Size");
+  managerWidget=new QTreeWidget;
+  managerWidget->hide();
+  managerWidget->setHeaderLabels(labels);
+
+  managerLayout->addWidget(managerWidget);
 
   allLayout->addLayout(mainLayout);
   allLayout->addLayout(managerLayout);
@@ -412,7 +416,7 @@ void dvda::closeProject()
 
 void dvda::clearProjectData()
 {
-  RefreshFlag = ((RefreshFlag&CreateTreeMask) == NoCreate)? RefreshFlag|CreateTree|UpdateTabs|UpdateTree : RefreshFlag|UpdateTabs|UpdateTree ;
+  RefreshFlag = RefreshFlag|UpdateTabs|UpdateTree;
 
   for (int ZONE : {AUDIO, VIDEO})
     {
@@ -422,12 +426,13 @@ void dvda::clearProjectData()
       project[ZONE]->signalList->clear();
       project[ZONE]->clearWidgetContainer();
       fileSizeDataBase[ZONE].clear();
+      managerWidget->clear();
     }
 
 
   QMessageBox::StandardButton choice=QMessageBox::Cancel;
 
-  if (options::RefreshFlag ==  NoCreate)
+  if (options::RefreshFlag ==  hasUnsavedOptions)
     {
       choice=QMessageBox::information(this, "New settings",
                                       "This project contains new option settings.\nPress OK to replace your option settings,\notherwise No to parse only file paths\nor Cancel to exit project parsing.\n",
@@ -435,12 +440,11 @@ void dvda::clearProjectData()
       switch (choice)
         {
             case QMessageBox::Ok  :
-              options::RefreshFlag = UpdateOptionTabs;
-              emit(clearOptionData());
+              parent->dialog->clearOptionData();
               break;
 
             case QMessageBox::No :
-              options::RefreshFlag = NoCreate;
+              options::RefreshFlag = KeepOptionTabs;
               break;
 
             case QMessageBox::Cancel :
@@ -468,12 +472,7 @@ void dvda::on_helpButton_clicked()
 
 void dvda::on_openManagerWidgetButton_clicked(bool isHidden)
 {
-  if ((RefreshFlag&CreateTreeMask) == NoCreate)
-     {
-          RefreshFlag |= CreateTree;
-          refreshProjectManager();
-     }
-  managerWidget->setVisible(isHidden);
+   managerWidget->setVisible(isHidden);
  }
 
 void dvda::on_openManagerWidgetButton_clicked()
@@ -537,7 +536,7 @@ void dvda::addGroup()
 
   if (project[isVideo]->getRank() >=  9*(int) isVideo*10+9)
    {
-      QMessageBox::information(this, tr("Group"), tr(QString("A maximum of %1 "+ groupType + "s can be created.").toUtf8()).arg(QString::number(9*isVideo*10+9)));
+      QMessageBox::information(this, tr("Group"), tr(QString("A maximum of %1 "+ zoneGroupLabel(isVideo)+ "s can be created.").toUtf8()).arg(QString::number(9*isVideo*10+9)));
       return;
     }
 }
@@ -545,8 +544,11 @@ void dvda::addGroup()
 
 void dvda::displayTotalSize()
 {
+    static qint64 comp;
     qint64 tot=dvda::totalSize[AUDIO]+dvda::totalSize[VIDEO];
-    outputTextEdit->append(MSG_HTML_TAG "Total size:  " + QString::number(tot) + " B ("+QString::number(tot/(1024*1024))+" MB)");
+    if (tot != comp)
+       outputTextEdit->append(MSG_HTML_TAG "Total size:  " + QString::number(tot) + " B ("+QString::number(tot/(1024*1024))+" MB)");
+    comp=tot;
 }
 
 void dvda::deleteGroup()
@@ -591,15 +593,13 @@ void dvda::updateIndexChangeInfo()
   firstSelection=false;
 }
 
+
 void dvda::updateIndexInfo()
 {
   isVideo=mainTabWidget->currentIndex();
   currentIndex=project[isVideo]->getCurrentIndex();
   row=project[isVideo]->getCurrentRow();
-  groupType=(isVideo)?"titleset":"group";
-  zoneTag=(isVideo)? "DVD-V" : "DVD-A";
-
-  // row = -1 if nothing selected
+    // row = -1 if nothing selected
 }
 
 void dvda::on_importFromMainTree_clicked()
@@ -675,6 +675,7 @@ void dvda::on_deleteItem_clicked()
 {
   RefreshFlag |= SaveTree | UpdateTree;
   saveProject();
+  updateIndexInfo();
   displayTotalSize();
 }
 
@@ -1123,7 +1124,7 @@ void dvda::saveProject(bool requestSave)
   // Yet do not reparse tabs, as it should be useless (Tabs have been refreshed already)
 
   RefreshFlag = SaveTree|UpdateTree ;
-  //if ((RefreshFlag&CreateTreeMask) == NoCreate)   RefreshFlag |= CreateTree;
+  //if ((RefreshFlag&hasProjectManagerTreeMask) == hasNoProjectManagerTree)   RefreshFlag |= hasProjectManagerTree;
 
   audioFilterButton->setToolTip("Show audio files with extension "+ common::extraAudioFilters.join(", ")+"\nTo add extra file formats to this filter button go to Options>Audio Processing,\ncheck the \"Enable multiformat input\" box and fill in the file format field.");
 
@@ -1220,6 +1221,7 @@ void dvda::writeProjectFile()
 
   out << " </recent>\n</project>\n";
   out.flush();
+  options::RefreshFlag=hasSavedOptions;
 }
 
 void dvda::setCurrentFile(const QString &fileName)
@@ -1246,11 +1248,17 @@ void dvda::assignVariables(const QList<FStringList> &value)
   QListIterator<FAbstractWidget*> w(Abstract::abstractWidgetList);
   QListIterator<FStringList> z(value);
 
+  if ((w.hasNext()) && (z.hasNext()))
+     w.next()->setWidgetFromXml(z.next());
 
-  while ((w.hasNext()) && (z.hasNext()))// && (!z.peekNext().isEmpty()))
-  {
-      w.next()->setWidgetFromXml(z.next());
-  }
+  if ((w.hasNext()) && (z.hasNext()))
+     w.next()->setWidgetFromXml(z.next());
+
+  if (options::RefreshFlag == UpdateOptionTabs)
+      while ((w.hasNext()) && (z.hasNext()))
+      {
+          w.next()->setWidgetFromXml(z.next());
+      }
 
 }
 
@@ -1272,16 +1280,6 @@ bool dvda::refreshProjectManager()
 {
   // Step 1: prior to parsing
 
-  if ((RefreshFlag&CreateTreeMask) == CreateTree)
-     {
-      QStringList labels;
-      labels << tr("Setting") << tr("Value/Path") << tr("Size");
-      managerWidget=new QTreeWidget;
-      managerLayout->addWidget(managerWidget);
-      managerWidget->hide();
-      managerWidget->setHeaderLabels(labels);
-      RefreshFlag &= ~CreateTreeMask;
-     }
 
   if ((RefreshFlag&UpdateTreeMask) == UpdateTree)
     {
@@ -1341,7 +1339,7 @@ bool dvda::refreshProjectManager()
      }
 
   if (file.isOpen()) file.close();
-  RefreshFlag &= CreateTreeMask|SaveTreeMask|UpdateTreeMask|UpdateTabMask ;
+  RefreshFlag &= hasSavedOptionsMask|SaveTreeMask|UpdateTreeMask|UpdateTabMask ;
 
   return true;
 

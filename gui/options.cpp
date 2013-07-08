@@ -1549,7 +1549,6 @@ options::options(dvda* parent)
     closeButton = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     connect(closeButton, SIGNAL(accepted()), this, SLOT(closeOptions()));
     connect( this, SIGNAL(registered()), parent, SLOT(saveProject()));
-    connect( parent, SIGNAL(clearOptionData()), this, SLOT(clearOptionData()));
     connect(closeButton, SIGNAL(rejected()), this, SLOT(reject()));
 
     createIcons();
@@ -1639,8 +1638,7 @@ void options::changePage(QListWidgetItem *current, QListWidgetItem *previous)
 
 void options::closeOptions()
 {
-    options::RefreshFlag =  NoCreate;
-
+    options::RefreshFlag =  hasUnsavedOptions;
     emit(registered());
     accept();
 }
