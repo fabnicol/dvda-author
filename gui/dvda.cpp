@@ -391,7 +391,7 @@ void dvda::initializeProject(const bool cleardata)
         refreshProjectManager();
     }
 
-    if (projectName.isEmpty()) projectName=QDir::currentPath()+"/"+ "default.dvp";
+    if (projectName.isEmpty()) projectName=QDir::currentPath()+QDir::separator()+ "default.dvp";
     setCurrentFile(projectName);
 }
 
@@ -400,7 +400,8 @@ void dvda::closeProject()
   projectName="";
   clearProjectData();
 
-  refreshProjectManager();
+  dvda::totalSize[AUDIO]=dvda::totalSize[VIDEO]=0;
+  displayTotalSize();
 
   for (int ZONE : {AUDIO, VIDEO})
   {
@@ -426,9 +427,11 @@ void dvda::clearProjectData()
       project[ZONE]->signalList->clear();
       project[ZONE]->clearWidgetContainer();
       fileSizeDataBase[ZONE].clear();
-      managerWidget->clear();
     }
 
+   managerWidget->clear();
+
+   xmlDataWrapperReset();
 
   QMessageBox::StandardButton choice=QMessageBox::Cancel;
 
@@ -599,6 +602,7 @@ void dvda::updateIndexInfo()
   isVideo=mainTabWidget->currentIndex();
   currentIndex=project[isVideo]->getCurrentIndex();
   row=project[isVideo]->getCurrentRow();
+
     // row = -1 if nothing selected
 }
 
@@ -791,7 +795,6 @@ void dvda::run()
 
 //  args << createCommandLineString(lplexFiles).split("-ts");
 
-
   outputTextEdit->append(tr(INFORMATION_HTML_TAG "Processing input directory..."));
   outputTextEdit->append(tr(MSG_HTML_TAG "Size of Audio zone input %1").arg(QString::number(dvda::totalSize[AUDIO])));
   outputTextEdit->append(tr(MSG_HTML_TAG "Size of Video zone input %1").arg(QString::number(dvda::totalSize[VIDEO])));
@@ -811,26 +814,22 @@ void dvda::run()
 
 void dvda::feedConsole()
 {
-    QByteArray data = process.readAllStandardOutput();
+   QByteArray data = process.readAllStandardOutput();
+   QRegExp reg("\\[INF\\]([^\\n]*)\n");
+   QRegExp reg2("\\[PAR\\]([^\\n]*)\n");
+   QRegExp reg3("\\[MSG\\]([^\\n]*)\n");
+   QRegExp reg4("\\[ERR\\]([^\\n]*)\n");
+   QRegExp reg5("\\[WAR\\]([^\\n]*)\n");
+   QRegExp reg6("(===.*licenses/.)");
 
+    QString text=QString(data).replace(reg6, (QString) NAVY_HTML_TAG "\\1</span><br>");
+    text= text.replace(reg, (QString) INFORMATION_HTML_TAG "\\1<br>");
+    text=text.replace(reg2, (QString) PARAMETER_HTML_TAG "\\1<br>");
+    text=text.replace(reg3, (QString) MSG_HTML_TAG "\\1<br>");
+    text=text.replace(reg4, (QString) ERROR_HTML_TAG "\\1<br>");
+    text=text.replace(reg5, (QString) WARNING_HTML_TAG "\\1<br>");
 
-  QRegExp reg("\\[INF\\]([^\\n]*)\n");
-  QRegExp reg2("\\[PAR\\]([^\\n]*)\n");
-  QRegExp reg3("\\[MSG\\]([^\\n]*)\n");
-  QRegExp reg4("\\[ERR\\]([^\\n]*)\n");
-  QRegExp reg5("\\[WAR\\]([^\\n]*)\n");
-  QRegExp reg6("(===.*licenses/.)");
-
-        QString text=QString(data).replace(reg6, (QString) NAVY_HTML_TAG "\\1</span><br>");
-        text= text.replace(reg, (QString) INFORMATION_HTML_TAG "\\1<br>");
-        text=text.replace(reg2, (QString) PARAMETER_HTML_TAG "\\1<br>");
-        text=text.replace(reg3, (QString) MSG_HTML_TAG "\\1<br>");
-        text=text.replace(reg4, (QString) ERROR_HTML_TAG "\\1<br>");
-        text=text.replace(reg5, (QString) WARNING_HTML_TAG "\\1<br>");
-
-
-        console->append(text.replace('\n',"<br>"));
-
+    console->append(text.replace('\n',"<br>"));
  }
 
 
@@ -1188,6 +1187,7 @@ inline QString  dvda::makeSystemString()
 void dvda::writeProjectFile()
 {
   QFile projectFile;
+  if (projectName.isEmpty()) return;
   projectFile.setFileName(projectName);
   QErrorMessage *errorMessageDialog = new QErrorMessage(this);
   if (!projectFile.open(QIODevice::WriteOnly))
@@ -1288,9 +1288,7 @@ bool dvda::refreshProjectManager()
 
   if (projectName.isEmpty())
     {
-      managerWidget->setVisible(false);
-      //emit(is_signalList_changed(project[AUDIO]->signalList->size()));
-      //return false;
+      projectName=QDir::currentPath() + QDir::separator()+"default.dvp";
     }
 
   QFile file(projectName);

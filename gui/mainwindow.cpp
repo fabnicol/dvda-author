@@ -447,6 +447,7 @@ void MainWindow::on_editProjectButton_clicked()
     highlighter = new Highlighter(editor->document());
 
    const QString str=dvda_author->projectName;
+   if (str.isEmpty()) return;
    QFile  *file=new QFile(str);
    if (file->open(QFile::ReadWrite| QFile::Text))
    {

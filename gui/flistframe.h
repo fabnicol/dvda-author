@@ -63,7 +63,7 @@ public:
 
 inline QList<QListWidget*>  getWidgetContainer() {return widgetContainer;}
 inline QListWidget*  getWidgetContainer(int rank) {if (rank < widgetContainer.count()) return widgetContainer[rank]; else return nullptr;}
-inline QListWidget*  getCurrentWidget() {return widgetContainer[this->mainTabWidget->currentIndex()];}
+inline QListWidget*  getCurrentWidget() { return widgetContainer[this->mainTabWidget->currentIndex()];}
 
 inline int getCurrentIndex() {return this->mainTabWidget->currentIndex();}
 inline int getCurrentRow() {return getCurrentWidget()->currentRow();}

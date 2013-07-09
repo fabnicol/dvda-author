@@ -316,21 +316,35 @@ inline QList<QStringList> dvda::processSecondLevelData(QList<QStringList> &L, bo
  }
 
 
+inline void dvda::xmlDataWrapperReset(int filter)
+{
+    int C=Abstract::abstractWidgetList.count();
+    int count=xmlDataWrapper.count();
+
+    switch(filter)
+    {
+       case refreshProjectInteractiveMode:
+         if (count < 2)
+         {
+            xmlDataWrapper  << *(hash::FStringListHash["DVD-A"])
+                                            << *(hash::FStringListHash["DVD-V"]);
+         }
+         break;
+
+//      case refreshSystemZone:
+//        if (count < C)
+//               for (int k=2; k <C; k++)
+//                   xmlDataWrapper   << *(hash::FStringListHash[Abstract::abstractWidgetList[k]->getHashKey()]);
+    }
+}
+
 void dvda::refreshProjectManagerValues(int refreshProjectManagerFlag)
 {
-    static bool initialized;
 
-    if ((refreshProjectManagerFlag & refreshProjectInteractiveMask) == refreshProjectInteractiveMode)
+     if ((refreshProjectManagerFlag & refreshProjectInteractiveMask) == refreshProjectInteractiveMode)
     {
-            updateIndexInfo();
-            if (!initialized)
-            {
-                for (int k=2; k <Abstract::abstractWidgetList.count(); k++)
-                xmlDataWrapper  << *(hash::FStringListHash["DVD-A"])
-                                                << *(hash::FStringListHash["DVD-V"]);
-            }
-
-             initialized=true;
+         xmlDataWrapperReset(refreshProjectInteractiveMode);
+         updateIndexInfo();
 
              if (currentIndex >= ((uint) xmlDataWrapper[isVideo].size()))
                  xmlDataWrapper[isVideo] << (QList<QStringList>() << QStringList());
@@ -361,14 +375,17 @@ void dvda::refreshProjectManagerValues(int refreshProjectManagerFlag)
        XmlMethod::itemParent=item;
 
        if ((refreshProjectManagerFlag & refreshProjectSystemZoneMask) == refreshSystemZone)
-       for (int k=2; k <Abstract::abstractWidgetList.count(); k++)
-       {
-           if (Abstract::abstractWidgetList[k]->getDepth() == "0")
-               XmlMethod::displayTextData(hash::description[Abstract::abstractWidgetList[k]->getHashKey()], Abstract::abstractWidgetList[k]->setXmlFromWidget().toQString(), "");
-           else if (Abstract::abstractWidgetList[k]->getDepth() == "1")
+      {
+          // xmlDataWrapperReset(refreshSystemZone);
+           for (int k=2; k <Abstract::abstractWidgetList.count(); k++)
            {
-               QString key=Abstract::abstractWidgetList[k]->getHashKey();
-               XmlMethod::displayFirstLevelData(hash::description[key],   "button", hash::FStringListHash[key]->at(0));
+               if (Abstract::abstractWidgetList[k]->getDepth() == "0")
+                   XmlMethod::displayTextData(hash::description[Abstract::abstractWidgetList[k]->getHashKey()], Abstract::abstractWidgetList[k]->setXmlFromWidget().toQString(), "");
+               else if (Abstract::abstractWidgetList[k]->getDepth() == "1")
+               {
+                   QString key=Abstract::abstractWidgetList[k]->getHashKey();
+                   XmlMethod::displayFirstLevelData(hash::description[key],   "button", hash::FStringListHash[key]->at(0));
+               }
            }
        }
 

@@ -363,8 +363,6 @@ bool FListFrame::addStringToListWidget(QString filepath, int index)
  fileListWidget->currentListWidget->setCurrentRow(row+1);
  fileListWidget->currentListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-// widgetContainer[index]->setCurrentRow(0);
- QMessageBox::about(this, "", QString::number(row));
  (*hash::FStringListHash[frameHashKey])[currentIndex] << filepath;
 
  *(fileListWidget->signalList) << filepath;

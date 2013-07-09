@@ -136,6 +136,7 @@ private:
     void updateIndexChangeInfo();
     void displayTotalSize();
     void refreshProjectManagerValues(int= refreshAllZones );
+    void xmlDataWrapperReset(int filter=refreshProjectInteractiveMode | refreshAllZones);
 
  protected:
 
