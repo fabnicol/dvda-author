@@ -431,6 +431,7 @@ void dvda::clearProjectData()
 
    managerWidget->clear();
 
+   xmlDataWrapper.clear();
    xmlDataWrapperReset();
 
   QMessageBox::StandardButton choice=QMessageBox::Cancel;
