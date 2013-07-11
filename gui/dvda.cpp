@@ -393,6 +393,7 @@ void dvda::initializeProject(const bool cleardata)
 
     if (projectName.isEmpty()) projectName=QDir::currentPath()+QDir::separator()+ "default.dvp";
     setCurrentFile(projectName);
+
 }
 
 void dvda::closeProject()
@@ -417,7 +418,7 @@ void dvda::closeProject()
 
 void dvda::clearProjectData()
 {
-  RefreshFlag = RefreshFlag|UpdateTabs|UpdateTree;
+  RefreshFlag = RefreshFlag|UpdateMainTabs|UpdateOptionTabs|UpdateTree;
 
   for (int ZONE : {AUDIO, VIDEO})
     {
@@ -1245,34 +1246,37 @@ void dvda::setCurrentFile(const QString &fileName)
 
 void dvda::assignVariables(const QList<FStringList> &value)
 {
-
   QListIterator<FAbstractWidget*> w(Abstract::abstractWidgetList);
   QListIterator<FStringList> z(value);
 
   if ((w.hasNext()) && (z.hasNext()))
-     w.next()->setWidgetFromXml(z.next());
+  {
+      if (dvda::RefreshFlag&UpdateMainTabs)
+              w.next()->setWidgetFromXml(z.next());
+      else
+              w.next();
+  }
 
   if ((w.hasNext()) && (z.hasNext()))
-     w.next()->setWidgetFromXml(z.next());
+  {
+      if (dvda::RefreshFlag&UpdateMainTabs)
+              w.next()->setWidgetFromXml(z.next());
+      else
+              w.next();
+  }
 
-  if (options::RefreshFlag == UpdateOptionTabs)
+  if (options::RefreshFlag&UpdateOptionTabs)
       while ((w.hasNext()) && (z.hasNext()))
       {
           w.next()->setWidgetFromXml(z.next());
       }
-
 }
 
 void dvda::assignGroupFiles(const int ZONE, const int group_index, QString size, QString file)
 {
-
-  if (group_index > project[ZONE]->getRank())
-    {
-        /* call the FListFrame function. The dvda auxiliary function will be managed by it */
-
-      outputTextEdit->append(MSG_HTML_TAG "Adding group " + QString::number(group_index));
-    }
-
+  static int last_group;
+  if (group_index-last_group) outputTextEdit->append(MSG_HTML_TAG "Adding group " + QString::number(group_index+1));
+  last_group=group_index;
   if (!ZONE) *(project[ZONE]->signalList) << file;
   fileSizeDataBase[ZONE][group_index].append(size);
 }
@@ -1325,6 +1329,7 @@ bool dvda::refreshProjectManager()
             }
 
           DomParser(&file);
+
       }
       else  // refresh display using containers without parsing xml file
       {

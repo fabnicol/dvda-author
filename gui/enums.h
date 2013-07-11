@@ -38,10 +38,10 @@ enum  {
   UpdateTreeMask=0x00F0,
   SaveTree=0x0100,
   SaveTreeMask=0x0F00,
-  UpdateTabs=0x1000,
-  UpdateTabMask=0xF000,
+  UpdateMainTabs=0x1000,
+  UpdateTabMask=0x7000,
   UpdateOptionTabs=0x2000,
-  KeepOptionTabs=0x3000,
+  KeepOptionTabs=0x4000,
   ParseXml=0xF000,
   ParseXmlMask=0xF000
 };

@@ -1,5 +1,5 @@
 #include "dvda.h"
-
+#include "common.h"
 
 namespace XmlMethod
 {
@@ -9,7 +9,9 @@ namespace XmlMethod
   inline void stackData(const QDomNode & node, QStringList tags, int level, QVariant &textData)
     {
       QDomNode  childNode=node.firstChild();
-      QVariant stackedInfo;
+      QList<QVariant> stackedInfo;
+      QStringList strL;
+      QString str;
 
       switch(level)
       {
@@ -18,14 +20,15 @@ namespace XmlMethod
            case 0:
 
                 tags[0] = node.toElement().tagName();
-
+                str.clear();
                 while ((!childNode.isNull()) && (childNode.nodeType() == QDomNode::TextNode))
                   {
-                    stackedInfo.toString() += childNode.toText().data().simplified();
-
-                    childNode=childNode.nextSibling();
+                     str += childNode.toText().data().simplified();
+                     childNode=childNode.nextSibling();
+                     //Q(str)
                   }
-                textData=stackedInfo;
+
+                textData=QVariant(str);
                 break;
 
         /*
@@ -45,10 +48,10 @@ namespace XmlMethod
                   {
                     QVariant str;
                     stackData(childNode, QStringList(tags[1]), 0, str);
-                    stackedInfo.toStringList() << str.toString();
+                    strL << str.toString();
                     childNode=childNode.nextSibling();
                   }
-                textData=QVariant(stackedInfo);
+                textData=QVariant(strL);
                 break;
 
         /*
@@ -70,19 +73,18 @@ namespace XmlMethod
 
     case 2:
             tags[0]=node.toElement().tagName();
-            QDomNode  childNode=node.firstChild();
-            QList<QVariant> stackedInfo;
+            childNode=node.firstChild();
 
-        while (!childNode.isNull())
-          {
-            QStringList L={QString(), QString()};
-            QVariant M;
-            stackData(childNode, L,1, M);
-            stackedInfo << M.toStringList();
-            tags[1]=L.at(0);
-            tags[2]=L.at(1);
-            childNode=childNode.nextSibling();
-          }
+           while (!childNode.isNull())
+           {
+             QStringList L={QString(), QString()};
+             QVariant M;
+             stackData(childNode, L,1, M);
+             stackedInfo << M.toStringList();
+             tags[1]=L.at(0);
+             tags[2]=L.at(1);
+             childNode=childNode.nextSibling();
+           }
 
         textData= QVariant(stackedInfo);
         break;
@@ -213,7 +215,16 @@ void dvda::DomParser(QIODevice* file)
 
   for (QString maintag : {"data", "system", "recent"})
   {
-      parseXmlNodes(node, maintag);
+       if (node.toElement().tagName() != maintag) return;
+
+       QDomNode subnode=node.firstChild();
+
+          while (!subnode.isNull())
+            {
+                xmlDataWrapper <<   parseEntry(subnode);
+                subnode=subnode.nextSibling();
+            }
+
       node = node.nextSibling();
   }
 
@@ -222,8 +233,8 @@ void dvda::DomParser(QIODevice* file)
   /* this assigns values to widgets (line edits, checkboxes, list widgets etc.)
    * in the Options dialog and ensures fills in main tab widget */
 
-  if ((dvda::RefreshFlag&UpdateTabMask) == UpdateTabs)
-  {
+  //if ((dvda::RefreshFlag&UpdateTabMask) == (UpdateMainTabs|UpdateOptionTabs))
+  //{
       assignVariables(xmlDataWrapper);
 
       // adds extra information to main window and sets alternating row colors
@@ -240,7 +251,7 @@ void dvda::DomParser(QIODevice* file)
               }
               refreshRowPresentation(ZONE, group_index);
           }
-  }
+  //}
 
   /* resets recent files using the ones listed in the dvp project file */
 
@@ -252,24 +263,11 @@ void dvda::DomParser(QIODevice* file)
    emit(is_signalList_changed(project[AUDIO]->signalList->size()));
 }
 
-void dvda::parseXmlNodes(const QDomNode &node, const QString &maintag)
-{
-    QTreeWidgetItem *item=new QTreeWidgetItem(managerWidget);
-    if (node.toElement().tagName() != maintag) return;
-    item->setText(0, maintag);
-    item->setExpanded(true);
 
-    QDomNode subnode=node.firstChild();
-
-    while (!subnode.isNull())
-      {
-          xmlDataWrapper <<   parseEntry(subnode, item);
-          subnode=subnode.nextSibling();
-      }
-}
 
 FStringList dvda::parseEntry(const QDomNode &node, QTreeWidgetItem *itemParent)
 {
+
   QVariant textData;
   QStringList tags={QString(),QString(),QString()} ;
   int level=node.toElement().attribute("widgetDepth").toInt();
@@ -280,11 +278,16 @@ FStringList dvda::parseEntry(const QDomNode &node, QTreeWidgetItem *itemParent)
    if ((level == 0) &&(tags[0] == "file"))
                       parent->recentFiles.append(textData.toString());
 
+   switch (level)
+   {
+   case 0:  return FStringList(textData.toString());
+   case 1:  return FStringList(textData.toStringList());
+   case 2:  return FStringList(textData.toList());
 
-   if (level == 0) return FStringList(textData.toString());
-   if (level == 1) return FStringList(textData.toStringList());
-   if (level == 2) return FStringList(textData.toList());
-   return FStringList();
+   }
+
+return FStringList();
+
 }
 
 
@@ -346,10 +349,10 @@ void dvda::refreshProjectManagerValues(int refreshProjectManagerFlag)
          xmlDataWrapperReset(refreshProjectInteractiveMode);
          updateIndexInfo();
 
-             if (currentIndex >= ((uint) xmlDataWrapper[isVideo].size()))
+          if (currentIndex >= ((uint) xmlDataWrapper[isVideo].size()))
                  xmlDataWrapper[isVideo] << (QList<QStringList>() << QStringList());
-            xmlDataWrapper[isVideo][currentIndex]=hash::FStringListHash[dvda::zoneTag()]->at(currentIndex);
-            fileSizeDataBase[isVideo] = processSecondLevelData(xmlDataWrapper[isVideo]);
+          xmlDataWrapper[isVideo][currentIndex]=hash::FStringListHash[dvda::zoneTag()]->at(currentIndex);
+          fileSizeDataBase[isVideo] = processSecondLevelData(xmlDataWrapper[isVideo]);
     }
 
 
@@ -379,13 +382,11 @@ void dvda::refreshProjectManagerValues(int refreshProjectManagerFlag)
           // xmlDataWrapperReset(refreshSystemZone);
            for (int k=2; k <Abstract::abstractWidgetList.count(); k++)
            {
+               QString key=Abstract::abstractWidgetList[k]->getHashKey();
                if (Abstract::abstractWidgetList[k]->getDepth() == "0")
-                   XmlMethod::displayTextData(hash::description[Abstract::abstractWidgetList[k]->getHashKey()], Abstract::abstractWidgetList[k]->setXmlFromWidget().toQString(), "");
+                   XmlMethod::displayTextData(hash::description[key], xmlDataWrapper[k].at(0).at(0), "");
                else if (Abstract::abstractWidgetList[k]->getDepth() == "1")
-               {
-                   QString key=Abstract::abstractWidgetList[k]->getHashKey();
-                   XmlMethod::displayFirstLevelData(hash::description[key],   "button", hash::FStringListHash[key]->at(0));
-               }
+                   XmlMethod::displayFirstLevelData(hash::description[key],   "button", xmlDataWrapper[k].at(0));
            }
        }
 

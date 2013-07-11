@@ -1,7 +1,5 @@
 #include "flistframe.h"
-#if DEBUG_MODE
 #include "common.h"
-#endif
 
 #include <QMessageBox>
 
@@ -256,8 +254,8 @@ void FListFrame::addGroup()
 
         // do not create an new group over an empty group (strict behaviour)
 
-        if (hash::FStringListHash[frameHashKey]->at(size-1).isEmpty()) return;
-        if ((slotListSize) && (getRank() >= slotListSize-1)) return;
+      // if (hash::FStringListHash[frameHashKey]->at(size-1).isEmpty()) return;
+      //  if ((slotListSize) && (getRank() >= slotListSize-1)) return;
 
         if (cumulativePicCount.count() <  slotListSize+1) cumulativePicCount.append(cumulativePicCount[getRank()]+hash::FStringListHash[frameHashKey]->at(getRank()).count());
 
@@ -268,7 +266,7 @@ void FListFrame::addGroup()
         fileListWidget->currentListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
         fileListWidget->currentListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
 
-        widgetContainer.append(fileListWidget->currentListWidget);
+        widgetContainer << fileListWidget->currentListWidget;
 
         addNewTab();
 }
@@ -277,7 +275,9 @@ void FListFrame::addGroup()
 
 void FListFrame::addGroups(int n)
 {
-   for (int j=0; j <= n; j++)
+    widgetContainer.clear();
+    widgetContainer << fileListWidget->currentListWidget;
+    for (int j=0; j <= n; j++)
    {
      if (j) addGroup();
 

@@ -122,8 +122,7 @@ private:
     QString  makeDataString( );
     QString  makeSystemString( );
     QList<QStringList> processSecondLevelData(QList<QStringList> &L, bool isFile=true);
-    FStringList parseEntry(const QDomNode &, QTreeWidgetItem *parent);
-    void parseXmlNodes(const QDomNode &node, const QString &maintag);
+    FStringList parseEntry(const QDomNode &, QTreeWidgetItem *parent=0);
     bool refreshProjectManager();
     void refreshRowPresentation();
     void refreshRowPresentation(uint, uint);
