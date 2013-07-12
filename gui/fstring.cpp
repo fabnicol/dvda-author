@@ -4,11 +4,6 @@ QHash<QString,QString>    hash::description;
 QHash<QString, QString >   hash::qstring;
 QHash<QString, FStringList* >   hash::FStringListHash;
 
-void hash::initializeFStringListHash(const QString &hashKey)
-{
-    hash::FStringListHash[hashKey]=new FStringList;
-    *hash::FStringListHash[hashKey] << QStringList();
-}
 
 FString   FString::operator & (FString  s)
 {

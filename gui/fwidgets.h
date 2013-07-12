@@ -63,6 +63,17 @@ struct Abstract
 {
     static QList<FAbstractWidget*> abstractWidgetList;
     static void refreshOptionFields();
+    static void initializeFStringListHash(const QString &hashKey)
+    {
+        hash::FStringListHash[hashKey]=new FStringList;
+        *hash::FStringListHash[hashKey] << QStringList();
+    }
+
+    static void initializeFStringListHashes()
+    {
+        for (QString hashKey: hash::FStringListHash.keys()) initializeFStringListHash(hashKey);
+    }
+
 };
 
 class FAbstractWidget : public flags
@@ -368,7 +379,7 @@ private:
 
 
 public:
-  FColorButton( const char* text, const char* color);
+  FColorButton( const char* text, const QString & color);
   QLabel *colorLabel;
   int buttonWidth()   const ;
   void setMinimumButtonWidth(const int w);

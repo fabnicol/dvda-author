@@ -130,7 +130,6 @@ void standardPage::changeNorm(QListWidgetItem*current,QListWidgetItem*previous)
 
     switch(normWidget->row(current))
     {
-
     case 0:
         standardMsg="NTSC"; break;
 
@@ -140,7 +139,6 @@ void standardPage::changeNorm(QListWidgetItem*current,QListWidgetItem*previous)
     case 2:
         standardMsg="SECAM"; break;
     }
-
 
     normTypeLineEdit->setText(standardMsg);
 }

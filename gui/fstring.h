@@ -7,6 +7,7 @@
 class FString;
 class FStringList;
 
+
 class hash : public QHash<QString, QString>
 {
 public:
@@ -20,14 +21,6 @@ public:
    *It converts a string label like "audioMenu" into a pointer to an FStringList object that contains a set of file paths
    * (or more generally, text phrases) grouped into a QStringList for each associated file in a list of files */
   static QHash<QString, FStringList *> FStringListHash;
-
-  static void initializeFStringListHash(const QString& hashKey);
-  static void initializeFStringListHashes()
-  {
-   hash::initializeFStringListHash("DVD-A");
-   hash::initializeFStringListHash("DVD-V");
-  }
-
 
 };
 

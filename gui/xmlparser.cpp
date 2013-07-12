@@ -210,7 +210,6 @@ void dvda::DomParser(QIODevice* file)
   /* this stacks data into relevant list structures, processes information
    * and displays it in the manager tree Widget  */
 
-  if (!xmlDataWrapper.isEmpty()) xmlDataWrapper.clear();
   dvda::totalSize[AUDIO]=dvda::totalSize[VIDEO]=0;
 
   for (QString maintag : {"data", "system", "recent"})
@@ -221,7 +220,7 @@ void dvda::DomParser(QIODevice* file)
 
           while (!subnode.isNull())
             {
-                xmlDataWrapper <<   parseEntry(subnode);
+              *(hash::FStringListHash[subnode.toElement().tagName()]=new FStringList) <<   parseEntry(subnode);
                 subnode=subnode.nextSibling();
             }
 
@@ -235,22 +234,26 @@ void dvda::DomParser(QIODevice* file)
 
   //if ((dvda::RefreshFlag&UpdateTabMask) == (UpdateMainTabs|UpdateOptionTabs))
   //{
-      assignVariables(xmlDataWrapper);
+
+      assignVariables();
 
       // adds extra information to main window and sets alternating row colors
 
       for (int ZONE : {AUDIO, VIDEO})
+      {
           for (int group_index=0; group_index<= project[ZONE]->getRank(); group_index++)
           {
               int r=0;
-              for (QString text : xmlDataWrapper[ZONE][group_index])
+              for (QString text : hash::FStringListHash[dvda::zoneTag(ZONE)]->at(group_index))
               {
                   if (!text.isEmpty())
                          assignGroupFiles(ZONE, group_index, fileSizeDataBase[ZONE].at(group_index).at(r),QDir::toNativeSeparators(text));
                   r++;
               }
+
               refreshRowPresentation(ZONE, group_index);
           }
+      }
   //}
 
   /* resets recent files using the ones listed in the dvp project file */
@@ -319,40 +322,15 @@ inline QList<QStringList> dvda::processSecondLevelData(QList<QStringList> &L, bo
  }
 
 
-inline void dvda::xmlDataWrapperReset(int filter)
-{
-    int C=Abstract::abstractWidgetList.count();
-    int count=xmlDataWrapper.count();
-
-    switch(filter)
-    {
-       case refreshProjectInteractiveMode:
-         if (count < 2)
-         {
-            xmlDataWrapper  << *(hash::FStringListHash["DVD-A"])
-                                            << *(hash::FStringListHash["DVD-V"]);
-         }
-         break;
-
-//      case refreshSystemZone:
-//        if (count < C)
-//               for (int k=2; k <C; k++)
-//                   xmlDataWrapper   << *(hash::FStringListHash[Abstract::abstractWidgetList[k]->getHashKey()]);
-    }
-}
 
 void dvda::refreshProjectManagerValues(int refreshProjectManagerFlag)
 {
 
      if ((refreshProjectManagerFlag & refreshProjectInteractiveMask) == refreshProjectInteractiveMode)
     {
-         xmlDataWrapperReset(refreshProjectInteractiveMode);
          updateIndexInfo();
 
-          if (currentIndex >= ((uint) xmlDataWrapper[isVideo].size()))
-                 xmlDataWrapper[isVideo] << (QList<QStringList>() << QStringList());
-          xmlDataWrapper[isVideo][currentIndex]=hash::FStringListHash[dvda::zoneTag()]->at(currentIndex);
-          fileSizeDataBase[isVideo] = processSecondLevelData(xmlDataWrapper[isVideo]);
+          fileSizeDataBase[isVideo] = processSecondLevelData(*hash::FStringListHash[dvda::zoneTag(isVideo)]);
     }
 
 
@@ -368,8 +346,8 @@ void dvda::refreshProjectManagerValues(int refreshProjectManagerFlag)
              if (test[ZONE])
                       dvda::totalSize[ZONE]=XmlMethod::displaySecondLevelData(
                                                                 {dvda::zoneGroupLabel(ZONE), "file"},
-                                                                   xmlDataWrapper[ZONE],
-                                                                   fileSizeDataBase[ZONE]=processSecondLevelData(xmlDataWrapper[ZONE]));
+                                                                   *hash::FStringListHash[dvda::zoneTag(ZONE)],
+                                                                   fileSizeDataBase[ZONE]=processSecondLevelData(*hash::FStringListHash[dvda::zoneTag(ZONE)]));
 
 
        item=new QTreeWidgetItem(managerWidget);
@@ -384,9 +362,9 @@ void dvda::refreshProjectManagerValues(int refreshProjectManagerFlag)
            {
                QString key=Abstract::abstractWidgetList[k]->getHashKey();
                if (Abstract::abstractWidgetList[k]->getDepth() == "0")
-                   XmlMethod::displayTextData(hash::description[key], xmlDataWrapper[k].at(0).at(0), "");
+                   XmlMethod::displayTextData(hash::description[key], Abstract::abstractWidgetList[k]->setXmlFromWidget(), "");
                else if (Abstract::abstractWidgetList[k]->getDepth() == "1")
-                   XmlMethod::displayFirstLevelData(hash::description[key],   "button", xmlDataWrapper[k].at(0));
+                   XmlMethod::displayFirstLevelData(hash::description[key],   "button", hash::FStringListHash[key]->at(0));
            }
        }
 

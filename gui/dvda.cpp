@@ -319,7 +319,7 @@ void dvda::refreshRowPresentation()
 
 void dvda::refreshRowPresentation(uint ZONE, uint j)
 {
-  QString localTag=(ZONE == AUDIO)? "DVD-A" : "DVD-V";
+
   QPalette palette;
   palette.setColor(QPalette::AlternateBase,QColor("silver"));
   QFont font=QFont("Courier",10);
@@ -330,9 +330,9 @@ void dvda::refreshRowPresentation(uint ZONE, uint j)
   widget->setAlternatingRowColors(true);
   widget->setFont(font);
 
-  for (int r=0; r < hash::FStringListHash[localTag]->at(j).size(); r++ )
+  for (int r=0; (r < widget->count()) && (r < hash::FStringListHash[zoneTag(ZONE)]->at(j).size()); r++ )
     {
-      widget->item(r)->setText(hash::FStringListHash.value(localTag)->at(j).at(r).section('/',-1));
+        widget->item(r)->setText(hash::FStringListHash.value(zoneTag(ZONE))->at(j).at(r).section('/',-1));
       widget->item(r)->setTextColor(QColor("navy"));
       //widget->item(r)->setToolTip(fileSizeDataBase[ZONE].at(j).at(r)+" B");
     }
@@ -432,9 +432,6 @@ void dvda::clearProjectData()
 
    managerWidget->clear();
 
-   xmlDataWrapper.clear();
-   xmlDataWrapperReset();
-
   QMessageBox::StandardButton choice=QMessageBox::Cancel;
 
   if (options::RefreshFlag ==  hasUnsavedOptions)
@@ -466,7 +463,7 @@ void dvda::clearProjectData()
   }
 
     /* cleanly wipe out main hash */
-        hash::initializeFStringListHashes();
+        Abstract::initializeFStringListHashes();
 }
 
 void dvda::on_helpButton_clicked()
@@ -1244,32 +1241,33 @@ void dvda::setCurrentFile(const QString &fileName)
 }
 
 
-void dvda::assignVariables(const QList<FStringList> &value)
+void dvda::assignVariables()
 {
   QListIterator<FAbstractWidget*> w(Abstract::abstractWidgetList);
-  QListIterator<FStringList> z(value);
 
-  if ((w.hasNext()) && (z.hasNext()))
+  if (w.hasNext())
   {
+      FAbstractWidget* widget=w.next();
       if (dvda::RefreshFlag&UpdateMainTabs)
-              w.next()->setWidgetFromXml(z.next());
-      else
-              w.next();
+      {
+             widget->setWidgetFromXml(*hash::FStringListHash[widget->getHashKey()]);
+      }
   }
 
-  if ((w.hasNext()) && (z.hasNext()))
+  if (w.hasNext())
   {
+     FAbstractWidget* widget=w.next();
       if (dvda::RefreshFlag&UpdateMainTabs)
-              w.next()->setWidgetFromXml(z.next());
-      else
-              w.next();
+              widget->setWidgetFromXml(*hash::FStringListHash[widget->getHashKey()]);
   }
 
   if (options::RefreshFlag&UpdateOptionTabs)
-      while ((w.hasNext()) && (z.hasNext()))
+      while (w.hasNext())
       {
-          w.next()->setWidgetFromXml(z.next());
+          FAbstractWidget* widget=w.next();
+          widget->setWidgetFromXml(*hash::FStringListHash[widget->getHashKey()]);
       }
+
 }
 
 void dvda::assignGroupFiles(const int ZONE, const int group_index, QString size, QString file)
@@ -1284,19 +1282,16 @@ void dvda::assignGroupFiles(const int ZONE, const int group_index, QString size,
 bool dvda::refreshProjectManager()
 {
   // Step 1: prior to parsing
-
+    if (projectName.isEmpty())
+      {
+        projectName=QDir::currentPath() + QDir::separator()+"default.dvp";
+      }
+      QFile file(projectName);
 
   if ((RefreshFlag&UpdateTreeMask) == UpdateTree)
     {
       managerWidget->clear();
     }
-
-  if (projectName.isEmpty())
-    {
-      projectName=QDir::currentPath() + QDir::separator()+"default.dvp";
-    }
-
-  QFile file(projectName);
 
   if ((RefreshFlag&SaveTreeMask) == SaveTree)
     {
@@ -1333,7 +1328,7 @@ bool dvda::refreshProjectManager()
       }
       else  // refresh display using containers without parsing xml file
       {
-          refreshProjectManagerValues(refreshProjectInteractiveMode | refreshAllZones);
+          refreshProjectManagerValues(refreshProjectInteractiveMode | refreshAudioZone |  refreshVideoZone | refreshSystemZone);
       }
 
       // Step3: adjusting project manager size

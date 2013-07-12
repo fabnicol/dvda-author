@@ -29,7 +29,6 @@ SOURCES += \
     main.cpp \
     viewer.cpp \
     browser.cpp \ 
-    fcolor.cpp \
     videoplayer.cpp \
     xmlparser.cpp \
     highlighter.cpp

@@ -1,7 +1,6 @@
 #include "fwidgets.h"
-#include "fcolor.h"
 #include "common.h"
-
+#include "fcolor.h"
 
 
 /* using above function with controlled object encapsulation */
@@ -223,7 +222,7 @@ FListWidget::FListWidget(const QString& hashKey,
     componentList=QList<QWidget*>() << this;
     widgetDepth="2";
 
-    hash::initializeFStringListHash(hashKey);
+    Abstract::initializeFStringListHash(hashKey);
 
     setObjectName(hashKey+" "+description);
     currentListWidget=new QListWidget;
@@ -280,23 +279,14 @@ FString FListWidget::translate(const FStringList &s)
 
 void FListWidget::setWidgetFromXml(const FStringList &s)
 {
-
     /* for display */
 
     if (s.isFilled())
     {
         int size=s.size()-1;
-        if (hash::FStringListHash.contains(hashKey))
-        {
-            *hash::FStringListHash[hashKey]=s;
-        }
-        else
-            return;
 
         /* add as many groups as there are QStringLists in excess of 1 and fill in the tabs with files */
-
          emit(open_tabs_signal(size)) ;
-
     }
     else
     {
@@ -304,9 +294,7 @@ void FListWidget::setWidgetFromXml(const FStringList &s)
         return;
     }
 
-
     /* for command-line */
-
     /* if a hash has been activated, strings are saved in Xml projects
     * as "translated" items to be displayed straightaway in list widgets
     * command lines, in this case, need to be translated back to original terms */
@@ -679,7 +667,7 @@ void FLineEdit::setWidgetFromXml(const FStringList &s)
 }
 
 
-FColorButton::FColorButton(const char* text, const char* color)
+FColorButton::FColorButton(const char* text, const QString  &color)
 {
     widgetDepth="0";
     QGridLayout *newLayout=new QGridLayout;
@@ -702,7 +690,7 @@ FColorButton::FColorButton(const char* text, const char* color)
     newLayout->setColumnMinimumWidth(0, 150);
     newLayout->setRowMinimumHeight(0, 40);
     setLayout(newLayout);
-    commandLineList=QList<FString>() << RGBStr2YCrCbStr(color+1);
+    commandLineList=QList<FString>() << RGBStr2YCrCbStr(color);
     connect(button, SIGNAL(clicked()), this, SLOT(changeColors()));
 
     colorLabel->update();
@@ -761,7 +749,7 @@ FPalette::FPalette(const char* textR,
     button[1]=new FColorButton(textG, DEFAULT_COLOR_1); // green RGB
     button[2]=new FColorButton( textB, DEFAULT_COLOR_2); //blue RGB
 
-    hash::initializeFStringListHash(hashKey);
+    Abstract::initializeFStringListHash(hashKey);
 
     FCore( "000000:000000:000000",  hashKey, description, commandLine, status, NULL, NULL);
     refreshPaletteHash();
@@ -773,6 +761,7 @@ void FPalette::refreshPaletteHash()
     FStringList L=FStringList(button[0]->setXmlFromWidget(), button[1]->setXmlFromWidget(), button[2]->setXmlFromWidget());
     if (hash::FStringListHash.contains(hashKey))  *hash::FStringListHash[hashKey]=L;
     commandLineList[0]=L[0][0] + ":"+ L[0][1] + ":"+ L[0][2];
+
 }
 
 FString FPalette::setXmlFromWidget()
@@ -783,7 +772,6 @@ FString FPalette::setXmlFromWidget()
 
 void FPalette::setWidgetFromXml(const FStringList &s)
 {
-    if (hash::FStringListHash.contains(hashKey)) *hash::FStringListHash[hashKey]=s;
     commandLineList[0]=s[0].join(":");
     refreshWidgetDisplay();
 }

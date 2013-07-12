@@ -92,10 +92,11 @@ private:
     static qint64 totalSize[2];
 
 
+    QString  zoneTag(int ZONE){return ((ZONE)? "DVD-V" : "DVD-A");}
     QString  zoneTag(){return ((mainTabWidget->currentIndex())? "DVD-V" : "DVD-A");}
     QString  zoneGroupLabel(int ZONE){return ((ZONE)? "titleset" : "group");}
+    QString  zoneGroupLabel(){return ((mainTabWidget->currentIndex())? "titleset" : "group");}
 
-    QList<FStringList> xmlDataWrapper;
     QHash <int,  QList<QStringList>  > fileSizeDataBase;
 
     QDialog *consoleDialog;
@@ -112,7 +113,7 @@ private:
     QHBoxLayout *allLayout;
 
     void addSelectedFileToProject();
-    void assignVariables(const QList<FStringList> &value);
+    void assignVariables();
     void clearProjectData();
     QStringList createCommandLineString(int commandLineType);
     float discShare(qint64 directorySize);
@@ -135,7 +136,7 @@ private:
     void updateIndexChangeInfo();
     void displayTotalSize();
     void refreshProjectManagerValues(int= refreshAllZones );
-    void xmlDataWrapperReset(int filter=refreshProjectInteractiveMode | refreshAllZones);
+
 
  protected:
 

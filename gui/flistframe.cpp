@@ -128,7 +128,11 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
  tabBox->setLayout(tabLayout);
  tabBox->setFlat(true);
 
- connect(addGroupButton, SIGNAL(clicked()), this, SLOT(addGroup()));
+ connect(addGroupButton, &QToolButton::clicked, [=] () {
+                                                                                                     if (hash::FStringListHash[frameHashKey]->last().isEmpty()) return;
+                                                                                                     hash::FStringListHash[frameHashKey]->append(QStringList());
+                                                                                                     addGroup();
+                                                                                                  });
  connect(deleteGroupButton, SIGNAL(clicked()), this, SLOT(deleteGroup()));
  connect(mainTabWidget, SIGNAL(currentChanged(int)), this, SLOT(on_mainTabIndex_changed(int)));
  connect(embeddingTabWidget, SIGNAL(currentChanged(int)), this, SLOT(on_embeddingTabIndex_changed(int)));
@@ -254,13 +258,12 @@ void FListFrame::addGroup()
 
         // do not create an new group over an empty group (strict behaviour)
 
-      // if (hash::FStringListHash[frameHashKey]->at(size-1).isEmpty()) return;
+       if (size < 2 ||hash::FStringListHash[frameHashKey]->at(size-2).isEmpty()) return;
       //  if ((slotListSize) && (getRank() >= slotListSize-1)) return;
 
         if (cumulativePicCount.count() <  slotListSize+1) cumulativePicCount.append(cumulativePicCount[getRank()]+hash::FStringListHash[frameHashKey]->at(getRank()).count());
 
         //TODO: check this out
-        if ((size < slotListSize) || slotListSize == 0) hash::FStringListHash[frameHashKey]->append(QStringList());
 
         fileListWidget->currentListWidget=new QListWidget;
         fileListWidget->currentListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);

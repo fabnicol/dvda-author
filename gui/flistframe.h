@@ -24,6 +24,7 @@ private:
  QString frameHashKey;
 
  void startDrag();
+ void addGroup();
  QPoint startPos;
  int row, currentIndex,  slotListSize;
 
@@ -80,7 +81,7 @@ FListFrame(QObject* parent,  QAbstractItemView * fileTreeView, short import_type
 
 
 public slots:
-    void addGroup();
+
     void deleteGroup();
     void on_deleteItem_clicked();
      void on_clearList_clicked(int currentIndex=-1);
