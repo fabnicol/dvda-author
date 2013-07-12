@@ -15,6 +15,7 @@
 int dvda::RefreshFlag=0;
 int flags::lplexRank=0;
 qint64   dvda::totalSize[]={0,0};
+int dvda::dialVolume=25;
 class hash;
 
 
@@ -58,13 +59,16 @@ void dvda::on_playItemButton_clicked()
 
   if (count == 0)
     {
-      myMusic = new QMediaPlayer;
+      myMusic = new QMediaPlayer(this, QMediaPlayer::StreamPlayback);
+      myMusic->setMedia(QMediaContent(QUrl::fromLocalFile(hash::FStringListHash[dvda::zoneTag(isVideo)]->at(currentIndex).at(row))));
+      myMusic->setVolume(dvda::dialVolume);
+      myMusic->play();
     }
 
   if (count % 2 == 0)
     {
       myMusic->play();
-      outputTextEdit->append(tr(INFORMATION_HTML_TAG "Playing...\n   file %1\n   in %2 %3   row %4" "<br>")
+      outputTextEdit->append(tr(INFORMATION_HTML_TAG "Playing...   file %1\n   in %2 %3   row %4" )
                                   .arg(hash::FStringListHash.value(dvda::zoneTag())->at(currentIndex).at(row),
                                   zoneGroupLabel(isVideo),QString::number(currentIndex+1),QString::number(row+1)));
 
@@ -76,7 +80,7 @@ void dvda::on_playItemButton_clicked()
       playItemButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
       playItemButton->setToolTip(tr("Play selected file"));
       myMusic->stop();
-      outputTextEdit->append(tr(INFORMATION_HTML_TAG "Stopped.\n"));
+      outputTextEdit->append(tr(INFORMATION_HTML_TAG "Stopped."));
     }
   count++;
 }
@@ -168,6 +172,13 @@ dvda::dvda()
   playItemButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
   playItemButton->setIconSize(QSize(22, 22));
   playItemButton->setToolTip(tr("Play selected file"));
+  QDial* dial = new QDial;
+  dial->setFocusPolicy(Qt::StrongFocus);
+  dial->setMinimum(0);
+  dial->setMaximum(100);
+  dial->setValue(dvda::dialVolume);
+  dial->setNotchesVisible(true);
+  dial->setMaximumWidth(40);
 
   killButton = new QToolButton(this);
   killButton->setToolTip(tr("Kill dvda-author"));
@@ -208,6 +219,7 @@ dvda::dvda()
   connect(&process3, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(process3Finished(int, QProcess::ExitStatus)));
   connect(mainTabWidget, SIGNAL(currentChanged(int)), this, SLOT(on_frameTab_changed(int )));
   connect(playItemButton, SIGNAL(clicked()), this, SLOT(on_playItemButton_clicked()));
+  connect(dial, &QDial::valueChanged, [=]() { dvda::dialVolume=dial->value(); if (myMusic) myMusic->setVolume(dvda::dialVolume);});
   connect(this, SIGNAL(hasIndexChangedSignal()), this, SLOT(on_playItem_changed()));
   connect(audioFilterButton, SIGNAL(toggled(bool)), this, SLOT(on_audioFilterButton_clicked(bool)));
 
@@ -229,7 +241,8 @@ dvda::dvda()
   }
 
   updownLayout->setRowMinimumHeight(1, 40);
-  updownLayout->addWidget(playItemButton, 2, 0);
+  updownLayout->addWidget(playItemButton, 2, 0,Qt::AlignBottom | Qt::AlignHCenter);
+  updownLayout->addWidget(dial, 3, 0, Qt::AlignTop | Qt::AlignHCenter);
   updownLayout->setRowMinimumHeight(3, 40);
 
   projectLayout->addLayout(updownLayout, 0,3);

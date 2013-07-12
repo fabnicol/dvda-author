@@ -20,6 +20,7 @@ public:
     MainWindow *parent;
     enum { MaxRecentFiles = 5 };
     static int RefreshFlag;
+    static int dialVolume;
 
     QFileSystemModel *model;
     QTabWidget  *mainTabWidget;
