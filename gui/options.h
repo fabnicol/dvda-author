@@ -315,7 +315,7 @@ public:
 signals:
 
     void defaultClick(bool);
-    void registered();
+
 
 private:
 
@@ -326,8 +326,6 @@ private:
     void createIcon(const char* path, const char* text);
 
 private slots:
-
-    void closeOptions();
     void changePage(QListWidgetItem *current, QListWidgetItem *previous);
 
 };

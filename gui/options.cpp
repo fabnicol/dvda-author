@@ -1545,8 +1545,11 @@ options::options(dvda* parent)
     pagesWidget->addWidget(lplexTab);
 
     closeButton = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-    connect(closeButton, SIGNAL(accepted()), this, SLOT(closeOptions()));
-    connect( this, SIGNAL(registered()), parent, SLOT(saveProject()));
+    connect(closeButton, &QDialogButtonBox::accepted, [=]() {
+                                                                                                                options::RefreshFlag =  hasUnsavedOptions;
+                                                                                                                accept();
+                                                                                                                parent->saveProject(true);
+                                                                                                          });
     connect(closeButton, SIGNAL(rejected()), this, SLOT(reject()));
 
     createIcons();
@@ -1631,13 +1634,4 @@ void options::changePage(QListWidgetItem *current, QListWidgetItem *previous)
     if (current) pagesWidget->setCurrentIndex(r);
 }
 
-
-
-
-void options::closeOptions()
-{
-    options::RefreshFlag =  hasUnsavedOptions;
-    emit(registered());
-    accept();
-}
 

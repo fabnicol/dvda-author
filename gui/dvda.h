@@ -35,6 +35,7 @@ public:
 //    void addDraggedFiles(QList<QUrl> urls);
     void initializeProject(const bool cleardata=true);
     void DomParser(QIODevice*);
+    void refreshProjectManagerValues(int= refreshAllZones );
 
 public slots:
 
@@ -46,7 +47,6 @@ public slots:
 private slots:
 
     void on_openManagerWidgetButton_clicked();
-    void on_importFromMainTree_clicked();
     void on_moveUpItemButton_clicked();
     void on_moveDownItemButton_clicked();
     void on_deleteItem_clicked();
@@ -135,7 +135,6 @@ private:
     void updateIndexInfo();
     void updateIndexChangeInfo();
     void displayTotalSize();
-    void refreshProjectManagerValues(int= refreshAllZones );
 
 
  protected:

@@ -357,17 +357,19 @@ void dvda::refreshProjectManagerValues(int refreshProjectManagerFlag)
 
        if ((refreshProjectManagerFlag & refreshProjectSystemZoneMask) == refreshSystemZone)
       {
-          // xmlDataWrapperReset(refreshSystemZone);
+
            for (int k=2; k <Abstract::abstractWidgetList.count(); k++)
            {
+
                QString key=Abstract::abstractWidgetList[k]->getHashKey();
+
                if (Abstract::abstractWidgetList[k]->getDepth() == "0")
-                   XmlMethod::displayTextData(hash::description[key], Abstract::abstractWidgetList[k]->setXmlFromWidget(), "");
+                   XmlMethod::displayTextData(hash::description[key], hash::qstring[key], "");
                else if (Abstract::abstractWidgetList[k]->getDepth() == "1")
                    XmlMethod::displayFirstLevelData(hash::description[key],   "button", hash::FStringListHash[key]->at(0));
            }
        }
 
-       options::RefreshFlag=hasSavedOptions;
+       options::RefreshFlag|=hasSavedOptions;
 
 }

@@ -217,7 +217,7 @@ dvda::dvda()
       project[ZONE]->slotList=NULL;
       connect(project[ZONE]->addGroupButton, SIGNAL(clicked()), this, SLOT(addGroup()));
       connect(project[ZONE]->deleteGroupButton, SIGNAL(clicked()), this, SLOT(deleteGroup()));
-      connect(project[ZONE]->importFromMainTree, SIGNAL(clicked()), this, SLOT(on_importFromMainTree_clicked()));
+      connect(project[ZONE]->importFromMainTree, &QToolButton::clicked, [=] () {addSelectedFileToProject();});
       connect(project[ZONE]->moveUpItemButton, SIGNAL(clicked()), this, SLOT(on_moveUpItemButton_clicked()));
       connect(project[ZONE]->moveDownItemButton, SIGNAL(clicked()), this, SLOT(on_moveDownItemButton_clicked()));
       connect(project[ZONE]->retrieveItemButton, SIGNAL(clicked()), this, SLOT(on_deleteItem_clicked()));
@@ -388,11 +388,13 @@ void dvda::initializeProject(const bool cleardata)
     {
         clearProjectData();
         RefreshFlag |=  ParseXml;
+        options::RefreshFlag |= UpdateOptionTabs;
         refreshProjectManager();
     }
 
     if (projectName.isEmpty()) projectName=QDir::currentPath()+QDir::separator()+ "default.dvp";
     setCurrentFile(projectName);
+
 
 }
 
@@ -603,11 +605,6 @@ void dvda::updateIndexInfo()
   row=project[isVideo]->getCurrentRow();
 
     // row = -1 if nothing selected
-}
-
-void dvda::on_importFromMainTree_clicked()
-{
-  addSelectedFileToProject();
 }
 
 

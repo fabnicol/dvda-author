@@ -128,7 +128,7 @@ MainWindow::MainWindow()
   addDockWidget(Qt::LeftDockWidgetArea, fileTreeViewDockWidget);
 
   configureOptions();
-
+  Abstract::initializeFStringListHashes();
   Abstract::refreshOptionFields();
 
   // NOTE: Using only FCheckBoxes. Change this if other FAbstractWidget subclasses are to be used
