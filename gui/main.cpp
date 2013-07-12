@@ -35,7 +35,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    MainWindow *mainWin=new MainWindow;
+    char* s;
+    if (argc > 1) s=argv[1];
+    else s=(char*)"";
+    MainWindow *mainWin=new MainWindow(s);
+
     mainWin->show();
     return app.exec();
 }

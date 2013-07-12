@@ -78,7 +78,7 @@ void createFontDataBase()
 }
 
 
-MainWindow::MainWindow()
+MainWindow::MainWindow(char* projectName)
 {
   createFontDataBase();
 
@@ -92,6 +92,7 @@ MainWindow::MainWindow()
 //  dialog->setAcceptDrops(true);
   dialog->setParent(dvda_author, Qt::Window);
   dvda_author->parent=this;
+  dvda_author->projectName=projectName;
 
   createActions();
   createMenus();
@@ -106,8 +107,8 @@ MainWindow::MainWindow()
         dvda_author->setCurrentFile(settings->value("default").toString());
   else
     {
-        dvda_author->setCurrentFile(defaultPath);
-        settings->setValue("default",defaultPath);
+        dvda_author->setCurrentFile(projectName);
+        settings->setValue("default",projectName);
     }
 
 
@@ -139,8 +140,10 @@ MainWindow::MainWindow()
              a->setChecked(settings->value(a->getHashKey()).toBool());
        }
 
+  dvda_author->initializeProject();
   setWindowIcon(QIcon(":/images/dvda-author.png"));
   setWindowTitle("dvda-author interface  "+ QString(VERSION) +" version");
+
 }
 
 
@@ -469,6 +472,8 @@ void MainWindow::on_editProjectButton_clicked()
                                                                                         file->open(QFile::Truncate |QFile::WriteOnly| QFile::Text);
                                                                                         file->write(editor->document()->toPlainText().toUtf8()) ;
                                                                                         file->close();
+                                                                                        dvda::RefreshFlag = dvda::RefreshFlag |UpdateTree | ParseXml;
+                                                                                        dvda_author->initializeProject(true);
                                                                                       });
 
    connect(actionList[3], &QAction::triggered,  [=] ()
@@ -492,11 +497,15 @@ void MainWindow::on_editProjectButton_clicked()
                                                                                              }
                                                                                        }
                                                                                        if (file->rename(newstr) ==false) return;
+                                                                                       dvda_author->projectName=newstr;
                                                                                        if (file->open(QFile::WriteOnly | QFile::Truncate | QFile::Text))
                                                                                        {
                                                                                           file->write(editor->document()->toPlainText().toUtf8()) ;
-                                                                                          file->close();
                                                                                        }
+                                                                                       file->close();
+                                                                                       dvda::RefreshFlag = dvda::RefreshFlag |UpdateTree | ParseXml;
+                                                                                       dvda_author->initializeProject(true);
+
                                                                                       });
 
    connect(actionList[4], &QAction::triggered,  [=] ()

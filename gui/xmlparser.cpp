@@ -247,7 +247,7 @@ void dvda::DomParser(QIODevice* file)
               for (QString text : hash::FStringListHash[dvda::zoneTag(ZONE)]->at(group_index))
               {
                   if (!text.isEmpty())
-                         assignGroupFiles(ZONE, group_index, fileSizeDataBase[ZONE].at(group_index).at(r),QDir::toNativeSeparators(text));
+                         assignGroupFiles(ZONE, group_index, QDir::toNativeSeparators(text));
                   r++;
               }
 

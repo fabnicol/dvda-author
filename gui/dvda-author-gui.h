@@ -47,7 +47,7 @@ class MainWindow : public QMainWindow
   Q_OBJECT
 
   public :
-   MainWindow();
+   MainWindow(char*);
    options* dialog;
    QSettings  *settings;
 

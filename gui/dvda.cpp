@@ -1267,13 +1267,12 @@ void dvda::assignVariables()
 
 }
 
-void dvda::assignGroupFiles(const int ZONE, const int group_index, QString size, QString file)
+void dvda::assignGroupFiles(const int ZONE, const int group_index,  QString file)
 {
   static int last_group;
   if (group_index-last_group) outputTextEdit->append(MSG_HTML_TAG "Adding group " + QString::number(group_index+1));
   last_group=group_index;
   if (!ZONE) *(project[ZONE]->signalList) << file;
-  fileSizeDataBase[ZONE][group_index].append(size);
 }
 
 bool dvda::refreshProjectManager()

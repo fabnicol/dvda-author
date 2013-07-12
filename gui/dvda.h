@@ -19,6 +19,7 @@ public:
     void setOutputTextEdit(QString filename);
     MainWindow *parent;
     enum { MaxRecentFiles = 5 };
+    static int RefreshFlag;
 
     QFileSystemModel *model;
     QTabWidget  *mainTabWidget;
@@ -31,11 +32,10 @@ public:
     QToolButton *audioFilterButton;
 
     int getZone() {return isVideo;}
+    void initializeProject(const bool cleardata=true);
 
 //    void addDraggedFiles(QList<QUrl> urls);
-    void initializeProject(const bool cleardata=true);
-    void DomParser(QIODevice*);
-    void refreshProjectManagerValues(int= refreshAllZones );
+
 
 public slots:
 
@@ -68,7 +68,7 @@ private slots:
     void on_helpButton_clicked();
     void requestSaveProject();
     void writeProjectFile();
-    void assignGroupFiles(const int isVideo, const int group_index, QString size,  QString file);
+    void assignGroupFiles(const int isVideo, const int group_index, QString file);
     void openProjectFile();
     void on_playItemButton_clicked();
     void on_playItem_changed();
@@ -124,7 +124,7 @@ private:
     QString  makeSystemString( );
     QList<QStringList> processSecondLevelData(QList<QStringList> &L, bool isFile=true);
     FStringList parseEntry(const QDomNode &, QTreeWidgetItem *parent=0);
-    bool refreshProjectManager();
+
     void refreshRowPresentation();
     void refreshRowPresentation(uint, uint);
     void setIndexedProperties(QModelIndexList* indexList);
@@ -136,12 +136,14 @@ private:
     void updateIndexChangeInfo();
     void displayTotalSize();
 
+    void DomParser(QIODevice*);
+    void refreshProjectManagerValues(int= refreshAllZones );
+    bool refreshProjectManager();
 
  protected:
 
     QString     outputType, sourceDir;
     unsigned int maxRange;
-    static int RefreshFlag;
 
 signals:
 
