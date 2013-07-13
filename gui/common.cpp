@@ -3,16 +3,8 @@
 
 QStringList common::extraAudioFilters=QStringList();
 FString common::htmlLogPath;
-QString common::tempdir;
+QString common::tempdir=QDir::homePath ()+QDir::separator()+"tempdir";  // should be equal to main app globals.settings.tempdir=TEMPDIR;
 
-common::common()
-{
-    outputTextEdit=new QTextEdit;
-    outputTextEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    outputTextEdit->setAcceptDrops(false);
-    outputTextEdit->setMinimumHeight(200);
-    whatsThisPath=generateDatadirPath("whatsthis.info");
-}
 
 
 bool common::remove(const QString &path)

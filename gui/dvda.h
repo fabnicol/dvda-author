@@ -11,6 +11,7 @@ class dvda : public common
 {
     Q_OBJECT
 
+
 public:
 
     dvda();
@@ -22,15 +23,15 @@ public:
     static int RefreshFlag;
     static int dialVolume;
 
-    QFileSystemModel *model;
-    QTabWidget  *mainTabWidget;
-    QTreeWidget *managerWidget;
-    QTreeView *fileTreeView;
+    QFileSystemModel *model=new QFileSystemModel;
+    QTabWidget  *mainTabWidget= new QTabWidget;
+    QTreeWidget *managerWidget= new QTreeWidget;
+    QTreeView *fileTreeView= new QTreeView;
     QString projectName;
     QString curFile;
     FListFrame *project[2];
-
-    QToolButton *audioFilterButton;
+    QToolButton *audioFilterButton=new QToolButton;
+    QTextEdit *outputTextEdit = new QTextEdit;
 
     int getZone() {return isVideo;}
     void initializeProject(const bool cleardata=true);
@@ -39,8 +40,8 @@ public:
 
     void startDrag();
     void addDraggedFiles(QList<QUrl> urls);
-    void mousePressEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
+ /*   void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event)*/
     void dragMoveEvent(QDragMoveEvent *event);
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
@@ -90,16 +91,17 @@ private slots:
 private:
 
     bool hasIndexChanged;
-    bool startProgressBar;
-    bool startProgressBar2;
-    bool startProgressBar3;
-    int myTimerId;
-    int row;
-    uint isVideo;
-    uint currentIndex;
-    qint64 value;
+    bool startProgressBar=0;
+    bool startProgressBar2=0;
+    bool startProgressBar3=0;
+    int myTimerId=0;
+    int row=0;
+    uint isVideo=AUDIO;
+    uint currentIndex=0;
+    qint64 value=0;
     static qint64 totalSize[2];
 
+    QDial* dial=new QDial;
 
     QString  zoneTag(int ZONE){return ((ZONE)? "DVD-V" : "DVD-A");}
     QString  zoneTag(){return ((mainTabWidget->currentIndex())? "DVD-V" : "DVD-A");}
@@ -108,18 +110,23 @@ private:
 
     QHash <int,  QList<QStringList>  > fileSizeDataBase;
 
-    QDialog *consoleDialog;
+    QDockWidget *consoleDialog=  new QDockWidget(tr("Console"), this, Qt::SubWindow);
     QIcon iconShowMaximized, iconShowNormal;
-    QMediaPlayer *myMusic;
-    QProcess    process, process2, process3, helpProcess;
-    QProgressBar *progress, *progress2, *progress3;
-    QToolButton *mkdirButton, *removeButton, *moveUpItemButton,
-                         *moveDownItemButton, *retrieveItemButton, *addGroupButton, *deleteGroupButton,
-                         *killMkisofsButton, *killButton, *killCdrecordButton,*playItemButton;
-    QTextEdit *console;
+    QMediaPlayer *myMusic=nullptr;
+    QProcess    process, process2, process3;
+    QProgressBar *progress=new QProgressBar, *progress2=nullptr, *progress3=nullptr;
+    QToolButton *mkdirButton= new QToolButton;
+    QToolButton *removeButton= new QToolButton;
+    QToolButton *killMkisofsButton= new QToolButton;
+    QToolButton *killButton= new QToolButton;
+    QToolButton *killCdrecordButton= new QToolButton;
+    QToolButton *playItemButton= new QToolButton;
+    QTextEdit     *console  = new QTextEdit;
 
-    QVBoxLayout *mainLayout, *progressLayout, *managerLayout;
-    QHBoxLayout *allLayout;
+    QVBoxLayout *mainLayout= new QVBoxLayout;
+    QVBoxLayout *progressLayout= new QVBoxLayout;
+    QVBoxLayout *managerLayout= new QVBoxLayout;
+    QHBoxLayout *allLayout= new QHBoxLayout;
 
     void addSelectedFileToProject();
     void assignVariables();
@@ -152,7 +159,7 @@ private:
  protected:
 
     QString     outputType, sourceDir;
-    unsigned int maxRange;
+    unsigned int maxRange=0;
 
 signals:
 

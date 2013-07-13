@@ -23,36 +23,33 @@ private:
  FListWidget* fileListWidget;
  QString frameHashKey;
 
-
  void addGroup();
 
  int row, currentIndex,  slotListSize;
 
 public:
 
- QToolButton *importFromMainTree,
-                        *moveDownItemButton,
-                        *moveUpItemButton,
-                        *retrieveItemButton,
-                        *clearListButton,
-                        *addGroupButton,
-                        *deleteGroupButton;
+ QToolButton *importFromMainTree=new QToolButton,
+                        *moveDownItemButton=new QToolButton,
+                        *moveUpItemButton=new QToolButton,
+                        *retrieveItemButton=new QToolButton,
+                        *clearListButton=new QToolButton,
+                        *addGroupButton=new QToolButton,
+                        *deleteGroupButton=new QToolButton;
 
- QTabWidget* mainTabWidget, *embeddingTabWidget;
+ QTabWidget *mainTabWidget, *embeddingTabWidget;
  QAbstractItemView *fileTreeView;
- QStringList* slotList;
+ QStringList* slotList= new QStringList;
+ QStringList *signalList= new QStringList;
  QList<int> cumulativePicCount;
- QLabel* fileLabel;
+ QLabel* fileLabel=new QLabel;
  QString fileLabelText;
- QStringList *signalList;
- QFileSystemModel *model;
- QGroupBox *controlButtonBox, *tabBox;
-
+ QFileSystemModel *model=new QFileSystemModel;
+ QGroupBox *controlButtonBox=new QGroupBox, *tabBox=new QGroupBox;
 
  /* accessors */
  int getRank() {return widgetContainer.count()-1;}
  QString &getHashKey() {return frameHashKey;}
-
  void initializeWidgetContainer()
  {
     widgetContainer = QList<QListWidget*>() << fileListWidget->currentListWidget;
@@ -98,7 +95,6 @@ protected slots:
 protected:
     short importType;
     QStringList tags;
-
 
 signals:
     void is_signalList_changed(int);

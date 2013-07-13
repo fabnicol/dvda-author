@@ -18,11 +18,11 @@ public:
    static void showPage(const QUrl &url);
 
  private:
-   QWebView *textBrowser;
-   QToolButton *homeButton;
-   QToolButton *backButton;
-   QToolButton *forwardButton;
-   QToolButton *closeButton;
+   QWebView *textBrowser  = new QWebView;
+   QToolButton *homeButton = new QToolButton ;
+   QToolButton *backButton = new QToolButton ;
+   QToolButton *forwardButton = new QToolButton ;
+   QToolButton *closeButton =new QToolButton;
    QUrl url;
 
 public slots:

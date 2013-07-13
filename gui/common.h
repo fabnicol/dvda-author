@@ -42,11 +42,12 @@ protected slots:
     void assignAudioCharacterisics(int exitcode, QProcess::ExitStatus status);
 
 public:
-  common();
+
+  common()   {    whatsThisPath=generateDatadirPath("whatsthis.info");  }
+
   static QString tempdir;
   static QString generateDatadirPath(const char* path);
   static QString generateDatadirPath(QString &path);
-  QTextEdit *outputTextEdit;
 
   qint64 recursiveDirectorySize(const QString &path, const QString &extension);
 

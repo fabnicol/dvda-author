@@ -13,11 +13,9 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
  currentIndex=0;  // necessary for project parsing
  importType=import_type;
  tags=xml_tags;
- signalList= new QStringList;
  slotList = slotL;
 
  fileTreeView=tree;
- fileLabel=new QLabel;
  fileLabelText=  tags[0] + "s for "+ tags[1];
  fileLabel->setWordWrap(true);
  frameHashKey=hashKey;
@@ -65,51 +63,43 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
 
  mainTabWidget->addTab(fileListWidget->currentListWidget, xml_tags[1]+" 1");
  cumulativePicCount =QList<int>() << 0 << 0;
- importFromMainTree = new QToolButton;
 
  const QIcon importIcon = QIcon(QString::fromUtf8( ":/images/document-import.png"));
  importFromMainTree->setIcon(importIcon);
  importFromMainTree->setIconSize(QSize(22, 22));
 
- addGroupButton = new QToolButton(this);
  addGroupButton->setToolTip(tr("Add new DVD-Audio group tab"));
  const QIcon iconNew = QIcon(QString::fromUtf8( ":/images/tab-new.png"));
  addGroupButton->setIcon(iconNew);
  addGroupButton->setIconSize(QSize(22,22));
 
- deleteGroupButton = new QToolButton;
  deleteGroupButton->setToolTip(tr("Delete current DVD-Audio group tab"));
  const QIcon iconDelete = QIcon(QString::fromUtf8( ":/images/tab-close-other.png"));
  deleteGroupButton->setIcon(iconDelete);
  deleteGroupButton->setIconSize(QSize(22,22));
 
- moveUpItemButton = new QToolButton(this);
  moveUpItemButton->setToolTip(tr("Move group item up"));
  const QIcon iconUp = QIcon(QString::fromUtf8( ":/images/arrow-up.png"));
  moveUpItemButton->setIcon(iconUp);
  moveUpItemButton->setIconSize(QSize(22, 22));
 
- retrieveItemButton = new QToolButton(this);
  retrieveItemButton->setToolTip(tr("Retrieve group item"));
  retrieveItemButton->setObjectName(QString::fromUtf8("Retrieve"));
  const QIcon iconRetrieve = QIcon(QString::fromUtf8( ":/images/retrieve.png"));
  retrieveItemButton->setIcon(iconRetrieve);
  retrieveItemButton->setIconSize(QSize(22, 22));
 
- moveDownItemButton = new QToolButton(this);
  moveDownItemButton->setToolTip(tr("Move group item down"));
  moveDownItemButton->setObjectName(QString::fromUtf8("Down"));
  const QIcon iconDown = QIcon(QString::fromUtf8( ":/images/arrow-down.png"));
  moveDownItemButton->setIcon(iconDown);
  moveDownItemButton->setIconSize(QSize(22, 22));
 
- clearListButton=new QToolButton;
  clearListButton->setToolTip(tr("Erase selected menu file list"));
  const QIcon clearIcon = QIcon(QString::fromUtf8( ":/images/edit-clear.png"));
  clearListButton->setIcon(clearIcon);
  clearListButton->setIconSize(QSize(22,22));
 
- controlButtonBox=new QGroupBox(this);
  QGridLayout *controlButtonLayout=new QGridLayout;
 
  controlButtonLayout->addWidget(moveUpItemButton, 1,1,1,1,Qt::AlignCenter);
@@ -122,7 +112,6 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
  controlButtonBox->setLayout(controlButtonLayout);
  controlButtonBox->setFlat(true);
 
- tabBox=new QGroupBox(this);
  QVBoxLayout *tabLayout=new QVBoxLayout;
  tabLayout->addWidget(embeddingTabWidget);
  tabBox->setLayout(tabLayout);

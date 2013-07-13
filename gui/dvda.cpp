@@ -23,16 +23,7 @@ class hash;
 void dvda::initialize()
 {
   adjustSize();
-
-  myMusic=0;
-  maxRange=0;
-  startProgressBar=startProgressBar2=startProgressBar3=0;
-  myTimerId=isVideo=0;
-
-  tempdir=QDir::homePath ()+QDir::separator()+"tempdir";  // should be equal to main app globals.settings.tempdir=TEMPDIR
-
   extraAudioFilters=QStringList() << "*.wav" << "*.flac";
-
   hash::description["titleset"]="DVD-Video titleset";
   hash::description["group"]="DVD-Audio group";
   hash::description["recent"]="Recent file";
@@ -92,13 +83,11 @@ dvda::dvda()
   initialize();
   setAcceptDrops(true);
 
-  model = new QFileSystemModel;
   model->setReadOnly(false);
   model->setRootPath(QDir::homePath());
   model->sort(Qt::AscendingOrder);
   model->setNameFilterDisables(false);
 
-  fileTreeView = new QTreeView;
   fileTreeView->setModel(model);
   fileTreeView->hideColumn(1);
   fileTreeView->setMinimumWidth(400);
@@ -115,7 +104,6 @@ dvda::dvda()
   fileTreeView->expand(index);
   fileTreeView->scrollTo(index);
 
-  audioFilterButton= new QToolButton(this);
   audioFilterButton->setToolTip("Show audio files with extension "+ common::extraAudioFilters.join(", ")+"\nTo add extra file formats to this filter button go to Options>Audio Processing,\ncheck the \"Enable multiformat input\" box and fill in the file format field.");
   const QIcon iconAudioFilter = QIcon(QString::fromUtf8( ":/images/audio_file_icon.png"));
   audioFilterButton->setIcon(iconAudioFilter);
@@ -159,23 +147,20 @@ dvda::dvda()
 
   project[VIDEO]->embeddingTabWidget->setIconSize(QSize(64, 64));
 
-  mkdirButton = new QToolButton(this);
   mkdirButton->setToolTip(tr("Create Directory..."));
   const QIcon iconCreate = QIcon(QString::fromUtf8( ":/images/folder-new.png"));
   mkdirButton->setIcon(iconCreate);
   mkdirButton->setIconSize(QSize(22, 22));
 
-  removeButton = new QToolButton(this);
   removeButton->setToolTip(tr("Remove directory or file..."));
   const QIcon iconRemove = QIcon(QString::fromUtf8( ":/images/edit-delete.png"));
   removeButton->setIcon(iconRemove);
   removeButton->setIconSize(QSize(22, 22));
 
-  playItemButton = new QToolButton(this);
-  playItemButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+    playItemButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
   playItemButton->setIconSize(QSize(22, 22));
   playItemButton->setToolTip(tr("Play selected file"));
-  QDial* dial = new QDial;
+
   dial->setFocusPolicy(Qt::StrongFocus);
   dial->setMinimum(0);
   dial->setMaximum(100);
@@ -183,20 +168,21 @@ dvda::dvda()
   dial->setNotchesVisible(true);
   dial->setMaximumWidth(40);
 
-  killButton = new QToolButton(this);
   killButton->setToolTip(tr("Kill dvda-author"));
   const QIcon iconKill = QIcon(QString::fromUtf8( ":/images/process-stop.png"));
   killButton->setIcon(iconKill);
   killButton->setIconSize(QSize(22,22));
 
-  progress= new QProgressBar(this);
   progress->reset();
   progress->setRange(0, maxRange=100);
   progress->setToolTip(tr("DVD-Audio structure authoring progress bar"));
 
-  consoleDialog= new QDialog(this, Qt::Window | Qt::WindowStaysOnTopHint);
+  outputTextEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+  outputTextEdit->setAcceptDrops(false);
+  outputTextEdit->setMinimumHeight(200);
+
+  consoleDialog->setFeatures(QDockWidget::AllDockWidgetFeatures);
   QVBoxLayout* consoleLayout=new QVBoxLayout;
-  console= new QTextEdit;
   consoleLayout->addWidget(console);
   consoleDialog->setLayout(consoleLayout);
   consoleDialog->setWindowTitle("Console");
@@ -206,7 +192,7 @@ dvda::dvda()
   QGridLayout *updownLayout = new QGridLayout;
   QVBoxLayout *mkdirLayout = new QVBoxLayout;
   QHBoxLayout *progress1Layout= new QHBoxLayout;
-  progressLayout = new QVBoxLayout;
+
   mkdirLayout->addWidget(mkdirButton);
   mkdirLayout->addWidget(removeButton);
   mkdirLayout->addWidget(audioFilterButton);
@@ -250,22 +236,16 @@ dvda::dvda()
 
   projectLayout->addLayout(updownLayout, 0,3);
 
-  mainLayout = new QVBoxLayout;
   mainLayout->addLayout(projectLayout);
 
-  progressLayout = new QVBoxLayout;
   progress1Layout->addWidget(killButton);
   progress1Layout->addWidget(progress);
   progressLayout->addLayout(progress1Layout);
 
   mainLayout->addLayout(progressLayout);
 
-  QHBoxLayout *allLayout =new QHBoxLayout;
-
-  managerLayout =new QVBoxLayout;
   QStringList labels;
   labels << tr("Setting") << tr("Value/Path") << tr("Size");
-  managerWidget=new QTreeWidget;
   managerWidget->hide();
   managerWidget->setHeaderLabels(labels);
 
@@ -279,9 +259,6 @@ dvda::dvda()
   const QIcon dvdaIcon=QIcon(QString::fromUtf8( ":/images/dvda-author.png"));
   setWindowIcon(dvdaIcon);
 
-  /* requested initialization */
-  progress2=NULL;
-  progress3=NULL;
 }
 
 
@@ -362,20 +339,6 @@ void dvda::showFilenameOnly()
   refreshRowPresentation(isVideo, currentIndex);
  }
 
-
-
-//void dvda::addDraggedFiles(QList<QUrl> urls)
-//{
-//  updateIndexInfo();
-//  uint size=urls.size();
-
-//  for (uint i = 0; i < size; i++)
-//    {
-//      if (false == addStringToListWidget((QString) urls.at(i).toLocalFile())) return;
-//    }
-//  saveProject();
-//  showFilenameOnly();
-//}
 
 
 
@@ -1359,40 +1322,6 @@ bool dvda::refreshProjectManager()
 }
 
 
-void dvda::mousePressEvent(QMouseEvent *event)
-{
-    if (event->button() ==  Qt::LeftButton)
-        startPos = event->pos();
-
-    QWidget::mousePressEvent(event);
-}
-
-void dvda::mouseMoveEvent(QMouseEvent *event)
-{
-//    if (event->buttons()  == Qt::LeftButton)
-//    {
-//        int distance = (event->pos() - startPos).manhattanLength();
-//        if (distance >= QApplication::startDragDistance()) startDrag();
-//    }
-//    QWidget::mouseMoveEvent(event);
-}
-
-void dvda::startDrag()
-{
-//    QDrag *drag = new QDrag(this);
-//    QMimeData *mimeData = new QMimeData;
-//    QList<QUrl> urls= QList<QUrl>();
-//    QList<QListWidgetItem*> itemList = project[AUDIO]->getCurrentWidget()->selectedItems();
-//    QListIterator<QListWidgetItem*> w(itemList);
-//    while (w.hasNext())
-//        urls << QUrl(w.next()->text());
-
-//    mimeData->setUrls(urls);
-//    drag->setMimeData(mimeData);
-
-//    drag->setPixmap(QPixmap(":/images/dvda-author.png"));
-//    drag->start(Qt::CopyAction);
-}
 
 void dvda::dragEnterEvent(QDragEnterEvent *event)
 {
@@ -1430,19 +1359,17 @@ void dvda::dropEvent(QDropEvent *event)
 
 }
 
+
+
 void dvda::addDraggedFiles(QList<QUrl> urls)
 {
-    updateIndexInfo();
+  updateIndexInfo();
 
-    for (const QUrl &u: urls)
+  for (const QUrl &u: urls)
     {
-        QString s=u.toLocalFile();
-        project[isVideo]->getCurrentWidget()->addItem(s);
-        FStringList *F=hash::FStringListHash[zoneTag()];
-                (*F)[currentIndex] << s;
-        refreshRowPresentation();
-        *(project[isVideo]->signalList) << s;
+      if (false == project[isVideo]->addStringToListWidget(u.toLocalFile(), currentIndex)) return;
     }
+  saveProject();
+  showFilenameOnly();
 }
-
 

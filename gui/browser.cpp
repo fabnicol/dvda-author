@@ -8,13 +8,6 @@ browser::browser(const QUrl &urlPath,  QWidget *parent) :  QWidget(parent)
 
     url=urlPath;
 
-    textBrowser = new QWebView;
-
-    homeButton = new QToolButton;
-    backButton = new QToolButton;
-    forwardButton = new QToolButton;
-    closeButton  =new QToolButton;
-
     homeButton->setIcon(style()->standardIcon(QStyle::SP_DirHomeIcon));
     homeButton->setToolTip(tr("Home"));
     backButton->setIcon(style()->standardIcon(QStyle::SP_ArrowBack));

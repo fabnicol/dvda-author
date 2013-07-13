@@ -1218,8 +1218,6 @@ void outputPage::selectOutput()
 
             if (!remove(path))    QMessageBox::information(0, QString("Remove"),
                                                            QString("Failed to remove %1").arg(QDir::toNativeSeparators(path)));
-            else
-                outputTextEdit->append("Removed output directory "+path);
 
             QDir targetDirObject(path);
             if (targetDirObject.mkpath(path) == false)
