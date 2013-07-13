@@ -1,7 +1,6 @@
 #include "fstring.h"
 
 QHash<QString,QString>    hash::description;
-QHash<QString, QString >   hash::qstring;
 QHash<QString, FStringList* >   hash::FStringListHash;
 
 
@@ -62,7 +61,7 @@ QString& FString::toQStringRef()
 
 FString  FString::operator * ()
 {
-  return hash::qstring[p];
+  return hash::FStringListHash[p]->toFString();
 }
 
 short FString::toBool()
@@ -213,7 +212,7 @@ inline QStringList setDistributedTags(const QString & tag,const QStringList &pro
 }
 
 
- QString FStringList::setEmptyTags(const QStringList & tags)
+ QString FStringList::setEmptyTags(const QStringList & tags) const
 {
   QStringListIterator i(tags);
   QString S="";
@@ -226,7 +225,7 @@ inline QStringList setDistributedTags(const QString & tag,const QStringList &pro
 }
 
 
-QString FStringList::setTags(const QStringList  &tags, const FStringList *properties )
+QString FStringList::setTags(const QStringList  &tags, const FStringList *properties ) const
 {
   if ((this == NULL) ||  this->hasNoString())
   {

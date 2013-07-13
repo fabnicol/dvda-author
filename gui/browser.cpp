@@ -36,7 +36,6 @@ browser::browser(const QUrl &urlPath,  QWidget *parent) :  QWidget(parent)
     buttonLayout->addWidget(closeButton);
     buttonLayout->addStretch();
 
-
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addLayout(buttonLayout);
     mainLayout->addWidget(textBrowser);

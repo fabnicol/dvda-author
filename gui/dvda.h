@@ -37,6 +37,14 @@ public:
 
 //    void addDraggedFiles(QList<QUrl> urls);
 
+    void startDrag();
+    void addDraggedFiles(QList<QUrl> urls);
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
+    void dragMoveEvent(QDragMoveEvent *event);
+    void dragEnterEvent(QDragEnterEvent *event);
+    void dropEvent(QDropEvent *event);
+     QPoint startPos;
 
 public slots:
 

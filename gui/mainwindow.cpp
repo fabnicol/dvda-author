@@ -113,7 +113,7 @@ MainWindow::MainWindow(char* projectName)
 
 
   setCentralWidget(dvda_author);
-  dvda_author->setAcceptDrops(false);
+
   dvda_author->mainTabWidget->addActions(actionList);
   dvda_author->setContextMenuPolicy(Qt::ActionsContextMenu);
   dvda_author->mainTabWidget->setContextMenuPolicy(Qt::ActionsContextMenu);
@@ -358,6 +358,8 @@ void MainWindow::on_displayFileTreeViewButton_clicked(bool isHidden)
 {
    fileTreeViewDockWidget->setVisible(isHidden);
    dvda_author->on_frameTab_changed(dvda_author->mainTabWidget->currentIndex());
+   dvda_author->project[AUDIO]->importFromMainTree->setVisible(isHidden);
+   dvda_author->project[VIDEO]->importFromMainTree->setVisible(isHidden);
  }
 
 void MainWindow::on_displayFileTreeViewButton_clicked()
@@ -430,7 +432,7 @@ void MainWindow::on_editProjectButton_clicked()
            << new QAction(tr("S&ave and exit"),this)
            << new QAction(tr("&Exit"),this);
 
-    const char* seq[]={"Ctrl+N","Ctrl+O","Ctrl+S","Ctrl+A","Ctrl+R","Ctrl+E","Ctrl+Q"};
+    const char* seq[]={"Ctrl+N","Ctrl+O","Ctrl+S","Ctrl+T","Ctrl+R","Ctrl+E","Ctrl+Q"};
     int j=0;
 
     for (QAction *a: actionList)

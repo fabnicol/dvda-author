@@ -8,7 +8,7 @@
 #include "browser.h"
 #include "dvda-author-gui.h"
 
-#define v(X) *FString(#X)
+
 
 standardPage::standardPage()
 {

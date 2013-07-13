@@ -49,13 +49,13 @@ if (!hK.isEmpty())\
         this->description=desc;\
         hash::description[hK]=desc;\
     }\
-    if (((stat) & flags::commandLinewidgetDepthMask) == flags::hasListCommandLine)\
-        hash::qstring[hK]=this->commandLineList[0];\
 }\
 \
 this->optionLabel=opt;\
 \
 this->setEnabled((((stat) | flags::multimodal)& flags::enabledMask) ==  flags::enabled);\
+hash::FStringListHash[hK] = new FStringList;\
+    *hash::FStringListHash[hK]  << (QStringList() << QString());\
 \
 Abstract::abstractWidgetList.append(this);\
 \
@@ -423,8 +423,6 @@ void FCheckBox::refreshWidgetDisplay()
 FString FCheckBox::setXmlFromWidget()
 {
     commandLineList[0].fromBool(this->isChecked()) ;
-    hash::qstring[hashKey]=commandLineList[0];
-
     return commandLineList[0];
 }
 
@@ -432,7 +430,6 @@ void FCheckBox::setWidgetFromXml(const FStringList &s)
 {
     QString st=s.toFString();
     commandLineList[0]=FString(st);
-    hash::qstring[hashKey]=st;
     this->setChecked( commandLineList[0].isTrue());
 }
 
@@ -536,8 +533,6 @@ void FRadioBox::refreshWidgetDisplay()
 FString FRadioBox::setXmlFromWidget()
 {
     commandLineList[0]=FString(QString::number(rank), flags::multimodal) ;
-    hash::qstring[hashKey]=commandLineList[0];
-
     return commandLineList[0];
 }
 
@@ -545,7 +540,6 @@ void FRadioBox::setWidgetFromXml(const FStringList &s)
 {
     QString st=s.toFString();
     commandLineList[0]=FString(st, flags::multimodal);
-    hash::qstring[hashKey]=st;
     rank=st.toUInt();
     for (int i=0; i < size ; i++)
         radioButtonList[i]->setChecked(i == rank);
@@ -623,7 +617,6 @@ FString FComboBox::setXmlFromWidget()
 {
     commandLineList[0]= (comboBoxTranslationHash)? comboBoxTranslationHash->value(currentText()) : currentText();
     if (commandLineList[0].isEmpty()) commandLineList[0]="none";
-    hash::qstring[hashKey]=commandLineList[0];
     return commandLineList[0];
 }
 
@@ -631,11 +624,7 @@ FString FComboBox::setXmlFromWidget()
 void FComboBox::setWidgetFromXml(const FStringList &s)
 {
     commandLineList[0] = s.toFString();
-
-    hash::qstring[hashKey]=commandLineList[0];
-
     refreshWidgetDisplay();
-
 }
 
 
@@ -655,14 +644,12 @@ FString FLineEdit::setXmlFromWidget()
 {
     commandLineList[0]=FString(this->text());
     if (commandLineList[0].isEmpty()) commandLineList[0]="none";
-    hash::qstring[hashKey]=this->text();
     return commandLineList[0];
 }
 
 void FLineEdit::setWidgetFromXml(const FStringList &s)
 {
     commandLineList[0] = s.toFString();
-    hash::qstring[hashKey]=commandLineList[0].toQString();
     this->setText(commandLineList[0].toQString());
 }
 
@@ -717,15 +704,12 @@ void FColorButton::setMinimumButtonWidth(const int w)
 
 FString FColorButton::setXmlFromWidget()
 {
-
-    hash::qstring[hashKey]=commandLineList[0];
-    return commandLineList[0];
+     return commandLineList[0];
 }
 
 void FColorButton::setWidgetFromXml(const FStringList &s)
 {
     commandLineList[0] = s.toFString();
-    hash::qstring[hashKey]=commandLineList[0];
     colorLabel->setPalette(QPalette(YCrCbStr2QColor(commandLineList[0].toQString())));
 }
 

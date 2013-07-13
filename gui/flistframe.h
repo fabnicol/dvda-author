@@ -23,9 +23,9 @@ private:
  FListWidget* fileListWidget;
  QString frameHashKey;
 
- void startDrag();
+
  void addGroup();
- QPoint startPos;
+
  int row, currentIndex,  slotListSize;
 
 public:
@@ -98,12 +98,7 @@ protected slots:
 protected:
     short importType;
     QStringList tags;
-    void addDraggedFiles(QList<QUrl> urls);
-    void mousePressEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
-    void dragMoveEvent(QDragMoveEvent *event);
-    void dragEnterEvent(QDragEnterEvent *event);
-    void dropEvent(QDropEvent *event);
+
 
 signals:
     void is_signalList_changed(int);

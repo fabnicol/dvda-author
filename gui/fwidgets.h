@@ -117,15 +117,7 @@ protected:
   QString optionLabel;
   QList<FString> commandLineList;
   QList<QWidget*> componentList;
-/*
-  template <typename W> void setProtectedFields(W* w, const QString &defaultValue, const QString &,
-                                              const QString &, const QString&, int, const Q2ListWidget*, const  Q2ListWidget*);
 
-
-  template <typename W> void setProtectedFields(W* w, const QString &defaultValue, const QString &hashKey,
-                                              const QString &description, const QString &optionLabel, int status, const  Q2ListWidget* controlledObjects=NULL);
-
-*/
 };
 
 

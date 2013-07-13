@@ -12,6 +12,7 @@
 #include "fstring.h"
 
 
+
 int dvda::RefreshFlag=0;
 int flags::lplexRank=0;
 qint64   dvda::totalSize[]={0,0};
@@ -89,6 +90,7 @@ dvda::dvda()
 {
   setAttribute(Qt::WA_DeleteOnClose);
   initialize();
+  setAcceptDrops(true);
 
   model = new QFileSystemModel;
   model->setReadOnly(false);
@@ -134,6 +136,7 @@ dvda::dvda()
                                {"file", "group"},                // subordinate xml tags
                                 0,                                     // rank
                                 iconDVDA);                      //tab icon
+
 
   mainTabWidget=project[AUDIO]->embeddingTabWidget;
 
@@ -342,10 +345,11 @@ void dvda::refreshRowPresentation(uint ZONE, uint j)
   widget->setPalette(palette);
   widget->setAlternatingRowColors(true);
   widget->setFont(font);
-
+  Q(hash::FStringListHash[zoneTag(ZONE)]->join({",",";"}))
   for (int r=0; (r < widget->count()) && (r < hash::FStringListHash[zoneTag(ZONE)]->at(j).size()); r++ )
     {
-        widget->item(r)->setText(hash::FStringListHash.value(zoneTag(ZONE))->at(j).at(r).section('/',-1));
+
+      widget->item(r)->setText(hash::FStringListHash.value(zoneTag(ZONE))->at(j).at(r).section('/',-1));
       widget->item(r)->setTextColor(QColor("navy"));
       //widget->item(r)->setToolTip(fileSizeDataBase[ZONE].at(j).at(r)+" B");
     }
@@ -519,7 +523,7 @@ void dvda::timerEvent(QTimerEvent *event)
     {
       if (startProgressBar)
         {
-          new_value=recursiveDirectorySize(hash::qstring["targetDir"], "*.AOB");
+          new_value=recursiveDirectorySize(hash::FStringListHash["targetDir"]->toQString(), "*.AOB");
           progress->setValue(qFloor(discShare(new_value)));
           value=new_value;
         }
@@ -527,7 +531,7 @@ void dvda::timerEvent(QTimerEvent *event)
 
         if (startProgressBar2)
           {
-            new_isoSize=QFileInfo(hash::qstring["mkisofsPath"]).size();
+            new_isoSize=QFileInfo(hash::FStringListHash["mkisofsPath"]->toQString()).size();
             outputTextEdit->append(tr(MSG_HTML_TAG "Size of iso output: %1").arg(QString::number(new_isoSize)));
             counter=qFloor(((float) new_isoSize*102)/ ((float) value));
             progress2->setValue(counter);
@@ -883,17 +887,18 @@ void dvda::processFinished(int exitCode,  QProcess::ExitStatus exitStatus)
       {
         outputTextEdit->append(ERROR_HTML_TAG "" +outputType + tr(" failed"));
         return;
-      } else
+      }
+    else
       {
-        outputTextEdit->append(MSG_HTML_TAG "\n" + outputType + tr(" completed, output directory is %1").arg(hash::qstring["targetDir"]));
-        outputTextEdit->append(QString::number(recursiveDirectorySize(hash::qstring["targetDir"], "*.*")));
+        outputTextEdit->append(MSG_HTML_TAG "\n" + outputType + tr(" completed, output directory is %1").arg(v(targetDir)));
+        outputTextEdit->append(QString::number(recursiveDirectorySize(v(targetDir), "*.*")));
         progress->setValue(maxRange);
 
         if ((*FString("runMkisofs")).isTrue())
           {
-            if ((*FString("targetDir")).isFilled() & (*FString("mkisofsPath")).isFilled())
+            if ((*FString("targetDir")).isFilled() & (v(mkisofsPath)).isFilled())
 
-              argsMkisofs << "-dvd-audio" << "-o" << hash::qstring["mkisofsPath"] << hash::qstring["targetDir"];
+              argsMkisofs << "-dvd-audio" << "-o" << v(mkisofsPath) << v(targetDir);
 
             if (progress2 == NULL)
               {
@@ -935,7 +940,7 @@ void dvda::process2Finished(int exitCode,  QProcess::ExitStatus exitStatus)
         outputTextEdit->append(tr(ERROR_HTML_TAG "ISO disc authoring failed"));
       } else
       {
-        outputTextEdit->append(tr(MSG_HTML_TAG "\nISO file %1 created").arg(hash::qstring["mkisofsPath"]));
+        outputTextEdit->append(tr(MSG_HTML_TAG "\nISO file %1 created").arg(v(mkisofsPath)));
         progress2->setValue(maxRange);
         outputTextEdit->append(tr(MSG_HTML_TAG "You can now burn your DVD-Audio disc"));
       }
@@ -982,17 +987,17 @@ void dvda::on_cdrecordButton_clicked()
       return;
     }
 
-  QFileInfo f(*FString("mkisofsPath"));
+  QFileInfo f(v(mkisofsPath));
   f.refresh();
 
   if (! f.isFile())
     {
-      QMessageBox::warning(this, tr("Record"), tr("No valid ISO file path was entered:\n %1").arg(hash::qstring["mkisofsPath"]), QMessageBox::Ok );
+      QMessageBox::warning(this, tr("Record"), tr("No valid ISO file path was entered:\n %1").arg(v(mkisofsPath)), QMessageBox::Ok );
       return;
     }
 
   outputTextEdit->append(tr(INFORMATION_HTML_TAG "\nBurning disc...please wait."));
-  argsCdrecord << "dev="<< hash::qstring["dvdwriterPath"] << hash::qstring["mkisofsPath"];
+  argsCdrecord << "dev="<< v(dvdwriterPath) << v(mkisofsPath);
   outputTextEdit->append(tr(MSG_HTML_TAG "Command line: cdrecord %1").arg(argsCdrecord.join(" ")));
 
   if (progress3 == NULL)
@@ -1351,6 +1356,93 @@ bool dvda::refreshProjectManager()
 
   return true;
 
+}
+
+
+void dvda::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() ==  Qt::LeftButton)
+        startPos = event->pos();
+
+    QWidget::mousePressEvent(event);
+}
+
+void dvda::mouseMoveEvent(QMouseEvent *event)
+{
+//    if (event->buttons()  == Qt::LeftButton)
+//    {
+//        int distance = (event->pos() - startPos).manhattanLength();
+//        if (distance >= QApplication::startDragDistance()) startDrag();
+//    }
+//    QWidget::mouseMoveEvent(event);
+}
+
+void dvda::startDrag()
+{
+//    QDrag *drag = new QDrag(this);
+//    QMimeData *mimeData = new QMimeData;
+//    QList<QUrl> urls= QList<QUrl>();
+//    QList<QListWidgetItem*> itemList = project[AUDIO]->getCurrentWidget()->selectedItems();
+//    QListIterator<QListWidgetItem*> w(itemList);
+//    while (w.hasNext())
+//        urls << QUrl(w.next()->text());
+
+//    mimeData->setUrls(urls);
+//    drag->setMimeData(mimeData);
+
+//    drag->setPixmap(QPixmap(":/images/dvda-author.png"));
+//    drag->start(Qt::CopyAction);
+}
+
+void dvda::dragEnterEvent(QDragEnterEvent *event)
+{
+
+    if (event->source() != this)
+        {
+            event->setDropAction(Qt::CopyAction);
+            event->accept();
+        }
+}
+
+void dvda::dragMoveEvent(QDragMoveEvent *event)
+{
+
+    if (event->source() != this)
+    {
+        event->setDropAction(Qt::CopyAction);
+        event->accept();
+    }
+}
+
+void dvda::dropEvent(QDropEvent *event)
+{
+
+    if (event->source() != this)
+    {
+        QList<QUrl> urls=event->mimeData()->urls();
+        if (urls.isEmpty()) return;
+
+        QString fileName = urls.first().toLocalFile();
+        if (fileName.isEmpty()) return;
+
+        addDraggedFiles(urls);
+    }
+
+}
+
+void dvda::addDraggedFiles(QList<QUrl> urls)
+{
+    updateIndexInfo();
+
+    for (const QUrl &u: urls)
+    {
+        QString s=u.toLocalFile();
+        project[isVideo]->getCurrentWidget()->addItem(s);
+        FStringList *F=hash::FStringListHash[zoneTag()];
+                (*F)[currentIndex] << s;
+        refreshRowPresentation();
+        *(project[isVideo]->signalList) << s;
+    }
 }
 
 

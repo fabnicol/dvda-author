@@ -9,7 +9,7 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
                          QStringList* terms, QStringList* translation, QStringList* slotL)
 
 {
-
+ setAcceptDrops(true);
  currentIndex=0;  // necessary for project parsing
  importType=import_type;
  tags=xml_tags;
@@ -434,88 +434,5 @@ void FListFrame::on_importFromMainTree_clicked()
          addStringToListWidget(name, currentIndex);
        }
   }
-}
-
-
-void FListFrame::mousePressEvent(QMouseEvent *event)
-{
-    if (event->button() ==  Qt::LeftButton)
-        startPos = event->pos();
-
-    QWidget::mousePressEvent(event);
-}
-
-void FListFrame::mouseMoveEvent(QMouseEvent *event)
-{
-    if (event->buttons()  & Qt::LeftButton)
-    {
-        int distance = (event->pos() - startPos).manhattanLength();
-        if (distance >= QApplication::startDragDistance()) startDrag();
-    }
-    QWidget::mouseMoveEvent(event);
-}
-
-void FListFrame::startDrag()
-{
-    QDrag *drag = new QDrag(this);
-    QMimeData *mimeData = new QMimeData;
-    QList<QUrl> urls= QList<QUrl>();
-    QList<QListWidgetItem*> itemList = fileListWidget->currentListWidget->selectedItems();
-    QListIterator<QListWidgetItem*> w(itemList);
-    while (w.hasNext())
-        urls << QUrl(w.next()->text());
-
-    mimeData->setUrls(urls);
-    drag->setMimeData(mimeData);
-
-    drag->setPixmap(QPixmap(":/images/dvda-author.png"));
-    drag->start(Qt::CopyAction);
-
-}
-
-void FListFrame::dragEnterEvent(QDragEnterEvent *event)
-{
-    if (event->source() != this)
-    {
-        event->setDropAction(Qt::CopyAction);
-        event->accept();
-    }
-}
-
-void FListFrame::dragMoveEvent(QDragMoveEvent *event)
-{
-    if (event->source() != this)
-    {
-        event->setDropAction(Qt::CopyAction);
-        event->accept();
-    }
-}
-
-void FListFrame::dropEvent(QDropEvent *event)
-{
-
-    if (event->source() != this)
-    {
-        QList<QUrl> urls=event->mimeData()->urls();
-        if (urls.isEmpty()) return;
-
-        QString fileName = urls.first().toLocalFile();
-        if (fileName.isEmpty()) return;
-
-        addDraggedFiles(urls);
-    }
-
-}
-
-void FListFrame::addDraggedFiles(QList<QUrl> urls)
-{
-    uint size=urls.size();
-
-    for (uint i = 0; i < size; i++)
-    {
-        QString str = (QString) urls.at(i).toLocalFile();
-        fileListWidget->currentListWidget->addItem(str);
-        *signalList << str;
-    }
 }
 
