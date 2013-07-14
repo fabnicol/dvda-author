@@ -204,7 +204,9 @@ void Abstract::refreshOptionFields()
 {
     QListIterator<FAbstractWidget*>  j(Abstract::abstractWidgetList);
     while (j.hasNext())
+    {
         j.next()->refreshWidgetDisplay();
+    }
 }
 
 FListWidget::FListWidget(const QString& hashKey,

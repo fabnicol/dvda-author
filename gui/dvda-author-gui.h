@@ -57,11 +57,6 @@ class MainWindow : public QMainWindow
    QString strippedName(const QString &fullFuleName);
    FCheckBox *defaultSaveProjectBehavior;
 
-  protected :
-
-//   void dragEnterEvent(QDragEnterEvent *event);
-//   void dropEvent(QDropEvent *event);
-
   private slots:
 
    void on_displayFileTreeViewButton_clicked(bool);
@@ -73,7 +68,9 @@ class MainWindow : public QMainWindow
    void configure();
    void configureOptions();
    void on_activate_lplex(bool);
-
+   void on_displayConsoleButton_clicked();
+   void feedConsole();
+   void detachConsole(bool);
 
   private :
 
@@ -83,10 +80,14 @@ class MainWindow : public QMainWindow
    void createActions();
    void createMenus();
    void createToolBars();
+   void createFontDataBase();
    void loadFile(const QString &fileName);
 
+   QTextEdit *consoleDialog;
+   QTabWidget *bottomTabWidget;
+
    QDockWidget* fileTreeViewDockWidget;
-   QDockWidget* outputTextEditDockWidget;
+   QDockWidget* bottomDockWidget;
    QMenu *fileMenu;
    QMenu *processMenu;
    QMenu *editMenu;
@@ -131,11 +132,14 @@ class MainWindow : public QMainWindow
                         *defaultProjectManagerWidgetLayoutBox,
                         *defaultFileManagerWidgetLayoutBox,
                         *defaultMessageLayoutBox,
-                        *defaultOutputTextEditBox;
+                        *defaultOutputTextEditBox,
+                        *defaultLoadProjectBehavior;
 
-   QList<FCheckBox*> widgetList;
+   QList<FCheckBox*> displayWidgetList, behaviorWidgetList;
    QTextEdit *editor;
    Highlighter *highlighter;
+   QDialog *console;
+
 };
 
 

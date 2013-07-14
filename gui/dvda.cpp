@@ -181,13 +181,6 @@ dvda::dvda()
   outputTextEdit->setAcceptDrops(false);
   outputTextEdit->setMinimumHeight(200);
 
-  consoleDialog->setFeatures(QDockWidget::AllDockWidgetFeatures);
-  QVBoxLayout* consoleLayout=new QVBoxLayout;
-  consoleLayout->addWidget(console);
-  consoleDialog->setLayout(consoleLayout);
-  consoleDialog->setWindowTitle("Console");
-  consoleDialog->setMinimumSize(800,600);
-
   QGridLayout *projectLayout = new QGridLayout;
   QGridLayout *updownLayout = new QGridLayout;
   QVBoxLayout *mkdirLayout = new QVBoxLayout;
@@ -201,7 +194,7 @@ dvda::dvda()
   connect(mkdirButton, SIGNAL(clicked()), this, SLOT(createDirectory()));
   connect(removeButton, SIGNAL(clicked()), this, SLOT(remove()));
   connect(killButton, SIGNAL(clicked()), this, SLOT(killDvda()));
-  connect(&process, SIGNAL(readyReadStandardOutput ()), this, SLOT(feedConsole()));
+  //connect(&process, SIGNAL(readyReadStandardOutput ()), this, SLOT(feedConsole()));
   connect(&process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int, QProcess::ExitStatus)));
   connect(&process2, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(process2Finished(int, QProcess::ExitStatus)));
   connect(&process2, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(on_cdrecordButton_clicked()));
@@ -271,18 +264,6 @@ void dvda::on_frameTab_changed(int index)
     }
 }
 
-
-void dvda::on_displayConsoleButton_clicked()
-{
-  bool visibility=consoleDialog->isVisible();
-  visibility = !visibility;
-  consoleDialog->setVisible(visibility);
-  if (visibility)
-    {
-      consoleDialog->raise();
-      consoleDialog->activateWindow();
-    }
-}
 
 
 void dvda::on_audioFilterButton_clicked(bool active)
@@ -367,15 +348,12 @@ void dvda::initializeProject(const bool cleardata)
     if (cleardata)
     {
         clearProjectData();
-        RefreshFlag |=  ParseXml;
         options::RefreshFlag |= UpdateOptionTabs;
         refreshProjectManager();
     }
 
-    if (projectName.isEmpty()) projectName=QDir::currentPath()+QDir::separator()+ "default.dvp";
+    checkEmptyProjectName();
     setCurrentFile(projectName);
-
-
 }
 
 void dvda::closeProject()
@@ -786,29 +764,6 @@ void dvda::run()
 
 }
 
-
-
-void dvda::feedConsole()
-{
-   QByteArray data = process.readAllStandardOutput();
-   QRegExp reg("\\[INF\\]([^\\n]*)\n");
-   QRegExp reg2("\\[PAR\\]([^\\n]*)\n");
-   QRegExp reg3("\\[MSG\\]([^\\n]*)\n");
-   QRegExp reg4("\\[ERR\\]([^\\n]*)\n");
-   QRegExp reg5("\\[WAR\\]([^\\n]*)\n");
-   QRegExp reg6("(===.*licenses/.)");
-
-    QString text=QString(data).replace(reg6, (QString) NAVY_HTML_TAG "\\1</span><br>");
-    text= text.replace(reg, (QString) INFORMATION_HTML_TAG "\\1<br>");
-    text=text.replace(reg2, (QString) PARAMETER_HTML_TAG "\\1<br>");
-    text=text.replace(reg3, (QString) MSG_HTML_TAG "\\1<br>");
-    text=text.replace(reg4, (QString) ERROR_HTML_TAG "\\1<br>");
-    text=text.replace(reg5, (QString) WARNING_HTML_TAG "\\1<br>");
-
-    console->append(text.replace('\n',"<br>"));
- }
-
-
 void dvda::runLplex()
 {
   QStringList args;
@@ -1105,13 +1060,7 @@ void dvda::saveProject(bool requestSave)
   audioFilterButton->setToolTip("Show audio files with extension "+ common::extraAudioFilters.join(", ")+"\nTo add extra file formats to this filter button go to Options>Audio Processing,\ncheck the \"Enable multiformat input\" box and fill in the file format field.");
 
   if (parent->defaultSaveProjectBehavior->isChecked() || requestSave)
-  {
-      if ((projectName == NULL)||(projectName.isEmpty()))
-        {
-          projectName=QDir::currentPath()+"/"+ "default.dvp";
-        }
-      writeProjectFile();
-  }
+        writeProjectFile();
 
   refreshProjectManager();
 }
@@ -1164,7 +1113,7 @@ inline QString  dvda::makeSystemString()
 void dvda::writeProjectFile()
 {
   QFile projectFile;
-  if (projectName.isEmpty()) return;
+  checkEmptyProjectName();
   projectFile.setFileName(projectName);
   QErrorMessage *errorMessageDialog = new QErrorMessage(this);
   if (!projectFile.open(QIODevice::WriteOnly))
@@ -1256,13 +1205,11 @@ void dvda::assignGroupFiles(const int ZONE, const int group_index,  QString file
   if (!ZONE) *(project[ZONE]->signalList) << file;
 }
 
+
 bool dvda::refreshProjectManager()
 {
   // Step 1: prior to parsing
-    if (projectName.isEmpty())
-      {
-        projectName=QDir::currentPath() + QDir::separator()+"default.dvp";
-      }
+      checkEmptyProjectName();
       QFile file(projectName);
 
   if ((RefreshFlag&UpdateTreeMask) == UpdateTree)
@@ -1289,6 +1236,7 @@ bool dvda::refreshProjectManager()
 
       if ((RefreshFlag&ParseXmlMask) == ParseXml)  // refresh display by parsing xml file again
       {
+
           if (!file.isOpen())
             file.open(QIODevice::ReadWrite);
           else
@@ -1358,7 +1306,6 @@ void dvda::dropEvent(QDropEvent *event)
     }
 
 }
-
 
 
 void dvda::addDraggedFiles(QList<QUrl> urls)

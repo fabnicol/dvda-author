@@ -36,7 +36,13 @@ public:
     int getZone() {return isVideo;}
     void initializeProject(const bool cleardata=true);
 
-//    void addDraggedFiles(QList<QUrl> urls);
+    void checkEmptyProjectName()
+      {
+         if (projectName.isEmpty())
+            projectName=QDir::currentPath() + "/default.dvp";
+      }
+
+    //    void addDraggedFiles(QList<QUrl> urls);
 
     void startDrag();
     void addDraggedFiles(QList<QUrl> urls);
@@ -46,6 +52,7 @@ public:
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
      QPoint startPos;
+     QProcess process;
 
 public slots:
 
@@ -83,9 +90,8 @@ private slots:
     void on_playItemButton_clicked();
     void on_playItem_changed();
     void on_audioFilterButton_clicked(bool active);
-    void on_displayConsoleButton_clicked();
     void closeProject();
-    void feedConsole();
+
 
 
 private:
@@ -110,10 +116,9 @@ private:
 
     QHash <int,  QList<QStringList>  > fileSizeDataBase;
 
-    QDockWidget *consoleDialog=  new QDockWidget(tr("Console"), this, Qt::SubWindow);
     QIcon iconShowMaximized, iconShowNormal;
     QMediaPlayer *myMusic=nullptr;
-    QProcess    process, process2, process3;
+    QProcess   process2, process3;
     QProgressBar *progress=new QProgressBar, *progress2=nullptr, *progress3=nullptr;
     QToolButton *mkdirButton= new QToolButton;
     QToolButton *removeButton= new QToolButton;
@@ -121,7 +126,7 @@ private:
     QToolButton *killButton= new QToolButton;
     QToolButton *killCdrecordButton= new QToolButton;
     QToolButton *playItemButton= new QToolButton;
-    QTextEdit     *console  = new QTextEdit;
+    //QTextEdit     *console  = new QTextEdit;
 
     QVBoxLayout *mainLayout= new QVBoxLayout;
     QVBoxLayout *progressLayout= new QVBoxLayout;

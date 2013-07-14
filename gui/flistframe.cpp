@@ -234,7 +234,7 @@ void FListFrame::on_embeddingTabIndex_changed(int index)
 }
 
 
-inline void FListFrame::addNewTab()
+void FListFrame::addNewTab()
 {
     mainTabWidget->insertTab(getRank() ,widgetContainer.at(getRank()) , tags[1] + " "+ QString::number(getRank()+1));
     mainTabWidget->setCurrentIndex(getRank());
