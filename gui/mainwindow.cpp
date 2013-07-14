@@ -94,15 +94,22 @@ MainWindow::MainWindow(char* projectName)
   dvda_author->parent=this;
   dvda_author->projectName=projectName;
 
-  QVBoxLayout* consoleLayout=new QVBoxLayout;
-  consoleLayout->addWidget(consoleDialog=new QTextEdit);
+  QGridLayout* consoleLayout=new QGridLayout;
   console=new QDialog(this);
   console->hide();
-  console->setLayout(consoleLayout);
+  console->setSizeGripEnabled(true);
   console->setWindowTitle("Console");
   console->setMinimumSize(800,600);
   console->show();
   console->raise();
+  QToolButton *closeConsoleButton=new QToolButton;
+  closeConsoleButton->setIcon(style()->standardIcon(QStyle::SP_DialogCloseButton));
+  closeConsoleButton->setToolTip(tr("Close (Ctrl + Q)"));
+  closeConsoleButton->setShortcut(QKeySequence("Ctrl+Q"));
+  consoleLayout->addWidget(consoleDialog=new QTextEdit,0,0);
+  consoleLayout->addWidget(closeConsoleButton, 1,0,Qt::AlignRight);
+  console->setLayout(consoleLayout);
+  connect(closeConsoleButton, &QToolButton::clicked, [=](){on_displayConsoleButton_clicked();});
 
   createActions();
   createMenus();
@@ -132,7 +139,6 @@ MainWindow::MainWindow(char* projectName)
   consoleDialog=  new QTextEdit;
   //consoleDialog->setMinimumSize(800,600);
   bottomTabWidget->addTab(dvda_author->outputTextEdit, tr("Messages"));
-  bottomTabWidget->addTab(consoleDialog, tr("Console"));
   bottomDockWidget->setWidget(bottomTabWidget);
   addDockWidget(Qt::BottomDockWidgetArea, bottomDockWidget);
 
@@ -152,16 +158,15 @@ MainWindow::MainWindow(char* projectName)
    configureOptions();
   // NOTE: Using only FCheckBoxes. Change this if other FAbstractWidget subclasses are to be used
 
+
   for (FCheckBox* a : displayWidgetList+behaviorWidgetList)
       {
          if (settings->value(a->getHashKey()).isValid())
              a->setChecked(settings->value(a->getHashKey()).toBool());
        }
 
-
-
-
   dvda_author->initializeProject();
+  bottomTabWidget->setCurrentIndex(0);
   setWindowIcon(QIcon(":/images/dvda-author.png"));
   setWindowTitle("dvda-author interface  "+ QString(VERSION) +" version");
 }
@@ -668,7 +673,6 @@ void MainWindow::configureOptions()
     connect(defaultOutputTextEditBox, &FCheckBox::toggled, [=] () {bottomDockWidget->setVisible(defaultOutputTextEditBox->isChecked());});
     connect(defaultLoadProjectBehavior, &FCheckBox::toggled, [=]() {if (defaultLoadProjectBehavior->isChecked()) dvda_author->RefreshFlag |=  ParseXml;});
 
-
     setWindowTitle(tr("Configure dvda-author GUI"));
     setWindowIcon(QIcon(":/images/dvda-author.png"));
 }
@@ -678,9 +682,7 @@ void MainWindow::detachConsole(bool isDetached)
     if (isDetached)
     {
         console->hide();
-        QTextEdit *cDialog=new QTextEdit;
-        cDialog->insertHtml(consoleDialog->toHtml());
-        bottomTabWidget->addTab(cDialog, tr("Console"));
+        bottomTabWidget->addTab(consoleDialog, tr("Console"));
         bottomTabWidget->setCurrentIndex(1);
     }
     else
