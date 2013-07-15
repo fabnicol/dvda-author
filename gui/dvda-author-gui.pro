@@ -31,7 +31,8 @@ SOURCES += \
     browser.cpp \ 
     videoplayer.cpp \
     xmlparser.cpp \
-    highlighter.cpp
+    highlighter.cpp \
+    run.cpp
 
 
 HEADERS  += \

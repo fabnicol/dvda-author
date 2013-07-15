@@ -109,6 +109,7 @@ private:
 
     QDial* dial=new QDial;
 
+
     QString  zoneTag(int ZONE){return ((ZONE)? "DVD-V" : "DVD-A");}
     QString  zoneTag(){return ((mainTabWidget->currentIndex())? "DVD-V" : "DVD-A");}
     QString  zoneGroupLabel(int ZONE){return ((ZONE)? "titleset" : "group");}

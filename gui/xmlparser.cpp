@@ -1,6 +1,90 @@
 #include "dvda.h"
 #include "common.h"
 
+
+
+inline QString dvda::makeParserString(int start, int end)
+{
+
+    QStringList L=QStringList();
+
+    for (int j=start; j <=end; j++)
+      {
+
+        FAbstractWidget* widget=Abstract::abstractWidgetList.at(j);
+        QString hK=widget->getHashKey();
+
+        if  (widget->getHashKey().isEmpty())
+          {
+            QMessageBox::warning(this, tr("Error"), tr(".dvp project parsing error"));
+            continue;
+          }
+
+        QString xml=widget->setXmlFromWidget().toQString();
+        QString widgetDepth=widget->getDepth();
+
+        L <<  "  <" + hK + " widgetDepth=\"" + widgetDepth +  "\">\n   "
+                                 + xml
+              +"\n  </" + hK + ">\n";
+
+      }
+
+    return L.join("");
+
+}
+
+
+inline QString  dvda::makeDataString()
+{
+    return  makeParserString(0,1);
+}
+
+inline QString  dvda::makeSystemString()
+{
+    return makeParserString(2);
+}
+
+
+void dvda::writeProjectFile()
+{
+  QFile projectFile;
+  checkEmptyProjectName();
+  projectFile.setFileName(projectName);
+  QErrorMessage *errorMessageDialog = new QErrorMessage(this);
+  if (!projectFile.open(QIODevice::WriteOnly))
+    {
+          errorMessageDialog->showMessage(tr("Cannot open file for writing\n")+ qPrintable(projectFile.errorString()));
+          QLabel *errorLabel = new QLabel;
+          errorLabel->setText(tr("If the box is unchecked, the message "
+                                 "won't appear again."));
+          return;
+     }
+
+  QTextStream out(&projectFile);
+  out.setCodec("UTF-8");
+
+  out << "<?xml version=\"1.0\"?>\n" <<"<project>\n";
+  out << " <data>\n";
+
+  out << dvda::makeDataString();
+
+  out << " </data>\n";
+  out << " <system>\n";
+
+  out << dvda::makeSystemString();
+
+  out << " </system>\n <recent>\n";
+
+  QStringListIterator w(parent->recentFiles);
+  QString str;
+  while (w.hasNext() && QFileInfo(str=w.next()).isFile())
+     out    <<  "  <file>" << str << "</file>\n";
+
+  out << " </recent>\n</project>\n";
+  out.flush();
+  options::RefreshFlag=hasSavedOptions;
+}
+
 namespace XmlMethod
 {
 

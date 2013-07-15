@@ -77,6 +77,7 @@ class MainWindow : public QMainWindow
    bool readFile(const QString &fileName);
    dvda *dvda_author;
    QMainWindow *editWidget;
+   QTimer *timer = new QTimer(this);
    void createActions();
    void createMenus();
    void createToolBars();

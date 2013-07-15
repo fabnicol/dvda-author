@@ -109,7 +109,14 @@ MainWindow::MainWindow(char* projectName)
   consoleLayout->addWidget(consoleDialog=new QTextEdit,0,0);
   consoleLayout->addWidget(closeConsoleButton, 1,0,Qt::AlignRight);
   console->setLayout(consoleLayout);
+
+  connect(timer, SIGNAL(timeout()),this, SLOT(feedConsole()));
   connect(closeConsoleButton, &QToolButton::clicked, [=](){on_displayConsoleButton_clicked();});
+  connect(&(dvda_author->process), &QProcess::readyReadStandardOutput, [=]()
+                                                                                                                                              {
+                                                                                                                                                  feedConsole();
+                                                                                                                                                  timer->start(50);
+                                                                                                                                              });
 
   createActions();
   createMenus();
@@ -727,23 +734,57 @@ void MainWindow::showMainWidget()
       showMainWidget(this->windowState() != Qt::WindowFullScreen);
 }
 
+
+
+
 void MainWindow::feedConsole()
 {
-   QByteArray data = dvda_author->process.readAllStandardOutput();
-   QRegExp reg("\\[INF\\]([^\\n]*)\n");
-   QRegExp reg2("\\[PAR\\]([^\\n]*)\n");
-   QRegExp reg3("\\[MSG\\]([^\\n]*)\n");
-   QRegExp reg4("\\[ERR\\]([^\\n]*)\n");
-   QRegExp reg5("\\[WAR\\]([^\\n]*)\n");
-   QRegExp reg6("(===.*licenses/.)");
+   //QByteArray data = dvda_author->process.readAllStandardOutput();
+    QString string, temp="";
 
-    QString text=QString(data).replace(reg6, (QString) NAVY_HTML_TAG "\\1</span><br>");
-    text= text.replace(reg, (QString) INFORMATION_HTML_TAG "\\1<br>");
-    text=text.replace(reg2, (QString) PARAMETER_HTML_TAG "\\1<br>");
-    text=text.replace(reg3, (QString) MSG_HTML_TAG "\\1<br>");
-    text=text.replace(reg4, (QString) ERROR_HTML_TAG "\\1<br>");
-    text=text.replace(reg5, (QString) WARNING_HTML_TAG "\\1<br>");
+    if (!dvda_author->process.atEnd())
+    {
+           char data[500]={0};
+           qint64 count;
 
-    consoleDialog->append(text.replace('\n',"<br>"));
+           count=dvda_author->process.readLine(data, sizeof(data));
+//    //       if (count <= 0) break;
+////           if (count < sizeof(data))
+////           {
+
+//                 if (data[count-1] != '\n')
+//               {
+
+//                   temp=QString(data);
+
+//               }
+//               else
+//               {
+//                       temp.chop(2);
+//                       string=temp+QString(data);
+//                       temp.clear();
+//               }
+////           }
+
+           QRegExp reg("\\[INF\\]([^\\n]*)\n");
+           QRegExp reg2("\\[PAR\\]([^\\n]*)\n");
+           QRegExp reg3("\\[MSG\\]([^\\n]*)\n");
+           QRegExp reg4("\\[ERR\\]([^\\n]*)\n");
+           QRegExp reg5("\\[WAR\\]([^\\n]*)\n");
+           QRegExp reg6("(===.*licenses/.)");
+
+
+           QString text=QString(data).replace(reg6, (QString) NAVY_HTML_TAG "\\1</span>");
+            text= text.replace(reg, (QString) INFORMATION_HTML_TAG "\\1");
+            text=text.replace(reg2, (QString) PARAMETER_HTML_TAG "\\1");
+            text=text.replace(reg3, (QString) MSG_HTML_TAG "\\1");
+            text=text.replace(reg4, (QString) ERROR_HTML_TAG "\\1");
+            text=text.replace(reg5, (QString) WARNING_HTML_TAG "\\1");
+
+            consoleDialog->append(text.replace('\n',""));
+            consoleDialog->update();
+
+    }
+    else timer->stop();
  }
 
