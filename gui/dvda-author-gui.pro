@@ -32,7 +32,8 @@ SOURCES += \
     videoplayer.cpp \
     xmlparser.cpp \
     highlighter.cpp \
-    run.cpp
+    run.cpp \
+    console.cpp
 
 
 HEADERS  += \
@@ -50,7 +51,8 @@ HEADERS  += \
     fcolor.h \
     videoplayer.h \
     dvda.h \
-    highlighter.h
+    highlighter.h \
+    console.h
 
 
 RESOURCES += \

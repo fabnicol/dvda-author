@@ -437,56 +437,6 @@ void dvda::on_openManagerWidgetButton_clicked()
     on_openManagerWidgetButton_clicked(managerWidget->isHidden());
 }
 
-void dvda::showEvent(QShowEvent *)
-{
-  myTimerId=startTimer(3000);
-}
-
-void dvda::hideEvent(QHideEvent *)
-{
-  killTimer(myTimerId);
-}
-
-
-void dvda::timerEvent(QTimerEvent *event)
-{
-  qint64 new_value=0;
-  qint64 new_isoSize;
-  unsigned short int counter;
-  static unsigned short int static_value;
-
-  if (event->timerId() == myTimerId)
-    {
-      if (startProgressBar)
-        {
-          new_value=recursiveDirectorySize(hash::FStringListHash["targetDir"]->toQString(), "*.AOB");
-          progress->setValue(qFloor(discShare(new_value)));
-          value=new_value;
-        }
-      else
-
-        if (startProgressBar2)
-          {
-            new_isoSize=QFileInfo(hash::FStringListHash["mkisofsPath"]->toQString()).size();
-            outputTextEdit->append(tr(MSG_HTML_TAG "Size of iso output: %1").arg(QString::number(new_isoSize)));
-            counter=qFloor(((float) new_isoSize*102)/ ((float) value));
-            progress2->setValue(counter);
-          }
-        else
-
-          if (startProgressBar3)
-            {
-              static_value += 3;
-              progress3->setValue(static_value);
-
-            }
-          else static_value=0;
-    }
-
-  else
-    QWidget::timerEvent(event);
-}
-
 void dvda::addGroup()
 {
   updateIndexInfo();

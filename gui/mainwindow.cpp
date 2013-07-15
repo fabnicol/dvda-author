@@ -94,30 +94,17 @@ MainWindow::MainWindow(char* projectName)
   dvda_author->parent=this;
   dvda_author->projectName=projectName;
 
-  QGridLayout* consoleLayout=new QGridLayout;
-  console=new QDialog(this);
-  console->hide();
-  console->setSizeGripEnabled(true);
-  console->setWindowTitle("Console");
-  console->setMinimumSize(800,600);
-  console->show();
-  console->raise();
-  QToolButton *closeConsoleButton=new QToolButton;
-  closeConsoleButton->setIcon(style()->standardIcon(QStyle::SP_DialogCloseButton));
-  closeConsoleButton->setToolTip(tr("Close (Ctrl + Q)"));
-  closeConsoleButton->setShortcut(QKeySequence("Ctrl+Q"));
-  consoleLayout->addWidget(consoleDialog=new QTextEdit,0,0);
-  consoleLayout->addWidget(closeConsoleButton, 1,0,Qt::AlignRight);
-  console->setLayout(consoleLayout);
+  console=new Console(this);
+
+  timer = new QTimer(this);
 
   connect(timer, &QTimer::timeout, [=]() {feedConsole(true);});
-  connect(closeConsoleButton, &QToolButton::clicked, [=](){on_displayConsoleButton_clicked();});
+
   connect(&(dvda_author->process), &QProcess::readyReadStandardOutput, [=]()
                                                                                                                                               {
                                                                                                                                                   feedConsole(false);
                                                                                                                                                   timer->start(50);
                                                                                                                                               });
-
   createActions();
   createMenus();
   createToolBars();
@@ -336,7 +323,7 @@ void MainWindow::createActions()
   displayConsoleAction = new QAction(tr("Show/Close console"), this);
   const QIcon consoleIcon = QIcon(QString::fromUtf8( ":/images/console.png"));
   displayConsoleAction->setIcon(consoleIcon);
-  connect(displayConsoleAction, SIGNAL(triggered()), this, SLOT(on_displayConsoleButton_clicked()));
+  connect(displayConsoleAction, &QAction::triggered, [=]() {console->on_displayConsoleButton_clicked(this);});
 
   editProjectAction=new QAction(tr("Edit current project"), this);
   editProjectAction->setShortcut(QKeySequence("Ctrl+E"));
@@ -693,7 +680,7 @@ void MainWindow::configureOptions()
     connect(defaultFileManagerWidgetLayoutBox, SIGNAL(toggled(bool)), this, SLOT(on_displayFileTreeViewButton_clicked(bool)));
     connect(defaultProjectManagerWidgetLayoutBox, SIGNAL(toggled(bool)), dvda_author, SLOT(on_openManagerWidgetButton_clicked(bool)));
     connect(defaultLplexActivation, &FCheckBox::toggled, this, &MainWindow::on_activate_lplex);
-    connect(defaultConsoleLayoutBox, SIGNAL(toggled(bool)),  this, SLOT(detachConsole(bool)));
+    connect(defaultConsoleLayoutBox, &FCheckBox::toggled, [=]() {console->detachConsole(defaultConsoleLayoutBox->isChecked(), this);});
     connect(defaultFullScreenLayout, SIGNAL(toggled(bool)), this, SLOT(showMainWidget(bool)));
     connect(defaultOutputTextEditBox, &FCheckBox::toggled, [=] () {bottomDockWidget->setVisible(defaultOutputTextEditBox->isChecked());});
     connect(defaultLoadProjectBehavior, &FCheckBox::toggled, [=]() {if (defaultLoadProjectBehavior->isChecked()) dvda_author->RefreshFlag |=  ParseXml;});
@@ -702,28 +689,7 @@ void MainWindow::configureOptions()
     setWindowIcon(QIcon(":/images/dvda-author.png"));
 }
 
-void MainWindow::detachConsole(bool isDetached)
-{
-    if (isDetached)
-    {
-        console->hide();
-        bottomTabWidget->addTab(consoleDialog, tr("Console"));
-        bottomTabWidget->setCurrentIndex(1);
-    }
-    else
-    {
-        console->show();
-        bottomTabWidget->removeTab(1);
-    }
-}
 
-
-void MainWindow::on_displayConsoleButton_clicked()
-{
-    static bool isDetached;
-    detachConsole(isDetached);
-    isDetached=!isDetached;
-}
 
 void MainWindow::on_activate_lplex(bool active)
 {
@@ -797,11 +763,12 @@ void MainWindow::feedConsole(bool initialized)
                               HTML_TAG(red) "\\1</span>"+QString("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")
                               + HTML_TAG(green) "\\3</span>" +HTML_TAG(green) "/ <b>\\4</b></span>"
                               +QString("&nbsp;&nbsp;")+HTML_TAG(blue) "\\6</span>&nbsp;&nbsp;&nbsp;&nbsp;");
-            consoleDialog->insertHtml(text.replace("\n", "<br>"));
+            consoleDialog->insertHtml(text=text.replace("\n", "<br>"));
             consoleDialog->moveCursor(QTextCursor::End);
-            consoleDialog->update();
+            console->appendHtml(text);
+
     }
-    else timer->stop();
+    else (timer->stop());
 
  }
 

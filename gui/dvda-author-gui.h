@@ -14,6 +14,7 @@
 #include "common.h"
 #include "highlighter.h"
 #include "enums.h"
+#include "console.h"
 
 #define PARAMETER_HTML_TAG "<img src=\":/images/configure.png\"  height=\"16\" width=\"16\"/> "
 #define MSG_HTML_TAG "<img src=\":/images/msg.png\"/> "
@@ -41,6 +42,7 @@ class QTreeWidgetItem;
 class options;
 class dvda;
 class common;
+class Console;
 
 class MainWindow : public QMainWindow
 {
@@ -56,6 +58,8 @@ class MainWindow : public QMainWindow
    void updateRecentFileActions();
    QString strippedName(const QString &fullFuleName);
    FCheckBox *defaultSaveProjectBehavior;
+   QTabWidget *bottomTabWidget;
+   QTextEdit *consoleDialog;
 
   private slots:
 
@@ -68,9 +72,6 @@ class MainWindow : public QMainWindow
    void configure();
    void configureOptions();
    void on_activate_lplex(bool);
-   void on_displayConsoleButton_clicked();
-   void detachConsole(bool);
-
 
   private :
 
@@ -80,15 +81,12 @@ class MainWindow : public QMainWindow
    bool readFile(const QString &fileName);
    dvda *dvda_author;
    QMainWindow *editWidget;
-   QTimer *timer = new QTimer(this);
+   QTimer *timer;
    void createActions();
    void createMenus();
    void createToolBars();
    void createFontDataBase();
    void loadFile(const QString &fileName);
-
-   QTextEdit *consoleDialog;
-   QTabWidget *bottomTabWidget;
 
    QDockWidget* fileTreeViewDockWidget;
    QDockWidget* bottomDockWidget;
@@ -142,7 +140,7 @@ class MainWindow : public QMainWindow
    QList<FCheckBox*> displayWidgetList, behaviorWidgetList;
    QTextEdit *editor;
    Highlighter *highlighter;
-   QDialog *console;
+   Console *console;
 
 };
 
