@@ -20,7 +20,7 @@
 #define ERROR_HTML_TAG "<img src=\":/images/error.png\"/> "
 #define WARNING_HTML_TAG "<img src=\":/images/warning.png\"/> "
 #define INFORMATION_HTML_TAG "<img src=\":/images/information.png\"/> "
-#define NAVY_HTML_TAG "<span style=\"color: navy;\"> "
+#define HTML_TAG(X) "<span style=\"color: " #X ";\"> "
 
 
 

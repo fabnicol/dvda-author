@@ -305,7 +305,7 @@ void dvda::refreshRowPresentation(uint ZONE, uint j)
   widget->setPalette(palette);
   widget->setAlternatingRowColors(true);
   widget->setFont(font);
-  Q(hash::FStringListHash[zoneTag(ZONE)]->join({",",";"}))
+
   for (int r=0; (r < widget->count()) && (r < hash::FStringListHash[zoneTag(ZONE)]->at(j).size()); r++ )
     {
 
