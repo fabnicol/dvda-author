@@ -304,7 +304,9 @@ void dvda::DomParser(QIODevice* file)
 
           while (!subnode.isNull())
             {
-              *(hash::FStringListHash[subnode.toElement().tagName()]=new FStringList) <<   parseEntry(subnode);
+              const FStringList &str=parseEntry(subnode);
+              if (!str.at(0).at(0).isEmpty())
+                 *(hash::FStringListHash[subnode.toElement().tagName()]=new FStringList) =   str;
                 subnode=subnode.nextSibling();
             }
 

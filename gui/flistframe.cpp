@@ -350,15 +350,19 @@ bool FListFrame::addStringToListWidget(QString filepath, int index)
  updateIndexInfo();
  if ((filepath.isEmpty()) || (currentIndex >= (*hash::FStringListHash[frameHashKey]).count() ) || (signalList == NULL)) return false;
 
- fileListWidget->currentListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
- fileListWidget->currentListWidget->addItem(filepath);
- fileListWidget->currentListWidget->setCurrentRow(row+1);
- fileListWidget->currentListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
- (*hash::FStringListHash[frameHashKey])[currentIndex] << filepath;
+ if  (!filepath.isEmpty())
+ {
+     fileListWidget->currentListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+     fileListWidget->currentListWidget->addItem(filepath);
+     fileListWidget->currentListWidget->setCurrentRow(row+1);
+     fileListWidget->currentListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
- *(fileListWidget->signalList) << filepath;
- *signalList << filepath; //make a copy. Necessary to avoid losing dragged and dropped files to list widget directly.
+     (*hash::FStringListHash[frameHashKey])[currentIndex] << filepath;
+
+     *(fileListWidget->signalList) << filepath;
+     *signalList << filepath; //make a copy. Necessary to avoid losing dragged and dropped files to list widget directly.
+ }
 
  for (int j=1; index+j < cumulativePicCount.count() ;  j++)
    cumulativePicCount[index+j]++;

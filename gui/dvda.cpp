@@ -217,10 +217,11 @@ dvda::dvda()
       connect(project[ZONE]->moveDownItemButton, SIGNAL(clicked()), this, SLOT(on_moveDownItemButton_clicked()));
       connect(project[ZONE]->retrieveItemButton, SIGNAL(clicked()), this, SLOT(on_deleteItem_clicked()));
       connect(project[ZONE]->clearListButton, SIGNAL(clicked()), this, SLOT(saveProject()));
-      projectLayout->addWidget(project[ZONE]->importFromMainTree, 0,1);
       // set visible importFromMaintree and controlButtonBox !
       projectLayout->addWidget(project[ZONE]->tabBox, 0,2);
       updownLayout->addWidget(project[ZONE]->controlButtonBox, 0,0);
+      //in this order!
+      projectLayout->addWidget(project[1-ZONE]->importFromMainTree, 0,1);
   }
 
   updownLayout->setRowMinimumHeight(1, 40);
