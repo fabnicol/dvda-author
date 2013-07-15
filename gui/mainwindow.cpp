@@ -110,11 +110,11 @@ MainWindow::MainWindow(char* projectName)
   consoleLayout->addWidget(closeConsoleButton, 1,0,Qt::AlignRight);
   console->setLayout(consoleLayout);
 
-  connect(timer, SIGNAL(timeout()),this, SLOT(feedConsole()));
+  connect(timer, &QTimer::timeout, [=]() {feedConsole(true);});
   connect(closeConsoleButton, &QToolButton::clicked, [=](){on_displayConsoleButton_clicked();});
   connect(&(dvda_author->process), &QProcess::readyReadStandardOutput, [=]()
                                                                                                                                               {
-                                                                                                                                                  feedConsole();
+                                                                                                                                                  feedConsole(false);
                                                                                                                                                   timer->start(50);
                                                                                                                                               });
 
@@ -146,8 +146,6 @@ MainWindow::MainWindow(char* projectName)
   consoleDialog=  new QTextEdit;
   //consoleDialog->setMinimumSize(800,600);
   bottomTabWidget->addTab(dvda_author->outputTextEdit, tr("Messages"));
-  bottomDockWidget->setWidget(bottomTabWidget);
-  addDockWidget(Qt::BottomDockWidgetArea, bottomDockWidget);
 
   fileTreeViewDockWidget= new QDockWidget;
   fileTreeViewDockWidget->setWidget(dvda_author->fileTreeView);
@@ -170,14 +168,34 @@ MainWindow::MainWindow(char* projectName)
       {
          if (settings->value(a->getHashKey()).isValid())
              a->setChecked(settings->value(a->getHashKey()).toBool());
-       }
+      }
 
   dvda_author->initializeProject();
   bottomTabWidget->setCurrentIndex(0);
+
+  QToolButton *clearBottomTabWidgetButton=new QToolButton;
+  const QIcon clearOutputText = QIcon(QString::fromUtf8( ":/images/edit-clear.png"));
+  clearBottomTabWidgetButton->setIcon(clearOutputText);
+
+  connect(clearBottomTabWidgetButton, &QToolButton::clicked, [=]() { on_clearOutputTextButton_clicked();});
+
+  QGroupBox *stackedBottomWidget=new QGroupBox;
+  QHBoxLayout *stackedBottomWidgetLayout=new QHBoxLayout;
+  stackedBottomWidgetLayout->addWidget(clearBottomTabWidgetButton);
+  stackedBottomWidgetLayout->addWidget(bottomTabWidget);
+  stackedBottomWidget->setLayout(stackedBottomWidgetLayout);
+  bottomDockWidget->setWidget(stackedBottomWidget);
+
+  addDockWidget(Qt::BottomDockWidgetArea, bottomDockWidget);
+
   setWindowIcon(QIcon(":/images/dvda-author.png"));
   setWindowTitle("dvda-author interface  "+ QString(VERSION) +" version");
 }
 
+void MainWindow::on_clearOutputTextButton_clicked()
+{
+    qobject_cast<QTextEdit*>(bottomTabWidget->currentWidget())->clear();
+}
 
 
 void MainWindow::updateRecentFileActions()
@@ -252,6 +270,7 @@ void MainWindow::createMenus()
 
  aboutMenu->addAction(helpAction);
  aboutMenu->addAction(aboutAction);
+
 }
 
 
@@ -334,10 +353,10 @@ void MainWindow::createActions()
   displayFileTreeViewAction->setIcon(displayFileTreeView);
   connect(displayFileTreeViewAction, SIGNAL(triggered()), this, SLOT(on_displayFileTreeViewButton_clicked()));
 
-  clearOutputTextAction = new QAction(tr("Clear message &window"), this);
+  clearOutputTextAction = new QAction(tr("Clear message/console &window"), this);
   const QIcon clearOutputText = QIcon(QString::fromUtf8( ":/images/edit-clear.png"));
   clearOutputTextAction->setIcon(clearOutputText);
-  connect(clearOutputTextAction, SIGNAL(triggered()), dvda_author, SLOT(on_clearOutputTextButton_clicked()));
+  connect(clearOutputTextAction, &QAction::triggered,  [=]() {on_clearOutputTextButton_clicked();});
 
   exitAction = new QAction(tr("&Exit"), this);
   exitAction->setIcon(QIcon(":/images/application-exit.png"));
@@ -430,7 +449,6 @@ void MainWindow::createToolBars()
  editToolBar->addAction(displayFileTreeViewAction);
  editToolBar->addAction(displayManagerAction);
  editToolBar->addAction(displayConsoleAction);
- editToolBar->addAction(clearOutputTextAction);
  editToolBar->addAction(editProjectAction);
 
  processToolBar->addAction(burnAction);
@@ -737,9 +755,8 @@ void MainWindow::showMainWidget()
 
 
 
-void MainWindow::feedConsole()
+void MainWindow::feedConsole(bool initialized)
 {
-    static bool initialized;
 
     if (!dvda_author->process.atEnd())
     {
@@ -765,7 +782,7 @@ void MainWindow::feedConsole()
            QRegExp reg3("\\[MSG\\]([^\\n]*)\n");
            QRegExp reg4("\\[ERR\\]([^\\n]*)\n");
            QRegExp reg5("\\[WAR\\]([^\\n]*)\n");
-           QRegExp reg6("(.*licenses/.)");
+           QRegExp reg6("(^.*licenses/.)");
 
             QString text=QString(data).replace(reg6, (QString) HTML_TAG(navy) "\\1</span><br>");
             text= text.replace(reg, (QString) INFORMATION_HTML_TAG "\\1<br>");
@@ -776,15 +793,15 @@ void MainWindow::feedConsole()
             text=text.replace("Group", (QString) HTML_TAG(red) "Group</span>");
             text=text.replace("Title", (QString) HTML_TAG(green) "Title</span>");
             text=text.replace("Track", (QString) HTML_TAG(blue) "Track</span>");
-            text=text.replace(QRegExp("(.*) ([0-9]*) / ([0-9]*)([ ]*)([0-9]*)"),
+            text=text.replace(QRegExp("([0-9]+)([ ]+)([0-9]*) / ([0-9]*)([ ]+)([0-9]*)"),
                               HTML_TAG(red) "\\1</span>"+QString("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")
-                              + HTML_TAG(green) "\\2</span>" +HTML_TAG(green) "/ <b>\\3</b></span>"
-                              +QString("&nbsp;&nbsp;")+HTML_TAG(blue) "\\5</span>&nbsp;&nbsp;&nbsp;&nbsp;");
+                              + HTML_TAG(green) "\\3</span>" +HTML_TAG(green) "/ <b>\\4</b></span>"
+                              +QString("&nbsp;&nbsp;")+HTML_TAG(blue) "\\6</span>&nbsp;&nbsp;&nbsp;&nbsp;");
             consoleDialog->insertHtml(text.replace("\n", "<br>"));
+            consoleDialog->moveCursor(QTextCursor::End);
             consoleDialog->update();
-
     }
     else timer->stop();
-    initialized=true;
+
  }
 

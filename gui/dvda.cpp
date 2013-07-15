@@ -279,13 +279,6 @@ void dvda::on_audioFilterButton_clicked(bool active)
   fileTreeView->update();
 }
 
-
-void dvda::on_clearOutputTextButton_clicked()
-{
-  outputTextEdit->clear();
-}
-
-
 void dvda::refreshRowPresentation()
 {
   // indexes are supposed to have been recently updated

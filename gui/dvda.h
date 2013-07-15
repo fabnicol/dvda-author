@@ -68,7 +68,6 @@ private slots:
     void on_moveDownItemButton_clicked();
     void on_deleteItem_clicked();
     void on_cdrecordButton_clicked();
-    void on_clearOutputTextButton_clicked();
     void remove();
     void extract();
     void createDirectory();

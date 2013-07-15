@@ -69,11 +69,14 @@ class MainWindow : public QMainWindow
    void configureOptions();
    void on_activate_lplex(bool);
    void on_displayConsoleButton_clicked();
-   void feedConsole();
    void detachConsole(bool);
+
 
   private :
 
+   void on_clearOutputTextButton_clicked();
+
+   void feedConsole(bool);
    bool readFile(const QString &fileName);
    dvda *dvda_author;
    QMainWindow *editWidget;
