@@ -202,7 +202,7 @@ dvda::dvda()
   connect(&process3, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(process3Finished(int, QProcess::ExitStatus)));
   connect(mainTabWidget, SIGNAL(currentChanged(int)), this, SLOT(on_frameTab_changed(int )));
   connect(playItemButton, SIGNAL(clicked()), this, SLOT(on_playItemButton_clicked()));
-  connect(dial, &QDial::valueChanged, [=]() { dvda::dialVolume=dial->value(); if (myMusic) myMusic->setVolume(dvda::dialVolume);});
+  connect(dial, &QDial::valueChanged, [&]{ dvda::dialVolume=dial->value(); if (myMusic) myMusic->setVolume(dvda::dialVolume);});
   connect(this, SIGNAL(hasIndexChangedSignal()), this, SLOT(on_playItem_changed()));
   connect(audioFilterButton, SIGNAL(toggled(bool)), this, SLOT(on_audioFilterButton_clicked(bool)));
 
@@ -212,7 +212,7 @@ dvda::dvda()
       project[ZONE]->slotList=NULL;
       connect(project[ZONE]->addGroupButton, SIGNAL(clicked()), this, SLOT(addGroup()));
       connect(project[ZONE]->deleteGroupButton, SIGNAL(clicked()), this, SLOT(deleteGroup()));
-      connect(project[ZONE]->importFromMainTree, &QToolButton::clicked, [=] () {addSelectedFileToProject();});
+      connect(project[ZONE]->importFromMainTree, &QToolButton::clicked, [this] {addSelectedFileToProject();});
       connect(project[ZONE]->moveUpItemButton, SIGNAL(clicked()), this, SLOT(on_moveUpItemButton_clicked()));
       connect(project[ZONE]->moveDownItemButton, SIGNAL(clicked()), this, SLOT(on_moveDownItemButton_clicked()));
       connect(project[ZONE]->retrieveItemButton, SIGNAL(clicked()), this, SLOT(on_deleteItem_clicked()));

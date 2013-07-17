@@ -57,6 +57,7 @@ class MainWindow : public QMainWindow
    QStringList recentFiles;
    void updateRecentFileActions();
    QString strippedName(const QString &fullFuleName);
+   void on_clearOutputTextButton_clicked();
    FCheckBox *defaultSaveProjectBehavior;
    QTabWidget *bottomTabWidget;
    QTextEdit *consoleDialog;
@@ -75,8 +76,7 @@ class MainWindow : public QMainWindow
 
   private :
 
-   void on_clearOutputTextButton_clicked();
-
+   QHash<QString, QAction*> actionHash;
    void feedConsole(bool);
    bool readFile(const QString &fileName);
    dvda *dvda_author;
@@ -87,6 +87,7 @@ class MainWindow : public QMainWindow
    void createToolBars();
    void createFontDataBase();
    void loadFile(const QString &fileName);
+   void saveProjectAs(QFile* file);
 
    QDockWidget* fileTreeViewDockWidget;
    QDockWidget* bottomDockWidget;

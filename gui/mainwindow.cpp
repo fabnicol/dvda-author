@@ -98,13 +98,16 @@ MainWindow::MainWindow(char* projectName)
 
   timer = new QTimer(this);
 
-  connect(timer, &QTimer::timeout, [=]() {feedConsole(true);});
+  connect(timer, &QTimer::timeout, [this]() {feedConsole(true);});
 
-  connect(&(dvda_author->process), &QProcess::readyReadStandardOutput, [=]()
-                                                                                                                                              {
-                                                                                                                                                  feedConsole(false);
-                                                                                                                                                  timer->start(50);
-                                                                                                                                              });
+  connect(&(dvda_author->process),
+                 &QProcess::readyReadStandardOutput,
+                      [&]
+                          {
+                              feedConsole(false);
+                              timer->start(50);
+                          });
+
   createActions();
   createMenus();
   createToolBars();
@@ -164,7 +167,7 @@ MainWindow::MainWindow(char* projectName)
   const QIcon clearOutputText = QIcon(QString::fromUtf8( ":/images/edit-clear.png"));
   clearBottomTabWidgetButton->setIcon(clearOutputText);
 
-  connect(clearBottomTabWidgetButton, &QToolButton::clicked, [=]() { on_clearOutputTextButton_clicked();});
+  connect(clearBottomTabWidgetButton, &QToolButton::clicked, [this] { on_clearOutputTextButton_clicked();});
 
   QGroupBox *stackedBottomWidget=new QGroupBox;
   QHBoxLayout *stackedBottomWidgetLayout=new QHBoxLayout;
@@ -181,8 +184,13 @@ MainWindow::MainWindow(char* projectName)
 
 void MainWindow::on_clearOutputTextButton_clicked()
 {
+    if (console->isVisible())
+    {
+        console->raise(); // to refocus if triggering main app button otherwise redundant
+    }
+
     qobject_cast<QTextEdit*>(bottomTabWidget->currentWidget())->clear();
-}
+ }
 
 
 void MainWindow::updateRecentFileActions()
@@ -272,7 +280,7 @@ void MainWindow::createActions()
   saveAction = new QAction(tr("&Save"), this);
   saveAction->setShortcut(QKeySequence("Ctrl+S"));
   saveAction->setIcon(style()->standardIcon(QStyle::SP_DialogSaveButton));
-  connect(saveAction, &QAction::triggered, [=] () {dvda_author->saveProject(true);});
+  connect(saveAction, &QAction::triggered, [&] {dvda_author->saveProject(true);});
 
   saveAsAction = new QAction(tr("S&ave project file as..."), this);
   saveAsAction->setIcon(QIcon(":/images/document-save-as.png"));
@@ -323,7 +331,7 @@ void MainWindow::createActions()
   displayConsoleAction = new QAction(tr("Show/Close console"), this);
   const QIcon consoleIcon = QIcon(QString::fromUtf8( ":/images/console.png"));
   displayConsoleAction->setIcon(consoleIcon);
-  connect(displayConsoleAction, &QAction::triggered, [=]() {console->on_displayConsoleButton_clicked(this);});
+  connect(displayConsoleAction, &QAction::triggered, [&] {console->on_displayConsoleButton_clicked(this);});
 
   editProjectAction=new QAction(tr("Edit current project"), this);
   editProjectAction->setShortcut(QKeySequence("Ctrl+E"));
@@ -333,7 +341,7 @@ void MainWindow::createActions()
   displayOutputAction  = new QAction(tr("Show/Close messages"), this);
   const QIcon displayOutput = QIcon(QString::fromUtf8( ":/images/display-output.png"));
   displayOutputAction->setIcon(displayOutput);
-  connect(displayOutputAction, &QAction::triggered,  [=] () {bottomDockWidget->setVisible(!bottomDockWidget->isVisible());});
+  connect(displayOutputAction, &QAction::triggered,  [this] {bottomDockWidget->setVisible(!bottomDockWidget->isVisible());});
 
   displayFileTreeViewAction  = new QAction(tr("Show/Close file manager"), this);
   const QIcon displayFileTreeView = QIcon(QString::fromUtf8( ":/images/view-list-tree.png"));
@@ -343,17 +351,17 @@ void MainWindow::createActions()
   clearOutputTextAction = new QAction(tr("Clear message/console &window"), this);
   const QIcon clearOutputText = QIcon(QString::fromUtf8( ":/images/edit-clear.png"));
   clearOutputTextAction->setIcon(clearOutputText);
-  connect(clearOutputTextAction, &QAction::triggered,  [=]() {on_clearOutputTextButton_clicked();});
+  connect(clearOutputTextAction, &QAction::triggered,  [this] {on_clearOutputTextButton_clicked();});
 
   exitAction = new QAction(tr("&Exit"), this);
   exitAction->setIcon(QIcon(":/images/application-exit.png"));
   exitAction->setShortcut(QKeySequence("Ctrl+Q"));
-  connect(exitAction, &QAction::triggered,  [=] () { exit(1);});
+  connect(exitAction, &QAction::triggered,  [this] { exit(1);});
 
   aboutAction=new QAction(tr("&About"), this);
   aboutAction->setIcon(QIcon(":/images/about.png"));
 
-  connect(aboutAction, &QAction::triggered,  [=] () {
+  connect(aboutAction, &QAction::triggered,  [this]  {
                                                                                           QUrl url=QUrl::fromLocalFile( dvda_author->generateDatadirPath("about.html") );
                                                                                            browser::showPage(url);
                                                                                          });
@@ -460,22 +468,15 @@ void MainWindow::on_editProjectButton_clicked()
     QMenu *fileMenu = new QMenu(tr("&File"), this);
     editWidget->menuBar()->addMenu(fileMenu);
 
-    QList<QAction*> actionList=QList<QAction*>()
-           << new QAction(tr("&New"),this)
-           << new QAction(tr("&Open"),this)
-           << new QAction(tr("&Save"),this)
-           << new QAction(tr("Save as..."),this)
-           << new QAction(tr("Refresh project"),this)
-           << new QAction(tr("S&ave and exit"),this)
-           << new QAction(tr("&Exit"),this);
+     const char* keys[]={"New", "Open", "Save", "Save as...", "Refresh project", "Save and exit", "Exit"};
+     const char* seq[]={"Ctrl+N","Ctrl+O","Ctrl+S","Ctrl+T","Ctrl+R","Ctrl+E","Ctrl+Q"};
+     int j=0;
 
-    const char* seq[]={"Ctrl+N","Ctrl+O","Ctrl+S","Ctrl+T","Ctrl+R","Ctrl+E","Ctrl+Q"};
-    int j=0;
-
-    for (QAction *a: actionList)
+    for (const char* k:  keys)
     {
-            fileMenu->addAction(a);
-            a->setShortcut(QKeySequence(seq[j++]));
+        actionHash[k]=new QAction(tr(k), this);
+        fileMenu->addAction(actionHash[k]);
+        actionHash[k]->setShortcut(QKeySequence(seq[j++]));
     }
 
     QFont font;
@@ -488,93 +489,108 @@ void MainWindow::on_editProjectButton_clicked()
 
     highlighter = new Highlighter(editor->document());
 
-   const QString str=dvda_author->projectName;
-   if (str.isEmpty()) return;
-   QFile  *file=new QFile(str);
+    if (dvda_author->projectName.isEmpty()) return;
+   QFile  *file=new QFile(dvda_author->projectName);
+
    if (file->open(QFile::ReadWrite| QFile::Text))
    {
        editor->setPlainText(file->readAll());
        file->close();
    }
+   // do not capture file by reference!
+   connect(actionHash["New"],
+                 &QAction::triggered,
+                 [this] { editor->clear();});
 
-   connect(actionList[0], &QAction::triggered, [=] () { editor->clear();});
-   connect(actionList[1], &QAction::triggered, [=] ()
-                                                                                     {
-                                                                                        file->~QFile();
-                                                                                        dvda_author->on_openProjectButton_clicked() ;
-                                                                                        editWidget->~QMainWindow();
-                                                                                        on_editProjectButton_clicked();
-                                                                                      });
+   connect(actionHash["Open"],
+                 &QAction::triggered,
+                 [file, this]
+                                  {
+                                     file->~QFile();
+                                     dvda_author->on_openProjectButton_clicked() ;
+                                     editWidget->~QMainWindow();
+                                     on_editProjectButton_clicked();
+                                   });
 
-   connect(actionList[2], &QAction::triggered,  [=] ()
-                                                                                     {
-                                                                                        file->open(QFile::Truncate |QFile::WriteOnly| QFile::Text);
-                                                                                        file->write(editor->document()->toPlainText().toUtf8()) ;
-                                                                                        file->close();
-                                                                                        dvda::RefreshFlag = dvda::RefreshFlag |UpdateTree | ParseXml;
-                                                                                        dvda_author->initializeProject(true);
-                                                                                      });
+   connect(actionHash["Save"],
+                 &QAction::triggered,
+                 [file, this]
+                                 {
+                                    file->open(QFile::Truncate |QFile::WriteOnly| QFile::Text);
+                                    file->write(editor->document()->toPlainText().toUtf8()) ;
+                                    file->close();
+                                    dvda::RefreshFlag = dvda::RefreshFlag |UpdateTree | ParseXml;
+                                    dvda_author->initializeProject(true);
+                                  });
 
-   connect(actionList[3], &QAction::triggered,  [=] ()
-                                                                                     {
-                                                                                       QString newstr=QFileDialog::getSaveFileName(this, tr("Save project as..."), QDir::currentPath(), tr("dvp projects (*.dvp)"));
-                                                                                       if (newstr.isEmpty()) return;
-                                                                                       if (newstr == str)
-                                                                                       {
-                                                                                           actionList[2]->trigger();
-                                                                                           return;
-                                                                                       }
+   connect(actionHash["Save as..."],
+                  &QAction::triggered,
+                  [file, this] {saveProjectAs(file);});
 
-                                                                                       if  (QFileInfo(newstr).isFile())
-                                                                                       {
-                                                                                             if (QMessageBox::No == QMessageBox::warning(this, tr("Overwrite file?"), tr("File will be overwritten.\nPress Yess to confirm, No to cancel operation."), QMessageBox::Yes|QMessageBox::No))
-                                                                                                return;
-                                                                                             else
-                                                                                             {
-                                                                                                    QFile newfile(newstr);
-                                                                                                    newfile.remove();
-                                                                                             }
-                                                                                       }
-                                                                                       if (file->rename(newstr) ==false) return;
-                                                                                       dvda_author->projectName=newstr;
-                                                                                       if (file->open(QFile::WriteOnly | QFile::Truncate | QFile::Text))
-                                                                                       {
-                                                                                          file->write(editor->document()->toPlainText().toUtf8()) ;
-                                                                                       }
-                                                                                       file->close();
-                                                                                       dvda::RefreshFlag = dvda::RefreshFlag |UpdateTree | ParseXml;
-                                                                                       dvda_author->initializeProject(true);
+   connect(actionHash["Refresh project"],
+                 &QAction::triggered,
+                 [file, this]
+                                 {
+                                    dvda_author->saveProject(true);
+                                    if (file->open(QFile::ReadWrite |  QFile::Text))
+                                       {
+                                           editor->clear();
+                                           editor->setPlainText(file->readAll());
+                                           file->close();
+                                       }
+                                  });
 
-                                                                                      });
+   connect(actionHash["Save and exit"],
+                  &QAction::triggered,
+                 [this]
+                         {
+                            actionHash["Save"]->trigger();
+                            actionHash["Exit"]->trigger();
+                         });
 
-   connect(actionList[4], &QAction::triggered,  [=] ()
-                                                                                     {
-                                                                                        dvda_author->saveProject(true);
-                                                                                        if (file->open(QFile::ReadWrite |  QFile::Text))
-                                                                                           {
-                                                                                               editor->clear();
-                                                                                               editor->setPlainText(file->readAll());
-                                                                                               file->close();
-                                                                                           }
-
-                                                                                      });
-
-   connect(actionList[5], &QAction::triggered,  [=] ()
-                                                                                      {
-                                                                                           actionList[2]->trigger();
-                                                                                           actionList[6]->trigger();
-                                                                                       });
-
-   connect(actionList[6], &QAction::triggered,  [=] ()
-                                                                                      {
-                                                                                         file->~QFile();
-                                                                                         actionList.~QList();
-                                                                                         editWidget->~QMainWindow() ;
-                                                                                       });
+   connect(actionHash["Exit"],
+                 &QAction::triggered,
+                 [file, this]
+                                  {
+                                     file->~QFile();
+                                     editWidget->~QMainWindow() ;
+                                   });
    editWidget->setCentralWidget(editor);
    editWidget->setGeometry(200,200,600,800);
    editWidget->show();
 
+}
+
+
+void MainWindow::saveProjectAs(QFile* file)
+{
+    QString newstr=QFileDialog::getSaveFileName(this, tr("Save project as..."), QDir::currentPath(), tr("dvp projects (*.dvp)"));
+    if (newstr.isEmpty()) return;
+    if (newstr == dvda_author->projectName)
+    {
+        actionHash["Save"]->trigger();
+        return;
+    }
+
+    if  (QFileInfo(newstr).isFile())
+    {
+          if (QMessageBox::No == QMessageBox::warning(this, tr("Overwrite file?"), tr("File will be overwritten.\nPress Yess to confirm, No to cancel operation."), QMessageBox::Yes|QMessageBox::No))
+             return;
+          else
+          {
+                 QFile newfile(newstr);
+                 newfile.remove();
+          }
+    }
+    if (file->rename(newstr) ==false) return;
+    dvda_author->projectName=newstr;
+    if (file->open(QFile::WriteOnly | QFile::Truncate | QFile::Text))
+    {
+       file->write(editor->document()->toPlainText().toUtf8()) ;
+    }
+    file->close();
+    dvda::RefreshFlag = dvda::RefreshFlag |UpdateTree | ParseXml;
+    dvda_author->initializeProject(true);
 }
 
 void MainWindow::configureOptions()
@@ -656,11 +672,11 @@ void MainWindow::configureOptions()
 
     contentsWidget->setLayout(layout);
     connect(closeButton, &QDialogButtonBox::accepted,
-                        [=] () {
+                        [this]  {
                                         for (FCheckBox* a : displayWidgetList + behaviorWidgetList)
                                             settings->setValue(a->getHashKey(), a->isChecked());
                                         contentsWidget->accept();
-                                  }
+                                }
                   );
 
     /* note on connection syntax
@@ -669,7 +685,7 @@ void MainWindow::configureOptions()
      * b) the boolean version of slots must be used by the FcheckBox. The new Qt5 syntax cannot work this out as it does not manage overloading. */
 
     connect(closeButton, &QDialogButtonBox::rejected, contentsWidget, &QDialog::reject);
-    connect(closeButton, &QDialogButtonBox::accepted, [=] ()
+    connect(closeButton, &QDialogButtonBox::accepted, [this]
                                                                                                          {
                                                                                                                if (    (defaultSaveProjectBehavior->isChecked())
                                                                                                                     || (QMessageBox::Yes == QMessageBox::warning(this, tr("Save project"), tr("Project has not been saved.\nPress Yes to save current .dvp project file now\nor No to close dialog without saving project."), QMessageBox::Yes|QMessageBox::No))
@@ -680,10 +696,10 @@ void MainWindow::configureOptions()
     connect(defaultFileManagerWidgetLayoutBox, SIGNAL(toggled(bool)), this, SLOT(on_displayFileTreeViewButton_clicked(bool)));
     connect(defaultProjectManagerWidgetLayoutBox, SIGNAL(toggled(bool)), dvda_author, SLOT(on_openManagerWidgetButton_clicked(bool)));
     connect(defaultLplexActivation, &FCheckBox::toggled, this, &MainWindow::on_activate_lplex);
-    connect(defaultConsoleLayoutBox, &FCheckBox::toggled, [=]() {console->detachConsole(defaultConsoleLayoutBox->isChecked(), this);});
+    connect(defaultConsoleLayoutBox, &FCheckBox::toggled, [this] {console->detachConsole(defaultConsoleLayoutBox->isChecked(), this);});
     connect(defaultFullScreenLayout, SIGNAL(toggled(bool)), this, SLOT(showMainWidget(bool)));
-    connect(defaultOutputTextEditBox, &FCheckBox::toggled, [=] () {bottomDockWidget->setVisible(defaultOutputTextEditBox->isChecked());});
-    connect(defaultLoadProjectBehavior, &FCheckBox::toggled, [=]() {if (defaultLoadProjectBehavior->isChecked()) dvda_author->RefreshFlag |=  ParseXml;});
+    connect(defaultOutputTextEditBox, &FCheckBox::toggled, [this] {bottomDockWidget->setVisible(defaultOutputTextEditBox->isChecked());});
+    connect(defaultLoadProjectBehavior, &FCheckBox::toggled, [this] {if (defaultLoadProjectBehavior->isChecked()) dvda_author->RefreshFlag |=  ParseXml;});
 
     setWindowTitle(tr("Configure dvda-author GUI"));
     setWindowIcon(QIcon(":/images/dvda-author.png"));

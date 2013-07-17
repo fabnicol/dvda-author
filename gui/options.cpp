@@ -1543,11 +1543,15 @@ options::options(dvda* parent)
     pagesWidget->addWidget(lplexTab);
 
     closeButton = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-    connect(closeButton, &QDialogButtonBox::accepted, [=]() {
-                                                                                                                options::RefreshFlag =  hasUnsavedOptions;
-                                                                                                                accept();
-                                                                                                                parent->saveProject(true);
-                                                                                                          });
+    connect(closeButton,
+            &QDialogButtonBox::accepted,
+            [this,parent]
+           {
+                options::RefreshFlag =  hasUnsavedOptions;
+                accept();
+                parent->saveProject(true);
+            });
+
     connect(closeButton, SIGNAL(rejected()), this, SLOT(reject()));
 
     createIcons();

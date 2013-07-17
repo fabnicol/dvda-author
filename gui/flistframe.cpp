@@ -117,11 +117,13 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
  tabBox->setLayout(tabLayout);
  tabBox->setFlat(true);
 
- connect(addGroupButton, &QToolButton::clicked, [=] () {
-                                                                                                     if (hash::FStringListHash[frameHashKey]->last().isEmpty()) return;
-                                                                                                     hash::FStringListHash[frameHashKey]->append(QStringList());
-                                                                                                     addGroup();
-                                                                                                  });
+ connect(addGroupButton,
+               &QToolButton::clicked,
+               [this]{
+                      if (hash::FStringListHash[frameHashKey]->last().isEmpty()) return;
+                      hash::FStringListHash[frameHashKey]->append(QStringList());
+                      addGroup();
+                  });
  connect(deleteGroupButton, SIGNAL(clicked()), this, SLOT(deleteGroup()));
  connect(mainTabWidget, SIGNAL(currentChanged(int)), this, SLOT(on_mainTabIndex_changed(int)));
  connect(embeddingTabWidget, SIGNAL(currentChanged(int)), this, SLOT(on_embeddingTabIndex_changed(int)));
