@@ -3,7 +3,7 @@
 
 
 
-inline QString dvda::makeParserString(int start, int end)
+inline const QString dvda::makeParserString(int start, int end)
 {
 
     QStringList L=QStringList();
@@ -34,12 +34,12 @@ inline QString dvda::makeParserString(int start, int end)
 }
 
 
-inline QString  dvda::makeDataString()
+inline const QString  dvda::makeDataString()
 {
     return  makeParserString(0,1);
 }
 
-inline QString  dvda::makeSystemString()
+inline const QString  dvda::makeSystemString()
 {
     return makeParserString(2);
 }
@@ -306,7 +306,7 @@ void dvda::DomParser(QIODevice* file)
             {
               const FStringList &str=parseEntry(subnode);
               if (!str.at(0).at(0).isEmpty())
-                 *(hash::FStringListHash[subnode.toElement().tagName()]=new FStringList) =   str;
+                 *(Hash::wrapper[subnode.toElement().tagName()]=new FStringList) =   str;
                 subnode=subnode.nextSibling();
             }
 
@@ -330,7 +330,7 @@ void dvda::DomParser(QIODevice* file)
           for (int group_index=0; group_index<= project[ZONE]->getRank(); group_index++)
           {
               int r=0;
-              for (QString text : hash::FStringListHash[dvda::zoneTag(ZONE)]->at(group_index))
+              for (QString text : Hash::wrapper[dvda::zoneTag(ZONE)]->at(group_index))
               {
                   if (!text.isEmpty())
                          assignGroupFiles(ZONE, group_index, QDir::toNativeSeparators(text));
@@ -379,7 +379,7 @@ return FStringList();
 }
 
 
-inline QList<QStringList> dvda::processSecondLevelData(QList<QStringList> &L, bool isFile)
+inline const QList<QStringList> dvda::processSecondLevelData(QList<QStringList> &L, bool isFile)
   {
         QListIterator<QStringList> i(L);
         int group_index=0;
@@ -415,7 +415,7 @@ void dvda::refreshProjectManagerValues(int refreshProjectManagerFlag)
     {
          updateIndexInfo();
 
-          fileSizeDataBase[isVideo] = processSecondLevelData(*hash::FStringListHash[dvda::zoneTag(isVideo)]);
+          fileSizeDataBase[isVideo] = processSecondLevelData(*Hash::wrapper[dvda::zoneTag(isVideo)]);
     }
 
 
@@ -431,8 +431,8 @@ void dvda::refreshProjectManagerValues(int refreshProjectManagerFlag)
              if (test[ZONE])
                       dvda::totalSize[ZONE]=XmlMethod::displaySecondLevelData(
                                                                 {dvda::zoneGroupLabel(ZONE), "file"},
-                                                                   *hash::FStringListHash[dvda::zoneTag(ZONE)],
-                                                                   fileSizeDataBase[ZONE]=processSecondLevelData(*hash::FStringListHash[dvda::zoneTag(ZONE)]));
+                                                                   *Hash::wrapper[dvda::zoneTag(ZONE)],
+                                                                   fileSizeDataBase[ZONE]=processSecondLevelData(*Hash::wrapper[dvda::zoneTag(ZONE)]));
 
 
        item=new QTreeWidgetItem(managerWidget);
@@ -449,9 +449,9 @@ void dvda::refreshProjectManagerValues(int refreshProjectManagerFlag)
                QString key=Abstract::abstractWidgetList[k]->getHashKey();
 
                if (Abstract::abstractWidgetList[k]->getDepth() == "0")
-                   XmlMethod::displayTextData(hash::description[key], hash::FStringListHash[key]->toQString(), "");
+                   XmlMethod::displayTextData(Hash::description[key], Hash::wrapper[key]->toQString(), "");
                else if (Abstract::abstractWidgetList[k]->getDepth() == "1")
-                   XmlMethod::displayFirstLevelData(hash::description[key],   "button", hash::FStringListHash[key]->at(0));
+                   XmlMethod::displayFirstLevelData(Hash::description[key],   "button", Hash::wrapper[key]->at(0));
            }
        }
 

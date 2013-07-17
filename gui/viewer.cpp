@@ -145,8 +145,6 @@ void ImageViewer::fitToWindow()
 void ImageViewer::createActions()
 
 {
-
-
     printAct = new QAction(tr("&Print..."), this);
     printAct->setShortcut(tr("Ctrl+P"));
     printAct->setEnabled(false);

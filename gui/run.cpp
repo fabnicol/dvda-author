@@ -24,7 +24,7 @@ void dvda::timerEvent(QTimerEvent *event)
     {
       if (startProgressBar)
         {
-          new_value=recursiveDirectorySize(hash::FStringListHash["targetDir"]->toQString(), "*.AOB");
+          new_value=recursiveDirectorySize(Hash::wrapper["targetDir"]->toQString(), "*.AOB");
           progress->setValue(qFloor(discShare(new_value)));
           value=new_value;
         }
@@ -32,7 +32,7 @@ void dvda::timerEvent(QTimerEvent *event)
 
         if (startProgressBar2)
           {
-            new_isoSize=QFileInfo(hash::FStringListHash["mkisofsPath"]->toQString()).size();
+            new_isoSize=QFileInfo(Hash::wrapper["mkisofsPath"]->toQString()).size();
             outputTextEdit->append(tr(MSG_HTML_TAG "Size of iso output: %1").arg(QString::number(new_isoSize)));
             counter=qFloor(((float) new_isoSize*102)/ ((float) value));
             progress2->setValue(counter);

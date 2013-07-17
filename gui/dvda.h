@@ -17,7 +17,7 @@ public:
     dvda();
 
     void setCurrentFile(const QString &fileName);
-    void setOutputTextEdit(QString filename);
+
     MainWindow *parent;
     enum { MaxRecentFiles = 5 };
     static int RefreshFlag;
@@ -45,7 +45,7 @@ public:
     //    void addDraggedFiles(QList<QUrl> urls);
 
     void startDrag();
-    void addDraggedFiles(QList<QUrl> urls);
+    void addDraggedFiles(const QList<QUrl>& urls);
  /*   void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event)*/
     void dragMoveEvent(QDragMoveEvent *event);
@@ -84,7 +84,7 @@ private slots:
     void on_helpButton_clicked();
     void requestSaveProject();
     void writeProjectFile();
-    void assignGroupFiles(const int isVideo, const int group_index, QString file);
+    void assignGroupFiles(const int isVideo, const int group_index, const QString& file);
     void openProjectFile();
     void on_playItemButton_clicked();
     void on_playItem_changed();
@@ -140,10 +140,10 @@ private:
     float discShare(qint64 directorySize);
     void hideEvent(QHideEvent *event);
     void initialize();
-    QString makeParserString(int start, int end=Abstract::abstractWidgetList.size()-1);
-    QString  makeDataString( );
-    QString  makeSystemString( );
-    QList<QStringList> processSecondLevelData(QList<QStringList> &L, bool isFile=true);
+    const QString  makeParserString(int start, int end=Abstract::abstractWidgetList.size()-1);
+    const QString  makeDataString( );
+    const QString  makeSystemString( );
+    const QList<QStringList> processSecondLevelData(QList<QStringList> &L, bool isFile=true);
     FStringList parseEntry(const QDomNode &, QTreeWidgetItem *parent=0);
 
     void refreshRowPresentation();

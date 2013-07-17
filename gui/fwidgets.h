@@ -32,7 +32,7 @@ public:
         }
     }
 
-    QToolDirButton(QString  st, actionType  type=actionType::Select):QToolDirButton(type){setToolTip(st);}
+    QToolDirButton(const QString&  st, const actionType  type=actionType::Select):QToolDirButton(type){setToolTip(st);}
 
 };
 
@@ -44,8 +44,8 @@ class FAbstractConnection : QObject
 
 public:
 
-  static void meta_connect(FAbstractWidget* w,  const Q2ListWidget *enabledObjects,  const Q2ListWidget *disabledObjects=NULL);
-  static void meta_connect(FAbstractWidget* w,  const QList<QWidget*> *enabledObjects=NULL,  const QList<QWidget*> *disabledObjects=NULL)
+  static void meta_connect(const FAbstractWidget* w,  const Q2ListWidget *enabledObjects,  const Q2ListWidget *disabledObjects=NULL);
+  static void meta_connect(const FAbstractWidget* w,  const QList<QWidget*> *enabledObjects=NULL,  const QList<QWidget*> *disabledObjects=NULL)
   {
      meta_connect(w, &(*(new Q2ListWidget) << *enabledObjects),  &(*(new Q2ListWidget) << *disabledObjects));
   }
@@ -65,13 +65,13 @@ struct Abstract
     static void refreshOptionFields();
     static void initializeFStringListHash(const QString &hashKey)
     {
-        hash::FStringListHash[hashKey]=new FStringList;
-        *hash::FStringListHash[hashKey] << QStringList();
+        Hash::wrapper[hashKey]=new FStringList;
+        *Hash::wrapper[hashKey] << QStringList();
     }
 
     static void initializeFStringListHashes()
     {
-        for (const QString& hashKey: hash::FStringListHash.keys()) initializeFStringListHash(hashKey);
+        for (const QString& hashKey: Hash::wrapper.keys()) initializeFStringListHash(hashKey);
     }
 
 };
@@ -84,7 +84,7 @@ public:
  const Q2ListWidget* disabledObjects;
 
 
-  /* is used for .dvp Xml project writing: refresh Widget information and injects current Widget state into hash::qstring as left-valued of <...hashKey=...> */
+  /* is used for .dvp Xml project writing: refresh Widget information and injects current Widget state into Hash::qstring as left-valued of <...hashKey=...> */
  virtual const FString setXmlFromWidget()=0 ;
 
   /* does the reverse of setXmlFromWidget : reads left value of <...hashKey=...> and injects it into commandLineList. Refreshes Widget state accordingly */

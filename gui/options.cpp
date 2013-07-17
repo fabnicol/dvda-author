@@ -1433,7 +1433,7 @@ void stillPage::on_applyAllEffectsToOneFile_clicked()
     //  while (w.hasNext())
     //    rankedOptions << listWidgetTranslationHash[w.next()->text()] ;
 
-    //  for (int r=0;  r < hash::FStringListHash[slides->frameHashKey]->at(slides->fileNumber).count();  r++)
+    //  for (int r=0;  r < Hash::wrapper[slides->frameHashKey]->at(slides->fileNumber).count();  r++)
     //    optionClChunkList[slides->fileNumber] << "rank=" + QString::number(slides->cumulativePicCount[slides->fileNumber] + r)
     //        + "," + rankedOptions.join(",");
     //  applyEffectsToOneFile->setIcon(applyEffectsToOneFileToggledIcon);
@@ -1497,7 +1497,7 @@ void stillPage::on_nextStep_clicked()
 void stillPage::refreshApplyEffectsIcon()
 {
 
-    if (hash::FStringListHash[slides->getHashKey()][slides->mainTabWidget->currentIndex()].isEmpty())
+    if (Hash::wrapper[slides->getHashKey()][slides->mainTabWidget->currentIndex()].isEmpty())
         applyEffectsToOneFile->setIcon(applyEffectsToOneFileUntoggledIcon);
     else
         applyEffectsToOneFile->setIcon(applyEffectsToOneFileToggledIcon);
@@ -1582,7 +1582,7 @@ options::options(dvda* parent)
 
 void options::clearOptionData()
 {
-    hash::FStringListHash.clear();
+    Hash::wrapper.clear();
     stillTab->slides->getCurrentWidget()->clear();
     stillTab->selectoptionListWidget->getCurrentWidget()->clear();
     audioMenuTab->slides->getCurrentWidget()->clear();

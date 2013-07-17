@@ -68,7 +68,7 @@ inline int getCurrentRow() {return getCurrentWidget()->currentRow();}
 
 void addDirectoryToListWidget(const QFileInfo&, int);
 void addNewTab();
-bool addStringToListWidget(QString , int );
+bool addStringToListWidget(const QString& , int );
 
 
 FListFrame(QObject* parent,  QAbstractItemView * fileTreeView, short import_type, const QString &hashKey,

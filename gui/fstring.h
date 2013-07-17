@@ -8,17 +8,17 @@ class FString;
 class FStringList;
 
 
-class hash : public QHash<QString, QString>
+class Hash : public QHash<QString, QString>
 {
 public:
 
-  /* hash::description converts a string like "targetDir" into its (sentence-like) description for display in project manager (first column)*/
+  /* Hash::description converts a string like "targetDir" into its (sentence-like) description for display in project manager (first column)*/
   static QHash<QString,QString> description;
 
-  /* hash::FStringListHash  is used for storing information for xml project parsing/writing.
+  /* Hash::wrapper  is used for storing information for xml project parsing/writing.
    *It converts a string label like "audioMenu" into a pointer to an FStringList object that contains a set of file paths
    * (or more generally, text phrases) grouped into a QStringList for each associated file in a list of files */
-  static QHash<QString, FStringList *> FStringListHash;
+  static QHash<QString, FStringList *> wrapper;
 
 };
 
@@ -107,8 +107,8 @@ private:
 public:
 
   FStringList( ) : QList<QStringList>() { }
-  FStringList(QString s) : QList<QStringList>()  { this->append(QStringList(s)); }
-  FStringList(FString &s):FStringList(s.toQString()) {}
+  FStringList(const QString& s) : QList<QStringList>()  { this->append(QStringList(s)); }
+  FStringList(const FString &s):FStringList(s.toQString()) {}
   FStringList(const FString *s):FStringList(s->toQString()) {}
   FStringList(const QStringList &L): QList<QStringList>() {this->append(L);}
   FStringList(const  QList<QStringList> &s) : QList<QStringList>(s) {}
@@ -124,12 +124,12 @@ public:
       }
   }
 
-  FStringList(QString a, QString b, QString c):QList<QStringList>()  { this->append(QStringList() << a << b << c);}
-  FString join(const QStringList &) const ;
-  FString join(const char* s) const {QStringList strL=QStringList((QString(s))); return join(strL);}
-  QStringList join() ;
+  FStringList(const QString& a, const QString& b, const QString& c):QList<QStringList>()  { this->append(QStringList() << a << b << c);}
+  const FString join(const QStringList &) const ;
+  const FString& join(const char* s) const {return join(QStringList((QString(s)))); }
+  const QStringList& join() ;
   QString setEmptyTags(const QStringList &)const;
-  QString setTags(const QStringList &tags, const FStringList *properties=NULL) const;
+  const QString setTags(const QStringList &tags, const FStringList *properties=NULL) const;
   FString toFString() const { return ((this->isEmpty()) || this->at(0).isEmpty())?  "" : FString(this->at(0).at(0)); }
   FString toQString() const { return ((this->isEmpty()) || this->at(0).isEmpty())?  "" : QString(this->at(0).at(0)); }
   int toInt() const {return ((this->isEmpty() || this->at(0).isEmpty())? 0: this->at(0).at(0).toInt());}
@@ -143,7 +143,7 @@ public:
 class FStringListIterator : public QListIterator<QStringList>
 {
 public:
-  FStringListIterator(FStringList list) : QListIterator(list) {}
+  FStringListIterator(const FStringList& list) : QListIterator(list) {}
   FStringListIterator(FStringList *list) : QListIterator(*list) {}
   FStringListIterator(const FStringList *list) : QListIterator(*list) {}
  };

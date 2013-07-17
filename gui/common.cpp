@@ -9,7 +9,6 @@ QString common::tempdir=QDir::homePath ()+QDir::separator()+"tempdir";  // shoul
 
 bool common::remove(const QString &path)
 {
-
     if (QFileInfo(path).isDir())
     {
         return  removeDirectory(path) ;

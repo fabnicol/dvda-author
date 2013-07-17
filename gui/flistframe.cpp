@@ -120,8 +120,8 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
  connect(addGroupButton,
                &QToolButton::clicked,
                [this]{
-                      if (hash::FStringListHash[frameHashKey]->last().isEmpty()) return;
-                      hash::FStringListHash[frameHashKey]->append(QStringList());
+                      if (Hash::wrapper[frameHashKey]->last().isEmpty()) return;
+                      Hash::wrapper[frameHashKey]->append(QStringList());
                       addGroup();
                   });
  connect(deleteGroupButton, SIGNAL(clicked()), this, SLOT(deleteGroup()));
@@ -147,17 +147,17 @@ void FListFrame::on_clearList_clicked(int currentIndex)
        currentIndex=this->currentIndex;
     }
 
-  if (hash::FStringListHash[frameHashKey]->count() < currentIndex+1) return;
+  if (Hash::wrapper[frameHashKey]->count() < currentIndex+1) return;
 
   widgetContainer[currentIndex]->clear();
 
   /* warning : use *[], not ->value, to modifie any list content, even subordinate */
 
-  (*hash::FStringListHash[frameHashKey])[currentIndex].clear();
+  (*Hash::wrapper[frameHashKey])[currentIndex].clear();
 
   for (int j=1; currentIndex +j < cumulativePicCount.count() ; j++)
       if  (cumulativePicCount.count() >= currentIndex+j+1)
-          cumulativePicCount[currentIndex+j] -= hash::FStringListHash[frameHashKey]->at(currentIndex).count();
+          cumulativePicCount[currentIndex+j] -= Hash::wrapper[frameHashKey]->at(currentIndex).count();
 
 }
 
@@ -175,14 +175,14 @@ void FListFrame::on_moveUpItemButton_clicked()
   fileListWidget->currentListWidget->insertItem(row, temp2);
   fileListWidget->currentListWidget ->setCurrentRow(row-1);
 
-   (*hash::FStringListHash[frameHashKey])[currentIndex].swap(row, row-1);
+   (*Hash::wrapper[frameHashKey])[currentIndex].swap(row, row-1);
 }
 
 void FListFrame::on_deleteItem_clicked()
 {
   updateIndexInfo();
 
-  if (hash::FStringListHash[frameHashKey]->at(currentIndex).isEmpty()) return;
+  if (Hash::wrapper[frameHashKey]->at(currentIndex).isEmpty()) return;
   if (row <0) return;
 
   QModelIndexList L=fileListWidget->currentListWidget->selectionModel()->selectedRows();
@@ -192,7 +192,7 @@ void FListFrame::on_deleteItem_clicked()
   {
       localrow=L[rank].row() - rank;
       fileListWidget->currentListWidget->takeItem(localrow);
-      (*hash::FStringListHash[frameHashKey])[currentIndex].removeAt(localrow);
+      (*Hash::wrapper[frameHashKey])[currentIndex].removeAt(localrow);
       rank++;
   }
 
@@ -215,7 +215,7 @@ void FListFrame::on_moveDownItemButton_clicked()
   fileListWidget->currentListWidget->insertItem(row+1, temp2);
   fileListWidget->currentListWidget->setCurrentRow(row+1);
 
-   (*hash::FStringListHash[frameHashKey])[currentIndex].swap(row, row+1);
+   (*Hash::wrapper[frameHashKey])[currentIndex].swap(row, row+1);
 }
 
 void FListFrame::on_mainTabIndex_changed(int index)
@@ -244,15 +244,15 @@ void FListFrame::addNewTab()
 
 void FListFrame::addGroup()
 {
-        int size=hash::FStringListHash[frameHashKey]->size();
+        int size=Hash::wrapper[frameHashKey]->size();
         slotListSize=(slotList)? slotList->size() : 0;
 
         // do not create an new group over an empty group (strict behaviour)
 
-       if (size < 2 ||hash::FStringListHash[frameHashKey]->at(size-2).isEmpty()) return;
+       if (size < 2 ||Hash::wrapper[frameHashKey]->at(size-2).isEmpty()) return;
       //  if ((slotListSize) && (getRank() >= slotListSize-1)) return;
 
-        if (cumulativePicCount.count() <  slotListSize+1) cumulativePicCount.append(cumulativePicCount[getRank()]+hash::FStringListHash[frameHashKey]->at(getRank()).count());
+        if (cumulativePicCount.count() <  slotListSize+1) cumulativePicCount.append(cumulativePicCount[getRank()]+Hash::wrapper[frameHashKey]->at(getRank()).count());
 
         //TODO: check this out
 
@@ -275,8 +275,8 @@ void FListFrame::addGroups(int n)
    {
      if (j) addGroup();
 
-     widgetContainer[j]->addItems((*hash::FStringListHash[frameHashKey])[j]);
-      *signalList << hash::FStringListHash.value(frameHashKey)->at(j);
+     widgetContainer[j]->addItems((*Hash::wrapper[frameHashKey])[j]);
+      *signalList << Hash::wrapper.value(frameHashKey)->at(j);
    }
 }
 
@@ -289,7 +289,7 @@ void FListFrame::deleteGroup()
 
  mainTabWidget->removeTab(currentIndex);
 
- hash::FStringListHash[frameHashKey]->removeAt(currentIndex);
+ Hash::wrapper[frameHashKey]->removeAt(currentIndex);
 
  if (currentIndex <getRank())
    {
@@ -311,7 +311,7 @@ void FListFrame::deleteGroups(QList<int> &L)
  foreach (int j,  L)
    {
      mainTabWidget->removeTab(j);
-     hash::FStringListHash[frameHashKey]->removeAt(j);
+     Hash::wrapper[frameHashKey]->removeAt(j);
      getRank()--;
    }
 
@@ -346,11 +346,11 @@ void FListFrame::addDirectoryToListWidget(const QFileInfo& info, int filerank)
 }
 
 
-bool FListFrame::addStringToListWidget(QString filepath, int index)
+bool FListFrame::addStringToListWidget(const QString& filepath, int index)
 {
   // normaly it should be useless to call updateIndexInfo() here
  updateIndexInfo();
- if ((filepath.isEmpty()) || (currentIndex >= (*hash::FStringListHash[frameHashKey]).count() ) || (signalList == NULL)) return false;
+ if ((filepath.isEmpty()) || (currentIndex >= (*Hash::wrapper[frameHashKey]).count() ) || (signalList == NULL)) return false;
 
 
  if  (!filepath.isEmpty())
@@ -360,7 +360,7 @@ bool FListFrame::addStringToListWidget(QString filepath, int index)
      fileListWidget->currentListWidget->setCurrentRow(row+1);
      fileListWidget->currentListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-     (*hash::FStringListHash[frameHashKey])[currentIndex] << filepath;
+     (*Hash::wrapper[frameHashKey])[currentIndex] << filepath;
 
      *(fileListWidget->signalList) << filepath;
      *signalList << filepath; //make a copy. Necessary to avoid losing dragged and dropped files to list widget directly.

@@ -17,23 +17,23 @@ int dvda::RefreshFlag=0;
 int flags::lplexRank=0;
 qint64   dvda::totalSize[]={0,0};
 int dvda::dialVolume=25;
-class hash;
+class Hash;
 
 
 void dvda::initialize()
 {
   adjustSize();
   extraAudioFilters=QStringList() << "*.wav" << "*.flac";
-  hash::description["titleset"]="DVD-Video titleset";
-  hash::description["group"]="DVD-Audio group";
-  hash::description["recent"]="Recent file";
+  Hash::description["titleset"]="DVD-Video titleset";
+  Hash::description["group"]="DVD-Audio group";
+  Hash::description["recent"]="Recent file";
 }
 
 
 void dvda::on_playItem_changed()
 {
   if (!myMusic ) return;
-  myMusic->setMedia(QUrl::fromLocalFile(hash::FStringListHash.value(dvda::zoneTag())->at(currentIndex).at(row)));
+  myMusic->setMedia(QUrl::fromLocalFile(Hash::wrapper.value(dvda::zoneTag())->at(currentIndex).at(row)));
   myMusic->play();
 }
 
@@ -52,7 +52,7 @@ void dvda::on_playItemButton_clicked()
   if (count == 0)
     {
       myMusic = new QMediaPlayer(this, QMediaPlayer::StreamPlayback);
-      myMusic->setMedia(QMediaContent(QUrl::fromLocalFile(hash::FStringListHash[dvda::zoneTag(isVideo)]->at(currentIndex).at(row))));
+      myMusic->setMedia(QMediaContent(QUrl::fromLocalFile(Hash::wrapper[dvda::zoneTag(isVideo)]->at(currentIndex).at(row))));
       myMusic->setVolume(dvda::dialVolume);
       myMusic->play();
     }
@@ -61,7 +61,7 @@ void dvda::on_playItemButton_clicked()
     {
       myMusic->play();
       outputTextEdit->append(tr(INFORMATION_HTML_TAG "Playing...   file %1\n   in %2 %3   row %4" )
-                                  .arg(hash::FStringListHash.value(dvda::zoneTag())->at(currentIndex).at(row),
+                                  .arg(Hash::wrapper.value(dvda::zoneTag())->at(currentIndex).at(row),
                                   zoneGroupLabel(isVideo),QString::number(currentIndex+1),QString::number(row+1)));
 
       playItemButton->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
@@ -299,10 +299,10 @@ void dvda::refreshRowPresentation(uint ZONE, uint j)
   widget->setAlternatingRowColors(true);
   widget->setFont(font);
 
-  for (int r=0; (r < widget->count()) && (r < hash::FStringListHash[zoneTag(ZONE)]->at(j).size()); r++ )
+  for (int r=0; (r < widget->count()) && (r < Hash::wrapper[zoneTag(ZONE)]->at(j).size()); r++ )
     {
 
-      widget->item(r)->setText(hash::FStringListHash.value(zoneTag(ZONE))->at(j).at(r).section('/',-1));
+      widget->item(r)->setText(Hash::wrapper.value(zoneTag(ZONE))->at(j).at(r).section('/',-1));
       widget->item(r)->setTextColor(QColor("navy"));
       //widget->item(r)->setToolTip(fileSizeDataBase[ZONE].at(j).at(r)+" B");
     }
@@ -417,7 +417,7 @@ void dvda::clearProjectData()
       project[ZONE]->initializeWidgetContainer();
   }
 
-    /* cleanly wipe out main hash */
+    /* cleanly wipe out main Hash */
         Abstract::initializeFStringListHashes();
 }
 
@@ -673,7 +673,7 @@ void dvda::assignVariables()
       FAbstractWidget* widget=w.next();
       if (dvda::RefreshFlag&UpdateMainTabs)
       {
-             widget->setWidgetFromXml(*hash::FStringListHash[widget->getHashKey()]);
+             widget->setWidgetFromXml(*Hash::wrapper[widget->getHashKey()]);
       }
   }
 
@@ -681,19 +681,19 @@ void dvda::assignVariables()
   {
      FAbstractWidget* widget=w.next();
       if (dvda::RefreshFlag&UpdateMainTabs)
-              widget->setWidgetFromXml(*hash::FStringListHash[widget->getHashKey()]);
+              widget->setWidgetFromXml(*Hash::wrapper[widget->getHashKey()]);
   }
 
   if (options::RefreshFlag&UpdateOptionTabs)
       while (w.hasNext())
       {
           FAbstractWidget* widget=w.next();
-          widget->setWidgetFromXml(*hash::FStringListHash[widget->getHashKey()]);
+          widget->setWidgetFromXml(*Hash::wrapper[widget->getHashKey()]);
       }
 
 }
 
-void dvda::assignGroupFiles(const int ZONE, const int group_index,  QString file)
+void dvda::assignGroupFiles(const int ZONE, const int group_index,  const QString& file)
 {
   static int last_group;
   if (group_index-last_group) outputTextEdit->append(MSG_HTML_TAG "Adding group " + QString::number(group_index+1));
@@ -804,7 +804,7 @@ void dvda::dropEvent(QDropEvent *event)
 }
 
 
-void dvda::addDraggedFiles(QList<QUrl> urls)
+void dvda::addDraggedFiles(const QList<QUrl>& urls)
 {
   updateIndexInfo();
 
