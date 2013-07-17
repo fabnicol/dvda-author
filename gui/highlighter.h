@@ -68,7 +68,7 @@ private:
 
     QTextCharFormat keywordFormat;
 
-    void createRulePattern(QColor color,  QFont::Weight weight,  QStringList list);
+    void createRulePattern(const QColor& color,  QFont::Weight weight,  const QStringList& list);
 };
 
 #endif // HIGHLIGHTER_H

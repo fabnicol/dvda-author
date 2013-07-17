@@ -41,7 +41,7 @@
 #include "highlighter.h"
 #include "fwidgets.h"
 
-inline void Highlighter::createRulePattern(QColor color,  QFont::Weight weight,  QStringList list)
+inline void Highlighter::createRulePattern(const QColor& color,  QFont::Weight weight,  const QStringList& list)
 {
     HighlightingRule rule;
     QTextCharFormat classFormat;

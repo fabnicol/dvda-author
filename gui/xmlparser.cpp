@@ -376,7 +376,6 @@ FStringList dvda::parseEntry(const QDomNode &node, QTreeWidgetItem *itemParent)
    }
 
 return FStringList();
-
 }
 
 

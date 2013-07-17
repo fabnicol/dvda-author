@@ -49,7 +49,7 @@ public:
 
  /* accessors */
  int getRank() {return widgetContainer.count()-1;}
- QString &getHashKey() {return frameHashKey;}
+ const QString &getHashKey() const {return frameHashKey;}
  void initializeWidgetContainer()
  {
     widgetContainer = QList<QListWidget*>() << fileListWidget->currentListWidget;

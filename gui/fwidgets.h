@@ -71,7 +71,7 @@ struct Abstract
 
     static void initializeFStringListHashes()
     {
-        for (QString hashKey: hash::FStringListHash.keys()) initializeFStringListHash(hashKey);
+        for (const QString& hashKey: hash::FStringListHash.keys()) initializeFStringListHash(hashKey);
     }
 
 };
@@ -85,7 +85,7 @@ public:
 
 
   /* is used for .dvp Xml project writing: refresh Widget information and injects current Widget state into hash::qstring as left-valued of <...hashKey=...> */
- virtual FString setXmlFromWidget()=0 ;
+ virtual const FString setXmlFromWidget()=0 ;
 
   /* does the reverse of setXmlFromWidget : reads left value of <...hashKey=...> and injects it into commandLineList. Refreshes Widget state accordingly */
   virtual void setWidgetFromXml(const FStringList& )=0;
@@ -94,13 +94,13 @@ public:
  virtual void refreshWidgetDisplay()=0 ;
 
   /* accessor to privale hashKey value */
- virtual QString getHashKey()=0;
- virtual QList<QWidget*> getComponentList()=0;
- virtual QString getDepth()=0;
- virtual QString getDescription()=0;
+ virtual const QString& getHashKey() const=0;
+ virtual const QList<QWidget*> & getComponentList() const=0;
+ virtual const QString& getDepth() const=0;
+ virtual const QString& getDescription() const=0;
 
   /* command-line interface maker */
-  virtual QStringList commandLineStringList();
+  virtual const QStringList& commandLineStringList();
 
   /* command-line interface type */
   int commandLineType;
@@ -137,17 +137,17 @@ public:
               const QStringList &taglist, const QList<QWidget*> &enabledObjects, const QList<QString> *terms=NULL, const QList<QString> *translation=NULL, QWidget* controlledWidget=NULL);
 
   void setWidgetFromXml(const FStringList & );
-  FString setXmlFromWidget();
+  const FString setXmlFromWidget();
 
   void refreshWidgetDisplay();
   bool isAbstractEnabled() {return this->isEnabled();}
 
   QStringList *signalList;
   QListWidget* currentListWidget;
-  QString getHashKey() {return hashKey; }
-  QList<QWidget*> getComponentList() { return componentList;}
-  QString getDepth()  {return widgetDepth; }
-  QString getDescription() { return description; }
+  const QString& getHashKey() const {return hashKey; }
+  const QList<QWidget*>& getComponentList() const { return componentList;}
+  const QString& getDepth() const {return widgetDepth; }
+  const QString& getDescription() const { return description; }
 
 private:
   QStringList separator;
@@ -157,7 +157,7 @@ private:
   friend  void applyHashToStringList(QStringList *L, QHash<QString, QString> *H,  const QStringList *M);
 
   QHash<QString, QString> *listWidgetTranslationHash;
-  FString translate(const FStringList &s);
+  const FString& translate(const FStringList &s);
   QString hashKey;
   QString widgetDepth;
   QString description;
@@ -205,13 +205,13 @@ public:
 
 
   void setWidgetFromXml(const FStringList& );
-  FString setXmlFromWidget();
+  const FString setXmlFromWidget();
   void refreshWidgetDisplay();
   bool isAbstractEnabled() {return this->isEnabled();}
-  QString getHashKey() {return hashKey; }
-  QString getDescription() { return description; }
-  QList<QWidget*> getComponentList() { return componentList;}
-  QString getDepth()  {return widgetDepth; }
+  const QString& getHashKey() const {return hashKey; }
+  const QList<QWidget*>& getComponentList() const { return componentList;}
+  const QString& getDepth()  const {return widgetDepth; }
+  const QString& getDescription() const { return description; }
 
 private slots:
   void uncheckDisabledBox();
@@ -243,15 +243,15 @@ public:
 
 
   void setWidgetFromXml(const FStringList& );
-  FString setXmlFromWidget();
+  const FString setXmlFromWidget();
   void refreshWidgetDisplay();
   bool isAbstractEnabled() { return this->radioGroupBox->isEnabled();}
   void setToolTip(const QString & description) {this->radioGroupBox->setToolTip(description);}
   void setEnabled(bool enabled) {this->radioGroupBox->setEnabled(enabled);}
-  QString getHashKey() {return hashKey; }
-  QList<QWidget*> getComponentList() { return componentList;}
-  QString getDepth()  {return widgetDepth; }
-  QString getDescription() { return description; }
+  const QString& getHashKey() const {return hashKey; }
+  const QList<QWidget*>& getComponentList() const { return componentList;}
+  const QString& getDepth() const {return widgetDepth; }
+  const QString& getDescription() const { return description; }
 
 
 private:
@@ -297,13 +297,13 @@ public:
     FComboBox(QStringList(str),  status, hashKey, description, commandLine,  iconList){}
 
   void setWidgetFromXml(const FStringList&);
-  FString setXmlFromWidget();
+  const FString setXmlFromWidget();
   void refreshWidgetDisplay();
   bool isAbstractEnabled() {return this->isEnabled();}
-  QString getHashKey() {return hashKey; }
-  QString getDepth()  {return widgetDepth; }
-  QString getDescription() { return description; }
-  QList<QWidget*> getComponentList() { return componentList;}
+  const QString& getHashKey() const {return hashKey; }
+  const QString& getDepth() const {return widgetDepth; }
+  const QString& getDescription() const { return description; }
+  const QList<QWidget*>& getComponentList() const { return componentList;}
   QStringList *signalList;
 
 private slots:
@@ -334,11 +334,11 @@ public:
   FLineEdit(const QString &defaultstring, const QString &hashKey, const QString &description, const QString &commandLine):
   FLineEdit(defaultstring, flags::defaultStatus|flags::defaultCommandLine, hashKey, description, commandLine){}
   void setWidgetFromXml(const FStringList&);
-  FString setXmlFromWidget();
+  const FString setXmlFromWidget();
   void refreshWidgetDisplay();
   bool isAbstractEnabled() {return this->isEnabled();}
-  QString getDescription() { return description; }
-  QString getHashKey() {return hashKey; }
+  const QString& getDescription() const { return description; }
+  const QString& getHashKey() const {return hashKey; }
 
 private:
   QString hashKey;
@@ -348,8 +348,8 @@ private:
   QList<FString> commandLineList;
   QList<QWidget*> componentList;
 
-  QList<QWidget*> getComponentList() { return componentList;}
-  QString getDepth()  {return widgetDepth; }
+  const QList<QWidget*>& getComponentList() const { return componentList;}
+  const QString& getDepth() const {return widgetDepth; }
 
 };
 
@@ -377,12 +377,12 @@ public:
   void setMinimumButtonWidth(const int w);
   void setWidgetFromXml(const FStringList&);
   void refreshWidgetDisplay();
-  FString setXmlFromWidget();
+  const FString setXmlFromWidget();
   bool isAbstractEnabled() {return this->isEnabled();}
-  QString getHashKey() {return hashKey; }
-  QList<QWidget*> getComponentList() { return componentList;}
-  QString getDepth()  {return widgetDepth; }
-  QString getDescription() { return description; }
+  const QString& getHashKey() const {return hashKey; }
+  const QList<QWidget*>& getComponentList() const { return componentList;}
+  const QString& getDepth() const {return widgetDepth; }
+  const QString& getDescription() const { return description; }
 
 public slots:
   void changeColors();
@@ -403,13 +403,13 @@ class FPalette :  public QWidget, virtual public FAbstractWidget
     void refreshComponent(short i);
     void setToolTip(const QString &);
 
-    FString setXmlFromWidget();
+    const FString setXmlFromWidget();
     void setMinimumButtonWidth(const int w);
     bool isAbstractEnabled() {return (this->isEnabled());}
-    QString getHashKey() {return hashKey; }
-    QList<QWidget*> getComponentList() { return componentList;}
-    QString getDepth()  {return widgetDepth; }
-    QString getDescription() { return description; }
+    const QString& getHashKey() const {return hashKey; }
+    const QList<QWidget*>& getComponentList() const { return componentList;}
+    const QString& getDepth() const {return widgetDepth; }
+    const QString& getDescription() const { return description; }
 
     FColorButton *button[3];
 
@@ -421,8 +421,6 @@ class FPalette :  public QWidget, virtual public FAbstractWidget
    QList<FString> commandLineList;
    QList<QWidget*> componentList;
    void refreshPaletteHash();
-
-
 };
 
 

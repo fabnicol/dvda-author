@@ -41,7 +41,7 @@ private:
      else
        // Preserving flagged status
          x= (flag != flags::defaultStatus)? flag : 2;
-   }
+    }
  }
 
 public:
@@ -83,8 +83,8 @@ public:
   }
 
 
-  FStringList split(const QString &) const;
-  FStringList split(const QStringList &separator) const;
+  const FStringList& split(const QString &) const;
+  const FStringList& split(const QStringList &separator) const;
 
   short toBool();
   bool isBoolean();
