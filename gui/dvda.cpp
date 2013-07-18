@@ -24,9 +24,9 @@ void dvda::initialize()
 {
   adjustSize();
   extraAudioFilters=QStringList() << "*.wav" << "*.flac";
-  Hash::description["titleset"]="DVD-Video titleset";
-  Hash::description["group"]="DVD-Audio group";
-  Hash::description["recent"]="Recent file";
+  Hash::description["titleset"]={"DVD-Video titleset"};
+  Hash::description["group"]={"DVD-Audio group"};
+  Hash::description["recent"]={"Recent file"};
 }
 
 
@@ -117,7 +117,7 @@ dvda::dvda()
                                 fileTreeView,                   // files may be imported from this tree view
                                 importFiles,                     // FListFrame type
                                 "DVD-A",                          // superordinate xml tag
-                                "DVD-Audio",                   // project manager widget on-screen tag
+  {"DVD-Audio"},                   // project manager widget on-screen tag
                                 "g",                                  // command line label
                                 dvdaCommandLine|hasListCommandLine|flags::enabled,  // command line characteristic features
                                {" ", " -g "},                       // command line separators
@@ -136,7 +136,7 @@ dvda::dvda()
                                 fileTreeView,                   // files may be imported from this tree view
                                 importFiles,                     // FListFrame type
                                 "DVD-V",                          // superordinate xml tag
-                                "DVD-Video",                   // project manager widget on-screen tag
+  {"DVD-Video"},                   // project manager widget on-screen tag
                                 "",                                   // command line label
                                 lplexFiles | hasListCommandLine|flags::enabled,  // command line characteristic features
                                {" ", " -ts "},                     // command line separators

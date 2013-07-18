@@ -4,7 +4,7 @@
 #include <QMessageBox>
 
 FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_type, const QString &hashKey,
-                         const QString &description, const QString &command_line, int cli_type, const QStringList &separator, const QStringList &xml_tags,
+                         const QStringList &description, const QString &command_line, int cli_type, const QStringList &separator, const QStringList &xml_tags,
                          int mainTabWidgetRank, QIcon *icon, QTabWidget *parentTabWidget,
                          QStringList* terms, QStringList* translation, QStringList* slotL)
 
@@ -48,7 +48,7 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
            embeddingTabWidget->insertTab(mainTabWidgetRank, mainTabWidget, *icon, "");
            embeddingTabWidget->setIconSize(QSize(48,48));
            embeddingTabWidget->setMovable(true);
-           embeddingTabWidget->setTabToolTip(mainTabWidgetRank, description);
+           embeddingTabWidget->setTabToolTip(mainTabWidgetRank, description.at(0));
        }
      else
        embeddingTabWidget->insertTab(mainTabWidgetRank, mainTabWidget, xml_tags[1]);

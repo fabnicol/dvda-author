@@ -13,7 +13,7 @@ class Hash : public QHash<QString, QString>
 public:
 
   /* Hash::description converts a string like "targetDir" into its (sentence-like) description for display in project manager (first column)*/
-  static QHash<QString,QString> description;
+  static QHash<QString,QStringList> description;
 
   /* Hash::wrapper  is used for storing information for xml project parsing/writing.
    *It converts a string label like "audioMenu" into a pointer to an FStringList object that contains a set of file paths

@@ -40,7 +40,7 @@
 this->commandLineList= QList<FString>() << defaultStatus;\
 if (((stat) & flags::widgetMask) == flags::multimodal) { this->commandLineList[0].setMultimodal(); }\
 this->hashKey=hK;\
-this->setToolTip(desc);\
+    this->setToolTip(desc.at(0));\
 this->commandLineType=stat | flags::multimodal;\
 if (!hK.isEmpty())\
 {\
@@ -211,7 +211,7 @@ void Abstract::refreshOptionFields()
 
 FListWidget::FListWidget(const QString& hashKey,
                          int status,
-                         const QString& description,
+                         const QStringList& description,
                          const QString& commandLine,
                          const QStringList& sep,
                          const QStringList &taglist,
@@ -226,7 +226,7 @@ FListWidget::FListWidget(const QString& hashKey,
 
     Abstract::initializeFStringListHash(hashKey);
 
-    setObjectName(hashKey+" "+description);
+    setObjectName(hashKey+" "+description.join(" "));
     currentListWidget=new QListWidget;
     currentListWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
     currentListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -359,7 +359,7 @@ void FListWidget::refreshWidgetDisplay()
 }
 
 
-FCheckBox::FCheckBox(const QString &boxLabel, int status,const QString &hashKey, const QString &description,
+FCheckBox::FCheckBox(const QString &boxLabel, int status,const QString &hashKey, const QStringList &description,
                      const QString &commandLineString, const Q2ListWidget* controlledObjects) : QCheckBox(boxLabel)
 {
     componentList={this};
@@ -369,7 +369,7 @@ FCheckBox::FCheckBox(const QString &boxLabel, int status,const QString &hashKey,
 }
 
 
-FCheckBox::FCheckBox(const QString &boxLabel, int status, const QString &hashKey, const QString &description,
+FCheckBox::FCheckBox(const QString &boxLabel, int status, const QString &hashKey, const QStringList &description,
                      const QList<QWidget*> &enabledObjects, const QList<QWidget*> &disabledObjects) : QCheckBox(boxLabel)
 {
     componentList={this};
@@ -437,7 +437,7 @@ void FCheckBox::setWidgetFromXml(const FStringList &s)
 
 
 
-FRadioBox::FRadioBox(const QStringList &boxLabelList, int status,const QString &hashKey, const QString &description,
+FRadioBox::FRadioBox(const QStringList &boxLabelList, int status,const QString &hashKey, const QStringList &description,
                      const QStringList &stringList, const Q2ListWidget *enabledObjects,  const Q2ListWidget *disabledObjects)
 {
     /* button 0 should have special controlling properties (either enabling or disabling) over subordinate widgets */
@@ -553,7 +553,7 @@ FComboBox::FComboBox(const QStringList &labelList,
                      const QStringList &translation,
                      int status,
                      const QString &hashKey,
-                     const QString &description,
+                     const QStringList &description,
                      const QString &commandLine,
                      QList<QIcon> *iconList) : QComboBox()
 {
@@ -633,7 +633,7 @@ void FComboBox::setWidgetFromXml(const FStringList &s)
 }
 
 
-FLineEdit::FLineEdit(const QString &defaultString, int status, const QString &hashKey, const QString &description, const QString &commandLine):QLineEdit()
+FLineEdit::FLineEdit(const QString &defaultString, int status, const QString &hashKey, const QStringList &description, const QString &commandLine):QLineEdit()
 {
     widgetDepth="0";
     FCore(defaultString, hashKey, description, commandLine, status, NULL, NULL);
@@ -730,7 +730,7 @@ FPalette::FPalette(const char* textR,
                    const char* textB,
                    int status,
                    const QString &hashKey,
-                   const QString &description,
+                   const QStringList &description,
                    const QString &commandLine,
                    int buttonWidth)
 {

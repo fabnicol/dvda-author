@@ -143,7 +143,7 @@ private:
     const QString  makeParserString(int start, int end=Abstract::abstractWidgetList.size()-1);
     const QString  makeDataString( );
     const QString  makeSystemString( );
-    const QList<QStringList> processSecondLevelData(QList<QStringList> &L, bool isFile=true);
+    QList<QStringList> processSecondLevelData(QList<QStringList> &L, bool isFile=true);
     FStringList parseEntry(const QDomNode &, QTreeWidgetItem *parent=0);
 
     void refreshRowPresentation();

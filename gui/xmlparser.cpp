@@ -180,21 +180,41 @@ namespace XmlMethod
 
 /* displays on manager tree window */
 
-void displayTextData(const QString &firstColumn,
+void displayTextData(const QStringList &firstColumn,
                                  const QString &secondColumn,
                                  const QString &thirdColumn,
                      const QColor &color=QColor("blue"));
 
-void displayTextData(const QString &firstColumn,
+void displayTextData(const QStringList &firstColumn,
                                  const QString &secondColumn,
                                  const QString &thirdColumn,
                                  const QColor &color)
 {
-          QTreeWidgetItem* item = new QTreeWidgetItem(XmlMethod::itemParent);
-           item->setText(0, firstColumn);
-           item->setText(1, secondColumn);
-           if (!thirdColumn.isEmpty()) item->setText(2, thirdColumn);
-           if (color.isValid()) item->setTextColor(2, color);
+          static QString last;
+          static QTreeWidgetItem* item;
+          int shift=0;
+          if (firstColumn.at(0) != last)
+          {
+            item = new QTreeWidgetItem(XmlMethod::itemParent);
+             item->setText(0, firstColumn.at(0));
+             shift=1;
+          }
+
+           item->setExpanded(true);
+           if (firstColumn.count() > 1)
+           {
+               QTreeWidgetItem* item2 = new QTreeWidgetItem(item);
+               item2->setText(0, firstColumn.at(1));
+               item2->setText(1, secondColumn);
+               item2->setExpanded(true);
+           }
+           else
+           {
+              item->setText(1, secondColumn);
+              if (!thirdColumn.isEmpty()) item->setText(2, thirdColumn);
+              if (color.isValid()) item->setTextColor(2, color);
+           }
+           last= firstColumn.at(0);
 }
 
 
@@ -220,7 +240,7 @@ inline qint64 displaySecondLevelData(    const QStringList &tags,
                firstColumn = root + " "+QString::number(++k);
            }
 
-          displayTextData(firstColumn, "", "");
+          displayTextData({firstColumn}, "", "");
 
            QStringListIterator w(i.next()), z(j.next());
            l=0;
@@ -239,7 +259,7 @@ inline qint64 displaySecondLevelData(    const QStringList &tags,
                    thirdColumn    = QString::number(msize/1048576.0, 'f', 1) + "/"+  QString::number(filesizecount/1048576.0, 'f', 1)+ " MB" ;
                }
 
-               displayTextData("", secondColumn, thirdColumn, (z.hasNext())? QColor("navy"): ((j.hasNext())? QColor("orange") :QColor("red")));
+               displayTextData({""}, secondColumn, thirdColumn, (z.hasNext())? QColor("navy"): ((j.hasNext())? QColor("orange") :QColor("red")));
 
            }
        }
@@ -258,7 +278,7 @@ inline void displayFirstLevelData( const QString &tag,  const QString &style, co
        while (i.hasNext())
           {
              ++count;
-             displayTextData((count>1)?"":tag, style+" "+QString::number(count)+": "+i.next(), "");
+             displayTextData((count>1)?QStringList(""):QStringList(tag), style+" "+QString::number(count)+": "+i.next(), "");
            }
      }
 
@@ -379,7 +399,7 @@ return FStringList();
 }
 
 
-inline const QList<QStringList> dvda::processSecondLevelData(QList<QStringList> &L, bool isFile)
+inline QList<QStringList> dvda::processSecondLevelData(QList<QStringList> &L, bool isFile)
   {
         QListIterator<QStringList> i(L);
         int group_index=0;
@@ -410,14 +430,11 @@ inline const QList<QStringList> dvda::processSecondLevelData(QList<QStringList> 
 
 void dvda::refreshProjectManagerValues(int refreshProjectManagerFlag)
 {
-
      if ((refreshProjectManagerFlag & refreshProjectInteractiveMask) == refreshProjectInteractiveMode)
     {
          updateIndexInfo();
-
-          fileSizeDataBase[isVideo] = processSecondLevelData(*Hash::wrapper[dvda::zoneTag(isVideo)]);
+         fileSizeDataBase[isVideo] = processSecondLevelData(*Hash::wrapper[dvda::zoneTag(isVideo)]);
     }
-
 
     QTreeWidgetItem *item=new QTreeWidgetItem(managerWidget);
     item->setText(0, "data");
@@ -432,8 +449,7 @@ void dvda::refreshProjectManagerValues(int refreshProjectManagerFlag)
                       dvda::totalSize[ZONE]=XmlMethod::displaySecondLevelData(
                                                                 {dvda::zoneGroupLabel(ZONE), "file"},
                                                                    *Hash::wrapper[dvda::zoneTag(ZONE)],
-                                                                   fileSizeDataBase[ZONE]=processSecondLevelData(*Hash::wrapper[dvda::zoneTag(ZONE)]));
-
+                              fileSizeDataBase[ZONE]=processSecondLevelData(*Hash::wrapper[dvda::zoneTag(ZONE)]));
 
        item=new QTreeWidgetItem(managerWidget);
        item->setText(0, "system");
@@ -453,7 +469,7 @@ void dvda::refreshProjectManagerValues(int refreshProjectManagerFlag)
                    XmlMethod::displayTextData(Hash::description[key], Hash::wrapper[key]->toQString(), "");
                }
                else if (Abstract::abstractWidgetList[k]->getDepth() == "1")
-                   XmlMethod::displayFirstLevelData(Hash::description[key],   "button", Hash::wrapper[key]->at(0));
+                   XmlMethod::displayFirstLevelData(Hash::description[key].at(0),   "button", Hash::wrapper[key]->at(0));
            }
        }
 

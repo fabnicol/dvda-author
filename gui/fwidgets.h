@@ -97,7 +97,7 @@ public:
  virtual const QString& getHashKey() const=0;
  virtual const QList<QWidget*> & getComponentList() const=0;
  virtual const QString& getDepth() const=0;
- virtual const QString& getDescription() const=0;
+ virtual const QStringList& getDescription() const=0;
 
   /* command-line interface maker */
   virtual const QStringList& commandLineStringList();
@@ -130,10 +130,10 @@ class FListWidget : public QWidget, virtual public FAbstractWidget
 public:
   FListWidget()  {}
 
-  FListWidget(const QString& hashKey,int status,const QString& description,const QString& commandLine,const QStringList& sep,
+  FListWidget(const QString& hashKey,int status,const QStringList& description,const QString& commandLine,const QStringList& sep,
               const QStringList &taglist,  const QList<QString> *terms=NULL, const QList<QString> *translation=NULL, QWidget* controlledWidget=NULL);
 
-  FListWidget(const QString& hashKey,int status,const QString& description,const QString& commandLine,const QStringList& sep,
+  FListWidget(const QString& hashKey,int status,const QStringList& description,const QString& commandLine,const QStringList& sep,
               const QStringList &taglist, const QList<QWidget*> &enabledObjects, const QList<QString> *terms=NULL, const QList<QString> *translation=NULL, QWidget* controlledWidget=NULL);
 
   void setWidgetFromXml(const FStringList & );
@@ -147,7 +147,7 @@ public:
   const QString& getHashKey() const {return hashKey; }
   const QList<QWidget*>& getComponentList() const { return componentList;}
   const QString& getDepth() const {return widgetDepth; }
-  const QString& getDescription() const { return description; }
+  const QStringList& getDescription() const { return description; }
 
 private:
   QStringList separator;
@@ -160,7 +160,7 @@ private:
   const FString& translate(const FStringList &s);
   QString hashKey;
   QString widgetDepth;
-  QString description;
+  QStringList description;
   QString optionLabel;
   QList<FString> commandLineList;
   QList<QWidget*> componentList;
@@ -180,26 +180,34 @@ class FCheckBox : public QCheckBox, virtual public FAbstractWidget
 
 public:
 
-  FCheckBox(const QString &boxLabel, int status, const QString &hashKey, const QString &description,
+  FCheckBox(const QString &boxLabel, int status, const QString &hashKey, const QStringList &description,
                        const QList<QWidget*> &enabledObjects, const QList<QWidget*> &disabledObjects=QList<QWidget*>());
 
-  FCheckBox(const QString &boxLabel, const QString &hashKey, QString description,
+  FCheckBox(const QString &boxLabel, const QString &hashKey, const QStringList& description,
             const QList<QWidget*> &enabledObjects, const QList<QWidget*> &disabledObjects=QList<QWidget*>()):
     FCheckBox(boxLabel, flags::defaultStatus|flags::unchecked|flags::defaultCommandLine, hashKey, description,
                          enabledObjects, disabledObjects){}
 
-  FCheckBox(const QString &boxLabel, int status, const QString &hashKey, const QString &description,
+  FCheckBox(const QString &boxLabel, int status, const QString &hashKey, const QStringList &description,
             const QString &commandLineString,  const Q2ListWidget* controlledObjects =NULL) ;
 
   FCheckBox(const QString &boxLabel, int status, const QString &hashKey, const QString &description,
+            const QString &commandLineString,  const Q2ListWidget* controlledObjects =NULL) :
+       FCheckBox(boxLabel,  status, hashKey, QStringList(description), commandLineString,  controlledObjects ) {}
+
+  FCheckBox(const QString &boxLabel, int status, const QString &hashKey, const QStringList &description,
             const Q2ListWidget* controlledObjects=NULL):
     FCheckBox(boxLabel,  status | flags::noCommandLine, hashKey, description, "",  controlledObjects){}
 
-   FCheckBox(const QString &boxLabel, const QString &hashKey, const QString &description,
+  FCheckBox(const QString &boxLabel, int status, const QString &hashKey, const QString &description,
+            const Q2ListWidget* controlledObjects=NULL):
+    FCheckBox(boxLabel,  status | flags::noCommandLine, hashKey, QStringList(description), "",  controlledObjects){}
+
+   FCheckBox(const QString &boxLabel, const QString &hashKey, const QStringList &description,
              const Q2ListWidget* controlledObjects =NULL):
     FCheckBox(boxLabel,  flags::defaultStatus | flags::noCommandLine|flags::unchecked, hashKey, description, "",  controlledObjects){}
 
-    FCheckBox(const QString &boxLabel, const QString &hashKey, const QString &description,
+    FCheckBox(const QString &boxLabel, const QString &hashKey, const QStringList &description,
             const QString &commandLineString,  const Q2ListWidget* controlledObjects =NULL):
                 FCheckBox(boxLabel, flags::defaultStatus| flags::unchecked|flags::defaultCommandLine, hashKey, description,  commandLineString, controlledObjects){}
 
@@ -211,7 +219,7 @@ public:
   const QString& getHashKey() const {return hashKey; }
   const QList<QWidget*>& getComponentList() const { return componentList;}
   const QString& getDepth()  const {return widgetDepth; }
-  const QString& getDescription() const { return description; }
+  const QStringList& getDescription() const { return description; }
 
 private slots:
   void uncheckDisabledBox();
@@ -219,7 +227,7 @@ private slots:
 private:
   QString hashKey;
   QString widgetDepth;
-  QString description;
+  QStringList description;
   QString optionLabel;
   QList<FString> commandLineList;
   QList<QWidget*> componentList;
@@ -234,10 +242,10 @@ class FRadioBox : public QWidget, virtual public FAbstractWidget
   friend class FAbstractWidget;
 
 public:
-   FRadioBox(const QStringList &boxLabelList, int status, const QString &hashKey, const QString &description,
+   FRadioBox(const QStringList &boxLabelList, int status, const QString &hashKey, const QStringList &description,
                      const QStringList &optionLabelStringList, const Q2ListWidget* enabledObjects=NULL,  const Q2ListWidget* disabledObjects=NULL) ;
 
-   FRadioBox(const QStringList &boxLabelList, const QString &hashKey, const QString &description,
+   FRadioBox(const QStringList &boxLabelList, const QString &hashKey, const QStringList &description,
                      const QStringList &optionLabelStringList, const Q2ListWidget* enabledObjects=NULL,  const Q2ListWidget* disabledObjects=NULL) :
      FRadioBox(boxLabelList, flags::defaultStatus,hashKey, description,  optionLabelStringList, enabledObjects,  disabledObjects) {}
 
@@ -251,7 +259,7 @@ public:
   const QString& getHashKey() const {return hashKey; }
   const QList<QWidget*>& getComponentList() const { return componentList;}
   const QString& getDepth() const {return widgetDepth; }
-  const QString& getDescription() const { return description; }
+  const QStringList& getDescription() const { return description; }
 
 
 private:
@@ -262,7 +270,7 @@ private:
   int rank;
   QString hashKey;
   QString widgetDepth;
-  QString description;
+  QStringList description;
   QString optionLabel;
   QList<FString> commandLineList;
   QList<QWidget*> componentList;
@@ -286,14 +294,14 @@ class FComboBox : public QComboBox, virtual public FAbstractWidget
 
 public:
 
-  FComboBox(const QStringList &labelList, const QStringList &translation, int status, const QString &hashKey, const QString &description, const QString &commandLine, QList<QIcon> *iconList);
-  FComboBox(const QStringList &labelList, int status, const QString &hashKey, const QString &description, const QString &commandLine,  QList<QIcon> *iconList=NULL):
+  FComboBox(const QStringList &labelList, const QStringList &translation, int status, const QString &hashKey, const QStringList &description, const QString &commandLine, QList<QIcon> *iconList);
+  FComboBox(const QStringList &labelList, int status, const QString &hashKey, const QStringList &description, const QString &commandLine,  QList<QIcon> *iconList=NULL):
     FComboBox(labelList, QStringList(), status, hashKey, description, commandLine, iconList){}
-  FComboBox(const QStringList &labelList, const QString &hashKey, const QString &description, const QString &commandLine,  QList<QIcon> *iconList=NULL):
+  FComboBox(const QStringList &labelList, const QString &hashKey, const QStringList &description, const QString &commandLine,  QList<QIcon> *iconList=NULL):
       FComboBox(labelList, flags::defaultStatus|flags::defaultCommandLine, hashKey, description, commandLine,  iconList){}
 
 
-  FComboBox(const char* str, int status, const QString &hashKey, const QString &description, const QString &commandLine,  QList<QIcon> *iconList=NULL):
+  FComboBox(const char* str, int status, const QString &hashKey, const QStringList &description, const QString &commandLine,  QList<QIcon> *iconList=NULL):
     FComboBox(QStringList(str),  status, hashKey, description, commandLine,  iconList){}
 
   void setWidgetFromXml(const FStringList&);
@@ -302,7 +310,7 @@ public:
   bool isAbstractEnabled() {return this->isEnabled();}
   const QString& getHashKey() const {return hashKey; }
   const QString& getDepth() const {return widgetDepth; }
-  const QString& getDescription() const { return description; }
+  const QStringList& getDescription() const { return description; }
   const QList<QWidget*>& getComponentList() const { return componentList;}
   QStringList *signalList;
 
@@ -313,7 +321,7 @@ private:
   QHash<QString, QString> *comboBoxTranslationHash;
   QString hashKey;
   QString widgetDepth;
-  QString description;
+  QStringList description;
   QString optionLabel;
   QList<FString> commandLineList;
   QList<QWidget*> componentList;
@@ -330,20 +338,21 @@ class FLineEdit : public QLineEdit, virtual public FAbstractWidget
   friend class FAbstractWidget;
 
 public:
-  FLineEdit(const QString &defaultstring, int status, const QString &hashKey, const QString &description, const QString &commandLine);
-  FLineEdit(const QString &defaultstring, const QString &hashKey, const QString &description, const QString &commandLine):
+  FLineEdit(const QString &defaultstring, int status, const QString &hashKey, const QStringList &description, const QString &commandLine);
+  FLineEdit(const QString &defaultstring, const QString &hashKey, const QStringList &description, const QString &commandLine):
   FLineEdit(defaultstring, flags::defaultStatus|flags::defaultCommandLine, hashKey, description, commandLine){}
+
   void setWidgetFromXml(const FStringList&);
   const FString setXmlFromWidget();
   void refreshWidgetDisplay();
   bool isAbstractEnabled() {return this->isEnabled();}
-  const QString& getDescription() const { return description; }
+  const QStringList& getDescription() const { return description; }
   const QString& getHashKey() const {return hashKey; }
 
 private:
   QString hashKey;
   QString widgetDepth;
-  QString description;
+  QStringList description;
   QString optionLabel;
   QList<FString> commandLineList;
   QList<QWidget*> componentList;
@@ -364,7 +373,7 @@ private:
   QPushButton *button;
   QString hashKey;
   QString widgetDepth;
-  QString description;
+  QStringList description;
   QString optionLabel;
   QList<FString> commandLineList;
   QList<QWidget*> componentList;
@@ -382,7 +391,7 @@ public:
   const QString& getHashKey() const {return hashKey; }
   const QList<QWidget*>& getComponentList() const { return componentList;}
   const QString& getDepth() const {return widgetDepth; }
-  const QString& getDescription() const { return description; }
+  const QStringList& getDescription() const { return description; }
 
 public slots:
   void changeColors();
@@ -395,8 +404,8 @@ class FPalette :  public QWidget, virtual public FAbstractWidget
   friend class FAbstractWidget;
 
   public:
-    FPalette(const char* textR, const char* textG, const char* textB, int status , const QString &hashKey,const QString &description, const QString &commandLine, int buttonWidth=150);
-    FPalette(const char* textR, const char* textG, const char* textB,  const QString &hashKey,const QString &description, const QString &commandLine):
+    FPalette(const char* textR, const char* textG, const char* textB, int status , const QString &hashKey,const QStringList &description, const QString &commandLine, int buttonWidth=150);
+    FPalette(const char* textR, const char* textG, const char* textB,  const QString &hashKey,const QStringList &description, const QString &commandLine):
       FPalette(textR, textG, textB, flags::defaultStatus|flags::defaultCommandLine,hashKey,description,commandLine) {}
     void setWidgetFromXml(const FStringList&);
     void refreshWidgetDisplay();
@@ -409,14 +418,14 @@ class FPalette :  public QWidget, virtual public FAbstractWidget
     const QString& getHashKey() const {return hashKey; }
     const QList<QWidget*>& getComponentList() const { return componentList;}
     const QString& getDepth() const {return widgetDepth; }
-    const QString& getDescription() const { return description; }
+    const QStringList& getDescription() const { return description; }
 
     FColorButton *button[3];
 
   private:
    QString hashKey;
    QString widgetDepth;
-   QString description;
+   QStringList description;
    QString optionLabel;
    QList<FString> commandLineList;
    QList<QWidget*> componentList;

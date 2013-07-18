@@ -17,8 +17,8 @@ lplexPage::lplexPage()
   lplexVideoType = new FComboBox({ "ntsc" , "pal" , "secam"},
                                  lplexFiles,
                                  "lplexVideoType",
-                                 "TV standard",
-                                 "video" );
+                                 {"Lplex","TV standard"},
+                                  "video" );
 
   lplexVideoType->setMinimumWidth(lplexComboBoxWidth);
 
@@ -28,14 +28,14 @@ lplexPage::lplexPage()
   lplexBackgroundLineEdit = new FLineEdit(generateDatadirPath("black.jpg"),
                                           lplexFiles,
                                           "lplexJpegPath",
-                                          "Path to lplex background jpeg",
+                                         {"Lplex", "Path to lplex background jpeg"},
                                           "jpeg");
 
   lplexBackgroundLineEdit->setMinimumWidth(lplexLineEditWidth);
 
   lplexScreenParameterBox = new FCheckBox("Use DVD-Audio display parameters",
                                           "lplexDisplayIsDVD-Audio",
-                                          "Use DVD-Audio display parameters",
+                                         {"Lplex", "Use DVD-Audio display parameters"},
                                             {NULL},
                                             {
                                               lplexBackgroundLineEdit,
@@ -50,7 +50,7 @@ lplexPage::lplexPage()
   lplexCreateType = new FComboBox({ "lpcm" , "m2v" , "dvdstyler" , "mpeg" , "dvd" , "iso"} ,
                                   lplexFiles,
                                   "lplexCreateType",
-                                  "Authoring type",
+                                 {"Lplex","Authoring type"},
                                   "create" );
 
   lplexCreateType->setMinimumWidth(lplexComboBoxWidth);
@@ -60,7 +60,7 @@ lplexPage::lplexPage()
   lplexMediaType = new FComboBox( {"dvd+r" ,  "dvd-r" ,  "dl" ,  "none"},
                                   lplexFiles,
                                   "lplexMediaType",
-                                  "Maximum disc size",
+                                 {"Lplex","Maximum disc size"},
                                   "media");
 
   lplexMediaType->setMinimumWidth(lplexComboBoxWidth);
@@ -68,7 +68,7 @@ lplexPage::lplexPage()
   lplexDirLineEdit = new FLineEdit(tempdir,
                                    lplexFiles,
                                    "lplexDirPath",
-                                   "Output everything to this directory",
+                                   {"Lplex","Output everything to this directory"},
                                    "dir" );
 
   lplexDirLineEdit->setMinimumWidth(lplexLineEditWidth);
@@ -105,7 +105,7 @@ lplexPage::lplexPage()
   lplexSpliceType = new FComboBox({"seamless" , "discrete" , "padded" , "none"},
                                   flags::enabled|lplexFiles,
                                   "lplexSpliceType",
-                                  "Physically structure track transition point",
+                                 {"Lplex","Physically structure track transition point"},
                                   "splice" );
 
   lplexSpliceType->setMinimumWidth(lplexComboBoxWidth);
@@ -115,7 +115,7 @@ lplexPage::lplexPage()
   lplexShiftType = new FComboBox({"backward" , "forward" , "nearest" },
                                  flags::enabled|lplexFiles,
                                  "lplexShiftType",
-                                 "Move seamless startpoints",
+                                 {"Lplex","Move seamless startpoints"},
                                  "shift");
 
   lplexShiftType->setMinimumWidth(lplexComboBoxWidth);
@@ -124,7 +124,7 @@ lplexPage::lplexPage()
   lplexMd5AwareBox = new FCheckBox("Generate MD5 tags",
                                     flags::enabled|flags::lplexFiles,
                                    "lplexMd5Aware",
-                                   "Generate MD5 tags",
+                                   {"Lplex","Generate MD5 tags"},
                                    "md5aware");
 
   lplexRescaleBox = new FCheckBox("Rescale images to TV standard",
@@ -136,7 +136,7 @@ lplexPage::lplexPage()
   lplexInfoDirLineEdit = new FLineEdit(tempdir,
                                        flags::enabled|lplexFiles,
                                        "lplexInfoDirPath",
-                                       "Path to directory to be added\n to Lplex-made XTRA directory",
+                                       {"Lplex","Path to directory to be added\n to Lplex-made XTRA directory"},
                                        "infodir");
 
   lplexInfoDirLineEdit->setMinimumWidth(lplexLineEditWidth);
@@ -150,7 +150,7 @@ lplexPage::lplexPage()
   lplexInfoDirBox = new FCheckBox("Add Info directory to disc",
                                   disabled,
                                   "lplexInfoDir",
-                                  "Add Info directory\nto disc XTRA directory",
+                                  {"Lplex","Add Info directory\nto disc XTRA directory"},
                                     {
                                       lplexInfoDirLabel,
                                       lplexInfoDirLineEdit,
@@ -160,7 +160,7 @@ lplexPage::lplexPage()
 
   lplexInfofilesBox = new FCheckBox("Generate info files",
                                     "lplexInfoFiles",
-                                    "Make an 'XTRA' info folder",
+                                    {"Lplex", "Make an 'XTRA' info folder"},
                                     {lplexInfoDirBox}) ;
 
   QGroupBox *lplexAdvancedBox= new QGroupBox(tr("Advanced parameters"));
@@ -198,17 +198,17 @@ lplexPage::lplexPage()
 
 void lplexPage::on_lplexInfoDirButton_clicked()
 {
-  lplexInfoDirLineEdit->setText(QFileDialog::getExistingDirectory(this, lplexInfoDirBox->getDescription()));
+    lplexInfoDirLineEdit->setText(QFileDialog::getExistingDirectory(this, lplexInfoDirBox->getDescription().join(": ")));
 }
 
 void lplexPage::on_lplexDirButton_clicked()
 {
-  lplexDirLineEdit->setText(QFileDialog::getExistingDirectory(this, lplexDirLineEdit->getDescription()));
+    lplexDirLineEdit->setText(QFileDialog::getExistingDirectory(this, lplexDirLineEdit->getDescription().join(": ")));
 }
 
 void lplexPage::on_lplexBackgroundButton_clicked()
 {
- lplexBackgroundLineEdit->setText(QFileDialog::getOpenFileName(this, lplexBackgroundLineEdit->getDescription()));
+    lplexBackgroundLineEdit->setText(QFileDialog::getOpenFileName(this, lplexBackgroundLineEdit->getDescription().join(": ")));
 }
 
 

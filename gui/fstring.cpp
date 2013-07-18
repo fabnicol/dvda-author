@@ -1,6 +1,6 @@
 #include "fstring.h"
 
-QHash<QString,QString>    Hash::description;
+QHash<QString,QStringList>    Hash::description;
 QHash<QString, FStringList* >   Hash::wrapper;
 
 
@@ -213,7 +213,7 @@ inline QStringList setDistributedTags(const QString & tag,const QStringList &pro
 }
 
 
- QString FStringList::setEmptyTags(const QStringList & tags) const
+ inline QString FStringList::setEmptyTags(const QStringList & tags) const
 {
   QStringListIterator i(tags);
   QString S="";
