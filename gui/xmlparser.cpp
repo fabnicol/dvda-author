@@ -449,7 +449,9 @@ void dvda::refreshProjectManagerValues(int refreshProjectManagerFlag)
                QString key=Abstract::abstractWidgetList[k]->getHashKey();
 
                if (Abstract::abstractWidgetList[k]->getDepth() == "0")
+               {
                    XmlMethod::displayTextData(Hash::description[key], Hash::wrapper[key]->toQString(), "");
+               }
                else if (Abstract::abstractWidgetList[k]->getDepth() == "1")
                    XmlMethod::displayFirstLevelData(Hash::description[key],   "button", Hash::wrapper[key]->at(0));
            }

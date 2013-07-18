@@ -93,7 +93,7 @@ public:
   bool isMultimodal();
   void setMultimodal();
   bool isFilled();
-  void fromBool(bool);
+  const FString fromBool(bool);
   QString toQString() const;
   QString& toQStringRef();
 };

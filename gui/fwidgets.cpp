@@ -424,8 +424,7 @@ void FCheckBox::refreshWidgetDisplay()
 
 const FString FCheckBox::setXmlFromWidget()
 {
-    commandLineList[0].fromBool(this->isChecked()) ;
-
+    *Hash::wrapper[getHashKey()]=FStringList(commandLineList[0].fromBool(this->isChecked()));
     return commandLineList[0].toQStringRef();
 }
 
@@ -536,6 +535,7 @@ void FRadioBox::refreshWidgetDisplay()
 const FString FRadioBox::setXmlFromWidget()
 {
     commandLineList[0]=FString(QString::number(rank), flags::multimodal) ;
+    *Hash::wrapper[getHashKey()]=FStringList(commandLineList[0]);
     return commandLineList[0].toQStringRef();
 }
 
@@ -618,7 +618,9 @@ void FComboBox::refreshWidgetDisplay()
 
 const FString FComboBox::setXmlFromWidget()
 {
-    commandLineList[0]= (comboBoxTranslationHash)? comboBoxTranslationHash->value(currentText()) : currentText();
+    QString str=currentText();
+    *Hash::wrapper[getHashKey()]=FStringList(str);
+    commandLineList[0]= (comboBoxTranslationHash)? comboBoxTranslationHash->value(str) : str;
     if (commandLineList[0].isEmpty()) commandLineList[0]="none";
     return commandLineList[0].toQStringRef();
 }
@@ -646,6 +648,7 @@ void FLineEdit::refreshWidgetDisplay()
 const FString FLineEdit::setXmlFromWidget()
 {
     commandLineList[0]=FString(this->text());
+    *Hash::wrapper[getHashKey()]=FStringList(this->text());
     if (commandLineList[0].isEmpty()) commandLineList[0]="none";
     return commandLineList[0].toQStringRef();
 }

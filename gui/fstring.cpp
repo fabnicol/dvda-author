@@ -75,10 +75,11 @@ bool FString::isFilled()
   return (!p.isEmpty());
 }
 
-void FString::fromBool(bool value)
+const FString  FString::fromBool(bool value)
 {
   x=value;
   if (value) p="yes"; else p="no";
+  return FString(p);
 }
 
 bool FString::isTrue()

@@ -50,7 +50,7 @@ inline void Highlighter::createRulePattern(const QColor& color,  QFont::Weight w
     classFormat.setFontWeight(weight);
     rule.format = classFormat;
 
-    for (QString a : list)
+    for (const QString& a : list)
     {
         rule.pattern = QRegExp(a);
         highlightingRules.append(rule);
@@ -86,7 +86,7 @@ Highlighter::Highlighter(QTextDocument *parent)
 
 void Highlighter::highlightBlock(const QString &text)
 {
-    foreach (const HighlightingRule &rule, highlightingRules)
+    for (const HighlightingRule &rule: highlightingRules)
     {
         QRegExp expression(rule.pattern);
         int index = expression.indexIn(text);
