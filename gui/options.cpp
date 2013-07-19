@@ -17,12 +17,12 @@ standardPage::standardPage()
 
     normTypeLineEdit = new FLineEdit("PAL",
                                      "normType",
-    {"TV Standard"},
+    {"Screen", "TV Standard"},
     "norm");
 
     aspectRatioLineEdit = new FLineEdit("16:9",
                                         "aspectRatio",
-    {"Screen size"},
+    {"Screen", "Screen size"},
     {"aspect"});
 
     normTypeLineEdit->setAlignment(Qt::AlignCenter);
@@ -154,14 +154,14 @@ optionsPage::optionsPage()
     mkisofsLineEdit = new FLineEdit(tempdir+QDir::separator()+"dvd.iso",
                                     createIso,
                                     "mkisofsPath",
-    {"Path to ISO image"},
+    {"Burn", "Path to ISO image"},
     "mkisofs");
 
 
     dvdwriterComboBox = new FComboBox("",
                                       createDisc,
                                       "dvdwriterPath",
-    {"Path to DVD writer device"},
+    {"Burn", "Path to DVD writer device"},
     "cdrecord");
 
     dvdwriterComboBox->setMinimumContentsLength(35);
@@ -169,13 +169,13 @@ optionsPage::optionsPage()
 
     cdrecordBox= new FCheckBox("Burn to DVD-Audio/Video disc",
                                "burnDisc",
-    {"Authoring", "Burn disc image to DVD"},
+    {"Burn", "Burn disc image to DVD"},
                                 {dvdwriterComboBox});
 
     mkisofsBox =new FCheckBox("Create ISO file",
                               flags::checked|flags::enabled|flags::dvdaCommandLine,
                               "runMkisofs",
-    {"Create disc image using mkisofs"},
+    {"Burn", "Create disc image using mkisofs"},
                               {
                                   mkisofsButton,
                                   cdrecordBox,
@@ -185,7 +185,7 @@ optionsPage::optionsPage()
 
     playbackBox= new FCheckBox("Launch playback on loading disc",
                                "playback",
-    {"Authoring","Launch playback on loading"},
+    {"Launch","Launch playback on loading"},
                                "autoplay");
 
     QGridLayout *gridLayout=new QGridLayout;
@@ -333,7 +333,7 @@ advancedPage::advancedPage()
     setWhatsThisText(fixwavBox, 82,90);
 
     startsectorLabel = new QLabel(tr("&Start sector"));
-    startsectorLineEdit = new FLineEdit("281", "startsector", {"Advanced","Start sector number"},"startsector");
+    startsectorLineEdit = new FLineEdit("281", "startsector", {"Audio processing","Start sector number"},"startsector");
     startsectorLineEdit->setMaxLength(4);
     startsectorLineEdit->setFixedWidth(50);
     startsectorLabel->setBuddy(startsectorLineEdit);
@@ -445,7 +445,7 @@ audioMenuPage::audioMenuPage(dvda* parent, standardPage* standardTab)
                            parent->fileTreeView,
                            importFiles,
                            "audioMenuSlides",
-    {"DVD-Audio menu slides"},
+    {"Audio menu","DVD-Audio menu slides"},
                              "topmenu-slides",
                            dvdaCommandLine|flags::enabled,
                             {",", ":"},
@@ -460,7 +460,7 @@ audioMenuPage::audioMenuPage(dvda* parent, standardPage* standardTab)
                                 parent->fileTreeView,
                                 importFiles,
                                 "audioMenuTracks",
-                               { "DVD-Audio menu tracks"},
+                               {"Audio menu", "DVD-Audio menu tracks"},
                                 "topmenu-soundtracks",
                                 dvdaCommandLine|flags::enabled,
                                 {",", ":"},
@@ -476,7 +476,7 @@ audioMenuPage::audioMenuPage(dvda* parent, standardPage* standardTab)
                                NULL,
                                typeIn,
                                "audioMenuText",
-    {"DVD-Audio menu text"},
+    {"Audio menu","DVD-Audio menu text"},
                                "screentext",
                                dvdaCommandLine|flags::enabled,
                                 { ",", ":"},
@@ -493,12 +493,12 @@ audioMenuPage::audioMenuPage(dvda* parent, standardPage* standardTab)
 
     loopVideoBox= new FCheckBox(tr("Loop menu"),
                                 "loopVideo",
-    {"Loop menu video"},
+    {"Audio menu","Loop menu video"},
                                 "loop");
 
     menuStyleFComboBox=new FComboBox({"standard", "hierarchical", "active"},
                                      "menuStyle",
-    {"Menu style"},
+    {"Audio menu", "Menu style"},
                                      "menustyle");
 
     menuStyleFComboBox->setMaximumWidth(150);
@@ -512,7 +512,7 @@ audioMenuPage::audioMenuPage(dvda* parent, standardPage* standardTab)
                                             {"-1", "0",  "1"}, // translation into xml
                                            flags::defaultStatus,
                                            "highlightFormat",
-                                          { "Highlight format"},
+                                          {"Audio menu", "Highlight format"},
                                            "highlightformat",
                                            iconList);
 
@@ -525,12 +525,12 @@ audioMenuPage::audioMenuPage(dvda* parent, standardPage* standardTab)
 
     fontFComboBox=new FComboBox(fontList,
                                 "font",
-    {"Font"},
+    {"Audio menu","Font"},
                                 "fontname");
 
     fontSizeFComboBox=new FComboBox(QStringList(),
                 "fontSize",
-    { "Font size"},
+    {"Audio menu", "Font size"},
                 "fontsize");
 
     readFontSizes(0);
@@ -544,7 +544,7 @@ audioMenuPage::audioMenuPage(dvda* parent, standardPage* standardTab)
 
     audioMenuLineEdit = new FLineEdit(common::tempdir+QDir::separator()+QString::fromUtf8("audiobackground.png"),
                                       "audioBackgroundPath",
-                                     { "Path to DVD-Audio menu background"},
+                                     {"Audio menu", "Path to DVD-Audio menu background"},
                                       "blankscreen");
 
     QLabel *audioMenuLabel = new QLabel(tr("Menu background"));
@@ -557,7 +557,7 @@ audioMenuPage::audioMenuPage(dvda* parent, standardPage* standardTab)
                                    "Highlight",
                                    "Album/Group",
                                    "topmenuPalette",
-    {"Top menu colors"},
+    {"Audio menu", "Top menu colors"},
                                    "topmenu-palette");
 
     QGridLayout* createMenuLayout=new QGridLayout;
@@ -604,7 +604,7 @@ audioMenuPage::audioMenuPage(dvda* parent, standardPage* standardTab)
 
     audioMenuCheckBox = new FCheckBox("Create",
                                       "audioMenu",
-    {"Create DVD-Audio menu"},
+    {"Audio menu","Create DVD-Audio menu"},
                                        {
                                           nmenuFComboBox,
                                           audioMenuLineEdit,
@@ -749,7 +749,7 @@ videoMenuPage::videoMenuPage()
 
     videoImportLineEdit = new FLineEdit(tempdir+QDir::separator()+QString::fromUtf8("VIDEO_TS"),
                                         "videoImport",
-                                       { "Path to DVD-Video directory"},
+                                       {"Video menu", "Path to DVD-Video directory"},
                                         "videodir");
 
     QLabel *videoImportLabel = new QLabel(tr("Video directory"));
@@ -763,7 +763,7 @@ videoMenuPage::videoMenuPage()
 
     videoImportCheckBox= new FCheckBox("Import DVD-Video",
                                        "videoMenu",
-    {"Import DVD-Video "},
+    {"Video menu","Import DVD-Video "},
     {
                                            videoImportLineEdit,
                                            videoImportButton,
@@ -786,7 +786,7 @@ videoMenuPage::videoMenuPage()
     videoMenuImportLineEdit = new FLineEdit(tempdir+QDir::separator()+QString::fromUtf8("VIDEO_TS/VIDEO_TS.VOB"),
                                             flags::disabled,
                                             "videoMenuImport",
-    {"Import DVD-Video menu"},
+    {"Video menu","Import DVD-Video menu"},
                                             "videomenu");
 
     Q2ListWidget *audioExportRadioBoxEnabledObjects = new Q2ListWidget ;
@@ -800,7 +800,7 @@ videoMenuPage::videoMenuPage()
     audioExportRadioBox =  new FRadioBox(
     {"Hybrid disc", "No DVD-Video menu" ,"Import authored menu", "Export DVD-Audio menu" },
                 "hybridate",
-               { "Create DVD-Audio/Video hybrid"},
+               { "Video menu","Create DVD-Audio/Video hybrid"},
     {"hybridate", "hybridate", "hybridate-export-menu"},
                 audioExportRadioBoxEnabledObjects);
 
@@ -809,7 +809,7 @@ videoMenuPage::videoMenuPage()
 
     audioExportCheckBox = new FCheckBox("Create DVD-Audio/Video hybrid disc",
                                         "createHybrid",
-    {"Create hybrid DVD-Audio/Video disc"},
+    {"Video menu","Create hybrid DVD-Audio/Video disc"},
     {audioExportRadioBox},
     {videoImportBox});
 
@@ -868,7 +868,7 @@ videolinkPage::videolinkPage()
 
     videolinkSpinBox = new FComboBox(range,
                                      "videolinkRank",
-                                    { "Rank of linked video titleset"},
+                                    {"Video link", "Rank of linked video titleset"},
                                      "T");
 
     videolinkSpinBox->setEnabled(true);
@@ -882,14 +882,14 @@ videolinkPage::videolinkPage()
 
     videoZoneLineEdit = new FLineEdit(tempdir + QDir::separator()+QString::fromUtf8("VIDEO_TS"),
                                       "videoZonePath",
-    {"Path to VIDEO_TS linked to"},
+    {"Video link","Path to VIDEO_TS linked to"},
                                       "V");
 
     videoZoneButton = new  QToolDirButton(tr("Select customized menu background image (*.png)"));
 
     videolinkCheckBox = new FCheckBox("Link Audio zone\nto Video zone",
                                       "videolink",
-                                     { "Link Audio zone to Video zone"},
+                                     {"Video link", "Link Audio zone to Video zone"},
                                     {
                                           videolinkSpinBox,
                                           videoZoneLineEdit,
@@ -979,31 +979,31 @@ outputPage::outputPage(options* parent)
     debugBox = new FCheckBox(tr("Debugging-level verbosity"),
                              flags::disabled|flags::dvdaCommandLine,
                              "debug",
-                             "Use debug-level verbosity",
+                            {"Console","Use debug-level verbosity"},
                              "debug" );
 
     veryverboseBox = new FCheckBox(tr("Increased verbosity"),
                                    flags::disabled|flags::dvdaCommandLine,
                                    "veryverbose",
-                                   "Use enhanced verbosity",
+                                  {"Console","Use enhanced verbosity"},
                                    "veryverbose");
 
     htmlFormatBox = new FCheckBox(tr("Html format"),
                                   flags::disabled|flags::dvdaCommandLine,
                                   "htmlFormat",
-                                  "Output html log",
+                                {"Console","Output html log"},
                                   "loghtml");
 
     logrefreshBox=new FCheckBox(tr("Refresh log"),
                                 flags::disabled|flags::dvdaCommandLine,
                                 "logrefresh",
-                                "Erase prior logs on running",
+                                {"Console","Erase prior logs on running"},
                                 "logrefresh");
 
 
     logBox = new FCheckBox(tr("&Log file"),
                            "log",
-    {"Create log file"},
+                            {"Console", "Create log file"},
                            {
                                logButton,
                                openLogButton,
@@ -1072,7 +1072,7 @@ outputPage::outputPage(options* parent)
 
     createDVDFilesRadioBox = new FRadioBox({ "Output mode" , "Create DVD files", "No output"},
                                            "createDVDFiles",
-    {"Create DVD Files"},
+                                           {"Output", "Create DVD Files"},
                                            { "" , "no-output"},
                                            createDVDFilesEnabledObjects,
                                            createDVDFilesDisabledObjects);
@@ -1102,17 +1102,17 @@ outputPage::outputPage(options* parent)
 
     QLabel* workDirLabel = new QLabel(tr("Working directory"));
     QToolDirButton *openWorkDirButton = new QToolDirButton;
-    workDirLineEdit = new FLineEdit(QDir::currentPath (), "workDir", {"Working directory"}, "workdir");
+    workDirLineEdit = new FLineEdit(QDir::currentPath (), "workDir", {"Folders", "Working directory"}, "workdir");
     workDirLabel->setBuddy(workDirLineEdit);
 
     QLabel* tempDirLabel = new QLabel(tr("Temporary directory"));
-    tempDirLineEdit = new FLineEdit(common::tempdir, "tempDir", {"Temporary directory"}, "tempdir");
+    tempDirLineEdit = new FLineEdit(common::tempdir, "tempDir", {"Folders","Temporary directory"}, "tempdir");
     tempDirLabel->setBuddy(tempDirLineEdit);
     QToolDirButton *openTempDirButton = new QToolDirButton;
 
     QLabel* binDirLabel = new QLabel(tr("Binary directory"));
     QToolDirButton *openBinDirButton = new QToolDirButton;
-    binDirLineEdit = new FLineEdit(QDir::currentPath ()+QDir::separator()+"bindir", "binDir", {"Binary directory"}, "bindir");
+    binDirLineEdit = new FLineEdit(QDir::currentPath ()+QDir::separator()+"bindir", "binDir", {"Folders","Binary directory"}, "bindir");
     binDirLabel->setBuddy(binDirLineEdit);
 
     QGroupBox *auxdirGroupBox = new QGroupBox(tr("Auxiliary directories"));
@@ -1240,7 +1240,7 @@ stillPage::stillPage(dvda* parent, standardPage* standardTab)
                            parent->fileTreeView,
                            importFiles,
                            "trackSlides",
-    {"Track slides"},
+                          {"Slides","Track slides"},
                            "stillpics",
                            dvdaCommandLine|flags::enabled,
                             {",", "-"},
@@ -1272,7 +1272,7 @@ stillPage::stillPage(dvda* parent, standardPage* standardTab)
                                             stilloptionListWidget,
                                             importNames,
                                             "slideOptions",
-    {"Slide options"},
+    {"Slides","Slide options"},
                                             "stilloptions",
                                             dvdaCommandLine|flags::enabled,
                                             {",", "-"},
@@ -1336,7 +1336,7 @@ stillPage::stillPage(dvda* parent, standardPage* standardTab)
     QGroupBox *paletteGroupBox = new QGroupBox("Active menu palette");
     FCheckBox *addPaletteCheckBox = new FCheckBox("Change default text color",
                                                   "addPalette",
-    {"User active menu palette"},
+    {"Slides","User active menu palette"},
                                                  {
                                                       paletteGroupBox,
                                                       palette,
@@ -1373,7 +1373,7 @@ stillPage::stillPage(dvda* parent, standardPage* standardTab)
      videoFileLineEdit = new FLineEdit(videoFilePath,
                                      flags::dvdaCommandLine,
                                      "background-mpg",                          //TODO: check this is the right dvda option!
-                                     {"Path to .mpg slideshow"},
+                                     {"Slides","Path to .mpg slideshow"},
                                      "background slideshow");
 
 

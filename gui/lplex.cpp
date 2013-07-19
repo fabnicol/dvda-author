@@ -130,7 +130,7 @@ lplexPage::lplexPage()
   lplexRescaleBox = new FCheckBox("Rescale images to TV standard",
                                   flags::enabled|lplexFiles,
                                   "lplexRescale",
-                                  "If jpegs sized for ntsc [pal] are being used\nto create a pal [ntsc] dvd, rescale them",
+                                { "Lplex","If jpegs sized for ntsc [pal] are being used\nto create a pal [ntsc] dvd, rescale them"},
                                   "rescale") ;
 
   lplexInfoDirLineEdit = new FLineEdit(tempdir,

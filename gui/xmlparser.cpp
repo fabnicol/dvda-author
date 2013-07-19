@@ -197,16 +197,16 @@ void displayTextData(const QStringList &firstColumn,
           {
             item = new QTreeWidgetItem(XmlMethod::itemParent);
              item->setText(0, firstColumn.at(0));
+             item->setExpanded(false);
              shift=1;
           }
 
-           item->setExpanded(true);
+
            if (firstColumn.count() > 1)
            {
                QTreeWidgetItem* item2 = new QTreeWidgetItem(item);
                item2->setText(0, firstColumn.at(1));
                item2->setText(1, secondColumn);
-               item2->setExpanded(true);
            }
            else
            {
