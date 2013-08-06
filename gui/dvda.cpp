@@ -216,7 +216,7 @@ dvda::dvda()
       connect(project[ZONE]->moveUpItemButton, SIGNAL(clicked()), this, SLOT(on_moveUpItemButton_clicked()));
       connect(project[ZONE]->moveDownItemButton, SIGNAL(clicked()), this, SLOT(on_moveDownItemButton_clicked()));
       connect(project[ZONE]->retrieveItemButton, SIGNAL(clicked()), this, SLOT(on_deleteItem_clicked()));
-      connect(project[ZONE]->clearListButton, SIGNAL(clicked()), this, SLOT(saveProject()));
+      connect(project[ZONE]->clearListButton, &QToolButton::clicked, [this] { saveProject(); displayTotalSize(); });
       // set visible importFromMaintree and controlButtonBox !
       projectLayout->addWidget(project[ZONE]->tabBox, 0,2);
       updownLayout->addWidget(project[ZONE]->controlButtonBox, 0,0);

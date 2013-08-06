@@ -192,28 +192,29 @@ void displayTextData(const QStringList &firstColumn,
 {
           static QString last;
           static QTreeWidgetItem* item;
-          int shift=0;
-          if (firstColumn.at(0) != last)
+          if ((firstColumn.at(0) != last) && !firstColumn.at(0).isEmpty())
           {
             item = new QTreeWidgetItem(XmlMethod::itemParent);
              item->setText(0, firstColumn.at(0));
              item->setExpanded(false);
-             shift=1;
           }
-
 
            if (firstColumn.count() > 1)
            {
+
+
                QTreeWidgetItem* item2 = new QTreeWidgetItem(item);
                item2->setText(0, firstColumn.at(1));
                item2->setText(1, secondColumn);
            }
            else
            {
-              item->setText(1, secondColumn);
-              if (!thirdColumn.isEmpty()) item->setText(2, thirdColumn);
-              if (color.isValid()) item->setTextColor(2, color);
+               QTreeWidgetItem* item2 = new QTreeWidgetItem(item);
+               item2->setText(1, secondColumn);
+              if (!thirdColumn.isEmpty()) item2->setText(2, thirdColumn);
+              if (color.isValid()) item2->setTextColor(2, color);
            }
+
            last= firstColumn.at(0);
 }
 
