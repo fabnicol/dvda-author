@@ -551,10 +551,11 @@ void dvda::addSelectedFileToProject()
       if ((model->fileInfo(index).isFile())||(model->fileInfo(index).isDir()))
         {
           QString path=model->filePath(index);
-          bool ok=(isVideo== 0)? checkAudioStandardCompliance(path) : checkVideoStandardCompliance(path);
-          if (!ok)
+          StandardComplianceProbe  probe(path, isVideo);
+          if (!probe.isStandardCompliant())
           {
              outputTextEdit->append(tr(ERROR_HTML_TAG "Track does not comply with the standard.\n"));
+             outputTextEdit->append(tr("\t %1 bits  %2 kHz %3 ch.\n").arg(probe.getSampleSize(), probe.getSampleRate(), probe.getChannelCount()));
              return;
           }
               RefreshFlag |= SaveTree|UpdateTree;
@@ -753,9 +754,9 @@ bool dvda::refreshProjectManager()
       }
 
       // Step3: adjusting project manager size
-      managerWidget->resizeColumnToContents(0);
-      managerWidget->resizeColumnToContents(1);
-      managerWidget->resizeColumnToContents(2);
+//      managerWidget->resizeColumnToContents(0);
+//      managerWidget->resizeColumnToContents(1);
+//      managerWidget->resizeColumnToContents(2);
      }
 
   if (file.isOpen()) file.close();

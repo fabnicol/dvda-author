@@ -1,6 +1,5 @@
 #include "common.h"
 
-
 QStringList common::extraAudioFilters=QStringList();
 FString common::htmlLogPath;
 QString common::tempdir=QDir::homePath ()+QDir::separator()+"tempdir";  // should be equal to main app globals.settings.tempdir=TEMPDIR;
@@ -145,61 +144,53 @@ QDesktopServices::openUrl(url);
 
 
 
-bool common::checkVideoStandardCompliance(QString &filename)
+bool StandardComplianceProbe::isStandardCompliant()
 {
-  return true;
-  //return  (fileinfo->compliance == isDVDVideoCompliant);
+    if (audioZone == VIDEO)
+       return (decoderCompliance == isStrictlyDVDVideoCompliant) ;
+
+    return (decoderCompliance == (isStrictlyDVDAudioCompliant | isStrictlyDVDVideoCompliant));
 }
 
-bool common::checkAudioStandardCompliance(QString &filename)
+void StandardComplianceProbe::getAudioCharacteristics(QString &filename)
 {
-  return true;
-  //return (fileinfo->compliance == isDVDAudioCompliant);
-}
+     if (filename.isEmpty()  || audioZone > 1)
+     {
+         decoderCompliance=isNonCompliant;
+         return;
+     }
 
-void common::getAudioCharacteristics(QString &filename)
-{
-  fileinfo = new fileinfo_t;
-  fileinfo->filename=filename.toLocal8Bit();
+    decoder.setSourceFilename(filename);
+    audioFileFormat=decoder.audioFormat();
 
-  /* filepath is non-locale char compliant, so that dvda-author cannot be used for input filename format reasons */
-  if (QString(fileinfo->filename) != filename) fileinfo->compliance=isNonCompliant;
+  sampleSize=audioFileFormat.sampleSize();
+  sampleRate=audioFileFormat.sampleRate();
+  channelCount=audioFileFormat.channelCount();
 
-
-  QProcess process;
-  QStringList args=QStringList() << "--test" << filename;
-  process.start("dvda-author", args);
-  connect(&process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(assignAudioCharacteristics(int, QProcess::ExitStatus )));
-
-  /*  */
-
-}
-
-void common::assignAudioCharacterisics(int exitcode, QProcess::ExitStatus status)
-{
-
-  /* ecode dvda-author --test filename exit status as : channels << 4 [byte 1] | samplerate << 1 [byte 2-4] | bitspersample [byte 5] */
-
-  if (status != QProcess::NormalExit) return;
-  fileinfo->bitspersample = exitcode & 0xFF;
-  fileinfo->samplerate = (exitcode >> 1) & 0xFFFFFF;
-  fileinfo->channels = (exitcode >> 4) & 0xFF;
-  if (((fileinfo->channels ==0) || (fileinfo->samplerate == 0) || (fileinfo->bitspersample == 0)) ||
-      (fileinfo->channels > 6) ||
-      ((fileinfo->bitspersample != 16) || (fileinfo->bitspersample != 24)))
+  if (((channelCount ==0) || ( sampleRate == 0) || (sampleSize == 0)) ||
+      (channelCount > 6) ||
+      ((sampleSize != 16) || (sampleSize != 24)))
     {
-      fileinfo->compliance=isNonCompliant;
+      decoderCompliance=isNonCompliant;
       return;
     }
 
+  switch (audioFileFormat.sampleRate())
+  {
+  case 96000:
+  case 48000: decoderCompliance=isStrictlyDVDVideoCompliant;
+                        break;
+  case 44100:
+  case 88200:
+  case 176400:
+  case 192000:
+                           decoderCompliance = isStrictlyDVDAudioCompliant;
+                           break;
+  default:
 
-  if ((fileinfo->samplerate = 96000) || (fileinfo->samplerate == 48000) || (fileinfo->samplerate == 44100) || (fileinfo->samplerate == 88200) || (fileinfo->samplerate == 176400) || (fileinfo->samplerate == 192000))
-         fileinfo->compliance=isDVDAudioCompliant;
-  else
-    if ((fileinfo->samplerate == 96000) || (fileinfo->samplerate == 48000))
-       fileinfo->compliance=isDVDVideoCompliant;
-  else
-    fileinfo->compliance=isNonCompliant;
+    decoderCompliance=isNonCompliant;
+  }
 
   return;
 }
+

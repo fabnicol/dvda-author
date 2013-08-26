@@ -2,6 +2,7 @@
 #define COMMON_H
 
 #include <QtWidgets>
+#include <QAudioDecoder>
 
 #include "fwidgets.h"
 
@@ -30,6 +31,31 @@
 #define v(X) *FString(#X)
 
 
+class StandardComplianceProbe
+{
+private:
+    QAudioDecoder decoder;
+    QAudioFormat audioFileFormat;
+    uint audioZone;
+    void getAudioCharacteristics(QString &filename);
+    enum audioCharacteristics   { isWav=AFMT_WAVE, isFlac=AFMT_FLAC, isOggFlac=AFMT_OGG_FLAC, isStrictlyDVDAudioCompliant=0x10,  isStrictlyDVDVideoCompliant=0x100, isNonCompliant=0x1000};
+    audioCharacteristics decoderCompliance;
+    int sampleRate;
+    int sampleSize;
+    int channelCount;
+
+ public:
+    StandardComplianceProbe(QString &filename, uint zone)
+    {
+        audioZone=zone;
+        getAudioCharacteristics(filename);
+    }
+    bool isStandardCompliant();
+    QString getSampleRate() {return QString::number(sampleRate);}
+    QString getSampleSize() {return QString::number(sampleSize);}
+    QString getChannelCount() {return QString::number(channelCount);}
+};
+
 
 class common : public QDialog, public flags
 {
@@ -37,9 +63,6 @@ class common : public QDialog, public flags
 
  private:
     QString whatsThisPath;
-
-protected slots:
-    void assignAudioCharacterisics(int exitcode, QProcess::ExitStatus status);
 
 public:
 
@@ -75,27 +98,6 @@ protected :
   QString  videoFilePath;
   static FString    htmlLogPath;
   static QStringList extraAudioFilters;
-  enum audioCharacteristics   { isWav=AFMT_WAVE, isFlac=AFMT_FLAC, isOggFlac=AFMT_OGG_FLAC, isDVDAudioCompliant,  isDVDVideoCompliant, isNonCompliant};
-  struct fileinfo_t
-  {
-     quint8 header_size;
-     quint8 type;
-     quint8 bitspersample;
-     quint8 channels;
-     audioCharacteristics compliance;
-     quint32 samplerate;
-     quint64 numsamples;
-     quint64 numbytes; // theoretical file size
-     quint64 file_size; // file size on disc
-     QByteArray filename;
-  };
-
-  fileinfo_t *fileinfo;
-
-  bool checkVideoStandardCompliance(QString &filename);
-  bool checkAudioStandardCompliance(QString &filename);
-  void getAudioCharacteristics(QString &filename);
-
 
 
 };
