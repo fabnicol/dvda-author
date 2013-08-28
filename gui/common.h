@@ -31,13 +31,15 @@
 #define v(X) *FString(#X)
 
 
-class StandardComplianceProbe
+class StandardComplianceProbe : public QObject
 {
+    Q_OBJECT
 private:
     QAudioDecoder decoder;
     QAudioFormat audioFileFormat;
     uint audioZone;
     void getAudioCharacteristics(QString &filename);
+    void parseBuffer();
     enum audioCharacteristics   { isWav=AFMT_WAVE, isFlac=AFMT_FLAC, isOggFlac=AFMT_OGG_FLAC, isStrictlyDVDAudioCompliant=0x10,  isStrictlyDVDVideoCompliant=0x100, isNonCompliant=0x1000};
     audioCharacteristics decoderCompliance;
     int sampleRate;
