@@ -213,7 +213,7 @@ inline QStringList setDistributedTags(const QString & tag,const QStringList &pro
 }
 
 
- inline QString FStringList::setEmptyTags(const QStringList & tags) const
+QString FStringList::setEmptyTags(const QStringList & tags) const
 {
   QStringListIterator i(tags);
   QString S="";
