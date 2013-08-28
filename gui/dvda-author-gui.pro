@@ -6,8 +6,8 @@ include(spectrum.pri)
 CONFIG  += ordered
 
 SUBDIRS += 3rdparty/fftreal \
-    3rdparty/fftreal/fftreal.pro
-SUBDIRS += spectrumAnalyzer
+                       spectrumAnalyzer \
+                       Flac
 
 #use at least Qt5.1 with g++-4.8 for windows
 
@@ -56,7 +56,8 @@ SOURCES += \
     spectrumAnalyzer/utils.cpp \
     spectrumAnalyzer/waveform.cpp \
     spectrumAnalyzer/wavfile.cpp \
-    3rdparty/fftreal/fftreal_wrapper.cpp
+    3rdparty/fftreal/fftreal_wrapper.cpp \
+    Flac/flac_metadata_processing.cpp
 
 
 HEADERS  += \
@@ -110,6 +111,9 @@ HEADERS  += \
     3rdparty/fftreal/FFTRealUseTrigo.hpp \
     3rdparty/fftreal/OscSinCos.h \
     3rdparty/fftreal/OscSinCos.hpp \
+    Flac/flac_metadata_processing.h \
+    Flac/format.h \
+    Flac/stream_decoder.h
 
 
 
