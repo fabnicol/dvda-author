@@ -552,9 +552,14 @@ void dvda::addSelectedFileToProject()
         {
           QString path=model->filePath(index);
           StandardComplianceProbe  probe(path, isVideo);
-          if (!probe.isStandardCompliant())
+          if (probe.isStandardCompliant())
           {
-             outputTextEdit->append(tr(ERROR_HTML_TAG "Track does not comply with the standard.\n"));
+             outputTextEdit->append(tr(MSG_HTML_TAG  "Added wav file: %1 bits  %2 kHz %3 ch.\n").arg(probe.getSampleSize(), probe.getSampleRate(), probe.getChannelCount()));
+          }
+          else
+          {
+              outputTextEdit->append(tr("%1 %2").arg(QString::number(probe.audioZone), QString::number(probe.decoderCompliance)));
+              outputTextEdit->append(tr(ERROR_HTML_TAG "Track does not comply with the standard.\n"));
              outputTextEdit->append(tr("\t %1 bits  %2 kHz %3 ch.\n").arg(probe.getSampleSize(), probe.getSampleRate(), probe.getChannelCount()));
              return;
           }

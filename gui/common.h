@@ -2,9 +2,10 @@
 #define COMMON_H
 
 #include <QtWidgets>
-#include <QAudioDecoder>
+
 
 #include "fwidgets.h"
+#include "wavfile.h"
 
 
 #define AFMT_WAVE 1
@@ -34,8 +35,8 @@
 class StandardComplianceProbe : public QObject
 {
     Q_OBJECT
-private:
-    QAudioDecoder decoder;
+public:
+    WavFile decoder;
     QAudioFormat audioFileFormat;
     uint audioZone;
     void getAudioCharacteristics(QString &filename);

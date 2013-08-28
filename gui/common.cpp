@@ -145,15 +145,15 @@ QDesktopServices::openUrl(url);
 
 void StandardComplianceProbe::parseBuffer()
 {
-audioFileFormat=decoder.audioFormat();
-decoder.stop();
+audioFileFormat=decoder.fileFormat();
+
 sampleSize=audioFileFormat.sampleSize();
 sampleRate=audioFileFormat.sampleRate();
 channelCount=audioFileFormat.channelCount();
 
 if (((channelCount ==0) || ( sampleRate == 0) || (sampleSize == 0)) ||
     (channelCount > 6) ||
-    ((sampleSize != 16) || (sampleSize != 24)))
+    ((sampleSize != 16) && (sampleSize != 24)))
   {
     decoderCompliance=isNonCompliant;
     return;
@@ -183,7 +183,7 @@ bool StandardComplianceProbe::isStandardCompliant()
     if (audioZone == VIDEO)
        return (decoderCompliance == isStrictlyDVDVideoCompliant) ;
 
-    return (decoderCompliance == (isStrictlyDVDAudioCompliant | isStrictlyDVDVideoCompliant));
+    return (decoderCompliance == isStrictlyDVDAudioCompliant ||  decoderCompliance == isStrictlyDVDVideoCompliant);
 }
 
 void StandardComplianceProbe::getAudioCharacteristics(QString &filename)
@@ -194,9 +194,6 @@ void StandardComplianceProbe::getAudioCharacteristics(QString &filename)
          return;
      }
 
-    decoder.setSourceFilename(filename);
-  //  decoder.start();
-    connect(&decoder, &QAudioDecoder::bufferReady, [&] {parseBuffer();});
-
+    if (decoder.open(filename))  parseBuffer();
 }
 
