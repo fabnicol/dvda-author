@@ -19,7 +19,8 @@ TARGET = dvda-author-gui
 
 VPATH = .
 
-INCLUDEPATH += spectrumAnalyzer 3rdparty 3rdparty/fftreal
+INCLUDEPATH += spectrumAnalyzer 3rdparty 3rdparty/fftreal Flac
+LIBS += -L../libs -lFLAC
 
 DEFINES += CDRECORD_LOCAL_PATH
 
@@ -114,7 +115,8 @@ HEADERS  += \
     Flac/flac_metadata_processing.h \
     Flac/format.h \
     Flac/stream_decoder.h \
-    Flac/export.h
+    Flac/export.h \
+    Flac/ordinals.h
 
 
 
