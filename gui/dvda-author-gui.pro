@@ -113,7 +113,8 @@ HEADERS  += \
     3rdparty/fftreal/OscSinCos.hpp \
     Flac/flac_metadata_processing.h \
     Flac/format.h \
-    Flac/stream_decoder.h
+    Flac/stream_decoder.h \
+    Flac/export.h
 
 
 
