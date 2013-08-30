@@ -24,6 +24,7 @@ public:
     static int dialVolume;
 
     void  getAudioFormat(const char* filepath);
+    int getSoxAudioFormat(const char* filename);
 
     QFileSystemModel *model=new QFileSystemModel;
     QTabWidget  *mainTabWidget= new QTabWidget;
