@@ -19,7 +19,7 @@ TARGET = dvda-author-gui
 
 VPATH = .
 
-INCLUDEPATH += spectrumAnalyzer 3rdparty 3rdparty/fftreal 3rdparty/sox Flac
+INCLUDEPATH += spectrumAnalyzer 3rdparty 3rdparty/fftreal 3rdparty/sox 3rdparty/FLAC
 LIBS += -L../libs -lFLAC -lsox
 
 DEFINES += CDRECORD_LOCAL_PATH
@@ -58,8 +58,8 @@ SOURCES += \
     spectrumAnalyzer/waveform.cpp \
     spectrumAnalyzer/wavfile.cpp \
     3rdparty/fftreal/fftreal_wrapper.cpp \
-    Flac/flac_metadata_processing.cpp \
-    3rdparty/sox/sox_metadat_processing.cpp
+    3rdparty/FLAC/flac_metadata_processing.cpp \
+    probe.cpp
 
 
 HEADERS  += \
@@ -113,13 +113,12 @@ HEADERS  += \
     3rdparty/fftreal/FFTRealUseTrigo.hpp \
     3rdparty/fftreal/OscSinCos.h \
     3rdparty/fftreal/OscSinCos.hpp \
-    Flac/flac_metadata_processing.h \
-    Flac/format.h \
-    Flac/stream_decoder.h \
-    Flac/export.h \
-    Flac/ordinals.h \
+    3rdparty/FLAC/format.h \
+    3rdparty/FLAC/stream_decoder.h \
+    3rdparty/FLAC/export.h \
+    3rdparty/FLAC/ordinals.h \
     3rdparty/sox/sox.h \
-    3rdparty/sox/SoXFormatList.h
+    probe.h
 
 
 

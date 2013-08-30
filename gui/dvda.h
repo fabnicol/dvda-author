@@ -5,7 +5,11 @@
 #include "dvda-author-gui.h"
 #include "flistframe.h"
 #include "stream_decoder.h"
+#include "probe.h"
+
 class MainWindow;
+
+
 
 class dvda : public common
 {
@@ -22,9 +26,6 @@ public:
     enum { MaxRecentFiles = 5 };
     static int RefreshFlag;
     static int dialVolume;
-
-    void  getAudioFormat(const char* filepath);
-    int getSoxAudioFormat(const char* filename);
 
     QFileSystemModel *model=new QFileSystemModel;
     QTabWidget  *mainTabWidget= new QTabWidget;
@@ -110,7 +111,6 @@ private:
     static qint64 totalSize[2];
 
     QDial* dial=new QDial;
-    QAudioFormat audioFormat= QAudioFormat();
 
     QString  zoneTag(int ZONE){return ((ZONE)? "DVD-V" : "DVD-A");}
     QString  zoneTag(){return ((mainTabWidget->currentIndex())? "DVD-V" : "DVD-A");}
@@ -163,6 +163,7 @@ private:
     void DomParser(QIODevice*);
     void refreshProjectManagerValues(int= refreshAllZones );
     bool refreshProjectManager();
+
 
  protected:
 

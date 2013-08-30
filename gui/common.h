@@ -5,15 +5,7 @@
 
 
 #include "fwidgets.h"
-#include "wavfile.h"
 
-
-#define AFMT_WAVE 1
-#define AFMT_FLAC 2
-#define AFMT_OGG_FLAC 3
-#define NO_AFMT_FOUND 4
-#define AFMT_WAVE_GOOD_HEADER 10
-#define AFMT_WAVE_FIXED 11
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -30,34 +22,6 @@
 #define Q(X) QMessageBox::about(NULL, "", X);
 #define q(X) QMessageBox::about(NULL, "", QString::number(X));
 #define v(X) *FString(#X)
-
-
-class StandardComplianceProbe : public QObject
-{
-    Q_OBJECT
-public:
-    WavFile decoder;
-    QAudioFormat audioFileFormat;
-    uint audioZone;
-    void getAudioCharacteristics(QString &filename);
-    void parseBuffer();
-    enum audioCharacteristics   { isWav=AFMT_WAVE, isFlac=AFMT_FLAC, isOggFlac=AFMT_OGG_FLAC, isStrictlyDVDAudioCompliant=0x10,  isStrictlyDVDVideoCompliant=0x100, isNonCompliant=0x1000};
-    audioCharacteristics decoderCompliance;
-    int sampleRate;
-    int sampleSize;
-    int channelCount;
-
- public:
-    StandardComplianceProbe(QString &filename, uint zone)
-    {
-        audioZone=zone;
-        getAudioCharacteristics(filename);
-    }
-    bool isStandardCompliant();
-    QString getSampleRate() {return QString::number(sampleRate);}
-    QString getSampleSize() {return QString::number(sampleSize);}
-    QString getChannelCount() {return QString::number(channelCount);}
-};
 
 
 class common : public QDialog, public flags

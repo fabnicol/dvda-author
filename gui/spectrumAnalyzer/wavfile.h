@@ -45,6 +45,14 @@
 #include <QFile>
 #include <QAudioFormat>
 
+#define AFMT_WAVE 1
+#define AFMT_FLAC 2
+#define AFMT_OGG_FLAC 3
+#define NO_AFMT_FOUND 4
+#define AFMT_WAVE_GOOD_HEADER 10
+#define AFMT_WAVE_FIXED 11
+
+
 class WavFile : public QFile
 {
 public:

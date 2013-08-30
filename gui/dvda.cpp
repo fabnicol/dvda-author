@@ -10,7 +10,7 @@
 #include "options.h"
 #include "browser.h"
 #include "fstring.h"
-#include "SoXFormatList.h"
+
 
 
 int dvda::RefreshFlag=0;
@@ -553,29 +553,21 @@ void dvda::addSelectedFileToProject()
       if ((model->fileInfo(index).isFile())||(model->fileInfo(index).isDir()))
         {
           QString path=model->filePath(index);
-          QString extension=path.split(".").last();
-          if (extension == "flac")
-             getAudioFormat((const char*) path.toLocal8Bit());
-          else if (extension == "wav")
-           {
+
               StandardComplianceProbe  probe(path, isVideo);
               if (probe.isStandardCompliant())
               {
-                 outputTextEdit->append(tr(MSG_HTML_TAG  "Added wav file: %1 bits  %2 kHz %3 ch.\n").arg(probe.getSampleSize(), probe.getSampleRate(), probe.getChannelCount()));
+                  outputTextEdit->append(tr(MSG_HTML_TAG  "Added  .%4  file: %1 bits  %2 kHz %3 ch.\n").arg(probe.getSampleSize(), probe.getSampleRate(), probe.getChannelCount(),  probe.getCodec()));
               }
               else
               {
-                  outputTextEdit->append(tr("%1 %2").arg(QString::number(probe.audioZone), QString::number(probe.decoderCompliance)));
-                  outputTextEdit->append(tr(ERROR_HTML_TAG "Track does not comply with the standard.\n"));
-                 outputTextEdit->append(tr("\t %1 bits  %2 kHz %3 ch.\n").arg(probe.getSampleSize(), probe.getSampleRate(), probe.getChannelCount()));
+                  outputTextEdit->append(tr(ERROR_HTML_TAG "Track does not comply with the standard)"));
+                  QStringList p =QStringList()<< probe.getSampleSize() <<  probe.getSampleRate() << probe.getChannelCount() ;
+                  if ((p.at(0) > "0") && (p.at(1) > "0") && (p.at(2) > "0"))
+                     outputTextEdit->insertPlainText(tr(": %1 bits  %2 kHz %3 ch.\n").arg(p.at(0), p.at(1), p.at(2)));
+                  else
                  return;
               }
-            }
-              else if (SoXFormatList.contains(extension))
-             {
-                getSoxAudioFormat((const char*)path.toLocal8Bit());
-                q(audioFormat.sampleRate())
-             }
 
               RefreshFlag |= SaveTree|UpdateTree;
         }
@@ -835,4 +827,6 @@ void dvda::addDraggedFiles(const QList<QUrl>& urls)
   saveProject();
   showFilenameOnly();
 }
+
+
 
