@@ -6,10 +6,9 @@
 #include "flistframe.h"
 #include "stream_decoder.h"
 #include "probe.h"
+#include "mainwidget.h"
 
 class MainWindow;
-
-
 
 class dvda : public common
 {
@@ -64,6 +63,7 @@ public slots:
    void on_openManagerWidgetButton_clicked(bool );
    void on_frameTab_changed(int index);
    void on_openProjectButton_clicked();
+   void on_playItemButton_clicked(bool playInSpectrumAnalizer=false);
 
 private slots:
 
@@ -90,7 +90,6 @@ private slots:
     void writeProjectFile();
     void assignGroupFiles(const int isVideo, const int group_index, const QString& file);
     void openProjectFile();
-    void on_playItemButton_clicked();
     void on_playItem_changed();
     void on_audioFilterButton_clicked(bool active);
     void closeProject();
@@ -163,7 +162,7 @@ private:
     bool refreshProjectManager();
 
     StandardComplianceProbe  *probe;
-
+    spectrumAnalyzerMainWidget* spectrum;
 
  protected:
 

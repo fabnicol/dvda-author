@@ -72,6 +72,7 @@ class spectrumAnalyzerMainWidget : public QWidget
 
 public:
     explicit spectrumAnalyzerMainWidget(QWidget *parent = 0);
+    void load(const QString & path);
 
     // QObject
     void timerEvent(QTimerEvent *event);

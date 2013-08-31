@@ -35,7 +35,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 // createFontDataBase looks to be fast enough to be run on each launch.
 // Should it slow down application launch on some platform, one option could be to launch it just once then on user demand
 
-#include "mainwidget.h"
 
 void MainWindow::createFontDataBase()
 {
@@ -88,8 +87,6 @@ MainWindow::MainWindow(char* projectName)
   recentFiles=QStringList()<<QString("default") ;
 
   dvda_author=new dvda;
-
-  //spectrumAnalyzerMainWidget* spectrum=new spectrumAnalyzerMainWidget;
 
   dialog=new options(dvda_author);
 
@@ -262,6 +259,9 @@ void MainWindow::createMenus()
  processMenu->addAction(burnAction);
  processMenu->addAction(encodeAction);
  processMenu->addAction(decodeAction);
+ processMenu->addSeparator();
+ processMenu->addAction(playAction);
+ processMenu->addAction(playInSpectrumAnalyzerAction);
 
  optionsMenu->addAction(optionsAction);
  optionsMenu->addAction(configureAction);
@@ -307,6 +307,16 @@ void MainWindow::createActions()
   decodeAction = new QAction(tr("&Decode disc to generate wav files"), this);
   decodeAction->setIcon(QIcon(":/images/decode.png"));
   connect(decodeAction, SIGNAL(triggered()), dvda_author, SLOT(extract()));
+
+  playAction = new QAction(tr("Play file"), this);
+  playAction->setShortcut(QKeySequence("Ctrl+M"));
+  playAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+  connect(playAction, SIGNAL(triggered()), dvda_author, SLOT(on_playItemButton_clicked()));
+
+  playInSpectrumAnalyzerAction = new QAction(tr("Play in spectrum analyzer"), this);
+  playInSpectrumAnalyzerAction->setShortcut(QKeySequence("Ctrl+!"));
+  playInSpectrumAnalyzerAction->setIcon(QIcon(":/images/spectrum.png"));
+  connect(playInSpectrumAnalyzerAction, &QAction::triggered, [this] {dvda_author->on_playItemButton_clicked(true);});
 
   optionsAction = new QAction(tr("&Processing options"), this);
   optionsAction->setShortcut(QKeySequence("Ctrl+P"));
@@ -376,8 +386,8 @@ void MainWindow::createActions()
     connect(recentFileActions[i], SIGNAL(triggered()), dvda_author, SLOT(openProjectFile()));
   }
 
-  QAction* separator[3];
-  for (int i=0; i < 3; i++)
+  QAction* separator[4];
+  for (int i=0; i < 4; i++)
     {
       separator[i] = new QAction(this) ;
       separator[i]->setSeparator(true);
@@ -385,11 +395,14 @@ void MainWindow::createActions()
 
   actionList << openAction << saveAction << saveAsAction << closeAction << exitAction << separator[0] <<
                 burnAction << encodeAction << decodeAction << separator[1] <<
+                playAction  << playInSpectrumAnalyzerAction  << separator[2] <<
                 displayOutputAction << displayFileTreeViewAction << displayManagerAction << displayConsoleAction <<
-                clearOutputTextAction <<  editProjectAction << separator[2] << configureAction <<
+                clearOutputTextAction <<  editProjectAction << separator[3] << configureAction <<
                 optionsAction << helpAction << aboutAction;
 
 }
+
+
 
 void MainWindow::configure()
 {

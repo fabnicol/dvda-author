@@ -167,16 +167,21 @@ void spectrumAnalyzerMainWidget::bufferLengthChanged(qint64 length)
 // Private slots
 //-----------------------------------------------------------------------------
 
+void spectrumAnalyzerMainWidget::load(const QString & path)
+{
+    //reset();
+    setMode(LoadFileMode);
+    m_engine->loadFile(path);
+    m_engine->startPlayback();
+    updateButtonStates();
+}
+
 void spectrumAnalyzerMainWidget::showFileDialog()
 {
     const QString dir;
     const QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Open WAV file"), dir, "*.wav");
-    if (fileNames.count()) {
-        reset();
-        setMode(LoadFileMode);
-        m_engine->loadFile(fileNames.front());
-        updateButtonStates();
-    }
+    if (fileNames.count())
+        this->load(fileNames.at(0));
 }
 
 void spectrumAnalyzerMainWidget::showSettingsDialog()

@@ -39,7 +39,8 @@ void dvda::on_playItem_changed()
 }
 
 
-void dvda::on_playItemButton_clicked()
+
+void dvda::on_playItemButton_clicked(bool inSpectrumAnalyzer)
 {
   static int count;
   updateIndexInfo();
@@ -49,26 +50,47 @@ void dvda::on_playItemButton_clicked()
       project[isVideo]->getCurrentWidget()->setCurrentRow(0);
     }
   updateIndexChangeInfo();
+  QUrl path=QUrl::fromLocalFile(Hash::wrapper[dvda::zoneTag(isVideo)]->at(currentIndex).at(row));
 
   if (count == 0)
     {
-      myMusic = new QMediaPlayer(this, QMediaPlayer::StreamPlayback);
-      myMusic->setMedia(QMediaContent(QUrl::fromLocalFile(Hash::wrapper[dvda::zoneTag(isVideo)]->at(currentIndex).at(row))));
-      myMusic->setVolume(dvda::dialVolume);
-      myMusic->play();
+      if (inSpectrumAnalyzer)
+      {
+         // if (spectrum == nullptr)
+               spectrum=new spectrumAnalyzerMainWidget;
+          spectrum->load(path.toString(QUrl::PreferLocalFile));
+          spectrum->show();
+      }
+      else
+      {
+              myMusic = new QMediaPlayer(this, QMediaPlayer::StreamPlayback);
+              myMusic->setMedia(QMediaContent(path));
+              myMusic->setVolume(dvda::dialVolume);
+              myMusic->play();
+      }
     }
 
   if (count % 2 == 0)
     {
-      myMusic->play();
+      if (inSpectrumAnalyzer)
+      {
+           spectrum->load(path.toString(QUrl::PreferLocalFile));
+      }
+      else
+      {
+          myMusic->play();
+          playItemButton->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
+          playItemButton->setToolTip(tr("Stop playing"));
+      }
+
       outputTextEdit->append(tr(INFORMATION_HTML_TAG "Playing...   file %1\n   in %2 %3   row %4" )
                                   .arg(Hash::wrapper.value(dvda::zoneTag())->at(currentIndex).at(row),
                                   zoneGroupLabel(isVideo),QString::number(currentIndex+1),QString::number(row+1)));
 
-      playItemButton->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
-      playItemButton->setToolTip(tr("Stop playing"));
+
     }
   else
+      if(!inSpectrumAnalyzer)
     {
       playItemButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
       playItemButton->setToolTip(tr("Play selected file"));
@@ -158,7 +180,7 @@ dvda::dvda()
   removeButton->setIcon(iconRemove);
   removeButton->setIconSize(QSize(22, 22));
 
-    playItemButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+  playItemButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
   playItemButton->setIconSize(QSize(22, 22));
   playItemButton->setToolTip(tr("Play selected file"));
 
