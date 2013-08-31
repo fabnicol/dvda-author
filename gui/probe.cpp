@@ -10,7 +10,7 @@ if (ft != nullptr)
     audioFileFormat.setCodec(QString(ft->filetype));
     audioFileFormat.setSampleRate((int) ft->signal.rate);
     audioFileFormat.setChannelCount((int) ft->signal.channels);
-    audioFileFormat.setSampleSize(ft->encoding.bits_per_sample);
+    audioFileFormat.setSampleSize(ft->signal.precision);
 }
 }
 #endif
@@ -42,6 +42,7 @@ void StandardComplianceProbe::checkStandardCompliance()
 sampleSize=audioFileFormat.sampleSize();
 sampleRate=audioFileFormat.sampleRate();
 channelCount=audioFileFormat.channelCount();
+
 
 if (((channelCount ==0) || ( sampleRate == 0) || (sampleSize == 0)) ||
     (channelCount > 6) ||
@@ -80,6 +81,8 @@ bool StandardComplianceProbe::isStandardCompliant()
 
 void StandardComplianceProbe::getAudioCharacteristics(const QString &filename)
 {
+    QString sox_guessed_codec=QString();
+
     decoderCompliance=isNonCompliant;   //default
 
     if (filename.isEmpty()  || audioZone > 1)
@@ -94,34 +97,32 @@ void StandardComplianceProbe::getAudioCharacteristics(const QString &filename)
 #endif
       }
       else if (extension == "oga")
-       {
+      {
     #ifndef WITHOUT_FLAC
              getOggFlacAudioFormat(filename);
     #endif
-       }
+      }
      else if (extension == "wav")
-      {
+     {
               if (wavDecoder.open(filename))
                 audioFileFormat=wavDecoder.fileFormat();
      }
+ #ifndef WITHOUT_SOX
      else if (SoXFormatList.contains(extension))
     {
- #ifndef WITHOUT_SOX
        getSoxAudioFormat(filename);
-  #endif
     }
+    else                                                 // last-ditch attempt
+     {
+               getSoxAudioFormat(filename);
+               sox_guessed_codec=audioFileFormat.codec();
+      }
+ #endif
 
-      checkStandardCompliance();  // will override default if headers allow it
+      codec= (sox_guessed_codec.isEmpty())?
+                     ((audioFileFormat.codec().isEmpty())? filename:  audioFileFormat.codec()):
+                      sox_guessed_codec + " (guessed format)";
 
-       if (isStandardCompliant())
-           codec= QString(extension);
-   #ifndef WITHOUT_SOX
-       else                                                 // last-ditch attempt
-        {
-                  getSoxAudioFormat(filename);
-                  codec=QString(extension)+" (guessed format)";
-        }
-    #endif
-
+      checkStandardCompliance();
 }
 

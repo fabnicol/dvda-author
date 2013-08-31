@@ -1549,7 +1549,7 @@ options::options(dvda* parent)
            {
                 options::RefreshFlag =  hasUnsavedOptions;
                 accept();
-                parent->saveProject(true);
+                parent->updateProject(true);
             });
 
     connect(closeButton, SIGNAL(rejected()), this, SLOT(reject()));

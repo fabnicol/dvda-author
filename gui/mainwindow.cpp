@@ -283,7 +283,7 @@ void MainWindow::createActions()
   saveAction = new QAction(tr("&Save"), this);
   saveAction->setShortcut(QKeySequence("Ctrl+S"));
   saveAction->setIcon(style()->standardIcon(QStyle::SP_DialogSaveButton));
-  connect(saveAction, &QAction::triggered, [&] {dvda_author->saveProject(true);});
+  connect(saveAction, &QAction::triggered, [&] {dvda_author->updateProject(true);});
 
   saveAsAction = new QAction(tr("S&ave project file as..."), this);
   saveAsAction->setIcon(QIcon(":/images/document-save-as.png"));
@@ -534,7 +534,7 @@ void MainWindow::on_editProjectButton_clicked()
                  &QAction::triggered,
                  [file, this]
                                  {
-                                    dvda_author->saveProject(true);
+                                    dvda_author->updateProject(true);
                                     if (file->open(QFile::ReadWrite |  QFile::Text))
                                        {
                                            editor->clear();
@@ -693,7 +693,7 @@ void MainWindow::configureOptions()
                                                                                                                if (    (defaultSaveProjectBehavior->isChecked())
                                                                                                                     || (QMessageBox::Yes == QMessageBox::warning(this, tr("Save project"), tr("Project has not been saved.\nPress Yes to save current .dvp project file now\nor No to close dialog without saving project."), QMessageBox::Yes|QMessageBox::No))
                                                                                                                    )
-                                                                                                                         dvda_author->saveProject();
+                                                                                                                         dvda_author->updateProject();
                                                                                                           });
 
     connect(defaultFileManagerWidgetLayoutBox, SIGNAL(toggled(bool)), this, SLOT(on_displayFileTreeViewButton_clicked(bool)));

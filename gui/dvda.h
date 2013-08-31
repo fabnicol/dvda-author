@@ -60,7 +60,7 @@ public:
 
 public slots:
 
-   void saveProject(bool=false);
+   void updateProject(bool=false);
    void on_openManagerWidgetButton_clicked(bool );
    void on_frameTab_changed(int index);
    void on_openProjectButton_clicked();
@@ -94,8 +94,7 @@ private slots:
     void on_playItem_changed();
     void on_audioFilterButton_clicked(bool active);
     void closeProject();
-
-
+    void checkStandardCompliance();
 
 private:
 
@@ -136,7 +135,6 @@ private:
     QVBoxLayout *managerLayout= new QVBoxLayout;
     QHBoxLayout *allLayout= new QHBoxLayout;
 
-    void addSelectedFileToProject();
     void assignVariables();
     void clearProjectData();
     QStringList createCommandLineString(int commandLineType);
@@ -163,6 +161,8 @@ private:
     void DomParser(QIODevice*);
     void refreshProjectManagerValues(int= refreshAllZones );
     bool refreshProjectManager();
+
+    StandardComplianceProbe  *probe;
 
 
  protected:

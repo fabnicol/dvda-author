@@ -46,7 +46,7 @@ private:
     int channelCount;
 
  public:
-    StandardComplianceProbe(QString &filename, uint zone)
+    StandardComplianceProbe(QString &filename, uint zone=0)
     {
         audioZone=zone;
         getAudioCharacteristics(filename);

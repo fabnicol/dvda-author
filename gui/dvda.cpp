@@ -17,8 +17,9 @@ int dvda::RefreshFlag=0;
 int flags::lplexRank=0;
 qint64   dvda::totalSize[]={0,0};
 int dvda::dialVolume=25;
-class Hash;
 
+class Hash;
+class StandardComplianceProbe;
 
 void dvda::initialize()
 {
@@ -212,11 +213,12 @@ dvda::dvda()
       project[ZONE]->slotList=NULL;
       connect(project[ZONE]->addGroupButton, SIGNAL(clicked()), this, SLOT(addGroup()));
       connect(project[ZONE]->deleteGroupButton, SIGNAL(clicked()), this, SLOT(deleteGroup()));
-      connect(project[ZONE]->importFromMainTree, &QToolButton::clicked, [this] {addSelectedFileToProject();});
+      project[ZONE]->importFromMainTree->disconnect(SIGNAL(clicked()));
+      connect(project[ZONE]->importFromMainTree, SIGNAL(clicked()), this, SLOT(checkStandardCompliance()));
       connect(project[ZONE]->moveUpItemButton, SIGNAL(clicked()), this, SLOT(on_moveUpItemButton_clicked()));
       connect(project[ZONE]->moveDownItemButton, SIGNAL(clicked()), this, SLOT(on_moveDownItemButton_clicked()));
       connect(project[ZONE]->retrieveItemButton, SIGNAL(clicked()), this, SLOT(on_deleteItem_clicked()));
-      connect(project[ZONE]->clearListButton, &QToolButton::clicked, [this] { saveProject(); displayTotalSize(); });
+      connect(project[ZONE]->clearListButton, &QToolButton::clicked, [this] { updateProject(); displayTotalSize(); });
       // set visible importFromMaintree and controlButtonBox !
       projectLayout->addWidget(project[ZONE]->tabBox, 0,2);
       updownLayout->addWidget(project[ZONE]->controlButtonBox, 0,0);
@@ -240,7 +242,7 @@ dvda::dvda()
   mainLayout->addLayout(progressLayout);
 
   QStringList labels;
-  labels << tr("Setting") << tr("Value/Path") << tr("Size");
+  labels << tr("") << tr("Rank/Path") << tr("Size") << tr("Precision") << tr("Sample Rate") << tr("Channels");
   managerWidget->hide();
   managerWidget->setHeaderLabels(labels);
 
@@ -478,7 +480,7 @@ void dvda::deleteGroup()
         }
     }
 
-  saveProject();
+  updateProject();
   displayTotalSize();
 }
 
@@ -518,7 +520,7 @@ void dvda::on_moveUpItemButton_clicked()
   fileSizeDataBase[isVideo][currentIndex].swap(row, row-1);
 
   RefreshFlag |= SaveTree|UpdateTree;
-  saveProject();
+  updateProject();
   refreshRowPresentation();
 }
 
@@ -530,13 +532,13 @@ void dvda::on_moveDownItemButton_clicked()
 
   fileSizeDataBase[isVideo][currentIndex].swap(row, row+1);
   RefreshFlag |= SaveTree | UpdateTree;
-  saveProject();
+  updateProject();
   refreshRowPresentation();
 }
 
 #include "flac_metadata_processing.h"
 
-void dvda::addSelectedFileToProject()
+void dvda::checkStandardCompliance()
 {
   QItemSelectionModel *selectionModel = fileTreeView->selectionModel();
   QModelIndexList  indexList=selectionModel->selectedIndexes();
@@ -554,22 +556,30 @@ void dvda::addSelectedFileToProject()
         {
           QString path=model->filePath(index);
 
-              StandardComplianceProbe  probe(path, isVideo);
-              if (probe.isStandardCompliant())
+              probe=new StandardComplianceProbe(path, isVideo);
+              if (probe->isStandardCompliant())
               {
-                  outputTextEdit->append(tr(MSG_HTML_TAG  "Added  .%4  file: %1 bits  %2 kHz %3 ch.\n").arg(probe.getSampleSize(), probe.getSampleRate(), probe.getChannelCount(),  probe.getCodec()));
+                  outputTextEdit->append(tr(MSG_HTML_TAG  "Added  .%4  file: %1 bits  %2 kHz %3 ch.\n").arg(probe->getSampleSize(), probe->getSampleRate(), probe->getChannelCount(),  probe->getCodec()));
+                  project[isVideo]->addStringToListWidget(path, currentIndex);
+                  // in this order
+                  displayTotalSize();
+                  showFilenameOnly();
+
+                  updateProject();
               }
               else
               {
-                  outputTextEdit->append(tr(ERROR_HTML_TAG "Track does not comply with the standard)"));
-                  QStringList p =QStringList()<< probe.getSampleSize() <<  probe.getSampleRate() << probe.getChannelCount() ;
+                  outputTextEdit->append(tr(ERROR_HTML_TAG "Track does not comply with the standard"));
+                  QStringList p =QStringList()<< probe->getSampleSize() <<  probe->getSampleRate() << probe->getChannelCount() ;
                   if ((p.at(0) > "0") && (p.at(1) > "0") && (p.at(2) > "0"))
                      outputTextEdit->insertPlainText(tr(": %1 bits  %2 kHz %3 ch.\n").arg(p.at(0), p.at(1), p.at(2)));
                   else
-                 return;
+                 continue;
               }
 
               RefreshFlag |= SaveTree|UpdateTree;
+              delete(probe);
+
         }
       else
         {
@@ -579,17 +589,13 @@ void dvda::addSelectedFileToProject()
         }
     }
 
-  saveProject();
-  // in this order
-  displayTotalSize();
-  showFilenameOnly();
 }
 
 
 void dvda::on_deleteItem_clicked()
 {
   RefreshFlag |= SaveTree | UpdateTree;
-  saveProject();
+  updateProject();
   updateIndexInfo();
   displayTotalSize();
 }
@@ -633,11 +639,11 @@ void dvda::remove()
 void dvda::requestSaveProject()
 {
   projectName=QFileDialog::getSaveFileName(this,  tr("Set project file name"), "default.dvp", tr("dvp projects (*.dvp)"));
-  saveProject(true);
+  updateProject(true);
 }
 
 
-void dvda::saveProject(bool requestSave)
+void dvda::updateProject(bool requestSave)
 {
   QListIterator<FAbstractWidget*>  w(Abstract::abstractWidgetList);
 
@@ -824,7 +830,7 @@ void dvda::addDraggedFiles(const QList<QUrl>& urls)
     {
       if (false == project[isVideo]->addStringToListWidget(u.toLocalFile(), currentIndex)) return;
     }
-  saveProject();
+  updateProject();
   showFilenameOnly();
 }
 
