@@ -56,10 +56,8 @@ void dvda::on_playItemButton_clicked(bool inSpectrumAnalyzer)
     {
       if (inSpectrumAnalyzer)
       {
-         // if (spectrum == nullptr)
-               spectrum=new spectrumAnalyzerMainWidget;
-          spectrum->load(path.toString(QUrl::PreferLocalFile));
-          spectrum->show();
+          QProcess sonicVisualiserProcess;
+          sonicVisualiserProcess.start("sonic-visualiser", QStringList() << "--play-on-launch" << "--no-property-boxes" << path);
       }
       else
       {
@@ -74,7 +72,7 @@ void dvda::on_playItemButton_clicked(bool inSpectrumAnalyzer)
     {
       if (inSpectrumAnalyzer)
       {
-           spectrum->load(path.toString(QUrl::PreferLocalFile));
+           //spectrum->load(path.toString(QUrl::PreferLocalFile));
       }
       else
       {

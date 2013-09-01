@@ -1,7 +1,7 @@
 #ifndef PROBE_H
 #define PROBE_H
 #include "common.h"
-#include "wavfile.h"
+//#include "wavfile.h"
 
 #include "sox.h"
 

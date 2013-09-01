@@ -1,0 +1,106 @@
+diff -p1 -w -u3 -r sonic-visualiser-2.2-orig/main/main.cpp sonic-visualiser-2.2/main/main.cpp
+--- sonic-visualiser-2.2-orig/main/main.cpp	2013-07-31 16:44:43.000000000 +0200
++++ sonic-visualiser-2.2/main/main.cpp	2013-09-02 00:22:08.250592629 +0200
+@@ -357,7 +357,7 @@ main(int argc, char **argv)
+     QDesktopWidget *desktop = QApplication::desktop();
+     QRect available = desktop->availableGeometry();
+ 
+-    int width = (available.width() * 2) / 3;
++    int width = available.width()  /2;
+     int height = available.height() / 2;
+     if (height < 450) height = (available.height() * 2) / 3;
+     if (width > height * 2) width = height * 2;
+@@ -373,8 +373,12 @@ main(int argc, char **argv)
+     }
+     settings.endGroup();
+     
++
+     gui->show();
+ 
++    if (args.contains("--no-property-boxes"))
++          gui->togglePropertyBoxes();
++
+     // The MainWindow class seems to have trouble dealing with this if
+     // it tries to adapt to this preference before the constructor is
+     // complete.  As a lazy hack, apply it explicitly from here
+@@ -397,6 +401,11 @@ main(int argc, char **argv)
+         application.handleFilepathArgument(path, splash);
+     }
+     
++
++    if (args.contains("--play-on-launch"))
++        gui->play();
++
++
+ #ifdef HAVE_FFTW3F
+     settings.beginGroup("FFTWisdom");
+     QString wisdom = settings.value("wisdom").toString();
+Seulement dans sonic-visualiser-2.2-orig/: misc
+Seulement dans sonic-visualiser-2.2-orig/: samples
+diff -p1 -w -u3 -r sonic-visualiser-2.2-orig/sonic-visualiser.desktop sonic-visualiser-2.2/sonic-visualiser.desktop
+--- sonic-visualiser-2.2-orig/sonic-visualiser.desktop	2013-07-31 16:44:43.000000000 +0200
++++ sonic-visualiser-2.2/sonic-visualiser.desktop	2013-09-01 22:35:12.230743750 +0200
+@@ -1,3 +1,4 @@
++#!/usr/bin/env xdg-open
+ [Desktop Entry]
+ Name=Sonic Visualiser
+ Exec=sonic-visualiser
+diff -p1 -w -u3 -r sonic-visualiser-2.2-orig/sonic-visualiser.qrc sonic-visualiser-2.2/sonic-visualiser.qrc
+--- sonic-visualiser-2.2-orig/sonic-visualiser.qrc	2013-07-31 16:44:43.000000000 +0200
++++ sonic-visualiser-2.2/sonic-visualiser.qrc	2013-09-02 00:44:33.862560935 +0200
+@@ -1,5 +1,5 @@
+-<!DOCTYPE RCC><RCC version="1.0">
+-<qresource>
++<RCC>
++    <qresource prefix="/">
+     <file>icons/waveform.png</file>
+     <file>icons/spectrum.png</file>
+     <file>icons/spectrogram.png</file>
+@@ -96,21 +96,6 @@
+     <file>icons/sv-64x64.png</file>
+     <file>icons/sv-128x128.png</file>
+     <file>icons/sv-splash.png</file>
+-    <file>samples/bass.wav</file>
+-    <file>samples/beep.wav</file>
+-    <file>samples/bounce.wav</file>
+-    <file>samples/clap.wav</file>
+-    <file>samples/click.wav</file>
+-    <file>samples/cowbell.wav</file>
+-    <file>samples/hihat.wav</file>
+-    <file>samples/kick.wav</file>
+-    <file>samples/organ.wav</file>
+-    <file>samples/piano.wav</file>
+-    <file>samples/silent.wav</file>
+-    <file>samples/snare.wav</file>
+-    <file>samples/stick.wav</file>
+-    <file>samples/strike.wav</file>
+-    <file>samples/tap.wav</file>
+     <file>templates/default.svt</file>
+     <file>templates/Scrolling Waveforms.svt</file>
+     <file>templates/Spectrograms.svt</file>
+diff -p1 -w -u3 -r sonic-visualiser-2.2-orig/svapp/framework/MainWindowBase.h sonic-visualiser-2.2/svapp/framework/MainWindowBase.h
+--- sonic-visualiser-2.2-orig/svapp/framework/MainWindowBase.h	2013-07-31 16:44:43.000000000 +0200
++++ sonic-visualiser-2.2/svapp/framework/MainWindowBase.h	2013-09-02 00:16:22.542600772 +0200
+@@ -159,6 +159,8 @@ signals:
+ public slots:
+     virtual void preferenceChanged(PropertyContainer::PropertyName);
+     virtual void resizeConstrained(QSize);
++    virtual void togglePropertyBoxes();
++    virtual void play();
+ 
+ protected slots:
+     virtual void zoomIn();
+@@ -178,11 +180,11 @@ protected slots:
+ 
+     virtual void toggleTimeRulers();
+     virtual void toggleZoomWheels();
+-    virtual void togglePropertyBoxes();
++
+     virtual void toggleStatusBar();
+     virtual void toggleCentreLine();
+ 
+-    virtual void play();
++
+     virtual void ffwd();
+     virtual void ffwdEnd();
+     virtual void rewind();

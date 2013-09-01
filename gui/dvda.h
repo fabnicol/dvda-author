@@ -6,7 +6,7 @@
 #include "flistframe.h"
 #include "stream_decoder.h"
 #include "probe.h"
-#include "mainwidget.h"
+//#include "mainwidget.h"
 
 class MainWindow;
 
@@ -162,7 +162,6 @@ private:
     bool refreshProjectManager();
 
     StandardComplianceProbe  *probe;
-    spectrumAnalyzerMainWidget* spectrum;
 
  protected:
 
