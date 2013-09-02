@@ -42,7 +42,8 @@ SOURCES += \
     run.cpp \
     console.cpp \
     3rdparty/FLAC/flac_metadata_processing.cpp \
-    probe.cpp
+    probe.cpp \
+    wavfile.cpp
 
 
 HEADERS  += \
@@ -67,7 +68,8 @@ HEADERS  += \
     3rdparty/FLAC/export.h \
     3rdparty/FLAC/ordinals.h \
     3rdparty/sox/sox.h \
-    probe.h
+    probe.h \
+    wavfile.h
 
 
 

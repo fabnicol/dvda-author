@@ -44,6 +44,7 @@ void dvda::on_playItemButton_clicked(bool inSpectrumAnalyzer)
 {
   static int count;
   updateIndexInfo();
+
   if (row < 0)
     {
       row=0;
@@ -56,8 +57,7 @@ void dvda::on_playItemButton_clicked(bool inSpectrumAnalyzer)
     {
       if (inSpectrumAnalyzer)
       {
-          QProcess sonicVisualiserProcess;
-          sonicVisualiserProcess.start("sonic-visualiser", QStringList() << "--play-on-launch" << "--no-property-boxes" << path);
+          sonicVisualiserProcess.start("sonic-visualiser", QStringList()  << "--no-property-boxes" << "--play-on-launch"<< path.toString(QUrl::PreferLocalFile));
       }
       else
       {

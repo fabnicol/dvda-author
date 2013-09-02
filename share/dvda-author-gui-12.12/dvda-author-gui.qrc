@@ -90,5 +90,6 @@
         <file>images/window-close.png</file>
         <file>images/configure-toolbars.png</file>
         <file>images/spectrum.png</file>
+        <file>images/64x64/sonic-visualiser.png</file>
     </qresource>
 </RCC>

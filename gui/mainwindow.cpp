@@ -313,9 +313,9 @@ void MainWindow::createActions()
   playAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
   connect(playAction, SIGNAL(triggered()), dvda_author, SLOT(on_playItemButton_clicked()));
 
-  playInSpectrumAnalyzerAction = new QAction(tr("Play in spectrum analyzer"), this);
+  playInSpectrumAnalyzerAction = new QAction(tr("Play in sonic visualiser"), this);
   playInSpectrumAnalyzerAction->setShortcut(QKeySequence("Ctrl+!"));
-  playInSpectrumAnalyzerAction->setIcon(QIcon(":/images/spectrum.png"));
+  playInSpectrumAnalyzerAction->setIcon(QIcon(":/images/64x64/sonic-visualiser.png"));
   connect(playInSpectrumAnalyzerAction, &QAction::triggered, [this] {dvda_author->on_playItemButton_clicked(true);});
 
   optionsAction = new QAction(tr("&Processing options"), this);
