@@ -113,6 +113,8 @@ class MainWindow : public QMainWindow
    QAction *configureAction;
    QAction *encodeAction;
    QAction *decodeAction;
+   QAction *playInSpectrumAnalyzerAction ;
+   QAction *playAction ;
    QAction *aboutAction;
    QAction *optionsAction;
    QAction *exitAction;

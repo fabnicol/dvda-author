@@ -57,6 +57,7 @@ public:
     void dropEvent(QDropEvent *event);
      QPoint startPos;
      QProcess process;
+     QProcess sonicVisualiserProcess;
 
 public slots:
 
@@ -64,6 +65,7 @@ public slots:
    void on_openManagerWidgetButton_clicked(bool );
    void on_frameTab_changed(int index);
    void on_openProjectButton_clicked();
+   void on_playItemButton_clicked(bool =false);
 
 private slots:
 
@@ -90,7 +92,7 @@ private slots:
     void writeProjectFile();
     void assignGroupFiles(const int isVideo, const int group_index, const QString& file);
     void openProjectFile();
-    void on_playItemButton_clicked();
+
     void on_playItem_changed();
     void on_audioFilterButton_clicked(bool active);
     void closeProject();

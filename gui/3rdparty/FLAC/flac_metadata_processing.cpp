@@ -75,41 +75,4 @@ void init_file(const char* filepath, void* f)
     FLAC__stream_decoder_delete(flac);
 
 }
-
-void  dvda::getAudioFormat(const char* filepath)
-{
-
-
-
-//    if (flac!=NULL)
-//    {
-
-     //   if (audioFormat->type == AFMT_FLAC )
-afmt=&(this->audioFormat);
-init_file(filepath, nullptr);
-int a=this->audioFormat.channelCount();
-q(a)
-
-//        else
-//        {
-//            result=/*FLAC__StreamDecoderInitStatus*/ FLAC__stream_decoder_init_ogg_file  	(
-//                        /*FLAC__StreamDecoder *  */ 	 flac,
-//                        /*FILE * */ filepath,
-//                        /*FLAC__StreamDecoderWriteCallback */ 	null_write_callback,
-//                        /*FLAC__StreamDecoderMetadataCallback */ 	metadata_callback,
-//                        /*FLAC__StreamDecoderErrorCallback  */	error_callback,
-//                        (void *) audioFormat
-//                    );
-//        }
-
-//    }
-//    else
-//    {
-//        //parent->outputTextEdit->append(QObject::tr(ERROR_HTML_TAG  " Fatal - could not create FLAC OR OGG FLAC decoder\n"));
-//    }
-
-
-   // return audioFormat;
-}
-//}
 #endif
