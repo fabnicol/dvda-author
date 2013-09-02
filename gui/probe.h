@@ -5,8 +5,6 @@
 
 #include "sox.h"
 
-void flac_init_file(const QString &filepath, void* f);
-void oggflac_init_file(const QString& filepath, void* f);
 
 class StandardComplianceProbe : public QObject
 {

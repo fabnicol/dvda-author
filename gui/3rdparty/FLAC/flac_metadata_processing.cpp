@@ -7,13 +7,6 @@
 //extern "C" {
 
 
-#include "format.h"
-#include "stream_decoder.h"
-#include "ordinals.h"
-//#include "dvda.h"
-
-#include "dvda.h"
-#include "common.h"
 
 QAudioFormat *afmt;
 
@@ -45,22 +38,12 @@ void flac__error_callback(const FLAC__StreamDecoder *dec,
 
 }
 
-void init_file(const char* filepath, void* f)
-{
-   FLAC__StreamDecoder* flac;
-   flac=FLAC__stream_decoder_new();
-    FLAC__StreamDecoderInitStatus result= /*FLAC__StreamDecoderInitStatus*/ FLAC__stream_decoder_init_file  	(
-    /*FLAC__StreamDecoder *  */ 	 flac,
-    /*FILE * */ filepath,
-    /*FLAC__StreamDecoderWriteCallback */ 	flac__null_write_callback,
-    /*FLAC__StreamDecoderMetadataCallback */ 	flac__metadata_callback,
-    /*FLAC__StreamDecoderErrorCallback  */	 flac__error_callback,
-   (void*) f
-);
+FLAC__StreamDecoder* flac;
 
+void flac_close(int result)
+{
     if (result!=FLAC__STREAM_DECODER_INIT_STATUS_OK)
     {
-
         FLAC__stream_decoder_delete(flac);
         //parent->outputTextEdit->append(QObject::tr(ERROR_HTML_TAG  "Failed to initialise FLAC decoder\n"));
     }
@@ -73,6 +56,35 @@ void init_file(const char* filepath, void* f)
     }
     FLAC__stream_decoder_finish(flac);
     FLAC__stream_decoder_delete(flac);
+}
 
+void flac_init_file(const QString & filepath, void* f)
+{
+   flac=FLAC__stream_decoder_new();
+    FLAC__StreamDecoderInitStatus result= /*FLAC__StreamDecoderInitStatus*/ FLAC__stream_decoder_init_file  	(
+    /*FLAC__StreamDecoder *  */ 	 flac,
+    /*FILE * */ (const char*) filepath.toLocal8Bit(),
+    /*FLAC__StreamDecoderWriteCallback */ 	flac__null_write_callback,
+    /*FLAC__StreamDecoderMetadataCallback */ 	flac__metadata_callback,
+    /*FLAC__StreamDecoderErrorCallback  */	 flac__error_callback,
+   (void*) f
+);
+
+    flac_close(result);
+}
+
+
+void oggflac_init_file(const QString & filepath, void* f)
+{
+   flac=FLAC__stream_decoder_new();
+    FLAC__StreamDecoderInitStatus    result=/*FLAC__StreamDecoderInitStatus*/ FLAC__stream_decoder_init_ogg_file  	(
+                /*FLAC__StreamDecoder *  */ 	 flac,
+                /*FILE * */ (const char*) filepath.toLocal8Bit(),
+                /*FLAC__StreamDecoderWriteCallback */ 	flac__null_write_callback,
+                /*FLAC__StreamDecoderMetadataCallback */ 	flac__metadata_callback,
+                /*FLAC__StreamDecoderErrorCallback  */	flac__error_callback,
+                (void *) f
+            );
+    flac_close(result);
 }
 #endif

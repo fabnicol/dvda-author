@@ -69,7 +69,8 @@ HEADERS  += \
     3rdparty/FLAC/ordinals.h \
     3rdparty/sox/sox.h \
     probe.h \
-    wavfile.h
+    wavfile.h \
+    3rdparty/FLAC/flac_metadata_processing.h
 
 
 

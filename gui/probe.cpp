@@ -1,6 +1,8 @@
 #include "probe.h"
 #ifndef WITHOUT_SOX
 #include "sox.h"
+#include "flac_metadata_processing.h"
+
 
 void StandardComplianceProbe::getSoxAudioFormat(const QString& filename)
 {
