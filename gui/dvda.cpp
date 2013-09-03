@@ -39,64 +39,98 @@ void dvda::on_playItem_changed()
 }
 
 
-
 void dvda::on_playItemButton_clicked(bool inSpectrumAnalyzer)
 {
-  static int count;
-  updateIndexInfo();
+    static int count;
+    updateIndexInfo();
 
-  if (row < 0)
+    if (row < 0)
     {
-      row=0;
-      project[isVideo]->getCurrentWidget()->setCurrentRow(0);
+        row=0;
+        project[isVideo]->getCurrentWidget()->setCurrentRow(0);
     }
-  updateIndexChangeInfo();
-  QUrl path=QUrl::fromLocalFile(Hash::wrapper[dvda::zoneTag(isVideo)]->at(currentIndex).at(row));
+    updateIndexChangeInfo();
+    QUrl path=QUrl::fromLocalFile(Hash::wrapper[dvda::zoneTag(isVideo)]->at(currentIndex).at(row));
 
-  if (count == 0)
+#define PLAY_MSG(X) \
+    outputTextEdit->append(tr(INFORMATION_HTML_TAG X " %1\n   in %2 %3   row %4") \
+                           .arg(Hash::wrapper.value(dvda::zoneTag())->at(currentIndex).at(row), \
+                                zoneGroupLabel(isVideo),QString::number(currentIndex+1),QString::number(row+1)));
+
+
+    if (inSpectrumAnalyzer)
     {
-      if (inSpectrumAnalyzer)
-      {
-          sonicVisualiserProcess.start("sonic-visualiser", QStringList()  << "--no-property-boxes" << "--play-on-launch"<< path.toString(QUrl::PreferLocalFile));
-      }
-      else
-      {
-              myMusic = new QMediaPlayer(this, QMediaPlayer::StreamPlayback);
-              myMusic->setMedia(QMediaContent(path));
-              myMusic->setVolume(dvda::dialVolume);
-              myMusic->play();
-      }
-    }
 
-  if (count % 2 == 0)
+
+        /* using stack allocation experimentally improves playback launch by sonic-visualiser
+         *for poorly understood reasons wrt heap allocation of QProcess */
+
+        /*  do not heap-allocate in class */
+
+        if (sonicVisualiserProcess == nullptr )
+            sonicVisualiserProcess =new QProcess;
+
+        sonicVisualiserProcess->start("sonic-visualiser", QStringList()  << "--no-property-boxes" << "--play-on-launch"<< path.toString(QUrl::PreferLocalFile));
+
+        connect(sonicVisualiserProcess, SIGNAL(finished(int , QProcess::ExitStatus )),  this, SLOT(deleteSonicVisualiserProcess(int)));
+
+        PLAY_MSG("Sonic-visualiser : playing file" )
+    }
+    else
     {
-      if (inSpectrumAnalyzer)
-      {
-           //spectrum->load(path.toString(QUrl::PreferLocalFile));
-      }
-      else
-      {
-          myMusic->play();
-          playItemButton->setIcon(style()->standardIcon(QStyle::SP_MediaStop));
-          playItemButton->setToolTip(tr("Stop playing"));
-      }
+        if (count == 0)
+        {
+            myMusic = new QMediaPlayer(this, QMediaPlayer::StreamPlayback);
+            myMusic->setMedia(QMediaContent(path));
+            myMusic->setVolume(dvda::dialVolume);
+            myMusic->play();
+        }
 
-      outputTextEdit->append(tr(INFORMATION_HTML_TAG "Playing...   file %1\n   in %2 %3   row %4" )
-                                  .arg(Hash::wrapper.value(dvda::zoneTag())->at(currentIndex).at(row),
-                                  zoneGroupLabel(isVideo),QString::number(currentIndex+1),QString::number(row+1)));
+        if (count % 2 == 0)
+        {
+            {
+                const char* text="Stop playing";
+                const QIcon icon =style()->standardIcon(QStyle::SP_MediaStop);
+                myMusic->play();
+                playItemButton->setIcon(icon);
+                parent->playAction->setIcon(icon);
+                parent->playAction->setText(tr(text));
+                playItemButton->setToolTip(tr(text));
+            }
 
+            PLAY_MSG("Playing...   file")
+
+        }
+        else
+        {
+            const char* text="Play selected file";
+            const QIcon icon =style()->standardIcon(QStyle::SP_MediaPlay);
+            playItemButton->setIcon(icon);
+            parent->playAction->setIcon(icon);
+            parent->playAction->setText(tr(text));
+            playItemButton->setToolTip(tr(text));
+            myMusic->stop();
+
+            PLAY_MSG("Stopped playing file")
+        }
+        count++;
 
     }
-  else
-      if(!inSpectrumAnalyzer)
-    {
-      playItemButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-      playItemButton->setToolTip(tr("Play selected file"));
-      myMusic->stop();
-      outputTextEdit->append(tr(INFORMATION_HTML_TAG "Stopped."));
-    }
-  count++;
+
 }
+
+void dvda::deleteSonicVisualiserProcess(int exitcode)
+{
+
+    if (sonicVisualiserProcess != nullptr)
+    {
+        sonicVisualiserProcess->kill(); // do not forget as a deleted process may not be registered as finished by Qt even if it disappears in pid lists!
+        delete(sonicVisualiserProcess);
+     }
+   sonicVisualiserProcess=nullptr;  // necessary as deletion does not ensure pointing to nullptr
+   PLAY_MSG("Sonic-visualiser : stopped playing")
+}
+
 
 dvda::dvda()
 {
@@ -221,6 +255,9 @@ dvda::dvda()
   connect(&process2, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(process2Finished(int, QProcess::ExitStatus)));
   connect(&process2, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(on_cdrecordButton_clicked()));
   connect(&process3, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(process3Finished(int, QProcess::ExitStatus)));
+
+  //connect(sonicVisualiserProcess, SIGNAL(error(QProcess::ProcessError)),  this, SLOT(deleteSonicVisualiserProcess(QProcess::ProcessError)));
+
   connect(mainTabWidget, SIGNAL(currentChanged(int)), this, SLOT(on_frameTab_changed(int )));
   connect(playItemButton, SIGNAL(clicked()), this, SLOT(on_playItemButton_clicked()));
   connect(dial, &QDial::valueChanged, [&]{ dvda::dialVolume=dial->value(); if (myMusic) myMusic->setVolume(dvda::dialVolume);});

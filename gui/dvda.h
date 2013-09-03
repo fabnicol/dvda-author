@@ -57,7 +57,7 @@ public:
     void dropEvent(QDropEvent *event);
      QPoint startPos;
      QProcess process;
-     QProcess sonicVisualiserProcess;
+
 
 public slots:
 
@@ -97,6 +97,8 @@ private slots:
     void on_audioFilterButton_clicked(bool active);
     void closeProject();
     void checkStandardCompliance();
+    void deleteSonicVisualiserProcess(int);
+
 
 private:
 
@@ -163,9 +165,10 @@ private:
     void DomParser(QIODevice*);
     void refreshProjectManagerValues(int= refreshAllZones );
     bool refreshProjectManager();
+    void msg (const QString & text);
 
     StandardComplianceProbe  *probe;
-
+    QProcess *sonicVisualiserProcess=nullptr;
 
  protected:
 

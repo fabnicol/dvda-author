@@ -52,6 +52,9 @@ class MainWindow : public QMainWindow
    MainWindow(char*);
    options* dialog;
    QSettings  *settings;
+   QAction *playInSpectrumAnalyzerAction ;
+   QAction *playAction ;
+
 
    enum { MaxRecentFiles = 5 };
    QStringList recentFiles;
@@ -113,8 +116,6 @@ class MainWindow : public QMainWindow
    QAction *configureAction;
    QAction *encodeAction;
    QAction *decodeAction;
-   QAction *playInSpectrumAnalyzerAction ;
-   QAction *playAction ;
    QAction *aboutAction;
    QAction *optionsAction;
    QAction *exitAction;

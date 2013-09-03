@@ -15,7 +15,7 @@ TARGET = dvda-author-gui
 
 VPATH = .
 
-INCLUDEPATH += 3rdparty 3rdparty/sox 3rdparty/FLAC 3rdparty/sonic-visaliser
+INCLUDEPATH += 3rdparty 3rdparty/sox 3rdparty/FLAC 3rdparty/sonic-visaliser 3rdparty/Qt
 LIBS += -L../libs -lFLAC -lsox
 
 DEFINES += CDRECORD_LOCAL_PATH
@@ -42,8 +42,10 @@ SOURCES += \
     run.cpp \
     console.cpp \
     3rdparty/FLAC/flac_metadata_processing.cpp \
-    probe.cpp \
-    wavfile.cpp
+    3rdparty/Qt/wavfile.cpp \
+    probe.cpp
+
+
 
 
 HEADERS  += \
@@ -68,9 +70,11 @@ HEADERS  += \
     3rdparty/FLAC/export.h \
     3rdparty/FLAC/ordinals.h \
     3rdparty/sox/sox.h \
-    probe.h \
-    wavfile.h \
-    3rdparty/FLAC/flac_metadata_processing.h
+    3rdparty/FLAC/flac_metadata_processing.h \
+    3rdparty/Qt/wavfile.h \
+    probe.h
+
+
 
 
 
