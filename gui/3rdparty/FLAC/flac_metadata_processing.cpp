@@ -42,20 +42,11 @@ FLAC__StreamDecoder* flac;
 
 void flac_close(int result)
 {
-    if (result!=FLAC__STREAM_DECODER_INIT_STATUS_OK)
+    if ((result == FLAC__STREAM_DECODER_INIT_STATUS_OK) &&  (FLAC__stream_decoder_process_until_end_of_metadata(flac)))
     {
-        FLAC__stream_decoder_delete(flac);
-        //parent->outputTextEdit->append(QObject::tr(ERROR_HTML_TAG  "Failed to initialise FLAC decoder\n"));
+         FLAC__stream_decoder_finish(flac);
     }
-
-    if (!FLAC__stream_decoder_process_until_end_of_metadata(flac))
-    {
-
         FLAC__stream_decoder_delete(flac);
-        //parent->outputTextEdit->append(QObject::tr(ERROR_HTML_TAG "Failed to read metadata from FLAC file\n"));
-    }
-    FLAC__stream_decoder_finish(flac);
-    FLAC__stream_decoder_delete(flac);
 }
 
 void flac_init_file(const QString & filepath, void* f)

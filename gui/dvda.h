@@ -34,11 +34,12 @@ public:
     QString projectName;
     QString curFile;
     FListFrame *project[2];
-    QToolButton *audioFilterButton=new QToolButton;
+    QPushButton *audioFilterButton=new QPushButton;
     QTextEdit *outputTextEdit = new QTextEdit;
 
     int getZone() {return isVideo;}
     void initializeProject(const bool cleardata=true);
+    int resample(int,int);
 
     void checkEmptyProjectName()
       {
@@ -169,6 +170,8 @@ private:
 
     StandardComplianceProbe  *probe;
     QProcess *sonicVisualiserProcess=nullptr;
+    QProcess resampleProcess;
+    int resample(int bitRate, int sampleRate, const QString & file);
 
  protected:
 

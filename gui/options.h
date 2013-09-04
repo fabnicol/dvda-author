@@ -182,7 +182,8 @@ public:
       *highlightFormatFComboBox,
       *fontFComboBox,
       *fontSizeFComboBox,
-      *nmenuFComboBox;
+      *nmenuFComboBox,
+      *ncolumnFComboBox;
 
     FCheckBox *loopVideoBox;
     FListFrame* slides, * soundtracks, *screentext;

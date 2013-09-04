@@ -437,6 +437,15 @@ audioMenuPage::audioMenuPage(dvda* parent, standardPage* standardTab)
 
     nmenuFComboBox->setMaximumWidth(50);
 
+    nmenuList.removeFirst();
+
+    ncolumnFComboBox=new FComboBox(nmenuList,
+                                 "numberOfColumns",
+    {"Audio menu", "Number of columns per menu"},
+                                 "ncolumns");
+
+    ncolumnFComboBox->setMaximumWidth(50);
+
     QIcon *iconSlides=new QIcon(":/images/64x64/still.png");
     QIcon *iconSoundtracks=new QIcon(":/images/audio_file_icon.png");
     QIcon *iconScreentext=new QIcon(":/images/64x64/text-rtf.png");
@@ -563,8 +572,10 @@ audioMenuPage::audioMenuPage(dvda* parent, standardPage* standardTab)
     QGridLayout* createMenuLayout=new QGridLayout;
 
     createMenuLayout->addWidget(nmenuFComboBox, 0, 1);
+    createMenuLayout->addWidget(ncolumnFComboBox, 0, 3);
     createMenuLayout->addWidget(new QLabel(tr("menu(s)")), 0, 2);
-    createMenuLayout->setColumnMinimumWidth(3,300);
+    createMenuLayout->addWidget(new QLabel(tr("columns")), 0, 4);
+    createMenuLayout->setColumnMinimumWidth(5,200);
 
     audioMenuLabel->setBuddy(audioMenuLineEdit);
     audioMenuLabel->setToolTip(tr("Path to image of DVD-Audio menu background"));
@@ -607,6 +618,7 @@ audioMenuPage::audioMenuPage(dvda* parent, standardPage* standardTab)
     {"Audio menu","Create DVD-Audio menu"},
                                        {
                                           nmenuFComboBox,
+                                          ncolumnFComboBox,
                                           audioMenuLineEdit,
                                           audioMenuButton,
                                           openAudioMenuButton,
@@ -688,6 +700,7 @@ void audioMenuPage::readFontSizes(int rank)
 void audioMenuPage::setMinimumNMenu(bool value)
 {
     nmenuFComboBox->setCurrentIndex((int) value);
+    ncolumnFComboBox->setCurrentIndex((int) value*2);
 }
 
 void audioMenuPage::on_slidesButton_clicked()

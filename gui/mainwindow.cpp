@@ -262,6 +262,14 @@ void MainWindow::createMenus()
  processMenu->addSeparator();
  processMenu->addAction(playAction);
  processMenu->addAction(playInSpectrumAnalyzerAction);
+ processMenu->addSeparator();
+ processMenu->addAction(reSampleTo1644);
+ processMenu->addAction(reSampleTo1648);
+ processMenu->addAction(reSampleTo1696);
+ processMenu->addAction(reSampleTo2444);
+ processMenu->addAction(reSampleTo2448);
+ processMenu->addAction(reSampleTo2496);
+
 
  optionsMenu->addAction(optionsAction);
  optionsMenu->addAction(configureAction);
@@ -317,6 +325,22 @@ void MainWindow::createActions()
   playInSpectrumAnalyzerAction->setShortcut(QKeySequence("Ctrl+!"));
   playInSpectrumAnalyzerAction->setIcon(QIcon(":/images/64x64/sonic-visualiser.png"));
   connect(playInSpectrumAnalyzerAction, &QAction::triggered, [this] {dvda_author->on_playItemButton_clicked(true);});
+
+
+#define reSampleTo(X,Y)  reSampleTo##X##Y= new QAction(tr("Resample to " #X "bits/" #Y " kHz"), this);\
+                                             connect(reSampleTo##X##Y, &QAction::triggered, [this] {dvda_author->resample(X,Y);});
+
+  reSampleTo(16,44)
+  reSampleTo(16,48)
+  reSampleTo(16,96)
+
+  reSampleTo(24,44)
+  reSampleTo(24,48)
+  reSampleTo(24,96)
+
+  exportAudioToVideo= new QAction(tr("Export to DVD-Video"), this);
+  exportVideoToAudio = new QAction(tr("Export to DVD-Audio"), this);
+  createMirror= new QAction(tr("Create mirror zones"), this);
 
   optionsAction = new QAction(tr("&Processing options"), this);
   optionsAction->setShortcut(QKeySequence("Ctrl+P"));
@@ -386,8 +410,8 @@ void MainWindow::createActions()
     connect(recentFileActions[i], SIGNAL(triggered()), dvda_author, SLOT(openProjectFile()));
   }
 
-  QAction* separator[4];
-  for (int i=0; i < 4; i++)
+  QAction* separator[6];
+  for (int i=0; i < 6; i++)
     {
       separator[i] = new QAction(this) ;
       separator[i]->setSeparator(true);
@@ -396,7 +420,8 @@ void MainWindow::createActions()
   actionList << openAction << saveAction << saveAsAction << closeAction << exitAction << separator[0] <<
                 burnAction << encodeAction << decodeAction << separator[1] <<
                 playAction  << playInSpectrumAnalyzerAction  << separator[2] <<
-                displayOutputAction << displayFileTreeViewAction << displayManagerAction << displayConsoleAction <<
+                reSampleTo1644 << reSampleTo1648 << reSampleTo1696 << reSampleTo2444 << reSampleTo2448 << reSampleTo2496 << separator[5] <<
+                displayOutputAction << displayFileTreeViewAction << displayManagerAction << displayConsoleAction <<  separator[4] <<
                 clearOutputTextAction <<  editProjectAction << separator[3] << configureAction <<
                 optionsAction << helpAction << aboutAction;
 

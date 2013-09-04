@@ -13,6 +13,14 @@ if (ft != nullptr)
     audioFileFormat.setSampleRate((int) ft->signal.rate);
     audioFileFormat.setChannelCount((int) ft->signal.channels);
     audioFileFormat.setSampleSize(ft->signal.precision);
+    sox_close(ft);
+}
+else
+{
+    audioFileFormat.setCodec("");
+    audioFileFormat.setSampleRate(0);
+    audioFileFormat.setChannelCount(0);
+    audioFileFormat.setSampleSize(0);
 }
 }
 #endif
@@ -107,7 +115,10 @@ void StandardComplianceProbe::getAudioCharacteristics(const QString &filename)
      else if (extension == "wav")
      {
               if (wavDecoder.open(filename))
+              {
                 audioFileFormat=wavDecoder.fileFormat();
+                wavDecoder.close();
+              }
      }
  #ifndef WITHOUT_SOX
      else if (SoXFormatList.contains(extension))

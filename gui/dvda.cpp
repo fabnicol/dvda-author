@@ -132,6 +132,59 @@ void dvda::deleteSonicVisualiserProcess(int exitcode)
 }
 
 
+int dvda::resample(int bitRate, int sampleRate, const QString & file)
+{
+
+    resampleProcess;
+    QStringList args;
+    QString outputPath ="output.wav"/* =... */;
+    args << file << "-b" <<  QString::number(bitRate) << outputPath << "rate";
+
+    if (bitRate == 24)
+       args << "-v"  << "-I" <<  "-b" << "90" ;
+     else
+        args << "-s" << "-a" << "dither" << "-s" ;
+
+     args  << QString::number(sampleRate)+"k";
+
+     QString command=args.join(" ");
+     outputTextEdit->append(tr(INFORMATION_HTML_TAG "Reseampling file"));
+     outputTextEdit->append(tr(MSG_HTML_TAG "Command line : sox %1").arg(command));
+
+     resampleProcess.start("sox", args);
+
+     return 0;
+     /* will have to check the finished signal before proceeding in disc creation */
+}
+
+
+int dvda::resample(int bitRate, int sampleRate)
+{
+    QItemSelectionModel *selectionModel = fileTreeView->selectionModel();
+    QModelIndexList  indexList=selectionModel->selectedIndexes();
+    int result=0;
+
+    if (indexList.isEmpty()) return -1;
+    updateIndexInfo();
+    uint size=indexList.size();
+
+    for (uint i = 0; i < size; i++)
+      {
+        QModelIndex index;
+        index=indexList.at(i);
+
+        if (model->fileInfo(index).isFile())
+          {
+            QString path=model->filePath(index);
+           result+= resample(bitRate, sampleRate, path);
+         }
+    }
+
+    return result;
+}
+
+
+
 dvda::dvda()
 {
   setAttribute(Qt::WA_DeleteOnClose);
@@ -164,6 +217,7 @@ dvda::dvda()
   audioFilterButton->setIcon(iconAudioFilter);
   audioFilterButton->setIconSize(QSize(22, 22));
   audioFilterButton->setCheckable(true);
+  audioFilterButton->setAutoFillBackground(true);
 
   QIcon* iconDVDA = new QIcon(":/images/64x64/dvd-audio.png");
   QIcon* iconDVDV = new QIcon(":/images/64x64/dvd-video.png");

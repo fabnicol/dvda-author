@@ -127,6 +127,16 @@ class MainWindow : public QMainWindow
    QAction *displayOutputAction;
    QAction *displayFileTreeViewAction;
    QAction *clearOutputTextAction;
+   QAction *reSampleTo1644;
+   QAction *reSampleTo1648;
+   QAction *reSampleTo1696;
+   QAction *reSampleTo2444;
+   QAction *reSampleTo2448;
+   QAction *reSampleTo2496;
+   QAction *exportAudioToVideo;
+   QAction *exportVideoToAudio;
+   QAction *createMirror;
+
    QList<QAction*>  actionList;
 
    QDialog *contentsWidget;

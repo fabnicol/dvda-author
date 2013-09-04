@@ -120,7 +120,8 @@ OTHER_FILES += \
     3rdparty/sonic-visualiser/README.OSC \
     3rdparty/sonic-visualiser/fork.patch \
     3rdparty/sonic-visualiser/svcore/COPYING \
-    3rdparty/sonic-visualiser/svcore/INSTALL.txt
+    3rdparty/sonic-visualiser/svcore/INSTALL.txt \
+    TODO.txt
 
 
 
