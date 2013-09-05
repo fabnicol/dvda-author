@@ -58,6 +58,7 @@ public:
     void dropEvent(QDropEvent *event);
      QPoint startPos;
      QProcess process;
+     WavFile wavFile;
 
 
 public slots:
@@ -97,7 +98,7 @@ private slots:
     void on_playItem_changed();
     void on_audioFilterButton_clicked(bool active);
     void closeProject();
-    void checkStandardCompliance();
+    inline int checkStandardCompliance();
     void deleteSonicVisualiserProcess(int);
 
 
@@ -170,8 +171,10 @@ private:
 
     StandardComplianceProbe  *probe;
     QProcess *sonicVisualiserProcess=nullptr;
+
     QProcess resampleProcess;
-    int resample(int bitRate, int sampleRate, const QString & file);
+    int applyFunctionToSelectedFiles(int (dvda::*f)( )) ;
+    inline int resample();
 
  protected:
 

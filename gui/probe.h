@@ -21,7 +21,6 @@ private:
         "sph",        "sw",        "txw",        "u1",        "u16",        "u2",        "u24",        "u3",        "u32",        "u4",        "u8",        "ub",        "ul",        "uw",        "vms",
         "voc",        "vorbis",        "vox",        "w64",        "wav",        "wavpcm",        "wv",        "wve",        "xa",        "xi"};
 
-    WavFile wavDecoder;
     QAudioFormat audioFileFormat;
     uint audioZone;
     QString codec;

@@ -60,7 +60,7 @@ public:
 
     using QFile::open;
     bool open(const QString &fileName);
-    const QAudioFormat &fileFormat() const;
+    QAudioFormat &fileFormat() ;
     qint64 headerLength() const;
 
 private:

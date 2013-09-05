@@ -132,13 +132,59 @@ void dvda::deleteSonicVisualiserProcess(int exitcode)
 }
 
 
-int dvda::resample(int bitRate, int sampleRate, const QString & file)
+int dvda::applyFunctionToSelectedFiles(int (dvda::*f)())
 {
 
-    resampleProcess;
+    QItemSelectionModel *selectionModel = fileTreeView->selectionModel();
+    QModelIndexList  indexList=selectionModel->selectedIndexes();
+    int result=0;
+
+    if (indexList.isEmpty()) return -1;
+    updateIndexInfo();
+    QListIterator<QModelIndex> i(indexList);
+
+    while (i.hasNext())
+      {
+        QModelIndex index=i.next();
+
+        if (model->fileInfo(index).isFile())
+          {
+            QString path=model->filePath(index);
+
+            wavFile.setFileName(path);
+
+
+            result+= (this->*f)();
+         }
+        else
+          {
+            QMessageBox::warning(this, tr("Browse"),
+                                 tr("%1 is not a file or a directory.").arg(model->fileInfo(index).fileName()));
+            return 0;
+          }
+    }
+
+    return result;
+
+}
+
+
+
+inline int dvda::resample()
+{
+
     QStringList args;
-    QString outputPath ="output.wav"/* =... */;
-    args << file << "-b" <<  QString::number(bitRate) << outputPath << "rate";
+    QString fileName=wavFile.fileName();
+    const int bitRate=wavFile.fileFormat().sampleSize();
+    const QString bitRateString=QString::number(bitRate);
+    const int sampleRate=wavFile.fileFormat().sampleRate();
+
+    args  << fileName
+             << "-b" <<  bitRateString;
+
+    fileName.truncate( fileName.lastIndexOf('.'));
+
+    args << fileName+".sox."+bitRateString+"."+QString::number(sampleRate)+".wav" << "rate";
 
     if (bitRate == 24)
        args << "-v"  << "-I" <<  "-b" << "90" ;
@@ -148,8 +194,8 @@ int dvda::resample(int bitRate, int sampleRate, const QString & file)
      args  << QString::number(sampleRate)+"k";
 
      QString command=args.join(" ");
-     outputTextEdit->append(tr(INFORMATION_HTML_TAG "Reseampling file"));
-     outputTextEdit->append(tr(MSG_HTML_TAG "Command line : sox %1").arg(command));
+     outputTextEdit->append(QObject::tr(INFORMATION_HTML_TAG "Resampling file"));
+     outputTextEdit->append(QObject::tr(MSG_HTML_TAG "Command line : sox %1").arg(command));
 
      resampleProcess.start("sox", args);
 
@@ -160,27 +206,9 @@ int dvda::resample(int bitRate, int sampleRate, const QString & file)
 
 int dvda::resample(int bitRate, int sampleRate)
 {
-    QItemSelectionModel *selectionModel = fileTreeView->selectionModel();
-    QModelIndexList  indexList=selectionModel->selectedIndexes();
-    int result=0;
-
-    if (indexList.isEmpty()) return -1;
-    updateIndexInfo();
-    uint size=indexList.size();
-
-    for (uint i = 0; i < size; i++)
-      {
-        QModelIndex index;
-        index=indexList.at(i);
-
-        if (model->fileInfo(index).isFile())
-          {
-            QString path=model->filePath(index);
-           result+= resample(bitRate, sampleRate, path);
-         }
-    }
-
-    return result;
+    wavFile.fileFormat().setSampleRate(sampleRate);
+    wavFile.fileFormat().setSampleSize(bitRate);
+    return applyFunctionToSelectedFiles(&dvda::resample); //do not  forget ampersand...
 }
 
 
@@ -325,7 +353,7 @@ dvda::dvda()
       connect(project[ZONE]->addGroupButton, SIGNAL(clicked()), this, SLOT(addGroup()));
       connect(project[ZONE]->deleteGroupButton, SIGNAL(clicked()), this, SLOT(deleteGroup()));
       project[ZONE]->importFromMainTree->disconnect(SIGNAL(clicked()));
-      connect(project[ZONE]->importFromMainTree, SIGNAL(clicked()), this, SLOT(checkStandardCompliance()));
+      connect(project[ZONE]->importFromMainTree, &QToolButton::clicked, [this]{applyFunctionToSelectedFiles(&dvda::checkStandardCompliance);});
       connect(project[ZONE]->moveUpItemButton, SIGNAL(clicked()), this, SLOT(on_moveUpItemButton_clicked()));
       connect(project[ZONE]->moveDownItemButton, SIGNAL(clicked()), this, SLOT(on_moveDownItemButton_clicked()));
       connect(project[ZONE]->retrieveItemButton, SIGNAL(clicked()), this, SLOT(on_deleteItem_clicked()));
@@ -649,59 +677,37 @@ void dvda::on_moveDownItemButton_clicked()
 
 #include "flac_metadata_processing.h"
 
-void dvda::checkStandardCompliance()
+
+inline int dvda::checkStandardCompliance()
 {
-  QItemSelectionModel *selectionModel = fileTreeView->selectionModel();
-  QModelIndexList  indexList=selectionModel->selectedIndexes();
+QString path=wavFile.fileName();
+probe=new StandardComplianceProbe(path, isVideo);
+if (probe->isStandardCompliant())
+{
+    outputTextEdit->append(tr(MSG_HTML_TAG  "Added  .%4  file: %1 bits  %2 kHz %3 ch.\n").arg(probe->getSampleSize(), probe->getSampleRate(), probe->getChannelCount(),  probe->getCodec()));
+    delete(probe);
 
-  if (indexList.isEmpty()) return;
-  updateIndexInfo();
-  uint size=indexList.size();
+    project[isVideo]->addStringToListWidget(path, currentIndex);
+    // in this order
+    displayTotalSize();
+    showFilenameOnly();
 
-  for (uint i = 0; i < size; i++)
-    {
-      QModelIndex index;
-      index=indexList.at(i);
+    RefreshFlag |= SaveTree|UpdateTree;
 
-      if ((model->fileInfo(index).isFile())||(model->fileInfo(index).isDir()))
-        {
-          QString path=model->filePath(index);
-
-              probe=new StandardComplianceProbe(path, isVideo);
-              if (probe->isStandardCompliant())
-              {
-                  outputTextEdit->append(tr(MSG_HTML_TAG  "Added  .%4  file: %1 bits  %2 kHz %3 ch.\n").arg(probe->getSampleSize(), probe->getSampleRate(), probe->getChannelCount(),  probe->getCodec()));
-                  project[isVideo]->addStringToListWidget(path, currentIndex);
-                  // in this order
-                  displayTotalSize();
-                  showFilenameOnly();
-
-                  updateProject();
-              }
-              else
-              {
-                  outputTextEdit->append(tr(ERROR_HTML_TAG "Track does not comply with the standard"));
-                  QStringList p =QStringList()<< probe->getSampleSize() <<  probe->getSampleRate() << probe->getChannelCount() ;
-                  if ((p.at(0) > "0") && (p.at(1) > "0") && (p.at(2) > "0"))
-                     outputTextEdit->insertPlainText(tr(": %1 bits  %2 kHz %3 ch.\n").arg(p.at(0), p.at(1), p.at(2)));
-                  else
-                 continue;
-              }
-
-              RefreshFlag |= SaveTree|UpdateTree;
-              delete(probe);
-
-        }
-      else
-        {
-          QMessageBox::warning(this, tr("Browse"),
-                               tr("%1 is not a file or a directory.").arg(model->fileInfo(index).fileName()));
-          return;
-        }
-    }
-
+    updateProject();
+    return 0;
+}
+else
+{
+    delete(probe);
+    outputTextEdit->append(tr(ERROR_HTML_TAG "Track %1 does not comply with the standard").arg(path));
+      QStringList p =QStringList()<< probe->getSampleSize() <<  probe->getSampleRate() << probe->getChannelCount() ;
+    if ((p.at(0).toInt() > 0) && (p.at(1).toInt() > 0) && (p.at(2).toInt() > 0))
+       outputTextEdit->insertPlainText(tr(": %1 bits  %2 kHz %3 ch.\n").arg(p.at(0), p.at(1), p.at(2)));
+    return -1;
 }
 
+}
 
 void dvda::on_deleteItem_clicked()
 {

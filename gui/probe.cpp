@@ -112,14 +112,7 @@ void StandardComplianceProbe::getAudioCharacteristics(const QString &filename)
              getOggFlacAudioFormat(filename);
     #endif
       }
-     else if (extension == "wav")
-     {
-              if (wavDecoder.open(filename))
-              {
-                audioFileFormat=wavDecoder.fileFormat();
-                wavDecoder.close();
-              }
-     }
+
  #ifndef WITHOUT_SOX
      else if (SoXFormatList.contains(extension))
     {
