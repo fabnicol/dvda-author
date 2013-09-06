@@ -6,8 +6,10 @@
 #include "flistframe.h"
 #include "stream_decoder.h"
 #include "probe.h"
+#include "FProgressBar.h"
 
 class MainWindow;
+class FProgressBar;
 
 
 
@@ -127,7 +129,7 @@ private:
     QIcon iconShowMaximized, iconShowNormal;
     QMediaPlayer *myMusic=nullptr;
     QProcess   process2, process3;
-    QProgressBar *progress=new QProgressBar, *progress2=nullptr, *progress3=nullptr;
+    FProgressBar *progress;//, *progress2=nullptr, *progress3=nullptr;
     QToolButton *mkdirButton= new QToolButton;
     QToolButton *removeButton= new QToolButton;
     QToolButton *killMkisofsButton= new QToolButton;
@@ -145,7 +147,6 @@ private:
     void clearProjectData();
     QStringList createCommandLineString(int commandLineType);
     float discShare(qint64 directorySize);
-    void hideEvent(QHideEvent *event);
     void initialize();
     const QString  makeParserString(int start, int end=Abstract::abstractWidgetList.size()-1);
     const QString  makeDataString( );
@@ -157,9 +158,7 @@ private:
     void refreshRowPresentation(uint, uint);
     void setIndexedProperties(QModelIndexList* indexList);
     void setDialogFromProject();
-    void showEvent(QShowEvent *event);
     void showFilenameOnly();
-    void timerEvent(QTimerEvent *event);
     void updateIndexInfo();
     void updateIndexChangeInfo();
     void displayTotalSize();
@@ -188,5 +187,48 @@ signals:
 
 
 };
+
+
+class FProgressBar : public QWidget
+{
+  // Q_OBJECT
+    typedef  qint64 (dvda::*Function)(const QString &, const QString &) ;
+public:
+    FProgressBar(       Function f,
+                                     QString  measurableTarget,
+                                     QString  fileExtensionFilter="",
+                                     qint64 referenceSize=1,
+                                     QString displayedMessageWhileProcessing="",
+                                     dvda* parent=nullptr);
+
+    QProgressBar *bar=new QProgressBar ;
+
+    void start(int timeout=0)
+    {
+        timer->start(timeout);
+    }
+
+    void stop()
+    {
+        timer->stop();
+    }
+
+    void setTarget(QString  t) { target=t; }
+    void setReference(qint64  r) { reference=r; }
+
+ private:
+    QString   target;
+    QString   filter;
+    qint64 reference;
+    QString  display;
+    QTimer *timer= new QTimer(this);
+    qint64 new_value=0;
+
+    Function engine ;
+    dvda* parent;
+    void updateProgressBar();
+
+};
+
 
 #endif // DVDA_H

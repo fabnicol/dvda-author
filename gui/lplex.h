@@ -4,6 +4,10 @@
 
 #include "common.h"
 
+class FComboBox;
+class FLineEdit;
+class FCheckBox;
+
 class lplexPage : public common
 {
     Q_OBJECT

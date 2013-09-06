@@ -1,56 +1,96 @@
 #include "dvda.h"
+#include "fwidgets.h"
 
 
+//template <typename T> FProgressBar::FProgressBar(QWidget* parent,
+//                                 const QString & measurableTarget,
+//                                 const QString & fileExtensionFilter,
+//                                 const qint64 referenceSize,
+//                                 const QString &displayedMessageWhileProcessing)
+//{
+//    target=measurableTarget;
+//    filter=fileExtensionFilter;
+//    reference=referenceSize;
+//    display=displayedMessageWhileProcessing;
+//    bar=new QProgressBar(parent);
+//    timer = new QTimer(this);
+//    qint64 new_value=0;
+//    connect(timer,
+//                  &QTimer::timeout,
+//                 [this, new_value] {
+//                                //recursiveDirectorySize(Hash::wrapper["targetDir"]->toQString(), "*.AOB");
+//                                new_value=(this->*f)(this->target, this->filter);
 
-void dvda::showEvent(QShowEvent *)
+//                                //qint64 tot=dvda::totalSize[AUDIO]+dvda::totalSize[VIDEO];
+//                                //
+//                                if (new_value < 1024*1024*1024*4.7) outputTextEdit->append(tr(MSG_HTML_TAG) + display);
+//                                else
+//                                    outputTextEdit->append(tr(WARNING_HTML_TAG) + "Total size exceeds 4.7 GB");
+//                                bar->setValue(qFloor(100*(static_cast<float>(new_value)/static_cast<float>(reference))));
+//                                //value=new_value;
+//                           });
+
+//}
+
+//FProgressBar::start(int timeout)
+//{
+//    timer->start(timout);
+//}
+
+//FProgressBar::stop()
+//{
+//    timer->stop();
+//}
+
+
+#if 0
+void dvda::startProgressBar(
+                                const QProgressBar *progress,
+                                qint64 (dvda::*f)(const QString & , const QString & ),
+                                qint64 reference,
+                               const QString & msg)
 {
-  myTimerId=startTimer(800);
+
+  //qint64 new_isoSize;
+  //unsigned short int counter;
+  //static unsigned short int static_value;
+  QTimer *timer = new QTimer(this);
+  connect(timer,
+                &QTimer::timeout,
+               [this] {
+                               qint64 new_value;
+                              //recursiveDirectorySize(Hash::wrapper["targetDir"]->toQString(), "*.AOB");
+                              new_value=(this->*f)(target, filter);
+
+                              //qint64 tot=dvda::totalSize[AUDIO]+dvda::totalSize[VIDEO];
+                              //"Total size exceeds 4.7 GB"
+                              if (new_value > 1024*1024*1024*4.7) outputTextEdit->append(tr(WARNING_HTML_TAG) + msg);
+                              progress->setValue(qFloor(100*(static_cast<float>(new_value)/static_cast<float>(reference))));
+                              //value=new_value;
+                         });
+//      else
+
+//        if (startProgressBar2)
+//          {
+//            new_isoSize=QFileInfo(Hash::wrapper["mkisofsPath"]->toQString()).size();
+//            outputTextEdit->append(tr(MSG_HTML_TAG "Size of iso output: %1").arg(QString::number(new_isoSize)));
+//            counter=qFloor(((float) new_isoSize*102)/ ((float) value));
+//            progress2->setValue(counter);
+//          }
+//        else
+
+//          if (startProgressBar3)
+//            {
+//              static_value += 3;
+//              progress3->setValue(static_value);
+
+//            }
+//          else static_value=0;
+
+      timer->start(500);
 }
+#endif
 
-void dvda::hideEvent(QHideEvent *)
-{
-  killTimer(myTimerId);
-}
-
-
-void dvda::timerEvent(QTimerEvent *event)
-{
-  qint64 new_value=0;
-  qint64 new_isoSize;
-  unsigned short int counter;
-  static unsigned short int static_value;
-
-  if (event->timerId() == myTimerId)
-    {
-      if (startProgressBar)
-        {
-          new_value=recursiveDirectorySize(Hash::wrapper["targetDir"]->toQString(), "*.AOB");
-          progress->setValue(qFloor(discShare(new_value)));
-          value=new_value;
-        }
-      else
-
-        if (startProgressBar2)
-          {
-            new_isoSize=QFileInfo(Hash::wrapper["mkisofsPath"]->toQString()).size();
-            outputTextEdit->append(tr(MSG_HTML_TAG "Size of iso output: %1").arg(QString::number(new_isoSize)));
-            counter=qFloor(((float) new_isoSize*102)/ ((float) value));
-            progress2->setValue(counter);
-          }
-        else
-
-          if (startProgressBar3)
-            {
-              static_value += 3;
-              progress3->setValue(static_value);
-
-            }
-          else static_value=0;
-    }
-
-  else
-    QWidget::timerEvent(event);
-}
 
 float dvda::discShare(qint64 directorySize)
 {
@@ -84,36 +124,36 @@ void dvda::run()
   QStringList args;
   QString command;
 
-  progress->reset();
-  if (progress3)
-    {
-      if ((*FString("burnDisc")).isTrue())
-        {
-          progressLayout->removeWidget(progress3);
-          delete(progress3);
-          progressLayout->removeWidget(killCdrecordButton);
-          delete(killCdrecordButton);
-          progress3=NULL;
+  progress->bar->reset();
+//  if (progress3)
+//    {
+//      if ((*FString("burnDisc")).isTrue())
+//        {
+//          progressLayout->removeWidget(progress3);
+//          delete(progress3);
+//          progressLayout->removeWidget(killCdrecordButton);
+//          delete(killCdrecordButton);
+//          progress3=NULL;
 
-        }
-      else
-        if (progress3->isEnabled()) progress3->reset();
-    }
+//        }
+//      else
+//        if (progress3->isEnabled()) progress3->reset();
+//    }
 
-  if (progress2)
-    {
-      if ((*FString("runMkisofs")).isTrue())
-        {
-          progressLayout->removeWidget(progress2);
-          delete(progress2);
-          progressLayout->removeWidget(killMkisofsButton);
-          delete(killMkisofsButton);
-          progress2=NULL;
+//  if (progress2)
+//    {
+//      if ((*FString("runMkisofs")).isTrue())
+//        {
+//          progressLayout->removeWidget(progress2);
+//          delete(progress2);
+//          progressLayout->removeWidget(killMkisofsButton);
+//          delete(killMkisofsButton);
+//          progress2=NULL;
 
-        }
-      else
-        progress2->reset();
-    }
+//        }
+//      else
+//        progress2->reset();
+//    }
 
 
   if (dvda::totalSize[AUDIO] + dvda::totalSize[VIDEO] == 0)
@@ -122,12 +162,7 @@ void dvda::run()
       return;
     }
 
-  args << "-P0" << "-o" << common::tempdir+"/output"  << "-g" << "/home/fab/celice.wav" << "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"
-          << "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"
-          << "/home/fab/celice.wav" << "-j" << "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"
-          <<          "-g" << "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"
-                    << "/home/fab/celice.wav" << "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"
-                              << "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav"<< "/home/fab/celice.wav";
+  args << "-P0" << "-o" << common::tempdir+"/output"  << "-g" << "/home/fab/Audio/pn.wav" << "/home/fab/Audio/pn.wav";
 
 
   args << createCommandLineString(dvdaCommandLine|createIso|createDisc);
@@ -144,6 +179,13 @@ void dvda::run()
   outputType="DVD-Audio authoring";
   process.setProcessChannelMode(QProcess::MergedChannels);
   process.start(/*"konsole"*/ "dvda-author", args);
+
+  //startProgressBar(progress, &dvda::recursiveDirectorySize, dvda::totalSize[AUDIO]+dvda::totalSize[VIDEO], "Total size exceeds 4.7 GB");
+
+
+  progress->setTarget(Hash::wrapper["targetDir"]->toQString());
+  progress->setReference(dvda::totalSize[AUDIO]+dvda::totalSize[VIDEO]);
+  progress->start(500);
 
   // runLplex();
   outputTextEdit->moveCursor(QTextCursor::End);
@@ -192,7 +234,7 @@ void dvda::processFinished(int exitCode,  QProcess::ExitStatus exitStatus)
         outputTextEdit->append(MSG_HTML_TAG "\n" + outputType + tr(" completed, output directory is %1").arg(v(targetDir)));
         qint64 fsSize=recursiveDirectorySize(v(targetDir), "*.*");
         outputTextEdit->append(tr(MSG_HTML_TAG "File system size: ")+ QString::number(fsSize) + " Bytes ("+ QString::number(((float)fsSize)/(1024.0*1024.0*1024.0), 'f', 2)+ " GB)");
-        progress->setValue(maxRange);
+        progress->bar->setValue(maxRange);
 
         if ((*FString("runMkisofs")).isTrue())
           {
@@ -200,26 +242,26 @@ void dvda::processFinished(int exitCode,  QProcess::ExitStatus exitStatus)
 
               argsMkisofs << "-dvd-audio" << "-o" << v(mkisofsPath) << v(targetDir);
 
-            if (progress2 == NULL)
-              {
-                killMkisofsButton = new QToolButton(this);
-                killMkisofsButton->setToolTip(tr("Kill mkisofs"));
-                const QIcon iconKill = QIcon(QString::fromUtf8( ":/images/process-stop.png"));
-                killMkisofsButton->setIcon(iconKill);
-                killMkisofsButton->setIconSize(QSize(22,22));
+//            if (progress2 == NULL)
+//              {
+//                killMkisofsButton = new QToolButton(this);
+//                killMkisofsButton->setToolTip(tr("Kill mkisofs"));
+//                const QIcon iconKill = QIcon(QString::fromUtf8( ":/images/process-stop.png"));
+//                killMkisofsButton->setIcon(iconKill);
+//                killMkisofsButton->setIconSize(QSize(22,22));
 
-                connect(killMkisofsButton, SIGNAL(clicked()), this, SLOT(killMkisofs()));
+//                connect(killMkisofsButton, SIGNAL(clicked()), this, SLOT(killMkisofs()));
 
-                progress2 = new QProgressBar(this);
-                progress2->setRange(0, maxRange=100);
-                progress2->setToolTip(tr("ISO file creation progress bar"));
+//                progress2 = new QProgressBar(this);
+//                progress2->setRange(0, maxRange=100);
+//                progress2->setToolTip(tr("ISO file creation progress bar"));
 
-                QHBoxLayout *progress2Layout= new QHBoxLayout;
-                progress2Layout->addWidget(killMkisofsButton);
-                progress2Layout->addWidget(progress2);
-                progressLayout->addLayout(progress2Layout);
-              }
-            progress2->reset();
+//                QHBoxLayout *progress2Layout= new QHBoxLayout;
+//                progress2Layout->addWidget(killMkisofsButton);
+//                progress2Layout->addWidget(progress2);
+//                progressLayout->addLayout(progress2Layout);
+//              }
+//            progress2->reset();
             startProgressBar2=1;
             outputTextEdit->append(tr(MSG_HTML_TAG "mkisofs command line : %1").arg(argsMkisofs.join(" ")));
             process2.start("/usr/bin/mkisofs", argsMkisofs);
@@ -230,47 +272,47 @@ void dvda::processFinished(int exitCode,  QProcess::ExitStatus exitStatus)
 
 void dvda::process2Finished(int exitCode,  QProcess::ExitStatus exitStatus)
 {
-  startProgressBar2=0;
+//  startProgressBar2=0;
 
-  QFileInfo info=QFileInfo(v(mkisofsPath));
+//  QFileInfo info=QFileInfo(v(mkisofsPath));
 
-  if ((exitStatus == QProcess::CrashExit) || (exitCode == EXIT_FAILURE))
-    {
-      outputTextEdit->append(tr(ERROR_HTML_TAG " mkisofs crashed"));
-    }
-   else
-    {
-      if (!info.isFile() ||  info.size() == 0)
-      {
-          outputTextEdit->append(tr(MSG_HTML_TAG "\nISO file could not be created by mksiofs"));
-          progress2->reset();
-      }
-        else
-      {
-          outputTextEdit->append(tr(MSG_HTML_TAG "\nISO file %1 created").arg(v(mkisofsPath)));
+//  if ((exitStatus == QProcess::CrashExit) || (exitCode == EXIT_FAILURE))
+//    {
+//      outputTextEdit->append(tr(ERROR_HTML_TAG " mkisofs crashed"));
+//    }
+//   else
+//    {
+//      if (!info.isFile() ||  info.size() == 0)
+//      {
+//          outputTextEdit->append(tr(MSG_HTML_TAG "\nISO file could not be created by mksiofs"));
+//          progress2->reset();
+//      }
+//        else
+//      {
+//          outputTextEdit->append(tr(MSG_HTML_TAG "\nISO file %1 created").arg(v(mkisofsPath)));
 
-        progress2->setValue(maxRange);
-        outputTextEdit->append(tr(MSG_HTML_TAG " You can now burn your DVD-Audio disc"));
-      }
-     }
+//        progress2->setValue(maxRange);
+//        outputTextEdit->append(tr(MSG_HTML_TAG " You can now burn your DVD-Audio disc"));
+//      }
+//     }
 }
 
 void dvda::process3Finished(int exitCode,  QProcess::ExitStatus exitStatus)
 {
-  startProgressBar3=0;
+//  startProgressBar3=0;
 
-  if (exitStatus == QProcess::CrashExit)
-    {
-      outputTextEdit->append(tr(ERROR_HTML_TAG "cdrecord crashed"));
-    } else
+//  if (exitStatus == QProcess::CrashExit)
+//    {
+//      outputTextEdit->append(tr(ERROR_HTML_TAG "cdrecord crashed"));
+//    } else
 
-    if (exitCode == EXIT_FAILURE)
-      {
-        outputTextEdit->append(tr(ERROR_HTML_TAG "DVD-Audio disc was not burned"));
-      } else
-      {
-        progress3->setValue(maxRange);
-      }
+//    if (exitCode == EXIT_FAILURE)
+//      {
+//        outputTextEdit->append(tr(ERROR_HTML_TAG "DVD-Audio disc was not burned"));
+//      } else
+//      {
+//        progress3->setValue(maxRange);
+//      }
 }
 
 
@@ -309,26 +351,26 @@ void dvda::on_cdrecordButton_clicked()
   argsCdrecord << "dev="<< v(dvdwriterPath) << v(mkisofsPath);
   outputTextEdit->append(tr(MSG_HTML_TAG "Command line: cdrecord %1").arg(argsCdrecord.join(" ")));
 
-  if (progress3 == NULL)
-    {
-      progress3 = new QProgressBar(this);
-      killCdrecordButton = new QToolButton(this);
-      killCdrecordButton->setToolTip(tr("Kill cdrecord"));
-      const QIcon iconKill = QIcon(QString::fromUtf8( ":/images/process-stop.png"));
-      killCdrecordButton->setIcon(iconKill);
-      killCdrecordButton->setIconSize(QSize(22,22));
+//  if (progress3 == NULL)
+//    {
+//    //  progress3 = new QProgressBar(this);
+//      killCdrecordButton = new QToolButton(this);
+//      killCdrecordButton->setToolTip(tr("Kill cdrecord"));
+//      const QIcon iconKill = QIcon(QString::fromUtf8( ":/images/process-stop.png"));
+//      killCdrecordButton->setIcon(iconKill);
+//      killCdrecordButton->setIconSize(QSize(22,22));
 
-      connect(killCdrecordButton, SIGNAL(clicked()), this, SLOT(killCdrecord()));
+//      connect(killCdrecordButton, SIGNAL(clicked()), this, SLOT(killCdrecord()));
 
-      QHBoxLayout *progress3Layout= new QHBoxLayout;
-      progress3Layout->addWidget(killCdrecordButton);
-      progress3Layout->addWidget(progress3);
-      progressLayout->addLayout(progress3Layout);
-    }
+//      QHBoxLayout *progress3Layout= new QHBoxLayout;
+//      progress3Layout->addWidget(killCdrecordButton);
+//      progress3Layout->addWidget(progress3);
+//      progressLayout->addLayout(progress3Layout);
+//    }
 
-  progress3->setRange(0, maxRange=100);
-  progress3->setToolTip(tr("Burning DVD-Audio disc with cdrecord"));
-  progress3->reset();
+//  progress3->setRange(0, maxRange=100);
+//  progress3->setToolTip(tr("Burning DVD-Audio disc with cdrecord"));
+//  progress3->reset();
 
   startProgressBar3=1;
   process3.start("cdrecord", argsCdrecord);
@@ -341,26 +383,26 @@ void dvda::killDvda()
   if (!process.atEnd()) return;
   process.kill();
   outputTextEdit->append(INFORMATION_HTML_TAG+ outputType + tr(" was killed (SIGKILL)"));
-  progress->reset();
+  progress->bar->reset();
   processFinished(EXIT_FAILURE, QProcess::NormalExit );
 }
 
 void dvda::killMkisofs()
 {
-  if (!process2.atEnd()) return;
-  process2.kill();
-  progress2->reset();
-  outputTextEdit->append(tr(INFORMATION_HTML_TAG " mkisofs processing was killed (SIGKILL)"));
-  process2Finished(EXIT_FAILURE, QProcess::NormalExit);
+//  if (!process2.atEnd()) return;
+//  process2.kill();
+//  progress2->reset();
+//  outputTextEdit->append(tr(INFORMATION_HTML_TAG " mkisofs processing was killed (SIGKILL)"));
+//  process2Finished(EXIT_FAILURE, QProcess::NormalExit);
 }
 
 void dvda::killCdrecord()
 {
-  if (process3.atEnd()) return;
-  process3.kill();
-  progress3->reset();
-  outputTextEdit->append(tr(INFORMATION_HTML_TAG " cdrecord processing was killed (SIGKILL)"));
-  process3Finished(EXIT_FAILURE, QProcess::NormalExit);
+//  if (process3.atEnd()) return;
+//  process3.kill();
+//  progress3->reset();
+//  outputTextEdit->append(tr(INFORMATION_HTML_TAG " cdrecord processing was killed (SIGKILL)"));
+//  process3Finished(EXIT_FAILURE, QProcess::NormalExit);
 }
 
 
@@ -368,7 +410,7 @@ void dvda::extract()
 {
   QStringList args;
 
-  progress->reset();
+  progress->bar->reset();
   outputType="Audio recovery";
 
   QItemSelectionModel *selectionModel = fileTreeView->selectionModel();

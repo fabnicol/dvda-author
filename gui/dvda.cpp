@@ -10,7 +10,7 @@
 #include "options.h"
 #include "browser.h"
 #include "fstring.h"
-
+#include "tags.h"
 
 
 int dvda::RefreshFlag=0;
@@ -189,9 +189,12 @@ inline int dvda::resample()
     if (bitRate == 24)
        args << "-v"  << "-I" <<  "-b" << "90" ;
      else
-        args << "-s" << "-a" << "dither" << "-s" ;
+        args << "-s" << "-a";
 
-     args  << QString::number(sampleRate)+"k";
+     args  << QString::number(sampleRate);
+
+    if (bitRate == 16)
+        args << "dither" << "-s" ;
 
      QString command=args.join(" ");
      outputTextEdit->append(QObject::tr(INFORMATION_HTML_TAG "Resampling file"));
@@ -310,10 +313,19 @@ dvda::dvda()
   const QIcon iconKill = QIcon(QString::fromUtf8( ":/images/process-stop.png"));
   killButton->setIcon(iconKill);
   killButton->setIconSize(QSize(22,22));
+  QString target="";
+  QString extension="*.AOB";
+  QString msg="Processing...";
+  progress=new FProgressBar(&dvda::recursiveDirectorySize,
+                                  target,
+                                   extension,
+                                   0,
+                                  msg,
+                                  this);
 
-  progress->reset();
-  progress->setRange(0, maxRange=100);
-  progress->setToolTip(tr("DVD-Audio structure authoring progress bar"));
+  progress->bar->reset();
+  progress->bar->setRange(0, maxRange=100);
+  progress->bar->setToolTip(tr("DVD-Audio structure authoring progress bar"));
 
   outputTextEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   outputTextEdit->setAcceptDrops(false);
@@ -375,7 +387,7 @@ dvda::dvda()
   mainLayout->addLayout(projectLayout);
 
   progress1Layout->addWidget(killButton);
-  progress1Layout->addWidget(progress);
+  progress1Layout->addWidget(progress->bar);
   progressLayout->addLayout(progress1Layout);
 
   mainLayout->addLayout(progressLayout);
@@ -703,7 +715,7 @@ else
     outputTextEdit->append(tr(ERROR_HTML_TAG "Track %1 does not comply with the standard").arg(path));
       QStringList p =QStringList()<< probe->getSampleSize() <<  probe->getSampleRate() << probe->getChannelCount() ;
     if ((p.at(0).toInt() > 0) && (p.at(1).toInt() > 0) && (p.at(2).toInt() > 0))
-       outputTextEdit->insertPlainText(tr(": %1 bits  %2 kHz %3 ch.\n").arg(p.at(0), p.at(1), p.at(2)));
+       outputTextEdit->insertPlainText(tr(": %1 bits  %2 kHz %3 ch").arg(p.at(0), p.at(1), p.at(2)));
     return -1;
 }
 
@@ -951,5 +963,38 @@ void dvda::addDraggedFiles(const QList<QUrl>& urls)
   showFilenameOnly();
 }
 
+
+void FProgressBar::updateProgressBar()
+{
+               //recursiveDirectorySize(Hash::wrapper["targetDir"]->toQString(), "*.AOB");
+      qint64   new_value=(parent->*engine)(target, filter);
+      if (parent != nullptr)
+               {
+                   if (new_value < 1024*1024*1024*4.7)
+                       parent->outputTextEdit->append(tr(MSG_HTML_TAG) + display + QString::number(new_value) + " "+ QString::number(reference) );
+                   else
+                       parent->outputTextEdit->append(tr(WARNING_HTML_TAG) + "Total size exceeds 4.7 GB");
+               }
+        bar->setValue(qFloor(100*(static_cast<float>(new_value)/static_cast<float>(reference))));
+
+}
+
+
+FProgressBar::FProgressBar(Function f,
+                                 QString  measurableTarget,
+                                 QString  fileExtensionFilter,
+                                 qint64 referenceSize,
+                                 QString displayedMessageWhileProcessing,
+                                 dvda* parent )
+{
+    target=measurableTarget;
+    filter=fileExtensionFilter;
+    reference=referenceSize;
+    display=displayedMessageWhileProcessing;
+    engine=f;
+    this->parent=parent;
+
+    connect(timer,  &QTimer::timeout, [this] {updateProgressBar();});
+}
 
 

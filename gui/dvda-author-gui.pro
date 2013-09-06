@@ -43,7 +43,8 @@ SOURCES += \
     console.cpp \
     3rdparty/FLAC/flac_metadata_processing.cpp \
     3rdparty/Qt/wavfile.cpp \
-    probe.cpp
+    probe.cpp \
+    FProgressBar.cpp
 
 
 
@@ -72,7 +73,9 @@ HEADERS  += \
     3rdparty/sox/sox.h \
     3rdparty/FLAC/flac_metadata_processing.h \
     3rdparty/Qt/wavfile.h \
-    probe.h
+    probe.h \
+    FProgressBar.h \
+    tags.h
 
 
 

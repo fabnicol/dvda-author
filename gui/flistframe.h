@@ -6,6 +6,8 @@
 #include <QToolButton>
 #include <QFileSystemModel>
 
+class FListWidget;
+class QToolDirButton;
 
 class FListFrame : public QWidget//: public common
 {

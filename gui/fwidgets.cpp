@@ -798,3 +798,4 @@ void FPalette::setMinimumButtonWidth(const int w)
     button[1]->setMinimumButtonWidth( w);
     button[2]->setMinimumButtonWidth( w);
 }
+

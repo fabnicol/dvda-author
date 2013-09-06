@@ -263,12 +263,12 @@ void MainWindow::createMenus()
  processMenu->addAction(playAction);
  processMenu->addAction(playInSpectrumAnalyzerAction);
  processMenu->addSeparator();
- processMenu->addAction(reSampleTo1644);
- processMenu->addAction(reSampleTo1648);
- processMenu->addAction(reSampleTo1696);
- processMenu->addAction(reSampleTo2444);
- processMenu->addAction(reSampleTo2448);
- processMenu->addAction(reSampleTo2496);
+ processMenu->addAction(reSampleTo16_44100);
+ processMenu->addAction(reSampleTo16_48000);
+ processMenu->addAction(reSampleTo16_96000);
+ processMenu->addAction(reSampleTo24_44100);
+ processMenu->addAction(reSampleTo24_48000);
+ processMenu->addAction(reSampleTo24_96000);
 
 
  optionsMenu->addAction(optionsAction);
@@ -327,16 +327,16 @@ void MainWindow::createActions()
   connect(playInSpectrumAnalyzerAction, &QAction::triggered, [this] {dvda_author->on_playItemButton_clicked(true);});
 
 
-#define reSampleTo(X,Y)  reSampleTo##X##Y= new QAction(tr("Resample to " #X "bits/" #Y " kHz"), this);\
-                                             connect(reSampleTo##X##Y, &QAction::triggered, [this] {dvda_author->resample(X,Y);});
+#define reSampleTo(X,Y)  reSampleTo##X##_##Y= new QAction(tr("Resample to " #X "bits/" #Y " Hz"), this);\
+                                             connect(reSampleTo##X##_##Y, &QAction::triggered, [this] {dvda_author->resample(X,Y);});
 
-  reSampleTo(16,44)
-  reSampleTo(16,48)
-  reSampleTo(16,96)
+  reSampleTo(16,44100)
+  reSampleTo(16,48000)
+  reSampleTo(16,96000)
 
-  reSampleTo(24,44)
-  reSampleTo(24,48)
-  reSampleTo(24,96)
+  reSampleTo(24,44100)
+  reSampleTo(24,48000)
+  reSampleTo(24,96000)
 
   exportAudioToVideo= new QAction(tr("Export to DVD-Video"), this);
   exportVideoToAudio = new QAction(tr("Export to DVD-Audio"), this);
@@ -420,7 +420,7 @@ void MainWindow::createActions()
   actionList << openAction << saveAction << saveAsAction << closeAction << exitAction << separator[0] <<
                 burnAction << encodeAction << decodeAction << separator[1] <<
                 playAction  << playInSpectrumAnalyzerAction  << separator[2] <<
-                reSampleTo1644 << reSampleTo1648 << reSampleTo1696 << reSampleTo2444 << reSampleTo2448 << reSampleTo2496 << separator[5] <<
+                reSampleTo16_44100 << reSampleTo16_48000 << reSampleTo16_96000 << reSampleTo24_44100 << reSampleTo24_48000 << reSampleTo24_96000 << separator[5] <<
                 displayOutputAction << displayFileTreeViewAction << displayManagerAction << displayConsoleAction <<  separator[4] <<
                 clearOutputTextAction <<  editProjectAction << separator[3] << configureAction <<
                 optionsAction << helpAction << aboutAction;

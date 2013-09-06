@@ -10,6 +10,8 @@
 class options;
 class dvda;
 class lplexPage;
+class QToolDirButton;
+class FListFrame;
 
 class standardPage : public common
 {

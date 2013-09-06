@@ -16,12 +16,6 @@
 #include "enums.h"
 #include "console.h"
 
-#define PARAMETER_HTML_TAG "<img src=\":/images/configure.png\"  height=\"16\" width=\"16\"/> "
-#define MSG_HTML_TAG "<img src=\":/images/msg.png\"/> "
-#define ERROR_HTML_TAG "<img src=\":/images/error.png\"/> "
-#define WARNING_HTML_TAG "<img src=\":/images/warning.png\"/> "
-#define INFORMATION_HTML_TAG "<img src=\":/images/information.png\"/> "
-#define HTML_TAG(X) "<span style=\"color: " #X ";\"> "
 
 
 
@@ -127,12 +121,12 @@ class MainWindow : public QMainWindow
    QAction *displayOutputAction;
    QAction *displayFileTreeViewAction;
    QAction *clearOutputTextAction;
-   QAction *reSampleTo1644;
-   QAction *reSampleTo1648;
-   QAction *reSampleTo1696;
-   QAction *reSampleTo2444;
-   QAction *reSampleTo2448;
-   QAction *reSampleTo2496;
+   QAction *reSampleTo16_44100;
+   QAction *reSampleTo16_48000;
+   QAction *reSampleTo16_96000;
+   QAction *reSampleTo24_44100;
+   QAction *reSampleTo24_48000;
+   QAction *reSampleTo24_96000;
    QAction *exportAudioToVideo;
    QAction *exportVideoToAudio;
    QAction *createMirror;

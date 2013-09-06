@@ -1050,6 +1050,7 @@ outputPage::outputPage(options* parent)
     openTargetDirButton = new QToolDirButton(tr("Open output directory for DVD-Audio disc files."), actionType::OpenFolder);
     targetDirLineEdit = new FLineEdit(tempdir+QDir::separator()+"output", "targetDir", {"DVD-A file directory"}, "o");
 
+
     Q2ListWidget *createDVDFilesEnabledObjects= new Q2ListWidget;
     Q2ListWidget *createDVDFilesDisabledObjects=new Q2ListWidget;
     *createDVDFilesEnabledObjects =

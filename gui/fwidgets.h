@@ -4,6 +4,8 @@
 #include <QtWidgets>
 #include "fcolor.h"
 #include "fstring.h"
+#include "FProgressBar.h"
+#include "tags.h"
 
 #define Q2ListWidget QList<QList<QWidget*> >
 #define Q2ListIterator QListIterator<QList<QWidget*> >
@@ -49,6 +51,7 @@ public:
   {
      meta_connect(w, &(*(new Q2ListWidget) << *enabledObjects),  &(*(new Q2ListWidget) << *disabledObjects));
   }
+
 };
 
 /* Note :
@@ -431,6 +434,5 @@ class FPalette :  public QWidget, virtual public FAbstractWidget
    QList<QWidget*> componentList;
    void refreshPaletteHash();
 };
-
 
 #endif
