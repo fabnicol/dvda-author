@@ -4,7 +4,6 @@
 #include <QtWidgets>
 #include "fcolor.h"
 #include "fstring.h"
-#include "FProgressBar.h"
 #include "tags.h"
 
 #define Q2ListWidget QList<QList<QWidget*> >

@@ -1220,7 +1220,7 @@ void outputPage::selectOutput()
     if (path.isEmpty()) return;
 
     /* It is recommended to clean the directory, otherwise ProgressBar is flawed. A Warning pops up for confirmation. I eschewed Qt here */
-    qint64 size=recursiveDirectorySize(path, "*");
+    qint64 size=getDirectorySize(path, "*");
     /* you may have to run as root or sudo to root depending on permissions */
 
     if (size)

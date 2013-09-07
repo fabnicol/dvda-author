@@ -72,7 +72,7 @@ void dvda::on_playItemButton_clicked(bool inSpectrumAnalyzer)
 
         sonicVisualiserProcess->start("sonic-visualiser", QStringList()  << "--no-property-boxes" << "--play-on-launch"<< path.toString(QUrl::PreferLocalFile));
 
-        connect(sonicVisualiserProcess, SIGNAL(finished(int , QProcess::ExitStatus )),  this, SLOT(deleteSonicVisualiserProcess(int)));
+        connect(sonicVisualiserProcess, SIGNAL(finished(int , QProcess::ExitStatus )),  this, SLOT(deleteSonicVisualiserProcess()));
 
         PLAY_MSG("Sonic-visualiser : playing file" )
     }
@@ -119,7 +119,7 @@ void dvda::on_playItemButton_clicked(bool inSpectrumAnalyzer)
 
 }
 
-void dvda::deleteSonicVisualiserProcess(int exitcode)
+void dvda::deleteSonicVisualiserProcess()
 {
 
     if (sonicVisualiserProcess != nullptr)
@@ -309,23 +309,26 @@ dvda::dvda()
   dial->setMaximumWidth(40);
   dial->setToolTip(tr("Volume"));
 
-  killButton->setToolTip(tr("Kill dvda-author"));
-  const QIcon iconKill = QIcon(QString::fromUtf8( ":/images/process-stop.png"));
-  killButton->setIcon(iconKill);
-  killButton->setIconSize(QSize(22,22));
-  QString target="";
-  QString extension="*.AOB";
-  QString msg="Processing...";
-  progress=new FProgressBar(&dvda::recursiveDirectorySize,
-                                  target,
-                                   extension,
-                                   0,
-                                  msg,
-                                  this);
 
-  progress->bar->reset();
-  progress->bar->setRange(0, maxRange=100);
-  progress->bar->setToolTip(tr("DVD-Audio structure authoring progress bar"));
+  progress=new FProgressBar(this,
+                                  &dvda::getDirectorySize,
+                                  &dvda::printDiscSize,
+                                  &dvda::killProcess);
+
+  progress2=new FProgressBar(this,
+                                  &dvda::getFileSize,
+                                  &dvda::printFileSize,
+                                   &dvda::killProcess,
+                                   "dvda.iso"
+);
+
+  progress3=new FProgressBar(this,
+                                  &dvda::getDirectorySize,
+                                  &dvda::printDiscSize);
+
+
+  progress->setToolTip(tr("DVD-Audio structure authoring progress bar"));
+  progress2->setToolTip(tr("ISO file creation progress bar"));
 
   outputTextEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   outputTextEdit->setAcceptDrops(false);
@@ -334,7 +337,6 @@ dvda::dvda()
   QGridLayout *projectLayout = new QGridLayout;
   QGridLayout *updownLayout = new QGridLayout;
   QVBoxLayout *mkdirLayout = new QVBoxLayout;
-  QHBoxLayout *progress1Layout= new QHBoxLayout;
 
   mkdirLayout->addWidget(mkdirButton);
   mkdirLayout->addWidget(removeButton);
@@ -343,15 +345,9 @@ dvda::dvda()
 
   connect(mkdirButton, SIGNAL(clicked()), this, SLOT(createDirectory()));
   connect(removeButton, SIGNAL(clicked()), this, SLOT(remove()));
-  connect(killButton, SIGNAL(clicked()), this, SLOT(killDvda()));
-
-  connect(&process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int, QProcess::ExitStatus)));
-  connect(&process2, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(process2Finished(int, QProcess::ExitStatus)));
-  connect(&process2, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(on_cdrecordButton_clicked()));
-  connect(&process3, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(process3Finished(int, QProcess::ExitStatus)));
+  connect(&process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int)));
 
   //connect(sonicVisualiserProcess, SIGNAL(error(QProcess::ProcessError)),  this, SLOT(deleteSonicVisualiserProcess(QProcess::ProcessError)));
-
   connect(mainTabWidget, SIGNAL(currentChanged(int)), this, SLOT(on_frameTab_changed(int )));
   connect(playItemButton, SIGNAL(clicked()), this, SLOT(on_playItemButton_clicked()));
   connect(dial, &QDial::valueChanged, [&]{ dvda::dialVolume=dial->value(); if (myMusic) myMusic->setVolume(dvda::dialVolume);});
@@ -386,9 +382,9 @@ dvda::dvda()
 
   mainLayout->addLayout(projectLayout);
 
-  progress1Layout->addWidget(killButton);
-  progress1Layout->addWidget(progress->bar);
-  progressLayout->addLayout(progress1Layout);
+  progressLayout->addLayout(progress->layout);
+  progressLayout->addLayout(progress2->layout);
+  progressLayout->addLayout(progress3->layout);
 
   mainLayout->addLayout(progressLayout);
 
@@ -964,37 +960,74 @@ void dvda::addDraggedFiles(const QList<QUrl>& urls)
 }
 
 
-void FProgressBar::updateProgressBar()
+void dvda::printMsg(qint64 new_value, const QString &str)
 {
-               //recursiveDirectorySize(Hash::wrapper["targetDir"]->toQString(), "*.AOB");
-      qint64   new_value=(parent->*engine)(target, filter);
-      if (parent != nullptr)
-               {
-                   if (new_value < 1024*1024*1024*4.7)
-                       parent->outputTextEdit->append(tr(MSG_HTML_TAG) + display + QString::number(new_value) + " "+ QString::number(reference) );
-                   else
-                       parent->outputTextEdit->append(tr(WARNING_HTML_TAG) + "Total size exceeds 4.7 GB");
-               }
-        bar->setValue(qFloor(100*(static_cast<float>(new_value)/static_cast<float>(reference))));
+    if (process.state() != QProcess::Running)        return;
+    if (new_value < 1024*1024*1024*4.7)
+                   outputTextEdit->append(tr(MSG_HTML_TAG) + str + QString::number(new_value) +" B ("+QString::number(new_value/(1024*1024))+ " MB)");
+             else
+                 outputTextEdit->append(tr(WARNING_HTML_TAG) + "Total size exceeds 4.7 GB");
+}
 
+void dvda::printDiscSize(qint64 new_value)
+{
+    printMsg(new_value, "Processing audio files...");
 }
 
 
-FProgressBar::FProgressBar(Function f,
-                                 QString  measurableTarget,
-                                 QString  fileExtensionFilter,
-                                 qint64 referenceSize,
-                                 QString displayedMessageWhileProcessing,
-                                 dvda* parent )
+void dvda::printFileSize(qint64 new_value)
 {
+    printMsg(new_value, "Processing .iso disc image...");
+}
+
+void dvda::printBurnProcess(qint64 new_value)
+{
+    printMsg(new_value, "Burning disc...");
+}
+
+qint64 FProgressBar::updateProgressBar()
+{
+      qint64   new_value=(parent->*engine)(target, filter);
+      int share=qCeil(100*(static_cast<float>(new_value)/static_cast<float>(reference)));
+      if (share >= 100)
+      {
+          share=100;
+          stop();
+      }
+      bar->setValue(share);
+      return new_value;
+}
+
+
+FProgressBar::FProgressBar(dvda* parent,
+                                 MeasureFunction measureFunction,
+                                 DisplayFunction displayMessageWhileProcessing,
+                                 SlotFunction  killFunction,
+                                 const QString&  fileExtensionFilter,
+                                 const QString&  measurableTarget,
+                                 const qint64 referenceSize)
+{
+    bar->hide();
+    bar->setRange(0,100);
+    killButton->hide();
+    const QIcon iconKill = QIcon(QString::fromUtf8( ":/images/process-stop.png"));
+    killButton->setIcon(iconKill);
+    killButton->setIconSize(QSize(22,22));
+        killButton->setToolTip(tr("Kill process"));
+
+    layout->addWidget(killButton);
+    layout->addWidget(bar);
+
     target=measurableTarget;
     filter=fileExtensionFilter;
     reference=referenceSize;
-    display=displayedMessageWhileProcessing;
-    engine=f;
+    engine=measureFunction;
     this->parent=parent;
 
-    connect(timer,  &QTimer::timeout, [this] {updateProgressBar();});
+    connect(timer,
+                   &QTimer::timeout,
+                   [this, displayMessageWhileProcessing] { (this->parent->*displayMessageWhileProcessing)(updateProgressBar()); });
+
+    connect(killButton, &QToolButton::clicked, parent, killFunction);
+    connect(killButton, &QToolButton::clicked, this, &FProgressBar::stop);
 }
-
-

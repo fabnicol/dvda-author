@@ -42,7 +42,7 @@ bool common::removeDirectory(const QString &path)
 
 }
 
-qint64 common::recursiveDirectorySize(const QString &path, const QString &extension)
+qint64 common::getDirectorySize(const QString &path, const QString &extension)
 {
 
     QDir dir(path);
@@ -55,11 +55,17 @@ qint64 common::recursiveDirectorySize(const QString &path, const QString &extens
         size+=QFileInfo(dir, file).size();
 
     foreach (QString subDir, dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot))
-        size+=recursiveDirectorySize(path+QDir::separator()+subDir, extension);
+        size+=getDirectorySize(path+QDir::separator()+subDir, extension);
 
     return size;
 
 }
+
+qint64 common::getFileSize(const QString &fullFilePath, const QString & voidstring)
+{
+    return QFileInfo(fullFilePath).size();
+}
+
 
 void common::writeFile(QString & path, const QStringList &list, QFlags<QIODevice::OpenModeFlag> flag)
 {

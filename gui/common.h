@@ -21,7 +21,7 @@
 #define Max(X,Y) ((X>Y)? X : Y)
 #define Q(X) QMessageBox::about(NULL, "", X);
 #define q(X) QMessageBox::about(NULL, "", QString::number(X));
-#define v(X) *FString(#X)
+#define v(X) (*FString(#X))
 
 
 class common : public QDialog, public flags
@@ -39,7 +39,7 @@ public:
   static QString generateDatadirPath(const char* path);
   static QString generateDatadirPath(QString &path);
 
-  qint64 recursiveDirectorySize(const QString &path, const QString &extension);
+  qint64 getDirectorySize(const QString &path, const QString &extension="");
 
   bool removeDirectory(const QString &path);
   bool remove(const QString &path);
@@ -59,6 +59,7 @@ public:
 static void writeFile(QString & path, const QStringList &list, QFlags<QIODevice::OpenModeFlag> flag= QFile::WriteOnly | QFile::Truncate) ;
 void setWhatsThisText(QWidget* widget, int start, int stop);
 void openDir(QString path);
+qint64 getFileSize(const QString &, const QString& ="");
 
 
 protected :

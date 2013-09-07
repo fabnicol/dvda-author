@@ -6,7 +6,7 @@
 #include "flistframe.h"
 #include "stream_decoder.h"
 #include "probe.h"
-#include "FProgressBar.h"
+
 
 class MainWindow;
 class FProgressBar;
@@ -82,15 +82,13 @@ private slots:
     void extract();
     void createDirectory();
     void run();
+    void runMkisofs();
     void runLplex();
-    void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
-    void process2Finished(int exitCode,  QProcess::ExitStatus exitStatus);
-    void process3Finished(int exitCode,  QProcess::ExitStatus exitStatus);
+    void processFinished(int exitCode);
     void addGroup();
     void deleteGroup();
-    void killMkisofs();
-    void killDvda();
-    void killCdrecord();
+    void killProcess();
+
     void on_helpButton_clicked();
     void requestSaveProject();
     void writeProjectFile();
@@ -101,15 +99,13 @@ private slots:
     void on_audioFilterButton_clicked(bool active);
     void closeProject();
     inline int checkStandardCompliance();
-    void deleteSonicVisualiserProcess(int);
+    void deleteSonicVisualiserProcess();
 
 
 private:
 
     bool hasIndexChanged;
-    bool startProgressBar=0;
-    bool startProgressBar2=0;
-    bool startProgressBar3=0;
+
     int myTimerId=0;
     int row=0;
     uint isVideo=AUDIO;
@@ -129,12 +125,9 @@ private:
     QIcon iconShowMaximized, iconShowNormal;
     QMediaPlayer *myMusic=nullptr;
     QProcess   process2, process3;
-    FProgressBar *progress;//, *progress2=nullptr, *progress3=nullptr;
+    FProgressBar *progress, *progress2, *progress3;
     QToolButton *mkdirButton= new QToolButton;
     QToolButton *removeButton= new QToolButton;
-    QToolButton *killMkisofsButton= new QToolButton;
-    QToolButton *killButton= new QToolButton;
-    QToolButton *killCdrecordButton= new QToolButton;
     QToolButton *playItemButton= new QToolButton;
     //QTextEdit     *console  = new QTextEdit;
 
@@ -146,8 +139,7 @@ private:
     void assignVariables();
     void clearProjectData();
     QStringList createCommandLineString(int commandLineType);
-    float discShare(qint64 directorySize);
-    void initialize();
+     void initialize();
     const QString  makeParserString(int start, int end=Abstract::abstractWidgetList.size()-1);
     const QString  makeDataString( );
     const QString  makeSystemString( );
@@ -174,6 +166,10 @@ private:
     QProcess resampleProcess;
     int applyFunctionToSelectedFiles(int (dvda::*f)( )) ;
     inline int resample();
+    void printDiscSize(qint64 new_value);
+    void printMsg(qint64 new_value, const QString &str);
+    void printFileSize(qint64 new_value);
+    void printBurnProcess(qint64 new_value);
 
  protected:
 
@@ -191,42 +187,68 @@ signals:
 
 class FProgressBar : public QWidget
 {
-  // Q_OBJECT
-    typedef  qint64 (dvda::*Function)(const QString &, const QString &) ;
-public:
-    FProgressBar(       Function f,
-                                     QString  measurableTarget,
-                                     QString  fileExtensionFilter="",
-                                     qint64 referenceSize=1,
-                                     QString displayedMessageWhileProcessing="",
-                                     dvda* parent=nullptr);
+   Q_OBJECT
 
-    QProgressBar *bar=new QProgressBar ;
+    typedef  qint64 (dvda::*MeasureFunction)(const QString &, const QString &) ;
+    typedef void (dvda::*DisplayFunction)(qint64 );
+    typedef void (dvda::*SlotFunction)();
+
+public:
+    FProgressBar(dvda* parent,
+                                     MeasureFunction measureFunction,
+                                     DisplayFunction displayMessageWhileProcessing,
+                                     SlotFunction  killFunction=nullptr,
+                                     const QString & fileExtensionFilter="*.AOB",
+                                     const QString&  measurableTarget="",
+                                     const qint64 referenceSize=1);
+
+    QHBoxLayout* layout=new QHBoxLayout;
+
+    void show()
+    {
+        start();
+        bar->reset();
+        killButton->show();
+        bar->show();
+    }
 
     void start(int timeout=0)
     {
         timer->start(timeout);
+        killButton->setEnabled(true);
     }
 
     void stop()
     {
         timer->stop();
+        killButton->setDisabled(true);
     }
 
-    void setTarget(QString  t) { target=t; }
+    void hide()
+    {
+        stop();
+        bar->hide();
+        killButton->hide();
+        bar->reset();
+    }
+
+    void setToolTip(const QString & tip) { bar->setToolTip(tip); }
+    void setTarget(const QString&  t) { target=t; }
     void setReference(qint64  r) { reference=r; }
 
  private:
+    QToolButton* killButton=new QToolButton;
     QString   target;
     QString   filter;
     qint64 reference;
-    QString  display;
     QTimer *timer= new QTimer(this);
+    QProgressBar *bar=new QProgressBar ;
     qint64 new_value=0;
-
-    Function engine ;
     dvda* parent;
-    void updateProgressBar();
+
+    MeasureFunction engine ;
+    qint64 updateProgressBar();
+
 
 };
 

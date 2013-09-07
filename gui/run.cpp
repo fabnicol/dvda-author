@@ -2,45 +2,6 @@
 #include "fwidgets.h"
 
 
-//template <typename T> FProgressBar::FProgressBar(QWidget* parent,
-//                                 const QString & measurableTarget,
-//                                 const QString & fileExtensionFilter,
-//                                 const qint64 referenceSize,
-//                                 const QString &displayedMessageWhileProcessing)
-//{
-//    target=measurableTarget;
-//    filter=fileExtensionFilter;
-//    reference=referenceSize;
-//    display=displayedMessageWhileProcessing;
-//    bar=new QProgressBar(parent);
-//    timer = new QTimer(this);
-//    qint64 new_value=0;
-//    connect(timer,
-//                  &QTimer::timeout,
-//                 [this, new_value] {
-//                                //recursiveDirectorySize(Hash::wrapper["targetDir"]->toQString(), "*.AOB");
-//                                new_value=(this->*f)(this->target, this->filter);
-
-//                                //qint64 tot=dvda::totalSize[AUDIO]+dvda::totalSize[VIDEO];
-//                                //
-//                                if (new_value < 1024*1024*1024*4.7) outputTextEdit->append(tr(MSG_HTML_TAG) + display);
-//                                else
-//                                    outputTextEdit->append(tr(WARNING_HTML_TAG) + "Total size exceeds 4.7 GB");
-//                                bar->setValue(qFloor(100*(static_cast<float>(new_value)/static_cast<float>(reference))));
-//                                //value=new_value;
-//                           });
-
-//}
-
-//FProgressBar::start(int timeout)
-//{
-//    timer->start(timout);
-//}
-
-//FProgressBar::stop()
-//{
-//    timer->stop();
-//}
 
 
 #if 0
@@ -59,7 +20,7 @@ void dvda::startProgressBar(
                 &QTimer::timeout,
                [this] {
                                qint64 new_value;
-                              //recursiveDirectorySize(Hash::wrapper["targetDir"]->toQString(), "*.AOB");
+                              //getDirectorySize(Hash::wrapper["targetDir"]->toQString(), "*.AOB");
                               new_value=(this->*f)(target, filter);
 
                               //qint64 tot=dvda::totalSize[AUDIO]+dvda::totalSize[VIDEO];
@@ -92,13 +53,6 @@ void dvda::startProgressBar(
 #endif
 
 
-float dvda::discShare(qint64 directorySize)
-{
-  qint64 tot=dvda::totalSize[AUDIO]+dvda::totalSize[VIDEO];
-  if (tot > 1024*1024*1024*4.7) outputTextEdit->append(tr(ERROR_HTML_TAG "total size exceeds 4.7 GB\n"));
-  float share=100* ((float) directorySize ) /((float) tot);
-  return share;
-}
 
 QStringList dvda::createCommandLineString(int commandLineType)
 {
@@ -124,41 +78,15 @@ void dvda::run()
   QStringList args;
   QString command;
 
-  progress->bar->reset();
-//  if (progress3)
-//    {
-//      if ((*FString("burnDisc")).isTrue())
-//        {
-//          progressLayout->removeWidget(progress3);
-//          delete(progress3);
-//          progressLayout->removeWidget(killCdrecordButton);
-//          delete(killCdrecordButton);
-//          progress3=NULL;
-
-//        }
-//      else
-//        if (progress3->isEnabled()) progress3->reset();
-//    }
-
-//  if (progress2)
-//    {
-//      if ((*FString("runMkisofs")).isTrue())
-//        {
-//          progressLayout->removeWidget(progress2);
-//          delete(progress2);
-//          progressLayout->removeWidget(killMkisofsButton);
-//          delete(killMkisofsButton);
-//          progress2=NULL;
-
-//        }
-//      else
-//        progress2->reset();
-//    }
+  progress->show();
+  progress2->hide();
+  progress3->hide();
 
 
   if (dvda::totalSize[AUDIO] + dvda::totalSize[VIDEO] == 0)
     {
-      processFinished(EXIT_FAILURE,QProcess::NormalExit);
+      process.kill();
+//      processFinished(EXIT_FAILURE);
       return;
     }
 
@@ -169,26 +97,22 @@ void dvda::run()
 
   //args << createCommandLineString(lplexFiles).split("-ts");
 
-  outputTextEdit->append(tr(INFORMATION_HTML_TAG "Processing input directory..."));
-  outputTextEdit->append(tr(MSG_HTML_TAG "Size of Audio zone input %1").arg(QString::number(dvda::totalSize[AUDIO])));
-  outputTextEdit->append(tr(MSG_HTML_TAG "Size of Video zone input %1").arg(QString::number(dvda::totalSize[VIDEO])));
+  outputTextEdit->append(tr(MSG_HTML_TAG "Processing input directory..."));
+  outputTextEdit->append(tr(INFORMATION_HTML_TAG "Size of Audio zone input %1").arg(QString::number(dvda::totalSize[AUDIO])));
+  outputTextEdit->append(tr(INFORMATION_HTML_TAG "Size of Video zone input %1").arg(QString::number(dvda::totalSize[VIDEO])));
   command=args.join(" ");
   outputTextEdit->append(tr(MSG_HTML_TAG "Command line : dvda-author %1").arg(command));
 
-  startProgressBar=1;
   outputType="DVD-Audio authoring";
   process.setProcessChannelMode(QProcess::MergedChannels);
   process.start(/*"konsole"*/ "dvda-author", args);
 
-  //startProgressBar(progress, &dvda::recursiveDirectorySize, dvda::totalSize[AUDIO]+dvda::totalSize[VIDEO], "Total size exceeds 4.7 GB");
-
-
   progress->setTarget(Hash::wrapper["targetDir"]->toQString());
+  progress2->setTarget(Hash::wrapper["mkisofsPath"]->toQString());
+  //progress->setTarget(Hash::wrapper[""]->toQString());
+
   progress->setReference(dvda::totalSize[AUDIO]+dvda::totalSize[VIDEO]);
   progress->start(500);
-
-  // runLplex();
-  outputTextEdit->moveCursor(QTextCursor::End);
 
 }
 
@@ -208,98 +132,79 @@ void dvda::runLplex()
         args << item->commandLineStringList();
     }
 
-  outputTextEdit->append(tr(INFORMATION_HTML_TAG "Processing input directory..."));
+  outputTextEdit->append(tr(MSG_HTML_TAG "Processing input directory..."));
   command=args.join(" ");
   outputTextEdit->append(tr(MSG_HTML_TAG "Command line : %1").arg(command));
 
-  startProgressBar=1;
   outputType="audio DVD-Video disc authoring";
   process.start(/*"konsole"*/ "Lplex", args);
 
 }
 
-void dvda::processFinished(int exitCode,  QProcess::ExitStatus exitStatus)
+void dvda::processFinished(int exitCode)
 {
-  QStringList  argsMkisofs;
-  startProgressBar=0;
-  startProgressBar3=0;
 
-  if ((exitStatus == QProcess::CrashExit) ||  (exitCode == EXIT_FAILURE))
-    {
-       outputTextEdit->append(ERROR_HTML_TAG  +outputType + tr(": dvda-author crashed"));
+  if (exitCode == EXIT_FAILURE)
+  {
+        outputTextEdit->append(ERROR_HTML_TAG  +outputType + tr(": crash exit"));
+        progress->stop();
        return;
-     }
-    else
-     {
-        outputTextEdit->append(MSG_HTML_TAG "\n" + outputType + tr(" completed, output directory is %1").arg(v(targetDir)));
-        qint64 fsSize=recursiveDirectorySize(v(targetDir), "*.*");
-        outputTextEdit->append(tr(MSG_HTML_TAG "File system size: ")+ QString::number(fsSize) + " Bytes ("+ QString::number(((float)fsSize)/(1024.0*1024.0*1024.0), 'f', 2)+ " GB)");
-        progress->bar->setValue(maxRange);
+  }
 
-        if ((*FString("runMkisofs")).isTrue())
-          {
-            if ((*FString("targetDir")).isFilled() & (v(mkisofsPath)).isFilled())
+if (process.exitStatus() == QProcess::CrashExit) return;
 
-              argsMkisofs << "-dvd-audio" << "-o" << v(mkisofsPath) << v(targetDir);
+if (outputType == "DVD-Audio authoring")
+ {
+    outputTextEdit->append(INFORMATION_HTML_TAG "\n" + outputType + tr(" completed, output directory is %1").arg(v(targetDir)));
+    qint64 fsSize=getDirectorySize(v(targetDir), "*.*");
 
-//            if (progress2 == NULL)
-//              {
-//                killMkisofsButton = new QToolButton(this);
-//                killMkisofsButton->setToolTip(tr("Kill mkisofs"));
-//                const QIcon iconKill = QIcon(QString::fromUtf8( ":/images/process-stop.png"));
-//                killMkisofsButton->setIcon(iconKill);
-//                killMkisofsButton->setIconSize(QSize(22,22));
+    progress2->setReference(fsSize);
 
-//                connect(killMkisofsButton, SIGNAL(clicked()), this, SLOT(killMkisofs()));
+    outputTextEdit->append(tr(INFORMATION_HTML_TAG "File system size: ")+ QString::number(fsSize) + " Bytes ("+ QString::number(((float)fsSize)/(1024.0*1024.0*1024.0), 'f', 2)+ " GB)");
 
-//                progress2 = new QProgressBar(this);
-//                progress2->setRange(0, maxRange=100);
-//                progress2->setToolTip(tr("ISO file creation progress bar"));
+    if (!v(runMkisofs).isTrue()) return;
+    runMkisofs();
+}
+else
+ if (outputType == "Disc image authoring")
+    {
+        outputTextEdit->append(INFORMATION_HTML_TAG "\n" + outputType + tr(" completed. Image file is: %1").arg(v(mkisofsPath)));
+        qint64 fsSize=getFileSize(v(mkisofsPath));
+        outputTextEdit->append(tr(INFORMATION_HTML_TAG"File size: ")+ QString::number(fsSize) + " Bytes ("+ QString::number(((float)fsSize)/(1024.0*1024.0*1024.0), 'f', 2)+ " GB)");
+    }
+else
+ if (outputType == "Disc image authoring")
+ {
+    outputTextEdit->append(INFORMATION_HTML_TAG "\n" + outputType + tr(" completed. Image file is: %1").arg(v(mkisofsPath)));
+    qint64 fsSize=getFileSize(v(mkisofsPath));
+    outputTextEdit->append(tr(INFORMATION_HTML_TAG "File size: ")+ QString::number(fsSize) + " Bytes ("+ QString::number(((float)fsSize)/(1024.0*1024.0*1024.0), 'f', 2)+ " GB)");
+ }
 
-//                QHBoxLayout *progress2Layout= new QHBoxLayout;
-//                progress2Layout->addWidget(killMkisofsButton);
-//                progress2Layout->addWidget(progress2);
-//                progressLayout->addLayout(progress2Layout);
-//              }
-//            progress2->reset();
-            startProgressBar2=1;
-            outputTextEdit->append(tr(MSG_HTML_TAG "mkisofs command line : %1").arg(argsMkisofs.join(" ")));
-            process2.start("/usr/bin/mkisofs", argsMkisofs);
-          }
-   }
 }
 
 
-void dvda::process2Finished(int exitCode,  QProcess::ExitStatus exitStatus)
+void dvda::runMkisofs()
 {
-//  startProgressBar2=0;
+    QStringList  argsMkisofs;
 
-//  QFileInfo info=QFileInfo(v(mkisofsPath));
+    progress2->show();
 
-//  if ((exitStatus == QProcess::CrashExit) || (exitCode == EXIT_FAILURE))
-//    {
-//      outputTextEdit->append(tr(ERROR_HTML_TAG " mkisofs crashed"));
-//    }
-//   else
-//    {
-//      if (!info.isFile() ||  info.size() == 0)
-//      {
-//          outputTextEdit->append(tr(MSG_HTML_TAG "\nISO file could not be created by mksiofs"));
-//          progress2->reset();
-//      }
-//        else
-//      {
-//          outputTextEdit->append(tr(MSG_HTML_TAG "\nISO file %1 created").arg(v(mkisofsPath)));
+    if (v(targetDir).isEmpty() || v(mkisofsPath).isEmpty()) return;
 
-//        progress2->setValue(maxRange);
-//        outputTextEdit->append(tr(MSG_HTML_TAG " You can now burn your DVD-Audio disc"));
-//      }
-//     }
-}
+     argsMkisofs << "-dvd-audio" << "-o" << v(mkisofsPath) << v(targetDir);
 
-void dvda::process3Finished(int exitCode,  QProcess::ExitStatus exitStatus)
-{
-//  startProgressBar3=0;
+   outputTextEdit->append(tr(MSG_HTML_TAG "mkisofs command line : %1").arg(argsMkisofs.join(" ")));
+
+   outputType="Disc image authoring";
+
+   progress2->start(500);
+
+   process.start("/usr/bin/mkisofs", argsMkisofs);
+
+ }
+
+//void dvda::process3Finished(int exitCode,  QProcess::ExitStatus exitStatus)
+//{
 
 //  if (exitStatus == QProcess::CrashExit)
 //    {
@@ -309,30 +214,27 @@ void dvda::process3Finished(int exitCode,  QProcess::ExitStatus exitStatus)
 //    if (exitCode == EXIT_FAILURE)
 //      {
 //        outputTextEdit->append(tr(ERROR_HTML_TAG "DVD-Audio disc was not burned"));
-//      } else
-//      {
-//        progress3->setValue(maxRange);
 //      }
-}
+//}
 
 
 
 void dvda::on_cdrecordButton_clicked()
 {
 
-  if (((*FString("burnDisc")).isFalse())||((*FString("dvdwriterPath")).isEmpty())) return;
+  if ((v(burnDisc).isFalse())||(v(dvdwriterPath).isEmpty())) return;
 
   QStringList argsCdrecord;
 
 
-  if ((*FString("runMkisofs")).isFalse())
+  if (v(runMkisofs).isFalse())
     {
       QMessageBox::warning(this, tr("Record"), tr("You need to create an ISO file first to be able to burn a DVD-Audio disc."), QMessageBox::Ok );
       return;
     }
 
 
-  if ((*FString("dvdwriterPath")).isEmpty())
+  if (v(dvdwriterPath).isEmpty())
     {
       QMessageBox::warning(this, tr("Record"), tr("You need to enter the path to a valid DVD writer device."), QMessageBox::Ok );
       return;
@@ -350,59 +252,16 @@ void dvda::on_cdrecordButton_clicked()
   outputTextEdit->append(tr(INFORMATION_HTML_TAG "\nBurning disc...please wait."));
   argsCdrecord << "dev="<< v(dvdwriterPath) << v(mkisofsPath);
   outputTextEdit->append(tr(MSG_HTML_TAG "Command line: cdrecord %1").arg(argsCdrecord.join(" ")));
-
-//  if (progress3 == NULL)
-//    {
-//    //  progress3 = new QProgressBar(this);
-//      killCdrecordButton = new QToolButton(this);
-//      killCdrecordButton->setToolTip(tr("Kill cdrecord"));
-//      const QIcon iconKill = QIcon(QString::fromUtf8( ":/images/process-stop.png"));
-//      killCdrecordButton->setIcon(iconKill);
-//      killCdrecordButton->setIconSize(QSize(22,22));
-
-//      connect(killCdrecordButton, SIGNAL(clicked()), this, SLOT(killCdrecord()));
-
-//      QHBoxLayout *progress3Layout= new QHBoxLayout;
-//      progress3Layout->addWidget(killCdrecordButton);
-//      progress3Layout->addWidget(progress3);
-//      progressLayout->addLayout(progress3Layout);
-//    }
-
-//  progress3->setRange(0, maxRange=100);
-//  progress3->setToolTip(tr("Burning DVD-Audio disc with cdrecord"));
-//  progress3->reset();
-
-  startProgressBar3=1;
-  process3.start("cdrecord", argsCdrecord);
+  outputType="Burning";
+  process.start("cdrecord", argsCdrecord);
 
 }
 
 
-void dvda::killDvda()
+void dvda::killProcess()
 {
-  if (!process.atEnd()) return;
   process.kill();
   outputTextEdit->append(INFORMATION_HTML_TAG+ outputType + tr(" was killed (SIGKILL)"));
-  progress->bar->reset();
-  processFinished(EXIT_FAILURE, QProcess::NormalExit );
-}
-
-void dvda::killMkisofs()
-{
-//  if (!process2.atEnd()) return;
-//  process2.kill();
-//  progress2->reset();
-//  outputTextEdit->append(tr(INFORMATION_HTML_TAG " mkisofs processing was killed (SIGKILL)"));
-//  process2Finished(EXIT_FAILURE, QProcess::NormalExit);
-}
-
-void dvda::killCdrecord()
-{
-//  if (process3.atEnd()) return;
-//  process3.kill();
-//  progress3->reset();
-//  outputTextEdit->append(tr(INFORMATION_HTML_TAG " cdrecord processing was killed (SIGKILL)"));
-//  process3Finished(EXIT_FAILURE, QProcess::NormalExit);
 }
 
 
@@ -410,7 +269,7 @@ void dvda::extract()
 {
   QStringList args;
 
-  progress->bar->reset();
+  progress->show();
   outputType="Audio recovery";
 
   QItemSelectionModel *selectionModel = fileTreeView->selectionModel();
@@ -434,7 +293,7 @@ void dvda::extract()
   else if  (model->fileInfo(index).isDir())
     {
       sourceDir=model->fileInfo(index).absoluteFilePath();
-      dvda::totalSize[AUDIO]=(sourceDir.isEmpty())? 0 : recursiveDirectorySize(sourceDir, "*.AOB");
+      dvda::totalSize[AUDIO]=(sourceDir.isEmpty())? 0 : getDirectorySize(sourceDir, "*.AOB");
       if (dvda::totalSize[AUDIO] < 100)
         {
           QMessageBox::warning(this, tr("Extract"), tr("Directory path is empty. Please select disc structure."), QMessageBox::Ok | QMessageBox::Cancel);
@@ -461,7 +320,8 @@ void dvda::extract()
 
   if (dvda::totalSize[AUDIO] == 0)
     {
-      processFinished(EXIT_FAILURE,QProcess::NormalExit);
+   process.kill();
+      //      processFinished(EXIT_FAILURE);
       return;
     }
 
@@ -472,7 +332,7 @@ void dvda::extract()
   QString command=args.join(" ");
   outputTextEdit->append(tr(MSG_HTML_TAG "Command line : %1").arg(command));
 
-  startProgressBar3=1;
+
   //FAbstractWidget::setProtectedFields(runMkisofs="0";
 
   process.start(/*"konsole"*/ "dvda-author", args);
