@@ -66,12 +66,12 @@ private slots:
 };
 
 
-class optionsPage :  public common
+class discPage :  public common
 {
     Q_OBJECT
 
 public:
-    optionsPage();
+    discPage();
     FCheckBox   *mkisofsBox,  *cdrecordBox, *playbackBox;
     FComboBox   *dvdwriterComboBox;
     FLineEdit *mkisofsLineEdit ;
@@ -80,12 +80,9 @@ public:
 private:
     QToolDirButton   *mkisofsButton;
 
-    struct dvdwriterAddress
-    {
-      const QStringList dvdwriterBusList;
-      const QStringList dvdwriterNameList;
-    };
-    struct dvdwriterAddress generateDvdwriterPaths();
+    QStringList dvdwriterBusList;
+    QStringList dvdwriterNameList;
+    void generateDvdwriterPaths();
 
 private slots:
     void on_mkisofsButton_clicked();
@@ -302,7 +299,7 @@ class options :  public common
 public:
 
     options(dvda* parent=0);
-    optionsPage *optionsTab;
+    discPage *optionsTab;
     advancedPage *advancedTab;
     outputPage *outputTab;
     audioMenuPage *audioMenuTab;

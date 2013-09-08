@@ -102,7 +102,7 @@ public:
  virtual const QStringList& getDescription() const=0;
 
   /* command-line interface maker */
-  virtual const QStringList& commandLineStringList();
+  virtual const QStringList commandLineStringList();
 
   /* command-line interface type */
   int commandLineType;

@@ -144,7 +144,7 @@ void standardPage::changeNorm(QListWidgetItem*current,QListWidgetItem*previous)
 }
 
 
-optionsPage::optionsPage()
+discPage::discPage()
 {
 
     mainBox = new QGroupBox(tr("Disc options"));
@@ -154,28 +154,48 @@ optionsPage::optionsPage()
     mkisofsLineEdit = new FLineEdit(tempdir+QDir::separator()+"dvd.iso",
                                     createIso,
                                     "mkisofsPath",
-    {"Burn", "Path to ISO image"},
-    "mkisofs");
+                                    {"Burn", "Path to ISO image"},
+                                    "mkisofs");
 
 
     dvdwriterComboBox = new FComboBox("",
                                       createDisc,
                                       "dvdwriterPath",
-    {"Burn", "Path to DVD writer device"},
-    "cdrecord");
+                                      {"Burn", "Path to DVD writer device"},
+                                       "cdrecord");
 
     dvdwriterComboBox->setMinimumContentsLength(35);
 
+    FCheckBox* ejectDvdBox=new FCheckBox("Eject recorded DVD",
+                              "ejectDvd",
+                             {"Burn", "Eject recorded DVD"},
+                                         "^-eject");
+
+    FCheckBox* verboseCdrecordBox=new FCheckBox("Increase cdrecord verbosity",
+                              "verboseCdrecord",
+                             {"Burn", "Increase cdrecord verbosity"},
+                                                "^-verbose");
+
+    FCheckBox* blankDvdBox=new FCheckBox("Blank DVD before burning",
+                              "blankDvd",
+                             {"Burn", "Blank DVD"},
+                                                "^blank=fast");
+
+    FCheckBox* overBurnBox=new FCheckBox("Try to burn more than official disc size (if necessary)",
+                              "overBurnDvd",
+                             {"Burn", "Overburn"},
+                                                "^-overburn");
 
     cdrecordBox= new FCheckBox("Burn to DVD-Audio/Video disc",
                                "burnDisc",
-    {"Burn", "Burn disc image to DVD"},
-                                {dvdwriterComboBox});
+                                {"Burn", "Burn disc image to DVD"},
+                                {dvdwriterComboBox, ejectDvdBox, verboseCdrecordBox, blankDvdBox, overBurnBox});
+
 
     mkisofsBox =new FCheckBox("Create ISO file",
                               flags::checked|flags::enabled|flags::dvdaCommandLine,
                               "runMkisofs",
-    {"Burn", "Create disc image using mkisofs"},
+                               {"Burn", "Create disc image using mkisofs"},
                               {
                                   mkisofsButton,
                                   cdrecordBox,
@@ -185,7 +205,7 @@ optionsPage::optionsPage()
 
     playbackBox= new FCheckBox("Launch playback on loading disc",
                                "playback",
-    {"Launch","Launch playback on loading"},
+                               {"Launch","Launch playback on loading"},
                                "autoplay");
 
     QGridLayout *gridLayout=new QGridLayout;
@@ -197,8 +217,13 @@ optionsPage::optionsPage()
     gridLayout->addWidget(mkisofsButton,2,3);
     gridLayout->addWidget(cdrecordBox,3,1);
     gridLayout->addWidget(dvdwriterComboBox,4,2);
-    gridLayout->addWidget(playbackBox,5,1);
-    gridLayout->setRowMinimumHeight(6,50);
+    gridLayout->addWidget(ejectDvdBox,5,1);
+    gridLayout->addWidget(verboseCdrecordBox,6,1);
+    gridLayout->setRowMinimumHeight(9,30);
+    gridLayout->addWidget(blankDvdBox,7,1);
+    gridLayout->addWidget(overBurnBox,8,1);
+
+    gridLayout->addWidget(playbackBox,10,1);
     mainBox->setLayout(gridLayout);
     QVBoxLayout *mainLayout=new QVBoxLayout;
     mainLayout->addWidget(mainLabel);
@@ -212,7 +237,7 @@ optionsPage::optionsPage()
     connect(cdrecordBox, SIGNAL(toggled(bool)), this, SLOT(dvdwriterCheckEditStatus(bool)));
 }
 
-void optionsPage::dvdwriterCheckEditStatus(bool checked)
+void discPage::dvdwriterCheckEditStatus(bool checked)
 {
     dvdwriterComboBox->clear();
 
@@ -222,13 +247,12 @@ void optionsPage::dvdwriterCheckEditStatus(bool checked)
         return;
     }
 
-    QStringList dvdwriterPaths;
-    dvdwriterPaths=generateDvdwriterPaths().dvdwriterNameList;
+    generateDvdwriterPaths();
 
-    if ((dvdwriterPaths.isEmpty()) || dvdwriterPaths[0].isEmpty())
+    if ((dvdwriterNameList.isEmpty()) || dvdwriterNameList[0].isEmpty())
         dvdwriterComboBox->setEditable(true);
     else
-        dvdwriterComboBox->addItems(dvdwriterPaths);
+        dvdwriterComboBox->addItems(dvdwriterNameList);
 
         dvdwriterComboBox->setItemIcon(0, style()->standardIcon(QStyle::SP_DriveDVDIcon));
         dvdwriterComboBox->setIconSize(QSize(32,32));
@@ -245,7 +269,7 @@ void optionsPage::dvdwriterCheckEditStatus(bool checked)
  * under the build directory
  */
 
-struct optionsPage::dvdwriterAddress optionsPage::generateDvdwriterPaths()
+void discPage::generateDvdwriterPaths()
 {
     QProcess process;
 #ifndef CDRECORD_PATH
@@ -255,9 +279,9 @@ struct optionsPage::dvdwriterAddress optionsPage::generateDvdwriterPaths()
     #define CDRECORD_PATH "/opt/schily/bin"
      process.start(QString(CDRECORD_PATH) + QString("/cdrecord"),  QStringList() << "-scanbus");
  #endif
+ #else
+    process.start(QString(CDRECORD_PATH) + QString("/cdrecord"),  QStringList() << "-scanbus");
 #endif
-
-    QStringList dvdwriterNameList=QStringList(), dvdwriterBusList=QStringList();
 
     if (process.waitForFinished(800))
     {
@@ -282,17 +306,18 @@ struct optionsPage::dvdwriterAddress optionsPage::generateDvdwriterPaths()
             start=endIndex+1;
         }
 
+        Hash::wrapper["dvdwriterScan"] = new FStringList;
+        *Hash::wrapper["dvdwriterScan"]  <<  dvdwriterBusList << dvdwriterNameList;
+
     }
     else
     {
         QMessageBox::warning(this, tr("cdrecord"), tr("cdrecord could not be located or crashed."));
     }
 
-    dvdwriterAddress S={dvdwriterBusList, dvdwriterNameList};
-    return S;
 }
 
-void optionsPage::on_mkisofsButton_clicked()
+void discPage::on_mkisofsButton_clicked()
 {
     QString path=QFileDialog::getSaveFileName(this,  tr("Set mkisofs iso file"), "");
     mkisofsLineEdit->setText(path);
@@ -1535,7 +1560,7 @@ options::options(dvda* parent)
 
     pagesWidget = new QStackedWidget;
 
-    optionsTab = new optionsPage;
+    optionsTab = new discPage;
     advancedTab = new advancedPage;
     standardTab = new standardPage;
     audioMenuTab = new audioMenuPage(parent, standardTab);

@@ -160,7 +160,7 @@ void FAbstractConnection::meta_connect(const FAbstractWidget* w,  const Q2ListWi
 }
 
 
-const QStringList& FAbstractWidget::commandLineStringList()
+const QStringList FAbstractWidget::commandLineStringList()
 {
     /* If command line option is ill-formed, or if a corresponding checkbox is unchecked (or negatively checked)
   * or if an argument-taking option has no-argument, return empty */
@@ -172,9 +172,11 @@ const QStringList& FAbstractWidget::commandLineStringList()
 
 
 if (commandLineList[0].isTrue() | commandLineList[0].isMultimodal())
-return  ((optionLabel.size() == 1)?
-             QStringList( "-"+optionLabel):
-             QStringList ("--" +optionLabel));
+{
+    if  (optionLabel.size() == 1)   return   QStringList( "-"+optionLabel);
+    if (optionLabel.at(0) == '^')  return   QStringList(optionLabel.mid(1));
+   return    QStringList ("--" +optionLabel);
+}
 
 if ((commandLineType & flags::commandLinewidgetDepthMask) == flags::hasListCommandLine)
 {

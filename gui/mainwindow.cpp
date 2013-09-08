@@ -305,7 +305,7 @@ void MainWindow::createActions()
   burnAction = new QAction(tr("&Burn files to disc"), this);
   burnAction->setShortcut(QKeySequence("Ctrl+B"));
   burnAction->setIcon(QIcon(":/images/burn.png"));
-  connect(burnAction, SIGNAL(triggered()), dvda_author, SLOT(on_cdrecordButton_clicked()));
+  connect(burnAction, SIGNAL(triggered()), dvda_author, SLOT(runCdrecord()));
 
   encodeAction = new QAction(tr("Start c&reating disc files"), this);
   encodeAction->setShortcut(QKeySequence("Ctrl+R"));
@@ -807,15 +807,21 @@ void MainWindow::feedConsole(bool initialized)
            QRegExp reg5("\\[WAR\\]([^\\n]*)\n");
            QRegExp reg6("(^.*licenses/.)");
 
+QRegExp reg8("\rTrack.*[ ]([0-9]*) of [ ]*([0-9]*) .*written.*x.");
+
             QString text=QString(data).replace(reg6, (QString) HTML_TAG(navy) "\\1</span><br>");
+            dvda_author->outputTextEdit->append(text.replace(reg8, (QString) "\\1/\\2"));
             text= text.replace(reg, (QString) INFORMATION_HTML_TAG "\\1<br>");
             text=text.replace(reg2, (QString) PARAMETER_HTML_TAG "\\1<br>");
             text=text.replace(reg3, (QString) MSG_HTML_TAG "\\1<br>");
             text=text.replace(reg4, (QString) ERROR_HTML_TAG "\\1<br>");
             text=text.replace(reg5, (QString) WARNING_HTML_TAG "\\1<br>");
+
             text=text.replace("Group", (QString) HTML_TAG(red) "Group</span>");
             text=text.replace("Title", (QString) HTML_TAG(green) "Title</span>");
+            text=text.replace("\rTrack", (QString) HTML_TAG(blue) "<br>Track</span>");
             text=text.replace("Track", (QString) HTML_TAG(blue) "Track</span>");
+
             text=text.replace(QRegExp("([0-9]+)([ ]+)([0-9]*) / ([0-9]*)([ ]+)([0-9]*)"),
                               HTML_TAG(red) "\\1</span>"+QString("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")
                               + HTML_TAG(green) "\\3</span>" +HTML_TAG(green) "/ <b>\\4</b></span>"
@@ -823,6 +829,7 @@ void MainWindow::feedConsole(bool initialized)
             consoleDialog->insertHtml(text=text.replace("\n", "<br>"));
             consoleDialog->moveCursor(QTextCursor::End);
             console->appendHtml(text);
+
 
     }
     else (timer->stop());

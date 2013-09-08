@@ -21,7 +21,8 @@ class dvda : public common
 public:
 
     dvda();
-
+    void feedLog();
+    QTimer* timer;
     void setCurrentFile(const QString &fileName);
 
     MainWindow *parent;
@@ -77,7 +78,7 @@ private slots:
     void on_moveUpItemButton_clicked();
     void on_moveDownItemButton_clicked();
     void on_deleteItem_clicked();
-    void on_cdrecordButton_clicked();
+    void runCdrecord();
     void remove();
     void extract();
     void createDirectory();
@@ -124,12 +125,10 @@ private:
 
     QIcon iconShowMaximized, iconShowNormal;
     QMediaPlayer *myMusic=nullptr;
-    QProcess   process2, process3;
     FProgressBar *progress, *progress2, *progress3;
     QToolButton *mkdirButton= new QToolButton;
     QToolButton *removeButton= new QToolButton;
     QToolButton *playItemButton= new QToolButton;
-    //QTextEdit     *console  = new QTextEdit;
 
     QVBoxLayout *mainLayout= new QVBoxLayout;
     QVBoxLayout *progressLayout= new QVBoxLayout;

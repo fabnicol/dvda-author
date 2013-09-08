@@ -18,7 +18,7 @@ VPATH = .
 INCLUDEPATH += 3rdparty 3rdparty/sox 3rdparty/FLAC 3rdparty/sonic-visaliser 3rdparty/Qt
 LIBS += -L../libs -lFLAC -lsox
 
-DEFINES += CDRECORD_LOCAL_PATH
+win32:DEFINES += CDRECORD_LOCAL_PATH
 
 QMAKE_CXXFLAGS += -std=c++11
 #QMAKE_LFLAGS = -Wl,--no-keep-memory
