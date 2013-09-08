@@ -164,6 +164,17 @@ discPage::discPage()
                                       {"Burn", "Path to DVD writer device"},
                                        "cdrecord");
 
+    FComboBox* speedDvdComboBox=new FComboBox(
+                              QStringList() << tr("Automatic") <<  tr("Lowest") << "2" << "4" << "6" << "12" << "24" << "36" << "48" << "52",
+                              QStringList() << "" <<  "0" << "2" << "4" << "6" << "12" << "24" << "36" << "48" << "52",
+                              createDisc,
+                              "speedDvd",
+                             {"Burn", "Driver speed"},
+                                                "^speed=", nullptr);
+
+    speedDvdComboBox->setMaximumWidth(160);
+
+
     dvdwriterComboBox->setMinimumContentsLength(35);
 
     FCheckBox* ejectDvdBox=new FCheckBox("Eject recorded DVD",
@@ -186,10 +197,22 @@ discPage::discPage()
                              {"Burn", "Overburn"},
                                                 "^-overburn");
 
+    FCheckBox* formatDvdBox=new FCheckBox("Reformat DVD+RW",
+                              "formatDvd",
+                             {"Burn", "Reformat"},
+                                                "^-format");
+
+    FCheckBox* burnFreeBox=new FCheckBox("Use BURN-Free buffer control system",
+                              "burnFree",
+                             {"Burn", "Use BURN-Free"},
+                                                "^driveropts=burnfree");
+
+    burnFreeBox->setToolTip(tr("Only use if your driver supports this option!"));
+
     cdrecordBox= new FCheckBox("Burn to DVD-Audio/Video disc",
                                "burnDisc",
                                 {"Burn", "Burn disc image to DVD"},
-                                {dvdwriterComboBox, ejectDvdBox, verboseCdrecordBox, blankDvdBox, overBurnBox});
+                                {dvdwriterComboBox, ejectDvdBox, verboseCdrecordBox, blankDvdBox, overBurnBox, formatDvdBox, burnFreeBox, speedDvdComboBox});
 
 
     mkisofsBox =new FCheckBox("Create ISO file",
@@ -219,11 +242,17 @@ discPage::discPage()
     gridLayout->addWidget(dvdwriterComboBox,4,2);
     gridLayout->addWidget(ejectDvdBox,5,1);
     gridLayout->addWidget(verboseCdrecordBox,6,1);
-    gridLayout->setRowMinimumHeight(9,30);
+
     gridLayout->addWidget(blankDvdBox,7,1);
     gridLayout->addWidget(overBurnBox,8,1);
+    gridLayout->addWidget(formatDvdBox,9,1);
+    gridLayout->addWidget(burnFreeBox,10,1);
 
-    gridLayout->addWidget(playbackBox,10,1);
+    QLabel* speedLabel=new QLabel(tr("Set driver speed:"));
+    gridLayout->addWidget(speedLabel,11,1);
+    gridLayout->addWidget(speedDvdComboBox,12,1, Qt::AlignHCenter);
+    gridLayout->setRowMinimumHeight(13,30);
+    gridLayout->addWidget(playbackBox,14,1);
     mainBox->setLayout(gridLayout);
     QVBoxLayout *mainLayout=new QVBoxLayout;
     mainLayout->addWidget(mainLabel);
@@ -272,16 +301,7 @@ void discPage::dvdwriterCheckEditStatus(bool checked)
 void discPage::generateDvdwriterPaths()
 {
     QProcess process;
-#ifndef CDRECORD_PATH
- #ifdef CDRECORD_LOCAL_PATH
-    process.start(QDir::toNativeSeparators(QDir::currentPath ()+"/bindir/"+ QString("cdrecord.exe")),  QStringList() << "-scanbus");   //"k3b");
- #else
-    #define CDRECORD_PATH "/opt/schily/bin"
-     process.start(QString(CDRECORD_PATH) + QString("/cdrecord"),  QStringList() << "-scanbus");
- #endif
- #else
-    process.start(QString(CDRECORD_PATH) + QString("/cdrecord"),  QStringList() << "-scanbus");
-#endif
+    process.start(cdRecordCommandStr,  QStringList() << "-scanbus");
 
     if (process.waitForFinished(800))
     {
@@ -1073,7 +1093,7 @@ outputPage::outputPage(options* parent)
     targetDirLabel = new QLabel(tr("Output directory"));
     targetDirButton = new QToolDirButton(tr("Browse output directory for DVD-Audio disc files."));
     openTargetDirButton = new QToolDirButton(tr("Open output directory for DVD-Audio disc files."), actionType::OpenFolder);
-    targetDirLineEdit = new FLineEdit(tempdir+QDir::separator()+"output", "targetDir", {"DVD-A file directory"}, "o");
+    targetDirLineEdit = new FLineEdit(tempdir+QDir::separator()+"output", "targetDir", {"DVD-A file directory", "DVD-A file directory"}, "o");
 
 
     Q2ListWidget *createDVDFilesEnabledObjects= new Q2ListWidget;
@@ -1346,7 +1366,7 @@ stillPage::stillPage(dvda* parent, standardPage* standardTab)
 
     on_nextStep_clicked();
 
-    FPalette *palette=new FPalette("Track", "Highlight", "Album/Group", "activemenuPalette", {"Active menu colors"}, "activemenu-palette");
+    FPalette *palette=new FPalette("Track", "Highlight", "Album/Group", "activemenuPalette", {"Active menu colors", "Active menu colors"}, "activemenu-palette");
 
     QGridLayout  *stillLayout=new QGridLayout;
     QGridLayout  *headerLayout=new QGridLayout;

@@ -48,6 +48,7 @@ class MainWindow : public QMainWindow
    QSettings  *settings;
    QAction *playInSpectrumAnalyzerAction ;
    QAction *playAction ;
+   long long cdRecordProcessedOutput;
 
 
    enum { MaxRecentFiles = 5 };

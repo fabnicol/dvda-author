@@ -28,6 +28,7 @@ void dvda::initialize()
   Hash::description["titleset"]={"DVD-Video titleset"};
   Hash::description["group"]={"DVD-Audio group"};
   Hash::description["recent"]={"Recent file"};
+
 }
 
 
@@ -257,7 +258,7 @@ dvda::dvda()
                                 fileTreeView,                   // files may be imported from this tree view
                                 importFiles,                     // FListFrame type
                                 "DVD-A",                          // superordinate xml tag
-  {"DVD-Audio"},                   // project manager widget on-screen tag
+  {"DVD-Audio", ""},                   // project manager widget on-screen tag
                                 "g",                                  // command line label
                                 dvdaCommandLine|hasListCommandLine|flags::enabled,  // command line characteristic features
                                {" ", " -g "},                       // command line separators
@@ -276,7 +277,7 @@ dvda::dvda()
                                 fileTreeView,                   // files may be imported from this tree view
                                 importFiles,                     // FListFrame type
                                 "DVD-V",                          // superordinate xml tag
-  {"DVD-Video"},                   // project manager widget on-screen tag
+  {"DVD-Video",""},                   // project manager widget on-screen tag
                                 "",                                   // command line label
                                 lplexFiles | hasListCommandLine|flags::enabled,  // command line characteristic features
                                {" ", " -ts "},                     // command line separators
@@ -319,16 +320,18 @@ dvda::dvda()
                                   &dvda::getFileSize,
                                   &dvda::printFileSize,
                                    &dvda::killProcess,
-                                   "dvda.iso"
-);
+                                   "dvda.iso");
 
   progress3=new FProgressBar(this,
-                                  &dvda::getDirectorySize,
-                                  &dvda::printDiscSize);
+                                  &dvda::getCdrecordProcessedOutput,
+                                  &dvda::printBurnProcess,
+                                  &dvda::killCdrecord,
+                                 "dvda.iso");
 
 
   progress->setToolTip(tr("DVD-Audio structure authoring progress bar"));
   progress2->setToolTip(tr("ISO file creation progress bar"));
+  progress3->setToolTip(tr("Disc recording progress bar"));
 
   outputTextEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   outputTextEdit->setAcceptDrops(false);
@@ -960,30 +963,6 @@ void dvda::addDraggedFiles(const QList<QUrl>& urls)
 }
 
 
-void dvda::printMsg(qint64 new_value, const QString &str)
-{
-    if (process.state() != QProcess::Running)        return;
-    if (new_value < 1024*1024*1024*4.7)
-                   outputTextEdit->append(tr(MSG_HTML_TAG) + str + QString::number(new_value) +" B ("+QString::number(new_value/(1024*1024))+ " MB)");
-             else
-                 outputTextEdit->append(tr(WARNING_HTML_TAG) + "Total size exceeds 4.7 GB");
-}
-
-void dvda::printDiscSize(qint64 new_value)
-{
-    printMsg(new_value, "Processing audio files...");
-}
-
-
-void dvda::printFileSize(qint64 new_value)
-{
-    printMsg(new_value, "Processing .iso disc image...");
-}
-
-void dvda::printBurnProcess(qint64 new_value)
-{
-    printMsg(new_value, "Burning disc...");
-}
 
 qint64 FProgressBar::updateProgressBar()
 {

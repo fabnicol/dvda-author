@@ -40,7 +40,7 @@
 this->commandLineList= QList<FString>() << defaultStatus;\
 if (((stat) & flags::widgetMask) == flags::multimodal) { this->commandLineList[0].setMultimodal(); }\
 this->hashKey=hK;\
-    this->setToolTip(desc.at(0));\
+    this->setToolTip(desc.at(1));\
 this->commandLineType=stat | flags::multimodal;\
 if (!hK.isEmpty())\
 {\

@@ -806,11 +806,17 @@ void MainWindow::feedConsole(bool initialized)
            QRegExp reg4("\\[ERR\\]([^\\n]*)\n");
            QRegExp reg5("\\[WAR\\]([^\\n]*)\n");
            QRegExp reg6("(^.*licenses/.)");
+           QRegExp reg8("\rTrack.* (\\d+) of[ ]+\\d+.*written.*x.");
 
-QRegExp reg8("\rTrack.*[ ]([0-9]*) of [ ]*([0-9]*) .*written.*x.");
 
-            QString text=QString(data).replace(reg6, (QString) HTML_TAG(navy) "\\1</span><br>");
-            dvda_author->outputTextEdit->append(text.replace(reg8, (QString) "\\1/\\2"));
+            QString text=QString(data);
+
+            if (text.contains(reg8))
+            {
+                 cdRecordProcessedOutput=reg8.cap(1).toLongLong();
+            }
+
+            text=text.replace(reg6, (QString) HTML_TAG(navy) "\\1</span><br>");
             text= text.replace(reg, (QString) INFORMATION_HTML_TAG "\\1<br>");
             text=text.replace(reg2, (QString) PARAMETER_HTML_TAG "\\1<br>");
             text=text.replace(reg3, (QString) MSG_HTML_TAG "\\1<br>");
@@ -829,7 +835,6 @@ QRegExp reg8("\rTrack.*[ ]([0-9]*) of [ ]*([0-9]*) .*written.*x.");
             consoleDialog->insertHtml(text=text.replace("\n", "<br>"));
             consoleDialog->moveCursor(QTextCursor::End);
             console->appendHtml(text);
-
 
     }
     else (timer->stop());

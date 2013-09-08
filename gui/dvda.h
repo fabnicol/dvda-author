@@ -21,8 +21,6 @@ class dvda : public common
 public:
 
     dvda();
-    void feedLog();
-    QTimer* timer;
     void setCurrentFile(const QString &fileName);
 
     MainWindow *parent;
@@ -61,6 +59,7 @@ public:
     void dropEvent(QDropEvent *event);
      QPoint startPos;
      QProcess process;
+     QProcess ejectProcess;
      WavFile wavFile;
 
 
@@ -89,6 +88,7 @@ private slots:
     void addGroup();
     void deleteGroup();
     void killProcess();
+    void killCdrecord();
 
     void on_helpButton_clicked();
     void requestSaveProject();
@@ -169,6 +169,10 @@ private:
     void printMsg(qint64 new_value, const QString &str);
     void printFileSize(qint64 new_value);
     void printBurnProcess(qint64 new_value);
+   qint64 getCdrecordProcessedOutput(const QString& ="", const QString& ="");
+   void resetCdRecordProcessedOutput();
+
+
 
  protected:
 
@@ -219,6 +223,7 @@ public:
 
     void stop()
     {
+        if (parent->process.state() == QProcess::Running) return;
         timer->stop();
         killButton->setDisabled(true);
     }
@@ -234,6 +239,7 @@ public:
     void setToolTip(const QString & tip) { bar->setToolTip(tip); }
     void setTarget(const QString&  t) { target=t; }
     void setReference(qint64  r) { reference=r; }
+    qint64 updateProgressBar();
 
  private:
     QToolButton* killButton=new QToolButton;
@@ -246,8 +252,6 @@ public:
     dvda* parent;
 
     MeasureFunction engine ;
-    qint64 updateProgressBar();
-
 
 };
 

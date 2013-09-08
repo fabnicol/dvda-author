@@ -67,6 +67,15 @@ protected :
   static FString    htmlLogPath;
   static QStringList extraAudioFilters;
 
+#ifdef CDRECORD_PATH_WIN32
+ /* insert executable at root of windows package */
+  QString cdRecordCommandStr=QDir::toNativeSeparators(QDir::currentPath ()+"/bindir/"+ QString("cdrecord.exe"));
+#else
+ #ifndef CDRECORD_PATH
+  #define CDRECORD_PATH "/opt/schily/bin"
+ #endif
+   QString cdRecordCommandStr=QString(CDRECORD_PATH) + QString("/cdrecord");
+#endif
 
 };
 
