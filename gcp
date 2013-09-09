@@ -24,12 +24,12 @@ else
     cd /key/dvda-author-gui/key
     git pull  -f 
     cd -
+    sudo umount /key
  fi
  name=archive.`date | sed -r "s/[ ,:+]/-/g" | sed -r "s/[()]//g"`.zip
  echo "Saving $name..." 
  git archive -o "$name" HEAD 
  mv "$name" /media/2c40f767-127f-4fc8-a88a-7dea7b8b0ab9/Archive
- sudo umount /key
 fi
 
 
