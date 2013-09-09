@@ -15,16 +15,16 @@ msg="$1"
 fi
 
 if test "$msg" = ""; then
-git checkout master
-echo "Enter commit msg:"
-read msg 
-fi
-
-if test "$msg" != ""; then
+ git checkout master
+ echo "Enter commit msg:"
+ read msg 
+else
  git commit -a -m "$msg" 
- cd /key/dvda-author-gui/key
- git pull  -f 
- cd -
+ if test "$1" = "-k"; then
+    cd /key/dvda-author-gui/key
+    git pull  -f 
+    cd -
+ fi
  name=archive.`date | sed -r "s/[ ,:+]/-/g" | sed -r "s/[()]//g"`.zip
  echo "Saving $name..." 
  git archive -o "$name" HEAD 
