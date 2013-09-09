@@ -221,12 +221,6 @@ public:
         killButton->setEnabled(true);
     }
 
-    void stop()
-    {
-        if (parent->process.state() == QProcess::Running) return;
-        timer->stop();
-        killButton->setDisabled(true);
-    }
 
     void hide()
     {
@@ -252,6 +246,17 @@ public:
     dvda* parent;
 
     MeasureFunction engine ;
+
+  public slots:
+
+      void stop()
+      {
+          if (parent->process.state() == QProcess::Running) return;
+          if (parent->process.exitStatus() != QProcess::CrashExit)
+              bar->setValue(100);
+          timer->stop();
+          killButton->setDisabled(true);
+      }
 
 };
 

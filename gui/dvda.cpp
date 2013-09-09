@@ -971,9 +971,9 @@ qint64 FProgressBar::updateProgressBar()
       if (share >= 100)
       {
           share=100;
-          stop();
       }
       bar->setValue(share);
+      if ( share == 100) stop();
       return new_value;
 }
 
@@ -1008,5 +1008,5 @@ FProgressBar::FProgressBar(dvda* parent,
                    [this, displayMessageWhileProcessing] { (this->parent->*displayMessageWhileProcessing)(updateProgressBar()); });
 
     connect(killButton, &QToolButton::clicked, parent, killFunction);
-    connect(killButton, &QToolButton::clicked, this, &FProgressBar::stop);
+    connect(&parent->process, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(stop()));
 }

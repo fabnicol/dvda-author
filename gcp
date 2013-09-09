@@ -1,10 +1,13 @@
-if test "$(grep "/key" /etc/mtab)" = ""
-then
-  if test ! -d /key
-   then 
-     sudo mkdir /key
-   fi
-  sudo mount -t vfat /dev/sdb1 /key 
+if test x$1 = x-k; then
+  if test "$(grep "/key" /etc/mtab)" = ""
+  then
+    if test ! -d /key
+    then 
+      sudo mkdir /key
+    fi
+    sudo mount -t vfat /dev/sdb1 /key 
+
+  fi
 fi
 
 if test $1 != ""; then

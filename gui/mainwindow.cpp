@@ -776,10 +776,16 @@ void MainWindow::showMainWidget()
 }
 
 
+QFile test("/home/fab/test2");
 
+QTextStream out(&test);
 
 void MainWindow::feedConsole(bool initialized)
 {
+static int table1Flag;
+if (table1Flag == 0){
+    test.open(QFile::WriteOnly|QFile::Truncate);
+    table1Flag=-1;}
 
     if (!dvda_author->process.atEnd())
     {
@@ -806,15 +812,44 @@ void MainWindow::feedConsole(bool initialized)
            QRegExp reg4("\\[ERR\\]([^\\n]*)\n");
            QRegExp reg5("\\[WAR\\]([^\\n]*)\n");
            QRegExp reg6("(^.*licenses/.)");
-           QRegExp reg8("\rTrack.* (\\d+) of[ ]+\\d+.*written.*x.");
+               // 1   1 / 1     1           0        1323         585     1350000   1
+           QRegExp reg7("(\\d{1})[ ]+(\\d+) /[ ]?(\\d+)[ ]+(\\d+)[ ]+(\\d+)[ ]+(\\d+)[ ]+(\\d+)[ ]+(\\d+)[ ]+(\\d+)\n");
+           QRegExp reg9("(\\d+)[ ]+(\\d+)[ ]+(\\d+)[ ]+(\\d+)[ ]+(\\d+)[ ]+(\\d+)[ ]+([\\w\\\\/\\.^\\n]+)\n");
+           QRegExp reg8("\r(Track.*) (\\d+)( of[ ]+)(\\d+.*)(written.*.)");
+
+
+#define HTML_TABLE_FORMAT1(X1,X2,X3,X4,X5,X6,X7) \
+           QString("<tr><th style=\"color: red; width: 50px;\">"#X1"</th>"\
+           "<th style=\"color: #FF6600; \">"#X2"</th>"\
+           "<th style=\"color: #FFCC00;\">"#X3"</th>"\
+           "<th style=\"color: #00CC00; \">"#X4"</th>"\
+           "<th style=\"color: #00FF99; \">"#X5"</th>"\
+           "<th>"#X6"</th><th>"#X7"</th></tr>")
+
+#define HTML_TABLE_FORMAT2(X1,X2,X3,X4,X5,X6,X7,X8,X9) \
+           QString("<tr><th style=\"color: red; \">"#X1"</th>"\
+           "<th style=\"color: green; \">"#X2"/ <b>"#X3"</b></th>"\
+           "<th style=\"color: #FF6600; \">"#X4"</th>"\
+           "<th style=\"color: #00FF99; \">"#X5"</th>"\
+           "<th>"#X6"</th><th>"#X7"</th><th>"#X8"</th><th>"#X9"</th></tr>")
 
 
             QString text=QString(data);
 
-            if (text.contains(reg8))
-            {
-                 cdRecordProcessedOutput=reg8.cap(1).toLongLong();
-            }
+            text=text.replace("Group   Title  Track  First Sect   Last Sect  First PTS  PTS length cga",
+                  "<table frame=\"all\" border=\"1\" cellpadding=\"3\" width=\"70%\">"+HTML_TABLE_FORMAT2(Group,Title,Title count,Track,First sector,Last sector,First PTS,PTS Length, cga));
+
+            text=text.replace(reg7, HTML_TABLE_FORMAT2(\\1,\\2,\\3,\\4,\\5,\\6,\\7,\\8,\\9));
+            text=text.replace("Total number of tracks", "</table><br>Total number of tracks");
+
+            text=text.replace("Group  Track    Rate Bits  Ch        Length  Filename",
+                  "<table frame=\"all\" border=\"1\" cellpadding=\"3\" width=\"60%\">"+HTML_TABLE_FORMAT1(Group,Track,Rate,Bits,Ch,Length,Filename));
+
+           text=text.replace("[MSG]  Size of raw", "</table><br><br>[MSG]  Size of raw");
+
+           text=text.replace(reg9, HTML_TABLE_FORMAT1(\\1,\\2,\\3,\\4,\\5,\\6,\\7));
+
+
 
             text=text.replace(reg6, (QString) HTML_TAG(navy) "\\1</span><br>");
             text= text.replace(reg, (QString) INFORMATION_HTML_TAG "\\1<br>");
@@ -823,21 +858,22 @@ void MainWindow::feedConsole(bool initialized)
             text=text.replace(reg4, (QString) ERROR_HTML_TAG "\\1<br>");
             text=text.replace(reg5, (QString) WARNING_HTML_TAG "\\1<br>");
 
-            text=text.replace("Group", (QString) HTML_TAG(red) "Group</span>");
-            text=text.replace("Title", (QString) HTML_TAG(green) "Title</span>");
-            text=text.replace("\rTrack", (QString) HTML_TAG(blue) "<br>Track</span>");
-            text=text.replace("Track", (QString) HTML_TAG(blue) "Track</span>");
+            if (text.contains(reg8))
+            {
+                 cdRecordProcessedOutput=reg8.cap(2).toLongLong();
+                 text=text.replace(reg8, (QString) MSG_HTML_TAG +reg8.cap(1)+
+                                   HTML_TAG(#FF6600) +reg8.cap(2)+"</span>"+
+                                   reg8.cap(3)+
+                                   HTML_TAG(navy) +reg8.cap(4)+"</span>"+
+                                   reg8.cap(5)+"<br>");
+            }
 
-            text=text.replace(QRegExp("([0-9]+)([ ]+)([0-9]*) / ([0-9]*)([ ]+)([0-9]*)"),
-                              HTML_TAG(red) "\\1</span>"+QString("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")
-                              + HTML_TAG(green) "\\3</span>" +HTML_TAG(green) "/ <b>\\4</b></span>"
-                              +QString("&nbsp;&nbsp;")+HTML_TAG(blue) "\\6</span>&nbsp;&nbsp;&nbsp;&nbsp;");
             consoleDialog->insertHtml(text=text.replace("\n", "<br>"));
             consoleDialog->moveCursor(QTextCursor::End);
             console->appendHtml(text);
 
     }
-    else (timer->stop());
+    else { timer->stop(); }
 
  }
 
