@@ -11,7 +11,7 @@ public:
     enum status {
         defaultStatus,
         defaultCommandLine,
-        commandLineMask=0xF,
+        //commandLineMask=0xF,
         commandLinewidgetDepthMask=0xF,
         untoggledCommandLine=0x00,
         toggledCommandLine=0x10,

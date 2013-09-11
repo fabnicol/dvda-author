@@ -14,9 +14,12 @@ QStringList dvda::createCommandLineString(int commandLineType)
   while (w.hasNext())
     {
       FAbstractWidget* item=w.next();
-      int itemCommandLineType=item->commandLineType & flags::commandLineMask;
-      if ((itemCommandLineType & commandLineType) == itemCommandLineType)
+      int itemCommandLineType=item->commandLineType &0xF;//& flags::commandLineMask;
+      //if ((itemCommandLineType & commandLineType) == itemCommandLineType)
+
+      if (itemCommandLineType == commandLineType)
         {
+            Q(item->optionLabel)
            commandLine +=  item->commandLineStringList();
         }
     }
@@ -42,10 +45,11 @@ void dvda::run()
       return;
     }
 
-  args << "-P0" << "-o" << common::tempdir+"/output"  << "-g" << "/home/fab/Audio/a.wav" << "/home/fab/Audio/pn.wav";
+  args << "-P0" << "-o" ;//<< common::tempdir+"/output"  << "-g" << "/home/fab/Audio/a.wav" << "/home/fab/Audio/pn.wav";
 
+//|createIso|createDisc
 
-  args << createCommandLineString(dvdaCommandLine|createIso|createDisc);
+  args << createCommandLineString(flags::dvdaCommandLine);
 
   //args << createCommandLineString(lplexFiles).split("-ts");
 
@@ -118,8 +122,8 @@ if (outputType == "DVD-Audio authoring")
 
     outputTextEdit->append(tr(INFORMATION_HTML_TAG "File system size: ")+ QString::number(fsSize) + " Bytes ("+ QString::number(((float)fsSize)/(1024.0*1024.0*1024.0), 'f', 2)+ " GB)");
 
-    if (!v(runMkisofs).isTrue()) return;
-    runMkisofs();
+    if (v(skipMkisofs).isFalse())
+        runMkisofs();
 }
 else
  if (outputType == "Disc image authoring")
@@ -141,7 +145,7 @@ else
      else
      {
         outputTextEdit->append(ERROR_HTML_TAG  + outputType + tr(" issues: check disc."));
-        QString msg=(process.exitStatus() == QProcess::NormalExit)?(QString(ERROR_HTML_TAG) + "Normal exit") :(QString(ERROR_HTML_TAG) + "Crash exit");
+        QString msg=(process.exitStatus() == QProcess::NormalExit)?(QString(ERROR_HTML_TAG) + "Cdrecord: Normal exit") :(QString(ERROR_HTML_TAG) + "Crash exit");
         outputTextEdit->append(msg+". Error code: "+QString::number(process.exitCode()));
      }
  }
@@ -178,7 +182,7 @@ void dvda::runCdrecord()
   QStringList argsCdrecord;
 
 
-  if (v(runMkisofs).isFalse())
+  if (v(skipMkisofs).isTrue() && v(mkisofsPath).isEmpty())
     {
       QMessageBox::warning(this, tr("Record"), tr("You need to create an ISO file first to be able to burn a DVD-Audio disc."), QMessageBox::Ok );
       return;
@@ -351,8 +355,6 @@ void dvda::extract()
   QString command=args.join(" ");
   outputTextEdit->append(tr(MSG_HTML_TAG "Command line : %1").arg(command));
 
-
-  //FAbstractWidget::setProtectedFields(runMkisofs="0";
 
   process.start(/*"konsole"*/ "dvda-author", args);
 }

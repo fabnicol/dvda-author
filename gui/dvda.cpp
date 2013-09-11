@@ -258,9 +258,9 @@ dvda::dvda()
                                 fileTreeView,                   // files may be imported from this tree view
                                 importFiles,                     // FListFrame type
                                 "DVD-A",                          // superordinate xml tag
-  {"DVD-Audio", ""},                   // project manager widget on-screen tag
+                                {"DVD-Audio", ""},                   // project manager widget on-screen tag
                                 "g",                                  // command line label
-                                dvdaCommandLine|hasListCommandLine|flags::enabled,  // command line characteristic features
+                                flags::dvdaCommandLine|hasListCommandLine|flags::enabled,  // command line characteristic features
                                {" ", " -g "},                       // command line separators
                                {"file", "group"},                // subordinate xml tags
                                 0,                                     // rank
@@ -277,7 +277,7 @@ dvda::dvda()
                                 fileTreeView,                   // files may be imported from this tree view
                                 importFiles,                     // FListFrame type
                                 "DVD-V",                          // superordinate xml tag
-  {"DVD-Video",""},                   // project manager widget on-screen tag
+                               {"DVD-Video",""},                   // project manager widget on-screen tag
                                 "",                                   // command line label
                                 lplexFiles | hasListCommandLine|flags::enabled,  // command line characteristic features
                                {" ", " -ts "},                     // command line separators
@@ -364,7 +364,12 @@ dvda::dvda()
       connect(project[ZONE]->addGroupButton, SIGNAL(clicked()), this, SLOT(addGroup()));
       connect(project[ZONE]->deleteGroupButton, SIGNAL(clicked()), this, SLOT(deleteGroup()));
       project[ZONE]->importFromMainTree->disconnect(SIGNAL(clicked()));
-      connect(project[ZONE]->importFromMainTree, &QToolButton::clicked, [this]{applyFunctionToSelectedFiles(&dvda::checkStandardCompliance);});
+      connect(project[ZONE]->importFromMainTree, &QToolButton::clicked,
+              [this]{applyFunctionToSelectedFiles(&dvda::checkStandardCompliance);
+                          updateProject();
+                          displayTotalSize();
+                          showFilenameOnly();
+                       });
       connect(project[ZONE]->moveUpItemButton, SIGNAL(clicked()), this, SLOT(on_moveUpItemButton_clicked()));
       connect(project[ZONE]->moveDownItemButton, SIGNAL(clicked()), this, SLOT(on_moveDownItemButton_clicked()));
       connect(project[ZONE]->retrieveItemButton, SIGNAL(clicked()), this, SLOT(on_deleteItem_clicked()));
@@ -395,7 +400,8 @@ dvda::dvda()
   labels << tr("") << tr("Rank/Path") << tr("Size") << tr("Precision") << tr("Sample Rate") << tr("Channels");
   managerWidget->hide();
   managerWidget->setHeaderLabels(labels);
-
+  managerWidget->setColumnWidth(0,300);
+  managerWidget->setColumnWidth(1,300);
   managerLayout->addWidget(managerWidget);
 
   allLayout->addLayout(mainLayout);
@@ -440,7 +446,6 @@ void dvda::refreshRowPresentation()
 
 void dvda::refreshRowPresentation(uint ZONE, uint j)
 {
-
   QPalette palette;
   palette.setColor(QPalette::AlternateBase,QColor("silver"));
   QFont font=QFont("Courier",10);
@@ -453,7 +458,6 @@ void dvda::refreshRowPresentation(uint ZONE, uint j)
 
   for (int r=0; (r < widget->count()) && (r < Hash::wrapper[zoneTag(ZONE)]->at(j).size()); r++ )
     {
-
       widget->item(r)->setText(Hash::wrapper.value(zoneTag(ZONE))->at(j).at(r).section('/',-1));
       widget->item(r)->setTextColor(QColor("navy"));
       //widget->item(r)->setToolTip(fileSizeDataBase[ZONE].at(j).at(r)+" B");
@@ -479,6 +483,7 @@ void dvda::on_openProjectButton_clicked()
 
   if (projectName.isEmpty()) return;
 
+  RefreshFlag |=ParseXml;
   initializeProject();
   must_close=true;
 }
@@ -486,6 +491,7 @@ void dvda::on_openProjectButton_clicked()
 void dvda::openProjectFile()
 {
   projectName=qobject_cast<QAction *>(sender())->data().toString();
+  RefreshFlag |=ParseXml;
   initializeProject();
 }
 
@@ -495,9 +501,16 @@ void dvda::initializeProject(const bool cleardata)
     if (cleardata)
     {
         clearProjectData();
-        options::RefreshFlag |= UpdateOptionTabs;
-        refreshProjectManager();
     }
+
+    options::RefreshFlag = options::RefreshFlag|UpdateOptionTabs ;
+    RefreshFlag |= UpdateTree ;
+    QListIterator<FAbstractWidget*>  w(Abstract::abstractWidgetList);
+
+   while (w.hasNext())
+        w.next()->setXmlFromWidget();
+
+    refreshProjectManager();
 
     checkEmptyProjectName();
     setCurrentFile(projectName);
@@ -700,12 +713,9 @@ if (probe->isStandardCompliant())
 
     project[isVideo]->addStringToListWidget(path, currentIndex);
     // in this order
-    displayTotalSize();
-    showFilenameOnly();
 
     RefreshFlag |= SaveTree|UpdateTree;
 
-    updateProject();
     return 0;
 }
 else
@@ -773,13 +783,7 @@ void dvda::requestSaveProject()
 
 void dvda::updateProject(bool requestSave)
 {
-  QListIterator<FAbstractWidget*>  w(Abstract::abstractWidgetList);
-
-  // On adding files or deleting files, or saving project, write project file and the update tree par reparsing project
-  // Yet do not reparse tabs, as it should be useless (Tabs have been refreshed already)
-
-  RefreshFlag = SaveTree|UpdateTree ;
-  //if ((RefreshFlag&hasProjectManagerTreeMask) == hasNoProjectManagerTree)   RefreshFlag |= hasProjectManagerTree;
+   RefreshFlag = SaveTree|UpdateTree ;
 
   audioFilterButton->setToolTip("Show audio files with extension "+ common::extraAudioFilters.join(", ")+"\nTo add extra file formats to this filter button go to Options>Audio Processing,\ncheck the \"Enable multiformat input\" box and fill in the file format field.");
 
@@ -898,7 +902,7 @@ bool dvda::refreshProjectManager()
           refreshProjectManagerValues(refreshProjectInteractiveMode | refreshAudioZone |  refreshVideoZone | refreshSystemZone);
       }
 
-      // Step3: adjusting project manager size
+       //Step3: adjusting project manager size
 //      managerWidget->resizeColumnToContents(0);
 //      managerWidget->resizeColumnToContents(1);
 //      managerWidget->resizeColumnToContents(2);

@@ -41,7 +41,7 @@ this->commandLineList= QList<FString>() << defaultStatus;\
 if (((stat) & flags::widgetMask) == flags::multimodal) { this->commandLineList[0].setMultimodal(); }\
 this->hashKey=hK;\
     this->setToolTip(desc.at(1));\
-this->commandLineType=stat | flags::multimodal;\
+this->commandLineType=stat;\
 if (!hK.isEmpty())\
 {\
     if (!desc.isEmpty())\
@@ -164,36 +164,45 @@ const QStringList FAbstractWidget::commandLineStringList()
 {
     /* If command line option is ill-formed, or if a corresponding checkbox is unchecked (or negatively checked)
   * or if an argument-taking option has no-argument, return empty */
-
-    if ((optionLabel.isEmpty())
-            ||  (commandLineList[0].isFalse())
+//QMessageBox::warning(NULL, "", optionLabel+":"+QString::number(commandLineType & flags::commandLinewidgetDepthMask));
+    if (
+            //(optionLabel.isEmpty()) ||
+              (commandLineList[0].isFalse())
             ||  (commandLineList[0].toQString().isEmpty())
             ||  (this->isAbstractDisabled())) return {};
 
-
-if (commandLineList[0].isTrue() | commandLineList[0].isMultimodal())
-{
-    if  (optionLabel.size() == 1)   return   QStringList( "-"+optionLabel);
-    if (optionLabel.at(0) == '^')  return   QStringList(optionLabel.mid(1));
-   return    QStringList ("--" +optionLabel);
-}
-
-if ((commandLineType & flags::commandLinewidgetDepthMask) == flags::hasListCommandLine)
-{
     QStringList strL;
-    QListIterator<FString> i(commandLineList);
-    strL << ((optionLabel.size() == 1)? "-":"--") +optionLabel;
-    while (i.hasNext())
-        strL <<  i.next();
-    return strL;
-}
-else
-{
-if (optionLabel.size() == 1)
-return (QStringList("-"+optionLabel+" "+commandLineList[0].toQString()));
-else
-return (QStringList("--"+optionLabel+"="+commandLineList[0].toQString()));
-}
+
+    if (optionLabel.isEmpty())
+    {
+
+        if ((commandLineType & flags::commandLinewidgetDepthMask) == flags::hasListCommandLine)
+        {
+            QListIterator<FString> i(commandLineList);
+            strL << ((optionLabel.size() == 1)? "-":"--") +optionLabel;
+            while (i.hasNext())
+                strL <<  i.next();
+            return QStringList(strL);
+        }
+    }
+    else
+    {
+        if (commandLineList[0].isTrue() | commandLineList[0].isMultimodal())
+        {
+            if  (optionLabel.size() == 1)   return   QStringList( "-"+optionLabel);
+            if (optionLabel.at(0) == '^')  return   QStringList(optionLabel.mid(1));
+            return    QStringList ("--" +optionLabel);
+        }
+        else
+        {
+            if (optionLabel.size() == 1)
+                return (QStringList("-"+optionLabel+" "+commandLineList[0].toQString()));
+            else
+                return (QStringList("--"+optionLabel+"="+commandLineList[0].toQString()));
+        }
+
+
+    }
 
 }
 
@@ -466,11 +475,9 @@ FRadioBox::FRadioBox(const QStringList &boxLabelList, int status,const QString &
         radioBoxLayout->addWidget(button);
     }
 
-
     FCore("0", hashKey, description, optionLabelStringList[status], status | flags::multimodal, enabledObjects, disabledObjects)
 
-
-    connect(this->radioButtonList.at(0), SIGNAL(toggled(bool)), this, SIGNAL(toggled(bool)));
+   connect(this->radioButtonList.at(0), SIGNAL(toggled(bool)), this, SIGNAL(toggled(bool)));
 
     for (int i=0; i < size; i++)
     {

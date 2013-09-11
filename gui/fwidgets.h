@@ -111,12 +111,12 @@ public:
   // yet using virtual derivation makes it possible to invoke the QWidget-inherited isEnabled().
   virtual bool isAbstractEnabled() =0;
   bool isAbstractDisabled() {return !isAbstractEnabled();}
-
+  QString optionLabel;
 protected:
 //  QString hashKey;
 //  QString widgetDepth;
 //  QString description;
-  QString optionLabel;
+
   QList<FString> commandLineList;
   QList<QWidget*> componentList;
 
@@ -163,8 +163,8 @@ private:
   QString hashKey;
   QString widgetDepth;
   QStringList description;
-  QString optionLabel;
-  QList<FString> commandLineList;
+  //QString optionLabel;
+  //QList<FString> commandLineList;
   QList<QWidget*> componentList;
 
 signals:
@@ -230,8 +230,8 @@ private:
   QString hashKey;
   QString widgetDepth;
   QStringList description;
-  QString optionLabel;
-  QList<FString> commandLineList;
+  //QString optionLabel;
+ //QList<FString> commandLineList;
   QList<QWidget*> componentList;
 
 };
@@ -273,8 +273,8 @@ private:
   QString hashKey;
   QString widgetDepth;
   QStringList description;
-  QString optionLabel;
-  QList<FString> commandLineList;
+ // QString optionLabel;
+ // QList<FString> commandLineList;
   QList<QWidget*> componentList;
 
 private slots:
@@ -324,8 +324,8 @@ private:
   QString hashKey;
   QString widgetDepth;
   QStringList description;
-  QString optionLabel;
-  QList<FString> commandLineList;
+ // QString optionLabel;
+ //QList<FString> commandLineList;
   QList<QWidget*> componentList;
 
 
@@ -355,8 +355,8 @@ private:
   QString hashKey;
   QString widgetDepth;
   QStringList description;
-  QString optionLabel;
-  QList<FString> commandLineList;
+  //QString optionLabel;
+  //QList<FString> commandLineList;
   QList<QWidget*> componentList;
 
   const QList<QWidget*>& getComponentList() const { return componentList;}
@@ -376,8 +376,8 @@ private:
   QString hashKey;
   QString widgetDepth;
   QStringList description;
-  QString optionLabel;
-  QList<FString> commandLineList;
+  //QString optionLabel;
+ //QList<FString> commandLineList;
   QList<QWidget*> componentList;
 
 
@@ -428,8 +428,8 @@ class FPalette :  public QWidget, virtual public FAbstractWidget
    QString hashKey;
    QString widgetDepth;
    QStringList description;
-   QString optionLabel;
-   QList<FString> commandLineList;
+   //QString optionLabel;
+   //QList<FString> commandLineList;
    QList<QWidget*> componentList;
    void refreshPaletteHash();
 };
