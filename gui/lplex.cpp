@@ -122,19 +122,19 @@ lplexPage::lplexPage()
 
 
   lplexMd5AwareBox = new FCheckBox("Generate MD5 tags",
-                                    flags::enabled|flags::lplexFiles,
+                                    flags::enabled|flags::lplexFiles|flags::unchecked,
                                    "lplexMd5Aware",
                                    {"Lplex","Generate MD5 tags"},
                                    "md5aware");
 
   lplexRescaleBox = new FCheckBox("Rescale images to TV standard",
-                                  flags::enabled|lplexFiles,
+                                  flags::enabled|flags::lplexFiles|flags::unchecked,
                                   "lplexRescale",
                                 { "Lplex","If jpegs sized for ntsc [pal] are being used\nto create a pal [ntsc] dvd, rescale them"},
                                   "rescale") ;
 
   lplexInfoDirLineEdit = new FLineEdit(tempdir,
-                                       flags::enabled|lplexFiles,
+                                  flags::enabled|flags::lplexFiles|flags::unchecked,
                                        "lplexInfoDirPath",
                                        {"Lplex","Path to directory to be added\n to Lplex-made XTRA directory"},
                                        "infodir");
@@ -148,7 +148,7 @@ lplexPage::lplexPage()
   /* connect to  QFileDialog::getExistingDirectory(this, "Browse Info directory"); */
 
   lplexInfoDirBox = new FCheckBox("Add Info directory to disc",
-                                  disabled,
+                                  flags::disabled,
                                   "lplexInfoDir",
                                   {"Lplex","Add Info directory\nto disc XTRA directory"},
                                     {

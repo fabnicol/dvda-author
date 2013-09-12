@@ -228,7 +228,7 @@ discPage::discPage()
     mkisofsBox->setToolTip(tr("Check this box to use existing *.iso file for disc burning"));
 
     playbackBox= new FCheckBox("Launch playback on loading disc",
-                               flags::unchecked|flags::dvdaCommandLine,
+                               flags::dvdaCommandLine|flags::enabled,
                                "playback",
                                {"Launch","Launch playback on loading"},
                                "autoplay");
@@ -362,7 +362,7 @@ advancedPage::advancedPage()
 
     Q2ListWidget controlledObjects={{paddingBox, pruneBox}} ;
 
-    fixWavOnlyBox=new FCheckBox("Only fix wav headers,\ndo not process audio",
+    fixWavOnlyBox=new FCheckBox(tr("Only fix wav headers,\ndo not process audio"),
                                 flags::disabled|flags::dvdaCommandLine,
                                 "fixWavOnly",
                                {"Audio processing", "Only fix wav headers"},
@@ -371,7 +371,7 @@ advancedPage::advancedPage()
 
     setWhatsThisText(fixWavOnlyBox, 78,79);
 
-    fixwavBox = new FCheckBox("Fix corrupt wav headers\nand process audio",
+    fixwavBox = new FCheckBox(tr("Fix corrupt wav headers\nand process audio"),
                               "fixwav",
                             {"Audio processing", "Fix corrupt wav headers"},
                               "fixwav",
@@ -401,7 +401,7 @@ advancedPage::advancedPage()
     extraAudioFiltersLineEdit->setMaximumWidth(120);
 
     soxBox= new FCheckBox("Enable multiformat input",
-                          flags::dvdaCommandLine,
+                          flags::dvdaCommandLine|flags::enabled,
                           "sox",
                         {"Audio processing", "Use SoX to convert audio files"},
                           "sox") ;
@@ -868,15 +868,22 @@ videoMenuPage::videoMenuPage()
     {
         {NULL},
         { videoMenuImportLineEdit,  videoMenuImportButton, videoMenuImportLabel },
-        {NULL}
+    };
+
+    Q2ListWidget *audioExportRadioBoxDisabledObjects = new Q2ListWidget ;
+    *audioExportRadioBoxDisabledObjects=
+    {
+        {NULL},
+        {NULL },
     };
 
     audioExportRadioBox =  new FRadioBox(
-               {"Hybrid disc", "No DVD-Video menu" ,"Import authored menu", "Export DVD-Audio menu" },
+               {"Hybrid disc", "No DVD-Video menu" ,"Import authored menu"},
                 "hybridate",
                { "Video menu","Create DVD-Audio/Video hybrid"},
-               {"hybridate", "hybridate", "hybridate-export-menu"},
-                audioExportRadioBoxEnabledObjects);
+               {"hybridate", "hybridate2"},
+                audioExportRadioBoxEnabledObjects,
+                audioExportRadioBoxDisabledObjects);
 
     QGroupBox *audioExportBox = new QGroupBox(tr("DVD-Audio/Video hybrid"));
     QGridLayout *audioExportLayout=new QGridLayout;
@@ -884,12 +891,12 @@ videoMenuPage::videoMenuPage()
     audioExportCheckBox = new FCheckBox("Create DVD-Audio/Video hybrid disc",
                                         "createHybrid",
                                       {"Video menu","Create hybrid DVD-Audio/Video disc"},
-                                      {audioExportRadioBox},
+                                     // {audioExportRadioBox},
                                       {videoImportBox});
 
     audioExportLayout->addWidget(audioExportCheckBox, 1,0);
-    audioExportLayout->addWidget(audioExportRadioBox, 2,0, Qt::AlignHCenter);
-    audioExportLayout->setColumnMinimumWidth(1,250);
+    //audioExportLayout->addWidget(audioExportRadioBox, 4,0, Qt::AlignHCenter);
+   // audioExportLayout->setColumnMinimumWidth(1,250);
 
     audioExportBox->setLayout(audioExportLayout);
 
@@ -897,6 +904,7 @@ videoMenuPage::videoMenuPage()
     videoMenuImportLayout->addWidget(videoMenuImportLabel, 1,0);
     videoMenuImportLayout->addWidget(videoMenuImportLineEdit, 1,1);
     videoMenuImportLayout->addWidget(videoMenuImportButton, 1,3);
+    videoMenuImportLayout->addWidget(audioExportRadioBox,3, 1);
     videoMenuImportLayout->setColumnMinimumWidth(2,60);
 
     QVBoxLayout* mainLayout = new QVBoxLayout;
@@ -1051,25 +1059,25 @@ outputPage::outputPage(options* parent)
     openHtmlLogButton->setToolTip(tr("Open log.html file in browser."));
 
     debugBox = new FCheckBox(tr("Debugging-level verbosity"),
-                             flags::unchecked|flags::dvdaCommandLine,
                              "debug",
                             {"Console","Use debug-level verbosity"},
                              "debug" );
 
-    veryverboseBox = new FCheckBox(tr("Increased verbosity"),
-                                  flags::unchecked|flags::dvdaCommandLine,
+
+    veryverboseBox = new FCheckBox("Increased verbosity",
                                    "veryverbose",
                                   {"Console","Use enhanced verbosity"},
-                                   "veryverbose");
+                                   "veryverbose",
+                                    {NULL},
+                                    {debugBox}
+                                   );
 
     htmlFormatBox = new FCheckBox(tr("Html format"),
-                                  flags::unchecked|flags::dvdaCommandLine,
                                   "htmlFormat",
                                 {"Console","Output html log"},
                                   "loghtml");
 
     logrefreshBox=new FCheckBox(tr("Refresh log"),
-                                flags::unchecked|flags::dvdaCommandLine,
                                 "logrefresh",
                                 {"Console","Erase prior logs on running"},
                                 "logrefresh");
@@ -1107,7 +1115,6 @@ outputPage::outputPage(options* parent)
     targetDirButton = new QToolDirButton(tr("Browse output directory for DVD-Audio disc files."));
     openTargetDirButton = new QToolDirButton(tr("Open output directory for DVD-Audio disc files."), actionType::OpenFolder);
     targetDirLineEdit = new FLineEdit(tempdir+QDir::separator()+"output",
-                                      flags::dvdaCommandLine,
                                       "targetDir",
                                       {"DVD-A file directory", "DVD-A file directory"},
                                       "output");
@@ -1148,7 +1155,7 @@ outputPage::outputPage(options* parent)
     createDVDFilesRadioBox = new FRadioBox({ "Output mode" , "Create DVD files", "No output"},
                                            "createDVDFiles",
                                            {"Output", "Create DVD Files"},
-                                           { "" , "no-output"},
+                                           { "^ " , "no-output"},
                                            createDVDFilesEnabledObjects,
                                            createDVDFilesDisabledObjects);
 
@@ -1179,7 +1186,6 @@ outputPage::outputPage(options* parent)
     QToolDirButton *openWorkDirButton = new QToolDirButton;
 
     workDirLineEdit = new FLineEdit(QDir::currentPath (),
-                                    flags::dvdaCommandLine,
                                     "workDir",
                                      {"Folders", "Working directory"},
                                     "workdir");
@@ -1189,7 +1195,6 @@ outputPage::outputPage(options* parent)
     QLabel* tempDirLabel = new QLabel(tr("Temporary directory"));
 
     tempDirLineEdit = new FLineEdit(common::tempdir,
-                                    flags::dvdaCommandLine,
                                     "tempDir",
                                    {"Folders","Temporary directory"},
                                      "tempdir");
@@ -1201,7 +1206,6 @@ outputPage::outputPage(options* parent)
     QToolDirButton *openBinDirButton = new QToolDirButton;
 
     binDirLineEdit = new FLineEdit(QDir::currentPath ()+QDir::separator()+"bindir",
-                                   flags::dvdaCommandLine,
                                    "binDir",
                                   {"Folders","Binary directory"},
                                    "bindir");

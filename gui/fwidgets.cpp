@@ -164,46 +164,41 @@ const QStringList FAbstractWidget::commandLineStringList()
 {
     /* If command line option is ill-formed, or if a corresponding checkbox is unchecked (or negatively checked)
   * or if an argument-taking option has no-argument, return empty */
-//QMessageBox::warning(NULL, "", optionLabel+":"+QString::number(commandLineType & flags::commandLinewidgetDepthMask));
+//QMessageBox::warning(NULL, "", optionLabel+":"+QString::number(commandLineType & flags::widgetMask));
+
     if (
-            //(optionLabel.isEmpty()) ||
+            (optionLabel.isEmpty()) ||
               (commandLineList[0].isFalse())
-            ||  (commandLineList[0].toQString().isEmpty())
+           // ||  (commandLineList[0].toQString().isEmpty())
             ||  (this->isAbstractDisabled())) return {};
 
-    QStringList strL;
+    QStringList strL=QStringList();
 
-    if (optionLabel.isEmpty())
-    {
-
-        if ((commandLineType & flags::commandLinewidgetDepthMask) == flags::hasListCommandLine)
+      if ((commandLineType & flags::widgetMask) == flags::hasListCommandLine)
         {
             QListIterator<FString> i(commandLineList);
-            strL << ((optionLabel.size() == 1)? "-":"--") +optionLabel;
             while (i.hasNext())
-                strL <<  i.next();
-            return QStringList(strL);
-        }
-    }
-    else
+                if (!i.peekNext().isEmpty()) strL <<  i.next().trimmed();
+               else i.next();
+
+         }
+      else
     {
         if (commandLineList[0].isTrue() | commandLineList[0].isMultimodal())
         {
-            if  (optionLabel.size() == 1)   return   QStringList( "-"+optionLabel);
-            if (optionLabel.at(0) == '^')  return   QStringList(optionLabel.mid(1));
-            return    QStringList ("--" +optionLabel);
+            if  (optionLabel.size() == 1)   strL= QStringList("-"+optionLabel);
+            else
+            if (optionLabel.at(0) == '^')  strL=QStringList(optionLabel.mid(1));
+            else strL=QStringList ("--" +optionLabel);
         }
         else
         {
-            if (optionLabel.size() == 1)
-                return (QStringList("-"+optionLabel+" "+commandLineList[0].toQString()));
-            else
-                return (QStringList("--"+optionLabel+"="+commandLineList[0].toQString()));
+            if (!commandLineList[0].toQString().isEmpty())
+                 strL= (optionLabel.size() == 1)? QStringList("-"+optionLabel+" "+commandLineList[0].toQString())
+                                                                       :QStringList("--"+optionLabel+"="+commandLineList[0].toQString());
         }
-
-
     }
-
+              return QStringList(strL);
 }
 
 /* caution : abstractWidgetList must have its first two elements as respectively being with "DVD-A" and "DVD-V" hashKeys. */
@@ -316,7 +311,7 @@ void FListWidget::setWidgetFromXml(const FStringList &s)
         commandLineList= QList<FString>() << translate(s);
     else
     {
-        if ((commandLineType & flags::commandLinewidgetDepthMask) == flags::hasListCommandLine)
+        if ((commandLineType & flags::widgetMask) == flags::hasListCommandLine)
         {
             if (separator.size() < 2) commandLineList=QList<FString>();
             FStringListIterator i(Hash::wrapper[hashKey]);
@@ -341,16 +336,23 @@ const FString FListWidget::setXmlFromWidget()
         commandLineList=QList<FString>() << translate(*Hash::wrapper[hashKey]);
     else
     {
-        if ((commandLineType & flags::commandLinewidgetDepthMask)  == hasListCommandLine)
+        if ((commandLineType & flags::widgetMask)  == hasListCommandLine)
         {
             if (separator.size() < 2) commandLineList=QList<FString>();
             FStringListIterator i(Hash::wrapper[hashKey]);
+
             while (i.hasNext())
             {
+                QStringList str=i.next();
+                if (str.isEmpty()) continue;
                 commandLineList << separator[1] ;
-                QStringListIterator j(i.next());
+                QStringListIterator j(str);
                 while (j.hasNext())
-                    commandLineList << j.next();
+                {
+                    QString s=j.next();
+                    commandLineList << s;
+
+                }
             }
         }
 
@@ -379,6 +381,22 @@ FCheckBox::FCheckBox(const QString &boxLabel, int status,const QString &hashKey,
     FCore3(FString(mode), hashKey, description, commandLineString, status, controlledObjects)
 }
 
+
+FCheckBox::FCheckBox(const QString &boxLabel, const QString &hashKey, const QStringList &description,
+        const QString &commandLineString,  const QList<QWidget*> &enabledObjects, const QList<QWidget*> &disabledObjects): QCheckBox(boxLabel)
+{
+    componentList={this};
+    widgetDepth="0";
+
+    Q2ListWidget *dObjects=new Q2ListWidget, *eObjects=new Q2ListWidget;
+    if (enabledObjects.isEmpty()) eObjects=NULL;
+    else
+        *eObjects << enabledObjects;
+    if (disabledObjects.isEmpty()) dObjects=NULL;
+    else
+        *dObjects << disabledObjects;
+    FCore(FString(false), hashKey, description, commandLineString, flags::defaultStatus|flags::defaultCommandLine|flags::unchecked, eObjects, dObjects);
+}
 
 FCheckBox::FCheckBox(const QString &boxLabel, int status, const QString &hashKey, const QStringList &description,
                      const QList<QWidget*> &enabledObjects, const QList<QWidget*> &disabledObjects) : QCheckBox(boxLabel)

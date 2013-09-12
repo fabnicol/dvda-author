@@ -17,9 +17,15 @@ QStringList dvda::createCommandLineString(int commandLineType)
       int itemCommandLineType=item->commandLineType &0xF;//& flags::commandLineMask;
       //if ((itemCommandLineType & commandLineType) == itemCommandLineType)
 
+//      Q(item->optionLabel)
+//              q(item->commandLineType)
+//              q(itemCommandLineType)
+//              q(commandLineType)
+
+      //    item->setXmlFromWidget();
+
       if (itemCommandLineType == commandLineType)
         {
-            Q(item->optionLabel)
            commandLine +=  item->commandLineStringList();
         }
     }
@@ -45,18 +51,18 @@ void dvda::run()
       return;
     }
 
-  args << "-P0" << "-o" ;//<< common::tempdir+"/output"  << "-g" << "/home/fab/Audio/a.wav" << "/home/fab/Audio/pn.wav";
+// args << "-P0"   << "-g" << "/home/fab/Audio/a.wav" << "/home/fab/Audio/pn.wav" << "--output="+  common::tempdir+"/output" ;
 
 //|createIso|createDisc
 
-  args << createCommandLineString(flags::dvdaCommandLine);
+ args << "-P0" << createCommandLineString(flags::dvdaCommandLine);
 
   //args << createCommandLineString(lplexFiles).split("-ts");
 
   outputTextEdit->append(tr(MSG_HTML_TAG "Processing input directory..."));
   outputTextEdit->append(tr(INFORMATION_HTML_TAG "Size of Audio zone input %1").arg(QString::number(dvda::totalSize[AUDIO])));
   outputTextEdit->append(tr(INFORMATION_HTML_TAG "Size of Video zone input %1").arg(QString::number(dvda::totalSize[VIDEO])));
-  command=args.join(" ");
+  command=args.join("#");
   outputTextEdit->append(tr(MSG_HTML_TAG "Command line : dvda-author %1").arg(command));
 
   outputType="DVD-Audio authoring";

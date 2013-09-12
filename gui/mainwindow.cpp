@@ -650,45 +650,45 @@ void MainWindow::configureOptions()
     QVBoxLayout *blayout=new QVBoxLayout;
 
     defaultFileManagerWidgetLayoutBox=new FCheckBox("Display file manager",
-                                                                                                                           flags::noCommandLine|flags::checked,
+                                                                                                                           flags::enabled|flags::checked,
                                                                                                                            "fileManagerDisplay",
                                                                                                                            {"Interface", "Display file manager on left panel"});
 
     defaultProjectManagerWidgetLayoutBox=new FCheckBox("Display project manager",
-                                                                                                                                 flags::noCommandLine|flags::checked,
+                                                                                                                                 flags::enabled|flags::checked,
                                                                                                                                  "projectManagerDisplay",
                                                                                                                                  {"Interface", "Display project manager on right panel"});
 
     defaultConsoleLayoutBox=new FCheckBox("Display console as bottom panel tab",
-                                                                                                       flags::noCommandLine|flags::checked,
+                                                                                                       flags::enabled|flags::checked,
                                                                                                        "launchConsoleAsTab",
                                                                                                        {"Interface", "Add tab to bottom output panel\non launching console"});
 
     defaultFullScreenLayout=new FCheckBox("Full screen",
-                                                                                                      flags::noCommandLine|flags::unchecked,
+                                                                                                      flags::enabled|flags::unchecked,
                                                                                                       "fullScreenDisplay",
                                                                                                       {"Interface", "Display interface full screen on launch"});
 
 
     defaultLplexActivation=new FCheckBox("Activate video zone editing using Lplex",
-                                                                                                  flags::noCommandLine|flags::checked,
+                                                                                                  flags::enabled|flags::checked,
                                                                                                   "activateLplex",
                                                                                                   {"Interface", "Create DVD-Video zone\nusing Lplex"});
 
     defaultOutputTextEditBox=new FCheckBox("Display message panel",
-                                                                                                  flags::noCommandLine|flags::checked,
+                                                                                                  flags::enabled|flags::checked,
                                                                                                   "outputTextEdit",
                                                                                                   {"Interface", "Display message panel"});
 
     QGroupBox *behaviorGroupBox =new QGroupBox(tr("Save/Launch"));
 
     defaultSaveProjectBehavior=new FCheckBox("Save .dvp project automatically",
-                                                                                                      flags::noCommandLine|flags::checked,
+                                                                                                      flags::enabled|flags::checked,
                                                                                                       "saveProjectBehavior",
                                                                                                       {"Interface", "Saves project if a tab content is changed\nand on exiting the interface"});
 
     defaultLoadProjectBehavior=new FCheckBox("Load .dvp project on launch",
-                                                                                                      flags::noCommandLine|flags::checked,
+                                                                                                      flags::enabled|flags::checked,
                                                                                                       "loadProjectBehavior",
                                                                                                       {"Interface", "Load latest .dvp project on launch"});
 

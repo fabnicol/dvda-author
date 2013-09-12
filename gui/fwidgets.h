@@ -213,6 +213,8 @@ public:
             const QString &commandLineString,  const Q2ListWidget* controlledObjects =NULL):
                 FCheckBox(boxLabel, flags::defaultStatus| flags::unchecked|flags::defaultCommandLine, hashKey, description,  commandLineString, controlledObjects){}
 
+    FCheckBox(const QString &boxLabel, const QString &hashKey, const QStringList &description,
+            const QString &commandLineString,  const QList<QWidget*> &enabledObjects, const QList<QWidget*> &disabledObjects);
 
   void setWidgetFromXml(const FStringList& );
   const FString setXmlFromWidget();
