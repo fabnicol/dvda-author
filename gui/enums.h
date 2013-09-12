@@ -7,6 +7,7 @@ public:
     enum {flush=0xF00};
     enum {importFiles, importNames, typeIn, isEmbedded};
     enum font {boldTitle, regularTitle, italicTitle};
+#ifdef DEBUG
     enum commandLineType {dvdaCommandLine, createDisc, createIso, dvdaExtract, lplexFiles,  noCommandLine};
     enum status {
         defaultCommandLine=dvdaCommandLine,
@@ -23,6 +24,27 @@ public:
         multimodal=0x3000,
         hasListCommandLine=0x4000,
         defaultStatus=enabled
+    };
+#endif
+    enum commandLineType {dvdaCommandLine, createDisc, createIso, dvdaExtract, lplexFiles,  noCommandLine};
+
+    enum status {
+        defaultStatus=0x0,  ///-->regression origin
+        defaultCommandLine=dvdaCommandLine,
+        //commandLineMask=0xF,
+         commandLinewidgetDepthMask=0xF,
+        untoggledCommandLine=0x10,
+        toggledCommandLine=0x20,
+        commandLineToggleMask=0xF0,
+        enabled=0x100,
+        disabled=0x200,
+        enabledMask=0xF00,
+        widgetMask=0xF000,
+        checked=0x1000,
+        unchecked=0x2000,
+        multimodal=0x3000,
+        hasListCommandLine=0x4000
+
     };
     static int lplexRank;
 

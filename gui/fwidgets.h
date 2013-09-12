@@ -251,7 +251,7 @@ public:
 
    FRadioBox(const QStringList &boxLabelList, const QString &hashKey, const QStringList &description,
                      const QStringList &optionLabelStringList, const Q2ListWidget* enabledObjects=NULL,  const Q2ListWidget* disabledObjects=NULL) :
-     FRadioBox(boxLabelList, flags::defaultStatus,hashKey, description,  optionLabelStringList, enabledObjects,  disabledObjects) {}
+     FRadioBox(boxLabelList, flags::defaultStatus|flags::defaultCommandLine,hashKey, description,  optionLabelStringList, enabledObjects,  disabledObjects) {}
 
 
   void setWidgetFromXml(const FStringList& );
