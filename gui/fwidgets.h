@@ -112,13 +112,20 @@ public:
   virtual bool isAbstractEnabled() =0;
   bool isAbstractDisabled() {return !isAbstractEnabled();}
   QString optionLabel;
-protected:
-//  QString hashKey;
-//  QString widgetDepth;
-//  QString description;
 
+protected:
+  QString hashKey;
+  QString widgetDepth;
+  QStringList description;
   QList<FString> commandLineList;
   QList<QWidget*> componentList;
+  inline void FCore(FString defaultStatus, const QString &hashKey, const QStringList & description,
+                    const QString &option, int status, const QList<QWidget*>&enabledObjects=QList<QWidget*>(), const QList<QWidget*>&disabledObjects=QList<QWidget*>());
+
+  inline void FCore(FString defaultStatus, const QString &hashKey, const QStringList & description,
+                    const QString &option, int status, const Q2ListWidget *enabledObjects, const Q2ListWidget *disabledObjects);
+
+ //virtual void setEnabled();
 
 };
 
@@ -160,9 +167,9 @@ private:
 
   QHash<QString, QString> *listWidgetTranslationHash;
   const FString& translate(const FStringList &s);
-  QString hashKey;
-  QString widgetDepth;
-  QStringList description;
+ // QString hashKey;
+  //QString widgetDepth;
+  //QStringList description;
   //QString optionLabel;
   //QList<FString> commandLineList;
   QList<QWidget*> componentList;
@@ -179,42 +186,28 @@ class FCheckBox : public QCheckBox, virtual public FAbstractWidget
   Q_OBJECT
 
   friend class FAbstractWidget;
+  friend inline void FCore( FString defaultStatus, const QString &hashKey, const QStringList & description,
+                            const QString &option, int status, const QList<QWidget*>&enabledObjects, const QList<QWidget*>&disabledObjects);
 
 public:
 
-  FCheckBox(const QString &boxLabel, int status, const QString &hashKey, const QStringList &description,
-                       const QList<QWidget*> &enabledObjects, const QList<QWidget*> &disabledObjects=QList<QWidget*>());
+  FCheckBox(const QString &boxLabel, int status, const QString &hashKey, const QStringList &description, const char* commandLineString,
+                       const QList<QWidget*> &enabledObjects=QList<QWidget*>(), const QList<QWidget*> &disabledObjects=QList<QWidget*>());
 
-  FCheckBox(const QString &boxLabel, const QString &hashKey, const QStringList& description,
-            const QList<QWidget*> &enabledObjects, const QList<QWidget*> &disabledObjects=QList<QWidget*>()):
-    FCheckBox(boxLabel, flags::defaultStatus|flags::unchecked|flags::defaultCommandLine, hashKey, description,
+  FCheckBox(const QString &boxLabel, int status, const QString &hashKey, const QStringList &description,
+                       const QList<QWidget*> &enabledObjects=QList<QWidget*>(), const QList<QWidget*> &disabledObjects=QList<QWidget*>()):
+                        FCheckBox(boxLabel,  status, hashKey, description, "",enabledObjects, disabledObjects) {}
+
+
+  FCheckBox(const QString &boxLabel, const QString &hashKey, const QStringList& description, const char* commandLineString,
+            const QList<QWidget*> &enabledObjects=QList<QWidget*>(), const QList<QWidget*> &disabledObjects=QList<QWidget*>()):
+    FCheckBox(boxLabel, flags::defaultStatus|flags::unchecked|flags::defaultCommandLine, hashKey, description, commandLineString,
                          enabledObjects, disabledObjects){}
 
-  FCheckBox(const QString &boxLabel, int status, const QString &hashKey, const QStringList &description,
-            const QString &commandLineString,  const Q2ListWidget* controlledObjects =NULL) ;
-
-  FCheckBox(const QString &boxLabel, int status, const QString &hashKey, const QString &description,
-            const QString &commandLineString,  const Q2ListWidget* controlledObjects =NULL) :
-       FCheckBox(boxLabel,  status, hashKey, QStringList(description), commandLineString,  controlledObjects ) {}
-
-  FCheckBox(const QString &boxLabel, int status, const QString &hashKey, const QStringList &description,
-            const Q2ListWidget* controlledObjects=NULL):
-    FCheckBox(boxLabel,  status | flags::noCommandLine, hashKey, description, "",  controlledObjects){}
-
-  FCheckBox(const QString &boxLabel, int status, const QString &hashKey, const QString &description,
-            const Q2ListWidget* controlledObjects=NULL):
-    FCheckBox(boxLabel,  status | flags::noCommandLine, hashKey, QStringList(description), "",  controlledObjects){}
-
-   FCheckBox(const QString &boxLabel, const QString &hashKey, const QStringList &description,
-             const Q2ListWidget* controlledObjects =NULL):
-    FCheckBox(boxLabel,  flags::defaultStatus | flags::noCommandLine|flags::unchecked, hashKey, description, "",  controlledObjects){}
-
-    FCheckBox(const QString &boxLabel, const QString &hashKey, const QStringList &description,
-            const QString &commandLineString,  const Q2ListWidget* controlledObjects =NULL):
-                FCheckBox(boxLabel, flags::defaultStatus| flags::unchecked|flags::defaultCommandLine, hashKey, description,  commandLineString, controlledObjects){}
-
-    FCheckBox(const QString &boxLabel, const QString &hashKey, const QStringList &description,
-            const QString &commandLineString,  const QList<QWidget*> &enabledObjects, const QList<QWidget*> &disabledObjects);
+  FCheckBox(const QString &boxLabel, const QString &hashKey, const QStringList& description,
+            const QList<QWidget*> &enabledObjects=QList<QWidget*>(), const QList<QWidget*> &disabledObjects=QList<QWidget*>()):
+      FCheckBox(boxLabel, flags::defaultStatus|flags::unchecked|flags::defaultCommandLine, hashKey, description, "",
+                         enabledObjects, disabledObjects){}
 
   void setWidgetFromXml(const FStringList& );
   const FString setXmlFromWidget();
@@ -229,12 +222,12 @@ private slots:
   void uncheckDisabledBox();
 
 private:
-  QString hashKey;
-  QString widgetDepth;
-  QStringList description;
+  //QString hashKey;
+  //QString widgetDepth="0";
+  //QStringList description;
   //QString optionLabel;
  //QList<FString> commandLineList;
-  QList<QWidget*> componentList;
+  QList<QWidget*> componentList={this};
 
 };
 
@@ -258,7 +251,7 @@ public:
   const FString setXmlFromWidget();
   void refreshWidgetDisplay();
   bool isAbstractEnabled() { return this->radioGroupBox->isEnabled();}
-  void setToolTip(const QString & description) {this->radioGroupBox->setToolTip(description);}
+
   void setEnabled(bool enabled) {this->radioGroupBox->setEnabled(enabled);}
   const QString& getHashKey() const {return hashKey; }
   const QList<QWidget*>& getComponentList() const { return componentList;}
@@ -272,9 +265,9 @@ private:
   QStringList optionLabelStringList;
   QGroupBox* radioGroupBox;
   int rank;
-  QString hashKey;
-  QString widgetDepth;
-  QStringList description;
+ // QString hashKey;
+  //QString widgetDepth;
+  //QStringList description;
  // QString optionLabel;
  // QList<FString> commandLineList;
   QList<QWidget*> componentList;
@@ -323,9 +316,9 @@ private slots:
 
 private:
   QHash<QString, QString> *comboBoxTranslationHash;
-  QString hashKey;
-  QString widgetDepth;
-  QStringList description;
+  //QString hashKey;
+  //QString widgetDepth;
+  //QStringList description;
  // QString optionLabel;
  //QList<FString> commandLineList;
   QList<QWidget*> componentList;
@@ -354,9 +347,9 @@ public:
   const QString& getHashKey() const {return hashKey; }
 
 private:
-  QString hashKey;
-  QString widgetDepth;
-  QStringList description;
+  //QString hashKey;
+  //QString widgetDepth;
+  //QStringList description;
   //QString optionLabel;
   //QList<FString> commandLineList;
   QList<QWidget*> componentList;
@@ -414,7 +407,6 @@ class FPalette :  public QWidget, virtual public FAbstractWidget
     void setWidgetFromXml(const FStringList&);
     void refreshWidgetDisplay();
     void refreshComponent(short i);
-    void setToolTip(const QString &);
 
     const FString setXmlFromWidget();
     void setMinimumButtonWidth(const int w);
@@ -427,9 +419,9 @@ class FPalette :  public QWidget, virtual public FAbstractWidget
     FColorButton *button[3];
 
   private:
-   QString hashKey;
-   QString widgetDepth;
-   QStringList description;
+   //QString hashKey;
+   //QString widgetDepth;
+   //QStringList description;
    //QString optionLabel;
    //QList<FString> commandLineList;
    QList<QWidget*> componentList;

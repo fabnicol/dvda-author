@@ -207,7 +207,7 @@ discPage::discPage()
                              {"Burn", "Use BURN-Free"},
                                "^driveropts=burnfree");
 
-    burnFreeBox->setToolTip(tr("Only use if your driver supports this option!"));
+    burnFreeBox->QWidget::setToolTip(tr("Only use if your driver supports this option!"));
 
     mkisofsBox =new FCheckBox("Skip image file creation",
                               "skipMkisofs",
@@ -360,14 +360,13 @@ advancedPage::advancedPage()
                             {"Audio processing", "Cut silence at end of wav files"},
                              "prune");
 
-    Q2ListWidget controlledObjects={{paddingBox, pruneBox}} ;
 
     fixWavOnlyBox=new FCheckBox(tr("Only fix wav headers,\ndo not process audio"),
                                 flags::disabled|flags::dvdaCommandLine,
                                 "fixWavOnly",
                                {"Audio processing", "Only fix wav headers"},
                                 "fixwav",
-                                &controlledObjects);
+                                {paddingBox, pruneBox});
 
     setWhatsThisText(fixWavOnlyBox, 78,79);
 
@@ -375,7 +374,7 @@ advancedPage::advancedPage()
                               "fixwav",
                             {"Audio processing", "Fix corrupt wav headers"},
                               "fixwav",
-                              &controlledObjects);
+                              {paddingBox, pruneBox});
 
     setWhatsThisText(fixwavBox, 82,90);
 
@@ -953,7 +952,7 @@ videolinkPage::videolinkPage()
                                     {"Video link", "Rank of linked video titleset"},
                                      "T");
 
-    videolinkSpinBox->setEnabled(true);
+    videolinkSpinBox->QWidget::setEnabled(true);
 
     videolinkSpinBox->setMaximumWidth(50);
 

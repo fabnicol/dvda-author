@@ -35,39 +35,47 @@
     }\
 }
 
-#define FCore2(defaultStatus, hK, desc, opt, stat)\
-{\
-this->commandLineList= QList<FString>() << defaultStatus;\
-if (((stat) & flags::widgetMask) == flags::multimodal) { this->commandLineList[0].setMultimodal(); }\
-this->hashKey=hK;\
-    this->setToolTip(desc.at(1));\
-this->commandLineType=stat;\
-if (!hK.isEmpty())\
-{\
-    if (!desc.isEmpty())\
-    {\
-        this->description=desc;\
-        Hash::description[hK]=desc;\
-    }\
-}\
-\
-this->optionLabel=opt;\
-\
-this->setEnabled((((stat) | flags::multimodal)& flags::enabledMask) ==  flags::enabled);\
-Hash::wrapper[hK] = new FStringList;\
-    *Hash::wrapper[hK]  << (QStringList() << QString());\
-\
-Abstract::abstractWidgetList.append(this);\
-\
-FAbstractConnection::meta_connect(this, this->enabledObjects, this->disabledObjects);\
+//this->setToolTip(desc.at(1));
+//this->setEnabled((((stat) | flags::multimodal)& flags::enabledMask) ==  flags::enabled);
+
+void FAbstractWidget::FCore(FString defaultStatus, const QString &hashKey, const QStringList & description,
+                  const QString &option, int status, const QList<QWidget*>&enabledObjects, const QList<QWidget*>&disabledObjects)
+{
+Q2ListWidget *dObjects=new Q2ListWidget, *eObjects=new Q2ListWidget;
+if (enabledObjects.isEmpty()) eObjects=NULL;
+else
+    *eObjects << enabledObjects;
+if (disabledObjects.isEmpty()) dObjects=NULL;
+else
+    *dObjects << disabledObjects;
+
+FCore(defaultStatus, hashKey, description, option, status, eObjects, dObjects);
 }
 
+inline void FAbstractWidget::FCore(FString defaultStatus, const QString &hashKey, const QStringList & description,
+                  const QString &option, int status, const Q2ListWidget *enabledObjects, const Q2ListWidget *disabledObjects)
+{
+    this->enabledObjects=enabledObjects;
+    this->disabledObjects=disabledObjects;
 
-#define FCore(defaultStatus, hashKey, decription, option, status, EO, DO)\
-{\
-this->enabledObjects=EO; \
-this->disabledObjects=DO;\
-FCore2(defaultStatus, hashKey, decription, option, status)\
+    this->commandLineList= QList<FString>() << defaultStatus;
+    if (((status) & flags::widgetMask) == flags::multimodal) { this->commandLineList[0].setMultimodal(); }
+    this->hashKey=hashKey;
+    this->commandLineType=status;
+    if (!hashKey.isEmpty())
+            {
+                if (!description.isEmpty())\
+                {
+                     this->description=description;
+                    Hash::description[hashKey]=description;
+                }
+            }
+    this->optionLabel=option;
+    Hash::wrapper[hashKey] = new FStringList;
+    *Hash::wrapper[hashKey]  << (QStringList() << QString());
+    Abstract::abstractWidgetList.append(this);
+    FAbstractConnection::meta_connect(this, this->enabledObjects, this->disabledObjects);
+
 }
 
 
@@ -372,47 +380,12 @@ void FListWidget::refreshWidgetDisplay()
 }
 
 
-FCheckBox::FCheckBox(const QString &boxLabel, int status,const QString &hashKey, const QStringList &description,
-                     const QString &commandLineString, const Q2ListWidget* controlledObjects) : QCheckBox(boxLabel)
-{
-    componentList={this};
-    widgetDepth="0";
-    bool mode= ((status & flags::widgetMask) == flags::checked) ;
-    FCore3(FString(mode), hashKey, description, commandLineString, status, controlledObjects)
-}
 
-
-FCheckBox::FCheckBox(const QString &boxLabel, const QString &hashKey, const QStringList &description,
-        const QString &commandLineString,  const QList<QWidget*> &enabledObjects, const QList<QWidget*> &disabledObjects): QCheckBox(boxLabel)
-{
-    componentList={this};
-    widgetDepth="0";
-
-    Q2ListWidget *dObjects=new Q2ListWidget, *eObjects=new Q2ListWidget;
-    if (enabledObjects.isEmpty()) eObjects=NULL;
-    else
-        *eObjects << enabledObjects;
-    if (disabledObjects.isEmpty()) dObjects=NULL;
-    else
-        *dObjects << disabledObjects;
-    FCore(FString(false), hashKey, description, commandLineString, flags::defaultStatus|flags::defaultCommandLine|flags::unchecked, eObjects, dObjects);
-}
-
-FCheckBox::FCheckBox(const QString &boxLabel, int status, const QString &hashKey, const QStringList &description,
+FCheckBox::FCheckBox(const QString &boxLabel, int status, const QString &hashKey, const QStringList &description, const char* commandLineString,
                      const QList<QWidget*> &enabledObjects, const QList<QWidget*> &disabledObjects) : QCheckBox(boxLabel)
 {
-    componentList={this};
-    widgetDepth="0";
     bool mode= ((status & flags::widgetMask) == flags::checked) ;
-
-    Q2ListWidget *dObjects=new Q2ListWidget, *eObjects=new Q2ListWidget;
-    if (enabledObjects.isEmpty()) eObjects=NULL;
-    else
-        *eObjects << enabledObjects;
-    if (disabledObjects.isEmpty()) dObjects=NULL;
-    else
-        *dObjects << disabledObjects;
-    FCore(FString(mode), hashKey, description, "", status, eObjects, dObjects);
+    FCore(FString(mode), hashKey, description, commandLineString, status, enabledObjects, disabledObjects);
 }
 
 void FCheckBox::uncheckDisabledBox()
@@ -483,6 +456,8 @@ FRadioBox::FRadioBox(const QStringList &boxLabelList, int status,const QString &
     radioGroupBox=new QGroupBox(i.next());
     QRadioButton *button;
 
+    this->radioGroupBox->setToolTip(description.at(1));
+
     QVBoxLayout* mainLayout=new QVBoxLayout;
     QVBoxLayout *radioBoxLayout=new QVBoxLayout;
 
@@ -493,9 +468,12 @@ FRadioBox::FRadioBox(const QStringList &boxLabelList, int status,const QString &
         radioBoxLayout->addWidget(button);
     }
 
-    FCore("0", hashKey, description, optionLabelStringList[status], status | flags::multimodal, enabledObjects, disabledObjects)
+    this->enabledObjects=enabledObjects;
+    this->disabledObjects=disabledObjects;
 
-   connect(this->radioButtonList.at(0), SIGNAL(toggled(bool)), this, SIGNAL(toggled(bool)));
+    FCore2("0", hashKey, description, optionLabelStringList[status], status| flags::multimodal)
+
+            connect(this->radioButtonList.at(0), SIGNAL(toggled(bool)), this, SIGNAL(toggled(bool)));
 
     for (int i=0; i < size; i++)
     {
@@ -663,7 +641,7 @@ void FComboBox::setWidgetFromXml(const FStringList &s)
 FLineEdit::FLineEdit(const QString &defaultString, int status, const QString &hashKey, const QStringList &description, const QString &commandLine):QLineEdit()
 {
     widgetDepth="0";
-    FCore(defaultString, hashKey, description, commandLine, status, NULL, NULL);
+    FCore(defaultString, hashKey, description, commandLine);
 }
 
 
@@ -768,7 +746,7 @@ FPalette::FPalette(const char* textR,
 
     Abstract::initializeFStringListHash(hashKey);
 
-    FCore( "000000:000000:000000",  hashKey, description, commandLine, status, NULL, NULL);
+    FCore("000000:000000:000000",  hashKey, description, commandLine, status);
     refreshPaletteHash();
     setMinimumButtonWidth(buttonWidth);
 }
@@ -812,12 +790,7 @@ void FPalette::refreshWidgetDisplay()
     refreshComponent(2);
 }
 
-void FPalette::setToolTip(const QString &tipstr)
-{
-    button[0]->setToolTip(tipstr);
-    button[1]->setToolTip(tipstr);
-    button[2]->setToolTip(tipstr);
-}
+
 
 void FPalette::setMinimumButtonWidth(const int w)
 {

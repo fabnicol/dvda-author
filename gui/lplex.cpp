@@ -36,7 +36,7 @@ lplexPage::lplexPage()
   lplexScreenParameterBox = new FCheckBox("Use DVD-Audio display parameters",
                                           "lplexDisplayIsDVD-Audio",
                                          {"Lplex", "Use DVD-Audio display parameters"},
-                                            {NULL},
+                                            {nullptr},
                                             {
                                               lplexBackgroundLineEdit,
                                               lplexBackgroundLabel,
