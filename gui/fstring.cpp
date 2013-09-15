@@ -162,7 +162,7 @@ const QStringList& FStringList::join()
 
 const FString  FStringList::join(const QStringList &separator) const
 {
-  if (this == NULL) return "";
+  if (this == nullptr) return "";
   if (this->size() == 0) return "";
 
   QStringList S;
@@ -228,7 +228,7 @@ QString FStringList::setEmptyTags(const QStringList & tags) const
 
 const QString FStringList::setTags(const QStringList  &tags, const FStringList *properties ) const
 {
-  if ((this == NULL) ||  this->hasNoString())
+  if ((this == nullptr) ||  this->hasNoString())
   {
       // should trigger a crash
       return setEmptyTags(tags);

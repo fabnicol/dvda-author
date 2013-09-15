@@ -6,7 +6,7 @@
 
 void StandardComplianceProbe::getSoxAudioFormat(const QString& filename)
 {
-sox_format_t * ft = sox_open_read((const char*) filename.toLocal8Bit(), NULL, NULL, NULL);
+sox_format_t * ft = sox_open_read((const char*) filename.toLocal8Bit(), nullptr, nullptr, nullptr);
 if (ft != nullptr)
 {
     audioFileFormat.setCodec(QString(ft->filetype));

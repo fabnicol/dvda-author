@@ -19,8 +19,8 @@
 
 
 #define Max(X,Y) ((X>Y)? X : Y)
-#define Q(X) QMessageBox::about(NULL, "", X);
-#define q(X) QMessageBox::about(NULL, "", QString::number(X));
+#define Q(X) QMessageBox::about(nullptr, "", X);
+#define q(X) QMessageBox::about(nullptr, "", QString::number(X));
 #define v(X) (*FString(#X))
 
 

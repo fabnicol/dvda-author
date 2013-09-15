@@ -72,9 +72,9 @@ inline QColor YCrCbStr2QColor(QString str)
 
     if (str.length() < 6) return QColor(0,0,0);
 
-    qreal Y =  str.mid(0,2).toInt(NULL, 16);
-    qreal Cr = str.mid(2,2).toInt(NULL, 16);
-    qreal Cb = str.mid(4,2).toInt(NULL, 16);
+    qreal Y =  str.mid(0,2).toInt(nullptr, 16);
+    qreal Cr = str.mid(2,2).toInt(nullptr, 16);
+    qreal Cb = str.mid(4,2).toInt(nullptr, 16);
 
     qreal red = normalise(Y + 1.402 * (Cr-128));
     qreal green = normalise( Y - 0.34414 * (Cb-128) - 0.71414 * (Cr-128));

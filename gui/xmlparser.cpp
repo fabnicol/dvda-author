@@ -88,7 +88,7 @@ void dvda::writeProjectFile()
 namespace XmlMethod
 {
 
-   QTreeWidgetItem *itemParent=NULL;
+   QTreeWidgetItem *itemParent=nullptr;
 
   inline void stackData(const QDomNode & node, QStringList tags, int level, QVariant &textData)
     {

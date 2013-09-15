@@ -531,7 +531,7 @@ audioMenuPage::audioMenuPage(dvda* parent, standardPage* standardTab)
     soundtracks->slotList=nmenuFComboBox->signalList;
 
     screentext= new FListFrame(parent,
-                               NULL,
+                               nullptr,
                                typeIn,
                                "audioMenuText",
     {"Audio menu","DVD-Audio menu text"},
@@ -1089,7 +1089,7 @@ outputPage::outputPage(options* parent)
     logLayout->setColumnMinimumWidth(2,300);
     logGroupBox->setLayout(logLayout);
 
-    targetDirLabel = new QLabel(tr("Output directory"));
+    targetDirLabel = new QLabel(tr("Output directory:"));
     targetDirButton = new QToolDirButton(tr("Browse output directory for DVD-Audio disc files."));
     openTargetDirButton = new QToolDirButton(tr("Open output directory for DVD-Audio disc files."), actionType::OpenFolder);
     targetDirLineEdit = new FLineEdit(tempdir+QDir::separator()+"output",
@@ -1126,7 +1126,7 @@ outputPage::outputPage(options* parent)
             parent->advancedTab->fixWavOnlyBox
         },
         {
-            NULL//parent->advancedTab->fixwavBox : useless
+            nullptr//parent->advancedTab->fixwavBox : useless
         }
     };
 
@@ -1142,25 +1142,19 @@ outputPage::outputPage(options* parent)
 
     setWhatsThisText(createDVDFilesRadioBox, 104, 105);
 
-    QHBoxLayout *targetLayout = new QHBoxLayout;
-    targetLayout->addWidget(createDVDFilesRadioBox);
-    targetLayout->addStretch(4);
-
     QGridLayout *targetDirLineEditLayout=new QGridLayout;
-    targetDirLineEditLayout->addWidget(targetDirLabel,1,0);
-    targetDirLineEditLayout->addWidget(targetDirLineEdit,1,1);
-    targetDirLineEditLayout->addWidget(targetDirButton, 1,2);
-    targetDirLineEditLayout->addWidget(openTargetDirButton, 1,3, Qt::AlignLeft);
-    targetDirLineEditLayout->setColumnMinimumWidth(0,150);
-
-    QVBoxLayout *mainTargetLayout=new QVBoxLayout;
-    mainTargetLayout->addLayout(targetLayout);
-    mainTargetLayout->addLayout(targetDirLineEditLayout);
+    targetDirLineEditLayout->addWidget(createDVDFilesRadioBox,0,1);
+    targetDirLineEditLayout->addWidget(targetDirLabel,1,1, Qt::AlignRight);
+    targetDirLineEditLayout->addWidget(targetDirLineEdit,1,2);
+    targetDirLineEditLayout->addWidget(targetDirButton, 1,3);
+    targetDirLineEditLayout->addWidget(openTargetDirButton, 1,4, Qt::AlignLeft);
+    targetDirLineEditLayout->setColumnMinimumWidth(1,150);
+    targetDirLineEditLayout->setColumnMinimumWidth(0,30);
 
     QGroupBox *outputGroupBox = new QGroupBox(tr("DVD-Audio disc files"));
-    outputGroupBox->setLayout(mainTargetLayout);
+    outputGroupBox->setLayout(targetDirLineEditLayout);
 
-    QLabel* workDirLabel = new QLabel(tr("Working directory"));
+    QLabel* workDirLabel = new QLabel(tr("Working directory:"));
     QToolDirButton *openWorkDirButton = new QToolDirButton;
 
     workDirLineEdit = new FLineEdit(QDir::currentPath (),
@@ -1170,7 +1164,7 @@ outputPage::outputPage(options* parent)
 
     workDirLabel->setBuddy(workDirLineEdit);
 
-    QLabel* tempDirLabel = new QLabel(tr("Temporary directory"));
+    QLabel* tempDirLabel = new QLabel(tr("Temporary directory:"));
 
     tempDirLineEdit = new FLineEdit(common::tempdir,
                                     "tempDir",
@@ -1180,7 +1174,7 @@ outputPage::outputPage(options* parent)
     tempDirLabel->setBuddy(tempDirLineEdit);
     QToolDirButton *openTempDirButton = new QToolDirButton;
 
-    QLabel* binDirLabel = new QLabel(tr("Binary directory"));
+    QLabel* binDirLabel = new QLabel(tr("Binary directory:"));
     QToolDirButton *openBinDirButton = new QToolDirButton;
 
     binDirLineEdit = new FLineEdit(QDir::currentPath ()+QDir::separator()+"bindir",
@@ -1193,19 +1187,19 @@ outputPage::outputPage(options* parent)
     QGroupBox *auxdirGroupBox = new QGroupBox(tr("Auxiliary directories"));
     QGridLayout *auxdirLayout = new QGridLayout;
 
-    auxdirLayout->addWidget(workDirLabel,1,0);
+    auxdirLayout->addWidget(workDirLabel,1,0, Qt::AlignRight);
     auxdirLayout->addWidget(workDirLineEdit, 1,1);
     auxdirLayout->addWidget(openWorkDirButton, 1,2);
 
-    auxdirLayout->addWidget(tempDirLabel, 2,0);
+    auxdirLayout->addWidget(tempDirLabel, 2,0,Qt::AlignRight);
     auxdirLayout->addWidget(tempDirLineEdit, 2,1);
     auxdirLayout->addWidget(openTempDirButton, 2,2);
 
-    auxdirLayout->addWidget(binDirLabel, 3,0);
+    auxdirLayout->addWidget(binDirLabel, 3,0,Qt::AlignRight);
     auxdirLayout->addWidget(binDirLineEdit, 3,1);
     auxdirLayout->addWidget(openBinDirButton, 3,2);
 
-    auxdirLayout->setColumnMinimumWidth(0,150);
+    auxdirLayout->setColumnMinimumWidth(0,180);
     auxdirGroupBox->setLayout(auxdirLayout);
 
     QVBoxLayout *mainLayout =new QVBoxLayout;
@@ -1322,10 +1316,10 @@ stillPage::stillPage(dvda* parent, standardPage* standardTab)
                             {",", "-"},
                             {"slide" , "track"},
                            -1,
-                           NULL,
-                           NULL,
-                           NULL,
-                           NULL,
+                           nullptr,
+                           nullptr,
+                           nullptr,
+                           nullptr,
                            parent->project[AUDIO]->signalList);
 
     slides->model=parent->model;
@@ -1354,8 +1348,8 @@ stillPage::stillPage(dvda* parent, standardPage* standardTab)
                                             {",", "-"},
                                             {"option" , "slide"},
                                             -1,
-                                            NULL,
-                                            NULL,
+                                            nullptr,
+                                            nullptr,
                                             &stillClChunks,
                                             &stilloptionListText,
                                             slides->signalList);
@@ -1411,8 +1405,10 @@ stillPage::stillPage(dvda* parent, standardPage* standardTab)
     stillLayout->addWidget(applyAllEffects, 3,2,1,1,Qt::AlignVCenter);
     stillLayout->addWidget(applyEffectsToOneFile, 3,3,1,1,Qt::AlignLeft);
     stillLayout->addWidget(nextStep, 4,5,1,1,Qt::AlignRight);
-    stillLayout->setRowMinimumHeight(0, 400);
+    //stillLayout->setRowMinimumHeight(0, 400);
 
+    QGroupBox *stillBox= new QGroupBox(tr("Create slideshow"));
+    stillBox->setLayout(stillLayout);
 
     QGroupBox *paletteGroupBox = new QGroupBox("Active menu palette");
     FCheckBox *addPaletteCheckBox = new FCheckBox("Change default text color",
@@ -1424,20 +1420,15 @@ stillPage::stillPage(dvda* parent, standardPage* standardTab)
                                                       standardTab
                                                   });
 
-
-
     paletteLayout->addWidget(palette->button[0], 0,0, Qt::AlignHCenter);
     paletteLayout->addWidget(palette->button[1], 0,1, Qt::AlignHCenter);
     paletteLayout->addWidget(palette->button[2], 0,2, Qt::AlignHCenter);
     paletteGroupBox->setLayout(paletteLayout);
 
     mainVLayout->addLayout(headerLayout);
-    mainVLayout->setSpacing(1);
-    mainVLayout->addLayout(stillLayout);
-    mainVLayout->addStretch();
+    mainVLayout->addWidget(stillBox);
     mainVLayout->addWidget(addPaletteCheckBox);
     mainVLayout->addWidget(paletteGroupBox);
-    mainVLayout->addSpacing(10);
 
     // En fait il faudrait  autant de lignes d'importation que de slideshows soit de tracks (au moins)  background_still_k.mpg
     videoFilePath=common::tempdir+QDir::separator()+"stillpics.VOB"; // yields AUDIO_SV.VOB later on in amg2.c
@@ -1458,17 +1449,35 @@ stillPage::stillPage(dvda* parent, standardPage* standardTab)
     videoPlayerButton->setMaximumSize(videoPlayerButton->sizeHint());
     importSlideShowButton->setMaximumSize(importSlideShowButton->sizeHint());
 
-    mainVLayout->addWidget(videoPlayerButton);
-    QHBoxLayout *bottomHLayout=new QHBoxLayout;
-    bottomHLayout->addWidget(importSlideShowButton);
-    bottomHLayout->addWidget(videoFileLineEdit);
-    bottomHLayout->addSpacing(100);
+    QHBoxLayout *topHLayout=new QHBoxLayout;
+    topHLayout->addWidget(videoPlayerButton);
+    topHLayout->addWidget(importSlideShowButton);
+    topHLayout->addWidget(videoFileLineEdit);
+
+    Q2ListWidget *enabledObjects=new Q2ListWidget;
+    Q2ListWidget *disabledObjects=new Q2ListWidget;
+
+    QList<QWidget*> topHObjects={videoPlayerButton, videoFileLineEdit, importSlideShowButton};
+    QList<QWidget*> mainVObjects={addPaletteCheckBox, paletteGroupBox, stillBox};
+
+    *enabledObjects={{nullptr}, topHObjects, mainVObjects};
+    *disabledObjects={ mainVObjects+topHObjects << reinterpret_cast<QWidget*>(standardTab), mainVObjects, topHObjects};
+
+    FRadioBox* selectActionRadioBox=new FRadioBox(
+                    {tr("Slideshow"), tr("No slideshow"), tr("Import already authored slideshow") , tr("Create slideshow from images")},
+                    "slideshowImport",
+                    {tr("Slides"), tr("Import/Create")},
+                    {"", "",""},
+                    enabledObjects,
+                    disabledObjects);
 
     QVBoxLayout  *mainLayout = new QVBoxLayout;
     FRichLabel *stillLabel = new FRichLabel("Track slideshow options", ":/images/64x64/still.png");
     mainLayout->addWidget(stillLabel);
+    mainLayout->addWidget(selectActionRadioBox);
+    mainLayout->addSpacing(20);
+    mainLayout->addLayout(topHLayout);
     mainLayout->addLayout(mainVLayout);
-    mainLayout->addLayout(bottomHLayout);
     mainLayout->setMargin(20);
 
     setLayout(mainLayout);

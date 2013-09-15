@@ -75,8 +75,8 @@ bool addStringToListWidget(const QString& , int );
 
 FListFrame(QObject* parent,  QAbstractItemView * fileTreeView, short import_type, const QString &hashKey,
             const QStringList &description, const QString &command_line, int commandLineType, const QStringList &separator, const QStringList &xml_tags,
-            int mainTabWidgetRank=-1, QIcon* icon=NULL, QTabWidget* parentTabWidget=NULL,
-           QStringList* terms=NULL, QStringList* translation=NULL, QStringList* slotL=NULL);
+            int mainTabWidgetRank=-1, QIcon* icon=nullptr, QTabWidget* parentTabWidget=nullptr,
+           QStringList* terms=nullptr, QStringList* translation=nullptr, QStringList* slotL=nullptr);
 
 
 public slots:
@@ -106,7 +106,7 @@ signals:
 inline void FListFrame::updateIndexInfo()
 {
   fileListWidget->currentListWidget=qobject_cast<QListWidget*>(mainTabWidget->currentWidget());
-  if (fileListWidget->currentListWidget == NULL) return;
+  if (fileListWidget->currentListWidget == nullptr) return;
   row=fileListWidget->currentListWidget->currentRow();
   currentIndex=mainTabWidget->currentIndex();
 }

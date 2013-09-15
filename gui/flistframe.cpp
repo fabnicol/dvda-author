@@ -33,7 +33,7 @@ FListFrame::FListFrame(QObject* parent,  QAbstractItemView* tree, short import_t
 
  if (mainTabWidgetRank != -1)
    {
-     if (parentTabWidget == NULL)
+     if (parentTabWidget == nullptr)
        {
          embeddingTabWidget = new QTabWidget(this);
        }
@@ -220,7 +220,7 @@ void FListFrame::on_moveDownItemButton_clicked()
 
 void FListFrame::on_mainTabIndex_changed(int index)
 {
-  if ((slotList == NULL) || ( slotList->count() <= index)) return;
+  if ((slotList == nullptr) || ( slotList->count() <= index)) return;
   if (index > 0) fileLabel->setText(fileLabelText+" "+QString::number(index)+"\n"+ slotList->at(index-1));
   // now delete groups that should be deleted, possibly parsing hashes to determine which
   // use deleteGroups(L) when list of groups (=tracks) to be deleted is determined
@@ -350,7 +350,7 @@ bool FListFrame::addStringToListWidget(const QString& filepath, int index)
 {
   // normaly it should be useless to call updateIndexInfo() here
  updateIndexInfo();
- if ((filepath.isEmpty()) || (currentIndex >= (*Hash::wrapper[frameHashKey]).count() ) || (signalList == NULL)) return false;
+ if ((filepath.isEmpty()) || (currentIndex >= (*Hash::wrapper[frameHashKey]).count() ) || (signalList == nullptr)) return false;
 
 
  if  (!filepath.isEmpty())

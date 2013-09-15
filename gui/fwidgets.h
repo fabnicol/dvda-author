@@ -45,8 +45,8 @@ class FAbstractConnection : QObject
 
 public:
 
-  static void meta_connect(const FAbstractWidget* w,  const Q2ListWidget *enabledObjects,  const Q2ListWidget *disabledObjects=NULL);
-  static void meta_connect(const FAbstractWidget* w,  const QList<QWidget*> *enabledObjects=NULL,  const QList<QWidget*> *disabledObjects=NULL)
+  static void meta_connect(const FAbstractWidget* w,  const Q2ListWidget *enabledObjects,  const Q2ListWidget *disabledObjects=nullptr);
+  static void meta_connect(const FAbstractWidget* w,  const QList<QWidget*> *enabledObjects=nullptr,  const QList<QWidget*> *disabledObjects=nullptr)
   {
      meta_connect(w, &(*(new Q2ListWidget) << *enabledObjects),  &(*(new Q2ListWidget) << *disabledObjects));
   }
@@ -121,9 +121,9 @@ protected:
   QList<FString> commandLineList;
   QList<QWidget*> componentList;
 
-  inline void FCore(QWidget*, FString, int, const QString&, const QStringList& , const QString&, const QList<QWidget*>& =QList<QWidget*>(), const QList<QWidget*>& =QList<QWidget*>());
+  inline void FCore(const QList<QWidget*>& , FString, int, const QString&, const QStringList& , const QString&, const QList<QWidget*>& =QList<QWidget*>(), const QList<QWidget*>& =QList<QWidget*>());
 
-  inline void FCore(QWidget*, FString, int, const QString &, const QStringList &, const QString&, const Q2ListWidget*, const Q2ListWidget*);
+  inline void FCore(const QList<QWidget*>&, FString, int, const QString &, const QStringList &, const QString&, const Q2ListWidget*, const Q2ListWidget*);
 
 };
 
@@ -138,10 +138,10 @@ public:
   FListWidget()  {}
 
   FListWidget(const QString& hashKey,int status,const QStringList& description,const QString& commandLine,const QStringList& sep,
-              const QStringList &taglist,  const QList<QString> *terms=NULL, const QList<QString> *translation=NULL, QWidget* controlledWidget=NULL);
+              const QStringList &taglist,  const QList<QString> *terms=nullptr, const QList<QString> *translation=nullptr, QWidget* controlledWidget=nullptr);
 
   FListWidget(const QString& hashKey,int status,const QStringList& description,const QString& commandLine,const QStringList& sep,
-              const QStringList &taglist, const QList<QWidget*> &enabledObjects, const QList<QString> *terms=NULL, const QList<QString> *translation=NULL, QWidget* controlledWidget=NULL);
+              const QStringList &taglist, const QList<QWidget*> &enabledObjects, const QList<QString> *terms=nullptr, const QList<QString> *translation=nullptr, QWidget* controlledWidget=nullptr);
 
   void setWidgetFromXml(const FStringList & );
   const FString setXmlFromWidget();
@@ -236,10 +236,10 @@ class FRadioBox :  public QWidget, public FAbstractWidget
 
 public:
    FRadioBox(const QStringList &boxLabelList, int status, const QString &hashKey, const QStringList &description,
-                     const QStringList &optionLabelStringList, const Q2ListWidget* enabledObjects=NULL,  const Q2ListWidget* disabledObjects=NULL) ;
+                     const QStringList &optionLabelStringList, const Q2ListWidget* enabledObjects=nullptr,  const Q2ListWidget* disabledObjects=nullptr) ;
 
    FRadioBox(const QStringList &boxLabelList, const QString &hashKey, const QStringList &description,
-                     const QStringList &optionLabelStringList, const Q2ListWidget* enabledObjects=NULL,  const Q2ListWidget* disabledObjects=NULL) :
+                     const QStringList &optionLabelStringList, const Q2ListWidget* enabledObjects=nullptr,  const Q2ListWidget* disabledObjects=nullptr) :
      FRadioBox(boxLabelList, flags::status::defaultStatus|flags::commandLineType::defaultCommandLine,hashKey, description,  optionLabelStringList, enabledObjects,  disabledObjects) {}
 
 
@@ -288,13 +288,13 @@ class FComboBox : public QComboBox, public FAbstractWidget
 public:
 
   FComboBox(const QStringList &labelList, const QStringList &translation, int status, const QString &hashKey, const QStringList &description, const QString &commandLine, QList<QIcon> *iconList);
-  FComboBox(const QStringList &labelList, int status, const QString &hashKey, const QStringList &description, const QString &commandLine,  QList<QIcon> *iconList=NULL):
+  FComboBox(const QStringList &labelList, int status, const QString &hashKey, const QStringList &description, const QString &commandLine,  QList<QIcon> *iconList=nullptr):
     FComboBox(labelList, QStringList(), status, hashKey, description, commandLine, iconList){}
-  FComboBox(const QStringList &labelList, const QString &hashKey, const QStringList &description, const QString &commandLine,  QList<QIcon> *iconList=NULL):
+  FComboBox(const QStringList &labelList, const QString &hashKey, const QStringList &description, const QString &commandLine,  QList<QIcon> *iconList=nullptr):
       FComboBox(labelList, flags::status::defaultStatus|flags::commandLineType::defaultCommandLine, hashKey, description, commandLine,  iconList){}
 
 
-  FComboBox(const char* str, int status, const QString &hashKey, const QStringList &description, const QString &commandLine,  QList<QIcon> *iconList=NULL):
+  FComboBox(const char* str, int status, const QString &hashKey, const QStringList &description, const QString &commandLine,  QList<QIcon> *iconList=nullptr):
     FComboBox(QStringList(str),  status, hashKey, description, commandLine,  iconList){}
 
   void setWidgetFromXml(const FStringList&);
@@ -364,9 +364,9 @@ class FColorButton : public QWidget, public FAbstractWidget
 private:
 
   QPushButton *button;
-  QString hashKey;
-  QString widgetDepth;
-  QStringList description;
+  //QString hashKey;
+  //QString widgetDepth;
+  //QStringList description;
   //QString optionLabel;
  //QList<FString> commandLineList;
  //QList<QWidget*> componentList;

@@ -129,7 +129,7 @@ public:
   const FString& join(const char* s) const {return join(QStringList((QString(s)))); }
   const QStringList& join() ;
   QString setEmptyTags(const QStringList &)const;
-  const QString setTags(const QStringList &tags, const FStringList *properties=NULL) const;
+  const QString setTags(const QStringList &tags, const FStringList *properties=nullptr) const;
   FString toFString() const {if (this == nullptr) return ""; else return ((this->isEmpty()) || this->at(0).isEmpty())?  "" : FString(this->at(0).at(0)); }
   QString toQString() const { return ((this->isEmpty()) || this->at(0).isEmpty())?  "" : QString(this->at(0).at(0)); }
   int toInt() const {return ((this->isEmpty() || this->at(0).isEmpty())? 0: this->at(0).at(0).toInt());}

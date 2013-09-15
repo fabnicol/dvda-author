@@ -282,7 +282,7 @@ dvda::dvda()
   QIcon* iconDVDA = new QIcon(":/images/64x64/dvd-audio.png");
   QIcon* iconDVDV = new QIcon(":/images/64x64/dvd-video.png");
 
-  project[AUDIO]=new FListFrame(NULL,      // no parent widget
+  project[AUDIO]=new FListFrame(nullptr,      // no parent widget
                                 fileTreeView,                   // files may be imported from this tree view
                                 importFiles,                     // FListFrame type
                                 "DVD-A",                          // superordinate xml tag
@@ -301,7 +301,7 @@ dvda::dvda()
   mainTabWidget->setMovable(true);
   mainTabWidget->setMinimumWidth(250);
 
-  project[VIDEO]=new FListFrame(NULL,
+  project[VIDEO]=new FListFrame(nullptr,
                                 fileTreeView,                   // files may be imported from this tree view
                                 importFiles,                     // FListFrame type
                                 "DVD-V",                          // superordinate xml tag
@@ -388,7 +388,7 @@ dvda::dvda()
   for (int ZONE : {AUDIO, VIDEO})
  {
       project[ZONE]->model=model;
-      project[ZONE]->slotList=NULL;
+      project[ZONE]->slotList=nullptr;
       connect(project[ZONE]->addGroupButton, SIGNAL(clicked()), this, SLOT(addGroup()));
       connect(project[ZONE]->deleteGroupButton, SIGNAL(clicked()), this, SLOT(deleteGroup()));
       project[ZONE]->importFromMainTree->disconnect(SIGNAL(clicked()));

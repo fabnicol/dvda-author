@@ -9,7 +9,7 @@
 
 void applyHashToStringList(QStringList *L, QHash<QString, QString> *H,  const QStringList *M)
 {
-    if ((H == NULL) || (M == NULL) || (L == NULL)) return;
+    if ((H == nullptr) || (M == nullptr) || (L == nullptr)) return;
     QStringListIterator j(*M);
 
     while (j.hasNext())
@@ -18,7 +18,7 @@ void applyHashToStringList(QStringList *L, QHash<QString, QString> *H,  const QS
 
 template <typename T, typename U> void createHash(QHash<T, U > *H, const QList<T> *L, const QList<U> *M)
 {
-    if ((H == NULL) || (L == NULL) || (M == NULL)) return;
+    if ((H == nullptr) || (L == nullptr) || (M == nullptr)) return;
     QListIterator<T> i(*L);
     QListIterator<U> j(*M);
 
@@ -28,7 +28,7 @@ template <typename T, typename U> void createHash(QHash<T, U > *H, const QList<T
 
 void FAbstractConnection::meta_connect(const FAbstractWidget* w,  const Q2ListWidget *enabledObjects,  const Q2ListWidget *disabledObjects)
 {
-    if ((enabledObjects != NULL) &&  (!enabledObjects->isEmpty()) )
+    if ((enabledObjects != nullptr) &&  (!enabledObjects->isEmpty()) )
     {
 
         QListIterator<QWidget*> componentlistIterator(w->getComponentList());
@@ -40,7 +40,7 @@ void FAbstractConnection::meta_connect(const FAbstractWidget* w,  const Q2ListWi
             while (i.hasNext())
             {
                 QWidget* item=i.next();
-                if ((item == NULL) || (component==NULL)) continue;
+                if ((item == nullptr) || (component==nullptr)) continue;
                 // This does not always work automatically through Qt parenting as it normally should, so it is necessary to reimplement enabling dependencies
                 // e.g. for QLabels
 
@@ -69,7 +69,7 @@ void FAbstractConnection::meta_connect(const FAbstractWidget* w,  const Q2ListWi
         }
     }
 
-    if ((disabledObjects != NULL) &&  (!disabledObjects->isEmpty()))
+    if ((disabledObjects != nullptr) &&  (!disabledObjects->isEmpty()))
     {
 
         QListIterator<QWidget*> newcomponentlistIterator(w->getComponentList());
@@ -83,7 +83,7 @@ void FAbstractConnection::meta_connect(const FAbstractWidget* w,  const Q2ListWi
             {
                 QWidget* item=j.next();
 
-                if ((item == NULL) || (component==NULL)) continue;
+                if ((item == nullptr) || (component==nullptr)) continue;
 
                 connect(component, SIGNAL(toggled(bool)), item , SLOT(setDisabled(bool)));
 
@@ -96,31 +96,31 @@ void FAbstractConnection::meta_connect(const FAbstractWidget* w,  const Q2ListWi
 }
 
 
-inline void FAbstractWidget::FCore(QWidget* w, FString defaultCommandLine, int commandLineType, const QString &hashKey, const QStringList & description,
+inline void FAbstractWidget::FCore(const QList<QWidget*>& w, FString defaultCommandLine, int commandLineType, const QString &hashKey, const QStringList & description,
                   const QString &option, const QList<QWidget*>&enabledObjects, const QList<QWidget*>&disabledObjects)
 {
-Q2ListWidget *dObjects=new Q2ListWidget, *eObjects=new Q2ListWidget;
-if (enabledObjects.isEmpty()) eObjects=NULL;
-else
-    *eObjects << enabledObjects;
-if (disabledObjects.isEmpty()) dObjects=NULL;
-else
-    *dObjects << disabledObjects;
+    Q2ListWidget *dObjects=new Q2ListWidget, *eObjects=new Q2ListWidget;
+    if (enabledObjects.isEmpty()) eObjects=nullptr;
+    else
+        *eObjects << enabledObjects;
+    if (disabledObjects.isEmpty()) dObjects=nullptr;
+    else
+        *dObjects << disabledObjects;
 
-FCore(w, defaultCommandLine, commandLineType, hashKey, description, option, eObjects, dObjects);
+    FCore(w, defaultCommandLine, commandLineType, hashKey, description, option, eObjects, dObjects);
 }
 
-inline void FAbstractWidget::FCore(QWidget* w,FString defaultCommandLine,  int status, const QString &hashKey, const QStringList & description,
+inline void FAbstractWidget::FCore(const QList<QWidget*>& w,FString defaultCommandLine,  int status, const QString &hashKey, const QStringList & description,
                   const QString &option, const Q2ListWidget *enabledObjects, const Q2ListWidget *disabledObjects)
 {
     this->enabledObjects=enabledObjects;
     this->disabledObjects=disabledObjects;
 
-    w->setToolTip(description.at(1));
-    w->setEnabled((status & flags::status::enabledMask) ==  flags::status::enabled);
+    w.at(0)->setToolTip(description.at(1));
+    w.at(0)->setEnabled((status & flags::status::enabledMask) ==  flags::status::enabled);
 
     this->commandLineList= QList<FString>() << defaultCommandLine;
-    this->componentList=QList<QWidget*>()<< w;
+    this->componentList= w;
     if ((status & flags::status::widgetMask) == flags::status::multimodal) { this->commandLineList[0].setMultimodal(); }
     this->hashKey=hashKey;
     this->commandLineType=static_cast<flags::commandLineType>(status & static_cast<int>(flags::commandLineType::commandLineMask));
@@ -146,7 +146,7 @@ const QStringList FAbstractWidget::commandLineStringList()
 {
     /* If command line option is ill-formed, or if a corresponding checkbox is unchecked (or negatively checked)
   * or if an argument-taking option has no-argument, return empty */
-//QMessageBox::warning(NULL, "", optionLabel+":"+QString::number(commandLineType & flags::::widgetMask));
+//QMessageBox::warning(nullptr, "", optionLabel+":"+QString::number(commandLineType & flags::::widgetMask));
 
     if (
             (optionLabel.isEmpty()) ||
@@ -224,7 +224,7 @@ FListWidget::FListWidget(const QString& hashKey,
     componentList[0]->setToolTip(description.at(1));
     setEnabled((status& flags::status::enabledMask) ==  flags::status::enabled);
 
-    FCore(this, "", status, hashKey, description, commandLine, QList<QWidget*>() << controlledWidget);
+    FCore({this}, "", status, hashKey, description, commandLine, QList<QWidget*>() << controlledWidget);
 
     separator=sep;
 
@@ -234,8 +234,8 @@ FListWidget::FListWidget(const QString& hashKey,
     /* if a Hash has been activated, build the terms-translation Hash table so that translated terms
    * can be translated back to original terms later on, so as to get the correct command line string chunks */
 
-    if ((terms == NULL) || (translation == NULL))
-        listWidgetTranslationHash=NULL;
+    if ((terms == nullptr) || (translation == nullptr))
+        listWidgetTranslationHash=nullptr;
     else
     {
         listWidgetTranslationHash=new QHash<QString, QString>;
@@ -363,7 +363,7 @@ FCheckBox::FCheckBox(const QString &boxLabel, int status, const QString &hashKey
 {
     bool mode= ((status & flags::status::widgetMask) == flags::status::checked) ;
 
-    FCore(this, FString(mode), status, hashKey, description, commandLineString, enabledObjects, disabledObjects);
+    FCore({this}, FString(mode), status, hashKey, description, commandLineString, enabledObjects, disabledObjects);
 }
 
 void FCheckBox::uncheckDisabledBox()
@@ -385,7 +385,7 @@ void FCheckBox::refreshWidgetDisplay()
         while (i.hasNext())
         {
             QWidget *item=i.next();
-            if (item == NULL) continue;
+            if (item == nullptr) continue;
             item->setEnabled(checked);
         }
     }
@@ -396,7 +396,7 @@ void FCheckBox::refreshWidgetDisplay()
         while (i.hasNext())
         {
             QWidget* item=i.next();
-            if (item == NULL) continue;
+            if (item == nullptr) continue;
             item->setDisabled(checked);
         }
     }
@@ -428,16 +428,12 @@ FRadioBox::FRadioBox(const QStringList &boxLabelList, int status,const QString &
     if (boxLabelList.size() != (size+1)) return;
     QStringListIterator i(boxLabelList);
     radioButtonList=QList<QRadioButton*> ();
-    componentList= QList<QWidget*>();
+    QList<QWidget*> componentList;
     radioGroupBox=new QGroupBox(i.next());
     QRadioButton *button;
 
     QVBoxLayout* mainLayout=new QVBoxLayout;
     QVBoxLayout *radioBoxLayout=new QVBoxLayout;
-
-     FCore(this, "0", status| flags::status::multimodal, hashKey, description, optionLabelStringList[0],enabledObjects, disabledObjects);
-
-     setEnabled((status& flags::status::enabledMask) ==  flags::status::enabled);
 
     while(i.hasNext())
     {
@@ -445,6 +441,8 @@ FRadioBox::FRadioBox(const QStringList &boxLabelList, int status,const QString &
         componentList << button;
         radioBoxLayout->addWidget(button);
     }
+
+    FCore(componentList, "0", status| flags::status::multimodal, hashKey, description, optionLabelStringList[0],enabledObjects, disabledObjects);
 
      connect(this->radioButtonList.at(0), SIGNAL(toggled(bool)), this, SIGNAL(toggled(bool)));
 
@@ -505,7 +503,7 @@ void FRadioBox::refreshWidgetDisplay()
         while (i.hasNext())
         {
             QWidget* item=i.next();
-            if (item == NULL) continue;
+            if (item == nullptr) continue;
             item->setDisabled(rank ==0);
         }
     }
@@ -542,7 +540,7 @@ FComboBox::FComboBox(const QStringList &labelList,
     if (labelList.isEmpty())
         return;
 
-    FCore(this, labelList.at(0), status, hashKey, description, commandLine);
+    FCore({this}, labelList.at(0), status, hashKey, description, commandLine);
 
     if (iconList)
     {
@@ -559,7 +557,7 @@ FComboBox::FComboBox(const QStringList &labelList,
     /* if a Hash has been activated, build the terms-translation Hash table so that translated terms
    * can be translated back to original terms later on, so as to get the correct command line string chunks */
 
-    if ((labelList.isEmpty()) || (translation.isEmpty())) comboBoxTranslationHash=NULL;
+    if ((labelList.isEmpty()) || (translation.isEmpty())) comboBoxTranslationHash=nullptr;
     else
     {
         comboBoxTranslationHash=new QHash<QString, QString>;
@@ -614,7 +612,7 @@ FLineEdit::FLineEdit(const QString &defaultString, int status, const QString &ha
 {
     widgetDepth="0";
 
-    FCore(this, defaultString, status, hashKey, description, commandLine);
+    FCore({this}, defaultString, status, hashKey, description, commandLine);
 }
 
 
@@ -720,7 +718,7 @@ FPalette::FPalette(const char* textR,
 
     Abstract::initializeFStringListHash(hashKey);
 
-    FCore(this, "000000:000000:000000", status, hashKey, description, commandLine);
+    FCore({this}, "000000:000000:000000", status, hashKey, description, commandLine);
     refreshPaletteHash();
     setMinimumButtonWidth(buttonWidth);
 }
