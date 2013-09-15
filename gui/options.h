@@ -233,10 +233,7 @@ private slots:
 
 private:
 
-    FCheckBox
-      *videoImportCheckBox,
-      *audioExportCheckBox;
-    FRadioBox *audioExportRadioBox;
+    FRadioBox *discTypeRadioBox;
     FLineEdit
     *videoImportLineEdit,
     *videoMenuImportLineEdit;

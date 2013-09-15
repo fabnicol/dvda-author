@@ -2,20 +2,20 @@
 
 
 
-FRichLabel::FRichLabel(const QString &title, const QString &path, int flag) : QWidget()
+FRichLabel::FRichLabel(const QString &title, const QString &path, flags::font flag) : QWidget()
 {
   QHBoxLayout* mainLayout=new QHBoxLayout;
   QLabel *label=new QLabel;
   QLabel *label2=new QLabel;
   switch (flag)
     {
-      case flags::regularTitle:
+      case flags::font::regularTitle:
         label->setText(title);break;
 
-      case flags::boldTitle:
+      case flags::font::boldTitle:
         label->setText("<b>"+title+"</b>"); break;
 
-      case flags::italicTitle:
+      case flags::font::italicTitle:
         label->setText("<i>"+title+"</i>"); break;
     }
 

@@ -32,6 +32,34 @@ void dvda::initialize()
 }
 
 
+inline int dvda::checkStandardCompliance()
+{
+QString path=wavFile.fileName();
+probe=new StandardComplianceProbe(path, isVideo);
+if (probe->isStandardCompliant())
+{
+    outputTextEdit->append(tr(MSG_HTML_TAG  "Added  .%4  file: %1 bits  %2 kHz %3 ch.\n").arg(probe->getSampleSize(), probe->getSampleRate(), probe->getChannelCount(),  probe->getCodec()));
+    delete(probe);
+
+    project[isVideo]->addStringToListWidget(path, currentIndex);
+    // in this order
+
+    RefreshFlag |= SaveTree|UpdateTree;
+
+    return 0;
+}
+else
+{
+    delete(probe);
+    outputTextEdit->append(tr(ERROR_HTML_TAG "Track %1 does not comply with the standard").arg(path));
+      QStringList p =QStringList()<< probe->getSampleSize() <<  probe->getSampleRate() << probe->getChannelCount() ;
+    if ((p.at(0).toInt() > 0) && (p.at(1).toInt() > 0) && (p.at(2).toInt() > 0))
+       outputTextEdit->insertPlainText(tr(": %1 bits  %2 kHz %3 ch").arg(p.at(0), p.at(1), p.at(2)));
+    return -1;
+}
+
+}
+
 void dvda::on_playItem_changed()
 {
   if (!myMusic ) return;
@@ -260,7 +288,7 @@ dvda::dvda()
                                 "DVD-A",                          // superordinate xml tag
                                 {"DVD-Audio", ""},                   // project manager widget on-screen tag
                                 "g",                                  // command line label
-                                flags::dvdaCommandLine|hasListCommandLine|flags::enabled,  // command line characteristic features
+                                flags::commandLineType::dvdaCommandLine|flags::status::hasListCommandLine|flags::status::enabledUnchecked,  // command line characteristic features
                                {" ", " -g "},                       // command line separators
                                {"file", "group"},                // subordinate xml tags
                                 0,                                     // rank
@@ -279,7 +307,7 @@ dvda::dvda()
                                 "DVD-V",                          // superordinate xml tag
                                {"DVD-Video",""},                   // project manager widget on-screen tag
                                 "",                                   // command line label
-                                lplexFiles | hasListCommandLine|flags::enabled,  // command line characteristic features
+                                flags::commandLineType::lplexFiles |flags::status::hasListCommandLine|flags::status::enabled,  // command line characteristic features
                                {" ", " -ts "},                     // command line separators
                                {"file", "titleset"},             // subordinate xml tags
                                 1,                                    // rank
@@ -702,33 +730,6 @@ void dvda::on_moveDownItemButton_clicked()
 #include "flac_metadata_processing.h"
 
 
-inline int dvda::checkStandardCompliance()
-{
-QString path=wavFile.fileName();
-probe=new StandardComplianceProbe(path, isVideo);
-if (probe->isStandardCompliant())
-{
-    outputTextEdit->append(tr(MSG_HTML_TAG  "Added  .%4  file: %1 bits  %2 kHz %3 ch.\n").arg(probe->getSampleSize(), probe->getSampleRate(), probe->getChannelCount(),  probe->getCodec()));
-    delete(probe);
-
-    project[isVideo]->addStringToListWidget(path, currentIndex);
-    // in this order
-
-    RefreshFlag |= SaveTree|UpdateTree;
-
-    return 0;
-}
-else
-{
-    delete(probe);
-    outputTextEdit->append(tr(ERROR_HTML_TAG "Track %1 does not comply with the standard").arg(path));
-      QStringList p =QStringList()<< probe->getSampleSize() <<  probe->getSampleRate() << probe->getChannelCount() ;
-    if ((p.at(0).toInt() > 0) && (p.at(1).toInt() > 0) && (p.at(2).toInt() > 0))
-       outputTextEdit->insertPlainText(tr(": %1 bits  %2 kHz %3 ch").arg(p.at(0), p.at(1), p.at(2)));
-    return -1;
-}
-
-}
 
 void dvda::on_deleteItem_clicked()
 {

@@ -89,12 +89,12 @@ bool FString::isTrue()
 
 bool FString::isMultimodal()
 {
-  return (x == flags::multimodal);
+  return (x == static_cast<int>(flags::status::multimodal));
 }
 
 void FString::setMultimodal()
 {
-  x = flags::multimodal;
+  x = static_cast<int>(flags::status::multimodal);
 }
 
 bool FString::isFalse()

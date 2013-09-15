@@ -6,7 +6,7 @@
 
 
 
-QStringList dvda::createCommandLineString(int commandLineType)
+QStringList dvda::createCommandLineString(flags::commandLineType commandLineType)
 {
  QListIterator<FAbstractWidget*> w(Abstract::abstractWidgetList);
  QStringList commandLine;
@@ -14,7 +14,7 @@ QStringList dvda::createCommandLineString(int commandLineType)
   while (w.hasNext())
     {
       FAbstractWidget* item=w.next();
-      int itemCommandLineType=item->commandLineType &0xF;//& flags::commandLineMask;
+
       //if ((itemCommandLineType & commandLineType) == itemCommandLineType)
 
 //      Q(item->optionLabel)
@@ -24,7 +24,7 @@ QStringList dvda::createCommandLineString(int commandLineType)
 
       //    item->setXmlFromWidget();
 
-      if (itemCommandLineType == commandLineType)
+      if (item->commandLineType == commandLineType)
         {
            commandLine +=  item->commandLineStringList();
         }
@@ -55,7 +55,7 @@ void dvda::run()
 
 //|createIso|createDisc
 
- args << "-P0" << createCommandLineString(flags::dvdaCommandLine);
+  args << "--pause=0" << "--disable-lexer" << createCommandLineString(flags::commandLineType::dvdaCommandLine);
 
   //args << createCommandLineString(lplexFiles).split("-ts");
 
@@ -91,7 +91,7 @@ void dvda::runLplex()
     {
       FAbstractWidget* item=w.next();
 
-      if (item->commandLineType == lplexFiles)
+      if (item->commandLineType == flags::commandLineType::lplexFiles)
         args << item->commandLineStringList();
     }
 
@@ -342,7 +342,7 @@ void dvda::extract()
     {
       FAbstractWidget* item=w.next();
 
-      if (item->commandLineType == dvdaExtract)
+      if (item->commandLineType == flags::commandLineType::dvdaExtract)
         args << item->commandLineStringList();
 
     }

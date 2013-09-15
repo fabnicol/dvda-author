@@ -1,51 +1,54 @@
 #ifndef ENUMS_H
 #define ENUMS_H
+#include <cstdint>
 
 class flags
 {
 public:
     enum {flush=0xF00};
     enum {importFiles, importNames, typeIn, isEmbedded};
-    enum font {boldTitle, regularTitle, italicTitle};
-#ifdef DEBUG
-    enum commandLineType {dvdaCommandLine, createDisc, createIso, dvdaExtract, lplexFiles,  noCommandLine};
-    enum status {
-        defaultCommandLine=dvdaCommandLine,
-        commandLineMask=0xF,
+
+    enum class font : std::uint8_t {boldTitle, regularTitle, italicTitle};
+
+    enum class commandLineType : std::uint8_t {dvdaCommandLine,
+                                               defaultCommandLine=dvdaCommandLine,
+                                               createDisc,
+                                               createIso,
+                                               dvdaExtract,
+                                               lplexFiles,
+                                               noCommandLine,
+                                               commandLinewidgetDepthMask=0xF,
+                                               commandLineMask=0xF,
+                                              };
+
+    enum class status : std::uint16_t {
         untoggledCommandLine=0x10,
         toggledCommandLine=0x20,
-        commandLineToggleMask=0xF0,
         enabled=0x100,
         disabled=0x200,
-        enabledMask=0xF00,
-        widgetMask=0xF000,
         checked=0x1000,
         unchecked=0x2000,
         multimodal=0x3000,
+        enabledChecked=enabled|checked,
+        enabledUnchecked=enabled|unchecked,
         hasListCommandLine=0x4000,
-        defaultStatus=enabled
-    };
-#endif
-    enum commandLineType {dvdaCommandLine, createDisc, createIso, dvdaExtract, lplexFiles,  noCommandLine};
-
-    enum status {
-        defaultStatus=0x100,  ///-->regression origin
-        defaultCommandLine=dvdaCommandLine,
-        //commandLineMask=0xF,
-         commandLinewidgetDepthMask=0xF,
-        untoggledCommandLine=0x10,
-        toggledCommandLine=0x20,
+        defaultStatus=enabled,
         commandLineToggleMask=0xF0,
-        enabled=0x100,
-        disabled=0x200,
         enabledMask=0xF00,
         widgetMask=0xF000,
-        checked=0x1000,
-        unchecked=0x2000,
-        multimodal=0x3000,
-        hasListCommandLine=0x4000
-
+        statusMask=widgetMask|enabledMask|commandLineToggleMask  //0xFFF0
     };
+
+
+
+    friend int operator | (int  x, flags::status y) {return x | static_cast<int>(y);}
+    friend flags::status operator & (int  x, flags::status y) {return y & static_cast<flags::status>(x);}
+    friend flags::status operator & (flags::status  x, flags::status y) {return static_cast<flags::status>(static_cast<int>(y) & static_cast<int>(x));}
+    friend int operator | (flags::commandLineType x, flags::status y) {return static_cast<int>(x) | static_cast<int>(y);}
+    friend int operator | (flags::status y, flags::commandLineType x) {return static_cast<int>(x) | static_cast<int>(y);}
+    friend int operator & (flags::status y, flags::commandLineType x) {return static_cast<int>(x) & static_cast<int>(y);}
+    friend int operator & (flags::commandLineType x, flags::status y) {return static_cast<int>(x) & static_cast<int>(y);}
+
     static int lplexRank;
 
 };

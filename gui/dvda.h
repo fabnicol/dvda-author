@@ -137,7 +137,7 @@ private:
 
     void assignVariables();
     void clearProjectData();
-    QStringList createCommandLineString(int commandLineType);
+    QStringList createCommandLineString(flags::commandLineType commandLineType);
      void initialize();
     const QString  makeParserString(int start, int end=Abstract::abstractWidgetList.size()-1);
     const QString  makeDataString( );

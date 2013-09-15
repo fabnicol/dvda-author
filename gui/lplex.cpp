@@ -15,7 +15,7 @@ lplexPage::lplexPage()
   QLabel *lplexVideoLabel = new QLabel(tr("TV standard"));
 
   lplexVideoType = new FComboBox({ "ntsc" , "pal" , "secam"},
-                                 lplexFiles,
+                                 flags::commandLineType::lplexFiles|flags::status::enabled,
                                  "lplexVideoType",
                                  {"Lplex","TV standard"},
                                   "video" );
@@ -26,7 +26,7 @@ lplexPage::lplexPage()
   QToolButton *lplexBackgroundButton=new QToolDirButton;
   /* connect to ... */
   lplexBackgroundLineEdit = new FLineEdit(generateDatadirPath("black.jpg"),
-                                          lplexFiles,
+                                          flags::commandLineType::lplexFiles|flags::status::enabled,
                                           "lplexJpegPath",
                                          {"Lplex", "Path to lplex background jpeg"},
                                           "jpeg");
@@ -48,7 +48,7 @@ lplexPage::lplexPage()
   QLabel *lplexCreateLabel = new QLabel(tr("Authoring"));
 
   lplexCreateType = new FComboBox({ "lpcm" , "m2v" , "dvdstyler" , "mpeg" , "dvd" , "iso"} ,
-                                  lplexFiles,
+                                  flags::commandLineType::lplexFiles|flags::status::enabled,
                                   "lplexCreateType",
                                  {"Lplex","Authoring type"},
                                   "create" );
@@ -58,7 +58,7 @@ lplexPage::lplexPage()
   QLabel *lplexMediaLabel = new QLabel(tr("Disc size"));
 
   lplexMediaType = new FComboBox( {"dvd+r" ,  "dvd-r" ,  "dl" ,  "none"},
-                                  lplexFiles,
+                                  flags::commandLineType::lplexFiles|flags::status::enabled,
                                   "lplexMediaType",
                                  {"Lplex","Maximum disc size"},
                                   "media");
@@ -66,7 +66,7 @@ lplexPage::lplexPage()
   lplexMediaType->setMinimumWidth(lplexComboBoxWidth);
 
   lplexDirLineEdit = new FLineEdit(tempdir,
-                                   lplexFiles,
+                                   flags::commandLineType::lplexFiles|flags::status::enabled,
                                    "lplexDirPath",
                                    {"Lplex","Output everything to this directory"},
                                    "dir" );
@@ -103,7 +103,7 @@ lplexPage::lplexPage()
   QLabel *lplexSpliceLabel = new QLabel(tr("Splice"));
 
   lplexSpliceType = new FComboBox({"seamless" , "discrete" , "padded" , "none"},
-                                  flags::enabled|lplexFiles,
+                                  flags::status::enabledUnchecked|flags::commandLineType::lplexFiles,
                                   "lplexSpliceType",
                                  {"Lplex","Physically structure track transition point"},
                                   "splice" );
@@ -113,7 +113,7 @@ lplexPage::lplexPage()
   QLabel *lplexShiftLabel = new QLabel(tr("Move startpoints"));
 
   lplexShiftType = new FComboBox({"backward" , "forward" , "nearest" },
-                                 flags::enabled|lplexFiles,
+                                 flags::status::enabledUnchecked|flags::commandLineType::lplexFiles,
                                  "lplexShiftType",
                                  {"Lplex","Move seamless startpoints"},
                                  "shift");
@@ -122,19 +122,19 @@ lplexPage::lplexPage()
 
 
   lplexMd5AwareBox = new FCheckBox("Generate MD5 tags",
-                                    flags::enabled|flags::lplexFiles|flags::unchecked,
+                                    flags::status::enabledUnchecked|flags::commandLineType::lplexFiles,
                                    "lplexMd5Aware",
                                    {"Lplex","Generate MD5 tags"},
                                    "md5aware");
 
   lplexRescaleBox = new FCheckBox("Rescale images to TV standard",
-                                  flags::enabled|flags::lplexFiles|flags::unchecked,
+                                  flags::status::enabledUnchecked|flags::commandLineType::lplexFiles,
                                   "lplexRescale",
                                 { "Lplex","If jpegs sized for ntsc [pal] are being used\nto create a pal [ntsc] dvd, rescale them"},
                                   "rescale") ;
 
   lplexInfoDirLineEdit = new FLineEdit(tempdir,
-                                  flags::enabled|flags::lplexFiles|flags::unchecked,
+                                  flags::status::enabledUnchecked|flags::commandLineType::lplexFiles,
                                        "lplexInfoDirPath",
                                        {"Lplex","Path to directory to be added\n to Lplex-made XTRA directory"},
                                        "infodir");
@@ -148,7 +148,7 @@ lplexPage::lplexPage()
   /* connect to  QFileDialog::getExistingDirectory(this, "Browse Info directory"); */
 
   lplexInfoDirBox = new FCheckBox("Add Info directory to disc",
-                                  flags::disabled,
+                                  flags::status::disabled|flags::commandLineType::noCommandLine,
                                   "lplexInfoDir",
                                   {"Lplex","Add Info directory\nto disc XTRA directory"},
                                     {
@@ -159,6 +159,7 @@ lplexPage::lplexPage()
 
 
   lplexInfofilesBox = new FCheckBox("Generate info files",
+                                    flags::status::enabled|flags::commandLineType::noCommandLine,
                                     "lplexInfoFiles",
                                     {"Lplex", "Make an 'XTRA' info folder"},
                                     {lplexInfoDirBox}) ;

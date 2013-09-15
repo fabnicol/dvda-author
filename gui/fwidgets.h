@@ -105,7 +105,8 @@ public:
   virtual const QStringList commandLineStringList();
 
   /* command-line interface type */
-  int commandLineType;
+  flags::commandLineType commandLineType;
+  flags::status  status;
 
   // isEnabled() cannot be used as it would trigger lexical ambiguity with QWidget-inherited isEnabled() in subclasses
   // yet using virtual derivation makes it possible to invoke the QWidget-inherited isEnabled().
@@ -196,12 +197,12 @@ public:
 
   FCheckBox(const QString &boxLabel, const QString &hashKey, const QStringList& description, const char* commandLineString,
             const QList<QWidget*> &enabledObjects=QList<QWidget*>(), const QList<QWidget*> &disabledObjects=QList<QWidget*>()):
-    FCheckBox(boxLabel, flags::defaultStatus|flags::unchecked|flags::defaultCommandLine, hashKey, description, commandLineString,
+    FCheckBox(boxLabel, flags::status::enabledUnchecked|flags::commandLineType::defaultCommandLine, hashKey, description, commandLineString,
                          enabledObjects, disabledObjects){}
 
   FCheckBox(const QString &boxLabel, const QString &hashKey, const QStringList& description,
             const QList<QWidget*> &enabledObjects=QList<QWidget*>(), const QList<QWidget*> &disabledObjects=QList<QWidget*>()):
-      FCheckBox(boxLabel, flags::defaultStatus|flags::unchecked|flags::defaultCommandLine, hashKey, description, "",
+      FCheckBox(boxLabel, flags::status::enabledUnchecked|flags::commandLineType::defaultCommandLine, hashKey, description, "",
                          enabledObjects, disabledObjects){}
 
   void setWidgetFromXml(const FStringList& );
@@ -239,7 +240,7 @@ public:
 
    FRadioBox(const QStringList &boxLabelList, const QString &hashKey, const QStringList &description,
                      const QStringList &optionLabelStringList, const Q2ListWidget* enabledObjects=NULL,  const Q2ListWidget* disabledObjects=NULL) :
-     FRadioBox(boxLabelList, flags::defaultStatus|flags::defaultCommandLine,hashKey, description,  optionLabelStringList, enabledObjects,  disabledObjects) {}
+     FRadioBox(boxLabelList, flags::status::defaultStatus|flags::commandLineType::defaultCommandLine,hashKey, description,  optionLabelStringList, enabledObjects,  disabledObjects) {}
 
 
   void setWidgetFromXml(const FStringList& );
@@ -290,7 +291,7 @@ public:
   FComboBox(const QStringList &labelList, int status, const QString &hashKey, const QStringList &description, const QString &commandLine,  QList<QIcon> *iconList=NULL):
     FComboBox(labelList, QStringList(), status, hashKey, description, commandLine, iconList){}
   FComboBox(const QStringList &labelList, const QString &hashKey, const QStringList &description, const QString &commandLine,  QList<QIcon> *iconList=NULL):
-      FComboBox(labelList, flags::defaultStatus|flags::defaultCommandLine, hashKey, description, commandLine,  iconList){}
+      FComboBox(labelList, flags::status::defaultStatus|flags::commandLineType::defaultCommandLine, hashKey, description, commandLine,  iconList){}
 
 
   FComboBox(const char* str, int status, const QString &hashKey, const QStringList &description, const QString &commandLine,  QList<QIcon> *iconList=NULL):
@@ -332,7 +333,7 @@ class FLineEdit : public QLineEdit, public FAbstractWidget
 public:
   FLineEdit(const QString &defaultstring, int status, const QString &hashKey, const QStringList &description, const QString &commandLine);
   FLineEdit(const QString &defaultstring, const QString &hashKey, const QStringList &description, const QString &commandLine):
-  FLineEdit(defaultstring, flags::defaultStatus|flags::defaultCommandLine, hashKey, description, commandLine){}
+  FLineEdit(defaultstring, flags::status::defaultStatus|flags::commandLineType::defaultCommandLine, hashKey, description, commandLine){}
 
   void setWidgetFromXml(const FStringList&);
   const FString setXmlFromWidget();
@@ -398,7 +399,7 @@ class FPalette :   public QWidget, public FAbstractWidget
   public:
     FPalette(const char* textR, const char* textG, const char* textB, int status , const QString &hashKey,const QStringList &description, const QString &commandLine, int buttonWidth=150);
     FPalette(const char* textR, const char* textG, const char* textB,  const QString &hashKey,const QStringList &description, const QString &commandLine):
-      FPalette(textR, textG, textB, flags::defaultStatus|flags::defaultCommandLine,hashKey,description,commandLine) {}
+      FPalette(textR, textG, textB, flags::status::defaultStatus|flags::commandLineType::defaultCommandLine,hashKey,description,commandLine) {}
     void setWidgetFromXml(const FStringList&);
     void refreshWidgetDisplay();
     void refreshComponent(short i);

@@ -27,7 +27,7 @@ class FString : public QString
 private:
  int x;
  QString p;
- void testBool(QString &s, flags::status flag=flags::defaultStatus)
+ void testBool(QString &s, flags::status flag=flags::status::defaultStatus)
  {
  if (s.isEmpty())
    x=2;
@@ -40,7 +40,7 @@ private:
        x=0;
      else
        // Preserving flagged status
-         x= (flag != flags::defaultStatus)? flag : 2;
+         x= (flag != flags::status::defaultStatus)? static_cast<int>(flag) : 2;
     }
  }
 
@@ -60,7 +60,7 @@ public:
     p="";
   }
 
-  FString(QString s, flags::status flag=flags::defaultStatus):QString(s)
+  FString(QString s, flags::status flag=flags::status::defaultStatus):QString(s)
   {
     p=s;
     testBool(s, flag);
