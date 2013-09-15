@@ -119,18 +119,15 @@ protected:
   QStringList description;
   QList<FString> commandLineList;
   QList<QWidget*> componentList;
-  inline void FCore(FString defaultStatus, const QString &hashKey, const QStringList & description,
-                    const QString &option, int status, const QList<QWidget*>&enabledObjects=QList<QWidget*>(), const QList<QWidget*>&disabledObjects=QList<QWidget*>());
 
-  inline void FCore(FString defaultStatus, const QString &hashKey, const QStringList & description,
-                    const QString &option, int status, const Q2ListWidget *enabledObjects, const Q2ListWidget *disabledObjects);
+  inline void FCore(QWidget*, FString, int, const QString&, const QStringList& , const QString&, const QList<QWidget*>& =QList<QWidget*>(), const QList<QWidget*>& =QList<QWidget*>());
 
- //virtual void setEnabled();
+  inline void FCore(QWidget*, FString, int, const QString &, const QStringList &, const QString&, const Q2ListWidget*, const Q2ListWidget*);
 
 };
 
 
-class FListWidget : public QWidget, virtual public FAbstractWidget
+class FListWidget : public QWidget, public FAbstractWidget
 {
   Q_OBJECT
 
@@ -172,7 +169,7 @@ private:
   //QStringList description;
   //QString optionLabel;
   //QList<FString> commandLineList;
-  QList<QWidget*> componentList;
+ //QList<QWidget*> componentList;
 
 signals:
   void  open_tabs_signal(int);
@@ -181,13 +178,11 @@ signals:
 };
 
 
-class FCheckBox : public QCheckBox, virtual public FAbstractWidget
+class FCheckBox : public QCheckBox,  public FAbstractWidget
 {
   Q_OBJECT
 
   friend class FAbstractWidget;
-  friend inline void FCore( FString defaultStatus, const QString &hashKey, const QStringList & description,
-                            const QString &option, int status, const QList<QWidget*>&enabledObjects, const QList<QWidget*>&disabledObjects);
 
 public:
 
@@ -212,7 +207,7 @@ public:
   void setWidgetFromXml(const FStringList& );
   const FString setXmlFromWidget();
   void refreshWidgetDisplay();
-  bool isAbstractEnabled() {return this->isEnabled();}
+  bool isAbstractEnabled() {return this->QCheckBox::isEnabled();}
   const QString& getHashKey() const {return hashKey; }
   const QList<QWidget*>& getComponentList() const { return componentList;}
   const QString& getDepth()  const {return widgetDepth; }
@@ -227,12 +222,12 @@ private:
   //QStringList description;
   //QString optionLabel;
  //QList<FString> commandLineList;
-  QList<QWidget*> componentList={this};
+ // QList<QWidget*> componentList={this};
 
 };
 
 
-class FRadioBox : public QWidget, virtual public FAbstractWidget
+class FRadioBox :  public QWidget, public FAbstractWidget
 {
   Q_OBJECT
 
@@ -270,7 +265,7 @@ private:
   //QStringList description;
  // QString optionLabel;
  // QList<FString> commandLineList;
-  QList<QWidget*> componentList;
+ // QList<QWidget*> componentList;
 
 private slots:
   void toggledTo(bool);
@@ -283,7 +278,7 @@ signals:
 
 
 
-class FComboBox : public QComboBox, virtual public FAbstractWidget
+class FComboBox : public QComboBox, public FAbstractWidget
 {
   Q_OBJECT
 
@@ -321,7 +316,7 @@ private:
   //QStringList description;
  // QString optionLabel;
  //QList<FString> commandLineList;
-  QList<QWidget*> componentList;
+ // QList<QWidget*> componentList;
 
 
 signals:
@@ -329,7 +324,7 @@ signals:
 
 };
 
-class FLineEdit : public QLineEdit, virtual public FAbstractWidget
+class FLineEdit : public QLineEdit, public FAbstractWidget
 {
   Q_OBJECT
   friend class FAbstractWidget;
@@ -352,7 +347,7 @@ private:
   //QStringList description;
   //QString optionLabel;
   //QList<FString> commandLineList;
-  QList<QWidget*> componentList;
+ // QList<QWidget*> componentList;
 
   const QList<QWidget*>& getComponentList() const { return componentList;}
   const QString& getDepth() const {return widgetDepth; }
@@ -361,7 +356,7 @@ private:
 
 
 
-class FColorButton :  public QWidget, virtual public FAbstractWidget
+class FColorButton : public QWidget, public FAbstractWidget
 {
  Q_OBJECT
 
@@ -373,7 +368,7 @@ private:
   QStringList description;
   //QString optionLabel;
  //QList<FString> commandLineList;
-  QList<QWidget*> componentList;
+ //QList<QWidget*> componentList;
 
 
 public:
@@ -395,7 +390,7 @@ public slots:
 
 };
 
-class FPalette :  public QWidget, virtual public FAbstractWidget
+class FPalette :   public QWidget, public FAbstractWidget
 {
   Q_OBJECT
   friend class FAbstractWidget;
@@ -424,7 +419,7 @@ class FPalette :  public QWidget, virtual public FAbstractWidget
    //QStringList description;
    //QString optionLabel;
    //QList<FString> commandLineList;
-   QList<QWidget*> componentList;
+  // QList<QWidget*> componentList;
    void refreshPaletteHash();
 };
 

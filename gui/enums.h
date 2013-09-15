@@ -29,7 +29,7 @@ public:
     enum commandLineType {dvdaCommandLine, createDisc, createIso, dvdaExtract, lplexFiles,  noCommandLine};
 
     enum status {
-        defaultStatus=0x0,  ///-->regression origin
+        defaultStatus=0x100,  ///-->regression origin
         defaultCommandLine=dvdaCommandLine,
         //commandLineMask=0xF,
          commandLinewidgetDepthMask=0xF,

@@ -225,7 +225,7 @@ discPage::discPage()
                                  burnFreeBox,
                                  speedDvdComboBox});
 
-    mkisofsBox->setToolTip(tr("Check this box to use existing *.iso file for disc burning"));
+    mkisofsBox->QWidget::setToolTip(tr("Check this box to use existing *.iso file for disc burning"));
 
     playbackBox= new FCheckBox("Launch playback on loading disc",
                                flags::dvdaCommandLine|flags::enabled,
