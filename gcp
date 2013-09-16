@@ -6,13 +6,13 @@ if test x"$1" = x"-k"; then
     then 
       sudo mkdir /key
     fi
-    sudo mount -t vfat /dev/sdb1 /key 
-
   fi
 msg="$2"
 else
 msg="$1"
 fi
+
+sudo mount -t vfat /dev/sdb1 /key
 
 if test "$msg" = ""; then
  git checkout master
