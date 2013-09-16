@@ -16,7 +16,7 @@ TARGET = dvda-author-gui
 VPATH = .
 
 INCLUDEPATH += 3rdparty 3rdparty/sox 3rdparty/FLAC 3rdparty/sonic-visaliser 3rdparty/Qt
-LIBS += -L../libs -lFLAC -lsox
+LIBS += -L../lib -lFLAC -lsox
 
 win32:DEFINES += CDRECORD_PATH_WIN32
 
