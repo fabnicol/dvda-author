@@ -45,3 +45,5 @@ Usage: Replace --fixwavprune,interactive with -Fprune,interactive.
     at exec time. Should libiberty AND SoX compiling be triggered by the autoconf program, rerun configure with either --without-sox
     or --disable-libiberty --without-libiberty, or, alternatively, install the binutils-dev (or like) package of your *NIX platform
     and rerun configure. This issue is not detected automatically as it may be unstable and disappear with later SoX versions.
+
+12. 12.06 : bug with AOBs bigger than 1GB

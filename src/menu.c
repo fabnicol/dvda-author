@@ -823,7 +823,7 @@ int mogrify_img(char* text, int8_t group, int8_t track, pic *img, uint8_t maxnum
     x0=EVEN(x( (group>0)?group:0, img->ncolumns)) ;
     y0=EVEN(y(track+1-offset, maxnumtracks+4));
 
-// In automatic mode, we underline presupposing -font Courier with approx 1 letter of font 10 =6 pix in width, sinon préciser la fontwidth
+// In automatic mode, we underline presupposing -font Courier with approx 1 letter of font 10 =6 pix in width, otherwise sepcify fontwidth
 
     char *str, *str2;
     str=(char*) calloc(10*CHAR_BUFSIZ, 1);

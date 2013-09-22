@@ -197,6 +197,7 @@ int main(int argc,  char* const argv[])
     #ifdef __WIN32__
     DATADIR=strdup(currentdir);
     #else
+    #define INSTALL_CONF_DIR "."
     DATADIR=strdup(INSTALL_CONF_DIR);
     #endif
     char **BGPIC=calloc(1, sizeof(char*));

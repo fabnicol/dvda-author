@@ -6,7 +6,7 @@
 #endif
 
 #ifndef VERSION
-#define VERSION "10.06-400"
+#define VERSION "dev"
 #endif
 
 #endif // VERSION_H_INCLUDED
