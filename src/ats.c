@@ -680,36 +680,36 @@ int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,con
 
 PLAYBACK: // newer versions of VLC play back AOB files, this jjust triggers playback of the requested sequence of AOBs corresponding to audio groups.
 
-    if (player)
-    {
-
-        while (filenum < )
-        if ((extract) && (!extract->extracttitleset[filenum-1]))
-        {
-            filenum++;
-            continue;
-        }
-
-      {
-                    write_aob_path(aobfile, audiotsdir, titleset, filenum);
-                    char* argsplayer[]={aobfile, "vlc://quit", NULL};
-                    if (strcmp(player, "vlc") != 0) argsplayer[1]=NULL;
-                    if (run(player, argsplayer, 0) == -1)  // will wait for player until ends
-                    {
-                        EXPLAIN_DEV("[ERR]  Could not play group:", i)
-                        EXIT_ON_RUNTIME_ERROR
-                    }
-                    else
-                    {
-                        EXPLAIN_DEV("[ERR]  Played group:", i)
-                        return;
-                    }
-                    filenum++;
-
-       }
-       return 1-filenum;
-
-    }
+//     if (player)
+//     {
+// 
+//         while (filenum < )
+//         if ((extract) && (!extract->extracttitleset[filenum-1]))
+//         {
+//             filenum++;
+//             continue;
+//         }
+// 
+//       {
+//                     write_aob_path(aobfile, audiotsdir, titleset, filenum);
+//                     char* argsplayer[]={aobfile, "vlc://quit", NULL};
+//                     if (strcmp(player, "vlc") != 0) argsplayer[1]=NULL;
+//                     if (run(player, argsplayer, 0) == -1)  // will wait for player until ends
+//                     {
+//                         EXPLAIN_DEV("[ERR]  Could not play group:", i)
+//                         EXIT_ON_RUNTIME_ERROR
+//                     }
+//                     else
+//                     {
+//                         EXPLAIN_DEV("[ERR]  Played group:", i)
+//                         return;
+//                     }
+//                     filenum++;
+// 
+//        }
+//        return 1-filenum;
+// 
+//     }
 
 EXTRACT:   //extraction file by file may be necessary even for playback on some players
 

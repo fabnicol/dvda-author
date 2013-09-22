@@ -205,6 +205,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"screentext", required_argument, NULL, 'O'},
         {"highlightformat", required_argument, NULL, 'K'},
         {"font", required_argument, NULL, 'J'},
+        {"fontname", required_argument, NULL, 14},
+        {"fontsize", required_argument, NULL, 15},
+        {"fontwidth", required_argument, NULL, 16},
         {"duration", required_argument, NULL, 'u'},
         {"stillpics", required_argument, NULL, '3'},
         {"norm", required_argument, NULL, '4'},
@@ -402,6 +405,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                     foutput("%s%s\n", "[PAR]  Working directory is: ", optarg);
                     // WARNING never launch a command line with --mkisofs in the WORKDIR directory
                     change_directory(globals.settings.workdir);
+
                     //reset++;
                     break;
 
@@ -1316,13 +1320,49 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                     EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Font chain is illegal: enter font,font size,font width (width in pixels for size=10)");
 
                 if (img->textfont) foutput("[PAR]  Font: %s\n", img->textfont);
-                if (img->pointsize) foutput("[PAR]  Point size: %d\n", img->pointsize);
-                if (img->fontwidth) foutput("[PAR]  Font width: %d\n", img->fontwidth);
+                foutput("[PAR]  Point size: %d\n", img->pointsize);
+                foutput("[PAR]  Font width: %d\n", img->fontwidth);
 
             }
             globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             img->refresh=1;
             break;
+
+        case 14:
+            fontchain=strndup(optarg, MAX_OPTION_LENGTH);
+            if (fontchain)
+            {
+                free(img->textfont);
+                img->textfont=fontchain;
+
+                if (img->textfont) foutput("[PAR]  Fontname: %s\n", img->textfont);
+            }
+            globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+            img->refresh=1;
+            break;
+
+        case 15:
+            fontchain=strndup(optarg, MAX_OPTION_LENGTH);
+            if (fontchain)
+            {
+                img->pointsize=(int8_t) atoi(fontchain);
+                foutput("[PAR]  Point size: %d\n", img->pointsize);
+            }
+            globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+            img->refresh=1;
+            break;
+
+        case 16:
+            fontchain=strndup(optarg, MAX_OPTION_LENGTH);
+            if (fontchain)
+            {
+                img->fontwidth=(int8_t) atoi(fontchain);
+                foutput("[PAR]  Font width: %d\n", img->fontwidth);
+            }
+            globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+            img->refresh=1;
+            break;
+
 
         case '2':
             still_options_string=strdup(optarg);
@@ -1639,22 +1679,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             img->backgroundpic[0][len2-2]='p';
             img->backgroundpic[0][len2-3]='j';
 
-            if (globals.veryverbose) foutput("%s\n", "[INF]  Converting overlay .png blankscreen to .jg blankscreen for mpg authoring...");
-            if (img->blankscreen)
-            {
-                char* convert=NULL;
-                char cl[500]; //do not use command as an array name !
-                convert=create_binary_path(convert, CONVERT, SEPARATOR CONVERT_BASENAME);
 
-                snprintf(cl, 500, "%s %s %s", convert, img->blankscreen , img->backgroundpic[0]);
-
-                if (globals.veryverbose) foutput("[INF]  Launching convert with command line %s\n",  cl);
-                unlink(img->backgroundpic[0]);
-                errno=0;
-                if (system(win32quote(cl)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
-                    fflush(NULL);
-
-            }
             globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR );
 
             break;
@@ -1749,6 +1774,32 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         }
     }
+
+    int wpathlength=strlen(globals.settings.workdir);
+    char menudir[wpathlength+6];
+
+    if (img->blankscreen)
+    {
+        if (globals.veryverbose) foutput("%s\n", "[INF]  Converting overlay .png blankscreen to .jg blankscreen for mpg authoring...");
+
+        sprintf(menudir, "%s"SEPARATOR"menu", globals.settings.workdir);
+        if (globals.veryverbose) foutput("[INF]  Creating menu directory %s\n",  menudir);
+        secure_mkdir(menudir, globals.access_rights, DEFAULT);
+
+        char* convert=NULL;
+        char cl[500]; //do not use command as an array name !
+        convert=create_binary_path(convert, CONVERT, SEPARATOR CONVERT_BASENAME);
+
+        snprintf(cl, 500, "%s %s %s", convert, img->blankscreen , img->backgroundpic[0]);
+
+        if (globals.veryverbose) foutput("[INF]  Launching convert with command line %s\n",  cl);
+        unlink(img->backgroundpic[0]);
+        errno=0;
+        if (system(win32quote(cl)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
+            fflush(NULL);
+
+    }
+
 
 
     _Bool menupic_input_coherence_test=0;
