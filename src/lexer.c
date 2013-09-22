@@ -165,12 +165,12 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
 			i++;j++;
 
 			break;
-		    case '!':
+            case 3:
 			dataflag=STILLPICS_TITLE;
 			mem_s2=0;
 			i++;j++;
 			break;
-		    case '?':
+            case 2:
 			dataflag=STILLOPTIONS_RANK;
 			mem_s2=0;
 			i++;j++;
