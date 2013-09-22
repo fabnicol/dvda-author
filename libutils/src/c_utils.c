@@ -179,15 +179,22 @@ typedef struct slist_t
 
 int rmdir_recursive (char *root, char *dirname)
 {
+    char *cwd;
+    cwd=fn_get_current_dir_name();
+    if (chdir (dirname) == -1)
+    {
+        if (errno == ENOTDIR)
+        return 0;
+        printf ( "[ERR]  chdir() issue with dirname=%s\n", dirname);
+        return (-1);
+    }
+
     slist_t *names = NULL;
     slist_t *sl;
 
     DIR *FD;
     struct dirent *f;
-    int cwdlen = 32;
-    char *cwd;
     char *new_root;
-
 
     if (root)
     {
@@ -207,16 +214,6 @@ int rmdir_recursive (char *root, char *dirname)
     }
     else
         new_root = strdup (dirname);
-
-
-    cwd=fn_get_current_dir_name();
-
-
-    if (chdir (dirname) == -1)
-    {
-        printf ("%s", "[ERR]  chdir() issue\n");
-        return (-1);
-    }
 
 
     if (NULL == (FD = opendir (".")))
@@ -404,7 +401,6 @@ _Bool clean_directory(char* path)
 
     errno=0;
     if (path == NULL) return (EXIT_FAILURE);
-    int s=strlen(path);	    // This is brute-force handling with shell. TODO: turn into C.
 
     if (globals.veryverbose) printf("%s%s\n", "[INF]  Cleaning directory ", path);
 
@@ -751,7 +747,8 @@ void change_directory(const char * filename)
     {
         if (errno == ENOTDIR)
             printf("[ERR]  %s is not a directory\n", filename);
-        printf("[ERR]  input file %s does not comply with chdir  specifications\n.", filename);
+        else
+        printf("[ERR]  Impossible to cd to %s \n.", filename);
         exit(EXIT_FAILURE);
     }
     else if (globals.veryverbose)
