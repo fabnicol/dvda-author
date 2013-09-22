@@ -129,7 +129,7 @@ printf("%s","-g                       You may specify up to 9 groups of tracks."
 printf("%s","                         Enter full path to files if input directory is not set"J"by [-i].\n\n");
 printf("%s","-j, --joingaps           Like -g with special processing to avoid gaps."J"Minimum: one group.\n");
 printf("%s","-s,                      Like -g with all tracks merged into one single track."J"Minimum: one group.\n");
-printf("%s","-z, --newtitle           Separate two consecutive titles when files have same audio"J"characteritics within a group.\n");
+printf("%s","-z, --title           Separate two consecutive titles when files have same audio"J"characteritics within a group.\n");
 printf("%s","-Z, --playlist           You may specify up to 9 group copies."J"Total number of groups and copy groups should not exceed 9.\n");
 printf("%s","-n, --no-videozone       Do not generate an empty VIDEO_TS directory.\n\n");
 printf("%s","-w, --rights             Access rights to directories created (octal values)\n\n");
