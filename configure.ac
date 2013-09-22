@@ -9,7 +9,7 @@
 
 
 
-AC_INIT([dvda-author],[12.06],[fabnicol@users.sourceforge.net])
+AC_INIT([dvda-author],[dev],[fabnicol@users.sourceforge.net])
 # requested to define _GNU_SOURCE and check the availability of GNU extensions
 # This should be called before any macros that run the C   compiler.
 AC_USE_SYSTEM_EXTENSIONS
@@ -25,7 +25,8 @@ AC_CONFIG_MACRO_DIR([m4])
 # standard init macros
 
 # make dist produces both tar.bz2 and tar.gz packages
-AM_INIT_AUTOMAKE([dist-lzma -Wall])
+AM_INIT_AUTOMAKE([-Wall])
+AM_PROG_AR
 AC_CONFIG_SRCDIR([src/videoimport.c])
 AC_CONFIG_HEADER([config.h])
 
@@ -104,15 +105,15 @@ AC_ARG_WITH([debug],
            ])
         ],
         [
-	  AS_IF([ test "x$withval" = "xfull"],
-	   [
-	    AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],[
-		# -O2 is necessary for inlining, do not take it off
+          AS_IF([ test "x$withval" = "xfull"],
+           [
+            AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],[
+                # -O2 is necessary for inlining, do not take it off
             CFLAGS="-std=c99 -g3 -O2 -Wall -Wextra -pedantic"
-	    cflags_save=`echo $cflags_save | $SED "s/-g \(.*\)-O2/ \1/g"` ])
+            cflags_save=`echo $cflags_save | $SED "s/-g \(.*\)-O2/ \1/g"` ])
            ],
            [
-	    CFLAGS="-O2 $withval"
+            CFLAGS="-O2 $withval"
            ])
 
         ])
