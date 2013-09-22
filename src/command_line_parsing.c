@@ -1775,16 +1775,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         }
     }
 
-    int wpathlength=strlen(globals.settings.workdir);
-    char menudir[wpathlength+6];
 
     if (img->blankscreen)
     {
         if (globals.veryverbose) foutput("%s\n", "[INF]  Converting overlay .png blankscreen to .jg blankscreen for mpg authoring...");
-
-        sprintf(menudir, "%s"SEPARATOR"menu", globals.settings.workdir);
-        if (globals.veryverbose) foutput("[INF]  Creating menu directory %s\n",  menudir);
-        secure_mkdir(menudir, globals.access_rights, DEFAULT);
 
         char* convert=NULL;
         char cl[500]; //do not use command as an array name !
@@ -1797,9 +1791,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         errno=0;
         if (system(win32quote(cl)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR] System command failed")
             fflush(NULL);
-
     }
-
 
 
     _Bool menupic_input_coherence_test=0;
