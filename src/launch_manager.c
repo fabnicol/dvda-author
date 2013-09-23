@@ -223,7 +223,7 @@ int launch_manager(command_t *command)
     scan_wavfile_audio_characteristics(indices, command);
 
 
-    foutput("\n%s\n", "DVD Layout:\n\n");
+    foutput("\n%s", "DVD Layout:\n");
     foutput("%s\n", "Group  Track    Rate Bits  Ch        Length  Filename\n");
 
     // ngroups does not include copy groups from then on -- nplaygroups are just virtual (no added bytes to disc)
