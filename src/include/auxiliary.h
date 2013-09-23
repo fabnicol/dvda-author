@@ -52,11 +52,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
 #define HEADER(X, Y)      do{ \
-						  DOUBLE_DOTS \
-                          foutput("\n\n%s\n",     " -----------------   "X" "Y"   -----------------");\
-                          print_time(1);\
-                          DOUBLE_DOTS \
-                          foutput("\n%s\n", INFO_GNU);}while(0);
+                          foutput("\n%s\n",     " ---------- " X Y" ----------");\
+                          foutput("\n%s\n", INFO_GNU);\
+    print_time(1); puts("");}while(0);
 
 
 #define FREE(X)  if (X != NULL) free(X);
