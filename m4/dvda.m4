@@ -147,6 +147,7 @@ AC_DEFUN([DVDA_DOWNLOAD],
                 upper[_VERSION]=$version
                 DVDA_CLEAN([bn-$version.tar.gz])
                 DVDA_CLEAN([bn-$version.tar.bz2])
+                DVDA_CLEAN([bn-$version.tar.xz])
 
                 type=gz
                 LOOP_MIRRORS([$version],[$3],[$6],[$type],[$7])
@@ -156,6 +157,12 @@ AC_DEFUN([DVDA_DOWNLOAD],
                 AS_IF([ test  [x]MD5_CHECK([$filename]) != x$7 ],
                 [
                  type=bz2
+                 LOOP_MIRRORS([$version],[$3],[$6],[$type],[$7])
+                ])
+
+                AS_IF([ test  [x]MD5_CHECK([$filename]) != x$7 ],
+                [
+                 type=xz
                  LOOP_MIRRORS([$version],[$3],[$6],[$type],[$7])
                 ])
 
@@ -173,7 +180,7 @@ AC_DEFUN([DVDA_DOWNLOAD],
 
                 AS_IF([test -f "$filename"],
                  [
-                   AS_IF([test x$type = xgz],[mode=xzvf],[mode=xjvf])
+                   AS_IF([test x$type = xgz],[mode=xzvf],[AS_IF([test x$type = xxz],[mode=xJvf],[AS_IF([test x$type = xbz2],[mode=xjvf])])])
                    DVDA_TAR([$filename],[$mode])
                    [MAYBE_]upper=$dir
 
