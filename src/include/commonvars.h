@@ -409,7 +409,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #define READTRACKS 1
 
-#define INFO_GNU   "Copyright Dave Chapman 2005-Fabrice Nicol 2007-2010\n\
+#define INFO_GNU   "[LICENSE]  Copyright Dave Chapman 2005-Fabrice Nicol 2007-2010\n\
 <fabnicol@users.sourceforge.net>-Lee and Tim Feldkamp 2008-2009\n\
 This file is part of dvda-author.\n\
 dvda-author is free software: you can redistribute it and/or modify \n\
