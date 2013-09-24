@@ -634,7 +634,7 @@ int launch_spumux(pic* img)
     int menu=0;
 
 
-    initialize_binary_paths(1);
+    initialize_binary_paths(CREATE_SPUMUX);
 
 
     while (menu < img->nmenus)
@@ -665,17 +665,20 @@ int launch_spumux(pic* img)
             close(firsttubeerr[0]);
             dup2(firsttubeerr[1], STDERR_FILENO);
 
-
+           fprintf(stderr, "command line: %s %s %s %s %s", spumux, argsspumux[1], argsspumux[2], argsspumux[3], argsspumux[4]);
             if (freopen(img->backgroundmpg[menu], "rb", stdin) == NULL)
             {
                 perror("[ERR]  freopen (stdin)");
+                fprintf(stderr, "img->backgroundmpg[%d]=%s errno=%d: %s", menu, img->backgroundmpg[menu], errno, strerror(errno));
                 return errno;
             }
             if (freopen(img->topmenu[menu], "wb", stdout) == NULL)
             {
                 perror("[ERR]  freopen (stdout)");
+                fprintf(stderr, "img->backgroundmpg[%d]=%s errno=%d: %s", menu, img->topmenu[menu], errno, strerror(errno));
                 return errno;
             }
+
             execv(spumux, argsspumux);
             return errno;
 
