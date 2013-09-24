@@ -35,10 +35,16 @@ m4_map([m4_define],[
                       ]],
 [[DVDA_RUN],
 					  [
-					    DVDA_INF([Running $1 $2])
-					    $1 $2
+					    DVDA_INF([Running $1 $2 $3])
+					    $1 $2 $3
 					    exitcode=$?
-					    AS_IF([test $exitcode = 0],[DVDA_INF([...OK])],[DVDA_ERR([...$1 $2 failed, exit $exitcode.])])
+					    AS_IF([test $exitcode = 0],
+					       [DVDA_INF([...OK])],
+					       [
+					         DVDA_ERR([...$1 $2 $3 failed]) 
+					         sleep 2s
+					         AS_IF([test x$1 != x"$CURL"], [exit $exitcode])
+					       ])
 					  ]],
 
 [[DVDA_CLEAN],
@@ -49,8 +55,8 @@ m4_map([m4_define],[
 						   rm -f "$1"
 					     ])
 					  ]],
-[[DVDA_CURL],         [DVDA_RUN(["$CURL" -f --location -o $2],[$1])]],
-[[DVDA_PATCH],        [DVDA_RUN(["$PATCH" -p4 -f --verbose < ],[$1])]],
+[[DVDA_CURL],         [DVDA_RUN(["$CURL"],[ -f --location -o $2],[$1])]],
+[[DVDA_PATCH],        [DVDA_RUN(["$PATCH"],[ -p4 -f --verbose < ],[$1])]],
 [[MD5_CHECK],         [$($MD5SUM -b $1 | $SED "s/ .*//g")]],
 [[MD5_BREAK],         [     md5=MD5_CHECK([$1])
 	                    AS_IF([ test -f $1 && test x$md5 = x$2 ],
@@ -61,5 +67,5 @@ m4_map([m4_define],[
                       ]],
 
 [[DVDA_MKDIR],        [AS_IF([test -d "$1"],[rm -rf "$1" && mkdir "$1"],[mkdir "$1"])]],
-[[DVDA_TAR],          [DVDA_RUN(["$TAR" $2],[$1])]]])
+[[DVDA_TAR],          [DVDA_RUN(["$TAR"],[ $2],[$1])]]])
 
