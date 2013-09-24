@@ -30,7 +30,7 @@ all: stamprecord0 stamprecord1 stamprecord2 stamprecord3 stamprecord4 stamprecor
 do_sox_lib_deps_subst: src/Makefile stamprecord2
 if HAVE_SOX_BUILD
 	chmod +x ${MAYBE_SOX}/sox-libs
-	$(SED) -e "s,SOX_LIB_DEPS,$(shell cat ${MAYBE_SOX}/sox-libs | $(SED) "s,[\.\.\/].*[a],,g" ),g" < src/Makefile > src/Makefile.temp
+	$(SED) -e "s,SOX_LIB_DEPS,$(shell cat ${MAYBE_SOX}/sox-libs | $(SED) -e "s,[\.\.\/].*[a],,g"   -e  "s,@.*@,,g"),g" < src/Makefile > src/Makefile.temp
 	mv src/Makefile.temp src/Makefile
 endif
 
