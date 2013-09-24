@@ -165,10 +165,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"no-refresh-tempdir",no_argument, NULL, 4},
         {"no-refresh-outdir",no_argument, NULL, 5},
         {"extract", required_argument, NULL, 'x'},
-        {"play", required_argument, NULL, 12},
-        {"player", required_argument, NULL, 13},
 
 #if !HAVE_CORE_BUILD
+        {"play", required_argument, NULL, 12},
+        {"player", required_argument, NULL, 13},
         {"videodir", required_argument, NULL, 'V'},
         {"fixwav", optional_argument, NULL, 'F'},
         {"fixwav-virtual", optional_argument, NULL, 'f'},
@@ -769,22 +769,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
 
-       case 12:
-
-        //no break with 'x'
-
        case 'x' :
 
             extract_audio_flag=1;
-            player=NULL;
             FREE(globals.settings.indir)
             globals.settings.indir=strdup(optarg);
 
-            break;
-
-       case  13:
-
-            player=strdup(optarg);
             break;
 
        case 'n' :
@@ -892,6 +882,22 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
 #if !HAVE_CORE_BUILD
+	    
+        case 12:
+
+            player=NULL;
+            extract_audio_flag=1;
+            FREE(globals.settings.indir)
+            globals.settings.indir=strdup(optarg);
+
+            break;
+
+       case  13:
+
+            player=strdup(optarg);
+            break;
+
+
 	          // case 'g': c=0; break;
         case '9':
             /* --datadir is the directory  where the menu/ files are located. Under* nix it automatically installed under /usr/share/applications/dvda-author by the autotools
@@ -1510,7 +1516,13 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     if (extract_audio_flag)
     {
         extract_list_parsing(globals.settings.indir, &extract);
+#if !HAVE_CORE_BUILD
+
         ats2wav_parsing(globals.settings.indir, &extract, player);
+#else
+        ats2wav_parsing(globals.settings.indir, &extract, NULL);
+#endif
+
         return(NULL);
     }
 

@@ -16,21 +16,21 @@ AC_DEFUN([DVDA_CHECK_DEPENDENCIES],
 #mkisofs and cdrecord are tested by DVDA_DOWNLOAD
 
 m4_map([DVDA_TEST_AUX],[
-	[[help2man],  [man page will be generated after install: help2man]],
-	[[man2html],  [man page will be generated after install: man2html]],
-	[[curl],      [patched version of prerequisites will be downloaded: curl]],
-	[[jpeg2yuv],  [background pictures can be converted to background videos: jpeg2yuv]],
-	[[mplex],     [menus can be muxed: mplex]],
-	[[mp2enc],    [mp2 soundtracks can be created: mp2enc]],
-	[[mpeg2enc],  [mpeg2 streams can be encoded: mpeg2enc]],
-	[[spumux],    [menu titles can be muxed: spumux]],
-	[[mogrify],   [automatic menus can be generated: mogrify]],
-	[[convert],   [automatic menus can be generated: convert]],
-	[[mkisofs],   [ISO authoring software: mkisofs]],
-	[[cdrecord],  [recording software: cdrecord]],
+        [[help2man],  [man page will be generated after install: help2man]],
+        [[man2html],  [man page will be generated after install: man2html]],
+        [[curl],      [patched version of prerequisites will be downloaded: curl]],
+        [[jpeg2yuv],  [background pictures can be converted to background videos: jpeg2yuv]],
+        [[mplex],     [menus can be muxed: mplex]],
+        [[mp2enc],    [mp2 soundtracks can be created: mp2enc]],
+        [[mpeg2enc],  [mpeg2 streams can be encoded: mpeg2enc]],
+        [[spumux],    [menu titles can be muxed: spumux]],
+        [[mogrify],   [automatic menus can be generated: mogrify]],
+        [[convert],   [automatic menus can be generated: convert]],
+        [[mkisofs],   [ISO authoring software: mkisofs]],
+        [[cdrecord],  [recording software: cdrecord]],
         [[md5sum],    [MD5 checksum utility]],
-	[[autoconf],  [configure system build: autoconf]],
-	[[automake],  [make system build: automake]],
+        [[autoconf],  [configure system build: autoconf]],
+        [[automake],  [make system build: automake]],
         [[smake],     [using smake instead of GNU make]],
         [[lplex],     [using lplex to mux lpcm audio and video]],
         [[make],      [whether make is installed]],
@@ -73,7 +73,7 @@ m4_map([DVDA_TEST_AUX],[
              [[cdrtools-build]],
              [[static-sox],
               [DVDA_INF([SOX_STATIC_MSG])
-	       SOX_LINK="$SOX_LINK -lasound -lpng -lz -lltdl -lmagic -lsamplerate"
+               SOX_LINK="$SOX_LINK -lasound -lpng -lz -lltdl -lmagic -lsamplerate"
                SOX_LIB="/usr/lib/libsox.a $(find /usr/lib/sox/ -regex lib.*a)"]],
              [[all-builds]]])
 
@@ -82,14 +82,14 @@ m4_map([DVDA_TEST_AUX],[
 
     AS_CASE([${build}],
             [*-*-mingw32*],[
-		    DVDA_INF([MinGW detected: libsox and libiberty will be built from source])
-		    DVDA_ARG_ENABLE([sox-build])
-		    DVDA_ARG_ENABLE([iberty-build])],
+                    DVDA_INF([MinGW detected: libsox and libiberty will be built from source])
+                    DVDA_ARG_ENABLE([sox-build])
+                    DVDA_ARG_ENABLE([iberty-build])],
 
             [*-*-cygwin*],[
-		    DVDA_ARG_ENABLE([sox-build])
-		    DVDA_ARG_ENABLE([iberty-build])
-		    DVDA_INF([Cygwin detected: libsoX and glibc will be built from source])])
+                    DVDA_ARG_ENABLE([sox-build])
+                    DVDA_ARG_ENABLE([iberty-build])
+                    DVDA_INF([Cygwin detected: libsoX and glibc will be built from source])])
           # on cygwin, libsox dependencies will not be resolved (platform limitation)
 
     # put feature specific parameters after global parameters to redefine X_LIBs.
@@ -149,13 +149,14 @@ m4_map([DVDA_TEST_AUX],[
 
     # installing binaries, normally executables
 
-    DVDA_CONF_SUBDIRS([[[[DVDAUTHOR],[dvdauthor-0.6.14]]], [[[CDRTOOLS],[cdrtools-3.00]]], [[[MJPEGTOOLS], [mjpegtools-2.0.0]]],[[[A52DEC],[a52dec-0.7.5-cvs]],[--prefix=$prefix]],[[[MPEG2DEC],[mpeg2dec-0.2.1-mjpegtools-0.7]], [--prefix=$prefix]],[[[LPLEX], [lplex-0.3]], [--prefix=$prefix --disable-shared]],[[[HELP2MAN], [help2man-1.36.4]]], [[[MAGICK], [magick-6.6.3]]]])
+    DVDA_CONF_SUBDIRS([[[[DVDAUTHOR],[dvdauthor-0.6.14]]], [[[CDRTOOLS],[cdrtools-3.00]]], [[[A52DEC],[a52dec-0.7.5-cvs]],[--prefix=$prefix]],[[[MPEG2DEC],[mpeg2dec-0.2.1-mjpegtools-0.7]], [--prefix=$prefix]],[[[LPLEX], [lplex-0.3]], [--prefix=$prefix --disable-shared]],[[[HELP2MAN], [help2man-1.36.4]]], [[[MAGICK], [magick-6.6.3]]]])
 
     # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
 
     DVDA_CONF_SUBDIRS_LOCAL_INSTALL([
-     [[[FLAC],[flac-1.2.1]],[--disable-shared --disable-thorough-tests --disable-oggtest --disable-cpplibs --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]],
-     [[[SOX],[sox-14.3.1]],  [--without-mad --without-flac --without-lame --prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]],
+     [[[MJPEGTOOLS], [mjpegtools-2.1.0]],[--enable-static-build]],
+     [[[FLAC],[flac-1.3.0]],[--disable-shared --disable-thorough-tests --disable-oggtest --disable-cpplibs --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]],
+     [[[SOX],[sox-14.4.1]],  [--without-mad --without-flac --without-lame --prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]],
      [[[OGG],[ogg-1.1.4]],  [--prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]]])
 
     # auxiliary libs that remain within package, not installed
