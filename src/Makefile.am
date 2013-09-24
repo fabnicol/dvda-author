@@ -24,10 +24,10 @@ dvda_SOURCES += menu.c asvs.c xml.c sound.c videoimport.c
 endif
 
 
-AM_LDFLAGS=-L/usr/local/lib -L/usr/lib -Xlinker --allow-multiple-definition
+AM_LDFLAGS=-L/usr/local/lib -L/usr/lib -Xlinker --allow-multiple-definition -L${top_builddir}/libs
 AM_CPPFLAGS=-I${top_srcdir}/libutils/src/include -I${top_srcdir}/src/include -I${top_srcdir}   ${DEBUG_FLAGS}
 
-dvda_LDADD= -lm ${top_builddir}/libutils/src/libc_utils.a  
+dvda_LDADD= -lm ${top_builddir}/libutils/src/libc_utils.a
 
 
 # Symbol SOX_LIB_DEPS will be replaced by sox dependencies after configure in libsox by target do_sox_lib_deps_subst
