@@ -8,7 +8,6 @@
 ######################################################################################################
 
 
-
 AC_INIT([dvda-author],[dev],[fabnicol@users.sourceforge.net])
 # requested to define _GNU_SOURCE and check the availability of GNU extensions
 # This should be called before any macros that run the C   compiler.
@@ -25,7 +24,7 @@ AC_CONFIG_MACRO_DIR([m4])
 # standard init macros
 
 # make dist produces both tar.bz2 and tar.gz packages
-AM_INIT_AUTOMAKE([-Wall])
+AM_INIT_AUTOMAKE
 AM_PROG_AR
 AC_CONFIG_SRCDIR([src/videoimport.c])
 AC_CONFIG_HEADER([config.h])
