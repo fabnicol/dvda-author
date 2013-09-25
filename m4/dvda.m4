@@ -189,10 +189,10 @@ AC_DEFUN([DVDA_DOWNLOAD],
                    AS_IF([test $exitcode = 0 && test $patchbool = 1],
                     [
                     # cdrtools is Makefile-based whilst autotools-compliant packages are configure-based
-		    [DVDA_INF([cdrtools specific procedure...])]
                       AS_IF([test -f "$dir/Makefile" || test -f "$dir/configure"],
                        [
 
+                          DVDA_INF([cdrtools specific procedure...])
                           m4_popdef([site])
                           m4_pushdef([site],[$4])
                           AS_IF([test $patchbool = 1],
@@ -281,18 +281,19 @@ AC_DEFUN([DVDA_ARG_ENABLE_DOWNLOAD],
 ])
 
 AC_ARG_ENABLE([$1],[AS_HELP_STRING([--enable-$1],msg)],
-[
-  if test x$enableval != xno; then
-   $2
-   DVDA_INF([Will msg... ])
-   upper=yes
-  else
-   DVDA_INF([Will not msg... ])
-   m4_ifvaln([$3], [$3])dnl
-   upper=no
-  fi
- ]
-)
+ [
+  AS_IF([ test x$enableval != xno],
+   [
+    $2
+    DVDA_INF([Will msg... ])
+    upper=yes
+   ],
+   [
+    DVDA_INF([Will not msg... ])
+    m4_ifvaln([$3], [$3])dnl
+    upper=no
+   ]) 
+ ])
 
 
 

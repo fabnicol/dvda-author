@@ -62,11 +62,18 @@ m4_map([m4_define],[
 				  [
 				    md5=MD5_CHECK([$1])
 				    AS_IF([ test -f $1 && test x$md5 = x$2 ],
-				    [ AC_MSG_NOTICE([Found right MD5 checksum: $md5])
+				    [ 
+				      AC_MSG_NOTICE([Found right MD5 checksum: $md5])
 				      break
 				    ],
-				    [ AC_MSG_NOTICE([Did not find right MD5 checksum: $md5 instead of $2, skipping...])] )
-				  ],[sleep 2s])
+				    [ 
+				      AS_IF([test "$md5" != ""],
+				      [ AC_MSG_NOTICE([Did not find right MD5 checksum: *$md5* instead of *$2*, skipping...])],
+				      [ AC_MSG_NOTICE([MD5 sum unavailable, skipping...])])
+				       
+				    ])
+				  ],
+				  [sleep 2s])
                       ]],
 
 [[DVDA_MKDIR],        [AS_IF([test -d "$1"],[rm -rf "$1" && mkdir "$1"],[mkdir "$1"])]],
