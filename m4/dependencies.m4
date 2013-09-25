@@ -110,13 +110,13 @@ m4_map([DVDA_TEST_AUX],[
     #     mirror root characteristics/basename-version.tar.[bz2|gz]
 
     m4_define([DOWNLOAD_OPTIONS],[
-            [[dvdauthor-patch],[0.6.14],     [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [dvdauthor], [dvdauthor/0.6.14],                       [bd646b47950c4091ffd781d43fd2c5e9]],
-            [[cdrtools-patch], [3.00],       [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches/mkisofs],[], [ftp://ftp.berlios.de/pub/cdrecord/alpha],         [bb21cefefcfbb76cf249120e8978ffdd]],
-            [[sox-patch],      [14.4.1],     [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [sox],  [sox/14.4.1],                             [ff9ca6aca972549de0e80e8e30ed379c]],
-            [[flac-download],  [1.3.0],      [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [], [http://downloads.xiph.org/releases/flac],                [13b5c214cee8373464d3d65dee362cdd]],
-            [[ogg-download],   [1.1.4],      [http://dvd-audio.sourceforge.net/utils],[],                                                [],     [],                                       [6c68b14485fccdb6a2a14109185dd816]],
-            [[help2man-download],[1.36.4],   [http://dvd-audio.sourceforge.net/utils],[],[],[], [d31a0a38c2ec71faa06723f6b8bd3076]],
-	    [[ImageMagick-download], [6.8.7-0],     [http://dvd-audio.sourceforge.net/utils],[],[],[], [3f4462d8108105f5860ddbff95e1af9e]],
+            [[dvdauthor-patch],[0.6.14],     [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [dvdauthor], [dvdauthor/0.6.14],                        [bd646b47950c4091ffd781d43fd2c5e9]],
+            [[cdrtools-patch], [3.00],       [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches/mkisofs],[],          [ftp://ftp.berlios.de/pub/cdrecord/alpha], [bb21cefefcfbb76cf249120e8978ffdd]],
+            [[sox-patch],      [14.4.1],     [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [sox],       [sox/14.4.1],                              [ff9ca6aca972549de0e80e8e30ed379c]],
+            [[flac-download],  [1.3.0],      [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [],          [http://downloads.xiph.org/releases/flac], [13b5c214cee8373464d3d65dee362cdd]],
+            [[ogg-download],   [1.1.4],      [http://dvd-audio.sourceforge.net/utils],[],                                                [],          [],                                        [6c68b14485fccdb6a2a14109185dd816]],
+            [[help2man-download],[1.36.4],   [http://dvd-audio.sourceforge.net/utils],[],                                                [],          [],                                        [d31a0a38c2ec71faa06723f6b8bd3076]],
+	    [[ImageMagick-download], [6.8.7-0],[http://dvd-audio.sourceforge.net/utils],[],                                              [],          [http://www.imagemagick.org/download],     [3f4462d8108105f5860ddbff95e1af9e]],
             [[lplex-download], [0.3],    [http://dvd-audio.sourceforge.net],[],[],[],[23e52c149ccfa0169955a57ff783fd21]],
             [[mjpegtools-download], [2.1.0],  [http://dvd-audio.sourceforge.net/utils],[], [mjpeg],[mjpegtools/2.1.0], [57bf5dd78976ca9bac972a6511b236f3]],
             [[mpeg2dec-download], [0.2.1], [http://dvd-audio.sourceforge.net/utils],[],[],[],[a7caee4591e8addc3bddaf47d2d45ec0]],
