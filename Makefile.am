@@ -82,7 +82,7 @@ stamprecord4: Makefile
 stamprecord5: Makefile
 	if test -f stamprecord5; then rm -f stamprecord5; fi; touch stamprecord5
 if HAVE_MJPEGTOOLS_BUILD
-	cd ${MAYBE_MJPEGTOOLS} && ${SHELL} configure --prefix=${prefix}  && $(MAKETOOL) ; cd -
+	chmod +x script6 && ${SHELL} script6
 endif
 
 

@@ -266,6 +266,7 @@ AC_CONFIG_FILES([Makefile
          script3
          script4
          script5
+         script6
          COREBUILD
          EXAMPLES
 ])
