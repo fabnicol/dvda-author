@@ -7,11 +7,15 @@
 # Dependencies: all files in m4/
 ######################################################################################################
 
+AS_INIT
+AS_SHELL_SANITIZE
 
 AC_INIT([dvda-author],[dev],[fabnicol@users.sourceforge.net])
 # requested to define _GNU_SOURCE and check the availability of GNU extensions
 # This should be called before any macros that run the C   compiler.
 AC_USE_SYSTEM_EXTENSIONS
+
+
 
 AC_PREREQ(2.63)
 AC_LANG([C])
@@ -355,23 +359,23 @@ AC_MSG_RESULT([[
   Using $make as a system build tool.
 
   Auxiliary tools
-                                   installed (path)/build (yes/no)
+				   build [yes/no] install path
 
-    help2man: .....................$HELP2MAN $HELP2MAN_BUILD
-    man2html: .....................$MAN2HTML $MAN2HTML_BUILD
-    spumux: .......................$SPUMUX $DVDAUTHOR_BUILD
-    dvdauthor: ....................$DVDAUTHOR $DVDAUTHOR_BUILD
-    mkisofs: ......................$MKISOFS $CDRTOOLS_BUILD
-    cdrecord: .....................$CDRECORD $CDRTOOLS_BUILD
-    mp2enc: .......................$MP2ENC $MJPEGTOOLS_BUILD
-    jpeg2yuv: .....................$JPEG2YUV $MJPEGTOOLS_BUILD
-    mpeg2enc: .....................$MPEG2ENC $MJPEGTOOLS_BUILD
-    mpeg2dec: .....................$MPEG2DEC $MPEG2DEC_BUILD
-    a52dec: .......................$A52DEC $A52DEC_BUILD
-    mplex: ........................$MPLEX $MJPEGTOOLS_BUILD
-    mogrify:.......................$MOGRIFY $MAGICK_BUILD
-    convert:.......................$CONVERT $MAGICK_BUILD
-    lplex: ........................$LPLEX $LPLEX_BUILD
+    help2man: .....................$HELP2MAN_BUILD $HELP2MAN
+    man2html: .....................$MAN2HTML_BUILD $MAN2HTML
+    spumux: .......................$DVDAUTHOR_BUILD $SPUMUX
+    dvdauthor: ....................$DVDAUTHOR_BUILD $DVDAUTHOR
+    mkisofs: ......................$CDRTOOLS_BUILD $MKISOFS
+    cdrecord: .....................$CDRTOOLS_BUILD $CDRECORD
+    mp2enc: .......................$MJPEGTOOLS_BUILD $MP2ENC
+    jpeg2yuv: .....................$MJPEGTOOLS_BUILD $JPEG2YUV
+    mpeg2enc: .....................$MJPEGTOOLS_BUILD $MPEG2ENC
+    mpeg2dec: .....................$MPEG2DEC_BUILD $MPEG2DEC
+    a52dec: .......................$A52DEC_BUILD $A52DEC
+    mplex: ........................$MJPEGTOOLS_BUILD $MPLEX
+    mogrify:.......................$IMAGEMAGICK_BUILD $MOGRIFY
+    convert:.......................$IMAGEMAGICK_BUILD $CONVERT
+    lplex: ........................$LPLEX_BUILD $LPLEX
 
    Building tools:
 
@@ -395,5 +399,5 @@ AC_MSG_RESULT([[
 
 ]])
 
-AS_IF([ test x$MAGICK_BUILD = xyes ], [DVDA_INF([MAGICK_MSG])])
+AS_IF([ test x$MAGICK_BUILD = xyes ], [DVDA_INF([IMAGEMAGICK_MSG])])
 
