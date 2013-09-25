@@ -171,6 +171,9 @@
 /* Whether ImageMagick source code will be downloaded for build. */
 #undef HAVE_IMAGEMAGICK
 
+/* configure, build and install ImageMagick from source code */
+#undef HAVE_IMAGEMAGICK_BUILD
+
 /* download ImageMagick from source code */
 #undef HAVE_IMAGEMAGICK_DOWNLOAD
 
@@ -191,9 +194,6 @@
 
 /* download lplex from source code */
 #undef HAVE_LPLEX_DOWNLOAD
-
-/* configure, build and install magick from source code */
-#undef HAVE_MAGICK_BUILD
 
 /* Found make */
 #undef HAVE_MAKE
