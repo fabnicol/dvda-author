@@ -35,7 +35,7 @@
 # 									 HAVE_SOX_BUILD			   true/false				CONF_SUBDIRS
 # HAVE_SOX_BUILD											   (0|1)				CONF_SUBDIRS
 # 						DVDAUTHOR_BUILD						    yes/no				BUILD, DVDA_DOWNLOAD
-#						SOX_BUILD						    yes/no				BUILD (>) DVDA_TEST_LIB, DVDA_ARG_WITH,DVDA_CONF_SUBDIRS, DVDA_ARG_ENABLE > DVDA_ARG_ENABLE_DOWNLOAD
+#						SOX_BUILD						    yes/no				BUILD (>) DVDA_TEST_LIB, DVDA_ARG_WITH,DVDA_CONFIG_EXECUTABLE_INSTALL, DVDA_ARG_ENABLE > DVDA_ARG_ENABLE_DOWNLOAD
 # 									 WITH_SOX			   true/false				DVDA_ARG_WITH
 #									 HAVE_SOX			   true/false				DVDA_TEST_LIB
 # WITHOUT_SOX		                           				                                 (0|1)      		        DVDA_ARG_WITH
@@ -71,7 +71,7 @@ AC_DEFUN([LOOP_MIRRORS],
 
       filename=bn-$1.tar.$4
       MD5=$5
-
+      exitcode=0
       # first trying to download from main site unless SF_MIRRORS is set
       AS_IF([test x"$SF_MIRROR" = x ],  [ DVDA_CURL([$2/$filename],[$filename] )], [AC_MSG_NOTICE([Downloading from mirror $SF_MIRROR])])
 
@@ -82,6 +82,7 @@ AC_DEFUN([LOOP_MIRRORS],
 
         # if fails, download from specified mirror / mirror list
 
+	exitcode=0
         AS_IF([test [x]m4_bpatsubst([$3],[tp:],[]) != x],
          [  DVDA_CURL([$3/$filename], [$filename])],
          [
@@ -89,7 +90,7 @@ AC_DEFUN([LOOP_MIRRORS],
 
             m4_foreach([mirror],[SF_MIRRORLIST],[
             MD5_BREAK([$filename],[$MD5])
-
+	    exitcode=0
             AC_MSG_NOTICE([Connecting to mirror:]mirror[...])
             # This mirroring is Sourceforge-specific and should be twisted for other mirroring patterns.
             DVDA_CURL([http://sourceforge.net/projects/root/files/$3/$filename/download?use_mirror=]mirror,[$filename])
@@ -105,6 +106,7 @@ AC_DEFUN([LOOP_MIRRORS],
         # last resort attempt, if everything has failed, use the Sourceforge network, except for cdrtools:
 
         AC_MSG_NOTICE([MD5SUM: not equal to  $MD5, downloading however from network...])
+	exitcode=0
         AS_IF([test bn != cdrtools], [DVDA_CURL([http://downloads.sourceforge.net/project/root/$3/$filename],[$filename])])
 
         break
@@ -150,17 +152,17 @@ AC_DEFUN([DVDA_DOWNLOAD],
                 DVDA_CLEAN([bn-$version.tar.xz])
 
                 type=gz
-                LOOP_MIRRORS([$version],[$3],[$6],[$type],[$7])
+		LOOP_MIRRORS([$version],[$3],[$6],[$type],[$7])
 
-                # outputs variable $filename
+		# outputs variable $filename and $exitcode
 
-                AS_IF([ test  [x]MD5_CHECK([$filename]) != x$7 ],
+		AS_IF([ test  $exitcode != 0 ],
                 [
                  type=bz2
                  LOOP_MIRRORS([$version],[$3],[$6],[$type],[$7])
                 ])
 
-                AS_IF([ test  [x]MD5_CHECK([$filename]) != x$7 ],
+		AS_IF([ test  $exitcode != 0 ],
                 [
                  type=xz
                  LOOP_MIRRORS([$version],[$3],[$6],[$type],[$7])
@@ -168,7 +170,7 @@ AC_DEFUN([DVDA_DOWNLOAD],
 
                 dir="bn[-]m4_argn(1,$2)"
 
-                AS_IF([ test  [x]MD5_CHECK([$filename]) != x$7 ],[DVDA_ERR([Download failure])],
+		AS_IF([ test  $exitcode != 0 ],[DVDA_ERR([Download failure])],
                   [
 
                    AS_IF([test -d  $dir],
@@ -187,6 +189,7 @@ AC_DEFUN([DVDA_DOWNLOAD],
                    AS_IF([test $exitcode = 0 && test $patchbool = 1],
                     [
                     # cdrtools is Makefile-based whilst autotools-compliant packages are configure-based
+		    [DVDA_INF([cdrtools specific procedure...])]
                       AS_IF([test -f "$dir/Makefile" || test -f "$dir/configure"],
                        [
 
@@ -455,7 +458,7 @@ AC_DEFUN([PROFILE_LD],[
 # Add HAVE_EXTERNAL_UPPERBASENAME as AM conditional if lib is given as input
 # If shared is added, only link to shared .so library under exec_prefix/lib/lib(basename).so, unless LIBINPUT is given (default for sox)
 # If not found, disable lib capability by setting  enable_basename=false as a shell variable.
-# Invoke DVDA_CONF_SUBDIRS before
+# Invoke DVDA_CONFIG_EXECUTABLE_INSTALL before
 
 AC_DEFUN([DVDA_TEST_LIB],
 [
@@ -603,7 +606,7 @@ AC_DEFUN([DVDA_CONFIG],[
               [MAYBE_]VAR=CDR
               VAR[_BUILD]=yes
               VAR[_CONFIGURE_FILE]="[$MAYBE_]VAR"/configure
-              m4_ifvaln([$2],[$2],[VAR[_LIB]="\${ROOTDIR}[/local/lib/lib]m4_tolower(VAR)[.a]"]) #do not quote VAR
+	      m4_ifvaln([$2],[$2],[VAR[_LIB]="\${ROOTDIR}[/local/lib/lib]VAR[.a]"]) #do not quote VAR
 
               [CONFIGURE_]VAR[_FLAGS]="FL $VAR[_FLAGS]"
               AC_SUBST([CONFIGURE_]VAR[_FLAGS])
@@ -622,9 +625,9 @@ AC_DEFUN([DVDA_CONFIG],[
     m4_popdef([LIST])
     ])])dnl
 
-AC_DEFUN([DVDA_CONF_SUBDIRS],               [DVDA_CONFIG([$1],[#])])
-AC_DEFUN([DVDA_CONF_SUBDIRS_NOINSTALL],     [DVDA_CONFIG([$1],[VAR[_LIB]="\${top_builddir}/[$MAYBE_]VAR/src/[$MAYBE_]VAR.a"])])
-AC_DEFUN([DVDA_CONF_SUBDIRS_LOCAL_INSTALL], [DVDA_CONFIG([$1],[]) ])
+AC_DEFUN([DVDA_CONFIG_EXECUTABLE_INSTALL],               [DVDA_CONFIG([$1],[#executable_install])])
+AC_DEFUN([DVDA_CONFIG_LIBRARY_NO_INSTALL],     [DVDA_CONFIG([$1],[VAR[_LIB]="\${top_builddir}/[$MAYBE_]VAR/src/[$MAYBE_]VAR.a"])])
+AC_DEFUN([DVDA_CONFIG_LIBRARY_LOCAL_INSTALL], [DVDA_CONFIG([$1],[]) ])
 
 
 AC_DEFUN([DVDA_PREFIX_DEFAULT],
