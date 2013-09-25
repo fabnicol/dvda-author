@@ -95,7 +95,7 @@ endif
 stamprecord7: Makefile
 	if test -f stamprecord7; then rm -f stamprecord7; fi; touch stamprecord7
 #Here again a script is oddly requested.
-if HAVE_MAGICK_BUILD
+if HAVE_IMAGEMAGICK_BUILD
 	chmod +x script2 && ${SHELL} script2
 endif
 
@@ -129,7 +129,7 @@ if HAVE_MAN2HTML
 endif
 
 
-SUBDIRS=${MAYBE_IBERTY} libutils ${MAYBE_OGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} ${MAYBE_SOX}  ${MAYBE_LPLEX} ${MAYBE_DVDAUTHOR} ${MAYBE_HELP2MAN}  ${MAYBE_MAGICK} ${MAYBE_MPEG2DEC} ${MAYBE_A52DEC} src
+SUBDIRS=${MAYBE_IBERTY} libutils ${MAYBE_OGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} ${MAYBE_SOX}  ${MAYBE_LPLEX} ${MAYBE_DVDAUTHOR} ${MAYBE_HELP2MAN}  ${MAYBE_IMAGEMAGICK} ${MAYBE_MPEG2DEC} ${MAYBE_A52DEC} src
 DIST_SUBDIRS=libiberty libutils libfixwav src CB_project  images
 
 #normally is ${prefix}/share/applications/dvda-author-${VERSION}
@@ -177,8 +177,8 @@ endif
 if HAVE_MJPEGTOOLS_BUILD
 	 cd ${MAYBE_MJPEGTOOLS}; $(MAKETOOL) install; cd - ;
 endif
-if HAVE_MAGICK_BUILD
-	 cd ${MAYBE_MAGICK}; $(MAKETOOL) install; cd - ;
+if HAVE_IMAGEMAGICK_BUILD
+	 cd ${MAYBE_IMAGEMAGICK}; $(MAKETOOL) install; cd - ;
 endif
 if HAVE_SOX_BUILD
 	cd ${MAYBE_SOX}; $(MAKETOOL) install; cd -;
@@ -211,8 +211,8 @@ endif
 if HAVE_MJPEGTOOLS_BUILD
 	 cd ${MAYBE_MJPEGTOOLS}; $(MAKETOOL) clean; cd - ;
 endif
-if HAVE_MAGICK_BUILD
-	 cd ${MAYBE_MAGICK}; $(MAKETOOL) clean; cd - ;
+if HAVE_IMAGEMAGICK_BUILD
+	 cd ${MAYBE_IMAGEMAGICK}; $(MAKETOOL) clean; cd - ;
 endif
 if HAVE_SOX_BUILD
 	cd ${MAYBE_SOX}; $(MAKETOOL) clean; cd -;
