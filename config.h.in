@@ -168,6 +168,12 @@
 /* configure, build and install iberty from source code */
 #undef HAVE_IBERTY_BUILD
 
+/* Whether ImageMagick source code will be downloaded for build. */
+#undef HAVE_IMAGEMAGICK
+
+/* download ImageMagick from source code */
+#undef HAVE_IMAGEMAGICK_DOWNLOAD
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
@@ -186,14 +192,8 @@
 /* download lplex from source code */
 #undef HAVE_LPLEX_DOWNLOAD
 
-/* Whether magick source code will be downloaded for build. */
-#undef HAVE_MAGICK
-
 /* configure, build and install magick from source code */
 #undef HAVE_MAGICK_BUILD
-
-/* download magick from source code */
-#undef HAVE_MAGICK_DOWNLOAD
 
 /* Found make */
 #undef HAVE_MAKE
@@ -278,10 +278,10 @@
 #undef HAVE_NO_HELP2MAN_PATCH
 
 /* Does not use a configured patch of bn */
-#undef HAVE_NO_LPLEX_PATCH
+#undef HAVE_NO_IMAGEMAGICK_PATCH
 
 /* Does not use a configured patch of bn */
-#undef HAVE_NO_MAGICK_PATCH
+#undef HAVE_NO_LPLEX_PATCH
 
 /* Does not use a configured patch of bn */
 #undef HAVE_NO_MJPEGTOOLS_PATCH
@@ -433,6 +433,9 @@
 /* Defining help2man filepath. */
 #undef HELP2MAN
 
+/* Defining ImageMagick filepath. */
+#undef IMAGEMAGICK
+
 /* Defines directory of .desktop and .conf files */
 #undef INSTALL_CONF_DIR
 
@@ -441,9 +444,6 @@
 
 /* Defining lplex filepath. */
 #undef LPLEX
-
-/* Defining magick filepath. */
-#undef MAGICK
 
 /* Pathname of make */
 #undef MAKE
