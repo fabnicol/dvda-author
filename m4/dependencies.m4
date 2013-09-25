@@ -44,7 +44,7 @@ m4_map([DVDA_TEST_AUX],[
     Warning: Availability will not be tested. An error message 'Cannot find -l...' at the
     end of compiling stage will indicate that you need to install the corresponding library.])
 
-  m4_define([MAGICK_MSG],
+  m4_define([IMAGEMAGICK_MSG],
     [With GNU/Linux you will need to run sudo ldconfig after make install.])
 
 
@@ -68,7 +68,7 @@ m4_map([DVDA_TEST_AUX],[
                withval_FLAC=no
                withval_OGG=no
                withval_SOX=no]],
-             [[magick-build],[DVDA_INF([MAGICK_MSG])]],
+	     [[ImageMagick-build],[DVDA_INF([IMAGEMAGICK_MSG])]],
              [[dvdauthor-build]],
              [[cdrtools-build]],
              [[static-sox],
@@ -116,7 +116,7 @@ m4_map([DVDA_TEST_AUX],[
             [[flac-download],  [1.3.0],      [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [], [http://downloads.xiph.org/releases/flac],                [13b5c214cee8373464d3d65dee362cdd]],
             [[ogg-download],   [1.1.4],      [http://dvd-audio.sourceforge.net/utils],[],                                                [],     [],                                       [6c68b14485fccdb6a2a14109185dd816]],
             [[help2man-download],[1.36.4],   [http://dvd-audio.sourceforge.net/utils],[],[],[], [d31a0a38c2ec71faa06723f6b8bd3076]],
-            [[ImageMagick-download], [6.8.6-10],     [http://dvd-audio.sourceforge.net/utils],[],[],[], [3f4462d8108105f5860ddbff95e1af9e]],
+	    [[ImageMagick-download], [6.8.7-0],     [http://dvd-audio.sourceforge.net/utils],[],[],[], [3f4462d8108105f5860ddbff95e1af9e]],
             [[lplex-download], [0.3],    [http://dvd-audio.sourceforge.net],[],[],[],[23e52c149ccfa0169955a57ff783fd21]],
             [[mjpegtools-download], [2.1.0],  [http://dvd-audio.sourceforge.net/utils],[], [mjpeg],[mjpegtools/2.1.0], [57bf5dd78976ca9bac972a6511b236f3]],
             [[mpeg2dec-download], [0.2.1], [http://dvd-audio.sourceforge.net/utils],[],[],[],[a7caee4591e8addc3bddaf47d2d45ec0]],
@@ -155,27 +155,25 @@ m4_map([DVDA_TEST_AUX],[
 
     # installing binaries, normally executables
 
-    DVDA_CONF_SUBDIRS([[[[DVDAUTHOR],[dvdauthor-0.6.14]]],
+    DVDA_CONFIG_EXECUTABLE_INSTALL([[[[DVDAUTHOR],[dvdauthor-0.6.14]]],
+	       [[[LPLEX], [lplex-0.3]], [--prefix=$prefix --disable-shared]],
+	       [[[MJPEGTOOLS], [mjpegtools-2.1.0]],[--enable-static-build --disable-fast-install --prefix=$ROOTDIR/local]],
                [[[CDRTOOLS],[cdrtools-3.00]]],
                [[[A52DEC],[a52dec-0.7.5-cvs]],[--prefix=$prefix]],
                [[[MPEG2DEC],[mpeg2dec-0.2.1-mjpegtools-0.7]], [--prefix=$prefix]],
-               [[[HELP2MAN], [help2man-1.36.4]]], [[[MAGICK], [magick-6.6.3]]]])
+	       [[[HELP2MAN], [help2man-1.36.4]]],
+	       [[[IMAGEMAGICK], [ImageMagick-6.8.7-0]]]])
 
     # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
 
-    DVDA_CONF_SUBDIRS_LOCAL_INSTALL([
-     [[[LPLEX], [lplex-0.3]], [--prefix=$prefix --disable-shared]],
-     [[[MJPEGTOOLS], [mjpegtools-2.1.0]],[--enable-static-build --disable-fast-install --prefix=$ROOTDIR/local]],
+    DVDA_CONFIG_LIBRARY_LOCAL_INSTALL([
      [[[FLAC],[flac-1.3.0]],[--disable-shared --disable-thorough-tests --disable-oggtest --disable-cpplibs --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]],
      [[[SOX],[sox-14.4.1]],  [--without-mad --without-flac --without-lame --prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]],
      [[[OGG],[ogg-1.1.4]],  [--prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]]])
 
     # auxiliary libs that remain within package, not installed
 
-    DVDA_CONF_SUBDIRS_NOINSTALL([[[[IBERTY],[libiberty]]], [[[FIXWAV],[libfixwav]]]])
-
-    #DVDA_CONFIG([[[[LPLEX],[lplex]],  [--prefix=$prefix --disable-shared]]])
-
+    DVDA_CONFIG_LIBRARY_NO_INSTALL([[[[IBERTY],[libiberty]]], [[[FIXWAV],[libfixwav]]]])
 
 
 ])

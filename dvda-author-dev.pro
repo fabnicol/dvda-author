@@ -49,7 +49,11 @@ OTHER_FILES += \
     libfixwav/ChangeLog \
     libfixwav/Makefile.am \
     libfixwav/src/include/Makefile.am \
-    libs/include/FLAC/Makefile.am
+    libs/include/FLAC/Makefile.am \
+    m4/dependencies.m4 \
+    m4/dvda.m4 \
+    m4/auxiliary.m4 \
+    configure.ac
 
 HEADERS += \
     src/include/amg.h \
