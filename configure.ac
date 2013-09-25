@@ -7,9 +7,6 @@
 # Dependencies: all files in m4/
 ######################################################################################################
 
-AS_INIT
-AS_SHELL_SANITIZE
-
 AC_INIT([dvda-author],[dev],[fabnicol@users.sourceforge.net])
 # requested to define _GNU_SOURCE and check the availability of GNU extensions
 # This should be called before any macros that run the C   compiler.
