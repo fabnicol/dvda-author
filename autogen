@@ -20,7 +20,7 @@ topdir=`pwd`
 echo "Entering: "
 echo "$topdir"
 autoreconf --install --force -Im4 -Im4.extra -Im4.extra.dvdauthor 
-
+exitcode=$?
 cd "$topdir"
 
 mv $backup INSTALL
@@ -30,4 +30,5 @@ else
 echo INSTALL was backed up in previous generation but could not be recovered.
 echo Fix this manually.
 fi
+exit $exitcode
 

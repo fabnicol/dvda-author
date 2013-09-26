@@ -61,8 +61,7 @@ m4_include([m4/oggflac-test.m4])
 
 # LOOP_MIRRORS(VERSION,MAIN MIRROR,FILE TYPE [gz|bz2],MD5SUM)
 # --------------------------------------------------------------------
-# if configure variable SF_MIRROR is given on command line, downloads packages from this site
-# otherwise loops over SF_MIRRORLIST=kent,garr,voxel,free_fr, see dependencies.m4
+# loops over SF_MIRRORLIST=kent,garr,voxel,free_fr, see dependencies.m4
 # if all fails resort to autedetection by SF network.
 # checks MD5SUMS of downloaded file.
 
@@ -80,7 +79,6 @@ AC_DEFUN([LOOP_MIRRORS],
         AS_IF([test [x]$filestring != x],
          [  DVDA_CURL([$3/$filename], [$filename])],
          [
-                       DVDA_CURL([http://sourceforge.net/projects/root/files/$3/$filename/download?use_mirror=]$SF_MIRROR,[$filename])
                         m4_foreach([mirror],[SF_MIRRORLIST],
                             [
                                 MD5_BREAK([$filename],[$MD5])
@@ -124,12 +122,6 @@ AC_DEFUN([DVDA_DOWNLOAD],
   m4_pushdef([upper], [upperbasename([$1])])
   m4_pushdef([root], [$5])
   errorcode=0
-  AC_PATH_PROG([TAR], [tar], [], [$bindir:/bin:/sbin:/usr/bin:/usr/local/bin])
-  AS_IF([ test x$TAR = x],[DVDA_ERR([tar is requested, please install it.]
-         AS_EXIT)])
-  AC_PATH_PROG([PATCH], [patch], [], [$bindir:/bin:/sbin:/usr/bin:/usr/local/bin])
-  AS_IF([ test x$PATCH = x],[DVDA_ERR([patch is requested, please install it.]
-         AS_EXIT)])
 
   # It is necessary to use a macro here, as there is an unfortunate hyphen in project name!
 
@@ -155,13 +147,13 @@ AC_DEFUN([DVDA_DOWNLOAD],
 
             # outputs variable $filename and $exitcode
 
-            AS_IF([ test  $exitcode != 0 ],
+            AS_IF([ test  $exitcode != 0 -a "$6" != "" -a "$3" != "" -a "$7" != ""],
             [
              type=bz2
              LOOP_MIRRORS([$version],[$3],[$6],[$type],[$7])
             ])
 
-            AS_IF([ test  $exitcode != 0 ],
+            AS_IF([ test  $exitcode != 0 -a "$6" != "" -a "$3" != "" -a "$7" != ""]
             [
              type=xz
              LOOP_MIRRORS([$version],[$3],[$6],[$type],[$7])
@@ -169,7 +161,7 @@ AC_DEFUN([DVDA_DOWNLOAD],
 
             dir="bn[-]m4_argn(1,$2)"
 
-            AS_IF([ test  $exitcode != 0 ],
+            AS_IF([ test  $exitcode != 0 -a "$6" != "" -a "$3" != "" -a "$7" != ""]
               [
                 DVDA_ERR([Download failure])
                 AS_EXIT
