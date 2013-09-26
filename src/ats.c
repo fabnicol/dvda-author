@@ -660,13 +660,13 @@ ALWAYS_INLINE_GCC int process_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* au
     return(audio_bytes);
 }
 
-inline void         write_aob_path(aobfile, audiotsdir, titleset, filenum)
+inline void         write_aob_path(char* aobfile,char* audiotsdir,int titleset,int filenum)
 {
     STRING_WRITE_CHAR_BUFSIZ(aobfile, "%s"SEPARATOR"ATS_%02d_%d.AOB",audiotsdir,titleset,filenum)
 }
 
 
-int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,const char* ioflag, char* player, extractlist* extract)
+int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,const char* ioflag, char* player)
 {
 
     FILE* aobfilepointer;
@@ -678,7 +678,7 @@ int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,con
     uint64_t pack_in_title=0;
 
 
-PLAYBACK: // newer versions of VLC play back AOB files, this jjust triggers playback of the requested sequence of AOBs corresponding to audio groups.
+// newer versions of VLC play back AOB files, this jjust triggers playback of the requested sequence of AOBs corresponding to audio groups.
 
 //     if (player)
 //     {
@@ -711,7 +711,7 @@ PLAYBACK: // newer versions of VLC play back AOB files, this jjust triggers play
 // 
 //     }
 
-EXTRACT:   //extraction file by file may be necessary even for playback on some players
+//extraction file by file may be necessary even for playback on some players
 
     write_aob_path(aobfile, audiotsdir, titleset, filenum);
 
