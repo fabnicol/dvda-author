@@ -55,7 +55,16 @@ m4_map([m4_define],[
                                                    rm -f "$1"
                                              ])
                                           ]],
-[[DVDA_CURL],         [DVDA_RUN(["$CURL"],[ -f --location -o $2],[$1])]],
+[[DVDA_CURL],         [
+                        AS_IF([test "$2" != ""],
+                                    [
+                                      AS_IF([test "$1" != ""],
+                                          [DVDA_RUN(["$CURL"],[ -f --location -o $2],[$1])],
+                                          [DVDA_INF([Cannot curl empty Url...])])
+                                    ],
+                                    [DVDA_INF([Cannot curl empty Url...])])
+                       ]],
+                                    
 [[DVDA_PATCH],        [DVDA_RUN(["$PATCH"],[ -p4 -f --verbose < ],[$1])]],
 [[MD5_CHECK],         [$($MD5SUM -b $1 | $SED "s/ .*//g")]],
 [[MD5_BREAK],         [m4_ifval([$1],

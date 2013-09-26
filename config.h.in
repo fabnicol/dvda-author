@@ -165,6 +165,9 @@
 /* Found jpeg2yuv */
 #undef HAVE_JPEG2YUV
 
+/* Whether libmpeg2 source code will be downloaded for build. */
+#undef HAVE_LIBMPEG2
+
 /* Whether libogg source code will be downloaded for build. */
 #undef HAVE_LIBOGG
 
@@ -220,7 +223,7 @@
 /* Found mp2enc */
 #undef HAVE_MP2ENC
 
-/* Whether mpeg2dec source code will be downloaded for build. */
+/* Found mpeg2dec */
 #undef HAVE_MPEG2DEC
 
 /* configure, build and install mpeg2dec from source code */
@@ -376,6 +379,9 @@
 /* Pathname of jpeg2yuv */
 #undef JPEG2YUV
 
+/* Defining libmpeg2 filepath. */
+#undef LIBMPEG2
+
 /* Defining libogg filepath. */
 #undef LIBOGG
 
@@ -403,7 +409,7 @@
 /* Pathname of mp2enc */
 #undef MP2ENC
 
-/* Defining mpeg2dec filepath. */
+/* Pathname of mpeg2dec */
 #undef MPEG2DEC
 
 /* Pathname of mpeg2enc */

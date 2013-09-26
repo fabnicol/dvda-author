@@ -59,6 +59,16 @@
 m4_include([m4/auxiliary.m4])
 m4_include([m4/oggflac-test.m4])
 
+
+ AC_PATH_PROG([TAR], [tar], [], [$bindir:/bin:/sbin:/usr/bin:/usr/local/bin])
+  AS_IF([ test x$TAR = x],[DVDA_ERR([tar is requested, please install it.]
+         AS_EXIT)])
+  AC_PATH_PROG([PATCH], [patch], [], [$bindir:/bin:/sbin:/usr/bin:/usr/local/bin])
+  AS_IF([ test x$PATCH = x],[DVDA_ERR([patch is requested, please install it.]
+         AS_EXIT)])
+
+  AC_PATH_PROG([CURL], [curl], [], [$bindir:/usr/bin:/usr/local/bin])
+         
 # LOOP_MIRRORS(VERSION,MAIN MIRROR,FILE TYPE [gz|bz2],MD5SUM)
 # --------------------------------------------------------------------
 # loops over SF_MIRRORLIST=kent,garr,voxel,free_fr, see dependencies.m4
@@ -76,13 +86,13 @@ AC_DEFUN([LOOP_MIRRORS],
       while true
       do
 
-        AS_IF([test [x]$filestring != x],
+        AS_IF([test [x]$filestring != x -a "$3" != ""],
          [  DVDA_CURL([$3/$filename], [$filename])],
          [
                         m4_foreach([mirror],[SF_MIRRORLIST],
                             [
                                 MD5_BREAK([$filename],[$MD5])
-                                AS_IF([test $exitcode != 0],
+                                AS_IF([test $exitcode != 0 -a "$3" != ""],
                                                   [
                                                         AC_MSG_NOTICE([Connecting to mirror:]mirror[...])
                                                         # This mirroring is Sourceforge-specific and should be twisted for other mirroring patterns.
@@ -99,7 +109,7 @@ AC_DEFUN([LOOP_MIRRORS],
 
         # last resort attempt, if everything has failed, use the Sourceforge network, except for cdrtools:
 
-        AS_IF([test $exitcode != 0],
+        AS_IF([test $exitcode != 0 -a "$3" != ""],
            [
               AC_MSG_NOTICE([MD5SUM: not equal to  $MD5, downloading however from network...])
 
@@ -120,19 +130,23 @@ AC_DEFUN([DVDA_DOWNLOAD],
 [
   m4_pushdef([bn], basename([$1]))
   m4_pushdef([upper], [upperbasename([$1])])
-  m4_pushdef([root], [$5])
+  m4_pushdef([root], [$4])
   errorcode=0
 
+ 
   # It is necessary to use a macro here, as there is an unfortunate hyphen in project name!
 
-  m4_pushdef([site],[$3])
+  m4_pushdef([site],[$2])
   AS_IF([test [x]m4_bpatsubst([$1],[patch],[]) = x$1],[patchbool=0],[patchbool=1])
 
   # not having tar may sometimes happen on lightweight windows-based platforms
 
-    AC_PATH_PROG([CURL], [curl], [], [$bindir:/usr/bin:/usr/local/bin])
+
     AS_IF([test x$CURL = x],
-          [DVDA_ERR([Install curl to download bn and rerun])],
+          [
+            DVDA_ERR([Install curl to download bn and rerun])
+            AS_EXIT
+          ],
           [
             DVDA_INF([Downloading bn. Make sure you have a functional internet connection.])
 
@@ -143,25 +157,25 @@ AC_DEFUN([DVDA_DOWNLOAD],
             DVDA_CLEAN([bn-$version.tar.xz])
 
             type=gz
-            LOOP_MIRRORS([$version],[$3],[$6],[$type],[$7])
+            LOOP_MIRRORS([$version],[$2],[$5],[$type],[$6])
 
             # outputs variable $filename and $exitcode
 
-            AS_IF([ test  $exitcode != 0 -a "$6" != "" -a "$3" != "" -a "$7" != ""],
+            AS_IF([ test  $exitcode != 0 -a "$5" != "" -a "$2" != "" -a "$6" != ""],
             [
              type=bz2
-             LOOP_MIRRORS([$version],[$3],[$6],[$type],[$7])
+             LOOP_MIRRORS([$version],[$2],[$5],[$type],[$6])
             ])
 
-            AS_IF([ test  $exitcode != 0 -a "$6" != "" -a "$3" != "" -a "$7" != ""]
+            AS_IF([ test  $exitcode != 0 -a "$5" != "" -a "$2" != "" -a "$6" != ""],
             [
              type=xz
-             LOOP_MIRRORS([$version],[$3],[$6],[$type],[$7])
+             LOOP_MIRRORS([$version],[$2],[$5],[$type],[$6])
             ])
 
             dir="bn[-]m4_argn(1,$2)"
 
-            AS_IF([ test  $exitcode != 0 -a "$6" != "" -a "$3" != "" -a "$7" != ""]
+            AS_IF([ test  $exitcode != 0 -a "$5" != "" -a "$2" != "" -a "$6" != ""],
               [
                 DVDA_ERR([Download failure])
                 AS_EXIT
@@ -182,7 +196,6 @@ AC_DEFUN([DVDA_DOWNLOAD],
                [MAYBE_]upper=$dir
 
                AS_IF([test "$exitcode" = "0"],
-                 [  DVDA_INF([Proceeding to next package...]) ],
                  [
                     AS_IF([test "$patchbool" = "1"],
                        [
@@ -191,7 +204,7 @@ AC_DEFUN([DVDA_DOWNLOAD],
                                [
                                   DVDA_INF([cdrtools specific procedure...])
                                   m4_popdef([site])
-                                  m4_pushdef([site],[$4])
+                                  m4_pushdef([site],[$3])
                                   AS_IF([test "$patchbool" = "1"],
                                    [
                                     DVDA_CURL([site/$1-$version],[$1-$version])
@@ -206,7 +219,9 @@ AC_DEFUN([DVDA_DOWNLOAD],
                        [
                              DVDA_INF([No patching was performed])
                        ])
-                ])
+                ],
+                [  DVDA_INF([Proceeding to next package...]) ]
+                )
 
              ],
              [DVDA_ERR([Extraction of bn failed])])
@@ -282,23 +297,22 @@ AC_DEFUN([DVDA_ARG_ENABLE_DOWNLOAD],
    ])
 
  AS_IF([test $1 = dvdauthor-patch && test x$DVDAUTHOR_PATCH = x],[DVDA_TEST_SOFTWARE_VERSION([$1])])
-])
 
-AC_ARG_ENABLE([$1],[AS_HELP_STRING([--enable-$1],msg)],
- [
-  AS_IF([ test x$enableval != xno],
-   [
-    $2
-    DVDA_INF([Will msg... ])
-    upper=yes
-   ],
-   [
-    DVDA_INF([Will not msg... ])
-    m4_ifvaln([$3], [$3])dnl
-    upper=no
-   ])
- ])
-
+ AC_ARG_ENABLE([$1],[AS_HELP_STRING([--enable-$1],msg)],
+  [
+   AS_IF([ test x$enableval != xno],
+    [
+     $2
+     DVDA_INF([Will msg... ])
+     upper=yes
+    ],
+    [
+     DVDA_INF([Will not msg... ])
+     m4_ifvaln([$3], [$3])dnl
+     upper=no
+    ])
+  ])
+ ])#DVDA_ARG_ENABLE_DOWNLOAD
 
 
 # ===== redefine AC_ARG_ENABLE incorporating shreds of AC_HELP_STRING, see autoconf/general.m4 ========= #
