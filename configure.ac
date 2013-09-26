@@ -38,6 +38,9 @@ AC_CANONICAL_BUILD
 # do not use libtool in this version, for arcane and unclear reasons.
 AC_PROG_RANLIB
 
+AS_IF([test -f DOWNLOADS], [rm -f DOWNLOADS])
+AS_IF([test -f PATCHED.DOWNLOADS], [rm -f PATCHED.DOWNLOADS])
+
 # probably spurious on most platforms yet useful on MSYS
 CPPFLAGS="$CPPFLAGS -I/usr/include -I/usr/local/include"
 #default configuration
