@@ -111,7 +111,7 @@ m4_map([DVDA_TEST_AUX],[
 
     m4_define([DOWNLOAD_OPTIONS],[
             [[dvdauthor-patch],[0.6.14],     [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [dvdauthor], [dvdauthor/0.6.14],                        [bd646b47950c4091ffd781d43fd2c5e9]],
-            [[cdrtools-patch], [3.00],       [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches/mkisofs],[],          [ftp://ftp.berlios.de/pub/cdrecord/alpha], [bb21cefefcfbb76cf249120e8978ffdd]],
+            [[cdrtools-patch], [3.00],       [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches/mkisofs],[],          [ftp://ftp.berlios.de/pub/cdrecord], [bb21cefefcfbb76cf249120e8978ffdd]],
             [[sox-patch],      [14.4.1],     [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [sox],       [sox/14.4.1],                              [ff9ca6aca972549de0e80e8e30ed379c]],
             [[flac-download],  [1.3.0],      [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [],          [http://downloads.xiph.org/releases/flac], [13b5c214cee8373464d3d65dee362cdd]],
             [[ogg-download],   [1.1.4],      [http://dvd-audio.sourceforge.net/utils],[],                                                [],          [],                                        [6c68b14485fccdb6a2a14109185dd816]],
