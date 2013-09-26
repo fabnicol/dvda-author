@@ -109,12 +109,20 @@ m4_map([DVDA_TEST_AUX],[
     #               = for cdrtools:
     #     mirror root characteristics/basename-version.tar.[bz2|gz]
 
+  AC_PATH_PROG([TAR], [tar], [], [$bindir:/bin:/sbin:/usr/bin:/usr/local/bin])
+  AS_IF([ test x$TAR = x],[DVDA_ERR([tar is requested, please install it.]
+         AS_EXIT)])
+  AC_PATH_PROG([PATCH], [patch], [], [$bindir:/bin:/sbin:/usr/bin:/usr/local/bin])
+  AS_IF([ test x$PATCH = x],[DVDA_ERR([patch is requested, please install it.]
+         AS_EXIT)])
+
+
     m4_define([DOWNLOAD_OPTIONS],[
             [[dvdauthor-patch],[0.6.14],     [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [dvdauthor], [dvdauthor/0.6.14],                        [bd646b47950c4091ffd781d43fd2c5e9]],
-            [[cdrtools-patch], [3.00],       [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches/mkisofs],[],          [ftp://ftp.berlios.de/pub/cdrecord], [bb21cefefcfbb76cf249120e8978ffdd]],
+            [[cdrtools-patch], [3.00],       [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches/mkisofs],[],          [ftp://ftp.berlios.de/pub/cdrecord],       [bb21cefefcfbb76cf249120e8978ffdd]],
             [[sox-patch],      [14.4.1],     [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [sox],       [sox/14.4.1],                              [ff9ca6aca972549de0e80e8e30ed379c]],
             [[flac-download],  [1.3.0],      [http://dvd-audio.sourceforge.net/utils],[http://dvd-audio.sourceforge.net/patches],        [],          [http://downloads.xiph.org/releases/flac], [13b5c214cee8373464d3d65dee362cdd]],
-            [[ogg-download],   [1.1.4],      [http://dvd-audio.sourceforge.net/utils],[],                                                [],          [],                                        [6c68b14485fccdb6a2a14109185dd816]],
+            [[libogg-download],   [1.1.4],   [],[ogg],                                                                                      [],          [http://downloads.xiph.org/releases/ogg],  [10200ec22543841d9d1c23e0aed4e5e9]],
             [[help2man-download],[1.36.4],   [http://dvd-audio.sourceforge.net/utils],[],                                                [],          [],                                        [d31a0a38c2ec71faa06723f6b8bd3076]],
             [[ImageMagick-download], [6.8.7-0],[http://dvd-audio.sourceforge.net/utils],[],                                              [],          [http://www.imagemagick.org/download],     [2f3854878735be72e66ac53a3146b63d]],
             [[lplex-download], [0.3],    [http://dvd-audio.sourceforge.net],           [],                                               [],          [],                                        [23e52c149ccfa0169955a57ff783fd21]],
@@ -122,13 +130,11 @@ m4_map([DVDA_TEST_AUX],[
             [[mpeg2dec-download], [0.2.1],   [http://dvd-audio.sourceforge.net/utils],[],                                                [],          [],                                        [a7caee4591e8addc3bddaf47d2d45ec0]],
             [[a52dec-download], [0.7.5-cvs], [http://dvd-audio.sourceforge.net/utils],[],                                                [],          [],                                        [1729c7507f76b0d4cc04540926c5d0d7]]])
 
-    m4_map([DVDA_ARG_ENABLE_DOWNLOAD],[
-            DOWNLOAD_OPTIONS,
-            [[all-deps]]])
+    m4_map([DVDA_ARG_ENABLE_DOWNLOAD], [[all-deps]])
 
-    m4_map([DVDA_ARG_ENABLE_DOWNLOAD],[
-            DOWNLOAD_OPTIONS,
-            [[all-all]]])
+    m4_map([DVDA_ARG_ENABLE_DOWNLOAD], [[all-all]])
+
+#    m4_map([DVDA_ARG_ENABLE_DOWNLOAD], DOWNLOAD_OPTIONS)
 
     # for sox libs, empirically it appears safer to link to dynamic libs under linux at least, due to linking issues with static libs: shared forces this,
     # unless explicit filepath input is given
