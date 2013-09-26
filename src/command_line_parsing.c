@@ -1384,7 +1384,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 free(img->blankscreen);
                 img->blankscreen=strdup(DEFAULT_BLANKSCREEN_NTSC);
                 img->backgroundpic[0]=strdup(DEFAULT_BACKGROUNDPIC_NTSC);
-
+                foutput("[PAR]  Video standard is %s", img->norm);
 
             }
             else if ((strcasecmp(optarg,"pal") != 0) && (strcasecmp(optarg,"secam") != 0))

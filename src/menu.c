@@ -356,7 +356,10 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
         sprintf(soundtrack, "%s"SEPARATOR"%s", globals.settings.tempdir, "soundtrack");
         unlink(soundtrack);
         errno=0;
+  //      fprintf(stderr, "***%s***", globals.settings.datadir);
+  //      pause_dos_type();
         change_directory(globals.settings.datadir);
+ //       pause_dos_type();
         copy_file(img->soundtrack[0][0], soundtrack);
         change_directory(globals.settings.workdir);
 
