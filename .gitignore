@@ -1,3 +1,13 @@
+/src/dvda-author
+/src/dvda
+/key/dvda-author-dev.pro.user
+/libfixwav/src/libfixwav.a
+/libiberty/src/libiberty.a
+/libutils/src/libc_utils.a
+/dvda-author-dev.pro.user
+/PATCHED.DOWNLOADS
+/DOWNLOADS
+/aclocal.m4
 cdrtools*
 dvdau*
 help2*
@@ -25,6 +35,12 @@ flac*
 libmpeg2*
 *.libs
 *.deps
-*script
+script
+script1
+script2
+script3
+script4
+script5
+script6
 *.directory
 stamp*

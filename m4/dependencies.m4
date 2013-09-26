@@ -158,9 +158,9 @@ m4_map([DVDA_TEST_AUX],[
                [[[LPLEX], [lplex-0.3]], [--prefix=$prefix --disable-shared]],
                [[[MJPEGTOOLS], [mjpegtools-2.1.0]],[--enable-static-build --disable-fast-install --prefix=$ROOTDIR/local]],
                [[[CDRTOOLS],[cdrtools-3.00]]],
-               [[[A52DEC],[a52dec-0.7.5-cvs]],[--prefix=$prefix]],
-               [[[MPEG2DEC],[mpeg2dec-0.2.1-mjpegtools-0.7]], [--prefix=$prefix]],
-               [[[HELP2MAN], [help2man-1.36.4]]],
+               [[[A52DEC],[a52dec-0.7.4]],[--prefix=$prefix]],
+               [[[MPEG2DEC],[mpeg2dec-0.5.1]], [--prefix=$prefix]],
+               [[[HELP2MAN], [help2man-1.43.3]]],
                [[[IMAGEMAGICK], [ImageMagick-6.8.7-0]]]])
 
     # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
