@@ -34,46 +34,51 @@ m4_map([m4_define],[
                         errorcode=1
                       ]],
 [[DVDA_RUN],
-					  [
-					    DVDA_INF([Running $1 $2 $3])
-					    $1 $2 $3
-					    exitcode=$?
-					    AS_IF([test $exitcode = 0],
-					       [DVDA_INF([...OK])],
-					       [
-					         DVDA_ERR([...$1 $2 $3 failed]) 
-					         sleep 2s
-					         AS_IF([test x$1 != x"$CURL"], [exit $exitcode])
-					       ])
-					  ]],
+                                          [
+                                            DVDA_INF([Running $1 $2 $3])
+                                            $1 $2 $3
+                                            exitcode=$?
+                                            AS_IF([test $exitcode = 0],
+                                               [DVDA_INF([...OK])],
+                                               [
+                                                 DVDA_ERR([...$1 $2 $3 failed])
+                                                 sleep 2s
+                                                 AS_IF([test x$1 != x"$CURL"], [exit $exitcode])
+                                               ])
+                                          ]],
 
 [[DVDA_CLEAN],
-					  [
-					    AS_IF([test  -f "$1"],
-					     [
-						   DVDA_INF([Cleaning up $1...])
-						   rm -f "$1"
-					     ])
-					  ]],
+                                          [
+                                            AS_IF([test  -f "$1"],
+                                             [
+                                                   DVDA_INF([Cleaning up $1...])
+                                                   rm -f "$1"
+                                             ])
+                                          ]],
 [[DVDA_CURL],         [DVDA_RUN(["$CURL"],[ -f --location -o $2],[$1])]],
 [[DVDA_PATCH],        [DVDA_RUN(["$PATCH"],[ -p4 -f --verbose < ],[$1])]],
 [[MD5_CHECK],         [$($MD5SUM -b $1 | $SED "s/ .*//g")]],
 [[MD5_BREAK],         [m4_ifval([$1],
-				  [
-				    md5=MD5_CHECK([$1])
-				    AS_IF([ test -f $1 && test x$md5 = x$2 ],
-				    [ 
-				      AC_MSG_NOTICE([Found right MD5 checksum: $md5])
-				      break
-				    ],
-				    [ 
-				      AS_IF([test "$md5" != ""],
-				      [ AC_MSG_NOTICE([Did not find right MD5 checksum: *$md5* instead of *$2*, skipping...])],
-				      [ AC_MSG_NOTICE([MD5 sum unavailable, skipping...])])
-				       
-				    ])
-				  ],
-				  [sleep 2s])
+                                  [
+                                    md5=MD5_CHECK([$1])
+                                    AS_IF([ test -f $1 && test x$md5 = x$2 ],
+                                    [
+                                      AC_MSG_NOTICE([Found right MD5 checksum: $md5])
+                                      exitcode=0
+                                      break
+                                    ],
+                                    [
+                                      AS_IF([test "$md5" != ""],
+                                      [ AC_MSG_NOTICE([Did not find right MD5 checksum: *$md5* instead of *$2*, skipping...])],
+                                      [ AC_MSG_NOTICE([MD5 sum unavailable, skipping...])])
+                                      exitcode=-1
+
+                                    ])
+                                  ],
+                                  [
+                                    sleep 2s
+                                    exitcode=-1
+                                  ])
                       ]],
 
 [[DVDA_MKDIR],        [AS_IF([test -d "$1"],[rm -rf "$1" && mkdir "$1"],[mkdir "$1"])]],
