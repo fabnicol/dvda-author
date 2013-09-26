@@ -72,42 +72,41 @@ AC_DEFUN([LOOP_MIRRORS],
       filename=bn-$1.tar.$4
       MD5=$5
       exitcode=0
-      # first trying to download from main site unless SF_MIRRORS is set
-      AS_IF([test x"$SF_MIRROR" = x ],  [ DVDA_CURL([$2/$filename],[$filename] )], [AC_MSG_NOTICE([Downloading from mirror $SF_MIRROR])])
+      filestring=m4_bpatsubst([$3],[tp:],[])
 
       while true
       do
 
-        MD5_BREAK([$filename],[$MD5])
-
-        # if fails, download from specified mirror / mirror list
-
-	exitcode=0
-        AS_IF([test [x]m4_bpatsubst([$3],[tp:],[]) != x],
+        AS_IF([test [x]$filestring != x],
          [  DVDA_CURL([$3/$filename], [$filename])],
          [
-            AS_IF([test x"$SF_MIRROR" != x ],  [DVDA_CURL([http://sourceforge.net/projects/root/files/$3/$filename/download?use_mirror=]$SF_MIRROR,[$filename])],[
+                       DVDA_CURL([http://sourceforge.net/projects/root/files/$3/$filename/download?use_mirror=]$SF_MIRROR,[$filename])
+                        m4_foreach([mirror],[SF_MIRRORLIST],
+                            [
+                                MD5_BREAK([$filename],[$MD5])
+                                AS_IF([test $exitcode != 0],
+                                                  [
+                                                        AC_MSG_NOTICE([Connecting to mirror:]mirror[...])
+                                                        # This mirroring is Sourceforge-specific and should be twisted for other mirroring patterns.
+                                                        DVDA_CURL([http://sourceforge.net/projects/root/files/$3/$filename/download?use_mirror=]mirror,[$filename])
 
-            m4_foreach([mirror],[SF_MIRRORLIST],[
-            MD5_BREAK([$filename],[$MD5])
-	    exitcode=0
-            AC_MSG_NOTICE([Connecting to mirror:]mirror[...])
-            # This mirroring is Sourceforge-specific and should be twisted for other mirroring patterns.
-            DVDA_CURL([http://sourceforge.net/projects/root/files/$3/$filename/download?use_mirror=]mirror,[$filename])
-
-            # eg:
-            #     http://sourceforge.net/projects/mjpeg/files/mjpegtools/1.9.0/mjpegtools-1.9.0.tar.gz/download?use_mirror=kent
-
-            ])])
+                                                        # eg:
+                                                        #     http://sourceforge.net/projects/mjpeg/files/mjpegtools/1.9.0/mjpegtools-1.9.0.tar.gz/download?use_mirror=kent
+                                                 ],
+                                                 [break])
+                            ])
          ])
 
         MD5_BREAK([$filename],[$MD5])
 
         # last resort attempt, if everything has failed, use the Sourceforge network, except for cdrtools:
 
-        AC_MSG_NOTICE([MD5SUM: not equal to  $MD5, downloading however from network...])
-	exitcode=0
-        AS_IF([test bn != cdrtools], [DVDA_CURL([http://downloads.sourceforge.net/project/root/$3/$filename],[$filename])])
+        AS_IF([test $exitcode != 0],
+           [
+              AC_MSG_NOTICE([MD5SUM: not equal to  $MD5, downloading however from network...])
+
+              AS_IF([test bn != cdrtools], [DVDA_CURL([http://downloads.sourceforge.net/project/root/$3/$filename],[$filename])])
+          ])
 
         break
       done
@@ -139,74 +138,87 @@ AC_DEFUN([DVDA_DOWNLOAD],
 
   # not having tar may sometimes happen on lightweight windows-based platforms
 
-        AC_PATH_PROG([CURL], [curl], [], [$bindir:/usr/bin:/usr/local/bin])
-        AS_IF([test x$CURL = x],
-              [DVDA_ERR([Install curl to download bn and rerun])],
+    AC_PATH_PROG([CURL], [curl], [], [$bindir:/usr/bin:/usr/local/bin])
+    AS_IF([test x$CURL = x],
+          [DVDA_ERR([Install curl to download bn and rerun])],
+          [
+            DVDA_INF([Downloading bn. Make sure you have a functional internet connection.])
+
+            version=m4_argn(1,$2)m4_argn(2,$2)
+            upper[_VERSION]=$version
+            DVDA_CLEAN([bn-$version.tar.gz])
+            DVDA_CLEAN([bn-$version.tar.bz2])
+            DVDA_CLEAN([bn-$version.tar.xz])
+
+            type=gz
+            LOOP_MIRRORS([$version],[$3],[$6],[$type],[$7])
+
+            # outputs variable $filename and $exitcode
+
+            AS_IF([ test  $exitcode != 0 ],
+            [
+             type=bz2
+             LOOP_MIRRORS([$version],[$3],[$6],[$type],[$7])
+            ])
+
+            AS_IF([ test  $exitcode != 0 ],
+            [
+             type=xz
+             LOOP_MIRRORS([$version],[$3],[$6],[$type],[$7])
+            ])
+
+            dir="bn[-]m4_argn(1,$2)"
+
+            AS_IF([ test  $exitcode != 0 ],
               [
-                DVDA_INF([Downloading bn. Make sure you have a functional internet connection.])
+                DVDA_ERR([Download failure])
+                AS_EXIT
+              ],
+              [
 
-                version=m4_argn(1,$2)m4_argn(2,$2)
-                upper[_VERSION]=$version
-                DVDA_CLEAN([bn-$version.tar.gz])
-                DVDA_CLEAN([bn-$version.tar.bz2])
-                DVDA_CLEAN([bn-$version.tar.xz])
-
-                type=gz
-		LOOP_MIRRORS([$version],[$3],[$6],[$type],[$7])
-
-		# outputs variable $filename and $exitcode
-
-		AS_IF([ test  $exitcode != 0 ],
+               AS_IF([test -d  $dir],
                 [
-                 type=bz2
-                 LOOP_MIRRORS([$version],[$3],[$6],[$type],[$7])
+                 DVDA_INF([Removing $dir])
+                 rm -rf $dir
                 ])
+              ])
 
-		AS_IF([ test  $exitcode != 0 ],
-                [
-                 type=xz
-                 LOOP_MIRRORS([$version],[$3],[$6],[$type],[$7])
-                ])
+            AS_IF([test -f "$filename"],
+             [
+               AS_IF([test x$type = xgz],[mode=xzvf],[AS_IF([test x$type = xxz],[mode=xJvf],[AS_IF([test x$type = xbz2],[mode=xjvf])])])
+               DVDA_TAR([$filename],[$mode])
+               [MAYBE_]upper=$dir
 
-                dir="bn[-]m4_argn(1,$2)"
-
-		AS_IF([ test  $exitcode != 0 ],[DVDA_ERR([Download failure])],
-                  [
-
-                   AS_IF([test -d  $dir],
-                    [
-                     DVDA_INF([Removing $dir])
-                     rm -rf $dir
-                    ])
-                  ])
-
-                AS_IF([test -f "$filename"],
+               AS_IF([test "$exitcode" = "0"],
+                 [  DVDA_INF([Proceeding to next package...]) ],
                  [
-                   AS_IF([test x$type = xgz],[mode=xzvf],[AS_IF([test x$type = xxz],[mode=xJvf],[AS_IF([test x$type = xbz2],[mode=xjvf])])])
-                   DVDA_TAR([$filename],[$mode])
-                   [MAYBE_]upper=$dir
-
-                   AS_IF([test $exitcode = 0 && test $patchbool = 1],
-                    [
-                    # cdrtools is Makefile-based whilst autotools-compliant packages are configure-based
-                      AS_IF([test -f "$dir/Makefile" || test -f "$dir/configure"],
+                    AS_IF([test "$patchbool" = "1"],
                        [
+                            # cdrtools is Makefile-based whilst autotools-compliant packages are configure-based
+                             AS_IF([test -f "$dir/Makefile" || test -f "$dir/configure"],
+                               [
+                                  DVDA_INF([cdrtools specific procedure...])
+                                  m4_popdef([site])
+                                  m4_pushdef([site],[$4])
+                                  AS_IF([test "$patchbool" = "1"],
+                                   [
+                                    DVDA_CURL([site/$1-$version],[$1-$version])
+                                    DVDA_PATCH([$1-$version])
+                                   ],
+                                   [
+                                    DVDA_ERR([$1 needs patching])
+                                    AS_EXIT
+                                  ])
+                              ])
+                       ],
+                       [
+                             DVDA_INF([No patching was performed])
+                       ])
+                ])
 
-                          DVDA_INF([cdrtools specific procedure...])
-                          m4_popdef([site])
-                          m4_pushdef([site],[$4])
-                          AS_IF([test $patchbool = 1],
-                           [
-                            DVDA_CURL([site/$1-$version],[$1-$version])
-                            DVDA_PATCH([$1-$version])
-                           ],
-                           [DVDA_ERR([$1 needs patching])])
-                      ])
-                    ],
-                    [DVDA_INF([No patching was performed])])
-                 ],
-                 [DVDA_ERR([Extraction of bn failed])])
-               ])
+             ],
+             [DVDA_ERR([Extraction of bn failed])])
+           ])
 
 
 AS_IF([test "$errorcode" = "1"],[errorcode_boolean=0],[errorcode_boolean=1])
@@ -292,7 +304,7 @@ AC_ARG_ENABLE([$1],[AS_HELP_STRING([--enable-$1],msg)],
     DVDA_INF([Will not msg... ])
     m4_ifvaln([$3], [$3])dnl
     upper=no
-   ]) 
+   ])
  ])
 
 
@@ -607,7 +619,7 @@ AC_DEFUN([DVDA_CONFIG],[
               [MAYBE_]VAR=CDR
               VAR[_BUILD]=yes
               VAR[_CONFIGURE_FILE]="[$MAYBE_]VAR"/configure
-	      m4_ifvaln([$2],[$2],[VAR[_LIB]="\${ROOTDIR}[/local/lib/lib]VAR[.a]"]) #do not quote VAR
+              m4_ifvaln([$2],[$2],[VAR[_LIB]="\${ROOTDIR}[/local/lib/lib]m4_tolower(VAR)[.a]"]) #do not quote VAR. It is necessary to lower case as base names are uniform
 
               [CONFIGURE_]VAR[_FLAGS]="FL $VAR[_FLAGS]"
               AC_SUBST([CONFIGURE_]VAR[_FLAGS])
