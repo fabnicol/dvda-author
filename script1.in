@@ -1,4 +1,4 @@
-if test -d "$PWD/@MAYBE_SOX@"
+if test -d "@PWD@/@MAYBE_SOX@"
 then
   cp "@ROOTDIR@/sox-libs" "$PWD/@MAYBE_SOX@/sox-libs.in" 
 else

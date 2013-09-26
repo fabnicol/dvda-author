@@ -60,15 +60,6 @@ m4_include([m4/auxiliary.m4])
 m4_include([m4/oggflac-test.m4])
 
 
- AC_PATH_PROG([TAR], [tar], [], [$bindir:/bin:/sbin:/usr/bin:/usr/local/bin])
-  AS_IF([ test x$TAR = x],[DVDA_ERR([tar is requested, please install it.]
-         AS_EXIT)])
-  AC_PATH_PROG([PATCH], [patch], [], [$bindir:/bin:/sbin:/usr/bin:/usr/local/bin])
-  AS_IF([ test x$PATCH = x],[DVDA_ERR([patch is requested, please install it.]
-         AS_EXIT)])
-
-  AC_PATH_PROG([CURL], [curl], [], [$bindir:/usr/bin:/usr/local/bin])
-         
 # LOOP_MIRRORS(VERSION,MAIN MIRROR,FILE TYPE [gz|bz2],MD5SUM)
 # --------------------------------------------------------------------
 # loops over SF_MIRRORLIST=kent,garr,voxel,free_fr, see dependencies.m4
@@ -140,6 +131,22 @@ AC_DEFUN([DVDA_DOWNLOAD],
   AS_IF([test [x]m4_bpatsubst([$1],[patch],[]) = x$1],[patchbool=0],[patchbool=1])
 
   # not having tar may sometimes happen on lightweight windows-based platforms
+
+
+  AC_PATH_PROG([TAR], [tar], [], [$bindir:/bin:/sbin:/usr/bin:/usr/local/bin])
+  AS_IF([ test x$TAR = x],[
+                           DVDA_ERR([tar is requested, please install it.])
+                           AS_EXIT
+                          ])
+  AC_PATH_PROG([PATCH], [patch], [], [$bindir:/bin:/sbin:/usr/bin:/usr/local/bin])
+  AS_IF([ test x$PATCH = x],[
+                              DVDA_ERR([patch is requested, please install it.])
+                              AS_EXIT
+                            ])
+
+
+  AC_PATH_PROG([CURL], [curl], [], [$bindir:/usr/bin:/usr/local/bin])
+
 
 
     AS_IF([test x$CURL = x],

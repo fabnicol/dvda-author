@@ -1,1 +1,1 @@
-	cd @MJPEGTOOLS@ &&  ./configure --prefix=${prefix} ; make -j4; cd - 
+	cd @MAYBE_MJPEGTOOLS@ &&  ./configure --prefix=${prefix} ; make -j4; cd - 
