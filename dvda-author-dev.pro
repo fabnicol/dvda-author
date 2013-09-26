@@ -9,10 +9,10 @@ QMAKE_CFLAGS=-std=c99
 
 DEFINES += _GNU_SOURCE __CB
 
-LIBS +=   -L/home/fab/build/dvda-author-dev/libutils/src \
-                 -L/home/fab/build/dvda-author-dev/libfixwav/src \
-                 /home/fab/build/dvda-author-dev/libs/libFLAC.a /home/fab/build/dvda-author-dev/libs/libsoxconvert.a /home/fab/build/dvda-author-dev/libs/libsox.a\
-                 -lfixwav -lc_utils
+LIBS +=   -L/home/fab/Dev/dvda-author-dev/libutils/src \
+                 -L/home/fab/Dev/dvda-author-dev/libfixwav/src \
+                 /home/fab/Dev/dvda-author-dev/libs/libFLAC.a /home/fab/Dev/dvda-author-dev/libs/libsoxconvert.a /home/fab/Dev/dvda-author-dev/libs/libsox.a\
+                 -lfixwav -lc_utils -lltdl -lgomp -lpng -lz
 
 INCLUDEPATH = src/include libutils/src/include libfixwav/src/include libs/include/FLAC libs/include/libsoxconvert
 
