@@ -298,7 +298,7 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
     Dependencies:
                     fixwav..........$(echo $FIXWAV_LIB)
                     flac............$(echo $FLAC_LIB) $FLAC_LINK
-                    ogg.............$(echo $OGG_LIB) $LIBOGG_LINK
+                    ogg.............$(echo $LIBOGG_LIB) $LIBOGG_LINK
                     sox.............$(echo $SOX_LIB) $SOX_LINK
 
     Build libraries:
@@ -308,7 +308,7 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
                     libutils .......yes
 
     Ogg FLAC support:
-                     ...............$OGG_BUILD
+                     ...............$LIBOGG_BUILD
 
     Static sox build:
                      ...............$STATIC_SOX

@@ -38,17 +38,17 @@ if WITH_FLAC
 if HAVE_EXTERNAL_FLAC
     dvda_LDADD  += ${FLAC_LIB}
 endif
-if HAVE_EXTERNAL_OGG
-    dvda_LDADD  +=  ${OGG_LIB}
+if HAVE_EXTERNAL_LIBOGG
+    dvda_LDADD  +=  ${LIBOGG_LIB}
 endif
 if HAVE_FLAC_BUILD
     dvda_LDADD   +=  ${FLAC_LIB}
 endif
-if HAVE_OGG_BUILD
-    dvda_LDADD   +=  ${OGG_LIB}
+if HAVE_LIBOGG_BUILD
+    dvda_LDADD   +=  ${LIBOGG_LIB}
 endif
 if HAVE_FLAC
-    dvda_LDADD  += ${FLAC_LINK} ${OGG_LINK}
+    dvda_LDADD  += ${FLAC_LINK} ${LIBOGG_LINK}
 endif
 endif
 

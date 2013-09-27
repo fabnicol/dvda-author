@@ -1,8 +1,24 @@
 if HAVE_SMAKE
 MAKETOOL=${SMAKE}
 else
-MAKETOOL=make
+MAKETOOL=make -j4 -k
 endif
+
+define trace
+	echo "$2:  $1" >> BUILD.TRACE
+endef
+
+define follow
+	if test   "$1" != "" ; then $(call trace, $2, "done: $1") ; else $(call trace, $2, failed); fi
+endef
+
+define execfollow
+	$(call follow, $3: `find $1 -name $2 -print0`, "executable: `find . -name $2 -print0  -exec   {}  $4  \;`")
+endef
+
+define docfollow
+	$(call follow, $2: `find  ${ROOTDIR} -name $1 -print0`, "doc: `find . -name $1 -print0  `")
+endef
 
 # downloaded binaries will be built locally, to avoid possible versioning issues with already installed one
 # passing right flags to make distcheck when configuring nested packages We do not configure libogg, because install is forced under _build/_inst instead of local/
@@ -20,18 +36,21 @@ ACLOCAL_AMFLAGS=-I m4 --install
 # nested packages will be configured only if main configure has been launched freshly.
 # stamprecord si a so-called cookie, used only for its time stamp
 
-.PHONY: do_sox_lib_deps_subst
+.PHONY: erase_build.trace do_sox_lib_deps_subst stage2
+
+erase_build.trace:
+	if test -f  BUILD.TRACE; then rm -f BUILD.TRACE; fi
+
+all: erase_build.trace stamprecord0 stamprecord1 stamprecord2 stamprecord3 stamprecord4 stamprecord5 stamprecord6 stamprecord7 stamprecord8 stamprecord9 stamprecord10 do_sox_lib_deps_subst
 
 
-all: stamprecord0 stamprecord1 stamprecord2 stamprecord3 stamprecord4 stamprecord5 stamprecord6 stamprecord7 stamprecord8 stamprecord9 stamprecord10 do_sox_lib_deps_subst
-
-
-# directly patching the Makefile appears to be more efficient. You nee a GNU-compliant make.
+# directly patching the Makefile appears to be more efficient. You need a GNU-compliant make.
 do_sox_lib_deps_subst: src/Makefile stamprecord2
 if HAVE_SOX_BUILD
 	chmod +x ${MAYBE_SOX}/sox-libs
 	$(SED) -e "s,SOX_LIB_DEPS,$(shell cat ${MAYBE_SOX}/sox-libs | $(SED) -e "s,[\.\.\/].*[a],,g"   -e  "s,@.*@,,g"),g" < src/Makefile > src/Makefile.temp
 	mv src/Makefile.temp src/Makefile
+	$(call follow, src/Makefile.temp, $@)
 endif
 
 
@@ -39,9 +58,10 @@ endif
 # probably a libtool bug?
 
 stamprecord0: Makefile
+if HAVE_LIBOGG_BUILD
 	if test -f stamprecord0; then rm -f stamprecord0; fi; touch stamprecord0
-if HAVE_OGG_BUILD
-	cd ${MAYBE_OGG} &&  ${SHELL} configure ${CONFIGURE_OGG_FLAGS} && $(MAKETOOL)  -k && $(MAKETOOL) install ; cd -
+	cd ${MAYBE_LIBOGG} &&  ${SHELL} configure ${CONFIGURE_LIBOGG_FLAGS} && $(MAKETOOL) && $(MAKETOOL) install ; cd -
+	$(call follow, $@: `find ${ROOTDIR} -name libogg.a -print0`, library)
 endif
 
 
@@ -49,6 +69,7 @@ stamprecord1: Makefile
 	if test -f stamprecord1; then rm -f stamprecord1; fi; touch stamprecord1
 if HAVE_FLAC_BUILD
 	chmod +x script && ${SHELL} script
+	$(call follow, $@: `find ${ROOTDIR} -name libflac.a -print0` , library)
 endif
 
 # you need the autotools to be able to rebuild sox with the sox-libs patch (the alternative would be using pkg-config, which is no better)
@@ -59,6 +80,7 @@ if HAVE_AUTOMAKE
 if HAVE_AUTOCONF
 if HAVE_SOX_BUILD
 	chmod +x script1 && ${SHELL} script1
+	$(call follow, $@: ` find ${ROOTDIR} -name libsox.a -print0` , library)
 endif
 endif
 endif
@@ -74,63 +96,70 @@ endif
 endif
 
 #cdrtools must be compiled with special make install parameters hence should not be included in the SUBDIRS list. Building/cleaning will need prior configuration.
-#mjpegtools has a libtool issue with SUBDIR build as of 2.0.0 so the same trick as with cdrtools will be used.
+
 stamprecord4: Makefile
 	if test -f stamprecord4; then rm -f stamprecord4; fi; touch stamprecord4
 	cd ${MAYBE_CDRTOOLS} && $(MAKETOOL) ; cd -
+	$(call execfollow, ${MAYBE_CDRTOOLS}, cdrecord, $@, -version 2>null)
 
 stamprecord5: Makefile
 	if test -f stamprecord5; then rm -f stamprecord5; fi; touch stamprecord5
 if HAVE_MJPEGTOOLS_BUILD
 	chmod +x script6 && ${SHELL} script6
+	$(call execfollow, ${MAYBE_MJPEGTOOLS}, mplex, $@,  2>&1 |  line)
 endif
-
 
 stamprecord6: Makefile
 	if test -f stamprecord6; then rm -f stamprecord6; fi; touch stamprecord6
 if HAVE_HELP2MAN_BUILD
 	cd ${MAYBE_HELP2MAN} && ${SHELL} configure --prefix=${prefix} ; cd -
+	$(call execfollow, ${MAYBE_HELP2MAN}, help2man, $@,  --version | line)
 endif
 
 stamprecord7: Makefile
 	if test -f stamprecord7; then rm -f stamprecord7; fi; touch stamprecord7
-#Here again a script is oddly requested.
 if HAVE_IMAGEMAGICK_BUILD
 	chmod +x script2 && ${SHELL} script2
+	$(call execfollow, ${MAYBE_IMAGEMAGICK}, convert, $@,  --version 2>&1 | line)
 endif
 
 stamprecord8: Makefile
 	if test -f stamprecord8; then rm -f stamprecord8; fi; touch stamprecord8
 if HAVE_LPLEX_BUILD
 	chmod +x script3 && ${SHELL} script3
+	$(call execfollow, ${MAYBE_LPLEX}, lplex, $@,  --version 2>&1 | line)
 endif
 
 stamprecord9: Makefile
 	if test -f stamprecord9; then rm -f stamprecord9; fi; touch stamprecord9
-if HAVE_MPEG2DEC_BUILD
+if HAVE_LIBMPEG2_BUILD
 	chmod +x script4 && ${SHELL} script4
+	$(call execfollow, ${MAYBE_LIBMPEG2}, mpeg2dec, $@,  <null 2>&1 | line)
 endif
 
 stamprecord10: Makefile
 	if test -f stamprecord10; then rm -f stamprecord10; fi; touch stamprecord10
 if HAVE_A52DEC_BUILD
 	chmod +x script5 && ${SHELL} script5
+	$(call execfollow, ${MAYBE_A52DEC}, a52dec, $@,  2>&1 | line)
 endif
 
 dvda-author.1:
 if HAVE_HELP2MAN
 	${HELP2MAN} -s 1 -N -o dvda-author.1 src/dvda
+	$(call docfollow,  dvda-author.1, $@)
 endif
 
 dvda-author-@VERSION@.html: dvda-author.1
 #PATCH  09.12  We need to display in UTF-8 mode and take off an illicit file header created by man2html
 if HAVE_MAN2HTML
 	${MAN2HTML} < dvda-author.1 | $(SED) -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > dvda-author-@VERSION@.html
+	$(call docfollow, dvda-author-@VERSION@.html, $@)
 endif
 
 
-SUBDIRS=${MAYBE_IBERTY} libutils ${MAYBE_OGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} ${MAYBE_SOX}  ${MAYBE_LPLEX} ${MAYBE_DVDAUTHOR} ${MAYBE_HELP2MAN}  ${MAYBE_IMAGEMAGICK} ${MAYBE_MPEG2DEC} ${MAYBE_A52DEC} src
-DIST_SUBDIRS=libiberty libutils libfixwav src CB_project  images
+SUBDIRS=${MAYBE_IBERTY} libutils ${MAYBE_LIBOGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} ${MAYBE_SOX}  ${MAYBE_LPLEX} ${MAYBE_DVDAUTHOR} ${MAYBE_HELP2MAN}  ${MAYBE_IMAGEMAGICK} ${MAYBE_LIBMPEG2} ${MAYBE_A52DEC} src
+DIST_SUBDIRS=libiberty libutils libfixwav src  images
 
 #normally is ${prefix}/share/applications/dvda-author-${VERSION}
 sysconfdir=${SHORTLINKDIR}
@@ -169,26 +198,30 @@ if HAVE_CDRTOOLS_BUILD
 	cd ${MAYBE_CDRTOOLS}; $(MAKETOOL) INS_BASE=${prefix} install; cd -
 endif
 if HAVE_DVDAUTHOR_BUILD
-	 cd ${MAYBE_DVDAUTHOR}; $(MAKETOOL)  install; cd - ;
+	cd ${MAYBE_DVDAUTHOR}; $(MAKETOOL)  install; cd - ;
+	$(call follow, find ${MAYBE_DVDAUTHOR} -name dvdauthor -print0, $(`find ${MAYBE_DVDAUTHOR} -name dvdauthor`  --version 2>&1 |grep patched))
 endif
 if HAVE_HELP2MAN_BUILD
-	 cd ${MAYBE_HELP2MAN}; $(MAKETOOL) install; cd - ;
+	cd ${MAYBE_HELP2MAN}; $(MAKETOOL) install; cd - ;
+	$(call follow, find ${MAYBE_HELP2MAN} -name help2man -print0, $(`find ${MAYBE_HELP2MAN} -name help2man -print0` ))
 endif
 if HAVE_MJPEGTOOLS_BUILD
-	 cd ${MAYBE_MJPEGTOOLS}; $(MAKETOOL) install; cd - ;
+	cd ${MAYBE_MJPEGTOOLS}; $(MAKETOOL) install; cd - ;
 endif
 if HAVE_IMAGEMAGICK_BUILD
-	 cd ${MAYBE_IMAGEMAGICK}; $(MAKETOOL) install; cd - ;
+	cd ${MAYBE_IMAGEMAGICK}; $(MAKETOOL) install; cd - ;
 endif
 if HAVE_SOX_BUILD
 	cd ${MAYBE_SOX}; $(MAKETOOL) install; cd -;
-endif 
+endif
+
+
 
 # redefining install is necessary to rename nested package directories for later builds with --enable-all-builds, which request lib* labelling
 
 install: install-exec install-data-local install-am
-if HAVE_OGG_BUILD
-	if test -d libogg-${OGG_VERSION}; then mv libogg-${OGG_VERSION}/ libogg/; fi
+if HAVE_LIBOGG_BUILD
+	if test -d libogg-${LIBOGG_VERSION}; then mv libogg-${LIBOGG_VERSION}/ libogg/; fi
 endif
 if HAVE_FLAC_BUILD
 	if test -d flac-${FLAC_VERSION}; then mv flac-${FLAC_VERSION}/ libFLAC/; fi
@@ -198,22 +231,23 @@ if HAVE_SOX_BUILD
 endif
 
 clean-local:
-	  rm -f dvda-author.1 dvda-author-@VERSION@.html
+	rm -f dvda-author.1 dvda-author-@VERSION@.html
 if HAVE_CDRTOOLS_BUILD
 	cd ${MAYBE_CDRTOOLS}; $(MAKETOOL) INS_BASE=${prefix} clean; cd -
 endif
 if HAVE_DVDAUTHOR_BUILD
-	 cd ${MAYBE_DVDAUTHOR}; $(MAKETOOL)  clean; cd - ;
+	cd ${MAYBE_DVDAUTHOR}; $(MAKETOOL)  clean; cd - ;
 endif
 if HAVE_HELP2MAN_BUILD
-	 cd ${MAYBE_HELP2MAN}; $(MAKETOOL) clean; cd - ;
+	cd ${MAYBE_HELP2MAN}; $(MAKETOOL) clean; cd - ;
 endif
 if HAVE_MJPEGTOOLS_BUILD
-	 cd ${MAYBE_MJPEGTOOLS}; $(MAKETOOL) clean; cd - ;
+	cd ${MAYBE_MJPEGTOOLS}; $(MAKETOOL) clean; cd - ;
 endif
 if HAVE_IMAGEMAGICK_BUILD
-	 cd ${MAYBE_IMAGEMAGICK}; $(MAKETOOL) clean; cd - ;
+	cd ${MAYBE_IMAGEMAGICK}; $(MAKETOOL) clean; cd - ;
 endif
 if HAVE_SOX_BUILD
 	cd ${MAYBE_SOX}; $(MAKETOOL) clean; cd -;
-endif 
+endif
+
