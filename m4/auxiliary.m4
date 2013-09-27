@@ -23,6 +23,7 @@ m4_map([m4_define],[
 [[normalise],         [m4_translit([$1], [-],     [_])]],
 [[basename],          [m4_bpatsubst([$1],[[-_].*],[])]],
 [[suffix],            [m4_bpatsubst([$1],[^.*-],  [])]],
+[[cut_lib_prefix],            [m4_bpatsubst([$1],[lib(.*)],  [\1])]],
 [[dehyphenate],       [m4_translit([$1], [-],     [ ])]],
 [[upperbasename],     [m4_toupper(basename([$1]))]],
 [[uppernormalisename],[m4_toupper(normalise([$1]))]],
@@ -67,7 +68,7 @@ m4_map([m4_define],[
                                     ],
                                     [DVDA_INF([Cannot curl empty Url...])])
                        ]],
-                                    
+
 [[DVDA_PATCH],        [
                         DVDA_RUN(["$PATCH"],[ -p4 -f --verbose < ],[$1])
                         AS_IF([test $exitcode = 0], [echo "Patched: $1" >> PATCHED.DOWNLOADS], [echo "Not patched: $1" >> PATCHED.DOWNLOADS])

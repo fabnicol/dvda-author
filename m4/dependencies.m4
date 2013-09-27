@@ -55,7 +55,7 @@ m4_map([DVDA_TEST_AUX],[
     m4_map([DVDA_ARG_ENABLE],
            [
              [[iberty-build]],
-             [[ogg-build]],
+             [[libogg-build]],
              [[flac-build]],
              [[sox-build]],
              [[help2man-build]],
@@ -137,7 +137,7 @@ m4_map([DVDA_TEST_AUX],[
 
     m4_map([DVDA_ARG_WITH],[
       [[FLAC],  [[[FLAC/all.h],[FLAC__stream_decoder_init_file]]]],
-      [[ogg],   [[[ogg/ogg.h], [ogg_stream_init]]]],
+      [[libogg],   [[[ogg/ogg.h], [ogg_stream_init]]]],
       [[fixwav],[[[fixwav_manager.h],[fixwav]]]],
       [[sox],   [[[sox.h],     [sox_format_init  sox_open_read
                                 sox_open_write sox_create_effects_chain
@@ -148,9 +148,9 @@ m4_map([DVDA_TEST_AUX],[
                 [[string.h],[strchrnul]],           [[strndup.h],[strndup]]],[static]]])
 
     # to be invoked after ENABLE and WITH features
-    # insert here application-specific macros that cannot be inserted in anothor file
+    # insert here application-specific macros that cannot be inserted in another file
 
-    DISABLE_OGG_TEST
+    DISABLE_LIBOGG_TEST
 
     # installing binaries, normally executables
 
@@ -159,7 +159,7 @@ m4_map([DVDA_TEST_AUX],[
                [[[MJPEGTOOLS], [mjpegtools-2.1.0]],[--enable-static-build --disable-fast-install --prefix=$ROOTDIR/local]],
                [[[CDRTOOLS],[cdrtools-3.00]]],
                [[[A52DEC],[a52dec-0.7.4]],[--prefix=$prefix]],
-               [[[MPEG2DEC],[mpeg2dec-0.5.1]], [--prefix=$prefix]],
+               [[[LIBMPEG2],[libmpeg2-0.5.1]], [--prefix=$prefix]],
                [[[HELP2MAN], [help2man-1.43.3]]],
                [[[IMAGEMAGICK], [ImageMagick-6.8.7-0]]]])
 
@@ -168,7 +168,7 @@ m4_map([DVDA_TEST_AUX],[
     DVDA_CONFIG_LIBRARY_LOCAL_INSTALL([
      [[[FLAC],[flac-1.3.0]],[--disable-shared --disable-thorough-tests --disable-oggtest --disable-cpplibs --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]],
      [[[SOX],[sox-14.4.1]],  [--without-mad --without-flac --without-lame --prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]],
-     [[[OGG],[ogg-1.1.4]],  [--prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]]])
+     [[[LIBOGG],[libogg-1.1.4]],  [--prefix=$ROOTDIR/local CPPFLAGS="-I$ROOTDIR/local/include"]]])
 
     # auxiliary libs that remain within package, not installed
 

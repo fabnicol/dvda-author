@@ -53,7 +53,15 @@ OTHER_FILES += \
     m4/dependencies.m4 \
     m4/dvda.m4 \
     m4/auxiliary.m4 \
-    configure.ac
+    configure.ac \
+    Makefile.am \
+    script.in \
+    script1.in \
+    script2.in \
+    script3.in \
+    script4.in \
+    script5.in \
+    script6.in
 
 HEADERS += \
     src/include/amg.h \

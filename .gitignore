@@ -1,3 +1,9 @@
+/README.sf.txt
+/diff1.patch
+/diff2.patch
+/key.fingerprint
+/key.ppk.pub
+/sshaccess
 /src/dvda-author
 /src/dvda
 /key/dvda-author-dev.pro.user
@@ -10,6 +16,7 @@
 /aclocal.m4
 cdrtools*
 dvdau*
+dvda-author*
 help2*
 CB_project*
 ImageMagick*
@@ -44,3 +51,9 @@ script5
 script6
 *.directory
 stamp*
+*ppk
+*.old
+*.zip
+*.gz
+*.bz2
+*.xz

@@ -1,8 +1,8 @@
-if test -d "@PWD@/@MAYBE_SOX@"
+if test -d "@ROOTDIR@/@MAYBE_SOX@"
 then
-  cp "@ROOTDIR@/sox-libs" "$PWD/@MAYBE_SOX@/sox-libs.in" 
+  cp "@ROOTDIR@/sox-libs" "@ROOTDIR@/@MAYBE_SOX@/sox-libs.in" 
 else
-  echo "$PWD/@MAYBE_SOX@ is not a directory"
+  echo "@ROOTDIR@/@MAYBE_SOX@ is not a directory"
   exit -1
 fi 
 cd "@MAYBE_SOX@" 
