@@ -171,6 +171,9 @@
 /* Whether libogg source code will be downloaded for build. */
 #undef HAVE_LIBOGG
 
+/* configure, build and install libogg from source code */
+#undef HAVE_LIBOGG_BUILD
+
 /* Define to 1 if you have the <locale.h> header file. */
 #undef HAVE_LOCALE_H
 
@@ -240,9 +243,6 @@
 
 /* Does not use a configured patch of bn */
 #undef HAVE_NO_ALL_PATCH
-
-/* configure, build and install ogg from source code */
-#undef HAVE_OGG_BUILD
 
 /* Define to 1 if you have the <ogg/ogg.h> header file. */
 #undef HAVE_OGG_OGG_H
@@ -495,7 +495,7 @@
 #undef WITHOUT_IBERTY
 
 /* Disables $lower support */
-#undef WITHOUT_OGG
+#undef WITHOUT_LIBOGG
 
 /* Disables $lower support */
 #undef WITHOUT_SOX
