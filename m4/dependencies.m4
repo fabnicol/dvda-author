@@ -127,13 +127,10 @@ m4_map([DVDA_TEST_AUX],[
 
     m4_map([DVDA_ARG_ENABLE_DOWNLOAD], [[all-all]])
 
-#    m4_map([DVDA_ARG_ENABLE_DOWNLOAD], DOWNLOAD_OPTIONS)
+    m4_map([DVDA_ARG_ENABLE_DOWNLOAD], [DOWNLOAD_OPTIONS])
 
-    # for sox libs, empirically it appears safer to link to dynamic libs under linux at least, due to linking issues with static libs: shared forces this,
-    # unless explicit filepath input is given
     # owing to sox versioning issues (notably intervention of home-made getopt in versions <= 14.3), a wider array of function checks is justified.
     # functions should be white-space separated, as should header-function list double-quoted pairs. Headers are comma-separated from funtion lists in pair.
-
 
     m4_map([DVDA_ARG_WITH],[
       [[FLAC],  [[[FLAC/all.h],[FLAC__stream_decoder_init_file]]]],

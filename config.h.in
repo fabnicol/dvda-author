@@ -1,6 +1,6 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Defining a52dec filepath. */
+/* Defining bn filepath */
 #undef A52DEC
 
 /* Defining bn filepath */
@@ -48,6 +48,9 @@
 /* configure, build and install a52dec from source code */
 #undef HAVE_A52DEC_BUILD
 
+/* download a52dec from source code */
+#undef HAVE_A52DEC_DOWNLOAD
+
 /* Whether all source code will be downloaded for build. */
 #undef HAVE_ALL
 
@@ -77,6 +80,9 @@
 /* configure, build and install cdrtools from source code */
 #undef HAVE_CDRTOOLS_BUILD
 
+/* download and patch cdrtools from source code */
+#undef HAVE_CDRTOOLS_PATCH
+
 /* Found convert */
 #undef HAVE_CONVERT
 
@@ -102,6 +108,9 @@
 /* configure, build and install dvdauthor from source code */
 #undef HAVE_DVDAUTHOR_BUILD
 
+/* download and patch dvdauthor from source code */
+#undef HAVE_DVDAUTHOR_PATCH
+
 /* Define to 1 if you have the <errno.h> header file. */
 #undef HAVE_ERRNO_H
 
@@ -119,6 +128,9 @@
 
 /* configure, build and install flac from source code */
 #undef HAVE_FLAC_BUILD
+
+/* download flac from source code */
+#undef HAVE_FLAC_DOWNLOAD
 
 /* Define to 1 if you have the `floor' function. */
 #undef HAVE_FLOOR
@@ -150,6 +162,9 @@
 /* configure, build and install help2man from source code */
 #undef HAVE_HELP2MAN_BUILD
 
+/* download help2man from source code */
+#undef HAVE_HELP2MAN_DOWNLOAD
+
 /* configure, build and install iberty from source code */
 #undef HAVE_IBERTY_BUILD
 
@@ -158,6 +173,9 @@
 
 /* configure, build and install ImageMagick from source code */
 #undef HAVE_IMAGEMAGICK_BUILD
+
+/* download ImageMagick from source code */
+#undef HAVE_IMAGEMAGICK_DOWNLOAD
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
@@ -168,11 +186,17 @@
 /* Whether libmpeg2 source code will be downloaded for build. */
 #undef HAVE_LIBMPEG2
 
+/* download libmpeg2 from source code */
+#undef HAVE_LIBMPEG2_DOWNLOAD
+
 /* Whether libogg source code will be downloaded for build. */
 #undef HAVE_LIBOGG
 
 /* configure, build and install libogg from source code */
 #undef HAVE_LIBOGG_BUILD
+
+/* download libogg from source code */
+#undef HAVE_LIBOGG_DOWNLOAD
 
 /* Define to 1 if you have the <locale.h> header file. */
 #undef HAVE_LOCALE_H
@@ -182,6 +206,9 @@
 
 /* configure, build and install lplex from source code */
 #undef HAVE_LPLEX_BUILD
+
+/* download lplex from source code */
+#undef HAVE_LPLEX_DOWNLOAD
 
 /* Found make */
 #undef HAVE_MAKE
@@ -214,6 +241,9 @@
 /* configure, build and install mjpegtools from source code */
 #undef HAVE_MJPEGTOOLS_BUILD
 
+/* download mjpegtools from source code */
+#undef HAVE_MJPEGTOOLS_DOWNLOAD
+
 /* Define to 1 if you have the `mkdir' function. */
 #undef HAVE_MKDIR
 
@@ -242,7 +272,40 @@
 #undef HAVE_NDIR_H
 
 /* Does not use a configured patch of bn */
+#undef HAVE_NO_A52DEC_PATCH
+
+/* Does not use a configured patch of bn */
 #undef HAVE_NO_ALL_PATCH
+
+/* Does not use a configured patch of bn */
+#undef HAVE_NO_CDRTOOLS_PATCH
+
+/* Does not use a configured patch of bn */
+#undef HAVE_NO_DVDAUTHOR_PATCH
+
+/* Does not use a configured patch of bn */
+#undef HAVE_NO_FLAC_PATCH
+
+/* Does not use a configured patch of bn */
+#undef HAVE_NO_HELP2MAN_PATCH
+
+/* Does not use a configured patch of bn */
+#undef HAVE_NO_IMAGEMAGICK_PATCH
+
+/* Does not use a configured patch of bn */
+#undef HAVE_NO_LIBMPEG2_PATCH
+
+/* Does not use a configured patch of bn */
+#undef HAVE_NO_LIBOGG_PATCH
+
+/* Does not use a configured patch of bn */
+#undef HAVE_NO_LPLEX_PATCH
+
+/* Does not use a configured patch of bn */
+#undef HAVE_NO_MJPEGTOOLS_PATCH
+
+/* Does not use a configured patch of bn */
+#undef HAVE_NO_SOX_PATCH
 
 /* Define to 1 if you have the <ogg/ogg.h> header file. */
 #undef HAVE_OGG_OGG_H
@@ -274,6 +337,9 @@
 
 /* Define to 1 if you have the <sox.h> header file. */
 #undef HAVE_SOX_H
+
+/* download and patch sox from source code */
+#undef HAVE_SOX_PATCH
 
 /* Found spumux */
 #undef HAVE_SPUMUX
