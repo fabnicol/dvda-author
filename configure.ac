@@ -303,7 +303,9 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
 
     Build libraries:
                     libFLAC ........$FLAC_BUILD
+                    libogg .........$LIBOGG_BUILD
                     libsox  ........$SOX_BUILD
+
                     gnu libc .......$IBERTY_BUILD
                     libutils .......yes
 
@@ -394,10 +396,27 @@ AC_MSG_RESULT([[
     Images directory: ............ $(echo $PIXDIR)
     Configuration files: ......... $SHORTLINKDIR
     Images directory: ............ $MENUDIR
+]])
 
+
+AS_IF([ test -f DOWNLOADS ],[
+  AC_MSG_RESULT([[  The following file(s) have been downloaded:
+
+$(cat DOWNLOADS| grep Downloaded | sed s/Downloaded:// ) ]])],
+  [AC_MSG_RESULT([  No packages were downloaded.])])
+
+AS_IF([ test -f PATCHED.DOWNLOADS ],[
+  AC_MSG_RESULT([[
+  The following  patch(es) were applied:
+
+$(cat PATCHED.DOWNLOADS | grep Patched | sed s/Patched://)]])],
+  [AC_MSG_RESULT([
+  No packages were patched after download.])])
+
+AC_MSG_RESULT([
     You may now build by typing 'make' and install with 'make install'.
 
-]])
+])
 
 AS_IF([ test x$MAGICK_BUILD = xyes ], [DVDA_INF([IMAGEMAGICK_MSG])])
 
