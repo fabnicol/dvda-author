@@ -1,0 +1,926 @@
+diff -urdwb /home/fab/build/dvdauthor-0.6.14/configure.ac /home/fab/build/dvdauthor-0.6.14-patched/configure.ac
+--- /home/fab/build/dvdauthor-0.6.14/configure.ac	2007-02-24 19:46:17.000000000 +0100
++++ /home/fab/build/dvdauthor-0.6.14-patched/configure.ac	2009-10-20 23:16:13.000000000 +0200
+@@ -1,7 +1,9 @@
+-AC_INIT(DVDAuthor,0.6.14,dvdauthor-users@lists.sourceforge.net)
++AC_INIT(DVDAuthor,0.6.14-dvda-author-patched,dvdauthor-users@lists.sourceforge.net)
+ 
+ AM_CONFIG_HEADER(src/config.h)
+ AC_CONFIG_AUX_DIR(autotools)
++AC_CONFIG_MACRO_DIR([m4])
++AC_CONFIG_MACRO_DIR([srcm4])
+ 
+ AM_INIT_AUTOMAKE
+ 
+diff -urdwb /home/fab/build/dvdauthor-0.6.14/dvdauthor.spec /home/fab/build/dvdauthor-0.6.14-patched/dvdauthor.spec
+--- /home/fab/build/dvdauthor-0.6.14/dvdauthor.spec	2007-02-24 19:46:42.000000000 +0100
++++ /home/fab/build/dvdauthor-0.6.14-patched/dvdauthor.spec	2009-10-26 21:21:00.000000000 +0100
+@@ -2,7 +2,7 @@
+ %define DISTRO_SUSE %([ -f /etc/SuSE-release ] && grep VERSION /etc/SuSE-release| sed -e "s/VERSION = /SuSE/"|tr -d ".")
+  
+ 
+-%define	dvdauthor_version	0.6.14
++%define	dvdauthor_version	0.6.14-dvda-author-patched
+ %define	dvdauthor_release	1
+ 
+ Summary: 	Latest DVDAuthor package
+diff -urdwb /home/fab/build/dvdauthor-0.6.14/Makefile.am /home/fab/build/dvdauthor-0.6.14-patched/Makefile.am
+--- /home/fab/build/dvdauthor-0.6.14/Makefile.am	2006-06-01 06:31:29.000000000 +0200
++++ /home/fab/build/dvdauthor-0.6.14-patched/Makefile.am	2009-10-20 23:16:13.000000000 +0200
+@@ -1,3 +1,4 @@
++ACLOCAL_AMPATH=-Im4 -Isrcm4
+ SUBDIRS = doc src
+ 
+ noinst_DATA = dvdauthor.spec
+diff -urdwb /home/fab/build/dvdauthor-0.6.14/src/config.h.in /home/fab/build/dvdauthor-0.6.14-patched/src/config.h.in
+--- /home/fab/build/dvdauthor-0.6.14/src/config.h.in	2007-02-24 19:46:34.000000000 +0100
++++ /home/fab/build/dvdauthor-0.6.14-patched/src/config.h.in	2009-10-20 23:16:25.000000000 +0200
+@@ -19,7 +19,7 @@
+ /* Define to 1 if you have the `getopt_long' function. */
+ #undef HAVE_GETOPT_LONG
+ 
+-/* Define if you have the iconv() function. */
++/* Define if you have the iconv() function and it works. */
+ #undef HAVE_ICONV
+ 
+ /* Define to 1 if you have the <inttypes.h> header file. */
+@@ -85,6 +85,9 @@
+ /* Define to the one symbol short name of this package. */
+ #undef PACKAGE_TARNAME
+ 
++/* Define to the home page for this package. */
++#undef PACKAGE_URL
++
+ /* Define to the version of this package. */
+ #undef PACKAGE_VERSION
+ 
+diff -urdwb /home/fab/build/dvdauthor-0.6.14/src/da-internal.h /home/fab/build/dvdauthor-0.6.14-patched/src/da-internal.h
+--- /home/fab/build/dvdauthor-0.6.14/src/da-internal.h	2007-01-11 03:21:36.000000000 +0100
++++ /home/fab/build/dvdauthor-0.6.14-patched/src/da-internal.h	2009-10-20 23:16:13.000000000 +0200
+@@ -142,6 +142,9 @@
+     int numgroups;
+     struct langgroup *groups;
+     struct vobgroup *vg;
++    // DVDA-AUTHOR PATCH
++    struct vobgroup *ag;
++    // END OF DVDA-AUTHOR PATCH
+ };
+ 
+ struct vobgroup {
+@@ -164,10 +167,15 @@
+ struct toc_summary {
+     struct vtsdef vts[MAXVTS];
+     int numvts;
++    // DVDA-AUTHOR PATCH
++    //struct atsdef ats[MAXVTS];
++    //int numats;
++    // END OF DVDA-AUTHOR PATCH
+ };
+ 
+ struct workset {
+     const struct toc_summary *ts;
++    const struct toc_summary *ats;
+     const struct menugroup *menus;
+     const struct pgcgroup *titles;
+ };
+@@ -197,18 +205,18 @@
+ int vobgroup_set_video_framerate(struct vobgroup *va,int rate);
+ int audiodesc_set_audio_attr(struct audiodesc *ad,struct audiodesc *adwarn,int attr,char *s);
+ 
+-unsigned char *vm_compile(unsigned char *obuf,unsigned char *buf,const struct workset *ws,const struct pgcgroup *curgroup,const struct pgc *curpgc,const struct vm_statement *cs,int ismenu);
++unsigned char *vm_compile(unsigned char *obuf,unsigned char *buf,const struct workset *ws,const struct pgcgroup *curgroup,const struct pgc *curpgc,const struct vm_statement *cs,int ismenu, _Bool isvideo);
+ void vm_optimize(unsigned char *obuf,unsigned char *buf,unsigned char **end);
+ struct vm_statement *vm_parse(const char *b);
+ 
+ void WriteIFOs(char *fbase,const struct workset *ws);
+ void TocGen(const struct workset *ws,const struct pgc *fpc,char *fname);
+ 
+-int CreatePGC(FILE *h,const struct workset *ws,int ismenu);
++int CreatePGC(FILE *h,const struct workset *ws,int ismenu, _Bool isvideo);
+ 
+ int FindVobus(char *fbase,struct vobgroup *va,int ismenu);
+ void MarkChapters(struct vobgroup *va);
+-void FixVobus(char *fbase,const struct vobgroup *va,const struct workset *ws,int ismenu);
++void FixVobus(char *fbase,const struct vobgroup *va,const struct workset *ws,int ismenu, _Bool isvideo);
+ int calcaudiogap(const struct vobgroup *va,int vcid0,int vcid1,int ach);
+ 
+ #endif
+Seulement dans /home/fab/build/dvdauthor-0.6.14-patched/src: .directory
+diff -urdwb /home/fab/build/dvdauthor-0.6.14/src/dvdauthor.c /home/fab/build/dvdauthor-0.6.14-patched/src/dvdauthor.c
+--- /home/fab/build/dvdauthor-0.6.14/src/dvdauthor.c	2007-01-12 08:11:11.000000000 +0100
++++ /home/fab/build/dvdauthor-0.6.14-patched/src/dvdauthor.c	2009-10-20 23:16:13.000000000 +0200
+@@ -32,6 +32,7 @@
+ #include "dvdvm.h"
+ 
+ 
++_Bool videoedit=0, audioedit=0;
+ 
+ // with this enabled, extra PGC commands will be generated to allow
+ // jumping/calling to a wider number of destinations
+@@ -66,7 +67,7 @@
+ 
+ char *entries[9]={"","","title","root","subtitle","audio","angle","ptt",0};
+ 
+-char *pstypes[3]={"VTS","VTSM","VMGM"};
++char *pstypes[4]={"VTS","VTSM","VMGM","AMGM"};
+ 
+ static char *smodedesc[6]={"","normal","widescreen","letterbox","panscan",0};
+ 
+@@ -779,6 +780,19 @@
+     return strdup(fbuf);
+ }
+ 
++// DVDA-AUTHOR PATCH
++static char *makeatsdir(char *s)
++{
++    static char fbuf[1000];
++
++    if( !s )
++        return 0;
++    strcpy(fbuf,s);
++    strcat(fbuf,"/AUDIO_TS");
++    return strdup(fbuf);
++}
++// END OF DVDA-AUTHOR PATCH
++
+ // jumppad requires the existance of a menu to operate
+ // if no languages exist, create an english one
+ static void jp_force_menu(struct menugroup *mg,int type)
+@@ -926,6 +940,15 @@
+     return vg;
+ }
+ 
++// DVDA-AUTHOR PATCH
++static struct vobgroup *audiovobgroup_new()
++{
++    struct vobgroup *ag=malloc(sizeof(struct vobgroup));
++    memset(ag,0,sizeof(struct vobgroup));
++    return ag;
++}
++// END OF DVDA-AUTHOR PATCH
++
+ static void vobgroup_free(struct vobgroup *vg)
+ {
+     int i;
+@@ -1313,6 +1336,9 @@
+     struct menugroup *mg=malloc(sizeof(struct menugroup));
+     memset(mg,0,sizeof(struct menugroup));
+     mg->vg=vobgroup_new();
++    // DVDA-AUTHOR PATCH
++    mg->ag=audiovobgroup_new();
++    // END OF DVDA-AUTHOR PATCH
+     return mg;
+ }
+ 
+@@ -1386,6 +1412,7 @@
+     DIR *d;
+     struct dirent *de;
+     char *vtsdir;
++    
+     int i;
+     static struct toc_summary ts;
+     static char fbuf[1000];
+@@ -1394,6 +1421,11 @@
+ 
+     if( !fbase ) // can't really make a vmgm without titlesets
+         return;
++        
++    // create base entry, if not already existing
++    fprintf(stderr, "INFO: dvdauthor creating %s %s",  " video", "table of contents\n");
++    initdir(fbase);
++
+     ws.ts=&ts;
+     ws.menus=menus;
+     ws.titles=0;
+@@ -1403,11 +1435,10 @@
+         pgcgroup_createvobs(menus->groups[i].pg,menus->vg);
+         forceaddentry(menus->groups[i].pg,4);
+     }
+-    fprintf(stderr,"INFO: dvdauthor creating table of contents\n");
+-    initdir(fbase);
+-    // create base entry, if not already existing
+     memset(&ts,0,sizeof(struct toc_summary));
+     vtsdir=makevtsdir(fbase);
++
++    
+     for( i=0; i<101; i++ )
+         ifonames[i][0]=0;
+     d=opendir(vtsdir);
+@@ -1440,19 +1471,32 @@
+             fprintf(stderr,"ERR:  Titleset #%d (%s) does not immediately follow the last titleset\n",i,ifonames[i]);
+             exit(1);
+         }
+-    if( !ts.numvts ) {
++        if ( !ts.numvts && videoedit ) {
+         fprintf(stderr,"ERR:  No .IFO files to process\n");
+         exit(1);
+     }
++           //  DVDA-AUTHOR PATCH 
++           /* new vars : 
++              menu->ag
++              ts.ats[i] for i < ts.numats
++              ts.ats[i].numchapters
++              atsdir
++              globals : audioedit, videoedit
++           */
++           
+     if( menus->vg->numvobs ) {
+-        fprintf(stderr,"INFO: Creating menu for TOC\n");
++            
++            fprintf(stderr,"INFO: Creating menu for DVD-Video TOC\n");
+         sprintf(fbuf,"%s/VIDEO_TS.VOB",vtsdir);
+         FindVobus(fbuf,menus->vg,2);
+         MarkChapters(menus->vg);
+         setattr(menus->vg,2);
+         fprintf(stderr,"\n");
+-        FixVobus(fbuf,menus->vg,&ws,2);
++            FixVobus(fbuf,menus->vg,&ws,2, 1);
+     }
++
++    
++    
+     sprintf(fbuf,"%s/VIDEO_TS.IFO",vtsdir);
+     TocGen(&ws,fpc,fbuf);
+     sprintf(fbuf,"%s/VIDEO_TS.BUP",vtsdir);
+@@ -1461,6 +1505,78 @@
+         if( ts.vts[i].numchapters )
+             free(ts.vts[i].numchapters);
+     free(vtsdir);
++
++    
++    
++       //  END OF DVDA-AUTHOR PATCH 
++}
++
++
++void dvdauthor_amgm_gen(struct pgc *fpc,struct menugroup *menus,char *fbase)
++{
++    DIR *d;
++    struct dirent *de;
++    char *atsdir;
++    int i;
++    static struct toc_summary ats;
++    static char fbuf2[1000];
++    static char ifonames[11][14];
++    struct workset aws;
++
++    if( !fbase ) // can't really make a vmgm without titlesets
++        return;
++        
++    // create base entry, if not already existing
++    fprintf(stderr, "INFO: dvdauthor creating %s %s", " audio", "menu\n");
++    initdir(fbase);
++
++        aws.ts=&ats;
++        aws.menus=menus;
++        aws.titles=0;
++        jp_force_menu(menus,2);  // ?
++        for( i=0; i<menus->numgroups; i++ ) {
++            validatesummary(menus->groups[i].pg);
++            pgcgroup_createvobs(menus->groups[i].pg, menus->ag);        
++            forceaddentry(menus->groups[i].pg,4);
++        }
++        memset(&ats,0,sizeof(struct toc_summary));
++        atsdir=makeatsdir(fbase);
++    
++
++        for( i=0; i<11; i++ )
++            ifonames[i][0]=0;
++        d=opendir(atsdir);
++        while ((de=readdir(d))!=0) {
++            i=strlen(de->d_name);
++            if( i==12 && !strcasecmp(de->d_name+i-6,"_0.IFO") &&
++                !strncasecmp(de->d_name,"ATS_",4)) {
++                i=(de->d_name[4]-'0')*10+(de->d_name[5]-'0');
++                if( ifonames[i][0] ) {
++                    fprintf(stderr,"ERR:  Two different names for the same audio group: %s and %s\n",ifonames[i],de->d_name);
++                    exit(1);
++                }
++                if( !i ) {
++                    fprintf(stderr,"ERR:  Cannot have group #0 (%s)\n",de->d_name);
++                    exit(1);
++                }
++                strcpy(ifonames[i],de->d_name);
++            }
++        }
++        closedir(d);
++           
++        if(menus->ag->numvobs) {
++        
++        fprintf(stderr,"INFO: Creating menu for DVD-Audio TOC\n");
++        sprintf(fbuf2,"%s/AUDIO_TS.VOB",atsdir);
++        FindVobus(fbuf2,menus->ag,2);
++        MarkChapters(menus->ag);
++        setattr(menus->ag,3);
++        fprintf(stderr,"\n");
++        FixVobus(fbuf2,menus->ag,&aws,2, 0);
++        }
++
++        free(atsdir);
++    
+ }
+ 
+ void dvdauthor_vts_gen(struct menugroup *menus,struct pgcgroup *titles,char *fbase)
+@@ -1506,6 +1622,6 @@
+     fprintf(stderr,"\n");
+     WriteIFOs(fbase,&ws);
+     if( menus->vg->numvobs )
+-        FixVobus(fbase,menus->vg,&ws,1);
+-    FixVobus(fbase,titles->vg,&ws,0);
++        FixVobus(fbase,menus->vg,&ws,1, 1);
++    FixVobus(fbase,titles->vg,&ws,0,1);
+ }
+diff -urdwb /home/fab/build/dvdauthor-0.6.14/src/dvdcli.c /home/fab/build/dvdauthor-0.6.14-patched/src/dvdcli.c
+--- /home/fab/build/dvdauthor-0.6.14/src/dvdcli.c	2007-01-11 02:38:08.000000000 +0100
++++ /home/fab/build/dvdauthor-0.6.14-patched/src/dvdcli.c	2009-10-20 23:16:13.000000000 +0200
+@@ -33,6 +33,8 @@
+ 
+ #define RGB2YCrCb(R,G,B) ((((int)RGB2Y(R,G,B))<<16)|(((int)RGB2Cr(R,G,B))<<8)|(((int)RGB2Cb(R,G,B))))
+ 
++extern _Bool videoedit, audioedit;
++
+ static int readdvdauthorxml(const char *xmlfile,char *fb);
+ 
+ static int hadchapter=0,pauselen=0,writeoutput=1;
+@@ -226,6 +228,7 @@
+ 
+     fprintf(stderr,
+             "syntax: dvdauthor [-o VTSBASE | -n] [options] VOBFILE(s)\n"
++	    
+             "\n\t-x XMLFILE where XMLFILE is a configuration file describing the\n"
+             "\t    structure of the DVD to create.  If you use a config file, then you\n"
+             "\t    do not need to specify any other options, except -o and -n.\n"
+@@ -287,6 +290,7 @@
+             "\t    flexibility in choosing jump/call desinations.\n"
+             "\n\t" LONGOPT("--allgprm or ") "-g enables the use of all 16 general purpose registers.\n"
+             "\n\t" LONGOPT("--help or ") "-h displays this screen.\n"
++	    "\n\t" LONGOPT("--version or ") "-V displays software version.\n"
+         );
+     exit(1);
+ }
+@@ -347,6 +351,7 @@
+         {"fpc",1,0,'F'},
+         {"jumppad",0,0,'j'},
+         {"allgprm",0,0,'g'},
++        {"version",0,0,'V'},
+         {0,0,0,0}
+     };
+ #define GETOPTFUNC(x,y,z) getopt_long(x,y,"-" z,longopts,NULL)
+@@ -368,6 +373,8 @@
+         if( c == -1 )
+             break;
+         switch(c) {
++        case 'V': exit(EXIT_SUCCESS);
++
+         case 'h':
+             usage();
+             break;
+@@ -565,11 +572,11 @@
+ };
+ 
+ static struct pgcgroup *titles=0, *curgroup=0;
+-static struct menugroup *mg=0, *vmgmmenus=0;
++static struct menugroup *mg=0, *vmgmmenus=0, *amgmmenus=0;
+ static struct pgc *curpgc=0,*fpc=0;
+ static struct source *curvob=0;
+ static char *fbase=0,*buttonname=0;
+-static int ismenuf=0,istoc=0,setvideo=0,setaudio=0,setsubpicture=0,subpmode=DA_NOSUB,hadtoc=0,subpstreamid=-1;
++static int ismenuf=0,istoc=0,setvideo=0,setaudio=0,setsubpicture=0,subpmode=DA_NOSUB,hadtoc=0,hadaudiotoc=0,subpstreamid=-1;
+ static char *subpstreammode=0;
+ static int vobbasic,cell_chapter;
+ static double cell_starttime,cell_endtime;
+@@ -666,8 +673,19 @@
+         fpc=0;
+         vmgmmenus=0;
+     }
++     if( hadaudiotoc ) {
++        dvdauthor_amgm_gen(fpc,amgmmenus,fbase);
++        if( fpc )
++            pgc_free(fpc);
++        if( amgmmenus )
++            menugroup_free(amgmmenus);
++        fpc=0;
++        amgmmenus=0;
++    }
+ }
+ 
++
++
+ static void titleset_start()
+ {
+     mg=menugroup_new();
+@@ -689,6 +707,54 @@
+     }
+ }
+ 
++// DVDA-AUTHOR PATCH
++
++static void audiogroup_start()
++{
++    mg=menugroup_new();
++    istoc=0;
++}
++
++static void audiogroup_end()
++{
++    getfbase();
++    if( !parser_err ) {
++        if( !titles )
++            titles=pgcgroup_new(0);
++        dvdauthor_vts_gen(mg,titles,fbase);
++        if( mg )
++            menugroup_free(mg);
++        pgcgroup_free(titles);
++        mg=0;
++        titles=0;
++    }
++}
++
++
++
++static void amgm_start()
++{
++    if( hadaudiotoc ) {
++        fprintf(stderr,"ERR:  Can only define one AMGM\n");
++        parser_err=1;
++        return;
++    }
++    mg=menugroup_new();
++    audioedit=1;
++    istoc=1;
++    hadaudiotoc=1;
++}
++
++static void amgm_end()
++{
++    getfbase();
++    // we put off compilation of amgm until after the audio groups
++    amgmmenus=mg;
++    mg=0;
++}
++
++// END OF DVDA-AUTHOR PATCH
++
+ static void vmgm_start()
+ {
+     if( hadtoc ) {
+@@ -696,6 +762,7 @@
+         parser_err=1;
+         return;
+     }
++    videoedit=1;
+     mg=menugroup_new();
+     istoc=1;
+     hadtoc=1;
+@@ -1088,7 +1155,11 @@
+ static struct elemdesc elems[]={
+     {"dvdauthor", DA_BEGIN,   DA_ROOT,    0,               dvdauthor_end},
+     {"titleset",  DA_ROOT,    DA_SET,     titleset_start,  titleset_end},
++    // DVDA-AUTHOR PATCH
++    {"audiogroup",  DA_ROOT,    DA_SET,   audiogroup_start,  audiogroup_end},
+     {"vmgm",      DA_ROOT,    DA_SET,     vmgm_start,      vmgm_end},
++    {"amgm",      DA_ROOT,    DA_SET,     amgm_start,      amgm_end},
++    //
+     {"fpc",       DA_SET,     DA_NOSUB,   fpc_start,       fpc_end},
+     {"titles",    DA_SET,     DA_PGCGROUP,titles_start,    0},
+     {"menus",     DA_SET,     DA_PGCGROUP,menus_start,     menus_end},
+diff -urdwb /home/fab/build/dvdauthor-0.6.14/src/dvdcompile.c /home/fab/build/dvdauthor-0.6.14-patched/src/dvdcompile.c
+--- /home/fab/build/dvdauthor-0.6.14/src/dvdcompile.c	2007-01-11 01:20:42.000000000 +0100
++++ /home/fab/build/dvdauthor-0.6.14-patched/src/dvdcompile.c	2009-11-15 20:45:22.000000000 +0100
+@@ -26,6 +26,7 @@
+ #include "da-internal.h"
+ #include "dvdvm.h"
+ 
++extern _Bool videoedit, audioedit;
+ 
+ struct vm_statement *dvd_vm_parsed_cmd;
+ 
+@@ -273,7 +274,7 @@
+ }
+ 
+ // NOTE: curgroup is passed separately from curpgc, because in FPC, curpgc==NULL, but curgroup!=NULL
+-static unsigned char *compilecs(unsigned char *obuf,unsigned char *buf,const struct workset *ws,const struct pgcgroup *curgroup,const struct pgc *curpgc,const struct vm_statement *cs,int ismenu)
++static unsigned char *compilecs(unsigned char *obuf,unsigned char *buf,const struct workset *ws,const struct pgcgroup *curgroup,const struct pgc *curpgc,const struct vm_statement *cs,int ismenu, _Bool isvideo)
+ {
+     int lastif=0;
+ 
+@@ -378,9 +379,9 @@
+             while(1) {
+                 unsigned char *lp,*ib,*e;
+ 
+-                lp=compilecs(obuf,iftrue,ws,curgroup,curpgc,cs->param->next->param,ismenu);
++                lp=compilecs(obuf,iftrue,ws,curgroup,curpgc,cs->param->next->param,ismenu, isvideo);
+                 if( cs->param->next->next ) {
+-                    e=compilecs(obuf,lp+8,ws,curgroup,curpgc,cs->param->next->next,ismenu);
++                    e=compilecs(obuf,lp+8,ws,curgroup,curpgc,cs->param->next->next,ismenu, isvideo);
+                     write8(lp,0x00,0x01,0x00,0x00,0x00,0x00,0x00,(e-obuf)/8+1);
+                     lp+=8;
+                 } else
+@@ -560,7 +561,18 @@
+                 if( !i2 || i2==120 )
+                     i2=122;
+                 if( i2<120 )
++		{
++                    if (isvideo) 
++		    {
+                     write8(buf,0x30,0x06,0x00,i2,0x00,0xC0,0x00,0x00); // JumpSS VMGM pgcn
++		      fprintf(stderr,"INFO:  Jumping to VMGM pgcn %d\n", i2);
++		    }
++		    else 
++		    {
++		      write8(buf,0x20,0x04,0x00,0x00,0x00,0x00,0x00,i2); // JumpSS AMGM pgcn
++		      fprintf(stderr,"INFO:  Jumping to AMGM pgcn %d\n", i2);
++		    }
++		}
+                 else
+                     write8(buf,0x30,0x06,0x00,0x00,0x00,i2==121?0:(0x40+i2-120),0x00,0x00); // JumpSS FP or JumpSS VMGM menu
+                 buf+=8;
+@@ -620,7 +632,16 @@
+                 if( ismenu==2 ) {
+                     // In case we are jumping from a FP to VMGM, we need to use a JumpSS
+                     // instruction
++                   if (isvideo)
++		   {
+                     write8(buf,0x30,0x06,0x00,i2&127,0x00,0xc0,0x00,0x00); // JumpSS VMGM pgcn
++		      fprintf(stderr,"INFO:  Jumping to VMGM pgcn %d\n", i2);
++		   }
++		   else
++		   {
++		     write8(buf,0x20,0x04,0x00,0x00,0x00,0xc0,0x00,i2&127); // JumpSS AMGM pgcn
++		      fprintf(stderr,"INFO:  Jumping to AMGM pgcn %d\n", i2);
++		   }
+                 } else
+                     write8(buf,0x20,0x04,0x00,0x00,0x00,0x00,0x00,i2&127); // LinkPGCN pgcn
+                 buf+=8;
+@@ -640,11 +661,31 @@
+                         return 0;
+                     }
+                 }
+-                write8(buf,0x30,ismenu==2?0x02:(cs->i3?0x05:0x03),0x00,cs->i3,0x00,i2-128,0x00,0x00);
++                if (isvideo) write8(buf,0x30,ismenu==2?0x02:(cs->i3?0x05:0x03),0x00,cs->i3,0x00,i2-128,0x00,0x00);
++                else 
++                   fprintf(stderr, "%s\n", "ERR: Use 'jump group X track Y' for DVD-Audio editing");
++                
+                 buf+=8;
+             }
+             break;
+         }
++                 // DVDA-AUTHOR PATCH
++                // AUDIO_TS: Jump to titleset X track Y (1-based in titleset X) : 0x30 0A 00 0X 00 0Y 00 00 
++               //else write8(buf,0x30,ismenu==2?0x0A:(cs->i3?0x05:0x03),0x00,cs->i3,0x00,i2-128,0x00,0x00);
++              // END OF DVDA-AUTHOR PATCH
++
++        case VM_JUMP_AUDIOGROUP:
++        
++                if (ismenu==2)
++                {
++                     write8(buf,0x30,0x0A,0x00,cs->audiogroup,0x00,cs->i2-128,0x00,0x00);
++                     fprintf(stderr, "INFO: Writing DVD-Audio VM code for group %d, track %d\n", cs->audiogroup, cs->i2-128);
++                }
++                else 
++                fprintf(stderr, "%s\n", "ERR: Unknown audio jump for ismenu != 2");
++                buf+=8;
++                break;
++        
+ 
+         case VM_CALL:
+         {
+@@ -730,7 +771,7 @@
+                 //	VTS	NONE	MEPGC	CHXX
+                 //	VTS	VMGM	MEPGC	CHXX
+                 //	VTS	TS	MEPGC	CHXX
+-                fprintf(stderr,"ERR:  Cannot 'call' a chatper within a menu\n");
++                fprintf(stderr,"ERR:  Cannot 'call' a chapter within a menu\n");
+                 return 0;
+             }
+             if( i2==121 && (cs->i1>=2 || (cs->i1==0 && ismenu!=2)) ) {
+@@ -1026,7 +1067,7 @@
+     }
+ }
+ 
+-unsigned char *vm_compile(unsigned char *obuf,unsigned char *buf,const struct workset *ws,const struct pgcgroup *curgroup,const struct pgc *curpgc,const struct vm_statement *cs,int ismenu)
++unsigned char *vm_compile(unsigned char *obuf,unsigned char *buf,const struct workset *ws,const struct pgcgroup *curgroup,const struct pgc *curpgc,const struct vm_statement *cs,int ismenu, _Bool isvideo)
+ {
+     unsigned char *end;
+     int i, j;
+@@ -1034,7 +1075,7 @@
+     numlabels=0;
+     numgotos=0;
+ 
+-    end=compilecs(obuf,buf,ws,curgroup,curpgc,cs,ismenu);
++    end=compilecs(obuf,buf,ws,curgroup,curpgc,cs,ismenu, isvideo);
+     if( !end ) return end;
+ 
+     // fix goto references
+diff -urdwb /home/fab/build/dvdauthor-0.6.14/src/dvdifo.c /home/fab/build/dvdauthor-0.6.14-patched/src/dvdifo.c
+--- /home/fab/build/dvdauthor-0.6.14/src/dvdifo.c	2007-02-11 04:51:50.000000000 +0100
++++ /home/fab/build/dvdauthor-0.6.14-patched/src/dvdifo.c	2009-10-20 23:16:13.000000000 +0200
+@@ -384,11 +384,11 @@
+     i+=Create_PTT_SRPT(0,ws->titles);
+ 
+     write4(buf+0xCC,i); // VTS_PGCI
+-    i+=CreatePGC(0,ws,0);
++    i+=CreatePGC(0,ws,0,1);
+ 
+     if( jumppad || forcemenus ) {
+         write4(buf+0xD0,i); // VTSM_PGCI
+-        i+=CreatePGC(0,ws,1);
++        i+=CreatePGC(0,ws,1,1);
+     }
+ 
+     write4(buf+0xD4,i); // VTS_TMAPT
+@@ -428,10 +428,10 @@
+     Create_PTT_SRPT(h,ws->titles);
+    
+     // sect 2: VTS_PGCIT
+-    CreatePGC(h,ws,0);
++    CreatePGC(h,ws,0,1);
+ 
+     if( jumppad || forcemenus )
+-        CreatePGC(h,ws,1);
++        CreatePGC(h,ws,1,1);
+ 
+     // sect 3: ??? VTS_TMAPT
+     CreateTMAPT(h,ws->titles);
+@@ -487,7 +487,7 @@
+ 
+     if( jumppad || forcemenus ) { // PGC
+         write4(buf+0xc8,i);
+-        i+=CreatePGC(0,ws,2);
++        i+=CreatePGC(0,ws,2,1);
+     }
+ 
+     write4(buf+0xd0,i); // VTS_ATRT
+@@ -526,9 +526,9 @@
+             exit(1);
+         }
+         if( ws->menus && ws->menus->numgroups )
+-            pi=vm_compile(buf+i,buf+i,ws,ws->menus->groups[0].pg,0,fpc->prei,2); // XXX: just use the first pgcgroup as a reference
++            pi=vm_compile(buf+i,buf+i,ws,ws->menus->groups[0].pg,0,fpc->prei,2, 1); // XXX: just use the first pgcgroup as a reference
+         else
+-            pi=vm_compile(buf+i,buf+i,ws,0,0,fpc->prei,2);
++            pi=vm_compile(buf+i,buf+i,ws,0,0,fpc->prei,2, 1);
+         if( !pi ) {
+             fprintf(stderr,"ERR:  in FPC\n");
+             exit(1);
+@@ -572,7 +572,7 @@
+ 
+     // PGC
+     if( jumppad || forcemenus )
+-        CreatePGC(h,ws,2);
++        CreatePGC(h,ws,2,1);
+ 
+     // VMG_VTS_ATRT
+     memset(buf,0,2048);
+diff -urdwb /home/fab/build/dvdauthor-0.6.14/src/dvdpgc.c /home/fab/build/dvdauthor-0.6.14-patched/src/dvdpgc.c
+--- /home/fab/build/dvdauthor-0.6.14/src/dvdpgc.c	2007-01-12 20:50:55.000000000 +0100
++++ /home/fab/build/dvdauthor-0.6.14-patched/src/dvdpgc.c	2009-10-20 23:16:13.000000000 +0200
+@@ -137,7 +137,7 @@
+     return offs;
+ }
+ 
+-static int genpgc(unsigned char *buf,const struct workset *ws,const struct pgcgroup *group,int pgc,int ismenu,int entry)
++static int genpgc(unsigned char *buf,const struct workset *ws,const struct pgcgroup *group,int pgc,int ismenu,int entry, _Bool isvideo)
+ {
+     const struct vobgroup *va=(ismenu?ws->menus->vg:ws->titles->vg);
+     const struct pgc *p=group->pgcs[pgc];
+@@ -176,7 +176,7 @@
+         preptr=cd;
+         cd+=genjumppad(cd,ismenu,entry,ws,group);
+         if( p->prei ) {
+-            cd=vm_compile(preptr,cd,ws,p->pgcgroup,p,p->prei,ismenu);
++            cd=vm_compile(preptr,cd,ws,p->pgcgroup,p,p->prei,ismenu, isvideo);
+             if(!cd) {
+                 fprintf(stderr,"ERR:  in %s pgc %d, <pre>\n",pstypes[ismenu],pgc);
+                 exit(1);
+@@ -192,7 +192,7 @@
+             cd+=8*(p->numbuttons+2);
+         }
+         if( p->posti ) {
+-            cd=vm_compile(postptr,cd,ws,p->pgcgroup,p,p->posti,ismenu);
++            cd=vm_compile(postptr,cd,ws,p->pgcgroup,p,p->posti,ismenu, isvideo);
+             if(!cd) {
+                 fprintf(stderr,"ERR:  in %s pgc %d, <post>\n",pstypes[ismenu],pgc);
+                 exit(1);
+@@ -206,7 +206,7 @@
+ 
+             for( i=0; i<p->numbuttons; i++ ) {
+                 const struct button *b=&p->buttons[i];
+-                unsigned char *cdd=vm_compile(postptr,cd,ws,p->pgcgroup,p,b->cs,ismenu);
++                unsigned char *cdd=vm_compile(postptr,cd,ws,p->pgcgroup,p,b->cs,ismenu, isvideo);
+ 
+                 if(!cdd) {
+                     fprintf(stderr,"ERR:  in %s pgc %d, button %s\n",pstypes[ismenu],pgc,b->name);
+@@ -234,7 +234,7 @@
+             for( j=0; j<p->sources[i]->numcells; j++ ) {
+                 const struct cell *c=&p->sources[i]->cells[j];
+                 if( c->cs ) {
+-                    unsigned char *cdd=vm_compile(cellptr,cd,ws,p->pgcgroup,p,c->cs,ismenu);
++                    unsigned char *cdd=vm_compile(cellptr,cd,ws,p->pgcgroup,p,c->cs,ismenu, isvideo);
+                     if( !cdd ) {
+                         fprintf(stderr,"ERR:  in %s pgc %d, <cell>\n",pstypes[ismenu],pgc);
+                         exit(1);
+@@ -338,7 +338,7 @@
+     return d;
+ }
+ 
+-static int createpgcgroup(const struct workset *ws,int ismenu,const struct pgcgroup *va,unsigned char *buf)
++static int createpgcgroup(const struct workset *ws,int ismenu,const struct pgcgroup *va,unsigned char *buf, _Bool isvideo)
+ {
+     int len,i,pgcidx;
+ 
+@@ -366,7 +366,7 @@
+                 }
+         }
+         write4(buf+pgcidx+4,len);
+-        len+=genpgc(buf+len,ws,va,i,ismenu,j);
++        len+=genpgc(buf+len,ws,va,i,ismenu,j, isvideo);
+         pgcidx+=8;
+     }
+ 
+@@ -399,7 +399,7 @@
+     return len;
+ }
+ 
+-int CreatePGC(FILE *h,const struct workset *ws,int ismenu)
++int CreatePGC(FILE *h,const struct workset *ws,int ismenu,_Bool isvideo)
+ {
+     unsigned char *buf;
+     int len,ph,i,in_it;
+@@ -434,14 +434,14 @@
+                 plu[3]=0x80; // menu system contains entry for title
+             write4(plu+4,ph);
+ 
+-            len=createpgcgroup(ws,ismenu,lg->pg,buf+ph);
++            len=createpgcgroup(ws,ismenu,lg->pg,buf+ph, isvideo);
+             if( len<0 )
+                 goto retry;
+             ph+=len;
+         }
+         write4(buf+4,ph-1);
+     } else {
+-        len=createpgcgroup(ws,0,ws->titles,buf);
++        len=createpgcgroup(ws,0,ws->titles,buf, isvideo);
+         if( len<0 )
+             goto retry;
+         ph=len;
+diff -urdwb /home/fab/build/dvdauthor-0.6.14/src/dvdunauthor.c /home/fab/build/dvdauthor-0.6.14-patched/src/dvdunauthor.c
+--- /home/fab/build/dvdauthor-0.6.14/src/dvdunauthor.c	2006-06-01 06:03:24.000000000 +0200
++++ /home/fab/build/dvdauthor-0.6.14-patched/src/dvdunauthor.c	2009-10-20 23:16:13.000000000 +0200
+@@ -1069,7 +1069,6 @@
+         usage();
+     }
+     devname=argv[optind];
+-
+     dvd=DVDOpen(devname);
+     if(!dvd) {
+         fprintf(stderr,"ERR:  Cannot open path '%s'\n",argv[1]);
+@@ -1082,6 +1081,7 @@
+     xmlDocSetRootElement(myXmlDoc, mainNode);
+     xmlNewProp( mainNode, "allgprm", "yes");
+       
++   
+     for( i=0; i<=numtitlesets; i++ ) {
+         if( i ) {
+             char buffer[100];
+@@ -1102,6 +1102,8 @@
+         }
+     }
+      
++   
++   
+     xmlSaveFormatFile( "dvdauthor.xml", myXmlDoc, 1 );
+     xmlFreeDoc( myXmlDoc );
+ 
+diff -urdwb /home/fab/build/dvdauthor-0.6.14/src/dvdvm.h /home/fab/build/dvdauthor-0.6.14-patched/src/dvdvm.h
+--- /home/fab/build/dvdauthor-0.6.14/src/dvdvm.h	2007-01-11 01:20:18.000000000 +0100
++++ /home/fab/build/dvdauthor-0.6.14-patched/src/dvdvm.h	2009-10-20 23:16:13.000000000 +0200
+@@ -17,7 +17,7 @@
+ 
+ struct vm_statement {
+     int op;
+-    int i1,i2,i3,i4;
++    int i1,i2,i3,i4, audiogroup;
+     char *s1,*s2,*s3,*s4;
+     struct vm_statement *param;
+     struct vm_statement *next;
+@@ -60,7 +60,8 @@
+        VM_LABEL,
+        VM_BREAK,
+        
+-       VM_MAX_OPCODE
++       VM_MAX_OPCODE,
++       VM_JUMP_AUDIOGROUP
+ };
+ 
+ static inline struct vm_statement *statement_new()
+diff -urdwb /home/fab/build/dvdauthor-0.6.14/src/dvdvml.l /home/fab/build/dvdauthor-0.6.14-patched/src/dvdvml.l
+--- /home/fab/build/dvdauthor-0.6.14/src/dvdvml.l	2006-06-01 06:03:35.000000000 +0200
++++ /home/fab/build/dvdauthor-0.6.14-patched/src/dvdvml.l	2009-10-26 22:13:26.000000000 +0100
+@@ -76,11 +76,13 @@
+ subtitle	{ return SUBTITLE_TOK; }
+ tail            { return TAIL_TOK; }
+ title		{ return TITLE_TOK; }
++track           { return TRACK_TOK; }
+ titleset	{ return TITLESET_TOK; }
+ top             { return TOP_TOK; }
+ vmgm		{ return VMGM_TOK; }
++amgm            { return AMGM_TOK; }
+ xor		{ return XOR_TOK; }
+-
++group		{ return GROUP_TOK; }
+ 
+ {ws}		;
+ 
+diff -urdwb /home/fab/build/dvdauthor-0.6.14/src/dvdvmy.y /home/fab/build/dvdauthor-0.6.14-patched/src/dvdvmy.y
+--- /home/fab/build/dvdauthor-0.6.14/src/dvdvmy.y	2006-06-01 06:03:44.000000000 +0200
++++ /home/fab/build/dvdauthor-0.6.14-patched/src/dvdvmy.y	2009-10-26 22:12:47.000000000 +0100
+@@ -69,7 +69,9 @@
+ %token TITLESET_TOK
+ %token TOP_TOK
+ %token VMGM_TOK
+-
++%token AMGM_TOK
++%token GROUP_TOK
++%token TRACK_TOK
+ 
+ %left _OR_TOK XOR_TOK LOR_TOK BOR_TOK
+ %left _AND_TOK LAND_TOK BAND_TOK
+@@ -92,7 +94,7 @@
+ }
+ 
+ %type <statement> finalparse statements statement callstatement jumpstatement setstatement ifstatement ifelsestatement expression boolexpr
+-%type <int_val> jtsl jtml jcl resumel reg regornum regorcounter
++%type <int_val> jtsl jgrl jtml jcl resumel reg regornum regorcounter
+ 
+ %%
+ 
+@@ -155,11 +157,21 @@
+ | VMGM_TOK {
+     $$=1;
+ }
++| AMGM_TOK {
++    $$=1;
++}
++
+ | {
+     $$=0;
+ }
+ ;
+ 
++jgrl: GROUP_TOK NUM_TOK {
++    $$=$2;
++}
++
++;
++
+ jtml: MENU_TOK NUM_TOK {
+     $$=$2;
+ }
+@@ -190,6 +202,9 @@
+ | TITLE_TOK NUM_TOK {
+     $$=($2)|128;
+ }
++| TRACK_TOK NUM_TOK {
++    $$=($2)|128;
++}
+ | {
+     $$=0;
+ }
+@@ -220,6 +235,14 @@
+     $$->op=VM_JUMP;
+     $$->i3=65536+$3;
+ }
++| JUMP_TOK jgrl jtml SEMICOLON_TOK {
++    $$=statement_new();
++    $$->op=VM_JUMP_AUDIOGROUP;
++    $$->audiogroup=$2;
++    $$->i2=$3;
++        
++}
++
+ ;
+ 
+ resumel: RESUME_TOK NUM_TOK {
+diff -urdwb /home/fab/build/dvdauthor-0.6.14/src/dvdvob.c /home/fab/build/dvdauthor-0.6.14-patched/src/dvdvob.c
+--- /home/fab/build/dvdauthor-0.6.14/src/dvdvob.c	2007-01-13 00:52:20.000000000 +0100
++++ /home/fab/build/dvdauthor-0.6.14-patched/src/dvdvob.c	2009-10-20 23:16:13.000000000 +0200
+@@ -1564,7 +1564,7 @@
+     return 1;
+ }
+ 
+-void FixVobus(char *fbase,const struct vobgroup *va,const struct workset *ws,int ismenu)
++void FixVobus(char *fbase,const struct vobgroup *va,const struct workset *ws,int ismenu, _Bool isvideo)
+ {
+     int h=-1;
+     int i,j,pn,fnum=-2;
+@@ -1674,7 +1674,7 @@
+                             boffs[8]=findbutton(pg,bi->left,(j==0)?pg->numbuttons:j);
+                             boffs[9]=findbutton(pg,bi->right,(j+1==pg->numbuttons)?1:j+2);
+                         }
+-                        rbuf=vm_compile(compilebuf,compilebuf,ws,pg->pgcgroup,pg,b->cs,ismenu);
++                        rbuf=vm_compile(compilebuf,compilebuf,ws,pg->pgcgroup,pg,b->cs,ismenu, isvideo);
+                         if( rbuf-compilebuf==8 ) {
+                             memcpy(boffs+10,compilebuf,8);
+                         } else if( allowallreg ) {
+Seulement dans /home/fab/build/dvdauthor-0.6.14-patched: srcm4
