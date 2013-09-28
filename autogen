@@ -19,7 +19,7 @@ cp INSTALL $backup
 topdir=`pwd`
 echo "Entering: "
 echo "$topdir"
-autoreconf --install --force -Im4 -Im4.extra -Im4.extra.dvdauthor 
+autoreconf --install --force -Im4 -Im4.extra -Im4.extra.dvdauthor -W none
 exitcode=$?
 cd "$topdir"
 

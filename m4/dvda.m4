@@ -633,7 +633,7 @@ AC_DEFUN([DVDA_CONFIG],[
               VAR[_BUILD]=yes
               VAR[_CONFIGURE_FILE]="[$MAYBE_]VAR"/configure
 
-              m4_ifvaln([$2],[$2],[VAR[_LIB]="\${ROOTDIR}[/local/lib/lib]m4_tolower(cut_lib_prefix(VAR))[.a]"]) #do not quote VAR. It is necessary to lower case as base names are uniform
+              m4_ifvaln([$2],[$2],[VAR[_LIB]="\${ROOTDIR}[/local/lib/lib]cut_lib_prefix(m4_tolower(VAR))[.a]"]) #do not quote VAR. It is necessary to lower case as base names are uniform
 
               [CONFIGURE_]VAR[_FLAGS]="FL $VAR[_FLAGS]"
               AC_SUBST([CONFIGURE_]VAR[_FLAGS])
