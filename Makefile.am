@@ -1,7 +1,7 @@
 if HAVE_SMAKE
 MAKETOOL=${SMAKE}
 else
-MAKETOOL=make -j4 -k
+MAKETOOL=make  -k
 endif
 
 define trace
@@ -23,12 +23,12 @@ endef
 # downloaded binaries will be built locally, to avoid possible versioning issues with already installed one
 # passing right flags to make distcheck when configuring nested packages We do not configure libogg, because install is forced under _build/_inst instead of local/
 
-DISTCHECK_CONFIGURE_FLAGS=--enable-all-deps --enable-all-builds
-ACLOCAL_AMFLAGS=-I m4 --install
+DISTCHECK_CONFIGURE_FLAGS=--enable-all-all
+ACLOCAL_AMFLAGS=-I m4 -I m4.extra -I m4.extra.dvdauthor --install
 
 # delegating nested 'configure' to 'make' in gcc-fashion saves about 40% of computing time on a multicore with make -j4
 # configure real processing times on Intel Q4 9450, 2GB DDR3 1600 MHz:
-#
+
 # libFLAC + libogg (prior versions)
 # make     make -j4
 # 9.5s --> 4.5s
@@ -36,16 +36,16 @@ ACLOCAL_AMFLAGS=-I m4 --install
 # nested packages will be configured only if main configure has been launched freshly.
 # stamprecord si a so-called cookie, used only for its time stamp
 
-.PHONY: erase_build.trace do_sox_lib_deps_subst stage2
+.PHONY: erase_build.trace do_sox_lib_deps_subst 
 
 erase_build.trace:
 	if test -f  BUILD.TRACE; then rm -f BUILD.TRACE; fi
 
-all: erase_build.trace stamprecord0 stamprecord1 stamprecord2 stamprecord3 stamprecord4 stamprecord5 stamprecord6 stamprecord7 stamprecord8 stamprecord9 stamprecord10 do_sox_lib_deps_subst
+all: erase_build.trace libogg libflac libsox dvdauthor cdrtools mjpegtools help2man imagemagick lplex libmpeg2 a52dec do_sox_lib_deps_subst
 
 
 # directly patching the Makefile appears to be more efficient. You need a GNU-compliant make.
-do_sox_lib_deps_subst: src/Makefile stamprecord2
+do_sox_lib_deps_subst: src/Makefile libsox
 if HAVE_SOX_BUILD
 	chmod +x ${MAYBE_SOX}/sox-libs
 	$(SED) -e "s,SOX_LIB_DEPS,$(shell cat ${MAYBE_SOX}/sox-libs | $(SED) -e "s,[\.\.\/].*[a],,g"   -e  "s,@.*@,,g"),g" < src/Makefile > src/Makefile.temp
@@ -57,16 +57,16 @@ endif
 # delegating configure to a script for FLAC and SOX is oddly necessary, for unclear reasons. The same script embedded here causes libtool issues,
 # probably a libtool bug?
 
-stamprecord0: Makefile
+libogg: Makefile
 if HAVE_LIBOGG_BUILD
-	if test -f stamprecord0; then rm -f stamprecord0; fi; touch stamprecord0
+	if test -f libogg; then rm -f libogg; fi; touch libogg
 	cd ${MAYBE_LIBOGG} &&  ${SHELL} configure ${CONFIGURE_LIBOGG_FLAGS} && $(MAKETOOL) && $(MAKETOOL) install ; cd -
 	$(call follow, $@: `find ${ROOTDIR} -name libogg.a -print0`, library)
 endif
 
 
-stamprecord1: Makefile
-	if test -f stamprecord1; then rm -f stamprecord1; fi; touch stamprecord1
+libflac: Makefile
+	if test -f libflac; then rm -f libflac; fi; touch libflac
 if HAVE_FLAC_BUILD
 	chmod +x script && ${SHELL} script
 	$(call follow, $@: `find ${ROOTDIR} -name libflac.a -print0` , library)
@@ -74,8 +74,8 @@ endif
 
 # you need the autotools to be able to rebuild sox with the sox-libs patch (the alternative would be using pkg-config, which is no better)
 
-stamprecord2: Makefile
-	if test -f stamprecord2; then rm -f stamprecord2; fi; touch stamprecord2
+libsox: Makefile
+	if test -f libsox; then rm -f libsox; fi; touch libsox
 if HAVE_AUTOMAKE
 if HAVE_AUTOCONF
 if HAVE_SOX_BUILD
@@ -85,8 +85,8 @@ endif
 endif
 endif
 
-stamprecord3: Makefile
-	if test -f stamprecord3; then rm -f stamprecord3; fi; touch stamprecord3
+dvdauthor: Makefile
+	if test -f dvdauthor; then rm -f dvdauthor; fi; touch dvdauthor
 if HAVE_AUTOMAKE
 if HAVE_AUTOCONF
 if HAVE_DVDAUTHOR_BUILD
@@ -97,48 +97,48 @@ endif
 
 #cdrtools must be compiled with special make install parameters hence should not be included in the SUBDIRS list. Building/cleaning will need prior configuration.
 
-stamprecord4: Makefile
-	if test -f stamprecord4; then rm -f stamprecord4; fi; touch stamprecord4
+cdrtools: Makefile
+	if test -f cdrtools; then rm -f cdrtools; fi; touch cdrtools
 	cd ${MAYBE_CDRTOOLS} && $(MAKETOOL) ; cd -
 	$(call execfollow, ${MAYBE_CDRTOOLS}, cdrecord, $@, -version 2>null)
 
-stamprecord5: Makefile
-	if test -f stamprecord5; then rm -f stamprecord5; fi; touch stamprecord5
+mjpegtools: Makefile
+	if test -f mjpegtools; then rm -f mjpegtools; fi; touch mjpegtools
 if HAVE_MJPEGTOOLS_BUILD
 	chmod +x script6 && ${SHELL} script6
 	$(call execfollow, ${MAYBE_MJPEGTOOLS}, mplex, $@,  2>&1 |  line)
 endif
 
-stamprecord6: Makefile
-	if test -f stamprecord6; then rm -f stamprecord6; fi; touch stamprecord6
+help2man: Makefile
+	if test -f help2man; then rm -f help2man; fi; touch help2man
 if HAVE_HELP2MAN_BUILD
 	cd ${MAYBE_HELP2MAN} && ${SHELL} configure --prefix=${prefix} ; cd -
 	$(call execfollow, ${MAYBE_HELP2MAN}, help2man, $@,  --version | line)
 endif
 
-stamprecord7: Makefile
-	if test -f stamprecord7; then rm -f stamprecord7; fi; touch stamprecord7
+imagemagick: Makefile
+	if test -f imagemagick; then rm -f imagemagick; fi; touch imagemagick
 if HAVE_IMAGEMAGICK_BUILD
 	chmod +x script2 && ${SHELL} script2
 	$(call execfollow, ${MAYBE_IMAGEMAGICK}, convert, $@,  --version 2>&1 | line)
 endif
 
-stamprecord8: Makefile
-	if test -f stamprecord8; then rm -f stamprecord8; fi; touch stamprecord8
+lplex: Makefile
+	if test -f lplex; then rm -f lplex; fi; touch lplex
 if HAVE_LPLEX_BUILD
 	chmod +x script3 && ${SHELL} script3
 	$(call execfollow, ${MAYBE_LPLEX}, lplex, $@,  --version 2>&1 | line)
 endif
 
-stamprecord9: Makefile
-	if test -f stamprecord9; then rm -f stamprecord9; fi; touch stamprecord9
+libmpeg2: Makefile
+	if test -f libmpeg2; then rm -f libmpeg2; fi; touch libmpeg2
 if HAVE_LIBMPEG2_BUILD
 	chmod +x script4 && ${SHELL} script4
 	$(call execfollow, ${MAYBE_LIBMPEG2}, mpeg2dec, $@,  <null 2>&1 | line)
 endif
 
-stamprecord10: Makefile
-	if test -f stamprecord10; then rm -f stamprecord10; fi; touch stamprecord10
+a52dec: Makefile
+	if test -f a52dec; then rm -f a52dec; fi; touch a52dec
 if HAVE_A52DEC_BUILD
 	chmod +x script5 && ${SHELL} script5
 	$(call execfollow, ${MAYBE_A52DEC}, a52dec, $@,  2>&1 | line)
@@ -150,16 +150,16 @@ if HAVE_HELP2MAN
 	$(call docfollow,  dvda-author.1, $@)
 endif
 
-dvda-author-@VERSION@.html: dvda-author.1
+dochtml: dvda-author.1
 #PATCH  09.12  We need to display in UTF-8 mode and take off an illicit file header created by man2html
 if HAVE_MAN2HTML
-	${MAN2HTML} < dvda-author.1 | $(SED) -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > dvda-author-@VERSION@.html
-	$(call docfollow, dvda-author-@VERSION@.html, $@)
+	${MAN2HTML} < dvda-author.1 | $(SED) -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > dochtml
+	$(call docfollow, dochtml, $@)
 endif
 
 
 SUBDIRS=${MAYBE_IBERTY} libutils ${MAYBE_LIBOGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} ${MAYBE_SOX}  ${MAYBE_LPLEX} ${MAYBE_DVDAUTHOR} ${MAYBE_HELP2MAN}  ${MAYBE_IMAGEMAGICK} ${MAYBE_LIBMPEG2} ${MAYBE_A52DEC} src
-DIST_SUBDIRS=libiberty libutils libfixwav src  images
+DIST_SUBDIRS=libiberty libutils libfixwav src  images 
 
 #normally is ${prefix}/share/applications/dvda-author-${VERSION}
 sysconfdir=${SHORTLINKDIR}
@@ -177,8 +177,8 @@ dist_pix_DATA=dvda-author_48x48.png dvda-author_64x64.png
 dist_doc_DATA=README  BUGS EXAMPLES LIMITATIONS BUILD.lplex BUILD.Windows BUILD.Ubuntu  DEPENDENCIES HOWTO.conf dvda-author.conf.example
 
 if HAVE_MAN2HTML
-  dist_doc_DATA += dvda-author-@VERSION@.html
-  htmlhelp=dvda-author-@VERSION@.html
+  dist_doc_DATA += dochtml
+  htmlhelp=dochtml
 else
   htmlhelp=
 endif
@@ -191,9 +191,12 @@ else
 endif
 
 # GNU build system regeneration script and others
-EXTRA_DIST=autogen dvda-author.ico  dvda-author-launch.bat  sox-libs  m4.extra m4.extra.dvdauthor
+
+EXTRA_DIST=autogen dvda-author.ico  dvda-author-launch.bat  sox-libs  m4.extra m4.extra.dvdauthor menu  libs
+
 install-data-local:  $(manhelp) $(htmlhelp)
 install-exec-local:
+
 if HAVE_CDRTOOLS_BUILD
 	cd ${MAYBE_CDRTOOLS}; $(MAKETOOL) INS_BASE=${prefix} install; cd -
 endif
@@ -231,7 +234,7 @@ if HAVE_SOX_BUILD
 endif
 
 clean-local:
-	rm -f dvda-author.1 dvda-author-@VERSION@.html
+	rm -f dvda-author.1 dochtml
 if HAVE_CDRTOOLS_BUILD
 	cd ${MAYBE_CDRTOOLS}; $(MAKETOOL) INS_BASE=${prefix} clean; cd -
 endif
