@@ -633,12 +633,12 @@ AC_DEFUN([DVDA_CONFIG],[
               VAR[_BUILD]=yes
               VAR[_CONFIGURE_FILE]="[$MAYBE_]VAR"/configure
 
-              m4_ifvaln([$2],[$2],[VAR[_LIB]="\${ROOTDIR}[/local/lib/lib]cut_lib_prefix(m4_tolower(VAR))[.a]"]) #do not quote VAR. It is necessary to lower case as base names are uniform
+              m4_ifvaln([$2],[$2],[VAR[_LIB]="\${BUILDDIR}[/local/lib/lib]cut_lib_prefix(m4_tolower(VAR))[.a]"]) #do not quote VAR. It is necessary to lower case as base names are uniform
 
               [CONFIGURE_]VAR[_FLAGS]="FL $VAR[_FLAGS]"
               AC_SUBST([CONFIGURE_]VAR[_FLAGS])
               AC_MSG_NOTICE([CONFIGURE_]VAR[_FLAGS]=$[CONFIGURE_]VAR[_FLAGS])
-              AS_IF([test -d  $ROOTDIR/$[MAYBE_]VAR && ! test -d  $[MAYBE_]VAR ], [cp -r $ROOTDIR/$[MAYBE_]VAR  $PWD])
+              AS_IF([test -d  $BUILDDIR/$[MAYBE_]VAR && ! test -d  $[MAYBE_]VAR ], [cp -r $BUILDDIR/$[MAYBE_]VAR  $PWD])
            ])
 
     AM_CONDITIONAL([HAVE_]VAR[_BUILD], [test x$VAR[_BUILD] = xyes || test x$ALL_BUILDS = xyes])
