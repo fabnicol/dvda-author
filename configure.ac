@@ -54,6 +54,7 @@ SOX_BUILD=no
 cflags_save="$CFLAGS -std=c99"
 #redefine CFLAGS to avoid systematic -g -O2 introduced by AC_PROG_CC
 #This should come after AC_PROG macros
+BUILDDIR=`cd "$builddir" ; pwd`
 ROOTDIR=`cd "$srcdir" ; pwd`
 #preparing local build of downloaded libs
 DVDA_MKDIR([local])
@@ -83,11 +84,11 @@ PIXDIR=$datarootdir/pixmaps
 AS_IF([ test x$SHORTLINKDIR = x ], [SHORTLINKDIR=$datarootdir/applications/$PACKAGE_TARNAME])
 MENUDIR=$SHORTLINKDIR/menu
 AS_IF([ test $exec_prefix = "NONE" ],
-[
- AC_MSG_RESULT([Using libdir=${prefix}/lib])
- libdir="${prefix}/lib"
- bindir="${prefix}/bin"
-])
+  [
+   AC_MSG_RESULT([Using libdir=${prefix}/lib])
+   libdir="${prefix}/lib"
+    bindir="${prefix}/bin"
+  ])
 
 AC_DEFINE_UNQUOTED([BINDIR], "${bindir}", [Installation directory for dvda-author and tools])
 AC_DEFINE_UNQUOTED(INSTALL_CONF_DIR, "$SHORTLINKDIR", [Defines directory of .desktop and .conf files])
@@ -233,7 +234,7 @@ AC_SYS_LARGEFILE
 AC_DEFINE([_FILE_OFFSET_BITS], [64], [Large file support enabled])
 
 
-m4_map([AC_SUBST],[[[ROOTDIR]],[[LIBSOXCONVERT_CPPFLAGS]],[[DEBUG_FLAGS]],[[SHORTLINKDIR]], [[PIXDIR]],[[MENUDIR]]])
+m4_map([AC_SUBST],[[[ROOTDIR]],[[BUILDDIR]], [[LIBSOXCONVERT_CPPFLAGS]],[[DEBUG_FLAGS]],[[SHORTLINKDIR]], [[PIXDIR]],[[MENUDIR]]])
 
 
 # correspondence between X_BUILD shell variables and subdirectory names. Could be avoided with lesser flexibility in naming conventions.
@@ -255,21 +256,18 @@ AC_CONFIG_FILES([Makefile
          libfixwav/Makefile
          libfixwav/src/Makefile
          libfixwav/src/include/Makefile
-         CB_project/Makefile
-         CB_project/dvda-author/Makefile
-         CB_project/libc_utils/Makefile
-         CB_project/libfixwav/Makefile
          libiberty/Makefile
          libiberty/src/Makefile
          libiberty/src/include/Makefile
          images/Makefile
-         script
-         script1
-         script2
-         script3
-         script4
-         script5
-         script6
+         script.libflac
+         script.lplex
+         script.a52dec
+         script.libmpeg2
+         script.magick
+         script.mjpegtools
+         script.libsox
+         sox-libs
          COREBUILD
          EXAMPLES
 ])
@@ -355,13 +353,12 @@ AS_IF([ test x$SMAKE != x ], [ AC_MSG_RESULT([smake will be used instead of GNU 
 AS_IF([ test x$MP2ENC = x -o x$JPEG2YUV = x -o x$MPEG2ENC = x -o x$MPLEX = x],[
  AC_MSG_RESULT([  You will have to author top menus from available MPEG background files, as tools are missing to automate generation.])])
 
-
 AC_MSG_RESULT([[
 
   Using $make as a system build tool.
 
   Auxiliary tools
-				   build [yes/no] install path
+				   build [default no/yes]    install path [default system path/build path]
 
     help2man: .....................$HELP2MAN_BUILD $HELP2MAN
     man2html: .....................$MAN2HTML_BUILD $MAN2HTML
@@ -405,18 +402,52 @@ AS_IF([ test -f DOWNLOADS ],[
 $(cat DOWNLOADS| grep Downloaded | sed s/Downloaded:// ) ]])],
   [AC_MSG_RESULT([  No packages were downloaded.])])
 
-AS_IF([ test -f PATCHED.DOWNLOADS ],[
-  AC_MSG_RESULT([[
+AS_IF([ test -f PATCHED.DOWNLOADS ],
+  [
+     patches=`cat PATCHED.DOWNLOADS | grep Patched | sed s/Patched://`
+     AC_MSG_RESULT([[
   The following  patch(es) were applied:
 
-$(cat PATCHED.DOWNLOADS | grep Patched | sed s/Patched://)]])],
-  [AC_MSG_RESULT([
-  No packages were patched after download.])])
+  $patches]])
 
-AC_MSG_RESULT([
+   AS_IF([test x$CDRTOOLS_BUILD = xyes -a "$(echo $patches | grep cdrtools)" = ""],
+          [
+             AC_MSG_RESULT([Patching issue: you need to download and apply the cdrtools patch first before building.])
+             patching_issue=yes
+          ])
+
+   AS_IF([test x$SOX_BUILD = xyes -a "$(echo $patches | grep sox)" = ""],
+          [
+             AC_MSG_RESULT([Patching issue: you need to download and apply the sox patch first before building.])
+             patching_issue=yes
+          ])
+
+   AS_IF([test x$DVDAUTHOR_BUILD = xyes -a "$(echo $patches | grep dvdauthor)" = ""],
+          [
+             AC_MSG_RESULT([Patching issue: you need to download and apply the dvdauthor patch first before building.])
+             patching_issue=yes
+          ])
+
+  ],
+  [
+     AC_MSG_RESULT([
+  No packages were patched after download.])
+
+     AS_IF([test x$CDRTOOLS_BUILD = xyes -o x$DVDAUTHOR_BUILD = xyes -o x$SOX_BUILD = xyes],[patching_issue=yes])
+
+  ])
+
+AS_IF([test x$patching_issue = xyes],
+       [
+          AC_MSG_RESULT([[
+          Please try downloading the patches manually. (See file README for http links to patches)]])
+       ]
+       ,
+       [
+         AC_MSG_RESULT([
     You may now build by typing 'make' and install with 'make install'.
-
-])
+       ])])
 
 AS_IF([ test x$MAGICK_BUILD = xyes ], [DVDA_INF([IMAGEMAGICK_MSG])])
+
 

@@ -40,9 +40,6 @@ to enable lplex build, add:
 libflac++-dev
 libdvdread-dev
 
-To build lplex on Ubuntu, you should take care to install ANSI WxWidgets 
-libraries from source code, building with ./configure --enable-unicode=no, 
-as the default repository Wx libs and built with unicode support.
 
 To build documentation and repack a distribution tarball using make dist, add:
 
