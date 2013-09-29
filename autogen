@@ -24,9 +24,7 @@ exitcode=$?
 cd "$topdir"
 
 mv $backup INSTALL
-if test $? = 0; then
-echo INSTALL was recovered
-else
+if test $? != 0; then
 echo INSTALL was backed up in previous generation but could not be recovered.
 echo Fix this manually.
 fi

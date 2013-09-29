@@ -1,6 +1,5 @@
 Short term
 ----------
-sox patch with 14.4.1 version (and sox lib deps)
 fix lack of relative paths for -x -o
 add sanity check if -o . ! (avoid cur dir erasure...)
 
