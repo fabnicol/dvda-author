@@ -8,19 +8,20 @@ Dependencies
 
 Dependencies for the building process are the following libraries:
 
+built-in libraries:
   - libc_utils, a general-purpose library used for security enhancement
   - libfixwav, a special library designed for repairing WAV headers.
   - libats2wav a DVD-Audio titleset extracter.
-  - libFLAC version 1.2.1, which itself depends on libogg version 1.1.3. If Ogg is not installed
-    on system, install it manually, or FLAC will be automatically configured without Ogg support.
-    If libogg is installed on system, default configuration for FLAC is with Ogg support,
-    unless --disable-ogg-flac is added on command line.
-  - libsox 14.3.1, a general-purpose audio format converter
+
+external libraries:
+  - libFLAC, which itself depends on libogg.
+    If libogg is installed, default configuration for FLAC is with Ogg support.
+  - libsox, a general-purpose audio format converter
   - libiberty.a if --enable-iberty-build is not used and if it is installed in a system path, and if
     there is no SoX bug (see file BUGS )
 
-Building dvdauthor requests linking to libpng12, libxml2 and libz.
-Building lplex requests linking to libdvdread(-dev) and libFLAC++.
+Building dvdauthor requests linking to libpng12, libxml2 and libz, as well as bison and flex.
+Building lplex requests linking to libdvdread(-dev) and libFLAC++, using g++, as well as a recent wxWidget installation.
 
 For menu authoring, add the following executables:
 
@@ -29,7 +30,6 @@ For menu authoring, add the following executables:
   - mogrify and convert from ImageMagick
   - lplex (for top menu soundtrack authoring) from the Sourceforge audioplex project (http://audioplex.sourceforge.net)
   - a52dec (for video top menu conversion into audio top menu)
-
 
 A patched version of mkisofs is needed to create an ISO image file that is DVD-Audio compliant.
 cdrecord or growisofs are advised for burning the ISO, though other tools can be used.
@@ -48,6 +48,8 @@ used depends on platforms. The GNU build system will give a priority to -liberty
 building GNU libc source code as a fallback option. Most often, libiberty.a can be found in a binutils-dev
 package on most *nix platforms.
 
+Building dependencies
+---------------------
 
 libc_utils.a, libfixwav.a and libats2wav.a will automatically build and link.
 All above dependencies (executables and libraries) can be rebuilt and/or linked to
@@ -55,6 +57,23 @@ if the package is built with the autotools system on a POSIX platform, using
 
 ./configure --enable-all-all
 
+the minimal set of requirements under a "bare" Linux 13.04 platforms seems to be :
+
+  core build + fixwav: gcc, make
+  
+  with downloads enabled: add curl, patch and tar
+  
+  flac and ogg added with no extra linking provided that they are  downloaded 
+  using the --enable-... command line options.
+  
+  lplex support : add: g++, wxWidgets (2.9.2+), libxml2, libz, libFLAC-dev,libFLAC++-dev, libogg-dev, libdvdread
+  
+  sox support: possible links to audio libraries installed on the system, libltl and libz,
+  
+  menu authoring : add: automake, autoconf, libtool, bison, flex.
+  
+To build lplex, a prior system installation of libFLAC seems preferable.
+  
 
 2. Building tools
 ------------------
