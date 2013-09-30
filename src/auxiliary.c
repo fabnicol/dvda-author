@@ -33,12 +33,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <dirent.h>
-
 #include <stdarg.h>
 #include <sys/time.h>
 #include <errno.h>
-#include <unistd.h>
 #include <string.h>
 #include <time.h>
 #include "structures.h"

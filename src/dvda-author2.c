@@ -28,10 +28,13 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#ifndef __WIN32__
 #include <unistd.h>
+#endif
 #include <getopt.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#define off64_t long long
 #include <dirent.h>
 #include <locale.h>
 #include <errno.h>

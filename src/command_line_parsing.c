@@ -5,8 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#ifndef __WIN32__
 #include <unistd.h>
 #include <fcntl.h>
+#endif
 #include "getopt.h"
 #include <sys/time.h>
 #include "dvda-author.h"
@@ -1377,7 +1379,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case '4':
             /* default is PAL, 25 */
             img->norm=strdup(optarg);
-            if (strcasecmp(optarg,"ntsc") == 0)
+            if (strcmp(optarg,"ntsc") == 0)
             {
                 img->framerate[0]='3';
                 img->framerate[1]='0';
@@ -1387,7 +1389,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 foutput("[PAR]  Video standard is %s", img->norm);
 
             }
-            else if ((strcasecmp(optarg,"pal") != 0) && (strcasecmp(optarg,"secam") != 0))
+            else if ((strcmp(optarg,"pal") != 0) && (strcmp(optarg,"secam") != 0))
             {
                 foutput("%s\n","[ERR]  Only options are 'ntsc', 'secam' or (default) 'pal'.");
                 clean_exit(EXIT_FAILURE);
