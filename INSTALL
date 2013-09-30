@@ -25,7 +25,7 @@ To build all dependencies again (without downloading):
 
        ../configure --enable-all-builds
 
-To enable a dvda-author core build, without fixwav, FLAC, OggFLAC, SoX support and without
+To enable a dvda-author minimal (core) build, without fixwav, FLAC, OggFLAC, SoX support and without
 menu authoring features, just configure with:
 
         ../configure  --enable-core-build
@@ -36,6 +36,20 @@ Alternatively, add WITHOUT_FLAC WITHOUT_SOX WITHOUT_OGG WITHOUT_FIXWAV as symbol
 in source code or at configuration stage :
 
 	../configure CPPFLAGS="-DWITHOUT_FLAC ...."
+
+"Simple configuration" with just:
+
+        ../configure
+
+will yield the following configuration :
+     
+      -> menu authoring enabled, but without automatic download, nor building configuration of
+         dependencies
+
+      -> fixwav capability enabled (impaired wav header automatic detection/correction)
+
+      -> FLAC, libogg and libsox bindings disabled.
+
 
 GNU Basic Installation
 ======================

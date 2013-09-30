@@ -68,48 +68,50 @@ m4_include([m4/oggflac-test.m4])
 
 AC_DEFUN([LOOP_MIRRORS],
     [
-
-      filename=bn-$1.tar.$4
-      MD5=$5
+      Version=$1
+      Sourceforge_url=$2
+      Other_url=$3
+      Type=$4
+      Md5=$5
+      
+      Filename=bn[-]$Version.tar.$Type
+      
+      echo Using 'filename' as $Filename
+      
       exitcode=0
-      filestring=m4_bpatsubst([$3],[tp:],[])
 
-      while true
-      do
+      m4_ifvaln([bn],
+      [
+        AS_IF([test "$Sourceforge_url" != "" ],
+                       [DVDA_CURL([$Sourceforge_url/$Filename], [$Filename])],
+                       [
+                        AS_IF([test "$Other_url" != ""],
+                             [DVDA_CURL([$Other_url/$Filename], [$Filename])],
+                             [
+                               AC_MSG_NOTICE([No repository was provided for bn... Please download by other means.])
+                               AS_EXIT
+                             ])
+                       ])
+      ],
+      [
+        AC_MSG_NOTICE([Issue with downloading: no filename ... Please download by other means.])
+        AS_EXIT
+      ])
 
-        AS_IF([test [x]$filestring != x -a "$3" != ""],
-         [  DVDA_CURL([$3/$filename], [$filename])],
-         [
-                        m4_foreach([mirror],[SF_MIRRORLIST],
-                            [
-                                MD5_BREAK([$filename],[$MD5])
-                                AS_IF([test $exitcode != 0 -a "$3" != ""],
-                                                  [
-                                                        AC_MSG_NOTICE([Connecting to mirror:]mirror[...])
-                                                        # This mirroring is Sourceforge-specific and should be twisted for other mirroring patterns.
-                                                        DVDA_CURL([http://sourceforge.net/projects/root/files/$3/$filename/download?use_mirror=]mirror,[$filename])
+      MD5_BREAK([$Filename],[$Md5])
 
-                                                        # eg:
-                                                        #     http://sourceforge.net/projects/mjpeg/files/mjpegtools/1.9.0/mjpegtools-1.9.0.tar.gz/download?use_mirror=kent
-                                                 ],
-                                                 [break])
-                            ])
-         ])
-
-        MD5_BREAK([$filename],[$MD5])
-
-        # last resort attempt, if everything has failed, use the Sourceforge network, except for cdrtools:
-
-        AS_IF([test $exitcode != 0 -a "$3" != ""],
+      AS_IF([test $exitcode != 0],
            [
-              AC_MSG_NOTICE([MD5SUM: not equal to  $MD5, downloading however from network...])
+              AC_MSG_NOTICE([[MD5SUM: not equal to  $md5, trying again fallback Url $Other_url]])
+              AS_IF([test "$Other_url" != ""],[DVDA_CURL([$Other_url/$Filename], [$Filename])])
+           ])
 
-              AS_IF([test bn != cdrtools], [DVDA_CURL([http://downloads.sourceforge.net/project/root/$3/$filename],[$filename])])
-          ])
+      
+      
 
-        break
-      done
-   ])
+   ]) #LOOP_MIRRORS
+
+
 
 # DVDA_DOWNLOAD(BASENAME[-PATCH],VERSION,SITE, PATCHPATH,[POST-ACTION])
 # --------------------------------------------------------------------
@@ -121,33 +123,18 @@ AC_DEFUN([DVDA_DOWNLOAD],
 [
   m4_pushdef([bn], basename([$1]))
   m4_pushdef([upper], [upperbasename([$1])])
-  m4_pushdef([root], [$4])
+  m4_pushdef([version],[$2])
+  m4_pushdef([patch_url],[$3])
+  m4_pushdef([sourceforge_url],[$4])
+  m4_pushdef([other_url],[$5])
+  m4_pushdef([MD5],[$6])
+  m4_pushdef([filename], [bn[-]version])
+
   errorcode=0
 
-
-  # It is necessary to use a macro here, as there is an unfortunate hyphen in project name!
-
-  m4_pushdef([site],[$2])
   AS_IF([test [x]m4_bpatsubst([$1],[patch],[]) = x$1],[patchbool=0],[patchbool=1])
 
   # not having tar may sometimes happen on lightweight windows-based platforms
-
-
-  AC_PATH_PROG([TAR], [tar], [], [$bindir:/bin:/sbin:/usr/bin:/usr/local/bin])
-  AS_IF([ test x$TAR = x],[
-                           DVDA_ERR([tar is requested, please install it.])
-                           AS_EXIT
-                          ])
-  AC_PATH_PROG([PATCH], [patch], [], [$bindir:/bin:/sbin:/usr/bin:/usr/local/bin])
-  AS_IF([ test x$PATCH = x],[
-                              DVDA_ERR([patch is requested, please install it.])
-                              AS_EXIT
-                            ])
-
-
-  AC_PATH_PROG([CURL], [curl], [], [$bindir:/usr/bin:/usr/local/bin])
-
-
 
     AS_IF([test x$CURL = x],
           [
@@ -156,82 +143,103 @@ AC_DEFUN([DVDA_DOWNLOAD],
           ],
           [
             DVDA_INF([Downloading bn. Make sure you have a functional internet connection.])
+            upper[_VERSION]=version
+            DVDA_CLEAN([filename.tar.gz])
+            DVDA_CLEAN([filename.tar.bz2])
+            DVDA_CLEAN([filename.tar.xz])
 
-            version=m4_argn(1,$2)m4_argn(2,$2)
-            upper[_VERSION]=$version
-            DVDA_CLEAN([bn-$version.tar.gz])
-            DVDA_CLEAN([bn-$version.tar.bz2])
-            DVDA_CLEAN([bn-$version.tar.xz])
-
+            LOOP_MIRRORS([version],[sourceforge_url],[other_url],[gz],[MD5])
+            mode=xzf
             type=gz
-            LOOP_MIRRORS([$version],[$2],[$5],[$type],[$6])
 
-            # outputs variable $filename and $exitcode
+            AS_IF([test $exitcode != 0],
+                    [
+                      exitcode=0
+                      LOOP_MIRRORS([version],[sourceforge_url],[other_url],[bz2],[MD5])
+                      mode=xjf
+                      type=bz2
+                    ])
 
-            AS_IF([ test  $exitcode != 0 -a "$5" != "" -a "$2" != "" -a "$6" != ""],
-            [
-             type=bz2
-             LOOP_MIRRORS([$version],[$2],[$5],[$type],[$6])
-            ])
+            AS_IF([test $exitcode != 0],
+                    [
+                      exitcode=0
+                      LOOP_MIRRORS([version],[sourceforge_url],[other_url],[xz],[MD5])
+                      mode=xJf
+                      type=xz
+                    ])
 
-            AS_IF([ test  $exitcode != 0 -a "$5" != "" -a "$2" != "" -a "$6" != ""],
-            [
-             type=xz
-             LOOP_MIRRORS([$version],[$2],[$5],[$type],[$6])
-            ])
-
-            dir="bn[-]m4_argn(1,$2)"
-
-            AS_IF([ test  $exitcode != 0 -a "$5" != "" -a "$2" != "" -a "$6" != ""],
+            AS_IF([ test  $exitcode != 0 ],
               [
                 DVDA_ERR([Download failure])
                 AS_EXIT
               ],
               [
-
-               AS_IF([test -d  $dir],
+               AS_IF([test -d  filename],
                 [
-                 DVDA_INF([Removing $dir])
-                 rm -rf $dir
+                 DVDA_INF([Removing directory filename])
+                 rm -rf filename
                 ])
+                
+               AS_IF([test -d  bn],
+                [
+                 DVDA_INF([Removing directory bn])
+                 rm -rf bn
+                ])
+                
               ])
 
-            AS_IF([test -f "$filename"],
+            AS_IF([test -f filename.tar.$type],
              [
-               AS_IF([test x$type = xgz],[mode=xzvf],[AS_IF([test x$type = xxz],[mode=xJvf],[AS_IF([test x$type = xbz2],[mode=xjvf])])])
-               DVDA_TAR([$filename],[$mode])
-               [MAYBE_]upper=$dir
+
+               DVDA_TAR([filename.tar.$type],[$mode])
+             
+               
+               [MAYBE_]upper=filename
 
                AS_IF([test "$exitcode" = "0"],
                  [
                     AS_IF([test "$patchbool" = "1"],
                        [
-                            # cdrtools is Makefile-based whilst autotools-compliant packages are configure-based
-                             AS_IF([test -f "$dir/Makefile" || test -f "$dir/configure"],
-                               [
-                                  DVDA_INF([cdrtools specific procedure...])
-                                  m4_popdef([site])
-                                  m4_pushdef([site],[$3])
-                                  AS_IF([test "$patchbool" = "1"],
-                                   [
-                                    DVDA_CURL([site/$1-$version],[$1-$version])
-                                    DVDA_PATCH([$1-$version])
-                                   ],
-                                   [
-                                    DVDA_ERR([$1 needs patching])
-                                    AS_EXIT
-                                  ])
-                              ])
+                        
+			    AS_IF([test "$patchbool" = "1"],
+			      [
+			        DVDA_CURL([patch_url], bn-patch-version)
+			        DVDA_PATCH([bn-patch-version])
+			      ],
+			      [
+			        DVDA_ERR([$1 needs patching])
+			        AS_EXIT
+			      ])
+                              
+                            AS_IF([test -d filename],
+			            [AC_MSG_NOTICE([Extraction: OK])], 
+                                    [
+                                      AS_IF([test -d bn], 
+                                            [
+                                              mv -f bn bn-version
+                                              AS_IF([ test "$?" = "0" ], 
+                                                      [AC_MSG_NOTICE([Renamed directory to bn-version])],  
+                                                      [
+                                                         AC_MSG_NOTICE([Extraction is not canonical: naming issue])
+                                                         AS_EXIT
+                                                      ])    
+                                            ], 
+                                            [
+                                              AC_MSG_NOTICE([Extraction is not canonical: naming issue])
+                                              AS_EXIT
+                                            ])
+                                    ])
+
                        ],
                        [
                              DVDA_INF([No patching was performed])
                        ])
                 ],
-                [  DVDA_INF([Proceeding to next package...]) ]
+                [  DVDA_INF([Extraction of bn.tar.$type failed. Proceeding to next package...]) ]
                 )
 
              ],
-             [DVDA_ERR([Extraction of bn failed])])
+             [DVDA_ERR([Download of bn failed])])
            ])
 
 
@@ -240,11 +248,17 @@ AS_IF([test "$errorcode" = "1"],[uppernormalisename([$1])[_BUILD]=no],[uppernorm
 AC_DEFINE_UNQUOTED(upper, ["${prefix}/bin/bn"], [Defining ]bn[ filepath.])
 AC_DEFINE_UNQUOTED([HAVE_]upper, [$errorcode_boolean], [Whether ]bn[ source code will be downloaded for build.])
 AC_SUBST(upper[_VERSION])
-m4_popdef([site])
+
 m4_popdef([bn])
 m4_popdef([upper])
-m4_popdef([root])
-])#DVDA_DOWNLOAD
+m4_popdef([version])
+m4_popdef([patch_url])
+m4_popdef([sourceforge_url])
+m4_popdef([other_url])
+m4_popdef([MD5])
+m4_popdef([filename])
+
+])  #DVDA_DOWNLOAD
 
 # DVDA_TEST_SOFTWARE_VERSION(SOFTWARE[-PATCH])
 # --------------------------------------------
@@ -315,11 +329,11 @@ AC_DEFUN([DVDA_ARG_ENABLE_DOWNLOAD],
     ],
     [
      DVDA_INF([Will not msg... ])
-     m4_ifvaln([$3], [$3])dnl
+     m4_ifvaln([$3], [$3])
      upper=no
     ])
   ])
- ])#DVDA_ARG_ENABLE_DOWNLOAD
+ ]) #DVDA_ARG_ENABLE_DOWNLOAD
 
 
 # ===== redefine AC_ARG_ENABLE incorporating shreds of AC_HELP_STRING, see autoconf/general.m4 ========= #
@@ -362,17 +376,31 @@ m4_if(act,[build],
 
 AC_ARG_ENABLE([$1],[AS_HELP_STRING([--enable-$1],msg)],
 [
-  if test x$enableval != xno; then
+  AS_IF([test x$enableval != xno],
+  [
+      AC_PATH_PROG([TAR], [tar], [], [$bindir:/bin:/sbin:/usr/bin:/usr/local/bin])
+      AS_IF([ test x$TAR = x],[
+                               DVDA_ERR([tar is requested, please install it.])
+                               AS_EXIT
+                              ])
+      AC_PATH_PROG([PATCH], [patch], [], [$bindir:/bin:/sbin:/usr/bin:/usr/local/bin])
+      AS_IF([ test x$PATCH = x],[
+                                  DVDA_ERR([patch is requested, please install it.])
+                                  AS_EXIT
+                                ])
+
+      AC_PATH_PROG([CURL], [curl], [], [$bindir:/usr/bin:/usr/local/bin])
+
    $2
    DVDA_INF([Will msg... ])
    upper=yes
-  else
+  ],
+  [
    DVDA_INF([Will not msg... ])
-   m4_ifvaln([$3], [$3])dnl
+   m4_ifvaln([$3], [$3])
    upper=no
-  fi
- ]
-)
+  ])
+])
 
 
 # We get AC_DEFINE out of the first yes test higher up because scripts passed along in arg3 may have result status that
@@ -415,7 +443,7 @@ AC_DEFINE_UNQUOTED(CAPNAME, "$CAPNAME", [Pathname of $1])
 AM_CONDITIONAL([HAVE_]CAPNAME, [test $auxbool = 1])
 m4_popdef([CAPNAME])
 
-])#DVDA_TEST_AUX
+]) #DVDA_TEST_AUX
 
 
 #unquote!
@@ -551,7 +579,7 @@ m4_foreach([LIST], [CHECKLIST],
    AC_MSG_NOTICE([No appropriate headers for $1])
  ])
  m4_popdef([FUNCTIONLIST])
-])dnl
+])
 
  # automake conditionals will depend on possible --without features so should be placed in configure.ac
 
@@ -608,7 +636,7 @@ AM_CONDITIONAL([HAVE_EXTERNAL_]CAPNAME, [test x$[withval_]CAPNAME != x])
 
 # whether configure automatically found valid system link
 AM_CONDITIONAL([HAVE_]CAPNAME, [test x$CAPNAME[_LINK] != x ])
-])dnl
+])
 
 #CONF_SUBDIRS([X_BUILD names],[DIRNAMES])
 #---------------------------------------
@@ -650,7 +678,7 @@ AC_DEFUN([DVDA_CONFIG],[
     m4_popdef([CDR])
     m4_popdef([FL])
     m4_popdef([LIST])
-    ])])dnl
+    ])])
 
 AC_DEFUN([DVDA_CONFIG_EXECUTABLE_INSTALL],               [DVDA_CONFIG([$1],[#executable_install])])
 AC_DEFUN([DVDA_CONFIG_LIBRARY_NO_INSTALL],     [DVDA_CONFIG([$1],[VAR[_LIB]="\${top_builddir}/[$MAYBE_]VAR/src/[$MAYBE_]VAR.a"])])
