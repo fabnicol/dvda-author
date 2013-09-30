@@ -269,7 +269,7 @@ static int check_ignored_extension(void *path)
     if ((dotloc =  strrchr(path, '.')) == NULL) return (1);
 
     while (num--)
-        if (strncasecmp(dotloc,ign_extension[num],NUMCHAR) == 0) return (1);
+        if (strncmp(dotloc,ign_extension[num],NUMCHAR) == 0) return (1);
     return (0);
 }
 

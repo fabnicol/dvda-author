@@ -12,8 +12,9 @@
 #include "launch_manager.h"
 #include <errno.h>
 #include <stdlib.h>
+#ifndef __WIN32__
 #include <unistd.h>
-
+#endif
 extern globalData globals;
 
 // Checks whether video soundtracks comply with standard for AUDIO_TS.VOB authoring

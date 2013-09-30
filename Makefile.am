@@ -1,7 +1,7 @@
 if HAVE_SMAKE
 MAKETOOL=${SMAKE}
 else
-MAKETOOL=make  -k -j4
+MAKETOOL=make  -k 
 endif
 
 define trace
@@ -13,11 +13,14 @@ define follow
 endef
 
 define execfollow
-	$(call follow, $2: `find $1 -name $2 -print0`, "executable: `find $1 -name $2 -print0  -exec {} $3 \;`")
+	if test "$1" != "" ; then \
+	   $(call follow, $2: `find $1 -name $2 -print0`, "executable: `find $1 -name $2 -print0  -exec {} $3 \;`");\
+	else $(call trace, $2, failed); fi
 endef
 
 define docfollow
-	$(call follow, $1: `find  ${BUILDDIR} -name $1 -print0`, "doc: `find ${BUILDDIR} -name $1 -print0  `")
+	findstring=`find ${BUILDDIR} -name $1 -print0`
+	$(call follow, $1: $findstring, "doc: `find $findstring  `")
 endef
 
 # downloaded binaries will be built locally, to avoid possible versioning issues with already installed one

@@ -26,7 +26,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #ifndef FILE_INPUT_PARSING_H_INCLUDED
 #define FILE_INPUT_PARSING_H_INCLUDED
 #include "auxiliary.h"
-
+#define off64_t long long
+#include <dirent.h>
 
 
 

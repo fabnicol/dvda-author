@@ -7,8 +7,10 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifndef __WIN32__
 #include <fcntl.h>
 #include <unistd.h>
+#endif
 #include <inttypes.h>
 #include <stdint.h>
 #include "structures.h"

@@ -1,5 +1,5 @@
 if test "@MAYBE_IMAGEMAGICK@" != ""; then
   if test -d "@MAYBE_IMAGEMAGICK@" ; then
-   cd @MAYBE_IMAGEMAGICK@ && ./configure @CONFIGURE_IMAGEMAGICK_FLAGS@ ; make -j4; cd - ;
+   cd @MAYBE_IMAGEMAGICK@ && ./configure @CONFIGURE_IMAGEMAGICK_FLAGS@ ; make ; cd - ;
   fi
 fi
