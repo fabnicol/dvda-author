@@ -60,14 +60,15 @@ endif
 libogg: Makefile
 if HAVE_LIBOGG_BUILD
 	if test -f libogg; then rm -f libogg; fi; touch libogg
-	if test -d  ${MAYBE_LIBOGG}; then \
+	if test "${MAYBE_LIBOGG}" != ""; then \
+	   if test -d  ${MAYBE_LIBOGG}; then \
 	   cd ${MAYBE_LIBOGG} &&  ${SHELL} configure ${CONFIGURE_LIBOGG_FLAGS} && $(MAKETOOL) && $(MAKETOOL) install ; cd - ; \
-	fi
+	fi; fi
 	$(call follow, $@: `find ${BUILDDIR} -name libogg.a -print0`, library)
 endif
 
-
-libflac: Makefile
+#build and install libogg before libFLAC
+libflac: Makefile libogg
 	if test -f libflac; then rm -f libflac; fi; touch libflac
 if HAVE_FLAC_BUILD
 	chmod +x script.libflac && ${SHELL} script.libflac
@@ -78,13 +79,10 @@ endif
 
 libsox: Makefile
 	if test -f libsox; then rm -f libsox; fi; touch libsox
-if HAVE_AUTOMAKE
-if HAVE_AUTOCONF
 if HAVE_SOX_BUILD
+	echo OK!
 	chmod +x script.libsox && ${SHELL} script.libsox
 	$(call follow, $@: ` find ${BUILDDIR} -name libsox.a -print0` , library)
-endif
-endif
 endif
 
 dvdauthor: Makefile
@@ -92,7 +90,12 @@ dvdauthor: Makefile
 if HAVE_AUTOMAKE
 if HAVE_AUTOCONF
 if HAVE_DVDAUTHOR_BUILD
-	cp -r ${ROOTDIR}/m4.extra.dvdauthor ${MAYBE_DVDAUTHOR}/srcm4 && cd ${MAYBE_DVDAUTHOR} && autoreconf -i -Isrcm4 && ${SHELL} configure  --prefix=${prefix} ; $(MAKETOOL); cd -
+	cp -r ${ROOTDIR}/m4.extra.dvdauthor ${MAYBE_DVDAUTHOR}/srcm4 
+	if test "${MAYBE_DVDAUTHOR}" != ""; then \
+	  if test -d ${MAYBE_DVDAUTHOR} ; then\ 
+	   cd ${MAYBE_DVDAUTHOR} && autoreconf -i -Isrcm4 && ${SHELL} configure  --prefix=${prefix} ; $(MAKETOOL); cd - ;\
+	  fi ;\
+	fi
 endif
 endif
 endif
@@ -101,7 +104,11 @@ endif
 
 cdrecord: Makefile
 	if test -f cdrecord; then rm -f cdrecord; fi; touch cdrecord
-	cd ${MAYBE_CDRTOOLS} && $(MAKETOOL) ; cd -
+	if "${MAYBE_CDRTOOLS}" != ""; then \
+	  if test -d ${MAYBE_CDRTOOLS}; then \
+	    cd ${MAYBE_CDRTOOLS} && $(MAKETOOL) ; cd - ;\
+	  fi ;\
+	fi
 	$(call execfollow, ${MAYBE_CDRTOOLS},  $@, -version 2>null)
 
 mplex: Makefile
@@ -114,7 +121,10 @@ endif
 help2man: Makefile
 	if test -f help2man; then rm -f help2man; fi; touch help2man
 if HAVE_HELP2MAN_BUILD
-	cd ${MAYBE_HELP2MAN} && ${SHELL} configure --prefix=${prefix} ; $(MAKETOOL) ; cd -
+	if test "${MAYBE_HELP2MAN}" != "" ; then \
+	  if test -d ${MAYBE_HELP2MAN} ; then \ 
+	  cd ${MAYBE_HELP2MAN} && ${SHELL} configure --prefix=${prefix} ; $(MAKETOOL) ; cd - ;\
+	fi; fi
 	$(call execfollow, ${MAYBE_HELP2MAN}, $@,  --version | line)
 	if test -f ${MAYBE_HELP2MAN}/help2man ; then \
                   ${MAYBE_HELP2MAN}/help2man -s 1 -N -o dvda-author.1 src/dvda ;\
@@ -130,7 +140,7 @@ if HAVE_IMAGEMAGICK_BUILD
 	$(call execfollow, ${MAYBE_IMAGEMAGICK}, $@,  --version 2>&1 | line)
 endif
 
-lplex: Makefile
+lplex: Makefile libflac
 	if test -f lplex; then rm -f lplex; fi; touch lplex
 if HAVE_LPLEX_BUILD
 	chmod +x script.lplex && ${SHELL} script.lplex
