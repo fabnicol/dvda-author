@@ -1,1 +1,5 @@
-	cd @MAYBE_MJPEGTOOLS@ &&  ./configure --prefix=${prefix} ; make -j4; cd - 
+if test  "@MAYBE_MJPEGTOOLS@" != ""; then
+  if test -d "@MAYBE_MJPEGTOOLS@" ; then
+    cd "@MAYBE_MJPEGTOOLS@" &&  ./configure --prefix=${prefix} ; make -j4; cd - 
+  fi
+fi

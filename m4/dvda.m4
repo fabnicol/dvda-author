@@ -300,7 +300,7 @@ m4_popdef([SOFTWARE])
 
 
 
-# DVDA_ARG_ENABLE_DOWNLOAD(FEATURE[-PATCH],VERSION,SITE_OF_PACKAGE,SITE_OF_PATCH,[POST-ACTION])
+# DVDA_ARG_ENABLE_DOWNLOAD
 # ---------------------------------------------------------------------------------------------
 # Enables download of file named FEATURE-VERSION.tar.gz or .tar.bz2 (automatic detection)
 # from SITE.
@@ -323,14 +323,10 @@ AC_DEFUN([DVDA_ARG_ENABLE_DOWNLOAD],
   [
    AS_IF([ test x$enableval != xno],
     [
-     $2
-     DVDA_INF([Will msg... ])
-     upper=yes
+     DVDA_INF([Will enable $1... ])
     ],
     [
-     DVDA_INF([Will not msg... ])
-     m4_ifvaln([$3], [$3])
-     upper=no
+     DVDA_INF([Will disable $1... ])
     ])
   ])
  ]) #DVDA_ARG_ENABLE_DOWNLOAD
@@ -456,9 +452,29 @@ m4_popdef([CAPNAME])
 
 AC_DEFUN([BUILD],
      [
+     m4_pushdef([lower], [m4_tolower($1)])
+     
       DVDA_INF([Building $1 library from sources...
 Triggering --enable-$1-build... ])
-      upperbasename($1)[_BUILD]=yes
+AS_IF([test "$1" != "" ], 
+       [
+          AS_IF([test "$1" = "fixwav" -o "$1" = "iberty" -o "$1" = "all-all" -o "$1"="all-deps" -o "$1" = "all-builds" -o `echo "$command_line-args" | sed s/lower//g` != "$command_line_args"], 
+	      [
+		upperbasename($1)[_BUILD]=yes
+	      ],
+	      [ 
+	        AC_MSG_WARN([[Please download $1 or restart configure with --enable-]lower[-download or --enable-]lower[-patch <sox, cdrtools and dvdauthor>]])
+	        AS_EXIT
+	      ])
+      ],
+      [
+        echo Naming error: empty "enable" feature
+        sleep 5s
+        AS_EXIT
+      ])
+      
+      m4_popdef([lower])
+      
      ])#BUILD
 
 

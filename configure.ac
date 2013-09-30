@@ -7,9 +7,10 @@
 # Dependencies: all files in m4/
 ######################################################################################################
 
-command_line_args="$*"
 
 AC_INIT([dvda-author],[dev],[fabnicol@users.sourceforge.net])
+command_line_args="$*"
+echo Using command line $command_line_args
 # requested to define _GNU_SOURCE and check the availability of GNU extensions
 # This should be called before any macros that run the C   compiler.
 AC_USE_SYSTEM_EXTENSIONS
@@ -144,14 +145,10 @@ AC_ARG_WITH([debug-flags],
 #======================================
 
 # insert lib-specific tests here
-
 # invoking main M4sh subroutine
-
-
 #definition of empty commandline
 
-
-AS_IF([test x$command_line_args = "x"],
+AS_IF([test "$command_line_args" = ""],
         [
            withval_LIBOGG=no
            withval_FLAC=no
