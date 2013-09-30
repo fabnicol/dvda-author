@@ -60,7 +60,9 @@ endif
 libogg: Makefile
 if HAVE_LIBOGG_BUILD
 	if test -f libogg; then rm -f libogg; fi; touch libogg
-	cd ${MAYBE_LIBOGG} &&  ${SHELL} configure ${CONFIGURE_LIBOGG_FLAGS} && $(MAKETOOL) && $(MAKETOOL) install ; cd -
+	if test -d  ${MAYBE_LIBOGG}; then \
+	   cd ${MAYBE_LIBOGG} &&  ${SHELL} configure ${CONFIGURE_LIBOGG_FLAGS} && $(MAKETOOL) && $(MAKETOOL) install ; cd - ; \
+	fi
 	$(call follow, $@: `find ${BUILDDIR} -name libogg.a -print0`, library)
 endif
 
@@ -196,7 +198,7 @@ endif
 
 # GNU build system regeneration script and others
 
-EXTRA_DIST=autogen dvda-author.ico  dvda-author-launch.bat  sox-libs  m4.extra m4.extra.dvdauthor menu  libs
+EXTRA_DIST=autogen dvda-author.ico  dvda-author-launch.bat  sox-libs  m4.extra m4.extra.dvdauthor menu  libs patches
 
 install-data-local:  $(manhelp) $(htmlhelp)
 
@@ -249,4 +251,15 @@ endif
 if HAVE_SOX_BUILD
 	cd ${MAYBE_SOX}; $(MAKETOOL) clean; cd -;
 endif
+
+distclean: clean-local
+	rm -rf autom4te* && rm -f config.log && rm -f config.status 
+	find . -name Makefile -delete
+
+maintainer-clean: distclean
+	find . -name configure -delete
+	rm -rf config
+
+	
+       
 

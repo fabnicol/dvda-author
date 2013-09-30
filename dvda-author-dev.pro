@@ -61,7 +61,19 @@ OTHER_FILES += \
     script3.in \
     script4.in \
     script5.in \
-    script6.in
+    script6.in \
+    AUTHORS \
+    COPYING \
+    COREBUILD \
+    DEPENDENCIES \
+    EXAMPLES.in \
+    LIMITATIONS \
+    INSTALL \
+    HOWTO.conf \
+    README \
+    NEWS \
+    TODO \
+    ChangeLog
 
 HEADERS += \
     src/include/amg.h \
