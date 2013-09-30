@@ -11,7 +11,7 @@ FLAC/Ogg FLAC (version 1.3.0), or SoX-14.4.1-supported audio formats (.au, .aiff
 
 This version supports multichannel audio up to 5.1.
 
-Switch -x enables extraction of audio content from DVD-Audio structures into .wav files.
+Switch -x enables extraction of audio content from DVDb-Audio structures into .wav files.
 
 It can also create "hybrid" or "universal" DVD-Audio/Video disc structures,
 which contain both DVD-Audio and DVD-Video zones.
@@ -73,7 +73,7 @@ Source code directories are:
 	auxiliary.m4           shorter general-purpose macros.
 	dependencies.m4        dvda-author-specific parameters submitted to other M4 macros (using lists).
 	sox-debug.m4           used to correct a bug in SoX code.
-        oggflac-test.m4        tests for Ogg FLAC support
+	oggflac-test.m4        tests for Ogg FLAC support
 	iconv.m4, codeset.m4   third-party macros copied here as some platforms may not include it
 			       and they are used by nested configure scripts.
 
@@ -92,8 +92,7 @@ Important DATA-type files are:
       images for desktop.
   dvda-author.nsi
       NSIS script for generating Windows installer.
-  CB_project
-      Code::Blocks Xml project files
+
   BUGS
   LIMITATIONS
   HOWTO.conf
@@ -106,14 +105,17 @@ Important DATA-type files are:
 ---------------
 
 This application performs limited patching of other open source utilities used for creating
-audio and video menus. 
+audio and video menus (dvdauthor), analyzing audio content (SoX) or creating
+a special ISO dic image (mkisofs).
 
-The special patches used in this process are automatically downloaded by the autotools configure 
+The special patches used in this process are automatically downloaded by the autotools configure
 script (see below).
 
 Other building systems will have to make use of the patches available at the following links:
 
-
+    http://dvd-audio.sourceforge.net/patches/mkisofs/cdrtools-patch-3.00
+    http://dvd-audio.sourceforge.net/patches/dvdauthor-patch-0.7.1
+    http://dvd-audio.sourceforge.net/patches/sox-patch-14.4.1
 
 See file INSTALL included in this distribution, and COREBUILD for building the core application only.
 On *nix platforms, the GNU build system will automatically link to existing libFLAC
