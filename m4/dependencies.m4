@@ -67,8 +67,12 @@ m4_map([DVDA_TEST_AUX],[
              [[core-build],
               [withval_FIXWAV=no
                withval_FLAC=no
-               withval_OGG=no
-               withval_SOX=no]],
+               withval_LIBOGG=no
+               withval_SOX=no
+               LIBOGG_BUILD=no
+               LIBOGG_DOWNLOAD=no
+               MAYBE_LIBOGG=""
+               LIBOGG_LINK=""]],
              [[ImageMagick-build],[DVDA_INF([IMAGEMAGICK_MSG])]],
              [[dvdauthor-build]],
              [[cdrtools-build]],
@@ -111,17 +115,94 @@ m4_map([DVDA_TEST_AUX],[
 
 
     m4_define([DOWNLOAD_OPTIONS],[
-            [[dvdauthor-patch],[0.7.1],        [http://dvd-audio.sourceforge.net/patches],        [dvdauthor], [dvdauthor/0.7.1],                         [2694a5a3ef460106ea3caf0f7f60ff80]],
-            [[cdrtools-patch], [3.00],         [http://dvd-audio.sourceforge.net/patches/mkisofs],[],          [ftp://ftp.berlios.de/pub/cdrecord],       [bb21cefefcfbb76cf249120e8978ffdd]],
-            [[sox-patch],      [14.4.1],       [http://dvd-audio.sourceforge.net/patches],        [sox],       [sox/14.4.1],                              [ff9ca6aca972549de0e80e8e30ed379c]],
-            [[flac-download],  [1.3.0],        [],  RB      [],          [http://downloads.xiph.org/releases/flac], [13b5c214cee8373464d3d65dee362cdd]],
-            [[libogg-download],   [1.1.4],     [],                                                [ogg],       [http://downloads.xiph.org/releases/ogg],  [10200ec22543841d9d1c23e0aed4e5e9]],
-            [[help2man-download],[1.43.3],     [],                                                [],          [http://mirror.ibcp.fr/pub/gnu/help2man],  [a84868db7c139238df8add5d86a0b54f]],
-            [[ImageMagick-download], [6.8.7-0],[],                                                [],          [ftp://mirrors.linsrv.net/pub/ImageMagick],[2f3854878735be72e66ac53a3146b63d]],
-            [[lplex-download], [0.3],          [],                                                [],          [http://dvd-audio.sourceforge.net],        [23e52c149ccfa0169955a57ff783fd21]],
-            [[mjpegtools-download], [2.1.0],   [],             RBRB                                   [mjpeg],     [mjpegtools/2.1.0],                        [57bf5dd78976ca9bac972a6511b236f3]],
-            [[libmpeg2-download], [0.5.1],     [],                                                [],          [libmpeg2.sourceforge.net/files],          [0f92c7454e58379b4a5a378485bbd8ef]],
-            [[a52dec-download], [0.7.4],       [],                                                [],          [http://liba52.sourceforge.net/files],     [caa9f5bc44232dc8aeea773fea56be80]]])
+            [
+                [dvdauthor-patch],
+                [0.7.1],
+                [http://dvd-audio.sourceforge.net/patches/dvdauthor-patch-0.7.1],
+                [http://downloads.sourceforge.net/project/dvdauthor/dvdauthor/0.7.1],
+                [http://dvd-audio.sourceforge.net],
+                [2694a5a3ef460106ea3caf0f7f60ff80]
+            ],
+            [
+                [cdrtools-patch],
+                [3.00],
+                [http://dvd-audio.sourceforge.net/patches/mkisofs/cdrtools-patch-3.00],
+                [ftp://ftp.berlios.de/pub/cdrecord],
+                [http://dvd-audio.sourceforge.net],
+                [bb21cefefcfbb76cf249120e8978ffdd]
+            ],
+            [
+                [sox-patch],
+                [14.4.1],
+                [http://dvd-audio.sourceforge.net/patches/sox-patch-14.4.1],
+                [http://downloads.sourceforge.net/project/sox/sox/14.4.1],
+                [http://dvd-audio.sourceforge.net],
+                [ff9ca6aca972549de0e80e8e30ed379c]
+            ],
+            [
+                [flac-download],
+                [1.3.0],
+                [],
+                [http://downloads.xiph.org/releases/flac],
+                [http://dvd-audio.sourceforge.net],
+                [13b5c214cee8373464d3d65dee362cdd]
+            ],
+            [
+                [libogg-download],
+                [1.1.4],
+                [],
+                [http://downloads.xiph.org/releases/ogg],
+                [http://dvd-audio.sourceforge.net],
+                [10200ec22543841d9d1c23e0aed4e5e9]
+            ],
+            [
+                [help2man-download],
+                [1.43.3],
+                [],
+                [http://mirror.ibcp.fr/pub/gnu/help2man],
+                [http://dvd-audio.sourceforge.net],
+                [a84868db7c139238df8add5d86a0b54f]
+            ],
+            [
+                [ImageMagick-download],
+                [6.8.7-0],
+                [],
+                [ftp://mirrors.linsrv.net/pub/ImageMagick],
+                [ftp://ftp.sunet.se/pub/multimedia/graphics/ImageMagick],
+                [2f3854878735be72e66ac53a3146b63d]
+            ],
+            [
+                [lplex-download],
+                [0.3],
+                [],
+                [http://dvd-audio.sourceforge.net],
+                [http://dvd-audio.sourceforge.net],
+                [23e52c149ccfa0169955a57ff783fd21]
+            ],
+            [
+                [mjpegtools-download],
+                [2.1.0],
+                [],
+                [http://sourceforge.net/projects/mjpeg/files/mjpegtools/2.1.0],
+                [http://dvd-audio.sourceforge.net],
+                [57bf5dd78976ca9bac972a6511b236f3]
+            ],
+            [
+                [libmpeg2-download],
+                [0.5.1],
+                [],
+                [http://libmpeg2.sourceforge.net/files],
+                [http://dvd-audio.sourceforge.net],
+                [0f92c7454e58379b4a5a378485bbd8ef]
+            ],
+            [
+                [a52dec-download],
+                [0.7.4],
+                [],
+                [http://liba52.sourceforge.net/files],
+                [http://dvd-audio.sourceforge.net],
+                [caa9f5bc44232dc8aeea773fea56be80]
+            ]])
 
     m4_map([DVDA_ARG_ENABLE_DOWNLOAD], [[all-deps]])
 

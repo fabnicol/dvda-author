@@ -1,3 +1,8 @@
-cd @MAYBE_FLAC@ && cp @ROOTDIR@/m4.extra/iconv.m4 m4/ ; cp @ROOTDIR@/m4.extra/codeset.m4 m4/
-./configure  @CONFIGURE_FLAC_FLAGS@  && make  -j4 -k && make install; cd - 
-mv local/lib/libFLAC.a local/lib/libflac.a
+if test -d @MAYBE_FLAC@; then
+   cd @MAYBE_FLAC@ && cp @ROOTDIR@/m4.extra/iconv.m4 m4/ ; cp @ROOTDIR@/m4.extra/codeset.m4 m4/
+  ./configure  @CONFIGURE_FLAC_FLAGS@  && make  -j4 -k && make install
+   cd - 
+  if test -f local/lib/libFLAC.a ; then 
+    mv local/lib/libFLAC.a local/lib/libflac.a
+  fi
+fi 

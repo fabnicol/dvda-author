@@ -50,10 +50,10 @@ package on most *nix platforms.
 
 
 libc_utils.a, libfixwav.a and libats2wav.a will automatically build and link.
-All above dependencies (executables and libraries) can be rebuilt and/or linked to 
-if the package is built with the autotools system on a POSIX platform, using 
+All above dependencies (executables and libraries) can be rebuilt and/or linked to
+if the package is built with the autotools system on a POSIX platform, using
 
-./configure --enable-all-deps --enable-all-builds
+./configure --enable-all-all
 
 
 2. Building tools
@@ -67,8 +67,3 @@ ideally smake for building cdrecord. flex and bison are used by dvdauthor.
 
 Other building tools may be needed for specific features, take care to check configuration
 messages (in config.log or in the make run output).
-
-3. lplex build
---------------
-
-See file BUILD.lplex

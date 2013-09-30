@@ -7,6 +7,8 @@
 # Dependencies: all files in m4/
 ######################################################################################################
 
+command_line_args="$*"
+
 AC_INIT([dvda-author],[dev],[fabnicol@users.sourceforge.net])
 # requested to define _GNU_SOURCE and check the availability of GNU extensions
 # This should be called before any macros that run the C   compiler.
@@ -38,6 +40,7 @@ AC_CANONICAL_BUILD
 # do not use libtool in this version, for arcane and unclear reasons.
 AC_PROG_RANLIB
 
+          
 AS_IF([test -f DOWNLOADS], [rm -f DOWNLOADS])
 AS_IF([test -f PATCHED.DOWNLOADS], [rm -f PATCHED.DOWNLOADS])
 
@@ -48,7 +51,6 @@ CPPFLAGS="$CPPFLAGS -I/usr/include -I/usr/local/include"
 FLAC_BUILD=no
 STATIC_SOX=no
 SOX_BUILD=no
-
 
 #preserving user CFLAGS input
 cflags_save="$CFLAGS -std=c99"
@@ -136,6 +138,7 @@ AC_ARG_WITH([debug-flags],
     ])
 
 
+
 #======================================
 # Core feature macros, see m4 directory
 #======================================
@@ -143,6 +146,18 @@ AC_ARG_WITH([debug-flags],
 # insert lib-specific tests here
 
 # invoking main M4sh subroutine
+
+
+#definition of empty commandline
+
+
+AS_IF([test x$command_line_args = "x"],
+        [
+           withval_LIBOGG=no
+           withval_FLAC=no
+           withval_SOX=no
+        ])
+
 DVDA_CHECK_DEPENDENCIES
 
 #=======================================
@@ -358,7 +373,7 @@ AC_MSG_RESULT([[
   Using $make as a system build tool.
 
   Auxiliary tools
-				   build [default no/yes]    install path [default system path/build path]
+                                   build [default no/yes]    install path [default system path/build path]
 
     help2man: .....................$HELP2MAN_BUILD $HELP2MAN
     man2html: .....................$MAN2HTML_BUILD $MAN2HTML
@@ -404,7 +419,7 @@ $(cat DOWNLOADS| grep Downloaded | sed s/Downloaded:// ) ]])],
 
 AS_IF([ test -f PATCHED.DOWNLOADS ],
   [
-     patches=`cat PATCHED.DOWNLOADS | grep Patched | sed s/Patched://`
+     patches=`cat PATCHED.DOWNLOADS | grep Patched | sed s/Patched://g | sed s/\n/\n\ \ \ \ /g`
      AC_MSG_RESULT([[
   The following  patch(es) were applied:
 
