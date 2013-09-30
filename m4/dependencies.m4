@@ -232,9 +232,9 @@ m4_map([DVDA_TEST_AUX],[
 
     # installing binaries, normally executables
 
-    DVDA_CONFIG_EXECUTABLE_INSTALL([[[[DVDAUTHOR],[dvdauthor-0.6.14]]],
-               [[[LPLEX], [lplex-0.3]], [--prefix=$prefix --disable-shared]],
-               [[[MJPEGTOOLS], [mjpegtools-2.1.0]],[--enable-static-build --disable-fast-install --prefix=$BUILDDIR/local]],
+    DVDA_CONFIG_EXECUTABLE_INSTALL([[[[DVDAUTHOR],[dvdauthor-0.7.1]]],
+               [[[LPLEX], [lplex-0.3]], [--prefix=$prefix --disable-shared --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
+               [[[MJPEGTOOLS], [mjpegtools-2.1.0]],[--enable-static-build --disable-fast-install --prefix="$BUILDDIR/local"]],
                [[[CDRTOOLS],[cdrtools-3.00]]],
                [[[A52DEC],[a52dec-0.7.4]],[--prefix=$prefix]],
                [[[LIBMPEG2],[libmpeg2-0.5.1]], [--prefix=$prefix]],
@@ -244,9 +244,10 @@ m4_map([DVDA_TEST_AUX],[
     # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
 
     DVDA_CONFIG_LIBRARY_LOCAL_INSTALL([
-     [[[FLAC],[flac-1.3.0]],[--disable-shared --disable-thorough-tests --disable-oggtest --disable-cpplibs --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix=$BUILDDIR/local CPPFLAGS="-I$BUILDDIR/local/include"]],
-     [[[SOX],[sox-14.4.1]],  [--without-mad --without-flac --without-lame --without-ffmpeg --prefix=$BUILDDIR/local CPPFLAGS="-I$BUILDDIR/local/include"]],
-     [[[LIBOGG],[libogg-1.1.4]],  [--prefix=$BUILDDIR/local CPPFLAGS="-I$BUILDDIR/local/include"]]])
+     [[[FLAC],[flac-1.3.0]],[--disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include" \
+         --disable-thorough-tests --disable-oggtest --disable-cpplibs --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
+     [[[SOX],[sox-14.4.1]],  [--without-mad --without-flac --without-lame --without-ffmpeg --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
+     [[[LIBOGG],[libogg-1.1.4]],  [--prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]]])
 
     # auxiliary libs that remain within package, not installed
 

@@ -1,1 +1,5 @@
-cd @MAYBE_LPLEX@ && ./configure @CONFIGURE_LPLEX_FLAGS@ ; make -j4; cd - ;
+if test  "@MAYBE_LPLEX@" != ""; then 
+ if test -d "@MAYBE_LPLEX@"; then
+  cd "@MAYBE_LPLEX@"  && ./configure @CONFIGURE_LPLEX_FLAGS@ ; make -j4; cd - ;
+ fi
+fi
