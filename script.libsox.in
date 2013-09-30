@@ -8,4 +8,4 @@ if test  "@MAYBE_SOX@" != ""; then
 fi
 cd "@BUILDDIR@/@MAYBE_SOX@"
 
-./configure @CONFIGURE_SOX_FLAGS@ --without-oggvorbis --without-mad && make -j4 -k && make install; cd - 
+./configure @CONFIGURE_SOX_FLAGS@ --without-oggvorbis --without-mad && make -k && make install; cd - 
