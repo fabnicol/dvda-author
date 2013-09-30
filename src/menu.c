@@ -1,18 +1,19 @@
 #if HAVE_CONFIG_H && !defined __CB__
 #include "config.h"
 #endif
+#undef __STRICT_ANSI__
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h>
 #include <math.h>
 #include <sys/types.h>
 #ifndef __WIN32__
 #include <sys/wait.h>
+#include <unistd.h>
+#include <fcntl.h>
 #endif
 #include <sys/stat.h>
-#include <fcntl.h>
 #include "structures.h"
 #include "c_utils.h"
 #include "commonvars.h"

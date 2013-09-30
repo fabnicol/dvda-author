@@ -35,7 +35,9 @@ with current title starting at pic n
 #include <math.h>
 #include <errno.h>
 #include <stdint.h>
+#ifndef __WIN32__
 #include <unistd.h>
+#endif
 #include "structures.h"
 #include "c_utils.h"
 #include "winport.h"

@@ -33,14 +33,15 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <string.h>
 #include <math.h>
 #include "errno.h"
-#include <unistd.h>
 #include <sys/types.h>
 #ifndef __WIN32__
 #include <sys/wait.h>
+#include <fcntl.h>
+#include <unistd.h>
 #endif
 
 #include <sys/stat.h>
-#include <fcntl.h>
+
 
 #include "structures.h"
 #include "c_utils.h"
