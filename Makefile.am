@@ -1,25 +1,30 @@
 if HAVE_SMAKE
-MAKETOOL=${SMAKE}
+MAKETOOL=$(SMAKE)
 else
-MAKETOOL=make  -k 
+MAKETOOL=make  -k
 endif
+
+SHELL=/bin/bash
+.SHELLFLAGS=-ec
+.ONESHELL:
 
 define trace
 	echo "$2:  $1" >> BUILD.TRACE
 endef
 
 define follow
-	if test   "$1" != "" ; then $(call trace, $2, "done: $1") ; else $(call trace, $2, failed); fi
+	if test   "$(strip $1)" != "" ; then $(call trace, $2, "done: $1") ; else $(call trace, $2, failed); fi
 endef
 
 define execfollow
-	if test "$1" != "" ; then \
-	   $(call follow, $2: `find $1 -name $2 -print0`, "executable: `find $1 -name $2 -print0  -exec {} $3 \;`");\
-	else $(call trace, $2, failed); fi
+	$(if "$1",
+	    $(call follow,($eval $(shell find $1 -name $2 -print0)),executable: $(eval $(shell find $1 -name $2 -print0  -exec {} $3 \;))),
+	    $(call trace, $2, failed))
+
 endef
 
 define docfollow
-	findstring=`find ${BUILDDIR} -name $1 -print0`
+	findstring=$(strip $(eval "find ${BUILDDIR} -name $1 -print0"))
 	$(call follow, $1: $findstring, "doc: `find $findstring  `")
 endef
 
@@ -39,7 +44,7 @@ ACLOCAL_AMFLAGS=-I m4 -I m4.extra -I m4.extra.dvdauthor --install
 # nested packages will be configured only if main configure has been launched freshly.
 # stamprecord si a so-called cookie, used only for its time stamp
 
-.PHONY: erase_build.trace do_sox_lib_deps_subst 
+.PHONY: erase_build.trace do_sox_lib_deps_subst
 
 erase_build.trace:
 	if test -f  BUILD.TRACE; then mv BUILD.TRACE BUILD.TRACE~ ; fi
@@ -53,39 +58,46 @@ if HAVE_SOX_BUILD
 	chmod +x ${MAYBE_SOX}/sox-libs
 	$(SED) -e "s,SOX_LIB_DEPS,$(shell cat ${MAYBE_SOX}/sox-libs | $(SED) -e "s,[\.\.\/].*[a],,g"   -e  "s,@.*@,,g"),g" < src/Makefile > src/Makefile.temp
 	mv src/Makefile.temp src/Makefile
-	$(call follow, src/Makefile.temp, $@)
+	$(call follow,src/Makefile.temp,$@)
 endif
 
 
-# delegating configure to a script for FLAC and SOX is oddly necessary, for unclear reasons. The same script embedded here causes libtool issues,
-# probably a libtool bug?
+define configure_sub_package
+    target_subdir="$(strip $1)"
+    configure_flags="$2"
+    $(if $$target_subdir,
+    if test -d  $$target_subdir; then
+    cd $$target_subdir &&  $(SHELL) configure $$configure_flags && $(MAKETOOL) ; cd -
+    fi)
+endef
+
+define config_lib_package
+	$(call configure_sub_package, $2, $3)
+	$(call follow,$$(find $(BUILDDIR) -name $(strip $1).a -print0),library)
+endef
+
+define config_exec_package
+	$(call configure_sub_package, $2, $3)
+	$(call execfollow,$2,$$(find $(BUILDDIR) -name $(strip $1) -print0),$4)
+endef
+
 
 libogg: Makefile
 if HAVE_LIBOGG_BUILD
-	if test -f libogg; then rm -f libogg; fi; touch libogg
-	if test "${MAYBE_LIBOGG}" != ""; then \
-	   if test -d  ${MAYBE_LIBOGG}; then \
-	   cd ${MAYBE_LIBOGG} &&  ${SHELL} configure ${CONFIGURE_LIBOGG_FLAGS} && $(MAKETOOL) && $(MAKETOOL) install ; cd - ; \
-	fi; fi
-	$(call follow, $@: `find ${BUILDDIR} -name libogg.a -print0`, library)
+	$(call config_lib_package,libogg, $(MAYBE_LIBOGG),$(CONFIGURE_LIBOGG_FLAGS))
 endif
 
 #build and install libogg before libFLAC
 libflac: Makefile libogg
-	if test -f libflac; then rm -f libflac; fi; touch libflac
 if HAVE_FLAC_BUILD
-	chmod +x script.libflac && ${SHELL} script.libflac
-	$(call follow, $@: `find ${BUILDDIR} -name libflac.a -print0` , library)
+	$(call config_lib_package,libflac, $(MAYBE_FLAC),$(CONFIGURE_FLAC_FLAGS))
 endif
 
 # you need the autotools to be able to rebuild sox with the sox-libs patch (the alternative would be using pkg-config, which is no better)
 
 libsox: Makefile
-	if test -f libsox; then rm -f libsox; fi; touch libsox
 if HAVE_SOX_BUILD
-	echo OK!
-	chmod +x script.libsox && ${SHELL} script.libsox
-	$(call follow, $@: ` find ${BUILDDIR} -name libsox.a -print0` , library)
+	$(call config_sub_package,libsox, $(MAYBE_SOX),$(CONFIGURE_SOX_FLAGS))
 endif
 
 dvdauthor: Makefile
@@ -93,12 +105,11 @@ dvdauthor: Makefile
 if HAVE_AUTOMAKE
 if HAVE_AUTOCONF
 if HAVE_DVDAUTHOR_BUILD
-	cp -r ${ROOTDIR}/m4.extra.dvdauthor ${MAYBE_DVDAUTHOR}/srcm4 
-	if test "${MAYBE_DVDAUTHOR}" != ""; then \
-	  if test -d ${MAYBE_DVDAUTHOR} ; then\ 
-	   cd ${MAYBE_DVDAUTHOR} && autoreconf -i -Isrcm4 && ${SHELL} configure  --prefix=${prefix} ; $(MAKETOOL); cd - ;\
-	  fi ;\
-	fi
+	cp -r ${ROOTDIR}/m4.extra.dvdauthor ${MAYBE_DVDAUTHOR}/srcm4
+	$(if $(MAYBE_DVDAUTHOR),
+	  if test -d $(MAYBE_DVDAUTHOR) ; then
+	   cd $(MAYBE_DVDAUTHOR) && ${SHELL} autoreconf -i -Isrcm4 && ${SHELL} configure  --prefix=${prefix} ; $(MAKETOOL); cd -
+	  fi)
 endif
 endif
 endif
@@ -106,41 +117,31 @@ endif
 #cdrecord must be compiled with special make install parameters hence should not be included in the SUBDIRS list. Building/cleaning will need prior configuration.
 
 cdrecord: Makefile
-	if test -f cdrecord; then rm -f cdrecord; fi; touch cdrecord
-	if "${MAYBE_CDRTOOLS}" != ""; then \
-	  if test -d ${MAYBE_CDRTOOLS}; then \
-	    cd ${MAYBE_CDRTOOLS} && $(MAKETOOL) ; cd - ;\
-	  fi ;\
-	fi
-	$(call execfollow, ${MAYBE_CDRTOOLS},  $@, -version 2>null)
+	$(eval $(call execfollow, ${MAYBE_CDRTOOLS},$@,-version 2>null))
 
 mplex: Makefile
-	if test -f mplex; then rm -f mplex; fi; touch mplex
 if HAVE_MJPEGTOOLS_BUILD
-	chmod +x script.mjpegtools && ${SHELL} script.mjpegtools
-	$(call execfollow, ${MAYBE_MJPEGTOOLS}, $@,  2>&1 |  line)
+	$(call config_exec_package,$@, $(MAYBE_MJPEGTOOLS),$(CONFIGURE_MJPEGTOOLS_FLAGS),2>&1|line)
 endif
 
 help2man: Makefile
 	if test -f help2man; then rm -f help2man; fi; touch help2man
 if HAVE_HELP2MAN_BUILD
 	if test "${MAYBE_HELP2MAN}" != "" ; then \
-	  if test -d ${MAYBE_HELP2MAN} ; then \ 
+	  if test -d ${MAYBE_HELP2MAN} ; then \
 	  cd ${MAYBE_HELP2MAN} && ${SHELL} configure --prefix=${prefix} ; $(MAKETOOL) ; cd - ;\
 	fi; fi
 	$(call execfollow, ${MAYBE_HELP2MAN}, $@,  --version | line)
 	if test -f ${MAYBE_HELP2MAN}/help2man ; then \
-                  ${MAYBE_HELP2MAN}/help2man -s 1 -N -o dvda-author.1 src/dvda ;\
-                  $(call docfollow,  $@) ;\
-                  manhelp=dvda-author.1 ;\
-        fi
+		  ${MAYBE_HELP2MAN}/help2man -s 1 -N -o dvda-author.1 src/dvda ;\
+		  $(call docfollow,  $@) ;\
+		  manhelp=dvda-author.1 ;\
+	fi
 endif
 
 convert: Makefile
-	if test -f convert; then rm -f convert; fi; touch convert
 if HAVE_IMAGEMAGICK_BUILD
-	chmod +x script.magick && ${SHELL} script.magick
-	$(call execfollow, ${MAYBE_IMAGEMAGICK}, $@,  --version 2>&1 | line)
+	$(call config_exec_package,$@,$(MAYBE_IMAGEMAGICK),$(CONFIGURE_IMAGEMAGICK_FLAGS),--version 2>&1|line)
 endif
 
 lplex: Makefile libflac
@@ -179,18 +180,23 @@ endif
 
 
 SUBDIRS=${MAYBE_IBERTY} libutils ${MAYBE_LIBOGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} ${MAYBE_SOX}  ${MAYBE_LPLEX} ${MAYBE_DVDAUTHOR}  ${MAYBE_IMAGEMAGICK} ${MAYBE_LIBMPEG2} ${MAYBE_A52DEC} src
-DIST_SUBDIRS=libiberty libutils libfixwav src  images 
+DIST_SUBDIRS=libiberty libutils libfixwav src  images
 
 #normally is ${prefix}/share/applications/dvda-author-${VERSION}
 sysconfdir=${SHORTLINKDIR}
+
 # distributed under $sysconfdir, normally
 dist_sysconf_DATA=dvda-author.desktop dvda-author.conf
+
 menudir=${MENUDIR}
 # distributed under $menudir=$sysconfdir/menu
+
 dist_menu_DATA=menu/black_PAL_720x576.jpg menu/black_PAL_720x576.png menu/black_NTSC_720x480.jpg menu/black_NTSC_720x480.png menu/silence.wav menu/activeheader
 # normally $prefix/share/pixmaps/dvda-author
+
 pixdir=${PIXDIR}
 # distributed under $pixdir
+
 dist_pix_DATA=dvda-author_48x48.png dvda-author_64x64.png
 # distributed under $docdir, normally $prefix/doc/dvda-author
 
@@ -266,13 +272,13 @@ if HAVE_SOX_BUILD
 endif
 
 distclean: clean-local
-	rm -rf autom4te* && rm -f config.log && rm -f config.status 
+	rm -rf autom4te* && rm -f config.log && rm -f config.status
 	find . -name Makefile -delete
 
 maintainer-clean: distclean
 	find . -name configure -delete
 	rm -rf config
 
-	
-       
+
+
 
