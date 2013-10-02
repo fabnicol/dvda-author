@@ -220,7 +220,7 @@ m4_map([DVDA_TEST_AUX],[
       [[sox],   [[[sox.h],     [sox_format_init  sox_open_read
                                 sox_open_write sox_create_effects_chain
                                 sox_create_effect sox_find_effect
-                                sox_add_effect sox_flow_effects
+				sox_add_effect sox_flow_effectsb
                                 sox_delete_effects sox_close sox_format_quit]]],[shared]],
       [[iberty],[[[getopt.h],[getopt  getopt_long]],[[stdlib.h],[getsubopt]],
                 [[string.h],[strchrnul]],           [[strndup.h],[strndup]]],[static]]])
@@ -244,7 +244,7 @@ m4_map([DVDA_TEST_AUX],[
     # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
 
     DVDA_CONFIG_LIBRARY_LOCAL_INSTALL([
-     [[[FLAC],[flac-1.3.0]],[--disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include" \
+     [[[FLAC],[flac-1.3.0]],[--disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg" \
          --disable-thorough-tests --disable-oggtest --disable-cpplibs --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
      [[[SOX],[sox-14.4.1]],  [--without-mad --without-flac --without-lame --without-ffmpeg --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
      [[[LIBOGG],[libogg-1.1.4]],  [--prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]]])
