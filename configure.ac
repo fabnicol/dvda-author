@@ -15,8 +15,6 @@ echo Using command line $command_line_args
 # This should be called before any macros that run the C   compiler.
 AC_USE_SYSTEM_EXTENSIONS
 
-
-
 AC_PREREQ(2.63)
 AC_LANG([C])
 # Path to auxiliary configuration files
@@ -98,6 +96,9 @@ AC_DEFINE_UNQUOTED(INSTALL_CONF_DIR, "$SHORTLINKDIR", [Defines directory of .des
 
 AC_PROG_SED
 
+#after sed test
+DVDA_TEST_MAKE_VERSION
+
 AC_ARG_WITH([debug],
     [AS_HELP_STRING([--with-debug],[ =full for debugging, =no for Release build ])],
     [
@@ -156,6 +157,8 @@ AS_IF([test "$command_line_args" = ""],
         ])
 
 DVDA_CHECK_DEPENDENCIES
+
+
 
 #=======================================
 # Checks for programs/functions/compiler
@@ -410,7 +413,7 @@ $(cat DOWNLOADS| grep Downloaded | $SED s/Downloaded:// ) ]])],
 
 AS_IF([ test -f PATCHED.DOWNLOADS ],
   [
-     patches=$(cat PATCHED.DOWNLOADS | grep Patched | $SED -r 's/Patched://g ; s/\n/\n      /g')
+     patches=$(cat PATCHED.DOWNLOADS | grep Patched | $SED -r 's/Patched://g ; s/\n/\n\ \ \ \ \ \ /g')
      AC_MSG_RESULT([[
   The following  patch(es) were applied:
 

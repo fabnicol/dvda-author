@@ -299,6 +299,38 @@ m4_popdef([SOFTWARE])
 ]) #DVDA_TEST_SOFTWARE_VERSION
 
 
+# DVDA_TEST_MAKE_VERSION
+# --------------------------------------------
+# find path to MAKE in MAKE_PATH
+# test if software --version has "3.82" in its output ore more
+
+AC_DEFUN([DVDA_TEST_MAKE_VERSION],
+[
+AC_MSG_NOTICE([Testing make version...])
+AC_PATH_PROG(MAKE_PATH, [make], [], [$bindir:/bin:/usr/bin:/usr/local/bin])
+#caution: quote [...]  regep square brackets
+AS_IF([test x$MAKE_PATH != x],
+  [
+    testchain=$($MAKE_PATH -v | grep -E [3\.[8-9]{1}[2-9]{1}])
+    AC_MSG_NOTICE([tested: whether version of $MAKE_PATH is 3.82+ ])
+    AS_IF([test x"$testchain" != x],
+     [
+       DVDA_INF([Version of make is 3.82+: $testchain])
+       MAKE="$MAKE_PATH"
+     ],
+     [
+       DVDA_INF([Installed version of make is not 3.82+: $testchain])
+       AS_EXIT
+     ])
+  ],
+  [
+    DVDA_INF([Installed version of make is not upgraded])
+    AS_EXIT
+  ]
+)
+
+]) #DVDA_TEST_SOFTWARE_VERSION
+
 
 # DVDA_ARG_ENABLE_DOWNLOAD
 # ---------------------------------------------------------------------------------------------
@@ -673,7 +705,7 @@ AC_DEFUN([DVDA_CONFIG],[
 
     AS_IF([test x$VAR[_BUILD] = xyes || test x$ALL_BUILDS = xyes -a x$[withval_]VAR != xno],
            [
-              [MAYBE_]VAR=m4_unquote(CDR)dnl
+	      [MAYBE_]VAR=m4_unquote(CDR)
               VAR[_BUILD]=yes
               VAR[_CONFIGURE_FILE]="[$MAYBE_]VAR"/configure
 
