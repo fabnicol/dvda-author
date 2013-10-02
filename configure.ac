@@ -41,7 +41,7 @@ AC_CANONICAL_BUILD
 # do not use libtool in this version, for arcane and unclear reasons.
 AC_PROG_RANLIB
 
-          
+
 AS_IF([test -f DOWNLOADS], [rm -f DOWNLOADS])
 AS_IF([test -f PATCHED.DOWNLOADS], [rm -f PATCHED.DOWNLOADS])
 
@@ -376,7 +376,6 @@ AC_MSG_RESULT([[
     mp2enc: .......................$MJPEGTOOLS_BUILD $MP2ENC
     jpeg2yuv: .....................$MJPEGTOOLS_BUILD $JPEG2YUV
     mpeg2enc: .....................$MJPEGTOOLS_BUILD $MPEG2ENC
-    mpeg2dec: .....................$MPEG2DEC_BUILD $MPEG2DEC
     a52dec: .......................$A52DEC_BUILD $A52DEC
     mplex: ........................$MJPEGTOOLS_BUILD $MPLEX
     mogrify:.......................$IMAGEMAGICK_BUILD $MOGRIFY
@@ -406,12 +405,12 @@ AC_MSG_RESULT([[
 AS_IF([ test -f DOWNLOADS ],[
   AC_MSG_RESULT([[  The following file(s) have been downloaded:
 
-$(cat DOWNLOADS| grep Downloaded | sed s/Downloaded:// ) ]])],
+$(cat DOWNLOADS| grep Downloaded | $SED s/Downloaded:// ) ]])],
   [AC_MSG_RESULT([  No packages were downloaded.])])
 
 AS_IF([ test -f PATCHED.DOWNLOADS ],
   [
-     patches=`cat PATCHED.DOWNLOADS | grep Patched | sed s/Patched://g | sed s/\n/\n\ \ \ \ /g`
+     patches=$(cat PATCHED.DOWNLOADS | grep Patched | $SED -r 's/Patched://g ; s/\n/\n      /g')
      AC_MSG_RESULT([[
   The following  patch(es) were applied:
 

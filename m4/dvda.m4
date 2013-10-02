@@ -73,11 +73,11 @@ AC_DEFUN([LOOP_MIRRORS],
       Other_url=$3
       Type=$4
       Md5=$5
-      
+
       Filename=bn[-]$Version.tar.$Type
-      
+
       echo Using 'filename' as $Filename
-      
+
       exitcode=0
 
       m4_ifvaln([bn],
@@ -106,8 +106,8 @@ AC_DEFUN([LOOP_MIRRORS],
               AS_IF([test "$Other_url" != ""],[DVDA_CURL([$Other_url/$Filename], [$Filename])])
            ])
 
-      
-      
+
+
 
    ]) #LOOP_MIRRORS
 
@@ -179,56 +179,56 @@ AC_DEFUN([DVDA_DOWNLOAD],
                  DVDA_INF([Removing directory filename])
                  rm -rf filename
                 ])
-                
+
                AS_IF([test -d  bn],
                 [
                  DVDA_INF([Removing directory bn])
                  rm -rf bn
                 ])
-                
+
               ])
 
             AS_IF([test -f filename.tar.$type],
              [
 
                DVDA_TAR([filename.tar.$type],[$mode])
-             
-               
+
+
                [MAYBE_]upper=filename
 
                AS_IF([test "$exitcode" = "0"],
                  [
                     AS_IF([test "$patchbool" = "1"],
                        [
-                        
+
 			    AS_IF([test "$patchbool" = "1"],
 			      [
-			        DVDA_CURL([patch_url], bn-patch-version)
-			        DVDA_PATCH([bn-patch-version])
+				DVDA_CURL([patch_url], bn-patch-version)
+				DVDA_PATCH([bn-patch-version])
 			      ],
 			      [
-			        DVDA_ERR([$1 needs patching])
-			        AS_EXIT
+				DVDA_ERR([$1 needs patching])
+				AS_EXIT
 			      ])
-                              
-                            AS_IF([test -d filename],
-			            [AC_MSG_NOTICE([Extraction: OK])], 
-                                    [
-                                      AS_IF([test -d bn], 
-                                            [
-                                              mv -f bn bn-version
-                                              AS_IF([ test "$?" = "0" ], 
-                                                      [AC_MSG_NOTICE([Renamed directory to bn-version])],  
-                                                      [
-                                                         AC_MSG_NOTICE([Extraction is not canonical: naming issue])
-                                                         AS_EXIT
-                                                      ])    
-                                            ], 
-                                            [
-                                              AC_MSG_NOTICE([Extraction is not canonical: naming issue])
-                                              AS_EXIT
-                                            ])
-                                    ])
+
+			    AS_IF([test -d filename],
+				    [AC_MSG_NOTICE([Extraction: OK])],
+				    [
+				      AS_IF([test -d bn],
+					    [
+					      mv -f bn bn-version
+					      AS_IF([ test "$?" = "0" ],
+						      [AC_MSG_NOTICE([Renamed directory to bn-version])],
+						      [
+							 AC_MSG_NOTICE([Extraction is not canonical: naming issue])
+							 AS_EXIT
+						      ])
+					    ],
+					    [
+					      AC_MSG_NOTICE([Extraction is not canonical: naming issue])
+					      AS_EXIT
+					    ])
+				    ])
 
                        ],
                        [
@@ -453,28 +453,28 @@ m4_popdef([CAPNAME])
 AC_DEFUN([BUILD],
      [
      m4_pushdef([lower], [m4_tolower($1)])
-     
+
       DVDA_INF([Building $1 library from sources...
 Triggering --enable-$1-build... ])
-AS_IF([test "$1" != "" ], 
+AS_IF([test "$1" != "" ],
        [
-          AS_IF([test "$1" = "fixwav" -o "$1" = "iberty" -o "$1" = "all-all" -o "$1"="all-deps" -o "$1" = "all-builds" -o `echo "$command_line-args" | sed s/lower//g` != "$command_line_args"], 
-	      [
-		upperbasename($1)[_BUILD]=yes
-	      ],
-	      [ 
-	        AC_MSG_WARN([[Please download $1 or restart configure with --enable-]lower[-download or --enable-]lower[-patch <sox, cdrtools and dvdauthor>]])
-	        AS_EXIT
-	      ])
+          AS_IF([test "$1" = "fixwav" -o "$1" = "iberty" -o "$1" = "all-all" -o "$1"="all-deps" -o "$1" = "all-builds" -o `echo "$command_line-args" | sed s/lower//g` != "$command_line_args"],
+              [
+                upperbasename($1)[_BUILD]=yes
+              ],
+              [
+                AC_MSG_WARN([[Please download $1 or restart configure with --enable-]lower[-download or --enable-]lower[-patch <sox, cdrtools and dvdauthor>]])
+                AS_EXIT
+              ])
       ],
       [
         echo Naming error: empty "enable" feature
         sleep 5s
         AS_EXIT
       ])
-      
+
       m4_popdef([lower])
-      
+
      ])#BUILD
 
 
@@ -673,7 +673,7 @@ AC_DEFUN([DVDA_CONFIG],[
 
     AS_IF([test x$VAR[_BUILD] = xyes || test x$ALL_BUILDS = xyes -a x$[withval_]VAR != xno],
            [
-              [MAYBE_]VAR=CDR
+              [MAYBE_]VAR=m4_unquote(CDR)dnl
               VAR[_BUILD]=yes
               VAR[_CONFIGURE_FILE]="[$MAYBE_]VAR"/configure
 
