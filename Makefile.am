@@ -17,10 +17,10 @@ define follow
 endef
 
 define execfollow
-	$(if "$1",
-	    $(call follow,($eval $(shell find $1 -name $2 -print0)),executable: $(eval $(shell find $1 -name $2 -print0  -exec {} $3 \;))),
-	    $(call trace, $2, failed))
-
+	$(if "$2",
+	    program=$$(find $2 -name $1 -print0)
+	    $(call follow,$$program,executable: $$($(SHELL) $$program $3)),
+	    $(call trace, $1, failed))
 endef
 
 define docfollow
@@ -63,12 +63,12 @@ endif
 
 
 define configure_sub_package
-    target_subdir="$(strip $1)"
-    configure_flags="$2"
-    $(if $$target_subdir,
-    if test -d  $$target_subdir; then
-    cd $$target_subdir &&  $(SHELL) configure $$configure_flags && $(MAKETOOL) ; cd -
-    fi)
+	target_subdir="$(strip $1)"
+	configure_flags="$2"
+	$(if $$target_subdir,
+	   if test -d  $$target_subdir; then
+	   cd $$target_subdir &&  $(SHELL) configure $$configure_flags && $(MAKETOOL) && $(MAKETOOL) install ; cd -
+	fi)
 endef
 
 define config_lib_package
@@ -78,7 +78,7 @@ endef
 
 define config_exec_package
 	$(call configure_sub_package, $2, $3)
-	$(call execfollow,$2,$$(find $(BUILDDIR) -name $(strip $1) -print0),$4)
+	$(call execfollow,$$(find $(BUILDDIR) -name $(strip $1) -print0),$2,$4)
 endef
 
 
@@ -97,7 +97,7 @@ endif
 
 libsox: Makefile
 if HAVE_SOX_BUILD
-	$(call config_sub_package,libsox, $(MAYBE_SOX),$(CONFIGURE_SOX_FLAGS))
+	$(call config_lib_package,libsox, $(MAYBE_SOX),$(CONFIGURE_SOX_FLAGS))
 endif
 
 dvdauthor: Makefile
@@ -108,7 +108,7 @@ if HAVE_DVDAUTHOR_BUILD
 	cp -r ${ROOTDIR}/m4.extra.dvdauthor ${MAYBE_DVDAUTHOR}/srcm4
 	$(if $(MAYBE_DVDAUTHOR),
 	  if test -d $(MAYBE_DVDAUTHOR) ; then
-	   cd $(MAYBE_DVDAUTHOR) && ${SHELL} autoreconf -i -Isrcm4 && ${SHELL} configure  --prefix=${prefix} ; $(MAKETOOL); cd -
+	   cd $(MAYBE_DVDAUTHOR) && $(SHELL) autoreconf -i -Isrcm4 && $(SHELL) configure  --prefix=$(prefix) ; $(MAKETOOL); cd -
 	  fi)
 endif
 endif
@@ -117,11 +117,13 @@ endif
 #cdrecord must be compiled with special make install parameters hence should not be included in the SUBDIRS list. Building/cleaning will need prior configuration.
 
 cdrecord: Makefile
-	$(eval $(call execfollow, ${MAYBE_CDRTOOLS},$@,-version 2>null))
+if HAVE_CDRTOOLS_BUILD
+	$(call execfollow,$@,$(MAYBE_CDRTOOLS),-version 2>null))
+endif
 
 mplex: Makefile
 if HAVE_MJPEGTOOLS_BUILD
-	$(call config_exec_package,$@, $(MAYBE_MJPEGTOOLS),$(CONFIGURE_MJPEGTOOLS_FLAGS),2>&1|line)
+	$(call config_exec_package,$@,$(MAYBE_MJPEGTOOLS),$(CONFIGURE_MJPEGTOOLS_FLAGS),2>&1|line)
 endif
 
 help2man: Makefile
@@ -145,24 +147,18 @@ if HAVE_IMAGEMAGICK_BUILD
 endif
 
 lplex: Makefile libflac
-	if test -f lplex; then rm -f lplex; fi; touch lplex
 if HAVE_LPLEX_BUILD
-	chmod +x script.lplex && ${SHELL} script.lplex
-	$(call execfollow, ${MAYBE_LPLEX}, $@,  --version 2>&1 | line)
+	$(call config_exec_package,$@,$(MAYBE_LPLEX),$(CONFIGURE_LPLEX_FLAGS),--version 2>&1|line)
 endif
 
 mpeg2dec: Makefile
-	if test -f mpeg2dec; then rm -f mpeg2dec; fi; touch mpeg2dec
 if HAVE_LIBMPEG2_BUILD
-	chmod +x script.libmpeg2 && ${SHELL} script.libmpeg2
-	$(call execfollow, ${MAYBE_LIBMPEG2}, $@,  <null 2>&1 | line)
+	$(call config_exec_package,$@,$(MAYBE_LIBMPEG2),$(CONFIGURE_IMAGEMAGICK_FLAGS),<null 2>&1|line)
 endif
 
 a52dec: Makefile
-	if test -f a52dec; then rm -f a52dec; fi; touch a52dec
 if HAVE_A52DEC_BUILD
-	chmod +x script.a52dec && ${SHELL} script.a52dec
-	$(call execfollow, ${MAYBE_A52DEC}, $@,  2>&1 | line)
+	$(call config_exec_package,$@,$(MAYBE_A52DEC),$(CONFIGURE_A52DEC_FLAGS),2>&1|line)
 endif
 
 dvda-author.1:
@@ -179,8 +175,7 @@ if HAVE_MAN2HTML
 endif
 
 
-SUBDIRS=${MAYBE_IBERTY} libutils ${MAYBE_LIBOGG} ${MAYBE_FLAC} ${MAYBE_FIXWAV} ${MAYBE_SOX}  ${MAYBE_LPLEX} ${MAYBE_DVDAUTHOR}  ${MAYBE_IMAGEMAGICK} ${MAYBE_LIBMPEG2} ${MAYBE_A52DEC} src
-DIST_SUBDIRS=libiberty libutils libfixwav src  images
+SUBDIRS=libiberty libutils libfixwav src  images
 
 #normally is ${prefix}/share/applications/dvda-author-${VERSION}
 sysconfdir=${SHORTLINKDIR}
@@ -278,6 +273,7 @@ distclean: clean-local
 maintainer-clean: distclean
 	find . -name configure -delete
 	rm -rf config
+
 
 
 
