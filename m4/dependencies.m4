@@ -88,17 +88,13 @@ m4_map([DVDA_TEST_AUX],[
 
     AS_CASE([${build}],
             [*-*-mingw32*],[
-                    DVDA_INF([MinGW detected: libsox and libiberty will be built from source])
-                    DVDA_ARG_ENABLE([sox-build])
+		    DVDA_INF([MinGW detected: libiberty will be built from source])
                     DVDA_ARG_ENABLE([iberty-build])],
 
             [*-*-cygwin*],[
-                    DVDA_ARG_ENABLE([sox-build])
                     DVDA_ARG_ENABLE([iberty-build])
-                    DVDA_INF([Cygwin detected: libsoX and glibc will be built from source])])
-          # on cygwin, libsox dependencies will not be resolved (platform limitation)
+		    DVDA_INF([Cygwin detected: libiberty will be built from source])])
 
-    # put feature specific parameters after global parameters to redefine X_LIBs.
 
 
     # downloading (patched) version of source code
@@ -246,7 +242,7 @@ m4_map([DVDA_TEST_AUX],[
     DVDA_CONFIG_LIBRARY_LOCAL_INSTALL([
      [[[FLAC],[flac-1.3.0]],[--disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg" \
          --disable-thorough-tests --disable-oggtest --disable-cpplibs --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
-     [[[SOX],[sox-14.4.1]],  [--without-mad --without-flac --without-lame --without-ffmpeg --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
+     [[[SOX],[sox-14.4.1]],  [--without-libltdl --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-ffmpeg --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
      [[[LIBOGG],[libogg-1.1.4]],  [--prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]]])
 
     # auxiliary libs that remain within package, not installed

@@ -40,12 +40,13 @@ endef
 
 define config_lib_package
 	$(call configure_sub_package, $2, $3)
-	testvar=$$(find $(BUILDDIR)/$2 -type f -maxdepth 2 -name $(strip $1).a -print0)
-	$(if $$testvar, echo "found library: $$testvar for $1" >> BUILD.TRACE
-			testvar=$$(find $(BUILDDIR)/local/lib -type f -maxdepth 1 -name $(strip $1).a -print0)
+	testvar=$$(find $(BUILDDIR)/$2 -maxdepth 2 -type f -name $(strip $1).a -print0)
+	$(if $$testvar,
+			echo "found library: $$testvar for $1" >> BUILD.TRACE
+			testvar=$$(find $(BUILDDIR)/local/lib -maxdepth 1 -name $(strip $1).a -print0)
 			$(if $$testvar,
 				echo "locally installed library: $$testvar from $1" >> BUILD.TRACE,
-				echo "did not install library $1" >> BUILD.TRACE)),
+				echo "did not install library $1" >> BUILD.TRACE),
 			echo "no library $1" >> BUILD.TRACE)
 endef
 
@@ -55,35 +56,26 @@ define config_exec_package
 endef
 
 
-# downloaded binaries will be built locally, to avoid possible versioning issues with already installed one
-# passing right flags to make distcheck when configuring nested packages We do not configure libogg, because install is forced under _build/_inst instead of local/
-
 DISTCHECK_CONFIGURE_FLAGS=--enable-all-all
 ACLOCAL_AMFLAGS=-I m4 -I m4.extra -I m4.extra.dvdauthor --install
 
-# delegating nested 'configure' to 'make' in gcc-fashion saves about 40% of computing time on a multicore with make -j4
-# configure real processing times on Intel Q4 9450, 2GB DDR3 1600 MHz:
-
-# libFLAC + libogg (prior versions)
-# make     make -j4
-# 9.5s --> 4.5s
-
 # nested packages will be configured only if main configure has been launched freshly.
 # stamprecord si a so-called cookie, used only for its time stamp
+
+
+all: erase_build.trace libogg libFLAC libsox dvdauthor cdrecord mplex help2man  convert lplex mpeg2dec a52dec do_sox_lib_deps_subst
+
 
 .PHONY: erase_build.trace do_sox_lib_deps_subst
 
 erase_build.trace:
 	if test -f  BUILD.TRACE; then mv BUILD.TRACE BUILD.TRACE~ ; fi
 
-all: erase_build.trace libogg libFLAC libsox dvdauthor cdrecord mplex help2man  convert lplex mpeg2dec a52dec do_sox_lib_deps_subst
-
-
 # directly patching the Makefile appears to be more efficient. You need a GNU-compliant make.
 do_sox_lib_deps_subst: src/Makefile libsox
 if HAVE_SOX_BUILD
 	chmod +x ${MAYBE_SOX}/sox-libs
-	$(SED) -e "s,SOX_LIB_DEPS,$(shell cat ${MAYBE_SOX}/sox-libs | $(SED) -e "s,[\.\.\/].*[a],,g"   -e  "s,@.*@,,g"),g" < src/Makefile > src/Makefile.temp
+	$(SED) -e "s,SOX_LIB_DEPS,$(shell cat ${MAYBE_SOX}/sox-libs | $(SED) -e "s,[\.\.\/].*[a],,g"   ;  "s,@.*@,,g"),g" < src/Makefile > src/Makefile.temp
 	mv src/Makefile.temp src/Makefile
 	$(call follow,src/Makefile.temp,$@)
 endif
