@@ -24,6 +24,8 @@ AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([m4])
 
 # standard init macros
+AC_PROG_LEX
+AC_PROG_EGREP
 
 # make dist produces both tar.bz2 and tar.gz packages
 AM_INIT_AUTOMAKE
