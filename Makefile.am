@@ -4,7 +4,7 @@ else
 MAKETOOL=make  -k
 endif
 
-SHELL=/bin/bash
+SHELL=/bin/bash -c
 .SHELLFLAGS=-ec
 .ONESHELL:
 
@@ -18,7 +18,7 @@ endef
 
 define execfollow
 	$(if "$2",
-	    program=$$(find $2 -name $1 -print0)
+	    program=$$(eval find $2 -name $1 -print0)
 	    $(call follow,$$program,executable: $$($(SHELL) $$program $3)),
 	    $(call trace, $1, failed))
 endef
@@ -27,6 +27,33 @@ define docfollow
 	findstring=$(strip $(eval "find ${BUILDDIR} -name $1 -print0"))
 	$(call follow, $1: $findstring, "doc: `find $findstring  `")
 endef
+
+
+define configure_sub_package
+	target_subdir="$(strip $1)"
+	configure_flags="$2"
+	$(if $$target_subdir,
+	   if test -d  $$target_subdir; then
+	   cd $$target_subdir &&  $(SHELL) configure $$configure_flags && $(MAKETOOL) MKDIR_P="mkdir.exe -p"  && $(MAKETOOL) install ; cd -
+	fi)
+endef
+
+define config_lib_package
+	$(call configure_sub_package, $2, $3)
+	testvar=$$(find $(BUILDDIR)/$2 -type f -maxdepth 2 -name $(strip $1).a -print0)
+	$(if $$testvar, echo "found library: $$testvar for $1" >> BUILD.TRACE
+			testvar=$$(find $(BUILDDIR)/local/lib -type f -maxdepth 1 -name $(strip $1).a -print0)
+			$(if $$testvar,
+				echo "locally installed library: $$testvar from $1" >> BUILD.TRACE,
+				echo "did not install library $1" >> BUILD.TRACE)),
+			echo "no library $1" >> BUILD.TRACE)
+endef
+
+define config_exec_package
+	$(call configure_sub_package, $2, $3)
+	$(call execfollow,$$(find $(BUILDDIR) -name $(strip $1) -print0),$2,$4)
+endef
+
 
 # downloaded binaries will be built locally, to avoid possible versioning issues with already installed one
 # passing right flags to make distcheck when configuring nested packages We do not configure libogg, because install is forced under _build/_inst instead of local/
@@ -49,7 +76,7 @@ ACLOCAL_AMFLAGS=-I m4 -I m4.extra -I m4.extra.dvdauthor --install
 erase_build.trace:
 	if test -f  BUILD.TRACE; then mv BUILD.TRACE BUILD.TRACE~ ; fi
 
-all: erase_build.trace libogg libflac libsox dvdauthor cdrecord mplex help2man  convert lplex mpeg2dec a52dec do_sox_lib_deps_subst
+all: erase_build.trace libogg libFLAC libsox dvdauthor cdrecord mplex help2man  convert lplex mpeg2dec a52dec do_sox_lib_deps_subst
 
 
 # directly patching the Makefile appears to be more efficient. You need a GNU-compliant make.
@@ -62,41 +89,29 @@ if HAVE_SOX_BUILD
 endif
 
 
-define configure_sub_package
-	target_subdir="$(strip $1)"
-	configure_flags="$2"
-	$(if $$target_subdir,
-	   if test -d  $$target_subdir; then
-	   cd $$target_subdir &&  $(SHELL) configure $$configure_flags && $(MAKETOOL) && $(MAKETOOL) install ; cd -
-	fi)
-endef
-
-define config_lib_package
-	$(call configure_sub_package, $2, $3)
-	$(call follow,$$(find $(BUILDDIR) -name $(strip $1).a -print0),library)
-endef
-
-define config_exec_package
-	$(call configure_sub_package, $2, $3)
-	$(call execfollow,$$(find $(BUILDDIR) -name $(strip $1) -print0),$2,$4)
-endef
-
-
 libogg: Makefile
 if HAVE_LIBOGG_BUILD
 	$(call config_lib_package,libogg, $(MAYBE_LIBOGG),$(CONFIGURE_LIBOGG_FLAGS))
 endif
 
 #build and install libogg before libFLAC
-libflac: Makefile libogg
+libFLAC: Makefile libogg
 if HAVE_FLAC_BUILD
-	$(call config_lib_package,libflac, $(MAYBE_FLAC),$(CONFIGURE_FLAC_FLAGS))
+	$(call config_lib_package,libFLAC, $(MAYBE_FLAC),$(CONFIGURE_FLAC_FLAGS))
 endif
 
 # you need the autotools to be able to rebuild sox with the sox-libs patch (the alternative would be using pkg-config, which is no better)
 
 libsox: Makefile
 if HAVE_SOX_BUILD
+	if test  "$(MAYBE_SOX)" != ""; then
+		if test -d "$(BUILDDIR)/$(MAYBE_SOX)" ; then
+			cp "$(BUILDDIR)/sox-libs" "$(BUILDDIR)/$(MAYBE_SOX)/sox-libs.in"
+			else
+			echo "$(BUILDDIR)/$(MAYBE_SOX) is not a directory"
+			exit -1
+		fi
+	fi
 	$(call config_lib_package,libsox, $(MAYBE_SOX),$(CONFIGURE_SOX_FLAGS))
 endif
 
@@ -146,7 +161,7 @@ if HAVE_IMAGEMAGICK_BUILD
 	$(call config_exec_package,$@,$(MAYBE_IMAGEMAGICK),$(CONFIGURE_IMAGEMAGICK_FLAGS),--version 2>&1|line)
 endif
 
-lplex: Makefile libflac
+lplex: Makefile libFLAC
 if HAVE_LPLEX_BUILD
 	$(call config_exec_package,$@,$(MAYBE_LPLEX),$(CONFIGURE_LPLEX_FLAGS),--version 2>&1|line)
 endif
