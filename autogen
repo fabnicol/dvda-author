@@ -10,12 +10,14 @@ if test ! -f /usr/bin/autoreconf -a ! -f /usr/local/bin/autoreconf ; then
 fi
 
 if test -d autom4te.cache; then
-rm -rf autom4te.cache
+   rm -rf autom4te.cache
 fi
 
 backup=INSTALL_save_$(date | sed -r "s/[() :]/./g")
-cp INSTALL $backup
- 
+if test -f INSTALL; then
+   cp INSTALL $backup
+fi
+
 topdir=`pwd`
 echo "Entering: "
 echo "$topdir"
@@ -23,10 +25,13 @@ autoreconf --install --force -Im4 -Im4.extra -Im4.extra.dvdauthor -W none
 exitcode=$?
 cd "$topdir"
 
-mv $backup INSTALL
-if test $? != 0; then
-echo INSTALL was backed up in previous generation but could not be recovered.
-echo Fix this manually.
+if test -f $backup; then
+	mv $backup INSTALL
+	if test $? != 0; then
+	  echo INSTALL was backed up in previous generation but could not be recovered.
+	  echo Fix this manually.
+	fi
 fi
+
 exit $exitcode
 
