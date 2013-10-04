@@ -4,7 +4,7 @@ else
 MAKETOOL=make  -k
 endif
 
-SHELL=/bin/bash -c
+SHELL=/bin/bash
 .SHELLFLAGS=-ec
 .ONESHELL:
 
@@ -32,14 +32,22 @@ endef
 define configure_sub_package
 	target_subdir="$(strip $1)"
 	configure_flags="$2"
+	autotools_command_line="$3"
 	$(if $$target_subdir,
 	   if test -d  $$target_subdir; then
-	   cd $$target_subdir &&  $(SHELL) configure $$configure_flags && $(MAKETOOL) MKDIR_P="mkdir.exe -p"  && $(MAKETOOL) install ; cd -
-	fi)
+	      cd $$target_subdir && $$autotools_command_line && $(SHELL) configure $$configure_flags && $(MAKETOOL) MKDIR_P="mkdir.exe -p"
+	      if test "$$?" = "0"; then
+		 echo Installing from $$target_subdir ...
+		 if test -f INSTALL; then mv -f INSTALL INSTALL.txt ; fi
+		 $(MAKETOOL) install
+	      fi
+	   if test -f INSTALL.txt; then mv -f INSTALL.txt INSTALL; fi
+	   cd -
+	   fi)
 endef
 
 define config_lib_package
-	$(call configure_sub_package, $2, $3)
+	$(call configure_sub_package,$2,$3,$4)
 	testvar=$$(find $(BUILDDIR)/$2 -maxdepth 2 -type f -name $(strip $1).a -print0)
 	$(if $$testvar,
 			echo "found library: $$testvar for $1" >> BUILD.TRACE
@@ -104,7 +112,7 @@ if HAVE_SOX_BUILD
 			exit -1
 		fi
 	fi
-	$(call config_lib_package,libsox, $(MAYBE_SOX),$(CONFIGURE_SOX_FLAGS))
+	$(call config_lib_package,libsox,$(MAYBE_SOX),$(CONFIGURE_SOX_FLAGS),autoreconf -if)
 endif
 
 dvdauthor: Makefile
