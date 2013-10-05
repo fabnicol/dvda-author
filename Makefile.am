@@ -4,42 +4,50 @@ else
 MAKETOOL=make  -k
 endif
 
+if HAVE_CDRTOOLS_BUILD
+INS_BASE=${prefix} install
+else
+INS_BASE=
+endif
+
 SHELL=/bin/bash
 .SHELLFLAGS=-ec
 .ONESHELL:
 
 define trace
-	echo "$2:  $1" >> BUILD.TRACE
+	echo "$1:  $2" >> BUILD.TRACE
 endef
 
 define follow
-	if test   "$(strip $1)" != "" ; then $(call trace, $2, "done: $1") ; else $(call trace, $2, failed); fi
+	$(if "$1", $(call trace,done,"$1 $2"), $(call trace,failed,$1))
 endef
 
 define execfollow
-	$(if "$2",
-	    program=$$(eval find $2 -name $1 -print0)
+	$(if "$1",
+	    program=$$(find $(BUILDDIR)/$2 -maxdepth 2 -type f -name $(strip $1)$(EXEEXT) -print0)
 	    $(call follow,$$program,executable: $$($(SHELL) $$program $3)),
-	    $(call trace, $1, failed))
+	    $(call trace,failed,$1))
 endef
 
 define docfollow
-	findstring=$(strip $(eval "find ${BUILDDIR} -name $1 -print0"))
-	$(call follow, $1: $findstring, "doc: `find $findstring  `")
+	findstring=$$(find $(BUILDDIR) -maxdepth 1 -name $(strip $1) -print0)
+	$(call follow, $1, $$findstring)
 endef
 
-
+#the complex autotools invocation is rendered necessary by the missing/obsolete status of the dvdauthor autotools chain
+#notice autoconf twice and aclocal -I... to retrieve missing macros
 define configure_sub_package
 	target_subdir="$(strip $1)"
 	configure_flags="$2"
 	autotools_command_line="$3"
 	$(if $$target_subdir,
 	   if test -d  $$target_subdir; then
-	      cd $$target_subdir && $$autotools_command_line && $(SHELL) configure $$configure_flags && $(MAKETOOL) MKDIR_P="mkdir.exe -p"
+	      cd $$target_subdir && $$autotools_command_line && $(SHELL) configure $$configure_flags --prefix="$(BUILDDIR)/local" CPPFLAGS="-I$(BUILDDIR)/local/include" \
+		 && $(MAKETOOL) MKDIR_P="mkdir$(EXEEXT) -p"
 	      if test "$$?" = "0"; then
 		 echo Installing from $$target_subdir ...
 		 if test -f INSTALL; then mv -f INSTALL INSTALL.txt ; fi
-		 $(MAKETOOL) install
+		 $(MAKETOOL) $(INS_BASE) install
 	      fi
 	   if test -f INSTALL.txt; then mv -f INSTALL.txt INSTALL; fi
 	   cd -
@@ -60,7 +68,7 @@ endef
 
 define config_exec_package
 	$(call configure_sub_package, $2, $3)
-	$(call execfollow,$$(find $(BUILDDIR) -name $(strip $1) -print0),$2,$4)
+	$(call execfollow,$1,$2,$4)
 endef
 
 
@@ -76,8 +84,10 @@ all: erase_build.trace libogg libFLAC libsox dvdauthor cdrecord mplex help2man  
 
 .PHONY: erase_build.trace do_sox_lib_deps_subst
 
-erase_build.trace:
-	if test -f  BUILD.TRACE; then mv BUILD.TRACE BUILD.TRACE~ ; fi
+BUILD.TRACE: ;
+
+erase_build.trace: BUILD.TRACE
+	mv BUILD.TRACE BUILD.TRACE~
 
 # directly patching the Makefile appears to be more efficient. You need a GNU-compliant make.
 do_sox_lib_deps_subst: src/Makefile libsox
@@ -115,6 +125,8 @@ if HAVE_SOX_BUILD
 	$(call config_lib_package,libsox,$(MAYBE_SOX),$(CONFIGURE_SOX_FLAGS),autoreconf -if)
 endif
 
+
+
 dvdauthor: Makefile
 	if test -f dvdauthor; then rm -f dvdauthor; fi; touch dvdauthor
 if HAVE_AUTOMAKE
@@ -123,7 +135,8 @@ if HAVE_DVDAUTHOR_BUILD
 	cp -r ${ROOTDIR}/m4.extra.dvdauthor ${MAYBE_DVDAUTHOR}/srcm4
 	$(if $(MAYBE_DVDAUTHOR),
 	  if test -d $(MAYBE_DVDAUTHOR) ; then
-	   cd $(MAYBE_DVDAUTHOR) && $(SHELL) autoreconf -i -Isrcm4 && $(SHELL) configure  --prefix=$(prefix) ; $(MAKETOOL); cd -
+	   cd $(MAYBE_DVDAUTHOR) && $(SHELL) -c "aclocal -Isrcm4 && autoheader && automake -acf && autoconf -Isrcm4" \
+	   && $(SHELL) configure  --prefix=$(prefix) ; $(MAKETOOL); cd -
 	  fi)
 endif
 endif
@@ -144,15 +157,16 @@ endif
 help2man: Makefile
 	if test -f help2man; then rm -f help2man; fi; touch help2man
 if HAVE_HELP2MAN_BUILD
-	if test "${MAYBE_HELP2MAN}" != "" ; then \
-	  if test -d ${MAYBE_HELP2MAN} ; then \
-	  cd ${MAYBE_HELP2MAN} && ${SHELL} configure --prefix=${prefix} ; $(MAKETOOL) ; cd - ;\
-	fi; fi
-	$(call execfollow, ${MAYBE_HELP2MAN}, $@,  --version | line)
-	if test -f ${MAYBE_HELP2MAN}/help2man ; then \
-		  ${MAYBE_HELP2MAN}/help2man -s 1 -N -o dvda-author.1 src/dvda ;\
-		  $(call docfollow,  $@) ;\
-		  manhelp=dvda-author.1 ;\
+	if test "$(MAYBE_HELP2MAN)" != "" ; then
+	  if test -d $(MAYBE_HELP2MAN) ; then
+		cd $(MAYBE_HELP2MAN) && $(SHELL) configure --prefix=${prefix} ; $(MAKETOOL) ; cd -
+	  fi
+	fi
+	$(call execfollow,$@,$(MAYBE_HELP2MAN),--version|line)
+	if test -f $(MAYBE_HELP2MAN)/help2man ; then
+		  $(MAYBE_HELP2MAN)/help2man -s 1 -N -o dvda-author.1 src/dvda
+		  $(call docfollow,dvda-author.1)
+		  manhelp=dvda-author.1
 	fi
 endif
 
@@ -178,15 +192,17 @@ endif
 
 dvda-author.1:
 if HAVE_HELP2MAN
-	${HELP2MAN} -s 1 -N -o dvda-author.1 src/dvda
-	$(call docfollow,  $@)
+	if test -f src/dvda; then
+		${HELP2MAN} -s 1 -N -o dvda-author.1 src/dvda
+		$(call docfollow,  $@)
+	fi
 endif
 
 dochtml: dvda-author.1
 #PATCH  09.12  We need to display in UTF-8 mode and take off an illicit file header created by man2html
 if HAVE_MAN2HTML
-	${MAN2HTML} < dvda-author.1 | $(SED) -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > dvda-author-@VERSION@.html
-	$(call docfollow, $@)
+		${MAN2HTML} < dvda-author.1 | $(SED) -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > dvda-author-@VERSION@.html
+		$(call docfollow, $@)
 endif
 
 
@@ -231,34 +247,9 @@ EXTRA_DIST=autogen dvda-author.ico  dvda-author-launch.bat  sox-libs  m4.extra m
 
 install-data-local:  $(manhelp) $(htmlhelp)
 
-install-exec-local:
-
-if HAVE_CDRTOOLS_BUILD
-	cd ${MAYBE_CDRTOOLS}; $(MAKETOOL) INS_BASE=${prefix} install; cd -
-endif
-if HAVE_DVDAUTHOR_BUILD
-	cd ${MAYBE_DVDAUTHOR}; $(MAKETOOL)  install; cd - ;
-	$(call follow, find ${MAYBE_DVDAUTHOR} -name dvdauthor -print0, $(`find ${MAYBE_DVDAUTHOR} -name dvdauthor`  --version 2>&1 |grep patched))
-endif
-if HAVE_MJPEGTOOLS_BUILD
-	cd ${MAYBE_MJPEGTOOLS}; $(MAKETOOL) install; cd - ;
-endif
-if HAVE_IMAGEMAGICK_BUILD
-	cd ${MAYBE_IMAGEMAGICK}; $(MAKETOOL) install; cd - ;
-endif
-if HAVE_SOX_BUILD
-	cd ${MAYBE_SOX}; $(MAKETOOL) install; cd -;
-endif
-
-
-
 # redefining install is necessary to rename nested package directories for later builds with --enable-all-builds, which request lib* labelling
 
-install: install-exec install-data-local install-am
-if HAVE_HELP2MAN_BUILD
-	cd ${MAYBE_HELP2MAN}; $(MAKETOOL) install; cd - ;
-	$(call follow, find ${MAYBE_HELP2MAN} -name help2man -print0, $(`find ${MAYBE_HELP2MAN} -name help2man -print0` ))
-endif
+install: install-data-local install-am
 
 clean-local:
 	rm -f dvda-author.1 dvda-author-@VERSION@.html
