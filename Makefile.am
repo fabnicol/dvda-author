@@ -1,3 +1,7 @@
+#to be used with automake 1.14 and higher
+#file: Makefile.am Copyright Fabrice Nicol 2013
+#Caution: you need GNU make, version 3.82 and higher, preferably 3.99+
+
 if HAVE_SMAKE
 MAKETOOL=$(SMAKE)
 else
@@ -10,8 +14,12 @@ else
 INS_BASE=
 endif
 
-SHELL=/bin/bash
+#Do not use bash. It would cause subtle issues with libtool in the flac package, probably a libtool bug.
+SHELL=/bin/sh
+
 .SHELLFLAGS=-ec
+
+#Using ONESHELL, version make 3.82+, possibly higher with windows ports
 .ONESHELL:
 
 define trace
@@ -23,10 +31,10 @@ define follow
 endef
 
 define execfollow
-	$(if "$1",
-	    program=$$(find $(BUILDDIR)/$2 -maxdepth 2 -type f -name $(strip $1)$(EXEEXT) -print0)
-	    $(call follow,$$program,executable: $$($(SHELL) $$program $3)),
-	    $(call trace,failed,$1))
+	$(if "$2",
+	    program=$$(find $(BUILDDIR)/$1 -maxdepth 2 -type f -name $(strip $2)$(EXEEXT) -print0)
+	    $(call follow,$$program,executable: `$$program $3` ),
+	    $(call trace,failed,$2))
 endef
 
 define docfollow
@@ -67,8 +75,13 @@ define config_lib_package
 endef
 
 define config_exec_package
+    ifeq $(build_os) "mingw32"
+	patchfile=$$(find patches -type f -regex .*$1-patch.* -print0)
+	echo Found mingw32 OS...patching with local patch $$patchfile
+	$(if $$patchfile, patch -p0 < $$patchfile && echo "locally patched: $1, using $$patchfile in patches/" >> PATCHED.DOWNLOADS)
+    endif
 	$(call configure_sub_package, $2, $3)
-	$(call execfollow,$1,$2,$4)
+	$(call execfollow,$2,$4,$5)
 endef
 
 
@@ -79,7 +92,7 @@ ACLOCAL_AMFLAGS=-I m4 -I m4.extra -I m4.extra.dvdauthor --install
 # stamprecord si a so-called cookie, used only for its time stamp
 
 
-all: erase_build.trace libogg libFLAC libsox dvdauthor cdrecord mplex help2man  convert lplex mpeg2dec a52dec do_sox_lib_deps_subst
+all: erase_build.trace libogg libFLAC libsox dvdauthor cdrecord mjpegtools help2man  convert lplex mpeg2dec a52dec do_sox_lib_deps_subst
 
 
 .PHONY: erase_build.trace do_sox_lib_deps_subst
@@ -93,9 +106,10 @@ erase_build.trace: BUILD.TRACE
 do_sox_lib_deps_subst: src/Makefile libsox
 if HAVE_SOX_BUILD
 	chmod +x ${MAYBE_SOX}/sox-libs
-	$(SED) -e "s,SOX_LIB_DEPS,$(shell cat ${MAYBE_SOX}/sox-libs | $(SED) -e "s,[\.\.\/].*[a],,g"   ;  "s,@.*@,,g"),g" < src/Makefile > src/Makefile.temp
+	pkgconfig_style_libs=$(shell cat $(MAYBE_SOX)/sox-libs | $(SED) -e "s,[\.\.\/].*[a],,g   ;  s,@.*@,,g")
+	$(SED) -e "s,SOX_LIB_DEPS,$$pkgconfig_style_libs,g" < src/Makefile > src/Makefile.temp
 	mv src/Makefile.temp src/Makefile
-	$(call follow,src/Makefile.temp,$@)
+	$(call follow,src/Makefile.temp, done sox library substitution (pkgconfig-style))
 endif
 
 
@@ -146,12 +160,12 @@ endif
 
 cdrecord: Makefile
 if HAVE_CDRTOOLS_BUILD
-	$(call execfollow,$@,$(MAYBE_CDRTOOLS),-version 2>null))
+	$(call execfollow,$(MAYBE_CDRTOOLS),$@,-version 2>null)
 endif
 
-mplex: Makefile
+mjpegtools: Makefile
 if HAVE_MJPEGTOOLS_BUILD
-	$(call config_exec_package,$@,$(MAYBE_MJPEGTOOLS),$(CONFIGURE_MJPEGTOOLS_FLAGS),2>&1|line)
+	$(call config_exec_package,$@,$(MAYBE_MJPEGTOOLS),$(CONFIGURE_MJPEGTOOLS_FLAGS),mplex,2>&1|line)
 endif
 
 help2man: Makefile
@@ -162,7 +176,7 @@ if HAVE_HELP2MAN_BUILD
 		cd $(MAYBE_HELP2MAN) && $(SHELL) configure --prefix=${prefix} ; $(MAKETOOL) ; cd -
 	  fi
 	fi
-	$(call execfollow,$@,$(MAYBE_HELP2MAN),--version|line)
+	$(call execfollow,$(MAYBE_HELP2MAN),$@,--version|line)
 	if test -f $(MAYBE_HELP2MAN)/help2man ; then
 		  $(MAYBE_HELP2MAN)/help2man -s 1 -N -o dvda-author.1 src/dvda
 		  $(call docfollow,dvda-author.1)
