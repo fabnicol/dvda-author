@@ -6,7 +6,7 @@ Purpose: Create an Audio Manager (AUDIO_TS.IFO)
 dvda-author  - Author a DVD-Audio DVD
 
 (C) Dave Chapman <dave@dchapman.com> 2005
-(C) Revised version with zone-to-zone linking Fabrice Nicol <fabnicol@users.sourceforge.net> 2007, 2008
+(C) Revised version with zone-to-zone linking Fabrice Nicol <fabnicol@users.sourceforge.net> 2007, 2008,2013
 
 The latest version can be found at http://dvd-audio.sourceforge.net
 

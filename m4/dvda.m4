@@ -6,7 +6,7 @@
 # and are reusable in other projects.
 # ====================================================
 
-# All macros are copyright Fabrice Nicol, 2009
+# All macros are copyright Fabrice Nicol, 2009-2013
 # These macros are part of the dvda-author package
 # and are delivered under the same licensing terms.
 # --------------------------------------------------
@@ -82,29 +82,29 @@ AC_DEFUN([LOOP_MIRRORS],
 
       m4_ifvaln([bn],
       [
-        AS_IF([test "$Sourceforge_url" != "" ],
-                       [DVDA_CURL([$Sourceforge_url/$Filename], [$Filename])],
-                       [
-                        AS_IF([test "$Other_url" != ""],
-                             [DVDA_CURL([$Other_url/$Filename], [$Filename])],
-                             [
-                               AC_MSG_NOTICE([No repository was provided for bn... Please download by other means.])
-                               AS_EXIT
-                             ])
-                       ])
+	AS_IF([test "$Sourceforge_url" != "" ],
+		       [DVDA_CURL([$Sourceforge_url/$Filename], [$Filename])],
+		       [
+			AS_IF([test "$Other_url" != ""],
+			     [DVDA_CURL([$Other_url/$Filename], [$Filename])],
+			     [
+			       AC_MSG_NOTICE([No repository was provided for bn... Please download by other means.])
+			       AS_EXIT
+			     ])
+		       ])
       ],
       [
-        AC_MSG_NOTICE([Issue with downloading: no filename ... Please download by other means.])
-        AS_EXIT
+	AC_MSG_NOTICE([Issue with downloading: no filename ... Please download by other means.])
+	AS_EXIT
       ])
 
       MD5_BREAK([$Filename],[$Md5])
 
       AS_IF([test $exitcode != 0],
-           [
-              AC_MSG_NOTICE([[MD5SUM: not equal to  $md5, trying again fallback Url $Other_url]])
-              AS_IF([test "$Other_url" != ""],[DVDA_CURL([$Other_url/$Filename], [$Filename])])
-           ])
+	   [
+	      AC_MSG_NOTICE([[MD5SUM: not equal to  $md5, trying again fallback Url $Other_url]])
+	      AS_IF([test "$Other_url" != ""],[DVDA_CURL([$Other_url/$Filename], [$Filename])])
+	   ])
 
 
 
@@ -137,69 +137,69 @@ AC_DEFUN([DVDA_DOWNLOAD],
   # not having tar may sometimes happen on lightweight windows-based platforms
 
     AS_IF([test x$CURL = x],
-          [
-            DVDA_ERR([Install curl to download bn and rerun])
-            AS_EXIT
-          ],
-          [
-            DVDA_INF([Downloading bn. Make sure you have a functional internet connection.])
-            upper[_VERSION]=version
-            DVDA_CLEAN([filename.tar.gz])
-            DVDA_CLEAN([filename.tar.bz2])
-            DVDA_CLEAN([filename.tar.xz])
+	  [
+	    DVDA_ERR([Install curl to download bn and rerun])
+	    AS_EXIT
+	  ],
+	  [
+	    DVDA_INF([Downloading bn. Make sure you have a functional internet connection.])
+	    upper[_VERSION]=version
+	    DVDA_CLEAN([filename.tar.gz])
+	    DVDA_CLEAN([filename.tar.bz2])
+	    DVDA_CLEAN([filename.tar.xz])
 
-            LOOP_MIRRORS([version],[sourceforge_url],[other_url],[gz],[MD5])
-            mode=xzf
-            type=gz
+	    LOOP_MIRRORS([version],[sourceforge_url],[other_url],[gz],[MD5])
+	    mode=xzf
+	    type=gz
 
-            AS_IF([test $exitcode != 0],
-                    [
-                      exitcode=0
-                      LOOP_MIRRORS([version],[sourceforge_url],[other_url],[bz2],[MD5])
-                      mode=xjf
-                      type=bz2
-                    ])
+	    AS_IF([test $exitcode != 0],
+		    [
+		      exitcode=0
+		      LOOP_MIRRORS([version],[sourceforge_url],[other_url],[bz2],[MD5])
+		      mode=xjf
+		      type=bz2
+		    ])
 
-            AS_IF([test $exitcode != 0],
-                    [
-                      exitcode=0
-                      LOOP_MIRRORS([version],[sourceforge_url],[other_url],[xz],[MD5])
-                      mode=xJf
-                      type=xz
-                    ])
+	    AS_IF([test $exitcode != 0],
+		    [
+		      exitcode=0
+		      LOOP_MIRRORS([version],[sourceforge_url],[other_url],[xz],[MD5])
+		      mode=xJf
+		      type=xz
+		    ])
 
-            AS_IF([ test  $exitcode != 0 ],
-              [
-                DVDA_ERR([Download failure])
-                AS_EXIT
-              ],
-              [
-               AS_IF([test -d  filename],
-                [
-                 DVDA_INF([Removing directory filename])
-                 rm -rf filename
-                ])
+	    AS_IF([ test  $exitcode != 0 ],
+	      [
+		DVDA_ERR([Download failure])
+		AS_EXIT
+	      ],
+	      [
+	       AS_IF([test -d  filename],
+		[
+		 DVDA_INF([Removing directory filename])
+		 rm -rf filename
+		])
 
-               AS_IF([test -d  bn],
-                [
-                 DVDA_INF([Removing directory bn])
-                 rm -rf bn
-                ])
+	       AS_IF([test -d  bn],
+		[
+		 DVDA_INF([Removing directory bn])
+		 rm -rf bn
+		])
 
-              ])
+	      ])
 
-            AS_IF([test -f filename.tar.$type],
-             [
+	    AS_IF([test -f filename.tar.$type],
+	     [
 
-               DVDA_TAR([filename.tar.$type],[$mode])
+	       DVDA_TAR([filename.tar.$type],[$mode])
 
 
-               [MAYBE_]upper=filename
+	       [MAYBE_]upper=filename
 
-               AS_IF([test "$exitcode" = "0"],
-                 [
-                    AS_IF([test "$patchbool" = "1"],
-                       [
+	       AS_IF([test "$exitcode" = "0"],
+		 [
+		    AS_IF([test "$patchbool" = "1"],
+		       [
 
 			    AS_IF([test "$patchbool" = "1"],
 			      [
@@ -230,17 +230,17 @@ AC_DEFUN([DVDA_DOWNLOAD],
 					    ])
 				    ])
 
-                       ],
-                       [
-                             DVDA_INF([No patching was performed])
-                       ])
-                ],
-                [  DVDA_INF([Extraction of bn.tar.$type failed. Proceeding to next package...]) ]
-                )
+		       ],
+		       [
+			     DVDA_INF([No patching was performed])
+		       ])
+		],
+		[  DVDA_INF([Extraction of bn.tar.$type failed. Proceeding to next package...]) ]
+		)
 
-             ],
-             [DVDA_ERR([Download of bn failed])])
-           ])
+	     ],
+	     [DVDA_ERR([Download of bn failed])])
+	   ])
 
 
 AS_IF([test "$errorcode" = "1"],[errorcode_boolean=0],[errorcode_boolean=1])
@@ -343,9 +343,9 @@ AC_DEFUN([DVDA_ARG_ENABLE_DOWNLOAD],
  DVDA_ARG_ENABLE([$1],
    [
     AS_IF([test x$1 = xall-deps -o x$1 = xall-all],
-            [m4_map([DVDA_DOWNLOAD],[DOWNLOAD_OPTIONS])],
-          [test x$1 != xno],
-            [DVDA_DOWNLOAD($@)])
+	    [m4_map([DVDA_DOWNLOAD],[DOWNLOAD_OPTIONS])],
+	  [test x$1 != xno],
+	    [DVDA_DOWNLOAD($@)])
 
    ])
 
@@ -387,18 +387,18 @@ m4_pushdef([upper],[uppernormalisename([$1])])
 
 m4_if(act,[build],
        [m4_pushdef([msg],[[configure, build and install ]bn[ from source code]])],
-          act,[builds],
+	  act,[builds],
        [m4_pushdef([msg],[[configure, build and install all core dependencies <FLAC, Ogg, SoX, dvdauthor, cdrtools> from source code]])],
-          act,[patch],
+	  act,[patch],
        [m4_pushdef([msg],[[download and patch ]bn[ from source code]])],
-          act,[download],
+	  act,[download],
        [m4_pushdef([msg],[[download ]bn[ from source code]])],
-          act,[cvs],
+	  act,[cvs],
        [m4_pushdef([msg],[[download ]bn[ (cvs code for windows builds)]])],
-          act,[deps],
+	  act,[deps],
        [m4_pushdef([msg],[[download ]bn[ dependencies <FLAC, Ogg, SoX, dvdauthor, cdrtools> and patch the source code if necessary]])],
 
-           [m4_pushdef([msg],[[enable ]dhms])])
+	   [m4_pushdef([msg],[[enable ]dhms])])
 
 # Check whether --enable-$1 or --disable-$1 was given.
 
@@ -408,14 +408,14 @@ AC_ARG_ENABLE([$1],[AS_HELP_STRING([--enable-$1],msg)],
   [
       AC_PATH_PROG([TAR], [tar], [], [$bindir:/bin:/sbin:/usr/bin:/usr/local/bin])
       AS_IF([ test x$TAR = x],[
-                               DVDA_ERR([tar is requested, please install it.])
-                               AS_EXIT
-                              ])
+			       DVDA_ERR([tar is requested, please install it.])
+			       AS_EXIT
+			      ])
       AC_PATH_PROG([PATCH], [patch], [], [$bindir:/bin:/sbin:/usr/bin:/usr/local/bin])
       AS_IF([ test x$PATCH = x],[
-                                  DVDA_ERR([patch is requested, please install it.])
-                                  AS_EXIT
-                                ])
+				  DVDA_ERR([patch is requested, please install it.])
+				  AS_EXIT
+				])
 
       AC_PATH_PROG([CURL], [curl], [], [$bindir:/usr/bin:/usr/local/bin])
 
@@ -490,19 +490,19 @@ AC_DEFUN([BUILD],
 Triggering --enable-$1-build... ])
 AS_IF([test "$1" != "" ],
        [
-          AS_IF([test "$1" = "fixwav" -o "$1" = "iberty" -o "$1" = "all-all" -o "$1"="all-deps" -o "$1" = "all-builds" -o `echo "$command_line-args" | sed s/lower//g` != "$command_line_args"],
-              [
-                upperbasename($1)[_BUILD]=yes
-              ],
-              [
-                AC_MSG_WARN([[Please download $1 or restart configure with --enable-]lower[-download or --enable-]lower[-patch <sox, cdrtools and dvdauthor>]])
-                AS_EXIT
-              ])
+	  AS_IF([test "$1" = "fixwav" -o "$1" = "iberty" -o "$1" = "all-all" -o "$1"="all-deps" -o "$1" = "all-builds" -o `echo "$command_line-args" | sed s/lower//g` != "$command_line_args"],
+	      [
+		upperbasename($1)[_BUILD]=yes
+	      ],
+	      [
+		AC_MSG_WARN([[Please download $1 or restart configure with --enable-]lower[-download or --enable-]lower[-patch <sox, cdrtools and dvdauthor>]])
+		AS_EXIT
+	      ])
       ],
       [
-        echo Naming error: empty "enable" feature
-        sleep 5s
-        AS_EXIT
+	echo Naming error: empty "enable" feature
+	sleep 5s
+	AS_EXIT
       ])
 
       m4_popdef([lower])
@@ -584,37 +584,37 @@ m4_foreach([LIST], [CHECKLIST],
 
        m4_foreach_w([VAR], cdr_w(FUNCTIONLIST), [AC_CHECK_LIB([$TEST], [VAR], [], [BUILD([$1])])])
        AS_IF([test x$2 = x],
-        [
-         UPPERBASENAME[_LINK]="-l$1"
-         m4_ifvaln([$4],[
-         # oddly AS_CASE did not work here
-         AS_IF( [test $4 = shared],
-                [
-                 UPPERBASENAME[_LIB]="${prefix}/lib/lib$1.so"
-                  AS_IF([test -f $UPPERBASENAME[_LIB]],
-                      [ DVDA_INF([Using installed dynamic lib$1 library...])
+	[
+	 UPPERBASENAME[_LINK]="-l$1"
+	 m4_ifvaln([$4],[
+	 # oddly AS_CASE did not work here
+	 AS_IF( [test $4 = shared],
+		[
+		 UPPERBASENAME[_LIB]="${prefix}/lib/lib$1.so"
+		  AS_IF([test -f $UPPERBASENAME[_LIB]],
+		      [ DVDA_INF([Using installed dynamic lib$1 library...])
 
-                      ]
-                      ,[ DVDA_ERR([Could not find UPPERBASENAME lib, retry with --libdir=DIR, root directory for $1 lib])
-                         UPPERBASENEME[_LIB]=
-                       ])
-                ],
-                [test $4 = static],
-                [
-                UPPERBASENAME[_LIB]="${prefix}/lib/lib$TEST.a"
-                  AS_IF([test -f $UPPERBASENAME[_LIB]],
-                      [ DVDA_INF([Using installed static lib$1 library...])]
-                      ,[ DVDA_ERR([Could not find UPPERBASENAME lib, retry with --libdir=DIR, root directory for $1 lib])
-                         UPPERBASENAME[_LIB]=
-                       ])
-                ])])
+		      ]
+		      ,[ DVDA_ERR([Could not find UPPERBASENAME lib, retry with --libdir=DIR, root directory for $1 lib])
+			 UPPERBASENEME[_LIB]=
+		       ])
+		],
+		[test $4 = static],
+		[
+		UPPERBASENAME[_LIB]="${prefix}/lib/lib$TEST.a"
+		  AS_IF([test -f $UPPERBASENAME[_LIB]],
+		      [ DVDA_INF([Using installed static lib$1 library...])]
+		      ,[ DVDA_ERR([Could not find UPPERBASENAME lib, retry with --libdir=DIR, root directory for $1 lib])
+			 UPPERBASENAME[_LIB]=
+		       ])
+		])])
 
-        DVDA_INF([Using installed [lib]$1 library...])
+	DVDA_INF([Using installed [lib]$1 library...])
        ],
        [
-        DVDA_INF([Using specified [lib]$1 library...])
-        UPPERBASENAME[_LIB]="$2"
-        UPPERBASENAME[_BUILD]=no
+	DVDA_INF([Using specified [lib]$1 library...])
+	UPPERBASENAME[_LIB]="$2"
+	UPPERBASENAME[_BUILD]=no
        ])
     ],
     [
@@ -653,13 +653,13 @@ AC_ARG_WITH([lower], [AS_HELP_STRING([--with-]lower,[full pathname of library or
    [
     [withval_]CAPNAME=$withval
     AS_IF([test x$withval = xno],
-          [
-           AC_DEFINE([WITHOUT_]CAPNAME,[1],[Disables $lower support])
-           CAPNAME[_BUILD]=no
-          ],
-          [test x$withval != xyes],
-          [AC_MSG_NOTICE([Using specified ]lower[ lib: $withval])
-           CAPNAME[_LIB_INPUT]=$withval])
+	  [
+	   AC_DEFINE([WITHOUT_]CAPNAME,[1],[Disables $lower support])
+	   CAPNAME[_BUILD]=no
+	  ],
+	  [test x$withval != xyes],
+	  [AC_MSG_NOTICE([Using specified ]lower[ lib: $withval])
+	   CAPNAME[_LIB_INPUT]=$withval])
    ],
    [
      [withval_]CAPNAME=
@@ -704,18 +704,18 @@ AC_DEFUN([DVDA_CONFIG],[
 
 
     AS_IF([test x$VAR[_BUILD] = xyes || test x$ALL_BUILDS = xyes -a x$[withval_]VAR != xno],
-           [
+	   [
 	      [MAYBE_]VAR=m4_unquote(CDR)
-              VAR[_BUILD]=yes
-              VAR[_CONFIGURE_FILE]="[$MAYBE_]VAR"/configure
+	      VAR[_BUILD]=yes
+	      VAR[_CONFIGURE_FILE]="[$MAYBE_]VAR"/configure
 
-              m4_ifvaln([$2],[$2],[VAR[_LIB]="\${BUILDDIR}[/local/lib/lib]cut_lib_prefix(m4_tolower(VAR))[.a]"]) #do not quote VAR. It is necessary to lower case as base names are uniform
+	      m4_ifvaln([$2],[$2],[VAR[_LIB]="\${BUILDDIR}[/local/lib/lib]cut_lib_prefix(m4_tolower(VAR))[.a]"]) #do not quote VAR. It is necessary to lower case as base names are uniform
 
-              [CONFIGURE_]VAR[_FLAGS]="FL $VAR[_FLAGS]"
-              AC_SUBST([CONFIGURE_]VAR[_FLAGS])
-              AC_MSG_NOTICE([CONFIGURE_]VAR[_FLAGS]=$[CONFIGURE_]VAR[_FLAGS])
-              AS_IF([test -d  $BUILDDIR/$[MAYBE_]VAR && ! test -d  $[MAYBE_]VAR ], [cp -r $BUILDDIR/$[MAYBE_]VAR  $PWD])
-           ])
+	      [CONFIGURE_]VAR[_FLAGS]="FL $VAR[_FLAGS]"
+	      AC_SUBST([CONFIGURE_]VAR[_FLAGS])
+	      AC_MSG_NOTICE([CONFIGURE_]VAR[_FLAGS]=$[CONFIGURE_]VAR[_FLAGS])
+	      AS_IF([test -d  $BUILDDIR/$[MAYBE_]VAR && ! test -d  $[MAYBE_]VAR ], [cp -r $BUILDDIR/$[MAYBE_]VAR  $PWD])
+	   ])
 
     AM_CONDITIONAL([HAVE_]VAR[_BUILD], [test x$VAR[_BUILD] = xyes || test x$ALL_BUILDS = xyes])
     AC_SUBST([MAYBE_]VAR)
@@ -737,7 +737,7 @@ AC_DEFUN([DVDA_PREFIX_DEFAULT],
  [ AC_PREFIX_DEFAULT([$1])
    AS_IF([test $prefix = NONE],[prefix=$ac_default_prefix])])
 
-# All above macros are copyright Fabrice Nicol, 2009
+# All above macros are copyright Fabrice Nicol, 2009-2013
 # These macros are part of the dvda-author package
 # and are delivered under the same licensing terms.
 # --------------------------------------------------

@@ -2,7 +2,7 @@
 
 dvda-author2.c  - Author a DVD-Audio DVD
 
-Copyright Fabrice Nicol <fabnicol@users.sourceforge.net> July 2008
+Copyright Fabrice Nicol <fabnicol@users.sourceforge.net> July 2008-2013
 
 The latest version can be found at http://dvd-audio.sourceforge.net
 
