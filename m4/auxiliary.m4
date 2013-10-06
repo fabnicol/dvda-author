@@ -68,10 +68,12 @@ m4_map([m4_define],[
                                     ],
                                     [DVDA_INF([Cannot curl empty Url...])])
                        ]],
-
-[[DVDA_PATCH],        [
-                        DVDA_RUN(["$PATCH"],[ -p4 -f --verbose < ],[$1])
+[[DVDA_PATCH_LEVEL],  [
+                        DVDA_RUN(["$PATCH"],[ -p$2 -f --verbose < ],[$1])
                         AS_IF([test $exitcode = 0], [echo "Patched:  $1" >> PATCHED.DOWNLOADS], [echo "Not patched:  $1" >> PATCHED.DOWNLOADS])
+                      ]],
+[[DVDA_PATCH],        [
+                        DVDA_PATCH_LEVEL([$1],[4]) 
                       ]],
 [[MD5_CHECK],         [$($MD5SUM -b $1 | $SED "s/ .*//g")]],
 [[MD5_BREAK],         [m4_ifval([$1],
