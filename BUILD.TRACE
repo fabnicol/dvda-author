@@ -5,15 +5,5 @@ locally installed library: /home/fab/Dev/dvda-author-dev/local/lib/libFLAC.a fro
 found library:  for libsox
 locally installed library: /home/fab/Dev/dvda-author-dev/local/lib/libsox.a from libsox
 done:   executable: 
-done:  /home/fab/Dev/dvda-author-dev/mjpegtools-2.1.0/mplex/mplex executable: mjpegtools mplex-2 version 2.1.0 (2.2.7) 
-done:  /home/fab/Dev/dvda-author-dev/help2man-1.43.3/help2man executable: GNU help2man 1.43.3 
-done:   dvda-author.1 /home/fab/Dev/dvda-author-dev/dvda-author.1
-done:  /home/fab/Dev/dvda-author-dev/ImageMagick-6.8.7-0/utilities/convert executable: Version: ImageMagick 6.8.7-0 2013-10-05 Q16 http://www.imagemagick.org 
-done:   executable: /bin/sh: 1: --version: not found 
-done:  /home/fab/Dev/dvda-author-dev/libmpeg2-0.5.1/src/mpeg2dec executable: libmpeg2-0.5.1 - by Michel Lespinasse <walken@zoy.org> and Aaron Holtzman 
-done:  /home/fab/Dev/dvda-author-dev/a52dec-0.7.4/src/a52dec executable: a52dec-0.7.4 - by Michel Lespinasse <walken@zoy.org> and Aaron Holtzman 
-done:  src/Makefile.temp do_sox_lib_deps_subst
-done:   dochtml 
-done:   dochtml 
 done:   dochtml 
 done:   dochtml 

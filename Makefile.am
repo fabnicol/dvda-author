@@ -2,18 +2,6 @@
 #file: Makefile.am Copyright Fabrice Nicol 2013
 #Caution: you need GNU make, version 3.82 and higher, preferably 3.99+
 
-if HAVE_SMAKE
-MAKETOOL=$(SMAKE)
-else
-MAKETOOL=make  -k
-endif
-
-if HAVE_CDRTOOLS_BUILD
-INS_BASE=${prefix} install
-else
-INS_BASE=
-endif
-
 #Do not use bash. It would cause subtle issues with libtool in the flac package, probably a libtool bug.
 SHELL=/bin/sh
 
@@ -22,68 +10,12 @@ SHELL=/bin/sh
 #Using ONESHELL, version make 3.82+, possibly higher with windows ports
 .ONESHELL:
 
-define trace
-	echo "$1:  $2" >> BUILD.TRACE
-endef
+include $(foreach prog,$(PROGRAM_TARGETS),mk/$(prog).mk)
+include mk/functions.mk
 
-define follow
-	$(if "$1", $(call trace,done,"$1 $2"), $(call trace,failed,$1))
-endef
+MAKETOOL=make  -k
 
-define execfollow
-	$(if "$2",
-	    program=$$(find $(BUILDDIR)/$1 -maxdepth 2 -type f -name $(strip $2)$(EXEEXT) -print0)
-	    $(call follow,$$program,executable: `$$program $3` ),
-	    $(call trace,failed,$2))
-endef
-
-define docfollow
-	findstring=$$(find $(BUILDDIR) -maxdepth 1 -name $(strip $1) -print0)
-	$(call follow, $1, $$findstring)
-endef
-
-#the complex autotools invocation is rendered necessary by the missing/obsolete status of the dvdauthor autotools chain
-#notice autoconf twice and aclocal -I... to retrieve missing macros
-define configure_sub_package
-	target_subdir="$(strip $1)"
-	configure_flags="$2"
-	autotools_command_line="$3"
-	$(if $$target_subdir,
-	   if test -d  $$target_subdir; then
-	      cd $$target_subdir && $$autotools_command_line && $(SHELL) configure $$configure_flags --prefix="$(BUILDDIR)/local" CPPFLAGS="-I$(BUILDDIR)/local/include" \
-		 && $(MAKETOOL) MKDIR_P="mkdir$(EXEEXT) -p"
-	      if test "$$?" = "0"; then
-		 echo Installing from $$target_subdir ...
-		 if test -f INSTALL; then mv -f INSTALL INSTALL.txt ; fi
-		 $(MAKETOOL) $(INS_BASE) install
-	      fi
-	   if test -f INSTALL.txt; then mv -f INSTALL.txt INSTALL; fi
-	   cd -
-	   fi)
-endef
-
-define config_lib_package
-	$(call configure_sub_package,$2,$3,$4)
-	testvar=$$(find $(BUILDDIR)/$2 -maxdepth 2 -type f -name $(strip $1).a -print0)
-	$(if $$testvar,
-			echo "found library: $$testvar for $1" >> BUILD.TRACE
-			testvar=$$(find $(BUILDDIR)/local/lib -maxdepth 1 -name $(strip $1).a -print0)
-			$(if $$testvar,
-				echo "locally installed library: $$testvar from $1" >> BUILD.TRACE,
-				echo "did not install library $1" >> BUILD.TRACE),
-			echo "no library $1" >> BUILD.TRACE)
-endef
-
-define config_exec_package
-    ifeq $(build_os) "mingw32"
-	patchfile=$$(find patches -type f -regex .*$1-patch.* -print0)
-	echo Found mingw32 OS...patching with local patch $$patchfile
-	$(if $$patchfile, patch -p0 < $$patchfile && echo "locally patched: $1, using $$patchfile in patches/" >> PATCHED.DOWNLOADS)
-    endif
-	$(call configure_sub_package, $2, $3)
-	$(call execfollow,$2,$4,$5)
-endef
-
+$(if $(cdrtools),INS_BASE=$(prefix) install,INS_BASE= )
 
 DISTCHECK_CONFIGURE_FLAGS=--enable-all-all
 ACLOCAL_AMFLAGS=-I m4 -I m4.extra -I m4.extra.dvdauthor --install
@@ -91,131 +23,44 @@ ACLOCAL_AMFLAGS=-I m4 -I m4.extra -I m4.extra.dvdauthor --install
 # nested packages will be configured only if main configure has been launched freshly.
 # stamprecord si a so-called cookie, used only for its time stamp
 
+.PHONY: erase_build.trace do_sox_lib_deps_subst $(PROGRAM_TARGETS)
 
-all: erase_build.trace libogg libFLAC libsox dvdauthor cdrecord mjpegtools help2man  convert lplex mpeg2dec a52dec do_sox_lib_deps_subst
-
-
-.PHONY: erase_build.trace do_sox_lib_deps_subst
+all: erase_build.trace $(PROGRAM_TARGETS) do_sox_lib_deps_subst
 
 BUILD.TRACE: ;
 
 erase_build.trace: BUILD.TRACE
-	mv BUILD.TRACE BUILD.TRACE~
+	if test -f BUILD.TRACE; then
+	  mv BUILD.TRACE BUILD.TRACE~
+	fi
 
 # directly patching the Makefile appears to be more efficient. You need a GNU-compliant make.
+
 do_sox_lib_deps_subst: src/Makefile libsox
-if HAVE_SOX_BUILD
+	$(if "$(sox)",
 	chmod +x ${MAYBE_SOX}/sox-libs
-	pkgconfig_style_libs=$(shell cat $(MAYBE_SOX)/sox-libs | $(SED) -e "s,[\.\.\/].*[a],,g   ;  s,@.*@,,g")
+	pkgconfig_style_libs="$(shell cat $(MAYBE_SOX)/sox-libs | $(SED) -e "s,[\.\/].*[a],,g   ;  s,@.*@,,g")"
 	$(SED) -e "s,SOX_LIB_DEPS,$$pkgconfig_style_libs,g" < src/Makefile > src/Makefile.temp
 	mv src/Makefile.temp src/Makefile
-	$(call follow,src/Makefile.temp, done sox library substitution (pkgconfig-style))
-endif
+	$(call follow,src/Makefile.temp, done sox library substitution \(pkgconfig-style\)))
 
-
-libogg: Makefile
-if HAVE_LIBOGG_BUILD
-	$(call config_lib_package,libogg, $(MAYBE_LIBOGG),$(CONFIGURE_LIBOGG_FLAGS))
-endif
-
-#build and install libogg before libFLAC
-libFLAC: Makefile libogg
-if HAVE_FLAC_BUILD
-	$(call config_lib_package,libFLAC, $(MAYBE_FLAC),$(CONFIGURE_FLAC_FLAGS))
-endif
-
-# you need the autotools to be able to rebuild sox with the sox-libs patch (the alternative would be using pkg-config, which is no better)
-
-libsox: Makefile
-if HAVE_SOX_BUILD
-	if test  "$(MAYBE_SOX)" != ""; then
-		if test -d "$(BUILDDIR)/$(MAYBE_SOX)" ; then
-			cp "$(BUILDDIR)/sox-libs" "$(BUILDDIR)/$(MAYBE_SOX)/sox-libs.in"
-			else
-			echo "$(BUILDDIR)/$(MAYBE_SOX) is not a directory"
-			exit -1
-		fi
-	fi
-	$(call config_lib_package,libsox,$(MAYBE_SOX),$(CONFIGURE_SOX_FLAGS),autoreconf -if)
-endif
-
-
-
-dvdauthor: Makefile
-	if test -f dvdauthor; then rm -f dvdauthor; fi; touch dvdauthor
-if HAVE_AUTOMAKE
-if HAVE_AUTOCONF
-if HAVE_DVDAUTHOR_BUILD
-	cp -r ${ROOTDIR}/m4.extra.dvdauthor ${MAYBE_DVDAUTHOR}/srcm4
-	$(if $(MAYBE_DVDAUTHOR),
-	  if test -d $(MAYBE_DVDAUTHOR) ; then
-	   cd $(MAYBE_DVDAUTHOR) && $(SHELL) -c "aclocal -Isrcm4 && autoheader && automake -acf && autoconf -Isrcm4" \
-	   && $(SHELL) configure  --prefix=$(prefix) ; $(MAKETOOL); cd -
-	  fi)
-endif
-endif
-endif
-
-#cdrecord must be compiled with special make install parameters hence should not be included in the SUBDIRS list. Building/cleaning will need prior configuration.
-
-cdrecord: Makefile
-if HAVE_CDRTOOLS_BUILD
-	$(call execfollow,$(MAYBE_CDRTOOLS),$@,-version 2>null)
-endif
-
-mjpegtools: Makefile
-if HAVE_MJPEGTOOLS_BUILD
-	$(call config_exec_package,$@,$(MAYBE_MJPEGTOOLS),$(CONFIGURE_MJPEGTOOLS_FLAGS),mplex,2>&1|line)
-endif
-
-help2man: Makefile
-	if test -f help2man; then rm -f help2man; fi; touch help2man
-if HAVE_HELP2MAN_BUILD
-	if test "$(MAYBE_HELP2MAN)" != "" ; then
-	  if test -d $(MAYBE_HELP2MAN) ; then
-		cd $(MAYBE_HELP2MAN) && $(SHELL) configure --prefix=${prefix} ; $(MAKETOOL) ; cd -
-	  fi
-	fi
-	$(call execfollow,$(MAYBE_HELP2MAN),$@,--version|line)
-	if test -f $(MAYBE_HELP2MAN)/help2man ; then
-		  $(MAYBE_HELP2MAN)/help2man -s 1 -N -o dvda-author.1 src/dvda
-		  $(call docfollow,dvda-author.1)
-		  manhelp=dvda-author.1
-	fi
-endif
-
-convert: Makefile
-if HAVE_IMAGEMAGICK_BUILD
-	$(call config_exec_package,$@,$(MAYBE_IMAGEMAGICK),$(CONFIGURE_IMAGEMAGICK_FLAGS),--version 2>&1|line)
-endif
-
-lplex: Makefile libFLAC
-if HAVE_LPLEX_BUILD
-	$(call config_exec_package,$@,$(MAYBE_LPLEX),$(CONFIGURE_LPLEX_FLAGS),--version 2>&1|line)
-endif
-
-mpeg2dec: Makefile
-if HAVE_LIBMPEG2_BUILD
-	$(call config_exec_package,$@,$(MAYBE_LIBMPEG2),$(CONFIGURE_IMAGEMAGICK_FLAGS),<null 2>&1|line)
-endif
-
-a52dec: Makefile
-if HAVE_A52DEC_BUILD
-	$(call config_exec_package,$@,$(MAYBE_A52DEC),$(CONFIGURE_A52DEC_FLAGS),2>&1|line)
-endif
 
 dvda-author.1:
 if HAVE_HELP2MAN
 	if test -f src/dvda; then
-		${HELP2MAN} -s 1 -N -o dvda-author.1 src/dvda
-		$(call docfollow,  $@)
+		$(HELP2MAN) -s 1 -N -o dvda-author.1 src/dvda
 	fi
+else
+	if test -f src/dvda -a test -d $(MAYBE_HELP2MAN) -a test -f $(MAYBE_HELP2MAN)/$(HELP2MAN); then
+		$(MAYBE_HELP2MAN)/$(HELP2MAN) -s 1 -N -o dvda-author.1 src/dvda
+	fi
+	$(call docfollow,  $@)
 endif
 
-dochtml: dvda-author.1
+dvda-author-@VERSION@.html: dvda-author.1
 #PATCH  09.12  We need to display in UTF-8 mode and take off an illicit file header created by man2html
 if HAVE_MAN2HTML
-		${MAN2HTML} < dvda-author.1 | $(SED) -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > dvda-author-@VERSION@.html
+		${MAN2HTML} < dvda-author.1 | $(SED) -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > $@
 		$(call docfollow, $@)
 endif
 
@@ -243,7 +88,7 @@ dist_pix_DATA=dvda-author_48x48.png dvda-author_64x64.png
 dist_doc_DATA=README  BUGS EXAMPLES LIMITATIONS BUILD.Ubuntu  DEPENDENCIES HOWTO.conf dvda-author.conf.example
 
 if HAVE_MAN2HTML
-  htmlhelp=dochtml
+  htmlhelp=dvda-author-@VERSION@.html
 else
   htmlhelp=
 endif
@@ -257,7 +102,7 @@ endif
 
 # GNU build system regeneration script and others
 
-EXTRA_DIST=autogen dvda-author.ico  dvda-author-launch.bat  sox-libs  m4.extra m4.extra.dvdauthor menu  libs patches
+EXTRA_DIST=autogen dvda-author.ico dvda-author-@VERSION@.html  dvda-author-launch.bat  sox-libs  m4.extra m4.extra.dvdauthor menu  libs patches
 
 install-data-local:  $(manhelp) $(htmlhelp)
 
@@ -267,24 +112,8 @@ install: install-data-local install-am
 
 clean-local:
 	rm -f dvda-author.1 dvda-author-@VERSION@.html
-if HAVE_CDRTOOLS_BUILD
-	cd ${MAYBE_CDRTOOLS}; $(MAKETOOL) INS_BASE=${prefix} clean; cd -
-endif
-if HAVE_DVDAUTHOR_BUILD
-	cd ${MAYBE_DVDAUTHOR}; $(MAKETOOL)  clean; cd - ;
-endif
-if HAVE_HELP2MAN_BUILD
-	cd ${MAYBE_HELP2MAN}; $(MAKETOOL) clean; cd - ;
-endif
-if HAVE_MJPEGTOOLS_BUILD
-	cd ${MAYBE_MJPEGTOOLS}; $(MAKETOOL) clean; cd - ;
-endif
-if HAVE_IMAGEMAGICK_BUILD
-	cd ${MAYBE_IMAGEMAGICK}; $(MAKETOOL) clean; cd - ;
-endif
-if HAVE_SOX_BUILD
-	cd ${MAYBE_SOX}; $(MAKETOOL) clean; cd -;
-endif
+	$(foreach prog,$(PROGRAM_TARGETS),$(call clean_package($(prog))))
+
 
 distclean: clean-local
 	rm -rf autom4te* && rm -f config.log && rm -f config.status
@@ -293,8 +122,3 @@ distclean: clean-local
 maintainer-clean: distclean
 	find . -name configure -delete
 	rm -rf config
-
-
-
-
-

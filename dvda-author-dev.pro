@@ -73,7 +73,26 @@ OTHER_FILES += \
     README \
     NEWS \
     TODO \
-    ChangeLog
+    ChangeLog \
+    m4/m4.variables \
+    mk/functions.mk \
+    mk/libogg.mk \
+    mk/libFlac.mk \
+    mk/libsox.mk \
+    mk/mjpegtools.mk \
+    mk/dvdauthor.mk \
+    mk/ImageMagick.mk \
+    mk/lplex.mk \
+    mk/mpeg2dec.mk \
+    mk/help2man.mk \
+    mk/a52dec.mk \
+    mk/cdrtools.mk \
+    libiberty/Makefile.am \
+    libiberty/src/Makefile.am \
+    libiberty/src/include/Makefile.am \
+    libutils/Makefile.am \
+    libutils/src/Makefile.am \
+    libfixwav/src/Makefile.am
 
 HEADERS += \
     src/include/amg.h \
