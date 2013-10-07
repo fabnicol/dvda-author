@@ -51,7 +51,7 @@ CPPFLAGS="$CPPFLAGS -I/usr/include -I/usr/local/include"
 #by default, link, do not build, and use Ogg FLAC:
 FLAC_BUILD=no
 STATIC_SOX=no
-SOX_BUILD=no
+sox_BUILD=no
 
 #preserving user CFLAGS input
 cflags_save="$CFLAGS -std=c99"
@@ -105,28 +105,28 @@ AC_ARG_WITH([debug],
     [AS_HELP_STRING([--with-debug],[ =full for debugging, =no for Release build ])],
     [
        AS_IF([ test "x$withval" = "xno"],
-        [
-          AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],
-           [
-             CFLAGS="-g0 -O3"
-                #exceptionally erasing -g and -O2 from user CFLAGS input
-                cflags_save=`echo $cflags_save | $SED "s/-g \(.*\)-O2/ \1/g"`
-             LIBS="$LIBS -s"
-           ])
-        ],
-        [
-          AS_IF([ test "x$withval" = "xfull"],
-           [
-            AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],[
-                # -O2 is necessary for inlining, do not take it off
-            CFLAGS="-std=c99 -g3 -O2 -Wall -Wextra -pedantic"
-            cflags_save=`echo $cflags_save | $SED "s/-g \(.*\)-O2/ \1/g"` ])
-           ],
-           [
-            CFLAGS="-O2 $withval"
-           ])
+	[
+	  AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],
+	   [
+	     CFLAGS="-g0 -O3"
+		#exceptionally erasing -g and -O2 from user CFLAGS input
+		cflags_save=`echo $cflags_save | $SED "s/-g \(.*\)-O2/ \1/g"`
+	     LIBS="$LIBS -s"
+	   ])
+	],
+	[
+	  AS_IF([ test "x$withval" = "xfull"],
+	   [
+	    AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],[
+		# -O2 is necessary for inlining, do not take it off
+	    CFLAGS="-std=c99 -g3 -O2 -Wall -Wextra -pedantic"
+	    cflags_save=`echo $cflags_save | $SED "s/-g \(.*\)-O2/ \1/g"` ])
+	   ],
+	   [
+	    CFLAGS="-O2 $withval"
+	   ])
 
-        ])
+	])
     ],
     [
       LIBS="$LIBS -s"
@@ -138,7 +138,7 @@ CFLAGS="$CFLAGS $cflags_save"
 AC_ARG_WITH([debug-flags],
     [AS_HELP_STRING([--with-debug-flags],[Debug build flags])],
     [
-         DEBUG_FLAGS=$withval
+	 DEBUG_FLAGS=$withval
     ])
 
 
@@ -152,11 +152,11 @@ AC_ARG_WITH([debug-flags],
 #definition of empty commandline
 
 AS_IF([test "$command_line_args" = ""],
-        [
-           withval_LIBOGG=no
-           withval_FLAC=no
-           withval_SOX=no
-        ])
+	[
+	   withval_libogg=no
+	   withval_FLAC=no
+	   withval_sox=no
+	])
 
 DVDA_CHECK_DEPENDENCIES
 
@@ -192,7 +192,7 @@ AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],
 
 AS_IF([ test "x$ac_cv_prog_cc_stdc" = "xno" ], [AC_MSG_WARN([Compiler does not support size-variable static arrays.
 Please install C99-compliant compiuler. Aborting...])
-                                                AS_EXIT])
+						AS_EXIT])
 
 
 AC_C99_FLEXIBLE_ARRAY
@@ -201,7 +201,7 @@ AC_C99_SIZE_VARIABLE_STATIC_ARRAY
 AS_IF([ test x$ac_cv_c99_flexible_array != xyes ], [AC_MSG_WARN([Compiler does not support feature known as the flexible array struct member])])
 
 AS_IF([ test x$ac_cv_c99_size_variable_static_array != xyes ],  [AC_MSG_WARN([Compiler does not support size-variable static arrays. Aborting...])
-                                                                 AS_EXIT])
+								 AS_EXIT])
 
 AC_C_VARARRAYS
 AC_C_CONST
@@ -246,42 +246,42 @@ AC_SYS_LARGEFILE
 AC_DEFINE([_FILE_OFFSET_BITS], [64], [Large file support enabled])
 
 
-m4_map([AC_SUBST],[[[ROOTDIR]],[[BUILDDIR]], [[LIBSOXCONVERT_CPPFLAGS]],[[DEBUG_FLAGS]],[[SHORTLINKDIR]], [[PIXDIR]],[[MENUDIR]]])
-
+m4_map([AC_SUBST],
+       [[[ROOTDIR]],[[BUILDDIR]],[[SHORTLINKDIR]], [[PIXDIR]],[[MENUDIR]],
+       [[LIBSOXCONVERT_CPPFLAGS]],[[DEBUG_FLAGS]],[[PROGRAM_TARGETS]]])
 
 # correspondence between X_BUILD shell variables and subdirectory names. Could be avoided with lesser flexibility in naming conventions.
 
-
 AC_MSG_NOTICE([Configuring ${PACKAGE_TARNAME}...])
 AC_CONFIG_FILES([Makefile
-         dvda-author.desktop
-         dvda-author-shared.spec
-         dvda-author.spec
-         dvda-author.spec.coreversion
-         dvda-author.nsi
-         src/Makefile
-         src/include/Makefile
-         libutils/Makefile
-         libutils/src/Makefile
-         libutils/src/include/Makefile
-         libutils/src/private/Makefile
-         libfixwav/Makefile
-         libfixwav/src/Makefile
-         libfixwav/src/include/Makefile
-         libiberty/Makefile
-         libiberty/src/Makefile
-         libiberty/src/include/Makefile
-         images/Makefile
-         script.libflac
-         script.lplex
-         script.a52dec
-         script.libmpeg2
-         script.magick
-         script.mjpegtools
-         script.libsox
-         sox-libs
-         COREBUILD
-         EXAMPLES
+	 dvda-author.desktop
+	 dvda-author-shared.spec
+	 dvda-author.spec
+	 dvda-author.spec.coreversion
+	 dvda-author.nsi
+	 src/Makefile
+	 src/include/Makefile
+	 libutils/Makefile
+	 libutils/src/Makefile
+	 libutils/src/include/Makefile
+	 libutils/src/private/Makefile
+	 libfixwav/Makefile
+	 libfixwav/src/Makefile
+	 libfixwav/src/include/Makefile
+	 libiberty/Makefile
+	 libiberty/src/Makefile
+	 libiberty/src/include/Makefile
+	 images/Makefile
+	 script.libflac
+	 script.lplex
+	 script.a52dec
+	 script.libmpeg2
+	 script.magick
+	 script.mjpegtools
+	 script.libsox
+	 sox-libs
+	 COREBUILD
+	 EXAMPLES
 ])
 
 
@@ -306,24 +306,24 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
     Version : ..................... $VERSION
 
     Dependencies:
-                    fixwav..........$(echo $FIXWAV_LIB)
-                    flac............$(echo $FLAC_LIB) $FLAC_LINK
-                    ogg.............$(echo $LIBOGG_LIB) $LIBOGG_LINK
-                    sox.............$(echo $SOX_LIB) $SOX_LINK
+		    fixwav..........$(echo $fixwav_LIB)
+		    flac............$(echo $FLAC_LIB) $FLAC_LINK
+		    ogg.............$(echo $libogg_LIB) $libogg_LINK
+		    sox.............$(echo $sox_LIB) $sox_LINK
 
     Build libraries:
-                    libFLAC ........$FLAC_BUILD
-                    libogg .........$LIBOGG_BUILD
-                    libsox  ........$SOX_BUILD
+		    libFLAC ........$FLAC_BUILD
+		    libogg .........$libogg_BUILD
+		    libsox  ........$sox_BUILD
 
-                    gnu libc .......$IBERTY_BUILD
-                    libutils .......yes
+		    gnu libc .......$iberty_BUILD
+		    libutils .......yes
 
     Ogg FLAC support:
-                     ...............$LIBOGG_BUILD
+		     ...............$libogg_BUILD
 
     Static sox build:
-                     ...............$STATIC_SOX
+		     ...............$STATIC_SOX
 
 
 ])
@@ -332,13 +332,13 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
 AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],[
   AC_MSG_RESULT([
   Tools :
-         Compiler is GCC : ............. $ac_cv_c_compiler_gnu
+	 Compiler is GCC : ............. $ac_cv_c_compiler_gnu
 ])
 ])
 
-AS_IF([ test x$IBIBERTY_LIB -o x$IBIBERTY_LINK != x ],[AC_MSG_RESULT([  libiberty.a will be linked to])])
+AS_IF([ test x$iberty_LIB -o x$iberty_LINK != x ],[AC_MSG_RESULT([  libiberty.a will be linked to])])
 
-AS_IF([ test x$IBERTY_BUILD = xyes ],
+AS_IF([ test x$iberty_BUILD = xyes ],
  [
   AC_MSG_RESULT([  GNU lib sources in libiberty/ will be recompiled for enhanced portability.])
  ])
@@ -357,10 +357,6 @@ AS_IF([ test x$HELP2MAN != x ],
   AC_MSG_RESULT([  Man page will not be generated])
 ])
 
-AS_IF([ test x$SMAKE != x ], [ AC_MSG_RESULT([smake will be used instead of GNU make])
-                              make=$SMAKE
-                             ],
-                             [make="$MAKE"])
 
 AS_IF([ test x$MP2ENC = x -o x$JPEG2YUV = x -o x$MPEG2ENC = x -o x$MPLEX = x],[
  AC_MSG_RESULT([  You will have to author top menus from available MPEG background files, as tools are missing to automate generation.])])
@@ -370,7 +366,7 @@ AC_MSG_RESULT([[
   Using $make as a system build tool.
 
   Auxiliary tools
-                                   build [default no/yes]    install path [default system path/build path]
+				   build [default no/yes]    install path [default system path/build path]
 
     help2man: .....................$HELP2MAN_BUILD $HELP2MAN
     man2html: .....................$MAN2HTML_BUILD $MAN2HTML
@@ -421,44 +417,44 @@ AS_IF([ test -f PATCHED.DOWNLOADS ],
 
   $patches]])
 
-   AS_IF([test x$CDRTOOLS_BUILD = xyes -a "$(echo $patches | grep cdrtools)" = ""],
-          [
-             AC_MSG_RESULT([Patching issue: you need to download and apply the cdrtools patch first before building.])
-             patching_issue=yes
-          ])
+   AS_IF([test x$cdrtools_BUILD = xyes -a "$(echo $patches | grep cdrtools)" = ""],
+	  [
+	     AC_MSG_RESULT([Patching issue: you need to download and apply the cdrtools patch first before building.])
+	     patching_issue=yes
+	  ])
 
-   AS_IF([test x$SOX_BUILD = xyes -a "$(echo $patches | grep sox)" = ""],
-          [
-             AC_MSG_RESULT([Patching issue: you need to download and apply the sox patch first before building.])
-             patching_issue=yes
-          ])
+   AS_IF([test x$sox_BUILD = xyes -a "$(echo $patches | grep sox)" = ""],
+	  [
+	     AC_MSG_RESULT([Patching issue: you need to download and apply the sox patch first before building.])
+	     patching_issue=yes
+	  ])
 
-   AS_IF([test x$DVDAUTHOR_BUILD = xyes -a "$(echo $patches | grep dvdauthor)" = ""],
-          [
-             AC_MSG_RESULT([Patching issue: you need to download and apply the dvdauthor patch first before building.])
-             patching_issue=yes
-          ])
+   AS_IF([test x$dvdauthor_BUILD = xyes -a "$(echo $patches | grep dvdauthor)" = ""],
+	  [
+	     AC_MSG_RESULT([Patching issue: you need to download and apply the dvdauthor patch first before building.])
+	     patching_issue=yes
+	  ])
 
   ],
   [
      AC_MSG_RESULT([
   No packages were patched after download.])
 
-     AS_IF([test x$CDRTOOLS_BUILD = xyes -o x$DVDAUTHOR_BUILD = xyes -o x$SOX_BUILD = xyes],[patching_issue=yes])
+     AS_IF([test x$cdrtools_BUILD = xyes -o x$dvdauthor_BUILD = xyes -o x$sox_BUILD = xyes],[patching_issue=yes])
 
   ])
 
 AS_IF([test x$patching_issue = xyes],
        [
-          AC_MSG_RESULT([[
-          Please try downloading the patches manually. (See file README for http links to patches)]])
+	  AC_MSG_RESULT([[
+	  Please try downloading the patches manually. (See file README for http links to patches)]])
        ]
        ,
        [
-         AC_MSG_RESULT([
+	 AC_MSG_RESULT([
     You may now build by typing 'make' and install with 'make install'.
        ])])
 
-AS_IF([ test x$MAGICK_BUILD = xyes ], [DVDA_INF([IMAGEMAGICK_MSG])])
+AS_IF([ test x$ImageMagick_BUILD = xyes ], [DVDA_INF([IMAGEMAGICK_MSG])])
 
 

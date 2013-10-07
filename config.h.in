@@ -1,6 +1,6 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Defining bn filepath */
+/* Defining a52dec filepath. */
 #undef A52DEC
 
 /* Defining bn filepath */
@@ -77,9 +77,6 @@
 /* Whether cdrtools source code will be downloaded for build. */
 #undef HAVE_CDRTOOLS
 
-/* configure, build and install cdrtools from source code */
-#undef HAVE_CDRTOOLS_BUILD
-
 /* download and patch cdrtools from source code */
 #undef HAVE_CDRTOOLS_PATCH
 
@@ -104,9 +101,6 @@
 
 /* Whether dvdauthor source code will be downloaded for build. */
 #undef HAVE_DVDAUTHOR
-
-/* configure, build and install dvdauthor from source code */
-#undef HAVE_DVDAUTHOR_BUILD
 
 /* download and patch dvdauthor from source code */
 #undef HAVE_DVDAUTHOR_PATCH
@@ -201,9 +195,6 @@
 /* Whether lplex source code will be downloaded for build. */
 #undef HAVE_LPLEX
 
-/* configure, build and install lplex from source code */
-#undef HAVE_LPLEX_BUILD
-
 /* download lplex from source code */
 #undef HAVE_LPLEX_DOWNLOAD
 
@@ -231,6 +222,16 @@
 
 /* Define to 1 if you have the `memset' function. */
 #undef HAVE_MEMSET
+
+/* Whether minimal source code will be downloaded for build. */
+#undef HAVE_MINIMAL
+
+/* configure, build and install minimal from source code */
+#undef HAVE_MINIMAL_BUILD
+
+/* download minimal dependencies <FLAC, Ogg, SoX, dvdauthor, cdrtools> and
+   patch the source code if necessary */
+#undef HAVE_MINIMAL_DEPS
 
 /* Whether mjpegtools source code will be downloaded for build. */
 #undef HAVE_MJPEGTOOLS
@@ -299,6 +300,9 @@
 #undef HAVE_NO_LPLEX_PATCH
 
 /* Does not use a configured patch of bn */
+#undef HAVE_NO_MINIMAL_PATCH
+
+/* Does not use a configured patch of bn */
 #undef HAVE_NO_MJPEGTOOLS_PATCH
 
 /* Does not use a configured patch of bn */
@@ -322,9 +326,6 @@
 
 /* Define to 1 if you have the `setlocale' function. */
 #undef HAVE_SETLOCALE
-
-/* Found smake */
-#undef HAVE_SMAKE
 
 /* Define to 1 if you have the `snprintf' function. */
 #undef HAVE_SNPRINTF
@@ -451,6 +452,9 @@
 /* Pathname of md5sum */
 #undef MD5SUM
 
+/* Defining bn filepath */
+#undef MINIMAL
+
 /* Defining mjpegtools filepath. */
 #undef MJPEGTOOLS
 
@@ -499,9 +503,6 @@
 /* Pathname of patch */
 #undef PATCH
 
-/* Pathname of smake */
-#undef SMAKE
-
 /* Defining sox filepath. */
 #undef SOX
 
@@ -540,19 +541,19 @@
 #undef VERSION
 
 /* Disables $lower support */
-#undef WITHOUT_FIXWAV
+#undef WITHOUT_fixwav
 
 /* Disables $lower support */
-#undef WITHOUT_FLAC
+#undef WITHOUT_flac
 
 /* Disables $lower support */
-#undef WITHOUT_IBERTY
+#undef WITHOUT_iberty
 
 /* Disables $lower support */
-#undef WITHOUT_LIBOGG
+#undef WITHOUT_libogg
 
 /* Disables $lower support */
-#undef WITHOUT_SOX
+#undef WITHOUT_sox
 
 /* Define to 1 if `lex' declares `yytext' as a `char *' by default, not a
    `char[]'. */
