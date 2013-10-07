@@ -32,7 +32,6 @@ m4_map([DVDA_TEST_AUX],[
 	[[md5sum],    [MD5 checksum utility]],
 	[[autoconf],  [configure system build: autoconf]],
 	[[automake],  [make system build: automake]],
-	[[smake],     [using smake instead of GNU make]],
 	[[lplex],     [using lplex to mux lpcm audio and video]],
 	[[make],      [whether make is installed]],
 	[[mpeg2dec],  [whether mpeg2dec is installed]],
@@ -50,6 +49,8 @@ m4_map([DVDA_TEST_AUX],[
 
 
   #===================== build features ==============================================#
+  #=================  platform-specific features in AS_CASE =====================================#
+
 
  AS_CASE([${build}],
    [*-*-mingw32*],
@@ -65,19 +66,21 @@ m4_map([DVDA_TEST_AUX],[
 	     [[a52dec-build]],
 	     [[mjpegtools-build]],
 	     [[core-build],
-	      [withval_FIXWAV=no
+	      [withval_fixwav=no
 	       withval_FLAC=no
-	       withval_LIBOGG=no
-	       withval_SOX=no
-	       LIBOGG_BUILD=no
+	       withval_libogg=no
+	       withval_sox=no
+	       withval_iberty=yes
+	       libogg_BUILD=no
 	       LIBOGG_DOWNLOAD=no
-	       MAYBE_LIBOGG=""
-	       LIBOGG_LINK=""]],
+	       iberty_BUILD=yes
+	       MAYBE_libogg=""
+	       libogg_LINK=""]],
 	     [[ImageMagick-build],[DVDA_INF([IMAGEMAGICK_MSG])]],
 	     [[static-sox],
 	      [DVDA_INF([SOX_STATIC_MSG])
-	       SOX_LINK="$SOX_LINK -lasound -lpng -lz -lltdl -lmagic -lsamplerate"
-	       SOX_LIB="/usr/lib/libsox.a $(find /usr/lib/sox/ -regex lib.*a)"]],
+	       sox_LINK="$sox_LINK -lasound -lpng -lz -lltdl -lmagic -lsamplerate"
+	       sox_LIB="/usr/lib/libsox.a $(find /usr/lib/sox/ -regex lib.*a)"]],
 	     [[all-all],
 		[ALL_BUILDS=yes]],
 	     [[all-builds]]])
@@ -95,49 +98,34 @@ m4_map([DVDA_TEST_AUX],[
 	     [[a52dec-build]],
 	     [[mjpegtools-build]],
 	     [[core-build],
-	      [withval_FIXWAV=no
+	      [withval_fixwav=no
 	       withval_FLAC=no
-	       withval_LIBOGG=no
-	       withval_SOX=no
+	       withval_libogg=no
+	       withval_sox=no
 	       LIBOGG_BUILD=no
 	       LIBOGG_DOWNLOAD=no
-	       MAYBE_LIBOGG=""
-	       LIBOGG_LINK=""]],
+	       MAYBE_libogg=""
+	       libogg_LINK=""]],
+	     [[minimal-build],
+	      [withval_fixwav=yes
+	       withval_FLAC=yes
+	       withval_libogg=yes
+	       withval_sox=yes
+	       libogg_BUILD=yes
+	       FLAC_BUILD=yes
+	       fixwav_BUILD=yes
+	       sox_BUILD=yes
+	     ]],
 	     [[ImageMagick-build],[DVDA_INF([IMAGEMAGICK_MSG])]],
 	     [[static-sox],
 	      [DVDA_INF([SOX_STATIC_MSG])
-	       SOX_LINK="$SOX_LINK -lasound -lpng -lz -lltdl -lmagic -lsamplerate"
-	       SOX_LIB="/usr/lib/libsox.a $(find /usr/lib/sox/ -regex lib.*a)"]],
+	       sox_LINK="$sox_LINK -lasound -lpng -lz -lltdl -lmagic -lsamplerate"
+	       sox_LIB="/usr/lib/libsox.a $(find /usr/lib/sox/ -regex lib.*a)"]],
 	     [[all-all],
 		[ALL_BUILDS=yes]],
 	     [[all-builds]]])
 
    ])
-
-  #=================  platform-specific features =====================================#
-
-    AS_CASE([${build}],
-	    [*-*-mingw32*],[
-		    DVDA_INF([MinGW detected: libiberty will be built from source])
-		    DVDA_ARG_ENABLE([iberty-build])],
-
-	    [*-*-cygwin*],[
-		    DVDA_ARG_ENABLE([iberty-build])
-		    DVDA_INF([Cygwin detected: libiberty will be built from source])])
-
-
-
-    # downloading (patched) version of source code
-    # from sourceforge mirror network except for cdrtools (berlios)
-    # possible Sourceforge mirrors: kent, garr, voxel, free_fr ... Specify ./configure SF_MIRRORS=kent on command line otherwise autoselect is performed
-
-    m4_define([SF_MIRRORLIST],[kent,garr,voxel,free_fr])
-
-    # basename(-patch), version=[untarred directory version name,appended label], root download site, root site for patch download, mirror root characteristics, MD5SUM for main package
-    # download site = for Sourceforge:
-    #     http://sourceforge.net/projects/basename/basename/mirror root characteristics/basename-version.tar.[bz2|gz]/download?use_mirror=$SF_MIRROR
-    #               = for cdrtools:
-    #     mirror root characteristics/basename-version.tar.[bz2|gz]
 
      m4_define([DOWNLOAD_OPTIONS],[
 	    [
@@ -229,17 +217,44 @@ m4_map([DVDA_TEST_AUX],[
 		[caa9f5bc44232dc8aeea773fea56be80]
 	    ]])
 
+
+m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
+	    [
+		[flac-download],
+		[1.3.0],
+		[],
+		[http://downloads.xiph.org/releases/flac],
+		[http://dvd-audio.sourceforge.net],
+		[13b5c214cee8373464d3d65dee362cdd]
+	    ],
+	    [
+		[libogg-download],
+		[1.1.4],
+		[],
+		[http://downloads.xiph.org/releases/ogg],
+		[http://dvd-audio.sourceforge.net],
+		[10200ec22543841d9d1c23e0aed4e5e9]
+	    ],
+	    [
+		[sox-patch],
+		[14.4.1],
+		[http://dvd-audio.sourceforge.net/patches/sox-patch-14.4.1],
+		[http://downloads.sourceforge.net/project/sox/sox/14.4.1],
+		[http://dvd-audio.sourceforge.net],
+		[ff9ca6aca972549de0e80e8e30ed379c]
+	    ]])
+
+
     m4_map([DVDA_ARG_ENABLE_DOWNLOAD], [[all-deps]])
-
     m4_map([DVDA_ARG_ENABLE_DOWNLOAD], [[all-all]])
-
     m4_map([DVDA_ARG_ENABLE_DOWNLOAD], [DOWNLOAD_OPTIONS])
+    m4_map([DVDA_ARG_ENABLE_DOWNLOAD], [[minimal-deps]])
 
     # owing to sox versioning issues (notably intervention of home-made getopt in versions <= 14.3), a wider array of function checks is justified.
     # functions should be white-space separated, as should header-function list double-quoted pairs. Headers are comma-separated from funtion lists in pair.
 
     m4_map([DVDA_ARG_WITH],[
-      [[FLAC],  [[[FLAC/all.h],[FLAC__stream_decoder_init_file]]]],
+      [[flac],  [[[FLAC/all.h],[FLAC__stream_decoder_init_file]]]],
       [[libogg],   [[[ogg/ogg.h], [ogg_stream_init]]]],
       [[fixwav],[[[fixwav_manager.h],[fixwav]]]],
       [[sox],   [[[sox.h],     [sox_format_init  sox_open_read
@@ -261,29 +276,29 @@ m4_map([DVDA_TEST_AUX],[
 	    [*-*-mingw32*],
 	    [
 
-	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[DVDAUTHOR],[dvdauthor-0.7.1]]],
-	       [[[LPLEX], [lplex-0.3]], [--prefix=$prefix --disable-shared --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
-	       [[[MJPEGTOOLS], [mjpegtools-2.1.0]],
+	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]]],
+	       [[[lplex], [lplex-0.3]], [--prefix=$prefix --disable-shared --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
+	       [[[mjpegtools], [mjpegtools-2.1.0]],
 			       [
 				 --disable-shared  --enable-static-build --disable-fast-install --prefix="$BUILDDIR/local"
 				 --without-gtk --without-libpng --without-libdv --without-dga --without-libsdl --without-libquicktime
 				 --disable-simd-accel LIBDIR=/lib LDFLAGS=-L/lib CPPFLAGS=-I/include]
 			       ],
-	       [[[CDRTOOLS],[cdrtools-3.00]]],
-	       [[[A52DEC],[a52dec-0.7.4]],[--prefix=$prefix]],
-	       [[[LIBMPEG2],[libmpeg2-0.5.1]], [--prefix=$prefix]],
-	       [[[HELP2MAN], [help2man-1.43.3]]],
-	       [[[IMAGEMAGICK], [ImageMagick-6.8.7-0]]]])
+	       [[[cdrtools],[cdrtools-3.00]]],
+	       [[[a52dec],[a52dec-0.7.4]],[--prefix=$prefix]],
+	       [[[libmpeg2],[libmpeg2-0.5.1]], [--prefix=$prefix]],
+	       [[[help2man], [help2man-1.43.3]]],
+	       [[[ImageMagick], [ImageMagick-6.8.7-0]]]])
 	    ],
 	    [
 	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[DVDAUTHOR],[dvdauthor-0.7.1]]],
-	       [[[LPLEX], [lplex-0.3]], [--prefix=$prefix --disable-shared --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
-	       [[[MJPEGTOOLS], [mjpegtools-2.1.0]],[--enable-static-build --disable-fast-install --prefix="$BUILDDIR/local"]],
-	       [[[CDRTOOLS],[cdrtools-3.00]]],
-	       [[[A52DEC],[a52dec-0.7.4]],[--prefix=$prefix]],
-	       [[[LIBMPEG2],[libmpeg2-0.5.1]], [--prefix=$prefix]],
-	       [[[HELP2MAN], [help2man-1.43.3]]],
-	       [[[IMAGEMAGICK], [ImageMagick-6.8.7-0]]]])
+	       [[[lplex], [lplex-0.3]], [--prefix=$prefix --disable-shared --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
+	       [[[mjpegtools], [mjpegtools-2.1.0]],[--enable-static-build --disable-fast-install --prefix="$BUILDDIR/local"]],
+	       [[[cdrtools],[cdrtools-3.00]]],
+	       [[[a52dec],[a52dec-0.7.4]],[--prefix=$prefix]],
+	       [[[libmpeg2],[libmpeg2-0.5.1]], [--prefix=$prefix]],
+	       [[[help2man], [help2man-1.43.3]]],
+	       [[[ImageMagick], [ImageMagick-6.8.7-0]]]])
 	    ])
 
     # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
@@ -291,12 +306,12 @@ m4_map([DVDA_TEST_AUX],[
     DVDA_CONFIG_LIBRARY_LOCAL_INSTALL([
      [[[FLAC],[flac-1.3.0]],[--disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg" \
 	 --disable-thorough-tests --disable-oggtest --disable-cpplibs --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
-     [[[SOX],[sox-14.4.1]],  [--without-libltdl --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-ffmpeg --disable-fast-install --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
-     [[[LIBOGG],[libogg-1.1.4]],  [--prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]]])
+     [[[sox],[sox-14.4.1]],  [--without-libltdl --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-ffmpeg --disable-fast-install --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
+     [[[libogg],[libogg-1.1.4]],  [--prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]]])
 
     # auxiliary libs that remain within package, not installed
 
-    DVDA_CONFIG_LIBRARY_NO_INSTALL([[[[IBERTY],[libiberty]]], [[[FIXWAV],[libfixwav]]]])
+    DVDA_CONFIG_LIBRARY_NO_INSTALL([[[[iberty],[libiberty]]], [[[fixwav],[libfixwav]]]])
 
 
 ])

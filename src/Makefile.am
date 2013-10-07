@@ -7,91 +7,65 @@ CAT=/bin/cat
 ## to avoid conflicts, we take care to add either -l to LDFLAGS links of libs to LDADD, except for static build.
 ## if giving FLAC or Ogg as input, do also give the other one for compatibility reasons.
 ## Definitions: WITH_LIB: activates this capability
-##              HAVE_LIB_BUILD: recurses subdirs to build capability locally
 #               HAVE_EXTERNAL_LIB: use specified lib, e.g. --with-lib=/full/path/to/lib
 ##              HAVE_LIB: LIB has been tested to be system-installed, so linking should be OK (in principle)
 
 
+#Interpret: HAVE_X: have X on system
+#           HAVE_EXTERNAL_X: given on commandline --with-X=...
+#           $(if $(X),...)   or:   ifeq "$(X)" "X": if build package with basename X (--enable-X-build), then do...
+#           WITH_X: X-related code was not filtered out by conditional compilation (e.g. WITHOUT-SOX)
 
 bin_PROGRAMS=dvda
 
 dvda_SOURCES=amg2.c ats.c atsi2.c audio.c auxiliary.c dvda-author2.c  \
-             file_input_parsing.c samg2.c launch_manager.c command_line_parsing.c  \
-             lexer.c ats2wav.c
+	     file_input_parsing.c samg2.c launch_manager.c command_line_parsing.c  \
+	     lexer.c ats2wav.c
 
-if !HAVE_CORE_BUILD
-dvda_SOURCES += menu.c asvs.c xml.c sound.c videoimport.c
+if HAVE_CORE_BUILD
+   dvda_SOURCES += menu.c asvs.c xml.c sound.c videoimport.c
 endif
-
 
 AM_LDFLAGS=-L/usr/local/lib -L/usr/lib -Xlinker --allow-multiple-definition -L${top_builddir}/libs
 AM_CPPFLAGS=-I${top_srcdir}/libutils/src/include -I${top_srcdir}/src/include -I${top_srcdir}   ${DEBUG_FLAGS}
 
 dvda_LDADD= -lm ${top_builddir}/libutils/src/libc_utils.a
 
+if WITH_sox
+    dvda_SOURCES += libsoxconvert.c
+endif
+
+if WITH_fixwav
+     dvda_LDADD+=$(fixwav_LIB}
+     AM_CPPFLAGS +=-I${top_srcdir}/libfixwav/src/include
+endif
+
 
 # Symbol SOX_LIB_DEPS will be replaced by sox dependencies after configure in libsox by target do_sox_lib_deps_subst
 # left-align if conditions
 
+$(foreach prog,$(PROGRAM_TARGETS),
+	$(if $(prog),
+	    $(if ($($(prog)_LIB),
+	      dvda_LDADD += $($(prog)_LIB)
+	      AM_CPPFLAGS  += -I$(top_srcdir)/$(MAYBE_$(prog))/src ),
+	    if HAVE_EXTERNAL_$(prog)
+	      $(if ($($(prog)_LIB),
+		dvda_LDADD   += $($(prog)_LIB)
+		echo Linking to system lib $($(prog)_LIB)))
+	    else
+	      if HAVE_$(prog)
+		$(if $($(prog)_LINK),
+		LIBS   += $($(prog)_LINK)
+		echo Linking to user lib $(($prog)_LINK))
+	      else
+		echo No linking to $(prog)
+	      endif
+	    endif
+	 ))
 
-if WITH_FLAC
-if HAVE_EXTERNAL_FLAC
-    dvda_LDADD  += ${FLAC_LIB}
-endif
-if HAVE_EXTERNAL_LIBOGG
-    dvda_LDADD  +=  ${LIBOGG_LIB}
-endif
-if HAVE_FLAC_BUILD
-    dvda_LDADD   +=  ${FLAC_LIB}
-endif
-if HAVE_LIBOGG_BUILD
-    dvda_LDADD   +=  ${LIBOGG_LIB}
-endif
-if HAVE_FLAC
-    dvda_LDADD  += ${FLAC_LINK} ${LIBOGG_LINK}
-endif
-endif
-
-if WITH_SOX
-    dvda_SOURCES += libsoxconvert.c
-
-if HAVE_SOX_BUILD
-    AM_CPPFLAGS  += -I${top_srcdir}/${MAYBE_SOX}/src
-    LIBS   += SOX_LIB_DEPS
-    dvda_LDADD   += ${SOX_LIB}
-
-else
-
-if HAVE_EXTERNAL_SOX
-    dvda_LDADD   += -ldl
-    dvda_LDADD   += ${SOX_LIB}
-endif
-if HAVE_SOX
-    LIBS   += ${SOX_LINK}
-endif
-endif
-
-endif
-
-if HAVE_IBERTY_BUILD
-     dvda_LDADD+= ${IBERTY_LIB}
-     AM_CPPFLAGS +=-I${top_srcdir}/libiberty/src/include
-else
-if  HAVE_EXTERNAL_IBERTY
-     dvda_LDADD+= ${IBERTY_LIB}
-     AM_CPPFLAGS +=-I${top_srcdir}/libiberty/src/include
-endif
-if HAVE_IBERTY
-     LIBS+= ${IBERTY_LINK}
-endif
-endif
-
-if WITH_FIXWAV
-     dvda_LDADD+=${FIXWAV_LIB}
-     AM_CPPFLAGS +=-I${top_srcdir}/libfixwav/src/include
-endif
+$(if $(sox), LIBS   += SOX_LIB_DEPS)
 
 ## canonical names cannot contain hyphens, so using program_transform_name
-## remark: AC_ARG_PROGRAM was tested useless here
 
 program_transform_name='s/dvda/dvda-author/g'
