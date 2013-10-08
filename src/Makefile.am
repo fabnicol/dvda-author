@@ -22,7 +22,7 @@ dvda_SOURCES=amg2.c ats.c atsi2.c audio.c auxiliary.c dvda-author2.c  \
 	     file_input_parsing.c samg2.c launch_manager.c command_line_parsing.c  \
 	     lexer.c ats2wav.c
 
-if HAVE_CORE_BUILD
+if HAVE_core_BUILD
    dvda_SOURCES += menu.c asvs.c xml.c sound.c videoimport.c
 endif
 
@@ -36,7 +36,7 @@ if WITH_sox
 endif
 
 if WITH_fixwav
-     dvda_LDADD+=$(fixwav_LIB}
+     dvda_LDADD+=$(fixwav_LIB)
      AM_CPPFLAGS +=-I${top_srcdir}/libfixwav/src/include
 endif
 
@@ -46,18 +46,18 @@ endif
 
 $(foreach prog,$(PROGRAM_TARGETS),
 	$(if $(prog),
-	    $(if ($($(prog)_LIB),
+	    $(if $($(prog)_LIB),
 	      dvda_LDADD += $($(prog)_LIB)
 	      AM_CPPFLAGS  += -I$(top_srcdir)/$(MAYBE_$(prog))/src ),
 	    if HAVE_EXTERNAL_$(prog)
-	      $(if ($($(prog)_LIB),
+	      $(if $($(prog)_LIB),
 		dvda_LDADD   += $($(prog)_LIB)
-		echo Linking to system lib $($(prog)_LIB)))
+		echo Linking to system lib $($(prog)_LIB))
 	    else
 	      if HAVE_$(prog)
 		$(if $($(prog)_LINK),
 		LIBS   += $($(prog)_LINK)
-		echo Linking to user lib $(($prog)_LINK))
+		echo Linking to user lib $(($prog)_LINK)a)
 	      else
 		echo No linking to $(prog)
 	      endif

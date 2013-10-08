@@ -1,4 +1,6 @@
 
+dvdauthor_MAKESPEC=manual
+
 if HAVE_AUTOMAKE
 if HAVE_AUTOCONF
 dvdauthor: Makefile

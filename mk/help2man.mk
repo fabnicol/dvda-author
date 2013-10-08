@@ -1,3 +1,5 @@
+help2man_MAKESPEC=manual
+
 help2man: Makefile
 	if test -f help2man; then rm -f help2man; fi; touch help2man
 	if test "$(MAYBE_$@)" != "" ; then

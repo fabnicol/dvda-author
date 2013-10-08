@@ -1,3 +1,6 @@
-mjpegtools: Makefile
-	$(call config_exec_package,$@,mplex,2>&1|line)
+mjpegtools_MAKESPEC=auto
+mjpegtools_CONFIGSPEC=exe
+mjpegtools_DEPENDENCY=Makefile
+mjpegtools_TESTBINARY=mplex
+mjpegtools_COMMANDLINE=2>&1|line
 

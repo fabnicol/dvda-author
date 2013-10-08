@@ -386,8 +386,12 @@ AC_ARG_ENABLE([$1],[AS_HELP_STRING([--enable-$1],msg)],
 # reset $enableval to "no"
 
 AS_IF([test x$enableval = xyes],[enableval_boolean=1],[enableval_boolean=0])
+#HAVE_SOX etc. in C code
 AC_DEFINE_UNQUOTED([HAVE_]upper,[$enableval_boolean],msg)
-AM_CONDITIONAL([HAVE_]upper,[test $enableval_boolean = 1 ])
+#HAVE_sox etc. in automake conditionals
+AM_CONDITIONAL([HAVE_]bn,[test $enableval_boolean = 1 ])
+AM_CONDITIONAL([HAVE_]bn[_BUILD],[test x$upper = xyes -a  act = build ])
+
 m4_popdef([msg])
 m4_popdef([norm])
 m4_popdef([upper])
@@ -419,7 +423,7 @@ AS_IF([test x$CAPNAME = x ],
   ])
 AC_DEFINE_UNQUOTED([HAVE_]CAPNAME, [$auxbool], [Found $1])
 AC_DEFINE_UNQUOTED(CAPNAME, "$CAPNAME", [Pathname of $1])
-AM_CONDITIONAL([HAVE_]CAPNAME, [test $auxbool = 1])
+AM_CONDITIONAL([HAVE_]$1, [test $auxbool = 1])
 m4_popdef([CAPNAME])
 
 ]) #DVDA_TEST_AUX
@@ -666,9 +670,10 @@ AC_DEFUN([DVDA_CONFIG],[
 	   ],
 	   [VAR=])
 
+   #do not quote ac_subst'd VARS
 
     AC_SUBST([MAYBE_]VAR)
-    AC_SUBST([VAR])
+    AC_SUBST(VAR)
     AC_SUBST(VAR[_CONFIGURE_FILE])
     AC_SUBST(VAR[_LIB])
     m4_popdef([VAR])
@@ -678,9 +683,10 @@ AC_DEFUN([DVDA_CONFIG],[
     m4_popdef([LIST])
     ])])
 
-AC_DEFUN([DVDA_CONFIG_EXECUTABLE_INSTALL],               [DVDA_CONFIG([$1],[#executable_install])])
-AC_DEFUN([DVDA_CONFIG_LIBRARY_NO_INSTALL],     [DVDA_CONFIG([$1],[VAR[_LIB]="\${top_builddir}/[$MAYBE_]VAR/src/[$MAYBE_]VAR.a"])])
-AC_DEFUN([DVDA_CONFIG_LIBRARY_LOCAL_INSTALL], [DVDA_CONFIG([$1],[]) ])
+
+AC_DEFUN([DVDA_CONFIG_EXECUTABLE_INSTALL],[DVDA_CONFIG([$1],[#executable_install])])
+AC_DEFUN([DVDA_CONFIG_LIBRARY_NO_INSTALL],[DVDA_CONFIG([$1],[VAR[_LIB]="\${top_builddir}/[$MAYBE_]VAR/src/[$MAYBE_]VAR.a"])])
+AC_DEFUN([DVDA_CONFIG_LIBRARY_LOCAL_INSTALL],[DVDA_CONFIG([$1],[]) ])
 
 
 AC_DEFUN([DVDA_PREFIX_DEFAULT],

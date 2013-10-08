@@ -1,6 +1,8 @@
+ImageMagick_MAKESPEC=auto
+ImageMagick_DEPENDENCY=Makefile
+ImageMagick_TESTBINARY=convert
+ImageMagick_COMMANDLINE=--version 2>&1|line
 
-ImageMagick: Makefile
-	$(call config_exec_package,$@,convert,--version 2>&1|line)
 
 
 
