@@ -1,7 +1,4 @@
-
-libogg: Makefile
-	$(call config_lib_package,libogg)
-
-
-#build and install libogg before libFLAC
-
+libogg_MAKESPEC=auto
+libogg_CONFIGSPEC=lib
+libogg_DEPENDENCY=Makefile
+libogg_TARGETLIB=libogg.a
