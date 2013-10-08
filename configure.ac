@@ -383,6 +383,14 @@ AC_MSG_RESULT([[
     convert:.......................$ImageMagick_BUILD $CONVERT
     lplex: ........................$lplex_BUILD $LPLEX
 
+   Echo make will target the following .mk files:
+
+]])
+
+    for i in $PROGRAM_TARGETS ; do echo -e \\t$i.mk; done
+
+AC_MSG_RESULT([[
+
    Building tools:
 
     make:..........................$make

@@ -1,9 +1,0 @@
-found library: /home/fab/Dev/dvda-author-dev/libs/libogg.a for libogg
-locally installed library: /home/fab/Dev/dvda-author-dev/local/lib/libogg.a from libogg
-found library: /home/fab/Dev/dvda-author-dev/libs/libFLAC.a for libFLAC
-locally installed library: /home/fab/Dev/dvda-author-dev/local/lib/libFLAC.a from libFLAC
-found library:  for libsox
-locally installed library: /home/fab/Dev/dvda-author-dev/local/lib/libsox.a from libsox
-done:   executable: 
-done:   dochtml 
-done:   dochtml 
