@@ -15,8 +15,6 @@ include mk/functions.mk
 
 MAKETOOL=make  -k
 
-$(if $(cdrtools),INS_BASE=$(prefix) install,INS_BASE= )
-
 DISTCHECK_CONFIGURE_FLAGS=--enable-all-all
 ACLOCAL_AMFLAGS=-I m4 -I m4.extra -I m4.extra.dvdauthor --install
 
@@ -27,9 +25,8 @@ ACLOCAL_AMFLAGS=-I m4 -I m4.extra -I m4.extra.dvdauthor --install
 
 all: erase_build.trace $(PROGRAM_TARGETS) do_sox_lib_deps_subst
 
-BUILD.TRACE: ;
 
-erase_build.trace: BUILD.TRACE
+erase_build.trace: force;
 	if test -f BUILD.TRACE; then
 	  mv BUILD.TRACE BUILD.TRACE~
 	fi
@@ -37,16 +34,17 @@ erase_build.trace: BUILD.TRACE
 # directly patching the Makefile appears to be more efficient. You need a GNU-compliant make.
 
 do_sox_lib_deps_subst: src/Makefile libsox
-	$(if "$(sox)",
-	chmod +x ${MAYBE_SOX}/sox-libs
-	pkgconfig_style_libs="$(shell cat $(MAYBE_SOX)/sox-libs | $(SED) -e "s,[\.\/].*[a],,g   ;  s,@.*@,,g")"
-	$(SED) -e "s,SOX_LIB_DEPS,$$pkgconfig_style_libs,g" < src/Makefile > src/Makefile.temp
+	echo Testing *$(sox)*...
+	$(if $(sox),
+	chmod +x ${MAYBE_sox}/sox-libs
+	pkgconfig_style_libs=$(shell cat $(MAYBE_sox)/sox-libs | $(SED) -e "s,[\.\/].*[a],,g   ;  s,@.*@,,g")
+	$(SED) -e "s/SOX_LIB_DEPS/$$pkgconfig_style_libs/g" < src/Makefile > src/Makefile.temp
 	mv src/Makefile.temp src/Makefile
 	$(call follow,src/Makefile.temp, done sox library substitution \(pkgconfig-style\)))
 
 
 dvda-author.1:
-if HAVE_HELP2MAN
+if HAVE_help2man
 	if test -f src/dvda; then
 		$(HELP2MAN) -s 1 -N -o dvda-author.1 src/dvda
 	fi
@@ -59,7 +57,7 @@ endif
 
 dvda-author-@VERSION@.html: dvda-author.1
 #PATCH  09.12  We need to display in UTF-8 mode and take off an illicit file header created by man2html
-if HAVE_MAN2HTML
+if HAVE_man2html
 		${MAN2HTML} < dvda-author.1 | $(SED) -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > $@
 		$(call docfollow, $@)
 endif
@@ -87,13 +85,13 @@ dist_pix_DATA=dvda-author_48x48.png dvda-author_64x64.png
 
 dist_doc_DATA=README  BUGS EXAMPLES LIMITATIONS BUILD.Ubuntu  DEPENDENCIES HOWTO.conf dvda-author.conf.example
 
-if HAVE_MAN2HTML
+if HAVE_man2html
   htmlhelp=dvda-author-@VERSION@.html
 else
   htmlhelp=
 endif
 
-if HAVE_HELP2MAN
+if HAVE_help2man
   dist_man_MANS=dvda-author.1
   manhelp=dvda-author.1
 else
