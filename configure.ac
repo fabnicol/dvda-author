@@ -368,20 +368,20 @@ AC_MSG_RESULT([[
   Auxiliary tools
 				   build [default no/yes]    install path [default system path/build path]
 
-    help2man: .....................$HELP2MAN_BUILD $HELP2MAN
-    man2html: .....................$MAN2HTML_BUILD $MAN2HTML
-    spumux: .......................$DVDAUTHOR_BUILD $SPUMUX
-    dvdauthor: ....................$DVDAUTHOR_BUILD $DVDAUTHOR
-    mkisofs: ......................$CDRTOOLS_BUILD $MKISOFS
-    cdrecord: .....................$CDRTOOLS_BUILD $CDRECORD
-    mp2enc: .......................$MJPEGTOOLS_BUILD $MP2ENC
-    jpeg2yuv: .....................$MJPEGTOOLS_BUILD $JPEG2YUV
-    mpeg2enc: .....................$MJPEGTOOLS_BUILD $MPEG2ENC
-    a52dec: .......................$A52DEC_BUILD $A52DEC
-    mplex: ........................$MJPEGTOOLS_BUILD $MPLEX
-    mogrify:.......................$IMAGEMAGICK_BUILD $MOGRIFY
-    convert:.......................$IMAGEMAGICK_BUILD $CONVERT
-    lplex: ........................$LPLEX_BUILD $LPLEX
+    help2man: .....................$help2man_BUILD $HELP2MAN
+    man2html: .....................$man2html_BUILD $MAN2HTML
+    spumux: .......................$dvdauthor_BUILD $SPUMUX
+    dvdauthor: ....................$dvdauthor_BUILD $DVDAUTHOR
+    mkisofs: ......................$cdrtools_BUILD $MKISOFS
+    cdrecord: .....................$cdrtools_BUILD $CDRECORD
+    mp2enc: .......................$mjpegtools_BUILD $MP2ENC
+    jpeg2yuv: .....................$mjpegtools_BUILD $JPEG2YUV
+    mpeg2enc: .....................$mjpegtools_BUILD $MPEG2ENC
+    a52dec: .......................$a52dec_BUILD $A52DEC
+    mplex: ........................$mjpegtools_BUILD $MPLEX
+    mogrify:.......................$ImageMagick_BUILD $MOGRIFY
+    convert:.......................$ImageMagick_BUILD $CONVERT
+    lplex: ........................$lplex_BUILD $LPLEX
 
    Building tools:
 

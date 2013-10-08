@@ -13,5 +13,9 @@ Long term
 -add album text and group text to text table
 -add automatic import of mono or stereo wavs for multichannel authoring.
 
+check:
+
+
+$(if $(cdrtools),INS_BASE=$(prefix) install,INS_BASE= )
 
 
