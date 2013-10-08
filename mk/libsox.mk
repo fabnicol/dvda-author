@@ -1,3 +1,5 @@
+sox_MAKESPEC=manual
+
 sox: Makefile
 	if test  "$(MAYBE_$@)" != ""; then
 		if test -d "$(BUILDDIR)/$(MAYBE_$@)" ; then

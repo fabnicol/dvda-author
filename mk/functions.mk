@@ -73,4 +73,25 @@ endef
 
 define clean_package
 	$(if $1,$(if $2, (if test -d  $2; then cd $2; $(MAKETOOL)  clean ; cd - ; fi)))
+endef
 
+.PHONY: create_autotargets
+
+AUTOTARGETS=
+
+create_autotargets: force;
+	$(foreach prog, $(PROGRAM_TARGETS),
+	  if test "$($(prog)_MAKESPEC)" = "auto" ; then
+	     AUTOTARGETS += $(prog)
+	  fi)
+
+$(AUTOTARGETS): create_autotargets
+	   if test "$($@_CONFIGSPEC)" = "exe"; then
+	      $(call configure_exec_package,$@,$($@_TESTBINARY),$($@_COMMANDLINE))
+	   else
+	     if test "$($@_CONFIGSPEC)" = "lib"; then
+		$(call configure_lib_package,$@,$($@_TARGETLIB))
+	     fi
+	   fi
+
+force: ;
