@@ -25,7 +25,6 @@ SOURCES += \
     src/audio.c \
     src/auxiliary.c \
     src/command_line_parsing.c \
-    src/dvda-author2.c \
     src/file_input_parsing.c \
     src/launch_manager.c \
     src/lexer.c \
@@ -34,7 +33,8 @@ SOURCES += \
     src/samg2.c \
     src/sound.c \
     src/videoimport.c \
-    src/xml.c
+    src/xml.c \
+    src/dvda_author.c
 
 OTHER_FILES += \
     src/dvda-author.conf \
@@ -92,7 +92,8 @@ OTHER_FILES += \
     libiberty/src/include/Makefile.am \
     libutils/Makefile.am \
     libutils/src/Makefile.am \
-    libfixwav/src/Makefile.am
+    libfixwav/src/Makefile.am \
+    src/Makefile.in
 
 HEADERS += \
     src/include/amg.h \

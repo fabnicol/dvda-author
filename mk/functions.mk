@@ -86,10 +86,11 @@ create_autotargets: force;
 	  fi)
 
 $(AUTOTARGETS): create_autotargets
-	   if test "$($@_CONFIGSPEC)" = "exe"; then
+	echo creating target $@ ...
+	if test "$($@_CONFIGSPEC)" = "exe"; then
 	      $(call configure_exec_package,$@,$($@_TESTBINARY),$($@_COMMANDLINE))
-	   else
-	     if test "$($@_CONFIGSPEC)" = "lib"; then
+	 else
+	    if test "$($@_CONFIGSPEC)" = "lib"; then
 		$(call configure_lib_package,$@,$($@_TARGETLIB))
 	     fi
 	   fi

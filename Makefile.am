@@ -21,19 +21,26 @@ ACLOCAL_AMFLAGS=-I m4 -I m4.extra -I m4.extra.dvdauthor --install
 # nested packages will be configured only if main configure has been launched freshly.
 # stamprecord si a so-called cookie, used only for its time stamp
 
-.PHONY: erase_build.trace do_sox_lib_deps_subst $(PROGRAM_TARGETS)
+.PHONY: erase_build.trace do_sox_lib_deps_subst $(PROGRAM_TARGETS) create_autotargets $(AUTOTARGETS)
 
-all: erase_build.trace $(PROGRAM_TARGETS) do_sox_lib_deps_subst
+ALL_TARGETS=erase_build.trace $(PROGRAM_TARGETS)
+
+ifeq "@HAVE_sox_BUILD@" "yes"
+ ALL_TARGETS += do_sox_lib_deps_subst
+endif
+
+all: $(ALL_TARGETS)
 
 
 erase_build.trace: force;
+	echo PROGRAM_TARGETS=$(PROGRAM_TARGETS)
 	if test -f BUILD.TRACE; then
 	  mv BUILD.TRACE BUILD.TRACE~
 	fi
 
 # directly patching the Makefile appears to be more efficient. You need a GNU-compliant make.
 
-do_sox_lib_deps_subst: src/Makefile libsox
+do_sox_lib_deps_subst: src/Makefile sox
 	echo Testing *$(sox)*...
 	$(if $(sox),
 	chmod +x ${MAYBE_sox}/sox-libs
@@ -57,7 +64,7 @@ endif
 
 dvda-author-@VERSION@.html: dvda-author.1
 #PATCH  09.12  We need to display in UTF-8 mode and take off an illicit file header created by man2html
-if HAVE_man2html
+ifeq "@HAVE_man2html@" "yes"
 		${MAN2HTML} < dvda-author.1 | $(SED) -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > $@
 		$(call docfollow, $@)
 endif
@@ -85,13 +92,13 @@ dist_pix_DATA=dvda-author_48x48.png dvda-author_64x64.png
 
 dist_doc_DATA=README  BUGS EXAMPLES LIMITATIONS BUILD.Ubuntu  DEPENDENCIES HOWTO.conf dvda-author.conf.example
 
-if HAVE_man2html
+ifeq "@HAVE_man2html@" "yes"
   htmlhelp=dvda-author-@VERSION@.html
 else
   htmlhelp=
 endif
 
-if HAVE_help2man
+ifeq "@HAVE_help2man@" "yes"
   dist_man_MANS=dvda-author.1
   manhelp=dvda-author.1
 else
