@@ -326,7 +326,6 @@ AC_DEFUN([DVDA_ARG_ENABLE_DOWNLOAD],
 # Add AC_DEFINE_UNQUOTED([HAVE_FEATURE], [0|1], [HELPMSG])
 # Add AC_HELP_STRING([--enable-feature], [HELPMSG])
 # Add verbosity to yes/no result
-# Add AM_CONDITIONAL(HAVE_FEATURE,  YES/NO-TEST) with variable name (non-standard)
 
 AC_DEFUN([DVDA_ARG_ENABLE],
 [
@@ -389,8 +388,9 @@ AS_IF([test x$enableval = xyes],[enableval_boolean=1],[enableval_boolean=0])
 #HAVE_SOX etc. in C code
 AC_DEFINE_UNQUOTED([HAVE_]upper,[$enableval_boolean],msg)
 #HAVE_sox etc. in automake conditionals
-AM_CONDITIONAL([HAVE_]bn,[test $enableval_boolean = 1 ])
-AM_CONDITIONAL([HAVE_]bn[_BUILD],[test x$upper = xyes -a  act = build ])
+
+AS_IF([test x$upper = xyes -a  act = build ],[[HAVE_]bn[_BUILD] = yes],[[HAVE_]bn[_BUILD]=no])
+AC_SUBST([HAVE_]bn[_BUILD])
 
 m4_popdef([msg])
 m4_popdef([norm])
@@ -423,7 +423,8 @@ AS_IF([test x$CAPNAME = x ],
   ])
 AC_DEFINE_UNQUOTED([HAVE_]CAPNAME, [$auxbool], [Found $1])
 AC_DEFINE_UNQUOTED(CAPNAME, "$CAPNAME", [Pathname of $1])
-AM_CONDITIONAL([HAVE_]$1, [test $auxbool = 1])
+AS_IF([test $auxbool = 1],[[HAVE_]$1=yes],[[HAVE_]$1=no])
+AC_SUBST([HAVE_]$1])
 m4_popdef([CAPNAME])
 
 ]) #DVDA_TEST_AUX
@@ -606,19 +607,25 @@ AC_ARG_WITH([lower], [AS_HELP_STRING([--with-]lower,[full pathname of library or
 	  [
 	   AC_DEFINE([WITHOUT_]BASENAME,[1],[Disables $lower support])
 	   BASENAME[_BUILD]=no
+          [HAVE_EXTERNAL_]BASENAME=no
 	  ],
 	  [test x$withval != xyes],
-	  [AC_MSG_NOTICE([Using specified ]lower[ lib: $withval])
-	   BASENAME[_LIB_INPUT]=$withval])
+	  [
+           AC_MSG_NOTICE([Using specified ]lower[ lib: $withval])
+	   BASENAME[_LIB_INPUT]=$withval
+           [HAVE_EXTERNAL_]BASENAME=yes
+          ])
    ],
    [
      [withval_]BASENAME=
      BASENAME[_LIB_INPUT]=
+     [HAVE_EXTERNAL_]BASENAME=no
    ])
 ],
 [
    AC_DEFINE([WITHOUT_]BASENAME,[1],[Disables $lower support])
    BASENAME[_BUILD]=no
+  [HAVE_EXTERNAL_]BASENAME=no
 ])
 
 # do not simply use the withval variable as --without-X options might interfere globally
@@ -627,13 +634,17 @@ AS_IF([test x$BASENAME[_BUILD] != xyes && test x$[withval_]BASENAME != xno],
  [DVDA_TEST_LIB([$1],[$BASENAME[_LIB_INPUT]],$2,$3,$4,$5)])
 
 # whether lib has not been deactivated by --without-lib
-AM_CONDITIONAL([WITH_]BASENAME, [test x$[withval_]BASENAME != xno])
+
+AS_IF([test x$[withval_]BASENAME != x],[[WITH_]BASENAME=yes],[[WITH_]BASENAME=no])
+AC_SUBST([WITH_]BASENAME)
 
 # whether linking to installed lib with --with-lib=/full/path/to/lib
-AM_CONDITIONAL([HAVE_EXTERNAL_]BASENAME, [test x$[withval_]BASENAME != x])
+
+AC_SUBST([HAVE_EXTERNAL_]BASENAME)
 
 # whether configure automatically found valid system link
-AM_CONDITIONAL([HAVE_]BASENAME, [test x$BASENAME[_LINK] != x ])
+AS_IF([test x$BASENAME[_LINK] != x ],[[HAVE_]BASENAME[_LINK]=yes],[[HAVE_]BASENAME[_LINK]=no])
+
 ])
 
 #CONF_SUBDIRS([X_BUILD names],[DIRNAMES])
@@ -655,7 +666,7 @@ AC_DEFUN([DVDA_CONFIG],[
 
     AS_IF([test x$VAR[_BUILD] = xyes || test x$ALL_BUILDS = xyes -a x$[withval_]VAR != xno],
 	   [
-	      PROGRAM_TARGETS=$PROGRAM_TARGETS VAR
+	      AS_IF([test VAR != fixwav], [PROGRAM_TARGETS="$PROGRAM_TARGETS VAR"])
 
 	      [MAYBE_]VAR=m4_unquote(CDR)
 	      VAR[_BUILD]=yes
