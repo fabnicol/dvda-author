@@ -135,8 +135,17 @@ DISTFORMATS=$(FORMATS: %=dist-%)
 
 $(FORMATS): ;
 
+#master by default, can be overridden on commandline e.g. make dist-xz BRANCH=win32
 
 $(DISTFORMATS): $(FORMATS)
 ifeq "@HAVE_git@" "yes"
-	@GIT@ archive -o dvda-author-@VERSION@.$< HEAD
+   BRANCH=master
+   CURRRENTBRANCH=@GIT@ branch | grep \* | sed -E 's/\*[ ]+//'
+   ifneq "$(BRANCH)" "$(CURRENTBRANCH)"
+	@GIT@ checkout $(BRANCH))
+   endif
+	@GIT@ archive -o dvda-author-@VERSION@.$< HEAD $(BRANCH)
+   ifneq "$(BRANCH)" "$(CURRENTBRANCH)"
+	@GIT@ checkout $(CURRENTBRANCH)
+   endif
 endif
