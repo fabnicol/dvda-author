@@ -80,7 +80,7 @@ endef
 AUTOTARGETS=
 
 create_autotargets: force;
-	$(foreach prog, $(PROGRAM_TARGETS),
+	$(foreach prog, @PROGRAM_TARGETS@,
 	  if test "$($(prog)_MAKESPEC)" = "auto" ; then
 	     AUTOTARGETS += $(prog)
 	  fi)
