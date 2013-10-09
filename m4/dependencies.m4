@@ -35,7 +35,8 @@ m4_map([DVDA_TEST_AUX],[
 	[[lplex],     [using lplex to mux lpcm audio and video]],
 	[[make],      [whether make is installed]],
 	[[mpeg2dec],  [whether mpeg2dec is installed]],
-	[[a52dec],   [whether a52dec is installed]]])
+	[[git],       [whether git can be used for archiving purposes]],
+	[[a52dec],    [whether a52dec is installed]]])
 
 
   m4_define([SOX_STATIC_MSG],
