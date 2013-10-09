@@ -365,8 +365,7 @@ AC_MSG_RESULT([[
 
   Using $make as a system build tool.
 
-  Auxiliary tools
-				   build [default no/yes]    install path [default system path/build path]
+  Auxiliary tools		   build [default no/yes]    install path [default system path/build path]
 
     help2man: .....................$help2man_BUILD $HELP2MAN
     man2html: .....................$man2html_BUILD $MAN2HTML
@@ -383,11 +382,17 @@ AC_MSG_RESULT([[
     convert:.......................$ImageMagick_BUILD $CONVERT
     lplex: ........................$lplex_BUILD $LPLEX
 
-   Echo make will target the following .mk files:
+   Make will target the following .mk files:
 
 ]])
 
-    for i in $PROGRAM_TARGETS ; do echo -e \\t$i.mk; done
+for i in $PROGRAM_TARGETS ; do echo -e \\t$i.mk; done
+
+ AS_IF([test "$GIT" != ""],
+    AC_MSG_RESULT([
+  Distribution of files:  using git in $GIT
+
+  ]))
 
 AC_MSG_RESULT([[
 
