@@ -13,7 +13,7 @@
 /dvda-author-dev.pro.user
 /PATCHED.DOWNLOADS
 /DOWNLOADS
-/aclocal.m4
+*aclocal.m4
 cdrtools*
 dvdau*
 dvda-author*
@@ -23,7 +23,7 @@ ImageMagick*
 a52dec*
 autom4te.cache
 build-*
-config*
+configure
 help2man* 
 local*
 lplex*
@@ -36,7 +36,6 @@ sox*
 flac*
 *.o
 *Makefile
-*Makefile.in
 *.Po
 *.la
 libmpeg2*
