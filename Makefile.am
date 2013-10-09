@@ -13,9 +13,6 @@ SHELL=/bin/sh
 include $(foreach prog,@PROGRAM_TARGETS@,mk/$(prog).mk)
 include mk/functions.mk
 
-DISTCHECK_CONFIGURE_FLAGS=--enable-all-all
-ACLOCAL_AMFLAGS=-I m4 -I m4.extra -I m4.extra.dvdauthor --install
-
 # nested packages will be configured only if main configure has been launched freshly.
 # stamprecord si a so-called cookie, used only for its time stamp
 
@@ -41,7 +38,7 @@ erase_build.trace:
 # directly patching the Makefile appears to be more efficient. You need a GNU-compliant make.
 
 do_sox_lib_deps_subst: src/Makefile sox
-	echo Testing *@sox@*...
+	echo Processing dependencies for sox=@sox@...
 	$(if @sox@,
 	chmod +x @MAYBE_sox@/sox-libs
 	pkgconfig_style_libs=$(shell cat @MAYBE_sox@/sox-libs | @SED@ -e "s,[\.\/].*[a],,g   ;  s,@.*@,,g")
@@ -73,10 +70,10 @@ endif
 	install-data-local install clean clean-local distclean
 
 #normally is ${prefix}/share/applications/dvda-author-${VERSION}
-#sysconfdir=@SHORTLINKDIR@
+sysconfdir=@SHORTLINKDIR@
 
 # distributed under $sysconfdir, normally
-#dist_sysconf_DATA=dvda-author.desktop dvda-author.conf
+dist_sysconf_DATA=dvda-author.desktop dvda-author.conf
 
 # distributed under $menudir=$sysconfdir/menu
 # normally $prefix/share/pixmaps/dvda-author
@@ -104,7 +101,7 @@ endif
 install-sys: dist_sysconf _DATA
 	$(INSTALL_DATA) $^ $(DESTDIR)$(sysconfdir)
 
-intall-pic:  $(MENUDIR)
+intall-pic:  @MENUDIR@
 	$(INSTALL_DATA) $^ $(DESTDIR)$(picdir)
 
 install-data-local:  $(manhelp) $(htmlhelp) $(dist_doc_DATA) $(dist_pic_DATA)
@@ -131,7 +128,7 @@ maintainer-clean: distclean
 	rm -rf config
 
 FORMATS=tar.xz tar.gz tar.bz2 zip
-DISTFORMATS=$(FORMATS: %=dist-%)
+DISTFORMATS=$(FORMATS:%=dist-%)
 
 $(FORMATS): ;
 
