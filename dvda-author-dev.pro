@@ -39,15 +39,12 @@ SOURCES += \
 OTHER_FILES += \
     src/dvda-author.conf \
     src/Makefile.am \
-    src/include/Makefile.am \
-    libutils/src/include/Makefile.am \
     libfixwav/AUTHORS \
     libfixwav/COPYING \
     libfixwav/INSTALL \
     libfixwav/NEWS \
     libfixwav/README \
     libfixwav/ChangeLog \
-    libfixwav/Makefile.am \
     libfixwav/src/include/Makefile.am \
     libs/include/FLAC/Makefile.am
 
