@@ -92,8 +92,7 @@ OTHER_FILES += \
     libiberty/src/include/Makefile.am \
     libutils/Makefile.am \
     libutils/src/Makefile.am \
-    libfixwav/src/Makefile.am \
-    src/Makefile.in
+    libfixwav/src/Makefile.am
 
 HEADERS += \
     src/include/amg.h \
