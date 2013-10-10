@@ -78,7 +78,7 @@ dist_sysconf_DATA=dvda-author.desktop dvda-author.conf
 # normally $prefix/share/pixmaps/dvda-author
 # distributed under $pixdir
 
-dist_pix_DATA= dvda-author_48x48.png dvda-author_64x64.png
+dist_pic_DATA= dvda-author_48x48.png dvda-author_64x64.png
 # distributed under $docdir, normally $prefix/doc/dvda-author
 
 dist_doc_DATA=README  BUGS EXAMPLES LIMITATIONS BUILD.Ubuntu  DEPENDENCIES HOWTO.conf dvda-author.conf.example
