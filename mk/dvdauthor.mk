@@ -5,6 +5,8 @@ dvdauthor_MAKESPEC=manual
 dvdauthor_LIB=@dvdauthor_LIB@
 dvdauthor_LINK=@dvdauthor_LINK@
 MAYBE_dvdauthor=@MAYBE_dvdauthor@
+HAVE_cdrtools=@HAVE_a52_dec@
+HAVE_EXTERNAL_cdrtools=@HAVE_EXTERNAL_cdrtools@
 
 if HAVE_AUTOMAKE
 if HAVE_AUTOCONF

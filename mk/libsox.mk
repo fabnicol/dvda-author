@@ -4,8 +4,8 @@ sox_MAKESPEC=manual
 sox_LIB=@sox_LIB@
 sox_LINK=@sox_LINK@
 MAYBE_sox=@MAYBE_sox@
-HAVE_a52dec=@HAVE_a52_dec@
-HAVE_EXTERNAL_a52dec=@HAVE_EXTERNAL_a52dec@
+HAVE_sox=@HAVE_a52_dec@
+HAVE_EXTERNAL_sox=@HAVE_EXTERNAL_sox@
 
 
 sox: Makefile
