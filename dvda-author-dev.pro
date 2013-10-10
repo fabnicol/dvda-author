@@ -38,7 +38,6 @@ SOURCES += \
 
 OTHER_FILES += \
     src/dvda-author.conf \
-    src/Makefile.am \
     src/include/Makefile.am \
     libutils/src/include/Makefile.am \
     libfixwav/AUTHORS \
@@ -54,7 +53,6 @@ OTHER_FILES += \
     m4/dvda.m4 \
     m4/auxiliary.m4 \
     configure.ac \
-    Makefile.am \
     script.in \
     script1.in \
     script2.in \
@@ -92,7 +90,9 @@ OTHER_FILES += \
     libiberty/src/include/Makefile.am \
     libutils/Makefile.am \
     libutils/src/Makefile.am \
-    libfixwav/src/Makefile.am
+    libfixwav/src/Makefile.am \
+    Makefile.in \
+    src/Makefile.in
 
 HEADERS += \
     src/include/amg.h \

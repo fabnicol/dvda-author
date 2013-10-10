@@ -259,6 +259,7 @@ AC_CONFIG_FILES([Makefile
 	 dvda-author.spec
 	 dvda-author.spec.coreversion
 	 dvda-author.nsi
+	 Makefile
 	 src/Makefile
 	 src/include/Makefile
 	 libutils/Makefile
