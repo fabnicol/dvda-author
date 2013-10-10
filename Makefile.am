@@ -46,7 +46,6 @@ do_sox_lib_deps_subst: src/Makefile sox
 	mv src/Makefile.temp src/Makefile
 	$(call follow,src/Makefile.temp, done sox library substitution \(pkgconfig-style\)))
 
-
 dvda-author.1:
 ifeq "@HAVE_help2man@" "yes"
 	if test -f src/dvda; then
@@ -137,11 +136,11 @@ $(FORMATS): ;
 $(DISTFORMATS): $(FORMATS)
 ifeq "@HAVE_git@" "yes"
    BRANCH=master
-   CURRRENTBRANCH=@GIT@ branch | grep \* | sed -E 's/\*[ ]+//'
+   CURRRENTBRANCH=`@GIT@ status -bs -u no -z | sed -e 's/[# ]*//g'`
    ifneq "$(BRANCH)" "$(CURRENTBRANCH)"
 	@GIT@ checkout $(BRANCH))
    endif
-	@GIT@ archive -o dvda-author-@VERSION@.$< HEAD $(BRANCH)
+	if test $? = 0 ; then @GIT@ archive -o dvda-author-@VERSION@.$< HEAD $(BRANCH); fi
    ifneq "$(BRANCH)" "$(CURRENTBRANCH)"
 	@GIT@ checkout $(CURRENTBRANCH)
    endif
