@@ -18,8 +18,10 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifndef __WIN32__
 #include <unistd.h>
-
+#endif
+#define off64_t  long long
 #include <dirent.h>
 #include <stdint.h>
 #include <inttypes.h>
@@ -36,7 +38,6 @@
 #include "winport.h"
 #include "commonvars.h"
 #include "libiberty.h"
-
 
 extern globalData globals;
 

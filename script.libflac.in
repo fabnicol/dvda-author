@@ -1,0 +1,10 @@
+if test  "@MAYBE_FLAC@" != ""; then
+  if test -d "@MAYBE_FLAC@"; then
+   cd "@MAYBE_FLAC@" && cp "@ROOTDIR@/m4.extra/iconv.m4" m4/ ; cp "@ROOTDIR@/m4.extra/codeset.m4" m4/
+  ./configure  @CONFIGURE_FLAC_FLAGS@  && make -k && make install
+   cd - 
+  if test -f local/lib/libFLAC.a ; then 
+    mv local/lib/libFLAC.a local/lib/libflac.a
+  fi
+ fi 
+fi

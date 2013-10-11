@@ -5,8 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#ifndef __WIN32__
 #include <unistd.h>
 #include <fcntl.h>
+#endif
 #include "getopt.h"
 #include <sys/time.h>
 #include "dvda-author.h"
@@ -19,7 +21,7 @@
 #include "file_input_parsing.h"
 #include "launch_manager.h"
 #include "dvda-author.h"
-#ifndef WITHOUT_FIXWAV
+#ifndef WITHOUT_fixwav
 #include "fixwav_auxiliary.h"
 #include "fixwav_manager.h"
 #endif
@@ -165,10 +167,15 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"no-refresh-tempdir",no_argument, NULL, 4},
         {"no-refresh-outdir",no_argument, NULL, 5},
         {"extract", required_argument, NULL, 'x'},
-        {"play", required_argument, NULL, 12},
-        {"player", required_argument, NULL, 13},
 
 #if !HAVE_core_BUILD
+        {"play", required_argument, NULL, 12},
+        {"player", required_argument, NULL, 13},
+<<<<<<< HEAD
+
+#if !HAVE_core_BUILD
+=======
+>>>>>>> mergebranch
         {"videodir", required_argument, NULL, 'V'},
         {"fixwav", optional_argument, NULL, 'F'},
         {"fixwav-virtual", optional_argument, NULL, 'f'},
@@ -599,7 +606,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
             // Should be done as early as main globals are set, could be done a bit earlier (adding an extra parse)
-#ifndef WITHOUT_FIXWAV
+#ifndef WITHOUT_fixwav
 
         case 'F' :
         case 'f' :
@@ -769,22 +776,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
 
-       case 12:
-
-        //no break with 'x'
-
        case 'x' :
 
             extract_audio_flag=1;
-            player=NULL;
             FREE(globals.settings.indir)
             globals.settings.indir=strdup(optarg);
 
-            break;
-
-       case  13:
-
-            player=strdup(optarg);
             break;
 
        case 'n' :
@@ -892,6 +889,25 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
 #if !HAVE_core_BUILD
+<<<<<<< HEAD
+=======
+	    
+        case 12:
+
+            player=NULL;
+            extract_audio_flag=1;
+            FREE(globals.settings.indir)
+            globals.settings.indir=strdup(optarg);
+
+            break;
+
+       case  13:
+
+            player=strdup(optarg);
+            break;
+
+
+>>>>>>> mergebranch
 	          // case 'g': c=0; break;
         case '9':
             /* --datadir is the directory  where the menu/ files are located. Under* nix it automatically installed under /usr/share/applications/dvda-author by the autotools
@@ -1013,7 +1029,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             img->loop=1;
             break;
 
-#ifndef WITHOUT_FIXWAV
+#ifndef WITHOUT_fixwav
         case 'f':
             globals.fixwav_virtual_enable=1;
             foutput("%s\n", "[PAR]  Virtual fixwav enabled.");
@@ -1038,7 +1054,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 #endif
 
-#ifndef WITHOUT_SOX
+#ifndef WITHOUT_sox
 
         case 'S':
 
@@ -1371,17 +1387,17 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case '4':
             /* default is PAL, 25 */
             img->norm=strdup(optarg);
-            if (strcasecmp(optarg,"ntsc") == 0)
+            if (strcmp(optarg,"ntsc") == 0)
             {
                 img->framerate[0]='3';
                 img->framerate[1]='0';
                 free(img->blankscreen);
                 img->blankscreen=strdup(DEFAULT_BLANKSCREEN_NTSC);
                 img->backgroundpic[0]=strdup(DEFAULT_BACKGROUNDPIC_NTSC);
-
+                foutput("[PAR]  Video standard is %s", img->norm);
 
             }
-            else if ((strcasecmp(optarg,"pal") != 0) && (strcasecmp(optarg,"secam") != 0))
+            else if ((strcmp(optarg,"pal") != 0) && (strcmp(optarg,"secam") != 0))
             {
                 foutput("%s\n","[ERR]  Only options are 'ntsc', 'secam' or (default) 'pal'.");
                 clean_exit(EXIT_FAILURE);
@@ -1510,7 +1526,13 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     if (extract_audio_flag)
     {
         extract_list_parsing(globals.settings.indir, &extract);
+#if !HAVE_core_BUILD
+
         ats2wav_parsing(globals.settings.indir, &extract, player);
+#else
+        ats2wav_parsing(globals.settings.indir, &extract, NULL);
+#endif
+
         return(NULL);
     }
 
@@ -2068,7 +2090,7 @@ standard_checks:
 
 
 
-#ifndef WITHOUT_FIXWAV
+#ifndef WITHOUT_fixwav
 void fixwav_parsing(char *ssopt)
 {
     int subopt;

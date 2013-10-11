@@ -26,7 +26,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define AUXILIARY_H_INCLUDED
 #include <sys/stat.h>
 #include <sys/types.h>
+#ifndef __WIN32__
 #include <dirent.h>
+#endif
 #include <errno.h>
 
 #include "audio2.h"

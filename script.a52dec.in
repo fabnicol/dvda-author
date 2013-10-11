@@ -1,0 +1,5 @@
+if test  "@MAYBE_A52DEC@" != ""; then
+  if test -d "@MAYBE_A52DEC@" ; then
+   cd "@MAYBE_A52DEC@" && ./configure @CONFIGURE_A52DEC_FLAGS@ ; make ; cd - ;
+  fi
+fi
