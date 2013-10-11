@@ -21,7 +21,7 @@
 #include "file_input_parsing.h"
 #include "launch_manager.h"
 #include "dvda-author.h"
-#ifndef WITHOUT_FIXWAV
+#ifndef WITHOUT_fixwav
 #include "fixwav_auxiliary.h"
 #include "fixwav_manager.h"
 #endif
@@ -168,7 +168,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"no-refresh-outdir",no_argument, NULL, 5},
         {"extract", required_argument, NULL, 'x'},
 
-#if !HAVE_CORE_BUILD
+#if !HAVE_core_BUILD
         {"play", required_argument, NULL, 12},
         {"player", required_argument, NULL, 13},
         {"videodir", required_argument, NULL, 'V'},
@@ -570,7 +570,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             refresh_tempdir=0;
             break;
 
-#if !HAVE_CORE_BUILD
+#if !HAVE_core_BUILD
 
         case 'T':
 
@@ -601,7 +601,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
             // Should be done as early as main globals are set, could be done a bit earlier (adding an extra parse)
-#ifndef WITHOUT_FIXWAV
+#ifndef WITHOUT_fixwav
 
         case 'F' :
         case 'f' :
@@ -731,7 +731,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         for (k=0; k < ngroups-nvideolinking_groups; k++)
             totntracks+=ntracks[k];
     ngroups_scan=0;
-    #if !HAVE_CORE_BUILD
+    #if !HAVE_core_BUILD
     int nvideolinking_groups_scan=0, strlength=0;
     char* piccolorchain, *activepiccolorchain, *palettecolorchain, *fontchain, *durationchain=NULL,
             *h, *min, *sec, **tab=NULL,**tab2=NULL, *stillpic_string=NULL, *still_options_string=NULL, *import_topmenu_path=NULL, *player="vlc";
@@ -883,7 +883,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             textable=fn_strtok(optarg, ',' , textable, 0,NULL,NULL);
             break;
 
-#if !HAVE_CORE_BUILD
+#if !HAVE_core_BUILD
 	    
         case 12:
 
@@ -1021,7 +1021,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             img->loop=1;
             break;
 
-#ifndef WITHOUT_FIXWAV
+#ifndef WITHOUT_fixwav
         case 'f':
             globals.fixwav_virtual_enable=1;
             foutput("%s\n", "[PAR]  Virtual fixwav enabled.");
@@ -1046,7 +1046,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 #endif
 
-#ifndef WITHOUT_SOX
+#ifndef WITHOUT_sox
 
         case 'S':
 
@@ -1447,7 +1447,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     }
 
 
-#if !HAVE_CORE_BUILD
+#if !HAVE_core_BUILD
     if (check_version_flag)
         {
             #ifdef __WIN32__
@@ -1518,7 +1518,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     if (extract_audio_flag)
     {
         extract_list_parsing(globals.settings.indir, &extract);
-#if !HAVE_CORE_BUILD
+#if !HAVE_core_BUILD
 
         ats2wav_parsing(globals.settings.indir, &extract, player);
 #else
@@ -1531,11 +1531,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     // Coherence checks
     // You first have to test here.
-#if !HAVE_CORE_BUILD
+#if !HAVE_core_BUILD
     menu_characteristics_coherence_test(img, ngroups);
 
 #ifndef __CB__
-#if !defined HAVE_MPEG2ENC || !defined HAVE_JPEG2YUV || !defined HAVE_MPLEX
+#if !defined HAVE_mpeg2enc || !defined HAVE_jpeg2yuv || !defined HAVE_mplex
     if (globals.topmenu <= RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR)
     {
         foutput("%s\n", "[ERR]  You need mplex, mpeg2enc and jpeg2yuv to author\n       a background screen, please install these applications.");
@@ -1565,7 +1565,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {
         case 'Q':
 
-#if defined HAVE_LPLEX || HAVE_LPLEX_BUILD
+#if defined HAVE_lplex || HAVE_lplex_BUILD
 
             if (img->backgroundmpg)
             {
@@ -2082,7 +2082,7 @@ standard_checks:
 
 
 
-#ifndef WITHOUT_FIXWAV
+#ifndef WITHOUT_fixwav
 void fixwav_parsing(char *ssopt)
 {
     int subopt;

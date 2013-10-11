@@ -18,15 +18,15 @@
 
 # DEF symbol				|	Shell variable		| AM conditional		|		value			|			macro
 #----------------------------------------------------------------------------------------------------------------------------------------------
-# HAVE_DVDAUTHOR_PATCH										   		    1 or not defined		DVDA_TEST_SOFTWARE_VERSION, DVDA_DOWNLAOD > DVDA_ARG_ENABLE_DOWNLOAD
-# HAVE_SOX_BUILD											   (0|1)				CONF_SUBDIRS
+# HAVE_dvdauthor_PATCH										   		    1 or not defined		DVDA_TEST_SOFTWARE_VERSION, DVDA_DOWNLAOD > DVDA_ARG_ENABLE_DOWNLOAD
+# HAVE_sox_BUILD											   (0|1)				CONF_SUBDIRS
 # 						DVDAUTHOR_BUILD						    yes/no				BUILD, DVDA_DOWNLOAD
 #						SOX_BUILD						    yes/no				BUILD (>) DVDA_TEST_LIB, DVDA_ARG_WITH,DVDA_CONFIG_EXECUTABLE_INSTALL, DVDA_ARG_ENABLE > DVDA_ARG_ENABLE_DOWNLOAD
-# 									 WITH_SOX			   true/false				DVDA_ARG_WITH
-#									 HAVE_SOX			   true/false				DVDA_TEST_LIB
-# WITHOUT_SOX		                           				                                 (0|1)      		        DVDA_ARG_WITH
+# 									 WITH_sox			   true/false				DVDA_ARG_WITH
+#									 HAVE_sox			   true/false				DVDA_TEST_LIB
+# WITHOUT_sox		                           				                                 (0|1)      		        DVDA_ARG_WITH
 #                                              				 HAVE_EXTERNAL_LIB                   true/false				DVDA_ARG_ENABLE
-# HAVE_MOGRIFY          										   (0|1)				DVDA_TEST_AUX
+# HAVE_mogrify          										   (0|1)				DVDA_TEST_AUX
 # 						*MAYBE_SOX		 				   libsox/				DVDA_ARG_ENABLE > DVDA_ARG_ENABLE_DOWNLOAD, DVDA_TEST_LIB
 # DVDAUTHOR												  /usr/bin/dvdauthor	  		DVDA_DOWNLOAD, DVDA_TEST_SOFTWARE_VERSION > DVDA_ARG_ENABLE_DOWNLOAD
 # MOGRIFY                                       *MOGRIFY		 				  /usr/bin/mogrify			DVDA_TEST_AUX
