@@ -273,7 +273,7 @@ static int check_ignored_extension(void *path)
     return (0);
 }
 
-int parse_disk(DIR* dir, mode_t mode, const char* default_directory, extractlist  *extract, const char* player)
+int parse_disk(DIR* dir, mode_t mode, extractlist  *extract, const char* player)
 {
 
     char ngroups_scan=0, control=0;
@@ -335,8 +335,7 @@ int parse_disk(DIR* dir, mode_t mode, const char* default_directory, extractlist
             if (!globals.nooutput)
                 secure_mkdir(
                     output_buf,
-                    mode,
-                    default_directory);
+                    mode);
 
             if ((globals.debugging)&& (!globals.nooutput))
                 foutput("[INF]  Extracting to directory %s ...\n", output_buf);
