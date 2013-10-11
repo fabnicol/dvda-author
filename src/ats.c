@@ -49,7 +49,7 @@ uint64_t fileoffset;
 
 
 
-void  write_search_sequence(uint8_t* sequence, size_t sizeofsequence , FILE* filepointer, const char* ioflag)
+inline   void  write_search_sequence(uint8_t* sequence, size_t sizeofsequence , FILE* filepointer, const char* ioflag)
 {
     if (globals.veryverbose)
         hexdump_pointer(sequence, sizeofsequence);
@@ -666,7 +666,7 @@ void write_aob_path(char* aobfile,char* audiotsdir,int titleset,int filenum)
 }
 
 
-int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,const char* ioflag, char* player)
+int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,const char* ioflag, char* player, extractlist* extract)
 {
 
     FILE* aobfilepointer;
@@ -678,7 +678,7 @@ int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,con
     uint64_t pack_in_title=0;
 
 
-// newer versions of VLC play back AOB files, this jjust triggers playback of the requested sequence of AOBs corresponding to audio groups.
+PLAYBACK: // newer versions of VLC play back AOB files, this jjust triggers playback of the requested sequence of AOBs corresponding to audio groups.
 
 //     if (player)
 //     {

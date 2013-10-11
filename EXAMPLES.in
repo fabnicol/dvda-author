@@ -10,8 +10,8 @@ Name three WAV audio files file1.wav, file2.wav, file3.wav under ~/test.
 Check your internet connection is functional.
 Open a command line window and type in:
 
-./configure --enable-dvdauthor-patch --enable-mkisofs-patch 
- --enable-dvdauthor-build --enable-mkisofs-build && make && make install
+./configure --enable-dvdauthor-patch --enable-cdrtools-patch 
+ --enable-dvdauthor-build --enable-cdrtools-build && make && make install
 
 If all runs well, you have a patched version of mkisofs and dvdauthor and 
 the Schilling version of cdrecord installed on your platform

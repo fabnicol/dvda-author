@@ -1,0 +1,5 @@
+if test "@MAYBE_LIBMPEG2@" != ""; then
+  if test -d "@MAYBE_LIBMPEG2@" ; then
+   cd "@MAYBE_LIBMPEG2@" && ./configure @CONFIGURE_LIBMPEG2_FLAGS@ ; make ; cd - ;
+  fi
+fi

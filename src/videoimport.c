@@ -37,7 +37,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <stdarg.h>
 #include <sys/time.h>
 #include <errno.h>
+#ifndef __WIN32__
 #include <unistd.h>
+#endif
 #include <string.h>
 #include "structures.h"
 #include "commonvars.h"

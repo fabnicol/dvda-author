@@ -11,6 +11,6 @@
 
    rather than the licit: --stillpics a.jpg,b.jpg--c.jpg
 
-3. For top menu authoring, as of evrsion 10.06 build 300, you may use several slides only if there is just one menu.
+3. For top menu authoring, as of version 10.06 build 300, you may use several slides only if there is just one menu.
    Should you need several menus, the number of slides per menu will automatically be reset to 1.
 

@@ -36,7 +36,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#ifndef __WIN32__
 #include <unistd.h>
+#endif
 #include "structures.h"
 #include "export.h"
 #include "audio2.h"
@@ -348,7 +350,7 @@ int flac_getinfo(fileinfo_t* info)
 }
 #endif
 
-#ifndef WITHOUT_FIXWAV
+#ifndef WITHOUT_fixwav
 int fixwav_repair(fileinfo_t *info)
 {
     WaveHeader  waveheader;
@@ -461,7 +463,7 @@ int fixwav_repair(fileinfo_t *info)
 }
 #endif
 
-#ifndef WITHOUT_SOX
+#ifndef WITHOUT_sox
 
 char* replace_file_extension(char * filename)
 {
@@ -537,7 +539,7 @@ int extract_audio_info(fileinfo_t *info, uint8_t * header)
 {
     info->type=AFMT_WAVE;
 
-#ifndef WITHOUT_FIXWAV
+#ifndef WITHOUT_fixwav
 
     /* parsing header again with FIXWAV utility */
 
@@ -597,7 +599,7 @@ int extract_audio_info(fileinfo_t *info, uint8_t * header)
     if ((info->bitspersample!=16) && (info->bitspersample!=24))
     {
         foutput("%s\n", "[WAR]  Audio characteristics of file could not be found.");
-#ifndef WITHOUT_FIXWAV
+#ifndef WITHOUT_fixwav
         foutput("%s\n", "       Fixing wav header (option -F) ...");
         info->type=fixwav_repair(info);
 
@@ -691,13 +693,13 @@ int wav_getinfo(fileinfo_t* info)
             {
 #endif
 #endif
-#ifndef WITHOUT_SOX
+#ifndef WITHOUT_sox
 
                 if (globals.sox_enable)
                 {
                     // When RIFF fmt headers are not recognized, they are processed by Sox first if -S -F is on command line then checked by fixwav
                     // yest SoX may crash for seriously mangled headers
-#ifndef WITHOUT_FIXWAV
+#ifndef WITHOUT_fixwav
                     if (!globals.fixwav_force)
                     {
 #endif
@@ -707,7 +709,7 @@ int wav_getinfo(fileinfo_t* info)
                         else
                             // PATCH looping back to get info
                             return(info->type=wav_getinfo(info));
-#ifndef WITHOUT_FIXWAV    // yet without the processing tail below (preserving new header[] array and info structure)
+#ifndef WITHOUT_fixwav    // yet without the processing tail below (preserving new header[] array and info structure)
                     }
 
                     else
@@ -738,11 +740,11 @@ int wav_getinfo(fileinfo_t* info)
                 else
 
 #endif
-#ifndef WITHOUT_FIXWAV
+#ifndef WITHOUT_fixwav
                     if ((!globals.fixwav_force) && (!globals.fixwav_prepend))
 #endif
                         return(info->type);
-#ifndef WITHOUT_FIXWAV
+#ifndef WITHOUT_fixwav
                     else
                         return(info->type=extract_audio_info(info, header));
 #endif

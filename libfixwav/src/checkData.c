@@ -22,7 +22,9 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
+#ifndef __WIN32__
 #include <unistd.h>
+#endif
 #include <sys/types.h>
 #include <inttypes.h>
 

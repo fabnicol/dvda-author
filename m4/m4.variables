@@ -1,0 +1,43 @@
+
+
+# Recap of symbols and shell variables defined by following macros (using examples)
+# ----------------------------------------------------------------
+#
+# Naming conventions:
+#          HAVE_APPNAME_(PATCH/BUILD): const for AC_DEFINE and AM_CONDITIONAL, whether to patch/build APPNAME
+#          MAYBE_APPNAME             : shell variable for AC_SUBST, whether to recurse directory corresponding to APPNAME in build tree
+#          APPNAME                   : shell variable for AC_SUBST, filepath to APPNAME
+#          APPNAME_BUILD             : local (non-AC-SUBST'd) shell variable, whether to build APPNAME from source code (present in pakage or downloaded)
+#          APPNAME_LIB               : shell variable for AC_SUBST, library path (user-defined or package-local lib)
+#          APPNAME_LINK              : shell variable for AC_SUBST, library link (system-installed lib)
+#          WITH_FUNCTION             : const for AM_CONDITIONAL, whether to build or link against FUNCTION=part of core source code or lib
+#          WITHOUT_FUNCTION          : const for AC_DEFINE, whether to build or link against FUNCTION=part of core source code or lib
+#
+
+#  Use TAB=8 spaces
+
+# DEF symbol				|	Shell variable		| AM conditional		|		value			|			macro
+#----------------------------------------------------------------------------------------------------------------------------------------------
+# HAVE_dvdauthor_PATCH										   		    1 or not defined		DVDA_TEST_SOFTWARE_VERSION, DVDA_DOWNLAOD > DVDA_ARG_ENABLE_DOWNLOAD
+# HAVE_sox_BUILD											   (0|1)				CONF_SUBDIRS
+# 						DVDAUTHOR_BUILD						    yes/no				BUILD, DVDA_DOWNLOAD
+#						SOX_BUILD						    yes/no				BUILD (>) DVDA_TEST_LIB, DVDA_ARG_WITH,DVDA_CONFIG_EXECUTABLE_INSTALL, DVDA_ARG_ENABLE > DVDA_ARG_ENABLE_DOWNLOAD
+# 									 WITH_sox			   true/false				DVDA_ARG_WITH
+#									 HAVE_sox			   true/false				DVDA_TEST_LIB
+# WITHOUT_sox		                           				                                 (0|1)      		        DVDA_ARG_WITH
+#                                              				 HAVE_EXTERNAL_LIB                   true/false				DVDA_ARG_ENABLE
+# HAVE_mogrify          										   (0|1)				DVDA_TEST_AUX
+# 						*MAYBE_SOX		 				   libsox/				DVDA_ARG_ENABLE > DVDA_ARG_ENABLE_DOWNLOAD, DVDA_TEST_LIB
+# DVDAUTHOR												  /usr/bin/dvdauthor	  		DVDA_DOWNLOAD, DVDA_TEST_SOFTWARE_VERSION > DVDA_ARG_ENABLE_DOWNLOAD
+# MOGRIFY                                       *MOGRIFY		 				  /usr/bin/mogrify			DVDA_TEST_AUX
+#						*SOX_LIB						  /usr/lib/libsox.so			DVDA_TEST_LIB
+#						*SOX_LINK		 				  -lsox					DVDA_TEST_LIB
+#						enable_sox						   false				DVDA_TEST_LIB if failure to check installed shared lib against test functions (sanitizing)
+# 						CURL							  /usr/bin/curl				DVDA_DOWNLOAD > DVDA_ARG_ENABLE_DOWNLOAD
+# 						PATCH							  /usr/bin/patch			DVDA_DOWNLOAD > DVDA_ARG_ENABLE_DOWNLOAD
+# 						TAR							  /usr/bin/tar				DVDA_DOWNLOAD > DVDA_ARG_ENABLE_DOWNLOAD
+#						exitcode											DVDA_RUN
+#						errorcode											DVDA_ERR
+
+
+# starred shell variables are AC_SUBST'ed, others are local to top builddir configure.

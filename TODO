@@ -1,6 +1,5 @@
 Short term
 ----------
-sox patch with 14.4.1 version (and sox lib deps)
 fix lack of relative paths for -x -o
 add sanity check if -o . ! (avoid cur dir erasure...)
 
@@ -14,5 +13,9 @@ Long term
 -add album text and group text to text table
 -add automatic import of mono or stereo wavs for multichannel authoring.
 
+check:
+
+
+$(if $(cdrtools),INS_BASE=$(prefix) install,INS_BASE= )
 
 
