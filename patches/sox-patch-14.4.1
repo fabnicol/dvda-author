@@ -1,0 +1,21 @@
+--- /home/fab/build/sox-14.4.1/configure.ac	2013-02-02 03:02:37.000000000 +0100
++++ /home/fab/build/new/configure.ac	2013-09-24 11:45:21.000000000 +0200
+@@ -49,7 +49,9 @@
+   APP_LDFLAGS="-no-undefined"
+    ;;
+ esac
+-AC_PROG_LIBTOOL
++
++LT_INIT([disable-shared])
++
+ AC_SUBST(LIBTOOL_DEPS)
+ 
+ AC_ARG_WITH(dyn-default,AC_HELP_STRING([--with-dyn-default],[Default to loading optional formats dynamically]),opt_default=dyn,opt_default=yes)
+@@ -604,6 +606,7 @@
+ 
+ dnl Generate output files.
+ AC_CONFIG_FILES(Makefile src/Makefile libgsm/Makefile lpc10/Makefile msvc9/Makefile msvc10/Makefile sox.pc)
++AC_CONFIG_FILES(sox-libs)
+ AC_OUTPUT
+ 
+ if test "$using_gsm" != "no"; then

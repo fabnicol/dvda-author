@@ -10,24 +10,43 @@ if test ! -f /usr/bin/autoreconf -a ! -f /usr/local/bin/autoreconf ; then
 fi
 
 if test -d autom4te.cache; then
-rm -rf autom4te.cache
+   rm -rf autom4te.cache
 fi
 
 backup=INSTALL_save_$(date | sed -r "s/[() :]/./g")
-cp INSTALL $backup
- 
+if test -f INSTALL; then
+   cp INSTALL $backup
+fi
+
 topdir=`pwd`
 echo "Entering: "
 echo "$topdir"
-autoreconf --install --force -Im4 -Im4.extra -Im4.extra.dvdauthor 
-
+autoreconf --install --force -Im4 -Im4.extra -Im4.extra.dvdauthor -W none
+exitcode=$?
 cd "$topdir"
 
-mv $backup INSTALL
-if test $? = 0; then
-echo INSTALL was recovered
-else
-echo INSTALL was backed up in previous generation but could not be recovered.
-echo Fix this manually.
+if test -f $backup; then
+	mv $backup INSTALL
+	if test $? != 0; then
+	  echo INSTALL was backed up in previous generation but could not be recovered.
+	  echo Fix this manually.
+	fi
 fi
+
+#cleaning up the empty lines (compress to about 1/3 of line count)
+
+function clean()
+{
+  sed -i '/^\s*$/d' $1 
+}
+
+
+echo Cleaning configure: 
+if test -f configure; then
+  echo -e Before:\\t$(wc -l configure | sed s/configure//) lines... 
+  clean configure
+  echo -e After:\\t$(wc -l configure | sed s/configure//) lines
+fi
+
+exit $exitcode
 

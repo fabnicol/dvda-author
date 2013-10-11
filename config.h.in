@@ -54,6 +54,9 @@
 /* Whether all source code will be downloaded for build. */
 #undef HAVE_ALL
 
+/* enable all all */
+#undef HAVE_ALL_ALL
+
 /* configure, build and install all core dependencies <FLAC, Ogg, SoX,
    dvdauthor, cdrtools> from source code */
 #undef HAVE_ALL_BUILDS
@@ -73,9 +76,6 @@
 
 /* Whether cdrtools source code will be downloaded for build. */
 #undef HAVE_CDRTOOLS
-
-/* configure, build and install cdrtools from source code */
-#undef HAVE_CDRTOOLS_BUILD
 
 /* download and patch cdrtools from source code */
 #undef HAVE_CDRTOOLS_PATCH
@@ -101,9 +101,6 @@
 
 /* Whether dvdauthor source code will be downloaded for build. */
 #undef HAVE_DVDAUTHOR
-
-/* configure, build and install dvdauthor from source code */
-#undef HAVE_DVDAUTHOR_BUILD
 
 /* download and patch dvdauthor from source code */
 #undef HAVE_DVDAUTHOR_PATCH
@@ -131,9 +128,6 @@
 
 /* Define to 1 if you have the `floor' function. */
 #undef HAVE_FLOOR
-
-/* Define to 1 if you have the `fork' function. */
-#undef HAVE_FORK
 
 /* Define to 1 if the system has the type `fpos_t'. */
 #undef HAVE_FPOS_T
@@ -165,11 +159,35 @@
 /* configure, build and install iberty from source code */
 #undef HAVE_IBERTY_BUILD
 
+/* Whether ImageMagick source code will be downloaded for build. */
+#undef HAVE_IMAGEMAGICK
+
+/* configure, build and install ImageMagick from source code */
+#undef HAVE_IMAGEMAGICK_BUILD
+
+/* download ImageMagick from source code */
+#undef HAVE_IMAGEMAGICK_DOWNLOAD
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
 /* Found jpeg2yuv */
 #undef HAVE_JPEG2YUV
+
+/* Whether libmpeg2 source code will be downloaded for build. */
+#undef HAVE_LIBMPEG2
+
+/* download libmpeg2 from source code */
+#undef HAVE_LIBMPEG2_DOWNLOAD
+
+/* Whether libogg source code will be downloaded for build. */
+#undef HAVE_LIBOGG
+
+/* configure, build and install libogg from source code */
+#undef HAVE_LIBOGG_BUILD
+
+/* download libogg from source code */
+#undef HAVE_LIBOGG_DOWNLOAD
 
 /* Define to 1 if you have the <locale.h> header file. */
 #undef HAVE_LOCALE_H
@@ -177,20 +195,8 @@
 /* Whether lplex source code will be downloaded for build. */
 #undef HAVE_LPLEX
 
-/* configure, build and install lplex from source code */
-#undef HAVE_LPLEX_BUILD
-
 /* download lplex from source code */
 #undef HAVE_LPLEX_DOWNLOAD
-
-/* Whether magick source code will be downloaded for build. */
-#undef HAVE_MAGICK
-
-/* configure, build and install magick from source code */
-#undef HAVE_MAGICK_BUILD
-
-/* download magick from source code */
-#undef HAVE_MAGICK_DOWNLOAD
 
 /* Found make */
 #undef HAVE_MAKE
@@ -217,6 +223,16 @@
 /* Define to 1 if you have the `memset' function. */
 #undef HAVE_MEMSET
 
+/* Whether minimal source code will be downloaded for build. */
+#undef HAVE_MINIMAL
+
+/* configure, build and install minimal from source code */
+#undef HAVE_MINIMAL_BUILD
+
+/* download minimal dependencies <FLAC, Ogg, SoX, dvdauthor, cdrtools> and
+   patch the source code if necessary */
+#undef HAVE_MINIMAL_DEPS
+
 /* Whether mjpegtools source code will be downloaded for build. */
 #undef HAVE_MJPEGTOOLS
 
@@ -238,14 +254,11 @@
 /* Found mp2enc */
 #undef HAVE_MP2ENC
 
-/* Whether mpeg2dec source code will be downloaded for build. */
+/* Found mpeg2dec */
 #undef HAVE_MPEG2DEC
 
 /* configure, build and install mpeg2dec from source code */
 #undef HAVE_MPEG2DEC_BUILD
-
-/* download mpeg2dec from source code */
-#undef HAVE_MPEG2DEC_DOWNLOAD
 
 /* Found mpeg2enc */
 #undef HAVE_MPEG2ENC
@@ -275,34 +288,31 @@
 #undef HAVE_NO_HELP2MAN_PATCH
 
 /* Does not use a configured patch of bn */
+#undef HAVE_NO_IMAGEMAGICK_PATCH
+
+/* Does not use a configured patch of bn */
+#undef HAVE_NO_LIBMPEG2_PATCH
+
+/* Does not use a configured patch of bn */
+#undef HAVE_NO_LIBOGG_PATCH
+
+/* Does not use a configured patch of bn */
 #undef HAVE_NO_LPLEX_PATCH
 
 /* Does not use a configured patch of bn */
-#undef HAVE_NO_MAGICK_PATCH
+#undef HAVE_NO_MINIMAL_PATCH
 
 /* Does not use a configured patch of bn */
 #undef HAVE_NO_MJPEGTOOLS_PATCH
 
 /* Does not use a configured patch of bn */
-#undef HAVE_NO_MPEG2DEC_PATCH
-
-/* Does not use a configured patch of bn */
-#undef HAVE_NO_OGG_PATCH
-
-/* Does not use a configured patch of bn */
 #undef HAVE_NO_SOX_PATCH
-
-/* Whether ogg source code will be downloaded for build. */
-#undef HAVE_OGG
-
-/* configure, build and install ogg from source code */
-#undef HAVE_OGG_BUILD
-
-/* download ogg from source code */
-#undef HAVE_OGG_DOWNLOAD
 
 /* Define to 1 if you have the <ogg/ogg.h> header file. */
 #undef HAVE_OGG_OGG_H
+
+/* Found patch */
+#undef HAVE_PATCH
 
 /* Define to 1 if your system has a GNU libc compatible `realloc' function,
    and to 0 otherwise. */
@@ -316,9 +326,6 @@
 
 /* Define to 1 if you have the `setlocale' function. */
 #undef HAVE_SETLOCALE
-
-/* Found smake */
-#undef HAVE_SMAKE
 
 /* Define to 1 if you have the `snprintf' function. */
 #undef HAVE_SNPRINTF
@@ -412,23 +419,14 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
-/* Define to 1 if you have the `vfork' function. */
-#undef HAVE_VFORK
-
-/* Define to 1 if you have the <vfork.h> header file. */
-#undef HAVE_VFORK_H
-
-/* Define to 1 if `fork' works. */
-#undef HAVE_WORKING_FORK
-
-/* Define to 1 if `vfork' works. */
-#undef HAVE_WORKING_VFORK
-
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
 
 /* Defining help2man filepath. */
 #undef HELP2MAN
+
+/* Defining ImageMagick filepath. */
+#undef IMAGEMAGICK
 
 /* Defines directory of .desktop and .conf files */
 #undef INSTALL_CONF_DIR
@@ -436,11 +434,14 @@
 /* Pathname of jpeg2yuv */
 #undef JPEG2YUV
 
+/* Defining libmpeg2 filepath. */
+#undef LIBMPEG2
+
+/* Defining libogg filepath. */
+#undef LIBOGG
+
 /* Defining lplex filepath. */
 #undef LPLEX
-
-/* Defining magick filepath. */
-#undef MAGICK
 
 /* Pathname of make */
 #undef MAKE
@@ -450,6 +451,9 @@
 
 /* Pathname of md5sum */
 #undef MD5SUM
+
+/* Defining bn filepath */
+#undef MINIMAL
 
 /* Defining mjpegtools filepath. */
 #undef MJPEGTOOLS
@@ -463,7 +467,7 @@
 /* Pathname of mp2enc */
 #undef MP2ENC
 
-/* Defining mpeg2dec filepath. */
+/* Pathname of mpeg2dec */
 #undef MPEG2DEC
 
 /* Pathname of mpeg2enc */
@@ -477,9 +481,6 @@
 
 /* Define to 1 if your C compiler doesn't accept -c and -o together. */
 #undef NO_MINUS_C_MINUS_O
-
-/* Defining ogg filepath. */
-#undef OGG
 
 /* Name of package */
 #undef PACKAGE
@@ -502,8 +503,8 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* Pathname of smake */
-#undef SMAKE
+/* Pathname of patch */
+#undef PATCH
 
 /* Defining sox filepath. */
 #undef SOX
@@ -543,19 +544,23 @@
 #undef VERSION
 
 /* Disables $lower support */
-#undef WITHOUT_FIXWAV
+#undef WITHOUT_fixwav
 
 /* Disables $lower support */
-#undef WITHOUT_FLAC
+#undef WITHOUT_flac
 
 /* Disables $lower support */
-#undef WITHOUT_IBERTY
+#undef WITHOUT_iberty
 
 /* Disables $lower support */
-#undef WITHOUT_OGG
+#undef WITHOUT_libogg
 
 /* Disables $lower support */
-#undef WITHOUT_SOX
+#undef WITHOUT_sox
+
+/* Define to 1 if `lex' declares `yytext' as a `char *' by default, not a
+   `char[]'. */
+#undef YYTEXT_POINTER
 
 /* Enable large inode numbers on Mac OS X 10.5.  */
 #ifndef _DARWIN_USE_64_BIT_INODE
@@ -624,20 +629,8 @@
 /* Define to rpl_malloc if the replacement function should be used. */
 #undef malloc
 
-/* Define to `int' if <sys/types.h> does not define. */
-#undef mode_t
-
-/* Define to `long int' if <sys/types.h> does not define. */
-#undef off_t
-
-/* Define to `int' if <sys/types.h> does not define. */
-#undef pid_t
-
 /* Define to rpl_realloc if the replacement function should be used. */
 #undef realloc
-
-/* Define to `unsigned int' if <sys/types.h> does not define. */
-#undef size_t
 
 /* Define to the type of an unsigned integer type of width exactly 16 bits if
    such a type exists and the standard includes do not define it. */
@@ -654,6 +647,3 @@
 /* Define to the type of an unsigned integer type of width exactly 8 bits if
    such a type exists and the standard includes do not define it. */
 #undef uint8_t
-
-/* Define as `fork' if `vfork' does not work. */
-#undef vfork

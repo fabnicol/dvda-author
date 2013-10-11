@@ -27,7 +27,6 @@ SOURCES += \
     src/audio.c \
     src/auxiliary.c \
     src/command_line_parsing.c \
-    src/dvda-author2.c \
     src/file_input_parsing.c \
     src/launch_manager.c \
     src/lexer.c \
@@ -36,7 +35,8 @@ SOURCES += \
     src/samg2.c \
     src/sound.c \
     src/videoimport.c \
-    src/xml.c
+    src/xml.c \
+    src/dvda_author.c
 
 OTHER_FILES += \
     src/dvda-author.conf \
@@ -47,8 +47,46 @@ OTHER_FILES += \
     libfixwav/NEWS \
     libfixwav/README \
     libfixwav/ChangeLog \
+    libfixwav/Makefile.am \
     libfixwav/src/include/Makefile.am \
-    libs/include/FLAC/Makefile.am
+    libs/include/FLAC/Makefile.am \
+    m4/dependencies.m4 \
+    m4/dvda.m4 \
+    m4/auxiliary.m4 \
+    configure.ac \
+    AUTHORS \
+    COPYING \
+    COREBUILD \
+    DEPENDENCIES \
+    EXAMPLES.in \
+    LIMITATIONS \
+    INSTALL \
+    HOWTO.conf \
+    README \
+    NEWS \
+    TODO \
+    ChangeLog \
+    m4/m4.variables \
+    mk/functions.mk \
+    mk/libogg.mk \
+    mk/libFlac.mk \
+    mk/libsox.mk \
+    mk/mjpegtools.mk \
+    mk/dvdauthor.mk \
+    mk/ImageMagick.mk \
+    mk/lplex.mk \
+    mk/mpeg2dec.mk \
+    mk/help2man.mk \
+    mk/a52dec.mk \
+    mk/cdrtools.mk \
+    libiberty/Makefile.am \
+    libiberty/src/Makefile.am \
+    libiberty/src/include/Makefile.am \
+    libutils/Makefile.am \
+    libutils/src/Makefile.am \
+    libfixwav/src/Makefile.am \
+    Makefile.in \
+    src/Makefile.in
 
 HEADERS += \
     src/include/amg.h \

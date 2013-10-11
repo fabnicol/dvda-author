@@ -1,1 +1,0 @@
-cp @ROOTDIR@/sox-libs $PWD/@MAYBE_SOX@/sox-libs.in && cd @MAYBE_SOX@ && ./configure @CONFIGURE_SOX_FLAGS@ --without-oggvorbis --without-mad && make -j4 -k && make install; cd - 

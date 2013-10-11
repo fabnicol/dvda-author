@@ -222,10 +222,10 @@ typedef struct
     _Bool lossy_rounding;
     #endif
     _Bool rungrowisofs;
-#ifndef WITHOUT_SOX
+#ifndef WITHOUT_sox
     _Bool sox_enable;
 #endif
-#ifndef WITHOUT_FIXWAV
+#ifndef WITHOUT_fixwav
     _Bool fixwav_enable;
     _Bool fixwav_virtual_enable;
     _Bool fixwav_automatic; /* automatic behaviour */

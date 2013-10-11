@@ -5,10 +5,10 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/types.h>
 #ifndef __WIN32__
 #include <sys/wait.h>
+#include <unistd.h>
 #endif
 #include "structures.h"
 #include "audio2.h"
@@ -86,7 +86,7 @@ command_t *scan_wavfile_audio_characteristics(uint8_t* I, command_t *command)
         error=flac_getinfo(&files[i][j]);
         j++;
         break;
-#if !defined WITHOUT_OGG
+#if !defined WITHOUT_libogg
 #if HAVE_OGG_FLAC
     case AFMT_OGG_FLAC:
         if (globals.debugging) foutput("[MSG]  Found Ogg FLAC format for %s\n", files[i][j].filename);
