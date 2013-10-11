@@ -9,7 +9,7 @@
 # and are delivered under the same licensing terms.
 # --------------------------------------------------
 
-m4_include([m4/auxiliary.m4])
+
 m4_include([m4/oggflac-test.m4])
 
 
@@ -70,14 +70,14 @@ AC_DEFUN([LOOP_MIRRORS],
 
 AC_DEFUN([DVDA_DOWNLOAD],
 [
-  m4_pushdef([bn], basename([$1]))
-  m4_pushdef([upper], [upperbasename([$1])])
-  m4_pushdef([version],[$2])
-  m4_pushdef([patch_url],[$3])
-  m4_pushdef([sourceforge_url],[$4])
-  m4_pushdef([other_url],[$5])
-  m4_pushdef([MD5],[$6])
-  m4_pushdef([filename], [bn[-]version])
+  m4_define([bn], basename([$1]))
+  m4_define([upper], [upperbasename([$1])])
+  m4_define([version],[$2])
+  m4_define([patch_url],[$3])
+  m4_define([sourceforge_url],[$4])
+  m4_define([other_url],[$5])
+  m4_define([MD5],[$6])
+  m4_define([filename], [bn[-]version])
 
   errorcode=0
 
@@ -198,14 +198,14 @@ AC_DEFINE_UNQUOTED(upper, ["${prefix}/bin/bn"], [Defining ]bn[ filepath.])
 AC_DEFINE_UNQUOTED([HAVE_]upper, [$errorcode_boolean], [Whether ]bn[ source code will be downloaded for build.])
 AC_SUBST(upper[_VERSION])
 
-m4_popdef([bn])
-m4_popdef([upper])
-m4_popdef([version])
-m4_popdef([patch_url])
-m4_popdef([sourceforge_url])
-m4_popdef([other_url])
-m4_popdef([MD5])
-m4_popdef([filename])
+#m4_popdef([bn])
+#m4_popdef([upper])
+#m4_popdef([version])
+#m4_popdef([patch_url])
+#m4_popdef([sourceforge_url])
+#m4_popdef([other_url])
+#m4_popdef([MD5])
+#m4_popdef([filename])
 
 ])  #DVDA_DOWNLOAD
 
@@ -219,8 +219,8 @@ m4_popdef([filename])
 AC_DEFUN([DVDA_TEST_SOFTWARE_VERSION],
 [
 software_path=
-m4_pushdef([bn],[basename([$1])])
-m4_pushdef([SOFTWARE],[upperbasename([$1])])
+m4_define([bn],[basename([$1])])
+m4_define([SOFTWARE],[upperbasename([$1])])
 AC_MSG_NOTICE([Testing ]bn[ version...])
 AC_PATH_PROG(SOFTWARE_PATH, [bn], [], [$bindir:/usr/bin:/usr/local/bin])
 
@@ -243,8 +243,8 @@ AS_IF([test x$SOFTWARE_PATH != x],
 )
 # do not forget C-language quotes here
 AC_DEFINE_UNQUOTED(SOFTWARE, "$SOFTWARE_PATH", [Defining bn filepath])
-m4_popdef([bn])
-m4_popdef([SOFTWARE])
+#m4_popdef([bn])
+#m4_popdef([SOFTWARE])
 ]) #DVDA_TEST_SOFTWARE_VERSION
 
 
@@ -329,26 +329,26 @@ AC_DEFUN([DVDA_ARG_ENABLE_DOWNLOAD],
 
 AC_DEFUN([DVDA_ARG_ENABLE],
 [
-m4_pushdef([dhms],[dehyphenate([$1])])
-m4_pushdef([act],  suffix([$1]))
-m4_pushdef([bn],   [basename([$1])])
-m4_pushdef([norm], [normalise([$1])])
-m4_pushdef([upper],[uppernormalisename([$1])])
+m4_define([dhms],[dehyphenate([$1])])
+m4_define([act],  suffix([$1]))
+m4_define([bn],   [basename([$1])])
+m4_define([norm], [normalise([$1])])
+m4_define([upper],[uppernormalisename([$1])])
 
 m4_if(act,[build],
-       [m4_pushdef([msg],[[configure, build and install ]bn[ from source code]])],
+       [m4_define([msg],[[configure, build and install ]bn[ from source code]])],
 	  act,[builds],
-       [m4_pushdef([msg],[[configure, build and install all core dependencies <FLAC, Ogg, SoX, dvdauthor, cdrtools> from source code]])],
+       [m4_define([msg],[[configure, build and install all core dependencies <FLAC, Ogg, SoX, dvdauthor, cdrtools> from source code]])],
 	  act,[patch],
-       [m4_pushdef([msg],[[download and patch ]bn[ from source code]])],
+       [m4_define([msg],[[download and patch ]bn[ from source code]])],
 	  act,[download],
-       [m4_pushdef([msg],[[download ]bn[ from source code]])],
+       [m4_define([msg],[[download ]bn[ from source code]])],
 	  act,[cvs],
-       [m4_pushdef([msg],[[download ]bn[ (cvs code for windows builds)]])],
+       [m4_define([msg],[[download ]bn[ (cvs code for windows builds)]])],
 	  act,[deps],
-       [m4_pushdef([msg],[[download ]bn[ dependencies <FLAC, Ogg, SoX, dvdauthor, cdrtools> and patch the source code if necessary]])],
+       [m4_define([msg],[[download ]bn[ dependencies <FLAC, Ogg, SoX, dvdauthor, cdrtools> and patch the source code if necessary]])],
 
-	   [m4_pushdef([msg],[[enable ]dhms])])
+	   [m4_define([msg],[[enable ]dhms])])
 
 # Check whether --enable-$1 or --disable-$1 was given.
 
@@ -392,11 +392,12 @@ AC_DEFINE_UNQUOTED([HAVE_]upper,[$enableval_boolean],msg)
 AS_IF([test x$upper = xyes -a  act = build ],[[HAVE_]bn[_BUILD] = yes],[[HAVE_]bn[_BUILD]=no])
 AC_SUBST([HAVE_]bn[_BUILD])
 
-m4_popdef([msg])
-m4_popdef([norm])
-m4_popdef([upper])
-m4_popdef([act])
-m4_popdef([dhms])
+#m4_popdef([msg])
+#m4_popdef([norm])
+#m4_popdef([upper])
+#m4_popdef([act])
+#m4_popdef([bn])
+#m4_popdef([dhms])
 ])# DVDA_ARG_ENABLE
 
 
@@ -409,24 +410,25 @@ m4_popdef([dhms])
 
 AC_DEFUN([DVDA_TEST_AUX],
 [
-m4_pushdef([CAPNAME],[uppernormalisename([$1])])
+
+m4_define([CAPNAME],[uppernormalisename([$1])])
 #don't quote here
 AC_PATH_PROG(CAPNAME, [$1],[], [$bindir:/usr/bin:/usr/local/bin])
 AS_IF([test x$CAPNAME = x ],
-  [
+   [
    DVDA_INF([No $2])
-   auxbool=0
+    auxbool=0
   ],
   [
    DVDA_INF([$2])
    auxbool=1
   ])
+
 AC_DEFINE_UNQUOTED([HAVE_]CAPNAME, [$auxbool], [Found $1])
 AC_DEFINE_UNQUOTED(CAPNAME, "$CAPNAME", [Pathname of $1])
 AS_IF([test $auxbool = 1],[[HAVE_]$1=yes],[[HAVE_]$1=no])
-AC_SUBST([HAVE_]$1])
-m4_popdef([CAPNAME])
-
+AC_SUBST([HAVE_]$1)
+m4_undefine([CAPNAME])
 ]) #DVDA_TEST_AUX
 
 
@@ -440,7 +442,7 @@ m4_popdef([CAPNAME])
 
 AC_DEFUN([BUILD],
      [
-     m4_pushdef([lower], [m4_tolower($1)])
+     m4_define([lower], [m4_tolower($1)])
 
       DVDA_INF([Building $1 library from sources...
 Triggering --enable-$1-build... ])
@@ -461,7 +463,7 @@ AS_IF([test "$1" != "" ],
 	AS_EXIT
       ])
 
-      m4_popdef([lower])
+      #m4_popdef([lower])
 
      ])#BUILD
 
@@ -525,11 +527,11 @@ PROFILE_LD([$1],[$2])
 # we cannot resort to shell variable CAPNAME as prefix here, defining a macro is necessary
 # remember m4_car and m4_cdr should be used unquoted
 
-m4_pushdef([BASENAME],[basename([$1])])
-m4_pushdef([CHECKLIST],[m4_normalize([$3])])
+m4_define([BASENAME],[basename([$1])])
+m4_define([CHECKLIST],[m4_normalize([$3])])
 m4_foreach([LIST], [CHECKLIST],
 [
-  m4_pushdef([FUNCTIONLIST],m4_cdr(LIST))
+  m4_define([FUNCTIONLIST],m4_cdr(LIST))
   ## Four levels of brackets are needed: one is stripped, followed by the quotes of the list followed by quotes for pair groups, followed by header quotes or function list quotes
   ## FLAC_LIB etc must have been computed before
 
@@ -582,10 +584,11 @@ m4_foreach([LIST], [CHECKLIST],
    BUILD([$1])
    AC_MSG_NOTICE([No appropriate headers for $1])
  ])
- m4_popdef([FUNCTIONLIST])
+ #m4_popdef([FUNCTIONLIST])
 ])
 
- # automake conditionals will depend on possible --without features so should be placed in configure.ac
+#m4_popdef([BASENAME])
+#m4_popdef([CHECKLIST])
 
 ]) #DVDA_TEST_LIB
 
@@ -597,8 +600,8 @@ m4_foreach([LIST], [CHECKLIST],
 
 AC_DEFUN([DVDA_ARG_WITH],
 [
-m4_pushdef([BASENAME],[basename([$1])])
-m4_pushdef([lower],m4_tolower([$1]))
+m4_define([BASENAME],[basename([$1])])
+m4_define([lower],m4_tolower([$1]))
 AS_IF([test x$[withval_]BASENAME != xno],[
 AC_ARG_WITH([lower], [AS_HELP_STRING([--with-]lower,[full pathname of library or --without-]lower)],
    [
@@ -607,14 +610,14 @@ AC_ARG_WITH([lower], [AS_HELP_STRING([--with-]lower,[full pathname of library or
 	  [
 	   AC_DEFINE([WITHOUT_]BASENAME,[1],[Disables $lower support])
 	   BASENAME[_BUILD]=no
-          [HAVE_EXTERNAL_]BASENAME=no
+	  [HAVE_EXTERNAL_]BASENAME=no
 	  ],
 	  [test x$withval != xyes],
 	  [
-           AC_MSG_NOTICE([Using specified ]lower[ lib: $withval])
+	   AC_MSG_NOTICE([Using specified ]lower[ lib: $withval])
 	   BASENAME[_LIB_INPUT]=$withval
-           [HAVE_EXTERNAL_]BASENAME=yes
-          ])
+	   [HAVE_EXTERNAL_]BASENAME=yes
+	  ])
    ],
    [
      [withval_]BASENAME=
@@ -645,6 +648,9 @@ AC_SUBST([HAVE_EXTERNAL_]BASENAME)
 # whether configure automatically found valid system link
 AS_IF([test x$BASENAME[_LINK] != x ],[[HAVE_]BASENAME[_LINK]=yes],[[HAVE_]BASENAME[_LINK]=no])
 
+#m4_popdef([BASENAME])
+#m4_popdef([lower])
+
 ])
 
 #CONF_SUBDIRS([X_BUILD names],[DIRNAMES])
@@ -658,11 +664,11 @@ AS_IF([test x$BASENAME[_LINK] != x ],[[HAVE_]BASENAME[_LINK]=yes],[[HAVE_]BASENA
 AC_DEFUN([DVDA_CONFIG],[
 
     m4_foreach([ALIST],[$1],[
-    m4_pushdef([LIST],m4_car(ALIST))
-    m4_pushdef([FL], m4_unquote(m4_cdr(ALIST)))
-    m4_pushdef([VAR],m4_car(LIST))
-    m4_pushdef([UPPERVAR],m4_toupper(VAR))
-    m4_pushdef([CDR],m4_unquote(m4_cdr(LIST)))
+    m4_define([LIST],m4_car(ALIST))
+    m4_define([FL], m4_unquote(m4_cdr(ALIST)))
+    m4_define([VAR],m4_car(LIST))
+    m4_define([UPPERVAR],m4_toupper(VAR))
+    m4_define([CDR],m4_unquote(m4_cdr(LIST)))
 
     AS_IF([test x$VAR[_BUILD] = xyes || test x$ALL_BUILDS = xyes -a x$[withval_]VAR != xno],
 	   [
@@ -687,11 +693,11 @@ AC_DEFUN([DVDA_CONFIG],[
     AC_SUBST(VAR)
     AC_SUBST(VAR[_CONFIGURE_FILE])
     AC_SUBST(VAR[_LIB])
-    m4_popdef([VAR])
-    m4_popdef([UPPERVAR])
-    m4_popdef([CDR])
-    m4_popdef([FL])
-    m4_popdef([LIST])
+    #m4_popdef([VAR])
+    #m4_popdef([UPPERVAR])
+    #m4_popdef([CDR])
+    #m4_popdef([FL])
+    #m4_popdef([LIST])
     ])])
 
 
