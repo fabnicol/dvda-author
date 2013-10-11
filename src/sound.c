@@ -3,7 +3,7 @@
 #endif
 
 #include "sound.h"
-#if HAVE_FIXWAV
+#if HAVE_fixwav
 #include "fixwav.h"
 #include "fixwav_manager.h"
 #endif
@@ -21,7 +21,7 @@ extern globalData globals;
 
 int audit_soundtrack(char* path)
 {
-#if HAVE_FIXWAV
+#if HAVE_fixwav
     path_t *s=parse_filepath(path);
     errno=0;
     if (s->isfile)
@@ -73,7 +73,7 @@ int audit_soundtrack(char* path)
 
 int launch_lplex_soundtrack(pic* img, char* create_mode)
 {
-#if HAVE_LPLEX
+#if HAVE_lplex
     errno=0;
     int u, menu, tot=0;
     char* lplex=NULL;

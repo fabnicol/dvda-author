@@ -86,7 +86,7 @@ command_t *scan_wavfile_audio_characteristics(uint8_t* I, command_t *command)
         error=flac_getinfo(&files[i][j]);
         j++;
         break;
-#if !defined WITHOUT_OGG
+#if !defined WITHOUT_libogg
 #if HAVE_OGG_FLAC
     case AFMT_OGG_FLAC:
         if (globals.debugging) foutput("[MSG]  Found Ogg FLAC format for %s\n", files[i][j].filename);
@@ -406,7 +406,7 @@ int launch_manager(command_t *command)
     }
 
     /* creating system VOBs */
-#if !HAVE_CORE_BUILD
+#if !HAVE_core_BUILD
     if (globals.topmenu < NO_MENU)  sectors.topvob=create_topmenu(audiotsdir, command); // if no top menu is requested, but simply active ones, generate matrix top menu and unlink it at the end
 
     if (img->active)
@@ -447,7 +447,7 @@ int launch_manager(command_t *command)
     last_sector=create_samg(audiotsdir, command, &sectors);
 
     /*   sector_pointer_VIDEO_TS= number of sectors for AOBs + 2* sizeof amg + 2* size of ats*ngroups +system vobs +2*sizeof asvs */
-#if !HAVE_CORE_BUILD
+#if !HAVE_core_BUILD
     sector_pointer_VIDEO_TS= 2*(sectors.amg+sectors.asvs)+sectors.stillvob+sectors.topvob;
 
     for (i=0; i < naudio_groups; i++)
@@ -504,7 +504,7 @@ int launch_manager(command_t *command)
     */
 
 // returns relative_sector_pointer_VTSI and videotitlelength
-#if !HAVE_CORE_BUILD
+#if !HAVE_core_BUILD
     if (globals.videolinking)
     {
 
@@ -576,7 +576,7 @@ SUMMARY:
     // Crucial, otherwise the ISO file may well be unordered even if AUDIO_TS files are OK after exit
     fflush(NULL);
 
-#if !HAVE_CORE_BUILD
+#if !HAVE_core_BUILD
     //
     if (globals.runmkisofs)
     {

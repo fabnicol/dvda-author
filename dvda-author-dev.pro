@@ -38,12 +38,6 @@ SOURCES += \
 
 OTHER_FILES += \
     src/dvda-author.conf \
-<<<<<<< HEAD
-    src/include/Makefile.am \
-    libutils/src/include/Makefile.am \
-=======
-    src/Makefile.am \
->>>>>>> cleanup
     libfixwav/AUTHORS \
     libfixwav/COPYING \
     libfixwav/INSTALL \

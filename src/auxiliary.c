@@ -106,7 +106,7 @@ printf("%s","\n\nSupported audio types:   .wav\n");
 #ifndef WITHOUT_FLAC
 printf("%s",    J".flac and .oga (Ogg FLAC, see below)\n");
 #endif
-#ifndef WITHOUT_SOX
+#ifndef WITHOUT_sox
 printf("%s", J"SoX-supported formats with -S enabled\n");
 
 printf("%s", J"except for lossy formats.\n");
@@ -131,14 +131,14 @@ printf("%s","-Z, --playlist           You may specify up to 9 group copies."J"To
 printf("%s","-n, --no-videozone       Do not generate an empty VIDEO_TS directory.\n\n");
 printf("%s","-w, --rights             Access rights to directories created (octal values)\n\n");
 printf("%s","-c, --cga                Enter channel group assignment right after group (-g, -j or -s).\n\n");
-#ifndef WITHOUT_FIXWAV
+#ifndef WITHOUT_fixwav
 printf("%s","-F, --fixwav(options)    Bad wav headers will be fixed by fixwav."J"Can be run alone without DVD-AUDIO output by adding --nooutput.\n\n");
 printf("%s","-f, --fixwav-virtual(options)  Use .wav header repair utility "J"without any write operation.\n\n");
 #endif
-#ifndef WITHOUT_SOX
+#ifndef WITHOUT_sox
 printf("%s","-S, --sox                Use SoX to convert files to .wav."J"By default, only flac, Ogg FLAC "J"and .wav files are accepted.\n\n");
 #endif
-#if !HAVE_CORE_BUILD
+#if !HAVE_core_BUILD
 printf("%s","    --no-padding         Block padding of audio files by dvda-author.\n\n");
 printf("%s","    --minimal-padding    Only pad for evenness of sample count.\n\n");
 printf("%s","-C, --pad-cont           When padding, pad with last known byte, not 0.\n\n");
@@ -199,16 +199,16 @@ printf("%s","-D, --tempdir directory  Temporary directory.\n\n");
 printf("%s","-X, --workdir directory  Working directory: current directory in command line relative paths."J"By default, the current directory."J"With Code::Blocks and similar IDE, you may have to specify your root package directory as argument to --workdir.\n\n");
 printf("%s","    --no-refresh-tempdir Do not erase and recreate the temporary directory on launch.\n\n");
 printf("%s","    --no-refresh-outdir  Do not erase and recreate the output directory on launch.\n\n");
-#if !HAVE_CORE_BUILD
+#if !HAVE_core_BUILD
 printf("%s","-W, --bindir path        Path to auxiliary binaries.\n\n");
-#if HAVE_CURL
+#if HAVE_curl
 printf("%s","    --check-version  Only check whether this is the latest version of dvda-author, does not download.\n\n");
 printf("%s","    --download  Download the latest version of dvda-author. Triggers --check-version.\n\n");
 printf("%s","    --download=force  Download the latest version of dvda-author even if the current one is the same."J"Maybe useful for reinstalling or in case of impaired source code.\n\n");
 #endif
 
 printf("%s","Sub-options\n\n");
-#ifndef WITHOUT_FIXWAV
+#ifndef WITHOUT_fixwav
 
 printf("%s", "\n    fixwav sub-options:\n\n"\
 "simple-mode"\
@@ -283,7 +283,7 @@ printf("%s", "Examples:\n");
 printf("%s", "\n\
 -create a 3-group DVD-Audio disc (legacy syntax):\n\n\
   dvda-author -g file1.wav file2.flac -g file3.flac -g file4.wav\n\n");
-#if !HAVE_CORE_BUILD
+#if !HAVE_core_BUILD
 printf("%s", "-create a hybrid DVD disc with both AUDIO_TS mirroring audio_input_directory\n\n\
   and VIDEO_TS imported from directory VID, outputs disc structure to directory\n\n");
 printf("%s", " DVD_HYBRID and links video titleset #2 of VIDEO_TS to AUDIO_TS:\n\n");
@@ -306,9 +306,9 @@ FLAC__HAS_OGG to enable Ogg FLAC support.\n\n\
 _LARGEFILE_SOURCE,_LARGE_FILES,_FILE_OFFSET_BITS=64\n\n\
 to enable large file support.\n\n\
 ALWAYS_INLINE forces code inlining.\n\n\
-WITHOUT_SOX to compile without SoX code\n\n\
+WITHOUT_sox to compile without SoX code\n\n\
 WITHOUT_FLAC to compile without FLAC/OggFLAC code\n\n\
-WITHOUT_FIXWAV to compile without fixwav code\n\n");
+WITHOUT_fixwav to compile without fixwav code\n\n");
 
 printf("%s", "\nReport bugs to fabnicol@users.sourceforge.net\n");
 return;
@@ -430,7 +430,7 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t* ntracks,  uin
 void free_memory(command_t *command)
 {
     int i, j;
-#if !HAVE_CORE_BUILD
+#if !HAVE_core_BUILD
     initialize_binary_paths(FREE_BINARY_PATH_SPACE);
 #endif
     if (command)
@@ -614,7 +614,7 @@ return w;
 
  // if installed with autotools, if bindir overrides then use override, otherwise use config.h value;
 // if not installed with autotools, then use command line value or last-resort hard-code set defaults and test for result
-#if !HAVE_CORE_BUILD
+#if !HAVE_core_BUILD
 char* create_binary_path(char* local_variable, char* symbolic_constant, char* basename)
 {
 
@@ -634,7 +634,7 @@ char* create_binary_path(char* local_variable, char* symbolic_constant, char* ba
 
 void download_latest_version(_Bool download_new_version_flag,_Bool force_download_flag)
 {
-   #if HAVE_CURL
+   #if HAVE_curl
 
       extern char* curl;
 

@@ -191,7 +191,7 @@ path_t *parse_filepath(const char* filepath);
 char *fn_get_current_dir_name (void);
 int  rmdir_global(char* path);
 int  rmdir_recursive (char *root, char *dirname);
-#if HAVE_CURL
+#if HAVE_curl
 int download_file_from_http_server(const char* bindir, const char* file, const char* server);
 int download_rename_from_http_server(const char* bindir, const char* name, const char* fullpath);
 #endif

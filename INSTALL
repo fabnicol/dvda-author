@@ -46,7 +46,7 @@ before running `make' and `make install'.
 
 Alternatively, if your prefer to use compiling defines, you may add
 
-    WITHOUT_FLAC WITHOUT_SOX WITHOUT_OGG WITHOUT_FIXWAV as symbolic constants either
+    WITHOUT_FLAC WITHOUT_sox WITHOUT_libogg WITHOUT_fixwav as symbolic constants either
 
 at configuration stage :
 
@@ -283,8 +283,8 @@ have a positive effect on running times, depending on modules and hardware:
 
  Alternatively, you may add, repectively:
 
- #define WITHOUT_SOX
- #define WITHOUT_FIXWAV
+ #define WITHOUT_sox
+ #define WITHOUT_fixwav
  #define WITHOUT_FLAC
 
  to src/commonvars.h code.
@@ -300,9 +300,9 @@ Optional Symbolic constants can be defined at compile time to specify some featu
   SETTINGSFILE=filepath to specify default filepath of the configuration file.
   _LARGEFILE_SOURCE,_LARGE_FILES,_FILE_OFFSET_BITS=64 enable large file support.
   ALWAYS_INLINE forces code inlining.
-  WITHOUT_SOX to compile without SoX code
+  WITHOUT_sox to compile without SoX code
   WITHOUT_FLAC to compile without FLAC/OggFLAC code
-  WITHOUT_FIXWAV to compile without fixwav code
+  WITHOUT_fixwav to compile without fixwav code
 
 
 Required compile-time constants:
