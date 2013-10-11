@@ -49,7 +49,7 @@ uint64_t fileoffset;
 
 
 
-inline   void  write_search_sequence(uint8_t* sequence, size_t sizeofsequence , FILE* filepointer, const char* ioflag)
+void  write_search_sequence(uint8_t* sequence, size_t sizeofsequence , FILE* filepointer, const char* ioflag)
 {
     if (globals.veryverbose)
         hexdump_pointer(sequence, sizeofsequence);
@@ -183,7 +183,7 @@ ALWAYS_INLINE_GCC  void pack_pts(uint8_t PTS_DTS_data[10],uint32_t pts)
 
 
 
-ALWAYS_INLINE_GCC  void process_pack_header(FILE* fp,  uint64_t SCRint, const char* ioflag)
+inline void process_pack_header(FILE* fp,  uint64_t SCRint, const char* ioflag)
 {
 
     uint8_t scr_bytes[6];
@@ -565,7 +565,7 @@ ALWAYS_INLINE_GCC uint64_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
 // Lee Feldkamp patch for version 09.09 build 12
 // corrects differences with canon version starting with version 08.12 subsequent to multichannel authoring
 
-ALWAYS_INLINE_GCC int process_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf, int bytesinbuffer, uint64_t pack_in_title,int pack_in_file,const char* ioflag)
+inline int process_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf, int bytesinbuffer, uint64_t pack_in_title,int pack_in_file,const char* ioflag)
 {
     uint64_t PTS;
     uint64_t SCR;
@@ -660,13 +660,13 @@ ALWAYS_INLINE_GCC int process_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* au
     return(audio_bytes);
 }
 
-inline void         write_aob_path(aobfile, audiotsdir, titleset, filenum)
+void write_aob_path(char* aobfile,char* audiotsdir,int titleset,int filenum)
 {
     STRING_WRITE_CHAR_BUFSIZ(aobfile, "%s"SEPARATOR"ATS_%02d_%d.AOB",audiotsdir,titleset,filenum)
 }
 
 
-int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,const char* ioflag, char* player, extractlist* extract)
+int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,const char* ioflag, char* player)
 {
 
     FILE* aobfilepointer;
@@ -678,7 +678,7 @@ int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,con
     uint64_t pack_in_title=0;
 
 
-PLAYBACK: // newer versions of VLC play back AOB files, this jjust triggers playback of the requested sequence of AOBs corresponding to audio groups.
+// newer versions of VLC play back AOB files, this jjust triggers playback of the requested sequence of AOBs corresponding to audio groups.
 
 //     if (player)
 //     {
@@ -711,7 +711,7 @@ PLAYBACK: // newer versions of VLC play back AOB files, this jjust triggers play
 // 
 //     }
 
-EXTRACT:   //extraction file by file may be necessary even for playback on some players
+  //extraction file by file may be necessary even for playback on some players
 
     write_aob_path(aobfile, audiotsdir, titleset, filenum);
 

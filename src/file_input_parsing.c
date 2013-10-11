@@ -344,7 +344,7 @@ int parse_disk(DIR* dir, mode_t mode, const char* default_directory, extractlist
         else
             STRING_WRITE_CHAR_BUFSIZ(output_buf, "%s", globals.settings.tempdir )
 
-            if (ats2wav(rootdirent->d_name, output_buf,  extract, player) == EXIT_SUCCESS)
+            if (ats2wav(rootdirent->d_name, output_buf) == EXIT_SUCCESS)
             {
                 control++;
                 if  (globals.debugging)
