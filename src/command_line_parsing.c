@@ -167,15 +167,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"no-refresh-tempdir",no_argument, NULL, 4},
         {"no-refresh-outdir",no_argument, NULL, 5},
         {"extract", required_argument, NULL, 'x'},
-
 #if !HAVE_core_BUILD
         {"play", required_argument, NULL, 12},
         {"player", required_argument, NULL, 13},
-<<<<<<< HEAD
-
-#if !HAVE_core_BUILD
-=======
->>>>>>> mergebranch
         {"videodir", required_argument, NULL, 'V'},
         {"fixwav", optional_argument, NULL, 'F'},
         {"fixwav-virtual", optional_argument, NULL, 'f'},
@@ -889,8 +883,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
 #if !HAVE_core_BUILD
-<<<<<<< HEAD
-=======
 	    
         case 12:
 
@@ -906,8 +898,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             player=strdup(optarg);
             break;
 
-
->>>>>>> mergebranch
 	          // case 'g': c=0; break;
         case '9':
             /* --datadir is the directory  where the menu/ files are located. Under* nix it automatically installed under /usr/share/applications/dvda-author by the autotools
@@ -1489,7 +1479,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         if (!globals.nooutput)
         {
-            errno=secure_mkdir(globals.settings.outdir, 0777, OUTDIR);
+            errno=secure_mkdir(globals.settings.outdir, 0777);
             if (errno)
             {
                 if (errno != EEXIST) perror("[WAR]  mkdir outdir");  // EEXIST error messages are often spurious
@@ -1502,7 +1492,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             clean_directory(globals.settings.tempdir);
             if (errno) perror("[ERR]  clean");
         }
-        errno=secure_mkdir(globals.settings.tempdir, globals.access_rights, TEMPDIR);
+        errno=secure_mkdir(globals.settings.tempdir, globals.access_rights);
         if (errno)
         {
             if (errno != EEXIST) perror("[WAR]  mkdir temp");
@@ -2154,7 +2144,7 @@ void fixwav_parsing(char *ssopt)
             FREE(globals.settings.fixwav_database)
             globals.settings.fixwav_database=strndup(value, MAX_OPTION_LENGTH);
             if (!globals.nooutput) {
-                    secure_mkdir(globals.settings.fixwav_database, 0755, DEFAULT_DATABASE_FOLDER);
+                    secure_mkdir(globals.settings.fixwav_database, 0755);
                     foutput("%s       %s%s", "[PAR]  Fixwav will output info chunk from wav headers to:\n", globals.settings.fixwav_database, SEPARATOR "database\n");
             }
             break;
@@ -2269,11 +2259,11 @@ void ats2wav_parsing(const char * arg, extractlist* extract, char* player)
     if (extract->nextractgroup[0])
     {
 
-        parse_disk(dir, globals.access_rights,  OUTDIR, extract, player);
+        parse_disk(dir, globals.access_rights, extract, player);
     }
     else
 
-        parse_disk(dir, globals.access_rights, OUTDIR, NULL, player);
+        parse_disk(dir, globals.access_rights, NULL, player);
 
     if (closedir(dir) == -1)
         foutput( "%s\n", "[ERR]  Impossible to close dir");

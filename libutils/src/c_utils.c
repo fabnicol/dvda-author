@@ -92,8 +92,8 @@ void erase_file(const char* path)
 }
 
 
-#if HAVE_CURL
-int download_file_from_http_server( const char* bindir, const char* file, const char* server)
+#if HAVE_curl
+int download_file_from_http_server(const char* file, const char* server)
 {
     char command[strlen(server) + 1 + 1 + 2*strlen(file) +30];
 
@@ -103,7 +103,7 @@ int download_file_from_http_server( const char* bindir, const char* file, const 
 
 }
 
-int download_rename_from_http_server(const char* bindir, const char* name, const char* fullpath)
+int download_rename_from_http_server(const char* name, const char* fullpath)
 {
 
     char command[30+1+strlen(name)+strlen(fullpath)];
@@ -563,7 +563,7 @@ void clean_exit(int message)
 *   Creates directories.
 ****************************************************************/
 
-int secure_mkdir (const char *path, mode_t mode, const char* default_directory)
+int secure_mkdir (const char *path, mode_t mode)
 {
 
     int i=0, len;
@@ -778,7 +778,7 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
 
     if (globals.debugging)  printf("%s%s\n", "[INF]  Creating dir=", dest);
 
-    secure_mkdir(dest, mode, "./");
+    secure_mkdir(dest, mode);
 
     if (globals.debugging)   printf("[INF]  Copying in %s ...\n", src);
     change_directory(src);
@@ -952,7 +952,7 @@ char* copy_file2dir_rename(const char *existing_file, const char *new_dir, char*
 // existence of new_dir is not tested
 // existence of file dest is tested and if exists, copy overwrites it
 
-    static uint32_t counter;
+
     int errorlevel;
     if (globals.veryverbose) printf("[INF]  Copying file %s to directory %s\n", existing_file, new_dir);
 
@@ -1085,7 +1085,7 @@ int get_endianness()
 }
 
 
-ALWAYS_INLINE_GCC inline uint8_t read_info_chunk(uint8_t* pt, uint8_t* chunk)
+ inline uint8_t read_info_chunk(uint8_t* pt, uint8_t* chunk)
 {
     pt+=4;
     /* there may be non-printable characters after I... info chunk labels */
@@ -1490,7 +1490,8 @@ errno=0;
 
         return -1;
     }
-    int i=0, c;
+    size_t i=0;
+    int c;
     while (i < sizeoftab)
     {
         if ((c=fgetc(fp)) == EOF) break;
@@ -1506,7 +1507,7 @@ errno=0;
 
     if (i == sizeoftab)
     {
-        if ((fileoffset=ftell(fp)) < sizeoftab*8)
+        if ((size_t) (fileoffset=ftell(fp)) < sizeoftab*8)
             return -1; // error
     }
     else fileoffset=0; // not found

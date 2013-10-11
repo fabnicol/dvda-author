@@ -38,6 +38,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <errno.h>
 #include <string.h>
 #include <time.h>
+#ifndef __WIN32__
+#include <unistd.h>
+#endif
 #include "structures.h"
 #include "ports.h"
 #include "audio2.h"
@@ -643,7 +646,7 @@ void download_latest_version(_Bool download_new_version_flag,_Bool force_downloa
       erase_file("version.current");
 
       FILE* versionfile;
-      int error=download_file_from_http_server(curl, "version.current", "dvd-audio.sourceforge.net");
+      int error=download_file_from_http_server(curl, "version.current");
       if ((error == 0) && (NULL != (versionfile=fopen("version.current", "rb"))))
       {
 	char year[5]={0};
@@ -697,7 +700,7 @@ void download_latest_version(_Bool download_new_version_flag,_Bool force_downloa
 	  unlink("dvda-author-update.tar.gz");
 	  errno=0;
 	  sprintf(dvda_author_fullpath, "http://sourceforge.net/projects/dvd-audio/files/dvda-author/%s-%s.%s/%s-%s.%s-%s.tar.gz/download", "dvda-author", year, month, "dvda-author", year, month, build);
-	  error=download_rename_from_http_server(curl, "dvda-author-update.tar.gz", dvda_author_fullpath);
+      error=download_rename_from_http_server(curl, "dvda-author-update.tar.gz");
 	  FILE* package;
 	  if ((error == 0) && (NULL != (package=fopen("dvda-author-update.tar.gz", "rb"))))
 	  {

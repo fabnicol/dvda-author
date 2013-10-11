@@ -565,7 +565,7 @@ ALWAYS_INLINE_GCC uint64_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
 // Lee Feldkamp patch for version 09.09 build 12
 // corrects differences with canon version starting with version 08.12 subsequent to multichannel authoring
 
-inline int process_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf, int bytesinbuffer, uint64_t pack_in_title,int pack_in_file,const char* ioflag)
+int process_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf, int bytesinbuffer, uint64_t pack_in_title,int pack_in_file,const char* ioflag)
 {
     uint64_t PTS;
     uint64_t SCR;
@@ -666,7 +666,7 @@ void write_aob_path(char* aobfile,char* audiotsdir,int titleset,int filenum)
 }
 
 
-int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,const char* ioflag, char* player, extractlist* extract)
+int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,const char* ioflag, char* player)
 {
 
     FILE* aobfilepointer;
@@ -676,9 +676,6 @@ int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,con
     uint8_t audio_buf_in[AUDIO_BUFFER_SIZE];
     uint8_t audio_buf_out[AUDIO_BUFFER_SIZE];
     uint64_t pack_in_title=0;
-
-
-PLAYBACK: // newer versions of VLC play back AOB files, this jjust triggers playback of the requested sequence of AOBs corresponding to audio groups.
 
 //     if (player)
 //     {
