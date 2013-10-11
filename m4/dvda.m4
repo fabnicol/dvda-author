@@ -195,7 +195,7 @@ AC_DEFUN([DVDA_DOWNLOAD],
 AS_IF([test "$errorcode" = "1"],[errorcode_boolean=0],[errorcode_boolean=1])
 AS_IF([test "$errorcode" = "1"],[basename([$1])[_BUILD]=no],[basename([$1])[_BUILD]=yes])
 AC_DEFINE_UNQUOTED(upper, ["${prefix}/bin/bn"], [Defining ]bn[ filepath.])
-AC_DEFINE_UNQUOTED([HAVE_]upper, [$errorcode_boolean], [Whether ]bn[ source code will be downloaded for build.])
+AC_DEFINE_UNQUOTED([HAVE_]bn, [$errorcode_boolean], [Whether ]bn[ source code will be downloaded for build.])
 AC_SUBST(upper[_VERSION])
 
 #m4_popdef([bn])
@@ -385,8 +385,8 @@ AC_ARG_ENABLE([$1],[AS_HELP_STRING([--enable-$1],msg)],
 # reset $enableval to "no"
 
 AS_IF([test x$enableval = xyes],[enableval_boolean=1],[enableval_boolean=0])
-#HAVE_SOX etc. in C code
-AC_DEFINE_UNQUOTED([HAVE_]upper,[$enableval_boolean],msg)
+#HAVE_sox etc. in C code
+AC_DEFINE_UNQUOTED([HAVE_]bn,[$enableval_boolean],msg)
 #HAVE_sox etc. in automake conditionals
 
 AS_IF([test x$upper = xyes -a  act = build ],[[HAVE_]bn[_BUILD] = yes],[[HAVE_]bn[_BUILD]=no])
@@ -424,7 +424,7 @@ AS_IF([test x$CAPNAME = x ],
    auxbool=1
   ])
 
-AC_DEFINE_UNQUOTED([HAVE_]CAPNAME, [$auxbool], [Found $1])
+AC_DEFINE_UNQUOTED([HAVE_]$1, [$auxbool], [Found $1])
 AC_DEFINE_UNQUOTED(CAPNAME, "$CAPNAME", [Pathname of $1])
 AS_IF([test $auxbool = 1],[[HAVE_]$1=yes],[[HAVE_]$1=no])
 AC_SUBST([HAVE_]$1)

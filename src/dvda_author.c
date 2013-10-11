@@ -250,10 +250,10 @@ int main(int argc,  char* const argv[])
         /*lossy_rounding*/ 0,  // No audio loss
 #endif
         /*rungrowisofs*/   0,  // Do not burn with growisofs
-#ifndef WITHOUT_SOX
+#ifndef WITHOUT_sox
         /*sox_enable*/     0,  // no use of SoX
 #endif
-#ifndef WITHOUT_FIXWAV
+#ifndef WITHOUT_fixwav
         /*fixwav_enable*/               0,  // no use of fixwav
         /*fixwav_virtual_enable*/       0,  // no use of fixwav (virtual headers)
         /* automatic behaviour */       1,
