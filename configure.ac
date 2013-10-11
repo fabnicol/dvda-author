@@ -7,10 +7,9 @@
 # Dependencies: all files in m4/
 ######################################################################################################
 
-
 AC_INIT([dvda-author],[dev],[fabnicol@users.sourceforge.net])
+
 command_line_args="$*"
-echo Using command line $command_line_args
 # requested to define _GNU_SOURCE and check the availability of GNU extensions
 # This should be called before any macros that run the C   compiler.
 AC_USE_SYSTEM_EXTENSIONS
@@ -19,7 +18,6 @@ AC_PREREQ(2.63)
 AC_LANG([C])
 # Path to auxiliary configuration files
 
-# AC_CONFIG must be called before AM_INIT_AUTOMAKE
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -27,14 +25,10 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_LEX
 AC_PROG_EGREP
 
-# make dist produces both tar.bz2 and tar.gz packages
-AM_INIT_AUTOMAKE
-AM_PROG_AR
 AC_CONFIG_SRCDIR([src/videoimport.c])
 AC_CONFIG_HEADER([config.h])
 
 # uses default prefix /usr unless otherwise specified by --prefix= on commandline
-DVDA_PREFIX_DEFAULT([/usr])
 
 AC_CANONICAL_BUILD
 
@@ -60,6 +54,11 @@ cflags_save="$CFLAGS -std=c99"
 BUILDDIR=`cd "$builddir" ; pwd`
 ROOTDIR=`cd "$srcdir" ; pwd`
 #preparing local build of downloaded libs
+
+m4_include([m4/auxiliary.m4])
+
+#m4_include([m4/dependencies.m4])
+
 DVDA_MKDIR([local])
 
 
@@ -78,8 +77,8 @@ DVDA_MKDIR([local])
 # checks installation dirs
 # For BSD-type packaging, it is preferable not to use /usr/local as a default prefix
 
-AC_PREFIX_DEFAULT([/usr])
-
+m4_include([m4/dvda.m4])
+DVDA_PREFIX_DEFAULT([/usr])
 AC_ARG_WITH(config, [AS_HELP_STRING([--with-config],[Path to directory of configuration file])], [SHORTLINKDIR=$withval], [])
 
 datarootdir="${prefix}/share"
@@ -170,7 +169,6 @@ DVDA_CHECK_DEPENDENCIES
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AM_PROG_CC_C_O
 AC_PROG_CC_STDC
 AC_FUNC_MALLOC
 AC_FUNC_STRNLEN
@@ -190,26 +188,20 @@ AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],
  ])
 
 
+AC_PROG_CC_C99
+
 AS_IF([ test "x$ac_cv_prog_cc_stdc" = "xno" ], [AC_MSG_WARN([Compiler does not support size-variable static arrays.
 Please install C99-compliant compiuler. Aborting...])
 						AS_EXIT])
 
 
-AC_C99_FLEXIBLE_ARRAY
-AC_C99_SIZE_VARIABLE_STATIC_ARRAY
-
-AS_IF([ test x$ac_cv_c99_flexible_array != xyes ], [AC_MSG_WARN([Compiler does not support feature known as the flexible array struct member])])
-
-AS_IF([ test x$ac_cv_c99_size_variable_static_array != xyes ],  [AC_MSG_WARN([Compiler does not support size-variable static arrays. Aborting...])
-								 AS_EXIT])
 
 AC_C_VARARRAYS
 AC_C_CONST
 AC_C_INLINE
-
 # Determine endian-ness of target processor.
 
-AC_C_FIND_ENDIAN
+AC_C_BIGENDIAN
 
 AC_DEFINE_UNQUOTED(CPU_IS_BIG_ENDIAN, ${ac_cv_c_big_endian},
     [Target processor is big endian.])
@@ -248,7 +240,7 @@ AC_DEFINE([_FILE_OFFSET_BITS], [64], [Large file support enabled])
 
 m4_map([AC_SUBST],
        [[[ROOTDIR]],[[BUILDDIR]],[[SHORTLINKDIR]], [[PIXDIR]],[[MENUDIR]],
-       [[LIBSOXCONVERT_CPPFLAGS]],[[DEBUG_FLAGS]],[[PROGRAM_TARGETS]]])
+       [[LIBSOXCONVERT_CPPFLAGS]],[[DEBUG_FLAGS]],[[VERSION]],[[PROGRAM_TARGETS]]])
 
 # correspondence between X_BUILD shell variables and subdirectory names. Could be avoided with lesser flexibility in naming conventions.
 
@@ -259,7 +251,6 @@ AC_CONFIG_FILES([Makefile
 	 dvda-author.spec
 	 dvda-author.spec.coreversion
 	 dvda-author.nsi
-	 Makefile
 	 src/Makefile
 	 src/include/Makefile
 	 libutils/Makefile
