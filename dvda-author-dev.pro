@@ -85,12 +85,12 @@ OTHER_FILES += \
     libiberty/src/Makefile.am \
     libiberty/src/include/Makefile.am \
     libutils/Makefile.am \
-    libutils/src/Makefile.am \
     libfixwav/src/Makefile.am \
     Makefile.in \
     src/Makefile.in \
     libutils/src/include/Makefile.in \
-    libutils/src/include/Makefile
+    libutils/src/include/Makefile \
+    libutils/src/Makefile.in
 
 HEADERS += \
     src/include/amg.h \
