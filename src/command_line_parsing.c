@@ -25,7 +25,7 @@
 #endif
 #include "command_line_parsing.h"
 #include "menu.h"
-#if defined HAVE_LPLEX || HAVE_LPLEX_BUILD
+#if defined HAVE_lplex || HAVE_lplex_BUILD
 #include "sound.h"
 #endif
 #include "videoimport.h"
@@ -168,7 +168,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"play", required_argument, NULL, 12},
         {"player", required_argument, NULL, 13},
 
-#if !HAVE_CORE_BUILD
+#if !HAVE_core_BUILD
         {"videodir", required_argument, NULL, 'V'},
         {"fixwav", optional_argument, NULL, 'F'},
         {"fixwav-virtual", optional_argument, NULL, 'f'},
@@ -568,7 +568,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             refresh_tempdir=0;
             break;
 
-#if !HAVE_CORE_BUILD
+#if !HAVE_core_BUILD
 
         case 'T':
 
@@ -729,7 +729,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         for (k=0; k < ngroups-nvideolinking_groups; k++)
             totntracks+=ntracks[k];
     ngroups_scan=0;
-    #if !HAVE_CORE_BUILD
+    #if !HAVE_core_BUILD
     int nvideolinking_groups_scan=0, strlength=0;
     char* piccolorchain, *activepiccolorchain, *palettecolorchain, *fontchain, *durationchain=NULL,
             *h, *min, *sec, **tab=NULL,**tab2=NULL, *stillpic_string=NULL, *still_options_string=NULL, *import_topmenu_path=NULL, *player="vlc";
@@ -891,7 +891,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             textable=fn_strtok(optarg, ',' , textable, 0,NULL,NULL);
             break;
 
-#if !HAVE_CORE_BUILD
+#if !HAVE_core_BUILD
 	          // case 'g': c=0; break;
         case '9':
             /* --datadir is the directory  where the menu/ files are located. Under* nix it automatically installed under /usr/share/applications/dvda-author by the autotools
@@ -1439,7 +1439,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     }
 
 
-#if !HAVE_CORE_BUILD
+#if !HAVE_core_BUILD
     if (check_version_flag)
         {
             #ifdef __WIN32__
@@ -1517,11 +1517,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     // Coherence checks
     // You first have to test here.
-#if !HAVE_CORE_BUILD
+#if !HAVE_core_BUILD
     menu_characteristics_coherence_test(img, ngroups);
 
 #ifndef __CB__
-#if !defined HAVE_MPEG2ENC || !defined HAVE_JPEG2YUV || !defined HAVE_MPLEX
+#if !defined HAVE_mpeg2enc || !defined HAVE_jpeg2yuv || !defined HAVE_mplex
     if (globals.topmenu <= RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR)
     {
         foutput("%s\n", "[ERR]  You need mplex, mpeg2enc and jpeg2yuv to author\n       a background screen, please install these applications.");
@@ -1551,7 +1551,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {
         case 'Q':
 
-#if defined HAVE_LPLEX || HAVE_LPLEX_BUILD
+#if defined HAVE_lplex || HAVE_lplex_BUILD
 
             if (img->backgroundmpg)
             {

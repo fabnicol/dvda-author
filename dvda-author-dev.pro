@@ -7,12 +7,12 @@ TARGET = dvda-author
 
 QMAKE_CFLAGS=-std=c99
 
-DEFINES += _GNU_SOURCE __CB
+DEFINES += _GNU_SOURCE __CB HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_fixwav HAVE_libogg HAVE_iberty HAVE_mpeg2enc HAVE_mplex HAVE_OGG_FLAC
 
-LIBS +=   -L/home/fab/Dev/dvda-author-dev/libutils/src \
-                 -L/home/fab/Dev/dvda-author-dev/libfixwav/src \
-                 /home/fab/Dev/dvda-author-dev/libs/libFLAC.a /home/fab/Dev/dvda-author-dev/libs/libsoxconvert.a /home/fab/Dev/dvda-author-dev/libs/libsox.a\
-                 -lfixwav -lc_utils -lFLAC -lsox
+LIBS +=   -Llibutils/src \
+		 -Llibfixwav/src \
+		 libs/libsoxconvert.a  libs/libFLAC.a libs/libogg.a\
+		  -lfixwav -lc_utils -lsox
 
 INCLUDEPATH = src/include libutils/src/include libfixwav/src/include libs/include/FLAC libs/include/libsoxconvert
 
