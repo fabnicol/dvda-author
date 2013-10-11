@@ -168,7 +168,7 @@ _Bool clean_directory(char* path);
 void clean_exit(int message);
 void starter(compute_t *timer);
 char* print_time(int);
-int secure_mkdir ( const char *path, mode_t mode, const char* default_directory);
+int secure_mkdir ( const char *path, mode_t mode);
 void print_commandline(int argc_count, char * const argv[]);
 void change_directory(const char * filename);
 int copy_file(const char *existing_file, const char *new_file);
@@ -192,8 +192,8 @@ char *fn_get_current_dir_name (void);
 int  rmdir_global(char* path);
 int  rmdir_recursive (char *root, char *dirname);
 #if HAVE_curl
-int download_file_from_http_server(const char* bindir, const char* file, const char* server);
-int download_rename_from_http_server(const char* bindir, const char* name, const char* fullpath);
+int download_file_from_http_server(const char* file, const char* server);
+int download_rename_from_http_server(const char* name, const char* fullpath);
 #endif
 void erase_file(const char* path);
 char* quote(char* path);
@@ -201,7 +201,7 @@ char* win32quote(char* path);
 int run(char* application, char* args[], int option);
 uint64_t  parse_file_for_sequence(FILE* fp, uint8_t* tab, size_t sizeoftab);
 
-ALWAYS_INLINE_GCC inline static void  uint32_copy(uint8_t* buf, uint32_t x)
+inline static void  uint32_copy(uint8_t* buf, uint32_t x)
 {
     buf[0]=(x>>24)&0xff;
     buf[1]=(x>>16)&0xff;
@@ -209,7 +209,7 @@ ALWAYS_INLINE_GCC inline static void  uint32_copy(uint8_t* buf, uint32_t x)
     buf[3]=x&0xff;
 }
 
-ALWAYS_INLINE_GCC inline static void uint32_copy_reverse(uint8_t* buf, uint32_t x)
+inline static void uint32_copy_reverse(uint8_t* buf, uint32_t x)
 {
     buf[0]=x&0xff;
     buf[1]=(x&0xff00)>>8;
@@ -218,39 +218,40 @@ ALWAYS_INLINE_GCC inline static void uint32_copy_reverse(uint8_t* buf, uint32_t 
 }
 
 
-ALWAYS_INLINE_GCC inline static void uint16_copy(uint8_t* buf, uint16_t x)
+inline static void uint16_copy(uint8_t* buf, uint16_t x)
 {
     buf[0]=(x>>8)&0xff;
     buf[1]=x&0xff;
 }
 
-ALWAYS_INLINE_GCC inline static void uint16_copy_reverse(uint8_t* buf, uint16_t x)
+inline static void uint16_copy_reverse(uint8_t* buf, uint16_t x)
 {
     buf[0]=x&0xff;
     buf[1]=(x&0xff00)>>8;
 }
 
 
-ALWAYS_INLINE_GCC inline static uint32_t uint32_read(uint8_t* buf)
+inline static uint32_t uint32_read(uint8_t* buf)
 {
 	return( buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3] );
 }
 
-ALWAYS_INLINE_GCC inline static uint16_t uint16_read(uint8_t* buf)
+inline static uint16_t uint16_read(uint8_t* buf)
 {
 	return( buf[0] << 8 | buf[1] );
 }
 
-ALWAYS_INLINE_GCC inline static uint32_t uint32_read_reverse(uint8_t* buf)
+inline static uint32_t uint32_read_reverse(uint8_t* buf)
 {
 	return( buf[0]  | buf[1] << 8 | buf[2] << 16 | buf[3] << 24);
 }
 
-ALWAYS_INLINE_GCC inline static uint16_t uint16_read_reverse(uint8_t* buf)
+inline static uint16_t uint16_read_reverse(uint8_t* buf)
 {
 	return( buf[0]  | buf[1] << 8);
 }
 
+uint8_t read_info_chunk(uint8_t* pt, uint8_t* chunk);
 
 
 #endif // C_UTILS_H_INCLUDED

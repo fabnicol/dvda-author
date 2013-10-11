@@ -16,7 +16,7 @@ LIBS +=   -Llibutils/src \
 		 libs/libsoxconvert.a  libs/libFLAC.a libs/libogg.a   libs/libsox.a\
 		  -lfixwav -lc_utils
 
-INCLUDEPATH = src/include libutils/src/include libfixwav/src/include libs/include/FLAC libs/include/libsoxconvert
+INCLUDEPATH = src/include libutils/src/include libutils/src/include libutils/src/private libfixwav/src/include libs/include/FLAC libs/include/libsoxconvert
 
 SOURCES += \
     src/amg2.c \
@@ -36,7 +36,9 @@ SOURCES += \
     src/sound.c \
     src/videoimport.c \
     src/xml.c \
-    src/dvda_author.c
+    src/dvda_author.c \
+    libutils/src/c_utils.c \
+    libutils/src/winport.c
 
 OTHER_FILES += \
     src/dvda-author.conf \
@@ -86,7 +88,9 @@ OTHER_FILES += \
     libutils/src/Makefile.am \
     libfixwav/src/Makefile.am \
     Makefile.in \
-    src/Makefile.in
+    src/Makefile.in \
+    libutils/src/include/Makefile.in \
+    libutils/src/include/Makefile
 
 HEADERS += \
     src/include/amg.h \
@@ -184,5 +188,6 @@ HEADERS += \
     libs/include/libsoxconvert/vox.h \
     libs/include/libsoxconvert/win32-glob.h \
     libs/include/libsoxconvert/win32-ltdl.h \
-    libs/include/libsoxconvert/xmalloc.h
+    libs/include/libsoxconvert/xmalloc.h \
+    libutils/src/private/private_c_utils.h
 
