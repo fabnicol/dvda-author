@@ -29,12 +29,16 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <dirent.h>
 #include <errno.h>
 
-#pragma STDC FP_CONTRACT ON
-
 #include "audio2.h"
 #include "c_utils.h"
 #include "commonvars.h"
 #include "structures.h"
+
+#ifdef COMPILER_IS_GCC
+    #define GCC_ATTRIBUTE_UNUSED __attribute__((unused))
+#else
+   #define GCC_ATTRIBUTE_UNUSED
+#endif
 
 // debugging macros
 #define prs(X) do {if (X) foutput("PRS: %s : %s\n", #X, X);} while (0);
@@ -84,7 +88,7 @@ void free_memory(command_t *command);
 void check_settings_file();
 void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size);
 char** fn_strtok(char* chain, char delim, char** array, uint32_t count, int  (*f)(char*, uint32_t ), char* remainder);
-int cutloop(char*, uint32_t count);
+int cutloop(char GCC_ATTRIBUTE_UNUSED *c, uint32_t count);
 int arraylength(char ** tab);
 char* create_binary_path(char* local_variable, char* symbolic_constant, char* basename);
 void download_latest_version(_Bool download_new_version_flag,_Bool force_download_flag);

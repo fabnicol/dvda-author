@@ -19,7 +19,7 @@ dvda_SOURCES=amg2.c ats.c atsi2.c audio.c auxiliary.c dvda-author2.c  \
              file_input_parsing.c samg2.c launch_manager.c command_line_parsing.c  \
              lexer.c ats2wav.c
 
-if !HAVE_CORE_BUILD
+if !HAVE_core_BUILD
 dvda_SOURCES += menu.c asvs.c xml.c sound.c videoimport.c
 endif
 

@@ -321,7 +321,7 @@ int scan_ats_ifo(_fileinfo_t * files, uint8_t *buf)
     return(ntracks);
 }
 
-int ats2wav(const char* filename, const char* outdir, extractlist *extract, char* player)
+int ats2wav(const char* filename, const char* outdir)
 {
 
 

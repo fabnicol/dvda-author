@@ -42,7 +42,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "audio2.h"
 #include "stream_decoder.h"
 #include "c_utils.h"
-#ifndef WITHOUT_FIXWAV
+#ifndef WITHOUT_fixwav
 #include "fixwav.h"
 #include "fixwav_manager.h"
 #include "audio.h"
@@ -51,7 +51,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "command_line_parsing.h"
 #include "winport.h"
 
-#ifndef WITHOUT_SOX
+#ifndef WITHOUT_sox
 #include "sox.h"
 #include "libsoxconvert.h"
 #endif
@@ -110,7 +110,9 @@ static uint8_t  R[2][6][36]= {{ {0}, {0},
 
 /* Note on compiler whining: unused FLAC auxiliary parameters are normal, as arity is ompoised by FLAC__stream_decoder type functions; diregard warnings */
 
-void flac_metadata_callback(const FLAC__StreamDecoder *dec, const FLAC__StreamMetadata *meta, void *data)
+
+
+void flac_metadata_callback(const FLAC__StreamDecoder GCC_ATTRIBUTE_UNUSED *dec, const FLAC__StreamMetadata GCC_ATTRIBUTE_UNUSED *meta, void GCC_ATTRIBUTE_UNUSED *data)
 {
     fileinfo_t *info = (fileinfo_t *) data;
 
@@ -123,15 +125,16 @@ void flac_metadata_callback(const FLAC__StreamDecoder *dec, const FLAC__StreamMe
     }
 }
 
-FLAC__StreamDecoderWriteStatus flac_null_write_callback(const FLAC__StreamDecoder *dec,
-        const FLAC__Frame *frame,
-        const FLAC__int32 * const buf[],
-        void *data)
+FLAC__StreamDecoderWriteStatus flac_null_write_callback(const FLAC__StreamDecoder GCC_ATTRIBUTE_UNUSED *dec,
+        const FLAC__Frame  GCC_ATTRIBUTE_UNUSED *frame,
+        const FLAC__int32  GCC_ATTRIBUTE_UNUSED * const buf[],
+        void GCC_ATTRIBUTE_UNUSED *data)
 {
+
     return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
 
-FLAC__StreamDecoderWriteStatus flac_write_callback(const FLAC__StreamDecoder *dec,
+FLAC__StreamDecoderWriteStatus flac_write_callback(const FLAC__StreamDecoder GCC_ATTRIBUTE_UNUSED *dec,
         const FLAC__Frame *frame,
         const FLAC__int32 * const buf[],
         void *data)
@@ -168,8 +171,8 @@ FLAC__StreamDecoderWriteStatus flac_write_callback(const FLAC__StreamDecoder *de
 
 
 
-void flac_error_callback(const FLAC__StreamDecoder *dec,
-                         FLAC__StreamDecoderErrorStatus status, void *data)
+void flac_error_callback(const FLAC__StreamDecoder GCC_ATTRIBUTE_UNUSED *dec,
+                         FLAC__StreamDecoderErrorStatus GCC_ATTRIBUTE_UNUSED status, void GCC_ATTRIBUTE_UNUSED *data)
 {
     foutput("%s", "[ERR]  FLAC error callback called.\n");
 }
@@ -1426,7 +1429,7 @@ uint32_t process_audio(fileinfo_t* info, uint8_t* buf_in,uint8_t* buf_out, uint3
     return(n);
 }
 
-int audio_close(fileinfo_t* info,const char* ioflag)
+int audio_close(fileinfo_t* info,const char GCC_ATTRIBUTE_UNUSED *ioflag)
 {
     if (info->type==AFMT_WAVE)
     {
