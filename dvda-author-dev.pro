@@ -7,12 +7,14 @@ TARGET = dvda-author
 
 QMAKE_CFLAGS=-std=c99
 
-DEFINES += _GNU_SOURCE __CB HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_fixwav HAVE_libogg HAVE_iberty HAVE_mpeg2enc HAVE_mplex HAVE_OGG_FLAC
+DEFINES += _GNU_SOURCE __CB HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_fixwav HAVE_libogg HAVE_iberty HAVE_mpeg2enc HAVE_mplex HAVE_OGG_FLAC HAVE_FLAC HAVE_libogg HAVE_sox
+
+#libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame --disable-gomp
 
 LIBS +=   -Llibutils/src \
 		 -Llibfixwav/src \
-		 libs/libsoxconvert.a  libs/libFLAC.a libs/libogg.a\
-		  -lfixwav -lc_utils -lsox
+		 libs/libsoxconvert.a  libs/libFLAC.a libs/libogg.a   libs/libsox.a\
+		  -lfixwav -lc_utils
 
 INCLUDEPATH = src/include libutils/src/include libfixwav/src/include libs/include/FLAC libs/include/libsoxconvert
 
