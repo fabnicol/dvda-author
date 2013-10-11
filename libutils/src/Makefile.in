@@ -1,0 +1,25 @@
+
+LDFLAGS=-s
+CPPFLAGS=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/libutils/src/private -I@ROOTDIR@ -I@ROOTDIR@/src/include
+
+if HAVE_iberty_BUILD
+     LDLIBS       = @iberty_LIB@
+     CPPFLAGS +=-I@ROOTDIR@/libiberty/src/include,
+     if  HAVE_EXTERNAL_iberty
+       LDADD       = @iberty_LIB@
+       AM_CPPFLAGS +=-I@ROOTDIR@/libiberty/src/include
+     endif
+     if HAVE_iberty
+      AM_LDLIBS  += @iberty_LINK@
+     endif
+endif
+
+libc_utils.o: %.c
+
+
+libc_utils.a: $*.o
+
+
+
+
+
