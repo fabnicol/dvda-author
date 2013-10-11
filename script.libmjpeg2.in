@@ -1,0 +1,1 @@
+cd @MAYBE_LIBMPEG2@ && ./configure @CONFIGURE_LIBMPEG2_FLAGS@ ; make ; cd - ;

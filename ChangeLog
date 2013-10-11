@@ -1,3 +1,9 @@
+2013-09-26 Fabrice Nicol
+	* Add --enable-all-all, --fontname, --fontsize, --pointsize
+	* configuration command line moves: --enable-mkisofs-... ->  --enable-cdrtools-... among others
+          (see ./configure --help)
+	* Many build system fixes and code cleanup.
+
 2010-07-18  Fabrice Nicol
 	* Add --enable-core-build for minimal build without dependencies
 	* Add  --enable-mpeg2dec-download --enable-mpeg2dec-build for deps requested by --import-topmenu

@@ -1,5 +1,8 @@
 Release History
 
+   dvda-author-13.10
+          Oct     01, 2013  Build system fixes. Audio menu enhancements. Updated dependencies.
+
    dvda-author-10.06
 	  July    17, 2010  Other fixes and top menu soundtrack authoring with optional slideshows (build 300).
           June    14, 2010  Major fixes for bugs and regressions. Portability enhancements.

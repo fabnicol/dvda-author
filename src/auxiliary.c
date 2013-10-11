@@ -33,12 +33,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <dirent.h>
-
 #include <stdarg.h>
 #include <sys/time.h>
 #include <errno.h>
-#include <unistd.h>
 #include <string.h>
 #include <time.h>
 #include "structures.h"
@@ -57,7 +54,7 @@ extern char* INDIR, *OUTDIR, *LOGFILE, *TEMPDIR, *LINKDIR, *WORKDIR;
 void version()
 {
 
-    foutput("%s%s%s", "dvda-author version ", VERSION, "\nCopyright  2005 Dave Chapman; 2007-2012 Fabrice Nicol;\n2008-2009 Lee and Tim Feldkamp\n\n");
+    foutput("%s%s%s", "dvda-author version ", VERSION, "\nCopyright  2005 Dave Chapman; 2007-2013 Fabrice Nicol;\n2008-2009 Lee and Tim Feldkamp\n\n");
     foutput("%s","See file AUTHORS for other contributors.\n\n");
     foutput("%s","Latest version available from http://dvd-audio.sourceforge.net/\n\n");
     foutput("%s","This is free software; see the source for copying conditions.\n\nWritten by Dave Chapman, Fabrice Nicol, Lee and Tim Feldkamp.\n");
@@ -109,7 +106,7 @@ printf("%s","\n\nSupported audio types:   .wav\n");
 #ifndef WITHOUT_FLAC
 printf("%s",    J".flac and .oga (Ogg FLAC, see below)\n");
 #endif
-#ifndef WITHOUT_SOX
+#ifndef WITHOUT_sox
 printf("%s", J"SoX-supported formats with -S enabled\n");
 
 printf("%s", J"except for lossy formats.\n");
@@ -165,7 +162,7 @@ printf("%s","-J, --font a,b,c         Font name,font size,font width"J"(number o
 printf("%s","    --fontname a             Font name.\n");
 printf("%s","    --fontsize b             Font size.\n");
 printf("%s","    --fontwidth b             Font width.\n");
-printf("%s","-Y, --topmenu-palette string     Text for system palette. Format is"J"either \"norefresh\", to block the refreshing of menu images, or:"J"textcolor:highlight_color:select_action color"J"in alpha-YCrCb 32-bit hexa coding. Here textcolor is the non-highlighted text for tracks, "J","J"highlight_color is the underline or mobile motif color,"J"and select_action_color is album and group labels"J"as well as color of tracks on pressing the highlighted track.\n\n");
+printf("%s","-Y, --topmenu-palette string     Text for system palette. Format is"J"either \"norefresh\", to block the refreshing of menu images, or:"J"textcolor:highlight_color:select_action color"J"in alpha-YCrCb 32-bit hexa coding. Here textcolor is the non-highlighted text for tracks, "J",highlight_color is the underline or mobile motif color,"J"and select_action_color is album and group labels"J"as well as color of tracks on pressing the highlighted track.\n\n");
 printf("%s","-8, --activemenu-palette string     Text for menu colors. Format is:"J"textcolor:highlight_text_color:highlight_color:select_action color"J"in alpha-YCrCb 32-bit hexa coding. Here textcolor is the non-highlighted text for tracks, "J"highlight_text_color is the color of album and group labels and highlighted text,"J"highlight_color is the underline or mobile motif color,"J"and select_action_color is on pressing the highlighted track.\n\n");
 printf("%s","-y, --topmenu-colors string     Text for menu colors. This is a developer's switch. "J"Use the -palette switches for modifying display colors. "J"This switch determines the colors of pictures generated in the temporary directory before creating the mpg background files."J" Format is either \"norefresh\", to block the refreshing of menu images, or "J"textcolor:backgroundcolor:highlightcolor:select action color in rgb values a,b,c between 0 and 255.\n\n");
 printf("%s","-b, --background         Background jpg files (comma-separated) to create a background mpg file"J"into which titles are multiplexed."J"Specify as many files as there are menus, or the last file will be duplicated for missing menu files.\n\n");
@@ -211,7 +208,7 @@ printf("%s","    --download=force  Download the latest version of dvda-author ev
 #endif
 
 printf("%s","Sub-options\n\n");
-#ifndef WITHOUT_FIXWAV
+#ifndef WITHOUT_fixwav
 
 printf("%s", "\n    fixwav sub-options:\n\n"\
 "simple-mode"\
@@ -309,9 +306,9 @@ FLAC__HAS_OGG to enable Ogg FLAC support.\n\n\
 _LARGEFILE_SOURCE,_LARGE_FILES,_FILE_OFFSET_BITS=64\n\n\
 to enable large file support.\n\n\
 ALWAYS_INLINE forces code inlining.\n\n\
-WITHOUT_SOX to compile without SoX code\n\n\
+WITHOUT_sox to compile without SoX code\n\n\
 WITHOUT_FLAC to compile without FLAC/OggFLAC code\n\n\
-WITHOUT_FIXWAV to compile without fixwav code\n\n");
+WITHOUT_fixwav to compile without fixwav code\n\n");
 
 printf("%s", "\nReport bugs to fabnicol@users.sourceforge.net\n");
 return;

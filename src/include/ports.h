@@ -30,6 +30,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 /* The debian Mingwin compiler ignores access rights */
 
 #ifdef __MINGW32__
+#define off64_t long long
 #include <io.h>
 #define COMPUTE_EXECTIME
 

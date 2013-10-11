@@ -1,40 +1,69 @@
-dvda-author 10.06-400 (August 2010)
+dvda-author 13.10 (Oct 2013)
 =====================
 
 
 Installation Instructions
 *************************
 
-Builds have been successful under Linux, Windows XP/Cygwin and FreeBSD 7.0
-Two building options are shipped:
+Overview
 
- - GNU installation scripts as explained below; in short, a full build can be
-   obtained with:
-        ./configure --enable-all-deps --enable-all-builds && make && make install
+To build the application from source code, you will need all the dependencies
+listed in the file DEPENDENCIES, depending on your platform.
 
- - Code::Blocks workspace projects for Windows/Mingwin platforms
-   (dvda-author-09.09.workspace)
+In short, a full build of main application and all dependencies (libraries and executables)
+can be obtained with:
 
-To enable a core dvda-author build, without fixwav, FLAC, OggFLAC, SoX support and without
-menu authoring features, configure with --enable-core-build if you use the autotools,
-or add WITHOUT_FLAC WITHOUT_SOX WITHOUT_OGG WITHOUT_FIXWAV as symbolic constants either
-in source code or at building stage (CPPFLAGS="-DWITHOUT....").
+	mkdir build
+	cd build
+	../configure --enable-all-all && make && make install
 
+In case of building issues, you may wish to download no dependencies and enable
+a very minimal (core) build, without fixwav, FLAC, OggFLAC, SoX support and without
+menu authoring features. In this case, just configure with:
 
-Code::Blocks install
-====================
+	../configure  --enable-core-build
 
+If you wish to download dependencies first and build them later, run:
 
-  1. Open the adequate workspace file
-  2. Build workspace
-  3. Binaries are to be found in the CB_project sub-directories
-  4. If you later install the main executable in CB_project/dvda-author
-     in another directory, please copy file dvda-author.conf in the same directory,
-     unless you have added a define constant in commonvars.h:
+       ../configure --enable-all-deps
 
-     SETTINGSFILE="full//path/to/dvda-author.conf"
+You'll have to reconfigure later using:
 
+       ../configure --enable-all-builds
 
+which just configures building without downloading packages.
+
+An intermediate way out is to download a minimal set of dependencies (FLAC, Ogg and SoX)
+and configure them without building. For this, run:
+
+       ../configure --enable-minimal-deps
+
+To build this set of features (fixwav, FLAC, OggFLAC, SoX enabled but without menu support), run:
+
+	../configure --enable-minimal-build
+
+before running `make' and `make install'.
+
+Alternatively, if your prefer to use compiling defines, you may add
+
+    WITHOUT_FLAC WITHOUT_sox WITHOUT_libogg WITHOUT_fixwav as symbolic constants either
+
+at configuration stage :
+
+	../configure CPPFLAGS="-DWITHOUT_FLAC ...."
+
+"Simple configuration" with just:
+
+	../configure
+
+will yield the following configuration :
+
+      -> menu authoring enabled, but without automatic download, nor building configuration of
+	 dependencies
+
+      -> fixwav capability enabled (impaired wav header automatic detection/correction)
+
+      -> FLAC, libogg and libsox bindings disabled.
 
 
 GNU Basic Installation
@@ -42,12 +71,25 @@ GNU Basic Installation
 
 Build system:
 
-Prerequisites are : autoconf 2.63, automake 1.10 and libtool if you are to perform a full build,
-owing to a patch agains SoX configure.ac script.
+For a core build:
+
+ gcc-4.7 and GNU  make only
+
+For dependencies, prerequisites are :
+ autoconf 2.69
+ automake 1.13
+ libtool-2.26 and higher
+ A recent version of GNU make
+
+Optionally:
+ man2html (to build the html help page)
+
 Please update you *nix autotools system as checks for version will fail if your version
 of any one of the tools is older than the above.
 
-Users who wish to regenerate the GNU build system should use the autogen script.
+Users who wish to regenerate the GNU build system should use the autogen script
+included in the package.
+
 Directory config contains GNU build system configuration files.
 Directory m4 contains m4 macros used to by the main configure.ac script.
 
@@ -61,8 +103,6 @@ The building/installation procedure unrolls as for Unix platforms as follows.
 However, users are advised to build under a buiding tree entirely devoid of
 whitespace in file paths. Crashes have arisen repeatedly in such contexts owing
 to a libtool port issue.
-On Cygwin/MSYS, it is advised to build the full source package with downloaded dependencies
-using --enable-all-deps --enable-all-builds
 _____________________________________________________________________________________
 
 _____________________________________________________________________________________
@@ -74,44 +114,6 @@ The building/installation procedure unrolls as for Unix platforms.
 However, you may have to use --with-config=.  for a successful build (see below
 "Installation directories for auxilliary files")
 _____________________________________________________________________________________
-
-
-Briefly, the shell commands `./configure; make; make install' should
-configure, build, and install this package.
-By default, binaries (fixwav and dvda-author) will install under /usr/bin.
-
-The simplest way to compile this package is:
-
-  1. `cd' to the directory containing the package's source code and type
-     `./configure' to configure the package for your system.
-
-     Running `configure' might take a while.  While running, it prints
-     some messages telling which features it is checking for.
-	 On Windows platforms (MSYS build), you should specify the path to
-	 the configuration file as follows:
-
-	 ./configure --prefix=/mingw --with-conf='/path to directory of dvda-author.conf'
-
-  2. Type `make' to compile the package. WITH MULTICORE CPUs it is advised to build
-     using  `make -j4' as it speeds up both nested configure execution and source code build.
-
-  3. Optionally, type `make check' to run any self-tests that come with
-     the package.
-
-  4. Type `make install' to install the programs and any data files and
-     documentation as root user (sudo make install on K/Ubuntu)
-
-  5. You can remove the program binaries and object files from the
-     source code directory by typing `make clean'.  To also remove the
-     files that `configure' created (so you can compile the package for
-     a different kind of computer), type `make distclean'.  There is
-     also a `make maintainer-clean' target, but that is intended mainly
-     for the package's developers. If you use it, you should regenerate the
-     build system by running ./autogen in the package root directory
-     (See Build system regeneration).
-
-  6. You can also type `make uninstall' to remove the installed
-     files again.
 
 
 KDE/GNOME Platforms
@@ -150,76 +152,51 @@ Depedencies
 
 See file DEPENDENCIES
 
-        
+
 Building dependencies without the GNU build system
 --------------------------------------------------
 
 If you do not use the GNU build system (e.g. building with Code::Blocks project),
-all dependencies will be rebuilt from source code. Further, check that the configuration
-file dvda-author.conf is in the same directory as the main executable (see INSTALL for
+check that the configuration file dvda-author.conf is in the same directory as the main executable (see INSTALL for
 other options).
 
 
-Building with GNU autoconf
---------------------------
+Building dependencies with GNU autoconf
+---------------------------------------
 
 On *nix and *nix-like platforms, dependencies can be rebuilt automatically from source code.
 Requested packages will be downloaded, patched if necessary and installed, some of them locally
 in the local/ subdirectory created at by the main configure script.
 
-Consequently subdirectories libFLAC and libsox of prior versions have been pruned off the current package.
-
 Rebuilding dependencies may be useful in the event of version conflicts between what is requested by dvda-author
 source code and what is already installed on your platform.
 
-In order to rebuild dependencies, you will need the following tools: curl, patch, tar, automake, autoconf-2.63 or
-(later version), libtool-2.26 (or later version), GNU make.
-
 Please check that you have a functional internet connection before configuring as follows.
 
-In a nutshell, to download dependency X, use ./configure --enable-X-download, and --enable-X-patch when X needs patching.
+To download dependency X, run the following command line in your build directory:
 
-You can always check ./configure --help to have a list of possible configuration options.
+	./configure --enable-X-download
+and 	./configure --enable-X-patch       when X needs patching, which is the case for:
 
-Packages will be downloaded from the dvd-audio project mirror repository, and in case of failure, from Sourceforge mirrors (first trying
-kent, garr, voxel and free_fr). Alternatively, you can specify the Sourceforge mirror that you would like to download your
-packages from on the configure command line, e.g:
+	X=flac,dvdauthor,cdrtools,sox
 
-./configure SF_MIRROR=odh
+You can always run:
 
-Both .gz and .bz2 formats will be successively attempted.
+	 ./configure --help
 
-Then add --enable-X-build to build the X sub-package.
+to get a list of possible configuration options.
+
+Packages will be downloaded from a selected mirror repository and patches from the project Sourceforge repository.
+
+You should add --enable-X-build to the configure command line if you are to build the X sub-package (not just download), e.g.
+
+	./configure --enable-flac-download  --enable-sox-patch --enableflac-build --enable-sox-build
+
+for a configuration with FLAC and SoX dependencies enabled.
 
 More specifically, from the top source directory:
 
-
-- You can force rebuilding of libiberty(l) source code using configure option:
-
-	 --enable-iberty-build
-
-  See file BUGS for issues with libiberty building.
-
-- To build the FLAC 1.2.1 library, run:
-
-	./configure --enable-flac-download --enable-flac-build
-
-  for a windows (mingw32/MSYS) build use:
-
-  curl -O http://dvd-audio.sourceforge.net/utils/flac-1.2.1.cvs.tar.gz
-
-  as (patched) CVS code is necessary owing to a bug in the standard flac package build system
-  for windows builds. The patched CVS flac package can only be downloaded from the dvd-audio site repository.
-  Alternatively, you can dowload it manually using:
-
-	Note: a) add --disable-ogg-flac  if you wish to deactivate Ogg FLAC support (enabled by default).
-              b) dependencies to Ogg are now managed by the full (downloaded) FLAC package.
-
-- To build and patch the libsox library:
-
-	./configure --enable-sox-patch  --enable-sox-build
-
-  See file BUGS for issues with SoX building.
+See file BUGS for issues with libiberty and SoX (older versions) building.
 
 - To build and patch dvdauthor (only necessary if you need DVD-Audio menus):
 
@@ -231,7 +208,7 @@ More specifically, from the top source directory:
 
 - To build and patch mjpegtools (owing to source code bug), if you need to enable menu authoring only:
 
-        ./configure --enable-mjpegtools-patch --enable-mjpegtools-build
+	./configure --enable-mjpegtools-patch --enable-mjpegtools-build
 
 - To build help2man:
 
@@ -239,32 +216,22 @@ More specifically, from the top source directory:
 
 - To build ImageMagick:
 
-	./configure --enable-magick-download  --enable-magick-build
+	./configure --enable-ImageMagick-download  --enable-ImageMagick-build
 
 
 - To avoid repreating -build enable options, you may just add to command line:
 
-        --enable-all-builds
+	--enable-all-builds
 
-  after the -patch and -download options. In this case, after the first stage configure script run, manually rename
-  your flac and sox subdirectories as follows: libFLAC, libsox.
-
-The "full-build" package is thus obtained with:
-
-	./configure  --enable-flac-download --enable-sox-patch --enable-dvdauthor-patch --enable-cdrtools-patch --enable-all-builds
-
-or equivalently with:
-
-        ./configure --enable-all-deps --enable-all-builds
-
-The autotools scripts are configured to only build from source the libraries that
-cannot be found in /usr/lib, /usr/local/lib or in the path indicated by the --with-...
-configuration option.
+  after the -patch and -download options.
 
 If your libFLAC library is installed in a non-standard directory (i.e. not /usr/lib
-or /usr/local/lib) you may have to use configure options --with-flac=/full/path/to/libFLAC.so
+or /usr/local/lib) you may have to use configure options
+
+	   --with-flac=/full/path/to/libFLAC.a
+
 to help out the linking process. You may equally
-indicate the path to libsox using --with-sox=/full/path/to/libsox.so (preferably use dynamic libs).
+indicate the path to libsox using --with-sox=/full/path/to/libsox.a
 
 
 Compilers and Options
@@ -316,8 +283,8 @@ have a positive effect on running times, depending on modules and hardware:
 
  Alternatively, you may add, repectively:
 
- #define WITHOUT_SOX
- #define WITHOUT_FIXWAV
+ #define WITHOUT_sox
+ #define WITHOUT_fixwav
  #define WITHOUT_FLAC
 
  to src/commonvars.h code.
@@ -333,24 +300,23 @@ Optional Symbolic constants can be defined at compile time to specify some featu
   SETTINGSFILE=filepath to specify default filepath of the configuration file.
   _LARGEFILE_SOURCE,_LARGE_FILES,_FILE_OFFSET_BITS=64 enable large file support.
   ALWAYS_INLINE forces code inlining.
-  WITHOUT_SOX to compile without SoX code
+  WITHOUT_sox to compile without SoX code
   WITHOUT_FLAC to compile without FLAC/OggFLAC code
-  WITHOUT_FIXWAV to compile without fixwav code
+  WITHOUT_fixwav to compile without fixwav code
 
 
 Required compile-time constants:
 
-  _GNU_SOURCE, __CB__ if compiling with Code::Blocks or similar IDE.
-
+  _GNU_SOURCE
 
 Default values are configured as follows:
 
   a) Unless SHORT_OPTIONS_ONLY is defined, LONG_OPTIONS will be enforced by default;
   b) LOCALE="C"
   c) ogg FLAC is enabled
-  d) Symbolic constants _GNU_SOURCE and __CB__ (if compiling with Code::Blocks or similar IDE)
+  d) Symbolic constants like _GNU_SOURCE
      are defined by the scripts included in this package
-    (top configure.ac file for GNU builds  and CB_projects/dvda-author/dvda-author.cbp for Code::Blocks).
+    (top configure.ac file for GNU builds).
   e) Large file support (constants _LARGE_FILES and  _FILE_OFFSET_BITS=64 are defined)
 
 
@@ -510,11 +476,10 @@ dvda-author.conf (mainly uselful on non *nix platforms).
 
 See file BUGS for additional advice.
 
-Copyright (C) 1994, 1995, 1996, 1999, 2000, 2001, 2002, 2004, 2005,
-2006, 2007 Free Software Foundation, Inc.
 
+Adapted by Fabrice Nicol for dvda-author, 2008-20013.
+Parts of this text Copyright (C) 1994, 1995, 1996, 1999, 2000, 2001, 2002, 2004, 2005,
+2006, 2007 Free Software Foundation, Inc.
 This file is free documentation; the Free Software Foundation gives
 unlimited permission to copy, distribute and modify it.
-
-Adapted by Fabrice Nicol for dvda-author, 2008-2009.
 

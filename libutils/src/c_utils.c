@@ -27,11 +27,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include <stdlib.h>
 #include <stdio.h>
-//#ifdef __WIN32__
-//#include <io.h>
-//#else
+#ifdef __WIN32__
+#undef __STRICT_ANSI__
+#include <io.h>
+#else
 #include <unistd.h>
-//#endif
+#endif
 #include <dirent.h>
 #include <stdarg.h>
 #include <sys/time.h>
@@ -760,7 +761,7 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
 
     DIR *dir_src;
 
-    struct  stat buf;
+    struct stat buf;
     struct dirent *f;
     char path[BUFSIZ];
 

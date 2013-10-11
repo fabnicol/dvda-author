@@ -1,18 +1,19 @@
 #if HAVE_CONFIG_H && !defined __CB__
 #include "config.h"
 #endif
+#undef __STRICT_ANSI__
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h>
 #include <math.h>
 #include <sys/types.h>
 #ifndef __WIN32__
 #include <sys/wait.h>
+#include <unistd.h>
+#include <fcntl.h>
 #endif
 #include <sys/stat.h>
-#include <fcntl.h>
 #include "structures.h"
 #include "c_utils.h"
 #include "commonvars.h"
@@ -356,7 +357,10 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
         sprintf(soundtrack, "%s"SEPARATOR"%s", globals.settings.tempdir, "soundtrack");
         unlink(soundtrack);
         errno=0;
+  //      fprintf(stderr, "***%s***", globals.settings.datadir);
+  //      pause_dos_type();
         change_directory(globals.settings.datadir);
+ //       pause_dos_type();
         copy_file(img->soundtrack[0][0], soundtrack);
         change_directory(globals.settings.workdir);
 
@@ -634,7 +638,7 @@ int launch_spumux(pic* img)
     int menu=0;
 
 
-    initialize_binary_paths(1);
+    initialize_binary_paths(CREATE_SPUMUX);
 
 
     while (menu < img->nmenus)
@@ -665,17 +669,20 @@ int launch_spumux(pic* img)
             close(firsttubeerr[0]);
             dup2(firsttubeerr[1], STDERR_FILENO);
 
-
+           fprintf(stderr, "command line: %s %s %s %s %s", spumux, argsspumux[1], argsspumux[2], argsspumux[3], argsspumux[4]);
             if (freopen(img->backgroundmpg[menu], "rb", stdin) == NULL)
             {
                 perror("[ERR]  freopen (stdin)");
+                fprintf(stderr, "img->backgroundmpg[%d]=%s errno=%d: %s", menu, img->backgroundmpg[menu], errno, strerror(errno));
                 return errno;
             }
             if (freopen(img->topmenu[menu], "wb", stdout) == NULL)
             {
                 perror("[ERR]  freopen (stdout)");
+                fprintf(stderr, "img->backgroundmpg[%d]=%s errno=%d: %s", menu, img->topmenu[menu], errno, strerror(errno));
                 return errno;
             }
+
             execv(spumux, argsspumux);
             return errno;
 
