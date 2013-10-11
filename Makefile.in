@@ -52,8 +52,8 @@ ifeq "@HAVE_help2man@" "yes"
 		@HELP2MAN@ -s 1 -N -o dvda-author.1 src/dvda
 	fi
 else
-	if test -f src/dvda -a test -d @MAYBE_HELP2MAN@ -a test -f @MAYBE_HELP2MAN@/@HELP2MAN@; then
-		@MAYBE_HELP2MAN@/@HELP2MAN@ -s 1 -N -o dvda-author.1 src/dvda
+	if test -f src/dvda -a test -d "@MAYBE_help2man@" -a test -f @MAYBE_help2man@/@HELP2MAN@; then
+		"@MAYBE_help2man@"/@HELP2MAN@ -s 1 -N -o dvda-author.1 src/dvda
 	fi
 	$(call docfollow,  $@)
 endif
