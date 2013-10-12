@@ -201,7 +201,7 @@ int  generate_spumux_xml(uint8_t ngroups, uint8_t *ntracks, uint16_t maxntracks,
     uint8_t buttons=0, arrowbuttons, menubuttons, menu=0, track=0, group=0, groupcount=0, offset=0;
     uint16_t x0[ngroups], y0[MAX_BUTTON_NUMBER], x1[ngroups], y1[MAX_BUTTON_NUMBER];
     errno=0;
-    FILE *spu_xmlfile;
+    FILE *spu_xmlfile=NULL;
     if (globals.debugging) foutput("[MSG]  Max ntracks: %d\n", maxntracks);
 
     if (globals.spu_xml == NULL) globals.spu_xml=calloc(img->nmenus,sizeof(char *));
