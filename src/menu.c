@@ -110,7 +110,7 @@ void create_activemenu(pic* img)
     char* activeheader=copy_file2dir(img->activeheader, globals.settings.tempdir);
     activeheadersize=stat_file_size(activeheader);
 
-    FILE* activeheaderfile;
+    FILE* activeheaderfile=NULL;
 
     if (!globals.nooutput)
         activeheaderfile=fopen(activeheader, "rb");
@@ -129,7 +129,7 @@ void create_activemenu(pic* img)
     memset(tsvobpt, 0, tsvobsize);
     FILE * tsvobfile=fopen(img->tsvob, "rb");
 
-    if (fread(tsvobpt, activeheadersize, 1, activeheaderfile) == 0) perror("[ERR]  fread [active menu authoring, stage 1]");
+    if (!globals.nooutput && fread(tsvobpt, activeheadersize, 1, activeheaderfile) == 0) perror("[ERR]  fread [active menu authoring, stage 1]");
 
     if (-1 == fseek(tsvobfile, ACTIVEHEADER_INSERTOFFSET, SEEK_SET)) perror("[ERR]  fseek [active menu authoring, stage 2]");
 
@@ -173,11 +173,14 @@ void create_activemenu(pic* img)
 
 
     FILE* svvobfile;
-    if (!globals.nooutput) svvobfile=fopen(img->stillvob, "wb");
-    for (j=0; j < totntracks; j++)
-        if (!globals.nooutput) fwrite(tsvobpt, tsvobsize, 1, svvobfile);
+    if (!globals.nooutput)
+    {
+     svvobfile=fopen(img->stillvob, "wb");
+     for (j=0; j < totntracks; j++)
+         fwrite(tsvobpt, tsvobsize, 1, svvobfile);
+     fclose(svvobfile);
+    }
 
-    fclose(svvobfile);
     free(activeheader);
     if (globals.topmenu == TEMPORARY_AUTOMATIC_MENU) unlink(img->tsvob);
     return;
@@ -1056,8 +1059,8 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
 
 
                     /* Vicious issue here: use DEFAULT_GROUP_HEADER such that the underline for highlighting does not cut a letter.
-                    			   With lower-case "group", this happens as the underline cuts the 'p'. Two ways out: underline lower or use another label/use uppercase
-                    			   Note: This issue was tested to cause spumux crash */
+                                   With lower-case "group", this happens as the underline cuts the 'p'. Two ways out: underline lower or use another label/use uppercase
+                                   Note: This issue was tested to cause spumux crash */
                     mogrify_img(grouptext[groupcount][0], 0, groupcount, img, maxntracks, command1, command2, 0, img->textcolor_pic);
                     groupcount++;
                     buttons++;
