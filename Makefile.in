@@ -135,13 +135,13 @@ $(FORMATS): ;
 
 $(DISTFORMATS): $(FORMATS)
 ifeq "@HAVE_git@" "yes"
-   BRANCH=master
-   CURRRENTBRANCH=`@GIT@ status -bs -u no -z | sed -e 's/[# ]*//g'`
-   ifneq "$(BRANCH)" "$(CURRENTBRANCH)"
-	@GIT@ checkout $(BRANCH))
-   endif
+	BRANCH=master
+	CURRRENTBRANCH=`@GIT@ status -bs -u no -z | sed -e 's/[# ]*//g'`
+	ifneq "$(BRANCH)" "$(CURRENTBRANCH)"
+	  @GIT@ checkout $(BRANCH))
+	endif
 	if test $? = 0 ; then @GIT@ archive -o dvda-author-@VERSION@.$< HEAD $(BRANCH); fi
-   ifneq "$(BRANCH)" "$(CURRENTBRANCH)"
-	@GIT@ checkout $(CURRENTBRANCH)
-   endif
+	ifneq "$(BRANCH)" "$(CURRENTBRANCH)"
+	  @GIT@ checkout $(CURRENTBRANCH)
+	endif
 endif

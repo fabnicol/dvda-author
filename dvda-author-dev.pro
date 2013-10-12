@@ -3,6 +3,7 @@ CONFIG += console ordered
 CONFIG -= app_bundle
 CONFIG -= qt
 
+
 TARGET = dvda-author
 
 QMAKE_CFLAGS=-std=c99
@@ -42,7 +43,6 @@ SOURCES += \
 
 OTHER_FILES += \
     src/dvda-author.conf \
-    src/Makefile.am \
     libfixwav/AUTHORS \
     libfixwav/COPYING \
     libfixwav/INSTALL \
@@ -81,7 +81,6 @@ OTHER_FILES += \
     mk/help2man.mk \
     mk/a52dec.mk \
     mk/cdrtools.mk \
-    libiberty/Makefile.am \
     libiberty/src/Makefile.am \
     libiberty/src/include/Makefile.am \
     libutils/Makefile.am \

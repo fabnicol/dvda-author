@@ -669,7 +669,7 @@ void write_aob_path(char* aobfile,char* audiotsdir,int titleset,int filenum)
 int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,const char* ioflag, char* player)
 {
 
-    FILE* aobfilepointer;
+    FILE* aobfilepointer=NULL;
     char aobfile[CHAR_BUFSIZ+13+1];
     int i=0, pack=0, pack_in_file=0, filenum=1;
     uint32_t bytesinbuf=0, n=0, lpcm_payload=0;
@@ -679,14 +679,14 @@ int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,con
 
 //     if (player)
 //     {
-// 
+//
 //         while (filenum < )
 //         if ((extract) && (!extract->extracttitleset[filenum-1]))
 //         {
 //             filenum++;
 //             continue;
 //         }
-// 
+//
 //       {
 //                     write_aob_path(aobfile, audiotsdir, titleset, filenum);
 //                     char* argsplayer[]={aobfile, "vlc://quit", NULL};
@@ -702,10 +702,10 @@ int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,con
 //                         return;
 //                     }
 //                     filenum++;
-// 
+//
 //        }
 //        return 1-filenum;
-// 
+//
 //     }
 
   //extraction file by file may be necessary even for playback on some players

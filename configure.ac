@@ -184,7 +184,7 @@ AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],
  [
   GCC_MAJOR_VERSION=`$CC -dumpversion |$SED "s/\..*//"`
   AS_IF([ test `echo $CC | $SED "s/mingw32//"` = `echo $CC` ],
-     [AC_DEFINE([ALWAYS_INLINE], [1], [Always inline when ALWAYS_INLINE is set])])
+     [AC_DEFINE([COMPILER_IS_GCC], [1], [Whether compiler is GNU GCC])])
  ])
 
 
@@ -253,14 +253,11 @@ AC_CONFIG_FILES([Makefile
 	 dvda-author.nsi
 	 src/Makefile
 	 src/include/Makefile
-	 libutils/Makefile
 	 libutils/src/Makefile
 	 libutils/src/include/Makefile
 	 libutils/src/private/Makefile
-	 libfixwav/Makefile
 	 libfixwav/src/Makefile
 	 libfixwav/src/include/Makefile
-	 libiberty/Makefile
 	 libiberty/src/Makefile
 	 libiberty/src/include/Makefile
 	 images/Makefile

@@ -830,7 +830,7 @@ int copy_file_no_p(FILE *infile, FILE *outfile)
     clearerr(infile);
     clearerr(outfile);
     double counter=0;
-    size_t chunk;
+    size_t chunk=0;
 
     if (globals.veryverbose) printf("%s","       |");
     errno=0;
