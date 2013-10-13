@@ -205,7 +205,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
   {
       char databasepath[MAX_OPTION_LENGTH+9]={0};
       snprintf(databasepath, MAX_OPTION_LENGTH+9, "%s%s", info->database, SEPARATOR"database");
-      secure_mkdir(info->database, 0755, DEFAULT_DATABASE_FOLDER);
+      secure_mkdir(info->database, 0755);
       FILE* database = secure_open(databasepath, "ab");
       fprintf(database, "Filename    %s\nArtist      %s\nDate        %s\nStyle       %s\nComment     %s\nCopyright   %s\n\n", ichunk.INAM, ichunk.IART, ichunk.ICRD, ichunk.IGNR, ichunk.ICMT, ichunk.ICOP);
       info->filetitle=strdup((const char*) ichunk.INAM);

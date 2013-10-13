@@ -16,58 +16,65 @@ CAT=/bin/cat
 #           $(if $(X),...)   or:   ifeq "$(X)" "X": if build package with basename X (--enable-X-build), then do...
 #           WITH_X: X-related code was not filtered out by conditional compilation (e.g. WITHOUT-SOX)
 
-bin_PROGRAM=dvda_author
+.ONESHELL:
+SHELL=/bin/sh
+SHELLFLAGS=-ec
 
-OBJECTS=amg2.o ats.o atsi2.o audio.o auxiliary.o dvda-author2.o  \
+bin_PROGRAM=dvda-author
+
+CFLAGS += -D_GNU_SOURCE
+LDFLAGS=-L/usr/local/lib -L/usr/lib -Xlinker --allow-multiple-definition -L@BUILDDIR@/libs
+CPPFLAGS=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include -I@ROOTDIR@   ${DEBUG_FLAGS}
+LDLIBS= -lm @BUILDDIR@/libutils/src/libc_utils.a
+
+OBJECTS=amg2.o ats.o atsi2.o audio.o auxiliary.o dvda-author.o  \
 	     file_input_parsing.o samg2.o launch_manager.o command_line_parsing.o  \
 	     lexer.o ats2wav.o
 
-ifeq "@HAVE_core_BUILD@" "yes"
-   dvda_OBJECTS += menu.o asvs.o xml.o sound.o videoimport.o
+ifneq "@HAVE_core_BUILD@" "yes"
+   OBJECTS += menu.o asvs.o xml.o sound.o videoimport.o
 endif
 
-ifeq "@WITH_sox@" "yes"
-    dvda_OBJECTS += libsoxconvert.o
+ifneq "@WITH_sox@" "no"
+    OBJECTS += libsoxconvert.o
 endif
 
-ifeq "@WITH_fixwav@" "yes"
-     LDADD+=$(fixwav_LIB)
+ifneq "@MAYBE_fixwav@" ""
+     LDLIBS+=$(fixwav_LIB)
      CPPFLAGS +=-I@ROOTDIR@/libfixwav/src/include
 endif
 
-LDFLAGS=-L/usr/local/lib -L/usr/lib -Xlinker --allow-multiple-definition -L@BUILDDIR@/libs
-CPPFLAGS=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include -I@ROOTDIR@   ${DEBUG_FLAGS}
-LDADD= -lm @BUILDDIR@/libutils/src/libc_utils.a
 
 $(if $(sox), LIBS   += SOX_LIB_DEPS)
 
-create_options: @PROGRAM_TARGETS@
+ALL_TARGETS=@PROGRAM_TARGETS@ FLAC libogg sox
 
-@PROGRAM_TARGETS@:
-	   $(if $($@_LIB),
-	      LDADD += $($@_LIB)
-	      CPPFLAGS += -I$(top_srcdir)/$(MAYBE_$@)/src,
-		 if test "$(HAVE_EXTERNAL_$@)" = "yes"
-		    $(if $($@_LIB),
-		       LDADD   += $($@_LIB)
-		       echo Linking to system lib $($@_LIB))
+.PHONY: program_transform_name create_options all $(ALL_TARGETS)
+
+all:  $(ALL_TARGETS) $(bin_PROGRAM) program_transform_name
+
+$(ALL_TARGETS):
+	if test "$($@_LIB)" != ""; then
+	      LDLIBS += $($@_LIB)
+	      CPPFLAGS += -I@ROOTDIR@/$(MAYBE_$@)/src
+		 if test "$(HAVE_EXTERNAL_$@)" = "yes"; then
+		    if test "$($@_LIB)" != "yes"; then
+		       LDLIBS   += $($@_LIB)
+		       echo Linking to system lib $($@_LIB)
+		    fi
 		 else
-		     if test $(HAVE_$@)
-			$(if $($@_LINK),
-			LDFLAGS   += $($@_LINK)
-			echo Linking to user lib $($@_LINK))
+		     if test "$(HAVE_$@)" = "yes" ; then
+			if test "$($@_LINK)" != ""; then
+			  LDFLAGS   += $($@_LINK)
+			  echo Linking to user lib $($@_LINK)
+			fi
 		     else
 			echo No linking to $@
 		     fi
-		fi)
-
-
-.PHONY: program_transform_name create_options
-
-all:  create_options $(bin_PROGRAM) program_transform_name
+		 fi
+	fi
 
 $(bin_PROGRAM): $(OBJECTS)
-
 program_transform_name: $(bin_PROGRAM)
 	mv -f $(bin_PROGRAM) @PACKAGE_NAME@-@VERSION@
 
