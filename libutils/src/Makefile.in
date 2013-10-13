@@ -1,20 +1,23 @@
 
-LDFLAGS=-s
-CPPFLAGS=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/libutils/src/private -I@ROOTDIR@ -I@ROOTDIR@/src/include
+LDFLAGS +=-s
+CFLAGS  += -std=c99 -O3
+CPPFLAGS+=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/libutils/src/private -I@ROOTDIR@ -I@ROOTDIR@/src/include
 
 ifeq "@HAVE_iberty_BUILD@" "yes"
-     LDLIBS       = @iberty_LIB@
+     LDLIBS   += @iberty_LIB@
      CPPFLAGS +=-I@ROOTDIR@/libiberty/src/include
      ifeq  "@HAVE_EXTERNAL_iberty@" "yes"
-       LDADD       = @iberty_LIB@
+       LDLIBS   += @iberty_LIB@
        CPPFLAGS +=-I@ROOTDIR@/libiberty/src/include
      endif
-     ifeq "@HAVE_iberty@" "yes"
+endif
+
+ifeq "@HAVE_iberty@" "yes"
       LDLIBS  += -liberty
-     endif
 endif
 
 SOURCES:=$(wildcard *.c)
 OBJECTS:=$(SOURCES:.c=.o)
 
 libc_utils.a: libc_utils.a($(OBJECTS))
+

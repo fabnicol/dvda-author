@@ -163,11 +163,11 @@ m4_map([DVDA_TEST_AUX],[
 	    ],
 	    [
 		[libogg-download],
-		[1.1.4],
+		[1.3.1],
 		[],
 		[http://downloads.xiph.org/releases/ogg],
 		[http://dvd-audio.sourceforge.net],
-		[10200ec22543841d9d1c23e0aed4e5e9]
+		[ba526cd8f4403a5d351a9efaa8608fbc]
 	    ],
 	    [
 		[help2man-download],
@@ -230,11 +230,11 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	    ],
 	    [
 		[libogg-download],
-		[1.1.4],
+		[1.3.1],
 		[],
 		[http://downloads.xiph.org/releases/ogg],
 		[http://dvd-audio.sourceforge.net],
-		[10200ec22543841d9d1c23e0aed4e5e9]
+		[ba526cd8f4403a5d351a9efaa8608fbc]
 	    ],
 	    [
 		[sox-patch],
@@ -269,9 +269,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
     # to be invoked after ENABLE and WITH features
     # insert here application-specific macros that cannot be inserted in another file
 
-    DISABLE_LIBOGG_TEST
-
-    # installing binaries, normally executables
+     # installing binaries, normally executables
 
     AS_CASE([${build}],
 	    [*-*-mingw32*],
@@ -305,14 +303,14 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
     # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
 
     DVDA_CONFIG_LIBRARY_LOCAL_INSTALL([
-     [[[FLAC],[flac-1.3.0]],[--disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg" \
+     [[[FLAC],[flac-1.3.0]],[--enable-static --disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg" \
 	 --disable-thorough-tests --disable-oggtest --disable-cpplibs --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
      [[[sox],[sox-14.4.1]],  [--without-libltdl --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-ffmpeg --disable-fast-install --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
-     [[[libogg],[libogg-1.1.4]],  [--prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]]])
+     [[[libogg],[libogg-1.3.1]],  [--prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]]])
 
     # auxiliary libs that remain within package, not installed
 
-    DVDA_CONFIG_LIBRARY_NO_INSTALL([[[[iberty],[libiberty]]], [[[fixwav],[libfixwav]]]])
+    DVDA_CONFIG_LIBRARY_NO_INSTALL([[[[iberty],[libiberty/src]]], [[[fixwav],[libfixwav/src]]]])
 
 
 ])

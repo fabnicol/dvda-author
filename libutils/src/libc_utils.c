@@ -27,12 +27,14 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include <stdlib.h>
 #include <stdio.h>
-#ifdef __WIN32__
-#undef __STRICT_ANSI__
-#include <io.h>
+
+#ifndef __unix__
+ #undef __STRICT_ANSI__
+ #include <io.h>
 #else
-#include <unistd.h>
+ #include <unistd.h>
 #endif
+
 #include <dirent.h>
 #include <stdarg.h>
 #include <sys/time.h>
@@ -41,9 +43,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <time.h>
 #include <ctype.h>
 #include <sys/stat.h>
-#ifndef __WIN32__
-#include <sys/wait.h>
+
+#ifdef __unix__
+ #include <sys/wait.h>
 #endif
+
 #include <sys/types.h>
 
 /* printf is a public macro
@@ -795,10 +799,7 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
             exit(EXIT_FAILURE);
         }
 
-        /*  Note: on my implementation of Linux (Ubuntu), S_ISDIR and S_ISREG(buf.st_mode) are seemingly buggy
-         *  Resorting to masks S_ISDIR and S_IFREG as a way out */
-
-        if (S_IFDIR & buf.st_mode)
+        if (S_IFDIR(buf.st_mode))
         {
 
             if (globals.debugging) printf("%s %s %s %s\n", "[INF]  Copying dir=", f->d_name, " to=", path);
@@ -807,7 +808,7 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
 
             continue;
         }
-        if (S_IFREG & buf.st_mode)
+        if (S_IFREG(buf.st_mode))
         {
             if (globals.debugging) printf("%s%s to= %s\n", "[INF]  Copying file=", f->d_name, path);
             errno=copy_file(f->d_name, path);

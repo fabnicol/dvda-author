@@ -25,8 +25,8 @@ endef
 #Theres is an odd MKDIR_P bug with MIGW32, which is circumvented here for generality but could be taken out in later versions
 
 define configure_sub_package
-	target_subdir=$(strip $1)
-	configure_flags=$2
+	@target_subdir=$(strip $1)
+	configure_flags="$2"
 	autotools_command_line=$3
 	echo configuring sub package with arguments: $1 $2 $3...
 	if test "$$target_subdir" != ""; then
@@ -47,10 +47,13 @@ define configure_sub_package
 endef
 
 define configure_lib_package
-	@flags=$(CONFIGURE_$1_FLAGS)
+	@flags="$(CONFIGURE_$1_FLAGS)"
+	echo $1: $$flags>>flags.test
 	directory=$(MAYBE_$1)
 	autotools_command_line=$2
 	echo configuring lib_package with arguments: $1 $2
+	echo in directory $$directory
+	echo with build flags $$flags
 	$(call configure_sub_package,$$directory,$$flags,$$autotools_command_line)
 	testvar=$$(find @BUILDDIR@/$$directory -maxdepth 2 -type f -name $(strip $1).a -print0)
 	$(if $$testvar,
