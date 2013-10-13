@@ -22,41 +22,42 @@ OBJECTS=amg2.o ats.o atsi2.o audio.o auxiliary.o dvda-author2.o  \
 	     file_input_parsing.o samg2.o launch_manager.o command_line_parsing.o  \
 	     lexer.o ats2wav.o
 
-if @HAVE_core_BUILD@
+ifeq "@HAVE_core_BUILD@" "yes"
    dvda_OBJECTS += menu.o asvs.o xml.o sound.o videoimport.o
 endif
 
-if @WITH_sox@
+ifeq "@WITH_sox@" "yes"
     dvda_OBJECTS += libsoxconvert.o
 endif
 
-if @WITH_fixwav@
+ifeq "@WITH_fixwav@" "yes"
      LDADD+=$(fixwav_LIB)
-     CPPFLAGS +=-I${top_srcdir}/libfixwav/src/include
+     CPPFLAGS +=-I@ROOTDIR@/libfixwav/src/include
 endif
 
-LDFLAGS=-L/usr/local/lib -L/usr/lib -Xlinker --allow-multiple-definition -L${top_builddir}/libs
-CPPFLAGS=-I${top_srcdir}/libutils/src/include -I${top_srcdir}/src/include -I${top_srcdir}   ${DEBUG_FLAGS}
-LDADD= -lm ${top_builddir}/libutils/src/libc_utils.a
+LDFLAGS=-L/usr/local/lib -L/usr/lib -Xlinker --allow-multiple-definition -L@BUILDDIR@/libs
+CPPFLAGS=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include -I@ROOTDIR@   ${DEBUG_FLAGS}
+LDADD= -lm @BUILDDIR@/libutils/src/libc_utils.a
 
 $(if $(sox), LIBS   += SOX_LIB_DEPS)
 
-create_options:
-	$(foreach prog,@PROGRAM_TARGETS@,
-	   $(if $($(prog)_LIB),
-	      LDADD += $($(prog)_LIB)
-	      CPPFLAGS += -I$(top_srcdir)/$(MAYBE_$(prog))/src,
-		 if test "$(HAVE_EXTERNAL_$(prog))" = "yes"
-		    $(if $($(prog)_LIB),
-		       LDADD   += $($(prog)_LIB)
-		       echo Linking to system lib $($(prog)_LIB))
+create_options: @PROGRAM_TARGETS@
+
+@PROGRAM_TARGETS@:
+	   $(if $($@_LIB),
+	      LDADD += $($@_LIB)
+	      CPPFLAGS += -I$(top_srcdir)/$(MAYBE_$@)/src,
+		 if test "$(HAVE_EXTERNAL_$@)" = "yes"
+		    $(if $($@_LIB),
+		       LDADD   += $($@_LIB)
+		       echo Linking to system lib $($@_LIB))
 		 else
-		     if test $(HAVE_$(prog))
-			$(if $($(prog)_LINK),
-			LDFLAGS   += $($(prog)_LINK)
-			echo Linking to user lib $(($prog)_LINK))
+		     if test $(HAVE_$@)
+			$(if $($@_LINK),
+			LDFLAGS   += $($@_LINK)
+			echo Linking to user lib $($@_LINK))
 		     else
-			echo No linking to $(prog)
+			echo No linking to $@
 		     fi
 		fi)
 

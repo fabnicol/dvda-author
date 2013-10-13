@@ -254,8 +254,6 @@ AC_CONFIG_FILES([Makefile
 	 src/Makefile
 	 src/include/Makefile
 	 libutils/src/Makefile
-	 libutils/src/include/Makefile
-	 libutils/src/private/Makefile
 	 libfixwav/src/Makefile
 	 libfixwav/src/include/Makefile
 	 libiberty/src/Makefile

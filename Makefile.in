@@ -123,7 +123,7 @@ install: all install-data-local install-pic install-sys
 	$(foreach dir,src $(subdirs), $(MAKE) --directory=$(dir) install)
 
 clean: clean-local
-	rm -f $(wildcard *.o *.po *.a)
+	$(call clean_directory,src libutils/src libfixwav/src)
 
 clean-local:
 	rm -f dvda-author.1 dvda-author-@VERSION@.html
@@ -165,7 +165,6 @@ endif
 
 $(PROGRAM_TARGET_CONFIGS): %.config: %.depconf
 	@echo Creating program target config for $* using $<...
-
 
 force: ;
 
