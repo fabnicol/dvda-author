@@ -91,3 +91,10 @@ define depconf
 	fi
 endef
 
+define clean_directory
+	for dir in $1; do
+	   if test -d "$$dir" ; then
+	     cd "$$dir"; $(RM) *.a *.po *.o; cd @BUILDDIR@
+	   fi
+	done
+endef
