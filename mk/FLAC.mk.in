@@ -1,0 +1,20 @@
+#Start of autoconf-substituted, do not modify#
+
+FLAC_LIB=@FLAC_LIB@
+FLAC_LINK=@FLAC_LINK@
+MAYBE_FLAC=@MAYBE_FLAC@
+HAVE_FLAC=@HAVE_a52_dec@
+HAVE_EXTERNAL_FLAC=@HAVE_EXTERNAL_FLAC@
+
+#End of autoconf-substituted, do not modify#
+
+FLAC_MAKESPEC=auto
+FLAC_CONFIGSPEC=lib
+FLAC_DEPENDENCY=$(MAYBE_FLAC) libogg.depconf
+FLAC_TARGETLIB=libFLAC.a
+
+
+#Start of autoconf-substituted, do not modify#
+FLAC.depconf: $(FLAC_DEPENDENCY)
+	$(call depconf,$*)
+#end of autoconf-substituted
