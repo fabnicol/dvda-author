@@ -261,6 +261,15 @@ AC_CONFIG_FILES([Makefile
 	 mk/libogg.mk
 	 mk/FLAC.mk
 	 mk/functions.mk
+	 mk/sox.mk
+	 mk/mjpegtools.mk \
+	 mk/dvdauthor.mk \
+	 mk/ImageMagick.mk \
+	 mk/lplex.mk \
+	 mk/mpeg2dec.mk \
+	 mk/help2man.mk \
+	 mk/a52dec.mk \
+	 mk/cdrtools.mk \
 	 images/Makefile
 	 script.libflac
 	 script.lplex

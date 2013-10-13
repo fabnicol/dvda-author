@@ -20,6 +20,10 @@ CAT=/bin/cat
 SHELL=/bin/sh
 SHELLFLAGS=-ec
 
+include @ROOTDIR@/mk/FLAC.mk
+include @ROOTDIR@/mk/sox.mk
+include @ROOTDIR@/mk/libogg.mk
+
 bin_PROGRAM=dvda-author
 
 CFLAGS += -D_GNU_SOURCE
@@ -47,7 +51,7 @@ endif
 
 $(if $(sox), LIBS   += SOX_LIB_DEPS)
 
-ALL_TARGETS=@PROGRAM_TARGETS@ FLAC libogg sox
+ALL_TARGETS=FLAC libogg sox
 
 .PHONY: program_transform_name create_options all $(ALL_TARGETS)
 
@@ -55,17 +59,17 @@ all:  $(ALL_TARGETS) $(bin_PROGRAM) program_transform_name
 
 $(ALL_TARGETS):
 	if test "$($@_LIB)" != ""; then
-	      LDLIBS += $($@_LIB)
+	      LD_DEPS += $($@_LIB)
 	      CPPFLAGS += -I@ROOTDIR@/$(MAYBE_$@)/src
 		 if test "$(HAVE_EXTERNAL_$@)" = "yes"; then
 		    if test "$($@_LIB)" != "yes"; then
-		       LDLIBS   += $($@_LIB)
+		       LD_DEPS   += $($@_LIB)
 		       echo Linking to system lib $($@_LIB)
 		    fi
 		 else
 		     if test "$(HAVE_$@)" = "yes" ; then
 			if test "$($@_LINK)" != ""; then
-			  LDFLAGS   += $($@_LINK)
+			  LD_DEPS   += $($@_LINK)
 			  echo Linking to user lib $($@_LINK)
 			fi
 		     else
@@ -74,7 +78,8 @@ $(ALL_TARGETS):
 		 fi
 	fi
 
-$(bin_PROGRAM): $(OBJECTS)
+$(bin_PROGRAM): $(OBJECTS) $(LD_DEPS)
+
 program_transform_name: $(bin_PROGRAM)
 	mv -f $(bin_PROGRAM) @PACKAGE_NAME@-@VERSION@
 
