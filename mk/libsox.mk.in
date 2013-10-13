@@ -7,6 +7,7 @@ MAYBE_sox=@MAYBE_sox@
 HAVE_sox=@HAVE_a52_dec@
 HAVE_EXTERNAL_sox=@HAVE_EXTERNAL_sox@
 sox_DEPENDENCY=$(MAYBE_sox) FLAC.depconf
+CONFIGURE_sox_FLAGS=@CONFIGURE_sox_FLAGS@
 
 sox.depconf: $(sox_DEPENDENCY)
 	if test  "$(MAYBE_$*)" != ""; then

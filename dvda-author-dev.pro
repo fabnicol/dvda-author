@@ -37,9 +37,15 @@ SOURCES += \
     src/sound.c \
     src/videoimport.c \
     src/xml.c \
-    src/dvda_author.c \
-    libutils/src/c_utils.c \
-    libutils/src/winport.c
+    libutils/src/winport.c \
+    libutils/src/libc_utils.c \
+    libfixwav/src/auxiliary.c \
+    libfixwav/src/checkData.c \
+    libfixwav/src/checkParameters.c \
+    libfixwav/src/manager.c \
+    libfixwav/src/readHeader.c \
+    libfixwav/src/repair.c \
+    src/dvda-author.c
 
 OTHER_FILES += \
     src/dvda-author.conf \
@@ -68,29 +74,30 @@ OTHER_FILES += \
     NEWS \
     TODO \
     ChangeLog \
-    m4/m4.variables \
-    mk/functions.mk \
-    mk/mjpegtools.mk \
-    mk/dvdauthor.mk \
-    mk/ImageMagick.mk \
-    mk/lplex.mk \
-    mk/mpeg2dec.mk \
-    mk/help2man.mk \
-    mk/a52dec.mk \
-    mk/cdrtools.mk \
     libiberty/src/Makefile.am \
     libiberty/src/include/Makefile.am \
     libutils/Makefile.am \
     libfixwav/src/Makefile.am \
     Makefile.in \
     src/Makefile.in \
-    libutils/src/include/Makefile.in \
-    libutils/src/include/Makefile \
     libutils/src/Makefile.in \
+    m4/m4.variables \
     mk/functions.mk.in \
     mk/FLAC.mk.in \
     mk/libogg.mk.in \
-    mk/libsox.mk.in
+    mk/libsox.mk.in \
+    mk/mjpegtools.mk.in \
+    mk/dvdauthor.mk.in \
+    mk/ImageMagick.mk.in \
+    mk/lplex.mk.in \
+    mk/mpeg2dec.mk.in \
+    mk/help2man.mk.in \
+    mk/a52dec.mk.in \
+    mk/cdrtools.mk.in \
+    libfixwav/src/Makefile.in \
+    libfixwav/src/Makefile \
+    libfixwav/src/Makefile.am.user \
+    libfixwav/src/Makefile.inMakefile.am
 
 HEADERS += \
     src/include/amg.h \

@@ -333,9 +333,7 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract, const char* player)
         {
             STRING_WRITE_CHAR_BUFSIZ(output_buf, "%s%s%d", globals.settings.outdir, "/g", ngroups_scan)
             if (!globals.nooutput)
-                secure_mkdir(
-                    output_buf,
-                    mode);
+                secure_mkdir(output_buf, mode);
 
             if ((globals.debugging)&& (!globals.nooutput))
                 foutput("[INF]  Extracting to directory %s ...\n", output_buf);

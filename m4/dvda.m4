@@ -672,7 +672,9 @@ AC_DEFUN([DVDA_CONFIG],[
 
     AS_IF([test x$VAR[_BUILD] = xyes || test x$ALL_BUILDS = xyes -a x$[withval_]VAR != xno],
 	   [
-	      AS_IF([test VAR != fixwav], [PROGRAM_TARGETS="$PROGRAM_TARGETS VAR"])
+	      #AS_IF([test VAR != fixwav], [PROGRAM_TARGETS="$PROGRAM_TARGETS VAR"])
+
+	      PROGRAM_TARGETS="$PROGRAM_TARGETS VAR"
 
 	      [MAYBE_]VAR=m4_unquote(CDR)
 	      VAR[_BUILD]=yes
