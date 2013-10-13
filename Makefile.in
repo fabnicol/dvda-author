@@ -10,27 +10,38 @@ SHELL=/bin/sh
 #Using ONESHELL, version make 3.82+, possibly higher with windows ports
 .ONESHELL:
 
-include $(foreach prog,@PROGRAM_TARGETS@,mk/$(prog).mk)
-include mk/functions.mk
 
-# nested packages will be configured only if main configure has been launched freshly.
-# stamprecord si a so-called cookie, used only for its time stamp
+PROGRAM_TARGETS=@PROGRAM_TARGETS@
+PROGRAM_TARGET_SOURCES=$(foreach prog,$(PROGRAM_TARGETS),mk/$(prog).mk)
+PROGRAM_TARGET_CONFIGS=$(foreach prog,$(PROGRAM_TARGETS),$(prog).config)
+SRC_SUBDIRS=libutils/src $(iberty) $(fixwav) src
 
-.PHONY: all erase_build.trace do_sox_lib_deps_subst @PROGRAM_TARGETS@ create_autotargets $(AUTOTARGETS)
+.SUFFIXES: .config .depconf
+.PHONY: all all-sources erase_build.trace do_sox_lib_deps_subst create_autotargets $(PROGRAM_TARGET_CONFIGS) $(SRC_SUBDIRS)
 
-ALL_TARGETS=erase_build.trace @PROGRAM_TARGETS@
+ALL_TARGETS=erase_build.trace
 
 ifeq "@HAVE_sox_BUILD@" "yes"
  ALL_TARGETS += do_sox_lib_deps_subst
 endif
 
-all: $(ALL_TARGETS) src
-	$(MAKE) --directory=$^
+ALL_TARGETS += $(PROGRAM_TARGET_CONFIGS) $(SRC_SUBDIRS)
 
-src: libutils $(iberty) $(fixwav) $(sox)
+all:  $(ALL_TARGETS)
+
+include mk/functions.mk
+include $(PROGRAM_TARGET_SOURCES)
+
+$(SRC_SUBDIRS):
+	echo making into directory $@...
+	$(MAKE) --directory=$@
 
 erase_build.trace:
-	echo PROGRAM_TARGETS=@PROGRAM_TARGETS@
+	@echo PROGRAM_TARGETS=$(PROGRAM_TARGETS)
+	echo PROGRAM_TARGET_SOURCES=$(PROGRAM_TARGET_SOURCES)
+	echo PROGRAM_TARGET_CONFIGS=$(PROGRAM_TARGET_CONFIGS)
+	echo adding: $(SRC_SUBDIRS)
+	echo yielding ALL_TARGETS=$(ALL_TARGETS)
 	if test -f BUILD.TRACE; then
 	  mv BUILD.TRACE BUILD.TRACE~
 	fi
@@ -145,3 +156,16 @@ ifeq "@HAVE_git@" "yes"
 	  @GIT@ checkout $(CURRENTBRANCH)
 	endif
 endif
+
+#$(libogg_TARGETLIB)
+	#if test "$($<_CONFIGSPEC)" = "exe"; then
+	#      $(call configure_exec_package,$<,$($<_TESTBINARY),$($<_COMMANDLINE))
+	#else
+	#fi
+
+$(PROGRAM_TARGET_CONFIGS): %.config: %.depconf
+	@echo Creating program target config for $* using $<...
+
+
+force: ;
+
