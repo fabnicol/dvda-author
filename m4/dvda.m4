@@ -389,7 +389,7 @@ AS_IF([test x$enableval = xyes],[enableval_boolean=1],[enableval_boolean=0])
 AC_DEFINE_UNQUOTED([HAVE_]bn,[$enableval_boolean],msg)
 #HAVE_sox etc. in automake conditionals
 
-AS_IF([test x$upper = xyes -a  act = build ],[[HAVE_]bn[_BUILD] = yes],[[HAVE_]bn[_BUILD]=no])
+AS_IF([test x$upper = xyes -a  act = build ],[[HAVE_]bn[_BUILD]=yes],[[HAVE_]bn[_BUILD]=no])
 AC_SUBST([HAVE_]bn[_BUILD])
 
 #m4_popdef([msg])

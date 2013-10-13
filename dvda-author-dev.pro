@@ -70,9 +70,6 @@ OTHER_FILES += \
     ChangeLog \
     m4/m4.variables \
     mk/functions.mk \
-    mk/libogg.mk \
-    mk/libFlac.mk \
-    mk/libsox.mk \
     mk/mjpegtools.mk \
     mk/dvdauthor.mk \
     mk/ImageMagick.mk \
@@ -89,7 +86,11 @@ OTHER_FILES += \
     src/Makefile.in \
     libutils/src/include/Makefile.in \
     libutils/src/include/Makefile \
-    libutils/src/Makefile.in
+    libutils/src/Makefile.in \
+    mk/functions.mk.in \
+    mk/FLAC.mk.in \
+    mk/libogg.mk.in \
+    mk/libsox.mk.in
 
 HEADERS += \
     src/include/amg.h \

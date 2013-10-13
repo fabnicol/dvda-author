@@ -260,6 +260,9 @@ AC_CONFIG_FILES([Makefile
 	 libfixwav/src/include/Makefile
 	 libiberty/src/Makefile
 	 libiberty/src/include/Makefile
+	 mk/libogg.mk
+	 mk/FLAC.mk
+	 mk/functions.mk
 	 images/Makefile
 	 script.libflac
 	 script.lplex
