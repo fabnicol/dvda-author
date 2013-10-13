@@ -85,7 +85,6 @@ OTHER_FILES += \
     mk/functions.mk.in \
     mk/FLAC.mk.in \
     mk/libogg.mk.in \
-    mk/libsox.mk.in \
     mk/mjpegtools.mk.in \
     mk/dvdauthor.mk.in \
     mk/ImageMagick.mk.in \
@@ -97,7 +96,8 @@ OTHER_FILES += \
     libfixwav/src/Makefile.in \
     libfixwav/src/Makefile \
     libfixwav/src/Makefile.am.user \
-    libfixwav/src/Makefile.inMakefile.am
+    libfixwav/src/Makefile.inMakefile.am \
+    mk/sox.mk.in
 
 HEADERS += \
     src/include/amg.h \
