@@ -12,9 +12,10 @@ SHELL=/bin/sh
 
 
 PROGRAM_TARGETS=@PROGRAM_TARGETS@
-PROGRAM_TARGET_SOURCES=$(foreach prog,$(PROGRAM_TARGETS),mk/$(prog).mk)
-PROGRAM_TARGET_CONFIGS=$(foreach prog,$(PROGRAM_TARGETS),$(prog).config)
-SRC_SUBDIRS=libutils/src $(iberty) $(fixwav) src
+PROGRAM_TARGET_SOURCES=$(foreach prog,$(PROGRAM_TARGETS),$(shell if test -f mk/$(prog).mk; then echo mk/$(prog).mk; fi))
+PROGRAM_TARGET_CONFIGS=$(foreach prog,$(PROGRAM_TARGETS),$(shell if test -f mk/$(prog).mk; then echo $(prog).config; fi))
+
+SRC_SUBDIRS=libutils/src @MAYBE_iberty@ @MAYBE_fixwav@ src
 
 .SUFFIXES: .config .depconf
 .PHONY: all all-sources erase_build.trace do_sox_lib_deps_subst create_autotargets $(PROGRAM_TARGET_CONFIGS) $(SRC_SUBDIRS)
@@ -35,6 +36,7 @@ include $(PROGRAM_TARGET_SOURCES)
 $(SRC_SUBDIRS):
 	echo making into directory $@...
 	$(MAKE) --directory=$@
+
 
 erase_build.trace:
 	@echo PROGRAM_TARGETS=$(PROGRAM_TARGETS)
