@@ -1,4 +1,4 @@
-include sox.global.mk
+include @ROOTDIR@/mk/sox.global.mk
 
 sox_MAKESPEC=manual
 
