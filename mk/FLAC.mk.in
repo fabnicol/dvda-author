@@ -1,4 +1,4 @@
-include FLAC.global.mk
+include @ROOTDIR@/mk/FLAC.global.mk
 
 FLAC_MAKESPEC=auto
 FLAC_CONFIGSPEC=lib

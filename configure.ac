@@ -243,7 +243,7 @@ m4_map([AC_SUBST],
        [[LIBSOXCONVERT_CPPFLAGS]],[[DEBUG_FLAGS]],[[VERSION]],[[PROGRAM_TARGETS]]])
 
 # correspondence between X_BUILD shell variables and subdirectory names. Could be avoided with lesser flexibility in naming conventions.
-	 #mk/libogg.global.mk
+
 
 AC_MSG_NOTICE([Configuring ${PACKAGE_TARNAME}...])
 AC_CONFIG_FILES([Makefile
@@ -257,6 +257,7 @@ AC_CONFIG_FILES([Makefile
 	 libfixwav/src/Makefile
 	 libfixwav/src/include/Makefile
 	 libiberty/src/Makefile
+	 mk/libogg.global.mk
 	 mk/libogg.mk
 	 mk/FLAC.mk
 	 mk/FLAC.global.mk
