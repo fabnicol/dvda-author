@@ -37,7 +37,7 @@ fi
 
 function clean()
 {
-  sed -r -i '/^(\s*|\s*#.*)$/d' $1
+  sed -r -i '/^\s*$/d' $1
 }
 
 

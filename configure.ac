@@ -57,7 +57,7 @@ ROOTDIR=`cd "$srcdir" ; pwd`
 
 m4_include([m4/auxiliary.m4])
 
-#m4_include([m4/dependencies.m4])
+m4_include([m4/dependencies.m4])
 
 DVDA_MKDIR([local])
 
@@ -243,6 +243,7 @@ m4_map([AC_SUBST],
        [[LIBSOXCONVERT_CPPFLAGS]],[[DEBUG_FLAGS]],[[VERSION]],[[PROGRAM_TARGETS]]])
 
 # correspondence between X_BUILD shell variables and subdirectory names. Could be avoided with lesser flexibility in naming conventions.
+	 #mk/libogg.global.mk
 
 AC_MSG_NOTICE([Configuring ${PACKAGE_TARNAME}...])
 AC_CONFIG_FILES([Makefile
@@ -252,24 +253,24 @@ AC_CONFIG_FILES([Makefile
 	 dvda-author.spec.coreversion
 	 dvda-author.nsi
 	 src/Makefile
-	 src/include/Makefile
 	 libutils/src/Makefile
 	 libfixwav/src/Makefile
 	 libfixwav/src/include/Makefile
 	 libiberty/src/Makefile
-	 libiberty/src/include/Makefile
 	 mk/libogg.mk
 	 mk/FLAC.mk
+	 mk/FLAC.global.mk
 	 mk/functions.mk
 	 mk/sox.mk
-	 mk/mjpegtools.mk \
-	 mk/dvdauthor.mk \
-	 mk/ImageMagick.mk \
-	 mk/lplex.mk \
-	 mk/mpeg2dec.mk \
-	 mk/help2man.mk \
-	 mk/a52dec.mk \
-	 mk/cdrtools.mk \
+	 mk/sox.global.mk
+	 mk/mjpegtools.mk
+	 mk/dvdauthor.mk
+	 mk/ImageMagick.mk
+	 mk/lplex.mk
+	 mk/mpeg2dec.mk
+	 mk/help2man.mk
+	 mk/a52dec.mk
+	 mk/cdrtools.mk
 	 images/Makefile
 	 script.libflac
 	 script.lplex
