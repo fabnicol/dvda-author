@@ -100,6 +100,8 @@ OTHER_FILES += \
     mk/sox.mk.in \
     mk/FLAC.global.mk.in \
     mk/sox.global.mk.in \
+    mk/libogg.global.mk.in \
+    mk/sox.global.mk.in \
     mk/libogg.global.mk.in
 
 HEADERS += \

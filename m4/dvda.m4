@@ -648,6 +648,8 @@ AC_SUBST([HAVE_EXTERNAL_]BASENAME)
 # whether configure automatically found valid system link
 AS_IF([test x$BASENAME[_LINK] != x ],[[HAVE_]BASENAME[_LINK]=yes],[[HAVE_]BASENAME[_LINK]=no])
 
+AC_SUBST([HAVE_]BASENAME[_LINK])
+
 #m4_popdef([BASENAME])
 #m4_popdef([lower])
 
@@ -680,7 +682,11 @@ AC_DEFUN([DVDA_CONFIG],[
 	      VAR[_BUILD]=yes
 	      VAR[_CONFIGURE_FILE]="[$MAYBE_]VAR"/configure
 
-	      m4_ifvaln([$2],[$2],[VAR[_LIB]="\${BUILDDIR}[/local/lib/lib]cut_lib_prefix(VAR)[.a]"]) #do not quote VAR. It is necessary to lower case as base names are uniform
+	      m4_ifvaln([$2],[$2],
+	      [
+		VAR[_LIB]="$BUILDDIR[/local/lib/lib]cut_lib_prefix(VAR)[.a]"
+		VAR[_LINK]=""
+	      ]) #do not quote VAR. It is necessary to lower case as base names are uniform
 
 	      [CONFIGURE_]VAR[_FLAGS]="FL $UPPERVAR[_FLAGS]"
 	      AC_SUBST([CONFIGURE_]VAR[_FLAGS])
@@ -695,6 +701,7 @@ AC_DEFUN([DVDA_CONFIG],[
     AC_SUBST(VAR)
     AC_SUBST(VAR[_CONFIGURE_FILE])
     AC_SUBST(VAR[_LIB])
+    AC_SUBST(VAR[_LINK])
     #m4_popdef([VAR])
     #m4_popdef([UPPERVAR])
     #m4_popdef([CDR])
@@ -704,7 +711,10 @@ AC_DEFUN([DVDA_CONFIG],[
 
 
 AC_DEFUN([DVDA_CONFIG_EXECUTABLE_INSTALL],[DVDA_CONFIG([$1],[#executable_install])])
-AC_DEFUN([DVDA_CONFIG_LIBRARY_NO_INSTALL],[DVDA_CONFIG([$1],[VAR[_LIB]="\${top_builddir}/[$MAYBE_]VAR/src/[$MAYBE_]VAR.a"])])
+AC_DEFUN([DVDA_CONFIG_LIBRARY_NO_INSTALL],[DVDA_CONFIG([$1],[
+       VAR[_LIB]="$BUILDDIR/[$MAYBE_]VAR/src/[$MAYBE_]VAR.a"])
+       VAR[_LINK]=""
+    ])
 AC_DEFUN([DVDA_CONFIG_LIBRARY_LOCAL_INSTALL],[DVDA_CONFIG([$1],[]) ])
 
 
