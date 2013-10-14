@@ -20,9 +20,9 @@ CAT=/bin/cat
 SHELL=/bin/sh
 SHELLFLAGS=-ec
 
-include @ROOTDIR@/mk/FLAC.mk
-include @ROOTDIR@/mk/sox.mk
-include @ROOTDIR@/mk/libogg.mk
+include @ROOTDIR@/mk/FLAC.global.mk
+include @ROOTDIR@/mk/sox.global.mk
+#include @ROOTDIR@/mk/libogg.global.mk
 
 bin_PROGRAM=dvda-author
 
