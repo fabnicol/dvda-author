@@ -97,7 +97,10 @@ OTHER_FILES += \
     libfixwav/src/Makefile \
     libfixwav/src/Makefile.am.user \
     libfixwav/src/Makefile.inMakefile.am \
-    mk/sox.mk.in
+    mk/sox.mk.in \
+    mk/FLAC.global.mk.in \
+    mk/sox.global.mk.in \
+    mk/libogg.global.mk.in
 
 HEADERS += \
     src/include/amg.h \
