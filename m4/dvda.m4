@@ -554,7 +554,8 @@ m4_foreach([LIST], [CHECKLIST],
 
 		      ]
 		      ,[ DVDA_ERR([Could not find BASENAME lib, retry with --libdir=DIR, root directory for $1 lib])
-			 BASENEME[_LIB]=
+			 BASENAME[_LIB]=
+			 BASENAME[_LINK]=
 		       ])
 		],
 		[test $4 = static],
@@ -564,15 +565,16 @@ m4_foreach([LIST], [CHECKLIST],
 		      [ DVDA_INF([Using installed static lib$1 library...])]
 		      ,[ DVDA_ERR([Could not find BASENAME lib, retry with --libdir=DIR, root directory for $1 lib])
 			 BASENAME[_LIB]=
+			 BASENAME[_LINK]=
 		       ])
 		])])
 
-	DVDA_INF([Using installed [lib]$1 library...])
        ],
        [
 	DVDA_INF([Using specified [lib]$1 library...])
 	BASENAME[_LIB]="$2"
 	BASENAME[_BUILD]=no
+	BASENAME[_LINK]=
        ])
     ],
     [
@@ -674,8 +676,6 @@ AC_DEFUN([DVDA_CONFIG],[
 
     AS_IF([test x$VAR[_BUILD] = xyes || test x$ALL_BUILDS = xyes -a x$[withval_]VAR != xno],
 	   [
-	      #AS_IF([test VAR != fixwav], [PROGRAM_TARGETS="$PROGRAM_TARGETS VAR"])
-
 	      PROGRAM_TARGETS="$PROGRAM_TARGETS VAR"
 
 	      [MAYBE_]VAR=m4_unquote(CDR)

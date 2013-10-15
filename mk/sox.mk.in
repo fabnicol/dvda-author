@@ -11,5 +11,6 @@ sox.depconf: $(sox_DEPENDENCY)
 			exit -1
 		fi
 	fi
-	$(call configure_lib_package,$*,autoreconf -if)
+	$(call configure_lib_package,$*,/usr/bin/autoreconf,-if)
 
+#with /bin/sh it is necessary to prepend the path to autoreconf, unlike with /bin/bash
