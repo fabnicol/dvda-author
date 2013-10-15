@@ -12,10 +12,7 @@ DEFINES += _GNU_SOURCE __CB HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_fixwav HAV
 
 #libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame --disable-gomp
 
-LIBS +=   -Llibutils/src \
-		 -Llibfixwav/src \
-		 libs/libsoxconvert.a  libs/libFLAC.a libs/libogg.a   libs/libsox.a\
-		  -lfixwav -lc_utils
+LIBS +=   libs/libFLAC.a libs/libogg.a   libs/libsox.a
 
 INCLUDEPATH = src/include libutils/src/include libutils/src/include libutils/src/private libfixwav/src/include libs/include/FLAC libs/include/libsoxconvert
 
@@ -39,13 +36,13 @@ SOURCES += \
     src/xml.c \
     libutils/src/winport.c \
     libutils/src/libc_utils.c \
-    libfixwav/src/auxiliary.c \
     libfixwav/src/checkData.c \
     libfixwav/src/checkParameters.c \
     libfixwav/src/manager.c \
     libfixwav/src/readHeader.c \
     libfixwav/src/repair.c \
-    src/dvda-author.c
+    src/dvda-author.c \
+    libfixwav/src/fixwav_auxiliary.c
 
 OTHER_FILES += \
     src/dvda-author.conf \

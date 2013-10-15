@@ -1,7 +1,7 @@
 #if HAVE_CONFIG_H && !defined __CB__
 #include "config.h"
 #endif
-#undef __STRICT_ANSI__
+//#undef __STRICT_ANSI__
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

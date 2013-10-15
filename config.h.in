@@ -3,11 +3,11 @@
 /* Defining a52dec filepath. */
 #undef A52DEC
 
+/* Define if building universal (internal helper macro) */
+#undef AC_APPLE_UNIVERSAL_BUILD
+
 /* Defining bn filepath */
 #undef ALL
-
-/* Always inline when ALWAYS_INLINE is set */
-#undef ALWAYS_INLINE
 
 /* Pathname of autoconf */
 #undef AUTOCONF
@@ -23,6 +23,9 @@
 
 /* Defining cdrtools filepath. */
 #undef CDRTOOLS
+
+/* Whether compiler is GNU GCC */
+#undef COMPILER_IS_GCC
 
 /* Pathname of convert */
 #undef CONVERT
@@ -42,52 +45,8 @@
 /* Defining flac filepath. */
 #undef FLAC
 
-/* Whether a52dec source code will be downloaded for build. */
-#undef HAVE_A52DEC
-
-/* configure, build and install a52dec from source code */
-#undef HAVE_A52DEC_BUILD
-
-/* download a52dec from source code */
-#undef HAVE_A52DEC_DOWNLOAD
-
-/* Whether all source code will be downloaded for build. */
-#undef HAVE_ALL
-
-/* enable all all */
-#undef HAVE_ALL_ALL
-
-/* configure, build and install all core dependencies <FLAC, Ogg, SoX,
-   dvdauthor, cdrtools> from source code */
-#undef HAVE_ALL_BUILDS
-
-/* download all dependencies <FLAC, Ogg, SoX, dvdauthor, cdrtools> and patch
-   the source code if necessary */
-#undef HAVE_ALL_DEPS
-
-/* Found autoconf */
-#undef HAVE_AUTOCONF
-
-/* Found automake */
-#undef HAVE_AUTOMAKE
-
-/* Found cdrecord */
-#undef HAVE_CDRECORD
-
-/* Whether cdrtools source code will be downloaded for build. */
-#undef HAVE_CDRTOOLS
-
-/* download and patch cdrtools from source code */
-#undef HAVE_CDRTOOLS_PATCH
-
-/* Found convert */
-#undef HAVE_CONVERT
-
-/* configure, build and install core from source code */
-#undef HAVE_CORE_BUILD
-
-/* Found curl */
-#undef HAVE_CURL
+/* Pathname of git */
+#undef GIT
 
 /* Define to 1 if C supports variable-length arrays. */
 #undef HAVE_C_VARARRAYS
@@ -99,12 +58,6 @@
 /* Define to 1 if you have the `dup2' function. */
 #undef HAVE_DUP2
 
-/* Whether dvdauthor source code will be downloaded for build. */
-#undef HAVE_DVDAUTHOR
-
-/* download and patch dvdauthor from source code */
-#undef HAVE_DVDAUTHOR_PATCH
-
 /* Define to 1 if you have the <errno.h> header file. */
 #undef HAVE_ERRNO_H
 
@@ -114,17 +67,8 @@
 /* Define to 1 if you have the <fixwav_manager.h> header file. */
 #undef HAVE_FIXWAV_MANAGER_H
 
-/* Whether flac source code will be downloaded for build. */
-#undef HAVE_FLAC
-
 /* Define to 1 if you have the <FLAC/all.h> header file. */
 #undef HAVE_FLAC_ALL_H
-
-/* configure, build and install flac from source code */
-#undef HAVE_FLAC_BUILD
-
-/* download flac from source code */
-#undef HAVE_FLAC_DOWNLOAD
 
 /* Define to 1 if you have the `floor' function. */
 #undef HAVE_FLOOR
@@ -147,69 +91,18 @@
 /* Define to 1 if you have the `getsubopt' function. */
 #undef HAVE_GETSUBOPT
 
-/* Whether help2man source code will be downloaded for build. */
-#undef HAVE_HELP2MAN
-
-/* configure, build and install help2man from source code */
-#undef HAVE_HELP2MAN_BUILD
-
-/* download help2man from source code */
-#undef HAVE_HELP2MAN_DOWNLOAD
-
-/* configure, build and install iberty from source code */
-#undef HAVE_IBERTY_BUILD
-
-/* Whether ImageMagick source code will be downloaded for build. */
-#undef HAVE_IMAGEMAGICK
-
-/* configure, build and install ImageMagick from source code */
-#undef HAVE_IMAGEMAGICK_BUILD
-
-/* download ImageMagick from source code */
-#undef HAVE_IMAGEMAGICK_DOWNLOAD
-
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Found jpeg2yuv */
-#undef HAVE_JPEG2YUV
-
-/* Whether libmpeg2 source code will be downloaded for build. */
-#undef HAVE_LIBMPEG2
-
-/* download libmpeg2 from source code */
-#undef HAVE_LIBMPEG2_DOWNLOAD
-
-/* Whether libogg source code will be downloaded for build. */
-#undef HAVE_LIBOGG
-
-/* configure, build and install libogg from source code */
-#undef HAVE_LIBOGG_BUILD
-
-/* download libogg from source code */
-#undef HAVE_LIBOGG_DOWNLOAD
+/* Whether ImageMagick source code will be downloaded for build. */
+#undef HAVE_ImageMagick
 
 /* Define to 1 if you have the <locale.h> header file. */
 #undef HAVE_LOCALE_H
 
-/* Whether lplex source code will be downloaded for build. */
-#undef HAVE_LPLEX
-
-/* download lplex from source code */
-#undef HAVE_LPLEX_DOWNLOAD
-
-/* Found make */
-#undef HAVE_MAKE
-
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
 #undef HAVE_MALLOC
-
-/* Found man2html */
-#undef HAVE_MAN2HTML
-
-/* Found md5sum */
-#undef HAVE_MD5SUM
 
 /* Define to 1 if you have the `memchr' function. */
 #undef HAVE_MEMCHR
@@ -223,48 +116,8 @@
 /* Define to 1 if you have the `memset' function. */
 #undef HAVE_MEMSET
 
-/* Whether minimal source code will be downloaded for build. */
-#undef HAVE_MINIMAL
-
-/* configure, build and install minimal from source code */
-#undef HAVE_MINIMAL_BUILD
-
-/* download minimal dependencies <FLAC, Ogg, SoX, dvdauthor, cdrtools> and
-   patch the source code if necessary */
-#undef HAVE_MINIMAL_DEPS
-
-/* Whether mjpegtools source code will be downloaded for build. */
-#undef HAVE_MJPEGTOOLS
-
-/* configure, build and install mjpegtools from source code */
-#undef HAVE_MJPEGTOOLS_BUILD
-
-/* download mjpegtools from source code */
-#undef HAVE_MJPEGTOOLS_DOWNLOAD
-
 /* Define to 1 if you have the `mkdir' function. */
 #undef HAVE_MKDIR
-
-/* Found mkisofs */
-#undef HAVE_MKISOFS
-
-/* Found mogrify */
-#undef HAVE_MOGRIFY
-
-/* Found mp2enc */
-#undef HAVE_MP2ENC
-
-/* Found mpeg2dec */
-#undef HAVE_MPEG2DEC
-
-/* configure, build and install mpeg2dec from source code */
-#undef HAVE_MPEG2DEC_BUILD
-
-/* Found mpeg2enc */
-#undef HAVE_MPEG2ENC
-
-/* Found mplex */
-#undef HAVE_MPLEX
 
 /* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
 #undef HAVE_NDIR_H
@@ -311,9 +164,6 @@
 /* Define to 1 if you have the <ogg/ogg.h> header file. */
 #undef HAVE_OGG_OGG_H
 
-/* Found patch */
-#undef HAVE_PATCH
-
 /* Define to 1 if your system has a GNU libc compatible `realloc' function,
    and to 0 otherwise. */
 #undef HAVE_REALLOC
@@ -330,23 +180,8 @@
 /* Define to 1 if you have the `snprintf' function. */
 #undef HAVE_SNPRINTF
 
-/* Whether sox source code will be downloaded for build. */
-#undef HAVE_SOX
-
-/* configure, build and install sox from source code */
-#undef HAVE_SOX_BUILD
-
 /* Define to 1 if you have the <sox.h> header file. */
 #undef HAVE_SOX_H
-
-/* download and patch sox from source code */
-#undef HAVE_SOX_PATCH
-
-/* Found spumux */
-#undef HAVE_SPUMUX
-
-/* enable static sox */
-#undef HAVE_STATIC_SOX
 
 /* Define to 1 if stdbool.h conforms to C99. */
 #undef HAVE_STDBOOL_H
@@ -422,6 +257,109 @@
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
 
+/* Whether a52dec source code will be downloaded for build. */
+#undef HAVE_a52dec
+
+/* enable all all */
+#undef HAVE_all
+
+/* Found autoconf */
+#undef HAVE_autoconf
+
+/* Found automake */
+#undef HAVE_automake
+
+/* Found cdrecord */
+#undef HAVE_cdrecord
+
+/* Whether cdrtools source code will be downloaded for build. */
+#undef HAVE_cdrtools
+
+/* Found convert */
+#undef HAVE_convert
+
+/* configure, build and install core from source code */
+#undef HAVE_core
+
+/* Found curl */
+#undef HAVE_curl
+
+/* Whether dvdauthor source code will be downloaded for build. */
+#undef HAVE_dvdauthor
+
+/* Whether flac source code will be downloaded for build. */
+#undef HAVE_flac
+
+/* Found git */
+#undef HAVE_git
+
+/* Whether help2man source code will be downloaded for build. */
+#undef HAVE_help2man
+
+/* Found jpeg2yuv */
+#undef HAVE_jpeg2yuv
+
+/* configure, build and install libfixwav from source code */
+#undef HAVE_libfixwav
+
+/* configure, build and install libiberty from source code */
+#undef HAVE_libiberty
+
+/* Whether libmpeg2 source code will be downloaded for build. */
+#undef HAVE_libmpeg2
+
+/* Whether libogg source code will be downloaded for build. */
+#undef HAVE_libogg
+
+/* Whether lplex source code will be downloaded for build. */
+#undef HAVE_lplex
+
+/* Found make */
+#undef HAVE_make
+
+/* Found man2html */
+#undef HAVE_man2html
+
+/* Found md5sum */
+#undef HAVE_md5sum
+
+/* download minimal dependencies <FLAC, Ogg, SoX, dvdauthor, cdrtools> and
+   patch the source code if necessary */
+#undef HAVE_minimal
+
+/* Whether mjpegtools source code will be downloaded for build. */
+#undef HAVE_mjpegtools
+
+/* Found mkisofs */
+#undef HAVE_mkisofs
+
+/* Found mogrify */
+#undef HAVE_mogrify
+
+/* Found mp2enc */
+#undef HAVE_mp2enc
+
+/* configure, build and install mpeg2dec from source code */
+#undef HAVE_mpeg2dec
+
+/* Found mpeg2enc */
+#undef HAVE_mpeg2enc
+
+/* Found mplex */
+#undef HAVE_mplex
+
+/* Found patch */
+#undef HAVE_patch
+
+/* Whether sox source code will be downloaded for build. */
+#undef HAVE_sox
+
+/* Found spumux */
+#undef HAVE_spumux
+
+/* enable static sox */
+#undef HAVE_static
+
 /* Defining help2man filepath. */
 #undef HELP2MAN
 
@@ -479,12 +417,6 @@
 /* Define to 1 if assertions should be disabled. */
 #undef NDEBUG
 
-/* Define to 1 if your C compiler doesn't accept -c and -o together. */
-#undef NO_MINUS_C_MINUS_O
-
-/* Name of package */
-#undef PACKAGE
-
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
 
@@ -540,23 +472,32 @@
 #endif
 
 
-/* Version number of package */
-#undef VERSION
-
-/* Disables $lower support */
-#undef WITHOUT_fixwav
-
 /* Disables $lower support */
 #undef WITHOUT_flac
 
 /* Disables $lower support */
-#undef WITHOUT_iberty
+#undef WITHOUT_libfixwav
+
+/* Disables $lower support */
+#undef WITHOUT_libiberty
 
 /* Disables $lower support */
 #undef WITHOUT_libogg
 
 /* Disables $lower support */
 #undef WITHOUT_sox
+
+/* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
+   significant byte first (like Motorola and SPARC, unlike Intel). */
+#if defined AC_APPLE_UNIVERSAL_BUILD
+# if defined __BIG_ENDIAN__
+#  define WORDS_BIGENDIAN 1
+# endif
+#else
+# ifndef WORDS_BIGENDIAN
+#  undef WORDS_BIGENDIAN
+# endif
+#endif
 
 /* Define to 1 if `lex' declares `yytext' as a `char *' by default, not a
    `char[]'. */

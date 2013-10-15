@@ -27,9 +27,9 @@ include @ROOTDIR@/mk/libogg.global.mk
 bin_PROGRAM=dvda-author
 
 CFLAGS += -D_GNU_SOURCE
-LDFLAGS=-L/usr/local/lib -L/usr/lib -Xlinker --allow-multiple-definition -L@BUILDDIR@/libs
-CPPFLAGS=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include -I@ROOTDIR@ @DEBUG_FLAGS@
-LDLIBS= -lm @BUILDDIR@/libutils/src/libc_utils.a
+LDFLAGS :=-L/usr/local/lib -L/usr/lib -Xlinker --allow-multiple-definition -L@BUILDDIR@/libs
+CPPFLAGS :=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include -I@ROOTDIR@ @DEBUG_FLAGS@
+LDLIBS := -lm @BUILDDIR@/libutils/src/libc_utils.a
 
 OBJECTS=amg2.o ats.o atsi2.o audio.o auxiliary.o dvda-author.o  \
 	     file_input_parsing.o samg2.o launch_manager.o command_line_parsing.o  \
@@ -57,7 +57,7 @@ endif
 
 $(if $(sox), LDIBS_append   += SOX_LIB_DEPS)
 
-ALL_TARGETS=FLAC libogg
+ALL_TARGETS=FLAC libogg sox
 
 .PHONY: program_transform_name create_options all
 
@@ -69,10 +69,12 @@ LDLIBS += $(LDLIBS_append)
 
 CPPFLAGS += $(foreach prog,$(ALL_TARGETS),$(if $(MAYBE_$(prog)),-I@ROOTDIR@/$(MAYBE_$(prog))/src))
 
+CPPFLAGS += $(foreach prog,$(ALL_TARGETS),$$(if test "$($(prog)_LIB)" = "" -a "$($(prog)_LINK)" = ""; then echo -DWITHOUT_$(prog); fi))
+
 $(bin_PROGRAM): $(OBJECTS) $(LDLIBS_append)
 
 program_transform_name: $(bin_PROGRAM)
-	mv -f $(bin_PROGRAM) @PACKAGE_NAME@-@VERSION@
+	mv -f $(bin_PROGRAM) @PACKAGE_NAME@-@PACKAGE_VERSION@$(EXEEXT)
 
 # Symbol SOX_LIB_DEPS will be replaced by sox dependencies after configure in libsox by target do_sox_lib_deps_subst
 # left-align if conditions

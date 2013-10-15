@@ -4,7 +4,7 @@ help2man_MAKESPEC=manual
 help2man_LIB=
 help2man_LINK=
 MAYBE_help2man=
-HAVE_help2man=yes
+HAVE_help2man=no
 HAVE_EXTERNAL_help2man=@HAVE_EXTERNAL_help2man@
 
 help2man: Makefile
