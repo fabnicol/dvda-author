@@ -22,13 +22,13 @@ SHELLFLAGS=-ec
 
 include @ROOTDIR@/mk/FLAC.global.mk
 include @ROOTDIR@/mk/sox.global.mk
-#include @ROOTDIR@/mk/libogg.global.mk
+include @ROOTDIR@/mk/libogg.global.mk
 
 bin_PROGRAM=dvda-author
 
 CFLAGS += -D_GNU_SOURCE
 LDFLAGS=-L/usr/local/lib -L/usr/lib -Xlinker --allow-multiple-definition -L@BUILDDIR@/libs
-CPPFLAGS=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include -I@ROOTDIR@   ${DEBUG_FLAGS}
+CPPFLAGS=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include -I@ROOTDIR@ @DEBUG_FLAGS@
 LDLIBS= -lm @BUILDDIR@/libutils/src/libc_utils.a
 
 OBJECTS=amg2.o ats.o atsi2.o audio.o auxiliary.o dvda-author.o  \
@@ -41,44 +41,35 @@ endif
 
 ifneq "@WITH_sox@" "no"
     OBJECTS += libsoxconvert.o
+else
+    CPPFLAGS += -DWITHOUT_sox
 endif
 
-ifneq "@MAYBE_fixwav@" ""
-     LDLIBS+=$(fixwav_LIB)
-     CPPFLAGS +=-I@ROOTDIR@/libfixwav/src/include
+ifneq "@MAYBE_libfixwav@" ""
+     LDLIBS+=@libfixwav_LIB@
+     CPPFLAGS +=-I@ROOTDIR@/@MAYBE_libfixwav@/include
 endif
 
+ifneq "@MAYBE_libiberty@" ""
+     LDLIBS+=@libiberty_LIB@
+     CPPFLAGS +=-I@ROOTDIR@/@MAYBE_libiberty@/include
+endif
 
-$(if $(sox), LIBS   += SOX_LIB_DEPS)
+$(if $(sox), LDIBS_append   += SOX_LIB_DEPS)
 
-ALL_TARGETS=FLAC libogg sox
+ALL_TARGETS=FLAC libogg
 
-.PHONY: program_transform_name create_options all $(ALL_TARGETS)
+.PHONY: program_transform_name create_options all
 
-all:  $(ALL_TARGETS) $(bin_PROGRAM) program_transform_name
+all:  $(bin_PROGRAM) program_transform_name
 
-$(ALL_TARGETS):
-	if test "$($@_LIB)" != ""; then
-	      LD_DEPS += $($@_LIB)
-	      CPPFLAGS += -I@ROOTDIR@/$(MAYBE_$@)/src
-		 if test "$(HAVE_EXTERNAL_$@)" = "yes"; then
-		    if test "$($@_LIB)" != "yes"; then
-		       LD_DEPS   += $($@_LIB)
-		       echo Linking to system lib $($@_LIB)
-		    fi
-		 else
-		     if test "$(HAVE_$@)" = "yes" ; then
-			if test "$($@_LINK)" != ""; then
-			  LD_DEPS   += $($@_LINK)
-			  echo Linking to user lib $($@_LINK)
-			fi
-		     else
-			echo No linking to $@
-		     fi
-		 fi
-	fi
+LDLIBS_append = $(foreach prog,$(ALL_TARGETS),$($(prog)_LIB) $($(prog)_LINK))
 
-$(bin_PROGRAM): $(OBJECTS) $(LD_DEPS)
+LDLIBS += $(LDLIBS_append)
+
+CPPFLAGS += $(foreach prog,$(ALL_TARGETS),$(if $(MAYBE_$(prog)),-I@ROOTDIR@/$(MAYBE_$(prog))/src))
+
+$(bin_PROGRAM): $(OBJECTS) $(LDLIBS_append)
 
 program_transform_name: $(bin_PROGRAM)
 	mv -f $(bin_PROGRAM) @PACKAGE_NAME@-@VERSION@

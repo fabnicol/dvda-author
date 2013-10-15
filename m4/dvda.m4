@@ -448,7 +448,7 @@ AC_DEFUN([BUILD],
 Triggering --enable-$1-build... ])
 AS_IF([test "$1" != "" ],
        [
-	  AS_IF([test "$1" = "fixwav" -o "$1" = "iberty" -o "$1" = "all-all" -o "$1"="all-deps" -o "$1" = "all-builds" -o `echo "$command_line-args" | sed s/lower//g` != "$command_line_args"],
+	  AS_IF([test "$1" = "libfixwav" -o "$1" = "libiberty" -o "$1" = "all-all" -o "$1"="all-deps" -o "$1" = "all-builds" -o `echo "$command_line-args" | sed s/lower//g` != "$command_line_args"],
 	      [
 		basename($1)[_BUILD]=yes
 	      ],
@@ -712,7 +712,7 @@ AC_DEFUN([DVDA_CONFIG],[
 
 AC_DEFUN([DVDA_CONFIG_EXECUTABLE_INSTALL],[DVDA_CONFIG([$1],[#executable_install])])
 AC_DEFUN([DVDA_CONFIG_LIBRARY_NO_INSTALL],[DVDA_CONFIG([$1],[
-       VAR[_LIB]="$BUILDDIR/[$MAYBE_]VAR/src/[$MAYBE_]VAR.a"])
+       VAR[_LIB]="$BUILDDIR/[$MAYBE_]VAR/VAR.a"])
        VAR[_LINK]=""
     ])
 AC_DEFUN([DVDA_CONFIG_LIBRARY_LOCAL_INSTALL],[DVDA_CONFIG([$1],[]) ])
