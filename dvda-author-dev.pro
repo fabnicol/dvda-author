@@ -42,7 +42,14 @@ SOURCES += \
     libfixwav/src/readHeader.c \
     libfixwav/src/repair.c \
     src/dvda-author.c \
-    libfixwav/src/fixwav_auxiliary.c
+    libfixwav/src/fixwav_auxiliary.c \
+    libiberty/src/getopt.c \
+    libiberty/src/getsubopt.c \
+    libiberty/src/malloc.c \
+    libiberty/src/strchrnul.c \
+    libiberty/src/strdup.c \
+    libiberty/src/strndup.c \
+    libiberty/src/strnlen.c
 
 OTHER_FILES += \
     src/dvda-author.conf \

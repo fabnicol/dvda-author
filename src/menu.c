@@ -1,4 +1,4 @@
-#if HAVE_CONFIG_H && !defined __CB__
+#ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 //#undef __STRICT_ANSI__

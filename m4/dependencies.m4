@@ -73,10 +73,15 @@ m4_map([DVDA_TEST_AUX],[
 	       withval_libogg=no
 	       withval_sox=no
 	       withval_libiberty=yes
+	       MAYBE_libiberty=$ROOTDIR/libiberty
+	       libiberty_BUILD=yes
+	       libiberty_BUILD=no
 	       libogg_BUILD=no
 	       libogg_DOWNLOAD=no
 	       libiberty_BUILD=yes
 	       MAYBE_libogg=""
+	       MAYBE_libfixwav=""
+	       libfixwav_BUILD=no
 	       libogg_LINK=""]],
 	     [[ImageMagick-build],[DVDA_INF([IMAGEMAGICK_MSG])]],
 	     [[static-sox],
@@ -101,7 +106,12 @@ m4_map([DVDA_TEST_AUX],[
 	     [[a52dec-build]],
 	     [[mjpegtools-build]],
 	     [[core-build],
-	      [withval_libfixwav=no
+	      [WITH_libfixwav=no
+	       MAYBE_libfixwav=""
+	       WITH_libiberty=no
+	       MAYBE_libiberty=""
+	       libiberty_BUILD=no
+	       libfixwav_BUILD=no
 	       withval_FLAC=no
 	       withval_libogg=no
 	       withval_sox=no

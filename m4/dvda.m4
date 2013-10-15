@@ -385,9 +385,10 @@ AC_ARG_ENABLE([$1],[AS_HELP_STRING([--enable-$1],msg)],
 # reset $enableval to "no"
 
 AS_IF([test x$enableval = xyes],[enableval_boolean=1],[enableval_boolean=0])
-#HAVE_sox etc. in C code
-AC_DEFINE_UNQUOTED([HAVE_]bn,[$enableval_boolean],msg)
-#HAVE_sox etc. in automake conditionals
+
+#HAVE_sox_BUILD etc. in C code
+
+AC_DEFINE_UNQUOTED([HAVE_]bn[_BUILD],[$enableval_boolean],msg)
 
 AS_IF([test x$upper = xyes -a  act = build ],[[HAVE_]bn[_BUILD]=yes],[[HAVE_]bn[_BUILD]=no])
 AC_SUBST([HAVE_]bn[_BUILD])
@@ -602,57 +603,52 @@ m4_foreach([LIST], [CHECKLIST],
 
 AC_DEFUN([DVDA_ARG_WITH],
 [
-m4_define([BASENAME],[basename([$1])])
+m4_define([bn],[basename([$1])])
 m4_define([lower],m4_tolower([$1]))
-AS_IF([test x$[withval_]BASENAME != xno],[
+AS_IF([test x$[withval_]bn != xno],[
 AC_ARG_WITH([lower], [AS_HELP_STRING([--with-]lower,[full pathname of library or --without-]lower)],
    [
-    [withval_]BASENAME=$withval
+    [withval_]bn=$withval
     AS_IF([test x$withval = xno],
 	  [
-	   AC_DEFINE([WITHOUT_]BASENAME,[1],[Disables $lower support])
-	   BASENAME[_BUILD]=no
-	  [HAVE_EXTERNAL_]BASENAME=no
+	   AC_DEFINE([WITHOUT_]bn,[1],[Disables $lower support])
+	   bn[_BUILD]=no
+	   [HAVE_EXTERNAL_]bn=no
+	   [WITH_]bn=no
 	  ],
 	  [test x$withval != xyes],
 	  [
 	   AC_MSG_NOTICE([Using specified ]lower[ lib: $withval])
-	   BASENAME[_LIB_INPUT]=$withval
-	   [HAVE_EXTERNAL_]BASENAME=yes
+	   bn[_LIB_INPUT]=$withval
+	   [HAVE_EXTERNAL_]bn=yes
+	   [WITH_]bn=yes
 	  ])
    ],
    [
-     [withval_]BASENAME=
-     BASENAME[_LIB_INPUT]=
-     [HAVE_EXTERNAL_]BASENAME=no
+     [withval_]bn=
+     bn[_LIB_INPUT]=
+     [HAVE_EXTERNAL_]bn=no
    ])
 ],
 [
-   AC_DEFINE([WITHOUT_]BASENAME,[1],[Disables $lower support])
-   BASENAME[_BUILD]=no
-  [HAVE_EXTERNAL_]BASENAME=no
+   AC_DEFINE([WITHOUT_]bn,[1],[Disables $lower support])
+   bn[_BUILD]=no
+  [HAVE_EXTERNAL_]bn=no
+  [WITH_]bn=no
 ])
 
 # do not simply use the withval variable as --without-X options might interfere globally
 
-AS_IF([test x$BASENAME[_BUILD] != xyes && test x$[withval_]BASENAME != xno],
- [DVDA_TEST_LIB([$1],[$BASENAME[_LIB_INPUT]],$2,$3,$4,$5)])
+AS_IF([test x$bn[_BUILD] != xyes && test x$[withval_]bn != xno],
+ [DVDA_TEST_LIB([$1],[$bn[_LIB_INPUT]],$2,$3,$4,$5)])
 
 # whether lib has not been deactivated by --without-lib
 
-AS_IF([test x$[withval_]BASENAME != x],[[WITH_]BASENAME=yes],[[WITH_]BASENAME=no])
-AC_SUBST([WITH_]BASENAME)
-
-# whether linking to installed lib with --with-lib=/full/path/to/lib
-
-AC_SUBST([HAVE_EXTERNAL_]BASENAME)
-
-# whether configure automatically found valid system link
-AS_IF([test x$BASENAME[_LINK] != x ],[[HAVE_]BASENAME[_LINK]=yes],[[HAVE_]BASENAME[_LINK]=no])
-
-AC_SUBST([HAVE_]BASENAME[_LINK])
-
-#m4_popdef([BASENAME])
+AC_SUBST([WITH_]bn)
+AC_SUBST([HAVE_EXTERNAL_]bn)
+AC_SUBST([HAVE_]bn[_LINK])
+m4_undefine([bn])
+#m4_popdef([bn])
 #m4_popdef([lower])
 
 ])
@@ -674,7 +670,7 @@ AC_DEFUN([DVDA_CONFIG],[
     m4_define([UPPERVAR],m4_toupper(VAR))
     m4_define([CDR],m4_unquote(m4_cdr(LIST)))
 
-    AS_IF([test x$VAR[_BUILD] = xyes || test x$ALL_BUILDS = xyes -a x$[withval_]VAR != xno],
+    AS_IF([test \( x$VAR[_BUILD] = xyes -o x$ALL_BUILDS = xyes \) -a x$[WITH_]VAR != xno ],
 	   [
 	      PROGRAM_TARGETS="$PROGRAM_TARGETS VAR"
 

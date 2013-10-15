@@ -28,7 +28,7 @@ bin_PROGRAM=dvda-author
 
 CFLAGS += -D_GNU_SOURCE
 LDFLAGS :=-L/usr/local/lib -L/usr/lib -Xlinker --allow-multiple-definition -L@BUILDDIR@/libs
-CPPFLAGS :=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include -I@ROOTDIR@ @DEBUG_FLAGS@
+CPPFLAGS +=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include -I@ROOTDIR@ @DEBUG_FLAGS@
 LDLIBS := -lm @BUILDDIR@/libutils/src/libc_utils.a
 
 OBJECTS=amg2.o ats.o atsi2.o audio.o auxiliary.o dvda-author.o  \

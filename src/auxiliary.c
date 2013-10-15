@@ -25,7 +25,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 /* do not use code beautifiers/formatters for this file*/
-#if HAVE_CONFIG_H
+#ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
@@ -134,7 +134,7 @@ printf("%s","-Z, --playlist           You may specify up to 9 group copies."J"To
 printf("%s","-n, --no-videozone       Do not generate an empty VIDEO_TS directory.\n\n");
 printf("%s","-w, --rights             Access rights to directories created (octal values)\n\n");
 printf("%s","-c, --cga                Enter channel group assignment right after group (-g, -j or -s).\n\n");
-#ifndef WITHOUT_fixwav
+#ifndef WITHOUT_libfixwav
 printf("%s","-F, --fixwav(options)    Bad wav headers will be fixed by fixwav."J"Can be run alone without DVD-AUDIO output by adding --nooutput.\n\n");
 printf("%s","-f, --fixwav-virtual(options)  Use .wav header repair utility "J"without any write operation.\n\n");
 #endif
@@ -211,7 +211,7 @@ printf("%s","    --download=force  Download the latest version of dvda-author ev
 #endif
 
 printf("%s","Sub-options\n\n");
-#ifndef WITHOUT_fixwav
+#ifndef WITHOUT_libfixwav
 
 printf("%s", "\n    fixwav sub-options:\n\n"\
 "simple-mode"\
@@ -311,7 +311,7 @@ to enable large file support.\n\n\
 ALWAYS_INLINE forces code inlining.\n\n\
 WITHOUT_sox to compile without SoX code\n\n\
 WITHOUT_FLAC to compile without FLAC/OggFLAC code\n\n\
-WITHOUT_fixwav to compile without fixwav code\n\n");
+WITHOUT_libfixwav to compile without fixwav code\n\n");
 
 printf("%s", "\nReport bugs to fabnicol@users.sourceforge.net\n");
 return;
@@ -649,74 +649,74 @@ void download_latest_version(_Bool download_new_version_flag,_Bool force_downloa
       int error=download_file_from_http_server(curl, "version.current");
       if ((error == 0) && (NULL != (versionfile=fopen("version.current", "rb"))))
       {
-	char year[5]={0};
-	char month[5]={0};
-	char build[6]={0};
+    char year[5]={0};
+    char month[5]={0};
+    char build[6]={0};
 
-	if (NULL == fgets(year, 5, versionfile)) clean_exit(EXIT_FAILURE);
-	if (NULL == fgets(month, 5, versionfile)) clean_exit(EXIT_FAILURE);
-	if (NULL == fgets(build, 6, versionfile)) clean_exit(EXIT_FAILURE);
+    if (NULL == fgets(year, 5, versionfile)) clean_exit(EXIT_FAILURE);
+    if (NULL == fgets(month, 5, versionfile)) clean_exit(EXIT_FAILURE);
+    if (NULL == fgets(build, 6, versionfile)) clean_exit(EXIT_FAILURE);
 
-	year[2]=0;
-	month[2]=0;
-	build[3]=0;
-	char* version=strdup(VERSION);
-	char this_year[3]={version[0], version[1], '\0'};
-	char this_month[3]={version[3], version[4], '\0'};
-	char this_build[4]={version[6], version[7], version[8], '\0'};
-	if (globals.veryverbose)
-	{
-	foutput("[MSG]  Current version is: %s-%s ", year, month);
-	foutput("build %s\n", build);
-	foutput("[MSG]  Software version is: %s-%s ", this_year, this_month);
-	foutput("build %s\n", this_build);
-	}
+    year[2]=0;
+    month[2]=0;
+    build[3]=0;
+    char* version=strdup(VERSION);
+    char this_year[3]={version[0], version[1], '\0'};
+    char this_month[3]={version[3], version[4], '\0'};
+    char this_build[4]={version[6], version[7], version[8], '\0'};
+    if (globals.veryverbose)
+    {
+    foutput("[MSG]  Current version is: %s-%s ", year, month);
+    foutput("build %s\n", build);
+    foutput("[MSG]  Software version is: %s-%s ", this_year, this_month);
+    foutput("build %s\n", this_build);
+    }
 
-	if (atoi(this_year) < atoi(year) || atoi(this_month) < atoi(month) || atoi(this_build) < atoi(build))
-	  foutput("[INF]  A more recent version has been released (%s-%s build %s)\n       Download it from http://dvd-audio.sourceforge.net\n       You can also trigger download by relaunching with dvda-author --download.\n", year, month, build);
-	else
-	{
-	  foutput("%s", "[MSG]  This version is the latest version available.\n");
-	  if (download_new_version_flag)
-	  {
+    if (atoi(this_year) < atoi(year) || atoi(this_month) < atoi(month) || atoi(this_build) < atoi(build))
+      foutput("[INF]  A more recent version has been released (%s-%s build %s)\n       Download it from http://dvd-audio.sourceforge.net\n       You can also trigger download by relaunching with dvda-author --download.\n", year, month, build);
+    else
+    {
+      foutput("%s", "[MSG]  This version is the latest version available.\n");
+      if (download_new_version_flag)
+      {
 
-	    if (!force_download_flag)
-	    {
-	      foutput("%s", "[MSG]  You do not need to download the new package.\n");
-	      foutput("%s", "[MSG]  To force downloading use --download=force instead\n       Now exiting...\n");
-	      clean_exit(EXIT_SUCCESS);
-	    }
-	    else
-	      foutput("%s", "[MSG]  Downloading the current package anyhow. Please wait...\n");
+        if (!force_download_flag)
+        {
+          foutput("%s", "[MSG]  You do not need to download the new package.\n");
+          foutput("%s", "[MSG]  To force downloading use --download=force instead\n       Now exiting...\n");
+          clean_exit(EXIT_SUCCESS);
+        }
+        else
+          foutput("%s", "[MSG]  Downloading the current package anyhow. Please wait...\n");
 
-	  }
-	}
+      }
+    }
 
 
 
-	if (download_new_version_flag)
-	{
-	  char dvda_author_fullpath[350]={0};
-	  unlink("dvda-author-update.tar.gz");
-	  errno=0;
-	  sprintf(dvda_author_fullpath, "http://sourceforge.net/projects/dvd-audio/files/dvda-author/%s-%s.%s/%s-%s.%s-%s.tar.gz/download", "dvda-author", year, month, "dvda-author", year, month, build);
+    if (download_new_version_flag)
+    {
+      char dvda_author_fullpath[350]={0};
+      unlink("dvda-author-update.tar.gz");
+      errno=0;
+      sprintf(dvda_author_fullpath, "http://sourceforge.net/projects/dvd-audio/files/dvda-author/%s-%s.%s/%s-%s.%s-%s.tar.gz/download", "dvda-author", year, month, "dvda-author", year, month, build);
       error=download_rename_from_http_server(curl, "dvda-author-update.tar.gz");
-	  FILE* package;
-	  if ((error == 0) && (NULL != (package=fopen("dvda-author-update.tar.gz", "rb"))))
-	  {
+      FILE* package;
+      if ((error == 0) && (NULL != (package=fopen("dvda-author-update.tar.gz", "rb"))))
+      {
 
-	    fclose(package);
-	    foutput("[MSG]  New version %s-%s build %s was downloaded as dvda-author-update.tar.gz\n", year, month, build);
+        fclose(package);
+        foutput("[MSG]  New version %s-%s build %s was downloaded as dvda-author-update.tar.gz\n", year, month, build);
 
-	  }
-	  else
-	    foutput("%s", "[MSG]  Failed to download new version.\n");
+      }
+      else
+        foutput("%s", "[MSG]  Failed to download new version.\n");
 
-	  exit(EXIT_SUCCESS);
+      exit(EXIT_SUCCESS);
 
-	}
-	free(version);
-	initialize_binary_paths(FREE_MEMORY);
+    }
+    free(version);
+    initialize_binary_paths(FREE_MEMORY);
 
 
       }
