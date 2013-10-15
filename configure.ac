@@ -273,13 +273,6 @@ AC_CONFIG_FILES([Makefile
 	 mk/a52dec.mk
 	 mk/cdrtools.mk
 	 images/Makefile
-	 script.libflac
-	 script.lplex
-	 script.a52dec
-	 script.libmpeg2
-	 script.magick
-	 script.mjpegtools
-	 script.libsox
 	 sox-libs
 	 COREBUILD
 	 EXAMPLES

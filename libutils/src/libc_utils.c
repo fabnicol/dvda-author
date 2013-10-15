@@ -799,7 +799,7 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
             exit(EXIT_FAILURE);
         }
 
-        if (S_IFDIR(buf.st_mode))
+        if (S_ISDIR(buf.st_mode))
         {
 
             if (globals.debugging) printf("%s %s %s %s\n", "[INF]  Copying dir=", f->d_name, " to=", path);
@@ -808,7 +808,7 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
 
             continue;
         }
-        if (S_IFREG(buf.st_mode))
+        if (S_ISREG(buf.st_mode))
         {
             if (globals.debugging) printf("%s%s to= %s\n", "[INF]  Copying file=", f->d_name, path);
             errno=copy_file(f->d_name, path);
