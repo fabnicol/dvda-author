@@ -97,6 +97,9 @@
 /* Whether ImageMagick source code will be downloaded for build. */
 #undef HAVE_ImageMagick
 
+/* download ImageMagick from source code */
+#undef HAVE_ImageMagick_BUILD
+
 /* Define to 1 if you have the <locale.h> header file. */
 #undef HAVE_LOCALE_H
 
@@ -260,8 +263,14 @@
 /* Whether a52dec source code will be downloaded for build. */
 #undef HAVE_a52dec
 
-/* enable all all */
+/* download a52dec from source code */
+#undef HAVE_a52dec_BUILD
+
+/* Whether all source code will be downloaded for build. */
 #undef HAVE_all
+
+/* enable all all */
+#undef HAVE_all_BUILD
 
 /* Found autoconf */
 #undef HAVE_autoconf
@@ -275,11 +284,14 @@
 /* Whether cdrtools source code will be downloaded for build. */
 #undef HAVE_cdrtools
 
+/* download and patch cdrtools from source code */
+#undef HAVE_cdrtools_BUILD
+
 /* Found convert */
 #undef HAVE_convert
 
 /* configure, build and install core from source code */
-#undef HAVE_core
+#undef HAVE_core_BUILD
 
 /* Found curl */
 #undef HAVE_curl
@@ -287,8 +299,14 @@
 /* Whether dvdauthor source code will be downloaded for build. */
 #undef HAVE_dvdauthor
 
+/* download and patch dvdauthor from source code */
+#undef HAVE_dvdauthor_BUILD
+
 /* Whether flac source code will be downloaded for build. */
 #undef HAVE_flac
+
+/* download flac from source code */
+#undef HAVE_flac_BUILD
 
 /* Found git */
 #undef HAVE_git
@@ -296,23 +314,35 @@
 /* Whether help2man source code will be downloaded for build. */
 #undef HAVE_help2man
 
+/* download help2man from source code */
+#undef HAVE_help2man_BUILD
+
 /* Found jpeg2yuv */
 #undef HAVE_jpeg2yuv
 
 /* configure, build and install libfixwav from source code */
-#undef HAVE_libfixwav
+#undef HAVE_libfixwav_BUILD
 
 /* configure, build and install libiberty from source code */
-#undef HAVE_libiberty
+#undef HAVE_libiberty_BUILD
 
 /* Whether libmpeg2 source code will be downloaded for build. */
 #undef HAVE_libmpeg2
 
+/* download libmpeg2 from source code */
+#undef HAVE_libmpeg2_BUILD
+
 /* Whether libogg source code will be downloaded for build. */
 #undef HAVE_libogg
 
+/* download libogg from source code */
+#undef HAVE_libogg_BUILD
+
 /* Whether lplex source code will be downloaded for build. */
 #undef HAVE_lplex
+
+/* download lplex from source code */
+#undef HAVE_lplex_BUILD
 
 /* Found make */
 #undef HAVE_make
@@ -323,12 +353,18 @@
 /* Found md5sum */
 #undef HAVE_md5sum
 
+/* Whether minimal source code will be downloaded for build. */
+#undef HAVE_minimal
+
 /* download minimal dependencies <FLAC, Ogg, SoX, dvdauthor, cdrtools> and
    patch the source code if necessary */
-#undef HAVE_minimal
+#undef HAVE_minimal_BUILD
 
 /* Whether mjpegtools source code will be downloaded for build. */
 #undef HAVE_mjpegtools
+
+/* download mjpegtools from source code */
+#undef HAVE_mjpegtools_BUILD
 
 /* Found mkisofs */
 #undef HAVE_mkisofs
@@ -339,8 +375,11 @@
 /* Found mp2enc */
 #undef HAVE_mp2enc
 
-/* configure, build and install mpeg2dec from source code */
+/* Found mpeg2dec */
 #undef HAVE_mpeg2dec
+
+/* configure, build and install mpeg2dec from source code */
+#undef HAVE_mpeg2dec_BUILD
 
 /* Found mpeg2enc */
 #undef HAVE_mpeg2enc
@@ -354,11 +393,14 @@
 /* Whether sox source code will be downloaded for build. */
 #undef HAVE_sox
 
+/* download and patch sox from source code */
+#undef HAVE_sox_BUILD
+
 /* Found spumux */
 #undef HAVE_spumux
 
 /* enable static sox */
-#undef HAVE_static
+#undef HAVE_static_BUILD
 
 /* Defining help2man filepath. */
 #undef HELP2MAN

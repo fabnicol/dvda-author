@@ -1,4 +1,4 @@
-#if HAVE_CONFIG_H && !defined __CB__
+#ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 #include <stdio.h>
@@ -21,7 +21,7 @@
 #include "file_input_parsing.h"
 #include "launch_manager.h"
 #include "dvda-author.h"
-#ifndef WITHOUT_fixwav
+#ifndef WITHOUT_libfixwav
 #include "fixwav_auxiliary.h"
 #include "fixwav_manager.h"
 #endif
@@ -600,7 +600,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
             // Should be done as early as main globals are set, could be done a bit earlier (adding an extra parse)
-#ifndef WITHOUT_fixwav
+#ifndef WITHOUT_libfixwav
 
         case 'F' :
         case 'f' :
@@ -883,7 +883,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
 #if !HAVE_core_BUILD
-	    
+
         case 12:
 
             player=NULL;
@@ -898,7 +898,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             player=strdup(optarg);
             break;
 
-	          // case 'g': c=0; break;
+              // case 'g': c=0; break;
         case '9':
             /* --datadir is the directory  where the menu/ files are located. Under* nix it automatically installed under /usr/share/applications/dvda-author by the autotools
                With other building modes or platforms however, it may be useful to indicate where the menu/ directory will be*/
@@ -1019,7 +1019,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             img->loop=1;
             break;
 
-#ifndef WITHOUT_fixwav
+#ifndef WITHOUT_libfixwav
         case 'f':
             globals.fixwav_virtual_enable=1;
             foutput("%s\n", "[PAR]  Virtual fixwav enabled.");
@@ -2080,7 +2080,7 @@ standard_checks:
 
 
 
-#ifndef WITHOUT_fixwav
+#ifndef WITHOUT_libfixwav
 void fixwav_parsing(char *ssopt)
 {
     int subopt;

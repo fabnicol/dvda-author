@@ -8,5 +8,5 @@ lplex_COMMANDLINE=--version 2>&1|line
 lplex_LIB=
 lplex_LINK=
 MAYBE_lplex=
-HAVE_lplex=no
+HAVE_lplex=yes
 HAVE_EXTERNAL_lplex=@HAVE_EXTERNAL_lplex@

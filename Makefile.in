@@ -10,12 +10,27 @@ SHELL=/bin/sh
 #Using ONESHELL, version make 3.82+, possibly higher with windows ports
 .ONESHELL:
 
+CPPFLAGS = @DEFS@
 
 PROGRAM_TARGETS=@PROGRAM_TARGETS@
 PROGRAM_TARGET_SOURCES=$(foreach prog,$(PROGRAM_TARGETS),$(shell if test -f mk/$(prog).mk; then echo mk/$(prog).mk; fi))
 PROGRAM_TARGET_CONFIGS=$(foreach prog,$(PROGRAM_TARGETS),$(shell if test -f mk/$(prog).mk; then echo $(prog).config; fi))
 
-SRC_SUBDIRS=@ROOTDIR@/libutils/src @ROOTDIR@/@MAYBE_libiberty@ @ROOTDIR@/@MAYBE_libfixwav@ @ROOTDIR@/src
+SRC_SUBDIRS := @ROOTDIR@/libutils/src
+
+ifneq "@WITH_libiberty@" "no"
+  SRC_SUBDIRS += @ROOTDIR@/@MAYBE_libiberty@
+else
+  CPPFLAGS += -DWITHOUT_libiberty
+endif
+
+ifneq "@WITH_libfixwav@" "no"
+  SRC_SUBDIRS += @ROOTDIR@/@MAYBE_libfixwav@
+else
+  CPPFLAGS += -DWITHOUT_libfixwav
+endif
+
+SRC_SUBDIRS += @ROOTDIR@/src
 
 .SUFFIXES: .config .depconf
 .PHONY: all all-sources erase_build.trace do_sox_lib_deps_subst create_autotargets $(PROGRAM_TARGET_CONFIGS) $(SRC_SUBDIRS)
@@ -33,10 +48,11 @@ all:  $(ALL_TARGETS)
 include mk/functions.mk
 include $(PROGRAM_TARGET_SOURCES)
 
+export CPPFLAGS
+
 $(SRC_SUBDIRS):
 	echo making into directory $@...
 	$(MAKE) $(PARALLEL) --directory=$@
-
 
 erase_build.trace:
 	@echo PROGRAM_TARGETS=$(PROGRAM_TARGETS)

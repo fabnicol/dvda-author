@@ -3,7 +3,7 @@
 #endif
 
 #include "sound.h"
-#if HAVE_fixwav
+#if HAVE_libfixwav
 #include "fixwav.h"
 #include "fixwav_manager.h"
 #endif
@@ -21,7 +21,7 @@ extern globalData globals;
 
 int audit_soundtrack(char* path)
 {
-#if HAVE_fixwav
+#if HAVE_libfixwav
     path_t *s=parse_filepath(path);
     errno=0;
     if (s->isfile)

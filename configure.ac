@@ -26,7 +26,7 @@ AC_PROG_LEX
 AC_PROG_EGREP
 
 AC_CONFIG_SRCDIR([src/videoimport.c])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 
 # uses default prefix /usr unless otherwise specified by --prefix= on commandline
 
@@ -57,7 +57,7 @@ ROOTDIR=`cd "$srcdir" ; pwd`
 
 m4_include([m4/auxiliary.m4])
 
-m4_include([m4/dependencies.m4])
+#m4_include([m4/dependencies.m4])
 
 DVDA_MKDIR([local])
 
