@@ -4,7 +4,7 @@ ifneq "@WITH_sox@" ""
 OBJECTS+= getopt.o getopt1.o
 endif
 
-CPPFLAGS=-I@ROOTDIR@/@MAYBE_libiberty@/include
+CPPFLAGS += -I@ROOTDIR@/@MAYBE_libiberty@/include
 
 libiberty.a: libiberty.a($(OBJECTS))
 

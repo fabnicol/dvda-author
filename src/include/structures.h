@@ -225,7 +225,7 @@ typedef struct
 #ifndef WITHOUT_sox
     _Bool sox_enable;
 #endif
-#ifndef WITHOUT_fixwav
+#ifndef WITHOUT_libfixwav
     _Bool fixwav_enable;
     _Bool fixwav_virtual_enable;
     _Bool fixwav_automatic; /* automatic behaviour */

@@ -29,7 +29,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 
-#if HAVE_CONFIG_H && !defined __CB__
+#ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 #include <stdio.h>
@@ -44,7 +44,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "audio2.h"
 #include "stream_decoder.h"
 #include "c_utils.h"
-#ifndef WITHOUT_fixwav
+#ifndef WITHOUT_libfixwav
 #include "fixwav.h"
 #include "fixwav_manager.h"
 #include "audio.h"
@@ -350,7 +350,7 @@ int flac_getinfo(fileinfo_t* info)
 }
 #endif
 
-#ifndef WITHOUT_fixwav
+#ifndef WITHOUT_libfixwav
 int fixwav_repair(fileinfo_t *info)
 {
     WaveHeader  waveheader;
@@ -539,7 +539,7 @@ int extract_audio_info(fileinfo_t *info, uint8_t * header)
 {
     info->type=AFMT_WAVE;
 
-#ifndef WITHOUT_fixwav
+#ifndef WITHOUT_libfixwav
 
     /* parsing header again with FIXWAV utility */
 
@@ -599,7 +599,7 @@ int extract_audio_info(fileinfo_t *info, uint8_t * header)
     if ((info->bitspersample!=16) && (info->bitspersample!=24))
     {
         foutput("%s\n", "[WAR]  Audio characteristics of file could not be found.");
-#ifndef WITHOUT_fixwav
+#ifndef WITHOUT_libfixwav
         foutput("%s\n", "       Fixing wav header (option -F) ...");
         info->type=fixwav_repair(info);
 
@@ -699,7 +699,7 @@ int wav_getinfo(fileinfo_t* info)
                 {
                     // When RIFF fmt headers are not recognized, they are processed by Sox first if -S -F is on command line then checked by fixwav
                     // yest SoX may crash for seriously mangled headers
-#ifndef WITHOUT_fixwav
+#ifndef WITHOUT_libfixwav
                     if (!globals.fixwav_force)
                     {
 #endif
@@ -709,7 +709,7 @@ int wav_getinfo(fileinfo_t* info)
                         else
                             // PATCH looping back to get info
                             return(info->type=wav_getinfo(info));
-#ifndef WITHOUT_fixwav    // yet without the processing tail below (preserving new header[] array and info structure)
+#ifndef WITHOUT_libfixwav    // yet without the processing tail below (preserving new header[] array and info structure)
                     }
 
                     else
@@ -740,11 +740,11 @@ int wav_getinfo(fileinfo_t* info)
                 else
 
 #endif
-#ifndef WITHOUT_fixwav
+#ifndef WITHOUT_libfixwav
                     if ((!globals.fixwav_force) && (!globals.fixwav_prepend))
 #endif
                         return(info->type);
-#ifndef WITHOUT_fixwav
+#ifndef WITHOUT_libfixwav
                     else
                         return(info->type=extract_audio_info(info, header));
 #endif
@@ -930,16 +930,16 @@ AOB:   1  0
 In the original dvda-author, the mono and stereo 24-bit cases were illustrated thus:
 
 24-bit mono samples are packed as follows:
-	           0   1     2   3   4   5
-	WAV: 01 23 45 12 34 56
-	AOB: 45 23 56 34 01 12
-	             2   1   5   4    0  3
+               0   1     2   3   4   5
+    WAV: 01 23 45 12 34 56
+    AOB: 45 23 56 34 01 12
+                 2   1   5   4    0  3
 
  24-bit Stereo samples are packed as follows:
-		0   1     2  3    4   5    6  7    8  9  10  11
-	WAV: 01 23 45 bf 60 8c 67 89 ab b7 d4 e3
-	AOB: 45 23 8c 60 ab 89 e3 d4 01 bf 67 b7
-	            2   1    5  4    8    7  11  10  0  3   6   9
+        0   1     2  3    4   5    6  7    8  9  10  11
+    WAV: 01 23 45 bf 60 8c 67 89 ab b7 d4 e3
+    AOB: 45 23 8c 60 ab 89 e3 d4 01 bf 67 b7
+                2   1    5  4    8    7  11  10  0  3   6   9
 
 For brevity, we use only the more compact label-based description for each of the 12 cases treated here.
 The in-place transformatioin code that derives from this description was machine generated to reduce the chance for transcription errors,. Identity expressions, e.g. x[i+1] = x[i+1], are omitted.

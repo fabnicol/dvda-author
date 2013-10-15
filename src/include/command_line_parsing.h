@@ -13,7 +13,7 @@
 #define ALLOWED_OPTIONS_PRINT  "0123456789aA:b:B:c:dD:e:E:f::F::g:G:hH:i:I::j:J:k:K:l:L:m::M:nN:o:O:p:P::qQ:r::R:s:S::tT:u:U::vV:w:Wx:X:y:Y:z:Z:"
 command_t *command_line_parsing(int , char* const argv[],  command_t *command);
 
-#ifndef WITHOUT_fixwav
+#ifndef WITHOUT_libfixwav
 #include "fixwav_manager.h"
 void fixwav_parsing(char *ssopt);
 #endif
