@@ -1,23 +1,22 @@
-SUBDIRS=include
-noinst_LIBRARIES=libfixwav.a
 
-libfixwav_a_SOURCES=auxiliary.c  checkData.c  checkParameters.c   readHeader.c  repair.c  manager.c
-AM_CPPFLAGS=-Wall  -std=c99 -O3 -I${top_srcdir}/libfixwav/src/include -I${top_srcdir}/libutils/src/include -I${top_srcdir}/src/include -I${top_srcdir}
-AM_LDFLAGS=-s  -lm
-LDADD=${top_builddir}/libutils/src/libc_utils.a
 
-if HAVE_iberty_BUILD
-	LDADD       += $(iberty_LIB)
-	AM_CPPFLAGS +=-I$(top_srcdir)/libiberty/src/include,
-	if  HAVE_EXTERNAL_iberty
-	  LDADD       += $(iberty_LIB)
-	  AM_CPPFLAGS +=-I${top_srcdir}/libiberty/src/include
+SOURCES:=$(wildcard *.c)
+OBJECTS:=$(SOURCES:.c=.o)
+CPPFLAGS += -stdc99 -O3 -I@ROOTDIR@/libfixwav/src/include -I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include -I@ROOTDIR@
+LDLIBS += @BUILDDIR@/libutils/src/libc_utils.a
+
+ifeq "@HAVE_libiberty_BUILD@" "yes"
+	LDADD    += @iberty_LIB@
+	CPPFLAGS +=-I@ROOTDIR@/libiberty/src/include
+	ifeq  "@HAVE_EXTERNAL_iberty@" "yes"
+	  LDLIBS       += @iberty_LIB@
+	  CPPFLAGS +=-I@ROOTDIR@/libiberty/src/include
 	endif
-	echo Linking to local libiberty.a...)
+	echo Linking to local libiberty.a...
 endif
-if HAVE_iberty
-     AM_LDFLAGS  += $(iberty_LINK)
+ifeq "@HAVE_iberty@" "yes"
+     LDFLAGS  += @libiberty_LINK@
 endif
 
-
+libfixwav.a: libfixwav.a($(OBJECTS))
 

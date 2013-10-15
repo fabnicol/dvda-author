@@ -3,16 +3,16 @@ LDFLAGS +=-s
 CFLAGS  += -std=c99 -O3
 CPPFLAGS+=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/libutils/src/private -I@ROOTDIR@ -I@ROOTDIR@/src/include
 
-ifeq "@HAVE_iberty_BUILD@" "yes"
-     LDLIBS   += @iberty_LIB@
-     CPPFLAGS +=-I@ROOTDIR@/libiberty/src/include
+ifeq "@HAVE_libiberty_BUILD@" "yes"
+     LDLIBS   += @libiberty_LIB@
+     CPPFLAGS +=-I@ROOTDIR@/@MAYBE_libiberty@/include
      ifeq  "@HAVE_EXTERNAL_iberty@" "yes"
-       LDLIBS   += @iberty_LIB@
-       CPPFLAGS +=-I@ROOTDIR@/libiberty/src/include
+       LDLIBS   += @libiberty_LIB@
+       CPPFLAGS +=-I@ROOTDIR@/@MAYBE_libiberty@/include
      endif
 endif
 
-ifeq "@HAVE_iberty@" "yes"
+ifeq "@HAVE_libiberty@" "yes"
       LDLIBS  += -liberty
 endif
 

@@ -58,8 +58,9 @@ m4_map([DVDA_TEST_AUX],[
    [
     m4_map([DVDA_ARG_ENABLE],
 	   [
-	     [[iberty-build]],
 	     [[libogg-build]],
+	     [[libiberty-build]],
+	     [[libfixwav-build]],
 	     [[flac-build]],
 	     [[sox-build]],
 	     [[help2man-build]],
@@ -67,14 +68,14 @@ m4_map([DVDA_TEST_AUX],[
 	     [[a52dec-build]],
 	     [[mjpegtools-build]],
 	     [[core-build],
-	      [withval_fixwav=no
+	      [withval_libfixwav=no
 	       withval_FLAC=no
 	       withval_libogg=no
 	       withval_sox=no
-	       withval_iberty=yes
+	       withval_libiberty=yes
 	       libogg_BUILD=no
-	       LIBOGG_DOWNLOAD=no
-	       iberty_BUILD=yes
+	       libogg_DOWNLOAD=no
+	       libiberty_BUILD=yes
 	       MAYBE_libogg=""
 	       libogg_LINK=""]],
 	     [[ImageMagick-build],[DVDA_INF([IMAGEMAGICK_MSG])]],
@@ -90,8 +91,9 @@ m4_map([DVDA_TEST_AUX],[
 
      m4_map([DVDA_ARG_ENABLE],
 	   [
-	     [[iberty-build]],
 	     [[libogg-build]],
+	     [[libiberty-build]],
+	     [[libfixwav-build]],
 	     [[flac-build]],
 	     [[sox-build]],
 	     [[help2man-build]],
@@ -99,22 +101,22 @@ m4_map([DVDA_TEST_AUX],[
 	     [[a52dec-build]],
 	     [[mjpegtools-build]],
 	     [[core-build],
-	      [withval_fixwav=no
+	      [withval_libfixwav=no
 	       withval_FLAC=no
 	       withval_libogg=no
 	       withval_sox=no
-	       LIBOGG_BUILD=no
-	       LIBOGG_DOWNLOAD=no
+	       libogg_BUILD=no
+	       libogg_DOWNLOAD=no
 	       MAYBE_libogg=""
 	       libogg_LINK=""]],
 	     [[minimal-build],
-	      [withval_fixwav=yes
+	      [withval_libfixwav=yes
 	       withval_FLAC=yes
 	       withval_libogg=yes
 	       withval_sox=yes
 	       libogg_BUILD=yes
 	       FLAC_BUILD=yes
-	       fixwav_BUILD=yes
+	       libfixwav_BUILD=yes
 	       sox_BUILD=yes
 	     ]],
 	     [[ImageMagick-build],[DVDA_INF([IMAGEMAGICK_MSG])]],
@@ -257,13 +259,13 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
     m4_map([DVDA_ARG_WITH],[
       [[flac],  [[[FLAC/all.h],[FLAC__stream_decoder_init_file]]]],
       [[libogg],   [[[ogg/ogg.h], [ogg_stream_init]]]],
-      [[fixwav],[[[fixwav_manager.h],[fixwav]]]],
+      [[libfixwav],[[[fixwav_manager.h],[fixwav]]]],
       [[sox],   [[[sox.h],     [sox_format_init  sox_open_read
 				sox_open_write sox_create_effects_chain
 				sox_create_effect sox_find_effect
 				sox_add_effect sox_flow_effectsb
 				sox_delete_effects sox_close sox_format_quit]]],[shared]],
-      [[iberty],[[[getopt.h],[getopt  getopt_long]],[[stdlib.h],[getsubopt]],
+      [[libiberty],[[[getopt.h],[getopt  getopt_long]],[[stdlib.h],[getsubopt]],
 		[[string.h],[strchrnul]],           [[strndup.h],[strndup]]],[static]]])
 
     # to be invoked after ENABLE and WITH features
@@ -310,7 +312,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 
     # auxiliary libs that remain within package, not installed
 
-    DVDA_CONFIG_LIBRARY_NO_INSTALL([[[[iberty],[libiberty/src]]], [[[fixwav],[libfixwav/src]]]])
+    DVDA_CONFIG_LIBRARY_NO_INSTALL([[[[libiberty],[libiberty/src]]], [[[libfixwav],[libfixwav/src]]]])
 
 
 ])

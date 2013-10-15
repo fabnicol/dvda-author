@@ -10,13 +10,13 @@ endef
 
 define execfollow
 	$(if "$2",
-	    program=$$(find $(BUILDDIR)/$1 -maxdepth 2 -type f -name $(strip $2)$(EXEEXT) -print0)
+	    program=$$(find /home/fab/Dev/dvda-author-dev/$1 -maxdepth 2 -type f -name $(strip $2)$(EXEEXT) -print0)
 	    $(call follow,$$program,executable: `$$program $3` ),
 	    $(call trace,failed,$2))
 endef
 
 define docfollow
-	findstring=$$(find $(BUILDDIR) -maxdepth 1 -name $(strip $1) -print0)
+	findstring=$$(find /home/fab/Dev/dvda-author-dev -maxdepth 1 -name $(strip $1) -print0)
 	$(call follow, $1, $$findstring)
 endef
 
@@ -25,43 +25,50 @@ endef
 #Theres is an odd MKDIR_P bug with MIGW32, which is circumvented here for generality but could be taken out in later versions
 
 define configure_sub_package
-	target_subdir="$(strip $1)"
+	@target_subdir=$(strip $1)
 	configure_flags="$2"
-	autotools_command_line="$3"
-	$(if $$target_subdir,
-	   if test -d  $$target_subdir; then
-	      cd $$target_subdir
-	      $(if $$autotools_command_line,$(SHELL) $$autotools_command_line)
-	      $(SHELL) configure $$configure_flags --prefix="$(BUILDDIR)/local" CPPFLAGS="-I$(BUILDDIR)/local/include" \
-		 && $(MAKETOOL) MKDIR_P="mkdir$(EXEEXT) -p"
+	autotools_command_line=$3
+	echo configuring sub package with arguments: $1 $2 $3...
+	if test "$$target_subdir" != ""; then
+	   if test -d  "$$target_subdir"; then
+	      cd "$$target_subdir"
+	      if test "$$autotools_command_line" != ""; then $(SHELL) $$autotools_command_line; fi
+	      $(SHELL) configure $$configure_flags --prefix="/home/fab/Dev/dvda-author-dev/local" CPPFLAGS="-I/home/fab/Dev/dvda-author-dev/local/include" \
+		 && $(MAKE) MKDIR_P="mkdir$(EXEEXT) -p"
 	      if test "$$?" = "0"; then
 		 echo Installing from $$target_subdir ...
 		 if test -f INSTALL; then mv -f INSTALL INSTALL.txt ; fi
-		 $(MAKETOOL) $(INS_BASE) install
+		 $(MAKE) $(INS_BASE) install
 	      fi
-	   if test -f INSTALL.txt; then mv -f INSTALL.txt INSTALL; fi
-	   cd -
-	   fi)
+	      if test -f INSTALL.txt; then mv -f INSTALL.txt INSTALL; fi
+	      cd -
+	   fi
+	fi
 endef
 
-define config_lib_package
-	flags=$(CONFIGURE_$1_FLAGS)
+define configure_lib_package
+	@flags="$(CONFIGURE_$1_FLAGS)"
+	echo $1: $$flags>>flags.test
 	directory=$(MAYBE_$1)
 	autotools_command_line=$2
+	echo configuring lib_package with arguments: $1 $2
+	echo in directory $$directory
+	echo with build flags $$flags
 	$(call configure_sub_package,$$directory,$$flags,$$autotools_command_line)
-	testvar=$$(find $(BUILDDIR)/$$directory -maxdepth 2 -type f -name $(strip $1).a -print0)
+	testvar=$$(find /home/fab/Dev/dvda-author-dev/$$directory -maxdepth 2 -type f -name $(strip $1).a -print0)
 	$(if $$testvar,
 			echo "found library: $$testvar for $1" >> BUILD.TRACE
-			testvar=$$(find $(BUILDDIR)/local/lib -maxdepth 1 -name $(strip $1).a -print0)
+			testvar=$$(find /home/fab/Dev/dvda-author-dev/local/lib -maxdepth 1 -name $(strip $1).a -print0)
 			$(if $$testvar,
 				echo "locally installed library: $$testvar from $1" >> BUILD.TRACE,
 				echo "did not install library $1" >> BUILD.TRACE),
 			echo "no library $1" >> BUILD.TRACE)
 endef
 
-define config_exec_package
+define configure_exec_package
     flags=$(CONFIGURE_$1_FLAGS)
     directory=$(MAYBE_$1)
+    echo configuring exec_package with arguments: $1 $2 $3
     ifeq $(build_os) mingw32
 	patchfile=$$(find patches -type f -regex .*$1-patch.* -print0)
 	echo Found mingw32 OS...patching with local patch $$patchfile
@@ -72,27 +79,25 @@ define config_exec_package
 endef
 
 define clean_package
-	$(if $1,$(if $2, (if test -d  $2; then cd $2; $(MAKETOOL)  clean ; cd - ; fi)))
+	$(if $1,$(if $2, (if test -d  $2; then cd $2; $(MAKE)  clean ; cd - ; fi)))
 endef
 
-.PHONY: create_autotargets
-
-AUTOTARGETS=
-
-create_autotargets: force;
-	$(foreach prog, @PROGRAM_TARGETS@,
-	  if test "$($(prog)_MAKESPEC)" = "auto" ; then
-	     AUTOTARGETS += $(prog)
-	  fi)
-
-$(AUTOTARGETS): create_autotargets
-	echo creating target $@ ...
-	if test "$($@_CONFIGSPEC)" = "exe"; then
-	      $(call configure_exec_package,$@,$($@_TESTBINARY),$($@_COMMANDLINE))
-	 else
-	    if test "$($@_CONFIGSPEC)" = "lib"; then
-		$(call configure_lib_package,$@,$($@_TARGETLIB))
+define depconf
+	if test "$($1_MAKESPEC)" = "auto" ; then
+	  if test "$($1_CONFIGSPEC)" = "lib"; then
+	     if test $(origin $($1_COMMANDLINE)) != undefined ; then
+		$(call configure_lib_package,$1,$($1_COMMANDLINE))
+	     else
+		$(call configure_lib_package,$1)
 	     fi
-	   fi
+	  fi
+	fi
+endef
 
-force: ;
+define clean_directory
+	for dir in $1; do
+	   if test -d "$$dir" ; then
+	     cd "$$dir"; $(RM) *.a *.po *.o; cd /home/fab/Dev/dvda-author-dev
+	   fi
+	done
+endef
