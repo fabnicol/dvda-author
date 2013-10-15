@@ -26,6 +26,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 */
 // Place here to #define _GNU_SOURCE before <unistd.h>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include "commonvars.h"
 // End of comment
 #include <stdio.h>

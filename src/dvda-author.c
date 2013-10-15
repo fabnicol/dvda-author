@@ -22,7 +22,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 */
 
-#if HAVE_CONFIG_H && !defined __CB__
+#ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 #include <stdio.h>
@@ -253,7 +253,7 @@ int main(int argc,  char* const argv[])
 #ifndef WITHOUT_sox
         /*sox_enable*/     0,  // no use of SoX
 #endif
-#ifndef WITHOUT_fixwav
+#ifndef WITHOUT_libfixwav
         /*fixwav_enable*/               0,  // no use of fixwav
         /*fixwav_virtual_enable*/       0,  // no use of fixwav (virtual headers)
         /* automatic behaviour */       1,

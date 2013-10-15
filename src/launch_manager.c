@@ -1,4 +1,4 @@
-#if HAVE_CONFIG_H && !defined __CB__
+#ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 #include <stdio.h>
@@ -117,7 +117,7 @@ command_t *scan_wavfile_audio_characteristics(uint8_t* I, command_t *command)
             // getting out of both loops, check end on inner=end of outer
             if (i == ngroups-nvideolinking_groups)
               {
-              	  if (i) return(command);
+                  if (i) return(command);
                   else exit(EXIT_FAILURE);
               }
 
@@ -389,10 +389,10 @@ int launch_manager(command_t *command)
     uint16_t totntracks0=create_tracktables(command, naudio_groups,numtitles,ntitletracks,titlelength,ntitlepics);
     if (globals.veryverbose)
     {
-	    if (totntracks == totntracks0)
-		 foutput("%s\n", "[INF]  Coherence check on total of tracks... OK");
-	    else
-		printf("[INF]  Total of tracks is not coherent: totntracks=%d, return of create_tracktables=%d\n", totntracks, totntracks0);
+        if (totntracks == totntracks0)
+         foutput("%s\n", "[INF]  Coherence check on total of tracks... OK");
+        else
+        printf("[INF]  Total of tracks is not coherent: totntracks=%d, return of create_tracktables=%d\n", totntracks, totntracks0);
     }
 
 
@@ -419,9 +419,9 @@ int launch_manager(command_t *command)
     if ((img->count) || (img->stillvob) || (img->active))
     {
 
-	if (img->stillpicvobsize == NULL)
-	// allocation to be revised
-	   img->stillpicvobsize=(uint32_t*) calloc(totntracks, sizeof(uint32_t));
+    if (img->stillpicvobsize == NULL)
+    // allocation to be revised
+       img->stillpicvobsize=(uint32_t*) calloc(totntracks, sizeof(uint32_t));
 
         create_stillpics(
             audiotsdir,
