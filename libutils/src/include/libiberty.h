@@ -1,6 +1,6 @@
 #ifndef HAVE_LIBIBERTY_H
 
-#if HAVE_iberty_BUILD
+#if HAVE_libiberty_BUILD
 #include "strdup.h"
 #include "getopt.h"
 #include "getopt_int.h"

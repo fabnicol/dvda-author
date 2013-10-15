@@ -1,12 +1,10 @@
 
 OBJECTS=getsubopt.o strdup.o strndup.o strchrnul.o  strnlen.o malloc.o
-if WITH_sox
+ifneq "@WITH_sox@" ""
 OBJECTS+= getopt.o getopt1.o
 endif
 
-CPPFLAGS=-I@ROOTDIR@/libiberty/src/include
+CPPFLAGS=-I@ROOTDIR@/@MAYBE_libiberty@/include
 
-(%.o): $(OBJECTS)
-
-libiberty.a: libiberty.o
+libiberty.a: libiberty.a($(OBJECTS))
 

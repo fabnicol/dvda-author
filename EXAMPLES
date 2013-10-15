@@ -1,5 +1,5 @@
 
-DVDA-AUTHOR dev MENU EXAMPLE
+DVDA-AUTHOR  MENU EXAMPLE
 
 Prerequisites
 -------------
@@ -16,7 +16,7 @@ Open a command line window and type in:
 If all runs well, you have a patched version of mkisofs and dvdauthor and 
 the Schilling version of cdrecord installed on your platform
 (it is recommended to uninstall prior versions of these tools before this step),
-with the dev version of dvda-author.
+with the  version of dvda-author.
 
 Should you need to author top menu soundtracks, or create slideshows for top menus, you'll
 also need lplex, which may be downloaded from the lplex forum page (see links 
@@ -118,7 +118,7 @@ Each of the wav files should be 16bit-48kHz.
 
 
 
-DVDA-AUTHOR dev STILLS EXAMPLE
+DVDA-AUTHOR  STILLS EXAMPLE
 
 Collect jpg pictures and author them. 
 Add them to a directory dir with names pic_000.jpg,...pic_010.jpg,...pic_999.jpg (max).
@@ -134,7 +134,7 @@ Use exactly as many pictures as there are tracks if using pictures
 (repeat self-same pics; laxer syntax to be developed).
 
 
-DVDA-AUTHOR dev CONFIGURATION FILE EXAMPLE
+DVDA-AUTHOR  CONFIGURATION FILE EXAMPLE
 
 Check the howto HOWTO.conf and the configuration file example dvda-author.conf.example 
 in your package or under your documentation installation folder.

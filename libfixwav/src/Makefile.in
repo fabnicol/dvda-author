@@ -2,20 +2,22 @@
 
 SOURCES:=$(wildcard *.c)
 OBJECTS:=$(SOURCES:.c=.o)
-CPPFLAGS += -std=c99 -O3 -I@ROOTDIR@/libfixwav/src/include -I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include -I@ROOTDIR@
+
+CFLAGS += -std=c99 -O3
+CPPFLAGS += -I@ROOTDIR@/@MAYBE_libfixwav@/include -I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include -I@ROOTDIR@
 LDLIBS += @BUILDDIR@/libutils/src/libc_utils.a
 
-ifeq "@HAVE_iberty_BUILD@" "yes"
-	LDADD    += @iberty_LIB@
-	CPPFLAGS +=-I@ROOTDIR@/libiberty/src/include
+ifeq "@HAVE_libiberty_BUILD@" "yes"
+	LDADD    += @libiberty_LIB@
+	CPPFLAGS +=-I@ROOTDIR@/@MAYBE_libiberty@/include
 	ifeq  "@HAVE_EXTERNAL_iberty@" "yes"
-	  LDLIBS       += @iberty_LIB@
-	  CPPFLAGS +=-I@ROOTDIR@/libiberty/src/include
+	  LDLIBS       += @libiberty_LIB@
+	  CPPFLAGS +=-I@ROOTDIR@/@MAYBE_libiberty@/include
 	endif
 	echo Linking to local libiberty.a...
 endif
 ifeq "@HAVE_iberty@" "yes"
-     LDFLAGS  += @iberty_LINK@
+     LDFLAGS  += @libiberty_LINK@
 endif
 
 libfixwav.a: libfixwav.a($(OBJECTS))
