@@ -307,7 +307,7 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
     Version : ..................... $VERSION
 
     Dependencies:
-		    fixwav..........$(echo $fixwav_LIB)
+		    fixwav..........$(echo $libfixwav_LIB)
 		    flac............$(echo $FLAC_LIB) $FLAC_LINK
 		    ogg.............$(echo $libogg_LIB) $libogg_LINK
 		    sox.............$(echo $sox_LIB) $sox_LINK
@@ -317,7 +317,7 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
 		    libogg .........$libogg_BUILD
 		    libsox  ........$sox_BUILD
 
-		    gnu libc .......$iberty_BUILD
+		    gnu libc .......$libiberty_BUILD
 		    libutils .......yes
 
     Ogg FLAC support:
@@ -337,9 +337,9 @@ AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],[
 ])
 ])
 
-AS_IF([ test x$iberty_LIB -o x$iberty_LINK != x ],[AC_MSG_RESULT([  libiberty.a will be linked to])])
+AS_IF([ test x$libiberty_LIB -o x$libiberty_LINK != x ],[AC_MSG_RESULT([  libiberty.a will be linked to])])
 
-AS_IF([ test x$iberty_BUILD = xyes ],
+AS_IF([ test x$libiberty_BUILD = xyes ],
  [
   AC_MSG_RESULT([  GNU lib sources in libiberty/ will be recompiled for enhanced portability.])
  ])

@@ -102,7 +102,8 @@ OTHER_FILES += \
     mk/sox.global.mk.in \
     mk/libogg.global.mk.in \
     mk/sox.global.mk.in \
-    mk/libogg.global.mk.in
+    mk/libogg.global.mk.in \
+    libiberty/src/Makefile.in
 
 HEADERS += \
     src/include/amg.h \

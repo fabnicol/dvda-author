@@ -1,10 +1,10 @@
 help2man_MAKESPEC=manual
 
 #Autoconf-substituted, do not modify#
-help2man_LIB=@help2man_LIB@
-help2man_LINK=@help2man_LINK@
-MAYBE_help2man=@MAYBE_help2man@
-HAVE_help2man=@HAVE_a52_dec@
+help2man_LIB=
+help2man_LINK=
+MAYBE_help2man=
+HAVE_help2man=yes
 HAVE_EXTERNAL_help2man=@HAVE_EXTERNAL_help2man@
 
 help2man: Makefile

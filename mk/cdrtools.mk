@@ -8,8 +8,9 @@ cdrtools_COMMANDLINE=-version 2>null
 
 
 #Autoconf-substituted, do not modify#
-cdrtools_LIB=@cdrtools_LIB@
-cdrtools_LINK=@cdrtools_LINK@
-MAYBE_cdrtools=@MAYBE_cdrtools@
-HAVE_cdrtools=@HAVE_a52_dec@
+cdrtools_LIB=
+cdrtools_LINK=
+MAYBE_cdrtools=
+HAVE_cdrtools=@HAVE_cdrtools@
 HAVE_EXTERNAL_cdrtools=@HAVE_EXTERNAL_cdrtools@
+cdrtools: cdrtools_DEPENDENCY
