@@ -6,12 +6,13 @@ help2man_LINK=@help2man_LINK@
 MAYBE_help2man=@MAYBE_help2man@
 HAVE_help2man=@HAVE_help2man@
 HAVE_EXTERNAL_help2man=@HAVE_EXTERNAL_help2man@
+CONFIGURE_help2man_FLAGS=@CONFIGURE_help2man_FLAGS@
 
 help2man: Makefile
 	if test -f $@; then rm -f $@; fi; touch $@
 	if test "$(MAYBE_$@)" != "" ; then
 	  if test -d $(MAYBE_$@) ; then
-		cd $(MAYBE_$@) && $(SHELL) configure --prefix=${prefix} ; $(MAKE) ; cd -
+		cd $(MAYBE_$@) && $(SHELL) configure --prefix=${prefix} ; $(MAKE) $(PARALLEL); cd -
 	  fi
 	fi
 	$(call execfollow,$(MAYBE_$@),$@,--version|line)

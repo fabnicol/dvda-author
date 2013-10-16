@@ -11,4 +11,11 @@ HAVE_EXTERNAL_ImageMagick=@HAVE_EXTERNAL_ImageMagick@
 ImageMagick_LIB=@ImageMagick_LIB@
 ImageMagick_LINK=@ImageMagick_LINK@
 MAYBE_ImageMagick=@MAYBE_ImageMagick@
+CONFIGURE_ImageMagick_FLAGS=@CONFIGURE_ImageMagick_FLAGS@
 
+#Start of autoconf-substituted, do not modify#
+
+ImageMagick.depconf: $(ImageMagick_DEPENDENCY)
+	$(call depconf,$*)
+
+#end of autoconf-substituted

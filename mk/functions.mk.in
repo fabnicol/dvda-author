@@ -33,7 +33,7 @@ define configure_sub_package
 	      cd "$$target_subdir"
 	      if test "$3" != ""; then $(SHELL) "$3" $4; fi
 	      $(SHELL) configure $$configure_flags --prefix="@BUILDDIR@/local" CPPFLAGS="-I@BUILDDIR@/local/include" \
-		 && $(MAKE) MKDIR_P="mkdir$(EXEEXT) -p"
+		 && $(MAKE) MKDIR_P="mkdir$(EXEEXT) -p" $(PARALLEL)
 	      if test "$$?" = "0"; then
 		 echo Installing from $$target_subdir ...
 		 if test -f INSTALL; then mv -f INSTALL INSTALL.txt ; fi
@@ -64,7 +64,7 @@ define configure_lib_package
 endef
 
 define configure_exec_package
-    @flags=$(CONFIGURE_$1_FLAGS)
+    @flags="$(CONFIGURE_$1_FLAGS)"
     directory=$(MAYBE_$1)
     echo configuring exec_package with arguments: $1 $2 $3
     if test "$(build_os)" = "mingw32"; then

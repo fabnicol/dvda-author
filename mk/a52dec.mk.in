@@ -10,6 +10,7 @@ a52dec_LINK=@a52dec_LINK@
 MAYBE_a52dec=@MAYBE_a52dec@
 HAVE_a52dec=@HAVE_a52_dec@
 HAVE_EXTERNAL_a52dec=@HAVE_EXTERNAL_a52dec@
+CONFIGURE_a52dec_FLAGS=@CONFIGURE_a52dec_FLAGS@
 
 
 #Start of autoconf-substituted, do not modify#

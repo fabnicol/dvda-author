@@ -291,17 +291,17 @@ You can now build ${PACKAGE_TARNAME} by issuing 'make'.
 When the build is complete, become root and install
 it by issuing 'make install'.
 A ${PACKAGE_TARNAME} man page will be installed on Unix system
-
+ 
   Configuration summary :
-
+ 
     Version : ..................... $VERSION
-
+ 
     Dependencies:
-		    fixwav..........$(echo $libfixwav_LIB)
-		    flac............$(echo $FLAC_LIB) $FLAC_LINK
-		    ogg.............$(echo $libogg_LIB) $libogg_LINK
-		    sox.............$(echo $sox_LIB) $sox_LINK
-
+		    fixwav..........$libfixwav_LIB
+		    flac............$FLAC_LIB $FLAC_LINK
+		    ogg.............$libogg_LIB $libogg_LINK
+		    sox.............$sox_LIB $sox_LINK
+ 
     Build libraries:
 		    libFLAC ........$FLAC_BUILD
 		    libogg .........$libogg_BUILD
@@ -309,14 +309,14 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
 
 		    gnu libc .......$libiberty_BUILD
 		    libutils .......yes
-
+ 
     Ogg FLAC support:
 		     ...............$libogg_BUILD
-
+ 
     Static sox build:
 		     ...............$STATIC_SOX
-
-
+ 
+ 
 ])
 
 
@@ -353,11 +353,11 @@ AS_IF([ test x$MP2ENC = x -o x$JPEG2YUV = x -o x$MPEG2ENC = x -o x$MPLEX = x],[
  AC_MSG_RESULT([  You will have to author top menus from available MPEG background files, as tools are missing to automate generation.])])
 
 AC_MSG_RESULT([[
-
+ 
   Using $make as a system build tool.
 
   Auxiliary tools		   build [default no/yes]    install path [default system path/build path]
-
+ 
     help2man: .....................$help2man_BUILD $HELP2MAN
     man2html: .....................$man2html_BUILD $MAN2HTML
     spumux: .......................$dvdauthor_BUILD $SPUMUX
@@ -372,29 +372,41 @@ AC_MSG_RESULT([[
     mogrify:.......................$ImageMagick_BUILD $MOGRIFY
     convert:.......................$ImageMagick_BUILD $CONVERT
     lplex: ........................$lplex_BUILD $LPLEX
-
-   Make will target the following .mk files:
-
+ 
 ]])
 
-for i in $PROGRAM_TARGETS ; do echo -e \\t$i.mk; done
+AS_IF([test "$PROGRAM_TARGETS" != ""],[AC_MSG_RESULT([
+   Make will target the following external source packages:
+ 
+       $PROGRAM_TARGETS
+ 
+   and the following .mk files:
+])],
+[AC_MSG_RESULT([
+No external package will be built.
+])])
+
+for i in $PROGRAM_TARGETS
+do
+ AS_IF([test -f "$ROOTDIR/mk/$i.mk" ],[echo -e \\t$i.mk])
+done
 
  AS_IF([test "$GIT" != ""],
     AC_MSG_RESULT([
   Distribution of files:  using git in $GIT
-
   ]))
 
 AC_MSG_RESULT([[
-
    Building tools:
 
     make:..........................$make
     curl: .........................$CURL
     patch:.........................$PATCH
-
+    autoconf:......................$AUTOCONF
+    automake:......................$AUTOMAKE
+ 
   These tools should all be installed to enable advanced dvda-author features.
-
+ 
   Installation directories :
     prefix is: ....................$prefix
     Library directory: ........... $(echo $libdir)
@@ -404,6 +416,7 @@ AC_MSG_RESULT([[
     Images directory: ............ $(echo $PIXDIR)
     Configuration files: ......... $SHORTLINKDIR
     Images directory: ............ $MENUDIR
+ 
 ]])
 
 
@@ -418,7 +431,7 @@ AS_IF([ test -f PATCHED.DOWNLOADS ],
      patches=$(cat PATCHED.DOWNLOADS | grep Patched | $SED -r 's/Patched://g ; s/\n/\n\ \ \ \ \ \ /g')
      AC_MSG_RESULT([[
   The following  patch(es) were applied:
-
+ 
   $patches]])
 
    AS_IF([test x$cdrtools_BUILD = xyes -a "$(echo $patches | grep cdrtools)" = ""],
@@ -451,12 +464,12 @@ AS_IF([ test -f PATCHED.DOWNLOADS ],
 AS_IF([test x$patching_issue = xyes],
        [
 	  AC_MSG_RESULT([[
-	  Please try downloading the patches manually. (See file README for http links to patches)]])
+  Please try downloading the patches manually. (See file README for http links to patches)]])
        ]
        ,
        [
 	 AC_MSG_RESULT([
-    You may now build by typing 'make' and install with 'make install'.
+  You may now build by typing 'make' and install with 'make install'.
        ])])
 
 AS_IF([ test x$ImageMagick_BUILD = xyes ], [DVDA_INF([IMAGEMAGICK_MSG])])

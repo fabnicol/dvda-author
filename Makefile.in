@@ -3,6 +3,12 @@
 #Caution: you need GNU make, version 3.82 and higher, preferably 3.99+
 
 #Do not use bash. It would cause subtle issues with libtool in the flac package, probably a libtool bug.
+
+CCAS=$(AS)
+export CCAS
+CCASFLAGS=$(ASFLAGS)
+export CCASFLAGS
+
 SHELL=/bin/sh
 
 .SHELLFLAGS=-ec
@@ -23,7 +29,9 @@ PROGRAM_TARGET_CONFIGS=$(foreach prog,$(PROGRAM_TARGETS),$(shell if test -f mk/$
 SRC_SUBDIRS := @ROOTDIR@/libutils/src
 
 ifneq "@WITH_libiberty@" "no"
-  SRC_SUBDIRS += @ROOTDIR@/@MAYBE_libiberty@
+  ifneq "@MAYBE_libiberty@" ""
+    SRC_SUBDIRS += @ROOTDIR@/@MAYBE_libiberty@
+  endif
 else
   CPPFLAGS += -DWITHOUT_libiberty
 endif
@@ -53,6 +61,7 @@ include mk/functions.mk
 include $(PROGRAM_TARGET_SOURCES)
 
 export CPPFLAGS
+export PARALLEL
 
 $(SRC_SUBDIRS):
 	echo making into directory $@...
