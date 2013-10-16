@@ -7,7 +7,7 @@ WITH_a52dec=@WITH_a52dec@
 #Autoconf-substituted, do not modify#
 a52dec_LIB=
 a52dec_LINK=
-MAYBE_a52dec=a52dec-0.7.4
+MAYBE_a52dec=
 HAVE_a52dec=@HAVE_a52_dec@
 HAVE_EXTERNAL_a52dec=@HAVE_EXTERNAL_a52dec@
 

@@ -57,7 +57,7 @@ ROOTDIR=`cd "$srcdir" ; pwd`
 
 m4_include([m4/auxiliary.m4])
 
-#m4_include([m4/dependencies.m4])
+m4_include([m4/dependencies.m4])
 
 DVDA_MKDIR([local])
 
