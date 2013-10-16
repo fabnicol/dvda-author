@@ -67,7 +67,7 @@ define configure_exec_package
     flags=$(CONFIGURE_$1_FLAGS)
     directory=$(MAYBE_$1)
     echo configuring exec_package with arguments: $1 $2 $3
-    ifeq $(build_os) mingw32
+    ifeq "$(build_os)" "mingw32"
 	patchfile=$$(find patches -type f -regex .*$1-patch.* -print0)
 	echo Found mingw32 OS...patching with local patch $$patchfile
 	$(if $$patchfile, patch -p0 < $$patchfile && echo "locally patched: $1, using $$patchfile in patches/" >> PATCHED.DOWNLOADS)
@@ -87,6 +87,20 @@ define depconf
 		$(call configure_lib_package,$1,$1,$($1_COMMANDLINE))
 	     else
 		$(call configure_lib_package,$1)
+	     fi
+	  else
+	     if test $(origin $($1_COMMANDLINE)) != undefined ; then
+		if test $(origin $($1_TESTBINARY)) != undefined ; then
+		  $(call configure_exec_package,$1,$($1_TESTBINARY),$($1_COMMANDLINE))
+		else
+		  $(call configure_exec_package,$1,$1,$($1_COMMANDLINE))
+		fi
+	     else
+		if test $(origin $($1_TESTBINARY)) != undefined ; then
+		  $(call configure_exec_package,$1,$($1_TESTBINARY),--version)
+		else
+		  $(call configure_exec_package,$1,$1,--version)
+		fi
 	     fi
 	  fi
 	fi
