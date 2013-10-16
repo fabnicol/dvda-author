@@ -10,3 +10,12 @@ lplex_LINK=@lplex_LINK@
 MAYBE_lplex=@MAYBE_lplex@
 HAVE_lplex=@HAVE_lplex@
 HAVE_EXTERNAL_lplex=@HAVE_EXTERNAL_lplex@
+CONFIGURE_lplex_FLAGS=@CONFIGURE_lplex_FLAGS@
+
+
+#Start of autoconf-substituted, do not modify#
+
+lplex.depconf: $(lplex_DEPENDENCY)
+	$(call depconf,$*)
+
+#end of autoconf-substituted

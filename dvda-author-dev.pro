@@ -106,7 +106,9 @@ OTHER_FILES += \
     mk/libogg.global.mk.in \
     mk/sox.global.mk.in \
     mk/libogg.global.mk.in \
-    libiberty/src/Makefile.in
+    libiberty/src/Makefile.in \
+    m4/oggflac-test.m4 \
+    autogen
 
 HEADERS += \
     src/include/amg.h \

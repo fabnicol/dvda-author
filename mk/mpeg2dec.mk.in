@@ -11,3 +11,13 @@ libmpeg2_LINK=@libmpeg2_LINK@
 MAYBE_libmpeg2=@MAYBE_libmpeg2@
 HAVE_libmpeg2dec=@HAVE_libmpeg2dec@
 HAVE_EXTERNAL_libmpeg2dec=@HAVE_EXTERNAL_libmpeg2dec@
+CONFIGURE_libmpeg2dec_FLAGS=@CONFIGURE_libmpeg2dec_FLAGS@
+
+
+#Start of autoconf-substituted, do not modify#
+
+mpeg2dec.depconf: $(mpeg2dec_DEPENDENCY)
+	$(call depconf,$*)
+
+#end of autoconf-substituted
+
