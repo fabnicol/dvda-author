@@ -103,6 +103,7 @@ m4_map([DVDA_TEST_AUX],[
 	     [[sox-build]],
 	     [[help2man-build]],
 	     [[mpeg2dec-build]],
+	     [[dvdauthor-build]],
 	     [[a52dec-build]],
 	     [[mjpegtools-build]],
 	     [[core-build],
@@ -287,29 +288,28 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	    [*-*-mingw32*],
 	    [
 
-	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]]],
-	       [[[lplex], [lplex-0.3]], [--prefix=$prefix --disable-shared --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
+	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --prefix="$BUILDDIR/local"]],
+	       [[[lplex], [lplex-0.3]], [--prefix="$BUILDDIR/local" --disable-shared --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
 	       [[[mjpegtools], [mjpegtools-2.1.0]],
-			       [
+			       [ --prefix="$BUILDDIR/local"
 				 --disable-shared  --enable-static-build --disable-fast-install --prefix="$BUILDDIR/local"
 				 --without-gtk --without-libpng --without-libdv --without-dga --without-libsdl --without-libquicktime
-				 --disable-simd-accel LIBDIR=/lib LDFLAGS=-L/lib CPPFLAGS=-I/include]
-			       ],
-	       [[[cdrtools],[cdrtools-3.00]]],
-	       [[[a52dec],[a52dec-0.7.4]],[--prefix=$prefix]],
-	       [[[libmpeg2],[libmpeg2-0.5.1]], [--prefix=$prefix]],
-	       [[[help2man], [help2man-1.43.3]]],
-	       [[[ImageMagick], [ImageMagick-6.8.7-0]]]])
+				 --disable-simd-accel LIBDIR=/lib LDFLAGS=-L/lib CPPFLAGS=-I/include]],
+	       [[[cdrtools],[cdrtools-3.00]],[--prefix="$BUILDDIR/local"]],
+	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
+	       [[[libmpeg2],[libmpeg2-0.5.1]],[--prefix="$BUILDDIR/local"]],
+	       [[[help2man], [help2man-1.43.3]],[--prefix="$BUILDDIR/local"]],
+	       [[[ImageMagick], [ImageMagick-6.8.7-0]],[--prefix="$BUILDDIR/local"]]])
 	    ],
 	    [
-	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[DVDAUTHOR],[dvdauthor-0.7.1]]],
-	       [[[lplex], [lplex-0.3]], [--prefix=$prefix --disable-shared --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
-	       [[[mjpegtools], [mjpegtools-2.1.0]],[--enable-static-build --disable-fast-install --prefix="$BUILDDIR/local"]],
-	       [[[cdrtools],[cdrtools-3.00]]],
-	       [[[a52dec],[a52dec-0.7.4]],[--prefix=$prefix]],
-	       [[[libmpeg2],[libmpeg2-0.5.1]], [--prefix=$prefix]],
-	       [[[help2man], [help2man-1.43.3]]],
-	       [[[ImageMagick], [ImageMagick-6.8.7-0]]]])
+	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --prefix="$BUILDDIR/local"]],
+	       [[[lplex], [lplex-0.3]], [--prefix="$BUILDDIR/local" --disable-shared --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
+	       [[[mjpegtools], [mjpegtools-2.1.0]],[ --enable-static-build --disable-fast-install --prefix="$BUILDDIR/local"]],
+	       [[[cdrtools],[cdrtools-3.00]],[--prefix="$BUILDDIR/local"]],
+	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
+	       [[[libmpeg2],[libmpeg2-0.5.1]], [--prefix="$BUILDDIR/local"]],
+	       [[[help2man], [help2man-1.43.3]],[--prefix="$BUILDDIR/local"]],
+	       [[[ImageMagick], [ImageMagick-6.8.7-0]],[--prefix="$BUILDDIR/local"]]])
 	    ])
 
     # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs

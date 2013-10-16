@@ -609,6 +609,7 @@ m4_define([lower],m4_tolower([$1]))
 AS_IF([test x$[withval_]bn != xno],[
 AC_ARG_WITH([lower], [AS_HELP_STRING([--with-]lower,[full pathname of library or --without-]lower)],
    [
+    #given on command line
     [withval_]bn=$withval
     AS_IF([test x$withval = xno],
 	  [
@@ -626,10 +627,13 @@ AC_ARG_WITH([lower], [AS_HELP_STRING([--with-]lower,[full pathname of library or
 	  ])
    ],
    [
-     [withval_]bn=
-     bn[_LIB_INPUT]=
-     [HAVE_EXTERNAL_]bn=no
-     AC_DEFINE([WITHOUT_]bn,[1],[Disables $lower support])
+     #not given on command line
+     [withval_]bn=no
+      #building libfixwav by default
+      AS_IF([test bn != libfixwav ],[bn[_BUILD]=""],[bn[_BUILD]=yes])
+      bn[_LIB_INPUT]=""
+      [HAVE_EXTERNAL_]bn=no
+      [WITH_]bn=""
    ])
 ],
 [
@@ -671,9 +675,11 @@ AC_DEFUN([DVDA_CONFIG],[
     m4_define([VAR],m4_car(LIST))
     m4_define([UPPERVAR],m4_toupper(VAR))
     m4_define([CDR],m4_unquote(m4_cdr(LIST)))
-
+    AC_MSG_RESULT([configure:  VAR[_BUILD]=$VAR[_BUILD]])
+    AC_MSG_RESULT([configure:  [WITH_]VAR=$[WITH_]VAR])
     AS_IF([test \( x$VAR[_BUILD] = xyes -o x$ALL_BUILDS = xyes \) -a x$[WITH_]VAR != xno ],
 	   [
+	      AC_MSG_RESULT([configure:  Adding VAR to PROGRAM_TARGETS...])
 	      PROGRAM_TARGETS="$PROGRAM_TARGETS VAR"
 
 	      [MAYBE_]VAR=m4_unquote(CDR)

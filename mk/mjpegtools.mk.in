@@ -9,5 +9,14 @@ mjpegtools_COMMANDLINE=2>&1|line
 mjpegtools_LIB=@mjpegtools_LIB@
 mjpegtools_LINK=@mjpegtools_LINK@
 MAYBE_mjpegtools=@MAYBE_mjpegtools@
-HAVE_mjpegtools=@HAVE_a52_dec@
+HAVE_mjpegtools=@HAVE_mjpegtools@
 HAVE_EXTERNAL_mjpegtools=@HAVE_EXTERNAL_mjpegtools@
+CONFIGURE_mjpegtools_FLAGS=@CONFIGURE_mjpegtools_FLAGS@ CCAS=/usr/bin/as
+
+
+#Start of autoconf-substituted, do not modify#
+
+mjpegtools.depconf: $(mjpegtools_DEPENDENCY)
+	$(call depconf,$*)
+
+#end of autoconf-substituted

@@ -21,7 +21,7 @@ fi
 topdir=`pwd`
 echo "Entering: "
 echo "$topdir"
-autoconf -f -Im4 -Im4.extra -Im4.extra.dvdauthor
+autoconf -f -Im4 -Im4.extra -Im4.extra.dvdauthor --warnings=none
 autoheader
 exitcode=$?
 cd "$topdir"
@@ -38,7 +38,7 @@ fi
 
 function clean()
 {
-  sed -r -i '/^\s*$/d' $1
+  sed -r -i '/^\s{3,}*$/d' $1
 }
 
 
