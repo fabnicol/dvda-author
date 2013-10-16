@@ -25,9 +25,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 /* do not use code beautifiers/formatters for this file*/
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -617,6 +615,7 @@ return w;
 
  // if installed with autotools, if bindir overrides then use override, otherwise use config.h value;
 // if not installed with autotools, then use command line value or last-resort hard-code set defaults and test for result
+
 #if !HAVE_core_BUILD
 char* create_binary_path(char* local_variable, char* symbolic_constant, char* basename)
 {

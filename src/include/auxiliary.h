@@ -24,6 +24,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 #ifndef  AUXILIARY_H_INCLUDED
 #define AUXILIARY_H_INCLUDED
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <sys/stat.h>
 #include <sys/types.h>
 #ifndef __WIN32__
@@ -92,6 +96,10 @@ void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size);
 char** fn_strtok(char* chain, char delim, char** array, uint32_t count, int  (*f)(char*, uint32_t ), char* remainder);
 int cutloop(char GCC_ATTRIBUTE_UNUSED *c, uint32_t count);
 int arraylength(char ** tab);
+
+#if !HAVE_core_BUILD
 char* create_binary_path(char* local_variable, char* symbolic_constant, char* basename);
 void download_latest_version(_Bool download_new_version_flag,_Bool force_download_flag);
+#endif
+
 #endif // AUXILIARY_H_INCLUDED

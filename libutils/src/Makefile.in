@@ -1,6 +1,4 @@
 
-LDFLAGS  +=-s
-CFLAGS   += -std=c99 -O3
 CPPFLAGS +=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/libutils/src/private -I@ROOTDIR@ -I@ROOTDIR@/src/include
 
 ifeq "@HAVE_libiberty_BUILD@" "yes"

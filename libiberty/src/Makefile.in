@@ -1,7 +1,7 @@
 
 OBJECTS=getsubopt.o strdup.o strndup.o strchrnul.o  strnlen.o malloc.o
 ifneq "@WITH_sox@" ""
-OBJECTS+= getopt.o getopt1.o
+ OBJECTS+= getopt.o getopt1.o
 endif
 
 CPPFLAGS += -I@ROOTDIR@/@MAYBE_libiberty@/include
