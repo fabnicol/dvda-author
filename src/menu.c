@@ -1,6 +1,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#if !HAVE_core_BUILD
 //#undef __STRICT_ANSI__
 #include <stdio.h>
 #include <stdlib.h>
@@ -1224,7 +1225,7 @@ int create_stillpic_directory(char* string, uint32_t count)
     return 0;
 
 }
-
+#endif
 
 
 

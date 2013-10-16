@@ -27,7 +27,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 */
 
-
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#if !HAVE_core_BUILD
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -231,3 +234,4 @@ void import_topmenu(char* video_vob_path, pic* img, _Bool MIX_TYPE)
 
 
 }
+#endif
