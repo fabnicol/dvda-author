@@ -372,6 +372,7 @@ AC_ARG_ENABLE([$1],[AS_HELP_STRING([--enable-$1],msg)],
    $2
    DVDA_INF([Will msg... ])
    upper=yes
+   BUILD(bn)
   ],
   [
    DVDA_INF([Will not msg... ])
