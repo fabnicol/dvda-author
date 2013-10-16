@@ -167,23 +167,20 @@ $(FORMATS): ;
 #master by default, can be overridden on commandline e.g. make dist-xz BRANCH=win32
 
 $(DISTFORMATS): $(FORMATS)
-ifeq "@HAVE_git@" "yes"
-	BRANCH=master
-	CURRRENTBRANCH=`@GIT@ status -bs -u no -z | sed -e 's/[# ]*//g'`
-	ifneq "$(BRANCH)" "$(CURRENTBRANCH)"
-	  @GIT@ checkout $(BRANCH))
-	endif
-	if test $? = 0 ; then @GIT@ archive -o dvda-author-@VERSION@.$< HEAD $(BRANCH); fi
-	ifneq "$(BRANCH)" "$(CURRENTBRANCH)"
-	  @GIT@ checkout $(CURRENTBRANCH)
-	endif
-endif
+	if test "@HAVE_git@" = "yes"; then
+		BRANCH=master
+		CURRRENTBRANCH=`@GIT@ status -bs -u no -z | sed -e 's/[# ]*//g'`
+		if test "$(BRANCH)" != "$(CURRENTBRANCH)"; then
+		  @GIT@ checkout $(BRANCH)
+		fi
+		@GIT@ archive -o dvda-author-@PACKAGE_VERSION@.$< HEAD $(BRANCH)
+		if test "$(BRANCH)" != "$(CURRENTBRANCH)"; then
+		  @GIT@ checkout $(CURRENTBRANCH)
+		fi
+	else
+		echo Please install git to make a distribution package.
+	fi
 
-#$(libogg_TARGETLIB)
-	#if test "$($<_CONFIGSPEC)" = "exe"; then
-	#      $(call configure_exec_package,$<,$($<_TESTBINARY),$($<_COMMANDLINE))
-	#else
-	#fi
 
 force: ;
 
