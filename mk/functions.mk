@@ -64,14 +64,14 @@ define configure_lib_package
 endef
 
 define configure_exec_package
-    flags=$(CONFIGURE_$1_FLAGS)
+    @flags=$(CONFIGURE_$1_FLAGS)
     directory=$(MAYBE_$1)
     echo configuring exec_package with arguments: $1 $2 $3
-    ifeq "$(build_os)" "mingw32"
+    if test "$(build_os)" = "mingw32"; then
 	patchfile=$$(find patches -type f -regex .*$1-patch.* -print0)
 	echo Found mingw32 OS...patching with local patch $$patchfile
 	$(if $$patchfile, patch -p0 < $$patchfile && echo "locally patched: $1, using $$patchfile in patches/" >> PATCHED.DOWNLOADS)
-    endif
+    fi
 	$(call configure_sub_package,$$directory,$$flags)
 	$(call execfollow,$$directory,$2,$3)
 endef
@@ -81,7 +81,7 @@ define clean_package
 endef
 
 define depconf
-	if test "$($1_MAKESPEC)" = "auto" ; then
+	@if test "$($1_MAKESPEC)" = "auto" ; then
 	  if test "$($1_CONFIGSPEC)" = "lib"; then
 	     if test $(origin $($1_COMMANDLINE)) != undefined ; then
 		$(call configure_lib_package,$1,$1,$($1_COMMANDLINE))
@@ -89,19 +89,28 @@ define depconf
 		$(call configure_lib_package,$1)
 	     fi
 	  else
-	     if test $(origin $($1_COMMANDLINE)) != undefined ; then
-		if test $(origin $($1_TESTBINARY)) != undefined ; then
+	    if test "$($1_CONFIGSPEC)" = "exe"; then
+	    echo "configuring exec build..."
+	     if test "$($1_COMMANDLINE)" != "" ; then
+	       echo "configuring exec build with defined command line..."
+		if test "($1_TESTBINARY)" != "" ; then
+		  echo "...testing $($1_TESTBINARY) with $($1_COMMANDLINE)..."
 		  $(call configure_exec_package,$1,$($1_TESTBINARY),$($1_COMMANDLINE))
 		else
+		  echo "...testing $1 with $($1_COMMANDLINE)..."
 		  $(call configure_exec_package,$1,$1,$($1_COMMANDLINE))
 		fi
 	     else
+	      echo "configuring exec build with undefined command line..."
 		if test $(origin $($1_TESTBINARY)) != undefined ; then
+		  echo "...testing $($1_TESTBINARY) with --version..."
 		  $(call configure_exec_package,$1,$($1_TESTBINARY),--version)
 		else
+		   echo "...testing $1 with --version..."
 		  $(call configure_exec_package,$1,$1,--version)
 		fi
 	     fi
+	    fi
 	  fi
 	fi
 endef

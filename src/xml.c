@@ -1,6 +1,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#if !HAVE_core_BUILD
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -351,3 +352,4 @@ int  generate_spumux_xml(uint8_t ngroups, uint8_t *ntracks, uint16_t maxntracks,
 
     return(errno);
 }
+#endif

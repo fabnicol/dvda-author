@@ -629,6 +629,7 @@ AC_ARG_WITH([lower], [AS_HELP_STRING([--with-]lower,[full pathname of library or
      [withval_]bn=
      bn[_LIB_INPUT]=
      [HAVE_EXTERNAL_]bn=no
+     AC_DEFINE([WITHOUT_]bn,[1],[Disables $lower support])
    ])
 ],
 [
