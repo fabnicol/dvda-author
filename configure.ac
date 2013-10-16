@@ -209,9 +209,6 @@ AC_DEFINE_UNQUOTED(CPU_IS_LITTLE_ENDIAN, ${ac_cv_c_little_endian},
     [Target processor is little endian.])
 
 
-AS_IF([ test x${ac_cv_c_big_endian} = xyes ],[ CFLAGS="$CFLAGS   -DCPU_IS_BIG_ENDIAN"],[ CFLAGS="$CFLAGS  -DCPU_IS_LITTLE_ENDIAN"])
-
-
 #========================================
 # Checks for libraries, headers and types
 #========================================

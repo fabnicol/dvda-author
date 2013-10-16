@@ -3,8 +3,8 @@
 SOURCES:=$(wildcard *.c)
 OBJECTS:=$(SOURCES:.c=.o)
 
-CFLAGS += -std=c99 -O3
 CPPFLAGS += -I@ROOTDIR@/@MAYBE_libfixwav@/include -I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include -I@ROOTDIR@
+
 LDLIBS += @BUILDDIR@/libutils/src/libc_utils.a
 
 ifeq "@HAVE_libiberty_BUILD@" "yes"

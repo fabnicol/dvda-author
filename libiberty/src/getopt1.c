@@ -17,9 +17,6 @@
    Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
    02111-1307 USA.  */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
 
 /*  dvda-author surrogate name for getopt_long
     This is made necessary by a SoX bug in versions < 14.3

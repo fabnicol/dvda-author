@@ -1,8 +1,8 @@
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-#if !HAVE_core_BUILD
+
 //#undef __STRICT_ANSI__
+#include "menu.h"
+#if !HAVE_core_BUILD
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,7 +18,6 @@
 #include "structures.h"
 #include "c_utils.h"
 #include "commonvars.h"
-#include "menu.h"
 #include "launch_manager.h"
 #include "winport.h"
 #include "auxiliary.h"
