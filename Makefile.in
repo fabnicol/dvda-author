@@ -54,6 +54,10 @@ $(SRC_SUBDIRS):
 	echo making into directory $@...
 	$(MAKE) $(PARALLEL) --directory=$@
 
+
+$(PROGRAM_TARGET_CONFIGS): %.config: %.depconf
+	@echo Creating program target config for $* using $<...
+
 erase_build.trace:
 	@echo PROGRAM_TARGETS=$(PROGRAM_TARGETS)
 	echo PROGRAM_TARGET_SOURCES=$(PROGRAM_TARGET_SOURCES)
@@ -180,9 +184,6 @@ endif
 	#      $(call configure_exec_package,$<,$($<_TESTBINARY),$($<_COMMANDLINE))
 	#else
 	#fi
-
-$(PROGRAM_TARGET_CONFIGS): %.config: %.depconf
-	@echo Creating program target config for $* using $<...
 
 force: ;
 
