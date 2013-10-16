@@ -1,8 +1,13 @@
 #ifndef HAVE_MENU_C
 #define HAVE_MENU_C
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
+#include "structures.h"
 
+#if !HAVE_core_BUILD
 
 int  generate_background_mpg(pic* img);
 int prepare_overlay_img(char* text, int8_t group, pic *img, char* command, char* command2, int menu, char* albumcolor);
@@ -18,4 +23,5 @@ uint16_t y(uint8_t track, uint8_t maxnumtracks);
 void initialize_binary_paths(char level);
 void menu_characteristics_coherence_test(pic* img, uint8_t ngroups);
 void compute_pointsize(pic* img, uint16_t maxtracklength, uint8_t maxnumtracks);
+#endif
 #endif // HAVE_MENU_C

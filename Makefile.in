@@ -10,6 +10,10 @@ SHELL=/bin/sh
 #Using ONESHELL, version make 3.82+, possibly higher with windows ports
 .ONESHELL:
 
+CFLAGS ?= @CFLAGS@
+
+export CFLAGS
+
 CPPFLAGS = @DEFS@
 
 PROGRAM_TARGETS=@PROGRAM_TARGETS@
