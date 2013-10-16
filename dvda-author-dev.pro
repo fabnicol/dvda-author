@@ -98,7 +98,6 @@ OTHER_FILES += \
     mk/a52dec.mk.in \
     mk/cdrtools.mk.in \
     libfixwav/src/Makefile.in \
-    libfixwav/src/Makefile \
     libfixwav/src/Makefile.am.user \
     libfixwav/src/Makefile.inMakefile.am \
     mk/sox.mk.in \
