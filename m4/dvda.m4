@@ -333,7 +333,6 @@ m4_define([dhms],[dehyphenate([$1])])
 m4_define([act],  suffix([$1]))
 m4_define([bn],   [basename([$1])])
 m4_define([norm], [normalise([$1])])
-m4_define([upper],[uppernormalisename([$1])])
 
 m4_if(act,[build],
        [m4_define([msg],[[configure, build and install ]bn[ from source code]])],
@@ -371,27 +370,27 @@ AC_ARG_ENABLE([$1],[AS_HELP_STRING([--enable-$1],msg)],
 
    $2
    DVDA_INF([Will msg... ])
-   upper=yes
    BUILD(bn)
+   [HAVE_]bn[_BUILD]=yes
+   indic=yes
   ],
   [
    DVDA_INF([Will not msg... ])
    m4_ifvaln([$3], [$3])
-   upper=no
+   [HAVE_]bn[_BUILD]=no
+   indic=no
   ])
-])
+],
+[
+ [HAVE_]bn[_BUILD]=""
+ indic=""
+]
+)
 
+AS_IF([test "$indic" = "yes"],[indic=1][indic=0])
 
-# We get AC_DEFINE out of the first yes test higher up because scripts passed along in arg3 may have result status that
-# reset $enableval to "no"
+AC_DEFINE_UNQUOTED([HAVE_]bn[_BUILD],$indic,msg)
 
-AS_IF([test x$enableval = xyes],[enableval_boolean=1],[enableval_boolean=0])
-
-#HAVE_sox_BUILD etc. in C code
-
-AC_DEFINE_UNQUOTED([HAVE_]bn[_BUILD],[$enableval_boolean],msg)
-
-AS_IF([test x$upper = xyes -a  act = build ],[[HAVE_]bn[_BUILD]=yes],[[HAVE_]bn[_BUILD]=no])
 AC_SUBST([HAVE_]bn[_BUILD])
 
 #m4_popdef([msg])
@@ -458,6 +457,7 @@ AS_IF([test "$1" != "" ],
 		AC_MSG_WARN([[Please download $1 or restart configure with --enable-]lower[-download or --enable-]lower[-patch <sox, cdrtools and dvdauthor>]])
 		AS_EXIT
 	      ])
+
       ],
       [
 	echo Naming error: empty "enable" feature
