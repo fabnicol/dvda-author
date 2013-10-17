@@ -265,7 +265,7 @@ AC_CONFIG_FILES([Makefile
 	 mk/dvdauthor.mk
 	 mk/ImageMagick.mk
 	 mk/lplex.mk
-	 mk/mpeg2dec.mk
+	 mk/libmpeg2.mk
 	 mk/help2man.mk
 	 mk/a52dec.mk
 	 mk/cdrtools.mk
@@ -367,6 +367,7 @@ AC_MSG_RESULT([[
     mp2enc: .......................$mjpegtools_BUILD $MP2ENC
     jpeg2yuv: .....................$mjpegtools_BUILD $JPEG2YUV
     mpeg2enc: .....................$mjpegtools_BUILD $MPEG2ENC
+    mpeg2dec: .....................$libmpeg2_BUILD $MPEG2DEC
     a52dec: .......................$a52dec_BUILD $A52DEC
     mplex: ........................$mjpegtools_BUILD $MPLEX
     mogrify:.......................$ImageMagick_BUILD $MOGRIFY

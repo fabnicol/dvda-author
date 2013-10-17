@@ -6,6 +6,7 @@ cdrtools_DEPENDENCY=Makefile
 cdrtools_TESTBINARY=cdrecord
 cdrtools_COMMANDLINE=-version 2>null
 WITH_cdrtools=@WITH_cdrtools@
+INS_BASE="@BUILDDIR@/local"
 
 #Autoconf-substituted, do not modify#
 cdrtools_LIB=@cdrtools_LIB@
@@ -13,7 +14,9 @@ cdrtools_LINK=@cdrtools_LINK@
 MAYBE_cdrtools=@MAYBE_cdrtools@
 HAVE_cdrtools=@HAVE_cdrtools@
 HAVE_EXTERNAL_cdrtools=@HAVE_EXTERNAL_cdrtools@
-CONFIGURE_cdrtools_FLAGS=@CONFIGURE_cdrtools_FLAGS@
 
-cdrtools: cdrtools_DEPENDENCY
+
+cdrtools.depconf: $(cdrtools_DEPENDENCY)
+	$(call depconf,$*,noconfigure)
+
 

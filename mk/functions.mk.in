@@ -27,17 +27,19 @@ endef
 define configure_sub_package
 	@target_subdir=$(strip $1)
 	configure_flags="$2"
-	echo configuring sub package with arguments: $1 $2 $3 $4
+	echo configuring sub package with arguments: $1 $2 $3 $4 $5
 	if test "$$target_subdir" != ""; then
 	   if test -d  "$$target_subdir"; then
 	      cd "$$target_subdir"
-	      if test "$3" != ""; then $(SHELL) "$3" $4; fi
-	      $(SHELL) configure $$configure_flags --prefix="@BUILDDIR@/local" CPPFLAGS="-I@BUILDDIR@/local/include" \
-		 && $(MAKE) MKDIR_P="mkdir$(EXEEXT) -p" $(PARALLEL)
+	      if test "$5" != "noconfigure"; then 
+	       if test "$3" != "" ; then $(SHELL) "$3" "$4"; fi
+	       $(SHELL) configure $$configure_flags --prefix="@BUILDDIR@/local" CPPFLAGS="-I@BUILDDIR@/local/include"
+	      fi
+	      if test "$$?" = "0"; then  $(MAKE) MKDIR_P="mkdir$(EXEEXT) -p" $(PARALLEL) ; fi
 	      if test "$$?" = "0"; then
 		 echo Installing from $$target_subdir ...
 		 if test -f INSTALL; then mv -f INSTALL INSTALL.txt ; fi
-		 $(MAKE) $(INS_BASE) install
+		 $(MAKE) INS_BASE=$(INS_BASE) install
 	      fi
 	      if test -f INSTALL.txt; then mv -f INSTALL.txt INSTALL; fi
 	      cd -
@@ -66,13 +68,13 @@ endef
 define configure_exec_package
     @flags="$(CONFIGURE_$1_FLAGS)"
     directory=$(MAYBE_$1)
-    echo configuring exec_package with arguments: $1 $2 $3
+    echo configuring exec_package with arguments: $1 $2 $3 $4
     if test "$(build_os)" = "mingw32"; then
 	patchfile=$$(find patches -type f -regex .*$1-patch.* -print0)
 	echo Found mingw32 OS...patching with local patch $$patchfile
 	$(if $$patchfile, patch -p0 < $$patchfile && echo "locally patched: $1, using $$patchfile in patches/" >> PATCHED.DOWNLOADS)
     fi
-	$(call configure_sub_package,$$directory,$$flags)
+	$(call configure_sub_package,$$directory,$$flags,$2,"$3",$4)
 	$(call execfollow,$$directory,$2,$3)
 endef
 
@@ -95,19 +97,19 @@ define depconf
 	       echo "configuring exec build with defined command line..."
 		if test "($1_TESTBINARY)" != "" ; then
 		  echo "...testing $($1_TESTBINARY) with $($1_COMMANDLINE)..."
-		  $(call configure_exec_package,$1,$($1_TESTBINARY),$($1_COMMANDLINE))
+		  $(call configure_exec_package,$1,$($1_TESTBINARY),"$($1_COMMANDLINE)",$2)
 		else
 		  echo "...testing $1 with $($1_COMMANDLINE)..."
-		  $(call configure_exec_package,$1,$1,$($1_COMMANDLINE))
+		  $(call configure_exec_package,$1,$1,"$($1_COMMANDLINE)",$2)
 		fi
 	     else
 	      echo "configuring exec build with undefined command line..."
 		if test $(origin $($1_TESTBINARY)) != undefined ; then
 		  echo "...testing $($1_TESTBINARY) with --version..."
-		  $(call configure_exec_package,$1,$($1_TESTBINARY),--version)
+		  $(call configure_exec_package,$1,$($1_TESTBINARY),--version,$2)
 		else
 		   echo "...testing $1 with --version..."
-		  $(call configure_exec_package,$1,$1,--version)
+		  $(call configure_exec_package,$1,$1,--version,$2)
 		fi
 	     fi
 	    fi
