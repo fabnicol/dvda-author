@@ -350,6 +350,7 @@ m4_if(act,[build],
 	   [m4_define([msg],[[enable ]dhms])])
 
 # Check whether --enable-$1 or --disable-$1 was given.
+echo "++++++++" doing $1: bn with enableval=$enableval
 
 AC_ARG_ENABLE([$1],[AS_HELP_STRING([--enable-$1],msg)],
 [
@@ -387,9 +388,9 @@ AC_ARG_ENABLE([$1],[AS_HELP_STRING([--enable-$1],msg)],
 ]
 )
 
-AS_IF([test "$indic" = "yes"],[indic=1][indic=0])
+AS_IF([test "$indic" = "yes"],[indic_boolean=1],[indic_boolean=0])
 
-AC_DEFINE_UNQUOTED([HAVE_]bn[_BUILD],$indic,msg)
+AC_DEFINE_UNQUOTED([HAVE_]bn[_BUILD],[$indic_boolean],msg)
 
 AC_SUBST([HAVE_]bn[_BUILD])
 
@@ -449,7 +450,8 @@ AC_DEFUN([BUILD],
 Triggering --enable-$1-build... ])
 AS_IF([test "$1" != "" ],
        [
-	  AS_IF([test "$1" = "libfixwav" -o "$1" = "libiberty" -o "$1" = "all-all" -o "$1"="all-deps" -o "$1" = "all-builds" -o `echo "$command_line-args" | sed s/lower//g` != "$command_line_args"],
+	  AC_MSG_WARN([[Using command line args: $command_line_args ...]])
+	  AS_IF([test "$1" = "libfixwav" -o "$1" = "libiberty" -o "$1" = "all-all" -o "$1"="all-deps" -o "$1" = "all-builds" -o `echo "$command_line_args" | sed s/lower//g` != "$command_line_args"],
 	      [
 		basename($1)[_BUILD]=yes
 	      ],

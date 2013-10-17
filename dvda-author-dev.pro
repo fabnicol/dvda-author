@@ -93,7 +93,6 @@ OTHER_FILES += \
     mk/dvdauthor.mk.in \
     mk/ImageMagick.mk.in \
     mk/lplex.mk.in \
-    mk/mpeg2dec.mk.in \
     mk/help2man.mk.in \
     mk/a52dec.mk.in \
     mk/cdrtools.mk.in \
@@ -108,7 +107,8 @@ OTHER_FILES += \
     mk/libogg.global.mk.in \
     libiberty/src/Makefile.in \
     m4/oggflac-test.m4 \
-    autogen
+    autogen \
+    mk/libmpeg2.mk.in
 
 HEADERS += \
     src/include/amg.h \
