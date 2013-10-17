@@ -22,7 +22,7 @@ topdir=`pwd`
 echo "Entering: "
 echo "$topdir"
 autoconf -f -Im4 -Im4.extra -Im4.extra.dvdauthor --warnings=none
-autoheader
+autoheader --warnings=none
 exitcode=$?
 cd "$topdir"
 
