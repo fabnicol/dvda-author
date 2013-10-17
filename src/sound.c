@@ -83,13 +83,10 @@ int launch_lplex_soundtrack(pic* img, char* create_mode)
 
     if(!lplex) return -1;
 
-
     char *args0[12]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm, "seamless"};
-
 
     for (menu=0; menu < img->nmenus; menu++)
     {
-
         if ((img->topmenu_nslides[menu] > 1) && img->nmenus > 1)
         {
             foutput("%s\n", "[WAR]  Software limitation: you cannot author discs\n       with several slides for several menus.\n       Resetting slide number to 1.\n");
@@ -97,9 +94,7 @@ int launch_lplex_soundtrack(pic* img, char* create_mode)
         }
 
         char* args[img->topmenu_nslides[menu]*3+12+1];
-
         for (u=0; u < 12; u++) args[u]=args0[u];
-
         for (u=0; u < img->topmenu_nslides[menu]; u++)
         {
             args[12+tot]="jpg";
@@ -116,15 +111,11 @@ int launch_lplex_soundtrack(pic* img, char* create_mode)
         }
 
         change_directory(globals.settings.workdir);
-
         run(lplex, args, 0);
-
         tot=0;
-
         path_t* aux=parse_filepath(img->soundtrack[menu][0]);
 
         //path_t* aux=parse_filepath("/home/fab/A.jpg");
-
 
         if (aux->directory == NULL)
         {
@@ -156,12 +147,9 @@ int launch_lplex_soundtrack(pic* img, char* create_mode)
 #endif
 
         char* dest=copy_file2dir(adjacent, globals.settings.tempdir); // automatic renaming of dest
-
         img->backgroundmpg[menu]=strdup(dest);
-
         free(aux);
         free(dest);
-
     }
 #endif
     return errno;
