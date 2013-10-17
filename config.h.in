@@ -378,9 +378,6 @@
 /* Found mpeg2dec */
 #undef HAVE_mpeg2dec
 
-/* configure, build and install mpeg2dec from source code */
-#undef HAVE_mpeg2dec_BUILD
-
 /* Found mpeg2enc */
 #undef HAVE_mpeg2enc
 
