@@ -52,6 +52,7 @@ m4_map([DVDA_TEST_AUX],[
   #===================== build features ==============================================#
   #=================  platform-specific features in AS_CASE =====================================#
 
+#all _BUILD prepended items are lower case, including for FLAC-->flac
 
  AS_CASE([${build}],
    [*-*-mingw32*],
@@ -62,10 +63,16 @@ m4_map([DVDA_TEST_AUX],[
 	     [[libiberty-build]],
 	     [[libfixwav-build]],
 	     [[cdrtools-build]],
-	     [[flac-build]],
-	     [[sox-build]],
+	     [[flac-build],[ libogg_BUILD=yes]],
+	     [[sox-build],[
+	       flac_BUILD=yes
+	       libogg_BUILD=yes
+	       ]],
 	     [[help2man-build]],
 	     [[libmpeg2-build]],
+    	     [[lplex-build],[ 
+    	      libogg_BUILD=yes
+    	      flac_BUILD=yes]],
 	     [[a52dec-build]],
 	     [[mjpegtools-build]],
 	     [[core-build],
@@ -90,7 +97,7 @@ m4_map([DVDA_TEST_AUX],[
 	       sox_LINK="$sox_LINK -lasound -lpng -lz -lltdl -lmagic -lsamplerate"
 	       sox_LIB="/usr/lib/libsox.a $(find /usr/lib/sox/ -regex lib.*a)"]],
 	     [[all-all],
-		[ALL_BUILDS=yes]],
+		[all_builds=yes]],
 	     [[all-builds]]])
    ],
    [
@@ -101,10 +108,17 @@ m4_map([DVDA_TEST_AUX],[
 	     [[libiberty-build]],
 	     [[libfixwav-build]],
 	     [[cdrtools-build]],
-	     [[flac-build]],
-	     [[sox-build]],
+	     [[flac-build],[
+	      libogg_BUILD=yes
+	      ]],
+	     [[sox-build],[
+	       flac_BUILD=yes
+	       libogg_BUILD=yes]],
 	     [[help2man-build]],
 	     [[libmpeg2-build]],
+    	     [[lplex-build],[ 
+    	      libogg_BUILD=yes
+    	      flac_BUILD=yes]],
 	     [[dvdauthor-build]],
 	     [[a52dec-build]],
 	     [[mjpegtools-build]],
@@ -138,7 +152,7 @@ m4_map([DVDA_TEST_AUX],[
 	       sox_LINK="$sox_LINK -lasound -lpng -lz -lltdl -lmagic -lsamplerate"
 	       sox_LIB="/usr/lib/libsox.a $(find /usr/lib/sox/ -regex lib.*a)"]],
 	     [[all-all],
-		[ALL_BUILDS=yes]],
+		[all_builds=yes]],
 	     [[all-builds]]])
 
    ])
@@ -284,6 +298,14 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
     # to be invoked after ENABLE and WITH features
     # insert here application-specific macros that cannot be inserted in another file
 
+ # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
+
+    DVDA_CONFIG_LIBRARY_LOCAL_INSTALL([
+     [[[sox],[sox-14.4.1]],  [--without-libltdl --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-ffmpeg --disable-fast-install --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
+     [[[libogg],[libogg-1.3.1]],  [--prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
+     [[[FLAC],[flac-1.3.0]],[--enable-static --disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg" \
+       --disable-thorough-tests --disable-oggtest --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]]])
+       
      # installing binaries, normally executables
 
     AS_CASE([${build}],
@@ -314,13 +336,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	       [[[ImageMagick], [ImageMagick-6.8.7-0]],[--prefix="$BUILDDIR/local"]]])
 	    ])
 
-    # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
-
-    DVDA_CONFIG_LIBRARY_LOCAL_INSTALL([
-     [[[FLAC],[flac-1.3.0]],[--enable-static --disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg" \
-	 --disable-thorough-tests --disable-oggtest --disable-cpplibs --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
-     [[[sox],[sox-14.4.1]],  [--without-libltdl --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-ffmpeg --disable-fast-install --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
-     [[[libogg],[libogg-1.3.1]],  [--prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]]])
+   
 
     # auxiliary libs that remain within package, not installed
 

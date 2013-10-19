@@ -1,6 +1,7 @@
+
 lplex_MAKESPEC=auto
 lplex_CONFIGSPEC=exe
-lplex_DEPENDENCY=Makefile FLAC
+lplex_DEPENDENCY=Makefile FLAC.depconf
 lplex_TESTBINARY=lplex
 lplex_COMMANDLINE=--version 2>&1|line
 
@@ -18,4 +19,5 @@ CONFIGURE_lplex_FLAGS=@CONFIGURE_lplex_FLAGS@
 lplex.depconf: $(lplex_DEPENDENCY)
 	$(call depconf,$*)
 
+	
 #end of autoconf-substituted
