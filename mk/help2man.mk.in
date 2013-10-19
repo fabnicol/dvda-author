@@ -1,4 +1,4 @@
-help2man_MAKESPEC=manual
+help2man_MAKESPEC=auto
 
 #Autoconf-substituted, do not modify#
 help2man_LIB=@help2man_LIB@
@@ -7,17 +7,13 @@ MAYBE_help2man=@MAYBE_help2man@
 HAVE_help2man=@HAVE_help2man@
 HAVE_EXTERNAL_help2man=@HAVE_EXTERNAL_help2man@
 CONFIGURE_help2man_FLAGS=@CONFIGURE_help2man_FLAGS@
+help2man_COMMANDLINE=--version|line
+WITH_help2man=@WITH_help2man@
 
-help2man: Makefile
-	if test -f $@; then rm -f $@; fi; touch $@
-	if test "$(MAYBE_$@)" != "" ; then
-	  if test -d $(MAYBE_$@) ; then
-		cd $(MAYBE_$@) && $(SHELL) configure --prefix=${prefix} ; $(MAKE) $(PARALLEL); cd -
-	  fi
-	fi
-	$(call execfollow,$(MAYBE_$@),$@,--version|line)
-	if test -f $(MAYBE_$@)/$@ ; then
-		  $(MAYBE_$@)/$@ -s 1 -N -o dvda-author.1 src/dvda
+help2man.depconf: Makefile
+	$(call depconf,$*)
+	if test -f $(MAYBE_$*)/$* ; then
+		  $(MAYBE_$*)/$* -s 1 -N -o dvda-author.1 src/dvda
 		  $(call docfollow,dvda-author.1)
 		  manhelp=dvda-author.1
 	fi

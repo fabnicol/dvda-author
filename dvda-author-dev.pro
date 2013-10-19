@@ -108,7 +108,8 @@ OTHER_FILES += \
     libiberty/src/Makefile.in \
     m4/oggflac-test.m4 \
     autogen \
-    mk/libmpeg2.mk.in
+    mk/libmpeg2.mk.in \
+    script.mjpegtools
 
 HEADERS += \
     src/include/amg.h \

@@ -1,0 +1,5 @@
+if test  "@MAYBE_mjpegtools@" != ""; then
+  if test -d "@MAYBE_mjpegtools@" ; then
+    cd "@MAYBE_mjpegtools@" &&  ./configure --prefix=${prefix} ; make ; cd - 
+  fi
+fi

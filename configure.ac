@@ -271,6 +271,7 @@ AC_CONFIG_FILES([Makefile
 	 mk/cdrtools.mk
 	 images/Makefile
 	 sox-libs
+	 script.mjpegtools
 	 COREBUILD
 	 EXAMPLES
 ])

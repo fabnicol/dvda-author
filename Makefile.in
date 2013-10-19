@@ -23,7 +23,7 @@ export CFLAGS
 CPPFLAGS = @DEFS@
 
 PROGRAM_TARGETS=@PROGRAM_TARGETS@
-PROGRAM_TARGET_SOURCES=$(foreach prog,$(PROGRAM_TARGETS),$(shell if test -f mk/$(prog).mk; then echo mk/$(prog).mk; fi))
+PROGRAM_TARGET_MAKEFILES=$(foreach prog,$(PROGRAM_TARGETS),$(shell if test -f mk/$(prog).mk; then echo mk/$(prog).mk; fi))
 PROGRAM_TARGET_CONFIGS=$(foreach prog,$(PROGRAM_TARGETS),$(shell if test -f mk/$(prog).mk; then echo $(prog).config; fi))
 
 SRC_SUBDIRS := @ROOTDIR@/libutils/src
@@ -45,7 +45,7 @@ endif
 SRC_SUBDIRS += @ROOTDIR@/src
 
 .SUFFIXES: .config .depconf
-.PHONY: all all-sources erase_build.trace do_sox_lib_deps_subst create_autotargets $(PROGRAM_TARGET_CONFIGS) $(SRC_SUBDIRS)
+.PHONY: all all-sources erase_build.trace  create_autotargets $(PROGRAM_TARGET_CONFIGS) do_sox_lib_deps_subst $(SRC_SUBDIRS)
 
 ALL_TARGETS=erase_build.trace
 
@@ -58,12 +58,12 @@ ALL_TARGETS += $(PROGRAM_TARGET_CONFIGS) $(SRC_SUBDIRS)
 all:  $(ALL_TARGETS)
 
 include mk/functions.mk
-include $(PROGRAM_TARGET_SOURCES)
+include $(PROGRAM_TARGET_MAKEFILES)
 
 export CPPFLAGS
 export PARALLEL
 
-$(SRC_SUBDIRS):
+$(SRC_SUBDIRS): do_sox_lib_deps_subst
 	echo making into directory $@...
 	$(MAKE) $(PARALLEL) --directory=$@
 
@@ -73,7 +73,7 @@ $(PROGRAM_TARGET_CONFIGS): %.config: %.depconf
 
 erase_build.trace:
 	@echo PROGRAM_TARGETS=$(PROGRAM_TARGETS)
-	echo PROGRAM_TARGET_SOURCES=$(PROGRAM_TARGET_SOURCES)
+	echo PROGRAM_TARGET_MAKEFILES=$(PROGRAM_TARGET_MAKEFILES)
 	echo PROGRAM_TARGET_CONFIGS=$(PROGRAM_TARGET_CONFIGS)
 	echo adding: $(SRC_SUBDIRS)
 	echo yielding ALL_TARGETS=$(ALL_TARGETS)
@@ -83,14 +83,13 @@ erase_build.trace:
 
 # directly patching the Makefile appears to be more efficient. You need a GNU-compliant make.
 
-do_sox_lib_deps_subst: src/Makefile sox
-	echo Processing dependencies for sox=@sox@...
-	$(if @sox@,
-	chmod +x @MAYBE_sox@/sox-libs
-	pkgconfig_style_libs=$(shell cat @MAYBE_sox@/sox-libs | @SED@ -e "s,[\.\/].*[a],,g   ;  s,@.*@,,g")
-	@SED@ -e "s/SOX_LIB_DEPS/$$pkgconfig_style_libs/g" < src/Makefile > src/Makefile.temp
-	mv src/Makefile.temp src/Makefile
-	$(call follow,src/Makefile.temp, done sox library substitution \(pkgconfig-style\)))
+pkgconfig_style_libs=$(if $(MAYBE_sox),$(shell cat $(MAYBE_sox)/sox-libs | @SED@ -e "s/^.*\.a//g   ;  s/@.*@//g"))
+
+do_sox_lib_deps_subst: src/Makefile $(MAYBE_sox)
+	@echo Processing dependencies for sox...
+	echo pkgconfig_style_libs=$(pkgconfig_style_libs)
+	@SED@ -i -e 's/SOX_LIB_DEPS/$(pkgconfig_style_libs)/g'  src/Makefile 
+	$(call follow,src/Makefile, done sox library substitution \(pkgconfig-style\))
 
 dvda-author.1:
 ifeq "@HAVE_help2man@" "yes"
