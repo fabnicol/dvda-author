@@ -337,7 +337,7 @@ m4_define([norm], [normalise([$1])])
 m4_if(act,[build],
        [m4_define([msg],[[configure, build and install ]bn[ from source code]])],
 	  act,[builds],
-       [m4_define([msg],[[configure, build and install all core dependencies <FLAC, Ogg, SoX, dvdauthor, cdrtools> from source code]])],
+       [m4_define([msg],[[configure, build and install all core dependencies <FLAC, Ogg, SoX, dvdauthor, cdrtools> from source code]])       ],
 	  act,[patch],
        [m4_define([msg],[[download and patch ]bn[ from source code]])],
 	  act,[download],
@@ -371,7 +371,7 @@ AC_ARG_ENABLE([$1],[AS_HELP_STRING([--enable-$1],msg)],
 
    $2
    DVDA_INF([Will msg... ])
-   BUILD(bn)
+   BUILD([bn])
    [HAVE_]bn[_BUILD]=yes
    indic=yes
   ],
@@ -451,7 +451,8 @@ Triggering --enable-$1-build... ])
 AS_IF([test "$1" != "" ],
        [
 	  AC_MSG_WARN([[Using command line args: $command_line_args ...]])
-	  AS_IF([test "$1" = "libfixwav" -o "$1" = "libiberty" -o "$1" = "all-all" -o "$1"="all-deps" -o "$1" = "all-builds" -o `echo "$command_line_args" | sed s/lower//g` != "$command_line_args"],
+	  
+	  AS_IF([test "$1" = "libfixwav" -o "$1" = "libiberty" -o "$1" = "all-all"  -o "$1" = "all-builds" || test `echo "$command_line_args" | sed s/lower//g` != "$command_line_args"],
 	      [
 		basename($1)[_BUILD]=yes
 	      ],
@@ -632,7 +633,7 @@ AC_ARG_WITH([lower], [AS_HELP_STRING([--with-]lower,[full pathname of library or
      #not given on command line
      [withval_]bn=no
       #building libfixwav by default
-      AS_IF([test bn != libfixwav ],[bn[_BUILD]=""],[bn[_BUILD]=yes])
+      AS_IF([test bn = libfixwav ],[bn[_BUILD]=yes])
       bn[_LIB_INPUT]=""
       [HAVE_EXTERNAL_]bn=no
       [WITH_]bn=""
@@ -677,10 +678,11 @@ AC_DEFUN([DVDA_CONFIG],[
     m4_define([VAR],m4_car(LIST))
     m4_define([UPPERVAR],m4_toupper(VAR))
     m4_define([CDR],m4_unquote(m4_cdr(LIST)))
-    AC_MSG_RESULT([configure:  VAR[_BUILD]=$VAR[_BUILD]])
+    AC_MSG_RESULT([configure:  m4_tolower(VAR)[_BUILD]=$m4_tolower(VAR)[_BUILD]])
     AC_MSG_RESULT([configure:  [WITH_]VAR=$[WITH_]VAR])
-    AS_IF([test \( x$VAR[_BUILD] = xyes -o x$ALL_BUILDS = xyes \) -a x$[WITH_]VAR != xno ],
-	   [
+    
+    AS_IF([test \( x$m4_tolower(VAR)[_BUILD] = xyes -o x$all_BUILD = xyes \) -a x$[WITH_]VAR != xno ],
+	   [	
 	      AC_MSG_RESULT([configure:  Adding VAR to PROGRAM_TARGETS...])
 	      PROGRAM_TARGETS="$PROGRAM_TARGETS VAR"
 

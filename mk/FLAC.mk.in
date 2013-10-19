@@ -6,5 +6,4 @@ FLAC_DEPENDENCY=$(MAYBE_FLAC) libogg.depconf
 FLAC_TARGETLIB=libFLAC.a
 
 FLAC.depconf: $(FLAC_DEPENDENCY)
-	$(call depconf,$*)
-
+	$(call depconf,$*,CFLAGS=)

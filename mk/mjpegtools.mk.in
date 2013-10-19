@@ -16,7 +16,14 @@ CONFIGURE_mjpegtools_FLAGS=@CONFIGURE_mjpegtools_FLAGS@ CCAS=/usr/bin/as
 
 #Start of autoconf-substituted, do not modify#
 
-mjpegtools.depconf: $(mjpegtools_DEPENDENCY)
-	$(call depconf,$*)
+#mjpegtools.depconf: $(mjpegtools_DEPENDENCY)
+#	$(call depconf,$*)
 
 #end of autoconf-substituted
+
+#it is necssary to 'unexport' the CFLAGS specs (which is globally exported in top Makefile)
+#because mjpegtools generates undefined refs to asm when -std=c99 is on. Do not use -ansi either.
+
+mjpegtools.depconf: Makefile
+	$(call depconf,$*,CFLAGS="")
+	 
