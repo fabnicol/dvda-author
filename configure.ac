@@ -241,47 +241,43 @@ m4_map([AC_SUBST],
 
 # correspondence between X_BUILD shell variables and subdirectory names. Could be avoided with lesser flexibility in naming conventions.
 
-
 AC_MSG_NOTICE([Configuring ${PACKAGE_TARNAME}...])
-AC_CONFIG_FILES([Makefile
+
+GENERATE_GLOBAL_MKS
+
+AC_CONFIG_FILES([
+	 COREBUILD
 	 dvda-author.desktop
 	 dvda-author-shared.spec
 	 dvda-author.spec
 	 dvda-author.spec.coreversion
 	 dvda-author.nsi
-	 src/Makefile
+	 EXAMPLES
+	 images/Makefile	 
 	 libutils/src/Makefile
 	 libfixwav/src/Makefile
 	 libfixwav/src/include/Makefile
 	 libiberty/src/Makefile
-	 mk/libogg.global.mk
-	 mk/libogg.mk
+	 Makefile
+ 	 mk/a52dec.mk
+	 mk/cdrtools.mk 	 
+	 mk/dvdauthor.mk 	 
 	 mk/FLAC.mk
-	 mk/FLAC.global.mk
-	 mk/functions.mk
+ 	 mk/functions.mk
+	 mk/help2man.mk 	 
+	 mk/ImageMagick.mk 	 
+ 	 mk/libogg.mk
+ 	 mk/libmpeg2.mk
+ 	 mk/lplex.mk
+	 mk/man2html.mk 	 
+ 	 mk/mjpegtools.mk
 	 mk/sox.mk
-	 mk/sox.global.mk
-	 mk/mjpegtools.mk
-	 mk/dvdauthor.mk
-	 mk/ImageMagick.mk
-	 mk/lplex.mk
-	 mk/libmpeg2.mk
-	 mk/help2man.mk
-	 mk/a52dec.mk
-	 mk/cdrtools.mk
-	 mk/man2html.mk
-	 images/Makefile
 	 sox-libs
-	 script.mjpegtools
-	 COREBUILD
-	 EXAMPLES
+ 	 src/Makefile
 ])
 
 
-
 AC_OUTPUT
-
-
 
 AC_MSG_RESULT([
 

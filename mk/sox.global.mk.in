@@ -1,9 +1,0 @@
-
-#Autoconf-substituted, do not modify#
-sox_LIB=@sox_LIB@
-sox_LINK=@sox_LINK@
-MAYBE_sox=@MAYBE_sox@
-HAVE_sox=@HAVE_sox@
-HAVE_EXTERNAL_sox=@HAVE_EXTERNAL_sox@
-sox_DEPENDENCY=$(MAYBE_sox) FLAC.depconf
-CONFIGURE_sox_FLAGS=@CONFIGURE_sox_FLAGS@

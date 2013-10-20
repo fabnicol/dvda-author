@@ -100,13 +100,7 @@ OTHER_FILES += \
     libfixwav/src/Makefile.am.user \
     libfixwav/src/Makefile.inMakefile.am \
     mk/sox.mk.in \
-    mk/FLAC.global.mk.in \
-    mk/sox.global.mk.in \
-    mk/libogg.global.mk.in \
-    mk/sox.global.mk.in \
-    mk/libogg.global.mk.in \
     libiberty/src/Makefile.in \
-    m4/oggflac-test.m4 \
     autogen \
     mk/libmpeg2.mk.in \
     script.mjpegtools \

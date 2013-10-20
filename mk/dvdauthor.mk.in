@@ -1,26 +1,18 @@
+include @ROOTDIR@/mk/dvdauthor.global.mk
 
 dvdauthor_MAKESPEC=manual
-
-#Autoconf-substituted, do not modify#
-dvdauthor_LIB=@dvdauthor_LIB@
-dvdauthor_LINK=@dvdauthor_LINK@
-MAYBE_dvdauthor=@MAYBE_dvdauthor@
-HAVE_dvdauthor=@HAVE_dvdauthor@
-HAVE_EXTERNAL_dvdauthor=@HAVE_EXTERNAL_dvdauthor@
-dvdauthor_COMMANDLINE=2>&1|grep version
-WITH_dvdauthor=@WITH_dvdauthor@
-CONFIGURE_dvdauthor_FLAGS=@CONFIGURE_dvdauthor_FLAGS@
+dvdauthor_TESTBINARY=dvdauthor
 
 ifeq "@HAVE_automake@" "yes"
 ifeq "@HAVE_autoconf@" "yes"
 dvdauthor.depconf: Makefile
-	cp -r @ROOTDIR@/m4.extra.dvdauthor $(MAYBE_$*)/srcm4
+	@cp -r @ROOTDIR@/m4.extra.dvdauthor $(MAYBE_$*)/srcm4
 	$(if $(MAYBE_$*),
 	  if test -d $(MAYBE_$*) ; then
 	   cd $(MAYBE_$*) && $(SHELL) -c "aclocal -Isrcm4 && autoheader && automake -acf && autoconf -Isrcm4" \
 	   && $(SHELL) configure  $(CONFIGURE_$*_FLAGS) ; $(MAKE) $(PARALLEL); $(MAKE) install; cd -
 	  fi)
-	$(call execfollow,$(MAYBE_$*),$*,$($*_COMMANDLINE))
+	$(call execfollow,$(MAYBE_$*),$*)
 endif
 endif
 

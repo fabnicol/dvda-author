@@ -9,12 +9,10 @@
 # and are delivered under the same licensing terms.
 # --------------------------------------------------
 
-
-m4_include([m4/oggflac-test.m4])
-
-
 # LOOP_MIRRORS(VERSION,MAIN MIRROR,FILE TYPE [gz|bz2],MD5SUM)
 # --------------------------------------------------------------------
+
+m4_define([PROGRAM_TARGET_LIST],[])
 
 AC_DEFUN([LOOP_MIRRORS],
     [
@@ -656,20 +654,21 @@ m4_undefine([bn])
 
 
 AC_DEFUN([DVDA_CONFIG],[
-
     m4_foreach([ALIST],[$1],[
     m4_define([LIST],m4_car(ALIST))
     m4_define([FL], m4_unquote(m4_cdr(ALIST)))
     m4_define([VAR],m4_car(LIST))
     m4_define([UPPERVAR],m4_toupper(VAR))
     m4_define([CDR],m4_unquote(m4_cdr(LIST)))
-    AC_MSG_RESULT([configure:  m4_tolower(VAR)[_BUILD]=$m4_tolower(VAR)[_BUILD]])
-    AC_MSG_RESULT([configure:  [WITH_]VAR=$[WITH_]VAR])
-    
+           
     AS_IF([test \( x$m4_tolower(VAR)[_BUILD] = xyes -o x$all_BUILD = xyes \) -a x$[WITH_]VAR != xno ],
 	   [	
 	      AC_MSG_RESULT([configure:  Adding VAR to PROGRAM_TARGETS...])
 	      PROGRAM_TARGETS="$PROGRAM_TARGETS VAR"
+	      
+	      m4_if(VAR,[libfixwav],[],
+	               VAR,[libiberty],[],
+	                  [m4_append_uniq_w([PROGRAM_TARGET_LIST],VAR)])
 
 	      [MAYBE_]VAR=m4_unquote(CDR)
 	      VAR[_BUILD]=yes
@@ -683,7 +682,6 @@ AC_DEFUN([DVDA_CONFIG],[
 
 	      [CONFIGURE_]VAR[_FLAGS]="FL $UPPERVAR[_FLAGS]"
 	      AC_SUBST([CONFIGURE_]VAR[_FLAGS])
-	      AC_MSG_NOTICE([CONFIGURE_]VAR[_FLAGS]=$[CONFIGURE_]VAR[_FLAGS])
 	      AS_IF([test -d  $BUILDDIR/$[MAYBE_]VAR && ! test -d  $[MAYBE_]VAR ], [cp -r $BUILDDIR/$[MAYBE_]VAR  $PWD])
 	   ],
 	   [VAR=])
@@ -714,6 +712,24 @@ AC_DEFUN([DVDA_CONFIG_LIBRARY_LOCAL_INSTALL],[DVDA_CONFIG([$1],[]) ])
 AC_DEFUN([DVDA_PREFIX_DEFAULT],
  [ AC_PREFIX_DEFAULT([$1])
    AS_IF([test $prefix = NONE],[prefix=$ac_default_prefix])])
+
+AC_DEFUN([GENERATE_GLOBAL_MKS],[
+
+m4_foreach_w([prog],PROGRAM_TARGET_LIST,[
+
+  echo   prog[_LIB]=[@]prog[_LIB@]  > [mk/]prog[.global.mk.in] 
+  echo   prog[_LINK]=[@]prog[_LINK@] >> [mk/]prog[.global.mk.in] 
+  echo  [MAYBE_]prog=[@MAYBE_]prog[@] >> [mk/]prog[.global.mk.in] 
+  echo  [HAVE_]prog=[@HAVE_]prog[@] >> [mk/]prog[.global.mk.in] 
+  echo  [HAVE_EXTERNAL_]prog=[@HAVE_EXTERNAL_]prog[@] >> [mk/]prog[.global.mk.in] 
+  echo  [CONFIGURE_]prog[_FLAGS]=[@CONFIGURE_]prog[_FLAGS@] >> [mk/]prog[.global.mk.in] 
+  echo  [WITH_]prog=[@WITH_]prog[@]  >> [mk/]prog[.global.mk.in] 
+  
+  AC_CONFIG_FILES([mk/]prog[.global.mk])   
+  ])
+
+])
+
 
 # All above macros are copyright Fabrice Nicol, 2009-2013
 # These macros are part of the dvda-author package
