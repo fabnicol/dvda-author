@@ -1,18 +1,37 @@
 #Do not use bash. It would cause subtle issues with libtool in the flac package, probably a libtool bug.
 
 
-define execfollow
-	$(if "$2",
-	    program=$$(find @BUILDDIR@/$1 -maxdepth 2 -type f -name $(strip $2)$(EXEEXT) -print0)
-	    echo done: $$program >> BUILD.TRACE
-	    echo $$($$program $3) >> BUILD.TRACE,
-	    echo failed: $1 >> BUILD.TRACE)
+define docfollow
+	@findstring=$$(find @BUILDDIR@ -maxdepth 1 -name $(strip $1) -print0)
+	echo "[doc]" >> BUILD.TRACE
+	echo "    $1 $$findstring" >> BUILD.TRACE 
 endef
 
-define docfollow
-	findstring=$$(find @BUILDDIR@ -maxdepth 1 -name $(strip $1) -print0)
-	echo done: $1 $$findstring >> BUILD.TRACE
+define index
+	@echo [$1] >> BUILD.TRACE
+	directory=$(MAYBE_$1)
+	if test "$3" = "library" ; then
+	   testvar=$$(find @BUILDDIR@/$$directory -maxdepth 4 -type f -wholename "*$1$2" -print0)
+	else
+	   testvar=$$(find @BUILDDIR@/$$directory -maxdepth 4 -type f -wholename "*$($1_TESTBINARY)$2" -print0)
+	fi
+	if test "$$testvar" != ""; then
+		echo "     built $3: $$testvar for $1" >> BUILD.TRACE
+		if test "$3" = "library" ; then
+		  testvar2=$$(find @BUILDDIR@/local/lib -wholename $($1_LIB) -print0)
+		else
+		  testvar2=$$(find @BUILDDIR@/local/bin -name "$($1_TESTBINARY)$(EXEEXT)" -print0)
+		fi
+		if test "$$testvar2" != ""; then
+			echo "     local $3: $$testvar2 from $(MAYBE_$1)" >> BUILD.TRACE
+		else
+			echo "     did not install $3 $1" >> BUILD.TRACE
+		fi
+	else
+	        echo "     no $3 $1" >> BUILD.TRACE
+	fi
 endef
+
 
 #the complex autotools invocation is rendered necessary by the missing/obsolete status of the dvdauthor autotools chain
 #notice autoconf twice and aclocal -I... to retrieve missing macros
@@ -21,19 +40,20 @@ endef
 define configure_sub_package
 	@target_subdir=$(strip $1)
 	configure_flags="$2"
-	echo configuring sub package with arguments: $1 $2 aa $3 aa $4 "$5" "$6"
 	if test "$$target_subdir" != ""; then
 	   if test -d  "$$target_subdir"; then
 	      cd "$$target_subdir"
 	      if test "$(findstring noconfigure,$5)" = "" ; then 
 	       if test "$3" != "" ; then $(SHELL) "$3" "$4"; fi
-	       $(SHELL) configure $$configure_flags --prefix="@BUILDDIR@/local" CPPFLAGS="-I@BUILDDIR@/local/include" "$5" $6
+	       $(SHELL) configure $$configure_flags --prefix="@BUILDDIR@/local" CPPFLAGS="-I@BUILDDIR@/local/include"  $6
 	      fi
-	      if test "$$?" = "0"; then  $(MAKE) MKDIR_P="mkdir$(EXEEXT) -p" $(PARALLEL) $6 ; fi
+	      if test "$$?" = "0"; then  
+	         $(MAKE) MKDIR_P="mkdir$(EXEEXT) -p" $(PARALLEL) $(if $6,$6)
+	      fi
 	      if test "$$?" = "0"; then
 		 echo Installing from $$target_subdir ...
 		 if test -f INSTALL; then mv -f INSTALL INSTALL.txt ; fi
-		 $(MAKE) INS_BASE=$(INS_BASE) install
+		 $(MAKE) INS_BASE=$(INS_BASE) $6 install
 	      fi
 	      if test -f INSTALL.txt; then mv -f INSTALL.txt INSTALL; fi
 	      cd -
@@ -43,78 +63,38 @@ endef
 
 
 define configure_lib_package
-	@flags="$(CONFIGURE_$1_FLAGS)"
-	echo $1: $$flags>>flags.test
-	directory=$(MAYBE_$1)
-	echo configuring lib_package with arguments: $1 $2 $3 $4
-	echo in directory $$directory
-	echo with build flags $$flags
-	$(call configure_sub_package,$$directory,$$flags,"$2","$3","$4")
-	testvar=$$(find @BUILDDIR@/$$directory -maxdepth 2 -type f -name $(strip $1).a -print0)
-	$(if $$testvar,
-			echo "found library: $$testvar for $1" >> BUILD.TRACE
-			testvar=$$(find @BUILDDIR@/local/lib -maxdepth 1 -name $(strip $1).a -print0)
-			$(if $$testvar,
-				echo "locally installed library: $$testvar from $1" >> BUILD.TRACE,
-				echo "did not install library $1" >> BUILD.TRACE),
-			echo "no library $1" >> BUILD.TRACE)
+	@$(call configure_sub_package,$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),$2,$3,,$4)
+	$(call index,$1,.a,library)
 endef
 
 define configure_exec_package
-    @flags="$(CONFIGURE_$1_FLAGS)"
-    directory=$(MAYBE_$1)
-    test_binary=$2
-    echo configuring exec_package with arguments: $1 bb $2 bb $3 $4
-    if test "$(build_os)" = "mingw32"; then
-	patchfile=$$(find patches -type f -regex .*$1-patch.* -print0)
-	echo Found mingw32 OS...patching with local patch $$patchfile
-	$(if $$patchfile, patch -p0 < $$patchfile && echo "locally patched: $1, using $$patchfile in patches/" >> PATCHED.DOWNLOADS)
-    fi
-	$(call configure_sub_package,$$directory,$$flags,"","","$4",$5)
-	$(call execfollow,$$directory,"$2","$3")
+	@if test "$(build_os)" = "mingw32"; then
+	  patchfile=$$(find patches -type f -regex .*$1-patch.* -print0)
+	  echo Found mingw32 OS...patching with local patch $$patchfile
+	  $(if $$patchfile, patch -p0 < $$patchfile && echo "locally patched: $1: using $$patchfile in patches/" >> PATCHED.DOWNLOADS)
+	fi
+	$(call configure_sub_package,$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),,,$2,$3)
+	$(call index,$1,$(EXEEXT),binary)
 endef
 
 define clean_package
-	$(if $1,$(if $2, (if test -d  $2; then cd $2; $(MAKE)  clean ; cd - ; fi)))
+	@$(if $1,$(if $2, (if test -d  $2; then cd $2; $(MAKE)  clean ; cd - ; fi)))
 endef
 
 define depconf
 	@if test "$($1_MAKESPEC)" = "auto" ; then
 	  if test "$($1_CONFIGSPEC)" = "lib"; then
-	     if test $(origin $($1_COMMANDLINE)) != undefined ; then
-		$(call configure_lib_package,$1,$1,$($1_COMMANDLINE),$2)
-	     else
-		$(call configure_lib_package,$1,"","",$2)
-	     fi
+		$(call configure_lib_package,$1,$2,$3,$4)
 	  else
 	    if test "$($1_CONFIGSPEC)" = "exe"; then
-	    echo "configuring exec build..."
-	     if test "$($1_COMMANDLINE)" != "" ; then
-	       echo "configuring exec build with defined command line..."
-		if test "($1_TESTBINARY)" != "" ; then
-		  echo "...testing $($1_TESTBINARY) with $($1_COMMANDLINE)..."
-		  $(call configure_exec_package,$1,$($1_TESTBINARY),"$($1_COMMANDLINE)",$2,$3)
-		else
-		  echo "...testing $1 with $($1_COMMANDLINE)..."
-		  $(call configure_exec_package,$1,$1,"$($1_COMMANDLINE)",$2,$3)
-		fi
-	     else
-	      echo "configuring exec build with undefined command line..."
-		if test $($1_TESTBINARY) != ""; then
-		  echo "...testing $($1_TESTBINARY) with --version..."
-		  $(call configure_exec_package,$1,$($1_TESTBINARY),--version,$2,$3)
-		else
-		   echo "...testing $1 with --version..."
-		  $(call configure_exec_package,$1,$1,--version,$2,$3)
-		fi
-	     fi
+		  $(call configure_exec_package,$1,$2,$3)
 	    fi
 	  fi
 	fi
 endef
 
 define clean_directory
-	for dir in $1; do
+	@for dir in $1; do
 	   if test -d "$$dir" ; then
 	     cd "$$dir"; $(RM) *.a *.po *.o *.1 *.html; cd @BUILDDIR@
 	   fi

@@ -1,23 +1,12 @@
+include @ROOTDIR@/mk/libmpeg2.global.mk
+
 libmpeg2_MAKESPEC=auto
 libmpeg2_CONFIGSPEC=exe
 libmpeg2_DEPENDENCY=Makefile
-libmpeg2_TESTBINARY=mpeg2dec
-libmpeg2_COMMANDLINE=<null 2>&1|line
-
-
-#Autoconf-substituted, do not modify#
-libmpeg2_LIB=@libmpeg2_LIB@
-libmpeg2_LINK=@libmpeg2_LINK@
-MAYBE_libmpeg2=@MAYBE_libmpeg2@
-HAVE_libmpeg2=@HAVE_libmpeg2@
-HAVE_EXTERNAL_libmpeg2=@HAVE_EXTERNAL_libmpeg2@
-CONFIGURE_libmpeg2_FLAGS=@CONFIGURE_libmpeg2_FLAGS@
-
-
-#Start of autoconf-substituted, do not modify#
+libmpeg2_TESTBINARY=mpeg2dec$(EXEEXT)
 
 libmpeg2.depconf: $(libmpeg2_DEPENDENCY)
 	$(call depconf,$*)
 
-#end of autoconf-substituted
+
 

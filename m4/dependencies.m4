@@ -334,7 +334,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	       [[[libmpeg2],[libmpeg2-0.5.1]],[--prefix="$BUILDDIR/local"]],
 	       [[[help2man], [help2man-1.43.3]],[--prefix="$BUILDDIR/local"]],
 	       [[[ImageMagick], [ImageMagick-6.8.7-0]],[--prefix="$BUILDDIR/local"]],
-	       [[[man2html], [man2html-1.6]],[--prefix="$BUILDDIR/local"]]])
+	       [[[man2html], [man2html-1.6]],[bindir="$BUILDDIR/local/bin"]]])
 	    ],
 	    [
 	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --prefix="$BUILDDIR/local"]],
@@ -345,7 +345,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	       [[[libmpeg2],[libmpeg2-0.5.1]], [--prefix="$BUILDDIR/local"]],
 	       [[[help2man], [help2man-1.43.3]],[--prefix="$BUILDDIR/local"]],
 	       [[[ImageMagick], [ImageMagick-6.8.7-0]],[--prefix="$BUILDDIR/local"]],
-       	       [[[man2html], [man2html]],[--prefix="$BUILDDIR/local"]]])
+       	       [[[man2html], [man2html]],[bindir="$BUILDDIR/local/bin"]]])
 	    ])
     
     # auxiliary libs that remain within package, not installed
