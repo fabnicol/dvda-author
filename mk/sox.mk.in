@@ -3,7 +3,7 @@ include @ROOTDIR@/mk/sox.global.mk
 sox_MAKESPEC=manual
 
 sox.depconf: $(sox_DEPENDENCY)
-	if test  "$(MAYBE_$*)" != ""; then
+	@if test  "$(MAYBE_$*)" != ""; then
 		if test -d "@BUILDDIR@/$(MAYBE_$*)" ; then
 			cp "@BUILDDIR@/sox-libs" "@BUILDDIR@/$(MAYBE_$*)/sox-libs.in"
 			else
@@ -12,5 +12,3 @@ sox.depconf: $(sox_DEPENDENCY)
 		fi
 	fi
 	$(call configure_lib_package,$*,/usr/bin/autoreconf,-if,CFLAGS=)
-
-#with /bin/sh it is necessary to prepend the path to autoreconf, unlike with /bin/bash

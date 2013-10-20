@@ -99,11 +99,10 @@ $(PROGRAM).1:
 	fi
 	$(call docfollow,  $@)
 
-#PATCH  09.12  We need to display in UTF-8 mode and take off an illicit file header created by man2html
 
 $(PROGRAM).html: $(PROGRAM).1
 	@if test "@HAVE_man2html@" = "yes"; then
-		@MAN2HTML@ < $(PROGRAM).1 | @SED@ -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > $@
+		@MAN2HTML@ < $(PROGRAM).1 > $@
 		$(call docfollow, $@)
 	fi
 
