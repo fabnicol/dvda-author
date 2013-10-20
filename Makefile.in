@@ -4,10 +4,8 @@
 
 #Do not use bash. It would cause subtle issues with libtool in the flac package, probably a libtool bug.
 
-CCAS=$(AS)
-export CCAS
-CCASFLAGS=$(ASFLAGS)
-export CCASFLAGS
+PROGRAM=@PACKAGE_NAME@-@PACKAGE_VERSION@
+export PROGRAM
 
 SHELL=/bin/sh
 
@@ -24,7 +22,7 @@ CPPFLAGS = @DEFS@
 
 PROGRAM_TARGETS=@PROGRAM_TARGETS@
 PROGRAM_TARGET_MAKEFILES=$(foreach prog,$(PROGRAM_TARGETS),$(shell if test -f mk/$(prog).mk; then echo mk/$(prog).mk; fi))
-PROGRAM_TARGET_CONFIGS=$(foreach prog,$(PROGRAM_TARGETS),$(shell if test -f mk/$(prog).mk; then echo $(prog).config; fi))
+PROGRAM_TARGET_CONFIGS=$(foreach prog,$(PROGRAM_TARGETS),$(shell if test  -f mk/$(prog).mk ; then echo $(prog).config; fi))
 
 SRC_SUBDIRS := @ROOTDIR@/libutils/src
 
@@ -53,30 +51,29 @@ ifeq "@HAVE_sox_BUILD@" "yes"
  ALL_TARGETS += do_sox_lib_deps_subst
 endif
 
-ALL_TARGETS += $(PROGRAM_TARGET_CONFIGS) $(SRC_SUBDIRS)
+ALL_TARGETS += $(PROGRAM_TARGET_CONFIGS) $(SRC_SUBDIRS) 
 
-all:  $(ALL_TARGETS)
+all:  $(ALL_TARGETS) $(PROGRAM).1 $(PROGRAM).html
 
-include mk/functions.mk
-include $(PROGRAM_TARGET_MAKEFILES)
+include mk/functions.mk 
+include $(PROGRAM_TARGET_MAKEFILES) 
+
+help2man.config: $(SRC_SUBDIRS) help2man.depconf
+man2html.config: $(SRC_SUBDIRS) help2man.depconf man2html.depconf
 
 export CPPFLAGS
 export PARALLEL
 
 $(SRC_SUBDIRS): do_sox_lib_deps_subst
-	echo making into directory $@...
+	@echo making into directory $@...
 	$(MAKE) $(PARALLEL) --directory=$@
 
 
 $(PROGRAM_TARGET_CONFIGS): %.config: %.depconf
-	@echo Creating program target config for $* using $<...
+
 
 erase_build.trace:
 	@echo PROGRAM_TARGETS=$(PROGRAM_TARGETS)
-	echo PROGRAM_TARGET_MAKEFILES=$(PROGRAM_TARGET_MAKEFILES)
-	echo PROGRAM_TARGET_CONFIGS=$(PROGRAM_TARGET_CONFIGS)
-	echo adding: $(SRC_SUBDIRS)
-	echo yielding ALL_TARGETS=$(ALL_TARGETS)
 	if test -f BUILD.TRACE; then
 	  mv BUILD.TRACE BUILD.TRACE~
 	fi
@@ -87,28 +84,28 @@ pkgconfig_style_libs=$(if $(MAYBE_sox),$(shell cat $(MAYBE_sox)/sox-libs | @SED@
 
 do_sox_lib_deps_subst: src/Makefile $(MAYBE_sox)
 	@echo Processing dependencies for sox...
-	echo pkgconfig_style_libs=$(pkgconfig_style_libs)
 	@SED@ -i -e 's/SOX_LIB_DEPS/$(pkgconfig_style_libs)/g'  src/Makefile 
 	$(call follow,src/Makefile, done sox library substitution \(pkgconfig-style\))
 
-dvda-author.1:
-ifeq "@HAVE_help2man@" "yes"
-	if test -f src/dvda; then
-		@HELP2MAN@ -s 1 -N -o dvda-author.1 src/dvda
-	fi
-else
-	if test -f src/dvda -a test -d "@MAYBE_help2man@" -a test -f @MAYBE_help2man@/@HELP2MAN@; then
-		"@MAYBE_help2man@"/@HELP2MAN@ -s 1 -N -o dvda-author.1 src/dvda
+$(PROGRAM).1:
+	@if test "@HAVE_help2man@" = "yes"; then
+	  if test -f src/$(PROGRAM); then
+		@HELP2MAN@ -s 1 -N -o $(PROGRAM).1 src/$(PROGRAM)
+	  fi
+	else
+	  if test -f src/$(PROGRAM) && test -d "@MAYBE_help2man@" && test -f "@MAYBE_help2man@"/help2man; then
+		"@MAYBE_help2man@"/help2man -s 1 -N -o $(PROGRAM).1 src/$(PROGRAM)
+	  fi
 	fi
 	$(call docfollow,  $@)
-endif
 
-dvda-author-@VERSION@.html: dvda-author.1
 #PATCH  09.12  We need to display in UTF-8 mode and take off an illicit file header created by man2html
-ifeq "@HAVE_man2html@" "yes"
-		@MAN2HTML@ < dvda-author.1 | @SED@ -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > $@
+
+$(PROGRAM).html: $(PROGRAM).1
+	@if test "@HAVE_man2html@" = "yes"; then
+		@MAN2HTML@ < $(PROGRAM).1 | @SED@ -e s/Content-type\.\*\$\/'<meta http-equiv="content-type" content="text\/html; charset=UTF-8">'/ > $@
 		$(call docfollow, $@)
-endif
+	fi
 
 .PHONY: sysconfdir dist_sysconf_DATA menudir dist_menu_DATA dist_doc_DATA DISFORMATS $(FORMATS) \
 	install-data-local install clean clean-local distclean
@@ -129,13 +126,13 @@ dist_pic_DATA= dvda-author_48x48.png dvda-author_64x64.png
 dist_doc_DATA=README  BUGS EXAMPLES LIMITATIONS BUILD.Ubuntu  DEPENDENCIES HOWTO.conf dvda-author.conf.example
 
 ifeq "@HAVE_man2html@" "yes"
-  htmlhelp=dvda-author-@VERSION@.html
+  htmlhelp=$(PROGRAM).html
 else
   htmlhelp=
 endif
 
 ifeq "@HAVE_help2man@" "yes"
-  manhelp=dvda-author.1
+  manhelp=$(PROGRAM).1
 else
   manhelp=
 endif
@@ -143,33 +140,33 @@ endif
 # GNU build system regeneration script and others
 
 install-sys: dist_sysconf _DATA
-	$(INSTALL_DATA) $^ $(DESTDIR)$(sysconfdir)
+	@$(INSTALL_DATA) $^ $(DESTDIR)$(sysconfdir)
 
 intall-pic:  @MENUDIR@
-	$(INSTALL_DATA) $^ $(DESTDIR)$(picdir)
+	@$(INSTALL_DATA) $^ $(DESTDIR)$(picdir)
 
 install-data-local:  $(manhelp) $(htmlhelp) $(dist_doc_DATA) $(dist_pic_DATA)
-	$(INSTALL_DATA) $^ $(DESTDIR)$(infodir)
+	@$(INSTALL_DATA) $^ $(DESTDIR)$(infodir)
 
 # redefining install is necessary to rename nested package directories for later builds with --enable-all-builds, which request lib* labelling
 
 install: all install-data-local install-pic install-sys
-	$(foreach dir,src $(subdirs), $(MAKE) --directory=$(dir) install)
+	@$(foreach dir,src $(subdirs), $(MAKE) --directory=$(dir) install)
 
 clean: clean-local
-	$(call clean_directory,$(SRC_SUBDIRS))
+	@$(call clean_directory,$(SRC_SUBDIRS))
 
 clean-local:
-	rm -f dvda-author.1 dvda-author-@VERSION@.html
+	@$(RM) $(PROGRAM).1 $(PROGRAM).html
 	$(foreach prog,@PROGRAM_TARGETS@,$(call clean_package($(prog))))
 
 distclean: clean-local
-	rm -rf autom4te* && rm -f config.log && rm -f config.status
+	@$(RM) -r autom4te* && $(RM) config.log && $(RM) config.status
 	find . -name Makefile -delete
 
 maintainer-clean: distclean
-	find . -name configure -delete
-	rm -rf config
+	@find . -name configure -delete
+	$(RM) -r config
 
 FORMATS=tar.xz tar.gz tar.bz2 zip
 DISTFORMATS=$(FORMATS:%=dist-%)
@@ -179,13 +176,13 @@ $(FORMATS): ;
 #master by default, can be overridden on commandline e.g. make dist-xz BRANCH=win32
 
 $(DISTFORMATS): $(FORMATS)
-	if test "@HAVE_git@" = "yes"; then
+	@if test "@HAVE_git@" = "yes"; then
 		BRANCH=master
 		CURRRENTBRANCH=`@GIT@ status -bs -u no -z | sed -e 's/[# ]*//g'`
 		if test "$(BRANCH)" != "$(CURRENTBRANCH)"; then
 		  @GIT@ checkout $(BRANCH)
 		fi
-		@GIT@ archive -o dvda-author-@PACKAGE_VERSION@.$< HEAD $(BRANCH)
+		@GIT@ archive -o $(PROGRAM).$< HEAD $(BRANCH)
 		if test "$(BRANCH)" != "$(CURRENTBRANCH)"; then
 		  @GIT@ checkout $(CURRENTBRANCH)
 		fi
