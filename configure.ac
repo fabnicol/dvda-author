@@ -375,7 +375,7 @@ AC_MSG_RESULT([[
 ]])
 
 AS_IF([test "$PROGRAM_TARGETS" != ""],[AC_MSG_RESULT([
-   Make will target the following external source packages:
+   Make will target the following packages:
  
        $PROGRAM_TARGETS
  

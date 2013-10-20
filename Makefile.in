@@ -174,7 +174,7 @@ $(FORMATS): ;
 
 #master by default, can be overridden on commandline e.g. make dist-xz BRANCH=win32
 
-$(DISTFORMATS): $(FORMATS)
+$(DISTFORMATS):dist-%: %
 	@if test "@HAVE_git@" = "yes"; then
 		BRANCH=master
 		CURRRENTBRANCH=`@GIT@ status -bs -u no -z | sed -e 's/[# ]*//g'`
