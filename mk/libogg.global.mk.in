@@ -1,9 +1,0 @@
-#Start of autoconf-substituted, do not modify#
-
-libogg_LIB=@libogg_LIB@
-libogg_LINK=@libogg_LINK@
-MAYBE_libogg=@MAYBE_libogg@
-HAVE_libogg=@HAVE_libogg@
-HAVE_EXTERNAL_libogg=@HAVE_EXTERNAL_libogg@
-CONFIGURE_libogg_FLAGS=@CONFIGURE_libogg_FLAGS@
-#end of autoconf-substituted

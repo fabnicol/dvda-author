@@ -1,29 +1,10 @@
+include @ROOTDIR@/mk/mjpegtools.global.mk
+
 mjpegtools_MAKESPEC=auto
 mjpegtools_CONFIGSPEC=exe
 mjpegtools_DEPENDENCY=Makefile
 mjpegtools_TESTBINARY=mplex
-mjpegtools_COMMANDLINE=2>&1|line
-
-
-#Autoconf-substituted, do not modify#
-mjpegtools_LIB=@mjpegtools_LIB@
-mjpegtools_LINK=@mjpegtools_LINK@
-MAYBE_mjpegtools=@MAYBE_mjpegtools@
-HAVE_mjpegtools=@HAVE_mjpegtools@
-HAVE_EXTERNAL_mjpegtools=@HAVE_EXTERNAL_mjpegtools@
-CONFIGURE_mjpegtools_FLAGS=@CONFIGURE_mjpegtools_FLAGS@ CCAS=/usr/bin/as
-
-
-#Start of autoconf-substituted, do not modify#
-
-#mjpegtools.depconf: $(mjpegtools_DEPENDENCY)
-#	$(call depconf,$*)
-
-#end of autoconf-substituted
-
-#it is necssary to 'unexport' the CFLAGS specs (which is globally exported in top Makefile)
-#because mjpegtools generates undefined refs to asm when -std=c99 is on. Do not use -ansi either.
 
 mjpegtools.depconf: Makefile
-	$(call depconf,$*,CFLAGS="")
+	$(call depconf,$*,"",CFLAGS="")
 	 
