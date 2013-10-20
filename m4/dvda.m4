@@ -23,13 +23,8 @@ AC_DEFUN([LOOP_MIRRORS],
       Other_url=$3
       Type=$4
       Md5=$5
-
       Filename=bn[-]$Version.tar.$Type
-
-      echo Using 'filename' as $Filename
-
       exitcode=0
-
       m4_ifvaln([bn],
       [
 	AS_IF([test "$Sourceforge_url" != "" ],
@@ -350,7 +345,6 @@ m4_if(act,[build],
 	   [m4_define([msg],[[enable ]dhms])])
 
 # Check whether --enable-$1 or --disable-$1 was given.
-echo "++++++++" doing $1: bn with enableval=$enableval
 
 AC_ARG_ENABLE([$1],[AS_HELP_STRING([--enable-$1],msg)],
 [
@@ -371,7 +365,8 @@ AC_ARG_ENABLE([$1],[AS_HELP_STRING([--enable-$1],msg)],
 
    $2
    DVDA_INF([Will msg... ])
-   BUILD([bn])
+   #do not quote
+   BUILD(bn)
    [HAVE_]bn[_BUILD]=yes
    indic=yes
   ],
@@ -449,18 +444,8 @@ AC_DEFUN([BUILD],
       DVDA_INF([Building $1 library from sources...
 Triggering --enable-$1-build... ])
 AS_IF([test "$1" != "" ],
-       [
-	  AC_MSG_WARN([[Using command line args: $command_line_args ...]])
-	  
-	  AS_IF([test "$1" = "libfixwav" -o "$1" = "libiberty" -o "$1" = "all-all"  -o "$1" = "all-builds" || test `echo "$command_line_args" | sed s/lower//g` != "$command_line_args"],
-	      [
-		basename($1)[_BUILD]=yes
-	      ],
-	      [
-		AC_MSG_WARN([[Please download $1 or restart configure with --enable-]lower[-download or --enable-]lower[-patch <sox, cdrtools and dvdauthor>]])
-		AS_EXIT
-	      ])
-
+      [
+	basename($1)[_BUILD]=yes
       ],
       [
 	echo Naming error: empty "enable" feature

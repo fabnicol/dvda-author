@@ -1,4 +1,5 @@
 help2man_MAKESPEC=auto
+help2man_CONFIGSPEC=exe
 
 #Autoconf-substituted, do not modify#
 help2man_LIB=@help2man_LIB@
@@ -12,8 +13,3 @@ WITH_help2man=@WITH_help2man@
 
 help2man.depconf: Makefile
 	$(call depconf,$*)
-	if test -f $(MAYBE_$*)/$* ; then
-		  $(MAYBE_$*)/$* -s 1 -N -o dvda-author.1 src/dvda
-		  $(call docfollow,dvda-author.1)
-		  manhelp=dvda-author.1
-	fi

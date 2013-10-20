@@ -269,6 +269,7 @@ AC_CONFIG_FILES([Makefile
 	 mk/help2man.mk
 	 mk/a52dec.mk
 	 mk/cdrtools.mk
+	 mk/man2html.mk
 	 images/Makefile
 	 sox-libs
 	 script.mjpegtools

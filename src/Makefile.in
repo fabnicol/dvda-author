@@ -24,8 +24,6 @@ include @ROOTDIR@/mk/FLAC.global.mk
 include @ROOTDIR@/mk/sox.global.mk
 include @ROOTDIR@/mk/libogg.global.mk
 
-bin_PROGRAM=dvda-author
-
 DEBUG_FLAGS ?= @DEBUG_FLAGS@
 
 CFLAGS += -D_GNU_SOURCE
@@ -70,10 +68,11 @@ $(if $(sox), LDIBS_append   += SOX_LIB_DEPS)
 
 ALL_TARGETS=FLAC libogg sox
 
-.PHONY: program_transform_name create_options all
+.PHONY: create_options all
 
-all:  $(bin_PROGRAM) program_transform_name
-
+all:    dvda-author
+	mv -f dvda-author $(PROGRAM)
+	
 LDLIBS_append = $(foreach prog,$(ALL_TARGETS),$($(prog)_LIB) $($(prog)_LINK))  
 
 LDLIBS += $(LDLIBS_append) SOX_LIB_DEPS
@@ -82,10 +81,8 @@ CPPFLAGS += $(foreach prog,$(ALL_TARGETS),$(if $(MAYBE_$(prog)),-I@ROOTDIR@/$(MA
 
 CPPFLAGS += $(foreach prog,$(ALL_TARGETS),$$(if test "$($(prog)_LIB)" = "" -a "$($(prog)_LINK)" = ""; then echo -DWITHOUT_$(prog); fi))
 
-$(bin_PROGRAM): $(OBJECTS) $(LDLIBS_append)
+dvda-author: $(OBJECTS) $(LDLIBS_append)
 
-program_transform_name: $(bin_PROGRAM)
-	mv -f $(bin_PROGRAM) @PACKAGE_NAME@-@PACKAGE_VERSION@$(EXEEXT)
 
 # Symbol SOX_LIB_DEPS will be replaced by sox dependencies after configure in libsox by target do_sox_lib_deps_subst
 # left-align if conditions

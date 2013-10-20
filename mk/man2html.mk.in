@@ -1,0 +1,21 @@
+
+man2html_MAKESPEC=auto
+man2html_CONFIGSPEC=exe
+man2html_DEPENDENCY=Makefile
+man2html_TESTBINARY=man2html
+man2html_COMMANDLINE=""
+
+#Autoconf-substituted, do not modify#
+
+MAYBE_man2html=@MAYBE_man2html@
+HAVE_man2html=@HAVE_man2html@
+HAVE_EXTERNAL_man2html=@HAVE_EXTERNAL_man2html@
+
+
+#Start of autoconf-substituted, do not modify#
+
+man2html.depconf: $(man2html_DEPENDENCY)
+	$(call depconf,$*,noconfigure,CFLAGS=)
+
+	
+#end of autoconf-substituted
