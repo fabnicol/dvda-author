@@ -181,7 +181,7 @@ $(DISTFORMATS):dist-%: %
 		if test "$(BRANCH)" != "$(CURRENTBRANCH)"; then
 		  @GIT@ checkout $(BRANCH)
 		fi
-		@GIT@ archive -o $(PROGRAM).$< HEAD $(BRANCH)
+		@GIT@ archive --prefix=$(PROGRAM)/  -o $(PROGRAM).$< HEAD $(BRANCH)
 		if test "$(BRANCH)" != "$(CURRENTBRANCH)"; then
 		  @GIT@ checkout $(CURRENTBRANCH)
 		fi
