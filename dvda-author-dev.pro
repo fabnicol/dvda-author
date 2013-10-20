@@ -109,7 +109,8 @@ OTHER_FILES += \
     m4/oggflac-test.m4 \
     autogen \
     mk/libmpeg2.mk.in \
-    script.mjpegtools
+    script.mjpegtools \
+    mk/man2html.mk.in
 
 HEADERS += \
     src/include/amg.h \
