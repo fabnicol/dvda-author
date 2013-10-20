@@ -156,6 +156,9 @@
 #undef HAVE_NO_LPLEX_PATCH
 
 /* Does not use a configured patch of bn */
+#undef HAVE_NO_MAN2HTML_PATCH
+
+/* Does not use a configured patch of bn */
 #undef HAVE_NO_MINIMAL_PATCH
 
 /* Does not use a configured patch of bn */
@@ -347,8 +350,11 @@
 /* Found make */
 #undef HAVE_make
 
-/* Found man2html */
+/* Whether man2html source code will be downloaded for build. */
 #undef HAVE_man2html
+
+/* download man2html from source code */
+#undef HAVE_man2html_BUILD
 
 /* Found md5sum */
 #undef HAVE_md5sum
@@ -423,7 +429,7 @@
 /* Pathname of make */
 #undef MAKE
 
-/* Pathname of man2html */
+/* Defining man2html filepath. */
 #undef MAN2HTML
 
 /* Pathname of md5sum */

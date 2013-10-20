@@ -69,6 +69,7 @@ m4_map([DVDA_TEST_AUX],[
 	       libogg_BUILD=yes
 	       ]],
 	     [[help2man-build]],
+	     [[man2html-build],[help2man_BUILD=yes]],
 	     [[libmpeg2-build]],
     	     [[lplex-build],[ 
     	      libogg_BUILD=yes
@@ -115,6 +116,7 @@ m4_map([DVDA_TEST_AUX],[
 	       flac_BUILD=yes
 	       libogg_BUILD=yes]],
 	     [[help2man-build]],
+	     [[man2html-build],[help2man_BUILD=yes]],
 	     [[libmpeg2-build]],
     	     [[lplex-build],[ 
     	      libogg_BUILD=yes
@@ -163,7 +165,7 @@ m4_map([DVDA_TEST_AUX],[
 		[0.7.1],
 		[http://dvd-audio.sourceforge.net/patches/dvdauthor-patch-0.7.1],
 		[http://downloads.sourceforge.net/project/dvdauthor/dvdauthor/0.7.1],
-		[http://dvd-audio.sourceforge.net],
+		[http://dvd-audio.sourceforge.net/utils],
 		[2694a5a3ef460106ea3caf0f7f60ff80]
 	    ],
 	    [
@@ -171,7 +173,7 @@ m4_map([DVDA_TEST_AUX],[
 		[3.00],
 		[http://dvd-audio.sourceforge.net/patches/mkisofs/cdrtools-patch-3.00],
 		[ftp://ftp.berlios.de/pub/cdrecord],
-		[http://dvd-audio.sourceforge.net],
+		[http://dvd-audio.sourceforge.net/utils],
 		[bb21cefefcfbb76cf249120e8978ffdd]
 	    ],
 	    [
@@ -179,7 +181,7 @@ m4_map([DVDA_TEST_AUX],[
 		[14.4.1],
 		[http://dvd-audio.sourceforge.net/patches/sox-patch-14.4.1],
 		[http://downloads.sourceforge.net/project/sox/sox/14.4.1],
-		[http://dvd-audio.sourceforge.net],
+		[http://dvd-audio.sourceforge.net/utils],
 		[ff9ca6aca972549de0e80e8e30ed379c]
 	    ],
 	    [
@@ -187,7 +189,7 @@ m4_map([DVDA_TEST_AUX],[
 		[1.3.0],
 		[],
 		[http://downloads.xiph.org/releases/flac],
-		[http://dvd-audio.sourceforge.net],
+		[http://dvd-audio.sourceforge.net/utils],
 		[13b5c214cee8373464d3d65dee362cdd]
 	    ],
 	    [
@@ -195,7 +197,7 @@ m4_map([DVDA_TEST_AUX],[
 		[1.3.1],
 		[],
 		[http://downloads.xiph.org/releases/ogg],
-		[http://dvd-audio.sourceforge.net],
+		[http://dvd-audio.sourceforge.net/utils],
 		[ba526cd8f4403a5d351a9efaa8608fbc]
 	    ],
 	    [
@@ -203,8 +205,16 @@ m4_map([DVDA_TEST_AUX],[
 		[1.43.3],
 		[],
 		[http://mirror.ibcp.fr/pub/gnu/help2man],
-		[http://dvd-audio.sourceforge.net],
+		[http://dvd-audio.sourceforge.net/utils],
 		[a84868db7c139238df8add5d86a0b54f]
+	    ],
+    	    [
+		[man2html-download],
+		[1.6],
+		[],
+		[],
+		[http://dvd-audio.sourceforge.net/utils],
+		[ad4f385addc87974de373d7057a2ea7b]
 	    ],
 	    [
 		[ImageMagick-download],
@@ -218,16 +228,16 @@ m4_map([DVDA_TEST_AUX],[
 		[lplex-download],
 		[0.3],
 		[],
-		[http://dvd-audio.sourceforge.net],
-		[http://dvd-audio.sourceforge.net],
-		[23e52c149ccfa0169955a57ff783fd21]
+		[],
+		[http://dvd-audio.sourceforge.net/utils],
+		[57f44fd274dfb03b0ab765ff8eab9a6d]
 	    ],
 	    [
 		[mjpegtools-download],
 		[2.1.0],
 		[],
 		[http://sourceforge.net/projects/mjpeg/files/mjpegtools/2.1.0],
-		[http://dvd-audio.sourceforge.net],
+		[http://dvd-audio.sourceforge.net/utils],
 		[57bf5dd78976ca9bac972a6511b236f3]
 	    ],
 	    [
@@ -235,7 +245,7 @@ m4_map([DVDA_TEST_AUX],[
 		[0.5.1],
 		[],
 		[http://libmpeg2.sourceforge.net/files],
-		[http://dvd-audio.sourceforge.net],
+		[http://dvd-audio.sourceforge.net/utils],
 		[0f92c7454e58379b4a5a378485bbd8ef]
 	    ],
 	    [
@@ -243,7 +253,7 @@ m4_map([DVDA_TEST_AUX],[
 		[0.7.4],
 		[],
 		[http://liba52.sourceforge.net/files],
-		[http://dvd-audio.sourceforge.net],
+		[http://dvd-audio.sourceforge.net/utils],
 		[caa9f5bc44232dc8aeea773fea56be80]
 	    ]])
 
@@ -254,7 +264,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 		[1.3.0],
 		[],
 		[http://downloads.xiph.org/releases/flac],
-		[http://dvd-audio.sourceforge.net],
+		[http://dvd-audio.sourceforge.net/utils],
 		[13b5c214cee8373464d3d65dee362cdd]
 	    ],
 	    [
@@ -262,7 +272,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 		[1.3.1],
 		[],
 		[http://downloads.xiph.org/releases/ogg],
-		[http://dvd-audio.sourceforge.net],
+		[http://dvd-audio.sourceforge.net/utils],
 		[ba526cd8f4403a5d351a9efaa8608fbc]
 	    ],
 	    [
@@ -270,7 +280,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 		[14.4.1],
 		[http://dvd-audio.sourceforge.net/patches/sox-patch-14.4.1],
 		[http://downloads.sourceforge.net/project/sox/sox/14.4.1],
-		[http://dvd-audio.sourceforge.net],
+		[http://dvd-audio.sourceforge.net/utils],
 		[ff9ca6aca972549de0e80e8e30ed379c]
 	    ]])
 
@@ -323,7 +333,8 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
 	       [[[libmpeg2],[libmpeg2-0.5.1]],[--prefix="$BUILDDIR/local"]],
 	       [[[help2man], [help2man-1.43.3]],[--prefix="$BUILDDIR/local"]],
-	       [[[ImageMagick], [ImageMagick-6.8.7-0]],[--prefix="$BUILDDIR/local"]]])
+	       [[[ImageMagick], [ImageMagick-6.8.7-0]],[--prefix="$BUILDDIR/local"]],
+	       [[[man2html], [man2html-1.6]],[--prefix="$BUILDDIR/local"]]])
 	    ],
 	    [
 	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --prefix="$BUILDDIR/local"]],
@@ -333,15 +344,13 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
 	       [[[libmpeg2],[libmpeg2-0.5.1]], [--prefix="$BUILDDIR/local"]],
 	       [[[help2man], [help2man-1.43.3]],[--prefix="$BUILDDIR/local"]],
-	       [[[ImageMagick], [ImageMagick-6.8.7-0]],[--prefix="$BUILDDIR/local"]]])
+	       [[[ImageMagick], [ImageMagick-6.8.7-0]],[--prefix="$BUILDDIR/local"]],
+       	       [[[man2html], [man2html]],[--prefix="$BUILDDIR/local"]]])
 	    ])
-
-   
-
+    
     # auxiliary libs that remain within package, not installed
 
     DVDA_CONFIG_LIBRARY_NO_INSTALL([[[[libiberty],[libiberty/src]]], [[[libfixwav],[libfixwav/src]]]])
-
 
 ])
 
