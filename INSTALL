@@ -47,6 +47,12 @@ file DOWNLOADS traces the downloaded packages
 files PATCHED.DOWNLOADS traces the patched downloads
 file BUILD.TRACE gives an account of all builds, either successful or failed.
 
+Qt Creator builds
+-----------------
+
+A Qt Creator project is given for a linux build. The project uses pre-built library to be found in 
+directory build/lib/linux.  
+
 Core builds
 -----------
 In case of building issues, you may wish to download no dependencies and enable
