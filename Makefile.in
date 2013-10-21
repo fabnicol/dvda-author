@@ -84,9 +84,10 @@ erase_build.trace:
 
 # directly patching the Makefile appears to be more efficient. You need a GNU-compliant make.
 
+#this must be lazy-evaluation otherwise will not work
 pkgconfig_style_libs=$(if $(MAYBE_sox),$(shell cat $(MAYBE_sox)/sox-libs | @SED@ -e "s/^.*\.a//g   ;  s/@.*@//g"))
 
-do_sox_lib_deps_subst: src/Makefile $(MAYBE_sox)
+do_sox_lib_deps_subst: src/Makefile  sox.depconf
 	@echo Processing dependencies for sox...
 	@SED@ -i -e 's/SOX_LIB_DEPS/$(pkgconfig_style_libs)/g'  src/Makefile 
 	$(call follow,src/Makefile, done sox library substitution \(pkgconfig-style\))
