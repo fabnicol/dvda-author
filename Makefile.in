@@ -149,7 +149,7 @@ install-pic:  $(wildcard menu/*)
 	$(INSTALL_DATA) $^ $(DESTDIR)@MENUDIR@
 
 install-man: $(manhelp)
-	$(INSTALL_DATA) $^ @mandir@/man
+	$(INSTALL_DATA) $^ @mandir@/man1
 
 install-data-local:  $(htmlhelp) $(dist_doc_DATA) $(dist_pic_DATA)
 	$(INSTALL_DATA) $^ $(DESTDIR)@infodir@/$(PROGRAM)
