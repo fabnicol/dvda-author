@@ -186,19 +186,9 @@ AC_DEFUN([DVDA_DOWNLOAD],
 
 
 AS_IF([test "$errorcode" = "1"],[errorcode_boolean=0],[errorcode_boolean=1])
-AS_IF([test "$errorcode" = "1"],[basename([$1])[_BUILD]=no],[basename([$1])[_BUILD]=yes])
 AC_DEFINE_UNQUOTED(upper, ["${prefix}/bin/bn"], [Defining ]bn[ filepath.])
 AC_DEFINE_UNQUOTED([HAVE_]bn, [$errorcode_boolean], [Whether ]bn[ source code will be downloaded for build.])
 AC_SUBST(upper[_VERSION])
-
-#m4_popdef([bn])
-#m4_popdef([upper])
-#m4_popdef([version])
-#m4_popdef([patch_url])
-#m4_popdef([sourceforge_url])
-#m4_popdef([other_url])
-#m4_popdef([MD5])
-#m4_popdef([filename])
 
 ])  #DVDA_DOWNLOAD
 
@@ -387,12 +377,6 @@ AC_DEFINE_UNQUOTED([HAVE_]bn[_BUILD],[$indic_boolean],msg)
 
 AC_SUBST([HAVE_]bn[_BUILD])
 
-#m4_popdef([msg])
-#m4_popdef([norm])
-#m4_popdef([upper])
-#m4_popdef([act])
-#m4_popdef([bn])
-#m4_popdef([dhms])
 ])# DVDA_ARG_ENABLE
 
 
