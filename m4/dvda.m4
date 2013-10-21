@@ -693,6 +693,7 @@ AC_DEFUN([DVDA_CONFIG],[
     AC_SUBST(VAR[_CONFIGURE_FILE])
     AC_SUBST(VAR[_LIB])
     AC_SUBST(VAR[_LINK])
+    AC_SUBST(VAR[_BUILD])
     #m4_popdef([VAR])
     #m4_popdef([UPPERVAR])
     #m4_popdef([CDR])
@@ -723,6 +724,7 @@ m4_foreach_w([prog],PROGRAM_TARGET_LIST,[
   echo  [HAVE_]prog=[@HAVE_]prog[@] >> [mk/]prog[.global.mk.in] 
   echo  [HAVE_EXTERNAL_]prog=[@HAVE_EXTERNAL_]prog[@] >> [mk/]prog[.global.mk.in] 
   echo  [CONFIGURE_]prog[_FLAGS]=[@CONFIGURE_]prog[_FLAGS@] >> [mk/]prog[.global.mk.in] 
+  echo  m4_tolower(prog)[_BUILD]=[@]m4_tolower(prog)[_BUILD@] >> [mk/]prog[.global.mk.in] 
   echo  [WITH_]prog=[@WITH_]prog[@]  >> [mk/]prog[.global.mk.in] 
   
   AC_CONFIG_FILES([mk/]prog[.global.mk])   
