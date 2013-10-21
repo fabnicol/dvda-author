@@ -170,14 +170,15 @@ clean-local:
 	$(foreach prog,@PROGRAM_TARGETS@,$(call clean_package($(prog))))
 
 distclean: clean-local
-	@$(RM) -r autom4te* && $(RM) config.log && $(RM) config.status
-	find . -name Makefile -delete
+	@$(RM) -r $(wildcard autom4te*) && $(RM) config.log && $(RM) config.status
+	$(RM) Makefile src/Makefile libfixwav/src/Mafile libutils/src/Makefile libiberty/src/Makefile
 
 maintainer-clean: distclean
 	@find . -name configure -delete
-	$(RM) -r config
+	$(RM) -r config/ $(wildcard config.*)
+	for prog in $(SRC_SUBDIRS); do make -k --directory=$$prog distclean; done
 
-FORMATS=tar.xz tar.gz tar.bz2 zip
+FORMATS=xz gz bz2 zip
 DISTFORMATS=$(FORMATS:%=dist-%)
 
 $(FORMATS): ;
@@ -191,14 +192,13 @@ $(DISTFORMATS):dist-%: %
 		if test "$(BRANCH)" != "$(CURRENTBRANCH)"; then
 		  @GIT@ checkout $(BRANCH)
 		fi
-		@GIT@ archive --prefix=$(PROGRAM)/  -o $(PROGRAM).$< HEAD $(BRANCH)
+		@GIT@ archive --prefix=$(PROGRAM)/  -o $(PROGRAM).tar.$< HEAD $(BRANCH)
 		if test "$(BRANCH)" != "$(CURRENTBRANCH)"; then
 		  @GIT@ checkout $(CURRENTBRANCH)
 		fi
 	else
 		echo Please install git to make a distribution package.
 	fi
-
 
 force: ;
 
