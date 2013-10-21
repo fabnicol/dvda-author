@@ -49,13 +49,15 @@ SRC_SUBDIRS += @ROOTDIR@/src
 .SUFFIXES: .config .depconf
 .PHONY: all all-sources erase_build.trace  create_autotargets $(PROGRAM_TARGET_CONFIGS) do_sox_lib_deps_subst $(SRC_SUBDIRS)
 
-ALL_TARGETS=erase_build.trace
+ALL_TARGETS_EXTERNAL=erase_build.trace
 
-ifeq "@HAVE_sox_BUILD@" "yes"
- ALL_TARGETS += do_sox_lib_deps_subst
+ifeq "@sox_BUILD@" "yes"
+ ALL_TARGETS_EXTERNAL += do_sox_lib_deps_subst
 endif
 
-ALL_TARGETS += $(PROGRAM_TARGET_CONFIGS) $(SRC_SUBDIRS) 
+ALL_TARGETS_EXTERNAL += $(PROGRAM_TARGET_CONFIGS)
+
+ALL_TARGETS += $(ALL_TARGETS_EXTERNAL) $(SRC_SUBDIRS) 
 
 all:  $(ALL_TARGETS) $(PROGRAM).1 $(PROGRAM).html
 
@@ -68,13 +70,12 @@ man2html.config: $(SRC_SUBDIRS) help2man.depconf man2html.depconf
 export CPPFLAGS
 export PARALLEL
 
-$(SRC_SUBDIRS): do_sox_lib_deps_subst
+$(SRC_SUBDIRS): $(ALL_TARGETS_EXTERNAL)
 	@echo making into directory $@...
 	$(MAKE) $(PARALLEL) --directory=$@
 
 
 $(PROGRAM_TARGET_CONFIGS): %.config: %.depconf
-
 
 erase_build.trace:
 	@echo PROGRAM_TARGETS=$(PROGRAM_TARGETS)
