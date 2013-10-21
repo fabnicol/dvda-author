@@ -76,6 +76,7 @@ Source code directories are:
 	iconv.m4, codeset.m4   third-party macros copied here as some platforms may not include it
 			       and they are used by nested configure scripts.
 
+Builds of are provided in directory 'build' for win32 and linux.
 
 Important DATA-type files are:
 
