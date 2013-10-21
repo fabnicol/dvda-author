@@ -2,6 +2,7 @@ Release History
 
    dvda-author-13.10
           Oct     01, 2013  Build system fixes. Audio menu enhancements. Updated dependencies.
+	  Oct     19, 2013  Further build system fixes. Port to GNU make entirely, remove all Makefile.am files
 
    dvda-author-10.06
 	  July    17, 2010  Other fixes and top menu soundtrack authoring with optional slideshows (build 300).

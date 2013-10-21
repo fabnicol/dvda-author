@@ -73,7 +73,6 @@ Source code directories are:
 	auxiliary.m4           shorter general-purpose macros.
 	dependencies.m4        dvda-author-specific parameters submitted to other M4 macros (using lists).
 	sox-debug.m4           used to correct a bug in SoX code.
-	oggflac-test.m4        tests for Ogg FLAC support
 	iconv.m4, codeset.m4   third-party macros copied here as some platforms may not include it
 			       and they are used by nested configure scripts.
 
