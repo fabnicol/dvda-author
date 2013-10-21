@@ -92,6 +92,16 @@ m4_map([DVDA_TEST_AUX],[
 	       MAYBE_libfixwav=""
 	       libfixwav_BUILD=no
 	       libogg_LINK=""]],
+	     [[minimal-build],
+	      [withval_libfixwav=yes
+	       withval_FLAC=yes
+	       withval_libogg=yes
+	       withval_sox=yes
+	       libogg_BUILD=yes
+	       flac_BUILD=yes
+	       libfixwav_BUILD=yes
+	       sox_BUILD=yes
+	     ]],
 	     [[ImageMagick-build],[DVDA_INF([IMAGEMAGICK_MSG])]],
 	     [[static-sox],
 	      [DVDA_INF([SOX_STATIC_MSG])
@@ -144,7 +154,7 @@ m4_map([DVDA_TEST_AUX],[
 	       withval_libogg=yes
 	       withval_sox=yes
 	       libogg_BUILD=yes
-	       FLAC_BUILD=yes
+	       flac_BUILD=yes
 	       libfixwav_BUILD=yes
 	       sox_BUILD=yes
 	     ]],
