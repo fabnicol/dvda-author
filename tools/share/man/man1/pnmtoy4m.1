@@ -1,0 +1,149 @@
+.\" 
+.TH "pnmtoy4m" "1" "28 April 2004" "MJPEG Tools Team" "MJPEG tools manual"
+.SH "NAME"
+pnmtoy4m \- Convert PNM/PAM images to YUV4MPEG2 stream
+
+.SH "SYNOPSIS"
+.B pnmtoy4m
+.RI [ options ]
+.I [ filename ]
+
+.SH "DESCRIPTION"
+\fBpnmtoy4m\fP converts one or more raw PPM, PGM, PBM, or PAM images into a
+YUV4MPEG2 stream ready for further processing by other video tools.
+These three (or four) image formats are collectively referred to
+as "PNM images".
+
+Output is to stdout to facilitate piping to other MJPEG tools.
+The size of the output frame(s) is determined from the (first) input image.
+
+Input is a 'raw' format PNM image, read from stdin or from the optional
+filename.  The input may contain multiple PNM images concatenated together;
+\fBpnmtoy4m\fP will read and process them sequentially.  All images must have
+identical size and format.  Input images can be interpreted as whole
+progressive frames, pairs of interleaved fields, or as sequential fields
+(read in pairs of images) to be output as either interlaced or progressive
+frames.
+PPM and PGM images must have 8 bits per channel (i.e. 'maxval' must be 255).
+
+PPM input images should be in the usual R'G'B' colorspace.  They are converted
+to the Y'CbCr colorspace (ITU-R BT.601) before being output to a "4:4:4"
+(non-subsampled) YUV4MPEG2 stream.  If chroma subsampling is required
+(e.g. to 4:2:0 for MPEG), the output should be further piped through a
+program such as \fBy4mscaler\fP.
+
+PGM images should be in the standard full-range ([0,255])
+grayscale colorspace.  PGM and PBM images will be converted to BT.601 luma
+and output as "MONO" (luma-only) YUV4MPEG2 streams.
+
+The PAM format is a newer superset of the PNM formats; the precise contents
+of a PAM image is defined by the TUPLTYPE header tag.  \fBpnmtoy4m\fP
+handles TUPLTYPE "GRAYSCALE" as PGM, "RGB" as PPM, and "RGB_ALPHA" as
+PPM with an 8-bit alpha channel.  (The alpha channel is converted to
+BT.601 luma as is appropriate for YUV4MPEG2 streams.)
+
+\fBpnmtoy4m\fP and \fBy4mtopnm\fP are inverses of each other; you can
+pipe the output of one into the other, and vice-versa.  Note that the
+colorspace operations are lossy in both directions.  And,
+when converting to PNM, information on interlacing and sample aspect ratio
+is lost (but can be reconstructed by supplying command-line arguments to
+\fBpnmtoy4m\fP).
+
+
+.SH "OPTIONS"
+\fBpnmtoy4m\fP accepts the following options:
+
+.TP 5
+.BI \-o " num"
+Frame offset:  skip output of the first 'num' frames.  (default: 0)
+.TP 5
+.BI \-n " num"
+Output a total of 'num' output frames.  Use '0' to specify all frames.
+(default: 0)
+.TP 5
+.BI \-B
+Interpret data as being  BGR rather than RGB.
+.TP 5
+.BI \-r 
+Repeat last input frame until output is complete.  If '-n 0' is also specified,
+last input frame will be repeated forever.
+.TP 5
+.BI \-D " x"
+Treat each PNM image as a single (de-interleaved) field instead of a full
+frame.  The argument specifies the interpretation:
+ t - the first image is a top-field
+ b - the first image is a bottom-field
+
+With this option, two input images will be required per output frame.
+Be careful:  mismatched "-I" and "-D" options can invert the temporal or
+spatial order of the fields (or both).
+.TP 5
+.BI \-F " n:d"
+Set framerate encoded in output stream, as an exact integer ratio.
+(default:  30000:1001)  Common rates are:
+ 24000:1001 - NTSC 3:2 pulldown converted film
+       24:1 - native film
+       25:1 - PAL/SECAM
+ 30000:1001 - NTSC video
+       50:1 - PAL field rate
+ 60000:1001 - NTSC field rate
+.TP 5
+.BI \-A " n:d"
+Set pixel aspect ratio encoded in output stream, as an exact integer ratio.
+(default:  1:1)  Common ratios are:
+     1:1  - square pixels (computer graphics)
+    10:11 - CCIR-601 NTSC
+    59:54 - CCIR-601 PAL
+.TP 5
+.BI \-I " x"
+Set the output interlacing mode, encoded in the output stream.
+(Default is to match "-D" if given, or 'p' if not.)
+ p - progressive, non-interlaced
+ t - top/upper-field-first interlaced
+ b - bottom/lower-field-first interlaced
+.TP 5
+.BI \-v " [0,1,2]"
+Set verbosity level.  
+ 0 = warnings and errors only.
+ 1 = add informative messages, too.
+ 2 = add chatty debugging message, too.
+
+.SH "EXAMPLES"
+.hw pnmtoy4m yuvplay tgatoppm
+To convert a file containing a single PPM file into a stream of 15
+(identical) frames:
+
+.RS 5
+pnmtoy4m -n 15 -r some-image.ppm
+.RE
+
+To convert a series of Targa format images (in the current directory)
+to a YUV4MPEG2 stream displayed by yuvplay:
+
+.RS 5
+ls *.tga | xargs -n1 tgatoppm | pnmtoy4m | yuvplay
+.RE
+
+.SH "AUTHOR"
+This manual page was written by Matt Marjanovic.
+.br 
+If you have questions, remarks, problems or you just want to contact
+the developers, the main mailing list for the MJPEG\-tools is:
+  \fImjpeg\-users@lists.sourceforge.net\fP
+
+.TP 
+For more info, see our website at
+.I http://mjpeg.sourceforge.net/
+
+.SH "SEE ALSO"
+.BR pam (5),
+.BR pbm (5),
+.BR pgm (5),
+.BR pnm (5),
+.BR ppm (5),
+.BR y4mtopnm (1),
+.BR mjpegtools (1),
+.BR mpeg2enc (1),
+.BR y4mscaler (1),
+.BR yuv2lav (1),
+.BR yuvplay (1)

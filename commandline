@@ -1,1 +1,0 @@
-./configure --disable-shared --disable-oggtest --disable-cpplibs --disable-doxygen-docs --disable-xmms-plugin --with-ogg-libraries=/home/fab/Dev/dvda-author-09.07-dev/libogg/src --with-ogg-includes=/home/fab/Dev/dvda-author-09.07-dev/libogg/include/ogg
