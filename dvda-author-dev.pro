@@ -12,9 +12,11 @@ DEFINES += _GNU_SOURCE __CB HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_fixwav HAV
 
 #libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame --disable-gomp
 
-LIBS +=   libs/libFLAC.a libs/libogg.a   libs/libsox.a
+linux:LIBS +=   build/lib/linux/libFLAC.a build/lib/linux/libogg.a   build/lib/linux/libsox.a  -lid3tag -lz -lsndfile  -lpulse -lpulse-simple -lasound -lwavpack \
+                -lvorbisenc -lvorbisfile -lvorbis  -logg -lpng -lz -lgomp -lsndfile -s
 
-INCLUDEPATH = src/include libutils/src/include libutils/src/include libutils/src/private libfixwav/src/include libs/include/FLAC libs/include/libsoxconvert
+
+INCLUDEPATH = src/include libutils/src/include libutils/src/include libutils/src/private libfixwav/src/include libs/include/FLAC libs/include/libsoxconvert libiberty/src/include
 
 SOURCES += \
     src/amg2.c \
@@ -104,7 +106,8 @@ OTHER_FILES += \
     autogen \
     mk/libmpeg2.mk.in \
     script.mjpegtools \
-    mk/man2html.mk.in
+    mk/man2html.mk.in \
+    libiberty/src/include/Makefile.in
 
 HEADERS += \
     src/include/amg.h \
@@ -203,5 +206,12 @@ HEADERS += \
     libs/include/libsoxconvert/win32-glob.h \
     libs/include/libsoxconvert/win32-ltdl.h \
     libs/include/libsoxconvert/xmalloc.h \
-    libutils/src/private/private_c_utils.h
+    libutils/src/private/private_c_utils.h \
+    libiberty/src/include/getopt_int.h \
+    libiberty/src/include/getopt.h \
+    libiberty/src/include/getsubopt.h \
+    libiberty/src/include/strchrnul.h \
+    libiberty/src/include/strdup.h \
+    libiberty/src/include/strndup.h \
+    libiberty/src/include/strnlen.h
 
