@@ -64,7 +64,9 @@ ifneq "@MAYBE_libiberty@" ""
      CPPFLAGS +=-I@ROOTDIR@/@MAYBE_libiberty@/include
 endif
 
-$(if $(sox), LDIBS_append   += SOX_LIB_DEPS)
+ifeq "$(sox_BUILD)" "yes"
+     LDLIBS  += SOX_LIB_DEPS
+endif
 
 ALL_TARGETS=FLAC libogg sox
 
@@ -73,9 +75,9 @@ ALL_TARGETS=FLAC libogg sox
 all:    @PACKAGE_NAME@
 	mv -f @PACKAGE_NAME@ $(PROGRAM)
 	
-LDLIBS_append = $(foreach prog,$(ALL_TARGETS),$($(prog)_LIB) $($(prog)_LINK))  
+LDLIBS_append += $(foreach prog,$(ALL_TARGETS),$($(prog)_LIB) $($(prog)_LINK))  
 
-LDLIBS += $(LDLIBS_append) SOX_LIB_DEPS
+LDLIBS += $(LDLIBS_append) 
 
 CPPFLAGS += $(foreach prog,$(ALL_TARGETS),$(if $(MAYBE_$(prog)),-I@ROOTDIR@/$(MAYBE_$(prog))/src))
 
