@@ -83,7 +83,7 @@ AC_ARG_WITH(config, [AS_HELP_STRING([--with-config],[Path to directory of config
 
 datarootdir="${prefix}/share"
 PIXDIR=$datarootdir/pixmaps
-AS_IF([ test x$SHORTLINKDIR = x ], [SHORTLINKDIR=$datarootdir/applications/$PACKAGE_TARNAME])
+AS_IF([ test x$SHORTLINKDIR = x ], [SHORTLINKDIR=$datarootdir/applications/$PACKAGE_NAME-$PACKAGE_VERSION])
 MENUDIR=$SHORTLINKDIR/menu
 AS_IF([ test $exec_prefix = "NONE" ],
   [
