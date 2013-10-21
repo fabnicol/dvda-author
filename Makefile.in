@@ -6,6 +6,10 @@
 
 PROGRAM=@PACKAGE_NAME@-@PACKAGE_VERSION@
 export PROGRAM
+INSTALL=$(SHELL) @ROOTDIR@/config/install-sh 
+INSTALL_DATA=$(SHELL) @ROOTDIR@/config/install-sh  -m 644
+export INSTALL
+export INSTALL_DATA
 
 SHELL=/bin/sh
 
@@ -106,7 +110,7 @@ $(PROGRAM).html: $(PROGRAM).1
 		$(call docfollow, $@)
 	fi
 
-.PHONY: sysconfdir dist_sysconf_DATA menudir dist_menu_DATA dist_doc_DATA DISFORMATS $(FORMATS) \
+.PHONY: DISFORMATS $(FORMATS) \
 	install-data-local install clean clean-local distclean
 
 #normally is ${prefix}/share/applications/dvda-author-${VERSION}
@@ -138,18 +142,21 @@ endif
 
 # GNU build system regeneration script and others
 
-install-sys: dist_sysconf _DATA
-	@$(INSTALL_DATA) $^ $(DESTDIR)$(sysconfdir)
+install-sys: $(dist_sysconf_DATA)
+	$(INSTALL_DATA) $^ $(DESTDIR)$(sysconfdir)
 
-intall-pic:  @MENUDIR@
-	@$(INSTALL_DATA) $^ $(DESTDIR)$(picdir)
+install-pic:  $(wildcard menu/*)
+	$(INSTALL_DATA) $^ $(DESTDIR)@MENUDIR@
 
-install-data-local:  $(manhelp) $(htmlhelp) $(dist_doc_DATA) $(dist_pic_DATA)
-	@$(INSTALL_DATA) $^ $(DESTDIR)$(infodir)
+install-man: $(manhelp)
+	$(INSTALL_DATA) $^ @mandir@/man
+
+install-data-local:  $(htmlhelp) $(dist_doc_DATA) $(dist_pic_DATA)
+	$(INSTALL_DATA) $^ $(DESTDIR)@infodir@/$(PROGRAM)
 
 # redefining install is necessary to rename nested package directories for later builds with --enable-all-builds, which request lib* labelling
 
-install: all install-data-local install-pic install-sys
+install: all install-data-local install-pic install-sys install-man
 	@$(foreach dir,src $(subdirs), $(MAKE) --directory=$(dir) install)
 
 clean: clean-local

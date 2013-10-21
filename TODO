@@ -2,7 +2,7 @@ Short term
 ----------
 fix lack of relative paths for -x -o
 add sanity check if -o . ! (avoid cur dir erasure...)
-strip .a libs on install
+fix ats2wav
 
 Long term
 ---------

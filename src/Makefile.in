@@ -70,8 +70,8 @@ ALL_TARGETS=FLAC libogg sox
 
 .PHONY: create_options all
 
-all:    dvda-author
-	mv -f dvda-author $(PROGRAM)
+all:    @PACKAGE_NAME@
+	mv -f @PACKAGE_NAME@ $(PROGRAM)
 	
 LDLIBS_append = $(foreach prog,$(ALL_TARGETS),$($(prog)_LIB) $($(prog)_LINK))  
 
@@ -81,7 +81,10 @@ CPPFLAGS += $(foreach prog,$(ALL_TARGETS),$(if $(MAYBE_$(prog)),-I@ROOTDIR@/$(MA
 
 CPPFLAGS += $(foreach prog,$(ALL_TARGETS),$$(if test "$($(prog)_LIB)" = "" -a "$($(prog)_LINK)" = ""; then echo -DWITHOUT_$(prog); fi))
 
-dvda-author: $(OBJECTS) $(LDLIBS_append)
+@PACKAGE_NAME@: $(OBJECTS) $(LDLIBS_append)
+
+install: $(PROGRAM)
+	$(INSTALL) $(PROGRAM) $(DESTDIR)@bindir@
 
 
 # Symbol SOX_LIB_DEPS will be replaced by sox dependencies after configure in libsox by target do_sox_lib_deps_subst

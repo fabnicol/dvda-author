@@ -44,4 +44,7 @@ libdvdread-dev
 To build documentation and repack a distribution tarball using make dist, add:
 
 help2man
-man2html
+
+however do not use package man2html, which is broken.
+Use rather ./configure --enable-man2html-download --enable-man2html-build to build
+man2html as an auxiliary tool.
