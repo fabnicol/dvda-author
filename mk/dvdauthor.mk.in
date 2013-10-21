@@ -6,13 +6,14 @@ dvdauthor_TESTBINARY=dvdauthor
 ifeq "@HAVE_automake@" "yes"
 ifeq "@HAVE_autoconf@" "yes"
 dvdauthor.depconf: Makefile
-	@cp -r @ROOTDIR@/m4.extra.dvdauthor $(MAYBE_$*)/srcm4
+	@mkdir -p $(MAYBE_$*)/srcm4
+	 cp -f @ROOTDIR@/m4.extra.dvdauthor/*  $(MAYBE_$*)/srcm4
 	$(if $(MAYBE_$*),
 	  if test -d $(MAYBE_$*) ; then
 	   cd $(MAYBE_$*) && $(SHELL) -c "aclocal -Isrcm4 && autoheader && automake -acf && autoconf -Isrcm4" \
 	   && $(SHELL) configure  $(CONFIGURE_$*_FLAGS) ; $(MAKE) $(PARALLEL); $(MAKE) install; cd -
 	  fi)
-	$(call execfollow,$(MAYBE_$*),$*)
+	(call index,$*,$(EXEEXT),binary)
 endif
 endif
 
