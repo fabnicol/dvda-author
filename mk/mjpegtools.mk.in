@@ -6,5 +6,5 @@ mjpegtools_DEPENDENCY=Makefile
 mjpegtools_TESTBINARY=mplex
 
 mjpegtools.depconf: Makefile
-	$(call depconf,$*,"",CFLAGS="")
+	$(call depconf,$*,"",CFLAGS="")  
 	 
