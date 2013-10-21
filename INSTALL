@@ -6,17 +6,49 @@ Installation Instructions
 *************************
 
 Overview
-
+--------
 To build the application from source code, you will need all the dependencies
 listed in the file DEPENDENCIES, depending on your platform.
 
 In short, a full build of main application and all dependencies (libraries and executables)
 can be obtained with:
 
+	./autogen
 	mkdir build
 	cd build
-	../configure --enable-all-all && make && make install
+	../configure --enable-all-all && make PARALLEL=-jN 
 
+then install as usual:
+	(sudo) make install
+
+You may use PARALLEL=-jN on the make command line with N=2,3 up to 6, depending
+on the number of CPU cores available. This will speed up the building process significantly.
+
+All auxiliary tools will be locally installed under the ./local directory.
+It is recommended to manually install the local directory under a user-defined system directory DIR
+(e.g. DIR=/opt/dvda-author under *nix platforms) and add the resulting DIR/bin to the system PATH.
+
+This extra installation step is left to the user.
+
+Note that this step has not been made automatic to avoid possible versioning conlicts with system-
+installed tools already under /usr/bin or /usr/local/bin.
+
+WARNING
+-------
+To ensure a smooth building process, check that the GNU autotools (autoconf, automake, libtool),
+and auxiliary programs curl and patch are installed on your system (*nix or MSYS)
+Also check that your version of GNU make is at least 3.82 (preferably 3.99 at least for MSYS).
+Please note that on many platforms GNU make version still is 3.81 and that any build attempt
+will fail without a prior tool update.
+
+Tracing the downloads and builds
+--------------------------------
+file DOWNLOADS traces the downloaded packages
+files PATCHED.DOWNLOADS traces the patched downloads
+file BUILD.TRACE gives an account of all builds, either successful or failed.
+
+Core builds
+-----------
 In case of building issues, you may wish to download no dependencies and enable
 a very minimal (core) build, without fixwav, FLAC, OggFLAC, SoX support and without
 menu authoring features. In this case, just configure with:
@@ -73,16 +105,17 @@ Build system:
 
 For a core build:
 
- gcc-4.7 and GNU  make only
+ gcc-4.7 and GNU make (version 3.82+) only
 
 For dependencies, prerequisites are :
  autoconf 2.69
  automake 1.13
  libtool-2.26 and higher
- A recent version of GNU make
 
 Optionally:
- man2html (to build the html help page)
+ man2html (to build the html help page). Note that the classic perl program
+ (still available on Savannah CVS) is  broken. A replacement may be downloaded using
+  ./configure --enable-man2html-download
 
 Please update you *nix autotools system as checks for version will fail if your version
 of any one of the tools is older than the above.
@@ -137,11 +170,6 @@ to /usr/share/man/man1
 
 An html version is shipped with this package.
 
-Ubuntu 10.04 builds
-===================
-
-See file BUILD.Ubuntu
-
 Windows XP building
 
 See file BUILD.Windows
@@ -190,7 +218,7 @@ Packages will be downloaded from a selected mirror repository and patches from t
 
 You should add --enable-X-build to the configure command line if you are to build the X sub-package (not just download), e.g.
 
-	./configure --enable-flac-download  --enable-sox-patch --enableflac-build --enable-sox-build
+	./configure --enable-flac-download  --enable-sox-patch --enable-flac-build --enable-sox-build
 
 for a configuration with FLAC and SoX dependencies enabled.
 
@@ -248,7 +276,7 @@ is an example:
 
 - to configure with GCC debugging options, run:
 
-    ./configure --with-debug=full
+    ./configure --with-debug
 
 - to configure with no GCC debugging options and full O3 optimization, run:
 
@@ -445,11 +473,7 @@ an Autoconf bug.  Until the bug is fixed you can use this workaround:
 Build system regeneration
 =========================
 
-Users who are conversant with Autoconf scripts should not use `autoreconf`
-to regenerate the build system after modifications of configure.ac or Makefile.am
-files included within this package.
-
-They should run ./autogen from the top package directory instead.
+Run ./autogen from the top package directory instead.
 
 
 Installation directories for auxilliary files
