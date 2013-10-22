@@ -11,8 +11,6 @@ FLAC/Ogg FLAC (version 1.3.0), or SoX-14.4.1-supported audio formats (.au, .aiff
 
 This version supports multichannel audio up to 5.1.
 
-Switch -x enables extraction of audio content from DVDb-Audio structures into .wav files.
-
 It can also create "hybrid" or "universal" DVD-Audio/Video disc structures,
 which contain both DVD-Audio and DVD-Video zones.
 
@@ -76,7 +74,7 @@ Source code directories are:
 	iconv.m4, codeset.m4   third-party macros copied here as some platforms may not include it
 			       and they are used by nested configure scripts.
 
-Builds of are provided in directory 'build' for win32 and linux.
+Builds are provided in directory 'build' for win32 and linux.
 
 Important DATA-type files are:
 
@@ -150,7 +148,13 @@ and all other authors (see file AUTHORS for details).
 
 See file NEWS
 
-8. MAILING LIST
+8.BUGS
+------
+
+The audio extraction capability (switch -x) that should be used for extracting audio
+from a disc is being rewritten and is currently broken. 
+
+9. MAILING LIST
 ---------------
 
   dvd-audio-devel@lists.sourceforge.net
