@@ -170,10 +170,8 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_CC_STDC
-AC_FUNC_MALLOC
 AC_FUNC_STRNLEN
 AC_FUNC_FSEEKO
-AC_FUNC_REALLOC
 
 #checks only
 AC_CHECK_FUNCS([strcasecmp select getcwd floor memmove memset mkdir rmdir setlocale strerror strtol strtoul snprintf fseek setlocale strchr strdup strndup strstr strnlen getsubopt memchr dup2 strncasecmp strrchr])
