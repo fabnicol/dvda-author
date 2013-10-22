@@ -1412,7 +1412,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case '6':
+
             img->nmenus=atoi(optarg);
+
             foutput("[PAR]  Using %d menu screens.\n", img->nmenus);
             break;
 
@@ -1530,7 +1532,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     // Coherence checks
     // You first have to test here.
 #if !HAVE_core_BUILD
-    menu_characteristics_coherence_test(img, ngroups);
+   // menu_characteristics_coherence_test(img, ngroups);
 
 #ifndef __CB__
 #if !defined HAVE_mpeg2enc || !defined HAVE_jpeg2yuv || !defined HAVE_mplex
@@ -1559,6 +1561,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     while ((c=getopt(argc, argv, ALLOWED_OPTIONS)) != -1)
 #endif
     {
+
         switch (c)
         {
         case 'Q':
@@ -1788,8 +1791,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     }
 
 
-    if (img->blankscreen)
+    if ((img->nmenus)&&(img->blankscreen))
     {
+
         if (globals.veryverbose) foutput("%s\n", "[INF]  Converting overlay .png blankscreen to .jg blankscreen for mpg authoring...");
 
         char* convert=NULL;
