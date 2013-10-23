@@ -51,8 +51,8 @@ sox_BUILD=no
 cflags_save="$CFLAGS -std=c99"
 #redefine CFLAGS to avoid systematic -g -O2 introduced by AC_PROG_CC
 #This should come after AC_PROG macros
-BUILDDIR=`cd "$builddir" ; pwd`
-ROOTDIR=`cd "$srcdir" ; pwd`
+AS_IF([test "$BUILDDIR" = ""],[BUILDDIR=$(echo `cd "$builddir" ; pwd` | sed "s/\/c\//c:\//g")]])
+AS_IF([test "$ROOTDIR" = ""],[ROOTDIR=$(echo `cd "$srcdir" ; pwd` | sed "s/\/c\//c:\//g")]])
 #preparing local build of downloaded libs
 
 m4_include([m4/auxiliary.m4])
@@ -170,8 +170,10 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_CC_STDC
+AC_FUNC_MALLOC
 AC_FUNC_STRNLEN
 AC_FUNC_FSEEKO
+AC_FUNC_REALLOC
 
 #checks only
 AC_CHECK_FUNCS([strcasecmp select getcwd floor memmove memset mkdir rmdir setlocale strerror strtol strtoul snprintf fseek setlocale strchr strdup strndup strstr strnlen getsubopt memchr dup2 strncasecmp strrchr])
@@ -216,6 +218,7 @@ AC_HEADER_ASSERT
 AC_HEADER_STDBOOL
 AC_CHECK_HEADERS([errno.h sys/stat.h time.h inttypes.h locale.h stdint.h stdlib.h string.h sys/time.h unistd.h fcntl.h])
 AC_FUNC_ERROR_AT_LINE
+AC_FUNC_REALLOC
 AC_C_CONST
 AC_STRUCT_TM
 AC_TYPE_INT8_T
