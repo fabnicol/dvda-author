@@ -1,0 +1,102 @@
+#Do not use bash. It would cause subtle issues with libtool in the flac package, probably a libtool bug.
+
+
+define docfollow
+	@findstring=$$(find @BUILDDIR@ -maxdepth 1 -name $(strip $1) -print0)
+	echo "[doc]" >> BUILD.TRACE
+	echo "    $1 $$findstring" >> BUILD.TRACE 
+endef
+
+define index
+	@echo [$1] >> BUILD.TRACE
+	directory=$(MAYBE_$1)
+	if test "$3" = "library" ; then
+	   testvar=$$(find @BUILDDIR@/$$directory -maxdepth 4 -type f -wholename "*$1$2" -print0)
+	else
+	   testvar=$$(find @BUILDDIR@/$$directory -maxdepth 4 -type f -wholename "*$($1_TESTBINARY)$2" -print0)
+	fi
+	if test "$$testvar" != ""; then
+		echo "     built $3: $$testvar for $1" >> BUILD.TRACE
+		if test "$3" = "library" ; then
+		  testvar2=$$(find @BUILDDIR@/local/lib -wholename $($1_LIB) -print0)
+		else
+		  testvar2=$$(find @BUILDDIR@/local/bin -name "$($1_TESTBINARY)$(EXEEXT)" -print0)
+		fi
+		if test "$$testvar2" != ""; then
+			echo "     local $3: $$testvar2 from $(MAYBE_$1)" >> BUILD.TRACE
+		else
+			echo "     did not install $3 $1" >> BUILD.TRACE
+		fi
+	else
+	        echo "     no $3 $1" >> BUILD.TRACE
+	fi
+endef
+
+
+#the complex autotools invocation is rendered necessary by the missing/obsolete status of the dvdauthor autotools chain
+#notice autoconf twice and aclocal -I... to retrieve missing macros
+#Theres is an odd MKDIR_P bug with MIGW32, which is circumvented here for generality but could be taken out in later versions
+
+define configure_sub_package
+	@target_subdir=$(strip $1)
+	configure_flags="$2"
+	if test "$$target_subdir" != ""; then
+	   if test -d  "$$target_subdir"; then
+	      cd "$$target_subdir"
+	      if test "$(findstring noconfigure,$5)" = "" ; then 
+	       if test "$3" != "" ; then $(SHELL) "$3" "$4"; fi
+	       $(SHELL) configure $$configure_flags --prefix="@BUILDDIR@/local" CPPFLAGS="-I@BUILDDIR@/local/include"  $6
+	      fi
+	      if test "$$?" = "0"; then  
+	         $(MAKE) MKDIR_P="mkdir$(EXEEXT) -p" $(PARALLEL) $(if $6,$6)
+	      fi
+	      if test "$$?" = "0"; then
+		 echo Installing from $$target_subdir ...
+		 if test -f INSTALL; then mv -f INSTALL INSTALL.txt ; fi
+		 $(MAKE) INS_BASE=$(INS_BASE) $6 install
+	      fi
+	      if test -f INSTALL.txt; then mv -f INSTALL.txt INSTALL; fi
+	      cd -
+	   fi
+	fi
+endef
+
+
+define configure_lib_package
+	@$(call configure_sub_package,$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),$2,$3,,$4)
+	$(call index,$1,.a,library)
+endef
+
+define configure_exec_package
+	@if test "$(build_os)" = "mingw32"; then
+	  patchfile=$$(find patches -type f -regex .*$1-patch.* -print0)
+	  echo Found mingw32 OS...patching with local patch $$patchfile
+	  $(if $$patchfile, patch -p0 < $$patchfile && echo "locally patched: $1: using $$patchfile in patches/" >> PATCHED.DOWNLOADS)
+	fi
+	$(call configure_sub_package,$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),,,$2,$3)
+	$(call index,$1,$(EXEEXT),binary)
+endef
+
+define clean_package
+	@$(if $1,$(if $2, (if test -d  $2; then cd $2; $(MAKE)  clean ; cd - ; fi)))
+endef
+
+define depconf
+	@if test "$($1_MAKESPEC)" = "auto" ; then
+	  if test "$($1_CONFIGSPEC)" = "lib"; then
+		$(call configure_lib_package,$1,$2,$3,$4)
+	  else
+	    if test "$($1_CONFIGSPEC)" = "exe"; then
+		  $(call configure_exec_package,$1,$2,$3)
+	    fi
+	  fi
+	fi
+endef
+
+define clean_directory
+	@for dir in $1; do
+	   if test -d "$$dir" ; then
+	     cd "$$dir"; $(RM) *.a *.po *.o *.1 *.html; cd @BUILDDIR@
+	   fi
+	done
+endef

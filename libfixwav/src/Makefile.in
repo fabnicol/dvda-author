@@ -1,0 +1,24 @@
+
+
+SOURCES:=$(wildcard *.c)
+OBJECTS:=$(SOURCES:.c=.o)
+
+CPPFLAGS += -I@ROOTDIR@/@MAYBE_libfixwav@/include -I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include -I@ROOTDIR@
+
+LDLIBS += @BUILDDIR@/libutils/src/libc_utils.a
+
+ifeq "@HAVE_libiberty_BUILD@" "yes"
+	LDADD    += @libiberty_LIB@
+	CPPFLAGS +=-I@ROOTDIR@/@MAYBE_libiberty@/include
+	ifeq  "@HAVE_EXTERNAL_iberty@" "yes"
+	  LDLIBS       += @libiberty_LIB@
+	  CPPFLAGS +=-I@ROOTDIR@/@MAYBE_libiberty@/include
+	endif
+	echo Linking to local libiberty.a...
+endif
+ifeq "@HAVE_iberty@" "yes"
+     LDFLAGS  += @libiberty_LINK@
+endif
+
+libfixwav.a: libfixwav.a($(OBJECTS))
+

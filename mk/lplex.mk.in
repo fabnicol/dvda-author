@@ -1,0 +1,9 @@
+include @ROOTDIR@/mk/lplex.global.mk
+
+lplex_MAKESPEC=auto
+lplex_CONFIGSPEC=exe
+lplex_DEPENDENCY=Makefile FLAC.depconf
+lplex_TESTBINARY=lplex
+
+lplex.depconf: $(lplex_DEPENDENCY)
+	$(call depconf,$*)
