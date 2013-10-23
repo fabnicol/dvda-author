@@ -1,0 +1,49 @@
+1. On Windows platforms, and more generally when getsubopt() should be recompiled (with glibc/ sources)
+long option --fixwav is not available in combination with sub-options.
+Usage: Replace --fixwavprune,interactive with -Fprune,interactive.
+
+2. Still under Windows,
+   cannot output to D:\ (or partition other than C:) folder if program installed under C:\
+
+3. From version 08.09: take care to place dvda-author.conf in the same directory as the main executable,
+  unless the application was successfully built with --with-config=/path/to/dvda-author.conf/directory
+  at configure stage. Should this crash, check that you built with administrative rights. See INSTALL for details.
+
+4. If using SoX, the configure script will automatically build glibc objects, among others getop1.c and getopt.c
+   This is made necessary by a bug in SoX, versions < 14.3, which redefines getopt_long in own source code,
+   causing stack segfaults due to runtime calls by dvda-author routines which should be linked to libc getopt_long,
+   not SoX-redefined getopt_long. This does not occur if --enable-sox-build is used or if the Code::Blocks project is
+   used (full build). Another way out is to compile with CPPFLAGS=-DSHORT_OPTIONS_ONLY
+   (or simply in adding #define SHORT_OPTIONS_ONLY 1 in commonvars.h), thereby using getopt instead of getopt_long.
+   A renaming turnaround has been implemented as of version 09.05, which, however, does not work for MSYS builds.
+
+5. If your platform has libavformat, libavcodec, liavutil, the libsox package will be configured for then
+   which is recognizable by ld links -lavformat -lavcodec etc. in the final make output. On some platforms, eg Ubuntu,
+   system-installed packages for these shared libraries are numbered (e.g. libavformat.so.52) and do not have a proper
+   "standard" link of the form libavformat.so under usual library pathc (/usr/lib, /usr/local/lib). This may cause a crash at
+    linking time. The solution consists in either copying numbered libraries to their standard names or creating a link to numbered
+    libraries using standard names.
+
+6. Menu authoring.
+   Some font sizes (the second parameter in the --font a,b,c switch) may not work for reasons so far unknown. In case of issues,
+   change the font size. Issues have been reported with b=20 and b=30, switching to b=18 or b=40 set things right.
+   Do not use a background whose dominant color is too close to text color, otherwise text will not be readable and buttons might not be detected.
+
+7. Version 09.09 was an unstable development version that was provided for experimental purposes, "as is".
+   Many bugs have been corrected as of version 10.06.
+
+8. A serious regression has flawed --extract and -i between version 09.05 and 10.06 build 200 included. Fixed.
+
+9. Multiple definitions may arise at linking time, especially when building libiberty and other packages from source code.
+   To avoid this, the following option has been added to the gcc linker: -Xlinker --allow-multiple-definition
+   If using another compiler, you may have to replace this option with the corresponding one for your compiler in src/Makefile.am
+
+10. Some capabilities of SoX may have to be deactivated for compatibility reasons, platform-wise. On Ubuntu Linux I had to add
+    --without-mad --without-oggvorbis to SoX configure command line as of Jan. 2011.
+
+11. Due to linking  issues caused by SoX code (version 14.3) do not compile libiberty.a and SoX simultaneously. A segfault might arise
+    at exec time. Should libiberty AND SoX compiling be triggered by the autoconf program, rerun configure with either --without-sox
+    or --disable-libiberty --without-libiberty, or, alternatively, install the binutils-dev (or like) package of your *NIX platform
+    and rerun configure. This issue is not detected automatically as it may be unstable and disappear with later SoX versions.
+
+12. 12.06 : bug with AOBs bigger than 1GB
