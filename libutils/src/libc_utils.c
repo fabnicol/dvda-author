@@ -81,7 +81,9 @@ void pause_dos_type()
 
 
 }
+
 #undef malloc
+#undef rpl_realloc   
 #undef realloc   
 
 void *malloc ();
