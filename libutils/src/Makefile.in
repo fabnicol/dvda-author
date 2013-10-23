@@ -1,0 +1,21 @@
+
+CPPFLAGS +=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/libutils/src/private -I@ROOTDIR@ -I@ROOTDIR@/src/include
+
+ifeq "@HAVE_libiberty_BUILD@" "yes"
+     LDLIBS   += @libiberty_LIB@
+     CPPFLAGS +=-I@ROOTDIR@/@MAYBE_libiberty@/include
+     ifeq  "@HAVE_EXTERNAL_iberty@" "yes"
+       LDLIBS   += @libiberty_LIB@
+       CPPFLAGS +=-I@ROOTDIR@/@MAYBE_libiberty@/include
+     endif
+endif
+
+ifeq "@HAVE_libiberty@" "yes"
+      LDLIBS  += -liberty
+endif
+
+SOURCES:=$(wildcard *.c)
+OBJECTS:=$(SOURCES:.c=.o)
+
+libc_utils.a: libc_utils.a($(OBJECTS))
+
