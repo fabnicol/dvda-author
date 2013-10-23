@@ -1,0 +1,13 @@
+include @ROOTDIR@/mk/cdrtools.global.mk
+
+cdrtools_MAKESPEC=auto
+cdrtools_CONFIGSPEC=exe
+cdrtools_DEPENDENCY=Makefile
+cdrtools_TESTBINARY=cdrecord
+INS_BASE="@BUILDDIR@/local"
+
+
+cdrtools.depconf: $(cdrtools_DEPENDENCY)
+	$(call depconf,$*,noconfigure)
+
+

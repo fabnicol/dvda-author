@@ -1,0 +1,31 @@
+./configure --enable-core-build
+ make -k PARALLEL=-j4
+ sudo make -k install
+ sudo rm -rf local/
+ mv BUILD.TRACE BUILD.TRACE.1
+make distclean
+./configure --enable-minimal-build --enable-minimal-deps
+ make -k PARALLEL=-j4
+ sudo make -k install
+ sudo rm -rf local/
+ mv BUILD.TRACE BUILD.TRACE.2
+make distclean
+./configure --enable-sox-build --enable-sox-patch
+ make -k PARALLEL=-j4
+ sudo make -k install
+ sudo rm -rf local/
+ mv BUILD.TRACE BUILD.TRACE.3
+make distclean
+./configure --enable-all-all
+ make -k PARALLEL=-j4
+ sudo make -k install
+ sudo rm -rf local/
+ mv BUILD.TRACE BUILD.TRACE.4
+make clean
+./configure --enable-all-builds
+ make -k PARALLEL=-j4
+ sudo make -k install
+ sudo rm -rf local/
+ mv BUILD.TRACE BUILD.TRACE.5
+
+#5:missed dvdauthor,cdrtools,man2html 4:missed dvdauthor 

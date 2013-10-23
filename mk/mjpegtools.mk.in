@@ -1,0 +1,10 @@
+include @ROOTDIR@/mk/mjpegtools.global.mk
+
+mjpegtools_MAKESPEC=auto
+mjpegtools_CONFIGSPEC=exe
+mjpegtools_DEPENDENCY=Makefile
+mjpegtools_TESTBINARY=mplex
+
+mjpegtools.depconf: Makefile
+	$(call depconf,$*,"",CFLAGS="")  
+	 

@@ -1,0 +1,14 @@
+include @ROOTDIR@/mk/sox.global.mk
+
+sox_MAKESPEC=manual
+
+sox.depconf: $(sox_DEPENDENCY)
+	@if test  "$(MAYBE_$*)" != ""; then
+		if test -d "@BUILDDIR@/$(MAYBE_$*)" ; then
+			cp "@BUILDDIR@/sox-libs" "@BUILDDIR@/$(MAYBE_$*)/sox-libs.in"
+			else
+			echo "@BUILDDIR@/$(MAYBE_$*) is not a directory"
+			exit -1
+		fi
+	fi
+	$(call configure_lib_package,$*,/usr/bin/autoreconf,-if,CFLAGS=)

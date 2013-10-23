@@ -1,0 +1,64 @@
+## dvda-author configuration file version 09.10
+
+# Important syntactic changes wrt priori versions
+# Use command line switches between brackets: [switch]
+# You may skip any number of blank characters and lines excep when indicated
+# You may comment with character #
+## Do use the = sign for optional arguments, ie:
+
+#[pause=0]
+
+# For arguments or switches, always go to the following line
+
+# using fixwav as a header-checker, cautiously pruning silence at end of files
+# use commas to separate fixwav suboptions as on command line
+
+#[fixwav]	 prune,cautious
+
+#start disc at once
+
+
+# I/O parameters
+## audio input directory
+
+
+[g]
+       /home/fab/a.wav
+       /home/fab/a.wav
+       /home/fab/a.aiff
+[g]
+       /home/fab/a.wav
+
+[output]
+       /home/fab/DVD
+
+# Menu authoring
+# suboption syntax is simplified for lexer. Do not skip any line after [screentext]
+# Skip ONE blank line between album text and group text; skip ONE blank line between
+# group text and track text. Skip no lines between tracks.
+# No need for quotes anywhere.
+
+[sox]
+
+[topmenu]
+
+[stillpics]
+   /home/fab/A.jpg
+
+   /home/fab/B.jpg
+
+   /home/fab/C.jpg
+
+   /home/fab/A.jpg
+
+[veryverbose]
+
+[tempdir]
+  /home/fab/tempdir3
+
+[datadir]
+ /home/fab/Dev/dvda-author-10.06
+
+[cdrecord]
+
+## end of config file

@@ -1,0 +1,12 @@
+To build a core version of dvda-author-, use the autotools with following command line: 
+
+./configure --enable-core-build 
+
+or add the following symbolic constants either to CPPFLAGS (using -DWITHOUT_...) or to hard code in commonvars.h:
+WITHOUT_FLAC
+WITHOUT_OGG
+WITHOUT_FIXWAV
+WITHOUT_SOX
+WITHOUT_DVDAUTHOR
+HAVE_CORE_BUILD
+

@@ -1,0 +1,9 @@
+include @ROOTDIR@/mk/FLAC.global.mk
+
+FLAC_MAKESPEC=auto
+FLAC_CONFIGSPEC=lib
+FLAC_DEPENDENCY=$(MAYBE_FLAC) libogg.depconf
+FLAC_TARGETLIB=libFLAC.a
+
+FLAC.depconf: $(FLAC_DEPENDENCY)
+	$(call depconf,$*,"","",CFLAGS=)
