@@ -216,7 +216,6 @@ AC_HEADER_ASSERT
 AC_HEADER_STDBOOL
 AC_CHECK_HEADERS([errno.h sys/stat.h time.h inttypes.h locale.h stdint.h stdlib.h string.h sys/time.h unistd.h fcntl.h])
 AC_FUNC_ERROR_AT_LINE
-AC_FUNC_REALLOC
 AC_C_CONST
 AC_STRUCT_TM
 AC_TYPE_INT8_T
