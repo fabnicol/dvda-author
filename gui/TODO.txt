@@ -1,3 +1,0 @@
-TODO:
-fix regression on .dvp launch when automatic launch checkbox is not toggled
-fix regression on project closing (leaves most tables empty there)
