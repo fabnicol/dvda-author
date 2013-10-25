@@ -13,7 +13,7 @@ dvdauthor.depconf: Makefile
 	   cd $(MAYBE_$*) && $(SHELL) -c "aclocal -Isrcm4 && autoheader && automake -acf && autoconf -Isrcm4" \
 	   && $(SHELL) configure  $(CONFIGURE_$*_FLAGS) ; $(MAKE) $(PARALLEL); $(MAKE) install; cd -
 	  fi)
-	(call index,$*,$(EXEEXT),binary)
+	$(call index,$*,$(EXEEXT),binary)
 endif
 endif
 
