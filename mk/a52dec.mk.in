@@ -1,8 +1,7 @@
-include @ROOTDIR@/mk/a52dec.global.mk
+include @BUILDDIR@/mk/a52dec.global.mk
 
 a52dec_MAKESPEC=auto
 a52dec_CONFIGSPEC=exe
-a52dec_DEPENDENCY=Makefile
 a52dec_TESTBINARY=a52dec
 
 a52dec.depconf: $(a52dec_DEPENDENCY)

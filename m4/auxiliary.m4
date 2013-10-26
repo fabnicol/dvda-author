@@ -36,13 +36,13 @@ m4_map([m4_define],[
                       ]],
 [[DVDA_RUN],
                                           [
-                                            DVDA_INF([Running $1 $2 $3])
-                                            $1 $2 $3
+                                            DVDA_INF([Running $1 $2 $3 $4])
+                                            $1 $2 $3 $4
                                             exitcode=$?
                                             AS_IF([test $exitcode = 0],
                                                [DVDA_INF([...OK])],
                                                [
-                                                 DVDA_ERR([...$1 $2 $3 failed])
+                                                 DVDA_ERR([...$1 $2 $3 $4 failed])
                                                  sleep 2s
                                                  AS_IF([test x$1 != x"$CURL"], [exit $exitcode])
                                                ])
@@ -69,7 +69,7 @@ m4_map([m4_define],[
                                     [DVDA_INF([Cannot curl empty Url...])])
                        ]],
 [[DVDA_PATCH_LEVEL],  [
-                        DVDA_RUN(["$PATCH"],[ -p$2 -f --verbose < ],[$1])
+                        DVDA_RUN([cd $ROOTDIR && "$PATCH"],[ -p$2 -f --verbose < ],[$1],[&& cd $BUILDDIR])
                         AS_IF([test $exitcode = 0], [echo "Patched:  $1" >> PATCHED.DOWNLOADS], [echo "Not patched:  $1" >> PATCHED.DOWNLOADS])
                       ]],
 [[DVDA_PATCH],        [
@@ -100,5 +100,5 @@ m4_map([m4_define],[
                       ]],
 
 [[DVDA_MKDIR],        [AS_IF([test -d "$1"],[rm -rf "$1" && mkdir "$1"],[mkdir "$1"])]],
-[[DVDA_TAR],          [DVDA_RUN(["$TAR"],[ $2],[$1])]]])
+[[DVDA_TAR],          [DVDA_RUN([cd $ROOTDIR && "$TAR"],[ $2],[$1],[&& cd $BUILDDIR])]]])
 

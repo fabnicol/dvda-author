@@ -1,4 +1,4 @@
-include @ROOTDIR@/mk/dvdauthor.global.mk
+include @BUILDDIR@/mk/dvdauthor.global.mk
 
 dvdauthor_MAKESPEC=manual
 dvdauthor_TESTBINARY=dvdauthor
@@ -10,8 +10,16 @@ dvdauthor.depconf: Makefile
 	 cp -f @ROOTDIR@/m4.extra.dvdauthor/*  @ROOTDIR@/$(MAYBE_$*)/srcm4
 	$(if $(MAYBE_$*),
 	  if test -d @ROOTDIR@/$(MAYBE_$*) ; then
-	   cd @ROOTDIR@/$(MAYBE_$*) && $(SHELL) -c "aclocal -Isrcm4 && autoheader && automake -acf && autoconf -Isrcm4" \
-	   && $(SHELL) configure  $(CONFIGURE_$*_FLAGS) ; $(MAKE) $(PARALLEL); $(MAKE) install; cd -
+	   cd @ROOTDIR@/$(MAYBE_$*) && $(SHELL) -c "aclocal -Isrcm4 && autoheader && automake -acf && autoconf -Isrcm4" 
+	    if test "$$?" = "0"; then 
+	    cd @BUILDDIR@
+	   else 
+	    echo "autoreconf failed for dvdauthor"
+	    exit -1
+	   fi
+	   mkdir -p @BUILDDIR@/$(MAYBE_dvdauthor) && cd @BUILDDIR@/$(MAYBE_dvdauthor)
+	   $(SHELL) @ROOTDIR@/$(MAYBE_dvdauthor)/configure  $(CONFIGURE_$*_FLAGS) && $(MAKE) $(PARALLEL) && $(MAKE) install
+	   cd @BUILDDIR@
 	  fi)
 	$(call index,$*,$(EXEEXT),binary)
 endif

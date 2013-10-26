@@ -3,12 +3,12 @@
 
 define docfollow
 	@findstring=$$(find @BUILDDIR@ -maxdepth 1 -name $(strip $1) -print0)
-	echo "[doc]" >> BUILD.TRACE
-	echo "    $1 $$findstring" >> BUILD.TRACE 
+	echo "[doc]" >> @BUILDDIR@/BUILD.TRACE
+	echo "    $1 $$findstring" >> @BUILDDIR@/BUILD.TRACE 
 endef
 
 define index
-	@echo [$1] >> BUILD.TRACE
+	@echo [$1] >> @BUILDDIR@/BUILD.TRACE
 	directory=$(MAYBE_$1)
 	if test "$3" = "library" ; then
 	   testvar=$$(find @BUILDDIR@/$$directory -maxdepth 4 -type f -wholename "*$1$2" -print0)
@@ -16,19 +16,19 @@ define index
 	   testvar=$$(find @BUILDDIR@/$$directory -maxdepth 4 -type f -wholename "*$($1_TESTBINARY)$2" -print0)
 	fi
 	if test "$$testvar" != ""; then
-		echo "     built $3: $$testvar for $1" >> BUILD.TRACE
+		echo "     built $3: $$testvar for $1" >> @BUILDDIR@/BUILD.TRACE
 		if test "$3" = "library" ; then
 		  testvar2=$$(find @BUILDDIR@/local/lib -wholename $($1_LIB) -print0)
 		else
 		  testvar2=$$(find @BUILDDIR@/local/bin -name "$($1_TESTBINARY)$(EXEEXT)" -print0)
 		fi
 		if test "$$testvar2" != ""; then
-			echo "     local $3: $$testvar2 from $(MAYBE_$1)" >> BUILD.TRACE
+			echo "     local $3: $$testvar2 from $(MAYBE_$1)" >> @BUILDDIR@/BUILD.TRACE
 		else
-			echo "     did not install $3 $1" >> BUILD.TRACE
+			echo "     did not install $3 $1" >> @BUILDDIR@/BUILD.TRACE
 		fi
 	else
-	        echo "     no $3 $1" >> BUILD.TRACE
+	        echo "     no $3 $1" >> @BUILDDIR@/BUILD.TRACE
 	fi
 endef
 
@@ -39,31 +39,44 @@ endef
 
 define configure_sub_package
 	@target_subdir=$(strip $1)
+	echo Building $1...
 	configure_flags="$2"
 	if test "$$target_subdir" != ""; then
-	   if test -d  "$$target_subdir"; then
-	      cd "$$target_subdir"
+	   if test -d  "@ROOTDIR@/$$target_subdir"; then
+	      mkdir -p "@BUILDDIR@/$$target_subdir/"
+	      cd "@BUILDDIR@/$$target_subdir/"
 	      if test "$(findstring noconfigure,$5)" = "" ; then 
-	       if test "$3" != "" ; then $(SHELL) "$3" "$4"; fi
-	       $(SHELL) configure $$configure_flags --prefix="@BUILDDIR@/local" CPPFLAGS="-I@BUILDDIR@/local/include"  $6
+       	       cd "@ROOTDIR@/$$target_subdir"
+	       if test "$3" != "" ; then echo Running shell command...; $(SHELL) "$3" "$4"; fi
+	       cd -
+	       echo Running configure in @ROOTDIR@/$$target_subdir ...
+	       $(SHELL) "@ROOTDIR@/$$target_subdir/configure" $$configure_flags --prefix="@BUILDDIR@/local" CPPFLAGS="-I@BUILDDIR@/local/include"  $6
+	      else
+	      cp -rf "@ROOTDIR@/$$target_subdir" "@BUILDDIR@/$$target_subdir"
 	      fi
 	      if test "$$?" = "0"; then  
-	         $(MAKE) MKDIR_P="mkdir$(EXEEXT) -p" $(PARALLEL) $(if $6,$6)
+		  echo Now building $1 with command line $(MAKE) $(PARALLEL) MKDIR_P="mkdir$(EXEEXT) -p"  $(if $6,$6)...  
+		  $(MAKE) $(PARALLEL) MKDIR_P="mkdir$(EXEEXT) -p"  $(if $6,$6)
 	      fi
 	      if test "$$?" = "0"; then
 		 echo Installing from $$target_subdir ...
 		 if test -f INSTALL; then mv -f INSTALL INSTALL.txt ; fi
 		 $(MAKE) INS_BASE=$(INS_BASE) $6 install
+	      else 
+		echo
+		echo [ERR] Make failed while processing $1.
+		echo
+		sleep 1s
 	      fi
 	      if test -f INSTALL.txt; then mv -f INSTALL.txt INSTALL; fi
-	      cd -
+	      cd @BUILDDIR@
 	   fi
 	fi
 endef
 
 
 define configure_lib_package
-	@$(call configure_sub_package,@ROOTDIR@/$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),$2,$3,,$4)
+	@$(call configure_sub_package,$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),$2,$3,,$4)
 	$(call index,$1,.a,library)
 endef
 
@@ -73,12 +86,12 @@ define configure_exec_package
 	  echo Found mingw32 OS...patching with local patch $$patchfile
 	  $(if $$patchfile, patch -p0 < $$patchfile && echo "locally patched: $1: using $$patchfile in patches/" >> PATCHED.DOWNLOADS)
 	fi
-	$(call configure_sub_package,@ROOTDIR@/$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),,,$2,$3)
+	$(call configure_sub_package,$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),,,$2,$3)
 	$(call index,$1,$(EXEEXT),binary)
 endef
 
 define clean_package
-	@$(if $2,if test -d  @ROOTDIR@/$(MAYBE_$2); then cd @ROOTDIR@/$(MAYBE_$2); $(MAKE)  clean ; cd - ; fi)
+	@$(if $1,if test -d  @ROOTDIR@/$(MAYBE_$1); then cd @ROOTDIR@/$(MAYBE_$1); $(MAKE)  clean ; cd - ; fi)
 endef
 
 define depconf

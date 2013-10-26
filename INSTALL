@@ -14,8 +14,8 @@ In short, a full build of main application and all dependencies (libraries and e
 can be obtained with:
 
 	./autogen
-	mkdir build
-	cd build
+	mkdir BUILD
+	cd BUILD
 	../configure --enable-all-all && make PARALLEL=-jN 
 
 then install as usual:
