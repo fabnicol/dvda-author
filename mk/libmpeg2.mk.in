@@ -1,8 +1,7 @@
-include @ROOTDIR@/mk/libmpeg2.global.mk
+include @BUILDDIR@/mk/libmpeg2.global.mk
 
 libmpeg2_MAKESPEC=auto
 libmpeg2_CONFIGSPEC=exe
-libmpeg2_DEPENDENCY=Makefile
 libmpeg2_TESTBINARY=mpeg2dec$(EXEEXT)
 
 libmpeg2.depconf: $(libmpeg2_DEPENDENCY)

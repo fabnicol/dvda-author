@@ -1,9 +1,8 @@
 
-include @ROOTDIR@/mk/man2html.global.mk
+include @BUILDDIR@/mk/man2html.global.mk
 
 man2html_MAKESPEC=auto
 man2html_CONFIGSPEC=exe
-man2html_DEPENDENCY=Makefile
 man2html_TESTBINARY=man2html
 
 man2html.depconf: $(man2html_DEPENDENCY)
