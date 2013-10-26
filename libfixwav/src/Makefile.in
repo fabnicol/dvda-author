@@ -1,6 +1,6 @@
 
 
-SOURCES:=$(wildcard *.c)
+SOURCES:=$(wildcard @ROOTDIR@/@MAYBE_libfixwav@/*.c)
 OBJECTS:=$(SOURCES:.c=.o)
 
 CPPFLAGS += -I@ROOTDIR@/@MAYBE_libfixwav@/include -I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include -I@ROOTDIR@
@@ -22,3 +22,4 @@ endif
 
 libfixwav.a: libfixwav.a($(OBJECTS))
 
+$(OBJECTS):%.o: %.c

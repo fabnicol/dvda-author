@@ -14,8 +14,9 @@ ifeq "@HAVE_libiberty@" "yes"
       LDLIBS  += -liberty
 endif
 
-SOURCES:=$(wildcard *.c)
+SOURCES:=$(wildcard @ROOTDIR@/libutils/src/*.c)
 OBJECTS:=$(SOURCES:.c=.o)
 
 libc_utils.a: libc_utils.a($(OBJECTS))
 
+$(OBJECTS):%.o: %.c 

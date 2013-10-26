@@ -259,19 +259,20 @@ AC_CONFIG_FILES([
 	 libfixwav/src/include/Makefile
 	 libiberty/src/Makefile
 	 Makefile
- 	 mk/a52dec.mk
-	 mk/cdrtools.mk 	 
-	 mk/dvdauthor.mk 	 
-	 mk/FLAC.mk
- 	 mk/functions.mk
-	 mk/help2man.mk 	 
-	 mk/ImageMagick.mk 	 
- 	 mk/libogg.mk
- 	 mk/libmpeg2.mk
- 	 mk/lplex.mk
-	 mk/man2html.mk 	 
- 	 mk/mjpegtools.mk
-	 mk/sox.mk
+ 	 $ROOTDIR/mk/a52dec.mk
+	 $ROOTDIR/mk/cdrtools.mk 	 
+	 $ROOTDIR/mk/dvdauthor.mk 	 
+	 $ROOTDIR/mk/FLAC.mk
+ 	 $ROOTDIR/mk/functions.mk
+	 $ROOTDIR/mk/help2man.mk 	 
+	 $ROOTDIR/mk/ImageMagick.mk 	 
+ 	 $ROOTDIR/mk/libogg.mk
+ 	 $ROOTDIR/mk/libmpeg2.mk
+ 	 $ROOTDIR/mk/lplex.mk
+	 $ROOTDIR/mk/man2html.mk 	 
+ 	 $ROOTDIR/mk/mjpegtools.mk
+	 $ROOTDIR/mk/sox.mk
+	 $ROOTDIR/mk/Makefile
 	 sox-libs
  	 src/Makefile
 ])
