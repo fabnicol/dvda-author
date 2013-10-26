@@ -27,7 +27,7 @@ include @ROOTDIR@/mk/libogg.global.mk
 DEBUG_FLAGS ?= @DEBUG_FLAGS@
 
 CFLAGS += -D_GNU_SOURCE
-LDFLAGS :=-L/usr/local/lib -L/usr/lib -Xlinker --allow-multiple-definition -L@BUILDDIR@/libs
+LDFLAGS :=-L/usr/local/lib -L/usr/lib -Xlinker --allow-multiple-definition 
 
 ifeq "$(DEBUG_FLAGS)" ""
    LDFLAGS += -s
@@ -75,13 +75,17 @@ ALL_TARGETS=FLAC libogg sox
 all:    @PACKAGE_NAME@
 	mv -f @PACKAGE_NAME@ $(PROGRAM)
 	
-LDLIBS_append += $(foreach prog,$(ALL_TARGETS),$($(prog)_LIB) $($(prog)_LINK))  
-
-LDLIBS += $(LDLIBS_append) 
 
 CPPFLAGS += $(foreach prog,$(ALL_TARGETS),$(if $(MAYBE_$(prog)),-I@ROOTDIR@/$(MAYBE_$(prog))/src))
 
 CPPFLAGS += $(foreach prog,$(ALL_TARGETS),$$(if test "$($(prog)_LIB)" = "" -a "$($(prog)_LINK)" = ""; then echo -DWITHOUT_$(prog); fi))
+
+$(OBJECTS): %.o: @ROOTDIR@/src/%.c
+	$(CC) -fPIC -c $(CFLAGS) $(CPPFLAGS)   $< -o $@ 
+
+LDLIBS_append += $(foreach prog,$(ALL_TARGETS),$($(prog)_LIB) $($(prog)_LINK))  
+
+LDLIBS += $(LDLIBS_append) 
 
 @PACKAGE_NAME@: $(OBJECTS) $(LDLIBS_append)
 

@@ -63,7 +63,7 @@ endef
 
 
 define configure_lib_package
-	@$(call configure_sub_package,$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),$2,$3,,$4)
+	@$(call configure_sub_package,@ROOTDIR@/$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),$2,$3,,$4)
 	$(call index,$1,.a,library)
 endef
 
@@ -73,12 +73,12 @@ define configure_exec_package
 	  echo Found mingw32 OS...patching with local patch $$patchfile
 	  $(if $$patchfile, patch -p0 < $$patchfile && echo "locally patched: $1: using $$patchfile in patches/" >> PATCHED.DOWNLOADS)
 	fi
-	$(call configure_sub_package,$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),,,$2,$3)
+	$(call configure_sub_package,@ROOTDIR@/$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),,,$2,$3)
 	$(call index,$1,$(EXEEXT),binary)
 endef
 
 define clean_package
-	@$(if $1,$(if $2, (if test -d  $2; then cd $2; $(MAKE)  clean ; cd - ; fi)))
+	@$(if $2,if test -d  @ROOTDIR@/$(MAYBE_$2); then cd @ROOTDIR@/$(MAYBE_$2); $(MAKE)  clean ; cd - ; fi)
 endef
 
 define depconf
