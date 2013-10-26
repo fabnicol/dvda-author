@@ -55,9 +55,8 @@ AS_IF([test "$BUILDDIR" = ""],[BUILDDIR=$(echo `cd "$builddir" ; pwd` | sed "s/\
 AS_IF([test "$ROOTDIR" = ""],[ROOTDIR=$(echo `cd "$srcdir" ; pwd` | sed "s/\/c\//c:\//g")])
 #preparing local build of downloaded libs
 
-m4_include([m4/auxiliary.m4])
-
 m4_include([m4/dependencies.m4])
+m4_include([m4/auxiliary.m4])
 
 DVDA_MKDIR([local])
 
@@ -76,7 +75,6 @@ DVDA_MKDIR([local])
 
 # checks installation dirs
 # For BSD-type packaging, it is preferable not to use /usr/local as a default prefix
-
 m4_include([m4/dvda.m4])
 DVDA_PREFIX_DEFAULT([/usr])
 AC_ARG_WITH(config, [AS_HELP_STRING([--with-config],[Path to directory of configuration file])], [SHORTLINKDIR=$withval], [])
@@ -256,7 +254,6 @@ AC_CONFIG_FILES([
 	 images/Makefile	 
 	 libutils/src/Makefile
 	 libfixwav/src/Makefile
-	 libfixwav/src/include/Makefile
 	 libiberty/src/Makefile
 	 Makefile
  	 $ROOTDIR/mk/a52dec.mk
@@ -272,7 +269,6 @@ AC_CONFIG_FILES([
 	 $ROOTDIR/mk/man2html.mk 	 
  	 $ROOTDIR/mk/mjpegtools.mk
 	 $ROOTDIR/mk/sox.mk
-	 $ROOTDIR/mk/Makefile
 	 sox-libs
  	 src/Makefile
 ])

@@ -37,7 +37,7 @@ else
  endif
 endif
 
-CPPFLAGS +=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include -I@ROOTDIR@
+CPPFLAGS :=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include -I@ROOTDIR@
 LDLIBS := -lm @BUILDDIR@/libutils/src/libc_utils.a
 
 OBJECTS=amg2.o ats.o atsi2.o audio.o auxiliary.o dvda-author.o  \
@@ -73,15 +73,23 @@ ALL_TARGETS=FLAC libogg sox
 .PHONY: create_options all
 
 all:    @PACKAGE_NAME@
-	mv -f @PACKAGE_NAME@ $(PROGRAM)
-	
+	@mv -f @PACKAGE_NAME@ $(PROGRAM)
+	echo
+	echo ----------------------------------------------- 
+	echo Finished building $(PROGRAM)
+	echo Now run 'make install'
+	echo Man page will be in directory @mandir@/man1
+	echo Html page help and other files in $(DESTDIR)@infodir@/$(PROGRAM)
+	echo -----------------------------------------------
+	echo
 
+	
 CPPFLAGS += $(foreach prog,$(ALL_TARGETS),$(if $(MAYBE_$(prog)),-I@ROOTDIR@/$(MAYBE_$(prog))/src))
 
 CPPFLAGS += $(foreach prog,$(ALL_TARGETS),$$(if test "$($(prog)_LIB)" = "" -a "$($(prog)_LINK)" = ""; then echo -DWITHOUT_$(prog); fi))
 
 $(OBJECTS): %.o: @ROOTDIR@/src/%.c
-	$(CC) -fPIC -c $(CFLAGS) $(CPPFLAGS)   $< -o $@ 
+	$(CC)  -c $(CFLAGS) $(CPPFLAGS)   $< -o $@ 
 
 LDLIBS_append += $(foreach prog,$(ALL_TARGETS),$($(prog)_LIB) $($(prog)_LINK))  
 

@@ -1,8 +1,7 @@
-include @ROOTDIR@/mk/ImageMagick.global.mk
+include @BUILDDIR@/mk/ImageMagick.global.mk
 
 ImageMagick_MAKESPEC=auto
 ImageMagick_CONFIGSPEC=exe
-ImageMagick_DEPENDENCY=Makefile
 ImageMagick_TESTBINARY=convert
 
 ImageMagick.depconf: $(ImageMagick_DEPENDENCY)

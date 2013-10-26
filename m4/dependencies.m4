@@ -237,8 +237,8 @@ m4_map([DVDA_TEST_AUX],[
 		[0.3],
 		[],
 		[],
-		[http://dvd-audio.sourceforge.net/utils],
-		[57f44fd274dfb03b0ab765ff8eab9a6d]
+		[https://downloads.sourceforge.net/project/dvd-audio/dvda-author/dvda-author-dev/external%20packages],
+		[c28803dfe4b136a2c25bbb088b2eafce]
 	    ],
 	    [
 		[mjpegtools-download],
