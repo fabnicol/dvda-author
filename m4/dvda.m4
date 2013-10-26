@@ -702,14 +702,14 @@ AC_DEFUN([GENERATE_GLOBAL_MKS],[
 
 m4_foreach_w([prog],PROGRAM_TARGET_LIST,[
 
-  echo   prog[_LIB]=[@]prog[_LIB@]  > [mk/]prog[.global.mk.in] 
-  echo   prog[_LINK]=[@]prog[_LINK@] >> [mk/]prog[.global.mk.in] 
-  echo  [MAYBE_]prog=[@MAYBE_]prog[@] >> [mk/]prog[.global.mk.in] 
-  echo  [HAVE_]prog=[@HAVE_]prog[@] >> [mk/]prog[.global.mk.in] 
-  echo  [HAVE_EXTERNAL_]prog=[@HAVE_EXTERNAL_]prog[@] >> [mk/]prog[.global.mk.in] 
-  echo  [CONFIGURE_]prog[_FLAGS]=[@CONFIGURE_]prog[_FLAGS@] >> [mk/]prog[.global.mk.in] 
-  echo  m4_tolower(prog)[_BUILD]=[@]m4_tolower(prog)[_BUILD@] >> [mk/]prog[.global.mk.in] 
-  echo  [WITH_]prog=[@WITH_]prog[@]  >> [mk/]prog[.global.mk.in] 
+  echo   prog[_LIB]=[@]prog[_LIB@]  > [$ROOTDIR/mk/]prog[.global.mk.in] 
+  echo   prog[_LINK]=[@]prog[_LINK@] >> [$ROOTDIR/mk/]prog[.global.mk.in] 
+  echo  [MAYBE_]prog=[@MAYBE_]prog[@] >> [$ROOTDIR/mk/]prog[.global.mk.in] 
+  echo  [HAVE_]prog=[@HAVE_]prog[@] >> [$ROOTDIR/mk/]prog[.global.mk.in] 
+  echo  [HAVE_EXTERNAL_]prog=[@HAVE_EXTERNAL_]prog[@] >> [$ROOTDIR/mk/]prog[.global.mk.in] 
+  echo  [CONFIGURE_]prog[_FLAGS]=[@CONFIGURE_]prog[_FLAGS@] >> [$ROOTDIR/mk/]prog[.global.mk.in] 
+  echo  m4_tolower(prog)[_BUILD]=[@]m4_tolower(prog)[_BUILD@] >> [$ROOTDIR/mk/]prog[.global.mk.in] 
+  echo  [WITH_]prog=[@WITH_]prog[@]  >> [$ROOTDIR/mk/]prog[.global.mk.in] 
   
   AC_CONFIG_FILES([mk/]prog[.global.mk])   
   ])
