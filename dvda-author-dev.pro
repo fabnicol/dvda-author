@@ -100,7 +100,6 @@ OTHER_FILES += \
     mk/cdrtools.mk.in \
     libfixwav/src/Makefile.in \
     libfixwav/src/Makefile.am.user \
-    libfixwav/src/Makefile.inMakefile.am \
     mk/sox.mk.in \
     libiberty/src/Makefile.in \
     autogen \

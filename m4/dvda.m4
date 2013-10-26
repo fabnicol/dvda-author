@@ -26,10 +26,10 @@ AC_DEFUN([LOOP_MIRRORS],
       m4_ifvaln([bn],
       [
 	AS_IF([test "$Sourceforge_url" != "" ],
-		       [DVDA_CURL([$Sourceforge_url/$Filename], [$Filename])],
+		       [DVDA_CURL([$Sourceforge_url/$Filename], [$ROOTDIR/$Filename])],
 		       [
 			AS_IF([test "$Other_url" != ""],
-			     [DVDA_CURL([$Other_url/$Filename], [$Filename])],
+			     [DVDA_CURL([$Other_url/$Filename], [$ROOTDIR/$Filename])],
 			     [
 			       AC_MSG_NOTICE([No repository was provided for bn... Please download by other means.])
 			       AS_EXIT
@@ -41,12 +41,12 @@ AC_DEFUN([LOOP_MIRRORS],
 	AS_EXIT
       ])
 
-      MD5_BREAK([$Filename],[$Md5])
+      MD5_BREAK([$ROOTDIR/$Filename],[$Md5])
 
       AS_IF([test $exitcode != 0],
 	   [
 	      AC_MSG_NOTICE([[MD5SUM: not equal to  $md5, trying again fallback Url $Other_url]])
-	      AS_IF([test "$Other_url" != ""],[DVDA_CURL([$Other_url/$Filename], [$Filename])])
+	      AS_IF([test "$Other_url" != ""],[DVDA_CURL([$Other_url/$Filename], [$ROOTDIR/$Filename])])
 	   ])
 
 
@@ -116,27 +116,27 @@ AC_DEFUN([DVDA_DOWNLOAD],
 		AS_EXIT
 	      ],
 	      [
-	       AS_IF([test -d  filename],
+	       AS_IF([test -d  $ROOTDIR/filename],
 		[
-		 DVDA_INF([Removing directory filename])
-		 rm -rf filename
+		 DVDA_INF([Removing directory $ROOTDIR/filename])
+		 rm -rf $ROOTDIR/filename
 		])
 
-	       AS_IF([test -d  bn],
+	       AS_IF([test -d  $ROOTDIR/bn],
 		[
-		 DVDA_INF([Removing directory bn])
-		 rm -rf bn
+		 DVDA_INF([Removing directory $ROOTDIR/bn])
+		 rm -rf $ROOTDIR/bn
 		])
 
 	      ])
 
-	    AS_IF([test -f filename.tar.$type],
+	    AS_IF([test -f $ROOTDIR/filename.tar.$type],
 	     [
 
-	       DVDA_TAR([filename.tar.$type],[$mode])
+	       DVDA_TAR([$ROOTDIR/filename.tar.$type],[$mode])
 
 
-	       [MAYBE_]bn=filename
+	       [MAYBE_]bn=$ROOTDIR/filename
 
 	       AS_IF([test "$exitcode" = "0"],
 		 [
@@ -145,20 +145,20 @@ AC_DEFUN([DVDA_DOWNLOAD],
 
 			    AS_IF([test "$patchbool" = "1"],
 			      [
-				DVDA_CURL([patch_url], bn-patch-version)
-				DVDA_PATCH([bn-patch-version])
+				DVDA_CURL([patch_url], $ROOTDIR/bn-patch-version)
+				DVDA_PATCH([$ROOTDIR/bn-patch-version])
 			      ],
 			      [
 				DVDA_ERR([$1 needs patching])
 				AS_EXIT
 			      ])
 
-			    AS_IF([test -d filename],
+			    AS_IF([test -d $ROOTDIR/filename],
 				    [AC_MSG_NOTICE([Extraction: OK])],
 				    [
-				      AS_IF([test -d bn],
+				      AS_IF([test -d $ROOTDIR/bn],
 					    [
-					      mv -f bn bn-version
+					      mv -f $ROOTDIR/bn $ROOTDIR/bn-version
 					      AS_IF([ test "$?" = "0" ],
 						      [AC_MSG_NOTICE([Renamed directory to bn-version])],
 						      [
@@ -181,7 +181,10 @@ AC_DEFUN([DVDA_DOWNLOAD],
 		)
 
 	     ],
-	     [DVDA_ERR([Download of bn failed])])
+	     [
+	       DVDA_ERR([Download of bn failed])
+	       AS_EXIT
+	     ])
 	   ])
 
 
@@ -710,6 +713,7 @@ m4_foreach_w([prog],PROGRAM_TARGET_LIST,[
   echo  [CONFIGURE_]prog[_FLAGS]=[@CONFIGURE_]prog[_FLAGS@] >> [$ROOTDIR/mk/]prog[.global.mk.in] 
   echo  m4_tolower(prog)[_BUILD]=[@]m4_tolower(prog)[_BUILD@] >> [$ROOTDIR/mk/]prog[.global.mk.in] 
   echo  [WITH_]prog=[@WITH_]prog[@]  >> [$ROOTDIR/mk/]prog[.global.mk.in] 
+  echo  prog[_DEPENDENCY]="Makefile @ROOTDIR@/[@MAYBE_]prog[@]" >> [$ROOTDIR/mk/]prog[.global.mk.in] 
   
   AC_CONFIG_FILES([mk/]prog[.global.mk])   
   ])

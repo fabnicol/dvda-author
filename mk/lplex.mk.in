@@ -1,8 +1,8 @@
-include @ROOTDIR@/mk/lplex.global.mk
+include @BUILDDIR@/mk/lplex.global.mk
 
 lplex_MAKESPEC=auto
 lplex_CONFIGSPEC=exe
-lplex_DEPENDENCY=Makefile FLAC.depconf
+lplex_DEPENDENCY += FLAC.depconf
 lplex_TESTBINARY=lplex
 
 lplex.depconf: $(lplex_DEPENDENCY)

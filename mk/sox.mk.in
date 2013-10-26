@@ -1,13 +1,13 @@
-include @ROOTDIR@/mk/sox.global.mk
+include @BUILDDIR@/mk/sox.global.mk
 
 sox_MAKESPEC=manual
 
 sox.depconf: $(sox_DEPENDENCY)
 	@if test  "$(MAYBE_$*)" != ""; then
-		if test -d "@BUILDDIR@/$(MAYBE_$*)" ; then
-			cp "@BUILDDIR@/sox-libs" "@BUILDDIR@/$(MAYBE_$*)/sox-libs.in"
+		if test -d "@ROOTDIR@/$(MAYBE_$*)" ; then
+			cp "@ROOTDIR@/sox-libs" "@ROOTDIR@/$(MAYBE_$*)/sox-libs.in"
 			else
-			echo "@BUILDDIR@/$(MAYBE_$*) is not a directory"
+			echo "@ROOTDIR@/$(MAYBE_$*) is not a directory"
 			exit -1
 		fi
 	fi
