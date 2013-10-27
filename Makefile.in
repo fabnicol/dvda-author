@@ -23,8 +23,8 @@ export CFLAGS
 CPPFLAGS = @DEFS@
 
 PROGRAM_TARGETS := @PROGRAM_TARGETS@
-PROGRAM_TARGET_MAKEFILES := $(eval $(foreach prog,$(PROGRAM_TARGETS),$(shell if test -f @ROOTDIR@/mk/$(prog).mk; then echo @ROOTDIR@/mk/$(prog).mk; fi)))
-PROGRAM_TARGET_CONFIGS := $(eval $(foreach prog,$(PROGRAM_TARGETS),$(shell if test  -f @ROOTDIR@/mk/$(prog).mk ; then echo $(prog).config; fi)))
+PROGRAM_TARGET_MAKEFILES := $(foreach prog,$(PROGRAM_TARGETS),$(shell if test -f @ROOTDIR@/mk/$(prog).mk; then echo @ROOTDIR@/mk/$(prog).mk; fi))
+PROGRAM_TARGET_CONFIGS := $(foreach prog,$(PROGRAM_TARGETS),$(shell if test  -f @ROOTDIR@/mk/$(prog).mk ; then echo $(prog).config; fi))
 
 ifneq "@WITH_libiberty@" "no"
   ifneq "@MAYBE_libiberty@" ""
