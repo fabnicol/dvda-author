@@ -3,7 +3,7 @@
 #
 # dvda-author executable script
 #
-# All autoconf and automake scripts Copyright Fabrice Nicol 2008-2009 <fabnicol@users.sourceforge.net>
+# All autoconf and make scripts Copyright Fabrice Nicol 2008-2009 <fabnicol@users.sourceforge.net>
 # Dependencies: all files in m4/
 ######################################################################################################
 
