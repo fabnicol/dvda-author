@@ -52,7 +52,7 @@ define configure_sub_package
 	       echo Running configure in @ROOTDIR@/$$target_subdir ...
 	       $(SHELL) "@ROOTDIR@/$$target_subdir/configure" $$configure_flags --prefix="@BUILDDIR@/local" CPPFLAGS="-I@BUILDDIR@/local/include"  $6
 	      else
-	      cp -rf "@ROOTDIR@/$$target_subdir" "@BUILDDIR@/$$target_subdir"
+	       if test "@ROOTDIR@" != "@BUILDDIR@"; then cp -rf "@ROOTDIR@/$$target_subdir" @BUILDDIR@; fi
 	      fi
 	      if test "$$?" = "0"; then  
 		  echo Now building $1 with command line $(MAKE) $(PARALLEL) MKDIR_P="mkdir$(EXEEXT) -p"  $(if $6,$6)...  
