@@ -923,7 +923,7 @@ ALWAYS_INLINE_GCC  void test_underline(char* text,pic* img)
 
 int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxntracks)
 {
-    if (!img->refresh) return 0;
+    if ((!img->refresh)||(!img->nmenus))   return 0;
     errno=0;
     FILE* f;
     uint8_t group=0, track=0, buttons=0, menu=0, arrowbuttons=1, groupcount=0, menubuttons;
