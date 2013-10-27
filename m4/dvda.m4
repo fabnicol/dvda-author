@@ -246,7 +246,7 @@ AC_PATH_PROG(MAKE_PATH, [make], [], [$bindir:/bin:/usr/bin:/usr/local/bin])
 #caution: quote [...]  regep square brackets
 AS_IF([test x$MAKE_PATH != x],
   [
-    testchain=$($MAKE_PATH -v | grep -E [3\.[8-9]{1}[2-9]{1}])
+    testchain=$($MAKE_PATH -v | grep -G '\(3\.\[[89\]]\{1\}\[[2-9\]]\{1\}\|4\..\{1,2\}\)')
     AC_MSG_NOTICE([tested: whether version of $MAKE_PATH is 3.82+ ])
     AS_IF([test x"$testchain" != x],
      [
