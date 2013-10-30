@@ -162,6 +162,8 @@ install-data-local:  $(htmlhelp) $(dist_doc_DATA) $(dist_pic_DATA)
 
 # redefining install is necessary to rename nested package directories for later builds with --enable-all-builds, which request lib* labelling
 
+install-strip: install
+
 install:  @BUILDDIR@/src/$(PROGRAM) install-data-local install-pic install-sys install-man
 	@$(foreach dir,src $(subdirs), $(MAKE) --directory=$(dir) install)
 
