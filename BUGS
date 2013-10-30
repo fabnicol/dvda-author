@@ -29,10 +29,6 @@ Usage: Replace --fixwavprune,interactive with -Fprune,interactive.
    change the font size. Issues have been reported with b=20 and b=30, switching to b=18 or b=40 set things right.
    Do not use a background whose dominant color is too close to text color, otherwise text will not be readable and buttons might not be detected.
 
-7. Version 09.09 was an unstable development version that was provided for experimental purposes, "as is".
-   Many bugs have been corrected as of version 10.06.
-
-8. A serious regression has flawed --extract and -i between version 09.05 and 10.06 build 200 included. Fixed.
 
 9. Multiple definitions may arise at linking time, especially when building libiberty and other packages from source code.
    To avoid this, the following option has been added to the gcc linker: -Xlinker --allow-multiple-definition
@@ -47,3 +43,14 @@ Usage: Replace --fixwavprune,interactive with -Fprune,interactive.
     and rerun configure. This issue is not detected automatically as it may be unstable and disappear with later SoX versions.
 
 12. 12.06 : bug with AOBs bigger than 1GB
+
+
+Special tracing files
+---------------------
+
+As of Oct. 2013, the following files are generated at the root to monitor the toolchain build:
+BUILD.TRACE
+BUILD.TRACE~ (saves prior BUILD.TRACE)
+DOWNLOADS
+PATCHED.DOWNLOADS
+The filenames are self-explanatory. Please check them before reporting a bug.
