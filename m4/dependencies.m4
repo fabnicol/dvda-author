@@ -31,6 +31,7 @@ m4_map([DVDA_TEST_AUX],[
 	[[cdrecord],  [recording software: cdrecord]],
 	[[md5sum],    [MD5 checksum utility]],
 	[[autoconf],  [configure system build: autoconf]],
+	[[libtoolize],[configure libraries with libtool]],
 	[[automake],  [make system build: automake]],
 	[[lplex],     [using lplex to mux lpcm audio and video]],
 	[[make],      [whether make is installed]],
@@ -353,7 +354,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	       [[[libmpeg2],[libmpeg2-0.5.1]], [--prefix="$BUILDDIR/local"]],
 	       [[[help2man], [help2man-1.43.3]],[--prefix="$BUILDDIR/local"]],
 	       [[[ImageMagick], [ImageMagick-6.8.7-0]],[--prefix="$BUILDDIR/local"]],
-       	       [[[man2html], [man2html]],[bindir="$BUILDDIR/local/bin"]]])
+       	       [[[man2html], [man2html]],[bindir="$BUILDDIR/local/bin" mandir="$BUILDDIR/local/share/man"]]])
 	    ])
     
     # auxiliary libs that remain within package, not installed

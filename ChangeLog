@@ -1,3 +1,6 @@
+2013-10-30 Fabrice Nicol
+	* Fix minor build system issues.
+	
 2013-09-26 Fabrice Nicol
 	* Add --enable-all-all, --fontname, --fontsize, --pointsize
 	* configuration command line moves: --enable-mkisofs-... ->  --enable-cdrtools-... among others
