@@ -1,5 +1,5 @@
-#ifndef HAVE_MENU_C
-#define HAVE_MENU_C
+#ifndef HAVE_MENU_H
+#define HAVE_MENU_H
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

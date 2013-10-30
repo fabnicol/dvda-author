@@ -13,7 +13,7 @@ sox.depconf: $(sox_DEPENDENCY)
 			exit -1
 		fi
 	fi
-	$(call configure_lib_package,$*,/usr/bin/autoreconf,-if,CFLAGS=)a
+	$(call configure_lib_package,$*,/usr/bin/autoreconf,-if,CFLAGS=)
 else
 sox.depconf: 
 	echo "Please install libtoolize"
