@@ -5,6 +5,7 @@ dvdauthor_TESTBINARY=dvdauthor
 
 ifeq "@HAVE_automake@" "yes"
 ifeq "@HAVE_autoconf@" "yes"
+ifeq "@HAVE_libtoolize@" "yes"
 dvdauthor.depconf: Makefile
 	@mkdir -p @ROOTDIR@/$(MAYBE_$*)/srcm4
 	 cp -f @ROOTDIR@/m4.extra.dvdauthor/*  @ROOTDIR@/$(MAYBE_$*)/srcm4
@@ -22,6 +23,22 @@ dvdauthor.depconf: Makefile
 	   cd @BUILDDIR@
 	  fi)
 	$(call index,$*,$(EXEEXT),binary)
-endif
-endif
+else
+dvdauthor.depconf: 
+	echo "Please install libtoolize"
+	exit -1
 
+
+endif
+else
+dvdauthor.depconf: 
+	echo "Please install automake"
+	exit -1
+
+endif
+else
+
+dvdauthor.depconf: 
+	echo "Please install autoconf"
+	exit -1
+endif
