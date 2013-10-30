@@ -396,12 +396,15 @@ AC_MSG_RESULT([[
    Building tools:
 
     make:..........................$make
+    make version:..................`$make --version`
     curl: .........................$CURL
     patch:.........................$PATCH
     autoconf:......................$AUTOCONF
     automake:......................$AUTOMAKE
+    libtoolize:....................$LIBTOOLIZE
  
-  These tools should all be installed to enable advanced dvda-author features.
+  These tools should all be installed to enable advanced dvda-author features or 
+  auxiliary packages.
  
   Installation directories :
     prefix is: ....................$prefix
