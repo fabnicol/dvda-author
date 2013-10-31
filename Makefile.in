@@ -112,6 +112,11 @@ $(PROGRAM).html: $(PROGRAM).1
 	@if test "@HAVE_man2html@" = "yes"; then
 		@MAN2HTML@ < $(PROGRAM).1 > $@
 		$(call docfollow, $@)
+	else	
+	  if test -f "@BUILDDIR@/local/bin/man2html" ; then
+		"@BUILDDIR@/local/bin/man2html" < $(PROGRAM).1 > $@
+		$(call docfollow, $@)
+	  fi
 	fi
 
 .PHONY: DISFORMATS $(FORMATS) \

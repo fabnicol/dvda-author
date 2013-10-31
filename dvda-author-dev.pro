@@ -12,9 +12,10 @@ DEFINES += _GNU_SOURCE  HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_fixwav HAVE_li
 
 #libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame --disable-gomp
 
-linux:LIBS +=   build/lib/linux/libFLAC.a build/lib/linux/libogg.a   build/lib/linux/libsox.a  -lid3tag -lz -lsndfile  -lpulse -lpulse-simple -lasound -lwavpack \
-                -lvorbisenc -lvorbisfile -lvorbis  -logg -lpng -lz -lgomp -lsndfile 
+linux:LIBS +=   -Lbuild/lib/linux build/lib/linux/libFLAC.a build/lib/linux/libogg.a   build/lib/linux/libsox.a   -lz -lsndfile  -lpulse -lpulse-simple -lasound -lwavpack \
+		-lvorbisenc -lvorbisfile -lvorbis  -logg -lpng -lz -lgomp -lsndfile -lpulsecommon-4.0 -ljson-c -L/usr/lib
 
+#todo: add libjson to build directory
 
 INCLUDEPATH = src/include libutils/src/include libutils/src/include libutils/src/private libfixwav/src/include libs/include/FLAC libs/include/libsoxconvert libiberty/src/include
 
