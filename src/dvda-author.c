@@ -364,6 +364,7 @@ int main(int argc,  char* const argv[])
 
     globals=globals_init;
     globals.settings.tempdir=TEMPDIR;
+    globals.settings.stillpicdir=strdup(globals.settings.tempdir);
     normalize_temporary_paths(NULL);
 
 

@@ -21,6 +21,13 @@ can be obtained with:
 then install as usual:
 	(sudo) make install
 
+This application uses a patched version of dvdauthor to create menus.
+The default video format for dvdauthor is set to PAL. If you are to create menus for an
+NTSC (non-PAL compatible) player, it is advised to add the following specification to the
+configure command-line:
+
+ ./configure (...command line...) VIDEO_FORMAT=NTSC
+
 You may use PARALLEL=-jN on the make command line with N=2,3 up to 6, depending
 on the number of CPU cores available. This will speed up the building process significantly.
 

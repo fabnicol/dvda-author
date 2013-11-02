@@ -327,11 +327,13 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
        
      # installing binaries, normally executables
 
+    AS_IF([test "$VIDEO_FORMAT" = ""],[VIDEO_FORMAT=PAL])
+
     AS_CASE([${build}],
 	    [*-*-mingw32*],
 	    [
 
-	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --prefix="$BUILDDIR/local"]],
+	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --enable-default-video-format=$VIDEO_FORMAT --prefix="$BUILDDIR/local"]],
 	       [[[lplex], [lplex-0.3]], [--prefix="$BUILDDIR/local" --disable-shared top_srcdir=$ROOTDIR/lplex-0.3 --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
 	       [[[mjpegtools], [mjpegtools-2.1.0]],
 			       [ --prefix="$BUILDDIR/local" 
@@ -346,7 +348,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	       [[[man2html], [man2html-1.6]],[bindir="$BUILDDIR/local/bin"]]])
 	    ],
 	    [
-	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --prefix="$BUILDDIR/local"]],
+	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --enable-default-video-format=$VIDEO_FORMAT --prefix="$BUILDDIR/local"]],
 	       [[[lplex], [lplex-0.3]], [--prefix="$BUILDDIR/local" --disable-shared top_srcdir=$ROOTDIR/lplex-0.3 --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
 	       [[[mjpegtools], [mjpegtools-2.1.0]],[--without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime  --without-pic --disable-shared --enable-static-build --enable-static  --disable-fast-install --prefix="$BUILDDIR/local"]],
 	       [[[cdrtools],[cdrtools-3.00]],[--prefix="$BUILDDIR/local"]],
