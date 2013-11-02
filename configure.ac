@@ -392,11 +392,12 @@ done
   Distribution of files:  using git in $GIT
   ]))
 
+
 AC_MSG_RESULT([[
    Building tools:
 
-    make:..........................$make
-    make version:..................`$make --version`
+    make:..........................$MAKE
+    make version:..................$MAKE_VERSION
     curl: .........................$CURL
     patch:.........................$PATCH
     autoconf:......................$AUTOCONF
