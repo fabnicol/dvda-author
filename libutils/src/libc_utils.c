@@ -756,8 +756,8 @@ void change_directory(const char * filename)
         printf("[ERR]  Impossible to cd to %s \n.", filename);
         exit(EXIT_FAILURE);
     }
-    else if (globals.veryverbose)
-        printf("[MSG]  Current working directory is now %s\n", filename);
+    else if (globals.debugging)
+        printf("[DBG]  Current working directory is now %s\n", filename);
 }
 
 int copy_directory(const char* src, const char* dest, mode_t mode)
@@ -882,7 +882,7 @@ int copy_file(const char *existing_file, const char *new_file)
 
     FILE *fn, *fe;
     int errorlevel;
-    if (globals.veryverbose) printf("[INF]  Copying file %s\n", existing_file);
+    if (globals.debugging) fprintf(stderr, "[DBG]  Copying file %s\n", existing_file);
     if (NULL == (fe = fopen(existing_file, "rb")))
     {
         fprintf(stderr, "[ERR]  Impossible to open file '%s' in read mode\n", existing_file);
@@ -899,8 +899,8 @@ int copy_file(const char *existing_file, const char *new_file)
     errorlevel=copy_file_no_p(fe, fn);
     fclose(fe);
     fclose(fn);
-    if (globals.veryverbose)
-        if (errorlevel == 0) printf("[INF]  File was copied as: %s\n", new_file);
+    if (globals.debugging)
+        if (errorlevel == 0) fprintf(stderr, "[DBG]  File was copied as: %s\n", new_file);
 
     return(errorlevel);
 

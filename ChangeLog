@@ -1,3 +1,7 @@
+2013-10-31 Fabrice Nicol
+	* Add --enable-default-video-format to dvdauthor configure command line in m4/dependencies.m4.
+	  Add command line variable VIDEO_FORMAT at main configure level.
+	
 2013-10-30 Fabrice Nicol
 	* Fix minor build system issues.
 	
