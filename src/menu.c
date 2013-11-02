@@ -311,11 +311,13 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
     if (img->action == STILLPICS)
     {
-        if (globals.debugging) foutput("%s%u\n", "[INF]  Creating still pictture #", rank+1);
+        if (globals.debugging) foutput("%s%u\n", "[INF]  Creating still picture #", rank+1);
 
         sprintf(img->backgroundmpg[rank], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "background_still_", rank, ".mpg");
 
         snprintf(pict, sizeof(pict), "%s"SEPARATOR"pic_%03u.jpg", globals.settings.stillpicdir, rank);  // here stillpic[0] is a subdir.
+
+        if (globals.debugging) foutput("%s%d%s\n","[DBG]  Created still picture path #:", rank+1,pict);
     }
     else if (img->action == ANIMATEDVIDEO)
     {
@@ -1185,6 +1187,11 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
 
 int create_stillpic_directory(char* string, uint32_t count)
 {
+    if (!string)
+    {
+        fprintf(stderr, "[ERR]  Null string input for stillpic in create_stillpic_directory, with count=%d\n", count);
+        exit(-1);
+    }
     struct stat buf;
     static uint32_t  k;
     change_directory(globals.settings.workdir);
@@ -1201,7 +1208,8 @@ int create_stillpic_directory(char* string, uint32_t count)
     }
     if (stat(string, &buf) == -1)
     {
-        perror("[ERR]  create_stillpic_directory:stat");
+        fprintf(stderr,"[ERR]  create_stillpic_directory: could not stat file %s\n", string);
+        exit(-1);
     }
     if (S_IFDIR & buf.st_mode)
     {
@@ -1213,7 +1221,7 @@ int create_stillpic_directory(char* string, uint32_t count)
     {
         char dest[strlen(globals.settings.tempdir)+13];
         sprintf(dest, "%s"SEPARATOR"pic_%03d.jpg", globals.settings.tempdir, k);
-        if (globals.veryverbose) foutput("[INF]  Picture %s will be copied to temporary directory as %s.\n", string, dest);
+        if (globals.debugging) fprintf(stderr, "[DBG]  Picture %s will be copied to temporary directory as %s.\n", string, dest);
 
         copy_file(string, dest);
 

@@ -579,9 +579,10 @@ char** fn_strtok(char* chain, char delim, char** array, uint32_t count, int  (*f
 
       memcpy(array[k], s+cut[k]+1, cut[k+1]-cut[k]-1);
       array[k][cut[k+1]-cut[k]-1]=0;
-      k++;
-      if ((*f) && ((*f)(NULL, count) == 0)) break;
 
+      if ((*f) && ((*f)(array[k], count) == 0)) break;
+
+      k++;
     }
   array[k]=NULL;
   if ((remainder) && (s[cut[k]] !='\0'))
@@ -607,10 +608,16 @@ int cutloop(char GCC_ATTRIBUTE_UNUSED*c, uint32_t count)
 }
 
 int arraylength(char ** tab)
-  {
-int w=0;
-if (tab) while (tab[w] != NULL)  w++;
-return w;
+{
+    int w=0;
+    if (tab) while (tab[w] != NULL)
+    {
+      if (globals.debugging) fprintf(stderr, "[DBG]  parsing tab string %s\n", tab[w]);
+       w++;
+    }
+    if (globals.debugging) fprintf(stderr, "[DBG]  found %d strings in tab\n", w);
+
+    return w;
 }
 
  // if installed with autotools, if bindir overrides then use override, otherwise use config.h value;

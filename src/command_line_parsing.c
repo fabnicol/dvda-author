@@ -1964,7 +1964,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     {
         // heap-allocations is not possible if char** is not returned by function
         // A simple char* would well be allocated by function, not a char**.
-
+        fprintf(stderr, "[DBG]  stillpic_string=%s\n", stillpic_string);
         tab=fn_strtok(stillpic_string, '-', tab, 0,NULL,NULL);
         uint16_t dim,DIM=0,w;
 
@@ -1983,17 +1983,18 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         }
         if (w > totntracks)
         {
-            perror("[ERR]  Too many tracks on --stillpics");
+            fprintf(stderr, "[ERR]  Too many tracks on --stillpics: %d\n",w);
             goto standard_checks;
         }
         else if (w < totntracks)
         {
-            perror("[ERR]  You forgot at least one track on --stillpics");
+            fprintf(stderr, "[ERR]  You forgot at least one track on --stillpics:\n  total number of tracks:%d whilst pic string array has length %d\n", totntracks, w);
             goto standard_checks;
         }
 
         for (k=0; k < totntracks; k++)
         {
+            if (globals.debugging) fprintf(stderr,"[DBG]  parsing pictures for track %d\n",k);
             tab2=fn_strtok(tab[k], ',', tab2, -1,create_stillpic_directory,NULL);
             dim=0;
             w=0;
@@ -2010,7 +2011,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             npics[k]=(k)? dim+npics[k-1]: dim;
             img->npics[k]=dim;
             DIM+=dim;
-            if (globals.veryverbose) foutput("  --> npics[%d] = %d\n", k, dim);
+            if (globals.debugging) fprintf(stderr, "[DBG]  number of pics for track %d: npics[%d] = %d\n", k,k, dim);
             FREE(tab2)
             if (img->npics[k] > 99)
             {
@@ -2027,7 +2028,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             goto standard_checks;
         }
         img->count=DIM;
-        if (globals.veryverbose) foutput("[MSG]  Total of %d pictures\n", img->count);
+        if (globals.debugging) fprintf(stderr,"[DBG]  Total of %d pictures\n", img->count);
         free(stillpic_string);
 
         if (still_options_string)
