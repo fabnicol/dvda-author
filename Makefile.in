@@ -112,6 +112,11 @@ $(PROGRAM).html: $(PROGRAM).1
 	@if test "@HAVE_man2html@" = "yes"; then
 		@MAN2HTML@ < $(PROGRAM).1 > $@
 		$(call docfollow, $@)
+	else	
+	  if test -f "@BUILDDIR@/local/bin/man2html" ; then
+		"@BUILDDIR@/local/bin/man2html" < $(PROGRAM).1 > $@
+		$(call docfollow, $@)
+	  fi
 	fi
 
 .PHONY: DISFORMATS $(FORMATS) \
@@ -161,6 +166,8 @@ install-data-local:  $(htmlhelp) $(dist_doc_DATA) $(dist_pic_DATA)
 	$(INSTALL_DATA) $^ $(DESTDIR)@infodir@/$(PROGRAM)
 
 # redefining install is necessary to rename nested package directories for later builds with --enable-all-builds, which request lib* labelling
+
+install-strip: install
 
 install:  @BUILDDIR@/src/$(PROGRAM) install-data-local install-pic install-sys install-man
 	@$(foreach dir,src $(subdirs), $(MAKE) --directory=$(dir) install)

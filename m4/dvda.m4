@@ -113,7 +113,7 @@ AC_DEFUN([DVDA_DOWNLOAD],
 	    AS_IF([ test  $exitcode != 0 ],
 	      [
 		DVDA_ERR([Download failure])
-		AS_EXIT
+		AS_IF([test "$CONTINUE" = "no"],[AS_EXIT],[AC_MSG_NOTICE([Package bn could not be downloaded. Continuing nonetheless...])])
 	      ],
 	      [
 	       AS_IF([test -d  $ROOTDIR/filename],
@@ -183,7 +183,7 @@ AC_DEFUN([DVDA_DOWNLOAD],
 	     ],
 	     [
 	       DVDA_ERR([Download of bn failed])
-	       AS_EXIT
+	       AS_IF([test "$CONTINUE" = "no"],[AS_EXIT])
 	     ])
 	   ])
 
@@ -246,15 +246,16 @@ AC_PATH_PROG(MAKE_PATH, [make], [], [$bindir:/bin:/usr/bin:/usr/local/bin])
 #caution: quote [...]  regep square brackets
 AS_IF([test x$MAKE_PATH != x],
   [
-    testchain=$($MAKE_PATH -v | grep -G '\(3\.[[89]]\{1\}[[2-9]]\{1\}.*\|4\..\{1,2\}\)')
+    MAKE_VERSION=$($MAKE_PATH -v | grep -G '\(3\.[[89]]\{1\}[[2-9]]\{1\}.*\|4\..\{1,2\}\)')
     AC_MSG_NOTICE([tested: whether version of $MAKE_PATH is 3.82+ ])
-    AS_IF([test x"$testchain" != x],
+    AS_IF([test x"$MAKE_VERSION" != x],
      [
-       DVDA_INF([Version of make is 3.82+: $testchain])
+       DVDA_INF([Version of make is 3.82+: $MAKE_VERSION])
        MAKE="$MAKE_PATH"
+
      ],
      [
-       DVDA_INF([Installed version of make is not 3.82+: $testchain])
+       DVDA_INF([Installed version of make is not 3.82+: $MAKE_VERSION])
        AS_EXIT
      ])
   ],
