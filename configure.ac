@@ -155,6 +155,8 @@ AS_IF([test "$command_line_args" = ""],
 	   withval_sox=no
 	])
 
+AC_ARG_ENABLE([cont],[AS_HELP_STRING([--enable-cont],[continue download even if package not available])],[CONTINUE=yes],[CONTINUE=no])
+
 DVDA_CHECK_DEPENDENCIES
 
 
@@ -392,16 +394,20 @@ done
   Distribution of files:  using git in $GIT
   ]))
 
+
 AC_MSG_RESULT([[
    Building tools:
 
-    make:..........................$make
+    make:..........................$MAKE
+    make version:..................$MAKE_VERSION
     curl: .........................$CURL
     patch:.........................$PATCH
     autoconf:......................$AUTOCONF
     automake:......................$AUTOMAKE
+    libtoolize:....................$LIBTOOLIZE
  
-  These tools should all be installed to enable advanced dvda-author features.
+  These tools should all be installed to enable advanced dvda-author features or 
+  auxiliary packages.
  
   Installation directories :
     prefix is: ....................$prefix

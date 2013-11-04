@@ -341,6 +341,9 @@
 /* download libogg from source code */
 #undef HAVE_libogg_BUILD
 
+/* Found libtoolize */
+#undef HAVE_libtoolize
+
 /* Whether lplex source code will be downloaded for build. */
 #undef HAVE_lplex
 
@@ -422,6 +425,9 @@
 
 /* Defining libogg filepath. */
 #undef LIBOGG
+
+/* Pathname of libtoolize */
+#undef LIBTOOLIZE
 
 /* Defining lplex filepath. */
 #undef LPLEX
