@@ -41,8 +41,9 @@ cdrecord or growisofs are advised for burning the ISO, though other tools can be
 
 To generate the documentation, you will need help2man for the man page and man2html
 for the html man page. If these applications are installed, the autotools building
-system automatically creates them. Note that this package uses a special version of man2html, not the broken perl
-package still available on the Savannah repository. See package man2html for details. 
+system automatically creates them. Note that this package uses a special version of man2html, 
+(http://github.com/hamano/man2html/) not the usual (and apparently broken) perl
+package still available in the Savannah repository. See package man2html for details. 
 
 This version will use either libiberty.a if already installed on your platform
 or source code for a few GNU libc functions located in libiberty/ The list of functions
