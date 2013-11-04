@@ -21,6 +21,13 @@ can be obtained with:
 then install as usual:
 	(sudo) make install
 
+This application uses a patched version of dvdauthor to create menus.
+The default video format for dvdauthor is set to PAL. If you are to create menus for an
+NTSC (non-PAL compatible) player, it is advised to add the following specification to the
+configure command-line:
+
+ ./configure (...command line...) VIDEO_FORMAT=NTSC
+
 You may use PARALLEL=-jN on the make command line with N=2,3 up to 6, depending
 on the number of CPU cores available. This will speed up the building process significantly.
 
@@ -102,6 +109,19 @@ will yield the following configuration :
       -> fixwav capability enabled (impaired wav header automatic detection/correction)
 
       -> FLAC, libogg and libsox bindings disabled.
+
+      
+Missing packages
+----------------
+Should any given package become unavailable in the source code repositories, you can restart 
+the configure script adding:
+
+        --enable-cont
+        
+to your command line, so that configuration proceeds with missing packages. Note however that a full
+build is bound to fail if you do not download and unpack the source code yourself before running make.
+Unpacked packages should have directory names as indicated in m4/dependencies.m4, in the second square bracket of 
+the macros DVDA_CONFIG_EXECUTABLE_INSTALL. 
 
 
 GNU Basic Installation

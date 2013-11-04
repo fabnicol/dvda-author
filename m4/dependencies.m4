@@ -31,6 +31,7 @@ m4_map([DVDA_TEST_AUX],[
 	[[cdrecord],  [recording software: cdrecord]],
 	[[md5sum],    [MD5 checksum utility]],
 	[[autoconf],  [configure system build: autoconf]],
+	[[libtoolize],[configure libraries with libtool]],
 	[[automake],  [make system build: automake]],
 	[[lplex],     [using lplex to mux lpcm audio and video]],
 	[[make],      [whether make is installed]],
@@ -319,19 +320,21 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
  # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
 
     DVDA_CONFIG_LIBRARY_LOCAL_INSTALL([
-     [[[sox],[sox-14.4.1]],  [--without-libltdl --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-ffmpeg --disable-fast-install --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
+     [[[sox],[sox-14.4.1]],  [--without-libltdl --without-sndfile --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-ffmpeg --disable-fast-install --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
      [[[libogg],[libogg-1.3.1]],  [--prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
      [[[FLAC],[flac-1.3.0]],[--enable-static --disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg" \
        --disable-thorough-tests --disable-oggtest --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]]])
        
      # installing binaries, normally executables
 
+    AS_IF([test "$VIDEO_FORMAT" = ""],[VIDEO_FORMAT=PAL])
+
     AS_CASE([${build}],
 	    [*-*-mingw32*],
 	    [
 
-	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --prefix="$BUILDDIR/local"]],
-	       [[[lplex], [lplex-0.3]], [--prefix="$BUILDDIR/local" --disable-shared top_srcdir=$ROOTDIR/lplex-0.3 --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
+	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --enable-default-video-format=$VIDEO_FORMAT --prefix="$BUILDDIR/local"]],
+	       [[[lplex], [lplex-0.3]], [--prefix="$BUILDDIR/local" --disable-shared ROOTDIR=$ROOTDIR/lplex-0.3 --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
 	       [[[mjpegtools], [mjpegtools-2.1.0]],
 			       [ --prefix="$BUILDDIR/local" 
 				 --disable-shared  --enable-static --enable-static-build --disable-fast-install --prefix="$BUILDDIR/local"
@@ -345,15 +348,15 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	       [[[man2html], [man2html-1.6]],[bindir="$BUILDDIR/local/bin"]]])
 	    ],
 	    [
-	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --prefix="$BUILDDIR/local"]],
-	       [[[lplex], [lplex-0.3]], [--prefix="$BUILDDIR/local" --disable-shared top_srcdir=$ROOTDIR/lplex-0.3 --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
+	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --enable-default-video-format=$VIDEO_FORMAT --prefix="$BUILDDIR/local"]],
+	       [[[lplex], [lplex-0.3]], [--prefix="$BUILDDIR/local" --disable-shared ROOTDIR=$ROOTDIR/lplex-0.3 --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
 	       [[[mjpegtools], [mjpegtools-2.1.0]],[--without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime  --without-pic --disable-shared --enable-static-build --enable-static  --disable-fast-install --prefix="$BUILDDIR/local"]],
 	       [[[cdrtools],[cdrtools-3.00]],[--prefix="$BUILDDIR/local"]],
 	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
 	       [[[libmpeg2],[libmpeg2-0.5.1]], [--prefix="$BUILDDIR/local"]],
 	       [[[help2man], [help2man-1.43.3]],[--prefix="$BUILDDIR/local"]],
 	       [[[ImageMagick], [ImageMagick-6.8.7-0]],[--prefix="$BUILDDIR/local"]],
-       	       [[[man2html], [man2html]],[bindir="$BUILDDIR/local/bin"]]])
+       	       [[[man2html], [man2html]],[bindir="$BUILDDIR/local/bin" mandir="$BUILDDIR/local/share/man"]]])
 	    ])
     
     # auxiliary libs that remain within package, not installed
