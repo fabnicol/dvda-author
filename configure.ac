@@ -155,6 +155,8 @@ AS_IF([test "$command_line_args" = ""],
 	   withval_sox=no
 	])
 
+AC_ARG_ENABLE([cont],[AS_HELP_STRING([--enable-cont],[continue download even if package not available])],[CONTINUE=yes],[CONTINUE=no])
+
 DVDA_CHECK_DEPENDENCIES
 
 

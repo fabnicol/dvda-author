@@ -113,7 +113,7 @@ AC_DEFUN([DVDA_DOWNLOAD],
 	    AS_IF([ test  $exitcode != 0 ],
 	      [
 		DVDA_ERR([Download failure])
-		AS_EXIT
+		AS_IF([test "$CONTINUE" = "no"],[AS_EXIT],[AC_MSG_NOTICE([Package bn could not be downloaded. Continuing nonetheless...])])
 	      ],
 	      [
 	       AS_IF([test -d  $ROOTDIR/filename],
@@ -183,7 +183,7 @@ AC_DEFUN([DVDA_DOWNLOAD],
 	     ],
 	     [
 	       DVDA_ERR([Download of bn failed])
-	       AS_EXIT
+	       AS_IF([test "$CONTINUE" = "no"],[AS_EXIT])
 	     ])
 	   ])
 

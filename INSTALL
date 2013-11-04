@@ -110,6 +110,19 @@ will yield the following configuration :
 
       -> FLAC, libogg and libsox bindings disabled.
 
+      
+Missing packages
+----------------
+Should any given package become unavailable in the source code repositories, you can restart 
+the configure script adding:
+
+        --enable-cont
+        
+to your command line, so that configuration proceeds with missing packages. Note however that a full
+build is bound to fail if you do not download and unpack the source code yourself before running make.
+Unpacked packages should have directory names as indicated in m4/dependencies.m4, in the second square bracket of 
+the macros DVDA_CONFIG_EXECUTABLE_INSTALL. 
+
 
 GNU Basic Installation
 ======================
