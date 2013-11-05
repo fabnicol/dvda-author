@@ -95,6 +95,10 @@ do_sox_lib_deps_subst: @BUILDDIR@/src/Makefile  @BUILDDIR@/$(MAYBE_sox)/sox-libs
 	@SED@ -i -e 's/SOX_LIB_DEPS/$(pkgconfig_style_libs)/g'  @BUILDDIR@/src/Makefile 
 	echo "[sox] done sox library substitution with libs: $(pkgconfig_style_libs)" >> BUILD.TRACE
 
+manpage: $(PROGRAM).1
+
+htmlpage: $(PROGRAM).html
+
 $(PROGRAM).1:
 	@if test "@HAVE_help2man@" = "yes"; then
 	  if test -f @BUILDDIR@/src/$(PROGRAM); then
