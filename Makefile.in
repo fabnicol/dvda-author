@@ -177,19 +177,19 @@ install:  @BUILDDIR@/src/$(PROGRAM) install-data-local install-pic install-sys i
 	@$(foreach dir,src $(subdirs), $(MAKE) --directory=$(dir) install)
 
 clean: clean-local
-	@$(call clean_directory,@BUILDDIR@/libutils/src $(BUILD_SUBDIRS))
+	$(call clean_directory,@BUILDDIR@/libutils/src $(BUILD_SUBDIRS))
 	$(RM) @BUILDDIR@/src/$(PROGRAM)
 
 clean-local:
-	@$(RM) $(PROGRAM).1 $(PROGRAM).html
-	$(foreach prog,@PROGRAM_TARGETS@,$(call clean_package($(prog))))
+	$(RM) $(PROGRAM).1 $(PROGRAM).html
 
 distclean: clean-local
-	@$(RM) -r $(wildcard @ROOTDIR@/autom4te*) && $(RM) config.log && $(RM) config.status
+	$(RM) -r $(wildcard @ROOTDIR@/autom4te*) 
+	$(RM) config.log config.status config.h
 	$(RM) Makefile src/Makefile libfixwav/src/Mafile libutils/src/Makefile libiberty/src/Makefile
 
 maintainer-clean: distclean
-	@find . -name configure -delete
+	find . -name configure -delete
 	$(RM) -r config/ $(wildcard config.*)
 	
 FORMATS=xz gz bz2 zip

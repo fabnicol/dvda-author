@@ -3,7 +3,10 @@
 SOURCES:=$(wildcard @ROOTDIR@/@MAYBE_libfixwav@/*.c)
 OBJECTS:=$(subst @ROOTDIR@/@MAYBE_libfixwav@,@BUILDDIR@/@MAYBE_libfixwav@, $(SOURCES:.c=.o) )
 
-CPPFLAGS += -I@ROOTDIR@/@MAYBE_libfixwav@/include -I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include -I@ROOTDIR@
+CPPFLAGS += -I@ROOTDIR@/@MAYBE_libfixwav@/include -I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include 
+#for config.h
+CPPFLAGS += -I@BUILDDIR@
+
 
 ifeq "@HAVE_libiberty_BUILD@" "yes"
 	CPPFLAGS +=-I@ROOTDIR@/@MAYBE_libiberty@/include
