@@ -1,5 +1,7 @@
 
-CPPFLAGS +=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/libutils/src/private -I@ROOTDIR@ -I@ROOTDIR@/src/include
+CPPFLAGS +=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/libutils/src/private -I@ROOTDIR@/src/include
+#for config.h
+CPPFLAGS += -I@BUILDDIR@
 
 ifeq "@HAVE_libiberty_BUILD@" "yes"
      LDLIBS   += @libiberty_LIB@

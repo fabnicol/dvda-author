@@ -5,6 +5,8 @@ ifneq "@WITH_sox@" "no"
 endif
 
 CPPFLAGS += -I@ROOTDIR@/@MAYBE_libiberty@/include
+#for config.h
+CPPFLAGS += -I@BUILDDIR@
 
 libiberty.a: libiberty.a($(OBJECTS))
 
