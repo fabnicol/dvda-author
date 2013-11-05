@@ -107,7 +107,7 @@ define depconf
 endef
 
 define clean_directory
-	@for dir in $1; do
+	for dir in $1; do
 	   if test -d "$$dir" ; then
 	     cd "$$dir"; $(RM) *.a *.po *.o *.1 *.html; cd @BUILDDIR@
 	   fi
