@@ -652,7 +652,7 @@ void download_latest_version(_Bool download_new_version_flag,_Bool force_downloa
       erase_file("version.current");
 
       FILE* versionfile;
-      int error=download_file_from_http_server(curl, "version.current");
+      int error=download_file_from_http_server(curl, "version.current", WEBSITE);
       if ((error == 0) && (NULL != (versionfile=fopen("version.current", "rb"))))
       {
     char year[5]={0};
@@ -677,8 +677,17 @@ void download_latest_version(_Bool download_new_version_flag,_Bool force_downloa
     foutput("[MSG]  Software version is: %s-%s ", this_year, this_month);
     foutput("build %s\n", this_build);
     }
-
-    if (atoi(this_year) < atoi(year) || atoi(this_month) < atoi(month) || atoi(this_build) < atoi(build))
+    
+    int atoi_this_year=atoi(this_year);
+    int atoi_this_month=atoi(this_month);
+    int atoi_year=atoi(year);
+    int atoi_month=atoi(month);
+    
+    short test= (atoi_this_year < atoi_year)+
+    (atoi_this_year == atoi_year)*(atoi_this_month < atoi_month)+
+    (atoi_this_year == atoi_year)*(atoi_this_month == atoi_month)*(atoi(this_build) < atoi(build));
+    
+    if (test)
       foutput("[INF]  A more recent version has been released (%s-%s build %s)\n       Download it from http://dvd-audio.sourceforge.net\n       You can also trigger download by relaunching with dvda-author --download.\n", year, month, build);
     else
     {
@@ -706,7 +715,7 @@ void download_latest_version(_Bool download_new_version_flag,_Bool force_downloa
       unlink("dvda-author-update.tar.gz");
       errno=0;
       sprintf(dvda_author_fullpath, "http://sourceforge.net/projects/dvd-audio/files/dvda-author/%s-%s.%s/%s-%s.%s-%s.tar.gz/download", "dvda-author", year, month, "dvda-author", year, month, build);
-      error=download_rename_from_http_server(curl, "dvda-author-update.tar.gz");
+      error=download_fullpath(curl, "dvda-author-update.tar.gz", dvda_author_fullpath);
       FILE* package;
       if ((error == 0) && (NULL != (package=fopen("dvda-author-update.tar.gz", "rb"))))
       {

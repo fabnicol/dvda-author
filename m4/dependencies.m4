@@ -11,6 +11,9 @@
 AC_DEFUN([DVDA_CHECK_DEPENDENCIES],
 [
 
+m4_define([WEBSITE],[http://dvd-audio.sourceforge.net])
+AC_DEFINE([WEBSITE],[http://dvd-audio.sourceforge.net],[Project website])
+
 # ====== Auxiliary tools: man page and html doc, mjpegtools, ImageMagick ========= #
 
 #mkisofs and cdrecord are tested by DVDA_DOWNLOAD
@@ -172,25 +175,25 @@ m4_map([DVDA_TEST_AUX],[
 	    [
 		[dvdauthor-patch],
 		[0.7.1],
-		[http://dvd-audio.sourceforge.net/patches/dvdauthor-patch-0.7.1],
+		[WEBSITE/patches/dvdauthor-patch-0.7.1],
 		[http://downloads.sourceforge.net/project/dvdauthor/dvdauthor/0.7.1],
-		[http://dvd-audio.sourceforge.net/utils],
+		[WEBSITE/utils],
 		[2694a5a3ef460106ea3caf0f7f60ff80]
 	    ],
 	    [
 		[cdrtools-patch],
 		[3.00],
-		[http://dvd-audio.sourceforge.net/patches/mkisofs/cdrtools-patch-3.00],
+		[WEBSITE/patches/mkisofs/cdrtools-patch-3.00],
 		[ftp://ftp.berlios.de/pub/cdrecord],
-		[http://dvd-audio.sourceforge.net/utils],
+		[WEBSITE/utils],
 		[bb21cefefcfbb76cf249120e8978ffdd]
 	    ],
 	    [
 		[sox-patch],
 		[14.4.1],
-		[http://dvd-audio.sourceforge.net/patches/sox-patch-14.4.1],
+		[WEBSITE/patches/sox-patch-14.4.1],
 		[http://downloads.sourceforge.net/project/sox/sox/14.4.1],
-		[http://dvd-audio.sourceforge.net/utils],
+		[WEBSITE/utils],
 		[ff9ca6aca972549de0e80e8e30ed379c]
 	    ],
 	    [
@@ -198,7 +201,7 @@ m4_map([DVDA_TEST_AUX],[
 		[1.3.0],
 		[],
 		[http://downloads.xiph.org/releases/flac],
-		[http://dvd-audio.sourceforge.net/utils],
+		[WEBSITE/utils],
 		[13b5c214cee8373464d3d65dee362cdd]
 	    ],
 	    [
@@ -206,7 +209,7 @@ m4_map([DVDA_TEST_AUX],[
 		[1.3.1],
 		[],
 		[http://downloads.xiph.org/releases/ogg],
-		[http://dvd-audio.sourceforge.net/utils],
+		[WEBSITE/utils],
 		[ba526cd8f4403a5d351a9efaa8608fbc]
 	    ],
 	    [
@@ -214,7 +217,7 @@ m4_map([DVDA_TEST_AUX],[
 		[1.43.3],
 		[],
 		[http://mirror.ibcp.fr/pub/gnu/help2man],
-		[http://dvd-audio.sourceforge.net/utils],
+		[WEBSITE/utils],
 		[a84868db7c139238df8add5d86a0b54f]
 	    ],
     	    [
@@ -222,7 +225,7 @@ m4_map([DVDA_TEST_AUX],[
 		[1.6],
 		[],
 		[],
-		[http://dvd-audio.sourceforge.net/utils],
+		[WEBSITE/utils],
 		[ad4f385addc87974de373d7057a2ea7b]
 	    ],
 	    [
@@ -246,7 +249,7 @@ m4_map([DVDA_TEST_AUX],[
 		[2.1.0],
 		[],
 		[http://sourceforge.net/projects/mjpeg/files/mjpegtools/2.1.0],
-		[http://dvd-audio.sourceforge.net/utils],
+		[WEBSITE/utils],
 		[57bf5dd78976ca9bac972a6511b236f3]
 	    ],
 	    [
@@ -254,7 +257,7 @@ m4_map([DVDA_TEST_AUX],[
 		[0.5.1],
 		[],
 		[http://libmpeg2.sourceforge.net/files],
-		[http://dvd-audio.sourceforge.net/utils],
+		[WEBSITE/utils],
 		[0f92c7454e58379b4a5a378485bbd8ef]
 	    ],
 	    [
@@ -262,7 +265,7 @@ m4_map([DVDA_TEST_AUX],[
 		[0.7.4],
 		[],
 		[http://liba52.sourceforge.net/files],
-		[http://dvd-audio.sourceforge.net/utils],
+		[WEBSITE/utils],
 		[caa9f5bc44232dc8aeea773fea56be80]
 	    ]])
 
@@ -273,7 +276,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 		[1.3.0],
 		[],
 		[http://downloads.xiph.org/releases/flac],
-		[http://dvd-audio.sourceforge.net/utils],
+		[WEBSITE/utils],
 		[13b5c214cee8373464d3d65dee362cdd]
 	    ],
 	    [
@@ -281,15 +284,15 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 		[1.3.1],
 		[],
 		[http://downloads.xiph.org/releases/ogg],
-		[http://dvd-audio.sourceforge.net/utils],
+		[WEBSITE/utils],
 		[ba526cd8f4403a5d351a9efaa8608fbc]
 	    ],
 	    [
 		[sox-patch],
 		[14.4.1],
-		[http://dvd-audio.sourceforge.net/patches/sox-patch-14.4.1],
+		[WEBSITE/patches/sox-patch-14.4.1],
 		[http://downloads.sourceforge.net/project/sox/sox/14.4.1],
-		[http://dvd-audio.sourceforge.net/utils],
+		[WEBSITE/utils],
 		[ff9ca6aca972549de0e80e8e30ed379c]
 	    ]])
 
