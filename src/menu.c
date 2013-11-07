@@ -100,10 +100,10 @@ void menu_characteristics_coherence_test(pic* img, uint8_t ngroups)
 void create_activemenu(pic* img)
 {
 
-
+    
     if (img->tsvob == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  No matrix AUDIO_TS.VOB available for generating active menus.")
 
-        uint8_t j;
+    uint8_t j;
     uint64_t i;
     uint16_t activeheadersize=0;
 
@@ -158,7 +158,7 @@ void create_activemenu(pic* img)
     /* writing */
     if (img->stillvob == NULL)
     {
-        if (img->stillvob == NULL) img->stillvob=strdup(img->tsvob);
+        img->stillvob=strdup(img->tsvob);
         if (img->stillvob)
         {
             img->stillvob[strlen(img->stillvob)-5]='V';
@@ -176,6 +176,10 @@ void create_activemenu(pic* img)
     if (!globals.nooutput)
     {
      svvobfile=fopen(img->stillvob, "wb");
+     if (svvobfile == NULL)
+        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Cannot open AUDIO_SV.VOB for generating active menus.")
+
+     fprintf(stdout, "\n[DBG]  Creating active menu: will patch AUDIO_TS.VOB into AUDIO_SV.VOB=%s\n\n",img->stillvob);        
      for (j=0; j < totntracks; j++)
          fwrite(tsvobpt, tsvobsize, 1, svvobfile);
      fclose(svvobfile);

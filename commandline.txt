@@ -1,0 +1,5 @@
+-g /home/fab/Audio/a.wav /home/fab/Audio/a.aiff  -d -W -P0 -S --topmenu --bindir /home/fab/Dev/dvda-author-dev/build/bin/linux/aux  --nmenus=1 --blankscreen=/home/fab/Dev/dvda-author-dev/menu/black_PAL_720x576.png -d --norm pal
+-g /home/fab/Audio/a.wav /home/fab/Audio/a.wav -W -P0   --bindir /home/fab/Dev/dvda-author-dev/build/bin/linux/aux   --norm pal --stillpics /home/fab/A.jpg,/home/fab/B.jpg-/home/fab/C.jpg
+-g /home/fab/Audio/a.wav -W -P0   --bindir /home/fab/Dev/dvda-author-dev/build/bin/linux/aux   --norm pal --stillpics /home/fab/A.jpg --topmenu --menustyle active --nmenus=1 -t
+-g /home/fab/Audio/a.wav /home/fab/Audio/a.wav -W -P0   --bindir /home/fab/Dev/dvda-author-dev/build/bin/linux/aux   --norm pal --stillpics /home/fab/A.jpg-/home/fab/C.jpg --topmenu --menustyle active --nmenus=1
+-g /home/fab/Audio/a.wav /home/fab/Audio/a.wav -W -P0   --bindir /home/fab/Dev/dvda-author-dev/build/bin/linux/aux   --norm pal --stillpics /home/fab/A.jpg,/home/fab/B.jpg-/home/fab/C.jpg --topmenu --menustyle active --nmenus=1 -t 

@@ -108,7 +108,8 @@ OTHER_FILES += \
     mk/libmpeg2.mk.in \
     script.mjpegtools \
     mk/man2html.mk.in \
-    libiberty/src/include/Makefile.in
+    libiberty/src/include/Makefile.in \
+    commandline.txt
 
 HEADERS += \
     src/include/amg.h \
