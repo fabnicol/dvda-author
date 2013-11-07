@@ -1532,7 +1532,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     // Coherence checks
     // You first have to test here.
 #if !HAVE_core_BUILD
-   // menu_characteristics_coherence_test(img, ngroups);
+    menu_characteristics_coherence_test(img, ngroups);
 
 #ifndef __CB__
 #if !defined HAVE_mpeg2enc || !defined HAVE_mjpegtools
