@@ -97,24 +97,22 @@ void erase_file(const char* path)
 
 
 #if HAVE_curl
-int download_file_from_http_server(const char* file, const char* server)
+int download_file_from_http_server(const char* curlpath, const char* filename, const char* server)
 {
-    char command[strlen(server) + 1 + 1 + 2*strlen(file) +30];
+    char command[strlen(server)+strlen(filename)+strlen(curlpath) + 32];
 
-    sprintf(command, "curl -f -s -S -o %s --location %s/%s", file, server, file);
-    if (globals.veryverbose) printf("[INF]  downloading: %s\n", command);
+    sprintf(command, "%s -# -f  -o %s --location %s/%s", curlpath, filename, server, filename);
+    fprintf(stderr, "[INF]  downloading %s from server %s\n", filename, server);
+    if (globals.veryverbose) fprintf(stderr, "[DBG]  ...%s\n", command);
     return system(win32quote(command));
-
 }
 
-int download_rename_from_http_server(const char* name, const char* fullpath)
+int download_fullpath(const char* curlpath, const char* filename, const char* fullpath)
 {
-
-    char command[30+1+strlen(name)+strlen(fullpath)];
-    sprintf(command, "curl -f -s -S -o %s --location %s", name, fullpath);
+    char command[30+1+strlen(filename)+strlen(fullpath)];
+    sprintf(command, "%s -# -f -o %s --location %s", curlpath, filename, fullpath);
     if (globals.veryverbose) printf("[INF]  downloading: %s\n", command);
     return system(win32quote(command));
-
 }
 
 #endif
@@ -122,8 +120,6 @@ int download_rename_from_http_server(const char* name, const char* fullpath)
 
 // From Yves Mettier's "C en action" (2009, ENI)
 // Patched somehow.
-
-
 
 char *fn_get_current_dir_name (void)
 {
