@@ -115,9 +115,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 #ifdef ALWAYS_INLINE
-#define ALWAYS_INLINE_GCC __attribute__((always_inline))
+#define  __attribute__((always_inline))
 #else
-#define ALWAYS_INLINE_GCC
+#define 
 #endif
 
 #define NOWAIT -1

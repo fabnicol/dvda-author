@@ -1004,7 +1004,7 @@ Now follows the actual manipulation code.  Note that performing the transformati
 */
 
 
-ALWAYS_INLINE_GCC  static void interleave_16_bit_sample_extended(uint8_t channels, int count, uint8_t * buf_in, uint8_t * buf_out )
+  static void interleave_16_bit_sample_extended(uint8_t channels, int count, uint8_t * buf_in, uint8_t * buf_out )
 {
     int i, size=channels*4;
     switch (channels)
@@ -1027,7 +1027,7 @@ ALWAYS_INLINE_GCC  static void interleave_16_bit_sample_extended(uint8_t channel
 }
 
 
-ALWAYS_INLINE_GCC  static void interleave_24_bit_sample_extended(uint8_t channels, int count, uint8_t * buf_in, uint8_t* buf_out)
+  static void interleave_24_bit_sample_extended(uint8_t channels, int count, uint8_t * buf_in, uint8_t* buf_out)
 
 {
 
@@ -1133,7 +1133,7 @@ WAV: 28  13  12  29  15  14  8  1  0  9  3  2  30  17  16  31  19  18  32  21  2
 */
 
 
-ALWAYS_INLINE_GCC static void deinterleave_24_bit_sample_extended(uint8_t channels, int count, uint8_t *buf_in, uint8_t *buf_out)
+ static void deinterleave_24_bit_sample_extended(uint8_t channels, int count, uint8_t *buf_in, uint8_t *buf_out)
 {
     // Processing 16-bit case
     int i, size=channels*6;
@@ -1144,7 +1144,7 @@ ALWAYS_INLINE_GCC static void deinterleave_24_bit_sample_extended(uint8_t channe
 
 }
 
-ALWAYS_INLINE_GCC static void deinterleave_16_bit_sample_extended(uint8_t channels, int count, uint8_t *buf_in, uint8_t *buf_out)
+ static void deinterleave_16_bit_sample_extended(uint8_t channels, int count, uint8_t *buf_in, uint8_t *buf_out)
 {
 
     // Processing 16-bit case
@@ -1172,7 +1172,7 @@ ALWAYS_INLINE_GCC static void deinterleave_16_bit_sample_extended(uint8_t channe
 
 
 
-ALWAYS_INLINE_GCC  uint8_t read_count(uint32_t *bytesread, uint32_t count, uint8_t  offset, uint8_t * buf, fileinfo_t* info)
+  uint8_t read_count(uint32_t *bytesread, uint32_t count, uint8_t  offset, uint8_t * buf, fileinfo_t* info)
 {
 
 
@@ -1234,7 +1234,7 @@ ALWAYS_INLINE_GCC  uint8_t read_count(uint32_t *bytesread, uint32_t count, uint8
     return n;
 }
 
-ALWAYS_INLINE_GCC  uint8_t pad_sample(uint8_t *buf, uint32_t nc, uint8_t rmdr, fileinfo_t* info)
+  uint8_t pad_sample(uint8_t *buf, uint32_t nc, uint8_t rmdr, fileinfo_t* info)
 {
     uint8_t padbytes;
 
@@ -1247,7 +1247,7 @@ ALWAYS_INLINE_GCC  uint8_t pad_sample(uint8_t *buf, uint32_t nc, uint8_t rmdr, f
 }
 
 
-ALWAYS_INLINE_GCC  static uint32_t read_track_file_into_buffer(uint8_t* buf, fileinfo_t* info, uint32_t *count)
+  static uint32_t read_track_file_into_buffer(uint8_t* buf, fileinfo_t* info, uint32_t *count)
 {
 
     static uint8_t fbuf[50];

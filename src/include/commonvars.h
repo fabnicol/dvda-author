@@ -131,6 +131,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define PATCH_LABEL ""
 #endif
 
+#ifndef VLC_BASENAME
+#define VLC_BASENAME "vlc" 
+#endif
+
 #ifndef MKISOFS_BASENAME
 #define MKISOFS_BASENAME "mkisofs" PATCH_LABEL
 #endif
@@ -268,6 +272,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define AC3DEC ""
 #endif
 
+#ifndef VLC
+#define VLC ""
+#endif
 
 #define CREATE_EXTRACT_AC3 7
 #define CREATE_CURL     6
@@ -352,6 +359,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define ACTIVEHEADER_INSERTOFFSET  0xBB
 #define DEFAULT_AUDIOFORMAT  "mp2"
 
+#define AUDIT_STRICT_TOPMENU_AUDIO_FORMAT 1
+#define AUDIT_DVD_VIDEO_AUDIO_FORMAT 0
 
 #define TEMPORARY_AUTOMATIC_MENU -5
 #define AUTOMATIC_MENU     -4 // automate all menu authoring process
