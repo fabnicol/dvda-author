@@ -26,7 +26,7 @@
 
 #if defined __WIN32__
 
-ALWAYS_INLINE_GCC inline static uint64_t stat_file_size(const char* filename)
+ inline static uint64_t stat_file_size(const char* filename)
 {
      HANDLE hFile;
 
@@ -65,7 +65,7 @@ uint64_t read_file_size(FILE* fp, TCHAR* filename);
 
 #else
 
-ALWAYS_INLINE_GCC inline static uint64_t stat_file_size(const char* filename)
+ inline static uint64_t stat_file_size(const char* filename)
 {
     struct stat buf;
     if (stat(filename, &buf) != 0) return(0);

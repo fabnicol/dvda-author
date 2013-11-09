@@ -36,7 +36,7 @@ parse_t parse_directory(DIR *dir,  uint8_t* ntracks, uint8_t n_g_groups, int act
 int parse_disk(DIR* dir,  mode_t mode,extractlist *extract, const char* player);
 static uint8_t cgadef[]={0, 1, 2, 3, 6, 20};
 
-ALWAYS_INLINE_GCC inline static _Bool check_cga_assignment(int cgaint)
+ inline static _Bool check_cga_assignment(int cgaint)
 {
     int k;
     /*   Valid Channel group assignment values are:
