@@ -112,7 +112,7 @@ inline   void  write_search_sequence(uint8_t* sequence, size_t sizeofsequence , 
 
 /* pack_scr was taken from mplex (part of the mjpegtools) */
 #define MARKER_MPEG2_SCR 1
-ALWAYS_INLINE_GCC   void pack_scr(uint8_t scr_bytes[6],uint64_t SCR_base, uint16_t SCR_ext)
+   void pack_scr(uint8_t scr_bytes[6],uint64_t SCR_base, uint16_t SCR_ext)
 {
 
     uint8_t temp;
@@ -135,7 +135,7 @@ ALWAYS_INLINE_GCC   void pack_scr(uint8_t scr_bytes[6],uint64_t SCR_base, uint16
     scr_bytes[5]=temp;
 }
 
-ALWAYS_INLINE_GCC void pack_pts_dts(uint8_t PTS_DTS_data[10],uint32_t pts, uint32_t dts)
+ void pack_pts_dts(uint8_t PTS_DTS_data[10],uint32_t pts, uint32_t dts)
 {
     uint8_t p3,p2,p1,p0,d3,d2,d1,d0;
 
@@ -160,7 +160,7 @@ ALWAYS_INLINE_GCC void pack_pts_dts(uint8_t PTS_DTS_data[10],uint32_t pts, uint3
     PTS_DTS_data[9]=((d0&0x7f)<<1)|1;                 // 6,5,4,3,2,1,0
 }
 
-ALWAYS_INLINE_GCC  void pack_pts(uint8_t PTS_DTS_data[10],uint32_t pts)
+  void pack_pts(uint8_t PTS_DTS_data[10],uint32_t pts)
 {
     uint8_t p3,p2,p1,p0;
 
@@ -221,7 +221,7 @@ inline void process_pack_header(FILE* fp,  uint64_t SCRint, const char* ioflag)
 
 }
 
-ALWAYS_INLINE_GCC  void process_system_header(FILE* fp,const char* ioflag)
+  void process_system_header(FILE* fp,const char* ioflag)
 {
     uint8_t header_length[2]= {0x00,0x0c};
     uint8_t rate_bound[3]= {0x80,0xc4,0xe1};
@@ -249,7 +249,7 @@ ALWAYS_INLINE_GCC  void process_system_header(FILE* fp,const char* ioflag)
 
 }
 
-ALWAYS_INLINE_GCC  void process_pes_padding(FILE* fp,uint16_t length,const char* ioflag)
+  void process_pes_padding(FILE* fp,uint16_t length,const char* ioflag)
 {
     uint8_t packet_start_code_prefix[3]= {0x00,0x00,0x01};
     uint8_t stream_id[1]= {0xbe};
@@ -275,7 +275,7 @@ ALWAYS_INLINE_GCC  void process_pes_padding(FILE* fp,uint16_t length,const char*
 
 }
 
-ALWAYS_INLINE_GCC  void process_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uint8_t extension_flag, uint64_t PTS,const char* ioflag)
+  void process_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uint8_t extension_flag, uint64_t PTS,const char* ioflag)
 {
     uint8_t packet_start_code_prefix[3]= {0x00,0x00,0x01};
     uint8_t stream_id[1]= {0xbd}; // private_stream_1
@@ -330,7 +330,7 @@ ALWAYS_INLINE_GCC  void process_audio_pes_header(FILE* fp, uint16_t PES_packet_l
 
 }
 
-ALWAYS_INLINE_GCC  void process_lpcm_header(FILE* fp, int header_length,fileinfo_t* info, uint64_t pack_in_title, uint8_t counter,const char* ioflag)
+  void process_lpcm_header(FILE* fp, int header_length,fileinfo_t* info, uint64_t pack_in_title, uint8_t counter,const char* ioflag)
 {
     uint8_t sub_stream_id[1]= {0xa0};
 
@@ -480,7 +480,7 @@ ALWAYS_INLINE_GCC  void process_lpcm_header(FILE* fp, int header_length,fileinfo
 }
 
 
-ALWAYS_INLINE_GCC  uint64_t calc_PTS_start(fileinfo_t* info, uint64_t pack_in_title)
+  uint64_t calc_PTS_start(fileinfo_t* info, uint64_t pack_in_title)
 {
     double PTS;
     uint64_t PTSint;
@@ -503,7 +503,7 @@ ALWAYS_INLINE_GCC  uint64_t calc_PTS_start(fileinfo_t* info, uint64_t pack_in_ti
 
 
 
-ALWAYS_INLINE_GCC  uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_title)
+  uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_title)
 {
     double SCR;
     uint64_t SCRint;
@@ -533,7 +533,7 @@ ALWAYS_INLINE_GCC  uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_title)
 }
 
 
-ALWAYS_INLINE_GCC uint64_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
+ uint64_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
 {
     double PTS;
     uint64_t PTSint;

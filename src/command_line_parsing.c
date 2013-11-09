@@ -72,9 +72,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     int k, c;
 
     static char ALLOWED_OPTIONS[256];
-    // Allowing for 30 non-print characters for short options, as escape sequences in the defined string trigger (spurious) warnings
-    // Note that the :/:: diacritics are only needed for short options and that long options argument status is defined ins truct longopts, so
-    // this trick is OK is only long options are used for non-print short options.
+    // Allowing for 30 non-print characters for short options
+    // Note that the :/:: diacritics are only needed for short options and that long options argument status is defined in struct longopts, so
+    // this trick is OK if only long options are used for non-print short options.
     if (!user_command_line)
     {
 
@@ -177,12 +177,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"videolink", required_argument, NULL, 'T'},
         {"loop", optional_argument, NULL, 'U'},
         {"rights", required_argument, NULL, 'w'},
-        //   {"no-padding", no_argument, NULL, '\1'},
-        //   {"minimal-padding", no_argument, NULL, '\2'},
-
         {"pad-cont", no_argument, NULL, 'C'},
-        //   {"lossy-rounding", no_argument, NULL, 'L'},
-
         {"topmenu", optional_argument, NULL, 'm'},
         {"menustyle", required_argument, NULL, '0'},
         {"xml", required_argument, NULL, 'M'},
@@ -216,14 +211,13 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"nmenus", required_argument, NULL, '6'},
         {"ncolumns", required_argument, NULL, '7'},
         {"activemenu-palette", required_argument, NULL, '8'},
-
         {"background-colors", required_argument, NULL, 2},
         {"bindir",required_argument, NULL, 3},
-
         {"topmenu-slides",required_argument, NULL, 6},
         {"download",optional_argument, NULL, 7},
         {"check-version",no_argument, NULL, 8},
         {"import-topmenu",required_argument, NULL, 9},
+        {"dvdv-author",required_argument, NULL, 17},
 #endif
         {NULL, 0, NULL, 0}
     };
@@ -1601,7 +1595,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 int v;
                 for (u=0; u < img->nmenus; u++)
                     for (v=0; v < arraylength(img->soundtrack[u]); v++)
-                        errno+=audit_soundtrack(img->soundtrack[u][v]);
+                        errno+=audit_soundtrack(img->soundtrack[u][v],AUDIT_STRICT_TOPMENU_AUDIO_FORMAT);
 
             }
 
@@ -1613,6 +1607,48 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 #endif
             break;
 
+       case 17:
+
+#if defined HAVE_lplex || HAVE_lplex_BUILD
+
+            foutput("%s\n", "[PAR]  Generate DVD-VIDEO zone");
+            if (globals.veryverbose) 
+            {
+              foutput("%s\n", "[PAR]  Will create DVD-VIDEO from following files:");
+            }
+            
+            if (!optarg)
+            {
+                foutput("%s", "[ERR]  No audio valid file paths were given on command line\n");
+                EXIT_ON_RUNTIME_ERROR
+            }
+            else
+            {
+                errno=0;
+                char** array=NULL;
+                video_titleset_array=fn_strtok(optarg, ':', video_titleset_array, 0, NULL, NULL);
+                int nvideotitlesets=arraylength(array_titleset_array);
+                char*** video_track_array=(char ***) calloc(nvideotitlesets, sizeof(char**));
+                if (NULL == video_track_array) EXIT_ON_RUNTIME_ERROR
+
+                for (int titleset=0; titleset < nvideotitlesets; titleset++)
+                {
+                    video_track_array[titleset]=fn_strtok(video_titleset_array[titleset], ',', video_track_array[titleset], 0,NULL, NULL);
+                    ntracks[titleset]=arraylength(video_track_array[titleset]);
+                    for (int track=0; track < ntracks[titleset]; track++)
+                        errno+=audit_soundtrack(video_track_array[titleset][track],AUDIT_DVD_VIDEO_AUDIO_FORMAT);
+                }
+
+
+            }
+
+            soundtracks_flag=1;
+            globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+
+#else
+            foutput("%s", "[ERR]  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+#endif
+            break;
 
         case 6 :
 
