@@ -911,7 +911,7 @@ void compute_pointsize(pic* img, uint16_t maxtracklength, uint8_t maxnumtracks)
 /* The following function tests presence of characters with pixels likely to intersect underlining motifs thereby causing spumux to crash
    and to avoid this switches ----highlightformat to -1 (little squares) */
 
-ALWAYS_INLINE_GCC  void test_underline(char* text,pic* img)
+  void test_underline(char* text,pic* img)
 {
 
     int j, s=strlen(text);

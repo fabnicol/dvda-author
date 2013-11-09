@@ -19,7 +19,7 @@ extern globalData globals;
 
 // Checks whether video soundtracks comply with standard for AUDIO_TS.VOB authoring
 
-int audit_soundtrack(char* path)
+int audit_soundtrack(char* path, _Bool strict)
 {
 #if HAVE_libfixwav
     path_t *s=parse_filepath(path);
@@ -47,17 +47,34 @@ int audit_soundtrack(char* path)
         };
 
         fixwav(&wavedata, &waveheader);
-
-        if ((waveheader.sample_fq == 48000) && (waveheader.bit_p_spl == 16) && (waveheader.channels == 2))
+        
+        if (strict)
         {
-            if (globals.veryverbose) foutput("%s", "[MSG]  LPCM requirements [fq=48k, bps=16, c=2] are satisfied by soundtrack input\n");
-            errno=0;
-        }
-        else
+            if ((waveheader.sample_fq == 48000) && (waveheader.bit_p_spl == 16) && (waveheader.channels == 2))
+            {
+                if (globals.veryverbose) foutput("%s", "[MSG]  LPCM requirements [fq=48k, bps=16, c=2] are satisfied by soundtrack input\n");
+                errno=0;
+            }
+            else
+            {
+                foutput("%s", "[ERR]  LPCM requirements [fq=48k, bps=16, c=2] are not satisfied by soundtrack input\n");
+                errno=1;
+            }
+       }
+       else
         {
-            foutput("%s", "[ERR]  LPCM requirements [fq=48k, bps=16, c=2] are not satisfied by soundtrack input\n");
-            errno=1;
-        }
+            if ((waveheader.sample_fq == 48000 || waveheader.sample_fq == 96000) 
+             && (waveheader.bit_p_spl == 16 || waveheader.bit_p_spl == 24))
+            {
+                if (globals.veryverbose) foutput("%s", "[MSG]  LPCM requirements [fq=48|96k, bps=16|24] are satisfied by soundtrack input\n");
+                errno=0;
+            }
+            else
+            {
+                foutput("%s", "[ERR]  LPCM requirements [fq=48|96k, bps=16|24] are not satisfied by soundtrack input\n");
+                errno=1;
+            }
+       }
     }
     else
     {
@@ -71,20 +88,27 @@ int audit_soundtrack(char* path)
 
 }
 
-int launch_lplex_soundtrack(pic* img, char* create_mode)
+char* lplex=NULL;
+
+int lplex_initialise()
 {
 #if HAVE_lplex
     errno=0;
-    int u, menu, tot=0;
-    char* lplex=NULL;
     lplex=create_binary_path(lplex, LPLEX, SEPARATOR LPLEX_BASENAME);
-
-    img->backgroundmpg=calloc(img->nmenus, sizeof(char*));
-
     if(!lplex) return -1;
+  
+#endif
+}
 
-    char *args0[12]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm, "seamless"};
-
+int launch_lplex_soundtrack(const pic* img, const char* create_mode)
+{
+#if HAVE_lplex    
+    
+    if (-1 == lplex_initialise()) return -1;
+  
+    char *args0[12]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm, "seamless"};  
+    int u, menu, tot=0;
+    img->backgroundmpg=calloc(img->nmenus, sizeof(char*));
     for (menu=0; menu < img->nmenus; menu++)
     {
         if ((img->topmenu_nslides[menu] > 1) && img->nmenus > 1)
@@ -114,8 +138,6 @@ int launch_lplex_soundtrack(pic* img, char* create_mode)
         run(lplex, args, 0);
         tot=0;
         path_t* aux=parse_filepath(img->soundtrack[menu][0]);
-
-        //path_t* aux=parse_filepath("/home/fab/A.jpg");
 
         if (aux->directory == NULL)
         {
@@ -154,6 +176,106 @@ int launch_lplex_soundtrack(pic* img, char* create_mode)
 #endif
     return errno;
 }
+
+/*  Create disc hybrid using track paths of priorly converted (16-24 bits/48-96 kHz) audio files */
+
+int launch_lplex_hybridate(const pic* img, const char* create_mode,
+                           const char** trackpath,int* ntracks,int ntitlesets)
+
+{
+#if HAVE_lplex
+
+    if (-1 == lplex_initialise()) return -1;
+    
+    char *args0[12]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm, "seamless"};
+    
+    int group, tr, argssize=0;
+    
+    for (group=0; group < ntitlesets; group++)
+    {
+      for (tr=0; tr < ntracks[group]; tr++)
+      {
+          argssize += ntracks[group][tr]+ (tr)+ (img->video_slide[group][tr] != NULL)*2;
+      }
+    }
+        
+    char* args[12+argssize+1];
+    int tot=0;
+        
+    for (u=0; u < 12; u++) args[u]=args0[u];
+    
+    for (group=0; tr < ntitlesets; group++)
+    {
+      if (group) args[tot]="ts";
+      
+      for (tr=0; tr < ntracks[group]; tr++)
+      {
+        if (img->video_slide[group][tr]) 
+        {
+          args[12+tot]="jpg";
+          agrs[12+tot+1]=img->video_slide[group][tr];
+        }
+        args[12+tot+2]=trackpath[group][track];
+        tot +=3;
+      }
+    }
+    
+    args[12+tot]=NULL; 
+    
+    if (globals.debugging)
+        {
+            foutput("%s","[INF]  Launching lplex to create hybrid...\n");
+            foutput("[INF]  with command line %s\n", get_full_command_line(args));
+        }
+
+        change_directory(globals.settings.workdir);
+        run(lplex, args, 0);
+        tot=0;
+        
+#if 0        
+        path_t* aux=parse_filepath(img->soundtrack[menu][0]);
+        
+        if (aux->directory == NULL)
+        {
+            free(aux); // resorting to relative filenames withing current working dir
+            aux=parse_filepath(globals.settings.workdir);
+            if (aux->filename == NULL)
+            {
+                foutput("%s", "[ERR]  Use non-root audio folder, with appropriate access rights.\n");
+                return -1;
+            }
+            else
+            {
+                aux->directory=aux->filename;
+                foutput("[ING]  Using filepaths relative to %s.\n", globals.settings.workdir);
+            }
+        }
+
+        char adjacent[2*strlen(aux->directory)+strlen(globals.settings.tempdir)+4+20+2+1];
+
+        sprintf(adjacent, "%s%s%s%s%s%s%s", globals.settings.tempdir, SEPARATOR, aux->directory, "_DVD", SEPARATOR, aux->directory, "_DVD_title_01-00.mpg");
+
+#ifndef __WIN32__
+
+        // This is crucial for *nix otherwise lplex still holds the file streams blocked (tested)
+
+        sync();
+
+        // End of *nix code
+#endif
+
+        char* dest=copy_file2dir(adjacent, globals.settings.tempdir); // automatic renaming of dest
+        img->backgroundmpg[menu]=strdup(dest);
+        free(aux);
+        free(dest);
+
+#endif
+#endif
+    return errno;
+}
+
+
+
 
 
 
