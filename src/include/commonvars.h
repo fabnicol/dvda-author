@@ -361,6 +361,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #define AUDIT_STRICT_TOPMENU_AUDIO_FORMAT 1
 #define AUDIT_DVD_VIDEO_AUDIO_FORMAT 0
+#define NO_FIXWAV_AUDIT 2
 
 #define TEMPORARY_AUTOMATIC_MENU -5
 #define AUTOMATIC_MENU     -4 // automate all menu authoring process

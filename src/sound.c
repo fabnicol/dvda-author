@@ -121,7 +121,16 @@ int launch_lplex_soundtrack(pic* img, const char* create_mode)
         for (u=0; u < 12; u++) args[u]=(char*) args0[u];
         for (u=0; u < img->topmenu_nslides[menu]; u++)
         {
-            args[12+tot]="jpg";
+          if (img->aspect[0] == '3')
+             args[12+tot]= "jpg";
+          else
+          if (img->aspect[0] == '3')
+             args[12+tot]= "jpgw";
+          else
+          {
+            fprintf(stderr, "%s", "[ERR]  For topmenu soundtrack editing only 4:3 and 16:9 aspect ratios are supported.\n");
+            EXIT_ON_RUNTIME_ERROR
+          }
             args[12+tot+1]=img->topmenu_slide[menu][u];
             args[12+tot+2]=img->soundtrack[menu][u];
             tot +=3;
@@ -181,13 +190,17 @@ int launch_lplex_soundtrack(pic* img, const char* create_mode)
 
 int launch_lplex_hybridate(const pic* img, const char* create_mode,
                            const char*** trackpath, const uint8_t* ntracks, 
-                           const char*** slidepath, const uint8_t* nslides, 
+                           const char*** slidepath, uint8_t* nslides, 
                            const int ntitlesets)
 
 {
 #if HAVE_lplex
 
     if (-1 == lplex_initialise()) return -1;
+    if (ntracks == NULL || nslides == NULL || slidepath == NULL || trackpath == NULL) 
+    {
+      EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Allocation of DVD-VIDEO tracks/slides")
+    }
     
     const char *args0[12]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm, "seamless"};
     
@@ -208,22 +221,60 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
     
     for (int group=0; group < ntitlesets; group++)
     {
+      if (globals.veryverbose) foutput("[INF]  Now processing titleset %d/%d...\n", group, ntitlesets);
+      
       if (group) args[tot]="ts";
+      
+      if (nslides[group] == 0)
+      {
+        fprintf(stderr, "%s\n", "[ERR]  No slides for any track. Fix this issue and relaunch.\n");
+        EXIT_ON_RUNTIME_ERROR
+      }
+      
+      if (ntracks[group] < nslides[group]) nslides[group]=ntracks[group];  // there can be no more slides than tracks (lplex constraint)
+      
+      if (nslides[group] < ntracks[group]) 
+      {
+         int i;
+         for (i=1; i <= nslides[group] && slidepath[group][nslides[group]-i][0] == '\0'; i++);
+         if (i == (nslides[group]+1)) 
+         {
+             fprintf(stderr, "%s\n", "[ERR]  No slides for any track. Fix this issue and relaunch.\n");
+             EXIT_ON_RUNTIME_ERROR
+         }
+         else
+         {
+           for (int u=nslides[group]-i+1; u <= ntracks[group] ; u++) slidepath[group][u] = slidepath[group][nslides[group]-i];
+         }
+      }
+      
+      if (globals.veryverbose) foutput("[INF]  Now listing %d tracks for group %d...\n", ntracks[group], group);
       
       for (int tr=0; tr < ntracks[group]; tr++)
       {
+
         if (slidepath[group][tr]) 
         {
-          if (img->aspect[0] == '3')
+          if (img->aspect[0] == '2')
              args[12+tot]= "jpg";
           else
           if (img->aspect[0] == '3')
              args[12+tot]= "jpgw";
           else
           {
-            fprintf(stderr, "%s", "[ERR]  For DVD-Video editing only 4:3 and 16:9 aspect ratios are supported.\n");
+            fprintf(stderr, "[ERR]  Found aspect code img->aspect[0]=%c.\n       For DVD-Video editing only 4:3 and 16:9 aspect ratios are supported.\n",img->aspect[0]);
             EXIT_ON_RUNTIME_ERROR
           }
+          
+          /* 
+             If fewer slides than tracks, follow this strategy:
+                   - if slide path name is empty, copy previous one (corresponds to --dvdv-slides=...,,...)
+                  - otherwise go presume there is one slide per track, go to end of slides array and copy 
+                    the last one as many times as necessary 
+          */
+          
+          if (slidepath[group][tr][0] == '\0' && tr != 0) slidepath[group][tr]=slidepath[group][tr-1];
+          
           args[12+tot+1]=(char*) slidepath[group][tr];
         }
         args[12+tot+2]=(char*) trackpath[group][tr];

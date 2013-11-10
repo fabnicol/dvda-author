@@ -83,7 +83,8 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   if ( ((length=strlen(info->infile) - 3) <= 0) || ( strncmp( info->infile + length, "wav", 3 ) ))
     {
-      printf("%s\n", "[WAR]  The filename must end in 'wav'.\nExiting ..." );
+      fprintf(stderr, "%s%s%s\n","[ERR]  Found file '", info->infile,"'");
+      fprintf(stderr, "%s\n", "[ERR]  The filename must end in 'wav'.\nExiting ..." );
       info->repair=FAIL;
       goto getout;
     }
@@ -146,7 +147,9 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
   /* open the existing file */
 
   if (info->virtual)
+  {
     infile=secure_open(info->infile, "rb+");
+  }
   else
     {
 
@@ -349,7 +352,7 @@ Checkout:
                   printf("%s\n", "[INF]  Header copy successful.\n");
                   if (fclose(outfile) != 0) return(NULL);
                   outfile=secure_open(info->outfile, "rb+");
-                  if (globals.debugging) {
+                  if (globals.maxverbose) {
                        printf("%s","Dumping new header:\n\n");
                        hexdump_header(outfile, HEADER_SIZE);
                   }

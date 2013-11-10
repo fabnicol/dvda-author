@@ -9,7 +9,7 @@ int launch_lplex_soundtrack(pic* img,const char* create_mode);
 
 int launch_lplex_hybridate(const pic* img, const char* create_mode,
                            const char*** trackpath,const uint8_t* ntracks,
-                           const char*** slidepath,const uint8_t* nslides,
+                           const char*** slidepath, uint8_t* nslides,
                            int ntitlesets);
 
 int audit_soundtrack(char* path, _Bool strict);
