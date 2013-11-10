@@ -320,7 +320,12 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
 AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],[
   AC_MSG_RESULT([
   Tools :
-	 Compiler is GCC : ............. $ac_cv_c_compiler_gnu
+    Compiler is GCC : ............. $ac_cv_c_compiler_gnu
+   
+  Build options:
+    CFLAGS=$CFLAGS
+    CPPFLAGS=$CPPFLAGS
+    LDFLAGS=$LDFLAGS
 ])
 ])
 

@@ -203,9 +203,9 @@ void import_topmenu(char* video_vob_path, pic* img, _Bool MIX_TYPE)
 
 
 
-  char* argsextract[]={extract_ac3, video_vob_path, "-",  "-s", "|", ac3dec, "-o", "wav", "-p", img->soundtrack[0][0], NULL};
+  const char* argsextract[]={extract_ac3, video_vob_path, "-",  "-s", "|", ac3dec, "-o", "wav", "-p", img->soundtrack[0][0], NULL};
   char* cml=get_full_command_line(argsextract);
-  errno=system(win32quote(cml));
+  errno=system(win32quote((const char*) cml));
   free(cml);
  }
 
@@ -215,9 +215,9 @@ void import_topmenu(char* video_vob_path, pic* img, _Bool MIX_TYPE)
  char imported_topmenu[strlen(globals.settings.tempdir)+28+1];
  sprintf(imported_topmenu, "%s%s", globals.settings.tempdir, "/imported_topmenu_video.m2v");
  if (framerate == NULL) exit(0);
- char* args[]={mpeg2dec, "-s", "-o", "pgmpipe", quote(video_vob_path),"|", pgmtoy4m, "-i", "p", "-r", framerate, "|", mpeg2enc, "-f", "8", "-o", quote(imported_topmenu),NULL};
+ const char* args[]={mpeg2dec, "-s", "-o", "pgmpipe", quote(video_vob_path),"|", pgmtoy4m, "-i", "p", "-r", framerate, "|", mpeg2enc, "-f", "8", "-o", quote(imported_topmenu),NULL};
  char* cml=get_full_command_line(args);
- errno=system(win32quote(cml));
+ errno=system(win32quote((const char*) cml));
  free(cml);
 
 
@@ -229,7 +229,7 @@ void import_topmenu(char* video_vob_path, pic* img, _Bool MIX_TYPE)
 
  launch_lplex_soundtrack(img, "lpcm");
 
- char* argsmplex[]={mplex, "-f", "8", "-L", "48000:2:16", "-o", img->backgroundmpg[0], imported_topmenu, img->soundtrack[0][0], NULL};
+ char* const argsmplex[]={mplex, "-f", "8", "-L", "48000:2:16", "-o", img->backgroundmpg[0], imported_topmenu, img->soundtrack[0][0], NULL};
  run(mplex, argsmplex, 0);
 
 
