@@ -145,7 +145,7 @@ printf("%s","    --minimal-padding    Only pad for evenness of sample count.\n\n
 printf("%s","-C, --pad-cont           When padding, pad with last known byte, not 0.\n\n");
 printf("%s","-L, --lossy-rounding     Sample count rounding will be performed by cutting audio files.\n\n");
 
-printf("%s","   Menu authoring\n\n");
+printf("%s","Menu authoring\n\n");
 
 printf("%s","-m, --topmenu(=mpgfiles) Generates top menu from comma-separated list of mpgfiles."J"Without argument, automatic menu generation is launched.\n\n");
 printf("%s","-u, --duration hh:mm:ss Duration of top menu file, if provided."J"It is mandatory when --topmenu has an argument file.\n\n");
@@ -185,14 +185,20 @@ printf("%s","-6, --nmenus int         Generates int top menus (default 1).\n\n")
 printf("%s","-7, --ncolumns int       Top menus will have at most int columns (default 3).\n\n");
 
 
-printf("%s","   Disc authoring\n\n");
+printf("%s","Disc authoring\n\n");
 printf("%s","-I, --mkisofs(=file)     Run mkisofs to author disc image using file"J"as an ISO image. If file is empty, use tempdir/dvd.iso.\n\n");
 printf("%s","-r, --cdrecord(=a,b,c)   Run cdrecord to burn disc image."J"Unless specified, --mkisofs will be automatically triggered with default tempdir/dvd.iso value."J"Device is of the form a,b,c, see cdrecord -scanbus. It can be omitted"J"if there is just one writer.\n\n");
 printf("%s","-R, --growisofs /dev/dvd Run growisofs to burn disc image."J"Device is of the form /dev/scd0 under many GNU/Linux distributions."J"It cannot be omitted.\n\n");
 
+printf("%s","DVD-VIDEO zone authoring\n\n");
+printf("%s","    --dvdv-tracks ...    Add tracks to be added to DVD-VIDEO zone using lplex:"J"track11,...,trackn1:track12,...,trackn2:..."J"for trackij the ith track of group j.\n\n");
+printf("%s","    --dvdv-slides ...    Add slides to be added to DVD-VIDEO zone using lplex:"J"slide11,...,sliden1:slide12,...,slide2:..."J"for slideij the ith slide of group j."J"Each track should have a corresponding slide."J"Add two commas in a row for repeating previous slide."J"There can be a maximum of 1 slide per track.\n\n");
 printf("%s","-V, --videodir directory Path to VIDEO_TS directory\n\n");
 printf("%s","-T, --videolink rank     Rank of video titleset linked to in video zone"J"(XX in VTS_XX_0.IFO)."J"In this case the path to the VIDEO_TS linked to"J"must be indicated.\n\n");
+
 #endif
+
+
 
 printf("%s","Software configuration\n\n");
 
@@ -624,7 +630,7 @@ int arraylength(char ** tab)
 // if not installed with autotools, then use command line value or last-resort hard-code set defaults and test for result
 
 #if !HAVE_core_BUILD
-char* create_binary_path(char* local_variable, char* symbolic_constant, char* basename)
+char* create_binary_path(char* local_variable, const char* symbolic_constant, const char* basename)
 {
 
     if (symbolic_constant[0])

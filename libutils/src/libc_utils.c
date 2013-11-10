@@ -636,7 +636,7 @@ int secure_mkdir (const char *path, mode_t mode)
 }
 
 
-char* get_cl(char** args, uint16_t start)
+char* get_cl(const char** args, uint16_t start)
 {
     if (args == NULL) return NULL;
     uint16_t tot=0, i=start, j, shift=0;
@@ -665,13 +665,13 @@ char* get_cl(char** args, uint16_t start)
 }
 
 
-char* get_command_line(char** args)
+const char* get_command_line(const char** args)
 {
 // You should always use arrays with this function, not pointers
     return get_cl(args, 1);
 }
 
-char* get_full_command_line(char** args)
+char* get_full_command_line(const char** args)
 {
     return get_cl(args, 0);
 }
@@ -1380,7 +1380,7 @@ void fread_endian(uint32_t * p, int t, FILE *f)
 }
 
 
-char* win32quote(char* path)
+char* win32quote(const char* path)
 {
 // comment: this function leaks some memory if path has been allocated on heap. Yet using free(path) could
 // yield segfaults, should path not be allocated with malloc() or strdup() but using static arrays. Preferring safety here.
@@ -1400,12 +1400,12 @@ char* win32quote(char* path)
         return NULL;
     }
 #else
-    return path;
+    return (char*) path;
 #endif
 }
 
 
-char* quote(char* path)
+char* quote(const char* path)
 {
 // comment: this function leaks some memory if path has been allocated on heap. Yet using free(path) could
 // yield segfaults, should path not be allocated with malloc() or strdup() but using static arrays. Preferring safety here.
@@ -1429,7 +1429,7 @@ char* quote(char* path)
 // Launches an application in a fork and duplicates its stdout into stdout; waits for it to return;
 
 
-int run(char* application, char* args[], int option)
+int run(const char* application, char* const args[], const int option)
 {
 errno=0;
 #if !defined __WIN32__

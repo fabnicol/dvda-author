@@ -96,17 +96,17 @@ int lplex_initialise()
     errno=0;
     lplex=create_binary_path(lplex, LPLEX, SEPARATOR LPLEX_BASENAME);
     if(!lplex) return -1;
-  
 #endif
+return 0;
 }
 
-int launch_lplex_soundtrack(const pic* img, const char* create_mode)
+int launch_lplex_soundtrack(pic* img, const char* create_mode)
 {
 #if HAVE_lplex    
     
     if (-1 == lplex_initialise()) return -1;
   
-    char *args0[12]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm, "seamless"};  
+    const char *args0[12]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm, "seamless"};  
     int u, menu, tot=0;
     img->backgroundmpg=calloc(img->nmenus, sizeof(char*));
     for (menu=0; menu < img->nmenus; menu++)
@@ -118,7 +118,7 @@ int launch_lplex_soundtrack(const pic* img, const char* create_mode)
         }
 
         char* args[img->topmenu_nslides[menu]*3+12+1];
-        for (u=0; u < 12; u++) args[u]=args0[u];
+        for (u=0; u < 12; u++) args[u]=(char*) args0[u];
         for (u=0; u < img->topmenu_nslides[menu]; u++)
         {
             args[12+tot]="jpg";
@@ -131,7 +131,7 @@ int launch_lplex_soundtrack(const pic* img, const char* create_mode)
         if (globals.debugging)
         {
             foutput("[INF]  Launching lplex to create top menu #%d with soundtrack...\n", menu);
-            foutput("[INF]  with command line %s\n", get_full_command_line(args));
+            foutput("[INF]  with command line %s\n", get_full_command_line((const  char**) args));
         }
 
         change_directory(globals.settings.workdir);
@@ -180,42 +180,53 @@ int launch_lplex_soundtrack(const pic* img, const char* create_mode)
 /*  Create disc hybrid using track paths of priorly converted (16-24 bits/48-96 kHz) audio files */
 
 int launch_lplex_hybridate(const pic* img, const char* create_mode,
-                           const char** trackpath,int* ntracks,int ntitlesets)
+                           const char*** trackpath, const uint8_t* ntracks, 
+                           const char*** slidepath, const uint8_t* nslides, 
+                           const int ntitlesets)
 
 {
 #if HAVE_lplex
 
     if (-1 == lplex_initialise()) return -1;
     
-    char *args0[12]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm, "seamless"};
+    const char *args0[12]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm, "seamless"};
     
-    int group, tr, argssize=0;
+    int argssize=0;
     
-    for (group=0; group < ntitlesets; group++)
+    for (int group=0; group < ntitlesets; group++)
     {
-      for (tr=0; tr < ntracks[group]; tr++)
+      for (int tr=0; tr < ntracks[group]; tr++)
       {
-          argssize += ntracks[group][tr]+ (tr)+ (img->video_slide[group][tr] != NULL)*2;
+          argssize += ntracks[group] + (group)+ nslides[group]*2;
       }
     }
         
     char* args[12+argssize+1];
     int tot=0;
         
-    for (u=0; u < 12; u++) args[u]=args0[u];
+    for (int u=0; u < 12; u++) args[u]=(char*) args0[u];
     
-    for (group=0; tr < ntitlesets; group++)
+    for (int group=0; group < ntitlesets; group++)
     {
       if (group) args[tot]="ts";
       
-      for (tr=0; tr < ntracks[group]; tr++)
+      for (int tr=0; tr < ntracks[group]; tr++)
       {
-        if (img->video_slide[group][tr]) 
+        if (slidepath[group][tr]) 
         {
-          args[12+tot]="jpg";
-          agrs[12+tot+1]=img->video_slide[group][tr];
+          if (img->aspect[0] == '3')
+             args[12+tot]= "jpg";
+          else
+          if (img->aspect[0] == '3')
+             args[12+tot]= "jpgw";
+          else
+          {
+            fprintf(stderr, "%s", "[ERR]  For DVD-Video editing only 4:3 and 16:9 aspect ratios are supported.\n");
+            EXIT_ON_RUNTIME_ERROR
+          }
+          args[12+tot+1]=(char*) slidepath[group][tr];
         }
-        args[12+tot+2]=trackpath[group][track];
+        args[12+tot+2]=(char*) trackpath[group][tr];
         tot +=3;
       }
     }
@@ -225,7 +236,7 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
     if (globals.debugging)
         {
             foutput("%s","[INF]  Launching lplex to create hybrid...\n");
-            foutput("[INF]  with command line %s\n", get_full_command_line(args));
+            foutput("[INF]  with command line %s\n", get_full_command_line((const char**) args));
         }
 
         change_directory(globals.settings.workdir);

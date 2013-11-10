@@ -217,7 +217,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"download",optional_argument, NULL, 7},
         {"check-version",no_argument, NULL, 8},
         {"import-topmenu",required_argument, NULL, 9},
-        {"dvdv-author",required_argument, NULL, 17},
+        {"dvdv-tracks",required_argument, NULL, 17},
+        {"dvdv-tracks",required_argument, NULL, 18},
 #endif
         {NULL, 0, NULL, 0}
     };
@@ -1546,7 +1547,41 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     char * str=NULL;
     optind=0;
     opterr=1;
-    _Bool soundtracks_flag=0;
+    _Bool soundtracks_flag=0, lplex_flag=0;
+    char*** dvdv_track_array=NULL;
+    char*** dvdv_slide_array=NULL;
+    uint8_t* ndvdvslides=NULL; 
+    uint8_t* ndvdvtracks=NULL;
+    uint8_t ndvdvtitleset1=0,ndvdvtitleset2=0;
+
+inline void parse_double_entry_command_line(char*** DOUBLE_ARRAY, uint8_t* COUNTER_ARRAY, uint8_t TOTAL) 
+{
+                errno=0;
+                char** array=NULL; 
+                array=fn_strtok(optarg, ':', array, 0, NULL, NULL); 
+                TOTAL=arraylength(array); 
+                DOUBLE_ARRAY=(char ***) calloc(TOTAL, sizeof(char**)); 
+                if (NULL == DOUBLE_ARRAY) EXIT_ON_RUNTIME_ERROR 
+                for (int titleset=0; titleset < TOTAL; titleset++) 
+                {
+                    DOUBLE_ARRAY[titleset]=fn_strtok(array[titleset], ',', DOUBLE_ARRAY[titleset], 0,NULL, NULL);
+                    COUNTER_ARRAY[titleset]=arraylength(DOUBLE_ARRAY[titleset]);
+                    for (int track=0; track < COUNTER_ARRAY[titleset]; track++)
+                    {
+                        errno=audit_soundtrack(DOUBLE_ARRAY[titleset][track],AUDIT_DVD_VIDEO_AUDIO_FORMAT);
+                        if (errno) 
+                        {
+                           fprintf(stderr, 
+                                   "[ERR]  Track %s is not DVD-VIDEO compliant\n       Exiting...\n", 
+                                   DOUBLE_ARRAY[titleset][track]);
+                           EXIT_ON_RUNTIME_ERROR 
+                        }
+                        else 
+                        foutput("[MSG]  %s\n", DOUBLE_ARRAY[titleset][track]);
+                    }
+                }
+                free(array);
+  }
 
 
 #ifdef LONG_OPTIONS
@@ -1611,10 +1646,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 #if defined HAVE_lplex || HAVE_lplex_BUILD
 
-            foutput("%s\n", "[PAR]  Generate DVD-VIDEO zone");
+            foutput("%s\n", "[PAR]  Generate DVD-VIDEO audio tracks");
             if (globals.veryverbose) 
             {
-              foutput("%s\n", "[PAR]  Will create DVD-VIDEO from following files:");
+              foutput("%s\n", "[PAR]  Will create DVD-VIDEO from following audio files:");
             }
             
             if (!optarg)
@@ -1624,31 +1659,40 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
             else
             {
-                errno=0;
-                char** array=NULL;
-                video_titleset_array=fn_strtok(optarg, ':', video_titleset_array, 0, NULL, NULL);
-                int nvideotitlesets=arraylength(array_titleset_array);
-                char*** video_track_array=(char ***) calloc(nvideotitlesets, sizeof(char**));
-                if (NULL == video_track_array) EXIT_ON_RUNTIME_ERROR
-
-                for (int titleset=0; titleset < nvideotitlesets; titleset++)
-                {
-                    video_track_array[titleset]=fn_strtok(video_titleset_array[titleset], ',', video_track_array[titleset], 0,NULL, NULL);
-                    ntracks[titleset]=arraylength(video_track_array[titleset]);
-                    for (int track=0; track < ntracks[titleset]; track++)
-                        errno+=audit_soundtrack(video_track_array[titleset][track],AUDIT_DVD_VIDEO_AUDIO_FORMAT);
-                }
-
-
+              parse_double_entry_command_line(dvdv_track_array, ndvdvtracks, ndvdvtitleset1); 
+              lplex_flag=1;
             }
-
-            soundtracks_flag=1;
-            globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
 
 #else
             foutput("%s", "[ERR]  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
 #endif
             break;
+
+  case 18:
+
+#if defined HAVE_lplex || HAVE_lplex_BUILD
+
+            foutput("%s\n", "[PAR]  Generate DVD-VIDEO slides");
+            if (globals.veryverbose) 
+            {
+              foutput("%s\n", "[PAR]  Will create DVD-VIDEO slides from following files:");
+            }
+            
+            if (!optarg)
+            {
+                foutput("%s", "[ERR]  No audio file paths were given on command line\n");
+                EXIT_ON_RUNTIME_ERROR
+            }
+            else
+            {
+              parse_double_entry_command_line(dvdv_slide_array, ndvdvslides, ndvdvtitleset2); 
+            }
+
+#else
+            foutput("%s", "[ERR]  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+#endif
+            break;
+
 
         case 6 :
 
@@ -1896,7 +1940,25 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
        if (import_topmenu_flag)
            import_topmenu(import_topmenu_path, img, USE_VTS_SOUNDTRACK);
 
+if (lplex_flag == 1)
+{
+     if (ndvdvtitleset1 != ndvdvtitleset2)
+     {
+        fprintf(stderr, "[ERR]  Titleset count for slides (%d) and tracks (%d) is not the same.\n Fix the issue and relaunch.\n", ndvdvtitleset1, ndvdvtitleset2);
+        EXIT_ON_RUNTIME_ERROR
+     }
+     
+     launch_lplex_hybridate(img, 
+                            "dvd", 
+                            (const char***) dvdv_track_array, 
+                            (const uint8_t*) ndvdvtracks, 
+                            (const char***) dvdv_slide_array, 
+                            (const uint8_t*) ndvdvslides,
+                            (const int) ndvdvtitleset1); 
 
+     free(dvdv_track_array);
+     free(dvdv_slide_array);
+}
 
     switch (globals.topmenu)
     {

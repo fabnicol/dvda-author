@@ -326,17 +326,17 @@ int ats2wav(const char* filename, const char* outdir)
     
     
     FILE* file=NULL;
-    FILE* fp=NULL;
+    //FILE* fp=NULL;
     
     unsigned int payload_length=0, ats=1, t=0, ntracks=0;
     _fileinfo_t files[99];
     int length=strlen(outdir);
-    int i,k ;
+    //int i,k ;
     uint8_t buf[BUFFER_SIZE];
-    uint64_t delta=0;
+    //uint64_t delta=0;
     uint16_t nbytesread=0; // size must be >= BUFFER_SIZE
-    char outfile[length+1+14];
-    char atstemplate[512]= {0};
+    //char outfile[length+1+14];
+    //char atstemplate[512]= {0};
     
     /* First check the DVDAUDIO-ATS tag at start of ATS_XX_0.IFO */
     
@@ -377,8 +377,8 @@ int ats2wav(const char* filename, const char* outdir)
     t=0;
     
     
-    uint16_t offset=0;
-    _Bool fileend=0;
+    //uint16_t offset=0;
+    //_Bool fileend=0;
 #if 0
     while (t < ntracks)
     {

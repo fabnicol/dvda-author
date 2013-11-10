@@ -592,7 +592,7 @@ SUMMARY:
         unlink(dvdisopath);
         uint64_t size;
         char* mkisofs=NULL;
-        char *args[]={MKISOFS_BASENAME, "-dvd-audio", "-v", "-o", dvdisopath, globals.settings.outdir, NULL};
+        char* const args[]={MKISOFS_BASENAME, "-dvd-audio", "-v", "-o", dvdisopath, globals.settings.outdir, NULL};
 
         errno=0;
         if ((mkisofs=create_binary_path(mkisofs, MKISOFS, SEPARATOR MKISOFS_BASENAME)))
@@ -630,7 +630,7 @@ SUMMARY:
             foutput("\n%s\n", "[INF]  Launching growisofs to burn disc");
             char string[strlen(globals.cdrecorddevice)+2+strlen(dvdisoinput)];
             sprintf(string, "%s%c%s", globals.cdrecorddevice, '=', dvdisoinput);
-            char *args[]={"growisofs", "-Z", string, NULL};
+            char* const args[]={"growisofs", "-Z", string, NULL};
 #define GROWISOFS "/usr/bin/growisofs"
             run(GROWISOFS, args, 0);
         }
@@ -640,7 +640,7 @@ SUMMARY:
             char *verbosity=(globals.debugging)? "-v":"-s";
 #define TEST (globals.cdrecorddevice[0] != '\0')
             int S=TEST? 8:6;
-            char *args[S],
+            char* args[S],
             *args0[]={CDRECORD_BASENAME, verbosity,"blank=fast", "-eject","dev=", globals.cdrecorddevice, dvdisoinput, "-gracetime=", "1",  NULL},
             *args1[]={CDRECORD_BASENAME, verbosity, "blank=fast", "-eject",dvdisoinput, "-gracetime=", "1", NULL};
             if TEST memcpy(args, args0, sizeof(args0));
@@ -652,7 +652,7 @@ SUMMARY:
             if ((cdrecord=create_binary_path(cdrecord, CDRECORD, SEPARATOR CDRECORD_BASENAME)))
             {
                foutput("\n%s\n", "[INF]  Launching cdrecord to burn disc");
-               run(cdrecord, args, NOWAIT);
+               run(cdrecord, (char* const*) args, NOWAIT);
             }
             else
                foutput("%s\n", "[ERR]  Could not access to cdrecord binary.");

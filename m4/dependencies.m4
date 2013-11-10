@@ -12,7 +12,7 @@ AC_DEFUN([DVDA_CHECK_DEPENDENCIES],
 [
 
 m4_define([WEBSITE],[http://dvd-audio.sourceforge.net])
-AC_DEFINE([WEBSITE],[http://dvd-audio.sourceforge.net],[Project website])
+AC_DEFINE([WEBSITE],["http://dvd-audio.sourceforge.net"],[Project website])
 
 # ====== Auxiliary tools: man page and html doc, mjpegtools, ImageMagick ========= #
 
@@ -40,7 +40,7 @@ m4_map([DVDA_TEST_AUX],[
 	[[make],      [whether make is installed]],
 	[[mpeg2dec],  [whether mpeg2dec is installed]],
 	[[git],       [whether git can be used for archiving purposes]],
-	[[a52dec],    [whether a52dec is installed],
+	[[a52dec],    [whether a52dec is installed]],
 	[[vlc],       [whether vlc player can be used]]])
 
 

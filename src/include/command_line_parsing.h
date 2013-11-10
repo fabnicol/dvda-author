@@ -27,6 +27,7 @@ void fixwav_parsing(char *ssopt);
 #endif
 
 
+
 void ats2wav_parsing(const char * arg, extractlist* extract, char* player);
 void extract_list_parsing(const char *arg, extractlist* extract);
 void still_options_parsing(char *ssopt, pic* img);

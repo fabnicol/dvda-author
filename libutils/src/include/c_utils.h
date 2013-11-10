@@ -114,11 +114,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 	in other contexts (EXIT_SUCCESS, complex EXIT_FAILURE... )  clean_exit is used, see auxiliaray.c
 */
 
-#ifdef ALWAYS_INLINE
-#define  __attribute__((always_inline))
-#else
-#define 
-#endif
 
 #define NOWAIT -1
 
@@ -182,8 +177,8 @@ void hexdump_pointer(uint8_t* tab,  size_t tabsize);
 FILE* secure_open(const char *path, const char *context);
 int end_seek(FILE* outfile);
 void parse_wav_header(FILE * infile, infochunk* ichunk);
-char* get_command_line(char* args[]);
-char* get_full_command_line(char** args);
+const char* get_command_line(const char* args[]);
+char* get_full_command_line(const char** args);
 // These functions should be inlined hence in a header file
 char* copy_file2dir(const char *existing_file, const char *new_dir);
 char* copy_file2dir_rename(const char *existing_file, const char *new_dir, char* newfilename);
@@ -196,9 +191,9 @@ int download_file_from_http_server(const char* curlpath, const char* file, const
 int download_fullpath(const char* curlpath, const char* filename, const char* fullpath);
 #endif
 void erase_file(const char* path);
-char* quote(char* path);
-char* win32quote(char* path);
-int run(char* application, char* args[], int option);
+char* quote(const char* path);
+char* win32quote(const char* path);
+int run(const char* application,char* const args[], const int option);
 uint64_t  parse_file_for_sequence(FILE* fp, uint8_t* tab, size_t sizeoftab);
 
 inline static void  uint32_copy(uint8_t* buf, uint32_t x)
