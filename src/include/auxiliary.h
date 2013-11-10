@@ -98,7 +98,7 @@ int cutloop(char GCC_ATTRIBUTE_UNUSED *c, uint32_t count);
 int arraylength(char ** tab);
 
 #if !HAVE_core_BUILD
-char* create_binary_path(char* local_variable, char* symbolic_constant, char* basename);
+char* create_binary_path(char* local_variable, const char* symbolic_constant, const char* basename);
 void download_latest_version(_Bool download_new_version_flag,_Bool force_download_flag);
 #endif
 

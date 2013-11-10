@@ -280,21 +280,21 @@ void initialize_binary_paths(char level)
     case FREE_MEMORY:
         if (count1)
         {
-            free(mp2enc);
-            free(jpeg2yuv);
-            free(mpeg2enc);
-            free(mplex);
+            free((char*) mp2enc);
+            free((char*) jpeg2yuv);
+            free((char*) mpeg2enc);
+            free((char*) mplex);
         }
-        if (count2) free(spumux);
-        if (count3) free(dvdauthor);
+        if (count2) free((char*) spumux);
+        if (count3) free((char*) dvdauthor);
         if (count4)
         {
-            free(mogrify);
-            free(convert);
+            free((char*) mogrify);
+            free((char*) convert);
         }
-        if (count5) free(mpeg2dec);
-        if (count6) free(curl);
-        if (count7) { free(ac3dec); free(extract_ac3); }
+        if (count5) free((char*) mpeg2dec);
+        if (count6) free((char*) curl);
+        if (count7) { free((char*) ac3dec); free((char*) extract_ac3); }
         break;
     }
 }
@@ -353,7 +353,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     char *argsmp2enc[]= {MP2ENC_BASENAME, "-o", mp2track , NULL};
     char *argsjpeg2yuv[]= {JPEG2YUV_BASENAME, "-f", img->framerate, "-I", "p", "-n", "1", "-j", pict, "-A", img->aspectratio, NULL};
     char *argsmpeg2enc[]= {MPEG2ENC_BASENAME,  "-f", "8", "-n", norm,  "-o", tempfile ,"-a", img->aspect, NULL};
-    char *argsmplex[]= {MPLEX_BASENAME, "-f", "8",  "-o", img->backgroundmpg[rank], tempfile, mp2track, NULL};
+    char* const argsmplex[]= {MPLEX_BASENAME, "-f", "8",  "-o", img->backgroundmpg[rank], tempfile, mp2track, NULL};
 
     //////////////////////////
 
@@ -744,7 +744,7 @@ int launch_dvdauthor()
 
     if (globals.debugging) foutput("%s\n", "[INF]  Launching dvdauthor to add virtual machine commands to top menu");
 
-    char *args[]= {DVDAUTHOR_BASENAME, "-o", globals.settings.outdir, "-x", globals.xml, NULL};
+    char* const args[]= {DVDAUTHOR_BASENAME, "-o", globals.settings.outdir, "-x", globals.xml, NULL};
 
 #ifndef __WIN32__
     run(dvdauthor, args, 0);
