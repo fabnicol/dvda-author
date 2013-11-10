@@ -51,7 +51,7 @@ uint64_t fileoffset;
 
 inline   void  write_search_sequence(uint8_t* sequence, size_t sizeofsequence , FILE* filepointer, const char* ioflag)
 {
-    if (globals.veryverbose)
+    if (globals.maxverbose)
         hexdump_pointer(sequence, sizeofsequence);
 
     uint64_t offset_save=fileoffset;
@@ -64,8 +64,8 @@ inline   void  write_search_sequence(uint8_t* sequence, size_t sizeofsequence , 
             fwrite (sequence,sizeofsequence,1,filepointer);
 
 
-        if (globals.veryverbose)
-            EXPLAIN("%s%llu", "Wrote sequence at offset: ", fileoffset);
+        if (globals.maxverbose)
+            EXPLAIN("%s%llu", "Write sequence at offset: ", fileoffset);
 
         fileoffset+=  sizeofsequence;
 
@@ -74,25 +74,19 @@ inline   void  write_search_sequence(uint8_t* sequence, size_t sizeofsequence , 
     {
         fileoffset=parse_file_for_sequence(filepointer, sequence, sizeofsequence) ;
 
-        if (globals.veryverbose)
+        if (globals.maxverbose)
         {
-
             if (fileoffset > 0 )
             {
-
                 EXPLAIN("%s%llu", "Found sequence at offset: ", fileoffset-sizeofsequence+1);
-
+                
             }
             else if (fileoffset == 0)
             {
-
                 EXPLAIN("%s%llu", "Missed sequence at offset: ",offset_save);
-
             }
             else
-
             {
-
                 EXPLAIN("%s%llu", "Error: could not find sequence at offset: ",offset_save);
             }
         }
@@ -200,7 +194,7 @@ inline void process_pack_header(FILE* fp,  uint64_t SCRint, const char* ioflag)
 
     pack_scr(scr_bytes,(SCRint/300),(SCRint%300));
 
-    if (globals.veryverbose)
+    if (globals.maxverbose)
     {
         IO= (ioflag[0] == 'w')? WRITE : READ;
 
@@ -231,7 +225,7 @@ inline void process_pack_header(FILE* fp,  uint64_t SCRint, const char* ioflag)
     uint8_t stream_info1[3]= {0xb8, 0xc0, 0x40};
     uint8_t stream_info2[3]= {0xbd, 0xe0, 0x0a};
 
-    EXPLAIN("%s%d\n","WRITE SYSTEM HEADER, size is: ", 4+2+3+1+1+1+3+3)
+    if (globals.maxverbose) EXPLAIN("%s%d\n","WRITE SYSTEM HEADER, size is: ", 4+2+3+1+1+1+3+3)
 
 
     uint8_t tab[4+2+3+1+1+1+3+3]= {0};
@@ -262,7 +256,7 @@ inline void process_pack_header(FILE* fp,  uint64_t SCRint, const char* ioflag)
 
     length_bytes[0]=(length&0xff00)>>8;
     length_bytes[1]=(length&0xff);
-    EXPLAIN("%s%d\n", "PES padding, size is: ", 3+1+2+length)
+    if (globals.maxverbose) EXPLAIN("%s%d\n", "PES padding, size is: ", 3+1+2+length)
 
 
     uint8_t tab[3+1+2+length];
@@ -303,7 +297,7 @@ inline void process_pack_header(FILE* fp,  uint64_t SCRint, const char* ioflag)
     PES_packet_len_bytes[0]=(PES_packet_len&0xff00)>>8;
     PES_packet_len_bytes[1]=PES_packet_len&0xff;
 
-    EXPLAIN("%s%d%s%d%s%d\n","WRITE AUDIO PES HEADER, PES_packet_len: ", PES_packet_len, " extension_flag: ", extension_flag, " size is: ", 3+1+2+1+1+1+5+(extension_flag)*3)
+    if (globals.maxverbose) EXPLAIN("%s%d%s%d%s%d\n","WRITE AUDIO PES HEADER, PES_packet_len: ", PES_packet_len, " extension_flag: ", extension_flag, " size is: ", 3+1+2+1+1+1+5+(extension_flag)*3)
 
     pack_pts(PTS_DTS_data,PTS);
 
@@ -460,7 +454,7 @@ inline void process_pack_header(FILE* fp,  uint64_t SCRint, const char* ioflag)
 
     int sizeoftab=1+1+2+2+1+1+1+1+1+1+header_length-8;
 
-    EXPLAIN("%s%d%s%d\n","WRITE LPCM HEADER for ",info->bitspersample, " bits: size is ", sizeoftab)
+    if (globals.maxverbose) EXPLAIN("%s%d%s%d\n","WRITE LPCM HEADER for ",info->bitspersample, " bits: size is ", sizeoftab)
 
     uint8_t tab[sizeoftab];
     memcpy(tab,sub_stream_id,1);
@@ -587,7 +581,7 @@ int process_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf, int bytes
 
     if (pack_in_title==0)              // First packet in title
     {
-        EXPLAIN("%s\n","WRITE PACK HEADER and PES HEADER: first-->")
+        if (globals.maxverbose) EXPLAIN("%s\n","WRITE PACK HEADER and PES HEADER: first-->")
         process_pack_header(fp,SCR, ioflag);
         process_system_header(fp, ioflag);
         process_audio_pes_header(fp,2010,1,PTS, ioflag);
@@ -602,7 +596,7 @@ int process_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf, int bytes
             process_lpcm_header(fp,0x0f,info,pack_in_title,cc, ioflag);
         }
 
-        EXPLAIN("%s%d%s\n","WRITE ", audio_bytes, " bytes of audio_buf in file (first)" )
+        if (globals.maxverbose) EXPLAIN("%s%d%s\n","WRITE ", audio_bytes, " bytes of audio_buf in file (first)" )
 
         if (!globals.nooutput) fwrite (audio_buf,1,audio_bytes,fp);
     }
@@ -610,14 +604,14 @@ int process_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf, int bytes
     {
         printf("[INF]  Writing last packet - pack=%lld, bytesinbuffer=%d\n",pack_in_title,bytesinbuffer);
         audio_bytes=bytesinbuffer;
-        EXPLAIN("%s\n","write PACK HEADER and PES HEADER: last-->")
+        if (globals.maxverbose) EXPLAIN("%s\n","write PACK HEADER and PES HEADER: last-->")
         process_pack_header(fp,SCR, ioflag);
 
         int dave_offset = DAVE_OFFSET;  // value of 6 forces agreement with Dave's code; LF recommends value of 0 which is more consistent with middle pack treatment
         process_audio_pes_header(fp,-dave_offset+info->midpack_audiopesheaderquantity-(lpcm_payload-audio_bytes),0,PTS,ioflag);
         process_lpcm_header(fp,-dave_offset+info->midpack_lpcm_headerquantity,info,pack_in_title,cc,ioflag);
 
-        EXPLAIN("%s%d%s\n","WRITE ", audio_bytes, " bytes of audio_buf in file (last)" )
+        if (globals.maxverbose) EXPLAIN("%s%d%s\n","WRITE ", audio_bytes, " bytes of audio_buf in file (last)" )
 
 
         if (!globals.nooutput) fwrite (audio_buf,1,audio_bytes,fp);
@@ -631,7 +625,7 @@ int process_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf, int bytes
     else                             // A middle packet in the title.
     {
         audio_bytes=lpcm_payload;
-        EXPLAIN("%s\n","write PACK HEADER and PES HEADER: middle-->")
+        if (globals.maxverbose) EXPLAIN("%s\n","write PACK HEADER and PES HEADER: middle-->")
         process_pack_header(fp,SCR,ioflag);
         process_audio_pes_header(fp,2028,0,PTS,ioflag);
         if (info->bitspersample==16)
@@ -644,7 +638,7 @@ int process_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf, int bytes
             process_lpcm_header(fp,0x0c,info,pack_in_title,cc,ioflag);
         }
 
-        EXPLAIN("%s%d%s\n","WRITE ", audio_bytes, " bytes of audio_buf in file (middle)" )
+        if (globals.maxverbose) EXPLAIN("%s%d%s\n","WRITE ", audio_bytes, " bytes of audio_buf in file (middle)" )
 
         if (!globals.nooutput) fwrite(audio_buf,1,audio_bytes,fp);
     }
