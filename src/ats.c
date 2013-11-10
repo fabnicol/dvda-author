@@ -776,7 +776,7 @@ int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks,con
 
                 if (player)
                 {
-                    char* argsplayer[]={files[i].filename, "vlc://quit", NULL};
+                    char* const argsplayer[]={files[i].filename, "vlc://quit", NULL};
                     if (run(player, argsplayer, 0) == -1)  // will wait for player until ends
                         EXPLAIN_DEV("[ERR]  Could not play file", i)
                         EXIT_ON_RUNTIME_ERROR
