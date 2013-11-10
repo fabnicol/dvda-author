@@ -364,7 +364,7 @@ int ats2wav(const char* filename, const char* outdir)
     
     ntracks=scan_ats_ifo(files, buf);
     
-    EXPLAIN("%s%d%s\n", "scanning ", ntracks, "tracks")
+    if (globals.maxverbose) EXPLAIN("%s%d%s\n", "scanning ", ntracks, "tracks")
             
             //fp=open_aob( fp,  filename,  atstemplate,  ats);
             

@@ -32,9 +32,7 @@
 #endif
 #include "videoimport.h"
 
-
 /*  #define _GNU_SOURCE must appear before <string.h> and <getopt.h> for strndup  and getopt_long*/
-
 
 globalData globals;
 unsigned int startsector;
@@ -44,6 +42,59 @@ uint16_t totntracks;
 uint8_t maxbuttons; // to be used in xml.c and menu.c as extern globals
 uint8_t resbuttons; // to be used in xml.c and menu.c as extern globals
 
+void parse_double_entry_command_line(char**** DOUBLE_ARRAY, uint8_t** COUNTER_ARRAY, uint8_t* TOTAL, short int audit_flag) 
+{
+                errno=0;
+                char** array=NULL; 
+                array=fn_strtok(optarg, ':', array, 0, NULL, NULL); 
+                *TOTAL=arraylength(array); 
+                if (globals.veryverbose) 
+                {
+                  fprintf(stderr, "[MSG]  Found %d DVD-VIDEO group(s)/titleset(s)\n", *TOTAL);
+                  for (int u=0; u < *TOTAL; u++) fprintf(stderr, "[MSG]  Found group/titleset %d files: %s\n", u+1, array[u]);
+                }
+                
+                *DOUBLE_ARRAY=(char ***) calloc(*TOTAL, sizeof(char***)); 
+                if (NULL == *DOUBLE_ARRAY) EXIT_ON_RUNTIME_ERROR 
+                
+                for (int titleset=0; titleset < *TOTAL; titleset++) 
+                {
+                    (*DOUBLE_ARRAY)[titleset]=fn_strtok(array[titleset], ',', (*DOUBLE_ARRAY)[titleset], 0,NULL, NULL);
+                    *COUNTER_ARRAY=calloc(*TOTAL, sizeof(uint8_t));
+                    *COUNTER_ARRAY[titleset]=arraylength(*DOUBLE_ARRAY[titleset]);
+                    #if DEBUG
+                    if (globals.veryverbose) 
+                    {
+                      if (audit_flag == AUDIT_DVD_VIDEO_AUDIO_FORMAT)
+                         fprintf(stderr, "[MSG]  Found %d audio track(s) for DVD-VIDEO titleset %d\n", *COUNTER_ARRAY[titleset], *TOTAL);
+                      else
+                      if (audit_flag == NO_FIXWAV_AUDIT)
+                         fprintf(stderr, "[MSG]  Found %d slide(s) for DVD-VIDEO titleset %d\n", *COUNTER_ARRAY[titleset], *TOTAL);
+                    }
+                    #endif
+                    for (int track=0; track < *COUNTER_ARRAY[titleset]; track++)
+                    {
+                        if ((audit_flag == AUDIT_DVD_VIDEO_AUDIO_FORMAT) || (audit_flag == AUDIT_STRICT_TOPMENU_AUDIO_FORMAT)) 
+                          errno=audit_soundtrack((*DOUBLE_ARRAY)[titleset][track], audit_flag);
+                        // else case: images, noop.
+                          
+                        if (errno) 
+                        {
+                           fprintf(stderr, 
+                                   "[ERR]  Track %s is not DVD-VIDEO compliant\n       Exiting...\n", 
+                                   (*DOUBLE_ARRAY)[titleset][track]);
+                           EXIT_ON_RUNTIME_ERROR 
+                        }
+                        else 
+                        if (globals.debugging)
+                          foutput("[MSG]  Checked that track %s is DVD-VIDEO compliant\n", 
+                                   (*DOUBLE_ARRAY)[titleset][track]);
+                    }
+                }
+                
+                free(array);
+              
+  }
 
 
 command_t *command_line_parsing(int argc, char* const argv[], command_t *command)
@@ -83,10 +134,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         strcat(ALLOWED_OPTIONS, ALLOWED_OPTIONS_PRINT);
     }
 
-
-
-
-
     int errmsg;
     _Bool allocate_files=0, logrefresh=0, refresh_tempdir=1, refresh_outdir=1;  // refreshing output and temporary directories by default
     _Bool download_new_version_flag=0, check_version_flag=0, force_download_flag=0;
@@ -94,25 +141,17 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     parse_t  audiodir;
     extractlist extract;
 
-
-
 #ifdef img
 #undef img
 #endif
 #define img command->img  // already allocated, just for notational purposes
 
-
-
     char **argv_scan=calloc(argc, sizeof(char*));
-
     startsector=-1; /* triggers automatic computing of startsector (Lee and Tim Feldman) */
-
-
     /* Initialisation: default group values are overridden if and only if groups are added on command line
      * Other values are left statically determined by first launch of this function                          */
 
     // By default, videozone is generated ; use -n to deactivate.
-
     // When lexer is deactivated, parse command line directly.
 
     if (!globals.enable_lexer) user_command_line=1;
@@ -127,9 +166,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         globals.silence=0;
 
     }
-
-
-
 
     /* crucial: initialise before any call to getopt */
     optind=0;
@@ -218,25 +254,21 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"check-version",no_argument, NULL, 8},
         {"import-topmenu",required_argument, NULL, 9},
         {"dvdv-tracks",required_argument, NULL, 17},
-        {"dvdv-tracks",required_argument, NULL, 18},
+        {"dvdv-slides",required_argument, NULL, 18},
 #endif
         {NULL, 0, NULL, 0}
     };
 #endif
 
-
-
     /* getopt is now used for command line parsing. To ensure compatibility with prior "Dave" versions, the easier way out
      *  is to duplicate the command line. Otherwise getopt reorders options/non-options and multiple arguments of -g ...
      *  are consequently misplaced */
-
     /* 0-reset only on command-line parsing in case groups have been defined in config file */
 
     for (k=0; k<argc; k++)
         if ((argv_scan[k]=strdup(argv[k])) == NULL)
             EXIT_ON_RUNTIME_ERROR
             /* COMMAND-LINE  PARSING: first pass for global behaviour option: log, help, version, verbosity */
-
 
 #ifdef LONG_OPTIONS
             while ((c=getopt_long(argc, argv_scan, ALLOWED_OPTIONS, longopts, &longindex)) != -1)
@@ -1554,35 +1586,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     uint8_t* ndvdvtracks=NULL;
     uint8_t ndvdvtitleset1=0,ndvdvtitleset2=0;
 
-inline void parse_double_entry_command_line(char*** DOUBLE_ARRAY, uint8_t* COUNTER_ARRAY, uint8_t TOTAL) 
-{
-                errno=0;
-                char** array=NULL; 
-                array=fn_strtok(optarg, ':', array, 0, NULL, NULL); 
-                TOTAL=arraylength(array); 
-                DOUBLE_ARRAY=(char ***) calloc(TOTAL, sizeof(char**)); 
-                if (NULL == DOUBLE_ARRAY) EXIT_ON_RUNTIME_ERROR 
-                for (int titleset=0; titleset < TOTAL; titleset++) 
-                {
-                    DOUBLE_ARRAY[titleset]=fn_strtok(array[titleset], ',', DOUBLE_ARRAY[titleset], 0,NULL, NULL);
-                    COUNTER_ARRAY[titleset]=arraylength(DOUBLE_ARRAY[titleset]);
-                    for (int track=0; track < COUNTER_ARRAY[titleset]; track++)
-                    {
-                        errno=audit_soundtrack(DOUBLE_ARRAY[titleset][track],AUDIT_DVD_VIDEO_AUDIO_FORMAT);
-                        if (errno) 
-                        {
-                           fprintf(stderr, 
-                                   "[ERR]  Track %s is not DVD-VIDEO compliant\n       Exiting...\n", 
-                                   DOUBLE_ARRAY[titleset][track]);
-                           EXIT_ON_RUNTIME_ERROR 
-                        }
-                        else 
-                        foutput("[MSG]  %s\n", DOUBLE_ARRAY[titleset][track]);
-                    }
-                }
-                free(array);
-  }
-
 
 #ifdef LONG_OPTIONS
     while ((c=getopt_long(argc, argv, ALLOWED_OPTIONS, longopts, &longindex)) != -1)
@@ -1659,7 +1662,8 @@ inline void parse_double_entry_command_line(char*** DOUBLE_ARRAY, uint8_t* COUNT
             }
             else
             {
-              parse_double_entry_command_line(dvdv_track_array, ndvdvtracks, ndvdvtitleset1); 
+              parse_double_entry_command_line(&dvdv_track_array, &ndvdvtracks, &ndvdvtitleset1, AUDIT_DVD_VIDEO_AUDIO_FORMAT); 
+              if (ndvdvtracks == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE("ndvdtracks null")
               lplex_flag=1;
             }
 
@@ -1685,7 +1689,7 @@ inline void parse_double_entry_command_line(char*** DOUBLE_ARRAY, uint8_t* COUNT
             }
             else
             {
-              parse_double_entry_command_line(dvdv_slide_array, ndvdvslides, ndvdvtitleset2); 
+              parse_double_entry_command_line(&dvdv_slide_array, &ndvdvslides, &ndvdvtitleset2, NO_FIXWAV_AUDIT); 
             }
 
 #else
@@ -1953,11 +1957,13 @@ if (lplex_flag == 1)
                             (const char***) dvdv_track_array, 
                             (const uint8_t*) ndvdvtracks, 
                             (const char***) dvdv_slide_array, 
-                            (const uint8_t*) ndvdvslides,
+                            ndvdvslides,
                             (const int) ndvdvtitleset1); 
 
      free(dvdv_track_array);
      free(dvdv_slide_array);
+     free(ndvdvslides);
+     free(ndvdvtracks);
 }
 
     switch (globals.topmenu)

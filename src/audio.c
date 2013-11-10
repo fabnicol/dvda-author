@@ -1218,12 +1218,12 @@ WAV: 28  13  12  29  15  14  8  1  0  9  3  2  30  17  16  31  19  18  32  21  2
 
             n=fread(buf+*bytesread+offset,1,count-*bytesread,info->audio->fp);
 
-            EXPLAIN("%s%d%s%d%s%d%s%lld%s%d\n","READ ",n,"/", count-*bytesread, "B added to ",info->audio->bytesread, "B/", info->numbytes," into buffer at offset ", offset+*bytesread)
+            if (globals.maxverbose) EXPLAIN("%s%d%s%d%s%d%s%lld%s%d\n","READ ",n,"/", count-*bytesread, "B added to ",info->audio->bytesread, "B/", info->numbytes," into buffer at offset ", offset+*bytesread)
 
             if (info->audio->bytesread+n > info->numbytes)
             {
                 n=info->numbytes-info->audio->bytesread;
-                EXPLAIN("%s%lld%s%d\n","READ CUT",n-info->numbytes+info->audio->bytesread,"/", n)
+                if (globals.maxverbose) EXPLAIN("%s%lld%s%d\n","READ CUT",n-info->numbytes+info->audio->bytesread,"/", n)
             }
             info->audio->bytesread+=n;
             *bytesread+=n;
