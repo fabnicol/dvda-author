@@ -31,4 +31,5 @@ void fixwav_parsing(char *ssopt);
 void ats2wav_parsing(const char * arg, extractlist* extract, char* player);
 void extract_list_parsing(const char *arg, extractlist* extract);
 void still_options_parsing(char *ssopt, pic* img);
+//void parse_double_entry_command_line(char*** DOUBLE_ARRAY, uint8_t* COUNTER_ARRAY, uint8_t* TOTAL, short audit_flag);
 #endif
