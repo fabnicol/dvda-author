@@ -12,7 +12,7 @@ AC_DEFUN([DVDA_CHECK_DEPENDENCIES],
 [
 
 m4_define([WEBSITE],[http://dvd-audio.sourceforge.net])
-AC_DEFINE([WEBSITE],["http://dvd-audio.sourceforge.net"],[Project website])
+AC_DEFINE([WEBSITE],['http://dvd-audio.sourceforge.net'],[Project website])
 
 # ====== Auxiliary tools: man page and html doc, mjpegtools, ImageMagick ========= #
 

@@ -13,7 +13,7 @@ DEFINES += _GNU_SOURCE  HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_libfixwav HAVE
 #libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame --disable-gomp
 
 
-linux:LIBS +=   build/lib/linux/libFLAC.a build/lib/linux/libogg.a   build/lib/linux/libsox.a  -Lbuild/lib/linux -lid3tag -lvorbisenc -lvorbisfile -lvorbis -lz -lsndfile  -lpulse -lpulse-simple -lasound -lwavpack \
+linux:LIBS +=   ../dvda-author-dev/build/lib/linux/libFLAC.a ../dvda-author-dev/build/lib/linux/libogg.a   ../dvda-author-dev/build/lib/linux/libsox.a  -L../dvda-author-dev/build/lib/linux -lid3tag -lvorbisenc -lvorbisfile -lvorbis -lz -lsndfile  -lpulse -lpulse-simple -lasound -lwavpack \
                   -logg -lpng -lz -lgomp -lsndfile 
 
 #todo: add libjson to build directory
@@ -109,7 +109,8 @@ OTHER_FILES += \
     script.mjpegtools \
     mk/man2html.mk.in \
     libiberty/src/include/Makefile.in \
-    commandline.txt
+    commandline.txt \
+    TROUBLESHOOT.txt
 
 HEADERS += \
     src/include/amg.h \
