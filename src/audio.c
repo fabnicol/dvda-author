@@ -509,7 +509,7 @@ int launch_sox(char** filename)
 
     if (new_wav_name == NULL)
     {
-        perror("[ERR]  SoX string suffix was not allocated");
+        perror("\n[ERR]  SoX string suffix was not allocated\n");
         return(NO_AFMT_FOUND);
     }
 

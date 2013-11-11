@@ -567,6 +567,11 @@ int secure_mkdir (const char *path, mode_t mode)
 {
 
     int i=0, len;
+    if (path == NULL || path[0]=='\0')
+    {
+     fprintf(stderr, "%s","\n[ERR]  Could not create directory with empty or null path.\n");
+     clean_exit(EXIT_FAILURE);
+    }
     len = strlen (path);
 
     // requires std=c99
@@ -585,7 +590,7 @@ int secure_mkdir (const char *path, mode_t mode)
 
     if (d == NULL)
     {
-        perror("[MSG] Error: could not allocate directory path string");
+        perror("\n[MSG] Error: could not allocate directory path string\n");
         clean_exit(EXIT_FAILURE);
     }
 
@@ -649,7 +654,7 @@ char* get_cl(const char** args, uint16_t start)
     }
 
     char* cml=calloc(tot+i+2*i, sizeof(char)); // 2*i for quotes, i for spaces
-    if (cml == NULL) perror("[ERR]  get_command_line");
+    if (cml == NULL) perror("\n[ERR]  get_command_line\n");
 
     for (j=start; j< i; j++)
     {
@@ -769,7 +774,7 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
 
     if (stat(dest, &buf) == -1)
     {
-        perror("[ERR]  copy_directory could not stat file");
+        perror("\n[ERR]  copy_directory could not stat file\n");
         exit(EXIT_FAILURE);
     }
 
@@ -791,7 +796,7 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
         STRING_WRITE(path, "%s%c%s", dest, '/', f->d_name)
         if (stat(f->d_name, &buf) == -1)
         {
-            perror("[ERR] stat ");
+            perror("\n[ERR] stat in copy_directory\n");
             exit(EXIT_FAILURE);
         }
 
@@ -1442,7 +1447,7 @@ errno=0;
 
     if (pipe(tube))
     {
-        perror("[ERR]  ");
+        perror("\n[ERR]  pipe run\n");
         return errno;
     }
 

@@ -110,7 +110,8 @@ OTHER_FILES += \
     mk/man2html.mk.in \
     libiberty/src/include/Makefile.in \
     commandline.txt \
-    TROUBLESHOOT.txt
+    TROUBLESHOOT.txt \
+    TROUBLESHOOT
 
 HEADERS += \
     src/include/amg.h \
