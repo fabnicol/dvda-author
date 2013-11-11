@@ -524,7 +524,7 @@ void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size)
       f=fopen(outfile,"wb");
   if (f == NULL)
     fprintf(stderr, "[ERR] %s could not be opened properly.\n", basename);
-  if (errno) perror("[ERR] ");
+  if (errno) perror("\n[ERR] in create_file\n");
   errno=0;
 
     if (fwrite(array, 1, size, f) == size )
@@ -573,7 +573,7 @@ char** fn_strtok(char* chain, char delim, char** array, uint32_t count, int  (*f
   array=(char**) calloc(size, sizeof(char*));
   if (array == NULL)
   {
-      perror("[ERR]  fn_strtok");
+      perror("\n[ERR]  fn_strtok\n");
       return NULL;
   }
   k=0;

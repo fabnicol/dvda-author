@@ -22,6 +22,10 @@ can be obtained with:
 then install as usual:
 	(sudo) make install
 
+If you experience issues building from a subdirectory (which is a cleaner building method)
+you can also try building from the package root. Some path issues may be thus avoided on some 
+platforms.
+
 This application uses a patched version of dvdauthor to create menus.
 The default video format for dvdauthor is set to PAL. If you are to create menus for an
 NTSC (non-PAL compatible) player, it is advised to add the following specification to the

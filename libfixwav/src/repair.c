@@ -307,7 +307,7 @@ int write_header(uint8_t *newheader, FILE* outfile, WaveData *info)
 
   if (errno)
     {
-      perror("[ERR]  Error in launch repair module");
+      perror("\n[ERR]  Error in launch repair module\n");
       return(FAIL);
     }
 

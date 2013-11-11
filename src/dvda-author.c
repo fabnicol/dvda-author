@@ -63,11 +63,11 @@ char *currentdir, *TEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
     lexer->nlines=MAX_LEXER_LINES;
 
     lexer->commandline=(char** ) calloc(MAX_LEXER_LINES, sizeof(char *));
-    if (lexer->commandline == NULL) perror("[ERR]  lexer");
+    if (lexer->commandline == NULL) perror("\n[ERR]  lexer\n");
     for (i=0; i < MAX_LEXER_LINES; i++)
     {
         lexer->commandline[i]=(char* ) calloc(2*MAX_OPTION_LENGTH, sizeof(char));
-        if (lexer->commandline[i] == NULL) perror("[ERR]  lexer");
+        if (lexer->commandline[i] == NULL) perror("\n[ERR]  lexer\n");
     }
 
     if (config_type == CONFIGURATION_FILE) check_settings_file();
@@ -365,6 +365,7 @@ int main(int argc,  char* const argv[])
 
     globals=globals_init;
     globals.settings.tempdir=TEMPDIR;
+    globals.settings.lplextempdir=strdup(globals.settings.tempdir);
     globals.settings.stillpicdir=strdup(globals.settings.tempdir);
     normalize_temporary_paths(NULL);
 
