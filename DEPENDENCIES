@@ -20,7 +20,7 @@ external libraries:
   - libiberty.a if --enable-libiberty-build is not used and if it is installed in a system path, and if
     there is no SoX bug (see file BUGS )
 
-Building dvdauthor requests linking to libpng12, libxml2 and libz, as well as bison and flex.
+Building dvdauthor requests linking to libpng12, libxml2 (recent) and libz, as well as (lib)freetype, bison and flex.
 Buildinf mpegtools requests version 6b of the libmpeg IJG library. See package for details; this library is
 commonly provided by most *nix platforms.
 Building lplex requests linking to libdvdread(-dev) and libFLAC++, using g++, which is provided by
@@ -75,7 +75,7 @@ the minimal set of requirements under a "bare" Linux 13.04 platforms seems to be
   your system, building sox will require the autotools: autoconf, automake, libtool(ize) as it is necessary to redesign an unsatisfactory
   configure.ac file (broken pkg-config design).
   
-  menu authoring, dvdauthor : add: automake, autoconf, libtool(ize), bison, flex.
+  menu authoring, dvdauthor : add: automake, autoconf, libtool(ize), bison, flex, libfreetype.
   
 
 2. Building tools
