@@ -189,12 +189,12 @@ void allocate_topmenus(command_t *command)
 {
 
     if (img->topmenu == NULL) img->topmenu=calloc(img->nmenus,sizeof(char *));
-    if (img->topmenu == NULL) perror("[ERR]  img->topmenu 1\n");
+    if (img->topmenu == NULL) perror("\n[ERR]  img->topmenu 1\n");
     int menu, s=strlen(globals.settings.tempdir);
     for (menu=0; menu < img->nmenus; menu++)
     {
         if (img->topmenu[menu] == NULL) img->topmenu[menu]=calloc(s+13, sizeof(char));
-        if (img->topmenu[menu] == NULL)  perror("[ERR] img->topmenu is null");
+        if (img->topmenu[menu] == NULL)  perror("\n[ERR] img->topmenu is null");
         if (img->topmenu[menu]) snprintf(img->topmenu[menu], s+11, "%s"SEPARATOR"%s%d", globals.settings.tempdir,"topmenu", menu);
     }
     return;
@@ -235,10 +235,10 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
         allocate_topmenus(command);
 
         errno=generate_spumux_xml(ngroups, ntracks, maxntracks, img);
-        if (errno) perror("[ERR]  AMG:spumux_xml");
-
-        launch_spumux(img);
-        if (errno) perror("[ERR]  AMG:spumux");
+        if (errno) perror("\n[ERR]  AMG:spumux_xml\n");
+        
+        errno=launch_spumux(img);
+        if (errno) perror("\n[ERR]  AMG:spumux\n");
 
     case  RUN_DVDAUTHOR :
 
@@ -246,13 +246,13 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
         {
             if (globals.debugging) foutput("%s\n", "[INF]  Generating AMGM Xml project for dvdauthor (patched)...");
             errno=generate_amgm_xml(ngroups, ntracks, img);
-            if (errno) perror("[ERR]  AMG:amgm_xml");
+            if (errno) perror("\n[ERR]  AMG:amgm_xml\n");
         }
         for (menu=0; menu < img->nmenus; menu++)
             if (img->topmenu[menu])
             {
                 if (img->menuvobsize == NULL) img->menuvobsize=calloc(img->nmenus, sizeof(uint32_t*));
-                if (img->menuvobsize == NULL) perror("[ERR]  menuvobsize\n");
+                if (img->menuvobsize == NULL) perror("\n[ERR]  menuvobsize\n");
 
                 img->menuvobsize[menu]=stat_file_size(img->topmenu[menu])/0x800;
                 if (globals.veryverbose) foutput("[MSG]  Top menu is: %s with size %"PRIu32" KB\n", img->topmenu[menu], img->menuvobsize[menu]);
@@ -266,7 +266,7 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
     case TS_VOB_TYPE:
         if (img->menuvobsize == NULL)
             img->menuvobsize=calloc(img->nmenus, sizeof(uint32_t*));
-        if (img->menuvobsize == NULL) perror("[ERR]  menuvobsize\n");
+        if (img->menuvobsize == NULL) perror("\n[ERR]  menuvobsize\n");
 
         img->menuvobsize[0]=stat_file_size(img->tsvob)/(0x800*img->nmenus);
         for (menu=0; menu < img->nmenus; menu++)

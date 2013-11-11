@@ -1174,7 +1174,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s%s\n", "[PAR]  background mpg video: ", optarg);
             if (img->backgroundmpg == NULL)
                 img->backgroundmpg=calloc(1, sizeof(char*));
-            if (img->backgroundmpg == NULL) perror("[ERR]  img->backgroundmpg\n");
+            if (img->backgroundmpg == NULL) perror("\n[ERR]  img->backgroundmpg\n");
 
             img->backgroundmpg=fn_strtok(optarg, ',' , img->backgroundmpg, 0,NULL,NULL);
 
@@ -1517,7 +1517,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             errno=secure_mkdir(globals.settings.outdir, 0777);
             if (errno)
             {
-                if (errno != EEXIST) perror("[WAR]  mkdir outdir");  // EEXIST error messages are often spurious
+                if (errno != EEXIST) perror("\n[WAR]  mkdir outdir");  // EEXIST error messages are often spurious
             }
 
 
@@ -1525,7 +1525,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         if (refresh_tempdir)
         {
             clean_directory(globals.settings.tempdir);
-            if (errno) perror("[ERR]  clean");
+            if (errno) perror("\n[ERR]  clean");
         }
         errno=secure_mkdir(globals.settings.tempdir, globals.access_rights);
         errno += secure_mkdir(globals.settings.lplextempdir, globals.access_rights);
@@ -1533,7 +1533,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {
             if (errno != EEXIST) 
             {
-              perror("[ERR]  Could not create temporary directory");
+              perror("\n[ERR]  Could not create temporary directory\n");
             }
         }
         else if (refresh_tempdir)
@@ -2098,24 +2098,24 @@ if (lplex_flag == 1)
         img->npics =(uint16_t*) calloc(totntracks, sizeof(uint16_t));
         if (img->npics == NULL)
         {
-            perror("[ERR] img->npics");
+            perror("\n[ERR] img->npics");
             goto standard_checks;
         }
         if (tab)
             w=arraylength(tab);
         else
         {
-            perror("[ERR]  tab");
+            perror("\n[ERR]  tab");
             goto standard_checks;
         }
         if (w > totntracks)
         {
-            fprintf(stderr, "[ERR]  Too many tracks on --stillpics: %d\n",w);
+            fprintf(stderr, "\n[ERR]  Too many tracks on --stillpics: %d\n",w);
             goto standard_checks;
         }
         else if (w < totntracks)
         {
-            fprintf(stderr, "[ERR]  You forgot at least one track on --stillpics:\n  total number of tracks:%d whilst pic string array has length %d\n", totntracks, w);
+            fprintf(stderr, "\n[ERR]  You forgot at least one track on --stillpics:\n  total number of tracks:%d whilst pic string array has length %d\n", totntracks, w);
             goto standard_checks;
         }
 
@@ -2132,17 +2132,17 @@ if (lplex_flag == 1)
                 }
             else
             {
-                perror("[ERR]  tab2");
+                perror("\n[ERR]  tab2");
                 goto standard_checks;
             }
             npics[k]=(k)? dim+npics[k-1]: dim;
             img->npics[k]=dim;
             DIM+=dim;
-            if (globals.debugging) fprintf(stderr, "[DBG]  number of pics for track %d: npics[%d] = %d\n", k,k, dim);
+            if (globals.debugging) fprintf(stderr, "\n[DBG]  number of pics for track %d: npics[%d] = %d\n", k,k, dim);
             FREE(tab2)
             if (img->npics[k] > 99)
             {
-                foutput("%s", "[ERR]  The maximum number of pics per track is 99.\n");
+                foutput("%s", "\n[ERR]  The maximum number of pics per track is 99.\n");
                 EXIT_ON_RUNTIME_ERROR_VERBOSE("Exiting...");
             }
         }
@@ -2151,7 +2151,7 @@ if (lplex_flag == 1)
         img->stillpicvobsize=(uint32_t*) calloc(DIM, sizeof(uint32_t));
         if (img->stillpicvobsize == NULL)
         {
-            perror("[ERR]  still pic vob size array");
+            perror("\n[ERR]  still pic vob size array");
             goto standard_checks;
         }
         img->count=DIM;
