@@ -18,6 +18,9 @@ yet may occur on some platforms owing to configuration inadequacies:
            #define SETTINGSFILE  "path/to/your/dvda-author.conf file" in commonvars.h (around line 90)
            and manually change the value of 'sysconfdir' accordingly in the top Makefile.
 
+   These issues should be avoided by allowing dvda-author to skip the .conf file parsing stage.
+   This beaviour is enabled by adding option -W to command line.
+   
 2. Reporting that it is impossible to create menus:
 
    Try to relaunch using --workdir="path to a directory containing the 'menu' subdirectory of the 

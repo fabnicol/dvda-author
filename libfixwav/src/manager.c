@@ -65,7 +65,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
     }
   else
     {
-      perror("[ERR]  Could not stat regular file");
+      perror("\n[ERR]  Could not stat regular file\n");
       info->repair=FAIL;
       goto getout;
     }

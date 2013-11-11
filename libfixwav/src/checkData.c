@@ -198,7 +198,7 @@ int prune(FILE* infile, FILE* outfile, WaveData *info, WaveHeader *header)
   size=read_file_size(infile, info->infile);
 
   if (errno)
-     perror("[ERR]  Could not state file size");
+     perror("\n[ERR]  Could not state file size\n");
 
 // Count ending zeros to be pruned
   if (end_seek(infile) == FAIL) return(FAIL);
@@ -235,7 +235,7 @@ int prune(FILE* infile, FILE* outfile, WaveData *info, WaveHeader *header)
 
       if ((info->in_place) && (truncate_from_end(info->infile, offset) == -1))
         {
-          perror("[ERR]  truncate error");
+          perror("\n[ERR]  truncate error\n");
           return(info->repair=FAIL);
         }
 
