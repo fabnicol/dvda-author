@@ -100,13 +100,15 @@ int lplex_initialise()
 return 0;
 }
 
+#define DIM_LPLEX_CLI 11
+
 int launch_lplex_soundtrack(pic* img, const char* create_mode)
 {
 #if HAVE_lplex    
     
     if (-1 == lplex_initialise()) return -1;
   
-    const char *args0[12]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm, "seamless"};  
+    const char *args0[DIM_LPLEX_CLI]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm};  
     int u, menu, tot=0;
     img->backgroundmpg=calloc(img->nmenus, sizeof(char*));
     for (menu=0; menu < img->nmenus; menu++)
@@ -117,26 +119,26 @@ int launch_lplex_soundtrack(pic* img, const char* create_mode)
             img->topmenu_nslides[menu] =1;
         }
 
-        char* args[img->topmenu_nslides[menu]*3+12+1];
-        for (u=0; u < 12; u++) args[u]=(char*) args0[u];
+        char* args[img->topmenu_nslides[menu]*3+DIM_LPLEX_CLI+1];
+        for (u=0; u < DIM_LPLEX_CLI; u++) args[u]=(char*) args0[u];
         for (u=0; u < img->topmenu_nslides[menu]; u++)
         {
           if (img->aspect[0] == '3')
-             args[12+tot]= "jpg";
+             args[DIM_LPLEX_CLI+tot]= "jpg";
           else
           if (img->aspect[0] == '3')
-             args[12+tot]= "jpgw";
+             args[DIM_LPLEX_CLI+tot]= "jpgw";
           else
           {
             fprintf(stderr, "%s", "[ERR]  For topmenu soundtrack editing only 4:3 and 16:9 aspect ratios are supported.\n");
             EXIT_ON_RUNTIME_ERROR
           }
-            args[12+tot+1]=img->topmenu_slide[menu][u];
-            args[12+tot+2]=img->soundtrack[menu][u];
+            args[DIM_LPLEX_CLI+tot+1]=img->topmenu_slide[menu][u];
+            args[DIM_LPLEX_CLI+tot+2]=img->soundtrack[menu][u];
             tot +=3;
         }
 
-        args[12+tot]=NULL;
+        args[DIM_LPLEX_CLI+tot]=NULL;
         if (globals.debugging)
         {
             foutput("[INF]  Launching lplex to create top menu #%d with soundtrack...\n", menu);
@@ -188,6 +190,9 @@ int launch_lplex_soundtrack(pic* img, const char* create_mode)
 
 /*  Create disc hybrid using track paths of priorly converted (16-24 bits/48-96 kHz) audio files */
 
+#undef DIM_LPLEX_CLI 
+#define DIM_LPLEX_CLI 13
+
 int launch_lplex_hybridate(const pic* img, const char* create_mode,
                            const char*** trackpath, const uint8_t* ntracks, 
                            const char*** slidepath, uint8_t* nslides, 
@@ -202,7 +207,7 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
       EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Allocation of DVD-VIDEO tracks/slides")
     }
     
-    const char *args0[12]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm, "seamless"};
+    const char *args0[DIM_LPLEX_CLI]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm, "--dir", globals.settings.lplextempdir};
     
     int argssize=0;
     
@@ -214,10 +219,10 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
       }
     }
         
-    char* args[12+argssize+1];
+    char* args[DIM_LPLEX_CLI+argssize+1];
     int tot=0;
         
-    for (int u=0; u < 12; u++) args[u]=(char*) args0[u];
+    for (int u=0; u < DIM_LPLEX_CLI; u++) args[u]=(char*) args0[u];
     
     for (int group=0; group < ntitlesets; group++)
     {
@@ -256,10 +261,10 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
         if (slidepath[group][tr]) 
         {
           if (img->aspect[0] == '2')
-             args[12+tot]= "jpg";
+             args[DIM_LPLEX_CLI+tot]= "jpg";
           else
           if (img->aspect[0] == '3')
-             args[12+tot]= "jpgw";
+             args[DIM_LPLEX_CLI+tot]= "jpgw";
           else
           {
             fprintf(stderr, "[ERR]  Found aspect code img->aspect[0]=%c.\n       For DVD-Video editing only 4:3 and 16:9 aspect ratios are supported.\n",img->aspect[0]);
@@ -275,14 +280,14 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
           
           if (slidepath[group][tr][0] == '\0' && tr != 0) slidepath[group][tr]=slidepath[group][tr-1];
           
-          args[12+tot+1]=(char*) slidepath[group][tr];
+          args[DIM_LPLEX_CLI+tot+1]=(char*) slidepath[group][tr];
         }
-        args[12+tot+2]=(char*) trackpath[group][tr];
+        args[DIM_LPLEX_CLI+tot+2]=(char*) trackpath[group][tr];
         tot +=3;
       }
     }
     
-    args[12+tot]=NULL; 
+    args[DIM_LPLEX_CLI+tot]=NULL; 
     
     if (globals.debugging)
         {
