@@ -17,10 +17,16 @@ which contain both DVD-Audio and DVD-Video zones.
 A navigation feature makes it possible to start playing a video
 title from within audio zone or an audio title from within video zone.
 
-Wav header correction, 'gapless' track-to-track playback
-and DVD-Audio menus are the latest features to date.
+Inctructions for use are given in the following files:
 
-See man page, html page or website for details.
+  man page: dvda-author-(version).1
+  html page: dvda-author-(version).html
+  EXAMPLES
+  TROUBLESHOOT (user-mentioned issues)
+  HOWTO.conf (for configuration files)
+  dvda-author.conf.example
+  
+See website for further details.
 
 
 2. WEBSITE
@@ -118,8 +124,6 @@ Other building systems will have to make use of the patches available at the fol
 See file INSTALL included in this distribution, and COREBUILD for building the core application only.
 On *nix platforms, the GNU build system will automatically link to existing libFLAC
 libraries, checking for the appropriate version (1.3.0 and later).
-If your installed library is not compatible, or on Windows platforms, libFLAC will be
-rebuilt from source code in directory libFLAC/
 
 If you do not use the GNU build system, check that the configuration file dvda-author.conf
 is in the same directory as the main executable (see INSTALL for other options).

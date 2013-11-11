@@ -1,5 +1,8 @@
 Release History
 
+   dvda-author-13.11
+          Nov     11, 2013  Implement lplex authoring for hybrids.
+          
    dvda-author-13.10
           Oct     01, 2013  Build system fixes. Audio menu enhancements. Updated dependencies.
 	  Oct     19, 2013  Further build system fixes. Port to GNU make entirely, remove all Makefile.am files

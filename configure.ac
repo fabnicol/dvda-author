@@ -64,7 +64,7 @@ DVDA_MKDIR([local])
 # -----------------------------------------------------------------------------------------
 # configuration file installation
 #
-# dvda-author.conf   will be installed in SHORTLINKDIR=INSTALL_CONF_DIR.
+# dvda-author.conf   will be installed in SHORTLINKDIR (in Makefiles) or INSTALL_CONF_DIR (in C code)
 # ac_defining INSTALL_CONF_DIR is an alternative to configuring commonvars.h.in
 # in AC_CONFIG_FILES. This requires:
 # a) AC_DEFINE_UNQUOTED
