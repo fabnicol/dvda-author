@@ -10,13 +10,33 @@ Name three WAV audio files file1.wav, file2.wav, file3.wav under ~/test.
 Check your internet connection is functional.
 Open a command line window and type in:
 
-./configure --enable-dvdauthor-patch --enable-cdrtools-patch 
- --enable-dvdauthor-build --enable-cdrtools-build && make && make install
+./configure --enable-core-build && make && make install
 
-If all runs well, you have a patched version of mkisofs and dvdauthor and 
-the Schilling version of cdrecord installed on your platform
-(it is recommended to uninstall prior versions of these tools before this step),
-with the  version of dvda-author.
+If all runs well, you have a minimal version of dvda-author with which you can 
+create DVD-Audio discs for .wav files.
+
+If you'd like to extend the list of audio files that are preprocessed prior to disc creation,
+condfigure the build as follows:
+
+./configure --enable-minimal-build --enable--minimal-deps.
+
+Take care to have a functional internet connection. 
+This configuration will make it possible to create discs with the FLAC and OggFlac audio formats
+and more generally,all audio formats compatible with SoX.
+
+For a full build with menu creation enabled, you should use:
+
+./configure --enable-all-all 
+ 
+but this will only work if your platform is Unix-like and if you have a reasonably extended list of
+system-installed developer tools. See file INSTALL for details.
+
+Linux and Windows32 builds of these tools are made available in all recent packages (as of 2013) 
+under directory build/.
+
+IN particular, you will need a patched version of mkisofs and dvdauthor and the Schilling version
+of cdrecord installed on your platform (it is recommended to uninstall prior versions 
+of these tools before this step).
 
 Should you need to author top menu soundtracks, or create slideshows for top menus, you'll
 also need lplex, which may be downloaded from the lplex forum page (see links 
@@ -70,6 +90,22 @@ Launch:
 dvda-author -a -g test/file1.wav test/file2.wav -g test/file3.wav  -o output  
 --highlight=test/menu1-0.mpg_highlight.png --select=test/menu1-0.mpg_select.png 
 --image=test/menu1-0.mpg_buttons.png    --mkisofs --background-mpg=test/menu1-0.mpg_bg.mpg  
+--workdir=/path/to/package  --bindir=/path/to/auxiliary/toos/directory  -W -P0
+
+Take care that the argument to --workdir actually is a directory containing the menu/ directory of 
+the source code package. You can copy this menu subdirectory within any workdir you like, so 
+using the source package as workdir is not necessary. Do not forget to manually copy the menu/
+subdir as a whole, however, if you change the working directory.
+
+The argument to --bindir should contain all auxciliaryu executables: mplex, mkisofs, etc.
+If you configured as above, just use:
+
+      --workdir=/path/to/package/local/bin/linux/aux
+
+or
+      --workdir=/path/to/package/local/bin/w32/aux
+
+depending on you platform.
 
 To burn the iso file generated under ~/output, you may use:
 
@@ -94,7 +130,7 @@ Example 2 : Several menus
 
 Use command-line:
 
--i ~/audio -o dir --topmenu   --nmenus 3 --cdrecord
+-i ~/audio -o dir --topmenu   --nmenus 3 --cdrecord -W -P0 --workdir (as above)  --bindir (as above)
 
 will output three menus, each with automatic menu images. 
 If you want to set the number of columns rather than the number of menus, use --ncolumns N  instead of an --nmenus n  option.
@@ -109,7 +145,7 @@ Install lplex (see above). Add the following options to the command line in exam
 
 --workdir (directory having audio/ and pic/ as subdirectories)
 --soundtracks audio/soundtrack1.wav:audio/soundtrack2.wav:audio/soundtrack3.wav 
---topmenu-slides pic/A.jpg:pic/B.jpg:pic/C.jpg
+--topmenu-slides pic/A.jpg:pic/B.jpg:pic/C.jpg --workdir (as above)  --bindir (as above)
 
 Each of the three menus will have A, B, and C respectively as background pictures, 
 and the corresponding audio track will be, respectively, soundtrack1.wav, soundtrack2.wav and soundtrack3.wav
@@ -179,6 +215,12 @@ Below is a simple example for a hand-made dvda-author.dap, equivalent to the fol
   2
 
 [debug]
+
+[workdir]
+ /path/to/drectory/containing/menu/subdirectory
+
+[bindir]
+ /path/to/auxiliary/binaries
 
 #end of project file
 

@@ -8,7 +8,8 @@ Installation Instructions
 Overview
 --------
 To build the application from source code, you will need all the dependencies
-listed in the file DEPENDENCIES, depending on your platform.
+listed in the file DEPENDENCIES, depending on your platform. Please read this file before
+proceeding.
 
 In short, a full build of main application and all dependencies (libraries and executables)
 can be obtained with:
@@ -382,6 +383,36 @@ Example:
 and with the Code::Blocks, ad the selected constants and values in the Projetc/Build options/#defines tab window.
 
 
+Build system regeneration
+=========================
+
+Run ./autogen from the top package directory instead.
+
+
+Installation directories for auxilliary files
+=============================================
+
+For *nix compatible platforms (including Cygwin and MSYS), if --prefix=directory is not
+used as indicated above, the following installation directories are used:
+
+ for binaries: /usr/bin
+ for installed libraries: /usr/lib
+ for dvda-author.conf and dvd-author.desktop: /usr/share/applications
+ for README and HTML help: /usr/share/doc/dvda-author
+ for images/icons: /usr/share/pixmaps
+
+Also see fixwav man page and README in fixwav/
+
+If --prefix is used, the above directories are replaced with $prefix/<dir> instead of /usr/<dir>
+The KDE/gnome .desktop file is adjusted by configure to integrate a link to the .png image (icon)
+in $prefix/pixmaps.
+
+Configure option --with-config='full path to directory containing dvda-author.conf'
+makes it possible to change the default path to the directory containing
+dvda-author.conf (mainly uselful on non *nix platforms).
+
+See file BUGS for additional advice.
+
 Installation Names
 ==================
 
@@ -495,36 +526,6 @@ an Autoconf bug.  Until the bug is fixed you can use this workaround:
 `configure --help' for more details.
 
 
-
-Build system regeneration
-=========================
-
-Run ./autogen from the top package directory instead.
-
-
-Installation directories for auxilliary files
-=============================================
-
-For *nix compatible platforms (including Cygwin and MSYS), if --prefix=directory is not
-used as indicated above, the following installation directories are used:
-
- for binaries: /usr/bin
- for installed libraries: /usr/lib
- for dvda-author.conf and dvd-author.desktop: /usr/share/applications
- for README and HTML help: /usr/share/doc/dvda-author
- for images/icons: /usr/share/pixmaps
-
-Also see fixwav man page and README in fixwav/
-
-If --prefix is used, the above directories are replaced with $prefix/<dir> instead of /usr/<dir>
-The KDE/gnome .desktop file is adjusted by configure to integrate a link to the .png image (icon)
-in $prefix/pixmaps.
-
-Configure option --with-config='full path to directory containing dvda-author.conf'
-makes it possible to change the default path to the directory containing
-dvda-author.conf (mainly uselful on non *nix platforms).
-
-See file BUGS for additional advice.
 
 
 Adapted by Fabrice Nicol for dvda-author, 2008-20013.
