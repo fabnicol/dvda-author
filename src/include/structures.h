@@ -188,6 +188,7 @@ typedef struct
     char  *outdir;
     char  *workdir;
     char  *tempdir;
+    char  *lplextempdir;
     char  *linkdir;
     char  *bindir;
     char  *datadir;

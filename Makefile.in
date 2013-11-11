@@ -214,5 +214,7 @@ $(DISTFORMATS):dist-%: %
 		echo Please install git to make a distribution package.
 	fi
 
+dist: dist-gz
+
 force: ;
 

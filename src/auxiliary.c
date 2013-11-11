@@ -202,9 +202,10 @@ printf("%s","-T, --videolink rank     Rank of video titleset linked to in video 
 
 printf("%s","Software configuration\n\n");
 
-printf("%s","-D, --tempdir directory  Temporary directory.\n\n");
+printf("%s","-D, --tempdir directory  Temporary directory for DVD-Audio files (dvda-author).\n\n");
+printf("%s","-D, --tempdir directory  Temporary directory for DVD-Video files (lplex).\n\n");
 printf("%s","-X, --workdir directory  Working directory: current directory in command line relative paths."J"By default, the current directory."J"With Code::Blocks and similar IDE, you may have to specify your root package directory as argument to --workdir.\n\n");
-printf("%s","    --no-refresh-tempdir Do not erase and recreate the temporary directory on launch.\n\n");
+printf("%s","    --no-refresh-tempdir Do not erase and recreate the DVD-Audio temporary directory on launch.\n\n");
 printf("%s","    --no-refresh-outdir  Do not erase and recreate the output directory on launch.\n\n");
 #if !HAVE_core_BUILD
 printf("%s","-W, --bindir path        Path to auxiliary binaries.\n\n");
@@ -471,6 +472,7 @@ void free_memory(command_t *command)
     FREE(globals.settings.outdir)
     FREE(globals.settings.workdir)
     FREE(globals.settings.tempdir)
+    FREE(globals.settings.lplextempdir)
     FREE(globals.settings.indir)
     FREE(globals.settings.linkdir)
     //FREE(globals.settings.logfile)
