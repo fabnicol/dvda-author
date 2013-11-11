@@ -1,0 +1,29 @@
+	TROUBLESHOOT ISSUES
+	-------------------
+
+Reported cases of troubleshoot often involve one of the following issues, which are not bugs per se 
+yet may occur on some platforms owing to configuration inadequacies:
+
+1. Reporting that it is impossible to open a dvda-author.conf (configuration) file
+
+   Try one of the following actions:
+          a) Manually install dvda-author.conf (found in root package) or any blank file so named
+             under /usr/share/applications/dvda-author-(version)  if this directory exists [*nix platforms]
+          b) Look at your Makefile in top package and locate the value for 'sysconfdir'. Perform step a) again
+             if sysconfdir is not the same directory as the one mentioned in a)
+          c) Reconfigure using --with-config='path to directory containing file dvda-author.conf'
+          d) Install dvda-author in a directory for which you have access rights
+          e) If all this fails, as a last-ditch way out, insert: 
+           
+           #define SETTINGSFILE  "path/to/your/dvda-author.conf file" in commonvars.h (around line 90)
+           and manually change the value of 'sysconfdir' accordingly in the top Makefile.
+
+2. Reporting that it is impossible to create menus:
+
+   Try to relaunch using --workdir="path to a directory containing the 'menu' subdirectory of the 
+   source code package" (not necessarily the source code package if you copied the menu subdirectory elsewhere).
+
+   Check that you have all the auxiliary binaries listed in the file DEPENDENCIES of the source code package
+   and that these binaries can be accessed by the system (they are located in your PATH environment variable).
+   Otherwise use --bindir='path to auxiliary executables' (mplex, mkisofs,lplex etc.)
+   
