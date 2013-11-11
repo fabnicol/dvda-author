@@ -197,6 +197,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"cga", required_argument, NULL, 'c'},
         {"text", optional_argument, NULL, 'k'},
         {"tempdir", required_argument, NULL, 'D'},
+        {"lplextempdir", required_argument, NULL, 19},
         {"workdir", required_argument, NULL, 'X'},
         {"datadir", required_argument, NULL, '9'},
         {"loghtml", no_argument, NULL, 1},
@@ -426,7 +427,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                     normalize_temporary_paths(NULL);
                     break;
 
-
+                case 19:
+                    FREE(globals.settings.lplextempdir);
+                    globals.settings.lplextempdir=strndup(optarg, MAX_OPTION_LENGTH);
+                    foutput("%s%s\n", "[PAR]  Temporary lplex directory is: ", optarg);
+                    break;
+ 
                 case 'X':
                     free(globals.settings.workdir);
                     globals.settings.workdir=strndup(optarg, MAX_OPTION_LENGTH);
@@ -1522,19 +1528,23 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if (errno) perror("[ERR]  clean");
         }
         errno=secure_mkdir(globals.settings.tempdir, globals.access_rights);
+        errno += secure_mkdir(globals.settings.lplextempdir, globals.access_rights);
         if (errno)
         {
-            if (errno != EEXIST) perror("[WAR]  mkdir temp");
+            if (errno != EEXIST) 
+            {
+              perror("[ERR]  Could not create temporary directory");
+            }
         }
         else if (refresh_tempdir)
         {
             if (globals.debugging)
-                foutput("[PAR]  Temporary directory %s has been removed and recreated.\n", globals.settings.tempdir);
+                foutput("[PAR]  DVD-Audio temporary directory %s has been removed and recreated.\n", globals.settings.tempdir);
         }
         else
         {
             if (globals.debugging)
-                foutput("[PAR]  Temporary directory %s has been preserved.\n", globals.settings.tempdir);
+                foutput("[PAR]  DVD-Audio temporary directory %s has been preserved.\n", globals.settings.tempdir);
         }
         errno=0;
         }
@@ -1579,7 +1589,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     char * str=NULL;
     optind=0;
     opterr=1;
-    _Bool soundtracks_flag=0, lplex_flag=0;
+    _Bool soundtracks_flag=0, lplex_flag=0, lplex_slides_flag=0;
     char*** dvdv_track_array=NULL;
     char*** dvdv_slide_array=NULL;
     uint8_t* ndvdvslides=NULL; 
@@ -1665,6 +1675,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
               parse_double_entry_command_line(&dvdv_track_array, &ndvdvtracks, &ndvdvtitleset1, AUDIT_DVD_VIDEO_AUDIO_FORMAT); 
               if (ndvdvtracks == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE("ndvdtracks null")
               lplex_flag=1;
+              globals.videozone=0;  // no DVD-VIDEO zone created by dvda-authro itself as it will be imported from other tools
             }
 
 #else
@@ -1689,7 +1700,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
             else
             {
-              parse_double_entry_command_line(&dvdv_slide_array, &ndvdvslides, &ndvdvtitleset2, NO_FIXWAV_AUDIT); 
+                parse_double_entry_command_line(&dvdv_slide_array, &ndvdvslides, &ndvdvtitleset2, NO_FIXWAV_AUDIT); 
+                lplex_slides_flag=1;
             }
 
 #else
@@ -1944,14 +1956,25 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
        if (import_topmenu_flag)
            import_topmenu(import_topmenu_path, img, USE_VTS_SOUNDTRACK);
 
+if (lplex_slides_flag == 1   &&    (
+                                       (ndvdvslides == 0 || dvdv_slide_array == NULL)
+                                    || (lplex_flag == 0)
+                                   )) 
+   {  
+      EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Incoherent command line: slides requested for Lplex"J"...yet no audio tracks or slides given.")
+   }
+  
+   
 if (lplex_flag == 1)
 {
+     
      if (ndvdvtitleset1 != ndvdvtitleset2)
      {
         fprintf(stderr, "[ERR]  Titleset count for slides (%d) and tracks (%d) is not the same.\n Fix the issue and relaunch.\n", ndvdvtitleset1, ndvdvtitleset2);
         EXIT_ON_RUNTIME_ERROR
      }
-     
+    
+          
      launch_lplex_hybridate(img, 
                             "dvd", 
                             (const char***) dvdv_track_array, 

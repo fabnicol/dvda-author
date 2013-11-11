@@ -288,6 +288,7 @@ int main(int argc,  char* const argv[])
             strdup(currentdir),
 #endif
             NULL,// temporary directory
+            NULL,// lplex tempdir
             NULL,   // videolinked directory path
             EXECDIR, //bindir
             DATADIR,
