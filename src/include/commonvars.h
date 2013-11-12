@@ -81,7 +81,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define MAX_GROUPS     9
 #define MAX_GROUP_ITEMS        99
 
-
+#define HIGH 2
 
 /* default backup directories */
 
@@ -141,6 +141,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #ifndef LPLEX_BASENAME
 #define LPLEX_BASENAME "lplex"
+#endif
+
+
+#ifndef SOX_BASENAME
+#define SOX_BASENAME "sox"
 #endif
 
 #ifndef CDRECORD_BASENAME
@@ -208,6 +213,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #ifndef LPLEX
 #define LPLEX ""
+#endif
+
+
+#ifndef SOX
+#define SOX ""
 #endif
 
 #ifndef MKISOFS

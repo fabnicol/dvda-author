@@ -1,3 +1,6 @@
+2013-11-12 Fabrice Nicol
+	* Add --dvdv-import, --mirror and --miror-strategy for DVD-Video zone authoring
+
 2013-11-11 Fabrice Nicol
 	* Add --lplex-tempdir, --lplex-output, --dvdv-tracks, --dvdv-slides for lplex DVD-Video zone authoring
 	* Update EXAMPLES.in file
