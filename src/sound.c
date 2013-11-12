@@ -18,6 +18,34 @@
 extern globalData globals;
 
 // Checks whether video soundtracks comply with standard for AUDIO_TS.VOB authoring
+char* sox=NULL;
+int sox_initialise()
+{
+#if HAVE_libsox
+    errno=0;
+    sox=create_binary_path(sox, SOX, SEPARATOR SOX_BASENAME);
+    if(!sox) return -1;
+#endif
+return 0;
+}
+
+
+int resample(const char* in, const char* out,const char* bitrate,const char* samplerate)
+{
+errno=0;
+#if HAVE_libsox
+if (-1 == sox_initialise()) 
+ return -1;
+ 
+const char *args[]= {SOX_BASENAME, "-b", bitrate, "-r", samplerate, in, out, NULL};  
+change_directory(globals.settings.workdir);
+foutput("[INF]  Running SoX for resampling: sox -b %s -r %s %s %s\n",bitrate,samplerate,in,out);
+errno=run(sox, args, 0);
+#endif
+return errno;
+}
+
+
 
 int audit_soundtrack(char* path, _Bool strict)
 {
