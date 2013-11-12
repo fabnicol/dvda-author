@@ -12,13 +12,10 @@ DEFINES += _GNU_SOURCE  HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_libfixwav HAVE
 
 #libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame --disable-gomp
 
+linux:LIBS +=  -L$(LIBROOT) -lFLAC -logg  -lsox -lid3tag  -lz  -lpulse -lpulse-simple -lasound  \
+                  -logg -lpng -lz -lgomp 
 
-linux:LIBS +=   ../dvda-author-dev/build/lib/linux/libFLAC.a ../dvda-author-dev/build/lib/linux/libogg.a   ../dvda-author-dev/build/lib/linux/libsox.a  -L../dvda-author-dev/build/lib/linux -lid3tag -lvorbisenc -lvorbisfile -lvorbis -lz -lsndfile  -lpulse -lpulse-simple -lasound -lwavpack \
-                  -logg -lpng -lz -lgomp -lsndfile 
-
-#todo: add libjson to build directory
-
-INCLUDEPATH = src/include libutils/src/include libutils/src/include libutils/src/private libfixwav/src/include build/include/FLAC build/include/libsoxconvert build/include libiberty/src/include
+INCLUDEPATH = src/include libiberty/src/include libutils/src/include libutils/src/include libutils/src/private libfixwav/src/include /home/fab/Dev/dvda-author-dev/build/linux/dvda-author-full.build/include/FLAC /home/fab/Dev/dvda-author-dev/build/linux/dvda-author-full.build/include/libsoxconvert /home/fab/Dev/dvda-author-dev/build/linux/dvda-author-full.build/include 
 
 SOURCES += \
     src/amg2.c \
