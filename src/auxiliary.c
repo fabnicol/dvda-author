@@ -196,7 +196,7 @@ printf("%s","    --dvdv-slides ...    Add slides to be added to DVD-VIDEO zone u
 printf("%s","-V, --videodir directory Path to VIDEO_TS directory\n\n");
 printf("%s","-T, --videolink rank     Rank of video titleset linked to in video zone"J"(XX in VTS_XX_0.IFO)."J"In this case the path to the VIDEO_TS linked to"J"must be indicated.\n\n");
 printf("%s","    --dvdv-import        Create DVD-VIDEO zone from DVD-AUDIO zone."J"Import DVD-Video standard compliant files (16-24 bit/48-96 kHz"J"from DVD-AUDIO to DVD-VIDEO.\n\n");
-printf("%s","    --mirror             Like --dvdv-import buy resample audio tracks"J"if they are not DVD-Video compliant\n\n");
+printf("%s","    --mirror             Like --dvdv-import but resample audio tracks"J"if they are not DVD-Video compliant (.wav files only)\n\n");
 printf("%s","    --mirror-strategy st Values for st are: 'high'' or 'low'."J"If necessary, --mirror will resample audio tracks"J"by upsampling (high) or downsampling (low)\n\n");
 #endif
 

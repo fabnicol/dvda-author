@@ -13,5 +13,5 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
                            int ntitlesets);
 
 int audit_soundtrack(char* path, _Bool strict);
-
+int resample(const char* in, const char* out,const char* bitrate,const char* samplerate);
 #endif

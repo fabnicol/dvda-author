@@ -49,13 +49,12 @@ extern char* INDIR, *OUTDIR, *LOGDIR, *LINKDIR, *WORKDIR, *TEMPDIR;
 // This function cleans up the list of input files by filtering out non-compliant audio input (format undefined or impossible to correct by other options)
 // Group and track numbers are readjusted and shifted down (recursively) when one or more files are rejected
 
-command_t *scan_wavfile_audio_characteristics(uint8_t* I, command_t *command)
+command_t *scan_wavfile_audio_characteristics(command_t *command)
 {
 
-    short int i, j, l, delta=0, error=0;
-    i=I[0];
-    j=I[1];
-
+    short int  l, delta=0, error=0;
+    static uint8_t i,j;
+    
     // retrieving information as to sound file format
 
     error=wav_getinfo(&files[i][j]);
@@ -153,18 +152,18 @@ command_t *scan_wavfile_audio_characteristics(uint8_t* I, command_t *command)
 // if AFMT was found, j will have been incremented earlier
 // otherwise it is necessary to reparse again files[i][j] as indices have been shifted
 
-    I[0]=i, I[1]=j;
+    
 
-    _Bool increment_group=(I[1] == ntracks[I[0]]);
+    _Bool increment_group=(j == ntracks[i]);
 
-    I[1] *= 1-increment_group;
-    I[0] += increment_group;
+    j *= 1-increment_group;
+    i += increment_group;
 
-    if (I[0] == ngroups-nvideolinking_groups)
+    if (i == ngroups-nvideolinking_groups)
 
         return command;
 // recursion
-    if (files[I[0]][I[1]].filename) scan_wavfile_audio_characteristics(I, command);
+    if (files[i][j].filename) scan_wavfile_audio_characteristics(command);
     return(command);
 }
 
@@ -172,9 +171,6 @@ command_t *scan_wavfile_audio_characteristics(uint8_t* I, command_t *command)
 int launch_manager(command_t *command)
 
 {
-
-
-
     /* sanity check */
     if (command == NULL)
     {
@@ -184,7 +180,7 @@ int launch_manager(command_t *command)
 
     errno=0;
     int i, j, error;
-    uint8_t indices[2]={0,0};
+
     uint32_t  last_sector;
     uint64_t totalsize=0;
     uint64_t sector_pointer_VIDEO_TS=0;
@@ -218,10 +214,6 @@ int launch_manager(command_t *command)
 
     SINGLE_DOTS
     change_directory(globals.settings.workdir);
-
-
-    scan_wavfile_audio_characteristics(indices, command);
-
 
     foutput("\n%s", "DVD Layout:\n");
     foutput("%s\n", "Group  Track    Rate Bits  Ch        Length  Filename\n");

@@ -888,7 +888,7 @@ int copy_file(const char *existing_file, const char *new_file)
 
     FILE *fn, *fe;
     int errorlevel;
-    if (globals.debugging) fprintf(stderr, "[DBG]  Copying file %s\n", existing_file);
+    if (globals.debugging) fprintf(stderr, "\n[DBG]  Copying file %s\n", existing_file);
     if (NULL == (fe = fopen(existing_file, "rb")))
     {
         fprintf(stderr, "[ERR]  Impossible to open file '%s' in read mode\n", existing_file);
