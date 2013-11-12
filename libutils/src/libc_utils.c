@@ -186,8 +186,8 @@ int rmdir_recursive (char *root, char *dirname)
     {
         if (errno == ENOTDIR)
         return 0;
-        printf ( "[ERR]  chdir() issue with dirname=%s\n", dirname);
-        return (-1);
+        //printf ( "[ERR]  chdir() issue with dirname=%s\n", dirname);
+        else return (-1);
     }
 
     slist_t *names = NULL;
@@ -754,8 +754,13 @@ void change_directory(const char * filename)
         if (errno == ENOTDIR)
             printf("[ERR]  %s is not a directory\n", filename);
         else
-        printf("[ERR]  Impossible to cd to %s \n.", filename);
-        exit(EXIT_FAILURE);
+        {
+           if (NULL != filename)
+             fprintf(stderr, "[ERR]  Impossible to cd to %s \n.", filename);
+           else   
+             fprintf(stderr, "%s","[ERR]  Null path\n.");
+           exit(EXIT_FAILURE);
+        }
     }
     else if (globals.debugging)
         printf("[DBG]  Current working directory is now %s\n", filename);
