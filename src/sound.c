@@ -207,7 +207,9 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
       EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Allocation of DVD-VIDEO tracks/slides")
     }
     
-    const char *args0[DIM_LPLEX_CLI]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm, "--dir", globals.settings.lplextempdir};
+    const char *args0[DIM_LPLEX_CLI]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", 
+    "--workPath", globals.settings.lplextempdir, 
+    "-x", "false", "--video", img->norm, "--dir", globals.settings.lplextempdir};
     
     int argssize=0;
     
@@ -297,6 +299,7 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
 
         change_directory(globals.settings.workdir);
         run(lplex, args, 0);
+        
         tot=0;
         
 #if 0        
@@ -338,6 +341,7 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
 
 #endif
 #endif
+    
     return errno;
 }
 
