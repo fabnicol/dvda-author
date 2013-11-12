@@ -115,7 +115,7 @@ printf("%s", J"except for lossy formats.\n");
 printf("%s","    --project [file]     Launches a dvda-author project."J"The project file should have the same syntax as dvda-author.conf [see file HOW_TO.conf]"J"By default, launches dvda-author.dap in the current directory.\n\n");
 printf("%s","-i, --input directory    Input directory with audio files."J"Each subdirectory is a group.\n\n");
 printf("%s","-o, --output directory   Output directory.\n\n");
-
+printf("%s","    --lplex-output dir   Output directory for lplex"J"Default is same as specified -o value"J"or default output directory.\n\n");
 printf("%s","-x, --extract disc[list] Extract DVD-Audio to directory -o."J"Groups are labelled g1, g2..."J"Optional comma-separated list of groups to be extracted\n"J"may be appended to disc path.\n"J"Tracks to be extracted may be listed ranked per group and separated by colons.\n\n");
 
 printf("%s","    --play disc[list]    Play DVD-Audio tracks."J"Optional comma-separated list of groups to be played\n"J"may be appended to disc path.\n"J"Tracks to be played may be listed ranked per group and separated by colons.\n\n");
@@ -202,8 +202,8 @@ printf("%s","-T, --videolink rank     Rank of video titleset linked to in video 
 
 printf("%s","Software configuration\n\n");
 
-printf("%s","-D, --tempdir directory  Temporary directory for DVD-Audio files (dvda-author).\n\n");
-printf("%s","-D, --tempdir directory  Temporary directory for DVD-Video files (lplex).\n\n");
+printf("%s","-D, --tempdir directory  Temporary directory for DVD-Audio files (dvda-author)."J"Optional.\n\n");
+printf("%s","-D, --lplex-tempdir directory  Temporary directory for DVD-Video files (lplex)"J"Optional.\n\n");
 printf("%s","-X, --workdir directory  Working directory: current directory in command line relative paths."J"By default, the current directory."J"With Code::Blocks and similar IDE, you may have to specify your root package directory as argument to --workdir.\n\n");
 printf("%s","    --no-refresh-tempdir Do not erase and recreate the DVD-Audio temporary directory on launch.\n\n");
 printf("%s","    --no-refresh-outdir  Do not erase and recreate the output directory on launch.\n\n");
@@ -473,7 +473,7 @@ void free_memory(command_t *command)
     FREE(globals.settings.outdir)
     FREE(globals.settings.workdir)
     FREE(globals.settings.tempdir)
-    FREE(globals.settings.lplextempdir)
+    FREE(globals.settings.lplexoutdir)
     FREE(globals.settings.indir)
     FREE(globals.settings.linkdir)
     //FREE(globals.settings.logfile)

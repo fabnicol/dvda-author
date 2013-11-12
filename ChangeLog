@@ -1,5 +1,5 @@
 2013-11-11 Fabrice Nicol
-	* Add --lplextempdir, --dvdv-tracks, --dvdv-slides for lplex DVD-Video zone authoring
+	* Add --lplex-tempdir, --lplex-output, --dvdv-tracks, --dvdv-slides for lplex DVD-Video zone authoring
 	* Update EXAMPLES.in file
 	
 2013-10-31 Fabrice Nicol
