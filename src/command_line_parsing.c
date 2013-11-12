@@ -1677,7 +1677,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
               parse_double_entry_command_line(&dvdv_track_array, &ndvdvtracks, &ndvdvtitleset1, AUDIT_DVD_VIDEO_AUDIO_FORMAT); 
               if (ndvdvtracks == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE("ndvdtracks null")
               lplex_flag=1;
-              globals.videozone=0;  // no DVD-VIDEO zone created by dvda-authro itself as it will be imported from other tools
             }
 
 #else
