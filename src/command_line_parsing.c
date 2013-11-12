@@ -259,6 +259,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"import-topmenu",required_argument, NULL, 9},
         {"dvdv-tracks",required_argument, NULL, 17},
         {"dvdv-slides",required_argument, NULL, 18},
+        {"dvdv-import",required_argument, NULL, 21},
+        {"mirror",required_argument, NULL, 22},
+        {"mirror-strategy",required_argument, NULL, 23},
+        
 #endif
         {NULL, 0, NULL, 0}
     };
@@ -314,12 +318,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                     globals.silence=1;
                     globals.debugging=0;
                     // Radical measure yet not portable outside the *nix realm ?
-
                     break;
 
                 case 't':
                     globals.veryverbose=1;
-
                     // no break
 
                 case 'd':
@@ -327,7 +329,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                     globals.debugging=1;
                     globals.silence=0;
                     break;
-
 
                 case 'L':
                     logrefresh=1; // no break
@@ -365,7 +366,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                     check_version_flag=1;
 
                     break;
-
 
                 }
             }
@@ -1599,7 +1599,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     char * str=NULL;
     optind=0;
     opterr=1;
-    _Bool soundtracks_flag=0, lplex_flag=0, lplex_slides_flag=0;
+    _Bool soundtracks_flag=0, lplex_flag=0, lplex_slides_flag=0, import_flag=0, mirror_flag=0, mirror_st_flag=0;
     char*** dvdv_track_array=NULL;
     char*** dvdv_slide_array=NULL;
     uint8_t* ndvdvslides=NULL; 
@@ -1713,6 +1713,37 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 lplex_slides_flag=1;
             }
 
+#else
+            foutput("%s", "[ERR]  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+#endif
+            break;
+
+        case 21:
+
+#if defined HAVE_lplex || HAVE_lplex_BUILD
+
+            foutput("%s\n", "[PAR]  Import DVD-Audio tracks to DVD-Video zone.");
+            import_flag=1;
+
+#else
+            foutput("%s", "[ERR]  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+#endif
+            break;
+
+
+        case 22:
+#if defined HAVE_lplex || HAVE_lplex_BUILD
+            foutput("%s\n", "[PAR]  Make mirror: import DVD-Audio tracks into DVD-Video zone\n       and resample them if necessary.");
+            mirror_flag=1;
+#else
+            foutput("%s", "[ERR]  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+#endif
+            break;
+
+        case 23:
+#if defined HAVE_lplex || HAVE_lplex_BUILD
+            foutput("[PAR]  Mirroring strategy: %s\n",optarg);
+            mirror_st_flag=1;
 #else
             foutput("%s", "[ERR]  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
 #endif
@@ -1964,11 +1995,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     else
        if (import_topmenu_flag)
            import_topmenu(import_topmenu_path, img, USE_VTS_SOUNDTRACK);
-
-if (lplex_slides_flag == 1   &&    (
+           
+if (import_flag == 0 &&
+     (lplex_slides_flag == 1   &&    (
                                        (ndvdvslides == 0 || dvdv_slide_array == NULL)
                                     || (lplex_flag == 0)
-                                   )) 
+                                   ))) 
    {  
       EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Incoherent command line: slides requested for Lplex"J"...yet no audio tracks or slides given.")
    }
@@ -1998,6 +2030,62 @@ if (lplex_flag == 1)
      free(ndvdvslides);
      free(ndvdvtracks);
 }
+
+if (import_flag ==1)
+{
+ndvdvtitleset1=0;
+
+for (int group=0; group < ngroups; group++)
+{
+ for (int track=0; track < ntracks[group]; track++)
+ {
+  ndvdvtracks=calloc(ngroups, sizeof(u_int8_t));
+  if (ndvdvtracks == NULL) EXIT_ON_RUNTIME_ERROR
+  
+  if    (  (command->files[group][track].bitspersample == 16  || command->files[group][track].bitspersample == 24)
+         &&(command->files[group][track].samplerate  == 96000 || command->files[group][track].samplerate  == 48000))
+     {
+       if (globals.veryverbose) 
+          foutput("[MSG]  Tested DVD-Video compliant: %s\n", command->files[group][track].filename);
+          command->files[group][track].dvdv_compliant=1;
+          ndvdvtracks[group]++;
+     }
+     else
+     {
+       if (globals.veryverbose) 
+          foutput("[MSG]  Failde to be tested DVD-Video compliant: %s\n", command->files[group][track].filename);
+     }
+  
+ }
+ dvdv_track_array=calloc(ndvdvtracks[group], sizeof(uint8_t*)); 
+ for (int track=0; track < ndvdvtracks[group]; track++) 
+ {
+      u=track;
+      while (u < ntracks[group] && command->files[group][u].dvdv_compliant == 0) u++;
+      dvdv_track_array[group][track]=command->files[group][u].filename;
+ }
+ 
+ if (ndvdvtracks[group]) ndvdvtitleset1++;
+}
+
+     globals.videozone=0;
+     
+     launch_lplex_hybridate(img, 
+                            "dvd", 
+                            (const char***) dvdv_track_array, 
+                            (const uint8_t*) ndvdvtracks, 
+                            (const char***) dvdv_slide_array, 
+                            ndvdvslides,
+                            (const int) ndvdvtitleset1); 
+
+     free(dvdv_track_array);
+     free(dvdv_slide_array);
+     free(ndvdvslides);
+     free(ndvdvtracks);
+
+}
+
+
 
     switch (globals.topmenu)
     {
