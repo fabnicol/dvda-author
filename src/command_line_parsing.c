@@ -259,8 +259,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"import-topmenu",required_argument, NULL, 9},
         {"dvdv-tracks",required_argument, NULL, 17},
         {"dvdv-slides",required_argument, NULL, 18},
-        {"dvdv-import",required_argument, NULL, 21},
-        {"mirror",required_argument, NULL, 22},
+        {"dvdv-import",no_argument, NULL, 21},
+        {"mirror",no_argument, NULL, 22},
         {"mirror-strategy",required_argument, NULL, 23},
         
 #endif
@@ -1742,8 +1742,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case 23:
 #if defined HAVE_lplex || HAVE_lplex_BUILD
+            foutput("%s\n", "[PAR]  Make mirror: import DVD-Audio tracks into DVD-Video zone\n       and resample them if necessary.");
             foutput("[PAR]  Mirroring strategy: %s\n",optarg);
-            mirror_st_flag=1;
+            mirror_flag=1;
+            if (strcmp(optarg, "high") == 0) mirror_st_flag=HIGH;
 #else
             foutput("%s", "[ERR]  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
 #endif
@@ -1981,8 +1983,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     char* dest;
 
 // Operations related to top menu creation
-
 // TODO: consider adding silence.wav to silent slideshows.
+// Some sanity tests
 
     if (soundtracks_flag)
     {
@@ -1995,97 +1997,27 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     else
        if (import_topmenu_flag)
            import_topmenu(import_topmenu_path, img, USE_VTS_SOUNDTRACK);
-           
-if (import_flag == 0 &&
-     (lplex_slides_flag == 1   &&    (
-                                       (ndvdvslides == 0 || dvdv_slide_array == NULL)
-                                    || (lplex_flag == 0)
-                                   ))) 
-   {  
-      EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Incoherent command line: slides requested for Lplex"J"...yet no audio tracks or slides given.")
-   }
-  
-   
-if (lplex_flag == 1)
-{
-     
-     if (ndvdvtitleset1 != ndvdvtitleset2)
-     {
-        fprintf(stderr, "[ERR]  Titleset count for slides (%d) and tracks (%d) is not the same.\n Fix the issue and relaunch.\n", ndvdvtitleset1, ndvdvtitleset2);
-        EXIT_ON_RUNTIME_ERROR
-     }
     
-     globals.videozone=0;
-     
-     launch_lplex_hybridate(img, 
-                            "dvd", 
-                            (const char***) dvdv_track_array, 
-                            (const uint8_t*) ndvdvtracks, 
-                            (const char***) dvdv_slide_array, 
-                            ndvdvslides,
-                            (const int) ndvdvtitleset1); 
-
-     free(dvdv_track_array);
-     free(dvdv_slide_array);
-     free(ndvdvslides);
-     free(ndvdvtracks);
-}
-
-if (import_flag ==1)
-{
-ndvdvtitleset1=0;
-
-for (int group=0; group < ngroups; group++)
-{
- for (int track=0; track < ntracks[group]; track++)
- {
-  ndvdvtracks=calloc(ngroups, sizeof(u_int8_t));
-  if (ndvdvtracks == NULL) EXIT_ON_RUNTIME_ERROR
-  
-  if    (  (command->files[group][track].bitspersample == 16  || command->files[group][track].bitspersample == 24)
-         &&(command->files[group][track].samplerate  == 96000 || command->files[group][track].samplerate  == 48000))
-     {
-       if (globals.veryverbose) 
-          foutput("[MSG]  Tested DVD-Video compliant: %s\n", command->files[group][track].filename);
-          command->files[group][track].dvdv_compliant=1;
-          ndvdvtracks[group]++;
-     }
-     else
-     {
-       if (globals.veryverbose) 
-          foutput("[MSG]  Failde to be tested DVD-Video compliant: %s\n", command->files[group][track].filename);
-     }
-  
- }
- dvdv_track_array=calloc(ndvdvtracks[group], sizeof(uint8_t*)); 
- for (int track=0; track < ndvdvtracks[group]; track++) 
- {
-      u=track;
-      while (u < ntracks[group] && command->files[group][u].dvdv_compliant == 0) u++;
-      dvdv_track_array[group][track]=command->files[group][u].filename;
- }
- 
- if (ndvdvtracks[group]) ndvdvtitleset1++;
-}
-
-     globals.videozone=0;
-     
-     launch_lplex_hybridate(img, 
-                            "dvd", 
-                            (const char***) dvdv_track_array, 
-                            (const uint8_t*) ndvdvtracks, 
-                            (const char***) dvdv_slide_array, 
-                            ndvdvslides,
-                            (const int) ndvdvtitleset1); 
-
-     free(dvdv_track_array);
-     free(dvdv_slide_array);
-     free(ndvdvslides);
-     free(ndvdvtracks);
-
-}
-
-
+    if (import_flag == 0 &&
+            (lplex_slides_flag == 1   &&    (
+                 (ndvdvslides == 0 || dvdv_slide_array == NULL)
+                 || (lplex_flag == 0 && mirror_flag == 0)
+                 ))) 
+    {  
+        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Incoherent command line: slides requested for Lplex"J"...yet no audio tracks or slides given.")
+    }
+    if (lplex_flag == 1)
+    {
+        
+        if (ndvdvtitleset1 != ndvdvtitleset2)
+        {
+            fprintf(stderr, "[ERR]  Titleset count for slides (%d) and tracks (%d) is not the same.\n Fix the issue and relaunch.\n", ndvdvtitleset1, ndvdvtitleset2);
+            EXIT_ON_RUNTIME_ERROR
+        }
+    }
+    
+    if (import_flag == 1 && mirror_flag == 1)
+      EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  You should not use --mirror along with --import-dvdv: do you really want to resample?\n       Exiting...\n");
 
     switch (globals.topmenu)
     {
@@ -2178,8 +2110,6 @@ for (int group=0; group < ngroups; group++)
         menu_characteristics_coherence_test(img, ngroups);
         errno=0;
     }
-
-
 
 
 // Operations related to stills
@@ -2278,11 +2208,9 @@ standard_checks:
         nplaygroups=MAX(0, 9-ngroups);
     }
 
-
 // ngroups does not include copy groups from then on -- nplaygroups are just virtual (no added bytes to disc)
 // number of groups=ngroups+nplaygroups
 // number of audio groups=ngroups-nvideolinking_groups
-
 // End of coherence checks
 
     command_t command0=
@@ -2300,11 +2228,183 @@ standard_checks:
         textable,
     };
 
-
     errno=0;
     memcpy(command, &command0, sizeof(command0));
-    user_command_line++;
+    
+    if (user_command_line)    
+      scan_wavfile_audio_characteristics(command);
+   
+    if (lplex_flag == 1)
+    {
+      globals.videozone=0;
+     
+      launch_lplex_hybridate(img, 
+                            "dvd", 
+                            (const char***) dvdv_track_array, 
+                            (const uint8_t*) ndvdvtracks, 
+                            (const char***) dvdv_slide_array, 
+                            ndvdvslides,
+                            (const int) ndvdvtitleset1); 
 
+      free(dvdv_track_array);
+      free(dvdv_slide_array);
+      free(ndvdvslides);
+      free(ndvdvtracks);
+    }
+
+    if (import_flag == 1)
+    {
+        ndvdvtitleset1=0;
+        dvdv_track_array=(char***) calloc(ngroups, sizeof(char**));  // is a maximum
+        
+        for (int group=0; group < ngroups; group++)
+        {
+            for (int track=0; track < ntracks[group]; track++)
+            {
+                ndvdvtracks=calloc(ngroups, sizeof(u_int8_t));
+                if (ndvdvtracks == NULL) EXIT_ON_RUNTIME_ERROR
+                        
+                        if    (  (command->files[group][track].bitspersample == 16  || command->files[group][track].bitspersample == 24)
+                                 &&(command->files[group][track].samplerate  == 96000 || command->files[group][track].samplerate  == 48000))
+                {
+                    if (globals.veryverbose) 
+                    {
+                        foutput("[MSG]  Tested DVD-Video compliant: %s\n", command->files[group][track].filename);
+                        foutput("[MSG]  group %d track %d: bits per sample=%d samplerate=%d\n", group, track, command->files[group][track].bitspersample, command->files[group][track].samplerate);
+                    }
+                    command->files[group][track].dvdv_compliant=1;
+                    ndvdvtracks[group]++;
+                }
+                    else
+                {
+                    if (globals.veryverbose) 
+                    {
+                        foutput("[MSG]  Failed to be tested DVD-Video compliant: %s\n", command->files[group][track].filename);
+                        foutput("[MSG]  group %d track %d: bits per sample=%d samplerate=%d\n", group, track, command->files[group][track].bitspersample, command->files[group][track].samplerate);
+                    }
+                }
+                
+            }
+            dvdv_track_array[group]=(char**) calloc(ndvdvtracks[group], sizeof(char*)); 
+            for (int track=0; track < ndvdvtracks[group]; track++) 
+            {
+                u=track;
+                while (u < (ntracks[group]-1) && command->files[group][u].dvdv_compliant == 0) u++;
+                dvdv_track_array[group][track]=command->files[group][u].filename;
+            }
+            
+            if (ndvdvtracks[group]) ndvdvtitleset1++;
+        }
+        
+        globals.videozone=0;
+        
+        launch_lplex_hybridate(img, 
+                               "dvd", 
+                               (const char***) dvdv_track_array, 
+                               (const uint8_t*) ndvdvtracks, 
+                               (const char***) dvdv_slide_array, 
+                               ndvdvslides,
+                               (const int) ndvdvtitleset1); 
+        
+        free(dvdv_track_array);
+        FREE(dvdv_slide_array);
+        FREE(ndvdvslides);
+        FREE(ndvdvtracks);
+        
+    }
+
+ if (mirror_flag == 1)
+    {
+        ndvdvtitleset1=0;
+        dvdv_track_array=(char***) calloc(ngroups, sizeof(char**));  // now lo longer a maximum
+        
+        for (int group=0; group < ngroups; group++)
+        {
+            dvdv_track_array[group]=(char**) calloc(command->ntracks[group], sizeof(char*)); 
+            for (int track=0; track < ntracks[group]; track++)
+            {
+                        
+               if    (  (command->files[group][track].bitspersample == 16  || command->files[group][track].bitspersample == 24)
+                                 &&(command->files[group][track].samplerate  == 96000 || command->files[group][track].samplerate  == 48000))
+                {
+                    if (globals.veryverbose) 
+                    {
+                        foutput("[MSG]  Tested DVD-Video compliant: %s\n", command->files[group][track].filename);
+                        foutput("[MSG]  group %d track %d: bits per sample=%d samplerate=%d\n", group, track, command->files[group][track].bitspersample, command->files[group][track].samplerate);
+                    }
+                    command->files[group][track].dvdv_compliant=1;
+                }
+                    else
+                {
+                    if (globals.veryverbose) 
+                    {
+                        foutput("[MSG]  Failed to be tested DVD-Video compliant: %s\n", command->files[group][track].filename);
+                        foutput("[MSG]  group %d track %d: bits per sample=%d samplerate=%d\n", group, track, command->files[group][track].bitspersample, command->files[group][track].samplerate);
+                    }
+                }
+             
+                if(command->files[group][u].dvdv_compliant == 1) 
+                   dvdv_track_array[group][track]=command->files[group][u].filename;
+                else
+                {
+                   int new_sample_rate=0;
+                   int new_bit_rate=0;
+                                      
+                   if (mirror_st_flag == HIGH)
+                   {
+                      if (command->files[group][track].samplerate <= 48000) new_sample_rate=48000;
+                      else
+                      new_sample_rate=96000;
+                      if (command->files[group][track].bitspersample <= 16) new_bit_rate=16;
+                      else 
+                      new_bit_rate=24;
+                   }
+                   else //LOW
+                   {
+                      if (command->files[group][track].samplerate < 96000) new_sample_rate=48000;
+                      else
+                      new_sample_rate=96000;
+                      if (command->files[group][track].bitspersample < 24) new_bit_rate=16;
+                      else 
+                      new_bit_rate=24;
+                   }
+                   
+                   int size=strlen(command->files[group][track].filename);
+                   if (strcmp(command->files[group][track].filename+size-4, ".wav") !=0)
+                   {
+                      EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Automatic mirroring is only supported for wav files.")
+                   }
+                   
+                   char newpath[size+4];
+                   strncpy(newpath, command->files[group][track].filename,size-4);
+                   sprintf(newpath+size-4, "%s", ".res.wav");
+                   
+                   dvdv_track_array[group][track]=strdup(newpath);
+                   char new_bit_rate_str[3]={0};
+                   char new_sample_rate_str[6]={0};
+                   sprintf(new_bit_rate_str, "%d", new_bit_rate);
+                   sprintf(new_sample_rate_str, "%d", new_sample_rate);
+                   resample(command->files[group][track].filename,dvdv_track_array[group][track],new_bit_rate_str, new_sample_rate_str);
+                }
+               }
+        }
+        
+        globals.videozone=0;
+        
+        launch_lplex_hybridate(img, 
+                               "dvd", 
+                               (const char***) dvdv_track_array, 
+                               (const uint8_t*) command->ntracks, 
+                               (const char***) dvdv_slide_array, 
+                               ndvdvslides,
+                               (const int) ngroups); 
+        
+        free(dvdv_track_array);
+        FREE(dvdv_slide_array);
+        FREE(ndvdvslides);
+    }
+
+    user_command_line++;
     return(command);
 }
 

@@ -786,13 +786,12 @@ uint16_t y(uint8_t track, uint8_t maxnumtracks)
 
 int prepare_overlay_img(char* text, int8_t group, pic *img, char* command, char* command2, int menu, char* albumcolor)
 {
-
+    initialize_binary_paths(3);
+    
     int size=strlen(globals.settings.tempdir)+11;
     char picture_save[size];
-
-    initialize_binary_paths(3);
-
     sprintf(picture_save, "%s"SEPARATOR"%s", globals.settings.tempdir, "svpic.png");
+    
     unlink(picture_save);
     errno=0;
     change_directory(globals.settings.datadir);
