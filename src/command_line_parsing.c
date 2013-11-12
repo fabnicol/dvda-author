@@ -74,9 +74,11 @@ void parse_double_entry_command_line(char**** DOUBLE_ARRAY, uint8_t** COUNTER_AR
                     #endif
                     for (int track=0; track < *COUNTER_ARRAY[titleset]; track++)
                     {
+                        #if HAVE_libfixwav
                         if ((audit_flag == AUDIT_DVD_VIDEO_AUDIO_FORMAT) || (audit_flag == AUDIT_STRICT_TOPMENU_AUDIO_FORMAT)) 
                           errno=audit_soundtrack((*DOUBLE_ARRAY)[titleset][track], audit_flag);
                         // else case: images, noop.
+                        #endif
                           
                         if (errno) 
                         {

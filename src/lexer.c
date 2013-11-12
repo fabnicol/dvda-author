@@ -56,9 +56,9 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
 
     if (defaults == NULL)
     {
-        if (globals.debugging) foutput("[ERR]  fopen(%s, \"rb\") crashed\n", path);
-        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not open default file dvda-author.conf")
-
+       fprintf(stderr, "[ERR]  fopen(%s, \"rb\") crashed\n", path);
+       fprintf(stderr, "%s\n", "[ERR]  Could not open default file dvda-author.conf");
+       exit(-1);
     }
         clearerr(defaults);
 
