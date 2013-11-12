@@ -10,6 +10,7 @@ INSTALL=$(SHELL) @ROOTDIR@/config/install-sh
 INSTALL_DATA=$(SHELL) @ROOTDIR@/config/install-sh  -m 644
 export INSTALL
 export INSTALL_DATA
+MKDIR_P=mkdir$(EXEEXT) -p
 
 SHELL=/bin/sh
 
@@ -143,37 +144,29 @@ dist_pic_DATA= @ROOTDIR@/dvda-author_48x48.png @ROOTDIR@/dvda-author_64x64.png
 dist_doc_DATA=@ROOTDIR@/README  @ROOTDIR@/BUGS @ROOTDIR@/EXAMPLES @ROOTDIR@/LIMITATIONS @ROOTDIR@/BUILD.Ubuntu  \
                @ROOTDIR@/DEPENDENCIES @ROOTDIR@/HOWTO.conf @ROOTDIR@/dvda-author.conf.example
 
-ifeq "@HAVE_man2html@" "yes"
-  htmlhelp=$(PROGRAM).html
-else
-  htmlhelp=
-endif
-
-ifeq "@HAVE_help2man@" "yes"
-  manhelp=$(PROGRAM).1
-else
-  manhelp=
-endif
-
 # GNU build system regeneration script and others
 
 install-sys: $(dist_sysconf_DATA)
+	$(MKDIR_P) $(DESTDIR)$(DESTDIR)$(sysconfdir)
 	$(INSTALL_DATA) $^ $(DESTDIR)$(sysconfdir)
 
 install-pic:  $(wildcard @ROOTDIR@/menu/*)
-	$(INSTALL_DATA) $^ $(DESTDIR)@MENUDIR@
+	$(MKDIR_P) $(DESTDIR)$(DESTDIR)$(sysconfdir)/menu
+	$(INSTALL_DATA) $^ $(DESTDIR)@MENUDIR@	
 
-install-man: $(manhelp)
-	$(if $^,$(INSTALL_DATA) $^ @mandir@/man1)
+install-man: 
+	@if test -f $(PROGRAM).1; then $(INSTALL_DATA) $(PROGRAM).1 @mandir@/man1; fi
 
-install-data-local:  $(htmlhelp) $(dist_doc_DATA) $(dist_pic_DATA)
+install-data-local:  $(dist_doc_DATA) $(dist_pic_DATA)
 	$(INSTALL_DATA) $^ $(DESTDIR)@infodir@/$(PROGRAM)
+	@if test -f $(PROGRAM).html; then $(INSTALL_DATA) $(PROGRAM).html $(DESTDIR)@infodir@/$(PROGRAM); fi
 
 # redefining install is necessary to rename nested package directories for later builds with --enable-all-builds, which request lib* labelling
 
 install-strip: install
 
 install:  @BUILDDIR@/src/$(PROGRAM) install-data-local install-pic install-sys install-man
+	$(MKDIR_P) $(DESTDIR)@bindir@
 	@$(foreach dir,src $(subdirs), $(MAKE) --directory=$(dir) install)
 
 clean: clean-local
