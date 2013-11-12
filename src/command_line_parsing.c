@@ -1975,7 +1975,8 @@ if (lplex_flag == 1)
         EXIT_ON_RUNTIME_ERROR
      }
     
-          
+     globals.videozone=0;
+     
      launch_lplex_hybridate(img, 
                             "dvd", 
                             (const char***) dvdv_track_array, 
