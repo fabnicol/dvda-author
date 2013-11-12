@@ -107,8 +107,6 @@ void normalize_temporary_paths(pic* img)
         sprintf(globals.settings.indir, "%s"SEPARATOR"%s", globals.settings.tempdir, "audio");
         sprintf(globals.settings.outdir, "%s"SEPARATOR"%s", globals.settings.tempdir, "output");
         sprintf(globals.settings.linkdir, "%s"SEPARATOR"%s", globals.settings.tempdir, "VIDEO_TS");
-
-
     }
     else
     {
@@ -146,6 +144,8 @@ void normalize_temporary_paths(pic* img)
         img->selectpic[img->nmenus]=NULL;
 //        img->backgroundmpg[img->nmenus]=NULL;
     }
+    
+            //globals.settings.lplextempdir=strdup(globals.settings.outdir);
 }
 
 
@@ -365,7 +365,6 @@ int main(int argc,  char* const argv[])
 
     globals=globals_init;
     globals.settings.tempdir=TEMPDIR;
-    globals.settings.lplextempdir=strdup(globals.settings.tempdir);
     globals.settings.stillpicdir=strdup(globals.settings.tempdir);
     normalize_temporary_paths(NULL);
 
