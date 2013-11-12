@@ -209,7 +209,7 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
     
     const char *args0[DIM_LPLEX_CLI]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", 
     "--workPath", globals.settings.lplextempdir, 
-    "-x", "false", "--video", img->norm, "--dir", globals.settings.lplextempdir};
+    "-x", "false", "--video", img->norm, "--dir", globals.settings.lplexoutdir};
     
     int argssize=0;
     
