@@ -186,6 +186,7 @@ typedef struct
     char  *logfile;
     char  *indir;
     char  *outdir;
+    char  *lplexoutdir;
     char  *workdir;
     char  *tempdir;
     char  *lplextempdir;

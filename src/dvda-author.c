@@ -55,7 +55,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 /*  Global  options */
 
 globalData globals;
-char *currentdir, *TEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
+char *currentdir, *TEMPDIR, *LPLEXTEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
 
  command_t* lexer_analysis(command_t* command, lexer_t* lexer, const char* config_file, _Bool config_type)
  {
@@ -101,11 +101,13 @@ void normalize_temporary_paths(pic* img)
         s=strlen(globals.settings.tempdir);
         globals.settings.indir=realloc(globals.settings.indir, (s+10)*sizeof(char));
         globals.settings.outdir=realloc(globals.settings.outdir, (s+10)*sizeof(char));
+        globals.settings.lplexoutdir=realloc(globals.settings.lplexoutdir, (s+10)*sizeof(char));
         globals.settings.linkdir=realloc(globals.settings.linkdir, (s+10)*sizeof(char));
         globals.settings.indir=calloc(s+10,1);
 
         sprintf(globals.settings.indir, "%s"SEPARATOR"%s", globals.settings.tempdir, "audio");
         sprintf(globals.settings.outdir, "%s"SEPARATOR"%s", globals.settings.tempdir, "output");
+        sprintf(globals.settings.lplexoutdir, "%s"SEPARATOR"%s", globals.settings.tempdir, "output");
         sprintf(globals.settings.linkdir, "%s"SEPARATOR"%s", globals.settings.tempdir, "VIDEO_TS");
     }
     else
@@ -144,8 +146,7 @@ void normalize_temporary_paths(pic* img)
         img->selectpic[img->nmenus]=NULL;
 //        img->backgroundmpg[img->nmenus]=NULL;
     }
-    
-            //globals.settings.lplextempdir=strdup(globals.settings.outdir);
+                
 }
 
 
@@ -185,6 +186,7 @@ int main(int argc,  char* const argv[])
 
     char TEMPDIRROOT[currentdirlength+14];
     TEMPDIR=calloc(currentdirlength+20, sizeof(char));
+    LPLEXTEMPDIR=calloc(currentdirlength+26, sizeof(char));
 
     char *EXECDIR=calloc(MAX(currentdirlength, 20)+4+25, sizeof(char));  // /usr/local/bin or /usr/bin under *NIX, "currentdir" directory/bin otherwise (win32...)
     // 4 for "/bin and be liberal and allow 25 more characters for the executable name.
@@ -218,6 +220,7 @@ int main(int argc,  char* const argv[])
     sprintf(TEMPDIRROOT, "%s%s%s", currentdir,(currentdir[0] == 0)? "" : SEPARATOR , TEMPDIR_SUBFOLDER_PREFIX DVDA_AUTHOR_BASENAME);
 
     sprintf(TEMPDIR, "%s"SEPARATOR"%s", TEMPDIRROOT, "temp");
+    sprintf(LPLEXTEMPDIR, "%s"SEPARATOR"%s", TEMPDIRROOT, "temp.lplex");
 
 
     // Global settings are hard-code set by default as follows:
@@ -282,6 +285,7 @@ int main(int argc,  char* const argv[])
             NULL,  // logfile path should be supplied on command line
             NULL, // input directory path
             NULL,// output directory path
+            NULL,//lplex output dir path
 #ifdef __WIN32__
             strdup(DEFAULT_WORKDIR),// working directory: under Windows, c:\ if not defined at compile time, otherwise 'currentdir' environment variable
 #else
@@ -365,6 +369,7 @@ int main(int argc,  char* const argv[])
 
     globals=globals_init;
     globals.settings.tempdir=TEMPDIR;
+    globals.settings.lplextempdir=LPLEXTEMPDIR;
     globals.settings.stillpicdir=strdup(globals.settings.tempdir);
     normalize_temporary_paths(NULL);
 

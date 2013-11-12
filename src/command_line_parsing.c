@@ -36,7 +36,7 @@
 
 globalData globals;
 unsigned int startsector;
-extern char* OUTDIR, *LOGFILE, *WORKDIR, *TEMPDIR;
+extern char* OUTDIR, *LOGFILE, *WORKDIR, *TEMPDIR, *LPLEXTEMPDIR;
 static fileinfo_t ** files;
 uint16_t totntracks;
 uint8_t maxbuttons; // to be used in xml.c and menu.c as extern globals
@@ -189,6 +189,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"logrefresh", required_argument, NULL, 'L'},
         {"no-videozone", no_argument, NULL, 'n'},
         {"output", required_argument, NULL, 'o'},
+        {"lplex-output", required_argument, NULL, 20},
         {"autoplay", no_argument, NULL, 'a'},
         {"startsector", required_argument, NULL, 'p'},
         {"pause", optional_argument, NULL, 'P'},
@@ -199,7 +200,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"cga", required_argument, NULL, 'c'},
         {"text", optional_argument, NULL, 'k'},
         {"tempdir", required_argument, NULL, 'D'},
-        {"lplextempdir", required_argument, NULL, 19},
+        {"lplex-tempdir", required_argument, NULL, 19},
         {"workdir", required_argument, NULL, 'X'},
         {"datadir", required_argument, NULL, '9'},
         {"loghtml", no_argument, NULL, 1},
@@ -432,9 +433,15 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 case 19:
                     FREE(globals.settings.lplextempdir);
                     globals.settings.lplextempdir=strndup(optarg, MAX_OPTION_LENGTH);
-                    foutput("%s%s\n", "[PAR]  Temporary lplex directory is: ", optarg);
+                    foutput("%s%s\n", "[PAR]  Lplex temporary directory is: ", optarg);
                     break;
  
+                case 20:
+                    FREE(globals.settings.lplexoutdir);
+                    globals.settings.lplexoutdir=strndup(optarg, MAX_OPTION_LENGTH);
+                    foutput("%s%s\n", "[PAR]  Lplex output directory is: ", optarg);
+                    break;
+                    
                 case 'X':
                     free(globals.settings.workdir);
                     globals.settings.workdir=strndup(optarg, MAX_OPTION_LENGTH);
@@ -1505,7 +1512,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         if ((refresh_outdir) && (!globals.nooutput))
         {
             clean_directory(globals.settings.outdir);
-            if (errno) perror("[ERR]  clean");
+            clean_directory(globals.settings.lplexoutdir);
+            if (errno) perror("[WAR]  No output directory to be cleaned");
         }
         else
         {

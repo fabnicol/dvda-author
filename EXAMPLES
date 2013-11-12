@@ -100,12 +100,8 @@ subdir as a whole, however, if you change the working directory.
 The argument to --bindir should contain all auxciliaryu executables: mplex, mkisofs, etc.
 If you configured as above, just use:
 
-      --workdir=/path/to/package/local/bin/linux/aux
+      --workdir=/path/to/package/local/build/.../bin
 
-or
-      --workdir=/path/to/package/local/bin/w32/aux
-
-depending on you platform.
 
 To burn the iso file generated under ~/output, you may use:
 
