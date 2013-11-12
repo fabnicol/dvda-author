@@ -330,11 +330,12 @@ void check_settings_file()
 
     if (fopen(SETTINGSFILE, "rb") ==  NULL)
     {
-        foutput("[WAR]  Could not open settings file, creating one in %s...\n", SETTINGSFILE);
+        fprintf(stderr, "[WAR]  Could not open settings file %s, trying to create one in the same place...\n", SETTINGSFILE);
+        fprintf(stderr, "%s", "[WAR]  This will fail if directories containing this path do not exit or if you do not have appropriate rights.\n");
         FILE* settingsfile=fopen(SETTINGSFILE, "wb");
         if (settingsfile == NULL)
         {
-           foutput("[ERR]  Could not create settings file in path %s\n       Check that you have adequate administrative rights\n       Exiting...\n", SETTINGSFILE);
+           fprintf(stderr, "[ERR]  Could not create settings file in path %s\n       Check that you have adequate administrative rights\n       Exiting...\n", SETTINGSFILE);
            clean_exit(EXIT_FAILURE);
         }
 
