@@ -115,7 +115,6 @@ printf("%s", J"except for lossy formats.\n");
 printf("%s","    --project [file]     Launches a dvda-author project."J"The project file should have the same syntax as dvda-author.conf [see file HOW_TO.conf]"J"By default, launches dvda-author.dap in the current directory.\n\n");
 printf("%s","-i, --input directory    Input directory with audio files."J"Each subdirectory is a group.\n\n");
 printf("%s","-o, --output directory   Output directory.\n\n");
-printf("%s","    --lplex-output dir   Output directory for lplex"J"Default is same as specified -o value"J"or default output directory.\n\n");
 printf("%s","-x, --extract disc[list] Extract DVD-Audio to directory -o."J"Groups are labelled g1, g2..."J"Optional comma-separated list of groups to be extracted\n"J"may be appended to disc path.\n"J"Tracks to be extracted may be listed ranked per group and separated by colons.\n\n");
 
 printf("%s","    --play disc[list]    Play DVD-Audio tracks."J"Optional comma-separated list of groups to be played\n"J"may be appended to disc path.\n"J"Tracks to be played may be listed ranked per group and separated by colons.\n\n");
@@ -191,11 +190,14 @@ printf("%s","-r, --cdrecord(=a,b,c)   Run cdrecord to burn disc image."J"Unless 
 printf("%s","-R, --growisofs /dev/dvd Run growisofs to burn disc image."J"Device is of the form /dev/scd0 under many GNU/Linux distributions."J"It cannot be omitted.\n\n");
 
 printf("%s","DVD-VIDEO zone authoring\n\n");
+printf("%s","    --lplex-output dir   Output directory for lplex"J"Default is same as specified -o value"J"or default output directory.\n\n");
 printf("%s","    --dvdv-tracks ...    Add tracks to be added to DVD-VIDEO zone using lplex:"J"track11,...,trackn1:track12,...,trackn2:..."J"for trackij the ith track of group j.\n\n");
 printf("%s","    --dvdv-slides ...    Add slides to be added to DVD-VIDEO zone using lplex:"J"slide11,...,sliden1:slide12,...,slide2:..."J"for slideij the ith slide of group j."J"Each track should have a corresponding slide."J"Add two commas in a row for repeating previous slide."J"There can be a maximum of 1 slide per track.\n\n");
 printf("%s","-V, --videodir directory Path to VIDEO_TS directory\n\n");
 printf("%s","-T, --videolink rank     Rank of video titleset linked to in video zone"J"(XX in VTS_XX_0.IFO)."J"In this case the path to the VIDEO_TS linked to"J"must be indicated.\n\n");
-
+printf("%s","    --dvdv-import        Create DVD-VIDEO zone from DVD-AUDIO zone."J"Import DVD-Video standard compliant files (16-24 bit/48-96 kHz"J"from DVD-AUDIO to DVD-VIDEO.\n\n");
+printf("%s","    --mirror             Like --dvdv-import buy resample audio tracks"J"if they are not DVD-Video compliant\n\n");
+printf("%s","    --mirror-strategy st Values for st are: 'high'' or 'low'."J"If necessary, --mirror will resample audio tracks"J"by upsampling (high) or downsampling (low)\n\n");
 #endif
 
 
