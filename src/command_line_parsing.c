@@ -1582,7 +1582,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     menu_characteristics_coherence_test(img, ngroups);
 
 #ifndef __CB__
-#if !HAVE_mpeg2enc || !HAVE_mplex  || HAVE_jpeg2yuv
+#if !HAVE_mpeg2enc || !HAVE_mplex  || !HAVE_jpeg2yuv
     if (globals.topmenu <= RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR)
     {
         foutput("%s\n", "[ERR]  You need mplex, mpeg2enc and jpeg2yuv to author\n       a background screen, please install these applications.");
