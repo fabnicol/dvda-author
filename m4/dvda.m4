@@ -396,7 +396,7 @@ AC_DEFUN([DVDA_TEST_AUX],
 
 m4_define([CAPNAME],[uppernormalisename([$1])])
 #don't quote here
-AC_PATH_PROG(CAPNAME, [$1],[], [$bindir:/usr/bin:/usr/local/bin])
+AC_PATH_PROG(CAPNAME, [$1],[], [$PATH])
 AS_IF([test x$CAPNAME = x ],
    [
    DVDA_INF([No $2])
