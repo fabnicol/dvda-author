@@ -27,7 +27,7 @@
 #endif
 #include "command_line_parsing.h"
 #include "menu.h"
-#if defined HAVE_lplex || HAVE_lplex_BUILD
+#if HAVE_lplex || HAVE_lplex_BUILD
 #include "sound.h"
 #endif
 #include "videoimport.h"
@@ -1582,7 +1582,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     menu_characteristics_coherence_test(img, ngroups);
 
 #ifndef __CB__
-#if !defined HAVE_mpeg2enc || !defined HAVE_mjpegtools
+#if !HAVE_mpeg2enc || !HAVE_mplex  || HAVE_jpeg2yuv
     if (globals.topmenu <= RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR)
     {
         foutput("%s\n", "[ERR]  You need mplex, mpeg2enc and jpeg2yuv to author\n       a background screen, please install these applications.");
@@ -1618,7 +1618,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {
         case 'Q':
 
-#if defined HAVE_lplex || HAVE_lplex_BUILD
+#if  HAVE_lplex || HAVE_lplex_BUILD
 
             if (img->backgroundmpg)
             {
@@ -1667,7 +1667,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
        case 17:
 
-#if defined HAVE_lplex || HAVE_lplex_BUILD
+#if  HAVE_lplex || lplex_BUILD
 
             foutput("%s\n", "[PAR]  Generate DVD-VIDEO audio tracks");
             if (globals.veryverbose) 
@@ -1694,7 +1694,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
   case 18:
 
-#if defined HAVE_lplex || HAVE_lplex_BUILD
+#if HAVE_lplex || HAVE_lplex_BUILD
 
             foutput("%s\n", "[PAR]  Generate DVD-VIDEO slides");
             if (globals.veryverbose) 
@@ -1720,7 +1720,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case 21:
 
-#if defined HAVE_lplex || HAVE_lplex_BUILD
+#if HAVE_lplex || HAVE_lplex_BUILD
 
             foutput("%s\n", "[PAR]  Import DVD-Audio tracks to DVD-Video zone.");
             import_flag=1;
@@ -1732,7 +1732,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 
         case 22:
-#if defined HAVE_lplex || HAVE_lplex_BUILD
+#if HAVE_lplex || HAVE_lplex_BUILD
             foutput("%s\n", "[PAR]  Make mirror: import DVD-Audio tracks into DVD-Video zone\n       and resample them if necessary.");
             mirror_flag=1;
 #else
@@ -1741,7 +1741,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case 23:
-#if defined HAVE_lplex || HAVE_lplex_BUILD
+#if HAVE_lplex || HAVE_lplex_BUILD
             foutput("%s\n", "[PAR]  Make mirror: import DVD-Audio tracks into DVD-Video zone\n       and resample them if necessary.");
             foutput("[PAR]  Mirroring strategy: %s\n",optarg);
             mirror_flag=1;
