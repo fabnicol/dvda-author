@@ -47,6 +47,20 @@ installed tools already under /usr/bin or /usr/local/bin.
 
 WARNING
 -------
+
+1. Paths
+
+The auxiliary binaries which are built this way should be in your PATH at run time.
+If you ,leave them in place, you will have to enter a line like:
+
+export PATH=$PATH:$HOME/dvda-author-dev/local/.../bin
+
+with ... either linux or w32, depending on your platform before configuring the build
+as above and before running dvda-author too (if in another shell).
+To avoid repetitive exports, the former step is automatically executed by the `autogen' script.
+
+2. GNU tools
+
 To ensure a smooth building process, check that the GNU autotools (autoconf, automake, libtool),
 and auxiliary programs curl and patch are installed on your system (*nix or MSYS)
 Also check that your version of GNU make is at least 3.82 (preferably 3.99 at least for MSYS).
