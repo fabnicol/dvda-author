@@ -71,7 +71,7 @@ Tracing the downloads and builds
 --------------------------------
 file DOWNLOADS traces the downloaded packages
 files PATCHED.DOWNLOADS traces the patched downloads
-file BUILD.TRACE gives an account of all builds, either successful or failed.
+file depconf/BUILD.TRACE gives an account of all builds, either successful or failed.
 
 Qt Creator builds
 -----------------

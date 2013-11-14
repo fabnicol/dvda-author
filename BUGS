@@ -49,8 +49,8 @@ Special tracing files
 ---------------------
 
 As of Oct. 2013, the following files are generated at the root to monitor the toolchain build:
-BUILD.TRACE
-BUILD.TRACE~ (saves prior BUILD.TRACE)
+depconf/BUILD.TRACE
+depconf/BUILD.TRACE~ (saves prior BUILD.TRACE)
 DOWNLOADS
 PATCHED.DOWNLOADS
 The filenames are self-explanatory. Please check them before reporting a bug.
