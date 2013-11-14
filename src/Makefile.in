@@ -76,8 +76,8 @@ STATIC_LIBS=FLAC libogg sox
 
 all:    @PACKAGE_NAME@
 	@mv -f @PACKAGE_NAME@ $(PROGRAM)
-	echo [dvda-author] >> @BUILDDIR@/BUILD.TRACE
-	echo "     Build successful." >> @BUILDDIR@/BUILD.TRACE
+	echo [dvda-author] >> @BUILDDIR@/depconf/BUILD.TRACE
+	echo "     Build successful." >> @BUILDDIR@/depconf/BUILD.TRACE
 	echo
 	echo ----------------------------------------------- 
 	echo Finished building $(PROGRAM)
