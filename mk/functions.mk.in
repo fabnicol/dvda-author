@@ -3,12 +3,13 @@
 
 define docfollow
 	@findstring=$$(find @BUILDDIR@ -maxdepth 1 -name $(strip $1) -print0)
-	echo "[doc]" >> @BUILDDIR@/BUILD.TRACE
-	echo "    $1 $$findstring" >> @BUILDDIR@/BUILD.TRACE 
+	echo "[doc]" >> @BUILDDIR@/depconf/BUILD.TRACE
+	echo "    $1 $$findstring" >> @BUILDDIR@/depconf/BUILD.TRACE 
 endef
 
 define index
-	@echo [$1] >> @BUILDDIR@/BUILD.TRACE
+	$(MKDIR_P) @BUILDDIR@/depconf
+	@echo [$1] >> @BUILDDIR@/depconf/BUILD.TRACE
 	directory=$(MAYBE_$1)
 	if test "$3" = "library" ; then
 	   testvar=$$(find @BUILDDIR@/$$directory -maxdepth 4 -type f -wholename "*$1$2" -print0)
@@ -16,19 +17,19 @@ define index
 	   testvar=$$(find @BUILDDIR@/$$directory -maxdepth 4 -type f -wholename "*$($1_TESTBINARY)$2" -print0)
 	fi
 	if test "$$testvar" != ""; then
-		echo "     built $3: $$testvar for $1" >> @BUILDDIR@/BUILD.TRACE
+		echo "     built $3: $$testvar for $1" >> @BUILDDIR@/depconf/BUILD.TRACE
 		if test "$3" = "library" ; then
 		  testvar2=$$(find @BUILDDIR@/local/lib -wholename $($1_LIB) -print0)
 		else
 		  testvar2=$$(find @BUILDDIR@/local/bin -name "$($1_TESTBINARY)$(EXEEXT)" -print0)
 		fi
 		if test "$$testvar2" != ""; then
-			echo "     local $3: $$testvar2 from $(MAYBE_$1)" >> @BUILDDIR@/BUILD.TRACE
+			echo "     local $3: $$testvar2 from $(MAYBE_$1)" >> @BUILDDIR@/depconf/BUILD.TRACE
 		else
-			echo "     did not install $3 $1" >> @BUILDDIR@/BUILD.TRACE
+			echo "     did not install $3 $1" >> @BUILDDIR@/depconf/BUILD.TRACE
 		fi
 	else
-	        echo "     no $3 $1" >> @BUILDDIR@/BUILD.TRACE
+	        echo "     no $3 $1" >> @BUILDDIR@/depconf/BUILD.TRACE
 	fi
 endef
 
@@ -56,7 +57,7 @@ define configure_sub_package
 	      fi
 	      if test "$$?" = "0"; then  
 		  echo Now building $1 with command line $(MAKE) $(PARALLEL) MKDIR_P="mkdir$(EXEEXT) -p"  $(if $6,$6)...  
-		  $(MAKE) $(PARALLEL) MKDIR_P="mkdir$(EXEEXT) -p"  $(if $6,$6)
+		  $(MAKE) $(PARALLEL) MKDIR_P=$(MKDIR_P)  $(if $6,$6)
 	      fi
 	      if test "$$?" = "0"; then
 		 echo Installing from $$target_subdir ...
@@ -77,6 +78,7 @@ endef
 
 define configure_lib_package
 	@$(call configure_sub_package,$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),$2,$3,,$4)
+	if test "$$?" = "0"; then touch @BUILDDIR@/depconf/$1.depconf; fi
 	$(call index,$1,.a,library)
 endef
 
@@ -87,6 +89,7 @@ define configure_exec_package
 	  $(if $$patchfile, patch -p0 < $$patchfile && echo "locally patched: $1: using $$patchfile in patches/" >> PATCHED.DOWNLOADS)
 	fi
 	$(call configure_sub_package,$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),,,$2,$3)
+	if test "$$?" = "0"; then touch @BUILDDIR@/depconf/$1.depconf; fi
 	$(call index,$1,$(EXEEXT),binary)
 endef
 

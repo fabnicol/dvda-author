@@ -4,5 +4,5 @@ help2man_MAKESPEC=auto
 help2man_CONFIGSPEC=exe
 help2man_TESTBINARY=help2man
 
-help2man.depconf: 
-	$(call depconf,$*)
+@BUILDDIR@/depconf/help2man.depconf: 
+	$(call depconf,help2man)
