@@ -3,12 +3,13 @@
 
 define docfollow
 	@findstring=$$(find @BUILDDIR@ -maxdepth 1 -name $(strip $1) -print0)
-	echo "[doc]" >> @BUILDDIR@/BUILD.TRACE
-	echo "    $1 $$findstring" >> @BUILDDIR@/BUILD.TRACE 
+	echo "[doc]" >> @BUILDDIR@/depconf/BUILD.TRACE
+	echo "    $1 $$findstring" >> @BUILDDIR@/depconf/BUILD.TRACE 
 endef
 
 define index
-	@echo [$1] >> @BUILDDIR@/BUILD.TRACE
+	$(MKDIR_P) @BUILDDIR@/depconf
+	@echo [$1] >> @BUILDDIR@/depconf/BUILD.TRACE
 	directory=$(MAYBE_$1)
 	if test "$3" = "library" ; then
 	   testvar=$$(find @BUILDDIR@/$$directory -maxdepth 4 -type f -wholename "*$1$2" -print0)
@@ -16,7 +17,6 @@ define index
 	   testvar=$$(find @BUILDDIR@/$$directory -maxdepth 4 -type f -wholename "*$($1_TESTBINARY)$2" -print0)
 	fi
 	if test "$$testvar" != ""; then
-		$(MKDIR_P) @BUILDDIR@/depconf
 		echo "     built $3: $$testvar for $1" >> @BUILDDIR@/depconf/BUILD.TRACE
 		if test "$3" = "library" ; then
 		  testvar2=$$(find @BUILDDIR@/local/lib -wholename $($1_LIB) -print0)
@@ -24,12 +24,12 @@ define index
 		  testvar2=$$(find @BUILDDIR@/local/bin -name "$($1_TESTBINARY)$(EXEEXT)" -print0)
 		fi
 		if test "$$testvar2" != ""; then
-			echo "     local $3: $$testvar2 from $(MAYBE_$1)" >> @BUILDDIR@/BUILD.TRACE
+			echo "     local $3: $$testvar2 from $(MAYBE_$1)" >> @BUILDDIR@/depconf/BUILD.TRACE
 		else
-			echo "     did not install $3 $1" >> @BUILDDIR@/BUILD.TRACE
+			echo "     did not install $3 $1" >> @BUILDDIR@/depconf/BUILD.TRACE
 		fi
 	else
-	        echo "     no $3 $1" >> @BUILDDIR@/BUILD.TRACE
+	        echo "     no $3 $1" >> @BUILDDIR@/depconf/BUILD.TRACE
 	fi
 endef
 

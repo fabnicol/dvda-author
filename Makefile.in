@@ -63,8 +63,8 @@ all:  $(ALL_TARGETS) $(PROGRAM).1 $(PROGRAM).html
 include @ROOTDIR@/mk/functions.mk 
 include $(PROGRAM_TARGET_MAKEFILES) 
 
-help2man.config: $(BUILD_SUBDIRS) help2man.depconf
-man2html.config: help2man.depconf
+help2man.config: $(BUILD_SUBDIRS) @BUILDDIR@/depconf/help2man.depconf
+man2html.config: @BUILDDIR@/depconf/help2man.depconf
 
 export CPPFLAGS
 export PARALLEL
