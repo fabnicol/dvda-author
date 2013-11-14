@@ -96,7 +96,7 @@ pkgconfig_style_libs=$(if $(MAYBE_sox),$(shell cat @BUILDDIR@/$(MAYBE_sox)/sox-l
 do_sox_lib_deps_subst: @BUILDDIR@/src/Makefile  @BUILDDIR@/$(MAYBE_sox)/sox-libs
 	@echo Processing dependencies for sox...
 	@SED@ -i -e 's/SOX_LIB_DEPS/$(pkgconfig_style_libs)/g'  @BUILDDIR@/src/Makefile 
-	echo "[sox] done sox library substitution with libs: $(pkgconfig_style_libs)" >> BUILD.TRACE
+	echo "[sox] done sox library substitution with libs: $(pkgconfig_style_libs)" >> @BUILDDIR@/depconf/BUILD.TRACE
 
 manpage: $(PROGRAM).1
 
@@ -134,7 +134,7 @@ sysconfdir=@SHORTLINKDIR@
 
 # distributed under $sysconfdir, normally
 
-dist_sysconf_DATA=@ROOTDIR@/dvda-author.desktop @ROOTDIR@/dvda-author.conf
+dist_sysconf_DATA=@BUILDDIR@/dvda-author.desktop @ROOTDIR@/dvda-author.conf
 
 # distributed under $menudir=$sysconfdir/menu
 # normally $prefix/share/pixmaps/dvda-author
@@ -143,7 +143,7 @@ dist_sysconf_DATA=@ROOTDIR@/dvda-author.desktop @ROOTDIR@/dvda-author.conf
 dist_pic_DATA= @ROOTDIR@/dvda-author_48x48.png @ROOTDIR@/dvda-author_64x64.png
 # distributed under $docdir, normally $prefix/doc/dvda-author
 
-dist_doc_DATA=@ROOTDIR@/README  @ROOTDIR@/BUGS @ROOTDIR@/EXAMPLES @ROOTDIR@/LIMITATIONS @ROOTDIR@/BUILD.Ubuntu  \
+dist_doc_DATA=@ROOTDIR@/README  @ROOTDIR@/BUGS @BUILDDIR@/EXAMPLES @ROOTDIR@/LIMITATIONS @ROOTDIR@/BUILD.Ubuntu @BUILDDIR@/COREBUILD \
                @ROOTDIR@/DEPENDENCIES @ROOTDIR@/HOWTO.conf @ROOTDIR@/dvda-author.conf.example
 
 # GNU build system regeneration script and others
