@@ -4,6 +4,6 @@ libogg_MAKESPEC=auto
 libogg_CONFIGSPEC=lib
 libogg_TARGETLIB=libogg.a
 
-libogg.depconf: $(libogg_DEPENDENCY)
-	$(call depconf,$*)
+@BUILDDIR@/depconf/libogg.depconf: $(libogg_DEPENDENCY)
+	$(call depconf,libogg)
 
