@@ -5,6 +5,6 @@ man2html_MAKESPEC=auto
 man2html_CONFIGSPEC=exe
 man2html_TESTBINARY=man2html
 
-man2html.depconf: $(man2html_DEPENDENCY)
-	$(call depconf,$*,noconfigure,$(CONFIGURE_man2html_FLAGS) CFLAGS=)
+@BUILDDIR@/depconf/man2html.depconf: $(man2html_DEPENDENCY)
+	$(call depconf,man2html,noconfigure,$(CONFIGURE_man2html_FLAGS) CFLAGS=)
 

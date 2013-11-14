@@ -37,13 +37,7 @@ You may use PARALLEL=-jN on the make command line with N=2,3 up to 6, depending
 on the number of CPU cores available. This will speed up the building process significantly.
 
 All auxiliary tools will be locally installed under the ./local directory.
-It is recommended to manually install the local directory under a user-defined system directory DIR
-(e.g. DIR=/opt/dvda-author under *nix platforms) and add the resulting DIR/bin to the system PATH.
 
-This extra installation step is left to the user.
-
-Note that this step has not been made automatic to avoid possible versioning conlicts with system-
-installed tools already under /usr/bin or /usr/local/bin.
 
 WARNING
 -------
@@ -55,9 +49,12 @@ If you ,leave them in place, you will have to enter a line like:
 
 export PATH=$PATH:$HOME/dvda-author-dev/local/.../bin
 
-with ... either linux or w32, depending on your platform before configuring the build
-as above and before running dvda-author too (if in another shell).
+with ... either linux/dvda-author-full.build  or win32, depending on your platform,
+before configuring the build as above == and == before running dvda-author too (if from another shell).
+
 To avoid repetitive exports, the former step is automatically executed by the `autogen' script.
+The latter step has not been made automatic to avoid possible versioning conlicts with system-
+installed tools already under /usr/bin or /usr/local/bin.
 
 2. GNU tools
 
@@ -71,7 +68,7 @@ Tracing the downloads and builds
 --------------------------------
 file DOWNLOADS traces the downloaded packages
 files PATCHED.DOWNLOADS traces the patched downloads
-file BUILD.TRACE gives an account of all builds, either successful or failed.
+file depconf/BUILD.TRACE gives an account of all builds, either successful or failed.
 
 Qt Creator builds
 -----------------

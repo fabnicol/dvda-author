@@ -26,6 +26,7 @@ CPPFLAGS = @DEFS@
 PROGRAM_TARGETS := @PROGRAM_TARGETS@
 PROGRAM_TARGET_MAKEFILES := $(foreach prog,$(PROGRAM_TARGETS),$(shell if test -f @ROOTDIR@/mk/$(prog).mk; then echo @ROOTDIR@/mk/$(prog).mk; fi))
 PROGRAM_TARGET_CONFIGS := $(foreach prog,$(PROGRAM_TARGETS),$(shell if test  -f @ROOTDIR@/mk/$(prog).mk ; then echo $(prog).config; fi))
+PROGRAM_TARGET_DEPCONFS := $(PROGRAM_TARGET_CONFIGS:.config=.depconf)
 
 ifneq "@WITH_libiberty@" "no"
   ifneq "@MAYBE_libiberty@" ""
@@ -55,15 +56,15 @@ endif
 
 ALL_TARGETS += $(ALL_TARGETS_EXTERNAL) $(BUILD_SUBDIRS) 
 
-.PHONY: all $(ALL_TARGETS) libutils
+.PHONY: all    libutils
 
 all:  $(ALL_TARGETS) $(PROGRAM).1 $(PROGRAM).html
 
 include @ROOTDIR@/mk/functions.mk 
 include $(PROGRAM_TARGET_MAKEFILES) 
 
-help2man.config: $(BUILD_SUBDIRS) help2man.depconf
-man2html.config: help2man.depconf
+help2man.config: $(BUILD_SUBDIRS) @BUILDDIR@/depconf/help2man.depconf
+man2html.config: @BUILDDIR@/depconf/help2man.depconf
 
 export CPPFLAGS
 export PARALLEL
@@ -75,15 +76,16 @@ $(BUILD_SUBDIRS): $(ALL_TARGETS_EXTERNAL) libutils
 	@echo Running make in directory $@...
 	$(MAKE) $(PARALLEL) --directory=$@
 
-$(PROGRAM_TARGET_CONFIGS): %.config: %.depconf
+
+$(PROGRAM_TARGET_CONFIGS): %.config: @BUILDDIR@/depconf/%.depconf
 	@echo
 	sleep 1s
 	echo Finished building $*...
 
 erase_build.trace:
 	@echo PROGRAM_TARGETS=$(PROGRAM_TARGETS)
-	if test -f BUILD.TRACE; then
-	  mv BUILD.TRACE BUILD.TRACE~
+	if test -f @BUILDDIR@/depconf/BUILD.TRACE; then
+	  mv @BUILDDIR@/depconf/BUILD.TRACE @BUILDDIR@/depconf/BUILD.TRACE~
 	fi
 
 # directly patching the Makefile appears to be more efficient. You need a GNU-compliant make.
@@ -175,6 +177,7 @@ clean: clean-local
 
 clean-local:
 	$(RM) $(PROGRAM).1 $(PROGRAM).html
+	if test -d @BUILDDIR@/depconf; then $(RM) $(wildcard @BUILDDIR@/depconf/*.depconf); fi
 
 distclean: clean
 	$(RM) -r $(wildcard @ROOTDIR@/autom4te*) 

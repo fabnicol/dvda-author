@@ -6,12 +6,13 @@ dvdauthor_TESTBINARY=dvdauthor
 ifeq "@HAVE_automake@" "yes"
 ifeq "@HAVE_autoconf@" "yes"
 ifeq "@HAVE_libtoolize@" "yes"
-dvdauthor.depconf: Makefile
-	@mkdir -p @ROOTDIR@/$(MAYBE_$*)/srcm4
-	 cp -f @ROOTDIR@/m4.extra.dvdauthor/*  @ROOTDIR@/$(MAYBE_$*)/srcm4
-	$(if $(MAYBE_$*),
-	  if test -d @ROOTDIR@/$(MAYBE_$*) ; then
-	   cd @ROOTDIR@/$(MAYBE_$*) && $(SHELL) -c "aclocal -Isrcm4 && autoheader && automake -acf && autoconf -Isrcm4" 
+
+@BUILDDIR@/depconf/dvdauthor.depconf: Makefile
+	@mkdir -p @ROOTDIR@/$(MAYBE_dvdauthor)/srcm4
+	 cp -f @ROOTDIR@/m4.extra.dvdauthor/*  @ROOTDIR@/$(MAYBE_dvdauthor)/srcm4
+	$(if $(MAYBE_dvdauthor),
+	  if test -d @ROOTDIR@/$(MAYBE_dvdauthor) ; then
+	   cd @ROOTDIR@/$(MAYBE_dvdauthor) && $(SHELL) -c "aclocal -Isrcm4 && autoheader && automake -acf && autoconf -Isrcm4" 
 	    if test "$$?" = "0"; then 
 	    cd @BUILDDIR@
 	   else 
@@ -19,26 +20,27 @@ dvdauthor.depconf: Makefile
 	    exit -1
 	   fi
 	   mkdir -p @BUILDDIR@/$(MAYBE_dvdauthor) && cd @BUILDDIR@/$(MAYBE_dvdauthor)
-	   $(SHELL) @ROOTDIR@/$(MAYBE_dvdauthor)/configure  $(CONFIGURE_$*_FLAGS) && $(MAKE) $(PARALLEL) && $(MAKE) install
+	   $(SHELL) @ROOTDIR@/$(MAYBE_dvdauthor)/configure  $(CONFIGURE_dvdauthor_FLAGS) && $(MAKE) $(PARALLEL) && $(MAKE) install
+	   if test "$$?" = "0"; then touch @BUILDDIR@/depconf/dvdauthor.depconf; fi
 	   cd @BUILDDIR@
 	  fi)
-	$(call index,$*,$(EXEEXT),binary)
+	$(call index,dvdauthor,$(EXEEXT),binary)
 else
-dvdauthor.depconf: 
+@BUILDDIR@/depconf/dvdauthor.depconf: 
 	echo "Please install libtoolize"
 	exit -1
 
 
 endif
 else
-dvdauthor.depconf: 
+@BUILDDIR@/depconf/dvdauthor.depconf: 
 	echo "Please install automake"
 	exit -1
 
 endif
 else
 
-dvdauthor.depconf: 
+@BUILDDIR@/depconf/dvdauthor.depconf: 
 	echo "Please install autoconf"
 	exit -1
 endif
