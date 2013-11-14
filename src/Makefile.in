@@ -72,7 +72,7 @@ endif
 
 STATIC_LIBS=FLAC libogg sox
 
-.PHONY: create_options all
+.PHONY: create_options all install clean
 
 all:    @PACKAGE_NAME@
 	@mv -f @PACKAGE_NAME@ $(PROGRAM)
@@ -104,6 +104,8 @@ LDLIBS += $(LDLIBS_append)
 install: $(PROGRAM)
 	$(INSTALL) $(PROGRAM) $(DESTDIR)@bindir@
 
+clean: 
+	$(RM) $(wildcard *.o) dvda-author-dev dvda-author
 
 # Symbol SOX_LIB_DEPS will be replaced by sox dependencies after configure in libsox by target do_sox_lib_deps_subst
 # left-align if conditions
