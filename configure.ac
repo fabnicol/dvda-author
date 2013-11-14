@@ -245,6 +245,9 @@ AC_MSG_NOTICE([Configuring ${PACKAGE_TARNAME}...])
 
 GENERATE_GLOBAL_MKS
 
+
+AS_MKDIR_P([$BUILDDIR/depconf])
+
 AC_CONFIG_FILES([
 	 COREBUILD
 	 dvda-author.desktop
