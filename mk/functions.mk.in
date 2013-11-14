@@ -8,7 +8,6 @@ define docfollow
 endef
 
 define index
-	$(MKDIR_P) @BUILDDIR@/depconf
 	@echo [$1] >> @BUILDDIR@/depconf/BUILD.TRACE
 	directory=$(MAYBE_$1)
 	if test "$3" = "library" ; then
@@ -56,8 +55,8 @@ define configure_sub_package
 	       if test "@ROOTDIR@" != "@BUILDDIR@"; then cp -rf "@ROOTDIR@/$$target_subdir" @BUILDDIR@; fi
 	      fi
 	      if test "$$?" = "0"; then  
-		  echo Now building $1 with command line $(MAKE) $(PARALLEL) MKDIR_P="mkdir$(EXEEXT) -p"  $(if $6,$6)...  
-		  $(MAKE) $(PARALLEL) MKDIR_P=$(MKDIR_P)  $(if $6,$6)
+		  echo Now building $1 with command line $(MAKE) $(PARALLEL) MKDIR_P="$(MKDIR_P)"  $(if $6,$6)...  
+		  $(MAKE) $(PARALLEL) MKDIR_P="$(MKDIR_P)"  $(if $6,$6)
 	      fi
 	      if test "$$?" = "0"; then
 		 echo Installing from $$target_subdir ...
