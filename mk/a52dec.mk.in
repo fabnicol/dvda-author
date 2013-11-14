@@ -4,5 +4,5 @@ a52dec_MAKESPEC=auto
 a52dec_CONFIGSPEC=exe
 a52dec_TESTBINARY=a52dec
 
-a52dec.depconf: $(a52dec_DEPENDENCY)
-	$(call depconf,$*)
+@BUILDDIR@/depconf/a52dec.depconf: $(a52dec_DEPENDENCY)
+	$(call depconf,a52dec)

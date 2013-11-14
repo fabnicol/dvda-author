@@ -4,8 +4,8 @@ libmpeg2_MAKESPEC=auto
 libmpeg2_CONFIGSPEC=exe
 libmpeg2_TESTBINARY=mpeg2dec$(EXEEXT)
 
-libmpeg2.depconf: $(libmpeg2_DEPENDENCY)
-	$(call depconf,$*)
+@BUILDDIR@/depconf/libmpeg2.depconf: $(libmpeg2_DEPENDENCY)
+	$(call depconf,libmpeg2)
 
 
 

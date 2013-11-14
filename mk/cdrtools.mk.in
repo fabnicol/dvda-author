@@ -6,7 +6,7 @@ cdrtools_TESTBINARY=cdrecord
 INS_BASE="@BUILDDIR@/local"
 
 
-cdrtools.depconf: $(cdrtools_DEPENDENCY)
-	$(call depconf,$*,noconfigure)
+@BUILDDIR@/depconf/cdrtools.depconf: $(cdrtools_DEPENDENCY)
+	$(call depconf,cdrtools,noconfigure)
 
 
