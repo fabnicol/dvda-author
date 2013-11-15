@@ -329,47 +329,8 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
         run(lplex, args, 0);
         
         tot=0;
-        
-#if 0        
-        path_t* aux=parse_filepath(img->soundtrack[menu][0]);
-        
-        if (aux->directory == NULL)
-        {
-            free(aux); // resorting to relative filenames withing current working dir
-            aux=parse_filepath(globals.settings.workdir);
-            if (aux->filename == NULL)
-            {
-                foutput("%s", "[ERR]  Use non-root audio folder, with appropriate access rights.\n");
-                return -1;
-            }
-            else
-            {
-                aux->directory=aux->filename;
-                foutput("[ING]  Using filepaths relative to %s.\n", globals.settings.workdir);
-            }
-        }
 
-        char adjacent[2*strlen(aux->directory)+strlen(globals.settings.tempdir)+4+20+2+1];
-
-        sprintf(adjacent, "%s%s%s%s%s%s%s", globals.settings.tempdir, SEPARATOR, aux->directory, "_DVD", SEPARATOR, aux->directory, "_DVD_title_01-00.mpg");
-
-#ifndef __WIN32__
-
-        // This is crucial for *nix otherwise lplex still holds the file streams blocked (tested)
-
-        sync();
-
-        // End of *nix code
-#endif
-
-        char* dest=copy_file2dir(adjacent, globals.settings.tempdir); // automatic renaming of dest
-        img->backgroundmpg[menu]=strdup(dest);
-        free(aux);
-        free(dest);
-
-#endif
-#endif
-    
+#endif  
     return errno;
 }
 
