@@ -191,13 +191,16 @@ printf("%s","-R, --growisofs /dev/dvd Run growisofs to burn disc image."J"Device
 
 printf("%s","DVD-VIDEO zone authoring\n\n");
 printf("%s","    --lplex-output dir   Output directory for lplex"J"Default is same as specified -o value"J"or default output directory.\n\n");
-printf("%s","    --dvdv-tracks ...    Add tracks to be added to DVD-VIDEO zone using lplex:"J"track11,...,trackn1:track12,...,trackn2:..."J"for trackij the ith track of group j.\n\n");
-printf("%s","    --dvdv-slides ...    Add slides to be added to DVD-VIDEO zone using lplex:"J"slide11,...,sliden1:slide12,...,slide2:..."J"for slideij the ith slide of group j."J"Each track should have a corresponding slide."J"Add two commas in a row for repeating previous slide."J"There can be a maximum of 1 slide per track.\n\n");
+printf("%s","    --dvdv-tracks ...    Add tracks to be added to DVD-VIDEO zone using lplex:"J"track11,...,trackn1:track12,...,trackn2:..."J"for trackij the ith track of video titleset j.\n\n");
+printf("%s","    --dvdv-slides ...    Add slides to be added to DVD-VIDEO zone using lplex:"J"slide11,...,sliden1:slide12,...,slide2:..."J"for slideij the ith slide of video titleset j."J"Each track should have a corresponding slide."J"Add two commas in a row for repeating previous slide."J"There can be a maximum of 1 slide per track.\n\n");
 printf("%s","-V, --videodir directory Path to VIDEO_TS directory\n\n");
 printf("%s","-T, --videolink rank     Rank of video titleset linked to in video zone"J"(XX in VTS_XX_0.IFO)."J"In this case the path to the VIDEO_TS linked to"J"must be indicated.\n\n");
 printf("%s","    --dvdv-import        Create DVD-VIDEO zone from DVD-AUDIO zone."J"Import DVD-Video standard compliant files (16-24 bit/48-96 kHz"J"from DVD-AUDIO to DVD-VIDEO.\n\n");
 printf("%s","    --mirror             Like --dvdv-import but resample audio tracks"J"if they are not DVD-Video compliant (.wav files only)\n\n");
 printf("%s","    --mirror-strategy st Values for st are: 'high'' or 'low'."J"If necessary, --mirror will resample audio tracks"J"by upsampling (high) or downsampling (low)\n\n");
+printf("%s","    --hybridate          Alias for --dvdv-import"J"--dvdv-slides=... with each slide the first slide of --stillpics=... for each audio track.\n\n");
+printf("%s","    --full-hybridate     Alias for --mirror --miror-strategy high"J"--dvdv-slides=... with each slide the first slide of --stillpics=... for each audio track.\n\n");
+
 #endif
 
 
