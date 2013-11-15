@@ -12,10 +12,10 @@ DEFINES += _GNU_SOURCE __CB HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_fixwav HAV
 
 #libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame --disable-gomp
 
-LIBS += -Llocal/lib  -lFLAC -logg   -lsox  -lwinmm -lgomp -lsndfile -lpthread -s
+LIBS += -Lbuild/win32/lib  -lFLAC -logg   -lsox  -lwinmm -lgomp -lsndfile -lpthread -s
 
 
-INCLUDEPATH = src/include libutils/src/include libutils/src/include libutils/src/private libfixwav/src/include libs/include/FLAC libs/include/libsoxconvert libiberty/src/include
+INCLUDEPATH = src/include libutils/src/include libutils/src/include libutils/src/private libfixwav/src/include build/linux/dvda-author-full.build/include build/linux/include/dvda-author-full.build/FLAC build/linux/dvda-author-full.build/include/libsoxconvert libiberty/src/include
 
 SOURCES += \
     src/amg2.c \
