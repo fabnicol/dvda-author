@@ -42,11 +42,11 @@ uint16_t totntracks;
 uint8_t maxbuttons; // to be used in xml.c and menu.c as extern globals
 uint8_t resbuttons; // to be used in xml.c and menu.c as extern globals
 
-void parse_double_entry_command_line(char**** DOUBLE_ARRAY, uint8_t** COUNTER_ARRAY, uint8_t* TOTAL, short int audit_flag) 
+void parse_double_entry_command_line(char* input_string, char**** DOUBLE_ARRAY, uint8_t** COUNTER_ARRAY, uint8_t* TOTAL, short int audit_flag, char separator) 
 {
                 errno=0;
                 char** array=NULL; 
-                array=fn_strtok(optarg, ':', array, 0, NULL, NULL); 
+                array=fn_strtok(input_string, ':', array, 0, NULL, NULL); 
                 *TOTAL=arraylength(array); 
                 if (globals.veryverbose) 
                 {
@@ -59,7 +59,7 @@ void parse_double_entry_command_line(char**** DOUBLE_ARRAY, uint8_t** COUNTER_AR
                 
                 for (int titleset=0; titleset < *TOTAL; titleset++) 
                 {
-                    (*DOUBLE_ARRAY)[titleset]=fn_strtok(array[titleset], ',', (*DOUBLE_ARRAY)[titleset], 0,NULL, NULL);
+                    (*DOUBLE_ARRAY)[titleset]=fn_strtok(array[titleset], separator, (*DOUBLE_ARRAY)[titleset], 0,NULL, NULL);
                     *COUNTER_ARRAY=calloc(*TOTAL, sizeof(uint8_t));
                     *COUNTER_ARRAY[titleset]=arraylength(*DOUBLE_ARRAY[titleset]);
                     #if DEBUG
@@ -178,7 +178,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     static struct option  longopts[]=
     {
-
         {"debug", no_argument, NULL, 'd'},
         {"no-output", no_argument, NULL, 10},
         {"maxverbose", no_argument, NULL, 11},
@@ -222,7 +221,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"menustyle", required_argument, NULL, '0'},
         {"xml", required_argument, NULL, 'M'},
         {"spuxml", required_argument, NULL, 'H'},
-
         {"topvob", required_argument, NULL, 'A'},
         {"stillvob", required_argument, NULL, '1'},
         {"stilloptions", required_argument, NULL, '2'},
@@ -262,7 +260,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"dvdv-import",no_argument, NULL, 21},
         {"mirror",no_argument, NULL, 22},
         {"mirror-strategy",required_argument, NULL, 23},
-        
+        {"hybridate",no_argument, NULL, 24},
 #endif
         {NULL, 0, NULL, 0}
     };
@@ -1599,7 +1597,15 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     char * str=NULL;
     optind=0;
     opterr=1;
-    _Bool soundtracks_flag=0, lplex_flag=0, lplex_slides_flag=0, import_flag=0, mirror_flag=0, mirror_st_flag=0;
+    _Bool soundtracks_flag=0,
+          lplex_flag=0,
+          lplex_slides_flag=0,
+          import_flag=0,
+          mirror_flag=0,
+          mirror_st_flag=0,
+          full_hybridate_flag=0,
+          hybridate_flag=0;
+          
     char*** dvdv_track_array=NULL;
     char*** dvdv_slide_array=NULL;
     uint8_t* ndvdvslides=NULL; 
@@ -1682,7 +1688,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
             else
             {
-              parse_double_entry_command_line(&dvdv_track_array, &ndvdvtracks, &ndvdvtitleset1, AUDIT_DVD_VIDEO_AUDIO_FORMAT); 
+              parse_double_entry_command_line(optarg, &dvdv_track_array, &ndvdvtracks, &ndvdvtitleset1, AUDIT_DVD_VIDEO_AUDIO_FORMAT, ','); 
               if (ndvdvtracks == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE("ndvdtracks null")
               lplex_flag=1;
             }
@@ -1709,7 +1715,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
             else
             {
-                parse_double_entry_command_line(&dvdv_slide_array, &ndvdvslides, &ndvdvtitleset2, NO_FIXWAV_AUDIT); 
+                parse_double_entry_command_line(optarg, &dvdv_slide_array, &ndvdvslides, &ndvdvtitleset2, NO_FIXWAV_AUDIT,','); 
                 lplex_slides_flag=1;
             }
 
@@ -1751,7 +1757,26 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 #endif
             break;
 
+        case 24:
+#if HAVE_lplex || HAVE_lplex_BUILD
+            foutput("%s\n", "[PAR]  Will create minimal hybrid disk.");
+            foutput("[PAR]  Mirroring strategy: %s\n","high");
+            hybridate_flag=1;
+#else
+            foutput("%s", "[ERR]  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+#endif
+            break;
 
+        case 25:
+#if HAVE_lplex || HAVE_lplex_BUILD
+            foutput("%s\n", "[PAR]  Will create full hybrid disk.");
+            foutput("[PAR]  Mirroring strategy: %s\n","high");
+            full_hybridate_flag=1;
+#else
+            foutput("%s", "[ERR]  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+#endif
+            break;
+            
         case 6 :
 
             img->topmenu_slide=calloc(img->nmenus, sizeof(char***));
@@ -1984,8 +2009,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 // Operations related to top menu creation
 // TODO: consider adding silence.wav to silent slideshows.
-// Some sanity tests
 
+    ///////////////////////
+    // Some sanity tests //
+    ///////////////////////
+    
     if (soundtracks_flag)
     {
      if (img->topmenu_slide)
@@ -1997,16 +2025,64 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     else
        if (import_topmenu_flag)
            import_topmenu(import_topmenu_path, img, USE_VTS_SOUNDTRACK);
+
+    if (hybridate_flag)
+    {
+      import_flag=1;
+      mirror_flag=0;
+      mirror_st_flag=0;
+    }
+
+    if (full_hybridate_flag)
+    {
+      mirror_flag=1;
+      mirror_st_flag=HIGH;
+      import_flag=0;
+    }
     
-    if (import_flag == 0 &&
-            (lplex_slides_flag == 1   &&    (
-                 (ndvdvslides == 0 || dvdv_slide_array == NULL)
-                 || (lplex_flag == 0 && mirror_flag == 0)
-                 ))) 
+/* leftover issue: with --hybridate, if a track is non dvdv-compliant, the wrong slide will  be selected !*/
+    
+    if (hybridate_flag || full_hybridate_flag)
+    {
+      if (stillpic_string != NULL)
+      {
+        uint8_t ntracks_in_stillpic_command_line=0;
+        char*** dvdv_slide_array_temp;
+        parse_double_entry_command_line(stillpic_string, &dvdv_slide_array_temp, &ndvdvslides, &ntracks_in_stillpic_command_line, NO_FIXWAV_AUDIT,'-'); 
+        lplex_slides_flag=1;  
+        int g=0, N=ntracks[0];
+        dvdv_slide_array=calloc(ngroups, sizeof(char**));        
+        if (dvdv_slide_array == NULL) EXIT_ON_RUNTIME_ERROR
+        
+        for (int t=0; t < ntracks_in_stillpic_command_line && t < totntracks; t++)
+        {
+            int T=t;
+            if (t >= N && g < ngroups-1) 
+            {
+              N += ntracks[g];
+              T -= N;
+              g++;
+              dvdv_slide_array[g]=calloc(ntracks[g], sizeof(char *));
+              if (dvdv_slide_array[g] == NULL) EXIT_ON_RUNTIME_ERROR
+            }
+            
+            dvdv_slide_array[g][T]= dvdv_slide_array_temp[t][0];
+            ndvdvslides[g]++;
+        }
+        
+        free(dvdv_slide_array_temp);
+      }
+    }
+    
+    if ( !import_flag &&
+            ( lplex_slides_flag  &&    (
+                 ( !ndvdvslides || !dvdv_slide_array )
+                 || ( !lplex_flag && !mirror_flag )))) 
     {  
         EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Incoherent command line: slides requested for Lplex"J"...yet no audio tracks or slides given.")
     }
-    if (lplex_flag == 1)
+    
+    if (lplex_flag)
     {
         
         if (ndvdvtitleset1 != ndvdvtitleset2)
@@ -2016,8 +2092,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         }
     }
     
-    if (import_flag == 1 && mirror_flag == 1)
+    if ( import_flag && mirror_flag )
       EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  You should not use --mirror along with --import-dvdv: do you really want to resample?\n       Exiting...\n");
+      
+              
 
     switch (globals.topmenu)
     {
@@ -2234,7 +2312,7 @@ standard_checks:
     if (user_command_line)    
       scan_wavfile_audio_characteristics(command);
    
-    if (lplex_flag == 1)
+    if (lplex_flag)
     {
       globals.videozone=0;
      
@@ -2252,7 +2330,7 @@ standard_checks:
       free(ndvdvtracks);
     }
 
-    if (import_flag == 1)
+    if (import_flag)
     {
         ndvdvtitleset1=0;
         dvdv_track_array=(char***) calloc(ngroups, sizeof(char**));  // is a maximum
@@ -2313,7 +2391,7 @@ standard_checks:
         
     }
 
- if (mirror_flag == 1)
+ if (mirror_flag)
     {
         ndvdvtitleset1=0;
         dvdv_track_array=(char***) calloc(ngroups, sizeof(char**));  // now lo longer a maximum
