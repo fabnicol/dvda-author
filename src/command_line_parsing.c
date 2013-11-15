@@ -46,7 +46,7 @@ void parse_double_entry_command_line(char* input_string, char**** DOUBLE_ARRAY, 
 {
                 errno=0;
                 char** array=NULL; 
-                array=fn_strtok(input_string, ':', array, 0, NULL, NULL); 
+                array=fn_strtok(input_string, separator, array, 0, NULL, NULL);
                 *TOTAL=arraylength(array); 
                 if (globals.veryverbose) 
                 {
@@ -59,7 +59,7 @@ void parse_double_entry_command_line(char* input_string, char**** DOUBLE_ARRAY, 
                 
                 for (int titleset=0; titleset < *TOTAL; titleset++) 
                 {
-                    (*DOUBLE_ARRAY)[titleset]=fn_strtok(array[titleset], separator, (*DOUBLE_ARRAY)[titleset], 0,NULL, NULL);
+                    (*DOUBLE_ARRAY)[titleset]=fn_strtok(array[titleset], ',', (*DOUBLE_ARRAY)[titleset], 0,NULL, NULL);
                     *COUNTER_ARRAY=calloc(*TOTAL, sizeof(uint8_t));
                     *COUNTER_ARRAY[titleset]=arraylength(*DOUBLE_ARRAY[titleset]);
                     #if DEBUG
@@ -766,22 +766,34 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     /* COMMAND-LINE  PARSING: fourth pass for main arguments and non-g filename assignment */
     // Changing scanning variable names for ngroups_scan and nvideolinking_groups_scan
+
     if (totntracks == 0)
         for (k=0; k < ngroups-nvideolinking_groups; k++)
             totntracks+=ntracks[k];
+
     ngroups_scan=0;
     #if !HAVE_core_BUILD
     int nvideolinking_groups_scan=0, strlength=0;
-    char* piccolorchain, *activepiccolorchain, *palettecolorchain, *fontchain, *durationchain=NULL,
-            *h, *min, *sec, **tab=NULL,**tab2=NULL, *stillpic_string=NULL, *still_options_string=NULL, *import_topmenu_path=NULL, *player="vlc";
+    char *piccolorchain,
+         *activepiccolorchain,
+         *palettecolorchain,
+         *fontchain,
+         *durationchain=NULL,
+         *h,
+         *min,
+         *sec,
+         *stillpic_string=NULL,
+         *still_options_string=NULL,
+         *import_topmenu_path=NULL,
+         *player="vlc",
+         **pics_per_track=NULL,
+         ***picks_per_track_double_array=NULL;
+
     _Bool import_topmenu_flag=0;
     uint16_t npics[totntracks];
     #endif
     char** textable=NULL;
     _Bool extract_audio_flag=0;
-
-
-
     optind=0;
     opterr=1;
 
@@ -1688,7 +1700,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
             else
             {
-              parse_double_entry_command_line(optarg, &dvdv_track_array, &ndvdvtracks, &ndvdvtitleset1, AUDIT_DVD_VIDEO_AUDIO_FORMAT, ','); 
+              parse_double_entry_command_line(optarg, &dvdv_track_array, &ndvdvtracks, &ndvdvtitleset1, AUDIT_DVD_VIDEO_AUDIO_FORMAT, ':');
               if (ndvdvtracks == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE("ndvdtracks null")
               lplex_flag=1;
             }
@@ -1715,7 +1727,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
             else
             {
-                parse_double_entry_command_line(optarg, &dvdv_slide_array, &ndvdvslides, &ndvdvtitleset2, NO_FIXWAV_AUDIT,','); 
+                parse_double_entry_command_line(optarg, &dvdv_slide_array, &ndvdvslides, &ndvdvtitleset2, NO_FIXWAV_AUDIT,':');
                 lplex_slides_flag=1;
             }
 
@@ -2040,39 +2052,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
       import_flag=0;
     }
     
-/* leftover issue: with --hybridate, if a track is non dvdv-compliant, the wrong slide will  be selected !*/
-    
-    if (hybridate_flag || full_hybridate_flag)
-    {
-      if (stillpic_string != NULL)
-      {
-        uint8_t ntracks_in_stillpic_command_line=0;
-        char*** dvdv_slide_array_temp;
-        parse_double_entry_command_line(stillpic_string, &dvdv_slide_array_temp, &ndvdvslides, &ntracks_in_stillpic_command_line, NO_FIXWAV_AUDIT,'-'); 
-        lplex_slides_flag=1;  
-        int g=0, N=ntracks[0];
-        dvdv_slide_array=calloc(ngroups, sizeof(char**));        
-        if (dvdv_slide_array == NULL) EXIT_ON_RUNTIME_ERROR
-        
-        for (int t=0; t < ntracks_in_stillpic_command_line && t < totntracks; t++)
-        {
-            int T=t;
-            if (t >= N && g < ngroups-1) 
-            {
-              N += ntracks[g];
-              T -= N;
-              g++;
-              dvdv_slide_array[g]=calloc(ntracks[g], sizeof(char *));
-              if (dvdv_slide_array[g] == NULL) EXIT_ON_RUNTIME_ERROR
-            }
-            
-            dvdv_slide_array[g][T]= dvdv_slide_array_temp[t][0];
-            ndvdvslides[g]++;
-        }
-        
-        free(dvdv_slide_array_temp);
-      }
-    }
+
     
     if ( !import_flag &&
             ( lplex_slides_flag  &&    (
@@ -2193,83 +2173,118 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 // Operations related to stills
 
 
-    if ((stillpic_string) && !img->active)
+    if (!stillpic_string || img->active)  goto standard_checks;
+
+    // otherwise, if stillpic_strings given and no active menu, do this:
+
+     // heap-allocations is not possible if char** is not returned by function
+    // A simple char* would well be allocated by function, not a char**.
+    fprintf(stderr, "[DBG]  stillpic_string=%s\n", stillpic_string);
+    pics_per_track=fn_strtok(stillpic_string, '-', pics_per_track, 0,NULL,NULL);
+    uint16_t dim,DIM=0,w;
+
+    img->npics =(uint16_t*) calloc(totntracks, sizeof(uint16_t));
+    if (img->npics == NULL)
     {
-        // heap-allocations is not possible if char** is not returned by function
-        // A simple char* would well be allocated by function, not a char**.
-        fprintf(stderr, "[DBG]  stillpic_string=%s\n", stillpic_string);
-        tab=fn_strtok(stillpic_string, '-', tab, 0,NULL,NULL);
-        uint16_t dim,DIM=0,w;
-
-        img->npics =(uint16_t*) calloc(totntracks, sizeof(uint16_t));
-        if (img->npics == NULL)
-        {
-            perror("\n[ERR] img->npics");
-            goto standard_checks;
-        }
-        if (tab)
-            w=arraylength(tab);
-        else
-        {
-            perror("\n[ERR]  tab");
-            goto standard_checks;
-        }
-        if (w > totntracks)
-        {
-            fprintf(stderr, "\n[ERR]  Too many tracks on --stillpics: %d\n",w);
-            goto standard_checks;
-        }
-        else if (w < totntracks)
-        {
-            fprintf(stderr, "\n[ERR]  You forgot at least one track on --stillpics:\n  total number of tracks:%d whilst pic string array has length %d\n", totntracks, w);
-            goto standard_checks;
-        }
-
-        for (k=0; k < totntracks; k++)
-        {
-            if (globals.debugging) fprintf(stderr,"[DBG]  parsing pictures for track %d\n",k);
-            tab2=fn_strtok(tab[k], ',', tab2, -1,create_stillpic_directory,NULL);
-            dim=0;
-            w=0;
-            if (tab2) while (tab2[w] != NULL)
-                {
-                    if (tab2[w][0] != 0) dim++;
-                    w++;
-                }
-            else
-            {
-                perror("\n[ERR]  tab2");
-                goto standard_checks;
-            }
-            npics[k]=(k)? dim+npics[k-1]: dim;
-            img->npics[k]=dim;
-            DIM+=dim;
-            if (globals.debugging) fprintf(stderr, "\n[DBG]  number of pics for track %d: npics[%d] = %d\n", k,k, dim);
-            FREE(tab2)
-            if (img->npics[k] > 99)
-            {
-                foutput("%s", "\n[ERR]  The maximum number of pics per track is 99.\n");
-                EXIT_ON_RUNTIME_ERROR_VERBOSE("Exiting...");
-            }
-        }
-
-        FREE(tab)
-        img->stillpicvobsize=(uint32_t*) calloc(DIM, sizeof(uint32_t));
-        if (img->stillpicvobsize == NULL)
-        {
-            perror("\n[ERR]  still pic vob size array");
-            goto standard_checks;
-        }
-        img->count=DIM;
-        if (globals.debugging) fprintf(stderr,"[DBG]  Total of %d pictures\n", img->count);
-        free(stillpic_string);
-
-        if (still_options_string)
-            still_options_parsing(still_options_string, img);
-
+        perror("\n[ERR] img->npics");
+        goto standard_checks;
+    }
+    if (pics_per_track)
+        w=arraylength(pics_per_track);
+    else
+    {
+        perror("\n[ERR]  pics_per_track");
+        goto standard_checks;
+    }
+    if (w > totntracks)
+    {
+        fprintf(stderr, "\n[ERR]  Too many tracks on --stillpics: %d\n",w);
+        goto standard_checks;
+    }
+    else if (w < totntracks)
+    {
+        fprintf(stderr, "\n[ERR]  You forgot at least one track on --stillpics:\n  total number of tracks:%d whilst pic string array has length %d\n", totntracks, w);
+        goto standard_checks;
     }
 
+    picks_per_track_double_array=calloc(totntracks, sizeof(char**));
+    if (picks_per_track_double_array == NULL) EXIT_ON_RUNTIME_ERROR;
+
+    for (k=0; k < totntracks; k++)
+    {
+        if (globals.debugging) fprintf(stderr,"[DBG]  Parsing pictures for track %d\n",k);
+
+        picks_per_track_double_array[k]=fn_strtok(pics_per_track[k], ',', picks_per_track_double_array[k], -1,create_stillpic_directory,NULL);
+        dim=0;
+        w=0;
+        if (picks_per_track_double_array[k]) while (picks_per_track_double_array[k][w] != NULL)
+            {
+                if (picks_per_track_double_array[k][w][0] != 0) dim++;
+                w++;
+            }
+        else
+        {
+            perror("\n[ERR]  picks_per_track_double_array");
+            goto standard_checks;
+        }
+        npics[k]=(k)? dim+npics[k-1]: dim;
+        img->npics[k]=dim;
+        DIM+=dim;
+        if (globals.debugging) fprintf(stderr, "\n[DBG]  number of pics for track %d: npics[%d] = %d\n", k,k, dim);
+
+        if (img->npics[k] > 99)
+        {
+            foutput("%s", "\n[ERR]  The maximum number of pics per track is 99.\n");
+            EXIT_ON_RUNTIME_ERROR_VERBOSE("Exiting...");
+        }
+    }
+
+    FREE(pics_per_track)
+    img->stillpicvobsize=(uint32_t*) calloc(DIM, sizeof(uint32_t));
+    if (img->stillpicvobsize == NULL)
+    {
+        perror("\n[ERR]  still pic vob size array");
+        goto standard_checks;
+    }
+    img->count=DIM;
+    if (globals.debugging) fprintf(stderr,"[DBG]  Total of %d pictures\n", img->count);
+
+
+    if (still_options_string)
+        still_options_parsing(still_options_string, img);
+
+    /* leftover issue: with --hybridate, if a track is non dvdv-compliant, the wrong slide will  be selected !*/
+
+    if (hybridate_flag || full_hybridate_flag)
+    {
+        lplex_slides_flag=1;
+        int g=0, N=ntracks[0];
+        dvdv_slide_array=calloc(ngroups, sizeof(char**));
+        if (dvdv_slide_array == NULL) EXIT_ON_RUNTIME_ERROR
+
+        for (int t=0;  t < totntracks; t++)
+        {
+            int T=t;
+            if (t >= N && g < ngroups-1)
+            {
+              N += ntracks[g];
+              T -= N;
+              g++;
+              dvdv_slide_array[g]=calloc(ntracks[g], sizeof(char *));
+              if (dvdv_slide_array[g] == NULL) EXIT_ON_RUNTIME_ERROR
+            }
+
+            dvdv_slide_array[g][T]= strdup(picks_per_track_double_array[t][0]);
+            FREE(picks_per_track_double_array[t])
+            ndvdvslides[g]++;
+        }
+    }
+
+   free(stillpic_string);
+   free(picks_per_track_double_array);
+
 #endif
+
 // Final standard checks
 
 standard_checks:
@@ -2339,7 +2354,7 @@ standard_checks:
         {
             for (int track=0; track < ntracks[group]; track++)
             {
-                ndvdvtracks=calloc(ngroups, sizeof(u_int8_t));
+                ndvdvtracks=calloc(ngroups, sizeof(uint8_t));
                 if (ndvdvtracks == NULL) EXIT_ON_RUNTIME_ERROR
                         
                         if    (  (command->files[group][track].bitspersample == 16  || command->files[group][track].bitspersample == 24)
