@@ -260,6 +260,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"mirror",no_argument, NULL, 22},
         {"mirror-strategy",required_argument, NULL, 23},
         {"hybridate",no_argument, NULL, 24},
+        {"full-hybridate",no_argument, NULL, 25},
     #endif
         {NULL, 0, NULL, 0}
     };
@@ -1588,9 +1589,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     optind=0;
     opterr=1;
     _Bool soundtracks_flag=0,
-            lplex_flag=0,
+            dvdv_tracks_given=0,
             lplex_slides_flag=0,
-            import_flag=0,
+            dvdv_import_flag=0,
             mirror_flag=0,
             mirror_st_flag=0,
             full_hybridate_flag=0,
@@ -1680,7 +1681,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             {
                 parse_double_entry_command_line(optarg, &dvdv_track_array, &ndvdvtracks, &ndvdvtitleset1, AUDIT_DVD_VIDEO_AUDIO_FORMAT, ':');
                 if (ndvdvtracks == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE("ndvdtracks null")
-                        lplex_flag=1;
+                dvdv_tracks_given=1;
             }
             
 #else
@@ -1719,7 +1720,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 #if HAVE_lplex || HAVE_lplex_BUILD
             
             foutput("%s\n", "[PAR]  Import DVD-Audio tracks to DVD-Video zone.");
-            import_flag=1;
+            dvdv_import_flag=1;
             
 #else
             foutput("%s", "[ERR]  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
@@ -2013,7 +2014,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     
     if (hybridate_flag)
     {
-        import_flag=1;
+        dvdv_import_flag=1;
         mirror_flag=0;
         mirror_st_flag=0;
     }
@@ -2022,18 +2023,19 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     {
         mirror_flag=1;
         mirror_st_flag=HIGH;
-        import_flag=0;
+        dvdv_import_flag=0;
     }
     
-    if ( !import_flag &&
+    if ( !dvdv_import_flag &&
          ( lplex_slides_flag  &&    (
                ( !ndvdvslides || !dvdv_slide_array )
-               || ( !lplex_flag && !mirror_flag )))) 
+               || ( !dvdv_tracks_given && !mirror_flag )))) 
     {  
+        fprintf(stderr, "ndvdvslides[0]=%d\n", ndvdvslides[0]);
         EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Incoherent command line: slides requested for Lplex"J"...yet no audio tracks or slides given.")
     }
     
-    if (lplex_flag)
+    if (dvdv_tracks_given)
     {
         
         if (ndvdvtitleset1 != ndvdvtitleset2)
@@ -2043,7 +2045,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         }
     }
     
-    if ( import_flag && mirror_flag )
+    if ( dvdv_import_flag && mirror_flag )
         EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  You should not use --mirror along with --import-dvdv: do you really want to resample?\n       Exiting...\n");
     
     switch (globals.topmenu)
@@ -2287,10 +2289,11 @@ standard_checks:
     if (user_command_line)    
         scan_wavfile_audio_characteristics(command);
     
-    if (lplex_flag)
+    if (dvdv_tracks_given)
     {
         globals.videozone=0;
         
+        foutput("%s\n", "[MSG]  With --dvdv-tracks, no testing of audio file compliance will be performed!");
         launch_lplex_hybridate(img, 
                                "dvd", 
                                (const char***) dvdv_track_array, 
@@ -2305,16 +2308,16 @@ standard_checks:
         free(ndvdvtracks);
     }
     
-    if (import_flag)
+    if (dvdv_import_flag)
     {
         ndvdvtitleset1=0;
         dvdv_track_array=(char***) calloc(ngroups, sizeof(char**));  // is a maximum
         
         for (int group=0; group < ngroups; group++)
         {
+            ndvdvtracks=calloc(ngroups, sizeof(uint8_t));
             for (int track=0; track < ntracks[group]; track++)
             {
-                ndvdvtracks=calloc(ngroups, sizeof(uint8_t));
                 if (ndvdvtracks == NULL) EXIT_ON_RUNTIME_ERROR
                         
                         if    (  (command->files[group][track].bitspersample == 16  || command->files[group][track].bitspersample == 24)
@@ -2327,6 +2330,7 @@ standard_checks:
                     }
                     command->files[group][track].dvdv_compliant=1;
                     ndvdvtracks[group]++;
+                    
                 }
                     else
                 {
@@ -2355,6 +2359,9 @@ standard_checks:
         }
         
         globals.videozone=0;
+        
+        if (ndvdvtitleset1 == 0)
+        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  You requested hybridation yet no DVD-Video standard-compliant\n       audio file was found on input.\n")
         
         launch_lplex_hybridate(img, 
                                "dvd", 
