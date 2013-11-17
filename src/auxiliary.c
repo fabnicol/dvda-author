@@ -175,7 +175,7 @@ printf("%s","-A, --import-topmenu f   Import VIDEO_TS stream (VOB format) into A
 printf("%s","-0, --menustyle desc     Specifies top menu style"J"By default, tracks are listed under group headers."J"If desc='hierarchical', the first menu screen lists groups."J"If desc='active', all tracks will have an associated still picture with menu links that remain active while listening to the track.\n\n");
 printf("%s","-1, --stillvob f         Import already authored still pictures vob.\n\n");
 printf("%s","-2, --stilloptions ...   Still picture options (add after --stillpics). Each option applies to ranked pic, e.g."J"rank=0,manual,starteffect=fade,rank=1,starteffect=dissolve."J"Suboptions are:"J"rank=[number], starteffect=[effect], endeffect=[effect]"J"manual, lag=[number], start=[number], active"J"See details below. \n\n");
-printf("%s","-3, --stillpics          Background jpg files to create one or more still pictures"J"for each track.See usage below."J"If a track has no still picture, use two hyphens in a row."J"You may otherwise indicate a directory containing pictures"J"named pic_abc.jpg, with a,b,c between 0 and 9.\n\n");
+printf("%s","-3, --stillpics          Background jpg files to create one or more still pictures"J"for each track.See usage below."J"If a track has no still picture, use two colons in a row."J"You may otherwise indicate a directory containing pictures"J"named pic_abc.jpg, with a,b,c between 0 and 9.\n\n");
 printf("%s","-3, --stillpics dir/     Directory for background jpg files to create one still picture for each track."J"Pics should be named pic_000.jpg, ..., up to pic_999.jpg (maximum).\n\n");
 printf("%s","-4, --norm               Argument is 'ntsc', 'pal' or 'secam', depending on TV standard.\n\n");
 printf("%s","-5, --aspect             Set the playback aspect ratio code of the encoded video. By default, this value is inferred from  the input header.\n\n");
@@ -255,10 +255,10 @@ K"Copy info chunks from wav headers to file db"SEPARATOR"database\n\n"\
 
 printf("%s", "\n    Still pictures:\n\n"\
 K"p11,p21,...,pn1-p22,p22,...,pn2-...\n\n"\
-K"with tracks separated by hyphens and pictures by commas.\n\n"\
-K" Examples: -g ~/a.wav --stillpics image1.jpg,image2.jpg,image3.jpg-image4.jpg,image5.jpg,image6.jpg\n\n"\
-K" If there are no pics for a track use -- as below (no pics for second track):\n\n"\
-K"           -g ~/a.wav ~/b.wav ~/c.wav --stillpics image1.jpg,image2.jpg,image3.jpg--image4.jpg,image5.jpg,image6.jpg\n\n"
+K"with tracks separated by hyphens and pictures by colons.\n\n"\
+K" Examples: -g ~/a.wav --stillpics image1.jpg,image2.jpg,image3.jpg:image4.jpg,image5.jpg,image6.jpg\n\n"\
+K" If there are no pics for a track use :: as below (no pics for second track):\n\n"\
+K"           -g ~/a.wav ~/b.wav ~/c.wav --stillpics image1.jpg,image2.jpg,image3.jpg::image4.jpg,image5.jpg,image6.jpg\n\n"
 );
 printf("%s", "\n    Still picture transition effects:\n\n"\
 "rank=k"\
