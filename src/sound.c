@@ -232,6 +232,7 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
     if (-1 == lplex_initialise()) return -1;
     if (ntracks == NULL || nslides == NULL || slidepath == NULL || trackpath == NULL) 
     {
+      fprintf(stderr, "[ERR]  Error code: %d\n", (ntracks == NULL )*1+(nslides == NULL)*10+(slidepath == NULL)*100+(trackpath == NULL)*1000);
       EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Allocation of DVD-VIDEO tracks/slides")
     }
     
