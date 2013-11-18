@@ -29,22 +29,20 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
 
-#ifdef HAVE_CONFIG_H
+#if HAVE_CONFIG_H && !defined __CB__
 #include "config.h"
 #endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#ifndef __WIN32__
 #include <unistd.h>
-#endif
 #include "structures.h"
 #include "export.h"
 #include "audio2.h"
 #include "stream_decoder.h"
 #include "c_utils.h"
-#ifndef WITHOUT_libfixwav
+#ifndef WITHOUT_FIXWAV
 #include "fixwav.h"
 #include "fixwav_manager.h"
 #include "audio.h"
@@ -53,7 +51,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "command_line_parsing.h"
 #include "winport.h"
 
-#ifndef WITHOUT_sox
+#ifndef WITHOUT_SOX
 #include "sox.h"
 #include "libsoxconvert.h"
 #endif
@@ -63,8 +61,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
 extern globalData globals;
-extern unsigned char* wav_header;
-extern uint64_t fileoffset;
+
 /*
 Multichannel reference tables are structured as follows:
   { { 16-bit  { channels { permutated values }}}, { 24-bit  { channels { permutated values }}} }
@@ -75,14 +72,13 @@ S is the table of direct conversion (WAV to AOB) and _S the table of reverse con
 /* with static array execution time will be comparable to explicit hard-code value assignment */
 
 static uint8_t  S[2][6][36]=
-{
-    {   {0}, {0},
+{{      {0}, {0},
         {5, 4, 11, 10, 1, 0, 3, 2, 7, 6, 9, 8},
         {5, 4, 7, 6, 13, 12, 15, 14, 1,  0, 3, 2, 9, 8, 11, 10},
         {5, 4, 7, 6,  9,  8, 15, 14,17, 16, 19, 18, 1, 0, 3, 2, 11, 10, 13, 12},
         {5, 4, 7, 6, 17, 16, 19, 18, 1, 0, 3, 2, 9, 8, 11, 10, 13, 12, 15, 14, 21, 20, 23, 22}
     },
-    {   {2,  1,  5,  4,  0,  3},
+    {      {2,  1,  5,  4,  0,  3},
         {2, 1, 5, 4, 8, 7, 11, 10, 0, 3, 6, 9},
         {8, 7, 17, 16, 6, 15, 2, 1, 5, 4, 11, 10, 14, 13, 0, 3, 9, 12},
         {8,  7,  11,  10,  20,  19,  23,  22,  6,  9,  18,  21,  2,  1,  5,  4,  14,  13,  17,  16,  0,  3,  12,  15},
@@ -92,29 +88,11 @@ static uint8_t  S[2][6][36]=
 };
 
 
-static uint8_t  R[2][6][36]= {{ {0}, {0},
-        {5, 4, 7, 6, 1, 0, 9, 8, 11, 10, 3, 2},
-        {9, 8, 11, 10, 1, 0, 3, 2, 13, 12, 15, 14, 5, 4 ,7, 6},
-        {13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 17, 16, 19, 18, 7, 6, 9, 8, 11, 10},
-        {9, 8, 11, 10, 1, 0, 3, 2, 13, 12, 15, 14, 17, 16, 19, 18, 5, 4, 7, 6, 21, 20, 23, 22}
-    },
-    {   {4,  1,  0,  5,  3,  2},
-        {8, 1, 0, 9, 3, 2, 10, 5, 4, 11, 7, 6},
-        {14, 7, 6, 15, 9, 8, 4, 1, 0, 16, 11, 10, 17, 13, 12, 5, 3, 2},
-        {20, 13, 12, 21, 15, 14, 8, 1, 0, 9, 3, 2, 22, 17, 16, 23, 19, 18, 10, 5, 4, 11, 7, 6},
-        {26, 19, 18, 27, 21, 20, 12, 1, 0, 13, 3, 2, 14, 5,  4,  28, 23, 22, 29, 25, 24, 15,  7, 6,  16, 9, 8, 17, 11, 10},
-        {28, 13, 12, 29, 15, 14,  8, 1, 0,  9, 3, 2, 30, 17, 16, 31, 19, 18, 32, 21, 20, 33, 23, 22, 10, 5, 4, 11, 7,  6, 34, 25, 24, 35, 27, 26 }
-    }
-};
-
-
 #ifndef     WITHOUT_FLAC
 
 /* Note on compiler whining: unused FLAC auxiliary parameters are normal, as arity is ompoised by FLAC__stream_decoder type functions; diregard warnings */
 
-
-
-void flac_metadata_callback(const FLAC__StreamDecoder GCC_ATTRIBUTE_UNUSED *dec, const FLAC__StreamMetadata GCC_ATTRIBUTE_UNUSED *meta, void GCC_ATTRIBUTE_UNUSED *data)
+void flac_metadata_callback(const FLAC__StreamDecoder *dec, const FLAC__StreamMetadata *meta, void *data)
 {
     fileinfo_t *info = (fileinfo_t *) data;
 
@@ -127,16 +105,15 @@ void flac_metadata_callback(const FLAC__StreamDecoder GCC_ATTRIBUTE_UNUSED *dec,
     }
 }
 
-FLAC__StreamDecoderWriteStatus flac_null_write_callback(const FLAC__StreamDecoder GCC_ATTRIBUTE_UNUSED *dec,
-        const FLAC__Frame  GCC_ATTRIBUTE_UNUSED *frame,
-        const FLAC__int32  GCC_ATTRIBUTE_UNUSED * const buf[],
-        void GCC_ATTRIBUTE_UNUSED *data)
+FLAC__StreamDecoderWriteStatus flac_null_write_callback(const FLAC__StreamDecoder *dec,
+        const FLAC__Frame *frame,
+        const FLAC__int32 * const buf[],
+        void *data)
 {
-
     return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
 
-FLAC__StreamDecoderWriteStatus flac_write_callback(const FLAC__StreamDecoder GCC_ATTRIBUTE_UNUSED *dec,
+FLAC__StreamDecoderWriteStatus flac_write_callback(const FLAC__StreamDecoder *dec,
         const FLAC__Frame *frame,
         const FLAC__int32 * const buf[],
         void *data)
@@ -173,8 +150,8 @@ FLAC__StreamDecoderWriteStatus flac_write_callback(const FLAC__StreamDecoder GCC
 
 
 
-void flac_error_callback(const FLAC__StreamDecoder GCC_ATTRIBUTE_UNUSED *dec,
-                         FLAC__StreamDecoderErrorStatus GCC_ATTRIBUTE_UNUSED status, void GCC_ATTRIBUTE_UNUSED *data)
+void flac_error_callback(const FLAC__StreamDecoder *dec,
+                         FLAC__StreamDecoderErrorStatus status, void *data)
 {
     foutput("%s", "[ERR]  FLAC error callback called.\n");
 }
@@ -198,21 +175,19 @@ int calc_info(fileinfo_t* info)
 
     static uint16_t T[2][6][10]=     // 16-bit table
     {
-        {   {	2,	2000, 16,  1984,  2010,	2028, 11, 16, 0, 0 },
+        {{	2,	2000, 16,  1984,  2010,	2028, 11, 16, 0, 0 },
             {	4,	2000, 16,  1984,  2010,	2028, 11, 16, 0, 0 },
             { 12,	2004, 24,  1980,  2010,	2028, 15, 12, 0, 0 },
             { 16,	2000, 16,  1980,  2010,	2028, 11, 16, 0, 0 },
             { 20,	2000, 20,  1980,  2010, 2028, 15, 16, 0, 0 },
-            { 24,	1992, 24,  1992, 1993,  2014, 10, 10, 17, 14}
-        },
+            { 24,	1992, 24,  1992, 1993,  2014, 10, 10, 17, 14}},
         // 24-bit table
-        {   {	6,	2004, 24,  1980,  2010,	2028, 15, 12,  0, 0 },
+        {{	6,	2004, 24,  1980,  2010,	2028, 15, 12,  0, 0 },
             { 12,	2004, 24,  1980,  2010,	2028, 15, 12,  0, 0 },
             { 18,	1998, 18,  1980,  2010,	2026, 15, 16,  0, 2 },
             { 24,	1992, 24,  1968,  1993,	2014, 10, 10, 17, 14 },
             { 30,	1980,  0,  1980,  2010, 2008, 15, 16,  0, 20 },
-            { 36,	1980,  0,  1980,  2010, 2008, 15, 16,  0, 20 }
-        }
+            { 36,	1980,  0,  1980,  2010, 2008, 15, 16,  0, 20 }}
     };
 
 
@@ -350,7 +325,7 @@ int flac_getinfo(fileinfo_t* info)
 }
 #endif
 
-#ifndef WITHOUT_libfixwav
+#ifndef WITHOUT_FIXWAV
 int fixwav_repair(fileinfo_t *info)
 {
     WaveHeader  waveheader;
@@ -463,7 +438,7 @@ int fixwav_repair(fileinfo_t *info)
 }
 #endif
 
-#ifndef WITHOUT_sox
+#ifndef WITHOUT_SOX
 
 char* replace_file_extension(char * filename)
 {
@@ -509,7 +484,7 @@ int launch_sox(char** filename)
 
     if (new_wav_name == NULL)
     {
-        perror("\n[ERR]  SoX string suffix was not allocated\n");
+        perror("[ERR]  SoX string suffix was not allocated");
         return(NO_AFMT_FOUND);
     }
 
@@ -539,7 +514,7 @@ int extract_audio_info(fileinfo_t *info, uint8_t * header)
 {
     info->type=AFMT_WAVE;
 
-#ifndef WITHOUT_libfixwav
+#ifndef WITHOUT_FIXWAV
 
     /* parsing header again with FIXWAV utility */
 
@@ -590,7 +565,7 @@ int extract_audio_info(fileinfo_t *info, uint8_t * header)
         {
 
             foutput("[WAR]  Expected %"PRIu64" bytes but found %"PRIu64" on disc...patching data.\n",
-                    info->numbytes, info->file_size-info->header_size);
+                   info->numbytes, info->file_size-info->header_size);
             info->numbytes = info->file_size - info->header_size;
         }
 
@@ -599,7 +574,7 @@ int extract_audio_info(fileinfo_t *info, uint8_t * header)
     if ((info->bitspersample!=16) && (info->bitspersample!=24))
     {
         foutput("%s\n", "[WAR]  Audio characteristics of file could not be found.");
-#ifndef WITHOUT_libfixwav
+#ifndef WITHOUT_FIXWAV
         foutput("%s\n", "       Fixing wav header (option -F) ...");
         info->type=fixwav_repair(info);
 
@@ -652,6 +627,10 @@ int wav_getinfo(fileinfo_t* info)
     uint8_t header[info->header_size];
     memset(header, 0, info->header_size);
 
+    if (header == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not allocate header memory")
+
+
+
 
     /* PATCH: real size on disc is needed */
 #if defined __WIN32__
@@ -664,9 +643,9 @@ int wav_getinfo(fileinfo_t* info)
 
     if (info->header_size > (span=fread(header, 1, info->header_size,fp)))
     {
-        foutput("[ERR]  Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
-        perror("       ");
-        clean_exit(EXIT_FAILURE);
+            foutput("[ERR]  Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
+            perror("       ");
+            clean_exit(EXIT_FAILURE);
     }
 
     fclose(fp);
@@ -693,13 +672,13 @@ int wav_getinfo(fileinfo_t* info)
             {
 #endif
 #endif
-#ifndef WITHOUT_sox
+#ifndef WITHOUT_SOX
 
                 if (globals.sox_enable)
                 {
                     // When RIFF fmt headers are not recognized, they are processed by Sox first if -S -F is on command line then checked by fixwav
                     // yest SoX may crash for seriously mangled headers
-#ifndef WITHOUT_libfixwav
+#ifndef WITHOUT_FIXWAV
                     if (!globals.fixwav_force)
                     {
 #endif
@@ -709,7 +688,7 @@ int wav_getinfo(fileinfo_t* info)
                         else
                             // PATCH looping back to get info
                             return(info->type=wav_getinfo(info));
-#ifndef WITHOUT_libfixwav    // yet without the processing tail below (preserving new header[] array and info structure)
+#ifndef WITHOUT_FIXWAV    // yet without the processing tail below (preserving new header[] array and info structure)
                     }
 
                     else
@@ -740,11 +719,11 @@ int wav_getinfo(fileinfo_t* info)
                 else
 
 #endif
-#ifndef WITHOUT_libfixwav
+#ifndef WITHOUT_FIXWAV
                     if ((!globals.fixwav_force) && (!globals.fixwav_prepend))
 #endif
                         return(info->type);
-#ifndef WITHOUT_libfixwav
+#ifndef WITHOUT_FIXWAV
                     else
                         return(info->type=extract_audio_info(info, header));
 #endif
@@ -765,52 +744,61 @@ int wav_getinfo(fileinfo_t* info)
 
 
 
-int audio_open(fileinfo_t* info, const char* ioflag)
+int audio_open(fileinfo_t* info)
 {
 #ifndef WITHOUT_FLAC
     FLAC__StreamDecoderInitStatus result=0;
 #endif
 
     info->audio=malloc(sizeof(audio_input_t));
-    char ioflag_reverse[3]="rb";
-    if (ioflag[0] == 'r') ioflag_reverse[0]='w';
 
-    if (ioflag[0] == 'w')
+    if (info->type==AFMT_WAVE)
     {
-        if (info->type==AFMT_WAVE)
+        info->audio->fp=fopen(info->filename,"rb");
+        if (info->audio->fp==0)
         {
-            info->audio->fp=fopen(info->filename, ioflag_reverse);
-            if (info->audio->fp==0)
-            {
-                return(1);
-            }
-
-
-
-
-#if defined __WIN32__ & !defined MKDIR
-            info->file_size = read_file_size(info->audio->fp, (TCHAR*) info->filename);
-#else
-            info->file_size = read_file_size(info->audio->fp, info->filename);
-#endif
-            fseek(info->audio->fp, info->header_size,SEEK_SET);
-
-            info->audio->bytesread=0;
+            return(1);
         }
-#ifndef WITHOUT_FLAC
-        else
-        {
-            info->audio->flac=FLAC__stream_decoder_new();
-            info->audio->n=0;
-            info->audio->eos=0;
+#if defined __WIN32__ & !defined MKDIR
+        info->file_size = read_file_size(info->audio->fp, (TCHAR*) info->filename);
+#else
+        info->file_size = read_file_size(info->audio->fp, info->filename);
+#endif
+        fseek(info->audio->fp, info->header_size,SEEK_SET);
 
-            if (info->audio->flac!=NULL)
+
+        info->audio->bytesread=0;
+    }
+#ifndef WITHOUT_FLAC
+    else
+    {
+        info->audio->flac=FLAC__stream_decoder_new();
+        info->audio->n=0;
+        info->audio->eos=0;
+
+        if (info->audio->flac!=NULL)
+        {
+
+            if  (info->type==AFMT_FLAC)
             {
 
-                if  (info->type==AFMT_FLAC)
+                result=/*FLAC__StreamDecoderInitStatus*/ FLAC__stream_decoder_init_file  	(
+                            /*FLAC__StreamDecoder *  */ 	 info->audio->flac,
+                            /*char * */ 	info->filename,
+                            /*FLAC__StreamDecoderWriteCallback */ 	flac_write_callback,
+                            /*FLAC__StreamDecoderMetadataCallback */ 	flac_metadata_callback,
+                            /*FLAC__StreamDecoderErrorCallback  */	flac_error_callback,
+                            (void *) info
+                        );
+                if ((globals.debugging) && (result == FLAC__STREAM_DECODER_INIT_STATUS_OK))
+                    foutput("%s\n", "[MSG]  FLAC decoder was initialized");
+            }
+            else
+
+                if  (info->type==AFMT_OGG_FLAC)
                 {
 
-                    result=/*FLAC__StreamDecoderInitStatus*/ FLAC__stream_decoder_init_file  	(
+                    result=/*FLAC__StreamDecoderInitStatus*/ FLAC__stream_decoder_init_ogg_file  	(
                                 /*FLAC__StreamDecoder *  */ 	 info->audio->flac,
                                 /*char * */ 	info->filename,
                                 /*FLAC__StreamDecoderWriteCallback */ 	flac_write_callback,
@@ -818,100 +806,62 @@ int audio_open(fileinfo_t* info, const char* ioflag)
                                 /*FLAC__StreamDecoderErrorCallback  */	flac_error_callback,
                                 (void *) info
                             );
+
                     if ((globals.debugging) && (result == FLAC__STREAM_DECODER_INIT_STATUS_OK))
-                        foutput("%s\n", "[MSG]  FLAC decoder was initialized");
+                        foutput("%s\n", "[MSG]  OGG_FLAC decoder was initialized");
                 }
                 else
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Type of file unknown")
 
-                    if  (info->type==AFMT_OGG_FLAC)
+
+
+                    if (result!=FLAC__STREAM_DECODER_INIT_STATUS_OK)
                     {
+                        FLAC__stream_decoder_delete(info->audio->flac);
 
-                        result=/*FLAC__StreamDecoderInitStatus*/ FLAC__stream_decoder_init_ogg_file  	(
-                                    /*FLAC__StreamDecoder *  */ 	 info->audio->flac,
-                                    /*char * */ 	info->filename,
-                                    /*FLAC__StreamDecoderWriteCallback */ 	flac_write_callback,
-                                    /*FLAC__StreamDecoderMetadataCallback */ 	flac_metadata_callback,
-                                    /*FLAC__StreamDecoderErrorCallback  */	flac_error_callback,
-                                    (void *) info
-                                );
+                        /* error diagnosis */
 
-                        if ((globals.debugging) && (result == FLAC__STREAM_DECODER_INIT_STATUS_OK))
-                            foutput("%s\n", "[MSG]  OGG_FLAC decoder was initialized");
+                        if (globals.debugging)
+
+                            switch (result)
+                            {
+                            case   FLAC__STREAM_DECODER_INIT_STATUS_UNSUPPORTED_CONTAINER  :
+                                printf ("%s\n", "[ERR]  The library was not compiled with support\n       for the given container format. ");
+                                break;
+                            case   FLAC__STREAM_DECODER_INIT_STATUS_INVALID_CALLBACKS :
+                                foutput("%s\n",  "[ERR]  A required callback was not supplied.");
+                                break;
+                            case   FLAC__STREAM_DECODER_INIT_STATUS_MEMORY_ALLOCATION_ERROR :
+                                foutput("%s\n", "[ERR]  An error occurred allocating memory.");
+                                break;
+                            case   FLAC__STREAM_DECODER_INIT_STATUS_ERROR_OPENING_FILE :
+                                foutput("%s\n", "[ERR]  fopen() failed in FLAC__stream_decoder_init_file()\n       or FLAC__stream_decoder_init_ogg_file(). ");
+                                break;
+                            case   FLAC__STREAM_DECODER_INIT_STATUS_ALREADY_INITIALIZED :
+                                foutput("%s\n", "[ERR]  FLAC__stream_decoder_init_*() was called when the decoder was already initialized,\n       usually because FLAC__stream_decoder_finish() was not called.");
+                                break;
+                            default :
+                                foutput("%s\n", "[ERR]  Error unknown by FLAC API.");
+                            }
+
+                        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Failed to initialise FLAC decoder\n");
                     }
-                    else
-                        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Type of file unknown")
 
 
-
-                        if (result!=FLAC__STREAM_DECODER_INIT_STATUS_OK)
-                        {
-                            FLAC__stream_decoder_delete(info->audio->flac);
-
-                            /* error diagnosis */
-
-                            if (globals.debugging)
-
-                                switch (result)
-                                {
-                                case   FLAC__STREAM_DECODER_INIT_STATUS_UNSUPPORTED_CONTAINER  :
-                                    printf ("%s\n", "[ERR]  The library was not compiled with support\n       for the given container format. ");
-                                    break;
-                                case   FLAC__STREAM_DECODER_INIT_STATUS_INVALID_CALLBACKS :
-                                    foutput("%s\n",  "[ERR]  A required callback was not supplied.");
-                                    break;
-                                case   FLAC__STREAM_DECODER_INIT_STATUS_MEMORY_ALLOCATION_ERROR :
-                                    foutput("%s\n", "[ERR]  An error occurred allocating memory.");
-                                    break;
-                                case   FLAC__STREAM_DECODER_INIT_STATUS_ERROR_OPENING_FILE :
-                                    foutput("%s\n", "[ERR]  fopen() failed in FLAC__stream_decoder_init_file()\n       or FLAC__stream_decoder_init_ogg_file(). ");
-                                    break;
-                                case   FLAC__STREAM_DECODER_INIT_STATUS_ALREADY_INITIALIZED :
-                                    foutput("%s\n", "[ERR]  FLAC__stream_decoder_init_*() was called when the decoder was already initialized,\n       usually because FLAC__stream_decoder_finish() was not called.");
-                                    break;
-                                default :
-                                    foutput("%s\n", "[ERR]  Error unknown by FLAC API.");
-                                }
-
-                            EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Failed to initialise FLAC decoder\n");
-                        }
-
-
-                if (!FLAC__stream_decoder_process_until_end_of_metadata(info->audio->flac))
-                {
-                    FLAC__stream_decoder_delete(info->audio->flac);
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE( "[ERR]  Failed to read metadata from FLAC file\n")
-
-                }
-
-
-
-            }
-            else    EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not initialise FLAC decoder")
-
-            }
-#endif
-    }
-    else
-    {
-
-        info->type=AFMT_WAVE;
-
-        info->audio->fp=fopen(info->filename, ioflag_reverse);
-        if (info->audio->fp==0)
+            if (!FLAC__stream_decoder_process_until_end_of_metadata(info->audio->flac))
             {
-                return(1);
+                FLAC__stream_decoder_delete(info->audio->flac);
+                EXIT_ON_RUNTIME_ERROR_VERBOSE( "[ERR]  Failed to read metadata from FLAC file\n")
+
             }
 
 
-        if (!globals.nooutput)
-        {
-            info->header_size=sizeof(wav_header);
-            fwrite(wav_header,info->header_size,1,info->audio->fp);
-            fileoffset+=info->header_size;
 
-            // fseek(info->audio->fp, info->header_size,SEEK_SET);
         }
-    }
+        else    EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not initialise FLAC decoder")
+
+        }
+#endif
 
     return(0);
 }
@@ -930,16 +880,16 @@ AOB:   1  0
 In the original dvda-author, the mono and stereo 24-bit cases were illustrated thus:
 
 24-bit mono samples are packed as follows:
-               0   1     2   3   4   5
-    WAV: 01 23 45 12 34 56
-    AOB: 45 23 56 34 01 12
-                 2   1   5   4    0  3
+	           0   1     2   3   4   5
+	WAV: 01 23 45 12 34 56
+	AOB: 45 23 56 34 01 12
+	             2   1   5   4    0  3
 
  24-bit Stereo samples are packed as follows:
-        0   1     2  3    4   5    6  7    8  9  10  11
-    WAV: 01 23 45 bf 60 8c 67 89 ab b7 d4 e3
-    AOB: 45 23 8c 60 ab 89 e3 d4 01 bf 67 b7
-                2   1    5  4    8    7  11  10  0  3   6   9
+		0   1     2  3    4   5    6  7    8  9  10  11
+	WAV: 01 23 45 bf 60 8c 67 89 ab b7 d4 e3
+	AOB: 45 23 8c 60 ab 89 e3 d4 01 bf 67 b7
+	            2   1    5  4    8    7  11  10  0  3   6   9
 
 For brevity, we use only the more compact label-based description for each of the 12 cases treated here.
 The in-place transformatioin code that derives from this description was machine generated to reduce the chance for transcription errors,. Identity expressions, e.g. x[i+1] = x[i+1], are omitted.
@@ -1004,237 +954,102 @@ Now follows the actual manipulation code.  Note that performing the transformati
 */
 
 
-  static void interleave_16_bit_sample_extended(uint8_t channels, int count, uint8_t * buf_in, uint8_t * buf_out )
+static void interleave_16_bit_sample_extended(uint8_t channels, int count, uint8_t * buf)
 {
-    int i, size=channels*4;
+
+    int x,i, size=channels*4;
+    uint8_t _buf[size];
+
     switch (channels)
     {
     case 1:
     case 2:
-        for (i=0; i<count; i+=2)
-        {
-            buf_out[i]=buf_in[i+1];
-            buf_out[i+1]=buf_in[i];
-        }
 
+        for (i=0;i<count;i+=2)
+            x=buf[i+1], buf[i+1]=buf[i], buf[i]=x;
         break;
 
     default:
+
         for (i=0; i < count; i += size)
-            permutation(buf_in+i,buf_out+i, 0, channels, S, size);
+
+            permutation(buf+i,_buf, 0, channels, S, size);
+
+
+
         break;
     }
+
 }
 
 
-  static void interleave_24_bit_sample_extended(uint8_t channels, int count, uint8_t * buf_in, uint8_t* buf_out)
+ static void interleave_24_bit_sample_extended(uint8_t channels, int count, uint8_t * buf)
 
 {
 
     int i, size=channels*6;
+    uint8_t _buf[size];
+
 
     for (i=0; i < count; i += size)
-        permutation(buf_in+i,buf_out+i, 1, channels, S, size);
+        permutation(buf+i,_buf, 1, channels, S, size);
 
 
 }
 
-/*	 Convert LPCM samples to little-endian WAV samples and deinterleave.
-
-Here the interleaving that is performed during dvd_audio authoring is reversed so as to recover the proper byte order
-for a wave file.  The transformation for each of the 12 cases is specified by the following.
-A "round trip," i.e., authoring followed by extraction, is now illustrated for the 16-bit, 3-channel case.
-
-authoring:
-WAV:  0  1  2  3  4  5  6  7  8  9 10 11
-AOB:  5  4 11  10 1  0  3  2  7  6  9  8
-
-extraction:
-AOB: 0  1  2  3  4  5  6  7  8  9  10  11
-WAV: 5  4  7  6  1  0  9  8  11  10  3  2
-
-These values are encoded in T matrix to be found in src/include/multichannel.h
-
- */
-
-/*
- 16-bit 1  channel
-AOB: 0  1
-WAV: 1  0
-
- 16-bit 2  channel
-AOB: 0  1
-WAV: 1  0
-*/
-
-/*
- 16-bit 3  channel
-AOB: 0  1  2  3  4  5  6  7  8  9  10  11
-WAV: 5  4  7  6  1  0  9  8  11  10  3  2
-*/
-
-/*
- 16-bit 4  channel
-AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15
-WAV: 9  8  11  10  1  0  3  2  13  12  15  14  5  4  7  6
-*/
-
-
-/*
- 16-bit 5  channel
-AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19
-WAV: 13  12  15  14  1  0  3  2  5  4  17  16  19  18  7  6  9  8  11  10
-*/
-
-
-/*
- 16-bit 6  channel
-AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23
-WAV: 9  8  11  10  1  0  3  2  13  12  15  14  17  16  19  18  5  4  7  6  21  20  23  22
-*/
-
-
-/*
- 24-bit 1  channel
-AOB: 0  1  2  3  4  5
-WAV: 4  1  0  5  3  2
-*/
-
-
-/*
- 24-bit 2  channel
-AOB: 0  1  2  3  4  5  6  7  8  9  10  11
-WAV: 8  1  0  9  3  2  10  5  4  11  7  6
-*/
-
-
-/*
- 24-bit 3  channel
-AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17
-WAV: 14  7  6  15  9  8  4  1  0  16  11  10  17  13  12  5  3  2
-*/
-
-
-/*
- 24-bit 4  channel
-AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23
-WAV: 20  13  12  21  15  14  8  1  0  9  3  2  22  17  16  23  19  18  10  5  4  11  7  6
-*/
-
-/*
- 24-bit 5  channel
-AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29
-WAV: 26  19  18  27  21  20  12  1  0  13  3  2  14  5  4  28  23  22  29  25  24  15  7  6  16  9  8  17  11  10
-*/
-/*
- 24-bit 6  channel
-AOB: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35
-WAV: 28  13  12  29  15  14  8  1  0  9  3  2  30  17  16  31  19  18  32  21  20  33  23  22  10  5  4  11  7  6  34  25  24  35  27  26
-*/
-
-
- static void deinterleave_24_bit_sample_extended(uint8_t channels, int count, uint8_t *buf_in, uint8_t *buf_out)
-{
-    // Processing 16-bit case
-    int i, size=channels*6;
-    // Requires C99
-
-    for (i=0; i < count ; i += size)
-        permutation(buf_in+i, buf_out+i, 1, channels, R, size);
-
-}
-
- static void deinterleave_16_bit_sample_extended(uint8_t channels, int count, uint8_t *buf_in, uint8_t *buf_out)
-{
-
-    // Processing 16-bit case
-    int i, size=channels*4;
-    // Requires C99
-
-    switch (channels)
-    {
-    case 1:
-    case 2:
-        for (i=0; i<count; i+= 2 )
-        {
-            buf_out[i ] = buf_in[i+1];
-            buf_out[i+1] = buf_in[i];
-        }
-        break;
-
-    default:
-        for (i=0; i < count ; i += size)
-            permutation(buf_in+i, buf_out+i, 0, channels, R, size);
-
-    }
-}
-
-
-
-
-  uint8_t read_count(uint32_t *bytesread, uint32_t count, uint8_t  offset, uint8_t * buf, fileinfo_t* info)
+ uint8_t read_count(uint32_t *bytesread, uint32_t count, uint8_t  offset, uint8_t * buf, fileinfo_t* info)
 {
 
 
-    int n=0;
+  int n;
 
-    if ((info->type == AFMT_FLAC) || (info->type == AFMT_OGG_FLAC))
-    {
-        if (info->audio->n >= count)
-        {
-            n=count;
-            memcpy(buf,info->audio->buf,count);
-            memmove(info->audio->buf,&(info->audio->buf[count]),info->audio->n-count);
-            info->audio->n-=count;
-
-        }
-        else
-        {
-            n=info->audio->n;
-            memcpy(buf,info->audio->buf,info->audio->n);
-            info->audio->n=0;
-        }
-
-        *bytesread+=n;
-
-    }
-    else  //AFMT_WAV
-    {
-
-        /* read count bytes in file into buffer at an offset and increase bytesread counts accordingly, adjusting at end of audio files */
-        *bytesread=0;
-//    n=fread(buf+offset,1,count-*bytesread,info->audio->fp);
-//    if (info->audio->bytesread+n > info->numbytes)
-//    {
-//        n=info->numbytes-info->audio->bytesread;
-//    }
-//    info->audio->bytesread+=n;
-//    *bytesread=n;
-
-
-
-        while ((info->audio->bytesread < info->numbytes) && (*bytesread < count))
-        {
-
-            n=fread(buf+*bytesread+offset,1,count-*bytesread,info->audio->fp);
-
-            if (globals.maxverbose) EXPLAIN("%s%d%s%d%s%d%s%lld%s%d\n","READ ",n,"/", count-*bytesread, "B added to ",info->audio->bytesread, "B/", info->numbytes," into buffer at offset ", offset+*bytesread)
-
-            if (info->audio->bytesread+n > info->numbytes)
+  if ((info->type == AFMT_FLAC) || (info->type == AFMT_OGG_FLAC))
+  {
+      if (info->audio->n >= count)
             {
-                n=info->numbytes-info->audio->bytesread;
-                if (globals.maxverbose) EXPLAIN("%s%lld%s%d\n","READ CUT",n-info->numbytes+info->audio->bytesread,"/", n)
-            }
-            info->audio->bytesread+=n;
-            *bytesread+=n;
+              n=count;
+              memcpy(buf,info->audio->buf,count);
+              memmove(info->audio->buf,&(info->audio->buf[count]),info->audio->n-count);
+              info->audio->n-=count;
 
-        }
+            }
+          else
+            {
+              n=info->audio->n;
+              memcpy(buf,info->audio->buf,info->audio->n);
+              info->audio->n=0;
+            }
+
+    *bytesread+=n;
+
+  }
+  else  //AFMT_WAV
+  {
+
+
+    n=fread(buf+offset,1,count,info->audio->fp);
+    if (info->audio->bytesread+n > info->numbytes)
+    {
+        n=info->numbytes-info->audio->bytesread;
     }
-    /* return last number of bytes read, also in pointer parameter n for total of bytes read, and in structure info->audio->bytesread */
+    info->audio->bytesread+=n;
+    *bytesread=n;
+    while ((info->audio->bytesread < info->numbytes) && (*bytesread < count))
+    {
+        n=fread(buf+*bytesread+offset,1,count-*bytesread,info->audio->fp);
+        if (info->audio->bytesread+n > info->numbytes)
+        {
+            n=info->numbytes-info->audio->bytesread;
+        }
+        info->audio->bytesread+=n;
+        *bytesread+=n;
+    }
+  }
+
     return n;
 }
 
-  uint8_t pad_sample(uint8_t *buf, uint32_t nc, uint8_t rmdr, fileinfo_t* info)
+ uint8_t pad_sample(uint8_t *buf, uint32_t nc, uint8_t rmdr, fileinfo_t* info)
 {
     uint8_t padbytes;
 
@@ -1247,14 +1062,13 @@ WAV: 28  13  12  29  15  14  8  1  0  9  3  2  30  17  16  31  19  18  32  21  2
 }
 
 
-  static uint32_t read_track_file_into_buffer(uint8_t* buf, fileinfo_t* info, uint32_t *count)
+ static uint32_t read_track_file_into_buffer(uint8_t* buf, fileinfo_t* info, uint32_t *count)
 {
 
     static uint8_t fbuf[50];
     uint32_t n=0,nc=0, bytesread=0;
     static uint8_t offset,rmdr;
 
-    /* if no gap filling operation, just use the number of 4-byte words passed as argument rounded down to an equal number of samples */
 
     if (info->joingap==0)
     {
@@ -1263,29 +1077,16 @@ WAV: 28  13  12  29  15  14  8  1  0  9  3  2  30  17  16  31  19  18  32  21  2
         if (*count%info->sampleunitsize)
             foutput("[MSG]  Requested %d  bytes,sampleunitsize %d\n",*count,info->sampleunitsize);
 
-        /* read the audio with the rounded-up count into buffer and count the total number of bytes read  */
-
         read_count(&bytesread, *count, 0, buf, info);
-
-        /* Now assess if the number of bytes read comes in an integral number of samples */
         rmdr = bytesread % info->sampleunitsize;
-
-        /* if so, n = bytesread, otherwise pad the buffer accordingly with bytes in excess of sample count */
-
         n= (rmdr)? pad_sample(buf, n, rmdr, info) : bytesread;
 
     }
     else
-
-        /* if using the gap filling operation, do not round-up the number of 4-byte words passed to an equal number of samples */
-
     {
-
 
         if (offset)
             memcpy(buf, fbuf, offset);
-
-        /* read the audio with the rounded-up count into buffer and count the total number of bytes read  */
 
         read_count(&bytesread, *count-(*count+offset)%info->sampleunitsize, offset, buf, info);
         nc = bytesread+offset;
@@ -1295,20 +1096,15 @@ WAV: 28  13  12  29  15  14  8  1  0  9  3  2  30  17  16  31  19  18  32  21  2
             n=nc;
         else
         {
-
-            /* if option -j is used, the join-gap option is involved as follows:
-               in case you have a remainder, use it as an offset */
             if (info->contin_track)
             {
                 offset = rmdr;
                 n=nc-rmdr;
-                /* copy offset bytes of buf just before end of last read into fbuf *
-                   to use it for next buffer as a continuous gap filling fix */
                 memcpy(fbuf, buf+n, rmdr);
             }
             else
             {
-                /* otherwise pad the buffer with rmdr bytes */
+                // output everything
                 n=pad_sample(buf, nc, rmdr, info);
             }
         }
@@ -1322,59 +1118,55 @@ WAV: 28  13  12  29  15  14  8  1  0  9  3  2  30  17  16  31  19  18  32  21  2
 
 
 // Read numbytes of audio data, and convert it to DVD byte order
-uint32_t process_audio(fileinfo_t* info, uint8_t* buf_in,uint8_t* buf_out, uint32_t count, const char* ioflag)
+uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
 {
     uint32_t  n=0;
 
-    if (ioflag[0] == 'w')
+
+    //PATCH: provided for null audio characteristics, to ensure non-zero divider
+
+    if (info->sampleunitsize == 0)
     {
-
-
-        //PATCH: provided for null audio characteristics, to ensure non-zero divider
-
-        if (info->sampleunitsize == 0)
-        {
-            foutput("%s\n", "[ERR]  Sample unit size is null...");
-            return 0;
-        }
+        foutput("%s\n", "[ERR]  Sample unit size is null...");
+        return 0;
+    }
 
 ///////////////////////
 // copy offset bytes from buffer filled in last pass (remainder of non-whole modulo by info->sampleunitsize)
 
-        if ((info->type != AFMT_FLAC) && (info->type != AFMT_OGG_FLAC) && (info->type == AFMT_OGG_FLAC)) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Can only decode wav of flac streams...\n       Exiting...\n")
+    if ((info->type != AFMT_FLAC) && (info->type != AFMT_OGG_FLAC) && (info->type == AFMT_OGG_FLAC)) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Can only decode wav of flac streams...\n       Exiting...\n")
 
 #ifndef WITHOUT_FLAC
 
-            if ((info->type == AFMT_FLAC) || (info->type == AFMT_OGG_FLAC))
-            {
+    if ((info->type == AFMT_FLAC) || (info->type == AFMT_OGG_FLAC))
+    {
 
-                count-= count%info->sampleunitsize;
-                _Bool result;
+        count-= count%info->sampleunitsize;
+	_Bool result;
 
-                while ((info->audio->n < count) && (info->audio->eos==0))
+        while ((info->audio->n < count) && (info->audio->eos==0))
+        {
+            result=FLAC__stream_decoder_process_single(info->audio->flac);
+
+            if (result==0)
+                EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Fatal error decoding FLAC file\n")
+
+                if (FLAC__stream_decoder_get_state(info->audio->flac)==FLAC__STREAM_DECODER_END_OF_STREAM)
                 {
-                    result=FLAC__stream_decoder_process_single(info->audio->flac);
-
-                    if (result==0)
-                        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Fatal error decoding FLAC file\n")
-
-                        if (FLAC__stream_decoder_get_state(info->audio->flac)==FLAC__STREAM_DECODER_END_OF_STREAM)
-                        {
-                            info->audio->eos=1;
-                        }
+                    info->audio->eos=1;
                 }
+        }
 
-            }
-#endif
     }
+#endif
 
-    /* First read audio file into a buffer for count*4 bytes */
-
-    n=read_track_file_into_buffer(buf_in, info, &count);
-
+    n=read_track_file_into_buffer(buf, info, &count);
 
 
-    // Convert little-endian WAV samples to big-endian MPEG LPCM samples in buffer
+
+
+
+    // Convert little-endian WAV samples to big-endian MPEG LPCM samples
 
     if ((info->channels > 6) || (info->channels < 1))
     {
@@ -1389,21 +1181,15 @@ uint32_t process_audio(fileinfo_t* info, uint8_t* buf_in,uint8_t* buf_out, uint3
 
 
         // Processing 16-bit audio
-        if (ioflag[0] == 'w')
-            interleave_24_bit_sample_extended(info->channels, count, buf_in, buf_out);
-        else
-            deinterleave_24_bit_sample_extended(info->channels, count, buf_in, buf_out);
+        interleave_24_bit_sample_extended(info->channels, count, buf);
+
 
         break;
 
     case 16:
 
         // Processing 16-bit audio
-        if (ioflag[0] == 'w')
-            interleave_16_bit_sample_extended(info->channels, count, buf_in, buf_out);
-        else
-            deinterleave_16_bit_sample_extended(info->channels, count, buf_in, buf_out);
-
+        interleave_16_bit_sample_extended(info->channels, count, buf);
 
         break;
 
@@ -1431,7 +1217,7 @@ uint32_t process_audio(fileinfo_t* info, uint8_t* buf_in,uint8_t* buf_out, uint3
     return(n);
 }
 
-int audio_close(fileinfo_t* info,const char GCC_ATTRIBUTE_UNUSED *ioflag)
+int audio_close(fileinfo_t* info)
 {
     if (info->type==AFMT_WAVE)
     {
