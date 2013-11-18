@@ -47,8 +47,6 @@ uint8_t program_mux_rate_bytes[3]= {0x01,0x89,0xc3};
 uint64_t fileoffset;
 
 
-
-
 inline   void  write_search_sequence(uint8_t* sequence, size_t sizeofsequence , FILE* filepointer, const char* ioflag)
 {
     if (globals.maxverbose)
