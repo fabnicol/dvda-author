@@ -892,13 +892,13 @@ int copy_file(const char *existing_file, const char *new_file)
     if (NULL == (fe = fopen(existing_file, "rb")))
     {
         fprintf(stderr, "[ERR]  Impossible to open file '%s' in read mode\n", existing_file);
-        return(-1);
+        exit(-1);
     }
     if (NULL == (fn = fopen(new_file, "wb")))
     {
         fprintf(stderr, "[ERR]  Impossible to open file '%s' in write mode\n", new_file);
         fclose(fe);
-        return(-1);
+        exit(-1);
     }
 
 
@@ -930,22 +930,14 @@ char* copy_file2dir(const char *existing_file, const char *new_dir)
     char* dest=calloc(filestruct->length+strlen(new_dir)+1+6+2, sizeof(char)); // 6-digit counter +1 underscore; size is a maximum
     if (dest == NULL) return NULL;
     sprintf(dest, "%s%s%s", new_dir, SEPARATOR, filestruct->filename);
-
-    path_t *filedest=parse_filepath(dest);
-    if (!filedest) return NULL;
-
-
-    if (filedest->isfile)
-    {
-        counter++;
-        // overwrite
-        sprintf(dest, "%s%s%s_%d%s", new_dir, SEPARATOR, filestruct->rawfilename, counter, filestruct->extension);
-    }
-
+    counter++;
+    // overwrite
+     sprintf(dest, "%s%s%s_%d%s", new_dir, SEPARATOR, filestruct->rawfilename, counter, filestruct->extension);
+    
     errorlevel=copy_file(existing_file, dest);
 
     free(filestruct);
-    free(filedest);
+    
     errno=0;
     if (errorlevel) return NULL;
     else return(dest);
