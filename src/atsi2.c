@@ -54,6 +54,7 @@ int get_afmt(fileinfo_t* info, audioformat_t* audioformats, int* numafmts)
     // PATCH 24.08.2009
     if (!info->newtitle)
     {
+        if (globals.veryverbose) foutput("%s\n", "[DBG]  Getting audio from same title");
         while ((i < *numafmts) && (!found))
         {
             if ((info->samplerate==audioformats[i].samplerate) && (info->bitspersample==audioformats[i].bitspersample) && (info->channels==audioformats[i].channels)&& (info->cga==audioformats[i].cga))
@@ -76,6 +77,7 @@ int get_afmt(fileinfo_t* info, audioformat_t* audioformats, int* numafmts)
     }
     else
     {
+        if (globals.veryverbose) foutput("%s\n", "[DBG]  Getting audio from new title");
         audioformats[i].samplerate=info->samplerate;
         audioformats[i].channels=info->channels;
         audioformats[i].bitspersample=info->bitspersample;
@@ -129,7 +131,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
 
 
 
-    for (j=0;j<numafmts;j++)
+    for (j=0;j < numafmts;j++)
     {
         uint16_copy(&atsi[i],0x0000);  // [200806] 0x0000 if a menu is not generated; otherwise sector pointer from start of audio zone (AUDIO_PP.IFO to last sector of audio system space (here AUDIO_TS.IFO)
         i+=2;
