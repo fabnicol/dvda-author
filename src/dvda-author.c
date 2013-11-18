@@ -197,14 +197,7 @@ int main(int argc,  char* const argv[])
     sprintf(EXECDIR, "%s/bin", currentdir);
 #endif
 
-    char *DATADIR;
-
-    #ifdef __WIN32__
-    DATADIR=strdup(currentdir);
-    #else
-    #define INSTALL_CONF_DIR "."
-    DATADIR=strdup(INSTALL_CONF_DIR);
-    #endif
+    char *DATADIR=strdup(currentdir);
     char **BGPIC=calloc(1, sizeof(char*));
     char ***SNDT=calloc(1, sizeof(char**));
     SNDT[0]=calloc(1, sizeof(char*));
