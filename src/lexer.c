@@ -238,7 +238,7 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
             case STILLOPTIONS_TRACK:
 
                 if (mem_s2>0)
-		    lexer->commandline[j][mem_s2-1]=(dataflag == STILLPICS_TITLE)? '-' : ',' ;
+		    lexer->commandline[j][mem_s2-1]=(dataflag == STILLPICS_TITLE)? ':' : ',' ;
 		else {i++;j++;}
 
                 memmove(lexer->commandline[j]+mem_s2, T,s0);

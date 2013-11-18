@@ -5,19 +5,19 @@
 # It is necessary for linking the library.
 
 # The name that we can dlopen(3).
-dlname=''
+dlname='liblavfile-2.1.so.0'
 
 # Names of this library.
-library_names=''
+library_names='liblavfile-2.1.so.0.0.0 liblavfile-2.1.so.0 liblavfile.so'
 
 # The name of the static archive.
 old_library='liblavfile.a'
 
 # Linker flags that can not go in dependency_libs.
-inherited_linker_flags=''
+inherited_linker_flags=' -pthread'
 
 # Libraries that this one depends upon.
-dependency_libs=' /usr/local/lib/libjpeg.la /home/fab/Dev/dvda-author-dev/local/lib/libmjpegutils.la -lm'
+dependency_libs=' /usr/local/lib/libjpeg.la /home/fab/Dev/dvda-author-dev/mjpegtools-2.1.0/local/lib/libmjpegutils.la -lm'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''
@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/home/fab/Dev/dvda-author-dev/local/lib'
+libdir='/home/fab/Dev/dvda-author-dev/mjpegtools-2.1.0/local/lib'

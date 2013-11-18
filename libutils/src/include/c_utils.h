@@ -36,8 +36,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #ifdef __WIN32__
 #define SEPARATOR "\\"
+#define STRLEN_SEPARATOR 2
 #else
 #define SEPARATOR  "/"
+#define STRLEN_SEPARATOR 1
 #endif
 
 #include <sys/types.h>

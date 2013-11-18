@@ -342,13 +342,13 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	       [[[mjpegtools], [mjpegtools-2.1.0]],
 			       [ --prefix="$BUILDDIR/local" 
 				 --disable-shared  --enable-static --enable-static-build --disable-fast-install --prefix="$BUILDDIR/local"
-				 --without-gtk --without-libpng --without-libdv --without-dga --without-libsdl --without-libquicktime
+				 --without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime
 				 --disable-simd-accel LIBDIR=/lib LDFLAGS=-L/lib CPPFLAGS=-I/include]],
 	       [[[cdrtools],[cdrtools-3.00]],[--prefix="$BUILDDIR/local"]],
 	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
 	       [[[libmpeg2],[libmpeg2-0.5.1]],[--prefix="$BUILDDIR/local"]],
 	       [[[help2man], [help2man-1.43.3]],[--prefix="$BUILDDIR/local"]],
-	       [[[ImageMagick], [ImageMagick-6.8.7-0]],[--prefix="$BUILDDIR/local"]],
+	       [[[ImageMagick], [ImageMagick-6.8.7-0]],[--prefix="$BUILDDIR/local" --without-magick-plus-plus --without-pango --without-tiff --without-lzma --without-xml]],
 	       [[[man2html], [man2html-1.6]],[bindir="$BUILDDIR/local/bin"]]])
 	    ],
 	    [
@@ -359,7 +359,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
 	       [[[libmpeg2],[libmpeg2-0.5.1]], [--prefix="$BUILDDIR/local"]],
 	       [[[help2man], [help2man-1.43.3]],[--prefix="$BUILDDIR/local"]],
-	       [[[ImageMagick], [ImageMagick-6.8.7-0]],[--prefix="$BUILDDIR/local"]],
+	       [[[ImageMagick], [ImageMagick-6.8.7-0]],[--prefix="$BUILDDIR/local" --without-magick-plus-plus --without-pango --without-tiff --without-lzma --without-xml]],
        	       [[[man2html], [man2html]],[bindir="$BUILDDIR/local/bin" mandir="$BUILDDIR/local/share/man"]]])
 	    ])
     

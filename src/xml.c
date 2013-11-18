@@ -29,7 +29,7 @@ int  generate_amgm_xml(uint8_t ngroups, uint8_t *ntracks, pic* img)
     FILE *xmlfile;
     if (globals.xml == NULL)
     {
-        char xmlfilepath[strlen(globals.settings.tempdir)+10];
+        char xmlfilepath[strlen(globals.settings.tempdir)+8+STRLEN_SEPARATOR];
         memset(xmlfilepath, 0, sizeof(xmlfilepath));
         sprintf(xmlfilepath,"%s"SEPARATOR"%s", globals.settings.tempdir,"xmltemp");
         globals.xml=strdup(xmlfilepath);

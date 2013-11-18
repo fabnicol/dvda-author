@@ -198,7 +198,7 @@ void import_topmenu(char* video_vob_path, pic* img, _Bool MIX_TYPE)
   // extract lpcm from VTS or else convert mp2/ac3 to lpcm  then assign img->soundtrack[0]=result
   initialize_binary_paths(CREATE_EXTRACT_AC3);
   FREE(img->soundtrack[0][0])
-  img->soundtrack[0][0]=calloc(1+ s + 20+3+ 4+1, sizeof(char));
+  img->soundtrack[0][0]=calloc(STRLEN_SEPARATOR+ s + 20+3+ 4+1, sizeof(char));
   sprintf(img->soundtrack[0][0], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "extracted_soundtrack",0, ".wav");
 
 
