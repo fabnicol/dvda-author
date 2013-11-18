@@ -138,13 +138,15 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *
 
 
             // PATCH 12.06
-
-            if ((files[titleset][j].samplerate != files[titleset][j-1].samplerate)
+//****SUSPECTED REGRESSION***//
+            if (j)
+              if ((files[titleset][j].samplerate != files[titleset][j-1].samplerate)
                 ||(files[titleset][j].bitspersample != files[titleset][j-1].bitspersample)
                 ||(files[titleset][j].channels != files[titleset][j-1].channels))
-
-                files[titleset][j].newtitle=1;
-
+                {
+                  files[titleset][j].newtitle=1;
+                }
+//****END OF SUSPECTED REGRESSION***//
             j++;
             track++;
 
