@@ -88,101 +88,95 @@ uint16_t totaltitles;
 
 uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *numtitles, uint8_t *ntitletracks[], uint64_t *titlelength[], uint16_t **ntitlepics)
 {
-
-
-    int  j=0, u, track=0;
-    uint8_t titleset=0;
-
-    numtitles[titleset]=0;
-
+    int  track=0;
+    uint8_t group=0;
+    numtitles[0]=0;
+    totaltitles=1;
+    
     /* Normal case: audio files */
     // Files are packed together according to audio characteristics: bit rate, sampel rate, number of channels
 
-    for (j=0; j < naudio_groups; j++)
+    for (int group=0; group < naudio_groups; group++)
     {
         // slightly overallocated as ntracks > ntitles
-        if (((ntitletracks[j]=calloc(ntracks[j], sizeof(uint8_t))) == NULL) || ((ntitlepics[j]=calloc(ntracks[j], sizeof(uint64_t))) ==  NULL) || ((titlelength[j]=calloc(ntracks[j], sizeof(uint64_t))) ==  NULL))
+        if (((ntitletracks[group]=calloc(ntracks[group], sizeof(uint8_t))) == NULL) || ((ntitlepics[group]=calloc(ntracks[group], sizeof(uint64_t))) ==  NULL) || ((titlelength[group]=calloc(ntracks[group], sizeof(uint64_t))) ==  NULL))
             EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Memory shortage on creating track tables")
             // Allocating default values
-
-        }
-    j=0;
-    while  ((titleset < naudio_groups ) && (j < ntracks[titleset]) )
+    }
+        
+    track=0;
+    while  ((group < naudio_groups ) && (track < ntracks[group]) )
     {
-        while ((j == 0) || (j < ntracks[titleset]))
+            /* counts the number of tracks with same-type audio characteristics, per group and title
+            *  into ntitletracks[group][numtitles[group]], and corresponding PTS length in titlelength[group][numtitles[group]] */
 
-        {
-            /* counts the number of tracks with same-type audio characteristics, per titleset and title
-            *  into ntitletracks[titleset][numtitles[titleset]], and corresponding PTS length in titlelength[titleset][numtitles[titleset]] */
-
-            ntitletracks[titleset][numtitles[titleset]]++;
-
-            titlelength[titleset][numtitles[titleset]]+=files[titleset][j].PTS_length;
-
-            u=0;
-            if (img)
+            // PATCH 13.11 on 12.06
+//****SUSPECTED REGRESSION***//
+            if (track)
             {
-                if (img->npics)
-                    while (u < img->npics[track])
-                    {
-                        ntitlepics[titleset][numtitles[titleset]]++;
-                        u++;
-                    }
-                else
+              if ((files[group][track].samplerate != files[group][track-1].samplerate)
+                ||(files[group][track].bitspersample != files[group][track-1].bitspersample)
+                ||(files[group][track].channels != files[group][track-1].channels))
                 {
-                    ntitlepics[titleset][numtitles[titleset]]++;
-                    u++;
+                  files[group][track].newtitle=1;
                 }
             }
-
-
-
-            // PATCH 12.06
-//****SUSPECTED REGRESSION***//
-            if (j)
-              if ((files[titleset][j].samplerate != files[titleset][j-1].samplerate)
-                ||(files[titleset][j].bitspersample != files[titleset][j-1].bitspersample)
-                ||(files[titleset][j].channels != files[titleset][j-1].channels))
-                {
-                  files[titleset][j].newtitle=1;
-                }
+              
 //****END OF SUSPECTED REGRESSION***//
-            j++;
-            track++;
 
             // PATCH 02 Dec 09 && 12.06
-            if (files[titleset][j-1].newtitle)
+            if (files[group][track].newtitle)
             {
                 totaltitles++;
-                numtitles[titleset]++;
-                break;
+                numtitles[group]++;
             }
 
+            titlelength[group][numtitles[group]]+=files[group][track].PTS_length;
+            if (img)
+            {
+                    ntitlepics[group][numtitles[group]] += (img->npics)? img->npics[track]: 1;
+            }
 
-        }
-        //  a new title begins when audio characteristics change, (whatever the titleset), except on reaching end of titleset tracks
-        //  or: incrementing on leaving out titleset (0-based values)
+            ntitletracks[group][numtitles[group]]++;
+              
+            track++;
+        
+        //  a new title begins when audio characteristics change, (whatever the group), except on reaching end of group tracks
+        //  or: incrementing on leaving out group (0-based values)
 
-
-        /* In case we've processed the last title in titleset,
-         *so we've reached the end of titleset: new initialization of j to continue the loop and start new titleset */
-        if (j == ntracks[titleset])
+        /* In case we've processed the last title in group,
+         *so we've reached the end of group: new initialization of j to continue the loop and start new group */
+        if (track == ntracks[group])
         {
-            maxntracks=MAX(j, maxntracks);
-            j=0;
-            titleset++;
-            /* bug fix: condition titleset < naudio_groups added (in original code, naudio_groups=9) buffer overflow could happen with titleset=8  */
-            if (titleset < naudio_groups) numtitles[titleset]=0;
+            maxntracks=MAX(track, maxntracks);
+            track=0;
+            group++;
+            if (group < naudio_groups) totaltitles++;
+            /* bug fix: condition group < naudio_groups added (in original code, naudio_groups=9) buffer overflow could happen with group=8  */
+            if (group < naudio_groups) numtitles[group]=0;
             continue;
         }
     }
 
-    if (globals.debugging)  for (j=0; j < naudio_groups; j++) printf("[INF]  Number of titles for group %d is %d\n",j, numtitles[j] );
+    if (globals.debugging)  for (group=0; group < naudio_groups; group++) printf("[INF]  Number of titles for group %d is %d\n",group, numtitles[group] );
 
+    #ifdef DUMP_TRACKTABLES
+      FILE* tracktables_dump=fopen("TRACKTABLES", "wb");
+      for (int g=0; g < naudio_groups; g++) 
+      {
+        fprintf(tracktables_dump, "numtitles[%d]=%d\n",g, numtitles[g]+1);
+        for (int title=0; title <= numtitles[g]; title++) 
+          fprintf(tracktables_dump, "ntitletracks[%d][%d]=%d\n",g,title, ntitletracks[g][title]);
+           
+        for (int track=0; track < ntracks[g]; track++) 
+          fprintf(tracktables_dump, "files[%d][%d].newtitle=%d\n",g,track, files[g][track].newtitle);
+      }
+    
+      fprintf(tracktables_dump, "totaltitles=%d\n",totaltitles);
+      fclose(tracktables_dump);
+    #endif
+    
     return track;
-
-
-
 
 }
 
@@ -370,8 +364,8 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
     errno=0;
 
 
-    uint16_t i,j=0,k=0,titleset=0, totalplaylisttitles=0, totalaudiotitles=0, titleintitleset;
-
+    uint16_t i,j=0,k=0,titleset=0, totalplaylisttitles=0, totalaudiotitles=0;
+    uint8_t titleintitleset=0;
     _Bool menusector=(globals.topmenu <= TS_VOB_TYPE);  // there is a _TS.VOB in these cases
     uint8_t naudio_groups=ngroups-vgroups-nplaygroups;  // CHECK
 
@@ -434,11 +428,8 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
 
     // Normal case: audio titles
 
-
-
     for (j=0; j < totalaudiotitles; j++)
     {
-
         _Bool come_last=(titleintitleset==numtitles[titleset]-1);
 
         amg[i]=((menusector)? ((come_last)? 0xC0 : 0x80) : 0x80 )|(titleset+1); 			// Table sector 2 first two bytes per title
@@ -448,12 +439,11 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
         i+=4;
         amg[i]=titleset+1;  // Titleset number
         amg[++i]=titleintitleset+1;
-
         uint32_copy(&amg[++i],sectoroffset[titleset]); // Pointer to ATSI
-
-
         i+=4;
-        titleintitleset++;
+        if (globals.veryverbose)
+            foutput("[INF]  Writing AMG sector2 Audio group:%d Title rank:%d Ntitles in group:%d\n",titleset, titleintitleset, numtitles[titleset]);
+        
         if (titleintitleset == numtitles[titleset])
         {
             sectoroffset[titleset+1]=sectoroffset[titleset]+(files[titleset][ntracks[titleset]-1].last_sector+1)+sectors->atsi[titleset]*2;
@@ -467,11 +457,12 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
             titleintitleset=0;
             titleset++;
         }
-
-
+        else
+        titleintitleset++;
+        
     }
 
-
+    titleset=0;
 
     // Case 2: video-linking titles
 
@@ -552,12 +543,14 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
         uint32_copy(&amg[++i],sectoroffset[titleset]); // Pointer to ATSI
 
         i+=4;
-        titleintitleset++;
+
         if (titleintitleset == numtitles[titleset])
         {
             titleintitleset=0;
             titleset++;
         }
+        else
+        titleintitleset++;
     }
 
 
