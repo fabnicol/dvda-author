@@ -51,7 +51,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "command_line_parsing.h"
 #include "winport.h"
 
-#ifndef WITHOUT_SOX
+#ifndef WITHOUT_sox
 #include "sox.h"
 #include "libsoxconvert.h"
 #endif
@@ -438,7 +438,7 @@ int fixwav_repair(fileinfo_t *info)
 }
 #endif
 
-#ifndef WITHOUT_SOX
+#ifndef WITHOUT_sox
 
 char* replace_file_extension(char * filename)
 {
@@ -672,7 +672,7 @@ int wav_getinfo(fileinfo_t* info)
             {
 #endif
 #endif
-#ifndef WITHOUT_SOX
+#ifndef WITHOUT_sox
 
                 if (globals.sox_enable)
                 {
@@ -954,7 +954,7 @@ Now follows the actual manipulation code.  Note that performing the transformati
 */
 
 
-static void interleave_16_bit_sample_extended(uint8_t channels, int count, uint8_t * buf)
+   static void interleave_16_bit_sample_extended(uint8_t channels, int count, uint8_t * buf)
 {
 
     int x,i, size=channels*4;
@@ -983,7 +983,7 @@ static void interleave_16_bit_sample_extended(uint8_t channels, int count, uint8
 }
 
 
- static void interleave_24_bit_sample_extended(uint8_t channels, int count, uint8_t * buf)
+   static void interleave_24_bit_sample_extended(uint8_t channels, int count, uint8_t * buf)
 
 {
 
@@ -997,7 +997,7 @@ static void interleave_16_bit_sample_extended(uint8_t channels, int count, uint8
 
 }
 
- uint8_t read_count(uint32_t *bytesread, uint32_t count, uint8_t  offset, uint8_t * buf, fileinfo_t* info)
+   uint8_t read_count(uint32_t *bytesread, uint32_t count, uint8_t  offset, uint8_t * buf, fileinfo_t* info)
 {
 
 
@@ -1049,7 +1049,7 @@ static void interleave_16_bit_sample_extended(uint8_t channels, int count, uint8
     return n;
 }
 
- uint8_t pad_sample(uint8_t *buf, uint32_t nc, uint8_t rmdr, fileinfo_t* info)
+   uint8_t pad_sample(uint8_t *buf, uint32_t nc, uint8_t rmdr, fileinfo_t* info)
 {
     uint8_t padbytes;
 
@@ -1062,7 +1062,7 @@ static void interleave_16_bit_sample_extended(uint8_t channels, int count, uint8
 }
 
 
- static uint32_t read_track_file_into_buffer(uint8_t* buf, fileinfo_t* info, uint32_t *count)
+   static uint32_t read_track_file_into_buffer(uint8_t* buf, fileinfo_t* info, uint32_t *count)
 {
 
     static uint8_t fbuf[50];
