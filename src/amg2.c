@@ -91,7 +91,7 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *
     int  track=0;
     uint8_t group=0;
     numtitles[0]=0;
-    totaltitles=1;
+    totaltitles=0;
     
     /* Normal case: audio files */
     // Files are packed together according to audio characteristics: bit rate, sampel rate, number of channels
@@ -121,6 +121,10 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *
                   files[group][track].newtitle=1;
                 }
             }
+            else
+            {
+                  files[group][track].newtitle=1;
+            }
               
 //****END OF SUSPECTED REGRESSION***//
 
@@ -128,7 +132,7 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *
             if (files[group][track].newtitle)
             {
                 totaltitles++;
-                numtitles[group]++;
+                if (track) numtitles[group]++;
             }
 
             titlelength[group][numtitles[group]]+=files[group][track].PTS_length;
@@ -151,7 +155,6 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *
             maxntracks=MAX(track, maxntracks);
             track=0;
             group++;
-            if (group < naudio_groups) totaltitles++;
             /* bug fix: condition group < naudio_groups added (in original code, naudio_groups=9) buffer overflow could happen with group=8  */
             if (group < naudio_groups) numtitles[group]=0;
             continue;
