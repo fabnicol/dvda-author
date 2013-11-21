@@ -531,6 +531,8 @@ uint8_t program_mux_rate_bytes[3]={0x01,0x89,0xc3};
   return(audio_bytes);
 }
 
+
+#if 0
 int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
 {
 
@@ -645,4 +647,126 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
     if (files[0].single_track) files[0].last_sector=files[ntracks-1].last_sector;
 
     return(1-filenum);
+}
+#endif
+
+
+
+
+int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks) {
+  int i;
+  FILE* fpout;
+  char outfile[560];
+  uint8_t audio_buf[65536];
+  int bytesinbuf=0;
+
+  int pack;
+  uint64_t pack_in_title;
+  int pack_in_file;
+  int fileno=1;
+  int write_system;
+  int title;
+  int n;
+  int finished;
+  int lpcm_payload;
+
+  snprintf(outfile,sizeof(outfile),"%s/ATS_%02d_%d.AOB",audiotsdir,titleset,fileno);
+  fpout=fopen(outfile,"wb+");
+
+  pack=0;
+  pack_in_title=0;
+  pack_in_file=0;
+  title=1;
+  finished=0;
+  i=0;
+
+  /* Open the first file and initialise the input audio buffer */
+  if (audio_open(&files[i])!=0) {
+    fprintf(stderr,"ERR: Could not open %s\n",files[i].filename); 
+    exit(0);
+  }
+
+  n=audio_read(&files[i],audio_buf,sizeof(audio_buf)-bytesinbuf);
+  bytesinbuf=n;
+  write_system=1;
+  if (files[i].bitspersample==16) {
+    lpcm_payload=2000;
+  } else if (files[i].bitspersample==24) {
+    lpcm_payload=2004;
+  } else {
+    fprintf(stderr,"ERR: Unsupported samplerate %d bits/sample\n",files[i].bitspersample);
+    exit(0);
+  }
+
+  files[i].first_sector=0;
+  files[i].first_PTS=calc_PTS_start(&files[i],pack_in_title);
+
+  fprintf(stderr,"INFO: Processing %s\n",files[i].filename);
+  while (bytesinbuf) {
+    if (bytesinbuf >= lpcm_payload) {
+      n=write_pes_packet(fpout,&files[i],audio_buf,bytesinbuf,pack_in_title,pack_in_file);
+      write_system=0;
+      memmove(audio_buf,&audio_buf[n],bytesinbuf-n);
+      bytesinbuf-=n;
+      pack++;
+      pack_in_title++;
+      pack_in_file++;
+    }
+
+    if ((pack > 0) && ((pack%(512*1024))==0)) {
+      fclose(fpout);
+      fileno++;
+      snprintf(outfile,sizeof(outfile),"%s/ATS_%02d_%d.AOB",audiotsdir,titleset,fileno);
+      fpout=fopen(outfile,"wb+");
+    }
+
+    if (bytesinbuf < lpcm_payload) {
+      n=audio_read(&files[i],&audio_buf[bytesinbuf],sizeof(audio_buf)-bytesinbuf);
+      bytesinbuf+=n;
+      if (n==0) { /* We have reached the end of the input file */
+        files[i].last_sector=pack;
+	audio_close(&files[i]);
+        i++;
+        pack_in_file=-1;
+
+        if (i<ntracks) {
+          /* If the current track is a different audio format, we must start a new title. */
+          if ((files[i].samplerate!=files[i-1].samplerate) || (files[i].channels!=files[i-1].channels) || (files[i].bitspersample!=files[i-1].bitspersample)) {
+            n=write_pes_packet(fpout,&files[i-1],audio_buf,bytesinbuf,pack_in_title,pack_in_file); // Empty audio buffer.
+            pack++;
+            pack_in_title=0;
+            pack_in_file=0;
+            bytesinbuf=0;
+            write_system=1;
+            title++;
+            files[i].first_PTS=calc_PTS_start(&files[i],pack_in_title);
+          } else {
+            files[i].first_PTS=calc_PTS_start(&files[i],pack_in_title+1);
+          }
+
+          files[i].first_sector=files[i-1].last_sector+1;
+          if (audio_open(&files[i])!=0) {
+            fprintf(stderr,"ERR: Could not open %s\n",files[i].filename); 
+            exit(0);
+          }
+
+          n=audio_read(&files[i],&audio_buf[bytesinbuf],sizeof(audio_buf)-bytesinbuf);
+          bytesinbuf+=n;
+          fprintf(stderr,"INFO: Processing %s\n",files[i].filename);
+        } else {
+          /* We have reached the last packet of the last file */
+          if (bytesinbuf==0) {
+            files[i-1].last_sector=pack-1;
+          } else {
+            n=write_pes_packet(fpout,&files[i-1],audio_buf,bytesinbuf,pack_in_title,pack_in_file); // Empty audio buffer.
+            bytesinbuf=0;
+            pack++;
+            pack_in_title++;
+          }
+        }
+      }
+    }
+  }
+
+  return(0);
 }

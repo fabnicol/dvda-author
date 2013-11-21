@@ -80,6 +80,18 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
     */
 
     absolute_sector_offset=(uint32_t) startsector + sectors->samg + 2*(sectors->amg + sectors->asvs) + sectors->topvob + sectors->stillvob +sectors->atsi[0];
+    if (globals.veryverbose) 
+        foutput("\n[DBG]  Using absolute sector offset %d=%d+%d+2.(%d+%d)+%d+%d+%d\n\n", 
+                absolute_sector_offset,
+                startsector,
+                sectors->samg,
+                sectors->amg,
+                sectors->asvs,
+                sectors->topvob,
+                sectors->stillvob,
+                sectors->atsi[0]
+                );
+    
     /* Videolinking groups always come last (highest ranks) */
 
     for (g=0; g<ngroups-nvideolinking_groups; g++)
@@ -244,6 +256,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
             samg[i]=files[g][j].cga;
 
             i+=21;
+                 
             uint32_copy(&samg[i],absolute_sector_offset+files[g][j].first_sector);
             i+=4;
             uint32_copy(&samg[i],absolute_sector_offset+files[g][j].first_sector);
