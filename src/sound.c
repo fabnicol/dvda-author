@@ -36,11 +36,18 @@ errno=0;
 #if HAVE_libsox
 if (-1 == sox_initialise()) 
  return -1;
- 
-const char *args[]= {SOX_BASENAME, "-b", bitrate, "-r", samplerate, in, out, NULL};  
+   
+const char *args24[]= {SOX_BASENAME, in, "-b", bitrate, out,"rate", "-v","-I","-b","90",samplerate, NULL};  
+const char *args16[]= {SOX_BASENAME, in, "-b", bitrate, out,"rate", "-s","-a",samplerate,"dither","-s", NULL};  
 change_directory(globals.settings.workdir);
-foutput("[INF]  Running SoX for resampling: sox -b %s -r %s %s %s\n",bitrate,samplerate,in,out);
-errno=run(sox, args, 0);
+foutput("[INF]  Running SoX for resampling to %s bit-%s kHz audio: %s --> %s\n",bitrate,samplerate,in,out);
+if (strcmp(bitrate, "16") == 0)
+{ 
+  errno=run(sox, args16, 0);
+}
+else 
+  errno=run(sox, args24, 0);
+  
 #endif
 return errno;
 }

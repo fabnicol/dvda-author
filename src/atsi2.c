@@ -62,6 +62,7 @@ int get_afmt(fileinfo_t* info, audioformat_t* audioformats, int* numafmts) {
     audioformats[i].bitspersample=info->bitspersample;
     (*numafmts)++;
   }
+  if (*numafmts == 9) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  DVD-Audio discs cannot manage more than 8 different audio formats per group.\n       Resample tracks or create a new group.")
   return(i);
 }
 
