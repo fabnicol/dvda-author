@@ -88,11 +88,10 @@ uint16_t totaltitles;
 
 uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *numtitles, uint8_t *ntitletracks[], uint64_t *titlelength[], uint16_t **ntitlepics)
 {
-    int  track=0;
+    int  track=0, u;
     uint8_t group=0;
-    numtitles[0]=0;
-    totaltitles=0;
-    
+    numtitles[group]=0;
+
     /* Normal case: audio files */
     // Files are packed together according to audio characteristics: bit rate, sampel rate, number of channels
 
@@ -110,39 +109,33 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *
             /* counts the number of tracks with same-type audio characteristics, per group and title
             *  into ntitletracks[group][numtitles[group]], and corresponding PTS length in titlelength[group][numtitles[group]] */
 
+            ntitletracks[group][numtitles[group]]++;
+
+            titlelength[group][numtitles[group]]+=files[group][track].PTS_length;
+
+            if (img)
+            {
+                    ntitlepics[group][numtitles[group]] += (img->npics)? img->npics[track]: 1;
+            }
+
             // PATCH 13.11 on 12.06
 //****SUSPECTED REGRESSION***//
             if (track)
-            {
               if ((files[group][track].samplerate != files[group][track-1].samplerate)
                 ||(files[group][track].bitspersample != files[group][track-1].bitspersample)
                 ||(files[group][track].channels != files[group][track-1].channels))
                 {
                   files[group][track].newtitle=1;
                 }
-            }
-            else
-            {
-                  files[group][track].newtitle=1;
-            }
-              
 //****END OF SUSPECTED REGRESSION***//
 
             // PATCH 02 Dec 09 && 12.06
             if (files[group][track].newtitle)
             {
                 totaltitles++;
-                if (track) numtitles[group]++;
+                numtitles[group]++;
             }
-
-            titlelength[group][numtitles[group]]+=files[group][track].PTS_length;
-            if (img)
-            {
-                    ntitlepics[group][numtitles[group]] += (img->npics)? img->npics[track]: 1;
-            }
-
-            ntitletracks[group][numtitles[group]]++;
-              
+  
             track++;
         
         //  a new title begins when audio characteristics change, (whatever the group), except on reaching end of group tracks
@@ -163,22 +156,6 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *
 
     if (globals.debugging)  for (group=0; group < naudio_groups; group++) printf("[INF]  Number of titles for group %d is %d\n",group, numtitles[group] );
 
-    #ifdef DUMP_TRACKTABLES
-      FILE* tracktables_dump=fopen("TRACKTABLES", "wb");
-      for (int g=0; g < naudio_groups; g++) 
-      {
-        fprintf(tracktables_dump, "numtitles[%d]=%d\n",g, numtitles[g]+1);
-        for (int title=0; title <= numtitles[g]; title++) 
-          fprintf(tracktables_dump, "ntitletracks[%d][%d]=%d\n",g,title, ntitletracks[g][title]);
-           
-        for (int track=0; track < ntracks[g]; track++) 
-          fprintf(tracktables_dump, "files[%d][%d].newtitle=%d\n",g,track, files[g][track].newtitle);
-      }
-    
-      fprintf(tracktables_dump, "totaltitles=%d\n",totaltitles);
-      fclose(tracktables_dump);
-    #endif
-    
     return track;
 
 }
@@ -367,8 +344,8 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
     errno=0;
 
 
-    uint16_t i,j=0,k=0,titleset=0, totalplaylisttitles=0, totalaudiotitles=0;
-    uint8_t titleintitleset=0;
+    uint16_t i,j=0,k=0,titleset=0, totalplaylisttitles=0, totalaudiotitles=0, titleintitleset;
+
     _Bool menusector=(globals.topmenu <= TS_VOB_TYPE);  // there is a _TS.VOB in these cases
     uint8_t naudio_groups=ngroups-vgroups-nplaygroups;  // CHECK
 
@@ -431,8 +408,11 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
 
     // Normal case: audio titles
 
+
+
     for (j=0; j < totalaudiotitles; j++)
     {
+
         _Bool come_last=(titleintitleset==numtitles[titleset]-1);
 
         amg[i]=((menusector)? ((come_last)? 0xC0 : 0x80) : 0x80 )|(titleset+1); 			// Table sector 2 first two bytes per title
@@ -442,11 +422,12 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
         i+=4;
         amg[i]=titleset+1;  // Titleset number
         amg[++i]=titleintitleset+1;
+
         uint32_copy(&amg[++i],sectoroffset[titleset]); // Pointer to ATSI
+
+
         i+=4;
-        if (globals.veryverbose)
-            foutput("[INF]  Writing AMG sector2 Audio group:%d Title rank:%d Ntitles in group:%d\n",titleset, titleintitleset, numtitles[titleset]);
-        
+        titleintitleset++;
         if (titleintitleset == numtitles[titleset])
         {
             sectoroffset[titleset+1]=sectoroffset[titleset]+(files[titleset][ntracks[titleset]-1].last_sector+1)+sectors->atsi[titleset]*2;
@@ -460,12 +441,11 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
             titleintitleset=0;
             titleset++;
         }
-        else
-        titleintitleset++;
-        
+
+
     }
 
-    titleset=0;
+
 
     // Case 2: video-linking titles
 
@@ -546,14 +526,12 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
         uint32_copy(&amg[++i],sectoroffset[titleset]); // Pointer to ATSI
 
         i+=4;
-
+        titleintitleset++;
         if (titleintitleset == numtitles[titleset])
         {
             titleintitleset=0;
             titleset++;
         }
-        else
-        titleintitleset++;
     }
 
 
