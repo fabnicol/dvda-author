@@ -25,7 +25,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 */
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"
 #endif
 
 #include <stdio.h>
@@ -38,7 +38,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "c_utils.h"
 #include "auxiliary.h"
 #include "commonvars.h"
-
+#include "ats.h"
 
 
 extern globalData globals;
@@ -46,10 +46,11 @@ extern globalData globals;
 uint8_t pack_start_code[4]={0x00,0x00,0x01,0xBA};
 uint8_t system_header_start_code[4]={0x00,0x00,0x01,0xBB};
 uint8_t program_mux_rate_bytes[3]={0x01,0x89,0xc3};
+uint64_t fileoffset;
 
 /* pack_scr was taken from mplex (part of the mjpegtools) */
 #define MARKER_MPEG2_SCR 1
-ALWAYS_INLINE_GCC  inline void pack_scr(uint8_t scr_bytes[6],uint64_t SCR_base, uint16_t SCR_ext)
+  inline void pack_scr(uint8_t scr_bytes[6],uint64_t SCR_base, uint16_t SCR_ext)
 {
 
     uint8_t temp;
@@ -72,7 +73,7 @@ ALWAYS_INLINE_GCC  inline void pack_scr(uint8_t scr_bytes[6],uint64_t SCR_base, 
     scr_bytes[5]=temp;
 }
 
-ALWAYS_INLINE_GCC inline void pack_pts_dts(uint8_t PTS_DTS_data[10],uint32_t pts, uint32_t dts)
+ inline void pack_pts_dts(uint8_t PTS_DTS_data[10],uint32_t pts, uint32_t dts)
 {
     uint8_t p3,p2,p1,p0,d3,d2,d1,d0;
 
@@ -97,7 +98,7 @@ ALWAYS_INLINE_GCC inline void pack_pts_dts(uint8_t PTS_DTS_data[10],uint32_t pts
     PTS_DTS_data[9]=((d0&0x7f)<<1)|1;                 // 6,5,4,3,2,1,0
 }
 
-ALWAYS_INLINE_GCC inline void pack_pts(uint8_t PTS_DTS_data[10],uint32_t pts)
+ inline void pack_pts(uint8_t PTS_DTS_data[10],uint32_t pts)
 {
     uint8_t p3,p2,p1,p0;
 
@@ -113,7 +114,7 @@ ALWAYS_INLINE_GCC inline void pack_pts(uint8_t PTS_DTS_data[10],uint32_t pts)
     PTS_DTS_data[4]=((p0&0x7f)<<1)|1;                 // 6,5,4,3,2,1,0
 }
 
-ALWAYS_INLINE_GCC inline void write_pack_header(FILE* fp,  uint64_t SCRint)
+ inline void write_pack_header(FILE* fp,  uint64_t SCRint)
 {
 
     uint8_t scr_bytes[6];
@@ -124,6 +125,13 @@ ALWAYS_INLINE_GCC inline void write_pack_header(FILE* fp,  uint64_t SCRint)
     * SCRint=floor(SCR);
     */
 
+     if (globals.maxverbose)
+    {
+        IO= (ioflag[0] == 'w')? WRITE : READ;
+
+        EXPLAIN("%s%s%d\n", IO, " PACK HEADER into file, size is: ", 4+6+3+1);
+    }
+    
     fwrite(pack_start_code,4,1,fp);
     pack_scr(scr_bytes,(SCRint/300),(SCRint%300));
     fwrite(scr_bytes,6,1,fp);
@@ -131,7 +139,7 @@ ALWAYS_INLINE_GCC inline void write_pack_header(FILE* fp,  uint64_t SCRint)
     fwrite(pack_stuffing_length_byte,1,1,fp);
 }
 
-ALWAYS_INLINE_GCC inline void write_system_header(FILE* fp)
+ inline void write_system_header(FILE* fp)
 {
     uint8_t header_length[2]={0x00,0x0c};
     uint8_t rate_bound[3]={0x80,0xc4,0xe1};
@@ -140,6 +148,8 @@ ALWAYS_INLINE_GCC inline void write_system_header(FILE* fp)
     uint8_t packet_rate_restriction_flag[1]={0x7f};
     uint8_t stream_info1[3]={0xb8, 0xc0, 0x40};
     uint8_t stream_info2[3]={0xbd, 0xe0, 0x0a};
+    
+    if (globals.maxverbose) EXPLAIN("%s%d\n","WRITE SYSTEM HEADER, size is: ", 4+2+3+1+1+1+3+3)
 
     fwrite(system_header_start_code,4,1,fp);
     fwrite(header_length,2,1,fp);
@@ -151,12 +161,14 @@ ALWAYS_INLINE_GCC inline void write_system_header(FILE* fp)
     fwrite(stream_info2,3,1,fp);
 }
 
-ALWAYS_INLINE_GCC inline void write_pes_padding(FILE* fp,uint16_t length)
+ inline void write_pes_padding(FILE* fp,uint16_t length)
 {
     uint8_t packet_start_code_prefix[3]={0x00,0x00,0x01};
     uint8_t stream_id[1]={0xbe};
     uint8_t length_bytes[2];
     uint8_t ff_buf[2048];
+    
+    if (globals.maxverbose) EXPLAIN("%s%d\n", "PES padding, size is: ", 3+1+2+length)
 
     memset(ff_buf,0xff,sizeof(ff_buf));
 
@@ -171,7 +183,7 @@ ALWAYS_INLINE_GCC inline void write_pes_padding(FILE* fp,uint16_t length)
     fwrite(ff_buf,length,1,fp);
 }
 
-ALWAYS_INLINE_GCC inline void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uint8_t extension_flag, uint64_t PTS)
+ inline void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uint8_t extension_flag, uint64_t PTS)
 {
     uint8_t packet_start_code_prefix[3]={0x00,0x00,0x01};
     uint8_t stream_id[1]={0xbd}; // private_stream_1
@@ -183,6 +195,8 @@ ALWAYS_INLINE_GCC inline void write_audio_pes_header(FILE* fp, uint16_t PES_pack
     uint8_t PTS_DTS_data[10];
     uint8_t PSTD_buffer_scalesize[2];
     uint16_t PSTD=10240/1024;
+    
+    if (globals.maxverbose) EXPLAIN("%s%d%s%d%s%d\n","WRITE AUDIO PES HEADER, PES_packet_len: ", PES_packet_len, " extension_flag: ", extension_flag, " size is: ", 3+1+2+1+1+1+5+(extension_flag)*3)
 
     /* Set PTS_DTS_flags in flags2 to 2 (top 2 bits) - PTS only*/
     flags2[0]=(2<<6);
@@ -219,7 +233,7 @@ ALWAYS_INLINE_GCC inline void write_audio_pes_header(FILE* fp, uint16_t PES_pack
     }
 }
 
-ALWAYS_INLINE_GCC inline void write_lpcm_header(FILE* fp, int header_length,fileinfo_t* info, uint64_t pack_in_title, uint8_t counter)
+ inline void write_lpcm_header(FILE* fp, int header_length,fileinfo_t* info, uint64_t pack_in_title, uint8_t counter)
 {
     uint8_t sub_stream_id[1]={0xa0};
     uint8_t continuity_counter[1]={0x00};
@@ -250,9 +264,7 @@ ALWAYS_INLINE_GCC inline void write_lpcm_header(FILE* fp, int header_length,file
         case 16:
             sample_size[0]=0x0f;
             break;
-        case 20:
-            sample_size[0]=0x1f;
-            break;
+  
         case 24:
             sample_size[0]=0x2f;
             break;
@@ -291,9 +303,7 @@ ALWAYS_INLINE_GCC inline void write_lpcm_header(FILE* fp, int header_length,file
         case 16:
             sample_size[0]=0x00;
             break;
-        case 20:
-            sample_size[0]=0x12;
-            break;
+  
         case 24:
             sample_size[0]=0x22;
             break;
@@ -357,10 +367,11 @@ ALWAYS_INLINE_GCC inline void write_lpcm_header(FILE* fp, int header_length,file
     fwrite(&channel_assignment,1,1,fp);
     fwrite(unknown3,1,1,fp);
     fwrite(zero,header_length-8,1,fp);
+    if (globals.maxverbose) EXPLAIN("%s%d%s%d\n","WRITE LPCM HEADER for ",info->bitspersample, " bits: size is ", sizeoftab)
 }
 
 
-ALWAYS_INLINE_GCC inline uint64_t calc_PTS_start(fileinfo_t* info, uint64_t pack_in_title)
+ inline uint64_t calc_PTS_start(fileinfo_t* info, uint64_t pack_in_title)
 {
     double PTS;
     uint64_t PTSint;
@@ -383,7 +394,7 @@ ALWAYS_INLINE_GCC inline uint64_t calc_PTS_start(fileinfo_t* info, uint64_t pack
 
 
 
-ALWAYS_INLINE_GCC inline uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_title)
+ inline uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_title)
 {
     double SCR;
     uint64_t SCRint;
@@ -413,7 +424,7 @@ ALWAYS_INLINE_GCC inline uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_ti
 }
 
 
-ALWAYS_INLINE_GCC inline uint64_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
+ inline uint64_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
 {
     double PTS;
     uint64_t PTSint;
@@ -443,7 +454,7 @@ ALWAYS_INLINE_GCC inline uint64_t calc_PTS(fileinfo_t* info, uint64_t pack_in_ti
 }
 
 
-ALWAYS_INLINE_GCC inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf, uint32_t bytesinbuffer, uint64_t pack_in_title)
+ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf, uint32_t bytesinbuffer, uint64_t pack_in_title)
 {
     uint64_t PTS;
     uint64_t SCR;
@@ -631,6 +642,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
             }
         }
     }
-
+    
+    if (files[0].single_track) files[0].last_sector=files[ntracks-1].last_sector;
     return(1-fileno);
 }
