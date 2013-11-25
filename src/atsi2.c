@@ -62,7 +62,7 @@ int get_afmt(fileinfo_t* info, audioformat_t* audioformats, int* numafmts) {
     audioformats[i].bitspersample=info->bitspersample;
     (*numafmts)++;
   }
-  if (*numafmts == 9) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  DVD-Audio discs cannot manage more than 8 different audio formats per group.\n       Resample tracks or create a new group.")
+  if (*numafmts == 9) EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  DVD-Audio discs cannot manage more than 8 different audio formats per group.\n       Resample tracks or create a new group.")
   return(i);
 }
 
@@ -325,7 +325,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
             uint16_t r, u=0,  trackcount_save=trackcount;
             s+=(j)? ntitlepics[j-1]  : 0;
             if (ntitlepics[j]) pictitlecount++;
-             if (globals.veryverbose) foutput("[MSG]  pictitlecount=%d for ntitlepics[%d]=%d\n", pictitlecount,j,ntitlepics[j]);
+             if (globals.veryverbose) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  pictitlecount=%d for ntitlepics[%d]=%d\n", pictitlecount,j,ntitlepics[j]);
 	    for (r=0; r < ntitletracks[j]; r++)
 	    {
 		trackcount++;
@@ -337,7 +337,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
 		i++;
 		uint16_copy(&atsi[i], 0x06*ntitletracks[j]); // track rank index
 		i+=2;
-		if (globals.veryverbose) foutput("[MSG]  ntitlepics[%d]=%d, ntitletracks[%d]=%d\n", j, ntitlepics[j], j, ntitletracks[j]);
+		if (globals.veryverbose) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  ntitlepics[%d]=%d, ntitletracks[%d]=%d\n", j, ntitlepics[j], j, ntitletracks[j]);
 		//if (ntitlepics[j] > ntitletracks[j])  // conditions to be tested
 		 uint16_copy(&atsi[i],(ntitletracks[j]-1)*0x6+0x0F+(ntitlepics[j] -1)*0xA ); // track rank index (backup)
 		//else
@@ -352,7 +352,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
 		if (img->npics[trackcount-1] == 0)
 		{
 	             if (globals.debugging)
-		       foutput("[INF]  Skipping track with no pics, t=%d, trackcount=%d\n", t, trackcount);
+		       foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Skipping track with no pics, t=%d, trackcount=%d\n", t, trackcount);
 		     continue;
 		}
 		uint16_t  pictrackcount=0;

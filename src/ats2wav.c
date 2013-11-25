@@ -61,7 +61,7 @@ void calc_size(_fileinfo_t* info)
         x=(90000*info->numsamples)/info->samplerate;
     else
     {
-        foutput("%s", "[ERR]  Found null samplerate. Exiting...\n");
+        foutput("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Found null samplerate. Exiting...\n");
         clean_exit(EXIT_FAILURE);
     }
     
@@ -97,7 +97,7 @@ int setinfo(_fileinfo_t* info, uint8_t buf[4])
         break;
         
     default:
-        printf("%s", "[ERR]  Unsupported bits per sample\n");
+        printf("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Unsupported bits per sample\n");
         info->bitspersample=0;
         break;
     }
@@ -134,7 +134,7 @@ int setinfo(_fileinfo_t* info, uint8_t buf[4])
     if (buf[3] > 20)
         
     {
-        printf("%s\n", "[ERR] Unsupported number of channels, skipping file...\n");
+        printf("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET" Unsupported number of channels, skipping file...\n");
         return(0);
     }
     
@@ -180,7 +180,7 @@ static void wav_close(_fileinfo_t* info , const char* filename)
     
     if (filesize > UINT32_MAX)
     {
-        printf("%s", "[ERR]  WAV standards do not support files > 4 GB--exiting...\n");
+        printf("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  WAV standards do not support files > 4 GB--exiting...\n");
         exit(EXIT_FAILURE);
     }
     
@@ -188,12 +188,12 @@ static void wav_close(_fileinfo_t* info , const char* filename)
     
     if (filesize == 0)
     {
-        printf("[WAR]  filename: %s\n       filesize is null, closing file...\n", filename);
+        printf(""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  filename: %s\n       filesize is null, closing file...\n", filename);
         fclose(info->fpout);
         return;
     }
     
-    if (globals.debugging) printf("[MSG]  IFO file: %s\n       IFO file size: %"PRIu64"\n", filename, info->numbytes);
+    if (globals.debugging) printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  IFO file: %s\n       IFO file size: %"PRIu64"\n", filename, info->numbytes);
     
     fseek(info->fpout,0,SEEK_SET);
     
@@ -346,13 +346,13 @@ int ats2wav(const char* filename, const char* outdir)
     nbytesread=fread(buf,1,sizeof(buf), file);
     
     if (globals.debugging)
-        printf( "[INF]  Read %d bytes\n", nbytesread);
+        printf( ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Read %d bytes\n", nbytesread);
     
     fclose(file);
     
     if (memcmp(buf,"DVDAUDIO-ATS",12)!=0)
     {
-        printf("[ERR]  %s is not an ATSI file (ATS_XX_0.IFO)\n",filename);
+        printf(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  %s is not an ATSI file (ATS_XX_0.IFO)\n",filename);
         return(EXIT_FAILURE);
     }
     
@@ -472,7 +472,7 @@ NEXT:
                         
                         files[t].started=1;
                         if (globals.debugging)
-                            printf("[INF]  Extracting %s\n       %dHz, %d bits/sample, %d channels - %lld samples\n",outfile,files[t].samplerate,files[t].bitspersample,files[t].channels,files[t].numsamples);
+                            printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Extracting %s\n       %dHz, %d bits/sample, %d channels - %lld samples\n",outfile,files[t].samplerate,files[t].bitspersample,files[t].channels,files[t].numsamples);
                     }
                     
                     i+=buf[i+3]+4;
@@ -495,7 +495,7 @@ NEXT:
                     
                     if (globals.veryverbose)
                     {
-                        fprintf(stderr, "[MSG]  Wrote %d bytes yielding %lld/%lld\n",nbytesread,files[t].byteswritten,files[t].numbytes);
+                        fprintf(stderr, ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Wrote %d bytes yielding %lld/%lld\n",nbytesread,files[t].byteswritten,files[t].numbytes);
                     }
                     
                     delta= files[t].numbytes-files[t].byteswritten;
@@ -535,7 +535,7 @@ NEXT:
                                     files[t].started=1;
                                     calc_size(&files[t]);
                                     
-                                    printf("[INF]  Extracting %s\n       %dHz, %d bits/sample, %d channels - %lld samples\n",outfile,files[t].samplerate,files[t].bitspersample,files[t].channels,files[t].numsamples);
+                                    printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Extracting %s\n       %dHz, %d bits/sample, %d channels - %lld samples\n",outfile,files[t].samplerate,files[t].bitspersample,files[t].channels,files[t].numsamples);
                                     
                                     nbytesread=process_data(&files[t],&buf[i+nbytesread],payload_length-nbytesread);
                                 }

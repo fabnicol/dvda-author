@@ -117,11 +117,11 @@ int user_control(WaveData *info, WaveHeader *header)
   if ( header->byte_p_sec == bps )
     {
       // Patch again version 0.1.1: -Saple Rate ...offset 24  + Bytes per second ...offset 28
-      printf("%s\n",  "[MSG]  Found correct Subchunk1 Bytes per Second at offset 28" );
+      printf("%s\n",  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found correct Subchunk1 Bytes per Second at offset 28" );
     }
   else
     {
-      if (!info->prepend) printf("%s\n",  "[MSG]  Subchunk1 Bytes per Second at offset 28 is incorrect\n[INF]  ... repairing" );
+      if (!info->prepend) printf("%s\n",  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Subchunk1 Bytes per Second at offset 28 is incorrect\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  ... repairing" );
       header->byte_p_sec = bps;
       repair = BAD_HEADER;
     }
@@ -129,11 +129,11 @@ int user_control(WaveData *info, WaveHeader *header)
   /* The number of bytes per sample = NumChannels * BitsPerSample/8 */
   if ( header->byte_p_spl == header->channels * (header->bit_p_spl / 8) )
     {
-      printf("%s\n",  "[MSG]  Found correct Subchunk1 Bytes Per Sample at offset 32" );
+      printf("%s\n",  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found correct Subchunk1 Bytes Per Sample at offset 32" );
     }
   else
     {
-      if (!info->prepend) printf("%s\n",  "[MSG]  Subchunk1 Bytes Per Sample at offset 32 is incorrect\n[INF]  ... repairing" );
+      if (!info->prepend) printf("%s\n",  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Subchunk1 Bytes Per Sample at offset 32 is incorrect\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  ... repairing" );
       header->byte_p_spl = header->channels * (header->bit_p_spl / 8);
       repair = BAD_HEADER;
     }
@@ -151,7 +151,7 @@ int auto_control(WaveData *info, WaveHeader *header)
 
   /* initializing */
 
-  printf("%s\n", "[INF]  Checking header--automatic mode...");
+  printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Checking header--automatic mode...");
 
   regular_test(header, regular);
 
@@ -168,7 +168,7 @@ int auto_control(WaveData *info, WaveHeader *header)
          && (regular[0] == 5)
      )
     {
-      printf("%s\n", "[MSG]  Core parameters need not be repaired");
+      printf("%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Core parameters need not be repaired");
       return(info->repair = GOOD_HEADER);
     }
   /* Always repairing from now on except when bailing out */
@@ -293,8 +293,8 @@ int auto_control(WaveData *info, WaveHeader *header)
 
 bailing_out:
 
-  printf("\n%s\n", "[WAR]  Sorry, automatic mode cannot be used:\n       not enough information left in header");
-  printf("%s\n", "[INF]  Reverting to interactive simple mode.");
+  printf("\n%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Sorry, automatic mode cannot be used:\n       not enough information left in header");
+  printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Reverting to interactive simple mode.");
   info->interactive=TRUE;
   info->repair=user_control(info, header);
 
