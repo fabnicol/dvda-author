@@ -81,6 +81,7 @@ typedef struct
     uint64_t PTS_length;
     audio_input_t* audio;  // Used whilst decoding.
     char *filename;
+    _Bool last;
 } fileinfo_t;
 
 typedef struct

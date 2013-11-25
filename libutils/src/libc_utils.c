@@ -1431,7 +1431,7 @@ char* quote(const char* path)
 // Launches an application in a fork and duplicates its stdout into stdout; waits for it to return;
 
 
-int run(const char* application, char* const args[], const int option)
+int run(const char* application, char*  args[], const int option)
 {
 errno=0;
 #if !defined __WIN32__

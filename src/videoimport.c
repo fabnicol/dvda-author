@@ -229,7 +229,7 @@ void import_topmenu(char* video_vob_path, pic* img, _Bool MIX_TYPE)
 
  launch_lplex_soundtrack(img, "lpcm");
 
- char* const argsmplex[]={mplex, "-f", "8", "-L", "48000:2:16", "-o", img->backgroundmpg[0], imported_topmenu, img->soundtrack[0][0], NULL};
+ char*  argsmplex[]={mplex, "-f", "8", "-L", "48000:2:16", "-o", img->backgroundmpg[0], imported_topmenu, img->soundtrack[0][0], NULL};
  run(mplex, argsmplex, 0);
 
 
