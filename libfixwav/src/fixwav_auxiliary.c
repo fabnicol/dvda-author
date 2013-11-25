@@ -50,7 +50,7 @@ _Bool isok()
       break;
 
     default  :
-      fprintf(stderr, "%s\n", "[WAR]  Unknown--Enter reply again");
+      fprintf(stderr, "%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Unknown--Enter reply again");
       return(isok());
     }
 }
@@ -64,7 +64,7 @@ _Bool isok()
 void get_input( char* buf )
 {
   if (fgets(buf, FIXBUF_LEN, stdin) == NULL)
-    printf("%s\n", "[ERR]  fgets crash");
+    printf("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  fgets crash");
   return;
 }
 

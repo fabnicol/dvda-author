@@ -45,7 +45,7 @@ int readHeader(FILE * infile, WaveHeader *header)
 
   if ( count != 1)
     {
-      fprintf( stderr, "[ERR]  Failed to read header from input file\n       Size is: %d, read: %d bytes\n", header->header_size, count );
+      fprintf( stderr, ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Failed to read header from input file\n       Size is: %d, read: %d bytes\n", header->header_size, count );
 
       return(FAIL);
     }
@@ -100,7 +100,7 @@ int readHeader(FILE * infile, WaveHeader *header)
   rewind(infile);
 
   /* and dump the header */
-  printf( "%s\n", "[MSG]  Existing header data.\n[INF]  Looking for the words 'RIFF', 'WAVE', 'fmt'," );
+  printf( "%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Existing header data.\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Looking for the words 'RIFF', 'WAVE', 'fmt'," );
   printf( "%s\n", "       or 'data' to see if this is even a somewhat valid WAVE header:" );
   hexdump_header(infile, header->header_size);
 
