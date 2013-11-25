@@ -2320,7 +2320,8 @@ standard_checks:
     
     if (user_command_line)    
         scan_wavfile_audio_characteristics(command);
-    
+        
+    #if ! HAVE_core_BUILD
     if (dvdv_tracks_given)
     {
         globals.videozone=0;
@@ -2500,7 +2501,7 @@ standard_checks:
         FREE(dvdv_slide_array);
         FREE(ndvdvslides);
     }
-    
+    #endif
     user_command_line++;
     return(command);
 }

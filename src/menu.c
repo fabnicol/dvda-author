@@ -353,7 +353,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     char *argsmp2enc[]= {MP2ENC_BASENAME, "-o", mp2track , NULL};
     char *argsjpeg2yuv[]= {JPEG2YUV_BASENAME, "-f", img->framerate, "-I", "p", "-n", "1", "-j", pict, "-A", img->aspectratio, NULL};
     char *argsmpeg2enc[]= {MPEG2ENC_BASENAME,  "-f", "8", "-n", norm,  "-o", tempfile ,"-a", img->aspect, NULL};
-    char* const argsmplex[]= {MPLEX_BASENAME, "-f", "8",  "-o", img->backgroundmpg[rank], tempfile, mp2track, NULL};
+    char*  argsmplex[]= {MPLEX_BASENAME, "-f", "8",  "-o", img->backgroundmpg[rank], tempfile, mp2track, NULL};
 
     //////////////////////////
 
@@ -744,7 +744,7 @@ int launch_dvdauthor()
 
     if (globals.debugging) foutput("%s\n", "[INF]  Launching dvdauthor to add virtual machine commands to top menu");
 
-    char* const args[]= {DVDAUTHOR_BASENAME, "-o", globals.settings.outdir, "-x", globals.xml, NULL};
+    char* args[]= {DVDAUTHOR_BASENAME, "-o", globals.settings.outdir, "-x", globals.xml, NULL};
 
 #ifndef __WIN32__
     run(dvdauthor, args, 0);
