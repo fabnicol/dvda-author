@@ -86,75 +86,89 @@ uint16_t totaltitles;
 #define VTSI_rank command->VTSI_rank
 
 
-uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *numtitles, uint8_t *ntitletracks[], uint64_t *titlelength[], uint16_t **ntitlepics)
+uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *ntitles, uint8_t *ntitletracks[], uint64_t *titlelength[], uint16_t **ntitlepics)
 {
-    int  track=0, u;
+    
     uint8_t group=0;
-    numtitles[group]=0;
+    ntitles[group]=0;
+
 
     /* Normal case: audio files */
     // Files are packed together according to audio characteristics: bit rate, sampel rate, number of channels
 
-    for (int group=0; group < naudio_groups; group++)
-    {
-        // slightly overallocated as ntracks > ntitles
-        if (((ntitletracks[group]=calloc(ntracks[group], sizeof(uint8_t))) == NULL) || ((ntitlepics[group]=calloc(ntracks[group], sizeof(uint64_t))) ==  NULL) || ((titlelength[group]=calloc(ntracks[group], sizeof(uint64_t))) ==  NULL))
-            EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Memory shortage on creating track tables")
-            // Allocating default values
-    }
-        
-    track=0;
-    while  ((group < naudio_groups ) && (track < ntracks[group]) )
+  
+    for  (int track=0; group < naudio_groups  && track < ntracks[group]; track++)
     {
             /* counts the number of tracks with same-type audio characteristics, per group and title
             *  into ntitletracks[group][numtitles[group]], and corresponding PTS length in titlelength[group][numtitles[group]] */
 
-            ntitletracks[group][numtitles[group]]++;
-
-            titlelength[group][numtitles[group]]+=files[group][track].PTS_length;
-
-            if (img)
-            {
-                    ntitlepics[group][numtitles[group]] += (img->npics)? img->npics[track]: 1;
-            }
-
             // PATCH 13.11 on 12.06
 //****SUSPECTED REGRESSION***//
             if (track)
+            {
               if ((files[group][track].samplerate != files[group][track-1].samplerate)
                 ||(files[group][track].bitspersample != files[group][track-1].bitspersample)
-                ||(files[group][track].channels != files[group][track-1].channels))
+                ||(files[group][track].channels != files[group][track-1].channels)
+                ||(files[group][track].cga != files[group][track-1].cga))
+
                 {
                   files[group][track].newtitle=1;
                 }
+             }
+             else
+                files[group][track].newtitle=1;
 //****END OF SUSPECTED REGRESSION***//
 
             // PATCH 02 Dec 09 && 12.06
             if (files[group][track].newtitle)
             {
                 totaltitles++;
-                numtitles[group]++;
+                ntitles[group]++;
             }
-  
-            track++;
-        
-        //  a new title begins when audio characteristics change, (whatever the group), except on reaching end of group tracks
-        //  or: incrementing on leaving out group (0-based values)
-
-        /* In case we've processed the last title in group,
-         *so we've reached the end of group: new initialization of j to continue the loop and start new group */
-        if (track == ntracks[group])
-        {
-            maxntracks=MAX(track, maxntracks);
-            track=0;
-            group++;
-            /* bug fix: condition group < naudio_groups added (in original code, naudio_groups=9) buffer overflow could happen with group=8  */
-            if (group < naudio_groups) numtitles[group]=0;
-            continue;
-        }
+            
+            fprintf(stderr, "files[group][track].newtitle=%d\n",      files[group][track].newtitle);
     }
 
-    if (globals.debugging)  for (group=0; group < naudio_groups; group++) printf("[INF]  Number of titles for group %d is %d\n",group, numtitles[group] );
+    uint8_t track;
+  
+    for  (int group=0; group < naudio_groups; group++)
+    {
+      ntitletracks[group]=calloc(ntitles[group], sizeof(uint8_t));
+      ntitlepics[group]=calloc(ntitles[group],sizeof(uint64_t));
+      titlelength[group]=calloc(ntitles[group],sizeof(uint64_t));
+        
+      if (titlelength[group] == NULL || ntitlepics[group] == NULL || ntitletracks[group] == NULL)
+            EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Memory allocation, title track count in AMG")
+                    
+     track=0;
+      
+      for (int title=0; title < ntitles[group]; title++)
+      {
+        while (ntitletracks[group][title] == 0 || !files[group][track].newtitle)
+        {
+           ntitletracks[group][title]++;
+           titlelength[group][title]+=files[group][track].PTS_length;
+
+            if (img)
+            {
+                    ntitlepics[group][title] += (img->npics)? img->npics[track]: 1;
+            }
+  
+         track++;
+        } 
+        
+        fprintf(stderr, "ntitletracks[%d][%d]=%d\n", group, title, ntitletracks[group][title]);
+      }
+
+      maxntracks=MAX(track, maxntracks); 
+      if (track  != ntracks[group])
+      {
+        fprintf(stderr, "\nCounted %d tracks instead of %d\n", track, ntracks[group]);
+        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Incoherent title count")
+      }
+      
+      if (globals.debugging)  printf("[INF]  Number of titles for group %d is %d\n",group, ntitles[group] );
+    }
 
     return track;
 
