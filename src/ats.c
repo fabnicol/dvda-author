@@ -414,7 +414,7 @@ static uint64_t offset_count;
 
     if (info->bytespersecond == 0)
     {
-        foutput("[WAR]  file %s has bytes per second=0\n", info->filename);
+        foutput(""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  file %s has bytes per second=0\n", info->filename);
         return 0;
     }
 
@@ -483,7 +483,7 @@ static uint64_t offset_count;
     {
 
         cc=0;            // First packet in title
-        foutput("[INF]  Writing first packet - pack=%"PRIu64", bytesinbuffer=%d\n",pack_in_title,bytesinbuffer);
+        foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Writing first packet - pack=%"PRIu64", bytesinbuffer=%d\n",pack_in_title,bytesinbuffer);
         write_pack_header(fp,SCR);
         write_system_header(fp);
 
@@ -502,7 +502,7 @@ static uint64_t offset_count;
     else if (bytesinbuffer < info->lpcm_payload)   // Last packet in title
     {
 
-        foutput("[INF]  Writing last packet - pack=%lld, bytesinbuffer=%d\n",pack_in_title,bytesinbuffer);
+        foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Writing last packet - pack=%lld, bytesinbuffer=%d\n",pack_in_title,bytesinbuffer);
         audio_bytes=bytesinbuffer;
         write_pack_header(fp,SCR);
         write_audio_pes_header(fp,info->midpack_audiopesheaderquantity,0,PTS);
@@ -560,7 +560,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
     /* Open the first file and initialise the input audio buffer */
     if (audio_open(&files[i])!=0)
     {
-        foutput("[ERR]  Could not open %s\n", files[i].filename);
+        foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not open %s\n", files[i].filename);
         EXIT_ON_RUNTIME_ERROR
     }
 
@@ -572,7 +572,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
     files[i].first_sector=0;
     files[i].first_PTS=calc_PTS_start(&files[i],pack_in_title);
 
-    foutput("[INF]  Processing %s\n",files[i].filename);
+    foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Processing %s\n",files[i].filename);
 
     while (bytesinbuf)
     {
@@ -632,13 +632,13 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                     files[i].first_sector=files[i-1].last_sector+1;
                     if (audio_open(&files[i])!=0)
                     {
-                        foutput("[ERR]  Could not open %s\n",files[i].filename);
+                        foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not open %s\n",files[i].filename);
                         EXIT_ON_RUNTIME_ERROR
                     }
 
                     n=audio_read(&files[i],&audio_buf[bytesinbuf],sizeof(audio_buf)-bytesinbuf);
                     bytesinbuf+=n;
-                    foutput("[INF]  Processing %s\n",files[i].filename);
+                    foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Processing %s\n",files[i].filename);
                 }
                 else
                 {

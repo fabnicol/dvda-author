@@ -74,7 +74,7 @@ void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank,
     STRING_WRITE(temp,  "%s/VIDEO_TS.IFO", path_to_VIDEO_TS)
 
     if ((temp_file=fopen(temp, "rb")) == NULL)
-        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not open VIDEO_TS.IFO")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not open VIDEO_TS.IFO")
 
         /* retrieving size of VIDEO_TS.IFO
 
@@ -84,13 +84,13 @@ void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank,
 
 
         if (fseek(temp_file, 0xC, SEEK_SET) != 0)
-            EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not seek offset 0x0C of VIDEO_TS.IFO")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not seek offset 0x0C of VIDEO_TS.IFO")
 
             fread_endian(relative_sector_pointer_VTSI, 0, temp_file);
 
     relative_sector_pointer_VTSI[0] += sector_pointer_VIDEO_TS + 1;
 
-    foutput("[MSG]  Maximum rank of VTSI:  %d\n", maximum_VTSI_rank);
+    foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Maximum rank of VTSI:  %d\n", maximum_VTSI_rank);
 
     for (k=1; k< maximum_VTSI_rank; k++)
     {
@@ -99,14 +99,14 @@ void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank,
 
         if ((temp_file=fopen (temp, "rb")) == NULL)
         {
-            foutput("[ERR]  Impossible to open file '%s'\n", temp);
+            foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Impossible to open file '%s'\n", temp);
             EXIT_ON_RUNTIME_ERROR
         }
 
         /* retrieving size of VTS_XX_0.IFO */
 
         if (fseek(temp_file, 0xC, SEEK_SET) !=0)
-            EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not seek offset 0xC of VTS....IFO")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not seek offset 0xC of VTS....IFO")
 
 
             fread_endian(relative_sector_pointer_VTSI, k, temp_file);
@@ -114,7 +114,7 @@ void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank,
         relative_sector_pointer_VTSI[k] += relative_sector_pointer_VTSI[k-1] +1;
 
 
-        if (globals.debugging) foutput("[INF]  Retrieving relative sector pointer to VTSI %d : %"PRIu32"\n", k+1, relative_sector_pointer_VTSI[k]);
+        if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Retrieving relative sector pointer to VTSI %d : %"PRIu32"\n", k+1, relative_sector_pointer_VTSI[k]);
 
         fclose(temp_file);
 
@@ -148,7 +148,7 @@ void get_video_PTS_ticks(char* path_to_VIDEO_TS, uint32_t *videotitlelength, uin
 
         if ((temp_file=fopen (temp, "rb")) == NULL)
         {
-            foutput("[ERR]  Impossible to open file '%s'\n", temp);
+            foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Impossible to open file '%s'\n", temp);
             EXIT_ON_RUNTIME_ERROR
         }
 
@@ -160,18 +160,18 @@ void get_video_PTS_ticks(char* path_to_VIDEO_TS, uint32_t *videotitlelength, uin
         fseek(temp_file, PLAYBACK_TIME_OFFSET, SEEK_SET);
 
         if (fread(&hours, 1, 1, temp_file) != 1)
-            EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not read 1 byte at offset 4 of PGC")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not read 1 byte at offset 4 of PGC")
 
             if (fread(&minutes, 1, 1, temp_file) != 1)
-                EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not read 1 byte at offset 5 of PGC")
+                EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not read 1 byte at offset 5 of PGC")
 
                 if (fread(&seconds, 1, 1, temp_file) != 1)
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not read 1 byte at offset 6 of PGC")
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not read 1 byte at offset 6 of PGC")
 
                     /* frames will not be considered */
 
                     videotitlelength[k] = 90000 *(3600 * BCD(hours)  + 60 *BCD(minutes)  + BCD(seconds));
-        if (globals.debugging) foutput("\n[MSG]  Linked video group=%d \n       hours=%x  minutes=%x  seconds=%x\n       PTS ticks=%"PRIu32" length (seconds)=%"PRIu32" \n", VTSI_rank[k], hours, minutes, seconds, videotitlelength[k], videotitlelength[k]/90000);
+        if (globals.debugging) foutput("\n"ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Linked video group=%d \n       hours=%x  minutes=%x  seconds=%x\n       PTS ticks=%"PRIu32" length (seconds)=%"PRIu32" \n", VTSI_rank[k], hours, minutes, seconds, videotitlelength[k], videotitlelength[k]/90000);
 
     }
 

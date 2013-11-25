@@ -54,11 +54,11 @@ repair_wav(FILE* infile, WaveData *info, WaveHeader *header )
   /* the first 4 bytes should be "RIFF" */
   if ( header->chunk_id == RIFF )
     {
-      printf( "%s", "[MSG]  Found correct Chunk ID at offset 0\n" );
+      printf( "%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found correct Chunk ID at offset 0\n" );
     }
   else
     {
-      printf( "%s", "[INF]  Repairing Chunk ID at offset 0\n" );
+      printf( "%s", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Repairing Chunk ID at offset 0\n" );
       if (memmove( &(header->chunk_id), "RIFF", 4*sizeof(char) ) == NULL) return(FAIL);
       repair = BAD_HEADER;
     }
@@ -66,12 +66,12 @@ repair_wav(FILE* infile, WaveData *info, WaveHeader *header )
   /* The ChunkSize is the entire file size - 8 */
   if ( header->chunk_size ==  (file_size  - 8 ) )
     {
-      printf( "[MSG]  Found correct Chunk Size of %"PRIu32" bytes at offset 4\n",
+      printf( ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found correct Chunk Size of %"PRIu32" bytes at offset 4\n",
                  header->chunk_size );
     }
   else
     {
-      printf( "[MSG]  Chunk Size of %"PRIu32" at offset 4 is incorrect: should be %"PRIu32" bytes\n[INF]  ... repairing\n", header->chunk_size, (uint32_t) file_size-8 );
+      printf( ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Chunk Size of %"PRIu32" at offset 4 is incorrect: should be %"PRIu32" bytes\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  ... repairing\n", header->chunk_size, (uint32_t) file_size-8 );
       header->chunk_size = (uint32_t) file_size - 8;
       repair = BAD_HEADER;
     }
@@ -79,11 +79,11 @@ repair_wav(FILE* infile, WaveData *info, WaveHeader *header )
   /* The Chunk Format should be the letters "WAVE" */
   if ( header->chunk_format == WAVE )
     {
-      printf("%s\n",  "[MSG]  Found correct Chunk Format at offset 8" );
+      printf("%s\n",  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found correct Chunk Format at offset 8" );
     }
   else
     {
-      printf("%s\n",  "[MSG]  Chunk Format at offset 8 is incorrect\n[INF]  ... repairing\n" );
+      printf("%s\n",  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Chunk Format at offset 8 is incorrect\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  ... repairing\n" );
       if (memmove( &(header->chunk_format), "WAVE", 4*sizeof(char)) == NULL) return(FAIL);
       repair = BAD_HEADER;
     }
@@ -96,11 +96,11 @@ repair_wav(FILE* infile, WaveData *info, WaveHeader *header )
   /* The Subchunk1 ID should contain the letters "fmt " */
   if ( header->sub_chunk == FMT )
     {
-      printf("%s\n",  "[MSG]  Found correct Subchunk1 ID at offset 12" );
+      printf("%s\n",  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found correct Subchunk1 ID at offset 12" );
     }
   else
     {
-      printf("%s\n",  "[MSG]  Subchunk1 ID at offset 12 is incorrect\n[INF]  ... repairing" );
+      printf("%s\n",  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Subchunk1 ID at offset 12 is incorrect\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  ... repairing" );
       // "fmt " ends in a space
       if (memmove( &(header->sub_chunk), "fmt ", 4*sizeof(char) ) == NULL) return(FAIL);
       repair = BAD_HEADER;
@@ -109,11 +109,11 @@ repair_wav(FILE* infile, WaveData *info, WaveHeader *header )
   /* The Subchunk1 Size is 16 for PCM */
   if ( header->sc_size == 16 )
     {
-      printf("[MSG]  Found correct Subchunk1 Size of %"PRIu32" bytes at offset 16\n", header->sc_size );
+      printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found correct Subchunk1 Size of %"PRIu32" bytes at offset 16\n", header->sc_size );
     }
   else
     {
-      printf("%s\n",  "[MSG]  Subchunk1 Size at offset 16 is incorrect\n[INF]  ... repairing\n" );
+      printf("%s\n",  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Subchunk1 Size at offset 16 is incorrect\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  ... repairing\n" );
       header->sc_size = 16;
       repair = BAD_HEADER;
     }
@@ -121,11 +121,11 @@ repair_wav(FILE* infile, WaveData *info, WaveHeader *header )
   /* The Subchunk1 Audio Format is 1 for PCM */
   if ( header->sc_format == 1 )
     {
-      printf("%s\n",  "[MSG]  Found correct Subchunk1 Format at offset 20" );
+      printf("%s\n",  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found correct Subchunk1 Format at offset 20" );
     }
   else
     {
-      printf("%s\n",  "[MSG]  Subchunk1 Format at offset 20 is incorrect\n[INF]  ... repairing" );
+      printf("%s\n",  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Subchunk1 Format at offset 20 is incorrect\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  ... repairing" );
       header->sc_format = 1;
       repair = BAD_HEADER;
     }
@@ -137,7 +137,7 @@ repair_wav(FILE* infile, WaveData *info, WaveHeader *header )
   if (info->automatic)
     {
       repair= (auto_control(info, header) == BAD_HEADER)? BAD_HEADER: ((repair == BAD_HEADER)? BAD_HEADER : GOOD_HEADER) ;
-      printf("[MSG]  Audio characteristics found by automatic mode:\n       bits/s=%"PRIu16", sample rate=%"PRIu32", channels=%"PRIu16"\n",
+      printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Audio characteristics found by automatic mode:\n       bits/s=%"PRIu16", sample rate=%"PRIu32", channels=%"PRIu16"\n",
                 header->bit_p_spl, header->sample_fq, header->channels);
       if (repair == BAD_HEADER)
         {
@@ -146,7 +146,7 @@ repair_wav(FILE* infile, WaveData *info, WaveHeader *header )
               printf("%s\n", "[INT]  Please confirm [y/n] ");
               if (!isok())
                 {
-                  printf("%s\n", "[INF]  Exiting automatic mode: user mode\n");
+                  printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Exiting automatic mode: user mode\n");
                   repair=user_control(info, header);
                 }
             }
@@ -159,7 +159,7 @@ repair_wav(FILE* infile, WaveData *info, WaveHeader *header )
     repair= (user_control(info, header) == BAD_HEADER)? BAD_HEADER: (repair == BAD_HEADER)? BAD_HEADER : GOOD_HEADER ;
 
 
-  printf("%s\n", "[INF]  Core audio characteristics were checked.\n       Now processing data subchunk");
+  printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Core audio characteristics were checked.\n       Now processing data subchunk");
 
   /*********************************************************************/
   /* The "data" Subchunk                                               */
@@ -168,11 +168,11 @@ repair_wav(FILE* infile, WaveData *info, WaveHeader *header )
   /* The Subchunk2 ID is the ASCII characters "data" */
   if ( header->data_chunk == DATA )
     {
-      printf("%s\n",  "[MSG]  Found correct Subchunk2 ID at offset 36" );
+      printf("%s\n",  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found correct Subchunk2 ID at offset 36" );
     }
   else
     {
-      printf("%s\n",  "[MSG]  Subchunk2 ID at offset 36 is incorrect\n[INF]  ... repairing\n" );
+      printf("%s\n",  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Subchunk2 ID at offset 36 is incorrect\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  ... repairing\n" );
       if (memmove( &(header->data_chunk),"data", 4*sizeof(char) ) == NULL) return(FAIL);
       repair = BAD_HEADER;
     }
@@ -180,11 +180,11 @@ repair_wav(FILE* infile, WaveData *info, WaveHeader *header )
   /* The Subchunk2 Size = NumSample * NumChannels * BitsPerSample/8 */
   if ( header->data_size == (file_size - header->header_size) )
     {
-      printf(  "[MSG]  Found correct Subchunk2 Size of %"PRIu32" bytes at offset 40\n", header->data_size );
+      printf(  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found correct Subchunk2 Size of %"PRIu32" bytes at offset 40\n", header->data_size );
     }
   else
     {
-      printf("[MSG]  Subchunk2 Size at offset 40 is incorrect: found %"PRIu32" bytes instead of %"PRIu32"\n[INF]  ... repairing\n",header->data_size, (uint32_t) file_size -header->header_size  );
+      printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Subchunk2 Size at offset 40 is incorrect: found %"PRIu32" bytes instead of %"PRIu32"\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  ... repairing\n",header->data_size, (uint32_t) file_size -header->header_size  );
       header->data_size = file_size - header->header_size;
       repair = BAD_HEADER;
     }
@@ -200,7 +200,7 @@ int launch_repair(WaveData *info, WaveHeader *header, uint8_t * p)
 {
 
 
-  printf( "%s", "[INF]  Writing new header...\n" );
+  printf( "%s", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Writing new header...\n" );
 
   /* if -o option is not used, fixwav will overwrite existing data; confirmation dialog */
 
@@ -213,9 +213,9 @@ int launch_repair(WaveData *info, WaveHeader *header, uint8_t * p)
 
             {   /* user's bailing */
               if ( info->repair == BAD_DATA )
-                printf( "%s","[WAR]  Header may still be corrupt.\n" );
+                printf( "%s",""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Header may still be corrupt.\n" );
               else
-                printf( "%s", "[INF]  No changes made to existing file\n" );
+                printf( "%s", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  No changes made to existing file\n" );
               return(info->repair) ;
             }
       }
@@ -278,7 +278,7 @@ int write_header(uint8_t *newheader, FILE* outfile, WaveData *info)
 
   if ((!info->virtual) && ( (outfile == NULL) || (fclose(outfile) != 0) || ((outfile=fopen(info->outfile, "rb+")) == NULL) ))
     {
-      printf("%s\n", "[ERR]  Failed to close/open file");
+      printf("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Failed to close/open file");
       return(FAIL);
     }
 
@@ -291,7 +291,7 @@ int write_header(uint8_t *newheader, FILE* outfile, WaveData *info)
 
   if (info->in_place)
     {
-      printf("%s\n", "[INF]  Overwriting header...");
+      printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Overwriting header...");
     }
 
   count=fwrite(newheader, HEADER_SIZE, 1, outfile ) ;
@@ -299,7 +299,7 @@ int write_header(uint8_t *newheader, FILE* outfile, WaveData *info)
 
   if (count != 1)
     {
-      fprintf( stderr, "%s\n", "[ERR]  Error updating wav file.");
+      fprintf( stderr, "%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Error updating wav file.");
       return(FAIL);
     }
 
@@ -307,7 +307,7 @@ int write_header(uint8_t *newheader, FILE* outfile, WaveData *info)
 
   if (errno)
     {
-      perror("\n[ERR]  Error in launch repair module\n");
+      perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Error in launch repair module\n");
       return(FAIL);
     }
 
