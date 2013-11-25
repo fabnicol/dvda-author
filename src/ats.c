@@ -98,7 +98,7 @@ uint64_t fileoffset;
     PTS_DTS_data[9]=((d0&0x7f)<<1)|1;                 // 6,5,4,3,2,1,0
 }
 
- inline void pack_pts(uint8_t PTS_DTS_data[10],uint32_t pts)
+ inline static void pack_pts(uint8_t PTS_DTS_data[10],uint32_t pts)
 {
     uint8_t p3,p2,p1,p0;
 
@@ -114,7 +114,9 @@ uint64_t fileoffset;
     PTS_DTS_data[4]=((p0&0x7f)<<1)|1;                 // 6,5,4,3,2,1,0
 }
 
- inline void write_pack_header(FILE* fp,  uint64_t SCRint)
+static uint64_t offset_count;
+
+ inline static void write_pack_header(FILE* fp,  uint64_t SCRint)
 {
 
     uint8_t scr_bytes[6];
@@ -127,19 +129,17 @@ uint64_t fileoffset;
 
      if (globals.maxverbose)
     {
-        IO= (ioflag[0] == 'w')? WRITE : READ;
-
-        EXPLAIN("%s%s%d\n", IO, " PACK HEADER into file, size is: ", 4+6+3+1);
+        EXPLAIN("%s%d\n", " PACK HEADER into file, size is: ", 4+6+3+1);
     }
     
-    fwrite(pack_start_code,4,1,fp);
+    offset_count += 4*fwrite(pack_start_code,4,1,fp);
     pack_scr(scr_bytes,(SCRint/300),(SCRint%300));
-    fwrite(scr_bytes,6,1,fp);
-    fwrite(program_mux_rate_bytes,3,1,fp);
-    fwrite(pack_stuffing_length_byte,1,1,fp);
+    offset_count += 6*fwrite(scr_bytes,6,1,fp);
+    offset_count += 3*fwrite(program_mux_rate_bytes,3,1,fp);
+    offset_count += fwrite(pack_stuffing_length_byte,1,1,fp);
 }
 
- inline void write_system_header(FILE* fp)
+ inline static void write_system_header(FILE* fp)
 {
     uint8_t header_length[2]={0x00,0x0c};
     uint8_t rate_bound[3]={0x80,0xc4,0xe1};
@@ -151,17 +151,17 @@ uint64_t fileoffset;
     
     if (globals.maxverbose) EXPLAIN("%s%d\n","WRITE SYSTEM HEADER, size is: ", 4+2+3+1+1+1+3+3)
 
-    fwrite(system_header_start_code,4,1,fp);
-    fwrite(header_length,2,1,fp);
-    fwrite(rate_bound,3,1,fp);
-    fwrite(audio_bound,1,1,fp);
-    fwrite(video_bound,1,1,fp);
-    fwrite(packet_rate_restriction_flag,1,1,fp);
-    fwrite(stream_info1,3,1,fp);
-    fwrite(stream_info2,3,1,fp);
+    offset_count += 4*fwrite(system_header_start_code,4,1,fp);
+    offset_count += 2*fwrite(header_length,2,1,fp);
+    offset_count += 3*fwrite(rate_bound,3,1,fp);
+    offset_count += fwrite(audio_bound,1,1,fp);
+    offset_count += fwrite(video_bound,1,1,fp);
+    offset_count += fwrite(packet_rate_restriction_flag,1,1,fp);
+    offset_count += 3*fwrite(stream_info1,3,1,fp);
+    offset_count += 3*fwrite(stream_info2,3,1,fp);
 }
 
- inline void write_pes_padding(FILE* fp,uint16_t length)
+ inline static void write_pes_padding(FILE* fp,uint16_t length)
 {
     uint8_t packet_start_code_prefix[3]={0x00,0x00,0x01};
     uint8_t stream_id[1]={0xbe};
@@ -177,13 +177,13 @@ uint64_t fileoffset;
     length_bytes[0]=(length&0xff00)>>8;
     length_bytes[1]=(length&0xff);
 
-    fwrite(packet_start_code_prefix,3,1,fp);
-    fwrite(&stream_id,1,1,fp);
-    fwrite(length_bytes,2,1,fp);
-    fwrite(ff_buf,length,1,fp);
+    offset_count += 3*fwrite(packet_start_code_prefix,3,1,fp);
+    offset_count += fwrite(&stream_id,1,1,fp);
+    offset_count += 2*fwrite(length_bytes,2,1,fp);
+    offset_count += length*fwrite(ff_buf,length,1,fp);
 }
 
- inline void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uint8_t extension_flag, uint64_t PTS)
+ inline static void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uint8_t extension_flag, uint64_t PTS)
 {
     uint8_t packet_start_code_prefix[3]={0x00,0x00,0x01};
     uint8_t stream_id[1]={0xbd}; // private_stream_1
@@ -213,27 +213,27 @@ uint64_t fileoffset;
     PES_packet_len_bytes[0]=(PES_packet_len&0xff00)>>8;
     PES_packet_len_bytes[1]=PES_packet_len&0xff;
 
-    fwrite(packet_start_code_prefix,3,1,fp);
-    fwrite(stream_id,1,1,fp);
-    fwrite(PES_packet_len_bytes,2,1,fp);
-    fwrite(flags1,1,1,fp);
-    fwrite(flags2,1,1,fp);
-    fwrite(PES_header_data_length,1,1,fp);
+    offset_count += 3*fwrite(packet_start_code_prefix,3,1,fp);
+    offset_count += fwrite(stream_id,1,1,fp);
+    offset_count += 2*fwrite(PES_packet_len_bytes,2,1,fp);
+    offset_count += fwrite(flags1,1,1,fp);
+    offset_count += fwrite(flags2,1,1,fp);
+    offset_count += fwrite(PES_header_data_length,1,1,fp);
 
     pack_pts(PTS_DTS_data,PTS);
-    fwrite(PTS_DTS_data,5,1,fp);
+    offset_count += 5*fwrite(PTS_DTS_data,5,1,fp);
 
     if (extension_flag)
     {
         PSTD_buffer_scalesize[0]=0x60|((PSTD&0x1f00)>>8);
         PSTD_buffer_scalesize[1]=PSTD&0xff;
 
-        fwrite(PES_extension_flags,1,1,fp);
-        fwrite(PSTD_buffer_scalesize,2,1,fp);
+        offset_count += fwrite(PES_extension_flags,1,1,fp);
+        offset_count += 2*fwrite(PSTD_buffer_scalesize,2,1,fp);
     }
 }
 
- inline void write_lpcm_header(FILE* fp, int header_length,fileinfo_t* info, uint64_t pack_in_title, uint8_t counter)
+ inline static void write_lpcm_header(FILE* fp, int header_length,fileinfo_t* info, uint64_t pack_in_title, uint8_t counter)
 {
     uint8_t sub_stream_id[1]={0xa0};
     uint8_t continuity_counter[1]={0x00};
@@ -335,11 +335,20 @@ uint64_t fileoffset;
         }
     }
     channel_assignment = info->cga;
+    
+    int delta=header_length-1;
 
     if (pack_in_title==0)
     {
         frames_written=0;
         bytes_written=0;
+    }
+    else
+    if (pack_in_title==-1)
+    {
+        frames_written=0;
+        bytes_written=0;
+        delta=0;
     }
     else
     {
@@ -350,28 +359,29 @@ uint64_t fileoffset;
         {
             frames_written++;
         }
-    }
-
-    frame_offset=(frames_written*info->bytesperframe)-bytes_written+header_length-1;
+     }
+        
+    frame_offset=(frames_written*info->bytesperframe)-bytes_written+delta;
     first_access_unit_pointer[0]=(frame_offset&0xff00)>>8;
     first_access_unit_pointer[1]=frame_offset&0xff;
 
-    fwrite(sub_stream_id,1,1,fp);
-    fwrite(continuity_counter,1,1,fp);
-    fwrite(LPCM_header_length,2,1,fp);
-    fwrite(first_access_unit_pointer,2,1,fp);
-    fwrite(unknown1,1,1,fp);
-    fwrite(sample_size,1,1,fp);
-    fwrite(sample_rate,1,1,fp);
-    fwrite(unknown2,1,1,fp);
-    fwrite(&channel_assignment,1,1,fp);
-    fwrite(unknown3,1,1,fp);
-    fwrite(zero,header_length-8,1,fp);
-    if (globals.maxverbose) EXPLAIN("%s%d%s%d\n","WRITE LPCM HEADER for ",info->bitspersample, " bits: size is ", sizeoftab)
+    offset_count += fwrite(sub_stream_id,1,1,fp);
+    offset_count += fwrite(continuity_counter,1,1,fp);
+    offset_count += 2*fwrite(LPCM_header_length,2,1,fp);
+    offset_count += 2*fwrite(first_access_unit_pointer,2,1,fp);
+    fprintf(stderr, "ftell=%lu\n", ftell(fp));
+    offset_count += fwrite(unknown1,1,1,fp);
+    offset_count += fwrite(sample_size,1,1,fp);
+    offset_count += fwrite(sample_rate,1,1,fp);
+    offset_count += fwrite(unknown2,1,1,fp);
+    offset_count += fwrite(&channel_assignment,1,1,fp);
+    offset_count += fwrite(unknown3,1,1,fp);
+    offset_count += (header_length-8)*fwrite(zero,header_length-8,1,fp);
+    if (globals.maxverbose) EXPLAIN("%s%d%s\n","WRITE LPCM HEADER for ",info->bitspersample, " bits")
 }
 
 
- inline uint64_t calc_PTS_start(fileinfo_t* info, uint64_t pack_in_title)
+ inline static uint64_t calc_PTS_start(fileinfo_t* info, uint64_t pack_in_title)
 {
     double PTS;
     uint64_t PTSint;
@@ -394,7 +404,7 @@ uint64_t fileoffset;
 
 
 
- inline uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_title)
+ inline static uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_title)
 {
     double SCR;
     uint64_t SCRint;
@@ -424,7 +434,7 @@ uint64_t fileoffset;
 }
 
 
- inline uint64_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
+ inline static uint64_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
 {
     double PTS;
     uint64_t PTSint;
@@ -478,7 +488,7 @@ uint64_t fileoffset;
         write_audio_pes_header(fp,info->firstpack_audiopesheaderquantity,1,PTS);
         audio_bytes = info->lpcm_payload - info->firstpackdecrement;
         write_lpcm_header(fp,info->firstpack_lpcm_headerquantity,info,pack_in_title,cc);
-        fwrite(audio_buf,1,audio_bytes,fp);
+        offset_count+=fwrite(audio_buf,1,audio_bytes,fp);
 
         if (info->firstpack_pes_padding > 0)
         {
@@ -494,10 +504,10 @@ uint64_t fileoffset;
         audio_bytes=bytesinbuffer;
         write_pack_header(fp,SCR);
         write_audio_pes_header(fp,info->midpack_audiopesheaderquantity,0,PTS);
-        write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,pack_in_title,cc);
-
-
-        fwrite(audio_buf,1,audio_bytes,fp);
+        fprintf(stderr, "ftell=%lu\n", ftell(fp));
+        write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,-1,cc);
+        fprintf(stderr, "ftell=%lu\n", ftell(fp));
+        offset_count+=fwrite(audio_buf,1,audio_bytes,fp);
         write_pes_padding(fp,2048-28-info->midpack_lpcm_headerquantity-4-audio_bytes);
 
     }
@@ -510,7 +520,7 @@ uint64_t fileoffset;
         write_audio_pes_header(fp,info->midpack_audiopesheaderquantity,0,PTS);
         write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,pack_in_title,cc);
 
-        fwrite(audio_buf,1,audio_bytes,fp);
+        offset_count+=fwrite(audio_buf,1,audio_bytes,fp);
         if (info->midpack_pes_padding > 0) write_pes_padding(fp,info->midpack_pes_padding);
 
     }
@@ -565,6 +575,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
         if (bytesinbuf >= lpcm_payload)
         {
             //pack_in_file is not used in write_pes_packet
+            fprintf(stderr, "%llu\n", offset_count);
             n=write_pes_packet(fpout,&files[i],audio_buf,bytesinbuf,pack_in_title);
 
             memmove(audio_buf,&audio_buf[n],bytesinbuf-n);
@@ -597,15 +608,16 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                 if (i<ntracks)
                 {
                     /* If the current track is a different audio format, we must start a new title. */
-                    if ((files[i].samplerate!=files[i-1].samplerate) || (files[i].channels!=files[i-1].channels) || (files[i].bitspersample!=files[i-1].bitspersample))
+                    if (files[i].newtitle)
                     {
+                        fprintf(stderr, "%llu\n", offset_count);
+                        
+                        bytesinbuf=0;
                         n=write_pes_packet(fpout,&files[i-1],audio_buf,bytesinbuf,pack_in_title); // Empty audio buffer.
                         pack++;
                         pack_in_title=0;
                         pack_in_file=0;
-                        bytesinbuf=0;
-
-
+ 
                         files[i].first_PTS=calc_PTS_start(&files[i],pack_in_title);
                     }
                     else
@@ -633,6 +645,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                     }
                     else
                     {
+                        fprintf(stderr, "%llu\n", offset_count);
                         n=write_pes_packet(fpout,&files[i-1],audio_buf,bytesinbuf,pack_in_title); // Empty audio buffer.
                         bytesinbuf=0;
                         pack++;
