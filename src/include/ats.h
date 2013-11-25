@@ -32,14 +32,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <stdint.h>
 
 #include "audio2.h"
-#ifndef DAVE_OFFSET
-#define DAVE_OFFSET 0
-#endif
 
-int process_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks, const char* ioflag,char* player);
+int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks);
 void pack_scr(uint8_t scr_bytes[6],uint64_t SCR_base, uint16_t SCR_ext);
 void pack_pts_dts(uint8_t PTS_DTS_data[10],uint32_t pts, uint32_t dts);
-void  write_search_sequence(uint8_t* sequence, size_t sizeofsequence , FILE* filepointer, const char* ioflag);
-void  write_aob_path(char* aobfile,char* audiotsdir,int titleset,int filenum);
-void process_pack_header(FILE* fp,  uint64_t SCRint, const char* ioflag);
 #endif
