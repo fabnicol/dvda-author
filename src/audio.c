@@ -48,7 +48,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "commonvars.h"
 #include "command_line_parsing.h"
 #include "winport.h"
-#ifndef WITHOUT_SOX
+#ifndef WITHOUT_sox
 #include "sox.h"
 #endif
 #include "multichannel.h"
@@ -65,7 +65,7 @@ S is the table of direct conversion (WAV to AOB) and _S the table of reverse con
 
 /* with static array execution time will be comparable to explicit hard-code value assignment */
 
-static short int  S[2][6][36]=
+static uint8_t  S[2][6][36]=
 {{      {0}, {0},
         {5, 4, 11, 10, 1, 0, 3, 2, 7, 6, 9, 8},
         {5, 4, 7, 6, 13, 12, 15, 14, 1,  0, 3, 2, 9, 8, 11, 10},
@@ -356,6 +356,8 @@ int fixwav_repair(fileinfo_t *info)
     {
         info->filename,
         buf,
+        globals.settings.fixwav_database,  /* database path for collecting info chunks in headers */
+        NULL,
         globals.fixwav_automatic, /* automatic behaviour */
         globals.fixwav_prepend, /* do not prepend a header */
         globals.fixwav_in_place, /* do not correct in place */
@@ -388,8 +390,8 @@ int fixwav_repair(fileinfo_t *info)
         SINGLE_DOTS
 
         info->samplerate=waveheader.sample_fq;
-        info->bitspersample=waveheader.bit_p_spl;
-        info->channels=waveheader.channels;
+        info->bitspersample=(uint8_t) waveheader.bit_p_spl;
+        info->channels=(uint8_t) waveheader.channels;
         info->numbytes=waveheader.data_size;
         info->file_size=info->numbytes+waveheader.header_size;
         info->header_size=waveheader.header_size;
@@ -427,7 +429,7 @@ int fixwav_repair(fileinfo_t *info)
 }
 #endif
 
-#ifndef WITHOUT_SOX
+#ifndef WITHOUT_sox
 
 char* replace_file_extension(char * filename)
 {
@@ -477,7 +479,9 @@ int launch_sox(char** filename)
 
     if (globals.debugging)
         foutput("%s       %s -->\n       %s \n", "[MSG]  Format is neither WAV nor FLAC\n[INF]  Converting to WAV with SoX...\n", *filename, new_wav_name);
-
+        
+    unlink(new_wav_name);
+    errno=0;
     if (soxconvert(*filename, new_wav_name))
     {
         if (globals.debugging)  foutput("%s\n", "[INF]  File was converted.");
@@ -510,7 +514,6 @@ int extract_audio_info(fileinfo_t *info, uint8_t * header)
         if ((!globals.fixwav_automatic)  && (silence_previous_value))
         {
                 globals.silence=0;
-                initialise_c_utils(globals.silence, globals.logfile, globals.debugging, globals.journal);
         }
         #endif
         /* This is an anti-looping sercurity: normally its is spurious, yet it might be useful in unexpected cases */
@@ -579,41 +582,58 @@ int extract_audio_info(fileinfo_t *info, uint8_t * header)
 int wav_getinfo(fileinfo_t* info)
 {
 
-    FILE * fp;
+    FILE * fp=NULL;
 
     fp=fopen(info->filename,"rb");
 
     if (info->filename == NULL)
-        foutput("%s\n", "[ERR]  Could not open audio file: filepath pointer is null");
-    if (fp == NULL)
-        foutput("[ERR]  Could not open audio file %s: pointer is null\n", info->filename);
-
-
+    {
+      foutput("%s\n", "[ERR]  Could not open audio file: filepath pointer is null");
+      if (fp == NULL)
+         foutput("[ERR]  Could not open audio file %s: pointer is null\n", info->filename);
+         EXIT_ON_RUNTIME_ERROR
+    }
+    else
+    {
+      if (globals.debugging) foutput("[INF]  Opening %s to get info\n", info->filename);
+      change_directory(globals.settings.workdir);
+      fp=secure_open(info->filename, "rb");
+    }
 
     // C99 needed
     fseek(fp, 0, SEEK_SET);
-    if (globals.debugging) foutput("[INF]  Getting info, opening %s \n", info->filename);
-    uint8_t span=parse_wav_header(fp);
+    infochunk ichunk;
+    memset(&ichunk, 0, sizeof(infochunk));
+    uint8_t span=0;
+    parse_wav_header(fp, &ichunk);
+    span=ichunk.span;
 
     info->header_size=(span > 0) ? span + 8 : MAX_HEADER_SIZE;
 
     uint8_t header[info->header_size];
     memset(header, 0, info->header_size);
 
-    if (header == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Could not allocate header memory")
-
-    rewind(fp);
-
-    /* PATCH: real size on disc is needed */
-#ifdef __WIN32__
-    info->file_size= stat_file_size((TCHAR*) info->filename);
+     /* PATCH: real size on disc is needed */
+#if defined __WIN32__
+    info->file_size = read_file_size(fp, (TCHAR*) info->filename);
 #else
     info->file_size = read_file_size(fp, info->filename);
 #endif
 
     fread(header, info->header_size,1,fp);
+    fseek(fp, 0, SEEK_SET);
 
-    fclose(fp);
+    if (info->header_size > (span=fread(header, 1, info->header_size,fp)))
+    {
+        foutput("[ERR]  Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
+        perror("       ");
+        clean_exit(EXIT_FAILURE);
+    }
+
+     fclose(fp);
+
+    // default value
+    info->type=NO_AFMT_FOUND;
 
 
     if ((memcmp(header,"RIFF",4)!=0) || (memcmp(&header[8],"WAVEfmt",7)!=0))
@@ -631,23 +651,23 @@ int wav_getinfo(fileinfo_t* info)
             else
             {
 #endif
-#ifndef WITHOUT_SOX
+#ifndef WITHOUT_sox
 
                 if (globals.sox_enable)
                 {
                     // When RIFF fmt headers are not recognized, they are processed by Sox first if -S -F is on command line then checked by fixwav
                     // yest SoX may crash for seriously mangled headers
-#ifndef WITHOUT_FIWAV
+#ifndef WITHOUT_libfixwav
                     if (!globals.fixwav_force)
                     {
 #endif
                         if (launch_sox(&info->filename) == NO_AFMT_FOUND)
-                            return(NO_AFMT_FOUND);
+                           return(info->type);
                           // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
                         else
                           // PATCH looping back to get info
-                            return(info->type=wav_getinfo(info));
-#ifndef WITHOUT_FIWAV    // yet without the processing tail below (preserving new header[] array and info structure)
+                           return(info->type=wav_getinfo(info));
+#ifndef WITHOUT_libfixwav    // yet without the processing tail below (preserving new header[] array and info structure)
                     }
 
                     else
@@ -665,7 +685,7 @@ int wav_getinfo(fileinfo_t* info)
                            // PATCH looping back to get info
 #endif
                             if (launch_sox(&info->filename) == NO_AFMT_FOUND)
-                            return(NO_AFMT_FOUND);
+                            return(info->type);
                           // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
                             else
                           // PATCH looping back to get info
@@ -678,9 +698,9 @@ int wav_getinfo(fileinfo_t* info)
 
 #endif
 #ifndef WITHOUT_FIXWAV
-                 if (!globals.fixwav_force)
+                  if ((!globals.fixwav_force) && (!globals.fixwav_prepend))
 #endif
-                   return(info->type=NO_AFMT_FOUND);
+                   return(info->type);
 #ifndef WITHOUT_FIXWAV
                  else
                    return(info->type=extract_audio_info(info, header));
@@ -997,6 +1017,8 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
 		//   Padding occurs here for whole number of samples (from LF version S)
         rmdr = n % info->sampleunitsize;
         padbytes = info->sampleunitsize - rmdr;
+        
+        #if 0
         if (rmdr)
         {
             if ((globals.padding)&&(n+padbytes < AUDIO_BUFFER_SIZE))
@@ -1013,8 +1035,12 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
                 }
 
         }
+        #endif
+        
         // end of LF version S import
         rmdr = n %2;
+        
+        #if 0
         if (rmdr)
         {
             if ((globals.padding)&&(n+padbytes < AUDIO_BUFFER_SIZE))
@@ -1030,6 +1056,7 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
                     if (globals.debugging) foutput("[WAR]  Pruned track by 1 byte for evenness n= %d\n",n);
                 }
         }
+        #endif
 
     }
 #ifndef WITHOUT_FLAC
