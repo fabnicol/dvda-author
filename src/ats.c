@@ -351,7 +351,6 @@ static uint64_t offset_count;
         bytes_written=0;
         delta=0;
         if (info->bitspersample == 24) gamma=10;
-        if (info->last) gamma=10;
     }
     else
     {
@@ -651,7 +650,6 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                     else
                     {
                         fprintf(stderr, "%llu\n", offset_count);
-                        files[i-1].last=1;
                         n=write_pes_packet(fpout,&files[i-1],audio_buf,bytesinbuf,pack_in_title); // Empty audio buffer.
                         bytesinbuf=0;
                         pack++;
