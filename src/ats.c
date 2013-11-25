@@ -233,7 +233,7 @@ static uint64_t offset_count;
     }
 }
 
- inline static void write_lpcm_header(FILE* fp, int header_length,fileinfo_t* info, uint64_t pack_in_title, uint8_t counter)
+ inline static void write_lpcm_header(FILE* fp, int header_length,fileinfo_t* info, int64_t pack_in_title, uint8_t counter)
 {
     uint8_t sub_stream_id[1]={0xa0};
     uint8_t continuity_counter[1]={0x00};
@@ -337,6 +337,7 @@ static uint64_t offset_count;
     channel_assignment = info->cga;
     
     int delta=header_length-1;
+    int gamma=8;
 
     if (pack_in_title==0)
     {
@@ -349,6 +350,8 @@ static uint64_t offset_count;
         frames_written=0;
         bytes_written=0;
         delta=0;
+        if (info->bitspersample == 24) gamma=10;
+        if (info->last) gamma=10;
     }
     else
     {
@@ -376,7 +379,7 @@ static uint64_t offset_count;
     offset_count += fwrite(unknown2,1,1,fp);
     offset_count += fwrite(&channel_assignment,1,1,fp);
     offset_count += fwrite(unknown3,1,1,fp);
-    offset_count += (header_length-8)*fwrite(zero,header_length-8,1,fp);
+    offset_count += (header_length-8)*fwrite(zero,header_length-gamma,1,fp);
     if (globals.maxverbose) EXPLAIN("%s%d%s\n","WRITE LPCM HEADER for ",info->bitspersample, " bits")
 }
 
@@ -508,7 +511,9 @@ static uint64_t offset_count;
         write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,-1,cc);
         fprintf(stderr, "ftell=%lu\n", ftell(fp));
         offset_count+=fwrite(audio_buf,1,audio_bytes,fp);
-        write_pes_padding(fp,2048-28-info->midpack_lpcm_headerquantity-4-audio_bytes);
+        int gamma=0;
+        if (info->bitspersample == 24) gamma=2;
+        write_pes_padding(fp,2048-28-info->midpack_lpcm_headerquantity-4-audio_bytes+gamma);
 
     }
     else   			// A middle packet in the title.
@@ -612,9 +617,9 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                     {
                         fprintf(stderr, "%llu\n", offset_count);
                         
-                        bytesinbuf=0;
                         n=write_pes_packet(fpout,&files[i-1],audio_buf,bytesinbuf,pack_in_title); // Empty audio buffer.
                         pack++;
+                        bytesinbuf=0;
                         pack_in_title=0;
                         pack_in_file=0;
  
@@ -646,6 +651,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                     else
                     {
                         fprintf(stderr, "%llu\n", offset_count);
+                        files[i-1].last=1;
                         n=write_pes_packet(fpout,&files[i-1],audio_buf,bytesinbuf,pack_in_title); // Empty audio buffer.
                         bytesinbuf=0;
                         pack++;

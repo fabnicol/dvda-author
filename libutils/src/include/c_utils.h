@@ -195,7 +195,7 @@ int download_fullpath(const char* curlpath, const char* filename, const char* fu
 void erase_file(const char* path);
 char* quote(const char* path);
 char* win32quote(const char* path);
-int run(const char* application,char* const args[], const int option);
+int run(const char* application,char*  args[], const int option);
 uint64_t  parse_file_for_sequence(FILE* fp, uint8_t* tab, size_t sizeoftab);
 
 inline static void  uint32_copy(uint8_t* buf, uint32_t x)
