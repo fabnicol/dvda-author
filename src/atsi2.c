@@ -40,51 +40,32 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
 extern globalData globals;
+    
+    
+int get_afmt(fileinfo_t* info, audioformat_t* audioformats, int* numafmts) {
+  int i;
+  int found;
 
-
-
-int get_afmt(fileinfo_t* info, audioformat_t* audioformats, int* numafmts)
-{
-    int i;
-    int found;
-
-    found=0;
-
-    i=0;
-    // PATCH 24.08.2009
-    if (!info->newtitle)
-    {
-        if (globals.veryverbose) foutput("%s\n", "[DBG]  Getting audio from same title");
-        while ((i < *numafmts) && (!found))
-        {
-            if ((info->samplerate==audioformats[i].samplerate) && (info->bitspersample==audioformats[i].bitspersample) && (info->channels==audioformats[i].channels)&& (info->cga==audioformats[i].cga))
-            {
-                found=1;
-            }
-            else
-            {
-                i++;
-            }
-        }
-        if (!found)
-        {
-            audioformats[i].samplerate=info->samplerate;
-            audioformats[i].channels=info->channels;
-            audioformats[i].bitspersample=info->bitspersample;
-            audioformats[i].cga=info->cga;
-            (*numafmts)++;
-        }
+  found=0;
+  i=0;
+  while ((i < *numafmts) && (!found)) {
+    if ((info->samplerate==audioformats[i].samplerate) && (info->bitspersample==audioformats[i].bitspersample) && (info->channels==audioformats[i].channels)&& (info->cga==audioformats[i].cga)) {
+      found=1;
+    } else {
+      i++;
     }
-    else
-    {
-        if (globals.veryverbose) foutput("%s\n", "[DBG]  Getting audio from new title");
-        audioformats[i].samplerate=info->samplerate;
-        audioformats[i].channels=info->channels;
-        audioformats[i].bitspersample=info->bitspersample;
-        audioformats[i].cga=info->cga;
-    }
-    return(i);
+  }
+  if (!found) {
+    audioformats[i].samplerate=info->samplerate;
+    audioformats[i].channels=info->channels;
+    audioformats[i].cga=info->cga;
+    audioformats[i].bitspersample=info->bitspersample;
+    (*numafmts)++;
+  }
+  if (*numafmts == 9) EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  DVD-Audio discs cannot manage more than 8 different audio formats per group.\n       Resample tracks or create a new group.")
+  return(i);
 }
+
 
 int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* atsi_sectors, uint16_t * ntitlepics)
 {
@@ -100,6 +81,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
     int ntitletracks[99];
     uint64_t title_length;
     int numafmts=0;
+    //TODO: is 18 a maximum?
     audioformat_t audioformats[18];
     static uint16_t trackcount, pictitlecount;
 
@@ -115,13 +97,11 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
     ntitletracks[numtitles]=0;
     while (j < ntracks)
     {
-
         ntitletracks[numtitles]=1;
-
-        k=get_afmt(&files[j],audioformats,&numafmts);
+        get_afmt(&files[j],audioformats,&numafmts);
         j++;
 
-        while ((j < ntracks) && (!files[j].newtitle) && (files[j].samplerate==files[j-1].samplerate) && (files[j].bitspersample==files[j-1].bitspersample) && (files[j].channels==files[j-1].channels))
+        while ((j < ntracks) && (j == 0 || !files[j].newtitle) )
         {
             ntitletracks[numtitles]++;
             j++;
@@ -129,18 +109,14 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
         numtitles++;
     }
 
-
-
     for (j=0;j < numafmts;j++)
     {
         uint16_copy(&atsi[i],0x0000);  // [200806] 0x0000 if a menu is not generated; otherwise sector pointer from start of audio zone (AUDIO_PP.IFO to last sector of audio system space (here AUDIO_TS.IFO)
         i+=2;
         if (files[j].channels>2)
         {
-
             switch (audioformats[j].bitspersample)
             {
-
             case 16:
                 atsi[i]=0x00;
                 break;
@@ -310,8 +286,9 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
         {
 
             // These seem to be pointers to a lookup table in the first sector of the ATSI
+
             x=get_afmt(&files[k],audioformats,&numafmts);
-            x=((x*8)<<8)|0x0010;
+            x=((x*8) << 8)|0x0010;
             if (t==0)
             {
                 x|=0xc000;
