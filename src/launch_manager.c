@@ -556,7 +556,7 @@ SUMMARY:
     {
         for (j=0; j < ntracks[i]; j++)
         {
-            foutput("    %d  %2d /%2d    %2d  %10"PRIu32"  %10"PRIu32"  %10"PRIu64"  ",i+1, title[i][j]+1,numtitles[i]+1, j+1,files[i][j].first_sector,files[i][j].last_sector,files[i][j].first_PTS);
+            foutput("    %d  %2d /%2d    %2d  %10"PRIu32"  %10"PRIu32"  %10"PRIu64"  ",i+1, title[i][j]+1,numtitles[i], j+1,files[i][j].first_sector,files[i][j].last_sector,files[i][j].first_PTS);
             foutput("%10"PRIu64"  %2d\n",files[i][j].PTS_length, files[i][j].cga);
         }
     }
