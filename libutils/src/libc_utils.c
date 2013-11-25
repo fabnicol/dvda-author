@@ -102,8 +102,8 @@ int download_file_from_http_server(const char* curlpath, const char* filename, c
     char command[strlen(server)+strlen(filename)+strlen(curlpath) + 32];
 
     sprintf(command, "%s -# -f  -o %s --location %s/%s", curlpath, filename, server, filename);
-    fprintf(stderr, "[INF]  downloading %s from server %s\n", filename, server);
-    if (globals.veryverbose) fprintf(stderr, "[DBG]  ...%s\n", command);
+    fprintf(stderr, ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  downloading %s from server %s\n", filename, server);
+    if (globals.veryverbose) fprintf(stderr, ANSI_COLOR_YELLOW"[DBG]"ANSI_COLOR_RESET"  ...%s\n", command);
     return system(win32quote(command));
 }
 
@@ -111,7 +111,7 @@ int download_fullpath(const char* curlpath, const char* filename, const char* fu
 {
     char command[30+1+strlen(filename)+strlen(fullpath)];
     sprintf(command, "%s -# -f -o %s --location %s", curlpath, filename, fullpath);
-    if (globals.veryverbose) printf("[INF]  downloading: %s\n", command);
+    if (globals.veryverbose) printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  downloading: %s\n", command);
     return system(win32quote(command));
 }
 
@@ -128,7 +128,7 @@ char *fn_get_current_dir_name (void)
     char* r;
     if (NULL == (cwd = malloc (len * sizeof *cwd)))
     {
-        printf ("%s", "[ERR]  Not enough memory for my_get_cwd.\n");
+        printf ("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Not enough memory for my_get_cwd.\n");
         exit (EXIT_FAILURE);
     }
     while ((NULL == (r = getcwd (cwd, len))) && (ERANGE == errno))
@@ -136,7 +136,7 @@ char *fn_get_current_dir_name (void)
         len += 32;
         if(NULL == (cwd = realloc (cwd, len * sizeof *cwd)))
         {
-            printf ("%s", "[ERR]  Not enough memory for my_get_cwd.\n");
+            printf ("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Not enough memory for my_get_cwd.\n");
             exit (EXIT_FAILURE);
         }
     }
@@ -152,7 +152,7 @@ void action_dir_post (const char *root, const char *dir)
 {
     if (rmdir (dir))
     {
-        printf ("[ERR]  Impossible to erase directory %s/%s \n"
+        printf (ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Impossible to erase directory %s/%s \n"
                 "(errno = %s)\n", root, dir, strerror (errno));
         exit (EXIT_FAILURE);
     }
@@ -163,7 +163,7 @@ void action_file (const char *file)
 {
     if (unlink (file))
     {
-        printf ("[ERR]  Impossible to erase file %s \n"
+        printf (ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Impossible to erase file %s \n"
                 "(errno = %s)\n", file, strerror (errno));
         exit (EXIT_FAILURE);
     }
@@ -186,7 +186,7 @@ int rmdir_recursive (char *root, char *dirname)
     {
         if (errno == ENOTDIR)
         return 0;
-        //printf ( "[ERR]  chdir() issue with dirname=%s\n", dirname);
+        //printf ( ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  chdir() issue with dirname=%s\n", dirname);
         else return (-1);
     }
 
@@ -205,7 +205,7 @@ int rmdir_recursive (char *root, char *dirname)
                 (new_root =
                      malloc ((rootlen + dirnamelen + 2) * sizeof *new_root)))
         {
-            printf ("%s", "[ERR]  malloc issue\n");
+            printf ("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  malloc issue\n");
             exit (EXIT_FAILURE);
         }
         memcpy (new_root, root, rootlen);
@@ -219,7 +219,7 @@ int rmdir_recursive (char *root, char *dirname)
 
     if (NULL == (FD = opendir (".")))
     {
-        printf ("%s", "[ERR]  opendir() issue\n");
+        printf ("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  opendir() issue\n");
         return (-1);
     }
     sl = names;
@@ -235,7 +235,7 @@ int rmdir_recursive (char *root, char *dirname)
             continue;
         if (NULL == (n = malloc (sizeof *n)))
         {
-            printf ("%s", "[ERR]  memory issue\n");
+            printf ("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  memory issue\n");
             exit (EXIT_FAILURE);
         }
         n->name = strdup (f->d_name);
@@ -361,7 +361,7 @@ path_t *parse_filepath(const char* filepath)
         chain->isfile=0;
         if (globals.veryverbose)
         {
-            printf("[MSG]  Path %s is not a file\n", filepath);
+            printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Path %s is not a file\n", filepath);
         }
     }
     else
@@ -403,25 +403,25 @@ _Bool clean_directory(char* path)
     errno=0;
     if (path == NULL) return (EXIT_FAILURE);
 
-    if (globals.veryverbose) printf("%s%s\n", "[INF]  Cleaning directory ", path);
+    if (globals.veryverbose) printf("%s%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Cleaning directory ", path);
 
     errno=rmdir_global(path);
 
     if (errno)
     {
         if (globals.veryverbose)
-            printf("%s%s\n", "[MSG]  Failed to clean directory ", path);
+            printf("%s%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Failed to clean directory ", path);
         return 0;
     }
     else
     {
         if (globals.veryverbose)
-            printf("%s\n", "[MSG]  OK.");
+            printf("%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  OK.");
         return 1;
     }
 }
 
-/* This postprocessing procedure converts a tagged log (with [INF], [WAR], [ERR], [MSG]) into an Html logpage */
+/* This postprocessing procedure converts a tagged log (with "ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET", "ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET", "ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET", "ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET") into an Html logpage */
 /* To be launched at end of program, not in a thread */
 
 void htmlize(char* logpath)
@@ -569,7 +569,7 @@ int secure_mkdir (const char *path, mode_t mode)
     int i=0, len;
     if (path == NULL || path[0]=='\0')
     {
-     fprintf(stderr, "%s","\n[ERR]  Could not create directory with empty or null path.\n");
+     fprintf(stderr, "%s","\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not create directory with empty or null path.\n");
      clean_exit(EXIT_FAILURE);
     }
     len = strlen (path);
@@ -579,7 +579,7 @@ int secure_mkdir (const char *path, mode_t mode)
 
     if  ((len<1) && (globals.debugging))
     {
-        printf("%s\n","[ERR]  Path length could not be allocated by secure_mkdir:\n       Your compiler may not be C99-compliant");
+        printf("%s\n",ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Path length could not be allocated by secure_mkdir:\n       Your compiler may not be C99-compliant");
         clean_exit(EXIT_FAILURE);
     }
 
@@ -590,7 +590,7 @@ int secure_mkdir (const char *path, mode_t mode)
 
     if (d == NULL)
     {
-        perror("\n[MSG] Error: could not allocate directory path string\n");
+        perror("\n"ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET" Error: could not allocate directory path string\n");
         clean_exit(EXIT_FAILURE);
     }
 
@@ -629,7 +629,7 @@ int secure_mkdir (const char *path, mode_t mode)
             //  Output directory already created
             return(0);
         }
-        printf("[ERR]  Impossible to create directory '%s'\n", path);
+        printf(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Impossible to create directory '%s'\n", path);
         printf("       permission was: %d\n       %s\n", mode, strerror(errno));
         printf( "%s", "       Backup directories will be used.\n");
         errno=0;
@@ -654,7 +654,7 @@ char* get_cl(const char** args, uint16_t start)
     }
 
     char* cml=calloc(tot+i+2*i, sizeof(char)); // 2*i for quotes, i for spaces
-    if (cml == NULL) perror("\n[ERR]  get_command_line\n");
+    if (cml == NULL) perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  get_command_line\n");
 
     for (j=start; j< i; j++)
     {
@@ -664,7 +664,7 @@ char* get_cl(const char** args, uint16_t start)
         cml[shift-1]=0x20;
     }
     cml[shift-1]=0;
-    if (globals.debugging) printf("[INF]  Command line: %s\n", cml);
+    if (globals.debugging) printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Command line: %s\n", cml);
 
     return cml;
 }
@@ -699,7 +699,7 @@ void print_commandline(int argc, char * const argv[])
 {
     int i=0;
 
-    if (globals.debugging) printf("%s \n", "[INF]  Running:");
+    if (globals.debugging) printf("%s \n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Running:");
 
     for (i=0; i < argc ; i++)
         printf("%s ",  argv[i]);
@@ -752,18 +752,18 @@ void change_directory(const char * filename)
     if (chdir(filename) == -1)
     {
         if (errno == ENOTDIR)
-            printf("[ERR]  %s is not a directory\n", filename);
+            printf(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  %s is not a directory\n", filename);
         else
         {
            if (NULL != filename)
-             fprintf(stderr, "[ERR]  Impossible to cd to %s \n.", filename);
+             fprintf(stderr, ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Impossible to cd to %s \n.", filename);
            else   
-             fprintf(stderr, "%s","[ERR]  Null path\n.");
+             fprintf(stderr, "%s",ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Null path\n.");
            exit(EXIT_FAILURE);
         }
     }
     else if (globals.debugging)
-        printf("[DBG]  Current working directory is now %s\n", filename);
+        printf(ANSI_COLOR_YELLOW"[DBG]"ANSI_COLOR_RESET"  Current working directory is now %s\n", filename);
 }
 
 int copy_directory(const char* src, const char* dest, mode_t mode)
@@ -779,18 +779,18 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
 
     if (stat(dest, &buf) == -1)
     {
-        perror("\n[ERR]  copy_directory could not stat file\n");
+        perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  copy_directory could not stat file\n");
         exit(EXIT_FAILURE);
     }
 
 
     printf("%c", '\n');
 
-    if (globals.debugging)  printf("%s%s\n", "[INF]  Creating dir=", dest);
+    if (globals.debugging)  printf("%s%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Creating dir=", dest);
 
     secure_mkdir(dest, mode);
 
-    if (globals.debugging)   printf("[INF]  Copying in %s ...\n", src);
+    if (globals.debugging)   printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Copying in %s ...\n", src);
     change_directory(src);
 
     dir_src=opendir(".");
@@ -801,14 +801,14 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
         STRING_WRITE(path, "%s%c%s", dest, '/', f->d_name)
         if (stat(f->d_name, &buf) == -1)
         {
-            perror("\n[ERR] stat in copy_directory\n");
+            perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET" stat in copy_directory\n");
             exit(EXIT_FAILURE);
         }
 
         if (S_ISDIR(buf.st_mode))
         {
 
-            if (globals.debugging) printf("%s %s %s %s\n", "[INF]  Copying dir=", f->d_name, " to=", path);
+            if (globals.debugging) printf("%s %s %s %s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Copying dir=", f->d_name, " to=", path);
 
             errno=copy_directory(f->d_name, path, mode);
 
@@ -816,7 +816,7 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
         }
         if (S_ISREG(buf.st_mode))
         {
-            if (globals.debugging) printf("%s%s to= %s\n", "[INF]  Copying file=", f->d_name, path);
+            if (globals.debugging) printf("%s%s to= %s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Copying file=", f->d_name, path);
             errno=copy_file(f->d_name, path);
         }
         /* does not copy other types of files(symlink, sockets etc). */
@@ -824,7 +824,7 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
         else continue;
     }
 
-    if (globals.debugging)   printf("%s", "[INF]  Done. Backtracking... \n\n");
+    if (globals.debugging)   printf("%s", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Done. Backtracking... \n\n");
     closedir(dir_src);
     return(errno);
 }
@@ -848,7 +848,7 @@ int copy_file_no_p(FILE *infile, FILE *outfile)
 
         if (ferror(infile))
         {
-            fprintf(stderr, "[ERR]  Read error\n");
+            fprintf(stderr, ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Read error\n");
             return(-1);
         }
 
@@ -859,7 +859,7 @@ int copy_file_no_p(FILE *infile, FILE *outfile)
 
         if (ferror(outfile))
         {
-            fprintf(stderr, "[ERR]  Write error\n");
+            fprintf(stderr, ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Write error\n");
             return(-1);
         }
     }
@@ -871,10 +871,10 @@ int copy_file_no_p(FILE *infile, FILE *outfile)
         putchar('|');
         counter=counter-1;
         counter=(counter*sizeof(char)*BUFSIZ+chunk)/1024;
-        printf("\n[MSG]  Copied %.2lf KB.\n", counter);
-        if (!errno) puts("\n[MSG]  Copy completed.");
+        printf("\n"ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Copied %.2lf KB.\n", counter);
+        if (!errno) puts("\n"ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Copy completed.");
         else
-            puts("\n[ERR]  Copy failed.");
+            puts("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Copy failed.");
 
     }
     return(errno);
@@ -888,15 +888,15 @@ int copy_file(const char *existing_file, const char *new_file)
 
     FILE *fn, *fe;
     int errorlevel;
-    if (globals.debugging) fprintf(stderr, "\n[DBG]  Copying file %s\n", existing_file);
+    if (globals.debugging) fprintf(stderr, "\n"ANSI_COLOR_YELLOW"[DBG]"ANSI_COLOR_RESET"  Copying file %s\n", existing_file);
     if (NULL == (fe = fopen(existing_file, "rb")))
     {
-        fprintf(stderr, "[ERR]  Impossible to open file '%s' in read mode\n", existing_file);
+        fprintf(stderr, ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Impossible to open file '%s' in read mode\n", existing_file);
         exit(-1);
     }
     if (NULL == (fn = fopen(new_file, "wb")))
     {
-        fprintf(stderr, "[ERR]  Impossible to open file '%s' in write mode\n", new_file);
+        fprintf(stderr, ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Impossible to open file '%s' in write mode\n", new_file);
         fclose(fe);
         exit(-1);
     }
@@ -906,7 +906,7 @@ int copy_file(const char *existing_file, const char *new_file)
     fclose(fe);
     fclose(fn);
     if (globals.debugging)
-        if (errorlevel == 0) fprintf(stderr, "[DBG]  File was copied as: %s\n", new_file);
+        if (errorlevel == 0) fprintf(stderr, ANSI_COLOR_YELLOW"[DBG]"ANSI_COLOR_RESET"  File was copied as: %s\n", new_file);
 
     return(errorlevel);
 
@@ -922,7 +922,7 @@ char* copy_file2dir(const char *existing_file, const char *new_dir)
 
     static uint32_t counter;
     int errorlevel;
-    if (globals.veryverbose) printf("[INF]  Copying file %s to directory %s\n", existing_file, new_dir);
+    if (globals.veryverbose) printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Copying file %s to directory %s\n", existing_file, new_dir);
 
     path_t* filestruct=parse_filepath(existing_file);
     if (!filestruct) return NULL;
@@ -953,7 +953,7 @@ char* copy_file2dir_rename(const char *existing_file, const char *new_dir, char*
 
 
     int errorlevel;
-    if (globals.veryverbose) printf("[INF]  Copying file %s to directory %s\n", existing_file, new_dir);
+    if (globals.veryverbose) printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Copying file %s to directory %s\n", existing_file, new_dir);
 
     char *dest=calloc(strlen(newfilename)+strlen(new_dir)+1+1, sizeof(char));
     sprintf(dest, "%s%s%s", new_dir, SEPARATOR, newfilename);
@@ -985,12 +985,12 @@ int cat_file(const char *existing_file, const char *new_file)
 
     if (NULL == (fe = fopen(existing_file, "rb")))
     {
-        fprintf(stderr, "[ERR]  Impossible to open file '%s' \n in read mode.\n", existing_file);
+        fprintf(stderr, ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Impossible to open file '%s' \n in read mode.\n", existing_file);
         return(-1);
     }
     if (NULL == (fn = fopen(new_file, "ab")))
     {
-        fprintf(stderr, "[ERR]  Impossible to open file '%s' in append mode.\n", new_file);
+        fprintf(stderr, ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Impossible to open file '%s' in append mode.\n", new_file);
         fclose(fe);
         return(-1);
     }
@@ -1105,8 +1105,8 @@ void parse_wav_header(FILE * infile, infochunk* ichunk)
     int count;
     if ((count=fread(haystack, 1, MAX_HEADER_SIZE, infile)) != MAX_HEADER_SIZE)
     {
-        printf("[ERR]  Could not read %d characters from input file\n", MAX_HEADER_SIZE);
-        printf("[ERR]  Just read %d\n", count);
+        printf(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not read %d characters from input file\n", MAX_HEADER_SIZE);
+        printf(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Just read %d\n", count);
         ichunk->span=0;
         return;
     }
@@ -1120,7 +1120,7 @@ void parse_wav_header(FILE * infile, infochunk* ichunk)
     {
         if ((pt=memchr(haystack+span+1, 'd', MAX_HEADER_SIZE-1-span)) == NULL)
         {
-            printf("[WAR]  Could not find substring 'data' among %d characters\n", MAX_HEADER_SIZE);
+            printf(""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Could not find substring 'data' among %d characters\n", MAX_HEADER_SIZE);
             if (globals.debugging)
             {
                 hexdump_header(infile, MAX_HEADER_SIZE);
@@ -1177,10 +1177,10 @@ void parse_wav_header(FILE * infile, infochunk* ichunk)
                 if (globals.debugging)
                 {
                     if (ichunk->found)
-                        printf("[MSG]  Found %d info chunks among %d characters\n       INAM %s\n       IART %s\n       ICMT %s\n       ICOP %s\n       ICRD %s\n       IGNR %s\n",
+                        printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found %d info chunks among %d characters\n       INAM %s\n       IART %s\n       ICMT %s\n       ICOP %s\n       ICRD %s\n       IGNR %s\n",
                                ichunk->found, span, ichunk->INAM, ichunk->IART, ichunk->ICMT, ichunk->ICOP, ichunk->ICRD, ichunk->IGNR);
                     else
-                        printf("[MSG]  Could not find info chunks among %d characters\n", span);
+                        printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Could not find info chunks among %d characters\n", span);
 
                 }
                 break;
@@ -1212,8 +1212,8 @@ void parse_wav_header(FILE * infile, infochunk* ichunk)
 
     if (globals.debugging)
     {
-        if (span != 36) printf( "[MSG]  Size of header is non-standard (scanned %d characters)\n", span );
-        else printf("%s", "[MSG]  Size of header is standard\n");
+        if (span != 36) printf( ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Size of header is non-standard (scanned %d characters)\n", span );
+        else printf("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Size of header is standard\n");
 
         if (span < 36)
         {
@@ -1233,7 +1233,7 @@ FILE * secure_open(const char *path, const char *context)
 
     if ( (f=fopen( path, context ))  == NULL )
     {
-        printf("[ERR]  Could not open '%s'\n", path);
+        printf(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not open '%s'\n", path);
         exit(EXIT_FAILURE);
     }
     return f;
@@ -1245,7 +1245,7 @@ int end_seek(FILE *outfile)
 {
     if ( fseek(outfile, 0, SEEK_END) == -1)
     {
-        printf( "\n%s\n", "[ERR]  Error seeking to end of output file" );
+        printf( "\n%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Error seeking to end of output file" );
         printf( "%s\n", "     File was not changed\n" );
         return(FAIL);
     }
@@ -1297,7 +1297,7 @@ void hexdump_header(FILE* infile, uint8_t header_size)
         }
         else
         {
-            printf("%s\n", "[ERR]  Header was not properly read by hexdump_header()");
+            printf("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Header was not properly read by hexdump_header()");
         }
 
         /* break on partial buffer */
@@ -1398,7 +1398,7 @@ char* win32quote(const char* path)
     if (result) return (result);
     else
     {
-        printf("[ERR]  Could not allocate quoted string for %s.\n", path);
+        printf(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not allocate quoted string for %s.\n", path);
         return NULL;
     }
 #else
@@ -1422,7 +1422,7 @@ char* quote(const char* path)
     if (result) return (result);
     else
     {
-        printf("[ERR]  Could not allocate quoted string for %s.\n", path);
+        printf(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not allocate quoted string for %s.\n", path);
         return NULL;
     }
 }
@@ -1444,20 +1444,20 @@ errno=0;
 
     if (pipe(tube))
     {
-        perror("\n[ERR]  pipe run\n");
+        perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  pipe run\n");
         return errno;
     }
 
     switch (pid = fork())
     {
     case -1:
-        foutput("%s%s\n", "[ERR]  Could not launch ", application);
+        foutput("%s%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not launch ", application);
         break;
     case 0:
         close(tube[0]);
         dup2(tube[1], STDERR_FILENO);
         execv(application, args);
-        foutput("%s%s%s\n", "[ERR]  Runtime failure in ", application," child process");
+        foutput("%s%s%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Runtime failure in ", application," child process");
         perror("");
         return errno;
 
@@ -1474,7 +1474,7 @@ errno=0;
     char cml[strlen(application)+1+strlen(s)+1+2];
     sprintf(cml, "\"%s\" %s",  application, s);
     free(s);
-    if (globals.debugging) foutput("[INF]  Running: %s\n ", cml);
+    if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Running: %s\n ", cml);
     errno=system(cml);
 #endif
 

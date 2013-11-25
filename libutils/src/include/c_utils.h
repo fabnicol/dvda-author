@@ -73,8 +73,26 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define NO_PAD 0
 
 #ifndef LITTLE_ENDIAN
-#define LITTLE_ENDIAN  1
-#define BIG_ENDIAN  0
+    #define LITTLE_ENDIAN  1
+    #define BIG_ENDIAN  0
+#endif
+
+#ifdef NO_ANSI_COLORS
+    #define ANSI_COLOR_RED     ""
+    #define ANSI_COLOR_GREEN   ""
+    #define ANSI_COLOR_YELLOW  ""
+    #define ANSI_COLOR_BLUE    ""
+    #define ANSI_COLOR_MAGENTA ""
+    #define ANSI_COLOR_CYAN    ""
+    #define ANSI_COLOR_RESET   ""
+#else
+    #define ANSI_COLOR_RED     "\x1b[31m"
+    #define ANSI_COLOR_GREEN   "\x1b[32m"
+    #define ANSI_COLOR_YELLOW  "\x1b[33m"
+    #define ANSI_COLOR_BLUE    "\x1b[34m"
+    #define ANSI_COLOR_MAGENTA "\x1b[35m"
+    #define ANSI_COLOR_CYAN    "\x1b[36m"
+    #define ANSI_COLOR_RESET   "\x1b[0m"
 #endif
 
 #define ERR_STRING_LENGTH   "ERR: string was truncated, maximum length is %d"

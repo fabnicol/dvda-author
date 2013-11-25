@@ -8,11 +8,13 @@ TARGET = dvda-author
 
 QMAKE_CFLAGS=-std=c99
 
-DEFINES += _GNU_SOURCE  HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_libfixwav HAVE_libogg HAVE_libiberty HAVE_mplex HAVE_jpeg2yuv HAVE_mpeg2enc HAVE_mjpegtools HAVE_OGG_FLAC HAVE_FLAC HAVE_libogg HAVE_libsox
+#to avoid ansi colors in output console add NO_ANSI_COLORS to the DEFINES directive
+
+DEFINES +=  _GNU_SOURCE  HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_libfixwav HAVE_libogg HAVE_libiberty HAVE_mplex HAVE_jpeg2yuv HAVE_mpeg2enc HAVE_mjpegtools HAVE_OGG_FLAC HAVE_FLAC HAVE_libogg HAVE_libsox
 
 #libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame --disable-gomp
 
-linux:LIBS +=  -L$(LIBROOT) -lFLAC -logg  -lsox -lid3tag  -lz  -lpulse -lpulse-simple -lasound  \
+linux:LIBS +=  -L/usr/lib/i386-linux-gnu -L$(LIBROOT) -lFLAC -logg  -lsox -lid3tag  -lz  -lpulse -lpulse-simple -lasound  \
                   -logg -lpng -lz -lgomp 
 
 INCLUDEPATH = src/include libiberty/src/include libutils/src/include libutils/src/include libutils/src/private libfixwav/src/include /home/fab/Dev/dvda-author-dev/build/linux/dvda-author-full.build/include/FLAC /home/fab/Dev/dvda-author-dev/build/linux/dvda-author-full.build/include/libsoxconvert /home/fab/Dev/dvda-author-dev/build/linux/dvda-author-full.build/include 

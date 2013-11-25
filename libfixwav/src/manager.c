@@ -61,18 +61,18 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   if (!errno)
     {
-      printf( "\n\n--FIXWAV section %d--\n\n[MSG]  File size is %"PRIu64" bytes\n", section, (uint64_t)  size );
+      printf( "\n\n--FIXWAV section %d--\n\n"ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  File size is %"PRIu64" bytes\n", section, (uint64_t)  size );
     }
   else
     {
-      perror("\n[ERR]  Could not stat regular file\n");
+      perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not stat regular file\n");
       info->repair=FAIL;
       goto getout;
     }
 
   if (size == 0)
     {
-      printf( "%s\n", "[WAR]  File size is null; skipping ..." );
+      printf( "%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  File size is null; skipping ..." );
       info->repair=FAIL;
       goto getout;
     }
@@ -83,8 +83,8 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   if ( ((length=strlen(info->infile) - 3) <= 0) || ( strncmp( info->infile + length, "wav", 3 ) ))
     {
-      fprintf(stderr, "%s%s%s\n","[ERR]  Found file '", info->infile,"'");
-      fprintf(stderr, "%s\n", "[ERR]  The filename must end in 'wav'.\nExiting ..." );
+      fprintf(stderr, "%s%s%s\n",ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Found file '", info->infile,"'");
+      fprintf(stderr, "%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  The filename must end in 'wav'.\nExiting ..." );
       info->repair=FAIL;
       goto getout;
     }
@@ -95,7 +95,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   if ((info->prepend) && (info->in_place))
     {
-      printf( "%s\n",   "[ERR]  fixwav cannot prepend new header to raw data file in in-place mode.");
+      printf( "%s\n",   ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  fixwav cannot prepend new header to raw data file in in-place mode.");
       printf( "%s\n", "       use -o option instead. Press Y to exit...");
       if (isok())
         {
@@ -131,14 +131,14 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
    }
 
   if (adjust)
-    printf("[MSG]  Adjusted options are: \n       info->prepend=%d\n       info->in_place=%d\n       info->prune=%d\n       info->padding=%d\n       info->virtual=%d\n",
+    printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Adjusted options are: \n       info->prepend=%d\n       info->in_place=%d\n       info->prune=%d\n       info->padding=%d\n       info->virtual=%d\n",
               info->prepend, info->in_place, info->prune, info->padding, info->virtual);
 
 
 #ifdef RADICAL_FIXWAV_BEHAVIOUR
   if ((globals.silence) && ((header->sample_fq)*(header->bit_p_spl)*(header->channels) == 0))
     {
-      fprintf(stderr, "%s", "[ERR]  In silent mode, bit rate, sample rate and channels must be set\n[INF]  Correcting options...\n");
+      fprintf(stderr, "%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  In silent mode, bit rate, sample rate and channels must be set\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Correcting options...\n");
       globals.silence=0;
     }
 #endif
@@ -162,7 +162,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
             }
           else
             {
-              printf( "%s\n", "[ERR]  input and output paths are identical. Press Y to exit...");
+              printf( "%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  input and output paths are identical. Press Y to exit...");
               if (isok())
                 {
                   info->repair=FAIL;
@@ -174,7 +174,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
         {
           if (info->cautious)
           {
-              printf("%s", "[WAR]  in-place mode will change original file.\n");
+              printf("%s", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  in-place mode will change original file.\n");
               printf("%s\n",   "[INT]  Enter Y to continue, otherwise press any key + return to exit.");
 
               if (!isok())
@@ -184,7 +184,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
                 }
           }
 
-          printf("[INF]  Opening %s\n", info->outfile);
+          printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Opening %s\n", info->outfile);
 
           info->outfile=info->infile;
           outfile=infile=secure_open(info->infile, "rb+");
@@ -250,23 +250,23 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
   if  (info->prune)
     {
 
-      printf("%s\n", "[INF]  Pruning stage");
+      printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Pruning stage");
 
 
       switch (prune(infile, outfile, info, header))
         {
         case NO_PRUNE:
-          printf( "%s\n", "[INF]  Fixwav status 3:\n       File was not pruned (no ending zeros)." );
+          printf( "%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Fixwav status 3:\n       File was not pruned (no ending zeros)." );
 
           break;
 
         case BAD_DATA   :
-          printf( "%s\n", "[INF]  Fixwav status 3:\n       File was pruned." );
+          printf( "%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Fixwav status 3:\n       File was pruned." );
           info->prune=PRUNED;
           break;
 
         case FAIL       :
-          printf( "%s\n", "[INF]  Fixwav status 3:\n       Pruning failed." );
+          printf( "%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Fixwav status 3:\n       Pruning failed." );
           info->repair=FAIL;
           goto getout;
         }
@@ -283,17 +283,17 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
   switch (check_sample_count(info, header))
     {
     case GOOD_HEADER:
-      printf( "%s\n", "[MSG]  Fixwav status 1:\n       Sample count is correct. No changes made to existing file." );
+      printf( "%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Fixwav status 1:\n       Sample count is correct. No changes made to existing file." );
       break;
 
     case BAD_DATA   :
-      printf("%s\n",  "[MSG]  Fixwav status 1:\n       Sample count is corrupt." );
+      printf("%s\n",  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Fixwav status 1:\n       Sample count is corrupt." );
 
       if (info->padding)
       {
 
-          if (info->padbytes == 1) printf("%s", "[MSG]  File was padded with 1 byte for sample count.\n");
-          else  printf("[MSG]  File was padded with %d bytes for sample count.\n", info->padbytes);
+          if (info->padbytes == 1) printf("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  File was padded with 1 byte for sample count.\n");
+          else  printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  File was padded with %d bytes for sample count.\n", info->padbytes);
       }
 
       info->repair=BAD_DATA;
@@ -309,12 +309,12 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
   switch (check_evenness(info, header))
     {
     case GOOD_HEADER:
-      printf( "%s\n", "[MSG]  Fixwav status 2:\n       Even count of bytes." );
+      printf( "%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Fixwav status 2:\n       Even count of bytes." );
       break;
 
     case BAD_DATA   :
-      printf( "%s\n", "[MSG]  Fixwav status 2:\n       Byte count is odd." );
-      if (info->padding) printf( "%s\n", "[MSG]  File was padded with one byte." );
+      printf( "%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Fixwav status 2:\n       Byte count is odd." );
+      if (info->padding) printf( "%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  File was padded with one byte." );
       info->repair=BAD_DATA;
       break;
 
@@ -329,13 +329,13 @@ Checkout:
   switch (info->repair)
     {
     case	GOOD_HEADER:
-      printf( "%s\n", "[MSG]  Fixwav status 4:\n       WAVE header is correct. No changes made to existing header." );
+      printf( "%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Fixwav status 4:\n       WAVE header is correct. No changes made to existing header." );
       break;
 
     case	BAD_HEADER :
     case    BAD_DATA :
 
-      printf( "%s\n", "[MSG]  Fixwav status 4:\n       WAVE header corrupt." );
+      printf( "%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Fixwav status 4:\n       WAVE header corrupt." );
 
       uint8_t standard_header[HEADER_SIZE]={0};
 
@@ -349,7 +349,7 @@ Checkout:
               if ((info->repair=write_header(standard_header, outfile, info)) != FAIL)
                 {
 
-                  printf("%s\n", "[INF]  Header copy successful.\n");
+                  printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Header copy successful.\n");
                   if (fclose(outfile) != 0) return(NULL);
                   outfile=secure_open(info->outfile, "rb+");
                   if (globals.maxverbose) {
@@ -377,7 +377,7 @@ Checkout:
 
 
     case	FAIL       :
-      printf( "%s\n", "[MSG]  Fixwav status 4:\n       Failure at repair stage." );
+      printf( "%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Fixwav status 4:\n       Failure at repair stage." );
 
     }
 
@@ -388,14 +388,14 @@ getout:
   if (check_real_size(infile, outfile, info, header)) goto Checkout;
 
   if  (info->repair == BAD_HEADER)
-    printf( "%s\n", "[INF]  Fixwav status--summary:\n       HEADER chunk corrupt: fixed." );
+    printf( "%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Fixwav status--summary:\n       HEADER chunk corrupt: fixed." );
 
   if  (info->repair == BAD_DATA)
     {
       if (info->prune == PRUNED)
-        printf( "%s\n", "[INF]  Fixwav status--summary:\n       DATA chunk was adjusted after pruning." );
+        printf( "%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Fixwav status--summary:\n       DATA chunk was adjusted after pruning." );
       else
-        printf( "%s\n", "[INF]  Fixwav status--summary:\n       DATA chunk was corrupt: fixed." );
+        printf( "%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Fixwav status--summary:\n       DATA chunk was corrupt: fixed." );
     }
 
 
@@ -405,14 +405,14 @@ getout:
     {
       if ((infile == NULL) || (outfile == NULL) )
         {
-          fprintf(stderr, "%s\n", "[WAR]  File pointer is NULL.");
+          fprintf(stderr, "%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  File pointer is NULL.");
           return(NULL);
         }
 
       if ((fclose(infile) == EOF) || ((!info->in_place)  && (fclose(outfile) == EOF)) )
         {
 
-          fprintf(stderr, "%s\n", "[WAR]  fclose error: issues may arise.");
+          fprintf(stderr, "%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  fclose error: issues may arise.");
           return(NULL);
         }
     }
@@ -420,14 +420,14 @@ getout:
     {
       if (infile == NULL)
         {
-          fprintf(stderr, "%s\n", "[WAR]  File pointer is NULL.");
+          fprintf(stderr, "%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  File pointer is NULL.");
           return(NULL);
         }
 
       if (fclose(infile) == EOF)
         {
 
-          fprintf(stderr, "%s\n", "[WAR]  fclose error: issues may arise.");
+          fprintf(stderr, "%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  fclose error: issues may arise.");
           return(NULL);
         }
     }
@@ -438,7 +438,7 @@ getout:
       errno=0;
       unlink(info->outfile);
       if (errno)
-        printf("%s%s\n", "[ERR]  unlink: ", strerror(errno));
+        printf("%s%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  unlink: ", strerror(errno));
     }
 
   if (info->repair != FAIL)
