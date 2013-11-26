@@ -103,7 +103,7 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *
             *  into ntitletracks[group][numtitles[group]], and corresponding PTS length in titlelength[group][numtitles[group]] */
 
             // PATCH 13.11 on 12.06
-//****SUSPECTED REGRESSION***//
+
             if (track)
             {
               if ((files[group][track].samplerate != files[group][track-1].samplerate)
@@ -117,7 +117,6 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *
              }
              else
                 files[group][track].newtitle=1;
-//****END OF SUSPECTED REGRESSION***//
 
             // PATCH 02 Dec 09 && 12.06
             if (files[group][track].newtitle)
