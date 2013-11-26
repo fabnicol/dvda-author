@@ -253,8 +253,7 @@ static uint64_t offset_count;
     uint64_t frames_written;
 
     continuity_counter[0]=counter;
-    LPCM_header_length[0]=(header_length&0xff00)>>8;
-    LPCM_header_length[1]=header_length&0xff;
+    
 
     if (info->channels < 3)
     {
@@ -337,7 +336,7 @@ static uint64_t offset_count;
     channel_assignment = info->cga;
     
     int delta=header_length-1;
-    int gamma=8;
+    int gamma=0;
 
     if (pack_in_title==0)
     {
@@ -349,8 +348,8 @@ static uint64_t offset_count;
     {
         frames_written=0;
         bytes_written=0;
-        delta=0;
-        if (info->bitspersample == 24) gamma=10;
+        //delta=0;
+        if (info->bitspersample == 24) gamma=2;
     }
     else
     {
@@ -362,6 +361,9 @@ static uint64_t offset_count;
             frames_written++;
         }
      }
+    
+    LPCM_header_length[0]=(header_length&0xff00)>>8;
+    LPCM_header_length[1]=(header_length&0xff)-gamma;
         
     frame_offset=(frames_written*info->bytesperframe)-bytes_written+delta;
     first_access_unit_pointer[0]=(frame_offset&0xff00)>>8;
@@ -378,7 +380,7 @@ static uint64_t offset_count;
     offset_count += fwrite(unknown2,1,1,fp);
     offset_count += fwrite(&channel_assignment,1,1,fp);
     offset_count += fwrite(unknown3,1,1,fp);
-    offset_count += (header_length-8)*fwrite(zero,header_length-gamma,1,fp);
+    offset_count += (header_length-8-gamma)*fwrite(zero,header_length-8-gamma,1,fp);
     if (globals.maxverbose) EXPLAIN("%s%d%s\n","WRITE LPCM HEADER for ",info->bitspersample, " bits")
 }
 
@@ -501,32 +503,26 @@ static uint64_t offset_count;
     }
     else if (bytesinbuffer < info->lpcm_payload)   // Last packet in title
     {
-
+        int gamma=0;
+        if (info->bitspersample == 24) gamma=2;
         foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Writing last packet - pack=%lld, bytesinbuffer=%d\n",pack_in_title,bytesinbuffer);
         audio_bytes=bytesinbuffer;
         write_pack_header(fp,SCR);
-        write_audio_pes_header(fp,info->midpack_audiopesheaderquantity,0,PTS);
+        write_audio_pes_header(fp,info->lastpack_audiopesheaderquantity+audio_bytes,0,PTS);
         fprintf(stderr, "ftell=%lu\n", ftell(fp));
         write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,-1,cc);
         fprintf(stderr, "ftell=%lu\n", ftell(fp));
         offset_count+=fwrite(audio_buf,1,audio_bytes,fp);
-        int gamma=0;
-        if (info->bitspersample == 24) gamma=2;
         write_pes_padding(fp,2048-28-info->midpack_lpcm_headerquantity-4-audio_bytes+gamma);
-
     }
     else   			// A middle packet in the title.
     {
-
         audio_bytes=info->lpcm_payload;
         write_pack_header(fp,SCR);
-
         write_audio_pes_header(fp,info->midpack_audiopesheaderquantity,0,PTS);
         write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,pack_in_title,cc);
-
         offset_count+=fwrite(audio_buf,1,audio_bytes,fp);
         if (info->midpack_pes_padding > 0) write_pes_padding(fp,info->midpack_pes_padding);
-
     }
 
     if (cc == 0x1f)
