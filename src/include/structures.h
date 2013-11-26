@@ -67,6 +67,7 @@ typedef struct
     uint32_t SCRquantity;
     uint32_t firstpack_audiopesheaderquantity;
     uint32_t midpack_audiopesheaderquantity;
+    uint32_t lastpack_audiopesheaderquantity;
     uint32_t firstpack_lpcm_headerquantity;
     uint32_t midpack_lpcm_headerquantity;
     uint32_t firstpack_pes_padding;

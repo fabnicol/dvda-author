@@ -235,9 +235,9 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
     i=0x800;
     uint16_copy(&atsi[i],numtitles);
     // [200806] The number numtitles must be equal to number of audio zone titles plus video zone titles linked to. Gapless tracks are packed in the same title.
-    i+=2;
-    i+=2; // Padding
-    i+=4;
+    
+    // Padding
+    i+=8;
 
     for (j=0;j<numtitles;j++)
     {

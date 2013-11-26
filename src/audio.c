@@ -165,28 +165,25 @@ int calc_info(fileinfo_t* info)
 // assemble numbers for the various combinations
     short int table_index=(info->bitspersample == 24)? 1 : 0 ;
 
-    static uint16_t T[2][6][10]=     // 16-bit table
+    static uint16_t T[2][6][11]=     // 16-bit table
     {
-        {{	2,	2000, 16,  1984,  2010,	2028, 11, 16, 0, 0 },
-            {	4,	2000, 16,  1984,  2010,	2028, 11, 16, 0, 0 },
-            { 12,	2004, 24,  1980,  2010,	2028, 15, 12, 0, 0 },
-            { 16,	2000, 16,  1980,  2010,	2028, 11, 16, 0, 0 },
-            { 20,	2000, 20,  1980,  2010, 2028, 15, 16, 0, 0 },
-            { 24,	1992, 24,  1992, 1993,  2014, 10, 10, 17, 14}},
+         {{ 	2,	2000, 16,  1984,  2010,	2028, 22, 11, 16, 0, 0 },
+            {	4,	2000, 16,  1984,  2010,	2028, 22, 11, 16, 0, 0 },
+            { 12,	2004, 24,  1980,  2010,	2028, 22, 15, 12, 0, 0 },
+            { 16,	2000, 16,  1980,  2010,	2028, 22, 11, 16, 0, 0 },
+            { 20,	2000, 20,  1980,  2010, 2028, 22, 15, 16, 0, 0 },
+            { 24,	1992, 24,  1992, 1993,  2014, 22, 10, 10, 17, 14}},
         // 24-bit table
-        {{	6,	2004, 24,  1980,  2010,	2028, 15, 12,  0, 0 },
-            { 12,	2004, 24,  1980,  2010,	2028, 15, 12,  0, 0 },
-            { 18,	1998, 18,  1980,  2010,	2026, 15, 16,  0, 2 },
-            { 24,	1992, 24,  1968,  1993,	2014, 10, 10, 17, 14 },
-            { 30,	1980,  0,  1980,  2010, 2008, 15, 16,  0, 20 },
-            { 36,	1980,  0,  1980,  2010, 2008, 15, 16,  0, 20 }}
+        {{     6,	2004, 24,  1980,  2010,	2028, 22, 15, 12,  0, 0 },
+            { 12,	2004, 24,  1980,  2010,	2028, 22, 15, 12,  0, 0 },
+            { 18,	1998, 18,  1980,  2010,	2026, 22, 15, 16,  0, 2 },
+            { 24,	1992, 24,  1968,  1993,	2014, 22, 10, 10, 17, 14 },
+            { 30,	1980,  0,  1980,  2010, 2008, 22, 15, 16,  0, 20 },
+            { 36,	1980,  0,  1980,  2010, 2008, 22, 15, 16,  0, 20 }}
     };
 
 
-
-
 #define X T[table_index][info->channels-1]
-
 
     info->sampleunitsize=X[0];
     info->lpcm_payload=X[1];
@@ -194,10 +191,12 @@ int calc_info(fileinfo_t* info)
     info->SCRquantity=X[3];
     info->firstpack_audiopesheaderquantity=X[4];
     info->midpack_audiopesheaderquantity=X[5];
-    info->firstpack_lpcm_headerquantity=X[6];
-    info->midpack_lpcm_headerquantity=X[7];
-    info->firstpack_pes_padding=X[8];
-    info->midpack_pes_padding=X[9];
+    info->lastpack_audiopesheaderquantity=X[6];
+    info->firstpack_lpcm_headerquantity=X[7];
+    info->midpack_lpcm_headerquantity=X[8];
+    info->firstpack_pes_padding=X[9];
+    info->midpack_pes_padding=X[10];
+
 
 #undef X
 
