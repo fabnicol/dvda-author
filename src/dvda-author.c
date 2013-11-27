@@ -63,11 +63,11 @@ char *currentdir, *TEMPDIR, *LPLEXTEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
     lexer->nlines=MAX_LEXER_LINES;
 
     lexer->commandline=(char** ) calloc(MAX_LEXER_LINES, sizeof(char *));
-    if (lexer->commandline == NULL) perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  lexer\n");
+    if (lexer->commandline == NULL) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  lexer\n");
     for (i=0; i < MAX_LEXER_LINES; i++)
     {
         lexer->commandline[i]=(char* ) calloc(2*MAX_OPTION_LENGTH, sizeof(char));
-        if (lexer->commandline[i] == NULL) perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  lexer\n");
+        if (lexer->commandline[i] == NULL) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  lexer\n");
     }
 
     if (config_type == CONFIGURATION_FILE) check_settings_file();
@@ -78,7 +78,7 @@ char *currentdir, *TEMPDIR, *LPLEXTEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
 
 
     if (command == NULL)
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not allocate command-line structure")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not allocate command-line structure")
 
         command=command_line_parsing(lexer->nlines, lexer->commandline, command);
 
@@ -156,7 +156,7 @@ int main(int argc,  char* const argv[])
     int i=0;
     errno=0;
 
-    if (errno) perror(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Initial allocation\n");
+    if (errno) perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Initial allocation\n");
 
     lexer_t   lexer_init;
     lexer_t   *lexer=&lexer_init;
@@ -417,7 +417,7 @@ int main(int argc,  char* const argv[])
            }
            else
            {
-            foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Failed to parse project file %s\n       Exiting...\n", project_filepath);
+            foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Failed to parse project file %s\n       Exiting...\n", project_filepath);
             clean_exit(EXIT_FAILURE);
            }
            free(pstruct);

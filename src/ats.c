@@ -373,7 +373,9 @@ static uint64_t offset_count;
     offset_count += fwrite(continuity_counter,1,1,fp);
     offset_count += 2*fwrite(LPCM_header_length,2,1,fp);
     offset_count += 2*fwrite(first_access_unit_pointer,2,1,fp);
+    #ifdef DEBUG
     fprintf(stderr, "ftell=%lu\n", ftell(fp));
+    #endif
     offset_count += fwrite(unknown1,1,1,fp);
     offset_count += fwrite(sample_size,1,1,fp);
     offset_count += fwrite(sample_rate,1,1,fp);
@@ -509,9 +511,7 @@ static uint64_t offset_count;
         audio_bytes=bytesinbuffer;
         write_pack_header(fp,SCR);
         write_audio_pes_header(fp,info->lastpack_audiopesheaderquantity+audio_bytes,0,PTS);
-        fprintf(stderr, "ftell=%lu\n", ftell(fp));
         write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,-1,cc);
-        fprintf(stderr, "ftell=%lu\n", ftell(fp));
         offset_count+=fwrite(audio_buf,1,audio_bytes,fp);
         write_pes_padding(fp,2048-28-info->midpack_lpcm_headerquantity-4-audio_bytes+gamma);
     }
@@ -556,7 +556,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
     /* Open the first file and initialise the input audio buffer */
     if (audio_open(&files[i])!=0)
     {
-        foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not open %s\n", files[i].filename);
+        foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open %s\n", files[i].filename);
         EXIT_ON_RUNTIME_ERROR
     }
 
@@ -575,7 +575,9 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
         if (bytesinbuf >= lpcm_payload)
         {
             //pack_in_file is not used in write_pes_packet
+            #ifdef DEBUG
             fprintf(stderr, "%llu\n", offset_count);
+            #endif
             n=write_pes_packet(fpout,&files[i],audio_buf,bytesinbuf,pack_in_title);
 
             memmove(audio_buf,&audio_buf[n],bytesinbuf-n);
@@ -610,8 +612,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                     /* If the current track is a different audio format, we must start a new title. */
                     if (files[i].newtitle)
                     {
-                        fprintf(stderr, "%llu\n", offset_count);
-                        
+                                               
                         n=write_pes_packet(fpout,&files[i-1],audio_buf,bytesinbuf,pack_in_title); // Empty audio buffer.
                         pack++;
                         bytesinbuf=0;
@@ -628,7 +629,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                     files[i].first_sector=files[i-1].last_sector+1;
                     if (audio_open(&files[i])!=0)
                     {
-                        foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not open %s\n",files[i].filename);
+                        foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open %s\n",files[i].filename);
                         EXIT_ON_RUNTIME_ERROR
                     }
 
@@ -645,7 +646,6 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                     }
                     else
                     {
-                        fprintf(stderr, "%llu\n", offset_count);
                         n=write_pes_packet(fpout,&files[i-1],audio_buf,bytesinbuf,pack_in_title); // Empty audio buffer.
                         bytesinbuf=0;
                         pack++;

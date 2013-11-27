@@ -80,7 +80,7 @@ uint64_t read_file_size(FILE* fp, TCHAR* filename)
 
      if (fclose(fp) == EOF)
      {
-         printf(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not close file %s", filename);
+         printf(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not close file %s", filename);
          return(0);
      }
 
@@ -88,7 +88,7 @@ uint64_t read_file_size(FILE* fp, TCHAR* filename)
 
     if ((fp=fopen((char *) filename, "rb+")) == NULL)
     {
-        printf("%s%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not open ", (char *) filename);
+        printf("%s%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open ", (char *) filename);
         return(0);
     }
 

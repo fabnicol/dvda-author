@@ -57,7 +57,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define DEFAULT_DVDA_AUTHOR_PROJECT_FILENAME "dvda-author.dap"
 
 #ifndef _GNU_SOURCE
-#error "[ERR]  This version uses GNU extensions to C: try to compile again with #define _GNU_SOURCE"
+#error ANSI_COLOR_RED"\n[ERR]  This version uses GNU extensions to C: try to compile again with #define _GNU_SOURCE"
 #else
 #if !defined(LONG_OPTIONS) && !defined(SHORT_OPTIONS_ONLY)
 #define LONG_OPTIONS
@@ -65,7 +65,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 
 
-#define PROGRAM "DVD-A author"
+#define PROGRAM ANSI_COLOR_RED"DVD-A author"ANSI_COLOR_RESET
 
 /* filesystem constants expressed in sectors */
 #define DEFAULT_ACCESS_RIGHTS 0755
@@ -423,8 +423,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define PAL_Y 576   // ntsc 480
 #define NTSC_Y 480
 
-#define INFO_EXECTIME1  "[MSG]  User execution time: %u minutes %u seconds %u microseconds\n"
-#define INFO_EXECTIME2  "[MSG]  System execution time: %u minutes %u seconds %u microseconds\n"
+#define INFO_EXECTIME1  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  User execution time: %u minutes %u seconds %u microseconds\n"
+#define INFO_EXECTIME2  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  System execution time: %u minutes %u seconds %u microseconds\n"
 
 #ifndef LOCALE
 #define LOCALE "C"

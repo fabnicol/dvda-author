@@ -45,7 +45,7 @@ int readHeader(FILE * infile, WaveHeader *header)
 
   if ( count != 1)
     {
-      fprintf( stderr, ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Failed to read header from input file\n       Size is: %d, read: %d bytes\n", header->header_size, count );
+      fprintf( stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Failed to read header from input file\n       Size is: %d, read: %d bytes\n", header->header_size, count );
 
       return(FAIL);
     }

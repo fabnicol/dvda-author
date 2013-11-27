@@ -139,7 +139,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
                     break;
 
                 default:
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Unsupported bit rate")
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Unsupported bit rate")
                 }
 
             }
@@ -160,7 +160,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
                     break;
 
                 default:
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Unsupported bit rate")
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Unsupported bit rate")
 
                 }
             }
@@ -193,7 +193,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
                     samg[i]=0xaa;
                     break;
                 default:
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Unsupported bit rate")
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Unsupported bit rate")
 
                 }
             }
@@ -222,7 +222,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
                     samg[i]=0xaf;
                     break;
                 default:
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Unsupported bit rate")
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Unsupported bit rate")
                 }
             }
             i++;
@@ -249,7 +249,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
                 samg[i]=20;
                 break;
             default:
-                foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  samg: Unsupported number of channels (%d)\n",files[g][j].channels);
+                foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  samg: Unsupported number of channels (%d)\n",files[g][j].channels);
                 clean_exit(EXIT_FAILURE);
             }
 
