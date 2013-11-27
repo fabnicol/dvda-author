@@ -83,7 +83,7 @@ void parse_double_entry_command_line(char* input_string, char**** DOUBLE_ARRAY, 
             if (errno) 
             {
                 fprintf(stderr, 
-                        ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Track %s is not DVD-VIDEO compliant\n       Exiting...\n", 
+                        ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Track %s is not DVD-VIDEO compliant\n       Exiting...\n", 
                         (*DOUBLE_ARRAY)[titleset][track]);
                 EXIT_ON_RUNTIME_ERROR 
             }
@@ -341,7 +341,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                             if (optarg[0] == '-')
                             {
                                 globals.logfile=0;
-                                foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Enter a log path next time!");
+                                foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Enter a log path next time!");
                                 exit(EXIT_FAILURE);
                             }
                             else
@@ -554,7 +554,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Input directory is: ", 	optarg);
             
             if ((dir=opendir(optarg)) == NULL)
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Input directory could not be opened")
+                EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Input directory could not be opened")
                         
                         change_directory(globals.settings.indir);
             audiodir=parse_directory(dir, ntracks, n_g_groups, 0, files_dummy);
@@ -564,7 +564,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             memmove(ntracks, audiodir.ntracks, 9*sizeof(uint8_t));
             
             if (closedir(dir) == -1)
-                foutput( "%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Impossible to close dir");
+                foutput( "%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Impossible to close dir");
             
             change_directory(globals.settings.workdir);
             
@@ -607,7 +607,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
             if (nvideolinking_groups == MAXIMUM_LINKED_VTS)
             {
-                foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Error: there must be a maximum of %d video linking groups\n      Ignoring additional links...\n\n", MAXIMUM_LINKED_VTS);
+                foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Error: there must be a maximum of %d video linking groups\n      Ignoring additional links...\n\n", MAXIMUM_LINKED_VTS);
                 break;
             }
             
@@ -615,7 +615,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             VTSI_rank[nvideolinking_groups]=atoi(optarg);
             
             if   (VTSI_rank[nvideolinking_groups] > 99)
-                EXIT_ON_RUNTIME_ERROR_VERBOSE( ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  There must be a maximum of 99 video titlesets in video zone. Try again...\n\n")
+                EXIT_ON_RUNTIME_ERROR_VERBOSE( ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  There must be a maximum of 99 video titlesets in video zone. Try again...\n\n")
                         
                         if (nvideolinking_groups == 0)
                         maximum_VTSI_rank=VTSI_rank[nvideolinking_groups];
@@ -747,7 +747,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 
                 if (check_cga_assignment(cgaint))
                     files[ngroups_scan][m].cga=cgaint;
-                else if (globals.debugging) foutput("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Found illegal channel group assignement value, using standard settings.");
+                else if (globals.debugging) foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Found illegal channel group assignement value, using standard settings.");
             }
             k+=m-1;
         }
@@ -827,7 +827,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
         case 'i' :
             if ((dir=opendir(optarg)) == NULL)
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Input directory could not be opened")
+                EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Input directory could not be opened")
                         
                         change_directory(globals.settings.indir);
             
@@ -836,7 +836,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             change_directory(globals.settings.workdir);
             
             if (closedir(dir) == -1)
-                foutput( "%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Impossible to close dir");
+                foutput( "%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Impossible to close dir");
             
             /* all-important, otherwise irrelevant EXIT_ON_RUNTIME_ERROR will be generated*/
             
@@ -850,11 +850,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             switch (errmsg)
             {
             case   EINVAL :
-                foutput( "%s\n",  ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Incorrect offset value");
+                foutput( "%s\n",  ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Incorrect offset value");
                 clean_exit(EXIT_SUCCESS);
                 break;
             case   ERANGE :
-                EXIT_ON_RUNTIME_ERROR_VERBOSE( ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Offset range--overflowing LONG INT.");
+                EXIT_ON_RUNTIME_ERROR_VERBOSE( ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Offset range--overflowing LONG INT.");
                 break;
             }
             errno=0;
@@ -863,7 +863,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Using start sector: %"PRId32"\n", startsector);
             else
             {
-                foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Illegal negative start sector of %"PRId32"...falling back on automatic start sector\n", startsector);
+                foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Illegal negative start sector of %"PRId32"...falling back on automatic start sector\n", startsector);
                 startsector=-1;
             }
             
@@ -894,7 +894,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             nplaygroups++;
             if (nplaygroups > 8)
             {
-                if (globals.debugging) foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  There cannot be more than 9 copy groups. Skipping...");
+                if (globals.debugging) foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  There cannot be more than 9 copy groups. Skipping...");
                 break;
             }
             playtitleset[nplaygroups]=atoi(optarg);
@@ -1172,7 +1172,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  background mpg video: ", optarg);
             if (img->backgroundmpg == NULL)
                 img->backgroundmpg=calloc(1, sizeof(char*));
-            if (img->backgroundmpg == NULL) perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  img->backgroundmpg\n");
+            if (img->backgroundmpg == NULL) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  img->backgroundmpg\n");
             
             img->backgroundmpg=fn_strtok(optarg, ',' , img->backgroundmpg, 0,NULL,NULL);
             
@@ -1191,7 +1191,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             sec=strtok(NULL, ":");
             if ((h == NULL) || (min == NULL) || (sec == NULL))
             {
-                foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  format must be --duration hh:mm:ss");
+                foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  format must be --duration hh:mm:ss");
                 break;
             }
             img->h=atoi(h);
@@ -1211,7 +1211,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 img->highlightcolor_palette=strdup(strtok(NULL, ":"));
                 img->selectfgcolor_palette=strdup(strtok(NULL, ":"));
                 if ((img->selectfgcolor_palette == NULL)|| (img->highlightcolor_palette ==NULL) ||  (img->textcolor_palette ==NULL))
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Color chain is illegal: enter text:highlight:select color separated by a colon");
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Color chain is illegal: enter text:highlight:select color separated by a colon");
                 errno=0;
                 if (img->textcolor_palette) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Top menu palette text color: %s %lx\n", img->textcolor_palette, strtoul(img->textcolor_palette,NULL,16));
                 //if (img->textcolor_palette) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Top menu palette background color: %s %lx\n", img->bgcolor_palette, strtoul(img->bgcolor_palette,NULL,16));
@@ -1220,16 +1220,16 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 
                 if (errno == ERANGE)
                 {
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  At least one YCrCb coding overflows: check switch --palette")
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  At least one YCrCb coding overflows: check switch --palette")
                 }
                 else
                 {
                     if (errno)
-                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Check switch --palette")
+                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Check switch --palette")
                 }
             }
             else
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Color chain could not be allocated");
+                EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Color chain could not be allocated");
             
             break;
             
@@ -1252,7 +1252,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 img->highlightcolor_pic=strdup(strtok(NULL, ":"));
                 img->selectfgcolor_pic=strdup(strtok(NULL, ":"));
                 if ((img->selectfgcolor_pic == NULL)|| (img->highlightcolor_pic ==NULL) || (img->bgcolor_pic == NULL) || (img->textcolor_pic ==NULL))
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Picture color chain is illegal: enter text,background,highlight,select color\n        separated by a colon, with rgb components by commas");
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Picture color chain is illegal: enter text,background,highlight,select color\n        separated by a colon, with rgb components by commas");
                 if (img->textcolor_pic) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Top menu text color: rgb(%s)\n", img->textcolor_pic);
                 if (img->bgcolor_pic) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Top menu background color: rgb(%s)\n", img->bgcolor_pic);
                 if (img->highlightcolor_pic) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Top menu highlight color: rgb(%s)\n", img->highlightcolor_pic);
@@ -1260,7 +1260,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 
             }
             else
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Picture color chain could not be allocated");
+                EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Picture color chain could not be allocated");
             
             if ((strcmp(img->selectfgcolor_pic, img->highlightcolor_pic) == 0) || (strcmp(img->textcolor_pic, img->highlightcolor_pic) == 0) || (strcmp(img->textcolor_pic, img->selectfgcolor_pic) == 0))
             {
@@ -1300,7 +1300,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 img->activehighlightcolor_palette=strdup(strtok(NULL, ":"));
                 img->activeselectfgcolor_palette=strdup(strtok(NULL, ":"));
                 if ((img->activeselectfgcolor_palette == NULL)|| (img->activehighlightcolor_palette ==NULL) || (img->activebgcolor_palette == NULL) || (img->activetextcolor_palette ==NULL))
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Active picture color chain is illegal: enter text,background,highlight,select color\n        separated by a colon, with rgb components by commas");
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Active picture color chain is illegal: enter text,background,highlight,select color\n        separated by a colon, with rgb components by commas");
                 if (img->activetextcolor_palette) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Active menu text color: rgb(%s)\n", img->activetextcolor_palette);
                 if (img->activebgcolor_palette) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Active menu background color: rgb(%s)\n", img->activebgcolor_palette);
                 if (img->activehighlightcolor_palette) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Active menu highlight color: rgb(%s)\n", img->activehighlightcolor_palette);
@@ -1308,7 +1308,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 
             }
             else
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Active picture color chain could not be allocated");
+                EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Active picture color chain could not be allocated");
             
             if ((strcmp(img->activeselectfgcolor_palette, img->activehighlightcolor_palette) == 0) || (strcmp(img->activetextcolor_palette, img->activehighlightcolor_palette) == 0) || (strcmp(img->activetextcolor_palette, img->activeselectfgcolor_palette) == 0))
             {
@@ -1354,7 +1354,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 img->pointsize=(int8_t) atoi(strtok(NULL, ","));
                 img->fontwidth=(int8_t) atoi(strtok(NULL, ","));
                 if ((img->textfont == NULL)|| (img->pointsize <1) || (img->fontwidth < 1) )
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Font chain is illegal: enter font,font size,font width (width in pixels for size=10)");
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Font chain is illegal: enter font,font size,font width (width in pixels for size=10)");
                 
                 if (img->textfont) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Font: %s\n", img->textfont);
                 foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Point size: %d\n", img->pointsize);
@@ -1420,7 +1420,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
             else if ((strcmp(optarg,"pal") != 0) && (strcmp(optarg,"secam") != 0))
             {
-                foutput("%s\n",ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Only options are 'ntsc', 'secam' or (default) 'pal'.");
+                foutput("%s\n",ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Only options are 'ntsc', 'secam' or (default) 'pal'.");
                 clean_exit(EXIT_FAILURE);
             }
             
@@ -1438,7 +1438,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             else if (optarg[0] == '4')
                 img->aspectratio=strdup("2.21:1");
             else
-                foutput("%s\n",ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Only aspect ratios are 1 (1:1), 2 (4:3), 3 (16:9) or 4 (2.21:1).");
+                foutput("%s\n",ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Only aspect ratios are 1 (1:1), 2 (4:3), 3 (16:9) or 4 (2.21:1).");
             foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Using aspect ratio: %s\n", img->aspectratio);
             break;
             
@@ -1524,7 +1524,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if (refresh_tempdir)
             {
                 clean_directory(globals.settings.tempdir);
-                if (errno) perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  clean");
+                if (errno) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  clean");
             }
             errno=secure_mkdir(globals.settings.tempdir, globals.access_rights);
             errno += secure_mkdir(globals.settings.lplextempdir, globals.access_rights);
@@ -1532,7 +1532,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             {
                 if (errno != EEXIST) 
                 {
-                    perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not create temporary directory\n");
+                    perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not create temporary directory\n");
                 }
             }
             else if (refresh_tempdir)
@@ -1574,7 +1574,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 #if !HAVE_mpeg2enc || !HAVE_mplex  || !HAVE_jpeg2yuv
     if (globals.topmenu <= RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR)
     {
-        foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  You need mplex, mpeg2enc and jpeg2yuv to author\n       a background screen, please install these applications.");
+        foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  You need mplex, mpeg2enc and jpeg2yuv to author\n       a background screen, please install these applications.");
         foutput("%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Continuing without menu authoring...");
         globals.topmenu=NO_MENU;
     }
@@ -1619,7 +1619,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
             if (img->backgroundmpg)
             {
-                foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Background mpg file already specified, skipping...");
+                foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Background mpg file already specified, skipping...");
                 break;
             }
             
@@ -1658,7 +1658,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             
 #else
-            foutput("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+            foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
 #endif
             break;
             
@@ -1674,7 +1674,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
             if (!optarg)
             {
-                foutput("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  No audio valid file paths were given on command line\n");
+                foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  No audio valid file paths were given on command line\n");
                 EXIT_ON_RUNTIME_ERROR
             }
             else
@@ -1685,7 +1685,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
             
 #else
-            foutput("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+            foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
 #endif
             break;
             
@@ -1701,7 +1701,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
             if (!optarg)
             {
-                foutput("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  No audio file paths were given on command line\n");
+                foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  No audio file paths were given on command line\n");
                 EXIT_ON_RUNTIME_ERROR
             }
             else
@@ -1711,7 +1711,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
             
 #else
-            foutput("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+            foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
 #endif
             break;
             
@@ -1723,7 +1723,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             dvdv_import_flag=1;
             
 #else
-            foutput("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+            foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
 #endif
             break;
             
@@ -1733,7 +1733,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Make mirror: import DVD-Audio tracks into DVD-Video zone\n       and resample them if necessary.");
             mirror_flag=1;
 #else
-            foutput("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+            foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
 #endif
             break;
             
@@ -1744,7 +1744,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             mirror_flag=1;
             if (strcmp(optarg, "high") == 0) mirror_st_flag=HIGH;
 #else
-            foutput("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+            foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
 #endif
             break;
             
@@ -1754,7 +1754,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Mirroring strategy: %s\n","high");
             hybridate_flag=1;
 #else
-            foutput("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+            foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
 #endif
             break;
             
@@ -1764,7 +1764,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Mirroring strategy: %s\n","high");
             full_hybridate_flag=1;
 #else
-            foutput("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+            foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
 #endif
             break;
             
@@ -1805,7 +1805,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
             if (img->backgroundmpg)
             {
-                foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Background mpg file already specified, skipping...");
+                foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Background mpg file already specified, skipping...");
                 break;
             }
             foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  background jpg file(s) for generating mpg video: ", optarg);
@@ -1840,7 +1840,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             len2=strlen(img->backgroundpic[0]);
             if  ((img->blankscreen[len-1] != 'g') || (img->blankscreen[len-2] != 'n') || (img->blankscreen[len-3] != 'p'))
             {
-                foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  You should use a .png background picture... exiting.");
+                foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  You should use a .png background picture... exiting.");
                 clean_exit(EXIT_FAILURE);
             }
             // note that within a switch, some compilers do not authorize char dest[len+1]
@@ -1958,7 +1958,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         change_directory(globals.settings.datadir);
         snprintf(cl, 500, "%s %s %s", convert, img->blankscreen , img->backgroundpic[0]);
         if (globals.veryverbose) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Launching convert with command line %s\n",  cl);
-        if (system(win32quote(cl)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET" System command failed")
+        if (system(win32quote(cl)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" System command failed")
         fflush(NULL);
     }
     
@@ -2031,7 +2031,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                || ( !dvdv_tracks_given && !mirror_flag )))) 
     {  
         fprintf(stderr, "ndvdvslides[0]=%d\n", ndvdvslides[0]);
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Incoherent command line: slides requested for Lplex"J"...yet no audio tracks or slides given.")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Incoherent command line: slides requested for Lplex"J"...yet no audio tracks or slides given.")
     }
     
     if (dvdv_tracks_given)
@@ -2039,13 +2039,13 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         
         if (ndvdvtitleset1 != ndvdvtitleset2)
         {
-            fprintf(stderr, ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Titleset count for slides (%d) and tracks (%d) is not the same.\n Fix the issue and relaunch.\n", ndvdvtitleset1, ndvdvtitleset2);
+            fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Titleset count for slides (%d) and tracks (%d) is not the same.\n Fix the issue and relaunch.\n", ndvdvtitleset1, ndvdvtitleset2);
             EXIT_ON_RUNTIME_ERROR
         }
     }
     
     if ( dvdv_import_flag && mirror_flag )
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  You should not use --mirror along with --import-dvdv: do you really want to resample?\n       Exiting...\n");
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  You should not use --mirror along with --import-dvdv: do you really want to resample?\n       Exiting...\n");
     
     switch (globals.topmenu)
     {
@@ -2065,7 +2065,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 sprintf(name, "%s%d%s", "bgpic", u,".jpg");
                 dest=copy_file2dir_rename(img->backgroundpic[0], globals.settings.tempdir, name);
             }
-        if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Failed to copy background .jpg pictures to temporary directory.")
+        if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Failed to copy background .jpg pictures to temporary directory.")
                 free(dest);
         
     case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
@@ -2073,7 +2073,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         
         dest=copy_file2dir(img->blankscreen, globals.settings.tempdir);
         
-        if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Failed to copy background .png blankscreen to temporary directory.")
+        if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Failed to copy background .png blankscreen to temporary directory.")
                 free(dest);
         
         if (!menupic_input_coherence_test)
@@ -2148,24 +2148,24 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         img->npics =(uint16_t*) calloc(totntracks, sizeof(uint16_t));
         if (img->npics == NULL)
         {
-            perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET" img->npics");
+            perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" img->npics");
             goto standard_checks;
         }
         if (pics_per_track)
             w=arraylength(pics_per_track);
         else
         {
-            perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  pics_per_track");
+            perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  pics_per_track");
             goto standard_checks;
         }
         if (w > totntracks)
         {
-            fprintf(stderr, "\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Too many tracks on --stillpics: %d\n",w);
+            fprintf(stderr, "\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Too many tracks on --stillpics: %d\n",w);
             goto standard_checks;
         }
         else if (w < totntracks)
         {
-            fprintf(stderr, "\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  You forgot at least one track on --stillpics:\n  total number of tracks:%d whilst pic string array has length %d\n", totntracks, w);
+            fprintf(stderr, "\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  You forgot at least one track on --stillpics:\n  total number of tracks:%d whilst pic string array has length %d\n", totntracks, w);
             goto standard_checks;
         }
         
@@ -2197,7 +2197,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
             else
             {
-                perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  picks_per_track_double_array");
+                perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  picks_per_track_double_array");
                 goto standard_checks;
             }
             
@@ -2208,7 +2208,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
             if (img->npics[k] > 99)
             {
-                foutput("%s", "\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  The maximum number of pics per track is 99.\n");
+                foutput("%s", "\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  The maximum number of pics per track is 99.\n");
                 EXIT_ON_RUNTIME_ERROR_VERBOSE("Exiting...");
             }
         }
@@ -2217,7 +2217,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 img->stillpicvobsize=(uint32_t*) calloc(DIM, sizeof(uint32_t));
         if (img->stillpicvobsize == NULL)
         {
-            perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  still pic vob size array");
+            perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  still pic vob size array");
             goto standard_checks;
         }
         img->count=DIM;
@@ -2285,13 +2285,13 @@ standard_checks:
     
     if (nplaygroups > ngroups-nvideolinking_groups)
     {
-        if (globals.debugging) foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  There cannot be more copy groups than audio groups. Limiting to %d groups...\n", ngroups-nvideolinking_groups);
+        if (globals.debugging) foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  There cannot be more copy groups than audio groups. Limiting to %d groups...\n", ngroups-nvideolinking_groups);
         nplaygroups=ngroups-nvideolinking_groups;
     }
     
     if ( nplaygroups+ngroups > 8)
     {
-        if (globals.debugging) foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  There cannot be more copy groups than audio groups. Limiting to 9 groups...");
+        if (globals.debugging) foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  There cannot be more copy groups than audio groups. Limiting to 9 groups...");
         nplaygroups=MAX(0, 9-ngroups);
     }
     
@@ -2394,7 +2394,7 @@ standard_checks:
         globals.videozone=0;
         
         if (ndvdvtitleset1 == 0)
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  You requested hybridation yet no DVD-Video standard-compliant\n       audio file was found on input.\n")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  You requested hybridation yet no DVD-Video standard-compliant\n       audio file was found on input.\n")
         
         launch_lplex_hybridate(img, 
                                "dvd", 
@@ -2470,7 +2470,7 @@ standard_checks:
                     int size=strlen(command->files[group][track].filename);
                     if (strcmp(command->files[group][track].filename+size-4, ".wav") !=0)
                     {
-                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Automatic mirroring is only supported for wav files.")
+                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Automatic mirroring is only supported for wav files.")
                     }
                     
                     char newpath[size+4];
@@ -2673,13 +2673,13 @@ void ats2wav_parsing(const char * arg, extractlist* extract, char* player)
     chain=strdup(arg);
     globals.settings.indir=calloc(strlen(arg)+1+9, sizeof(char));
     
-    if (globals.settings.indir == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not allocate global settings")
+    if (globals.settings.indir == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not allocate global settings")
             
             sprintf(globals.settings.indir, "%s"SEPARATOR"AUDIO_TS", chain);
     
     change_directory(globals.settings.indir);
     if ((dir=opendir(globals.settings.indir)) == NULL)
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not open output directory")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open output directory")
                 
                 foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Extracting audio from %s\n", globals.settings.indir);
     
@@ -2694,7 +2694,7 @@ void ats2wav_parsing(const char * arg, extractlist* extract, char* player)
         parse_disk(dir, globals.access_rights, NULL, player);
     
     if (closedir(dir) == -1)
-        foutput( "%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Impossible to close dir");
+        foutput( "%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Impossible to close dir");
     
     /* all-important, otherwise irrelevant EXIT_ON_RUNTIME_ERROR will be generated*/
     
@@ -2715,11 +2715,11 @@ void still_options_parsing(char *ssopt, pic* img)
     static uint32_t rank, temp, lag;
     
     if (img->options == NULL) img->options=calloc(img->count, sizeof(stilloptions*));
-    if (img->options == NULL) perror(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  still options parsing");
+    if (img->options == NULL) perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  still options parsing");
     for (k=0; k<img->count; k++)
     {
         img->options[k]=calloc(1, sizeof(stilloptions));
-        if (img->options[k] == NULL) perror(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  still options parsing");
+        if (img->options[k] == NULL) perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  still options parsing");
     }
     // TODO: free them
     

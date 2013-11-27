@@ -118,7 +118,7 @@ FLAC__StreamDecoderWriteStatus flac_write_callback(const FLAC__StreamDecoder *de
     uint32_t i;
 
     if ((info->audio->n+data_size) > sizeof(info->audio->buf))
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Internal error - FLAC buffer overflown")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Internal error - FLAC buffer overflown")
 
 
         // Store data in interim buffer in WAV format - i.e. Little-endian interleaved samples
@@ -145,7 +145,7 @@ FLAC__StreamDecoderWriteStatus flac_write_callback(const FLAC__StreamDecoder *de
 void flac_error_callback(const FLAC__StreamDecoder *dec,
                          FLAC__StreamDecoderErrorStatus status, void *data)
 {
-    foutput("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  FLAC error callback called.\n");
+    foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  FLAC error callback called.\n");
 }
 
 #endif
@@ -155,7 +155,7 @@ int calc_info(fileinfo_t* info)
 //PATCH: provided for null dividers.
     if ((info->samplerate)*(info->channels) == 0)
     {
-        foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Null audio characteristics");
+        foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Null audio characteristics");
         return(NO_AFMT_FOUND);
     }
 
@@ -284,7 +284,7 @@ int flac_getinfo(fileinfo_t* info)
     }
     else
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Fatal error - could not create FLAC OR OGG FLAC decoder\n")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Fatal error - could not create FLAC OR OGG FLAC decoder\n")
     }
 
 
@@ -292,14 +292,14 @@ int flac_getinfo(fileinfo_t* info)
     {
 
         FLAC__stream_decoder_delete(flac);
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Failed to initialise FLAC decoder\n");
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Failed to initialise FLAC decoder\n");
     }
 
     if (!FLAC__stream_decoder_process_until_end_of_metadata(flac))
     {
 
         FLAC__stream_decoder_delete(flac);
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Failed to read metadata from FLAC file\n");
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Failed to read metadata from FLAC file\n");
     }
     FLAC__stream_decoder_finish(flac);
 
@@ -326,7 +326,7 @@ int fixwav_repair(fileinfo_t *info)
 
     if (temp == NULL)
     {
-        foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not allocate fixwav filename string");
+        foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not allocate fixwav filename string");
         return(NO_AFMT_FOUND);
     }
 
@@ -440,7 +440,7 @@ char* replace_file_extension(char * filename)
 
     if (1 == s-l)
     {
-        foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  To convert to WAV SoX.needs to indentify audio format and filename.\n       Use extension of type '.format'\n");
+        foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  To convert to WAV SoX.needs to indentify audio format and filename.\n       Use extension of type '.format'\n");
         if (globals.debugging)  foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Skipping file.\n ");
         return(NULL);
     }
@@ -472,7 +472,7 @@ int launch_sox(char** filename)
 
     if (new_wav_name == NULL)
     {
-        perror(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  SoX string suffix was not allocted");
+        perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  SoX string suffix was not allocted");
         return(NO_AFMT_FOUND);
     }
 
@@ -587,9 +587,9 @@ int wav_getinfo(fileinfo_t* info)
 
     if (info->filename == NULL)
     {
-      foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not open audio file: filepath pointer is null");
+      foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open audio file: filepath pointer is null");
       if (fp == NULL)
-         foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not open audio file %s: pointer is null\n", info->filename);
+         foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open audio file %s: pointer is null\n", info->filename);
          EXIT_ON_RUNTIME_ERROR
     }
     else
@@ -624,7 +624,7 @@ int wav_getinfo(fileinfo_t* info)
 
     if (info->header_size > (span=fread(header, 1, info->header_size,fp)))
     {
-        foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
+        foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
         perror("       ");
         clean_exit(EXIT_FAILURE);
     }
@@ -786,7 +786,7 @@ int audio_open(fileinfo_t* info)
                         foutput("%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  OGG_FLAC decoder was initialized");
                 }
                 else
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Type of file unknown")
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Type of file unknown")
 
 
 
@@ -801,39 +801,39 @@ int audio_open(fileinfo_t* info)
                             switch (result)
                             {
                             case   FLAC__STREAM_DECODER_INIT_STATUS_UNSUPPORTED_CONTAINER  :
-                                foutput ("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  The library was not compiled with support\n       for the given container format. ");
+                                foutput ("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  The library was not compiled with support\n       for the given container format. ");
                                 break;
                             case   FLAC__STREAM_DECODER_INIT_STATUS_INVALID_CALLBACKS :
-                                foutput("%s\n",  ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  A required callback was not supplied.");
+                                foutput("%s\n",  ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  A required callback was not supplied.");
                                 break;
                             case   FLAC__STREAM_DECODER_INIT_STATUS_MEMORY_ALLOCATION_ERROR :
-                                foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  An error occurred allocating memory.");
+                                foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  An error occurred allocating memory.");
                                 break;
                             case   FLAC__STREAM_DECODER_INIT_STATUS_ERROR_OPENING_FILE :
-                                foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  fopen() failed in FLAC__stream_decoder_init_file()\n       or FLAC__stream_decoder_init_ogg_file(). ");
+                                foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  fopen() failed in FLAC__stream_decoder_init_file()\n       or FLAC__stream_decoder_init_ogg_file(). ");
                                 break;
                             case   FLAC__STREAM_DECODER_INIT_STATUS_ALREADY_INITIALIZED :
-                                foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  FLAC__stream_decoder_init_*() was called when the decoder was already initialized,\n       usually because FLAC__stream_decoder_finish() was not called.");
+                                foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  FLAC__stream_decoder_init_*() was called when the decoder was already initialized,\n       usually because FLAC__stream_decoder_finish() was not called.");
                                 break;
                             default :
-                                foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Error unknown by FLAC API.");
+                                foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Error unknown by FLAC API.");
                             }
 
-                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Failed to initialise FLAC decoder\n");
+                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Failed to initialise FLAC decoder\n");
                     }
 
 
             if (!FLAC__stream_decoder_process_until_end_of_metadata(info->audio->flac))
             {
                 FLAC__stream_decoder_delete(info->audio->flac);
-                EXIT_ON_RUNTIME_ERROR_VERBOSE( ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Failed to read metadata from FLAC file\n")
+                EXIT_ON_RUNTIME_ERROR_VERBOSE( ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Failed to read metadata from FLAC file\n")
 
             }
 
 
 
         }
-        else    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not initialise FLAC decoder")
+        else    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not initialise FLAC decoder")
 
         }
 #endif
@@ -983,7 +983,7 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
     //PATCH: provided for null audio characteristics, to ensure non-zero divider
 
     if (info->sampleunitsize == 0)
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Sample unit size is null");
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Sample unit size is null");
 
     count-= count%info->sampleunitsize;
     if (count%info->sampleunitsize)
@@ -1067,7 +1067,7 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
             result=FLAC__stream_decoder_process_single(info->audio->flac);
 
             if (result==0)
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Fatal error decoding FLAC file\n")
+                EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Fatal error decoding FLAC file\n")
 
                 if (FLAC__stream_decoder_get_state(info->audio->flac)==FLAC__STREAM_DECODER_END_OF_STREAM)
                 {
@@ -1097,7 +1097,7 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
     if ((info->channels > 6) || (info->channels < 1))
     {
 
-        foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  problem in audio.c ! %d channels \n",info->channels);
+        foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  problem in audio.c ! %d channels \n",info->channels);
         EXIT_ON_RUNTIME_ERROR
     }
 
@@ -1136,7 +1136,7 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
         */
 
         // FIX: Handle 20-bit audio and maybe convert other formats.
-        foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  %d bit audio is not supported\n",info->bitspersample);
+        foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  %d bit audio is not supported\n",info->bitspersample);
         EXIT_ON_RUNTIME_ERROR
     }
 

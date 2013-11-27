@@ -340,7 +340,7 @@ void check_settings_file()
         FILE* settingsfile=fopen(SETTINGSFILE, "wb");
         if (settingsfile == NULL)
         {
-           fprintf(stderr, ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not create settings file in path %s\n       Check that you have adequate administrative rights\n       Exiting...\n", SETTINGSFILE);
+           fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not create settings file in path %s\n       Check that you have adequate administrative rights\n       Exiting...\n", SETTINGSFILE);
            clean_exit(EXIT_FAILURE);
         }
 
@@ -370,7 +370,7 @@ _Bool increment_ngroups_check_ceiling(uint8_t *ngroups, uint8_t * nvideolinking_
                 ++*nvideolinking_groups;
             else
             {
-                foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  DVD-Audio only supports up to 9 groups; audio groups=%d; video-linking groups=%d\n", *ngroups, *nvideolinking_groups);
+                foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  DVD-Audio only supports up to 9 groups; audio groups=%d; video-linking groups=%d\n", *ngroups, *nvideolinking_groups);
                 clean_exit(EXIT_SUCCESS);
             }
         }
@@ -379,9 +379,9 @@ _Bool increment_ngroups_check_ceiling(uint8_t *ngroups, uint8_t * nvideolinking_
     else
     {
         if (nvideolinking_groups != NULL)
-            foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  DVD-Audio only supports up to 9 groups; audio groups=%d; video-linking groups=%d\n", *ngroups, *nvideolinking_groups);
+            foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  DVD-Audio only supports up to 9 groups; audio groups=%d; video-linking groups=%d\n", *ngroups, *nvideolinking_groups);
         else
-            foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  DVD-Audio only supports up to 9 groups; audio groups=%d\n", *ngroups);
+            foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  DVD-Audio only supports up to 9 groups; audio groups=%d\n", *ngroups);
         clean_exit(EXIT_SUCCESS);
     }
     return 1;
@@ -529,18 +529,18 @@ void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size)
   {
       f=fopen(outfile,"wb");
   if (f == NULL)
-    fprintf(stderr, ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET" %s could not be opened properly.\n", basename);
-  if (errno) perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET" in create_file\n");
+    fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" %s could not be opened properly.\n", basename);
+  if (errno) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" in create_file\n");
   errno=0;
 
     if (fwrite(array, 1, size, f) == size )
     foutput("%s%s%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  ", outfile," was created.");
     else
-    fprintf(stderr, ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  %s could not be created properly -- fwrite error.\n", basename);
+    fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  %s could not be created properly -- fwrite error.\n", basename);
 
 
     if (fclose(f)== EOF)
-    fprintf(stderr, ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  %s could not be closed properly.", basename);
+    fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  %s could not be closed properly.", basename);
   }
 
 }
@@ -579,7 +579,7 @@ char** fn_strtok(char* chain, char delim, char** array, uint32_t count, int  (*f
   array=(char**) calloc(size, sizeof(char*));
   if (array == NULL)
   {
-      perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  fn_strtok\n");
+      perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  fn_strtok\n");
       return NULL;
   }
   k=0;
@@ -589,7 +589,7 @@ char** fn_strtok(char* chain, char delim, char** array, uint32_t count, int  (*f
 
       array[k]=calloc(cut[k+1]-cut[k], sizeof (char));
       if (array[k] == NULL)
-         { perror(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  fn_strtok, array[k]"); return NULL;}
+         { perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  fn_strtok, array[k]"); return NULL;}
 
       memcpy(array[k], s+cut[k]+1, cut[k+1]-cut[k]-1);
       array[k][cut[k+1]-cut[k]-1]=0;

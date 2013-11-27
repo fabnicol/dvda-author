@@ -158,7 +158,7 @@ int  generate_amgm_xml(uint8_t ngroups, uint8_t *ntracks, pic* img)
 
     fclose(xmlfile);
 
-    if (errno) foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not generate Xml project file properly for generating DVD-Audio menu");
+    if (errno) foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not generate Xml project file properly for generating DVD-Audio menu");
     else if (globals.debugging) foutput("%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Xml dvdauthor project file was generated.");
 
     return(errno);
@@ -206,7 +206,7 @@ int  generate_spumux_xml(uint8_t ngroups, uint8_t *ntracks, uint16_t maxntracks,
     if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Max ntracks: %d\n", maxntracks);
 
     if (globals.spu_xml == NULL) globals.spu_xml=calloc(img->nmenus,sizeof(char *));
-    if (globals.spu_xml == NULL) perror(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  spuxml\n");
+    if (globals.spu_xml == NULL) perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  spuxml\n");
     if (globals.debugging) foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Generating Xml project for spumux...");
 
 
@@ -237,7 +237,7 @@ int  generate_spumux_xml(uint8_t ngroups, uint8_t *ntracks, uint16_t maxntracks,
 
         if (globals.debugging)     foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Creating spumux xml file %s for menu %d\n", globals.spu_xml[menu], menu);
 
-        if (spu_xmlfile == NULL)   foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  spumux xml file %s for menu %d could not be opened\n", globals.spu_xml[menu], menu);
+        if (spu_xmlfile == NULL)   foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  spumux xml file %s for menu %d could not be opened\n", globals.spu_xml[menu], menu);
 
         fprintf(spu_xmlfile, "%s%s%s%s%s%s%s%s%s%s%s%s",
                 "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n\
@@ -347,7 +347,7 @@ int  generate_spumux_xml(uint8_t ngroups, uint8_t *ntracks, uint16_t maxntracks,
     while ((menu < img->nmenus)&& (groupcount < ngroups));
 
 
-    if (errno) foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not generate spumux xml project file properly for generating DVD-Audio menu");
+    if (errno) foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not generate spumux xml project file properly for generating DVD-Audio menu");
     else if (globals.debugging) foutput("%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  spumux xml dvdauthor project file was generated.");
 
     return(errno);

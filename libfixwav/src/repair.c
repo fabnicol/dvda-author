@@ -278,7 +278,7 @@ int write_header(uint8_t *newheader, FILE* outfile, WaveData *info)
 
   if ((!info->virtual) && ( (outfile == NULL) || (fclose(outfile) != 0) || ((outfile=fopen(info->outfile, "rb+")) == NULL) ))
     {
-      printf("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Failed to close/open file");
+      printf("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Failed to close/open file");
       return(FAIL);
     }
 
@@ -299,7 +299,7 @@ int write_header(uint8_t *newheader, FILE* outfile, WaveData *info)
 
   if (count != 1)
     {
-      fprintf( stderr, "%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Error updating wav file.");
+      fprintf( stderr, "%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Error updating wav file.");
       return(FAIL);
     }
 
@@ -307,7 +307,7 @@ int write_header(uint8_t *newheader, FILE* outfile, WaveData *info)
 
   if (errno)
     {
-      perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Error in launch repair module\n");
+      perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Error in launch repair module\n");
       return(FAIL);
     }
 

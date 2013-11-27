@@ -92,7 +92,7 @@ int audit_soundtrack(char* path, _Bool strict)
             }
             else
             {
-                foutput("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  LPCM requirements [fq=48k, bps=16, c=2] are not satisfied by soundtrack input\n");
+                foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  LPCM requirements [fq=48k, bps=16, c=2] are not satisfied by soundtrack input\n");
                 errno=1;
             }
        }
@@ -106,14 +106,14 @@ int audit_soundtrack(char* path, _Bool strict)
             }
             else
             {
-                foutput("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  LPCM requirements [fq=48|96k, bps=16|24] are not satisfied by soundtrack input\n");
+                foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  LPCM requirements [fq=48|96k, bps=16|24] are not satisfied by soundtrack input\n");
                 errno=1;
             }
        }
     }
     else
     {
-        foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  File %s does not exist.\n", path);
+        foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  File %s does not exist.\n", path);
         errno=1;
     }
 
@@ -165,7 +165,7 @@ int launch_lplex_soundtrack(pic* img, const char* create_mode)
              args[DIM_LPLEX_CLI+tot]= "jpgw";
           else
           {
-            fprintf(stderr, "%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  For topmenu soundtrack editing only 4:3 and 16:9 aspect ratios are supported.\n");
+            fprintf(stderr, "%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  For topmenu soundtrack editing only 4:3 and 16:9 aspect ratios are supported.\n");
             EXIT_ON_RUNTIME_ERROR
           }
             args[DIM_LPLEX_CLI+tot+1]=img->topmenu_slide[menu][u];
@@ -191,7 +191,7 @@ int launch_lplex_soundtrack(pic* img, const char* create_mode)
             aux=parse_filepath(globals.settings.workdir);
             if (aux->filename == NULL)
             {
-                foutput("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Use non-root audio folder, with appropriate access rights.\n");
+                foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Use non-root audio folder, with appropriate access rights.\n");
                 return -1;
             }
             else
@@ -239,8 +239,8 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
     if (-1 == lplex_initialise()) return -1;
     if (ntracks == NULL || nslides == NULL || slidepath == NULL || trackpath == NULL) 
     {
-      fprintf(stderr, ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Error code: %d\n", (ntracks == NULL )*1+(nslides == NULL)*10+(slidepath == NULL)*100+(trackpath == NULL)*1000);
-      EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Allocation of DVD-VIDEO tracks/slides")
+      fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Error code: %d\n", (ntracks == NULL )*1+(nslides == NULL)*10+(slidepath == NULL)*100+(trackpath == NULL)*1000);
+      EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Allocation of DVD-VIDEO tracks/slides")
     }
     
     const char *args0[DIM_LPLEX_CLI]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", 
@@ -270,7 +270,7 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
       
       if (nslides[group] == 0)
       {
-        fprintf(stderr, "%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  No slides for any track. Fix this issue and relaunch.\n");
+        fprintf(stderr, "%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  No slides for any track. Fix this issue and relaunch.\n");
         EXIT_ON_RUNTIME_ERROR
       }
       
@@ -282,7 +282,7 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
          for (i=1; i <= nslides[group] && slidepath[group][nslides[group]-i][0] == '\0'; i++);
          if (i == (nslides[group]+1)) 
          {
-             fprintf(stderr, "%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  No slides for any track. Fix this issue and relaunch.\n");
+             fprintf(stderr, "%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  No slides for any track. Fix this issue and relaunch.\n");
              EXIT_ON_RUNTIME_ERROR
          }
          else
@@ -305,7 +305,7 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
              args[DIM_LPLEX_CLI+tot]= "jpgw";
           else
           {
-            fprintf(stderr, ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Found aspect code img->aspect[0]=%c.\n       For DVD-Video editing only 4:3 and 16:9 aspect ratios are supported.\n",img->aspect[0]);
+            fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Found aspect code img->aspect[0]=%c.\n       For DVD-Video editing only 4:3 and 16:9 aspect ratios are supported.\n",img->aspect[0]);
             EXIT_ON_RUNTIME_ERROR
           }
           

@@ -97,7 +97,7 @@ command_t *scan_wavfile_audio_characteristics(command_t *command)
 #endif
 
     case NO_AFMT_FOUND:
-        if (globals.debugging) foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  No compatible format was found for %s\n       Skipping file...\n", files[i][j].filename);
+        if (globals.debugging) foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  No compatible format was found for %s\n       Skipping file...\n", files[i][j].filename);
 
         // House-cleaning rules: getting rid of files with unknown format
 
@@ -530,14 +530,14 @@ int launch_manager(command_t *command)
 
     if (numtitles == NULL)
     {
-        foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Critical error: failed to generate AUDIO_TS.IFO");
-        foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Continuing with non-compliant DVD-Audio structure...");
+        foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Critical error: failed to generate AUDIO_TS.IFO");
+        foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Continuing with non-compliant DVD-Audio structure...");
         goto SUMMARY;
     }
 
     for (i=0; i<naudio_groups; i++)
     {
-        if ((title[i]=(uint8_t *) calloc(ntracks[i], 1)) == NULL) perror(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  title[k]");
+        if ((title[i]=(uint8_t *) calloc(ntracks[i], 1)) == NULL) perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  title[k]");
         {
             title[i][0]=0;
             for (j=1; j<ntracks[i]; j++)
@@ -550,7 +550,7 @@ SUMMARY:
     errno=0;
 
     foutput("%c\n", '\n');
-    foutput("%s\n" , "Group   Title  Track  First Sect   Last Sect  First PTS  PTS length cga\n");
+    foutput("%s\n" , ANSI_COLOR_BLUE"Group"ANSI_COLOR_YELLOW"   Title"ANSI_COLOR_GREEN"  Track"ANSI_COLOR_RESET"  First Sect   Last Sect  First PTS  PTS length cga\n");
 
     for (i=0; i <naudio_groups; i++)
     {
@@ -594,14 +594,14 @@ SUMMARY:
            run(mkisofs, args, 0);
         }
         else
-                foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not access mkisofs binary.");
+                foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not access mkisofs binary.");
 
         FREE(mkisofs);
 
         size=stat_file_size(dvdisopath)/1024;
         if ((!errno) && (size > 4*SIZE_AMG + 2*SIZE_SAMG +1))  foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Image was created with size %llu KB.", size);
         else
-            foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  ISO file creation failed -- fix issue.");
+            foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  ISO file creation failed -- fix issue.");
 
     }
 
@@ -648,7 +648,7 @@ SUMMARY:
                run(cdrecord,  args, NOWAIT);
             }
             else
-               foutput("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not access to cdrecord binary.");
+               foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not access to cdrecord binary.");
 
             FREE(cdrecord);
         }
