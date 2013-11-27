@@ -2234,7 +2234,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     if (hybridate_flag || full_hybridate_flag)
     {
         lplex_slides_flag=1;
-        int g=0, N=ntracks[0];
+        int g=0;
         dvdv_slide_array=calloc(ngroups, sizeof(char**));
         if (dvdv_slide_array == NULL) EXIT_ON_RUNTIME_ERROR
         dvdv_slide_array[0]=calloc(ntracks[g], sizeof(char *));        
@@ -2242,13 +2242,15 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         if (ndvdvslides == NULL) ndvdvslides=calloc(ngroups, sizeof(uint8_t));
         if (ndvdvslides == NULL) EXIT_ON_RUNTIME_ERROR
         
+        int N=ntracks[0];
+        int T=0;
+        
         for (int t=0;  t < totntracks; t++)
         {
-            int T=t;
-            if (t >= N && g < ngroups-1)
+            if (g < ngroups-1 && t >= N)
             {
-                N += ntracks[g];
-                T -= N;
+                T = 0;
+                N += ntracks[g];    
                 g++;
                 dvdv_slide_array[g]=calloc(ntracks[g], sizeof(char *));
                 if (dvdv_slide_array[g] == NULL) EXIT_ON_RUNTIME_ERROR
@@ -2261,17 +2263,22 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                  {
                    char slide[strlen(globals.settings.workdir)+STRLEN_SEPARATOR+strlen(img->blankscreen)+1];
                    sprintf(slide, "%s%s%s", globals.settings.workdir,SEPARATOR,img->blankscreen);
-                   dvdv_slide_array[g][T]=strdup(slide);       
+                   dvdv_slide_array[g][T]=strdup(slide);  
+                     fprintf(stderr,"***%s\n",slide);    
                  }
                  else
                  {
                    dvdv_slide_array[g][T]=strdup(picks_per_track_double_array[t][0]);
+                   fprintf(stderr,"$$$ %d, %d, %s\n",g, T, dvdv_slide_array[g][T]);
+                   
                  }  
                  
-            
-            if (picks_per_track_double_array) FREE(picks_per_track_double_array[t])
+           T++;
+                       
+            //if (picks_per_track_double_array) FREE(picks_per_track_double_array[t])
             ndvdvslides[g]++;
         }
+        
     }
     
     FREE(picks_per_track_double_array)
@@ -2487,6 +2494,8 @@ standard_checks:
             }
         }
         
+       
+            
         globals.videozone=0;
         
         launch_lplex_hybridate(img, 
