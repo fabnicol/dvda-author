@@ -106,13 +106,13 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
                                       Y=sizeof(X); \
                                       if    ( ( chres = snprintf(X, Y , Z, __VA_ARGS__) ) >=  Y )  \
 									  printf("\n"ERR_STRING_LENGTH"\n", Y);\
-                                      else   if (chres < 0 ) printf( "\n[ERR] Error message:  %s\nCheck source code %s, line %d",  strerror(errno), __FILE__, __LINE__); } while(0);
+                                      else   if (chres < 0 ) fprintf(stderr, "\n"ANSI_COLOR_RED"\n[ERR] Error message:"ANSI_COLOR_RESET"  %s\nCheck source code %s, line %d",  strerror(errno), __FILE__, __LINE__); } while(0);
 
 
 #define STRING_WRITE_CHAR_BUFSIZ(X,Z,...)	 do { int chres;\
 													 if    ( ( chres = snprintf(X, CHAR_BUFSIZ*sizeof(char) , Z, __VA_ARGS__) ) >=  CHAR_BUFSIZ )  \
-														   printf("\n"ERR_STRING_LENGTH"\n", CHAR_BUFSIZ);\
-														   else   if (chres < 0 ) printf( "\n[ERR] Error message:  %s\nCheck source code %s, line %d",  strerror(errno), __FILE__, __LINE__); } while(0);
+														   fprintf(stderr, "\n"ERR_STRING_LENGTH"\n", CHAR_BUFSIZ);\
+														   else   if (chres < 0 ) printf( "\n\n[ERR] Error message:  %s\nCheck source code %s, line %d",  strerror(errno), __FILE__, __LINE__); } while(0);
 
 #ifdef foutput
 #undef foutput

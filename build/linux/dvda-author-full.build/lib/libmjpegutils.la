@@ -5,16 +5,16 @@
 # It is necessary for linking the library.
 
 # The name that we can dlopen(3).
-dlname='libmjpegutils-2.1.so.0'
+dlname=''
 
 # Names of this library.
-library_names='libmjpegutils-2.1.so.0.0.0 libmjpegutils-2.1.so.0 libmjpegutils.so'
+library_names=''
 
 # The name of the static archive.
 old_library='libmjpegutils.a'
 
 # Linker flags that can not go in dependency_libs.
-inherited_linker_flags=' -pthread'
+inherited_linker_flags=''
 
 # Libraries that this one depends upon.
 dependency_libs=' -lm'
@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/home/fab/Dev/dvda-author-dev/mjpegtools-2.1.0/local/lib'
+libdir='/home/fab/Dev/dvda-author-dev/local/lib'

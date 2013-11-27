@@ -58,11 +58,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define BCD_REVERSE(X)   ((X)/10*16 + (X)%10)
 
 #define EXIT_ON_RUNTIME_ERROR_VERBOSE(X)  do {  fprintf(stderr, "\n\n%s\n       Exiting...\n\n", X) ; clean_exit(EXIT_FAILURE);  } while(0);
-#define EXIT_ON_RUNTIME_ERROR  EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]")
+#define EXIT_ON_RUNTIME_ERROR  EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]")
 
 
 #define HEADER(X, Y)      do{ \
-                          foutput("\n%s\n",     " ---------- " X Y" ----------");\
+                          foutput("\n%s\n",     " ---------- " X" version "Y" ----------");\
                           foutput("\n%s\n", INFO_GNU);\
     print_time(1); puts("");}while(0);
 
@@ -79,9 +79,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
                                 }\
                             } while(0);
 
-#define EXPLAIN(X,...)       EXPL(X,globals.veryverbose, "[DBG]  Now ",__VA_ARGS__)
+#define EXPLAIN(X,...)       EXPL(X,globals.veryverbose, ANSI_COLOR_YELLOW"[DBG]  Now ",__VA_ARGS__)
 
-#define EXPLAIN_DEV(...)     EXPL("%s %d\n", globals.maxverbose, "[DEV]  ",__VA_ARGS__ )
+#define EXPLAIN_DEV(...)     EXPL("%s %d\n", globals.maxverbose, ANSI_COLOR_YELLOW"[DEV]  ",__VA_ARGS__ )
 
 
 /* end of macros */

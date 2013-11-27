@@ -47,7 +47,7 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
 
     char tab[MAX_OPTION_LENGTH];
     char *chain=&tab[0];
-    if (NULL == chain) perror(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET" lexer.c chain");
+    if (NULL == chain) perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" lexer.c chain");
 
     uint16_t s0=0, mem_s1=0, mem_s2=0;
 
@@ -56,8 +56,8 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
 
     if (defaults == NULL)
     {
-       fprintf(stderr, ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  fopen(%s, \"rb\") crashed\n", path);
-       fprintf(stderr, "%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not open default file dvda-author.conf");
+       fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  fopen(%s, \"rb\") crashed\n", path);
+       fprintf(stderr, "%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open default file dvda-author.conf");
        exit(-1);
     }
         clearerr(defaults);

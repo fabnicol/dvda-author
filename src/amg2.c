@@ -86,18 +86,18 @@ uint16_t totaltitles;
 #define VTSI_rank command->VTSI_rank
 
 
-uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *ntitles, uint8_t *ntitletracks[], uint64_t *titlelength[], uint16_t **ntitlepics)
+uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t ntitles[], uint8_t *ntitletracks[], uint64_t *titlelength[], uint16_t **ntitlepics)
 {
     
-    uint8_t group=0;
-    ntitles[group]=0;
-
-
     /* Normal case: audio files */
     // Files are packed together according to audio characteristics: bit rate, sampel rate, number of channels
 
-  
-    for  (int track=0; group < naudio_groups  && track < ntracks[group]; track++)
+   for (uint8_t group=0; group < naudio_groups; group++)
+   {
+
+    ntitles[group]=0;
+
+    for  (int track=0; track < ntracks[group]; track++)
     {
             /* counts the number of tracks with same-type audio characteristics, per group and title
             *  into ntitletracks[group][numtitles[group]], and corresponding PTS length in titlelength[group][numtitles[group]] */
@@ -124,10 +124,12 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *
                 totaltitles++;
                 ntitles[group]++;
             }
-            
-            fprintf(stderr, "files[group][track].newtitle=%d\n",      files[group][track].newtitle);
+            #ifdef DEBUG
+            fprintf(stderr, "files[group][track].newtitle=%d\n",group,track, files[group][track].newtitle);
+            #endif
+     }
     }
-
+    
     uint8_t track;
   
     for  (int group=0; group < naudio_groups; group++)
@@ -137,7 +139,7 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *
       titlelength[group]=calloc(ntitles[group],sizeof(uint64_t));
         
       if (titlelength[group] == NULL || ntitlepics[group] == NULL || ntitletracks[group] == NULL)
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Memory allocation, title track count in AMG")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Memory allocation, title track count in AMG")
                     
      track=0;
       
@@ -160,13 +162,14 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *
       }
 
       maxntracks=MAX(track, maxntracks); 
+      if (globals.debugging)  printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Number of titles for group %d is %d\n",group, ntitles[group] );
+      
       if (track  != ntracks[group])
       {
         fprintf(stderr, "\nCounted %d tracks instead of %d\n", track, ntracks[group]);
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Incoherent title count")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Incoherent title count")
       }
-      
-      if (globals.debugging)  printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Number of titles for group %d is %d\n",group, ntitles[group] );
+           
     }
 
     return track;
@@ -178,12 +181,12 @@ void allocate_topmenus(command_t *command)
 {
 
     if (img->topmenu == NULL) img->topmenu=calloc(img->nmenus,sizeof(char *));
-    if (img->topmenu == NULL) perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  img->topmenu 1\n");
+    if (img->topmenu == NULL) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  img->topmenu 1\n");
     int menu, s=strlen(globals.settings.tempdir);
     for (menu=0; menu < img->nmenus; menu++)
     {
         if (img->topmenu[menu] == NULL) img->topmenu[menu]=calloc(s+13, sizeof(char));
-        if (img->topmenu[menu] == NULL)  perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET" img->topmenu is null");
+        if (img->topmenu[menu] == NULL)  perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" img->topmenu is null");
         if (img->topmenu[menu]) snprintf(img->topmenu[menu], s+11, "%s"SEPARATOR"%s%d", globals.settings.tempdir,"topmenu", menu);
     }
     return;
@@ -224,10 +227,10 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
         allocate_topmenus(command);
 
         errno=generate_spumux_xml(ngroups, ntracks, maxntracks, img);
-        if (errno) perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  AMG:spumux_xml\n");
+        if (errno) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  AMG:spumux_xml\n");
         
         errno=launch_spumux(img);
-        if (errno) perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  AMG:spumux\n");
+        if (errno) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  AMG:spumux\n");
 
     case  RUN_DVDAUTHOR :
 
@@ -235,13 +238,13 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
         {
             if (globals.debugging) foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Generating AMGM Xml project for dvdauthor (patched)...");
             errno=generate_amgm_xml(ngroups, ntracks, img);
-            if (errno) perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  AMG:amgm_xml\n");
+            if (errno) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  AMG:amgm_xml\n");
         }
         for (menu=0; menu < img->nmenus; menu++)
             if (img->topmenu[menu])
             {
                 if (img->menuvobsize == NULL) img->menuvobsize=calloc(img->nmenus, sizeof(uint32_t*));
-                if (img->menuvobsize == NULL) perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  menuvobsize\n");
+                if (img->menuvobsize == NULL) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  menuvobsize\n");
 
                 img->menuvobsize[menu]=stat_file_size(img->topmenu[menu])/0x800;
                 if (globals.veryverbose) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Top menu is: %s with size %"PRIu32" KB\n", img->topmenu[menu], img->menuvobsize[menu]);
@@ -255,7 +258,7 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
     case TS_VOB_TYPE:
         if (img->menuvobsize == NULL)
             img->menuvobsize=calloc(img->nmenus, sizeof(uint32_t*));
-        if (img->menuvobsize == NULL) perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  menuvobsize\n");
+        if (img->menuvobsize == NULL) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  menuvobsize\n");
 
         img->menuvobsize[0]=stat_file_size(img->tsvob)/(0x800*img->nmenus);
         for (menu=0; menu < img->nmenus; menu++)
