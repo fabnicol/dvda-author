@@ -110,13 +110,13 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
         ngroups_scan= atoi(gnames[ng]+1);
 
         if ((ngroups_scan > MAX_GROUPS) || (ngroups_scan < 1))
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Subdirectories must be labelled ljm, with l, m any letters and j a number of 1 - 9")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Subdirectories must be labelled ljm, with l, m any letters and j a number of 1 - 9")
 
             change_directory(gnames[ng]);
 
         DIR *subdir;
         if ((subdir=opendir(".")) == NULL)
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Input directory could not be opened")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Input directory could not be opened")
 
 
             struct dirent * subdirent;
@@ -204,7 +204,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
 
                     if (NULL == fgets(cga, 3, cgafile))
                     {
-                        perror(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  fgets");
+                        perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  fgets");
                         clean_exit(EXIT_FAILURE);
                     }
 
@@ -216,7 +216,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
                         files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgaint;
                     else
                     {
-                        if (globals.debugging) foutput("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Found illegal channel group assignement value, using standard settings.");
+                        if (globals.debugging) foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Found illegal channel group assignement value, using standard settings.");
                         files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgadef[files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].channels-1];
                     }
                 }
@@ -291,7 +291,7 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract, const char* player)
         // duplicating is necessary as strtok alters its first argument
 
         if (d_name_duplicate == NULL)
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  strdup error while parsing disk")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  strdup error while parsing disk")
 
             // filenames must end in "_0.IFO" and begin in "ATS_"
             if (strcmp(strtok(d_name_duplicate , "_"), "ATS")) continue;

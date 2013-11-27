@@ -10,14 +10,14 @@
   <configure name="CFLAGS" value="-I/usr/include/freetype2 -fopenmp -g -O2 -g -O2 -std=c99 -Wall -pthread -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16"/>
   <configure name="CODER_PATH" value="/home/fab/Dev/dvda-author-dev/local/lib/ImageMagick-6.8.7/modules-Q16/coders"/>
   <configure name="CONFIGURE_PATH" value="/home/fab/Dev/dvda-author-dev/local/etc/ImageMagick-6/"/>
-  <configure name="CONFIGURE" value="/home/fab/Dev/dvda-author-dev/ImageMagick-6.8.7-0/configure  '--prefix=/home/fab/Dev/dvda-author-dev/local' 'CPPFLAGS=-I/home/fab/Dev/dvda-author-dev/local/include' 'CFLAGS=-g -O2 -g -O2 -std=c99'"/>
+  <configure name="CONFIGURE" value="/home/fab/Dev/dvda-author-dev/ImageMagick-6.8.7-0/configure  '--without-magick-plus-plus' '--without-pango' '--without-tiff' '--without-lzma' '--without-xml' 'JPEG_LIBS=/home/fab/Dev/dvda-author-dev/build/linux/dvda-author-full.build/lib/libjpeg.a' '--prefix=/home/fab/Dev/dvda-author-dev/local' 'CPPFLAGS=-I/home/fab/Dev/dvda-author-dev/local/include' 'CFLAGS=-g -O2 -g -O2 -std=c99'"/>
   <configure name="COPYRIGHT" value="Copyright (C) 1999-2013 ImageMagick Studio LLC"/>
   <configure name="CPPFLAGS" value="-I/home/fab/Dev/dvda-author-dev/local/include/ImageMagick-6"/>
   <configure name="CXXFLAGS" value="-g -O2 -pthread"/>
   <configure name="CXX" value="g++"/>
   <configure name="DEFS" value="-DHAVE_CONFIG_H"/>
-  <configure name="DELEGATES" value="bzlib mpeg freetype jng jpeg png ps x xml zlib"/>
-  <configure name="DISTCHECK_CONFIG_FLAGS" value="'CFLAGS=-g -O2 -g -O2 -std=c99' 'CPPFLAGS=-I/home/fab/Dev/dvda-author-dev/local/include' --disable-deprecated --with-quantum-depth=16 --with-umem=no --with-autotrace=no --with-gslib=no --with-fontpath= --with-gvc=no --with-mupdf=no --with-rsvg=no --with-wmf=no --with-perl=no"/>
+  <configure name="DELEGATES" value="mpeg freetype jng jpeg png ps x zlib"/>
+  <configure name="DISTCHECK_CONFIG_FLAGS" value="'CFLAGS=-g -O2 -g -O2 -std=c99' 'CPPFLAGS=-I/home/fab/Dev/dvda-author-dev/local/include' --disable-deprecated --with-quantum-depth=16 --with-umem=no --with-autotrace=no --with-gslib=no --with-fontpath= --with-gvc=no --with-lzma=no --with-mupdf=no --with-pango=no --with-rsvg=no --with-tiff=no --with-wmf=no --with-xml=no --with-perl=no"/>
   <configure name="DOCUMENTATION_PATH" value="/home/fab/Dev/dvda-author-dev/local/share/doc/ImageMagick-6"/>
   <configure name="EXEC-PREFIX" value="/home/fab/Dev/dvda-author-dev/local"/>
   <configure name="EXECUTABLE_PATH" value="/home/fab/Dev/dvda-author-dev/local/bin"/>
@@ -27,14 +27,14 @@
   <configure name="INCLUDE_PATH" value="/home/fab/Dev/dvda-author-dev/local/include/ImageMagick-6"/>
   <configure name="LDFLAGS" value="-L/home/fab/Dev/dvda-author-dev/local/lib "/>
   <configure name="LIBRARY_PATH" value="/home/fab/Dev/dvda-author-dev/local/lib/ImageMagick-6.8.7"/>
-  <configure name="LIBS" value="-lMagickCore -lfreetype -ljpeg -lpng12 -lXext -lXt -lSM -lICE -lX11 -lbz2 -lxml2 -lz -lm -lgomp"/>
+  <configure name="LIBS" value="-lMagickCore -lfreetype -ljpeg -lpng12 -lXext -lXt -lSM -lICE -lX11 -lz -lm -lgomp"/>
   <configure name="LIB_VERSION_NUMBER" value="6,8,7,0"/>
   <configure name="LIB_VERSION" value="0x687"/>
   <configure name="NAME" value="ImageMagick"/>
   <configure name="PCFLAGS" value="-fopenmp -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16"/>
   <configure name="PREFIX" value="/home/fab/Dev/dvda-author-dev/local"/>
   <configure name="QuantumDepth" value="16"/>
-  <configure name="RELEASE_DATE" value="2013-11-12"/>
+  <configure name="RELEASE_DATE" value="2013-11-27"/>
   <configure name="SHAREARCH_PATH" value="/home/fab/Dev/dvda-author-dev/local/lib/ImageMagick-6.8.7/config-Q16"/>
   <configure name="SHARE_PATH" value="/home/fab/Dev/dvda-author-dev/local/share/ImageMagick-6"/>
   <configure name="SVN_REVISION" value="13290" />

@@ -61,7 +61,7 @@ void calc_size(_fileinfo_t* info)
         x=(90000*info->numsamples)/info->samplerate;
     else
     {
-        foutput("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Found null samplerate. Exiting...\n");
+        foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Found null samplerate. Exiting...\n");
         clean_exit(EXIT_FAILURE);
     }
     
@@ -97,7 +97,7 @@ int setinfo(_fileinfo_t* info, uint8_t buf[4])
         break;
         
     default:
-        printf("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Unsupported bits per sample\n");
+        printf("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Unsupported bits per sample\n");
         info->bitspersample=0;
         break;
     }
@@ -134,7 +134,7 @@ int setinfo(_fileinfo_t* info, uint8_t buf[4])
     if (buf[3] > 20)
         
     {
-        printf("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET" Unsupported number of channels, skipping file...\n");
+        printf("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" Unsupported number of channels, skipping file...\n");
         return(0);
     }
     
@@ -180,7 +180,7 @@ static void wav_close(_fileinfo_t* info , const char* filename)
     
     if (filesize > UINT32_MAX)
     {
-        printf("%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  WAV standards do not support files > 4 GB--exiting...\n");
+        printf("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  WAV standards do not support files > 4 GB--exiting...\n");
         exit(EXIT_FAILURE);
     }
     
@@ -352,7 +352,7 @@ int ats2wav(const char* filename, const char* outdir)
     
     if (memcmp(buf,"DVDAUDIO-ATS",12)!=0)
     {
-        printf(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  %s is not an ATSI file (ATS_XX_0.IFO)\n",filename);
+        printf(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  %s is not an ATSI file (ATS_XX_0.IFO)\n",filename);
         return(EXIT_FAILURE);
     }
     

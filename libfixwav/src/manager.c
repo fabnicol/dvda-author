@@ -65,7 +65,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
     }
   else
     {
-      perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not stat regular file\n");
+      perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not stat regular file\n");
       info->repair=FAIL;
       goto getout;
     }
@@ -83,8 +83,8 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   if ( ((length=strlen(info->infile) - 3) <= 0) || ( strncmp( info->infile + length, "wav", 3 ) ))
     {
-      fprintf(stderr, "%s%s%s\n",ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Found file '", info->infile,"'");
-      fprintf(stderr, "%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  The filename must end in 'wav'.\nExiting ..." );
+      fprintf(stderr, "%s%s%s\n",ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Found file '", info->infile,"'");
+      fprintf(stderr, "%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  The filename must end in 'wav'.\nExiting ..." );
       info->repair=FAIL;
       goto getout;
     }
@@ -95,7 +95,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   if ((info->prepend) && (info->in_place))
     {
-      printf( "%s\n",   ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  fixwav cannot prepend new header to raw data file in in-place mode.");
+      printf( "%s\n",   ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  fixwav cannot prepend new header to raw data file in in-place mode.");
       printf( "%s\n", "       use -o option instead. Press Y to exit...");
       if (isok())
         {
@@ -138,7 +138,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 #ifdef RADICAL_FIXWAV_BEHAVIOUR
   if ((globals.silence) && ((header->sample_fq)*(header->bit_p_spl)*(header->channels) == 0))
     {
-      fprintf(stderr, "%s", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  In silent mode, bit rate, sample rate and channels must be set\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Correcting options...\n");
+      fprintf(stderr, "%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  In silent mode, bit rate, sample rate and channels must be set\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Correcting options...\n");
       globals.silence=0;
     }
 #endif
@@ -162,7 +162,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
             }
           else
             {
-              printf( "%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  input and output paths are identical. Press Y to exit...");
+              printf( "%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  input and output paths are identical. Press Y to exit...");
               if (isok())
                 {
                   info->repair=FAIL;
@@ -438,7 +438,7 @@ getout:
       errno=0;
       unlink(info->outfile);
       if (errno)
-        printf("%s%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  unlink: ", strerror(errno));
+        printf("%s%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  unlink: ", strerror(errno));
     }
 
   if (info->repair != FAIL)

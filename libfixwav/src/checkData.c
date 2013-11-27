@@ -59,9 +59,9 @@ int pad_end_of_file(FILE* outfile, uint32_t complement)
 
   if   (count  != complement)
     {
-      printf( "%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET" Error appending data to end of existing file\n" );
+      printf( "%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" Error appending data to end of existing file\n" );
       printf( ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  %d characters were written out of %d\n", count, complement);
-      printf( "%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Error appending data to end of existing file\n" );
+      printf( "%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Error appending data to end of existing file\n" );
 
       if (isok()) return(FAIL);
     }
@@ -198,7 +198,7 @@ int prune(FILE* infile, FILE* outfile, WaveData *info, WaveHeader *header)
   size=read_file_size(infile, info->infile);
 
   if (errno)
-     perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not state file size\n");
+     perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not state file size\n");
 
 // Count ending zeros to be pruned
   if (end_seek(infile) == FAIL) return(FAIL);
@@ -235,7 +235,7 @@ int prune(FILE* infile, FILE* outfile, WaveData *info, WaveHeader *header)
 
       if ((info->in_place) && (truncate_from_end(info->infile, offset) == -1))
         {
-          perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  truncate error\n");
+          perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  truncate error\n");
           return(info->repair=FAIL);
         }
 

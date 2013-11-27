@@ -74,7 +74,7 @@ void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank,
     STRING_WRITE(temp,  "%s/VIDEO_TS.IFO", path_to_VIDEO_TS)
 
     if ((temp_file=fopen(temp, "rb")) == NULL)
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not open VIDEO_TS.IFO")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open VIDEO_TS.IFO")
 
         /* retrieving size of VIDEO_TS.IFO
 
@@ -84,7 +84,7 @@ void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank,
 
 
         if (fseek(temp_file, 0xC, SEEK_SET) != 0)
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not seek offset 0x0C of VIDEO_TS.IFO")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not seek offset 0x0C of VIDEO_TS.IFO")
 
             fread_endian(relative_sector_pointer_VTSI, 0, temp_file);
 
@@ -99,14 +99,14 @@ void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank,
 
         if ((temp_file=fopen (temp, "rb")) == NULL)
         {
-            foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Impossible to open file '%s'\n", temp);
+            foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Impossible to open file '%s'\n", temp);
             EXIT_ON_RUNTIME_ERROR
         }
 
         /* retrieving size of VTS_XX_0.IFO */
 
         if (fseek(temp_file, 0xC, SEEK_SET) !=0)
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not seek offset 0xC of VTS....IFO")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not seek offset 0xC of VTS....IFO")
 
 
             fread_endian(relative_sector_pointer_VTSI, k, temp_file);
@@ -148,7 +148,7 @@ void get_video_PTS_ticks(char* path_to_VIDEO_TS, uint32_t *videotitlelength, uin
 
         if ((temp_file=fopen (temp, "rb")) == NULL)
         {
-            foutput(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Impossible to open file '%s'\n", temp);
+            foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Impossible to open file '%s'\n", temp);
             EXIT_ON_RUNTIME_ERROR
         }
 
@@ -160,13 +160,13 @@ void get_video_PTS_ticks(char* path_to_VIDEO_TS, uint32_t *videotitlelength, uin
         fseek(temp_file, PLAYBACK_TIME_OFFSET, SEEK_SET);
 
         if (fread(&hours, 1, 1, temp_file) != 1)
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not read 1 byte at offset 4 of PGC")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not read 1 byte at offset 4 of PGC")
 
             if (fread(&minutes, 1, 1, temp_file) != 1)
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not read 1 byte at offset 5 of PGC")
+                EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not read 1 byte at offset 5 of PGC")
 
                 if (fread(&seconds, 1, 1, temp_file) != 1)
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  Could not read 1 byte at offset 6 of PGC")
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not read 1 byte at offset 6 of PGC")
 
                     /* frames will not be considered */
 

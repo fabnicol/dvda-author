@@ -17,7 +17,7 @@ old_library='libMagickCore-6.Q16.a'
 inherited_linker_flags=' -fopenmp -pthread'
 
 # Libraries that this one depends upon.
-dependency_libs=' /usr/lib/i386-linux-gnu/libfreetype.la /usr/local/lib/libjpeg.la -lpng12 -lXext -lXt -lSM -lICE -lX11 -lbz2 -lxml2 -lz -lm /usr/local/lib/libgomp.la'
+dependency_libs=' /usr/lib/i386-linux-gnu/libfreetype.la /usr/local/lib/libjpeg.la -lpng12 -lXext -lXt -lSM -lICE -lX11 -lz -lm /usr/local/lib/libgomp.la'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''

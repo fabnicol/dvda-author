@@ -64,7 +64,7 @@ _Bool isok()
 void get_input( char* buf )
 {
   if (fgets(buf, FIXBUF_LEN, stdin) == NULL)
-    printf("%s\n", ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  fgets crash");
+    printf("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  fgets crash");
   return;
 }
 
