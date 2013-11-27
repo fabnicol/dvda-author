@@ -325,6 +325,10 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
       }
     }
     
+    sleep(3);
+    for (int u=0; u < DIM_LPLEX_CLI+tot; u++) fprintf(stderr, "%s ", args[u]);
+    sleep(3);
+    
     args[DIM_LPLEX_CLI+tot]=NULL; 
     
     if (globals.debugging)
