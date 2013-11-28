@@ -251,14 +251,11 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
     
     for (int group=0; group < ntitlesets; group++)
     {
-      for (int tr=0; tr < ntracks[group]; tr++)
-      {
           argssize += ntracks[group] + (group)+ nslides[group]*2;
-      }
     }
         
     char* args[DIM_LPLEX_CLI+argssize+1];
-    int tot=0;
+    int tot=DIM_LPLEX_CLI;
         
     for (int u=0; u < DIM_LPLEX_CLI; u++) args[u]=(char*) args0[u];
     
@@ -266,7 +263,11 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
     {
       if (globals.veryverbose) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Now processing titleset %d/%d...\n", group, ntitlesets);
       
-      if (group) args[tot]="ts";
+      if (group)
+      {
+       args[tot]="ts";
+       tot++;
+      }
       
       if (nslides[group] == 0)
       {
@@ -287,7 +288,8 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
          }
          else
          {
-           for (int u=nslides[group]-i+1; u <= ntracks[group] ; u++) slidepath[group][u] = slidepath[group][nslides[group]-i];
+           for (int u=nslides[group]-i+1; u <= ntracks[group] ; u++) 
+              slidepath[group][u] = slidepath[group][nslides[group]-i];
          }
       }
       
@@ -299,10 +301,10 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
         if (slidepath[group][tr]) 
         {
           if (img->aspect[0] == '2')
-             args[DIM_LPLEX_CLI+tot]= "jpg";
+             args[tot]= "jpg";
           else
           if (img->aspect[0] == '3')
-             args[DIM_LPLEX_CLI+tot]= "jpgw";
+             args[tot]= "jpgw";
           else
           {
             fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Found aspect code img->aspect[0]=%c.\n       For DVD-Video editing only 4:3 and 16:9 aspect ratios are supported.\n",img->aspect[0]);
@@ -315,21 +317,27 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
                   - otherwise go presume there is one slide per track, go to end of slides array and copy 
                     the last one as many times as necessary 
           */
+          tot++;
           
-          if (slidepath[group][tr][0] == '\0' && tr != 0) slidepath[group][tr]=slidepath[group][tr-1];
+          if (slidepath[group][tr][0] == '\0' && tr != 0)
+            slidepath[group][tr]=slidepath[group][tr-1];
           
-          args[DIM_LPLEX_CLI+tot+1]=(char*) slidepath[group][tr];
+          args[tot]=(char*) slidepath[group][tr];
+          tot++;
         }
-        args[DIM_LPLEX_CLI+tot+2]=(char*) trackpath[group][tr];
-        tot +=3;
+        
+        args[tot]=(char*) trackpath[group][tr];
+        
+        if (tot == argssize+DIM_LPLEX_CLI) 
+          EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Two many tracks/slides")
+          
+        tot++;
       }
     }
     
-    sleep(3);
-    for (int u=0; u < DIM_LPLEX_CLI+tot; u++) fprintf(stderr, "%s ", args[u]);
-    sleep(3);
+    args[tot]=NULL; 
     
-    args[DIM_LPLEX_CLI+tot]=NULL; 
+    for (int u=0; u < DIM_LPLEX_CLI+argssize+1; u++) fprintf(stderr, "%s ", args[u]);
     
     if (globals.debugging)
         {

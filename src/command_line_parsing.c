@@ -2422,34 +2422,47 @@ standard_checks:
     {
         ndvdvtitleset1=0;
         dvdv_track_array=(char***) calloc(ngroups, sizeof(char**));  // now lo longer a maximum
+        int cut_table[9][99]={{0}};
+        int delta_titlesets=0;
         
         for (int group=0; group < ngroups; group++)
         {
-            dvdv_track_array[group]=(char**) calloc(command->ntracks[group], sizeof(char*)); 
+            dvdv_track_array[group]=(char**) calloc(ntracks[group], sizeof(char*)); 
+            uint32_t lplex_audio_characteristics_test[ntracks[group]];
+            
             for (int track=0; track < ntracks[group]; track++)
             {
                 
-                if    (  (command->files[group][track].bitspersample == 16  || command->files[group][track].bitspersample == 24)
-                         &&(command->files[group][track].samplerate  == 96000 || command->files[group][track].samplerate  == 48000))
+                
+                if    (  (files[group][track].bitspersample == 16  || files[group][track].bitspersample == 24)
+                         &&(files[group][track].samplerate  == 96000 || files[group][track].samplerate  == 48000))
                 {
                     if (globals.veryverbose) 
                     {
-                        foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Tested DVD-Video compliant: %s\n", command->files[group][track].filename);
-                        foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  group %d track %d: bits per sample=%d samplerate=%d\n", group, track, command->files[group][track].bitspersample, command->files[group][track].samplerate);
+                        foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Tested DVD-Video compliant: %s\n", files[group][track].filename);
+                        foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  group %d track %d: bits per sample=%d samplerate=%d\n", group, track, files[group][track].bitspersample, files[group][track].samplerate);
                     }
-                    command->files[group][track].dvdv_compliant=1;
+                    files[group][track].dvdv_compliant=1;
                 }
                 else
                 {
                     if (globals.veryverbose) 
                     {
-                        foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Failed to be tested DVD-Video compliant: %s\n", command->files[group][track].filename);
-                        foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  group %d track %d: bits per sample=%d samplerate=%d\n", group, track, command->files[group][track].bitspersample, command->files[group][track].samplerate);
+                        foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Failed to be tested DVD-Video compliant: %s\n", files[group][track].filename);
+                        foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  group %d track %d: bits per sample=%d samplerate=%d\n", group, track, files[group][track].bitspersample, files[group][track].samplerate);
                     }
                 }
                 
-                if(command->files[group][u].dvdv_compliant == 1) 
-                    dvdv_track_array[group][track]=command->files[group][u].filename;
+                uint32_t lplex_audio_characteristics_test[ntracks[group]];
+                memset(lplex_audio_characteristics_test, '0', ntracks[group]);
+                
+                if(files[group][track].dvdv_compliant == 1) 
+                {
+                    dvdv_track_array[group][track]=files[group][track].filename;
+                    lplex_audio_characteristics_test[track]=(files[group][track].bitspersample<<16)
+                                                             |(files[group][track].samplerate << 8)
+                                                             |files[group][track].channels;
+                }
                 else
                 {
                     int new_sample_rate=0;
@@ -2457,31 +2470,33 @@ standard_checks:
                     
                     if (mirror_st_flag == HIGH)
                     {
-                        if (command->files[group][track].samplerate <= 48000) new_sample_rate=48000;
+                        if (files[group][track].samplerate <= 48000) new_sample_rate=48000;
                         else
                             new_sample_rate=96000;
-                        if (command->files[group][track].bitspersample <= 16) new_bit_rate=16;
+                        if (files[group][track].bitspersample <= 16) new_bit_rate=16;
                         else 
                             new_bit_rate=24;
+
                     }
                     else //LOW
                     {
-                        if (command->files[group][track].samplerate < 96000) new_sample_rate=48000;
+                        if (files[group][track].samplerate < 96000) new_sample_rate=48000;
                         else
                             new_sample_rate=96000;
-                        if (command->files[group][track].bitspersample < 24) new_bit_rate=16;
+                        if (files[group][track].bitspersample < 24) new_bit_rate=16;
                         else 
                             new_bit_rate=24;
                     }
-                    
-                    int size=strlen(command->files[group][track].filename);
-                    if (strcmp(command->files[group][track].filename+size-4, ".wav") !=0)
+
+                    lplex_audio_characteristics_test[track]=(new_bit_rate<<16)|(new_sample_rate<<8)|files[group][track].channels;                    
+                    int size=strlen(files[group][track].filename);
+                    if (strcmp(files[group][track].filename+size-4, ".wav") !=0)
                     {
                         EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Automatic mirroring is only supported for wav files.")
                     }
                     
                     char newpath[size+4];
-                    strncpy(newpath, command->files[group][track].filename,size-4);
+                    strncpy(newpath, files[group][track].filename,size-4);
                     sprintf(newpath+size-4, "%s", ".res.wav");
                     
                     dvdv_track_array[group][track]=strdup(newpath);
@@ -2489,22 +2504,63 @@ standard_checks:
                     char new_sample_rate_str[6]={0};
                     sprintf(new_bit_rate_str, "%d", new_bit_rate);
                     sprintf(new_sample_rate_str, "%d", new_sample_rate);
-                    resample(command->files[group][track].filename,dvdv_track_array[group][track],new_bit_rate_str, new_sample_rate_str);
+                    resample(files[group][track].filename,dvdv_track_array[group][track],new_bit_rate_str, new_sample_rate_str);
                 }
             }
+            
+            /* Now checking the lplex constraint on same-type audio characteristics per titleset */
+          if (ntracks[group])
+            for (int i=1; i < ntracks[group]; i++)
+               if  (lplex_audio_characteristics_test[i] != lplex_audio_characteristics_test[i-1])
+                {
+                  foutput(ANSI_COLOR_RED"\n[WAR]"ANSI_COLOR_RESET"  Lplex requests that tracks have same audio-characteristics for in a given titleset.\nFound different audio for tracks %s and %s", files[group][i].filename,files[group][i-1].filename);
+                  foutput("%s\n", ANSI_COLOR_RED"\n[WAR]"ANSI_COLOR_RESET"  Adding titleset");
+                  delta_titlesets++;
+                  cut_table[group][i]=1;
+                }
         }
         
-       
+       int dim[ngroups+delta_titlesets];
+        
+       if (delta_titlesets)
+           {
+             if (globals.veryverbose) 
+                   foutput("%s\n", ANSI_COLOR_RED"\n[WAR]"ANSI_COLOR_RESET"  %d titlesets will have to be added");
+             free(dvdv_track_array);
+             free(dvdv_slide_array);
+             dvdv_track_array=(char***) calloc(ngroups + delta_titlesets,sizeof(dvdv_track_array));
+             dvdv_slide_array=(char***) calloc(ngroups + delta_titlesets, sizeof(dvdv_slide_array));
+             
+            
+             int u=0;
+             
+             for (int group=0; group < ngroups && u < ngroups+delta_titlesets; group++)
+             {
+                   for (int track=0; track < ntracks[group]; track++)
+                   if (cut_table[group][track]) u++;
+                   dim[u]++;
+             }
+             
+             for (int group=0; group < ngroups +delta_titlesets; group++)
+             {
+               dvdv_track_array[group]=calloc(dim[group], sizeof(dvdv_track_array[group]));
+               dvdv_slide_array[group]=calloc(dim[group], sizeof(dvdv_slide_array[group]));
+             }
+           }
+           
+        uint8_t ntracks_lplex[9]={0};
+             
+             /* allocation still remains to be performed */
             
         globals.videozone=0;
         
         launch_lplex_hybridate(img, 
                                "dvd", 
                                (const char***) dvdv_track_array, 
-                               (const uint8_t*) command->ntracks, 
+                               (const uint8_t*) ntracks_lplex, 
                                (const char***) dvdv_slide_array, 
                                ndvdvslides,
-                               (const int) ngroups); 
+                               (const int) ngroups+delta_titlesets); 
         
         free(dvdv_track_array);
         FREE(dvdv_slide_array);
