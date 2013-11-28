@@ -10,7 +10,8 @@ QMAKE_CFLAGS=-std=c99
 
 #to avoid ansi colors in output console add NO_ANSI_COLORS to the DEFINES directive
 
-DEFINES +=  _GNU_SOURCE  HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_libfixwav HAVE_libogg HAVE_libiberty HAVE_mplex HAVE_jpeg2yuv HAVE_mpeg2enc HAVE_mjpegtools HAVE_OGG_FLAC HAVE_FLAC HAVE_libogg HAVE_libsox
+DEFINES +=   _GNU_SOURCE  HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_libfixwav HAVE_libogg HAVE_libiberty HAVE_mplex HAVE_jpeg2yuv HAVE_mpeg2enc HAVE_mjpegtools HAVE_OGG_FLAC HAVE_FLAC HAVE_libogg HAVE_libsox
+ 
 
 #libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame --disable-gomp
 
