@@ -1593,10 +1593,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             lplex_slides_flag=0,
             dvdv_import_flag=0,
             mirror_flag=0,
-            mirror_st_flag=0,
             full_hybridate_flag=0,
             hybridate_flag=0;
-    
+    uint8_t mirror_st_flag=0;
     char*** dvdv_track_array=NULL;
     char*** dvdv_slide_array=NULL;
     uint8_t* ndvdvslides=NULL; 
@@ -2422,13 +2421,17 @@ standard_checks:
     {
         ndvdvtitleset1=0;
         dvdv_track_array=(char***) calloc(ngroups, sizeof(char**));  // now lo longer a maximum
-        int cut_table[9][99]={{0}};
+        int* cut_table[ngroups];
         int delta_titlesets=0;
+     
         
         for (int group=0; group < ngroups; group++)
         {
             dvdv_track_array[group]=(char**) calloc(ntracks[group], sizeof(char*)); 
             uint32_t lplex_audio_characteristics_test[ntracks[group]];
+            memset(lplex_audio_characteristics_test, '0', ntracks[group]);
+            
+            cut_table[group]=(int*) calloc(ntracks[group], sizeof(int));
             
             for (int track=0; track < ntracks[group]; track++)
             {
@@ -2453,42 +2456,36 @@ standard_checks:
                     }
                 }
                 
-                uint32_t lplex_audio_characteristics_test[ntracks[group]];
-                memset(lplex_audio_characteristics_test, '0', ntracks[group]);
                 
                 if(files[group][track].dvdv_compliant == 1) 
                 {
-                    dvdv_track_array[group][track]=files[group][track].filename;
-                    lplex_audio_characteristics_test[track]=(files[group][track].bitspersample<<16)
-                                                             |(files[group][track].samplerate << 8)
+                    dvdv_track_array[group][track]=strdup(files[group][track].filename);
+                    lplex_audio_characteristics_test[track]=(((uint8_t)files[group][track].bitspersample)<<16)
+                                                             |(((uint8_t)(files[group][track].samplerate/1000)) << 8)
                                                              |files[group][track].channels;
                 }
                 else
                 {
                     int new_sample_rate=0;
                     int new_bit_rate=0;
-                    
+                    uint sample_floor;
+                    uint bps_floor;
+                                        
                     if (mirror_st_flag == HIGH)
                     {
-                        if (files[group][track].samplerate <= 48000) new_sample_rate=48000;
-                        else
-                            new_sample_rate=96000;
-                        if (files[group][track].bitspersample <= 16) new_bit_rate=16;
-                        else 
-                            new_bit_rate=24;
-
+                     sample_floor=48000;
+                     bps_floor=16;
                     }
                     else //LOW
                     {
-                        if (files[group][track].samplerate < 96000) new_sample_rate=48000;
-                        else
-                            new_sample_rate=96000;
-                        if (files[group][track].bitspersample < 24) new_bit_rate=16;
-                        else 
-                            new_bit_rate=24;
+                     sample_floor=96000;
+                     bps_floor=24;
                     }
 
-                    lplex_audio_characteristics_test[track]=(new_bit_rate<<16)|(new_sample_rate<<8)|files[group][track].channels;                    
+                    new_sample_rate=(files[group][track].samplerate <= sample_floor)? 48000 : 96000;
+                    new_bit_rate=(files[group][track].bitspersample <= bps_floor)? 16 : 24;
+                         
+                    lplex_audio_characteristics_test[track]=(new_bit_rate<<16)|((new_sample_rate/1000)<<8)|files[group][track].channels;                    
                     int size=strlen(files[group][track].filename);
                     if (strcmp(files[group][track].filename+size-4, ".wav") !=0)
                     {
@@ -2509,64 +2506,139 @@ standard_checks:
             }
             
             /* Now checking the lplex constraint on same-type audio characteristics per titleset */
-          if (ntracks[group])
+            cut_table[group][0]=1;    
             for (int i=1; i < ntracks[group]; i++)
                if  (lplex_audio_characteristics_test[i] != lplex_audio_characteristics_test[i-1])
                 {
-                  foutput(ANSI_COLOR_RED"\n[WAR]"ANSI_COLOR_RESET"  Lplex requests that tracks have same audio-characteristics for in a given titleset.\nFound different audio for tracks %s and %s", files[group][i].filename,files[group][i-1].filename);
+                  foutput(ANSI_COLOR_RED"\n[WAR]"ANSI_COLOR_RESET
+                          "  Lplex requests that tracks have same audio-characteristics for in a given titleset.\n       Found different audio for tracks %s and %s", 
+                          dvdv_track_array[group][i],
+                          dvdv_track_array[group][i-1]);
+                          
+                  foutput(ANSI_COLOR_RED"\n[WAR]"ANSI_COLOR_RESET"  %d, %d\n", lplex_audio_characteristics_test[i], lplex_audio_characteristics_test[i-1]);                            
+                  
                   foutput("%s\n", ANSI_COLOR_RED"\n[WAR]"ANSI_COLOR_RESET"  Adding titleset");
                   delta_titlesets++;
                   cut_table[group][i]=1;
                 }
+                
+           
+                
+
         }
         
-       int dim[ngroups+delta_titlesets];
+       uint8_t new_ntracks[9]={0};
+       uint8_t ndvdvslides[9]={0};
+               
+       char*** new_dvdv_track_array;
+       char*** new_dvdv_slide_array;
         
        if (delta_titlesets)
            {
              if (globals.veryverbose) 
-                   foutput("%s\n", ANSI_COLOR_RED"\n[WAR]"ANSI_COLOR_RESET"  %d titlesets will have to be added");
-             free(dvdv_track_array);
-             free(dvdv_slide_array);
-             dvdv_track_array=(char***) calloc(ngroups + delta_titlesets,sizeof(dvdv_track_array));
-             dvdv_slide_array=(char***) calloc(ngroups + delta_titlesets, sizeof(dvdv_slide_array));
+                   foutput(ANSI_COLOR_RED"\n[WAR]"ANSI_COLOR_RESET"  %d titlesets will have to be added", delta_titlesets);
+                   
+             if (ngroups+delta_titlesets > 99)      
+               EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Exceeded 99 titleset limit.\n       Redesign your audio input so that you do not have more than 99 different audio formats in a row.")
              
+             new_dvdv_track_array=(char***) calloc(ngroups + delta_titlesets,sizeof(dvdv_track_array));
+             new_dvdv_slide_array=(char***) calloc(ngroups + delta_titlesets, sizeof(dvdv_slide_array));
             
-             int u=0;
+             int newgroup=-1;
              
-             for (int group=0; group < ngroups && u < ngroups+delta_titlesets; group++)
+             for (int group=0; group < ngroups && newgroup < ngroups+delta_titlesets; group++)
              {
                    for (int track=0; track < ntracks[group]; track++)
-                   if (cut_table[group][track]) u++;
-                   dim[u]++;
+                   {
+                     if (cut_table[group][track]) newgroup++;
+                     new_ntracks[newgroup]++;
+                   }
              }
              
-             for (int group=0; group < ngroups +delta_titlesets; group++)
+             for (int newgroup=0; newgroup< ngroups +delta_titlesets; newgroup++)
              {
-               dvdv_track_array[group]=calloc(dim[group], sizeof(dvdv_track_array[group]));
-               dvdv_slide_array[group]=calloc(dim[group], sizeof(dvdv_slide_array[group]));
+               new_dvdv_track_array[newgroup]=calloc(new_ntracks[newgroup], sizeof(dvdv_track_array[newgroup]));
+               new_dvdv_slide_array[newgroup]=calloc(new_ntracks[newgroup], sizeof(dvdv_slide_array[newgroup]));
+               ndvdvslides[newgroup]=0;
+             }
+             
+             newgroup=0;
+             
+             for (int group=0; group < ngroups ; group++)
+             {
+                int N=0;
+                while (N < ntracks[group])
+                {
+                  for (int track=0; track < new_ntracks[newgroup]; track++)
+                  {
+                    new_dvdv_track_array[newgroup][track]=strdup(dvdv_track_array[group][track+N]);
+                    new_dvdv_slide_array[newgroup][track]=strdup(dvdv_slide_array[group][track+N]);
+                    ndvdvslides[newgroup]++;
+                    free(dvdv_slide_array[group][track+N]);
+                    free(dvdv_track_array[group][track+N]);
+                  }
+                  N+=new_ntracks[newgroup];
+                  newgroup++;
+                }
+                
+                free(dvdv_slide_array[group]);
+                free(dvdv_track_array[group]);
              }
            }
            
-        uint8_t ntracks_lplex[9]={0};
-             
-             /* allocation still remains to be performed */
             
         globals.videozone=0;
         
-        launch_lplex_hybridate(img, 
-                               "dvd", 
-                               (const char***) dvdv_track_array, 
-                               (const uint8_t*) ntracks_lplex, 
-                               (const char***) dvdv_slide_array, 
-                               ndvdvslides,
-                               (const int) ngroups+delta_titlesets); 
+        if (delta_titlesets)
+        {
+            launch_lplex_hybridate(img, 
+                                   "dvd", 
+                                   (const char***) new_dvdv_track_array, 
+                                   (const uint8_t*) new_ntracks, 
+                                   (const char***) new_dvdv_slide_array, 
+                                   ndvdvslides,
+                                   (const int) ngroups+delta_titlesets); 
+                                   
+            for (int group=0; group < ngroups+delta_titlesets; group++) 
+            {
+                for (int track=0; track < new_ntracks[group]; track++)
+                {
+                    free(new_dvdv_track_array[group][track]);
+                    free(new_dvdv_slide_array[group][track]);    
+                }
+                
+                if (group < ngroups) free(cut_table[group]);
+                free(new_dvdv_track_array[group]);
+                free(new_dvdv_slide_array[group]);
+            }
+        }
+        else
+        {
+            launch_lplex_hybridate(img, 
+                                   "dvd", 
+                                   (const char***) dvdv_track_array, 
+                                   (const uint8_t*) ntracks, 
+                                   (const char***) dvdv_slide_array, 
+                                   ndvdvslides,
+                                   (const int) ngroups); 
+                               
+            for (int group=0; group < ngroups; group++) 
+            {
+              for (int track=0; track < ntracks[group]; track++)
+              {
+                  free(dvdv_track_array[group][track]);
+                  free(dvdv_slide_array[group][track]);    
+              }
+              
+              free(cut_table[group]);
+              free(dvdv_track_array[group]);
+              free(dvdv_slide_array[group]);
+            }
+        }
         
-        free(dvdv_track_array);
-        FREE(dvdv_slide_array);
-        FREE(ndvdvslides);
     }
     #endif
+    
     user_command_line++;
     return(command);
 }
