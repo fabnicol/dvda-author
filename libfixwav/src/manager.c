@@ -96,12 +96,15 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
   if ((info->prepend) && (info->in_place))
     {
       printf( "%s\n",   ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  fixwav cannot prepend new header to raw data file in in-place mode.");
-      printf( "%s\n", "       use -o option instead. Press Y to exit...");
-      if (isok())
-        {
-          info->repair=FAIL;
-          goto getout;
-        }
+      if (info->interactive)
+      {
+          printf( "%s\n", "       use -o option instead. Press Y to exit...");
+          if (isok())
+          {
+              info->repair=FAIL;
+              goto getout;
+          }
+       }
       adjust=1;
     }
 

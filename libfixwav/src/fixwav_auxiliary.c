@@ -32,7 +32,7 @@ extern globalData globals;
 
 _Bool isok()
 {
-
+   
     char buf[FIXBUF_LEN]={0};
 
   get_input(buf);
@@ -50,7 +50,7 @@ _Bool isok()
       break;
 
     default  :
-      fprintf(stderr, "%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Unknown--Enter reply again");
+      fprintf(stderr, "%s\n",ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Unknown--Enter reply again");
       return(isok());
     }
 }

@@ -2532,7 +2532,7 @@ standard_checks:
        if (delta_titlesets)
            {
              if (globals.veryverbose) 
-                   foutput(ANSI_COLOR_RED"\n[WAR]"ANSI_COLOR_RESET"  %d titlesets will have to be added", delta_titlesets);
+                   foutput(ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  %d titlesets will have to be added.\n", delta_titlesets);
                    
              if (ngroups+delta_titlesets > 99)      
                EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Exceeded 99 titleset limit.\n       Redesign your audio input so that you do not have more than 99 different audio formats in a row.")
