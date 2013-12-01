@@ -2423,14 +2423,12 @@ standard_checks:
         dvdv_track_array=(char***) calloc(ngroups, sizeof(char**));  // now lo longer a maximum
         int* cut_table[ngroups];
         int delta_titlesets=0;
-     
         
         for (int group=0; group < ngroups; group++)
         {
             dvdv_track_array[group]=(char**) calloc(ntracks[group], sizeof(char*)); 
             uint32_t lplex_audio_characteristics_test[ntracks[group]];
             memset(lplex_audio_characteristics_test, '0', ntracks[group]);
-            
             cut_table[group]=(int*) calloc(ntracks[group], sizeof(int));
             
             for (int track=0; track < ntracks[group]; track++)
@@ -2521,8 +2519,6 @@ standard_checks:
                   delta_titlesets++;
                   cut_table[group][i]=1;
                 }
-                
-           
                 
 
         }
