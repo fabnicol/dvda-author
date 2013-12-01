@@ -38,9 +38,10 @@ extern globalData globals;
 * Purpose:  This function will analyze and repair the header
 *********************************************************************/
 int
-repair_wav(FILE* infile, WaveData *info, WaveHeader *header )
+repair_wav(WaveData *info, WaveHeader *header )
 {
 
+  FILE* infile=info->INFILE;
   int repair=GOOD_HEADER;
 
   errno=0;
@@ -178,14 +179,14 @@ repair_wav(FILE* infile, WaveData *info, WaveHeader *header )
     }
 
   /* The Subchunk2 Size = NumSample * NumChannels * BitsPerSample/8 */
-  if ( header->data_size == (file_size - header->header_size) )
+  if ( header->data_size == (file_size - header->header_size_in) )
     {
       printf(  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found correct Subchunk2 Size of %"PRIu32" bytes at offset 40\n", header->data_size );
     }
   else
     {
-      printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Subchunk2 Size at offset 40 is incorrect: found %"PRIu32" bytes instead of %"PRIu32"\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  ... repairing\n",header->data_size, (uint32_t) file_size -header->header_size  );
-      header->data_size = file_size - header->header_size;
+      printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Subchunk2 Size at offset 40 is incorrect: found %"PRIu32" bytes instead of %"PRIu32"\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  ... repairing\n",header->data_size, (uint32_t) file_size -header->header_size_in  );
+      header->data_size = file_size - header->header_size_in;
       repair = BAD_HEADER;
     }
 
@@ -232,13 +233,13 @@ int launch_repair(WaveData *info, WaveHeader *header, uint8_t * p)
       /* refresh header sizes
        * hence we substract the shrinking from original header to the standard one
        * to which one must add the prepending of a standard header, should it occur
-       * For datasize, which was valued as =filesize from the start (case where header_size == 0), we now have to correct by substracting HEADER_SIZE */
+       * For datasize, which was valued as =filesize from the start (case where header_size_in == 0), we now have to correct by substracting HEADER_SIZE */
 
 
-      int32_t delta= -MAX(header->header_size-HEADER_SIZE, 0)  + (info->prepend)*HEADER_SIZE;  /* must be signed */
+      int32_t delta= -MAX(header->header_size_in-HEADER_SIZE, 0)  + (info->prepend)*HEADER_SIZE;  /* must be signed */
       header->chunk_size+=delta;
-      header->data_size+=delta-(header->header_size == 0)*HEADER_SIZE;
-      header->header_size=(header->header_size)? header->header_size : HEADER_SIZE;
+      header->data_size+=delta-(header->header_size_in == 0)*HEADER_SIZE;
+      header->header_size_out=(header->header_size_in)? header->header_size_in : HEADER_SIZE;
 
     }
 
@@ -258,16 +259,20 @@ int launch_repair(WaveData *info, WaveHeader *header, uint8_t * p)
   uint16_copy_reverse(p, header->bit_p_spl), p+=2;
   uint32_copy_reverse(p, header->data_chunk), p+=4;
   uint32_copy_reverse(p, header->data_size);
-
-
+  if (header->is_extensible)
+    {
+    /* wiping out 14 bytes */
+      p+=4;
+      memset(p,0,WAV_EXTENSION_LENGTH);
+    }
 
   return(info->repair) ;
 }
 
 
-int write_header(uint8_t *newheader, FILE* outfile, WaveData *info)
+int write_header(WaveHeader *header, WaveData *info)
 {
-
+  FILE* outfile=info->OUTFILE; 
   // Only repairing headers virtually to cut down computing times (--fixwav-virtual)
 
   if (info->virtual) return(info->repair);
@@ -282,28 +287,23 @@ int write_header(uint8_t *newheader, FILE* outfile, WaveData *info)
       return(FAIL);
     }
 
-
   // in manager.c a sanity check ensures that if (info->prepend) then !(info->in_place)
   // Otherwise copying fixed header to new file or in place, depending on option
 
   /* try to seek right offset depending on type of file */
 
-
-  if (info->in_place)
+  if (info->in_place && globals.debugging)
     {
       printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Overwriting header...");
     }
 
-  count=fwrite(newheader, HEADER_SIZE, 1, outfile ) ;
-
+  count=fwrite(header->header_out, header->header_size_out, 1, outfile ) ;
 
   if (count != 1)
     {
       fprintf( stderr, "%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Error updating wav file.");
       return(FAIL);
     }
-
-
 
   if (errno)
     {
