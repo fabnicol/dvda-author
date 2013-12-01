@@ -1099,8 +1099,10 @@ int get_endianness()
 
 }
 
-void parse_wav_header(FILE * infile, infochunk* ichunk)
+void parse_wav_header(WaveData* info, infochunk* ichunk)
 {
+    
+    FILE * infile=info->INFILE;
     uint8_t haystack[MAX_HEADER_SIZE]= {0};
     int count;
     if ((count=fread(haystack, 1, MAX_HEADER_SIZE, infile)) != MAX_HEADER_SIZE)
@@ -1136,8 +1138,18 @@ void parse_wav_header(FILE * infile, infochunk* ichunk)
     }
     while ( span < MAX_HEADER_SIZE-7);
 
-    pt=&haystack[0];
+    if (span == 50)
+      if (haystack[38] == 'f' && haystack[39] == 'a' && haystack[40] == 'c' && haystack[41] == 't')
+       {
+         if (globals.debugging)
+           fprintf(stderr, "%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET "Wav header is in bare Wav extensible format." );
+         
+          ichunk->is_extensible=1;
+          return;
+       }
 
+    pt=&haystack[0];
+    
     if (span > 36)
     {
         /* header is non-standard, looking for INFO chunks */

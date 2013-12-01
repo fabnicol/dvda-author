@@ -3,28 +3,25 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
-
-
+#include <stdint.h>
 
 #define LITTLE_ENDIAN_WRITE_2_bytes(Y, X)  uint16_copy_reverse(Y, X);
 
-
 #define _LITTLE_ENDIAN_WRITE_2_bytes(Y, X) LITTLE_ENDIAN_WRITE_2_bytes(Y, X)\
                                            Y+=2;
-
+                                           
 #define LITTLE_ENDIAN_WRITE_4_bytes(Y, X)  uint32_copy_reverse(Y, X);
 
 #define _LITTLE_ENDIAN_WRITE_4_bytes(Y, X) LITTLE_ENDIAN_WRITE_4_bytes(Y, X)\
                                            Y+=4;
 
-
-
-
 typedef struct
   {
     /* pointers */
     char* infile;
+    FILE* INFILE;
     char* outfile;
+    FILE* OUTFILE;
     char* database;
     char* filetitle;
 
@@ -48,7 +45,11 @@ typedef struct
 
 typedef struct
   {
-
+    _Bool       is_extensible;
+    uint8_t*    header_in;
+    uint8_t*    header_out;
+    uint8_t     header_size_in; /* size of header */
+    uint8_t     header_size_out; /* size of header */
     uint16_t	sc_format;	/* should be 1 for PCM-code */
     uint16_t	channels;	/* 1 Mono, 2 Stereo */
     uint16_t	byte_p_spl;	/* samplesize*/
@@ -61,12 +62,14 @@ typedef struct
     uint32_t	sub_chunk;	/* 'fmt ' */
     uint32_t	sc_size;	/* length of sub_chunk = 16 */
     uint32_t	sample_fq;	/* frequence of sample */
-    uint32_t	byte_p_sec;     /* bytes per second */
-
+    uint32_t	byte_p_sec; /* bytes per second */
+    uint16_t    wavext;     /* wav extension = 0 */
+    uint32_t    fact_chunk; /* 'fact'*/
+    uint32_t    fact_length; /* length of fact chunk - 8 in bytes = 4*/
+    uint32_t    n_spl;       /* number of samples written out */
     uint32_t	data_chunk;	/* 'data' */
     uint32_t	data_size;	/* samplecount */
-    uint8_t     header_size; /* size of header */
-
+ 
   } WaveHeader;
 
 
@@ -74,7 +77,7 @@ typedef struct
 
 
 WaveHeader    *fixwav(WaveData *info, WaveHeader *header);
-int repair_wav(FILE* infile, WaveData *info, WaveHeader *header );
+int repair_wav(WaveData *info, WaveHeader *header );
 void print_fixwav_help();
 
 

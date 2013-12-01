@@ -45,7 +45,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 {
 
   // NULL init necessary
-  FILE* infile=NULL, *outfile=NULL;
+
   int length=0;
   uint64_t size=0;
   static int section;
@@ -151,7 +151,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   if (info->virtual)
   {
-    infile=secure_open(info->infile, "rb+");
+    info->INFILE=secure_open(info->infile, "rb+");
   }
   else
     {
@@ -160,8 +160,8 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
         {
           if (strcmp(info->infile, info->outfile))
             {
-              infile=secure_open(info->infile, "rb");
-              outfile=secure_open(info->outfile, "ab");
+              info->INFILE=secure_open(info->infile, "rb");
+              info->OUTFILE=secure_open(info->outfile, "ab");
             }
           else
             {
@@ -190,19 +190,21 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
           printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Opening %s\n", info->outfile);
 
           info->outfile=info->infile;
-          outfile=infile=secure_open(info->infile, "rb+");
+          info->OUTFILE=info->INFILE=secure_open(info->infile, "rb+");
 
         }
     }
-
-
 
   /* reads header */
 
   uint8_t span=0;
   infochunk ichunk;
   memset(&ichunk, 0, sizeof(infochunk));
-  if (!info->prepend) parse_wav_header(infile, &ichunk);
+   
+  if (!info->prepend) 
+     parse_wav_header(info, &ichunk);
+   
+  header->is_extensible=ichunk.is_extensible;    
   span=ichunk.span;
 
   /* if found info tags, dumps them in textfile database, which can only occur of span > 36 */
@@ -218,20 +220,18 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
       fclose(database);
    }
 
-
-  header->header_size=(span > 0)? ((span+8 < 256)? span+8 : MAX_HEADER_SIZE) : MAX_HEADER_SIZE;
-
+  header->header_size_in=(span > 0)? ((span+8 < 256)? span+8 : MAX_HEADER_SIZE) : MAX_HEADER_SIZE;
 
   /* reverting to user input and resetting header_size to 0 if: failed to parse header, or prepending, or header_size > 255 */
-  if ((readHeader(infile, header) == FAIL) || (info->prepend)|| (header->header_size == MAX_HEADER_SIZE))
+  if ((readHeader(info->INFILE, header) == FAIL) || (info->prepend)|| (header->header_size_in == MAX_HEADER_SIZE))
   {
       info->interactive=1;
       info->automatic=0;
-      header->header_size=0;
+      header->header_size_in=0;
       info->repair=BAD_HEADER;
   }
 
-  info->repair = repair_wav(infile, info, header );
+  info->repair = repair_wav(info, header);
 
   /* for virtual fixwav, no tampering with sample counts on file as file cannot be altered
      if --no-padding is not activated for dvda-author, this will be corrected by core dvda-author routines */
@@ -242,13 +242,9 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
   /* to be able to alter sample counts, you must enforce --fixwav=padding on command line, unless you are pruning */
 
 
-
   /****************************************************
   *   Pruning	if requested
   *****************************************************/
-
-
-
 
   if  (info->prune)
     {
@@ -256,7 +252,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
       printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Pruning stage");
 
 
-      switch (prune(infile, outfile, info, header))
+      switch (prune(info->INFILE, info->OUTFILE, info, header))
         {
         case NO_PRUNE:
           printf( "%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Fixwav status 3:\n       File was not pruned (no ending zeros)." );
@@ -340,7 +336,7 @@ Checkout:
 
       printf( "%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Fixwav status 4:\n       WAVE header corrupt." );
 
-      uint8_t standard_header[HEADER_SIZE]={0};
+      uint8_t standard_header[HEADER_SIZE+WAV_EXTENSION_LENGTH]={0};  //+14 to erase extended fact chunks inw wavext format
 
 
       if ((info->repair=launch_repair(info, header, standard_header)) == FAIL) break;
@@ -349,28 +345,29 @@ Checkout:
             {
               uint64_t   input_file_byte_size=header->chunk_size+8-HEADER_SIZE;
 
-              if ((info->repair=write_header(standard_header, outfile, info)) != FAIL)
+              if ((info->repair=write_header(standard_header, info)) != FAIL)
                 {
 
                   printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Header copy successful.\n");
-                  if (fclose(outfile) != 0) return(NULL);
-                  outfile=secure_open(info->outfile, "rb+");
+                  if (fclose(info->OUTFILE) != 0) return(NULL);
+                  info->OUTFILE=secure_open(info->outfile, "rb+");
                   if (globals.maxverbose) {
                        printf("%s","Dumping new header:\n\n");
-                       hexdump_header(outfile, HEADER_SIZE);
+                       hexdump_header(info->OUTFILE, HEADER_SIZE);
                   }
                 }
               else break;
 
               if (!info->in_place)
                 {
-                  if (copy_file_p(infile, outfile, (info->prepend) ? 0 : header->header_size, input_file_byte_size) == PAD)
-                      if (info->padbytes) pad_end_of_file(outfile, info->padbytes);
+                  if (copy_file_p(info->INFILE, info->OUTFILE, (info->prepend) ? 0 : header->header_size_out, input_file_byte_size) == PAD)
+                      if (info->padbytes) pad_end_of_file(info);
 
                   info->repair=BAD_HEADER;
                 }
               else
-                if (info->padbytes) pad_end_of_file(outfile, info->padbytes);
+                if (info->padbytes) 
+                   pad_end_of_file(info);
 
 
             }
@@ -388,7 +385,7 @@ Checkout:
 
 getout:
 
-  if (check_real_size(infile, outfile, info, header)) goto Checkout;
+  if (check_real_size(info, header)) goto Checkout;
 
   if  (info->repair == BAD_HEADER)
     printf( "%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Fixwav status--summary:\n       HEADER chunk corrupt: fixed." );
@@ -406,13 +403,13 @@ getout:
 
   if (!info->virtual)
     {
-      if ((infile == NULL) || (outfile == NULL) )
+      if ((info->INFILE == NULL) || (info->OUTFILE == NULL) )
         {
           fprintf(stderr, "%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  File pointer is NULL.");
           return(NULL);
         }
 
-      if ((fclose(infile) == EOF) || ((!info->in_place)  && (fclose(outfile) == EOF)) )
+      if ((fclose(info->INFILE) == EOF) || ((!info->in_place)  && (fclose(info->OUTFILE) == EOF)) )
         {
 
           fprintf(stderr, "%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  fclose error: issues may arise.");
@@ -421,13 +418,13 @@ getout:
     }
   else
     {
-      if (infile == NULL)
+      if (info->INFILE == NULL)
         {
           fprintf(stderr, "%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  File pointer is NULL.");
           return(NULL);
         }
 
-      if (fclose(infile) == EOF)
+      if (fclose(info->INFILE) == EOF)
         {
 
           fprintf(stderr, "%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  fclose error: issues may arise.");
