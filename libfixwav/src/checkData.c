@@ -48,8 +48,10 @@ extern globalData globals;
 
 *********************************************************************/
 
-int pad_end_of_file(FILE* outfile, uint32_t complement)
+int pad_end_of_file(WaveData* info)
 {
+  FILE* outfile=info->OUTFILE;
+  uint32_t complement=info->padbytes;
   char buf[complement];
   memset(buf, 0, complement);
 
@@ -94,12 +96,13 @@ int check_sample_count(WaveData *info, WaveHeader *header)
            updated information.
 *********************************************************************/
 
-_Bool check_real_size(FILE* infile, FILE* outfile, WaveData *info, WaveHeader *header)
+_Bool check_real_size(WaveData *info, WaveHeader *header)
 {
   uint64_t size=0;
   char* filepath=NULL;
   FILE* file=NULL;
-
+  FILE* infile=info->INFILE;
+  FILE* outfile=info->OUTFILE; 
 
   /* get the new file statistics, depending on whether there were changes or not */
   /* stat needs a newly opened file to tech stats */
@@ -139,15 +142,15 @@ _Bool check_real_size(FILE* infile, FILE* outfile, WaveData *info, WaveHeader *h
       header->chunk_size = (uint32_t) size - 8 ; // if prepending, chunk_size was computed as the full size of raw file -8 bytes to which one must add the size of new header
   }
 
-  if (header->data_size == (uint32_t) size - header->header_size)
+  if (header->data_size == (uint32_t) size - header->header_size_in)
   {
       if (globals.debugging)
         printf("%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Verifying real data size on disc... OK");
   }
   else
   {
-      if (globals.debugging) printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Verifying real data size on disc... fixed:\n       header size: %d, expected size: %u, real size: %llu\n", header->header_size, header->data_size+header->header_size, size );
-      header->data_size = (uint32_t) size - header->header_size ;  // if prepending, data_size was computed as the full size of raw file hence this new size minus HEADER_SIZE
+      if (globals.debugging) printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Verifying real data size on disc... fixed:\n       header size: %d, expected size: %u, real size: %llu\n", header->header_size_in, header->data_size+header->header_size_in, size );
+      header->data_size = (uint32_t) size - header->header_size_in ;  // if prepending, data_size was computed as the full size of raw file hence this new size minus HEADER_SIZE
   }
 
 

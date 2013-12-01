@@ -63,7 +63,9 @@ errno=0;
         WaveData wavedata=
         {
             path,
+            NULL,
             "st",
+            NULL,
             NULL,
             NULL,
             1, /* automatic behaviour */
@@ -110,7 +112,9 @@ int audit_soundtrack(char* path, _Bool strict)
         WaveData wavedata=
         {
             path,
-            strdup("useless"),
+            NULL,
+            "aud",
+            NULL,
             NULL,
             NULL,
             1, /* automatic behaviour */

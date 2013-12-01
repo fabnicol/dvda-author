@@ -41,7 +41,7 @@ typedef struct
     uint8_t type;
     uint8_t bitspersample;
     uint8_t channels;
-    _Bool dvdv_compliant;
+    _Bool   dvdv_compliant;
     // L&T Fedkamp addition
     uint8_t joingap;
     uint8_t single_track;
