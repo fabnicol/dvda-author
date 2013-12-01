@@ -40,8 +40,6 @@ int user_control(WaveData *info, WaveHeader *header)
 
   if (info->interactive)
     {
-
-
       if (!info->prepend)
       {  // useless if prepending, as 'header' info is always wrong
           printf( "\n%s\n", "[INT]  Is the file recorded in " );

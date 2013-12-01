@@ -37,8 +37,8 @@ errno=0;
 if (-1 == sox_initialise()) 
  return -1;
    
-char *args24[]= {SOX_BASENAME,  (char*)in, "-b", (char*) bitrate, (char*)out,"rate", "-v","-I","-b","90",(char*)samplerate, NULL};  
-char *args16[]= {SOX_BASENAME,  (char*)in, "-b", (char*)bitrate, (char*)out,"rate", "-s","-a",(char*)samplerate,"dither","-s", NULL};  
+char *args24[]= {SOX_BASENAME,  (char*)in, "-b", (char*) bitrate,(char*)out,"rate", "-v","-I","-b","90", (char*)samplerate, NULL};  
+char *args16[]= {SOX_BASENAME,  (char*)in, "-b", (char*) bitrate, (char*)out,"rate", "-s","-a",(char*)samplerate,"dither","-s", NULL};  
 change_directory(globals.settings.workdir);
 foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Running SoX for resampling to %s bit-%s kHz audio: %s --> %s\n",bitrate,samplerate,in,out);
 if (strcmp(bitrate, "16") == 0)
@@ -46,10 +46,55 @@ if (strcmp(bitrate, "16") == 0)
   errno=run(sox, args16, 0);
 }
 else 
+{
   errno=run(sox, args24, 0);
-  
+  if (errno == 0) errno=standardize_wav_header((char*) out);
+} 
 #endif
 return errno;
+}
+
+
+int standardize_wav_header(char* path)
+{
+errno=0;
+#if HAVE_libfixwav
+        WaveHeader waveheader;
+        WaveData wavedata=
+        {
+            path,
+            "st",
+            NULL,
+            NULL,
+            1, /* automatic behaviour */
+            0, /* prepending */
+            1, /* in-place*/
+            0, /* not cautious */
+            0, /* not interactive */
+            0, /* end-padding=no*/
+            0, /* no pruning */
+            0, /* read fix, not a virtual one*/
+            0, /* repair status */
+            0, /* padbytes */
+            0, /* pruned bytes */
+        };
+
+        fixwav(&wavedata, &waveheader);
+       if (globals.veryverbose) 
+            {
+                foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  LPCM diagnostics: bps=%d, sample rate=%d, channels=%d \n", 
+                         waveheader.bit_p_spl, waveheader.sample_fq, waveheader.channels);
+            }
+       if ((waveheader.bit_p_spl != 16 && waveheader.bit_p_spl != 24) || (waveheader.sample_fq != 48000 && waveheader.sample_fq != 96000) ||
+           (waveheader.channels > 6 || waveheader.channels == 0))
+            {
+                foutput("%s",ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Did not manage to standardize wav header.\n");
+                errno=1;
+            }
+       
+#endif
+    return errno;
+
 }
 
 
