@@ -33,6 +33,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 
 #include "version.h"
+#include "fixwav_manager.h"
 
 #ifdef __WIN32__
 #define SEPARATOR "\\"
@@ -163,6 +164,7 @@ typedef struct
     /* RIFF info chunks to be parsed: INAM, IART, ICMT, ICOP, ICRD, IGNR */
     uint8_t found;
     uint8_t span;
+    uint8_t is_extensible;
     uint8_t INAM[MAX_LIST_SIZE];
     uint8_t IART[MAX_LIST_SIZE];
     uint8_t ICMT[MAX_LIST_SIZE];
@@ -196,7 +198,7 @@ void hexdump_header(FILE* infile, uint8_t header_size);
 void hexdump_pointer(uint8_t* tab,  size_t tabsize);
 FILE* secure_open(const char *path, const char *context);
 int end_seek(FILE* outfile);
-void parse_wav_header(FILE * infile, infochunk* ichunk);
+void parse_wav_header(WaveData* info, infochunk* ichunk);
 const char* get_command_line(const char* args[]);
 char* get_full_command_line(const char** args);
 // These functions should be inlined hence in a header file

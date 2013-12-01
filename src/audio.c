@@ -354,7 +354,9 @@ int fixwav_repair(fileinfo_t *info)
     WaveData wavedata=
     {
         info->filename,
+        NULL,
         buf,
+        NULL,
         globals.settings.fixwav_database,  /* database path for collecting info chunks in headers */
         NULL,
         globals.fixwav_automatic, /* automatic behaviour */
@@ -392,8 +394,8 @@ int fixwav_repair(fileinfo_t *info)
         info->bitspersample=(uint8_t) waveheader.bit_p_spl;
         info->channels=(uint8_t) waveheader.channels;
         info->numbytes=waveheader.data_size;
-        info->file_size=info->numbytes+waveheader.header_size;
-        info->header_size=waveheader.header_size;
+        info->file_size=info->numbytes+waveheader.header_size_out;
+        info->header_size=waveheader.header_size_out;
 
         if (wavedata.repair == GOOD_HEADER)
         {
@@ -604,7 +606,9 @@ int wav_getinfo(fileinfo_t* info)
     infochunk ichunk;
     memset(&ichunk, 0, sizeof(infochunk));
     uint8_t span=0;
-    parse_wav_header(fp, &ichunk);
+    WaveData wavinfo;
+    wavinfo.INFILE=fp;
+    parse_wav_header(&wavinfo, &ichunk);
     span=ichunk.span;
 
     info->header_size=(span > 0) ? span + 8 : MAX_HEADER_SIZE;

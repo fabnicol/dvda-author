@@ -23,6 +23,7 @@
 /* real size of header in bytes */
 #define HEADER_SIZE 44
 #define HAVE_STANDARD_HEADER 44
+#define WAV_EXTENSION_LENGTH 36
 #define HAVE_NON_STANDARD_HEADER 72
 
 #define FW_VERSION "Version 0.1.4\n\n"\
