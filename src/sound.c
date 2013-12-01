@@ -37,8 +37,8 @@ errno=0;
 if (-1 == sox_initialise()) 
  return -1;
    
-char *args24[]= {SOX_BASENAME, (char*)in, "-b", (char*) bitrate, (char*)out,"rate", "-v","-I","-b","90",(char*)samplerate, NULL};  
-char *args16[]= {SOX_BASENAME, (char*)in, "-b", (char*)bitrate, (char*)out,"rate", "-s","-a",(char*)samplerate,"dither","-s", NULL};  
+char *args24[]= {SOX_BASENAME,  (char*)in, "-b", (char*) bitrate, (char*)out,"rate", "-v","-I","-b","90",(char*)samplerate, NULL};  
+char *args16[]= {SOX_BASENAME,  (char*)in, "-b", (char*)bitrate, (char*)out,"rate", "-s","-a",(char*)samplerate,"dither","-s", NULL};  
 change_directory(globals.settings.workdir);
 foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Running SoX for resampling to %s bit-%s kHz audio: %s --> %s\n",bitrate,samplerate,in,out);
 if (strcmp(bitrate, "16") == 0)
@@ -228,9 +228,12 @@ int launch_lplex_soundtrack(pic* img, const char* create_mode)
 #undef DIM_LPLEX_CLI 
 #define DIM_LPLEX_CLI 13
 
-int launch_lplex_hybridate(const pic* img, const char* create_mode,
-                           const char*** trackpath, const uint8_t* ntracks, 
-                           const char*** slidepath, uint8_t* nslides, 
+int launch_lplex_hybridate(const pic* img, 
+                           const char* create_mode,
+                           const char*** trackpath, 
+                           const uint8_t* ntracks, 
+                           const char*** slidepath, 
+                           uint8_t* nslides, 
                            const int ntitlesets)
 
 {
@@ -243,15 +246,19 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
       EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Allocation of DVD-VIDEO tracks/slides")
     }
     
-    const char *args0[DIM_LPLEX_CLI]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", 
-    "--workPath", globals.settings.lplextempdir, 
-    "-x", "false", "--video", img->norm, "--dir", globals.settings.lplexoutdir};
+    const char *args0[DIM_LPLEX_CLI]= {LPLEX_BASENAME, 
+                "--create", create_mode,
+                "--verbose", (globals.debugging)?"true":"false", 
+                "--workPath", globals.settings.lplextempdir, 
+                "-x", "false",
+                "--video", img->norm,
+                "--dir", globals.settings.lplexoutdir};
     
     int argssize=0;
     
     for (int group=0; group < ntitlesets; group++)
     {
-          argssize += ntracks[group] + (group)+ nslides[group]*2;
+          argssize += ntracks[group] + (group >0)+ nslides[group]*2;
     }
         
     char* args[DIM_LPLEX_CLI+argssize+1];
@@ -337,8 +344,10 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
     
     args[tot]=NULL; 
     
-    for (int u=0; u < DIM_LPLEX_CLI+argssize+1; u++) fprintf(stderr, "%s ", args[u]);
-    
+    for (int u=0; u < DIM_LPLEX_CLI+argssize+1; u++) 
+    {
+         fprintf(stderr, "%s ", args[u]);
+    }
     if (globals.debugging)
         {
             foutput("%s",ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Launching lplex to create hybrid...\n");
