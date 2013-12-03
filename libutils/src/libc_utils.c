@@ -1118,8 +1118,29 @@ void parse_wav_header(WaveData* info, infochunk* ichunk)
     fseek(infile, 0, SEEK_SET);
     // PATCH 09.07
 
+
     do
     {
+        if ((pt=memchr(haystack+span+1, 'f', MAX_HEADER_SIZE-1-span)) != NULL)
+        {
+          if ((*(pt + 1) == 'a') && (*(pt + 2) == 'c') && (*(pt + 3) == 't')) 
+          {
+           ichunk->is_extensible=1;   
+           break;
+          }
+          span=pt-haystack;
+        }
+        else 
+        break;
+
+    }
+    while ( span < MAX_HEADER_SIZE-7);
+    
+    span=0;
+      
+    do
+    {
+        
         if ((pt=memchr(haystack+span+1, 'd', MAX_HEADER_SIZE-1-span)) == NULL)
         {
             printf(""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Could not find substring 'data' among %d characters\n", MAX_HEADER_SIZE);
@@ -1137,16 +1158,6 @@ void parse_wav_header(WaveData* info, infochunk* ichunk)
 
     }
     while ( span < MAX_HEADER_SIZE-7);
-
-    if (span == 50)
-      if (haystack[38] == 'f' && haystack[39] == 'a' && haystack[40] == 'c' && haystack[41] == 't')
-       {
-         if (globals.debugging)
-           fprintf(stderr, "%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET "Wav header is in bare Wav extensible format." );
-         
-          ichunk->is_extensible=1;
-          return;
-       }
 
     pt=&haystack[0];
     

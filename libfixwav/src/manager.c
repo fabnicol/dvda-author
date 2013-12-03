@@ -277,8 +277,6 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
   *	Now checking whole number of samples
   *****************************************************/
 
-
-
   switch (check_sample_count(info, header))
     {
     case GOOD_HEADER:
@@ -336,18 +334,17 @@ Checkout:
 
       printf( "%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Fixwav status 4:\n       WAVE header corrupt." );
 
-      uint8_t standard_header[HEADER_SIZE+WAV_EXTENSION_LENGTH]={0};  //+14 to erase extended fact chunks inw wavext format
+      uint8_t standard_header[HEADER_SIZE]={0};  
+      
+      header->header_out=standard_header;
+      header->header_size_out= HEADER_SIZE;
 
-
-      if ((info->repair=launch_repair(info, header, standard_header)) == FAIL) break;
+      if ((info->repair=launch_repair(info, header)) == FAIL) break;
 
           if (!info->virtual)
             {
-              uint64_t   input_file_byte_size=header->chunk_size+8-HEADER_SIZE;
-
-              if ((info->repair=write_header(standard_header, info)) != FAIL)
+             if ((info->repair=write_header(info, header)) != FAIL)
                 {
-
                   printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Header copy successful.\n");
                   if (fclose(info->OUTFILE) != 0) return(NULL);
                   info->OUTFILE=secure_open(info->outfile, "rb+");
@@ -360,7 +357,10 @@ Checkout:
 
               if (!info->in_place)
                 {
-                  if (copy_file_p(info->INFILE, info->OUTFILE, (info->prepend) ? 0 : header->header_size_out, input_file_byte_size) == PAD)
+                  if (copy_file_p(info->INFILE, info->OUTFILE, 
+                                  (info->prepend) ? 0 : header->header_size_out,
+                                   header->data_size) == PAD)
+                                   
                       if (info->padbytes) pad_end_of_file(info);
 
                   info->repair=BAD_HEADER;
@@ -369,12 +369,9 @@ Checkout:
                 if (info->padbytes) 
                    pad_end_of_file(info);
 
-
             }
 
-
       break;
-
 
     case	FAIL       :
       printf( "%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Fixwav status 4:\n       Failure at repair stage." );
