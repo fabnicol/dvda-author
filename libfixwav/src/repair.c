@@ -181,11 +181,17 @@ repair_wav(WaveData *info, WaveHeader *header )
   /* The Subchunk2 Size = NumSample * NumChannels * BitsPerSample/8 */
   if ( header->data_size == (file_size - header->header_size_in) )
     {
-      printf(  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found correct Subchunk2 Size of %"PRIu32" bytes at offset 40\n", header->data_size );
+      printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found correct Subchunk2 Size of %"PRIu32" bytes at offset %d\n", 
+             header->data_size,
+             header->header_size_in-4);
     }
   else
     {
-      printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Subchunk2 Size at offset 40 is incorrect: found %"PRIu32" bytes instead of %"PRIu32"\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  ... repairing\n",header->data_size, (uint32_t) file_size -header->header_size_in  );
+      printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Subchunk2 Size at offset %d is incorrect: found %"PRIu32" bytes instead of %"PRIu32"\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  ... repairing\n",
+             header->header_size_in-4,
+             header->data_size, 
+             (uint32_t) file_size -header->header_size_in);
+             
       header->data_size = file_size - header->header_size_in;
       repair = BAD_HEADER;
     }
@@ -197,10 +203,10 @@ repair_wav(WaveData *info, WaveHeader *header )
 
 
 
-int launch_repair(WaveData *info, WaveHeader *header, uint8_t * p)
+int launch_repair(WaveData *info, WaveHeader *header)
 {
-
-
+  uint8_t *p=header->header_out;
+  
   printf( "%s", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Writing new header...\n" );
 
   /* if -o option is not used, fixwav will overwrite existing data; confirmation dialog */
@@ -224,25 +230,20 @@ int launch_repair(WaveData *info, WaveHeader *header, uint8_t * p)
 
   /* if OK */
   /* readjusting sizes after normalization */
-  /* if prepending, always not in place and header_size=0 */
-
-  else
-    {
+  /* if prepending, always not in place and header_size_in=0 */
 
 
-      /* refresh header sizes
-       * hence we substract the shrinking from original header to the standard one
-       * to which one must add the prepending of a standard header, should it occur
-       * For datasize, which was valued as =filesize from the start (case where header_size_in == 0), we now have to correct by substracting HEADER_SIZE */
+  /* refresh header sizes
+   * hence we substract the shrinking from original header to the standard one
+   * to which one must add the prepending of a standard header, should it occur
+   */
 
+  header->data_size += header->header_size_in-header->header_size_out;  // will be padded by zeros
 
-      int32_t delta= -MAX(header->header_size_in-HEADER_SIZE, 0)  + (info->prepend)*HEADER_SIZE;  /* must be signed */
-      header->chunk_size+=delta;
-      header->data_size+=delta-(header->header_size_in == 0)*HEADER_SIZE;
-      header->header_size_out=(header->header_size_in)? header->header_size_in : HEADER_SIZE;
-
-    }
-
+ // otherwise unchanged
+  
+  header->chunk_size=header->data_size+header->header_size_out-8;
+  
   /* write the new header at the beginning of the file */
   /* again, copying manually rather than invoking fread to ensure cross-compiler/platform portability */
 
@@ -259,18 +260,12 @@ int launch_repair(WaveData *info, WaveHeader *header, uint8_t * p)
   uint16_copy_reverse(p, header->bit_p_spl), p+=2;
   uint32_copy_reverse(p, header->data_chunk), p+=4;
   uint32_copy_reverse(p, header->data_size);
-  if (header->is_extensible)
-    {
-    /* wiping out 14 bytes */
-      p+=4;
-      memset(p,0,WAV_EXTENSION_LENGTH);
-    }
-
+ 
   return(info->repair) ;
 }
 
 
-int write_header(WaveHeader *header, WaveData *info)
+int write_header(WaveData *info, WaveHeader *header)
 {
   FILE* outfile=info->OUTFILE; 
   // Only repairing headers virtually to cut down computing times (--fixwav-virtual)
@@ -298,6 +293,12 @@ int write_header(WaveHeader *header, WaveData *info)
     }
 
   count=fwrite(header->header_out, header->header_size_out, 1, outfile ) ;
+ if (header->is_extensible)
+    {
+    /* wiping out wavext+14 bytes (36 for SoX 24-bit headers)*/
+      for (int i=0; i < header->wavext+WAV_EXTENSION_LENGTH; i++)
+        fputc(0,outfile);
+    }
 
   if (count != 1)
     {

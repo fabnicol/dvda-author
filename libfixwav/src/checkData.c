@@ -142,15 +142,15 @@ _Bool check_real_size(WaveData *info, WaveHeader *header)
       header->chunk_size = (uint32_t) size - 8 ; // if prepending, chunk_size was computed as the full size of raw file -8 bytes to which one must add the size of new header
   }
 
-  if (header->data_size == (uint32_t) size - header->header_size_in)
+  if (header->data_size == (uint32_t) size - header->header_size_out)
   {
       if (globals.debugging)
         printf("%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Verifying real data size on disc... OK");
   }
   else
   {
-      if (globals.debugging) printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Verifying real data size on disc... fixed:\n       header size: %d, expected size: %u, real size: %llu\n", header->header_size_in, header->data_size+header->header_size_in, size );
-      header->data_size = (uint32_t) size - header->header_size_in ;  // if prepending, data_size was computed as the full size of raw file hence this new size minus HEADER_SIZE
+      if (globals.debugging) printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Verifying real data size on disc... fixed:\n       header size: %d, expected size: %u, real size: %llu\n", header->header_size_out, header->data_size+header->header_size_out, size );
+      header->data_size = (uint32_t) size - header->header_size_out ;  // if prepending, data_size was computed as the full size of raw file hence this new size minus HEADER_SIZE
   }
 
 

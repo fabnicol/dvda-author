@@ -307,7 +307,7 @@ int launch_lplex_hybridate(const pic* img,
     
     for (int group=0; group < ntitlesets; group++)
     {
-          argssize += ntracks[group] + (group >0)+ nslides[group]*2;
+          argssize += (ntracks[group]>0)*(ntracks[group] + (group >0)+ nslides[group]*2);
     }
         
     char* args[DIM_LPLEX_CLI+argssize+1];
@@ -319,13 +319,13 @@ int launch_lplex_hybridate(const pic* img,
     {
       if (globals.veryverbose) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Now processing titleset %d/%d...\n", group, ntitlesets);
       
-      if (group)
+      if (group && ntracks[group])
       {
        args[tot]="ts";
        tot++;
       }
       
-      if (nslides[group] == 0)
+      if (ntracks[group] > 0 && nslides[group] == 0)
       {
         fprintf(stderr, "%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  No slides for any track. Fix this issue and relaunch.\n");
         EXIT_ON_RUNTIME_ERROR
