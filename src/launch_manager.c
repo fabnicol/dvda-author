@@ -152,6 +152,10 @@ command_t *scan_wavfile_audio_characteristics(command_t *command)
 // if AFMT was found, j will have been incremented earlier
 // otherwise it is necessary to reparse again files[i][j] as indices have been shifted
 
+   if (error != NO_AFMT_FOUND && (j))
+         files[i][j-1].dvdv_compliant=
+                  ((files[i][j-1].bitspersample == 16  || files[i][j-1].bitspersample == 24)
+                 &&(files[i][j-1].samplerate  == 96000 || files[i][j-1].samplerate  == 48000));
     
 
     _Bool increment_group=(j == ntracks[i]);

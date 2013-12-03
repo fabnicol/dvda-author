@@ -3,8 +3,8 @@
 
 #include "fixwav_manager.h"
 
-int launch_repair(WaveData *info, WaveHeader *header, uint8_t* p);
-int write_header(WaveHeader* header, WaveData *info);
+int launch_repair(WaveData *info, WaveHeader *header);
+int write_header(WaveData *info, WaveHeader* header);
 
 #endif
 // REPAIR_H_INCLUDED

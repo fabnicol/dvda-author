@@ -2227,61 +2227,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     
     if (still_options_string)
         still_options_parsing(still_options_string, img);
-    
-    /* leftover issue: with --hybridate, if a track is non dvdv-compliant, the wrong slide will  be selected !*/
-    
-    if (hybridate_flag || full_hybridate_flag)
-    {
-        lplex_slides_flag=1;
-        int g=0;
-        dvdv_slide_array=calloc(ngroups, sizeof(char**));
-        if (dvdv_slide_array == NULL) EXIT_ON_RUNTIME_ERROR
-        dvdv_slide_array[0]=calloc(ntracks[g], sizeof(char *));        
-        if (dvdv_slide_array[0] == NULL) EXIT_ON_RUNTIME_ERROR
-        if (ndvdvslides == NULL) ndvdvslides=calloc(ngroups, sizeof(uint8_t));
-        if (ndvdvslides == NULL) EXIT_ON_RUNTIME_ERROR
-        
-        int N=ntracks[0];
-        int T=0;
-        
-        for (int t=0;  t < totntracks; t++)
-        {
-            if (g < ngroups-1 && t >= N)
-            {
-                T = 0;
-                N += ntracks[g];    
-                g++;
-                dvdv_slide_array[g]=calloc(ntracks[g], sizeof(char *));
-                if (dvdv_slide_array[g] == NULL) EXIT_ON_RUNTIME_ERROR
-            }
-            
-            
-            if (picks_per_track_double_array == NULL  ||
-                 picks_per_track_double_array[t] == NULL ||
-                 picks_per_track_double_array[t][0] == NULL)
-                 {
-                   char slide[strlen(globals.settings.workdir)+STRLEN_SEPARATOR+strlen(img->blankscreen)+1];
-                   sprintf(slide, "%s%s%s", globals.settings.workdir,SEPARATOR,img->blankscreen);
-                   dvdv_slide_array[g][T]=strdup(slide);  
-                     fprintf(stderr,"***%s\n",slide);    
-                 }
-                 else
-                 {
-                   dvdv_slide_array[g][T]=strdup(picks_per_track_double_array[t][0]);
-                   fprintf(stderr,"$$$ %d, %d, %s\n",g, T, dvdv_slide_array[g][T]);
-                   
-                 }  
-                 
-           T++;
-                       
-            //if (picks_per_track_double_array) FREE(picks_per_track_double_array[t])
-            ndvdvslides[g]++;
-        }
-        
-    }
-    
-    FREE(picks_per_track_double_array)
-    free(stillpic_string);
+   
     
 #endif
     
@@ -2325,9 +2271,70 @@ standard_checks:
     memcpy(command, &command0, sizeof(command0));
     
     if (user_command_line)    
+    {
         scan_wavfile_audio_characteristics(command);
+    }
         
     #if ! HAVE_core_BUILD
+    
+        
+    if (hybridate_flag || full_hybridate_flag)
+    {
+        
+        lplex_slides_flag=1;
+        int g=0;
+        dvdv_slide_array=calloc(ngroups, sizeof(char**));
+        if (dvdv_slide_array == NULL) EXIT_ON_RUNTIME_ERROR
+        dvdv_slide_array[0]=calloc(ntracks[g], sizeof(char *));        
+        if (dvdv_slide_array[0] == NULL) EXIT_ON_RUNTIME_ERROR
+        if (ndvdvslides == NULL) ndvdvslides=calloc(ngroups, sizeof(uint8_t));
+        if (ndvdvslides == NULL) EXIT_ON_RUNTIME_ERROR
+        
+        int N=ntracks[0];
+        int T=0;
+        
+        for (int t=0;  t < totntracks; t++)
+        {
+            if (g < ngroups-1 && t >= N)
+            {
+                T = 0;
+                N += ntracks[g];    
+                g++;
+                dvdv_slide_array[g]=calloc(ntracks[g], sizeof(char *));
+                if (dvdv_slide_array[g] == NULL) EXIT_ON_RUNTIME_ERROR
+            }
+            
+          fprintf(stderr, "[DVDVC]  %s  %d\n", files[g][T].filename, files [g][T].dvdv_compliant)  ;
+            
+          if (full_hybridate_flag || (hybridate_flag && files[g][T].dvdv_compliant))          
+          {
+            if (picks_per_track_double_array == NULL  ||
+                 picks_per_track_double_array[t] == NULL ||
+                 picks_per_track_double_array[t][0] == NULL)
+                 {
+                   char slide[strlen(globals.settings.workdir)+STRLEN_SEPARATOR+strlen(img->blankscreen)+1];
+                   sprintf(slide, "%s%s%s", globals.settings.workdir,SEPARATOR,img->blankscreen);
+                          dvdv_slide_array[g][T]=strdup(slide);  
+                 }
+                 else
+                 {
+                      dvdv_slide_array[g][T]=strdup(picks_per_track_double_array[t][0]);
+                 }  
+                 
+          }
+          
+          ndvdvslides[g]++;
+                 
+          T++;
+                       
+          //if (picks_per_track_double_array) FREE(picks_per_track_double_array[t])
+
+        }
+    }
+    
+    FREE(picks_per_track_double_array)
+    free(stillpic_string);
+       
     if (dvdv_tracks_given)
     {
         globals.videozone=0;
@@ -2358,20 +2365,22 @@ standard_checks:
             for (int track=0; track < ntracks[group]; track++)
             {
                 if (ndvdvtracks == NULL) EXIT_ON_RUNTIME_ERROR
-                        
-                        if    (  (command->files[group][track].bitspersample == 16  || command->files[group][track].bitspersample == 24)
-                                 &&(command->files[group][track].samplerate  == 96000 || command->files[group][track].samplerate  == 48000))
+                if(files[group][track].dvdv_compliant)                        
                 {
                     if (globals.veryverbose) 
                     {
-                        foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Tested DVD-Video compliant: %s\n", command->files[group][track].filename);
-                        foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  group %d track %d: bits per sample=%d samplerate=%d\n", group, track, command->files[group][track].bitspersample, command->files[group][track].samplerate);
+                        foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Tested DVD-Video compliant: %s\n", files[group][track].filename);
+                        foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  group %d track %d: bits per sample=%d samplerate=%d\n", 
+                                       group,
+                                       track, 
+                                       files[group][track].bitspersample,
+                                       command->files[group][track].samplerate);
                     }
-                    command->files[group][track].dvdv_compliant=1;
+
                     ndvdvtracks[group]++;
                     
                 }
-                    else
+                else
                 {
                     if (globals.veryverbose) 
                     {
@@ -2434,28 +2443,7 @@ standard_checks:
             for (int track=0; track < ntracks[group]; track++)
             {
                 
-                
-                if    (  (files[group][track].bitspersample == 16  || files[group][track].bitspersample == 24)
-                         &&(files[group][track].samplerate  == 96000 || files[group][track].samplerate  == 48000))
-                {
-                    if (globals.veryverbose) 
-                    {
-                        foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Tested DVD-Video compliant: %s\n", files[group][track].filename);
-                        foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  group %d track %d: bits per sample=%d samplerate=%d\n", group, track, files[group][track].bitspersample, files[group][track].samplerate);
-                    }
-                    files[group][track].dvdv_compliant=1;
-                }
-                else
-                {
-                    if (globals.veryverbose) 
-                    {
-                        foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Failed to be tested DVD-Video compliant: %s\n", files[group][track].filename);
-                        foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  group %d track %d: bits per sample=%d samplerate=%d\n", group, track, files[group][track].bitspersample, files[group][track].samplerate);
-                    }
-                }
-                
-                
-                if(files[group][track].dvdv_compliant == 1) 
+                if(files[group][track].dvdv_compliant) 
                 {
                     dvdv_track_array[group][track]=strdup(files[group][track].filename);
                     lplex_audio_characteristics_test[track]=(((uint8_t)files[group][track].bitspersample)<<16)
