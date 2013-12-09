@@ -1,9 +1,9 @@
 
 
-SOURCES:=$(wildcard @ROOTDIR@/@MAYBE_libfixwav@/*.c)
-OBJECTS:=$(subst @ROOTDIR@/@MAYBE_libfixwav@,@BUILDDIR@/@MAYBE_libfixwav@, $(SOURCES:.c=.o) )
+SOURCES:=$(wildcard @ROOTDIR@/libfixwav/src/*.c)
+OBJECTS:=$(subst @ROOTDIR@/libfixwav/src,@BUILDDIR@/libfixwav/src, $(SOURCES:.c=.o) )
 
-CPPFLAGS += -I@ROOTDIR@/@MAYBE_libfixwav@/include -I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include 
+CPPFLAGS += -I@ROOTDIR@/libfixwav/src/include -I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include 
 #for config.h
 CPPFLAGS += -I@BUILDDIR@
 
@@ -18,5 +18,5 @@ endif
 libfixwav.a: libfixwav.a($(OBJECTS))
 
 #implicit rules won't work here
-@BUILDDIR@/@MAYBE_libfixwav@/%.o: @ROOTDIR@/@MAYBE_libfixwav@/%.c
+@BUILDDIR@/libfixwav/src/%.o: @ROOTDIR@/libfixwav/src/%.c
 	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@

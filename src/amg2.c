@@ -158,11 +158,10 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
          track++;
         } 
         
-        fprintf(stderr, "ntitletracks[%d][%d]=%d\n", group, title, ntitletracks[group][title]);
       }
 
       maxntracks=MAX(track, maxntracks); 
-      if (globals.debugging)  printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Number of titles for group %d is %d\n",group, ntitles[group] );
+      if (globals.debugging)  foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Number of titles for group %d is %d\n",group, ntitles[group] );
       
       if (track  != ntracks[group])
       {
