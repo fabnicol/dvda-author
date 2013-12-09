@@ -229,7 +229,7 @@ typedef struct
 #ifndef WITHOUT_sox
     _Bool sox_enable;
 #endif
-#ifndef WITHOUT_libfixwav
+
     _Bool fixwav_enable;
     _Bool fixwav_virtual_enable;
     _Bool fixwav_automatic; /* automatic behaviour */
@@ -242,7 +242,7 @@ typedef struct
     _Bool fixwav_force;
     char* fixwav_suffix; /* output suffix for corrected files */
     char* fixwav_parameters;
-#endif
+
     char* xml;
     char** spu_xml;
     char* cdrecorddevice;
