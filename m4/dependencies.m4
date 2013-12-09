@@ -66,7 +66,6 @@ m4_map([DVDA_TEST_AUX],[
 	   [
 	     [[libogg-build]],
 	     [[libiberty-build]],
-	     [[libfixwav-build]],
 	     [[cdrtools-build]],
 	     [[flac-build],[ libogg_BUILD=yes]],
 	     [[sox-build],[
@@ -82,7 +81,7 @@ m4_map([DVDA_TEST_AUX],[
 	     [[a52dec-build]],
 	     [[mjpegtools-build]],
 	     [[core-build],
-	      [withval_libfixwav=no
+	      [
 	       withval_FLAC=no
 	       withval_libogg=no
 	       withval_sox=no
@@ -94,11 +93,10 @@ m4_map([DVDA_TEST_AUX],[
 	       libogg_DOWNLOAD=no
 	       libiberty_BUILD=yes
 	       MAYBE_libogg=""
-	       MAYBE_libfixwav=""
 	       libfixwav_BUILD=no
 	       libogg_LINK=""]],
 	     [[minimal-build],
-	      [WITH_libfixwav=yes
+	      [
 	       WITH_FLAC=yes
 	       WITH_libogg=yes
 	       WITH_sox=yes
@@ -121,7 +119,6 @@ m4_map([DVDA_TEST_AUX],[
 	   [
 	     [[libogg-build]],
 	     [[libiberty-build]],
-	     [[libfixwav-build]],
 	     [[cdrtools-build]],
 	     [[flac-build],[
 	      libogg_BUILD=yes
@@ -139,8 +136,7 @@ m4_map([DVDA_TEST_AUX],[
 	     [[a52dec-build]],
 	     [[mjpegtools-build]],
 	     [[core-build],
-	      [WITH_libfixwav=no
-	       MAYBE_libfixwav=""
+	      [
 	       WITH_libiberty=no
 	       MAYBE_libiberty=""
 	       libiberty_BUILD=no
@@ -153,7 +149,7 @@ m4_map([DVDA_TEST_AUX],[
 	       MAYBE_libogg=""
 	       libogg_LINK=""]],
 	     [[minimal-build],
-	      [WITH_libfixwav=yes
+	      [
 	       WITH_FLAC=yes
 	       WITH_libogg=yes
 	       WITH_sox=yes
@@ -309,7 +305,6 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
     m4_map([DVDA_ARG_WITH],[
       [[flac],  [[[FLAC/all.h],[FLAC__stream_decoder_init_file]]]],
       [[libogg],   [[[ogg/ogg.h], [ogg_stream_init]]]],
-      [[libfixwav],[[[fixwav_manager.h],[fixwav]]]],
       [[sox],   [[[sox.h],     [sox_format_init  sox_open_read
 				sox_open_write sox_create_effects_chain
 				sox_create_effect sox_find_effect
