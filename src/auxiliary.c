@@ -131,10 +131,8 @@ printf("%s","-Z, --playlist           You may specify up to 9 group copies."J"To
 printf("%s","-n, --no-videozone       Do not generate an empty VIDEO_TS directory.\n\n");
 printf("%s","-w, --rights             Access rights to directories created (octal values)\n\n");
 printf("%s","-c, --cga                Enter channel group assignment right after group (-g, -j or -s).\n\n");
-#ifndef WITHOUT_libfixwav
 printf("%s","-F, --fixwav(options)    Bad wav headers will be fixed by fixwav."J"Can be run alone without DVD-AUDIO output by adding --nooutput.\n\n");
 printf("%s","-f, --fixwav-virtual(options)  Use .wav header repair utility "J"without any write operation.\n\n");
-#endif
 #ifndef WITHOUT_sox
 printf("%s","-S, --sox                Use SoX to convert files to .wav."J"By default, only flac, Ogg FLAC "J"and .wav files are accepted.\n\n");
 #endif
@@ -221,7 +219,6 @@ printf("%s","    --download=force  Download the latest version of dvda-author ev
 #endif
 
 printf("%s","Sub-options\n\n");
-#ifndef WITHOUT_libfixwav
 
 printf("%s", "\n    fixwav sub-options:\n\n"\
 "simple-mode"\
@@ -251,7 +248,6 @@ K"Copy info chunks from wav headers to file db"SEPARATOR"database\n\n"\
   without any whitespace in between them.\n\n\
   Example: --fixwav=simple-mode,prepend,interactive,output=new\n\
 ");
-#endif
 
 printf("%s", "\n    Still pictures:\n\n"\
 K"p11,p21,...,pn1-p22,p22,...,pn2-...\n\n"\
@@ -320,8 +316,7 @@ _LARGEFILE_SOURCE,_LARGE_FILES,_FILE_OFFSET_BITS=64\n\n\
 to enable large file support.\n\n\
 ALWAYS_INLINE forces code inlining.\n\n\
 WITHOUT_sox to compile without SoX code\n\n\
-WITHOUT_FLAC to compile without FLAC/OggFLAC code\n\n\
-WITHOUT_libfixwav to compile without fixwav code\n\n");
+WITHOUT_FLAC to compile without FLAC/OggFLAC code\n\n");
 
 printf("%s", "\nReport bugs to fabnicol@users.sourceforge.net\n");
 return;

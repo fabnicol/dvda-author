@@ -249,7 +249,7 @@ int main(int argc,  char* const argv[])
 #ifndef WITHOUT_sox
         /*sox_enable*/     0,  // no use of SoX
 #endif
-#ifndef WITHOUT_libfixwav
+
         /*fixwav_enable*/               0,  // no use of fixwav
         /*fixwav_virtual_enable*/       0,  // no use of fixwav (virtual headers)
         /* automatic behaviour */       1,
@@ -264,7 +264,7 @@ int main(int argc,  char* const argv[])
         strdup(STANDARD_FIXWAV_SUFFIX),
         /*fixwav_parameters*/ NULL,
 
-#endif
+
         /*xml filepath*/  NULL,
         /*spumux xml*/    NULL,
         /*cdrecord dev*/  NULL,

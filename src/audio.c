@@ -40,10 +40,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "audio2.h"
 #include "stream_decoder.h"
 #include "c_utils.h"
-#ifndef WITHOUT_FIXWAV
+
 #include "fixwav.h"
 #include "fixwav_manager.h"
-#endif
+
 #include "auxiliary.h"
 #include "commonvars.h"
 #include "command_line_parsing.h"
@@ -316,7 +316,7 @@ int flac_getinfo(fileinfo_t* info)
 }
 #endif
 
-#ifndef WITHOUT_FIXWAV
+
 int fixwav_repair(fileinfo_t *info)
 {
     WaveHeader  waveheader;
@@ -428,7 +428,7 @@ int fixwav_repair(fileinfo_t *info)
 
     }
 }
-#endif
+
 
 #ifndef WITHOUT_sox
 
@@ -503,8 +503,6 @@ int extract_audio_info(fileinfo_t *info, uint8_t * header)
 {
     info->type=AFMT_WAVE;
 
-#ifndef WITHOUT_FIXWAV
-
     /* parsing header again with FIXWAV utility */
 
     if (globals.fixwav_enable)
@@ -537,7 +535,7 @@ int extract_audio_info(fileinfo_t *info, uint8_t * header)
 
     else
 
-#endif
+
 
         /* otherwise, reading header, assuming 44-byte headers */
 
@@ -562,12 +560,9 @@ int extract_audio_info(fileinfo_t *info, uint8_t * header)
     if ((info->bitspersample!=16) && (info->bitspersample!=24))
     {
         foutput("%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Audio characteristics of file could not be found.");
-        #ifndef WITHOUT_FIXWAV
+
         foutput("%s\n", "       Fixing wav header (option -F) ...");
         info->type=fixwav_repair(info);
-        #else
-        return(NO_AFMT_FOUND);
-        #endif
 
     }
 
@@ -660,17 +655,17 @@ int wav_getinfo(fileinfo_t* info)
                 {
                     // When RIFF fmt headers are not recognized, they are processed by Sox first if -S -F is on command line then checked by fixwav
                     // yest SoX may crash for seriously mangled headers
-#ifndef WITHOUT_libfixwav
+
                     if (!globals.fixwav_force)
                     {
-#endif
+
                         if (launch_sox(&info->filename) == NO_AFMT_FOUND)
                            return(info->type);
                           // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
                         else
                           // PATCH looping back to get info
                            return(info->type=wav_getinfo(info));
-#ifndef WITHOUT_libfixwav    // yet without the processing tail below (preserving new header[] array and info structure)
+   // yet without the processing tail below (preserving new header[] array and info structure)
                     }
 
                     else
@@ -686,7 +681,7 @@ int wav_getinfo(fileinfo_t* info)
 
                          default:
                            // PATCH looping back to get info
-#endif
+
                             if (launch_sox(&info->filename) == NO_AFMT_FOUND)
                             return(info->type);
                           // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
@@ -700,14 +695,14 @@ int wav_getinfo(fileinfo_t* info)
                 else
 
 #endif
-#ifndef WITHOUT_FIXWAV
+
                   if ((!globals.fixwav_force) && (!globals.fixwav_prepend))
-#endif
+
                    return(info->type);
-#ifndef WITHOUT_FIXWAV
+
                  else
                    return(info->type=extract_audio_info(info, header));
-#endif
+
 
 #ifndef WITHOUT_FLAC
             }

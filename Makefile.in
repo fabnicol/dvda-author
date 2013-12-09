@@ -36,11 +36,7 @@ else
   CPPFLAGS += -DWITHOUT_libiberty
 endif
 
-ifneq "@WITH_libfixwav@" "no"
-  BUILD_SUBDIRS += @BUILDDIR@/@MAYBE_libfixwav@
-else
-  CPPFLAGS += -DWITHOUT_libfixwav
-endif
+BUILD_SUBDIRS += @BUILDDIR@/libfixwav/src
 
 BUILD_SUBDIRS += @BUILDDIR@/src
 

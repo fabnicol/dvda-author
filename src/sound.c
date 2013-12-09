@@ -3,10 +3,10 @@
 #endif
 
 #include "sound.h"
-#if HAVE_libfixwav
+
 #include "fixwav.h"
 #include "fixwav_manager.h"
-#endif
+
 #include "c_utils.h"
 #include "auxiliary.h"
 #include "launch_manager.h"
@@ -58,7 +58,7 @@ return errno;
 int standardize_wav_header(char* path)
 {
 errno=0;
-#if HAVE_libfixwav
+
         WaveHeader waveheader;
         WaveData wavedata=
         {
@@ -94,7 +94,7 @@ errno=0;
                 errno=1;
             }
        
-#endif
+
     return errno;
 
 }
@@ -103,7 +103,7 @@ errno=0;
 
 int audit_soundtrack(char* path, _Bool strict)
 {
-#if HAVE_libfixwav
+
     path_t *s=parse_filepath(path);
     errno=0;
     if (s->isfile)
@@ -167,7 +167,7 @@ int audit_soundtrack(char* path, _Bool strict)
     }
 
     free(s);
-#endif
+
     return errno;
 
 }
@@ -327,11 +327,12 @@ int launch_lplex_hybridate(const pic* img,
       
       if (ntracks[group] > 0 && nslides[group] == 0)
       {
-        fprintf(stderr, "%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  No slides for any track. Fix this issue and relaunch.\n");
+        fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  No slides for any track in titleset %d. Fix this issue and relaunch.\n", group);
         EXIT_ON_RUNTIME_ERROR
       }
       
-      if (ntracks[group] < nslides[group]) nslides[group]=ntracks[group];  // there can be no more slides than tracks (lplex constraint)
+      if (ntracks[group] < nslides[group]) 
+             nslides[group]=ntracks[group];  // there can be no more slides than tracks (lplex constraint)
       
       if (nslides[group] < ntracks[group]) 
       {
@@ -339,7 +340,7 @@ int launch_lplex_hybridate(const pic* img,
          for (i=1; i <= nslides[group] && slidepath[group][nslides[group]-i][0] == '\0'; i++);
          if (i == (nslides[group]+1)) 
          {
-             fprintf(stderr, "%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  No slides for any track. Fix this issue and relaunch.\n");
+             fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Fewer slides (%d) than tracks (%d) for titleset %d. Fix this issue and relaunch.\n", nslides[group], ntracks[group], group);
              EXIT_ON_RUNTIME_ERROR
          }
          else
@@ -354,7 +355,7 @@ int launch_lplex_hybridate(const pic* img,
       for (int tr=0; tr < ntracks[group]; tr++)
       {
 
-        if (slidepath[group][tr]) 
+        if (slidepath[group][tr][0] != '\0') 
         {
           if (img->aspect[0] == '2')
              args[tot]= "jpg";
@@ -375,25 +376,26 @@ int launch_lplex_hybridate(const pic* img,
           */
           tot++;
           
-          if (slidepath[group][tr][0] == '\0' && tr != 0)
-            slidepath[group][tr]=slidepath[group][tr-1];
           
           args[tot]=(char*) slidepath[group][tr];
           tot++;
+          args[tot]=(char*) trackpath[group][tr];
+          tot++;
         }
+        else 
+          continue;
         
-        args[tot]=(char*) trackpath[group][tr];
         
-        if (tot == argssize+DIM_LPLEX_CLI) 
-          EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Two many tracks/slides")
+      //  if (tot == argssize+DIM_LPLEX_CLI) 
+        //  EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Two many tracks/slides")
           
-        tot++;
       }
     }
     
     args[tot]=NULL; 
     
     for (int u=0; u < DIM_LPLEX_CLI+argssize+1; u++) 
+    //for (int u=0; u < 23; u++) 
     {
          fprintf(stderr, "%s ", args[u]);
     }
@@ -405,8 +407,6 @@ int launch_lplex_hybridate(const pic* img,
 
         change_directory(globals.settings.workdir);
         run(lplex, args, 0);
-        
-        tot=0;
 
 #endif  
     return errno;
