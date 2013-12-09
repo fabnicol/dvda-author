@@ -1,5 +1,5 @@
 
-CPPFLAGS +=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/libutils/src/private -I@ROOTDIR@/src/include
+CPPFLAGS +=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/libutils/src/private -I@ROOTDIR@/src/include -I@ROOTDIR@/libfixwav/src/include
 #for config.h
 CPPFLAGS += -I@BUILDDIR@
 

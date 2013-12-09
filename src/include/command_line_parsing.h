@@ -21,12 +21,8 @@
     
 command_t *command_line_parsing(int , char* const argv[],  command_t *command);
 
-#ifndef WITHOUT_libfixwav
 #include "fixwav_manager.h"
 void fixwav_parsing(char *ssopt);
-#endif
-
-
 
 void ats2wav_parsing(const char * arg, extractlist* extract, char* player);
 void extract_list_parsing(const char *arg, extractlist* extract);
