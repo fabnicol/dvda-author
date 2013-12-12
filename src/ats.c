@@ -232,8 +232,11 @@ static uint64_t offset_count;
         offset_count += 2*fwrite(PSTD_buffer_scalesize,2,1,fp);
     }
 }
+#define FIRST_PACK   0
+#define LAST_PACK    1
+#define MIDDLE_PACK  2
 
- inline static void write_lpcm_header(FILE* fp, int header_length,fileinfo_t* info, int64_t pack_in_title, uint8_t counter)
+ inline static void write_lpcm_header(FILE* fp, int header_length,fileinfo_t* info, int64_t pack_in_title, uint8_t counter, uint8_t position)
 {
     uint8_t sub_stream_id[1]={0xa0};
     uint8_t continuity_counter[1]={0x00};
@@ -334,38 +337,39 @@ static uint64_t offset_count;
         }
     }
     channel_assignment = info->cga;
-    
-    int delta=header_length-1;
-    int gamma=0;
 
-    if (pack_in_title==0)
+    switch (position)
     {
-        frames_written=0;
-        bytes_written=0;
+       case  FIRST_PACK:
+                          frames_written=0;
+                          bytes_written=0;
+                          break;
+        
+       case  LAST_PACK:
+                         
+                          //delta=0;
+                          if (info->bitspersample == 24) 
+                             header_length -= 2;
+                          else if 
+                             (info->bitspersample == 16) 
+                             header_length -= 6;
+                          //no break!
+                          
+       case  MIDDLE_PACK:
+                          bytes_written=(pack_in_title*info->lpcm_payload)-info->firstpackdecrement;
+                          // e.g., for 4ch, First pack is 1984, rest are 2000
+                          frames_written=bytes_written/info->bytesperframe;
+                          if (frames_written*info->bytesperframe < bytes_written)
+                            {
+                                frames_written++;
+                            }
+     
     }
-    else
-    if (pack_in_title==-1)
-    {
-        frames_written=0;
-        bytes_written=0;
-        //delta=0;
-        if (info->bitspersample == 24) gamma=2;
-    }
-    else
-    {
-        bytes_written=(pack_in_title*info->lpcm_payload)-info->firstpackdecrement;
-        // e.g., for 4ch, First pack is 1984, rest are 2000
-        frames_written=bytes_written/info->bytesperframe;
-        if (frames_written*info->bytesperframe < bytes_written)
-        {
-            frames_written++;
-        }
-     }
     
     LPCM_header_length[0]=(header_length&0xff00)>>8;
-    LPCM_header_length[1]=(header_length&0xff)-gamma;
+    LPCM_header_length[1]=header_length&0xff;
         
-    frame_offset=(frames_written*info->bytesperframe)-bytes_written+delta;
+    frame_offset=(frames_written*info->bytesperframe)-bytes_written+header_length-1;
     first_access_unit_pointer[0]=(frame_offset&0xff00)>>8;
     first_access_unit_pointer[1]=frame_offset&0xff;
 
@@ -382,7 +386,7 @@ static uint64_t offset_count;
     offset_count += fwrite(unknown2,1,1,fp);
     offset_count += fwrite(&channel_assignment,1,1,fp);
     offset_count += fwrite(unknown3,1,1,fp);
-    offset_count += (header_length-8-gamma)*fwrite(zero,header_length-8-gamma,1,fp);
+    offset_count += (header_length-8)*fwrite(zero,header_length-8,1,fp);
     if (globals.maxverbose) EXPLAIN("%s%d%s\n","WRITE LPCM HEADER for ",info->bitspersample, " bits")
 }
 
@@ -493,7 +497,7 @@ static uint64_t offset_count;
 
         write_audio_pes_header(fp,info->firstpack_audiopesheaderquantity,1,PTS);
         audio_bytes = info->lpcm_payload - info->firstpackdecrement;
-        write_lpcm_header(fp,info->firstpack_lpcm_headerquantity,info,pack_in_title,cc);
+        write_lpcm_header(fp,info->firstpack_lpcm_headerquantity,info,pack_in_title,cc,FIRST_PACK);
         offset_count+=fwrite(audio_buf,1,audio_bytes,fp);
 
         if (info->firstpack_pes_padding > 0)
@@ -505,22 +509,23 @@ static uint64_t offset_count;
     }
     else if (bytesinbuffer < info->lpcm_payload)   // Last packet in title
     {
-        int gamma=0;
-        if (info->bitspersample == 24) gamma=2;
+       
         foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Writing last packet - pack=%lld, bytesinbuffer=%d\n",pack_in_title,bytesinbuffer);
         audio_bytes=bytesinbuffer;
         write_pack_header(fp,SCR);
         write_audio_pes_header(fp,info->lastpack_audiopesheaderquantity+audio_bytes,0,PTS);
-        write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,-1,cc);
+        write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,pack_in_title,cc,LAST_PACK);
         offset_count+=fwrite(audio_buf,1,audio_bytes,fp);
-        write_pes_padding(fp,2048-28-info->midpack_lpcm_headerquantity-4-audio_bytes+gamma);
+       // Lee Feldkamp corrected formula write_pes_padding(fp,2048-28-info->midpack_lpcm_headerquantity-4-audio_bytes+gamma);
+       // reverting to Old-style Dave code:
+        write_pes_padding(fp,2006-audio_bytes);
     }
     else   			// A middle packet in the title.
     {
         audio_bytes=info->lpcm_payload;
         write_pack_header(fp,SCR);
         write_audio_pes_header(fp,info->midpack_audiopesheaderquantity,0,PTS);
-        write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,pack_in_title,cc);
+        write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,pack_in_title,cc,MIDDLE_PACK);
         offset_count+=fwrite(audio_buf,1,audio_bytes,fp);
         if (info->midpack_pes_padding > 0) write_pes_padding(fp,info->midpack_pes_padding);
     }
