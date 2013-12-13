@@ -70,6 +70,7 @@ typedef struct
     uint32_t lastpack_audiopesheaderquantity;
     uint32_t firstpack_lpcm_headerquantity;
     uint32_t midpack_lpcm_headerquantity;
+    uint32_t lastpack_lpcm_headerquantity;
     uint32_t firstpack_pes_padding;
     uint32_t midpack_pes_padding;
     // L&T Feldkamp addition (multichannel)
