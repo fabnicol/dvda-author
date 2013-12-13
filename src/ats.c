@@ -343,17 +343,16 @@ static uint64_t offset_count;
        case  FIRST_PACK:
                           frames_written=0;
                           bytes_written=0;
+                          frame_offset=header_length-1;
                           break;
         
        case  LAST_PACK:
-                         
-                          //delta=0;
-                          if (info->bitspersample == 24) 
-                             header_length -= 2;
-                          else if 
-                             (info->bitspersample == 16) 
-                             header_length -= 6;
-                          //no break!
+                          if (info->bitspersample == 16)
+                          {
+                            frame_offset=0;
+                            break;
+                          }
+                          // else no break;
                           
        case  MIDDLE_PACK:
                           bytes_written=(pack_in_title*info->lpcm_payload)-info->firstpackdecrement;
@@ -363,13 +362,12 @@ static uint64_t offset_count;
                             {
                                 frames_written++;
                             }
-     
+                          frame_offset=(frames_written*info->bytesperframe)-bytes_written+header_length-1;
     }
     
     LPCM_header_length[0]=(header_length&0xff00)>>8;
     LPCM_header_length[1]=header_length&0xff;
-        
-    frame_offset=(frames_written*info->bytesperframe)-bytes_written+header_length-1;
+    
     first_access_unit_pointer[0]=(frame_offset&0xff00)>>8;
     first_access_unit_pointer[1]=frame_offset&0xff;
 
@@ -474,7 +472,7 @@ static uint64_t offset_count;
 }
 
 
- inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf, uint32_t bytesinbuffer, uint64_t pack_in_title)
+ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf, uint32_t bytesinbuffer, uint64_t pack_in_title, _Bool start_of_file)
 {
     uint64_t PTS;
     uint64_t SCR;
@@ -484,8 +482,6 @@ static uint64_t offset_count;
 
     PTS=calc_PTS(info,pack_in_title);
     SCR=calc_SCR(info,pack_in_title);
-
-
 
     if (pack_in_title==0)
     {
@@ -514,17 +510,23 @@ static uint64_t offset_count;
         audio_bytes=bytesinbuffer;
         write_pack_header(fp,SCR);
         write_audio_pes_header(fp,info->lastpack_audiopesheaderquantity+audio_bytes,0,PTS);
-        write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,pack_in_title,cc,LAST_PACK);
+        write_lpcm_header(fp,info->lastpack_lpcm_headerquantity,info,pack_in_title,cc,LAST_PACK);
         offset_count+=fwrite(audio_buf,1,audio_bytes,fp);
-       // Lee Feldkamp corrected formula write_pes_padding(fp,2048-28-info->midpack_lpcm_headerquantity-4-audio_bytes+gamma);
-       // reverting to Old-style Dave code:
+      // PATCH Dec. 2013
+      // Lee Feldkamp corrected formula write_pes_padding(fp,2048-28-info->midpack_lpcm_headerquantity-4-audio_bytes+gamma);
+      // reverting to Old-style Dave code:
         write_pes_padding(fp,2006-audio_bytes);
+           
     }
     else   			// A middle packet in the title.
     {
         audio_bytes=info->lpcm_payload;
         write_pack_header(fp,SCR);
         write_audio_pes_header(fp,info->midpack_audiopesheaderquantity,0,PTS);
+        
+        //PATCH Dec. 2013: reset continuity counters at start of file
+        if (start_of_file) cc=0;
+        
         write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,pack_in_title,cc,MIDDLE_PACK);
         offset_count+=fwrite(audio_buf,1,audio_bytes,fp);
         if (info->midpack_pes_padding > 0) write_pes_padding(fp,info->midpack_pes_padding);
@@ -583,7 +585,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
             #ifdef DEBUG
             fprintf(stderr, "%llu\n", offset_count);
             #endif
-            n=write_pes_packet(fpout,&files[i],audio_buf,bytesinbuf,pack_in_title);
+            n=write_pes_packet(fpout,&files[i],audio_buf,bytesinbuf,pack_in_title,(pack_in_file == 0));
 
             memmove(audio_buf,&audio_buf[n],bytesinbuf-n);
             bytesinbuf -= n;
@@ -618,7 +620,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                     if (files[i].newtitle)
                     {
                                                
-                        n=write_pes_packet(fpout,&files[i-1],audio_buf,bytesinbuf,pack_in_title); // Empty audio buffer.
+                        n=write_pes_packet(fpout,&files[i-1],audio_buf,bytesinbuf,pack_in_title,(pack_in_file == 0)); // Empty audio buffer.
                         pack++;
                         bytesinbuf=0;
                         pack_in_title=0;
@@ -651,7 +653,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                     }
                     else
                     {
-                        n=write_pes_packet(fpout,&files[i-1],audio_buf,bytesinbuf,pack_in_title); // Empty audio buffer.
+                        n=write_pes_packet(fpout,&files[i-1],audio_buf,bytesinbuf,pack_in_title,(pack_in_file == 0)); // Empty audio buffer.
                         bytesinbuf=0;
                         pack++;
                         pack_in_title++;
