@@ -75,7 +75,7 @@ uint16_t totaltitles;
 
 /* 'playlist groups' are duplicate groups of audio titles */
 
-#define files command->files
+
 #define ntracks command->ntracks
 #define ngroups command->ngroups
 #define vgroups command->nvideolinking_groups
@@ -106,26 +106,26 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
 
             if (track)
             {
-              if ((files[group][track].samplerate != files[group][track-1].samplerate)
-                ||(files[group][track].bitspersample != files[group][track-1].bitspersample)
-                ||(files[group][track].channels != files[group][track-1].channels)
-                ||(files[group][track].cga != files[group][track-1].cga))
+              if ((command->files[group][track].samplerate != command->files[group][track-1].samplerate)
+                ||(command->files[group][track].bitspersample != command->files[group][track-1].bitspersample)
+                ||(command->files[group][track].channels != command->files[group][track-1].channels)
+                ||(command->files[group][track].cga != command->files[group][track-1].cga))
 
                 {
-                  files[group][track].newtitle=1;
+                  command->files[group][track].newtitle=1;
                 }
              }
              else
-                files[group][track].newtitle=1;
+                command->files[group][track].newtitle=1;
 
             // PATCH 02 Dec 09 && 12.06
-            if (files[group][track].newtitle)
+            if (command->files[group][track].newtitle)
             {
                 totaltitles++;
                 ntitles[group]++;
             }
             #ifdef DEBUG
-            fprintf(stderr, "files[group][track].newtitle=%d\n",group,track, files[group][track].newtitle);
+            fprintf(stderr, "command->files[%d][%d].newtitle=%d\n",group,track, command->files[group][track].newtitle);
             #endif
      }
     }
@@ -145,10 +145,11 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
       
       for (int title=0; title < ntitles[group]; title++)
       {
-        while (ntitletracks[group][title] == 0 || !files[group][track].newtitle)
+        
+        while (track < ntracks[group] && (ntitletracks[group][title] == 0 || !command->files[group][track].newtitle))
         {
            ntitletracks[group][title]++;
-           titlelength[group][title]+=files[group][track].PTS_length;
+           titlelength[group][title]+=command->files[group][track].PTS_length;
 
             if (img)
             {
@@ -159,13 +160,13 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
         } 
         
       }
-
+      
       maxntracks=MAX(track, maxntracks); 
       if (globals.debugging)  foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Number of titles for group %d is %d\n",group, ntitles[group] );
       
       if (track  != ntracks[group])
       {
-        fprintf(stderr, "\nCounted %d tracks instead of %d\n", track, ntracks[group]);
+        fprintf(stderr, "\nCounted %d tracks instead of %d for group %d\n", track, ntracks[group], group);
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Incoherent title count")
       }
            
@@ -445,12 +446,12 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
         titleintitleset++;
         if (titleintitleset == numtitles[titleset])
         {
-            sectoroffset[titleset+1]=sectoroffset[titleset]+(files[titleset][ntracks[titleset]-1].last_sector+1)+sectors->atsi[titleset]*2;
+            sectoroffset[titleset+1]=sectoroffset[titleset]+(command->files[titleset][ntracks[titleset]-1].last_sector+1)+sectors->atsi[titleset]*2;
             if (globals.veryverbose)
             {
                 if (titleset == 0)
                     foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  sectoroffset[%d]=%u=2*(%d+%d)+%u+%u\n", titleset, sectoroffset[titleset], sectors->amg , sectors->asvs, sectors->stillvob, sectors->topvob);
-                foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  sectoroffset[%d]=%u=sectoroffset[%d]+(files[%d][ntracks[%d]-1].last_sector+1)+2*%d\n", titleset+1, sectoroffset[titleset+1], titleset, titleset, titleset, sectors->atsi[titleset]);
+                foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  sectoroffset[%d]=%u=sectoroffset[%d]+(command->files[%d][ntracks[%d]-1].last_sector+1)+2*%d\n", titleset+1, sectoroffset[titleset+1], titleset, titleset, titleset, sectors->atsi[titleset]);
             }
 
             titleintitleset=0;
