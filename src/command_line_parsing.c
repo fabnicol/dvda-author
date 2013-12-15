@@ -114,11 +114,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     static uint8_t maximum_VTSI_rank;
     
     static uint8_t VTSI_rank[MAXIMUM_LINKED_VTS];
-    static uint8_t ntracks[9];
+    static uint8_t ntracks[9]={0};
     
     static uint8_t playtitleset[9]= {0};
-    memset(playtitleset, 0, 9);
-    
+        
     extern char *optarg;
     extern int optind, opterr;
     int k, c;
@@ -161,12 +160,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     /* you can alter this by commenting out #q in dvda-author.conf before install */
     /* for parsing user command line, revert to default verbose mode, unless -q is set */
     
-    if (user_command_line)
-        
-    {
-        globals.silence=0;
-        
-    }
+    if (user_command_line)     globals.silence=0;
     
     /* crucial: initialise before any call to getopt */
     optind=0;
@@ -261,6 +255,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"mirror-strategy",required_argument, NULL, 23},
         {"hybridate",no_argument, NULL, 24},
         {"full-hybridate",no_argument, NULL, 25},
+        {"merge",required_argument, NULL, 26},
     #endif
         {NULL, 0, NULL, 0}
     };
@@ -408,7 +403,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 case 'g':  // normal group file input (command line)
                 case 'T':  // video title input
                 case 'i':  // directory audio imput
-                    memset(ntracks, 0, 9);
+
                     ngroups=nvideolinking_groups=n_g_groups=0;
                     if (globals.veryverbose)
                         foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Overriding configuration file specifications for audio input");
@@ -471,10 +466,14 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     if (globals.debugging) foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  First scan of track list for memory allocation...");
     
     // n_g_groups count command-line groups of type -g, -j (join groups), -s (single track groups)
+        // ngiven_channels: number of given channels for group index n_g_group and at track 0-based rank ntracks
+    // given_channel: the mono channel given
     
+    uint8_t ngiven_channels[9][99]={{0}};
+   
     for (k=1; k < argc; k++)
     {
-        if (argv[k][0] != '-') continue;
+        if (argv[k][0] != '-' || argv[k][1] == '\0') continue;
         switch (argv[k][1])
         {
         
@@ -507,6 +506,28 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
             increment_ngroups_check_ceiling(&n_g_groups, NULL);
             k--;
+            break;
+            
+         case '-':
+            if ((strlen(argv[k]) != 7 ) || (strcmp(argv[k]+2, "merge") != 0))
+              break;
+              
+            k++;
+            
+            ntracks[n_g_groups]++;
+            for (;k < argc; k++)
+            {
+               if (argv[k][0] !='-')
+               {
+                    ngiven_channels[n_g_groups][ntracks[n_g_groups]]++;
+               }
+                else
+                  break;
+                
+            }
+            
+            k--;
+           
         }
     }
     
@@ -673,9 +694,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 
                 /* Allocate memory if and only if groups are to be (re)created on command line */
                 
-                if (allocate_files)
+        if (allocate_files)
         {
-            files=dynamic_memory_allocate(files, ntracks, ngroups, n_g_groups, nvideolinking_groups);
+            files=dynamic_memory_allocate(files, ngiven_channels, ntracks, ngroups, n_g_groups, nvideolinking_groups);
         }
             
             /* COMMAND-LINE PARSING: fourth pass to assign filenames without allocating new memory (pointing to argv) */
@@ -707,7 +728,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 {
                     if (globals.veryverbose)
                         foutput("       files[%d][%d].filename=%s\n", ngroups_scan, m, argv[m+k]);
-                    files[ngroups_scan][m].filename=strdup(argv[m+k]);
+                    strcpy(files[ngroups_scan][m].filename, argv[m+k]);
                     /* to create distinct titles out of a series of audio files which have same audio characteristics, use -| in between the series of files
                        of each title within the same group. This is not authorized to cleave groups, only titles */
                 }
@@ -723,8 +744,33 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                             k++;
                             if (globals.veryverbose)
                                 foutput("       files[%d][%d].filename=%s\n", ngroups_scan, m, argv[m+k]);
-                            if ((m+k) < argc) files[ngroups_scan][m].filename=strdup(argv[m+k]);
+                            if ((m+k) < argc) strcpy(files[ngroups_scan][m].filename,strdup(argv[m+k]));
                         }
+                    }
+                    else
+                    if (strcmp(argv[m+k]+2,"merge") == 0)
+                    {
+                     if (ngiven_channels[ngroups_scan][m])
+                     {
+                       strcpy(files[ngroups_scan][m].filename,"merged channels");
+                       files[ngroups_scan][m].channels=ngiven_channels[ngroups_scan][m];
+                       files[ngroups_scan][m].mergeflag=1;
+                       
+                       if (globals.veryverbose)
+                       {
+                         foutput("       files[%d][%d].filename=%s\n", ngroups_scan, m, "merged channels:");
+                       }
+                       
+                       for (int u=0; u < ngiven_channels[ngroups_scan][m]; u++)  
+                       {
+                        if (globals.veryverbose)
+                          foutput("                               %s\n", argv[m+k+u]);
+                        
+                        strcpy(files[ngroups_scan][m].given_channel[u],argv[m+k+u]);
+                       }
+                       
+                       m+=ngiven_channels[ngroups_scan][m];
+                     }
                     }
                     else
                         break;

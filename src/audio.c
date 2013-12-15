@@ -519,7 +519,9 @@ int extract_audio_info(fileinfo_t *info, uint8_t * header)
         /* This is an anti-looping sercurity: normally its is spurious, yet it might be useful in unexpected cases */
 
        static _Bool cut;
+       
        if (!cut) info->type=fixwav_repair(info);
+       
        cut=((info->type == AFMT_WAVE_FIXED) || (info->type == AFMT_WAVE_GOOD_HEADER));
 
 
@@ -535,20 +537,15 @@ int extract_audio_info(fileinfo_t *info, uint8_t * header)
     }
 
     else
-
-
-
         /* otherwise, reading header, assuming 44-byte headers */
 
-
     {
-        info->samplerate=header[24]|(header[25]<<8)|(header[26]<<16)|(header[27]<<24);
-        info->bitspersample=header[34];
-        info->channels=header[22];//
-        info->numbytes=header[40]|(header[41]<<8)|(header[42]<<16)|(header[43]<<24);
+        info->samplerate += header[24]|(header[25]<<8)|(header[26]<<16)|(header[27]<<24);
+        info->bitspersample += header[34];
+        info->channels += header[22];//
+        info->numbytes += header[40]|(header[41]<<8)|(header[42]<<16)|(header[43]<<24);
 
-
-        if (info->numbytes > info->file_size - info->header_size)
+        if (!info->mergeflag && info->numbytes > info->file_size - info->header_size)
         {
 
             foutput(""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Expected %"PRIu64" bytes but found %"PRIu64" on disc...patching data.\n",
@@ -576,143 +573,193 @@ int extract_audio_info(fileinfo_t *info, uint8_t * header)
     return(info->type);
 }
 
-int wav_getinfo(fileinfo_t* info)
+static inline void process_wav_get_info(fileinfo_t* info, FILE* fp)
 {
+// C99 needed
+change_directory(globals.settings.workdir);
+fseek(fp, 0, SEEK_SET);
+infochunk ichunk;
+memset(&ichunk, 0, sizeof(infochunk));
+uint8_t span=0;
+WaveData wavinfo;
+wavinfo.INFILE=fp;
+parse_wav_header(&wavinfo, &ichunk);
+span=ichunk.span;
 
-    FILE * fp=NULL;
+info->header_size=(span > 0) ? span + 8 : MAX_HEADER_SIZE;
 
-    fp=fopen(info->filename,"rb");
+uint8_t header[info->header_size];
+memset(header, 0, info->header_size);
 
-    if (info->filename == NULL)
-    {
-      foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open audio file: filepath pointer is null");
-      if (fp == NULL)
-         foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open audio file %s: pointer is null\n", info->filename);
-         EXIT_ON_RUNTIME_ERROR
-    }
-    else
-    {
-      if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Opening %s to get info\n", info->filename);
-      change_directory(globals.settings.workdir);
-      fp=secure_open(info->filename, "rb");
-    }
-
-    // C99 needed
-    fseek(fp, 0, SEEK_SET);
-    infochunk ichunk;
-    memset(&ichunk, 0, sizeof(infochunk));
-    uint8_t span=0;
-    WaveData wavinfo;
-    wavinfo.INFILE=fp;
-    parse_wav_header(&wavinfo, &ichunk);
-    span=ichunk.span;
-
-    info->header_size=(span > 0) ? span + 8 : MAX_HEADER_SIZE;
-
-    uint8_t header[info->header_size];
-    memset(header, 0, info->header_size);
-
-     /* PATCH: real size on disc is needed */
+ /* PATCH: real size on disc is needed */
 #if defined __WIN32__
-    info->file_size = read_file_size(fp, (TCHAR*) info->filename);
+info->file_size = read_file_size(fp, (TCHAR*) info->filename);
 #else
-    info->file_size = read_file_size(fp, info->filename);
+info->file_size = read_file_size(fp, info->filename);
 #endif
 
-    fread(header, info->header_size,1,fp);
-    fseek(fp, 0, SEEK_SET);
+fread(header, info->header_size,1,fp);
+fseek(fp, 0, SEEK_SET);
 
-    if (info->header_size > (span=fread(header, 1, info->header_size,fp)))
-    {
-        foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
-        perror("       ");
-        clean_exit(EXIT_FAILURE);
-    }
+if (info->header_size > (span=fread(header, 1, info->header_size,fp)))
+{
+    foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
+    perror("       ");
+    clean_exit(EXIT_FAILURE);
+}
 
-     fclose(fp);
+ fclose(fp);
 
-    // default value
-    info->type=NO_AFMT_FOUND;
+// default value
+info->type=NO_AFMT_FOUND;
 
 
-    if ((memcmp(header,"RIFF",4)!=0) || (memcmp(&header[8],"WAVEfmt",7)!=0))
-    {
+if ((memcmp(header,"RIFF",4)!=0) || (memcmp(&header[8],"WAVEfmt",7)!=0))
+{
 #ifndef WITHOUT_FLAC
 
-        /* Other formats than WAV: parsing headers */
-        if (memcmp(header,"fLaC",4) == 0 )
-            return(info->type=AFMT_FLAC);
+    /* Other formats than WAV: parsing headers */
+    if (memcmp(header,"fLaC",4) == 0 )
+        return(info->type=AFMT_FLAC);
+    else
+    {
+        if ((memcmp(header,"OggS",4) == 0 ) && (memcmp(header+0x17, "FLAC", 4) != 0))
+           return(info->type=AFMT_OGG_FLAC);
+
         else
         {
-            if ((memcmp(header,"OggS",4) == 0 ) && (memcmp(header+0x17, "FLAC", 4) != 0))
-               return(info->type=AFMT_OGG_FLAC);
-
-            else
-            {
 #endif
 #ifndef WITHOUT_sox
 
-                if (globals.sox_enable)
-                {
-                    // When RIFF fmt headers are not recognized, they are processed by Sox first if -S -F is on command line then checked by fixwav
-                    // yest SoX may crash for seriously mangled headers
+            if (globals.sox_enable)
+            {
+                // When RIFF fmt headers are not recognized, they are processed by Sox first if -S -F is on command line then checked by fixwav
+                // yest SoX may crash for seriously mangled headers
 
-                    if (!globals.fixwav_force)
-                    {
+                if (!globals.fixwav_force)
+                {
+
+                    if (launch_sox(&info->filename) == NO_AFMT_FOUND)
+                       return(info->type);
+                      // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
+                    else
+                      // PATCH looping back to get info
+                       return(info->type=wav_getinfo(info));
+// yet without the processing tail below (preserving new header[] array and info structure)
+                }
+
+                else
+                {
+                 // Other way round if -S -Fforce, as fixwav processes first before SoX
+                  info->type=extract_audio_info(info, header);
+
+                  switch(info->type)
+                  {
+                     case AFMT_WAVE_GOOD_HEADER :
+                     case AFMT_WAVE_FIXED :
+                        return (info->type=AFMT_WAVE);
+
+                     default:
+                       // PATCH looping back to get info
 
                         if (launch_sox(&info->filename) == NO_AFMT_FOUND)
-                           return(info->type);
-                          // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
+                        return(info->type);
+                      // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
                         else
-                          // PATCH looping back to get info
-                           return(info->type=wav_getinfo(info));
-   // yet without the processing tail below (preserving new header[] array and info structure)
-                    }
-
-                    else
-                    {
-                     // Other way round if -S -Fforce, as fixwav processes first before SoX
-                      info->type=extract_audio_info(info, header);
-
-                      switch(info->type)
-                      {
-                         case AFMT_WAVE_GOOD_HEADER :
-                         case AFMT_WAVE_FIXED :
-                            return (info->type=AFMT_WAVE);
-
-                         default:
-                           // PATCH looping back to get info
-
-                            if (launch_sox(&info->filename) == NO_AFMT_FOUND)
-                            return(info->type);
-                          // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
-                            else
-                          // PATCH looping back to get info
-                            return(info->type=wav_getinfo(info));
-                              // yet without the processing tail below (preserving new header[] array and info structure)
-                      }
-                   }
-                }
-                else
+                      // PATCH looping back to get info
+                        return(info->type=wav_getinfo(info));
+                          // yet without the processing tail below (preserving new header[] array and info structure)
+                  }
+               }
+            }
+            else
 
 #endif
 
-                  if ((!globals.fixwav_force) && (!globals.fixwav_prepend))
+              if ((!globals.fixwav_force) && (!globals.fixwav_prepend))
 
-                   return(info->type);
+               return(info->type);
 
-                 else
-                   return(info->type=extract_audio_info(info, header));
+             else
+               return(info->type=extract_audio_info(info, header));
 
 
 #ifndef WITHOUT_FLAC
-            }
         }
-#endif
     }
-    // else, if suboption force is used:
+#endif
+}
+// else, if suboption force is used:
 
-    info->type=extract_audio_info(info, header);
+info->type=extract_audio_info(info, header);
+}
+
+
+static inline int wav_getinfo_merged(fileinfo_t *info)
+{
+    FILE* fp[info->channels];
+    uint8_t nchannels=info->channels;
+    uint8_t bitspersample=info->bitspersample;
+    uint32_t samplerate=info->samplerate;
+    uint64_t numbytes=info->numbytes;
+    
+    for (int u=0; u < nchannels; u++)    
+    {
+      fp[u]=secure_open(info->given_channel[u], "rb");
+      if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Opening %s to get info\n", info->filename);
+      
+      process_wav_get_info(info,fp[u]);
+    }
+    
+    if (info->channels != nchannels)
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one non-mono channel was given.")
+    }
+
+    info->bitspersample /= nchannels;
+    
+    if (info->bitspersample != bitspersample)
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one channel did not have the same bit depth as others.")
+    }
+    
+    info->samplerate /= nchannels;
+    
+    if (info->samplerate != samplerate)
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one channel did not have the same sample rate as others.")
+    }
+    
+    info->numbytes /= nchannels;
+    
+    if (info->numbytes != numbytes)
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one channel did not have the same number of bytes as others.")
+    }
+
+    // Audio characteristics retained are those of the mono channels, after the above sanity tests.    
+    return(info->type);
+}
+
+
+int wav_getinfo(fileinfo_t* info)
+{
+    if (info->mergeflag)                
+        wav_getinfo_merged(info);
+
+    FILE * fp=NULL;
+    
+    if (info->filename == NULL)
+    {
+      foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open audio file: filepath pointer is null");
+    }
+    else
+    {
+      fp=secure_open(info->filename, "rb");
+      if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Opening %s to get info\n", info->filename);
+    }
+
+    process_wav_get_info(info,fp);
     return(info->type);
 }
 
