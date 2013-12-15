@@ -41,6 +41,7 @@ typedef struct
     uint8_t type;
     uint8_t bitspersample;
     uint8_t channels;
+    _Bool   mergeflag;
     _Bool   dvdv_compliant;
     // L&T Fedkamp addition
     uint8_t joingap;
@@ -83,6 +84,8 @@ typedef struct
     uint64_t PTS_length;
     audio_input_t* audio;  // Used whilst decoding.
     char *filename;
+    char **given_channel;
+
 } fileinfo_t;
 
 typedef struct

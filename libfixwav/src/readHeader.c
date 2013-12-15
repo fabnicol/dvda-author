@@ -34,16 +34,11 @@ int readHeader(FILE * infile, WaveHeader *header)
   uint8_t temp[header->header_size_in];
   memset(temp, 0, header->header_size_in);
   p=temp;
-  /* Patch against Pigiron's original work: code was not portable across compilers (structure header was
-   * not necessarily packed, unless using gcc's __attribute((packed))__ or similar. Also, using code
-   * was not portable to big-endian machines, considering wav headers are packed in little-endian order.
-   * This version  fixes both issues */
-
   rewind(infile);
   count=fread(temp, header->header_size_in, 1, infile ) ;
   /* Total is 44 bytes */
 
-  if ( count != 1)
+  if  (count != 1)
     {
       fprintf( stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Failed to read header from input file\n       Size is: %d, read: %d bytes\n", header->header_size_in, count );
 
