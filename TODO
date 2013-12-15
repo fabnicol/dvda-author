@@ -1,6 +1,6 @@
 Short term
 ----------
-convert SoX header output to canonical for lplex input (necessary only for 24 git authoring)
+use SoX to automatically merge files (mono and stereo) into multichannel, check on cga
 
 fix lack of relative paths for -x -o
 add sanity check if -o . ! (avoid cur dir erasure...)
