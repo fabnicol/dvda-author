@@ -63,7 +63,6 @@ Multichannel reference tables are structured as follows:
 S is the table of direct conversion (WAV to AOB) and _S the table of reverse conversion (AOB to WAV), with _S o S = Id
 */
 
-/* with static array execution time will be comparable to explicit hard-code value assignment */
 
 static uint8_t  S[2][6][36]=
 {{      {0}, {0},
@@ -72,12 +71,53 @@ static uint8_t  S[2][6][36]=
         {5, 4, 7, 6,  9,  8, 15, 14,17, 16, 19, 18, 1, 0, 3, 2, 11, 10, 13, 12},
         {5, 4, 7, 6, 17, 16, 19, 18, 1, 0, 3, 2, 9, 8, 11, 10, 13, 12, 15, 14, 21, 20, 23, 22}
     },
-    {      {2,  1,  5,  4,  0,  3},
+    {   {2,  1,  5,  4,  0,  3},
         {2, 1, 5, 4, 8, 7, 11, 10, 0, 3, 6, 9},
         {8, 7, 17, 16, 6, 15, 2, 1, 5, 4, 11, 10, 14, 13, 0, 3, 9, 12},
         {8,  7,  11,  10,  20,  19,  23,  22,  6,  9,  18,  21,  2,  1,  5,  4,  14,  13,  17,  16,  0,  3,  12,  15},
         {8, 7, 11, 10, 14, 13, 23, 22, 26, 25, 29, 28, 6, 9, 12, 21, 24, 27, 2, 1, 5, 4, 17, 16, 20, 19, 0, 3, 15, 18},
         {8, 7, 11, 10, 26, 25, 29, 28, 6, 9, 24, 27, 2, 1, 5, 4, 14, 13, 17, 16, 20, 19, 23, 22, 32, 31, 35, 34, 0, 3, 12, 15, 18, 21, 30, 33 }
+    }
+};
+
+// Direct conversion table when separate mono channels are given on command line
+
+static uint8_t  C[2][6][36][2]=
+{
+    {      
+     //3:1 3:0|4:1 4:0|3:3 3:2|4:3 4:2 |1:1 1:0|2:1 2:0 |5:1  5:0|6:1  6:0|1:3  1:2| 2:3 2:2|5:3 5:2 | 6:3 6:2
+     
+        
+        
+    },
+ //24-bit: 
+ //   per output 0-based channel number: {1-based input channel number, 0-based byte rank}
+    {   
+        {{1,1}, {1,0}},
+     
+        {{1,1}, {1,0}, {2,1}, {2,0}},
+         
+        {{1,2}, {1,1}, {2,2}, {2,1}, {1,5}, {1,4}, {2,5}, {2,4},
+         {1,0}, {2,0}, {1,3}, {2,3}},
+        
+        {{3,2}, {3,1}, {3,5}, {3,4}, {3,0}, {3,3}, {1,2}, {1,1},
+         {2,2}, {2,1}, {1,5}, {1,4}, {2,5}, {2,4}, {1,0}, {2,0},
+         {1,3}, {2,3}},
+        
+        {{3,2}, {3,1}, {4,2}, {4,1}, {3,5}, {3,4}, {4,5}, {4,4},
+         {3,0}, {4,0}, {3,3}, {4,3}, {1,2}, {1,1}, {2,2}, {3,1}, 
+         {1,5}, {1,4}, {2,5}, {2,4}, {1,0}, {2,0}, {1,3}, {2,3}}, 
+        
+        {{1,2}, {3,1}, {4,2}, {4,1}, {5,2}, {5,1}, {3,5}, {3,4},
+         {4,5}, {4,4}, {5,5}, {5,4}, {3,0}, {4,0}, {5,0}, {3,3}, 
+         {4,3}, {5,3}, {1,2}, {1,1}, {2,2}, {2,1}, {1,5}, {1,4},
+         {2,5}, {2,5}, {1,0}, {2,0}, {1,3}, {2,3}},
+                 
+        {{3,2}, {3,1}, {4,2}, {4,1}, {3,5}, {3,4}, {4,5}, {4,4},
+         {3,0}, {4,0}, {3,3}, {4,3}, {1,2}, {1,1}, {2,2}, {2,1},
+         {5,2}, {5,1}, {6,2}, {6,1}, {1,5}, {1,4}, {2,5}, {2,4},
+         {5,5}, {5,4}, {6,5}, {6,4}, {1,0}, {2,0}, {5,0}, {6,0},
+         {1,3}, {2,3}, {5,3}, {6,3}}
     }
 };
 
@@ -159,52 +199,49 @@ int calc_info(fileinfo_t* info)
         return(NO_AFMT_FOUND);
     }
 
-
-
-
 // assemble numbers for the various combinations
     short int table_index=(info->bitspersample == 24)? 1 : 0 ;
 
-    static uint16_t T[2][6][12]=     // 16-bit table
+    static uint16_t T[2][6][11]=     // 16-bit table
     {
-         {{ 	2,	2000, 16,  1984,  2010,	2028, 22, 11, 16, 10, 0, 0 },
-            {	4,	2000, 16,  1984,  2010,	2028, 22, 11, 16, 10, 0, 0 },
-            { 12,	2004, 24,  1980,  2010,	2028, 22, 15, 12,  6, 0, 0 },
-            { 16,	2000, 16,  1980,  2010,	2028, 22, 11, 16, 10, 0, 0 },
-            { 20,	2000, 20,  1980,  2010, 2028, 22, 15, 16, 10, 0, 0 },
-            { 24,	1992, 24,  1992, 1993,  2014, 22, 10, 10,  4,17,14}},
+         {{ 	2000, 16,  1984,  2010,	2028, 22, 11, 16, 10, 0, 0 },
+            {	2000, 16,  1984,  2010,	2028, 22, 11, 16, 10, 0, 0 },
+            { 	2004, 24,  1980,  2010,	2028, 22, 15, 12,  6, 0, 0 },
+            { 	2000, 16,  1980,  2010,	2028, 22, 11, 16, 10, 0, 0 },
+            { 	2000, 20,  1980,  2010, 2028, 22, 15, 16, 10, 0, 0 },
+            { 	1992, 24,  1992, 1993,  2014, 22, 10, 10,  4,17,14}},
         // 24-bit table
-        {{     6,	2004, 24,  1980,  2010,	2028, 22, 15, 12, 10, 0, 0 },
-            { 12,	2004, 24,  1980,  2010,	2028, 22, 15, 12, 10, 0, 0 },
-            { 18,	1998, 18,  1980,  2010,	2026, 22, 15, 16, 14, 0, 2 },
-            { 24,	1992, 24,  1968,  1993,	2014, 22, 10, 10,  8,17, 14 },
-            { 30,	1980,  0,  1980,  2010, 2008, 22, 15, 16, 14, 0, 20 },
-            { 36,	1980,  0,  1980,  2010, 2008, 22, 15, 16, 14, 0, 20 }}
+        {{    	2004, 24,  1980,  2010,	2028, 22, 15, 12, 10, 0, 0 },
+            { 	2004, 24,  1980,  2010,	2028, 22, 15, 12, 10, 0, 0 },
+            { 	1998, 18,  1980,  2010,	2026, 22, 15, 16, 14, 0, 2 },
+            { 	1992, 24,  1968,  1993,	2014, 22, 10, 10,  8,17, 14 },
+            { 	1980,  0,  1980,  2010, 2008, 22, 15, 16, 14, 0, 20 },
+            { 	1980,  0,  1980,  2010, 2008, 22, 15, 16, 14, 0, 20 }}
     };
 
 
 #define X T[table_index][info->channels-1]
 
-    info->sampleunitsize=X[0];
-    info->lpcm_payload=X[1];
-    info->firstpackdecrement=X[2];
-    info->SCRquantity=X[3];
-    info->firstpack_audiopesheaderquantity=X[4];
-    info->midpack_audiopesheaderquantity=X[5];
-    info->lastpack_audiopesheaderquantity=X[6];
-    info->firstpack_lpcm_headerquantity=X[7];
-    info->midpack_lpcm_headerquantity=X[8];
-    info->lastpack_lpcm_headerquantity=X[9];
-    info->firstpack_pes_padding=X[10];
-    info->midpack_pes_padding=X[11];
+    info->sampleunitsize=
+            (table_index==1)? info->channels*6 :
+                              ((info->channels > 2)? info->channels*4 :
+                                                     info->channels*2);
+    info->lpcm_payload=X[0];
+    info->firstpackdecrement=X[1];
+    info->SCRquantity=X[2];
+    info->firstpack_audiopesheaderquantity=X[3];
+    info->midpack_audiopesheaderquantity=X[4];
+    info->lastpack_audiopesheaderquantity=X[5];
+    info->firstpack_lpcm_headerquantity=X[6];
+    info->midpack_lpcm_headerquantity=X[7];
+    info->lastpack_lpcm_headerquantity=X[8];
+    info->firstpack_pes_padding=X[9];
+    info->midpack_pes_padding=X[10];
 
 
 #undef X
 
-
-
     info->bytespersecond=(info->samplerate*info->bitspersample*info->channels)/8;
-
 
     switch (info->samplerate)
     {
@@ -232,6 +269,376 @@ int calc_info(fileinfo_t* info)
     /* Patch : padding/pruning is now done in buffers (following version S) */
 
     return(AFMT_WAVE);
+}
+
+
+// This function cleans up the list of input files by filtering out non-compliant audio input (format undefined or impossible to correct by other options)
+// Group and track numbers are readjusted and shifted down (recursively) when one or more files are rejected
+
+command_t *scan_wavfile_audio_characteristics(command_t *command)
+{
+
+    short int  l, delta=0, error=0;
+    static uint8_t i,j;
+    
+    // retrieving information as to sound file format
+
+    error=wav_getinfo(&command->files[i][j]);
+
+    // dealing with format information
+
+    switch (error)
+    {
+    case AFMT_WAVE:
+        if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found WAVE format for %s\n", command->files[i][j].filename);
+        command->files[i][j].type=AFMT_WAVE;
+        j++;
+        break;
+    case AFMT_WAVE_FIXED:
+        if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found WAVE format (fixed) for %s\n", command->files[i][j].filename);
+        command->files[i][j].type=AFMT_WAVE;
+        j++;
+        break;
+    case AFMT_WAVE_GOOD_HEADER:
+        if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found WAVE format (original) for %s\n", command->files[i][j].filename);
+        command->files[i][j].type=AFMT_WAVE;
+        j++;
+        break;
+
+#ifndef WITHOUT_FLAC
+    case AFMT_FLAC:
+        if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found FLAC format for %s\n", command->files[i][j].filename);
+        error=flac_getinfo(&command->files[i][j]);
+        j++;
+        break;
+#if !defined WITHOUT_libogg
+#if HAVE_OGG_FLAC
+    case AFMT_OGG_FLAC:
+        if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found Ogg FLAC format for %s\n", command->files[i][j].filename);
+        error=flac_getinfo(&command->files[i][j]);
+        j++;
+        break;
+#endif
+#endif
+#endif
+
+    case NO_AFMT_FOUND:
+        if (globals.debugging) foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  No compatible format was found for %s\n       Skipping file...\n", command->files[i][j].filename);
+
+        // House-cleaning rules: getting rid of files with unknown format
+
+        // taking off one track;
+
+        command->ntracks[i]--;
+
+        // group demotion: if there is no track left in groups, taking off one group
+
+        if (command->ntracks[i] == 0)
+        {
+            // taking off one group
+
+            command->ngroups--;
+
+            // getting out of both loops, check end on inner=end of outer
+            if (i == command->ngroups-command->nvideolinking_groups)
+              {
+                  if (i) return(command);
+                  else exit(EXIT_FAILURE);
+              }
+
+            // shifting indices for ntracks: all groups have indices decremented, so ntracks[g+1] is now ntracks[g]
+
+            for (l=i; l < command->ngroups-command->nvideolinking_groups; l++)
+            {
+                command->ntracks[l]=command->ntracks[l+1];
+                if (globals.debugging)
+                    foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Shifting track count for group=%d->%d\n", l+1, l+2);
+            }
+            // delta is a flag for group demotion
+            delta=1;
+
+
+        }
+        // shifting indices for files (two cases: delta=0 for same group track-shifting, delta=1 for group demotion
+
+        for (l=j; l < command->ntracks[i+delta]; l++)
+        {
+            // a recursion is unavoidable save for j=last track in group
+            int i_shift=i+delta;
+            int l_shift=l+1-delta;
+            if (globals.debugging)
+                foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Shifting indices for group=%d->%d, track=%d->%d\n", i+1, i_shift+1, l+1, l_shift+1);
+
+            command->files[i][l]=command->files[i_shift][l_shift];
+        }
+        break;
+    }
+
+// assigning channel
+// if AFMT was found, j will have been incremented earlier
+// otherwise it is necessary to reparse again files[i][j] as indices have been shifted
+
+   if (error != NO_AFMT_FOUND && (j))
+         command->files[i][j-1].dvdv_compliant=
+                  ((command->files[i][j-1].bitspersample == 16  || command->files[i][j-1].bitspersample == 24)
+                 &&(command->files[i][j-1].samplerate  == 96000 || command->files[i][j-1].samplerate  == 48000));
+    
+
+    _Bool increment_group=(j == command->ntracks[i]);
+
+    j *= 1-increment_group;
+    i += increment_group;
+
+    if (i == command->ngroups-command->nvideolinking_groups)
+
+        return command;
+// recursion
+    if (command->files[i][j].filename) scan_wavfile_audio_characteristics(command);
+    return(command);
+}
+
+int extract_audio_info(fileinfo_t *info, uint8_t * header)
+{
+    info->type=AFMT_WAVE;
+
+    /* parsing header again with FIXWAV utility */
+
+       static _Bool cut;
+       
+    if (!cut) info->type=fixwav_repair(info);
+     
+    cut=((info->type == AFMT_WAVE_FIXED) || (info->type == AFMT_WAVE_GOOD_HEADER));
+
+    if (calc_info(info) == NO_AFMT_FOUND)
+    {
+      return(info->type=NO_AFMT_FOUND);
+    }
+
+    return(info->type);
+}
+
+
+static inline int compute_header_size(FILE* fp)
+{
+    infochunk ichunk;
+    memset(&ichunk, 0, sizeof(infochunk));
+    uint8_t span=0;
+    WaveData wavinfo;
+    wavinfo.INFILE=fp;
+    parse_wav_header(&wavinfo, &ichunk);
+    return ichunk.span;
+   
+}
+
+
+static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, fileinfo_t* info)
+{
+    
+    if ((memcmp(header,"RIFF",4)!=0) || (memcmp(&header[8],"WAVEfmt",7)!=0))
+    {
+    #ifndef WITHOUT_FLAC
+    
+        /* Other formats than WAV: parsing headers */
+        if (memcmp(header,"fLaC",4) == 0 )
+            return(info->type=AFMT_FLAC);
+        else
+        {
+            if ((memcmp(header,"OggS",4) == 0 ) && (memcmp(header+0x17, "FLAC", 4) != 0))
+               return(info->type=AFMT_OGG_FLAC);
+    
+            else
+            {
+    #endif
+    #ifndef WITHOUT_sox
+    
+                if (globals.sox_enable)
+                {
+                    // When RIFF fmt headers are not recognized, they are processed by Sox first if -S -F is on command line then checked by fixwav
+                    // yest SoX may crash for seriously mangled headers
+    
+                    if (!globals.fixwav_force)
+                    {
+    
+                        if (launch_sox(&path) == NO_AFMT_FOUND)
+                           return(info->type);
+                          // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
+                        else
+                          // PATCH looping back to get info
+                           return(info->type=wav_getinfo(info));
+    // yet without the processing tail below (preserving new header[] array and info structure)
+                    }
+    
+                    else
+                    {
+                     // Other way round if -S -Fforce, as fixwav processes first before SoX
+                      info->type=extract_audio_info(info, header);
+    
+                      switch(info->type)
+                      {
+                         case AFMT_WAVE_GOOD_HEADER :
+                         case AFMT_WAVE_FIXED :
+                            return (info->type=AFMT_WAVE);
+    
+                         default:
+                           // PATCH looping back to get info
+    
+                            if (launch_sox(&path) == NO_AFMT_FOUND)
+                            return(info->type);
+                          // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
+                            else
+                          // PATCH looping back to get info
+                            return(info->type=wav_getinfo(info));
+                              // yet without the processing tail below (preserving new header[] array and info structure)
+                      }
+                   }
+                }
+                else
+    
+    #endif
+    
+                  if ((!globals.fixwav_force) && (!globals.fixwav_prepend))
+    
+                   return(info->type);
+    
+                 else
+                   return(info->type=extract_audio_info(info, header));
+    
+    
+    #ifndef WITHOUT_FLAC
+            }
+        }
+    #endif
+    }
+    // else, if suboption force is used:
+}
+
+static inline int process_wav_get_info(fileinfo_t* info)
+{
+// C99 needed
+change_directory(globals.settings.workdir);
+info->type=NO_AFMT_FOUND;
+
+if (info->mergeflag)
+ for (int u=0; u < info->channels; u++)    
+ {
+  info->audio->channel_fp[u]=secure_open(info->given_channel[u], "rb");
+  if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Opening %s to get info\n", info->given_channel[u]);
+  int span=compute_header_size(info->audio->channel_fp[u]);
+  info->channel_header_size[u]=(span > 0) ? span + 8 : MAX_HEADER_SIZE;
+  uint8_t header[info->channel_header_size[u]];
+  memset(header, 0, info->channel_header_size[u]);
+  /* PATCH: real size on disc is needed */
+ #if defined __WIN32__
+ info->file_size = read_file_size(info->audio->channel_fp[u],(TCHAR*) info->given_channel[u]);
+ #else
+ info->file_size = read_file_size(info->audio->channel_fp[u], info->given_channel[u]);
+ #endif
+ 
+ fread(header, info->channel_header_size[u],1,info->audio->channel_fp[u]);
+ fseek(info->audio->channel_fp[u], 0, SEEK_SET);
+ 
+ if (info->channel_header_size[u] > (span=fread(header, 1, info->channel_header_size[u],info->audio->channel_fp[u])))
+ {
+     foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not read header of size %d for channel %d, just read %d character(s)\n", info->channel_header_size[u],u+1, span);
+     clean_exit(EXIT_FAILURE);
+ }
+ 
+  fclose(info->audio->channel_fp[u]);
+
+  info->type=extract_audio_info_by_all_means(info->given_channel[u], header, info);  
+ }
+else
+{
+  info->audio->fp=secure_open(info->filename, "rb");  
+  if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Opening %s to get info\n", info->filename);
+  int span=compute_header_size(info->audio->fp);
+  info->header_size=(span > 0) ? span + 8 : MAX_HEADER_SIZE;
+  uint8_t header[info->header_size];
+  memset(header, 0, info->header_size);
+  /* PATCH: real size on disc is needed */
+ #if defined __WIN32__
+ info->file_size = read_file_size(info->audio->fp,(TCHAR*) info->filename);
+ #else
+ info->file_size = read_file_size(info->audio->fp, info->filename);
+ #endif
+ 
+ fread(header, info->header_size,1,info->audio->fp);
+ fseek(info->audio->fp, 0, SEEK_SET);
+ 
+ if (info->header_size > (span=fread(header, 1, info->header_size,info->audio->fp)))
+ {
+     foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
+     perror("       ");
+     clean_exit(EXIT_FAILURE);
+ }
+ 
+  fclose(info->audio->fp);
+  info->type=extract_audio_info_by_all_means(info->filename, header, info);  
+  
+}
+
+
+return (info->type);
+}
+
+
+static inline int wav_getinfo_merged(fileinfo_t *info)
+{
+    
+    uint8_t nchannels=info->channels;
+    uint8_t bitspersample=info->bitspersample;
+    uint32_t samplerate=info->samplerate;
+    uint64_t numbytes=info->numbytes;
+    
+    info->type=process_wav_get_info(info);
+    
+    if (info->channels != nchannels)
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one non-mono channel was given.")
+    }
+
+    info->bitspersample /= nchannels;
+    
+    if (info->bitspersample != bitspersample)
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one channel did not have the same bit depth as others.")
+    }
+    
+    info->samplerate /= nchannels;
+    
+    if (info->samplerate != samplerate)
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one channel did not have the same sample rate as others.")
+    }
+    
+        
+    if (info->numbytes/nchannels != numbytes)
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one channel did not have the same number of bytes as others.")
+    }
+
+    // Audio characteristics retained are those of the multichannel file, after the above sanity tests.    
+    return(info->type);
+}
+
+
+int wav_getinfo(fileinfo_t* info)
+{
+    if (info->mergeflag)                
+        wav_getinfo_merged(info);
+    
+    if (info->filename == NULL)
+    {
+      foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open audio file: filepath pointer is null");
+    }
+    else
+    {
+      info->audio->fp=secure_open(info->filename, "rb");
+      if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Opening %s to get info\n", info->filename);
+    }
+
+    process_wav_get_info(info);
+    return(info->type);
 }
 
 #ifndef WITHOUT_FLAC
@@ -500,270 +907,26 @@ int launch_sox(char** filename)
 #endif
 
 
-int extract_audio_info(fileinfo_t *info, uint8_t * header)
+int mono_channel_open(fileinfo_t* info)
 {
-    info->type=AFMT_WAVE;
-
-    /* parsing header again with FIXWAV utility */
-
-    if (globals.fixwav_enable)
+    if (info->type != AFMT_WAVE) return;
+    for (int u=0; u < info->channels; u++)
     {
-        #if 0
-        _Bool silence_previous_value=globals.silence;
-        // Fixwav may request interaction so triggering verbose mode, except in automatic mode (-F by default)
-        if ((!globals.fixwav_automatic)  && (silence_previous_value))
+        info->audio->channel_fp[u]=fopen(info->given_channel[u],"rb");
+        if (info->audio->channel_fp[u]==NULL)
         {
-                globals.silence=0;
+            return(1);
         }
-        #endif
-        /* This is an anti-looping sercurity: normally its is spurious, yet it might be useful in unexpected cases */
-
-       static _Bool cut;
-       
-       if (!cut) info->type=fixwav_repair(info);
-       
-       cut=((info->type == AFMT_WAVE_FIXED) || (info->type == AFMT_WAVE_GOOD_HEADER));
-
-
-        // Reverting to previous verbosity level
-         #if 0
-        //resetting
-        if ((!globals.fixwav_automatic)  && (silence_previous_value))
-        {
-           globals.silence=silence_previous_value;
-           initialise_c_utils(globals.silence, globals.logfile, globals.debugging, globals.journal);
-        }
-        #endif
-    }
-
-    else
-        /* otherwise, reading header, assuming 44-byte headers */
-
-    {
-        info->samplerate += header[24]|(header[25]<<8)|(header[26]<<16)|(header[27]<<24);
-        info->bitspersample += header[34];
-        info->channels += header[22];//
-        info->numbytes += header[40]|(header[41]<<8)|(header[42]<<16)|(header[43]<<24);
-
-        if (!info->mergeflag && info->numbytes > info->file_size - info->header_size)
-        {
-
-            foutput(""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Expected %"PRIu64" bytes but found %"PRIu64" on disc...patching data.\n",
-                    info->numbytes, info->file_size-info->header_size);
-            info->numbytes = info->file_size - info->header_size;
-        }
-
-    }
-
-    if ((info->bitspersample!=16) && (info->bitspersample!=24))
-    {
-        foutput("%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Audio characteristics of file could not be found.");
-
-        foutput("%s\n", "       Fixing wav header (option -F) ...");
-        info->type=fixwav_repair(info);
-
-    }
-
-    // minimal patching without fiwxwav
-    if (calc_info(info) == NO_AFMT_FOUND)
-    {
-      return(info->type=NO_AFMT_FOUND);
-    }
-
-    return(info->type);
-}
-
-static inline void process_wav_get_info(fileinfo_t* info, FILE* fp)
-{
-// C99 needed
-change_directory(globals.settings.workdir);
-fseek(fp, 0, SEEK_SET);
-infochunk ichunk;
-memset(&ichunk, 0, sizeof(infochunk));
-uint8_t span=0;
-WaveData wavinfo;
-wavinfo.INFILE=fp;
-parse_wav_header(&wavinfo, &ichunk);
-span=ichunk.span;
-
-info->header_size=(span > 0) ? span + 8 : MAX_HEADER_SIZE;
-
-uint8_t header[info->header_size];
-memset(header, 0, info->header_size);
-
- /* PATCH: real size on disc is needed */
-#if defined __WIN32__
-info->file_size = read_file_size(fp, (TCHAR*) info->filename);
+#ifdef __WIN32__
+        info->channel_size[u] = read_file_size(info->audio->channel_fp[u], (TCHAR*) info->given_channel[u]);
 #else
-info->file_size = read_file_size(fp, info->filename);
+        info->channel_size[u] = read_file_size(info->audio->channel_fp[u], info->given_channel[u]);
 #endif
+        fseek(info->audio->channel_fp[u], info->header_size,SEEK_SET);
 
-fread(header, info->header_size,1,fp);
-fseek(fp, 0, SEEK_SET);
-
-if (info->header_size > (span=fread(header, 1, info->header_size,fp)))
-{
-    foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
-    perror("       ");
-    clean_exit(EXIT_FAILURE);
+        info->audio->bytesread=0;
+    }
 }
-
- fclose(fp);
-
-// default value
-info->type=NO_AFMT_FOUND;
-
-
-if ((memcmp(header,"RIFF",4)!=0) || (memcmp(&header[8],"WAVEfmt",7)!=0))
-{
-#ifndef WITHOUT_FLAC
-
-    /* Other formats than WAV: parsing headers */
-    if (memcmp(header,"fLaC",4) == 0 )
-        return(info->type=AFMT_FLAC);
-    else
-    {
-        if ((memcmp(header,"OggS",4) == 0 ) && (memcmp(header+0x17, "FLAC", 4) != 0))
-           return(info->type=AFMT_OGG_FLAC);
-
-        else
-        {
-#endif
-#ifndef WITHOUT_sox
-
-            if (globals.sox_enable)
-            {
-                // When RIFF fmt headers are not recognized, they are processed by Sox first if -S -F is on command line then checked by fixwav
-                // yest SoX may crash for seriously mangled headers
-
-                if (!globals.fixwav_force)
-                {
-
-                    if (launch_sox(&info->filename) == NO_AFMT_FOUND)
-                       return(info->type);
-                      // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
-                    else
-                      // PATCH looping back to get info
-                       return(info->type=wav_getinfo(info));
-// yet without the processing tail below (preserving new header[] array and info structure)
-                }
-
-                else
-                {
-                 // Other way round if -S -Fforce, as fixwav processes first before SoX
-                  info->type=extract_audio_info(info, header);
-
-                  switch(info->type)
-                  {
-                     case AFMT_WAVE_GOOD_HEADER :
-                     case AFMT_WAVE_FIXED :
-                        return (info->type=AFMT_WAVE);
-
-                     default:
-                       // PATCH looping back to get info
-
-                        if (launch_sox(&info->filename) == NO_AFMT_FOUND)
-                        return(info->type);
-                      // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
-                        else
-                      // PATCH looping back to get info
-                        return(info->type=wav_getinfo(info));
-                          // yet without the processing tail below (preserving new header[] array and info structure)
-                  }
-               }
-            }
-            else
-
-#endif
-
-              if ((!globals.fixwav_force) && (!globals.fixwav_prepend))
-
-               return(info->type);
-
-             else
-               return(info->type=extract_audio_info(info, header));
-
-
-#ifndef WITHOUT_FLAC
-        }
-    }
-#endif
-}
-// else, if suboption force is used:
-
-info->type=extract_audio_info(info, header);
-}
-
-
-static inline int wav_getinfo_merged(fileinfo_t *info)
-{
-    FILE* fp[info->channels];
-    uint8_t nchannels=info->channels;
-    uint8_t bitspersample=info->bitspersample;
-    uint32_t samplerate=info->samplerate;
-    uint64_t numbytes=info->numbytes;
-    
-    for (int u=0; u < nchannels; u++)    
-    {
-      fp[u]=secure_open(info->given_channel[u], "rb");
-      if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Opening %s to get info\n", info->filename);
-      
-      process_wav_get_info(info,fp[u]);
-    }
-    
-    if (info->channels != nchannels)
-    {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one non-mono channel was given.")
-    }
-
-    info->bitspersample /= nchannels;
-    
-    if (info->bitspersample != bitspersample)
-    {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one channel did not have the same bit depth as others.")
-    }
-    
-    info->samplerate /= nchannels;
-    
-    if (info->samplerate != samplerate)
-    {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one channel did not have the same sample rate as others.")
-    }
-    
-    info->numbytes /= nchannels;
-    
-    if (info->numbytes != numbytes)
-    {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one channel did not have the same number of bytes as others.")
-    }
-
-    // Audio characteristics retained are those of the mono channels, after the above sanity tests.    
-    return(info->type);
-}
-
-
-int wav_getinfo(fileinfo_t* info)
-{
-    if (info->mergeflag)                
-        wav_getinfo_merged(info);
-
-    FILE * fp=NULL;
-    
-    if (info->filename == NULL)
-    {
-      foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open audio file: filepath pointer is null");
-    }
-    else
-    {
-      fp=secure_open(info->filename, "rb");
-      if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Opening %s to get info\n", info->filename);
-    }
-
-    process_wav_get_info(info,fp);
-    return(info->type);
-}
-
-
 
 
 int audio_open(fileinfo_t* info)
@@ -776,18 +939,38 @@ int audio_open(fileinfo_t* info)
 
     if (info->type==AFMT_WAVE)
     {
-        info->audio->fp=fopen(info->filename,"rb");
-        if (info->audio->fp==0)
+        if (info->mergeflag)
         {
-            return(1);
+            for (int u=0; u < info->channels; u++)
+            {
+                info->audio->channel_fp[u]=fopen(info->given_channel[u],"rb");
+                if (info->audio->channel_fp[u]==NULL)
+                {
+                    return(1);
+                }
+        #ifdef __WIN32__
+                info->file_size += read_file_size(info->audio->channel_fp[u], (TCHAR*) info->given_channel[u]);
+        #else
+                info->file_size += read_file_size(info->audio->channel_fp[u], info->given_channel[u]);
+        #endif
+                fseek(info->audio->channel_fp[u], info->channel_header_size[u],SEEK_SET);
+            }
+            
         }
-#ifdef __WIN32__
-        info->file_size = read_file_size(info->audio->fp, (TCHAR*) info->filename);
-#else
-        info->file_size = read_file_size(info->audio->fp, info->filename);
-#endif
-        fseek(info->audio->fp, info->header_size,SEEK_SET);
-
+        else
+        {    
+            info->audio->fp=fopen(info->filename,"rb");
+            if (info->audio->fp==NULL)
+            {
+                return(1);
+            }
+    #ifdef __WIN32__
+            info->file_size = read_file_size(info->audio->fp, (TCHAR*) info->filename);
+    #else
+            info->file_size = read_file_size(info->audio->fp, info->filename);
+    #endif
+            fseek(info->audio->fp, info->header_size,SEEK_SET);
+        }
 
         info->audio->bytesread=0;
     }
@@ -902,19 +1085,19 @@ AOB:   1  0
 In the original dvda-author, the mono and stereo 24-bit cases were illustrated thus:
 
 24-bit mono samples are packed as follows:
-	           0   1     2   3   4   5
+         0   1  2  3  4  5
 	WAV: 01 23 45 12 34 56
 	AOB: 45 23 56 34 01 12
-	             2   1   5   4    0  3
+          2  1  5  4  0  3
 
  24-bit Stereo samples are packed as follows:
-		0   1     2  3    4   5    6  7    8  9  10  11
+    	 0   1  2  3  4  5  6  7  8  9  10 11
 	WAV: 01 23 45 bf 60 8c 67 89 ab b7 d4 e3
 	AOB: 45 23 8c 60 ab 89 e3 d4 01 bf 67 b7
-	            2   1    5  4    8    7  11  10  0  3   6   9
+         2   1  5  4  8  7  11 10 0  3  6   9
 
 For brevity, we use only the more compact label-based description for each of the 12 cases treated here.
-The in-place transformatioin code that derives from this description was machine generated to reduce the chance for transcription errors,. Identity expressions, e.g. x[i+1] = x[i+1], are omitted.
+The in-place transformation code that derives from this description was machine generated to reduce the chance for transcription errors,. Identity expressions, e.g. x[i+1] = x[i+1], are omitted.
 
 The 12 cases are as follows. Their values are encoded in matrix S to be found in src/include/multichannel.h
 
@@ -923,51 +1106,167 @@ WAV: 0  1
 AOB: 1  0
 
  16-bit 2  channel
-WAV: 0  1
-AOB: 1  0
+c1    0   1 
+c2           0   1    
+ 
+WAV:  0  1   2   3
+AOB:  1  0   3   2
+     1:1 1:0 2:1 2:0
 
  16-bit 3  channel
-WAV: 0  1  2  3  4  5  6  7  8  9  10  11
-AOB: 5  4  11  10  1  0  3  2  7  6  9  8
+c1   0   1 
+c2          0   1    
+c3                   0   1    
+                         c1    0   1  
+                         c2            0   1   
+                         c3                    0   1    
+ 
+WAV: 0  1 | 2   3  | 4  5   | 6   7  | 8  9  | 10  11
+AOB: 5  4 | 11  10 | 1  0   | 3   2  | 7  6  | 9   8
+   3:1 3:0|3:3 3:2 |1:1 1:0 |2:1 2:0 |1:3 1:0| 2:3 2:0
+
 
  16-bit 4  channel
-WAV: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15
-AOB: 5  4  7  6  13  12  15  14  1  0  3  2  9  8  11  10
+c1   0   1 
+c2          0   1    
+c3                   0   1    
+c4                            0   1    
+                                  c1    0   1  
+                                  c2             0   1   
+                                  c3                      0   1    
+                                  c4                               0    1  
+ 
+WAV: 0  1  | 2  3  | 4   5 |  6   7   | 8  9  | 10  11  | 12  13 | 14  15
+AOB: 5  4  | 7  6  | 13  12|  15  14  | 1  0  | 3   2   | 9   8  | 11  10
+    3:1 3:0|4:1 4:0|3:3 3:2| 4:3 4:2  |1:1 1:0|2:1  2:0 | 1:3 1:2| 2:3 2:0
+
 
  16-bit 5  channel
-WAV: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19
-AOB: 5  4  7  6  9  8  15  14  17  16  19  18  1  0  3  2  11  10  13  12
+c1   0   1 
+c2          0   1    
+c3                   0   1    
+c4                            0   1    
+c5                                    0   1
+                                          c1    0   1  
+                                          c2             0   1   
+                                          c3                      0   1    
+                                          c4                              0    1  
+                                          c5                                       0   1  
+
+
+WAV: 0  1  | 2  3  | 4  5  | 6   7  | 8   9  | 10  11 | 12  13 | 14  15 | 16  17 | 18  19
+AOB: 5  4  | 7  6  | 9  8  | 15  14 | 17  16 | 19  18 | 1    0 |  3   2 | 11  10 | 13  12
+    3:1 3:0|4:1 4:0|5:1 5:0|3:3 3:2 |4:3 4:2 | 5:3 5:2|1:1  1:0| 2:1 2:0|1:3  1:0|2:3  2:0
+
 
  16-bit 6  channel
-WAV: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23
-AOB: 5  4  7  6  17  16  19  18  1  0  3  2  9  8  11  10  13  12  15  14  21  20  23  22
+ 
+c1   0   1 
+c2          0   1    
+c3                   0   1    
+c4                            0   1    
+c5                                    0   1
+c6                                            0   1    ----------------------  2nd wav sample ------------
+                                                  c1    0   1  
+                                                  c2             0   1   
+                                                  c3                      0   1    
+                                                  c4                                0  1  
+                                                  c5                                        0   1  
+                                                  c6                                                 0   1 
+ 
+WAV: 0  1  | 2  3  | 4  5  | 6   7  | 8  9  | 10  11 | 12  13 | 14  15 | 16  17 | 18  19 | 20  21 | 22  23
+AOB: 5  4  | 7  6  | 17 16 | 19  18 | 1  0  |  3  2  | 9   8  | 11  10 | 13  12 | 15  14 | 21  20 | 23  22
+    3:1 3:0|4:1 4:0|3:3 3:2|4:3 4:2 |1:1 1:0|2:1 2:0 |5:1  5:0|6:1  6:0|1:3  1:2| 2:3 2:2|5:3 5:2 | 6:3 6:2
+
+
+
 
  24-bit 1  channel
 WAV: 0  1  2  3  4  5
 AOB: 2  1  5  4  0  3
 
  24-bit 2  channel
-WAV: 0  1  2  3  4  5  6  7  8  9  10  11
-AOB: 2  1  5  4  8  7  11  10  0  3  6  9
+ 
+c1   0   1   2
+c2                0   1   2  
+                          c1    0   1   2 -----2nd sample---
+                          c2                0   1   2  
+
+WAV: 0   1   2    3   4   5     6   7   8   9   10  11
+AOB: 2   1   5    4   8   7     11  10  0   3   6   9
+     1:2 1:1 2:2  2:1 1:5 1:4   2:5 2:4 1:0 2:0 1:3 2:3
+
+
 
  24-bit 3  channel
-WAV: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17
-AOB: 8  7  17  16  6  15  2  1  5  11  10  14  13  0   3   9   12
+c1   0   1   2
+c2                 0   1   2  
+c3                              0   1   2   
+                                       c1    0   1   2 ----------------- 2nd wav sample ----
+                                       c2                0   1   2  
+                                       c3                              0   1   2   
+
+ 
+WAV: 0   1   2  |  3    4   5 | 6   7   8 |  9   10  11| 12  13  14 |  15  16  17
+AOB: 8   7   17 |  16   6   15| 2   1   5 |  4   11  10| 14  13  0  |  3   9   12
+     3:2 3:1 3:5| 3:4  3:0 3:3|1:2 1:1 2:2| 2:1 1:5 1:4| 2:5 2:4 1:0|  2:0 1:3 2:3      
+
 
  24-bit 4  channel
-WAV: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23
-AOB: 8  7  11  10  20  19  23  22  6  9  18  21  2  1  5  4  14  13  17  16  0  3  12  15
+c1   0   1   2
+c2                 0   1   2  
+c3                             0   1   2   
+c4                                           0   1    2 
+                                                     c1   0   1   2 ----------------- 2nd wav sample ----
+                                                     c2               0   1   2  
+                                                     c3                             0   1   2   
+                                                     c4                                          0   1   2 
+
+WAV: 0   1   2  | 3   4    5  | 6   7   8  | 9  10   11 | 12  13  14 | 15  16  17 | 18  19  20 | 21  22  23
+AOB: 8   7   11 | 10  20  19  | 23  22  6  | 9  18   21 | 2   1    5 | 4   14  13 | 17  16   0 | 3   12  15
+     3:2 3:1 4:2| 4:1 3:5 3:4 |4:5  4:4 3:0|4:0 3:3  4:3| 1:2 1:1 2:2|3:1  1:5 1:4| 2:5 2:4 1:0|2:0  1:3 2:3 
 
 
  24-bit 5  channel
-WAV: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29
-AOB: 8  7  11  10  14  13  23  22  26  25  29  28  6  9  12  21  24  27  2  1  5  4  17  16  20  19  0  3  15  18
+c1   0   1   2
+c2                 0   1   2  
+c3                             0   1   2   
+c4                                         0   1    2 
+c5                                                     0   1    2
+                                                               c1   0   1   2 ----------------- 2nd wav sample --------------
+                                                               c2               0   1   2  
+                                                               c3                            0   1   2   
+                                                               c4                                        0   1   2 
+                                                               c5                                                    0   1    2
+
+WAV: 0   1    2 |  3   4   5 | 6   7   8 | 9   10  11 | 12  13  14 |15  16  17 |18  19  20 | 21  22  23| 24  25  26 |27  28  29
+AOB: 8   7   11 | 10  14  13 | 23  22  26| 25  29  28 | 6   9   12 |21  24  27 |2   1   5  | 4   17  16| 20  19  0  |3   15  18
+     1:2 3:1 4:2| 4:1 5:2 5:1|3:5 3:4 4:5|4:4 5:5 5:4 | 3:0 4:0 5:0|3:3 4:3 5:3|1:2 1:1 2:2|2:1 1:5 1:4| 2:5 2:4 1:0|2:0 1:3 2:3
+
+
+
 
  24-bit 6  channel
-WAV: 0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35
-AOB: 8  7  11  10  26  25  29  28  6  9  24  27  2  1  5  4  14  13  17  16  20  19  23  22  32  31  35  34  0  3  12  15  18  21  30  33
+ 
+c1   0   1   2
+c2                 0   1   2  
+c3                             0   1   2   
+c4                                         0   1    2 
+c5                                                     0   1    2
+c6                                                                  0   1   2 ----------------------  2nd wav sample ---------------------------------------
+                                                                            c1   0   1   2
+                                                                            c2                 0  1  2  
+                                                                            c3                              0  1  2   
+                                                                            c4                                          0  1   2 
+                                                                            c5                                                       0   1    2
+                                                                            c6                                                                     0   1   2 
 
-
+WAV: 0   1   2   | 3   4   5 | 6   7   8  | 9  10  11 | 12  13  14 | 15  16  17 | 18  19  20 | 21  22  23 | 24  25  26 | 27  28  29 | 30  31  32 | 33  34  35
+AOB: 8   7   11  | 10  26  25| 29  28  6  | 9  24  27 | 2   1   5  | 4   14  13 | 17  16  20 | 19  23  22 | 32  31  35 | 34  0   3  | 12  15  18 | 21  30  33
+     3:2 3:1 4:2 |4:1 3,2 3,1| 4,2 4,1 3:0|4:0 3,0 4,0| 1:2 1:1 2:2| 2:1 5:2 5:1| 6:2 6:1 1,2| 1,1 2,2 2,1| 5,2 5,1 6,2| 6,1 1:0 2:0| 5:0 6:0 1,0| 2,0 5,0 6,0
+     3:2 3:1 4:2 |4:1 3:5 3:4| 4:5 4:4 3:0|4:0 3:3 4:3| 1:2 1:1 2:2| 2:1 5:2 5:1| 6:2 6:1 1:5| 1:4 2:5 2:4| 5:5 5:4 6:5| 6:4 1:0 2:0| 5:0 6:0 1:3| 2:3 5:3 6:3
+     
+     
 The sequences presented above may be verified by constructing an .aob file with an easily identifiable sequence of bytes
 and presenting it to a (correct) dvd-audio extraction program.  The byte order in the extracted wave file should be the inverse
 of that given above.
