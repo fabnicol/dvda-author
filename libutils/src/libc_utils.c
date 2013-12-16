@@ -1259,6 +1259,7 @@ FILE * secure_open(const char *path, const char *context)
         printf(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open '%s'\n", path);
         exit(EXIT_FAILURE);
     }
+    fseek(f, 0, SEEK_SET);
     return f;
 
 }

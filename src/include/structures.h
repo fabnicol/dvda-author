@@ -27,6 +27,7 @@ typedef struct
 typedef struct
 {
     FILE* fp;
+    FILE** channel_fp;
     FLAC__StreamDecoder* flac;
     // Used for FLAC decoding:
     uint8_t buf[1024*256];
@@ -38,6 +39,7 @@ typedef struct
 typedef struct
 {
     uint8_t header_size;
+    uint8_t* channel_header_size;
     uint8_t type;
     uint8_t bitspersample;
     uint8_t channels;
@@ -52,7 +54,6 @@ typedef struct
     uint8_t join_flag;
     //uint8_t byteorder_testmode;
     uint8_t newtitle;
-    uint8_t headerlength;
     uint8_t padd;
     // L&T Feldkamp addition (multichannel)
     uint8_t offset;
@@ -78,6 +79,7 @@ typedef struct
     uint64_t numsamples;
     uint64_t numbytes; // theoretical file size
     uint64_t file_size; // file size on disc
+    uint64_t *channel_size; // channel size on disc
     uint64_t bytesperframe;
     uint64_t bytespersecond;
     uint64_t first_PTS;
