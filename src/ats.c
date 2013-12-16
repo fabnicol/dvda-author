@@ -561,6 +561,11 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
 
 
     /* Open the first file and initialise the input audio buffer */
+    if (files[i].mergeflag)
+    {
+        
+    }
+    else 
     if (audio_open(&files[i])!=0)
     {
         foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open %s\n", files[i].filename);

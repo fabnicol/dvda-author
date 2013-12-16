@@ -20,7 +20,7 @@
     // this trick is OK if only long options are used for non-print short options.
     
 command_t *command_line_parsing(int , char* const argv[],  command_t *command);
-
+void process_dvd_video_zone(command_t* command);
 #include "fixwav_manager.h"
 void fixwav_parsing(char *ssopt);
 

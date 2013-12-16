@@ -41,6 +41,24 @@ static fileinfo_t ** files;
 uint16_t totntracks;
 uint8_t maxbuttons; // to be used in xml.c and menu.c as extern globals
 uint8_t resbuttons; // to be used in xml.c and menu.c as extern globals
+uint8_t ndvdvtitleset1=0,ndvdvtitleset2=0;
+uint8_t mirror_st_flag=0;
+uint8_t* ndvdvslides=NULL; 
+uint8_t* ndvdvtracks=NULL;
+
+_Bool soundtracks_flag=0;
+_Bool dvdv_tracks_given=0;
+_Bool lplex_slides_flag=0;
+_Bool dvdv_import_flag=0;
+_Bool mirror_flag=0;
+_Bool full_hybridate_flag=0;
+_Bool         hybridate_flag=0;
+
+char  *stillpic_string=NULL;
+char  **pics_per_track=NULL;
+char ***dvdv_track_array=NULL;
+char ***dvdv_slide_array=NULL;
+char ***picks_per_track_double_array=NULL;
 
 void parse_double_entry_command_line(char* input_string, char**** DOUBLE_ARRAY, uint8_t** COUNTER_ARRAY, uint8_t* TOTAL, short int audit_flag, char separator) 
 {
@@ -816,12 +834,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             *h,
             *min,
             *sec,
-            *stillpic_string=NULL,
             *still_options_string=NULL,
             *import_topmenu_path=NULL,
-            *player="vlc",
-            **pics_per_track=NULL,
-            ***picks_per_track_double_array=NULL;
+            *player="vlc";
     
     _Bool import_topmenu_flag=0;
     uint16_t npics[totntracks];
@@ -1633,19 +1648,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     char * str=NULL;
     optind=0;
     opterr=1;
-    _Bool soundtracks_flag=0,
-            dvdv_tracks_given=0,
-            lplex_slides_flag=0,
-            dvdv_import_flag=0,
-            mirror_flag=0,
-            full_hybridate_flag=0,
-            hybridate_flag=0;
-    uint8_t mirror_st_flag=0;
-    char*** dvdv_track_array=NULL;
-    char*** dvdv_slide_array=NULL;
-    uint8_t* ndvdvslides=NULL; 
-    uint8_t* ndvdvtracks=NULL;
-    uint8_t ndvdvtitleset1=0,ndvdvtitleset2=0;
+  
     
     
 #ifdef LONG_OPTIONS
@@ -2320,33 +2323,42 @@ standard_checks:
         scan_wavfile_audio_characteristics(command);
     }
         
-    #if ! HAVE_core_BUILD
-    
-        
+    process_dvd_video_zone(command);
+  
+    user_command_line++;
+    return(command);
+}
+
+
+void process_dvd_video_zone(command_t* command)
+{
+#if ! HAVE_core_BUILD
+  
+ #if HAVE_lplex  
     if (hybridate_flag || full_hybridate_flag)
     {
         
         lplex_slides_flag=1;
         int g=0;
-        dvdv_slide_array=calloc(ngroups, sizeof(char**));
+        dvdv_slide_array=calloc(command->ngroups, sizeof(char**));
         if (dvdv_slide_array == NULL) EXIT_ON_RUNTIME_ERROR
-        dvdv_slide_array[0]=calloc(ntracks[g], sizeof(char *));        
+        dvdv_slide_array[0]=calloc(command->ntracks[g], sizeof(char *));        
         if (dvdv_slide_array[0] == NULL) EXIT_ON_RUNTIME_ERROR
-        if (ndvdvslides == NULL) ndvdvslides=calloc(ngroups, sizeof(uint8_t));
+        if (ndvdvslides == NULL) ndvdvslides=calloc(command->ngroups, sizeof(uint8_t));
         if (ndvdvslides == NULL) EXIT_ON_RUNTIME_ERROR
         
-        int N=ntracks[0];
+        int N=command->ntracks[0];
         int T=0, TT=0;
         
         for (int t=0;  t < totntracks; t++)
         {
-            if (g < ngroups-1 && t >= N)
+            if (g < command->ngroups-1 && t >= N)
             {
                 T = 0;
                 TT=0;
-                N += ntracks[g];    
+                N += command->ntracks[g];    
                 g++;
-                dvdv_slide_array[g]=calloc(ntracks[g], sizeof(char *));
+                dvdv_slide_array[g]=calloc(command->ntracks[g], sizeof(char *));
                 if (dvdv_slide_array[g] == NULL) EXIT_ON_RUNTIME_ERROR
             }
             
@@ -2402,15 +2414,15 @@ standard_checks:
     if (dvdv_import_flag)
     {
         ndvdvtitleset1=0;
-        dvdv_track_array=(char***) calloc(ngroups, sizeof(char**));  // is a maximum
-        ndvdvtracks=(uint8_t*) calloc(ngroups, sizeof(uint8_t));        
-        int* cut_table[ngroups];
+        dvdv_track_array=(char***) calloc(command->ngroups, sizeof(char**));  // is a maximum
+        ndvdvtracks=(uint8_t*) calloc(command->ngroups, sizeof(uint8_t));        
+        int* cut_table[command->ngroups];
         int delta_titlesets=0;
         
-        for (int group=0; group < ngroups; group++)
+        for (int group=0; group < command->ngroups; group++)
         {
 
-            for (int track=0; track < ntracks[group]; track++)
+            for (int track=0; track < command->ntracks[group]; track++)
             {
                 if (ndvdvtracks == NULL) EXIT_ON_RUNTIME_ERROR
                 if(files[group][track].dvdv_compliant)                        
@@ -2446,7 +2458,7 @@ standard_checks:
             cut_table[group][0]=1;    
             
             int TT=0;
-            for (int track=0; track < ntracks[group]; track++) 
+            for (int track=0; track < command->ntracks[group]; track++) 
             {
                 
                 if (command->files[group][track].dvdv_compliant)
@@ -2592,18 +2604,18 @@ standard_checks:
     if (mirror_flag)
     {
         ndvdvtitleset1=0;
-        dvdv_track_array=(char***) calloc(ngroups, sizeof(char**));  // now lo longer a maximum
-        int* cut_table[ngroups];
+        dvdv_track_array=(char***) calloc(command->ngroups, sizeof(char**));  // now lo longer a maximum
+        int* cut_table[command->ngroups];
         int delta_titlesets=0;
         
-        for (int group=0; group < ngroups; group++)
+        for (int group=0; group < command->ngroups; group++)
         {
-            dvdv_track_array[group]=(char**) calloc(ntracks[group], sizeof(char*)); 
-            uint32_t lplex_audio_characteristics_test[ntracks[group]];
-            memset(lplex_audio_characteristics_test, '0', ntracks[group]);
-            cut_table[group]=(int*) calloc(ntracks[group], sizeof(int));
+            dvdv_track_array[group]=(char**) calloc(command->ntracks[group], sizeof(char*)); 
+            uint32_t lplex_audio_characteristics_test[command->ntracks[group]];
+            memset(lplex_audio_characteristics_test, '0', command->ntracks[group]);
+            cut_table[group]=(int*) calloc(command->ntracks[group], sizeof(int));
             
-            for (int track=0; track < ntracks[group]; track++)
+            for (int track=0; track < command->ntracks[group]; track++)
             {
                 
                 if(files[group][track].dvdv_compliant) 
@@ -2656,7 +2668,7 @@ standard_checks:
             
             /* Now checking the lplex constraint on same-type audio characteristics per titleset */
             cut_table[group][0]=1;    
-            for (int i=1; i < ntracks[group]; i++)
+            for (int i=1; i < command->ntracks[group]; i++)
                if  (lplex_audio_characteristics_test[i] != lplex_audio_characteristics_test[i-1])
                 {
                   foutput(ANSI_COLOR_RED"\n[WAR]"ANSI_COLOR_RESET
@@ -2685,24 +2697,24 @@ standard_checks:
              if (globals.veryverbose) 
                    foutput(ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  %d titlesets will have to be added.\n", delta_titlesets);
                    
-             if (ngroups+delta_titlesets > 99)      
+             if (command->ngroups+delta_titlesets > 99)      
                EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Exceeded 99 titleset limit.\n       Redesign your audio input so that you do not have more than 99 different audio formats in a row.")
              
-             new_dvdv_track_array=(char***) calloc(ngroups + delta_titlesets,sizeof(dvdv_track_array));
-             new_dvdv_slide_array=(char***) calloc(ngroups + delta_titlesets, sizeof(dvdv_slide_array));
+             new_dvdv_track_array=(char***) calloc(command->ngroups + delta_titlesets,sizeof(dvdv_track_array));
+             new_dvdv_slide_array=(char***) calloc(command->ngroups + delta_titlesets, sizeof(dvdv_slide_array));
             
              int newgroup=-1;
              
-             for (int group=0; group < ngroups && newgroup < ngroups+delta_titlesets; group++)
+             for (int group=0; group < command->ngroups && newgroup < command->ngroups+delta_titlesets; group++)
              {
-                   for (int track=0; track < ntracks[group]; track++)
+                   for (int track=0; track < command->ntracks[group]; track++)
                    {
                      if (cut_table[group][track]) newgroup++;
                      new_ntracks[newgroup]++;
                    }
              }
              
-             for (int newgroup=0; newgroup< ngroups +delta_titlesets; newgroup++)
+             for (int newgroup=0; newgroup< command->ngroups +delta_titlesets; newgroup++)
              {
                new_dvdv_track_array[newgroup]=calloc(new_ntracks[newgroup], sizeof(dvdv_track_array[newgroup]));
                new_dvdv_slide_array[newgroup]=calloc(new_ntracks[newgroup], sizeof(dvdv_slide_array[newgroup]));
@@ -2711,10 +2723,10 @@ standard_checks:
              
              newgroup=0;
              
-             for (int group=0; group < ngroups ; group++)
+             for (int group=0; group < command->ngroups ; group++)
              {
                 int N=0;
-                while (N < ntracks[group])
+                while (N < command->ntracks[group])
                 {
                   for (int track=0; track < new_ntracks[newgroup]; track++)
                   {
@@ -2744,9 +2756,9 @@ standard_checks:
                                    (const uint8_t*) new_ntracks, 
                                    (const char***) new_dvdv_slide_array, 
                                    ndvdvslides,
-                                   (const int) ngroups+delta_titlesets); 
+                                   (const int) command->ngroups+delta_titlesets); 
                                    
-            for (int group=0; group < ngroups+delta_titlesets; group++) 
+            for (int group=0; group < command->ngroups+delta_titlesets; group++) 
             {
                 for (int track=0; track < new_ntracks[group]; track++)
                 {
@@ -2754,7 +2766,7 @@ standard_checks:
                     free(new_dvdv_slide_array[group][track]);    
                 }
                 
-                if (group < ngroups) free(cut_table[group]);
+                if (group < command->ngroups) free(cut_table[group]);
                 free(new_dvdv_track_array[group]);
                 free(new_dvdv_slide_array[group]);
             }
@@ -2764,14 +2776,14 @@ standard_checks:
             launch_lplex_hybridate(img, 
                                    "dvd", 
                                    (const char***) dvdv_track_array, 
-                                   (const uint8_t*) ntracks, 
+                                   (const uint8_t*) command->ntracks, 
                                    (const char***) dvdv_slide_array, 
                                    ndvdvslides,
-                                   (const int) ngroups); 
+                                   (const int) command->ngroups); 
                                
-            for (int group=0; group < ngroups; group++) 
+            for (int group=0; group < command->ngroups; group++) 
             {
-              for (int track=0; track < ntracks[group]; track++)
+              for (int track=0; track < command->ntracks[group]; track++)
               {
                   free(dvdv_track_array[group][track]);
                   free(dvdv_slide_array[group][track]);    
@@ -2784,14 +2796,11 @@ standard_checks:
         }
         
     }
-    #endif
+#endif
+
+#endif 
     
-    user_command_line++;
-    return(command);
 }
-
-
-
 
 void fixwav_parsing(char *ssopt)
 {

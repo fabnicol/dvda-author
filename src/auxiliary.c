@@ -419,7 +419,10 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t** ngiven_chann
                 if ((files[i][j].filename=calloc(CHAR_BUFSIZ, sizeof(char)) )== NULL)
                     EXIT_ON_RUNTIME_ERROR
                 if (ngiven_channels)
-                    files[i][j].given_channel=calloc(ngiven_channels, sizeof(char**));
+                    {
+                      files[i][j].given_channel=calloc(ngiven_channels, sizeof(char**));
+                      files[i][j].channel_header_size=calloc(ngiven_channels, sizeof(uint8_t));
+                    }
                 for  (int u=0; u< ngiven_channels[i][j]; u++)
                   {                            
                     if ((files[i][j].given_channel[u]=calloc(CHAR_BUFSIZ, sizeof(char)) )== NULL)
