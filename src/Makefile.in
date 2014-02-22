@@ -40,7 +40,7 @@ endif
 CPPFLAGS :=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include
 # for config.h
 CPPFLAGS += -I@BUILDDIR@
-LDLIBS := -lm @BUILDDIR@/libutils/src/libc_utils.a
+LDLIBS := -lm @BUILDDIR@/libutils/src/libc_utils.a @BUILDDIR@/libfixwav/src/libfixwav.a
 
 OBJECTS=amg2.o ats.o atsi2.o audio.o auxiliary.o dvda-author.o  \
 	     file_input_parsing.o samg2.o launch_manager.o command_line_parsing.o  \
@@ -56,9 +56,7 @@ else
     CPPFLAGS += -DWITHOUT_sox
 endif
 
-LDLIBS+=@libfixwav_LIB@
 CPPFLAGS +=-I@ROOTDIR@/libfixwav/src/include
-
 
 ifneq "@MAYBE_libiberty@" ""
      LDLIBS+=@libiberty_LIB@

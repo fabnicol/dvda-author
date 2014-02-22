@@ -3,7 +3,7 @@
 #
 # dvda-author executable script
 #
-# All autoconf and make scripts Copyright Fabrice Nicol 2008-2009 <fabnicol@users.sourceforge.net>
+# All autoconf and make scripts Copyright Fabrice Nicol 2008-2014 <fabnicol@users.sourceforge.net>
 # Dependencies: all files in m4/
 ######################################################################################################
 
@@ -35,7 +35,6 @@ AC_CANONICAL_BUILD
 # do not use libtool in this version, for arcane and unclear reasons.
 AC_PROG_RANLIB
 
-
 AS_IF([test -f DOWNLOADS], [rm -f DOWNLOADS])
 AS_IF([test -f PATCHED.DOWNLOADS], [rm -f PATCHED.DOWNLOADS])
 
@@ -59,7 +58,6 @@ m4_include([m4/dependencies.m4])
 m4_include([m4/auxiliary.m4])
 
 DVDA_MKDIR([local])
-
 
 # -----------------------------------------------------------------------------------------
 # configuration file installation
@@ -138,8 +136,6 @@ AC_ARG_WITH([debug-flags],
 	 DEBUG_FLAGS=$withval
     ])
 
-
-
 #======================================
 # Core feature macros, see m4 directory
 #======================================
@@ -148,18 +144,9 @@ AC_ARG_WITH([debug-flags],
 # invoking main M4sh subroutine
 #definition of empty commandline
 
-AS_IF([test "$command_line_args" = ""],
-	[
-	   withval_libogg=no
-	   withval_FLAC=no
-	   withval_sox=no
-	])
-
 AC_ARG_ENABLE([cont],[AS_HELP_STRING([--enable-cont],[continue download even if package not available])],[CONTINUE=yes],[CONTINUE=no])
 
 DVDA_CHECK_DEPENDENCIES
-
-
 
 #=======================================
 # Checks for programs/functions/compiler
@@ -297,7 +284,7 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
     Version : ..................... $VERSION
  
     Dependencies:
-		    fixwav..........$libfixwav_LIB
+		    fixwav..........$BUILDDIR/libfixwav/src/libfixwav.a
 		    flac............$FLAC_LIB $FLAC_LINK
 		    ogg.............$libogg_LIB $libogg_LINK
 		    sox.............$sox_LIB $sox_LINK

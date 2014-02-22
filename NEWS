@@ -1,5 +1,8 @@
 Release History
 
+   dvda-author-14.02
+          Fev     20, 2014  libfixwav becomes obligatory build. Fix audio encoding regression 
+	                    (starting 08.12)
    dvda-author-13.11
           Nov     11, 2013  Implement lplex authoring for hybrids.
           

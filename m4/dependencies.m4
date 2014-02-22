@@ -11,8 +11,8 @@
 AC_DEFUN([DVDA_CHECK_DEPENDENCIES],
 [
 
+AC_DEFINE([WEBSITE],["http://dvd-audio.sourceforge.net"],["Project website"])
 m4_define([WEBSITE],[http://dvd-audio.sourceforge.net])
-AC_DEFINE([WEBSITE],['http://dvd-audio.sourceforge.net'],[Project website])
 
 # ====== Auxiliary tools: man page and html doc, mjpegtools, ImageMagick ========= #
 
@@ -93,8 +93,9 @@ m4_map([DVDA_TEST_AUX],[
 	       libogg_DOWNLOAD=no
 	       libiberty_BUILD=yes
 	       MAYBE_libogg=""
-	       libfixwav_BUILD=no
-	       libogg_LINK=""]],
+	       libogg_LINK=""
+	       withval_lplex=no
+	       ]],
 	     [[minimal-build],
 	      [
 	       WITH_FLAC=yes
@@ -140,14 +141,15 @@ m4_map([DVDA_TEST_AUX],[
 	       WITH_libiberty=no
 	       MAYBE_libiberty=""
 	       libiberty_BUILD=no
-	       libfixwav_BUILD=no
 	       withval_FLAC=no
 	       withval_libogg=no
 	       withval_sox=no
 	       libogg_BUILD=no
 	       libogg_DOWNLOAD=no
 	       MAYBE_libogg=""
-	       libogg_LINK=""]],
+	       libogg_LINK=""
+	       withval_lplex=no
+	       ]],
 	     [[minimal-build],
 	      [
 	       WITH_FLAC=yes
@@ -303,6 +305,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
     # functions should be white-space separated, as should header-function list double-quoted pairs. Headers are comma-separated from funtion lists in pair.
 
     m4_map([DVDA_ARG_WITH],[
+      [[lplex],  [[[lplex.h],[author]]]],
       [[flac],  [[[FLAC/all.h],[FLAC__stream_decoder_init_file]]]],
       [[libogg],   [[[ogg/ogg.h], [ogg_stream_init]]]],
       [[sox],   [[[sox.h],     [sox_format_init  sox_open_read
