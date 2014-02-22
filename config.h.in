@@ -64,9 +64,6 @@
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
-/* Define to 1 if you have the <fixwav_manager.h> header file. */
-#undef HAVE_FIXWAV_MANAGER_H
-
 /* Define to 1 if you have the <FLAC/all.h> header file. */
 #undef HAVE_FLAC_ALL_H
 
@@ -102,6 +99,9 @@
 
 /* Define to 1 if you have the <locale.h> header file. */
 #undef HAVE_LOCALE_H
+
+/* Define to 1 if you have the <lplex.h> header file. */
+#undef HAVE_LPLEX_H
 
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
@@ -323,9 +323,6 @@
 /* Found jpeg2yuv */
 #undef HAVE_jpeg2yuv
 
-/* configure, build and install libfixwav from source code */
-#undef HAVE_libfixwav_BUILD
-
 /* configure, build and install libiberty from source code */
 #undef HAVE_libiberty_BUILD
 
@@ -407,6 +404,9 @@
 
 /* enable static sox */
 #undef HAVE_static_BUILD
+
+/* Found vlc */
+#undef HAVE_vlc
 
 /* Defining help2man filepath. */
 #undef HELP2MAN
@@ -523,19 +523,25 @@
 #endif
 
 
-/* Disables $lower support */
+/* Pathname of vlc */
+#undef VLC
+
+/* "Project website" */
+#undef WEBSITE
+
+/* Disables flac support */
 #undef WITHOUT_flac
 
-/* Disables $lower support */
-#undef WITHOUT_libfixwav
-
-/* Disables $lower support */
+/* Disables libiberty support */
 #undef WITHOUT_libiberty
 
-/* Disables $lower support */
+/* Disables libogg support */
 #undef WITHOUT_libogg
 
-/* Disables $lower support */
+/* Disables lplex support */
+#undef WITHOUT_lplex
+
+/* Disables sox support */
 #undef WITHOUT_sox
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most

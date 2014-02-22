@@ -2,7 +2,7 @@
 <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
 </HEAD><BODY>
 <H1>DVDA-AUTHOR</H1>
-Section: User Commands (1)<BR>Updated: November 2013<BR><A HREF="#index">Index</A>
+Section: User Commands (1)<BR>Updated: February 2014<BR><A HREF="#index">Index</A>
 <A HREF="http://localhost/cgi-bin/man/man2html">Return to Main Contents</A><HR>
 
 <A NAME="lbAB">&nbsp;</A>
@@ -227,9 +227,17 @@ Software configuration
 <P>
 
 <B>-D</B>, <B>--tempdir</B> directory  Temporary directory for DVD-Audio files (dvda-author).
+<DL COMPACT>
+<DT><DD>
+Optional.
+</DL>
 <P>
 
-<B>-D</B>, <B>--tempdir</B> directory  Temporary directory for DVD-Video files (lplex).
+<B>-D</B>, <B>--lplex-tempdir</B> directory  Temporary directory for DVD-Video files (lplex)
+<DL COMPACT>
+<DT><DD>
+Optional.
+</DL>
 <P>
 
 <B>-X</B>, <B>--workdir</B> directory  Working directory: current directory in command line relative paths.
@@ -306,9 +314,6 @@ WITHOUT_sox to compile without SoX code
 <P>
 
 WITHOUT_FLAC to compile without FLAC/OggFLAC code
-<P>
-
-WITHOUT_libfixwav to compile without fixwav code
 <A NAME="lbAG">&nbsp;</A>
 <H2>AUTHOR</H2>
 
@@ -351,6 +356,6 @@ This is free software; see the source for copying conditions.
 This document was created by
 <A HREF="http://github.com/hamano/man2html/">man2html</A>,
 using the manual pages.<BR>
-Time: 23:49:16 GMT, November 11, 2013
+Time: 23:03:08 GMT, February 22, 2014
 </BODY>
 </HTML>

@@ -587,7 +587,7 @@ AC_ARG_WITH([lower], [AS_HELP_STRING([--with-]lower,[full pathname of library or
     [withval_]bn=$withval
     AS_IF([test x$withval = xno],
 	  [
-	   AC_DEFINE([WITHOUT_]bn,[1],[Disables $lower support])
+	   AC_DEFINE([WITHOUT_]bn,[1],[Disables ]lower[ support])
 	   bn[_BUILD]=no
 	   [HAVE_EXTERNAL_]bn=no
 	   [WITH_]bn=no
@@ -604,14 +604,14 @@ AC_ARG_WITH([lower], [AS_HELP_STRING([--with-]lower,[full pathname of library or
      #not given on command line
      [withval_]bn=no
       #building libfixwav by default
-      AS_IF([test bn = libfixwav ],[bn[_BUILD]=yes])
+    
       bn[_LIB_INPUT]=""
       [HAVE_EXTERNAL_]bn=no
       [WITH_]bn=""
    ])
 ],
 [
-   AC_DEFINE([WITHOUT_]bn,[1],[Disables $lower support])
+   AC_DEFINE([WITHOUT_]bn,[1],[Disables ]lower[ support])
    bn[_BUILD]=no
   [HAVE_EXTERNAL_]bn=no
   [WITH_]bn=no

@@ -27,7 +27,7 @@
 
 #include "command_line_parsing.h"
 #include "menu.h"
-#if HAVE_lplex || HAVE_lplex_BUILD
+#ifndef WITHOUT_lplex
 #include "sound.h"
 #endif
 #include "videoimport.h"
@@ -92,9 +92,10 @@ void parse_double_entry_command_line(char* input_string, char**** DOUBLE_ARRAY, 
 #endif
         for (int track=0; track < *COUNTER_ARRAY[titleset]; track++)
         {
-
+#ifndef WITHOUT_lplex
             if ((audit_flag == AUDIT_DVD_VIDEO_AUDIO_FORMAT) || (audit_flag == AUDIT_STRICT_TOPMENU_AUDIO_FORMAT)) 
                 errno=audit_soundtrack((*DOUBLE_ARRAY)[titleset][track], audit_flag);
+#endif
             // else case: images, noop.
 
             
@@ -2629,8 +2630,8 @@ void process_dvd_video_zone(command_t* command)
                 {
                     int new_sample_rate=0;
                     int new_bit_rate=0;
-                    uint sample_floor;
-                    uint bps_floor;
+                    unsigned sample_floor;
+                    unsigned bps_floor;
                                         
                     if (mirror_st_flag == HIGH)
                     {
