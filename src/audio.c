@@ -724,7 +724,6 @@ int flac_getinfo(fileinfo_t* info)
 }
 #endif
 
-
 int fixwav_repair(fileinfo_t *info)
 {
     WaveHeader  waveheader;

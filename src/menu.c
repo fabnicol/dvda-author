@@ -583,7 +583,7 @@ int generate_background_mpg(pic* img)
     char* mp2track;
     errno=0;
 
-    if (strcasecmp(img->norm, "ntsc") == 0) norm_y=NTSC_Y;  //   x  value is the same as for PAL (720)
+    if (strcmp(img->norm, "ntsc") == 0) norm_y=NTSC_Y;  //   x  value is the same as for PAL (720)
     memset(tempfile, '0', sizeof(tempfile));
     sprintf(tempfile, "%s"SEPARATOR"%s", globals.settings.tempdir, "temp.m2v");
 
@@ -1188,6 +1188,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
     return errno;
 }
 
+
 int create_stillpic_directory(char* string, uint32_t count)
 {
     if (!string)
@@ -1195,7 +1196,8 @@ int create_stillpic_directory(char* string, uint32_t count)
         fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Null string input for stillpic in create_stillpic_directory, with count=%d\n", count);
         exit(-1);
     }
-    struct stat buf;
+
+
     static uint32_t  k;
     change_directory(globals.settings.workdir);
     if (k == count)
@@ -1209,6 +1211,10 @@ int create_stillpic_directory(char* string, uint32_t count)
         if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Jumping one track for picture rank=%d\n", k);
         return 1;
     }
+
+#ifndef __WIN32__
+ struct stat buf;
+
     if (stat(string, &buf) == -1)
     {
         fprintf(stderr,ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  create_stillpic_directory: could not stat file %s\n", string);
@@ -1222,6 +1228,7 @@ int create_stillpic_directory(char* string, uint32_t count)
     }
     if (S_IFREG & buf.st_mode)
     {
+  #endif
         char dest[strlen(globals.settings.tempdir)+13];
         sprintf(dest, "%s"SEPARATOR"pic_%03d.jpg", globals.settings.tempdir, k);
         if (globals.debugging) fprintf(stderr, ANSI_COLOR_YELLOW"[DBG]"ANSI_COLOR_RESET"  Picture %s will be copied to temporary directory as %s.\n", string, dest);
@@ -1231,7 +1238,9 @@ int create_stillpic_directory(char* string, uint32_t count)
         if (k == 0) globals.settings.stillpicdir=strdup(globals.settings.tempdir);
         k++;
         return 1;
+#ifndef __WIN32__
     }
+#endif
     return 0;
 
 }
