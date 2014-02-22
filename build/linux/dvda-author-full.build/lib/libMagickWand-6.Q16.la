@@ -17,7 +17,7 @@ old_library='libMagickWand-6.Q16.a'
 inherited_linker_flags=' -fopenmp -pthread'
 
 # Libraries that this one depends upon.
-dependency_libs=' /home/fab/Dev/dvda-author-dev/local/lib/libMagickCore-6.Q16.la /usr/lib/i386-linux-gnu/libfreetype.la /usr/local/lib/libjpeg.la -lpng12 -lXext -lXt -lz -lSM -lICE -lX11 /usr/local/lib/libgomp.la -lm'
+dependency_libs=' /home/fab/Dev/dvda-author-dev/local/lib/libMagickCore-6.Q16.la /usr/lib/i386-linux-gnu/libfreetype.la -ljbig -llcms2 /usr/local/lib/libjpeg.la -lpng12 -lfftw3 -lfontconfig -lXext -lXt -lbz2 -lz -lSM -lICE -lX11 /usr/local/lib/libgomp.la -lm'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''
