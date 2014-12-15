@@ -1,8 +1,8 @@
-#to be used with automake 1.14 and higher
-#file: Makefile.am Copyright Fabrice Nicol 2013
-#Caution: you need GNU make, version 3.82 and higher, preferably 3.99+
+# file: Makefile.in Copyright Fabrice Nicol 2013
+# do not use automake
+# Caution: you need GNU make, version 3.82 and higher, preferably 3.99+
 
-#Do not use bash. It would cause subtle issues with libtool in the flac package, probably a libtool bug.
+# Do not use bash. It would cause subtle issues with libtool in the flac package, probably a libtool bug.
 
 PROGRAM=@PACKAGE_NAME@-@PACKAGE_VERSION@
 export PROGRAM
@@ -123,7 +123,11 @@ $(PROGRAM).html: $(PROGRAM).1
 	fi
 
 .PHONY: DISFORMATS $(FORMATS) \
-	install-data-local install clean clean-local distclean
+	install-data-local install clean clean-local distclean infodir
+
+infodir: 
+	$(MKDIR_P)  $(DESTDIR)@infodir@/$(PROGRAM) 
+
 
 #normally is ${prefix}/share/applications/dvda-author-${VERSION}
 sysconfdir=@SHORTLINKDIR@
@@ -145,11 +149,11 @@ dist_doc_DATA=@ROOTDIR@/README  @ROOTDIR@/BUGS @BUILDDIR@/EXAMPLES @ROOTDIR@/LIM
 # GNU build system regeneration script and others
 
 install-sys: $(dist_sysconf_DATA)
-	$(MKDIR_P) $(DESTDIR)$(DESTDIR)$(sysconfdir)
+	$(MKDIR_P) $(DESTDIR)$(sysconfdir)
 	$(INSTALL_DATA) $^ $(DESTDIR)$(sysconfdir)
 
 install-pic:  $(wildcard @ROOTDIR@/menu/*)
-	$(MKDIR_P) $(DESTDIR)$(DESTDIR)$(sysconfdir)/menu
+	$(MKDIR_P) $(DESTDIR)@MENUDIR@
 	$(INSTALL_DATA) $^ $(DESTDIR)@MENUDIR@	
 
 install-man: 
@@ -157,6 +161,7 @@ install-man:
 
 install-data-local:  $(dist_doc_DATA) $(dist_pic_DATA)
 	$(INSTALL_DATA) $^ $(DESTDIR)@infodir@/$(PROGRAM)
+	$(MKDIR_P)  $(DESTDIR)@infodir@/$(PROGRAM)
 	@if test -f $(PROGRAM).html; then $(INSTALL_DATA) $(PROGRAM).html $(DESTDIR)@infodir@/$(PROGRAM); fi
 
 # redefining install is necessary to rename nested package directories for later builds with --enable-all-builds, which request lib* labelling

@@ -55,18 +55,22 @@ define configure_sub_package
 	       if test "@ROOTDIR@" != "@BUILDDIR@"; then cp -rf "@ROOTDIR@/$$target_subdir" @BUILDDIR@; fi
 	      fi
 	      if test "$$?" = "0"; then  
-		  echo Now building $1 with command line $(MAKE) $(PARALLEL) MKDIR_P="$(MKDIR_P)"  $(if $6,$6)...  
-		  $(MAKE) $(PARALLEL) MKDIR_P="$(MKDIR_P)"  $(if $6,$6)
+	      echo -- *****
+	      echo -- * Now building $1
+	      echo -- * See file @BUILDDIR@/depconf/BUILD.TRACE --
+	      echo -- *****
+		  echo Now building $1 with command line $(MAKE) $(PARALLEL) MKDIR_P="\"$(MKDIR_P)\""  $(if $6,$6)...  >> @BUILDDIR@/depconf/BUILD.TRACE
+		  $(MAKE)  $(if $6,$6) $(PARALLEL) MKDIR_P="$(MKDIR_P)" 
 	      fi
-	      if test "$$?" = "0"; then
-		 echo Installing from $$target_subdir ...
-		 if test -f INSTALL; then mv -f INSTALL INSTALL.txt ; fi
-		 $(MAKE) INS_BASE=$(INS_BASE) $6 install
+	      if test "$$?" = "0" -o "$6" != ""; then
+            echo Installing from $$target_subdir ...
+            if test -f INSTALL; then mv -f INSTALL INSTALL.txt ; fi
+            $(MAKE) INS_BASE=$(INS_BASE) $6 install
 	      else 
-		echo
-		echo [ERR] Make failed while processing $1.
-		echo
-		sleep 1s
+            echo
+            echo [ERR] Make failed while processing $1.
+            echo
+            sleep 1s
 	      fi
 	      if test -f INSTALL.txt; then mv -f INSTALL.txt INSTALL; fi
 	      cd @BUILDDIR@
@@ -77,7 +81,9 @@ endef
 
 define configure_lib_package
 	@$(call configure_sub_package,$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),$2,$3,,$4)
-	if test "$$?" = "0"; then touch @BUILDDIR@/depconf/$1.depconf; fi
+	if test "$$?" = "0"; then
+	  touch @BUILDDIR@/depconf/$1.depconf
+	fi
 	$(call index,$1,.a,library)
 endef
 
@@ -88,7 +94,9 @@ define configure_exec_package
 	  $(if $$patchfile, patch -p0 < $$patchfile && echo "locally patched: $1: using $$patchfile in patches/" >> PATCHED.DOWNLOADS)
 	fi
 	$(call configure_sub_package,$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),,,$2,$3)
-	if test "$$?" = "0"; then touch @BUILDDIR@/depconf/$1.depconf; fi
+	if test "$$?" = "0" -o "$6" != ""; then 
+        touch @BUILDDIR@/depconf/$1.depconf
+    fi
 	$(call index,$1,$(EXEEXT),binary)
 endef
 

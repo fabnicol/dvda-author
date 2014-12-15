@@ -32,8 +32,7 @@ AC_CONFIG_HEADERS([config.h])
 
 AC_CANONICAL_BUILD
 
-# do not use libtool in this version, for arcane and unclear reasons.
-AC_PROG_RANLIB
+LT_INIT
 
 AS_IF([test -f DOWNLOADS], [rm -f DOWNLOADS])
 AS_IF([test -f PATCHED.DOWNLOADS], [rm -f PATCHED.DOWNLOADS])
@@ -223,7 +222,7 @@ AC_DEFINE([_FILE_OFFSET_BITS], [64], [Large file support enabled])
 
 
 m4_map([AC_SUBST],
-       [[[ROOTDIR]],[[BUILDDIR]],[[SHORTLINKDIR]], [[PIXDIR]],[[MENUDIR]],
+       [[[ROOTDIR]],[[CFLAGS]], [[BUILDDIR]],[[SHORTLINKDIR]], [[PIXDIR]],[[MENUDIR]],
        [[LIBSOXCONVERT_CPPFLAGS]],[[DEBUG_FLAGS]],[[VERSION]],[[PROGRAM_TARGETS]]])
 
 # correspondence between X_BUILD shell variables and subdirectory names. Could be avoided with lesser flexibility in naming conventions.
@@ -431,11 +430,6 @@ AS_IF([ test -f PATCHED.DOWNLOADS ],
  
   $patches]])
 
-   AS_IF([test x$cdrtools_BUILD = xyes -a "$(echo $patches | grep cdrtools)" = ""],
-	  [
-	     AC_MSG_RESULT([Patching issue: you need to download and apply the cdrtools patch first before building.])
-	     patching_issue=yes
-	  ])
 
    AS_IF([test x$sox_BUILD = xyes -a "$(echo $patches | grep sox)" = ""],
 	  [

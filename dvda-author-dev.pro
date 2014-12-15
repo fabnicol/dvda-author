@@ -3,20 +3,20 @@ CONFIG += console ordered
 CONFIG -= app_bundle
 CONFIG -= qt
 
-
 TARGET = dvda-author
-
 QMAKE_CFLAGS=-std=c99
 
 #to avoid ansi colors in output console add NO_ANSI_COLORS to the DEFINES directive
 
-DEFINES +=   _GNU_SOURCE  HAVE_lplex COMPILER_IS_GCC HAVE_curl  HAVE_libogg HAVE_libiberty HAVE_mplex HAVE_jpeg2yuv HAVE_mpeg2enc HAVE_mjpegtools HAVE_OGG_FLAC HAVE_FLAC HAVE_libogg HAVE_libsox
- 
+DEFINES +=   _GNU_SOURCE  HAVE_lplex COMPILER_IS_GCC HAVE_curl  HAVE_libogg HAVE_libiberty HAVE_mplex HAVE_jpeg2yuv HAVE_mpeg2enc HAVE_mjpegtools HAVE_OGG_FLAC WITHOUT_FLAC HAVE_libogg  #WITHOUT_sox
+
 
 #libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame --disable-gomp
 
-linux:LIBS +=  -L/usr/lib/i386-linux-gnu -L$(LIBROOT) -lFLAC -logg  -lsox -lid3tag  -lz  -lpulse -lpulse-simple -lasound  \
-                  -logg  -lz $(LIBROOT)/libjpeg.a
+linux:LIBS +=  -L/usr/lib/i386-linux-gnu -L$(LIBROOT)  /home/fab/Dev/dvda-author-dev/build/linux/dvda-author-full.build/lib/libFLAC.a  -logg  -lsox -lid3tag  -lz  -lpulse -lpulse-simple -lasound  \
+                  -logg  -lvorbis -lz 
+
+#$(LIBROOT)/libjpeg.a
 
 INCLUDEPATH = src/include libiberty/src/include libutils/src/include libutils/src/include libutils/src/private libfixwav/src/include /home/fab/Dev/dvda-author-dev/build/linux/dvda-author-full.build/include/FLAC /home/fab/Dev/dvda-author-dev/build/linux/dvda-author-full.build/include/libsoxconvert /home/fab/Dev/dvda-author-dev/build/linux/dvda-author-full.build/include 
 
@@ -111,7 +111,8 @@ OTHER_FILES += \
     libiberty/src/include/Makefile.in \
     commandline.txt \
     TROUBLESHOOT.txt \
-    TROUBLESHOOT
+    TROUBLESHOOT \
+    ../dvda-author-gui/share/dvda-author-gui/whatsthis.info
 
 HEADERS += \
     src/include/amg.h \

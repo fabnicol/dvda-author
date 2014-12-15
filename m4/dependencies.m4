@@ -12,6 +12,9 @@ AC_DEFUN([DVDA_CHECK_DEPENDENCIES],
 [
 
 AC_DEFINE([WEBSITE],["http://dvd-audio.sourceforge.net"],["Project website"])
+
+# sftp path is /home/frs/project/dvd-audio after logging to frs.sourceforge.net
+
 m4_define([WEBSITE],[http://dvd-audio.sourceforge.net])
 
 # ====== Auxiliary tools: man page and html doc, mjpegtools, ImageMagick ========= #
@@ -175,49 +178,49 @@ m4_map([DVDA_TEST_AUX],[
 		[dvdauthor-patch],
 		[0.7.1],
 		[WEBSITE/patches/dvdauthor-patch-0.7.1],
-		[http://downloads.sourceforge.net/project/dvdauthor/dvdauthor/0.7.1],
+		[],
 		[WEBSITE/utils],
-		[2694a5a3ef460106ea3caf0f7f60ff80]
+		[be993fd1ddcd137100ad05cdc74a5c62]
 	    ],
 	    [
-		[cdrtools-patch],
-		[3.00],
-		[WEBSITE/patches/mkisofs/cdrtools-patch-3.00],
-		[ftp://ftp.berlios.de/pub/cdrecord],
+		[cdrtools-download],
+		[3.02a06],
+		[],
+		[],
 		[WEBSITE/utils],
-		[bb21cefefcfbb76cf249120e8978ffdd]
+		[49c9d73c09d3ec38c93dae65656a1b0e]
 	    ],
 	    [
 		[sox-patch],
 		[14.4.1],
 		[WEBSITE/patches/sox-patch-14.4.1],
-		[http://downloads.sourceforge.net/project/sox/sox/14.4.1],
+		[],
 		[WEBSITE/utils],
-		[ff9ca6aca972549de0e80e8e30ed379c]
+		[6fce4ed8cf767ba7b97b615300f76f46]
 	    ],
 	    [
 		[flac-download],
-		[1.3.0],
+		[1.3.1],
 		[],
-		[http://downloads.xiph.org/releases/flac],
+		[],
 		[WEBSITE/utils],
-		[13b5c214cee8373464d3d65dee362cdd]
+		[b9922c9a0378c88d3e901b234f852698]
 	    ],
 	    [
 		[libogg-download],
-		[1.3.1],
+		[1.3.2],
 		[],
-		[http://downloads.xiph.org/releases/ogg],
+		[],
 		[WEBSITE/utils],
-		[ba526cd8f4403a5d351a9efaa8608fbc]
+		[5c3a34309d8b98640827e5d0991a4015]
 	    ],
 	    [
 		[help2man-download],
 		[1.43.3],
 		[],
-		[http://mirror.ibcp.fr/pub/gnu/help2man],
+		[],
 		[WEBSITE/utils],
-		[a84868db7c139238df8add5d86a0b54f]
+		[4742689b62ab7f7865e516924cac2917]
 	    ],
     	    [
 		[man2html-download],
@@ -225,74 +228,74 @@ m4_map([DVDA_TEST_AUX],[
 		[],
 		[],
 		[WEBSITE/utils],
-		[ad4f385addc87974de373d7057a2ea7b]
+		[74b3156fb5ba68a48b07b568d181e771]
 	    ],
 	    [
 		[ImageMagick-download],
-		[6.8.7-0],
+		[7.0.2-6],
 		[],
-		[ftp://mirrors.linsrv.net/pub/ImageMagick],
-		[ftp://ftp.sunet.se/pub/multimedia/graphics/ImageMagick],
-		[2f3854878735be72e66ac53a3146b63d]
+		[],
+		[WEBSITE/utils],
+		[8c03070521ba859bad7df808852e5267]
 	    ],
 	    [
 		[lplex-download],
 		[0.3],
 		[],
 		[],
-		[https://downloads.sourceforge.net/project/dvd-audio/dvda-author/dvda-author-dev/external%20packages],
-		[ed561b023e0706e5edce91a63803e257]
+		[WEBSITE/utils],
+		[5c895985cb39bf1b8f7610ca5517e85b]
 	    ],
 	    [
 		[mjpegtools-download],
 		[2.1.0],
 		[],
-		[http://sourceforge.net/projects/mjpeg/files/mjpegtools/2.1.0],
+		[],
 		[WEBSITE/utils],
-		[57bf5dd78976ca9bac972a6511b236f3]
+		[b5386c145c267f4e073eee84ee94b7a4]
 	    ],
 	    [
 		[libmpeg2-download],
 		[0.5.1],
 		[],
-		[http://libmpeg2.sourceforge.net/files],
+		[],
 		[WEBSITE/utils],
-		[0f92c7454e58379b4a5a378485bbd8ef]
+		[99311a5f3a393560db096a41dcf84204]
 	    ],
 	    [
 		[a52dec-download],
 		[0.7.4],
 		[],
-		[http://liba52.sourceforge.net/files],
+		[],
 		[WEBSITE/utils],
-		[caa9f5bc44232dc8aeea773fea56be80]
+		[4aefb006e0032bd9cab72dc6a5702f42]
 	    ]])
 
 
 m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	    [
 		[flac-download],
-		[1.3.0],
+		[1.3.1],
 		[],
-		[http://downloads.xiph.org/releases/flac],
+		[],
 		[WEBSITE/utils],
-		[13b5c214cee8373464d3d65dee362cdd]
+		[b9922c9a0378c88d3e901b234f852698]
 	    ],
 	    [
 		[libogg-download],
-		[1.3.1],
+		[1.3.2],
 		[],
-		[http://downloads.xiph.org/releases/ogg],
+		[],
 		[WEBSITE/utils],
-		[ba526cd8f4403a5d351a9efaa8608fbc]
+		[5c3a34309d8b98640827e5d0991a4015]
 	    ],
 	    [
 		[sox-patch],
 		[14.4.1],
 		[WEBSITE/patches/sox-patch-14.4.1],
-		[http://downloads.sourceforge.net/project/sox/sox/14.4.1],
+		[],
 		[WEBSITE/utils],
-		[ff9ca6aca972549de0e80e8e30ed379c]
+		[6fce4ed8cf767ba7b97b615300f76f46]
 	    ]])
 
 
@@ -323,8 +326,8 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 
     DVDA_CONFIG_LIBRARY_LOCAL_INSTALL([
      [[[sox],[sox-14.4.1]],  [--without-libltdl --without-sndfile --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-ffmpeg --disable-fast-install --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
-     [[[libogg],[libogg-1.3.1]],  [--prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
-     [[[FLAC],[flac-1.3.0]],[--enable-static --disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg" \
+     [[[libogg],[libogg-1.3.2]],  [--prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
+     [[[FLAC],[flac-1.3.1]],[--enable-static --disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg" \
        --disable-thorough-tests --disable-oggtest --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]]])
        
      # installing binaries, normally executables
@@ -335,30 +338,30 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	    [*-*-mingw32*],
 	    [
 
-	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --enable-default-video-format=$VIDEO_FORMAT --prefix="$BUILDDIR/local"]],
+	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --enable-default-video-format=$VIDEO_FORMAT --prefix="$BUILDDIR/local" CPPFLAGS=-I$ROOTDIR/lplex-0.3/redist]],
 	       [[[lplex], [lplex-0.3]], [--prefix="$BUILDDIR/local" --disable-shared ROOTDIR=$ROOTDIR/lplex-0.3 --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
 	       [[[mjpegtools], [mjpegtools-2.1.0]],
 			       [ --prefix="$BUILDDIR/local" 
 				 --disable-shared  --enable-static --enable-static-build --disable-fast-install --prefix="$BUILDDIR/local"
 				 --without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime
 				 --disable-simd-accel LIBDIR=/lib LDFLAGS=-L/lib CPPFLAGS=-I/include]],
-	       [[[cdrtools],[cdrtools-3.00]],[--prefix="$BUILDDIR/local"]],
+	       [[[cdrtools],[cdrtools-3.02]],[--prefix="$BUILDDIR/local"]],
 	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
 	       [[[libmpeg2],[libmpeg2-0.5.1]],[--prefix="$BUILDDIR/local"]],
 	       [[[help2man], [help2man-1.43.3]],[--prefix="$BUILDDIR/local"]],
-	       [[[ImageMagick], [ImageMagick-6.8.7-0]],[--prefix="$BUILDDIR/local" --without-magick-plus-plus --without-pango --without-tiff --without-lzma --without-xml]],
+	       [[[ImageMagick], [ImageMagick-7.0.2-6]],[--prefix="$BUILDDIR/local" --without-magick-plus-plus --without-pango --without-tiff --without-lzma --without-xml]],
 	       [[[man2html], [man2html-1.6]],[bindir="$BUILDDIR/local/bin"]]])
 	    ],
 	    [
 	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --enable-default-video-format=$VIDEO_FORMAT --prefix="$BUILDDIR/local"]],
-	       [[[lplex], [lplex-0.3]], [--prefix="$BUILDDIR/local" --disable-shared ROOTDIR=$ROOTDIR/lplex-0.3 --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
+	       [[[lplex], [lplex-0.3]], [--prefix="$BUILDDIR/local" --disable-shared ROOTDIR=$ROOTDIR/lplex-0.3 --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include" CPPFLAGS=-I$ROOTDIR/lplex-0.3/redist]],
 	       [[[mjpegtools], [mjpegtools-2.1.0]],[--without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime  --without-pic --disable-shared --enable-static-build --enable-static  --disable-fast-install --prefix="$BUILDDIR/local"]],
-	       [[[cdrtools],[cdrtools-3.00]],[--prefix="$BUILDDIR/local"]],
+	       [[[cdrtools],[cdrtools-3.02]],[--prefix="$BUILDDIR/local"]],
 	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
 	       [[[libmpeg2],[libmpeg2-0.5.1]], [--prefix="$BUILDDIR/local"]],
 	       [[[help2man], [help2man-1.43.3]],[--prefix="$BUILDDIR/local"]],
-	       [[[ImageMagick], [ImageMagick-6.8.7-0]],[--prefix="$BUILDDIR/local" --without-magick-plus-plus --without-pango --without-tiff --without-lzma --without-xml JPEG_LIBS="$ROOTDIR/build/linux/dvda-author-full.build/lib/libjpeg.a"]],
-       	       [[[man2html], [man2html]],[bindir="$BUILDDIR/local/bin" mandir="$BUILDDIR/local/share/man"]]])
+	       [[[ImageMagick], [ImageMagick-7.0.2-6]],[--prefix="$BUILDDIR/local" --without-magick-plus-plus --without-pango --without-tiff --without-lzma --without-xml JPEG_LIBS="$ROOTDIR/build/linux/dvda-author-full.build/lib/libjpeg.a"]],
+   	       [[[man2html], [man2html]],[bindir="$BUILDDIR/local/bin" mandir="$BUILDDIR/local/share/man"]]])
 	    ])
     
     # libjpeg.a version 9 is provided as full-build as version 8. causes a crash and is often installed on many Unix systems.

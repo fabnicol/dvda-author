@@ -6,8 +6,7 @@ This package contains:
   Dependencies have been patched when needed (dvdauthor, cdrtools)
 - a linux build of dvda-author-dev, using:
 
- ./configure --enable-all-all; make PARALLEL=-j4
+ ./configure --enable-all-all; sudo make PARALLEL=-j4 (or without sudo with elevated rights)
 
-  then moving dvda-author-dev to root.
 
 See file INSTALL for proper installation of dependencies.
