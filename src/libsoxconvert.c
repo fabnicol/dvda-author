@@ -17,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-#ifndef WITHOUT_sox
+//#ifndef WITHOUT_sox
 #include <sox.h>
 #include <stdio.h>
 #include <errno.h>
@@ -110,4 +110,4 @@ int soxconvert(char * input, char* output)
   return errno;
 }
 
-#endif
+//#endif

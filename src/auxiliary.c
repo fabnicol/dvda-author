@@ -191,7 +191,7 @@ printf("%s","DVD-VIDEO zone authoring\n\n");
 printf("%s","    --lplex-output dir   Output directory for lplex"J"Default is same as specified -o value"J"or default output directory.\n\n");
 printf("%s","    --dvdv-tracks ...    Add tracks to be added to DVD-VIDEO zone using lplex:"J"track11,...,trackn1:track12,...,trackn2:..."J"for trackij the ith track of video titleset j.\n\n");
 printf("%s","    --dvdv-slides ...    Add slides to be added to DVD-VIDEO zone using lplex:"J"slide11,...,sliden1:slide12,...,slide2:..."J"for slideij the ith slide of video titleset j."J"Each track should have a corresponding slide."J"Add two commas in a row for repeating previous slide."J"There can be a maximum of 1 slide per track.\n\n");
-printf("%s","-V, --videodir directory Path to VIDEO_TS directory\n\n");
+printf("%s","-V, --videodir directory Path to VIDEO_TS input directory\n\n");
 printf("%s","-T, --videolink rank     Rank of video titleset linked to in video zone"J"(XX in VTS_XX_0.IFO)."J"In this case the path to the VIDEO_TS linked to"J"must be indicated.\n\n");
 printf("%s","    --dvdv-import        Create DVD-VIDEO zone from DVD-AUDIO zone."J"Import DVD-Video standard compliant files (16-24 bit/48-96 kHz"J"from DVD-AUDIO to DVD-VIDEO.\n\n");
 printf("%s","    --mirror             Like --dvdv-import but resample audio tracks"J"if they are not DVD-Video compliant (.wav files only)\n\n");
@@ -399,14 +399,16 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t** ngiven_chann
     if ((files= (fileinfo_t **) calloc(ngroups, sizeof(fileinfo_t *))) == NULL)
         EXIT_ON_RUNTIME_ERROR
 
-        for (i=0 ; i < n_g_groups; i++)
-        {
-            if ((files[i]=(fileinfo_t *) calloc(ntracks[i], sizeof(fileinfo_t))) == NULL)
-                EXIT_ON_RUNTIME_ERROR
-                memory+=(float) (ntracks[i])*sizeof(fileinfo_t)/1024;
-            if (globals.debugging)
-                foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  g-type  audio group  :  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i,  ntracks[i], memory);
-        }
+    for (i=0 ; i < n_g_groups; i++)
+    {
+        if ((files[i]=(fileinfo_t *) calloc(ntracks[i], sizeof(fileinfo_t))) == NULL)
+            EXIT_ON_RUNTIME_ERROR
+
+        memory += (float) (ntracks[i])*sizeof(fileinfo_t)/1024;
+
+        if (globals.debugging)
+            foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  g-type  audio group  :  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i,  ntracks[i], memory);
+    }
 
     for (i=n_g_groups ; i < ngroups-nvideolinking_groups; i++)
     {

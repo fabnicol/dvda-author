@@ -393,7 +393,7 @@ command_t *scan_wavfile_audio_characteristics(command_t *command)
 
         return command;
 // recursion
-    if (command->files[i][j].filename) scan_wavfile_audio_characteristics(command);
+    //if (command->files[i][j].filename) scan_wavfile_audio_characteristics(command);
     return(command);
 }
 
@@ -449,16 +449,17 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
             else
             {
     #endif
-    #ifndef WITHOUT_sox
+ //   #ifndef WITHOUT_sox
     
                 if (globals.sox_enable)
                 {
                     // When RIFF fmt headers are not recognized, they are processed by Sox first if -S -F is on command line then checked by fixwav
                     // yest SoX may crash for seriously mangled headers
-    
+
                     if (!globals.fixwav_force)
                     {
     
+
                         if (launch_sox(&path) == NO_AFMT_FOUND)
                            return(info->type);
                           // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
@@ -494,7 +495,7 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
                 }
                 else
     
-    #endif
+   // #endif
     
                   if ((!globals.fixwav_force) && (!globals.fixwav_prepend))
     
@@ -624,12 +625,20 @@ static inline int wav_getinfo_merged(fileinfo_t *info)
 
 int wav_getinfo(fileinfo_t* info)
 {
-    if (info->mergeflag)                
+    info->audio=malloc(sizeof(audio_input_t));
+    if (info->audio == NULL)
+    {
+      foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open audio file: filepath pointer is null");
+      EXITING
+    }
+
+    if (info->mergeflag)
         wav_getinfo_merged(info);
     
     if (info->filename == NULL)
     {
       foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open audio file: filepath pointer is null");
+      EXITING
     }
     else
     {
@@ -638,6 +647,7 @@ int wav_getinfo(fileinfo_t* info)
     }
 
     process_wav_get_info(info);
+    audio_close(info);
     return(info->type);
 }
 
@@ -837,7 +847,7 @@ int fixwav_repair(fileinfo_t *info)
 }
 
 
-#ifndef WITHOUT_sox
+//#ifndef WITHOUT_sox
 
 char* replace_file_extension(char * filename)
 {
@@ -903,7 +913,7 @@ int launch_sox(char** filename)
     return(NO_AFMT_FOUND);
 
 }
-#endif
+//#endif
 
 
 int mono_channel_open(fileinfo_t* info)
@@ -1066,6 +1076,7 @@ int audio_open(fileinfo_t* info)
 
         }
 #endif
+
 
     return(0);
 }

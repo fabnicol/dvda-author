@@ -90,9 +90,9 @@ AC_DEFUN([DVDA_DOWNLOAD],
 	    DVDA_CLEAN([filename.tar.bz2])
 	    DVDA_CLEAN([filename.tar.xz])
 
-	    LOOP_MIRRORS([version],[sourceforge_url],[other_url],[gz],[MD5])
-	    mode=xzf
-	    type=gz
+	    LOOP_MIRRORS([version],[sourceforge_url],[other_url],[xz],[MD5])
+	    mode=xJf
+	    type=xz
 
 	    AS_IF([test $exitcode != 0],
 		    [
@@ -105,9 +105,9 @@ AC_DEFUN([DVDA_DOWNLOAD],
 	    AS_IF([test $exitcode != 0],
 		    [
 		      exitcode=0
-		      LOOP_MIRRORS([version],[sourceforge_url],[other_url],[xz],[MD5])
-		      mode=xJf
-		      type=xz
+		      LOOP_MIRRORS([version],[sourceforge_url],[other_url],[gz],[MD5])
+		      mode=xzf
+		      type=gz
 		    ])
 
 	    AS_IF([ test  $exitcode != 0 ],

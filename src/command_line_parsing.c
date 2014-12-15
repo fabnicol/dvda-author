@@ -724,7 +724,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     
     if ((n_g_groups)&&(globals.debugging)) foutput("%s", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Assigning command-line filenames...\n");
     
-    for (k=0; k < argc; k++)
+    for (k=0; k < argc; ++k)
     {
         if (argv[k][0] != '-') continue;
         switch (argv[k][1])
@@ -740,14 +740,19 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
         case 'g' :
             
-            k++;
+            ++k;
             for (m=0; m+k < argc; m++)
             {
-                if (argv[m+k][0] !='-')
+                if (argv[m + k][0] != '-')
                 {
                     if (globals.veryverbose)
-                        foutput("       files[%d][%d].filename=%s\n", ngroups_scan, m, argv[m+k]);
-                    strcpy(files[ngroups_scan][m].filename, argv[m+k]);
+                      foutput("       files[%d][%d].filename=%s\n", ngroups_scan, m, argv[m + k]);
+                    
+
+                    files[ngroups_scan][m].filename = argv[m+k];
+
+                    //char b[150]={0};
+                    //strcpy(b, argv[m+k]);
                     /* to create distinct titles out of a series of audio files which have same audio characteristics, use -| in between the series of files
                        of each title within the same group. This is not authorized to cleave groups, only titles */
                 }
@@ -846,6 +851,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     _Bool extract_audio_flag=0;
     optind=0;
     opterr=1;
+    
+    
+
     
 #ifdef LONG_OPTIONS
     while ((c=getopt_long(argc, argv, ALLOWED_OPTIONS, longopts, &longindex)) != -1)

@@ -1,3 +1,24 @@
+
+FIX BUGS:
+
+audio.c:
+          scan_wavfile_audio_characteristics
+            Infinite loop at end of block
+
+          wav_getinfo
+            issue with info->audio allocation
+
+          process_wav_get_info
+            does not retrieve info->type
+
+launch-manager.c:
+
+          launch_manager :178
+            segfaults on nullptr.
+
+
+
+
 Short term
 ----------
 use SoX to automatically merge files (mono and stereo) into multichannel, check on cga
@@ -11,7 +32,9 @@ Long term
 
 -add options for swift reencoding of VOBS (video import)
 -possibly make blank screen subvobs in the event of no pics in some slideshow tracks.
--add multi-videolink groups
+-add multi-vid
+
+link groups
 -add album text and group text to text table
 -add automatic import of mono or stereo wavs for multichannel authoring.
 
