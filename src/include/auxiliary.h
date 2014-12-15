@@ -59,6 +59,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #define EXIT_ON_RUNTIME_ERROR_VERBOSE(X)  do {  fprintf(stderr, "\n%s\n       Exiting...\n", X) ; clean_exit(EXIT_FAILURE);  } while(0);
 #define EXIT_ON_RUNTIME_ERROR  EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]")
+#define EXITING EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Exiting....")
 
 
 #define HEADER(X, Y)      do{ \

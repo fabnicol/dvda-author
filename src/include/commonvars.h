@@ -309,7 +309,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 #endif
 
-
+#define TOPMENU_NAME "topmenu"
 #define TOPMENU_MIN_SIZE  32
 #define DEFAULT_MENU_NCOLUMNS 3
 

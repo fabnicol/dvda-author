@@ -1,4 +1,4 @@
-dvda-author 13.10 (Oct 2013)
+dvda-author 16.08 (Aug 2016)
 =====================
 
 
@@ -17,10 +17,16 @@ can be obtained with:
 	./autogen
 	mkdir BUILD
 	cd BUILD
-	../configure --enable-all-all && make PARALLEL=-jN 
+	../configure --enable-all-all && sudo make PARALLEL=-jN 
 
-then install as usual:
-	(sudo) make install
+Administrative rights are necessary for cdrtools to install properly in the local installation 
+directory at make stage. They are unnecessary if cdrtools is not rebuilt.
+
+Another way to circumvent these cdrtools specifics sis to relaunch with `make -k' afresh after 
+a crash at cdrtools build stage.
+
+Then install as usual:
+	(sudo/root login) make install
 
 If you experience issues building from a subdirectory (which is a cleaner building method)
 you can also try building from the package root. Some path issues may be thus avoided on some 

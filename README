@@ -117,7 +117,6 @@ script (see below).
 
 Other building systems will have to make use of the patches available at the following links:
 
-    http://dvd-audio.sourceforge.net/patches/mkisofs/cdrtools-patch-3.00
     http://dvd-audio.sourceforge.net/patches/dvdauthor-patch-0.7.1
     http://dvd-audio.sourceforge.net/patches/sox-patch-14.4.1
 
@@ -143,7 +142,8 @@ Thanks to:
   Bahman Negahban for useful hints on FLAC 1.2.1 integration
   Tomasz Belinea  for testing version 08.07.
   Lee Feldkamp for testing Windows executables and adding audio options (-j,-s)
-  Lee and Tim Feldkamp for authoring multichannel support.
+  Lee and Tim Feldkamp for authoring multichannel support
+  Jörg Schilling for adding the -dvd-audio/-dvd-hybrid feature patch to cdrtools.
 
 and all other authors (see file AUTHORS for details).
 

@@ -287,7 +287,7 @@
 /* Whether cdrtools source code will be downloaded for build. */
 #undef HAVE_cdrtools
 
-/* download and patch cdrtools from source code */
+/* download cdrtools from source code */
 #undef HAVE_cdrtools_BUILD
 
 /* Found convert */
