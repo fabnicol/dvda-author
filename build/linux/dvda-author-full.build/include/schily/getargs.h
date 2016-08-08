@@ -1,8 +1,8 @@
-/* @(#)getargs.h	1.18 07/07/02 Copyright 1985-2007 J. Schilling */
+/* @(#)getargs.h	1.20 14/01/18 Copyright 1985-2014 J. Schilling */
 /*
  *	Definitions for getargs()/getallargs()/getfiles()
  *
- *	Copyright (c) 1985-2007 J. Schilling
+ *	Copyright (c) 1985-2014 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -11,6 +11,8 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -57,8 +59,31 @@ extern "C" {
 #define	BADFMT		(-2)	/* Error in format string	*/
 #define	NOTAFILE	(-3)	/* Seems to be a flag type	*/
 
+/*
+ * The callback functions are called with the following parameters:
+ *
+ * arg		The option argument
+ * valp		A pointer to the related value argument from a get*arg*() call
+ * pac		A pointer to the current argument counter
+ * pav		A pointer to the current argument vector
+ * opt		The option that caused the call
+ *
+ * The return value of the callback function may be:
+ *
+ * FLAGDELIM	Pretend "--" stopped flag processing
+ * FLAGPARSED	A valid flag was found, getallargs() will continue scanning
+ * ------------ the following codes will interrupt getallargs() processing:
+ * NOARGS	Pretend all arguments have been examined
+ * BADFLAG	Not a valid flag argument
+ * BADFMT	General Error
+ * NOTAFILE	Continue to check the format string for matches with option arg
+ */
+#define	FLAGPARSED	  1	/* Flag was sucessfully parsed	*/
+
 typedef	int	(*getargfun)	__PR((const char *__arg, void *__valp));
-typedef	int	(*getpargfun)	__PR((const char *__arg, void *__valp, int *__pac, char *const **__pav, const char *__opt));
+typedef	int	(*getpargfun)	__PR((const char *__arg, void *__valp,
+						int *__pac, char *const **__pav,
+						const char *__opt));
 
 #define	NO_ARGFUN	(getargpfun)0
 
@@ -107,9 +132,12 @@ extern	char	*getargerror __PR((int));
  * The new list versions of the functions need struct ga_props and thus need
  * getargs.h
  */
-extern	int	getlallargs __PR((int *, char * const**, struct ga_props *, const char *, ...));
-extern	int	getlargs __PR((int *, char * const**, struct ga_props *, const char *, ...));
-extern	int	getlfiles __PR((int *, char * const**, struct ga_props *, const char *));
+extern	int	getlallargs __PR((int *, char * const**, struct ga_props *,
+						const char *, ...));
+extern	int	getlargs __PR((int *, char * const**, struct ga_props *,
+						const char *, ...));
+extern	int	getlfiles __PR((int *, char * const**, struct ga_props *,
+						const char *));
 extern	int	_getarginit __PR((struct ga_props *, size_t, UInt32_t));
 
 #define	getarginit(p, f)	_getarginit(p, sizeof (struct ga_props), f)
@@ -118,9 +146,12 @@ extern	int	_getarginit __PR((struct ga_props *, size_t, UInt32_t));
  * The vector versions of the functions need struct ga_flags and thus need
  * getargs.h
  */
-extern	int	getvallargs __PR((int *, char * const**, struct ga_flags *, struct ga_props *));
-extern	int	getvargs __PR((int *, char * const**, struct ga_flags *, struct ga_props *));
-extern	int	getvfiles __PR((int *, char * const**, struct ga_flags *, struct ga_props *));
+extern	int	getvallargs __PR((int *, char * const**, struct ga_flags *,
+						struct ga_props *));
+extern	int	getvargs __PR((int *, char * const**, struct ga_flags *,
+						struct ga_props *));
+extern	int	getvfiles __PR((int *, char * const**, struct ga_flags *,
+						struct ga_props *));
 
 #ifdef	__cplusplus
 }
