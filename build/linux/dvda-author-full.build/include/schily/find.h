@@ -1,8 +1,8 @@
-/* @(#)find.h	1.20 09/01/13 Copyright 2005-2009 J. Schilling */
+/* @(#)find.h	1.24 15/07/10 Copyright 2005-2015 J. Schilling */
 /*
  *	Definitions for libfind users.
  *
- *	Copyright (c) 2004-2009 J. Schilling
+ *	Copyright (c) 2004-2015 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -11,6 +11,8 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -72,6 +74,11 @@ typedef struct find_args {
 #define	findn_t	void
 #endif
 
+#ifndef	__sqfun_t_defined
+typedef	int	(*sqfun_t)	__PR((void *arg));
+#define	__sqfun_t_defined
+#endif
+
 #ifndef	__squit_t_defined
 
 typedef struct {
@@ -88,18 +95,22 @@ extern	void	find_timeinit	__PR((time_t __now));
 extern	findn_t	*find_printnode	__PR((void));
 extern	findn_t	*find_addprint	__PR((findn_t *np, finda_t *fap));
 extern	void	find_free	__PR((findn_t *t, finda_t *fap));
-extern	int	find_token	__PR((char *word));
+extern	int	find_token	__PR((char *__word));
 extern	char	*find_tname	__PR((int op));
 extern	findn_t	*find_parse	__PR((finda_t *fap));
 extern	void	find_firstprim	__PR((int *pac, char *const **pav));
 
 extern	BOOL	find_primary	__PR((findn_t *t, int op));
-extern	BOOL	find_pname	__PR((findn_t *t, char *word));
-extern	BOOL	find_expr	__PR((char *f, char *ff, struct stat *fs, struct WALK *state, findn_t *t));
+extern	BOOL	find_pname	__PR((findn_t *t, char *__word));
+extern	BOOL	find_hasprint	__PR((findn_t *t));
+extern	BOOL	find_hasexec	__PR((findn_t *t));
+extern	BOOL	find_expr	__PR((char *f, char *ff, struct stat *fs,
+					struct WALK *state, findn_t *t));
 
 extern	int	find_plusflush	__PR((void *p, struct WALK *state));
 extern	void	find_usage	__PR((FILE *f));
-extern	int	find_main	__PR((int ac, char **av, char **ev, FILE *std[3], squit_t *__quit));
+extern	int	find_main	__PR((int ac, char **av, char **ev,
+					FILE *std[3], squit_t *__quit));
 
 #ifdef	__cplusplus
 }

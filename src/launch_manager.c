@@ -479,7 +479,7 @@ SUMMARY:
         FREE(mkisofs);
 
         size=stat_file_size(dvdisopath)/1024;
-        if ((!errno) && (size > 4*SIZE_AMG + 2*SIZE_SAMG +1))  foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Image was created with size %llu KB.", size);
+        if ((!errno) && (size > 4*SIZE_AMG + 2*SIZE_SAMG +1))  foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Image was created with size %lu KB.", size);
         else
             foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  ISO file creation failed -- fix issue.");
 
