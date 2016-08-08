@@ -16,16 +16,16 @@
 #include "structures.h"
 #include "c_utils.h"
 #include "audio2.h"
+#include "audio.h"
 #include "auxiliary.h"
 #include "ports.h"
 #include "file_input_parsing.h"
 #include "launch_manager.h"
 #include "dvda-author.h"
-
 #include "fixwav_auxiliary.h"
 #include "fixwav_manager.h"
-
 #include "command_line_parsing.h"
+#include "libsoxconvert.h"
 #include "menu.h"
 #ifndef WITHOUT_lplex
 #include "sound.h"
@@ -488,7 +488,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         // ngiven_channels: number of given channels for group index n_g_group and at track 0-based rank ntracks
     // given_channel: the mono channel given
     
-    uint8_t ngiven_channels[9][99]={{0}};
+    uint8_t ngiven_channels[9][99] = {{0}};
    
     for (k=1; k < argc; k++)
     {

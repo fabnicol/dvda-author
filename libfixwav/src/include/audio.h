@@ -10,10 +10,8 @@
 
 
 int fixwav_getinfo(char* filename);
-int fixwav_repair(fileinfo_t *info);
+
 int launch_sox(char** filename);
 int extract_audio_info(fileinfo_t *info, uint8_t * header);
-
-command_t *scan_wavfile_audio_characteristics(command_t *command);
 
 #endif

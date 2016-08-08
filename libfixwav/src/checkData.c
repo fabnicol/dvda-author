@@ -108,26 +108,28 @@ _Bool check_real_size(WaveData *info, WaveHeader *header)
   /* stat needs a newly opened file to tech stats */
 
 
-
-  if ((!info->in_place)&&(!info->repair==GOOD_HEADER)&&(!info->virtual))
+  if (! info->in_place &&  info->repair != GOOD_HEADER && ! info->virtual)
   {
       filepath=info->outfile;
-      file=outfile;
+      file = outfile;
   }
   else
   {
       filepath=info->infile;
-      file=infile;
+      file = infile;
   }
 
-  if (fclose(file) == EOF)
-        {
+  if (file)
+  {
+//      if (fclose(file) == EOF)
+//            {
 
-          fprintf(stderr, "%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  fclose error: issues may arise.");
-          return(false);
-        }
+//              fprintf(stderr, "%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  fclose error: issues may arise.");
+//              return(false);
+//            }
+  }
 
-  file=secure_open(filepath, "rb");
+  secure_open(filepath, "rb", file);
   size=read_file_size(file, filepath);
 
   /* adjust the Chunk Size */
@@ -138,7 +140,7 @@ _Bool check_real_size(WaveData *info, WaveHeader *header)
   }
   else
   {
-      if (globals.debugging) printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Verifying real chunk size on disc... fixed:\n       expected size: %u, real size: %llu\n", header->chunk_size+8, size );
+      if (globals.debugging) printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Verifying real chunk size on disc... fixed:\n       expected size: %u, real size: %lu\n", header->chunk_size+8, size );
       header->chunk_size = (uint32_t) size - 8 ; // if prepending, chunk_size was computed as the full size of raw file -8 bytes to which one must add the size of new header
   }
 
@@ -149,7 +151,7 @@ _Bool check_real_size(WaveData *info, WaveHeader *header)
   }
   else
   {
-      if (globals.debugging) printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Verifying real data size on disc... fixed:\n       header size: %d, expected size: %u, real size: %llu\n", header->header_size_out, header->data_size+header->header_size_out, size );
+      if (globals.debugging) printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Verifying real data size on disc... fixed:\n       header size: %d, expected size: %u, real size: %lu\n", header->header_size_out, header->data_size+header->header_size_out, size );
       header->data_size = (uint32_t) size - header->header_size_out ;  // if prepending, data_size was computed as the full size of raw file hence this new size minus HEADER_SIZE
   }
 
@@ -190,7 +192,7 @@ int check_evenness(WaveData *info, WaveHeader *header)
 
 }
 
-int prune(FILE* infile, FILE* outfile, WaveData *info, WaveHeader *header)
+int prune(FILE* infile, WaveData *info, WaveHeader *header)
 {
 
   uint8_t p=0;

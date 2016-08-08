@@ -56,6 +56,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 
 
+
+#ifdef __GNUC__
+#define GCC_INLINE __attribute__((always_inline))
+#define GCC_UNUSED __attribute__((__unused__))
+#endif
+
 #define MAX_OPTION_LENGTH 3000
 
 /* sets the size of character-type buffers (command-line parsing etc). */
@@ -196,7 +202,7 @@ int copy_directory(const char* src, const char* dest, mode_t mode);
 int get_endianness();
 void hexdump_header(FILE* infile, uint8_t header_size);
 void hexdump_pointer(uint8_t* tab,  size_t tabsize);
-FILE* secure_open(const char *path, const char *context);
+void secure_open(const char *path, const char *context, FILE*);
 int end_seek(FILE* outfile);
 void parse_wav_header(WaveData* info, infochunk* ichunk);
 const char* get_command_line(const char* args[]);

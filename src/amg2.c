@@ -130,7 +130,7 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
      }
     }
     
-    uint8_t track;
+    int8_t track = 0;
   
     for  (int group = 0; group < naudio_groups; ++group)
     {
@@ -756,7 +756,7 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
                                   + img->menuvobsize[img->nmenus-1] -1)
                 foutput("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Menu vob size coherence test...OK\n");
             
-            else foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Menu vob size coherence test failed: sectors->topvob=%u against %llu\n",
+            else foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Menu vob size coherence test failed: sectors->topvob=%u against %lu\n",
                          sectors->topvob,
                          menuvobsize_sum + img->nmenus -1 + img->menuvobsize[img->nmenus - 1] -1);
         }

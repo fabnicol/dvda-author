@@ -72,9 +72,9 @@ void pause_dos_type()
 
     do
     {
-        scanf("%c", &reply);
-        fgets(buffer, 150, stdin);
-        if (reply == '\n') return;
+        int l = scanf("%c", &reply);
+        char* r = fgets(buffer, Min(150, l), stdin);
+        if (reply == '\n' && r != NULL) return;
     }
     while(1);
 
@@ -458,67 +458,69 @@ void htmlize(char* logpath)
     do
     {
 
-        fgets(line, 1000, src);
-        int linelength=strlen(line);
-        if (linelength > 0)
-        {
-            if ((line[0] == '[') && (line[1] == 'I') && (line[2]=='N') && (line[3] == 'F') && (line[4]==']'))
-            {
-                fwrite(NAVY, length, 1, dest);
-                fwrite(line, linelength, 1, dest);
-                fwrite(CLOSETAG2, 11, 1, dest);
-                fputc('\n', dest);
-            }
-            else if ((line[0] == '[') && (line[1] == 'M') && (line[2]=='S') && (line[3] == 'G') && (line[4]==']'))
-            {
-                fwrite(GREEN, length, 1, dest);
-                fwrite(line, linelength, 1, dest);
-                fwrite(CLOSETAG2, 11, 1, dest);
-                fputc('\n', dest);
-            }
-            else if ((line[0] == '[') && (line[1] == 'D') && (line[2]=='E') && (line[3] == 'V') && (line[4]==']'))
-            {
-                fwrite(PURPLE, length, 1, dest);
-                fwrite(line, linelength, 1, dest);
-                fwrite(CLOSETAG1, 7, 1, dest);
-                fputc('\n', dest);
-            }
-            else if ((line[0] == '[') && (line[1] == 'D') && (line[2]=='B') && (line[3] == 'G') && (line[4]==']'))
-            {
-                fwrite(MAROON, length, 1, dest);
-                fwrite(line, linelength, 1, dest);
-                fwrite(CLOSETAG1, 7, 1, dest);
-                fputc('\n', dest);
-            }
+        char* line_ent = fgets(line, 1000, src);
 
-            else if ((line[0] == '[') && (line[1] == 'W') && (line[2]=='A') && (line[3] == 'R') && (line[4]==']'))
+        if (line_ent == NULL) return;
+
+        int linelength=strlen(line);
+
+        if ((line[0] == '[') && (line[1] == 'I') && (line[2]=='N') && (line[3] == 'F') && (line[4]==']'))
+        {
+            fwrite(NAVY, length, 1, dest);
+            fwrite(line, linelength, 1, dest);
+            fwrite(CLOSETAG2, 11, 1, dest);
+            fputc('\n', dest);
+        }
+        else if ((line[0] == '[') && (line[1] == 'M') && (line[2]=='S') && (line[3] == 'G') && (line[4]==']'))
+        {
+            fwrite(GREEN, length, 1, dest);
+            fwrite(line, linelength, 1, dest);
+            fwrite(CLOSETAG2, 11, 1, dest);
+            fputc('\n', dest);
+        }
+        else if ((line[0] == '[') && (line[1] == 'D') && (line[2]=='E') && (line[3] == 'V') && (line[4]==']'))
+        {
+            fwrite(PURPLE, length, 1, dest);
+            fwrite(line, linelength, 1, dest);
+            fwrite(CLOSETAG1, 7, 1, dest);
+            fputc('\n', dest);
+        }
+        else if ((line[0] == '[') && (line[1] == 'D') && (line[2]=='B') && (line[3] == 'G') && (line[4]==']'))
+        {
+            fwrite(MAROON, length, 1, dest);
+            fwrite(line, linelength, 1, dest);
+            fwrite(CLOSETAG1, 7, 1, dest);
+            fputc('\n', dest);
+        }
+
+        else if ((line[0] == '[') && (line[1] == 'W') && (line[2]=='A') && (line[3] == 'R') && (line[4]==']'))
+        {
+            fwrite(ORANGE, length, 1, dest);
+            fwrite(line, linelength, 1, dest);
+            fwrite(CLOSETAG2, 11, 1, dest);
+            fputc('\n', dest);
+        }
+        else if ((line[0] == '[') && (line[1] == 'E') && (line[2]=='R') && (line[3] == 'R') && (line[4]==']'))
+        {
+            fwrite(RED, length, 1, dest);
+            fwrite(line, linelength, 1, dest);
+            fwrite(CLOSETAG2, 11, 1, dest);
+            fputc('\n', dest);
+        }
+        else
+        {
+            // Skipping white lines (spaces and tabs) or line feeds, yet not justifying
+            int u=0;
+            while ((line[u]) && (isspace(line[u]))) u++;
+            if (line[u])
             {
-                fwrite(ORANGE, length, 1, dest);
+                fwrite(GREY, length, 1, dest);
                 fwrite(line, linelength, 1, dest);
-                fwrite(CLOSETAG2, 11, 1, dest);
+                fwrite(CLOSETAG1, 7, 1, dest);
                 fputc('\n', dest);
-            }
-            else if ((line[0] == '[') && (line[1] == 'E') && (line[2]=='R') && (line[3] == 'R') && (line[4]==']'))
-            {
-                fwrite(RED, length, 1, dest);
-                fwrite(line, linelength, 1, dest);
-                fwrite(CLOSETAG2, 11, 1, dest);
-                fputc('\n', dest);
-            }
-            else
-            {
-                // Skipping white lines (spaces and tabs) or line feeds, yet not justifying
-                int u=0;
-                while ((line[u]) && (isspace(line[u]))) u++;
-                if (line[u])
-                {
-                    fwrite(GREY, length, 1, dest);
-                    fwrite(line, linelength, 1, dest);
-                    fwrite(CLOSETAG1, 7, 1, dest);
-                    fputc('\n', dest);
-                }
             }
         }
+
 
     }
     while (!feof(src));
@@ -1103,12 +1105,18 @@ void parse_wav_header(WaveData* info, infochunk* ichunk)
 {
     
     FILE * infile=info->INFILE;
-    uint8_t haystack[MAX_HEADER_SIZE]= {0};
-    int count;
-    if ((count=fread(haystack, 1, MAX_HEADER_SIZE, infile)) != MAX_HEADER_SIZE)
+    uint8_t haystack[MAX_HEADER_SIZE] = {0};
+    if (infile == NULL)
     {
-        printf(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not read %d characters from input file\n", MAX_HEADER_SIZE);
-        printf(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Just read %d\n", count);
+        fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Input file is null pointer.\n");
+        exit(-1);
+    }
+    fseek(infile, 0, SEEK_SET);
+    int count = fread(haystack, 1, MAX_HEADER_SIZE, infile);
+    if (count != MAX_HEADER_SIZE)
+    {
+        fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not read %d characters from input file\n", MAX_HEADER_SIZE);
+        fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Just read %d\n", count);
         ichunk->span=0;
         return;
     }
@@ -1250,18 +1258,16 @@ void parse_wav_header(WaveData* info, infochunk* ichunk)
 }
 
 
-FILE * secure_open(const char *path, const char *context)
+void secure_open(const char *path, const char *context, FILE* f)
 {
-    FILE *f;
-
+    //fclose(f);
     if ( (f=fopen( path, context ))  == NULL )
     {
         printf(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open '%s'\n", path);
         exit(EXIT_FAILURE);
     }
-    fseek(f, 0, SEEK_SET);
-    return f;
 
+    fseek(f, 0, SEEK_SET);
 }
 
 
@@ -1386,12 +1392,20 @@ void fread_endian(uint32_t * p, int t, FILE *f)
 
     if (little)
     {
-        fread(p+t, 4 ,1,  f) ;
+        uint8_t c = fread(p + t, 4, 1, f) ;
+
+        if (c < 4) return;
+
         p[t]= (p[t] << 8  &  0xFF0000)  |   (p[t]<<16 & 0xFF00)  |   (p[t]<<24 & 0xFF) |  (p[t] & 0xFF000000);
     }
     else
+    {
         /*Big endian  case*/
-        fread(p+t, 1 ,4,  f) ;
+
+        uint8_t c = fread(p+t, 1 ,4,  f) ;
+
+        if (c < 4) return;
+    }
     fflush(f);
 
 #elif   defined CPU_IS_BIG_ENDIAN

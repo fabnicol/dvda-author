@@ -137,7 +137,6 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
     printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Adjusted options are: \n       info->prepend=%d\n       info->in_place=%d\n       info->prune=%d\n       info->padding=%d\n       info->virtual=%d\n",
               info->prepend, info->in_place, info->prune, info->padding, info->virtual);
 
-
 #ifdef RADICAL_FIXWAV_BEHAVIOUR
   if ((globals.silence) && ((header->sample_fq)*(header->bit_p_spl)*(header->channels) == 0))
     {
@@ -146,12 +145,11 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
     }
 #endif
 
-
   /* open the existing file */
 
   if (info->virtual)
   {
-    info->INFILE=secure_open(info->infile, "rb+");
+    secure_open(info->infile, "rb+", info->INFILE);
   }
   else
     {
@@ -160,8 +158,8 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
         {
           if (strcmp(info->infile, info->outfile))
             {
-              info->INFILE=secure_open(info->infile, "rb");
-              info->OUTFILE=secure_open(info->outfile, "ab");
+              secure_open(info->infile, "rb", info->INFILE);
+              secure_open(info->outfile, "ab", info->OUTFILE);
             }
           else
             {
@@ -189,23 +187,23 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
           printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Opening %s\n", info->outfile);
 
-          info->outfile=info->infile;
-          info->OUTFILE=info->INFILE=secure_open(info->infile, "rb+");
-
+          info->outfile = info->infile;
+          secure_open(info->infile, "rb+", info->INFILE);
+          info->OUTFILE = info->INFILE;
         }
     }
 
   /* reads header */
 
-  uint8_t span=0;
+  uint8_t span = 0;
   infochunk ichunk;
   memset(&ichunk, 0, sizeof(infochunk));
    
   if (!info->prepend) 
      parse_wav_header(info, &ichunk);
    
-  header->is_extensible=ichunk.is_extensible;    
-  span=ichunk.span;
+  header->is_extensible = ichunk.is_extensible;
+  span = ichunk.span;
 
   /* if found info tags, dumps them in textfile database, which can only occur of span > 36 */
 
@@ -214,21 +212,23 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
       char databasepath[MAX_OPTION_LENGTH+9]={0};
       snprintf(databasepath, MAX_OPTION_LENGTH+9, "%s%s", info->database, SEPARATOR"database");
       secure_mkdir(info->database, 0755);
-      FILE* database = secure_open(databasepath, "ab");
+      FILE* database;
+      secure_open(databasepath, "ab", database);
       fprintf(database, "Filename    %s\nArtist      %s\nDate        %s\nStyle       %s\nComment     %s\nCopyright   %s\n\n", ichunk.INAM, ichunk.IART, ichunk.ICRD, ichunk.IGNR, ichunk.ICMT, ichunk.ICOP);
-      info->filetitle=strdup((const char*) ichunk.INAM);
+      info->filetitle = strdup((const char*) ichunk.INAM);
       fclose(database);
    }
 
-  header->header_size_in=(span > 0)? ((span+8 < 256)? span+8 : MAX_HEADER_SIZE) : MAX_HEADER_SIZE;
+  header->header_size_in = (span > 0)? ((span+8 < 256)? span+8 : MAX_HEADER_SIZE) : MAX_HEADER_SIZE;
 
   /* reverting to user input and resetting header_size to 0 if: failed to parse header, or prepending, or header_size > 255 */
+
   if ((readHeader(info->INFILE, header) == FAIL) || (info->prepend)|| (header->header_size_in == MAX_HEADER_SIZE))
   {
-      info->interactive=1;
-      info->automatic=0;
-      header->header_size_in=0;
-      info->repair=BAD_HEADER;
+      info->interactive = 1;
+      info->automatic = 0;
+      header->header_size_in = 0;
+      info->repair = BAD_HEADER;
   }
 
   info->repair = repair_wav(info, header);
@@ -238,9 +238,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   if (info->virtual) goto Checkout;
 
-
   /* to be able to alter sample counts, you must enforce --fixwav=padding on command line, unless you are pruning */
-
 
   /****************************************************
   *   Pruning	if requested
@@ -252,7 +250,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
       printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Pruning stage");
 
 
-      switch (prune(info->INFILE, info->OUTFILE, info, header))
+      switch (prune(info->INFILE, info, header))
         {
         case NO_PRUNE:
           printf( "%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Fixwav status 3:\n       File was not pruned (no ending zeros)." );
@@ -347,7 +345,7 @@ Checkout:
                 {
                   printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Header copy successful.\n");
                   if (fclose(info->OUTFILE) != 0) return(NULL);
-                  info->OUTFILE=secure_open(info->outfile, "rb+");
+                  secure_open(info->outfile, "rb+", info->OUTFILE);
                   if (globals.maxverbose) {
                        printf("%s","Dumping new header:\n\n");
                        hexdump_header(info->OUTFILE, HEADER_SIZE);
@@ -389,8 +387,8 @@ getout:
 
   if  (info->repair == BAD_DATA)
     {
-      if (info->prune == PRUNED)
-        printf( "%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Fixwav status--summary:\n       DATA chunk was adjusted after pruning." );
+      if (info->prune)
+        printf( "%s\n", ANSI_COLOR_BLUE" [INF] "ANSI_COLOR_RESET "  Fixwav status--summary:\n       DATA chunk was adjusted after pruning." );
       else
         printf( "%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Fixwav status--summary:\n       DATA chunk was corrupt: fixed." );
     }
@@ -400,15 +398,14 @@ getout:
 
   if (!info->virtual)
     {
-      if ((info->INFILE == NULL) || (info->OUTFILE == NULL) )
+      if (info->INFILE == NULL || info->OUTFILE == NULL)
         {
           fprintf(stderr, "%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  File pointer is NULL.");
           return(NULL);
         }
 
-      if ((fclose(info->INFILE) == EOF) || ((!info->in_place)  && (fclose(info->OUTFILE) == EOF)) )
+      if (fclose(info->INFILE) == EOF || (!info->in_place && fclose(info->OUTFILE) == EOF))
         {
-
           fprintf(stderr, "%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  fclose error: issues may arise.");
           return(NULL);
         }

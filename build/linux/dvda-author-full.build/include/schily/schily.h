@@ -1,4 +1,4 @@
-/* @(#)schily.h	1.86 09/10/22 Copyright 1985-2009 J. Schilling */
+/* @(#)schily.h	1.117 15/05/10 Copyright 1985-2014 J. Schilling */
 /*
  *	Definitions for libschily
  *
@@ -18,7 +18,7 @@
  *	include ctype.h past schily/schily.h as OpenBSD does not follow POSIX
  *	and defines EOF in ctype.h
  *
- *	Copyright (c) 1985-2009 J. Schilling
+ *	Copyright (c) 1985-2014 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -27,6 +27,8 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -50,12 +52,12 @@
 extern "C" {
 #endif
 
-#if	defined(_INCL_SYS_TYPES_H) || defined(_INCL_TYPES_) || defined(off_t)
+#if	defined(_INCL_SYS_TYPES_H) || defined(_INCL_TYPES_H) || defined(off_t)
 #	ifndef	FOUND_OFF_T
 #	define	FOUND_OFF_T
 #	endif
 #endif
-#if	defined(_INCL_SYS_TYPES_H) || defined(_INCL_TYPES_) || defined(size_t)
+#if	defined(_INCL_SYS_TYPES_H) || defined(_INCL_TYPES_H) || defined(size_t)
 #	ifndef	FOUND_SIZE_T
 #	define	FOUND_SIZE_T
 #	endif
@@ -129,31 +131,15 @@ extern "C" {
 
 #if	defined(RENAME_FEXEC) || defined(RENAME_FSPAWN)
 #ifndef	_SCHILY_UNISTD_H
-#include <schily/unistd.h>	/* Need to include before fexec*() protoypes */
+#include <schily/unistd.h>	/* Need to incl. before fexec*() protoypes */
 #endif
 #endif
 
 #if	defined(RENAME_GETLINE)
 #ifndef _SCHILY_STDIO_H
-#include <schily/stdio.h>	/* Need to include before *getline() protoypes */
+#include <schily/stdio.h>	/* Need to incl. before *getline() protoypes */
 #endif
 
-#endif
-
-#ifdef	RENAME_FEXEC
-#define	fexecl		js_fexecl
-#define	fexecle		js_fexecle
-#define	fexecv		js_fexecv
-#define	fexecve		js_fexecve
-#endif
-#ifdef	RENAME_FSPAWN
-#define	fspawnv		js_fspawnv
-#define	fspawnv_nowait	js_fspawnv_nowait
-#define	fspawnl		js_fspawnl
-#endif
-#ifdef	RENAME_GETLINE
-#define	getline		js_getline
-#define	fgetline	js_fgetline
 #endif
 
 #ifdef	EOF	/* stdio.h has been included */
@@ -167,20 +153,24 @@ extern	FILE	*fdup __PR((FILE *));
  */
 extern	int	fdown __PR((FILE *));
 #endif
-extern	int	fexecl __PR((const char *, FILE *, FILE *, FILE *,
+extern	int	js_fexecl __PR((const char *, FILE *, FILE *, FILE *,
 							const char *, ...));
-extern	int	fexecle __PR((const char *, FILE *, FILE *, FILE *,
+extern	int	js_fexecle __PR((const char *, FILE *, FILE *, FILE *,
 							const char *, ...));
 		/* 6th arg not const, fexecv forces av[ac] = NULL */
-extern	int	fexecv __PR((const char *, FILE *, FILE *, FILE *, int,
+extern	int	js_fexecv __PR((const char *, FILE *, FILE *, FILE *, int,
 							char **));
-extern	int	fexecve __PR((const char *, FILE *, FILE *, FILE *,
+extern	int	js_fexecve __PR((const char *, FILE *, FILE *, FILE *,
 					char * const *, char * const *));
-extern	int	fspawnv __PR((FILE *, FILE *, FILE *, int, char * const *));
-extern	int	fspawnl __PR((FILE *, FILE *, FILE *, const char *, ...));
-extern	int	fspawnv_nowait __PR((FILE *, FILE *, FILE *,
+extern	int	js_fspawnv __PR((FILE *, FILE *, FILE *, int, char * const *));
+extern	int	js_fspawnl __PR((FILE *, FILE *, FILE *, const char *, ...));
+extern	int	js_fspawnv_nowait __PR((FILE *, FILE *, FILE *,
 					const char *, int, char *const*));
-extern	int	fgetline __PR((FILE *, char *, int));
+extern	int	js_fgetline __PR((FILE *, char *, int));
+#ifdef	FOUND_SIZE_T
+extern	ssize_t	fgetaline __PR((FILE *, char **, size_t *));
+extern	ssize_t	getaline __PR((char **, size_t *));
+#endif
 extern	int	fgetstr __PR((FILE *, char *, int));
 extern	int	file_getraise __PR((FILE *));
 extern	void	file_raise __PR((FILE *, int));
@@ -211,7 +201,9 @@ extern	ssize_t	ffilewrite __PR((FILE *, void *, size_t));
 #endif
 extern	int	flush __PR((void));
 extern	int	fpipe __PR((FILE **));
-/*extern	int	fprintf __PR((FILE *, const char *, ...)) __printflike__(2, 3);*/
+#ifdef	__never__
+extern	int	fprintf __PR((FILE *, const char *, ...)) __printflike__(2, 3);
+#endif
 extern	int	getbroken __PR((FILE *, char *, char, char **, int));
 extern	int	ofindline __PR((FILE *, char, const char *, int,
 							char **, int));
@@ -228,6 +220,54 @@ extern	int	spawnv_nowait __PR((FILE *, FILE *, FILE *,
 #endif	/* __never_def__ */
 #endif	/* EOF */
 
+/*
+ * Flags for absfpath() and resolvefpath():
+ */
+#define	RSPF_EXIST		0x01	/* All path components must exist    */
+#define	RSPF_NOFOLLOW_LAST	0x02	/* Don't follow link in last pathcomp */
+
+#ifdef	FOUND_SIZE_T
+extern	char	*abspath __PR((const char *relp, char *absp, size_t asize));
+extern	char	*absnpath __PR((const char *relp, char *absp, size_t asize));
+extern	char	*absfpath __PR((const char *relp, char *absp, size_t asize,
+				int __flags));
+#ifndef	HAVE_RESOLVEPATH
+extern	int	resolvepath __PR((const char *__path,
+				char *__buf, size_t __bufsiz));
+#endif
+extern	int	resolvenpath __PR((const char *__path,
+				char *__buf, size_t __bufsiz));
+extern	int	resolvefpath __PR((const char *__path,
+				char *__buf, size_t __bufsiz, int __flags));
+#endif
+
+#ifdef	_SCHILY_TYPES_H
+extern	int	mkdirs __PR((char *, mode_t));
+extern	int	makedirs __PR((char *, mode_t, int __striplast));
+#endif
+
+extern	int	lxchdir	__PR((char *));
+#ifdef	HAVE_FCHDIR
+#define	fdsetname(fd, name)	(0)
+#define	fdclosename(fd)		(0)
+#else
+extern	int	fdsetname __PR((int fd, const char *name));
+extern	int	fdclosename __PR((int fd));
+#endif
+extern	int	diropen __PR((const char *));
+extern	int	dirrdopen __PR((const char *));
+extern	int	dirclose __PR((int));
+
+struct save_wd {
+	int	fd;
+	char	*name;
+};
+
+extern int	savewd	__PR((struct save_wd *sp));
+extern void	closewd	__PR((struct save_wd *sp));
+extern int	restorewd __PR((struct save_wd *sp));
+
+
 #ifdef	_SCHILY_UTYPES_H
 typedef struct gnmult {
 	char	key;
@@ -243,9 +283,21 @@ extern	int	getxtnum  __PR((char *arg, time_t *valp, gnmult_t *mult));
 extern	int	getllxtnum __PR((char *arg, Llong *lvalp, gnmult_t *mult));
 #endif
 extern	int	getnum	__PR((char *arg, long *valp));
-#ifdef	_SCHILY_TYPES_H
+#ifdef	_SCHILY_TIME_H
 extern	int	gettnum	__PR((char *arg, time_t *valp));
 #endif
+
+#ifdef	_SCHILY_TIME_H
+
+extern	int		getnstimeofday	__PR((struct timespec *__tp));
+extern	int		setnstimeofday	__PR((struct timespec *__tp));
+
+#ifdef	_SCHILY_UTYPES_H
+extern	Llong		mklgmtime	__PR((struct tm *));
+#endif
+extern	time_t		mkgmtime	__PR((struct tm *));
+#endif
+
 
 #ifdef	EOF			/* stdio.h has been included */
 #ifdef	_SCHILY_TYPES_H
@@ -256,9 +308,11 @@ extern	int	gettnum	__PR((char *arg, time_t *valp));
 #define	GP_DOX		1	/* 'X' perm character is valid		  */
 #define	GP_XERR		2	/* 'X' perm characters are invalid	  */
 #define	GP_FPERM	4	/* TRUE if we implement find -perm	  */
+#define	GP_UMASK	8	/* TRUE if we implement umask		  */
 
 extern	int	getperm	__PR((FILE *f, char *perm, char *opname, \
 				mode_t *modep, int smode, int flag));
+extern	void	permtostr	__PR((mode_t mode, char *));
 #endif
 #endif
 
@@ -273,32 +327,52 @@ extern	int	on_comerr __PR((void (*fun)(int, void *), void *arg));
 /*PRINTFLIKE1*/
 extern	void	comerr __PR((const char *, ...)) __printflike__(1, 2);
 /*PRINTFLIKE2*/
+extern	void	xcomerr	 __PR((int, const char *, ...)) __printflike__(2, 3);
+/*PRINTFLIKE2*/
 extern	void	comerrno __PR((int, const char *, ...)) __printflike__(2, 3);
+/*PRINTFLIKE3*/
+extern	void	xcomerrno __PR((int, int, const char *, ...)) __printflike__(3, 4);
 /*PRINTFLIKE1*/
 extern	int	errmsg __PR((const char *, ...)) __printflike__(1, 2);
 /*PRINTFLIKE2*/
 extern	int	errmsgno __PR((int, const char *, ...)) __printflike__(2, 3);
 #ifdef	FOUND_SIZE_T
 /*PRINTFLIKE3*/
-extern	int	serrmsg __PR((char *, size_t, const char *, ...)) __printflike__(3, 4);
+extern	int	serrmsg __PR((char *, size_t, const char *, ...))
+					__printflike__(3, 4);
 /*PRINTFLIKE4*/
-extern	int	serrmsgno __PR((int, char *, size_t, const char *, ...)) __printflike__(4, 5);
+extern	int	serrmsgno __PR((int, char *, size_t, const char *, ...))
+					__printflike__(4, 5);
 #endif
 extern	void	comexit	__PR((int));
 extern	char	*errmsgstr __PR((int));
 
 #ifdef	EOF	/* stdio.h has been included */
 /*PRINTFLIKE2*/
-extern	void	fcomerr		__PR((FILE *, const char *, ...)) __printflike__(2, 3);
+extern	void	fcomerr		__PR((FILE *, const char *, ...))
+					__printflike__(2, 3);
 /*PRINTFLIKE3*/
-extern	void	fcomerrno	__PR((FILE *, int, const char *, ...)) __printflike__(3, 4);
-/*PRINTFLIKE2*/
-extern	int	ferrmsg		__PR((FILE *, const char *, ...)) __printflike__(2, 3);
+extern	void	fxcomerr	__PR((FILE *, int, const char *, ...))
+					__printflike__(3, 4);
 /*PRINTFLIKE3*/
-extern	int	ferrmsgno	__PR((FILE *, int, const char *, ...)) __printflike__(3, 4);
-#ifdef	_SCHILY_VARARGS_H
+extern	void	fcomerrno	__PR((FILE *, int, const char *, ...))
+					__printflike__(3, 4);
 /*PRINTFLIKE4*/
-extern	int	_comerr		__PR((FILE *, int, int, const char *, va_list));
+extern	void	fxcomerrno	__PR((FILE *, int, int, const char *, ...))
+					__printflike__(4, 5);
+/*PRINTFLIKE2*/
+extern	int	ferrmsg		__PR((FILE *, const char *, ...))
+					__printflike__(2, 3);
+/*PRINTFLIKE3*/
+extern	int	ferrmsgno	__PR((FILE *, int, const char *, ...))
+					__printflike__(3, 4);
+#ifdef	_SCHILY_VARARGS_H
+#define	COMERR_RETURN	0
+#define	COMERR_EXIT	1
+#define	COMERR_EXCODE	2
+/*PRINTFLIKE4*/
+extern	int	_comerr		__PR((FILE *, int, int, int,
+						const char *, va_list));
 #endif
 #endif
 
@@ -306,12 +380,14 @@ extern	int	_comerr		__PR((FILE *, int, int, const char *, va_list));
 extern	int	error __PR((const char *, ...)) __printflike__(1, 2);
 #ifdef	FOUND_SIZE_T
 extern	char	*fillbytes __PR((void *, ssize_t, char));
+extern	char	*zerobytes __PR((void *, ssize_t));
 extern	char	*findbytes __PR((const void *, ssize_t, char));
 #endif
-extern	char	*findinpath __PR((char *__name, int __mode, BOOL __plain_file));
+extern	char	*findinpath __PR((char *__name, int __mode,
+					BOOL __plain_file, char *__path));
 extern	int	findline __PR((const char *, char, const char *,
 							int, char **, int));
-extern	int	getline __PR((char *, int));
+extern	int	js_getline __PR((char *, int));
 extern	int	getstr __PR((char *, int));
 extern	int	breakline __PR((char *, char, char **, int));
 extern	int	getallargs __PR((int *, char * const**, const char *, ...));
@@ -327,16 +403,17 @@ extern	char	*astoull __PR((const char *, Ullong *));
 extern	char	*astoullb __PR((const char *, Ullong *, int));
 #endif
 
-/*extern	void	handlecond __PR((const char *, SIGBLK *, int(*)(const char *, long, long), long));*/
-/*extern	void	unhandlecond __PR((SIGBLK *));*/
-
 extern	int		patcompile __PR((const unsigned char *, int, int *));
 extern	unsigned char	*patmatch __PR((const unsigned char *, const int *,
-					const unsigned char *, int, int, int, int[]));
+					const unsigned char *,
+					int, int, int, int[]));
 extern	unsigned char	*patlmatch __PR((const unsigned char *, const int *,
-					const unsigned char *, int, int, int, int[]));
+					const unsigned char *,
+					int, int, int, int[]));
 
-/*extern	int	printf __PR((const char *, ...)) __printflike__(1, 2);*/
+#ifdef	__never__
+extern	int	printf __PR((const char *, ...)) __printflike__(1, 2);
+#endif
 #ifdef	FOUND_SIZE_T
 extern	char	*movebytes __PR((const void *, void *, ssize_t));
 #endif
@@ -345,54 +422,77 @@ extern	void	save_args __PR((int, char **));
 extern	int	saved_ac __PR((void));
 extern	char	**saved_av __PR((void));
 extern	char	*saved_av0 __PR((void));
+extern	char	*searchfileinpath __PR((char *__name, int __mode,
+					int __file_mode, char *__path));
+#define	SIP_ANY_FILE	0x00
+#define	SIP_PLAIN_FILE	0x01
+#define	SIP_NO_PATH	0x10
+#define	SIP_TYPE_MASK	0x0F
+
 #ifndef	seterrno
 extern	int	seterrno __PR((int));
 #endif
 extern	void	set_progname __PR((const char *));
 extern	char	*get_progname __PR((void));
+extern	char	*get_progpath __PR((void));
+extern	char	*getexecpath __PR((void));
 
 extern	void	setfp __PR((void * const *));
 extern	int	wait_chld __PR((int));		/* for fspawnv_nowait() */
 extern	int	geterrno __PR((void));
 extern	void	raisecond __PR((const char *, long));
-#ifdef	FOUND_SIZE_T
+#ifdef	__never__
 /*
- * We currently cannot define this here because there IXIX has a definition
- * than violates the standard.
+ * sprintf() may be declared incorrectly somewhere else
+ * e.g. in old BSD include files
  */
-#ifndef	HAVE_SNPRINTF
-/*PRINTFLIKE3*/
-extern	int	snprintf __PR((char *, size_t, const char *, ...)) __printflike__(3, 4);
+extern	int	sprintf __PR((char *, const char *, ...));
 #endif
-#endif
-/*extern	int	sprintf __PR((char *, const char *, ...)); ist woanders falsch deklariert !!!*/
 extern	char	*strcatl __PR((char *, ...));
+#ifdef	FOUND_SIZE_T
+extern	size_t	strlcatl __PR((char *, size_t, ...));
+#endif
 extern	int	streql __PR((const char *, const char *));
 #ifdef	_SCHILY_WCHAR_H
 extern	wchar_t	*wcscatl __PR((wchar_t *, ...));
+#ifdef	FOUND_SIZE_T
+extern	size_t	wcslcatl __PR((wchar_t *, size_t, ...));
+#endif
 extern	int	wcseql __PR((const wchar_t *, const wchar_t *));
 #endif
 #ifdef	va_arg
-extern	int	format __PR((void (*)(char, long), long, const char *, va_list));
+extern	int	format __PR((void (*)(char, long), long, const char *,
+							va_list));
+extern	int	fprformat __PR((long, const char *, va_list));
 #else
 extern	int	format __PR((void (*)(char, long), long, const char *, void *));
+extern	int	fprformat __PR((long, const char *, void *));
 #endif
 
 extern	int	ftoes __PR((char *, double, int, int));
 extern	int	ftofs __PR((char *, double, int, int));
+#ifdef	HAVE_LONGDOUBLE
+extern	int	qftoes __PR((char *, long double, int, int));
+extern	int	qftofs __PR((char *, long double, int, int));
+#endif
 
+/*PRINTFLIKE1*/
+extern	int	js_error __PR((const char *, ...)) __printflike__(1, 2);
 #ifdef	EOF	/* stdio.h has been included */
 /*PRINTFLIKE2*/
-extern	int	js_fprintf	__PR((FILE *, const char *, ...)) __printflike__(2, 3);
+extern	int	js_fprintf	__PR((FILE *, const char *, ...))
+							__printflike__(2, 3);
+#endif	/* EOF */
 /*PRINTFLIKE1*/
 extern	int	js_printf	__PR((const char *, ...)) __printflike__(1, 2);
 #ifdef	FOUND_SIZE_T
 /*PRINTFLIKE3*/
-extern	int	js_snprintf	__PR((char *, size_t, const char *, ...)) __printflike__(3, 4);
+extern	int	js_snprintf	__PR((char *, size_t, const char *, ...))
+							__printflike__(3, 4);
 #endif
 /*PRINTFLIKE2*/
-extern	int	js_sprintf	__PR((char *, const char *, ...)) __printflike__(2, 3);
-#endif	/* EOF */
+extern	int	js_sprintf	__PR((char *, const char *, ...))
+							__printflike__(2, 3);
 
 #ifdef	FOUND_SIZE_T
 extern	void	swabbytes	__PR((void *, ssize_t));
@@ -404,6 +504,7 @@ extern	void	**getfp		__PR((void));
 extern	int	flush_reg_windows __PR((int));
 #ifdef	FOUND_SIZE_T
 extern	ssize_t	cmpbytes	__PR((const void *, const void *, ssize_t));
+extern	int	cmpmbytes	__PR((const void *, const void *, ssize_t));
 extern	ssize_t	cmpnullbytes	__PR((const void *, ssize_t));
 #endif
 
@@ -431,7 +532,12 @@ extern	int	_openfd64	__PR((const char *, int));
 #endif
 #endif
 
+#ifndef	NO_SCHILY_PRINT		/* Define to disable *printf() redirects */
 #ifdef	SCHILY_PRINT
+#ifdef	__never__
+#undef	error
+#define	error		js_error
+#endif
 #undef	fprintf
 #define	fprintf		js_fprintf
 #undef	printf
@@ -446,8 +552,36 @@ extern	int	_openfd64	__PR((const char *, int));
 #define	snprintf	js_snprintf
 #endif
 #endif
+#endif
 
+#ifndef	NO_SCHILY_GETLINE	/* Define to disable *getline() redirect */
+#undef	getline
+#define	getline		js_getline
+#undef	fgetline
+#define	fgetline	js_fgetline
+#endif
 
+#ifndef	NO_SCHILY_FEXEC		/* Define to disable fexec*() redirect */
+#undef	fexecl
+#define	fexecl		js_fexecl
+#undef	fexecle
+#define	fexecle		js_fexecle
+#undef	fexecv
+#define	fexecv		js_fexecv
+#undef	fexecve
+#define	fexecve		js_fexecve
+#endif
+
+#ifndef	NO_SCHILY_FSPAWN	/* Define to disable fspawn*() redirect */
+#undef	fspawnv
+#define	fspawnv		js_fspawnv
+#undef	fspawnv_nowait
+#define	fspawnv_nowait	js_fspawnv_nowait
+#undef	fspawnl
+#define	fspawnl		js_fspawnl
+#endif
+
+extern	int	js_mexval	__PR((int exval));
 #ifdef	FOUND_SIZE_T
 extern	void	*js_malloc	__PR((size_t size, char *msg));
 extern	void	*js_realloc	__PR((void *ptr, size_t size, char *msg));
@@ -457,33 +591,43 @@ extern	char	*js_savestr	__PR((const char *s));
 #ifdef	_SCHILY_JMPDEFS_H
 
 /*
- * Special valued for the "jmp" parameter.
+ * Special values for the "jmp" parameter.
+ *
+ * Control how the siglongjmp() should be handled:
  */
-#define	JM_EXIT		((sigjmps_t *)-1) /* Call comexit(errno) instead of siglongjmp() */
-#define	JM_RETURN	((sigjmps_t *)0)  /* Return instead of calling siglongjmp() */
+#define	JM_EXIT		((sigjmps_t *)-1) /* Call comexit(errno) instead */
+#define	JM_RETURN	((sigjmps_t *)0)  /* Return instead		 */
 
+extern	int	js_jmexval	__PR((int exval));
 #ifdef	FOUND_SIZE_T
 extern	void	*js_jmalloc	__PR((size_t size, char *msg, sigjmps_t *jmp));
-extern	void	*js_jrealloc	__PR((void *ptr, size_t size, char *msg, sigjmps_t *jmp));
+extern	void	*js_jrealloc	__PR((void *ptr, size_t size, char *msg,
+							sigjmps_t *jmp));
 #endif
 extern	char	*js_jsavestr	__PR((const char *s, sigjmps_t *jmp));
 
+extern	int	js_fjmexval	__PR((int exval));
 #ifdef	EOF	/* stdio.h has been included */
 #ifdef	FOUND_SIZE_T
-extern	void	*js_fjmalloc	__PR((FILE *f, size_t size, char *msg, sigjmps_t *jmp));
-extern	void	*js_fjrealloc	__PR((FILE *f, void *ptr, size_t size, char *msg, sigjmps_t *jmp));
+extern	void	*js_fjmalloc	__PR((FILE *f, size_t size, char *msg,
+						sigjmps_t *jmp));
+extern	void	*js_fjrealloc	__PR((FILE *f, void *ptr, size_t size,
+						char *msg, sigjmps_t *jmp));
 #endif
 extern	char	*js_fjsavestr	__PR((FILE *f, const char *s, sigjmps_t *jmp));
 #endif	/* EOF */
 #endif	/* _SCHILY_JMPDEFS_H */
 
+#define	___mexval	js_mexval
 #define	___malloc	js_malloc
 #define	___realloc	js_realloc
 #define	___savestr	js_savestr
+#define	__jmexval	js_jmexval
 #define	__jmalloc	js_jmalloc
 #define	__jrealloc	js_jrealloc
 #define	__jsavestr	js_jsavestr
 #define	__fjmalloc	js_fjmalloc
+#define	__fjmexval	js_fjmexval
 #define	__fjrealloc	js_fjrealloc
 #define	__fjsavestr	js_fjsavestr
 
