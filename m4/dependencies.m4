@@ -192,11 +192,11 @@ m4_map([DVDA_TEST_AUX],[
 	    ],
 	    [
 		[sox-patch],
-		[14.4.1],
-		[WEBSITE/patches/sox-patch-14.4.1],
+		[14.4.2],
+		[WEBSITE/patches/sox-patch-14.4.2],
 		[],
 		[WEBSITE/utils],
-		[6fce4ed8cf767ba7b97b615300f76f46]
+		[a44b293232d8068feeb07f10fe7b7574]
 	    ],
 	    [
 		[flac-download],
@@ -291,11 +291,11 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	    ],
 	    [
 		[sox-patch],
-		[14.4.1],
-		[WEBSITE/patches/sox-patch-14.4.1],
+		[14.4.2],
+		[WEBSITE/patches/sox-patch-14.4.2],
 		[],
 		[WEBSITE/utils],
-		[6fce4ed8cf767ba7b97b615300f76f46]
+		[a44b293232d8068feeb07f10fe7b7574]
 	    ]])
 
 
@@ -325,7 +325,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
  # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
 
     DVDA_CONFIG_LIBRARY_LOCAL_INSTALL([
-     [[[sox],[sox-14.4.1]],  [--without-libltdl --without-sndfile --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-ffmpeg --disable-fast-install --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
+     [[[sox],[sox-14.4.2]],  [--without-libltdl --without-sndfile --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-ffmpeg --disable-fast-install --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
      [[[libogg],[libogg-1.3.2]],  [--prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
      [[[FLAC],[flac-1.3.1]],[--enable-static --disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg" \
        --disable-thorough-tests --disable-oggtest --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]]])
