@@ -195,7 +195,7 @@ int calc_info(fileinfo_t* info)
 //PATCH: provided for null dividers.
     if ((info->samplerate)*(info->channels) == 0)
     {
-        foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Null audio characteristics");
+        foutput("%s%s%s\n", ANSI_COLOR_RED"\n[ERR] ", info->filename, ANSI_COLOR_RESET"  Null audio characteristics");
         return(NO_AFMT_FOUND);
     }
 
@@ -393,7 +393,7 @@ command_t *scan_wavfile_audio_characteristics(command_t *command)
 
         return command;
 // recursion
-    //if (command->files[i][j].filename) scan_wavfile_audio_characteristics(command);
+    if (command->files[i][j].filename) scan_wavfile_audio_characteristics(command);
     return(command);
 }
 
@@ -403,7 +403,7 @@ int extract_audio_info(fileinfo_t *info, uint8_t * header)
 
     /* parsing header again with FIXWAV utility */
 
-       static _Bool cut;
+    static _Bool cut;
        
     if (!cut) info->type=fixwav_repair(info);
      
@@ -434,139 +434,130 @@ static inline int compute_header_size(FILE* fp)
 static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, fileinfo_t* info)
 {
     
-    if ((memcmp(header,"RIFF",4)!=0) || (memcmp(&header[8],"WAVEfmt",7)!=0))
+    if ((memcmp(header,"RIFF",4) != 0) || (memcmp(&header[8],"WAVEfmt",7) != 0))
     {
     #ifndef WITHOUT_FLAC
     
         /* Other formats than WAV: parsing headers */
         if (memcmp(header,"fLaC",4) == 0 )
-            return(info->type=AFMT_FLAC);
-        else
-        {
-            if ((memcmp(header,"OggS",4) == 0 ) && (memcmp(header+0x17, "FLAC", 4) != 0))
-               return(info->type=AFMT_OGG_FLAC);
+            return(info->type = AFMT_FLAC);
+
+        if ((memcmp(header,"OggS",4) == 0 ) && (memcmp(header+0x17, "FLAC", 4) != 0))
+            return(info->type = AFMT_OGG_FLAC);
     
-            else
-            {
     #endif
- //   #ifndef WITHOUT_sox
+    #ifndef WITHOUT_sox
     
-                if (globals.sox_enable)
+            if (globals.sox_enable)
+            {
+                // When RIFF fmt headers are not recognized, they are processed by Sox first if -S -F is on command line then checked by fixwav
+                // yest SoX may crash for seriously mangled headers
+
+                if (!globals.fixwav_force)
                 {
-                    // When RIFF fmt headers are not recognized, they are processed by Sox first if -S -F is on command line then checked by fixwav
-                    // yest SoX may crash for seriously mangled headers
 
-                    if (!globals.fixwav_force)
-                    {
-    
-
-                        if (launch_sox(&path) == NO_AFMT_FOUND)
-                           return(info->type);
-                          // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
-                        else
-                          // PATCH looping back to get info
-                           return(info->type=wav_getinfo(info));
-    // yet without the processing tail below (preserving new header[] array and info structure)
-                    }
-    
+                    if (launch_sox(&path) == NO_AFMT_FOUND)
+                       return(info->type);
+                      // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
                     else
-                    {
-                     // Other way round if -S -Fforce, as fixwav processes first before SoX
-                      info->type=extract_audio_info(info, header);
-    
-                      switch(info->type)
-                      {
-                         case AFMT_WAVE_GOOD_HEADER :
-                         case AFMT_WAVE_FIXED :
-                            return (info->type=AFMT_WAVE);
-    
-                         default:
-                           // PATCH looping back to get info
-    
-                            if (launch_sox(&path) == NO_AFMT_FOUND)
-                            return(info->type);
-                          // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
-                            else
-                          // PATCH looping back to get info
-                            return(info->type=wav_getinfo(info));
-                              // yet without the processing tail below (preserving new header[] array and info structure)
-                      }
-                   }
+                      // PATCH looping back to get info
+                       return(info->type = wav_getinfo(info));
+// yet without the processing tail below (preserving new header[] array and info structure)
                 }
                 else
-    
-   // #endif
-    
-                  if ((!globals.fixwav_force) && (!globals.fixwav_prepend))
-    
-                   return(info->type);
-    
-                 else
-                   return(info->type=extract_audio_info(info, header));
-    
-    
-    #ifndef WITHOUT_FLAC
+                {
+                 // Other way round if -S -Fforce, as fixwav processes first before SoX
+                  info->type = extract_audio_info(info, header);
+
+                  switch(info->type)
+                  {
+                     case AFMT_WAVE_GOOD_HEADER :
+                     case AFMT_WAVE_FIXED :
+                        return (info->type=AFMT_WAVE);
+
+                     default:
+                       // PATCH looping back to get info
+
+                        if (launch_sox(&path) == NO_AFMT_FOUND)
+                        return(info->type);
+                      // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
+                        else
+                      // PATCH looping back to get info
+                        return(info->type = wav_getinfo(info));
+                          // yet without the processing tail below (preserving new header[] array and info structure)
+                  }
+               }
             }
-        }
-    #endif
-    }
-    // else, if suboption force is used:
+
+   #endif
+
+}
+
+  // BUGFIX: consequence of generalizing use of fixwav
+
+  return(info->type=extract_audio_info(info, header));
 }
 
 static inline int process_wav_get_info(fileinfo_t* info)
 {
 // C99 needed
+
 change_directory(globals.settings.workdir);
-info->type=NO_AFMT_FOUND;
+info->type = NO_AFMT_FOUND;
 
 if (info->mergeflag)
- for (int u=0; u < info->channels; u++)    
- {
-  info->audio->channel_fp[u]=secure_open(info->given_channel[u], "rb");
-  if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Opening %s to get info\n", info->given_channel[u]);
-  int span=compute_header_size(info->audio->channel_fp[u]);
-  info->channel_header_size[u]=(span > 0) ? span + 8 : MAX_HEADER_SIZE;
-  uint8_t header[info->channel_header_size[u]];
-  memset(header, 0, info->channel_header_size[u]);
-  /* PATCH: real size on disc is needed */
- #if defined __WIN32__
- info->file_size = read_file_size(info->audio->channel_fp[u],(TCHAR*) info->given_channel[u]);
- #else
- info->file_size = read_file_size(info->audio->channel_fp[u], info->given_channel[u]);
- #endif
- 
- fread(header, info->channel_header_size[u],1,info->audio->channel_fp[u]);
- fseek(info->audio->channel_fp[u], 0, SEEK_SET);
- 
- if (info->channel_header_size[u] > (span=fread(header, 1, info->channel_header_size[u],info->audio->channel_fp[u])))
- {
-     foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not read header of size %d for channel %d, just read %d character(s)\n", info->channel_header_size[u],u+1, span);
-     clean_exit(EXIT_FAILURE);
- }
- 
-  fclose(info->audio->channel_fp[u]);
+{
+     for (int u=0; u < info->channels; u++)
+     {
+      info->audio->channel_fp[u]=secure_open(info->given_channel[u], "rb");
+      if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Opening %s to get info\n", info->given_channel[u]);
+      int span=compute_header_size(info->audio->channel_fp[u]);
+      info->channel_header_size[u]=(span > 0) ? span + 8 : MAX_HEADER_SIZE;
+      uint8_t header[info->channel_header_size[u]];
+      memset(header, 0, info->channel_header_size[u]);
+      /* PATCH: real size on disc is needed */
+     #if defined __WIN32__
+     info->file_size = read_file_size(info->audio->channel_fp[u],(TCHAR*) info->given_channel[u]);
+     #else
+     info->file_size = read_file_size(info->audio->channel_fp[u], info->given_channel[u]);
+     #endif
 
-  info->type=extract_audio_info_by_all_means(info->given_channel[u], header, info);  
- }
+     fread(header, info->channel_header_size[u],1,info->audio->channel_fp[u]);
+     fseek(info->audio->channel_fp[u], 0, SEEK_SET);
+
+     if (info->channel_header_size[u] > (span=fread(header, 1, info->channel_header_size[u],info->audio->channel_fp[u])))
+     {
+         foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not read header of size %d for channel %d, just read %d character(s)\n", info->channel_header_size[u],u+1, span);
+         clean_exit(EXIT_FAILURE);
+     }
+
+      fclose(info->audio->channel_fp[u]);
+
+      info->type=extract_audio_info_by_all_means(info->given_channel[u], header, info);
+     }
+}
 else
 {
-  info->audio->fp=secure_open(info->filename, "rb");  
+  info->audio->fp = secure_open(info->filename, "rb");
+
   if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Opening %s to get info\n", info->filename);
+
   int span=compute_header_size(info->audio->fp);
+
   info->header_size=(span > 0) ? span + 8 : MAX_HEADER_SIZE;
+
   uint8_t header[info->header_size];
   memset(header, 0, info->header_size);
   /* PATCH: real size on disc is needed */
  #if defined __WIN32__
- info->file_size = read_file_size(info->audio->fp,(TCHAR*) info->filename);
+    info->file_size = read_file_size(info->audio->fp,(TCHAR*) info->filename);
  #else
- info->file_size = read_file_size(info->audio->fp, info->filename);
+    info->file_size = read_file_size(info->audio->fp, info->filename);
  #endif
- 
- fread(header, info->header_size,1,info->audio->fp);
+  
  fseek(info->audio->fp, 0, SEEK_SET);
  
- if (info->header_size > (span=fread(header, 1, info->header_size,info->audio->fp)))
+ if (info->header_size > (span = fread(header, 1, info->header_size,info->audio->fp)))
  {
      foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
      perror("       ");
@@ -574,7 +565,7 @@ else
  }
  
   fclose(info->audio->fp);
-  info->type=extract_audio_info_by_all_means(info->filename, header, info);  
+  info->type = extract_audio_info_by_all_means(info->filename, header, info);
   
 }
 
@@ -689,6 +680,7 @@ int flac_getinfo(fileinfo_t* info)
 
         else
         {
+#if (FLAC_API_SUPPORTS_OGG_FLAC == 1)
             result=/*FLAC__StreamDecoderInitStatus*/ FLAC__stream_decoder_init_ogg_file  	(
                         /*FLAC__StreamDecoder *  */ 	 flac,
                         /*FILE * */ 	info->filename,
@@ -697,6 +689,7 @@ int flac_getinfo(fileinfo_t* info)
                         /*FLAC__StreamDecoderErrorCallback  */	flac_error_callback,
                         (void *) info
                     );
+#endif
         }
 
     }
