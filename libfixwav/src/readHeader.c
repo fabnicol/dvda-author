@@ -25,6 +25,9 @@ extern globalData globals;
 
 int readHeader(FILE * infile, WaveHeader *header)
 {
+
+  if (infile == NULL)  return 0;
+
   size_t        count;
 
   /* read in the HEADER_SIZE byte RIFF header from file */
@@ -35,12 +38,12 @@ int readHeader(FILE * infile, WaveHeader *header)
   memset(temp, 0, header->header_size_in);
   p=temp;
   rewind(infile);
-  count=fread(temp, header->header_size_in, 1, infile ) ;
+  count=fread(temp, 1, header->header_size_in, infile ) ;
   /* Total is 44 bytes */
 
-  if  (count != 1)
+  if  (count != header->header_size_in)
     {
-      fprintf( stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Failed to read header from input file\n       Size is: %d, read: %d bytes\n", header->header_size_in, count );
+      fprintf(stderr, ANSI_COLOR_RED "\n[ERR]" ANSI_COLOR_RESET "  Failed to read header from input file\n       Size is: %d, read: %lu bytes\n", header->header_size_in, count );
 
       return(FAIL);
     }

@@ -1,8 +1,8 @@
-/* @(#)dlfcn.h	1.2 09/06/14 Copyright 2009 J. Schilling */
+/* @(#)dlfcn.h	1.4 15/07/13 Copyright 2015 J. Schilling */
 /*
  *	Abstraction from dlfcn.h
  *
- *	Copyright (c) 2009 J. Schilling
+ *	Copyright (c) 2015 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -11,6 +11,8 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -39,6 +41,18 @@
 #define	FOUND_DLFCN_H
 #endif
 #endif
+#endif
+
+#if defined(HAVE_DLOPEN) && defined(HAVE_DLCLOSE)		/* POSIX */
+#define	HAVE_LOADABLE_LIBS
+#endif
+
+#if !defined(HAVE_LOADABLE_LIBS) && defined(HAVE_SHL_LOAD)	/* HP-UX */
+#define	HAVE_LOADABLE_LIBS
+#endif
+
+#if !defined(HAVE_LOADABLE_LIBS) && defined(HAVE_LOADLIBRARY)	/* Win-DOS */
+#define	HAVE_LOADABLE_LIBS
 #endif
 
 /*
@@ -75,13 +89,13 @@ extern "C" {
 #endif
 
 #ifndef	HAVE_DLOPEN
-extern	void	*dlopen	__PR((const char *pathname, int mode));
+extern	void	*dlopen	__PR((const char *__pathname, int mode));
 #endif
 #ifndef	HAVE_DLCLOSE
-extern	int	dlclose	__PR((void *handle));
+extern	int	dlclose	__PR((void *__handle));
 #endif
 #ifndef	HAVE_DLSYM
-extern	void	*dlsym	__PR((void  *handle, const char *name));
+extern	void	*dlsym	__PR((void  *__handle, const char *name));
 #endif
 #ifndef	HAVE_DLERROR
 extern	const char *dlerror __PR((void));

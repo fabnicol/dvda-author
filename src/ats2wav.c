@@ -321,16 +321,17 @@ int scan_ats_ifo(_fileinfo_t * files, uint8_t *buf)
     return(ntracks);
 }
 
-int ats2wav(const char* filename, const char* outdir)
+int ats2wav(const char GCC_UNUSED * filename, const char GCC_UNUSED *outdir)
 {
     
-    
+#if 0
     FILE* file=NULL;
     //FILE* fp=NULL;
     
-    unsigned int payload_length=0, ats=1, t=0, ntracks=0;
+    //unsigned int payload_length=0, ats=1;
+    unsigned int t=0, ntracks=0;
     _fileinfo_t files[99];
-    int length=strlen(outdir);
+    //int length=strlen(outdir);
     //int i,k ;
     uint8_t buf[BUFFER_SIZE];
     //uint64_t delta=0;
@@ -379,7 +380,7 @@ int ats2wav(const char* filename, const char* outdir)
     
     //uint16_t offset=0;
     //_Bool fileend=0;
-#if 0
+
     while (t < ntracks)
     {
         

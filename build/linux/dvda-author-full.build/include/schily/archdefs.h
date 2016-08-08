@@ -1,9 +1,9 @@
-/* @(#)archdefs.h	1.8 09/08/09 Copyright 2006-2009 J. Schilling */
+/* @(#)archdefs.h	1.14 13/07/23 Copyright 2006-2013 J. Schilling */
 /*
  *	Processor, instruction set and OS architecture specific defines.
  *	The information is fetched from compiler predefinitions only.
  *
- *	Copyright (c) 2006-2009 J. Schilling
+ *	Copyright (c) 2006-2013 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -12,6 +12,8 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -49,14 +51,14 @@
 #endif
 #endif
 
-#if	defined(i386) || defined(__i386) || defined(__i386__)
+#if	defined(i386) || defined(__i386) || defined(__i386__) || defined(_M_IX86)
 #ifndef	__i386
 #define	__i386
 #endif
 #endif
 
 #if	defined(__amd64) || defined(__amd64__) || \
-	defined(__x86_64) || defined(__x86_64__)
+	defined(__x86_64) || defined(__x86_64__) || defined(_M_AMD64)
 #ifndef	__amd64
 #define	__amd64
 #endif
@@ -117,7 +119,10 @@
  */
 #if	defined(__sun) && !defined(__SVR4)
 
+#define	__SUNOS4
+
 #if	defined(__mc68000)
+#define	__SUNOS4_MC68000
 #ifdef	__GNUC__
 #define	__SUNOS4_MC68000_GCC32
 #define	__JS_ARCH_DEFINED
@@ -129,6 +134,7 @@
 #endif	/* __mc68000	*/
 
 #if	defined(__sparc)
+#define	__SUNOS4_SPARC
 #ifdef	__GNUC__
 #define	__SUNOS4_SPARC_GCC32
 #define	__JS_ARCH_DEFINED
@@ -146,6 +152,8 @@
  * SunOS 5 specific defines
  */
 #if	defined(__sun) && defined(__SVR4)
+
+#define	__SUNOS5
 
 #if	defined(__sparc)
 #ifdef	__GNUC__
@@ -214,14 +222,58 @@
 #endif	/* HP-UX */
 
 /*
+ * Linux specific defines
+ */
+#if	defined(__linux)
+
+#if	defined(__arm__)
+#ifdef	__GNUC__
+#ifdef	__ARM_ARCH_5TE__
+#define	__LINUX_ARMV5TEJL_GCC32
+#define	__JS_ARCH_DEFINED
+#endif
+#ifndef	__JS_ARCH_DEFINED
+#ifdef	__ARM_ARCH_6__
+#define	__LINUX_ARMV6L_GCC32
+#define	__JS_ARCH_DEFINED
+#endif
+#endif
+#ifndef	__JS_ARCH_DEFINED
+#ifdef	__ARM_ARCH_5__
+#define	__LINUX_ARMV5L_GCC32
+#define	__JS_ARCH_DEFINED
+#endif
+#endif
+#endif	/* __GNUC__	*/
+#endif	/* __arm__	*/
+
+#if	defined(__i386__) || defined(i386)
+#ifdef	__GNUC__
+#define	__LINUX_I386_GCC32
+#define	__JS_ARCH_DEFINED
+#endif
+#endif	/* __i386__	*/
+#if	defined(__amd64__) || defined(__amd64)
+#ifdef	__GNUC__
+#define	__LINUX_amd64_GCC64
+#define	__JS_ARCH_DEFINED
+#endif
+#endif	/* __amd64__	*/
+
+#endif	/* Linux */
+
+/*
  * MS-WIN specific defines
  *
  * cl defines one of:
+ *	_M_ALPHA
  *	_M_IX86
  *	_M_AMD64
  *	_M_M68K
- *	_M_MPPC
- *	_M_IA64
+ *	_M_PPC		PPC in general
+ *	_M_MPPC		Power Macintosh
+ *	_M_MRX000	Mips
+ *	_M_IA64		Itanium
  */
 #if	defined(_MSC_VER) && (defined(_X86_) || defined(_M_IX86))
 #define	__MSWIN_X86_CL32

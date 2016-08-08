@@ -382,7 +382,7 @@ _Bool increment_ngroups_check_ceiling(uint8_t *ngroups, uint8_t * nvideolinking_
     return 1;
 }
 
-fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t** ngiven_channels, uint8_t* ntracks,  uint8_t  ngroups, uint8_t n_g_groups, uint8_t nvideolinking_groups)
+fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t ngiven_channels[9][99], uint8_t* ntracks,  uint8_t  ngroups, uint8_t n_g_groups, uint8_t nvideolinking_groups)
 {
 
     float memory=0;
@@ -418,12 +418,12 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t** ngiven_chann
 
             for (j=0; j < ntracks[i]; j++)
             {
-                if ((files[i][j].filename=calloc(CHAR_BUFSIZ, sizeof(char)) )== NULL)
+                if ((files[i][j].filename = (char*) calloc(CHAR_BUFSIZ, sizeof(char)) )== NULL)
                     EXIT_ON_RUNTIME_ERROR
                 if (ngiven_channels)
                     {
-                      files[i][j].given_channel=calloc(ngiven_channels, sizeof(char**));
-                      files[i][j].channel_header_size=calloc(ngiven_channels, sizeof(uint8_t));
+                      files[i][j].given_channel = (char**) calloc(ngiven_channels[i][j], sizeof(char*));
+                      files[i][j].channel_header_size=calloc(ngiven_channels[i][j], sizeof(uint8_t));
                     }
                 for  (int u=0; u< ngiven_channels[i][j]; u++)
                   {                            

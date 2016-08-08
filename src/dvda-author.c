@@ -250,8 +250,8 @@ int main(int argc,  char* const argv[])
         /*sox_enable*/     0,  // no use of SoX
 #endif
 
-        /*fixwav_enable*/               0,  // no use of fixwav
-        /*fixwav_virtual_enable*/       0,  // no use of fixwav (virtual headers)
+        /*fixwav_enable*/               1,  // use of fixwav
+        /*fixwav_virtual_enable*/       1,  // use of fixwav (virtual headers)
         /* automatic behaviour */       1,
         /* do not prepend a header */   0,
         /* do not correct in place */   0,
