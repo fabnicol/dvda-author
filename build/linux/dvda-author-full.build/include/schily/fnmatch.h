@@ -1,4 +1,4 @@
-/* @(#)fnmatch.h	8.11 10/04/26 Copyright 2006-2010 J. Schilling from 8.1 (Berkeley) */
+/* @(#)fnmatch.h	8.13 10/10/09 Copyright 2006-2010 J. Schilling from 8.1 (Berkeley) */
 
 #ifndef	_SCHILY_FNMATCH_H
 #define	_SCHILY_FNMATCH_H
@@ -6,11 +6,20 @@
 #ifndef _SCHILY_MCONFIG_H
 #include <schily/mconfig.h>
 #endif
+
 #ifdef	HAVE_FNMATCH_H
 #include <fnmatch.h>
-#else
+#else	/* !HAVE_FNMATCH_H */
 
-int	 fnmatch __PR((const char *, const char *, int));
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
+extern int	 fnmatch __PR((const char *, const char *, int));
+
+#ifdef	__cplusplus
+}
+#endif
 
 #endif /* !HAVE_FNMATCH */
 
@@ -42,8 +51,12 @@ int	 fnmatch __PR((const char *, const char *, int));
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)fnmatch.h	8.11 (Berkeley) 04/26/10
+ *	@(#)fnmatch.h	8.13 (Berkeley) 10/09/10
  */
+
+#ifdef	__cplusplus
+extern "C" {
+#endif
 
 #ifndef	FNM_NOMATCH
 #define	FNM_NOMATCH	1	/* Match failed. */
@@ -77,9 +90,14 @@ int	 fnmatch __PR((const char *, const char *, int));
 #define	FNM_LEADING_DIR	0x20	/* Ignore /<tail> after Imatch. */
 #endif
 
-#ifndef	HAVE_FNMATCH_IGNORECASE
-int	 js_fnmatch __PR((const char *, const char *, int));
+extern int	 js_fnmatch __PR((const char *, const char *, int));
+
+#if	!defined(HAVE_FNMATCH_IGNORECASE)
 #define	fnmatch	js_fnmatch
+#endif
+
+#ifdef	__cplusplus
+}
 #endif
 
 #endif /* !_SCHILY_FNMATCH_H */

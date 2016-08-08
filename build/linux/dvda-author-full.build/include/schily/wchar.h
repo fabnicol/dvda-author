@@ -1,8 +1,8 @@
-/* @(#)wchar.h	1.17 10/05/07 Copyright 2007-2010 J. Schilling */
+/* @(#)wchar.h	1.21 11/07/19 Copyright 2007-2011 J. Schilling */
 /*
  *	Abstraction from wchar.h
  *
- *	Copyright (c) 2007-2010 J. Schilling
+ *	Copyright (c) 2007-2011 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -24,7 +24,7 @@
 #endif
 
 #ifndef	_SCHILY_STDLIB_H
-#include <schily/stdlib.h>	/* for MB_CUR_MAX */
+#include <schily/stdlib.h>	/* for MB_CUR_MAX, mbtowc()/wctomb() */
 #endif
 #ifndef	_SCHILY_TYPES_H
 #include <schily/types.h>
@@ -43,6 +43,15 @@
 #endif
 
 
+#if	!defined(HAVE_MBTOWC) || !defined(HAVE_WCTOMB)
+#if	defined(HAVE_MBRTOWC) && defined(HAVE_WCRTOMB)
+#	define	mbtowc(wp, cp, len)	mbrtowc(wp, cp, len, (mbstate_t *)0)
+#	define	wctomb(cp, wc)		wcrtomb(cp, wc, (mbstate_t *)0)
+#else
+#	define	NO_WCHAR
+#endif
+#endif
+
 #ifdef	HAVE_WCHAR_H
 
 #ifndef	_INCL_WCHAR_H
@@ -57,7 +66,7 @@
 #define	mbrtowc(wp, cp, len, sp)	mbtowc(wp, cp, len)
 #endif
 #ifndef	HAVE_WCRTOMB
-#define	wcrtomb(cp, wc, sp)		wcrtomb(cp, wc)
+#define	wcrtomb(cp, wc, sp)		wctomb(cp, wc)
 #endif
 
 #ifndef	USE_WCHAR
@@ -97,8 +106,10 @@
  * We cannot define wctype_t here because of a bug in Linux (missing xctype_t
  * definition in wchar.h
  */
-/*#undef	wctype_t*/
-/*#define	wctype_t	int*/
+#ifdef	__never__
+#undef	wctype_t
+#define	wctype_t	int
+#endif
 
 #undef	WEOF
 #define	WEOF	((wint_t)-1)
@@ -144,8 +155,8 @@
 #define	mbtowc(wp, cp, len)	((void)((wp) ? \
 				*(wchar_t *)(wp) = *(char *)(cp) : 1), 1)
 #undef	mbrtowc
-#define	mbrtowc(wp, cp, len, sp)	((void)((wp) ? \
-					*(wchar_t *)(wp) = *(char *)(cp) : 1), 1)
+#define	mbrtowc(wp, cp, len, sp) ((void)((wp) ? \
+				*(wchar_t *)(wp) = *(char *)(cp) : 1), 1)
 #undef	wctomb
 #define	wctomb(cp, wc)		(*(cp) = wc, 1)
 #undef	wcrtomb
@@ -154,6 +165,16 @@
 #undef	mbsinit
 #define	mbsinit(sp)		((int)((sp) == 0))
 
-#endif	/* !USE_WCHAR */
+#undef	wcwidth
+#define	wcwidth(wc)		(1)
+
+#else	/* USE_WCHAR */
+
+#ifndef	HAVE_WCWIDTH
+#undef	wcwidth
+#define	wcwidth(wc)		(1)
+#endif
+
+#endif	/* USE_WCHAR */
 
 #endif	/* _SCHILY_WCHAR_H */

@@ -1,8 +1,8 @@
-/* @(#)param.h	1.5 09/07/14 Copyright 2006-2007 J. Schilling */
+/* @(#)param.h	1.7 12/01/22 Copyright 2006-2011 J. Schilling */
 /*
  *	Abstraction from sys/param.h
  *
- *	Copyright (c) 2006-2007 J. Schilling
+ *	Copyright (c) 2006-2011 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -29,18 +29,17 @@
 #ifndef	_SCHILY_TYPES_H
 #include <schily/types.h>
 #endif
+#ifdef	HAVE_SYS_PARAM_H
+#ifndef	_INCL_SYS_PARAM_H
+#include <sys/param.h>		/* Must be before limits.h */
+#define	_INCL_SYS_PARAM_H
+#endif
+#endif
 #ifndef	_SCHILY_LIMITS_H
 #include <schily/limits.h>	/* For _SC_CLK_TCK */
 #endif
 #ifndef	_SCHILY_UNISTD_H
 #include <schily/unistd.h>	/* For _SC_CLK_TCK */
-#endif
-
-#ifdef	HAVE_SYS_PARAM_H
-#ifndef	_INCL_SYS_PARAM_H
-#include <sys/param.h>
-#define	_INCL_SYS_PARAM_H
-#endif
 #endif
 
 #ifndef	NBBY
@@ -64,6 +63,14 @@
 #else
 #define	HZ	100
 #endif
+#endif
+
+/*
+ * Do we need to define _XOPEN_SOURCE to get NZERO?
+ * On Linux, it is needed but on Linux NZERO is 20.
+ */
+#ifndef	NZERO		/* for nice(2) */
+#define	NZERO	20
 #endif
 
 #endif	/* _SCHILY_PARAM_H */

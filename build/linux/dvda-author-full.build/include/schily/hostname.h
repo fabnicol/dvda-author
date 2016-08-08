@@ -1,9 +1,9 @@
-/* @(#)hostname.h	1.18 09/07/28 Copyright 1995-2008 J. Schilling */
+/* @(#)hostname.h	1.22 14/01/01 Copyright 1995-2014 J. Schilling */
 /*
  *	This file has been separated from libport.h in order to avoid
  *	to include netdb.h in case gethostname() is not needed.
  *
- *	Copyright (c) 1995-2008 J. Schilling
+ *	Copyright (c) 1995-2014 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -12,6 +12,8 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -41,8 +43,9 @@
 #ifndef HOST_NAME_MAX
 #if	defined(HAVE_NETDB_H) && !defined(HOST_NOT_FOUND) && \
 				!defined(_INCL_NETDB_H)
-#include <netdb.h>		/* #defines MAXHOSTNAMELEN */
-#define	_INCL_NETDB_H
+#ifndef	_SCHILY_NETDB_H
+#include <schily/netdb.h>	/* #defines MAXHOSTNAMELEN */
+#endif
 #endif
 #ifdef	MAXHOSTNAMELEN
 #define	HOST_NAME_MAX	MAXHOSTNAMELEN
@@ -69,12 +72,31 @@
 extern "C" {
 #endif
 
+/*
+ * The gethostname() prototype from Win-DOS are in the wrong include files
+ * (winsock*.h instead of unistd.h) and they are in conflict with the standard.
+ * Because the prototype is in the wrong file and the function is not in libc,
+ * configure will believe gethostname() is missing.
+ * We cannot define our own correct prototype, but this is not a problem as the
+ * return type is int.
+ */
+#if !defined(__MINGW32__)
 #ifndef	HAVE_GETHOSTNAME
 extern	int		gethostname	__PR((char *name, int namelen));
+#endif
 #endif
 #ifndef	HAVE_GETDOMAINNAME
 extern	int		getdomainname	__PR((char *name, int namelen));
 #endif
+
+#ifdef	__SUNOS4
+/*
+ * Define prototypes for POSIX standard functions that are missing on SunOS-4.x
+ * to make compilation smooth.
+ */
+extern	int		gethostname	__PR((char *name, int namelen));
+extern	int		getdomainname	__PR((char *name, int namelen));
+#endif	/* __SUNOS4 */
 
 #ifdef	__cplusplus
 }
