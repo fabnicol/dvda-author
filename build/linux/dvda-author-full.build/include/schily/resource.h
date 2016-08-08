@@ -1,10 +1,10 @@
-/* @(#)resource.h	1.7 09/08/03 Copyright 1995-2009 J. Schilling */
+/* @(#)resource.h	1.11 15/08/14 Copyright 1995-2015 J. Schilling */
 /*
  *	Abstraction from resource limits
  *
  *	Missing parts for wait3() taken from SunOS
  *
- *	Copyright (c) 1995-2009 J. Schilling
+ *	Copyright (c) 1995-2015 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -13,6 +13,8 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -33,7 +35,14 @@
  * Get definitions from system include files
  */
 #ifdef	HAVE_SYS_RESOURCE_H
+#ifndef	_INCL_SYS_RESOURCE_H
 #include <sys/resource.h>
+#define	_INCL_SYS_RESOURCE_H
+#endif
+#endif
+
+#ifdef	__cplusplus
+extern "C" {
 #endif
 
 /*
@@ -52,14 +61,23 @@
 
 #ifndef	HAVE_STRUCT_RUSAGE
 
+/*
+ * On a vanilla BSD system, all fields are set.
+ * On other systems, parts may not be supported.
+ *
+ * S: 0 means that the value is 0 on Solaris
+ * S: * means that the value is the sum of rm_asrss on Solaris
+ *
+ * POSIX and BeOS/Haiku define only ru_utime and ru_stime.
+ */
 struct	rusage {
 	struct timeval ru_utime;	/* user time used */
 	struct timeval ru_stime;	/* system time used */
-	long	ru_maxrss;
+	long	ru_maxrss;		/* maximum resident set size S: 0 */
 #define	ru_first	ru_ixrss
-	long	ru_ixrss;		/* XXX: 0 */
-	long	ru_idrss;		/* XXX: sum of rm_asrss */
-	long	ru_isrss;		/* XXX: 0 */
+	long	ru_ixrss;		/* integral shared memory size S: 0 */
+	long	ru_idrss;		/* integral unshared data size S: * */
+	long	ru_isrss;		/* integral unshared stack size S: 0 */
 	long	ru_minflt;		/* any page faults not requiring I/O */
 	long	ru_majflt;		/* any page faults requiring I/O */
 	long	ru_nswap;		/* swaps */
@@ -91,11 +109,19 @@ struct	rusage {
 #define	RLIM_INFINITY	0x7fffffff
 #endif
 
+#ifndef	HAVE_TYPE_RLIM_T
+#define	rlim_t	Intmax_t
+#endif
+
 struct rlimit {
-	int	rlim_cur;		/* current (soft) limit */
-	int	rlim_max;		/* maximum value for rlim_cur */
+	rlim_t	rlim_cur;		/* current (soft) limit */
+	rlim_t	rlim_max;		/* maximum value for rlim_cur */
 };
 
 #endif	/* RLIMIT_CPU */
+
+#ifdef	__cplusplus
+}
+#endif
 
 #endif /* _SCHILY_RESOURCE_H */

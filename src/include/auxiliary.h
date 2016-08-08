@@ -90,7 +90,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 void help();
 void version();
 _Bool increment_ngroups_check_ceiling(uint8_t *ngroups, uint8_t *nvideolinking_groups );
-fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t** ngiven_channels, uint8_t* ntracks, uint8_t   ngroups, uint8_t n_g_groups, uint8_t nvideolinking_groups);
+fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files, uint8_t ngiven_channels[9][99], uint8_t* ntracks, uint8_t   ngroups, uint8_t n_g_groups, uint8_t nvideolinking_groups);
 void free_memory(command_t *command);
 void check_settings_file();
 void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size);

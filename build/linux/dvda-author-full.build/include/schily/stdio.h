@@ -1,8 +1,8 @@
-/* @(#)stdio.h	1.2 09/04/08 Copyright 2009 J. Schilling */
+/* @(#)stdio.h	1.9 14/01/02 Copyright 2009-2014 J. Schilling */
 /*
  *	Abstraction from stdio.h
  *
- *	Copyright (c) 2009 J. Schilling
+ *	Copyright (c) 2009-2014 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -11,6 +11,8 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -18,6 +20,8 @@
 
 #ifndef _SCHILY_STDIO_H
 #define	_SCHILY_STDIO_H
+#ifndef NO_SCHILY_STDIO_H	/* We #undef _SCHILY_STDIO_H later because */
+				/* of the ill designed "hdrchk" program    */
 
 #ifndef	_SCHILY_MCONFIG_H
 #include <schily/mconfig.h>
@@ -54,4 +58,50 @@
 #endif
 #endif
 
+#if	!defined(HAVE_POPEN) && defined(HAVE__POPEN)
+#define	popen(c, m)	_popen((c), (m))
+#endif
+
+#if	!defined(HAVE_PCLOSE) && defined(HAVE__PCLOSE)
+#define	pclose(fp)	_pclose(fp)
+#endif
+
+#ifdef	FAST_GETC_PUTC
+/*
+ * The following code partially allows libschily to access FILE * as fast as
+ * from inside libc on Solaris.
+ * This makes it possible to implement js_printf() from libschily aprox.
+ * 33% faster than printf() from libc on Solaris. To do this, we
+ * partially unhide the FILE structure in a 64 bit environment on Solaris
+ * to allow to run putc_unlocked() as a marcro.
+ *
+ * If you believe you can do this on onther platforms, send a note. 
+ */
+#if	defined(__SVR4) && defined(__sun) && defined(_LP64)
+
+/*
+ * This is how the 64 bit FILE * begins on Solaris.
+ */
+struct SCHILY__FILE_TAG {
+	unsigned char	*_ptr;	/* next character from/to here in buffer */
+	unsigned char	*_base;	/* the buffer */
+	unsigned char	*_end;	/* the end of the buffer */
+	ssize_t		_cnt;	/* number of available characters in buffer */
+};
+
+#define	__putc_unlocked(x, p)	(--(p)->_cnt < 0 \
+					? __flsbuf((x), (FILE *)(p)) \
+					: (int)(*(p)->_ptr++ = \
+					(unsigned char) (x)))
+
+#define	putc_unlocked(x, p)	__putc_unlocked(x, (struct SCHILY__FILE_TAG *)p)
+
+extern int	__flsbuf __PR((int, FILE *));
+
+#endif	/* defined(__SVR4) && defined(__sun) && defined(_LP64) */
+#endif	/* FAST_GETC_PUTC */
+
+#else	/* !NO_SCHILY_STDIO_H */
+#undef	_SCHILY_STDIO_H			/* #undef here to pass "hdrchk" */
+#endif	/* NO_SCHILY_STDIO_H */
 #endif	/* _SCHILY_STDIO_H */

@@ -35,7 +35,7 @@ int  generate_amgm_xml(uint8_t ngroups, uint8_t *ntracks, pic* img)
         globals.xml=strdup(xmlfilepath);
     }
 
-    xmlfile=secure_open(globals.xml, "wb");
+    secure_open(globals.xml, "wb", xmlfile);
 
     fprintf(xmlfile, "%s%s%s%s%s\n",
             "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n\

@@ -506,7 +506,7 @@ static uint64_t offset_count;
     else if (bytesinbuffer < info->lpcm_payload)   // Last packet in title
     {
        
-        foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Writing last packet - pack=%lld, bytesinbuffer=%d\n",pack_in_title,bytesinbuffer);
+        foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Writing last packet - pack=%lu, bytesinbuffer=%d\n", pack_in_title, bytesinbuffer);
         audio_bytes=bytesinbuffer;
         write_pack_header(fp,SCR);
         write_audio_pes_header(fp,info->lastpack_audiopesheaderquantity+audio_bytes,0,PTS);

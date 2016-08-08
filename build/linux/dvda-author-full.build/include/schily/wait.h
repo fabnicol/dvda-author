@@ -1,8 +1,8 @@
-/* @(#)wait.h	1.17 09/11/15 Copyright 1995-2007 J. Schilling */
+/* @(#)wait.h	1.24 15/09/18 Copyright 1995-2015 J. Schilling */
 /*
  *	Definitions to deal with various kinds of wait flavour
  *
- *	Copyright (c) 1995-2007 J. Schilling
+ *	Copyright (c) 1995-2015 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -11,6 +11,8 @@
  * with the License.
  *
  * See the file CDDL.Schily.txt in this distribution for details.
+ * A copy of the CDDL is also available via the Internet at
+ * http://www.opensource.org/licenses/cddl1.txt
  *
  * When distributing Covered Code, include this CDDL HEADER in each
  * file and include the License file CDDL.Schily.txt from this distribution.
@@ -67,10 +69,114 @@
 #	endif
 #endif
 
+#if !defined(HAVE_TYPE_SIGINFO_T) && defined(HAVE_SIGINFO_T)
+#ifndef	_SCHILY_SIGNAL_H
+#include <schily/signal.h>
+#endif
+#endif
 
 #ifdef	__cplusplus
 extern "C" {
 #endif
+
+/*
+ * waitid() idtype_t definition, define when missing or broken.
+ * NetBSD-5 has an idtype_t that is in conflict with POSIX.
+ */
+#ifndef	HAVE_TYPE_IDTYPE_T
+
+#undef  HAVE_WAITID	/* Can't have waitid() with broken idtype_t */
+
+#undef	P_PID
+#undef	P_PPID
+#undef	P_PGID
+#undef	P_SID
+#undef	P_CID
+#undef	P_UID
+#undef	P_GID
+#undef	P_ALL
+
+#define	P_PID	MY_P_PID
+#define	P_PPID	MY_P_PPID
+#define	P_PGID	MY_P_PGID
+#define	P_SID	MY_P_SID
+#define	P_CID	MY_P_CID
+#define	P_UID	MY_P_UID
+#define	P_GID	MY_P_GID
+#define	P_ALL	MY_P_ALL
+
+typedef enum {
+	P_PID,		/* A process identifier.		*/
+	P_PPID,		/* A parent process identifier.		*/
+	P_PGID,		/* A process group (job control group)	*/
+			/* identifier.				*/
+	P_SID,		/* A session identifier.		*/
+	P_CID,		/* A scheduling class identifier.	*/
+	P_UID,		/* A user identifier.			*/
+	P_GID,		/* A group identifier.			*/
+	P_ALL,		/* All processes.			*/
+} my_idtype_t;
+
+#undef	idtype_t
+#define	idtype_t	my_idtype_t
+
+#endif	/* HAVE_TYPE_IDTYPE_T */
+
+#ifndef	WCOREFLG
+#define	WCOREFLG	0x80
+#define	NO_WCOREFLG
+#endif
+
+#ifndef	WSTOPFLG
+#define	WSTOPFLG	0x7F
+#define	NO_WSTOPFLG
+#endif
+
+#ifndef	WCONTFLG
+#define	WCONTFLG	0xFFFF
+#define	NO_WCONTFLG
+#endif
+
+/*
+ * waitid() option flags:
+ */
+#ifndef	WCONTINUED
+#define	WCONTINUED	0
+#define	NO_WCONTINUED
+#endif
+#ifndef	WEXITED
+#define	WEXITED		0
+#define	NO_WEXITED
+#endif
+#ifndef	WNOHANG
+#define	WNOHANG		0
+#define	NO_WNOHANG
+#endif
+#ifndef	WNOWAIT
+#define	WNOWAIT		0
+#define	NO_WNOWAIT
+#endif
+#ifndef	WSTOPPED
+#define	WSTOPPED	0
+#define	NO_WSTOPPED
+#endif
+#ifndef	WTRAPPED
+#define	WTRAPPED	0
+#define	NO_WTRAPPED
+#endif
+
+/*
+ * waitid() code values, #define them when they are missing:
+ */
+#ifndef	CLD_EXITED		/* Assume all is missing then */
+#define	CLD_EXITED	1	/* child has exited */
+#define	CLD_KILLED	2	/* child was killed */
+#define	CLD_DUMPED	3	/* child has coredumped */
+#define	CLD_TRAPPED	4	/* traced child has stopped */
+#define	CLD_STOPPED	5	/* child has stopped on signal */
+#define	CLD_CONTINUED	6	/* stopped child has continued */
+#define	NO_CLD_EXITED
+#endif	/* CLD_EXITED */
 
 #if defined(HAVE_UNION_WAIT) && defined(USE_UNION_WAIT)
 #	define WAIT_T union wait
@@ -89,6 +195,9 @@ extern "C" {
 #	endif
 #	ifndef WSTOPSIG
 #		define WSTOPSIG(status)		(_W_U(status)->w_stopsig)
+#	endif
+#	ifndef WIFCONTINUED
+#		define	WIFCONTINUED(status)	(0)
 #	endif
 #	ifndef WIFSTOPPED
 #		define WIFSTOPPED(status)	(_W_U(status)->w_stopval == \
@@ -111,13 +220,29 @@ extern "C" {
 #		define WTERMSIG(status)		(_W_I(status) & 0x7F)
 #	endif
 #	ifndef WCOREDUMP
+#	ifdef WIFCORED				/* Haiku */
+#		define WCOREDUMP(status)	(WIFCORED(_W_I(status)))
+#	else
 #		define WCOREDUMP(status)	(_W_I(status) & 0x80)
+#	endif
 #	endif
 #	ifndef WEXITSTATUS
 #		define WEXITSTATUS(status)	((_W_I(status) >> 8) & 0xFF)
 #	endif
 #	ifndef WSTOPSIG
 #		define WSTOPSIG(status)		((_W_I(status) >> 8) & 0xFF)
+#	endif
+/*
+ * WIFSTOPPED and WIFSIGNALED match the definitions on older UNIX versions
+ * e.g. SunOS-4.x or HP-UX
+ */
+#	ifndef WIFCONTINUED
+#	ifdef	NO_WCONTINUED
+#		define	WIFCONTINUED(status)	(0)
+#	else
+#		define	WIFCONTINUED(status)	((_W_I(status) & 0xFFFF) == \
+								WCONTFLG)
+#	endif
 #	endif
 #	ifndef WIFSTOPPED
 #		define	WIFSTOPPED(status)	((_W_I(status) & 0xFF) == 0x7F)
@@ -131,18 +256,6 @@ extern "C" {
 #	endif
 #endif
 
-
-#ifndef	WCOREFLG
-#define	WCOREFLG	0x80
-#endif
-
-#ifndef	WSTOPFLG
-#define	WSTOPFLG	0x7F
-#endif
-
-#ifndef	WCONTFLG
-#define	WCONTFLG	0xFFFF
-#endif
 
 #ifdef	__cplusplus
 }

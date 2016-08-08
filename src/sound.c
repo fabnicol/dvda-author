@@ -59,7 +59,7 @@ int standardize_wav_header(char* path)
 {
 errno=0;
 
-        WaveHeader waveheader;
+        static WaveHeader waveheader;
         WaveData wavedata=
         {
             path,
@@ -75,7 +75,7 @@ errno=0;
             0, /* not interactive */
             0, /* end-padding=no*/
             0, /* no pruning */
-            0, /* read fix, not a virtual one*/
+            1, /* virtual fix */
             0, /* repair status */
             0, /* padbytes */
             0, /* pruned bytes */
@@ -108,7 +108,7 @@ int audit_soundtrack(char* path, _Bool strict)
     errno=0;
     if (s->isfile)
     {
-        WaveHeader waveheader;
+        static WaveHeader waveheader;
         WaveData wavedata=
         {
             path,
