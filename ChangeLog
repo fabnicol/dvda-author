@@ -1,3 +1,7 @@
+2016-08-08 Fabrice Nicol
+	* Fix regressions in later code. Update dependencies and patches.
+ 	  Build system improvements.
+
 2013-11-12 Fabrice Nicol
 	* Add --dvdv-import, --mirror and --miror-strategy for DVD-Video zone authoring
 
