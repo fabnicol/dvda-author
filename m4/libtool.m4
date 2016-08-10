@@ -1,1 +1,1 @@
-/usr/share/aclocal/libtool.m4
+# libtool.m4 - Configure libtool for the host system. -*-Autoconf-*-

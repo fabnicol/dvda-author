@@ -606,17 +606,17 @@ int secure_mkdir (const char *path, mode_t mode)
 #endif
             d[i] = '\0';
 
-            if ((MKDIR(d, mode) == -1) && (EEXIST != errno))
-
+            errno = 0;
+            if ((mkdir(d, mode) == -1) && (EEXIST != errno))
             {
-                printf( "Impossible to create directory '%s'\n", d);
-                printf("%s", "Backup directories will be used.\n " );
-
+                fprintf(stderr, "Impossible to create directory '%s'\n", d);
+                fprintf(stderr, "%s", "Backup directories will be used.\n " );
+                perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  mkdir ");  // EEXIST error messages are often spurious
+                puts(path);
                 clean_exit(EXIT_FAILURE);
-
             }
-            d[i] = '/';
 
+            d[i] = '/';
 
         }
 
@@ -758,7 +758,10 @@ void change_directory(const char * filename)
         else
         {
            if (NULL != filename)
+           {
              fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Impossible to cd to %s \n.", filename);
+             perror(ANSI_COLOR_RED"\n[ERR]");
+           }
            else   
              fprintf(stderr, "%s",ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Null path\n.");
            exit(EXIT_FAILURE);
