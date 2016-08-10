@@ -24,7 +24,7 @@ topdir=`pwd`
 echo "Entering: "
 echo "$topdir"
 libtoolize --force
-#automake --add-missing --force-missing
+automake --add-missing --force-missing
 autoconf -f -Im4 -Im4.extra -Im4.extra.dvdauthor --warnings=none
 autoheader --warnings=none
 exitcode=$?

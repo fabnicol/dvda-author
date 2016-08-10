@@ -1,1 +1,1 @@
-/usr/share/aclocal/lt~obsolete.m4
+# lt~obsolete.m4 -- aclocal satisfying obsolete definitions.    -*-Autoconf-*-

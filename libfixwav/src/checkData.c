@@ -244,10 +244,6 @@ int prune(FILE* infile, WaveData *info, WaveHeader *header)
           return(info->repair=FAIL);
         }
 
-#ifdef __WIN32__
-      if (info->in_place) outfile=fopen(info->infile, "rb+");
-#endif
-
       printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Readjusting byte count...");
       header->chunk_size-=count;
       header->data_size-=count;
