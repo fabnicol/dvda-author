@@ -571,7 +571,9 @@ else
 
   if (info->audio->fp == NULL)
   {
-      EXIT_ON_RUNTIME_ERROR_VERBOSE("Fichier impossible à ouvrir.")
+      puts(info->filename);
+      perror("Fichier impossible à ouvrir");
+      EXITING
   }
 
   if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Opening %s to get info\n", info->filename);

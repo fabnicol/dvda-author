@@ -1,1 +1,1 @@
-/usr/share/aclocal/ltversion.m4
+# ltversion.m4 -- version numbers			-*- Autoconf -*-

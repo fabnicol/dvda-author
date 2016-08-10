@@ -1,1 +1,1 @@
-/usr/share/aclocal/ltoptions.m4
+# Helper functions for option handling.                    -*- Autoconf -*-
