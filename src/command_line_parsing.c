@@ -713,7 +713,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 
                 /* Allocate memory if and only if groups are to be (re)created on command line */
                 
-        if (allocate_files)
+       if (allocate_files)
         {
             files=dynamic_memory_allocate(files, ngiven_channels, ntracks, ngroups, n_g_groups, nvideolinking_groups);
         }
