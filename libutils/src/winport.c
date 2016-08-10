@@ -44,7 +44,7 @@ extern globalData global_utils ;
 
 
 
-#ifndef __WIN32__
+#if ! defined __WIN32__ || defined __MSYS__
 #include <unistd.h>
 
 
