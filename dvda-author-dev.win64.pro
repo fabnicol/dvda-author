@@ -4,7 +4,7 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 TARGET = dvda-author
-QMAKE_CFLAGS += -std=c99
+QMAKE_CFLAGS += -std=c99 -m64
 
 QMAKE_CFLAGS_RELEASE -= -O2
 
@@ -60,7 +60,6 @@ SOURCES += \
     libfixwav/src/repair.c \
     src/dvda-author.c \
     libfixwav/src/fixwav_auxiliary.c \
-    libiberty/src/getopt.c \
     libiberty/src/getsubopt.c \
     libiberty/src/malloc.c \
     libiberty/src/strchrnul.c \

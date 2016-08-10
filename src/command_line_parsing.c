@@ -154,7 +154,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     }
     
     int errmsg;
-    _Bool allocate_files=0, logrefresh=0, refresh_tempdir=1, refresh_outdir=1;  // refreshing output and temporary directories by default
+    _Bool allocate_files=false, logrefresh=false, refresh_tempdir=true, refresh_outdir=true;  // refreshing output and temporary directories by default
     _Bool download_new_version_flag=0, check_version_flag=0, force_download_flag=0;
     DIR *dir;
     parse_t  audiodir;
@@ -166,6 +166,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 #define img command->img  // already allocated, just for notational purposes
     
     char **argv_scan=calloc(argc, sizeof(char*));
+
+    if (argv_scan == NULL)   EXIT_ON_RUNTIME_ERROR
+
     startsector=-1; /* triggers automatic computing of startsector (Lee and Tim Feldman) */
     /* Initialisation: default group values are overridden if and only if groups are added on command line
      * Other values are left statically determined by first launch of this function                          */
@@ -285,24 +288,28 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
      *  are consequently misplaced */
     /* 0-reset only on command-line parsing in case groups have been defined in config file */
     
-    for (k=0; k<argc; k++)
-        if ((argv_scan[k]=strdup(argv[k])) == NULL)
-            EXIT_ON_RUNTIME_ERROR
+    for (k=0; k < argc; ++k)
+    {
+        if ((argv_scan[k] = strdup(argv[k])) == NULL)
+             EXIT_ON_RUNTIME_ERROR
+
+    }
+
                     /* COMMAND-LINE  PARSING: first pass for global behaviour option: log, help, version, verbosity */
                     
-        #ifdef LONG_OPTIONS
-                    while ((c=getopt_long(argc, argv_scan, ALLOWED_OPTIONS, longopts, &longindex)) != -1)
-        #else
-                    while ((c=getopt(argc, argv_scan, ALLOWED_OPTIONS)) != -1)
-        #endif
-                    
+       #ifdef LONG_OPTIONS
+         while ((c=getopt_long(argc, argv_scan, ALLOWED_OPTIONS, longopts, &longindex)) != -1)
+       #else
+         while ((c=getopt(argc, argv_scan, ALLOWED_OPTIONS)) != -1)
+       #endif
             {
+
                 switch (c)
                 {
                 /* On modern *nix platform this trick ensures long --help and --version options even if LONG_OPTIONS
                      * is not defined. Not operational with Mingw to date 	*/
                 
-                
+
 #ifndef LONG_OPTIONS
                 case '-' :
                     if  (strcmp(optarg, "version") == 0)
@@ -402,19 +409,21 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     
     optind=0;
     opterr=1;
-    
-    
-    
+
     if (user_command_line)
     {
+
         int j;
-        for (j=0; j < argc; j++)
+        c=getopt_long(argc, argv_scan, ALLOWED_OPTIONS, longopts, &longindex);
+        foutput("%s%d\n", ANSI_COLOR_MAGENTA"[CL]"ANSI_COLOR_RESET"  gol  : ", c);
+        for (j=0; j < argc; ++j)
 #ifdef LONG_OPTIONS
             while ((c=getopt_long(argc, argv_scan, ALLOWED_OPTIONS, longopts, &longindex)) != -1)
 #else
             while ((c=getopt(argc, argv_scan, ALLOWED_OPTIONS)) != -1)
 #endif
             {
+
                 switch (c)
                 {
                 case 's':    // single-track group file input (command line)
@@ -583,12 +592,14 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'g' :
         case 'j' :
             u++;
-            allocate_files=1;
+            allocate_files=true;
+            foutput("%s%d\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  allocate_files = ", allocate_files);
+            fflush(NULL);
             break;
             
         case 'i' :
             
-            allocate_files=1;
+            allocate_files=true;
             globals.settings.indir=strndup(optarg, MAX_OPTION_LENGTH);
             
             foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Input directory is: ", 	optarg);
@@ -643,7 +654,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
         case 'T':
             
-            allocate_files=1;
+            allocate_files=true;
             
             if (nvideolinking_groups == MAXIMUM_LINKED_VTS)
             {
@@ -1583,20 +1594,20 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         if (!globals.nooutput)
         {
             errno=secure_mkdir(globals.settings.outdir, 0777);
-            if (errno)
-            {
-                if (errno != EEXIST) perror("\n"ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  mkdir outdir");  // EEXIST error messages are often spurious
-            }
+            errno=secure_mkdir(globals.settings.datadir, 0777);
             
-            
+            foutput("%s%s\n",ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  out** ", globals.settings.outdir);
             errno=0;
             if (refresh_tempdir)
             {
                 clean_directory(globals.settings.tempdir);
                 if (errno) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  clean");
             }
+
+
             errno=secure_mkdir(globals.settings.tempdir, globals.access_rights);
             errno += secure_mkdir(globals.settings.lplextempdir, globals.access_rights);
+
             if (errno)
             {
                 if (errno != EEXIST) 
