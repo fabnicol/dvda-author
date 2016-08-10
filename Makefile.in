@@ -162,7 +162,8 @@ install-man:
 install-data-local:  $(dist_doc_DATA) $(dist_pic_DATA)
 	$(INSTALL_DATA) $^ $(DESTDIR)@infodir@/$(PROGRAM)
 	$(MKDIR_P)  $(DESTDIR)@infodir@/$(PROGRAM)
-	@if test -f $(PROGRAM).html; then $(INSTALL_DATA) $(PROGRAM).html $(DESTDIR)@infodir@/$(PROGRAM); fi
+	$(MKDIR_P)  $(HOME)/.local/@infodir@/$(PROGRAM)
+	@if test -f $(PROGRAM).html; then $(INSTALL_DATA) $(PROGRAM).html $(DESTDIR)@infodir@/$(PROGRAM) $(HOME)/.local/@infodir@/$(PROGRAM); fi
 
 # redefining install is necessary to rename nested package directories for later builds with --enable-all-builds, which request lib* labelling
 
