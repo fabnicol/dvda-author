@@ -118,7 +118,7 @@ script (see below).
 Other building systems will have to make use of the patches available at the following links:
 
     http://dvd-audio.sourceforge.net/patches/dvdauthor-patch-0.7.1
-    http://dvd-audio.sourceforge.net/patches/sox-patch-14.4.1
+    http://dvd-audio.sourceforge.net/patches/sox-patch-14.4.2
 
 See file INSTALL included in this distribution, and COREBUILD for building the core application only.
 On *nix platforms, the GNU build system will automatically link to existing libFLAC
