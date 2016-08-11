@@ -1,0 +1,16 @@
+MSYS2 builds
+============
+
+As of Aug. 2016 the dvd-audio tools suite (dvda-author and friends) only 
+partly builds on MSYS2, namely:
+
+	* libFLAC, libogg and libsox: use correct config.sub file
+	* a patched source of lplex-0.3: either use wxWidgets 2.92-2.9.5 or redifine some system paths ;
+	* auxiliary tools: man2html and help2man, the latter with possible issues due to exclusion of codechunks using RTL_NEXT
+	* a52dec, with patched config.sub file
+	* libmpeg2: undefine libvo symbols (LIBVO_DX, LIBVO_SDL, LIBVO_X11, LIBVO_XV)
+	* dvdauthor: patch for dvda-author specific modifications and also specify :
+	  export FREETYPECONFIG=/mingw64/bin/freetype-config
+	  export LIBPNG_LIBS=/mingw64/lib/libpng.dll.a
+	  with freetype and libpng installed
+	* mjpegtools: first build and install libjpeg62 (alias 6b). Build with LIBS=/usr/lib/libjpeg.a and change of config.sub.
