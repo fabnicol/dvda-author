@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuremap [
+<!ELEMENT configuremap (configure)+>
+<!ELEMENT configure (#PCDATA)>
+<!ATTLIST configure name CDATA #REQUIRED>
+<!ATTLIST configure value CDATA #REQUIRED>
+]>
+<configuremap>
+  <configure name="CC" value="gcc"/>
+  <configure name="CFLAGS" value="-I/usr/include/libxml2    -fopenmp -g -O2 -Wall -mtune=haswell -fexceptions  -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16"/>
+  <configure name="CODER_PATH" value="/c/Users/Public/Dev/dvda-author-dev/local/lib/ImageMagick-7.0.2/modules-Q16HDRI/coders"/>
+  <configure name="CONFIGURE_PATH" value="/c/Users/Public/Dev/dvda-author-dev/local/etc/ImageMagick-7/"/>
+  <configure name="CONFIGURE" value="./configure  '--prefix=/c/Users/Public/Dev/dvda-author-dev/local' 'PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/share/pkgconfig:/lib/pkgconfig'"/>
+  <configure name="COPYRIGHT" value="Copyright (C) 1999-2016 ImageMagick Studio LLC"/>
+  <configure name="CPPFLAGS" value="-I/c/Users/Public/Dev/dvda-author-dev/local/include/ImageMagick-7"/>
+  <configure name="CXXFLAGS" value="-g -O2 "/>
+  <configure name="CXX" value="g++"/>
+  <configure name="DEFS" value="-DHAVE_CONFIG_H"/>
+  <configure name="DELEGATES" value="mpeg jpeg lzma xml zlib"/>
+  <configure name="DISTCHECK_CONFIG_FLAGS" value=" --disable-deprecated  --with-quantum-depth=16  --with-jemalloc=no  --with-umem=no  --with-autotrace=no  --with-gslib=no  --with-fontpath=  --with-rsvg=no  --with-perl=no "/>
+  <configure name="DOCUMENTATION_PATH" value="/c/Users/Public/Dev/dvda-author-dev/local/share/doc/ImageMagick-7"/>
+  <configure name="EXEC-PREFIX" value="/c/Users/Public/Dev/dvda-author-dev/local"/>
+  <configure name="EXECUTABLE_PATH" value="/c/Users/Public/Dev/dvda-author-dev/local/bin"/>
+  <configure name="FEATURES" value="DPC HDRI Cipher OpenMP"/>
+  <configure name="FILTER_PATH" value="/c/Users/Public/Dev/dvda-author-dev/local/lib/ImageMagick-7.0.2/modules-Q16HDRI/filters"/>
+  <configure name="GIT_REVISION" value="18628:98f9037:20160722" />
+  <configure name="HOST" value="x86_64-pc-msys"/>
+  <configure name="INCLUDE_PATH" value="/c/Users/Public/Dev/dvda-author-dev/local/include/ImageMagick-7"/>
+  <configure name="LDFLAGS" value="-L/c/Users/Public/Dev/dvda-author-dev/local/lib "/>
+  <configure name="LIBRARY_PATH" value="/c/Users/Public/Dev/dvda-author-dev/local/lib/ImageMagick-7.0.2"/>
+  <configure name="LIBS" value="      -ljpeg                 -llzma      -lxml2 -lpthread -lz -llzma -liconv -lm  -lz  -lm -lgomp    "/>
+  <configure name="LIB_VERSION_NUMBER" value="7,0,2,6"/>
+  <configure name="LIB_VERSION" value="0x702"/>
+  <configure name="NAME" value="ImageMagick"/>
+  <configure name="PCFLAGS" value="-fopenmp -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16"/>
+  <configure name="PREFIX" value="/c/Users/Public/Dev/dvda-author-dev/local"/>
+  <configure name="QuantumDepth" value="16"/>
+  <configure name="RELEASE_DATE" value="2016-08-12"/>
+  <configure name="SHAREARCH_PATH" value="/c/Users/Public/Dev/dvda-author-dev/local/lib/ImageMagick-7.0.2/config-Q16HDRI"/>
+  <configure name="SHARE_PATH" value="/c/Users/Public/Dev/dvda-author-dev/local/share/ImageMagick-7"/>
+  <configure name="TARGET_CPU" value="x86_64"/>
+  <configure name="TARGET_OS" value="msys"/>
+  <configure name="TARGET_VENDOR" value="pc"/>
+  <configure name="VERSION" value="7.0.2"/>
+  <configure name="WEBSITE" value="http://www.imagemagick.org"/>
+</configuremap>
