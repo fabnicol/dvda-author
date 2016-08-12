@@ -6,4 +6,4 @@ HAVE_EXTERNAL_FLAC=@HAVE_EXTERNAL_FLAC@
 CONFIGURE_FLAC_FLAGS=
 flac_BUILD=@flac_BUILD@
 WITH_FLAC=@WITH_FLAC@
-FLAC_DEPENDENCY=Makefile /mnt/fab/Dev/dvda-author-dev/
+FLAC_DEPENDENCY=Makefile c:/Users/Public/Dev/dvda-author-dev/
