@@ -357,7 +357,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	       [[[lplex], [lplex-0.3]], [--prefix="$BUILDDIR/local" --disable-shared ROOTDIR=$ROOTDIR/lplex-0.3 --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include" CPPFLAGS=-I$ROOTDIR/lplex-0.3/redist]],
 	       [[[mjpegtools], [mjpegtools-2.1.0]],[--without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime  --without-pic --disable-shared --enable-static-build --enable-static  --disable-fast-install --prefix="$BUILDDIR/local"]],
 	       [[[cdrtools],[cdrtools-3.02]],[--prefix="$BUILDDIR/local"]],
-	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
+	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local" --host=${host}]],
 	       [[[libmpeg2],[libmpeg2-0.5.1]], [--prefix="$BUILDDIR/local"]],
 	       [[[help2man], [help2man-1.43.3]],[--prefix="$BUILDDIR/local"]],
 	       [[[ImageMagick], [ImageMagick-7.0.2-6]],[--prefix="$BUILDDIR/local" --without-magick-plus-plus --without-pango --without-tiff --without-lzma --without-xml JPEG_LIBS="$ROOTDIR/build/linux/dvda-author-full.build/lib/libjpeg.a"]],
