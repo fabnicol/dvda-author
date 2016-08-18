@@ -24,7 +24,7 @@
 #endif
 
 
-#if defined __WIN32__  && ! defined __MSYS__
+#if (defined(__WIN32__) || defined(_WIN64) || defined(_WIN32) || defined(__WIN32) || defined (__WIN64)) && ! defined __MSYS__
 
  inline static uint64_t stat_file_size(const char* filename)
 {
