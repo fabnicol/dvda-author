@@ -150,6 +150,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 typedef struct
 {
  _Bool    isfile;
+ _Bool cdup_position[CHAR_BUFSIZ];
+ _Bool pwd_position[CHAR_BUFSIZ];
  char*    directory;
  char*    extension;
  char*    rawfilename;
@@ -192,13 +194,15 @@ void clean_exit(int message);
 void starter(compute_t *timer);
 char* print_time(int);
 int secure_mkdir ( const char *path, mode_t mode);
+int s_mkdir (const char *path);
 void print_commandline(int argc_count, char * const argv[]);
 void change_directory(const char * filename);
 int copy_file(const char *existing_file, const char *new_file);
 int cat_file(const char *existing_file, const char *new_file);
 int copy_file_p(FILE *infile, FILE *outfile, uint32_t position, uint64_t output_size);
-int copy_directory(const char* src, const char* dest, mode_t mode);
-
+_Bool file_exists(const char* filepath);
+int stat_dir_files(const char* src);
+int traverse_directory(const char* src, void (*f)(const char* GCC_UNUSED *arg1, void GCC_UNUSED *arg2, void GCC_UNUSED *arg3), _Bool recursive);
 int get_endianness();
 void hexdump_header(FILE* infile, uint8_t header_size);
 void hexdump_pointer(uint8_t* tab,  size_t tabsize);
@@ -211,6 +215,7 @@ char* get_full_command_line(const char** args);
 char* copy_file2dir(const char *existing_file, const char *new_dir);
 char* copy_file2dir_rename(const char *existing_file, const char *new_dir, char* newfilename);
 path_t *parse_filepath(const char* filepath);
+char* make_absolute(char* filepath);
 char *fn_get_current_dir_name (void);
 int  rmdir_global(char* path);
 int  rmdir_recursive (char *root, char *dirname);
