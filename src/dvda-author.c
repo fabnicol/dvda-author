@@ -160,12 +160,11 @@ int main(int argc,  char* const argv[])
 
     lexer_t   lexer_init;
     lexer_t   *lexer=&lexer_init;
-   /* create a static command_t structure
-    *  in command_line_parsing.c from default command line created by lexer.
-    */
 
-
-
+    /****
+     *  create a static command_t structure
+     *  in command_line_parsing.c from default command line created by lexer.
+     ****/
 
 #ifndef __MINGW32__
     struct rusage nothing, start;
