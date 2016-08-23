@@ -14,7 +14,9 @@
 #  endif
 #else
 #  define MKDIR(X, Y) mkdir(X, Y)
-#  define SEPARATOR '\\'
+#  ifndef SEPARATOR
+#    define SEPARATOR '\\'
+#  endif
 #endif
 
 
