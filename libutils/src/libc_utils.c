@@ -149,63 +149,68 @@ char *fn_get_current_dir_name (void)
 
 char* make_absolute(char* filepath)
 {
-    path_t path_info = parse_filepath(filepath);
+    path_t* path_info = parse_filepath(filepath);
     char buffer[2*CHAR_BUFSIZ] = {0};
 
-    for (int r = 0; r < path_info.separators; ++r)
+    for (int r = 0; r < path_info->separators; ++r)
     {
-        if (path_info.pwd_position[r])
+        if (path_info->pwd_position[r])
         {
             if (r == 0)
             {
                 char* current_dir = fn_get_current_dir_name();
 
-                if (current_dir == NULL || current_dir[0] == '\0') return;
+                if (current_dir == NULL || current_dir[0] == '\0') return "";
+                int u = 0;
+                for(char c; (c = current_dir[u]) != '\0'; ++u)  buffer[u] = c;
 
-                for(int u = 0, char c; (c = current_dir[u]) != '\0'; ++u)  buffer[u] = c;
+                buffer[u] = SEPARATOR[0];
 
-                buffer[u] = SEPARATOR;
+                u = 0;
+                for(char c; (c = filepath[u]) != '\0'; ++u)     buffer[u] = c;
 
-                for(int u = 0, char c; (c = filepath[u]) != '\0'; ++u)     buffer[u] = c;
-
-                return (makeAbsolute(buffer));
+                return (make_absolute(buffer));
 
             }
             else
             {
                 int u = 0;
+                int counter = 0;
                 while(counter < r)
                 {
                     buffer[u] = filepath[u];
-                    if (filepath[u] == SEPARATOR) ++counter;
+                    if (filepath[u] == SEPARATOR[0]) ++counter;
                     ++u;
                 }
 
-                buffer[u] =  SEPARATOR;
+                buffer[u] =  SEPARATOR[0];
                 ++u;
+                char c;
+                for(int j = u; (c = filepath[u + 2]) != '\0'; ++j)  buffer[j] = c;
 
-                for(int j = u, char c; (c = filepath[u + 2]) != '\0'; ++j)  buffer[j] = c;
-
-                return (makeAbsolute(buffer));
+                return (make_absolute(buffer));
             }
         }
         else
-        if (path_info.cdup_position[r])
+        if (path_info->cdup_position[r])
         {
 
             int u = 0;
+            int counter = 0;
+
             while(counter < r)
             {
                 if (counter < r - 1) buffer[u] = filepath[u];
-                if (filepath[u] == SEPARATOR) ++counter;
+                if (filepath[u] == SEPARATOR[0]) ++counter;
                 ++u;
             }
 
-            buffer[u] =  SEPARATOR;
+            buffer[u] =  SEPARATOR[0];
             ++u;
 
-            for(int j = u, char c; (c = filepath[u]) != '\0'; ++j)     buffer[j] = c;
-            return (makeAbsolute(buffer));
+            char c;
+            for(int j = u; (c = filepath[u]) != '\0'; ++j)     buffer[j] = c;
+            return (make_absolute(buffer));
         }
     }
 
@@ -377,7 +382,7 @@ void unix2dos_filename(char* path)
 {
     /* does not assume null-terminated strings, may be tab of chars */
 
-    for (int u = 0; u < strlen(path); ++u)
+    for (uint u = 0; u < strlen(path); ++u)
     {
        switch (path[u])
        {
@@ -392,7 +397,7 @@ void dos2Unix_filename(char* path)
 {
     /* does not assume null-terminated strings, may be tab of chars */
 
-    for (int u = 0; u < strlen(path); ++u)
+    for (uint u = 0; u < strlen(path); ++u)
     {
        if (path[u] == '\\')  path[u] = '/';
 #      if defined(__MSYS__) || defined (__CYGWIN__)
@@ -409,7 +414,7 @@ void fix_separators(char * path)
 {
     /* does not assume null-terminated strings, may be tab of chars */
 
-    if (SEPARATOR == '\\')
+    if (SEPARATOR[0] == '\\')
         unix2dos_filename(path);
     else
         dos2Unix_filename(path);
@@ -426,7 +431,7 @@ void fix_separators(char * path)
 char* end_sep(const char *path)
 {
     int s = strlen(path);
-
+    char* out;
     if (path[s - 1] != '/' && path[s - 1] != '\\')
     {
      out = calloc(s + 2, sizeof(char));
@@ -436,9 +441,9 @@ char* end_sep(const char *path)
          clean_exit(EXIT_FAILURE);
      }
 
-     memcpy(out, path, s, sizeof(char));
+     memcpy(out, path, s * sizeof(char));
 
-     out[s + 1] = SEPARATOR;
+     out[s + 1] = SEPARATOR[0];
      // null termination is ensuered by calloc.
     }
 
@@ -471,11 +476,11 @@ path_t *parse_filepath(const char* filepath)
                 }
                 else
                 {
-                   chain->cdup_position[chain->separators] = TRUE;
+                   chain->cdup_position[chain->separators] = true;
                 }
             }
             else
-                chain->pwd_position[chain->separators] = TRUE;
+                chain->pwd_position[chain->separators] = false;
 
             break;
 
@@ -610,7 +615,7 @@ _Bool clean_directory(char* path)
 * To be launched at end of program, not in a thread
 * ------- */
 
-void (char* logpath)
+void htmlize(char* logpath)
 {
 
 FILE* src=fopen(logpath, "rb");
@@ -753,11 +758,11 @@ void clean_exit(int message)
 * terminates if path cannot be accessed.
 * ------- */
 
-_Bool s_dir_exists(const char*)
+_Bool s_dir_exists(const char* path)
 {
   struct stat info;
 
-    if (stat( path, &info) != NULL)
+    if (stat(path, &info) != 0)
     {
         printf( "[ERR] Cannot access %s\n", path);
         clean_exit(EXIT_FAILURE);
@@ -765,12 +770,12 @@ _Bool s_dir_exists(const char*)
     else
     if (info.st_mode & S_IFDIR)
     {
-        printf( "[WAR] Directory %s already exists.\n", pathname );
+        printf( "[WAR] Directory %s already exists.\n", path);
         errno = 0;
-        return TRUE;
+        return true;
     }
 
-    return FALSE;
+    return false;
 }
 
 /*-------
@@ -791,7 +796,7 @@ int secure_mkdir (const char *path, mode_t mode)
 
  /* test for existence */
 
-    if (s_dir_exist(path)) return 0;
+    if (s_dir_exists(path)) return 0;
 
 
     int i=0, len;
@@ -1047,26 +1052,26 @@ void change_directory(const char * filename)
 * Note :  function may have 4 optional arguments, the first of a const char*, practically a path or filename
 * ------- */
 
-int traverse_directory(const char* src, void (*f)(const char* GCC_UNUSED *arg1, void GCC_UNUSED *arg2, void GCC_UNUSED *arg3), _Bool recursive)
+int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED *, void GCC_UNUSED *, void GCC_UNUSED *), _Bool recursive, void GCC_UNUSED* arg2, void GCC_UNUSED* arg3)
 {
     DIR *dir_src;
 
     struct stat buf;
-    struct dirent *f;
+    struct dirent *d;
 
     printf("%c", '\n');
 
-    if (globals.debugging)  printf("%s%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Traversing dir = ", dest);
+    if (globals.debugging)  printf("%s%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Traversing dir = ", src);
 
     change_directory(src);
 
     dir_src=opendir(".");
 
-    while ((f = readdir(dir_src)) != NULL)
+    while ((d = readdir(dir_src)) != NULL)
     {
-        if (f->d_name[0] == '.') continue;
+        if (d->d_name[0] == '.') continue;
 
-        if (stat(f->d_name, &buf) == -1)
+        if (stat(d->d_name, &buf) == -1)
         {
             perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" stat in traverse_directory\n");
             exit(EXIT_FAILURE);
@@ -1075,15 +1080,15 @@ int traverse_directory(const char* src, void (*f)(const char* GCC_UNUSED *arg1, 
         if (recursive && S_ISDIR(buf.st_mode))
         {
 
-            errno = traverse_directory(f->d_name, f, recursive);
+            errno = traverse_directory(d->d_name, f, recursive, arg2, arg3);
 
             continue;
         }
 
         if (S_ISREG(buf.st_mode))
         {
-            if (globals.debugging) printf("%s%s to= %s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Processing file=", f->d_name);
-            errno = f(f->d_name, arg2, arg3);
+            if (globals.debugging) printf("%s = %s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Processing file=", d->d_name);
+            f((const char*) d->d_name, arg2, arg3);
         }
 
         /* does not copy other types of files(symlink, sockets etc). */
@@ -1099,12 +1104,13 @@ int traverse_directory(const char* src, void (*f)(const char* GCC_UNUSED *arg1, 
 /*------- start of private */
 
 
-void copy_file_wrapper(const char* filename, void* out, void* permissions)
+void copy_file_wrapper(const char* filename, void* out, void GCC_UNUSED *permissions)
 {
     const char* dest = (const char*) out;
-    const mode_t mode = *permission;
+    //const mode_t mode = (mode_t) *permissions;
     char path[BUFSIZ] = {0};
-    copy_file(filename,  STRING_WRITE(path, "%s%c%s", dest, '/', filename));
+    sprintf(path, "%s%c%s", dest, '/', filename);
+    copy_file(filename,  path);
 }
 
 /*------- end of private */
@@ -1119,6 +1125,8 @@ void copy_file_wrapper(const char* filename, void* out, void* permissions)
 
 int copy_directory(const char* src, const char* dest, mode_t mode)
 {
+    struct stat buf;
+
     if (stat(dest, &buf) == -1)
     {
         perror("\n"ANSI_COLOR_RED "\n[ERR]" ANSI_COLOR_RESET"  copy_directory could not compute directory size\n");
@@ -1134,7 +1142,7 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
 
       if (globals.debugging)   printf(ANSI_COLOR_BLUE "[INF]" ANSI_COLOR_RESET"  Copying in %s ...\n", src);
 
-       traverse_directory(src, copy_file_wrapper(src, (void *) &dest, (void *) &mode), TRUE);
+       traverse_directory(src, copy_file_wrapper, true, (void*) dest, (void*) &mode);
     }
     else
     if (globals.debugging)
@@ -1170,6 +1178,7 @@ void stat_file_wrapper(const char *filename, void *total_size, void GCC_UNUSED *
 
 int stat_dir_files(const char* src)
 {
+    struct stat buf;
     if (stat(src, &buf) == -1)
     {
         perror("\n"ANSI_COLOR_RED "\n[ERR]" ANSI_COLOR_RESET" Directory not recognized.\n");
@@ -1178,9 +1187,11 @@ int stat_dir_files(const char* src)
 
     printf("%c", '\n');
 
-    if (globals.debugging)  printf("%s%s\n", ANSI_COLOR_BLUE" [INF] "ANSI_COLOR_RESET" Summing up directory file sizes...", dest);
+    if (globals.debugging)  printf("%s%s\n", ANSI_COLOR_BLUE" [INF] "ANSI_COLOR_RESET" Summing up directory file sizes...", src);
 
-    traverse_directory(src, stat_file_wrapper, FALSE);
+    uint64_t total_size = 0;
+
+    traverse_directory(src, stat_file_wrapper, false, (void*) &total_size, NULL);
 
     return(errno);
 }
