@@ -342,9 +342,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	       [[[lplex], [lplex-0.3]], [--prefix="$BUILDDIR/local" --disable-shared ROOTDIR=$ROOTDIR/lplex-0.3 --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
 	       [[[mjpegtools], [mjpegtools-2.1.0]],
 			       [ --prefix="$BUILDDIR/local" 
-				 --disable-shared  --enable-static --enable-static-build --disable-fast-install --prefix="$BUILDDIR/local"
-				 --without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime
-				 --disable-simd-accel LIBDIR=/lib LDFLAGS=-L/lib CPPFLAGS=-I/include]],
+				 --disable-shared  --enable-static --enable-static-build --disable-fast-install --prefix="$BUILDDIR/local" --without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime --disable-simd-accel LIBDIR=/lib LDFLAGS=-L/lib CPPFLAGS=-I/include]],
 	       [[[cdrtools],[cdrtools-3.02]],[--prefix="$BUILDDIR/local"]],
 	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
 	       [[[libmpeg2],[libmpeg2-0.5.1]],[--prefix="$BUILDDIR/local"]],
