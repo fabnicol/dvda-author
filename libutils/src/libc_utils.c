@@ -3,11 +3,11 @@
 File:   c_utils.c
 Purpose: utility library
 
-Copyright Fabrice Nicol <fabnicol@users.sourceforge.net>, 2008
+Copyright Fabrice Nicol <fabnicol@users.sourceforge.net>, 2008-2016
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
+the Free Software Foundation; either version 3 of the License, or
 (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
@@ -59,7 +59,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 // here include your main application's header containing a globalData structure with main application globals.
 #include "structures.h"
 #include "libiberty.h"
-
+#include "winport.h"
 
 #undef __MS_types__
 extern globalData globals;
@@ -97,6 +97,7 @@ void erase_file(const char* path)
 
 
 #if HAVE_curl
+
 int download_file_from_http_server(const char* curlpath, const char* filename, const char* server)
 {
     char command[strlen(server)+strlen(filename)+strlen(curlpath) + 32];
@@ -146,6 +147,72 @@ char *fn_get_current_dir_name (void)
     return (NULL);
 }
 
+char* make_absolute(char* filepath)
+{
+    path_t path_info = parse_filepath(filepath);
+    char buffer[2*CHAR_BUFSIZ] = {0};
+
+    for (int r = 0; r < path_info.separators; ++r)
+    {
+        if (path_info.pwd_position[r])
+        {
+            if (r == 0)
+            {
+                char* current_dir = fn_get_current_dir_name();
+
+                if (current_dir == NULL || current_dir[0] == '\0') return;
+
+                for(int u = 0, char c; (c = current_dir[u]) != '\0'; ++u)  buffer[u] = c;
+
+                buffer[u] = SEPARATOR;
+
+                for(int u = 0, char c; (c = filepath[u]) != '\0'; ++u)     buffer[u] = c;
+
+                return (makeAbsolute(buffer));
+
+            }
+            else
+            {
+                int u = 0;
+                while(counter < r)
+                {
+                    buffer[u] = filepath[u];
+                    if (filepath[u] == SEPARATOR) ++counter;
+                    ++u;
+                }
+
+                buffer[u] =  SEPARATOR;
+                ++u;
+
+                for(int j = u, char c; (c = filepath[u + 2]) != '\0'; ++j)  buffer[j] = c;
+
+                return (makeAbsolute(buffer));
+            }
+        }
+        else
+        if (path_info.cdup_position[r])
+        {
+
+            int u = 0;
+            while(counter < r)
+            {
+                if (counter < r - 1) buffer[u] = filepath[u];
+                if (filepath[u] == SEPARATOR) ++counter;
+                ++u;
+            }
+
+            buffer[u] =  SEPARATOR;
+            ++u;
+
+            for(int j = u, char c; (c = filepath[u]) != '\0'; ++j)     buffer[j] = c;
+            return (makeAbsolute(buffer));
+        }
+    }
+
+    return(strdup(buffer));
+
+    // it is up to the user to deallocate filepath string input
+}
 
 
 void action_dir_post (const char *root, const char *dir)
@@ -292,50 +359,150 @@ int rmdir_recursive (char *root, char *dirname)
 
 // End of Yves Mettier code
 
+/* -------
+* rmdir_global
+*
+* Erases a directory without testing for errors.
+* Returns errno
+* ------- */
+
+
 int rmdir_global(char* path)
 {
     int error=rmdir_recursive(NULL, path);
     return (error);
 }
 
+void unix2dos_filename(char* path)
+{
+    /* does not assume null-terminated strings, may be tab of chars */
+
+    for (int u = 0; u < strlen(path); ++u)
+    {
+       switch (path[u])
+       {
+         case '/' :  path[u] = '\\'; break;
+         case '.' :  if (u == 0 && path[1] == '/') ++path; ++path; break;  /* ./dir -> dir */
+         default :  break;
+       }
+    }
+}
+
+void dos2Unix_filename(char* path)
+{
+    /* does not assume null-terminated strings, may be tab of chars */
+
+    for (int u = 0; u < strlen(path); ++u)
+    {
+       if (path[u] == '\\')  path[u] = '/';
+#      if defined(__MSYS__) || defined (__CYGWIN__)
+       if (u == 1 && path[1] == ':')
+       {
+           path[1] = path[0];
+           path[0] = '/';            /*  C: -> /c ; useless to lower case */
+       }
+#      endif
+    }
+}
+
+void fix_separators(char * path)
+{
+    /* does not assume null-terminated strings, may be tab of chars */
+
+    if (SEPARATOR == '\\')
+        unix2dos_filename(path);
+    else
+        dos2Unix_filename(path);
+}
+
+/* -------
+*  end_sep
+*
+*  Returns input , adding a trailing separator if missing.
+*  Note: does not deallocate input
+* ------- */
+
+
+char* end_sep(const char *path)
+{
+    int s = strlen(path);
+
+    if (path[s - 1] != '/' && path[s - 1] != '\\')
+    {
+     out = calloc(s + 2, sizeof(char));
+     if (out == NULL)
+     {
+         perror("Allocation end_sep");
+         clean_exit(EXIT_FAILURE);
+     }
+
+     memcpy(out, path, s, sizeof(char));
+
+     out[s + 1] = SEPARATOR;
+     // null termination is ensuered by calloc.
+    }
+
+    return out;
+}
+
+
+/*-------
+* parse_filepath
+*
+* Examine filepath structure, notably: extension, filename, path, rawfilename, isfile
+* Returns structure path_t
+* ------- */
 
 path_t *parse_filepath(const char* filepath)
 {
-    path_t *chain=calloc(1, sizeof(path_t));
+    path_t *chain = calloc(1, sizeof(path_t));
     if (chain == NULL) return NULL;
     int u, last_separator_position=0, dot_position=0;
-    for (u=0; chain->length == 0 ; u++)
+    for (u=0; chain->length == 0 ; ++u)
     {
         switch (filepath[u])
         {
         case  '.' :
-            dot_position=u;
-
+            if (filepath[u+1] != '/' && filepath[u+1] != '\\')
+            {
+                if (filepath[u+1] != '.')
+                {
+                   dot_position = u;
+                }
+                else
+                {
+                   chain->cdup_position[chain->separators] = TRUE;
+                }
+            }
+            else
+                chain->pwd_position[chain->separators] = TRUE;
 
             break;
+
         case  '/' :
-#ifdef __WIN32__
+
+#       if defined(__WIN32__) || defined(_WIN32) || defined (_WIN64) || defined(__WIN32) || defined(__MSYS__)
         case  '\\':
-#endif
+#       endif
+
             chain->separators++;
-            last_separator_position=u;
+            last_separator_position = u;
             break;
         case  '\0':
-            chain->length=u;
+            chain->length = u;
             break;
 
         }
     }
 
-    chain->extension=strdup(filepath+dot_position);
-    chain->filename=strdup(filepath+last_separator_position+1);
-    chain->path=strdup(filepath);
-    chain->path[last_separator_position]=0;
+    chain->extension = strdup(filepath+dot_position);
+    chain->filename = strdup(filepath+last_separator_position+1);
+    chain->path = strdup(filepath);
+    chain->path[last_separator_position] = 0;
     chain->rawfilename=strdup(filepath);
-    chain->rawfilename[dot_position]=0;
+    chain->rawfilename[dot_position] = 0;
     chain->rawfilename += last_separator_position+1;
     if (last_separator_position >1)
-
     {
         for (u=last_separator_position-1; u>=0 ; u--)
         {
@@ -375,10 +542,15 @@ path_t *parse_filepath(const char* filepath)
     return chain;
 }
 
-
-// allocates heap memory to produce the result of the concatenation of two strings and returns the length of the concatenate
-// the result of the concatenation is placed into dest which is reallocated
-// returns -1 if either argument is null or 0 on error
+/* -------
+*  concatenate
+*
+*  Concatenates two strings into the forst argument.
+*  allocates heap memory to produce the result of the concatenation of two strings and returns the length of the concatenate
+*  the result of the concatenation is placed into dest which is reallocated
+*  dest should either be not allocated or previously allocated with m/calloc: not static arrays.
+*  returns -1 if either argument is null or 0 on error
+*  ------- */
 
 char * concatenate(char* dest, const char* str1, const char* str2)
 {
@@ -396,6 +568,12 @@ char * concatenate(char* dest, const char* str1, const char* str2)
     else return dest;
 
 }
+
+/*-------
+* clean_directory
+*
+* Erases direcory and check for any error
+* ------- */
 
 _Bool clean_directory(char* path)
 {
@@ -421,20 +599,28 @@ _Bool clean_directory(char* path)
     }
 }
 
-/* This postprocessing procedure converts a tagged log (with "ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET", "ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET", "ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET", "ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET") into an Html logpage */
-/* To be launched at end of program, not in a thread */
+/*-------
+* htmlize
+*
+* This postprocessing procedure converts a tagged log
+* (with "ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET",
+*  "ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET",
+*  "ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET",
+*  "ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET") into an Html logpage
+* To be launched at end of program, not in a thread
+* ------- */
 
-void htmlize(char* logpath)
+void (char* logpath)
 {
 
-    FILE* src=fopen(logpath, "rb");
-    if (src == NULL) return;
-    char* loghtmlpath=calloc(strlen(logpath)+6, 1);
-    if (loghtmlpath == NULL) return;
-    sprintf(loghtmlpath,"%s%s",logpath,".html");
+FILE* src=fopen(logpath, "rb");
+if (src == NULL) return;
+char* loghtmlpath=calloc(strlen(logpath)+6, 1);
+if (loghtmlpath == NULL) return;
+sprintf(loghtmlpath,"%s%s",logpath,".html");
 
-    FILE* dest=fopen(loghtmlpath, "wb");
-    if (dest == NULL) return;
+FILE* dest=fopen(loghtmlpath, "wb");
+if (dest == NULL) return;
 
 #define NAVY            "<p><span style=\"color: navy; font-size: 10pt;  \">"
 #define RED             "<p><span style=\"color: red;  font-size: 12pt   \">"
@@ -450,76 +636,76 @@ void htmlize(char* logpath)
 <HTML><HEAD><TITLE>dvda-author " VERSION " Html log</TITLE>\n\
 </HEAD><BODY>\n"
 
-    int length=strlen(NAVY);
-    char line[1000];
+int length=strlen(NAVY);
+char line[1000];
 
-    fwrite(HEADER, strlen(HEADER), 1, dest);
+fwrite(HEADER, strlen(HEADER), 1, dest);
 
-    do
+do
+{
+
+    char* line_ent = fgets(line, 1000, src);
+
+    if (line_ent == NULL) return;
+
+    int linelength=strlen(line);
+
+    if ((line[0] == '[') && (line[1] == 'I') && (line[2]=='N') && (line[3] == 'F') && (line[4]==']'))
     {
+        fwrite(NAVY, length, 1, dest);
+        fwrite(line, linelength, 1, dest);
+        fwrite(CLOSETAG2, 11, 1, dest);
+        fputc('\n', dest);
+    }
+    else if ((line[0] == '[') && (line[1] == 'M') && (line[2]=='S') && (line[3] == 'G') && (line[4]==']'))
+    {
+        fwrite(GREEN, length, 1, dest);
+        fwrite(line, linelength, 1, dest);
+        fwrite(CLOSETAG2, 11, 1, dest);
+        fputc('\n', dest);
+    }
+    else if ((line[0] == '[') && (line[1] == 'D') && (line[2]=='E') && (line[3] == 'V') && (line[4]==']'))
+    {
+        fwrite(PURPLE, length, 1, dest);
+        fwrite(line, linelength, 1, dest);
+        fwrite(CLOSETAG1, 7, 1, dest);
+        fputc('\n', dest);
+    }
+    else if ((line[0] == '[') && (line[1] == 'D') && (line[2]=='B') && (line[3] == 'G') && (line[4]==']'))
+    {
+        fwrite(MAROON, length, 1, dest);
+        fwrite(line, linelength, 1, dest);
+        fwrite(CLOSETAG1, 7, 1, dest);
+        fputc('\n', dest);
+    }
 
-        char* line_ent = fgets(line, 1000, src);
-
-        if (line_ent == NULL) return;
-
-        int linelength=strlen(line);
-
-        if ((line[0] == '[') && (line[1] == 'I') && (line[2]=='N') && (line[3] == 'F') && (line[4]==']'))
+    else if ((line[0] == '[') && (line[1] == 'W') && (line[2]=='A') && (line[3] == 'R') && (line[4]==']'))
+    {
+        fwrite(ORANGE, length, 1, dest);
+        fwrite(line, linelength, 1, dest);
+        fwrite(CLOSETAG2, 11, 1, dest);
+        fputc('\n', dest);
+    }
+    else if ((line[0] == '[') && (line[1] == 'E') && (line[2]=='R') && (line[3] == 'R') && (line[4]==']'))
+    {
+        fwrite(RED, length, 1, dest);
+        fwrite(line, linelength, 1, dest);
+        fwrite(CLOSETAG2, 11, 1, dest);
+        fputc('\n', dest);
+    }
+    else
+    {
+        // Skipping white lines (spaces and tabs) or line feeds, yet not justifying
+        int u=0;
+        while ((line[u]) && (isspace(line[u]))) u++;
+        if (line[u])
         {
-            fwrite(NAVY, length, 1, dest);
-            fwrite(line, linelength, 1, dest);
-            fwrite(CLOSETAG2, 11, 1, dest);
-            fputc('\n', dest);
-        }
-        else if ((line[0] == '[') && (line[1] == 'M') && (line[2]=='S') && (line[3] == 'G') && (line[4]==']'))
-        {
-            fwrite(GREEN, length, 1, dest);
-            fwrite(line, linelength, 1, dest);
-            fwrite(CLOSETAG2, 11, 1, dest);
-            fputc('\n', dest);
-        }
-        else if ((line[0] == '[') && (line[1] == 'D') && (line[2]=='E') && (line[3] == 'V') && (line[4]==']'))
-        {
-            fwrite(PURPLE, length, 1, dest);
+            fwrite(GREY, length, 1, dest);
             fwrite(line, linelength, 1, dest);
             fwrite(CLOSETAG1, 7, 1, dest);
             fputc('\n', dest);
         }
-        else if ((line[0] == '[') && (line[1] == 'D') && (line[2]=='B') && (line[3] == 'G') && (line[4]==']'))
-        {
-            fwrite(MAROON, length, 1, dest);
-            fwrite(line, linelength, 1, dest);
-            fwrite(CLOSETAG1, 7, 1, dest);
-            fputc('\n', dest);
-        }
-
-        else if ((line[0] == '[') && (line[1] == 'W') && (line[2]=='A') && (line[3] == 'R') && (line[4]==']'))
-        {
-            fwrite(ORANGE, length, 1, dest);
-            fwrite(line, linelength, 1, dest);
-            fwrite(CLOSETAG2, 11, 1, dest);
-            fputc('\n', dest);
-        }
-        else if ((line[0] == '[') && (line[1] == 'E') && (line[2]=='R') && (line[3] == 'R') && (line[4]==']'))
-        {
-            fwrite(RED, length, 1, dest);
-            fwrite(line, linelength, 1, dest);
-            fwrite(CLOSETAG2, 11, 1, dest);
-            fputc('\n', dest);
-        }
-        else
-        {
-            // Skipping white lines (spaces and tabs) or line feeds, yet not justifying
-            int u=0;
-            while ((line[u]) && (isspace(line[u]))) u++;
-            if (line[u])
-            {
-                fwrite(GREY, length, 1, dest);
-                fwrite(line, linelength, 1, dest);
-                fwrite(CLOSETAG1, 7, 1, dest);
-                fputc('\n', dest);
-            }
-        }
+    }
 
 
     }
@@ -529,6 +715,7 @@ void htmlize(char* logpath)
     free(loghtmlpath);
     fclose(src);
     fclose(dest);
+
 #undef NAVY
 #undef RED
 #undef GREY
@@ -540,13 +727,11 @@ void htmlize(char* logpath)
 }
 
 
-
-/*********************************************************************************************************
- * function: clean_exit
- *   logs time; flushes all streams;  erase empty backup dirs; closes log;
-  **********************************************************************************************************/
-
-
+/*-------
+* clean_exit
+*
+* Logs time; flushes all streams;  erase empty backup dirs; closes log;
+* ------- */
 
 void clean_exit(int message)
 {
@@ -560,13 +745,54 @@ void clean_exit(int message)
     exit(message);
 }
 
-/****************************************************************
-* function: secure_mkdir
-*   Creates directories.
-****************************************************************/
+
+/*-------
+* s_dir_exists
+*
+* Tests for existence of directory securely :
+* terminates if path cannot be accessed.
+* ------- */
+
+_Bool s_dir_exists(const char*)
+{
+  struct stat info;
+
+    if (stat( path, &info) != NULL)
+    {
+        printf( "[ERR] Cannot access %s\n", path);
+        clean_exit(EXIT_FAILURE);
+    }
+    else
+    if (info.st_mode & S_IFDIR)
+    {
+        printf( "[WAR] Directory %s already exists.\n", pathname );
+        errno = 0;
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+/*-------
+* secure_mkdir
+*
+* Creates directories safely:
+* balks out if directory exists, if path is null/empty,
+* or cannot be allocated. Stops execution.
+* ------- */
+
+_Bool s_mkdir (const char *path)
+{
+    return (secure_mkdir(path, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_ISVTX) == 0);
+}
 
 int secure_mkdir (const char *path, mode_t mode)
 {
+
+ /* test for existence */
+
+    if (s_dir_exist(path)) return 0;
+
 
     int i=0, len;
     if (path == NULL || path[0]=='\0')
@@ -601,16 +827,16 @@ int secure_mkdir (const char *path, mode_t mode)
     {
         if (('/' == d[i]) || ('\\' == d[i]))
         {
-#if defined __WIN32__ || defined __CYGWIN__
-            if (d[i-1] == ':') continue;
-#endif
+#           if defined __WIN32__ || defined __CYGWIN__
+              if (d[i-1] == ':') continue;
+#           endif
+
             d[i] = '\0';
 
             errno = 0;
-            if ((mkdir(d, mode) == -1) && (EEXIST != errno))
+            if ((MKDIR(d, mode) == -1))
             {
                 fprintf(stderr, "Impossible to create directory '%s'\n", d);
-                fprintf(stderr, "%s", "Backup directories will be used.\n " );
                 perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  mkdir ");  // EEXIST error messages are often spurious
                 puts(path);
                 clean_exit(EXIT_FAILURE);
@@ -625,58 +851,73 @@ int secure_mkdir (const char *path, mode_t mode)
 
     if  (MKDIR(path, mode) == -1)
     {
-        if (EEXIST == errno)
-        {
-            errno=0;
-            //  Output directory already created
-            return(0);
-        }
+
         printf(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Impossible to create directory '%s'\n", path);
         printf("       permission was: %d\n       %s\n", mode, strerror(errno));
-        printf( "%s", "       Backup directories will be used.\n");
         errno=0;
-
         clean_exit(EXIT_FAILURE);
     }
 
     return(errno);
 }
 
+/* --------
+* get_cl
+*
+* Returns a quoted version of command line starting at 0-based rank of second argument.
+* Quotes are not inserted with hypenated options/switches or in presence of quotes or
+* of a pipe
+* ------- */
 
 char* get_cl(const char** args, uint16_t start)
 {
     if (args == NULL) return NULL;
-    uint16_t tot=0, i=start, j, shift=0;
+    uint16_t tot = 0, i = start, j, shift = 0;
     uint16_t size[BUFSIZ*10];
     while (args[i])
     {
-        size[i]=strlen(args[i]);
-        tot+=size[i];
+        size[i] = strlen(args[i]);
+        tot += size[i];
         i++;
     }
 
-    char* cml=calloc(tot+i+2*i, sizeof(char)); // 2*i for quotes, i for spaces
+    char* cml=calloc(tot + i + 2 * i, sizeof(char)); // 2*i for quotes, i for spaces
+
     if (cml == NULL) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  get_command_line\n");
 
-    for (j=start; j< i; j++)
+    for (j = start; j < i; j++)
     {
-        _Bool do_quote=((args[j][0] != '"')&&(args[j][0] != '-')&&(args[j][0] != '|')) ;
-        memcpy(cml+shift, (do_quote)? quote(args[j]): args[j] , size[j]+2*do_quote);
-        shift+=size[j]+1+2*do_quote;
-        cml[shift-1]=0x20;
+        _Bool do_quote=((args[j][0] != '"') && (args[j][0] != '-') && (args[j][0] != '|')) ;
+        memcpy(cml + shift, (do_quote)? quote(args[j]): args[j] , size[j] + 2 * do_quote);
+        shift += size[j] + 1 + 2 * do_quote;
+        cml[shift - 1]=0x20;
     }
-    cml[shift-1]=0;
+
+    cml[shift - 1]=0;
     if (globals.debugging) printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Command line: %s\n", cml);
 
     return cml;
 }
 
+/* --------
+* get_command_line
+*
+* Returns a quoted version of command line starting at first real option/command/flag.
+* Quotes are not inserted with hypenated options/switches or in presence of quotes or
+* of a pipe
+* ------- */
 
 const char* get_command_line(const char** args)
 {
-// You should always use arrays with this function, not pointers
     return get_cl(args, 1);
 }
+
+/*--------
+* get_full_command_line
+*
+* Same as above yet also returns application name
+* ------- */
+
 
 char* get_full_command_line(const char** args)
 {
@@ -684,10 +925,17 @@ char* get_full_command_line(const char** args)
 }
 
 
+/*--------
+* starter
+*
+* Starts computing execution time
+* ------- */
+
+
 void starter(compute_t *timer)
 {
 // The Mingw compiler does not support getrusage
-#ifndef __MINGW32__
+#   ifndef __MINGW32__
     getrusage(RUSAGE_SELF, timer->start);
     getrusage(RUSAGE_SELF, timer->nothing);
     timer->nothing->ru_utime.tv_sec -= timer->start->ru_utime.tv_sec;
@@ -696,6 +944,12 @@ void starter(compute_t *timer)
 #endif
 
 }
+
+/*--------
+* print_commandline
+*
+* Prints command line
+* ------- */
 
 void print_commandline(int argc, char * const argv[])
 {
@@ -708,6 +962,13 @@ void print_commandline(int argc, char * const argv[])
     printf("%s", "\n\n");
 
 }
+
+/*--------
+* print_time
+*
+* Prints time in either format DD Mon. YY, Hour  Minute Second if verbose == TRUE
+* or only Hour Minute Second otherwise
+* ------- */
 
 char* print_time(int verbose)
 {
@@ -726,7 +987,7 @@ char* print_time(int verbose)
 
     if (verbose)
     {
-        if (strftime(outstr, sizeof(outstr), "%d %b, %Hh %Mm %Ss", tmp) == 0)
+        if (strftime(outstr, sizeof(outstr), "%d %b %Y, %Hh %Mm %Ss", tmp) == 0)
         {
             printf("%s\n", "strftime returned 0");
             exit(EXIT_FAILURE);
@@ -747,6 +1008,12 @@ char* print_time(int verbose)
     else
         return(strdup(outstr));
 }
+
+/*--------
+* change_directory
+*
+* Carefully changes directory, reporting errors
+* ------- */
 
 void change_directory(const char * filename)
 {
@@ -771,6 +1038,156 @@ void change_directory(const char * filename)
         printf(ANSI_COLOR_YELLOW"[DBG]"ANSI_COLOR_RESET"  Current working directory is now %s\n", filename);
 }
 
+
+/*--------
+* traverse_directory(path, function, boolean)
+*
+* Applies function to all regular (not symlink or special) file elements of dir
+* Recurses into subdirectories if last element is TRUE
+* Note :  function may have 4 optional arguments, the first of a const char*, practically a path or filename
+* ------- */
+
+int traverse_directory(const char* src, void (*f)(const char* GCC_UNUSED *arg1, void GCC_UNUSED *arg2, void GCC_UNUSED *arg3), _Bool recursive)
+{
+    DIR *dir_src;
+
+    struct stat buf;
+    struct dirent *f;
+
+    printf("%c", '\n');
+
+    if (globals.debugging)  printf("%s%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Traversing dir = ", dest);
+
+    change_directory(src);
+
+    dir_src=opendir(".");
+
+    while ((f = readdir(dir_src)) != NULL)
+    {
+        if (f->d_name[0] == '.') continue;
+
+        if (stat(f->d_name, &buf) == -1)
+        {
+            perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" stat in traverse_directory\n");
+            exit(EXIT_FAILURE);
+        }
+
+        if (recursive && S_ISDIR(buf.st_mode))
+        {
+
+            errno = traverse_directory(f->d_name, f, recursive);
+
+            continue;
+        }
+
+        if (S_ISREG(buf.st_mode))
+        {
+            if (globals.debugging) printf("%s%s to= %s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Processing file=", f->d_name);
+            errno = f(f->d_name, arg2, arg3);
+        }
+
+        /* does not copy other types of files(symlink, sockets etc). */
+
+        else continue;
+    }
+
+    if (globals.debugging)   printf("%s", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Done. Backtracking... \n\n");
+    closedir(dir_src);
+    return(errno);
+}
+
+/*------- start of private */
+
+
+void copy_file_wrapper(const char* filename, void* out, void* permissions)
+{
+    const char* dest = (const char*) out;
+    const mode_t mode = *permission;
+    char path[BUFSIZ] = {0};
+    copy_file(filename,  STRING_WRITE(path, "%s%c%s", dest, '/', filename));
+}
+
+/*------- end of private */
+
+/*--------
+* copy_directory
+*
+* Copies directory contest to path, with permissions
+* Recurses into subdirectories.
+* Returns errno.
+* ------- */
+
+int copy_directory(const char* src, const char* dest, mode_t mode)
+{
+    if (stat(dest, &buf) == -1)
+    {
+        perror("\n"ANSI_COLOR_RED "\n[ERR]" ANSI_COLOR_RESET"  copy_directory could not compute directory size\n");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("%c", '\n');
+
+    if (globals.debugging)  printf("%s%s\n", ANSI_COLOR_BLUE" [INF] "ANSI_COLOR_RESET"  Creating directory ", dest);
+
+    if (secure_mkdir(dest, mode) == 0)
+    {
+
+      if (globals.debugging)   printf(ANSI_COLOR_BLUE "[INF]" ANSI_COLOR_RESET"  Copying in %s ...\n", src);
+
+       traverse_directory(src, copy_file_wrapper(src, (void *) &dest, (void *) &mode), TRUE);
+    }
+    else
+    if (globals.debugging)
+        printf("%s%s\n", ANSI_COLOR_BLUE" [INF] "ANSI_COLOR_RESET"  No files copied to ", dest);
+
+    return(errno);
+}
+
+/*--------
+* file_exists
+*
+* Tests for file existence
+* ------- */
+
+_Bool file_exists(const char* filepath)
+{
+    return(access(filepath, F_OK) != -1 );
+}
+
+void stat_file_wrapper(const char *filename, void *total_size, void GCC_UNUSED *unused)
+{
+    uint64_t* sum = (uint64_t *) total_size;
+
+    *sum += stat_file_size(filename);
+
+    total_size = (void* ) sum;
+}
+
+/* stat_dir_files
+ *
+ * Computes the non-recursive sum of root-directory file sizes in a given directory.
+ * Note : for the whole (recursive) size, taking the stat st_size value would do the trick */
+
+int stat_dir_files(const char* src)
+{
+    if (stat(src, &buf) == -1)
+    {
+        perror("\n"ANSI_COLOR_RED "\n[ERR]" ANSI_COLOR_RESET" Directory not recognized.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("%c", '\n');
+
+    if (globals.debugging)  printf("%s%s\n", ANSI_COLOR_BLUE" [INF] "ANSI_COLOR_RESET" Summing up directory file sizes...", dest);
+
+    traverse_directory(src, stat_file_wrapper, FALSE);
+
+    return(errno);
+}
+
+#if 0
+ // vanilla code
+
 int copy_directory(const char* src, const char* dest, mode_t mode)
 {
 
@@ -784,10 +1201,9 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
 
     if (stat(dest, &buf) == -1)
     {
-        perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  copy_directory could not stat file\n");
+        perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  copy_directory could not compute directory size\n");
         exit(EXIT_FAILURE);
     }
-
 
     printf("%c", '\n');
 
@@ -833,6 +1249,8 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
     closedir(dir_src);
     return(errno);
 }
+
+#endif
 
 int copy_file_no_p(FILE *infile, FILE *outfile)
 {
@@ -885,7 +1303,6 @@ int copy_file_no_p(FILE *infile, FILE *outfile)
     return(errno);
 }
 
-
 // Adapted from Yve Mettier's O'Reilly "C en action" book, chapter 10.
 
 int copy_file(const char *existing_file, const char *new_file)
@@ -910,13 +1327,11 @@ int copy_file(const char *existing_file, const char *new_file)
     errorlevel=copy_file_no_p(fe, fn);
     fclose(fe);
     fclose(fn);
-    if (globals.debugging)
-        if (errorlevel == 0) fprintf(stderr, ANSI_COLOR_YELLOW"[DBG]"ANSI_COLOR_RESET"  File was copied as: %s\n", new_file);
+    if (globals.debugging && errorlevel == 0)
+      fprintf(stderr, ANSI_COLOR_YELLOW"[DBG]"ANSI_COLOR_RESET"  File was copied as: %s\n", new_file);
 
     return(errorlevel);
-
 }
-
 
 char* copy_file2dir(const char *existing_file, const char *new_dir)
 {
@@ -948,8 +1363,6 @@ char* copy_file2dir(const char *existing_file, const char *new_dir)
     else return(dest);
 
 }
-
-
 
 char* copy_file2dir_rename(const char *existing_file, const char *new_dir, char* newfilename)
 {
@@ -984,7 +1397,6 @@ char* copy_file2dir_rename(const char *existing_file, const char *new_dir, char*
 
 int cat_file(const char *existing_file, const char *new_file)
 {
-
     FILE *fn, *fe;
     int errorlevel;
 
@@ -1006,12 +1418,10 @@ int cat_file(const char *existing_file, const char *new_file)
     fclose(fn);
 
     return(errorlevel);
-
 }
+
 int copy_file_p(FILE *infile, FILE *outfile, uint32_t position,uint64_t output_size)
 {
-
-
     char buf[BUFSIZ];
     clearerr(infile);
     clearerr(outfile);
@@ -1074,8 +1484,8 @@ int copy_file_p(FILE *infile, FILE *outfile, uint32_t position,uint64_t output_s
             return(-1);
         }
     }
-    return(NO_PAD);
 
+    return(NO_PAD);
 }
 
 
@@ -1106,7 +1516,6 @@ int get_endianness()
 
 void parse_wav_header(WaveData* info, infochunk* ichunk)
 {
-    
     FILE * infile=info->INFILE;
     uint8_t haystack[MAX_HEADER_SIZE] = {0};
     if (infile == NULL)
@@ -1128,7 +1537,6 @@ void parse_wav_header(WaveData* info, infochunk* ichunk)
 
     fseek(infile, 0, SEEK_SET);
     // PATCH 09.07
-
 
     do
     {
@@ -1260,10 +1668,15 @@ void parse_wav_header(WaveData* info, infochunk* ichunk)
     return;
 }
 
+/* -------
+ * secure_open
+ *
+ * tries to open file path and allocate file pointer.
+ * Exits on failure, otherwise seeks start of file */
 
 void secure_open(const char *path, const char *context, FILE* f)
 {
-    //fclose(f);
+    fclose(f);
     if ( (f=fopen( path, context ))  == NULL )
     {
         printf(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open '%s'\n", path);
@@ -1273,6 +1686,11 @@ void secure_open(const char *path, const char *context, FILE* f)
     fseek(f, 0, SEEK_SET);
 }
 
+/* -------
+ * end_seek
+ *
+ * seeks end of file and returns 0 on success. Verbose.
+ * ------- */
 
 int end_seek(FILE *outfile)
 {
@@ -1287,12 +1705,12 @@ int end_seek(FILE *outfile)
 
 
 
-/*********************************************************************
-* Function: hexdump_header
+/* --------
+* hexdump_header
 *
-* Purpose:  This function displays the first HEADER_SIZE bytes of the file
-*           in both hexadecimal and ASCII
-*********************************************************************/
+* This function displays the first HEADER_SIZE bytes of the file
+* in both hexadecimal and ASCII
+* -------*/
 
 
 void hexdump_header(FILE* infile, uint8_t header_size)
@@ -1342,46 +1760,51 @@ void hexdump_header(FILE* infile, uint8_t header_size)
 
 }
 
-
+/* -------
+ * hexdump_pointer
+ *
+ * On at most 16 columns print hexadecimal values of array
+ * with base addressed on the left. Number of columns as
+ * second argument.
+ * ------- */
 
 void hexdump_pointer(uint8_t* tab,  size_t tabsize)
 {
-
     size_t i, count=0, input=0;
+
     fprintf(stderr, "%c", '\n' );
+
     do
     {
-
         /* Print the base address. */
-        fprintf(stderr,"%08lX:  ", (long unsigned)count);
-        input= Min(tabsize -count, HEX_COLUMNS);
 
-        for ( i = 0; i < input; i++ )
-            fprintf(stderr,"%02X ", tab[i+count]);
-        count+=HEX_COLUMNS;
+        fprintf(stderr,"%08lX:  ", (long unsigned)count);
+        input= Min(tabsize - count, HEX_COLUMNS);
+
+        for (i = 0; i < input; i++)
+            fprintf(stderr, "%02X ", tab[i+count]);
+
+        count += HEX_COLUMNS;
 
         /* Print the characters. */
-        for ( i = 0; i < HEX_COLUMNS; i++ )
+
+        for (i = 0; i < HEX_COLUMNS; i++)
             fprintf(stderr,"%c", (i < input)? (isprint(tab[i]) ? tab[i] : '.') : ' ');
 
         fprintf(stderr, "%c", '\n');
 
-
         /* break on partial buffer */
     }
-    while ( count < tabsize );
-
+    while (count < tabsize);
 
     fprintf(stderr, "%c", '\n' );
-
 }
 
 void fread_endian(uint32_t * p, int t, FILE *f)
 {
-
     /*  CPU_IS_LITTLE_ENDIAN or CPU_IS_BIG_ENDIAN are defined by  configure script */
 
-#if !defined    CPU_IS_LITTLE_ENDIAN    &&  !defined    CPU_IS_BIG_ENDIAN
+#   if !defined    CPU_IS_LITTLE_ENDIAN    &&  !defined    CPU_IS_BIG_ENDIAN
 
     /* it is necessary to test endianness here */
     static char u;
@@ -1411,23 +1834,33 @@ void fread_endian(uint32_t * p, int t, FILE *f)
     }
     fflush(f);
 
-#elif   defined CPU_IS_BIG_ENDIAN
+#   elif   defined CPU_IS_BIG_ENDIAN
+
     fread(p+t, 1 ,4,  f) ;
-#elif   defined CPU_IS_LITTLE_ENDIAN
+
+#   elif   defined CPU_IS_LITTLE_ENDIAN
+
     fread(p+t, 4 ,1,  f) ;
     p[t]= (p[t] << 8  &  0xFF0000)  |   (p[t]<<16 & 0xFF00)  |   (p[t]<<24 & 0xFF) |  (p[t] & 0xFF000000);
-#endif
+
+#   endif
 
     return;
-
 }
 
+/*--------
+* win32quote
+*
+* Returns a quoted version of argument exclusively on the WInodws platform.
+* Otherwise returns argument.
+* ------- */
 
 char* win32quote(const char* path)
 {
 // comment: this function leaks some memory if path has been allocated on heap. Yet using free(path) could
 // yield segfaults, should path not be allocated with malloc() or strdup() but using static arrays. Preferring safety here.
-#ifdef __WIN32__
+#   if defined (__WIN32__) || defined (_WIN32) || defined (_WIN64) || defined (__WIN32) || defined (__WIN64) || defined(__MSYS__)
+
     if (!path) return NULL;
     int size=strlen(path)+2+1;
     char buff[size];
@@ -1435,15 +1868,20 @@ char* win32quote(const char* path)
     buff[0]='"';
     buff[size-1]=0;
     buff[size-2]='"';
+
     char* result=strdup(buff);
+
     if (result) return (result);
     else
     {
         printf(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not allocate quoted string for %s.\n", path);
         return NULL;
     }
+
 #else
+
     return (char*) path;
+
 #endif
 }
 
