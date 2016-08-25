@@ -1513,11 +1513,12 @@ int get_endianness()
  inline uint8_t read_info_chunk(uint8_t* pt, uint8_t* chunk)
 {
     pt+=4;
-    /* there may be non-printable characters after I... info chunk labels */
-    while (!isprint(*pt)) pt++;
 
-    /* this functin should be called only when it it certain that there will be at least one 0 in the area pointed to by pt within the size of chunk */
-    int result=snprintf((char *) chunk, MAX_LIST_SIZE, "%s", pt);
+    /* there may be non-printable characters after I... info chunk labels */
+
+    while (! isprint(*pt)) pt++;
+
+    int result = snprintf((char *) chunk, MAX_LIST_SIZE, "%s", pt);
     if (result >0)
         return(1);
     else
@@ -1549,6 +1550,8 @@ void parse_wav_header(WaveData* info, infochunk* ichunk)
     fseek(infile, 0, SEEK_SET);
     // PATCH 09.07
 
+    // Loop until reached end of 256-byte window of found 'fact'
+
     do
     {
         if ((pt=memchr(haystack+span+1, 'f', MAX_HEADER_SIZE-1-span)) != NULL)
@@ -1567,7 +1570,9 @@ void parse_wav_header(WaveData* info, infochunk* ichunk)
     while ( span < MAX_HEADER_SIZE-7);
     
     span=0;
-      
+
+    // Loop until reached end of 256-byte window of found 'data'
+
     do
     {
         
@@ -1622,6 +1627,8 @@ void parse_wav_header(WaveData* info, infochunk* ichunk)
 
         uint8_t infoindex=0;
 
+        // loop for 'I' then analyse what follows
+
         do
         {
             if ((pt=memchr(haystack+infoindex+1, 0x49, span-1-infoindex)) == NULL)
@@ -1629,6 +1636,7 @@ void parse_wav_header(WaveData* info, infochunk* ichunk)
 
                 if (globals.debugging)
                 {
+
                     if (ichunk->found)
                         printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found %d info chunks among %d characters\n       INAM %s\n       IART %s\n       ICMT %s\n       ICOP %s\n       ICRD %s\n       IGNR %s\n",
                                ichunk->found, span, ichunk->INAM, ichunk->IART, ichunk->ICMT, ichunk->ICOP, ichunk->ICRD, ichunk->IGNR);
@@ -1639,34 +1647,47 @@ void parse_wav_header(WaveData* info, infochunk* ichunk)
                 break;
             }
 
-
             infoindex=pt-haystack;
 
-            if ((*(pt + 1) == 'N') && (*(pt + 2) == 'A') && (*(pt + 3) == 'M'))
-                ichunk->found=read_info_chunk(pt, ichunk->INAM);
-            else if ((*(pt + 1) == 'A') && (*(pt + 2) == 'R') && (*(pt + 3) == 'T'))
-                ichunk->found+=read_info_chunk(pt, ichunk->IART);
-            else if ((*(pt + 1) == 'C'))
+            if (*(pt + 1) == 'N' && *(pt + 2) == 'A' && *(pt + 3) == 'M')
+                ichunk->found = read_info_chunk(pt, ichunk->INAM);
+            else
+            if (*(pt + 1) == 'A' && *(pt + 2) == 'R' && *(pt + 3) == 'T')
+                ichunk->found += read_info_chunk(pt, ichunk->IART);
+            else
+            if (*(pt + 1) == 'C')
             {
-                if ((*(pt + 2) == 'M') && (*(pt + 3) == 'T'))
-                    ichunk->found+=read_info_chunk(pt, ichunk->ICMT);
-                else if ((*(pt + 2) == 'O') && (*(pt + 3) == 'P'))
-                    ichunk->found+=read_info_chunk(pt, ichunk->ICOP);
+                if (*(pt + 2) == 'M' && *(pt + 3) == 'T')
+                    ichunk->found += read_info_chunk(pt, ichunk->ICMT);
+                else
+                if (*(pt + 2) == 'O' && *(pt + 3) == 'P')
+                    ichunk->found += read_info_chunk(pt, ichunk->ICOP);
                 else if ((*(pt + 2) == 'R') && (*(pt + 3) == 'D'))
-                    ichunk->found+=read_info_chunk(pt, ichunk->ICRD);
+                    ichunk->found += read_info_chunk(pt, ichunk->ICRD);
             }
-            else if ((*(pt + 1) == 'G') && (*(pt + 2) == 'N') && (*(pt + 3) == 'R'))
-                ichunk->found+=read_info_chunk(pt, ichunk->IGNR);
+            else
+            if (*(pt + 1) == 'G' && *(pt + 2) == 'N' && *(pt + 3) == 'R')
+                ichunk->found += read_info_chunk(pt, ichunk->IGNR);
 
         }
         while (infoindex < span-4);
     }
 
+    if (ichunk->found)
+    {
+        printf(ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET"  Found %d info chunks in extended header\n", ichunk->found);
+        if (globals.debugging)
+        {
+            printf(ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET"  See file `database' under directory %s\n", info->database);
+        }
+    }
 
     if (globals.debugging)
     {
-        if (span != 36) printf( ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Size of header is non-standard (scanned %d characters)\n", span );
-        else printf("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Size of header is standard\n");
+        if (span != 36)
+            printf( ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Size of header is non-standard (scanned %d characters)\n", span );
+        else
+            printf("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Size of header is standard\n");
 
         if (span < 36)
         {
@@ -1685,9 +1706,9 @@ void parse_wav_header(WaveData* info, infochunk* ichunk)
  * tries to open file path and allocate file pointer.
  * Exits on failure, otherwise seeks start of file */
 
-void secure_open(const char *path, const char *context, FILE* f)
+void  secure_open(const char *path, const char *context, FILE* f)
 {
-    fclose(f);
+    if (f != NULL) fclose(f);
     if ( (f=fopen( path, context ))  == NULL )
     {
         printf(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open '%s'\n", path);

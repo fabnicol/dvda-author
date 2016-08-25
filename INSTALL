@@ -377,6 +377,7 @@ Optional Symbolic constants can be defined at compile time to specify some featu
   ALWAYS_INLINE forces code inlining.
   WITHOUT_sox to compile without SoX code
   WITHOUT_FLAC to compile without FLAC/OggFLAC code
+  To avoid any (rare) case of console interaction by dvda-author, compile with constant GUI_BEHAVIOR
   
 
 Required compile-time constants:

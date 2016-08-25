@@ -10,3 +10,4 @@ WITHOUT_sox
 WITHOUT_dvdauthor
 HAVE_core_BUILD
 
+To avoid any (rare) case of console interaction by dvda-author, compile with constant GUI_BEHAVIOR
