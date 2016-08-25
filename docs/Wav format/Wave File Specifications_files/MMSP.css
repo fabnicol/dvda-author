@@ -1,0 +1,27 @@
+body      { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 11px;
+            background-color: #FFFFD7; }
+h1        { font-family: Verdana, Arial, Helvetica, sans-serif; color: #6699CC; font-size:160%;
+            font-weight:bold; margin: 0px 0px 8px 0px; }
+h2        { font-family: Verdana, Arial, Helvetica, sans-serif; color: #5588BB; font-size:130%;
+            font-weight:bold; margin: 0px 0px 12px 0px; }
+h3        { font-family: Verdana, Arial, Helvetica, sans-serif; color: #4477AA; font-size:120%;
+            font-weight:bold; margin: 0px 0px 12px 0px; }
+h4        { font-family: Verdana, Arial, Helvetica, sans-serif; color: #336699; font-size:110%;
+            font-weight:bold; margin: 0px 0px 12px 0px; }
+table     { font-size: 11px; }
+th        { color: #336699; background-color: #FFFFAA; }
+ul        { margin-left: 2.5em; padding-left: 0px; }
+hr        { margin-top: 2px; margin-bottom: 2px; }
+p         { margin: 0px 0px 12px 0px; padding: 0px; }
+.squeeze  { margin-bottom: 0.5ex; margin-top: 1ex; }
+
+.Author   { font-weight: bold; text-align: left; margin-top: 0px; margin-bottom: 0.4ex; }
+.Number   { font-weight: bold; text-align: left; margin-top: 0px; margin-bottom: 0.4ex; }
+.Title    { color: #000080; margin-left: 1em; margin-top: 0px; margin-bottom: 0.5ex; }
+.Cite     { color: #000080; margin-left: 1em; margin-top: 0px; margin-bottom: 0.5ex; }
+.Type     {                 margin-left: 1em; margin-top: 0px; margin-bottom: 0.5ex; }
+.Supervisor { color:#006699; margin-left: 1em; margin-top: 0pt; margin-bottom: 0.5ex; } 
+.Addendum { color: #006699; margin-left: 1em; margin-top: 0px; margin-bottom: 0.5ex; }
+.Note     { color: #006699; margin-left: 2em; margin-top: 0px; margin-bottom: 0.5ex; }
+.Abstract { color: #000080; text-align: justify; margin: 1ex 5em; padding: 0px; }
+.File     {                 margin-left: 2.5em; margin-top: 0px; margin-bottom: 0.5ex; }
