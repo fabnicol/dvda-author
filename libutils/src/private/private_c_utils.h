@@ -3,17 +3,19 @@
 
 /* MACROS*/
 
-#ifdef __WIN32__
-    #ifdef __MSYS__
-    #define MKDIR(X, Y) mkdir(X, Y)
-    #else
-    #define	MKDIR(X, Y) mkdir(X)
-    #endif
+#if defined(__WIN32__) || defined (_WIN32) || defined (_WIN64) || defined (__CYGWIN__) || defined (__MSYS__)
+#  ifndef SEPARATOR
+#    define SEPARATOR "\\"
+#  endif
+#  if defined(__MSYS__) || defined (__CYGWIN__)
+#    define MKDIR(X, Y) mkdir(X, Y)
+#  else
+#    define	MKDIR(X, Y) mkdir(X)
+#  endif
 #else
-#define MKDIR(X, Y) mkdir(X, Y)
+#  define MKDIR(X, Y) mkdir(X, Y)
+#  define SEPARATOR '\\'
 #endif
-
-
 
 
 #endif // PRIVATE_C_UTILS_H_INCLUDED
