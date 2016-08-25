@@ -138,7 +138,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
               info->prepend, info->in_place, info->prune, info->padding, info->virtual);
 
 #ifdef RADICAL_FIXWAV_BEHAVIOUR
-  if ((globals.silence) && ((header->sample_fq)*(header->bit_p_spl)*(header->channels) == 0))
+  if (globals.silence && header->sample_fq * header->bit_p_spl * header->channels == 0)
     {
       fprintf(stderr, "%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  In silent mode, bit rate, sample rate and channels must be set\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Correcting options...\n");
       globals.silence=0;
@@ -175,8 +175,8 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
         {
           if (info->cautious)
           {
-              printf("%s", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  in-place mode will change original file.\n");
-              printf("%s\n",   "[INT]  Enter Y to continue, otherwise press any key + return to exit.");
+              printf("%s", "" ANSI_COLOR_RED "[WAR]" ANSI_COLOR_RESET "  in-place mode will change original file.\n");
+              printf("%s\n",  ANSI_COLOR_RED "[INT]" ANSI_COLOR_RESET   Enter Y to continue, otherwise press any key + return to exit.");
 
               if (!isok())
                 {
@@ -185,7 +185,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
                 }
           }
 
-          printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Opening %s\n", info->outfile);
+          printf(ANSI_COLOR_BLUE "[INF]" ANSI_COLOR_RESET "  Opening %s\n", info->outfile);
 
           info->outfile = info->infile;
           secure_open(info->infile, "rb+", info->INFILE);
@@ -205,28 +205,39 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
   header->is_extensible = ichunk.is_extensible;
   span = ichunk.span;
 
-  /* if found info tags, dumps them in textfile database, which can only occur of span > 36 */
+  if (header->is_extensible)
+      printf(ANSI_COLOR_BLUE "[INF]" ANSI_COLOR_RESET "  Found extensible WAV header with infochunk of size %d\n", span);
 
-  if ((span > 36)&&(ichunk.found))
+  /* if found info tags, dumps them in textfile database, which can only occur if span > 36 */
+
+  if (span > 36 && ichunk.found)
   {
       char databasepath[MAX_OPTION_LENGTH+9]={0};
-      snprintf(databasepath, MAX_OPTION_LENGTH+9, "%s%s", info->database, SEPARATOR"database");
+      if (info->database == NULL) info->database=strdup("localdata");
+      snprintf(databasepath, MAX_OPTION_LENGTH+9, "%s%s", info->database, SEPARATOR "database");
       secure_mkdir(info->database, 0755);
-      FILE* database;
+      FILE* database = NULL;
       secure_open(databasepath, "ab", database);
       fprintf(database, "Filename    %s\nArtist      %s\nDate        %s\nStyle       %s\nComment     %s\nCopyright   %s\n\n", ichunk.INAM, ichunk.IART, ichunk.ICRD, ichunk.IGNR, ichunk.ICMT, ichunk.ICOP);
       info->filetitle = strdup((const char*) ichunk.INAM);
       fclose(database);
    }
 
-  header->header_size_in = (span > 0)? ((span+8 < 256)? span+8 : MAX_HEADER_SIZE) : MAX_HEADER_SIZE;
+  header->header_size_in = (span > 0)? (span < 248 ? span + 8 : MAX_HEADER_SIZE) : MAX_HEADER_SIZE;
 
-  /* reverting to user input and resetting header_size to 0 if: failed to parse header, or prepending, or header_size > 255 */
-
-  if ((readHeader(info->INFILE, header) == FAIL) || (info->prepend)|| (header->header_size_in == MAX_HEADER_SIZE))
+  if (span >= 248)
   {
+       printf(ANSI_COLOR_YELLOW "[WAR]" ANSI_COLOR_RESET "  Found unsupported WAV header with infochunk size exceeding %d byte limit\n", 248);
+  }
+
+  /* if no GUI, reverting to user input and resetting header_size to 0 if: failed to parse header, or prepending, or header_size > 255 */
+
+  if (readHeader(info->INFILE, header) == FAIL || info->prepend || header->header_size_in == MAX_HEADER_SIZE)
+  {
+#ifndef GUI_BEHAVIOR
       info->interactive = 1;
       info->automatic = 0;
+#endif
       header->header_size_in = 0;
       info->repair = BAD_HEADER;
   }
@@ -314,7 +325,6 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
       break;
 
     }
-
 
 
 Checkout:

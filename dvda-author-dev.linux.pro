@@ -215,3 +215,7 @@ HEADERS += \
     libiberty/src/include/strndup.h \
     libiberty/src/include/strnlen.h
 
+DISTFILES += \
+    libfixwav/fixwav.autorepair.md \
+    libfixwav/fixwav.autorepair.pdf
+
