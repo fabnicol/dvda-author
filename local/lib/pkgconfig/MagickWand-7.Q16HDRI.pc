@@ -1,0 +1,15 @@
+prefix=/c/Users/Public/Dev/dvda-author-dev/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/ImageMagick-7
+includearchdir=/c/Users/Public/Dev/dvda-author-dev/local/include/ImageMagick-7
+libname=MagickWand-7.Q16HDRI
+ 
+Name: MagickWand
+Description: MagickWand - C API for ImageMagick (ABI Q16HDRI)
+URL: https://www.imagemagick.org
+Version: 7.0.2
+Requires: MagickCore
+Cflags: -I${includearchdir} -I${includedir} -fopenmp -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16
+Libs: -L${libdir} -l${libname}
+Libs.private: -L${libdir} -l${libname}       -ljpeg                 -llzma      -lxml2 -lpthread -lz -llzma -liconv -lm  -lz  -lm -lgomp     -lm
