@@ -139,74 +139,96 @@ int user_control(WaveData *info, WaveHeader *header)
   return (info->repair=repair);
 }
 
+/* Aug. 2016 patch.
+ *
+ * So far fixwav was not concerned with WAV_FORMAT_EXTENSIBLE.
+ * Correct implementation of multichannel requires implementing this however.
+ * MS specifications for WAV state that WAV_FORMAT_EXTENSIBLE should be used
+ * whenever one of the following cases is met:
+ * - PCM data has more than 16 bits/sample
+ * - the number of channel is more than 2
+ * - the mappings from channels to speakers is specified. */
+
+
 int auto_control(WaveData *info, WaveHeader *header)
 {
   /* This implementation of the algoritm restricts it to the 44.1 kHz and 48 kHz families although this is not
   out of logical necessity */
 
-
   int regular[6]={0};
 
   /* initializing */
 
-  printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Checking header--automatic mode...");
+  printf("%s\n", ANSI_COLOR_BLUE "[INF]" ANSI_COLOR_RESET "  Checking header -- automatic mode...");
+
+  /* The following function may deduce the number of bytes per second and of bytes per sample
+   * from other constants considered as given and thereby recover partially mangled headers
+   * Mathematical conditions apply, see comments at EOF : it does not work for 3/6-channel audio
+   * or 20-bit channel samples. */
 
   regular_test(header, regular);
 
-  _Bool regular_bit_p_spl =regular[1];
-  _Bool regular_sample_fq =regular[2];
-  _Bool regular_byte_p_spl=regular[3];
-  _Bool regular_byte_p_sec=regular[4];
-  _Bool regular_channels=regular[5];
+  _Bool regular_bit_p_spl  = regular[1];
+  _Bool regular_sample_fq  = regular[2];
+  _Bool regular_byte_p_spl = regular[3];
+  _Bool regular_byte_p_sec = regular[4];
+  _Bool regular_channels   = regular[5];
 
   /* Checking whether there is anything to be done at all */
 
-  if (   (header->byte_p_sec == (header->sample_fq*header->bit_p_spl*header->channels)/8)
-         && (header->byte_p_spl == (header->channels*header->bit_p_spl)/8)
-         && (regular[0] == 5)
+  if (header->byte_p_sec == (header->sample_fq * header->bit_p_spl * header->channels) / 8
+      && header->byte_p_spl == (header->channels * header->bit_p_spl) / 8
+      && (regular[0] == 5 || header->channels % 3 == 0 || header->bit_p_spl  == 20)
      )
     {
-      printf("%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Core parameters need not be repaired");
+      printf("%s\n", ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Core parameters need not be repaired");
       return(info->repair = GOOD_HEADER);
     }
+
   /* Always repairing from now on except when bailing out */
 
   info->repair=BAD_HEADER;
 
   /* Set of assumptions (R) + (3), see comment below */
-  if (regular[0] < 3)
+  /* Uniqueness of solution requires (R) */
+
+  if ((regular[0] < 3 && header->channels % 3 != 0 && header->bit_p_spl != 20)
+          || header->channels % 3 == 0 || header->bit_p_spl == 20)
+  {
     goto bailing_out;
+  }
 
-
-  if (regular_channels)
+  if (regular_channels && header->channels % 3 != 0 && header->bit_p_spl != 20)
     {
       /* channel number considered a parameter, variables between curly brackets */
 
       // {N, S} case
 
-      if ((regular_bit_p_spl) && (regular_sample_fq ))
+      if (regular_bit_p_spl && regular_sample_fq)
         {
-          header->byte_p_sec = (header->sample_fq*header->bit_p_spl*header->channels)/8;
-          header->byte_p_spl = (header->channels*header->bit_p_spl)/8;
+          header->byte_p_sec = (header->sample_fq * header->bit_p_spl * header->channels)/8;
+          header->byte_p_spl = (header->channels * header->bit_p_spl)/8;
+          /* Now double-checking */
           regular_test(header, regular);
           if (regular[0] == 5)  return (info->repair);
         }
 
       // {N, B}
-      if ((regular_byte_p_spl) && (regular_sample_fq ))
+      if (regular_byte_p_spl && regular_sample_fq)
         {
-          header->bit_p_spl  = (header->channels)? (header->byte_p_spl *8)/ header->channels: 0;
-          header->byte_p_sec = (header->sample_fq*header->bit_p_spl*header->channels)/8;
+          header->bit_p_spl  = header->channels ? (header->byte_p_spl * 8) / header->channels: 0;
+          header->byte_p_sec = (header->sample_fq * header->bit_p_spl * header->channels)/8;
+          /* Now double-checking */
           regular_test(header, regular);
           if (regular[0] == 5)  return (info->repair);
         }
 
       // {S, F}
 
-      if ((regular_byte_p_sec) && (regular_bit_p_spl ))
+      if (regular_byte_p_sec && regular_bit_p_spl )
         {
           header->byte_p_spl  = (header->bit_p_spl * header->channels)/8;
-          header->sample_fq   = (header->bit_p_spl*header->channels)? (header->byte_p_sec*8)/(header->bit_p_spl*header->channels):0 ;
+          header->sample_fq   = (header->bit_p_spl * header->channels)? (header->byte_p_sec * 8)/(header->bit_p_spl * header->channels) : 0 ;
           regular_test(header, regular);
           if (regular[0] == 5) return (info->repair);
         }
@@ -215,7 +237,7 @@ int auto_control(WaveData *info, WaveHeader *header)
       if ((regular_byte_p_sec) && (regular_sample_fq ))
         {
           header->byte_p_spl  = (header->bit_p_spl * header->channels)/8;
-          header->bit_p_spl   =  (header->channels*header->sample_fq)? (8*header->byte_p_sec)/(header->channels*header->sample_fq):0 ;
+          header->bit_p_spl   =  ( header->channels * header->sample_fq)? (8 * header->byte_p_sec)/( header->channels * header->sample_fq) : 0 ;
           regular_test(header, regular);
           if (regular[0] == 5) return (info->repair);
         }
@@ -223,8 +245,8 @@ int auto_control(WaveData *info, WaveHeader *header)
       // {F, B}
       if ((regular_byte_p_sec) && (regular_byte_p_spl ))
         {
-          header->bit_p_spl   = (header->byte_p_spl*8 )/ header->channels;
-          header->sample_fq   = (header->bit_p_spl*header->channels)?(header->byte_p_sec*8)/(header->bit_p_spl*header->channels) :0;
+          header->bit_p_spl   = (header->byte_p_spl * 8 )/ header->channels;
+          header->sample_fq   = (header->bit_p_spl * header->channels)?(header->byte_p_sec * 8)/(header->bit_p_spl * header->channels) : 0;
           regular_test(header, regular);
           if (regular[0] == 5) return (info->repair);
         }
@@ -234,20 +256,20 @@ int auto_control(WaveData *info, WaveHeader *header)
 
 // {N,C}
 
-  if ((regular_byte_p_spl) && (regular_bit_p_spl) && (regular_sample_fq))
+  if (regular_byte_p_spl && regular_bit_p_spl && regular_sample_fq)
     {
-      header->channels   = (header->byte_p_spl*8) / header->bit_p_spl;
-      header->byte_p_sec = (header->sample_fq*header->bit_p_spl*header->channels)/8;
+      header->channels   = (header->byte_p_spl * 8) / header->bit_p_spl;
+      header->byte_p_sec = (header->sample_fq * header->bit_p_spl * header->channels)/8;
       regular_test(header, regular);
       if (regular[0] == 5)  return (info->repair);
     }
 
 // {S, C}
 
-  if ((regular_byte_p_sec) && (regular_bit_p_spl) && (regular_sample_fq))
+  if (regular_byte_p_sec && regular_bit_p_spl && regular_sample_fq)
     {
-      header->byte_p_spl = (header->sample_fq)? header->byte_p_sec/header->sample_fq : 0;
-      header->channels   = (header->byte_p_spl*8 )/ header->bit_p_spl;
+      header->byte_p_spl = header->sample_fq? header->byte_p_sec/header->sample_fq : 0;
+      header->channels   = (header->byte_p_spl * 8 )/ header->bit_p_spl;
       regular_test(header, regular);
       if (regular[0] == 5)  return (info->repair);
     }
@@ -256,29 +278,25 @@ int auto_control(WaveData *info, WaveHeader *header)
 
 // {F, C}
 
-  if ((regular_byte_p_sec) && (regular_bit_p_spl) && (regular_byte_p_spl))
+  if (regular_byte_p_sec && regular_bit_p_spl && regular_byte_p_spl)
     {
-      header->sample_fq = (header->byte_p_spl)? header->byte_p_sec/header->byte_p_spl:0;
-      header->channels  = (header->byte_p_spl*8)/ header->bit_p_spl;
+      header->sample_fq = header->byte_p_spl? header->byte_p_sec / header->byte_p_spl : 0;
+      header->channels  = (header->byte_p_spl * 8) / header->bit_p_spl;
 
       regular_test(header, regular);
       if (regular[0] == 5)  return (info->repair);
     }
 
-  /* Uniqueness of solution requires (R) */
-
-// Now strengthening the notion of regular variable
-  if (header->channels % 3 == 0)
-    goto bailing_out;
+  /
 
 // {C, B}
 // The theorem below proves unicity of the {C, B} solution: it suffices to loop on C and break once found one.
-  if ((regular_byte_p_sec) && (regular_byte_p_spl) && (regular_sample_fq))
+  if (regular_byte_p_sec && regular_byte_p_spl && regular_sample_fq)
     {
       // Satisfying constaint on constants ?
       if (header->byte_p_sec != header->sample_fq * header->byte_p_spl) goto bailing_out;
 
-      for (header->channels=1; header->channels < 6 ; header->channels++)
+      for (header->channels = 1; header->channels < 6 ; header->channels++)
         {
           if (header->channels == 3) continue;
           header->bit_p_spl   = (header->channels)? (header->byte_p_spl*8) / header->channels:0;
@@ -291,10 +309,17 @@ int auto_control(WaveData *info, WaveHeader *header)
 
 bailing_out:
 
-  printf("\n%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Sorry, automatic mode cannot be used:\n       not enough information left in header");
+  if (header->bit_p_spl == 20 || header->channels % 3 == 0)
+  {
+      printf("\n%s\n", ""ANSI_COLOR_YELLOW "[WAR]" ANSI_COLOR_RESET "  Special automatic header recovery does not apply to 3/6-channel or 20-bit-audio.");
+  }
+  printf("\n%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Sorry, automatic mode cannot be used:\n       not enough information left in header.");
+
+# ifndef GUI_BEHAVIOR
   printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Reverting to interactive simple mode.");
   info->interactive=TRUE;
   info->repair=user_control(info, header);
+# endif
 
   return (info->repair);
 
@@ -304,12 +329,14 @@ void regular_test(WaveHeader *head, int* regular)
 {
   int i, j, k, l;
 
-  if (head ==NULL) fprintf(stderr, "NULL!");
-  _Bool regular_channels=(head->channels >= 1)*(head->channels < 6);
-  _Bool regular_bit_p_spl=(head->bit_p_spl == 16 ) + (head->bit_p_spl == 24);
+  if (head == NULL) fprintf(stderr, "NULL wave header !");
+
+  _Bool regular_channels  = (head->channels >= 1) * (head->channels < 6);
+  _Bool regular_bit_p_spl = (head->bit_p_spl == 16) + (head->bit_p_spl == 24);
   _Bool regular_sample_fq;
+
   if (head->sample_fq)
-    regular_sample_fq=(head->sample_fq % 44100 == 0) + (head->sample_fq % 48000 == 0);
+    regular_sample_fq = (head->sample_fq % 44100 == 0) + (head->sample_fq % 48000 == 0);
   else
     regular_sample_fq=0;
 
@@ -354,91 +381,107 @@ void regular_test(WaveHeader *head, int* regular)
 *	About automatic mode
 *	--------------------
 *
-*		A set of well-formed audio characteristics (R) is first defined (implementations
-*		may be restrictive for practical purposes as above), variables in (R) will
-*		henceforth be called regular variables.
-*
-*		The algorithm is based on the two equations on regular variables,
-*
-*			(1) N - F C B/8 = 0
-*			(2) S -   C B/8   = 0
-*
-*			where N is the number of bytes per second
-*			      S    the number of bytes per sample (all channels)
-*			      C    the number of channels
-*			      B    the number of bits per sample channel
-*			      F    sampling frequency in Hz
-*
-*		Assumptions on header state are:
-*
-*	     (3) three out of the five above variables are assumed to be correct, and considered as parameters.
-*
-*
-*	Mathematical discussion
-*   -----------------------
-*
-*		Let D={N,S, C, B, F}. The above system of equations (1) and (2) form a linear system with two
-*		unknown variables if the pair of variables is among this list:
-*		{N,S}, {N,C}, {N, B}, {S, F}, {S, C}, {S, B}, as the determinant is not null.
-*		In these cases, there is a single solution to the linear system.
-*
-*		However, the determinant is either null, or the system is not linear, for the following pairs of
-*		unknown variables:
-*		{N, F}, {F, C}, {F, B}, {C, B}, out of the 10 possible pairs.
-*		In these cases yet, S is always known and, following (3), considered as a parameter.
-*		As there must be a solution, the problem thus boild down to proving unicity under the set of assumptions.
-*		From (2) it can be shown that, for a pair of solutions {(N, S, C, B, F), (N', S, C', B', F')}:
-*
-*			(4) B/B' = k, where k =C'/C
-*
-*		The {F, C} and {F, B} cases are straightforward and the solution is unique. Hower for {C, B} the set
-*		of three constants {F, N, S} is linked by the equation F = N S, hence (2) is hyperbolic.
-*		For this case we now add the following assumptions on variables, which define a stricter set (R'):
-*		(R)	- number of channels is strictly positive and not a multiple of 3,
-*			- bit rate is either 16 or 24.
-*		Variables satisfying (R') in this case will be called regular variables equally.
-*
-*		Now, B/B' = 1 or 3/2, hence if C' > C, 2 | C.
-*		Therefore C = 2 or 4, barring 6 (from (R)), and C' = 3 or 6, contradicting (R). Ab absurdo, C' = C
-*		and B' = B out of (2). Out of the five cases at hand, N is a known correct parameter except in the
-*		four cases, hence N' = N, whence F' = F out of (1).
-*
-*		There remains the {N, F} case, which should be
-*		very rare, and added to the set of header assumptions as below:
-*
-*			(3') (header assumptions, revised): Three parameters are known to be correct, other than {S, C, B}.
-*
-*		In the {S, C, B} case, the algorithm will bail out.
-*
-*	Algorithm
-*   ---------
-*
-*		The algorithm first tests whether all five C variables read from the file header are within the bounds
-*		of (R), the set of regular values for this mode. If there are fewer than two such variables out of five,
-*		fixwav reverts to manual mode.
-*		Then setting the channel number, two regular variables are selected other than {S, B}.
-*		If this is not possible,  fixwav bails out.
-*		The other two variables are calculated out of (1) and (2), then tested to be within the bounds of (R).
-*		Should the test fail, fixwav looks for other possible combinations of known parameters.
-*		The above theorem ensures that there is	just one solution: the first regular values are the only ones
-*		under the set of assumptions.
-*		In the {C, B} case, the linear constraint on constants is checked and the stricter conditions (R') are
-*		enforced, bailing out if they are not satisfied. Then the one remaining equation is
-*		solved by looping on the number of channels C: the above theorem ensures that the first regular pair
-*		is the only one solution.
-*		When all options have failed, fixwav bails out to manual mode, otherwise it returns BAD_header->
-*		info values are modified as global variables.
-*
-*	Important note
-*	--------------
-*
-*		The algorithm assumes that if the constants are regular, then they are correct values.
-*		Should this assumption be erroneous, wrong corrections can be made that satisfy all mathematical constraints.
-*		User checking is therefore advised when option -a is used (please refrain from using silent mode -q
-*		in conjunction with -a).
-*		Example of "wrong" correction: C = 1, S = 3, B = 24, F = 96kHz, instead of C = 2, S = 6, B = 24, F = 48 kHz.
-*
-*		<added by Fabrice Nicol,  May 2008 >
+
+The automatic mode algorithm
+----------------------------
+
+    A set of well-formed audio characteristics (R) is first defined (implementations
+    may be restrictive for practical purposes as above), variables in (R) will
+    henceforth be called regular variables.
+
+    The algorithm is based on the two equations on regular variables,
+
+            (1) N - F C B/8 = 0
+            (2) S -   C B/8   = 0
+
+            where N is the number of bytes per second
+                  S    the number of bytes per sample (all channels)
+                  C    the number of channels
+                  B    the number of bits per sample channel
+                  F    sampling frequency in Hz
+
+    Assumptions on header state are:
+
+   (3) three out of the five above variables are assumed to be correct, and considered as parameters.
+
+
+Mathematical discussion
+-----------------------
+
+    Let D={N,S, C, B, F}. The above system of equations (1) and (2) form a linear system with two
+    unknown variables if the pair of variables is among this list:
+    {N,S}, {N,C}, {N, B}, {S, F}, {S, C}, {S, B}, as the determinant is not null.
+    In these cases, there is a single solution to the linear system.
+
+    However, the determinant is either null, or the system is not linear, for the following pairs of
+    unknown variables:
+    {N, F}, {F, C}, {F, B}, {C, B}, out of the 10 possible pairs.
+    In these cases yet, S is always known and, following (3), considered as a parameter.
+    As there must be a solution, the problem thus boils down to proving unicity under the set of assumptions.
+    From (2) it can be shown that, for a pair of solutions {(N, S, C, B, F), (N', S, C', B', F')}:
+
+            (4) B/B' = k, where k = C'/C
+
+    The {F, C} and {F, B} cases are straightforward and the solution is unique. However for {C, B} the set
+    of three constants {F, N, S} is linked by the equation F = N S, hence (2) is hyperbolic.
+    For this case we now add the following assumptions on variables, which define a stricter set (R'):
+    (R)	- number of channels is strictly positive and not a multiple of 3,
+        - bit rate is either 16, 20 or 24 and if 20, channels are different from 4 or 5.
+
+    Variables satisfying (R') in this case will be called regular variables equally.
+
+    Now,   for B, B' in {16, 20, 24}, and C, C' and C' > C, chosen without loss of generality, in {1, 2, 4, 5},
+    B/B' > 1 hence {B', B} = {16, 20} or {16, 24} or {20, 24}, entailing C'/C = 3/2 or 5/4 or 6/5
+    with C in {1, 2, 4, 5} anc C' in {2, 4, 5}, C' > C.
+
+    This set of constraints cannot be satisfied under (R). Ab absurdo, it ensues that C' = C, then B' = B out of (4).
+
+    Out of the five cases at hand, N is a known correct parameter except in the four cases, hence N' = N,
+    whence F' = F out of (1).
+
+    There remains the {N, F} case, which should be
+    very rare, and added to the set of header assumptions as below:
+
+            (3') (header assumptions, revised): Three parameters are known to be correct, other than {S, C, B}.
+
+    In the {S, C, B} case, the algorithm will bail out.
+
+Algorithm
+---------
+
+    The algorithm first tests whether all five C variables read from the file header are within the bounds
+    of (R), the set of regular values for this mode. If there are fewer than two such variables out of five,
+    fixwav reverts to manual mode.
+    Then setting the channel number, two regular variables are selected other than {S, B}.
+    If this is not possible,  fixwav bails out.
+    The other two variables are calculated out of (1) and (2), then tested to be within the bounds of (R).
+    Should the test fail, fixwav looks for other possible combinations of known parameters.
+    The above theorem ensures that there is just one solution: the first regular values are the only ones
+    under the set of assumptions.
+    In the {C, B} case, the linear constraint on constants is checked and the stricter conditions (R') are
+    enforced, bailing out if they are not satisfied. Then the one remaining equation is
+    solved by looping on the number of channels C: the above theorem ensures that the first regular pair
+    is the only one solution.
+    When all options have failed, fixwav bails out to manual mode, otherwise it returns BAD_header->
+    info values are modified as global variables.
+
+Important note
+--------------
+
+    1. The algorithm assumes that if the constants are regular, then they are correct values.
+    Should this assumption be erroneous, wrong corrections can be made that satisfy all mathematical constraints.
+    User checking is therefore advised when option -a is used (please refrain from using silent mode -q
+    in conjunction with -a).
+    Example of "wrong" correction: C = 1, S = 3, B = 24, F = 96 kHz, instead of C = 2, S = 6, B = 24, F = 48 kHz.
+
+    2. The above theorem holds in the 20-bit case except for one minor subcase (C = 4 or C = 5). The implementation
+    ignores 20-bit configurations for simplicity.-
+
+    <added by Fabrice Nicol,  May 2008, corrected Aug.2016 >
+
+
+
+
 *
 ******************************************************************************************************************/
 
