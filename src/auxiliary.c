@@ -205,8 +205,9 @@ printf("%s","    --full-hybridate     Alias for --mirror --miror-strategy high"J
 
 printf("%s","Software configuration\n\n");
 
-printf("%s","-D, --tempdir directory  Temporary directory for DVD-Audio files (dvda-author)."J"Optional.\n\n");
-printf("%s","-D, --lplex-tempdir directory  Temporary directory for DVD-Video files (lplex)"J"Optional.\n\n");
+printf("%s","-D, --tempdir directory  Temporary directory for DVD-Audio files (dvda-author)."J"Optional. CAUTION: tempdir will be erased unless --no-refresh-tempdir is used.\n\n");
+printf("%s","-9, --datadir directory  Data directory with subdirectory `menu' containing at least default backgrounds for menus. Optional, only to be used when menus are created.\n\n");
+printf("%s","  , --lplex-tempdir directory  Temporary directory for DVD-Video files (lplex)"J"Optional.\n\n");
 printf("%s","-X, --workdir directory  Working directory: current directory in command line relative paths."J"By default, the current directory."J"With Code::Blocks and similar IDE, you may have to specify your root package directory as argument to --workdir.\n\n");
 printf("%s","    --no-refresh-tempdir Do not erase and recreate the DVD-Audio temporary directory on launch.\n\n");
 printf("%s","    --no-refresh-outdir  Do not erase and recreate the output directory on launch.\n\n");
