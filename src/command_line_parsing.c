@@ -415,7 +415,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         int j;
         c=getopt_long(argc, argv_scan, ALLOWED_OPTIONS, longopts, &longindex);
-        foutput("%s%d\n", ANSI_COLOR_MAGENTA"[CL]"ANSI_COLOR_RESET"  gol  : ", c);
+
         for (j=0; j < argc; ++j)
 #ifdef LONG_OPTIONS
             while ((c=getopt_long(argc, argv_scan, ALLOWED_OPTIONS, longopts, &longindex)) != -1)
@@ -1601,7 +1601,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if (refresh_tempdir)
             {
                 clean_directory(globals.settings.tempdir);
-                if (errno) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  clean");
+                if (errno && globals.veryverbose) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Found errors while cleaning directory");
             }
 
 
@@ -2012,7 +2012,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     }
     
     
-    if ((img->nmenus)&&(img->blankscreen))
+    if (img->nmenus && img->blankscreen && globals.topmenu < NO_MENU)
     {
         
         if (globals.veryverbose) foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Converting overlay .png blankscreen to .jg blankscreen for mpg authoring...");
@@ -2031,7 +2031,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     
     _Bool menupic_input_coherence_test=0;
     
-    if ((img->imagepic) && (img->highlightpic) && (img->selectpic))
+    if ((img->imagepic) && (img->highlightpic) && (img->selectpic) && globals.topmenu < NO_MENU)
     {
         for (u=0;  u < img->nmenus; u++)
         {
