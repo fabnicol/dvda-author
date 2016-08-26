@@ -1595,8 +1595,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {
             errno=secure_mkdir(globals.settings.outdir, 0777);
             errno=secure_mkdir(globals.settings.datadir, 0777);
-            
-            foutput("%s%s\n",ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  out** ", globals.settings.outdir);
+                        
             errno=0;
             if (refresh_tempdir)
             {
