@@ -914,7 +914,7 @@ char* replace_file_extension(char * filename)
     return (filename);
 }
 
-
+#ifndef WITHOUT_sox
 int launch_sox(char** filename)
 {
 
@@ -944,7 +944,7 @@ int launch_sox(char** filename)
     return(NO_AFMT_FOUND);
 
 }
-//#endif
+#endif
 
 // to be used somewhere
 
