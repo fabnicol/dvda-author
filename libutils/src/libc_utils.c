@@ -586,9 +586,11 @@ _Bool clean_directory(char* path)
     errno=0;
     if (path == NULL) return (EXIT_FAILURE);
 
-    if (globals.veryverbose) printf("%s%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Cleaning directory ", path);
-
-    errno=rmdir_global(path);
+    if (s_dir_exists(path))
+    {
+      if (globals.veryverbose) printf("%s%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Cleaning directory ", path);
+      errno=rmdir_global(path);
+    }
 
     if (errno)
     {
@@ -764,18 +766,18 @@ _Bool s_dir_exists(const char* path)
 
     if (stat(path, &info) != 0)
     {
-        printf( "[ERR] Cannot access %s\n", path);
-        clean_exit(EXIT_FAILURE);
+        if (globals.veryverbose) printf( ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Directory to be created: %s \n", path);
+        errno = 0;
+        return false;
     }
     else
     if (info.st_mode & S_IFDIR)
     {
-        printf( "[WAR] Directory %s already exists.\n", path);
+        if (globals.veryverbose) printf( ANSI_COLOR_YELLOW "[WAR]" ANSI_COLOR_RESET "  Directory %s already exists.\n", path);
         errno = 0;
         return true;
     }
 
-    return false;
 }
 
 /*-------
@@ -839,12 +841,15 @@ int secure_mkdir (const char *path, mode_t mode)
             d[i] = '\0';
 
             errno = 0;
-            if ((MKDIR(d, mode) == -1))
+            if (! s_dir_exists(d))
             {
-                fprintf(stderr, "Impossible to create directory '%s'\n", d);
-                perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  mkdir ");  // EEXIST error messages are often spurious
-                puts(path);
-                clean_exit(EXIT_FAILURE);
+                if ((MKDIR(d, mode) == -1))
+                {
+                    fprintf(stderr, "Impossible to create directory '%s'\n", d);
+                    perror("\n"ANSI_COLOR_RED"[ERR]"ANSI_COLOR_RESET"  mkdir ");  // EEXIST error messages are often spurious
+                    puts(path);
+                    clean_exit(EXIT_FAILURE);
+                }
             }
 
             d[i] = '/';
@@ -1036,7 +1041,7 @@ void change_directory(const char * filename)
            }
            else   
              fprintf(stderr, "%s",ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Null path\n.");
-           exit(EXIT_FAILURE);
+           //exit(EXIT_FAILURE);
         }
     }
     else if (globals.debugging)

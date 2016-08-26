@@ -31,10 +31,6 @@ LDFLAGS :=-L/usr/local/lib -L/usr/lib -Xlinker --allow-multiple-definition
 
 ifeq "$(DEBUG_FLAGS)" ""
    LDFLAGS += -s
-else
- ifneq "$(DEBUG_FLAGS)" "yes"
-   LDFLAGS += -g
- endif
 endif
 
 CPPFLAGS :=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include

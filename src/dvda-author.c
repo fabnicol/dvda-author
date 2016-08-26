@@ -95,22 +95,19 @@ void normalize_temporary_paths(pic* img)
     static size_t s;
 
     // cannot easily  free(globals.settings.logfile) etc. as embedded  in structure ?
-    if (img == NULL)
-    {
+    s=strlen(globals.settings.tempdir);
+    globals.settings.indir=realloc(globals.settings.indir, (s+10)*sizeof(char));
+    globals.settings.outdir=realloc(globals.settings.outdir, (s+10)*sizeof(char));
+    globals.settings.lplexoutdir=realloc(globals.settings.lplexoutdir, (s+10)*sizeof(char));
+    globals.settings.linkdir=realloc(globals.settings.linkdir, (s+10)*sizeof(char));
+    globals.settings.indir=calloc(s+10,1);
 
-        s=strlen(globals.settings.tempdir);
-        globals.settings.indir=realloc(globals.settings.indir, (s+10)*sizeof(char));
-        globals.settings.outdir=realloc(globals.settings.outdir, (s+10)*sizeof(char));
-        globals.settings.lplexoutdir=realloc(globals.settings.lplexoutdir, (s+10)*sizeof(char));
-        globals.settings.linkdir=realloc(globals.settings.linkdir, (s+10)*sizeof(char));
-        globals.settings.indir=calloc(s+10,1);
+    sprintf(globals.settings.indir, "%s"SEPARATOR"%s", globals.settings.tempdir, "audio");
+    sprintf(globals.settings.outdir, "%s"SEPARATOR"%s", globals.settings.tempdir, "output");
+    sprintf(globals.settings.lplexoutdir, "%s"SEPARATOR"%s", globals.settings.tempdir, "output");
+    sprintf(globals.settings.linkdir, "%s"SEPARATOR"%s", globals.settings.tempdir, "VIDEO_TS");
 
-        sprintf(globals.settings.indir, "%s"SEPARATOR"%s", globals.settings.tempdir, "audio");
-        sprintf(globals.settings.outdir, "%s"SEPARATOR"%s", globals.settings.tempdir, "output");
-        sprintf(globals.settings.lplexoutdir, "%s"SEPARATOR"%s", globals.settings.tempdir, "output");
-        sprintf(globals.settings.linkdir, "%s"SEPARATOR"%s", globals.settings.tempdir, "VIDEO_TS");
-    }
-    else
+    if (img != NULL)
     {
 
        int menu;
@@ -178,9 +175,8 @@ int main(int argc,  char* const argv[])
 
     setlocale(LC_ALL, "LOCALE");
 
-    char* h = fn_get_current_dir_name ();
-    currentdir=strdup((h)? h : TEMPDIR_SUBFOLDER_PREFIX);
-    free(h);
+    char* currentdir = fn_get_current_dir_name ();
+
     int currentdirlength=strlen(currentdir);
 
     char TEMPDIRROOT[currentdirlength+14];
@@ -217,6 +213,30 @@ int main(int argc,  char* const argv[])
 
     // Global settings are hard-code set by default as follows:
     errno=0;
+
+    /* requests C99 */
+
+    defaults def = {
+        .settingsfile = strdup(SETTINGSFILE),
+        .logfile = NULL,   // logfile path should be supplied on command line
+        .indir = NULL,
+        .outdir = NULL,
+        .lplexoutdir = NULL,
+    #ifdef __WIN32__
+         .workdir = strdup(DEFAULT_WORKDIR),// working directory: under Windows, c:\ if not defined at compile time, otherwise 'currentdir' environment variable
+    #else
+         .workdir = strdup(currentdir),
+    #endif
+        .tempdir = NULL,
+        .lplextempdir = NULL,
+        .linkdir = NULL,
+        .bindir =  EXECDIR, //bindir,
+        .datadir = DATADIR,
+        .fixwav_database = strdup(STANDARD_FIXWAV_DATABASE_PATH),
+        .dvdisopath = NULL,
+        .stillpicdir = NULL
+
+    };
 
     globalData globals_init=
     {
@@ -272,27 +292,7 @@ int main(int argc,  char* const argv[])
         /* it is necessary to use strdup as these settings may be overridden dynamically */
 // Paths:
 
-        {
-            strdup(SETTINGSFILE),
-            NULL,  // logfile path should be supplied on command line
-            NULL, // input directory path
-            NULL,// output directory path
-            NULL,//lplex output dir path
-#ifdef __WIN32__
-            strdup(DEFAULT_WORKDIR),// working directory: under Windows, c:\ if not defined at compile time, otherwise 'currentdir' environment variable
-#else
-            strdup(currentdir),
-#endif
-            NULL,// temporary directory
-            NULL,// lplex tempdir
-            NULL,   // videolinked directory path
-            EXECDIR, //bindir
-            DATADIR,
-            /*fixwav_database*/
-            strdup(STANDARD_FIXWAV_DATABASE_PATH),
-            NULL,
-            NULL
-        }
+        def
     };
 
 
@@ -450,7 +450,11 @@ launch:
 
     if (globals.end_pause) pause_dos_type();
 
-    return(errno);
+    if (errno && globals.veryverbose)
+    {
+        perror(ANSI_COLOR_YELLOW "[WAR]" ANSI_COLOR_RESET "  Detected runtime errors");
+    }
 
+    return(errno);
 }
 

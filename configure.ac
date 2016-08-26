@@ -113,12 +113,16 @@ AC_ARG_WITH([debug],
 	   [
 	    AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],[
 		# -O2 is necessary for inlining, do not take it off
-	    CFLAGS="-std=c99 -g3 -O2 -Wall -Wextra -pedantic"
+	    CFLAGS="-std=c99 -g3  -Wall -Wextra -pedantic"
 	    cflags_save=`echo $cflags_save | $SED "s/-g \(.*\)-O2/ \1/g"` ])
 	   ],
 	   [
 	    CFLAGS="-O2 $withval"
 	   ])
+
+	   LIBS=`echo $LIBS | $SED "s/-s//g"`
+	   CFLAGS=`echo $CFLAGS | $SED "s/-O.//g"`
+           DEBUG_FLAGS="-g"
 
 	])
     ],
