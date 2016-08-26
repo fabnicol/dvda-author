@@ -43,6 +43,7 @@ repair_wav(WaveData *info, WaveHeader *header )
 
   FILE* infile=info->INFILE;
   int repair=GOOD_HEADER;
+  _Bool pad_byte = false;
 
   errno=0;
 
@@ -66,11 +67,17 @@ repair_wav(WaveData *info, WaveHeader *header )
 
   /* The ChunkSize is the entire file size - 8
    * unless a pad byte was added when the file was written  (patch Aug. 2016) */
-
-  if (header->chunk_size == file_size - 8 || header->chunk_size == file_size - 7)
+  if (header->chunk_size == file_size - 8)
     {
       printf( ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET"  Found correct Chunk Size of %" PRIu32 " bytes at offset 4\n",
                  header->chunk_size);
+    }
+  else
+  if (header->chunk_size == file_size - 7)
+    {
+      printf( ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET"  Found correct Chunk Size of %" PRIu32 " bytes at offset 4. Pad byte added at EOF.\n",
+                 header->chunk_size);
+      pad_byte = true;
     }
   else
     {
@@ -128,7 +135,7 @@ repair_wav(WaveData *info, WaveHeader *header )
     }
   else
     {
-      printf("%s\n",  ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Subchunk1 Size at offset 16 is incorrect (%d) \n" ANSI_COLOR_BLUE "[INF]" ANSI_COLOR_RESET "  ... repairing\n",  header->sc_size);
+      printf(ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Subchunk1 Size at offset 16 is incorrect (%d) \n" ANSI_COLOR_BLUE "[INF]" ANSI_COLOR_RESET "  ... repairing.\n",  header->sc_size);
       header->sc_size = 16;
       /* to be corrected later based on fmt chunk real size ? */
       repair = BAD_HEADER;
@@ -204,20 +211,22 @@ repair_wav(WaveData *info, WaveHeader *header )
 
   /* The Subchunk2 Size = NumSample * NumChannels * BitsPerSample/8 */
 
-  if ( header->data_size == (file_size - header->header_size_in) )
+  if (header->data_size == file_size - header->header_size_in || (pad_byte && header->data_size == file_size - header->header_size_in - 1))  // -1 if pad byte was added
     {
       printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found correct Subchunk2 Size of %"PRIu32" bytes at offset %d\n", 
              header->data_size,
              header->header_size_in-4);
+      if (pad_byte)
+        printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Pad byte was not taken into account.\n");
     }
   else
     {
       printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Subchunk2 Size at offset %d is incorrect: found %"PRIu32" bytes instead of %"PRIu32"\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  ... repairing\n",
              header->header_size_in-4,
-             header->data_size, 
-             (uint32_t) file_size -header->header_size_in);
+             header->data_size - (uint32_t) pad_byte,
+             (uint32_t) file_size - header->header_size_in - (uint32_t) pad_byte);
              
-      header->data_size = file_size - header->header_size_in;
+      header->data_size = file_size - header->header_size_in - (uint32_t) pad_byte;
       repair = BAD_HEADER;
     }
 

@@ -287,8 +287,6 @@ int auto_control(WaveData *info, WaveHeader *header)
       if (regular[0] == 5)  return (info->repair);
     }
 
-  /
-
 // {C, B}
 // The theorem below proves unicity of the {C, B} solution: it suffices to loop on C and break once found one.
   if (regular_byte_p_sec && regular_byte_p_spl && regular_sample_fq)
