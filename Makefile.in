@@ -203,7 +203,8 @@ $(DISTFORMATS):dist-%: %
 		if test "$(BRANCH)" != "$(CURRENTBRANCH)"; then
 		  @GIT@ checkout $(BRANCH)
 		fi
-		@GIT@ archive --prefix=$(PROGRAM)/  -o $(PROGRAM).tar.$< HEAD $(BRANCH)
+		@GIT@ archive --prefix=$(PROGRAM)/  -o $(PROGRAM).tar HEAD $(BRANCH)
+		tar cJvf $(PROGRAM).tar.xz $(PROGRAM).tar && rm -f $(PROGRAM).tar
 		if test "$(BRANCH)" != "$(CURRENTBRANCH)"; then
 		  @GIT@ checkout $(CURRENTBRANCH)
 		fi
@@ -211,7 +212,7 @@ $(DISTFORMATS):dist-%: %
 		echo Please install git to make a distribution package.
 	fi
 
-dist: dist-gz
+dist: dist-xz
 
 force: ;
 
