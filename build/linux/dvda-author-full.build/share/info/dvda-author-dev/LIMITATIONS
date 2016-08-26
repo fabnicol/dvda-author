@@ -1,0 +1,16 @@
+
+1. MLP lossless compression is not supported by this project, which make it impossible to author
+   all combinations of audio input files that can be found in commercial software,
+   notably 24-bit/96kHz, 5.1 channels, which requires MLP.
+
+2. If using slideshows, some players may have trouble when a track does not have pictures associated to it whilst others do have some.
+   Some players will stay with the latest picture displayed on screen in the same case, rather than with a blank screen.
+   If you do want to display a blank screen for some track, it may be safer to add a blanck screen picture to --stillpics rather than use ::, ie:
+
+   --stillpics a.jpg,b.jpg:blankscreen.jpg:c.jpg
+
+   rather than the licit: --stillpics a.jpg,b.jpg::c.jpg
+
+3. For top menu authoring, as of version 10.06 build 300, you may use several slides only if there is just one menu.
+   Should you need several menus, the number of slides per menu will automatically be reset to 1.
+
