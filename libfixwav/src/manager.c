@@ -176,7 +176,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
           if (info->cautious)
           {
               printf("%s", "" ANSI_COLOR_RED "[WAR]" ANSI_COLOR_RESET "  in-place mode will change original file.\n");
-              printf("%s\n",  ANSI_COLOR_RED "[INT]" ANSI_COLOR_RESET   Enter Y to continue, otherwise press any key + return to exit.");
+              printf("%s\n",  ANSI_COLOR_RED "[INT]" ANSI_COLOR_RESET "  Enter Y to continue, otherwise press any key + return to exit.");
 
               if (!isok())
                 {
