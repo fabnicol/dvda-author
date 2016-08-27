@@ -213,18 +213,20 @@ repair_wav(WaveData *info, WaveHeader *header )
 
   if (header->data_size == file_size - header->header_size_in || (pad_byte && header->data_size == file_size - header->header_size_in - 1))  // -1 if pad byte was added
     {
-      printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found correct Subchunk2 Size of %"PRIu32" bytes at offset %d\n", 
+      printf(ANSI_COLOR_GREEN"[MSG]" ANSI_COLOR_RESET "  Found correct Subchunk2 Size of %"PRIu32" bytes at offset %d\n",
              header->data_size,
-             header->header_size_in-4);
+             header->header_size_in - 4);
       if (pad_byte)
-        printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Pad byte was not taken into account.\n");
+        printf(ANSI_COLOR_GREEN"[MSG]" ANSI_COLOR_RESET "  Pad byte was not taken into account.\n");
     }
   else
     {
-      printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Subchunk2 Size at offset %d is incorrect: found %"PRIu32" bytes instead of %"PRIu32"\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  ... repairing\n",
-             header->header_size_in-4,
+      printf(ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Subchunk2 Size at offset %d is incorrect: found %" PRIu32 " bytes instead of\n       %" PRIu32 " = file size (%" PRIu32 ") - header size (%" PRIu16 ") - pad byte (%d)\n"
+             ANSI_COLOR_BLUE  "[INF]" ANSI_COLOR_RESET "  ... repairing\n",
+             header->header_size_in - 4,
              header->data_size,
-             (uint32_t) file_size - header->header_size_in - (uint32_t) pad_byte);
+             (uint32_t) file_size - header->header_size_in - (uint32_t) pad_byte,
+             (uint32_t) file_size, header->header_size_in , pad_byte);
              
       header->data_size = file_size - header->header_size_in - (uint32_t) pad_byte;
       repair = BAD_HEADER;
@@ -272,11 +274,11 @@ int launch_repair(WaveData *info, WaveHeader *header)
    * to which one must add the prepending of a standard header, should it occur
    */
 
-  header->data_size += header->header_size_in-header->header_size_out;  // will be padded by zeros
+  header->data_size += header->header_size_in - header->header_size_out;  // will be padded by zeros
 
  // otherwise unchanged
   
-  header->chunk_size=header->data_size+header->header_size_out-8;
+  header->chunk_size=header->data_size + header->header_size_out - 8;
   
   /* write the new header at the beginning of the file */
   /* again, copying manually rather than invoking fread to ensure cross-compiler/platform portability */

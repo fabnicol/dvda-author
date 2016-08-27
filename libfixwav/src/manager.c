@@ -327,6 +327,8 @@ Checkout:
     {
     case	GOOD_HEADER:
       printf( "%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Fixwav status 4:\n       WAVE header is correct. No changes made to existing header." );
+      header->header_out = header->header_in;
+      header->header_size_out = header->header_size_in;
       break;
 
     case	BAD_HEADER :
