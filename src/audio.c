@@ -427,32 +427,34 @@ int extract_audio_info(fileinfo_t *info)
 
 static inline int compute_header_size(FILE* fp)
 {
-    infochunk ichunk;
-    memset(&ichunk, 0, sizeof(infochunk));
+    WaveHeader header;
+    memset(&header, 0, sizeof(header));
     //uint8_t span=0;
     WaveData wavinfo =
     {
-        "unknown",
-        fp,
-        "st",
-        NULL,
-        NULL,
-        NULL,
-        1, /* automatic behaviour */
-        0, /* prepending */
-        1, /* in-place*/
-        0, /* not cautious */
-        0, /* not interactive */
-        0, /* end-padding=no*/
-        0, /* no pruning */
-        1, /* virtual fix */
-        0, /* repair status */
-        0, /* padbytes */
-        0, /* pruned bytes */
+      .infile = "unknown",
+      .INFILE = fp,
+      .outfile = "st",
+      .OUTFILE = NULL,
+      .database = NULL,
+      .filetitle = NULL,
+      .automatic = true,
+      .prepend = false,
+      .in_place = true,
+      .cautious = false,
+      .interactive = false,
+      .padding = false,
+      .prune = false,
+      .virtual = true,
+      .repair = 0,
+      .padbytes = 0,
+      .prunedbytes = 0
     };
+
     wavinfo.INFILE=fp;
-    parse_wav_header(&wavinfo, &ichunk);
-    return ichunk.span;
+
+    parse_wav_header(&wavinfo, &header);
+    return header.header_size_in;
    
 }
 
@@ -868,8 +870,10 @@ int fixwav_repair(fileinfo_t *info)
                 foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Proceeding with fixed file %s:\n", wavedata.outfile );
             }
             else
+            if (globals.debugging)
                 foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Proceeding with virtual header and same file %s:\n", info->filename );
-            foutput("       Bits per sample=%d, Sample frequency: %d, Bit depth:%d Channels:%d\n", waveheader.bit_p_spl, waveheader.sample_fq, waveheader.bit_p_spl, waveheader.channels );
+
+            foutput(ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Bits per sample=%d Sample frequency: %d\n       Bit depth:%d Channels:%d\n", waveheader.bit_p_spl, waveheader.sample_fq, waveheader.bit_p_spl, waveheader.channels );
 
             return(AFMT_WAVE_FIXED);
         }

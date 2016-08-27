@@ -26,15 +26,11 @@
 #define WAV_EXTENSION_LENGTH 36
 #define HAVE_NON_STANDARD_HEADER 72
 
-#define FW_VERSION "Version 0.1.4\n\n"\
-                    "Copyright pigiron 2007, Fabrice Nicol 2008,2009 (revised version) \n<fabnicol@users.sourceforge.net>.\nReleased under GPLv3. This software comes under NO GUARANTEE.\nPlease backup your files before running this utility.\n\n"
+#define FW_VERSION "Version 0.2.0\n\n"\
+                    "Copyright pigiron 2007, Fabrice Nicol 2008,2009-2016 (revised version) \n<fabnicol@users.sourceforge.net>.\nReleased under GPLv3. This software comes under NO GUARANTEE.\nPlease backup your files before running this utility.\n\n"
 
 /* Definitions for Microsoft WAVE format */
 
-#define RIFF		0x46464952
-#define WAVE		0x45564157
-#define FMT     0x20746d66
-#define DATA    0x61746164
 #define PCM_CODE	1
 #define WAVE_MONO	1
 #define WAVE_STEREO	2
