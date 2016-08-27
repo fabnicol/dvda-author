@@ -1,8 +1,8 @@
-prefix=/mnt/fab/Dev/dvda-author-dev/BUILD/local
+prefix=/home/fab/Dev/dvda-author-dev/local
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include/ImageMagick-7
-includearchdir=/mnt/fab/Dev/dvda-author-dev/BUILD/local/include/ImageMagick-7
+includearchdir=/home/fab/Dev/dvda-author-dev/local/include/ImageMagick-7
 libname=MagickCore-7.Q16HDRI
 moduledir=${exec_prefix}/lib/ImageMagick-7.0.2/modules-Q16HDRI
  
