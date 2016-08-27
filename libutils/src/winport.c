@@ -41,7 +41,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 extern globalData global_utils ;
 
-
+/* met issues on GNU/Linux with stat st_size field ( a few bytes off real size. USe below code from
+   http://www.securecoding.cert.org
+*/
 
 
 #if ! defined __WIN32__ || defined __MSYS__
@@ -59,6 +61,8 @@ uint64_t read_file_size(FILE * fp, const char* filename)
         /* get size */
             size=stat_file_size(filename);
     }
+
+
     return size;
 }
 
