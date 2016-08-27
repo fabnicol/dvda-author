@@ -7,6 +7,7 @@
 # Dependencies: all files in m4/
 ######################################################################################################
 
+
 AC_INIT([dvda-author],[dev],[fabnicol@users.sourceforge.net])
 
 command_line_args="$*"
