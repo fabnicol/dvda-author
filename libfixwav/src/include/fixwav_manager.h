@@ -5,6 +5,10 @@
 #include <sys/types.h>
 #include <stdint.h>
 
+#ifndef MAX_LIST_SIZE
+#define MAX_LIST_SIZE   64
+#endif
+
 #define LITTLE_ENDIAN_WRITE_2_bytes(Y, X)  uint16_copy_reverse(Y, X);
 
 #define _LITTLE_ENDIAN_WRITE_2_bytes(Y, X) LITTLE_ENDIAN_WRITE_2_bytes(Y, X)\
@@ -46,10 +50,12 @@ typedef struct
 typedef struct
   {
     _Bool       is_extensible;
+    _Bool       has_fact;
+    uint8_t     ichunks;
     uint8_t*    header_in;
     uint8_t*    header_out;
-    uint8_t     header_size_in; /* size of header */
-    uint8_t     header_size_out; /* size of header */
+    uint16_t     header_size_in; /* size of header */
+    uint16_t     header_size_out; /* size of header */
     uint16_t	sc_format;	/* should be 1 for PCM-code */
     uint16_t	channels;	/* 1 Mono, 2 Stereo */
     uint16_t	byte_p_spl;	/* samplesize*/
@@ -69,6 +75,13 @@ typedef struct
     uint32_t    n_spl;       /* number of samples written out */
     uint32_t	data_chunk;	/* 'data' */
     uint32_t	data_size;	/* samplecount */
+    /* RIFF info chunks to be parsed: INAM, IART, ICMT, ICOP, ICRD, IGNR */
+    uint8_t INAM[MAX_LIST_SIZE];
+    uint8_t IART[MAX_LIST_SIZE];
+    uint8_t ICMT[MAX_LIST_SIZE];
+    uint8_t ICOP[MAX_LIST_SIZE];
+    uint8_t ICRD[MAX_LIST_SIZE];
+    uint8_t IGNR[MAX_LIST_SIZE];
  
   } WaveHeader;
 
