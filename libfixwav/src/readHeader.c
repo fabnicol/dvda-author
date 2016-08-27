@@ -163,53 +163,33 @@ if (header->is_extensible)
 
 /* skipping extension subchunk */
 
-               p += header->wavext; // 0 or 22
+ p += header->wavext; // 0 or 22
+}
 
-/* 38-41 +22*/ header->fact_chunk=READ_4_bytes
-if (memcmp(p, "fact", 4) == 0)
-  {
+/* fact and data chunks were previouslt parsed */
+
+if (header->has_fact)
+{
+/* 38-41 +22*/ p += 4;
+
+
     /* 42-45 +22*/ header->fact_length=READ_4_bytes
     /* 46-49 +22*/ header->n_spl=READ_4_bytes
     // loop for 'data' chunk
-
-          do
-          {
-
-              if ((p = memchr(p, 'd', MAX_HEADER_SIZE-1-(p - buffer))) == NULL)
-              {
-                  printf(""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Could not find substring 'data' among %d characters\n", MAX_HEADER_SIZE);
-                  if (globals.debugging)
-                  {
-                      hexdump_header(infile, MAX_HEADER_SIZE);
-                  }
-
-                  return BAD_HEADER;
-              }
-
-
-              if ((*(p + 1) == 'a') && (*(p + 2) == 't') && (*(p + 3) == 'a')) break;
-
-          }
-          while (p - buffer < MAX_HEADER_SIZE);
-
-          header->data_chunk=READ_4_bytes
-  }
-  else
-   header->data_chunk = header->fact_chunk;
 }
-else
-/* standard header: DATA chunk */
-/* 36-39 or 50-53 +22*/ header->data_chunk=READ_4_bytes
 
-/* 40-43 or 54-57 +22*/ header->data_size= uint32_read_reverse(p);
+/* 40-43 or 54-57 +22*/ header->data_size= uint32_read_reverse(buffer + header->header_size_in - 4);
 
   /* point to beginning of file */
   rewind(infile);
 
   /* and dump the header */
-  printf( "%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Existing header data.\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Looking for the words 'RIFF', 'WAVE', 'fmt'," );
-  printf( "%s\n", "       or 'data' to see if this is even a somewhat valid WAVE header:" );
-  hexdump_header(infile, header->header_size_in);
+  if (globals.veryverbose)
+  {
+      printf( "%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Existing header data.\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Looking for the words 'RIFF', 'WAVE', 'fmt'," );
+      printf( "%s\n", "       or 'data' to see if this is even a somewhat valid WAVE header:" );
+      hexdump_header(infile, header->header_size_in);
+  }
 
   return 1;
 }
