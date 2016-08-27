@@ -62,10 +62,14 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 extern globalData globals;
 
 /*
-Multichannel reference tables are structured as follows:
-  { { 16-bit  { channels { permutated values }}}, { 24-bit  { channels { permutated values }}} }
-
-S is the table of direct conversion (WAV to AOB) and _S the table of reverse conversion (AOB to WAV), with _S o S = Id
+*
+* Multichannel reference tables are structured as follows:
+*  { { 16-bit  { channels { permutated values }}}, { 24-bit  { channels { permutated values }}} }
+*
+* S is the table of direct conversion (WAV to AOB) and _S the table of reverse conversion (AOB to WAV).
+*
+* Documentation on how to obtain the following permutation tables and relation to channel-mapping: see file wav-aob.mappings.ods (Aug. 2016, Fabrice Nicol)
+*
 */
 
 
