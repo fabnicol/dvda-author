@@ -21,6 +21,7 @@
 #endif
 #else
 #include <sys/stat.h>
+
 #endif
 
 
@@ -65,12 +66,70 @@ uint64_t read_file_size(FILE* fp, TCHAR* filename);
 
 #else
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+
  inline static uint64_t stat_file_size(const char* filename)
 {
-    struct stat buf;
-    if (stat(filename, &buf) != 0) return(0);
-    return((uint64_t) buf.st_size);
+
+    off_t file_size;
+
+    int fd;
+    FILE* fp;
+    struct stat st;
+
+    fd = open(filename, O_RDONLY);
+    if (fd == -1)
+    {
+        close(fd);
+        fprintf(stderr, "[ERR]" "   Impossible to open file %s for checking size.\n", filename);
+        perror("       ");
+        return 0;
+    }
+
+    fp = fdopen(fd, "r");
+
+    if (fp == NULL)
+    {
+        close(fd);
+        fprintf(stderr, "[ERR]" "   Impossible to fdopen file %s for checking size.\n", filename);
+        perror("       ");
+        return 0;
+    }
+
+    /* Ensure that the file is a regular file */
+
+    if ((fstat(fd, &st) != 0) || (!S_ISREG(st.st_mode)))
+    {
+        close(fd);
+        fprintf(stderr, "[ERR]" "   Impossible to fstat file %s for checking size.\n", filename);
+        perror("       ");
+        return 0;
+
+    }
+
+    if (fseeko(fp, 0 , SEEK_END) != 0)
+    {
+        close(fd);
+        fprintf(stderr, "[ERR]" "   Impossible to fseeko file %s for checking size.\n", filename);
+        perror("       ");
+        return 0;
+    }
+
+    file_size = ftello(fp);
+
+    if (file_size == -1)
+    {
+      perror(ANSI_COLOR_RED "[ERR]");
+      return 0;
+    }
+
+
+    return (uint64_t) file_size;
 }
+
 uint64_t read_file_size(FILE * fp, const char* filename);
 int truncate_from_end(char* filename, uint64_t offset);
 #endif
