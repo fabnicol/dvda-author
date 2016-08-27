@@ -357,7 +357,7 @@ int rmdir_recursive (char *root, char *dirname)
         names = names->next;
         free (prev);
     }
-    chdir (cwd);
+    if (chdir (cwd) != 0) perror("[ERR]  chdir");
     free (cwd);
     return (0);
 }
@@ -431,7 +431,7 @@ void fix_separators(char * path)
 char* end_sep(const char *path)
 {
     int s = strlen(path);
-    char* out;
+    char* out = NULL;
     if (path[s - 1] != '/' && path[s - 1] != '\\')
     {
      out = calloc(s + 2, sizeof(char));
@@ -775,9 +775,9 @@ _Bool s_dir_exists(const char* path)
     {
         if (globals.veryverbose) printf( ANSI_COLOR_YELLOW "[WAR]" ANSI_COLOR_RESET "  Directory %s already exists.\n", path);
         errno = 0;
-        return true;
     }
 
+    return true;
 }
 
 /*-------
@@ -1531,7 +1531,7 @@ int get_endianness()
 
 }
 
-void parse_wav_header(WaveData* info, infochunk* ichunk)
+void parse_wav_header(WaveData* info, WaveHeader* header)
 {
     FILE * infile=info->INFILE;
     uint8_t haystack[MAX_HEADER_SIZE] = {0};
@@ -1546,16 +1546,35 @@ void parse_wav_header(WaveData* info, infochunk* ichunk)
     {
         fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not read %d characters from input file\n", MAX_HEADER_SIZE);
         fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Just read %d\n", count);
-        ichunk->span=0;
+        header->header_size_in=0;
         return;
     }
     uint8_t *pt=&haystack[0];
     uint8_t span=0;
 
     fseek(infile, 0, SEEK_SET);
-    // PATCH 09.07
 
-    // Loop until reached end of 256-byte window of found 'fact'
+    if (memcmp(haystack + 36, "data", 4) == 0)
+    {
+        header->is_extensible = false;
+        header->ichunks = 0;
+        header->header_size_in = 0;
+        memcpy(&header->data_chunk, "data", 4 * sizeof(char)) ;
+        return;
+    }
+    else
+    {
+        if (haystack[36] == 0 || haystack[36] == 22)
+        header->is_extensible = true;
+    }
+
+    if (header->is_extensible)
+        printf(ANSI_COLOR_BLUE "[INF]" ANSI_COLOR_RESET "  Found extensible WAV header\n");
+    else
+    {
+        printf(ANSI_COLOR_BLUE "[INF]" ANSI_COLOR_RESET "  Found non-standard extensible-like WAV header, continue parsing...\n");
+        header->is_extensible = true;
+    }
 
     do
     {
@@ -1563,7 +1582,8 @@ void parse_wav_header(WaveData* info, infochunk* ichunk)
         {
           if ((*(pt + 1) == 'a') && (*(pt + 2) == 'c') && (*(pt + 3) == 't')) 
           {
-           ichunk->is_extensible=1;   
+           header->has_fact = true;
+           memmove(&header->fact_chunk,  "fact", 4 * sizeof(char));
            break;
           }
           span=pt-haystack;
@@ -1574,6 +1594,14 @@ void parse_wav_header(WaveData* info, infochunk* ichunk)
     }
     while ( span < MAX_HEADER_SIZE-7);
     
+    if (header->has_fact)
+        printf(ANSI_COLOR_BLUE "[INF]" ANSI_COLOR_RESET "  Found `fact' chunk\n");
+    else
+    {
+        printf(ANSI_COLOR_BLUE "[INF]" ANSI_COLOR_RESET "  No `fact' chunk in header.\n");
+    }
+
+
     span=0;
 
     // Loop until reached end of 256-byte window of found 'data'
@@ -1588,20 +1616,26 @@ void parse_wav_header(WaveData* info, infochunk* ichunk)
             {
                 hexdump_header(infile, MAX_HEADER_SIZE);
             }
-            ichunk->span=0;
+            header->header_size_in=0;
             return;
         }
 
         span=pt-haystack;
 
-        if ((*(pt + 1) == 'a') && (*(pt + 2) == 't') && (*(pt + 3) == 'a')) break;
+        if ((*(pt + 1) == 'a') && (*(pt + 2) == 't') && (*(pt + 3) == 'a'))
+        {
+            memmove(&header->data_chunk, "data", 4);
+            break;
+        }
 
     }
     while ( span < MAX_HEADER_SIZE-7);
 
+    header->header_size_in = (span > 0)? (span < 248 ? span + 8 : MAX_HEADER_SIZE) : MAX_HEADER_SIZE;
+
     pt=&haystack[0];
     
-    if (span > 36)
+    if (header->header_size_in  > 44)
     {
         /* header is non-standard, looking for INFO chunks */
         /* The RIFF standard defines the following chunks, of which only INAM, IART, ICMT, ICOP, ICRD, IGNR will be parsed */
@@ -1642,9 +1676,9 @@ void parse_wav_header(WaveData* info, infochunk* ichunk)
                 if (globals.debugging)
                 {
 
-                    if (ichunk->found)
+                    if (header->ichunks)
                         printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found %d info chunks among %d characters\n       INAM %s\n       IART %s\n       ICMT %s\n       ICOP %s\n       ICRD %s\n       IGNR %s\n",
-                               ichunk->found, span, ichunk->INAM, ichunk->IART, ichunk->ICMT, ichunk->ICOP, ichunk->ICRD, ichunk->IGNR);
+                               header->ichunks, span, header->INAM, header->IART, header->ICMT, header->ICOP, header->ICRD, header->IGNR);
                     else
                         printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Could not find info chunks among %d characters\n", span);
 
@@ -1655,32 +1689,32 @@ void parse_wav_header(WaveData* info, infochunk* ichunk)
             infoindex=pt-haystack;
 
             if (*(pt + 1) == 'N' && *(pt + 2) == 'A' && *(pt + 3) == 'M')
-                ichunk->found = read_info_chunk(pt, ichunk->INAM);
+                header->ichunks = read_info_chunk(pt, header->INAM);
             else
             if (*(pt + 1) == 'A' && *(pt + 2) == 'R' && *(pt + 3) == 'T')
-                ichunk->found += read_info_chunk(pt, ichunk->IART);
+                header->ichunks += read_info_chunk(pt, header->IART);
             else
             if (*(pt + 1) == 'C')
             {
                 if (*(pt + 2) == 'M' && *(pt + 3) == 'T')
-                    ichunk->found += read_info_chunk(pt, ichunk->ICMT);
+                    header->ichunks += read_info_chunk(pt, header->ICMT);
                 else
                 if (*(pt + 2) == 'O' && *(pt + 3) == 'P')
-                    ichunk->found += read_info_chunk(pt, ichunk->ICOP);
+                    header->ichunks += read_info_chunk(pt, header->ICOP);
                 else if ((*(pt + 2) == 'R') && (*(pt + 3) == 'D'))
-                    ichunk->found += read_info_chunk(pt, ichunk->ICRD);
+                    header->ichunks += read_info_chunk(pt, header->ICRD);
             }
             else
             if (*(pt + 1) == 'G' && *(pt + 2) == 'N' && *(pt + 3) == 'R')
-                ichunk->found += read_info_chunk(pt, ichunk->IGNR);
+                header->ichunks += read_info_chunk(pt, header->IGNR);
 
         }
         while (infoindex < span-4);
     }
 
-    if (ichunk->found)
+    if (header->ichunks)
     {
-        printf(ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET"  Found %d info chunks in extended header\n", ichunk->found);
+        printf(ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET"  Found %d info chunks in extended header\n", header->ichunks);
         if (globals.debugging)
         {
             printf(ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET"  See file `database' under directory %s\n", info->database);
@@ -1690,17 +1724,15 @@ void parse_wav_header(WaveData* info, infochunk* ichunk)
     if (globals.debugging)
     {
         if (span != 36)
-            printf( ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Size of header is non-standard (scanned %d characters)\n", span );
+            printf( ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Size of header is non-standard (scanned %d characters)\n", header->header_size_in);
         else
             printf("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Size of header is standard\n");
 
-        if (span < 36)
+        if (header->header_size_in  < 44)
         {
-            printf( "[MSF]  Size of header is too short, some audio will be lost (%d bytes).\n", 36-span );
+            printf( "[MSF]  Size of header is too short, some audio will be lost (%d bytes).\n", header->header_size_in  - span);
         }
     }
-
-    ichunk->span=span;
 
     return;
 }

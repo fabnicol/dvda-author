@@ -195,22 +195,14 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   /* reads header */
 
-  uint8_t span = 0;
-  infochunk ichunk;
-  memset(&ichunk, 0, sizeof(infochunk));
-   
+  /* pre parse header to find if is extensible and if has 'fact' ; collect facts in this case */
+
   if (!info->prepend) 
-     parse_wav_header(info, &ichunk);
-   
-  header->is_extensible = ichunk.is_extensible;
-  span = ichunk.span;
-
-  if (header->is_extensible)
-      printf(ANSI_COLOR_BLUE "[INF]" ANSI_COLOR_RESET "  Found extensible WAV header with infochunk of size %d\n", span);
-
+     parse_wav_header(info, header);
+     
   /* if found info tags, dumps them in textfile database, which can only occur if span > 36 */
 
-  if (span > 36 && ichunk.found)
+  if (header->ichunks > 0)
   {
       char databasepath[MAX_OPTION_LENGTH+9]={0};
       if (info->database == NULL) info->database=strdup("localdata");
@@ -218,16 +210,16 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
       secure_mkdir(info->database, 0755);
       FILE* database = NULL;
       secure_open(databasepath, "ab", database);
-      fprintf(database, "Filename    %s\nArtist      %s\nDate        %s\nStyle       %s\nComment     %s\nCopyright   %s\n\n", ichunk.INAM, ichunk.IART, ichunk.ICRD, ichunk.IGNR, ichunk.ICMT, ichunk.ICOP);
-      info->filetitle = strdup((const char*) ichunk.INAM);
+      fprintf(database, "Filename    %s\nArtist      %s\nDate        %s\nStyle       %s\nComment     %s\nCopyright   %s\n\n",
+                         header->INAM, header->IART, header->ICRD, header->IGNR, header->ICMT, header->ICOP);
+      info->filetitle = strdup((const char*) header->INAM);
       fclose(database);
    }
 
-  header->header_size_in = (span > 0)? (span < 248 ? span + 8 : MAX_HEADER_SIZE) : MAX_HEADER_SIZE;
 
-  if (span >= 248)
+  if (header->header_size_in >= 256)
   {
-       printf(ANSI_COLOR_YELLOW "[WAR]" ANSI_COLOR_RESET "  Found unsupported WAV header with infochunk size exceeding %d byte limit\n", 248);
+       printf(ANSI_COLOR_YELLOW "[WAR]" ANSI_COLOR_RESET "  Found unsupported WAV header with size exceeding %d byte limit\n", 256);
   }
 
   /* if no GUI, reverting to user input and resetting header_size to 0 if: failed to parse header, or prepending, or header_size > 255 */
