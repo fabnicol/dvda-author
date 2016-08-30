@@ -1,4 +1,4 @@
-prefix=/mnt/fab/Dev/dvda-author-dev/BUILD/local
+prefix=/home/fab/Dev/dvda-author-dev/local
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include/mjpegtools
