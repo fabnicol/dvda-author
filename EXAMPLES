@@ -1,5 +1,5 @@
 
-DVDA-AUTHOR  MENU EXAMPLE
+DVDA-AUTHOR 2016-dev MENU EXAMPLE
 
 Prerequisites
 -------------
@@ -150,7 +150,7 @@ Each of the wav files should be 16bit-48kHz.
 
 
 
-DVDA-AUTHOR  STILLS EXAMPLE
+DVDA-AUTHOR 2016-dev STILLS EXAMPLE
 
 Collect jpg pictures and author them. 
 Add them to a directory dir with names pic_000.jpg,...pic_010.jpg,...pic_999.jpg (max).
@@ -166,7 +166,7 @@ Use exactly as many pictures as there are tracks if using pictures
 (repeat self-same pics; laxer syntax to be developed).
 
 
-DVDA-AUTHOR  CONFIGURATION FILE EXAMPLE
+DVDA-AUTHOR 2016-dev CONFIGURATION FILE EXAMPLE
 
 Check the howto HOWTO.conf and the configuration file example dvda-author.conf.example 
 in your package or under your documentation installation folder.
