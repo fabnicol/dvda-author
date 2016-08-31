@@ -1,0 +1,3 @@
+To change version export the adequate VERSION variable before configuring:
+export VERSION=version string 
+configure ...
