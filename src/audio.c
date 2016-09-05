@@ -72,8 +72,35 @@ extern globalData globals;
 *
 */
 
+/*
+ID\Chan 0   1   2   3   	4   5     info->channels
+    0 	C                              1
+    1 	L 	R                          2
+    2 	L 	R 	S                      3
+    3 	L 	R 	Ls 	Rs                 4
+    4 	L 	R 	Lfe                    3
+    5 	L 	R 	Lfe	S                  4
+    6 	L 	R 	Lfe	Ls  	Rs         5
+    7 	L 	R 	C                      3
+    8 	L 	R 	C 	S                  4
+    9 	L 	R 	C 	Ls 	    Rs         5
+    10 	L 	R 	C 	Lfe                4
+    11 	L 	R 	C 	Lfe 	S          5
+    12 	L 	R 	C 	Lfe 	Ls 	Rs     6
+    13 	L 	R 	C 	S                  4
+    14 	L 	R 	C 	Ls 	    Rs         5
+    15 	L 	R 	C 	Lfe                4
+    16 	L 	R 	C 	Lfe 	S          5
+    17 	L 	R 	C 	Lfe 	Ls 	Rs     6
+    18 	L 	R 	Ls 	Rs   	Lfe        5
+    19 	L 	R 	Ls 	Rs 	    C          5
+    20 	L 	R 	Ls 	Rs 	    C  	Lfe    6
+*/
 
-static uint8_t  S[2][6][36]=
+const uint8_t channels[21] = {1,2,3,4,3,4,5,3,4,5,4,5,6,4,5,4,5,6,5,5,6};
+
+
+static const uint8_t  S[2][6][36]=
 {{      {0}, {0},
         {5, 4, 11, 10, 1, 0, 3, 2, 7, 6, 9, 8},
         {5, 4, 7, 6, 13, 12, 15, 14, 1,  0, 3, 2, 9, 8, 11, 10},
@@ -212,7 +239,7 @@ int calc_info(fileinfo_t* info)
 // assemble numbers for the various combinations
     short int table_index=(info->bitspersample == 24)? 1 : 0 ;
 
-    static uint16_t T[2][6][11]=     // 16-bit table
+    static const uint16_t T[2][6][11]=     // 16-bit table
     {
          {{ 	2000, 16,  1984,  2010,	2028, 22, 11, 16, 10, 0, 0 },
             {	2000, 16,  1984,  2010,	2028, 22, 11, 16, 10, 0, 0 },

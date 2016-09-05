@@ -103,4 +103,15 @@ char* create_binary_path(char* local_variable, const char* symbolic_constant, co
 void download_latest_version(_Bool download_new_version_flag,_Bool force_download_flag);
 #endif
 
+static FILE* aob_log;
+static void GCC_UNUSED open_aob_log()
+{
+    aob_log = fopen("/home/fab/aob_log", "wb+");
+}
+
+static void GCC_UNUSED close_aob_log()
+{
+    fclose(aob_log);
+}
+
 #endif // AUXILIARY_H_INCLUDED
