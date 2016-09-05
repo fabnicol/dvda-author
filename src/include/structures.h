@@ -217,6 +217,7 @@ typedef struct
     _Bool enable_lexer;
     _Bool logfile;
     _Bool loghtml;
+    _Bool logdecode;
     _Bool videozone;
     _Bool videolinking;
     _Bool playlist;
