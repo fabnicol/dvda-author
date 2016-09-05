@@ -1,0 +1,34 @@
+﻿3_16_44
+
+C       				                  dvda-author
+
+0x2C :  [0E 07]				         	[04 93] {=L - 0x974}
+x3B :   [04]                             	     	[02]    {=L - 0x02}
+0x800 : 00 00 01 BA 44 00 04 [16 F4 01] 	      00 00 01 BA 44 00 04 [04 94 AB]
+0x818 : 00 01 [13 C3]					00 01 [0A 4F] {= L - 0x974}
+0x826 : [04]						[02]    = {L - 0x02}
+0x1000 :00 00 01 BA 44 00 04 [2B 5C 01]        	00 00 01 BA 44 00 04 [09 25 57]
+0x1018 :00 01 [18 DD]					00 01 [0F 69] {= L - 0x974}
+0x1026 :[04]						[02] = {L - 0x02}
+0x1800: 00 00 01 BA 44 00 04 [3F C4 01] 	      00 00 01 BA 44 00 04 [0D B6 03]
+0x1818 :00 01 [1D F7]					00 01 [14 83]  {= L – 0x974}
+
++0x146800 à chaque secteur de 0x800            +0x490AC à chaque secteur de0x800
+
+
+PTS = ((pack_in_title * info→lpcm_payload) - info→firstpackdecrement) * 90000 / info→ bytespersecond + 585 
+
+D(info→firstpackdecrement) * 90000 * 8 /(info→samplerate * info→bitspersample * info→channels)
+ = 2420 
+
+44100 * 16 * 3 = 2 116 800 
+
+
+Analyse :
+
+patch L -2 : passage d’un encodage de 3 canaux de L R S à L R Lfe
+les autres deltas sont dus :
+- au début des secteurs après 00 00 01 BA, à un calc_SCR inexact du à une mauvaise formule de SCR
+- aux offset Ox20, à un pack_pts inexact lié à un mauvais calcul de PTS, probablement lui meme lié à un mauvais info→ firstpackdecrment.
+
+Idéalement, il faudrait inverser les formules mais on pourrait aussi essayer l’incrémentation unitaire des inputs jusqu’a atteindre les valeurs cibles.
