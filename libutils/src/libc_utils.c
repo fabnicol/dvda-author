@@ -1869,6 +1869,40 @@ void hexdump_pointer(uint8_t* tab,  size_t tabsize)
     fprintf(stderr, "%c", '\n' );
 }
 
+void hex2file(FILE* out, uint8_t* tab,  size_t tabsize)
+{
+    size_t i, count=0, input=0;
+
+    fprintf(out, "%c", '\n' );
+
+    do
+    {
+        /* Print the base address. */
+
+        fprintf(out,"%08lX:  ", (long unsigned)count);
+        input= Min(tabsize - count, HEX_COLUMNS);
+
+        for (i = 0; i < input; i++)
+            fprintf(out, "%02X ", tab[i+count]);
+
+        count += HEX_COLUMNS;
+
+        /* Print the characters. */
+
+        for (i = 0; i < HEX_COLUMNS; i++)
+            fprintf(out,"%c", (i < input)? (isprint(tab[i]) ? tab[i] : '.') : ' ');
+
+        fprintf(out, "%c", '\n');
+
+        /* break on partial buffer */
+    }
+    while (count < tabsize);
+
+    fprintf(out, "%c", '\n' );
+}
+
+
+
 void fread_endian(uint32_t * p, int t, FILE *f)
 {
     /*  CPU_IS_LITTLE_ENDIAN or CPU_IS_BIG_ENDIAN are defined by  configure script */

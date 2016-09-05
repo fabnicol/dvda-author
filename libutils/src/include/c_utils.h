@@ -196,6 +196,7 @@ int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED*, void G
 int get_endianness();
 void hexdump_header(FILE* infile, uint8_t header_size);
 void hexdump_pointer(uint8_t* tab,  size_t tabsize);
+void hex2file(FILE* out, uint8_t* tab,  size_t tabsize);
 void secure_open(const char *path, const char *context, FILE*);
 int end_seek(FILE* outfile);
 void parse_wav_header(WaveData* info, WaveHeader* ichunk);

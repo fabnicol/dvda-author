@@ -250,6 +250,7 @@ int main(int argc,  char* const argv[])
         1,  // enabling lexer
         /*logfile*/	0,  // no log
         /*loghtml*/     0,  //text log
+        /* logdecode */ 0,
         /*videozone*/   1,  // generates video zone
         /*videolinking*/0,  // no video link
         /*playlist*/    0,  // no playlist

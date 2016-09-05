@@ -116,7 +116,7 @@ printf("%s","    --project [file]     Launches a dvda-author project."J"The proj
 printf("%s","-i, --input directory    Input directory with audio files."J"Each subdirectory is a group.\n\n");
 printf("%s","-o, --output directory   Output directory.\n\n");
 printf("%s","-x, --extract disc[list] Extract DVD-Audio to directory -o."J"Groups are labelled g1, g2..."J"Optional comma-separated list of groups to be extracted\n"J"may be appended to disc path.\n"J"Tracks to be extracted may be listed ranked per group and separated by colons.\n\n");
-
+printf("%s","    --log-decode [file]  Decode AOB file and log MPEG specifics.\n\n");
 printf("%s","    --play disc[list]    Play DVD-Audio tracks."J"Optional comma-separated list of groups to be played\n"J"may be appended to disc path.\n"J"Tracks to be played may be listed ranked per group and separated by colons.\n\n");
 
 printf("%s","    --player PLAYER      Using a player that can be launched"J"by invocation of PLAYER (launch name or path to binary)"J"Player must return at end of each file."J"Default is 'vlc (files) vlc://quit'\n\n");
@@ -662,6 +662,9 @@ char* create_binary_path(char* local_variable, const char* symbolic_constant, co
     return local_variable;
 
 }
+
+
+
 
 void download_latest_version(_Bool download_new_version_flag,_Bool force_download_flag)
 {
