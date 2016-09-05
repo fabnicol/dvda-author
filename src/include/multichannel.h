@@ -28,7 +28,7 @@
 // To enable inlining of the same function in two distinct files, it is necessary to place it in a header
 // Performs permutation of buf by replacing buf[j] with associate value, depending on pits per second, channel number,
 // and whether one converts to AOB or extracts from AOB.
-static inline void permutation(uint8_t *buf, uint8_t *_buf, int bits_per_second_flag, uint8_t channels, uint8_t reference_table[][6][36], int size)
+static inline void permutation(uint8_t *buf, uint8_t *_buf, int bits_per_second_flag, uint8_t channels,  const uint8_t reference_table[][6][36], int size)
 {
     int j;
 
