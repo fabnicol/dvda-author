@@ -19,7 +19,7 @@ linux:LIBS +=   -lFLAC -logg  -lsox  -lid3tag -lz -lsndfile  -lpulse -lpulse-sim
 
 CONFIG(release, debug|release) {
 LIBS +=   -s
-QMAKE_CFLAGS=-march=native -O3
+QMAKE_CFLAGS=-march=native -O3 -Wno-unused-result
 }
 
 

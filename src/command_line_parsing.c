@@ -31,6 +31,7 @@
 #include "sound.h"
 #endif
 #include "videoimport.h"
+#include "ats.h"
 
 /*  #define _GNU_SOURCE must appear before <string.h> and <getopt.h> for strndup  and getopt_long*/
 
@@ -265,19 +266,20 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"ncolumns", required_argument, NULL, '7'},
         {"activemenu-palette", required_argument, NULL, '8'},
         {"background-colors", required_argument, NULL, 2},
-        {"bindir",required_argument, NULL, 3},
-        {"topmenu-slides",required_argument, NULL, 6},
-        {"download",optional_argument, NULL, 7},
-        {"check-version",no_argument, NULL, 8},
-        {"import-topmenu",required_argument, NULL, 9},
-        {"dvdv-tracks",required_argument, NULL, 17},
-        {"dvdv-slides",required_argument, NULL, 18},
-        {"dvdv-import",no_argument, NULL, 21},
-        {"mirror",no_argument, NULL, 22},
-        {"mirror-strategy",required_argument, NULL, 23},
-        {"hybridate",no_argument, NULL, 24},
-        {"full-hybridate",no_argument, NULL, 25},
-        {"merge",required_argument, NULL, 26},
+        {"bindir", required_argument, NULL, 3},
+        {"topmenu-slides", required_argument, NULL, 6},
+        {"download", optional_argument, NULL, 7},
+        {"check-version", no_argument, NULL, 8},
+        {"import-topmenu", required_argument, NULL, 9},
+        {"dvdv-tracks", required_argument, NULL, 17},
+        {"dvdv-slides", required_argument, NULL, 18},
+        {"dvdv-import", no_argument, NULL, 21},
+        {"mirror", no_argument, NULL, 22},
+        {"mirror-strategy", required_argument, NULL, 23},
+        {"hybridate", no_argument, NULL, 24},
+        {"full-hybridate", no_argument, NULL, 25},
+        {"merge",required_argument, NULL, 26},  // not implemented (reserved)
+        {"log-decode", required_argument,NULL, 27},
     #endif
         {NULL, 0, NULL, 0}
     };
@@ -891,7 +893,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'x' :
             extract_audio_flag=1;
             FREE(globals.settings.indir)
-                    globals.settings.indir=strdup(optarg);
+            globals.settings.indir=strdup(optarg);
             break;
             
         case 'n' :
@@ -1000,8 +1002,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             player=NULL;
             extract_audio_flag=1;
             FREE(globals.settings.indir)
-                    globals.settings.indir=strdup(optarg);
-            
+            globals.settings.indir=strdup(optarg);
+
             break;
             
         case  13:
@@ -1832,6 +1834,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 #else
             foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
 #endif
+            break;
+
+        case 27:
+            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Decode disk and log MPEG specifics.");
+            globals.logdecode = true;
+            decode_ats(optarg);
             break;
             
         case 6 :
