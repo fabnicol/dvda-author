@@ -830,7 +830,7 @@ inline static uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_title)
     }
 
     SCRint=floor(SCR);
-
+// Delta SCR is simply Delta PTS x 300. Use calc_PTS!
     return(SCRint);
 }
 
@@ -840,12 +840,12 @@ inline static uint32_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
     double PTS;
     uint32_t PTSint;
     uint64_t bytes_written;
-    uint64_t frames_written;
+    long double frames_written;
 
 
     if (pack_in_title==0)
     {
-        PTS=585.0;
+        PTS= 1795.0;//585.0;
     }
     else
     {
@@ -857,7 +857,7 @@ inline static uint32_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
             frames_written++;
         }
         // 1 48Khz-based frame is 1200Hz, 1 44.1KHz frame is 1102.5Hz
-        PTS=((frames_written*info->bytesperframe*90000.0)/(info->bytespersecond*1.0))+585.0;
+        PTS=( (frames_written*(double)info->bytesperframe*90000.0))/((double) info->bytespersecond)+ 1795.0;//585.0;
     }
 
     PTSint=(uint32_t) floor(PTS);
@@ -976,11 +976,12 @@ info->midpack_pes_padding=X[10];
 inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
 {
     int position;
-    int title = -1;
     //static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
     char* POS;
     uint32_t PTS;
-    uint64_t SCR, pack_in_title = 0;
+    uint64_t SCR;
+    static uint64_t pack_in_title;
+    static int title;
     int audio_bytes;
 
 
@@ -1180,7 +1181,7 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
 
     uint64_t sector_length = ftello(fp) - offset0;
     open_aob_log();
-    fprintf(aob_log, "NA;-----;%lu; bytes;------\n", sector_length);
+    fprintf(aob_log, "NA;-----;%lu; bytes;------;title pack;%lu;title;%d\n", sector_length, pack_in_title, title);
     close_aob_log();
     return(sector_length);
 }
@@ -1190,10 +1191,9 @@ int decode_ats(char* aob_file)
 
     FILE* fp;
 
-    int pack=0, pack_in_file=0, fileno=1;
     uint32_t bytesinbuf=2048, n=0;
     uint8_t audio_buf[2048];
-    uint64_t pack_in_title=0;
+    uint64_t pack = 0;
     fileinfo_t files;
 
     fp=fopen(aob_file,"rb");
@@ -1207,13 +1207,10 @@ int decode_ats(char* aob_file)
 
     do
     {
-        n=read_pes_packet(fp, &files, audio_buf);
 
-        if (n == bytesinbuf)
+        if (read_pes_packet(fp, &files, audio_buf) == bytesinbuf)
         {
             ++pack;
-            ++pack_in_title;
-            ++pack_in_file;
         }
         else
             bytesinbuf = 0;
@@ -1221,7 +1218,8 @@ int decode_ats(char* aob_file)
 
     } while (bytesinbuf);
 
-    return(1-fileno);
+    fprintf(stderr, "[MSG]   Read %lu PES packets.\n", pack);
+    return(0);
 }
 
 
