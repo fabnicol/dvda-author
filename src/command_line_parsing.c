@@ -1840,6 +1840,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Decode disk and log MPEG specifics.");
             globals.logdecode = true;
             decode_ats(optarg);
+            exit(0);
             break;
             
         case 6 :
