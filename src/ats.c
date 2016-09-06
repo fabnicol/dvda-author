@@ -138,7 +138,7 @@ inline static void decode_pts(uint8_t P[5], uint32_t* pts_ptr)
     *pts_ptr = (P[0] >> 1 & 0x3) << 30 | P[1] << 22 | (P[2] >> 1) << 15 | P[3] << 7 | P[4] >> 1;
 
     if (globals.logdecode)
-        fprintf(aob_log, "PTS;%" PRIu32 "\n", *pts_ptr);
+        fprintf(aob_log, "NA;PTS déc.;%" PRIu32 "\n", *pts_ptr);
 }
 
 inline static void write_pack_header(FILE* fp,  uint64_t SCRint)
@@ -186,11 +186,11 @@ inline static void rw_field(uint8_t* tab, int size,const char* label, FILE* fp)
 {
     uint64_t offset = ftello(fp);
     /* offset_count += */   fread(tab, size,1,fp);
-    hex2file(aob_log, tab, size);
 
     if (! globals.logdecode) return;
     fprintf(aob_log, "%" PRIu64 ";%s;", offset, label);
-    fprintf(aob_log, "%s", "\n");
+    hex2file(aob_log, tab, size);
+
 }
 
 
@@ -760,13 +760,13 @@ ID\Chan 0   1   2   3   	4   5     info->channels
     if (first_access_unit_pointer[0] != (frame_offset & 0xff00) >> 8)
     {
         foutput("%s\n", "first_access_unit_pointer: inaccurate bit 0");
-        if (globals.logdecode) fprintf(aob_log, "NA;first_access_unit_pointer bit 0 inacurate; %d instead of %d;", first_access_unit_pointer[0], (frame_offset & 0xff00) >> 8);
+        if (globals.logdecode) fprintf(aob_log, "NA;first_access_unit_pointer byte 0 inacurate; %d instead of %d\n", first_access_unit_pointer[0], (frame_offset & 0xff00) >> 8);
     }
 
     if (first_access_unit_pointer[1] != (frame_offset & 0xff))
     {
         foutput("%s\n", "first_access_unit_pointer: inaccurate bit 1");
-        if (globals.logdecode) fprintf(aob_log, "NA;first_access_unit_pointer bit 0 inacurate; %d instead of %d;", first_access_unit_pointer[1], (frame_offset & 0xff00) >> 8);
+        if (globals.logdecode) fprintf(aob_log, "NA;first_access_unit_pointer byte 1 inacurate; %d instead of %d\n", first_access_unit_pointer[1], frame_offset & 0xff);
     }
 
     /* offset_count += */   CHECK_FIELD(unknown3);
@@ -983,6 +983,9 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
     uint64_t SCR, pack_in_title = 0;
     int audio_bytes;
 
+
+    uint64_t offset0 = ftello(fp);
+
     read_pack_header(fp, &SCR); // +14
 
     uint8_t buf[4];
@@ -1175,8 +1178,11 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
     ??
     */
 
-
-    return(audio_bytes);
+    uint64_t sector_length = ftello(fp) - offset0;
+    open_aob_log();
+    fprintf(aob_log, "NA;-----;%lu; bytes;------\n", sector_length);
+    close_aob_log();
+    return(sector_length);
 }
 
 int decode_ats(char* aob_file)
