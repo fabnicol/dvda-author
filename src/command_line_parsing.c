@@ -280,6 +280,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"full-hybridate", no_argument, NULL, 25},
         {"merge",required_argument, NULL, 26},  // not implemented (reserved)
         {"log-decode", required_argument,NULL, 27},
+        {"outfile", required_argument,NULL, 28},
     #endif
         {NULL, 0, NULL, 0}
     };
@@ -639,7 +640,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'o' :
             
             globals.settings.outdir=strndup(optarg, MAX_OPTION_LENGTH);
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Output directory is: ", optarg);
+
+            foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET "  Output %s%s%s\n", "directory", " is: ", optarg);
             
             break;
             
@@ -1839,8 +1841,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 27:
             foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Decode disk and log MPEG specifics.");
             globals.logdecode = true;
-            decode_ats(optarg);
-            exit(0);
+            globals.aobpath = strdup(optarg);
+            break;
+
+        case 28:
+            globals.settings.outfile = strdup(optarg);
+            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  AOB log filepath: ", globals.settings.outfile);
             break;
             
         case 6 :
@@ -2063,6 +2069,15 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
         }
     }
+
+
+
+    if (globals.logdecode)
+    {
+        decode_ats(globals.aobpath);
+        exit(0);
+    }
+
     
     // Now copying to temporary directory, depending on type of menu creation, trying to minimize work, depending of type of disc build.
     char* dest;
