@@ -653,17 +653,20 @@ inline static int read_lpcm_header(FILE* fp, fileinfo_t* info, int64_t pack_in_t
 
     }
     else
-        if (sample_size[0] == 0x00 || sample_size[0] == 0x22)
+    if (sample_size[0] == 0x00 || sample_size[0] == 0x22)
+    {
+        unknown1[0] = 0x00;
+
+        if ((sample_rate[0] & 0xf) != high_nibble)
         {
-            unknown1[0] = 0x00;
-
-            if ((sample_rate[0] & 0xf) != high_nibble)
-            {
-                if (globals.logdecode) fprintf(aob_log, "%s", "NA;coherence_test;sample_rate and sample_size are incoherent (lower nibble != higher nibble)\n");
-            }
+            if (globals.logdecode) fprintf(aob_log, "%s", "NA;coherence_test;sample_rate and sample_size are incoherent (lower nibble != higher nibble)\n");
         }
+    }
 
-    info->bitspersample = 16 + (sample_size[0] & 0x10) * 4;
+    if (sample_size[0] == 0x2f || sample_size[0] == 0x22)
+        info->bitspersample = 24;
+    else
+        info->bitspersample = 16;
 
     /* offset_count += */   CHECK_FIELD(unknown2);
     /* offset_count += */   RW_FIELD(channel_assignment);
@@ -1226,18 +1229,6 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
         break;
     }
 
-    /*
-    if (cc == 0x1f)
-    {
-        cc=0;
-    }
-    else
-    {
-        cc++;
-    }
-    ??
-    */
-
     uint64_t sector_length = ftello(fp) - offset0;
     open_aob_log();
     fprintf(aob_log, "NA;-----;%lu; bytes;------;title pack;%lu;title;%d\n", sector_length, pack_in_title, title);
@@ -1264,8 +1255,8 @@ int decode_ats(char* aob_file)
 
     do
     {
-
-        if (read_pes_packet(fp, &files, audio_buf) == bytesinbuf)
+        int result  = read_pes_packet(fp, &files, audio_buf);
+        if (result  == bytesinbuf)
         {
             ++pack;
         }
