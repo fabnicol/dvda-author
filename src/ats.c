@@ -842,7 +842,7 @@ inline static uint32_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
     uint64_t bytes_written;
     long double frames_written;
     int rate = 0;
-    double M_PTS[2][4] = {{1795.0, 1650.0, 897.0, 550.0}, {1795.0, 1650.0, 897.0, 550.0}};
+    double M_PTS[2][4] = {{1795.0, 1650.0, 897.0, 550.0}, {1197.0, 1100.0, 897.0, 550.0}};
 
     if (pack_in_title==0)
     {
@@ -907,6 +907,16 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         {
             write_pes_padding(fp, info->firstpack_pes_padding);//+6+info->firstpack_pes_padding
         }
+        else
+        {
+            uint64_t offset = ftello(fp) % 2048;
+            if (offset)
+            {
+              uint8_t zero[2048-offset];
+              memset(zero, 0, 2048-offset);
+              fwrite(zero, 2048-offset, 1, fp);
+            }
+        }
     }
     else if (bytesinbuffer < info->lpcm_payload)   // Last packet in title 2038+info->lastpack_lpcm_headerquantity
     {
@@ -921,7 +931,20 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         // PATCH Dec. 2013
         // Lee Feldkamp corrected formula write_pes_padding(fp,2048-28-info->midpack_lpcm_headerquantity-4-audio_bytes+gamma);
         // PATCH Sept 2016
-        write_pes_padding(fp, 2016 - info->lastpack_lpcm_headerquantity - audio_bytes);
+        int16_t padding_quantity = 2016 - info->lastpack_lpcm_headerquantity - audio_bytes;
+
+        if (padding_quantity > 0)
+            write_pes_padding(fp, (uint16_t) padding_quantity);
+        else
+        {
+            uint64_t offset = ftello(fp) % 2048;
+            if (offset)
+            {
+              uint8_t zero[2048-offset];
+              memset(zero, 0, 2048-offset);
+              fwrite(zero, 2048-offset, 1, fp);
+            }
+        }
 
     }
     else   			// A middle packet in the title: 38 + (info->midpack_lpcm_headerquantity+info->midpack_pes_padding+info->lpcm_payload)
@@ -936,7 +959,21 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
 
         write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,pack_in_title,cc,MIDDLE_PACK); //info->midpack_lpcm_headerquantity+4
         /* offset_count+= */ fwrite(audio_buf,1,audio_bytes,fp);
-        if (info->midpack_pes_padding > 0) write_pes_padding(fp,info->midpack_pes_padding);//info->midpack_pes_padding +6
+
+        if (info->midpack_pes_padding > 0)
+        {
+            write_pes_padding(fp,info->midpack_pes_padding);//info->midpack_pes_padding +6
+        }
+        else
+        {
+          uint64_t offset = ftello(fp) % 2048;
+          if (offset)
+          {
+            int8_t zero[2048-offset];
+            memset(zero, 0, 2048-offset);
+            fwrite(zero, 2048-offset, 1, fp);
+          }
+        }
     }
     /*
     {{   	2000, 16,  1984,  2010,	2028, 22, 11, 16, 10, 0, 0 },
