@@ -1847,6 +1847,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 28:
             globals.settings.outfile = strdup(optarg);
             foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  AOB log filepath: ", globals.settings.outfile);
+            if (file_exists(globals.settings.outfile)) unlink(globals.settings.outfile);
             break;
             
         case 6 :
