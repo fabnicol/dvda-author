@@ -221,6 +221,7 @@ int main(int argc,  char* const argv[])
         .logfile = NULL,   // logfile path should be supplied on command line
         .indir = NULL,
         .outdir = NULL,
+        .outfile = NULL,
         .lplexoutdir = NULL,
     #ifdef __WIN32__
          .workdir = strdup(DEFAULT_WORKDIR),// working directory: under Windows, c:\ if not defined at compile time, otherwise 'currentdir' environment variable
@@ -288,6 +289,7 @@ int main(int argc,  char* const argv[])
         /*xml filepath*/  NULL,
         /*spumux xml*/    NULL,
         /*cdrecord dev*/  NULL,
+        /* aob path for decoding */ NULL,
         /*journal (log)*/ NULL, //(FILE*)
         /*access rights*/ DEFAULT_ACCESS_RIGHTS,
         /* it is necessary to use strdup as these settings may be overridden dynamically */
@@ -364,9 +366,7 @@ int main(int argc,  char* const argv[])
     globals.settings.tempdir=TEMPDIR;
     globals.settings.lplextempdir=LPLEXTEMPDIR;
     globals.settings.stillpicdir=strdup(globals.settings.tempdir);
-    normalize_temporary_paths(NULL);
-
-
+    normalize_temporary_paths(NULL); // to be reviewed
 
     // Null arg is no longer supported, yet...
 

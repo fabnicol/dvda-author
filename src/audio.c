@@ -243,7 +243,7 @@ int calc_info(fileinfo_t* info)
     {
          {{ 	2000, 16,  1984,  2010,	2028, 22, 11, 16, 10, 0, 0 },
             {	2000, 16,  1984,  2010,	2028, 22, 11, 16, 10, 0, 0 },
-            { 	2004, 24,  1980,  2010,	2028, 22, 15, 12,  6, 0, 0 },
+            { 	2004, 24,  1980,  2010,	2028, 22, 15, 12, 12 /*old:6*/, 0, 0 },
             { 	2000, 16,  1980,  2010,	2028, 22, 11, 16, 10, 0, 0 },
             { 	2000, 20,  1980,  2010, 2028, 22, 15, 16, 10, 0, 0 },
             { 	1992, 24,  1992, 1993,  2014, 22, 10, 10,  4,17,14}},
@@ -269,9 +269,9 @@ int calc_info(fileinfo_t* info)
     info->firstpack_audiopesheaderquantity=X[3];
     info->midpack_audiopesheaderquantity=X[4];
     info->lastpack_audiopesheaderquantity=X[5];
-    info->firstpack_lpcm_headerquantity=X[6];
-    info->midpack_lpcm_headerquantity=X[7];
-    info->lastpack_lpcm_headerquantity=X[8];
+    info->firstpack_lpcm_headerquantity=(uint8_t) X[6];
+    info->midpack_lpcm_headerquantity=(uint8_t) X[7];
+    info->lastpack_lpcm_headerquantity=(uint8_t) X[8];
     info->firstpack_pes_padding=X[9];
     info->midpack_pes_padding=X[10];
 

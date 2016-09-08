@@ -666,6 +666,7 @@ char* create_binary_path(char* local_variable, const char* symbolic_constant, co
 
 
 
+
 void download_latest_version(_Bool download_new_version_flag,_Bool force_download_flag)
 {
    #if HAVE_curl
