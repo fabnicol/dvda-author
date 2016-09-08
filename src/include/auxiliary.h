@@ -103,15 +103,26 @@ char* create_binary_path(char* local_variable, const char* symbolic_constant, co
 void download_latest_version(_Bool download_new_version_flag,_Bool force_download_flag);
 #endif
 
-static FILE* aob_log;
+static FILE* GCC_UNUSED aob_log;
+extern globalData globals;
 static void GCC_UNUSED open_aob_log()
 {
-    aob_log = fopen("/home/fab/aob_log", "ab");
+    if (globals.settings.outfile == NULL || globals.settings.outfile[0] == '\0')
+    {
+        fprintf(stderr, "%s\n", ANSI_COLOR_RED "[ERR]" ANSI_COLOR_RESET  "  Empty log-decode filepath.");
+        exit(-1);
+    }
+    aob_log = fopen(globals.settings.outfile, "ab");
+    if (aob_log == NULL)
+    {
+        fprintf(stderr, "%s%s%s\n", ANSI_COLOR_RED "[ERR]" ANSI_COLOR_RESET  "  AOB log *", globals.settings.outfile, "* could not be opened.");
+        fflush(NULL);
+        exit(-1);
+    }
 }
 
 static void GCC_UNUSED close_aob_log()
 {
     fclose(aob_log);
 }
-
 #endif // AUXILIARY_H_INCLUDED

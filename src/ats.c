@@ -43,6 +43,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 extern globalData globals;
 extern uint8_t channels[21];
+extern FILE* aob_log;
 static uint8_t pack_start_code[4]={0x00,0x00,0x01,0xBA};
 static uint8_t system_header_start_code[4]={0x00,0x00,0x01,0xBB};
 static uint8_t program_mux_rate_bytes[3]={0x01,0x89,0xc3};
@@ -164,7 +165,6 @@ inline static void write_pack_header(FILE* fp,  uint64_t SCRint)
     /* offset_count += */   fwrite(pack_stuffing_length_byte,1,1,fp);
 }
 
-
 inline static void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* fp, _Bool write)
 {
     uint64_t offset = ftello(fp);
@@ -173,7 +173,7 @@ inline static void test_field(uint8_t* tab__, uint8_t* tab, int size,const char*
     if (! globals.logdecode) return;
     if (memcmp(tab__, tab, size) == 0)
     {
-            fprintf(aob_log, "%s", "OK\n");
+        fprintf(aob_log, "%s", "OK\n");
     }
     else
     {
@@ -193,13 +193,9 @@ inline static void rw_field(uint8_t* tab, int size,const char* label, FILE* fp)
 
 }
 
-
 #define CHECK_FIELD(X) test_field(X##__, X, sizeof(X), #X, fp, true);
 #define CHECK_FIELD_NOWRITE(X) test_field(X##__, X, sizeof(X), #X, fp, false);
 #define RW_FIELD(X) rw_field(X, sizeof(X), #X, fp);
-
-
-
 
 inline static void read_pack_header(FILE* fp,  uint64_t* SCRint_ptr)
 {
@@ -266,41 +262,50 @@ inline static void read_system_header(FILE* fp)
     open_aob_log();
 
     /* offset_count += 4 */ CHECK_FIELD(system_header_start_code)
-    /* offset_count += 2 */ CHECK_FIELD(header_length)
-    /* offset_count += 3 */ CHECK_FIELD(rate_bound)
-    /* offset_count += */   CHECK_FIELD(audio_bound)
-    /* offset_count += */   CHECK_FIELD(video_bound)
-    /* offset_count += */   CHECK_FIELD(packet_rate_restriction_flag)
-    /* offset_count += 3 */ CHECK_FIELD(stream_info1)
-    /* offset_count += 3 */ CHECK_FIELD(stream_info2)
+            /* offset_count += 2 */ CHECK_FIELD(header_length)
+            /* offset_count += 3 */ CHECK_FIELD(rate_bound)
+            /* offset_count += */   CHECK_FIELD(audio_bound)
+            /* offset_count += */   CHECK_FIELD(video_bound)
+            /* offset_count += */   CHECK_FIELD(packet_rate_restriction_flag)
+            /* offset_count += 3 */ CHECK_FIELD(stream_info1)
+            /* offset_count += 3 */ CHECK_FIELD(stream_info2)
 
-    close_aob_log();
+            close_aob_log();
 }
 
 
-inline static void write_pes_padding(FILE* fp,uint16_t length)
+inline static void write_pes_padding(FILE* fp, uint16_t length)
 {
     uint8_t packet_start_code_prefix[3]={0x00,0x00,0x01};
     uint8_t stream_id[1]={0xbe};
     uint8_t length_bytes[2];
-    uint8_t ff_buf[2048];
-
-    if (globals.maxverbose) EXPLAIN("%s%d\n", "PES padding, size is: ", 3+1+2+length)
-
-            memset(ff_buf,0xff,sizeof(ff_buf));
 
     length-=6; // We have 6 bytes of PES header.
 
-    length_bytes[0]=(length&0xff00)>>8;
-    length_bytes[1]=(length&0xff);
+    /* PATCH Sept 2016 - old 'Dave' code:
+     *  length_bytes[0]=(length&0xff00)>>8;
+     *  length_bytes[1]=(length&0xff);
+     *  Found new padding byte count pattern
+     */
 
-    /* offset_count += 3 */ fwrite(packet_start_code_prefix,3,1,fp);
-    /* offset_count += 1 */ fwrite(&stream_id,1,1,fp);
-    /* offset_count += 2 */ fwrite(length_bytes,2,1,fp);
-    /* offset_count += length */ fwrite(ff_buf,length,1,fp);
+    length_bytes[0] = 0;
+
+    /* Take number of bytes to pad in sector (=2048-length)
+     * modulo 256 */
+
+    length_bytes[1] = length % 0x100;
+
+    uint8_t ff_buf[length];
+
+    memset(ff_buf, 0xff, length);
+
+    /* offset_count += 3 */ fwrite(packet_start_code_prefix, 3, 1, fp);
+    /* offset_count += 1 */ fwrite(&stream_id, 1, 1, fp);
+    /* offset_count += 2 */ fwrite(length_bytes, 2, 1, fp);
+    /* offset_count += length */ fwrite(ff_buf, length, 1, fp);
 }
 
-inline static void read_pes_padding(FILE* fp,uint16_t length)
+inline static void read_pes_padding(FILE* fp, uint16_t length)
 {
     uint8_t packet_start_code_prefix[3]={0x00,0x00,0x01};
     uint8_t stream_id[1]={0xbe};
@@ -310,24 +315,26 @@ inline static void read_pes_padding(FILE* fp,uint16_t length)
     uint8_t packet_start_code_prefix__[3]={0};
     uint8_t stream_id__[1]={0};
     uint8_t length_bytes__[2]={0};
-    uint8_t ff_buf__[2048]={0};
 
-    memset(ff_buf,0xff,sizeof(ff_buf));
 
     length-=6; // We have 6 bytes of PES header.
+
+    uint8_t ff_buf__[length];
+
+    memset(ff_buf,0xff,length);
 
     open_aob_log();
 
     /* offset_count += 3 */ CHECK_FIELD(packet_start_code_prefix)
-            /* offset_count += 1 */ CHECK_FIELD(stream_id);
+    /* offset_count += 1 */ CHECK_FIELD(stream_id);
 
-    length_bytes[0]=(length&0xff00)>>8;
-    length_bytes[1]=(length&0xff);
+    length_bytes[0]=0;
+    length_bytes[1]=length % 0x100;
 
     /* offset_count += 2 */ CHECK_FIELD(length_bytes);
     /* offset_count += length */ CHECK_FIELD_NOWRITE(ff_buf)
 
-            close_aob_log();
+    close_aob_log();
 }
 
 
@@ -453,7 +460,7 @@ inline static uint16_t read_audio_pes_header(FILE* fp, uint8_t extension_flag, u
 #define LAST_PACK    1
 #define MIDDLE_PACK  2
 
-inline static void write_lpcm_header(FILE* fp, int header_length,fileinfo_t* info, int64_t pack_in_title, uint8_t counter, uint8_t position)
+inline static void write_lpcm_header(FILE* fp, uint8_t header_length,fileinfo_t* info, int64_t pack_in_title, uint8_t counter, uint8_t position)
 {
     uint8_t sub_stream_id[1]={0xa0};
     uint8_t continuity_counter[1]={0x00};
@@ -539,55 +546,38 @@ inline static void write_lpcm_header(FILE* fp, int header_length,fileinfo_t* inf
 
     channel_assignment = info->cga;
 
-    switch (position)
+    bytes_written = pack_in_title == 0 ? 0 : (pack_in_title*info->lpcm_payload)-info->firstpackdecrement;
+    // e.g., for 4ch, First pack is 1984, rest are 2000
+    frames_written = bytes_written/info->bytesperframe;
+    if (frames_written*info->bytesperframe < bytes_written)
     {
-    case  FIRST_PACK:
-        frames_written=0;
-        bytes_written=0;
-        frame_offset=header_length-1;
-        break;
-
-    case  LAST_PACK:
-        if (info->bitspersample == 16)
-        {
-            frame_offset=0;
-            break;
-        }
-        // else no break;
-
-    case  MIDDLE_PACK:
-        bytes_written=(pack_in_title * info->lpcm_payload) - info->firstpackdecrement;
-        // e.g., for 4ch, First pack is 1984, rest are 2000
-        frames_written = bytes_written / info->bytesperframe;
-        if (frames_written * info->bytesperframe < bytes_written)
-        {
-            frames_written++;
-        }
-
-        frame_offset=(frames_written * info->bytesperframe) - bytes_written + header_length - 1;
+        frames_written++;
     }
+
+    frame_offset=(frames_written*info->bytesperframe)-bytes_written+header_length-1;
 
     LPCM_header_length[0] = (header_length & 0xff00) >> 8;
     LPCM_header_length[1] = header_length & 0xff;
 
-    first_access_unit_pointer[0]=(frame_offset&0xff00)>>8;
-    first_access_unit_pointer[1]=frame_offset&0xff;
+    first_access_unit_pointer[0]=(uint8_t)((frame_offset&0xff00)>>8);
+    first_access_unit_pointer[1]=(uint8_t)frame_offset&0xff;
 
     /* offset_count += */   fwrite(sub_stream_id,1,1,fp);
     /* offset_count += */   fwrite(continuity_counter,1,1,fp);
     /* offset_count += 2 */ fwrite(LPCM_header_length,2,1,fp);
     /* offset_count += 2 */ fwrite(first_access_unit_pointer,2,1,fp);
-#ifdef DEBUG
-    fprintf(stderr, "ftell=%lu\n", ftell(fp));
-#endif
+
     /* offset_count += */   fwrite(unknown1,1,1,fp);
     /* offset_count += */   fwrite(sample_size,1,1,fp);
     /* offset_count += */   fwrite(sample_rate,1,1,fp);
     /* offset_count += */   fwrite(unknown2,1,1,fp);
     /* offset_count += */   fwrite(&channel_assignment,1,1,fp);
     /* offset_count += */   fwrite(unknown3,1,1,fp);
-    /* offset_count += (header_length-8) */  fwrite(zero,header_length-8,1,fp);
-    if (globals.maxverbose) EXPLAIN("%s%d%s\n","WRITE LPCM HEADER for ",info->bitspersample, " bits")
+    /* offset_count += (header_length-8) */
+    fwrite(zero,header_length-8,1,fp);
+
+    if (globals.maxverbose)
+        EXPLAIN("%s%d%s\n","WRITE LPCM HEADER for ",info->bitspersample, " bits")
 }
 
 inline static int read_lpcm_header(FILE* fp, fileinfo_t* info, int64_t pack_in_title, uint8_t position)
@@ -618,7 +608,7 @@ inline static int read_lpcm_header(FILE* fp, fileinfo_t* info, int64_t pack_in_t
     /* offset_count += */   RW_FIELD(continuity_counter);
     /* offset_count += 2 */ RW_FIELD(LPCM_header_length);
 
-    uint header_length =  LPCM_header_length[0] << 8 | LPCM_header_length[1];
+    uint8_t header_length =  /* LPCM_header_length[0] << 8 | */ LPCM_header_length[1];
 
     /* offset_count += 2 */ RW_FIELD(first_access_unit_pointer);
 
@@ -680,7 +670,7 @@ inline static int read_lpcm_header(FILE* fp, fileinfo_t* info, int64_t pack_in_t
 
     info->cga = channel_assignment[0];
 
-    info->channels = channels[channel_assignment[0]];
+    info->channels = (channel_assignment[0] < 21) ? channels[channel_assignment[0]] : 0;
 
     /* info->PTS_length, info->numsamples and info->numbytes will be unusable, other info fileds OK */
 
@@ -715,43 +705,36 @@ ID\Chan 0   1   2   3   	4   5     info->channels
     switch (position)
     {
     case  FIRST_PACK:
-        frames_written=0;
-        bytes_written=0;
-        frame_offset=header_length-1;
 
         if (header_length != info->firstpack_lpcm_headerquantity)
         {
-            if (globals.logdecode) fprintf(aob_log, "NA;info->firstpack_lpcm_headerquantity;%d;%d", info->firstpack_lpcm_headerquantity, header_length);
+            if (globals.logdecode) fprintf(aob_log, "NA;info->firstpack_lpcm_headerquantity;Disk/Computed: %d;%d\n", header_length, info->firstpack_lpcm_headerquantity);
         }
         break;
 
     case  LAST_PACK:
         if (header_length != info->lastpack_lpcm_headerquantity)
         {
-            if (globals.logdecode) fprintf(aob_log, "NA;info->lastpack_lpcm_headerquantity;%d;%d", info->lastpack_lpcm_headerquantity, header_length);
+            if (globals.logdecode) fprintf(aob_log, "NA;info->lastpack_lpcm_headerquantity;Disk/Computed: %d;%d\n", header_length, info->lastpack_lpcm_headerquantity);
         }
-
-        if (info->bitspersample == 16)
-        {
-            frame_offset=0;
-            break;
-        }
-        // else no break;
+        break;
 
     case  MIDDLE_PACK:
         if (header_length != info->midpack_lpcm_headerquantity)
         {
-            if (globals.logdecode) fprintf(aob_log, "NA;info->midpack_lpcm_headerquantity;%d;%d", info->midpack_lpcm_headerquantity, header_length);
+            if (globals.logdecode) fprintf(aob_log, "NA;info->midpack_lpcm_headerquantity;Disk/Computed: %d;%d\n", header_length, info->midpack_lpcm_headerquantity);
         }
-        bytes_written=(pack_in_title*info->lpcm_payload)-info->firstpackdecrement;
-        // e.g., for 4ch, First pack is 1984, rest are 2000
-        frames_written=bytes_written/info->bytesperframe;
-        if (frames_written*info->bytesperframe < bytes_written)
-        {
-            frames_written++;
-        }
-        frame_offset=(frames_written*info->bytesperframe)-bytes_written+header_length-1;
     }
+
+    bytes_written = pack_in_title == 0 ? 0 : (pack_in_title*info->lpcm_payload)-info->firstpackdecrement;
+    // e.g., for 4ch, First pack is 1984, rest are 2000
+    frames_written = bytes_written/info->bytesperframe;
+    if (frames_written*info->bytesperframe < bytes_written)
+    {
+        frames_written++;
+    }
+
+    frame_offset=(frames_written*info->bytesperframe)-bytes_written+header_length-1;
 
     if (globals.veryverbose)
         foutput("titlepack: %ld bytes written: %ld\nsample rate: %d bit rate: %d channel asignment: %d\n",
@@ -760,13 +743,13 @@ ID\Chan 0   1   2   3   	4   5     info->channels
     if (first_access_unit_pointer[0] != (frame_offset & 0xff00) >> 8)
     {
         foutput("%s\n", "first_access_unit_pointer: inaccurate bit 0");
-        if (globals.logdecode) fprintf(aob_log, "NA;first_access_unit_pointer byte 0 inacurate; %d instead of %d\n", first_access_unit_pointer[0], (frame_offset & 0xff00) >> 8);
+        if (globals.logdecode) fprintf(aob_log, "NA;first_access_unit_pointer byte 0 inaccurate; %d instead of %d\n", first_access_unit_pointer[0], (frame_offset & 0xff00) >> 8);
     }
 
     if (first_access_unit_pointer[1] != (frame_offset & 0xff))
     {
         foutput("%s\n", "first_access_unit_pointer: inaccurate bit 1");
-        if (globals.logdecode) fprintf(aob_log, "NA;first_access_unit_pointer byte 1 inacurate; %d instead of %d\n", first_access_unit_pointer[1], frame_offset & 0xff);
+        if (globals.logdecode) fprintf(aob_log, "NA;first_access_unit_pointer byte 1 inaccurate; %d instead of %d\n", first_access_unit_pointer[1], frame_offset & 0xff);
     }
 
     /* offset_count += */   CHECK_FIELD(unknown3);
@@ -809,6 +792,8 @@ inline static uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_title)
 {
     double SCR;
     uint64_t SCRint;
+    uint64_t bytes_written;
+    long double frames_written;
 
 
     if (info->bytespersecond == 0)
@@ -818,19 +803,33 @@ inline static uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_title)
     }
 
 
-    SCR=(pack_in_title <= 4 ? pack_in_title : 4)*(2048.0*8.0*90000.0*300.0)/10080000.0;
+    //    SCR=(pack_in_title <= 4 ? pack_in_title : 4)*(2048.0*8.0*90000.0*300.0)/10080000.0;
 
-    if (pack_in_title>=4)
-    {
-        SCR+=((info->SCRquantity*300.0*90000.0)/info->bytespersecond)-42.85;
-    }
-    if (pack_in_title>=5)
-    {
-        SCR+=(pack_in_title-4.0)*((info->lpcm_payload*300.0*90000.0)/info->bytespersecond);
-    }
+    //    if (pack_in_title>=4)
+    //    {
+    //        SCR+=((info->SCRquantity*300.0*90000.0)/info->bytespersecond)-42.85;
+    //    }
+    //    if (pack_in_title>=5)
+    //    {
+    //        SCR+=(pack_in_title-4.0)*((info->lpcm_payload*300.0*90000.0)/info->bytespersecond);
+    //    }
 
-    SCRint=floor(SCR);
-// Delta SCR is simply Delta PTS x 300. Use calc_PTS!
+    if (pack_in_title==0) return 0;
+
+    bytes_written=(pack_in_title*info->lpcm_payload)-info->firstpackdecrement;
+    // e.g., for 4ch, First pack is 1984, rest are 2000
+    frames_written=bytes_written/info->bytesperframe;
+    if (frames_written*info->bytesperframe < bytes_written)
+    {
+        frames_written++;
+    }
+    // 1 48Khz-based frame is 1200Hz, 1 44.1KHz frame is 1102.5Hz
+    SCR=( (frames_written*(double)info->bytesperframe*90000.0))/((double) info->bytespersecond);
+
+    SCRint=floor(SCR) * 300;
+
+
+    // Delta SCR is simply Delta PTS x 300. Use calc_PTS!
     return(SCRint);
 }
 
@@ -838,14 +837,28 @@ inline static uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_title)
 inline static uint32_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
 {
     double PTS;
+    static  double PTS0;
     uint32_t PTSint;
     uint64_t bytes_written;
     long double frames_written;
-
+    int rate = 0;
+    double M_PTS[2][4] = {{1795.0, 1650.0, 897.0, 550.0}, {1795.0, 1650.0, 897.0, 550.0}};
 
     if (pack_in_title==0)
     {
-        PTS= 1795.0;//585.0;
+
+        int index = (info->bitspersample == 16)? 0 : 1;
+        fprintf(stderr, "%d %d, index: %d\n", info->samplerate, info->bitspersample, index);
+        switch (info->samplerate)
+        {
+            case 96000: ++rate;
+            case 88200: ++rate;
+            case 48000: ++rate;
+            default: break;
+        }
+
+        PTS0 = M_PTS[index][rate];
+        PTS = PTS0;
     }
     else
     {
@@ -857,7 +870,7 @@ inline static uint32_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
             frames_written++;
         }
         // 1 48Khz-based frame is 1200Hz, 1 44.1KHz frame is 1102.5Hz
-        PTS=( (frames_written*(double)info->bytesperframe*90000.0))/((double) info->bytespersecond)+ 1795.0;//585.0;
+        PTS=( (frames_written*(double)info->bytesperframe*90000.0))/((double) info->bytespersecond)+ PTS0;//585.0;
     }
 
     PTSint=(uint32_t) floor(PTS);
@@ -877,8 +890,8 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
     SCR=calc_SCR(info,pack_in_title);
 
     if (pack_in_title==0) // 53  + info->firstpack_lpcm_headerquantity + (info->firstpack_pes_padding != 0)? info->firstpack_pes_padding + 6 + info->lpcm_payload - info->firstpackdecrement
-                         //  = 59 + 1995 = 2054 if info->firstpack_pes_padding != 0
-                         //  = 2048 everywhere except for 16/6ch or 24/4ch.
+        //  = 59 + 1995 = 2054 if info->firstpack_pes_padding != 0
+        //  = 2048 everywhere except for 16/6ch or 24/4ch.
     {
         cc=0;            // First packet in title
         foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Writing first packet - pack=%"PRIu64", bytesinbuffer=%d\n",pack_in_title,bytesinbuffer);
@@ -892,7 +905,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
 
         if (info->firstpack_pes_padding > 0)
         {
-            write_pes_padding(fp,info->firstpack_pes_padding);//+6+info->firstpack_pes_padding
+            write_pes_padding(fp, info->firstpack_pes_padding);//+6+info->firstpack_pes_padding
         }
     }
     else if (bytesinbuffer < info->lpcm_payload)   // Last packet in title 2038+info->lastpack_lpcm_headerquantity
@@ -907,12 +920,12 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         /* offset_count+= */ fwrite(audio_buf,1,audio_bytes,fp);
         // PATCH Dec. 2013
         // Lee Feldkamp corrected formula write_pes_padding(fp,2048-28-info->midpack_lpcm_headerquantity-4-audio_bytes+gamma);
-        // reverting to Old-style Dave code:
-        write_pes_padding(fp,2006-audio_bytes);//2012-audio_bytes
+        // PATCH Sept 2016
+        write_pes_padding(fp, 2016 - info->lastpack_lpcm_headerquantity - audio_bytes);
 
     }
     else   			// A middle packet in the title: 38 + (info->midpack_lpcm_headerquantity+info->midpack_pes_padding+info->lpcm_payload)
-                    // = 32 + 2016 = 2048 or [faulty?] 2054 if (info->midpack_pes_padding > 0) ie 24b Ch 3+ and 16b 6 Ch.
+        // = 32 + 2016 = 2048 or [faulty?] 2054 if (info->midpack_pes_padding > 0) ie 24b Ch 3+ and 16b 6 Ch.
     {
         audio_bytes=info->lpcm_payload;
         write_pack_header(fp,SCR); //+14
@@ -925,7 +938,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         /* offset_count+= */ fwrite(audio_buf,1,audio_bytes,fp);
         if (info->midpack_pes_padding > 0) write_pes_padding(fp,info->midpack_pes_padding);//info->midpack_pes_padding +6
     }
-/*
+    /*
     {{   	2000, 16,  1984,  2010,	2028, 22, 11, 16, 10, 0, 0 },
        {	2000, 16,  1984,  2010,	2028, 22, 11, 16, 10, 0, 0 },
        { 	2004, 24,  1980,  2010,	2028, 22, 15, 12,  6, 0, 0 },
@@ -987,12 +1000,9 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
 
     uint64_t offset0 = ftello(fp);
 
-    read_pack_header(fp, &SCR); // +14
+    fseek(fp, offset0 +14, SEEK_SET);
 
     uint8_t buf[4];
-
-    uint64_t offset = ftello(fp);
-
     fread(buf, 4, 1, fp);
 
     if (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB)
@@ -1011,28 +1021,40 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
         }
         else
         {
-            fread(buf, 4, 1, fp);
+            int n = fread(buf, 4, 1, fp);
 
-            if (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB)
+            if (n == 4 && buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB)
             {
                 position = LAST_PACK;
                 POS = "last";
             }
             else
             {
-                     position = MIDDLE_PACK;
-                     POS = "middle";
+                position = MIDDLE_PACK;
+                POS = "middle";
             }
         }
 
         ++pack_in_title;
-     }
+    }
+
+    if (globals.logdecode)
+    {
+        open_aob_log();
+        fprintf(aob_log, "NA;Reading %s packet - pack;%"PRIu64";title;%d\n",
+                POS,
+                pack_in_title,
+                title);
+        close_aob_log();
+    }
+
+    fseek(fp, offset0, SEEK_SET);
+
+    read_pack_header(fp, &SCR); // +14
+
+    uint64_t offset = ftello(fp);
 
     fseek(fp, offset, SEEK_SET);
-
-    foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Reading %s packet - pack=%"PRIu64"\n",
-            POS,
-            pack_in_title);
 
     if (position == FIRST_PACK) read_system_header(fp); // +18
 
@@ -1053,7 +1075,7 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
 
     switch(position)
     {
-      case FIRST_PACK :
+    case FIRST_PACK :
 
         audio_bytes = info->lpcm_payload - info->firstpackdecrement;
 
@@ -1069,7 +1091,7 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
         }
         break;
 
-      case MIDDLE_PACK :
+    case MIDDLE_PACK :
 
         audio_bytes=info->lpcm_payload;
 
@@ -1080,14 +1102,14 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
             if (globals.logdecode)
             {
                 open_aob_log();
-                fprintf(aob_log, "NA;midpack_audiopesheaderquantity issue in read_audio_pes_header at pack %lu, title %d, position %d\n", pack_in_title, title, position);
+                fprintf(aob_log, "NA;midpack_audiopesheaderquantity issue in read_audio_pes_header at pack %lu;Disk/computed;%d;%d\n", pack_in_title, PES_packet_len, info->midpack_audiopesheaderquantity);
                 close_aob_log();
             }
         }
 
         break;
 
-      case LAST_PACK :
+    case LAST_PACK :
 
         PES_packet_len = read_audio_pes_header(fp, 0, &PTS); //+14
 
@@ -1133,10 +1155,10 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
         {
             open_aob_log();
             fprintf(aob_log, "NA;SCR issue at pack %lu, position %d. Disc/Computed:;%lu;%lu\n",
-                                           pack_in_title,
-                                           position,
-                                           SCR,
-                                           SCR_calc);
+                    pack_in_title,
+                    position,
+                    SCR,
+                    SCR_calc);
             close_aob_log();
         }
     }
@@ -1147,23 +1169,23 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
 
     switch(position)
     {
-      case FIRST_PACK :
+    case FIRST_PACK :
         if (info->firstpack_pes_padding > 0)
         {
-           read_pes_padding(fp,info->firstpack_pes_padding); // 0 or 6 + info->firstpack_pes_padding
+            read_pes_padding(fp,info->firstpack_pes_padding); // 0 or 6 + info->firstpack_pes_padding
         }
         break;
 
-      case MIDDLE_PACK :
+    case MIDDLE_PACK :
         if (info->midpack_pes_padding > 0)
         {
-           read_pes_padding(fp,info->midpack_pes_padding); // 0 or 6 + info->midpack_pes_padding
+            read_pes_padding(fp,info->midpack_pes_padding); // 0 or 6 + info->midpack_pes_padding
         }
 
         break;
 
-      case LAST_PACK :
-         read_pes_padding(fp,2006-audio_bytes);  // 2012 - audio_bytes
+    case LAST_PACK :
+        read_pes_padding(fp, 2016 - info->lastpack_lpcm_headerquantity - audio_bytes);
         break;
     }
 
@@ -1191,14 +1213,12 @@ int decode_ats(char* aob_file)
 
     FILE* fp;
 
-    uint32_t bytesinbuf=2048, n=0;
+    uint32_t bytesinbuf=2048;
     uint8_t audio_buf[2048];
     uint64_t pack = 0;
     fileinfo_t files;
 
     fp=fopen(aob_file,"rb");
-    if (globals.logdecode)
-        unlink("/home/fab/aob_log");
 
     if (fp == NULL)
     {
