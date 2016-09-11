@@ -99,9 +99,8 @@ ID\Chan 0   1   2   3   	4   5     info->channels
 
 const uint8_t channels[21] = {1,2,3,4,3,4,5,3,4,5,4,5,6,4,5,4,5,6,5,5,6};
 
-
 static const uint8_t  S[2][6][36]=
-{{      {0}, {0},
+{   {   {0}, {0},
         {5, 4, 11, 10, 1, 0, 3, 2, 7, 6, 9, 8},
         {5, 4, 7, 6, 13, 12, 15, 14, 1,  0, 3, 2, 9, 8, 11, 10},
         {5, 4, 7, 6,  9,  8, 15, 14,17, 16, 19, 18, 1, 0, 3, 2, 11, 10, 13, 12},
@@ -246,16 +245,19 @@ int calc_info(fileinfo_t* info)
             { 	2004, 24,  1980,  2010,	2028, 22, 15, 12, 12 /*old:6*/, 0, 0 },
             { 	2000, 16,  1980,  2010,	2028, 22, 11, 16, 10, 0, 0 },
             { 	2000, 20,  1980,  2010, 2028, 22, 15, 16, 10, 0, 0 },
-            { 	1992, 24,  1992, 1993,  2014, 22, 10, 10,  4,17,14}},
+            { 	1992, 24,  1992, 1993,  2014, 22, 10, 10,  4, 17, 14}},
         // 24-bit table
         {{    	2004, 24,  1980,  2010,	2028, 22, 15, 12, 10, 0, 0 },
             { 	2004, 24,  1980,  2010,	2028, 22, 15, 12, 10, 0, 0 },
-            { 	1998, 18,  1980,  2010,	2026, 22, 15, 16, 16 /* old 14*/, 0, 0 },
-            { 	1992, 24,  1968,  1993,	2014, 22, 10, 10,  8,17, 14 },
+            { 	1998, 18,  1980,  2010,	2026, 28 /* old 22 */, 15, 16, 16 /* old 14*/, 0, 0 },
+            { 	1992, 24,  1968,  1993,	2014, 22, 10, 10,  8, 17, 14 },
             { 	1980,  0,  1980,  2010, 2008, 22, 15, 16, 14, 0, 20 },
             { 	1980,  0,  1980,  2010, 2008, 22, 15, 16, 14, 0, 20 }}
     };
 
+// firstpack_lpcm_headerquantity + firstpack_pes_padding + payload - firstpackdecrement = 1995
+// midpack_lpcm_headerquantity   + payload + midpack_pes_padding = 2016
+// first/mid_pes_padding > 6
 
 #define X T[table_index][info->channels-1]
 
@@ -440,9 +442,9 @@ int extract_audio_info(fileinfo_t *info)
 
     /* parsing header again with FIXWAV utility */
 
-    _Bool cut;
-       
-    //if (!cut)
+    static _Bool cut;
+
+    if (!cut)
         info->type=fixwav_repair(info);
      
     cut=((info->type == AFMT_WAVE_FIXED) || (info->type == AFMT_WAVE_GOOD_HEADER));
