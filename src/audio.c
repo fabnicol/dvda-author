@@ -250,7 +250,7 @@ int calc_info(fileinfo_t* info)
         {{    	2004, 24,  1980,  2010,	2028, 22, 15, 12, 10, 0, 0 },
             { 	2004, 24,  1980,  2010,	2028, 22, 15, 12, 10, 0, 0 },
             { 	1998, 18,  1980,  2010,	2026, 28 /* old 22 */, 15, 16, 16 /* old 14*/, 0, 0 },
-            { 	1992, 24,  1968,  1993,	2014, 22, 10, 10,  8, 17, 14 },
+            { 	1992, 24,  1968,  1993,	2014, 22, 10, 10,  10 /*old: 8*/, 17, 14 },
             { 	1980,  0,  1980,  2010, 2008, 22, 15, 16, 14, 0, 20 },
             { 	1980,  0,  1980,  2010, 2008, 22, 15, 16, 14, 0, 20 }}
     };
@@ -262,21 +262,20 @@ int calc_info(fileinfo_t* info)
 #define X T[table_index][info->channels-1]
 
     info->sampleunitsize=
-            (table_index==1)? info->channels*6 :
-                              ((info->channels > 2)? info->channels*4 :
-                                                     info->channels*2);
-    info->lpcm_payload=X[0];
-    info->firstpackdecrement=X[1];
-    info->SCRquantity=X[2];
-    info->firstpack_audiopesheaderquantity=X[3];
-    info->midpack_audiopesheaderquantity=X[4];
-    info->lastpack_audiopesheaderquantity=X[5];
+            (table_index == 1)? info->channels * 6 :
+                              ((info->channels > 2)? info->channels * 4 :
+                                                     info->channels * 2);
+    info->lpcm_payload = X[0];
+    info->firstpackdecrement = X[1];
+    info->SCRquantity = X[2];
+    info->firstpack_audiopesheaderquantity = X[3];
+    info->midpack_audiopesheaderquantity = X[4];
+    info->lastpack_audiopesheaderquantity = X[5];
     info->firstpack_lpcm_headerquantity=(uint8_t) X[6];
     info->midpack_lpcm_headerquantity=(uint8_t) X[7];
     info->lastpack_lpcm_headerquantity=(uint8_t) X[8];
-    info->firstpack_pes_padding=X[9];
-    info->midpack_pes_padding=X[10];
-
+    info->firstpack_pes_padding = X[9];
+    info->midpack_pes_padding = X[10];
 
 #undef X
 
