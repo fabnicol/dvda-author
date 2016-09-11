@@ -280,7 +280,26 @@ inline static void write_pes_padding(FILE* fp, uint16_t length)
     uint8_t stream_id[1]={0xbe};
     uint8_t length_bytes[2];
 
-    length-=6; // We have 6 bytes of PES header.
+    if (length == 0)
+    {
+      uint64_t offset = ftello(fp) % 2048;
+      if (offset)
+      {
+        int8_t zero[2048-offset];
+        memset(zero, 0, 2048-offset);
+        fwrite(zero, 2048-offset, 1, fp);
+      }
+      return;
+    }
+
+    if (length > 6)
+      length-=6; // We have 6 bytes of PES header.
+    else
+    {
+        foutput("%s\n", "[ERR]  pes_padding length must be higher than 6;");
+        return;
+    }
+
 
     /* PATCH Sept 2016 - old 'Dave' code:
      *  length_bytes[0]=(length&0xff00)>>8;
@@ -316,12 +335,30 @@ inline static void read_pes_padding(FILE* fp, uint16_t length)
     uint8_t stream_id__[1]={0};
     uint8_t length_bytes__[2]={0};
 
+    if (length == 0)
+    {
+        uint64_t offset = ftello(fp) % 2048;
+        if (offset)
+        {
+          uint8_t zero[2048 - offset];
+          fread(zero, 2048 - offset, 1, fp);
+        }
+        return;
+    }
 
-    length-=6; // We have 6 bytes of PES header.
+    if (length > 6)
+    {
+        length-=6; // We have 6 bytes of PES header.
+    }
+    else
+    {
+        foutput("%s\n", "[ERR]  pes_padding length must be higher than 6;");
+        return;
+    }
 
     uint8_t ff_buf__[length];
 
-    memset(ff_buf,0xff,length);
+    memset(ff_buf, 0xff,length);
 
     open_aob_log();
 
@@ -332,6 +369,7 @@ inline static void read_pes_padding(FILE* fp, uint16_t length)
     length_bytes[1]=length % 0x100;
 
     /* offset_count += 2 */ CHECK_FIELD(length_bytes);
+
     /* offset_count += length */ CHECK_FIELD_NOWRITE(ff_buf)
 
     close_aob_log();
@@ -460,7 +498,7 @@ inline static uint16_t read_audio_pes_header(FILE* fp, uint8_t extension_flag, u
 #define LAST_PACK    1
 #define MIDDLE_PACK  2
 
-inline static void write_lpcm_header(FILE* fp, uint8_t header_length,fileinfo_t* info, int64_t pack_in_title, uint8_t counter, uint8_t position)
+inline static void write_lpcm_header(FILE* fp, uint8_t header_length,fileinfo_t* info, int64_t pack_in_title, uint8_t counter)
 {
     uint8_t sub_stream_id[1]={0xa0};
     uint8_t continuity_counter[1]={0x00};
@@ -707,26 +745,26 @@ ID\Chan 0   1   2   3   	4   5     info->channels
 
     switch (position)
     {
-    case  FIRST_PACK:
+        case  FIRST_PACK:
 
-        if (header_length != info->firstpack_lpcm_headerquantity)
-        {
-            if (globals.logdecode) fprintf(aob_log, "NA;info->firstpack_lpcm_headerquantity;Disk/Computed: %d;%d\n", header_length, info->firstpack_lpcm_headerquantity);
-        }
-        break;
+            if (header_length != info->firstpack_lpcm_headerquantity)
+            {
+                if (globals.logdecode) fprintf(aob_log, "NA;info->firstpack_lpcm_headerquantity;Disk/Computed: %d;%d\n", header_length, info->firstpack_lpcm_headerquantity);
+            }
+            break;
 
-    case  LAST_PACK:
-        if (header_length != info->lastpack_lpcm_headerquantity)
-        {
-            if (globals.logdecode) fprintf(aob_log, "NA;info->lastpack_lpcm_headerquantity;Disk/Computed: %d;%d\n", header_length, info->lastpack_lpcm_headerquantity);
-        }
-        break;
+        case  LAST_PACK:
+            if (header_length != info->lastpack_lpcm_headerquantity)
+            {
+                if (globals.logdecode) fprintf(aob_log, "NA;info->lastpack_lpcm_headerquantity;Disk/Computed: %d;%d\n", header_length, info->lastpack_lpcm_headerquantity);
+            }
+            break;
 
-    case  MIDDLE_PACK:
-        if (header_length != info->midpack_lpcm_headerquantity)
-        {
-            if (globals.logdecode) fprintf(aob_log, "NA;info->midpack_lpcm_headerquantity;Disk/Computed: %d;%d\n", header_length, info->midpack_lpcm_headerquantity);
-        }
+        case  MIDDLE_PACK:
+            if (header_length != info->midpack_lpcm_headerquantity)
+            {
+                if (globals.logdecode) fprintf(aob_log, "NA;info->midpack_lpcm_headerquantity;Disk/Computed: %d;%d\n", header_length, info->midpack_lpcm_headerquantity);
+            }
     }
 
     bytes_written = pack_in_title == 0 ? 0 : (pack_in_title*info->lpcm_payload)-info->firstpackdecrement;
@@ -840,28 +878,23 @@ inline static uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_title)
 inline static uint32_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
 {
     double PTS;
-    static  double PTS0;
+    double PTS0;
     uint32_t PTSint;
     uint64_t bytes_written;
     long double frames_written;
     int rate = 0;
-    double M_PTS[2][4] = {{1795.0, 1650.0, 897.0, 550.0}, {1197.0, 1100.0, 897.0, 550.0}};
+                          //16  44100    48000  88200  96000   //24   44100   48000   88200  96000
+  //double M_PTS[2][4] = {//3ch {1795.0, 1650.0, 897.0, 825.0},       {1197.0, 1100.0, 598.0, 550.0}};
+
+                          //4ch  1346.0
+
+  // Empirically PTS(br, sr, ch) = 5280 * 8 * 90000 / (br * sr * ch) = 5280 * 90000 / bytespersecond and M_PTS is floor(PTS(br, sr, ch))
+
+    PTS0 = 5280.0 / ((double) info->bytespersecond);
 
     if (pack_in_title==0)
     {
-
-        int index = (info->bitspersample == 16)? 0 : 1;
-        fprintf(stderr, "%d %d, index: %d\n", info->samplerate, info->bitspersample, index);
-        switch (info->samplerate)
-        {
-            case 96000: ++rate;
-            case 88200: ++rate;
-            case 48000: ++rate;
-            default: break;
-        }
-
-        PTS0 = M_PTS[index][rate];
-        PTS = PTS0;
+       PTS = PTS0;
     }
     else
     {
@@ -873,10 +906,10 @@ inline static uint32_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
             frames_written++;
         }
         // 1 48Khz-based frame is 1200Hz, 1 44.1KHz frame is 1102.5Hz
-        PTS=( (frames_written*(double)info->bytesperframe*90000.0))/((double) info->bytespersecond)+ PTS0;//585.0;
+        PTS=( (frames_written*(double)info->bytesperframe))/((double) info->bytespersecond) + PTS0;
     }
 
-    PTSint=(uint32_t) floor(PTS);
+    PTSint=(uint32_t) floor(PTS * 90000.0);
     return(PTSint);
 }
 
@@ -903,23 +936,10 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
 
         write_audio_pes_header(fp,info->firstpack_audiopesheaderquantity,1,PTS); //+17
         audio_bytes = info->lpcm_payload - info->firstpackdecrement;
-        write_lpcm_header(fp,info->firstpack_lpcm_headerquantity,info,pack_in_title,cc,FIRST_PACK);//info->firstpack_lpcm_headerquantity+4
+        write_lpcm_header(fp,info->firstpack_lpcm_headerquantity,info,pack_in_title,cc);//info->firstpack_lpcm_headerquantity+4
         /* offset_count+= */ fwrite(audio_buf,1,audio_bytes,fp);
 
-        if (info->firstpack_pes_padding > 0)
-        {
-            write_pes_padding(fp, info->firstpack_pes_padding);//+6+info->firstpack_pes_padding
-        }
-        else
-        {
-            uint64_t offset = ftello(fp) % 2048;
-            if (offset)
-            {
-              uint8_t zero[2048-offset];
-              memset(zero, 0, 2048-offset);
-              fwrite(zero, 2048-offset, 1, fp);
-            }
-        }
+        write_pes_padding(fp, info->firstpack_pes_padding);//+6+info->firstpack_pes_padding
     }
     else if (bytesinbuffer < info->lpcm_payload)   // Last packet in title 2038+info->lastpack_lpcm_headerquantity
     {
@@ -929,29 +949,22 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         audio_bytes=bytesinbuffer;
         write_pack_header(fp,SCR); //+14
         write_audio_pes_header(fp,info->lastpack_audiopesheaderquantity+audio_bytes,0,PTS);  // +14
-        write_lpcm_header(fp,info->lastpack_lpcm_headerquantity,info,pack_in_title,cc,LAST_PACK); // +info->lastpack_lpcm_headerquantity +4
+        write_lpcm_header(fp,info->lastpack_lpcm_headerquantity,info,pack_in_title,cc); // +info->lastpack_lpcm_headerquantity +4
         /* offset_count+= */ fwrite(audio_buf,1,audio_bytes,fp);
         // PATCH Dec. 2013
         // Lee Feldkamp corrected formula write_pes_padding(fp,2048-28-info->midpack_lpcm_headerquantity-4-audio_bytes+gamma);
         // PATCH Sept 2016
         int16_t padding_quantity = 2016 - info->lastpack_lpcm_headerquantity - audio_bytes;
-
-        if (padding_quantity > 0)
-            write_pes_padding(fp, (uint16_t) padding_quantity);
-        else
+        if (padding_quantity < 0)
         {
-            uint64_t offset = ftello(fp) % 2048;
-            if (offset)
-            {
-              uint8_t zero[2048-offset];
-              memset(zero, 0, 2048-offset);
-              fwrite(zero, 2048-offset, 1, fp);
-            }
+            foutput("[ERR]  Padding quantity error (last title packet): lastpack_lpcm_headerquantity %d; audio_bytes %d\n", info->lastpack_lpcm_headerquantity, audio_bytes);
+            return audio_bytes;
         }
+        write_pes_padding(fp, (uint16_t) padding_quantity);
 
     }
     else   			// A middle packet in the title: 38 + (info->midpack_lpcm_headerquantity+info->midpack_pes_padding+info->lpcm_payload)
-        // = 32 + 2016 = 2048 or [faulty?] 2054 if (info->midpack_pes_padding > 0) ie 24b Ch 3+ and 16b 6 Ch.
+                    // = 32 + 2016 = 2048 or [faulty?] 2054 if (info->midpack_pes_padding > 0) ie 24b Ch 3+ and 16b 6 Ch.
     {
         audio_bytes=info->lpcm_payload;
         write_pack_header(fp,SCR); //+14
@@ -960,25 +973,13 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         //PATCH Dec. 2013: reset continuity counters at start of file
         if (start_of_file) cc=0;
 
-        write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,pack_in_title,cc,MIDDLE_PACK); //info->midpack_lpcm_headerquantity+4
+        write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,pack_in_title,cc); //info->midpack_lpcm_headerquantity+4
         /* offset_count+= */ fwrite(audio_buf,1,audio_bytes,fp);
 
-        if (info->midpack_pes_padding > 0)
-        {
-            write_pes_padding(fp,info->midpack_pes_padding);//info->midpack_pes_padding +6
-        }
-        else
-        {
-          uint64_t offset = ftello(fp) % 2048;
-          if (offset)
-          {
-            int8_t zero[2048-offset];
-            memset(zero, 0, 2048-offset);
-            fwrite(zero, 2048-offset, 1, fp);
-          }
-        }
+        write_pes_padding(fp,info->midpack_pes_padding);//info->midpack_pes_padding +6
     }
-    /*
+
+/*
     {{   	2000, 16,  1984,  2010,	2028, 22, 11, 16, 10, 0, 0 },
        {	2000, 16,  1984,  2010,	2028, 22, 11, 16, 10, 0, 0 },
        { 	2004, 24,  1980,  2010,	2028, 22, 15, 12,  6, 0, 0 },
@@ -1054,16 +1055,18 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
     }
     else
     {
-        if (fseek(fp, 2044, SEEK_CUR) != 0)
+        int res = fseek(fp, 2044, SEEK_CUR);
+
+        if (res != 0)
         {
             position = LAST_PACK;
             POS = "last";
         }
         else
         {
-            int n = fread(buf, 4, 1, fp);
+            int n = fread(buf, 1, 4, fp);
 
-            if (n == 4 && buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB)
+            if (n != 4 || n == 4 && buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB)
             {
                 position = LAST_PACK;
                 POS = "last";
@@ -1073,6 +1076,8 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
                 position = MIDDLE_PACK;
                 POS = "middle";
             }
+
+            fseek(fp, offset0 + 18, SEEK_SET);
         }
 
         ++pack_in_title;
@@ -1090,20 +1095,23 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
 
     fseek(fp, offset0, SEEK_SET);
 
-    read_pack_header(fp, &SCR); // +14
+    /***       +14     ***/
+    read_pack_header(fp, &SCR);
 
     uint64_t offset = ftello(fp);
 
     fseek(fp, offset, SEEK_SET);
 
-    if (position == FIRST_PACK) read_system_header(fp); // +18
+    /***       +18  if first  ***/
+    if (position == FIRST_PACK) read_system_header(fp);
 
     /* skipping read_audio_pes_header to identify info */
     offset = ftello(fp);
 
     fseek(fp, 14 + (position == FIRST_PACK ? 3 : 0), SEEK_CUR);
 
-    uint header_length = read_lpcm_header(fp, info, pack_in_title, position); //  info->first/mid/last/pack_lpcm_headerquantity + 4
+    /***       info->first/mid/last/pack_lpcm_headerquantity + 4    ***/
+    uint header_length = read_lpcm_header(fp, info, pack_in_title, position);
 
     uint64_t offset1 = ftello(fp);
 
@@ -1115,47 +1123,56 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
 
     switch(position)
     {
-    case FIRST_PACK :
+        case FIRST_PACK :
 
-        audio_bytes = info->lpcm_payload - info->firstpackdecrement;
+            audio_bytes = info->lpcm_payload - info->firstpackdecrement;
 
-        PES_packet_len = read_audio_pes_header(fp, 1, &PTS); //+17
-        if (info->firstpack_audiopesheaderquantity != PES_packet_len)
-        {
-            if (globals.logdecode)
+            PES_packet_len = read_audio_pes_header(fp, 1, &PTS); //+17
+            if (info->firstpack_audiopesheaderquantity != PES_packet_len)
             {
-                open_aob_log();
-                fprintf(aob_log, "NA;firstpack_audiopesheaderquantity issue in read_audio_pes_header at pack %lu, title %d, position %d\n", pack_in_title, title, position);
-                close_aob_log();
+                if (globals.logdecode)
+                {
+                    open_aob_log();
+                    fprintf(aob_log,
+                            "NA;firstpack_audiopesheaderquantity issue in read_audio_pes_header at pack %lu, title %d, position %d\n",
+                            pack_in_title,
+                            title,
+                            position);
+                    close_aob_log();
+                }
             }
-        }
-        break;
+            break;
 
-    case MIDDLE_PACK :
+        case MIDDLE_PACK :
 
-        audio_bytes=info->lpcm_payload;
+            audio_bytes=info->lpcm_payload;
 
-        PES_packet_len = read_audio_pes_header(fp, 0, &PTS); //+14
+            /***   +14   ***/
 
-        if (info->midpack_audiopesheaderquantity != PES_packet_len)
-        {
-            if (globals.logdecode)
+            PES_packet_len = read_audio_pes_header(fp, 0, &PTS);
+
+            if (info->midpack_audiopesheaderquantity != PES_packet_len)
             {
-                open_aob_log();
-                fprintf(aob_log, "NA;midpack_audiopesheaderquantity issue in read_audio_pes_header at pack %lu;Disk/computed;%d;%d\n", pack_in_title, PES_packet_len, info->midpack_audiopesheaderquantity);
-                close_aob_log();
+                if (globals.logdecode)
+                {
+                    open_aob_log();
+                    fprintf(aob_log, "NA;midpack_audiopesheaderquantity issue in read_audio_pes_header at pack %lu;Disk/computed;%d;%d\n",
+                            pack_in_title,
+                            PES_packet_len,
+                            info->midpack_audiopesheaderquantity);
+                    close_aob_log();
+                }
             }
-        }
 
-        break;
+            break;
 
-    case LAST_PACK :
+        case LAST_PACK :
 
-        PES_packet_len = read_audio_pes_header(fp, 0, &PTS); //+14
+            PES_packet_len = read_audio_pes_header(fp, 0, &PTS); //+14
 
-        audio_bytes = PES_packet_len - info->lastpack_audiopesheaderquantity;
+            audio_bytes = PES_packet_len - info->lastpack_audiopesheaderquantity;
 
-        break;
+            break;
     }
 
 
@@ -1205,35 +1222,52 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
 
     fseek(fp, offset1, SEEK_SET);
 
-    /* offset_count+= audio_bytes */ fread(audio_buf, 1, audio_bytes,fp);
+    /* offset_count+= audio_bytes */
+
+    fread(audio_buf, 1, audio_bytes,fp);
+
+    // info->midpack_pes_padding + info->lpcm_payload + 38 + info->first/mid/last/pack_lpcm_headerquantity
+
+    int16_t padding_quantity;
 
     switch(position)
     {
-    case FIRST_PACK :
-        if (info->firstpack_pes_padding > 0)
-        {
-            read_pes_padding(fp,info->firstpack_pes_padding); // 0 or 6 + info->firstpack_pes_padding
-        }
-        break;
+        case FIRST_PACK :
+            if (info->firstpack_pes_padding > 0)
+            {
+              read_pes_padding(fp,info->firstpack_pes_padding); // 0 or  info->firstpack_pes_padding
+            }
+            break;
 
-    case MIDDLE_PACK :
-        if (info->midpack_pes_padding > 0)
-        {
-            read_pes_padding(fp,info->midpack_pes_padding); // 0 or 6 + info->midpack_pes_padding
-        }
+        case MIDDLE_PACK :
+            read_pes_padding(fp,info->midpack_pes_padding); // 0 or info->midpack_pes_padding
+            break;
 
-        break;
+        case LAST_PACK :
+            // 2016- info->lastpack_lpcm_headerquantity - audio_bytes
+            padding_quantity = 2016 - info->lastpack_lpcm_headerquantity - audio_bytes;
 
-    case LAST_PACK :
-        read_pes_padding(fp, 2016 - info->lastpack_lpcm_headerquantity - audio_bytes);
-        break;
+            if (padding_quantity > 0)
+                read_pes_padding(fp, (uint16_t) padding_quantity);
+            else
+            {
+                uint64_t offset = ftello(fp) % 2048;
+                if (offset)
+                {
+                  uint8_t zero[2048-offset];
+                  memset(zero, 0, 2048-offset);
+                  fwrite(zero, 2048-offset, 1, fp);
+                }
+            }
+            break;
     }
 
     uint64_t sector_length = ftello(fp) - offset0;
     open_aob_log();
+    fprintf(aob_log, "NA;midpack_lpcm_headerquantity;%d;midpack_pes_padding;%d;bitspersample;%d;samplerate;%d\n", info->midpack_lpcm_headerquantity, info->midpack_pes_padding,info->bitspersample, info->samplerate);
     fprintf(aob_log, "NA;-----;%lu; bytes;------;title pack;%lu;title;%d\n", sector_length, pack_in_title, title);
     close_aob_log();
-    return(sector_length);
+    return(position);
 }
 
 int decode_ats(char* aob_file)
@@ -1245,6 +1279,7 @@ int decode_ats(char* aob_file)
     uint8_t audio_buf[2048];
     uint64_t pack = 0;
     fileinfo_t files;
+    int result = 0;
 
     fp=fopen(aob_file,"rb");
 
@@ -1255,16 +1290,13 @@ int decode_ats(char* aob_file)
 
     do
     {
-        int result  = read_pes_packet(fp, &files, audio_buf);
+        result  = read_pes_packet(fp, &files, audio_buf);
         if (result  == bytesinbuf)
         {
             ++pack;
         }
-        else
-            bytesinbuf = 0;
-
-
-    } while (bytesinbuf);
+    }
+    while (result != LAST_PACK);
 
     fprintf(stderr, "[MSG]   Read %lu PES packets.\n", pack);
     return(0);
