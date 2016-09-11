@@ -334,44 +334,47 @@ Checkout:
     case	BAD_HEADER :
     case    BAD_DATA :
 
-      printf( "%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Fixwav status 4:\n       WAVE header corrupt." );
+      if (!info->virtual)
+        {
+          printf( "%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Fixwav status 4:\n       WAVE header corrupt." );
 
-      uint8_t standard_header[HEADER_SIZE]={0};  
-      
-      header->header_out=standard_header;
-      header->header_size_out= HEADER_SIZE;
+          uint8_t standard_header[HEADER_SIZE]={0};
 
-      if ((info->repair=launch_repair(info, header)) == FAIL) break;
+          header->header_out=standard_header;
+          header->header_size_out= HEADER_SIZE;
 
-          if (!info->virtual)
+         if ((info->repair=launch_repair(info, header)) == FAIL) break;
+         if ((info->repair=write_header(info, header)) != FAIL)
             {
-             if ((info->repair=write_header(info, header)) != FAIL)
-                {
-                  printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Header copy successful.\n");
-                  if (fclose(info->OUTFILE) != 0) return(NULL);
-                  secure_open(info->outfile, "rb+", info->OUTFILE);
-                  if (globals.maxverbose) {
-                       printf("%s","Dumping new header:\n\n");
-                       hexdump_header(info->OUTFILE, HEADER_SIZE);
-                  }
-                }
-              else break;
-
-              if (!info->in_place)
-                {
-                  if (copy_file_p(info->INFILE, info->OUTFILE, 
-                                  (info->prepend) ? 0 : header->header_size_out,
-                                   header->data_size) == PAD)
-                                   
-                      if (info->padbytes) pad_end_of_file(info);
-
-                  info->repair=BAD_HEADER;
-                }
-              else
-                if (info->padbytes) 
-                   pad_end_of_file(info);
-
+              printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Header copy successful.\n");
+              if (fclose(info->OUTFILE) != 0) return(NULL);
+              secure_open(info->outfile, "rb+", info->OUTFILE);
+              if (globals.maxverbose) {
+                   printf("%s","Dumping new header:\n\n");
+                   hexdump_header(info->OUTFILE, HEADER_SIZE);
+              }
             }
+          else break;
+
+          if (!info->in_place)
+            {
+              if (copy_file_p(info->INFILE, info->OUTFILE,
+                              (info->prepend) ? 0 : header->header_size_out,
+                               header->data_size) == PAD)
+
+                  if (info->padbytes) pad_end_of_file(info);
+
+              info->repair=BAD_HEADER;
+            }
+          else
+            if (info->padbytes)
+               pad_end_of_file(info);
+
+        }
+
+        printf( "%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Fixwav status 4:\n       WAVE header is incorrect, yet no changes were made to existing header." );
+        header->header_out = header->header_in;
+        header->header_size_out = header->header_size_in;
 
       break;
 
