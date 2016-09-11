@@ -1038,7 +1038,7 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
     static int title;
     int audio_bytes;
 
-
+    if (fp == NULL) return 0;
     uint64_t offset0 = ftello(fp);
 
     fseek(fp, offset0 +14, SEEK_SET);
