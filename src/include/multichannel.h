@@ -28,13 +28,36 @@
 // To enable inlining of the same function in two distinct files, it is necessary to place it in a header
 // Performs permutation of buf by replacing buf[j] with associate value, depending on pits per second, channel number,
 // and whether one converts to AOB or extracts from AOB.
-static inline void permutation(uint8_t *buf, uint8_t *_buf, int bits_per_second_flag, uint8_t channels,  const uint8_t reference_table[][6][36], int size)
+
+static inline void permutation(uint8_t *buf,
+                               uint8_t *_buf,
+                               int bits_per_second_flag,
+                               uint8_t channels,
+                               const uint8_t reference_table[][6][36],
+                               int size)
 {
     int j;
 
-
     for (j=0; j < size ; j++)
+    {
         _buf[j] = buf[reference_table[bits_per_second_flag][channels-1][j]];
+    }
+
+#if 0
+    for (j=0; j < size ; j++)
+    {
+        fprintf(stderr, "%X ", buf[j]);
+    }
+        fprintf(stderr, "\n");
+    for (j=0; j < size ; j++)
+    {
+        fprintf(stderr, "%X ", _buf[j]);
+    }
+
+    fprintf(stderr, "\n");
+    fprintf(stderr, "channels = %d, bps = %d\n", channels, bits_per_second_flag);
+    exit(0);
+#endif
 
     memcpy(buf,_buf, size);
 }

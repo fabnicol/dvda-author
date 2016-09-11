@@ -242,8 +242,8 @@ int calc_info(fileinfo_t* info)
     {
          {{ 	2000, 16,  1984,  2010,	2028, 22, 11, 16, 10, 0, 0 },
             {	2000, 16,  1984,  2010,	2028, 22, 11, 16, 10, 0, 0 },
-            { 	2004, 24,  1980,  2010,	2028, 22, 15, 12, 12 /*old:6*/, 0, 0 },
-            { 	2000, 16,  1980,  2010,	2028, 22, 11, 16, 10, 0, 0 },
+            { 	2004, 24,  1980,  2010,	2028, 22, 15, 12, 12 /*old:6*/, 0, 0 },  // 3 CH
+            { 	2000, 16,  1980,  2010,	2028, 22, 11, 16, 16 /*old:10*/, 0, 0 },   // 4 CH
             { 	2000, 20,  1980,  2010, 2028, 22, 15, 16, 10, 0, 0 },
             { 	1992, 24,  1992, 1993,  2014, 22, 10, 10,  4, 17, 14}},
         // 24-bit table
@@ -1357,32 +1357,24 @@ Now follows the actual manipulation code.  Note that performing the transformati
 
 inline static void interleave_sample_extended(int channels, int count, uint8_t * buf)
 {
-
     int x,i, size=channels*4;
     uint8_t _buf[size];
-
     switch (channels)
     {
-    case 1:
-    case 2:
+        case 1:
+        case 2:
 
-        for (i=0;i<count;i+=2)
-            x=buf[i+1], buf[i+1]=buf[i], buf[i]=x;
-        break;
+            for (i = 0; i < count; i += 2)
+                x = buf[i+1], buf[i+1] = buf[i], buf[i] = x;
+            break;
 
-    default:
+        default:
 
-        for (i=0; i < count; i += size)
-
-            permutation(buf+i,_buf, 0, channels, S, size);
-
-
-
-        break;
+            for (i = 0; i < count; i += size)
+                permutation(buf+i, _buf, 0, channels, S, size);
+            break;
     }
-
 }
-
 
 inline static void interleave_24_bit_sample_extended(int channels, int count, uint8_t * buf)
 
@@ -1392,8 +1384,8 @@ inline static void interleave_24_bit_sample_extended(int channels, int count, ui
     uint8_t _buf[size];
 
 
-    for (i=0; i < count; i += size)
-        permutation(buf+i,_buf, 1, channels, S, size);
+    for (i = 0; i < count; i += size)
+        permutation(buf+i, _buf, 1, channels, S, size);
 
 
 }
@@ -1525,8 +1517,6 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
     }
 #endif
 
-
-
     // Convert little-endian WAV samples to big-endian MPEG LPCM samples
 
     if ((info->channels > 6) || (info->channels < 1))
@@ -1540,18 +1530,14 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
     {
     case 24:
 
-
-        // Processing 16-bit audio
+        // Processing 24-bit audio
         interleave_24_bit_sample_extended(info->channels, count, buf);
-
-
         break;
 
     case 16:
 
         // Processing 16-bit audio
         interleave_sample_extended(info->channels, count, buf);
-
         break;
 
     default:
