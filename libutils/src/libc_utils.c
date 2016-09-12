@@ -1892,9 +1892,7 @@ void hex2file(FILE* out, uint8_t* tab,  size_t tabsize)
         for (i = 0; i < HEX_COLUMNS; i++)
             fprintf(out,"%c", (i < input)? (isprint(tab[i]) ? tab[i] : '.') : ' ');
 
-        fprintf(out, "%c", '\n');
-
-        /* break on partial buffer */
+       /* break on partial buffer */
     }
     while (count < tabsize);
 

@@ -34,20 +34,114 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 extern globalData globals;
 
-unsigned char wav_header[44]= {'R','I','F','F',   //  0 - ChunkID
+unsigned char wav_header[80]= {'R','I','F','F',   //  0 - ChunkID
                                0,0,0,0,            //  4 - ChunkSize (filesize-8)
                                'W','A','V','E',    //  8 - Format
                                'f','m','t',' ',    // 12 - SubChunkID
-                               16,0,0,0,           // 16 - SubChunk1ID  // 16 for PCM
-                               1,0,                // 20 - AudioFormat (1=16-bit)
+                               40,0,0,0,           // 16 - SubChunk1ID  // 40 for WAVE_FORMAT_EXTENSIBLE
+                               0xFE, 0xFF,         // 20 - AudioFormat (1=16-bit)
                                2,0,                // 22 - NumChannels
                                0,0,0,0,            // 24 - SampleRate in Hz
                                0,0,0,0,            // 28 - Byte Rate (SampleRate*NumChannels*(BitsPerSample/8)
                                4,0,                // 32 - BlockAlign (== NumChannels * BitsPerSample/8)
-                               16,0,               // 34 - BitsPerSample
-                               'd','a','t','a',    // 36 - Subchunk2ID
-                               0,0,0,0             // 40 - Subchunk2Size
+                               0x10,0,             // 34 - BitsPerSample (16)
+                               0x16,0,             // 36 - cbSize Size of extension (22)
+                               0x10,0,             // 38 - wValidBitsPerSample (16 bits)
+                               0,0,0,0,            // 40 - dwChannelMask
+                               0x01,0x00,          // 44 - subFormat 0x1 for PCM
+                               0,0,0,0,0x10,0,0x80,0,0,0xaa,0,0x38,0x9b,0x71,                    // 46 - GUID (fixed string)
+                               'f','a','c','t',    // 60 - "fact"
+                               4,0,0,0,            // 64 - ckSize (4)
+                               0,0,0,0,            // 68 - dwSampleLength = NumChannels * ckSize/(BitsPerSample/8)
+                               'd','a','t','a',    // 72 - ckID
+                               0,0,0,0             // 76 - ckSize -> // 79
                               };
+
+// Reverse table (to be used to convert AOBs to WAVs
+
+static const uint8_t  T[2][6][36]=
+     {{ {0},
+        {0},
+        {5, 4, 7, 6, 1, 0, 9, 8, 11, 10, 3, 2},
+        {9, 8, 11, 10, 1, 0, 3, 2, 13, 12, 15, 14, 5, 4 ,7, 6},
+        {13, 12, 15, 14, 1, 0, 3, 2, 5, 4, 17, 16, 19, 18, 7, 6, 9, 8, 11, 10},
+        {9, 8, 11, 10, 1, 0, 3, 2, 13, 12, 15, 14, 17, 16, 19, 18, 5, 4, 7, 6, 21, 20, 23, 22}},
+      {{4,  1,  0,  5,  3,  2},
+        {8, 1, 0, 9, 3, 2, 10, 5, 4, 11, 7, 6},
+        {14, 7, 6, 15, 9, 8, 4, 1, 0, 16, 11, 10, 17, 13, 12, 5, 3, 2},
+        {20, 13, 12, 21, 15, 14, 8, 1, 0, 9, 3, 2, 22, 17, 16, 23, 19, 18, 10, 5, 4, 11, 7, 6},
+        {26, 19, 18, 27, 21, 20, 12, 1, 0, 13, 3, 2, 14, 5,  4,  28, 23, 22, 29, 25, 24, 15,  7, 6,  16, 9, 8, 17, 11, 10},
+        {28, 13, 12, 29, 15, 14,  8, 1, 0,  9, 3, 2, 30, 17, 16, 31, 19, 18, 32, 21, 20, 33, 23, 22, 10, 5, 4, 11, 7,  6, 34, 25, 24, 35, 27, 26 }}
+    };
+
+static void deinterleave_24_bit_sample_extended(uint8_t channels, int count, uint8_t *buf)
+{
+    // Processing 16-bit case
+    int i, size=channels*6;
+    // Requires C99
+    uint8_t _buf[size];
+
+    for (i=0; i < count ; i += size)
+        permutation(buf+i, _buf, 1, channels, T, size);
+
+}
+
+static void deinterleave_sample_extended(uint8_t channels, int count, uint8_t *buf)
+{
+
+    // Processing 16-bit case
+    int x,i, size=channels*4;
+    // Requires C99
+    uint8_t _buf[size];
+
+    switch (channels)
+    {
+    case 1:
+    case 2:
+        for (i=0;i<count;i+= 2 )
+        {
+            x= buf[i ];
+            buf[i ] = buf[i+ 1 ];
+            buf[i+ 1 ]=x;
+        }
+        break;
+
+    default:
+        for (i=0; i < count ; i += size)
+            permutation(buf+i, _buf, 0, channels, T, size);
+
+    }
+}
+
+
+
+static void convert_buffer(_fileinfo_t* info, uint8_t* buf, int count)
+{
+
+    switch (info->bitspersample)
+    {
+
+    case 24:
+
+
+        deinterleave_24_bit_sample_extended(info->channels, count, buf);
+        break;
+
+    case 16:
+
+
+        deinterleave_sample_extended(info->channels, count, buf);
+        break;
+
+    default:
+        // FIX: Handle 20-bit audio and maybe convert other formats.
+        printf("[ERR]  %d bit %d channel audio is not supported\n",info->bitspersample,info->channels);
+        return;
+        //exit(EXIT_FAILURE);
+
+    }
+
+}
 
 
 #if 0
