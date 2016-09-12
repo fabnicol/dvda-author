@@ -100,7 +100,8 @@ ID\Chan 0   1   2   3   	4   5     info->channels
 const uint8_t channels[21] = {1,2,3,4,3,4,5,3,4,5,4,5,6,4,5,4,5,6,5,5,6};
 
 static const uint8_t  S[2][6][36]=
-{   {   {0}, {0},
+{   {   {0},
+        {0},
         {5, 4, 11, 10, 1, 0, 3, 2, 7, 6, 9, 8},
         {5, 4, 7, 6, 13, 12, 15, 14, 1,  0, 3, 2, 9, 8, 11, 10},
         {5, 4, 7, 6,  9,  8, 15, 14,17, 16, 19, 18, 1, 0, 3, 2, 11, 10, 13, 12},
@@ -115,7 +116,10 @@ static const uint8_t  S[2][6][36]=
     }
 };
 
+
+
 // Direct conversion table when separate mono channels are given on command line
+
 #if 0
 static uint8_t  C[2][7][36][2]=
 {
@@ -244,14 +248,14 @@ int calc_info(fileinfo_t* info)
             {	2000, 16,  1984,  2010,	2028, 22, 11, 16, 10, 0, 0 },
             { 	2004, 24,  1980,  2010,	2028, 22, 15, 12, 12 /*old:6*/, 0, 0 },  // 3 CH
             { 	2000, 16,  1980,  2010,	2028, 22, 11, 16, 16 /*old:10*/, 0, 0 },   // 4 CH
-            { 	2000, 20,  1980,  2010, 2028, 22, 15, 16, 10, 0, 0 },
+            { 	2000, 20,  1980,  2010, 2028, 22, 15, 16, 16 /*old: 10*/, 0, 0 },  // 5 CH
             { 	1992, 24,  1992, 1993,  2014, 22, 10, 10,  4, 17, 14}},
         // 24-bit table
         {{    	2004, 24,  1980,  2010,	2028, 22, 15, 12, 10, 0, 0 },
             { 	2004, 24,  1980,  2010,	2028, 22, 15, 12, 10, 0, 0 },
-            { 	1998, 18,  1980,  2010,	2026, 28 /* old 22 */, 15, 16, 16 /* old 14*/, 0, 0 },
+            { 	1998, 18,  1980,  2010,	2026, 28 /*old: 22 */, 15, 16, 16 /* old 14*/, 0, 0 },
             { 	1992, 24,  1968,  1993,	2014, 22, 10, 10,  10 /*old: 8*/, 17, 14 },
-            { 	1980,  0,  1980,  2010, 2008, 22, 15, 16, 14, 0, 20 },
+            { 	1980,  0,  1980,  2010, 2008, 22, 15, 16, 16 /*old: 14*/, 0, 20 },
             { 	1980,  0,  1980,  2010, 2008, 22, 15, 16, 14, 0, 20 }}
     };
 
@@ -1406,7 +1410,9 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
     if (info->sampleunitsize == 0)
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Sample unit size is null");
 
-    count-= count%info->sampleunitsize;
+    if (count > info->sampleunitsize) count-= count%info->sampleunitsize;
+    else return 0;
+
     if (count%info->sampleunitsize)
     {
         foutput("Requested %d bytes, sampleunitsize=%"PRIu16"\n",count,info->sampleunitsize);
