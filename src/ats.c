@@ -197,6 +197,8 @@ inline static void test_field(uint8_t* tab__, uint8_t* tab, int size,const char*
         {
             fprintf(aob_log, "%s", "Div: ");
             hex2file(aob_log, tab__, size);
+            fprintf(aob_log, "%s", ";instead of:;");
+            hex2file(aob_log, tab, size);
         }
         fprintf(aob_log, "%s", "\n");
     }
@@ -210,6 +212,7 @@ inline static void rw_field(uint8_t* tab, int size,const char* label, FILE* fp)
     if (! globals.logdecode) return;
     fprintf(aob_log, "%" PRIu64 ";%s;", offset, label);
     hex2file(aob_log, tab, size);
+    fprintf(aob_log, "%s", "\n");
 
 }
 
@@ -644,7 +647,8 @@ inline static int read_lpcm_header(FILE* fp, fileinfo_t* info, int64_t pack_in_t
     uint8_t continuity_counter[1]={0x00};
     uint8_t LPCM_header_length[2];
     uint8_t first_access_unit_pointer[2];
-    uint8_t unknown1[1]={0x10};   // e.g. 0x10 for stereo, 0x00 for surround
+    uint8_t unknown1[1]={0};   // e.g. 0x10 for stereo, 0x00 for surround
+
     uint8_t sample_size[1]={0x0f};  // 0x0f=16-bit, 0x1f=20-bit, 0x2f=24-bit
     uint8_t sample_rate[1]={0x0f};  // 0x0f=48KHz, 0x1f=96KHz, 0x2f=192KHz,0x8f=44.1KHz, 0x9f=88.2KHz, 0xaf=176.4KHz
     uint8_t unknown2[1]={0x00};
@@ -670,7 +674,7 @@ inline static int read_lpcm_header(FILE* fp, fileinfo_t* info, int64_t pack_in_t
 
     /* offset_count += 2 */ RW_FIELD(first_access_unit_pointer);
 
-    /* offset_count += */   CHECK_FIELD(unknown1);
+    /* offset_count += */   RW_FIELD(unknown1);
     /* offset_count += */   RW_FIELD(sample_size);
     /* offset_count += */   RW_FIELD(sample_rate);
 
@@ -732,6 +736,20 @@ inline static int read_lpcm_header(FILE* fp, fileinfo_t* info, int64_t pack_in_t
     info->cga = channel_assignment[0];
 
     info->channels = (channel_assignment[0] < 21) ? channels[channel_assignment[0]] : 0;
+
+    if (globals.logdecode)
+    {
+        if (info->channels <= 2)
+        {
+            if (unknown1[0] != 0x10)
+               fprintf(aob_log, "%s%d%s", "incorrect unknown1 lpcm header value: ", unknown1[0], " instead of expected 0x10.\n");
+        }
+    else
+
+        if (unknown1[0] != 0)
+               fprintf(aob_log, "%s%d%s", "incorrect unknown1 lpcm header value: ", unknown1[0], " instead of expected 0.\n");
+
+    }
 
     /* info->PTS_length, info->numsamples and info->numbytes will be unusable, other info fileds OK */
 
@@ -887,7 +905,9 @@ inline static uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_title)
     // 1 48Khz-based frame is 1200Hz, 1 44.1KHz frame is 1102.5Hz
     SCR=( (frames_written*(double)info->bytesperframe*90000.0))/((double) info->bytespersecond);
 
-    SCRint=floor(SCR * 300 * 1.007);
+    double skew = (info->bitspersample == 16)? 1.0 : (1.001 + 0.003 * (info->channels - 2));
+
+    SCRint=floor(SCR * 300 * skew);
 
 
     // Delta SCR is simply Delta PTS x 300. Use calc_PTS!
@@ -951,7 +971,7 @@ inline static uint32_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
 
         /* There seems to be an empirical skew somewhere. Ugly, and to be removed as soon as can be */
 
-        double skew = 1.007;
+        double skew = (info->bitspersample == 16)? 1.0 : (1.001 + 0.003 * (info->channels - 2));
 
         PTS=((double) frames_written * k * 8)/((double) (info->samplerate))* skew + PTS0;
 
@@ -1234,7 +1254,12 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
 
     /* offset_count+= audio_bytes */
 
-    fread(audio_buf, 1, audio_bytes,fp);
+    int result = fread(audio_buf, 1, audio_bytes,fp);
+    open_aob_log();
+    fprintf(aob_log, "NA;Read %d audio_bytes\n", result);
+    hex2file(aob_log, audio_buf, result > 16 ? 16 : result);
+    fprintf(aob_log, "%s", "\n");
+    close_aob_log();
 
     // info->midpack_pes_padding + info->lpcm_payload + 38 + info->first/mid/last/pack_lpcm_headerquantity
 
@@ -1526,9 +1551,8 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
 
 
     STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/ATS_%02d_%d.AOB",audiotsdir,titleset,fileno)
-            fpout=fopen(outfile,"wb+");
 
-
+    fpout=fopen(outfile,"wb+");
 
     //    /* Open the first file and initialise the input audio buffer */
     //    if (files[i].mergeflag)
