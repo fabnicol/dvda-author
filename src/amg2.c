@@ -361,11 +361,540 @@ int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles
 }
 #endif
 
+//char* audiotsdir, command_t *command, sect* sectors, uint32_t *videotitlelength, uint32_t* relative_sector_pointer_VTSI,
+//                    uint8_t *numtitles, uint8_t** ntitletracks, uint64_t** titlelength
+
+uint8_t* decode_amg(command_t *command, sectors, totaltitles,numtitles, playtitleset)
+{
+
+    uint16_t i, j = 0, k = 0, titleset = 0, totalplaylisttitles = 0, totalaudiotitles = 0, titleintitleset;
+
+    _Bool menusector = (globals.topmenu <= TS_VOB_TYPE);  // there is a _TS.VOB in these cases
+    uint8_t naudio_groups = ngroups-vgroups-nplaygroups;  // CHECK
+
+    uint8_t amg[sectors->amg*2048];
+    uint32_t  sectoroffset[naudio_groups];
+
+    totalaudiotitles = totaltitles;
+    totaltitles += vgroups;
+
+    if (globals.playlist)
+        for (j = 0; j < nplaygroups; ++j)
+            totalplaylisttitles += numtitles[playtitleset[j]];
+
+    totaltitles+=totalplaylisttitles;
+
+    if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Dec. AMG: totaltitles=%d\n", totaltitles);
+
+    memcmp(amg, "DVDAUDIO-AMG", 12);
+
+    uint32_check(&amg[12], 2 * sectors->amg + sectors->topvob - 1);		// Relative sector pointer to Last sector in AMG ie size (AUDIO_TS.IFO+AUDIO_TS.VOB+AUDIO_TS.BUP)-1 in sectors
+    uint32_check(&amg[28], sectors->amg - 1);		// Last sector in AMGI
+    uint16_check(&amg[32], 0x0012); 	// DVD Specifications
+    uint16_check(&amg[38], 0x0001); 	// Number of Volumes
+    uint16_check(&amg[40], 0x0001); 	// Current Volume
+    amg[42] = 1;  		    		// Disc Side
+    amg[47] = globals.autoplay;
+    if (sectors->stillvob)
+        uint32_check(&amg[48], 2 * sectors->amg + sectors->topvob);		// relative sector pointer to AUDIO_SV.VOB=same value as 0x when no SV.VOB
+    amg[62] = 0;  					// Number of AUDIO_TS video titlesets (DVD-Audio norm video titlesets are AOBs)
+    amg[63] = ngroups; 		        // Number of audio titlesets, must include video linking groups
+    uint32_check(&amg[128], 0x07ff);
+    uint32_check(&amg[0xc0], menusector * sectors->amg);  	// Pointer to sector 2
+    uint32_check(&amg[0xc4], 1);  	// Pointer to sector 2
+    uint32_check(&amg[0xc8], 2);  	// Pointer to sector 3
+    uint32_check(&amg[0xcc], (menusector)? 3 : 0);  	// Pointer to sector 4
+    uint32_check(&amg[0xd4], (globals.text)? 3+(menusector) : 0);  	// Pointer to sector 4 or 5
+    uint32_check(&amg[0x100], (menusector)? 0x53000000 : 0); // Unknown;
+
+    uint32_check(&amg[0x154], (menusector)? 0x00010000 : 0); // Unknown;
+
+    uint32_check(&amg[0x15C], (img->h + img->min + img->sec)? 0x00018001 : 0); // 2ch 48k LPCM audio (signed big endian) in mpeg2 top menu, 1 stream,
+
+    /* Sector 2 */
+
+    i = 0x800;
+    uint16_check(&amg[i], totaltitles);		// total number of titles, audio and videolinking titles included
+    i += 2;
+
+    // pointer to end of sector table : 4 (bytes used) + 14 (size of table) *number of tables (totaltitles) -1
+    uint16_check(&amg[i], 4 + 14 * totaltitles - 1);
+    i += 2;
+
+    uint8_check(sectoroffset[0] = 2 * (sectors->amg + sectors->asvs) + sectors->stillvob + sectors->topvob); 								 // Pointer to first ATS_XX_0.IFO
+
+    titleset = 0;
+    titleintitleset = 0;
+
+    // Normal case: audio titles
+
+    for (j = 0; j < totalaudiotitles; ++j)
+    {
+
+        _Bool come_last = (titleintitleset == numtitles[titleset] - 1);
+
+        uint8_check(amg[i], ((menusector)? ((come_last)? 0xC0 : 0x80) : 0x80 ) | (titleset + 1)); 			// Table sector 2 first two bytes per title
+        uint8_check(amg[++i], ntitletracks[titleset][titleintitleset]);
+        i += 3; // 0-padding
+        uint32_check(&amg[i], titlelength[titleset][titleintitleset]);
+        i += 4;
+        uint8_check(amg[i], titleset + 1);  // Titleset number
+        uint8_check(amg[++i], titleintitleset + 1);
+
+        uint32_check(&amg[++i], sectoroffset[titleset]); // Pointer to ATSI
+
+        i += 4;
+        ++titleintitleset;
+        if (titleintitleset == numtitles[titleset])
+        {
+            sectoroffset[titleset + 1] = sectoroffset[titleset] + (command->files[titleset][ntracks[titleset] - 1].last_sector + 1)+sectors->atsi[titleset] * 2;
+            if (globals.veryverbose)
+            {
+                if (titleset == 0)
+                    foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  sectoroffset[%d]=%u=2*(%d+%d)+%u+%u\n",
+                            titleset,
+                            sectoroffset[titleset],
+                            sectors->amg ,
+                            sectors->asvs,
+                            sectors->stillvob,
+                            sectors->topvob);
+
+                foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  sectoroffset[%d]=%u=sectoroffset[%d]+(command->files[%d][ntracks[%d]-1].last_sector+1)+2*%d\n",
+                        titleset+1,
+                        sectoroffset[titleset + 1],
+                        titleset,
+                        titleset,
+                        titleset,
+                        sectors->atsi[titleset]);
+
+            }
+
+            titleintitleset = 0;
+            ++titleset;
+        }
+    }
+
+
+    // Case 2: video-linking titles
+
+    // supposing one title per videolinking group
+
+    if (globals.videolinking)
+    {
+        for (k=0; k < vgroups ; ++k)
+        {
+
+            /* if (k +1 == #number of videotitles in group)
+                amg[i]=0x00|(titleset+1);                  // Table sector 2 first two bytes per title, non-last video linking title
+            else
+            */
+
+            uint8check(amg[i], 0x40 | ++titleset);                  // Table sector 2 first two bytes per title, last video linking title
+            uint8check(amg[++i], 1);                                        // Experiment limitation: just one video chapter is visible within video zone title
+            uint8check(amg[++i], 1);                                        // Experiment limitation: just one video chapter is visible within video zone title (repeated)
+            ++i;
+            uint32_check(&amg[++i],  videotitlelength[k]);        //  length of title in PTS ticks
+            i += 4;
+            uint8check(amg[i] = VTSI_rank[k]);                          // Video zone Titleset number
+            uint8check(amg[++i], 1);                                        // Experiment limitation: just one video title is visible within video zone titleset
+            uint32_check(&amg[++i], relative_sector_pointer_VTSI[VTSI_rank[k] - 1]);       // Pointer to VTSI
+            i += 4;
+        }
+    }
+
+    if (globals.playlist)
+    {
+        //copy of other groups
+
+        for (j = 0; j < nplaygroups; ++j)
+        {
+            if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Encoding copy group (#%d)\n", j+1);
+
+            for (k = 0; k < numtitles[playtitleset[j]]; ++k)
+            {
+                uint8check(amg[i], 0x80 | (playtitleset[j] + 1)); 			// Table sector 2 first two bytes per title
+                uint8check(amg[++i], ntitletracks[playtitleset[j]][k];
+                i += 3; // 0-padding
+                uint32_check(&amg[i], titlelength[playtitleset[j]][k]);
+                i += 4;
+                uint8check(amg[i] = playtitleset[j] + 1;  // Titleset number
+                uint8check(amg[++i] = k + 1;
+                uint32_check(&amg[++i], sectoroffset[playtitleset[j]]); // Pointer to ATSI
+                i += 4;
+            }
+        }
+    }
+
+    /* Sector 3 */
+
+    i = 0x1000;
+    uint16_check(&amg[i], totaltitles);		// total number of titles, audio and videolinking titles included
+    i += 2;
+
+    // pointer to end of sector table : 4 (bytes used) + 14 (size of table) *number of tables (totaltitles) -1
+    uint16_check(&amg[i], 4 + 14 * totaltitles -1);
+    i += 2;
+    titleset = 0;
+    titleintitleset = 0;
+
+    // Normal case: audio titles
+
+    for (j = 0; j < totalaudiotitles; ++j)
+    {
+        amg[i] = 0x80 | (titleset + 1); 			// Table sector 2 first two bytes per title
+        amg[++i] = ntitletracks[titleset][titleintitleset];
+        i += 3; // 0-padding
+        uint32_check(&amg[i], titlelength[titleset][titleintitleset]);
+        i += 4;
+        amg[i] = titleset + 1;  // Titleset number
+        amg[++i] = titleintitleset + 1;
+
+        uint32_check(&amg[++i], sectoroffset[titleset]); // Pointer to ATSI
+
+        i += 4;
+        ++titleintitleset;
+        if (titleintitleset == numtitles[titleset])
+        {
+            titleintitleset=0;
+            ++titleset;
+        }
+    }
+
+    // Case 2: video-linking titles
+
+    // supposing one title per videolinking group
+
+    if (globals.videolinking)
+    {
+        for (k = 0; k < vgroups ; ++k)
+        {
+
+            /* if (k +1 == #number of videotitles in group)
+                amg[i]=0x00|(titleset+1);                  // Table sector 2 first two bytes per title, non-last video linking title
+            else
+
+            */
+            uint8check(amg[i] , 0x40 | (++titleset);                  // Table sector 2 first two bytes per title, last video linking title
+            uint8check(amg[++i], 1);                                        // Experiment limitation: just one video chapter is visible within video zone title
+            uint8check(amg[++i], 1);                                        // Experiment limitation: just one video chapter is visible within video zone title (repeated)
+            ++i;
+            uint32_check(&amg[++i],  videotitlelength[k]);        //  length of title in PTS ticks
+            i += 4;
+            uint8check(amg[i], VTSI_rank[k]);                          // Video zone Titleset number
+            uint8check(amg[++i], 1);                                        // Experiment limitation: just one video title is visible within video zone titleset
+            uint32_check(&amg[++i], relative_sector_pointer_VTSI[VTSI_rank[k] - 1]);       // Pointer to VTSI
+            i += 4;
+        }
+    }
+
+    if (globals.playlist)
+    {
+        //copy of other groups
+
+        for (j = 0; j < nplaygroups; ++j)
+        {
+            if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Encoding copy group (#%d)\n", j + 1);
+
+            for (k = 0; k < numtitles[playtitleset[j]]; ++k)
+            {
+                uint8check(amg[i], 0x80 | (playtitleset[j]+1)); 			// Table sector 2 first two bytes per title
+                uint8check(amg[++i], ntitletracks[playtitleset[j]][k];
+                i += 3; // 0-padding
+                uint32_check(&amg[i], titlelength[playtitleset[j]][k]);
+                i += 4;
+                uint8check(amg[i], playtitleset[j] + 1);  // Titleset number
+                uint8check(amg[++i], k + 1);
+                uint32_check(&amg[++i], sectoroffset[playtitleset[j]]); // Pointer to ATSI
+                i += 4;
+            }
+        }
+    }
+
+    /* Sector 4 */
+
+// Next is generated only if there is a top menu, not if just still pics.
+
+    if (menusector)
+    {
+        if (globals.debugging) foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Creating menu ifo, AUDIO_TS.IFO sector 4");
+        uint64_t menuvobsize_sum = 0;
+
+        /* Looks like VMG_PGCI_UT */
+
+        uint32_check(&amg[0x1800], 0x00010000); // 0-3 Number of language units + 2 bytes of padding
+        uint32_check(&amg[0x1804], 0x00000151 + (img->nmenus - 1) * 0x13A); // 4-7 Address of last byte= length of table-1
+        uint32_check(&amg[0x1808], 0x656E0080); // 'en' for English, cound add 'g'=0x67 as third byte and 0x80 for existence of menu.
+
+        //  compare with VIDEO_TS.IFO, same bytes.
+        uint32_check(&amg[0x180C], 0x00000010); // relative pointer to start of language unit=0x1810
+
+        /* Looks like Language Unit, LU */
+
+        uint16_check(&amg[0x1810], img->nmenus);
+        uint32_check(&amg[0x1814], 0x00000141 + (img->nmenus - 1) * 0x13A);
+        uint32_check(&amg[0x1818], 0x82000000); // Language Unit: Menu type: Title menu + 3 padding bytes
+
+        uint32_check(&amg[0x181C], 8 * (img->nmenus + 1));
+        // INterpretation of palette may differ if spumux/dvdauthor was not fed with appropriate "highlighted" background.
+        /* Looks like amended PGC */
+
+        // Prerequisites : display is black and whiten simple text. Highlight is black and white,
+        //  with necessary highlighting form (underline, square...) in a third colour (which is not relevant).
+        // Select action picture must not be equal to display and it is advised to have a background similar to that of img->background (eg both black).
+
+        i = 0x1820;
+
+        for (j = 0; j < img->nmenus - 1; ++j)
+        {
+            i += 4; // 4 bytes of padding
+            uint32_check(&amg[i], 0x13A * (j + 1) + (img->nmenus - j) * 0x8);
+            i += 4;
+        }
+
+        // to visualize a video, it is necessary to have a transparent set of pics (alpha channel activated) except for text/highlight motifs.
+        // --colors commands picture authoring. --palette command real display on screen as --colors are only there to facilitate dvdauthor's work.
+        // so basically they may be left as default values, whilst --palette allows user specification
+
+        for (j = 1; j <= img->nmenus; ++j)
+        {
+
+            uint32_check(&amg[i], 0x00000101); // cf PGC cell data structure // reserved: normal cell (0000) + 1s of still time + 1 post command
+            i += 4;
+            amg[i++] = BCD_REVERSE(img->h);       //  It should be possible to automate this either by generating a temporary dvd-video-like ifo with dvdauthor and the using videoimport.c, or by retrieving the pointers to values by return of dvdauthor (harder). == TODO ==
+            amg[i++] = BCD_REVERSE(img->min);
+            amg[i++] = BCD_REVERSE(img->sec);
+            amg[i] = 0xC1; // hour, minute, second, frames in BCD. The frame part will be ignored (C1 seems to be ok for PAL)
+            i += 5;
+            amg[i] = (img->sec + img->min + img->h)? 0x80 : 0;  // Audio stream status : 0x80 for present, other reservedn except for bits 0 to 2 (stream number).
+            i += 0x10;
+            uint32_check(&amg[i], 0x80000000); // additional bits mask the menu.
+            i+=0x80;
+
+            if (j < img->nmenus) uint16_check(&amg[i], j + 1);
+            i += 2;
+            if (j > 1) uint16_check(&amg[i], j - 1);
+            i += 2;
+            uint16_check(&amg[i], 1);
+            i += 4; // 2 bytes of padding
+            uint32_check(&amg[i], (uint32_t) strtoul(img->textcolor_palette, NULL, 16)); // highlight motif colour
+            i += 4;
+            uint32_check(&amg[i], (uint32_t) strtoul(img->highlightcolor_palette, NULL, 16)); // Colors (a, Y, Cr, Cb): Pattern:: display background (black)    Type 1 (hier level 1)
+            i += 4;
+            uint32_check(&amg[i], (uint32_t) strtoul(img->selectfgcolor_palette, NULL, 16)); // Colors (a, Y, Cr, Cb): Pattern:: display foreground(red)
+            i += 4;
+            uint32_check(&amg[i], (uint32_t) strtoul(img->bgcolor_palette, NULL, 16)); // Colors (a, Y, Cr, Cb): Pattern:: select (action) foreground (green)
+            i += 4;
+            // other possible streams (lower hierarchical levels)
+            uint32_check(&amg[i], 0x00108080);
+            i += 4;
+            uint32_check(&amg[i], 0x00108080); // Colors (a, Y, Cr, Cb)
+            i += 4;
+            uint32_check(&amg[i], 0x00108080); // Colors (a, Y, Cr, Cb)
+            i += 4;
+            uint32_check(&amg[i], 0x00108080); // Colors (a, Y, Cr, Cb)
+            i += 4;
+            uint32_check(&amg[i], 0x00108080);
+            i += 4;
+            uint32_check(&amg[i], 0x00108080); // Colors (a, Y, Cr, Cb)   3rd level
+            i += 4;
+            uint32_check(&amg[i], 0x00108080); // Colors (a, Y, Cr, Cb)
+            i += 4;
+            uint32_check(&amg[i], 0x00108080); // Colors (a, Y, Cr, Cb)
+            i += 4;
+            uint32_check(&amg[i], 0x00108080);  // black
+            i += 4;
+            uint32_check(&amg[i], 0x00108080);
+            i += 4;
+            uint32_check(&amg[i], 0x00108080);
+            i += 4;
+            uint32_check(&amg[i], 0x00108080);  // Unknown
+            i += 4;
+            uint32_check(&amg[i], 0x00EC0114);
+            i += 4;
+            uint32_check(&amg[i], 0x0116012E);
+            i += 4;
+            uint32_check(&amg[i], 0x00010003);
+            i += 4;
+            uint32_check(&amg[i], 0x00000027);
+            if (img->loop)
+            {
+                uint16_check(&amg[i+0xC], 0x2004);
+                amg[i+7] = 1;
+            }
+            i += 0x24;
+            uint32_check(&amg[i], 0x01000200);
+            i += 4;
+            if (img->loop) uint16_check(&amg[i], 0x0001);
+            else uint16_check(&amg[i], 0xFF00);
+            i += 2;
+            amg[i++] = BCD_REVERSE(img->h);
+            amg[i++] = BCD_REVERSE(img->min);
+            amg[i++] = BCD_REVERSE(img->sec);
+            amg[i++] = 0xC1;
+            if (j > 1)
+            {
+                menuvobsize_sum += img->menuvobsize[j-2] - 1;
+                uint32_check(&amg[i], menuvobsize_sum); // in the course of processing dvdauthor over topmenus, one data sector added by spumux is lost
+                i += 8; // 4 bytes of padding
+                uint32_check(&amg[i], menuvobsize_sum);  // repeat
+                i += 4;
+            }
+            else i += 12;
+            uint32_check(&amg[i], menuvobsize_sum+img->menuvobsize[img->nmenus-1] - 1 - 1);
+            i += 4;
+            uint32_check(&amg[i], 0x00010001);
+            i += 4;
+        }
+
+        /* coherence test */
+
+        if (globals.veryverbose)
+        {
+            if (sectors->topvob == menuvobsize_sum + img->nmenus - 1
+                                  + img->menuvobsize[img->nmenus-1] -1)
+                foutput("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Menu vob size coherence test...OK\n");
+
+            else foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Menu vob size coherence test failed: sectors->topvob=%u against %lu\n",
+                         sectors->topvob,
+                         menuvobsize_sum + img->nmenus -1 + img->menuvobsize[img->nmenus - 1] -1);
+        }
+    }
+
+    /* Sector 5 */
+
+    /* partial implementation: is only valid for one group and type of content="Music content", code 0x38. For "song" replace 0x38 with 0x40 below*/
+
+    if ((globals.text) && naudio_groups == 1)
+    {
+        if (globals.debugging)
+            foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Creating DVDATXTDT-MG, AUDIO_TS.IFO");
+
+        int c, d;
+
+        d = (sectors->amg - 1) * 0x800;
+        i = d;
+        memcpy(&amg[i], "DVDATXTDT-MG", 12);
+        i += 12;
+        uint32_copy(&amg[i], 1);
+        i += 8;
+        memcpy(&amg[i], "en",2);
+        i += 3;
+        amg[i] = 0x11;
+        i += 4;
+        amg[i] = 0x1C;
+        i += 6;
+        amg[i] = 0x2A;
+        i += 2;
+        amg[i] = 0x32;
+        i = d + 0x35;
+        amg[i] = 0x36 + 0x8 * ntracks[0];
+        i = d + 0x47;
+        amg[i] = 0x03 + 4 * ntracks[0];
+        i += 3;
+        amg[i] = 1;
+        i += 4;
+        amg[i] = 2;
+        i += 4;
+        amg[i] = 3;
+        i += 4;
+        amg[i] = 0x38;
+        i += 3;
+        c = amg[i] = (ntracks[0] + 1) * 0x10;
+        ++i;
+        amg[i] = 0x3;
+        i += 4;
+        amg[i] = 0x38;
+        i -= 5;
+        int trackindex=0;
+        uint8_t lcount=c;
+
+        while(trackindex < 2)
+        {
+            if (textable[trackindex]!= NULL)
+                lcount += strlen(textable[trackindex]) + 1;
+
+            if (trackindex < ntracks[0] - 2)
+            {
+                i += 8;
+                amg[i + 1] = 0x3;
+                amg[i + 5] = 0x38;
+            }
+            else if (trackindex == (ntracks[0] - 2))
+            {
+                i += 8;
+                amg[i + 1] = 0x2;
+                amg[i + 5] = 0x3;
+                amg[i + 9] = 0x38;
+            }
+            else
+            {
+                i += 0xC;
+                amg[i + 1] = 0x3;
+                amg[i + 5] = 0x38;
+            }
+
+            amg[i] = lcount;
+            ++trackindex;
+        }
+
+        for(trackindex = 0; trackindex < ntracks[0] - 1; ++trackindex)
+        {
+            i += 8;
+            if (textable[trackindex]) lcount += strlen(textable[trackindex]) + 1;
+            amg[i] = lcount;
+            if (trackindex < ntracks[0] - 2)
+            {
+                amg[i + 1] = 0x3;
+                amg[i + 5] = 0x38;
+            }
+        }
+
+        ++i;
+
+        for (trackindex = 0; trackindex < ntracks[0]; ++trackindex)
+        {
+            c = (textable[trackindex]) ? strlen(textable[trackindex]) : 0;
+            if (c) memcpy(&amg[i], textable[trackindex], c);
+            i += c;
+            amg[i] = 0x9;
+            ++i;
+        }
+
+        amg[d + 0x13] = i - 1;
+        amg[d + 0x1F] = i - 1 - 0x1C;
+    }
+
+    errno=0;
+
+    size_t  sizeofamg=sizeof(amg);
+
+    create_file(audiotsdir, "AUDIO_TS.IFO", amg, sizeofamg);
+
+    create_file(audiotsdir, "AUDIO_TS.BUP", amg, sizeofamg);
+
+    if (errno)
+        return(NULL);
+    else
+        return numtitles;
+
+#undef files
+#undef ntracks
+#undef ngroups
+#undef vgroups
+#undef nplaygroups
+#undef playtitleset
+#undef img
+#undef textable
+#undef VTSI_rank
+
+
+
+}
+
 uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *videotitlelength, uint32_t* relative_sector_pointer_VTSI,
                     uint8_t *numtitles, uint8_t** ntitletracks, uint64_t** titlelength)
 {
     errno=0;
-
 
     uint16_t i, j = 0, k = 0, titleset = 0, totalplaylisttitles = 0, totalaudiotitles = 0, titleintitleset;
 
