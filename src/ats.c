@@ -833,6 +833,7 @@ ID\Chan 0   1   2   3   	4   5     info->channels
 
     /* offset_count += */   CHECK_FIELD(unknown3);
 
+    if (header_length < 8) return 0;
     uint8_t zero[header_length-8];
     uint8_t zero__[header_length-8];
     memset(zero, 0, header_length-8);
@@ -905,7 +906,7 @@ inline static uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_title)
     // 1 48Khz-based frame is 1200Hz, 1 44.1KHz frame is 1102.5Hz
     SCR=( (frames_written*(double)info->bytesperframe*90000.0))/((double) info->bytespersecond);
 
-    double skew = (info->bitspersample == 16)? 1.0 : (1.001 + 0.003 * (info->channels - 2));
+    double skew = (info->bitspersample == 16)? 1.0 + 0.007 * (info->channels == 6) : (1.001 + 0.003 * (info->channels > 2 ? info->channels - 2 : 0));
 
     SCRint=floor(SCR * 300 * skew);
 
@@ -971,7 +972,7 @@ inline static uint32_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
 
         /* There seems to be an empirical skew somewhere. Ugly, and to be removed as soon as can be */
 
-        double skew = (info->bitspersample == 16)? 1.0 : (1.001 + 0.003 * (info->channels - 2));
+        double skew = (info->bitspersample == 16)? 1.0 + 0.007 * (info->channels == 6) : (1.001 + 0.003 * (info->channels > 2 ? info->channels - 2 : 0));
 
         PTS=((double) frames_written * k * 8)/((double) (info->samplerate))* skew + PTS0;
 
