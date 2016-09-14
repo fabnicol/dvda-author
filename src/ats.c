@@ -43,7 +43,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 extern globalData globals;
 extern uint8_t channels[21];
-extern FILE* aob_log;
+
 static uint8_t pack_start_code[4]={0x00,0x00,0x01,0xBA};
 static uint8_t system_header_start_code[4]={0x00,0x00,0x01,0xBB};
 static uint8_t program_mux_rate_bytes[3]={0x01,0x89,0xc3};
@@ -165,60 +165,6 @@ inline static void write_pack_header(FILE* fp,  uint64_t SCRint)
     /* offset_count += */   fwrite(pack_stuffing_length_byte,1,1,fp);
 }
 
-inline static void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* fp, _Bool write)
-{
-    uint64_t offset = ftello(fp);
-    if (offset % 2048 +  (unsigned int) size > 2048)
-    {
-        if (globals.logdecode)
-        {
-            fprintf(aob_log, "SECTOR OVERFLOW at %" PRIu64 ";%s;size read;%d;exceeds by;%d\n", offset, label, size, (int) offset % 2048 + size - 2048);
-            fread(tab__, size,1,fp);
-            hex2file(aob_log, tab__, size);
-            fprintf(aob_log, "%s", "\n");
-            close_aob_log();
-            fflush(NULL);
-        }
-
-        exit(-2);
-    }
-
-    /* offset_count += */   fread(tab__, size,1,fp);
-
-    if (globals.logdecode) fprintf(aob_log, "%" PRIu64 ";%s;", offset, label);
-    if (! globals.logdecode) return;
-    if (memcmp(tab__, tab, size) == 0)
-    {
-        fprintf(aob_log, "%s", "OK\n");
-    }
-    else
-    {
-        if (write)
-        {
-            fprintf(aob_log, "%s", "Div: ");
-            hex2file(aob_log, tab__, size);
-            fprintf(aob_log, "%s", ";instead of:;");
-            hex2file(aob_log, tab, size);
-        }
-        fprintf(aob_log, "%s", "\n");
-    }
-}
-
-inline static void rw_field(uint8_t* tab, int size,const char* label, FILE* fp)
-{
-    uint64_t offset = ftello(fp);
-    /* offset_count += */   fread(tab, size,1,fp);
-
-    if (! globals.logdecode) return;
-    fprintf(aob_log, "%" PRIu64 ";%s;", offset, label);
-    hex2file(aob_log, tab, size);
-    fprintf(aob_log, "%s", "\n");
-
-}
-
-#define CHECK_FIELD(X) test_field(X##__, X, sizeof(X), #X, fp, true);
-#define CHECK_FIELD_NOWRITE(X) test_field(X##__, X, sizeof(X), #X, fp, false);
-#define RW_FIELD(X) rw_field(X, sizeof(X), #X, fp);
 
 inline static void read_pack_header(FILE* fp,  uint64_t* SCRint_ptr)
 {
@@ -285,13 +231,13 @@ inline static void read_system_header(FILE* fp)
     open_aob_log();
 
     /* offset_count += 4 */ CHECK_FIELD(system_header_start_code)
-            /* offset_count += 2 */ CHECK_FIELD(header_length)
-            /* offset_count += 3 */ CHECK_FIELD(rate_bound)
-            /* offset_count += */   CHECK_FIELD(audio_bound)
-            /* offset_count += */   CHECK_FIELD(video_bound)
-            /* offset_count += */   CHECK_FIELD(packet_rate_restriction_flag)
-            /* offset_count += 3 */ CHECK_FIELD(stream_info1)
-            /* offset_count += 3 */ CHECK_FIELD(stream_info2)
+    /* offset_count += 2 */ CHECK_FIELD(header_length)
+    /* offset_count += 3 */ CHECK_FIELD(rate_bound)
+    /* offset_count += */   CHECK_FIELD(audio_bound)
+    /* offset_count += */   CHECK_FIELD(video_bound)
+    /* offset_count += */   CHECK_FIELD(packet_rate_restriction_flag)
+    /* offset_count += 3 */ CHECK_FIELD(stream_info1)
+    /* offset_count += 3 */ CHECK_FIELD(stream_info2)
 
             close_aob_log();
 }
@@ -866,70 +812,48 @@ inline static uint64_t calc_PTS_start(fileinfo_t* info, uint64_t pack_in_title)
     return(PTSint);
 }
 
-
-
-inline static uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_title)
+typedef struct
 {
-    double SCR;
+    double PTS;
+    double PTS0;
+    uint64_t PTSint;
+} pts_t ;
+
+inline static uint64_t calc_SCR(fileinfo_t *info, uint64_t pack_in_title, pts_t *p)
+{
     uint64_t SCRint;
-    uint64_t bytes_written;
-    long double frames_written;
-
-
-    if (info->bytespersecond == 0)
-    {
-        foutput(""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  file %s has bytes per second=0\n", info->filename);
-        return 0;
-    }
-
-
-    //    SCR=(pack_in_title <= 4 ? pack_in_title : 4)*(2048.0*8.0*90000.0*300.0)/10080000.0;
-
-    //    if (pack_in_title>=4)
-    //    {
-    //        SCR+=((info->SCRquantity*300.0*90000.0)/info->bytespersecond)-42.85;
-    //    }
-    //    if (pack_in_title>=5)
-    //    {
-    //        SCR+=(pack_in_title-4.0)*((info->lpcm_payload*300.0*90000.0)/info->bytespersecond);
-    //    }
 
     if (pack_in_title==0) return 0;
 
-    bytes_written=(pack_in_title*info->lpcm_payload);//-info->firstpackdecrement;
-    // e.g., for 4ch, First pack is 1984, rest are 2000
-    frames_written=bytes_written/info->bytesperframe;
-    if (frames_written*info->bytesperframe < bytes_written)
-    {
-        frames_written++;
-    }
-    // 1 48Khz-based frame is 1200Hz, 1 44.1KHz frame is 1102.5Hz
-    SCR=( (frames_written*(double)info->bytesperframe*90000.0))/((double) info->bytespersecond);
+    double SCR = (p->PTS - p->PTS0) * 300.0;
 
-    double skew = (info->bitspersample == 16)? 1.0 + 0.007 * (info->channels == 6) : (1.001 + 0.003 * (info->channels > 2 ? info->channels - 2 : 0));
-
-    SCRint=floor(SCR * 300 * skew);
-
+    SCRint = (uint64_t) floor(SCR);
 
     // Delta SCR is simply Delta PTS x 300. Use calc_PTS!
     return(SCRint);
 }
 
 
-inline static uint32_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
+inline static pts_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
 {
     double PTS;
     double PTS0;
-    uint32_t PTSint;
+    uint64_t PTSint;
     uint64_t bytes_written;
     long double frames_written;
 
-                          //16  44100    48000  88200  96000   //24   44100   48000   88200  96000
-  //double M_PTS[2][4] = {//3ch {1795.0, 1650.0, 897.0, 825.0},       {1197.0, 1100.0, 598.0, 550.0}};
+                              //16  44100    48000  88200  96000   //24   44100   48000   88200  96000
+      //double M_PTS[2][4] = {//3ch {1795.0, 1650.0, 897.0, 825.0},       {1197.0, 1100.0, 598.0, 550.0}};
 
-                          //4ch  1346.0
+                              //4ch  1346.0
 
-  // Empirically PTS(br, sr, ch) = 5280 * 8 * 90000 / (br * sr * ch) = 5280 * 90000 / bytespersecond and M_PTS is floor(PTS(br, sr, ch))
+      // Empirically PTS(br, sr, ch) = 5280 * 8 * 90000 / (br * sr * ch) = 5280 * 90000 / bytespersecond and M_PTS is floor(PTS(br, sr, ch))
+
+    if (info->bytespersecond == 0)
+    {
+        foutput(""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  file %s has bytes per second=0\n", info->filename);
+        return 0;
+    }
 
     PTS0 = 5280.0 / ((double) info->bytespersecond);
 
@@ -978,21 +902,24 @@ inline static uint32_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
 
     }
 
-    PTSint=(uint32_t) floor(PTS * 90000.0);
-    return(PTSint);
+    PTSint=(uint64_t) floor(PTS * 90000.0);
+
+    pts_t p = { PTS, PTS0, PTSint };
+
+    return(p);
 }
 
 
 inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf, uint32_t bytesinbuffer, uint64_t pack_in_title, _Bool start_of_file)
 {
-    uint64_t PTS;
-    uint64_t SCR;
+
     int audio_bytes;
     static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
 
+    pts_t p = calc_PTS(info,pack_in_title);
 
-    PTS=calc_PTS(info,pack_in_title);
-    SCR=calc_SCR(info,pack_in_title);
+    uint64_t PTS=p.PTS;
+    uint64_t SCR = calc_SCR(info, pack_in_title, &p);
 
     if (pack_in_title==0) // 53  + info->firstpack_lpcm_headerquantity + (info->firstpack_pes_padding != 0)? info->firstpack_pes_padding + 6 + info->lpcm_payload - info->firstpackdecrement
         //  = 59 + 1995 = 2054 if info->firstpack_pes_padding != 0
@@ -1006,7 +933,8 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         write_audio_pes_header(fp,info->firstpack_audiopesheaderquantity,1,PTS); //+17
         audio_bytes = info->lpcm_payload - info->firstpackdecrement;
         write_lpcm_header(fp,info->firstpack_lpcm_headerquantity,info,pack_in_title,cc);//info->firstpack_lpcm_headerquantity+4
-        /* offset_count+= */ fwrite(audio_buf,1,audio_bytes,fp);
+        /* offset_count+= */
+        fwrite(audio_buf,1,audio_bytes,fp);
 
         write_pes_padding(fp, info->firstpack_pes_padding);//+6+info->firstpack_pes_padding
     }
@@ -1019,10 +947,10 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         write_pack_header(fp,SCR); //+14
         write_audio_pes_header(fp,info->lastpack_audiopesheaderquantity+audio_bytes,0,PTS);  // +14
         write_lpcm_header(fp,info->lastpack_lpcm_headerquantity,info,pack_in_title,cc); // +info->lastpack_lpcm_headerquantity +4
-        /* offset_count+= */ fwrite(audio_buf,1,audio_bytes,fp);
+        /* offset_count+= */
+        fwrite(audio_buf,1,audio_bytes,fp);
         // PATCH Dec. 2013
-        // Lee Feldkamp corrected formula write_pes_padding(fp,2048-28-info->midpack_lpcm_headerquantity-4-audio_bytes+gamma);
-        // PATCH Sept 2016
+         // PATCH Sept 2016
         int16_t padding_quantity = 2016 - info->lastpack_lpcm_headerquantity - audio_bytes;
         if (padding_quantity < 0)
         {

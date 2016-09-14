@@ -387,7 +387,7 @@ uint8_t* decode_amg(command_t *command, sectors, totaltitles,numtitles, playtitl
     if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Dec. AMG: totaltitles=%d\n", totaltitles);
 
     memcmp(amg, "DVDAUDIO-AMG", 12);
-
+    uint32_copy
     uint32_check(&amg[12], 2 * sectors->amg + sectors->topvob - 1);		// Relative sector pointer to Last sector in AMG ie size (AUDIO_TS.IFO+AUDIO_TS.VOB+AUDIO_TS.BUP)-1 in sectors
     uint32_check(&amg[28], sectors->amg - 1);		// Last sector in AMGI
     uint16_check(&amg[32], 0x0012); 	// DVD Specifications
