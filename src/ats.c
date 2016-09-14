@@ -791,6 +791,8 @@ ID\Chan 0   1   2   3   	4   5     info->channels
     return header_length;
 }
 
+// to be modified
+
 inline static uint64_t calc_PTS_start(fileinfo_t* info, uint64_t pack_in_title)
 {
     double PTS;

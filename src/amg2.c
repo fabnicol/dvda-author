@@ -936,7 +936,7 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
     uint32_copy(&amg[0xc8], 2);  	// Pointer to sector 3
     uint32_copy(&amg[0xcc], (menusector)? 3 : 0);  	// Pointer to sector 4
     uint32_copy(&amg[0xd4], (globals.text)? 3+(menusector) : 0);  	// Pointer to sector 4 or 5
-    uint32_copy(&amg[0x100], (menusector)? 0x53000000 : 0); // Unknown;
+    uint32_copy(&amg[0x100], (menusector)? 0x53000000 : 0); // Unknown;  // 0 -> 1E in some unknown cases TO BE CHECKED
 
     uint32_copy(&amg[0x154], (menusector)? 0x00010000 : 0); // Unknown;
 
