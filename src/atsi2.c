@@ -113,7 +113,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
     {
         uint16_copy(&atsi[i],0x0000);  // [200806] 0x0000 if a menu is not generated; otherwise sector pointer from start of audio zone (AUDIO_PP.IFO to last sector of audio system space (here AUDIO_TS.IFO)
         i+=2;
-        if (files[j].channels>2)
+        if (files[j].channels > 2)
         {
             switch (audioformats[j].bitspersample)
             {
@@ -151,7 +151,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
             }
         }
         i++;
-        if (files[j].channels>2)
+        if (files[j].channels > 2)
         {
 
             switch (audioformats[j].samplerate)
@@ -220,6 +220,9 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
 
     // downmix coefficients
     //[200806] : if a menu is generated: uint8_copy(&atsi[336],0x01);
+
+#ifdef DOWNMIX_COEFS_SET1
+
     uint16_copy(&atsi[384],0x0000);
     uint16_copy(&atsi[386],0x1eff);
     uint16_copy(&atsi[388],0xff1e);
@@ -229,7 +232,18 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
     uint16_copy(&atsi[396],0x4b4b);
     uint16_copy(&atsi[398],0x0000);
 
+#else
+    // new default downmix coefficient (Sept. 2016)
+    uint16_copy(&atsi[384],0x0000);
+    uint16_copy(&atsi[386],0x00ff);
+    uint16_copy(&atsi[388],0xff00);
+    uint16_copy(&atsi[390],0x1e1e);
+    uint16_copy(&atsi[392],0x3232);
+    uint16_copy(&atsi[394],0x3232);
+    uint16_copy(&atsi[396],0x1e1e);
+    uint16_copy(&atsi[398],0x0000);
 
+#endif
     /* SECTOR 2 */
 
     i=0x800;
@@ -243,7 +257,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
     {
         uint16_copy(&atsi[i],0x8000+(j+1)*0x100);
         i+=2;
-        uint16_copy(&atsi[i],0x0000); // Unknown.  Maybe 0x0100 for Stereo, 0x0000 for surround
+        uint16_copy(&atsi[i],0x0100 * (files[j].channels  > 2)); // Unknown.  Maybe 0x0100 for surround, 0x0000 for stereo. TO BE CHECKED
         i+=2;
 
         // To be filled later - pointer to a following table.
@@ -288,7 +302,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
             // These seem to be pointers to a lookup table in the first sector of the ATSI
 
             x=get_afmt(&files[k],audioformats,&numafmts);
-            x=((x*8) << 8)|0x0010;
+            x=((x*8) << 8) ; // |0x0010; ? Or 0x10 for stereo, 0 for surround ? TO BE CHECKED
             if (t==0)
             {
                 x|=0xc000;
@@ -301,7 +315,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
             i++;
             atsi[i]=0x00;
             i++;
-            uint32_copy(&atsi[i],files[k+t].first_PTS);
+            uint32_copy(&atsi[i],files[k+t].first_PTS);  // Modify calc_PS_start !
             i+=4;
             uint32_copy(&atsi[i],files[k+t].PTS_length);
             i+=10;
