@@ -32,10 +32,32 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <stdint.h>
 
 #include "audio2.h"
+#include "c_utils.h"
 
 int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks);
 void pack_scr(uint8_t scr_bytes[6],uint64_t SCR_base, uint16_t SCR_ext);
 void pack_pts_dts(uint8_t PTS_DTS_data[10],uint32_t pts, uint32_t dts);
 int decode_ats(char* aob_file);
+
+extern FILE* aob_log;
+
+#ifdef CHECK_FIELD
+#undef CHECK_FIELD
+#endif
+
+#define CHECK_FIELD(X) CHECK_FIELD_(X, fp, aob_log)
+
+#ifdef CHECK_FIELD_NOWRITE
+#undef CHECK_FIELD_NOWRITE
+#endif
+
+#define CHECK_FIELD_NOWRITE CHECK_FIELD_NOWRITE_(X, fp, aob_log)
+
+
+#ifndef RW_FIELD
+#undef RW_FIELD
+#endif
+
+#define RW_FIELD  RW_FIELD_(X, fp, aob_log)
 
 #endif
