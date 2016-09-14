@@ -1898,6 +1898,56 @@ void hex2file(FILE* out, uint8_t* tab,  size_t tabsize)
 
 }
 
+void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* fp, FILE* log, _Bool write, _Bool overflow_check)
+{
+    uint64_t offset = ftello(fp);
+    if (overflow_check && offset % 2048 +  (unsigned int) size > 2048)
+    {
+        if (globals.logdecode)
+        {
+            fprintf(log, "SECTOR OVERFLOW at %" PRIu64 ";%s;size read;%d;exceeds by;%d\n", offset, label, size, (int) offset % 2048 + size - 2048);
+            fread(tab__, size,1,fp);
+            hex2file(log, tab__, size);
+            fprintf(log, "%s", "\n");
+            fclose(log);
+            fflush(NULL);
+        }
+
+        exit(-2);
+    }
+
+    /* offset_count += */   fread(tab__, size,1,fp);
+
+    if (globals.logdecode) fprintf(log, "%" PRIu64 ";%s;", offset, label);
+    if (! globals.logdecode) return;
+    if (memcmp(tab__, tab, size) == 0)
+    {
+        fprintf(log, "%s", "OK\n");
+    }
+    else
+    {
+        if (write)
+        {
+            fprintf(log, "%s", "Div: ");
+            hex2file(log, tab__, size);
+            fprintf(log, "%s", ";instead of:;");
+            hex2file(log, tab, size);
+        }
+        fprintf(aob_log, "%s", "\n");
+    }
+}
+
+void rw_field(uint8_t* tab, int size,const char* label, FILE* fp, FILE* log)
+{
+    uint64_t offset = ftello(fp);
+    /* offset_count += */   fread(tab, size,1,fp);
+
+    if (! globals.logdecode) return;
+    fprintf(log, "%" PRIu64 ";%s;", offset, label);
+    hex2file(log, tab, size);
+    fprintf(log, "%s", "\n");
+
+}
 
 
 void fread_endian(uint32_t * p, int t, FILE *f)
