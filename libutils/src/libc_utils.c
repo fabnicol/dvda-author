@@ -574,6 +574,27 @@ char * concatenate(char* dest, const char* str1, const char* str2)
 
 }
 
+char * conc(const char* str1, const char* str2)
+{
+    if ((!str1) || (!str2)) return NULL;
+    errno=0;
+    uint16_t s1=strlen(str1);
+    uint16_t s2=strlen(str2);
+
+    char* dest=calloc(s1 + s2 + 1, sizeof(char));
+
+    memcpy(dest, str1, s1);
+    memcpy(dest+s1, str2, s2);
+    dest[s1+s2]=0;
+    if (errno) return NULL;
+    else return dest;
+}
+
+char* filepath(const char* str1, const char* str2)
+{
+  return conc(conc(str1, SEPARATOR), str2);
+}
+
 /*-------
 * clean_directory
 *
@@ -1933,7 +1954,7 @@ void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* 
             fprintf(log, "%s", ";instead of:;");
             hex2file(log, tab, size);
         }
-        fprintf(aob_log, "%s", "\n");
+        fprintf(log, "%s", "\n");
     }
 }
 
