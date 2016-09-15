@@ -35,7 +35,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "version.h"
 #include "fixwav_manager.h"
 
-#ifdef __WIN32__
+#if defined __WIN32__ || defined _WIN32 || defined __WIN32 || defined __WIN64 || defined _WIN64
 #define SEPARATOR "\\"
 #define STRLEN_SEPARATOR 2
 #else
@@ -44,7 +44,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 
 #include <sys/types.h>
-#ifndef __WIN32__
+#if defined __WIN32__ || defined _WIN32 || defined __WIN32 || defined __WIN64 || defined _WIN64
 #include <sys/stat.h>
 //#else
 //#include <io.h>
@@ -177,6 +177,8 @@ typedef struct
 void htmlize(char* logpath);
 
 char* concatenate(char* dest, const char* str1, const char* str2);
+char * conc(const char* str1, const char* str2);
+char * filepath(const char* str1, const char* str2);
 void pause_dos_type();
 _Bool clean_directory(char* path);
 void clean_exit(int message);
@@ -222,16 +224,6 @@ uint64_t  parse_file_for_sequence(FILE* fp, uint8_t* tab, size_t sizeoftab);
 void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* fp, FILE* log, _Bool write, _Bool);
 void rw_field(uint8_t* tab, int size,const char* label, FILE* fp, FILE* log);
 
-
-#ifndef CHECK_FIELD_
-#define CHECK_FIELD_(X, fp, log) test_field(X##__, X, sizeof(X), #X, fp, log, true, true);
-#endif
-#ifndef CHECK_FIELD_NOWRITE_
-#define CHECK_FIELD_NOWRITE_(X, fp, log) test_field(X##__, X, sizeof(X), #X, fp, log, false, true);
-#endif
-#ifndef RW_FIELD_
-#define RW_FIELD_(X, fp, log) rw_field(X, sizeof(X), #X, fp, log);
-#endif
 
 inline static void  uint32_copy(uint8_t* buf, uint32_t x)
 {
