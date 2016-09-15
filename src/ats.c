@@ -314,8 +314,6 @@ inline static void read_pes_padding(FILE* fp, uint16_t length)
     close_aob_log();
 }
 
-static  uint8_t packet_start_code_prefix[3]={0x00,0x00,0x01};
-static  uint8_t stream_id[1]={0xbd}; // private_stream_1
 static  uint8_t PES_packet_len_bytes[2];
 static  uint8_t flags1[1]={0x81};  // various flags - original_or_copy=1
 static  uint8_t flags2[1]={0};  // various flags - contains pts_dts_flags and extension_flav
@@ -426,7 +424,7 @@ static uint8_t unknown1[1]={0x10};   // e.g. 0x10 for stereo, 0x00 for surround
 static uint8_t sample_size[1]={0x0f};  // 0x0f=16-bit, 0x1f=20-bit, 0x2f=24-bit
 static uint8_t sample_rate[1]={0x0f};  // 0x0f=48KHz, 0x1f=96KHz, 0x2f=192KHz,0x8f=44.1KHz, 0x9f=88.2KHz, 0xaf=176.4KHz
 static uint8_t unknown2[1]={0x00};
-static uint8_t channel_assignment;  // The channel assignment - 0=C; 1=L,R; 17=L,R,C,lfe,Ls,Rs
+static uint8_t channel_assignment[0]={0};  // The channel assignment - 0=C; 1=L,R; 17=L,R,C,lfe,Ls,Rs
 static uint8_t unknown3[1]={0x80};
 static uint8_t zero[16]={0};
 
@@ -502,7 +500,7 @@ inline static void write_lpcm_header(FILE* fp, uint8_t header_length,fileinfo_t*
         sample_rate[0] = high_nibble << 4 | high_nibble;
     }
 
-    channel_assignment = info->cga;
+    channel_assignment[0] = info->cga;
 
     bytes_written = pack_in_title == 0 ? 0 : (pack_in_title*info->lpcm_payload)-info->firstpackdecrement;
     // e.g., for 4ch, First pack is 1984, rest are 2000

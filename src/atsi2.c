@@ -221,7 +221,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
     // downmix coefficients
     //[200806] : if a menu is generated: uint8_copy(&atsi[336],0x01);
 
-#ifdef DOWNMIX_COEFS_SET1
+#ifdef USE_SET1
 
     uint16_copy(&atsi[384],0x0000);
     uint16_copy(&atsi[386],0x1eff);
@@ -255,9 +255,9 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
 
     for (j=0;j<numtitles;j++)
     {
-        uint16_copy(&atsi[i],0x8000+(j+1)*0x100);
+        uint16_copy(&atsi[i], 0x8000 + (j + 1) * 0x100);
         i+=2;
-        uint16_copy(&atsi[i],0x0100 * (files[j].channels  > 2)); // Unknown.  Maybe 0x0100 for surround, 0x0000 for stereo. TO BE CHECKED
+        uint16_copy(&atsi[i], 0x0100); // Unknown.  Not related to channel count. TO BE CHECKED.
         i+=2;
 
         // To be filled later - pointer to a following table.
@@ -266,7 +266,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
 
     k=0;
     int s=0;
-    for (j=0;j<numtitles;j++)
+    for (j=0; j<numtitles; j++)
     {
         uint32_copy(&atsi[0x808+8*j+4],i-0x800);
 
@@ -302,7 +302,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
             // These seem to be pointers to a lookup table in the first sector of the ATSI
 
             x=get_afmt(&files[k],audioformats,&numafmts);
-            x=((x*8) << 8) ; // |0x0010; ? Or 0x10 for stereo, 0 for surround ? TO BE CHECKED
+            x = (x*8) << 8 | 0x0010 * (files[j].channels > 2); // looks like 0x10 for stereo, 0 for surround
             if (t==0)
             {
                 x|=0xc000;
