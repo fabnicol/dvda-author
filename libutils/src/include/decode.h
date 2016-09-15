@@ -37,7 +37,15 @@
 #undef RW_FIELD
 #endif
 
+#ifdef CHECK_FIELD_AT
+#undef CHECK_FIELD_AT
+#endif
+
 #define CHECK_FIELD_AT(X, Y) { fseek(fp, Y, SEEK_SET); RW_FIELD(X) };
+
+#ifdef RW_FIELD
+#undef RW_FIELD
+#endif
 
 #define RW_FIELD(X)  { uint8_t X##__[sizeof(X)];\
                        memset(X##__, 0, sizeof(X)); \
