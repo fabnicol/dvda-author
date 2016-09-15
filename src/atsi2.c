@@ -302,7 +302,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
             // These seem to be pointers to a lookup table in the first sector of the ATSI
 
             x=get_afmt(&files[k],audioformats,&numafmts);
-            x = (x*8) << 8 | 0x0010 * (files[j].channels > 2); // looks like 0x10 for stereo, 0 for surround
+            x = (x*8) << 8 | 0x0010 * (files[j].channels < 2); // looks like 0x10 for stereo or mono, 0 for surround
             if (t==0)
             {
                 x|=0xc000;
