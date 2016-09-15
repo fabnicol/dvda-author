@@ -361,18 +361,14 @@ int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles
 }
 #endif
 
-//char* audiotsdir, command_t *command, sect* sectors, uint32_t *videotitlelength, uint32_t* relative_sector_pointer_VTSI,
-//                    uint8_t *numtitles, uint8_t** ntitletracks, uint64_t** titlelength
 
-uint8_t* decode_amg(command_t *command, sectors, totaltitles,numtitles, playtitleset)
+uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, uint8_t* numtitles)
 {
-
     uint16_t i, j = 0, k = 0, titleset = 0, totalplaylisttitles = 0, totalaudiotitles = 0, titleintitleset;
 
     _Bool menusector = (globals.topmenu <= TS_VOB_TYPE);  // there is a _TS.VOB in these cases
     uint8_t naudio_groups = ngroups-vgroups-nplaygroups;  // CHECK
 
-    uint8_t amg[sectors->amg*2048];
     uint32_t  sectoroffset[naudio_groups];
 
     totalaudiotitles = totaltitles;
@@ -386,24 +382,65 @@ uint8_t* decode_amg(command_t *command, sectors, totaltitles,numtitles, playtitl
 
     if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Dec. AMG: totaltitles=%d\n", totaltitles);
 
-    memcmp(amg, "DVDAUDIO-AMG", 12);
-    uint32_copy
-    uint32_check(&amg[12], 2 * sectors->amg + sectors->topvob - 1);		// Relative sector pointer to Last sector in AMG ie size (AUDIO_TS.IFO+AUDIO_TS.VOB+AUDIO_TS.BUP)-1 in sectors
-    uint32_check(&amg[28], sectors->amg - 1);		// Last sector in AMGI
-    uint16_check(&amg[32], 0x0012); 	// DVD Specifications
-    uint16_check(&amg[38], 0x0001); 	// Number of Volumes
-    uint16_check(&amg[40], 0x0001); 	// Current Volume
-    amg[42] = 1;  		    		// Disc Side
-    amg[47] = globals.autoplay;
+    FILE* fp = fopen(filepath(audiotsdir, "AUDIO_TS.IFO"), "rb");
+
+    if (fp == NULL)
+    {
+        foutput("%s\n", "[ERR]  Could not open AUDIO_TS.IFO for decoding.");
+        exit(-3);
+    }
+
+    open_aob_log();
+
+    uint8_t amgtag[12] = "DVDAUDIO-AMG";
+    uint8_t sect_ptr_last_amg[4] = {0};   // Relative sector pointer to Last sector in AMG ie size (AUDIO_TS.IFO+AUDIO_TS.VOB+AUDIO_TS.BUP)-1 in sectors
+    uint8_t sect_ptr_amgi[4] = {0};       // Last sector in AMGI
+    uint8_t dvd_specification[2] = {0};   // DVD Specifications
+    uint8_t n_volumes[2] = {0};           // Number of Volumes
+    uint8_t current_volume[2] = {0};      // Current Volume
+    uint8_t disc_side[1] = {1};
+    uint8_t autoplay[1] = {globals.autoplay};
+    uint8_t sect_ptr_sv_vob[4] = {0};     	// relative sector pointer to AUDIO_SV.VOB=same value as 0x when no SV.VOB
+    uint8_t n_menu_aobs[1] = {0};	// Number of AUDIO_TS video titlesets (DVD-Audio norm video titlesets are AOBs)
+    uint8_t n_groups[1] = {ngroups};       // Number of audio titlesets, must include video linking groups
+    uint8_t unknown1[4] = {0};
+    uint8_t menusector_indic[4] = {0}; // Pointer to sector 2 in case of menu sector
+    uint8_t sec2_ptr[4] = {0}; // Pointer to sector 2
+    uint8_t sec3_ptr[4] = {0}; // Pointer to sector 3
+    uint8_t sec4_ptr[4] = {0}; // Pointer to sector 3
+
+    uint32_copy(sect_ptr_last_amg, 2 * sectors->amg + sectors->topvob - 1) ;
+    uint32_copy(sect_ptr_amgi, sectors->amg - 1);
+    uint16_copy(dvd_specification, 0x0012);
+    uint16_copy(n_volumes, 0x0001);
+    uint16_copy(current_volume, 0x0001);
+    uint32_copy(sect_ptr_sv_vob, 2 * sectors->amg + sectors->topvob);
+    uint32_copy(unknown1, 0x07ff);
+    uint32_copy(menusector_indic, menusector * sectors->amg);
+    uint32_copy(sec2_ptr, 1);
+    uint32_copy(sec3_ptr, 2);
+    uint32_copy(sec4_ptr, (menusector)? 3 : 0);  	// Pointer to sector 4
+
+    CHECK_FIELD(amgtag)
+    CHECK_FIELD(sect_ptr_last_amg)
+    CHECK_FIELD_AT(sect_ptr_amgi, 0x1C)
+    CHECK_FIELD(dvd_specification)
+    CHECK_FIELD_AT(n_volumes, 0x26)
+    CHECK_FIELD(current_volume)
+    CHECK_FIELD(disc_side)
+    CHECK_FIELD_AT(autoplay, 0x2F)
+
     if (sectors->stillvob)
-        uint32_check(&amg[48], 2 * sectors->amg + sectors->topvob);		// relative sector pointer to AUDIO_SV.VOB=same value as 0x when no SV.VOB
-    amg[62] = 0;  					// Number of AUDIO_TS video titlesets (DVD-Audio norm video titlesets are AOBs)
-    amg[63] = ngroups; 		        // Number of audio titlesets, must include video linking groups
-    uint32_check(&amg[128], 0x07ff);
-    uint32_check(&amg[0xc0], menusector * sectors->amg);  	// Pointer to sector 2
-    uint32_check(&amg[0xc4], 1);  	// Pointer to sector 2
-    uint32_check(&amg[0xc8], 2);  	// Pointer to sector 3
-    uint32_check(&amg[0xcc], (menusector)? 3 : 0);  	// Pointer to sector 4
+       CHECK_FIELD(sect_ptr_sv_vob)
+
+    CHECK_FIELD_AT(n_menu_aobs, 0x3E)
+    CHECK_FIELD(n_groups)
+    CHECK_FIELD_AT(unknown1, 0x80)
+    CHECK_FIELD_AT(menusector_indic, 0xC0)
+    CHECK_FIELD(sec2_ptr)
+    CHECK_FIELD(sec3_ptr)
+    CHECK_FIELD(sec4_ptr)
+
     uint32_check(&amg[0xd4], (globals.text)? 3+(menusector) : 0);  	// Pointer to sector 4 or 5
     uint32_check(&amg[0x100], (menusector)? 0x53000000 : 0); // Unknown;
 
@@ -890,6 +927,7 @@ uint8_t* decode_amg(command_t *command, sectors, totaltitles,numtitles, playtitl
 
 
 }
+
 
 uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *videotitlelength, uint32_t* relative_sector_pointer_VTSI,
                     uint8_t *numtitles, uint8_t** ntitletracks, uint64_t** titlelength)

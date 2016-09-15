@@ -142,6 +142,7 @@ HEADERS += \
     src/include/videoimport.h \
     src/include/xml.h \
     libutils/src/include/c_utils.h \
+    libutils/src/include/decode.h \
     libutils/src/include/export.h \
     libutils/src/include/format.h \
     libutils/src/include/libiberty.h \
