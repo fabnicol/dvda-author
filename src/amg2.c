@@ -362,7 +362,7 @@ int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles
 #endif
 
 
-uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, uint8_t* numtitles)
+uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, uint8_t* numtitles, uint8_t** ntitletracks, uint64_t** titlelength)
 {
     uint16_t i, j = 0, k = 0, titleset = 0, totalplaylisttitles = 0, totalaudiotitles = 0, titleintitleset;
 
@@ -407,7 +407,14 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
     uint8_t menusector_indic[4] = {0}; // Pointer to sector 2 in case of menu sector
     uint8_t sec2_ptr[4] = {0}; // Pointer to sector 2
     uint8_t sec3_ptr[4] = {0}; // Pointer to sector 3
-    uint8_t sec4_ptr[4] = {0}; // Pointer to sector 3
+    uint8_t sec4_ptr[4] = {0}; // Pointer to sector 4
+    uint8_t sec5_ptr[4] = {globals.text ? 3 + menusector : 0}; // Pointer to sector 5
+    uint8_t unknown2[4] = {0};
+    uint8_t unknown3[4] = {0};
+    uint8_t top_menu_lpcm_tag[4] = {0}; // 2ch 48k LPCM audio (signed big endian) in mpeg2 top menu, 1 stream,
+    uint8_t n_totaltitles[16] = {0};  // total number of titles, audio and videolinking titles included
+    uint8_t eo_sect_table_ptr[2] = {0}; // pointer to end of sector table : 4 (bytes used) + 14 (size of table) *number of tables (totaltitles) -1
+    uint8_t atsi_ptr[4] = {0};   // Pointer to first ATS_XX_0.IFO (ATSI)
 
     uint32_copy(sect_ptr_last_amg, 2 * sectors->amg + sectors->topvob - 1) ;
     uint32_copy(sect_ptr_amgi, sectors->amg - 1);
@@ -419,7 +426,12 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
     uint32_copy(menusector_indic, menusector * sectors->amg);
     uint32_copy(sec2_ptr, 1);
     uint32_copy(sec3_ptr, 2);
-    uint32_copy(sec4_ptr, (menusector)? 3 : 0);  	// Pointer to sector 4
+    uint32_copy(sec4_ptr, (menusector)? 3 : 0);
+    uint32_copy(unknown2, menusector ? 0x53000000 : 0);
+    uint32_copy(unknown3, menusector ? 0x00010000 : 0);
+    uint32_copy(top_menu_lpcm_tag, (img->h + img->min + img->sec)? 0x00018001 : 0);
+    uint16_copy(n_totaltitles, totaltitles);
+    uint16_copy(eo_sect_table_ptr, 4 + 14 * totaltitles - 1);
 
     CHECK_FIELD(amgtag)
     CHECK_FIELD(sect_ptr_last_amg)
@@ -440,25 +452,17 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
     CHECK_FIELD(sec2_ptr)
     CHECK_FIELD(sec3_ptr)
     CHECK_FIELD(sec4_ptr)
-
-    uint32_check(&amg[0xd4], (globals.text)? 3+(menusector) : 0);  	// Pointer to sector 4 or 5
-    uint32_check(&amg[0x100], (menusector)? 0x53000000 : 0); // Unknown;
-
-    uint32_check(&amg[0x154], (menusector)? 0x00010000 : 0); // Unknown;
-
-    uint32_check(&amg[0x15C], (img->h + img->min + img->sec)? 0x00018001 : 0); // 2ch 48k LPCM audio (signed big endian) in mpeg2 top menu, 1 stream,
+    CHECK_FIELD_AT(sec5_ptr, 0xd4)
+    CHECK_FIELD_AT(unknown2, 0x100)
+    CHECK_FIELD_AT(unknown3, 0x154)
+    CHECK_FIELD_AT(top_menu_lpcm_tag, 0x15C)
 
     /* Sector 2 */
 
-    i = 0x800;
-    uint16_check(&amg[i], totaltitles);		// total number of titles, audio and videolinking titles included
-    i += 2;
+    CHECK_FIELD_AT(n_totaltitles, 0x800)
+    CHECK_FIELD(eo_sect_table_ptr)
 
-    // pointer to end of sector table : 4 (bytes used) + 14 (size of table) *number of tables (totaltitles) -1
-    uint16_check(&amg[i], 4 + 14 * totaltitles - 1);
-    i += 2;
-
-    uint8_check(sectoroffset[0] = 2 * (sectors->amg + sectors->asvs) + sectors->stillvob + sectors->topvob); 								 // Pointer to first ATS_XX_0.IFO
+    sectoroffset[0] = 2 * (sectors->amg + sectors->asvs) + sectors->stillvob + sectors->topvob;
 
     titleset = 0;
     titleintitleset = 0;
@@ -470,15 +474,21 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
 
         _Bool come_last = (titleintitleset == numtitles[titleset] - 1);
 
-        uint8_check(amg[i], ((menusector)? ((come_last)? 0xC0 : 0x80) : 0x80 ) | (titleset + 1)); 			// Table sector 2 first two bytes per title
-        uint8_check(amg[++i], ntitletracks[titleset][titleintitleset]);
-        i += 3; // 0-padding
-        uint32_check(&amg[i], titlelength[titleset][titleintitleset]);
-        i += 4;
-        uint8_check(amg[i], titleset + 1);  // Titleset number
-        uint8_check(amg[++i], titleintitleset + 1);
+        uint8_t sec2_title_tag[1] = {((menusector)? ((come_last)? 0xC0 : 0x80) : 0x80 ) | (titleset + 1)}; // Table sector 2 first two bytes per title
+        uint8_t n_tracks_per_title[4] = { ntitletracks[titleset][titleintitleset], 0, 0, 0};
+        uint8_t title_length[4] = {0};
+        uint8_t n_titleset[1] = {titleset + 1};    // Titleset number
+        uint8_t n_titleintitleset[1] = {titleintitleset + 1};   // Title in titleset number including videolinking titles
 
-        uint32_check(&amg[++i], sectoroffset[titleset]); // Pointer to ATSI
+        uint32_copy(title_length, titlelength[titleset][titleintitleset]);
+        uint32_copy(atsi_ptr, sectoroffset[titleset]);
+
+        CHECK_FIELD(sec2_title_tag)
+        CHECK_FIELD(n_tracks_per_title)
+        CHECK_FIELD(title_length)
+        CHECK_FIELD(n_titleset)
+        CHECK_FIELD(n_titleintitleset);
+        CHECK_FIELD(atsi_ptr);
 
         i += 4;
         ++titleintitleset;
@@ -515,7 +525,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
     // Case 2: video-linking titles
 
     // supposing one title per videolinking group
-
+#if 0  // temporarily disabled for decoding
     if (globals.videolinking)
     {
         for (k=0; k < vgroups ; ++k)
@@ -562,6 +572,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
         }
     }
 
+
     /* Sector 3 */
 
     i = 0x1000;
@@ -600,7 +611,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
     // Case 2: video-linking titles
 
     // supposing one title per videolinking group
-
+#if 0  // temporarily disabled for decoding
     if (globals.videolinking)
     {
         for (k = 0; k < vgroups ; ++k)
@@ -646,7 +657,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
             }
         }
     }
-
+#endif
     /* Sector 4 */
 
 // Next is generated only if there is a top menu, not if just still pics.
@@ -924,7 +935,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
 #undef textable
 #undef VTSI_rank
 
-
+#endif
 
 }
 
@@ -974,7 +985,13 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
     uint32_copy(&amg[0xc8], 2);  	// Pointer to sector 3
     uint32_copy(&amg[0xcc], (menusector)? 3 : 0);  	// Pointer to sector 4
     uint32_copy(&amg[0xd4], (globals.text)? 3+(menusector) : 0);  	// Pointer to sector 4 or 5
-    uint32_copy(&amg[0x100], (menusector)? 0x53000000 : 0); // Unknown;  // 0 -> 1E in some unknown cases TO BE CHECKED
+    uint32_copy(&amg[0x100], (menusector)? 0x53000000 :
+                                       #ifdef USE_SET1
+                                           0
+                                       #else
+                                           0x1E000000
+                                       #endif
+                                           ); // Unknown;  // 0 used to be uset in SET1
 
     uint32_copy(&amg[0x154], (menusector)? 0x00010000 : 0); // Unknown;
 
