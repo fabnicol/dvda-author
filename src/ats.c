@@ -44,23 +44,15 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 extern globalData globals;
 extern uint8_t channels[21];
 
-static uint8_t pack_start_code[4]={0x00,0x00,0x01,0xBA};
-static uint8_t system_header_start_code[4]={0x00,0x00,0x01,0xBB};
-static uint8_t program_mux_rate_bytes[3]={0x01,0x89,0xc3};
-static uint8_t pack_stuffing_length_byte[1]={0xf8};
-
-
 /* pack_scr was taken from mplex (part of the mjpegtools) */
 #define MARKER_MPEG2_SCR 1
 inline void pack_scr(uint8_t scr_bytes[6],uint64_t SCR_base, uint16_t SCR_ext)
 {
-
     uint8_t temp;
     uint64_t msb, lsb;
 
     msb = (SCR_base>> 32) & 1;
     lsb = SCR_base & (0xFFFFFFFF);
-
     temp = (MARKER_MPEG2_SCR << 6) | (msb << 5) | ((lsb >> 27) & 0x18) | 0x4 | ((lsb >> 28) & 0x3);
     scr_bytes[0]=temp;
     temp = (lsb & 0x0ff00000) >> 20;
@@ -133,14 +125,19 @@ inline static void pack_pts(uint8_t PTS_DTS_data[5], uint32_t pts)
 
 // P[5] is PTS_DTS_data
 
-inline static void decode_pts(uint8_t P[5], uint32_t* pts_ptr)
+inline static void decode_pts(uint8_t P[5], uint64_t* pts_ptr)
 {
 
     *pts_ptr = (P[0] >> 1 & 0x3) << 30 | P[1] << 22 | (P[2] >> 1) << 15 | P[3] << 7 | P[4] >> 1;
 
     if (globals.logdecode)
-        fprintf(aob_log, "NA;PTS déc.;%" PRIu32 "\n", *pts_ptr);
+        fprintf(aob_log, "NA;PTS déc.;%" PRIu64 "\n", *pts_ptr);
 }
+
+static uint8_t pack_start_code[4]={0x00,0x00,0x01,0xBA};
+static uint8_t system_header_start_code[4]={0x00,0x00,0x01,0xBB};
+static uint8_t program_mux_rate_bytes[3]={0x01,0x89,0xc3};
+static uint8_t pack_stuffing_length_byte[1]={0xf8};
 
 inline static void write_pack_header(FILE* fp,  uint64_t SCRint)
 {
@@ -170,9 +167,7 @@ inline static void read_pack_header(FILE* fp,  uint64_t* SCRint_ptr)
 {
 
     uint8_t scr_bytes[6]={0};
-    uint8_t pack_stuffing_length_byte__[1]={0};
-    uint8_t pack_start_code__[4]={0};
-    uint8_t program_mux_rate_bytes__[3]={0};
+
     open_aob_log();
 
     CHECK_FIELD(pack_start_code)
@@ -187,15 +182,17 @@ inline static void read_pack_header(FILE* fp,  uint64_t* SCRint_ptr)
     close_aob_log();
 }
 
+static uint8_t header_length[2]={0x00,0x0c};
+static uint8_t rate_bound[3]={0x80,0xc4,0xe1};
+static uint8_t audio_bound[1]={0x04};
+static uint8_t video_bound[1]={0xa0};
+static uint8_t packet_rate_restriction_flag[1]={0x7f};
+static uint8_t stream_info1[3]={0xb8, 0xc0, 0x40};
+static uint8_t stream_info2[3]={0xbd, 0xe0, 0x0a};
+
 inline static void write_system_header(FILE* fp)
 {
-    uint8_t header_length[2]={0x00,0x0c};
-    uint8_t rate_bound[3]={0x80,0xc4,0xe1};
-    uint8_t audio_bound[1]={0x04};
-    uint8_t video_bound[1]={0xa0};
-    uint8_t packet_rate_restriction_flag[1]={0x7f};
-    uint8_t stream_info1[3]={0xb8, 0xc0, 0x40};
-    uint8_t stream_info2[3]={0xbd, 0xe0, 0x0a};
+
 
     if (globals.maxverbose) EXPLAIN("%s%d\n","WRITE SYSTEM HEADER, size is: ", 4+2+3+1+1+1+3+3)
 
@@ -211,23 +208,6 @@ inline static void write_system_header(FILE* fp)
 
 inline static void read_system_header(FILE* fp)
 {
-    uint8_t header_length[2]={0x00,0x0c};
-    uint8_t rate_bound[3]={0x80,0xc4,0xe1};
-    uint8_t audio_bound[1]={0x04};
-    uint8_t video_bound[1]={0xa0};
-    uint8_t packet_rate_restriction_flag[1]={0x7f};
-    uint8_t stream_info1[3]={0xb8, 0xc0, 0x40};
-    uint8_t stream_info2[3]={0xbd, 0xe0, 0x0a};
-
-    uint8_t header_length__[2]={0};
-    uint8_t rate_bound__[3]={0};
-    uint8_t audio_bound__[1]={0};
-    uint8_t video_bound__[1]={0};
-    uint8_t packet_rate_restriction_flag__[1]={0};
-    uint8_t stream_info1__[3]={0};
-    uint8_t stream_info2__[3]={0};
-    uint8_t system_header_start_code__[4]={0};
-
     open_aob_log();
 
     /* offset_count += 4 */ CHECK_FIELD(system_header_start_code)
@@ -239,16 +219,15 @@ inline static void read_system_header(FILE* fp)
     /* offset_count += 3 */ CHECK_FIELD(stream_info1)
     /* offset_count += 3 */ CHECK_FIELD(stream_info2)
 
-            close_aob_log();
+    close_aob_log();
 }
 
+static uint8_t packet_start_code_prefix[3]={0x00,0x00,0x01};
+static uint8_t stream_id[1]={0xbe};
+static uint8_t length_bytes[2];
 
 inline static void write_pes_padding(FILE* fp, uint16_t length)
 {
-    uint8_t packet_start_code_prefix[3]={0x00,0x00,0x01};
-    uint8_t stream_id[1]={0xbe};
-    uint8_t length_bytes[2];
-
     if (length == 0)
     {
       uint64_t offset = ftello(fp) % 2048;
@@ -295,14 +274,6 @@ inline static void write_pes_padding(FILE* fp, uint16_t length)
 
 inline static void read_pes_padding(FILE* fp, uint16_t length)
 {
-    uint8_t packet_start_code_prefix[3]={0x00,0x00,0x01};
-    uint8_t stream_id[1]={0xbe};
-    uint8_t length_bytes[2];
-
-    uint8_t packet_start_code_prefix__[3]={0};
-    uint8_t stream_id__[1]={0};
-    uint8_t length_bytes__[2]={0};
-
     if (length == 0)
     {
         uint64_t offset = ftello(fp) % 2048;
@@ -325,7 +296,6 @@ inline static void read_pes_padding(FILE* fp, uint16_t length)
     }
 
     uint8_t ff_buf[length];
-    uint8_t ff_buf__[length];
 
     memset(ff_buf, 0xff,length);
 
@@ -344,19 +314,19 @@ inline static void read_pes_padding(FILE* fp, uint16_t length)
     close_aob_log();
 }
 
+static  uint8_t packet_start_code_prefix[3]={0x00,0x00,0x01};
+static  uint8_t stream_id[1]={0xbd}; // private_stream_1
+static  uint8_t PES_packet_len_bytes[2];
+static  uint8_t flags1[1]={0x81};  // various flags - original_or_copy=1
+static  uint8_t flags2[1]={0};  // various flags - contains pts_dts_flags and extension_flav
+static  uint8_t PES_header_data_length[1]={0};
+static  uint8_t PES_extension_flags[1]={0x1e};  // PSTD_buffer_flag=1
+static  uint8_t PTS_DTS_data[5];
+static  uint8_t PSTD_buffer_scalesize[2];
+static  uint16_t PSTD=10240/1024;
 
 inline static void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uint8_t extension_flag, uint64_t PTS)
 {
-    uint8_t packet_start_code_prefix[3]={0x00,0x00,0x01};
-    uint8_t stream_id[1]={0xbd}; // private_stream_1
-    uint8_t PES_packet_len_bytes[2];
-    uint8_t flags1[1]={0x81};  // various flags - original_or_copy=1
-    uint8_t flags2[1]={0};  // various flags - contains pts_dts_flags and extension_flav
-    uint8_t PES_header_data_length[1]={0};
-    uint8_t PES_extension_flags[1]={0x1e};  // PSTD_buffer_flag=1
-    uint8_t PTS_DTS_data[5];
-    uint8_t PSTD_buffer_scalesize[2];
-    uint16_t PSTD=10240/1024;
 
     if (globals.maxverbose) EXPLAIN("%s%d%s%d%s%d\n","WRITE AUDIO PES HEADER, PES_packet_len: ", PES_packet_len, " extension_flag: ", extension_flag, " size is: ", 3+1+2+1+1+1+5+(extension_flag)*3)
 
@@ -396,29 +366,9 @@ inline static void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uin
     }
 }
 
-inline static uint16_t read_audio_pes_header(FILE* fp, uint8_t extension_flag, uint32_t* PTS_ptr)
+inline static uint16_t read_audio_pes_header(FILE* fp, uint8_t extension_flag, uint64_t* PTS_ptr)
 {
-    uint8_t packet_start_code_prefix[3]={0x00,0x00,0x01};
-    uint8_t stream_id[1]={0xbd}; // private_stream_1
-    uint8_t PES_packet_len_bytes[2] ={0};
-    uint8_t flags1[1]={0x81};  // various flags - original_or_copy=1
-    uint8_t flags2[1]={0};  // various flags - contains pts_dts_flags and extension_flav
-    uint8_t PES_header_data_length[1]={0};
-    uint8_t PES_extension_flags[1]={0x1e};  // PSTD_buffer_flag=1
-    uint8_t PTS_DTS_data[5];
-    uint8_t PSTD_buffer_scalesize[2];
-
-    uint8_t packet_start_code_prefix__[3]={0};
-    uint8_t stream_id__[1]={0}; // private_stream_1
-    uint8_t flags1__[1]={0};  // various flags - original_or_copy=1
-    uint8_t flags2__[1]={0};  // various flags - contains pts_dts_flags and extension_flav
-    uint8_t PES_header_data_length__[1]={0};
-    uint8_t PES_extension_flags__[1]={0};  // PSTD_buffer_flag=1
-    uint8_t PSTD_buffer_scalesize__[2]={0};
-
     uint16_t PES_packet_len = 0;
-
-    uint16_t PSTD=10; // =10240/1024;
 
     /* Set PTS_DTS_flags in flags2 to 2 (top 2 bits) - PTS only*/
     flags2[0]=(2<<6);
@@ -467,20 +417,21 @@ inline static uint16_t read_audio_pes_header(FILE* fp, uint8_t extension_flag, u
 #define LAST_PACK    1
 #define MIDDLE_PACK  2
 
+
+static uint8_t sub_stream_id[1]={0xa0};
+static uint8_t continuity_counter[1]={0x00};
+static uint8_t LPCM_header_length[2];
+static uint8_t first_access_unit_pointer[2];
+static uint8_t unknown1[1]={0x10};   // e.g. 0x10 for stereo, 0x00 for surround
+static uint8_t sample_size[1]={0x0f};  // 0x0f=16-bit, 0x1f=20-bit, 0x2f=24-bit
+static uint8_t sample_rate[1]={0x0f};  // 0x0f=48KHz, 0x1f=96KHz, 0x2f=192KHz,0x8f=44.1KHz, 0x9f=88.2KHz, 0xaf=176.4KHz
+static uint8_t unknown2[1]={0x00};
+static uint8_t channel_assignment;  // The channel assignment - 0=C; 1=L,R; 17=L,R,C,lfe,Ls,Rs
+static uint8_t unknown3[1]={0x80};
+static uint8_t zero[16]={0};
+
 inline static void write_lpcm_header(FILE* fp, uint8_t header_length,fileinfo_t* info, int64_t pack_in_title, uint8_t counter)
 {
-    uint8_t sub_stream_id[1]={0xa0};
-    uint8_t continuity_counter[1]={0x00};
-    uint8_t LPCM_header_length[2];
-    uint8_t first_access_unit_pointer[2];
-    uint8_t unknown1[1]={0x10};   // e.g. 0x10 for stereo, 0x00 for surround
-    uint8_t sample_size[1]={0x0f};  // 0x0f=16-bit, 0x1f=20-bit, 0x2f=24-bit
-    uint8_t sample_rate[1]={0x0f};  // 0x0f=48KHz, 0x1f=96KHz, 0x2f=192KHz,0x8f=44.1KHz, 0x9f=88.2KHz, 0xaf=176.4KHz
-    uint8_t unknown2[1]={0x00};
-    uint8_t channel_assignment;  // The channel assignment - 0=C; 1=L,R; 17=L,R,C,lfe,Ls,Rs
-    uint8_t unknown3[1]={0x80};
-
-    uint8_t zero[16]={0};
 
     int frame_offset;
     uint64_t bytes_written;
@@ -589,22 +540,6 @@ inline static void write_lpcm_header(FILE* fp, uint8_t header_length,fileinfo_t*
 
 inline static int read_lpcm_header(FILE* fp, fileinfo_t* info, int64_t pack_in_title, uint8_t position)
 {
-    uint8_t sub_stream_id[1]={0xa0};
-    uint8_t continuity_counter[1]={0x00};
-    uint8_t LPCM_header_length[2];
-    uint8_t first_access_unit_pointer[2];
-    uint8_t unknown1[1]={0};   // e.g. 0x10 for stereo, 0x00 for surround
-
-    uint8_t sample_size[1]={0x0f};  // 0x0f=16-bit, 0x1f=20-bit, 0x2f=24-bit
-    uint8_t sample_rate[1]={0x0f};  // 0x0f=48KHz, 0x1f=96KHz, 0x2f=192KHz,0x8f=44.1KHz, 0x9f=88.2KHz, 0xaf=176.4KHz
-    uint8_t unknown2[1]={0x00};
-    uint8_t channel_assignment[1];  // The channel assignment - 0=C; 1=L,R; 17=L,R,C,lfe,Ls,Rs
-    uint8_t unknown3[1]={0x80};
-
-    uint8_t sub_stream_id__[1]={0};
-    uint8_t unknown1__[1]={0};   // e.g. 0x10 for stereo, 0x00 for surround
-    uint8_t unknown2__[1]={0};
-    uint8_t unknown3__[1]={0};
 
     int frame_offset = 0;
     uint64_t bytes_written = 0;
@@ -821,7 +756,7 @@ typedef struct
     uint64_t PTSint;
 } pts_t ;
 
-inline static uint64_t calc_SCR(fileinfo_t *info, uint64_t pack_in_title, pts_t *p)
+inline static uint64_t calc_SCR(uint64_t pack_in_title, pts_t *p)
 {
     uint64_t SCRint;
 
@@ -854,7 +789,8 @@ inline static pts_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
     if (info->bytespersecond == 0)
     {
         foutput(""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  file %s has bytes per second=0\n", info->filename);
-        return 0;
+        pts_t ptsnull = {0,0,0};
+        return ptsnull;
     }
 
     PTS0 = 5280.0 / ((double) info->bytespersecond);
@@ -921,7 +857,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
     pts_t p = calc_PTS(info,pack_in_title);
 
     uint64_t PTS=p.PTS;
-    uint64_t SCR = calc_SCR(info, pack_in_title, &p);
+    uint64_t SCR = calc_SCR(pack_in_title, &p);
 
     if (pack_in_title==0) // 53  + info->firstpack_lpcm_headerquantity + (info->firstpack_pes_padding != 0)? info->firstpack_pes_padding + 6 + info->lpcm_payload - info->firstpackdecrement
         //  = 59 + 1995 = 2054 if info->firstpack_pes_padding != 0
@@ -997,7 +933,7 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
     int position;
     //static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
     char* POS;
-    uint32_t PTS;
+    uint64_t PTS;
     uint64_t SCR;
     static uint64_t pack_in_title;
     static int title;
@@ -1149,25 +1085,25 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
         }
     }
 
-    uint32_t PTS_calc;
+    pts_t pts_calc = calc_PTS(info, pack_in_title);
 
-    if (PTS != (PTS_calc = calc_PTS(info, pack_in_title)))
+    if (PTS != pts_calc.PTSint)
     {
         if (globals.logdecode)
         {
             open_aob_log();
-            fprintf(aob_log, "NA;PTS issue at pack %lu, position %d. Disc/Computed:;%d;%d\n",
+            fprintf(aob_log, "NA;PTS issue at pack %lu, position %d. Disc/Computed:;%lu;%lu\n",
                     pack_in_title,
                     position,
                     PTS,
-                    PTS_calc);
+                    pts_calc.PTSint);
 
             close_aob_log();
         }
     }
 
     uint64_t SCR_calc;
-    if (SCR != (SCR_calc = calc_SCR(info, pack_in_title)))
+    if (SCR != (SCR_calc = calc_SCR(pack_in_title, &pts_calc)))
     {
         if (globals.logdecode)
         {
