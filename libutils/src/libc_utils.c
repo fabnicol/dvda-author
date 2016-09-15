@@ -1579,7 +1579,7 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
     {
         header->is_extensible = false;
         header->ichunks = 0;
-        header->header_size_in = 0;
+        header->header_size_in = 44;
         memcpy(&header->data_chunk, "data", 4 * sizeof(char)) ;
         return;
     }
