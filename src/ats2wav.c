@@ -360,7 +360,7 @@ int get_ats_audio()
 
     if (fp == NULL)
     {
-        foutput("%s%s%s", "[ERR]  Could not open AOB file *", globals.aobpath,"*\n");
+        foutput("%s%s%s", ANSI_COLOR_RED "[ERR]" ANSI_COLOR_RESET "  Could not open AOB file *", globals.aobpath,"*\n");
         return(-1);
     }
 
@@ -374,7 +374,7 @@ int get_ats_audio()
     }
     while (result != LAST_PACK);
 
-    foutput("[MSG]   Read %lu PES packets.\n", pack);
+    foutput(ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Read %lu PES packets.\n", pack);
     return(0);
 }
 
