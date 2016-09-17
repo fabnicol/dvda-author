@@ -26,6 +26,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
 #include "ats2wav.h"
+#include "ats.h"
 #include "c_utils.h"
 
 #include "winport.h"
@@ -33,6 +34,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "auxiliary.h"
 
 extern globalData globals;
+extern uint8_t channels[21];
 
 unsigned char wav_header[80]= {'R','I','F','F',   //  0 - ChunkID
                                0,0,0,0,            //  4 - ChunkSize (filesize-8)
@@ -88,7 +90,6 @@ static void deinterleave_24_bit_sample_extended(uint8_t channels, int count, uin
 
 static void deinterleave_sample_extended(uint8_t channels, int count, uint8_t *buf)
 {
-
     // Processing 16-bit case
     int x,i, size=channels*4;
     // Requires C99
@@ -109,27 +110,19 @@ static void deinterleave_sample_extended(uint8_t channels, int count, uint8_t *b
     default:
         for (i=0; i < count ; i += size)
             permutation(buf+i, _buf, 0, channels, T, size);
-
     }
 }
 
-
-
-static void convert_buffer(_fileinfo_t* info, uint8_t* buf, int count)
+static void convert_buffer(fileinfo_t *info, uint8_t *buf, int count)
 {
-
     switch (info->bitspersample)
     {
-
     case 24:
-
 
         deinterleave_24_bit_sample_extended(info->channels, count, buf);
         break;
 
     case 16:
-
-
         deinterleave_sample_extended(info->channels, count, buf);
         break;
 
@@ -140,7 +133,249 @@ static void convert_buffer(_fileinfo_t* info, uint8_t* buf, int count)
         //exit(EXIT_FAILURE);
 
     }
+}
 
+inline static int get_pes_packet_audio(FILE *fp, fileinfo_t *info, uint8_t *audio_buf)
+{
+    int position;
+    //static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
+
+    static uint64_t pack_in_title;
+    static uint64_t fpout_size;
+    static int title;
+    int audio_bytes;
+    uint8_t PES_packet_len_bytes[2];
+
+    if (fp == NULL) return 0;
+    uint64_t offset0 = ftello(fp);
+
+    fseeko(fp, offset0 + 14, SEEK_SET);
+
+    uint8_t buf[4];
+    fread(buf, 4, 1, fp);
+
+    FILE *fpout;
+
+    char* outpath;
+
+    /* got to system header and read first 4 bytes to detect whether pack is start or not */
+    if (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB)
+    {
+        position = FIRST_PACK;
+        fpout_size = 0;
+        pack_in_title = 0;
+         ++title;
+
+        char Title[14] = {0};
+        sprintf(Title, "title_%d.wav", title);
+
+        outpath = filepath(globals.settings.outdir, Title);
+
+        if ((fpout = fopen(outpath, "wb")) == NULL)
+        {
+            foutput("[ERR]  Could not open audio file %s\n.        Exiting...\n", outpath);
+            exit(-7);
+        }
+    }
+    else
+    {
+        /* go to end of sector : if end of file, then last pack, idem if new pack detected ; otherwise middle pack */
+        int res = fseeko(fp, 2044, SEEK_CUR);
+
+        if (res != 0)
+        {
+            position = LAST_PACK;
+        }
+        else
+        {
+            int n = fread(buf, 1, 4, fp);
+
+            if (n != 4 || (n == 4 && buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB))
+            {
+                position = LAST_PACK;
+            }
+            else
+            {
+                position = MIDDLE_PACK;
+            }
+        }
+        ++pack_in_title;
+    }
+
+    // offset mark here
+
+    // first pack: 14 + (system header, first pack: 18) + (audio_pes_header, first pack extra: 3) + audi_pes_header: 14 + skip lpcm header content to rach sample size info: 7
+
+    fseeko(fp, offset0 + 35 + (position == FIRST_PACK ? 21 : 0), SEEK_SET);
+
+    /***       +14     ***/
+        //read_pack_header(fp, &SCR);
+
+    /***       +18  if first  ***/
+        // read_system_header(fp);
+
+    /* skipping read_audio_pes_header to identify info */
+
+    /***       info->first/mid/last/pack_lpcm_headerquantity + 4    ***/
+
+    uint8_t sample_size[1] = {0};
+    uint8_t sample_rate[1] = {0};
+
+    /* offset_count += */   fread(sample_size, 1, 1, fp);
+    /* offset_count += */   fread(sample_rate, 1, 1, fp);
+
+    uint8_t high_nibble = (sample_rate[0] & 0xf0) >> 4;
+
+    switch(high_nibble)
+    {
+        case 0:
+            info->samplerate = 48000;
+            break;
+        case 0x1:
+            info->samplerate = 96000;
+            break;
+        case 0x2:
+            info->samplerate = 192000;
+            break;
+        case 0x8:
+            info->samplerate = 44100;
+            break;
+        case 0x9:
+            info->samplerate = 88200;
+            break;
+        case 0xa:
+            info->samplerate = 176400;
+            break;
+        default:
+            break;
+    }
+
+    if (sample_size[0] == 0x0f || sample_size[0] == 0x2f)
+    {
+        if ((sample_rate[0] & 0xf) != 0xf)
+        {
+            foutput("%s", "[ERR]  Coherence_test : sample_rate and sample_size are incoherent (no 0xf lower nibble).\n");
+        }
+    }
+    else
+    if (sample_size[0] == 0x00 || sample_size[0] == 0x22)
+    {
+        if ((sample_rate[0] & 0xf) != high_nibble)
+        {
+            foutput("%s", "[ERR]  Coherence_test : sample_rate and sample_size are incoherent (lower nibble != higher nibble).\n");
+        }
+    }
+
+    info->bitspersample = (sample_size[0] == 0x2f || sample_size[0] == 0x22) ? 24 : 16;
+
+    fseeko(fp, 1, SEEK_CUR);
+
+    uint8_t channel_assignment[1] = {0};
+
+    fread(channel_assignment, 1, 1, fp);
+
+    info->cga = channel_assignment[0];
+
+    info->channels = (channel_assignment[0] < 21) ? channels[channel_assignment[0]] : 0;
+
+    /* info->PTS_length, info->numsamples and info->numbytes will be unusable, other info fileds OK */
+
+    calc_info(info);
+
+    /* getting back to audio_pes_header start */
+    /* AFTER having parsed read_lpcm_header, which is used to identify info members */
+
+    uint64_t offset1 = ftello(fp);
+
+    fseeko(fp, offset0 + 14 + (position == FIRST_PACK) * 18, SEEK_SET);
+
+    switch(position)
+    {
+        case FIRST_PACK :
+            audio_bytes = info->lpcm_payload - info->firstpackdecrement;
+            fprintf(stderr, "%s %d bytes %d ch %d bits %d kHz\n", "First pack", audio_bytes, info->channels, info->bitspersample, info->samplerate);
+            /* skipping audio_pes_header and lpcm_header */
+            fseeko(fp, 21 + info->firstpack_lpcm_headerquantity, SEEK_CUR);
+            break;
+
+        case MIDDLE_PACK :
+            audio_bytes=info->lpcm_payload;
+            fprintf(stderr, "%s %d bytes %d ch %d bits %d kHz\n", "Middle pack", audio_bytes, info->channels, info->bitspersample, info->samplerate);
+            /* skipping audio_pes_header and lpcm_header */
+            fseeko(fp, 18 + info->midpack_lpcm_headerquantity, SEEK_CUR);
+            break;
+
+        case LAST_PACK :
+            /* skipping audio_pes_header start to get to PES_packet_len_bytes --> audio_bytes */
+            fseeko(fp, 4, SEEK_CUR);
+            fprintf(stderr, "Reading PES_plb at offset: %lu\n", ftello(fp));
+            fread(PES_packet_len_bytes, 1, 2, fp);
+            fprintf(stderr, "With values: PES_packet_len_bytes[0] = %d, PES_packet_len_bytes[1] = %d \n", PES_packet_len_bytes[0], PES_packet_len_bytes[1]);
+            audio_bytes = (PES_packet_len_bytes[0] << 8 | PES_packet_len_bytes[1]) - info->lastpack_audiopesheaderquantity;
+            fprintf(stderr, "%s %d bytes %d ch %d bits %d kHz -- PES_plb = %d, info->lastpack_audiopesheaderquantity = %d\n", "Last pack", audio_bytes, info->channels, info->bitspersample, info->samplerate, PES_packet_len_bytes[0] << 8 | PES_packet_len_bytes[1], info->lastpack_audiopesheaderquantity);
+            /* skipping rest of audio_pes_header, i.e 8 bytes + lpcm_header */
+            fseeko(fp, 12 + info->lastpack_lpcm_headerquantity, SEEK_CUR);
+            break;
+    }
+
+    offset1 = ftello(fp);
+    int res = fread(audio_buf, 1, audio_bytes, fp);
+    fprintf(stderr, "%lu: Reading %d bytes\n", offset1, res);
+    convert_buffer(info, audio_buf, res);
+
+    int nbyteout = fwrite(audio_buf, 1, res, fpout);
+
+    fpout_size += nbyteout;
+
+    if (position == LAST_PACK)
+    {
+        fseeko(fpout, 0, SEEK_END); // normally no-op yet sometimes useful.
+        uint64_t check_size = ftello(fpout);
+        if (check_size != fpout_size)
+        {
+            foutput("[ERR]  Audio decoding outfile mismatch. Decoded %lu bytes yet file size audio is %lu bytes.\n", fpout_size, check_size);
+        }
+
+        foutput("[MSG]  Writing %s (%lu MB)...\n.", outpath, check_size / (1024 * 1024));
+        fclose(fpout);
+    }
+
+    fseeko(fp, offset0 + 2048, SEEK_SET);
+
+    return(position);
+}
+
+
+int get_ats_audio()
+{
+    FILE* fp;
+
+    int32_t bytesinbuf=2048;
+    uint8_t audio_buf[2048];
+    uint64_t pack = 0;
+    fileinfo_t files;
+    int result = 0;
+
+    fp=fopen(globals.aobpath,"rb");
+
+    if (fp == NULL)
+    {
+        foutput("%s%s%s", "[ERR]  Could not open AOB file *", globals.aobpath,"*\n");
+        return(-1);
+    }
+
+    do
+    {
+        result  = get_pes_packet_audio(fp, &files, audio_buf);
+        if (result  == bytesinbuf)
+        {
+            ++pack;
+        }
+    }
+    while (result != LAST_PACK);
+
+    foutput("[MSG]   Read %lu PES packets.\n", pack);
+    return(0);
 }
 
 

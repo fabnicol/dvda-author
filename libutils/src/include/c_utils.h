@@ -189,6 +189,7 @@ _Bool s_mkdir (const char *path);
 void print_commandline(int argc_count, char * const argv[]);
 void change_directory(const char * filename);
 int copy_file(const char *existing_file, const char *new_file);
+int copy_directory(const char* src, const char* dest, mode_t mode);
 int cat_file(const char *existing_file, const char *new_file);
 int copy_file_p(FILE *infile, FILE *outfile, uint32_t position, uint64_t output_size);
 _Bool file_exists(const char* filepath);
