@@ -236,7 +236,7 @@ inline static void write_pes_padding(FILE* fp, uint16_t length)
       length-=6; // We have 6 bytes of PES header.
     else
     {
-        foutput("%s\n", "[ERR]  pes_padding length must be higher than 6;");
+        foutput("%s\n", ANSI_COLOR_RED "[ERR]" ANSI_COLOR_RESET "  pes_padding length must be higher than 6;");
         return;
     }
 
@@ -335,7 +335,7 @@ inline static void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uin
 
     /* offset_count += 3 */ fwrite(packet_start_code_prefix,3,1,fp);
     /* offset_count += */   fwrite(stream_id,1,1,fp);
-    fprintf(stderr, "Writing PES_plb at offset: %lu, with value PES_packet_len = %d (%d, %d)\n", ftello(fp), PES_packet_len, PES_packet_len_bytes[0], PES_packet_len_bytes[1]);
+    if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  Writing PES_plb at offset: %lu, with value PES_packet_len = %d (%d, %d)\n", ftello(fp), PES_packet_len, PES_packet_len_bytes[0], PES_packet_len_bytes[1]);
     /* offset_count += 2 */ fwrite(PES_packet_len_bytes,2,1,fp);
     /* offset_count += */   fwrite(flags1,1,1,fp);
     /* offset_count += */   fwrite(flags2,1,1,fp);
@@ -861,7 +861,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         /* offset_count+= */
         uint64_t offset = ftello(fp);
         int res = fwrite(audio_buf,1,audio_bytes,fp);
-        fprintf(stderr, "\n%lu: Writing %d bytes\n", offset, res);
+        if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  \n%lu: Writing %d bytes\n", offset, res);
 
         write_pes_padding(fp, info->firstpack_pes_padding);//+6+info->firstpack_pes_padding
     }
@@ -872,13 +872,13 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Writing last packet - pack=%lu, bytesinbuffer=%d\n", pack_in_title, bytesinbuffer);
         audio_bytes=bytesinbuffer;
         write_pack_header(fp,SCR); //+14
-        fprintf(stderr, "LAST PACK: audio_bytes: %d, info->lastpack_audiopesheaderquantity %d \n", audio_bytes, info->lastpack_audiopesheaderquantity);
+        if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  LAST PACK: audio_bytes: %d, info->lastpack_audiopesheaderquantity %d \n", audio_bytes, info->lastpack_audiopesheaderquantity);
         write_audio_pes_header(fp, info->lastpack_audiopesheaderquantity + audio_bytes, 0, PTS);  // +14
         write_lpcm_header(fp,info->lastpack_lpcm_headerquantity,info,pack_in_title,cc); // +info->lastpack_lpcm_headerquantity +4
         /* offset_count+= */
         uint64_t offset = ftello(fp);
         int res = fwrite(audio_buf,1,audio_bytes,fp);
-        fprintf(stderr, "%lu: Writing %d bytes\n", offset, res);
+        if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  %lu: Writing %d bytes\n", offset, res);
         // PATCH Dec. 2013
          // PATCH Sept 2016
         int16_t padding_quantity = 2016 - info->lastpack_lpcm_headerquantity - audio_bytes;
@@ -904,7 +904,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         /* offset_count+= */
         uint64_t offset = ftello(fp);
         int res = fwrite(audio_buf,1,audio_bytes,fp);
-        fprintf(stderr, "%lu: Writing %d bytes\n", offset, res);
+        if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  %lu: Writing %d bytes\n", offset, res);
 
         write_pes_padding(fp,info->midpack_pes_padding);//info->midpack_pes_padding +6
     }
@@ -1195,7 +1195,7 @@ int decode_ats()
     }
     while (result != LAST_PACK);
 
-    fprintf(stderr, "[MSG]   Read %lu PES packets.\n", pack);
+    if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  Read %lu PES packets.\n", pack);
     return(0);
 }
 
