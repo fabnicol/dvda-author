@@ -27,6 +27,7 @@
 #include "command_line_parsing.h"
 #include "libsoxconvert.h"
 #include "menu.h"
+#include "ats2wav.h"
 #ifndef WITHOUT_lplex
 #include "sound.h"
 #endif
@@ -149,7 +150,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     if (!user_command_line)
     {
         
-        for (k=0; k < 30; k++)
+        for (k=0; k < 40; k++)
             ALLOWED_OPTIONS[k]=k;
         strcat(ALLOWED_OPTIONS, ALLOWED_OPTIONS_PRINT);
     }
@@ -280,7 +281,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"full-hybridate", no_argument, NULL, 25},
         {"merge",required_argument, NULL, 26},  // not implemented (reserved)
         {"log-decode", required_argument,NULL, 27},
-        {"outfile", required_argument,NULL, 28},
+        {"aob-extract", required_argument,NULL, 28},
+        {"aob2wav", required_argument,NULL, 29},
+        {"outfile", required_argument,NULL, 30},
+
     #endif
         {NULL, 0, NULL, 0}
     };
@@ -1845,11 +1849,22 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case 28:
+            globals.aobpath = strdup(optarg);
+            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  AOB input filepath: ", globals.aobpath);
+            break;
+
+        case 29:
+            globals.aobpath = strdup(optarg);
+            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  AOB input filepath: ", globals.aobpath);
+            globals.fixwav_prepend = true;
+            break;
+
+        case 30:
             globals.settings.outfile = strdup(optarg);
             foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  AOB log filepath: ", globals.settings.outfile);
             if (file_exists(globals.settings.outfile)) unlink(globals.settings.outfile);
             break;
-            
+
         case 6 :
             
             img->topmenu_slide=calloc(img->nmenus, sizeof(char***));
@@ -2071,13 +2086,20 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         }
     }
 
-
-
-    if (globals.logdecode)
+    if (globals.aobpath != NULL)
     {
-        decode_ats(globals.aobpath);
-        exit(0);
+        if (globals.logdecode)
+        {
+            decode_ats();
+            exit(0);
+        }
+        else
+        {
+          get_ats_audio();
+          exit(0);
+        }
     }
+
 
     
     // Now copying to temporary directory, depending on type of menu creation, trying to minimize work, depending of type of disc build.

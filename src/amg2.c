@@ -362,7 +362,7 @@ int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles
 #endif
 
 
-uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, uint8_t* numtitles, uint8_t** ntitletracks, uint64_t** titlelength)
+uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, uint8_t* numtitles, uint8_t** ntitletracks, uint64_t** titlelength, uint32_t *videotitlelength, uint32_t* relative_sector_pointer_VTSI)
 {
     uint16_t i, j = 0, k = 0, titleset = 0, totalplaylisttitles = 0, totalaudiotitles = 0, titleintitleset;
 
@@ -525,7 +525,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
     // Case 2: video-linking titles
 
     // supposing one title per videolinking group
-#if 0  // temporarily disabled for decoding
+    // temporarily disabled for decoding
     if (globals.videolinking)
     {
         for (k=0; k < vgroups ; ++k)
@@ -536,19 +536,27 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
             else
             */
 
-            uint8check(amg[i], 0x40 | ++titleset);                  // Table sector 2 first two bytes per title, last video linking title
-            uint8check(amg[++i], 1);                                        // Experiment limitation: just one video chapter is visible within video zone title
-            uint8check(amg[++i], 1);                                        // Experiment limitation: just one video chapter is visible within video zone title (repeated)
-            ++i;
-            uint32_check(&amg[++i],  videotitlelength[k]);        //  length of title in PTS ticks
-            i += 4;
-            uint8check(amg[i] = VTSI_rank[k]);                          // Video zone Titleset number
-            uint8check(amg[++i], 1);                                        // Experiment limitation: just one video title is visible within video zone titleset
-            uint32_check(&amg[++i], relative_sector_pointer_VTSI[VTSI_rank[k] - 1]);       // Pointer to VTSI
-            i += 4;
+            uint8_t videolinking_title[1] = {0x40 | ++titleset};    // Table sector 2 first two bytes per title, last video linking title
+            uint8_t videolinking_chapter[3] = {1, 1, 0};
+            uint8_t video_titlelength[4];
+            uint8_t videozone_ts_rank[1] = {VTSI_rank[k]};
+            uint8_t videozone_title_rank[1] = {1};
+            uint8_t vtsi_sec_ptr[4];
+
+            uint32_copy(video_titlelength, videotitlelength[k]);
+            uint32_copy(video_titlelength, videotitlelength[k]);
+            uint32_copy(vtsi_sec_ptr, relative_sector_pointer_VTSI[VTSI_rank[k] - 1]);
+
+            CHECK_FIELD(videolinking_title)
+            CHECK_FIELD(videolinking_chapter)               // Experiment limitation: just one video chapter is visible within video zone title
+                                                            // Experiment limitation: just one video chapter is visible within video zone title (repeated)
+            CHECK_FIELD(video_titlelength)                  // length of title in PTS ticks (4)
+            CHECK_FIELD(videozone_ts_rank)                  // Video zone Titleset number
+            CHECK_FIELD(videozone_title_rank)               // Experiment limitation: just one video title is visible within video zone titleset
+            CHECK_FIELD(vtsi_sec_ptr)                       // Pointer to VTSI (4)
         }
     }
-
+#if 0
     if (globals.playlist)
     {
         //copy of other groups
@@ -611,7 +619,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
     // Case 2: video-linking titles
 
     // supposing one title per videolinking group
-#if 0  // temporarily disabled for decoding
+    // temporarily disabled for decoding
     if (globals.videolinking)
     {
         for (k = 0; k < vgroups ; ++k)
@@ -657,7 +665,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
             }
         }
     }
-#endif
+
     /* Sector 4 */
 
 // Next is generated only if there is a top menu, not if just still pics.

@@ -30,15 +30,15 @@ return 0;
 }
 
 
-int resample(const char* in, const char* out,const char* bitrate,const char* samplerate)
+int resample(const char* in, const char* out, const char* bitrate, const char* samplerate)
 {
 errno=0;
 #if HAVE_libsox
 if (-1 == sox_initialise()) 
  return -1;
    
-char *args24[]= {SOX_BASENAME,  (char*)in, "-b", (char*) bitrate,(char*)out,"rate", "-v","-I","-b","90", (char*)samplerate, NULL};  
-char *args16[]= {SOX_BASENAME,  (char*)in, "-b", (char*) bitrate, (char*)out,"rate", "-s","-a",(char*)samplerate,"dither","-s", NULL};  
+char *args24[]= {SOX_BASENAME,  (char*) in, "-b", (char*) bitrate,(char*) out, "rate", "-v", "-I", "-b", "90", (char*)samplerate, NULL};
+char *args16[]= {SOX_BASENAME,  (char*) in, "-b", (char*) bitrate, (char*) out, "rate", "-s", "-a", (char*)samplerate, "dither", "-s", NULL};
 change_directory(globals.settings.workdir);
 foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Running SoX for resampling to %s bit-%s kHz audio: %s --> %s\n",bitrate,samplerate,in,out);
 if (strcmp(bitrate, "16") == 0)
