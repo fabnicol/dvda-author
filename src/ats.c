@@ -236,7 +236,7 @@ inline static void write_pes_padding(FILE* fp, uint16_t length)
       length-=6; // We have 6 bytes of PES header.
     else
     {
-        foutput("%s\n", "[ERR]  pes_padding length must be higher than 6;");
+        foutput("%s\n", ANSI_COLOR_RED "[ERR]" ANSI_COLOR_RESET "  pes_padding length must be higher than 6;");
         return;
     }
 
