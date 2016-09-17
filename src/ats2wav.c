@@ -293,14 +293,14 @@ inline static int get_pes_packet_audio(FILE *fp, fileinfo_t *info, uint8_t *audi
     {
         case FIRST_PACK :
             audio_bytes = info->lpcm_payload - info->firstpackdecrement;
-            fprintf(stderr, "%s %d bytes %d ch %d bits %d kHz\n", "First pack", audio_bytes, info->channels, info->bitspersample, info->samplerate);
+            if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  %s %d bytes %d ch %d bits %d kHz\n", "First pack", audio_bytes, info->channels, info->bitspersample, info->samplerate);
             /* skipping audio_pes_header and lpcm_header */
             fseeko(fp, 21 + info->firstpack_lpcm_headerquantity, SEEK_CUR);
             break;
 
         case MIDDLE_PACK :
             audio_bytes=info->lpcm_payload;
-            fprintf(stderr, "%s %d bytes %d ch %d bits %d kHz\n", "Middle pack", audio_bytes, info->channels, info->bitspersample, info->samplerate);
+            if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  %s %d bytes %d ch %d bits %d kHz\n", "Middle pack", audio_bytes, info->channels, info->bitspersample, info->samplerate);
             /* skipping audio_pes_header and lpcm_header */
             fseeko(fp, 18 + info->midpack_lpcm_headerquantity, SEEK_CUR);
             break;
@@ -308,11 +308,11 @@ inline static int get_pes_packet_audio(FILE *fp, fileinfo_t *info, uint8_t *audi
         case LAST_PACK :
             /* skipping audio_pes_header start to get to PES_packet_len_bytes --> audio_bytes */
             fseeko(fp, 4, SEEK_CUR);
-            fprintf(stderr, "Reading PES_plb at offset: %lu\n", ftello(fp));
+            if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  Reading PES_plb at offset: %lu\n", ftello(fp));
             fread(PES_packet_len_bytes, 1, 2, fp);
-            fprintf(stderr, "With values: PES_packet_len_bytes[0] = %d, PES_packet_len_bytes[1] = %d \n", PES_packet_len_bytes[0], PES_packet_len_bytes[1]);
+            if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  With values: PES_packet_len_bytes[0] = %d, PES_packet_len_bytes[1] = %d \n", PES_packet_len_bytes[0], PES_packet_len_bytes[1]);
             audio_bytes = (PES_packet_len_bytes[0] << 8 | PES_packet_len_bytes[1]) - info->lastpack_audiopesheaderquantity;
-            fprintf(stderr, "%s %d bytes %d ch %d bits %d kHz -- PES_plb = %d, info->lastpack_audiopesheaderquantity = %d\n", "Last pack", audio_bytes, info->channels, info->bitspersample, info->samplerate, PES_packet_len_bytes[0] << 8 | PES_packet_len_bytes[1], info->lastpack_audiopesheaderquantity);
+            if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  %s %d bytes %d ch %d bits %d kHz -- PES_plb = %d, info->lastpack_audiopesheaderquantity = %d\n", "Last pack", audio_bytes, info->channels, info->bitspersample, info->samplerate, PES_packet_len_bytes[0] << 8 | PES_packet_len_bytes[1], info->lastpack_audiopesheaderquantity);
             /* skipping rest of audio_pes_header, i.e 8 bytes + lpcm_header */
             fseeko(fp, 12 + info->lastpack_lpcm_headerquantity, SEEK_CUR);
             break;
@@ -320,7 +320,7 @@ inline static int get_pes_packet_audio(FILE *fp, fileinfo_t *info, uint8_t *audi
 
     offset1 = ftello(fp);
     int res = fread(audio_buf, 1, audio_bytes, fp);
-    fprintf(stderr, "%lu: Reading %d bytes\n", offset1, res);
+    if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  %lu: Reading %d bytes\n", offset1, res);
     convert_buffer(info, audio_buf, res);
 
     int nbyteout = fwrite(audio_buf, 1, res, fpout);
@@ -333,10 +333,10 @@ inline static int get_pes_packet_audio(FILE *fp, fileinfo_t *info, uint8_t *audi
         uint64_t check_size = ftello(fpout);
         if (check_size != fpout_size)
         {
-            foutput("[ERR]  Audio decoding outfile mismatch. Decoded %lu bytes yet file size audio is %lu bytes.\n", fpout_size, check_size);
+            foutput(ANSI_COLOR_RED "[ERR]" ANSI_COLOR_RESET "Audio decoding outfile mismatch. Decoded %lu bytes yet file size audio is %lu bytes.\n", fpout_size, check_size);
         }
 
-        foutput("[MSG]  Writing %s (%lu MB)...\n.", outpath, check_size / (1024 * 1024));
+        foutput(ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Writing %s (%lu MB)...\n", outpath, check_size / (1024 * 1024));
         fclose(fpout);
     }
 
