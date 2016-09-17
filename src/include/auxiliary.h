@@ -34,7 +34,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <dirent.h>
 #endif
 #include <errno.h>
-
+#include <stdlib.h>
 #include "audio2.h"
 #include "c_utils.h"
 #include "commonvars.h"
