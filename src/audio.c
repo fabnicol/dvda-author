@@ -233,7 +233,7 @@ void flac_error_callback(const FLAC__StreamDecoder GCC_UNUSED *dec,
 int calc_info(fileinfo_t* info)
 {
 //PATCH: provided for null dividers.
-    if ((info->samplerate)*(info->channels) == 0)
+    if (info->samplerate == 0 || info->channels == 0 || info->channels == 0)
     {
         foutput("%s%s%s\n", ANSI_COLOR_RED"\n[ERR] ", info->filename, ANSI_COLOR_RESET"  Null audio characteristics");
         return(NO_AFMT_FOUND);
@@ -447,7 +447,7 @@ int extract_audio_info(fileinfo_t *info)
 
     static _Bool cut;
 
-    if (!cut)
+    //if (!cut)
         info->type=fixwav_repair(info);
      
     cut=((info->type == AFMT_WAVE_FIXED) || (info->type == AFMT_WAVE_GOOD_HEADER));

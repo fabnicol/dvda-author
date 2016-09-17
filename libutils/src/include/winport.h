@@ -120,12 +120,13 @@ uint64_t read_file_size(FILE* fp, TCHAR* filename);
 
     file_size = ftello(fp);
 
+    fclose(fp);
+
     if (file_size == -1)
     {
       perror(ANSI_COLOR_RED "[ERR]");
       return 0;
     }
-
 
     return (uint64_t) file_size;
 }
