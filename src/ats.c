@@ -335,6 +335,7 @@ inline static void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uin
 
     /* offset_count += 3 */ fwrite(packet_start_code_prefix,3,1,fp);
     /* offset_count += */   fwrite(stream_id,1,1,fp);
+    fprintf(stderr, "Writing PES_plb at offset: %lu, with value PES_packet_len = %d (%d, %d)\n", ftello(fp), PES_packet_len, PES_packet_len_bytes[0], PES_packet_len_bytes[1]);
     /* offset_count += 2 */ fwrite(PES_packet_len_bytes,2,1,fp);
     /* offset_count += */   fwrite(flags1,1,1,fp);
     /* offset_count += */   fwrite(flags2,1,1,fp);
@@ -401,9 +402,6 @@ inline static uint16_t read_audio_pes_header(FILE* fp, uint8_t extension_flag, u
 }
 
 
-#define FIRST_PACK   0
-#define LAST_PACK    1
-#define MIDDLE_PACK  2
 
 
 uint8_t sub_stream_id[1]={0xa0};
@@ -765,7 +763,6 @@ inline static pts_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
     uint64_t PTSint;
     uint64_t bytes_written;
     long double frames_written;
-
                               //16  44100    48000  88200  96000   //24   44100   48000   88200  96000
       //double M_PTS[2][4] = {//3ch {1795.0, 1650.0, 897.0, 825.0},       {1197.0, 1100.0, 598.0, 550.0}};
 
@@ -862,7 +859,9 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         audio_bytes = info->lpcm_payload - info->firstpackdecrement;
         write_lpcm_header(fp,info->firstpack_lpcm_headerquantity,info,pack_in_title,cc);//info->firstpack_lpcm_headerquantity+4
         /* offset_count+= */
-        fwrite(audio_buf,1,audio_bytes,fp);
+        uint64_t offset = ftello(fp);
+        int res = fwrite(audio_buf,1,audio_bytes,fp);
+        fprintf(stderr, "\n%lu: Writing %d bytes\n", offset, res);
 
         write_pes_padding(fp, info->firstpack_pes_padding);//+6+info->firstpack_pes_padding
     }
@@ -873,10 +872,13 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Writing last packet - pack=%lu, bytesinbuffer=%d\n", pack_in_title, bytesinbuffer);
         audio_bytes=bytesinbuffer;
         write_pack_header(fp,SCR); //+14
-        write_audio_pes_header(fp,info->lastpack_audiopesheaderquantity+audio_bytes,0,PTS);  // +14
+        fprintf(stderr, "LAST PACK: audio_bytes: %d, info->lastpack_audiopesheaderquantity %d \n", audio_bytes, info->lastpack_audiopesheaderquantity);
+        write_audio_pes_header(fp, info->lastpack_audiopesheaderquantity + audio_bytes, 0, PTS);  // +14
         write_lpcm_header(fp,info->lastpack_lpcm_headerquantity,info,pack_in_title,cc); // +info->lastpack_lpcm_headerquantity +4
         /* offset_count+= */
-        fwrite(audio_buf,1,audio_bytes,fp);
+        uint64_t offset = ftello(fp);
+        int res = fwrite(audio_buf,1,audio_bytes,fp);
+        fprintf(stderr, "%lu: Writing %d bytes\n", offset, res);
         // PATCH Dec. 2013
          // PATCH Sept 2016
         int16_t padding_quantity = 2016 - info->lastpack_lpcm_headerquantity - audio_bytes;
@@ -899,7 +901,10 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         if (start_of_file) cc=0;
 
         write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,pack_in_title,cc); //info->midpack_lpcm_headerquantity+4
-        /* offset_count+= */ fwrite(audio_buf,1,audio_bytes,fp);
+        /* offset_count+= */
+        uint64_t offset = ftello(fp);
+        int res = fwrite(audio_buf,1,audio_bytes,fp);
+        fprintf(stderr, "%lu: Writing %d bytes\n", offset, res);
 
         write_pes_padding(fp,info->midpack_pes_padding);//info->midpack_pes_padding +6
     }
@@ -917,8 +922,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
     return(audio_bytes);
 }
 
-
-inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
+int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
 {
     int position;
     //static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
@@ -1164,22 +1168,20 @@ inline static int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf
     return(position);
 }
 
-int decode_ats(char* aob_file)
+int decode_ats()
 {
-
     FILE* fp;
-
     int32_t bytesinbuf=2048;
     uint8_t audio_buf[2048];
     uint64_t pack = 0;
     fileinfo_t files;
     int result = 0;
 
-    fp=fopen(aob_file,"rb");
+    fp=fopen(globals.aobpath,"rb");
 
     if (fp == NULL)
     {
-        foutput("%s%s%s", "[ERR]  Could not open AOB file *", aob_file,"*\n");
+        foutput("%s%s%s", "[ERR]  Could not open AOB file *", globals.aobpath,"*\n");
         return(-1);
     }
 
@@ -1197,215 +1199,14 @@ int decode_ats(char* aob_file)
     return(0);
 }
 
-
-inline static int get_pes_packet_audio(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
-{
-    int position;
-    //static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
-
-    static uint64_t pack_in_title;
-    static int title;
-    int audio_bytes;
-
-    if (fp == NULL) return 0;
-    uint64_t offset0 = ftello(fp);
-
-    fseeko(fp, offset0 +14, SEEK_SET);
-
-    uint8_t buf[4];
-    fread(buf, 4, 1, fp);
-
-    if (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB)
-    {
-        position = FIRST_PACK;
-        pack_in_title = 0;
-         ++title;
-    }
-    else
-    {
-        int res = fseeko(fp, 2044, SEEK_CUR);
-
-        if (res != 0)
-        {
-            position = LAST_PACK;
-        }
-        else
-        {
-            int n = fread(buf, 1, 4, fp);
-
-            if (n != 4 || (n == 4 && buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB))
-            {
-                position = LAST_PACK;
-            }
-            else
-            {
-                position = MIDDLE_PACK;
-            }
-
-            fseeko(fp, offset0 + 18, SEEK_SET);
-        }
-
-        ++pack_in_title;
-    }
-
-    uint64_t offset = offset0 + 14 + (position == FIRST_PACK) * 18;
-
-    fseeko(fp, offset0 + 35 + (position == FIRST_PACK ? 21 : 0), SEEK_SET);
-
-    /***       +14     ***/
-        //read_pack_header(fp, &SCR);
-
-    /***       +18  if first  ***/
-        // read_system_header(fp);
-
-    /* skipping read_audio_pes_header to identify info */
-
-    /***       info->first/mid/last/pack_lpcm_headerquantity + 4    ***/
-
-    uint8_t sample_size[1] = {0};
-    uint8_t sample_rate[1] = {0};
-
-    /* offset_count += */   fread(sample_size, 1, 1, fp);
-    /* offset_count += */   fread(sample_rate, 1, 1, fp);
-
-    uint8_t high_nibble = (sample_rate[0] & 0xf0) >> 4;
-
-    switch(high_nibble)
-    {
-        case 0:
-            info->samplerate = 48000;
-            break;
-        case 0x1:
-            info->samplerate = 96000;
-            break;
-        case 0x2:
-            info->samplerate = 192000;
-            break;
-        case 0x8:
-            info->samplerate = 44100;
-            break;
-        case 0x9:
-            info->samplerate = 88200;
-            break;
-        case 0xa:
-            info->samplerate = 176400;
-            break;
-        default:
-            break;
-    }
-
-    if (sample_size[0] == 0x0f || sample_size[0] == 0x2f)
-    {
-        if ((sample_rate[0] & 0xf) != 0xf)
-        {
-            foutput("%s", "[ERR]  Coherence_test : sample_rate and sample_size are incoherent (no 0xf lower nibble).\n");
-        }
-    }
-    else
-    if (sample_size[0] == 0x00 || sample_size[0] == 0x22)
-    {
-        if ((sample_rate[0] & 0xf) != high_nibble)
-        {
-            foutput("%s", "[ERR]  Coherence_test : sample_rate and sample_size are incoherent (lower nibble != higher nibble).\n");
-        }
-    }
-
-    info->bitspersample = (sample_size[0] == 0x2f || sample_size[0] == 0x22) ? 24 : 16;
-
-    fseeko(fp, 1, SEEK_CUR);
-
-    uint8_t channel_assignment[1] = {0};
-
-    fread(channel_assignment, 1, 1, fp);
-
-    info->cga = channel_assignment[0];
-
-    info->channels = (channel_assignment[0] < 21) ? channels[channel_assignment[0]] : 0;
-
-    /* info->PTS_length, info->numsamples and info->numbytes will be unusable, other info fileds OK */
-
-    calc_info(info);
-
-    uint64_t offset1 = ftello(fp);
-
-    fseek(fp, offset, SEEK_SET);
-
-    /* AFTER read_lpcm_header, which is used to identify info members */
-
-    switch(position)
-    {
-        case FIRST_PACK :
-            audio_bytes = info->lpcm_payload - info->firstpackdecrement;
-            fseeko(fp, 17, SEEK_CUR);
-
-        case MIDDLE_PACK :
-            audio_bytes=info->lpcm_payload;
-            fseeko(fp, 14, SEEK_CUR);
-            break;
-
-        case LAST_PACK :
-            fseeko(fp, 4, SEEK_CUR);
-            fread(PES_packet_len_bytes, 1, 2, fp);
-
-            audio_bytes = (PES_packet_len_bytes[0] << 8 | PES_packet_len_bytes[1]) - info->lastpack_audiopesheaderquantity;
-            break;
-    }
-
-
-    fseek(fp, offset1, SEEK_SET);
-
-    /* offset_count+= audio_bytes */
-
-    fread(audio_buf, 1, audio_bytes, fp);
-
-    fseeko(fp, offset0 + 2048, SEEK_SET);
-
-    return(position);
-}
-
-
-int get_ats_audio(char* aob_file)
-{
-    FILE* fp;
-
-    int32_t bytesinbuf=2048;
-    uint8_t audio_buf[2048];
-    uint64_t pack = 0;
-    fileinfo_t files;
-    int result = 0;
-
-    fp=fopen(aob_file,"rb");
-
-    if (fp == NULL)
-    {
-        foutput("%s%s%s", "[ERR]  Could not open AOB file *", aob_file,"*\n");
-        return(-1);
-    }
-
-    do
-    {
-        result  = get_pes_packet_audio(fp, &files, audio_buf);
-        if (result  == bytesinbuf)
-        {
-            ++pack;
-        }
-    }
-    while (result != LAST_PACK);
-
-    foutput("[MSG]   Read %lu PES packets.\n", pack);
-    return(0);
-}
-
 int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
 {
-
     FILE* fpout;
     char outfile[CHAR_BUFSIZ+13+1];
     int i=0, pack=0, pack_in_file=0, fileno=1;
     uint32_t bytesinbuf=0, n=0, lpcm_payload=0;
     uint8_t audio_buf[AUDIO_BUFFER_SIZE];
     uint64_t pack_in_title=0;
-
 
     STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/ATS_%02d_%d.AOB",audiotsdir,titleset,fileno)
 
