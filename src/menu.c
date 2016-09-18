@@ -43,12 +43,12 @@ void menu_characteristics_coherence_test(pic* img, uint8_t ngroups)
             globals.topmenu=TEMPORARY_AUTOMATIC_MENU; // you need to create a TS_VOB at least temporarily
         if (img->nmenus > 1)
         {
-            foutput("%s", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Active menus can only be used with simple menus for version "VERSION"\n       Using img->nmenus=1...\n");
+            foutput("%s", WAR "Active menus can only be used with simple menus for version "VERSION"\n       Using img->nmenus=1...\n");
             img->nmenus=1;
         }
         if (img->hierarchical)
         {
-            foutput("%s", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Active menus cannot be used with hierarchical menus for version "VERSION"\n       Choosing hierarchical menus...\n");
+            foutput("%s", WAR "Active menus cannot be used with hierarchical menus for version "VERSION"\n       Choosing hierarchical menus...\n");
             img->active=0;
             img->hierarchical=1;
         }
@@ -66,13 +66,13 @@ void menu_characteristics_coherence_test(pic* img, uint8_t ngroups)
             else
 
                 img->nmenus=ngroups/img->ncolumns + (ngroups%img->ncolumns > 0);  // number of columns cannot be higher than img->ncolumns; adjusting number of menus to ensure this.
-            if (globals.topmenu != NO_MENU) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  With %d columns, number of menus will be %d\n", img->ncolumns, img->nmenus);
+            if (globals.topmenu != NO_MENU) foutput(MSG "With %d columns, number of menus will be %d\n", img->ncolumns, img->nmenus);
         }
         else
         {
             if ((img->hierarchical) && (img->nmenus == 1))
             {
-                foutput("%s", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Hierarchical menus should have at least two screens...\n       Incrementing value for --nmenus=1->2\n");
+                foutput("%s", WAR "Hierarchical menus should have at least two screens...\n       Incrementing value for --nmenus=1->2\n");
                 img->nmenus++;
             }
 
@@ -80,7 +80,7 @@ void menu_characteristics_coherence_test(pic* img, uint8_t ngroups)
 
             if ((img->ncolumns)*ngroups < img->nmenus-1)
             {
-                foutput(""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Hierarchical menus should have at most %d*%d+1=%d menus...\n       Resetting value for --nmenus=%d\n", img->ncolumns, ngroups, img->ncolumns*ngroups+1, img->ncolumns*ngroups+1);
+                foutput(WAR "Hierarchical menus should have at most %d*%d+1=%d menus...\n       Resetting value for --nmenus=%d\n", img->ncolumns, ngroups, img->ncolumns*ngroups+1, img->ncolumns*ngroups+1);
                 img->nmenus=ngroups*img->ncolumns+1;
             }
 
@@ -101,7 +101,7 @@ void create_activemenu(pic* img)
 {
 
     
-    if (img->tsvob == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  No matrix AUDIO_TS.VOB available for generating active menus.")
+    if (img->tsvob == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "No matrix AUDIO_TS.VOB available for generating active menus.")
 
     uint8_t j;
     uint64_t i;
@@ -117,23 +117,23 @@ void create_activemenu(pic* img)
 
     /* processing */
 
-    puts(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Using already created top menus.\n");
+    puts(INF "Using already created top menus.\n");
     uint64_t tsvobsize=0;
     tsvobsize=stat_file_size(img->tsvob);
     if (tsvobsize <= activeheadersize)
     {
-        perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  AUDIO_TS.VOB is too small.\n");
+        perror(ERR "AUDIO_TS.VOB is too small.\n");
         exit(EXIT_FAILURE) ;
     }
     uint8_t tsvobpt[tsvobsize];
     memset(tsvobpt, 0, tsvobsize);
     FILE * tsvobfile=fopen(img->tsvob, "rb");
 
-    if (!globals.nooutput && fread(tsvobpt, activeheadersize, 1, activeheaderfile) == 0) perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  fread [active menu authoring, stage 1]");
+    if (!globals.nooutput && fread(tsvobpt, activeheadersize, 1, activeheaderfile) == 0) perror(ERR "fread [active menu authoring, stage 1]");
 
-    if (-1 == fseek(tsvobfile, ACTIVEHEADER_INSERTOFFSET, SEEK_SET)) perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  fseek [active menu authoring, stage 2]");
+    if (-1 == fseek(tsvobfile, ACTIVEHEADER_INSERTOFFSET, SEEK_SET)) perror(ERR "fseek [active menu authoring, stage 2]");
 
-    if (fread(tsvobpt+activeheadersize+32, 0x314-ACTIVEHEADER_INSERTOFFSET, 1, tsvobfile) == 0) perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  fread [active menu authoring, stage 3]");
+    if (fread(tsvobpt+activeheadersize+32, 0x314-ACTIVEHEADER_INSERTOFFSET, 1, tsvobfile) == 0) perror(ERR "fread [active menu authoring, stage 3]");
 //nlinks=1;
     i=activeheadersize;
 
@@ -151,8 +151,8 @@ void create_activemenu(pic* img)
         tsvobpt[i]=0xFF;
         i++;
     }
-    if (-1 == fseek(tsvobfile, 0x800, SEEK_SET)) perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  fseek [active menu authoring, stage 4]");
-    if (fread(tsvobpt+0x800, tsvobsize-0x800, 1, tsvobfile) == 0) perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  fread, stage 1, create_activemenu");
+    if (-1 == fseek(tsvobfile, 0x800, SEEK_SET)) perror(ERR "fseek [active menu authoring, stage 4]");
+    if (fread(tsvobpt+0x800, tsvobsize-0x800, 1, tsvobfile) == 0) perror(ERR "fread, stage 1, create_activemenu");
 
 
     /* writing */
@@ -166,7 +166,7 @@ void create_activemenu(pic* img)
         }
         else
         {
-            perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"   stillvob string allocation.\n");
+            perror(ERR " stillvob string allocation.\n");
             return;
         }
     }
@@ -177,9 +177,9 @@ void create_activemenu(pic* img)
     {
      svvobfile=fopen(img->stillvob, "wb");
      if (svvobfile == NULL)
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Cannot open AUDIO_SV.VOB for generating active menus.")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Cannot open AUDIO_SV.VOB for generating active menus.")
 
-     fprintf(stdout, "\n"ANSI_COLOR_YELLOW"[DBG]"ANSI_COLOR_RESET"  Creating active menu: will patch AUDIO_TS.VOB into AUDIO_SV.VOB=%s\n\n",img->stillvob);        
+     fprintf(stdout, "\n"DBG "Creating active menu: will patch AUDIO_TS.VOB into AUDIO_SV.VOB=%s\n\n",img->stillvob);
      for (j=0; j < totntracks; j++)
          fwrite(tsvobpt, tsvobsize, 1, svvobfile);
      fclose(svvobfile);
@@ -315,30 +315,30 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
     if (img->action == STILLPICS)
     {
-        if (globals.debugging) foutput("%s%u\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Creating still picture #", rank+1);
+        if (globals.debugging) foutput("%s%u\n", INF "Creating still picture #", rank+1);
 
         sprintf(img->backgroundmpg[rank], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "background_still_", rank, ".mpg");
 
         snprintf(pict, sizeof(pict), "%s"SEPARATOR"pic_%03u.jpg", globals.settings.stillpicdir, rank);  // here stillpic[0] is a subdir.
 
-        if (globals.debugging) foutput("%s%d%s\n",ANSI_COLOR_YELLOW"[DBG]"ANSI_COLOR_RESET"  Created still picture path #:", rank+1,pict);
+        if (globals.debugging) foutput("%s%d%s\n",DBG "Created still picture path #:", rank+1,pict);
     }
     else if (img->action == ANIMATEDVIDEO)
     {
-        if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Creating animated menu rank #%u out of %s\n", rank+1, img->backgroundpic[rank]);
+        if (globals.debugging) foutput(INF "Creating animated menu rank #%u out of %s\n", rank+1, img->backgroundpic[rank]);
         sprintf(img->backgroundmpg[rank], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "background_movie_",rank, ".mpg");
         snprintf(pict, sizeof(pict), "%s", img->backgroundpic[rank]);
         if (img->backgroundcolors)
         {
-            if (globals.veryverbose) foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Colorizing background jpg files prior to multiplexing...");
+            if (globals.veryverbose) foutput("%s\n", INF "Colorizing background jpg files prior to multiplexing...");
             char command[500];
 
             mogrify=create_binary_path(mogrify, MOGRIFY, SEPARATOR MOGRIFY_BASENAME);
 
             snprintf(command, 500, "%s -fill \"rgb(%s)\" -colorize 66%% %s", mogrify, img->backgroundcolors[rank], img->backgroundpic[rank]);
 
-            if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Launching mogrify to colorize menu: %d with command line %s\n", rank, command);
-            if (system(win32quote(command)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" System command failed")
+            if (globals.debugging) foutput(INF "Launching mogrify to colorize menu: %d with command line %s\n", rank, command);
+            if (system(win32quote(command)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed")
                 fflush(NULL);
         }
 
@@ -359,7 +359,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
     if (img->action==ANIMATEDVIDEO )
     {
-        if (globals.debugging) foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Running mp2enc...");
+        if (globals.debugging) foutput("%s\n", INF "Running mp2enc...");
 
 
         char soundtrack[strlen(globals.settings.tempdir)+11];
@@ -379,7 +379,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
         switch (pid1=fork())
         {
         case -1:
-            foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not launch "MP2ENC);
+            foutput("%s\n", ERR "Could not launch "MP2ENC);
             break;
 
         case 0:
@@ -387,7 +387,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
             if (NULL == freopen(soundtrack, "rb", stdin))
             {
-                perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  freopen");
+                perror(ERR "freopen");
                 clean_exit(EXIT_FAILURE);
             }
 
@@ -395,7 +395,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
             if (errno) perror(MP2ENC);
             execv(mp2enc, argsmp2enc);
-            foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Runtime failure in mp2enc child process");
+            foutput("%s\n", ERR "Runtime failure in mp2enc child process");
             return errno;
 
             break;
@@ -428,12 +428,12 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
     if (pipe(tube) || pipe(tubeerr) || pipe(tubeerr2))
     {
-        perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Pipe");
+        perror(ERR "Pipe");
         return errno;
     }
 
     if (globals.debugging)
-        foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Running jpeg2yuv...");
+        foutput("%s\n", INF "Running jpeg2yuv...");
 
     // Owing to the piping of the stdout streams (necessary for coherence of output) existence checks must be tightened up.
     // System will freeze should an input file not exit, as mjpegtools to not always exit on system error. This may cause a loop in the piping of jpeg2yuv to mpeg2enc
@@ -447,12 +447,12 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     {
         if (img->action == ANIMATEDVIDEO)
         {
-            foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  menu input files: background pic: %s", pict);
+            foutput(ERR "menu input files: background pic: %s", pict);
             perror("background");
         }
         else
         {
-            foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  still pic: %s", pict);
+            foutput(ERR "still pic: %s", pict);
         }
         clean_exit(EXIT_FAILURE);
     }
@@ -466,7 +466,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 //
 //        if ((errno) || (f == NULL))
 //        {
-//            perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  menu input files: mp2 track");
+//            perror(ERR "menu input files: mp2 track");
 //            globals.topmenu=NO_MENU;
 //
 //            return(errno);
@@ -478,7 +478,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     switch (fork())
     {
     case -1:
-        fprintf(stdout,"%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not launch jpeg2yuv");
+        fprintf(stdout,"%s\n", ERR "Could not launch jpeg2yuv");
         break;
 
     case 0:
@@ -489,7 +489,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
         // Piping stdout is required here as STDOUT is not a possible duplicate for stdout
         dup2(tubeerr[1], STDERR_FILENO);
         execv(jpeg2yuv, argsjpeg2yuv);
-        foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Runtime failure in jpeg2yuv child process");
+        foutput("%s\n", ERR "Runtime failure in jpeg2yuv child process");
         perror("menu1");
 
         return errno;
@@ -499,12 +499,12 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
         close(tube[1]);
         close(tubeerr[1]);
         dup2(tube[0], STDIN_FILENO);
-        if (globals.debugging) foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Piping to mpeg2enc...");
+        if (globals.debugging) foutput("%s\n", INF "Piping to mpeg2enc...");
 
         switch (pid2 = fork())
         {
         case -1:
-            foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not launch mpeg2enc");
+            foutput("%s\n", ERR "Could not launch mpeg2enc");
             break;
 
         case 0:
@@ -517,7 +517,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
             dup2(tubeerr2[1], STDERR_FILENO);
             // End of comment
             execv(mpeg2enc, argsmpeg2enc);
-            foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Runtime failure in mpeg2enc parent process");
+            foutput("%s\n", ERR "Runtime failure in mpeg2enc parent process");
             perror("menu2");
             return errno;
 
@@ -532,7 +532,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
             while (read(tubeerr2[0], &c, 1) == 1) foutput("%c",c);
             close(tubeerr2[0]);
-            if (globals.debugging) foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Running mplex...");
+            if (globals.debugging) foutput("%s\n", INF "Running mplex...");
             run(mplex, argsmplex, 0);
         }
         close(tube[0]);
@@ -589,9 +589,9 @@ int generate_background_mpg(pic* img)
     if (mp2track)
         sprintf(mp2track, "%s"SEPARATOR"%s", globals.settings.tempdir, "mp2track.mp2");
 
-    if (img->backgroundmpg == NULL) foutput("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  backgroundmpg will be allocated.\n");
+    if (img->backgroundmpg == NULL) foutput("%s", MSG "backgroundmpg will be allocated.\n");
 
-    if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Launching mjpegtools to create background mpg with nmenus=%d\n", img->nmenus);
+    if (globals.debugging) foutput(INF "Launching mjpegtools to create background mpg with nmenus=%d\n", img->nmenus);
 
     /* now authoring AUDIO_TS.VOB */
     rank=0;
@@ -619,7 +619,7 @@ int generate_background_mpg(pic* img)
             {
                 create_mpg(img, rank, mp2track, tempfile);
                 img->stillpicvobsize[rank]=(uint32_t) (stat_file_size(img->backgroundmpg[rank])/0x800);
-                if (img->stillpicvobsize[rank] > 1024) foutput("%s",""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Size of slideshow in excess of the 2MB track limit... some stillpics may not be displayed.\n");
+                if (img->stillpicvobsize[rank] > 1024) foutput("%s",WAR "Size of slideshow in excess of the 2MB track limit... some stillpics may not be displayed.\n");
                 if (rank) cat_file(img->backgroundmpg[rank], img->backgroundmpg[0]);
                 rank++;
             }
@@ -629,7 +629,7 @@ int generate_background_mpg(pic* img)
     FREE(mp2track)
 
     if ((globals.debugging) && (!errno))
-        foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  MPG background authoring OK.");
+        foutput("%s\n", INF "MPG background authoring OK.");
     return errno;
 
 }
@@ -641,7 +641,7 @@ int launch_spumux(pic* img)
 
     //sprintf(spumuxcommand, "%s%s%s%s%s%s%s", "spumux -v 0 ", globals.spu_xml, " < ", img->backgroundmpg, (globals.debugging)? "" : " 2>null ", " 1> ", img->topmenu);
 
-    if (globals.debugging) foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Launching spumux to create buttons");
+    if (globals.debugging) foutput("%s\n", INF "Launching spumux to create buttons");
     int menu=0;
 
 
@@ -650,7 +650,7 @@ int launch_spumux(pic* img)
 
     while (menu < img->nmenus)
     {
-        if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Creating menu %d from Xml file %s\n",menu+1, globals.spu_xml[menu]);
+        if (globals.debugging) foutput(INF "Creating menu %d from Xml file %s\n",menu+1, globals.spu_xml[menu]);
         char *argsspumux[]= {SPUMUX_BASENAME, "-v", "2", globals.spu_xml[menu], NULL};
 
         // This is to hush up dvdauthor's stdout messages, which interfere out of sequential order with main application stdout messages
@@ -661,7 +661,7 @@ int launch_spumux(pic* img)
 
         int firsttubeerr[2];
         if (pipe(firsttubeerr) == -1)
-            perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Pipe issue with spumux (firsttubeerr[2])");
+            perror(ERR "Pipe issue with spumux (firsttubeerr[2])");
         char c;
 
 
@@ -669,7 +669,7 @@ int launch_spumux(pic* img)
         {
 
         case -1:
-            foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not launch spumux");
+            foutput("%s\n", ERR "Could not launch spumux");
             break;
 
         case 0:
@@ -679,13 +679,13 @@ int launch_spumux(pic* img)
            fprintf(stderr, "command line: %s %s %s %s %s", spumux, argsspumux[1], argsspumux[2], argsspumux[3], argsspumux[4]);
             if (freopen(img->backgroundmpg[menu], "rb", stdin) == NULL)
             {
-                fprintf(stderr, "%s",ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  freopen (stdin)\n");
+                fprintf(stderr, "%s",ERR "freopen (stdin)\n");
                 fprintf(stderr, "img->backgroundmpg[%d]=%s errno=%d: %s", menu, img->backgroundmpg[menu], errno, strerror(errno));
                 return errno;
             }
             if (freopen(img->topmenu[menu], "wb", stdout) == NULL)
             {
-                fprintf(stderr, "%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  freopen (stdout)");
+                fprintf(stderr, "%s\n", ERR "freopen (stdout)");
                 fprintf(stderr, "img->backgroundmpg[%d]=%s errno=%d: %s", menu, img->topmenu[menu], errno, strerror(errno));
                 return errno;
             }
@@ -704,8 +704,8 @@ int launch_spumux(pic* img)
 
             if (errno)
             {
-                foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Runtime failure in spumux child process");
-                perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  spumux");
+                foutput("%s\n", ERR "Runtime failure in spumux child process");
+                perror(ERR "spumux");
                 return errno;
             }
             close(firsttubeerr[0]);
@@ -740,7 +740,7 @@ int launch_dvdauthor()
 
     errno=0;
 
-    if (globals.debugging) foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Launching dvdauthor to add virtual machine commands to top menu");
+    if (globals.debugging) foutput("%s\n", INF "Launching dvdauthor to add virtual machine commands to top menu");
 
     char* args[]= {DVDAUTHOR_BASENAME, "-o", globals.settings.outdir, "-x", globals.xml, NULL};
 
@@ -803,20 +803,20 @@ int prepare_overlay_img(char* text, int8_t group, pic *img, char* command, char*
         snprintf(command, 2*CHAR_BUFSIZ, "%s %s %s \"rgb(%s)\" %s %s %s %d %s %s %d%c%d %c%s%s %s", mogrify,
                  "+antialias", "-fill", albumcolor, "-font", img->textfont, "-pointsize", DEFAULT_POINTSIZE,
                  "-draw", " \"text ", x0, ',' , ALBUM_TEXT_Y0,  '\'', text, "\'\"", quote(picture_save));
-        if (globals.debugging) foutput("%s%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Launching mogrify (title) with command line: ", command);
-        if (system(win32quote(command)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" System command failed")
+        if (globals.debugging) foutput("%s%s\n", INF "Launching mogrify (title) with command line: ", command);
+        if (system(win32quote(command)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed")
             fflush(NULL);
     }
 
     if ((img->imagepic[menu]==NULL) || (img->highlightpic[menu]==NULL) || (img->imagepic[menu]==NULL))
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  pic pathnames");
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "pic pathnames");
         return -1;
     }
 
 
     copy_file(picture_save, img->imagepic[menu]);
-    if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  copying %s to %s for menu #%d\n", picture_save, img->imagepic[menu], menu);
+    if (globals.debugging) foutput(INF "copying %s to %s for menu #%d\n", picture_save, img->imagepic[menu], menu);
     copy_file(picture_save, img->highlightpic[menu]);
     copy_file(picture_save, img->selectpic[menu]);
     errno=0;
@@ -840,9 +840,9 @@ int mogrify_img(char* text, int8_t group, int8_t track, pic *img, uint8_t maxnum
 
     char *str, *str2;
     str=(char*) calloc(10*CHAR_BUFSIZ, 1);
-    if (str == NULL) perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  mogrify, string");
+    if (str == NULL) perror(ERR "mogrify, string");
     str2=(char*) calloc(10*CHAR_BUFSIZ, 1);
-    if (str2 == NULL) perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  mogrify, string 2");
+    if (str2 == NULL) perror(ERR "mogrify, string 2");
 
 // +antialias is crucial for dvdauthor, otherwise button masks will not be properly detected.
     int16_t deltax0=0,deltax1=0,deltay0=0,deltay1=0;
@@ -884,7 +884,7 @@ int mogrify_img(char* text, int8_t group, int8_t track, pic *img, uint8_t maxnum
     if (img->highlightformat == 1) strcat(command, str2); // because text will be overlayed. A more efficient method would be to use convert -composite for many tracks. For just a frew tracks, this is moot.
 
 
-    if (errno) perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  mogrify");
+    if (errno) perror(ERR "mogrify");
     FREE(str)
     FREE(str2)
     return errno;
@@ -917,7 +917,7 @@ void compute_pointsize(pic* img, uint16_t maxtracklength, uint8_t maxnumtracks)
         if ((text[j]== 'g') || (text[j]== 'j') || (text[j]== 'p') || (text[j]== 'q') || (text[j]== 'y'))
         {
             if (globals.debugging)
-                foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Switching to little squares rather than underlining motifs for highlight\n       as %c could cut underlines\n", text[j]);
+                foutput(INF "Switching to little squares rather than underlining motifs for highlight\n       as %c could cut underlines\n", text[j]);
             img->highlightformat=-1;
         }
 
@@ -956,9 +956,9 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
 
         dim=arraylength(grouparray);
         tracktext=calloc(dim, sizeof(char**));
-        if (tracktext == NULL) perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Track text allocation");
+        if (tracktext == NULL) perror(ERR "Track text allocation");
         grouptext=calloc(dim, sizeof(char**));
-        if (grouptext == NULL) perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Group text allocation");
+        if (grouptext == NULL) perror(ERR "Group text allocation");
 
         for (k=0; k < dim; k++)
         {
@@ -1034,7 +1034,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
         char picture_save[CHAR_BUFSIZ+14];
         sprintf(picture_save, "%s/%s%d", globals.settings.tempdir, "svpic",menu);
 
-        if (globals.debugging)  foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Authoring top menu streams...");
+        if (globals.debugging)  foutput("%s\n", INF "Authoring top menu streams...");
 
         if (img->hierarchical)
         {
@@ -1143,21 +1143,21 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
             while  (buttons < menubuttons+arrowbuttons);
 
         strcat(command2, quote(img->imagepic[menu]));
-        if (globals.veryverbose) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Menu: %d/%d, groupcount: %d/%d.\n       Launching mogrify (image) with command line: %s\n", menu, img->nmenus, groupcount, ngroups, command2);
-        if (system(win32quote(command2)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" System command failed");
+        if (globals.veryverbose) foutput(INF "Menu: %d/%d, groupcount: %d/%d.\n       Launching mogrify (image) with command line: %s\n", menu, img->nmenus, groupcount, ngroups, command2);
+        if (system(win32quote(command2)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed");
         free(command2);
 
         copy_file(img->imagepic[menu], img->highlightpic[menu]);
 
         strcat(command1, quote(img->highlightpic[menu]));
-        if (globals.veryverbose) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Menu: %d/%d, groupcount: %d/%d.\n       Launching mogrify (highlight) with command line: %s\n", menu, img->nmenus, groupcount, ngroups,command1);
-        if (system(win32quote(command1)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" System command failed");
+        if (globals.veryverbose) foutput(INF "Menu: %d/%d, groupcount: %d/%d.\n       Launching mogrify (highlight) with command line: %s\n", menu, img->nmenus, groupcount, ngroups,command1);
+        if (system(win32quote(command1)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed");
         free(command1);
         char command3[500];
 
         snprintf(command3, sizeof(command3), "%s %s \"rgb(%s)\"  %s \"rgb(%s)\" %s %s", convert, "-fill", quote(img->selectfgcolor_pic), "-opaque", quote(img->textcolor_pic), quote(img->imagepic[menu]), quote(img->selectpic[menu]));
-        if (globals.veryverbose) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Menu: %d/%d, groupcount: %d/%d.\n       Launching convert (select) with command line: %s\n",menu, img->nmenus, groupcount, ngroups,command3);
-        if (system(win32quote(command3)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" System command failed");
+        if (globals.veryverbose) foutput(INF "Menu: %d/%d, groupcount: %d/%d.\n       Launching convert (select) with command line: %s\n",menu, img->nmenus, groupcount, ngroups,command3);
+        if (system(win32quote(command3)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed");
 
         menu++;
         group=0;
@@ -1181,7 +1181,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
 
     if (globals.debugging)
         if (!errno)
-            foutput("%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Top menu pictures were authored.");
+            foutput("%s\n", MSG "Top menu pictures were authored.");
 
     return errno;
 }
@@ -1191,7 +1191,7 @@ int create_stillpic_directory(char* string, uint32_t count)
 {
     if (!string)
     {
-        fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Null string input for stillpic in create_stillpic_directory, with count=%d\n", count);
+        fprintf(stderr, ERR "Null string input for stillpic in create_stillpic_directory, with count=%d\n", count);
         exit(-1);
     }
 
@@ -1200,13 +1200,13 @@ int create_stillpic_directory(char* string, uint32_t count)
     change_directory(globals.settings.workdir);
     if (k == count)
     {
-        if (globals.debugging) foutput(""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Too many pics, only %d sound track%s skipping others...\n", count, (count == 1)?",":"s,");
+        if (globals.debugging) foutput(WAR "Too many pics, only %d sound track%s skipping others...\n", count, (count == 1)?",":"s,");
         return 0;
     }
 
     if (*string == '\0')
     {
-        if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Jumping one track for picture rank=%d\n", k);
+        if (globals.debugging) foutput(INF "Jumping one track for picture rank=%d\n", k);
         return 1;
     }
 
@@ -1215,12 +1215,12 @@ int create_stillpic_directory(char* string, uint32_t count)
 
     if (stat(string, &buf) == -1)
     {
-        fprintf(stderr,ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  create_stillpic_directory: could not stat file %s\n", string);
+        fprintf(stderr,ERR "create_stillpic_directory: could not stat file %s\n", string);
         exit(-1);
     }
     if (S_IFDIR & buf.st_mode)
     {
-        if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Directory %s will be parsed for still pics\n", string);
+        if (globals.debugging) foutput(INF "Directory %s will be parsed for still pics\n", string);
         globals.settings.stillpicdir=strdup(string);
         return 0;
     }
@@ -1229,7 +1229,7 @@ int create_stillpic_directory(char* string, uint32_t count)
   #endif
         char dest[strlen(globals.settings.tempdir)+13];
         sprintf(dest, "%s"SEPARATOR"pic_%03d.jpg", globals.settings.tempdir, k);
-        if (globals.debugging) fprintf(stderr, ANSI_COLOR_YELLOW"[DBG]"ANSI_COLOR_RESET"  Picture %s will be copied to temporary directory as %s.\n", string, dest);
+        if (globals.debugging) fprintf(stderr, DBG "Picture %s will be copied to temporary directory as %s.\n", string, dest);
 
         copy_file(string, dest);
 

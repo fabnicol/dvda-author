@@ -54,54 +54,57 @@ repair_wav(WaveData *info, WaveHeader *header )
   *********************************************************************/
 
   /* the first 4 bytes should be "RIFF" */
-  if (memcmp(&header->chunk_id, "RIFF", 4) == 0)
+  if (memcmp(&header->ckID, "RIFF", 4) == 0)
     {
-      printf( "%s", ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET"  Found correct Chunk ID at offset 0\n" );
+      if (globals.debugging) foutput( "%s", MSG "Found correct RIFF ID at offset 0\n" );
     }
   else
     {
-      printf( "%s", ANSI_COLOR_BLUE "[INF]" ANSI_COLOR_RESET"  Repairing Chunk ID at offset 0\n" );
-      if (memmove( &(header->chunk_id), "RIFF", 4 * sizeof(char)) == NULL) return(FAIL);
+      if (globals.debugging) foutput( "%s", INF "Repairing RIFF ID at offset 0\n" );
+      if (memmove( &(header->ckID), "RIFF", 4 * sizeof(char)) == NULL) return(FAIL);
       repair = BAD_HEADER;
     }
 
   /* The ChunkSize is the entire file size - 8
-   * unless a pad byte was added when the file was written  (patch Aug. 2016) */
-  if (header->chunk_size == file_size - 8)
+   * unless a pad byte was added when the file was written  (patch Aug. 2016)
+       "This size value does not include the size of the ckID or ckSize fields
+        or the pad byte at the end of
+        ckData."
+  */
+
+  if (header->ckSize == file_size - 8)
     {
-      printf( ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET"  Found correct Chunk Size of %" PRIu32 " bytes at offset 4\n",
-                 header->chunk_size);
+      if (globals.debugging) foutput( MSG "Found correct audio chunk Size of %" PRIu32 " bytes at offset 4\n",  header->ckSize);
     }
   else
-  if (header->chunk_size == file_size - 7)
+  if ((header->ckSize & 1) == 1 && header->ckSize == file_size - 9)
     {
-      printf( ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET"  Found correct Chunk Size of %" PRIu32 " bytes at offset 4. Pad byte added at EOF.\n",
-                 header->chunk_size);
+      if (globals.debugging) foutput( MSG "Found correct audio chunk Size of %" PRIu32 " bytes at offset 4. Pad byte added at EOF.\n",  header->ckSize);
       pad_byte = true;
     }
   else
     {
-      /* Supposing file was not 1-byte padded for imparity ... */
+      /* there is here no other logical option than to consider the possible pad byte at eof as part of audio data */
 
-      printf( ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Chunk Size of %" PRIu32 " at offset 4 is incorrect: should be %" PRIu32 " bytes\n"
-              ANSI_COLOR_BLUE  "[INF]" ANSI_COLOR_RESET "  ... repairing\n",
-              header->chunk_size,
-              (uint32_t) file_size-8);
+      if (globals.debugging) foutput( MSG "audio chunk Size of %" PRIu32 " at offset 4 is incorrect: should be %" PRIu32 " bytes\n"
+              INF "... repairing\n",
+              header->ckSize,
+              (uint32_t) file_size - 8);
 
-      header->chunk_size = (uint32_t) file_size - 8;
+      header->ckSize = (uint32_t) file_size - 8;
       repair = BAD_HEADER;
     }
 
   /* The Chunk Format should be the letters "WAVE" */
 
-  if (memcmp(&header->chunk_format, "WAVE", 4) == 0)
+  if (memcmp(&header->WAVEID, "WAVE", 4) == 0)
     {
-      printf("%s\n",  ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Found correct Chunk Format at offset 8" );
+      if (globals.debugging) foutput("%s\n",  MSG "Found correct WAVE Format at offset 8" );
     }
   else
     {
-      printf("%s\n",  ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Chunk Format at offset 8 is incorrect\n" ANSI_COLOR_BLUE "[INF]" ANSI_COLOR_RESET"  ... repairing\n" );
-      if (memmove(&(header->chunk_format), "WAVE", 4 * sizeof(char)) == NULL)
+      if (globals.debugging) foutput("%s\n",  MSG "WAVE Format at offset 8 is incorrect\n" INF "... repairing\n" );
+      if (memmove(&(header->WAVEID), "WAVE", 4 * sizeof(char)) == NULL)
           return(FAIL);
 
       repair = BAD_HEADER;
@@ -114,46 +117,16 @@ repair_wav(WaveData *info, WaveHeader *header )
 
   /* The Subchunk1 ID should contain the letters "fmt " */
 
-  if (memcmp(&header->sub_chunk, "fmt", 3) == 0)
+  if (memcmp(&header->fmt_ckID, "fmt", 3) == 0)
     {
-      printf("%s\n",  ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET"  Found correct Subchunk1 ID at offset 12" );
+      if (globals.debugging) foutput("%s\n",  MSG "Found correct fmt ID at offset 12" );
     }
   else
     {
-      printf("%s\n",  ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET"  Subchunk1 ID at offset 12 is incorrect\n" ANSI_COLOR_BLUE "[INF]" ANSI_COLOR_RESET "  ... repairing" );
+      if (globals.debugging) foutput("%s\n",  MSG "fmt ID at offset 12 is incorrect\n" INF "... repairing" );
       // "fmt " ends in a space
-      if (memmove( &(header->sub_chunk), "fmt ", 3 * sizeof(char) ) == NULL)
+      if (memmove( &(header->fmt_ckID), "fmt ", 3 * sizeof(char) ) == NULL)
           return(FAIL);
-      repair = BAD_HEADER;
-    }
-
-  /* The Subchunk1 Size is 16, 18 or 40 for PCM (patch Aug. 2016) */
-
-  if (header->sc_size == 16 || header->sc_size == 18 || header->sc_size == 40)
-    {
-      printf(ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Found correct Subchunk1 Size of %" PRIu32 " bytes at offset 16\n", header->sc_size );
-    }
-  else
-    {
-      printf(ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Subchunk1 Size at offset 16 is incorrect (%d) \n" ANSI_COLOR_BLUE "[INF]" ANSI_COLOR_RESET "  ... repairing.\n",  header->sc_size);
-      header->sc_size = 16;
-      /* to be corrected later based on fmt chunk real size ? */
-      repair = BAD_HEADER;
-    }
-
-  /* The Subchunk1 Audio Format is 1 for WAVE_FORMAT_PCM or 0xFFFE for WAVE_FORMAT_EXTENSIBLE*/
-
-  if (header->sc_format == 1 || header->sc_format == 0xFFFE)
-    {
-      printf("%s\n",  ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Found correct Subchunk1 Format at offset 20" );
-      if (header->sc_format == 0xFFFE)
-          printf("%s\n",  ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Found WAVE_FORMAT_EXTENSIBLE header");
-    }
-  else
-    {
-      printf("%s\n",  ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Subchunk1 Format at offset 20 is incorrect\n" ANSI_COLOR_BLUE "[INF]" ANSI_COLOR_RESET "  ... repairing" );
-      /* by default, assuming standard PCM data */
-      header->sc_format = 1;
       repair = BAD_HEADER;
     }
 
@@ -165,24 +138,24 @@ repair_wav(WaveData *info, WaveHeader *header )
   {
       repair = (auto_control(info, header) == BAD_HEADER)? BAD_HEADER: ((repair == BAD_HEADER)? BAD_HEADER : GOOD_HEADER) ;
 
-      printf(ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Audio characteristics found by automatic mode:\n       bits/s=%" PRIu16 ", sample rate=%" PRIu32 ", channels=%" PRIu16 "\n",
-                header->bit_p_spl, header->sample_fq, header->channels);
+      if (globals.debugging) foutput(MSG "Audio characteristics found by automatic mode:\n       bits/s=%" PRIu16 ", sample rate=%" PRIu32 ", channels=%" PRIu16 "\n",
+                header->wBitsPerSample, header->dwSamplesPerSec, header->channels);
 
       if (repair == BAD_HEADER)
       {
 #       ifndef GUI_BEHAVIOR
           if (info->interactive)
             {
-              printf("%s\n", "[INT]  Please confirm [y/n] ");
+              if (globals.debugging) foutput("%s\n", "[INT]  Please confirm [y/n] ");
               if (!isok())
                 {
-                  printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Exiting automatic mode: user mode\n");
+                  if (globals.debugging) foutput("%s\n", INF "Exiting automatic mode: user mode\n");
                   repair=user_control(info, header);
                 }
             }
           else
 #       endif
-            printf("%s\n", "[INT]  Non-interactive mode: assuming correct repair.");
+            if (globals.debugging) foutput("%s\n", "[INT]  Non-interactive mode: assuming correct repair.");
      }
   }
 # ifndef GUI_BEHAVIOR
@@ -190,7 +163,52 @@ repair_wav(WaveData *info, WaveHeader *header )
     repair= (user_control(info, header) == BAD_HEADER)? BAD_HEADER: (repair == BAD_HEADER)? BAD_HEADER : GOOD_HEADER ;
 # endif
 
-  printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Core audio characteristics were checked.\n       Now processing data subchunk");
+  if (globals.debugging) foutput("%s\n", INF "Core audio characteristics were checked.\n       Now processing data subchunk");
+
+ /* Consequences on WAVE_FORMAT type correction */
+
+  /* The fmt chunk Size is 16, 18 or 40 for PCM (patch Aug. 2016) */
+
+  if (header->fmt_ckSize == 16 || header->fmt_ckSize == 18 || header->fmt_ckSize == 40)
+    {
+      if (globals.debugging) foutput(MSG "Found correct fmt chunk Size of %" PRIu32 " bytes at offset 16\n", header->fmt_ckSize );
+    }
+  else
+    {
+      if (globals.debugging) foutput(MSG "fmt chunk Size at offset 16 is incorrect (%d) \n" INF "... repairing.\n",  header->fmt_ckSize);
+
+      /* for mono or stereo, stick to WAVE_FORMAT_PCM. Otherwise move to WAVE_FORMAT_EXTENSIBLE with fmt_ckSize 40 */
+
+      switch (header->channels)
+      {
+         case 1:
+         case 2: header->fmt_ckSize = 16;
+          break;
+         default:
+          header->fmt_ckSize = 40;
+      }
+
+      /* to be corrected later based on fmt chunk real size ? */
+      repair = BAD_HEADER;
+    }
+
+  /* The Subchunk1 Audio Format is 1 for WAVE_FORMAT_PCM or 0xFFFE for WAVE_FORMAT_EXTENSIBLE*/
+
+  if (header->wFormatTag == 1 || header->wFormatTag == 0xFFFE)
+    {
+      if (globals.debugging) foutput("%s\n",  MSG "Found correct wave Format Tag at offset 20" );
+      if (header->wFormatTag == 0xFFFE)
+          if (globals.debugging) foutput("%s\n",  MSG "Found WAVE_FORMAT_EXTENSIBLE header");
+    }
+  else
+    {
+      if (globals.debugging) foutput("%s\n",  MSG "Subchunk1 Format at offset 20 is incorrect\n" INF "... repairing" );
+      /* by default, assuming standard PCM data */
+      header->wFormatTag = 1;
+      repair = BAD_HEADER;
+    }
+
+
 
   /*********************************************************************/
   /* The "data" Subchunk                                               */
@@ -200,11 +218,11 @@ repair_wav(WaveData *info, WaveHeader *header )
 
   if (memcmp(&header->data_chunk, "data", 4) == 0)
     {
-      printf("%s\n",  ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Found correct Subchunk2 ID" );
+      if (globals.debugging) foutput("%s\n",  MSG "Found correct Subchunk2 ID" );
     }
   else
     {
-      printf("%s\n",  ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Subchunk2 ID at offset 36 is incorrect\n" ANSI_COLOR_BLUE "[INF]" ANSI_COLOR_RESET "  ... repairing\n" );
+      if (globals.debugging) foutput("%s\n",  MSG "Subchunk2 ID at offset 36 is incorrect\n" INF "... repairing\n" );
       if (memmove(&header->data_chunk,"data", 4*sizeof(char) ) == NULL) return(FAIL);
       repair = BAD_HEADER;
     }
@@ -213,16 +231,16 @@ repair_wav(WaveData *info, WaveHeader *header )
 
   if (header->data_size == file_size - header->header_size_in || (pad_byte && header->data_size == file_size - header->header_size_in - 1))  // -1 if pad byte was added
     {
-      printf(ANSI_COLOR_GREEN"[MSG]" ANSI_COLOR_RESET "  Found correct Subchunk2 Size of %"PRIu32" bytes at offset %d\n",
+      if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]" ANSI_COLOR_RESET "  Found correct Subchunk2 Size of %"PRIu32" bytes at offset %d\n",
              header->data_size,
              header->header_size_in - 4);
       if (pad_byte)
-        printf(ANSI_COLOR_GREEN"[MSG]" ANSI_COLOR_RESET "  Pad byte was not taken into account.\n");
+        if (globals.debugging) foutput("%s\n", ANSI_COLOR_GREEN"[MSG]" ANSI_COLOR_RESET "  Pad byte was not taken into account.");
     }
   else
     {
-      printf(ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Subchunk2 Size at offset %d is incorrect: found %" PRIu32 " bytes instead of\n       %" PRIu32 " = file size (%" PRIu32 ") - header size (%" PRIu16 ") - pad byte (%d)\n"
-             ANSI_COLOR_BLUE  "[INF]" ANSI_COLOR_RESET "  ... repairing\n",
+      if (globals.debugging) foutput(MSG "Subchunk2 Size at offset %d is incorrect: found %" PRIu32 " bytes instead of\n       %" PRIu32 " = file size (%" PRIu32 ") - header size (%" PRIu16 ") - pad byte (%d)\n"
+             INF "... repairing\n",
              header->header_size_in - 4,
              header->data_size,
              (uint32_t) file_size - header->header_size_in - (uint32_t) pad_byte,
@@ -243,7 +261,7 @@ int launch_repair(WaveData *info, WaveHeader *header)
 {
   uint8_t *p=header->header_out;
   
-  printf( "%s", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Writing new header...\n" );
+  if (globals.debugging) foutput( "%s", INF "Writing new header...\n" );
 
   /* if -o option is not used, fixwav will overwrite existing data; confirmation dialog */
 
@@ -251,14 +269,18 @@ int launch_repair(WaveData *info, WaveHeader *header)
     {
       if (info->cautious)
       {
-          printf( "\n%s", "[INT]  Overwrite the existing file? [y/n] " );
+          if (globals.debugging) foutput( "\n%s", "[INT]  Overwrite the existing file? [y/n] " );
          if (!isok())
 
             {   /* user's bailing */
-              if ( info->repair == BAD_DATA )
-                printf( "%s",""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Header may still be corrupt.\n" );
+              if (globals.debugging && info->repair == BAD_DATA )
+              {
+                foutput( "%s",WAR "Header may still be corrupt.\n" );
+              }
               else
-                printf( "%s", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  No changes made to existing file\n" );
+              {
+                foutput( "%s", INF "No changes made to existing file\n" );
+              }
               return(info->repair) ;
             }
       }
@@ -278,22 +300,23 @@ int launch_repair(WaveData *info, WaveHeader *header)
 
  // otherwise unchanged
   
-  header->chunk_size=header->data_size + header->header_size_out - 8;
+  header->ckSize=header->data_size + header->header_size_out - 8;
   
   /* write the new header at the beginning of the file */
   /* again, copying manually rather than invoking fread to ensure cross-compiler/platform portability */
 
-  uint32_copy_reverse(p, header->chunk_id), p+=4;
-  uint32_copy_reverse(p, header->chunk_size), p+=4;
-  uint32_copy_reverse(p, header->chunk_format), p+=4;
-  uint32_copy_reverse(p, header->sub_chunk), p+=4;
-  uint32_copy_reverse(p, header->sc_size), p+=4;
-  uint16_copy_reverse(p, header->sc_format), p+=2;
+  uint32_copy_reverse(p, header->ckID), p+=4;
+  uint32_copy_reverse(p, header->ckSize), p+=4;
+  uint32_copy_reverse(p, header->WAVEID), p+=4;
+  uint32_copy_reverse(p, header->fmt_ckID), p+=4;
+  uint32_copy_reverse(p, header->fmt_ckSize), p+=4;
+  uint16_copy_reverse(p, header->wFormatTag), p+=2;
   uint16_copy_reverse(p, header->channels), p+=2;
-  uint32_copy_reverse(p, header->sample_fq), p+=4;
+  uint32_copy_reverse(p, header->dwSamplesPerSec
+), p+=4;
   uint32_copy_reverse(p, header->byte_p_sec), p+=4;
   uint16_copy_reverse(p, header->byte_p_spl), p+=2;
-  uint16_copy_reverse(p, header->bit_p_spl), p+=2;
+  uint16_copy_reverse(p, header->wBitsPerSample), p+=2;
   uint32_copy_reverse(p, header->data_chunk), p+=4;
   uint32_copy_reverse(p, header->data_size);
  
@@ -314,7 +337,7 @@ int write_header(WaveData *info, WaveHeader *header)
 
   if ((!info->virtual) && ( (outfile == NULL) || (fclose(outfile) != 0) || ((outfile=fopen(info->outfile, "rb+")) == NULL) ))
     {
-      printf("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Failed to close/open file");
+      if (globals.debugging) foutput("%s\n", ERR "Failed to close/open file");
       return(FAIL);
     }
 
@@ -325,7 +348,7 @@ int write_header(WaveData *info, WaveHeader *header)
 
   if (info->in_place && globals.debugging)
     {
-      printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Overwriting header...");
+      if (globals.debugging) foutput("%s\n", INF "Overwriting header...");
     }
 
   count=fwrite(header->header_out, header->header_size_out, 1, outfile ) ;
@@ -338,13 +361,13 @@ int write_header(WaveData *info, WaveHeader *header)
 
   if (count != 1)
     {
-      fprintf( stderr, "%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Error updating wav file.");
+      if (globals.debugging) foutput("%s\n", ERR "Error updating wav file.");
       return(FAIL);
     }
 
   if (errno)
     {
-      perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Error in launch repair module\n");
+      perror("\n"ERR "Error in launch repair module\n");
       return(FAIL);
     }
 

@@ -134,7 +134,7 @@ int launch_manager(command_t *command)
 
             files[i][0].PTS_length = tl;
             files[i][0].last_sector = files[i][nfiles[i]-1].last_sector;
-            if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  group %d will be single-track\n", i);
+            if (globals.debugging) foutput(MSG "group %d will be single-track\n", i);
 
         }
 
@@ -152,7 +152,7 @@ int launch_manager(command_t *command)
                             || (files[i][j].channels!=files[i][j-1].channels)
                             || (files[i][j].newtitle)))
                 {
-                    foutput(""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  File %s (group %d, track %d) cannot be merged\n       into a single track, stopping here...\n", files[i][j].filename, i, j);
+                    foutput(WAR "File %s (group %d, track %d) cannot be merged\n       into a single track, stopping here...\n", files[i][j].filename, i, j);
                     //nfiles=j+1;
                     break;
                 }
@@ -222,7 +222,7 @@ int launch_manager(command_t *command)
 
     foutput("%c\n", '\n');
 
-    foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Size of raw PCM data: %"PRIu64" bytes (%.2f  MB)\n",totalsize, (float) totalsize/(1024*1024));
+    foutput(MSG "Size of raw PCM data: %"PRIu64" bytes (%.2f  MB)\n",totalsize, (float) totalsize/(1024*1024));
 
 
     /* This approximation was contributed by Lee and Tim feldkamp */
@@ -237,17 +237,17 @@ int launch_manager(command_t *command)
     case -1:
 
         startsector=approximation; /* automatic computing of startsector (Lee and Tim Feldman) */
-        foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Using start sector based on AOBs: %d\n",approximation);
+        foutput(MSG "Using start sector based on AOBs: %d\n",approximation);
         break;
 
     case  0:
         startsector=STARTSECTOR; /* default value is 281 (Dave Chapman setting) */
-        foutput("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Using default start sector 281\n");
+        foutput("%s", MSG "Using default start sector 281\n");
         break;
 
     default:
 
-        foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Using specified start sector %d instead of estimated %d\n",startsector,approximation);
+        foutput(MSG "Using specified start sector %d instead of estimated %d\n",startsector,approximation);
     }
 
     /* main reference track tables */
@@ -262,9 +262,9 @@ int launch_manager(command_t *command)
     if (globals.veryverbose)
     {
         if (totntracks == totntracks0)
-         foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Coherence check on total of tracks... OK");
+         foutput("%s\n", INF "Coherence check on total of tracks... OK");
         else
-        printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Total of tracks is not coherent: totntracks=%d, return of create_tracktables=%d\n", totntracks, totntracks0);
+        printf(INF "Total of tracks is not coherent: totntracks=%d, return of create_tracktables=%d\n", totntracks, totntracks0);
     }
 
 
@@ -284,7 +284,7 @@ int launch_manager(command_t *command)
 
     if (img->active)
         {
-            if (globals.debugging) foutput("%s", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Adding active menu.\n");
+            if (globals.debugging) foutput("%s", INF "Adding active menu.\n");
 
             create_activemenu(img);
         }
@@ -306,7 +306,7 @@ int launch_manager(command_t *command)
             totntracks);
         if (img->stillvob)
              sectors.stillvob=stat_file_size(img->stillvob)/0x800;  //expressed in sectors
-        if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Size of AUDIO_SV.VOB is: %u sectors\n" , sectors.stillvob);
+        if (globals.debugging) foutput(MSG "Size of AUDIO_SV.VOB is: %u sectors\n" , sectors.stillvob);
 
     }
 #endif
@@ -335,18 +335,18 @@ int launch_manager(command_t *command)
     if (globals.debugging)
     {
         foutput("       Sector pointer to VIDEO_TS from AUDIO_TS= %"PRIu64" sectors\n", sector_pointer_VIDEO_TS);
-        foutput( "%s", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Checking coherence of pointers...");
+        foutput( "%s", INF "Checking coherence of pointers...");
 
         if (sectors.samg + startsector + sector_pointer_VIDEO_TS != last_sector+1+sectors.atsi[naudio_groups-1])
-            foutput("\n"ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Pointers to VIDEO_TS are not coherent %"PRIu64" , %"PRIu32"\n",
+            foutput("\n"WAR "Pointers to VIDEO_TS are not coherent %"PRIu64" , %"PRIu32"\n",
                    sectors.samg + startsector + sector_pointer_VIDEO_TS, (uint32_t) last_sector+1+sectors.atsi[naudio_groups-1]);
         else
             foutput("%s\n", "    OK");
     }
 
-    foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Total size of AUDIO_TS: %"PRIu64" sectors\n", sector_pointer_VIDEO_TS + sectors.samg);
+    foutput(MSG "Total size of AUDIO_TS: %"PRIu64" sectors\n", sector_pointer_VIDEO_TS + sectors.samg);
 
-    foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Start offset of  VIDEO_TS in ISO file: %"PRIu64" sectors,  offset %"PRIu64"\n\n", sector_pointer_VIDEO_TS + sectors.samg + startsector,
+    foutput(MSG "Start offset of  VIDEO_TS in ISO file: %"PRIu64" sectors,  offset %"PRIu64"\n\n", sector_pointer_VIDEO_TS + sectors.samg + startsector,
            (sector_pointer_VIDEO_TS + sectors.samg + startsector)*2048);
 #endif
     /* Creating AUDIO_TS.IFO */
@@ -410,14 +410,14 @@ int launch_manager(command_t *command)
 
     if (numtitles == NULL)
     {
-        foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Critical error: failed to generate AUDIO_TS.IFO");
-        foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Continuing with non-compliant DVD-Audio structure...");
+        foutput("%s\n", ERR "Critical error: failed to generate AUDIO_TS.IFO");
+        foutput("%s\n", ERR "Continuing with non-compliant DVD-Audio structure...");
         goto SUMMARY;
     }
 
     for (i=0; i<naudio_groups; i++)
     {
-        if ((title[i]=(uint8_t *) calloc(ntracks[i], 1)) == NULL) perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  title[k]");
+        if ((title[i]=(uint8_t *) calloc(ntracks[i], 1)) == NULL) perror(ERR "title[k]");
         {
             title[i][0]=0;
             for (j=1; j<ntracks[i]; j++)
@@ -470,18 +470,18 @@ SUMMARY:
         errno=0;
         if ((mkisofs=create_binary_path(mkisofs, MKISOFS, SEPARATOR MKISOFS_BASENAME)))
         {
-           foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Launching mkisofs to create image");
+           foutput("%s\n", INF "Launching mkisofs to create image");
            run(mkisofs, args, 0);
         }
         else
-                foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not access mkisofs binary.");
+                foutput("%s\n", ERR "Could not access mkisofs binary.");
 
         FREE(mkisofs);
 
         size=stat_file_size(dvdisopath)/1024;
-        if ((!errno) && (size > 4*SIZE_AMG + 2*SIZE_SAMG +1))  foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Image was created with size %lu KB.", size);
+        if ((!errno) && (size > 4*SIZE_AMG + 2*SIZE_SAMG +1))  foutput(MSG "Image was created with size %lu KB.", size);
         else
-            foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  ISO file creation failed -- fix issue.");
+            foutput("%s\n", ERR "ISO file creation failed -- fix issue.");
 
     }
 
@@ -500,7 +500,7 @@ SUMMARY:
 
         if (globals.rungrowisofs)
         {
-            foutput("\n%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Launching growisofs to burn disc");
+            foutput("\n%s\n", INF "Launching growisofs to burn disc");
             char string[strlen(globals.cdrecorddevice)+2+strlen(dvdisoinput)];
             sprintf(string, "%s%c%s", globals.cdrecorddevice, '=', dvdisoinput);
             char*  args[]={"growisofs", "-Z", string, NULL};
@@ -524,11 +524,11 @@ SUMMARY:
 
             if ((cdrecord=create_binary_path(cdrecord, CDRECORD, SEPARATOR CDRECORD_BASENAME)))
             {
-               foutput("\n%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Launching cdrecord to burn disc");
+               foutput("\n%s\n", INF "Launching cdrecord to burn disc");
                run(cdrecord,  args, NOWAIT);
             }
             else
-               foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not access to cdrecord binary.");
+               foutput("%s\n", ERR "Could not access to cdrecord binary.");
 
             FREE(cdrecord);
         }

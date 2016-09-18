@@ -56,25 +56,26 @@ typedef struct
     uint8_t*    header_out;
     uint16_t     header_size_in; /* size of header */
     uint16_t     header_size_out; /* size of header */
-    uint16_t	sc_format;	/* should be 1 for PCM-code */
-    uint16_t	channels;	/* 1 Mono, 2 Stereo */
-    uint16_t	byte_p_spl;	/* samplesize*/
-    uint16_t	bit_p_spl;	/* 8, 12, 16, or 24 bit */
+    uint16_t	 wFormatTag;	/* should be 1 for PCM-code */
+    uint16_t	 channels;	/* 1 Mono, 2 Stereo */
+    uint16_t	 byte_p_spl;	/* samplesize*/
+    uint16_t	 wBitsPerSample;	/* 8, 12, 16, or 24 bit */
 
-    uint32_t	chunk_id;	/* 'RIFF' */
-    uint32_t	chunk_size;	/* filelen */
-    uint32_t	chunk_format;	/* 'WAVE' */
+    uint32_t	 ckID;	/* 'RIFF' */
+    uint32_t	 ckSize;	/* filelen */
+    uint32_t	 WAVEID;	/* 'WAVE' */
 
-    uint32_t	sub_chunk;	/* 'fmt ' */
-    uint32_t	sc_size;	/* length of sub_chunk = 16 */
-    uint32_t	sample_fq;	/* frequence of sample */
+    uint32_t	 fmt_ckID;	/* 'fmt ' */
+    uint32_t	 fmt_ckSize;	/* length of fmt_ckID = 16 */
+    uint32_t	 dwSamplesPerSec
+;	/* frequence of sample */
     uint32_t	byte_p_sec; /* bytes per second */
     uint16_t    wavext;     /* wav extension = 0 */
     uint32_t    fact_chunk; /* 'fact'*/
     uint32_t    fact_length; /* length of fact chunk - 8 in bytes = 4*/
     uint32_t    n_spl;       /* number of samples written out */
-    uint32_t	data_chunk;	/* 'data' */
-    uint32_t	data_size;	/* samplecount */
+    uint32_t	 data_chunk;	/* 'data' */
+    uint32_t	 data_size;	/* samplecount */
     /* RIFF info chunks to be parsed: INAM, IART, ICMT, ICOP, ICRD, IGNR */
     uint8_t INAM[MAX_LIST_SIZE];
     uint8_t IART[MAX_LIST_SIZE];
