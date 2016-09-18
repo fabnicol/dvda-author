@@ -40,7 +40,7 @@ if (-1 == sox_initialise())
 char *args24[]= {SOX_BASENAME,  (char*) in, "-b", (char*) bitrate,(char*) out, "rate", "-v", "-I", "-b", "90", (char*)samplerate, NULL};
 char *args16[]= {SOX_BASENAME,  (char*) in, "-b", (char*) bitrate, (char*) out, "rate", "-s", "-a", (char*)samplerate, "dither", "-s", NULL};
 change_directory(globals.settings.workdir);
-foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Running SoX for resampling to %s bit-%s kHz audio: %s --> %s\n",bitrate,samplerate,in,out);
+foutput(INF "Running SoX for resampling to %s bit-%s kHz audio: %s --> %s\n",bitrate,samplerate,in,out);
 if (strcmp(bitrate, "16") == 0)
 { 
   errno=run(sox, args16, 0);
@@ -84,13 +84,16 @@ errno=0;
         fixwav(&wavedata, &waveheader);
        if (globals.veryverbose) 
             {
-                foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  LPCM diagnostics: bps=%d, sample rate=%d, channels=%d \n", 
-                         waveheader.bit_p_spl, waveheader.sample_fq, waveheader.channels);
+                foutput(MSG "LPCM diagnostics: bps=%d, sample rate=%d, channels=%d \n", 
+                         waveheader.wBitsPerSample, waveheader.dwSamplesPerSec
+, waveheader.channels);
             }
-       if ((waveheader.bit_p_spl != 16 && waveheader.bit_p_spl != 24) || (waveheader.sample_fq != 48000 && waveheader.sample_fq != 96000) ||
+       if ((waveheader.wBitsPerSample != 16 && waveheader.wBitsPerSample != 24) || (waveheader.dwSamplesPerSec
+ != 48000 && waveheader.dwSamplesPerSec
+ != 96000) ||
            (waveheader.channels > 6 || waveheader.channels == 0))
             {
-                foutput("%s",ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Did not manage to standardize wav header.\n");
+                foutput("%s",ERR "Did not manage to standardize wav header.\n");
                 errno=1;
             }
        
@@ -134,35 +137,38 @@ int audit_soundtrack(char* path, _Bool strict)
         
         if (strict)
         {
-            if ((waveheader.sample_fq == 48000) && (waveheader.bit_p_spl == 16) && (waveheader.channels == 2))
+            if ((waveheader.dwSamplesPerSec
+ == 48000) && (waveheader.wBitsPerSample == 16) && (waveheader.channels == 2))
             {
-                if (globals.veryverbose) foutput("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  LPCM requirements [fq=48k, bps=16, c=2] are satisfied by soundtrack input\n");
+                if (globals.veryverbose) foutput("%s", MSG "LPCM requirements [fq=48k, bps=16, c=2] are satisfied by soundtrack input\n");
                 errno=0;
             }
             else
             {
-                foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  LPCM requirements [fq=48k, bps=16, c=2] are not satisfied by soundtrack input\n");
+                foutput("%s", ERR "LPCM requirements [fq=48k, bps=16, c=2] are not satisfied by soundtrack input\n");
                 errno=1;
             }
        }
        else
         {
-            if ((waveheader.sample_fq == 48000 || waveheader.sample_fq == 96000) 
-             && (waveheader.bit_p_spl == 16 || waveheader.bit_p_spl == 24))
+            if ((waveheader.dwSamplesPerSec
+ == 48000 || waveheader.dwSamplesPerSec
+ == 96000) 
+             && (waveheader.wBitsPerSample == 16 || waveheader.wBitsPerSample == 24))
             {
-                if (globals.veryverbose) foutput("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  LPCM requirements [fq=48|96k, bps=16|24] are satisfied by soundtrack input\n");
+                if (globals.veryverbose) foutput("%s", MSG "LPCM requirements [fq=48|96k, bps=16|24] are satisfied by soundtrack input\n");
                 errno=0;
             }
             else
             {
-                foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  LPCM requirements [fq=48|96k, bps=16|24] are not satisfied by soundtrack input\n");
+                foutput("%s", ERR "LPCM requirements [fq=48|96k, bps=16|24] are not satisfied by soundtrack input\n");
                 errno=1;
             }
        }
     }
     else
     {
-        foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  File %s does not exist.\n", path);
+        foutput(ERR "File %s does not exist.\n", path);
         errno=1;
     }
 
@@ -199,7 +205,7 @@ int launch_lplex_soundtrack(pic* img, const char* create_mode)
     {
         if ((img->topmenu_nslides[menu] > 1) && img->nmenus > 1)
         {
-            foutput("%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Software limitation: you cannot author discs\n       with several slides for several menus.\n       Resetting slide number to 1.\n");
+            foutput("%s\n", WAR "Software limitation: you cannot author discs\n       with several slides for several menus.\n       Resetting slide number to 1.\n");
             img->topmenu_nslides[menu] =1;
         }
 
@@ -214,7 +220,7 @@ int launch_lplex_soundtrack(pic* img, const char* create_mode)
              args[DIM_LPLEX_CLI+tot]= "jpgw";
           else
           {
-            fprintf(stderr, "%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  For topmenu soundtrack editing only 4:3 and 16:9 aspect ratios are supported.\n");
+            fprintf(stderr, "%s", ERR "For topmenu soundtrack editing only 4:3 and 16:9 aspect ratios are supported.\n");
             EXIT_ON_RUNTIME_ERROR
           }
             args[DIM_LPLEX_CLI+tot+1]=img->topmenu_slide[menu][u];
@@ -225,8 +231,8 @@ int launch_lplex_soundtrack(pic* img, const char* create_mode)
         args[DIM_LPLEX_CLI+tot]=NULL;
         if (globals.debugging)
         {
-            foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Launching lplex to create top menu #%d with soundtrack...\n", menu);
-            foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  with command line %s\n", get_full_command_line((const  char**) args));
+            foutput(INF "Launching lplex to create top menu #%d with soundtrack...\n", menu);
+            foutput(INF "with command line %s\n", get_full_command_line((const  char**) args));
         }
 
         change_directory(globals.settings.workdir);
@@ -240,7 +246,7 @@ int launch_lplex_soundtrack(pic* img, const char* create_mode)
             aux=parse_filepath(globals.settings.workdir);
             if (aux->filename == NULL)
             {
-                foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Use non-root audio folder, with appropriate access rights.\n");
+                foutput("%s", ERR "Use non-root audio folder, with appropriate access rights.\n");
                 return -1;
             }
             else
@@ -291,8 +297,8 @@ int launch_lplex_hybridate(const pic* img,
     if (-1 == lplex_initialise()) return -1;
     if (ntracks == NULL || nslides == NULL || slidepath == NULL || trackpath == NULL) 
     {
-      fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Error code: %d\n", (ntracks == NULL )*1+(nslides == NULL)*10+(slidepath == NULL)*100+(trackpath == NULL)*1000);
-      EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Allocation of DVD-VIDEO tracks/slides")
+      fprintf(stderr, ERR "Error code: %d\n", (ntracks == NULL )*1+(nslides == NULL)*10+(slidepath == NULL)*100+(trackpath == NULL)*1000);
+      EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Allocation of DVD-VIDEO tracks/slides")
     }
     
     const char *args0[DIM_LPLEX_CLI]= {LPLEX_BASENAME, 
@@ -317,7 +323,7 @@ int launch_lplex_hybridate(const pic* img,
     
     for (int group=0; group < ntitlesets; group++)
     {
-      if (globals.veryverbose) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Now processing titleset %d/%d...\n", group, ntitlesets);
+      if (globals.veryverbose) foutput(INF "Now processing titleset %d/%d...\n", group, ntitlesets);
       
       if (group && ntracks[group])
       {
@@ -327,7 +333,7 @@ int launch_lplex_hybridate(const pic* img,
       
       if (ntracks[group] > 0 && nslides[group] == 0)
       {
-        fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  No slides for any track in titleset %d. Fix this issue and relaunch.\n", group);
+        fprintf(stderr, ERR "No slides for any track in titleset %d. Fix this issue and relaunch.\n", group);
         EXIT_ON_RUNTIME_ERROR
       }
       
@@ -340,7 +346,7 @@ int launch_lplex_hybridate(const pic* img,
          for (i=1; i <= nslides[group] && slidepath[group][nslides[group]-i][0] == '\0'; i++);
          if (i == (nslides[group]+1)) 
          {
-             fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Fewer slides (%d) than tracks (%d) for titleset %d. Fix this issue and relaunch.\n", nslides[group], ntracks[group], group);
+             fprintf(stderr, ERR "Fewer slides (%d) than tracks (%d) for titleset %d. Fix this issue and relaunch.\n", nslides[group], ntracks[group], group);
              EXIT_ON_RUNTIME_ERROR
          }
          else
@@ -350,7 +356,7 @@ int launch_lplex_hybridate(const pic* img,
          }
       }
       
-      if (globals.veryverbose) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Now listing %d tracks for group %d...\n", ntracks[group], group);
+      if (globals.veryverbose) foutput(INF "Now listing %d tracks for group %d...\n", ntracks[group], group);
       
       for (int tr=0; tr < ntracks[group]; tr++)
       {
@@ -364,7 +370,7 @@ int launch_lplex_hybridate(const pic* img,
              args[tot]= "jpgw";
           else
           {
-            fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Found aspect code img->aspect[0]=%c.\n       For DVD-Video editing only 4:3 and 16:9 aspect ratios are supported.\n",img->aspect[0]);
+            fprintf(stderr, ERR "Found aspect code img->aspect[0]=%c.\n       For DVD-Video editing only 4:3 and 16:9 aspect ratios are supported.\n",img->aspect[0]);
             EXIT_ON_RUNTIME_ERROR
           }
           
@@ -401,8 +407,8 @@ int launch_lplex_hybridate(const pic* img,
     }
     if (globals.debugging)
         {
-            foutput("%s",ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Launching lplex to create hybrid...\n");
-            foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  with command line %s\n", get_full_command_line((const char**) args));
+            foutput("%s",INF "Launching lplex to create hybrid...\n");
+            foutput(INF "with command line %s\n", get_full_command_line((const char**) args));
         }
 
         change_directory(globals.settings.workdir);

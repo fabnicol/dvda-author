@@ -236,7 +236,7 @@ inline static void write_pes_padding(FILE* fp, uint16_t length)
       length-=6; // We have 6 bytes of PES header.
     else
     {
-        foutput("%s\n", ANSI_COLOR_RED "[ERR]" ANSI_COLOR_RESET "  pes_padding length must be higher than 6;");
+        foutput("%s\n", ERR "pes_padding length must be higher than 6;");
         return;
     }
 
@@ -335,7 +335,7 @@ inline static void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uin
 
     /* offset_count += 3 */ fwrite(packet_start_code_prefix,3,1,fp);
     /* offset_count += */   fwrite(stream_id,1,1,fp);
-    if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  Writing PES_plb at offset: %lu, with value PES_packet_len = %d (%d, %d)\n", ftello(fp), PES_packet_len, PES_packet_len_bytes[0], PES_packet_len_bytes[1]);
+    if (globals.maxverbose) fprintf(stderr, DBG "Writing PES_plb at offset: %lu, with value PES_packet_len = %d (%d, %d)\n", ftello(fp), PES_packet_len, PES_packet_len_bytes[0], PES_packet_len_bytes[1]);
     /* offset_count += 2 */ fwrite(PES_packet_len_bytes,2,1,fp);
     /* offset_count += */   fwrite(flags1,1,1,fp);
     /* offset_count += */   fwrite(flags2,1,1,fp);
@@ -772,7 +772,7 @@ inline static pts_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
 
     if (info->bytespersecond == 0)
     {
-        foutput(""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  file %s has bytes per second=0\n", info->filename);
+        foutput(WAR "file %s has bytes per second=0\n", info->filename);
         pts_t ptsnull = {0,0,0};
         return ptsnull;
     }
@@ -851,7 +851,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         //  = 2048 everywhere except for 16/6ch or 24/4ch.
     {
         cc=0;            // First packet in title
-        foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Writing first packet - pack=%"PRIu64", bytesinbuffer=%d\n",pack_in_title,bytesinbuffer);
+        foutput(INF "Writing first packet - pack=%"PRIu64", bytesinbuffer=%d\n",pack_in_title,bytesinbuffer);
         write_pack_header(fp,SCR); //+14
         write_system_header(fp); //+18
 
@@ -861,7 +861,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         /* offset_count+= */
         uint64_t offset = ftello(fp);
         int res = fwrite(audio_buf,1,audio_bytes,fp);
-        if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  \n%lu: Writing %d bytes\n", offset, res);
+        if (globals.maxverbose) fprintf(stderr, DBG "\n%lu: Writing %d bytes\n", offset, res);
 
         write_pes_padding(fp, info->firstpack_pes_padding);//+6+info->firstpack_pes_padding
     }
@@ -869,16 +869,16 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
     {
         // 2048,2048,2044,2048,2048,2042 | 2048,2048,2052,2046,2052,2052 : faulty
 
-        foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Writing last packet - pack=%lu, bytesinbuffer=%d\n", pack_in_title, bytesinbuffer);
+        foutput(INF "Writing last packet - pack=%lu, bytesinbuffer=%d\n", pack_in_title, bytesinbuffer);
         audio_bytes=bytesinbuffer;
         write_pack_header(fp,SCR); //+14
-        if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  LAST PACK: audio_bytes: %d, info->lastpack_audiopesheaderquantity %d \n", audio_bytes, info->lastpack_audiopesheaderquantity);
+        if (globals.maxverbose) fprintf(stderr, DBG "LAST PACK: audio_bytes: %d, info->lastpack_audiopesheaderquantity %d \n", audio_bytes, info->lastpack_audiopesheaderquantity);
         write_audio_pes_header(fp, info->lastpack_audiopesheaderquantity + audio_bytes, 0, PTS);  // +14
         write_lpcm_header(fp,info->lastpack_lpcm_headerquantity,info,pack_in_title,cc); // +info->lastpack_lpcm_headerquantity +4
         /* offset_count+= */
         uint64_t offset = ftello(fp);
         int res = fwrite(audio_buf,1,audio_bytes,fp);
-        if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  %lu: Writing %d bytes\n", offset, res);
+        if (globals.maxverbose) fprintf(stderr, DBG "%lu: Writing %d bytes\n", offset, res);
         // PATCH Dec. 2013
          // PATCH Sept 2016
         int16_t padding_quantity = 2016 - info->lastpack_lpcm_headerquantity - audio_bytes;
@@ -904,7 +904,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         /* offset_count+= */
         uint64_t offset = ftello(fp);
         int res = fwrite(audio_buf,1,audio_bytes,fp);
-        if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  %lu: Writing %d bytes\n", offset, res);
+        if (globals.maxverbose) fprintf(stderr, DBG "%lu: Writing %d bytes\n", offset, res);
 
         write_pes_padding(fp,info->midpack_pes_padding);//info->midpack_pes_padding +6
     }
@@ -1195,7 +1195,7 @@ int decode_ats()
     }
     while (result != LAST_PACK);
 
-    if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  Read %lu PES packets.\n", pack);
+    if (globals.maxverbose) fprintf(stderr, DBG "Read %lu PES packets.\n", pack);
     return(0);
 }
 
@@ -1220,7 +1220,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
     //    else
     if (audio_open(&files[i])!=0)
     {
-        foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open %s\n", files[i].filename);
+        foutput(ERR "Could not open %s\n", files[i].filename);
         EXIT_ON_RUNTIME_ERROR
     }
 
@@ -1232,7 +1232,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
     files[i].first_sector=0;
     files[i].first_PTS=calc_PTS(&files[i], 0).PTSint;
 
-    foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Processing %s\n",files[i].filename);
+    foutput(INF "Processing %s\n",files[i].filename);
 
     while (bytesinbuf)
     {
@@ -1291,13 +1291,13 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                     files[i].first_sector=files[i-1].last_sector+1;
                     if (audio_open(&files[i])!=0)
                     {
-                        foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open %s\n",files[i].filename);
+                        foutput(ERR "Could not open %s\n",files[i].filename);
                         EXIT_ON_RUNTIME_ERROR
                     }
 
                     n=audio_read(&files[i],&audio_buf[bytesinbuf],sizeof(audio_buf)-bytesinbuf);
                     bytesinbuf+=n;
-                    foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Processing %s\n",files[i].filename);
+                    foutput(INF "Processing %s\n",files[i].filename);
                 }
                 else
                 {

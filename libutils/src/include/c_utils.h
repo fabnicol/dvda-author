@@ -105,6 +105,13 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
     #define ANSI_COLOR_RESET   "\x1b[0m"
 #endif
 
+#define MSG ANSI_COLOR_GREEN "[MSG]  " ANSI_COLOR_RESET
+#define INF ANSI_COLOR_BLUE "[INF]  " ANSI_COLOR_RESET
+#define ERR ANSI_COLOR_RED "\n[ERR]  " ANSI_COLOR_RESET
+#define DBG ANSI_COLOR_MAGENTA "[DBG]  " ANSI_COLOR_RESET
+#define WAR ANSI_COLOR_YELLOW "[WAR]  " ANSI_COLOR_RESET
+#define DEV ANSI_COLOR_CYAN "[DEV]  " ANSI_COLOR_RESET
+
 #define ERR_STRING_LENGTH   "ERR: string was truncated, maximum length is %d"
 
 #define Min(X ,Y)    (((X) <= (Y))  ? (X):(Y))
@@ -129,8 +136,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 
 #define foutput(X,...)   do { if (!globals.silence) printf(X, __VA_ARGS__);\
-							   if (!globals.logfile) break;\
-							   fprintf(globals.journal, X, __VA_ARGS__);} while(0)
+                               if (globals.logfile) \
+                                fprintf(globals.journal, X, __VA_ARGS__);} while(0)
 
 
 

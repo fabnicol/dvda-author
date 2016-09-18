@@ -42,18 +42,18 @@ int user_control(WaveData *info, WaveHeader *header)
     {
       if (!info->prepend)
       {  // useless if prepending, as 'header' info is always wrong
-          printf( "\n%s\n", "[INT]  Is the file recorded in " );
+          if (globals.debugging) foutput( "\n%s\n", "[INT]  Is the file recorded in " );
           switch ( header->channels )
             {
             case 1:
-              printf( "%s", "Mono? [y/n] " );
+              if (globals.debugging) foutput( "%s", "Mono? [y/n] " );
               break;
             case 2:
-              printf( "%s", "Stereo?  [y/n] " );
+              if (globals.debugging) foutput( "%s", "Stereo?  [y/n] " );
               break;
 
             default:
-              printf( "%d channels?  [y/n] ", header->channels );
+              if (globals.debugging) foutput( "%d channels?  [y/n] ", header->channels );
 
             }
             ok=isok();
@@ -61,7 +61,7 @@ int user_control(WaveData *info, WaveHeader *header)
 
       if (!ok)
         {
-          printf( "%s", "[INT]  Enter number of channels... 1=Mono, 2=Stereo, etc: " );
+          if (globals.debugging) foutput( "%s", "[INT]  Enter number of channels... 1=Mono, 2=Stereo, etc: " );
           fflush(stdout);
           get_input(buf);
           header->channels = (uint16_t) atoi(buf);
@@ -71,39 +71,42 @@ int user_control(WaveData *info, WaveHeader *header)
       /* The Sample Rate is the number of samples per second */
       if (!info->prepend)
       {
-          printf( "[INT]  Is the number of samples per second = %"PRIu32"?  [y/n] ", header->sample_fq );
+          if (globals.debugging) foutput( "[INT]  Is the number of samples per second = %"PRIu32"?  [y/n] ", header->dwSamplesPerSec
+ );
           ok=isok();
       }
 
       if (!ok)
         {
-          printf( "%s", "[INT]  Enter number of samples per second in kHz (e.g. 44.1) : " );
+          if (globals.debugging) foutput( "%s", "[INT]  Enter number of samples per second in kHz (e.g. 44.1) : " );
           fflush(stdout);
           get_input(buf);
-          header->sample_fq = (uint32_t) floor(1000*atof(buf));
+          header->dwSamplesPerSec
+ = (uint32_t) floor(1000*atof(buf));
           repair = BAD_HEADER;
         }
 
       /* The number of bits per sample */
       if (!info->prepend)
       {
-          printf( "[INT]  Is the number of bits per sample = %d?  [y/n] ", header->bit_p_spl );
+          if (globals.debugging) foutput( "[INT]  Is the number of bits per sample = %d?  [y/n] ", header->wBitsPerSample );
           ok=isok();
       }
 
       if (!ok)
         {
-          printf( "%s", "[INT]  Enter number of bits per sample:  " );
+          if (globals.debugging) foutput( "%s", "[INT]  Enter number of bits per sample:  " );
           fflush(stdout);
           get_input(buf);
-          header->bit_p_spl = (uint16_t) atoi(buf);
+          header->wBitsPerSample = (uint16_t) atoi(buf);
           repair = BAD_HEADER;
         }
 
     }
 
   /* The bytes per second = SampleRate * NumChannels * BitsPerSample/8 */
-  bps = header->sample_fq * header->channels * (header->bit_p_spl / 8);
+  bps = header->dwSamplesPerSec
+ * header->channels * (header->wBitsPerSample / 8);
 
   // forcing interactive mode if null audio
   if (bps == 0)
@@ -115,24 +118,24 @@ int user_control(WaveData *info, WaveHeader *header)
   if ( header->byte_p_sec == bps )
     {
       // Patch again version 0.1.1: -Saple Rate ...offset 24  + Bytes per second ...offset 28
-      printf("%s\n",  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found correct Subchunk1 Bytes per Second at offset 28" );
+      if (globals.debugging) foutput("%s\n",  MSG "Found correct Subchunk1 Bytes per Second at offset 28" );
     }
   else
     {
-      if (!info->prepend) printf("%s\n",  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Subchunk1 Bytes per Second at offset 28 is incorrect\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  ... repairing" );
+      if (!info->prepend) if (globals.debugging) foutput("%s\n",  MSG "Subchunk1 Bytes per Second at offset 28 is incorrect\n"INF "... repairing" );
       header->byte_p_sec = bps;
       repair = BAD_HEADER;
     }
 
   /* The number of bytes per sample = NumChannels * BitsPerSample/8 */
-  if ( header->byte_p_spl == header->channels * (header->bit_p_spl / 8) )
+  if ( header->byte_p_spl == header->channels * (header->wBitsPerSample / 8) )
     {
-      printf("%s\n",  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found correct Subchunk1 Bytes Per Sample at offset 32" );
+      if (globals.debugging) foutput("%s\n",  MSG "Found correct Subchunk1 Bytes Per Sample at offset 32" );
     }
   else
     {
-      if (!info->prepend) printf("%s\n",  ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Subchunk1 Bytes Per Sample at offset 32 is incorrect\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  ... repairing" );
-      header->byte_p_spl = header->channels * (header->bit_p_spl / 8);
+      if (!info->prepend) if (globals.debugging) foutput("%s\n",  MSG "Subchunk1 Bytes Per Sample at offset 32 is incorrect\n"INF "... repairing" );
+      header->byte_p_spl = header->channels * (header->wBitsPerSample / 8);
       repair = BAD_HEADER;
     }
 
@@ -159,7 +162,7 @@ int auto_control(WaveData *info, WaveHeader *header)
 
   /* initializing */
 
-  printf("%s\n", ANSI_COLOR_BLUE "[INF]" ANSI_COLOR_RESET "  Checking header -- automatic mode...");
+  if (globals.debugging) foutput("%s\n", INF "Checking header -- automatic mode...");
 
   /* The following function may deduce the number of bytes per second and of bytes per sample
    * from other constants considered as given and thereby recover partially mangled headers
@@ -168,20 +171,22 @@ int auto_control(WaveData *info, WaveHeader *header)
 
   regular_test(header, regular);
 
-  _Bool regular_bit_p_spl  = regular[1];
-  _Bool regular_sample_fq  = regular[2];
+  _Bool regular_wBitsPerSample  = regular[1];
+  _Bool regular_dwSamplesPerSec
+  = regular[2];
   _Bool regular_byte_p_spl = regular[3];
   _Bool regular_byte_p_sec = regular[4];
   _Bool regular_channels   = regular[5];
 
   /* Checking whether there is anything to be done at all */
 
-  if (header->byte_p_sec == (header->sample_fq * header->bit_p_spl * header->channels) / 8
-      && header->byte_p_spl == (header->channels * header->bit_p_spl) / 8
-      && (regular[0] == 5 || header->channels % 3 == 0 || header->bit_p_spl  == 20)
+  if (header->byte_p_sec == (header->dwSamplesPerSec
+ * header->wBitsPerSample * header->channels) / 8
+      && header->byte_p_spl == (header->channels * header->wBitsPerSample) / 8
+      && (regular[0] == 5 || header->channels % 3 == 0 || header->wBitsPerSample  == 20)
      )
     {
-      printf("%s\n", ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Core parameters need not be repaired");
+      if (globals.debugging) foutput("%s\n", MSG "Core parameters need not be repaired");
       return(info->repair = GOOD_HEADER);
     }
 
@@ -192,32 +197,36 @@ int auto_control(WaveData *info, WaveHeader *header)
   /* Set of assumptions (R) + (3), see comment below */
   /* Uniqueness of solution requires (R) */
 
-  if ((regular[0] < 3 && header->channels % 3 != 0 && header->bit_p_spl != 20)
-          || header->channels % 3 == 0 || header->bit_p_spl == 20)
+  if ((regular[0] < 3 && header->channels % 3 != 0 && header->wBitsPerSample != 20)
+          || header->channels % 3 == 0 || header->wBitsPerSample == 20)
   {
     goto bailing_out;
   }
 
-  if (regular_channels && header->channels % 3 != 0 && header->bit_p_spl != 20)
+  if (regular_channels && header->channels % 3 != 0 && header->wBitsPerSample != 20)
     {
       /* channel number considered a parameter, variables between curly brackets */
 
       // {N, S} case
 
-      if (regular_bit_p_spl && regular_sample_fq)
+      if (regular_wBitsPerSample && regular_dwSamplesPerSec
+)
         {
-          header->byte_p_sec = (header->sample_fq * header->bit_p_spl * header->channels)/8;
-          header->byte_p_spl = (header->channels * header->bit_p_spl)/8;
+          header->byte_p_sec = (header->dwSamplesPerSec
+ * header->wBitsPerSample * header->channels)/8;
+          header->byte_p_spl = (header->channels * header->wBitsPerSample)/8;
           /* Now double-checking */
           regular_test(header, regular);
           if (regular[0] == 5)  return (info->repair);
         }
 
       // {N, B}
-      if (regular_byte_p_spl && regular_sample_fq)
+      if (regular_byte_p_spl && regular_dwSamplesPerSec
+)
         {
-          header->bit_p_spl  = header->channels ? (header->byte_p_spl * 8) / header->channels: 0;
-          header->byte_p_sec = (header->sample_fq * header->bit_p_spl * header->channels)/8;
+          header->wBitsPerSample  = header->channels ? (header->byte_p_spl * 8) / header->channels: 0;
+          header->byte_p_sec = (header->dwSamplesPerSec
+ * header->wBitsPerSample * header->channels)/8;
           /* Now double-checking */
           regular_test(header, regular);
           if (regular[0] == 5)  return (info->repair);
@@ -225,19 +234,23 @@ int auto_control(WaveData *info, WaveHeader *header)
 
       // {S, F}
 
-      if (regular_byte_p_sec && regular_bit_p_spl )
+      if (regular_byte_p_sec && regular_wBitsPerSample )
         {
-          header->byte_p_spl  = (header->bit_p_spl * header->channels)/8;
-          header->sample_fq   = (header->bit_p_spl * header->channels)? (header->byte_p_sec * 8)/(header->bit_p_spl * header->channels) : 0 ;
+          header->byte_p_spl  = (header->wBitsPerSample * header->channels)/8;
+          header->dwSamplesPerSec
+   = (header->wBitsPerSample * header->channels)? (header->byte_p_sec * 8)/(header->wBitsPerSample * header->channels) : 0 ;
           regular_test(header, regular);
           if (regular[0] == 5) return (info->repair);
         }
 
       // {S, B}
-      if ((regular_byte_p_sec) && (regular_sample_fq ))
+      if ((regular_byte_p_sec) && (regular_dwSamplesPerSec
+ ))
         {
-          header->byte_p_spl  = (header->bit_p_spl * header->channels)/8;
-          header->bit_p_spl   =  ( header->channels * header->sample_fq)? (8 * header->byte_p_sec)/( header->channels * header->sample_fq) : 0 ;
+          header->byte_p_spl  = (header->wBitsPerSample * header->channels)/8;
+          header->wBitsPerSample   =  ( header->channels * header->dwSamplesPerSec
+)? (8 * header->byte_p_sec)/( header->channels * header->dwSamplesPerSec
+) : 0 ;
           regular_test(header, regular);
           if (regular[0] == 5) return (info->repair);
         }
@@ -245,8 +258,9 @@ int auto_control(WaveData *info, WaveHeader *header)
       // {F, B}
       if ((regular_byte_p_sec) && (regular_byte_p_spl ))
         {
-          header->bit_p_spl   = (header->byte_p_spl * 8 )/ header->channels;
-          header->sample_fq   = (header->bit_p_spl * header->channels)?(header->byte_p_sec * 8)/(header->bit_p_spl * header->channels) : 0;
+          header->wBitsPerSample   = (header->byte_p_spl * 8 )/ header->channels;
+          header->dwSamplesPerSec
+   = (header->wBitsPerSample * header->channels)?(header->byte_p_sec * 8)/(header->wBitsPerSample * header->channels) : 0;
           regular_test(header, regular);
           if (regular[0] == 5) return (info->repair);
         }
@@ -256,20 +270,25 @@ int auto_control(WaveData *info, WaveHeader *header)
 
 // {N,C}
 
-  if (regular_byte_p_spl && regular_bit_p_spl && regular_sample_fq)
+  if (regular_byte_p_spl && regular_wBitsPerSample && regular_dwSamplesPerSec
+)
     {
-      header->channels   = (header->byte_p_spl * 8) / header->bit_p_spl;
-      header->byte_p_sec = (header->sample_fq * header->bit_p_spl * header->channels)/8;
+      header->channels   = (header->byte_p_spl * 8) / header->wBitsPerSample;
+      header->byte_p_sec = (header->dwSamplesPerSec
+ * header->wBitsPerSample * header->channels)/8;
       regular_test(header, regular);
       if (regular[0] == 5)  return (info->repair);
     }
 
 // {S, C}
 
-  if (regular_byte_p_sec && regular_bit_p_spl && regular_sample_fq)
+  if (regular_byte_p_sec && regular_wBitsPerSample && regular_dwSamplesPerSec
+)
     {
-      header->byte_p_spl = header->sample_fq? header->byte_p_sec/header->sample_fq : 0;
-      header->channels   = (header->byte_p_spl * 8 )/ header->bit_p_spl;
+      header->byte_p_spl = header->dwSamplesPerSec
+? header->byte_p_sec/header->dwSamplesPerSec
+ : 0;
+      header->channels   = (header->byte_p_spl * 8 )/ header->wBitsPerSample;
       regular_test(header, regular);
       if (regular[0] == 5)  return (info->repair);
     }
@@ -278,10 +297,11 @@ int auto_control(WaveData *info, WaveHeader *header)
 
 // {F, C}
 
-  if (regular_byte_p_sec && regular_bit_p_spl && regular_byte_p_spl)
+  if (regular_byte_p_sec && regular_wBitsPerSample && regular_byte_p_spl)
     {
-      header->sample_fq = header->byte_p_spl? header->byte_p_sec / header->byte_p_spl : 0;
-      header->channels  = (header->byte_p_spl * 8) / header->bit_p_spl;
+      header->dwSamplesPerSec
+ = header->byte_p_spl? header->byte_p_sec / header->byte_p_spl : 0;
+      header->channels  = (header->byte_p_spl * 8) / header->wBitsPerSample;
 
       regular_test(header, regular);
       if (regular[0] == 5)  return (info->repair);
@@ -289,15 +309,17 @@ int auto_control(WaveData *info, WaveHeader *header)
 
 // {C, B}
 // The theorem below proves unicity of the {C, B} solution: it suffices to loop on C and break once found one.
-  if (regular_byte_p_sec && regular_byte_p_spl && regular_sample_fq)
+  if (regular_byte_p_sec && regular_byte_p_spl && regular_dwSamplesPerSec
+)
     {
       // Satisfying constaint on constants ?
-      if (header->byte_p_sec != header->sample_fq * header->byte_p_spl) goto bailing_out;
+      if (header->byte_p_sec != header->dwSamplesPerSec
+ * header->byte_p_spl) goto bailing_out;
 
       for (header->channels = 1; header->channels < 6 ; header->channels++)
         {
           if (header->channels == 3) continue;
-          header->bit_p_spl   = (header->channels)? (header->byte_p_spl*8) / header->channels:0;
+          header->wBitsPerSample   = (header->channels)? (header->byte_p_spl*8) / header->channels:0;
           regular_test(header, regular);
           if (regular[0] == 5) return (info->repair);
         }
@@ -307,14 +329,14 @@ int auto_control(WaveData *info, WaveHeader *header)
 
 bailing_out:
 
-  if (header->bit_p_spl == 20 || header->channels % 3 == 0)
+  if (header->wBitsPerSample == 20 || header->channels % 3 == 0)
   {
-      printf("\n%s\n", ""ANSI_COLOR_YELLOW "[WAR]" ANSI_COLOR_RESET "  Special automatic header recovery does not apply to 3/6-channel or 20-bit-audio.");
+      if (globals.debugging) foutput("\n%s\n", WAR "Special automatic header recovery does not apply to 3/6-channel or 20-bit-audio.");
   }
-  printf("\n%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Sorry, automatic mode cannot be used:\n       not enough information left in header.");
+  if (globals.debugging) foutput("\n%s\n", WAR "Sorry, automatic mode cannot be used:\n       not enough information left in header.");
 
 # ifndef GUI_BEHAVIOR
-  printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Reverting to interactive simple mode.");
+  if (globals.debugging) foutput("%s\n", INF "Reverting to interactive simple mode.");
   info->interactive=TRUE;
   info->repair=user_control(info, header);
 # endif
@@ -327,16 +349,16 @@ void regular_test(WaveHeader *head, int* regular)
 {
   int i, j, k, l;
 
-  if (head == NULL) fprintf(stderr, "NULL wave header !");
+  if (head == NULL) if (globals.debugging) foutput("%s\n", ERR "NULL wave header !");
 
   _Bool regular_channels  = (head->channels >= 1) * (head->channels < 6);
-  _Bool regular_bit_p_spl = (head->bit_p_spl == 16) + (head->bit_p_spl == 24);
-  _Bool regular_sample_fq;
+  _Bool regular_wBitsPerSample = (head->wBitsPerSample == 16) + (head->wBitsPerSample == 24);
+  _Bool regular_dwSamplesPerSec;
 
-  if (head->sample_fq)
-    regular_sample_fq = (head->sample_fq % 44100 == 0) + (head->sample_fq % 48000 == 0);
+  if (head->dwSamplesPerSec)
+    regular_dwSamplesPerSec = (head->dwSamplesPerSec % 44100 == 0) + (head->dwSamplesPerSec % 48000 == 0);
   else
-    regular_sample_fq=0;
+    regular_dwSamplesPerSec = 0;
 
   /* bit rates other than 16, 24 and 3 channels are not considered */
 
@@ -363,9 +385,9 @@ void regular_test(WaveHeader *head, int* regular)
           }
 
 
-  regular[0]=regular_bit_p_spl + regular_sample_fq + regular_byte_p_spl + regular_byte_p_sec + regular_channels;
-  regular[1]=regular_bit_p_spl;
-  regular[2]=regular_sample_fq ;
+  regular[0]=regular_wBitsPerSample + regular_dwSamplesPerSec + regular_byte_p_spl + regular_byte_p_sec + regular_channels;
+  regular[1]=regular_wBitsPerSample;
+  regular[2]=regular_dwSamplesPerSec ;
   regular[3]=regular_byte_p_spl;
   regular[4]=regular_byte_p_sec;
   regular[5]=regular_channels;
