@@ -47,7 +47,7 @@ repair_wav(WaveData *info, WaveHeader *header )
 
   errno=0;
 
-  uint64_t file_size=read_file_size(infile, info->infile);
+  info->filesize = read_file_size(infile, info->infile);
 
   /*********************************************************************
   * The RIFF Chunk
@@ -72,12 +72,12 @@ repair_wav(WaveData *info, WaveHeader *header )
         ckData."
   */
 
-  if (header->ckSize == file_size - 8)
+  if (header->ckSize == info->filesize  - 8)
     {
       if (globals.debugging) foutput( MSG "Found correct audio chunk Size of %" PRIu32 " bytes at offset 4\n",  header->ckSize);
     }
   else
-  if ((header->ckSize & 1) == 1 && header->ckSize == file_size - 9)
+  if ((header->ckSize & 1) == 1 && header->ckSize == info->filesize  - 9)
     {
       if (globals.debugging) foutput( MSG "Found correct audio chunk Size of %" PRIu32 " bytes at offset 4. Pad byte added at EOF.\n",  header->ckSize);
       pad_byte = true;
@@ -89,9 +89,9 @@ repair_wav(WaveData *info, WaveHeader *header )
       if (globals.debugging) foutput( MSG "audio chunk Size of %" PRIu32 " at offset 4 is incorrect: should be %" PRIu32 " bytes\n"
               INF "... repairing\n",
               header->ckSize,
-              (uint32_t) file_size - 8);
+              (uint32_t) info->filesize  - 8);
 
-      header->ckSize = (uint32_t) file_size - 8;
+      header->ckSize = (uint32_t) info->filesize  - 8;
       repair = BAD_HEADER;
     }
 
@@ -203,59 +203,59 @@ repair_wav(WaveData *info, WaveHeader *header )
   else
     {
       if (globals.debugging) foutput("%s\n",  MSG "Subchunk1 Format at offset 20 is incorrect\n" INF "... repairing" );
-      /* by default, assuming standard PCM data */
-      header->wFormatTag = 1;
+      switch (header->channels)
+      {
+         case 1:
+         case 2:       header->wFormatTag = 1;
+          break;
+         default:
+                header->wFormatTag = 0xFFFE;
+      }
+
       repair = BAD_HEADER;
     }
-
-
 
   /*********************************************************************/
   /* The "data" Subchunk                                               */
   /*********************************************************************/
 
-  /* The Subchunk2 ID is the ASCII characters "data" */
+  /* The data chunk ID is the ASCII characters "data" */
 
-  if (memcmp(&header->data_chunk, "data", 4) == 0)
+  if (memcmp(&header->data_ckID, "data", 4) == 0)
     {
-      if (globals.debugging) foutput("%s\n",  MSG "Found correct Subchunk2 ID" );
+      if (globals.debugging) foutput("%s\n",  MSG "Found correct data chunk ID" );
     }
   else
     {
-      if (globals.debugging) foutput("%s\n",  MSG "Subchunk2 ID at offset 36 is incorrect\n" INF "... repairing\n" );
-      if (memmove(&header->data_chunk,"data", 4*sizeof(char) ) == NULL) return(FAIL);
+      if (globals.debugging) foutput("%s\n",  MSG "data chunk ID is incorrect\n" INF "... repairing\n" );
+      if (memmove(&header->data_ckID,"data", 4*sizeof(char) ) == NULL) return(FAIL);
       repair = BAD_HEADER;
     }
 
-  /* The Subchunk2 Size = NumSample * NumChannels * BitsPerSample/8 */
+  /* The data chunk Size = NumSample * NumChannels * BitsPerSample/8 */
 
-  if (header->data_size == file_size - header->header_size_in || (pad_byte && header->data_size == file_size - header->header_size_in - 1))  // -1 if pad byte was added
+  if (header->data_cksize == info->filesize  - header->header_size_in || (pad_byte && header->data_cksize == info->filesize  - header->header_size_in - 1))  // -1 if pad byte was added
     {
-      if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]" ANSI_COLOR_RESET "  Found correct Subchunk2 Size of %"PRIu32" bytes at offset %d\n",
-             header->data_size,
+      if (globals.debugging) foutput(MSG  "  Found correct data ckSize of %"PRIu32" bytes at offset %d\n",
+             header->data_cksize,
              header->header_size_in - 4);
-      if (pad_byte)
-        if (globals.debugging) foutput("%s\n", ANSI_COLOR_GREEN"[MSG]" ANSI_COLOR_RESET "  Pad byte was not taken into account.");
+      if (pad_byte && globals.debugging) foutput("%s\n", MSG "  Pad byte was not taken into account.");
     }
   else
     {
-      if (globals.debugging) foutput(MSG "Subchunk2 Size at offset %d is incorrect: found %" PRIu32 " bytes instead of\n       %" PRIu32 " = file size (%" PRIu32 ") - header size (%" PRIu16 ") - pad byte (%d)\n"
+      if (globals.debugging) foutput(MSG "data_ckSize at offset %d is incorrect: found %" PRIu32 " bytes instead of\n       %" PRIu32 " = file size (%" PRIu32 ") - header size (%" PRIu16 ") - pad byte (%d)\n"
              INF "... repairing\n",
              header->header_size_in - 4,
-             header->data_size,
-             (uint32_t) file_size - header->header_size_in - (uint32_t) pad_byte,
-             (uint32_t) file_size, header->header_size_in , pad_byte);
+             header->data_cksize,
+             (uint32_t) info->filesize  - header->header_size_in - (uint32_t) pad_byte,
+             (uint32_t) info->filesize , header->header_size_in , pad_byte);
              
-      header->data_size = file_size - header->header_size_in - (uint32_t) pad_byte;
+      header->data_cksize = info->filesize  - header->header_size_in - (uint32_t) pad_byte;
       repair = BAD_HEADER;
     }
 
   return(repair);
-
 }
-
-
-
 
 int launch_repair(WaveData *info, WaveHeader *header)
 {
@@ -269,7 +269,7 @@ int launch_repair(WaveData *info, WaveHeader *header)
     {
       if (info->cautious)
       {
-          if (globals.debugging) foutput( "\n%s", "[INT]  Overwrite the existing file? [y/n] " );
+         if (globals.debugging) foutput( "\n%s", "[INT]  Overwrite the existing file? [y/n] " );
          if (!isok())
 
             {   /* user's bailing */
@@ -286,25 +286,6 @@ int launch_repair(WaveData *info, WaveHeader *header)
       }
     }
 
-  /* if OK */
-  /* readjusting sizes after normalization */
-  /* if prepending, always not in place and header_size_in=0 */
-
-
-  /* refresh header sizes
-   * hence we substract the shrinking from original header to the standard one
-   * to which one must add the prepending of a standard header, should it occur
-   */
-
-  header->data_size += header->header_size_in - header->header_size_out;  // will be padded by zeros
-
- // otherwise unchanged
-  
-  header->ckSize=header->data_size + header->header_size_out - 8;
-  
-  /* write the new header at the beginning of the file */
-  /* again, copying manually rather than invoking fread to ensure cross-compiler/platform portability */
-
   uint32_copy_reverse(p, header->ckID), p+=4;
   uint32_copy_reverse(p, header->ckSize), p+=4;
   uint32_copy_reverse(p, header->WAVEID), p+=4;
@@ -312,24 +293,44 @@ int launch_repair(WaveData *info, WaveHeader *header)
   uint32_copy_reverse(p, header->fmt_ckSize), p+=4;
   uint16_copy_reverse(p, header->wFormatTag), p+=2;
   uint16_copy_reverse(p, header->channels), p+=2;
-  uint32_copy_reverse(p, header->dwSamplesPerSec
-), p+=4;
-  uint32_copy_reverse(p, header->byte_p_sec), p+=4;
-  uint16_copy_reverse(p, header->byte_p_spl), p+=2;
+  uint32_copy_reverse(p, header->dwSamplesPerSec), p+=4;
+  uint32_copy_reverse(p, header->nAvgBytesPerSec), p+=4;
+  uint16_copy_reverse(p, header->nBlockAlign), p+=2;
   uint16_copy_reverse(p, header->wBitsPerSample), p+=2;
-  uint32_copy_reverse(p, header->data_chunk), p+=4;
-  uint32_copy_reverse(p, header->data_size);
+
+  /* WAVE_FORMAT_EXTENSIBLE SPECIFICS */
+
+  if (header->channels > 2)
+  {
+
+      uint16_copy_reverse(p, header->cbSize), p+=2;
+      uint16_copy_reverse(p, header->wBitsPerSample), p+=2;  // in principle, wValidBitsPerSample
+      uint32_copy_reverse(p, header->dwChannelMask), p+=4;
+
+      const uint8_t GUID[16] = {1, 0, 0, 0, 0, 0, 0x10, 0, 0x80, 0, 0, 0xaa, 0, 0x38, 0x9b, 0x71};
+
+      memcpy(p, GUID, 16), p+=16;
+
+      const uint8_t FACT[8] = {'f', 'a', 'c', 't', 4, 0, 0, 0};
+
+      memcpy(p, FACT, 8), p+=8;
+
+      uint32_copy_reverse(p, header->data_cksize/(header->wBitsPerSample / 8)), p+=4;
+  }
+
+  uint32_copy_reverse(p, header->data_ckID), p+=4;
+  uint32_copy_reverse(p, header->data_cksize);
  
   return(info->repair) ;
 }
 
-
 int write_header(WaveData *info, WaveHeader *header)
 {
-  FILE* outfile=info->OUTFILE; 
   // Only repairing headers virtually to cut down computing times (--fixwav-virtual)
 
   if (info->virtual) return(info->repair);
+
+  FILE* outfile=info->OUTFILE;
 
   int count=0;
 
@@ -347,29 +348,23 @@ int write_header(WaveData *info, WaveHeader *header)
   /* try to seek right offset depending on type of file */
 
   if (info->in_place && globals.debugging)
-    {
-      if (globals.debugging) foutput("%s\n", INF "Overwriting header...");
-    }
+  {
+     if (globals.debugging) foutput("%s\n", INF "Overwriting header...");
+  }
 
-  count=fwrite(header->header_out, header->header_size_out, 1, outfile ) ;
- if (header->is_extensible)
-    {
-    /* wiping out wavext+14 bytes (36 for SoX 24-bit headers)*/
-      for (int i=0; i < header->wavext+WAV_EXTENSION_LENGTH; i++)
-        fputc(0,outfile);
-    }
+  count = fwrite(header->header_out, header->header_size_out, 1, outfile );
 
   if (count != 1)
-    {
-      if (globals.debugging) foutput("%s\n", ERR "Error updating wav file.");
-      return(FAIL);
-    }
+  {
+    if (globals.debugging) foutput("%s\n", ERR "Error updating wav file.");
+    return(FAIL);
+  }
 
   if (errno)
-    {
-      perror("\n"ERR "Error in launch repair module\n");
-      return(FAIL);
-    }
+  {
+    perror("\n"ERR "Error in launch repair module\n");
+    return(FAIL);
+  }
 
   return(COPY_SUCCESS);
 }

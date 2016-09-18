@@ -26,7 +26,7 @@ int  generate_amgm_xml(uint8_t ngroups, uint8_t *ntracks, pic* img)
     uint8_t menubuttons;
 
     // Writing XML code
-    FILE *xmlfile;
+    FILE *xmlfile = NULL;
     if (globals.xml == NULL)
     {
         char xmlfilepath[strlen(globals.settings.tempdir)+8+STRLEN_SEPARATOR];

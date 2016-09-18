@@ -299,26 +299,14 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
     }
 
-  /****************************************************
-   *	Now checking evenness of sample count
-   *****************************************************/
-
-  switch (check_evenness(info, header))
-    {
-    case GOOD_HEADER:
-      if (globals.debugging) foutput( "%s\n", MSG "Fixwav status 2:\n       Even count of bytes." );
-      break;
-
-    case BAD_DATA   :
-      if (globals.debugging) foutput( "%s\n", MSG "Fixwav status 2:\n       Byte count is odd." );
-      if (info->padding) if (globals.debugging) foutput( "%s\n", MSG "File was padded with one byte." );
-      info->repair=BAD_DATA;
-      break;
-    }
+int header_size;
 
 Checkout:
 
   /* checkout stage: check and possibly repair header data */
+
+  header_size = header->channels > 2 ? HEADER_EXTENSIBLE_SIZE : HEADER_SIZE;
+  uint8_t *standard_header;
 
   switch (info->repair)
     {
@@ -331,47 +319,56 @@ Checkout:
     case	BAD_HEADER :
     case    BAD_DATA :
 
-      if (!info->virtual)
-        {
-          if (globals.debugging) foutput( "%s\n", MSG "Fixwav status 4:\n       WAVE header corrupt." );
+      if (globals.debugging) foutput( "%s\n", MSG "Fixwav status 4:\n       WAVE header corrupt." );
 
-          uint8_t standard_header[HEADER_SIZE]={0};
+      standard_header = calloc(header_size, 1);
+      if (standard_header == NULL) return NULL;
+      memset(standard_header, 0, header_size);
+      header->header_out = standard_header;
+      header->header_size_out = header_size;
 
-          header->header_out=standard_header;
-          header->header_size_out= HEADER_SIZE;
+      /* to do: correct in_place facility and check padbytes */
 
-         if ((info->repair=launch_repair(info, header)) == FAIL) break;
-         if ((info->repair=write_header(info, header)) != FAIL)
-            {
+      if ((info->repair=launch_repair(info, header)) == FAIL) break;
+
+      if (! info->virtual)
+      {
+
+          if ((info->repair=write_header(info, header)) != FAIL)
+          {
               if (globals.debugging) foutput("%s\n", INF "Header copy successful.\n");
               if (fclose(info->OUTFILE) != 0) return(NULL);
               secure_open(info->outfile, "rb+", info->OUTFILE);
-              if (globals.maxverbose) {
-                   if (globals.debugging) foutput("%s","Dumping new header:\n\n");
-                   hexdump_header(info->OUTFILE, HEADER_SIZE);
+              if (globals.maxverbose)
+              {
+                  if (globals.debugging) foutput("%s","Dumping new header:\n\n");
+                  hexdump_header(info->OUTFILE, HEADER_SIZE);
               }
-            }
-          else break;
+          }
+          else
+              break;
 
           if (!info->in_place)
-            {
+          {
               if (copy_file_p(info->INFILE, info->OUTFILE,
-                              (info->prepend) ? 0 : header->header_size_out,
-                               header->data_size) == PAD)
+                              (info->prepend) ? 0 : header->header_size_in,
+                              info->filesize - header->header_size_in) == PAD)
 
                   if (info->padbytes) pad_end_of_file(info);
 
               info->repair=BAD_HEADER;
-            }
+          }
           else
-            if (info->padbytes)
-               pad_end_of_file(info);
+              if (info->padbytes)
+                  pad_end_of_file(info);
+      }
+      else
+      {
 
-        }
-
-        if (globals.debugging) foutput( "%s\n", MSG "Fixwav status 4:\n       WAVE header is incorrect, yet no changes were made to existing header." );
-        header->header_out = header->header_in;
-        header->header_size_out = header->header_size_in;
+          //if (globals.debugging) foutput( "%s\n", MSG "Fixwav status 4:\n       WAVE header is incorrect, yet no changes were made to existing header." );
+          //header->header_out = header->header_in;
+          //header->header_size_out = header->header_size_in;
+      }
 
       break;
 

@@ -70,20 +70,15 @@ int pad_end_of_file(WaveData* info)
   return(BAD_DATA);
 }
 
-
-
-
 int check_sample_count(WaveData *info, WaveHeader *header)
 {
-
-
   int r=0;
 
-  if ((r=header->data_size % header->byte_p_spl) 	== 0)
+  if ((r=header->data_cksize % header->nBlockAlign) 	== 0)
     return(GOOD_HEADER);
 
-   info->padbytes+=header->byte_p_spl - r;
-   header->data_size+=info->padbytes;
+   info->padbytes+=header->nBlockAlign - r;
+   header->data_cksize+=info->padbytes;
    header->ckSize+=info->padbytes;
 
   return(BAD_DATA);
@@ -131,64 +126,31 @@ _Bool check_real_size(WaveData *info, WaveHeader *header)
 
   secure_open(filepath, "rb", file);
   size=read_file_size(file, filepath);
+  _Bool pad_byte = (header->ckSize % 2 == 1);
 
   /* adjust the Chunk Size */
-  if (header->ckSize == (uint32_t) size - 8)
+  if (header->ckSize == (uint32_t) size - 8 - (int) pad_byte)
   {
       if (globals.debugging) foutput("%s\n", MSG "Verifying real chunk size on disc... OK");
   }
   else
   {
-      if (globals.debugging) foutput(INF "Verifying real chunk size on disc... fixed:\n       expected size: %u, real size: %lu\n", header->ckSize+8, size );
-      header->ckSize = (uint32_t) size - 8 ; // if prepending, ckSize was computed as the full size of raw file -8 bytes to which one must add the size of new header
+      if (globals.debugging) foutput(INF "Verifying real chunk size on disc... fixed:\n       expected size: %u, real size: %lu\n", header->ckSize + 8 + (int) pad_byte, size);
+      header->ckSize = (uint32_t) size - 8 ; // if prepending, ckSize was computed as the full size of raw file -8 bytes to which one must add the size of new header. Possible pad byte considered audio.
   }
 
-  if (header->data_size == (uint32_t) size - header->header_size_out)
+  if (header->data_cksize == (uint32_t) size - header->header_size_out - (int) (header->data_cksize % 2 == 1))
   {
       if (globals.debugging)
         foutput("%s\n", MSG "Verifying real data size on disc... OK");
   }
   else
   {
-      if (globals.debugging) foutput(INF "Verifying real data size on disc... fixed:\n       header size: %d, expected size: %u, real size: %lu\n", header->header_size_out, header->data_size+header->header_size_out, size );
-      header->data_size = (uint32_t) size - header->header_size_out ;  // if prepending, data_size was computed as the full size of raw file hence this new size minus HEADER_SIZE
+      if (globals.debugging) foutput(INF "Verifying real data size on disc... fixed:\n       header size: %d, expected size: %u, real size: %lu\n", header->header_size_out, header->data_cksize + header->header_size_out + (int) (header->data_cksize % 2 == 1), size);
+      header->data_cksize = (uint32_t) size - header->header_size_out ;  // if prepending, data_cksize was computed as the full size of raw file hence this new size minus HEADER_SIZE
   }
 
-
    return(false);
-
-}
-
-
-/****************************************************************************
- Function: check_envenness
-
- Purpose:  This function adds one padding byte to the end of the data chunk
-		   should the byte count be odd.
-***************************************************************************/
-
-
-/* all RIFF chunks (including WAVE "data" chunks) must be word aligned.
-* If the sample data uses an odd number of bytes, a padding byte with a value of zero
-* must be placed at the end of the sample data. The "data" chunk header's size should not include this byte.*/
-
-
-int check_evenness(WaveData *info, WaveHeader *header)
-{
-
-  if (header->data_size %2)
-    {
-      if (globals.debugging) foutput("%s\n", INF "Readjusting output file to even byte count...");
-
-      header->data_size++;
-      header->ckSize++;
-      info->padbytes+=1;
-
-      return(BAD_DATA);
-    }
-
-  return GOOD_HEADER;
-
 }
 
 int prune(FILE* infile, WaveData *info, WaveHeader *header)
@@ -245,7 +207,7 @@ int prune(FILE* infile, WaveData *info, WaveHeader *header)
 
       if (globals.debugging) foutput("%s\n", INF "Readjusting byte count...");
       header->ckSize-=count;
-      header->data_size-=count;
+      header->data_cksize-=count;
       info->prunedbytes=count;
 
       return(info->repair=BAD_DATA);
