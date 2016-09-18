@@ -115,7 +115,7 @@ int user_control(WaveData *info, WaveHeader *header)
       return (info->repair=user_control(info, header));
     }
 
-  if ( header->byte_p_sec == bps )
+  if ( header->nAvgBytesPerSec == bps )
     {
       // Patch again version 0.1.1: -Saple Rate ...offset 24  + Bytes per second ...offset 28
       if (globals.debugging) foutput("%s\n",  MSG "Found correct Subchunk1 Bytes per Second at offset 28" );
@@ -123,19 +123,19 @@ int user_control(WaveData *info, WaveHeader *header)
   else
     {
       if (!info->prepend) if (globals.debugging) foutput("%s\n",  MSG "Subchunk1 Bytes per Second at offset 28 is incorrect\n"INF "... repairing" );
-      header->byte_p_sec = bps;
+      header->nAvgBytesPerSec = bps;
       repair = BAD_HEADER;
     }
 
   /* The number of bytes per sample = NumChannels * BitsPerSample/8 */
-  if ( header->byte_p_spl == header->channels * (header->wBitsPerSample / 8) )
+  if ( header->nBlockAlign == header->channels * (header->wBitsPerSample / 8) )
     {
       if (globals.debugging) foutput("%s\n",  MSG "Found correct Subchunk1 Bytes Per Sample at offset 32" );
     }
   else
     {
       if (!info->prepend) if (globals.debugging) foutput("%s\n",  MSG "Subchunk1 Bytes Per Sample at offset 32 is incorrect\n"INF "... repairing" );
-      header->byte_p_spl = header->channels * (header->wBitsPerSample / 8);
+      header->nBlockAlign = header->channels * (header->wBitsPerSample / 8);
       repair = BAD_HEADER;
     }
 
@@ -174,15 +174,15 @@ int auto_control(WaveData *info, WaveHeader *header)
   _Bool regular_wBitsPerSample  = regular[1];
   _Bool regular_dwSamplesPerSec
   = regular[2];
-  _Bool regular_byte_p_spl = regular[3];
-  _Bool regular_byte_p_sec = regular[4];
+  _Bool regular_nBlockAlign = regular[3];
+  _Bool regular_nAvgBytesPerSec = regular[4];
   _Bool regular_channels   = regular[5];
 
   /* Checking whether there is anything to be done at all */
 
-  if (header->byte_p_sec == (header->dwSamplesPerSec
+  if (header->nAvgBytesPerSec == (header->dwSamplesPerSec
  * header->wBitsPerSample * header->channels) / 8
-      && header->byte_p_spl == (header->channels * header->wBitsPerSample) / 8
+      && header->nBlockAlign == (header->channels * header->wBitsPerSample) / 8
       && (regular[0] == 5 || header->channels % 3 == 0 || header->wBitsPerSample  == 20)
      )
     {
@@ -212,20 +212,20 @@ int auto_control(WaveData *info, WaveHeader *header)
       if (regular_wBitsPerSample && regular_dwSamplesPerSec
 )
         {
-          header->byte_p_sec = (header->dwSamplesPerSec
+          header->nAvgBytesPerSec = (header->dwSamplesPerSec
  * header->wBitsPerSample * header->channels)/8;
-          header->byte_p_spl = (header->channels * header->wBitsPerSample)/8;
+          header->nBlockAlign = (header->channels * header->wBitsPerSample)/8;
           /* Now double-checking */
           regular_test(header, regular);
           if (regular[0] == 5)  return (info->repair);
         }
 
       // {N, B}
-      if (regular_byte_p_spl && regular_dwSamplesPerSec
+      if (regular_nBlockAlign && regular_dwSamplesPerSec
 )
         {
-          header->wBitsPerSample  = header->channels ? (header->byte_p_spl * 8) / header->channels: 0;
-          header->byte_p_sec = (header->dwSamplesPerSec
+          header->wBitsPerSample  = header->channels ? (header->nBlockAlign * 8) / header->channels: 0;
+          header->nAvgBytesPerSec = (header->dwSamplesPerSec
  * header->wBitsPerSample * header->channels)/8;
           /* Now double-checking */
           regular_test(header, regular);
@@ -234,33 +234,33 @@ int auto_control(WaveData *info, WaveHeader *header)
 
       // {S, F}
 
-      if (regular_byte_p_sec && regular_wBitsPerSample )
+      if (regular_nAvgBytesPerSec && regular_wBitsPerSample )
         {
-          header->byte_p_spl  = (header->wBitsPerSample * header->channels)/8;
+          header->nBlockAlign  = (header->wBitsPerSample * header->channels)/8;
           header->dwSamplesPerSec
-   = (header->wBitsPerSample * header->channels)? (header->byte_p_sec * 8)/(header->wBitsPerSample * header->channels) : 0 ;
+   = (header->wBitsPerSample * header->channels)? (header->nAvgBytesPerSec * 8)/(header->wBitsPerSample * header->channels) : 0 ;
           regular_test(header, regular);
           if (regular[0] == 5) return (info->repair);
         }
 
       // {S, B}
-      if ((regular_byte_p_sec) && (regular_dwSamplesPerSec
+      if ((regular_nAvgBytesPerSec) && (regular_dwSamplesPerSec
  ))
         {
-          header->byte_p_spl  = (header->wBitsPerSample * header->channels)/8;
+          header->nBlockAlign  = (header->wBitsPerSample * header->channels)/8;
           header->wBitsPerSample   =  ( header->channels * header->dwSamplesPerSec
-)? (8 * header->byte_p_sec)/( header->channels * header->dwSamplesPerSec
+)? (8 * header->nAvgBytesPerSec)/( header->channels * header->dwSamplesPerSec
 ) : 0 ;
           regular_test(header, regular);
           if (regular[0] == 5) return (info->repair);
         }
 
       // {F, B}
-      if ((regular_byte_p_sec) && (regular_byte_p_spl ))
+      if ((regular_nAvgBytesPerSec) && (regular_nBlockAlign ))
         {
-          header->wBitsPerSample   = (header->byte_p_spl * 8 )/ header->channels;
+          header->wBitsPerSample   = (header->nBlockAlign * 8 )/ header->channels;
           header->dwSamplesPerSec
-   = (header->wBitsPerSample * header->channels)?(header->byte_p_sec * 8)/(header->wBitsPerSample * header->channels) : 0;
+   = (header->wBitsPerSample * header->channels)?(header->nAvgBytesPerSec * 8)/(header->wBitsPerSample * header->channels) : 0;
           regular_test(header, regular);
           if (regular[0] == 5) return (info->repair);
         }
@@ -270,11 +270,11 @@ int auto_control(WaveData *info, WaveHeader *header)
 
 // {N,C}
 
-  if (regular_byte_p_spl && regular_wBitsPerSample && regular_dwSamplesPerSec
+  if (regular_nBlockAlign && regular_wBitsPerSample && regular_dwSamplesPerSec
 )
     {
-      header->channels   = (header->byte_p_spl * 8) / header->wBitsPerSample;
-      header->byte_p_sec = (header->dwSamplesPerSec
+      header->channels   = (header->nBlockAlign * 8) / header->wBitsPerSample;
+      header->nAvgBytesPerSec = (header->dwSamplesPerSec
  * header->wBitsPerSample * header->channels)/8;
       regular_test(header, regular);
       if (regular[0] == 5)  return (info->repair);
@@ -282,13 +282,13 @@ int auto_control(WaveData *info, WaveHeader *header)
 
 // {S, C}
 
-  if (regular_byte_p_sec && regular_wBitsPerSample && regular_dwSamplesPerSec
+  if (regular_nAvgBytesPerSec && regular_wBitsPerSample && regular_dwSamplesPerSec
 )
     {
-      header->byte_p_spl = header->dwSamplesPerSec
-? header->byte_p_sec/header->dwSamplesPerSec
+      header->nBlockAlign = header->dwSamplesPerSec
+? header->nAvgBytesPerSec/header->dwSamplesPerSec
  : 0;
-      header->channels   = (header->byte_p_spl * 8 )/ header->wBitsPerSample;
+      header->channels   = (header->nBlockAlign * 8 )/ header->wBitsPerSample;
       regular_test(header, regular);
       if (regular[0] == 5)  return (info->repair);
     }
@@ -297,11 +297,11 @@ int auto_control(WaveData *info, WaveHeader *header)
 
 // {F, C}
 
-  if (regular_byte_p_sec && regular_wBitsPerSample && regular_byte_p_spl)
+  if (regular_nAvgBytesPerSec && regular_wBitsPerSample && regular_nBlockAlign)
     {
       header->dwSamplesPerSec
- = header->byte_p_spl? header->byte_p_sec / header->byte_p_spl : 0;
-      header->channels  = (header->byte_p_spl * 8) / header->wBitsPerSample;
+ = header->nBlockAlign? header->nAvgBytesPerSec / header->nBlockAlign : 0;
+      header->channels  = (header->nBlockAlign * 8) / header->wBitsPerSample;
 
       regular_test(header, regular);
       if (regular[0] == 5)  return (info->repair);
@@ -309,17 +309,17 @@ int auto_control(WaveData *info, WaveHeader *header)
 
 // {C, B}
 // The theorem below proves unicity of the {C, B} solution: it suffices to loop on C and break once found one.
-  if (regular_byte_p_sec && regular_byte_p_spl && regular_dwSamplesPerSec
+  if (regular_nAvgBytesPerSec && regular_nBlockAlign && regular_dwSamplesPerSec
 )
     {
       // Satisfying constaint on constants ?
-      if (header->byte_p_sec != header->dwSamplesPerSec
- * header->byte_p_spl) goto bailing_out;
+      if (header->nAvgBytesPerSec != header->dwSamplesPerSec
+ * header->nBlockAlign) goto bailing_out;
 
       for (header->channels = 1; header->channels < 6 ; header->channels++)
         {
           if (header->channels == 3) continue;
-          header->wBitsPerSample   = (header->channels)? (header->byte_p_spl*8) / header->channels:0;
+          header->wBitsPerSample   = (header->channels)? (header->nBlockAlign*8) / header->channels:0;
           regular_test(header, regular);
           if (regular[0] == 5) return (info->repair);
         }
@@ -362,13 +362,13 @@ void regular_test(WaveHeader *head, int* regular)
 
   /* bit rates other than 16, 24 and 3 channels are not considered */
 
-  _Bool regular_byte_p_spl=(head->byte_p_spl == 2*16/8)+(head->byte_p_spl == 2*24/8)
-                           +(head->byte_p_spl == 3*16/8)+(head->byte_p_spl == 3*24/8)
-                           +(head->byte_p_spl == 4*16/8)+(head->byte_p_spl == 4*24/8)
-                           +(head->byte_p_spl == 5*16/8)+(head->byte_p_spl == 5*24/8)
-                           +(head->byte_p_spl == 16/8)+(head->byte_p_spl == 24/8);
+  _Bool regular_nBlockAlign=(head->nBlockAlign == 2*16/8)+(head->nBlockAlign == 2*24/8)
+                           +(head->nBlockAlign == 3*16/8)+(head->nBlockAlign == 3*24/8)
+                           +(head->nBlockAlign == 4*16/8)+(head->nBlockAlign == 4*24/8)
+                           +(head->nBlockAlign == 5*16/8)+(head->nBlockAlign == 5*24/8)
+                           +(head->nBlockAlign == 16/8)+(head->nBlockAlign == 24/8);
 
-  _Bool regular_byte_p_sec=0;
+  _Bool regular_nAvgBytesPerSec=0;
 
 
   for (i=1; i < 6; i++)
@@ -377,19 +377,19 @@ void regular_test(WaveHeader *head, int* regular)
         for (l=16; l < 32; l+=8)
           {
             if ( (j+k) && (j*k == 0) )
-              if ( head->byte_p_sec == (uint32_t) (i* ((j* 44100) + (k* 48000)) * l /8 ))
+              if ( head->nAvgBytesPerSec == (uint32_t) (i* ((j* 44100) + (k* 48000)) * l /8 ))
                 {
-                  regular_byte_p_sec=1;
+                  regular_nAvgBytesPerSec=1;
                   break;
                 }
           }
 
 
-  regular[0]=regular_wBitsPerSample + regular_dwSamplesPerSec + regular_byte_p_spl + regular_byte_p_sec + regular_channels;
+  regular[0]=regular_wBitsPerSample + regular_dwSamplesPerSec + regular_nBlockAlign + regular_nAvgBytesPerSec + regular_channels;
   regular[1]=regular_wBitsPerSample;
   regular[2]=regular_dwSamplesPerSec ;
-  regular[3]=regular_byte_p_spl;
-  regular[4]=regular_byte_p_sec;
+  regular[3]=regular_nBlockAlign;
+  regular[4]=regular_nAvgBytesPerSec;
   regular[5]=regular_channels;
 
   return;

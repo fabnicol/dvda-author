@@ -152,8 +152,8 @@ Extended Wav:
 /* 22-23 */ header->channels = READ_2_bytes
 /* 24-27 */ header->dwSamplesPerSec
 = READ_4_bytes
-/* 28-31 */ header->byte_p_sec=READ_4_bytes
-/* 32-33 */ header->byte_p_spl=READ_2_bytes
+/* 28-31 */ header->nAvgBytesPerSec=READ_4_bytes
+/* 32-33 */ header->nBlockAlign=READ_2_bytes
 /* 34-35 */ header->wBitsPerSample =READ_2_bytes
 
 /* We diagnosed for WAV_FORMAT_EXTENSIBLE earlier */
@@ -179,7 +179,7 @@ if (header->has_fact)
     // loop for 'data' chunk
 }
 
-/* 40-43 or 54-57 +22*/ header->data_size= uint32_read_reverse(buffer + header->header_size_in - 4);
+/* 40-43 or 54-57 +22*/ header->data_cksize= uint32_read_reverse(buffer + header->header_size_in - 4);
 
   /* point to beginning of file */
   rewind(infile);

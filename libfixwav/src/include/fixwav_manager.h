@@ -42,6 +42,7 @@ typedef struct
     short int repair;
     uint32_t padbytes;
     uint32_t prunedbytes;
+    uint64_t filesize;
 
     /* header substructure */
 
@@ -58,9 +59,10 @@ typedef struct
     uint16_t     header_size_out; /* size of header */
     uint16_t	 wFormatTag;	/* should be 1 for PCM-code */
     uint16_t	 channels;	/* 1 Mono, 2 Stereo */
-    uint16_t	 byte_p_spl;	/* samplesize*/
+    uint16_t	 nBlockAlign;	/* samplesize*/
+    uint16_t     cbSize;  /* 0 or 22 */
     uint16_t	 wBitsPerSample;	/* 8, 12, 16, or 24 bit */
-
+    uint32_t     dwChannelMask;  /* channel mapping to hardware */
     uint32_t	 ckID;	/* 'RIFF' */
     uint32_t	 ckSize;	/* filelen */
     uint32_t	 WAVEID;	/* 'WAVE' */
@@ -69,13 +71,13 @@ typedef struct
     uint32_t	 fmt_ckSize;	/* length of fmt_ckID = 16 */
     uint32_t	 dwSamplesPerSec
 ;	/* frequence of sample */
-    uint32_t	byte_p_sec; /* bytes per second */
+    uint32_t	nAvgBytesPerSec; /* bytes per second */
     uint16_t    wavext;     /* wav extension = 0 */
     uint32_t    fact_chunk; /* 'fact'*/
     uint32_t    fact_length; /* length of fact chunk - 8 in bytes = 4*/
     uint32_t    n_spl;       /* number of samples written out */
-    uint32_t	 data_chunk;	/* 'data' */
-    uint32_t	 data_size;	/* samplecount */
+    uint32_t	 data_ckID;	/* 'data' */
+    uint32_t	 data_cksize;	/* samplecount */
     /* RIFF info chunks to be parsed: INAM, IART, ICMT, ICOP, ICRD, IGNR */
     uint8_t INAM[MAX_LIST_SIZE];
     uint8_t IART[MAX_LIST_SIZE];

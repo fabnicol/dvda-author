@@ -79,6 +79,7 @@ errno=0;
             0, /* repair status */
             0, /* padbytes */
             0, /* pruned bytes */
+            0 /* filesize */
         };
 
         fixwav(&wavedata, &waveheader);
@@ -131,6 +132,7 @@ int audit_soundtrack(char* path, _Bool strict)
             0,  /* repair status */
             0, /* padbytes */
             0, /* pruned bytes */
+            0 /* filesize */
         };
 
         fixwav(&wavedata, &waveheader);
