@@ -22,6 +22,7 @@
 
 /* real size of header in bytes */
 #define HEADER_SIZE 44
+#define HEADER_EXTENSIBLE_SIZE 80
 #define HAVE_STANDARD_HEADER 44
 #define WAV_EXTENSION_LENGTH 36
 #define HAVE_NON_STANDARD_HEADER 72
