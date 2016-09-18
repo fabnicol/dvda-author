@@ -325,12 +325,12 @@ void check_settings_file()
 
     if (fopen(SETTINGSFILE, "rb") ==  NULL)
     {
-        fprintf(stderr, ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Could not open settings file %s, trying to create one in the same place...\n", SETTINGSFILE);
-        fprintf(stderr, "%s", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  This will fail if directories containing this path do not exit or if you do not have appropriate rights.\n");
+        fprintf(stderr, WAR "Could not open settings file %s, trying to create one in the same place...\n", SETTINGSFILE);
+        fprintf(stderr, "%s", WAR "This will fail if directories containing this path do not exit or if you do not have appropriate rights.\n");
         FILE* settingsfile=fopen(SETTINGSFILE, "wb");
         if (settingsfile == NULL)
         {
-           fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not create settings file in path %s\n       Check that you have adequate administrative rights\n       Exiting...\n", SETTINGSFILE);
+           fprintf(stderr, ERR "Could not create settings file in path %s\n       Check that you have adequate administrative rights\n       Exiting...\n", SETTINGSFILE);
            clean_exit(EXIT_FAILURE);
         }
 
@@ -360,7 +360,7 @@ _Bool increment_ngroups_check_ceiling(uint8_t *ngroups, uint8_t * nvideolinking_
                 ++*nvideolinking_groups;
             else
             {
-                foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  DVD-Audio only supports up to 9 groups; audio groups=%d; video-linking groups=%d\n", *ngroups, *nvideolinking_groups);
+                foutput(ERR "DVD-Audio only supports up to 9 groups; audio groups=%d; video-linking groups=%d\n", *ngroups, *nvideolinking_groups);
                 clean_exit(EXIT_SUCCESS);
             }
         }
@@ -369,9 +369,9 @@ _Bool increment_ngroups_check_ceiling(uint8_t *ngroups, uint8_t * nvideolinking_
     else
     {
         if (nvideolinking_groups != NULL)
-            foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  DVD-Audio only supports up to 9 groups; audio groups=%d; video-linking groups=%d\n", *ngroups, *nvideolinking_groups);
+            foutput(ERR "DVD-Audio only supports up to 9 groups; audio groups=%d; video-linking groups=%d\n", *ngroups, *nvideolinking_groups);
         else
-            foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  DVD-Audio only supports up to 9 groups; audio groups=%d\n", *ngroups);
+            foutput(ERR "DVD-Audio only supports up to 9 groups; audio groups=%d\n", *ngroups);
         clean_exit(EXIT_SUCCESS);
     }
     return 1;
@@ -402,7 +402,7 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t ngiven_channel
         memory += (float) (ntracks[i])*sizeof(fileinfo_t)/1024;
 
         if (globals.debugging)
-            foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  g-type  audio group  :  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i,  ntracks[i], memory);
+            foutput(MSG "g-type  audio group  :  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i,  ntracks[i], memory);
     }
 
     for (i=n_g_groups ; i < ngroups-nvideolinking_groups; i++)
@@ -436,7 +436,7 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t ngiven_channel
             memory+=(float) sizeof(fileinfo_t)/1024;
         /* sanity check: 0 tracks should be allocated */
         if (globals.debugging)
-            foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Video-linking group  :  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i, ntracks[i], memory);
+            foutput(MSG "Video-linking group  :  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i, ntracks[i], memory);
     }
 
     return files;
@@ -459,7 +459,7 @@ void free_memory(command_t *command)
             for (j=0; j < command->ntracks[i]; j++)
             {
                 if (globals.debugging)
-                    foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Freeing i=%d  j=%d\n",i, j );
+                    foutput(INF "Freeing i=%d  j=%d\n",i, j );
                 FREE(command->files[i][j].filename)
                 //FREE(command->files[i][j].filetitle)
 
@@ -522,7 +522,7 @@ void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size)
 {
   char outfile[strlen(audiotsdir)+strlen(basename)+1+1];
   sprintf(outfile, "%s"SEPARATOR"%s",audiotsdir, basename);
-  foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Creating %s\n",outfile);
+  foutput(INF "Creating %s\n",outfile);
 
   unlink(outfile); // I sometimes had issues under linux when unlink was not called in rare cases. Reset errno to 0 just after.
   errno=0;
@@ -531,18 +531,18 @@ void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size)
   {
       f=fopen(outfile,"wb");
   if (f == NULL)
-    fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" %s could not be opened properly.\n", basename);
-  if (errno) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" in create_file\n");
+    fprintf(stderr, ERR "%s could not be opened properly.\n", basename);
+  if (errno) perror("\n"ERR "in create_file\n");
   errno=0;
 
     if (fwrite(array, 1, size, f) == size )
-    foutput("%s%s%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  ", outfile," was created.");
+    foutput("%s%s%s\n", MSG "", outfile," was created.");
     else
-    fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  %s could not be created properly -- fwrite error.\n", basename);
+    fprintf(stderr, ERR "%s could not be created properly -- fwrite error.\n", basename);
 
 
     if (fclose(f)== EOF)
-    fprintf(stderr, ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  %s could not be closed properly.", basename);
+    fprintf(stderr, ERR "%s could not be closed properly.", basename);
   }
 
 }
@@ -581,7 +581,7 @@ char** fn_strtok(char* chain, char delim, char** array, uint32_t count, int  (*f
   array=(char**) calloc(size, sizeof(char*));
   if (array == NULL)
   {
-      perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  fn_strtok\n");
+      perror("\n"ERR "fn_strtok\n");
       return NULL;
   }
   k=0;
@@ -591,7 +591,7 @@ char** fn_strtok(char* chain, char delim, char** array, uint32_t count, int  (*f
 
       array[k]=calloc(cut[k+1]-cut[k], sizeof (char));
       if (array[k] == NULL)
-         { perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  fn_strtok, array[k]"); return NULL;}
+         { perror(ERR "fn_strtok, array[k]"); return NULL;}
 
       memcpy(array[k], s+cut[k]+1, cut[k+1]-cut[k]-1);
       array[k][cut[k+1]-cut[k]-1]=0;
@@ -628,10 +628,10 @@ int arraylength(char ** tab)
     int w=0;
     if (tab) while (tab[w] != NULL)
     {
-      if (globals.debugging) fprintf(stderr, ANSI_COLOR_YELLOW"[DBG]"ANSI_COLOR_RESET"  parsing tab string %s\n", tab[w]);
+      if (globals.debugging) fprintf(stderr, DBG "parsing tab string %s\n", tab[w]);
        w++;
     }
-    if (globals.debugging) fprintf(stderr, ANSI_COLOR_YELLOW"[DBG]"ANSI_COLOR_RESET"  found %d strings in tab\n", w);
+    if (globals.debugging) fprintf(stderr, DBG "found %d strings in tab\n", w);
 
     return w;
 }
@@ -652,7 +652,7 @@ char* create_binary_path(char* local_variable, const char* symbolic_constant, co
     }
     else
         local_variable=win32quote(concatenate(local_variable, globals.settings.bindir, basename));
-    if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Path to %s is %s from bindir=%s and basename=%s\n", basename, local_variable,globals.settings.bindir, basename);
+    if (globals.debugging) foutput(MSG "Path to %s is %s from bindir=%s and basename=%s\n", basename, local_variable,globals.settings.bindir, basename);
     return local_variable;
 
 }
@@ -692,9 +692,9 @@ void download_latest_version(_Bool download_new_version_flag,_Bool force_downloa
     char this_build[4]={version[6], version[7], version[8], '\0'};
     if (globals.veryverbose)
     {
-    foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Current version is: %s-%s ", year, month);
+    foutput(MSG "Current version is: %s-%s ", year, month);
     foutput("build %s\n", build);
-    foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Software version is: %s-%s ", this_year, this_month);
+    foutput(MSG "Software version is: %s-%s ", this_year, this_month);
     foutput("build %s\n", this_build);
     }
     
@@ -708,21 +708,21 @@ void download_latest_version(_Bool download_new_version_flag,_Bool force_downloa
     (atoi_this_year == atoi_year)*(atoi_this_month == atoi_month)*(atoi(this_build) < atoi(build));
     
     if (test)
-      foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  A more recent version has been released (%s-%s build %s)\n       Download it from http://dvd-audio.sourceforge.net\n       You can also trigger download by relaunching with dvda-author --download.\n", year, month, build);
+      foutput(INF "A more recent version has been released (%s-%s build %s)\n       Download it from http://dvd-audio.sourceforge.net\n       You can also trigger download by relaunching with dvda-author --download.\n", year, month, build);
     else
     {
-      foutput("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  This version is the latest version available.\n");
+      foutput("%s", MSG "This version is the latest version available.\n");
       if (download_new_version_flag)
       {
 
         if (!force_download_flag)
         {
-          foutput("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  You do not need to download the new package.\n");
-          foutput("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  To force downloading use --download=force instead\n       Now exiting...\n");
+          foutput("%s", MSG "You do not need to download the new package.\n");
+          foutput("%s", MSG "To force downloading use --download=force instead\n       Now exiting...\n");
           clean_exit(EXIT_SUCCESS);
         }
         else
-          foutput("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Downloading the current package anyhow. Please wait...\n");
+          foutput("%s", MSG "Downloading the current package anyhow. Please wait...\n");
 
       }
     }
@@ -741,11 +741,11 @@ void download_latest_version(_Bool download_new_version_flag,_Bool force_downloa
       {
 
         fclose(package);
-        foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  New version %s-%s build %s was downloaded as dvda-author-update.tar.gz\n", year, month, build);
+        foutput(MSG "New version %s-%s build %s was downloaded as dvda-author-update.tar.gz\n", year, month, build);
 
       }
       else
-        foutput("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Failed to download new version.\n");
+        foutput("%s", MSG "Failed to download new version.\n");
 
       exit(EXIT_SUCCESS);
 

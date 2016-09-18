@@ -84,7 +84,7 @@ uint64_t read_file_size(FILE* fp, TCHAR* filename)
 
      if (fclose(fp) == EOF)
      {
-         printf(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not close file %s", filename);
+         printf(ERR "Could not close file %s", filename);
          return(0);
      }
 
@@ -92,7 +92,7 @@ uint64_t read_file_size(FILE* fp, TCHAR* filename)
 
     if ((fp=fopen((char *) filename, "rb+")) == NULL)
     {
-        printf("%s%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open ", (char *) filename);
+        printf("%s%s\n", ERR "Could not open ", (char *) filename);
         return(0);
     }
 
@@ -114,7 +114,7 @@ int truncate_from_end(TCHAR*filename, uint64_t cut){
 
     if (hFile == INVALID_HANDLE_VALUE)
     {
-        fprintf(stderr, ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Could not open file (error %d)\n", (int) GetLastError());
+        fprintf(stderr, WAR "Could not open file (error %d)\n", (int) GetLastError());
         CloseHandle(hFile);
         return -1;
     }
@@ -124,7 +124,7 @@ int truncate_from_end(TCHAR*filename, uint64_t cut){
 
     if (result == FALSE)
      {
-        fprintf(stderr, ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Could not open set of file (error %d)\n", (int) GetLastError());
+        fprintf(stderr, WAR "Could not open set of file (error %d)\n", (int) GetLastError());
         CloseHandle(hFile);
         return -1;
     }

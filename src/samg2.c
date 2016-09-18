@@ -81,7 +81,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
 
     absolute_sector_offset=(uint32_t) startsector + sectors->samg + 2*(sectors->amg + sectors->asvs) + sectors->topvob + sectors->stillvob +sectors->atsi[0];
     if (globals.veryverbose) 
-        foutput("\n"ANSI_COLOR_YELLOW"[DBG]"ANSI_COLOR_RESET"  Using absolute sector offset %d=%d+%d+2.(%d+%d)+%d+%d+%d\n\n", 
+        foutput("\n"DBG "Using absolute sector offset %d=%d+%d+2.(%d+%d)+%d+%d+%d\n\n", 
                 absolute_sector_offset,
                 startsector,
                 sectors->samg,
@@ -139,7 +139,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
                     break;
 
                 default:
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Unsupported bit rate")
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Unsupported bit rate")
                 }
 
             }
@@ -160,7 +160,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
                     break;
 
                 default:
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Unsupported bit rate")
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Unsupported bit rate")
 
                 }
             }
@@ -193,7 +193,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
                     samg[i]=0xaa;
                     break;
                 default:
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Unsupported bit rate")
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Unsupported bit rate")
 
                 }
             }
@@ -222,7 +222,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
                     samg[i]=0xaf;
                     break;
                 default:
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Unsupported bit rate")
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Unsupported bit rate")
                 }
             }
             i++;
@@ -249,7 +249,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
                 samg[i]=20;
                 break;
             default:
-                foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  samg: Unsupported number of channels (%d)\n",files[g][j].channels);
+                foutput(ERR "samg: Unsupported number of channels (%d)\n",files[g][j].channels);
                 clean_exit(EXIT_FAILURE);
             }
 
@@ -281,7 +281,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
     }
 
 
-    printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  SAMG pointers\n       Last audio group=%d\n       Last audio track=%d\n       Absolute sector pointer to last AOB sector=%"PRIu32"\n", last_audio_group, last_audio_track, last_sector);
+    printf(MSG "SAMG pointers\n       Last audio group=%d\n       Last audio track=%d\n       Absolute sector pointer to last AOB sector=%"PRIu32"\n", last_audio_group, last_audio_track, last_sector);
     for (i=1; i < 8; i++)
         memcpy(samg+i*sizeofsamg,samg, sizeofsamg);
 

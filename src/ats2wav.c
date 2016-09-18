@@ -293,14 +293,14 @@ inline static int get_pes_packet_audio(FILE *fp, fileinfo_t *info, uint8_t *audi
     {
         case FIRST_PACK :
             audio_bytes = info->lpcm_payload - info->firstpackdecrement;
-            if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  %s %d bytes %d ch %d bits %d kHz\n", "First pack", audio_bytes, info->channels, info->bitspersample, info->samplerate);
+            if (globals.maxverbose) fprintf(stderr, DBG "%s %d bytes %d ch %d bits %d kHz\n", "First pack", audio_bytes, info->channels, info->bitspersample, info->samplerate);
             /* skipping audio_pes_header and lpcm_header */
             fseeko(fp, 21 + info->firstpack_lpcm_headerquantity, SEEK_CUR);
             break;
 
         case MIDDLE_PACK :
             audio_bytes=info->lpcm_payload;
-            if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  %s %d bytes %d ch %d bits %d kHz\n", "Middle pack", audio_bytes, info->channels, info->bitspersample, info->samplerate);
+            if (globals.maxverbose) fprintf(stderr, DBG "%s %d bytes %d ch %d bits %d kHz\n", "Middle pack", audio_bytes, info->channels, info->bitspersample, info->samplerate);
             /* skipping audio_pes_header and lpcm_header */
             fseeko(fp, 18 + info->midpack_lpcm_headerquantity, SEEK_CUR);
             break;
@@ -308,11 +308,11 @@ inline static int get_pes_packet_audio(FILE *fp, fileinfo_t *info, uint8_t *audi
         case LAST_PACK :
             /* skipping audio_pes_header start to get to PES_packet_len_bytes --> audio_bytes */
             fseeko(fp, 4, SEEK_CUR);
-            if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  Reading PES_plb at offset: %lu\n", ftello(fp));
+            if (globals.maxverbose) fprintf(stderr, DBG "Reading PES_plb at offset: %lu\n", ftello(fp));
             fread(PES_packet_len_bytes, 1, 2, fp);
-            if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  With values: PES_packet_len_bytes[0] = %d, PES_packet_len_bytes[1] = %d \n", PES_packet_len_bytes[0], PES_packet_len_bytes[1]);
+            if (globals.maxverbose) fprintf(stderr, DBG "With values: PES_packet_len_bytes[0] = %d, PES_packet_len_bytes[1] = %d \n", PES_packet_len_bytes[0], PES_packet_len_bytes[1]);
             audio_bytes = (PES_packet_len_bytes[0] << 8 | PES_packet_len_bytes[1]) - info->lastpack_audiopesheaderquantity;
-            if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  %s %d bytes %d ch %d bits %d kHz -- PES_plb = %d, info->lastpack_audiopesheaderquantity = %d\n", "Last pack", audio_bytes, info->channels, info->bitspersample, info->samplerate, PES_packet_len_bytes[0] << 8 | PES_packet_len_bytes[1], info->lastpack_audiopesheaderquantity);
+            if (globals.maxverbose) fprintf(stderr, DBG "%s %d bytes %d ch %d bits %d kHz -- PES_plb = %d, info->lastpack_audiopesheaderquantity = %d\n", "Last pack", audio_bytes, info->channels, info->bitspersample, info->samplerate, PES_packet_len_bytes[0] << 8 | PES_packet_len_bytes[1], info->lastpack_audiopesheaderquantity);
             /* skipping rest of audio_pes_header, i.e 8 bytes + lpcm_header */
             fseeko(fp, 12 + info->lastpack_lpcm_headerquantity, SEEK_CUR);
             break;
@@ -320,7 +320,7 @@ inline static int get_pes_packet_audio(FILE *fp, fileinfo_t *info, uint8_t *audi
 
     offset1 = ftello(fp);
     int res = fread(audio_buf, 1, audio_bytes, fp);
-    if (globals.maxverbose) fprintf(stderr, ANSI_COLOR_YELLOW "[DBG]" ANSI_COLOR_RESET "  %lu: Reading %d bytes\n", offset1, res);
+    if (globals.maxverbose) fprintf(stderr, DBG "%lu: Reading %d bytes\n", offset1, res);
     convert_buffer(info, audio_buf, res);
 
     int nbyteout = fwrite(audio_buf, 1, res, fpout);
@@ -333,10 +333,10 @@ inline static int get_pes_packet_audio(FILE *fp, fileinfo_t *info, uint8_t *audi
         uint64_t check_size = ftello(fpout);
         if (check_size != fpout_size)
         {
-            foutput(ANSI_COLOR_RED "[ERR]" ANSI_COLOR_RESET "Audio decoding outfile mismatch. Decoded %lu bytes yet file size audio is %lu bytes.\n", fpout_size, check_size);
+            foutput(ERR  "Audio decoding outfile mismatch. Decoded %lu bytes yet file size audio is %lu bytes.\n", fpout_size, check_size);
         }
 
-        foutput(ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Writing %s (%lu MB)...\n", outpath, check_size / (1024 * 1024));
+        foutput(MSG "Writing %s (%lu MB)...\n", outpath, check_size / (1024 * 1024));
         fclose(fpout);
     }
 
@@ -360,7 +360,7 @@ int get_ats_audio()
 
     if (fp == NULL)
     {
-        foutput("%s%s%s", ANSI_COLOR_RED "[ERR]" ANSI_COLOR_RESET "  Could not open AOB file *", globals.aobpath,"*\n");
+        foutput("%s%s%s", ERR "Could not open AOB file *", globals.aobpath,"*\n");
         return(-1);
     }
 
@@ -374,7 +374,7 @@ int get_ats_audio()
     }
     while (result != LAST_PACK);
 
-    foutput(ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Read %lu PES packets.\n", pack);
+    foutput(MSG "Read %lu PES packets.\n", pack);
     return(0);
 }
 
@@ -390,7 +390,7 @@ void calc_size(_fileinfo_t* info)
         x=(90000*info->numsamples)/info->samplerate;
     else
     {
-        foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Found null samplerate. Exiting...\n");
+        foutput("%s", ERR "Found null samplerate. Exiting...\n");
         clean_exit(EXIT_FAILURE);
     }
     
@@ -426,7 +426,7 @@ int setinfo(_fileinfo_t* info, uint8_t buf[4])
         break;
         
     default:
-        printf("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Unsupported bits per sample\n");
+        printf("%s", ERR "Unsupported bits per sample\n");
         info->bitspersample=0;
         break;
     }
@@ -463,7 +463,7 @@ int setinfo(_fileinfo_t* info, uint8_t buf[4])
     if (buf[3] > 20)
         
     {
-        printf("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" Unsupported number of channels, skipping file...\n");
+        printf("%s\n", ERR "Unsupported number of channels, skipping file...\n");
         return(0);
     }
     
@@ -509,7 +509,7 @@ static void wav_close(_fileinfo_t* info , const char* filename)
     
     if (filesize > UINT32_MAX)
     {
-        printf("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  WAV standards do not support files > 4 GB--exiting...\n");
+        printf("%s", ERR "WAV standards do not support files > 4 GB--exiting...\n");
         exit(EXIT_FAILURE);
     }
     
@@ -517,12 +517,12 @@ static void wav_close(_fileinfo_t* info , const char* filename)
     
     if (filesize == 0)
     {
-        printf(""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  filename: %s\n       filesize is null, closing file...\n", filename);
+        printf(WAR "filename: %s\n       filesize is null, closing file...\n", filename);
         fclose(info->fpout);
         return;
     }
     
-    if (globals.debugging) printf(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  IFO file: %s\n       IFO file size: %"PRIu64"\n", filename, info->numbytes);
+    if (globals.debugging) printf(MSG "IFO file: %s\n       IFO file size: %"PRIu64"\n", filename, info->numbytes);
     
     fseek(info->fpout,0,SEEK_SET);
     
@@ -676,13 +676,13 @@ int ats2wav(const char GCC_UNUSED * filename, const char GCC_UNUSED *outdir)
     nbytesread=fread(buf,1,sizeof(buf), file);
     
     if (globals.debugging)
-        printf( ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Read %d bytes\n", nbytesread);
+        printf( INF "Read %d bytes\n", nbytesread);
     
     fclose(file);
     
     if (memcmp(buf,"DVDAUDIO-ATS",12)!=0)
     {
-        printf(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  %s is not an ATSI file (ATS_XX_0.IFO)\n",filename);
+        printf(ERR "%s is not an ATSI file (ATS_XX_0.IFO)\n",filename);
         return(EXIT_FAILURE);
     }
     
@@ -802,7 +802,7 @@ NEXT:
                         
                         files[t].started=1;
                         if (globals.debugging)
-                            printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Extracting %s\n       %dHz, %d bits/sample, %d channels - %lld samples\n",outfile,files[t].samplerate,files[t].bitspersample,files[t].channels,files[t].numsamples);
+                            printf(INF "Extracting %s\n       %dHz, %d bits/sample, %d channels - %lld samples\n",outfile,files[t].samplerate,files[t].bitspersample,files[t].channels,files[t].numsamples);
                     }
                     
                     i+=buf[i+3]+4;
@@ -825,7 +825,7 @@ NEXT:
                     
                     if (globals.veryverbose)
                     {
-                        fprintf(stderr, ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Wrote %d bytes yielding %lld/%lld\n",nbytesread,files[t].byteswritten,files[t].numbytes);
+                        fprintf(stderr, MSG "Wrote %d bytes yielding %lld/%lld\n",nbytesread,files[t].byteswritten,files[t].numbytes);
                     }
                     
                     delta= files[t].numbytes-files[t].byteswritten;
@@ -865,7 +865,7 @@ NEXT:
                                     files[t].started=1;
                                     calc_size(&files[t]);
                                     
-                                    printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Extracting %s\n       %dHz, %d bits/sample, %d channels - %lld samples\n",outfile,files[t].samplerate,files[t].bitspersample,files[t].channels,files[t].numsamples);
+                                    printf(INF "Extracting %s\n       %dHz, %d bits/sample, %d channels - %lld samples\n",outfile,files[t].samplerate,files[t].bitspersample,files[t].channels,files[t].numsamples);
                                     
                                     nbytesread=process_data(&files[t],&buf[i+nbytesread],payload_length-nbytesread);
                                 }

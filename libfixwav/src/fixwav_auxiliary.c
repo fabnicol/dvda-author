@@ -32,11 +32,8 @@ extern globalData globals;
 
 _Bool isok()
 {
-   
-    char buf[FIXBUF_LEN]={0};
-
+  char buf[FIXBUF_LEN]={0};
   get_input(buf);
-
   printf("%c", '\n');
 
   // With silent mode, replies are implicitly OK.
@@ -50,7 +47,7 @@ _Bool isok()
       break;
 
     default  :
-      fprintf(stderr, "%s\n",ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Unknown--Enter reply again");
+      fprintf(stderr, "%s\n",WAR "Unknown--Enter reply again");
       return(isok());
     }
 }
@@ -64,7 +61,7 @@ _Bool isok()
 void get_input( char* buf )
 {
   if (fgets(buf, FIXBUF_LEN, stdin) == NULL)
-    printf("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  fgets crash");
+    foutput("%s\n", ERR "fgets crash");
   return;
 }
 
