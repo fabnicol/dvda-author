@@ -943,8 +943,9 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
 #undef textable
 #undef VTSI_rank
 
-#endif
 
+#endif
+return 0;
 }
 
 

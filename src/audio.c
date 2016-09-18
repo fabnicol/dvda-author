@@ -445,12 +445,12 @@ int extract_audio_info(fileinfo_t *info)
 
     /* parsing header again with FIXWAV utility */
 
-    static _Bool cut;
+    //static _Bool cut;
 
     //if (!cut)
         info->type=fixwav_repair(info);
      
-    cut=((info->type == AFMT_WAVE_FIXED) || (info->type == AFMT_WAVE_GOOD_HEADER));
+    //cut=((info->type == AFMT_WAVE_FIXED) || (info->type == AFMT_WAVE_GOOD_HEADER));
 
     if (calc_info(info) == NO_AFMT_FOUND)
     {
@@ -484,7 +484,8 @@ static inline int compute_header_size(FILE* fp)
       .virtual = true,
       .repair = 0,
       .padbytes = 0,
-      .prunedbytes = 0
+      .prunedbytes = 0,
+      .filesize =0
     };
 
     wavinfo.INFILE=fp;
@@ -856,6 +857,7 @@ int fixwav_repair(fileinfo_t *info)
         0  /* repair status */,
         0, /* padbytes */
         0, /* pruned bytes */
+        0 /* filesize */
     };
 
 
@@ -883,7 +885,7 @@ int fixwav_repair(fileinfo_t *info)
         info->samplerate=waveheader.dwSamplesPerSec;
         info->bitspersample=(uint8_t) waveheader.wBitsPerSample;
         info->channels=(uint8_t) waveheader.channels;
-        info->numbytes=waveheader.data_size;
+        info->numbytes=waveheader.data_cksize;
         info->file_size=info->numbytes+waveheader.header_size_out;
         info->header_size=waveheader.header_size_out;
 

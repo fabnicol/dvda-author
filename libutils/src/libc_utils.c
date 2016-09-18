@@ -1591,7 +1591,7 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
         header->is_extensible = false;
         header->ichunks = 0;
         header->header_size_in = 44;
-        memcpy(&header->data_chunk, "data", 4 * sizeof(char)) ;
+        memcpy(&header->data_ckID, "data", 4 * sizeof(char)) ;
         return;
     }
     else
@@ -1656,7 +1656,7 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
 
         if ((*(pt + 1) == 'a') && (*(pt + 2) == 't') && (*(pt + 3) == 'a'))
         {
-            memmove(&header->data_chunk, "data", 4);
+            memmove(&header->data_ckID, "data", 4);
             break;
         }
 
