@@ -139,7 +139,7 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
        titlelength[group] = calloc(ntitles[group], sizeof(uint64_t));
         
       if (titlelength[group] == NULL || ntitlepics[group] == NULL || ntitletracks[group] == NULL)
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Memory allocation, title track count in AMG")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Memory allocation, title track count in AMG")
                     
      track=0;
       
@@ -163,12 +163,12 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
       
       maxntracks = MAX(track, maxntracks); 
       if (globals.debugging)  
-          foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Number of titles for group %d is %d\n",group, ntitles[group]);
+          foutput(INF "Number of titles for group %d is %d\n",group, ntitles[group]);
       
       if (track  != ntracks[group])
       {
         fprintf(stderr, "\nCounted %d tracks instead of %d for group %d\n", track, ntracks[group], group);
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Incoherent title count")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incoherent title count")
       }
            
     }
@@ -183,7 +183,7 @@ void allocate_topmenus(command_t *command)
         img->topmenu = calloc(img->nmenus, sizeof(char *));
     
     if (img->topmenu == NULL) 
-        perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  img->topmenu 1\n");
+        perror("\n"ERR "img->topmenu 1\n");
     
     int menu, s = strlen(globals.settings.tempdir);
 
@@ -195,7 +195,7 @@ void allocate_topmenus(command_t *command)
            // topmenu name length + 1 for SEPARATOR + 2 decimals + 0-end
         
         if (img->topmenu[menu] == NULL)  
-            perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" Topmenu filename memory issue.");
+            perror("\n"ERR "Topmenu filename memory issue.");
         
         if (img->topmenu[menu]) 
             snprintf(img->topmenu[menu], s + 11, "%s"SEPARATOR"%s%d", globals.settings.tempdir, TOPMENU_NAME, menu);
@@ -238,28 +238,28 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
         allocate_topmenus(command);
 
         errno = generate_spumux_xml(ngroups, ntracks, maxntracks, img);
-        if (errno) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  AMG: spumux_xml\n");
+        if (errno) perror("\n"ERR "AMG: spumux_xml\n");
         
         errno = launch_spumux(img);
-        if (errno) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  AMG: spumux\n");
+        if (errno) perror("\n"ERR "AMG: spumux\n");
 
     case  RUN_DVDAUTHOR :
 
         if (!globals.xml)
         {
-            if (globals.debugging) foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Generating AMGM Xml project for dvdauthor (patched)...");
+            if (globals.debugging) foutput("%s\n", INF "Generating AMGM Xml project for dvdauthor (patched)...");
             errno = generate_amgm_xml(ngroups, ntracks, img);
-            if (errno) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  AMG: amgm_xml\n");
+            if (errno) perror("\n"ERR "AMG: amgm_xml\n");
         }
         for (menu = 0; menu < img->nmenus; ++menu)
             if (img->topmenu[menu])
             {
                 if (img->menuvobsize == NULL) img->menuvobsize = calloc(img->nmenus, sizeof(uint32_t*));
-                if (img->menuvobsize == NULL) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  menuvobsize\n");
+                if (img->menuvobsize == NULL) perror("\n"ERR "menuvobsize\n");
 
                 img->menuvobsize[menu] = stat_file_size(img->topmenu[menu]) / 0x800;
                 if (globals.veryverbose) 
-                    foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Top menu is: %s with size %"PRIu32" KB\n", img->topmenu[menu], img->menuvobsize[menu]);
+                    foutput(MSG "Top menu is: %s with size %"PRIu32" KB\n", img->topmenu[menu], img->menuvobsize[menu]);
             }
 
         launch_dvdauthor();
@@ -268,13 +268,13 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
     case TS_VOB_TYPE:
         if (img->menuvobsize == NULL)
             img->menuvobsize = calloc(img->nmenus, sizeof(uint32_t*));
-        if (img->menuvobsize == NULL) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  menuvobsize\n");
+        if (img->menuvobsize == NULL) perror("\n"ERR "menuvobsize\n");
 
         img->menuvobsize[0] = stat_file_size(img->tsvob) / (0x800 * img->nmenus);
         for (menu = 0; menu < img->nmenus; menu++)
         {
             img->menuvobsize[menu] = img->menuvobsize[0];
-            if (globals.veryverbose) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Top menu is: %s with size %d KB\n", outfile,img->menuvobsize[menu]);
+            if (globals.veryverbose) foutput(MSG "Top menu is: %s with size %d KB\n", outfile,img->menuvobsize[menu]);
         }
 
         copy_file(img->tsvob, outfile);
@@ -282,7 +282,7 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
         break;
 
     default:
-        foutput("%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Incoherence of menu status in create_topmenu");
+        foutput("%s\n", WAR "Incoherence of menu status in create_topmenu");
         exit(EXIT_FAILURE);
 
         break;
@@ -300,7 +300,7 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
     uint32_t size=0;
 
     size = (uint32_t) stat_file_size(outfile) / 0x800;
-    if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Size of AUDIO_TS.VOB is: %u sectors\n" , size );
+    if (globals.debugging) foutput(MSG "Size of AUDIO_TS.VOB is: %u sectors\n" , size );
 
     img->tsvob=strdup(outfile);
     return (size); //expressed in sectors
@@ -311,7 +311,7 @@ int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles
 {
     char outfile[strlen(audiotsdir)+14];
     int  k;
-    foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Creating ASVS...");
+    foutput("%s\n", INF "Creating ASVS...");
     image->action = STILLPICS;
 
     if (image->stillvob == NULL)
@@ -380,7 +380,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
 
     totaltitles+=totalplaylisttitles;
 
-    if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Dec. AMG: totaltitles=%d\n", totaltitles);
+    if (globals.debugging) foutput(MSG "Dec. AMG: totaltitles=%d\n", totaltitles);
 
     FILE* fp = fopen(filepath(audiotsdir, "AUDIO_TS.IFO"), "rb");
 
@@ -498,7 +498,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
             if (globals.veryverbose)
             {
                 if (titleset == 0)
-                    foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  sectoroffset[%d]=%u=2*(%d+%d)+%u+%u\n",
+                    foutput(MSG "sectoroffset[%d]=%u=2*(%d+%d)+%u+%u\n",
                             titleset,
                             sectoroffset[titleset],
                             sectors->amg ,
@@ -506,7 +506,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
                             sectors->stillvob,
                             sectors->topvob);
 
-                foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  sectoroffset[%d]=%u=sectoroffset[%d]+(command->files[%d][ntracks[%d]-1].last_sector+1)+2*%d\n",
+                foutput(MSG "sectoroffset[%d]=%u=sectoroffset[%d]+(command->files[%d][ntracks[%d]-1].last_sector+1)+2*%d\n",
                         titleset+1,
                         sectoroffset[titleset + 1],
                         titleset,
@@ -563,7 +563,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
 
         for (j = 0; j < nplaygroups; ++j)
         {
-            if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Encoding copy group (#%d)\n", j+1);
+            if (globals.debugging) foutput(INF "Encoding copy group (#%d)\n", j+1);
 
             for (k = 0; k < numtitles[playtitleset[j]]; ++k)
             {
@@ -649,7 +649,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
 
         for (j = 0; j < nplaygroups; ++j)
         {
-            if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Encoding copy group (#%d)\n", j + 1);
+            if (globals.debugging) foutput(INF "Encoding copy group (#%d)\n", j + 1);
 
             for (k = 0; k < numtitles[playtitleset[j]]; ++k)
             {
@@ -672,7 +672,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
 
     if (menusector)
     {
-        if (globals.debugging) foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Creating menu ifo, AUDIO_TS.IFO sector 4");
+        if (globals.debugging) foutput("%s\n", INF "Creating menu ifo, AUDIO_TS.IFO sector 4");
         uint64_t menuvobsize_sum = 0;
 
         /* Looks like VMG_PGCI_UT */
@@ -808,9 +808,9 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
         {
             if (sectors->topvob == menuvobsize_sum + img->nmenus - 1
                                   + img->menuvobsize[img->nmenus-1] -1)
-                foutput("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Menu vob size coherence test...OK\n");
+                foutput("%s", MSG "Menu vob size coherence test...OK\n");
 
-            else foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Menu vob size coherence test failed: sectors->topvob=%u against %lu\n",
+            else foutput(MSG "Menu vob size coherence test failed: sectors->topvob=%u against %lu\n",
                          sectors->topvob,
                          menuvobsize_sum + img->nmenus -1 + img->menuvobsize[img->nmenus - 1] -1);
         }
@@ -823,7 +823,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
     if ((globals.text) && naudio_groups == 1)
     {
         if (globals.debugging)
-            foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Creating DVDATXTDT-MG, AUDIO_TS.IFO");
+            foutput("%s\n", INF "Creating DVDATXTDT-MG, AUDIO_TS.IFO");
 
         int c, d;
 
@@ -970,7 +970,7 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
 
     totaltitles+=totalplaylisttitles;
 
-    if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  AMG: totaltitles=%d\n", totaltitles);
+    if (globals.debugging) foutput(MSG "AMG: totaltitles=%d\n", totaltitles);
 
     memset(amg, 0, sizeof(amg));
 
@@ -1045,7 +1045,7 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
             if (globals.veryverbose)
             {
                 if (titleset == 0)
-                    foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  sectoroffset[%d]=%u=2*(%d+%d)+%u+%u\n", 
+                    foutput(MSG "sectoroffset[%d]=%u=2*(%d+%d)+%u+%u\n",
                             titleset,
                             sectoroffset[titleset],
                             sectors->amg ,
@@ -1053,7 +1053,7 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
                             sectors->stillvob,
                             sectors->topvob);
                 
-                foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  sectoroffset[%d]=%u=sectoroffset[%d]+(command->files[%d][ntracks[%d]-1].last_sector+1)+2*%d\n",
+                foutput(MSG "sectoroffset[%d]=%u=sectoroffset[%d]+(command->files[%d][ntracks[%d]-1].last_sector+1)+2*%d\n",
                         titleset+1,
                         sectoroffset[titleset + 1],
                         titleset,
@@ -1102,7 +1102,7 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
 
         for (j = 0; j < nplaygroups; ++j)
         {
-            if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Encoding copy group (#%d)\n", j+1);
+            if (globals.debugging) foutput(INF "Encoding copy group (#%d)\n", j+1);
 
             for (k = 0; k < numtitles[playtitleset[j]]; ++k)
             {
@@ -1187,7 +1187,7 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
 
         for (j = 0; j < nplaygroups; ++j)
         {
-            if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Encoding copy group (#%d)\n", j + 1);
+            if (globals.debugging) foutput(INF "Encoding copy group (#%d)\n", j + 1);
 
             for (k = 0; k < numtitles[playtitleset[j]]; ++k)
             {
@@ -1210,7 +1210,7 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
 
     if (menusector)
     {
-        if (globals.debugging) foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Creating menu ifo, AUDIO_TS.IFO sector 4");
+        if (globals.debugging) foutput("%s\n", INF "Creating menu ifo, AUDIO_TS.IFO sector 4");
         uint64_t menuvobsize_sum = 0;
 
         /* Looks like VMG_PGCI_UT */
@@ -1346,9 +1346,9 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
         {
             if (sectors->topvob == menuvobsize_sum + img->nmenus - 1 
                                   + img->menuvobsize[img->nmenus-1] -1)
-                foutput("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Menu vob size coherence test...OK\n");
+                foutput("%s", MSG "Menu vob size coherence test...OK\n");
             
-            else foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Menu vob size coherence test failed: sectors->topvob=%u against %lu\n",
+            else foutput(MSG "Menu vob size coherence test failed: sectors->topvob=%u against %lu\n",
                          sectors->topvob,
                          menuvobsize_sum + img->nmenus -1 + img->menuvobsize[img->nmenus - 1] -1);
         }
@@ -1361,7 +1361,7 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
     if ((globals.text) && naudio_groups == 1)
     {
         if (globals.debugging) 
-            foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Creating DVDATXTDT-MG, AUDIO_TS.IFO");
+            foutput("%s\n", INF "Creating DVDATXTDT-MG, AUDIO_TS.IFO");
         
         int c, d;
         

@@ -80,9 +80,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
                                 }\
                             } while(0);
 
-#define EXPLAIN(X,...)       EXPL(X,globals.veryverbose, ANSI_COLOR_YELLOW"[DBG]  Now ",__VA_ARGS__)
+#define EXPLAIN(X,...)       EXPL(X,globals.veryverbose, DBG "Now ",__VA_ARGS__)
 
-#define EXPLAIN_DEV(...)     EXPL("%s %d\n", globals.maxverbose, ANSI_COLOR_YELLOW"[DEV]  ",__VA_ARGS__ )
+#define EXPLAIN_DEV(...)     EXPL("%s %d\n", globals.maxverbose, DEV,__VA_ARGS__ )
 
 
 /* end of macros */
@@ -109,13 +109,13 @@ static void GCC_UNUSED open_aob_log()
 {
     if (globals.settings.outfile == NULL || globals.settings.outfile[0] == '\0')
     {
-        fprintf(stderr, "%s\n", ANSI_COLOR_RED "[ERR]" ANSI_COLOR_RESET  "  Empty log-decode filepath.");
+        fprintf(stderr, "%s\n", ERR "Empty log-decode filepath.");
         exit(-1);
     }
     aob_log = fopen(globals.settings.outfile, "ab");
     if (aob_log == NULL)
     {
-        fprintf(stderr, "%s%s%s\n", ANSI_COLOR_RED "[ERR]" ANSI_COLOR_RESET  "  AOB log *", globals.settings.outfile, "* could not be opened.");
+        fprintf(stderr, "%s%s%s\n", ERR "AOB log *", globals.settings.outfile, "* could not be opened.");
         fflush(NULL);
         exit(-1);
     }
