@@ -156,8 +156,6 @@ inline static int get_pes_packet_audio(FILE *fp, fileinfo_t *info, uint8_t *audi
 
     FILE *fpout;
 
-    char* outpath;
-
     /* got to system header and read first 4 bytes to detect whether pack is start or not */
     if (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB)
     {
@@ -169,11 +167,11 @@ inline static int get_pes_packet_audio(FILE *fp, fileinfo_t *info, uint8_t *audi
         char Title[14] = {0};
         sprintf(Title, "title_%d.wav", title);
 
-        outpath = filepath(globals.settings.outdir, Title);
+        info->filename = filepath(globals.settings.outdir, Title);
 
-        if ((fpout = fopen(outpath, "wb")) == NULL)
+        if ((fpout = fopen(info->filename, "wb")) == NULL)
         {
-            foutput("[ERR]  Could not open audio file %s\n.        Exiting...\n", outpath);
+            foutput("[ERR]  Could not open audio file %s\n.        Exiting...\n", info->filename);
             exit(-7);
         }
     }
@@ -336,8 +334,9 @@ inline static int get_pes_packet_audio(FILE *fp, fileinfo_t *info, uint8_t *audi
             foutput(ERR  "Audio decoding outfile mismatch. Decoded %lu bytes yet file size audio is %lu bytes.\n", fpout_size, check_size);
         }
 
-        foutput(MSG "Writing %s (%lu MB)...\n", outpath, check_size / (1024 * 1024));
+        foutput(MSG "Writing %s (%.2Lf MB)...\n", info->filename, (long double) check_size / (long double) (1024 * 1024));
         fclose(fpout);
+        info->file_size = check_size;
     }
 
     fseeko(fp, offset0 + 2048, SEEK_SET);
@@ -375,7 +374,32 @@ int get_ats_audio()
     while (result != LAST_PACK);
 
     foutput(MSG "Read %lu PES packets.\n", pack);
-    return(0);
+
+    WaveData info;
+    WaveHeader header;
+
+    info.automatic = true;
+    info.filesize = files.file_size;
+    info.prepend = true;
+    info.in_place = false;
+    info.infile = files.filename;
+    s_mkdir(globals.settings.tempdir);
+
+    info.outfile = filepath(globals.settings.tempdir, "temp");
+    header.wBitsPerSample = files.bitspersample;
+    header.channels = files.channels;
+    header.dwSamplesPerSec = files.samplerate;
+
+    WaveHeader* res = fixwav(&info, &header);
+
+    if (res == NULL) return(-1);
+
+    errno = 0;
+    unlink(info.infile);
+    rename(info.outfile, info.infile);
+    if (errno) perror(ERR);
+
+    return(errno);
 }
 
 
