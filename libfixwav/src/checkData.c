@@ -101,7 +101,7 @@ _Bool check_real_size(WaveData *info, WaveHeader *header)
   /* stat needs a newly opened file to tech stats */
 
 
-  s_open(file, "rb+");
+  s_open(&file, "rb+");
   _Bool pad_byte = (header->ckSize % 2 == 1);
 
   /* adjust the Chunk Size */
@@ -139,7 +139,7 @@ int prune(WaveData *info, WaveHeader *header)
   uint32_t count=-1;
   uint64_t size=0;
 
- s_open(info->infile, "rb+");
+ s_open(&info->infile, "rb+");
 
   if (errno)
   {

@@ -1567,7 +1567,7 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
 {
 
     uint8_t haystack[MAX_HEADER_SIZE] = {0};
-    s_open(info->infile, "rb+");
+    s_open(&info->infile, "rb+");
     if (errno) return;
     int count = fread(haystack, 1, MAX_HEADER_SIZE, fileptr(info->infile));
     if (count != MAX_HEADER_SIZE)
@@ -1798,24 +1798,25 @@ void  secure_open(const char *path, const char *context, FILE* f)
     fseek(f, 0, SEEK_SET);
 }
 
-int  s_open(filestat_t f, const char *context)
+int  s_open(filestat_t *f, const char *context)
 {
     errno = 0;
-    if (f.isopen) return 0; // no-op
+    if (f->isopen) return 0; // no-op
 
-    if ((f.fp = fopen(f.filename, context))  == NULL )
+    if ((f->fp = fopen(f->filename, context))  == NULL )
     {
-        printf(ERR "Could not open '%s'\n", f.filename);
-        f.fp = NULL;
-        f.filesize = 0;
+        fprintf(stderr, ERR "Could not open '%s'\n", f->filename);
+        f->fp = NULL;
+        f->filesize = 0;
+        fflush(NULL);
         return -1;
     }
 
-    f.isopen = true;
+    f->isopen = true;
 
-    f.filesize = stat_file_size(f.filename);
+    f->filesize = stat_file_size(f->filename);
 
-    fseek(f.fp, 0, SEEK_SET);  // normally 0
+    fseek(f->fp, 0, SEEK_SET);  // normally 0
 
     return errno;
 }
