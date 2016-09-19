@@ -468,10 +468,7 @@ static inline int compute_header_size(FILE* fp)
     //uint8_t span=0;
     WaveData wavinfo =
     {
-      .infile = "unknown",
-      .INFILE = fp,
-      .outfile = "st",
-      .OUTFILE = NULL,
+
       .database = NULL,
       .filetitle = NULL,
       .automatic = true,
@@ -485,14 +482,13 @@ static inline int compute_header_size(FILE* fp)
       .repair = 0,
       .padbytes = 0,
       .prunedbytes = 0,
-      .filesize =0
+      .infile = { false, 0, "unknown", NULL},
+      .outfile = {false, 0, "st", NULL },
     };
 
-    wavinfo.INFILE=fp;
-
+    setfileptr(&wavinfo.infile, fp);
     parse_wav_header(&wavinfo, &header);
     return header.header_size_in;
-   
 }
 
 
@@ -857,7 +853,7 @@ int fixwav_repair(fileinfo_t *info)
         0  /* repair status */,
         0, /* padbytes */
         0, /* pruned bytes */
-        0 /* filesize */
+        {false, 0, "", NULL}  /* filestat */
     };
 
 
