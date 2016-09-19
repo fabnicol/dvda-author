@@ -379,13 +379,12 @@ int get_ats_audio()
     WaveHeader header;
 
     info.automatic = true;
-    info.filesize = files.file_size;
     info.prepend = true;
     info.in_place = false;
-    info.infile = files.filename;
-    s_mkdir(globals.settings.tempdir);
+    info.prune = false;
+    info.infile = filestat(false, 0, files.filename, NULL);;
+    info.outfile = filestat(false, 0, filepath(globals.settings.tempdir, "temp"), NULL);
 
-    info.outfile = filepath(globals.settings.tempdir, "temp");
     header.wBitsPerSample = files.bitspersample;
     header.channels = files.channels;
     header.dwSamplesPerSec = files.samplerate;
@@ -395,8 +394,8 @@ int get_ats_audio()
     if (res == NULL) return(-1);
 
     errno = 0;
-    unlink(info.infile);
-    rename(info.outfile, info.infile);
+    unlink(filename(info.infile));
+    rename(filename(info.outfile), filename(info.infile));
     if (errno) perror(ERR);
 
     return(errno);
