@@ -47,7 +47,6 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
   // NULL init necessary
 
   int length=0;
-  uint64_t size=0;
   static int section;
   section++;
 
@@ -57,9 +56,10 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
   // display the total file size for convenience
   // Patch on version 0.1.1: -int +uint64_t (int is not enough for files > 2GB)
   // NB: under Windows, use stat_file_size if file not open, otherwise use read_file_size
-  if (fileptr(info->infile) == NULL) return;
 
-  s_open(info->infile, "rb+");
+  s_open(&info->infile, "rb+");
+
+  if (fileptr(info->infile) == NULL) return NULL;
 
   if (!errno)
     {
@@ -72,7 +72,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
       goto getout;
     }
 
-  if (size == 0)
+  if (filesize(info->infile) == 0)
     {
       if (globals.debugging) foutput( "%s\n", WAR "File size is null; skipping ..." );
       info->repair=FAIL;
@@ -152,7 +152,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   if (! info->in_place)
     {
-      if (strcmp(fileptr(info->infile), fileptr(info->outfile)) == 0)
+      if (strcmp(filename(info->infile), filename(info->outfile)) == 0)
         {
           if (globals.debugging) foutput( "%s\n", ERR "input and output paths are identical. Press Y to exit...");
           if (isok())
@@ -162,7 +162,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
             }
         }
 
-      s_open(info->outfile, "rb+");
+      s_open(&info->outfile, "rb+");
     }
   else
     {
@@ -331,7 +331,7 @@ Checkout:
               if (globals.maxverbose)
               {
                   if (s_close(info->outfile) != 0) return(NULL);
-                  s_open(info->outfile, "rb+");
+                  s_open(&info->outfile, "rb+");
                   if (globals.debugging) foutput("%s","Dumping new header:\n\n");
                   hexdump_header(fileptr(info->outfile), HEADER_SIZE);
               }
@@ -417,7 +417,7 @@ getout:
         }
     }
 
-  if ((info->repair == FAIL)  || (size == 0)  || ( (info->repair == GOOD_HEADER) && (!info->in_place) && (!info->virtual) ))
+  if ((info->repair == FAIL)  || (filesize(info->infile) == 0)  || ( (info->repair == GOOD_HEADER) && (!info->in_place) && (!info->virtual) ))
     {
       // getting rid of empty files and useless work copies
       errno=0;

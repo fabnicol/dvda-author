@@ -47,7 +47,7 @@ repair_wav(WaveData *info, WaveHeader *header )
   errno=0;
 
   s_close(info->infile);
-  s_open(info->infile, "rb+");
+  s_open(&info->infile, "rb+");
 
   /*********************************************************************
   * The RIFF Chunk
@@ -331,7 +331,7 @@ int write_header(WaveData *info, WaveHeader *header)
 
   if (info->virtual) return(info->repair);
 
-  s_open(info->outfile, "rb+"); // normally no-op.
+  s_open(&info->outfile, "rb+"); // normally no-op.
 
   int count=0;
 
