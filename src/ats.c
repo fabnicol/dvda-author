@@ -1188,7 +1188,7 @@ int decode_ats()
     do
     {
         result  = read_pes_packet(fp, &files, audio_buf);
-        if (result  == bytesinbuf)
+        if (result  == LAST_PACK || result  == FIRST_PACK || result  == MIDDLE_PACK)
         {
             ++pack;
         }

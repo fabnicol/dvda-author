@@ -32,6 +32,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "winport.h"
 #include "multichannel.h"
 #include "auxiliary.h"
+#include "fixwav_manager.h"
 
 extern globalData globals;
 extern uint8_t channels[21];
@@ -306,7 +307,7 @@ inline static int get_pes_packet_audio(FILE *fp, fileinfo_t *info, uint8_t *audi
         case LAST_PACK :
             /* skipping audio_pes_header start to get to PES_packet_len_bytes --> audio_bytes */
             fseeko(fp, 4, SEEK_CUR);
-            if (globals.maxverbose) fprintf(stderr, DBG "Reading PES_plb at offset: %lu\n", ftello(fp));
+            if (globals.maxverbose) fprintf(stderr, DBG "Reading PES_plb at offset: %llu\n", ftello(fp));
             fread(PES_packet_len_bytes, 1, 2, fp);
             if (globals.maxverbose) fprintf(stderr, DBG "With values: PES_packet_len_bytes[0] = %d, PES_packet_len_bytes[1] = %d \n", PES_packet_len_bytes[0], PES_packet_len_bytes[1]);
             audio_bytes = (PES_packet_len_bytes[0] << 8 | PES_packet_len_bytes[1]) - info->lastpack_audiopesheaderquantity;
@@ -349,7 +350,6 @@ int get_ats_audio()
 {
     FILE* fp;
 
-    int32_t bytesinbuf=2048;
     uint8_t audio_buf[2048];
     uint64_t pack = 0;
     fileinfo_t files;
@@ -366,7 +366,7 @@ int get_ats_audio()
     do
     {
         result  = get_pes_packet_audio(fp, &files, audio_buf);
-        if (result  == bytesinbuf)
+        if (result  == LAST_PACK || result  == FIRST_PACK || result  == MIDDLE_PACK)
         {
             ++pack;
         }
@@ -382,14 +382,16 @@ int get_ats_audio()
     info.prepend = true;
     info.in_place = false;
     info.prune = false;
-    info.infile = filestat(false, 0, files.filename, NULL);;
+    info.infile = filestat(false, 0, files.filename, NULL);
     info.outfile = filestat(false, 0, filepath(globals.settings.tempdir, "temp"), NULL);
 
     header.wBitsPerSample = files.bitspersample;
     header.channels = files.channels;
     header.dwSamplesPerSec = files.samplerate;
 
-    WaveHeader* res = fixwav(&info, &header);
+    WaveHeader* res;
+
+    res = fixwav(&info, &header);
 
     if (res == NULL) return(-1);
 
