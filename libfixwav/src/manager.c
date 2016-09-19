@@ -198,8 +198,9 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   /* pre parse header to find if is extensible and if has 'fact' ; collect facts in this case */
 
-  if (!info->prepend) 
-     parse_wav_header(info, header);
+  if (info->prepend) goto Repair;
+
+  parse_wav_header(info, header);
      
   /* if found info tags, dumps them in textfile database, which can only occur if span > 36 */
 
@@ -233,6 +234,8 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
         header->header_size_in = 0;
         info->repair = BAD_HEADER;
   }
+
+  Repair:
 
   info->repair = repair_wav(info, header);
 
@@ -337,16 +340,20 @@ Checkout:
           if ((info->repair=write_header(info, header)) != FAIL)
           {
               if (globals.debugging) foutput("%s\n", INF "Header copy successful.\n");
-              if (fclose(info->OUTFILE) != 0) return(NULL);
-              secure_open(info->outfile, "rb+", info->OUTFILE);
               if (globals.maxverbose)
               {
+                  if (fclose(info->OUTFILE) != 0) return(NULL);
+                  secure_open(info->outfile, "rb", info->OUTFILE);
+                  fseeko(info->OUTFILE, 0, SEEK_SET);
                   if (globals.debugging) foutput("%s","Dumping new header:\n\n");
                   hexdump_header(info->OUTFILE, HEADER_SIZE);
               }
           }
           else
               break;
+
+          fclose(info->OUTFILE);
+          secure_open(info->outfile, "ab", info->OUTFILE);
 
           if (!info->in_place)
           {
