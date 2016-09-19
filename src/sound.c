@@ -79,7 +79,7 @@ errno=0;
             0, /* repair status */
             0, /* padbytes */
             0, /* pruned bytes */
-            0 /* filesize */
+            {false, 0, "", NULL} /* filestat */
         };
 
         fixwav(&wavedata, &waveheader);

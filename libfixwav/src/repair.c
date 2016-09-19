@@ -41,13 +41,13 @@ int
 repair_wav(WaveData *info, WaveHeader *header )
 {
 
-  FILE* infile=info->INFILE;
   int repair=GOOD_HEADER;
   _Bool pad_byte = false;
 
   errno=0;
 
-  info->filesize = read_file_size(infile, info->infile);
+  s_close(info->infile);
+  s_open(info->infile, "rb+");
 
   /*********************************************************************
   * The RIFF Chunk
@@ -72,12 +72,12 @@ repair_wav(WaveData *info, WaveHeader *header )
         ckData."
   */
 
-  if (header->ckSize == info->filesize  - 8)
+  if (header->ckSize == filesize(info->infile)  - 8)
     {
       if (globals.debugging) foutput( MSG "Found correct audio chunk Size of %" PRIu32 " bytes at offset 4\n",  header->ckSize);
     }
   else
-  if ((header->ckSize & 1) == 1 && header->ckSize == info->filesize  - 9)
+  if ((header->ckSize & 1) == 1 && header->ckSize == filesize(info->infile)  - 9)
     {
       if (globals.debugging) foutput( MSG "Found correct audio chunk Size of %" PRIu32 " bytes at offset 4. Pad byte added at EOF.\n",  header->ckSize);
       pad_byte = true;
@@ -89,9 +89,9 @@ repair_wav(WaveData *info, WaveHeader *header )
       if (globals.debugging) foutput( MSG "audio chunk Size of %" PRIu32 " at offset 4 is incorrect: should be %" PRIu32 " bytes\n"
               INF "... repairing\n",
               header->ckSize,
-              (uint32_t) info->filesize  - 8);
+              (uint32_t) filesize(info->infile)  - 8);
 
-      header->ckSize = (uint32_t) info->filesize  - 8;
+      header->ckSize = (uint32_t) filesize(info->infile)  - 8;
       repair = BAD_HEADER;
     }
 
@@ -234,7 +234,8 @@ repair_wav(WaveData *info, WaveHeader *header )
 
   /* The data chunk Size = NumSample * NumChannels * BitsPerSample/8 */
 
-  if (header->data_cksize == info->filesize  - header->header_size_in || (pad_byte && header->data_cksize == info->filesize  - header->header_size_in - 1))  // -1 if pad byte was added
+  if (header->data_cksize == filesize(info->infile)  - header->header_size_in
+      || (pad_byte && header->data_cksize == filesize(info->infile)  - header->header_size_in - 1))  // -1 if pad byte was added
     {
       if (globals.debugging) foutput(MSG  "  Found correct data ckSize of %"PRIu32" bytes at offset %d\n",
              header->data_cksize,
@@ -247,10 +248,10 @@ repair_wav(WaveData *info, WaveHeader *header )
              INF "... repairing\n",
              header->header_size_in - 4,
              header->data_cksize,
-             (uint32_t) info->filesize  - header->header_size_in - (uint32_t) pad_byte,
-             (uint32_t) info->filesize , header->header_size_in , pad_byte);
+             (uint32_t) filesize(info->infile)  - header->header_size_in - (uint32_t) pad_byte,
+             (uint32_t) filesize(info->infile) , header->header_size_in , pad_byte);
              
-      header->data_cksize = info->filesize  - header->header_size_in - (uint32_t) pad_byte;
+      header->data_cksize = filesize(info->infile)  - header->header_size_in - (uint32_t) pad_byte;
       repair = BAD_HEADER;
     }
 
@@ -330,18 +331,18 @@ int write_header(WaveData *info, WaveHeader *header)
 
   if (info->virtual) return(info->repair);
 
-  FILE* outfile=info->OUTFILE;
+  s_open(info->outfile, "rb+"); // normally no-op.
 
   int count=0;
 
   //closing and opening again for security/sync, may be a non-op//
-
+#if 0
   if ((!info->virtual) && ( (outfile == NULL) || (fclose(outfile) != 0) || ((outfile=fopen(info->outfile, "rb+")) == NULL) ))
     {
       if (globals.debugging) foutput("%s\n", ERR "Failed to close/open file");
       return(FAIL);
     }
-
+#endif
   // in manager.c a sanity check ensures that if (info->prepend) then !(info->in_place)
   // Otherwise copying fixed header to new file or in place, depending on option
 
@@ -352,7 +353,7 @@ int write_header(WaveData *info, WaveHeader *header)
      if (globals.debugging) foutput("%s\n", INF "Overwriting header...");
   }
 
-  count = fwrite(header->header_out, header->header_size_out, 1, outfile );
+  count = fwrite(header->header_out, header->header_size_out, 1, fileptr(info->outfile));
 
   if (count != 1)
   {
