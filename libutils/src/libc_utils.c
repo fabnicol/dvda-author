@@ -1565,15 +1565,11 @@ int get_endianness()
 
 void parse_wav_header(WaveData* info, WaveHeader* header)
 {
-    FILE * infile=info->INFILE;
+
     uint8_t haystack[MAX_HEADER_SIZE] = {0};
-    if (infile == NULL)
-    {
-        fprintf(stderr, ERR "Input file is null pointer.\n");
-        exit(-1);
-    }
-    fseek(infile, 0, SEEK_SET);
-    int count = fread(haystack, 1, MAX_HEADER_SIZE, infile);
+    s_open(info->infile, "rb+");
+    if (errno) return;
+    int count = fread(haystack, 1, MAX_HEADER_SIZE, fileptr(info->infile));
     if (count != MAX_HEADER_SIZE)
     {
         fprintf(stderr, ERR "Could not read %d characters from input file\n", MAX_HEADER_SIZE);
@@ -1584,7 +1580,7 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
     uint8_t *pt=&haystack[0];
     uint8_t span=0;
 
-    fseek(infile, 0, SEEK_SET);
+    fseek(fileptr(info->infile), 0, SEEK_SET);
 
     if (memcmp(haystack + 36, "data", 4) == 0)
     {
@@ -1646,7 +1642,7 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
             printf(WAR "Could not find substring 'data' among %d characters\n", MAX_HEADER_SIZE);
             if (globals.debugging)
             {
-                hexdump_header(infile, MAX_HEADER_SIZE);
+                hexdump_header(fileptr(info->infile), MAX_HEADER_SIZE);
             }
             header->header_size_in=0;
             return;
@@ -1775,6 +1771,21 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
  * tries to open file path and allocate file pointer.
  * Exits on failure, otherwise seeks start of file */
 
+_Bool isopen(filestat_t f) { return f.isopen; }
+uint64_t filesize(filestat_t f) { return f.filesize; }
+char* filename(filestat_t f) { return f.filename; }
+FILE* fileptr(filestat_t f) { return f.fp; }
+
+void setfilesize(filestat_t* f, uint64_t s) { f->filesize = s;}
+void setfilename(filestat_t* f, char* fn) { f->filename = fn ;}
+void setfileptr(filestat_t* f, FILE* fp) { f->fp = fp; }
+
+filestat_t filestat(_Bool b, uint64_t s, char* fn, FILE* fp)
+{
+    filestat_t str = {b, s, fn, fp};
+    return str;
+}
+
 void  secure_open(const char *path, const char *context, FILE* f)
 {
     if (f != NULL) fclose(f);
@@ -1786,6 +1797,36 @@ void  secure_open(const char *path, const char *context, FILE* f)
 
     fseek(f, 0, SEEK_SET);
 }
+
+int  s_open(filestat_t f, const char *context)
+{
+    errno = 0;
+    if (f.isopen) return 0; // no-op
+
+    if ((f.fp = fopen(f.filename, context))  == NULL )
+    {
+        printf(ERR "Could not open '%s'\n", f.filename);
+        f.fp = NULL;
+        f.filesize = 0;
+        return -1;
+    }
+
+    f.isopen = true;
+
+    f.filesize = stat_file_size(f.filename);
+
+    fseek(f.fp, 0, SEEK_SET);  // normally 0
+
+    return errno;
+}
+
+
+int  s_close(filestat_t f)
+{
+    if (f.isopen) return fclose(f.fp);
+    else return 0; // no-op
+}
+
 
 /* -------
  * end_seek

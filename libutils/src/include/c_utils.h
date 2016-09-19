@@ -33,7 +33,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 
 #include "version.h"
-#include "fixwav_manager.h"
+//#include "fixwav_manager.h"
 
 #if defined __WIN32__ || defined _WIN32 || defined __WIN32 || defined __WIN64 || defined _WIN64
 #define SEPARATOR "\\"
@@ -175,9 +175,96 @@ typedef struct
  {
     struct rusage *nothing;
     struct rusage *start;
-}compute_t;
+} compute_t;
 
 
+typedef struct
+{
+   _Bool isopen;
+   uint64_t filesize;
+   char* filename;
+   FILE* fp;
+} filestat_t ;
+
+_Bool isopen(filestat_t f);
+uint64_t filesize(filestat_t f);
+char* filename(filestat_t f);
+FILE* fileptr(filestat_t f);
+
+void setfilesize(filestat_t* f, uint64_t s);
+void setfilename(filestat_t* f, char* fn);
+void setfileptr(filestat_t* f, FILE* fp);
+
+filestat_t filestat(_Bool b, uint64_t s, char* fn, FILE* fp);
+
+typedef struct
+  {
+    /* pointers */
+
+    char* database;
+    char* filetitle;
+
+    /* global behavior booleans are set to zero by default, being global */
+    _Bool automatic;  /* whether automatic processing mode is selected */
+    _Bool prepend;  /* whether new header is prepended to raw data or overwrites old header */
+    _Bool in_place; /* whether old file is overwritten */
+    _Bool cautious; /* whether to ask user before overwrite */
+    _Bool interactive; /* whether interactive dialogs will be used */
+    /* global diagnosis values */
+    _Bool padding; /* whether files should be end-padded */
+    _Bool prune; /* whether files ending with 00 should be pruned */
+    _Bool virtual;
+    short int repair;
+    uint32_t padbytes;
+    uint32_t prunedbytes;
+
+
+    filestat_t infile;
+    filestat_t outfile;
+
+    /* header substructure */
+
+  } WaveData;
+
+typedef struct
+  {
+    _Bool       is_extensible;
+    _Bool       has_fact;
+    uint8_t     ichunks;
+    uint8_t*    header_in;
+    uint8_t*    header_out;
+    uint16_t     header_size_in; /* size of header */
+    uint16_t     header_size_out; /* size of header */
+    uint16_t	 wFormatTag;	/* should be 1 for PCM-code */
+    uint16_t	 channels;	/* 1 Mono, 2 Stereo */
+    uint16_t	 nBlockAlign;	/* samplesize*/
+    uint16_t     cbSize;  /* 0 or 22 */
+    uint16_t	 wBitsPerSample;	/* 8, 12, 16, or 24 bit */
+    uint32_t     dwChannelMask;  /* channel mapping to hardware */
+    uint32_t	 ckID;	/* 'RIFF' */
+    uint32_t	 ckSize;	/* filelen */
+    uint32_t	 WAVEID;	/* 'WAVE' */
+
+    uint32_t	 fmt_ckID;	/* 'fmt ' */
+    uint32_t	 fmt_ckSize;	/* length of fmt_ckID = 16 */
+    uint32_t	 dwSamplesPerSec
+;	/* frequence of sample */
+    uint32_t	nAvgBytesPerSec; /* bytes per second */
+    uint16_t    wavext;     /* wav extension = 0 */
+    uint32_t    fact_chunk; /* 'fact'*/
+    uint32_t    fact_length; /* length of fact chunk - 8 in bytes = 4*/
+    uint32_t    n_spl;       /* number of samples written out */
+    uint32_t	 data_ckID;	/* 'data' */
+    uint32_t	 data_cksize;	/* samplecount */
+    /* RIFF info chunks to be parsed: INAM, IART, ICMT, ICOP, ICRD, IGNR */
+    uint8_t INAM[MAX_LIST_SIZE];
+    uint8_t IART[MAX_LIST_SIZE];
+    uint8_t ICMT[MAX_LIST_SIZE];
+    uint8_t ICOP[MAX_LIST_SIZE];
+    uint8_t ICRD[MAX_LIST_SIZE];
+    uint8_t IGNR[MAX_LIST_SIZE];
+
+  } WaveHeader;
 
 /* Prototypes */
 
@@ -208,6 +295,9 @@ void hexdump_header(FILE* infile, uint8_t header_size);
 void hexdump_pointer(uint8_t* tab,  size_t tabsize);
 void hex2file(FILE* out, uint8_t* tab,  size_t tabsize);
 void secure_open(const char *path, const char *context, FILE*);
+int  s_open(filestat_t f, const char *context);
+int  s_close(filestat_t f);
+
 int end_seek(FILE* outfile);
 void parse_wav_header(WaveData* info, WaveHeader* ichunk);
 const char* get_command_line(const char* args[]);

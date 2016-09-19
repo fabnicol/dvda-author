@@ -57,11 +57,13 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
   // display the total file size for convenience
   // Patch on version 0.1.1: -int +uint64_t (int is not enough for files > 2GB)
   // NB: under Windows, use stat_file_size if file not open, otherwise use read_file_size
-  if (info->infile)   size=stat_file_size(info->infile);
+  if (fileptr(info->infile) == NULL) return;
+
+  s_open(info->infile, "rb+");
 
   if (!errno)
     {
-      if (globals.debugging) foutput( "\n\n--FIXWAV section %d--\n\n"MSG "File size is %"PRIu64" bytes\n", section, (uint64_t)  size );
+      if (globals.debugging) foutput( "\n\n--FIXWAV section %d--\n\n"MSG "File size is %"PRIu64" bytes\n", section, filesize(info->infile));
     }
   else
     {
@@ -81,7 +83,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   /* verify that the filename ends with 'wav' */
 
-  if ( ((length=strlen(info->infile) - 3) <= 0) || ( strncmp( info->infile + length, "wav", 3 ) ))
+  if ( ((length=strlen(filename(info->infile)) - 3) <= 0) || ( strncmp(filename(info->infile) + length, "wav", 3)))
     {
       if (globals.debugging) foutput("%s%s%s\n",ERR "Found file '", info->infile,"'");
       if (globals.debugging) foutput("%s\n", ERR "The filename must end in 'wav'.\nExiting ..." );
@@ -146,53 +148,39 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
     }
 #endif
 
-  /* open the existing file */
+  /* check incompatible options and identify output and input for inplace mode */
 
-  if (info->virtual)
-  {
-    secure_open(info->infile, "rb+", info->INFILE);
-  }
+  if (! info->in_place)
+    {
+      if (strcmp(fileptr(info->infile), fileptr(info->outfile)) == 0)
+        {
+          if (globals.debugging) foutput( "%s\n", ERR "input and output paths are identical. Press Y to exit...");
+          if (isok())
+            {
+              info->repair=FAIL;
+              goto getout;
+            }
+        }
+
+      s_open(info->outfile, "rb+");
+    }
   else
     {
+      if (info->cautious)
+      {
+          if (globals.debugging) foutput("%s", "" WAR "in-place mode will change original file.\n");
+          if (globals.debugging) foutput("%s\n",  ANSI_COLOR_RED "[INT]" ANSI_COLOR_RESET "  Enter Y to continue, otherwise press any key + return to exit.");
 
-      if (!info->in_place)
-        {
-          if (strcmp(info->infile, info->outfile))
+          if (!isok())
             {
-              secure_open(info->infile, "rb", info->INFILE);
-              secure_open(info->outfile, "ab", info->OUTFILE);
+              info->repair=FAIL;
+              goto getout;
             }
-          else
-            {
-              if (globals.debugging) foutput( "%s\n", ERR "input and output paths are identical. Press Y to exit...");
-              if (isok())
-                {
-                  info->repair=FAIL;
-                  goto getout;
-                }
-            }
-        }
-      else
-        {
-          if (info->cautious)
-          {
-              if (globals.debugging) foutput("%s", "" WAR "in-place mode will change original file.\n");
-              if (globals.debugging) foutput("%s\n",  ANSI_COLOR_RED "[INT]" ANSI_COLOR_RESET "  Enter Y to continue, otherwise press any key + return to exit.");
+      }
 
-              if (!isok())
-                {
-                  info->repair=FAIL;
-                  goto getout;
-                }
-          }
-
-          if (globals.debugging) foutput(INF "Opening %s\n", info->outfile);
-
-          info->outfile = info->infile;
-          secure_open(info->infile, "rb+", info->INFILE);
-          info->OUTFILE = info->INFILE;
-        }
+      info->outfile = info->infile;
     }
+
 
   /* reads header */
 
@@ -225,7 +213,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   /* if no GUI, reverting to user input and resetting header_size to 0 if: failed to parse header, or prepending, or header_size > 255 */
 
-  if (readHeader(info->INFILE, header) == FAIL || info->prepend || header->header_size_in == MAX_HEADER_SIZE)
+  if (readHeader(fileptr(info->infile), header) == FAIL || info->prepend || header->header_size_in == MAX_HEADER_SIZE)
   {
 #     ifndef GUI_BEHAVIOR
         info->interactive = 1;
@@ -254,7 +242,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
     {
       if (globals.debugging) foutput("%s\n", INF "Pruning stage");
 
-      switch (prune(info->INFILE, info, header))
+      switch (prune(info, header))
         {
         case NO_PRUNE:
           if (globals.debugging) foutput( "%s\n", INF "Fixwav status 3:\n       File was not pruned (no ending zeros)." );
@@ -342,26 +330,22 @@ Checkout:
               if (globals.debugging) foutput("%s\n", INF "Header copy successful.\n");
               if (globals.maxverbose)
               {
-                  if (fclose(info->OUTFILE) != 0) return(NULL);
-                  secure_open(info->outfile, "rb", info->OUTFILE);
-                  fseeko(info->OUTFILE, 0, SEEK_SET);
+                  if (s_close(info->outfile) != 0) return(NULL);
+                  s_open(info->outfile, "rb+");
                   if (globals.debugging) foutput("%s","Dumping new header:\n\n");
-                  hexdump_header(info->OUTFILE, HEADER_SIZE);
+                  hexdump_header(fileptr(info->outfile), HEADER_SIZE);
               }
           }
           else
               break;
 
-          fclose(info->OUTFILE);
-          secure_open(info->outfile, "ab", info->OUTFILE);
-
           if (!info->in_place)
           {
-              if (copy_file_p(info->INFILE, info->OUTFILE,
+              if (copy_file_p(fileptr(info->infile), fileptr(info->outfile),
                               (info->prepend) ? 0 : header->header_size_in,
-                              info->filesize - header->header_size_in) == PAD)
+                              filesize(info->infile) - header->header_size_in) == PAD)
 
-                  if (info->padbytes) pad_end_of_file(info);
+              if (info->padbytes) pad_end_of_file(info);
 
               info->repair=BAD_HEADER;
           }
@@ -406,13 +390,13 @@ getout:
 
   if (!info->virtual)
     {
-      if (info->INFILE == NULL || info->OUTFILE == NULL)
+      if (filesize(info->infile) == NULL || filesize(info->outfile) == NULL)
         {
           if (globals.debugging) foutput("%s\n", WAR "File pointer is NULL.");
           return(NULL);
         }
 
-      if (fclose(info->INFILE) == EOF || (!info->in_place && fclose(info->OUTFILE) == EOF))
+      if (s_close(info->infile) == EOF || (!info->in_place && s_close(info->outfile) == EOF))
         {
           if (globals.debugging) foutput("%s\n", WAR "fclose error: issues may arise.");
           return(NULL);
@@ -420,15 +404,14 @@ getout:
     }
   else
     {
-      if (info->INFILE == NULL)
+      if (fileptr(info->infile) == NULL)
         {
           if (globals.debugging) foutput("%s\n", WAR "File pointer is NULL.");
           return(NULL);
         }
 
-      if (fclose(info->INFILE) == EOF)
+      if (s_close(info->infile) == EOF)
         {
-
           if (globals.debugging) foutput("%s\n", WAR "fclose error: issues may arise.");
           return(NULL);
         }
@@ -438,7 +421,7 @@ getout:
     {
       // getting rid of empty files and useless work copies
       errno=0;
-      unlink(info->outfile);
+      unlink(filename(info->outfile));
       if (errno)
         if (globals.debugging) foutput("%s%s\n", ERR "unlink: ", strerror(errno));
     }
