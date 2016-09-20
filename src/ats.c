@@ -1171,7 +1171,7 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
 int decode_ats()
 {
     FILE* fp;
-    int32_t bytesinbuf=2048;
+
     uint8_t audio_buf[2048];
     uint64_t pack = 0;
     fileinfo_t files;

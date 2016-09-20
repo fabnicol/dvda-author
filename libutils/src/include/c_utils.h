@@ -250,7 +250,6 @@ typedef struct
     uint32_t	 dwSamplesPerSec
 ;	/* frequence of sample */
     uint32_t	nAvgBytesPerSec; /* bytes per second */
-    uint16_t    wavext;     /* wav extension = 0 */
     uint32_t    fact_chunk; /* 'fact'*/
     uint32_t    fact_length; /* length of fact chunk - 8 in bytes = 4*/
     uint32_t    n_spl;       /* number of samples written out */
@@ -296,7 +295,7 @@ void hexdump_pointer(uint8_t* tab,  size_t tabsize);
 void hex2file(FILE* out, uint8_t* tab,  size_t tabsize);
 void secure_open(const char *path, const char *context, FILE*);
 int  s_open(filestat_t *f, const char *context);
-int  s_close(filestat_t f);
+int  s_close(filestat_t *f);
 
 int end_seek(FILE* outfile);
 void parse_wav_header(WaveData* info, WaveHeader* ichunk);
