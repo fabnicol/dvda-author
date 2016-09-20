@@ -62,12 +62,8 @@ errno=0;
         static WaveHeader waveheader;
         WaveData wavedata=
         {
-            path,
-            NULL,
-            "st",
-            NULL,
-            NULL,
-            NULL,
+            .database = NULL,
+            .filetitle = NULL,
             1, /* automatic behaviour */
             0, /* prepending */
             1, /* in-place*/
@@ -79,7 +75,8 @@ errno=0;
             0, /* repair status */
             0, /* padbytes */
             0, /* pruned bytes */
-            {false, 0, "", NULL} /* filestat */
+            .infile = {false, 0, "", NULL}, /* filestat */
+            .outfile = {false, 0, "", NULL} /* filestat */
         };
 
         fixwav(&wavedata, &waveheader);
@@ -115,12 +112,8 @@ int audit_soundtrack(char* path, _Bool strict)
         static WaveHeader waveheader;
         WaveData wavedata=
         {
-            path,
-            NULL,
-            "aud",
-            NULL,
-            NULL,
-            NULL,
+            .database = NULL,
+            .filetitle = NULL,
             1, /* automatic behaviour */
             0,
             0,
@@ -132,7 +125,8 @@ int audit_soundtrack(char* path, _Bool strict)
             0,  /* repair status */
             0, /* padbytes */
             0, /* pruned bytes */
-            0 /* filesize */
+            .infile = {false, 0, "", NULL}, /* filestat */
+            .outfile = {false, 0, "", NULL} /* filestat */
         };
 
         fixwav(&wavedata, &waveheader);

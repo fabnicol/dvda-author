@@ -46,90 +46,6 @@ repair_wav(WaveData *info, WaveHeader *header )
 
   errno=0;
 
-  s_close(info->infile);
-  s_open(&info->infile, "rb+");
-
-  /*********************************************************************
-  * The RIFF Chunk
-  *********************************************************************/
-
-  /* the first 4 bytes should be "RIFF" */
-  if (memcmp(&header->ckID, "RIFF", 4) == 0)
-    {
-      if (globals.debugging) foutput( "%s", MSG "Found correct RIFF ID at offset 0\n" );
-    }
-  else
-    {
-      if (globals.debugging) foutput( "%s", INF "Repairing RIFF ID at offset 0\n" );
-      if (memmove( &(header->ckID), "RIFF", 4 * sizeof(char)) == NULL) return(FAIL);
-      repair = BAD_HEADER;
-    }
-
-  /* The ChunkSize is the entire file size - 8
-   * unless a pad byte was added when the file was written  (patch Aug. 2016)
-       "This size value does not include the size of the ckID or ckSize fields
-        or the pad byte at the end of
-        ckData."
-  */
-
-  if (header->ckSize == filesize(info->infile)  - 8)
-    {
-      if (globals.debugging) foutput( MSG "Found correct audio chunk Size of %" PRIu32 " bytes at offset 4\n",  header->ckSize);
-    }
-  else
-  if ((header->ckSize & 1) == 1 && header->ckSize == filesize(info->infile)  - 9)
-    {
-      if (globals.debugging) foutput( MSG "Found correct audio chunk Size of %" PRIu32 " bytes at offset 4. Pad byte added at EOF.\n",  header->ckSize);
-      pad_byte = true;
-    }
-  else
-    {
-      /* there is here no other logical option than to consider the possible pad byte at eof as part of audio data */
-
-      if (globals.debugging) foutput( MSG "audio chunk Size of %" PRIu32 " at offset 4 is incorrect: should be %" PRIu32 " bytes\n"
-              INF "... repairing\n",
-              header->ckSize,
-              (uint32_t) filesize(info->infile)  - 8);
-
-      header->ckSize = (uint32_t) filesize(info->infile)  - 8;
-      repair = BAD_HEADER;
-    }
-
-  /* The Chunk Format should be the letters "WAVE" */
-
-  if (memcmp(&header->WAVEID, "WAVE", 4) == 0)
-    {
-      if (globals.debugging) foutput("%s\n",  MSG "Found correct WAVE Format at offset 8" );
-    }
-  else
-    {
-      if (globals.debugging) foutput("%s\n",  MSG "WAVE Format at offset 8 is incorrect\n" INF "... repairing\n" );
-      if (memmove(&(header->WAVEID), "WAVE", 4 * sizeof(char)) == NULL)
-          return(FAIL);
-
-      repair = BAD_HEADER;
-    }
-
-  /*********************************************************************/
-
-  /* The "fmt " Subchunk                                                */
-  /*********************************************************************/
-
-  /* The Subchunk1 ID should contain the letters "fmt " */
-
-  if (memcmp(&header->fmt_ckID, "fmt", 3) == 0)
-    {
-      if (globals.debugging) foutput("%s\n",  MSG "Found correct fmt ID at offset 12" );
-    }
-  else
-    {
-      if (globals.debugging) foutput("%s\n",  MSG "fmt ID at offset 12 is incorrect\n" INF "... repairing" );
-      // "fmt " ends in a space
-      if (memmove( &(header->fmt_ckID), "fmt ", 3 * sizeof(char) ) == NULL)
-          return(FAIL);
-      repair = BAD_HEADER;
-    }
-
   /****************************************
   *  On to core audio parameters
   *****************************************/
@@ -164,6 +80,89 @@ repair_wav(WaveData *info, WaveHeader *header )
 # endif
 
   if (globals.debugging) foutput("%s\n", INF "Core audio characteristics were checked.\n       Now processing data subchunk");
+
+  /*********************************************************************
+  * The RIFF Chunk
+  *********************************************************************/
+
+  /* the first 4 bytes should be "RIFF" */
+  if (memcmp(&header->ckID, "RIFF", 4) == 0)
+    {
+      if (globals.debugging) foutput( "%s", MSG "Found correct RIFF ID at offset 0\n" );
+    }
+  else
+    {
+      if (globals.debugging) foutput( "%s", INF "Repairing RIFF ID at offset 0\n" );
+      if (memmove( &(header->ckID), "RIFF", 4 * sizeof(char)) == NULL) return(FAIL);
+      repair = BAD_HEADER;
+    }
+
+  /* The ChunkSize is the entire file size - 8
+   * unless a pad byte was added when the file was written  (patch Aug. 2016)
+       "This size value does not include the size of the ckID or ckSize fields
+        or the pad byte at the end of
+        ckData."
+  */
+
+  if (header->ckSize == filesize(info->infile)  - 8 + (header->channels > 2 ? HEADER_EXTENSIBLE_SIZE : HEADER_SIZE))
+    {
+      if (globals.debugging) foutput( MSG "Found correct audio chunk Size of %" PRIu32 " bytes at offset 4\n",  header->ckSize);
+    }
+  else
+  if ((header->ckSize & 1) == 1 && header->ckSize == filesize(info->infile)  - 9 + (header->channels > 2 ? HEADER_EXTENSIBLE_SIZE : HEADER_SIZE))
+    {
+      if (globals.debugging) foutput( MSG "Found correct audio chunk Size of %" PRIu32 " bytes at offset 4. Pad byte added at EOF.\n",  header->ckSize);
+      pad_byte = true;
+    }
+  else
+    {
+      /* there is here no other logical option than to consider the possible pad byte at eof as part of audio data */
+
+      if (globals.debugging) foutput( MSG "audio chunk Size of %" PRIu32 " at offset 4 is incorrect: should be %" PRIu32 " bytes\n"
+              INF "... repairing\n",
+              header->ckSize,
+              (uint32_t) filesize(info->infile)  - 8);
+
+      header->ckSize = (uint32_t) filesize(info->infile)  - 8 + (header->channels > 2 ? HEADER_EXTENSIBLE_SIZE : HEADER_SIZE);
+      repair = BAD_HEADER;
+    }
+
+  /* The Chunk Format should be the letters "WAVE" */
+
+  if (memcmp(&header->WAVEID, "WAVE", 4) == 0)
+    {
+      if (globals.debugging) foutput("%s\n",  MSG "Found correct WAVE Format at offset 8" );
+    }
+  else
+    {
+      if (globals.debugging) foutput("%s\n",  MSG "WAVE Format at offset 8 is incorrect\n" INF "... repairing\n" );
+      if (memmove(&(header->WAVEID), "WAVE", 4 * sizeof(char)) == NULL)
+          return(FAIL);
+
+      repair = BAD_HEADER;
+    }
+
+  /*********************************************************************/
+
+  /* The "fmt " Subchunk                                                */
+  /*********************************************************************/
+
+  /* The Subchunk1 ID should contain the letters "fmt " */
+
+  if (memcmp(&header->fmt_ckID, "fmt ", 4) == 0)
+    {
+      if (globals.debugging) foutput("%s\n",  MSG "Found correct fmt ID at offset 12" );
+    }
+  else
+    {
+      if (globals.debugging) foutput("%s\n",  MSG "fmt ID at offset 12 is incorrect\n" INF "... repairing" );
+      // "fmt " ends in a space
+      if (memmove( &(header->fmt_ckID), "fmt ", 4 * sizeof(char) ) == NULL)
+          return(FAIL);
+      repair = BAD_HEADER;
+    }
+
+
 
  /* Consequences on WAVE_FORMAT type correction */
 
@@ -304,6 +303,7 @@ int launch_repair(WaveData *info, WaveHeader *header)
   if (header->channels > 2)
   {
 
+      header->cbSize = 0x16; // extension is 22 bytes
       uint16_copy_reverse(p, header->cbSize), p+=2;
       uint16_copy_reverse(p, header->wBitsPerSample), p+=2;  // in principle, wValidBitsPerSample
       uint32_copy_reverse(p, header->dwChannelMask), p+=4;
@@ -316,7 +316,7 @@ int launch_repair(WaveData *info, WaveHeader *header)
 
       memcpy(p, FACT, 8), p+=8;
 
-      uint32_copy_reverse(p, header->data_cksize/(header->wBitsPerSample / 8)), p+=4;
+      uint32_copy_reverse(p, header->data_cksize/(header->channels * header->wBitsPerSample / 8)), p+=4;
   }
 
   uint32_copy_reverse(p, header->data_ckID), p+=4;
@@ -331,7 +331,7 @@ int write_header(WaveData *info, WaveHeader *header)
 
   if (info->virtual) return(info->repair);
 
-  s_open(&info->outfile, "rb+"); // normally no-op.
+  s_open(&info->outfile, "wb+"); // normally no-op.
 
   int count=0;
 

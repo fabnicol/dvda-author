@@ -57,7 +57,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
   // Patch on version 0.1.1: -int +uint64_t (int is not enough for files > 2GB)
   // NB: under Windows, use stat_file_size if file not open, otherwise use read_file_size
 
-  s_open(&info->infile, "rb+");
+  s_open(&info->infile, "rb");
 
   if (fileptr(info->infile) == NULL) return NULL;
 
@@ -85,7 +85,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   if ( ((length=strlen(filename(info->infile)) - 3) <= 0) || ( strncmp(filename(info->infile) + length, "wav", 3)))
     {
-      if (globals.debugging) foutput("%s%s%s\n",ERR "Found file '", info->infile,"'");
+      if (globals.debugging) foutput("%s%s%s\n",ERR "Found file '", filename(info->infile),"'");
       if (globals.debugging) foutput("%s\n", ERR "The filename must end in 'wav'.\nExiting ..." );
       info->repair=FAIL;
       goto getout;
@@ -162,7 +162,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
             }
         }
 
-      s_open(&info->outfile, "rb+");
+      s_open(&info->outfile, "wb");
     }
   else
     {
@@ -330,17 +330,25 @@ Checkout:
               if (globals.debugging) foutput("%s\n", INF "Header copy successful.\n");
               if (globals.maxverbose)
               {
-                  if (s_close(info->outfile) != 0) return(NULL);
+                  if (s_close(&info->infile) != 0) return(NULL);
                   s_open(&info->outfile, "rb+");
                   if (globals.debugging) foutput("%s","Dumping new header:\n\n");
                   hexdump_header(fileptr(info->outfile), HEADER_SIZE);
               }
           }
           else
+          {
+              foutput("%s\n", ERR "Header could not be written.\n");
               break;
+          }
 
           if (!info->in_place)
           {
+//              if (s_close(&info->infile) == EOF)
+//              {
+//                  perror(ERR "s_close");
+//              }
+//              s_open(&info->infile, "rb");
               if (copy_file_p(fileptr(info->infile), fileptr(info->outfile),
                               (info->prepend) ? 0 : header->header_size_in,
                               filesize(info->infile) - header->header_size_in) == PAD)
@@ -390,13 +398,13 @@ getout:
 
   if (!info->virtual)
     {
-      if (filesize(info->infile) == NULL || filesize(info->outfile) == NULL)
+      if (fileptr(info->infile) == NULL || fileptr(info->outfile) == NULL)
         {
           if (globals.debugging) foutput("%s\n", WAR "File pointer is NULL.");
           return(NULL);
         }
 
-      if (s_close(info->infile) == EOF || (!info->in_place && s_close(info->outfile) == EOF))
+      if (s_close(&info->infile) == EOF || (!info->in_place && s_close(&info->outfile) == EOF))
         {
           if (globals.debugging) foutput("%s\n", WAR "fclose error: issues may arise.");
           return(NULL);
@@ -410,7 +418,7 @@ getout:
           return(NULL);
         }
 
-      if (s_close(info->infile) == EOF)
+      if (s_close(&info->infile) == EOF)
         {
           if (globals.debugging) foutput("%s\n", WAR "fclose error: issues may arise.");
           return(NULL);

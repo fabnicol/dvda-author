@@ -836,12 +836,8 @@ int fixwav_repair(fileinfo_t *info)
 
     WaveData wavedata=
     {
-        info->filename,
-        info->audio->fp,
-        buf,
-        NULL,
-        globals.settings.fixwav_database,  /* database path for collecting info chunks in headers */
-        NULL,
+        .database = globals.settings.fixwav_database,  /* database path for collecting info chunks in headers */
+        .filetitle = NULL,
         globals.fixwav_automatic, /* automatic behaviour */
         globals.fixwav_prepend, /* do not prepend a header */
         globals.fixwav_in_place, /* do not correct in place */
@@ -853,7 +849,8 @@ int fixwav_repair(fileinfo_t *info)
         0  /* repair status */,
         0, /* padbytes */
         0, /* pruned bytes */
-        {false, 0, "", NULL}  /* filestat */
+        .infile = {false, 0, "", NULL},  /* filestat */
+        .outfile = {false, 0, "", NULL}
     };
 
 
@@ -904,19 +901,17 @@ int fixwav_repair(fileinfo_t *info)
                     info->filename=strdup(buf);
                 }
 
-
-                foutput(MSG "Proceeding with fixed file %s:\n", wavedata.outfile );
+                foutput(MSG "Proceeding with fixed file %s:\n", filename(wavedata.outfile));
             }
             else
             if (globals.debugging)
-                foutput(MSG "Proceeding with virtual header and same file %s:\n", info->filename );
+                foutput(MSG "Proceeding with virtual header and same file %s:\n", info->filename);
 
             foutput(MSG "Bits per sample=%d Sample frequency: %d\n       Bit depth:%d Channels:%d\n", waveheader.wBitsPerSample,
                     waveheader.dwSamplesPerSec, waveheader.wBitsPerSample, waveheader.channels );
 
             return(AFMT_WAVE_FIXED);
         }
-
     }
 }
 

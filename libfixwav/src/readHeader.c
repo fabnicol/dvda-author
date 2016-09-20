@@ -160,11 +160,12 @@ Extended Wav:
 
 if (header->is_extensible)
 {
-/* 36-37 +22*/ header->wavext =READ_2_bytes
+/* 36-37 +22*/ header->cbSize =READ_2_bytes
 
 /* skipping extension subchunk */
-
- p += header->wavext; // 0 or 22
+ p +=2;
+ header->dwChannelMask = READ_4_bytes
+ p += header->cbSize - 6; // 0 or 22
 }
 
 /* fact and data chunks were previouslt parsed */
