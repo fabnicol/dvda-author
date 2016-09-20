@@ -19,7 +19,7 @@ CONFIG(debug, debug|release) {
 
 #to avoid ansi colors in output console add NO_ANSI_COLORS to the DEFINES directive
 
-DEFINES +=   _GNU_SOURCE  COMPILER_IS_GCC HAVE_libiberty HAVE_FLAC HAVE_libogg HAVE_libsox  #WITHOUT_sox #WITHOUT_FLAC
+DEFINES +=   _GNU_SOURCE  COMPILER_IS_GCC HAVE_libiberty HAVE_FLAC HAVE_libogg HAVE_libsox NO_ANSI_COLORS #WITHOUT_sox #WITHOUT_FLAC
 #USE_SET1 for reverting to some previously known IFO parameters. Deprecated.
 
 Build = $$PWD/build

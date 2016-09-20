@@ -1002,7 +1002,7 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
     fseek(fp, 14 + (position == FIRST_PACK ? 3 : 0), SEEK_CUR);
 
     /***       info->first/mid/last/pack_lpcm_headerquantity + 4    ***/
-    uint header_length = read_lpcm_header(fp, info, pack_in_title, position);
+    int header_length = read_lpcm_header(fp, info, pack_in_title, position);
 
     uint64_t offset1 = ftello(fp);
 
