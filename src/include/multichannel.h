@@ -89,32 +89,34 @@ static inline void permutation(uint8_t *buf,
 /* DVD-A multichanenl specs (= info->cga at relative offset 0x26 of AOB 2048-byte sectors, except for the first (at 0x3B) */
 
 #if 0
-DVD-A                                      WAV_FORMAT_EXTENSIBLE
 
-0 	C                                      SPEAKER_FRONT_CENTER 0x4
-1 	L 	R                                  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT    0x3
-2 	L 	R 	S                              SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_BACK_CENTER  0x103
-3 	L 	R 	Ls 	Rs                         SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT  0x33
-4 	L 	R 	Lfe                            SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_LOW_FREQUENCY  0xB
-5 	L 	R 	Lfe 	S                      SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_LOW_FREQUENCY | SPEAKER_BACK_CENTER 0x10B
-6 	L 	R 	Lfe 	Ls 	Rs                 SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_LOW_FREQUENCY | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT 0x3B
-7 	L 	R 	C                              SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_FRONT_CENTER  0x7
-8 	L 	R 	C 	S                          SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_FRONT_CENTER  | SPEAKER_BACK_CENTER 0x107
-9 	L 	R 	C 	Ls 	Rs                     SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_FRONT_CENTER  | SPEAKER_BACK_LEFT | SPEAKER_RIGHT_LEFT 0x37
-10 	L 	R 	C 	Lfe
-11 	L 	R 	C 	Lfe 	S
-12 	L 	R 	C 	Lfe 	Ls 	Rs
-13 	L 	R 	C 	S
-14 	L 	R 	C 	Ls 	Rs
-15 	L 	R 	C 	Lfe
-16 	L 	R 	C 	Lfe 	S
-17 	L 	R 	C 	Lfe 	Ls 	Rs
-18 	L 	R 	Ls 	Rs 	Lfe
-19 	L 	R 	Ls 	Rs 	C
-20 	L 	R 	Ls 	Rs 	C 	Lfe
+DVD-A                                       WAV_FORMAT_EXTENSIBLE
+
+0 	C                                       SPEAKER_FRONT_CENTER                                                                                                    0x4
+1 	L 	R                                   SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT                                                                                0x3
+2 	L 	R 	S                               SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_BACK_CENTER                                                         0x103
+3 	L 	R 	Ls 	Rs                          SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT                                      0x33
+4 	L 	R 	Lfe                             SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_LOW_FREQUENCY                                                       0xB
+5 	L 	R 	Lfe 	S                       SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_LOW_FREQUENCY | SPEAKER_BACK_CENTER                                 0x10B
+6 	L 	R 	Lfe 	Ls 	Rs                  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_LOW_FREQUENCY | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT              0x3B
+7 	L 	R 	C                               SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_FRONT_CENTER                                                        0x7
+8 	L 	R 	C 	S                           SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_FRONT_CENTER  | SPEAKER_BACK_CENTER                                 0x107
+9 	L 	R 	C 	Ls 	Rs                      SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_FRONT_CENTER  | SPEAKER_BACK_LEFT | SPEAKER_RIGHT_LEFT              0x37
+10 	L 	R 	C 	Lfe                         SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_FRONT_CENTER  | SPEAKER_LOW_FREQUENCY                               0xF
+11 	L 	R 	C 	Lfe 	S                   SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_FRONT_CENTER  | SPEAKER_LOW_FREQUENCY | SPEAKER_BACK_CENTER         0x10F
+12 	L 	R 	C 	Lfe 	Ls 	Rs              SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_FRONT_CENTER  | SPEAKER_LOW_FREQUENCY | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT  0x3F
+13 	L 	R 	C 	S                           SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_FRONT_CENTER  | SPEAKER_BACK_CENTER                                 0x107
+14 	L 	R 	C 	Ls 	Rs                      SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_FRONT_CENTER  | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT              0x37
+15 	L 	R 	C 	Lfe                         SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_FRONT_CENTER  | SPEAKER_LOW_FREQUENCY                               0xF
+16 	L 	R 	C 	Lfe 	S                   SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_FRONT_CENTER  | SPEAKER_LOW_FREQUENCY | SPEAKER_BACK_CENTER         0x10F
+17 	L 	R 	C 	Lfe 	Ls 	Rs              SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_FRONT_CENTER  | SPEAKER_LOW_FREQUENCY | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT 0x3F
+18 	L 	R 	Ls 	Rs 	Lfe                     SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  |  SPEAKER_BACK_LEFT    | SPEAKER_BACK_RIGHT    | SPEAKER_LOW_FREQUENCY       0x3B
+19 	L 	R 	Ls 	Rs 	C                       SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  |  SPEAKER_BACK_LEFT    | SPEAKER_BACK_RIGHT    | SPEAKER_FRONT_CENTER        0x37
+20 	L 	R 	Ls 	Rs 	C 	Lfe                 SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  |  SPEAKER_BACK_LEFT    | SPEAKER_BACK_RIGHT    | SPEAKER_FRONT_CENTER | SPEAKER_LOW_FREQUENCY  0x3B
+
+cga2wav_channels[21] = {0x4, 0x3, 0x103, 0x33, 0xB, 0x10B, 0x3B, 0x7, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x3B, 0x37, 0x3B };
+
 #endif
-
-cga2wav_channels[21] = {0x4, 0x3, 0x103, 0x33, 0xB, 0x10B, 0x3B, 0x7, 0x107, 0x37, ...};
 
 /* so we can convert dwChannelMask into cga and vice-versa */
 
