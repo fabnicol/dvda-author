@@ -1565,9 +1565,8 @@ int get_endianness()
 
 void parse_wav_header(WaveData* info, WaveHeader* header)
 {
-
     uint8_t haystack[MAX_HEADER_SIZE] = {0};
-    s_open(&info->infile, "rb+");
+
     if (errno) return;
     int count = fread(haystack, 1, MAX_HEADER_SIZE, fileptr(info->infile));
     if (count != MAX_HEADER_SIZE)
@@ -1809,7 +1808,7 @@ int  s_open(filestat_t *f, const char *context)
         f->fp = NULL;
         f->filesize = 0;
         fflush(NULL);
-        return -1;
+        exit(-1);
     }
 
     f->isopen = true;
@@ -1822,9 +1821,10 @@ int  s_open(filestat_t *f, const char *context)
 }
 
 
-int  s_close(filestat_t f)
+int  s_close(filestat_t *f)
 {
-    if (f.isopen) return fclose(f.fp);
+    if (f != NULL && f->isopen && f->fp != NULL)
+        return fclose(f->fp);
     else return 0; // no-op
 }
 

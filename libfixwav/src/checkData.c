@@ -173,7 +173,7 @@ int prune(WaveData *info, WaveHeader *header)
 //  otherwise truncate takes full size as an argument
 
 #if defined __WIN32__ || defined _WIN32 || defined __WIN32 || defined _WIN64 || defined __WIN64
-      if (info->in_place) s_close(info->infile);
+      if (info->in_place) s_close(&info->infile);
       offset=-count;
 #else
       offset=size -count;
