@@ -277,6 +277,7 @@ inline static int get_pes_packet_audio(FILE *fp, fileinfo_t *info, uint8_t *audi
 
     info->channels = (channel_assignment[0] < 21) ? channels[channel_assignment[0]] : 0;
 
+
     /* info->PTS_length, info->numsamples and info->numbytes will be unusable, other info fileds OK */
 
     calc_info(info);
@@ -307,7 +308,7 @@ inline static int get_pes_packet_audio(FILE *fp, fileinfo_t *info, uint8_t *audi
         case LAST_PACK :
             /* skipping audio_pes_header start to get to PES_packet_len_bytes --> audio_bytes */
             fseeko(fp, 4, SEEK_CUR);
-            if (globals.maxverbose) fprintf(stderr, DBG "Reading PES_plb at offset: %llu\n", ftello(fp));
+            if (globals.maxverbose) fprintf(stderr, DBG "Reading PES_plb at offset: %lu\n", ftello(fp));
             fread(PES_packet_len_bytes, 1, 2, fp);
             if (globals.maxverbose) fprintf(stderr, DBG "With values: PES_packet_len_bytes[0] = %d, PES_packet_len_bytes[1] = %d \n", PES_packet_len_bytes[0], PES_packet_len_bytes[1]);
             audio_bytes = (PES_packet_len_bytes[0] << 8 | PES_packet_len_bytes[1]) - info->lastpack_audiopesheaderquantity;
