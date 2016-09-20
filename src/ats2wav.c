@@ -385,6 +385,16 @@ int get_ats_audio()
     info.prune = false;
     info.infile = filestat(false, 0, files.filename, NULL);
     info.outfile = filestat(false, 0, filepath(globals.settings.tempdir, "temp"), NULL);
+    info.interactive = false;
+    _Bool debug = globals.debugging;
+    globals.debugging = false;
+
+    uint32_t cga2wav_channels[21] = {0x4, 0x3, 0x103, 0x33, 0xB, 0x10B, 0x3B, 0x7, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x3B, 0x37, 0x3B };
+
+    if (files.cga < 21)
+    {
+      header.dwChannelMask = cga2wav_channels[files.cga];
+    }
 
     header.wBitsPerSample = files.bitspersample;
     header.channels = files.channels;
@@ -394,7 +404,10 @@ int get_ats_audio()
 
     res = fixwav(&info, &header);
 
+    globals.debugging = debug;
+
     if (res == NULL) return(-1);
+
 
     errno = 0;
     unlink(filename(info.infile));
