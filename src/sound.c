@@ -410,6 +410,8 @@ int launch_lplex_hybridate(const pic* img,
         change_directory(globals.settings.workdir);
         run(lplex, args, 0);
 
+     FREE(lplex);
+
 #endif  
     return errno;
 }

@@ -136,14 +136,143 @@ static void convert_buffer(fileinfo_t *info, uint8_t *buf, int count)
     }
 }
 
-inline static int get_pes_packet_audio(FILE *fp, fileinfo_t *info, uint8_t *audio_buf)
+inline static int peek_pes_packet_audio(FILE *fp, FILE* fpout, fileinfo_t *info, _Bool *status)
+{
+    int position;
+
+    static uint64_t pack_in_title;
+    static int title;
+
+    if (fp == NULL) return 0;
+    uint64_t offset0 = ftello(fp);
+
+    fseeko(fp, offset0 + 14, SEEK_SET);
+
+    uint8_t buf[4];
+    fread(buf, 4, 1, fp);
+
+    if (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB)
+    {
+        position = FIRST_PACK;
+        pack_in_title = 0;
+        ++title;
+
+       char Title[14] = {0};
+       sprintf(Title, "title_%d.wav", title);
+
+       info->filename = filepath(globals.settings.outdir, Title);
+
+       if ((fpout = fopen(info->filename, "wb")) == NULL)
+       {
+           foutput("[ERR]  Could not open audio file %s\n.        Exiting...\n", info->filename);
+           exit(-7);
+       }
+    }
+    else
+    {
+        int res = fseeko(fp, 2044, SEEK_CUR);
+
+        if (res != 0)
+        {
+            position = LAST_PACK;
+        }
+        else
+        {
+            int n = fread(buf, 1, 4, fp);
+
+            if (n != 4 || (n == 4 && buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB))
+            {
+                position = LAST_PACK;
+            }
+            else
+            {
+                position = MIDDLE_PACK;
+            }
+        }
+        ++pack_in_title;
+    }
+
+
+    fseeko(fp, offset0 + 35 + (position == FIRST_PACK ? 21 : 0), SEEK_SET);
+
+    uint8_t sample_size[1] = {0};
+    uint8_t sample_rate[1] = {0};
+    fread(sample_size, 1, 1, fp);
+    fread(sample_rate, 1, 1, fp);
+    uint8_t high_nibble = (sample_rate[0] & 0xf0) >> 4;
+
+    switch(high_nibble)
+    {
+        case 0:
+            info->samplerate = 48000;
+            break;
+        case 0x1:
+            info->samplerate = 96000;
+            break;
+        case 0x2:
+            info->samplerate = 192000;
+            break;
+        case 0x8:
+            info->samplerate = 44100;
+            break;
+        case 0x9:
+            info->samplerate = 88200;
+            break;
+        case 0xa:
+            info->samplerate = 176400;
+            break;
+        default:
+            status = INVALID;
+            break;
+    }
+
+    if (sample_size[0] == 0x0f || sample_size[0] == 0x2f)
+    {
+        if ((sample_rate[0] & 0xf) != 0xf)
+        {
+            foutput("%s", "[ERR]  Coherence_test (peek) : sample_rate and sample_size are incoherent (no 0xf lower nibble).\n");
+            fflush(NULL);
+            status = INVALID;
+        }
+    }
+    else
+    if (sample_size[0] == 0x00 || sample_size[0] == 0x22)
+    {
+        if ((sample_rate[0] & 0xf) != high_nibble)
+        {
+            foutput("%s", "[ERR]  Coherence_test (peek) : sample_rate and sample_size are incoherent (lower nibble != higher nibble).\n");
+            status = INVALID;
+            fflush(NULL);
+        }
+    }
+
+    info->bitspersample = (sample_size[0] == 0x2f || sample_size[0] == 0x22) ? 24 : ((sample_size[0] == 0x0f || sample_size[0] == 0x00) ? 16 : 0);
+
+    if (! info->bitspersample) status = INVALID;
+
+    fseeko(fp, 1, SEEK_CUR);
+
+    uint8_t channel_assignment[1] = {0};
+
+    fread(channel_assignment, 1, 1, fp);
+
+    if (channel_assignment[0] > 20) status = INVALID;
+
+    info->cga = channel_assignment[0];
+
+    info->channels = (channel_assignment[0] < 21) ? channels[channel_assignment[0]] : 0;
+
+    return position;
+}
+
+
+inline static int get_pes_packet_audio(FILE *fp, FILE* fpout, fileinfo_t *info, uint8_t *audio_buf)
 {
     int position;
     //static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
 
     static uint64_t pack_in_title;
     static uint64_t fpout_size;
-    static int title;
     int audio_bytes;
     uint8_t PES_packet_len_bytes[2];
 
@@ -155,26 +284,13 @@ inline static int get_pes_packet_audio(FILE *fp, fileinfo_t *info, uint8_t *audi
     uint8_t buf[4];
     fread(buf, 4, 1, fp);
 
-    FILE *fpout;
-
     /* got to system header and read first 4 bytes to detect whether pack is start or not */
     if (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB)
     {
         position = FIRST_PACK;
         fpout_size = 0;
         pack_in_title = 0;
-         ++title;
 
-        char Title[14] = {0};
-        sprintf(Title, "title_%d.wav", title);
-
-        info->filename = filepath(globals.settings.outdir, Title);
-
-        if ((fpout = fopen(info->filename, "wb")) == NULL)
-        {
-            foutput("[ERR]  Could not open audio file %s\n.        Exiting...\n", info->filename);
-            exit(-7);
-        }
     }
     else
     {
@@ -277,7 +393,6 @@ inline static int get_pes_packet_audio(FILE *fp, fileinfo_t *info, uint8_t *audi
 
     info->channels = (channel_assignment[0] < 21) ? channels[channel_assignment[0]] : 0;
 
-
     /* info->PTS_length, info->numsamples and info->numbytes will be unusable, other info fileds OK */
 
     calc_info(info);
@@ -349,14 +464,14 @@ inline static int get_pes_packet_audio(FILE *fp, fileinfo_t *info, uint8_t *audi
 
 int get_ats_audio()
 {
-    FILE* fp;
+    FILE* fp = NULL, *fpout = NULL;
 
     uint8_t audio_buf[2048];
     uint64_t pack = 0;
     fileinfo_t files;
-    int result = 0;
+    int pack_rank = FIRST_PACK;
 
-    fp=fopen(globals.aobpath,"rb");
+    fp = fopen(globals.aobpath,"rb");
 
     if (fp == NULL)
     {
@@ -366,53 +481,76 @@ int get_ats_audio()
 
     do
     {
-        result  = get_pes_packet_audio(fp, &files, audio_buf);
-        if (result  == LAST_PACK || result  == FIRST_PACK || result  == MIDDLE_PACK)
+        /* First pass to get basic audio characteristics (sample rate, bit rate, cga */
+
+        _Bool status = INVALID;
+
+        do
         {
-            ++pack;
+            pack_rank = peek_pes_packet_audio(fp, fpout, &files, &status);
+            if (status == VALID) break;
         }
+        while (pack_rank != LAST_PACK);
+
+        if (status == INVALID || fp == NULL || fpout == NULL) return -1;
+
+        /* generate header in empty file. We must allow prepend and in_place for empty files */
+
+        WaveData info;
+        WaveHeader header;
+
+        info.automatic = true;
+        info.prepend = true;
+        info.in_place = true;
+        info.prune = false;
+        info.infile = filestat(true, 0, files.filename, fpout);
+        info.outfile = info.infile;
+        info.interactive = false;
+        _Bool debug = globals.debugging;
+        globals.debugging = false;
+
+        uint32_t cga2wav_channels[21] = {0x4, 0x3, 0x103, 0x33, 0xB, 0x10B, 0x3B, 0x7, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x3B, 0x37, 0x3B};
+
+        if (files.cga < 21)
+        {
+          header.dwChannelMask = cga2wav_channels[files.cga];
+        }
+
+        header.wBitsPerSample = files.bitspersample;
+        header.channels = files.channels;
+        header.dwSamplesPerSec = files.samplerate;
+
+        WaveHeader* res;
+
+        res = fixwav(&info, &header);
+
+        globals.debugging = debug;
+
+        if (res == NULL) return(-1);
+
+        /* second pass to get the audio */
+
+        do
+        {
+            if (s_open(&info.outfile, "ab") == INVALID)
+                return -1;
+            pack_rank = get_pes_packet_audio(fp, fpout, &files, audio_buf);
+
+            if (pack_rank  == LAST_PACK || pack_rank == FIRST_PACK || pack_rank == MIDDLE_PACK)
+            {
+                ++pack;
+            }
+        }
+        while (pack_rank != LAST_PACK);
+
+        foutput(MSG "Read %lu PES packets.\n", pack);
+
+        s_close(&info.outfile);
+
+        if (errno) perror(ERR);
+        free(files.filename);
     }
-    while (result != LAST_PACK);
-
-    foutput(MSG "Read %lu PES packets.\n", pack);
-
-    WaveData info;
-    WaveHeader header;
-
-    info.automatic = true;
-    info.prepend = true;
-    info.in_place = false;
-    info.prune = false;
-    info.infile = filestat(false, 0, files.filename, NULL);
-    info.outfile = filestat(false, 0, filepath(globals.settings.tempdir, "temp"), NULL);
-    info.interactive = false;
-    _Bool debug = globals.debugging;
-    globals.debugging = false;
-
-    uint32_t cga2wav_channels[21] = {0x4, 0x3, 0x103, 0x33, 0xB, 0x10B, 0x3B, 0x7, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x3B, 0x37, 0x3B };
-
-    if (files.cga < 21)
-    {
-      header.dwChannelMask = cga2wav_channels[files.cga];
-    }
-
-    header.wBitsPerSample = files.bitspersample;
-    header.channels = files.channels;
-    header.dwSamplesPerSec = files.samplerate;
-
-    WaveHeader* res;
-
-    res = fixwav(&info, &header);
-
-    globals.debugging = debug;
-
-    if (res == NULL) return(-1);
-
-
-    errno = 0;
-    unlink(filename(info.infile));
-    rename(filename(info.outfile), filename(info.infile));
-    if (errno) perror(ERR);
+    while (!feof(fp));
 
     return(errno);
 }
