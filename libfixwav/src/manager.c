@@ -344,13 +344,10 @@ Checkout:
 
           if (!info->in_place)
           {
-//              if (s_close(&info->infile) == EOF)
-//              {
-//                  perror(ERR "s_close");
-//              }
-//              s_open(&info->infile, "rb");
+              if (info->prepend) header->header_size_in = 0;  // safe-check, normally no-op
+
               if (copy_file_p(fileptr(info->infile), fileptr(info->outfile),
-                              (info->prepend) ? 0 : header->header_size_in,
+                              header->header_size_in,
                               filesize(info->infile) - header->header_size_in) == PAD)
 
               if (info->padbytes) pad_end_of_file(info);

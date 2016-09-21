@@ -548,7 +548,7 @@ path_t *parse_filepath(const char* filepath)
 }
 
 /* -------
-*  concatenate
+*  conc
 *
 *  Concatenates two strings into the forst argument.
 *  allocates heap memory to produce the result of the concatenation of two strings and returns the length of the concatenate
@@ -557,21 +557,6 @@ path_t *parse_filepath(const char* filepath)
 *  returns -1 if either argument is null or 0 on error
 *  ------- */
 
-char * concatenate(char* dest, const char* str1, const char* str2)
-{
-    if ((!str1) || (!str2)) return NULL;
-    errno=0;
-    uint16_t s1=strlen(str1);
-    uint16_t s2=strlen(str2);
-
-    dest=realloc(dest, (s1+s2+1)*sizeof(char));
-
-    strcpy(dest, str1);
-    strcat(dest, str2);
-    if (errno) return NULL;
-    else return dest;
-
-}
 
 char * conc(const char* str1, const char* str2)
 {

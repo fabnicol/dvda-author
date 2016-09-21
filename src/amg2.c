@@ -382,7 +382,9 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
 
     if (globals.debugging) foutput(MSG "Dec. AMG: totaltitles=%d\n", totaltitles);
 
-    FILE* fp = fopen(filepath(audiotsdir, "AUDIO_TS.IFO"), "rb");
+    char* path = filepath(audiotsdir, "AUDIO_TS.IFO");
+
+    FILE* fp = fopen(path, "rb");
 
     if (fp == NULL)
     {
@@ -945,6 +947,8 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
 
 
 #endif
+
+free(path);
 return 0;
 }
 
