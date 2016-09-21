@@ -246,9 +246,9 @@ int calc_info(fileinfo_t* info)
     {
          {{ 	2000, 16,  1984,  2010,	2028, 22, 11, 16, 16 /*old: 10*/, 0, 0 },
             {	2000, 16,  1984,  2010,	2028, 28 /*old: 22*/ , 11, 16, 16 /*old: 10*/, 0, 0 },
-            { 	2004, 24,  1980,  2010,	2028, 24 /*old: 22*/, 15, 12, 12 /*old: 6*/, 0, 0 },  // 3 CH
-            { 	2000, 16,  1980,  2010,	2028, 28 /*old: 22*/, 11, 16, 16 /*old: 10*/, 0, 0 },   // 4 CH
-            { 	2000, 20,  1980,  2010, 2028, 22, 15, 16, 16 /*old: 10*/, 0, 0 },  // 5 CH
+            { 	2004, 24,  1980,  2010,	2028, 24 /*old: 22*/, 15, 12, 12 /*old: 6*/, 0, 0 },
+            { 	2000, 16,  1980,  2010,	2028, 28 /*old: 22*/, 11, 16, 16 /*old: 10*/, 0, 0 },
+            { 	2000, 20,  1980,  2010, 2028, 22, 15, 16, 16 /*old: 10*/, 0, 0 },
             { 	1992, 24,  1992, 1993,  2014, 22, 10, 10, 10 /*old: 4*/, 17, 14}},
         // 24-bit table
         {{    	2004, 24,  1980,  2010,	2028, 22, 15, 12, 12 /*old: 10*/, 0, 0 },
@@ -259,9 +259,11 @@ int calc_info(fileinfo_t* info)
             { 	1980,  0,  1980,  2010, 2008, 22, 15, 16, 14, 0, 20 }}
     };
 
-// firstpack_lpcm_headerquantity + firstpack_pes_padding + payload - firstpackdecrement = 1995
-// midpack_lpcm_headerquantity   + payload + midpack_pes_padding = 2016
-// first/mid_pes_padding > 6
+/* The following equations are always true by necessity:
+    firstpack_lpcm_headerquantity + firstpack_pes_padding + payload - firstpackdecrement = 1995
+    midpack_lpcm_headerquantity   + payload + midpack_pes_padding = 2016
+    first/mid_pes_padding > 6
+*/
 
 #define X T[table_index][info->channels-1]
 

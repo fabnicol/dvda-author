@@ -643,22 +643,30 @@ int arraylength(char ** tab)
 char* create_binary_path(char* local_variable, const char* symbolic_constant, const char* basename)
 {
 
+    char* path = NULL;
+
     if (symbolic_constant[0])
     {
         if (globals.settings.bindir == NULL)
-            local_variable=strdup(symbolic_constant);
+            local_variable = strdup(symbolic_constant);
         else
-            local_variable=win32quote(concatenate(local_variable, globals.settings.bindir, basename));
+        {
+            path = conc(globals.settings.bindir, basename);
+            local_variable = win32quote(path);
+        }
     }
     else
-        local_variable=win32quote(concatenate(local_variable, globals.settings.bindir, basename));
+    {
+        path = conc(globals.settings.bindir, basename);
+        local_variable = win32quote(path);
+    }
     if (globals.debugging) foutput(MSG "Path to %s is %s from bindir=%s and basename=%s\n", basename, local_variable,globals.settings.bindir, basename);
+
+    if (path) free(path);
+
     return local_variable;
 
 }
-
-
-
 
 
 void download_latest_version(_Bool download_new_version_flag,_Bool force_download_flag)

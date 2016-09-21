@@ -2049,7 +2049,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         
         char* convert=NULL;
         char cl[500]; //do not use command as an array name !
-        convert=create_binary_path(convert, CONVERT, SEPARATOR CONVERT_BASENAME);
+        convert = create_binary_path(convert, CONVERT, SEPARATOR CONVERT_BASENAME);
         unlink(img->backgroundpic[0]);
         errno=0;
         change_directory(globals.settings.datadir);
@@ -2057,6 +2057,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         if (globals.veryverbose) foutput(INF "Launching convert with command line %s\n",  cl);
         if (system(win32quote(cl)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed")
         fflush(NULL);
+        FREE(convert);
     }
     
     _Bool menupic_input_coherence_test=0;

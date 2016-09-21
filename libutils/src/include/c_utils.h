@@ -269,7 +269,6 @@ typedef struct
 
 void htmlize(char* logpath);
 
-char* concatenate(char* dest, const char* str1, const char* str2);
 char * conc(const char* str1, const char* str2);
 char * filepath(const char* str1, const char* str2);
 void pause_dos_type();
