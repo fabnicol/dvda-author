@@ -136,7 +136,9 @@ static void convert_buffer(fileinfo_t *info, uint8_t *buf, int count)
     }
 }
 
-inline static int peek_pes_packet_audio(FILE *fp, FILE* fpout, fileinfo_t *info, _Bool *status)
+ FILE *fpout = NULL;
+
+inline static int peek_pes_packet_audio(FILE *fp, fileinfo_t *info, _Bool *status)
 {
     int position;
 
@@ -157,14 +159,15 @@ inline static int peek_pes_packet_audio(FILE *fp, FILE* fpout, fileinfo_t *info,
         pack_in_title = 0;
         ++title;
 
-       char Title[14] = {0};
-       sprintf(Title, "title_%d.wav", title);
+        char Title[14] = {0};
+        sprintf(Title, "title_%d.wav", title);
 
-       info->filename = filepath(globals.settings.outdir, Title);
+        info->filename = filepath(globals.settings.outdir, Title);
 
-       if ((fpout = fopen(info->filename, "wb")) == NULL)
+        if ((fpout = fopen(info->filename, "wb")) == NULL)
        {
-           foutput("[ERR]  Could not open audio file %s\n.        Exiting...\n", info->filename);
+           foutput("[ERR]  Could not open audio file %s\n.        Exiting...\n",
+                   info->filename);
            exit(-7);
        }
     }
@@ -246,7 +249,7 @@ inline static int peek_pes_packet_audio(FILE *fp, FILE* fpout, fileinfo_t *info,
         }
     }
 
-    info->bitspersample = (sample_size[0] == 0x2f || sample_size[0] == 0x22) ? 24 : ((sample_size[0] == 0x0f || sample_size[0] == 0x00) ? 16 : 0);
+    info->bitspersample = (sample_size[0] == 0x2f || sample_size[0] == 0x22) ? 24 : ((sample_size[0] == 0x22 || sample_size[0] == 0x00) ? 16 : 0) ;
 
     if (! info->bitspersample) status = INVALID;
 
@@ -262,6 +265,8 @@ inline static int peek_pes_packet_audio(FILE *fp, FILE* fpout, fileinfo_t *info,
 
     info->channels = (channel_assignment[0] < 21) ? channels[channel_assignment[0]] : 0;
 
+    fseeko(fp, offset0 + 2048, SEEK_SET);
+
     return position;
 }
 
@@ -270,7 +275,6 @@ inline static int get_pes_packet_audio(FILE *fp, FILE* fpout, fileinfo_t *info, 
 {
     int position;
     //static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
-
     static uint64_t pack_in_title;
     static uint64_t fpout_size;
     int audio_bytes;
@@ -278,19 +282,18 @@ inline static int get_pes_packet_audio(FILE *fp, FILE* fpout, fileinfo_t *info, 
 
     if (fp == NULL) return 0;
     uint64_t offset0 = ftello(fp);
+    uint8_t buf[4];
 
     fseeko(fp, offset0 + 14, SEEK_SET);
-
-    uint8_t buf[4];
     fread(buf, 4, 1, fp);
 
     /* got to system header and read first 4 bytes to detect whether pack is start or not */
+
     if (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB)
     {
         position = FIRST_PACK;
         fpout_size = 0;
         pack_in_title = 0;
-
     }
     else
     {
@@ -464,7 +467,7 @@ inline static int get_pes_packet_audio(FILE *fp, FILE* fpout, fileinfo_t *info, 
 
 int get_ats_audio()
 {
-    FILE* fp = NULL, *fpout = NULL;
+    FILE* fp = NULL;
 
     uint8_t audio_buf[2048];
     uint64_t pack = 0;
@@ -482,17 +485,16 @@ int get_ats_audio()
     do
     {
         /* First pass to get basic audio characteristics (sample rate, bit rate, cga */
-
-        _Bool status = INVALID;
+        _Bool status = VALID;
 
         do
         {
-            pack_rank = peek_pes_packet_audio(fp, fpout, &files, &status);
+            pack_rank = peek_pes_packet_audio(fp, &files, &status);
             if (status == VALID) break;
         }
         while (pack_rank != LAST_PACK);
 
-        if (status == INVALID || fp == NULL || fpout == NULL) return -1;
+        if (status == INVALID || fp == NULL) return -1;
 
         /* generate header in empty file. We must allow prepend and in_place for empty files */
 
@@ -500,12 +502,14 @@ int get_ats_audio()
         WaveHeader header;
 
         info.automatic = true;
+        info.cautious = false;
         info.prepend = true;
         info.in_place = true;
         info.prune = false;
         info.infile = filestat(true, 0, files.filename, fpout);
         info.outfile = info.infile;
         info.interactive = false;
+        info.virtual = false;
         _Bool debug = globals.debugging;
         globals.debugging = false;
 
@@ -532,7 +536,7 @@ int get_ats_audio()
 
         do
         {
-            if (s_open(&info.outfile, "ab") == INVALID)
+            if (s_open(&info.outfile, "ab") != NORMAL)
                 return -1;
             pack_rank = get_pes_packet_audio(fp, fpout, &files, audio_buf);
 
