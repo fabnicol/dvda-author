@@ -72,7 +72,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
       goto getout;
     }
 
-  if (filesize(info->infile) == 0)
+  if (!info->in_place && filesize(info->infile) == 0)
     {
       if (globals.debugging) foutput( "%s\n", WAR "File size is null; skipping ..." );
       info->repair=FAIL;
@@ -95,7 +95,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   int adjust=0;
 
-  if ((info->prepend) && (info->in_place))
+  if (info->prepend && info->in_place && filesize(info->infile) != 0)
     {
       if (globals.debugging) foutput( "%s\n",   ERR "fixwav cannot prepend new header to raw data file in in-place mode.");
       if (info->interactive)
@@ -131,7 +131,8 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
    if (info->prepend)
    {
        adjust=(info->in_place)+(info->virtual);
-       info->in_place=0;
+       if (filesize(info->infile))
+           info->in_place=0;
        info->virtual=0;
    }
 
@@ -140,10 +141,11 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
               info->prepend, info->in_place, info->prune, info->padding, info->virtual);
 
 #ifdef RADICAL_FIXWAV_BEHAVIOUR
-  if (globals.silence && header->dwSamplesPerSec
- * header->wBitsPerSample * header->channels == 0)
+  if (globals.silence && header->dwSamplesPerSec * header->wBitsPerSample * header->channels == 0)
     {
-      if (globals.debugging) foutput("%s", ERR "In silent mode, bit rate, sample rate and channels must be set\n"INF "Correcting options...\n");
+      if (globals.debugging)
+          foutput("%s", ERR "In silent mode, bit rate, sample rate and channels must be set\n"
+                        INF "Correcting options...\n");
       globals.silence=0;
     }
 #endif
