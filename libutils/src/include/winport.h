@@ -135,4 +135,13 @@ uint64_t read_file_size(FILE * fp, const char* filename);
 int truncate_from_end(char* filename, uint64_t offset);
 #endif
 
+
+#ifndef S_OPEN
+#  define S_OPEN(X, Y) { if (! X.isopen) X.fp = fopen(X.filename, "rb+"); \
+                         if (! X.filesize) X.filesize =  stat_file_size(X.filename); \
+                         X.isopen = (X.fp != NULL); }
+
+#  define S_CLOSE(X) { if (X.isopen) fclose(X.fp); }
+#endif
+
 #endif // WINPORT_H_INCLUDED

@@ -56,8 +56,8 @@ int pad_end_of_file(WaveData* info)
   memset(buf, 0, complement);
 
   if (globals.debugging) foutput( INF "Writing %d pad bytes...\n", complement);
-  end_seek(fileptr(info->outfile));
-  uint32_t count = fwrite( &buf, 1 , complement , fileptr(info->outfile));
+  end_seek(info->outfile.fp);
+  uint32_t count = fwrite( &buf, 1 , complement , info->outfile.fp);
 
   if   (count  != complement)
     {
@@ -95,17 +95,18 @@ _Bool check_real_size(WaveData *info, WaveHeader *header)
 {
   uint64_t size=0;
 
-  filestat_t file = (info->in_place ||  info->repair == GOOD_HEADER || info->virtual)? info->infile : info->outfile;
+  //filestat_t file = (info->in_place ||  info->repair == GOOD_HEADER || info->virtual)? info->infile : info->outfile;
 
   /* get the new file statistics, depending on whether there were changes or not */
   /* stat needs a newly opened file to tech stats */
 
 
-  s_open(&file, "rb+");
+  S_OPEN(info->outfile, "rb+")
+
   _Bool pad_byte = (header->ckSize % 2 == 1);
 
   /* adjust the Chunk Size */
-  if (header->ckSize == (uint32_t) filesize(file) - 8 - (int) pad_byte)
+  if (header->ckSize == (uint32_t) filesize(info->outfile) - 8 - (int) pad_byte)
   {
       if (globals.debugging) foutput("%s\n", MSG "Verifying real chunk size on disc... OK");
   }
@@ -115,7 +116,7 @@ _Bool check_real_size(WaveData *info, WaveHeader *header)
       header->ckSize = (uint32_t) size - 8 ; // if prepending, ckSize was computed as the full size of raw file -8 bytes to which one must add the size of new header. Possible pad byte considered audio.
   }
 
-  if (header->data_cksize == (uint32_t) filesize(file) - header->header_size_out - (int) (header->data_cksize % 2 == 1))
+  if (header->data_cksize == (uint32_t) filesize(info->outfile) - header->header_size_out - (int) (header->data_cksize % 2 == 1))
   {
       if (globals.debugging)
         foutput("%s\n", MSG "Verifying real data size on disc... OK");
@@ -124,9 +125,9 @@ _Bool check_real_size(WaveData *info, WaveHeader *header)
   {
       if (globals.debugging) foutput(INF "Verifying real data size on disc... fixed:\n       header size: %d, expected size: %u, real size: %lu\n", header->header_size_out,
                                      header->data_cksize + header->header_size_out + (int) (header->data_cksize % 2 == 1),
-                                     filesize(file));
+                                     filesize(info->outfile));
 
-      header->data_cksize = (uint32_t) filesize(file) - header->header_size_out ;  // if prepending, data_cksize was computed as the full size of raw file hence this new size minus HEADER_SIZE
+      header->data_cksize = (uint32_t) filesize(info->outfile) - header->header_size_out ;  // if prepending, data_cksize was computed as the full size of raw file hence this new size minus HEADER_SIZE
   }
 
    return(false);
@@ -139,7 +140,7 @@ int prune(WaveData *info, WaveHeader *header)
   uint32_t count=-1;
   uint64_t size=0;
 
- s_open(&info->infile, "rb+");
+ S_OPEN(info->infile, "rb+");
 
   if (errno)
   {
@@ -149,15 +150,15 @@ int prune(WaveData *info, WaveHeader *header)
 
 // Count ending zeros to be pruned
 
-  if (end_seek(fileptr(info->infile)) == FAIL)
+  if (end_seek(info->infile.fp) == FAIL)
       return(FAIL);
 
   do
     {
-      if (fseek(fileptr(info->infile), -1, SEEK_CUR) == -1) return(FAIL);
-      if (fread(&p, 1, 1, fileptr(info->infile)) != 1) return(FAIL);
-      if (globals.debugging)  foutput("  Offset %"PRIu64"  : %"PRIu8" \n", (uint64_t) ftello(fileptr(info->infile)), p );
-      if (fseek(fileptr(info->infile), -1, SEEK_CUR) == -1) return(FAIL);
+      if (fseek(info->infile.fp, -1, SEEK_CUR) == -1) return(FAIL);
+      if (fread(&p, 1, 1, info->infile.fp) != 1) return(FAIL);
+      if (globals.debugging)  foutput("  Offset %"PRIu64"  : %"PRIu8" \n", (uint64_t) ftello(info->infile.fp), p );
+      if (fseek(info->infile.fp, -1, SEEK_CUR) == -1) return(FAIL);
       ++count;
 
     }
