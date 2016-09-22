@@ -1552,7 +1552,14 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
 {
     uint8_t haystack[MAX_HEADER_SIZE] = {0};
 
-    if (errno) return;
+    if (errno)
+    {
+      perror(ERR "parse_wav_header");
+
+      fflush(NULL);
+      exit(-1);
+      return;
+    }
     int count = fread(haystack, 1, MAX_HEADER_SIZE, info->infile.fp);
     if (count != MAX_HEADER_SIZE)
     {
