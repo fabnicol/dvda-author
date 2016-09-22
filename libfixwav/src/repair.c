@@ -104,12 +104,12 @@ repair_wav(WaveData *info, WaveHeader *header )
         ckData."
   */
 
-  if (header->ckSize == filesize(info->infile)  - 8 + (header->channels > 2 ? HEADER_EXTENSIBLE_SIZE : HEADER_SIZE))
+  if (header->ckSize == filesize(info->infile)  - 8 )
     {
       if (globals.debugging) foutput( MSG "Found correct audio chunk Size of %" PRIu32 " bytes at offset 4\n",  header->ckSize);
     }
   else
-  if ((header->ckSize & 1) == 1 && header->ckSize == filesize(info->infile)  - 9 + (header->channels > 2 ? HEADER_EXTENSIBLE_SIZE : HEADER_SIZE))
+  if ((header->ckSize & 1) == 1 && header->ckSize == filesize(info->infile)  - 9)
     {
       if (globals.debugging) foutput( MSG "Found correct audio chunk Size of %" PRIu32 " bytes at offset 4. Pad byte added at EOF.\n",  header->ckSize);
       pad_byte = true;
@@ -123,7 +123,8 @@ repair_wav(WaveData *info, WaveHeader *header )
               header->ckSize,
               (uint32_t) filesize(info->infile)  - 8);
 
-      header->ckSize = (uint32_t) filesize(info->infile)  - 8 + (header->channels > 2 ? HEADER_EXTENSIBLE_SIZE : HEADER_SIZE);
+      header->ckSize = (uint32_t) filesize(info->infile)  - 8;
+      pad_byte = false;
       repair = BAD_HEADER;
     }
 
@@ -243,12 +244,17 @@ repair_wav(WaveData *info, WaveHeader *header )
     }
   else
     {
-      if (globals.debugging) foutput(MSG "data_ckSize at offset %d is incorrect: found %" PRIu32 " bytes instead of\n       %" PRIu32 " = file size (%" PRIu32 ") - header size (%" PRIu16 ") - pad byte (%d)\n"
-             INF "... repairing\n",
+      if (globals.debugging)
+          foutput(MSG "data_ckSize at offset %d is incorrect: found %"
+                  PRIu32 " bytes instead of\n       %"
+                  PRIu32 " = file size (%"
+                  PRIu32 ") - header size (%"
+                  PRIu16 ") - pad byte (%d)\n"
+                  INF "... repairing\n",
              header->header_size_in - 4,
              header->data_cksize,
-             (uint32_t) filesize(info->infile)  - header->header_size_in - (uint32_t) pad_byte,
-             (uint32_t) filesize(info->infile) , header->header_size_in , pad_byte);
+             (uint32_t) filesize(info->infile) - header->header_size_in - (uint32_t) pad_byte,
+             (uint32_t) filesize(info->infile), header->header_size_in, pad_byte);
              
       header->data_cksize = filesize(info->infile)  - header->header_size_in - (uint32_t) pad_byte;
       repair = BAD_HEADER;
@@ -331,7 +337,13 @@ int write_header(WaveData *info, WaveHeader *header)
 
   if (info->virtual) return(info->repair);
 
-  S_OPEN(info->outfile, "wb+"); // normally no-op.
+  S_CLOSE(info->outfile)
+
+  if (file_exists(filename(info->outfile)))
+      S_OPEN(info->outfile, "rb+")
+  else
+      S_OPEN(info->outfile, "wb")
+
 
   int count=0;
 
@@ -353,7 +365,7 @@ int write_header(WaveData *info, WaveHeader *header)
      if (globals.debugging) foutput("%s\n", INF "Overwriting header...");
   }
 
-  S_OPEN(info->outfile, "wb");
+
   count = fwrite(header->header_out,
                  header->header_size_out,
                  1,

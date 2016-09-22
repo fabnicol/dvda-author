@@ -1766,9 +1766,6 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
 uint64_t filesize(filestat_t f) { return f.filesize; }
 char* filename(filestat_t f) { return f.filename; }
 
-void setfilesize(filestat_t* f, uint64_t s) { f->filesize = s;}
-void setfilename(filestat_t* f, char* fn) { f->filename = fn ;}
-
 filestat_t filestat(_Bool b, uint64_t s, char* fn, FILE* fp)
 {
     filestat_t str = {b, s, fn, fp};
