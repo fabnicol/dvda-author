@@ -137,11 +137,11 @@ int truncate_from_end(char* filename, uint64_t offset);
 
 
 #ifndef S_OPEN
-#  define S_OPEN(X, Y) { if (! X.isopen) X.fp = fopen(X.filename, "rb+"); \
-                         if (! X.filesize) X.filesize =  stat_file_size(X.filename); \
+#  define S_OPEN(X, Y) {  if (!X.isopen && ! X.filesize) X.filesize =  stat_file_size(X.filename);\
+                         if (! X.isopen) X.fp = fopen(X.filename, Y); \
                          X.isopen = (X.fp != NULL); }
 
-#  define S_CLOSE(X) { if (X.isopen) fclose(X.fp); }
+#  define S_CLOSE(X) { if (X.isopen) fclose(X.fp); X.isopen = false; }
 #endif
 
 #endif // WINPORT_H_INCLUDED
