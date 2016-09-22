@@ -867,7 +867,6 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
     }
     else if (bytesinbuffer < info->lpcm_payload)   // Last packet in title 2038+info->lastpack_lpcm_headerquantity
     {
-        // 2048,2048,2044,2048,2048,2042 | 2048,2048,2052,2046,2052,2052 : faulty
 
         foutput(INF "Writing last packet - pack=%lu, bytesinbuffer=%d\n", pack_in_title, bytesinbuffer);
         audio_bytes=bytesinbuffer;
