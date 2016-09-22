@@ -488,7 +488,7 @@ static inline int compute_header_size(FILE* fp)
       .outfile = {false, 0, "st", NULL },
     };
 
-    setfileptr(&wavinfo.infile, fp);
+    wavinfo.infile.fp = fp;
     parse_wav_header(&wavinfo, &header);
     return header.header_size_in;
 }

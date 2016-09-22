@@ -186,7 +186,7 @@ typedef struct
    FILE* fp;
 } filestat_t ;
 
-_Bool isopen(filestat_t f);
+
 uint64_t filesize(filestat_t f);
 char* filename(filestat_t f);
 FILE* fileptr(filestat_t f);
@@ -293,8 +293,6 @@ void hexdump_header(FILE* infile, uint8_t header_size);
 void hexdump_pointer(uint8_t* tab,  size_t tabsize);
 void hex2file(FILE* out, uint8_t* tab,  size_t tabsize);
 void secure_open(const char *path, const char *context, FILE*);
-int  s_open(filestat_t *f, const char *context);
-int  s_close(filestat_t *f);
 
 int end_seek(FILE* outfile);
 void parse_wav_header(WaveData* info, WaveHeader* ichunk);
