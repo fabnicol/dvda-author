@@ -851,8 +851,8 @@ int fixwav_repair(fileinfo_t *info)
         0  /* repair status */,
         0, /* padbytes */
         0, /* pruned bytes */
-        .infile = {false, 0, "", NULL},  /* filestat */
-        .outfile = {false, 0, "", NULL}
+        .infile = {false, 0, info->filename, NULL},  /* filestat */
+        .outfile = {false, 0, buf, NULL}
     };
 
 

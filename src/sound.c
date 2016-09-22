@@ -75,20 +75,17 @@ errno=0;
             0, /* repair status */
             0, /* padbytes */
             0, /* pruned bytes */
-            .infile = {false, 0, "", NULL}, /* filestat */
-            .outfile = {false, 0, "", NULL} /* filestat */
+            .infile = {false, 0, path, NULL}, /* filestat */
+            .outfile = {false, 0, NULL, NULL} /* filestat */
         };
 
         fixwav(&wavedata, &waveheader);
        if (globals.veryverbose) 
             {
                 foutput(MSG "LPCM diagnostics: bps=%d, sample rate=%d, channels=%d \n", 
-                         waveheader.wBitsPerSample, waveheader.dwSamplesPerSec
-, waveheader.channels);
+                         waveheader.wBitsPerSample, waveheader.dwSamplesPerSec, waveheader.channels);
             }
-       if ((waveheader.wBitsPerSample != 16 && waveheader.wBitsPerSample != 24) || (waveheader.dwSamplesPerSec
- != 48000 && waveheader.dwSamplesPerSec
- != 96000) ||
+       if ((waveheader.wBitsPerSample != 16 && waveheader.wBitsPerSample != 24) || (waveheader.dwSamplesPerSec != 48000 && waveheader.dwSamplesPerSec != 96000) ||
            (waveheader.channels > 6 || waveheader.channels == 0))
             {
                 foutput("%s",ERR "Did not manage to standardize wav header.\n");
@@ -125,16 +122,15 @@ int audit_soundtrack(char* path, _Bool strict)
             0,  /* repair status */
             0, /* padbytes */
             0, /* pruned bytes */
-            .infile = {false, 0, "", NULL}, /* filestat */
-            .outfile = {false, 0, "", NULL} /* filestat */
+            .infile = {false, 0, path, NULL}, /* filestat */
+            .outfile = {false, 0, NULL, NULL} /* filestat */
         };
 
         fixwav(&wavedata, &waveheader);
         
         if (strict)
         {
-            if ((waveheader.dwSamplesPerSec
- == 48000) && (waveheader.wBitsPerSample == 16) && (waveheader.channels == 2))
+            if ((waveheader.dwSamplesPerSec == 48000) && (waveheader.wBitsPerSample == 16) && (waveheader.channels == 2))
             {
                 if (globals.veryverbose) foutput("%s", MSG "LPCM requirements [fq=48k, bps=16, c=2] are satisfied by soundtrack input\n");
                 errno=0;
@@ -147,9 +143,7 @@ int audit_soundtrack(char* path, _Bool strict)
        }
        else
         {
-            if ((waveheader.dwSamplesPerSec
- == 48000 || waveheader.dwSamplesPerSec
- == 96000) 
+            if ((waveheader.dwSamplesPerSec == 48000 || waveheader.dwSamplesPerSec == 96000) 
              && (waveheader.wBitsPerSample == 16 || waveheader.wBitsPerSample == 24))
             {
                 if (globals.veryverbose) foutput("%s", MSG "LPCM requirements [fq=48|96k, bps=16|24] are satisfied by soundtrack input\n");
