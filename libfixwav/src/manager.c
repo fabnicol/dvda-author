@@ -193,7 +193,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
   /* pre parse header to find if is extensible and if has 'fact' ; collect facts in this case */
 
   if (info->prepend) goto Repair;
-
+  errno = 0;
   parse_wav_header(info, header);
      
   /* if found info tags, dumps them in textfile database, which can only occur if span > 36 */
@@ -337,7 +337,7 @@ Checkout:
               if (globals.maxverbose)
               {
                   S_CLOSE(info->infile);
-                  S_OPEN(info->outfile, "rb+");
+                  S_OPEN(info->outfile, "wb+");
 
                   if (globals.debugging) foutput("%s","Dumping new header:\n\n");
 
