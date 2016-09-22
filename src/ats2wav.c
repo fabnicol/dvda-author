@@ -447,6 +447,8 @@ inline static int get_pes_packet_audio(FILE *fp, FILE* fpout, fileinfo_t *info, 
 
     if (position == LAST_PACK)
     {
+        fpout_size += info->header_size;
+
         fseeko(fpout, 0, SEEK_END); // normally no-op yet sometimes useful.
         uint64_t check_size = ftello(fpout);
         if (check_size != fpout_size)
@@ -508,10 +510,12 @@ int get_ats_audio()
         info.prepend = true;
         info.in_place = true;
         info.prune = false;
-        info.infile = filestat(false, stat_file_size(globals.aobpath), files.filename, fpout);
-        info.outfile = info.infile;
         info.interactive = false;
         info.virtual = false;
+
+        info.infile = filestat(false, 1, files.filename, fpout);
+        info.outfile = info.infile;
+
         _Bool debug = globals.debugging;
         globals.debugging = false;
 
@@ -528,18 +532,21 @@ int get_ats_audio()
         header.nBlockAlign =  header.wBitsPerSample / 8 * header.channels ;
         header.nAvgBytesPerSec = header.nBlockAlign * header.dwSamplesPerSec;
 
-        WaveHeader* res;
+        WaveHeader* header_fixed;
 
-        res = fixwav(&info, &header);
+        header_fixed = fixwav(&info, &header);
+
+        files.header_size = header_fixed->header_size_out;
 
         globals.debugging = debug;
 
-        if (res == NULL) return(-1);
+        if (header_fixed == NULL) return(-1);
 
         /* second pass to get the audio */
 
-        if ((fpout = fopen(filename(info.outfile), "ab")) == NULL)
-            return -1;
+        S_OPEN(info.outfile, "ab");
+
+        fseeko(fp, 0, SEEK_SET);
 
         do
         {
@@ -555,6 +562,16 @@ int get_ats_audio()
         foutput(MSG "Read %lu PES packets.\n", pack);
 
         fclose(info.outfile.fp);//s_close(&info.outfile);
+
+        /* WAV output is now OK except for the wav file size-based header data.
+         * ckSize, data_ckSize and nBlockAlign must be readjusted by computing
+         * the exact audio content bytesize. Also we no longer prepend the header
+         * but overwrite the existing one */
+
+        info.prepend = false;
+        info.infile.filesize = stat_file_size(filename(info.infile));
+
+        fixwav(&info, &header);
 
         if (errno) perror(ERR);
         free(files.filename);
