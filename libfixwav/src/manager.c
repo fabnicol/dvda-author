@@ -57,7 +57,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
   // Patch on version 0.1.1: -int +uint64_t (int is not enough for files > 2GB)
   // NB: under Windows, use stat_file_size if file not open, otherwise use read_file_size
 
-  S_OPEN(info->infile, "rb")
+  S_OPEN(info->infile, "rb+")
 
   if (info->infile.fp == NULL) return NULL;
 
@@ -72,7 +72,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
       goto getout;
     }
 
-  if (!info->in_place && filesize(info->infile) == 0)
+  if (! info->in_place && filesize(info->infile) == 0)
     {
       if (globals.debugging) foutput( "%s\n", WAR "File size is null; skipping ..." );
       info->repair=FAIL;
@@ -350,7 +350,7 @@ Checkout:
               break;
           }
 
-          if (!info->in_place)
+          if (! info->in_place)
           {
               if (info->prepend) header->header_size_in = 0;  // safe-check, normally no-op
 
