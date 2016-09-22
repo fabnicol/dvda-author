@@ -331,7 +331,7 @@ int write_header(WaveData *info, WaveHeader *header)
 
   if (info->virtual) return(info->repair);
 
-  s_open(&info->outfile, "wb+"); // normally no-op.
+  S_OPEN(info->outfile, "wb+"); // normally no-op.
 
   int count=0;
 
@@ -353,7 +353,13 @@ int write_header(WaveData *info, WaveHeader *header)
      if (globals.debugging) foutput("%s\n", INF "Overwriting header...");
   }
 
-  count = fwrite(header->header_out, header->header_size_out, 1, fileptr(info->outfile));
+  S_OPEN(info->outfile, "wb");
+  count = fwrite(header->header_out,
+                 header->header_size_out,
+                 1,
+                 info->outfile.fp);
+
+  fclose(info->outfile.fp);
 
   if (count != 1)
   {

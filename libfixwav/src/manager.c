@@ -57,9 +57,9 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
   // Patch on version 0.1.1: -int +uint64_t (int is not enough for files > 2GB)
   // NB: under Windows, use stat_file_size if file not open, otherwise use read_file_size
 
-  s_open(&info->infile, "rb");
+  S_OPEN(info->infile, "rb")
 
-  if (fileptr(info->infile) == NULL) return NULL;
+  if (info->infile.fp == NULL) return NULL;
 
   if (!errno)
     {
@@ -131,7 +131,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
    if (info->prepend)
    {
        adjust=(info->in_place)+(info->virtual);
-       if (filesize(info->infile))
+       if (stat_file_size(filename(info->infile)))
            info->in_place=0;
        info->virtual=0;
    }
@@ -157,14 +157,18 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
       if (strcmp(filename(info->infile), filename(info->outfile)) == 0)
         {
           if (globals.debugging) foutput( "%s\n", ERR "input and output paths are identical. Press Y to exit...");
+#        ifndef GUI_BEHAVIOR
           if (isok())
             {
+#        endif
               info->repair=FAIL;
               goto getout;
+#        ifndef GUI_BEHAVIOR
             }
+#        endif
         }
 
-      s_open(&info->outfile, "wb");
+      S_OPEN(info->outfile, "wb");
     }
   else
     {
@@ -215,7 +219,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   /* if no GUI, reverting to user input and resetting header_size to 0 if: failed to parse header, or prepending, or header_size > 255 */
 
-  if (readHeader(fileptr(info->infile), header) == FAIL || info->prepend || header->header_size_in == MAX_HEADER_SIZE)
+  if (readHeader(info->infile.fp, header) == FAIL || info->prepend || header->header_size_in == MAX_HEADER_SIZE)
   {
 #     ifndef GUI_BEHAVIOR
         info->interactive = 1;
@@ -332,10 +336,12 @@ Checkout:
               if (globals.debugging) foutput("%s\n", INF "Header copy successful.\n");
               if (globals.maxverbose)
               {
-                  if (s_close(&info->infile) != 0) return(NULL);
-                  s_open(&info->outfile, "rb+");
+                  S_CLOSE(info->infile);
+                  S_OPEN(info->outfile, "rb+");
+
                   if (globals.debugging) foutput("%s","Dumping new header:\n\n");
-                  hexdump_header(fileptr(info->outfile), HEADER_SIZE);
+
+                  hexdump_header(info->outfile.fp, HEADER_SIZE);
               }
           }
           else
@@ -348,7 +354,7 @@ Checkout:
           {
               if (info->prepend) header->header_size_in = 0;  // safe-check, normally no-op
 
-              if (copy_file_p(fileptr(info->infile), fileptr(info->outfile),
+              if (copy_file_p(info->infile.fp, info->outfile.fp,
                               header->header_size_in,
                               filesize(info->infile) - header->header_size_in) == PAD)
 
@@ -397,13 +403,15 @@ getout:
 
   if (!info->virtual)
     {
-      if (fileptr(info->infile) == NULL || fileptr(info->outfile) == NULL)
+      if (info->infile.fp == NULL || info->outfile.fp == NULL)
         {
           if (globals.debugging) foutput("%s\n", WAR "File pointer is NULL.");
           return(NULL);
         }
-
-      if (s_close(&info->infile) == EOF || (!info->in_place && s_close(&info->outfile) == EOF))
+      errno = 0;
+      S_CLOSE(info->infile)
+      S_CLOSE(info->outfile)
+      if (errno)
         {
           if (globals.debugging) foutput("%s\n", WAR "fclose error: issues may arise.");
           return(NULL);
@@ -411,26 +419,27 @@ getout:
     }
   else
     {
-      if (fileptr(info->infile) == NULL)
+      if (info->infile.fp == NULL)
         {
           if (globals.debugging) foutput("%s\n", WAR "File pointer is NULL.");
           return(NULL);
         }
 
-      if (s_close(&info->infile) == EOF)
+      errno = 0;
+      S_CLOSE(info->infile)
+      if (errno)
         {
           if (globals.debugging) foutput("%s\n", WAR "fclose error: issues may arise.");
           return(NULL);
         }
     }
 
-  if ((info->repair == FAIL)  || (filesize(info->infile) == 0)  || ( (info->repair == GOOD_HEADER) && (!info->in_place) && (!info->virtual) ))
+  if ((info->repair == FAIL)  || (filesize(info->outfile) == 0)  || ( (info->repair == GOOD_HEADER) && (!info->in_place) && (!info->virtual) ))
     {
       // getting rid of empty files and useless work copies
       errno=0;
       unlink(filename(info->outfile));
-      if (errno)
-        if (globals.debugging) foutput("%s%s\n", ERR "unlink: ", strerror(errno));
+      if (errno && globals.debugging) foutput("%s%s\n", ERR "unlink: ", strerror(errno));
     }
 
   if (info->repair != FAIL)

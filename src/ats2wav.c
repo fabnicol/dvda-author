@@ -249,7 +249,7 @@ inline static int peek_pes_packet_audio(FILE *fp, fileinfo_t *info, _Bool *statu
         }
     }
 
-    info->bitspersample = (sample_size[0] == 0x2f || sample_size[0] == 0x22) ? 24 : ((sample_size[0] == 0x22 || sample_size[0] == 0x00) ? 16 : 0) ;
+    info->bitspersample = (sample_size[0] == 0x2f || sample_size[0] == 0x22) ? 24 : ((sample_size[0] == 0x0f || sample_size[0] == 0x00) ? 16 : 0) ;
 
     if (! info->bitspersample) status = INVALID;
 
@@ -498,6 +498,8 @@ int get_ats_audio()
 
         /* generate header in empty file. We must allow prepend and in_place for empty files */
 
+        fclose(fpout);
+
         WaveData info;
         WaveHeader header;
 
@@ -506,7 +508,7 @@ int get_ats_audio()
         info.prepend = true;
         info.in_place = true;
         info.prune = false;
-        info.infile = filestat(true, 0, files.filename, fpout);
+        info.infile = filestat(false, stat_file_size(globals.aobpath), files.filename, fpout);
         info.outfile = info.infile;
         info.interactive = false;
         info.virtual = false;
@@ -523,6 +525,8 @@ int get_ats_audio()
         header.wBitsPerSample = files.bitspersample;
         header.channels = files.channels;
         header.dwSamplesPerSec = files.samplerate;
+        header.nBlockAlign =  header.wBitsPerSample / 8 * header.channels ;
+        header.nAvgBytesPerSec = header.nBlockAlign * header.dwSamplesPerSec;
 
         WaveHeader* res;
 
@@ -534,10 +538,11 @@ int get_ats_audio()
 
         /* second pass to get the audio */
 
+        if ((fpout = fopen(filename(info.outfile), "ab")) == NULL)
+            return -1;
+
         do
         {
-            if (s_open(&info.outfile, "ab") != NORMAL)
-                return -1;
             pack_rank = get_pes_packet_audio(fp, fpout, &files, audio_buf);
 
             if (pack_rank  == LAST_PACK || pack_rank == FIRST_PACK || pack_rank == MIDDLE_PACK)
@@ -549,12 +554,12 @@ int get_ats_audio()
 
         foutput(MSG "Read %lu PES packets.\n", pack);
 
-        s_close(&info.outfile);
+        fclose(info.outfile.fp);//s_close(&info.outfile);
 
         if (errno) perror(ERR);
         free(files.filename);
     }
-    while (!feof(fp));
+    while (false);//!feof(fp));
 
     return(errno);
 }
