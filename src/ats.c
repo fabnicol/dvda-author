@@ -335,7 +335,11 @@ inline static void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uin
 
     /* offset_count += 3 */ fwrite(packet_start_code_prefix,3,1,fp);
     /* offset_count += */   fwrite(stream_id,1,1,fp);
-    if (globals.maxverbose) fprintf(stderr, DBG "Writing PES_plb at offset: %lu, with value PES_packet_len = %d (%d, %d)\n", ftello(fp), PES_packet_len, PES_packet_len_bytes[0], PES_packet_len_bytes[1]);
+    if (globals.maxverbose) fprintf(stderr, DBG "Writing PES_plb at offset: %lu, with value PES_packet_len = %d (%d, %d)\n",
+                                    ftello(fp),
+                                    PES_packet_len,
+                                    PES_packet_len_bytes[0],
+                                    PES_packet_len_bytes[1]);
     /* offset_count += 2 */ fwrite(PES_packet_len_bytes,2,1,fp);
     /* offset_count += */   fwrite(flags1,1,1,fp);
     /* offset_count += */   fwrite(flags2,1,1,fp);
