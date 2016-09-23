@@ -203,16 +203,23 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   if (header->ichunks > 0)
   {
-      char databasepath[MAX_OPTION_LENGTH+9]={0};
+
       if (info->database == NULL) info->database=strdup("localdata");
-      snprintf(databasepath, MAX_OPTION_LENGTH+9, "%s%s", info->database, SEPARATOR "database");
+      int l = strlen(info->database) + 10;
+      char databasepath[l];
+      sprintf(databasepath, "%s%s", info->database, SEPARATOR "database");
       secure_mkdir(info->database, 0755);
       FILE* database = NULL;
       secure_open(databasepath, "ab", database);
-      fprintf(database, "Filename    %s\nArtist      %s\nDate        %s\nStyle       %s\nComment     %s\nCopyright   %s\n\n",
+      if (database)
+      {
+        fprintf(database, "Filename    %s\nArtist      %s\nDate        %s\nStyle       %s\nComment     %s\nCopyright   %s\n\n",
                          header->INAM, header->IART, header->ICRD, header->IGNR, header->ICMT, header->ICOP);
-      info->filetitle = strdup((const char*) header->INAM);
-      fclose(database);
+        info->filetitle = strdup((const char*) header->INAM);
+        fclose(database);
+      }
+      else
+          foutput("%s", ERR "Could not open data base.\n");
    }
 
   if (header->header_size_in >= FIXBUF_LEN)
