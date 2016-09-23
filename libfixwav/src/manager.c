@@ -410,11 +410,15 @@ getout:
 
   if (! info->virtual)
     {
-
       errno = 0;
+
+      if (info->in_place)
+        info->infile = info->outfile;
+
+      S_CLOSE(info->outfile)
+      info->infile.fp = NULL; // necessary
       S_CLOSE(info->infile)
-      if (! info->in_place)
-              S_CLOSE(info->outfile)
+
       if (errno)
         {
           if (globals.debugging) foutput("%s\n", WAR "fclose error: issues may arise.");
