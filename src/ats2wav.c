@@ -275,7 +275,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
 inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8_t *audio_buf)
 {
     int position;
-    //static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
+    static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
     static uint64_t pack_in_title;
     static uint64_t fpout_size;
     int audio_bytes;
