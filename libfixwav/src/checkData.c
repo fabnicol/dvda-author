@@ -84,6 +84,7 @@ int check_sample_count(WaveData *info, WaveHeader *header)
   return(BAD_DATA);
 }
 
+#if 0
 /*********************************************************************
  Function: readjust_sizes
 
@@ -91,11 +92,8 @@ int check_sample_count(WaveData *info, WaveHeader *header)
            updated information.
 *********************************************************************/
 
-_Bool check_real_size(WaveData *info, WaveHeader *header)
+void check_real_size(WaveData *info, WaveHeader *header)
 {
-  uint64_t size=0;
-
-  //filestat_t file = (info->in_place ||  info->repair == GOOD_HEADER || info->virtual)? info->infile : info->outfile;
 
   /* get the new file statistics, depending on whether there were changes or not */
   /* stat needs a newly opened file to tech stats */
@@ -105,8 +103,10 @@ _Bool check_real_size(WaveData *info, WaveHeader *header)
 
   _Bool pad_byte = (header->ckSize % 2 == 1);
 
+  uint32_t size = stat_file_size(filename(info->outfile));
+
   /* adjust the Chunk Size */
-  if (header->ckSize == (uint32_t) filesize(info->outfile) - 8 - (int) pad_byte)
+  if (header->ckSize ==  size - 8 - (int) pad_byte)
   {
       if (globals.debugging) foutput("%s\n", MSG "Verifying real chunk size on disc... OK");
   }
@@ -125,13 +125,13 @@ _Bool check_real_size(WaveData *info, WaveHeader *header)
   {
       if (globals.debugging) foutput(INF "Verifying real data size on disc... fixed:\n       header size: %d, expected size: %u, real size: %lu\n", header->header_size_out,
                                      header->data_cksize + header->header_size_out + (int) (header->data_cksize % 2 == 1),
-                                     filesize(info->outfile));
+                                     size);
 
-      header->data_cksize = (uint32_t) filesize(info->outfile) - header->header_size_out ;  // if prepending, data_cksize was computed as the full size of raw file hence this new size minus HEADER_SIZE
+      header->data_cksize = (uint32_t) size - header->header_size_out ;  // if prepending, data_cksize was computed as the full size of raw file hence this new size minus HEADER_SIZE
   }
 
-   return(false);
 }
+#endif
 
 int prune(WaveData *info, WaveHeader *header)
 {
@@ -140,7 +140,7 @@ int prune(WaveData *info, WaveHeader *header)
   uint32_t count=-1;
   uint64_t size=0;
 
- S_OPEN(info->infile, "rb+");
+ S_OPEN(info->infile, "rb+")
 
   if (errno)
   {
