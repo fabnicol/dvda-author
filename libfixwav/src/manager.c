@@ -56,10 +56,12 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
   // display the total file size for convenience
   // Patch on version 0.1.1: -int +uint64_t (int is not enough for files > 2GB)
   // NB: under Windows, use stat_file_size if file not open, otherwise use read_file_size
+  if (! info->in_place || filesize(info->infile) > 0)
+  {
+    S_OPEN(info->infile, "rb+")
 
-  S_OPEN(info->infile, "rb+")
-
-  if (info->infile.fp == NULL) return NULL;
+    if (info->infile.fp == NULL) return NULL;
+  }
 
   if (!errno)
     {
@@ -131,7 +133,8 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
    if (info->prepend)
    {
        adjust=(info->in_place)+(info->virtual);
-       if (stat_file_size(filename(info->infile)))
+       const char*  path = filename(info->infile);
+       if (file_exists(path) && stat_file_size(path))
            info->in_place=0;
        info->virtual=0;
    }
@@ -168,7 +171,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 #        endif
         }
 
-      S_OPEN(info->outfile, "wb");
+      S_OPEN(info->outfile, "wb")
     }
   else
     {
@@ -336,8 +339,8 @@ Checkout:
               if (globals.debugging) foutput("%s\n", INF "Header copy successful.\n");
               if (globals.maxverbose)
               {
-                  S_CLOSE(info->infile);
-                  S_OPEN(info->outfile, "wb+");
+                  S_CLOSE(info->infile)
+                  S_OPEN(info->outfile, "wb+")
 
                   if (globals.debugging) foutput("%s","Dumping new header:\n\n");
 
@@ -385,7 +388,11 @@ Checkout:
 
 getout:
 
-  if (check_real_size(info, header)) goto Checkout;
+#if 0
+  check_real_size(info, header);
+#endif
+
+  S_OPEN(info->outfile, "rb+")
 
   if  (info->repair == BAD_HEADER)
     if (globals.debugging) foutput( "%s\n", INF "Fixwav status--summary:\n       HEADER chunk corrupt: fixed." );
@@ -401,16 +408,13 @@ getout:
 
   if (globals.debugging) foutput( "\n--FIXWAV End of section %d --\n\n", section );
 
-  if (!info->virtual)
+  if (! info->virtual)
     {
-      if (info->infile.fp == NULL || info->outfile.fp == NULL)
-        {
-          if (globals.debugging) foutput("%s\n", WAR "File pointer is NULL.");
-          return(NULL);
-        }
+
       errno = 0;
       S_CLOSE(info->infile)
-      S_CLOSE(info->outfile)
+      if (! info->in_place)
+              S_CLOSE(info->outfile)
       if (errno)
         {
           if (globals.debugging) foutput("%s\n", WAR "fclose error: issues may arise.");

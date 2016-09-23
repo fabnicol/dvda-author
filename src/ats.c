@@ -1261,6 +1261,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
         {
             n=audio_read(&files[i],&audio_buf[bytesinbuf],sizeof(audio_buf)-bytesinbuf);
             bytesinbuf+=n;
+
             if (n==0)   /* We have reached the end of the input file */
             {
                 files[i].last_sector=pack;

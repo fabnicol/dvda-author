@@ -191,10 +191,6 @@ uint64_t filesize(filestat_t f);
 char* filename(filestat_t f);
 FILE* fileptr(filestat_t f);
 
-void setfilesize(filestat_t* f, uint64_t s);
-void setfilename(filestat_t* f, char* fn);
-void setfileptr(filestat_t* f, FILE* fp);
-
 filestat_t filestat(_Bool b, uint64_t s, char* fn, FILE* fp);
 
 typedef struct
