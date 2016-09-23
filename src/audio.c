@@ -863,7 +863,9 @@ int fixwav_repair(fileinfo_t *info)
         SINGLE_DOTS
     }
 
-    if (fixwav(&wavedata, &waveheader) == NULL )
+    WaveHeader* res = fixwav(&wavedata, &waveheader);
+
+    if (res == NULL )
     {
 
         if (globals.debugging) SINGLE_DOTS

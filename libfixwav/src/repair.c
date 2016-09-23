@@ -365,13 +365,14 @@ int write_header(WaveData *info, WaveHeader *header)
      if (globals.debugging) foutput("%s\n", INF "Overwriting header...");
   }
 
+  errno = 0;
 
   count = fwrite(header->header_out,
                  header->header_size_out,
                  1,
                  info->outfile.fp);
 
-  fclose(info->outfile.fp);
+  S_CLOSE(info->outfile)
 
   if (count != 1)
   {
@@ -381,7 +382,7 @@ int write_header(WaveData *info, WaveHeader *header)
 
   if (errno)
   {
-    perror("\n"ERR "Error in launch repair module\n");
+    perror("\n"ERR "Error in launch repair module");
     return(FAIL);
   }
 
