@@ -419,19 +419,25 @@ int get_ats_audio()
         /* First pass to get basic audio characteristics (sample rate, bit rate, cga */
         _Bool status = VALID;
 
-        WaveData info;
+        WaveData info = {
+                          .database = NULL,
+                          .filetitle = NULL,
+                          .automatic = true,
+                          .prepend = true,
+                          .in_place = true,
+                          .cautious = false,
+                          .interactive = false,
+                          .padding = false,
+                          .prune = false,
+                          .virtual = false,
+                          .repair = 0,
+                          .padbytes = 0,
+                          .prunedbytes = 0,
+                          .infile = filestat(false, 1, globals.aobpath, NULL),
+                          .outfile = filestat(false, 1, NULL, NULL)
+                        };
+
         WaveHeader header;
-
-        info.automatic = true;
-        info.cautious = false;
-        info.prepend = true;
-        info.in_place = true;
-        info.prune = false;
-        info.interactive = false;
-        info.virtual = false;
-
-        info.infile = filestat(false, 1, globals.aobpath, NULL);
-        info.outfile = filestat(false, 1, NULL, NULL);
 
         errno = 0;
 
