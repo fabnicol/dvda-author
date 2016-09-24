@@ -142,9 +142,11 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
     static uint64_t pack_in_title;
     static int title;
 
-    if (pack_in_title == 0) S_OPEN(info->infile, "rb")
+    if (title == 0 && pack_in_title == 0) S_OPEN(info->infile, "rb")
 
     uint64_t offset0 = ftello(info->infile.fp);
+    //if (pack_in_title == 0)
+        fprintf(stderr, "!!!-- title %d, start %d sector, remainder %d \n", title, offset0/2048, offset0 % 2048);
 
     fseeko(info->infile.fp, offset0 + 14, SEEK_SET);
 
@@ -156,6 +158,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
         position = FIRST_PACK;
 
         ++title;
+        ++pack_in_title;
 
         char Title[14] = {0};
         sprintf(Title, "title_%d.wav", title);
@@ -169,6 +172,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
         if (res != 0)
         {
             position = LAST_PACK;
+            pack_in_title = 0;
         }
         else
         {
@@ -177,15 +181,16 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
             if (n != 4 || (n == 4 && buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB))
             {
                 position = LAST_PACK;
+                pack_in_title = 0;
             }
             else
             {
                 position = MIDDLE_PACK;
+                ++pack_in_title;
             }
         }
     }
 
-    ++pack_in_title;
     fseeko(info->infile.fp, offset0 + 35 + (position == FIRST_PACK ? 21 : 0), SEEK_SET);
 
     uint8_t sample_size[1] = {0};
@@ -265,7 +270,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
 
     fseeko(info->infile.fp, offset0 + 2048, SEEK_SET);
 
-    if (position == LAST_PACK)
+    if (status == VALID)
           S_CLOSE(info->infile)
 
     return position;
@@ -283,6 +288,7 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
 
     if (pack_in_title == 0)
     {
+      S_OPEN(info->infile, "rb")
       fseeko(info->infile.fp, 0, SEEK_SET);
       S_OPEN(info->outfile, "ab")
     }
@@ -389,18 +395,18 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
         fpout_size += header->header_size_out;
 
         fseeko(info->outfile.fp, 0, SEEK_END);
-        uint64_t check_size = ftello(info->outfile.fp);
-        if (check_size != fpout_size)
+
+        if (ftello(info->outfile.fp) != fpout_size)
         {
-            foutput(ERR  "Audio decoding outfile mismatch. Decoded %lu bytes yet file size audio is %lu bytes.\n", fpout_size, check_size);
+            foutput(ERR  "Audio decoding outfile mismatch. Decoded %lu bytes yet file size audio is %lu bytes.\n", fpout_size, ftello(info->outfile.fp));
         }
 
-        foutput(MSG "Writing %s (%.2Lf MB)...\n", filename(info->outfile), (long double) check_size / (long double) (1024 * 1024));
+        foutput(MSG "Writing %s (%.2Lf MB)...\n", filename(info->outfile), (long double) fpout_size / (long double) (1024 * 1024));
         S_CLOSE(info->outfile)
-        S_CLOSE(info->infile)
-        info->outfile.filesize = check_size;
+        info->outfile.filesize = fpout_size;
+        fpout_size = 0;
     }
-    else
+
     fseeko(info->infile.fp, offset0 + 2048, SEEK_SET);
 
     return(position);
@@ -411,33 +417,35 @@ int get_ats_audio()
 {
     uint8_t audio_buf[2048];
     uint64_t pack = 0;
+    _Bool end_of_aob  = false;
 
     int pack_rank = FIRST_PACK;
+
+    filestat_t aob_object = filestat(false, 0, globals.aobpath, NULL);
+
+    WaveData info = {
+                      .database = NULL,
+                      .filetitle = NULL,
+                      .automatic = true,
+                      .prepend = true,
+                      .in_place = true,
+                      .cautious = false,
+                      .interactive = false,
+                      .padding = false,
+                      .prune = false,
+                      .virtual = false,
+                      .repair = 0,
+                      .padbytes = 0,
+                      .prunedbytes = 0,
+                      .infile = aob_object,
+                      .outfile = filestat(false, 1, NULL, NULL)
+                    };
+    WaveHeader header;
 
     do
     {
         /* First pass to get basic audio characteristics (sample rate, bit rate, cga */
         _Bool status = VALID;
-
-        WaveData info = {
-                          .database = NULL,
-                          .filetitle = NULL,
-                          .automatic = true,
-                          .prepend = true,
-                          .in_place = true,
-                          .cautious = false,
-                          .interactive = false,
-                          .padding = false,
-                          .prune = false,
-                          .virtual = false,
-                          .repair = 0,
-                          .padbytes = 0,
-                          .prunedbytes = 0,
-                          .infile = filestat(false, 1, globals.aobpath, NULL),
-                          .outfile = filestat(false, 1, NULL, NULL)
-                        };
-
-        WaveHeader header;
 
         errno = 0;
 
@@ -467,10 +475,14 @@ int get_ats_audio()
         _Bool debug = globals.debugging;
         globals.debugging = false;
 
-        filestat_t aob_object = info.infile;
-
         info.outfile.filesize = 0;  // necessary to reset so that header can be generated in empty file
         info.infile = info.outfile;
+
+        S_OPEN(info.infile, "wb+")
+
+        info.outfile = info.infile;
+
+        info.prepend = true;
 
         fixwav(&info, &header);
 
@@ -480,6 +492,9 @@ int get_ats_audio()
 
         info.infile = aob_object;
 
+        S_OPEN(info.infile, "rb")
+        S_OPEN(info.outfile, "ab")
+
         do
         {
             pack_rank = get_pes_packet_audio(&info, &header, audio_buf);
@@ -488,8 +503,11 @@ int get_ats_audio()
             {
                 ++pack;
             }
-        }
+
+       }
         while (pack_rank != LAST_PACK);
+
+        if (ftello(info.infile.fp) == filesize(info.infile)) end_of_aob = true;
 
         foutput(MSG "Read %lu PES packets.\n", pack);
 
@@ -499,6 +517,7 @@ int get_ats_audio()
          * but overwrite the existing one */
 
         info.prepend = false;
+        aob_object = info.infile;
         info.infile = info.outfile;
 
         fixwav(&info, &header);
@@ -507,8 +526,13 @@ int get_ats_audio()
 
         if (errno) perror(ERR);
         free(info.outfile.filename);
+
+        info.infile = aob_object;
+        info.outfile = filestat(false, 1, NULL, NULL);
     }
-    while (false);//!feof(fp));
+    while (! end_of_aob);
+
+    S_CLOSE(info.infile)
 
     return(errno);
 }
