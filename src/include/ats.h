@@ -47,6 +47,7 @@ extern FILE* aob_log;
 # define FIRST_PACK   0
 # define LAST_PACK    1
 # define MIDDLE_PACK  2
+# define END_OF_AOB 3
 # define VALID true
 # define NORMAL 0
 # define INVALID false

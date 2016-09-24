@@ -268,7 +268,15 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
       header->dwChannelMask = cga2wav_channels[channel_assignment[0]];
     }
 
-    fseeko(info->infile.fp, offset0 + 2048, SEEK_SET);
+    if (offset0 + 2048 < filesize(info->infile))
+    {
+      fseeko(info->infile.fp, offset0 + 2048, SEEK_SET);
+    }
+    else
+    {
+      fseeko(info->infile.fp, 0, SEEK_END);
+      position = END_OF_AOB;
+    }
 
     if (status == VALID)
           S_CLOSE(info->infile)
@@ -407,7 +415,15 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
         fpout_size = 0;
     }
 
-    fseeko(info->infile.fp, offset0 + 2048, SEEK_SET);
+    if (offset0 + 2048 < filesize(info->infile))
+    {
+      fseeko(info->infile.fp, offset0 + 2048, SEEK_SET);
+    }
+    else
+    {
+      fseeko(info->infile.fp, 0, SEEK_END);
+      position = END_OF_AOB;
+    }
 
     return(position);
 }
@@ -454,7 +470,7 @@ int get_ats_audio()
             pack_rank = peek_pes_packet_audio(&info, &header, &status);
             if (status == VALID) break;
         }
-        while (pack_rank != LAST_PACK);
+        while (pack_rank != LAST_PACK && pack_rank != END_OF_AOB);
 
         if (errno)
         {
@@ -505,9 +521,7 @@ int get_ats_audio()
             }
 
        }
-        while (pack_rank != LAST_PACK);
-
-        if (ftello(info.infile.fp) == filesize(info.infile)) end_of_aob = true;
+        while (pack_rank != LAST_PACK && pack_rank != END_OF_AOB);
 
         foutput(MSG "Read %lu PES packets.\n", pack);
 
@@ -530,7 +544,7 @@ int get_ats_audio()
         info.infile = aob_object;
         info.outfile = filestat(false, 1, NULL, NULL);
     }
-    while (! end_of_aob);
+    while (pack_rank != END_OF_AOB);
 
     S_CLOSE(info.infile)
 
