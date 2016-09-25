@@ -254,7 +254,7 @@ typedef struct
     char* xml;
     char** spu_xml;
     char* cdrecorddevice;
-    char* aobpath;
+    char** aobpath;
     FILE *journal;
     uint16_t access_rights;
     defaults settings;
