@@ -289,12 +289,15 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
 {
     int position;
     static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
-    static uint64_t aob_offset_read_start;
+    static int64_t aob_offset_read_start;
     static uint64_t fpout_size;
     int audio_bytes;
     uint8_t PES_packet_len_bytes[2];
 
-    if (aob_offset_read_start)
+    if (aob_offset_read_start == 0 && file_exists(info->infile.filename))
+        info->infile.filesize = stat_file_size(info->infile.filename);
+
+    if (aob_offset_read_start >= 0)
     {
       info->infile.fp = fopen(info->infile.filename, "rb")  ;
       if (info->infile.fp != NULL)
@@ -303,12 +306,21 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
       }
       else
       {
-          EXIT_ON_RUNTIME_ERROR_VERBOSE("AOB open issue.")
+          EXIT_ON_RUNTIME_ERROR_VERBOSE("INFILE open issue.")
       }
 
       if (info->infile.isopen)
               fseeko(info->infile.fp, aob_offset_read_start, SEEK_SET);
-      S_OPEN(info->outfile, "ab")
+
+      info->outfile.fp = fopen(info->outfile.filename, "ab");
+      if (info->outfile.fp != NULL)
+      {
+          info->outfile.isopen = true;
+      }
+      else
+      {
+          EXIT_ON_RUNTIME_ERROR_VERBOSE("OUTFILE open issue.")
+      }
     }
 
     uint64_t offset0 = ftello(info->infile.fp);
@@ -434,7 +446,7 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
       position = END_OF_AOB;
     }
 
-    aob_offset_read_start = (position == LAST_PACK) ? offset0 + 2048 : 0;
+    aob_offset_read_start = (position == LAST_PACK) ? offset0 + 2048 : -1;
 
     return(position);
 }
@@ -453,7 +465,7 @@ int get_ats_audio()
                       .database = NULL,
                       .filetitle = NULL,
                       .automatic = true,
-                      .prepend = true,
+                      .prepend = globals.fixwav_prepend,
                       .in_place = true,
                       .cautious = false,
                       .interactive = false,
@@ -496,30 +508,43 @@ int get_ats_audio()
            exit(-8);
         }
 
-        /* generate header in empty file. We must allow prepend and in_place for empty files */
+        _Bool debug;
 
-        _Bool debug = globals.debugging;
-        globals.debugging = false;
+        if (globals.fixwav_prepend)
+        {
+            /* generate header in empty file. We must allow prepend and in_place for empty files */
 
-        info.outfile.filesize = 0;  // necessary to reset so that header can be generated in empty file
-        info.infile = info.outfile;
+            debug = globals.debugging;
 
-        S_OPEN(info.infile, "wb+")
+            /* Hush it up as there will be spurious error mmsg */
+            globals.debugging = false;
 
-        info.outfile = info.infile;
+            info.outfile.filesize = 0;  // necessary to reset so that header can be generated in empty file
+            info.infile = info.outfile;
+            info.prepend = true;
 
-        info.prepend = true;
+            info.infile.fp = fopen(info.infile.filename, "wb+");
+            if (info.infile.fp != NULL)
+            {
+                info.infile.isopen = true;
+            }
+            else
+            {
+                EXIT_ON_RUNTIME_ERROR_VERBOSE("WAV header-prepending issue.")
+            }
 
-        fixwav(&info, &header);
+            info.outfile = info.infile;
 
-        S_CLOSE(info.outfile)  // necessary here, forbidden with the second fixwav below.
+            fixwav(&info, &header);
+
+            S_CLOSE(info.outfile)  // necessary here, forbidden with the second fixwav below.
+
+            info.infile = aob_object;
+            errno = 0;
+        }
 
         /* second pass to get the audio */
 
-        info.infile = aob_object;
-
-        S_OPEN(info.infile, "rb")
-        S_OPEN(info.outfile, "ab")
 
         do
         {
@@ -530,23 +555,27 @@ int get_ats_audio()
 
         foutput(MSG "Read %lu PES packets.\n", pack);
 
-        /* WAV output is now OK except for the wav file size-based header data.
-         * ckSize, data_ckSize and nBlockAlign must be readjusted by computing
-         * the exact audio content bytesize. Also we no longer prepend the header
-         * but overwrite the existing one */
 
-        info.prepend = false;
-        aob_object = info.infile;
-        info.infile = info.outfile;
+        if (globals.fixwav_prepend)
+        {
+            /* WAV output is now OK except for the wav file size-based header data.
+             * ckSize, data_ckSize and nBlockAlign must be readjusted by computing
+             * the exact audio content bytesize. Also we no longer prepend the header
+             * but overwrite the existing one */
 
-        fixwav(&info, &header);
+            info.prepend = false;
+            aob_object = info.infile;
+            info.infile = info.outfile;
 
-        globals.debugging = debug;
+            fixwav(&info, &header);
 
-        if (errno) perror(ERR);
+            globals.debugging = debug;
+            info.infile = aob_object;
+            errno = 0;
+        }
+
         free(info.outfile.filename);
 
-        info.infile = aob_object;
         info.outfile = filestat(false, 1, NULL, NULL);
     }
     while (pack_rank != END_OF_AOB);
