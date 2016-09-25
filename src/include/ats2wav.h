@@ -37,6 +37,7 @@ typedef struct
 #define BUFFER_SIZE 3*2048
 int ats2wav(const char* filename, const char* outdir);
 
+int get_ats_audio_i(int);
 int get_ats_audio();
 
 #endif

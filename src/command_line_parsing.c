@@ -1845,18 +1845,19 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 27:
             foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Decode disk and log MPEG specifics.");
             globals.logdecode = true;
-            globals.aobpath = strdup(optarg);
+            globals.aobpath[0] = strdup(optarg);
             break;
 
         case 28:
-            globals.aobpath = strdup(optarg);
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  AOB input filepath: ", globals.aobpath);
+            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Extracting AOB to raw wav: ", optarg);
+            aob2wav_parsing(optarg);
             break;
 
         case 29:
-            globals.aobpath = strdup(optarg);
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  AOB input filepath: ", globals.aobpath);
+
+            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Extracting AOB to wav: ", optarg);
             globals.fixwav_prepend = true;
+            aob2wav_parsing(optarg);
             break;
 
         case 30:
@@ -2868,6 +2869,35 @@ void process_dvd_video_zone(command_t* command)
 #endif 
     
 }
+
+
+void aob2wav_parsing(char *ssopt)
+{
+    char *chain , *subchunk;
+    if (ssopt) chain = strdup(ssopt); else return;
+    int i = 0;
+
+    if (chain != NULL)
+    {
+        globals.aobpath = (char**) calloc(9, sizeof(char*));
+        if (globals.aobpath == NULL)
+           perror(ERR "TAB allocation");
+    }
+
+    globals.aobpath[0] = strtok(chain, ",");
+
+    if (subchunk)
+    {
+        while (i < 9 && (subchunk = strtok(NULL, ",")) != NULL)
+        {
+            globals.aobpath[++i] = subchunk;
+        }
+    }
+
+    return;
+}
+
+
 
 void fixwav_parsing(char *ssopt)
 {
