@@ -382,7 +382,7 @@ void unix2dos_filename(char* path)
 {
     /* does not assume null-terminated strings, may be tab of chars */
 
-    for (uint u = 0; u < strlen(path); ++u)
+    for (unsigned int u = 0; u < strlen(path); ++u)
     {
        switch (path[u])
        {
@@ -397,7 +397,7 @@ void dos2Unix_filename(char* path)
 {
     /* does not assume null-terminated strings, may be tab of chars */
 
-    for (uint u = 0; u < strlen(path); ++u)
+    for (unsigned int u = 0; u < strlen(path); ++u)
     {
        if (path[u] == '\\')  path[u] = '/';
 #      if defined(__MSYS__) || defined (__CYGWIN__)
@@ -533,7 +533,7 @@ path_t *parse_filepath(const char* filepath)
         chain->isfile=0;
         if (globals.veryverbose)
         {
-            printf(MSG "Path %s is not a file\n", filepath);
+            printf(MSG_TAG "Path %s is not a file\n", filepath);
         }
     }
     else
@@ -612,13 +612,13 @@ _Bool clean_directory(char* path)
     if (errno)
     {
         if (globals.veryverbose)
-            printf("%s%s\n", MSG "Failed to clean directory ", path);
+            printf("%s%s\n", MSG_TAG "Failed to clean directory ", path);
         return 0;
     }
     else
     {
         if (globals.veryverbose)
-            printf("%s\n", MSG "OK.");
+            printf("%s\n", MSG_TAG "OK.");
         return 1;
     }
 }
@@ -783,7 +783,7 @@ _Bool s_dir_exists(const char* path)
 
     if (stat(path, &info) != 0)
     {
-        if (globals.veryverbose) printf( MSG "Directory to be created: %s \n", path);
+        if (globals.veryverbose) printf( MSG_TAG "Directory to be created: %s \n", path);
         errno = 0;
         return false;
     }
@@ -807,7 +807,12 @@ _Bool s_dir_exists(const char* path)
 
 _Bool s_mkdir (const char *path)
 {
+#if defined(__WIN32__) || defined (_WIN32) || defined (_WIN64) || defined (__CYGWIN__) || defined (__MSYS__)
+
+    return (secure_mkdir(path, 0777) == 0);
+#else
     return (secure_mkdir(path, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_ISVTX) == 0);
+#endif
 }
 
 int secure_mkdir (const char *path, mode_t mode)
@@ -842,7 +847,7 @@ int secure_mkdir (const char *path, mode_t mode)
 
     if (d == NULL)
     {
-        perror("\n"MSG "Error: could not allocate directory path string\n");
+        perror("\n"MSG_TAG "Error: could not allocate directory path string\n");
         clean_exit(EXIT_FAILURE);
     }
 
@@ -1327,8 +1332,8 @@ int copy_file_no_p(FILE *infile, FILE *outfile)
         putchar('|');
         counter=counter-1;
         counter=(counter*sizeof(char)*BUFSIZ+chunk)/1024;
-        printf("\n"MSG "Copied %.2lf KB.\n", counter);
-        if (!errno) puts("\n"MSG "Copy completed.");
+        printf("\n"MSG_TAG "Copied %.2lf KB.\n", counter);
+        if (!errno) puts("\n" MSG_TAG "Copy completed.");
         else
             puts("\n"ERR "Copy failed.");
 
@@ -1696,10 +1701,10 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
                 {
 
                     if (header->ichunks)
-                        printf(MSG "Found %d info chunks among %d characters\n       INAM %s\n       IART %s\n       ICMT %s\n       ICOP %s\n       ICRD %s\n       IGNR %s\n",
+                        printf(MSG_TAG "Found %d info chunks among %d characters\n       INAM %s\n       IART %s\n       ICMT %s\n       ICOP %s\n       ICRD %s\n       IGNR %s\n",
                                header->ichunks, span, header->INAM, header->IART, header->ICMT, header->ICOP, header->ICRD, header->IGNR);
                     else
-                        printf(MSG "Could not find info chunks among %d characters\n", span);
+                        printf(MSG_TAG "Could not find info chunks among %d characters\n", span);
 
                 }
                 break;
@@ -1733,19 +1738,19 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
 
     if (header->ichunks)
     {
-        printf(MSG "Found %d info chunks in extended header\n", header->ichunks);
+        printf(MSG_TAG "Found %d info chunks in extended header\n", header->ichunks);
         if (globals.debugging)
         {
-            printf(MSG "See file `database' under directory %s\n", info->database);
+            printf(MSG_TAG "See file `database' under directory %s\n", info->database);
         }
     }
 
     if (globals.debugging)
     {
         if (span != 36)
-            printf( MSG "Size of header is non-standard (scanned %d characters)\n", header->header_size_in);
+            printf( MSG_TAG "Size of header is non-standard (scanned %d characters)\n", header->header_size_in);
         else
-            printf("%s", MSG "Size of header is standard\n");
+            printf("%s", MSG_TAG "Size of header is standard\n");
 
         if (header->header_size_in  < 44)
         {
@@ -2089,7 +2094,7 @@ char* quote(const char* path)
 // Launches an application in a fork and duplicates its stdout into stdout; waits for it to return;
 
 
-int run(const char* application, char*  args[], const int option)
+int run(const char* application, const char*  args[], const int option)
 {
 errno=0;
 #if !defined __WIN32__
@@ -2097,8 +2102,8 @@ errno=0;
     int tube[2];
     char c;
 
-    char msg[strlen(application)+1+7];
-    memset(msg, '0', sizeof(msg));
+    char mesg[strlen(application)+1+7];
+    memset(mesg, '0', sizeof(mesg));
 
     if (pipe(tube))
     {
@@ -2128,10 +2133,10 @@ errno=0;
 
     }
 #else
-    char* s=get_command_line(args);
+    const char* s=get_command_line(args);
     char cml[strlen(application)+1+strlen(s)+1+2];
     sprintf(cml, "\"%s\" %s",  application, s);
-    free(s);
+    free((char* ) s);
     if (globals.debugging) foutput(INF "Running: %s\n ", cml);
     errno=system(cml);
 #endif

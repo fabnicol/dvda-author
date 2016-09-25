@@ -334,31 +334,31 @@ command_t *scan_wavfile_audio_characteristics(command_t *command)
     switch (error)
     {
     case AFMT_WAVE:
-        if (globals.debugging) foutput(MSG "Found WAVE format for %s\n", command->files[i][j].filename);
+        if (globals.debugging) foutput(MSG_TAG "Found WAVE format for %s\n", command->files[i][j].filename);
         command->files[i][j].type=AFMT_WAVE;
         j++;
         break;
     case AFMT_WAVE_FIXED:
-        if (globals.debugging) foutput(MSG "Found WAVE format (fixed) for %s\n", command->files[i][j].filename);
+        if (globals.debugging) foutput(MSG_TAG "Found WAVE format (fixed) for %s\n", command->files[i][j].filename);
         command->files[i][j].type=AFMT_WAVE;
         j++;
         break;
     case AFMT_WAVE_GOOD_HEADER:
-        if (globals.debugging) foutput(MSG "Found WAVE format (original) for %s\n", command->files[i][j].filename);
+        if (globals.debugging) foutput(MSG_TAG "Found WAVE format (original) for %s\n", command->files[i][j].filename);
         command->files[i][j].type=AFMT_WAVE;
         j++;
         break;
 
 #ifndef WITHOUT_FLAC
     case AFMT_FLAC:
-        if (globals.debugging) foutput(MSG "Found FLAC format for %s\n", command->files[i][j].filename);
+        if (globals.debugging) foutput(MSG_TAG "Found FLAC format for %s\n", command->files[i][j].filename);
         error=flac_getinfo(&command->files[i][j]);
         j++;
         break;
 #if !defined WITHOUT_libogg
 #if HAVE_OGG_FLAC
     case AFMT_OGG_FLAC:
-        if (globals.debugging) foutput(MSG "Found Ogg FLAC format for %s\n", command->files[i][j].filename);
+        if (globals.debugging) foutput(MSG_TAG "Found Ogg FLAC format for %s\n", command->files[i][j].filename);
         error=flac_getinfo(&command->files[i][j]);
         j++;
         break;
@@ -888,7 +888,7 @@ int fixwav_repair(fileinfo_t *info)
 
         if (wavedata.repair == GOOD_HEADER)
         {
-            foutput("%s", MSG "Proceeding with same file...\n");
+            foutput("%s", MSG_TAG "Proceeding with same file...\n");
 
             return(AFMT_WAVE_GOOD_HEADER);
         }
@@ -905,13 +905,13 @@ int fixwav_repair(fileinfo_t *info)
                     info->filename=strdup(buf);
                 }
 
-                foutput(MSG "Proceeding with fixed file %s:\n", filename(wavedata.outfile));
+                foutput(MSG_TAG "Proceeding with fixed file %s:\n", filename(wavedata.outfile));
             }
             else
             if (globals.debugging)
-                foutput(MSG "Proceeding with virtual header and same file %s:\n", info->filename);
+                foutput(MSG_TAG "Proceeding with virtual header and same file %s:\n", info->filename);
 
-            foutput(MSG "Bits per sample=%d Sample frequency: %d\n       Bit depth:%d Channels:%d\n", waveheader.wBitsPerSample,
+            foutput(MSG_TAG "Bits per sample=%d Sample frequency: %d\n       Bit depth:%d Channels:%d\n", waveheader.wBitsPerSample,
                     waveheader.dwSamplesPerSec, waveheader.wBitsPerSample, waveheader.channels );
 
             return(AFMT_WAVE_FIXED);
@@ -969,7 +969,7 @@ int launch_sox(char** filename)
     }
 
     if (globals.debugging)
-        foutput("%s       %s -->\n       %s \n", MSG "Format is neither WAV nor FLAC\n"INF "Converting to WAV with SoX...\n", *filename, new_wav_name);
+        foutput("%s       %s -->\n       %s \n", MSG_TAG "Format is neither WAV nor FLAC\n"INF "Converting to WAV with SoX...\n", *filename, new_wav_name);
         
     unlink(new_wav_name);
     errno=0;
@@ -1080,7 +1080,7 @@ int audio_open(fileinfo_t* info)
                             (void *) info
                         );
                 if ((globals.debugging) && (result == FLAC__STREAM_DECODER_INIT_STATUS_OK))
-                    foutput("%s\n", MSG "FLAC decoder was initialized");
+                    foutput("%s\n", MSG_TAG "FLAC decoder was initialized");
             }
             else
 
@@ -1097,7 +1097,7 @@ int audio_open(fileinfo_t* info)
                             );
 
                     if ((globals.debugging) && (result == FLAC__STREAM_DECODER_INIT_STATUS_OK))
-                        foutput("%s\n", MSG "OGG_FLAC decoder was initialized");
+                        foutput("%s\n", MSG_TAG "OGG_FLAC decoder was initialized");
                 }
                 else
                     EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Type of file unknown")
