@@ -327,7 +327,6 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
     static uint64_t fpout_size;
     int audio_bytes;
     uint8_t PES_packet_len_bytes[2];
-    static int title;
 
     aob_open(info, aob_offset_read_start);
 
@@ -435,10 +434,10 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
 
         if (ftello(info->outfile.fp) != (off64_t) fpout_size)
         {
-            foutput(ERR  "Audio decoding outfile mismatch. Decoded %lu bytes yet file size audio is %lu bytes.\n", fpout_size, ftello(info->outfile.fp));
+            foutput(ERR  "Audio decoding outfile mismatch. Decoded %" PRIu64 " bytes yet file size audio is %" PRIu64 " bytes.\n", fpout_size, ftello(info->outfile.fp));
         }
 
-        foutput(MSG "Writing %s (%.2Lf MB)...\n", filename(info->outfile), (long double) fpout_size / (long double) (1024 * 1024));
+        foutput(MSG_TAG "Writing %s (%.2f MB)...\n", filename(info->outfile), (double) fpout_size / (double) (1024 * 1024));
         S_CLOSE(info->outfile)
         info->outfile.filesize = fpout_size;
         fpout_size = 0;
@@ -566,7 +565,7 @@ int get_ats_audio_i(int i)
         }
         while (pack_rank != LAST_PACK && pack_rank != END_OF_AOB);
 
-        foutput(MSG "Read %lu PES packets.\n", pack);
+        foutput(MSG_TAG "Read %" PRIu64 " PES packets.\n", pack);
 
 
         if (globals.fixwav_prepend)
@@ -751,7 +750,7 @@ static void wav_close(_fileinfo_t* info , const char* filename)
         return;
     }
     
-    if (globals.debugging) printf(MSG "IFO file: %s\n       IFO file size: %"PRIu64"\n", filename, info->numbytes);
+    if (globals.debugging) printf(MSG_TAG "IFO file: %s\n       IFO file size: %"PRIu64"\n", filename, info->numbytes);
     
     fseek(info->fpout,0,SEEK_SET);
     
@@ -1054,7 +1053,7 @@ NEXT:
                     
                     if (globals.veryverbose)
                     {
-                        fprintf(stderr, MSG "Wrote %d bytes yielding %lld/%lld\n",nbytesread,files[t].byteswritten,files[t].numbytes);
+                        fprintf(stderr, MSG_TAG "Wrote %d bytes yielding %lld/%lld\n",nbytesread,files[t].byteswritten,files[t].numbytes);
                     }
                     
                     delta= files[t].numbytes-files[t].byteswritten;

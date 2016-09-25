@@ -90,7 +90,7 @@ void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank,
 
     relative_sector_pointer_VTSI[0] += sector_pointer_VIDEO_TS + 1;
 
-    foutput(MSG "Maximum rank of VTSI:  %d\n", maximum_VTSI_rank);
+    foutput(MSG_TAG "Maximum rank of VTSI:  %d\n", maximum_VTSI_rank);
 
     for (k=1; k< maximum_VTSI_rank; k++)
     {
@@ -171,7 +171,7 @@ void get_video_PTS_ticks(char* path_to_VIDEO_TS, uint32_t *videotitlelength, uin
                     /* frames will not be considered */
 
                     videotitlelength[k] = 90000 *(3600 * BCD(hours)  + 60 *BCD(minutes)  + BCD(seconds));
-        if (globals.debugging) foutput("\n"MSG "Linked video group=%d \n       hours=%x  minutes=%x  seconds=%x\n       PTS ticks=%"PRIu32" length (seconds)=%"PRIu32" \n", VTSI_rank[k], hours, minutes, seconds, videotitlelength[k], videotitlelength[k]/90000);
+        if (globals.debugging) foutput("\n"MSG_TAG "Linked video group=%d \n       hours=%x  minutes=%x  seconds=%x\n       PTS ticks=%"PRIu32" length (seconds)=%"PRIu32" \n", VTSI_rank[k], hours, minutes, seconds, videotitlelength[k], videotitlelength[k]/90000);
 
     }
 
@@ -229,7 +229,7 @@ void import_topmenu(char* video_vob_path, pic* img, _Bool MIX_TYPE)
 
  launch_lplex_soundtrack(img, "lpcm");
 
- char*  argsmplex[]={mplex, "-f", "8", "-L", "48000:2:16", "-o", img->backgroundmpg[0], imported_topmenu, img->soundtrack[0][0], NULL};
+ const char*  argsmplex[]={mplex, "-f", "8", "-L", "48000:2:16", "-o", img->backgroundmpg[0], imported_topmenu, img->soundtrack[0][0], NULL};
  run(mplex, argsmplex, 0);
 
 
