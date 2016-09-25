@@ -70,8 +70,8 @@ void parse_double_entry_command_line(char* input_string, char**** DOUBLE_ARRAY, 
     *TOTAL=arraylength(array); 
     if (globals.veryverbose) 
     {
-        fprintf(stderr, MSG "Found %d DVD-VIDEO group(s)/titleset(s)\n", *TOTAL);
-        for (int u=0; u < *TOTAL; u++) fprintf(stderr, MSG "Found group/titleset %d files: %s\n", u+1, array[u]);
+        fprintf(stderr, MSG_TAG "Found %d DVD-VIDEO group(s)/titleset(s)\n", *TOTAL);
+        for (int u=0; u < *TOTAL; u++) fprintf(stderr, MSG_TAG "Found group/titleset %d files: %s\n", u+1, array[u]);
     }
     
     *DOUBLE_ARRAY=(char ***) calloc(*TOTAL, sizeof(char***)); 
@@ -86,10 +86,10 @@ void parse_double_entry_command_line(char* input_string, char**** DOUBLE_ARRAY, 
         if (globals.veryverbose) 
         {
             if (audit_flag == AUDIT_DVD_VIDEO_AUDIO_FORMAT)
-                fprintf(stderr, MSG "Found %d audio track(s) for DVD-VIDEO titleset %d\n", *COUNTER_ARRAY[titleset], *TOTAL);
+                fprintf(stderr, MSG_TAG "Found %d audio track(s) for DVD-VIDEO titleset %d\n", *COUNTER_ARRAY[titleset], *TOTAL);
             else
                 if (audit_flag == NO_FIXWAV_AUDIT)
-                    fprintf(stderr, MSG "Found %d slide(s) for DVD-VIDEO titleset %d\n", *COUNTER_ARRAY[titleset], *TOTAL);
+                    fprintf(stderr, MSG_TAG "Found %d slide(s) for DVD-VIDEO titleset %d\n", *COUNTER_ARRAY[titleset], *TOTAL);
         }
 #endif
         for (int track=0; track < *COUNTER_ARRAY[titleset]; track++)
@@ -110,7 +110,7 @@ void parse_double_entry_command_line(char* input_string, char**** DOUBLE_ARRAY, 
             }
             else 
                 if (globals.debugging)
-                    foutput(MSG "Checked that track %s is DVD-VIDEO compliant\n", 
+                    foutput(MSG_TAG "Checked that track %s is DVD-VIDEO compliant\n", 
                             (*DOUBLE_ARRAY)[titleset][track]);
         }
     }
@@ -753,9 +753,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             files[ngroups_scan][0].single_track=1;   // no break
         case 'j' :
             files[ngroups_scan][0].contin=1;
-            if (globals.debugging) foutput("%s%d\n", MSG "Continuity requested for group ", ngroups_scan+1);
+            if (globals.debugging) foutput("%s%d\n", MSG_TAG "Continuity requested for group ", ngroups_scan+1);
             files[ngroups_scan][0].join_flag=1;     //  no break
-            if (globals.debugging) foutput("%s%d\n", MSG "Join flag set for group ", ngroups_scan+1);
+            if (globals.debugging) foutput("%s%d\n", MSG_TAG "Join flag set for group ", ngroups_scan+1);
             
         case 'g' :
             
@@ -948,7 +948,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             errno=0;
             
             if (startsector)
-                foutput(MSG "Using start sector: %"PRId32"\n", startsector);
+                foutput(MSG_TAG "Using start sector: %"PRId32"\n", startsector);
             else
             {
                 foutput(ERR "Illegal negative start sector of %"PRId32"...falling back on automatic start sector\n", startsector);
@@ -1590,12 +1590,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {
             clean_directory(globals.settings.outdir);
             clean_directory(globals.settings.lplexoutdir);
-            if (errno) foutput("%s\n",MSG "No output directory to be cleaned");
+            if (errno) foutput("%s\n",MSG_TAG "No output directory to be cleaned");
         }
         else
         {
             if ((globals.debugging)&& (!globals.nooutput))
-                foutput(MSG "Output directory %s has been preserved.\n", globals.settings.outdir);
+                foutput(MSG_TAG "Output directory %s has been preserved.\n", globals.settings.outdir);
         }
         
         
@@ -1845,7 +1845,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 27:
             foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Decode disk and log MPEG specifics.");
             globals.logdecode = true;
-            globals.aobpath[0] = strdup(optarg);
+            globals.aobpath = (char**) calloc(1, sizeof(char *));
+            if (globals.aobpath)
+                globals.aobpath[0] = strdup(optarg);
+            else
+                EXIT_ON_RUNTIME_ERROR_VERBOSE("Could not allocate AOB path file.")
             break;
 
         case 28:
@@ -2051,7 +2055,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         char* convert=NULL;
         char cl[500]; //do not use command as an array name !
         convert = create_binary_path(convert, CONVERT, SEPARATOR CONVERT_BASENAME);
-        unlink(img->backgroundpic[0]);
+        if (file_exists(img->backgroundpic[0])) unlink(img->backgroundpic[0]);
         errno=0;
         change_directory(globals.settings.datadir);
         snprintf(cl, 500, "%s %s %s", convert, img->blankscreen , img->backgroundpic[0]);
@@ -2212,7 +2216,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             errno=0;
             if (fopen(globals.xml, "rb") != NULL)
                 fclose(fopen(globals.xml, "rb"));
-            if (!errno) puts(MSG "--> dvdauthor requirement...OK");
+            if (!errno) puts(MSG_TAG "--> dvdauthor requirement...OK");
         }
         else errno=1;
         break;
@@ -2226,7 +2230,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if ((f=fopen(img->tsvob, "rb")) != NULL)
             {
                 fclose(f);
-                puts(MSG "--> top vob requirement...OK");
+                puts(MSG_TAG "--> top vob requirement...OK");
             }
             
             
@@ -2464,7 +2468,7 @@ void process_dvd_video_zone(command_t* command)
     {
         globals.videozone=0;
         
-        foutput("%s\n", MSG "With --dvdv-tracks, no testing of audio file compliance will be performed!");
+        foutput("%s\n", MSG_TAG "With --dvdv-tracks, no testing of audio file compliance will be performed!");
         launch_lplex_hybridate(img, 
                                "dvd", 
                                (const char***) dvdv_track_array, 
@@ -2497,8 +2501,8 @@ void process_dvd_video_zone(command_t* command)
                 {
                     if (globals.veryverbose) 
                     {
-                        foutput(MSG "Tested DVD-Video compliant: %s\n", files[group][track].filename);
-                        foutput(MSG "group %d track %d: bits per sample=%d samplerate=%d\n", 
+                        foutput(MSG_TAG "Tested DVD-Video compliant: %s\n", files[group][track].filename);
+                        foutput(MSG_TAG "group %d track %d: bits per sample=%d samplerate=%d\n", 
                                        group,
                                        track, 
                                        files[group][track].bitspersample,
@@ -2512,8 +2516,8 @@ void process_dvd_video_zone(command_t* command)
                 {
                     if (globals.veryverbose) 
                     {
-                        foutput(MSG "Failed to be tested DVD-Video compliant: %s\n", command->files[group][track].filename);
-                        foutput(MSG "group %d track %d: bits per sample=%d samplerate=%d\n", group, track, command->files[group][track].bitspersample, command->files[group][track].samplerate);
+                        foutput(MSG_TAG "Failed to be tested DVD-Video compliant: %s\n", command->files[group][track].filename);
+                        foutput(MSG_TAG "group %d track %d: bits per sample=%d samplerate=%d\n", group, track, command->files[group][track].bitspersample, command->files[group][track].samplerate);
                     }
                 }
                 
@@ -2873,7 +2877,7 @@ void process_dvd_video_zone(command_t* command)
 
 void aob2wav_parsing(char *ssopt)
 {
-    char *chain , *subchunk;
+    char *chain , *subchunk = NULL;
     if (ssopt) chain = strdup(ssopt); else return;
     int i = 0;
 
@@ -2882,9 +2886,10 @@ void aob2wav_parsing(char *ssopt)
         globals.aobpath = (char**) calloc(9, sizeof(char*));
         if (globals.aobpath == NULL)
            perror(ERR "TAB allocation");
+
+        globals.aobpath[0] = strtok(chain, ",");
     }
 
-    globals.aobpath[0] = strtok(chain, ",");
 
     if (subchunk)
     {

@@ -402,7 +402,7 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t ngiven_channel
         memory += (float) (ntracks[i])*sizeof(fileinfo_t)/1024;
 
         if (globals.debugging)
-            foutput(MSG "g-type  audio group  :  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i,  ntracks[i], memory);
+            foutput(MSG_TAG "g-type  audio group  :  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i,  ntracks[i], memory);
     }
 
     for (i=n_g_groups ; i < ngroups-nvideolinking_groups; i++)
@@ -436,7 +436,7 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t ngiven_channel
             memory+=(float) sizeof(fileinfo_t)/1024;
         /* sanity check: 0 tracks should be allocated */
         if (globals.debugging)
-            foutput(MSG "Video-linking group  :  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i, ntracks[i], memory);
+            foutput(MSG_TAG "Video-linking group  :  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i, ntracks[i], memory);
     }
 
     return files;
@@ -524,7 +524,7 @@ void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size)
   sprintf(outfile, "%s"SEPARATOR"%s",audiotsdir, basename);
   foutput(INF "Creating %s\n",outfile);
 
-  unlink(outfile); // I sometimes had issues under linux when unlink was not called in rare cases. Reset errno to 0 just after.
+  if (file_exists(outfile)) unlink(outfile); // I sometimes had issues under linux when unlink was not called in rare cases. Reset errno to 0 just after.
   errno=0;
   FILE* f;
   if (!globals.nooutput)
@@ -536,7 +536,7 @@ void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size)
   errno=0;
 
     if (fwrite(array, 1, size, f) == size )
-    foutput("%s%s%s\n", MSG "", outfile," was created.");
+    foutput("%s%s%s\n", MSG_TAG "", outfile," was created.");
     else
     fprintf(stderr, ERR "%s could not be created properly -- fwrite error.\n", basename);
 
@@ -660,7 +660,7 @@ char* create_binary_path(char* local_variable, const char* symbolic_constant, co
         path = conc(globals.settings.bindir, basename);
         local_variable = win32quote(path);
     }
-    if (globals.debugging) foutput(MSG "Path to %s is %s from bindir=%s and basename=%s\n", basename, local_variable,globals.settings.bindir, basename);
+    if (globals.debugging) foutput(MSG_TAG "Path to %s is %s from bindir=%s and basename=%s\n", basename, local_variable,globals.settings.bindir, basename);
 
     if (path) free(path);
 
@@ -700,9 +700,9 @@ void download_latest_version(_Bool download_new_version_flag,_Bool force_downloa
     char this_build[4]={version[6], version[7], version[8], '\0'};
     if (globals.veryverbose)
     {
-    foutput(MSG "Current version is: %s-%s ", year, month);
+    foutput(MSG_TAG "Current version is: %s-%s ", year, month);
     foutput("build %s\n", build);
-    foutput(MSG "Software version is: %s-%s ", this_year, this_month);
+    foutput(MSG_TAG "Software version is: %s-%s ", this_year, this_month);
     foutput("build %s\n", this_build);
     }
     
@@ -719,18 +719,18 @@ void download_latest_version(_Bool download_new_version_flag,_Bool force_downloa
       foutput(INF "A more recent version has been released (%s-%s build %s)\n       Download it from http://dvd-audio.sourceforge.net\n       You can also trigger download by relaunching with dvda-author --download.\n", year, month, build);
     else
     {
-      foutput("%s", MSG "This version is the latest version available.\n");
+      foutput("%s", MSG_TAG "This version is the latest version available.\n");
       if (download_new_version_flag)
       {
 
         if (!force_download_flag)
         {
-          foutput("%s", MSG "You do not need to download the new package.\n");
-          foutput("%s", MSG "To force downloading use --download=force instead\n       Now exiting...\n");
+          foutput("%s", MSG_TAG "You do not need to download the new package.\n");
+          foutput("%s", MSG_TAG "To force downloading use --download=force instead\n       Now exiting...\n");
           clean_exit(EXIT_SUCCESS);
         }
         else
-          foutput("%s", MSG "Downloading the current package anyhow. Please wait...\n");
+          foutput("%s", MSG_TAG "Downloading the current package anyhow. Please wait...\n");
 
       }
     }
@@ -749,11 +749,11 @@ void download_latest_version(_Bool download_new_version_flag,_Bool force_downloa
       {
 
         fclose(package);
-        foutput(MSG "New version %s-%s build %s was downloaded as dvda-author-update.tar.gz\n", year, month, build);
+        foutput(MSG_TAG "New version %s-%s build %s was downloaded as dvda-author-update.tar.gz\n", year, month, build);
 
       }
       else
-        foutput("%s", MSG "Failed to download new version.\n");
+        foutput("%s", MSG_TAG "Failed to download new version.\n");
 
       exit(EXIT_SUCCESS);
 

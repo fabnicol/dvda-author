@@ -43,7 +43,7 @@ int readHeader(FILE * infile, WaveHeader *header)
 
   if  (count != header->header_size_in)
     {
-      if (globals.debugging) foutput(ERR "Failed to read header from input file\n       Size is: %d, read: %lu bytes\n", header->header_size_in, count );
+      if (globals.debugging) foutput(ERR "Failed to read header from input file\n       Size is: %d, read: %" PRIu64 " bytes\n", header->header_size_in, count );
 
       return(FAIL);
     }
@@ -188,7 +188,7 @@ if (header->has_fact)
   /* and dump the header */
   if (globals.veryverbose)
   {
-      if (globals.debugging) foutput( "%s\n", MSG "Existing header data.\n" INF "Looking for the words 'RIFF', 'WAVE', 'fmt'," );
+      if (globals.debugging) foutput( "%s\n", MSG_TAG "Existing header data.\n" INF "Looking for the words 'RIFF', 'WAVE', 'fmt'," );
       if (globals.debugging) foutput( "%s\n", "       or 'data' to see if this is even a somewhat valid WAVE header:" );
       hexdump_header(infile, header->header_size_in);
   }
