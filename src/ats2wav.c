@@ -278,8 +278,8 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
       position = END_OF_AOB;
     }
 
-    if (status == VALID)
-          S_CLOSE(info->infile)
+    if (*status == VALID)
+         S_CLOSE(info->infile)
 
     return position;
 }
@@ -289,15 +289,25 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
 {
     int position;
     static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
-    static uint64_t pack_in_title;
+    static uint64_t aob_offset_read_start;
     static uint64_t fpout_size;
     int audio_bytes;
     uint8_t PES_packet_len_bytes[2];
 
-    if (pack_in_title == 0)
+    if (aob_offset_read_start)
     {
-      S_OPEN(info->infile, "rb")
-      fseeko(info->infile.fp, 0, SEEK_SET);
+      info->infile.fp = fopen(info->infile.filename, "rb")  ;
+      if (info->infile.fp != NULL)
+      {
+          info->infile.isopen = true;
+      }
+      else
+      {
+          EXIT_ON_RUNTIME_ERROR_VERBOSE("AOB open issue.")
+      }
+
+      if (info->infile.isopen)
+              fseeko(info->infile.fp, aob_offset_read_start, SEEK_SET);
       S_OPEN(info->outfile, "ab")
     }
 
@@ -315,6 +325,7 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
     }
     else
     {
+
         /* go to end of sector : if end of file, then last pack, idem if new pack detected ; otherwise middle pack */
         int res = fseeko(info->infile.fp, 2044, SEEK_CUR);
 
@@ -336,8 +347,6 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
             }
         }
     }
-
-    ++pack_in_title;
 
     short int table_index = header->wBitsPerSample == 24 ? 1 : 0;
 
@@ -404,7 +413,7 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
 
         fseeko(info->outfile.fp, 0, SEEK_END);
 
-        if (ftello(info->outfile.fp) != fpout_size)
+        if (ftello(info->outfile.fp) != (off64_t) fpout_size)
         {
             foutput(ERR  "Audio decoding outfile mismatch. Decoded %lu bytes yet file size audio is %lu bytes.\n", fpout_size, ftello(info->outfile.fp));
         }
@@ -425,6 +434,8 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
       position = END_OF_AOB;
     }
 
+    aob_offset_read_start = (position == LAST_PACK) ? offset0 + 2048 : 0;
+
     return(position);
 }
 
@@ -433,7 +444,6 @@ int get_ats_audio()
 {
     uint8_t audio_buf[2048];
     uint64_t pack = 0;
-    _Bool end_of_aob  = false;
 
     int pack_rank = FIRST_PACK;
 
@@ -479,7 +489,7 @@ int get_ats_audio()
            exit(-7);
         }
 
-        if (status == INVALID || info.infile.fp == NULL)
+        if (status == INVALID)
         {
            foutput(ERR "Error while trying to recover audio characteristics : invalid status or input file %s.\n        Exiting...\n",
                    filename(info.infile));
@@ -514,13 +524,8 @@ int get_ats_audio()
         do
         {
             pack_rank = get_pes_packet_audio(&info, &header, audio_buf);
-
-            if (pack_rank  == LAST_PACK || pack_rank == FIRST_PACK || pack_rank == MIDDLE_PACK)
-            {
-                ++pack;
-            }
-
-       }
+            ++pack;
+        }
         while (pack_rank != LAST_PACK && pack_rank != END_OF_AOB);
 
         foutput(MSG "Read %lu PES packets.\n", pack);
