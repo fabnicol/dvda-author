@@ -159,7 +159,7 @@ int  generate_amgm_xml(uint8_t ngroups, uint8_t *ntracks, pic* img)
     fclose(xmlfile);
 
     if (errno) foutput("%s\n", ERR "Could not generate Xml project file properly for generating DVD-Audio menu");
-    else if (globals.debugging) foutput("%s\n", MSG "Xml dvdauthor project file was generated.");
+    else if (globals.debugging) foutput("%s\n", MSG_TAG "Xml dvdauthor project file was generated.");
 
     return(errno);
 }
@@ -203,7 +203,7 @@ int  generate_spumux_xml(uint8_t ngroups, uint8_t *ntracks, uint16_t maxntracks,
     uint16_t x0[ngroups], y0[MAX_BUTTON_NUMBER], x1[ngroups], y1[MAX_BUTTON_NUMBER];
     errno=0;
     FILE *spu_xmlfile=NULL;
-    if (globals.debugging) foutput(MSG "Max ntracks: %d\n", maxntracks);
+    if (globals.debugging) foutput(MSG_TAG "Max ntracks: %d\n", maxntracks);
 
     if (globals.spu_xml == NULL) globals.spu_xml=calloc(img->nmenus,sizeof(char *));
     if (globals.spu_xml == NULL) perror(ERR "spuxml\n");
@@ -348,7 +348,7 @@ int  generate_spumux_xml(uint8_t ngroups, uint8_t *ntracks, uint16_t maxntracks,
 
 
     if (errno) foutput("%s\n", ERR "Could not generate spumux xml project file properly for generating DVD-Audio menu");
-    else if (globals.debugging) foutput("%s\n", MSG "spumux xml dvdauthor project file was generated.");
+    else if (globals.debugging) foutput("%s\n", MSG_TAG "spumux xml dvdauthor project file was generated.");
 
     return(errno);
 }

@@ -134,7 +134,7 @@ int launch_manager(command_t *command)
 
             files[i][0].PTS_length = tl;
             files[i][0].last_sector = files[i][nfiles[i]-1].last_sector;
-            if (globals.debugging) foutput(MSG "group %d will be single-track\n", i);
+            if (globals.debugging) foutput(MSG_TAG "group %d will be single-track\n", i);
 
         }
 
@@ -222,7 +222,7 @@ int launch_manager(command_t *command)
 
     foutput("%c\n", '\n');
 
-    foutput(MSG "Size of raw PCM data: %"PRIu64" bytes (%.2f  MB)\n",totalsize, (float) totalsize/(1024*1024));
+    foutput(MSG_TAG "Size of raw PCM data: %"PRIu64" bytes (%.2f  MB)\n",totalsize, (float) totalsize/(1024*1024));
 
 
     /* This approximation was contributed by Lee and Tim feldkamp */
@@ -237,17 +237,17 @@ int launch_manager(command_t *command)
     case -1:
 
         startsector=approximation; /* automatic computing of startsector (Lee and Tim Feldman) */
-        foutput(MSG "Using start sector based on AOBs: %d\n",approximation);
+        foutput(MSG_TAG "Using start sector based on AOBs: %d\n",approximation);
         break;
 
     case  0:
         startsector=STARTSECTOR; /* default value is 281 (Dave Chapman setting) */
-        foutput("%s", MSG "Using default start sector 281\n");
+        foutput("%s", MSG_TAG "Using default start sector 281\n");
         break;
 
     default:
 
-        foutput(MSG "Using specified start sector %d instead of estimated %d\n",startsector,approximation);
+        foutput(MSG_TAG "Using specified start sector %d instead of estimated %d\n",startsector,approximation);
     }
 
     /* main reference track tables */
@@ -306,7 +306,7 @@ int launch_manager(command_t *command)
             totntracks);
         if (img->stillvob)
              sectors.stillvob=stat_file_size(img->stillvob)/0x800;  //expressed in sectors
-        if (globals.debugging) foutput(MSG "Size of AUDIO_SV.VOB is: %u sectors\n" , sectors.stillvob);
+        if (globals.debugging) foutput(MSG_TAG "Size of AUDIO_SV.VOB is: %u sectors\n" , sectors.stillvob);
 
     }
 #endif
@@ -344,9 +344,9 @@ int launch_manager(command_t *command)
             foutput("%s\n", "    OK");
     }
 
-    foutput(MSG "Total size of AUDIO_TS: %"PRIu64" sectors\n", sector_pointer_VIDEO_TS + sectors.samg);
+    foutput(MSG_TAG "Total size of AUDIO_TS: %"PRIu64" sectors\n", sector_pointer_VIDEO_TS + sectors.samg);
 
-    foutput(MSG "Start offset of  VIDEO_TS in ISO file: %"PRIu64" sectors,  offset %"PRIu64"\n\n", sector_pointer_VIDEO_TS + sectors.samg + startsector,
+    foutput(MSG_TAG "Start offset of  VIDEO_TS in ISO file: %"PRIu64" sectors,  offset %"PRIu64"\n\n", sector_pointer_VIDEO_TS + sectors.samg + startsector,
            (sector_pointer_VIDEO_TS + sectors.samg + startsector)*2048);
 #endif
     /* Creating AUDIO_TS.IFO */
@@ -462,10 +462,10 @@ SUMMARY:
         }
         else memcpy(dvdisopath, globals.settings.dvdisopath, CHAR_BUFSIZ) ;
 
-        unlink(dvdisopath);
+        if (file_exists(dvdisopath)) unlink(dvdisopath);
         uint64_t size;
         char* mkisofs=NULL;
-        char* args[]={MKISOFS_BASENAME, "-dvd-audio", "-v", "-o", dvdisopath, globals.settings.outdir, NULL};
+        const char* args[]={MKISOFS_BASENAME, "-dvd-audio", "-v", "-o", dvdisopath, globals.settings.outdir, NULL};
 
         errno=0;
         if ((mkisofs=create_binary_path(mkisofs, MKISOFS, SEPARATOR MKISOFS_BASENAME)))
@@ -479,7 +479,7 @@ SUMMARY:
         FREE(mkisofs);
 
         size=stat_file_size(dvdisopath)/1024;
-        if ((!errno) && (size > 4*SIZE_AMG + 2*SIZE_SAMG +1))  foutput(MSG "Image was created with size %lu KB.", size);
+        if ((!errno) && (size > 4*SIZE_AMG + 2*SIZE_SAMG +1))  foutput(MSG_TAG "Image was created with size %" PRIu64 " KB.", size);
         else
             foutput("%s\n", ERR "ISO file creation failed -- fix issue.");
 
@@ -505,7 +505,7 @@ SUMMARY:
             sprintf(string, "%s%c%s", globals.cdrecorddevice, '=', dvdisoinput);
             char*  args[]={"growisofs", "-Z", string, NULL};
 #define GROWISOFS "/usr/bin/growisofs"
-            run(GROWISOFS, args, 0);
+            run(GROWISOFS, (const char**) args, 0);
         }
         else
         {
@@ -525,7 +525,7 @@ SUMMARY:
             if ((cdrecord=create_binary_path(cdrecord, CDRECORD, SEPARATOR CDRECORD_BASENAME)))
             {
                foutput("\n%s\n", INF "Launching cdrecord to burn disc");
-               run(cdrecord,  args, NOWAIT);
+               run(cdrecord,  (const char**) args, NOWAIT);
             }
             else
                foutput("%s\n", ERR "Could not access to cdrecord binary.");

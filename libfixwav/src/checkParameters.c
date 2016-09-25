@@ -118,11 +118,11 @@ int user_control(WaveData *info, WaveHeader *header)
   if ( header->nAvgBytesPerSec == bps )
     {
       // Patch again version 0.1.1: -Saple Rate ...offset 24  + Bytes per second ...offset 28
-      if (globals.debugging) foutput("%s\n",  MSG "Found correct Subchunk1 Bytes per Second at offset 28" );
+      if (globals.debugging) foutput("%s\n",  MSG_TAG "Found correct Subchunk1 Bytes per Second at offset 28" );
     }
   else
     {
-      if (!info->prepend) if (globals.debugging) foutput("%s\n",  MSG "Subchunk1 Bytes per Second at offset 28 is incorrect\n"INF "... repairing" );
+      if (!info->prepend) if (globals.debugging) foutput("%s\n",  MSG_TAG "Subchunk1 Bytes per Second at offset 28 is incorrect\n"INF "... repairing" );
       header->nAvgBytesPerSec = bps;
       repair = BAD_HEADER;
     }
@@ -130,11 +130,11 @@ int user_control(WaveData *info, WaveHeader *header)
   /* The number of bytes per sample = NumChannels * BitsPerSample/8 */
   if ( header->nBlockAlign == header->channels * (header->wBitsPerSample / 8) )
     {
-      if (globals.debugging) foutput("%s\n",  MSG "Found correct Subchunk1 Bytes Per Sample at offset 32" );
+      if (globals.debugging) foutput("%s\n",  MSG_TAG "Found correct Subchunk1 Bytes Per Sample at offset 32" );
     }
   else
     {
-      if (!info->prepend) if (globals.debugging) foutput("%s\n",  MSG "Subchunk1 Bytes Per Sample at offset 32 is incorrect\n"INF "... repairing" );
+      if (!info->prepend) if (globals.debugging) foutput("%s\n",  MSG_TAG "Subchunk1 Bytes Per Sample at offset 32 is incorrect\n"INF "... repairing" );
       header->nBlockAlign = header->channels * (header->wBitsPerSample / 8);
       repair = BAD_HEADER;
     }
@@ -185,7 +185,7 @@ int auto_control(WaveData *info, WaveHeader *header)
       && (regular[0] == 5 || header->channels % 3 == 0 || header->wBitsPerSample  == 20)
      )
     {
-      if (globals.debugging) foutput("%s\n", MSG "Core parameters need not be repaired");
+      if (globals.debugging) foutput("%s\n", MSG_TAG "Core parameters need not be repaired");
       return(info->repair = GOOD_HEADER);
     }
 

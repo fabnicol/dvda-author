@@ -339,7 +339,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
             uint16_t r, u=0,  trackcount_save=trackcount;
             s+=(j)? ntitlepics[j-1]  : 0;
             if (ntitlepics[j]) pictitlecount++;
-             if (globals.veryverbose) foutput(MSG "pictitlecount=%d for ntitlepics[%d]=%d\n", pictitlecount,j,ntitlepics[j]);
+             if (globals.veryverbose) foutput(MSG_TAG "pictitlecount=%d for ntitlepics[%d]=%d\n", pictitlecount,j,ntitlepics[j]);
 	    for (r=0; r < ntitletracks[j]; r++)
 	    {
 		trackcount++;
@@ -351,7 +351,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
 		i++;
 		uint16_copy(&atsi[i], 0x06*ntitletracks[j]); // track rank index
 		i+=2;
-		if (globals.veryverbose) foutput(MSG "ntitlepics[%d]=%d, ntitletracks[%d]=%d\n", j, ntitlepics[j], j, ntitletracks[j]);
+		if (globals.veryverbose) foutput(MSG_TAG "ntitlepics[%d]=%d, ntitletracks[%d]=%d\n", j, ntitlepics[j], j, ntitletracks[j]);
 		//if (ntitlepics[j] > ntitletracks[j])  // conditions to be tested
 		 uint16_copy(&atsi[i],(ntitletracks[j]-1)*0x6+0x0F+(ntitlepics[j] -1)*0xA ); // track rank index (backup)
 		//else

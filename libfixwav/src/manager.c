@@ -65,7 +65,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   if (!errno)
     {
-      if (globals.debugging) foutput( "\n\n--FIXWAV section %d--\n\n"MSG "File size is %"PRIu64" bytes\n", section, filesize(info->infile));
+      if (globals.debugging) foutput( "\n\n--FIXWAV section %d--\n\n"MSG_TAG "File size is %"PRIu64" bytes\n", section, filesize(info->infile));
     }
   else
     {
@@ -140,7 +140,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
    }
 
   if (adjust)
-    if (globals.debugging) foutput(MSG "Adjusted options are: \n       info->prepend=%d\n       info->in_place=%d\n       info->prune=%d\n       info->padding=%d\n       info->virtual=%d\n",
+    if (globals.debugging) foutput(MSG_TAG "Adjusted options are: \n       info->prepend=%d\n       info->in_place=%d\n       info->prune=%d\n       info->padding=%d\n       info->virtual=%d\n",
               info->prepend, info->in_place, info->prune, info->padding, info->virtual);
 
 #ifdef RADICAL_FIXWAV_BEHAVIOUR
@@ -286,19 +286,19 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
   switch (check_sample_count(info, header))
     {
     case GOOD_HEADER:
-      if (globals.debugging) foutput( "%s\n", MSG "Fixwav status 1:\n       Sample count is correct. No changes made to existing file." );
+      if (globals.debugging) foutput( "%s\n", MSG_TAG "Fixwav status 1:\n       Sample count is correct. No changes made to existing file." );
       break;
 
     case BAD_DATA   :
-      if (globals.debugging) foutput("%s\n",  MSG "Fixwav status 1:\n       Sample count is corrupt." );
+      if (globals.debugging) foutput("%s\n",  MSG_TAG "Fixwav status 1:\n       Sample count is corrupt." );
 
       if (globals.debugging  && info->padding)
       {
 
           if (info->padbytes == 1)
-              foutput("%s", MSG "File was padded with 1 byte for sample count.\n");
+              foutput("%s", MSG_TAG "File was padded with 1 byte for sample count.\n");
           else
-              foutput(MSG "File was padded with %d bytes for sample count.\n", info->padbytes);
+              foutput(MSG_TAG "File was padded with %d bytes for sample count.\n", info->padbytes);
       }
 
       info->repair=BAD_DATA;
@@ -318,7 +318,7 @@ Checkout:
   switch (info->repair)
     {
     case	GOOD_HEADER:
-      if (globals.debugging) foutput( "%s\n", MSG "Fixwav status 4:\n       WAVE header is correct. No changes made to existing header." );
+      if (globals.debugging) foutput( "%s\n", MSG_TAG "Fixwav status 4:\n       WAVE header is correct. No changes made to existing header." );
       header->header_out = header->header_in;
       header->header_size_out = header->header_size_in;
       break;
@@ -326,7 +326,7 @@ Checkout:
     case	BAD_HEADER :
     case    BAD_DATA :
 
-      if (globals.debugging) foutput( "%s\n", MSG "Fixwav status 4:\n       WAVE header corrupt." );
+      if (globals.debugging) foutput( "%s\n", MSG_TAG "Fixwav status 4:\n       WAVE header corrupt." );
 
       standard_header = calloc(header_size, 1);
       if (standard_header == NULL) return NULL;
@@ -379,7 +379,7 @@ Checkout:
       else
       {
 
-          //if (globals.debugging) foutput( "%s\n", MSG "Fixwav status 4:\n       WAVE header is incorrect, yet no changes were made to existing header." );
+          //if (globals.debugging) foutput( "%s\n", MSG_TAG "Fixwav status 4:\n       WAVE header is incorrect, yet no changes were made to existing header." );
           //header->header_out = header->header_in;
           //header->header_size_out = header->header_size_in;
       }
@@ -387,7 +387,7 @@ Checkout:
       break;
 
     case	FAIL       :
-      if (globals.debugging) foutput( "%s\n", MSG "Fixwav status 4:\n       Failure at repair stage." );
+      if (globals.debugging) foutput( "%s\n", MSG_TAG "Fixwav status 4:\n       Failure at repair stage." );
 
     }
 
@@ -453,8 +453,9 @@ getout:
     {
       // getting rid of empty files and useless work copies
       errno=0;
-      unlink(filename(info->outfile));
-      if (errno && globals.debugging) foutput("%s%s\n", ERR "unlink: ", strerror(errno));
+      if (file_exists(filename(info->outfile)))
+          unlink(filename(info->outfile));
+      if (errno && globals.debugging) foutput("%s%s\n", ERR,  strerror(errno));
     }
 
   if (info->repair != FAIL)

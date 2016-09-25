@@ -259,7 +259,7 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
 
                 img->menuvobsize[menu] = stat_file_size(img->topmenu[menu]) / 0x800;
                 if (globals.veryverbose) 
-                    foutput(MSG "Top menu is: %s with size %"PRIu32" KB\n", img->topmenu[menu], img->menuvobsize[menu]);
+                    foutput(MSG_TAG "Top menu is: %s with size %"PRIu32" KB\n", img->topmenu[menu], img->menuvobsize[menu]);
             }
 
         launch_dvdauthor();
@@ -274,7 +274,7 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
         for (menu = 0; menu < img->nmenus; menu++)
         {
             img->menuvobsize[menu] = img->menuvobsize[0];
-            if (globals.veryverbose) foutput(MSG "Top menu is: %s with size %d KB\n", outfile,img->menuvobsize[menu]);
+            if (globals.veryverbose) foutput(MSG_TAG "Top menu is: %s with size %d KB\n", outfile,img->menuvobsize[menu]);
         }
 
         copy_file(img->tsvob, outfile);
@@ -300,7 +300,7 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
     uint32_t size=0;
 
     size = (uint32_t) stat_file_size(outfile) / 0x800;
-    if (globals.debugging) foutput(MSG "Size of AUDIO_TS.VOB is: %u sectors\n" , size );
+    if (globals.debugging) foutput(MSG_TAG "Size of AUDIO_TS.VOB is: %u sectors\n" , size );
 
     img->tsvob=strdup(outfile);
     return (size); //expressed in sectors
@@ -380,7 +380,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
 
     totaltitles+=totalplaylisttitles;
 
-    if (globals.debugging) foutput(MSG "Dec. AMG: totaltitles=%d\n", totaltitles);
+    if (globals.debugging) foutput(MSG_TAG "Dec. AMG: totaltitles=%d\n", totaltitles);
 
     char* path = filepath(audiotsdir, "AUDIO_TS.IFO");
 
@@ -500,7 +500,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
             if (globals.veryverbose)
             {
                 if (titleset == 0)
-                    foutput(MSG "sectoroffset[%d]=%u=2*(%d+%d)+%u+%u\n",
+                    foutput(MSG_TAG "sectoroffset[%d]=%u=2*(%d+%d)+%u+%u\n",
                             titleset,
                             sectoroffset[titleset],
                             sectors->amg ,
@@ -508,7 +508,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
                             sectors->stillvob,
                             sectors->topvob);
 
-                foutput(MSG "sectoroffset[%d]=%u=sectoroffset[%d]+(command->files[%d][ntracks[%d]-1].last_sector+1)+2*%d\n",
+                foutput(MSG_TAG "sectoroffset[%d]=%u=sectoroffset[%d]+(command->files[%d][ntracks[%d]-1].last_sector+1)+2*%d\n",
                         titleset+1,
                         sectoroffset[titleset + 1],
                         titleset,
@@ -810,9 +810,9 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
         {
             if (sectors->topvob == menuvobsize_sum + img->nmenus - 1
                                   + img->menuvobsize[img->nmenus-1] -1)
-                foutput("%s", MSG "Menu vob size coherence test...OK\n");
+                foutput("%s", MSG_TAG "Menu vob size coherence test...OK\n");
 
-            else foutput(MSG "Menu vob size coherence test failed: sectors->topvob=%u against %lu\n",
+            else foutput(MSG_TAG "Menu vob size coherence test failed: sectors->topvob=%u against %" PRIu64 "\n",
                          sectors->topvob,
                          menuvobsize_sum + img->nmenus -1 + img->menuvobsize[img->nmenus - 1] -1);
         }
@@ -975,7 +975,7 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
 
     totaltitles+=totalplaylisttitles;
 
-    if (globals.debugging) foutput(MSG "AMG: totaltitles=%d\n", totaltitles);
+    if (globals.debugging) foutput(MSG_TAG "AMG: totaltitles=%d\n", totaltitles);
 
     memset(amg, 0, sizeof(amg));
 
@@ -1050,7 +1050,7 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
             if (globals.veryverbose)
             {
                 if (titleset == 0)
-                    foutput(MSG "sectoroffset[%d]=%u=2*(%d+%d)+%u+%u\n",
+                    foutput(MSG_TAG "sectoroffset[%d]=%u=2*(%d+%d)+%u+%u\n",
                             titleset,
                             sectoroffset[titleset],
                             sectors->amg ,
@@ -1058,7 +1058,7 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
                             sectors->stillvob,
                             sectors->topvob);
                 
-                foutput(MSG "sectoroffset[%d]=%u=sectoroffset[%d]+(command->files[%d][ntracks[%d]-1].last_sector+1)+2*%d\n",
+                foutput(MSG_TAG "sectoroffset[%d]=%u=sectoroffset[%d]+(command->files[%d][ntracks[%d]-1].last_sector+1)+2*%d\n",
                         titleset+1,
                         sectoroffset[titleset + 1],
                         titleset,
@@ -1351,9 +1351,9 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
         {
             if (sectors->topvob == menuvobsize_sum + img->nmenus - 1 
                                   + img->menuvobsize[img->nmenus-1] -1)
-                foutput("%s", MSG "Menu vob size coherence test...OK\n");
+                foutput("%s", MSG_TAG "Menu vob size coherence test...OK\n");
             
-            else foutput(MSG "Menu vob size coherence test failed: sectors->topvob=%u against %lu\n",
+            else foutput(MSG_TAG "Menu vob size coherence test failed: sectors->topvob=%u against %" PRIu64 "\n",
                          sectors->topvob,
                          menuvobsize_sum + img->nmenus -1 + img->menuvobsize[img->nmenus - 1] -1);
         }

@@ -95,6 +95,14 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
     #define ANSI_COLOR_MAGENTA ""
     #define ANSI_COLOR_CYAN    ""
     #define ANSI_COLOR_RESET   ""
+
+    #define MSG_TAG "[MSG]  "
+    #define INF "[INF]  "
+    #define ERR "\n[ERR]  "
+    #define DBG "[DBG]  "
+    #define WAR "[WAR]  "
+    #define DEV "[DEV]  "
+
 #else
     #define ANSI_COLOR_RED     "\x1b[31m"
     #define ANSI_COLOR_GREEN   "\x1b[32m"
@@ -103,14 +111,15 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
     #define ANSI_COLOR_MAGENTA "\x1b[35m"
     #define ANSI_COLOR_CYAN    "\x1b[36m"
     #define ANSI_COLOR_RESET   "\x1b[0m"
+
+    #define MSG_TAG "\x1b[32m[MSG] \x1b[0m"
+    #define INF "\x1b[34m[INF]  \x1b[0m"
+    #define ERR "\x1b[31m\n[ERR]  \x1b[0m"
+    #define DBG "\x1b[35m[DBG]  \x1b[0m"
+    #define WAR "\x1b[33m[WAR]  \x1b[0m"
+    #define DEV "\x1b[36m[DEV]  \x1b[0m"
 #endif
 
-#define MSG ANSI_COLOR_GREEN "[MSG]  " ANSI_COLOR_RESET
-#define INF ANSI_COLOR_BLUE "[INF]  " ANSI_COLOR_RESET
-#define ERR ANSI_COLOR_RED "\n[ERR]  " ANSI_COLOR_RESET
-#define DBG ANSI_COLOR_MAGENTA "[DBG]  " ANSI_COLOR_RESET
-#define WAR ANSI_COLOR_YELLOW "[WAR]  " ANSI_COLOR_RESET
-#define DEV ANSI_COLOR_CYAN "[DEV]  " ANSI_COLOR_RESET
 
 #define ERR_STRING_LENGTH   "ERR: string was truncated, maximum length is %d"
 
@@ -309,7 +318,7 @@ int download_fullpath(const char* curlpath, const char* filename, const char* fu
 void erase_file(const char* path);
 char* quote(const char* path);
 char* win32quote(const char* path);
-int run(const char* application,char*  args[], const int option);
+int run(const char* application, const char*  args[], const int option);
 uint64_t  parse_file_for_sequence(FILE* fp, uint8_t* tab, size_t sizeoftab);
 void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* fp, FILE* log, _Bool write, _Bool);
 void rw_field(uint8_t* tab, int size,const char* label, FILE* fp, FILE* log);

@@ -19,20 +19,24 @@ CONFIG(debug, debug|release) {
 
 #to avoid ansi colors in output console add NO_ANSI_COLORS to the DEFINES directive
 
-DEFINES +=   _GNU_SOURCE  COMPILER_IS_GCC HAVE_libiberty HAVE_FLAC HAVE_libogg HAVE_libsox #NO_ANSI_COLORS #WITHOUT_sox #WITHOUT_FLAC
+DEFINES +=   _GNU_SOURCE  COMPILER_IS_GCC HAVE_libiberty  WITHOUT_libogg WITHOUT_sox WITHOUT_FLAC #NO_ANSI_COLORS #WITHOUT_sox  #HAVE_libsox #HAVE_FLAC HAVE_libogg
+
+windows:DEFINES += __WIN32__
+
 #USE_SET1 for reverting to some previously known IFO parameters. Deprecated.
 
 Build = $$PWD/build
 
 #libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame --disable-gomp
 
-LIBS +=  -LC:/Users/Public/Dev/msys2/usr/lib -LC:/Users/Public/Dev/msys2/usr/local/lib  -L$(LIBROOT) C:/Users/Public/Dev/msys2/usr/lib/libogg.a C:/Users/Public/Dev/msys2/usr/lib/libFLAC.a  -lsox \
-                  -logg -lz -lgomp -lltdl -lwinmm -lmagic.dll -lssp
+LIBS +=  -LC:/Users/Public/Dev/msys2/usr/lib -LC:/Users/Public/Dev/msys2/usr/local/lib  -L$(LIBROOT) \ #C:/Users/Public/Dev/msys2/usr/lib/libogg.a C:/Users/Public/Dev/msys2/usr/lib/libFLAC.a \ #-lsox -logg \
+                   -lz -lgomp -lltdl -lwinmm -lmagic.dll -lssp
 
 #$(LIBROOT)/libjpeg.a
 
 INCLUDEPATH = src/include libiberty/src/include libutils/src/include libutils/src/include libutils/src/private libfixwav/src/include\
-  C:/Users/Public/Dev/msys2/usr/include/ogg C:/Users/Public/Dev/msys2/usr/include/FLAC C:/Users/Public/Dev/msys2/usr/local/include
+  C:/Users/Public/Dev/msys2/usr/include/ogg C:/Users/Public/Dev/msys2/usr/include/FLAC C:/Users/Public/Dev/msys2/usr/local/include \
+  C:/Users/Public/Dev/msys2/mingw64/include C:/Users/Public/Dev/msys2/mingw64/include/libogg
 
 SOURCES += \
     src/amg2.c \

@@ -82,7 +82,7 @@ errno=0;
         fixwav(&wavedata, &waveheader);
        if (globals.veryverbose) 
             {
-                foutput(MSG "LPCM diagnostics: bps=%d, sample rate=%d, channels=%d \n", 
+                foutput(MSG_TAG "LPCM diagnostics: bps=%d, sample rate=%d, channels=%d \n", 
                          waveheader.wBitsPerSample, waveheader.dwSamplesPerSec, waveheader.channels);
             }
        if ((waveheader.wBitsPerSample != 16 && waveheader.wBitsPerSample != 24) || (waveheader.dwSamplesPerSec != 48000 && waveheader.dwSamplesPerSec != 96000) ||
@@ -132,7 +132,7 @@ int audit_soundtrack(char* path, _Bool strict)
         {
             if ((waveheader.dwSamplesPerSec == 48000) && (waveheader.wBitsPerSample == 16) && (waveheader.channels == 2))
             {
-                if (globals.veryverbose) foutput("%s", MSG "LPCM requirements [fq=48k, bps=16, c=2] are satisfied by soundtrack input\n");
+                if (globals.veryverbose) foutput("%s", MSG_TAG "LPCM requirements [fq=48k, bps=16, c=2] are satisfied by soundtrack input\n");
                 errno=0;
             }
             else
@@ -146,7 +146,7 @@ int audit_soundtrack(char* path, _Bool strict)
             if ((waveheader.dwSamplesPerSec == 48000 || waveheader.dwSamplesPerSec == 96000) 
              && (waveheader.wBitsPerSample == 16 || waveheader.wBitsPerSample == 24))
             {
-                if (globals.veryverbose) foutput("%s", MSG "LPCM requirements [fq=48|96k, bps=16|24] are satisfied by soundtrack input\n");
+                if (globals.veryverbose) foutput("%s", MSG_TAG "LPCM requirements [fq=48|96k, bps=16|24] are satisfied by soundtrack input\n");
                 errno=0;
             }
             else

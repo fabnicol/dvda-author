@@ -54,7 +54,7 @@ repair_wav(WaveData *info, WaveHeader *header )
   {
       repair = (auto_control(info, header) == BAD_HEADER)? BAD_HEADER: ((repair == BAD_HEADER)? BAD_HEADER : GOOD_HEADER) ;
 
-      if (globals.debugging) foutput(MSG "Audio characteristics found by automatic mode:\n       bits/s=%" PRIu16 ", sample rate=%" PRIu32 ", channels=%" PRIu16 "\n",
+      if (globals.debugging) foutput(MSG_TAG "Audio characteristics found by automatic mode:\n       bits/s=%" PRIu16 ", sample rate=%" PRIu32 ", channels=%" PRIu16 "\n",
                 header->wBitsPerSample, header->dwSamplesPerSec, header->channels);
 
       if (repair == BAD_HEADER)
@@ -88,7 +88,7 @@ repair_wav(WaveData *info, WaveHeader *header )
   /* the first 4 bytes should be "RIFF" */
   if (memcmp(&header->ckID, "RIFF", 4) == 0)
     {
-      if (globals.debugging) foutput( "%s", MSG "Found correct RIFF ID at offset 0\n" );
+      if (globals.debugging) foutput( "%s", MSG_TAG "Found correct RIFF ID at offset 0\n" );
     }
   else
     {
@@ -106,19 +106,19 @@ repair_wav(WaveData *info, WaveHeader *header )
 
   if (header->ckSize == filesize(info->infile)  - 8 )
     {
-      if (globals.debugging) foutput( MSG "Found correct audio chunk Size of %" PRIu32 " bytes at offset 4\n",  header->ckSize);
+      if (globals.debugging) foutput( MSG_TAG "Found correct audio chunk Size of %" PRIu32 " bytes at offset 4\n",  header->ckSize);
     }
   else
   if ((header->ckSize & 1) == 1 && header->ckSize == filesize(info->infile)  - 9)
     {
-      if (globals.debugging) foutput( MSG "Found correct audio chunk Size of %" PRIu32 " bytes at offset 4. Pad byte added at EOF.\n",  header->ckSize);
+      if (globals.debugging) foutput( MSG_TAG "Found correct audio chunk Size of %" PRIu32 " bytes at offset 4. Pad byte added at EOF.\n",  header->ckSize);
       pad_byte = true;
     }
   else
     {
       /* there is here no other logical option than to consider the possible pad byte at eof as part of audio data */
 
-      if (globals.debugging) foutput( MSG "audio chunk Size of %" PRIu32 " at offset 4 is incorrect: should be %" PRIu32 " bytes\n"
+      if (globals.debugging) foutput( MSG_TAG "audio chunk Size of %" PRIu32 " at offset 4 is incorrect: should be %" PRIu32 " bytes\n"
               INF "... repairing\n",
               header->ckSize,
               (uint32_t) filesize(info->infile)  - 8);
@@ -132,11 +132,11 @@ repair_wav(WaveData *info, WaveHeader *header )
 
   if (memcmp(&header->WAVEID, "WAVE", 4) == 0)
     {
-      if (globals.debugging) foutput("%s\n",  MSG "Found correct WAVE Format at offset 8" );
+      if (globals.debugging) foutput("%s\n",  MSG_TAG "Found correct WAVE Format at offset 8" );
     }
   else
     {
-      if (globals.debugging) foutput("%s\n",  MSG "WAVE Format at offset 8 is incorrect\n" INF "... repairing\n" );
+      if (globals.debugging) foutput("%s\n",  MSG_TAG "WAVE Format at offset 8 is incorrect\n" INF "... repairing\n" );
       if (memmove(&(header->WAVEID), "WAVE", 4 * sizeof(char)) == NULL)
           return(FAIL);
 
@@ -152,11 +152,11 @@ repair_wav(WaveData *info, WaveHeader *header )
 
   if (memcmp(&header->fmt_ckID, "fmt ", 4) == 0)
     {
-      if (globals.debugging) foutput("%s\n",  MSG "Found correct fmt ID at offset 12" );
+      if (globals.debugging) foutput("%s\n",  MSG_TAG "Found correct fmt ID at offset 12" );
     }
   else
     {
-      if (globals.debugging) foutput("%s\n",  MSG "fmt ID at offset 12 is incorrect\n" INF "... repairing" );
+      if (globals.debugging) foutput("%s\n",  MSG_TAG "fmt ID at offset 12 is incorrect\n" INF "... repairing" );
       // "fmt " ends in a space
       if (memmove( &(header->fmt_ckID), "fmt ", 4 * sizeof(char) ) == NULL)
           return(FAIL);
@@ -171,11 +171,11 @@ repair_wav(WaveData *info, WaveHeader *header )
 
   if (header->fmt_ckSize == 16 || header->fmt_ckSize == 18 || header->fmt_ckSize == 40)
     {
-      if (globals.debugging) foutput(MSG "Found correct fmt chunk Size of %" PRIu32 " bytes at offset 16\n", header->fmt_ckSize );
+      if (globals.debugging) foutput(MSG_TAG "Found correct fmt chunk Size of %" PRIu32 " bytes at offset 16\n", header->fmt_ckSize );
     }
   else
     {
-      if (globals.debugging) foutput(MSG "fmt chunk Size at offset 16 is incorrect (%d) \n" INF "... repairing.\n",  header->fmt_ckSize);
+      if (globals.debugging) foutput(MSG_TAG "fmt chunk Size at offset 16 is incorrect (%d) \n" INF "... repairing.\n",  header->fmt_ckSize);
 
       /* for mono or stereo, stick to WAVE_FORMAT_PCM. Otherwise move to WAVE_FORMAT_EXTENSIBLE with fmt_ckSize 40 */
 
@@ -196,13 +196,13 @@ repair_wav(WaveData *info, WaveHeader *header )
 
   if (header->wFormatTag == 1 || header->wFormatTag == 0xFFFE)
     {
-      if (globals.debugging) foutput("%s\n",  MSG "Found correct wave Format Tag at offset 20" );
+      if (globals.debugging) foutput("%s\n",  MSG_TAG "Found correct wave Format Tag at offset 20" );
       if (header->wFormatTag == 0xFFFE)
-          if (globals.debugging) foutput("%s\n",  MSG "Found WAVE_FORMAT_EXTENSIBLE header");
+          if (globals.debugging) foutput("%s\n",  MSG_TAG "Found WAVE_FORMAT_EXTENSIBLE header");
     }
   else
     {
-      if (globals.debugging) foutput("%s\n",  MSG "Subchunk1 Format at offset 20 is incorrect\n" INF "... repairing" );
+      if (globals.debugging) foutput("%s\n",  MSG_TAG "Subchunk1 Format at offset 20 is incorrect\n" INF "... repairing" );
       switch (header->channels)
       {
          case 1:
@@ -223,11 +223,11 @@ repair_wav(WaveData *info, WaveHeader *header )
 
   if (memcmp(&header->data_ckID, "data", 4) == 0)
     {
-      if (globals.debugging) foutput("%s\n",  MSG "Found correct data chunk ID" );
+      if (globals.debugging) foutput("%s\n",  MSG_TAG "Found correct data chunk ID" );
     }
   else
     {
-      if (globals.debugging) foutput("%s\n",  MSG "data chunk ID is incorrect\n" INF "... repairing\n" );
+      if (globals.debugging) foutput("%s\n",  MSG_TAG "data chunk ID is incorrect\n" INF "... repairing\n" );
       if (memmove(&header->data_ckID,"data", 4*sizeof(char) ) == NULL) return(FAIL);
       repair = BAD_HEADER;
     }
@@ -237,15 +237,15 @@ repair_wav(WaveData *info, WaveHeader *header )
   if (header->data_cksize == filesize(info->infile)  - header->header_size_in
       || (pad_byte && header->data_cksize == filesize(info->infile)  - header->header_size_in - 1))  // -1 if pad byte was added
     {
-      if (globals.debugging) foutput(MSG  "  Found correct data ckSize of %"PRIu32" bytes at offset %d\n",
+      if (globals.debugging) foutput(MSG_TAG  "  Found correct data ckSize of %"PRIu32" bytes at offset %d\n",
              header->data_cksize,
              header->header_size_in - 4);
-      if (pad_byte && globals.debugging) foutput("%s\n", MSG "  Pad byte was not taken into account.");
+      if (pad_byte && globals.debugging) foutput("%s\n", MSG_TAG "  Pad byte was not taken into account.");
     }
   else
     {
       if (globals.debugging)
-          foutput(MSG "data_ckSize at offset %d is incorrect: found %"
+          foutput(MSG_TAG "data_ckSize at offset %d is incorrect: found %"
                   PRIu32 " bytes instead of\n       %"
                   PRIu32 " = file size (%"
                   PRIu32 ") - header size (%"

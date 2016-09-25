@@ -58,7 +58,7 @@ int read_tracks(char  *full_path, uint8_t *ntracks, char * parent_directory, cha
         }
     else
     {
-        foutput(MSG "Error: Too many input files specified - group %d, track %d\n",ngroups_scan,ntracks[ngroups_scan]);
+        foutput(MSG_TAG "Error: Too many input files specified - group %d, track %d\n",ngroups_scan,ntracks[ngroups_scan]);
         clean_exit(EXIT_SUCCESS);
     }
 
@@ -89,7 +89,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
 
         if (ng > (MAX_GROUPS-1))
         {
-            foutput("%s\n", MSG "Warning: Too many groups ( > 9 ) specified in directory, rest ignored.");
+            foutput("%s\n", MSG_TAG "Warning: Too many groups ( > 9 ) specified in directory, rest ignored.");
             break;
         }
         strcpy(gnames[ng], rootdirent->d_name);
@@ -140,7 +140,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
 
             if (nt > (MAX_GROUP_ITEMS-1))
             {
-                foutput(MSG "Warning: Too many input files (>99) specified in group %d, rest ignored.\n",ngroups_scan);
+                foutput(MSG_TAG "Warning: Too many input files (>99) specified in group %d, rest ignored.\n",ngroups_scan);
                 break;
             }
 
@@ -160,12 +160,12 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
         cgafile=fopen(CGA_FILE, "rb");
         if (cgafile != NULL)
         {
-            if (globals.debugging) foutput("%s", MSG "Channel assignment file was opened\n");
+            if (globals.debugging) foutput("%s", MSG_TAG "Channel assignment file was opened\n");
             read_cga_file=1;
         }
         else
         {
-            if (globals.debugging) foutput("%s", MSG "Automatic channel assignment.\n");
+            if (globals.debugging) foutput("%s", MSG_TAG "Automatic channel assignment.\n");
         }
 
 
@@ -235,7 +235,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
         ng++;
     }
 
-    if (action != READTRACKS) foutput(MSG "%d groups/subdirectories were parsed; ngroups=%d\n", control, ngroups);
+    if (action != READTRACKS) foutput(MSG_TAG "%d groups/subdirectories were parsed; ngroups=%d\n", control, ngroups);
 
     /* Controlling for contiguousness of ngroups_scan values; a crash may occur if not ensured; letting it go however */
 
@@ -320,12 +320,12 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract, const char* player)
         FREE(d_name_duplicate)
 
 
-        char  msg[11]="Extracting";
+        char  mesg[11]="Extracting";
         if (player)
-            strcpy(msg,"Playing");
+            strcpy(mesg,"Playing");
 
         if ((globals.debugging)&& (!globals.nooutput))
-          foutput(INF "%s%s%s%s",msg," titleset ", rootdirent->d_name," ...\n");
+          foutput(INF "%s%s%s%s",mesg," titleset ", rootdirent->d_name," ...\n");
 
         char output_buf[strlen(globals.settings.outdir) + 3 + 1];
 
@@ -362,13 +362,13 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract, const char* player)
         switch (control)
         {
         case 1:
-            foutput("%s", MSG "One group was extracted/played.\n");
+            foutput("%s", MSG_TAG "One group was extracted/played.\n");
             break;
         case 0:
-            foutput("%s", MSG "No group was extracted/played.\n");
+            foutput("%s", MSG_TAG "No group was extracted/played.\n");
             break;
         default:
-            foutput("\n"MSG "%d groups were extracted/played.\n", control);
+            foutput("\n" MSG_TAG "%d groups were extracted/played.\n", control);
         }
 
 

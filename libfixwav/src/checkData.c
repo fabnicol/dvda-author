@@ -108,22 +108,22 @@ void check_real_size(WaveData *info, WaveHeader *header)
   /* adjust the Chunk Size */
   if (header->ckSize ==  size - 8 - (int) pad_byte)
   {
-      if (globals.debugging) foutput("%s\n", MSG "Verifying real chunk size on disc... OK");
+      if (globals.debugging) foutput("%s\n", MSG_TAG "Verifying real chunk size on disc... OK");
   }
   else
   {
-      if (globals.debugging) foutput(INF "Verifying real chunk size on disc... fixed:\n       expected size: %u, real size: %lu\n", header->ckSize + 8 + (int) pad_byte, size);
+      if (globals.debugging) foutput(INF "Verifying real chunk size on disc... fixed:\n       expected size: %u, real size: %" PRIu64 "\n", header->ckSize + 8 + (int) pad_byte, size);
       header->ckSize = (uint32_t) size - 8 ; // if prepending, ckSize was computed as the full size of raw file -8 bytes to which one must add the size of new header. Possible pad byte considered audio.
   }
 
   if (header->data_cksize == (uint32_t) filesize(info->outfile) - header->header_size_out - (int) (header->data_cksize % 2 == 1))
   {
       if (globals.debugging)
-        foutput("%s\n", MSG "Verifying real data size on disc... OK");
+        foutput("%s\n", MSG_TAG "Verifying real data size on disc... OK");
   }
   else
   {
-      if (globals.debugging) foutput(INF "Verifying real data size on disc... fixed:\n       header size: %d, expected size: %u, real size: %lu\n", header->header_size_out,
+      if (globals.debugging) foutput(INF "Verifying real data size on disc... fixed:\n       header size: %d, expected size: %u, real size: %" PRIu64 "\n", header->header_size_out,
                                      header->data_cksize + header->header_size_out + (int) (header->data_cksize % 2 == 1),
                                      size);
 
@@ -174,7 +174,7 @@ int prune(WaveData *info, WaveHeader *header)
 //  otherwise truncate takes full size as an argument
 
 #if defined __WIN32__ || defined _WIN32 || defined __WIN32 || defined _WIN64 || defined __WIN64
-      if (info->in_place) s_close(&info->infile);
+      if (info->in_place) fclose(info->infile.fp);
       offset=-count;
 #else
       offset=size -count;

@@ -66,7 +66,7 @@ void menu_characteristics_coherence_test(pic* img, uint8_t ngroups)
             else
 
                 img->nmenus=ngroups/img->ncolumns + (ngroups%img->ncolumns > 0);  // number of columns cannot be higher than img->ncolumns; adjusting number of menus to ensure this.
-            if (globals.topmenu != NO_MENU) foutput(MSG "With %d columns, number of menus will be %d\n", img->ncolumns, img->nmenus);
+            if (globals.topmenu != NO_MENU) foutput(MSG_TAG "With %d columns, number of menus will be %d\n", img->ncolumns, img->nmenus);
         }
         else
         {
@@ -350,10 +350,10 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     norm[0]=img->norm[0];
     norm[1]=0;
 
-    char *argsmp2enc[]= {MP2ENC_BASENAME, "-o", mp2track , NULL};
-    char *argsjpeg2yuv[]= {JPEG2YUV_BASENAME, "-f", img->framerate, "-I", "p", "-n", "1", "-j", pict, "-A", img->aspectratio, NULL};
-    char *argsmpeg2enc[]= {MPEG2ENC_BASENAME,  "-f", "8", "-n", norm,  "-o", tempfile ,"-a", img->aspect, NULL};
-    char*  argsmplex[]= {MPLEX_BASENAME, "-f", "8",  "-o", img->backgroundmpg[rank], tempfile, mp2track, NULL};
+    const char *argsmp2enc[]= {MP2ENC_BASENAME, "-o", mp2track , NULL};
+    const char *argsjpeg2yuv[]= {JPEG2YUV_BASENAME, "-f", img->framerate, "-I", "p", "-n", "1", "-j", pict, "-A", img->aspectratio, NULL};
+    const char *argsmpeg2enc[]= {MPEG2ENC_BASENAME,  "-f", "8", "-n", norm,  "-o", tempfile ,"-a", img->aspect, NULL};
+    const char*  argsmplex[]= {MPLEX_BASENAME, "-f", "8",  "-o", img->backgroundmpg[rank], tempfile, mp2track, NULL};
 
     //////////////////////////
 
@@ -364,7 +364,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
         char soundtrack[strlen(globals.settings.tempdir)+11];
         sprintf(soundtrack, "%s"SEPARATOR"%s", globals.settings.tempdir, "soundtrack");
-        unlink(soundtrack);
+        if (file_exists(soundtrack)) unlink(soundtrack);
         errno=0;
         change_directory(globals.settings.datadir);
 
@@ -404,11 +404,11 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
             waitpid(pid1, NULL, 0);
         }
 #else
-        char* s=get_command_line(argsmp2enc);
+        const char* s=get_command_line(argsmp2enc);
         uint16_t size=strlen(s);
         char cml[strlen(mp2enc)+size+3+strlen(img->soundtrack[0][0])+1+1+2];
         sprintf(cml, "%s %s < %s", mp2enc, s, win32quote(img->soundtrack[0][0]));
-        free(s);
+        free((char *) s);
         system(win32quote(cml));
 #endif
     }
@@ -543,10 +543,9 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
 // This is unsatisfactory yet will do for porting purposes.
 
-    char* jpegcl;
-    jpegcl=get_command_line(argsjpeg2yuv);
-    char* mpegcl=get_command_line(argsmpeg2enc);
-    char* mplexcl=get_command_line(argsmplex);
+    const char* jpegcl = get_command_line(argsjpeg2yuv);
+    const char* mpegcl=get_command_line(argsmpeg2enc);
+    const char* mplexcl=get_command_line(argsmplex);
 
     char cml2[strlen(jpeg2yuv)+1+strlen(jpegcl)+3+strlen(mpeg2enc)+1+strlen(mpegcl)+1];
 
@@ -558,9 +557,9 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
     sprintf(cml3, "%s %s",mplex, mplexcl);
     system(win32quote(cml3));
-    free(jpegcl);
-    free(mpegcl);
-    free(mplexcl);
+    free((char*) jpegcl);
+    free((char*) mpegcl);
+    free((char*) mplexcl);
 #endif
 
 
@@ -589,7 +588,7 @@ int generate_background_mpg(pic* img)
     if (mp2track)
         sprintf(mp2track, "%s"SEPARATOR"%s", globals.settings.tempdir, "mp2track.mp2");
 
-    if (img->backgroundmpg == NULL) foutput("%s", MSG "backgroundmpg will be allocated.\n");
+    if (img->backgroundmpg == NULL) foutput("%s", MSG_TAG "backgroundmpg will be allocated.\n");
 
     if (globals.debugging) foutput(INF "Launching mjpegtools to create background mpg with nmenus=%d\n", img->nmenus);
 
@@ -651,7 +650,7 @@ int launch_spumux(pic* img)
     while (menu < img->nmenus)
     {
         if (globals.debugging) foutput(INF "Creating menu %d from Xml file %s\n",menu+1, globals.spu_xml[menu]);
-        char *argsspumux[]= {SPUMUX_BASENAME, "-v", "2", globals.spu_xml[menu], NULL};
+        const char *argsspumux[]= {SPUMUX_BASENAME, "-v", "2", globals.spu_xml[menu], NULL};
 
         // This is to hush up dvdauthor's stdout messages, which interfere out of sequential order with main application stdout messages
         // and anyway could not be logged by  -l;
@@ -713,12 +712,12 @@ int launch_spumux(pic* img)
 
 #else
 
-        char* s=get_command_line(argsspumux);
+        const char* s=get_command_line(argsspumux);
         uint16_t size=strlen(s);
         char cml[strlen(spumux)+1+size+3+strlen(img->backgroundmpg[menu])+2+3+strlen(img->topmenu[menu])+2+1];
         sprintf(cml, "%s %s < %s > %s",spumux, s, win32quote(img->backgroundmpg[menu]), win32quote(img->topmenu[menu]));
         system(win32quote(cml));
-        free(s);
+        free((char*) s);
 
 #endif
 
@@ -742,16 +741,16 @@ int launch_dvdauthor()
 
     if (globals.debugging) foutput("%s\n", INF "Launching dvdauthor to add virtual machine commands to top menu");
 
-    char* args[]= {DVDAUTHOR_BASENAME, "-o", globals.settings.outdir, "-x", globals.xml, NULL};
+    const char* args[]= {DVDAUTHOR_BASENAME, "-o", globals.settings.outdir, "-x", globals.xml, NULL};
 
 #ifndef __WIN32__
     run(dvdauthor, args, 0);
 #else
-    char* s=get_command_line(args);
+    const char* s=get_command_line(args);
     char cml[strlen(dvdauthor)+1+strlen(s)+1];
     sprintf(cml, "%s %s", dvdauthor, s);
     system(win32quote(cml));
-    free(s);
+    free((char*) s);
 #endif
 
 
@@ -790,7 +789,7 @@ int prepare_overlay_img(char* text, int8_t group, pic *img, char* command, char*
     char picture_save[size];
     sprintf(picture_save, "%s"SEPARATOR"%s", globals.settings.tempdir, "svpic.png");
     
-    unlink(picture_save);
+    if (file_exists(picture_save)) unlink(picture_save);
     errno=0;
     change_directory(globals.settings.datadir);
     if (img->blankscreen)
@@ -1181,7 +1180,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
 
     if (globals.debugging)
         if (!errno)
-            foutput("%s\n", MSG "Top menu pictures were authored.");
+            foutput("%s\n", MSG_TAG "Top menu pictures were authored.");
 
     return errno;
 }
