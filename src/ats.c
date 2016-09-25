@@ -850,9 +850,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
     uint64_t PTS=p.PTS;
     uint64_t SCR = calc_SCR(pack_in_title, &p);
 
-    if (pack_in_title==0) // 53  + info->firstpack_lpcm_headerquantity + (info->firstpack_pes_padding != 0)? info->firstpack_pes_padding + 6 + info->lpcm_payload - info->firstpackdecrement
-        //  = 59 + 1995 = 2054 if info->firstpack_pes_padding != 0
-        //  = 2048 everywhere except for 16/6ch or 24/4ch.
+    if (pack_in_title==0)
     {
         cc=0;            // First packet in title
         foutput(INF "Writing first packet - pack=%"PRIu64", bytesinbuffer=%d\n",pack_in_title,bytesinbuffer);
@@ -869,7 +867,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
 
         write_pes_padding(fp, info->firstpack_pes_padding);//+6+info->firstpack_pes_padding
     }
-    else if (bytesinbuffer < info->lpcm_payload)   // Last packet in title 2038+info->lastpack_lpcm_headerquantity
+    else if (bytesinbuffer < info->lpcm_payload)
     {
 
         foutput(INF "Writing last packet - pack=%lu, bytesinbuffer=%d\n", pack_in_title, bytesinbuffer);
@@ -893,8 +891,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         write_pes_padding(fp, (uint16_t) padding_quantity);
 
     }
-    else   			// A middle packet in the title: 38 + (info->midpack_lpcm_headerquantity+info->midpack_pes_padding+info->lpcm_payload)
-                    // = 32 + 2016 = 2048 or [faulty?] 2054 if (info->midpack_pes_padding > 0) ie 24b Ch 3+ and 16b 6 Ch.
+    else
     {
         audio_bytes=info->lpcm_payload;
         write_pack_header(fp,SCR); //+14
@@ -1206,7 +1203,8 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
 {
     FILE* fpout;
     char outfile[CHAR_BUFSIZ+13+1];
-    int i=0, pack=0, pack_in_file=0, fileno=1;
+    int i=0, pack=0, fileno=1;
+    _Bool start_of_file = true;
     uint32_t bytesinbuf=0, n=0, lpcm_payload=0;
     uint8_t audio_buf[AUDIO_BUFFER_SIZE];
     uint64_t pack_in_title=0;
@@ -1241,16 +1239,15 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
     {
         if (bytesinbuf >= lpcm_payload)
         {
-            //pack_in_file is not used in write_pes_packet
 
-            n=write_pes_packet(fpout,&files[i],audio_buf,bytesinbuf,pack_in_title,(pack_in_file == 0));
+            n=write_pes_packet(fpout,&files[i],audio_buf,bytesinbuf,pack_in_title, start_of_file);
 
             memmove(audio_buf,&audio_buf[n],bytesinbuf-n);
             bytesinbuf -= n;
 
             pack++;
             pack_in_title++;
-            pack_in_file++;
+            start_of_file = false;
         }
 
         if ((pack > 0) && ((pack%(512*1024))==0))
@@ -1258,7 +1255,8 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
             fclose(fpout);
             fileno++;
             STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/ATS_%02d_%d.AOB",audiotsdir,titleset,fileno)
-                    fpout=fopen(outfile,"wb+");
+            fpout=fopen(outfile,"wb+");
+            start_of_file = true;
         }
 
         if (bytesinbuf < lpcm_payload)
@@ -1271,19 +1269,16 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                 files[i].last_sector=pack;
                 audio_close(&files[i]);
                 i++;
-                pack_in_file=-1;
 
                 if (i<ntracks)
                 {
                     /* If the current track is a different audio format, we must start a new title. */
                     if (files[i].newtitle)
                     {
-
-                        n=write_pes_packet(fpout,&files[i-1],audio_buf,bytesinbuf,pack_in_title,(pack_in_file == 0)); // Empty audio buffer.
+                        write_pes_packet(fpout, &files[i-1], audio_buf, bytesinbuf, pack_in_title, start_of_file); // Empty audio buffer.
                         pack++;
                         bytesinbuf=0;
                         pack_in_title=0;
-                        pack_in_file=0;
 
                         files[i].first_PTS=calc_PTS(&files[i],pack_in_title).PTSint;
                     }
@@ -1299,6 +1294,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                         EXIT_ON_RUNTIME_ERROR
                     }
 
+                    start_of_file = true;
                     n=audio_read(&files[i],&audio_buf[bytesinbuf],sizeof(audio_buf)-bytesinbuf);
                     bytesinbuf+=n;
                     foutput(INF "Processing %s\n",files[i].filename);
@@ -1312,7 +1308,8 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                     }
                     else
                     {
-                        n=write_pes_packet(fpout,&files[i-1],audio_buf,bytesinbuf,pack_in_title,(pack_in_file == 0)); // Empty audio buffer.
+                        start_of_file = false;
+                        write_pes_packet(fpout,&files[i-1],audio_buf,bytesinbuf,pack_in_title, start_of_file); // Empty audio buffer.
                         bytesinbuf=0;
                         pack++;
                         pack_in_title++;
