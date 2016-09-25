@@ -135,18 +135,61 @@ static void convert_buffer(WaveHeader* header, uint8_t *buf, int count)
     }
 }
 
+
+inline static void  aob_open(WaveData *info, int64_t aob_offset_read_start)
+{
+    if (aob_offset_read_start < 0) return;
+
+    if (aob_offset_read_start == 0 && file_exists(info->infile.filename))
+        info->infile.filesize = stat_file_size(info->infile.filename);
+
+    info->infile.fp = fopen(info->infile.filename, "rb")  ;
+    if (info->infile.fp != NULL)
+    {
+        info->infile.isopen = true;
+    }
+    else
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE("INFILE open issue.")
+    }
+
+    if (info->infile.isopen)
+        fseeko(info->infile.fp, aob_offset_read_start, SEEK_SET);
+
+}
+
+inline static void wav_output_path_create(WaveData *info)
+{
+    static int title;
+
+    char Title[14] = {0};
+    sprintf(Title, "title_%d.wav", ++title);
+
+    info->outfile.filename = filepath(globals.settings.outdir, Title);
+}
+
+inline static void wav_output_open(WaveData *info)
+{
+    info->outfile.fp = fopen(info->outfile.filename, "ab");
+    if (info->outfile.fp != NULL)
+    {
+        info->outfile.isopen = true;
+    }
+    else
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE("OUTFILE open issue.")
+    }
+}
+
 inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Bool *status)
 {
     int position;
 
-    static uint64_t pack_in_title;
-    static int title;
+    static int64_t aob_offset_read_start;
 
-    if (title == 0 && pack_in_title == 0) S_OPEN(info->infile, "rb")
+    aob_open(info, aob_offset_read_start);
 
     uint64_t offset0 = ftello(info->infile.fp);
-    //if (pack_in_title == 0)
-        fprintf(stderr, "!!!-- title %d, start %d sector, remainder %d \n", title, offset0/2048, offset0 % 2048);
 
     fseeko(info->infile.fp, offset0 + 14, SEEK_SET);
 
@@ -156,14 +199,6 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
     if (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB)
     {
         position = FIRST_PACK;
-
-        ++title;
-        ++pack_in_title;
-
-        char Title[14] = {0};
-        sprintf(Title, "title_%d.wav", title);
-
-        info->outfile.filename = filepath(globals.settings.outdir, Title);
     }
     else
     {
@@ -172,7 +207,6 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
         if (res != 0)
         {
             position = LAST_PACK;
-            pack_in_title = 0;
         }
         else
         {
@@ -181,12 +215,10 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
             if (n != 4 || (n == 4 && buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB))
             {
                 position = LAST_PACK;
-                pack_in_title = 0;
             }
             else
             {
                 position = MIDDLE_PACK;
-                ++pack_in_title;
             }
         }
     }
@@ -271,11 +303,13 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
     if (offset0 + 2048 < filesize(info->infile))
     {
       fseeko(info->infile.fp, offset0 + 2048, SEEK_SET);
+      aob_offset_read_start = (position == LAST_PACK || *status == VALID) ? (int64_t) offset0 + 2048 : -1;
     }
     else
     {
       fseeko(info->infile.fp, 0, SEEK_END);
       position = END_OF_AOB;
+      aob_offset_read_start  = 0;
     }
 
     if (*status == VALID)
@@ -293,35 +327,9 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
     static uint64_t fpout_size;
     int audio_bytes;
     uint8_t PES_packet_len_bytes[2];
+    static int title;
 
-    if (aob_offset_read_start == 0 && file_exists(info->infile.filename))
-        info->infile.filesize = stat_file_size(info->infile.filename);
-
-    if (aob_offset_read_start >= 0)
-    {
-      info->infile.fp = fopen(info->infile.filename, "rb")  ;
-      if (info->infile.fp != NULL)
-      {
-          info->infile.isopen = true;
-      }
-      else
-      {
-          EXIT_ON_RUNTIME_ERROR_VERBOSE("INFILE open issue.")
-      }
-
-      if (info->infile.isopen)
-              fseeko(info->infile.fp, aob_offset_read_start, SEEK_SET);
-
-      info->outfile.fp = fopen(info->outfile.filename, "ab");
-      if (info->outfile.fp != NULL)
-      {
-          info->outfile.isopen = true;
-      }
-      else
-      {
-          EXIT_ON_RUNTIME_ERROR_VERBOSE("OUTFILE open issue.")
-      }
-    }
+    aob_open(info, aob_offset_read_start);
 
     uint64_t offset0 = ftello(info->infile.fp);
     uint8_t buf[4];
@@ -434,32 +442,32 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
         S_CLOSE(info->outfile)
         info->outfile.filesize = fpout_size;
         fpout_size = 0;
+
     }
 
     if (offset0 + 2048 < filesize(info->infile))
     {
       fseeko(info->infile.fp, offset0 + 2048, SEEK_SET);
+      aob_offset_read_start = (position == LAST_PACK) ? (int64_t) offset0 + 2048 : -1;
     }
     else
     {
       fseeko(info->infile.fp, 0, SEEK_END);
       position = END_OF_AOB;
+      aob_offset_read_start  = 0;
     }
-
-    aob_offset_read_start = (position == LAST_PACK) ? offset0 + 2048 : -1;
 
     return(position);
 }
 
-
-int get_ats_audio()
+int get_ats_audio_i(int i)
 {
     uint8_t audio_buf[2048];
     uint64_t pack = 0;
 
     int pack_rank = FIRST_PACK;
 
-    filestat_t aob_object = filestat(false, 0, globals.aobpath, NULL);
+    filestat_t aob_object = filestat(false, 0, globals.aobpath[i], NULL);
 
     WaveData info = {
                       .database = NULL,
@@ -508,6 +516,9 @@ int get_ats_audio()
            exit(-8);
         }
 
+        wav_output_path_create(&info);
+        wav_output_open(&info);
+
         _Bool debug;
 
         if (globals.fixwav_prepend)
@@ -541,6 +552,8 @@ int get_ats_audio()
 
             info.infile = aob_object;
             errno = 0;
+
+            wav_output_open(&info);
         }
 
         /* second pass to get the audio */
@@ -581,6 +594,15 @@ int get_ats_audio()
     while (pack_rank != END_OF_AOB);
 
     S_CLOSE(info.infile)
+
+    return(errno);
+}
+
+
+int get_ats_audio()
+{
+    for (int i = 0; i < 9 && globals.aobpath[i] != NULL; ++i)
+        get_ats_audio_i(i);
 
     return(errno);
 }
