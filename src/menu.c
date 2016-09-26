@@ -394,7 +394,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
             dup2(STDOUT_FILENO, STDERR_FILENO);
 
             if (errno) perror(MP2ENC);
-            execv(mp2enc, argsmp2enc);
+            execv(mp2enc, (char* const*)argsmp2enc);
             foutput("%s\n", ERR "Runtime failure in mp2enc child process");
             return errno;
 
@@ -488,7 +488,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
         dup2(tube[1], STDOUT_FILENO);
         // Piping stdout is required here as STDOUT is not a possible duplicate for stdout
         dup2(tubeerr[1], STDERR_FILENO);
-        execv(jpeg2yuv, argsjpeg2yuv);
+        execv(jpeg2yuv, (char* const*) argsjpeg2yuv);
         foutput("%s\n", ERR "Runtime failure in jpeg2yuv child process");
         perror("menu1");
 
@@ -516,7 +516,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
             close(STDOUT_FILENO);
             dup2(tubeerr2[1], STDERR_FILENO);
             // End of comment
-            execv(mpeg2enc, argsmpeg2enc);
+            execv(mpeg2enc, (char* const*)argsmpeg2enc);
             foutput("%s\n", ERR "Runtime failure in mpeg2enc parent process");
             perror("menu2");
             return errno;
@@ -689,7 +689,7 @@ int launch_spumux(pic* img)
                 return errno;
             }
 
-            execv(spumux, argsspumux);
+            execv(spumux, (char* const*) argsspumux);
             return errno;
 
 
