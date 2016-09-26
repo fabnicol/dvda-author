@@ -112,7 +112,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
     #define ANSI_COLOR_CYAN    "\x1b[36m"
     #define ANSI_COLOR_RESET   "\x1b[0m"
 
-    #define MSG_TAG "\x1b[32m[MSG] \x1b[0m"
+    #define MSG_TAG "\x1b[32m[MSG]  \x1b[0m"
     #define INF "\x1b[34m[INF]  \x1b[0m"
     #define ERR "\x1b[31m\n[ERR]  \x1b[0m"
     #define DBG "\x1b[35m[DBG]  \x1b[0m"
