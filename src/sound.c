@@ -199,7 +199,7 @@ int launch_lplex_soundtrack(pic* img, const char* create_mode)
             img->topmenu_nslides[menu] =1;
         }
 
-        char* args[img->topmenu_nslides[menu]*3+DIM_LPLEX_CLI+1];
+        const char* args[img->topmenu_nslides[menu]*3+DIM_LPLEX_CLI+1];
         for (u=0; u < DIM_LPLEX_CLI; u++) args[u]=(char*) args0[u];
         for (u=0; u < img->topmenu_nslides[menu]; u++)
         {
@@ -306,7 +306,7 @@ int launch_lplex_hybridate(const pic* img,
           argssize += (ntracks[group]>0)*(ntracks[group] + (group >0)+ nslides[group]*2);
     }
         
-    char* args[DIM_LPLEX_CLI+argssize+1];
+    const char* args[DIM_LPLEX_CLI+argssize+1];
     int tot=DIM_LPLEX_CLI;
         
     for (int u=0; u < DIM_LPLEX_CLI; u++) args[u]=(char*) args0[u];

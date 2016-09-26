@@ -459,10 +459,11 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
     return(position);
 }
 
-int get_ats_audio_i(int i)
+int get_ats_audio_i(int i, fileinfo_t files[9][99])
 {
     uint8_t audio_buf[2048];
     uint64_t pack = 0;
+    int j = 0;
 
     int pack_rank = FIRST_PACK;
 
@@ -514,6 +515,7 @@ int get_ats_audio_i(int i)
                    filename(info.infile));
            exit(-8);
         }
+
 
         wav_output_path_create(&info);
         wav_output_open(&info);
@@ -581,12 +583,23 @@ int get_ats_audio_i(int i)
 
             fixwav(&info, &header);
 
+            if (j == 99)
+            {
+                EXIT_ON_RUNTIME_ERROR_VERBOSE("DVD-Audio specifications only allow 99 titles per group.")
+            }
+
+            files[i][j].filename = filename(info.outfile);
+            files[i][j].bitspersample = header.wBitsPerSample;
+            files[i][j].samplerate = header.dwSamplesPerSec;
+            files[i][j].channels = header.channels;
+            files[i][j].numbytes  = header.data_cksize;
+
+            ++j;
+
             globals.debugging = debug;
             info.infile = aob_object;
             errno = 0;
         }
-
-        free(info.outfile.filename);
 
         info.outfile = filestat(false, 1, NULL, NULL);
     }
@@ -597,11 +610,33 @@ int get_ats_audio_i(int i)
     return(errno);
 }
 
+static void audio_extraction_layout(fileinfo_t files[9][99])
+{
+    foutput("\n%s", "DVD Layout\n");
+
+    foutput("%s\n",ANSI_COLOR_BLUE"Group"ANSI_COLOR_GREEN"  Track    "ANSI_COLOR_YELLOW"Rate"ANSI_COLOR_RED" Bits"ANSI_COLOR_RESET"  Ch    Audio bytes  Filename\n");
+
+    for (int i = 0; i < 9; ++i)
+        for (int j = 0; j < 99 && files[i][j].filename != NULL; ++j)
+        {
+           foutput("  "ANSI_COLOR_BLUE"%d     "ANSI_COLOR_GREEN"%02d"ANSI_COLOR_YELLOW"  %6"PRIu32"   "ANSI_COLOR_RED"%02d"ANSI_COLOR_RESET"   %d   %10"PRIu64"   ",
+                     i+1, j+1, files[i][j].samplerate, files[i][j].bitspersample, files[i][j].channels, files[i][j].numbytes);
+           foutput("%s\n",files[i][j].filename);
+        }
+
+    foutput("\n\n%s\n\n", MSG_TAG "The Audio bytes column gives the exact audio size of extracted files,\n" MSG_TAG "excluding the header (44 bytes for mono/stereo or 80 bytes for multichannel.)");
+}
+
 
 int get_ats_audio()
 {
+    fileinfo_t files[9][99];
+    memset(files, 0, sizeof(files));
     for (int i = 0; i < 9 && globals.aobpath[i] != NULL; ++i)
-        get_ats_audio_i(i);
+        get_ats_audio_i(i, files);
+
+    if (globals.fixwav_prepend)
+        audio_extraction_layout(files);
 
     return(errno);
 }
