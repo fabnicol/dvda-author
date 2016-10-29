@@ -63,11 +63,11 @@ char *currentdir, *TEMPDIR, *LPLEXTEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
     lexer->nlines=MAX_LEXER_LINES;
 
     lexer->commandline=(char** ) calloc(MAX_LEXER_LINES, sizeof(char *));
-    if (lexer->commandline == NULL) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  lexer\n");
+    if (lexer->commandline == NULL) perror("\n"ERR "lexer\n");
     for (i=0; i < MAX_LEXER_LINES; i++)
     {
         lexer->commandline[i]=(char* ) calloc(2*MAX_OPTION_LENGTH, sizeof(char));
-        if (lexer->commandline[i] == NULL) perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  lexer\n");
+        if (lexer->commandline[i] == NULL) perror("\n"ERR "lexer\n");
     }
 
     if (config_type == CONFIGURATION_FILE) check_settings_file();
@@ -78,7 +78,7 @@ char *currentdir, *TEMPDIR, *LPLEXTEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
 
 
     if (command == NULL)
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not allocate command-line structure")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not allocate command-line structure")
 
         command=command_line_parsing(lexer->nlines, lexer->commandline, command);
 
@@ -153,7 +153,7 @@ int main(int argc,  char* const argv[])
     int i=0;
     errno=0;
 
-    if (errno) perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Initial allocation\n");
+    if (errno) perror(ERR "Initial allocation\n");
 
     lexer_t   lexer_init;
     lexer_t   *lexer=&lexer_init;
@@ -221,6 +221,7 @@ int main(int argc,  char* const argv[])
         .logfile = NULL,   // logfile path should be supplied on command line
         .indir = NULL,
         .outdir = NULL,
+        .outfile = NULL,
         .lplexoutdir = NULL,
     #ifdef __WIN32__
          .workdir = strdup(DEFAULT_WORKDIR),// working directory: under Windows, c:\ if not defined at compile time, otherwise 'currentdir' environment variable
@@ -250,6 +251,7 @@ int main(int argc,  char* const argv[])
         1,  // enabling lexer
         /*logfile*/	0,  // no log
         /*loghtml*/     0,  //text log
+        /* logdecode */ 0,
         /*videozone*/   1,  // generates video zone
         /*videolinking*/0,  // no video link
         /*playlist*/    0,  // no playlist
@@ -287,6 +289,7 @@ int main(int argc,  char* const argv[])
         /*xml filepath*/  NULL,
         /*spumux xml*/    NULL,
         /*cdrecord dev*/  NULL,
+        /* aob path for decoding */ NULL,
         /*journal (log)*/ NULL, //(FILE*)
         /*access rights*/ DEFAULT_ACCESS_RIGHTS,
         /* it is necessary to use strdup as these settings may be overridden dynamically */
@@ -363,9 +366,7 @@ int main(int argc,  char* const argv[])
     globals.settings.tempdir=TEMPDIR;
     globals.settings.lplextempdir=LPLEXTEMPDIR;
     globals.settings.stillpicdir=strdup(globals.settings.tempdir);
-    normalize_temporary_paths(NULL);
-
-
+    normalize_temporary_paths(NULL); // to be reviewed
 
     // Null arg is no longer supported, yet...
 
@@ -412,11 +413,11 @@ int main(int argc,  char* const argv[])
            if (pstruct && pstruct->isfile)
            {
              //if (globals.debugging)
-             foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Parsing project file %s\n", project_filepath);
+             foutput(INF "Parsing project file %s\n", project_filepath);
            }
            else
            {
-            foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Failed to parse project file %s\n       Exiting...\n", project_filepath);
+            foutput(ERR "Failed to parse project file %s\n       Exiting...\n", project_filepath);
             clean_exit(EXIT_FAILURE);
            }
            free(pstruct);
@@ -452,7 +453,7 @@ launch:
 
     if (errno && globals.veryverbose)
     {
-        perror(ANSI_COLOR_YELLOW "[WAR]" ANSI_COLOR_RESET "  Detected runtime errors");
+        perror(WAR "Detected runtime errors");
     }
 
     return(errno);

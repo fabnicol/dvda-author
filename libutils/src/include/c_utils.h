@@ -33,9 +33,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 
 #include "version.h"
-#include "fixwav_manager.h"
+//#include "fixwav_manager.h"
 
-#ifdef __WIN32__
+#if defined __WIN32__ || defined _WIN32 || defined __WIN32 || defined __WIN64 || defined _WIN64
 #define SEPARATOR "\\"
 #define STRLEN_SEPARATOR 2
 #else
@@ -44,7 +44,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 
 #include <sys/types.h>
-#ifndef __WIN32__
+#if defined __WIN32__ || defined _WIN32 || defined __WIN32 || defined __WIN64 || defined _WIN64
 #include <sys/stat.h>
 //#else
 //#include <io.h>
@@ -95,6 +95,14 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
     #define ANSI_COLOR_MAGENTA ""
     #define ANSI_COLOR_CYAN    ""
     #define ANSI_COLOR_RESET   ""
+
+    #define MSG_TAG "[MSG]  "
+    #define INF "[INF]  "
+    #define ERR "\n[ERR]  "
+    #define DBG "[DBG]  "
+    #define WAR "[WAR]  "
+    #define DEV "[DEV]  "
+
 #else
     #define ANSI_COLOR_RED     "\x1b[31m"
     #define ANSI_COLOR_GREEN   "\x1b[32m"
@@ -103,7 +111,15 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
     #define ANSI_COLOR_MAGENTA "\x1b[35m"
     #define ANSI_COLOR_CYAN    "\x1b[36m"
     #define ANSI_COLOR_RESET   "\x1b[0m"
+
+    #define MSG_TAG "\x1b[32m[MSG]  \x1b[0m"
+    #define INF "\x1b[34m[INF]  \x1b[0m"
+    #define ERR "\x1b[31m\n[ERR]  \x1b[0m"
+    #define DBG "\x1b[35m[DBG]  \x1b[0m"
+    #define WAR "\x1b[33m[WAR]  \x1b[0m"
+    #define DEV "\x1b[36m[DEV]  \x1b[0m"
 #endif
+
 
 #define ERR_STRING_LENGTH   "ERR: string was truncated, maximum length is %d"
 
@@ -129,8 +145,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 
 #define foutput(X,...)   do { if (!globals.silence) printf(X, __VA_ARGS__);\
-							   if (!globals.logfile) break;\
-							   fprintf(globals.journal, X, __VA_ARGS__);} while(0)
+                               if (globals.logfile) \
+                                fprintf(globals.journal, X, __VA_ARGS__);} while(0)
 
 
 
@@ -168,15 +184,98 @@ typedef struct
  {
     struct rusage *nothing;
     struct rusage *start;
-}compute_t;
+} compute_t;
 
 
+typedef struct
+{
+   _Bool isopen;
+   uint64_t filesize;
+   char* filename;
+   FILE* fp;
+} filestat_t ;
+
+
+uint64_t filesize(filestat_t f);
+char* filename(filestat_t f);
+FILE* fileptr(filestat_t f);
+
+filestat_t filestat(_Bool b, uint64_t s, char* fn, FILE* fp);
+
+typedef struct
+  {
+    /* pointers */
+
+    char* database;
+    char* filetitle;
+
+    /* global behavior booleans are set to zero by default, being global */
+    _Bool automatic;  /* whether automatic processing mode is selected */
+    _Bool prepend;  /* whether new header is prepended to raw data or overwrites old header */
+    _Bool in_place; /* whether old file is overwritten */
+    _Bool cautious; /* whether to ask user before overwrite */
+    _Bool interactive; /* whether interactive dialogs will be used */
+    /* global diagnosis values */
+    _Bool padding; /* whether files should be end-padded */
+    _Bool prune; /* whether files ending with 00 should be pruned */
+    _Bool virtual;
+    short int repair;
+    uint32_t padbytes;
+    uint32_t prunedbytes;
+
+
+    filestat_t infile;
+    filestat_t outfile;
+
+    /* header substructure */
+
+  } WaveData;
+
+typedef struct
+  {
+    _Bool       is_extensible;
+    _Bool       has_fact;
+    uint8_t     ichunks;
+    uint8_t*    header_in;
+    uint8_t*    header_out;
+    uint16_t     header_size_in; /* size of header */
+    uint16_t     header_size_out; /* size of header */
+    uint16_t	 wFormatTag;	/* should be 1 for PCM-code */
+    uint16_t	 channels;	/* 1 Mono, 2 Stereo */
+    uint16_t	 nBlockAlign;	/* samplesize*/
+    uint16_t     cbSize;  /* 0 or 22 */
+    uint16_t	 wBitsPerSample;	/* 8, 12, 16, or 24 bit */
+    uint32_t     dwChannelMask;  /* channel mapping to hardware */
+    uint32_t	 ckID;	/* 'RIFF' */
+    uint32_t	 ckSize;	/* filelen */
+    uint32_t	 WAVEID;	/* 'WAVE' */
+
+    uint32_t	 fmt_ckID;	/* 'fmt ' */
+    uint32_t	 fmt_ckSize;	/* length of fmt_ckID = 16 */
+    uint32_t	 dwSamplesPerSec
+;	/* frequence of sample */
+    uint32_t	nAvgBytesPerSec; /* bytes per second */
+    uint32_t    fact_chunk; /* 'fact'*/
+    uint32_t    fact_length; /* length of fact chunk - 8 in bytes = 4*/
+    uint32_t    n_spl;       /* number of samples written out */
+    uint32_t	 data_ckID;	/* 'data' */
+    uint32_t	 data_cksize;	/* samplecount */
+    /* RIFF info chunks to be parsed: INAM, IART, ICMT, ICOP, ICRD, IGNR */
+    uint8_t INAM[MAX_LIST_SIZE];
+    uint8_t IART[MAX_LIST_SIZE];
+    uint8_t ICMT[MAX_LIST_SIZE];
+    uint8_t ICOP[MAX_LIST_SIZE];
+    uint8_t ICRD[MAX_LIST_SIZE];
+    uint8_t IGNR[MAX_LIST_SIZE];
+
+  } WaveHeader;
 
 /* Prototypes */
 
 void htmlize(char* logpath);
 
-char* concatenate(char* dest, const char* str1, const char* str2);
+char * conc(const char* str1, const char* str2);
+char * filepath(const char* str1, const char* str2);
 void pause_dos_type();
 _Bool clean_directory(char* path);
 void clean_exit(int message);
@@ -187,6 +286,7 @@ _Bool s_mkdir (const char *path);
 void print_commandline(int argc_count, char * const argv[]);
 void change_directory(const char * filename);
 int copy_file(const char *existing_file, const char *new_file);
+int copy_directory(const char* src, const char* dest, mode_t mode);
 int cat_file(const char *existing_file, const char *new_file);
 int copy_file_p(FILE *infile, FILE *outfile, uint32_t position, uint64_t output_size);
 _Bool file_exists(const char* filepath);
@@ -196,7 +296,9 @@ int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED*, void G
 int get_endianness();
 void hexdump_header(FILE* infile, uint8_t header_size);
 void hexdump_pointer(uint8_t* tab,  size_t tabsize);
+void hex2file(FILE* out, uint8_t* tab,  size_t tabsize);
 void secure_open(const char *path, const char *context, FILE*);
+
 int end_seek(FILE* outfile);
 void parse_wav_header(WaveData* info, WaveHeader* ichunk);
 const char* get_command_line(const char* args[]);
@@ -216,8 +318,11 @@ int download_fullpath(const char* curlpath, const char* filename, const char* fu
 void erase_file(const char* path);
 char* quote(const char* path);
 char* win32quote(const char* path);
-int run(const char* application,char*  args[], const int option);
+int run(const char* application, const char*  args[], const int option);
 uint64_t  parse_file_for_sequence(FILE* fp, uint8_t* tab, size_t sizeoftab);
+void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* fp, FILE* log, _Bool write, _Bool);
+void rw_field(uint8_t* tab, int size,const char* label, FILE* fp, FILE* log);
+
 
 inline static void  uint32_copy(uint8_t* buf, uint32_t x)
 {

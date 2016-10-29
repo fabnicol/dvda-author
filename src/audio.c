@@ -62,15 +62,46 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 extern globalData globals;
 
 /*
-Multichannel reference tables are structured as follows:
-  { { 16-bit  { channels { permutated values }}}, { 24-bit  { channels { permutated values }}} }
-
-S is the table of direct conversion (WAV to AOB) and _S the table of reverse conversion (AOB to WAV), with _S o S = Id
+*
+* Multichannel reference tables are structured as follows:
+*  { { 16-bit  { channels { permutated values }}}, { 24-bit  { channels { permutated values }}} }
+*
+* S is the table of direct conversion (WAV to AOB) and _S the table of reverse conversion (AOB to WAV).
+*
+* Documentation on how to obtain the following permutation tables and relation to channel-mapping: see file wav-aob.mappings.ods (Aug. 2016, Fabrice Nicol)
+*
 */
 
+/*
+ID\Chan 0   1   2   3   	4   5     info->channels
+    0 	C                              1
+    1 	L 	R                          2
+    2 	L 	R 	S                      3
+    3 	L 	R 	Ls 	Rs                 4
+    4 	L 	R 	Lfe                    3
+    5 	L 	R 	Lfe	S                  4
+    6 	L 	R 	Lfe	Ls  	Rs         5
+    7 	L 	R 	C                      3
+    8 	L 	R 	C 	S                  4
+    9 	L 	R 	C 	Ls 	    Rs         5
+    10 	L 	R 	C 	Lfe                4
+    11 	L 	R 	C 	Lfe 	S          5
+    12 	L 	R 	C 	Lfe 	Ls 	Rs     6
+    13 	L 	R 	C 	S                  4
+    14 	L 	R 	C 	Ls 	    Rs         5
+    15 	L 	R 	C 	Lfe                4
+    16 	L 	R 	C 	Lfe 	S          5
+    17 	L 	R 	C 	Lfe 	Ls 	Rs     6
+    18 	L 	R 	Ls 	Rs   	Lfe        5
+    19 	L 	R 	Ls 	Rs 	    C          5
+    20 	L 	R 	Ls 	Rs 	    C  	Lfe    6
+*/
 
-static uint8_t  S[2][6][36]=
-{{      {0}, {0},
+const uint8_t channels[21] = {1,2,3,4,3,4,5,3,4,5,4,5,6,4,5,4,5,6,5,5,6};
+
+static const uint8_t  S[2][6][36]=
+{   {   {0},
+        {0},
         {5, 4, 11, 10, 1, 0, 3, 2, 7, 6, 9, 8},
         {5, 4, 7, 6, 13, 12, 15, 14, 1,  0, 3, 2, 9, 8, 11, 10},
         {5, 4, 7, 6,  9,  8, 15, 14,17, 16, 19, 18, 1, 0, 3, 2, 11, 10, 13, 12},
@@ -85,7 +116,10 @@ static uint8_t  S[2][6][36]=
     }
 };
 
+
+
 // Direct conversion table when separate mono channels are given on command line
+
 #if 0
 static uint8_t  C[2][7][36][2]=
 {
@@ -164,7 +198,7 @@ FLAC__StreamDecoderWriteStatus flac_write_callback(const FLAC__StreamDecoder GCC
     uint32_t i;
 
     if ((info->audio->n+data_size) > sizeof(info->audio->buf))
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Internal error - FLAC buffer overflown")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Internal error - FLAC buffer overflown")
 
 
         // Store data in interim buffer in WAV format - i.e. Little-endian interleaved samples
@@ -191,7 +225,7 @@ FLAC__StreamDecoderWriteStatus flac_write_callback(const FLAC__StreamDecoder GCC
 void flac_error_callback(const FLAC__StreamDecoder GCC_UNUSED *dec,
                          FLAC__StreamDecoderErrorStatus GCC_UNUSED status, void GCC_UNUSED *data)
 {
-    foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  FLAC error callback called.\n");
+    foutput("%s", ERR "FLAC error callback called.\n");
 }
 
 #endif
@@ -199,7 +233,7 @@ void flac_error_callback(const FLAC__StreamDecoder GCC_UNUSED *dec,
 int calc_info(fileinfo_t* info)
 {
 //PATCH: provided for null dividers.
-    if ((info->samplerate)*(info->channels) == 0)
+    if (info->samplerate == 0 || info->channels == 0 || info->channels == 0)
     {
         foutput("%s%s%s\n", ANSI_COLOR_RED"\n[ERR] ", info->filename, ANSI_COLOR_RESET"  Null audio characteristics");
         return(NO_AFMT_FOUND);
@@ -208,42 +242,46 @@ int calc_info(fileinfo_t* info)
 // assemble numbers for the various combinations
     short int table_index=(info->bitspersample == 24)? 1 : 0 ;
 
-    static uint16_t T[2][6][11]=     // 16-bit table
+    static const uint16_t T[2][6][11]=     // 16-bit table
     {
-         {{ 	2000, 16,  1984,  2010,	2028, 22, 11, 16, 10, 0, 0 },
-            {	2000, 16,  1984,  2010,	2028, 22, 11, 16, 10, 0, 0 },
-            { 	2004, 24,  1980,  2010,	2028, 22, 15, 12,  6, 0, 0 },
-            { 	2000, 16,  1980,  2010,	2028, 22, 11, 16, 10, 0, 0 },
-            { 	2000, 20,  1980,  2010, 2028, 22, 15, 16, 10, 0, 0 },
-            { 	1992, 24,  1992, 1993,  2014, 22, 10, 10,  4,17,14}},
+         {{ 	2000, 16,  1984,  2010,	2028, 22, 11, 16, 16 /*old: 10*/, 0, 0 },
+            {	2000, 16,  1984,  2010,	2028, 28 /*old: 22*/ , 11, 16, 16 /*old: 10*/, 0, 0 },
+            { 	2004, 24,  1980,  2010,	2028, 24 /*old: 22*/, 15, 12, 12 /*old: 6*/, 0, 0 },
+            { 	2000, 16,  1980,  2010,	2028, 28 /*old: 22*/, 11, 16, 16 /*old: 10*/, 0, 0 },
+            { 	2000, 20,  1980,  2010, 2028, 22, 15, 16, 16 /*old: 10*/, 0, 0 },
+            { 	1992, 24,  1992, 1993,  2014, 22, 10, 10, 10 /*old: 4*/, 17, 14}},
         // 24-bit table
-        {{    	2004, 24,  1980,  2010,	2028, 22, 15, 12, 10, 0, 0 },
-            { 	2004, 24,  1980,  2010,	2028, 22, 15, 12, 10, 0, 0 },
-            { 	1998, 18,  1980,  2010,	2026, 22, 15, 16, 14, 0, 2 },
-            { 	1992, 24,  1968,  1993,	2014, 22, 10, 10,  8,17, 14 },
-            { 	1980,  0,  1980,  2010, 2008, 22, 15, 16, 14, 0, 20 },
+        {{    	2004, 24,  1980,  2010,	2028, 22, 15, 12, 12 /*old: 10*/, 0, 0 },
+            { 	2004, 24,  1980,  2010,	2028, 24 /*old: 22*/, 15, 12, 12 /*old: 10*/, 0, 0 },
+            { 	1998, 18,  1980,  2010,	2026, 28 /*old: 22 */, 15, 16, 16 /* old 14*/, 0, 0 },
+            { 	1992, 24,  1968,  1993,	2014, 22, 10, 10,  10 /*old: 8*/, 17, 14 },
+            { 	1980,  0,  1980,  2010, 2008, 28 /*old: 22*/, 15, 16, 16 /*old: 14*/, 0, 20 },
             { 	1980,  0,  1980,  2010, 2008, 22, 15, 16, 14, 0, 20 }}
     };
 
+/* The following equations are always true by necessity:
+    firstpack_lpcm_headerquantity + firstpack_pes_padding + payload - firstpackdecrement = 1995
+    midpack_lpcm_headerquantity   + payload + midpack_pes_padding = 2016
+    first/mid_pes_padding > 6
+*/
 
 #define X T[table_index][info->channels-1]
 
     info->sampleunitsize=
-            (table_index==1)? info->channels*6 :
-                              ((info->channels > 2)? info->channels*4 :
-                                                     info->channels*2);
-    info->lpcm_payload=X[0];
-    info->firstpackdecrement=X[1];
-    info->SCRquantity=X[2];
-    info->firstpack_audiopesheaderquantity=X[3];
-    info->midpack_audiopesheaderquantity=X[4];
-    info->lastpack_audiopesheaderquantity=X[5];
-    info->firstpack_lpcm_headerquantity=X[6];
-    info->midpack_lpcm_headerquantity=X[7];
-    info->lastpack_lpcm_headerquantity=X[8];
-    info->firstpack_pes_padding=X[9];
-    info->midpack_pes_padding=X[10];
-
+            (table_index == 1)? info->channels * 6 :
+                              ((info->channels > 2)? info->channels * 4 :
+                                                     info->channels * 2);
+    info->lpcm_payload = X[0];
+    info->firstpackdecrement = X[1];
+    info->SCRquantity = X[2];
+    info->firstpack_audiopesheaderquantity = X[3];
+    info->midpack_audiopesheaderquantity = X[4];
+    info->lastpack_audiopesheaderquantity = X[5];
+    info->firstpack_lpcm_headerquantity=(uint8_t) X[6];
+    info->midpack_lpcm_headerquantity=(uint8_t) X[7];
+    info->lastpack_lpcm_headerquantity=(uint8_t) X[8];
+    info->firstpack_pes_padding = X[9];
+    info->midpack_pes_padding = X[10];
 
 #undef X
 
@@ -296,31 +334,31 @@ command_t *scan_wavfile_audio_characteristics(command_t *command)
     switch (error)
     {
     case AFMT_WAVE:
-        if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found WAVE format for %s\n", command->files[i][j].filename);
+        if (globals.debugging) foutput(MSG_TAG "Found WAVE format for %s\n", command->files[i][j].filename);
         command->files[i][j].type=AFMT_WAVE;
         j++;
         break;
     case AFMT_WAVE_FIXED:
-        if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found WAVE format (fixed) for %s\n", command->files[i][j].filename);
+        if (globals.debugging) foutput(MSG_TAG "Found WAVE format (fixed) for %s\n", command->files[i][j].filename);
         command->files[i][j].type=AFMT_WAVE;
         j++;
         break;
     case AFMT_WAVE_GOOD_HEADER:
-        if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found WAVE format (original) for %s\n", command->files[i][j].filename);
+        if (globals.debugging) foutput(MSG_TAG "Found WAVE format (original) for %s\n", command->files[i][j].filename);
         command->files[i][j].type=AFMT_WAVE;
         j++;
         break;
 
 #ifndef WITHOUT_FLAC
     case AFMT_FLAC:
-        if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found FLAC format for %s\n", command->files[i][j].filename);
+        if (globals.debugging) foutput(MSG_TAG "Found FLAC format for %s\n", command->files[i][j].filename);
         error=flac_getinfo(&command->files[i][j]);
         j++;
         break;
 #if !defined WITHOUT_libogg
 #if HAVE_OGG_FLAC
     case AFMT_OGG_FLAC:
-        if (globals.debugging) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Found Ogg FLAC format for %s\n", command->files[i][j].filename);
+        if (globals.debugging) foutput(MSG_TAG "Found Ogg FLAC format for %s\n", command->files[i][j].filename);
         error=flac_getinfo(&command->files[i][j]);
         j++;
         break;
@@ -329,7 +367,7 @@ command_t *scan_wavfile_audio_characteristics(command_t *command)
 #endif
 
     case NO_AFMT_FOUND:
-        if (globals.debugging) foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  No compatible format was found for %s\n       Skipping file...\n", command->files[i][j].filename);
+        if (globals.debugging) foutput(ERR "No compatible format was found for %s\n       Skipping file...\n", command->files[i][j].filename);
 
         // House-cleaning rules: getting rid of files with unknown format
 
@@ -358,7 +396,7 @@ command_t *scan_wavfile_audio_characteristics(command_t *command)
             {
                 command->ntracks[l]=command->ntracks[l+1];
                 if (globals.debugging)
-                    foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Shifting track count for group=%d->%d\n", l+1, l+2);
+                    foutput(INF "Shifting track count for group=%d->%d\n", l+1, l+2);
             }
             // delta is a flag for group demotion
             delta=1;
@@ -373,7 +411,7 @@ command_t *scan_wavfile_audio_characteristics(command_t *command)
             int i_shift=i+delta;
             int l_shift=l+1-delta;
             if (globals.debugging)
-                foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Shifting indices for group=%d->%d, track=%d->%d\n", i+1, i_shift+1, l+1, l_shift+1);
+                foutput(INF "Shifting indices for group=%d->%d, track=%d->%d\n", i+1, i_shift+1, l+1, l_shift+1);
 
             command->files[i][l]=command->files[i_shift][l_shift];
         }
@@ -409,12 +447,12 @@ int extract_audio_info(fileinfo_t *info)
 
     /* parsing header again with FIXWAV utility */
 
-    _Bool cut;
-       
+    //static _Bool cut;
+
     //if (!cut)
         info->type=fixwav_repair(info);
      
-    cut=((info->type == AFMT_WAVE_FIXED) || (info->type == AFMT_WAVE_GOOD_HEADER));
+    //cut=((info->type == AFMT_WAVE_FIXED) || (info->type == AFMT_WAVE_GOOD_HEADER));
 
     if (calc_info(info) == NO_AFMT_FOUND)
     {
@@ -432,10 +470,7 @@ static inline int compute_header_size(FILE* fp)
     //uint8_t span=0;
     WaveData wavinfo =
     {
-      .infile = "unknown",
-      .INFILE = fp,
-      .outfile = "st",
-      .OUTFILE = NULL,
+
       .database = NULL,
       .filetitle = NULL,
       .automatic = true,
@@ -448,14 +483,14 @@ static inline int compute_header_size(FILE* fp)
       .virtual = true,
       .repair = 0,
       .padbytes = 0,
-      .prunedbytes = 0
+      .prunedbytes = 0,
+      .infile = { false, 0, "unknown", NULL},
+      .outfile = {false, 0, "st", NULL },
     };
 
-    wavinfo.INFILE=fp;
-
+    wavinfo.infile.fp = fp;
     parse_wav_header(&wavinfo, &header);
     return header.header_size_in;
-   
 }
 
 
@@ -539,7 +574,7 @@ if (info->mergeflag)
      for (int u=0; u < info->channels; u++)
      {
       secure_open(info->given_channel[u], "rb", info->audio->channel_fp[u]);
-      if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Opening %s to get info\n", info->given_channel[u]);
+      if (globals.debugging) foutput(INF "Opening %s to get info\n", info->given_channel[u]);
       int span=compute_header_size(info->audio->channel_fp[u]);
       info->channel_header_size[u]=(span > 0) ? span + 8 : MAX_HEADER_SIZE;
       uint8_t header[info->channel_header_size[u]];
@@ -556,7 +591,7 @@ if (info->mergeflag)
 
      if (info->channel_header_size[u] > (span=fread(header, 1, info->channel_header_size[u],info->audio->channel_fp[u])))
      {
-         foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not read header of size %d for channel %d, just read %d character(s)\n", info->channel_header_size[u],u+1, span);
+         foutput(ERR "Could not read header of size %d for channel %d, just read %d character(s)\n", info->channel_header_size[u],u+1, span);
          clean_exit(EXIT_FAILURE);
      }
 
@@ -578,7 +613,7 @@ else
       EXITING
   }
 
-  if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Opening %s to get info\n", info->filename);
+  if (globals.debugging) foutput(INF "Opening %s to get info\n", info->filename);
 
   //int span=compute_header_size(info->audio->fp);
 
@@ -599,7 +634,7 @@ else
  int span = 0;
  if (info->header_size > (span = fread(header, 1, info->header_size,info->audio->fp)))
  {
-     foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
+     foutput(ERR "Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
      perror("       ");
      clean_exit(EXIT_FAILURE);
  }
@@ -660,7 +695,7 @@ int wav_getinfo(fileinfo_t* info)
 
     if (info->audio == NULL)
     {
-      foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open audio file: filepath pointer is null");
+      foutput("%s\n", ERR "Could not open audio file: filepath pointer is null");
       EXITING
     }
 
@@ -669,12 +704,12 @@ int wav_getinfo(fileinfo_t* info)
     
     if (info->filename == NULL)
     {
-      foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not open audio file: filepath pointer is null");
+      foutput("%s\n", ERR "Could not open audio file: filepath pointer is null");
       EXITING
     }
     else
     {
-      if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Opening %s to get info\n", info->filename);
+      if (globals.debugging) foutput(INF "Opening %s to get info\n", info->filename);
     }
 
     process_wav_get_info(info);
@@ -735,7 +770,7 @@ int flac_getinfo(fileinfo_t* info)
     }
     else
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Fatal error - could not create FLAC OR OGG FLAC decoder\n")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Fatal error - could not create FLAC OR OGG FLAC decoder\n")
     }
 
 
@@ -743,14 +778,14 @@ int flac_getinfo(fileinfo_t* info)
     {
 
         FLAC__stream_decoder_delete(flac);
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Failed to initialise FLAC decoder\n");
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Failed to initialise FLAC decoder\n");
     }
 
     if (!FLAC__stream_decoder_process_until_end_of_metadata(flac))
     {
 
         FLAC__stream_decoder_delete(flac);
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Failed to read metadata from FLAC file\n");
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Failed to read metadata from FLAC file\n");
     }
     FLAC__stream_decoder_finish(flac);
 
@@ -776,7 +811,7 @@ int fixwav_repair(fileinfo_t *info)
 
     if (temp == NULL)
     {
-        foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not allocate fixwav filename string");
+        foutput("%s\n", ERR "Could not allocate fixwav filename string");
         return(NO_AFMT_FOUND);
     }
 
@@ -788,7 +823,7 @@ int fixwav_repair(fileinfo_t *info)
     short int memory_allocation=sizeof(temp)+5+strlen(outstring)+strlen(globals.fixwav_suffix)+4+1;
 
     if (memory_allocation> CHAR_BUFSIZ)
-            foutput("%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Shortening -o filename");
+            foutput("%s\n", WAR "Shortening -o filename");
 	memory_allocation=Min(memory_allocation, CHAR_BUFSIZ);
     char buf[memory_allocation];
     memset(buf, 0, memory_allocation);
@@ -803,12 +838,8 @@ int fixwav_repair(fileinfo_t *info)
 
     WaveData wavedata=
     {
-        info->filename,
-        info->audio->fp,
-        buf,
-        NULL,
-        globals.settings.fixwav_database,  /* database path for collecting info chunks in headers */
-        NULL,
+        .database = globals.settings.fixwav_database,  /* database path for collecting info chunks in headers */
+        .filetitle = NULL,
         globals.fixwav_automatic, /* automatic behaviour */
         globals.fixwav_prepend, /* do not prepend a header */
         globals.fixwav_in_place, /* do not correct in place */
@@ -820,17 +851,25 @@ int fixwav_repair(fileinfo_t *info)
         0  /* repair status */,
         0, /* padbytes */
         0, /* pruned bytes */
+        .infile = {false, 0, info->filename, NULL},  /* filestat */
+        .outfile = {false, 0, buf, NULL}
     };
 
 
-    if (globals.debugging) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Fixwav diagnosis for: %s\n", info->filename);
-
-    SINGLE_DOTS
-
-    if (fixwav(&wavedata, &waveheader) == NULL )
+    if (globals.debugging)
     {
+        foutput(INF "Fixwav diagnosis for: %s\n", info->filename);
+
         SINGLE_DOTS
-        foutput("\n%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Fixwav repair was unsuccessful; file will be skipped.");
+    }
+
+    WaveHeader* res = fixwav(&wavedata, &waveheader);
+
+    if (res == NULL )
+    {
+
+        if (globals.debugging) SINGLE_DOTS
+        foutput("\n%s\n", INF "Fixwav repair was unsuccessful; file will be skipped.");
 
         return(NO_AFMT_FOUND);
     }
@@ -838,18 +877,18 @@ int fixwav_repair(fileinfo_t *info)
 
     else
     {
-        SINGLE_DOTS
+        if (globals.debugging) SINGLE_DOTS
 
-        info->samplerate=waveheader.sample_fq;
-        info->bitspersample=(uint8_t) waveheader.bit_p_spl;
+        info->samplerate=waveheader.dwSamplesPerSec;
+        info->bitspersample=(uint8_t) waveheader.wBitsPerSample;
         info->channels=(uint8_t) waveheader.channels;
-        info->numbytes=waveheader.data_size;
+        info->numbytes=waveheader.data_cksize;
         info->file_size=info->numbytes+waveheader.header_size_out;
         info->header_size=waveheader.header_size_out;
 
         if (wavedata.repair == GOOD_HEADER)
         {
-            foutput("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Proceeding with same file...\n");
+            foutput("%s", MSG_TAG "Proceeding with same file...\n");
 
             return(AFMT_WAVE_GOOD_HEADER);
         }
@@ -866,18 +905,17 @@ int fixwav_repair(fileinfo_t *info)
                     info->filename=strdup(buf);
                 }
 
-
-                foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Proceeding with fixed file %s:\n", wavedata.outfile );
+                foutput(MSG_TAG "Proceeding with fixed file %s:\n", filename(wavedata.outfile));
             }
             else
             if (globals.debugging)
-                foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Proceeding with virtual header and same file %s:\n", info->filename );
+                foutput(MSG_TAG "Proceeding with virtual header and same file %s:\n", info->filename);
 
-            foutput(ANSI_COLOR_GREEN "[MSG]" ANSI_COLOR_RESET "  Bits per sample=%d Sample frequency: %d\n       Bit depth:%d Channels:%d\n", waveheader.bit_p_spl, waveheader.sample_fq, waveheader.bit_p_spl, waveheader.channels );
+            foutput(MSG_TAG "Bits per sample=%d Sample frequency: %d\n       Bit depth:%d Channels:%d\n", waveheader.wBitsPerSample,
+                    waveheader.dwSamplesPerSec, waveheader.wBitsPerSample, waveheader.channels );
 
             return(AFMT_WAVE_FIXED);
         }
-
     }
 }
 
@@ -894,8 +932,8 @@ char* replace_file_extension(char * filename)
 
     if (1 == s-l)
     {
-        foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  To convert to WAV SoX.needs to indentify audio format and filename.\n       Use extension of type '.format'\n");
-        if (globals.debugging)  foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Skipping file.\n ");
+        foutput("%s\n", ERR "To convert to WAV SoX.needs to indentify audio format and filename.\n       Use extension of type '.format'\n");
+        if (globals.debugging)  foutput("%s\n", INF "Skipping file.\n ");
         return(NULL);
     }
 
@@ -926,24 +964,24 @@ int launch_sox(char** filename)
 
     if (new_wav_name == NULL)
     {
-        perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  SoX string suffix was not allocted");
+        perror(ERR "SoX string suffix was not allocted");
         return(NO_AFMT_FOUND);
     }
 
     if (globals.debugging)
-        foutput("%s       %s -->\n       %s \n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Format is neither WAV nor FLAC\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Converting to WAV with SoX...\n", *filename, new_wav_name);
+        foutput("%s       %s -->\n       %s \n", MSG_TAG "Format is neither WAV nor FLAC\n"INF "Converting to WAV with SoX...\n", *filename, new_wav_name);
         
     unlink(new_wav_name);
     errno=0;
     if (soxconvert(*filename, new_wav_name))
     {
-        if (globals.debugging)  foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  File was converted.");
+        if (globals.debugging)  foutput("%s\n", INF "File was converted.");
 
         *filename=new_wav_name;
 
         return(AFMT_WAVE);
     }
-    if (globals.debugging)  foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  SoX could not convert file.");
+    if (globals.debugging)  foutput("%s\n", INF "SoX could not convert file.");
 
     return(NO_AFMT_FOUND);
 
@@ -1042,7 +1080,7 @@ int audio_open(fileinfo_t* info)
                             (void *) info
                         );
                 if ((globals.debugging) && (result == FLAC__STREAM_DECODER_INIT_STATUS_OK))
-                    foutput("%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  FLAC decoder was initialized");
+                    foutput("%s\n", MSG_TAG "FLAC decoder was initialized");
             }
             else
 
@@ -1059,10 +1097,10 @@ int audio_open(fileinfo_t* info)
                             );
 
                     if ((globals.debugging) && (result == FLAC__STREAM_DECODER_INIT_STATUS_OK))
-                        foutput("%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  OGG_FLAC decoder was initialized");
+                        foutput("%s\n", MSG_TAG "OGG_FLAC decoder was initialized");
                 }
                 else
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Type of file unknown")
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Type of file unknown")
 
 
 
@@ -1077,39 +1115,39 @@ int audio_open(fileinfo_t* info)
                             switch (result)
                             {
                             case   FLAC__STREAM_DECODER_INIT_STATUS_UNSUPPORTED_CONTAINER  :
-                                foutput ("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  The library was not compiled with support\n       for the given container format. ");
+                                foutput ("%s\n", ERR "The library was not compiled with support\n       for the given container format. ");
                                 break;
                             case   FLAC__STREAM_DECODER_INIT_STATUS_INVALID_CALLBACKS :
-                                foutput("%s\n",  ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  A required callback was not supplied.");
+                                foutput("%s\n",  ERR "A required callback was not supplied.");
                                 break;
                             case   FLAC__STREAM_DECODER_INIT_STATUS_MEMORY_ALLOCATION_ERROR :
-                                foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  An error occurred allocating memory.");
+                                foutput("%s\n", ERR "An error occurred allocating memory.");
                                 break;
                             case   FLAC__STREAM_DECODER_INIT_STATUS_ERROR_OPENING_FILE :
-                                foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  fopen() failed in FLAC__stream_decoder_init_file()\n       or FLAC__stream_decoder_init_ogg_file(). ");
+                                foutput("%s\n", ERR "fopen() failed in FLAC__stream_decoder_init_file()\n       or FLAC__stream_decoder_init_ogg_file(). ");
                                 break;
                             case   FLAC__STREAM_DECODER_INIT_STATUS_ALREADY_INITIALIZED :
-                                foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  FLAC__stream_decoder_init_*() was called when the decoder was already initialized,\n       usually because FLAC__stream_decoder_finish() was not called.");
+                                foutput("%s\n", ERR "FLAC__stream_decoder_init_*() was called when the decoder was already initialized,\n       usually because FLAC__stream_decoder_finish() was not called.");
                                 break;
                             default :
-                                foutput("%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Error unknown by FLAC API.");
+                                foutput("%s\n", ERR "Error unknown by FLAC API.");
                             }
 
-                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Failed to initialise FLAC decoder\n");
+                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Failed to initialise FLAC decoder\n");
                     }
 
 
             if (!FLAC__stream_decoder_process_until_end_of_metadata(info->audio->flac))
             {
                 FLAC__stream_decoder_delete(info->audio->flac);
-                EXIT_ON_RUNTIME_ERROR_VERBOSE( ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Failed to read metadata from FLAC file\n")
+                EXIT_ON_RUNTIME_ERROR_VERBOSE( ERR "Failed to read metadata from FLAC file\n")
 
             }
 
 
 
         }
-        else    EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not initialise FLAC decoder")
+        else    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not initialise FLAC decoder")
 
         }
 #endif
@@ -1324,32 +1362,24 @@ Now follows the actual manipulation code.  Note that performing the transformati
 
 inline static void interleave_sample_extended(int channels, int count, uint8_t * buf)
 {
-
     int x,i, size=channels*4;
     uint8_t _buf[size];
-
     switch (channels)
     {
-    case 1:
-    case 2:
+        case 1:
+        case 2:
 
-        for (i=0;i<count;i+=2)
-            x=buf[i+1], buf[i+1]=buf[i], buf[i]=x;
-        break;
+            for (i = 0; i < count; i += 2)
+                x = buf[i+1], buf[i+1] = buf[i], buf[i] = x;
+            break;
 
-    default:
+        default:
 
-        for (i=0; i < count; i += size)
-
-            permutation(buf+i,_buf, 0, channels, S, size);
-
-
-
-        break;
+            for (i = 0; i < count; i += size)
+                permutation(buf+i, _buf, 0, channels, S, size);
+            break;
     }
-
 }
-
 
 inline static void interleave_24_bit_sample_extended(int channels, int count, uint8_t * buf)
 
@@ -1359,8 +1389,8 @@ inline static void interleave_24_bit_sample_extended(int channels, int count, ui
     uint8_t _buf[size];
 
 
-    for (i=0; i < count; i += size)
-        permutation(buf+i,_buf, 1, channels, S, size);
+    for (i = 0; i < count; i += size)
+        permutation(buf+i, _buf, 1, channels, S, size);
 
 
 }
@@ -1380,9 +1410,11 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
     //PATCH: provided for null audio characteristics, to ensure non-zero divider
 
     if (info->sampleunitsize == 0)
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Sample unit size is null");
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Sample unit size is null");
 
-    count-= count%info->sampleunitsize;
+    if (count > info->sampleunitsize) count-= count%info->sampleunitsize;
+    else return 0;
+
     if (count%info->sampleunitsize)
     {
         foutput("Requested %d bytes, sampleunitsize=%"PRIu16"\n",count,info->sampleunitsize);
@@ -1424,13 +1456,13 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
             {
                 memset(buf+n, (globals.padding_continuous)? buf[n-1] : 0, padbytes);
                 n+=padbytes;
-                if (globals.debugging) foutput(""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Padding track with %d bytes for sample count.\n       Sample unit size is %d\n",padbytes,info->sampleunitsize);
+                if (globals.debugging) foutput(WAR "Padding track with %d bytes for sample count.\n       Sample unit size is %d\n",padbytes,info->sampleunitsize);
             }
             else
             if (globals.lossy_rounding)
                 {
                     n-=rmdr;
-                    if (globals.debugging) foutput(""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Pruned track by %d bytes for sample count.\n       Sample unit size is %d\n",rmdr,info->sampleunitsize);
+                    if (globals.debugging) foutput(WAR "Pruned track by %d bytes for sample count.\n       Sample unit size is %d\n",rmdr,info->sampleunitsize);
                 }
 
         }
@@ -1448,13 +1480,13 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
             {
                 buf[n+1]=(globals.padding_continuous)? buf[n] : 0;
                 n++;
-                if (globals.debugging) foutput(""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Padding track with 1 byte for evenness n= %d\n",n);
+                if (globals.debugging) foutput(WAR "Padding track with 1 byte for evenness n= %d\n",n);
             }
             else
             if (globals.lossy_rounding)
                 {
                     n--;
-                    if (globals.debugging) foutput(""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Pruned track by 1 byte for evenness n= %d\n",n);
+                    if (globals.debugging) foutput(WAR "Pruned track by 1 byte for evenness n= %d\n",n);
                 }
         }
         #endif
@@ -1469,7 +1501,7 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
             result=FLAC__stream_decoder_process_single(info->audio->flac);
 
             if (result==0)
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Fatal error decoding FLAC file\n")
+                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Fatal error decoding FLAC file\n")
 
                 if (FLAC__stream_decoder_get_state(info->audio->flac)==FLAC__STREAM_DECODER_END_OF_STREAM)
                 {
@@ -1492,14 +1524,12 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
     }
 #endif
 
-
-
     // Convert little-endian WAV samples to big-endian MPEG LPCM samples
 
     if ((info->channels > 6) || (info->channels < 1))
     {
 
-        foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  problem in audio.c ! %d channels \n",info->channels);
+        foutput(ERR "problem in audio.c ! %d channels \n",info->channels);
         EXIT_ON_RUNTIME_ERROR
     }
 
@@ -1507,18 +1537,14 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
     {
     case 24:
 
-
-        // Processing 16-bit audio
+        // Processing 24-bit audio
         interleave_24_bit_sample_extended(info->channels, count, buf);
-
-
         break;
 
     case 16:
 
         // Processing 16-bit audio
         interleave_sample_extended(info->channels, count, buf);
-
         break;
 
     default:
@@ -1538,7 +1564,7 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
         */
 
         // FIX: Handle 20-bit audio and maybe convert other formats.
-        foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  %d bit audio is not supported\n",info->bitspersample);
+        foutput(ERR "%d bit audio is not supported\n",info->bitspersample);
         EXIT_ON_RUNTIME_ERROR
     }
 

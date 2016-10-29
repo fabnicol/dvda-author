@@ -50,45 +50,41 @@ extern globalData globals;
 
 int pad_end_of_file(WaveData* info)
 {
-  FILE* outfile=info->OUTFILE;
+
   uint32_t complement=info->padbytes;
   char buf[complement];
   memset(buf, 0, complement);
 
-  printf( ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Writing %d pad bytes...\n", complement);
-  end_seek(outfile);
-  uint32_t count = fwrite( &buf, 1 , complement , outfile );
+  if (globals.debugging) foutput( INF "Writing %d pad bytes...\n", complement);
+  end_seek(info->outfile.fp);
+  uint32_t count = fwrite( &buf, 1 , complement , info->outfile.fp);
 
   if   (count  != complement)
     {
-      printf( "%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" Error appending data to end of existing file\n" );
-      printf( ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  %d characters were written out of %d\n", count, complement);
-      printf( "%s\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Error appending data to end of existing file\n" );
+      if (globals.debugging) foutput( "%s\n", ERR "Error appending data to end of existing file\n" );
+      if (globals.debugging) foutput( INF "%d characters were written out of %d\n", count, complement);
+      if (globals.debugging) foutput( "%s\n", ERR "Error appending data to end of existing file\n" );
 
       if (isok()) return(FAIL);
     }
   return(BAD_DATA);
 }
 
-
-
-
 int check_sample_count(WaveData *info, WaveHeader *header)
 {
-
-
   int r=0;
 
-  if ((r=header->data_size % header->byte_p_spl) 	== 0)
+  if ((r=header->data_cksize % header->nBlockAlign) 	== 0)
     return(GOOD_HEADER);
 
-   info->padbytes+=header->byte_p_spl - r;
-   header->data_size+=info->padbytes;
-   header->chunk_size+=info->padbytes;
+   info->padbytes+=header->nBlockAlign - r;
+   header->data_cksize+=info->padbytes;
+   header->ckSize+=info->padbytes;
 
   return(BAD_DATA);
 }
 
+#if 0
 /*********************************************************************
  Function: readjust_sizes
 
@@ -96,126 +92,74 @@ int check_sample_count(WaveData *info, WaveHeader *header)
            updated information.
 *********************************************************************/
 
-_Bool check_real_size(WaveData *info, WaveHeader *header)
+void check_real_size(WaveData *info, WaveHeader *header)
 {
-  uint64_t size=0;
-  char* filepath=NULL;
-  FILE* file=NULL;
-  FILE* infile=info->INFILE;
-  FILE* outfile=info->OUTFILE; 
 
   /* get the new file statistics, depending on whether there were changes or not */
   /* stat needs a newly opened file to tech stats */
 
 
-  if (! info->in_place &&  info->repair != GOOD_HEADER && ! info->virtual)
-  {
-      filepath=info->outfile;
-      file = outfile;
-  }
-  else
-  {
-      filepath=info->infile;
-      file = infile;
-  }
+  S_OPEN(info->outfile, "rb+")
 
-  if (file)
-  {
-//      if (fclose(file) == EOF)
-//            {
+  _Bool pad_byte = (header->ckSize % 2 == 1);
 
-//              fprintf(stderr, "%s\n", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  fclose error: issues may arise.");
-//              return(false);
-//            }
-  }
-
-  secure_open(filepath, "rb", file);
-  size=read_file_size(file, filepath);
+  uint32_t size = stat_file_size(filename(info->outfile));
 
   /* adjust the Chunk Size */
-  if (header->chunk_size == (uint32_t) size - 8)
+  if (header->ckSize ==  size - 8 - (int) pad_byte)
   {
-    if (globals.debugging)
-      printf("%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Verifying real chunk size on disc... OK");
+      if (globals.debugging) foutput("%s\n", MSG_TAG "Verifying real chunk size on disc... OK");
   }
   else
   {
-      if (globals.debugging) printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Verifying real chunk size on disc... fixed:\n       expected size: %u, real size: %lu\n", header->chunk_size+8, size );
-      header->chunk_size = (uint32_t) size - 8 ; // if prepending, chunk_size was computed as the full size of raw file -8 bytes to which one must add the size of new header
+      if (globals.debugging) foutput(INF "Verifying real chunk size on disc... fixed:\n       expected size: %u, real size: %" PRIu64 "\n", header->ckSize + 8 + (int) pad_byte, size);
+      header->ckSize = (uint32_t) size - 8 ; // if prepending, ckSize was computed as the full size of raw file -8 bytes to which one must add the size of new header. Possible pad byte considered audio.
   }
 
-  if (header->data_size == (uint32_t) size - header->header_size_out)
+  if (header->data_cksize == (uint32_t) filesize(info->outfile) - header->header_size_out - (int) (header->data_cksize % 2 == 1))
   {
       if (globals.debugging)
-        printf("%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Verifying real data size on disc... OK");
+        foutput("%s\n", MSG_TAG "Verifying real data size on disc... OK");
   }
   else
   {
-      if (globals.debugging) printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Verifying real data size on disc... fixed:\n       header size: %d, expected size: %u, real size: %lu\n", header->header_size_out, header->data_size+header->header_size_out, size );
-      header->data_size = (uint32_t) size - header->header_size_out ;  // if prepending, data_size was computed as the full size of raw file hence this new size minus HEADER_SIZE
+      if (globals.debugging) foutput(INF "Verifying real data size on disc... fixed:\n       header size: %d, expected size: %u, real size: %" PRIu64 "\n", header->header_size_out,
+                                     header->data_cksize + header->header_size_out + (int) (header->data_cksize % 2 == 1),
+                                     size);
+
+      header->data_cksize = (uint32_t) size - header->header_size_out ;  // if prepending, data_cksize was computed as the full size of raw file hence this new size minus HEADER_SIZE
   }
 
-
-   return(false);
-
 }
+#endif
 
-
-/****************************************************************************
- Function: check_envenness
-
- Purpose:  This function adds one padding byte to the end of the data chunk
-		   should the byte count be odd.
-***************************************************************************/
-
-
-/* all RIFF chunks (including WAVE "data" chunks) must be word aligned.
-* If the sample data uses an odd number of bytes, a padding byte with a value of zero
-* must be placed at the end of the sample data. The "data" chunk header's size should not include this byte.*/
-
-
-int check_evenness(WaveData *info, WaveHeader *header)
-{
-
-  if (header->data_size %2)
-    {
-      printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Readjusting output file to even byte count...");
-
-      header->data_size++;
-      header->chunk_size++;
-      info->padbytes+=1;
-
-      return(BAD_DATA);
-    }
-
-  return GOOD_HEADER;
-
-}
-
-int prune(FILE* infile, WaveData *info, WaveHeader *header)
+int prune(WaveData *info, WaveHeader *header)
 {
 
   uint8_t p=0;
   uint32_t count=-1;
   uint64_t size=0;
 
-  errno=0;
-  size=read_file_size(infile, info->infile);
+ S_OPEN(info->infile, "rb+")
 
   if (errno)
-     perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Could not state file size\n");
+  {
+     perror("\n"ERR "Could not state file size\n");
+     return FAIL;
+  }
 
 // Count ending zeros to be pruned
-  if (end_seek(infile) == FAIL) return(FAIL);
+
+  if (end_seek(info->infile.fp) == FAIL)
+      return(FAIL);
+
   do
     {
-      if (fseek(infile, -1, SEEK_CUR) == -1) return(FAIL);
-      if (fread(&p, 1, 1, infile) != 1) return(FAIL);
-#ifndef __WIN32__
-      if (globals.debugging) printf("  Offset %"PRIu64"  : %"PRIu8" \n", (uint64_t) ftello(infile), p );
-#endif
-      if (fseek(infile, -1, SEEK_CUR) == -1) return(FAIL);
-      count++;
+      if (fseek(info->infile.fp, -1, SEEK_CUR) == -1) return(FAIL);
+      if (fread(&p, 1, 1, info->infile.fp) != 1) return(FAIL);
+      if (globals.debugging)  foutput("  Offset %"PRIu64"  : %"PRIu8" \n", (uint64_t) ftello(info->infile.fp), p );
+      if (fseek(info->infile.fp, -1, SEEK_CUR) == -1) return(FAIL);
+      ++count;
 
     }
   while (p == 0);
@@ -223,14 +167,14 @@ int prune(FILE* infile, WaveData *info, WaveHeader *header)
   if (count > 0)
     {
 
-      printf(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Pruning file: -%"PRIu32" bytes at: %"PRIu32"\n", count, header->chunk_size + 8 -count );
+      if (globals.debugging) foutput(INF "Pruning file: -%"PRIu32" bytes at: %"PRIu32"\n", count, header->ckSize + 8 - count );
       uint64_t offset;
 
 //  Under Windows API, pruning from end of file
 //  otherwise truncate takes full size as an argument
 
-#ifdef __WIN32__
-      if (info->in_place) fclose(infile);
+#if defined __WIN32__ || defined _WIN32 || defined __WIN32 || defined _WIN64 || defined __WIN64
+      if (info->in_place) fclose(info->infile.fp);
       offset=-count;
 #else
       offset=size -count;
@@ -238,15 +182,15 @@ int prune(FILE* infile, WaveData *info, WaveHeader *header)
 #endif
       // Truncating only if changes made in place, otherwise truncations results from incomplete copying at Checkout stage
 
-      if ((info->in_place) && (truncate_from_end(info->infile, offset) == -1))
+      if ((info->in_place) && (truncate_from_end(filename(info->infile), offset) == -1))
         {
-          perror("\n"ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  truncate error\n");
+          perror("\n"ERR "truncate error\n");
           return(info->repair=FAIL);
         }
 
-      printf("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Readjusting byte count...");
-      header->chunk_size-=count;
-      header->data_size-=count;
+      if (globals.debugging) foutput("%s\n", INF "Readjusting byte count...");
+      header->ckSize-=count;
+      header->data_cksize-=count;
       info->prunedbytes=count;
 
       return(info->repair=BAD_DATA);
