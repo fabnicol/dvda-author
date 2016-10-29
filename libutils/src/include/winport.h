@@ -8,63 +8,19 @@
 #include <sys/types.h>
 #include <stdint.h>
 #include <stdio.h>
-#ifndef MKDIR
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(_WIN64) || defined(_WIN32) || defined(__WIN32) || defined (__WIN64)
 #include <tchar.h>
 #include <windows.h>
 #include <sys/stat.h>
 #include <string.h>
-#endif
 
 #ifndef __MINGW32__
 #include <sys/resource.h>
 #endif
 #else
 #include <sys/stat.h>
-
 #endif
 
-
-#if (defined(__WIN32__) || defined(_WIN64) || defined(_WIN32) || defined(__WIN32) || defined (__WIN64)) && ! defined __MSYS__
-
- inline static uint64_t stat_file_size(const char* filename)
-{
-     HANDLE hFile;
-
-     hFile = CreateFile(filename,                // name of the write
-                       GENERIC_WRITE,          // open for writing
-                       0,                      // do not share
-                       NULL,                   // default security
-                       OPEN_EXISTING,         // existing file only
-                       FILE_ATTRIBUTE_NORMAL,  // normal file
-                       NULL);                  // no attr. template
-    if (hFile == INVALID_HANDLE_VALUE)
-    {
-        CloseHandle(hFile);
-        return(0);
-    }
-
-    BOOL result=0;
-
-    LARGE_INTEGER move, distance;
-    PLARGE_INTEGER Distance=&distance;  // signed 64-bit type (*int64_t)
-
-    move.QuadPart=0;
-    result=SetFilePointerEx(hFile, move, Distance, FILE_END );
-
-    CloseHandle(hFile);
-    if (!result)
-    {
-            return(0);
-    }
-    return((uint64_t) distance.QuadPart);
-}
-
-
-int truncate_from_end(TCHAR*filename, uint64_t offset);
-uint64_t read_file_size(FILE* fp, TCHAR* filename);
-
-#else
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -120,12 +76,13 @@ uint64_t read_file_size(FILE* fp, TCHAR* filename);
 
     file_size = ftello(fp);
 
+    fclose(fp);
+
     if (file_size == -1)
     {
       perror(ANSI_COLOR_RED "[ERR]");
       return 0;
     }
-
 
     return (uint64_t) file_size;
 }
@@ -133,5 +90,20 @@ uint64_t read_file_size(FILE* fp, TCHAR* filename);
 uint64_t read_file_size(FILE * fp, const char* filename);
 int truncate_from_end(char* filename, uint64_t offset);
 #endif
+
+
+#ifndef S_OPEN
+#  define S_OPEN(X, Y) {  if (file_exists(X.filename) && ! X.isopen) \
+                           {\
+                              if (! X.filesize) X.filesize =  stat_file_size(X.filename); \
+                              X.fp = fopen(X.filename, Y); \
+                              X.isopen = (X.fp != NULL); } }
+
+#  define S_CLOSE(X) { if (X.isopen && X.fp != NULL) \
+                           { \
+                            fclose(X.fp); \
+                            X.isopen = false; \
+                            X.fp = NULL; \
+                         } }
 
 #endif // WINPORT_H_INCLUDED

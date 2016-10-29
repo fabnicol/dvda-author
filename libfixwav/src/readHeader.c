@@ -43,7 +43,7 @@ int readHeader(FILE * infile, WaveHeader *header)
 
   if  (count != header->header_size_in)
     {
-      fprintf(stderr, ANSI_COLOR_RED "\n[ERR]" ANSI_COLOR_RESET "  Failed to read header from input file\n       Size is: %d, read: %lu bytes\n", header->header_size_in, count );
+      if (globals.debugging) foutput(ERR "Failed to read header from input file\n       Size is: %d, read: %" PRIu64 " bytes\n", header->header_size_in, count );
 
       return(FAIL);
     }
@@ -141,29 +141,31 @@ Extended Wav:
 #define READ_2_bytes uint16_read_reverse(p), p+=2;
 
   /* RIFF chunk */
-/* 0-3 */   header->chunk_id    =READ_4_bytes
-/* 4-7 */   header->chunk_size  =READ_4_bytes
-/* 8-11 */  header->chunk_format=READ_4_bytes
+/* 0-3 */   header->ckID    =READ_4_bytes
+/* 4-7 */   header->ckSize  =READ_4_bytes
+/* 8-11 */  header->WAVEID=READ_4_bytes
 
 /* FORMAT chunk */
-/* 12-15 */ header->sub_chunk= READ_4_bytes
-/* 16-19 */ header->sc_size  = READ_4_bytes
-/* 20-21 */ header->sc_format= READ_2_bytes
+/* 12-15 */ header->fmt_ckID= READ_4_bytes
+/* 16-19 */ header->fmt_ckSize  = READ_4_bytes
+/* 20-21 */ header->wFormatTag= READ_2_bytes
 /* 22-23 */ header->channels = READ_2_bytes
-/* 24-27 */ header->sample_fq= READ_4_bytes
-/* 28-31 */ header->byte_p_sec=READ_4_bytes
-/* 32-33 */ header->byte_p_spl=READ_2_bytes
-/* 34-35 */ header->bit_p_spl =READ_2_bytes
+/* 24-27 */ header->dwSamplesPerSec
+= READ_4_bytes
+/* 28-31 */ header->nAvgBytesPerSec=READ_4_bytes
+/* 32-33 */ header->nBlockAlign=READ_2_bytes
+/* 34-35 */ header->wBitsPerSample =READ_2_bytes
 
 /* We diagnosed for WAV_FORMAT_EXTENSIBLE earlier */
 
 if (header->is_extensible)
 {
-/* 36-37 +22*/ header->wavext =READ_2_bytes
+/* 36-37 +22*/ header->cbSize =READ_2_bytes
 
 /* skipping extension subchunk */
-
- p += header->wavext; // 0 or 22
+ p +=2;
+ header->dwChannelMask = READ_4_bytes
+ p += header->cbSize - 6; // 0 or 22
 }
 
 /* fact and data chunks were previouslt parsed */
@@ -178,7 +180,7 @@ if (header->has_fact)
     // loop for 'data' chunk
 }
 
-/* 40-43 or 54-57 +22*/ header->data_size= uint32_read_reverse(buffer + header->header_size_in - 4);
+/* 40-43 or 54-57 +22*/ header->data_cksize= uint32_read_reverse(buffer + header->header_size_in - 4);
 
   /* point to beginning of file */
   rewind(infile);
@@ -186,8 +188,8 @@ if (header->has_fact)
   /* and dump the header */
   if (globals.veryverbose)
   {
-      printf( "%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Existing header data.\n"ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Looking for the words 'RIFF', 'WAVE', 'fmt'," );
-      printf( "%s\n", "       or 'data' to see if this is even a somewhat valid WAVE header:" );
+      if (globals.debugging) foutput( "%s\n", MSG_TAG "Existing header data.\n" INF "Looking for the words 'RIFF', 'WAVE', 'fmt'," );
+      if (globals.debugging) foutput( "%s\n", "       or 'data' to see if this is even a somewhat valid WAVE header:" );
       hexdump_header(infile, header->header_size_in);
   }
 

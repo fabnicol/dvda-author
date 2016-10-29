@@ -65,16 +65,16 @@ typedef struct
     uint32_t last_sector;
     // L&T Feldkamp addition (multichannel)
     uint32_t lpcm_payload;
-    uint32_t firstpackdecrement;
+    uint8_t firstpackdecrement;
     uint32_t SCRquantity;
     uint32_t firstpack_audiopesheaderquantity;
     uint32_t midpack_audiopesheaderquantity;
     uint32_t lastpack_audiopesheaderquantity;
-    uint32_t firstpack_lpcm_headerquantity;
-    uint32_t midpack_lpcm_headerquantity;
-    uint32_t lastpack_lpcm_headerquantity;
-    uint32_t firstpack_pes_padding;
-    uint32_t midpack_pes_padding;
+    uint8_t firstpack_lpcm_headerquantity;
+    uint8_t midpack_lpcm_headerquantity;
+    uint8_t lastpack_lpcm_headerquantity;
+    uint8_t firstpack_pes_padding;
+    uint8_t midpack_pes_padding;
     // L&T Feldkamp addition (multichannel)
     uint64_t numsamples;
     uint64_t numbytes; // theoretical file size
@@ -194,6 +194,7 @@ typedef struct
     char  *logfile;
     char  *indir;
     char  *outdir;
+    char  *outfile;
     char  *lplexoutdir;
     char  *workdir;
     char  *tempdir;
@@ -217,6 +218,7 @@ typedef struct
     _Bool enable_lexer;
     _Bool logfile;
     _Bool loghtml;
+    _Bool logdecode;
     _Bool videozone;
     _Bool videolinking;
     _Bool playlist;
@@ -252,6 +254,7 @@ typedef struct
     char* xml;
     char** spu_xml;
     char* cdrecorddevice;
+    char** aobpath;
     FILE *journal;
     uint16_t access_rights;
     defaults settings;

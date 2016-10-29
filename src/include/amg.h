@@ -34,6 +34,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include "audio2.h"
 #include "structures.h"
+#include "decode.h"
 
 uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *videotitlelength, uint32_t* relative_sector_pointer_VTSI,
                     uint8_t *numtitles, uint8_t** ntitletracks, uint64_t** titlelength);
@@ -43,3 +44,4 @@ int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles
 void allocate_topmenus(command_t *command);
 
 #endif
+
