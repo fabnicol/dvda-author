@@ -58,7 +58,7 @@ int read_tracks(char  *full_path, uint8_t *ntracks, char * parent_directory, cha
         }
     else
     {
-        foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Error: Too many input files specified - group %d, track %d\n",ngroups_scan,ntracks[ngroups_scan]);
+        foutput(MSG_TAG "Error: Too many input files specified - group %d, track %d\n",ngroups_scan,ntracks[ngroups_scan]);
         clean_exit(EXIT_SUCCESS);
     }
 
@@ -80,7 +80,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
     int totng;
     int ng = 0;
 
-    if (globals.debugging) foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Parsing audio input directory");
+    if (globals.debugging) foutput("%s\n", INF "Parsing audio input directory");
 
 
     while ((rootdirent=readdir(dir) )!= NULL)
@@ -89,7 +89,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
 
         if (ng > (MAX_GROUPS-1))
         {
-            foutput("%s\n", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Warning: Too many groups ( > 9 ) specified in directory, rest ignored.");
+            foutput("%s\n", MSG_TAG "Warning: Too many groups ( > 9 ) specified in directory, rest ignored.");
             break;
         }
         strcpy(gnames[ng], rootdirent->d_name);
@@ -110,13 +110,13 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
         ngroups_scan= atoi(gnames[ng]+1);
 
         if ((ngroups_scan > MAX_GROUPS) || (ngroups_scan < 1))
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Subdirectories must be labelled ljm, with l, m any letters and j a number of 1 - 9")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Subdirectories must be labelled ljm, with l, m any letters and j a number of 1 - 9")
 
             change_directory(gnames[ng]);
 
         DIR *subdir;
         if ((subdir=opendir(".")) == NULL)
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Input directory could not be opened")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Input directory could not be opened")
 
 
             struct dirent * subdirent;
@@ -140,7 +140,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
 
             if (nt > (MAX_GROUP_ITEMS-1))
             {
-                foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Warning: Too many input files (>99) specified in group %d, rest ignored.\n",ngroups_scan);
+                foutput(MSG_TAG "Warning: Too many input files (>99) specified in group %d, rest ignored.\n",ngroups_scan);
                 break;
             }
 
@@ -160,12 +160,12 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
         cgafile=fopen(CGA_FILE, "rb");
         if (cgafile != NULL)
         {
-            if (globals.debugging) foutput("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Channel assignment file was opened\n");
+            if (globals.debugging) foutput("%s", MSG_TAG "Channel assignment file was opened\n");
             read_cga_file=1;
         }
         else
         {
-            if (globals.debugging) foutput("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  Automatic channel assignment.\n");
+            if (globals.debugging) foutput("%s", MSG_TAG "Automatic channel assignment.\n");
         }
 
 
@@ -191,7 +191,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
                 read_tracks(buf, ntracks, gnames[ng], tnames[nt], ngroups_scan);
 
                 if (globals.debugging)
-                    foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Copying directory files[%d][%d]\n", n_g_groups+ngroups_scan-1, ntracks[n_g_groups+ngroups_scan-1]-1);
+                    foutput(INF "Copying directory files[%d][%d]\n", n_g_groups+ngroups_scan-1, ntracks[n_g_groups+ngroups_scan-1]-1);
 
                 // reads in filenames
                 memmove(files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].filename, buf, CHAR_BUFSIZ);
@@ -204,7 +204,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
 
                     if (NULL == fgets(cga, 3, cgafile))
                     {
-                        perror(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  fgets");
+                        perror(ERR "fgets");
                         clean_exit(EXIT_FAILURE);
                     }
 
@@ -216,7 +216,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
                         files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgaint;
                     else
                     {
-                        if (globals.debugging) foutput("%s", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Found illegal channel group assignement value, using standard settings.");
+                        if (globals.debugging) foutput("%s", ERR "Found illegal channel group assignement value, using standard settings.");
                         files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgadef[files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].channels-1];
                     }
                 }
@@ -235,12 +235,12 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
         ng++;
     }
 
-    if (action != READTRACKS) foutput(ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  %d groups/subdirectories were parsed; ngroups=%d\n", control, ngroups);
+    if (action != READTRACKS) foutput(MSG_TAG "%d groups/subdirectories were parsed; ngroups=%d\n", control, ngroups);
 
     /* Controlling for contiguousness of ngroups_scan values; a crash may occur if not ensured; letting it go however */
 
     /* with sort, the above comment and the next code could be removed. */
-    if (ngroups != control) foutput("%s", ""ANSI_COLOR_RED"[WAR]"ANSI_COLOR_RESET"  Critical -- Groups are not labelled contiguously (g1, ... ,gn).\n");
+    if (ngroups != control) foutput("%s", WAR "Critical -- Groups are not labelled contiguously (g1, ... ,gn).\n");
 
     audiodir.ngroups=ngroups+n_g_groups;
     audiodir.ntracks=ntracks;
@@ -280,7 +280,7 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract, const char* player)
     struct dirent *rootdirent;
 
     if ((globals.debugging)&& (!globals.nooutput))
-        foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Extracting to %s\n", globals.settings.outdir);
+        foutput(INF "Extracting to %s\n", globals.settings.outdir);
 
 
     while ((rootdirent=readdir(dir) )!= NULL)
@@ -291,7 +291,7 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract, const char* player)
         // duplicating is necessary as strtok alters its first argument
 
         if (d_name_duplicate == NULL)
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  strdup error while parsing disk")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "strdup error while parsing disk")
 
             // filenames must end in "_0.IFO" and begin in "ATS_"
             if (strcmp(strtok(d_name_duplicate , "_"), "ATS")) continue;
@@ -320,12 +320,12 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract, const char* player)
         FREE(d_name_duplicate)
 
 
-        char  MSG[11]="Extracting";
+        char  mesg[11]="Extracting";
         if (player)
-            strcpy(MSG,"Playing");
+            strcpy(mesg,"Playing");
 
         if ((globals.debugging)&& (!globals.nooutput))
-          foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  %s%s%s%s",MSG," titleset ", rootdirent->d_name," ...\n");
+          foutput(INF "%s%s%s%s",mesg," titleset ", rootdirent->d_name," ...\n");
 
         char output_buf[strlen(globals.settings.outdir) + 3 + 1];
 
@@ -336,7 +336,7 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract, const char* player)
                 secure_mkdir(output_buf, mode);
 
             if ((globals.debugging)&& (!globals.nooutput))
-                foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Extracting to directory %s ...\n", output_buf);
+                foutput(INF "Extracting to directory %s ...\n", output_buf);
         }
         else
             STRING_WRITE_CHAR_BUFSIZ(output_buf, "%s", globals.settings.tempdir )
@@ -346,12 +346,12 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract, const char* player)
                 control++;
                 if  (globals.debugging)
                 if (player == NULL)
-                    foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Extraction completed.");
+                    foutput("%s\n", INF "Extraction completed.");
             }
             else
             {
-                if (player == NULL) foutput(ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Error extracting audio in titleset %d\n", ngroups_scan);
-                else   foutput("%s", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Error playing audio.\n");
+                if (player == NULL) foutput(INF "Error extracting audio in titleset %d\n", ngroups_scan);
+                else   foutput("%s", INF "Error playing audio.\n");
                 continue;
             }
 
@@ -362,13 +362,13 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract, const char* player)
         switch (control)
         {
         case 1:
-            foutput("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  One group was extracted/played.\n");
+            foutput("%s", MSG_TAG "One group was extracted/played.\n");
             break;
         case 0:
-            foutput("%s", ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  No group was extracted/played.\n");
+            foutput("%s", MSG_TAG "No group was extracted/played.\n");
             break;
         default:
-            foutput("\n"ANSI_COLOR_GREEN"[MSG]"ANSI_COLOR_RESET"  %d groups were extracted/played.\n", control);
+            foutput("\n" MSG_TAG "%d groups were extracted/played.\n", control);
         }
 
 

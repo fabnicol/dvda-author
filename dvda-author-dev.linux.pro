@@ -19,7 +19,7 @@ linux:LIBS +=   -lFLAC -logg  -lsox  -lid3tag -lz -lsndfile  -lpulse -lpulse-sim
 
 CONFIG(release, debug|release) {
 LIBS +=   -s
-QMAKE_CFLAGS=-march=native -O3
+QMAKE_CFLAGS=-march=native -O3 -Wno-unused-result
 }
 
 
@@ -142,6 +142,7 @@ HEADERS += \
     src/include/videoimport.h \
     src/include/xml.h \
     libutils/src/include/c_utils.h \
+    libutils/src/include/decode.h \
     libutils/src/include/export.h \
     libutils/src/include/format.h \
     libutils/src/include/libiberty.h \
