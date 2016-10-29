@@ -54,4 +54,5 @@ command_t *scan_wavfile_audio_characteristics(command_t *command);
 void read_defaults();
 
 
+int calc_info(fileinfo_t* info);
 #endif

@@ -17,7 +17,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-//#ifndef WITHOUT_sox
+#ifndef WITHOUT_sox
 #include <sox.h>
 #include <stdio.h>
 #include <errno.h>
@@ -38,13 +38,13 @@ extern globalData globals;
 
 #if ((SOX_LIB_VERSION_CODE >>8 & 0xff) < 3)
 #error ---------------------------------------------------------------------------------
-#error "ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET" Build: SoX lib is too old --  version must be higher or equal to 14.3.0.
+#error "ERR "Build: SoX lib is too old --  version must be higher or equal to 14.3.0.
 #error       Either reinstall new lib or build from source code with --enable-sox-patch.
 #error ---------------------------------------------------------------------------------
 #endif
 
 // arcane issue with assert() that justifies this workaround
-#define check(X) if ((X)==0) foutput("%s%d\n", ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  SoX runtime failure, stage ", stage)
+#define check(X) if ((X)==0) foutput("%s%d\n", ERR "SoX runtime failure, stage ", stage)
 
 int soxconvert(char * input, char* output)
 {
@@ -57,7 +57,7 @@ int soxconvert(char * input, char* output)
   char * args[10];
 
 
-   foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Converting file");
+   foutput("%s\n", INF "Converting file");
 
   /* All libSoX applications must start by initialising the SoX library */
   check(sox_format_init() == SOX_SUCCESS); stage++;
@@ -99,7 +99,7 @@ int soxconvert(char * input, char* output)
 
   sox_flow_effects(chain, NULL, NULL);
 
-  foutput("%s\n", ANSI_COLOR_BLUE"[INF]"ANSI_COLOR_RESET"  Exiting SoX...");
+  foutput("%s\n", INF "Exiting SoX...");
   /* All done; tidy up: */
   sox_delete_effects_chain(chain);
 
@@ -110,4 +110,4 @@ int soxconvert(char * input, char* output)
   return errno;
 }
 
-//#endif
+#endif

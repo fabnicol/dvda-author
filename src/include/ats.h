@@ -32,8 +32,25 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <stdint.h>
 
 #include "audio2.h"
+#include "decode.h"
 
 int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks);
 void pack_scr(uint8_t scr_bytes[6],uint64_t SCR_base, uint16_t SCR_ext);
 void pack_pts_dts(uint8_t PTS_DTS_data[10],uint32_t pts, uint32_t dts);
+int decode_ats();
+int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf);
+
+extern FILE* aob_log;
+
+#ifndef PACK_POSITION
+# define PACK_POSITION
+# define FIRST_PACK   0
+# define LAST_PACK    1
+# define MIDDLE_PACK  2
+# define END_OF_AOB 3
+# define VALID true
+# define NORMAL 0
+# define INVALID false
+#endif
+
 #endif

@@ -7,6 +7,7 @@
 # Dependencies: all files in m4/
 ######################################################################################################
 
+
 AC_INIT([dvda-author],[dev],[fabnicol@users.sourceforge.net])
 
 command_line_args="$*"
@@ -102,7 +103,7 @@ AC_ARG_WITH([debug],
 	[
 	  AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],
 	   [
-	     CFLAGS="-g0 -O3"
+             CFLAGS="-g0 -O3 -Wno-unused-result"
 		#exceptionally erasing -g and -O2 from user CFLAGS input
 		cflags_save=`echo $cflags_save | $SED "s/-g \(.*\)-O2/ \1/g"`
 	     LIBS="$LIBS -s"

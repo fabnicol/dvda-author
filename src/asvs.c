@@ -104,7 +104,7 @@ int loop=0;
 		    if (j) uint16_copy(&asvs[t], totpicsectors);
 		    t+=2;
 		    totpicsectors+=img->stillpicvobsize[j];     //pict [] is 0-based: pict[0] for first track
-		    if (totpicsectors > 1024) foutput(ANSI_COLOR_RED"\n[ERR]"ANSI_COLOR_RESET"  Exceeding stillpic buffer limit (2 MB) at pict #%d.\n", j);
+		    if (totpicsectors > 1024) foutput(ERR "Exceeding stillpic buffer limit (2 MB) at pict #%d.\n", j);
 		}
 		k+=4;
 		img->stillpicvobsize+=npics;
