@@ -77,7 +77,8 @@ inline static void decode_SCR(uint8_t* scr_bytes, uint64_t* SCRint_ptr)
 
     *SCRint_ptr = SCR_base * 300 + SCR_ext;
 
-    if (globals.logdecode) fprintf(aob_log, "NA;SCR_base;%" PRIu64 ";SCR_ext;%" PRIu64 ";SCR_int;%" PRIu64 "\n", SCR_base, SCR_ext, *SCRint_ptr);
+    if (globals.logdecode)
+        fprintf(aob_log, "INF;SCR_base: ;%" PRIu64 ";SCR_ext: ;%" PRIu64 ";SCR_int: ;%" PRIu64 ";\n", SCR_base, SCR_ext, *SCRint_ptr);
 }
 
 #if 0 // not used
@@ -131,7 +132,7 @@ inline static void decode_pts(uint8_t P[5], uint64_t* pts_ptr)
     *pts_ptr = (P[0] >> 1 & 0x3) << 30 | P[1] << 22 | (P[2] >> 1) << 15 | P[3] << 7 | P[4] >> 1;
 
     if (globals.logdecode)
-        fprintf(aob_log, "NA;PTS déc.;%" PRIu64 "\n", *pts_ptr);
+        fprintf(aob_log, "INF;PTS décode;%08X" PRIu64 ";;;;\n", *pts_ptr);
 }
 
 uint8_t pack_start_code[4]={0x00,0x00,0x01,0xBA};
@@ -579,7 +580,8 @@ inline static int read_lpcm_header(FILE* fp, fileinfo_t* info, int64_t pack_in_t
 
         if ((sample_rate[0] & 0xf) != 0xf)
         {
-            if (globals.logdecode) fprintf(aob_log, "%s", "NA;coherence_test;sample_rate and sample_size are incoherent (no 0xf lower nibble)\n");
+            if (globals.logdecode)
+                fprintf(aob_log, "%s", "ERR;coherence_test;sample_rate and sample_size are incoherent (no 0xf lower nibble);;;;;\n");
         }
 
     }
@@ -590,7 +592,7 @@ inline static int read_lpcm_header(FILE* fp, fileinfo_t* info, int64_t pack_in_t
 
         if ((sample_rate[0] & 0xf) != high_nibble)
         {
-            if (globals.logdecode) fprintf(aob_log, "%s", "NA;coherence_test;sample_rate and sample_size are incoherent (lower nibble != higher nibble)\n");
+            if (globals.logdecode) fprintf(aob_log, "%s", "ERR;coherence_test;sample_rate and sample_size are incoherent (lower nibble != higher nibble);;;;;\n");
         }
     }
 
@@ -611,12 +613,12 @@ inline static int read_lpcm_header(FILE* fp, fileinfo_t* info, int64_t pack_in_t
         if (info->channels <= 2)
         {
             if (unknown1[0] != 0x10)
-               fprintf(aob_log, "%s%d%s", "incorrect unknown1 lpcm header value: ", unknown1[0], " instead of expected 0x10.\n");
+               fprintf(aob_log, "%s%d%s", "ERR;incorrect unknown1 lpcm header value: ;", unknown1[0], "; instead of expected 0x10;;;;\n");
         }
     else
 
         if (unknown1[0] != 0)
-               fprintf(aob_log, "%s%d%s", "incorrect unknown1 lpcm header value: ", unknown1[0], " instead of expected 0.\n");
+               fprintf(aob_log, "%s%d%s", "ERR;incorrect unknown1 lpcm header value: ;", unknown1[0], "; instead of expected 0;;;;\n");
 
     }
 
@@ -656,21 +658,21 @@ ID\Chan 0   1   2   3   	4   5     info->channels
 
             if (header_length != info->firstpack_lpcm_headerquantity)
             {
-                if (globals.logdecode) fprintf(aob_log, "NA;info->firstpack_lpcm_headerquantity;Disk/Computed: %d;%d\n", header_length, info->firstpack_lpcm_headerquantity);
+                if (globals.logdecode) fprintf(aob_log, "WAR;info->firstpack_lpcm_headerquantity;Disk: ; %d; Computed: ; %d;;\n", header_length, info->firstpack_lpcm_headerquantity);
             }
             break;
 
         case  LAST_PACK:
             if (header_length != info->lastpack_lpcm_headerquantity)
             {
-                if (globals.logdecode) fprintf(aob_log, "NA;info->lastpack_lpcm_headerquantity;Disk/Computed: %d;%d\n", header_length, info->lastpack_lpcm_headerquantity);
+                if (globals.logdecode) fprintf(aob_log, "WAR;info->lastpack_lpcm_headerquantity;Disk: ;%d; Computed: ; %d;;\n", header_length, info->lastpack_lpcm_headerquantity);
             }
             break;
 
         case  MIDDLE_PACK:
             if (header_length != info->midpack_lpcm_headerquantity)
             {
-                if (globals.logdecode) fprintf(aob_log, "NA;info->midpack_lpcm_headerquantity;Disk/Computed: %d;%d\n", header_length, info->midpack_lpcm_headerquantity);
+                if (globals.logdecode) fprintf(aob_log, "WAR;info->midpack_lpcm_headerquantity;Disk: ; %d; Computed: ; %d;;\n", header_length, info->midpack_lpcm_headerquantity);
             }
     }
 
@@ -691,13 +693,13 @@ ID\Chan 0   1   2   3   	4   5     info->channels
     if (first_access_unit_pointer[0] != (frame_offset & 0xff00) >> 8)
     {
         foutput("%s\n", "first_access_unit_pointer: inaccurate bit 0");
-        if (globals.logdecode) fprintf(aob_log, "NA;first_access_unit_pointer byte 0 inaccurate; %d instead of %d\n", first_access_unit_pointer[0], (frame_offset & 0xff00) >> 8);
+        if (globals.logdecode) fprintf(aob_log, "ERR;first_access_unit_pointer byte 0 inaccurate; %d ; instead of;  %d;;;\n", first_access_unit_pointer[0], (frame_offset & 0xff00) >> 8);
     }
 
     if (first_access_unit_pointer[1] != (frame_offset & 0xff))
     {
         foutput("%s\n", "first_access_unit_pointer: inaccurate bit 1");
-        if (globals.logdecode) fprintf(aob_log, "NA;first_access_unit_pointer byte 1 inaccurate; %d instead of %d\n", first_access_unit_pointer[1], frame_offset & 0xff);
+        if (globals.logdecode) fprintf(aob_log, "ERR;first_access_unit_pointer byte 1 inaccurate; %d ; instead of; %d;;;\n", first_access_unit_pointer[1], frame_offset & 0xff);
     }
 
     /* offset_count += */   CHECK_FIELD(unknown3);
@@ -981,7 +983,7 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
     if (globals.logdecode)
     {
         open_aob_log();
-        fprintf(aob_log, "NA;Reading %s packet - pack;%"PRIu64";title;%d\n",
+        fprintf(aob_log, ";;;;;;;\nNEW;Reading; %s ; packet - pack;%"PRIu64";title;%d;\n",
                 POS,
                 pack_in_title,
                 title);
@@ -1015,8 +1017,8 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
         if (globals.logdecode)
         {
             open_aob_log();
-            fprintf(aob_log, "NA;header_length issue in read_lpcm_header at pack %" PRIu64 ", position %d\n", pack_in_title, position);
-            fprintf(aob_log, "NA;header_length %d, expected: %" PRIu64 "\n", header_length, offset1 - offset - 18 - (position == FIRST_PACK ? 3 : 0));
+            fprintf(aob_log, "ERR;header_length issue in read_lpcm_header at pack: ; %" PRIu64 "; position %d;;;;\n", pack_in_title, position);
+            fprintf(aob_log, "ERR;header_length: ; %d; expected: %" PRIu64 ";;;;\n", header_length, offset1 - offset - 18 - (position == FIRST_PACK ? 3 : 0));
             close_aob_log();
         }
     }
@@ -1038,7 +1040,7 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
                 {
                     open_aob_log();
                     fprintf(aob_log,
-                            "NA;firstpack_audiopesheaderquantity issue in read_audio_pes_header at pack %" PRIu64 ", title %d, position %d\n",
+                            "ERR;firstpack_audiopesheaderquantity issue in read_audio_pes_header at pack: ; %" PRIu64 "; title: ;%d; position: ;%d;\n",
                             pack_in_title,
                             title,
                             position);
@@ -1088,7 +1090,7 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
         if (globals.logdecode)
         {
             open_aob_log();
-            fprintf(aob_log, "NA;PTS issue at pack %" PRIu64 ", position %d. Disc/Computed:;%" PRIu64 ";%" PRIu64 "\n",
+            fprintf(aob_log, "ERR;PTS issue at pack: ; %" PRIu64 "; position: %d; Disc: ;%" PRIu64 "; Computed: ;%" PRIu64 "\n",
                     pack_in_title,
                     position,
                     PTS,
@@ -1104,7 +1106,7 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
         if (globals.logdecode)
         {
             open_aob_log();
-            fprintf(aob_log, "NA;SCR issue at pack %" PRIu64 ", position %d. Disc/Computed:;%" PRIu64 ";%" PRIu64 "\n",
+            fprintf(aob_log, "ERR; SCR issue at pack: ; %" PRIu64 "; position: %d; Disc: ;%" PRIu64 "; Computed: ;%" PRIu64 "\n",
                     pack_in_title,
                     position,
                     SCR,
