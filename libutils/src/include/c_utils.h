@@ -76,7 +76,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define MAX_LIST_SIZE   64
 #endif
 
-#define HEX_COLUMNS 16
+#define HEX_COLUMNS 8
 #define FAIL 10
 
 #define PAD 1
