@@ -1824,8 +1824,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
         case 24:
 #if HAVE_lplex || HAVE_lplex_BUILD
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Will create minimal hybrid disk.");
-            foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Mirroring strategy: %s\n","high");
+            foutput("%s\n", ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET"  Will create minimal hybrid disk.");
+            foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET"  Mirroring strategy: %s\n","high");
             hybridate_flag=1;
 #else
             foutput("%s", ERR "Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
@@ -1834,8 +1834,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
         case 25:
 #if HAVE_lplex || HAVE_lplex_BUILD
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Will create full hybrid disk.");
-            foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Mirroring strategy: %s\n","high");
+            foutput("%s\n", ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET"  Will create full hybrid disk.");
+            foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET"  Mirroring strategy: %s\n","high");
             full_hybridate_flag=1;
 #else
             foutput("%s", ERR "Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
@@ -1843,7 +1843,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case 27:
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Decode disk and log MPEG specifics.");
+            foutput("%s\n", ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET"  Decode disk and log MPEG specifics.");
             globals.logdecode = true;
             globals.aobpath = (char**) calloc(1, sizeof(char *));
             if (globals.aobpath)
@@ -1853,7 +1853,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case 28:
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Extracting AOB to raw wav: ", optarg);
+            foutput("%s%s\n", ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET"  Extracting AOB to raw wav: ", optarg);
             aob2wav_parsing(optarg);
             break;
 
