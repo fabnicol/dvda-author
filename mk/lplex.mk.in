@@ -9,7 +9,7 @@ ifeq "@HAVE_automake@" "yes"
 ifeq "@HAVE_autoconf@" "yes"
 ifeq "@HAVE_libtoolize@" "yes"
 
-@BUILDDIR@/depconf/dvdauthor.depconf: $(lplex_DEPENDENCY)
+@BUILDDIR@/depconf/lplex.depconf: $(lplex_DEPENDENCY)
 	 $(if $(MAYBE_lplex),
 	  if test -d @ROOTDIR@/$(MAYBE_lplex) ; then
 	   cd @ROOTDIR@/$(MAYBE_lplex) && $(SHELL) -c "autoreconf -if -Im4 -Iredist" 
