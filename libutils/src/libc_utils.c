@@ -1911,11 +1911,11 @@ void hex2file(FILE* out, uint8_t* tab,  size_t tabsize)
     {
 //        /* Print the base address. */
 
-//        fprintf(out,"%08lX:  ", (long unsigned)count);
+
         input= Min(tabsize - count, HEX_COLUMNS);
 
         for (i = 0; i < input; i++)
-            fprintf(out, "%02X ", tab[i+count]);
+            fprintf(out, "%02X ;", tab[i+count]);
 
         count += HEX_COLUMNS;
 
@@ -1924,7 +1924,7 @@ void hex2file(FILE* out, uint8_t* tab,  size_t tabsize)
         fprintf(out, "%s", " | ");
 
         for (i = 0; i < HEX_COLUMNS; i++)
-            fprintf(out,"%c", (i < input)? (isprint(tab[i]) ? tab[i] : '.') : ' ');
+            fprintf(out,"%c%c", (i < input)? (isprint(tab[i]) ? tab[i] : '.') : ' ', ';');
 
        /* break on partial buffer */
     }
@@ -1939,7 +1939,7 @@ void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* 
     {
         if (globals.logdecode)
         {
-            fprintf(log, "SECTOR OVERFLOW at %" PRIu64 ";%s;size read;%d;exceeds by;%d\n", offset, label, size, (int) offset % 2048 + size - 2048);
+            fprintf(log, "ERR;SECTOR OVERFLOW at: %08X" PRIu64 ";%s;size read;%d;exceeds by;%d\n", offset, label, size, (int) offset % 2048 + size - 2048);
             fread(tab__, size,1,fp);
             hex2file(log, tab__, size);
             fprintf(log, "%s", "\n");
@@ -1952,17 +1952,21 @@ void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* 
 
     /* offset_count += */   fread(tab__, size,1,fp);
 
-    if (globals.logdecode) fprintf(log, "%" PRIu64 ";%s;", offset, label);
-    if (! globals.logdecode) return;
+
     if (memcmp(tab__, tab, size) == 0)
     {
-        fprintf(log, "%s", "OK\n");
+        if (globals.logdecode) fprintf(log, "OK ;%08X" PRIu64 ";%s;", offset, label);
+        else return;
+
     }
     else
     {
+        if (globals.logdecode) fprintf(log, "ERR;%08X" PRIu64 ";%s;", offset, label);
+        else return;
+
         if (write)
         {
-            fprintf(log, "%s", "Div: ");
+            fprintf(log, "%s", "Div:;;;; \n");
             hex2file(log, tab__, size);
             fprintf(log, "%s", ";instead of:;");
             hex2file(log, tab, size);
@@ -1974,13 +1978,16 @@ void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* 
 void rw_field(uint8_t* tab, int size,const char* label, FILE* fp, FILE* log)
 {
     uint64_t offset = ftello(fp);
-    /* offset_count += */   fread(tab, size,1,fp);
+
+    /* offset_count += */
+
+    fread(tab, size, 1, fp);
 
     if (! globals.logdecode) return;
-    fprintf(log, "%" PRIu64 ";%s;", offset, label);
-    hex2file(log, tab, size);
-    fprintf(log, "%s", "\n");
 
+    fprintf(log, "%08X" PRIu64 ";%s;;;;;;\n", offset, label);
+    hex2file(log, tab, size);
+    fprintf(log, "%s", ";;;;;;;\n");
 }
 
 
