@@ -5,5 +5,5 @@ mjpegtools_CONFIGSPEC=exe
 mjpegtools_TESTBINARY=mplex
 
 @BUILDDIR@/depconf/mjpegtools.depconf: $(mjpegtools_DEPENDENCY)
-	$(call depconf,mjpegtools,"",CFLAGS="")  
+	$(call depconf,mjpegtools)  
 	 
