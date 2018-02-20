@@ -1,0 +1,12 @@
+ 
+This package contains:
+
+- all source code, including build of dependencies in directory "external packages"
+- a linux build of all packages with dependencies under local/, with all developer files (headers, extra libs, docs etc.).
+  Dependencies have been patched when needed (dvdauthor, cdrtools)
+- a linux build of dvda-author-dev, using:
+
+ ./configure --enable-all-all; sudo make PARALLEL=-j4 (or without sudo with elevated rights)
+
+
+See file INSTALL for proper installation of dependencies.
