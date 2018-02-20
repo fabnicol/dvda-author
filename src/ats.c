@@ -1120,11 +1120,15 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
     /* offset_count+= audio_bytes */
 
     int result = fread(audio_buf, 1, audio_bytes,fp);
-    open_aob_log();
-    fprintf(aob_log, "NA;Read %d audio_bytes\n", result);
-    hex2file(aob_log, audio_buf, result > 16 ? 16 : result);
-    fprintf(aob_log, "%s", "\n");
-    close_aob_log();
+
+    if (globals.logdecode)
+    {
+        open_aob_log();
+        fprintf(aob_log, "INF;Read %d audio_bytes;;;;;;\n", result);
+        hex2file_csv(aob_log, audio_buf, result > 16 ? 16 : result);
+        //fprintf(aob_log, "%s", ";;;;;;;\n");
+        close_aob_log();
+    }
 
     // info->midpack_pes_padding + info->lpcm_payload + 38 + info->first/mid/last/pack_lpcm_headerquantity
 
@@ -1163,10 +1167,13 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
     }
 
     uint64_t sector_length = ftello(fp) - offset0;
-    open_aob_log();
-    fprintf(aob_log, "NA;midpack_lpcm_headerquantity;%d;midpack_pes_padding;%d;bitspersample;%d;samplerate;%d\n", info->midpack_lpcm_headerquantity, info->midpack_pes_padding,info->bitspersample, info->samplerate);
-    fprintf(aob_log, "NA;-----;%" PRIu64 "; bytes;------;title pack;%" PRIu64 ";title;%d\n", sector_length, pack_in_title, title);
-    close_aob_log();
+    if (globals.logdecode)
+    {
+        open_aob_log();
+        fprintf(aob_log, "INF;midpack_lpcm_headerquantity;%d;midpack_pes_padding;%d;bitspersample;%d;samplerate;%d\n", info->midpack_lpcm_headerquantity, info->midpack_pes_padding,info->bitspersample, info->samplerate);
+        fprintf(aob_log, "INF;sector length: ; %d  bytes;------;title pack: ; %d ; title: ;%d\n", sector_length, pack_in_title, title);
+        close_aob_log();
+    }
     return(position);
 }
 
