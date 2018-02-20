@@ -1,0 +1,24 @@
+
+CPPFLAGS +=-I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/libutils/src/private -I@ROOTDIR@/src/include -I@ROOTDIR@/libfixwav/src/include
+#for config.h
+CPPFLAGS += -I@BUILDDIR@
+
+ifeq "@HAVE_libiberty_BUILD@" "yes"
+     LDLIBS   += @libiberty_LIB@
+     CPPFLAGS +=-I@ROOTDIR@/@MAYBE_libiberty@/include
+     ifeq  "@HAVE_EXTERNAL_iberty@" "yes"
+       LDLIBS   += @libiberty_LIB@
+       CPPFLAGS +=-I@ROOTDIR@/@MAYBE_libiberty@/include
+     endif
+endif
+
+ifeq "@HAVE_libiberty@" "yes"
+      LDLIBS  += -liberty
+endif
+
+SOURCES:=$(wildcard @ROOTDIR@/libutils/src/*.c)
+OBJECTS:=$(SOURCES:.c=.o)
+
+libc_utils.a: libc_utils.a($(OBJECTS))
+
+$(OBJECTS):%.o: %.c 
