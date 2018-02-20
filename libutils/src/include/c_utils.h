@@ -297,6 +297,7 @@ int get_endianness();
 void hexdump_header(FILE* infile, uint8_t header_size);
 void hexdump_pointer(uint8_t* tab,  size_t tabsize);
 void hex2file(FILE* out, uint8_t* tab,  size_t tabsize);
+void hex2file_csv(FILE* out, uint8_t* tab,  size_t tabsize);
 void secure_open(const char *path, const char *context, FILE*);
 
 int end_seek(FILE* outfile);
