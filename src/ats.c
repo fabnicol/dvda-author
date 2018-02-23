@@ -263,6 +263,7 @@ inline static void write_pes_padding(FILE* fp, uint16_t length)
     /* offset_count += 1 */ fwrite(stream_id_padding, 1, 1, fp);
     /* offset_count += 2 */ fwrite(length_bytes, 2, 1, fp);
     /* offset_count += length */ fwrite(ff_buf, length, 1, fp);
+    
 }
 
 inline static void read_pes_padding(FILE* fp, uint16_t length)
