@@ -188,7 +188,16 @@ int launch_manager(command_t *command)
                 }
             }
 
-
+            if ((files[i][j].samplerate > 48000
+                 && (files[i][j].bitspersample == 24
+                     && (files[i][j].channels == 5 || files[i][j].channels == 6)))
+                ||
+                (files[i][j].channels > 2 && files[i][j].samplerate > 96000))		     
+            {
+              foutput("%s %s %s %d %s %d %s %d %s\n", ANSI_COLOR_RED "[ERR] File ", files[i][j].filename, " cannot be recorded to DVD-Audio without MLP encoding (", files[i][j].channels, " channels, ", files[i][j].bitspersample, " bits, ", files[i][j].samplerate, " samples per second.)");    
+              clean_exit(-1);
+            }
+            
             foutput("%c%c  "ANSI_COLOR_BLUE"%d     "ANSI_COLOR_GREEN"%02d"ANSI_COLOR_YELLOW"  %6"PRIu32"   "ANSI_COLOR_RED"%02d"ANSI_COLOR_RESET"   %d   %10"PRIu64"   ",joinmark[i][j], singlestar[i], i+1, j+1, files[i][j].samplerate, files[i][j].bitspersample, files[i][j].channels, files[i][j].numsamples);
             foutput("%s\n",files[i][j].filename);
             totalsize+=files[i][j].numbytes;
