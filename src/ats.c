@@ -234,7 +234,11 @@ inline static void write_pes_padding(FILE* fp, uint16_t length)
     }
 
     if (length > 6)
+    {
       length-=6; // We have 6 bytes of PES header.
+      if (globals.maxverbose)
+          foutput("%s %d %s\n", "[INF]  Padding with ", length, " bytes.");
+    }
     else
     {
         foutput("%s\n", ERR "pes_padding length must be higher than 6;");
@@ -242,18 +246,12 @@ inline static void write_pes_padding(FILE* fp, uint16_t length)
     }
 
 
-    /* PATCH Sept 2016 - old 'Dave' code:
-     *  length_bytes[0]=(length&0xff00)>>8;
-     *  length_bytes[1]=(length&0xff);
-     *  Found new padding byte count pattern
-     */
-
-    length_bytes[0] = 0;
+    length_bytes[0] = (length & 0xFF00) >> 8;
 
     /* Take number of bytes to pad in sector (=2048-length)
      * */
 
-    length_bytes[1] = length;
+    length_bytes[1] = length & 0xFF;
 
     uint8_t ff_buf[length];
 
