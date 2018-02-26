@@ -251,9 +251,9 @@ inline static void write_pes_padding(FILE* fp, uint16_t length)
     length_bytes[0] = 0;
 
     /* Take number of bytes to pad in sector (=2048-length)
-     * modulo 256 */
+     * */
 
-    length_bytes[1] = length % 0x100;
+    length_bytes[1] = length;
 
     uint8_t ff_buf[length];
 
