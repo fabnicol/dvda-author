@@ -188,10 +188,11 @@ int launch_manager(command_t *command)
                 }
             }
 
-            if (files[i][j].samplerate > 48000
-                 && files[i][j].bitspersample == 24
-                 && (files[i][j].channels == 5 || files[i][j].channels == 6)
-                )
+            if ((files[i][j].samplerate > 48000
+                 && (files[i][j].bitspersample == 24
+                     && (files[i][j].channels == 5 || files[i][j].channels == 6)))
+                ||
+                (files[i][j].channels > 2 && files[i][j].samplerate > 96000))		     
             {
               foutput("%s %s %s %d %s %d %s %d %s\n", ANSI_COLOR_RED "[ERR] File ", files[i][j].filename, " cannot be recorded to DVD-Audio without MLP encoding (", files[i][j].channels, " channels, ", files[i][j].bitspersample, " bits, ", files[i][j].samplerate, " samples per second.)");    
               clean_exit(-1);
