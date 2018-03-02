@@ -2,6 +2,6 @@
 #define GETSUBOPT_H_INCLUDED
 
 
-int getsubopt (char **optionp, char *const *tokens, char **valuep);
+//int getsubopt (char **optionp, char *const *tokens, char **valuep);
 
 #endif // GETSUBOPT_H_INCLUDED

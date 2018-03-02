@@ -71,7 +71,7 @@ all:    @PACKAGE_NAME@
 	@mv -f @PACKAGE_NAME@ $(PROGRAM)
 	echo [dvda-author] >> @BUILDDIR@/depconf/BUILD.TRACE
 	echo "     Build successful." >> @BUILDDIR@/depconf/BUILD.TRACE
-	echo
+	echo Built with : $(CC)
 	echo ----------------------------------------------- 
 	echo Finished building $(PROGRAM)
 	echo Now run 'make install'

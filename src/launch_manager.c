@@ -114,7 +114,7 @@ int launch_manager(command_t *command)
 
 
 
-    for (i=0; i < naudio_groups; i++)
+    for (i=0; i < naudio_groups; ++i)
     {
         nfiles[i]=ntracks[i];
         totntracks+=nfiles[i];
@@ -129,7 +129,7 @@ int launch_manager(command_t *command)
 
             uint64_t tl=0;
             int ii;
-            for (ii=0;ii<nfiles[i];ii++)
+            for (ii = 0; ii < nfiles[i]; ++ii)
                 tl += files[i][ii].PTS_length;
 
             files[i][0].PTS_length = tl;
@@ -236,29 +236,32 @@ int launch_manager(command_t *command)
 
     /* This approximation was contributed by Lee and Tim feldkamp */
 
-    approximation=275+3*naudio_groups+ppadd;
+//    approximation=275+3*naudio_groups+ppadd;
 
-    /* End of formula */
+//    /* End of formula */
 
-    switch (startsector)
-    {
+//    switch (startsector)
+//    {
 
-    case -1:
+//    case -1:
 
-        startsector=approximation; /* automatic computing of startsector (Lee and Tim Feldman) */
-        foutput(MSG_TAG "Using start sector based on AOBs: %d\n",approximation);
-        break;
+//        startsector=approximation; /* automatic computing of startsector (Lee and Tim Feldman) */
+//        foutput(MSG_TAG "Using start sector based on AOBs: %d\n",approximation);
+//        break;
 
-    case  0:
-        startsector=STARTSECTOR; /* default value is 281 (Dave Chapman setting) */
-        foutput("%s", MSG_TAG "Using default start sector 281\n");
-        break;
+//    case  0:
+//        startsector=STARTSECTOR; /* default value is 281 (Dave Chapman setting) */
+//        foutput("%s", MSG_TAG "Using default start sector 281\n");
+//        break;
 
-    default:
+//    default:
 
-        foutput(MSG_TAG "Using specified start sector %d instead of estimated %d\n",startsector,approximation);
-    }
+//        foutput(MSG_TAG "Using specified start sector %d instead of estimated %d\n",startsector,approximation);
+//    }
 
+    
+    startsector = 684 + 3 * naudio_groups;
+    
     /* main reference track tables */
     // static allocation with C99, arguably faster and possibly safer than calloc()
     uint8_t   numtitles[naudio_groups];
@@ -326,7 +329,7 @@ int launch_manager(command_t *command)
 
     /* Creating AUDIO_PP.IFO */
 
-    last_sector=create_samg(audiotsdir, command, &sectors);
+    last_sector = create_samg(audiotsdir, command, &sectors);
 
     /*   sector_pointer_VIDEO_TS= number of sectors for AOBs + 2* sizeof amg + 2* size of ats*ngroups +system vobs +2*sizeof asvs */
 #if !HAVE_core_BUILD
