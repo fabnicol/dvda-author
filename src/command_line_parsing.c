@@ -448,26 +448,26 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                     
                 case 'D' :
                     FREE(globals.settings.tempdir);
-                    globals.settings.tempdir=strndup(optarg, MAX_OPTION_LENGTH);
+                    globals.settings.tempdir=strdup(optarg);
                     foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Temporary directory is: ", optarg);
                     normalize_temporary_paths(NULL);
                     break;
                     
                 case 19:
                     FREE(globals.settings.lplextempdir);
-                    globals.settings.lplextempdir=strndup(optarg, MAX_OPTION_LENGTH);
+                    globals.settings.lplextempdir=strdup(optarg);
                     foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Lplex temporary directory is: ", optarg);
                     break;
                     
                 case 20:
                     FREE(globals.settings.lplexoutdir);
-                    globals.settings.lplexoutdir=strndup(optarg, MAX_OPTION_LENGTH);
+                    globals.settings.lplexoutdir=strdup(optarg);
                     foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Lplex output directory is: ", optarg);
                     break;
                     
                 case 'X':
                     free(globals.settings.workdir);
-                    globals.settings.workdir=strndup(optarg, MAX_OPTION_LENGTH);
+                    globals.settings.workdir=strdup(optarg);
                     foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Working directory is: ", optarg);
                     // WARNING never launch a command line with --mkisofs in the WORKDIR directory
                     change_directory(globals.settings.workdir);
@@ -607,7 +607,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'i' :
             
             allocate_files=true;
-            globals.settings.indir=strndup(optarg, MAX_OPTION_LENGTH);
+            globals.settings.indir=strdup(optarg);
             
             foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Input directory is: ", 	optarg);
             
@@ -643,7 +643,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
         case 'o' :
             
-            globals.settings.outdir=strndup(optarg, MAX_OPTION_LENGTH);
+            globals.settings.outdir=strdup(optarg);
 
             foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET "  Output %s%s%s\n", "directory", " is: ", optarg);
             
@@ -833,9 +833,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 if (globals.debugging) foutput("       files[%d][%d].cga=%s\n", ngroups_scan, m, argv[m+k]);
                 uint8_t cgaint=atoi(argv[m+k]);
                 
-                if (check_cga_assignment(cgaint))
-                    files[ngroups_scan][m].cga=cgaint;
-                else if (globals.debugging) foutput("%s", ERR "Found illegal channel group assignement value, using standard settings.");
+//                if (check_cga_assignment(cgaint))
+//                    files[ngroups_scan][m].cga=cgaint;
+//                else if (globals.debugging) foutput("%s", ERR "Found illegal channel group assignement value, using standard settings.");
             }
             k+=m-1;
         }
@@ -1066,7 +1066,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if (!img->active)
             {
                 foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  still pictures VOB: ", optarg);
-                img->stillvob=strndup(optarg, MAX_OPTION_LENGTH);
+                img->stillvob=strdup(optarg);
             }
             img->npics =(uint16_t*) calloc(totntracks, sizeof(uint16_t));
             for (k=0; k < totntracks; k++)
@@ -1082,7 +1082,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if (optarg)
             {
                 free(globals.settings.dvdisopath);
-                globals.settings.dvdisopath=strndup(optarg, MAX_OPTION_LENGTH);
+                globals.settings.dvdisopath=strdup(optarg);
                 foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  ISO file path is: ", optarg);
             }
             break;
@@ -1091,7 +1091,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Make ISO image then run cdrecord to burn disc image.");
             globals.runmkisofs=1;
             if ((optarg) && (strlen(optarg) >4 ) )
-                globals.cdrecorddevice=strndup(optarg, MAX_OPTION_LENGTH);
+                globals.cdrecorddevice=strdup(optarg);
             else
             {
                 foutput("%s%s%s\n", WAR "Device command ", (optarg)?optarg:"", " will be interpolated.\n       Run cdrecord -scanbus to check for available drivers");
@@ -1104,7 +1104,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             globals.runmkisofs=1;
             globals.rungrowisofs=1;
             if ((optarg) && (strlen(optarg) >4 ) )
-                globals.cdrecorddevice=strndup(optarg, MAX_OPTION_LENGTH);
+                globals.cdrecorddevice=strdup(optarg);
             break;
             
             
@@ -1127,7 +1127,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
             globals.videozone=1;
             free(globals.settings.linkdir);
-            globals.settings.linkdir=strndup(optarg, MAX_OPTION_LENGTH);
+            globals.settings.linkdir=strdup(optarg);
             foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  VIDEO_TS input directory is: ", optarg);
             
             break;
@@ -1243,7 +1243,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
         case 'M' :
             foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  dvdauthor Xml project: ", optarg);
-            globals.xml=strndup(optarg, MAX_OPTION_LENGTH);
+            globals.xml=strdup(optarg);
             globals.topmenu=Min(globals.topmenu, RUN_DVDAUTHOR);
             break;
             
@@ -1252,7 +1252,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             static int spurank;
             while (spurank >= img->nmenus) 	img->nmenus++;
             if (img->nmenus) globals.spu_xml=realloc(globals.spu_xml, img->nmenus*sizeof(char*));
-            globals.spu_xml[spurank++]=strndup(optarg, MAX_OPTION_LENGTH);
+            globals.spu_xml[spurank++]=strdup(optarg);
             globals.topmenu=Min(globals.topmenu, RUN_SPUMUX_DVDAUTHOR);
             break;
             
@@ -1272,7 +1272,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'u':
             
             foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  duration of background mpg video: ", optarg);
-            durationchain=strndup(optarg, MAX_OPTION_LENGTH);
+            durationchain=strdup(optarg);
             
             h=strtok(durationchain, ":");
             min=strtok(NULL, ":");
@@ -1290,7 +1290,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
             
         case 'Y':
-            palettecolorchain=strndup(optarg, MAX_OPTION_LENGTH);
+            palettecolorchain=strdup(optarg);
             if (palettecolorchain)
             {
                 free(img->textcolor_palette);
@@ -1322,7 +1322,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
             
         case 'y':
-            piccolorchain=strndup(optarg, MAX_OPTION_LENGTH);
+            piccolorchain=strdup(optarg);
             if (piccolorchain)
                 
             {
@@ -1369,7 +1369,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
             
         case '8':
-            activepiccolorchain=strndup(optarg, MAX_OPTION_LENGTH);
+            activepiccolorchain=strdup(optarg);
             if (activepiccolorchain)
                 
             {
@@ -1416,7 +1416,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
             
         case 'O':
-            img->screentextchain=strndup(optarg, MAX_OPTION_LENGTH);
+            img->screentextchain=strdup(optarg);
             if (globals.veryverbose) foutput("%s %s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Screen textchain is:", img->screentextchain);
             globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             img->refresh=1;
@@ -1434,7 +1434,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
             
         case 'J':
-            fontchain=strndup(optarg, MAX_OPTION_LENGTH);
+            fontchain=strdup(optarg);
             if (fontchain)
             {
                 free(img->textfont);
@@ -1454,7 +1454,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
             
         case 14:
-            fontchain=strndup(optarg, MAX_OPTION_LENGTH);
+            fontchain=strdup(optarg);
             if (fontchain)
             {
                 free(img->textfont);
@@ -1467,7 +1467,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
             
         case 15:
-            fontchain=strndup(optarg, MAX_OPTION_LENGTH);
+            fontchain=strdup(optarg);
             if (fontchain)
             {
                 img->pointsize=(int8_t) atoi(fontchain);
@@ -1478,7 +1478,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
             
         case 16:
-            fontchain=strndup(optarg, MAX_OPTION_LENGTH);
+            fontchain=strdup(optarg);
             if (fontchain)
             {
                 img->fontwidth=(int8_t) atoi(fontchain);
@@ -2890,18 +2890,12 @@ void aob2wav_parsing(char *ssopt)
         globals.aobpath[0] = strtok(chain, ",");
     }
 
+    while (i < 9 && (globals.aobpath[++i] = strtok(NULL, ",")) != NULL) ;
 
-    if (subchunk)
-    {
-        while (i < 9 && (subchunk = strtok(NULL, ",")) != NULL)
-        {
-            globals.aobpath[++i] = subchunk;
-        }
-    }
-
+    //free(chain);
+    
     return;
 }
-
 
 
 void fixwav_parsing(char *ssopt)
@@ -2949,7 +2943,7 @@ void fixwav_parsing(char *ssopt)
         case 6:
             
             FREE(globals.fixwav_suffix)
-                    globals.fixwav_suffix=strndup(value, MAX_OPTION_LENGTH);
+                    globals.fixwav_suffix=strdup(value);
             foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Fixwav output suffix: %s\n", globals.fixwav_suffix);
             break;
             
@@ -2965,7 +2959,7 @@ void fixwav_parsing(char *ssopt)
             
         case 9:
             FREE(globals.settings.fixwav_database)
-                    globals.settings.fixwav_database=strndup(value, MAX_OPTION_LENGTH);
+                    globals.settings.fixwav_database=strdup(value);
             if (!globals.nooutput) {
                 secure_mkdir(globals.settings.fixwav_database, 0755);
                 foutput("%s       %s%s", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Fixwav will output info chunk from wav headers to:\n", globals.settings.fixwav_database, SEPARATOR "database\n");
