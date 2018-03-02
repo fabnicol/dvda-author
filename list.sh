@@ -10,4 +10,4 @@ for i in {1..6}; do
   done
   args="$args -g $args1"
 done
-echo $args
+echo  $args

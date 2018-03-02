@@ -630,8 +630,8 @@ static void audio_extraction_layout(fileinfo_t files[9][99])
 
 int get_ats_audio()
 {
-    fileinfo_t files[9][99];
-    memset(files, 0, sizeof(files));
+    fileinfo_t files[9][99] = {{0}};
+    
     for (int i = 0; i < 9 && globals.aobpath[i] != NULL; ++i)
         get_ats_audio_i(i, files);
 

@@ -255,9 +255,9 @@ int calc_info(fileinfo_t* info)
         // 24-bit table
         {{    	2004, 24,  1980,  2010,	2028, 22, 15, 12, 12 /*old: 10*/, 0, 0 },
             { 	2004, 24,  1980,  2010,	2028, 24 /*old: 22*/, 15, 12, 10 /*old: 12*/, 0, 0 },
-            { 	1998, 18,  1980,  2010,	2026, 28 /*old: 22 */, 15, 10 /* old 16 */, 10 /* old 16*/, 0, 8 /* old 6 */ },
+            { 	1998, 18,  1980,  2010,	2020 /*old 2026*/, 28 /*old: 22 */, 15, 10 /* old 16 */, 10 /* old 16*/, 0, 8 /* old 6 */ },
             { 	1992, 24,  1968,  1993,	2014, 22, 10, 10,  10 /*old: 8*/, 17, 14 },
-            { 	1980,  0,  1980,  2010, 2008, 28 /*old: 22*/, 15, 10 /* old 16 */, 10 /*old: 16*/, 0, 26 /* old 20 */},  // out for 88.1 kHz and 96 kHz.
+            { 	1980,  0,  1980,  2010, 2002 /* old 2008 */, 22, 15, 10 /* old 16 */, 10 /*old: 16*/, 0, 26 /* old 20 */},  // out for 88.1 kHz and 96 kHz.
             { 	1980,  0,  1980,  2010, 2008, 22, 15, 16, 16 /* old 14*/, 0, 20 }}  // out for 88.1 kHz and 96 kHz.
     };
 
@@ -275,6 +275,7 @@ int calc_info(fileinfo_t* info)
                                                      info->channels * 2);
     info->lpcm_payload = X[0];
     info->firstpackdecrement = X[1];
+
     info->SCRquantity = X[2];
     info->firstpack_audiopesheaderquantity = X[3];
     info->midpack_audiopesheaderquantity = X[4];
@@ -953,7 +954,7 @@ char* replace_file_extension(char * filename)
     // -i filenames could in principle be freed.
     // filename cannot be altered directly as there the suffix increases its size and -g names cannot be reallocated
 
-    filename=strndup(new_wav_name, size+9);
+    filename=strdup(new_wav_name);
 
     return (filename);
 }
