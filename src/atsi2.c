@@ -49,7 +49,7 @@ int get_afmt(fileinfo_t* info, audioformat_t* audioformats, int* numafmts) {
   found=0;
   i=0;
   while ((i < *numafmts) && (!found)) {
-    if ((info->samplerate==audioformats[i].samplerate) && (info->bitspersample==audioformats[i].bitspersample) && (info->channels==audioformats[i].channels)&& (info->cga==audioformats[i].cga)) {
+    if ((info->samplerate==audioformats[i].samplerate) && (info->bitspersample==audioformats[i].bitspersample) && (info->channels==audioformats[i].channels)) {
       found=1;
     } else {
       i++;
@@ -58,7 +58,7 @@ int get_afmt(fileinfo_t* info, audioformat_t* audioformats, int* numafmts) {
   if (!found) {
     audioformats[i].samplerate=info->samplerate;
     audioformats[i].channels=info->channels;
-    audioformats[i].cga=info->cga;
+    //audioformats[i].cga=info->cga;
     audioformats[i].bitspersample=info->bitspersample;
     (*numafmts)++;
   }
@@ -111,7 +111,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
 
     for (j=0;j < numafmts;j++)
     {
-        uint16_copy(&atsi[i],0x0000);  // [200806] 0x0000 if a menu is not generated; otherwise sector pointer from start of audio zone (AUDIO_PP.IFO to last sector of audio system space (here AUDIO_TS.IFO)
+        uint16_copy(&atsi[i], 0x0000);  // [200806] 0x0000 if a menu is not generated; otherwise sector pointer from start of audio zone (AUDIO_PP.IFO to last sector of audio system space (here AUDIO_TS.IFO)
         i+=2;
         if (files[j].channels > 2)
         {
@@ -209,7 +209,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
 
         i++;
 
-        atsi[i]= audioformats[j].cga;
+        atsi[i]= files[j].cga;
         i++;
 
         atsi[i]=0x00; // ??? Unknown part of audio format
@@ -246,52 +246,53 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
 #endif
     /* SECTOR 2 */
 
-    i=0x800;
-    uint16_copy(&atsi[i],numtitles);
+    i = 0x800;
+    uint16_copy(&atsi[i], numtitles);
     // [200806] The number numtitles must be equal to number of audio zone titles plus video zone titles linked to. Gapless tracks are packed in the same title.
     
     // Padding
-    i+=8;
+    i += 8;
 
-    for (j=0;j<numtitles;j++)
+    for (j = 0; j < numtitles; ++j)
     {
         uint16_copy(&atsi[i], 0x8000 + (j + 1) * 0x100);
-        i+=2;
+        ++i;
         uint16_copy(&atsi[i], 0x0100); // Unknown.  Not related to channel count. TO BE CHECKED.
-        i+=2;
+       
 
         // To be filled later - pointer to a following table.
-        i+=4;
+        i += 7;
     }
 
-    k=0;
-    int s=0;
-    for (j=0; j<numtitles; j++)
+    k = 0;
+    int s = 0;
+    for (j = 0; j < numtitles; ++j)
     {
-        uint32_copy(&atsi[0x808+8*j+4],i-0x800);
+        uint32_copy(&atsi[0x808 + 8 * j + 4], i - 0x800);
 
-        uint16_copy(&atsi[i],0x0000); // Unknown
-        i+=2;
-        atsi[i]=ntitletracks[j];
-        i++;
-        atsi[i]=ntitletracks[j];
-        i++;
+        uint16_copy(&atsi[i], 0x0000); // Unknown
+        i += 2;
+        atsi[i] = ntitletracks[j];
+        ++i;
+        atsi[i] = ntitletracks[j];
+        ++i;
         title_length=0;
-        for (t=0;t<ntitletracks[j];t++)
+        for (t = 0; t < ntitletracks[j]; ++t)
         {
-            title_length+=files[k+t].PTS_length;
+            title_length += files[k+t].PTS_length;
         }
-        uint32_copy(&atsi[i],title_length);
-        i+=4;
-        uint16_copy(&atsi[i],0x0000);  // Unknown
-        i+=2;
-        uint16_copy(&atsi[i],0x0010);                 // Pointer to PTS table
-        i+=2;
-        uint16_copy(&atsi[i],16+20*ntitletracks[j]);  // Pointer to sector table
+        uint32_copy(&atsi[i], title_length);
+        i += 4;
+        
+        uint16_copy(&atsi[i], 0x0000);  // Unknown
+        i += 2;
+        uint16_copy(&atsi[i], 0x0010);                 // Pointer to PTS table
+        i += 2;
+        uint16_copy(&atsi[i],16 + 20 * ntitletracks[j]);  // Pointer to sector table
         i+=2;
         //PATCH 09.09
         if ((img->count) || (img->stillvob) || (img->active))
-            uint16_copy(&atsi[i], 16+32*ntitletracks[j]);                 // Pointer to a stillpic data table
+            uint16_copy(&atsi[i], 16 + 32*ntitletracks[j]);                 // Pointer to a stillpic data table
         i+=2;
 
         /* Timestamp and sector records */
@@ -398,7 +399,11 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
         }
         k+=ntitletracks[j];
     }
+    
+    // Pointer to following data
+    
     uint32_copy(&atsi[0x0804],i-0x801);
+    
     // PATCH 09.07: i > 2048*2 instead of i > 2048
     if (i > 4096)
     {

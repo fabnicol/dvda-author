@@ -196,32 +196,32 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
                 // reads in filenames
                 memmove(files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].filename, buf, CHAR_BUFSIZ);
 
-                if (read_cga_file)
-                {
-                    // reads in channel assignement from file cgafile
-                    // file cgafile.cga must contain left-aligned figures with at most two digits aligned in a single column, corresponding to cga values.
-                    char cga[4]; // 2 digits+newline+\0
+//                if (read_cga_file)
+//                {
+//                    // reads in channel assignement from file cgafile
+//                    // file cgafile.cga must contain left-aligned figures with at most two digits aligned in a single column, corresponding to cga values.
+//                    char cga[4]; // 2 digits+newline+\0
 
-                    if (NULL == fgets(cga, 3, cgafile))
-                    {
-                        perror(ERR "fgets");
-                        clean_exit(EXIT_FAILURE);
-                    }
+//                    if (NULL == fgets(cga, 3, cgafile))
+//                    {
+//                        perror(ERR "fgets");
+//                        clean_exit(EXIT_FAILURE);
+//                    }
 
-                    cga[3]='\0'; // cut at newline
-                    uint8_t cgaint=(uint8_t) atoi(cga);
+//                    cga[3]='\0'; // cut at newline
+//                    uint8_t cgaint=(uint8_t) atoi(cga);
 
-                    // performs checks on channel assignement
-                    if (check_cga_assignment(cgaint))
-                        files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgaint;
-                    else
-                    {
-                        if (globals.debugging) foutput("%s", ERR "Found illegal channel group assignement value, using standard settings.");
-                        files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgadef[files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].channels-1];
-                    }
-                }
-                else
-                    files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgadef[files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].channels-1];
+//                    // performs checks on channel assignement
+//                    if (check_cga_assignment(cgaint))
+//                        files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgaint;
+//                    else
+//                    {
+//                        if (globals.debugging) foutput("%s", ERR "Found illegal channel group assignement value, using standard settings.");
+//                        files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgadef[files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].channels-1];
+//                    }
+//                }
+//                else
+//                    files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgadef[files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].channels-1];
 
 
 
