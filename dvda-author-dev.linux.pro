@@ -14,7 +14,7 @@ DEFINES += _GNU_SOURCE __CB HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_fixwav HAV
 
 #libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame --disable-gomp
 
-linux:LIBS +=   -lFLAC -logg  -lsox  -lid3tag -lz -lsndfile  -lpulse -lpulse-simple -lasound -lwavpack \
+linux:LIBS +=   -lFLAC -logg  -lsox   -lz -lsndfile  -lpulse -lpulse-simple -lasound \ #-lwavpack \-lid3tag
                 -lvorbisenc -lvorbisfile -lvorbis  -logg -lpng -lz -lgomp -lsndfile
 
 CONFIG(release, debug|release) {

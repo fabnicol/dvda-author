@@ -2160,6 +2160,7 @@ errno=0;
     case 0:
         close(tube[0]);
         dup2(tube[1], STDERR_FILENO);
+        foutput("%s%s%s\n", DBG "application:", application, " args1:", args[1]);
         execv(application, (char* const*) args);
         foutput("%s%s%s\n", ERR "Runtime failure in ", application," child process");
         perror("");

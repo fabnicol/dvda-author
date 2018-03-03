@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.5.1, 2018-03-02T13:59:25. -->
+<!-- Written by QtCreator 4.5.1, 2018-03-03T02:13:51. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -54,7 +54,9 @@
  </data>
  <data>
   <variable>ProjectExplorer.Project.PluginSettings</variable>
-  <valuemap type="QVariantMap"/>
+  <valuemap type="QVariantMap">
+   <valuelist type="QVariantList" key="ClangStaticAnalyzer.SuppressedDiagnostics"/>
+  </valuemap>
  </data>
  <data>
   <variable>ProjectExplorer.Project.Target.0</variable>
@@ -248,40 +250,14 @@
    <value type="int" key="ProjectExplorer.Target.BuildConfigurationCount">3</value>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.DeployConfiguration.0">
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
-     <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
-      <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
-      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Vérification de l'espace disque disponible</value>
-      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
-      <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">RemoteLinux.CheckForFreeDiskSpaceStep</value>
-      <valuelist type="QVariantList" key="ProjectExplorer.RunConfiguration.LastDeployedFiles"/>
-      <valuelist type="QVariantList" key="ProjectExplorer.RunConfiguration.LastDeployedHosts"/>
-      <valuelist type="QVariantList" key="ProjectExplorer.RunConfiguration.LastDeployedRemotePaths"/>
-      <valuelist type="QVariantList" key="ProjectExplorer.RunConfiguration.LastDeployedSysroots"/>
-      <valuelist type="QVariantList" key="ProjectExplorer.RunConfiguration.LastDeployedTimes"/>
-      <value type="QString" key="RemoteLinux.CheckForFreeDiskSpaceStep.PathToCheck">/</value>
-      <value type="qulonglong" key="RemoteLinux.CheckForFreeDiskSpaceStep.RequiredSpace">5242880</value>
-     </valuemap>
-     <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.1">
-      <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
-      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Envoi de fichiers par SFTP</value>
-      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
-      <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">RemoteLinux.DirectUploadStep</value>
-      <valuelist type="QVariantList" key="ProjectExplorer.RunConfiguration.LastDeployedFiles"/>
-      <valuelist type="QVariantList" key="ProjectExplorer.RunConfiguration.LastDeployedHosts"/>
-      <valuelist type="QVariantList" key="ProjectExplorer.RunConfiguration.LastDeployedRemotePaths"/>
-      <valuelist type="QVariantList" key="ProjectExplorer.RunConfiguration.LastDeployedSysroots"/>
-      <valuelist type="QVariantList" key="ProjectExplorer.RunConfiguration.LastDeployedTimes"/>
-      <value type="bool" key="RemoteLinux.GenericDirectUploadStep.IgnoreMissingFiles">false</value>
-      <value type="bool" key="RemoteLinux.GenericDirectUploadStep.Incremental">true</value>
-     </valuemap>
-     <value type="int" key="ProjectExplorer.BuildStepList.StepsCount">2</value>
+     <value type="int" key="ProjectExplorer.BuildStepList.StepsCount">0</value>
      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Déploiement</value>
      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
      <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.BuildSteps.Deploy</value>
     </valuemap>
     <value type="int" key="ProjectExplorer.BuildConfiguration.BuildStepListCount">1</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Déploiement sur une hôte Linux distante</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">a</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">DeployToGenericLinux</value>
    </valuemap>
    <value type="int" key="ProjectExplorer.Target.DeployConfigurationCount">1</value>
@@ -329,13 +305,14 @@
     <value type="int" key="PE.EnvironmentAspect.Base">1</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">dvda-author (sur un périphérique distant)</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">dvda-author</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">RemoteLinuxRunConfiguration:dvda-author</value>
-    <value type="QString" key="Qt4ProjectManager.MaemoRunConfiguration.Arguments"></value>
+    <value type="QString" key="Qt4ProjectManager.MaemoRunConfiguration.Arguments">-g /home/fab/Desktop/dvda-author-dev/test/2/16_44/a2_16_44.wav -o a --mkisofs --maxverbose
+</value>
     <value type="QString" key="Qt4ProjectManager.MaemoRunConfiguration.TargetName">dvda-author</value>
     <value type="int" key="RemoteLinux.EnvironmentAspect.Version">1</value>
-    <value type="QString" key="RemoteLinux.RunConfig.AlternateRemoteExecutable"></value>
-    <value type="bool" key="RemoteLinux.RunConfig.UseAlternateRemoteExecutable">false</value>
+    <value type="QString" key="RemoteLinux.RunConfig.AlternateRemoteExecutable">/home/fab/Dev/build-dvda-author-dev.linux-Desktop-Debug/dvda-author</value>
+    <value type="bool" key="RemoteLinux.RunConfig.UseAlternateRemoteExecutable">true</value>
     <value type="QString" key="RemoteLinux.RunConfig.WorkingDirectory"></value>
     <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>

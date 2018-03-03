@@ -663,8 +663,6 @@ char* create_binary_path(char* local_variable, const char* symbolic_constant, co
     }
     if (globals.debugging) foutput(MSG_TAG "Path to %s is %s from bindir=%s and basename=%s\n", basename, local_variable,globals.settings.bindir, basename);
 
-    if (path) free(path);
-
     return local_variable;
 
 }
