@@ -1081,7 +1081,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             globals.runmkisofs=1;
             if (optarg)
             {
-                free(globals.settings.dvdisopath);
                 globals.settings.dvdisopath=strdup(optarg);
                 foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  ISO file path is: ", optarg);
             }

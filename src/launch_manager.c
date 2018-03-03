@@ -482,16 +482,16 @@ SUMMARY:
         errno=0;
         if ((mkisofs=create_binary_path(mkisofs, MKISOFS, SEPARATOR MKISOFS_BASENAME)))
         {
-           foutput("%s\n", INF "Launching mkisofs to create image");
+           foutput("%s%s%s\n", INF "Launching: ", mkisofs, " to create image");
            run(mkisofs, args, 0);
         }
         else
                 foutput("%s\n", ERR "Could not access mkisofs binary.");
 
-        FREE(mkisofs);
+        //FREE(mkisofs);
 
         size=stat_file_size(dvdisopath)/1024;
-        if ((!errno) && (size > 4*SIZE_AMG + 2*SIZE_SAMG +1))  foutput(MSG_TAG "Image was created with size %" PRIu64 " KB.", size);
+        if ((!errno) && (size > 4*SIZE_AMG + 2*SIZE_SAMG +1))  foutput(MSG_TAG "Image was created with size %" PRIu64 " KB.\n", size);
         else
             foutput("%s\n", ERR "ISO file creation failed -- fix issue.");
 
