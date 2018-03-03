@@ -2000,9 +2000,9 @@ void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* 
         if (write)
         {
             fprintf(log, "%s", "Div:;;;; \n");
-            hex2file_csv(log, tab__, size);
+            //hex2file_csv(log, tab__, size);
             fprintf(log, "%s", ";instead of:;");
-            hex2file_csv(log, tab, size);
+            //hex2file_csv(log, tab, size);
         }
 
         //fprintf(log, "%s", "\n");
@@ -2020,7 +2020,7 @@ void rw_field(uint8_t* tab, int size,const char* label, FILE* fp, FILE* log)
     if (! globals.logdecode) return;
 
     fprintf(log, "INF;%08X" PRIu64 ";%s;;;;;\n", offset, label);
-    hex2file_csv(log, tab, size);
+    //hex2file_csv(log, tab, size);
     //fprintf(log, "%s", ";;;;;;;\n");
 }
 
