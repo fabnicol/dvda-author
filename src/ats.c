@@ -284,7 +284,7 @@ inline static void read_pes_padding(FILE* fp, uint16_t length)
     }
     else
     {
-        foutput("%s\n", "[ERR]  pes_padding length must be higher than 6;");
+        foutput("%s\n", ERR "  pes_padding length must be higher than 6;");
         return;
     }
 
@@ -297,8 +297,8 @@ inline static void read_pes_padding(FILE* fp, uint16_t length)
     /* offset_count += 3 */ CHECK_FIELD(packet_start_code_prefix)
     /* offset_count += 1 */ CHECK_FIELD(stream_id_padding);
 
-    length_bytes[0]=0;
-    length_bytes[1]=length % 0x100;
+    length_bytes[0] = (length & 0xFF00) >> 8;
+    length_bytes[1] = length & 0xFF;
 
     /* offset_count += 2 */ CHECK_FIELD(length_bytes);
 
@@ -1214,11 +1214,11 @@ int decode_ats()
     fileinfo_t files;
     int result = 0;
 
-    fp=fopen(globals.aobpath[0],"rb");
+    fp = fopen(globals.aobpath[0],"rb");
 
     if (fp == NULL)
     {
-        foutput("%s%s%s", "[ERR]  Could not open AOB file *", globals.aobpath[0],"*\n");
+        foutput("%s%s%s", ERR "Could not open AOB file *", globals.aobpath[0],"*\n");
         return(-1);
     }
 
