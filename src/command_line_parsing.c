@@ -897,9 +897,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
             
         case 'x' :
-            extract_audio_flag=1;
+            extract_audio_flag = 1;
             FREE(globals.settings.indir)
-            globals.settings.indir=strdup(optarg);
+            globals.settings.indir = strdup(optarg);
             break;
             
         case 'n' :
@@ -1008,7 +1008,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             player=NULL;
             extract_audio_flag=1;
             FREE(globals.settings.indir)
-            globals.settings.indir=strdup(optarg);
 
             break;
             
@@ -1852,33 +1851,29 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case 28:
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET"  Extracting AOB to raw wav: ", optarg);
+            foutput("%s%s\n", ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET"  Extracting AOB to raw signed-integer PCM (headerless waav): ", optarg);
             aob2wav_parsing(optarg);
             break;
 
         case 29:
-
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Extracting AOB to wav: ", optarg);
+            foutput("%s%s\n", ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET"  Extracting AOB to wav: ", optarg);
             globals.fixwav_prepend = true;
             aob2wav_parsing(optarg);
             break;
 
         case 30:
             globals.settings.outfile = strdup(optarg);
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  AOB log filepath: ", globals.settings.outfile);
+            foutput("%s%s\n", ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET"  AOB log filepath: ", globals.settings.outfile);
             if (file_exists(globals.settings.outfile)) unlink(globals.settings.outfile);
             break;
 
         case 6 :
-            
-            img->topmenu_slide=calloc(img->nmenus, sizeof(char***));
-            img->topmenu_nslides=calloc(img->nmenus, sizeof(uint16_t));
+            img->topmenu_slide = calloc(img->nmenus, sizeof(char***));
+            img->topmenu_nslides = calloc(img->nmenus, sizeof(uint16_t));
             
             if (!img->topmenu_slide) break;
             else
             {
-                
-                
                 errno=0;
                 
                 char** array=NULL;
@@ -1997,7 +1992,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR );
             img->refresh=1;
             break;
-            
             
         case 'G' :
             
@@ -2973,18 +2967,18 @@ void fixwav_parsing(char *ssopt)
 
 void extract_list_parsing(const char *arg, extractlist* extract)
 {
-    char * chain, *subchunk=NULL, control=0;
+    char * chain, *subchunk = NULL, control=0;
     int j;
-    _Bool cutgroups=0;
+    _Bool cutgroups = 0;
     
     memset(extract, 0, sizeof(extractlist));
-    uint8_t nextractgroup=0;
-    nextractgroup=extract->nextractgroup[0];
-    chain=strdup(arg);
+    uint8_t nextractgroup = 0;
+    nextractgroup = extract->nextractgroup[0];
+    chain = strdup(arg);
     
-    cutgroups=(strchr(chain, ',') == NULL)? 0: 1 ;
+    cutgroups = (strchr(chain, ',') == NULL)? 0: 1 ;
     
-    if (!cutgroups) return;
+    if (! cutgroups) return;
     
     /* strtok modifies its first argument.
     * If ',' not found, returns all the string, otherwise cuts it */
@@ -2993,103 +2987,107 @@ void extract_list_parsing(const char *arg, extractlist* extract)
     
     if (globals.debugging)
         foutput("%s\n", INF "Analysing --extract/--play suboptions...");
-    
-    
-    control=1;
+        
+    control = 1;
     
     // Now strtok will return NULL if ',' not found, otherwise * to start of token
     
-    while (1)
+    while (true)
     {
         if (cutgroups)
         {
-            if (((subchunk=strtok(NULL, ",")) == NULL) || (control > 8))
+            if (((subchunk = strtok(NULL, ",")) == NULL) || (control > 8))
                 break;
         }
         else if (control > 1) break;
         
-        
-        int groupindex=(int) *subchunk-'0';
-        char colon=*(subchunk+1);
+        int groupindex = (int) *subchunk-'0';
+        char colon = *(subchunk+1);
+
         if ((colon != ':') || (strlen(subchunk) < 3))
         {
             foutput("%s\n", WAR "Incorrect --extract suboptions, format is --extract=group1:track1,...,groupN:trackN\n       Skipping...");
             return;
         }
-        int trackindex=atoi(subchunk+2);
+        int trackindex = atoi(subchunk + 2);
         
         if ((groupindex > 8) || (groupindex < 0) || (nextractgroup == 8) || (trackindex > 98))
         {
-            groupindex=0;
+            groupindex = 0;
             foutput("%s\n", WAR "Incorrect --extract/--play suboption, exceeding limits reset to 0.");
-            nextractgroup=0;
-            trackindex=0;
+            nextractgroup = 0;
+            trackindex = 0;
         }
-        nextractgroup++;
-        extract->extracttitleset[groupindex]=1;
-        extract->extracttrackintitleset[groupindex][trackindex]=1;
+
+        ++nextractgroup;
+        extract->extracttitleset[groupindex] = 1;
+        extract->extracttrackintitleset[groupindex][trackindex] = 1;
         
-        control++;
+        ++control;
     }
     
     if (globals.debugging)
     {
-        foutput("%s",ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  EXTRACTING: titleset   |   track\n");
+        foutput("%s",ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET"  EXTRACTING: titleset   |   track\n");
+
         int k;
-        for (j=0; j < 9; j++)
-            for (k=0; k < 99; j++)
+
+        for (j = 0; j < 9; ++j)
+        {
+            for (k = 0; k < 99; ++j)
+            {
                 if ((extract->extracttitleset[j]) && (extract->extracttrackintitleset[j][k]))
-                    foutput( ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"                   %02d      |      %02d\n", j, k );
+                    foutput( ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET"                   %02d      |      %02d\n", j, k );
+            }
+        }
     }
     
     /* all-important, otherwise irrelevant EXIT_ON_RUNTIME_ERROR will be generated*/
     
-    extract->nextractgroup[0]=nextractgroup;
+    extract->nextractgroup[0] = nextractgroup;
+
     errno=0;
+
     FREE(chain)
-            
 }
 
 
 void ats2wav_parsing(const char * arg, extractlist* extract, char* player)
 {
-    
-    char * chain, list[9];
-    DIR *dir;
-    memset(list, 0, 9);
-    
-    chain=strdup(arg);
-    globals.settings.indir=calloc(strlen(arg)+1+9, sizeof(char));
+    DIR *dir = NULL;
+
+    char *chain = strdup(arg);
+
+    globals.settings.indir = calloc(strlen(arg) + 1 + 9, sizeof(char));
     
     if (globals.settings.indir == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not allocate global settings")
             
-            sprintf(globals.settings.indir, "%s"SEPARATOR"AUDIO_TS", chain);
+    sprintf(globals.settings.indir, "%s" SEPARATOR "AUDIO_TS", chain);
     
     change_directory(globals.settings.indir);
-    if ((dir=opendir(globals.settings.indir)) == NULL)
+
+    if ((dir = opendir(globals.settings.indir)) == NULL)
+    {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not open output directory")
+    }
                 
-                foutput(INF "Extracting audio from %s\n", globals.settings.indir);
-    
-    
+    foutput(INF "Extracting audio from %s\n", globals.settings.indir);
+        
     if (extract->nextractgroup[0])
     {
-        
         parse_disk(dir, globals.access_rights, extract, player);
     }
     else
-        
         parse_disk(dir, globals.access_rights, NULL, player);
     
     if (closedir(dir) == -1)
         foutput( "%s\n", ERR "Impossible to close dir");
     
     /* all-important, otherwise irrelevant EXIT_ON_RUNTIME_ERROR will be generated*/
-    
-    
+        
     errno=0;
     change_directory(globals.settings.workdir);
-    FREE(chain)
+    free(chain);
 }
 #ifdef img
 #undef img
@@ -3097,118 +3095,125 @@ void ats2wav_parsing(const char * arg, extractlist* extract, char* player)
 void still_options_parsing(char *ssopt, pic* img)
 {
     int subopt, k;
-    char* chain=ssopt;
-    char* value=NULL;
-    char* tokens[]= {"rank", "manual","starteffect","endeffect","lag","start","active", NULL};
+    char* chain = ssopt;
+    char* value = NULL;
+    char* tokens[] = {"rank", "manual","starteffect","endeffect","lag","start","active", NULL};
     static uint32_t rank, temp, lag;
     
-    if (img->options == NULL) img->options=calloc(img->count, sizeof(stilloptions*));
-    if (img->options == NULL) perror(ERR "still options parsing");
-    for (k=0; k<img->count; k++)
+    if (img->options == NULL)
+        img->options = calloc(img->count, sizeof(stilloptions*));
+
+    if (img->options == NULL)
+        perror(ERR "still options parsing");
+
+    for (k = 0; k < img->count; ++k)
     {
-        img->options[k]=calloc(1, sizeof(stilloptions));
+        img->options[k] = calloc(1, sizeof(stilloptions));
         if (img->options[k] == NULL) perror(ERR "still options parsing");
     }
     // TODO: free them
-    
-    
     
     while ((subopt = getsubopt(&chain, tokens, &value)) != -1)
     {
         switch (subopt)
         {
         case 0:
-            temp=atoi(value);
+            temp = atoi(value);
+
             if (temp >= img->count)
             {
                 foutput(WAR "Index %d should be lower than %d. Start at index 0. Skipping...\n", temp, img->count);
                 break;
             }
-            rank=temp;
-            foutput("%s%d\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Options for still #", rank);
+
+            rank = temp;
+            foutput("%s%d\n", ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET "  Options for still #", rank);
             break;
             
         case 1:
-            foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  #%d: Manual browsing enabled.\n", rank);
-            img->options[rank]->manual=1;
+            foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET"  #%d: Manual browsing enabled.\n", rank);
+            img->options[rank]->manual = 1;
             break;
             
         case 2:
-            foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  #%d: start effect is: %s.\n", rank, value);    //  or: cut, fade, dissolve, top, bottom, left, right
+            foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET"  #%d: start effect is: %s.\n", rank, value);    //  or: cut, fade, dissolve, top, bottom, left, right
             switch (value[0])
             {
             case 'c':
-                img->options[rank]->starteffect=CUT|lag;
+                img->options[rank]->starteffect = CUT|lag;
                 break;
             case 'f':
-                img->options[rank]->starteffect=FADE|lag;
+                img->options[rank]->starteffect = FADE|lag;
                 break;
             case 'd':
-                img->options[rank]->starteffect=DISSOLVE|lag;
+                img->options[rank]->starteffect = DISSOLVE|lag;
                 break;
             case 't':
-                img->options[rank]->starteffect=WIPEFROMTOP|lag;
+                img->options[rank]->starteffect = WIPEFROMTOP|lag;
                 break;
             case 'b':
-                img->options[rank]->starteffect=WIPEFROMBOTTOM|lag;
+                img->options[rank]->starteffect = WIPEFROMBOTTOM|lag;
                 break;
             case 'l':
-                img->options[rank]->starteffect=WIPEFROMLEFT|lag;
+                img->options[rank]->starteffect = WIPEFROMLEFT|lag;
                 break;
             case 'r':
-                img->options[rank]->starteffect=WIPEFROMRIGHT|lag;
+                img->options[rank]->starteffect = WIPEFROMRIGHT|lag;
                 break;
                 
             }
             break;
             
         case 3:
-            foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  #%d: end effect is: %s.\n", rank, value);
+            foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET "  #%d: end effect is: %s.\n", rank, value);
+
             switch (value[0])
             {
             case 'c':
-                img->options[rank]->endeffect=CUT|lag;
+                img->options[rank]->endeffect = CUT | lag;
                 break;
             case 'f':
-                img->options[rank]->endeffect=FADE|lag;
+                img->options[rank]->endeffect = FADE | lag;
                 break;
             case 'd':
-                img->options[rank]->endeffect=DISSOLVE|lag;
+                img->options[rank]->endeffect = DISSOLVE | lag;
                 break;
             case 't':
-                img->options[rank]->endeffect=WIPEFROMTOP|lag;
+                img->options[rank]->endeffect = WIPEFROMTOP | lag;
                 break;
             case 'b':
-                img->options[rank]->endeffect=WIPEFROMBOTTOM|lag;
+                img->options[rank]->endeffect = WIPEFROMBOTTOM | lag;
                 break;
             case 'l':
-                img->options[rank]->endeffect=WIPEFROMLEFT|lag;
+                img->options[rank]->endeffect = WIPEFROMLEFT | lag;
                 break;
             case 'r':
-                img->options[rank]->endeffect=WIPEFROMRIGHT|lag;
+                img->options[rank]->endeffect = WIPEFROMRIGHT | lag;
                 break;
             }
             break;
             
         case 4:
-            lag=atoi(value);
+            lag = atoi(value);
             if (lag > 15)
             {
                 foutput("%s", WAR "Lag should be lower than 16, skipping...\n");
                 break;
             }
-            foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  #%d: effect lag is: %d*0.32s=%fs.\n", rank, lag, (float) lag*0.32);
-            img->options[rank]->lag=lag;
+
+            foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET"  #%d: effect lag is: %d*0.32s=%fs.\n", rank, lag, (float) lag*0.32);
+
+            img->options[rank]->lag = lag;
             break;
             
         case 5:
-            img->options[rank]->onset=atoi(value);
+            img->options[rank]->onset = atoi(value);
             break;
             
         case 6:
-            img->options[rank]->manual=1;
-            img->options[rank]->active=1;
-            foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Using active menus for #%d.\n", rank);
+            img->options[rank]->manual = 1;
+            img->options[rank]->active = 1;
+            foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET "  Using active menus for #%d.\n", rank);
             break;
             
         }
