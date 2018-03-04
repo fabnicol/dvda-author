@@ -465,7 +465,7 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99])
 {
     uint8_t audio_buf[2048];
     uint64_t pack = 0;
-    int j = 0;
+    static int j;
 
     int pack_rank = FIRST_PACK;
 
@@ -604,6 +604,12 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99])
         }
 
         info.outfile = filestat(false, 1, NULL, NULL);
+
+        if (position == LAST_PACK)
+        {
+            S_CLOSE(info.outfile)
+            get_ats_audio_i(i, files);
+        }
     }
     while (pack_rank != END_OF_AOB);
 
