@@ -144,6 +144,7 @@ inline static void  aob_open(WaveData *info, int64_t aob_offset_read_start)
         info->infile.filesize = stat_file_size(info->infile.filename);
 
     info->infile.fp = fopen(info->infile.filename, "rb")  ;
+
     if (info->infile.fp != NULL)
     {
         info->infile.isopen = true;
@@ -187,7 +188,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
 
     static int64_t aob_offset_read_start;
 
-    aob_open(info, aob_offset_read_start);
+    if (! info->infile.isopen) aob_open(info, aob_offset_read_start);
 
     uint64_t offset0 = ftello(info->infile.fp);
 
@@ -319,7 +320,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
 }
 
 
-inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8_t *audio_buf)
+inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header)
 {
     int position;
     static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
@@ -327,6 +328,43 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
     static uint64_t fpout_size;
     int audio_bytes;
     uint8_t PES_packet_len_bytes[2];
+    uint8_t audio_buf[2048];
+
+    //////////////////
+
+    // CAUTION : check coherence of this table and the S table of audio.c, of which it is only a subset.
+
+    const uint16_t T[2][6][6]=     // 16-bit table
+    {
+         {{ 	2000, 16,   22, 11, 16, 16},
+            {	2000, 16,   28, 11, 16, 10},
+            { 	2004, 24,   24, 15, 12, 10},
+            { 	2000, 16,   28, 11, 16, 10},
+            { 	2000, 20,   22, 15, 16, 10},
+            { 	1992, 24,   22, 10, 10, 10}},
+        // 24-bit table
+        {{    	2004, 24,   22, 15, 12, 12},
+            { 	2004, 24,   24, 15, 12, 10},
+            { 	1998, 18,   28, 15, 10, 10},
+            { 	1992, 24,   22, 10, 10, 10},
+            { 	1980,  0,   22, 15, 10, 10},
+            { 	1980,  0,   22, 15, 16, 16}}
+    };
+
+    const short int table_index = header->wBitsPerSample == 24 ? 1 : 0;
+
+#   define X T[table_index][header->channels-1]
+
+    const int lpcm_payload = X[0];
+    const int firstpackdecrement = X[1];
+    const int lastpack_audiopesheaderquantity = X[2];
+    const int firstpack_lpcm_headerquantity = X[3];
+    const int midpack_lpcm_headerquantity   = X[4];
+    const int lastpack_lpcm_headerquantity  = X[5];
+
+#   undef X
+
+    //////////////////////////////
 
     aob_open(info, aob_offset_read_start);
 
@@ -344,8 +382,8 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
     }
     else
     {
-
         /* go to end of sector : if end of file, then last pack, idem if new pack detected ; otherwise middle pack */
+
         int res = fseeko(info->infile.fp, 2044, SEEK_CUR);
 
         if (res != 0)
@@ -367,38 +405,7 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
         }
     }
 
-    short int table_index = header->wBitsPerSample == 24 ? 1 : 0;
     
-    // CAUTION : check coherence of this table and the S table of audio.c, of which it is only a subset.
-    
-    const uint16_t T[2][6][6]=     // 16-bit table
-    {
-         {{ 	2000, 16,   22, 11, 16, 16},
-            {	2000, 16,   28, 11, 16, 10},
-            { 	2004, 24,   24, 15, 12, 10},
-            { 	2000, 16,   28, 11, 16, 10},
-            { 	2000, 20,   22, 15, 16, 10},
-            { 	1992, 24,   22, 10, 10, 10}},
-        // 24-bit table
-        {{    	2004, 24,   22, 15, 12, 12},
-            { 	2004, 24,   24, 15, 12, 10},
-            { 	1998, 18,   28, 15, 10, 10},
-            { 	1992, 24,   22, 10, 10, 10},
-            { 	1980,  0,   22, 15, 10, 10},
-            { 	1980,  0,   22, 15, 16, 16}}
-    };
-
-#define X T[table_index][header->channels-1]
-
-    int lpcm_payload = X[0];
-    int firstpackdecrement = X[1];
-    int lastpack_audiopesheaderquantity = X[2];
-    int firstpack_lpcm_headerquantity = X[3];
-    int midpack_lpcm_headerquantity   = X[4];
-    int lastpack_lpcm_headerquantity  = X[5];
-
-#undef X
-
     switch(position)
     {
         case FIRST_PACK :
@@ -446,10 +453,12 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
 
     }
 
-    if (offset0 + 2048 < filesize(info->infile))
+    uint64_t offset1 = offset0 + 2048;
+
+    if (offset1 < filesize(info->infile))
     {
-      fseeko(info->infile.fp, offset0 + 2048, SEEK_SET);
-      aob_offset_read_start = (position == LAST_PACK) ? (int64_t) offset0 + 2048 : -1;
+      fseeko(info->infile.fp, offset1, SEEK_SET);
+      aob_offset_read_start = (position == LAST_PACK) ? (int64_t) offset1 : -1;
     }
     else
     {
@@ -463,7 +472,6 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint8
 
 int get_ats_audio_i(int i, fileinfo_t files[9][99])
 {
-    uint8_t audio_buf[2048];
     uint64_t pack = 0;
     static int j;
 
@@ -564,7 +572,7 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99])
 
         do
         {
-            pack_rank = get_pes_packet_audio(&info, &header, audio_buf);
+            pack_rank = get_pes_packet_audio(&info, &header);
             ++pack;
         }
         while (pack_rank != LAST_PACK && pack_rank != END_OF_AOB);

@@ -4,7 +4,7 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 TARGET = dvda-author
-QMAKE_CFLAGS += -std=c99
+QMAKE_CFLAGS += -std=c11
 
 QMAKE_CFLAGS_RELEASE -= -O2
 

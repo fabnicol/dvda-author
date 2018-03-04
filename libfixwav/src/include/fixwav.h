@@ -8,8 +8,6 @@
 
 #define GUI_BEHAVIOR
 
-
-#define TRUE 1
 #define FALSE 0
 #define YES 1
 #define NO  0
