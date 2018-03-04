@@ -111,7 +111,7 @@ int user_control(WaveData *info, WaveHeader *header)
   // forcing interactive mode if null audio
   if (bps == 0)
     {
-      info->interactive=TRUE;
+      info->interactive = true;
       return (info->repair=user_control(info, header));
     }
 
@@ -325,8 +325,8 @@ bailing_out:
 
 # ifndef GUI_BEHAVIOR
   if (globals.debugging) foutput("%s\n", INF "Reverting to interactive simple mode.");
-  info->interactive=TRUE;
-  info->repair=user_control(info, header);
+  info->interactive = true;
+  info->repair = user_control(info, header);
 # endif
 
   return (info->repair);
