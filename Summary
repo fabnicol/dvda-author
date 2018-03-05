@@ -1,0 +1,6 @@
+ 
+Summary of findings:
+
+* off by 2 bytes at around 58322992 which correspond to about 1/3 rd of differences
+* abusive padding by FF which corresponds to 1/3 of differences
+* ? tags characteristic of audio at very end of write_lpcm_header(...), originally zero padding by 8 bytes.

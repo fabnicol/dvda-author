@@ -1,0 +1,232 @@
+/*resources*/
+#resources { margin:0px; padding:0px 0px 10px 0px; }
+#resources .top { background:url(/images/reference_top.gif) left top repeat-x; height:15px; }
+#resources .top div { background:url(/images/reference_center_top_left.gif) left top no-repeat; height:15px; }
+#resources .top div div { background:url(/images/reference_center_top_right.gif) right top no-repeat; height:15px; }
+#resources .bottom { background:url(/images/reference_center_bottom.gif) left bottom repeat-x; height:15px; }
+#resources .bottom div { background:url(/images/reference_center_bottom_left.gif) left bottom no-repeat; height:15px; }
+#resources .bottom div div { background:url(/images/reference_center_bottom_right.gif) right bottom no-repeat; height:15px; }
+#resources .container { border-left:1px solid #ababab; border-right:1px solid #ababab; padding:0px 15px 0px 15px; zoom:100%; }
+#resources .title { padding:0px 0px 8px 0px; border-bottom:1px solid #dddddd; font-family:Arial, Helvetica, sans-serif; font-weight:bold; font-size:16px; color:#c80a04; }
+#resources ul.knowledge_base,#resources ul#usefull_tips{ padding:0 18px;}
+
+#resources ul.knowledge_base li{margin-bottom:18px; list-style-image:url(/images/windows.gif); list-style-position:inside; font-size:11px;}
+#resources ul.knowledge_base li.mac{margin-bottom:12px; list-style-image:url(/images/mac_icon.jpg);}
+
+#resources #tbc01,#resources #tbc02,#resources #tbc03,#resources #tbc04,#resources #tbc05,#resources #tbc06{margin-top:30px;}
+
+#resources #tbc01 ul li a,#resources #tbc02 ul li a{ line-height:24px; font-size:12px;}
+
+#resources .ul_nav {margin:0 0 15px 0;}
+#resources .ul_nav a{float:left;display:inline;}
+#resources ul.knowledge_base a h1{display:inline; font-size:14px; float:left; border-bottom: #bbbbbb dashed 1px;width:300px; line-height:25px; }
+#resources ul.knowledge_base a img.right{float:right;display:inline;}
+#knowledge_products  td ul{list-style: none;}
+#knowledge_products tr td ,#knowledge_products tr th{
+height:24px;
+padding:3px 5px;
+text-align:left;
+border-bottom:1px dashed #DEDEDE;
+}
+
+#knowledge_products tr th{line-height:24px;}
+
+#knowledge_products .bg_ddd{background:#dfdfdf;}
+#knowledge_products th a img{float:left;padding-right:5px;}
+#knowledge_products th a h1{ font-size:12px;line-height:32px;}
+
+#resources .subtitle { padding:8px 0px 8px 0px; border-bottom:1px solid #dddddd; font-family:Arial, Helvetica, sans-serif; font-weight:bold; font-size:14px; color:#000000; border-bottom:1px solid #dddddd; }
+#resources .subtitle h1 { float:left; font-family:Arial, Helvetica, sans-serif; font-weight:bold; font-size:14px; color:#000000; line-height:30px; }
+#resources .subtitle .more { float:right; padding:0px 0px 0px 24px; background:url(/images/product_menu_more.gif) left center no-repeat; line-height:30px; }
+#resources .subtitle .more a { text-decoration:underline; }
+
+#resources .container .tab { background:#eeeeee url(/images/product_tab.gif) left bottom repeat-x; height:70px; padding:0px; margin:15px 0px 0px 0px; }
+#resources .container .tab ul { margin:0px; padding:0px; margin:0px 15px 0px 15px; }
+#resources .container .tab ul li { height:70px; float:left; list-style:none outside; padding:0px 0px 0px 15px; display:inline; }
+#resources .container .tab ul li a { text-decoration:none; display:block; line-height:18px; padding:10px 15px 0px 0px; height:60px; float:left; }
+#resources .container .tab ul .out { background:none; }
+#resources .container .tab ul .out a { background:none; }
+#resources .container .tab ul .on { background:url(/images/reference_tab_on.gif) left top no-repeat !important; }
+#resources .container .tab ul .on a { background:url(/images/reference_tab_on_a.gif) right top no-repeat !important; }
+#resources .container .tab_content { border-left:1px solid #acacac; border-right:1px solid #acacac; border-bottom:1px solid #acacac; padding:15px; ZOOM:100%; }
+#resources .container .tab_content .left { float:left; width:350px; padding:0px 15px 0px 0px; }
+#resources .container .tab_content .left .info { padding:0px 0px 10px 0px; }
+#resources .container .tab_content .left .info img { float:left; margin:0px 15px 0px 0px; }
+#resources .container .tab_content .left .info h1 { font-size:12px; font-weight:bold; padding:0px 0px 8px 0px; }
+#resources .container .tab_content .left .links { padding:0px; margin:0px; }
+#resources .container .tab_content .left .links h1 { font-size:12px; font-weight:bold; padding:0px 0px 8px 0px; color:#000000; }
+#resources .container .tab_content .left .links ul { margin:0px; padding:0px; }
+#resources .container .tab_content .left .links ul li { list-style:square inside; line-height:18px; }
+#resources .container .tab_content .left .links ul li a,#resources .container .tab_content .left .links ul li a:link,#resources .container .tab_content .left .links ul li a { color:#c80a04; }
+#resources .container .tab_content .left .links ul li a:hover { color:#000000; text-decoration:underline; }
+#resources .container .tab_content .right { float:right; width:300px; padding:0px; }
+#resources .container .tab_content .right ul { margin:0px; padding:0px; }
+#resources .container .tab_content .right ul li { border:1px solid #ababab; background:url(/images/resources_right_bg.jpg) left top repeat-x; padding:10px; margin:0px 0px 10px 0px; list-style:none outside; }
+#resources .container .tab_content .right ul li img { float:left; margin:0px 15px 0px 0px; }
+#resources .container .tab_content .right ul li h1 { font-size:12px; font-weight:bold; padding:0px 0px 8px 0px; }
+
+#resources .container .from { border-bottom:1px dashed #cccccc; padding:15px 0px 15px 0px; color:#666666; }
+#resources .container .from a { color:#666666; text-decoration:underline; }
+#resources .container .note { padding:15px 0px 15px 0px; line-height:18px; }
+#resources .container .note .img { margin:0px; width:220px; border:0px; float:left; }
+#resources .container .note .img img { border:0px; width:100%; }
+#resources .container .note .content { float:right; width:470px; line-height:18px; padding:0px !important; }
+#resources .container .note .content h1 { font-family:Arial, Helvetica, sans-serif; font-weight:bold; font-size:16px; }
+#resources .container .note ul { margin:0px; padding:0px; }
+#resources .container .note ul li { list-style:square inside; line-height:18px; }
+#resources .container .solution { margin:0px 0px 10px 0px; }
+#resources .container .solution .title { background:#F2DFDF url(/images/re_solution_title.gif) left top repeat-x; padding:0px !important; }
+#resources .container .solution .title div { background:url(/images/re_solution_top_left.gif) left top no-repeat; }
+#resources .container .solution .title h1 { background:url(/images/re_solution_top_right.gif) right top no-repeat; padding:8px 15px 8px 15px; font-family:Arial, Helvetica, sans-serif; font-size:14px; }
+#resources .container .solution .content { padding:0px !important; border-left:#deb0b0 1px solid; border-right:#deb0b0 1px solid; zoom:100%; }
+#resources .container .solution .content div  { padding:0px; overflow:hidden; margin:0px 15px 0px 15px; padding:15px 0px 0px 0px; width:660px; }
+#resources .container .solution .content div a { float:left; margin:0px 8px 0px 8px; }
+#resources .container .solution .content div table { margin:0px; padding:0px; width:auto; }
+#resources .container .solution .content div table tr td { padding:0px; text-align:center; }
+#resources .container .solution .content div table tr td td { padding:0px 8px 0px 8px !important; }
+#resources .container .solution .bottom { background:url(/images/re_solution_bottom.gif) left bottom repeat-x; }
+#resources .container .solution .bottom div { background:url(/images/re_solution_bottom_left.gif) left bottom no-repeat; }
+#resources .container .solution .bottom div div { background:url(/images/re_solution_bottom_right.gif) right bottom no-repeat !important; height:15px; }
+
+#resources .container .related { width:150px; padding:0px; float:left; }
+#resources .container .related .title { background:#c9c9c9 url(/images/re_related_title.gif) left top no-repeat; }
+#resources .container .related .title h1 { padding:8px 10px 4px 10px; background:url(/images/re_related_title_right.gif) right top no-repeat; font-family:Arial, Helvetica, sans-serif; font-size:12px; font-weight:bold; color:#000000; }
+#resources .container .related .content { background:#F2F2F2; border:1px solid #cdcdcd; padding:10px 10px 0px 10px; }
+#resources .container .related .content ul { margin:0px; padding:0px; }
+#resources .container .related .content ul li { margin:0px 0px 10px 0px; list-style:none outside; text-align:center; }
+#resources .container .related .content ul li img { border:0px; width:100%; }
+
+#resources .container .knowledge { float:right; width:525px; border-left:1px dashed #999999; padding:0px 0px 0px 10px; }
+#resources .container .knowledge .part { padding:0px 0px 10px 0px; }
+#resources .container .knowledge .part .title { background:#FFC6C5 url(/images/knowledge_title.gif) left top repeat-x; margin:0px 0px 10px 0px; padding:0px !important; }
+#resources .container .knowledge .part .title div { background:url(/images/knowledge_title_left.gif) left top no-repeat; }
+#resources .container .knowledge .part .title div h1 { background:url(/images/knowledge_title_right.gif) right top no-repeat; padding:8px 10px 8px 10px; font-family:Arial, Helvetica, sans-serif; font-size:14px; font-weight:bold; }
+#resources .container .knowledge .part ul { margin:0px 10px 0px 10px; padding:0px; }
+#resources .container .knowledge .part ul li { background:url(/images/knowledge_li.gif) left 5px no-repeat; list-style:none outside; padding:0px 0px 0px 18px; font-size:12px; font-weight:bold; }
+#resources .container .knowledge .part ul li span { color:#666666; font-size:11px; font-weight:normal; font-family:Verdana, Arial, Helvetica, sans-serif; }
+#resources .container .knowledge .part ul li a,#resources .container .knowledge .part ul li a:link,#resources .container .knowledge .part ul li a:visited { color:#333333; text-decoration:underline; }
+#resources .container .knowledge .part ul li a:hover { color:#c80a04; text-decoration:underline; }
+
+#resources .container .select { background:#eeeeee url(/images/product_select.gif) left bottom repeat-x; height:32px; padding:0px 15px 0px 15px; margin:10px 0px 0px 0px }
+#resources .container .select ul { margin:0px; padding:0px; }
+#resources .container .select ul li { height:32px; float:left; list-style:none outside; background:#d6d6d6 url(/images/product_select_bg.gif) left top repeat-x; margin:0px 4px 0px 0px; }
+#resources .container .select ul li div { float:left; height:32px; background:url(/images/product_select_left.gif) left top no-repeat; }
+#resources .container .select ul li div h1 { height:32px; background:url(/images/product_select_right.gif) right top no-repeat; line-height:32px; padding:0px 15px 0px 15px; float:left; }
+#resources .container .select ul li div h1 a,#resources .container .select ul li div h1 a:link,#resources .container .select ul li div h1 a:visited { color:#000000; }
+#resources .container .select ul li div h1 a:hover { color:#c80a04; }
+#resources .container .select ul li div h1 a:active { color:#640502; }
+#resources .container .select .more { float:right; padding:0px 0px 0px 24px; background:url(/images/product_menu_more.gif) left center no-repeat; line-height:30px; }
+#resources .container .select .more a { text-decoration:underline; }
+.resources_select_on { background:url(/images/product_select_on_bg.gif) left top repeat-x !important; }
+.resources_select_on div { background:url(/images/product_select_on_left.gif) left top no-repeat !important; }
+.resources_select_on div h1 { background:url(/images/product_select_on_right.gif) right top no-repeat !important; }
+.resources_select_on a,.resources_select_on a:link,.resources_select_on a:visited { color:#c80a04 !important; }
+.reference_select_on a:hover { color:#000000 !important; }
+#resources .container .content { padding:15px 0px 0px 0px; }
+#resources .container .content .hot { float:left; width:405px; margin:0px 0px 10px 0px; background:#ffffff url(/images/reference_larger_left.gif) left top repeat-y;  }
+#resources .container .content .hot .top { background:url(/images/reference_larger_top.gif) left top repeat-x; height:15px; }
+#resources .container .content .hot .top div { background:url(/images/reference_larger_top_left.gif) left top no-repeat; height:15px; }
+#resources .container .content .hot .top div div { background:url(/images/reference_larger_top_right.gif) right top no-repeat !important; }
+#resources .container .content .hot .bottom { background:url(/images/reference_larger_bottom.gif) left bottom repeat-x; height:15px; }
+#resources .container .content .hot .bottom div { background:url(/images/reference_larger_bottom_left.gif) left bottom no-repeat; height:15px; }
+#resources .container .content .hot .bottom div div { background:url(/images/reference_larger_bottom_right.gif) right bottom no-repeat !important; }
+#resources .container .content .hot .note { padding:0px 15px 0px 15px; background:url(/images/reference_larger_right.gif) right top repeat-y; }
+#resources .container .content .hot .note img { border:1px solid #cccccc; margin:0px 15px 15px 0px; float:left; }
+#resources .container .content .hot .note h1 { font-family:Arial, Helvetica, sans-serif; font-size:16px; font-weight:bold; }
+#resources .container .content .hot .note h1 a { font-size:16px; }
+
+#resources .container .content .other { float:right; width:275px; }
+#resources .container .content .other table { margin:0px; padding:0px; }
+#resources .container .content .other table tr { margin:0px; padding:0px; }
+#resources .container .content .other table tr td { margin:0px; padding:5px; text-align:center; }
+#resources .container .content .other table tr td img { border:0px; width:48px; }
+#resources .container .content .format { margin:0px; padding:0px; width:100%; }
+#resources .container .content .format li { font-size:14px; font-family:Arial, Helvetica, sans-serif; padding:0px 15px 0px 0px; font-weight:bold; float:left; list-style:none outside; line-height:24px; }
+#resources .container .content .format li a { font-size:14px; }
+#resources .container .content .format li a:hover { text-decoration:underline; }
+
+#resources .container .content .top_article { margin:15px 0px 0px 0px; }
+#resources .container .content .top_article .top { background:url(/images/reference_format_bg.gif) left top repeat-x; height:15px; }
+#resources .container .content .top_article .top div { background:url(/images/reference_format_top_left.gif) left top no-repeat; height:15px; }
+#resources .container .content .top_article .top div div { background:url(/images/reference_format_top_right.gif) right top no-repeat !important; height:15px; }
+#resources .container .content .top_article .links { border-left:2px solid #e5e5e5; border-right:2px solid #e5e5e5; padding:0px 15px 0px 15px; }
+#resources .container .content .top_article .title { font-family:Arial, Helvetica, sans-serif; font-size:14px; font-weight:bold; padding:0px 0px 8px 0px; border:0px !important; color:#000000 !important; }
+#resources .container .content .top_article .links ul { margin:0px 0px 0px 0px; padding:0px; }
+#resources .container .content .top_article .links ul li { list-style:disc inside; line-height:18px; }
+
+#resources .container .content .top_article .bottom { background:url(/images/reference_format_bg.gif) left bottom repeat-x; height:15px; }
+#resources .container .content .top_article .bottom div { background:url(/images/reference_format_bottom_left.gif) left bottom no-repeat; height:15px; }
+#resources .container .content .top_article .bottom div div { background:url(/images/reference_format_bottom_right.gif) right bottom no-repeat !important; height:15px; }
+#resources .container .guide { margin:0px; padding:8px 0px 15px 0px; }
+#resources .container .guide ul { padding:0px; margin:0px; }
+#resources .container .guide li { list-style:none outside; line-height:18px; padding:8px 0px 8px 0px; border-bottom:1px solid #ececec; }
+#resources .container .guide li h1 { font-weight:bold; }
+#resources .container .guide li h1 a { font-size:12px; }
+#resources .container .guide li div { color:#666666; text-align:left !important; }
+#resources .container .guide li div img { border:0px; }
+
+#resources .container .feature { margin:0px 0px 15px 0px; padding:0px; background:#FFFFFF url(/images/re_feature_left.gif) left top repeat-y; }
+#resources .container .feature .top { background:url(/images/re_feature_top.gif) left top repeat-x; height:15px; }
+#resources .container .feature .top div { background:url(/images/re_feature_top_left.gif) left top no-repeat; height:15px; }
+#resources .container .feature .top div div { background:url(/images/re_feature_top_right.gif) right top no-repeat; }
+#resources .container .feature .bottom { background:url(/images/re_feature_bottom.gif) left bottom repeat-x; height:15px; }
+#resources .container .feature .bottom div { background:url(/images/re_feature_bottom_left.gif) left bottom no-repeat; height:15px; }
+#resources .container .feature .bottom div div { background:url(/images/re_feature_bottom_right.gif) right bottom no-repeat; }
+#resources .container .feature .content { background:url(../images/re_feature_right.gif) right top repeat-y; padding:0px 15px 0px 15px; }
+#resources .container .feature .content .title { font-family:Arial, Helvetica, sans-serif; font-size:16px; font-weight:bold; padding:0px 0px 8px 0px; border:0px !important; }
+#resources .container .feature .content .about { line-height:18px; float:left; width:340px; border-right:1px dashed #cecece; padding:0px 15px 0px 0px; }
+#resources .container .feature .content .about img { float:left; margin:4px 10px 10px 0px; border:0px; }
+#resources .container .feature .content .about .more { background:url(/images/re_feature_more.gif) left center no-repeat; padding:0px 0px 0px 15px; }
+#resources .container .feature .content .about a { text-decoration:underline; }
+#resources .container .feature .content .links { float:right; width:300px; }
+#resources .container .feature .content .links h1 { font-family:Arial, Helvetica, sans-serif; font-weight:bold; font-size:14px; }
+#resources .container .feature .content .links ul { margin:0px; padding:0px; }
+#resources .container .feature .content .links ul li { list-style:square inside; line-height:18px; }
+
+#recommended { margin:0px; padding:0px; }
+#recommended .title { background:url(/images/reference_recommended_title.gif) center top no-repeat; line-height:40px; padding:0px 15px 0px 15px; color:#000000 !important; }
+#recommended .content { border-left:1px solid #efbab8; border-right:1px solid #efbab8; }
+#recommended .bottom { background:url(/images/recommended_bg.gif) left bottom repeat-x; height:15px; }
+#recommended .bottom div { height:15px; background:url(/images/recommended_left.gif) left bottom no-repeat; }
+#recommended .bottom div div { background:url(/images/recommended_right.gif) right bottom no-repeat !important; }
+#recommended .content ul { margin:0px; padding:0px; width:100%; }
+#recommended .content ul li { list-style:none outside; }
+.recommended_left { float:left; width:49%; border-right:1px solid #ececec; }
+.recommended_right { float:right; width:49%; }
+#recommended .content ul li .img { float:left; left:15px; position:relative; width:100px; }
+#recommended .content ul li .img div { text-align:center; padding:8px 0px 0px 0px; }
+#recommended .content ul li .img div span { color:#666; text-decoration:line-through; font-size:12px; display:block; text-align:center; }
+#recommended .content ul li .img div font {  font-size:14px; font-weight:bold; color:#f00; display:block; text-align:center; }
+#recommended .content ul li .conts { float:right; right:15px; width:200px; position:relative; }
+#recommended .content ul li .conts h1 { font-family:Arial, Helvetica, sans-serif; font-size:14px; font-weight:bold; }
+#recommended .content ul li .conts h1 a { font-size:14px; }
+#recommended .content ul li .conts div { padding:6px 0px 0px 0px; }
+#recommended .content ul li .conts div img { border:0px; margin:0px 4px 0px 0px; }
+
+#resources .container .article { padding:15px 0px 15px 0px; line-height:18px; }
+#resources .container .article img { border:0px; }
+#resources .container .article h1 { font-family:Arial, Helvetica, sans-serif; font-weight:bold; font-size:14px; color:#000000; }
+#resources .container .article .img_center { text-align:center; }
+#resources .container .article ul { margin:0px; padding:0px; width:100%;  }
+#resources .container .article ul li .class { background:#99CCFF; font-size:12px; font-weight:bold; color:#660033; padding:0px; }
+#resources .container .article ul li .more { float:right; font-weight:bold; }
+#resources .container .article ul li { list-style:none outside; padding:4px 0px 4px 0px; border-bottom:1px solid #ececec; }
+#resources .container .article ul li img { margin:10px 15px 0px 15px; }
+#resources .container .article ul li .img { float:left; width:100px; }
+#resources .container .article ul li .text { float:right; width:570px; }
+#resources .container .article ul li h1 { font-size:12px; font-weight:bold; color:#CC00CC; }
+#resources .container .article ul li .download { float:right; text-decoration:underline; font-weight:bold; }
+#resources .container .article ul li a,#resources .container .article ul li a:link,#resources .container .article ul li a:visited { color:#0000FF; }
+#resources .container .article ul li a:hover { color:#c80a04; }
+#resources .container .article ul li a:active { color:#640502; }
+
+#resources .container .related_theme { background:#f8f8f8; padding:15px; margin:0px 0px 15px 0px; }
+#resources .container .related_theme h1 { font-family:Arial, Helvetica, sans-serif; font-size:14px; font-weight:bold; padding:0px 0px 8px 0px; }
+#resources .container .related_theme ul { margin:0px; padding:0px; width:100%; }
+#resources .container .related_theme ul li { line-height:18px; list-style:disc inside !important; }
+#resources .container .related_theme ul li span { color:#666666; }
+
+.wallpaper-bottom{color:#c80a04;padding:0 15px;}
+.backpage a{float:left;font-size:14px; font-weight:bolder;}
+.nextpage a{float:right;font-size:14px;font-weight:bolder;}
+
