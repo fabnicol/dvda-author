@@ -1,0 +1,19 @@
+--- /a/b/c/sox-14.4.2/configure.ac	2015-02-22 21:48:57.000000000 +0100
++++ /a/b/c/new/configure.ac	2016-08-08 02:50:28.547711234 +0200
+@@ -45,7 +45,7 @@
+     using_libltdl=$with_libltdl
+ fi
+ 
+-LT_INIT([dlopen win32-dll])
++LT_INIT([dlopen win32-dll disable-shared])
+ AC_SUBST(LIBTOOL_DEPS)
+ 
+ AC_ARG_WITH(dyn-default,AS_HELP_STRING([--with-dyn-default],[Default to loading optional formats dynamically]),opt_default=dyn,opt_default=yes)
+@@ -671,6 +671,7 @@
+ 
+ dnl Generate output files.
+ AC_CONFIG_FILES(Makefile src/Makefile libgsm/Makefile lpc10/Makefile msvc9/Makefile msvc10/Makefile sox.pc)
++AC_CONFIG_FILES(sox-libs)
+ AC_OUTPUT
+ 
+ if test "$using_gsm" != "no"; then
