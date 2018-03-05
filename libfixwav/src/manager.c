@@ -351,8 +351,7 @@ Checkout:
 
 //                  if (globals.debugging) foutput("%s","Dumping new header:\n\n");
 
-//                  hexdump_h
-//                    write_header(info->outfile.fp, HEADER_SIZE);
+//                  hexdump_header(info->outfile.fp, HEADER_SIZE);
 //              }
           }
           else
