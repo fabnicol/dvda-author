@@ -258,80 +258,99 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
         uint16_copy(&atsi[i], 0x8000 + (j + 1) * 0x100);
         ++i;
         uint16_copy(&atsi[i], 0x0100); // Unknown.  Not related to channel count. TO BE CHECKED.
-       
-
+    
         // To be filled later - pointer to a following table.
         i += 7;
     }
 
     k = 0;
     int s = 0;
+    
     for (j = 0; j < numtitles; ++j)
     {
         uint32_copy(&atsi[0x808 + 8 * j + 4], i - 0x800);
 
         uint16_copy(&atsi[i], 0x0000); // Unknown
         i += 2;
+        
         atsi[i] = ntitletracks[j];
         ++i;
+        
         atsi[i] = ntitletracks[j];
         ++i;
+        
         title_length=0;
+        
         for (t = 0; t < ntitletracks[j]; ++t)
         {
             title_length += files[k+t].PTS_length;
         }
+        
         uint32_copy(&atsi[i], title_length);
         i += 4;
         
         uint16_copy(&atsi[i], 0x0000);  // Unknown
         i += 2;
+        
         uint16_copy(&atsi[i], 0x0010);                 // Pointer to PTS table
         i += 2;
-        uint16_copy(&atsi[i],16 + 20 * ntitletracks[j]);  // Pointer to sector table
+        
+        uint16_copy(&atsi[i], 16 + 20 * ntitletracks[j]);  // Pointer to sector table
         i+=2;
+        
         //PATCH 09.09
         if ((img->count) || (img->stillvob) || (img->active))
-            uint16_copy(&atsi[i], 16 + 32*ntitletracks[j]);                 // Pointer to a stillpic data table
+            uint16_copy(&atsi[i], 16 + 32 * ntitletracks[j]);                 // Pointer to a stillpic data table
+        
         i+=2;
 
         /* Timestamp and sector records */
 
-        for (t=0;t<ntitletracks[j];t++)
+        for (t = 0; t < ntitletracks[j]; ++t)
         {
-
             // These seem to be pointers to a lookup table in the first sector of the ATSI
 
-            x=get_afmt(&files[k],audioformats,&numafmts);
-            x = (x*8) << 8 | 0x0010 * (files[j].channels < 2); // looks like 0x10 for stereo or mono, 0 for surround
-            if (t==0)
+            x = get_afmt(&files[k], audioformats, &numafmts);
+            x = (x * 8) << 8 | 0x0010 * (files[j].channels < 2); // looks like 0x10 for stereo or mono, 0 for surround
+            
+            if (t == 0)
             {
-                x|=0xc000;
+                x |= 0xc000;
             }
-            uint16_copy(&atsi[i],x);
-            i+=2;
-            uint16_copy(&atsi[i],0x0000);
-            i+=2;
-            atsi[i]=t+1;
-            i++;
-            atsi[i]=0x00;
-            i++;
-            uint32_copy(&atsi[i],files[k+t].first_PTS);  // Modify calc_PS_start !
-            i+=4;
-            uint32_copy(&atsi[i],files[k+t].PTS_length);
-            i+=10;
-
+            
+            uint16_copy(&atsi[i], x);
+            i += 2;
+            
+            uint16_copy(&atsi[i], 0x0000);
+            i += 2;
+            
+            atsi[i] = t + 1;
+            ++i;
+            
+            atsi[i] = 0x00;
+            ++i;
+            
+            uint32_copy(&atsi[i], files[k + t].first_PTS);  // Modify calc_PS_start !
+            i += 4;
+            
+            uint32_copy(&atsi[i], files[k + t].PTS_length);
+            i += 10;
         }
+        
         /* Sector pointer records */
-        for (t=0;t<ntitletracks[j];t++)
+        
+        for (t = 0; t < ntitletracks[j]; ++t)
         {
-            atsi[i]=0x01;
-            i+=4;
-            uint32_copy(&atsi[i],files[k+t].first_sector);
-            i+=4;
-            uint32_copy(&atsi[i],files[k+t].last_sector);
-            i+=4;
+            atsi[i] = 0x01;
+            i += 4;
+            
+            uint32_copy(&atsi[i], files[k + t].first_sector);
+            i += 4;
+            
+            uint32_copy(&atsi[i], files[k + t].last_sector);
+            i += 4;
         }
+        
         if ((img->count) || (img->stillvob) || (img->active))
         {
 
@@ -339,62 +358,72 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
 
             uint16_t r, u=0,  trackcount_save=trackcount;
             s+=(j)? ntitlepics[j-1]  : 0;
-            if (ntitlepics[j]) pictitlecount++;
-             if (globals.veryverbose) foutput(MSG_TAG "pictitlecount=%d for ntitlepics[%d]=%d\n", pictitlecount,j,ntitlepics[j]);
-	    for (r=0; r < ntitletracks[j]; r++)
-	    {
-		trackcount++;
-		if ((ntitlepics[j] == 0) && (img->npics[trackcount-1] == 0)) continue;  //  This might be taken off in some unclear cases.
-
-		atsi[i++]=pictitlecount;  // title-with-pics rank (1-based)
-		if ((img->options) && (img->options[s]) && (img->options[s]->manual))
-		  atsi[i]=0x04;
-		i++;
-		uint16_copy(&atsi[i], 0x06*ntitletracks[j]); // track rank index
-		i+=2;
-		if (globals.veryverbose) foutput(MSG_TAG "ntitlepics[%d]=%d, ntitletracks[%d]=%d\n", j, ntitlepics[j], j, ntitletracks[j]);
-		//if (ntitlepics[j] > ntitletracks[j])  // conditions to be tested
-		 uint16_copy(&atsi[i],(ntitletracks[j]-1)*0x6+0x0F+(ntitlepics[j] -1)*0xA ); // track rank index (backup)
-		//else
-		 //uint16_copy(&atsi[i],(ntitletracks[j]-1)*0x10+0x0F); // track rank index (backup)
-		i+=2;
-	    }
+            
+            if (ntitlepics[j]) 
+                ++pictitlecount;
+            
+            if (globals.veryverbose) foutput(MSG_TAG "pictitlecount=%d for ntitlepics[%d]=%d\n", 
+                                             pictitlecount,
+                                             j,
+                                             ntitlepics[j]);
+             
+            for (r = 0; r < ntitletracks[j]; ++r)
+            {
+                ++trackcount;
+                
+                if ((ntitlepics[j] == 0) && (img->npics[trackcount-1] == 0)) continue;  //  This might be taken off in some unclear cases.
+        
+                atsi[i++]=pictitlecount;  // title-with-pics rank (1-based)
+                
+                if ((img->options) && (img->options[s]) && (img->options[s]->manual))
+                  atsi[i]=0x04;
+                i++;
+                uint16_copy(&atsi[i], 0x06*ntitletracks[j]); // track rank index
+                i+=2;
+                if (globals.veryverbose) foutput(MSG_TAG "ntitlepics[%d]=%d, ntitletracks[%d]=%d\n", j, ntitlepics[j], j, ntitletracks[j]);
+                //if (ntitlepics[j] > ntitletracks[j])  // conditions to be tested
+                 uint16_copy(&atsi[i],(ntitletracks[j]-1)*0x6+0x0F+(ntitlepics[j] -1)*0xA ); // track rank index (backup)
+                //else
+                 //uint16_copy(&atsi[i],(ntitletracks[j]-1)*0x10+0x0F); // track rank index (backup)
+                i+=2;
+    	    }
+            
             trackcount=trackcount_save;
 
-	    for (t=0; t < ntitletracks[j]; t++)
-	    {
-		trackcount++;
-		if (img->npics[trackcount-1] == 0)
-		{
-	             if (globals.debugging)
-		       foutput(INF "Skipping track with no pics, t=%d, trackcount=%d\n", t, trackcount);
-		     continue;
-		}
-		uint16_t  pictrackcount=0;
+            for (t=0; t < ntitletracks[j]; t++)
+            {
+                trackcount++;
+                if (img->npics[trackcount-1] == 0)
+                {
+                         if (globals.debugging)
+                       foutput(INF "Skipping track with no pics, t=%d, trackcount=%d\n", t, trackcount);
+                     continue;
+                }
+                uint16_t  pictrackcount=0;
 
-		while (pictrackcount < img->npics[trackcount-1])   // while inside a track pic list or if beginning a track that has pics in it
-		{
-
-		  atsi[i]=u+1;
-		  i+=3;
-		  atsi[i]=t+1;
-		  i++;
-
-		  if ((img->options) && (img->options[s+u])&&(img->options[s+u]->onset))
-		     uint32_copy(&atsi[i],img->options[s+u]->onset*90000);
-		  else if ((img->options==NULL) || (img->options[s] == NULL) || (img->options[s]->manual == 0))
-		     uint32_copy(&atsi[i],pictrackcount*90000); // defaulting to 1 second intervals
-		  i+=4;
-		  if ((img->options) && (img->options[s+u]))
-		    atsi[i]=img->options[s+u]->starteffect;
-		  i++;
-		  if ((img->options) && (img->options[s+u]))
-		    atsi[i]=img->options[s+u]->endeffect;
-		  i++;
-		  u++;
-		  pictrackcount++;
-		}
-	    }
+                while (pictrackcount < img->npics[trackcount-1])   // while inside a track pic list or if beginning a track that has pics in it
+                {
+        
+                  atsi[i]=u+1;
+                  i+=3;
+                  atsi[i]=t+1;
+                  i++;
+        
+                  if ((img->options) && (img->options[s+u])&&(img->options[s+u]->onset))
+                     uint32_copy(&atsi[i],img->options[s+u]->onset*90000);
+                  else if ((img->options==NULL) || (img->options[s] == NULL) || (img->options[s]->manual == 0))
+                     uint32_copy(&atsi[i],pictrackcount*90000); // defaulting to 1 second intervals
+                  i+=4;
+                  if ((img->options) && (img->options[s+u]))
+                    atsi[i]=img->options[s+u]->starteffect;
+                  i++;
+                  if ((img->options) && (img->options[s+u]))
+                    atsi[i]=img->options[s+u]->endeffect;
+                  i++;
+                  u++;
+                  pictrackcount++;
+                }
+            }
 
         }
         k+=ntitletracks[j];
