@@ -831,7 +831,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             for (m=0; (m+k < argc)&&(argv[m+k][0] !='-'); m++)
             {
                 if (globals.debugging) foutput("       files[%d][%d].cga=%s\n", ngroups_scan, m, argv[m+k]);
-                uint8_t cgaint=atoi(argv[m+k]);
+                //uint8_t cgaint=atoi(argv[m+k]);
                 
 //                if (check_cga_assignment(cgaint))
 //                    files[ngroups_scan][m].cga=cgaint;
@@ -2870,7 +2870,7 @@ void process_dvd_video_zone(command_t* command)
 
 void aob2wav_parsing(char *ssopt)
 {
-    char *chain , *subchunk = NULL;
+    char *chain ;//, *subchunk = NULL;
     if (ssopt) chain = strdup(ssopt); else return;
     int i = 0;
 
