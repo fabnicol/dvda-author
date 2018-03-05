@@ -1040,7 +1040,10 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
         ++titleintitleset;
         if (titleintitleset == numtitles[titleset])
         {
-            sectoroffset[titleset + 1] = sectoroffset[titleset] + (command->files[titleset][ntracks[titleset] - 1].last_sector + 1)+sectors->atsi[titleset] * 2;
+            sectoroffset[titleset + 1] = sectoroffset[titleset] + 
+                    (command->files[titleset][ntracks[titleset] - 1].last_sector + 1) 
+                    + sectors->atsi[titleset] * 2;
+            
             if (globals.veryverbose)
             {
                 if (titleset == 0)

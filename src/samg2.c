@@ -235,31 +235,6 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
             samg[i]= files[g][j].cga;
             ++i;
 
-//            switch (files[g][j].channels)
-//            {
-//            case 1:
-//                samg[i]=0;
-//                break;
-//            case 2:
-//                samg[i]=1;
-//                break;
-//            case 3:
-//                samg[i]=2;
-//                break; // L-R-S   other 3-ch configs could be supported -- laf
-//            case 4:
-//                samg[i]=3;
-//                break;
-//            case 5:
-//                samg[i]=6;
-//                break; // other 5-ch configs could be supported -- laf
-//            case 6:
-//                samg[i]=20;
-//                break;
-//            default:
-//                foutput(ERR "samg: Unsupported number of channels (%d)\n",files[g][j].channels);
-//                clean_exit(EXIT_FAILURE);
-//            }
-
             i += 4;
             uint16_copy(&samg[i],0x1eff);
             i += 2;

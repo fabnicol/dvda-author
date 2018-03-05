@@ -868,73 +868,79 @@ int scan_ats_ifo(_fileinfo_t * files, uint8_t *buf)
     int i,j,k,t=0,ntracks,ntracks1, numtitles;
     
     
-    i=2048;
-    numtitles=uint16_read(buf+i);
+    i = 2048;
+    numtitles = uint16_read(buf + i);
     
     uint8_t titleptr[numtitles];
     
-    i+=8;
-    ntracks=0;
+    i += 8;
+    ntracks = 0;
     
-    for (j=0; j<numtitles; j++)
+    for (j = 0; j < numtitles; ++j)
     {
-        
-        i+=4;
-        titleptr[j]=uint32_read(buf+i);
-        i+=4;
+        i += 4;
+        titleptr[j] = uint32_read(buf + i);
+        i += 4;
     }
     
-    for (j=0; j<numtitles; j++)
+    for (j = 0; j < numtitles; ++j)
     {
-        i=0x802+titleptr[j];
-        ntracks1=buf[i];
-        i+=14;
+        i = 0x802 + titleptr[j];
+        ntracks1 = buf[i];
+        i += 14;
         
-        t=ntracks;
+        t = ntracks;
         
-        for (k=0; k<ntracks1; k++)
+        for (k = 0; k < ntracks1; ++k)
         {
-            i+=10;
-            files[t].pts_length=uint32_read(buf+i);
-            i+=10;
-            t++;
+            i += 10;
+            
+            files[t].pts_length = uint32_read(buf + i);
+            
+            i += 10;
+            ++t;
         }
         
-        t=ntracks;
+        t = ntracks;
+        
         /* 12 byte sector records */
-        if (globals.debugging)
-            for (k=0; k<ntracks1; k++)
-            {
-                
-                i+=4;
-                files[t].first_sector=uint32_read(buf+i);
-                i+=4;
-                files[t].last_sector=uint32_read(buf+i);
-                i+=4;
-                t++;
-            }
         
-        ntracks+=ntracks1;
-    }
-    if (globals.debugging)
-        for (i=0; i<ntracks; i++)
+        for (k = 0; k < ntracks1; ++k)
         {
-            printf("     track first sector  last sector   pts length\n     %02d    %12"PRIu64" %12"PRIu64" %12"PRIu64"\n\n",i+1,files[i].first_sector,files[i].last_sector,files[i].pts_length);
+            i += 4;
+            files[t].first_sector = uint32_read(buf + i);
+            
+            i += 4;
+            files[t].last_sector = uint32_read(buf + i);
+            
+            i += 4;
+            ++t;
+        }
+        
+        ntracks += ntracks1;
+    }
+    
+    if (globals.debugging)
+        for (i = 0; i < ntracks; ++i)
+        {
+            printf("     Track/N first sector  last sector   pts length\n     %02d/%02d    %12"PRIu64" %12"PRIu64" %12"PRIu64"\n\n",
+                   i+1, ntracks, files[i].first_sector, files[i].last_sector, files[i].pts_length);
         }
     
-    return(ntracks);
+    quick_exit(0);
+   // return(ntracks);
 }
 
 int ats2wav(const char GCC_UNUSED * filename, const char GCC_UNUSED *outdir)
 {
     
-#if 0
+
     FILE* file=NULL;
     //FILE* fp=NULL;
     
     //unsigned int payload_length=0, ats=1;
     unsigned int t=0, ntracks=0;
-    _fileinfo_t files[99];
+    _fileinfo_t *files = (_fileinfo_t*) calloc(99 * 9, sizeof(_fileinfo_t));
     //int length=strlen(outdir);
     //int i,k ;
     uint8_t buf[BUFFER_SIZE];
@@ -945,35 +951,39 @@ int ats2wav(const char GCC_UNUSED * filename, const char GCC_UNUSED *outdir)
     
     /* First check the DVDAUDIO-ATS tag at start of ATS_XX_0.IFO */
     
-    file=secure_open(filename, "rb");
+    file = fopen(filename, "rb");
+    if (file == NULL)
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE("IFO file could not be opened.")
+    }
     
+    if (globals.debugging)
+        printf( INF "Reading file %s\n", filename);
     
-    nbytesread=fread(buf,1,sizeof(buf), file);
+    nbytesread = fread(buf,1,sizeof(buf), file);
     
     if (globals.debugging)
         printf( INF "Read %d bytes\n", nbytesread);
     
     fclose(file);
     
-    if (memcmp(buf,"DVDAUDIO-ATS",12)!=0)
+    if (memcmp(buf, "DVDAUDIO-ATS", 12)!=0)
     {
         printf(ERR "%s is not an ATSI file (ATS_XX_0.IFO)\n",filename);
         return(EXIT_FAILURE);
     }
     
     printf("%c", '\n');
-    
-    
+        
     /* now scan tracks to be extracted */
-    
-    
+        
     ntracks=scan_ats_ifo(files, buf);
-    
+#if 0    
     if (globals.maxverbose) EXPLAIN("%s%d%s\n", "scanning ", ntracks, "tracks")
             
             //fp=open_aob( fp,  filename,  atstemplate,  ats);
             
-            for (t=0; t<ntracks; t++)
+   for (t=0; t<ntracks; t++)
     {
         files[t].started=0;
         files[t].byteswritten=0;

@@ -284,6 +284,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"aob-extract", required_argument,NULL, 28},
         {"aob2wav", required_argument,NULL, 29},
         {"outfile", required_argument,NULL, 30},
+        {"scan-info", required_argument, NULL, 31},
 
     #endif
         {NULL, 0, NULL, 0}
@@ -2035,7 +2036,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             break;
             
-            
+        case 31: 
+            foutput("%s%s\n", ANSI_COLOR_MAGENTA "[PAR] " ANSI_COLOR_RESET "Scanning information given by IFO file : ", optarg);
+            ats2wav(strdup(optarg), NULL);
+            break;
         }
     }
     
