@@ -1968,7 +1968,7 @@ void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* 
     {
         if (globals.logdecode)
         {
-            fprintf(log, "ERR;SECTOR OVERFLOW at: %08X" PRIu64 ";%s;size read;%d;exceeds by;%d\n", offset, label, size, (int) offset % 2048 + size - 2048);
+            fprintf(log, "ERR;SECTOR OVERFLOW at: %08luX ;%s;size read;%d;exceeds by;%d\n", offset, label, size, (int) offset % 2048 + size - 2048);
             fread(tab__, size,1,fp);
             hex2file_csv(log, tab__, size);
             //fprintf(log, "%s", "\n");
@@ -1987,7 +1987,7 @@ void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* 
         if (!globals.logdecode)
          return;
 
-        fprintf(log, "OK ;%08X" PRIu64 ";%s;", offset, label);
+        fprintf(log, "OK ;%08luX;%s;", offset, label);
         fprintf(log, "%s", "\n");
     }
     else
@@ -1995,7 +1995,7 @@ void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* 
         if (! globals.logdecode)
           return;
 
-        fprintf(log, "ERR;%08X" PRIu64 ";%s;", offset, label);
+        fprintf(log, "ERR;%08luX;%s;", offset, label);
 
         if (write)
         {
@@ -2019,7 +2019,7 @@ void rw_field(uint8_t* tab, int size,const char* label, FILE* fp, FILE* log)
 
     if (! globals.logdecode) return;
 
-    fprintf(log, "INF;%08X" PRIu64 ";%s;;;;;\n", offset, label);
+    fprintf(log, "INF;%08luX;%s;;;;;\n", offset, label);
     //hex2file_csv(log, tab, size);
     //fprintf(log, "%s", ";;;;;;;\n");
 }
@@ -2160,7 +2160,7 @@ errno=0;
     case 0:
         close(tube[0]);
         dup2(tube[1], STDERR_FILENO);
-        foutput("%s%s%s\n", DBG "application:", application, " args1:", args[1]);
+        foutput("%s%s%s%s\n", DBG "application:", application, " args1:", args[1]);
         execv(application, (char* const*) args);
         foutput("%s%s%s\n", ERR "Runtime failure in ", application," child process");
         perror("");

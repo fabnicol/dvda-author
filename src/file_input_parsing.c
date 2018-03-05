@@ -155,18 +155,18 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
         totnt = nt - 1;
         nt = 0;
 
-        FILE* cgafile;
-        _Bool read_cga_file=0;
-        cgafile=fopen(CGA_FILE, "rb");
-        if (cgafile != NULL)
-        {
-            if (globals.debugging) foutput("%s", MSG_TAG "Channel assignment file was opened\n");
-            read_cga_file=1;
-        }
-        else
-        {
+//        FILE* cgafile;
+//        //_Bool read_cga_file=0;
+//        cgafile=fopen(CGA_FILE, "rb");
+//        if (cgafile != NULL)
+//        {
+//            if (globals.debugging) foutput("%s", MSG_TAG "Channel assignment file was opened\n");
+//            //read_cga_file=1;
+//        }
+//        else
+//        {
             if (globals.debugging) foutput("%s", MSG_TAG "Automatic channel assignment.\n");
-        }
+//        }
 
 
         do
@@ -305,14 +305,14 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract, const char* player)
         // does not extract when an extract list (!=NULL) is given and buffer != a list member.
         if (extract != NULL)
             if ( (ngroups_scan-extract->extracttitleset[0])
-                    *(ngroups_scan-extract->extracttitleset[1])
-                    *(ngroups_scan-extract->extracttitleset[2])
-                    *(ngroups_scan-extract->extracttitleset[3])
-                    *(ngroups_scan-extract->extracttitleset[4])
-                    *(ngroups_scan-extract->extracttitleset[5])
-                    *(ngroups_scan-extract->extracttitleset[6])
-                    *(ngroups_scan-extract->extracttitleset[7])
-                    *(ngroups_scan-extract->extracttitleset[8]))
+                    && (ngroups_scan-extract->extracttitleset[1])
+                    && (ngroups_scan-extract->extracttitleset[2])
+                    && (ngroups_scan-extract->extracttitleset[3])
+                    && (ngroups_scan-extract->extracttitleset[4])
+                    && (ngroups_scan-extract->extracttitleset[5])
+                    && (ngroups_scan-extract->extracttitleset[6])
+                    && (ngroups_scan-extract->extracttitleset[7])
+                    && (ngroups_scan-extract->extracttitleset[8]))
                 continue;
 
         if (strcmp(strtok(NULL , "_"), "0.IFO")) continue;

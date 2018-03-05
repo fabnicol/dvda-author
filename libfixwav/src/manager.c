@@ -344,15 +344,15 @@ Checkout:
           if ((info->repair=write_header(info, header)) != FAIL)
           {
               if (globals.debugging) foutput("%s\n", INF "Header copy successful.\n");
-              if (globals.maxverbose)
-              {
-                  S_CLOSE(info->infile)
-                  S_OPEN(info->outfile, "wb+")
+//              if (globals.maxverbose)
+//              {
+//                  S_CLOSE(info->infile)
+//                  S_OPEN(info->outfile, "wb+")
 
-                  if (globals.debugging) foutput("%s","Dumping new header:\n\n");
+//                  if (globals.debugging) foutput("%s","Dumping new header:\n\n");
 
-                  hexdump_header(info->outfile.fp, HEADER_SIZE);
-              }
+//                  hexdump_header(info->outfile.fp, HEADER_SIZE);
+//              }
           }
           else
           {

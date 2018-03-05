@@ -133,7 +133,7 @@ inline static void decode_pts(uint8_t P[5], uint64_t* pts_ptr)
     *pts_ptr = (P[0] >> 1 & 0x3) << 30 | P[1] << 22 | (P[2] >> 1) << 15 | P[3] << 7 | P[4] >> 1;
 
     if (globals.logdecode)
-        fprintf(aob_log, "INF;PTS décode;%08X" PRIu64 ";;;;\n", *pts_ptr);
+        fprintf(aob_log, "INF;PTS décode;%08lX ;;;;\n", *pts_ptr);
 }
 
 uint8_t pack_start_code[4]={0x00,0x00,0x01,0xBA};
@@ -1040,7 +1040,7 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
 
     /* 14 + (3) + 4 + header_length = 18 + (3) + header_length = offset1-offset */
 
-    if (18 + (position == FIRST_PACK ? 3 : 0) + header_length != offset1 - offset)
+    if ((uint64_t) 18 + (position == FIRST_PACK ? 3 : 0) + header_length != offset1 - offset)
     {
         if (globals.logdecode)
         {
@@ -1199,7 +1199,7 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
     {
         open_aob_log();
         fprintf(aob_log, "INF;midpack_lpcm_headerquantity;%d;midpack_pes_padding;%d;bitspersample;%d;samplerate;%d\n", info->midpack_lpcm_headerquantity, info->midpack_pes_padding,info->bitspersample, info->samplerate);
-        fprintf(aob_log, "INF;sector length: ; %d  bytes;------;title pack: ; %d ; title: ;%d\n", sector_length, pack_in_title, title);
+        fprintf(aob_log, "INF;sector length: ; %lu  bytes;------;title pack: ; %lu ; title: ;%d\n", sector_length, pack_in_title, title);
         close_aob_log();
     }
     return(position);

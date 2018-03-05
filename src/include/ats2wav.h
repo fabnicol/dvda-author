@@ -15,6 +15,7 @@
 #include <stdint.h>
 #include "structures.h"
 #include "libiberty.h"
+#include "fixwav_manager.h"
 
 typedef struct
 {
@@ -37,7 +38,7 @@ typedef struct
 #define BUFFER_SIZE 3*2048
 int ats2wav(const char* filename, const char* outdir);
 
-int get_ats_audio_i(int, fileinfo_t[9][99]);
+int get_ats_audio_i(int, fileinfo_t[9][99], WaveData *info);
 int get_ats_audio();
 
 #endif
