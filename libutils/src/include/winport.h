@@ -40,7 +40,7 @@
     if (fd == -1)
     {
         close(fd);
-        fprintf(stderr, "[ERR]" "   Impossible to open file %s for checking size.\n", filename);
+        fprintf(stderr, ERR "   Impossible to open file %s for checking size.\n", filename);
         perror("       ");
         return 0;
     }

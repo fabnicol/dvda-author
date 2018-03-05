@@ -32,7 +32,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "winport.h"
 #include "multichannel.h"
 #include "auxiliary.h"
-#include "fixwav_manager.h"
+
 
 extern globalData globals;
 extern uint8_t channels[21];
@@ -136,11 +136,10 @@ static void convert_buffer(WaveHeader* header, uint8_t *buf, int count)
 }
 
 
-inline static void  aob_open(WaveData *info, int64_t aob_offset_read_start)
+inline static void  aob_open(WaveData *info)
 {
-    if (aob_offset_read_start < 0) return;
 
-    if (aob_offset_read_start == 0 && file_exists(info->infile.filename))
+    if (file_exists(info->infile.filename))
         info->infile.filesize = stat_file_size(info->infile.filename);
 
     info->infile.fp = fopen(info->infile.filename, "rb")  ;
@@ -153,10 +152,6 @@ inline static void  aob_open(WaveData *info, int64_t aob_offset_read_start)
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE("INFILE open issue.")
     }
-
-    if (info->infile.isopen)
-        fseeko(info->infile.fp, aob_offset_read_start, SEEK_SET);
-
 }
 
 inline static void wav_output_path_create(WaveData *info)
@@ -186,9 +181,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
 {
     int position;
 
-    static int64_t aob_offset_read_start;
-
-    if (! info->infile.isopen) aob_open(info, aob_offset_read_start);
+    if (! info->infile.isopen) aob_open(info);
 
     uint64_t offset0 = ftello(info->infile.fp);
 
@@ -207,7 +200,10 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
 
         if (res != 0)
         {
-            position = LAST_PACK;
+            if (feof(info->infile.fp))
+                position = END_OF_AOB;
+            else
+                position = LAST_PACK;
         }
         else
         {
@@ -301,20 +297,8 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
       header->dwChannelMask = cga2wav_channels[channel_assignment[0]];
     }
 
-    if (offset0 + 2048 < filesize(info->infile))
-    {
-      fseeko(info->infile.fp, offset0 + 2048, SEEK_SET);
-      aob_offset_read_start = (position == LAST_PACK || *status == VALID) ? (int64_t) offset0 + 2048 : -1;
-    }
-    else
-    {
-      fseeko(info->infile.fp, 0, SEEK_END);
-      position = END_OF_AOB;
-      aob_offset_read_start  = 0;
-    }
-
-    if (*status == VALID)
-         S_CLOSE(info->infile)
+   
+    fseeko(info->infile.fp, offset0, SEEK_SET);
 
     return position;
 }
@@ -323,8 +307,8 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
 inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header)
 {
     int position;
-    static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
-    static int64_t aob_offset_read_start;
+    //static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
+
     static uint64_t fpout_size;
     int audio_bytes;
     uint8_t PES_packet_len_bytes[2];
@@ -366,7 +350,7 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header)
 
     //////////////////////////////
 
-    aob_open(info, aob_offset_read_start);
+    if (! info->infile.isopen) aob_open(info);
 
     uint64_t offset0 = ftello(info->infile.fp);
     uint8_t buf[4];
@@ -454,81 +438,77 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header)
     }
 
     uint64_t offset1 = offset0 + 2048;
-
-    if (offset1 < filesize(info->infile))
-    {
-      fseeko(info->infile.fp, offset1, SEEK_SET);
-      aob_offset_read_start = (position == LAST_PACK) ? (int64_t) offset1 : -1;
-    }
+        
+    if (offset1 >= filesize(info->infile)) position = END_OF_AOB;
     else
-    {
-      fseeko(info->infile.fp, 0, SEEK_END);
-      position = END_OF_AOB;
-      aob_offset_read_start  = 0;
-    }
-
+        fseeko(info->infile.fp, offset1, SEEK_SET);
+   
     return(position);
 }
 
-int get_ats_audio_i(int i, fileinfo_t files[9][99])
+int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
 {
     uint64_t pack = 0;
     static int j;
 
     int pack_rank = FIRST_PACK;
-
-    filestat_t aob_object = filestat(false, 0, globals.aobpath[i], NULL);
-
-    WaveData info = {
-                      .database = NULL,
-                      .filetitle = NULL,
-                      .automatic = true,
-                      .prepend = globals.fixwav_prepend,
-                      .in_place = true,
-                      .cautious = false,
-                      .interactive = false,
-                      .padding = false,
-                      .prune = false,
-                      .virtual = false,
-                      .repair = 0,
-                      .padbytes = 0,
-                      .prunedbytes = 0,
-                      .infile = aob_object,
-                      .outfile = filestat(false, 1, NULL, NULL)
-                    };
+    
+    if (info == NULL)
+    {
+        info = (WaveData*) calloc(1, sizeof(WaveData));
+        
+        info->database = NULL;
+        info->filetitle = NULL;
+        info->automatic = true;
+        info->prepend = globals.fixwav_prepend;
+        info->in_place = true;
+        info->cautious = false;
+        info->interactive = false;
+        info->padding = false;
+        info->prune = false;
+        info->virtual = false;
+        info->repair = 0;
+        info->padbytes = 0;
+        info->prunedbytes = 0;
+        info->infile =  filestat(false, 0, globals.aobpath[i], NULL);
+        info->outfile = filestat(false, 1, NULL, NULL);
+    }
+    
     WaveHeader header;
 
-    do
+    while (pack_rank != END_OF_AOB)
     {
         /* First pass to get basic audio characteristics (sample rate, bit rate, cga */
         _Bool status = VALID;
 
         errno = 0;
+        if (globals.veryverbose)
+            foutput("%s %d %s %d\n", MSG_TAG "Group ", i, "Track ", j);
 
         do
         {
-            pack_rank = peek_pes_packet_audio(&info, &header, &status);
+            pack_rank = peek_pes_packet_audio(info, &header, &status);
             if (status == VALID) break;
         }
         while (pack_rank != LAST_PACK && pack_rank != END_OF_AOB);
 
-        if (errno)
-        {
-           foutput(ERR "Error while trying to recover audio characteristics of file %s.\n        Exiting...\n",
-                   filename(info.infile));
-           exit(-7);
-        }
+//        if (errno)
+//        {
+//           foutput(ERR "Error while trying to recover audio characteristics of file %s.\n        Exiting...\n",
+//                   filename(info->infile));
+//           exit(-7);
+//        }
 
-        if (status == INVALID)
-        {
-           foutput(ERR "Error while trying to recover audio characteristics : invalid status or input file %s.\n        Exiting...\n",
-                   filename(info.infile));
-           exit(-8);
-        }
+//        if (status == INVALID)
+//        {
+//           foutput(ERR "Error while trying to recover audio characteristics : invalid status or input file %s.\n        Exiting...\n",
+//                   filename(info->infile));
+//           exit(-8);
+//        }
 
 
-        wav_output_path_create(&info);
-        wav_output_open(&info);
+        wav_output_path_create(info);
+        wav_output_open(info);
 
         _Bool debug;
 
@@ -541,44 +521,42 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99])
             /* Hush it up as there will be spurious error mmsg */
             globals.debugging = false;
 
-            info.outfile.filesize = 0;  // necessary to reset so that header can be generated in empty file
-            info.infile = info.outfile;
-            info.prepend = true;
-
-            info.infile.fp = fopen(info.infile.filename, "wb+");
-            if (info.infile.fp != NULL)
+            info->outfile.filesize = 0;  // necessary to reset so that header can be generated in empty file
+            filestat_t temp = info->infile;
+            
+            info->infile = info->outfile;
+            info->prepend = true;
+            info->infile.fp = fopen(info->infile.filename, "wb+");
+            
+            if (info->infile.fp != NULL)
             {
-                info.infile.isopen = true;
+                info->infile.isopen = true;
             }
             else
             {
                 EXIT_ON_RUNTIME_ERROR_VERBOSE("WAV header-prepending issue.")
             }
+            
+            fixwav(info, &header);
 
-            info.outfile = info.infile;
+            S_CLOSE(info->outfile)  // necessary here, forbidden with the second fixwav below.
 
-            fixwav(&info, &header);
-
-            S_CLOSE(info.outfile)  // necessary here, forbidden with the second fixwav below.
-
-            info.infile = aob_object;
+            info->infile = temp;
             errno = 0;
 
-            wav_output_open(&info);
+            wav_output_open(info);
         }
 
         /* second pass to get the audio */
 
-
         do
         {
-            pack_rank = get_pes_packet_audio(&info, &header);
+            pack_rank = get_pes_packet_audio(info, &header);
             ++pack;
         }
         while (pack_rank != LAST_PACK && pack_rank != END_OF_AOB);
 
         foutput(MSG_TAG "Read %" PRIu64 " PES packets.\n", pack);
-
 
         if (globals.fixwav_prepend)
         {
@@ -587,18 +565,18 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99])
              * the exact audio content bytesize. Also we no longer prepend the header
              * but overwrite the existing one */
 
-            info.prepend = false;
-            aob_object = info.infile;
-            info.infile = info.outfile;
+            info->prepend = false;
+            filestat_t temp = info->infile;
+            info->infile = info->outfile;
 
-            fixwav(&info, &header);
+            fixwav(info, &header);
 
             if (j == 99)
             {
                 EXIT_ON_RUNTIME_ERROR_VERBOSE("DVD-Audio specifications only allow 99 titles per group.")
             }
 
-            files[i][j].filename = filename(info.outfile);
+            files[i][j].filename = filename(info->outfile);
             files[i][j].bitspersample = header.wBitsPerSample;
             files[i][j].samplerate = header.dwSamplesPerSec;
             files[i][j].channels = header.channels;
@@ -607,22 +585,30 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99])
             ++j;
 
             globals.debugging = debug;
-            info.infile = aob_object;
+            info->infile = temp;
             errno = 0;
         }
 
-        info.outfile = filestat(false, 1, NULL, NULL);
+        info->outfile = filestat(false, 1, NULL, NULL);
 
-        if (position == LAST_PACK)
+        if (pack_rank == LAST_PACK)
         {
-            S_CLOSE(info.outfile)
-            get_ats_audio_i(i, files);
+            S_CLOSE(info->outfile)
+            if (globals.veryverbose)        
+                    foutput("%s\n", INF "Closing first track and opening new one.");
+        }
+        else
+        if (pack_rank == END_OF_AOB)
+        {
+            S_CLOSE(info->outfile)
+            if (globals.veryverbose)        
+                    foutput("%s\n", INF "Closing last track of AOB.");
         }
     }
-    while (pack_rank != END_OF_AOB);
 
-    S_CLOSE(info.infile)
-
+    S_CLOSE(info->infile)
+    free(info);    
+    
     return(errno);
 }
 
@@ -646,11 +632,21 @@ static void audio_extraction_layout(fileinfo_t files[9][99])
 
 int get_ats_audio()
 {
-    fileinfo_t files[9][99] = {{0}};
+    fileinfo_t files[9][99] = {{{0}}};
     
     for (int i = 0; i < 9 && globals.aobpath[i] != NULL; ++i)
-        get_ats_audio_i(i, files);
+    {
+      if (globals.veryverbose)
+         foutput("%s%d%s\n", INF "Extracting audio for AOB n°", i+1, " (1-based).");
 
+      WaveData *info = NULL;
+      get_ats_audio_i(i, files, info);
+      if (globals.veryverbose)
+              foutput("%s\n", INF "Reached ead of AOB.");
+       
+     }
+     
+    
     if (globals.fixwav_prepend)
         audio_extraction_layout(files);
 
