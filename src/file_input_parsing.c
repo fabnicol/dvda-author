@@ -273,7 +273,7 @@ static int check_ignored_extension(void *path)
     return (0);
 }
 
-int parse_disk(DIR* dir, mode_t mode, extractlist  *extract, const char* player)
+int parse_disk(DIR* dir, mode_t mode, extractlist  *extract)
 {
 
     char ngroups_scan=0;
@@ -314,11 +314,11 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract, const char* player)
             EXIT_ON_RUNTIME_ERROR_VERBOSE("Erreur de nommage des fichiers ATS :  le premier chiffre doit être compris entre 01 et 09.")
         }
         
-        if (extract != NULL)
-        {
-            if (extract->extracttitleset[ngroups_scan - 1] != 1)
-                 continue;
-        }
+//        if (extract != NULL)
+//        {
+//            if (extract->extracttitleset[ngroups_scan - 1] != 1)
+//                 continue;
+//        }
 
         // Selecting IFO files only
         
@@ -327,39 +327,28 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract, const char* player)
         FREE(d_name_duplicate)
 
         char  mesg[11] = "Extracting";
-        if (player)
-            strcpy(mesg, "Playing");
-
-        if ((globals.debugging)&& (!globals.nooutput))
+        
+        if ((globals.debugging)&& (! globals.nooutput))
           foutput(INF "%s%s%s%s",mesg," titleset ", rootdirent->d_name," ...\n");
 
         char output_buf[strlen(globals.settings.outdir) + 3 + 1];
 
-        if (player == NULL)
-        {
-            STRING_WRITE_CHAR_BUFSIZ(output_buf, "%s%s%d", globals.settings.outdir, "/g", ngroups_scan)
-            if (!globals.nooutput)
-                secure_mkdir(output_buf, mode);
+        STRING_WRITE_CHAR_BUFSIZ(output_buf, "%s%s%d", globals.settings.outdir, "/g", ngroups_scan)
+                
+        if (!globals.nooutput)
+            secure_mkdir(output_buf, mode);
 
-            if ((globals.debugging) && (! globals.nooutput))
-                foutput(INF "Extracting to directory %s ...\n", output_buf);
-        }
-        else
-            STRING_WRITE_CHAR_BUFSIZ(output_buf, "%s", globals.settings.tempdir )
+        if ((globals.debugging) && (! globals.nooutput))
+            foutput(INF "Extracting to directory %s ...\n", output_buf);
 
         if (ats2wav(ngroups_scan, output_buf, extract) == EXIT_SUCCESS)
         {
-            if  (globals.debugging &&  player != NULL)
+            if  (globals.debugging)
                 foutput("%s\n", INF "Extraction completed.");
         }
         else
         {
-            if (! player) 
-            {
                 foutput(INF "Error extracting audio in titleset %d\n", ngroups_scan);
-            }
-            else
-                foutput("%s", INF "Error playing audio.\n");
             
             continue;
         }
