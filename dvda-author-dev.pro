@@ -13,13 +13,15 @@ CONFIG(debug, debug|release) {
     QMAKE_CFLAGS += -O0 -g
 
 } else{
-    QMAKE_LFLAGS += -s
+    QMAKE_LFLAGS += -s -Wl,--allow-multiple-definition
     QMAKE_CFLAGS += -O3 -fexpensive-optimizations -march=native
 }
 
+DEFINES += VERSION=\\\"2018.03\\\"
+
 #to avoid ansi colors in output console add NO_ANSI_COLORS to the DEFINES directive
 
-DEFINES +=   _GNU_SOURCE  HAVE_lplex COMPILER_IS_GCC HAVE_curl  HAVE_libogg HAVE_libiberty HAVE_mplex HAVE_jpeg2yuv HAVE_mpeg2enc HAVE_mjpegtools HAVE_libogg HAVE_libsox  NO_ANSI_COLORS #WITHOUT_sox #WITHOUT_FLAC
+DEFINES +=   _GNU_SOURCE  HAVE_lplex COMPILER_IS_GCC HAVE_curl  HAVE_libogg HAVE_libiberty HAVE_mplex HAVE_jpeg2yuv HAVE_mpeg2enc HAVE_mjpegtools   NO_ANSI_COLORS WITHOUT_sox WITHOUT_FLAC
 
 Build = $$PWD/build
 

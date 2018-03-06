@@ -141,7 +141,7 @@ Thanks to:
 
   Bahman Negahban for useful hints on FLAC 1.2.1 integration
   Tomasz Belinea  for testing version 08.07.
-  Lee Feldkamp for testing Windows executables and adding audio options (-j,-s)
+  Lee Feldkamp for testing Windows executables and adding first versions of multichannel support
   Lee and Tim Feldkamp for authoring multichannel support
   Jörg Schilling for adding the -dvd-audio/-dvd-hybrid feature patch to cdrtools.
 

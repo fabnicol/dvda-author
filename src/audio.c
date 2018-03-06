@@ -269,10 +269,6 @@ int calc_info(fileinfo_t* info)
 
 #define X T[table_index][info->channels-1]
 
-    info->sampleunitsize=
-            (table_index == 1)? info->channels * 6 :
-                              ((info->channels > 2)? info->channels * 4 :
-                                                     info->channels * 2);
     info->lpcm_payload = X[0];
     info->firstpackdecrement = X[1];
 
@@ -288,32 +284,32 @@ int calc_info(fileinfo_t* info)
 
 #undef X
 
-    info->bytespersecond=(info->samplerate*info->bitspersample*info->channels)/8;
+    info->bytespersecond = (info->samplerate * info->bitspersample * info->channels)/8;
 
     switch (info->samplerate)
     {
     case 44100:
     case 48000:
-        info->bytesperframe = 5*info->channels*info->bitspersample;
+        info->bytesperframe = 5;
         break;
     case 88200:
     case 96000:
-        info->bytesperframe = 10*info->channels*info->bitspersample;
+        info->bytesperframe = 10;
         break;
 
     case 176400:
     case 192000:
-        info->bytesperframe = 20*info->channels*info->bitspersample;
+        info->bytesperframe = 20;
         break;
 
     }
 
+    info->bytesperframe *= info->channels * info->bitspersample;
 
-    info->numsamples=(info->numbytes/info->sampleunitsize)*info->sampleunitsize/(info->channels*info->bitspersample/8);
+    info->numsamples
+            = (info->numbytes * 8) / (info->channels * info->bitspersample);
 
-    info->PTS_length=(90000.0*info->numsamples)/info->samplerate;
-
-    /* Patch : padding/pruning is now done in buffers (following version S) */
+    info->PTS_length = (90000.0 * info->numsamples) / info->samplerate;
 
     return(AFMT_WAVE);
 }
@@ -330,7 +326,7 @@ command_t *scan_wavfile_audio_characteristics(command_t *command)
     
     // retrieving information as to sound file format
 
-    error=wav_getinfo(&command->files[i][j]);
+    error = wav_getinfo(&command->files[i][j]);
 
     // dealing with format information
 
@@ -577,22 +573,27 @@ if (info->mergeflag)
      for (int u=0; u < info->channels; u++)
      {
       secure_open(info->given_channel[u], "rb", info->audio->channel_fp[u]);
+
       if (globals.debugging) foutput(INF "Opening %s to get info\n", info->given_channel[u]);
+
       int span=compute_header_size(info->audio->channel_fp[u]);
+
       info->channel_header_size[u]=(span > 0) ? span + 8 : MAX_HEADER_SIZE;
       uint8_t header[info->channel_header_size[u]];
       memset(header, 0, info->channel_header_size[u]);
+
       /* PATCH: real size on disc is needed */
-     #if defined __WIN32__
-     info->file_size = read_file_size(info->audio->channel_fp[u],(TCHAR*) info->given_channel[u]);
+
+#    if defined __WIN32__
+        info->file_size = read_file_size(info->audio->channel_fp[u],(TCHAR*) info->given_channel[u]);
      #else
-     info->file_size = read_file_size(info->audio->channel_fp[u], info->given_channel[u]);
+        info->file_size = read_file_size(info->audio->channel_fp[u], info->given_channel[u]);
      #endif
 
      //fread(header, info->channel_header_size[u],1,info->audio->channel_fp[u]);
      fseek(info->audio->channel_fp[u], 0, SEEK_SET);
 
-     if (info->channel_header_size[u] > (span=fread(header, 1, info->channel_header_size[u],info->audio->channel_fp[u])))
+     if (info->channel_header_size[u] > (span = fread(header, 1, info->channel_header_size[u], info->audio->channel_fp[u])))
      {
          foutput(ERR "Could not read header of size %d for channel %d, just read %d character(s)\n", info->channel_header_size[u],u+1, span);
          clean_exit(EXIT_FAILURE);
@@ -600,12 +601,11 @@ if (info->mergeflag)
 
       fclose(info->audio->channel_fp[u]);
 
-      info->type=extract_audio_info_by_all_means(info->given_channel[u], header, info);
+      info->type = extract_audio_info_by_all_means(info->given_channel[u], header, info);
      }
 }
 else
 {
-  //cure_open(info->filename, "rb", info->audio->fp);
 
   info->audio->fp = fopen(info->filename, "rb");
 
@@ -618,15 +618,12 @@ else
 
   if (globals.debugging) foutput(INF "Opening %s to get info\n", info->filename);
 
-  //int span=compute_header_size(info->audio->fp);
-
-  // info->header_size=(span > 0) ? span + 8 : MAX_HEADER_SIZE;
-
   info->header_size = MAX_HEADER_SIZE;
-
   uint8_t header[info->header_size];
   memset(header, 0, info->header_size);
+
   /* PATCH: real size on disc is needed */
+
  #if defined __WIN32__
     info->file_size = read_file_size(info->audio->fp,(TCHAR*) info->filename);
  #else
@@ -642,7 +639,6 @@ else
      clean_exit(EXIT_FAILURE);
  }
  
- // fclose(info->audio->fp);
   info->type = extract_audio_info_by_all_means(info->filename, header, info);
 
 }
@@ -682,7 +678,7 @@ static inline int wav_getinfo_merged(fileinfo_t *info)
     }
     
         
-    if (info->numbytes/nchannels != numbytes)
+    if (info->numbytes / nchannels != numbytes)
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one channel did not have the same number of bytes as others.")
     }
@@ -731,19 +727,6 @@ int flac_getinfo(fileinfo_t* info)
 
     if (flac!=NULL)
     {
-
-
-        /* Transition from the FLAC 1.1.2 syntax: legacy code recalled below
-        *
-        *	FLAC__file_decoder_set_filename(flac,info->filename);
-        *	FLAC__file_decoder_set_client_data(flac,(void*)info);
-        *	FLAC__file_decoder_set_write_callback(flac,flac_null_write_callback);
-        *	FLAC__file_decoder_set_error_callback(flac,flac_error_callback);
-        *	FLAC__file_decoder_set_metadata_callback(flac,flac_metadata_callback);
-        *
-        * end of legacy code */
-
-        /* Test flac != NULL is not enough to discriminate between Ogg FLAC and native FLAC */
 
         if (info->type == AFMT_FLAC )
 
@@ -818,9 +801,7 @@ int fixwav_repair(fileinfo_t *info)
         return(NO_AFMT_FOUND);
     }
 
-
     strncpy(temp, info->filename, strlen(info->filename)-4);
-
 
     char *outstring=print_time(0);
     short int memory_allocation=sizeof(temp)+5+strlen(outstring)+strlen(globals.fixwav_suffix)+4+1;
@@ -835,8 +816,6 @@ int fixwav_repair(fileinfo_t *info)
     snprintf(&buf[0], memory_allocation, "%s%s%s%s", temp, globals.fixwav_suffix, outstring, ".wav");
 
     // If new string longer than heap allocation of reference strings, cut it
-
-
     /* Default sub-options*/
 
     WaveData wavedata=
@@ -876,30 +855,27 @@ int fixwav_repair(fileinfo_t *info)
 
         return(NO_AFMT_FOUND);
     }
-
-
     else
     {
         if (globals.debugging) SINGLE_DOTS
 
-        info->samplerate=waveheader.dwSamplesPerSec;
-        info->bitspersample=(uint8_t) waveheader.wBitsPerSample;
-        info->channels=(uint8_t) waveheader.channels;
-        info->numbytes=waveheader.data_cksize;
-        info->file_size=info->numbytes+waveheader.header_size_out;
-        info->header_size=waveheader.header_size_out;
+        info->samplerate    = waveheader.dwSamplesPerSec;
+        info->bitspersample = (uint8_t) waveheader.wBitsPerSample;
+        info->channels      = (uint8_t) waveheader.channels;
+        info->numbytes      = waveheader.data_cksize;
+        info->file_size     = info->numbytes+waveheader.header_size_out;
+        info->header_size   = waveheader.header_size_out;
 
         if (wavedata.repair == GOOD_HEADER)
         {
             foutput("%s", MSG_TAG "Proceeding with same file...\n");
-
             return(AFMT_WAVE_GOOD_HEADER);
         }
         else
         {
-            if (!globals.fixwav_virtual_enable)
+            if (! globals.fixwav_virtual_enable)
             {
-                if (!wavedata.in_place)
+                if (! wavedata.in_place)
                 {
                     // info->filename is either allocated on the command-line heap itself (for free, with -g) or freshly allocated with -i
                     // with -g filenames it is not OK to free or realloc, see free_memory, one could just do info->filename=buf;
@@ -1400,104 +1376,48 @@ inline static void interleave_24_bit_sample_extended(int channels, int count, ui
 
 
 // Read numbytes of audio data, and convert it to DVD byte order
+
 uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
 {
     uint32_t n=0, bytesread=0;
-#if 0
-    uint32_t padbytes;
-    static uint32_t rmdr;
-#endif
 
     FLAC__bool result;
 
     //PATCH: provided for null audio characteristics, to ensure non-zero divider
 
-    if (info->sampleunitsize == 0)
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Sample unit size is null");
-
-    if (count > info->sampleunitsize) count-= count%info->sampleunitsize;
-    else return 0;
-
-    if (count%info->sampleunitsize)
+    if (info->type == AFMT_WAVE)
     {
-        foutput("Requested %d bytes, sampleunitsize=%"PRIu16"\n",count,info->sampleunitsize);
-        fflush(stdout);
+        n = fread(buf, 1, count, info->audio->fp);
+
+        if (info->audio->bytesread + n > info->numbytes)
+        {
+            n = info->numbytes-info->audio->bytesread;
+        }
+
+        info->audio->bytesread += n;
+        bytesread = n;
+
+        while ((info->audio->bytesread < info->numbytes)
+               && (bytesread < count))
+        {
+            n = fread(&buf[bytesread], 1, count - bytesread, info->audio->fp);
+
+            if (info->audio->bytesread + n > info->numbytes)
+            {
+                n = info->numbytes - info->audio->bytesread;
+            }
+
+            info->audio->bytesread += n;
+            bytesread += n;
+        }
+
+        n = bytesread;
+
     }
 
-    if (info->type==AFMT_WAVE)
-    {
-        n=fread(buf,1,count,info->audio->fp);
-        if (info->audio->bytesread+n > info->numbytes)
-        {
-            n=info->numbytes-info->audio->bytesread;
-        }
-        info->audio->bytesread+=n;
-        bytesread=n;
-
-        while ((info->audio->bytesread < info->numbytes) && (bytesread < count))
-        {
-            n=fread(&buf[bytesread],1,count-bytesread,info->audio->fp);
-            if (info->audio->bytesread+n > info->numbytes)
-            {
-                n=info->numbytes-info->audio->bytesread;
-            }
-            info->audio->bytesread+=n;
-            bytesread+=n;
-        }
-        n=bytesread;
-		//   Padding occurs here for whole number of samples (from LF version S)
-
-        #if 0
-
-        rmdr = n % info->sampleunitsize;
-        padbytes = info->sampleunitsize - rmdr;
-        
-
-        if (rmdr)
-        {
-            if ((globals.padding)&&(n+padbytes < AUDIO_BUFFER_SIZE))
-            {
-                memset(buf+n, (globals.padding_continuous)? buf[n-1] : 0, padbytes);
-                n+=padbytes;
-                if (globals.debugging) foutput(WAR "Padding track with %d bytes for sample count.\n       Sample unit size is %d\n",padbytes,info->sampleunitsize);
-            }
-            else
-            if (globals.lossy_rounding)
-                {
-                    n-=rmdr;
-                    if (globals.debugging) foutput(WAR "Pruned track by %d bytes for sample count.\n       Sample unit size is %d\n",rmdr,info->sampleunitsize);
-                }
-
-        }
-        rmdr = n %2;
-
-        #endif
-        
-        // end of LF version S import
-
-        
-        #if 0
-        if (rmdr)
-        {
-            if ((globals.padding)&&(n+padbytes < AUDIO_BUFFER_SIZE))
-            {
-                buf[n+1]=(globals.padding_continuous)? buf[n] : 0;
-                n++;
-                if (globals.debugging) foutput(WAR "Padding track with 1 byte for evenness n= %d\n",n);
-            }
-            else
-            if (globals.lossy_rounding)
-                {
-                    n--;
-                    if (globals.debugging) foutput(WAR "Pruned track by 1 byte for evenness n= %d\n",n);
-                }
-        }
-        #endif
-
-    }
 #ifndef WITHOUT_FLAC
 
-    else if ((info->type==AFMT_FLAC) || (info->type==AFMT_OGG_FLAC))
+    else if ((info->type == AFMT_FLAC) || (info->type == AFMT_OGG_FLAC))
     {
         while ((info->audio->n < count) && (info->audio->eos==0))
         {
@@ -1511,18 +1431,19 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
                     info->audio->eos=1;
                 }
         }
+
         if (info->audio->n >= count)
         {
-            n=count;
-            memcpy(buf,info->audio->buf,count);
-            memmove(info->audio->buf,&(info->audio->buf[count]),info->audio->n-count);
-            info->audio->n-=count;
+            n = count;
+            memcpy(buf, info->audio->buf, count);
+            memmove(info->audio->buf, &(info->audio->buf[count]), info-> audio->n - count);
+            info->audio->n -= count;
         }
         else
         {
-            n=info->audio->n;
-            memcpy(buf,info->audio->buf,info->audio->n);
-            info->audio->n=0;
+            n = info->audio->n;
+            memcpy(buf, info->audio->buf, info->audio->n);
+            info->audio->n = 0;
         }
     }
 #endif
@@ -1531,7 +1452,6 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
 
     if ((info->channels > 6) || (info->channels < 1))
     {
-
         foutput(ERR "problem in audio.c ! %d channels \n",info->channels);
         EXIT_ON_RUNTIME_ERROR
     }

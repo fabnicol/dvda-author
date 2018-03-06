@@ -172,7 +172,7 @@
 	* Correct lazy prefix in configure.ac
 
 2009-07-23  Lee Feldkamp, Fabrice Nicol
-	* Implement gapless groups and single track groups (-s, -j) and develop channel
+        * develop channel
 	  group assignement (-c).
 
 2009-07-19  Fabrice Nicol
