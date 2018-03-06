@@ -102,6 +102,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
     #define DBG "[DBG]  "
     #define WAR "[WAR]  "
     #define DEV "[DEV]  "
+    #define PAR "[PAR]  "
 
 #else
     #define ANSI_COLOR_RED     "\x1b[31m"

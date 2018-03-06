@@ -24,7 +24,7 @@ void process_dvd_video_zone(command_t* command);
 #include "fixwav_manager.h"
 void fixwav_parsing(char *ssopt);
 
-void ats2wav_parsing(const char * arg, extractlist* extract, char* player);
+void ats2wav_parsing(const char * arg, extractlist* extract);
 void extract_list_parsing(const char *arg, extractlist* extract);
 void still_options_parsing(char *ssopt, pic* img);
 

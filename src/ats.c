@@ -1287,44 +1287,49 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
             start_of_file = false;
         }
 
-        if ((pack > 0) && ((pack%(512*1024))==0))
+        if ((pack > 0) && ((pack % (512 * 1024)) == 0))   //?
         {
             fclose(fpout);
-            fileno++;
-            STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/ATS_%02d_%d.AOB",audiotsdir,titleset,fileno)
-            fpout=fopen(outfile,"wb+");
+            ++fileno;
+            STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/ATS_%02d_%d.AOB", audiotsdir, titleset, fileno)
+            fpout = fopen(outfile,"wb+");
             start_of_file = true;
         }
 
         if (bytesinbuf < lpcm_payload)
         {
-            n=audio_read(&files[i],&audio_buf[bytesinbuf], sizeof(audio_buf) - bytesinbuf);
-            bytesinbuf+=n;
+            n = audio_read(&files[i],
+                           &audio_buf[bytesinbuf],
+                           sizeof(audio_buf) - bytesinbuf);
 
-            if (n==0)   /* We have reached the end of the input file */
+            bytesinbuf += n;
+
+            if (n == 0)   /* We have reached the end of the input file */
             {
-                files[i].last_sector=pack;
+                files[i].last_sector = pack;
                 audio_close(&files[i]);
-                i++;
+                ++i;
 
-                if (i<ntracks)
+                if (i < ntracks)
                 {
                     /* If the current track is a different audio format, we must start a new title. */
                     if (files[i].newtitle)
                     {
                         write_pes_packet(fpout, &files[i-1], audio_buf, bytesinbuf, pack_in_title, start_of_file); // Empty audio buffer.
-                        pack++;
-                        bytesinbuf=0;
-                        pack_in_title=0;
 
-                        files[i].first_PTS=calc_PTS(&files[i],pack_in_title).PTS0;
+                        ++pack;
+                        bytesinbuf = 0;
+                        pack_in_title = 0;
+
+                        files[i].first_PTS = calc_PTS(&files[i],pack_in_title).PTS0;
                     }
                     else
                     {
-                        files[i].first_PTS=calc_PTS(&files[i],pack_in_title+1).PTS0;
+                        files[i].first_PTS = calc_PTS(&files[i], pack_in_title+1).PTS0;
                     }
 
-                    files[i].first_sector=files[i-1].last_sector+1;
+                    files[i].first_sector = files[i-1].last_sector+1;
+
                     if (audio_open(&files[i])!=0)
                     {
                         foutput(ERR "Could not open %s\n",files[i].filename);
@@ -1332,30 +1337,29 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                     }
 
                     start_of_file = true;
-                    n=audio_read(&files[i],&audio_buf[bytesinbuf],sizeof(audio_buf)-bytesinbuf);
-                    bytesinbuf+=n;
-                    foutput(INF "Processing %s\n",files[i].filename);
+                    n=audio_read(&files[i], &audio_buf[bytesinbuf], sizeof(audio_buf) - bytesinbuf);
+                    bytesinbuf += n;
+                    foutput(INF "Processing %s\n", files[i].filename);
                 }
                 else
                 {
                     /* We have reached the last packet of the last file */
-                    if (bytesinbuf==0)
+                    if (bytesinbuf == 0)
                     {
-                        files[i-1].last_sector=pack-1;
+                        files[i-1].last_sector = pack-1;
                     }
                     else
                     {
                         start_of_file = false;
                         write_pes_packet(fpout,&files[i-1],audio_buf,bytesinbuf,pack_in_title, start_of_file); // Empty audio buffer.
-                        bytesinbuf=0;
-                        pack++;
-                        pack_in_title++;
+                        bytesinbuf = 0;
+                        ++pack;
+                        ++pack_in_title;
                     }
                 }
             }
         }
     }
 
-    if (files[0].single_track) files[0].last_sector=files[ntracks-1].last_sector;
     return(1-fileno);
 }

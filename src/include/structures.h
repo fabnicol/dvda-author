@@ -46,20 +46,9 @@ typedef struct
     _Bool   mergeflag;
     _Bool   dvdv_compliant;
     // L&T Fedkamp addition
-    uint8_t joingap;
-    uint8_t single_track;
-    uint8_t contin;
-    uint8_t contin_track;
     uint8_t cga;
-    uint8_t join_flag;
-    //uint8_t byteorder_testmode;
     uint8_t newtitle;
-    uint8_t padd;
     // L&T Feldkamp addition (multichannel)
-    uint8_t offset;
-    uint8_t rmdr;
-    // L&T Feldkamp addition (multichannel)
-    uint16_t sampleunitsize;
     uint32_t samplerate;
     uint32_t first_sector;
     uint32_t last_sector;
@@ -87,7 +76,6 @@ typedef struct
     audio_input_t* audio;  // Used whilst decoding.
     char *filename;
     char **given_channel;
-
 } fileinfo_t;
 
 typedef struct
