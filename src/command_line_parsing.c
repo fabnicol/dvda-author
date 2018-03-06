@@ -224,8 +224,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"no-refresh-outdir",no_argument, NULL, 5},
         {"extract", required_argument, NULL, 'x'},
     #if !HAVE_core_BUILD
-        {"play", required_argument, NULL, 12},
-        {"player", required_argument, NULL, 13},
         {"videodir", required_argument, NULL, 'V'},
         {"fixwav", optional_argument, NULL, 'F'},
         {"fixwav-virtual", optional_argument, NULL, 'f'},
@@ -434,8 +432,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                 switch (c)
                 {
-                case 's':    // single-track group file input (command line)
-                case 'j':  // join-group file input (command line)
                 case 'g':  // normal group file input (command line)
                 case 'T':  // video title input
                 case 'i':  // directory audio imput
@@ -501,8 +497,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     
     if (globals.debugging) foutput("%s\n", INF "First scan of track list for memory allocation...");
     
-    // n_g_groups count command-line groups of type -g, -j (join groups), -s (single track groups)
-        // ngiven_channels: number of given channels for group index n_g_group and at track 0-based rank ntracks
+    // n_g_groups count command-line groups of type -g
+    // ngiven_channels: number of given channels for group index n_g_group and at track 0-based rank ntracks
     // given_channel: the mono channel given
     
     uint8_t ngiven_channels[9][99] = {{0}};
@@ -513,9 +509,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         switch (argv[k][1])
         {
         
-        case 'j' :
-            foutput("%s\n",PAR "Join group");
-        case 's' :
         case 'g' :
             
             k++;
@@ -523,7 +516,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             for (; k < argc; k++)
             {
                 /*  To explicitly change titles within the same group even if files_i and file_i+1 have same audio characterictics, use:
-                    -g/-j/-s file_1 ... file_i -| file_i+1 file_i+2 ... -g ...
+                    -g file_1 ... file_i -| file_i+1 file_i+2 ... -g ...
                 */
                 // PATCH 09.07
                 
@@ -593,15 +586,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput(PAR "Access rights (octal mode)=%o\n", globals.access_rights);
             break;
             
-        case 's' :
-            foutput("%s\n", PAR "Single track group");
         case 'g' :
-        case 'j' :
-            ++u;
-            allocate_files = true;
-            foutput("%s%d\n", PAR "allocate_files = ", allocate_files);
-            fflush(NULL);
-            break;
             
         case 'i' :
             
@@ -720,7 +705,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 *
                 *  Ordering
                 *  -----------
-                *  Groups are ordered according to the following order : g-type groups (-g, -j, -s) < directory groups < video-linking groups
+                *  Groups are ordered according to the following order : g-type groups (-g) < directory groups < video-linking groups
                 *
                 *  Allocation
                 *  ------------
@@ -747,15 +732,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         if (argv[k][0] != '-') continue;
         switch (argv[k][1])
         {
-        
-        case 's' :
-            files[ngroups_scan][0].single_track=1;   // no break
-        case 'j' :
-            files[ngroups_scan][0].contin=1;
-            if (globals.debugging) foutput("%s%d\n", MSG_TAG "Continuity requested for group ", ngroups_scan+1);
-            files[ngroups_scan][0].join_flag=1;     //  no break
-            if (globals.debugging) foutput("%s%d\n", MSG_TAG "Join flag set for group ", ngroups_scan+1);
-            
+                    
         case 'g' :
             
             ++k;
@@ -859,8 +836,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             *min,
             *sec,
             *still_options_string=NULL,
-            *import_topmenu_path=NULL,
-            *player="vlc";
+            *import_topmenu_path=NULL;
     
     _Bool import_topmenu_flag=0;
     uint16_t npics[totntracks];
@@ -1004,18 +980,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
         case 12:
             
-            player=NULL;
             extract_audio_flag=1;
             FREE(globals.settings.indir)
 
             break;
-            
-        case  13:
-            
-            player=strdup(optarg);
-            break;
-            
-            // case 'g': c=0; break;
+                        
         case '9':
             /* --datadir is the directory  where the menu/ files are located. Under* nix it automatically installed under /usr/share/applications/dvda-author by the autotools
                With other building modes or platforms however, it may be useful to indicate where the menu/ directory will be*/
@@ -1638,12 +1607,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     if (extract_audio_flag)
     {
         extract_list_parsing(globals.settings.indir, &extract);
-#if !HAVE_core_BUILD
         
-        ats2wav_parsing(globals.settings.indir, &extract, player);
-#else
-        ats2wav_parsing(globals.settings.indir, &extract, NULL);
-#endif
+        ats2wav_parsing(globals.settings.indir, &extract);
         
         return(NULL);
     }
@@ -2988,7 +2953,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
     strtok(chain, "-");
     
     if (globals.debugging)
-        foutput("%s\n", INF "Analysing --extract/--play suboptions...");
+        foutput("%s\n", INF "Analysing --extract suboptions...");
         
    // Now strtok will return NULL if '-' not found, otherwise * to start of token
     
@@ -3073,7 +3038,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
 }
 
 
-void ats2wav_parsing(const char *arg, extractlist* extract, char* player)
+void ats2wav_parsing(const char *arg, extractlist* extract)
 {
     DIR *dir = NULL;
 
@@ -3100,7 +3065,7 @@ void ats2wav_parsing(const char *arg, extractlist* extract, char* player)
         parse_disk(dir, globals.access_rights, extract);
 //    }
 //    else
-//        parse_disk(dir, globals.access_rights, NULL, player);
+//        parse_disk(dir, globals.access_rights, NULL);
     
     if (closedir(dir) == -1)
         foutput( "%s\n", ERR "Impossible to close dir");
@@ -3235,7 +3200,7 @@ void still_options_parsing(char *ssopt, pic* img)
         case 6:
             img->options[rank]->manual = 1;
             img->options[rank]->active = 1;
-            foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET "  Using active menus for #%d.\n", rank);
+            foutput( PAR "  Using active menus for #%d.\n", rank);
             break;
             
         }
