@@ -63,8 +63,8 @@ unsigned char wav_header[80]= {'R','I','F','F',   //  0 - ChunkID
 // Reverse table (to be used to convert AOBs to WAVs
 
 static const uint8_t  T[2][6][36]=
-     {{ {0},
-        {0},
+     {{ {0}, // 4
+        {0}, // 8
         {5, 4, 7, 6, 1, 0, 9, 8, 11, 10, 3, 2}, 
         {9, 8, 11, 10, 1, 0, 3, 2, 13, 12, 15, 14, 5, 4 ,7, 6}, 
         {9, 8, 11, 10, 13, 12, 1, 0, 3, 2, 15, 14, 17, 16, 19, 18, 5, 4, 7, 6}, //20, rev
@@ -76,6 +76,10 @@ static const uint8_t  T[2][6][36]=
         {24, 13, 12, 25, 15, 14, 26, 17, 16, 8, 1, 0, 9, 3,  2,  27, 19, 18, 28, 21, 20, 29,  23, 22,  10, 5, 4, 11, 7, 6}, //30, rev
         {28, 13, 12, 29, 15, 14,  8, 1, 0,  9, 3, 2, 30, 17, 16, 31, 19, 18, 32, 21, 20, 33, 23, 22, 10, 5, 4, 11, 7,  6, 34, 25, 24, 35, 27, 26 }}
     };
+
+// sizes of preceding table
+
+static const uint8_t  permut_size[2][6] = {{4, 8, 12, 16, 20, 24}, {6, 12, 18, 24, 30, 36}};
 
 static void deinterleave_24_bit_sample_extended(uint8_t channels, int count, uint8_t *buf)
 {
@@ -177,18 +181,22 @@ inline static void wav_output_open(WaveData *info)
     }
 }
 
-inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Bool *status)
+
+inline static int calc_position(FILE* fileptr, const uint64_t offset0)
 {
+    uint8_t buf[4];
     int position;
 
-    if (! info->infile.isopen) aob_open(info);
+    fseeko(fileptr, offset0 + 14, SEEK_SET);
+    int result = fread(buf, 4, 1, fileptr);
+    
+    if (result != 1)
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting packet position.")
+    }
+    
 
-    uint64_t offset0 = ftello(info->infile.fp);
-
-    fseeko(info->infile.fp, offset0 + 14, SEEK_SET);
-
-    uint8_t buf[4];
-    fread(buf, 4, 1, info->infile.fp);
+    /* got to system header and read first 4 bytes to detect whether pack is start or not */
 
     if (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB)
     {
@@ -196,18 +204,17 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
     }
     else
     {
-        int res = fseeko(info->infile.fp, 2044, SEEK_CUR);
+        /* go to end of sector : if end of file, then last pack, idem if new pack detected ; otherwise middle pack */
+
+        int res = fseeko(fileptr, 2044, SEEK_CUR);
 
         if (res != 0)
         {
-            if (feof(info->infile.fp))
-                position = END_OF_AOB;
-            else
-                position = LAST_PACK;
+            position = LAST_PACK;
         }
         else
         {
-            int n = fread(buf, 1, 4, info->infile.fp);
+            int n = fread(buf, 1, 4, fileptr);
 
             if (n != 4 || (n == 4 && buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB))
             {
@@ -219,13 +226,36 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
             }
         }
     }
+    
+    return(position);
+}
 
+inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Bool *status)
+{
+    if (! info->infile.isopen) aob_open(info);
+    
+    uint64_t offset0 = ftello(info->infile.fp);
+     
+    int position = calc_position(info->infile.fp, offset0);
+    
     fseeko(info->infile.fp, offset0 + 35 + (position == FIRST_PACK ? 21 : 0), SEEK_SET);
 
     uint8_t sample_size[1] = {0};
     uint8_t sample_rate[1] = {0};
-    fread(sample_size, 1, 1, info->infile.fp);
-    fread(sample_rate, 1, 1, info->infile.fp);
+    
+    int result = fread(sample_size, 1, 1, info->infile.fp);
+    
+    if (result != 1)
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting sample size.")
+    }
+    
+    result = fread(sample_rate, 1, 1, info->infile.fp);
+    if (result != 1)
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting sample rate.")
+    }
+    
     uint8_t high_nibble = (sample_rate[0] & 0xf0) >> 4;
 
     switch(high_nibble)
@@ -281,8 +311,13 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
 
     uint8_t channel_assignment[1] = {0};
 
-    fread(channel_assignment, 1, 1, info->infile.fp);
+    result = fread(channel_assignment, 1, 1, info->infile.fp);
 
+    if (result != 1)
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting channel.")
+    }
+    
     if (channel_assignment[0] > 20) *status = INVALID;
 
     header->channels = (channel_assignment[0] < 21) ? channels[channel_assignment[0]] : 0;
@@ -304,17 +339,13 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
 }
 
 
-inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header)
+inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint64_t numbytes, int* remainder)
 {
     int position;
-    //static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
-
     static uint64_t fpout_size;
     int audio_bytes;
     uint8_t PES_packet_len_bytes[2];
-    uint8_t audio_buf[2048];
-
-    //////////////////
+    uint8_t audio_buf[2048 * 2]; // in case of incomplete buffer shift
 
     // CAUTION : check coherence of this table and the S table of audio.c, of which it is only a subset.
 
@@ -353,73 +384,72 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header)
     if (! info->infile.isopen) aob_open(info);
 
     uint64_t offset0 = ftello(info->infile.fp);
-    uint8_t buf[4];
-
-    fseeko(info->infile.fp, offset0 + 14, SEEK_SET);
-    fread(buf, 4, 1, info->infile.fp);
-
-    /* got to system header and read first 4 bytes to detect whether pack is start or not */
-
-    if (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB)
-    {
-        position = FIRST_PACK;
-    }
-    else
-    {
-        /* go to end of sector : if end of file, then last pack, idem if new pack detected ; otherwise middle pack */
-
-        int res = fseeko(info->infile.fp, 2044, SEEK_CUR);
-
-        if (res != 0)
-        {
-            position = LAST_PACK;
-        }
-        else
-        {
-            int n = fread(buf, 1, 4, info->infile.fp);
-
-            if (n != 4 || (n == 4 && buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB))
+    
+    int res  = 0, result;    
+    
+    do {
+            if (*remainder)
             {
-                position = LAST_PACK;
+                position = CUT_PACK;
             }
             else
             {
-                position = MIDDLE_PACK;
+               position = calc_position(info->infile.fp, offset0);
             }
-        }
-    }
+            
+            switch(position)
+            {
+                case FIRST_PACK :
+                    audio_bytes = lpcm_payload - firstpackdecrement;
+                    fseeko(info->infile.fp, offset0 + 53 + firstpack_lpcm_headerquantity, SEEK_SET);
+                    break;
+        
+                case MIDDLE_PACK :
+                    audio_bytes = lpcm_payload;
+                    fseeko(info->infile.fp, offset0 + 32 + midpack_lpcm_headerquantity, SEEK_SET);
+                    break;
+        
+                case LAST_PACK :
+                    fseeko(info->infile.fp, offset0 + 18, SEEK_SET);
+                    result = fread(PES_packet_len_bytes, 1, 2, info->infile.fp);
+                    if (result != 2)
+                    {
+                            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting last pack.")
+                    }
+                    audio_bytes = (PES_packet_len_bytes[0] << 8 | PES_packet_len_bytes[1]) - lastpack_audiopesheaderquantity;
+                    /* skipping rest of audio_pes_header, i.e 8 bytes + lpcm_header */
+                    fseeko(info->infile.fp, offset0 + 32 + lastpack_lpcm_headerquantity, SEEK_SET);
+                    break;
+                    
+                case CUT_PACK :
+                    res = fread(audio_buf, 1, *remainder, info->infile.fp);
+                    *remainder -= res;  // normally 0
+                    if (*remainder && globals.veryverbose) 
+                        foutput("%s%luX\n", 
+                                WAR "Incomplete remainder detected at offset ",
+                                ftello(info->infile.fp));
+                    break;
+            }
+    } 
+    while(position == CUT_PACK);
 
+    // Here "cut" for a so-called 'gapless' track
+    // The cut should respect the size of permutation tables.
     
-    switch(position)
+    if (numbytes && fpout_size + audio_bytes > numbytes)
     {
-        case FIRST_PACK :
-            audio_bytes = lpcm_payload - firstpackdecrement;
-            fseeko(info->infile.fp, offset0 + 53 + firstpack_lpcm_headerquantity, SEEK_SET);
-            break;
-
-        case MIDDLE_PACK :
-            audio_bytes = lpcm_payload;
-            fseeko(info->infile.fp, offset0 + 32 + midpack_lpcm_headerquantity, SEEK_SET);
-            break;
-
-        case LAST_PACK :
-            fseeko(info->infile.fp, offset0 + 18, SEEK_SET);
-            fread(PES_packet_len_bytes, 1, 2, info->infile.fp);
-            audio_bytes = (PES_packet_len_bytes[0] << 8 | PES_packet_len_bytes[1]) - lastpack_audiopesheaderquantity;
-            /* skipping rest of audio_pes_header, i.e 8 bytes + lpcm_header */
-            fseeko(info->infile.fp, offset0 + 32 + lastpack_lpcm_headerquantity, SEEK_SET);
-            break;
+        *remainder = fpout_size + audio_bytes - numbytes;
+        audio_bytes  = numbytes - fpout_size;
+        position = CUT_PACK;
     }
-
-    int res = fread(audio_buf, 1, audio_bytes, info->infile.fp);
+        
+    res += fread(audio_buf + res, 1, audio_bytes, info->infile.fp);
 
     convert_buffer(header, audio_buf, res);
 
-    int nbyteout = fwrite(audio_buf, 1, res, info->outfile.fp);
+    fpout_size += fwrite(audio_buf, 1, res, info->outfile.fp);
 
-    fpout_size += nbyteout;
-
-    if (position == LAST_PACK)
+    if (position == LAST_PACK || position == CUT_PACK)
     {
         fpout_size += header->header_size_out;
 
@@ -427,17 +457,26 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header)
 
         if (ftello(info->outfile.fp) != (off64_t) fpout_size)
         {
-            foutput(ERR  "Audio decoding outfile mismatch. Decoded %" PRIu64 " bytes yet file size audio is %" PRIu64 " bytes.\n", fpout_size, ftello(info->outfile.fp));
+            foutput(ERR  "Audio decoding outfile mismatch. Decoded %" 
+                    PRIu64 
+                    " bytes yet file size audio is %" 
+                    PRIu64 
+                    " bytes.\n", 
+                    fpout_size,
+                    ftello(info->outfile.fp));
         }
 
-        foutput(MSG_TAG "Writing %s (%.2f MB)...\n", filename(info->outfile), (double) fpout_size / (double) (1024 * 1024));
+        foutput(MSG_TAG "Writing %s (%.2f MB)...\n",
+                filename(info->outfile),
+                (double) fpout_size / (double) (1024 * 1024));
+        
         S_CLOSE(info->outfile)
         info->outfile.filesize = fpout_size;
         fpout_size = 0;
 
     }
 
-    uint64_t offset1 = offset0 + 2048;
+    uint64_t offset1 = offset0 + (position == CUT_PACK ? 0 : 2048);
         
     if (offset1 >= filesize(info->infile)) position = END_OF_AOB;
     else
@@ -449,7 +488,7 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header)
 int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
 {
     uint64_t pack = 0;
-    static int j;
+    int j = 0; // necessary (track count)
 
     int pack_rank = FIRST_PACK;
     
@@ -475,7 +514,9 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
     }
     
     WaveHeader header;
-
+    
+    int remainder = 0;
+    
     while (pack_rank != END_OF_AOB)
     {
         /* First pass to get basic audio characteristics (sample rate, bit rate, cga */
@@ -484,13 +525,49 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
         errno = 0;
         if (globals.veryverbose)
             foutput("%s %d %s %d\n", MSG_TAG "Group ", i, "Track ", j);
-
+        
         do
         {
             pack_rank = peek_pes_packet_audio(info, &header, &status);
+            
             if (status == VALID) break;
         }
-        while (pack_rank != LAST_PACK && pack_rank != END_OF_AOB);
+        while (pack_rank == FIRST_PACK || pack_rank == MIDDLE_PACK);
+        
+        files[i][j].filename = filename(info->outfile);
+        files[i][j].bitspersample = header.wBitsPerSample;
+        files[i][j].samplerate = header.dwSamplesPerSec;
+        files[i][j].channels = header.channels;
+        
+        uint64_t x = 0, numsamples, numbytes = 0;
+        
+        if (files[i][j].PTS_length)     // Use IFO files
+        {
+            numsamples = (files[i][j].PTS_length * files[i][j].samplerate) / 90000;
+            
+            if (numsamples)
+                x = 90000 * numsamples;
+            else
+            {
+                foutput("%s", ERR "Found null samplerate or PTS length. Exiting...\n");
+                clean_exit(EXIT_FAILURE);
+            }
+            
+            // Adjust for rounding errors:
+            
+            if (x < files[i][j].PTS_length * files[i][j].samplerate)
+            {
+                ++numsamples;
+            }
+            
+            numbytes = (numsamples * files[i][j].channels * files[i][j].bitspersample) / 8;
+            const short int table_index = header.wBitsPerSample == 24 ? 1 : 0;
+            int modulo = permut_size[table_index][header.channels - 1];
+            
+            // Taking modulo
+            
+            numbytes -= numbytes % modulo;
+        }
 
 //        if (errno)
 //        {
@@ -551,10 +628,10 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
 
         do
         {
-            pack_rank = get_pes_packet_audio(info, &header);
+            pack_rank = get_pes_packet_audio(info, &header, numbytes, &remainder);
             ++pack;
         }
-        while (pack_rank != LAST_PACK && pack_rank != END_OF_AOB);
+        while (pack_rank == FIRST_PACK || pack_rank == MIDDLE_PACK);
 
         foutput(MSG_TAG "Read %" PRIu64 " PES packets.\n", pack);
 
@@ -576,13 +653,9 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
                 EXIT_ON_RUNTIME_ERROR_VERBOSE("DVD-Audio specifications only allow 99 titles per group.")
             }
 
-            files[i][j].filename = filename(info->outfile);
-            files[i][j].bitspersample = header.wBitsPerSample;
-            files[i][j].samplerate = header.dwSamplesPerSec;
-            files[i][j].channels = header.channels;
+            // Possible adjustment here
+            
             files[i][j].numbytes  = header.data_cksize;
-
-            ++j;
 
             globals.debugging = debug;
             info->infile = temp;
@@ -591,19 +664,22 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
 
         info->outfile = filestat(false, 1, NULL, NULL);
 
-        if (pack_rank == LAST_PACK)
+        S_CLOSE(info->outfile)
+                
+        if (pack_rank == LAST_PACK || pack_rank == CUT_PACK)
         {
-            S_CLOSE(info->outfile)
             if (globals.veryverbose)        
                     foutput("%s\n", INF "Closing first track and opening new one.");
         }
         else
         if (pack_rank == END_OF_AOB)
         {
-            S_CLOSE(info->outfile)
             if (globals.veryverbose)        
                     foutput("%s\n", INF "Closing last track of AOB.");
         }
+        
+        ++j;  // track rank
+        
     }
 
     S_CLOSE(info->infile)
@@ -640,7 +716,9 @@ int get_ats_audio()
          foutput("%s%d%s\n", INF "Extracting audio for AOB n°", i+1, " (1-based).");
 
       WaveData *info = NULL;
+      
       get_ats_audio_i(i, files, info);
+      
       if (globals.veryverbose)
               foutput("%s\n", INF "Reached ead of AOB.");
        
@@ -654,216 +732,7 @@ int get_ats_audio()
 }
 
 
-#if 0
-
-void calc_size(_fileinfo_t* info)
-{
-    uint64_t x=0;
-    
-    info->numsamples=(info->pts_length*info->samplerate)/90000;
-    if (info->samplerate)
-        x=(90000*info->numsamples)/info->samplerate;
-    else
-    {
-        foutput("%s", ERR "Found null samplerate. Exiting...\n");
-        clean_exit(EXIT_FAILURE);
-    }
-    
-    // Adjust for rounding errors:
-    if (x < info->pts_length)
-    {
-        info->numsamples++;
-    }
-    /*  PATCH
-     *  Need for real disc size
-     */
-    info->numbytes=(info->numsamples*info->channels*info->bitspersample)/8;
-    
-    
-    //     info->numbytes=read_file_size(info->fpout)
-}
-
-int setinfo(_fileinfo_t* info, uint8_t buf[4])
-{
-    
-    switch (buf[0]&0xf0)
-    {
-    case 0x00:
-        info->bitspersample=16;
-        break;
-        
-    case 0x10:
-        info->bitspersample=20;
-        break;
-        
-    case 0x20:
-        info->bitspersample=24;
-        break;
-        
-    default:
-        printf("%s", ERR "Unsupported bits per sample\n");
-        info->bitspersample=0;
-        break;
-    }
-    
-    switch (buf[1]&0xf0)
-    {
-    case 0x00:
-        info->samplerate=48000;
-        break;
-        
-    case 0x10:
-        info->samplerate=96000;
-        break;
-        
-    case 0x20:
-        info->samplerate=192000;
-        break;
-        
-    case 0x80:
-        info->samplerate=44100;
-        break;
-        
-    case 0x90:
-        info->samplerate=88200;
-        break;
-        
-    case 0xa0:
-        info->samplerate=176400;
-        break;
-    }
-    
-    int T[21] = {1, 2, 3, 4, 3, 4, 5, 3, 4, 5, 4, 5, 6, 4, 5, 4, 5, 6, 5, 5, 6 };
-    
-    if (buf[3] > 20)
-        
-    {
-        printf("%s\n", ERR "Unsupported number of channels, skipping file...\n");
-        return(0);
-    }
-    
-    info->channels = T[buf[3]] ;
-    
-    calc_size(info);
-    return(1);
-    
-}
-
-unsigned int process_data(_fileinfo_t* info, uint8_t* buf, unsigned int count)
-{
-    unsigned int n;
-    
-    
-    n= (info->byteswritten+count > info->numbytes) ? info->numbytes-info->byteswritten : count;
-    
-    
-    if (!globals.nooutput) fwrite(buf,n,1,info->fpout);
-    
-    info->byteswritten+=n;
-    
-    return(n);
-}
-
-
-
-
-static void wav_open(_fileinfo_t* info, char* outfile)
-{
-    
-    info->fpout=secure_open(outfile,"wb");
-    
-    if (!globals.nooutput) fwrite(wav_header,sizeof(wav_header),1,info->fpout);
-}
-
-
-static void wav_close(_fileinfo_t* info , const char* filename)
-{
-    
-    uint64_t filesize=0;
-    
-    
-    if (filesize > UINT32_MAX)
-    {
-        printf("%s", ERR "WAV standards do not support files > 4 GB--exiting...\n");
-        exit(EXIT_FAILURE);
-    }
-    
-    filesize=info->numbytes;
-    
-    if (filesize == 0)
-    {
-        printf(WAR "filename: %s\n       filesize is null, closing file...\n", filename);
-        fclose(info->fpout);
-        return;
-    }
-    
-    if (globals.debugging) printf(MSG_TAG "IFO file: %s\n       IFO file size: %"PRIu64"\n", filename, info->numbytes);
-    
-    fseek(info->fpout,0,SEEK_SET);
-    
-    // ChunkSize
-    
-    uint32_copy_reverse(wav_header+4, filesize-8+44);
-    
-    wav_header[22]=info->channels;
-    
-    // Samplerate
-    uint32_copy_reverse(wav_header+24, info->samplerate);
-    
-    // ByteRate
-    
-    uint32_copy_reverse(wav_header+28, (info->samplerate*info->bitspersample*info->channels)/8);
-    
-    wav_header[32]=(info->channels*info->bitspersample)/8;
-    wav_header[34]=info->bitspersample;
-    
-    // Subchunk2Size
-    uint32_copy_reverse(wav_header+40, (uint32_t) filesize);
-    
-    if (!globals.nooutput) fwrite(wav_header,sizeof(wav_header), 1, info->fpout);
-    fclose(info->fpout);
-}
-
-
-
-FILE* open_aob(FILE* fp, const char* filename, char* atstemplate, int ats)
-{
-    int length=strlen(filename);
-    char atsfilename[length+1];
-    
-    
-    memcpy(atstemplate,filename,length-5);
-    memcpy(&atstemplate[length-5],"%d.AOB",6);
-    atstemplate[length+1]=0;
-    sprintf(atsfilename,atstemplate,ats);
-    
-    
-    fp=fopen(atsfilename,"rb");
-    
-    
-    return(fp);
-}
-
-
-
-void process_wav_file(char* outfile, const char* outdir, int length, _fileinfo_t * files, int t)
-{
-    char tmp[length+1+14];
-    memcpy(tmp, outdir, length);
-    
-    memcpy(&tmp[length], "/track%02d.wav", 14);
-    tmp[length+14]=0;
-    sprintf(outfile, tmp ,t+1);
-    EXPLAIN_DEV("Creating new wav file: rank =" , t+1)
-            EXPLAIN_DEV("Writing default wav header: bytes =", 44)
-            wav_open(&files[t],outfile);
-    return;
-}
-#endif
-
-
-
-int scan_ats_ifo(_fileinfo_t * files, uint8_t *buf)
+int scan_ats_ifo(fileinfo_t *files, uint8_t *buf)
 {
     int i,j,k,t=0,ntracks,ntracks1, numtitles;
     
@@ -895,7 +764,7 @@ int scan_ats_ifo(_fileinfo_t * files, uint8_t *buf)
         {
             i += 10;
             
-            files[t].pts_length = uint32_read(buf + i);
+            files[t].PTS_length = uint32_read(buf + i);
             
             i += 10;
             ++t;
@@ -923,36 +792,37 @@ int scan_ats_ifo(_fileinfo_t * files, uint8_t *buf)
     if (globals.debugging)
         for (i = 0; i < ntracks; ++i)
         {
-            printf("     Track/N first sector  last sector   pts length\n     %02d/%02d    %12"PRIu64" %12"PRIu64" %12"PRIu64"\n\n",
-                   i+1, ntracks, files[i].first_sector, files[i].last_sector, files[i].pts_length);
+            printf("     Track/N first sector  last sector   pts length\n     %02d/%02d    %12u %12u %12"PRIu64"\n\n",
+                   i+1, ntracks, files[i].first_sector, files[i].last_sector, files[i].PTS_length);
         }
     
-    quick_exit(0);
-   // return(ntracks);
+ 
+    return(ntracks);
 }
 
-int ats2wav(const char GCC_UNUSED * filename, const char GCC_UNUSED *outdir)
+int ats2wav(short ngroups_scan, const char GCC_UNUSED *outdir, const extractlist* extract)
 {
+    FILE* file = NULL;
     
+    unsigned int ntracks = 0;
+    fileinfo_t files[9][99];
+    memset(files, 0, sizeof(files));
 
-    FILE* file=NULL;
-    //FILE* fp=NULL;
-    
-    //unsigned int payload_length=0, ats=1;
-    unsigned int t=0, ntracks=0;
-    _fileinfo_t *files = (_fileinfo_t*) calloc(99 * 9, sizeof(_fileinfo_t));
-    //int length=strlen(outdir);
-    //int i,k ;
     uint8_t buf[BUFFER_SIZE];
-    //uint64_t delta=0;
-    uint16_t nbytesread=0; // size must be >= BUFFER_SIZE
-    //char outfile[length+1+14];
-    //char atstemplate[512]= {0};
+    
+    uint16_t nbytesread=0; 
     
     /* First check the DVDAUDIO-ATS tag at start of ATS_XX_0.IFO */
+        
+    char filename[13] = {0};
+    if (ngroups_scan > 9 || ngroups_scan < 1)
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Group rank should be between 1 and 9")
+    }
     
-    file = fopen(filename, "rb");
-    if (file == NULL)
+    sprintf(filename, "ATS_0%d_0.IFO", ngroups_scan);
+    
+    if ((file = fopen(filename, "rb")) == NULL)
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE("IFO file could not be opened.")
     }
@@ -960,16 +830,16 @@ int ats2wav(const char GCC_UNUSED * filename, const char GCC_UNUSED *outdir)
     if (globals.debugging)
         printf( INF "Reading file %s\n", filename);
     
-    nbytesread = fread(buf,1,sizeof(buf), file);
+    nbytesread = fread(buf, 1, sizeof(buf), file);
     
     if (globals.debugging)
         printf( INF "Read %d bytes\n", nbytesread);
     
     fclose(file);
     
-    if (memcmp(buf, "DVDAUDIO-ATS", 12)!=0)
+    if (memcmp(buf, "DVDAUDIO-ATS", 12) != 0)
     {
-        printf(ERR "%s is not an ATSI file (ATS_XX_0.IFO)\n",filename);
+        printf(ERR "%s is not an ATSI file (ATS_XX_0.IFO)\n", filename);
         return(EXIT_FAILURE);
     }
     
@@ -977,200 +847,34 @@ int ats2wav(const char GCC_UNUSED * filename, const char GCC_UNUSED *outdir)
         
     /* now scan tracks to be extracted */
         
-    ntracks=scan_ats_ifo(files, buf);
-#if 0    
-    if (globals.maxverbose) EXPLAIN("%s%d%s\n", "scanning ", ntracks, "tracks")
-            
-            //fp=open_aob( fp,  filename,  atstemplate,  ats);
-            
-   for (t=0; t<ntracks; t++)
-    {
-        files[t].started=0;
-        files[t].byteswritten=0;
-    }
+    ntracks = scan_ats_ifo(&files[0][0], buf);
     
-    t=0;
-    
-    
-    //uint16_t offset=0;
-    //_Bool fileend=0;
+    if (outdir == NULL) exit(0);
 
-    while (t < ntracks)
+    if (globals.maxverbose)
     {
-        
-        if ((extract) && (!extract->extracttrackintitleset[ats-1][t]))
-        {
-            t++;
-            continue;
-        }
-        
-NEXT:
-        
-        /* read AOB into buf, when no longer possible, close AOB and try to open a new one, if not possible proceed with read bytes */
-        
-        while ((nbytesread=fread(buf+offset,1,2048-offset,fp)) != 2048-offset)
-        {
-            if (feof(fp))
-            {
-                fileend=1;
-                EXPLAIN("%s\n","Reached en of file. Closing...")
-                        fclose(fp);
-            }
-            else
-            {
-                EXPLAIN("%s\n","Dit not reach of file yet reading issues. Proceeding...")
-                        break;
-            }
-            
-            
-            ats++;
-            fp=open_aob(fp, filename, atstemplate, ats);
-            if (fp == NULL)
-            {
-                EXPLAIN_DEV("No AOB with rank = ", (int)ats)
-                        break;
-            }
-            
-            else
-                offset=nbytesread;
-            EXPLAIN_DEV("Opening AOB with rank = ", (int)ats)
-                    EXPLAIN_DEV("At offset = ", offset)
-        };
-        
-        offset=0;
-        
-        
-        i=0;
-        
-        /* Now parse buffer looking for 0x000001 sequences */
-        while (i < nbytesread-3)
-        {
-            
-            while ((buf[i]==0x00) && (buf[i+1]==0x00) && (buf[i+2]==0x01))
-            {
-                i+=3;
-                
-                switch (buf[i])
-                {
-                //            case 0xba:
-                //                i+=11;
-                //                break;
-                //            case 0xbb:
-                //                i+=15;
-                //                break;
-                
-                case 0xbe:
-                    
-                    EXPLAIN_DEV("Reached OxBE: i=", i)
-                            
-                        case 0xbd:  // Audio PES Packet
-                        
-                        
-                        k=i+3+uint16_read(buf+i+1);
-                    
-                    i+=6+buf[i+5];
-                    
-                    
-                    if (files[t].started==0)
-                    {
-                        process_wav_file(outfile, outdir, length, files, t);
-                        
-                        if (!setinfo(&files[t],&buf[i+7]))
-                        {
-                            /* skipping file */
-                            t++;
-                            fclose(fp);
-                            /* label jump is preferable here, to avoid testing a skip boolean repetitively for rare cases at end of while loops */
-                            goto NEXT;
-                            break;
-                        }
-                        
-                        files[t].started=1;
-                        if (globals.debugging)
-                            printf(INF "Extracting %s\n       %dHz, %d bits/sample, %d channels - %lld samples\n",outfile,files[t].samplerate,files[t].bitspersample,files[t].channels,files[t].numsamples);
-                    }
-                    
-                    i+=buf[i+3]+4;
-                    
-                    payload_length=k-i;
-                    
-                    EXPLAIN_DEV("Using payload_length = ",(int)payload_length)
-                            
-                            delta=(payload_length+files[t].byteswritten < files[t].numbytes)? payload_length : files[t].numbytes-files[t].byteswritten;
-                    if (fileend) delta=files[t].numbytes-files[t].byteswritten;
-                    
-                    EXPLAIN_DEV("Filling buffer with:",(int)delta)
-                            
-                            convert_buffer(&files[t],&buf[i],delta);
-                    
-                    EXPLAIN_DEV("Now writing bytes to wav file: ",(int)delta)
-                            
-                            nbytesread=process_data(&files[t],&buf[i],delta);
-                    
-                    
-                    if (globals.veryverbose)
-                    {
-                        fprintf(stderr, MSG_TAG "Wrote %d bytes yielding %lld/%lld\n",nbytesread,files[t].byteswritten,files[t].numbytes);
-                    }
-                    
-                    delta= files[t].numbytes-files[t].byteswritten;
-                    
-                    if (delta < 0) EXPLAIN_DEV("Extraction issue! Remaining bytes = ", (int)delta)
-                            else
-                    {
-                        if (delta > 0)
-                        {
-                            
-                            
-                            EXPLAIN_DEV("Wav file not completed. Remaining bytes = ", (int)delta)
-                                    if (fileend)
-                                    EXPLAIN("%s\n","However, AOB parsing reached EOF. Unknown issue. Closing AOB...")
-                        }
-                        else
-                        {
-                            
-                            EXPLAIN_DEV("Wav file completed! Remaining bytes =", (int)delta)
-                        }
-                        if (fileend)
-                        {
-                            
-                            wav_close(&files[t], filename);
-                            
-                            t++;
-                            
-                            if (t < ntracks)
-                            {
-                                if (nbytesread < payload_length)
-                                {
-                                    process_wav_file(outfile, outdir, length, files, t);
-                                    
-                                    files[t].samplerate=files[t-1].samplerate;
-                                    files[t].bitspersample=files[t-1].bitspersample;
-                                    files[t].channels=files[t-1].channels;
-                                    files[t].started=1;
-                                    calc_size(&files[t]);
-                                    
-                                    printf(INF "Extracting %s\n       %dHz, %d bits/sample, %d channels - %lld samples\n",outfile,files[t].samplerate,files[t].bitspersample,files[t].channels,files[t].numsamples);
-                                    
-                                    nbytesread=process_data(&files[t],&buf[i+nbytesread],payload_length-nbytesread);
-                                }
-                            }
-                        }
-                    }
-                        
-                        i=k;
-                    break;
-                    //                case 0xbe:  // Audio PES Packet
-                    //
-                    //                    i+=3+uint16_read(buf+i+1);
-                    //                    break;
-                }
-                
-            }
-            i++;
-        }
+        EXPLAIN("%s%d%s\n", DBG " Scanning ", ntracks, "tracks")
     }
-#endif
+    
+    for (int i = 0; i < 9; ++i)
+    {
+      if (extract->extracttitleset[i] != 1) continue;
+      
+      if (globals.veryverbose)
+         foutput("%s%d%s\n", INF "Extracting audio for AOB n°", i + 1, " (1-based).");
+
+      WaveData *info = NULL;
+      
+      get_ats_audio_i(i, files, info);
+      
+      if (globals.veryverbose)
+              foutput("%s\n", INF "Reached ead of AOB.");
+       
+    }
+    
+    if (globals.fixwav_prepend)
+        audio_extraction_layout(files);
+    
     return(EXIT_SUCCESS);
 }
 

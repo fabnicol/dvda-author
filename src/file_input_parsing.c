@@ -276,53 +276,59 @@ static int check_ignored_extension(void *path)
 int parse_disk(DIR* dir, mode_t mode, extractlist  *extract, const char* player)
 {
 
-    char ngroups_scan=0, control=0;
+    char ngroups_scan=0;
     struct dirent *rootdirent;
 
-    if ((globals.debugging)&& (!globals.nooutput))
+    if ((globals.debugging) && (! globals.nooutput))
         foutput(INF "Extracting to %s\n", globals.settings.outdir);
 
 
-    while ((rootdirent=readdir(dir) )!= NULL)
+    while ((rootdirent = readdir(dir) )!= NULL)
     {
         if (rootdirent->d_name[0] == '.') continue;
 
-        char * d_name_duplicate=strdup(rootdirent->d_name);
+        char *d_name_duplicate = strdup(rootdirent->d_name);
+        
         // duplicating is necessary as strtok alters its first argument
 
         if (d_name_duplicate == NULL)
+        {
             EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "strdup error while parsing disk")
+        }
 
-            // filenames must end in "_0.IFO" and begin in "ATS_"
-            if (strcmp(strtok(d_name_duplicate , "_"), "ATS")) continue;
+        // filenames must end in "_0.IFO" and begin in "ATS_"
+                    
+        if (strcmp(strtok(d_name_duplicate , "_"), "ATS")) continue;
+        
         /* ngroups_scan is XX in ATS_XX_0.IFO  */
 
         char buffer[3]= {0,0,0};
 
         memcpy(buffer, strtok(NULL , "_"), 3);
-        ngroups_scan= (char) atoi(&buffer[0]);
+        ngroups_scan = (char) atoi(buffer);
 
         // does not extract when an extract list (!=NULL) is given and buffer != a list member.
+        
+        if (ngroups_scan < 1  || ngroups_scan > 9)
+        {
+            EXIT_ON_RUNTIME_ERROR_VERBOSE("Erreur de nommage des fichiers ATS :  le premier chiffre doit être compris entre 01 et 09.")
+        }
+        
         if (extract != NULL)
-            if ( (ngroups_scan-extract->extracttitleset[0])
-                    && (ngroups_scan-extract->extracttitleset[1])
-                    && (ngroups_scan-extract->extracttitleset[2])
-                    && (ngroups_scan-extract->extracttitleset[3])
-                    && (ngroups_scan-extract->extracttitleset[4])
-                    && (ngroups_scan-extract->extracttitleset[5])
-                    && (ngroups_scan-extract->extracttitleset[6])
-                    && (ngroups_scan-extract->extracttitleset[7])
-                    && (ngroups_scan-extract->extracttitleset[8]))
-                continue;
+        {
+            if (extract->extracttitleset[ngroups_scan - 1] != 1)
+                 continue;
+        }
 
+        // Selecting IFO files only
+        
         if (strcmp(strtok(NULL , "_"), "0.IFO")) continue;
 
         FREE(d_name_duplicate)
 
-
-        char  mesg[11]="Extracting";
+        char  mesg[11] = "Extracting";
         if (player)
-            strcpy(mesg,"Playing");
+            strcpy(mesg, "Playing");
 
         if ((globals.debugging)&& (!globals.nooutput))
           foutput(INF "%s%s%s%s",mesg," titleset ", rootdirent->d_name," ...\n");
@@ -335,43 +341,30 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract, const char* player)
             if (!globals.nooutput)
                 secure_mkdir(output_buf, mode);
 
-            if ((globals.debugging)&& (!globals.nooutput))
+            if ((globals.debugging) && (! globals.nooutput))
                 foutput(INF "Extracting to directory %s ...\n", output_buf);
         }
         else
             STRING_WRITE_CHAR_BUFSIZ(output_buf, "%s", globals.settings.tempdir )
 
-            if (ats2wav(rootdirent->d_name, output_buf) == EXIT_SUCCESS)
+        if (ats2wav(ngroups_scan, output_buf, extract) == EXIT_SUCCESS)
+        {
+            if  (globals.debugging &&  player != NULL)
+                foutput("%s\n", INF "Extraction completed.");
+        }
+        else
+        {
+            if (! player) 
             {
-                control++;
-                if  (globals.debugging)
-                if (player == NULL)
-                    foutput("%s\n", INF "Extraction completed.");
+                foutput(INF "Error extracting audio in titleset %d\n", ngroups_scan);
             }
             else
-            {
-                if (player == NULL) foutput(INF "Error extracting audio in titleset %d\n", ngroups_scan);
-                else   foutput("%s", INF "Error playing audio.\n");
-                continue;
-            }
-
-
+                foutput("%s", INF "Error playing audio.\n");
+            
+            continue;
+        }
     }
 
-    if  (globals.debugging)
-        switch (control)
-        {
-        case 1:
-            foutput("%s", MSG_TAG "One group was extracted/played.\n");
-            break;
-        case 0:
-            foutput("%s", MSG_TAG "No group was extracted/played.\n");
-            break;
-        default:
-            foutput("\n" MSG_TAG "%d groups were extracted/played.\n", control);
-        }
-
-
-    return control;
+    return ngroups_scan;
 }
 

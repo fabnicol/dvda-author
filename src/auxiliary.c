@@ -109,7 +109,7 @@ printf("%s", J"except for lossy formats.\n");
 printf("%s","    --project [file]     Launches a dvda-author project." J "The project file should have the same syntax as dvda-author.conf [see file HOW_TO.conf]" J "By default, launches dvda-author.dap in the current directory.\n\n");
 printf("%s","-i, --input directory    Input directory with audio files." J "Each subdirectory is a group.\n\n");
 printf("%s","-o, --output directory   Output directory.\n\n");
-printf("%s","-x, --extract disc[list] Extract DVD-Audio to directory -o." J "Groups are labelled g1, g2..." J "Optional comma-separated list of groups to be extracted\n" J "may be appended to disc path.\n" J "Tracks to be extracted may be listed ranked per group and separated by colons.\n\n");
+printf("%s","-x, --extract {disc or directory}[1:1,...,t1n-2:1,...,t2n-...-N:1,...,tNn] Extract DVD-Audio to directory -o." J "Groups are labelled g1, g2 in output directory." J "Optional hyphen-separated list of groups to be extracted\n" J "may be appended to disc path.\n" J "Groups ranks are followed by colons." J "Tracks to be extracted may be listed separated by commas after colon.\n\n");
 printf("%s","    --aob-extract AOB[,AOB...]    Direct AOB file audio content extraction. " J "Unlike -x, this option does not use .IFO files. Use this option in combination with -o. No wav header is generated." J "Several AOB files may be listed, separated by commas.\n\n");
 printf("%s","    --aob2wav AOB[,AOB...]        Like --aob-extract but a wav header is prepended to audio content.\n\n");
 printf("%s","    --log-decode [AOB]   Decode AOB file and log MPEG specifics. Should be used only in conjunction with --outfile\n\n");
