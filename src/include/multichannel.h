@@ -23,8 +23,6 @@
 #define MULTICHANNEL_H_INCLUDED
 // used for multichannel encoding/decoding, in audio.c and libats2wav.c
 
-
-
 // To enable inlining of the same function in two distinct files, it is necessary to place it in a header
 // Performs permutation of buf by replacing buf[j] with associate value, depending on pits per second, channel number,
 // and whether one converts to AOB or extracts from AOB.
@@ -57,6 +55,7 @@ static inline void permutation(uint8_t *buf,
     fprintf(stderr, "\n");
     fprintf(stderr, "channels = %d, bps = %d\n", channels, bits_per_second_flag);
     exit(0);
+
 #endif
 
     memcpy(buf,_buf, size);
@@ -65,6 +64,7 @@ static inline void permutation(uint8_t *buf,
 /* WAVFORMAT_EXTENSIBLE SPECS at offset 0x29-0x2B in wav headers */
 
 #ifndef SPEAKER_RESERVED
+
 # define SPEAKER_FRONT_LEFT             0x1
 # define SPEAKER_FRONT_RIGHT            0x2
 # define SPEAKER_FRONT_CENTER           0x4
