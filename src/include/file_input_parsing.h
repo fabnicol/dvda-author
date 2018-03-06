@@ -37,7 +37,32 @@ int parse_disk(DIR* dir,  mode_t mode,extractlist *extract, const char* player);
                         //1 //2 //3  //4  //5  //6
 static uint8_t cgadef[]={0,  1,  7,  3,   16,   17};
 
- inline static _Bool check_cga_assignment(int cgaint)
+//cga\nchannels
+//    1    2      3       4       5       6
+//0   C   
+//1   L    R
+//2   L    R      S
+//3   L    R      Ls      Rs
+//4   L    R      Ls      Rs
+//5   L    R      Lfe
+//6   L    R      Lfe     S
+//7   L    R      Lfe     Ls      Rs      
+//8   L    R      C
+//9   L    R      C       S
+//10  L    R      C       Ls      Rs
+//11  L    R      C       Lfe
+//12  L    R      C       Lfe     S
+//13  L    R      C       Lfe     Ls      Rs
+//14  L    R      C       S
+//15  L    R      C       Ls      Rs
+//16  L    R      C       Lfe
+//17  L    R      C       Lfe     S
+//18  L    R      C       Lfe     Ls      Rs
+//19  L    R      Ls      Rs      Lfe
+//20  L    R      Ls      Rs      Lfe
+//21  L    R      Ls      Rs      C       Lfe
+
+inline static _Bool check_cga_assignment(int cgaint)
 {
     int k;
     /*   Valid Channel group assignment values are:

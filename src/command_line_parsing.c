@@ -450,26 +450,26 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 case 'D' :
                     FREE(globals.settings.tempdir);
                     globals.settings.tempdir=strdup(optarg);
-                    foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Temporary directory is: ", optarg);
+                    foutput("%s%s\n",PAR "  Temporary directory is: ", optarg);
                     normalize_temporary_paths(NULL);
                     break;
                     
                 case 19:
                     FREE(globals.settings.lplextempdir);
                     globals.settings.lplextempdir=strdup(optarg);
-                    foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Lplex temporary directory is: ", optarg);
+                    foutput("%s%s\n",PAR "  Lplex temporary directory is: ", optarg);
                     break;
                     
                 case 20:
                     FREE(globals.settings.lplexoutdir);
                     globals.settings.lplexoutdir=strdup(optarg);
-                    foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Lplex output directory is: ", optarg);
+                    foutput("%s%s\n",PAR "  Lplex output directory is: ", optarg);
                     break;
                     
                 case 'X':
                     free(globals.settings.workdir);
                     globals.settings.workdir=strdup(optarg);
-                    foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Working directory is: ", optarg);
+                    foutput("%s%s\n",PAR "  Working directory is: ", optarg);
                     // WARNING never launch a command line with --mkisofs in the WORKDIR directory
                     change_directory(globals.settings.workdir);
                     
@@ -493,7 +493,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         foutput("%c", '\n');
     }
     
-    if (globals.logfile) foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Log file is: ", globals.settings.logfile);
+    if (globals.logfile) foutput("%s%s\n",PAR "  Log file is: ", globals.settings.logfile);
       
     /* COMMAND-LINE PARSING: second pass to determine memory allocation (thereby avoiding heap loss)
      * We give up getopt here to allow for legacy "Dave" syntax with multiple tracks as -g arguments
@@ -514,7 +514,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {
         
         case 'j' :
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Join group");
+            foutput("%s\n",PAR "  Join group");
         case 's' :
         case 'g' :
             
@@ -596,12 +596,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
             
         case 's' :
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Single track group");
+            foutput("%s\n",PAR "  Single track group");
         case 'g' :
         case 'j' :
             u++;
             allocate_files=true;
-            foutput("%s%d\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  allocate_files = ", allocate_files);
+            foutput("%s%d\n",PAR "  allocate_files = ", allocate_files);
             fflush(NULL);
             break;
             
@@ -610,7 +610,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             allocate_files=true;
             globals.settings.indir=strdup(optarg);
             
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Input directory is: ", 	optarg);
+            foutput("%s%s\n",PAR "  Input directory is: ", 	optarg);
             
             if ((dir=opendir(optarg)) == NULL)
                 EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Input directory could not be opened")
@@ -630,13 +630,13 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
             
         case 10:
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Will run with no output.");
+            foutput("%s\n",PAR "  Will run with no output.");
             globals.nooutput=1;
             globals.logfile=0;
             break;
             
         case 11:
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Will run with maximal debugging information.");
+            foutput("%s\n",PAR "  Will run with maximal debugging information.");
             globals.debugging=1;
             globals.veryverbose=1;
             globals.maxverbose=1;
@@ -829,7 +829,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
             k++;
             globals.cga=1;
-            for (m=0; (m+k < argc)&&(argv[m+k][0] !='-'); m++)
+            for (m = 0; m+k < argc && argv[m+k][0] !='-'; ++m)
             {
                 if (globals.debugging) foutput("       files[%d][%d].cga=%s\n", ngroups_scan, m, argv[m+k]);
                 //uint8_t cgaint=atoi(argv[m+k]);
@@ -838,7 +838,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 //                    files[ngroups_scan][m].cga=cgaint;
 //                else if (globals.debugging) foutput("%s", ERR "Found illegal channel group assignement value, using standard settings.");
             }
-            k+=m-1;
+            k += m-1;
         }
     }
     
@@ -885,16 +885,16 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {
         
         case 'a' :
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Autoplay on.");
+            foutput("%s\n",PAR "  Autoplay on.");
             globals.autoplay=1;
             break;
             
         case 't' :
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Enhanced debugging-level verbosity");
+            foutput("%s\n",PAR "  Enhanced debugging-level verbosity");
             break;
             
         case 'd' :
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Debugging-level verbosity");
+            foutput("%s\n",PAR "  Debugging-level verbosity");
             break;
             
         case 'x' :
@@ -911,7 +911,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 break;
             }
             globals.videozone=0;
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  No video zone");
+            foutput("%s\n",PAR "  No video zone");
             break;
             
         case 'i' :
@@ -962,23 +962,23 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if ((optarg != NULL) && (strcmp(optarg, "0") == 0))
             {
                 globals.end_pause=0;
-                foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  End pause will be suppressed.");
+                foutput("%s\n",PAR "  End pause will be suppressed.");
             }
             else
             {
                 globals.end_pause=1;
-                foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Adding end pause.");
+                foutput("%s\n",PAR "  Adding end pause.");
             }
             break;
             
             
         case 'W' :
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Lexer was deactivated");
+            foutput("%s\n",PAR "  Lexer was deactivated");
             globals.enable_lexer=0;
             break;
             
         case 'Z' :
-            foutput("%s%d\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Duplicate group #", nplaygroups+1);
+            foutput("%s%d\n",PAR "  Duplicate group #", nplaygroups+1);
             globals.playlist=1;
             nplaygroups++;
             if (nplaygroups > 8)
@@ -991,7 +991,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
             
         case 'c' :
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Channel group assignement activated.");
+            foutput("%s\n",PAR "  Channel group assignement activated.");
             globals.cga=1;
             break;
             
@@ -1037,7 +1037,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
         case 'A':
             
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  topmenu VOB: ", optarg);
+            foutput("%s%s\n",PAR "  topmenu VOB: ", optarg);
             img->tsvob=strdup(optarg);
             globals.topmenu=Min(globals.topmenu, TS_VOB_TYPE);
             
@@ -1065,7 +1065,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
             if (!img->active)
             {
-                foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  still pictures VOB: ", optarg);
+                foutput("%s%s\n",PAR "  still pictures VOB: ", optarg);
                 img->stillvob=strdup(optarg);
             }
             img->npics =(uint16_t*) calloc(totntracks, sizeof(uint16_t));
@@ -1077,17 +1077,17 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             //  'x' Must come AFTER 'o' and 'w'
             
         case 'I':
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Run mkisofs to author disc image.");
+            foutput("%s\n",PAR "  Run mkisofs to author disc image.");
             globals.runmkisofs=1;
             if (optarg)
             {
                 globals.settings.dvdisopath=strdup(optarg);
-                foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  ISO file path is: ", optarg);
+                foutput("%s%s\n",PAR "  ISO file path is: ", optarg);
             }
             break;
             
         case 'r':
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Make ISO image then run cdrecord to burn disc image.");
+            foutput("%s\n",PAR "  Make ISO image then run cdrecord to burn disc image.");
             globals.runmkisofs=1;
             if ((optarg) && (strlen(optarg) >4 ) )
                 globals.cdrecorddevice=strdup(optarg);
@@ -1099,7 +1099,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
             
         case 'R':
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Make ISO image the run growisofs to burn disc image.");
+            foutput("%s\n",PAR "  Make ISO image the run growisofs to burn disc image.");
             globals.runmkisofs=1;
             globals.rungrowisofs=1;
             if ((optarg) && (strlen(optarg) >4 ) )
@@ -1127,20 +1127,20 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             globals.videozone=1;
             free(globals.settings.linkdir);
             globals.settings.linkdir=strdup(optarg);
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  VIDEO_TS input directory is: ", optarg);
+            foutput("%s%s\n",PAR "  VIDEO_TS input directory is: ", optarg);
             
             break;
             
         case 'U':
             
-            foutput("%s", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Loop menu background video\n");
+            foutput("%s",PAR "  Loop menu background video\n");
             img->loop=1;
             break;
             
 
         case 'f':
             globals.fixwav_virtual_enable=1;
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Virtual fixwav enabled.");
+            foutput("%s\n",PAR "  Virtual fixwav enabled.");
             // case 'F' must follow breakless
             
         case 'F':
@@ -1150,10 +1150,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             globals.fixwav_enable=1;
             globals.fixwav_parameters=optarg;
             globals.fixwav_automatic=1; /* default */
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Bad wav headers will be fixed by fixwav");
+            foutput("%s\n",PAR "  Bad wav headers will be fixed by fixwav");
             if (optarg != NULL)
             {
-                foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  fixwav command line: ", optarg);
+                foutput("%s%s\n",PAR "  fixwav command line: ", optarg);
                 /* sub-option analysis */
                 fixwav_parsing(globals.fixwav_parameters);
             }
@@ -1168,7 +1168,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
             /* Uses sox to convert different input formats */
             globals.sox_enable=1;
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Audio formats other than WAV and FLAC will be converted by sox tool.");
+            foutput("%s\n",PAR "  Audio formats other than WAV and FLAC will be converted by sox tool.");
             
             break;
 #endif
@@ -1178,15 +1178,15 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if (globals.lossy_rounding)
             {
                 globals.lossy_rounding=0;
-                foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  --lossy-rounding was neutralized.");
+                foutput("%s\n",PAR "  --lossy-rounding was neutralized.");
             }
             
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  No audio padding will be performed by core dvda-processes.");
+            foutput("%s\n",PAR "  No audio padding will be performed by core dvda-processes.");
             break;
             
         case 2 :
             globals.minimal_padding=1;
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Minimal padding of audio samples (for evenness).");
+            foutput("%s\n",PAR "  Minimal padding of audio samples (for evenness).");
             break;
             
         case 'L' :
@@ -1194,15 +1194,15 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if (globals.padding)
             {
                 globals.padding=0;
-                foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Default padding was neutralized.");
+                foutput("%s\n",PAR "  Default padding was neutralized.");
             }
             if (globals.padding_continuous)
             {
                 globals.padding_continuous=0;
-                foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  --pad-cont was neutralized");
+                foutput("%s\n",PAR "  --pad-cont was neutralized");
             }
             
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Sample count rounding will be performed by cutting audio files.");
+            foutput("%s\n",PAR "  Sample count rounding will be performed by cutting audio files.");
             break;
 #endif
 #if 0
@@ -1212,14 +1212,14 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if (globals.padding == 0)
             {
                 globals.padding=1;
-                foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  --no-padding was neutralized");
+                foutput("%s\n",PAR "  --no-padding was neutralized");
             }
             if (globals.lossy_rounding)
             {
                 globals.lossy_rounding=0;
-                foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  --lossy-rounding was neutralized");
+                foutput("%s\n",PAR "  --lossy-rounding was neutralized");
             }
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Pad with last known byte, if padding, not 0s.");
+            foutput("%s\n",PAR "  Pad with last known byte, if padding, not 0s.");
             break;
 #endif
             
@@ -1234,20 +1234,20 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
             else
             {
-                foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Automatic generation of top menu...");
+                foutput("%s\n",PAR "  Automatic generation of top menu...");
                 globals.topmenu=Min(globals.topmenu, AUTOMATIC_MENU);
             }
             
             break;
             
         case 'M' :
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  dvdauthor Xml project: ", optarg);
+            foutput("%s%s\n",PAR "  dvdauthor Xml project: ", optarg);
             globals.xml=strdup(optarg);
             globals.topmenu=Min(globals.topmenu, RUN_DVDAUTHOR);
             break;
             
         case 'H' :
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  spumux Xml project: ", optarg);
+            foutput("%s%s\n",PAR "  spumux Xml project: ", optarg);
             static int spurank;
             while (spurank >= img->nmenus) 	img->nmenus++;
             if (img->nmenus) globals.spu_xml=realloc(globals.spu_xml, img->nmenus*sizeof(char*));
@@ -1256,7 +1256,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
             
         case 'B':
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  background mpg video: ", optarg);
+            foutput("%s%s\n",PAR "  background mpg video: ", optarg);
             if (img->backgroundmpg == NULL)
                 img->backgroundmpg=calloc(1, sizeof(char*));
             if (img->backgroundmpg == NULL) perror("\n"ERR "img->backgroundmpg\n");
@@ -1270,7 +1270,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
         case 'u':
             
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  duration of background mpg video: ", optarg);
+            foutput("%s%s\n",PAR "  duration of background mpg video: ", optarg);
             durationchain=strdup(optarg);
             
             h=strtok(durationchain, ":");
@@ -1328,7 +1328,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 if (strcmp(piccolorchain, "norefresh") == 0)
                 {
                     img->refresh=0;
-                    foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Menu pics will not be refreshed...");
+                    foutput("%s\n",PAR "  Menu pics will not be refreshed...");
                     break;
                 }
                 
@@ -1375,7 +1375,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 if (strcmp(activepiccolorchain, "norefresh") == 0)
                 {
                     img->refresh=0;
-                    foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Active menu pics will not be refreshed...");
+                    foutput("%s\n",PAR "  Active menu pics will not be refreshed...");
                     break;
                 }
                 
@@ -1416,7 +1416,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
         case 'O':
             img->screentextchain=strdup(optarg);
-            if (globals.veryverbose) foutput("%s %s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Screen textchain is:", img->screentextchain);
+            if (globals.veryverbose) foutput("%s %s\n",PAR "  Screen textchain is:", img->screentextchain);
             globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             img->refresh=1;
             break;
@@ -1696,7 +1696,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 break;
             }
             
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Soundtrack(s) to be muxed into background mpg video: ", optarg);
+            foutput("%s%s\n",PAR "  Soundtrack(s) to be muxed into background mpg video: ", optarg);
             
             if (!optarg)
             {
@@ -1739,10 +1739,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
 #if  HAVE_lplex || lplex_BUILD
             
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Generate DVD-VIDEO audio tracks");
+            foutput("%s\n",PAR "  Generate DVD-VIDEO audio tracks");
             if (globals.veryverbose) 
             {
-                foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Will create DVD-VIDEO from following audio files:");
+                foutput("%s\n",PAR "  Will create DVD-VIDEO from following audio files:");
             }
             
             if (!optarg)
@@ -1766,10 +1766,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
 #if HAVE_lplex || HAVE_lplex_BUILD
             
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Generate DVD-VIDEO slides");
+            foutput("%s\n",PAR "  Generate DVD-VIDEO slides");
             if (globals.veryverbose) 
             {
-                foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Will create DVD-VIDEO slides from following files:");
+                foutput("%s\n",PAR "  Will create DVD-VIDEO slides from following files:");
             }
             
             if (!optarg)
@@ -1792,7 +1792,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
 #if HAVE_lplex || HAVE_lplex_BUILD
             
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Import DVD-Audio tracks to DVD-Video zone.");
+            foutput("%s\n",PAR "  Import DVD-Audio tracks to DVD-Video zone.");
             dvdv_import_flag=1;
             
 #else
@@ -1803,7 +1803,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
         case 22:
 #if HAVE_lplex || HAVE_lplex_BUILD
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Make mirror: import DVD-Audio tracks into DVD-Video zone\n       and resample them if necessary.");
+            foutput("%s\n",PAR "  Make mirror: import DVD-Audio tracks into DVD-Video zone\n       and resample them if necessary.");
             mirror_flag=1;
 #else
             foutput("%s", ERR "Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
@@ -1812,7 +1812,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
         case 23:
 #if HAVE_lplex || HAVE_lplex_BUILD
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Make mirror: import DVD-Audio tracks into DVD-Video zone\n       and resample them if necessary.");
+            foutput("%s\n",PAR "  Make mirror: import DVD-Audio tracks into DVD-Video zone\n       and resample them if necessary.");
             foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Mirroring strategy: %s\n",optarg);
             mirror_flag=1;
             if (strcmp(optarg, "high") == 0) mirror_st_flag=HIGH;
@@ -1905,7 +1905,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 foutput("%s\n", ERR "Background mpg file already specified, skipping...");
                 break;
             }
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  background jpg file(s) for generating mpg video: ", optarg);
+            foutput("%s%s\n",PAR "  background jpg file(s) for generating mpg video: ", optarg);
             
             str=strdup(optarg);
             
@@ -1951,7 +1951,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
             
         case 'E':
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  highlight png file(s) for generating mpg video: ", optarg);
+            foutput("%s%s\n",PAR "  highlight png file(s) for generating mpg video: ", optarg);
             foutput("%s\n", WAR "Check that your image doe not have more than 4 colors, including transparency.");
             str=strdup(optarg);
             
@@ -1973,7 +1973,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
             
         case 'e' :
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  select png file(s) for generating mpg video: ", optarg);
+            foutput("%s%s\n",PAR "  select png file(s) for generating mpg video: ", optarg);
             foutput("%s\n", WAR "Check that your image doe not have more than 4 colors, including transparency.");
             str=strdup(optarg);
             
@@ -1996,7 +1996,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
         case 'G' :
             
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  image png file(s) for generating mpg video: ", optarg);
+            foutput("%s%s\n",PAR "  image png file(s) for generating mpg video: ", optarg);
             foutput("%s\n", WAR "Check that your image doe not have more than 4 colors, including transparency.");
             str=strdup(optarg);
             
@@ -2019,7 +2019,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
         case 2:
             
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Background color(s) for top (and active) menus : ", optarg);
+            foutput("%s%s\n", PAR "  Background color(s) for top (and active) menus : ", optarg);
             str=strdup(optarg);
             
             img->backgroundcolors=fn_strtok(str,':', img->backgroundcolors,0,NULL,NULL);
@@ -2037,8 +2037,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
             
         case 31: 
-            foutput("%s%s\n", ANSI_COLOR_MAGENTA "[PAR] " ANSI_COLOR_RESET "Scanning information given by IFO file : ", optarg);
-            ats2wav(strdup(optarg), NULL);
+            foutput("%s%s\n", PAR "Scanning information given by IFO file : ", optarg);
+            ats2wav(optarg[5] - '0', NULL, NULL);
             break;
         }
     }
@@ -2908,32 +2908,32 @@ void fixwav_parsing(char *ssopt)
         switch (subopt)
         {
         case 0:
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Fixwav: simple mode activated, advanced features deactivated.");
+            foutput("%s\n",PAR "  Fixwav: simple mode activated, advanced features deactivated.");
             globals.fixwav_automatic=0;
             break;
             
         case 1:
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Fixwav: prepending header to raw file.");
+            foutput("%s\n",PAR "  Fixwav: prepending header to raw file.");
             globals.fixwav_prepend=1;
             break;
             
         case 2:
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Fixwav: file header will be repaired in place.");
+            foutput("%s\n",PAR "  Fixwav: file header will be repaired in place.");
             globals.fixwav_in_place=1;
             break;
             
         case 3:
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Fixwav: interactive mode activated.");
+            foutput("%s\n",PAR "  Fixwav: interactive mode activated.");
             globals.fixwav_interactive=1;
             break;
             
         case 4:
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Fixwav: padding activated.");
+            foutput("%s\n",PAR "  Fixwav: padding activated.");
             globals.fixwav_padding=1;
             break;
             
         case 5:
-            foutput("%s\n", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Fixwav: pruning silence at end of files.");
+            foutput("%s\n",PAR "  Fixwav: pruning silence at end of files.");
             globals.fixwav_prune=1;
             break;
             
@@ -2946,12 +2946,12 @@ void fixwav_parsing(char *ssopt)
             
         case 7:
             globals.fixwav_force=1;
-            foutput("%s", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Fixwav will be launched before SoX for seriously mangled headers.\n");
+            foutput("%s",PAR "  Fixwav will be launched before SoX for seriously mangled headers.\n");
             break;
             
         case 8:
             globals.fixwav_cautious=1;
-            foutput("%s", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Fixwav will ask user permission to overwrite files in place.\n");
+            foutput("%s",PAR "  Fixwav will ask user permission to overwrite files in place.\n");
             break;
             
         case 9:
@@ -2959,7 +2959,7 @@ void fixwav_parsing(char *ssopt)
                     globals.settings.fixwav_database=strdup(value);
             if (!globals.nooutput) {
                 secure_mkdir(globals.settings.fixwav_database, 0755);
-                foutput("%s       %s%s", ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Fixwav will output info chunk from wav headers to:\n", globals.settings.fixwav_database, SEPARATOR "database\n");
+                foutput("%s       %s%s",PAR "  Fixwav will output info chunk from wav headers to:\n", globals.settings.fixwav_database, SEPARATOR "database\n");
             }
             break;
         }
@@ -2971,7 +2971,7 @@ void fixwav_parsing(char *ssopt)
 
 void extract_list_parsing(const char *arg, extractlist* extract)
 {
-    char * chain, *subchunk = NULL, control=0;
+    char * chain, *subchunk = NULL;
     int j;
     _Bool cutgroups = 0;
     
@@ -2980,59 +2980,78 @@ void extract_list_parsing(const char *arg, extractlist* extract)
     nextractgroup = extract->nextractgroup[0];
     chain = strdup(arg);
     
-    cutgroups = (strchr(chain, ',') == NULL)? 0: 1 ;
+    cutgroups = (strchr(chain, '-') == NULL)? 0: 1 ;
     
     if (! cutgroups) return;
     
     /* strtok modifies its first argument.
-    * If ',' not found, returns all the string, otherwise cuts it */
+    * If '-' not found, returns all the string, otherwise cuts it */
     
-    strtok(chain, ",");
+    strtok(chain, "-");
     
     if (globals.debugging)
         foutput("%s\n", INF "Analysing --extract/--play suboptions...");
         
-    control = 1;
-    
-    // Now strtok will return NULL if ',' not found, otherwise * to start of token
+   // Now strtok will return NULL if '-' not found, otherwise * to start of token
     
     while (true)
     {
-        if (cutgroups)
+        if ((subchunk = strtok(NULL, "-")) == NULL)
+            break;
+             
+        int groupindex = subchunk[0] - '0';
+        if (groupindex > 9 || groupindex < 1)
         {
-            if (((subchunk = strtok(NULL, ",")) == NULL) || (control > 8))
-                break;
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect group : rank should be included between 1 and 9.")
+            break;        
         }
-        else if (control > 1) break;
         
-        int groupindex = (int) *subchunk-'0';
-        char colon = *(subchunk+1);
+        char colon = *(subchunk + 1);
 
-        if ((colon != ':') || (strlen(subchunk) < 3))
+        if (colon != ':')
         {
-            foutput("%s\n", WAR "Incorrect --extract suboptions, format is --extract=group1:track1,...,groupN:trackN\n       Skipping...");
+            foutput("%s\n", WAR "Incorrect --extract suboptions, format is --extract=group1:track1,track11,...,track1n-...-groupN:trackN1,trackN2,...,trackNn");
+            foutput("%s\n", WAR "Example --extract=3:1,3,4-5:6,7\nperforms of extraction of tracks n°1, 3 and 4 in group 1 and tracks 6 and 7 in group 5.\n ");
             return;
         }
-        int trackindex = atoi(subchunk + 2);
         
-        if ((groupindex > 8) || (groupindex < 0) || (nextractgroup == 8) || (trackindex > 98))
+        char* subchunk_copy = strdup(subchunk);
+        strtok(subchunk_copy + 2, ",");
+        
+        char *trackchunk = NULL;
+        int trackindex = 0;
+                        
+        while ((trackchunk = strtok(subchunk, ",")) != NULL)
         {
-            groupindex = 0;
-            foutput("%s\n", WAR "Incorrect --extract/--play suboption, exceeding limits reset to 0.");
-            nextractgroup = 0;
-            trackindex = 0;
+            
+            trackindex = atoi(trackchunk);
+            if (trackindex < 1 || trackindex > 99)
+            {
+                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect track number : rank should be included between 1 and 99.");
+            }
+            
+            extract->extracttitleset[groupindex - 1] = 1;
+            extract->extracttrackintitleset[groupindex - 1][trackindex - 1] = 1;
         }
-
-        ++nextractgroup;
-        extract->extracttitleset[groupindex] = 1;
-        extract->extracttrackintitleset[groupindex][trackindex] = 1;
         
-        ++control;
+        free(subchunk_copy);
+    }
+    
+    for (j = 0; j < 9; ++j)
+    {
+        for (int k = 0; k < 99; ++j)
+        {
+            if ((extract->extracttitleset[j]) && (extract->extracttrackintitleset[j][k]))
+            {
+                ++nextractgroup;
+                break;
+            }
+        }
     }
     
     if (globals.debugging)
     {
-        foutput("%s",ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET"  EXTRACTING: titleset   |   track\n");
+        foutput("%s", PAR "EXTRACTING: titleset   |   track\n");
 
         int k;
 
@@ -3041,7 +3060,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
             for (k = 0; k < 99; ++j)
             {
                 if ((extract->extracttitleset[j]) && (extract->extracttrackintitleset[j][k]))
-                    foutput( ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET"                   %02d      |      %02d\n", j, k );
+                    foutput(INF "                   %02d      |      %02d\n", j, k );
             }
         }
     }
@@ -3050,13 +3069,13 @@ void extract_list_parsing(const char *arg, extractlist* extract)
     
     extract->nextractgroup[0] = nextractgroup;
 
-    errno=0;
+    errno = 0;
 
     FREE(chain)
 }
 
 
-void ats2wav_parsing(const char * arg, extractlist* extract, char* player)
+void ats2wav_parsing(const char *arg, extractlist* extract, char* player)
 {
     DIR *dir = NULL;
 
