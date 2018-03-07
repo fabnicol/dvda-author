@@ -275,13 +275,14 @@ static int check_ignored_extension(void *path)
 
 int parse_disk(DIR* dir, mode_t mode, extractlist  *extract)
 {
-
     char ngroups_scan=0;
     struct dirent *rootdirent;
 
-    if ((globals.debugging) && (! globals.nooutput))
-        foutput(INF "Extracting to %s\n", globals.settings.outdir);
+    if (globals.debugging && ! globals.nooutput)
+        foutput(INF "Extracting to %s\n",
+                globals.settings.outdir);
 
+    globals.fixwav_prepend = true;
 
     while ((rootdirent = readdir(dir) )!= NULL)
     {
@@ -302,7 +303,7 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract)
         
         /* ngroups_scan is XX in ATS_XX_0.IFO  */
 
-        char buffer[3]= {0,0,0};
+        char buffer[3]= {0, 0, 0};
 
         memcpy(buffer, strtok(NULL , "_"), 3);
         ngroups_scan = (char) atoi(buffer);
@@ -328,27 +329,50 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract)
 
         char  mesg[11] = "Extracting";
         
-        if ((globals.debugging)&& (! globals.nooutput))
-          foutput(INF "%s%s%s%s",mesg," titleset ", rootdirent->d_name," ...\n");
+        if (globals.debugging && ! globals.nooutput)
+        {
+          foutput(INF "%s%s%s%s",
+                  mesg,
+                  " titleset ",
+                  rootdirent->d_name,
+                  " ...\n");
+        }
 
         char output_buf[strlen(globals.settings.outdir) + 3 + 1];
 
-        STRING_WRITE_CHAR_BUFSIZ(output_buf, "%s%s%d", globals.settings.outdir, "/g", ngroups_scan)
-                
-        if (!globals.nooutput)
+        STRING_WRITE_CHAR_BUFSIZ(output_buf,
+                                 "%s%s%d",
+                                 globals.settings.outdir,
+                                 "/g",
+                                 ngroups_scan)
+
+        change_directory(globals.settings.workdir);
+
+        if (! globals.nooutput)
+        {
             secure_mkdir(output_buf, mode);
+        }
 
-        if ((globals.debugging) && (! globals.nooutput))
-            foutput(INF "Extracting to directory %s ...\n", output_buf);
+        if (globals.debugging && ! globals.nooutput)
+        {
+            foutput(INF "Extracting to directory %s ...\n",
+                    output_buf);
+        }
 
-        if (ats2wav(ngroups_scan, output_buf, extract) == EXIT_SUCCESS)
+        change_directory(globals.settings.indir);
+
+        if (ats2wav(ngroups_scan,
+                    output_buf,
+                    extract) == EXIT_SUCCESS)
         {
             if  (globals.debugging)
-                foutput("%s\n", INF "Extraction completed.");
+                foutput("%s\n",
+                        INF "Extraction completed.");
         }
         else
         {
-                foutput(INF "Error extracting audio in titleset %d\n", ngroups_scan);
+            foutput(INF "Error extracting audio in titleset %d\n",
+                    ngroups_scan);
             
             continue;
         }
@@ -356,4 +380,3 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract)
 
     return ngroups_scan;
 }
-
