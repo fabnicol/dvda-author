@@ -1609,6 +1609,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         extract_list_parsing(globals.settings.indir, &extract);
         
         ats2wav_parsing(globals.settings.indir, &extract);
+#else
+        ats2wav_parsing(globals.settings.indir, &extract, NULL);
+#endif
         
         return(NULL);
     }
@@ -3062,7 +3065,7 @@ void ats2wav_parsing(const char *arg, extractlist* extract)
         
 //    if (extract->nextractgroup[0])
 //    {
-        parse_disk(dir, globals.access_rights, extract);
+        parse_disk(dir, globals.access_rights, NULL);
 //    }
 //    else
 //        parse_disk(dir, globals.access_rights, NULL);
