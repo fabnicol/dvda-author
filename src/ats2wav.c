@@ -474,12 +474,12 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint6
         S_CLOSE(info->outfile)
         info->outfile.filesize = fpout_size;
         fpout_size = 0;
-
     }
 
     uint64_t offset1 = offset0 + (position == CUT_PACK ? 0 : 2048);
         
-    if (offset1 >= filesize(info->infile)) position = END_OF_AOB;
+    if (offset1 >= filesize(info->infile))
+        position = END_OF_AOB;
     else
         fseeko(info->infile.fp, offset1, SEEK_SET);
    
@@ -490,7 +490,6 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
 {
     uint64_t pack = 0;
     int j = 0; // necessary (track count)
-
     int pack_rank = FIRST_PACK;
     
     if (info == NULL)
@@ -527,7 +526,6 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
         errno = 0;
         if (globals.veryverbose)
             foutput("%s %d %s %d\n", MSG_TAG "Group ", i + 1, "Track ", j + 1);
-        
         do
         {
             pack_rank = peek_pes_packet_audio(info, &header, &status);
@@ -546,7 +544,6 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
         if (files[i][j].PTS_length)     // Use IFO files
         {
             numsamples = (files[i][j].PTS_length * files[i][j].samplerate) / 90000;
-            
             if (numsamples)
                 x = 90000 * numsamples;
             else
@@ -584,7 +581,6 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
 //                   filename(info->infile));
 //           exit(-8);
 //        }
-
 
         wav_output_path_create(info);
         wav_output_open(info);
@@ -693,7 +689,6 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
 static void audio_extraction_layout(fileinfo_t files[9][99])
 {
     foutput("\n%s", "DVD Layout\n");
-
     foutput("%s\n",ANSI_COLOR_BLUE"Group"ANSI_COLOR_GREEN"  Track    "ANSI_COLOR_YELLOW"Rate"ANSI_COLOR_RED" Bits"ANSI_COLOR_RESET"  Ch    Audio bytes  Filename\n");
 
     for (int i = 0; i < 9; ++i)
@@ -723,9 +718,7 @@ int get_ats_audio()
       
       if (globals.veryverbose)
               foutput("%s\n", INF "Reached ead of AOB.");
-       
-     }
-     
+    }
     
     if (globals.fixwav_prepend)
         audio_extraction_layout(files);
@@ -736,9 +729,7 @@ int get_ats_audio()
 
 int scan_ats_ifo(fileinfo_t *files, uint8_t *buf)
 {
-    int i,j,k,t=0,ntracks,ntracks1, numtitles;
-    
-    
+    int i, j, k, t=0, ntracks, ntracks1, numtitles;
     i = 2048;
     numtitles = uint16_read(buf + i);
     
@@ -797,7 +788,6 @@ int scan_ats_ifo(fileinfo_t *files, uint8_t *buf)
             printf("     Track/N first sector  last sector   pts length\n     %02d/%02d    %12u %12u %12"PRIu64"\n\n",
                    i+1, ntracks, files[i].first_sector, files[i].last_sector, files[i].PTS_length);
         }
-    
  
     return(ntracks);
 }
@@ -805,13 +795,10 @@ int scan_ats_ifo(fileinfo_t *files, uint8_t *buf)
 int ats2wav(short ngroups_scan, const char GCC_UNUSED *outdir, const extractlist* extract)
 {
     FILE* file = NULL;
-    
     unsigned int ntracks = 0;
     fileinfo_t files[9][99];
     memset(files, 0, sizeof(files));
-
     uint8_t buf[BUFFER_SIZE];
-    
     uint16_t nbytesread=0; 
     
     /* First check the DVDAUDIO-ATS tag at start of ATS_XX_0.IFO */
@@ -858,24 +845,28 @@ int ats2wav(short ngroups_scan, const char GCC_UNUSED *outdir, const extractlist
         EXPLAIN("%s%d%s\n", DBG " Scanning ", ntracks, "tracks")
     }
     
-    
     if (! extract || (extract && extract->extracttitleset[ngroups_scan] == 1))
     {
        if (globals.veryverbose)
-          foutput("%s%d%s\n", INF "Extracting audio for AOB n°", ngroups_scan, " (1-based).");
+       {
+          foutput("%s%d%s\n",
+                  INF "Extracting audio for AOB n°",
+                  ngroups_scan,
+                  " (1-based).");
+       }
  
        WaveData *info = NULL;
-          
+
        get_ats_audio_i(ngroups_scan - 1, files, info);
           
        if (globals.veryverbose)
-           foutput("%s\n", INF "Reached ead of AOB.");
+       {
+           foutput("%s\n",
+                   INF "Reached ead of AOB.");
+       }
     }
     
-    if (globals.fixwav_prepend)
-        audio_extraction_layout(files);
+    audio_extraction_layout(files);
     
     return(EXIT_SUCCESS);
 }
-
-
