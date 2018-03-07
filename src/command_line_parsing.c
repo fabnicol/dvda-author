@@ -1640,7 +1640,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         extract_list_parsing(globals.settings.indir, &extract);
 #if !HAVE_core_BUILD
         
-        ats2wav_parsing(globals.settings.indir, &extract, player);
+        ats2wav_parsing(globals.settings.indir, &extract);
 #else
         ats2wav_parsing(globals.settings.indir, &extract, NULL);
 #endif
@@ -3073,7 +3073,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
 }
 
 
-void ats2wav_parsing(const char *arg, extractlist* extract, char* player)
+void ats2wav_parsing(const char *arg, extractlist* extract)
 {
     DIR *dir = NULL;
 
@@ -3097,7 +3097,7 @@ void ats2wav_parsing(const char *arg, extractlist* extract, char* player)
         
 //    if (extract->nextractgroup[0])
 //    {
-        parse_disk(dir, globals.access_rights, extract);
+        parse_disk(dir, globals.access_rights, NULL);
 //    }
 //    else
 //        parse_disk(dir, globals.access_rights, NULL, player);
