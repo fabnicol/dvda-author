@@ -3055,7 +3055,7 @@ void ats2wav_parsing(const char *arg, extractlist* extract)
     
     if ((dir = opendir(globals.settings.indir)) == NULL)
     {
-        puts(globals.settings.indir);
+        foutput("%s\n", globals.settings.indir);
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not open input directory")
     }
 
@@ -3072,11 +3072,7 @@ void ats2wav_parsing(const char *arg, extractlist* extract)
     
     if (closedir(dir) == -1)
         foutput( "%s\n", ERR "Impossible to close dir");
-    
-    /* all-important, otherwise irrelevant EXIT_ON_RUNTIME_ERROR will be generated*/
         
-    errno=0;
-    change_directory(globals.settings.workdir);
     free(chain);
 }
 #ifdef img
