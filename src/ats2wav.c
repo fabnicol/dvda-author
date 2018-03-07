@@ -154,6 +154,7 @@ inline static void  aob_open(WaveData *info)
     }
     else
     {
+        foutput("File: %s\n", info->infile.filename);
         EXIT_ON_RUNTIME_ERROR_VERBOSE("INFILE open issue.")
     }
 }
@@ -509,7 +510,8 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
         info->repair = 0;
         info->padbytes = 0;
         info->prunedbytes = 0;
-        info->infile =  filestat(false, 0, globals.aobpath[i], NULL);
+        //info->infile =  filestat(false, 0, globals.aobpath[i], NULL);
+        info->infile =  filestat(false, 0, "/home/fab/Dev/dvda-author-dev/Docs/out/AUDIO_TS/ATS_01_1.AOB", NULL);
         info->outfile = filestat(false, 1, NULL, NULL);
     }
     
@@ -524,7 +526,7 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
 
         errno = 0;
         if (globals.veryverbose)
-            foutput("%s %d %s %d\n", MSG_TAG "Group ", i, "Track ", j);
+            foutput("%s %d %s %d\n", MSG_TAG "Group ", i + 1, "Track ", j + 1);
         
         do
         {
@@ -856,20 +858,18 @@ int ats2wav(short ngroups_scan, const char GCC_UNUSED *outdir, const extractlist
         EXPLAIN("%s%d%s\n", DBG " Scanning ", ntracks, "tracks")
     }
     
-    for (int i = 0; i < 9; ++i)
+    
+    if (! extract || (extract && extract->extracttitleset[ngroups_scan] == 1))
     {
-      if (extract->extracttitleset[i] != 1) continue;
-      
-      if (globals.veryverbose)
-         foutput("%s%d%s\n", INF "Extracting audio for AOB n°", i + 1, " (1-based).");
-
-      WaveData *info = NULL;
-      
-      get_ats_audio_i(i, files, info);
-      
-      if (globals.veryverbose)
-              foutput("%s\n", INF "Reached ead of AOB.");
-       
+       if (globals.veryverbose)
+          foutput("%s%d%s\n", INF "Extracting audio for AOB n°", ngroups_scan, " (1-based).");
+ 
+       WaveData *info = NULL;
+          
+       get_ats_audio_i(ngroups_scan - 1, files, info);
+          
+       if (globals.veryverbose)
+           foutput("%s\n", INF "Reached ead of AOB.");
     }
     
     if (globals.fixwav_prepend)
