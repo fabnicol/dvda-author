@@ -97,8 +97,12 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
     }
 
     if (ng > 1)
-        qsort(gnames, (size_t) ng, (size_t) CHAR_BUFSIZ,
+    {
+        qsort(gnames,
+              (size_t) ng,
+              (size_t) CHAR_BUFSIZ,
               (int (*) (const void *, const void *)) strcmp);
+    }
 
     totng = ng;
     ng = 0;
@@ -110,21 +114,25 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
         ngroups_scan= atoi(gnames[ng]+1);
 
         if ((ngroups_scan > MAX_GROUPS) || (ngroups_scan < 1))
+        {
             EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Subdirectories must be labelled ljm, with l, m any letters and j a number of 1 - 9")
+        }
 
-            change_directory(gnames[ng]);
+        change_directory(gnames[ng]);
 
         DIR *subdir;
-        if ((subdir=opendir(".")) == NULL)
+
+        if ((subdir = opendir(".")) == NULL)
+        {
             EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Input directory could not be opened")
+        }
 
-
-            struct dirent * subdirent;
-        control++;
+        struct dirent * subdirent;
+        ++control;
 
         /* Memory allocation will be based on user input ngroups = Max {ngroups_scan}  */
 
-        ngroups=MAX(ngroups_scan, ngroups);
+        ngroups = MAX(ngroups_scan, ngroups);
 
         ntracks[n_g_groups+ngroups_scan-1]=0;
 
@@ -132,7 +140,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
         int totnt;
         int nt = 0;
 
-        while ((subdirent=readdir(subdir) )!= NULL)
+        while ((subdirent = readdir(subdir) )!= NULL)
         {
             if (subdirent->d_name[0] == '.') continue;
             /* filter extensions, which are known not to be processed in this context */
@@ -145,7 +153,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
             }
 
             strcpy(tnames[nt], subdirent->d_name);
-            nt++;
+            ++nt;
         }
 
         if ((action == READTRACKS) && (nt))
@@ -180,7 +188,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
 
             /* assignment of values is based on ngroups_scan */
 
-            ntracks[n_g_groups+ngroups_scan-1]++;
+            ++ntracks[n_g_groups+ngroups_scan-1]
 
             if (action == READTRACKS)
             {
@@ -227,12 +235,12 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
 
             }
 
-            nt++;
+            ++nt;
         }
 
         while (1);
 
-        ng++;
+        ++ng;
     }
 
     if (action != READTRACKS) foutput(MSG_TAG "%d groups/subdirectories were parsed; ngroups=%d\n", control, ngroups);
@@ -269,7 +277,11 @@ static int check_ignored_extension(void *path)
     if ((dotloc =  strrchr(path, '.')) == NULL) return (1);
 
     while (num--)
-        if (strncmp(dotloc,ign_extension[num],NUMCHAR) == 0) return (1);
+    {
+        if (strncmp(dotloc, ign_extension[num], NUMCHAR) == 0)
+            return (1);
+    }
+
     return (0);
 }
 
@@ -299,7 +311,8 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract)
 
         // filenames must end in "_0.IFO" and begin in "ATS_"
                     
-        if (strcmp(strtok(d_name_duplicate , "_"), "ATS")) continue;
+        if (strcmp(strtok(d_name_duplicate , "_"), "ATS"))
+        continue;
         
         /* ngroups_scan is XX in ATS_XX_0.IFO  */
 
@@ -312,18 +325,16 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract)
         
         if (ngroups_scan < 1  || ngroups_scan > 9)
         {
-            EXIT_ON_RUNTIME_ERROR_VERBOSE("Erreur de nommage des fichiers ATS :  le premier chiffre doit être compris entre 01 et 09.")
+           EXIT_ON_RUNTIME_ERROR_VERBOSE("Erreur de nommage des fichiers ATS :  le premier chiffre doit être compris entre 01 et 09.")
         }
         
-//        if (extract != NULL)
-//        {
-//            if (extract->extracttitleset[ngroups_scan - 1] != 1)
-//                 continue;
-//        }
+        if (extract->extracttitleset[ngroups_scan - 1] != 1)
+        continue;
 
         // Selecting IFO files only
         
-        if (strcmp(strtok(NULL , "_"), "0.IFO")) continue;
+        if (strcmp(strtok(NULL , "_"), "0.IFO"))
+        continue;
 
         FREE(d_name_duplicate)
 
