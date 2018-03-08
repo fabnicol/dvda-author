@@ -491,29 +491,7 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
     uint64_t pack = 0;
     int j = 0; // necessary (track count)
     int pack_rank = FIRST_PACK;
-    
-    if (info == NULL)
-    {
-        info = (WaveData*) calloc(1, sizeof(WaveData));
-        
-        info->database = NULL;
-        info->filetitle = NULL;
-        info->automatic = true;
-        info->prepend = globals.fixwav_prepend;
-        info->in_place = true;
-        info->cautious = false;
-        info->interactive = false;
-        info->padding = false;
-        info->prune = false;
-        info->virtual = false;
-        info->repair = 0;
-        info->padbytes = 0;
-        info->prunedbytes = 0;
-        //info->infile =  filestat(false, 0, globals.aobpath[i], NULL);
-        info->infile =  filestat(false, 0, "/home/fab/Dev/dvda-author-dev/Docs/out/AUDIO_TS/ATS_01_1.AOB", NULL);
-        info->outfile = filestat(false, 1, NULL, NULL);
-    }
-    
+
     WaveHeader header;
     
     int remainder = 0;
@@ -804,6 +782,7 @@ int ats2wav(short ngroups_scan, const char GCC_UNUSED *outdir, const extractlist
     /* First check the DVDAUDIO-ATS tag at start of ATS_XX_0.IFO */
         
     char filename[13] = {0};
+
     if (ngroups_scan > 9 || ngroups_scan < 1)
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Group rank should be between 1 and 9")
@@ -855,9 +834,36 @@ int ats2wav(short ngroups_scan, const char GCC_UNUSED *outdir, const extractlist
                   " (1-based).");
        }
  
-       WaveData *info = NULL;
+       WaveData *info = (WaveData*) calloc(1, sizeof(WaveData));
 
-       get_ats_audio_i(ngroups_scan - 1, files, info);
+       info->database = NULL;
+       info->filetitle = NULL;
+       info->automatic = true;
+       info->prepend = globals.fixwav_prepend;
+       info->in_place = true;
+       info->cautious = false;
+       info->interactive = false;
+       info->padding = false;
+       info->prune = false;
+       info->virtual = false;
+       info->repair = 0;
+       info->padbytes = 0;
+       info->prunedbytes = 0;
+       //info->infile =  filestat(false, 0, globals.aobpath[i], NULL);
+
+       info->infile =  filestat(false,
+                                0,
+                                filepath(globals.settings.indir, filename),
+                                NULL);
+
+       info->outfile = filestat(false,
+                                0,
+                                NULL,
+                                NULL);
+
+       get_ats_audio_i(ngroups_scan - 1,
+                       files,
+                       info);
           
        if (globals.veryverbose)
        {

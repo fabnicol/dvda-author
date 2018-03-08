@@ -1563,8 +1563,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if ((globals.debugging)&& (!globals.nooutput))
                 foutput(MSG_TAG "Output directory %s has been preserved.\n", globals.settings.outdir);
         }
-        
-        
+                
         if (!globals.nooutput)
         {
             errno=secure_mkdir(globals.settings.outdir, 0777);
@@ -1576,7 +1575,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 clean_directory(globals.settings.tempdir);
                 if (errno && globals.veryverbose) perror("\n"ERR "Found errors while cleaning directory");
             }
-
 
             errno=secure_mkdir(globals.settings.tempdir, globals.access_rights);
             errno += secure_mkdir(globals.settings.lplextempdir, globals.access_rights);
@@ -1600,9 +1598,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
             errno=0;
         }
-        
     }
-    
     
     if (extract_audio_flag)
     {
@@ -1612,10 +1608,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 #else
         ats2wav_parsing(globals.settings.indir, &extract, NULL);
 #endif
-        
         return(NULL);
     }
-    
     
     // Coherence checks
     // You first have to test here.
@@ -1640,8 +1634,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     char * str=NULL;
     optind=0;
     opterr=1;
-  
-    
     
 #ifdef LONG_OPTIONS
     while ((c=getopt_long(argc, argv, ALLOWED_OPTIONS, longopts, &longindex)) != -1)
@@ -1649,7 +1641,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     while ((c=getopt(argc, argv, ALLOWED_OPTIONS)) != -1)
 #endif
     {
-        
         switch (c)
         {
         case 'Q':
@@ -2510,7 +2501,7 @@ void process_dvd_video_zone(command_t* command)
                                dvdv_track_array[group][TT],
                                dvdv_track_array[group][TT-1]);
                        
-                       foutput(ANSI_COLOR_RED"\n[WAR]"ANSI_COLOR_RESET"  %d, %d\n", lplex_audio_characteristics_test[TT], lplex_audio_characteristics_test[TT-1]);                            
+                       foutput( "  %d, %d\n", lplex_audio_characteristics_test[TT], lplex_audio_characteristics_test[TT-1]);
                        
                        foutput("%s\n", ANSI_COLOR_RED"\n[WAR]"ANSI_COLOR_RESET"  Adding titleset");
                        delta_titlesets++;
@@ -2874,32 +2865,32 @@ void fixwav_parsing(char *ssopt)
         switch (subopt)
         {
         case 0:
-            foutput("%s\n",PAR "  Fixwav: simple mode activated, advanced features deactivated.");
+            foutput("%s\n", PAR "  Fixwav: simple mode activated, advanced features deactivated.");
             globals.fixwav_automatic=0;
             break;
             
         case 1:
-            foutput("%s\n",PAR "  Fixwav: prepending header to raw file.");
+            foutput("%s\n", PAR "  Fixwav: prepending header to raw file.");
             globals.fixwav_prepend=1;
             break;
             
         case 2:
-            foutput("%s\n",PAR "  Fixwav: file header will be repaired in place.");
+            foutput("%s\n", PAR "  Fixwav: file header will be repaired in place.");
             globals.fixwav_in_place=1;
             break;
             
         case 3:
-            foutput("%s\n",PAR "  Fixwav: interactive mode activated.");
+            foutput("%s\n", PAR "  Fixwav: interactive mode activated.");
             globals.fixwav_interactive=1;
             break;
             
         case 4:
-            foutput("%s\n",PAR "  Fixwav: padding activated.");
+            foutput("%s\n", PAR "  Fixwav: padding activated.");
             globals.fixwav_padding=1;
             break;
             
         case 5:
-            foutput("%s\n",PAR "  Fixwav: pruning silence at end of files.");
+            foutput("%s\n", PAR "  Fixwav: pruning silence at end of files.");
             globals.fixwav_prune=1;
             break;
             
@@ -2907,7 +2898,7 @@ void fixwav_parsing(char *ssopt)
             
             FREE(globals.fixwav_suffix)
                     globals.fixwav_suffix=strdup(value);
-            foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Fixwav output suffix: %s\n", globals.fixwav_suffix);
+            foutput( PAR "  Fixwav output suffix: %s\n", globals.fixwav_suffix);
             break;
             
         case 7:
@@ -2943,12 +2934,25 @@ void extract_list_parsing(const char *arg, extractlist* extract)
     
     memset(extract, 0, sizeof(extractlist));
     uint8_t nextractgroup = 0;
-    nextractgroup = extract->nextractgroup[0];
+
     chain = strdup(arg);
     
-    cutgroups = (strchr(chain, '-') == NULL)? 0: 1 ;
+    cutgroups = (strchr(chain, '-') == NULL)? 0: 1;
     
-    if (! cutgroups) return;
+    if (! cutgroups)
+    {
+        for (int j = 0; j < 9; ++j)
+        {
+            for (int k = 0; k < 99; ++j)
+            {
+                extract->extracttitleset[j] = 1;
+                extract->extracttrackintitleset[j][k] = 1;
+            }
+        }
+
+        extract->nextractgroup = 9;
+        return;
+    }
     
     /* strtok modifies its first argument.
     * If '-' not found, returns all the string, otherwise cuts it */
@@ -3033,7 +3037,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
     
     /* all-important, otherwise irrelevant EXIT_ON_RUNTIME_ERROR will be generated*/
     
-    extract->nextractgroup[0] = nextractgroup;
+    extract->nextractgroup = nextractgroup;
 
     errno = 0;
 
@@ -3063,12 +3067,7 @@ void ats2wav_parsing(const char *arg, extractlist* extract)
     
     foutput(INF "Extracting audio from %s\n", globals.settings.indir);
         
-//    if (extract->nextractgroup[0])
-//    {
-        parse_disk(dir, globals.access_rights, NULL);
-//    }
-//    else
-//        parse_disk(dir, globals.access_rights, NULL);
+    parse_disk(dir, globals.access_rights, extract);
     
     if (closedir(dir) == -1)
         foutput( "%s\n", ERR "Impossible to close dir");
@@ -3113,16 +3112,16 @@ void still_options_parsing(char *ssopt, pic* img)
             }
 
             rank = temp;
-            foutput("%s%d\n", ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET "  Options for still #", rank);
+            foutput("%s%d\n", PAR "  Options for still #", rank);
             break;
             
         case 1:
-            foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET"  #%d: Manual browsing enabled.\n", rank);
+            foutput( PAR "  #%d: Manual browsing enabled.\n", rank);
             img->options[rank]->manual = 1;
             break;
             
         case 2:
-            foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET"  #%d: start effect is: %s.\n", rank, value);    //  or: cut, fade, dissolve, top, bottom, left, right
+            foutput( PAR "  #%d: start effect is: %s.\n", rank, value);    //  or: cut, fade, dissolve, top, bottom, left, right
             switch (value[0])
             {
             case 'c':
@@ -3151,7 +3150,7 @@ void still_options_parsing(char *ssopt, pic* img)
             break;
             
         case 3:
-            foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET "  #%d: end effect is: %s.\n", rank, value);
+            foutput( PAR "  #%d: end effect is: %s.\n", rank, value);
 
             switch (value[0])
             {
@@ -3187,7 +3186,7 @@ void still_options_parsing(char *ssopt, pic* img)
                 break;
             }
 
-            foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET"  #%d: effect lag is: %d*0.32s=%fs.\n", rank, lag, (float) lag*0.32);
+            foutput( PAR "  #%d: effect lag is: %d*0.32s=%fs.\n", rank, lag, (float) lag*0.32);
 
             img->options[rank]->lag = lag;
             break;
