@@ -397,6 +397,11 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint6
     do {
             if (*remainder)
             {
+                if (globals.veryverbose)
+                {
+                    foutput(MSG_TAG "%s", "Cutting AOB audio for gapless track extraction.\n");
+                }
+                
                 position = CUT_PACK;
             }
             else
@@ -447,6 +452,15 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint6
     {
         *remainder = fpout_size + audio_bytes - numbytes;
         audio_bytes  = numbytes - fpout_size;
+        
+        if (globals.veryverbose)
+        {
+            foutput(MSG_TAG "%s, offset: %lu, remainder: %d bytes\n", 
+                    "Cutting AOB audio for track extraction at end of track.",
+                    numbytes,
+                    *remainder);
+        }
+        
         position = CUT_PACK;
     }
     
@@ -484,6 +498,9 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint6
                     ftello(info->outfile.fp));
         }
 
+        if (globals.veryverbose)
+            foutput(INF "%s", "Cutting gapless track...\n");
+                    
         foutput(INF "Writing %s (%.2f MB)...\n",
                 filename(info->outfile),
                 (double) fpout_size / (double) (1024 * 1024));

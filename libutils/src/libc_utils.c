@@ -653,6 +653,7 @@ if (dest == NULL) return;
 #define ORANGE          "<p><span style=\"color: orange;font-size: 12pt; \">"
 #define MAROON          "<br/><span style=\"color: maroon;font-size: 8pt;\">"
 #define PURPLE          "<br/><span style=\"color: purple;font-size: 8pt;\">"
+#define VIOLET          "<br/><span style=\"color: violet;font-size: 8pt;\">"
 #define CLOSETAG1        "</span>"
 #define CLOSETAG2        "</span></p>"
 #define HEADER "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">\n\
@@ -661,61 +662,118 @@ if (dest == NULL) return;
 </HEAD><BODY>\n"
 
 int length=strlen(NAVY);
-char line[1000];
+char* line = calloc(1000, sizeof(char));
 
 fwrite(HEADER, strlen(HEADER), 1, dest);
 
 do
 {
-
     char* line_ent = fgets(line, 1000, src);
-
+    
+#   ifndef NO_ANSI_COLORS
+        if (line[0] == '\x1b')
+        {
+            while (line[0] != 'm') ++line;
+            ++line;
+        }
+#   endif
+    
     if (line_ent == NULL) return;
 
-    int linelength=strlen(line);
+    int linelength = strlen(line);
 
-    if ((line[0] == '[') && (line[1] == 'I') && (line[2]=='N') && (line[3] == 'F') && (line[4]==']'))
+    if (linelength > 4 && line[0] == '[' && line[1] == 'I' && line[2] == 'N' && line[3] == 'F' && line[4] == ']')
     {
         fwrite(NAVY, length, 1, dest);
-        fwrite(line, linelength, 1, dest);
-        fwrite(CLOSETAG2, 11, 1, dest);
-        fputc('\n', dest);
+        
+#       ifndef NO_ANSI_COLORS        
+            fwrite(line, 5, 1, dest);
+            line += 5;
+            while (line[0] != 'm') ++line;
+            ++line;
+#       endif        
+            
+        fprintf(dest, "%s%s\n", line, CLOSETAG2);
     }
     else if ((line[0] == '[') && (line[1] == 'M') && (line[2]=='S') && (line[3] == 'G') && (line[4]==']'))
     {
         fwrite(GREEN, length, 1, dest);
-        fwrite(line, linelength, 1, dest);
-        fwrite(CLOSETAG2, 11, 1, dest);
-        fputc('\n', dest);
+        
+#       ifndef NO_ANSI_COLORS        
+            fwrite(line, 5, 1, dest);
+            line += 5;
+            while (line[0] != 'm') ++line;
+            ++line;
+#       endif        
+        
+        fprintf(dest, "%s%s\n", line, CLOSETAG2);
     }
     else if ((line[0] == '[') && (line[1] == 'D') && (line[2]=='E') && (line[3] == 'V') && (line[4]==']'))
     {
         fwrite(PURPLE, length, 1, dest);
-        fwrite(line, linelength, 1, dest);
-        fwrite(CLOSETAG1, 7, 1, dest);
-        fputc('\n', dest);
+        
+#       ifndef NO_ANSI_COLORS        
+            fwrite(line, 5, 1, dest);
+            line += 5;
+            while (line[0] != 'm') ++line;
+            ++line;
+#       endif        
+            
+        fprintf(dest, "%s%s\n", line, CLOSETAG1);
     }
     else if ((line[0] == '[') && (line[1] == 'D') && (line[2]=='B') && (line[3] == 'G') && (line[4]==']'))
     {
         fwrite(MAROON, length, 1, dest);
-        fwrite(line, linelength, 1, dest);
-        fwrite(CLOSETAG1, 7, 1, dest);
-        fputc('\n', dest);
+        
+#       ifndef NO_ANSI_COLORS        
+            fwrite(line, 5, 1, dest);
+            line += 5;
+            while (line[0] != 'm') ++line;
+            ++line;
+#       endif        
+            
+        fprintf(dest, "%s%s\n", line, CLOSETAG1);
+        
     }
 
     else if ((line[0] == '[') && (line[1] == 'W') && (line[2]=='A') && (line[3] == 'R') && (line[4]==']'))
     {
         fwrite(ORANGE, length, 1, dest);
-        fwrite(line, linelength, 1, dest);
-        fwrite(CLOSETAG2, 11, 1, dest);
-        fputc('\n', dest);
+        
+#       ifndef NO_ANSI_COLORS        
+            fwrite(line, 5, 1, dest);
+            line += 5;
+            while (line[0] != 'm') ++line;
+            ++line;
+#       endif        
+            
+        fprintf(dest, "%s%s\n", line, CLOSETAG2);
     }
     else if ((line[0] == '[') && (line[1] == 'E') && (line[2]=='R') && (line[3] == 'R') && (line[4]==']'))
     {
         fwrite(RED, length, 1, dest);
-        fwrite(line, linelength, 1, dest);
-        fwrite(CLOSETAG2, 11, 1, dest);
-        fputc('\n', dest);
+        
+#       ifndef NO_ANSI_COLORS        
+            fwrite(line, 5, 1, dest);
+            line += 5;
+            while (line[0] != 'm') ++line;
+            ++line;
+#       endif        
+            
+        fprintf(dest, "%s%s\n", line, CLOSETAG2);
+    }
+    else if ((line[0] == '[') && (line[1] == 'P') && (line[2]=='A') && (line[3] == 'R') && (line[4]==']'))
+    {
+        fwrite(VIOLET, length, 1, dest);
+        
+#       ifndef NO_ANSI_COLORS        
+            fwrite(line, 5, 1, dest);
+            line += 5;
+            while (line[0] != 'm') ++line;
+            ++line;
+#       endif        
+            
+        fprintf(dest, "%s%s\n", line, CLOSETAG1);
     }
     else
     {
@@ -724,10 +782,7 @@ do
         while ((line[u]) && (isspace(line[u]))) u++;
         if (line[u])
         {
-            fwrite(GREY, length, 1, dest);
-            fwrite(line, linelength, 1, dest);
-            fwrite(CLOSETAG1, 7, 1, dest);
-            fputc('\n', dest);
+            fprintf(dest, "%s%s%s\n", GREY, line, CLOSETAG1);
         }
     }
 
@@ -739,6 +794,7 @@ do
     free(loghtmlpath);
     fclose(src);
     fclose(dest);
+    free(line);
 
 #undef NAVY
 #undef RED
