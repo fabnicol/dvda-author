@@ -267,6 +267,11 @@ int calc_info(fileinfo_t* info)
     first/mid_pes_padding > 6
 */
 
+    info->sampleunitsize=
+            (table_index == 1)? info->channels * 6 :
+                              ((info->channels > 2)? info->channels * 4 :
+                                                     info->channels * 2);
+    
 #define X T[table_index][info->channels-1]
 
     info->lpcm_payload = X[0];
@@ -1385,6 +1390,13 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
 
     //PATCH: provided for null audio characteristics, to ensure non-zero divider
 
+    if (info->sampleunitsize == 0)
+          EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Sample unit size is null");
+  
+    if (count > info->sampleunitsize) 
+        count -= count%info->sampleunitsize;
+      else return 0;
+    
     if (info->type == AFMT_WAVE)
     {
         n = fread(buf, 1, count, info->audio->fp);
