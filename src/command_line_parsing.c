@@ -587,6 +587,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
             
         case 'g' :
+            ++u;
+            allocate_files = true;
+            foutput("%s%d\n", PAR "allocate_files = ", allocate_files);
+            fflush(NULL);
+            break;
             
         case 'i' :
             
@@ -598,7 +603,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if ((dir=opendir(optarg)) == NULL)
                 EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Input directory could not be opened")
                         
-                        change_directory(globals.settings.indir);
+            change_directory(globals.settings.indir);
             audiodir=parse_directory(dir, ntracks, n_g_groups, 0, files_dummy);
             
             ngroups=audiodir.ngroups;
@@ -1605,24 +1610,25 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         extract_list_parsing(globals.settings.indir, &extract);
         
         ats2wav_parsing(globals.settings.indir, &extract);
-#else
-        ats2wav_parsing(globals.settings.indir, &extract, NULL);
-#endif
+
         return(NULL);
     }
     
     // Coherence checks
     // You first have to test here.
+    
 #if !HAVE_core_BUILD
+    
     menu_characteristics_coherence_test(img, ngroups);
     
 #ifndef __CB__
 #if !HAVE_mpeg2enc || !HAVE_mplex  || !HAVE_jpeg2yuv
+    
     if (globals.topmenu <= RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR)
     {
         foutput("%s\n", ERR "You need mplex, mpeg2enc and jpeg2yuv to author\n       a background screen, please install these applications.");
         foutput("%s\n", WAR "Continuing without menu authoring...");
-        globals.topmenu=NO_MENU;
+        globals.topmenu = NO_MENU;
     }
     
 #endif
@@ -1995,7 +2001,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
         case 31: 
             foutput("%s%s\n", PAR "Scanning information given by IFO file : ", optarg);
-            ats2wav(optarg[5] - '0', NULL, NULL);
+            ats2wav(optarg[5] - '0', NULL, NULL, NULL);
             break;
         }
     }
@@ -2936,14 +2942,14 @@ void extract_list_parsing(const char *arg, extractlist* extract)
     uint8_t nextractgroup = 0;
 
     chain = strdup(arg);
-    
-    cutgroups = (strchr(chain, '-') == NULL)? 0: 1;
+    fprintf(stderr, "chain : %s\n", chain);
+    cutgroups = (strchr(chain, ':') == NULL)? 0: 1;
     
     if (! cutgroups)
     {
         for (int j = 0; j < 9; ++j)
         {
-            for (int k = 0; k < 99; ++j)
+            for (int k = 0; k < 99; ++k)
             {
                 extract->extracttitleset[j] = 1;
                 extract->extracttrackintitleset[j][k] = 1;
@@ -2953,6 +2959,8 @@ void extract_list_parsing(const char *arg, extractlist* extract)
         extract->nextractgroup = 9;
         return;
     }
+    else
+    {
     
     /* strtok modifies its first argument.
     * If '-' not found, returns all the string, otherwise cuts it */
@@ -2964,47 +2972,49 @@ void extract_list_parsing(const char *arg, extractlist* extract)
         
    // Now strtok will return NULL if '-' not found, otherwise * to start of token
     
-    while (true)
-    {
-        if ((subchunk = strtok(NULL, "-")) == NULL)
-            break;
-             
-        int groupindex = subchunk[0] - '0';
-        if (groupindex > 9 || groupindex < 1)
+        while (true)
         {
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect group : rank should be included between 1 and 9.")
-            break;        
-        }
-        
-        char colon = *(subchunk + 1);
-
-        if (colon != ':')
-        {
-            foutput("%s\n", WAR "Incorrect --extract suboptions, format is --extract=group1:track1,track11,...,track1n-...-groupN:trackN1,trackN2,...,trackNn");
-            foutput("%s\n", WAR "Example --extract=3:1,3,4-5:6,7\nperforms of extraction of tracks n°1, 3 and 4 in group 1 and tracks 6 and 7 in group 5.\n ");
-            return;
-        }
-        
-        char* subchunk_copy = strdup(subchunk);
-        strtok(subchunk_copy + 2, ",");
-        
-        char *trackchunk = NULL;
-        int trackindex = 0;
-                        
-        while ((trackchunk = strtok(subchunk, ",")) != NULL)
-        {
-            
-            trackindex = atoi(trackchunk);
-            if (trackindex < 1 || trackindex > 99)
+            if ((subchunk = strtok(NULL, "-")) == NULL)
+                break;
+                 
+            int groupindex = subchunk[0] - '0';
+            if (groupindex > 9 || groupindex < 1)
             {
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect track number : rank should be included between 1 and 99.");
+                fprintf(stderr, ERR "Group index %d\n", groupindex);
+                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect group : rank should be included between 1 and 9.")
+                break;        
             }
             
-            extract->extracttitleset[groupindex - 1] = 1;
-            extract->extracttrackintitleset[groupindex - 1][trackindex - 1] = 1;
+            char colon = *(subchunk + 1);
+    
+            if (colon != ':')
+            {
+                foutput("%s\n", WAR "Incorrect --extract suboptions, format is --extract=group1:track1,track11,...,track1n-...-groupN:trackN1,trackN2,...,trackNn");
+                foutput("%s\n", WAR "Example --extract=3:1,3,4-5:6,7\nperforms of extraction of tracks n°1, 3 and 4 in group 1 and tracks 6 and 7 in group 5.\n ");
+                return;
+            }
+            
+            char* subchunk_copy = strdup(subchunk);
+            strtok(subchunk_copy + 2, ",");
+            
+            char *trackchunk = NULL;
+            int trackindex = 0;
+                            
+            while ((trackchunk = strtok(subchunk, ",")) != NULL)
+            {
+                
+                trackindex = atoi(trackchunk);
+                if (trackindex < 1 || trackindex > 99)
+                {
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect track number : rank should be included between 1 and 99.");
+                }
+                
+                extract->extracttitleset[groupindex - 1] = 1;
+                extract->extracttrackintitleset[groupindex - 1][trackindex - 1] = 1;
+            }
+            
+            free(subchunk_copy);
         }
-        
-        free(subchunk_copy);
     }
     
     for (j = 0; j < 9; ++j)
@@ -3051,28 +3061,32 @@ void ats2wav_parsing(const char *arg, extractlist* extract)
 
     char *chain = strdup(arg);
 
-    globals.settings.indir = calloc(strlen(arg) + 1 + 9, sizeof(char));
+    char *audiots_chain = calloc(strlen(arg) + 1 + 9, sizeof(char));
     
-    if (globals.settings.indir == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not allocate global settings")
-            
-    sprintf(globals.settings.indir, "%s" SEPARATOR "AUDIO_TS", chain);
-    
-    if ((dir = opendir(globals.settings.indir)) == NULL)
+    if (audiots_chain == NULL)
     {
-        foutput("%s\n", globals.settings.indir);
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not allocate global settings")
+    }
+            
+    sprintf(audiots_chain, "%s" SEPARATOR "AUDIO_TS", chain);
+    
+    if ((dir = opendir(audiots_chain)) == NULL)
+    {
+        foutput("%s\n", audiots_chain);
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not open input directory")
     }
 
-    change_directory(globals.settings.indir);
+    change_directory(audiots_chain);
     
-    foutput(INF "Extracting audio from %s\n", globals.settings.indir);
+    foutput(INF "Extracting audio from %s\n", audiots_chain);
         
-    parse_disk(dir, globals.access_rights, extract);
+    parse_disk(audiots_chain, globals.access_rights, extract);
     
     if (closedir(dir) == -1)
         foutput( "%s\n", ERR "Impossible to close dir");
         
     free(chain);
+    free(audiots_chain);
 }
 #ifdef img
 #undef img

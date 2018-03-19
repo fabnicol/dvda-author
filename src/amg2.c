@@ -119,6 +119,7 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
                 command->files[group][track].newtitle = 1;
 
             // PATCH 02 Dec 09 && 12.06
+            
             if (command->files[group][track].newtitle)
             {
                 ++totaltitles;
@@ -141,27 +142,26 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
       if (titlelength[group] == NULL || ntitlepics[group] == NULL || ntitletracks[group] == NULL)
             EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Memory allocation, title track count in AMG")
                     
-     track=0;
+      track=0;
       
       for (int title = 0; title < ntitles[group]; ++title)
       {
-        
         while (track < ntracks[group] && (ntitletracks[group][title] == 0 || !command->files[group][track].newtitle))
         {
            ++ntitletracks[group][title];
            titlelength[group][title] += command->files[group][track].PTS_length;
 
-            if (img)
+           if (img)
             {
                ntitlepics[group][title] += (img->npics)? img->npics[track] : 1;
             }
   
-         track++;
+          ++track;
         } 
-        
       }
       
       maxntracks = MAX(track, maxntracks); 
+      
       if (globals.debugging)  
           foutput(INF "Number of titles for group %d is %d\n",group, ntitles[group]);
       
