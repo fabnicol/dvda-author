@@ -19,7 +19,7 @@
 
 #define BUFFER_SIZE 3*2048
 
-int ats2wav(short ngroups_scan, const char* outdir, const extractlist* extract);
+int ats2wav(short ngroups_scan, const char* audiots_dir, const char* outdir, const extractlist* extract);
 
 int get_ats_audio_i(int, fileinfo_t[9][99], WaveData *info);
 int get_ats_audio();

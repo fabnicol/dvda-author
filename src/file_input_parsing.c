@@ -188,7 +188,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
 
             /* assignment of values is based on ngroups_scan */
 
-            ++ntracks[n_g_groups+ngroups_scan-1]
+            ++ntracks[n_g_groups+ngroups_scan-1];
 
             if (action == READTRACKS)
             {
@@ -285,7 +285,7 @@ static int check_ignored_extension(void *path)
     return (0);
 }
 
-int parse_disk(DIR* dir, mode_t mode, extractlist  *extract)
+int parse_disk(const char* audiots_chain, mode_t mode, extractlist  *extract)
 {
     char ngroups_scan=0;
     struct dirent *rootdirent;
@@ -295,7 +295,16 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract)
                 globals.settings.outdir);
 
     globals.fixwav_prepend = true;
-
+     
+    DIR* dir;
+    
+    if ((dir = opendir(audiots_chain)) == NULL)
+    {
+        foutput("%s\n", audiots_chain);
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not open input directory")
+    }
+    
+   
     while ((rootdirent = readdir(dir) )!= NULL)
     {
         if (rootdirent->d_name[0] == '.') continue;
@@ -370,9 +379,10 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract)
                     output_buf);
         }
 
-        change_directory(globals.settings.indir);
+        change_directory(audiots_chain);
 
         if (ats2wav(ngroups_scan,
+                    audiots_chain,
                     output_buf,
                     extract) == EXIT_SUCCESS)
         {
@@ -389,5 +399,6 @@ int parse_disk(DIR* dir, mode_t mode, extractlist  *extract)
         }
     }
 
+    closedir(dir);
     return ngroups_scan;
 }

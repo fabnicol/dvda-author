@@ -180,7 +180,8 @@ int launch_manager(command_t *command)
 
     uint64_t  *titlelength[naudio_groups];
 
-    uint16_t totntracks0=create_tracktables(command, naudio_groups,numtitles,ntitletracks,titlelength,ntitlepics);
+    uint16_t totntracks0 = create_tracktables(command, naudio_groups,numtitles,ntitletracks,titlelength,ntitlepics);
+
     if (globals.veryverbose)
     {
         if (totntracks == totntracks0)
@@ -188,7 +189,6 @@ int launch_manager(command_t *command)
         else
         printf(INF "Total of tracks is not coherent: totntracks=%d, return of create_tracktables=%d\n", totntracks, totntracks0);
     }
-
 
     for (i=0; i < naudio_groups; i++)
     {
@@ -232,10 +232,6 @@ int launch_manager(command_t *command)
 
     }
 #endif
-
-
-
-
 
     /* Creating AUDIO_PP.IFO */
 
