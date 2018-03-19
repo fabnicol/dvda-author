@@ -202,7 +202,7 @@ uint64_t filesize(filestat_t f);
 char* filename(filestat_t f);
 FILE* fileptr(filestat_t f);
 
-filestat_t filestat(_Bool b, uint64_t s, char* fn, FILE* fp);
+filestat_t filestat(_Bool b, uint64_t s, const char* fn, FILE* fp);
 
 typedef struct
   {
