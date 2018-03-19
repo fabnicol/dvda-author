@@ -166,7 +166,7 @@ inline static void wav_output_path_create(WaveData *info)
     char Title[14] = {0};
     sprintf(Title, "title_%d.wav", ++title);
 
-    info->outfile.filename = filepath(globals.settings.outdir, Title);
+    info->outfile.filename = filepath(info->outfile.filename, Title);
 }
 
 inline static void wav_output_open(WaveData *info)
@@ -326,7 +326,8 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Boo
     header->nBlockAlign =  header->wBitsPerSample / 8 * header->channels ;
     header->nAvgBytesPerSec = header->nBlockAlign * header->dwSamplesPerSec;
 
-    uint32_t cga2wav_channels[21] = {0x4, 0x3, 0x103, 0x33, 0xB, 0x10B, 0x3B, 0x7, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x3B, 0x37, 0x3B};
+    uint32_t cga2wav_channels[21] = {0x4, 0x3,   0x103, 0x33,  0xB,  0x10B, 0x3B,  0x7,  0x107, 0x37,
+                                     0xF, 0x10F, 0x3F,  0x107, 0x37, 0xF,   0x10F, 0x3F, 0x3B,  0x37, 0x3B};
 
     if (channel_assignment[0] < 21)
     {
@@ -512,7 +513,6 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
         }
         while (pack_rank == FIRST_PACK || pack_rank == MIDDLE_PACK);
         
-        files[i][j].filename = filename(info->outfile);
         files[i][j].bitspersample = header.wBitsPerSample;
         files[i][j].samplerate = header.dwSamplesPerSec;
         files[i][j].channels = header.channels;
@@ -561,6 +561,7 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
 //        }
 
         wav_output_path_create(info);
+        files[i][j].filename = info->outfile.filename;
         wav_output_open(info);
 
         _Bool debug;
@@ -770,7 +771,7 @@ int scan_ats_ifo(fileinfo_t *files, uint8_t *buf)
     return(ntracks);
 }
 
-int ats2wav(short ngroups_scan, const char GCC_UNUSED *outdir, const extractlist* extract)
+int ats2wav(short ngroups_scan, const char* audiots_dir, const char *outdir, const extractlist* extract)
 {
     FILE* file = NULL;
     unsigned int ntracks = 0;
@@ -834,6 +835,8 @@ int ats2wav(short ngroups_scan, const char GCC_UNUSED *outdir, const extractlist
                   " (1-based).");
        }
  
+       sprintf(filename, "ATS_0%d_1.AOB", ngroups_scan);
+       
        WaveData *info = (WaveData*) calloc(1, sizeof(WaveData));
 
        info->database = NULL;
@@ -853,12 +856,12 @@ int ats2wav(short ngroups_scan, const char GCC_UNUSED *outdir, const extractlist
 
        info->infile =  filestat(false,
                                 0,
-                                filepath(globals.settings.indir, filename),
+                                filepath(audiots_dir, filename),
                                 NULL);
 
        info->outfile = filestat(false,
                                 0,
-                                NULL,
+                                outdir,
                                 NULL);
 
        get_ats_audio_i(ngroups_scan - 1,
