@@ -96,7 +96,7 @@ static void deinterleave_24_bit_sample_extended(uint8_t channels, int count, uin
 static void deinterleave_sample_extended(uint8_t channels, int count, uint8_t *buf)
 {
 
-    int x,i, size=channels*4;
+    int x,i, size = channels * 4;
 
     uint8_t _buf[size];
 
@@ -104,16 +104,16 @@ static void deinterleave_sample_extended(uint8_t channels, int count, uint8_t *b
     {
     case 1:
     case 2:
-        for (i=0;i<count;i+= 2)
+        for (i = 0; i < count; i += 2)
         {
-            x= buf[i];
-            buf[i] = buf[i+ 1];
-            buf[i+ 1]=x;
+            x = buf[i];
+            buf[i] = buf[i + 1];
+            buf[i + 1] = x;
         }
         break;
 
     default:
-        for (i=0; i < count ; i += size)
+        for (i =0; i < count ; i += size)
             permutation(buf+i, _buf, 0, channels, T, size);
     }
 }
@@ -217,7 +217,7 @@ inline static int calc_position(FILE* fileptr, const uint64_t offset0)
         {
             int n = fread(buf, 1, 4, fileptr);
 
-            if (n != 4 || (n == 4 && buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB))
+            if (n != 4 || (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB))
             {
                 position = LAST_PACK;
             }
@@ -444,13 +444,24 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint6
         audio_bytes  = numbytes - fpout_size;
         position = CUT_PACK;
     }
-        
+    
     res += fread(audio_buf + res, 1, audio_bytes, info->infile.fp);
 
+    if (globals.maxverbose)    
+    {
+       foutput(MSG_TAG "Audio bytes: %d, res: %d\n", audio_bytes, res);
+       if (res != audio_bytes)
+           foutput(WAR "Caution : Read %d instead of %d\n", res, audio_bytes);
+    }
+    
     convert_buffer(header, audio_buf, res);
 
     fpout_size += fwrite(audio_buf, 1, res, info->outfile.fp);
 
+    
+    if (globals.maxverbose)
+           foutput(MSG_TAG "File size : %lu\n", fpout_size);
+    
     if (position == LAST_PACK || position == CUT_PACK)
     {
         fpout_size += header->header_size_out;
@@ -468,7 +479,7 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint6
                     ftello(info->outfile.fp));
         }
 
-        foutput(MSG_TAG "Writing %s (%.2f MB)...\n",
+        foutput(INF "Writing %s (%.2f MB)...\n",
                 filename(info->outfile),
                 (double) fpout_size / (double) (1024 * 1024));
         
@@ -484,6 +495,9 @@ inline static int get_pes_packet_audio(WaveData *info, WaveHeader *header, uint6
     else
         fseeko(info->infile.fp, offset1, SEEK_SET);
    
+    if (globals.maxverbose)
+           foutput(MSG_TAG "Position : %d\n", position);
+    
     return(position);
 }
 
@@ -605,8 +619,12 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
 
         do
         {
+            if (globals.maxverbose)
+                foutput(MSG_TAG "Pack %lu, Numbytes %lu, remainder %d\n", pack + 1, numbytes, remainder);
+                        
             pack_rank = get_pes_packet_audio(info, &header, numbytes, &remainder);
             ++pack;
+            
         }
         while (pack_rank == FIRST_PACK || pack_rank == MIDDLE_PACK);
 
@@ -632,7 +650,7 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
 
             // Possible adjustment here
             
-            files[i][j].numbytes  = header.data_cksize;
+            files[i][j].numbytes = header.data_cksize;
 
             globals.debugging = debug;
             info->infile = temp;
