@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.5.1, 2018-03-19T13:02:35. -->
+<!-- Written by QtCreator 4.5.1, 2018-03-19T18:31:55. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -8,7 +8,7 @@
  </data>
  <data>
   <variable>ProjectExplorer.Project.ActiveTarget</variable>
-  <value type="int">1</value>
+  <value type="int">0</value>
  </data>
  <data>
   <variable>ProjectExplorer.Project.EditorSettings</variable>
@@ -307,13 +307,13 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">dvda-author (sur un périphérique distant)</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">dvda-author</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">RemoteLinuxRunConfiguration:dvda-author</value>
-    <value type="QString" key="Qt4ProjectManager.MaemoRunConfiguration.Arguments">--extract /home/fab/Dev/dvda-author-dev/Docs/out/  -o /home/fab/Dev/dvda-author-dev/Docs/a --maxverbose
+    <value type="QString" key="Qt4ProjectManager.MaemoRunConfiguration.Arguments">-g /home/fab/Desktop/dvda-author-dev/test/2/16_44/a2_16_44.wav -o a --mkisofs --maxverbose
 </value>
     <value type="QString" key="Qt4ProjectManager.MaemoRunConfiguration.TargetName">dvda-author</value>
     <value type="int" key="RemoteLinux.EnvironmentAspect.Version">1</value>
     <value type="QString" key="RemoteLinux.RunConfig.AlternateRemoteExecutable">/home/fab/Dev/build-dvda-author-dev.linux-Desktop-Debug/dvda-author</value>
     <value type="bool" key="RemoteLinux.RunConfig.UseAlternateRemoteExecutable">true</value>
-    <value type="QString" key="RemoteLinux.RunConfig.WorkingDirectory">/home/fab/Dev/build-dvda-author-dev.linux-Desktop-Debug/</value>
+    <value type="QString" key="RemoteLinux.RunConfig.WorkingDirectory"></value>
     <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
@@ -574,12 +574,11 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:/home/fab/Dev/dvda-author-dev/dvda-author-dev.linux.pro</value>
     <value type="bool" key="QmakeProjectManager.QmakeRunConfiguration.UseLibrarySearchPath">true</value>
-    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.CommandLineArguments">-g /home/fab/Desktop/dvda-author-dev/test/3/16_48/a3_16_48.wav -o b -t</value>
+    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.CommandLineArguments"></value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.ProFile">dvda-author-dev.linux.pro</value>
     <value type="bool" key="Qt4ProjectManager.Qt4RunConfiguration.UseDyldImageSuffix">false</value>
-    <value type="bool" key="Qt4ProjectManager.Qt4RunConfiguration.UseTerminal">false</value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.UserWorkingDirectory"></value>
-    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.UserWorkingDirectory.default">/home/fab/Dev/build-dvda-author-dev.linux-debug-Debug</value>
+    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.UserWorkingDirectory.default">/home/fab/Dev/build-dvda-author-dev.linux-Desktop-Debug</value>
     <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
@@ -844,7 +843,7 @@
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.ProFile">dvda-author-dev.linux.pro</value>
     <value type="bool" key="Qt4ProjectManager.Qt4RunConfiguration.UseDyldImageSuffix">false</value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.UserWorkingDirectory"></value>
-    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.UserWorkingDirectory.default">/home/fab/Dev/build-dvda-author-dev.linux-debug-Debug</value>
+    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.UserWorkingDirectory.default">/home/fab/Dev/build-dvda-author-dev.linux-Desktop-Debug</value>
     <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
