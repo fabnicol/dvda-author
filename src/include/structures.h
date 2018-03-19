@@ -49,6 +49,7 @@ typedef struct
     uint8_t cga;
     uint8_t newtitle;
     // L&T Feldkamp addition (multichannel)
+    uint16_t sampleunitsize;
     uint32_t samplerate;
     uint32_t first_sector;
     uint32_t last_sector;
