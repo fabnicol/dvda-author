@@ -159,18 +159,23 @@ inline static void  aob_open(WaveData *info)
     }
 }
 
-inline static void wav_output_path_create(WaveData *info)
+inline static void wav_output_path_create(const char* dirpath, WaveData *info)
 {
     static int title;
 
     char Title[14] = {0};
     sprintf(Title, "title_%d.wav", ++title);
 
-    info->outfile.filename = filepath(info->outfile.filename, Title);
+    info->outfile.filename = filepath(dirpath, Title);
 }
 
 inline static void wav_output_open(WaveData *info)
 {
+    if (globals.veryverbose)
+    {
+        foutput(INF "Opening file %s ...\n", info->outfile.filename);
+    }
+    
     info->outfile.fp = fopen(info->outfile.filename, "ab");
     if (info->outfile.fp != NULL)
     {
@@ -510,10 +515,12 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
     WaveHeader header;
     
     int remainder = 0;
+    const char* dirpath = info->outfile.filename;
     
     while (pack_rank != END_OF_AOB)
     {
         /* First pass to get basic audio characteristics (sample rate, bit rate, cga */
+        
         _Bool status = VALID;
 
         errno = 0;
@@ -536,6 +543,7 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
         if (files[i][j].PTS_length)     // Use IFO files
         {
             numsamples = (files[i][j].PTS_length * files[i][j].samplerate) / 90000;
+            
             if (numsamples)
                 x = 90000 * numsamples;
             else
@@ -574,7 +582,7 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
 //           exit(-8);
 //        }
 
-        wav_output_path_create(info);
+        wav_output_path_create(dirpath, info);
         files[i][j].filename = info->outfile.filename;
         wav_output_open(info);
 
@@ -612,6 +620,9 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
             info->infile = temp;
             errno = 0;
 
+            if (globals.veryverbose)
+                foutput(MSG_TAG "%s\n", "Header prepended.");
+            
             wav_output_open(info);
         }
 
@@ -657,14 +668,12 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
             errno = 0;
         }
 
-        info->outfile = filestat(false, 1, NULL, NULL);
-
         S_CLOSE(info->outfile)
                 
         if (pack_rank == LAST_PACK || pack_rank == CUT_PACK)
         {
             if (globals.veryverbose)        
-                    foutput("%s\n", INF "Closing first track and opening new one.");
+                    foutput("%s\n", INF "Closing track and opening new one.");
         }
         else
         if (pack_rank == END_OF_AOB)
