@@ -1817,12 +1817,6 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
     return;
 }
 
-/* -------
- * secure_open
- *
- * tries to open file path and allocate file pointer.
- * Exits on failure, otherwise seeks start of file */
-
 
 uint64_t filesize(filestat_t f) { return f.filesize; }
 char* filename(filestat_t f) { return f.filename; }
@@ -1833,17 +1827,6 @@ filestat_t filestat(_Bool b, uint64_t s, const char* fn, FILE* fp)
     return str;
 }
 
-void  secure_open(const char *path, const char *context, FILE* f)
-{
-    if (f != NULL) fclose(f);
-    if ( (f=fopen( path, context ))  == NULL )
-    {
-        printf(ERR "Could not open '%s'\n", path);
-        exit(EXIT_FAILURE);
-    }
-
-    fseek(f, 0, SEEK_SET);
-}
 
 /* -------
  * end_seek

@@ -26,7 +26,7 @@ int  generate_amgm_xml(uint8_t ngroups, uint8_t *ntracks, pic* img)
     uint8_t menubuttons;
 
     // Writing XML code
-    FILE *xmlfile = NULL;
+    FILE *xmlfile;
     if (globals.xml == NULL)
     {
         char xmlfilepath[strlen(globals.settings.tempdir)+8+STRLEN_SEPARATOR];
@@ -35,8 +35,12 @@ int  generate_amgm_xml(uint8_t ngroups, uint8_t *ntracks, pic* img)
         globals.xml=strdup(xmlfilepath);
     }
 
-    secure_open(globals.xml, "wb", xmlfile);
-
+    xmlfile = fopen(globals.xml, "wb");
+    if (xmlfile == NULL)        
+    {
+      EXIT_ON_RUNTIME_ERROR_VERBOSE("Could not open xmlfile")        
+    }
+            
     fprintf(xmlfile, "%s%s%s%s%s\n",
             "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n\
 <dvdauthor jumppad=\"1\">\n\
