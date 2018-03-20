@@ -1,0 +1,9 @@
+include @BUILDDIR@/mk/mjpegtools.global.mk
+
+mjpegtools_MAKESPEC=auto
+mjpegtools_CONFIGSPEC=exe
+mjpegtools_TESTBINARY=mplex
+
+@BUILDDIR@/depconf/mjpegtools.depconf: $(mjpegtools_DEPENDENCY)
+	$(call depconf,mjpegtools)  
+	 

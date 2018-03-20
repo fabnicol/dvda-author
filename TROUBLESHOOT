@@ -1,0 +1,72 @@
+	TROUBLESHOOT ISSUES
+	-------------------
+
+Reported cases of troubleshoot often involve one of the following issues, which are not bugs per se 
+yet may occur on some platforms owing to configuration inadequacies:
+
+1. Reporting that it is impossible to open a dvda-author.conf (configuration) file
+   
+   These issues should be avoided by allowing dvda-author to skip the .conf file parsing stage.
+   This beaviour is enabled by adding option -W to command line.
+
+   If however you have long command lines and wish to take advantage of the capability of parsing
+   config files to store recurring command line data, please read what follows.
+
+   Normally this issue arises when dvda-author is locally run like this:
+
+     ./dvda-author-(version)
+
+   in its own directory, when no dvda-author.conf file is present in the same directory.
+
+   Normally .conf files are installed :
+    * under unix platforms in ${prefix}/share/applications/dvda-author-(version)
+    * at the source package root otherwise
+   
+   You can change the install menu for .conf files by indicating them after --with-config 
+   at configuration stage (see file INSTALL and HOWTO.conf)
+
+   As a rule of thumb, dvda-author should be run with full paths starting from a node containing both the
+   install directory  of the .conf file and the main executable. This is the case when you condigure with e.g.
+
+   ./configure --prefix=/usr/local
+
+   and run /usr/local/bin/dvda-author-(version)
+
+   as the .conf file will be in /usr/local/share/applications/dvda-author-(version)
+   Simlilarly, if you configure with:
+
+   ./configure --prefix=/home/xxx/local
+
+   cd to /home/xxx/local/bin and run:
+
+   ./dvda-author-(version)
+
+   a runtime error will be reported. You need to run a full path, or at least, from your /home/xxx:
+
+   local/bin/dvda-author-(version)
+
+   In this case, the .conf file is accessible, being located under a subdirectory of local/.
+
+   Should this fail, try one of the following actions:
+
+          a) Manually install dvda-author.conf (found in root package) or any blank file so named
+             under /usr/share/applications/dvda-author-(version)  if this directory exists [*nix platforms]
+          b) Look at your Makefile in top package and locate the value for 'sysconfdir'. Perform step a) again
+             if sysconfdir is not the same directory as the one mentioned in a)
+          c) Reconfigure using --with-config='path to directory containing file dvda-author.conf'
+          d) Install dvda-author in a directory for which you have access rights
+          e) If all this fails, as a last-ditch way out, insert: 
+           
+           #define SETTINGSFILE  "path/to/your/dvda-author.conf file" in commonvars.h (around line 90)
+           and manually change the value of 'sysconfdir' accordingly in the top Makefile.
+
+   
+2. Reporting that it is impossible to create menus:
+
+   Try to relaunch using --workdir="path to a directory containing the 'menu' subdirectory of the 
+   source code package" (not necessarily the source code package if you copied the menu subdirectory elsewhere).
+
+   Check that you have all the auxiliary binaries listed in the file DEPENDENCIES of the source code package
+   and that these binaries can be accessed by the system (they are located in your PATH environment variable).
+   Otherwise use --bindir='path to auxiliary executables' (mplex, mkisofs,lplex etc.)
+   
