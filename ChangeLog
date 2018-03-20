@@ -1,0 +1,318 @@
+2016-08-08 Fabrice Nicol
+	* Fix regressions in later code. Update dependencies and patches.
+ 	  Build system improvements.
+
+2013-11-12 Fabrice Nicol
+	* Add --dvdv-import, --mirror and --miror-strategy for DVD-Video zone authoring
+
+2013-11-11 Fabrice Nicol
+	* Add --lplex-tempdir, --lplex-output, --dvdv-tracks, --dvdv-slides for lplex DVD-Video zone authoring
+	* Update EXAMPLES.in file
+	
+2013-10-31 Fabrice Nicol
+	* Add --enable-default-video-format to dvdauthor configure command line in m4/dependencies.m4.
+	  Add command line variable VIDEO_FORMAT at main configure level.
+	
+2013-10-30 Fabrice Nicol
+	* Fix minor build system issues.
+	
+2013-09-26 Fabrice Nicol
+	* Add --enable-all-all, --fontname, --fontsize, --pointsize
+	* configuration command line moves: --enable-mkisofs-... ->  --enable-cdrtools-... among others
+          (see ./configure --help)
+	* Many build system fixes and code cleanup.
+
+2010-07-18  Fabrice Nicol
+	* Add --enable-core-build for minimal build without dependencies
+	* Add  --enable-mpeg2dec-download --enable-mpeg2dec-build for deps requested by --import-topmenu
+	* Add --import-topmenu for authoring topmenus from video VOBS (on-going dev) using mpeg2dec
+
+2010-07-15  Fabrice Nicol
+	* Fix several serious regressions (--extract, -i)
+	* Add --soundtracks, --topmenu-slides and lplex support (--enable-lplex-build/download)
+	* tested OK: multipmenu with 1 slide per menu/one menu with several slides. 
+	* Fix some relative path issues
+	* enable sibling builds
+
+2010-07-05  Fabrice Nicol
+	* Add several --enable configure options for auxiliary builds
+	* Fix NTSC and temporary directory issues
+	* TODO: build on windows
+
+2010-06-28  Fabrice NICOL  <fabnicol@users.sourceforge.net>
+ 	* Cut down --topmenu-palette to 3 suboptions, change in separators (, -> :)
+	* Add: --background-colors in rgb mode, as meny menus.
+	* Redesign of temporary file memory allocation and override on command line.
+	* Redesign of log output with Windows porting by CreateThread
+	* Add: Html log (new switch --loghtml)
+
+2010-06-26  Fabrice NICOL
+	* Fix --topvob in new context
+	* Dev: test multi-screen menus with active menus --> new algorithm in view
+	* Cygwin builds for dvdauthor.
+
+
+2010-06-24  Fabrice NICOL
+	* Fix: AUDIO_SV overgeneration with --menustyle hierarchical
+	* fix: bug in new-style call to MP2ENC
+	* fix: --nmenus > 2 (has to specify default relation between img->nmenus and img->ncolumns)
+	* restrict active menus to simple screens
+	* fix regression and redesign: --log(=file), --logrefresh(=file) with optional arguments.
+	* clean up deprecated switches: --lossy-rounding, --pad-cont, --minimal-padding, --no-padding
+
+2010-06-23  Fabrice NICOL
+	* Generalize binary path creation (for autotools-based builds, for IDEs, *nix/Windows)
+	* fix --bindir etc. accordingly
+
+2010-06-20  Fabrice NICOL
+	* Fix --topvob
+	* Add grey non-transparent .png backgrounds in menu/ --> change palettes accordingly.
+	  This adds one possible parametric color (background)
+	* Add --no-refresh-outdir and --no-refresh-tempdir to avoid erasing these directories
+	  default behaviour being erasure on launch (new for tempdir).
+
+2010-06-19  Fabrice NICOL
+	* Add: --datadir and improve behaviour of --workdir
+	* Recast: --palette and --colors into --topmenu-palette and --topmenu-colors
+	* Add: --activemenu-palette and revise information on palette customization and defaults in commonvars.h
+	* Change: --logrefresh into --log=refresh
+	* Change: short options into -0 to -9
+	* Fix: home environment variable trouble
+	* Windows porting enhancement or bug fixes
+	* More tests
+
+2010-06-16  Fabrice NICOL
+	* Stabilize and fix --menustyle active
+
+2010-06-14  Fabrice NICOL
+	* Fix: very serious regression that introduced a 2-sector shift in pointers to audio files (recent 09.09 releases)
+	* Fix: regression in -V (arbitrary exit) and EXIT_ON_ERROR...
+	* Fix: bug in nvideolinking_groups
+	* Add: -I paths to autogen
+	* Fix: inapropriate behaviour of cdrtools patching for dvd_sort.c in /mkisofs
+	* Syntax change: --colors refresh replaced by --colors norefresh, as refreshing menu pics is now default
+	* Add: --logrefresh for generating logs from a truncated file
+	* Add: blank=fast to cdrtools command-lines.
+
+2010-06-03  Fabrice NICOL
+	* Upgrade to sox-14.3.1
+
+2010-04-02  Fabrice NICOL
+	* Fix bug in DVDA_TEST_SOFTWARE_VERSION
+
+2009-12-15  Fabrice Nicol
+	* Implement active menus (add --menustyle active and --stilloptions active)
+	* Update website (Advanced and Project file pages).
+	* New series of tests and bugfixes.
+
+2009-11-30  Fabrice Nicol
+	* Implement hierarchical menus (add --menustyle hierarchical)
+	* Add --nmenus and --ncolumns to customize top menus with several screens.
+	* Improve menu generation, enable --background for several menu backgrounds
+	* Bugfixes.
+
+2009-10-10  Fabrice Nicol
+	* Implement DVDATXTDT-MG for 1-group discs.
+
+2009-10-06  Fabrice Nicol
+	* Release candidate 6, bugfixes.
+	* Prune libogg directory off tree. Automate libogg dependency management through FLAC --disable-ogg in dependencies.m4
+
+2009-10-01  Fabrice Nicol
+	* Release candidate 4, bugfixes.
+
+2009-09-30  Fabrice Nicol
+	* Release candidate version 09.09, bugfixes.
+
+2009-09-20  Fabrice Nicol
+	* Major build system revamp.
+	* Add auxiliary.m4, dvda.m4 and dependencies.m4
+	* Fix end effects
+
+2009-09-07  Fabrice Nicol
+	* Fix bugs.
+	* Add git repo
+
+2009-09-05  Fabrice Nicol
+	* Improve lexer (simplify audio and menu text input).
+	* Fix album label display on top menu.
+	* Add group label display.
+
+2009-09-04  Fabrice Nicol
+	* Fix pointer in sector 4 of AUDIO_TS (0x194A).
+	* Add Code::Blocks project adjustments
+	* Test automatic top menu + stills + --title: OK
+	* Fix broken lexer (long overdue), test OK.
+
+2009-09-01  Fabrice Nicol
+	* Add still picture (aka stills) for titles and tracks, with some suboptions: --stillpics,
+	  --stilloptions [suboptions: rank, starteffect=[cut|fade|dissolve|topwipe|bottomwipe|leftwipe|rightwipe],endeffect=(same),
+	  lag,manual. (Input limited to jpg).
+	* Fix asvs.c and atsi2.c. Alter menu.c to reuse for SV_VOB generation.
+	* SV tables (ATSI +ASVS).
+	* Add --loop to replay top menu once.
+
+2009-08-15  Fabrice Nicol
+	* Add top menu generation from still jpg and soundtrack using mp2enc, jpeg2yuv, mpeg2eng and mplex:
+	  switches --background -- soundtrack --background-mpg --image --highlight --select --screentext
+	  --highlightformat --duration
+	* Add automatic menu text formatting.
+	* Interpolate norm in amg2.c, fourth sector: palette coding for menus (new table). Add switch --colors.
+	* Add option --growisofs to burn disc with growisofs as an alternative to cdrecord
+	* Add ImageMagick-based capability for automating top menu image generation (switch --blankscreen).
+	* Bug fixes (buffer overflows with .newtitle; moderate memory leaks; change buggy switch -| into -z).
+	* Enhance title count reporting.
+	* Move endianness.c to libc_utils.
+	* Perform stess tests OK.
+	* Improve configure.ac
+	* Withdraw -U as useless.
+
+2009-08-08  Fabrice Nicol, Kai-Uwe Behrmann
+	* Fix regression in libats2wav.c with groups having more than 1GB of data
+	* Correct lazy prefix in configure.ac
+
+2009-07-23  Lee Feldkamp, Fabrice Nicol
+        * develop channel
+	  group assignement (-c).
+
+2009-07-19  Fabrice Nicol
+	* Automate man page and html documentation processing.
+	* Add file menu.c for creating top menus (--topmenu [mpgfile])
+	* Add working directory switch (--workdir) and temporary files output directory
+	  switch (--tempdir)
+	* Add --dvdauthor, --mkisofs and --cdrecord switches to launch patched dvdauthor,
+	  patched mkisofs and standard cdrecord.
+	* Patch dvdauthor to enable DVD-Audio compliant VOB menu authoring with xml project
+	  file parsing.
+	* Add --enable-dvdauthor-patch ad --enable-mkisofs-patch to configure.ac. Enable
+	  downloading dvdauthor and cdrtools sources, patches them, rebuild and install.
+	* Update to sox-14.3. Minor patch to sox-14.3 build system and matrix configure.ac
+	  and glibc Makefile.am
+
+2009-07-01  Fabrice Nicol
+	* Add --autoplay switch, modify web AUDIO_TS.IFO table accordingly.
+	* Add --disable-lexer.
+
+2009-06-02  Fabrice Nicol
+	* Prune libogg tree to minimal needs. Alter libogg build system for Suse build
+	  system compatibility. Amend spec file accordingly.
+
+2009-06-02  Fabrice Nicol
+	* Bug fix for accidentally mangled Windows code (winport.c)
+
+2009-06-01  Fabrice Nicol
+	*  Minor bug fix (padding), add -C (--pad-cont).
+
+2009-05-28  Fabrice Nicol
+	* Fix bug caused by SoX code/interface, add getopt1.c and getopt.c in glibc/
+	* Upgrade and debug fixwav module, add 'force' and 'cautious' suboptions.
+	* Revise and upgrade configure.ac, add --disable-sox-shared for static build
+	* Add -L, -W switches
+
+2009-05-16  Fabrice Nicol
+	 * Fix bug configure.ac
+
+2009-05-10  Kai-Uwe Behrmann and Fabrice Nicol
+
+	* Bug fix for building system (configure.ac, libsoxconvert/sox-libs)
+	* Correct time output
+	* Suppress pause on error exit (GUI requirement)
+
+2009-05-04  Jerome Brock
+	* Add mkisofs patch for -dvd-audio -dvd-video (see website, not in package)
+
+2009-03-25  Norbert Tognino
+	* Bug fix for -i switch file ordering (using qsort)
+
+2008-12-30  Fabrice Nicol
+	* Update documentation and online help.
+	* Bugfix for decoder (headers).
+	* Change default behaviour for -p (Feldkamp automatic approximation).
+	* Update windows package.
+
+2008-12-25  Lee and Tim Feldkamp
+	* add multichannel support
+	* add startsector pp approximation
+
+2008-12-25  Fabrice Nicol
+	* enhance configure script (--without-module options)
+	* add multiformat support based on SoX 14.1
+	* code refactoring of Chapman code for (lib)ats2wav
+
+2008-10-01  Enhance NSIS installer for Windows (French install, optional modules)
+            GNU system bugfix (force libogg build when libFLAC configured).
+
+2008-09-28  Bugfixes in GNU build system. New configure
+            option --with-config. Increase libFLAC
+            portability (using fpos_t).
+
+2008-09-07  Fabrice Nicol
+
+	* add large file support
+	* add libats2wav module for extracting DVD-Audio titlesets into .wav files.
+	* enhance fixwav module, option adjustments.
+	* portable to *nix by using GNU libc sources (strdup, strndup, getsubopt) under glibc/
+ 	* portable to Windows (limited API code snippets for truncate() porting).
+	* increase portability if compiling with GCC using libiberty.a
+	* GNU build system enhancements: autoconf library checks/replacements for
+          libFLAC, libogg and GNU libc functions (stdup, strndup, getsubopt)
+	* bugfixes
+
+
+2008-08-10  Fabrice Nicol
+
+	* dvda-author 08.08-dev released
+	* Features: Ogg FLAC support, header repair module, long options,
+	  configuration file parsing, padding/pruning options; .
+	* command line:
+	  add as short options: -0, -f, -F, -S, -v
+	  add as long options:  --version, --help, --debug, --input, --fixwav
+	  --fixwav-virtual, --log, --no-videozone, --output, --startoffset, --pause, --quiet, --sox, --videolink, --PTS-factor, --videodir, --rights, --no-padding
+	* command_line_parsing.c, endianness.c, launch_manager.c, lexer.c: new files
+	* dvda-author2.c: rewrite, code partly moved to launch_manager.c
+	* Header repair module: add libfixwav-1.3.a, new library (libfixwav/src directory)
+	* libfixwav directory:  add directories src, include
+	* files auxiliary.c, checkData.c, checkParameters.c, manager.c,
+	  readHeader.c, repair.c: new source files
+	* checKData.h, checkPrameters.h, fixwav_auxiliary.h, fixwav.h, fixwav_manager.h,
+	  readHeader.h repair.h: new header files
+	* dvda-author.conf: editable configuration file for command-line defaults (top directory)
+	* Enhanced GNU build system:
+	  new options --enable-all-builds, --enable-ogg-flac
+	  new nested build system for fixwav library, see libfixwav/README and INSTALL files.
+	  full Ogg-FLAC support
+	  autogen: new script
+	  configuration summary.
+
+
+2008-08-02  Fabrice Nicol
+
+	* dvda-author 08.07 released
+	* Patches against c_utils.c, c_utils.h and critical patch against samg2.c
+	* Corrects memory allocation of array samg in samg2.c
+	* Directory creation fully enabled.
+	* Defined constant __CB__ for building linkable libFLAC library
+	  with Code::Blocks.
+
+2008-07-04  Fabrice Nicol
+
+	* dvda-author version 08.06 released
+	* Features: rewrite memory allocation; legacy syntax preserved.
+	* command line: add --version, --help, -d, -i, -n, -o, -q, -T,-U, -V, -w
+	* videoimport.c, auxiliary.c, file_input_parsing.c: new files
+	* samg.c, amg.c: new versions, rename samg2.c and amg2.c
+	* dvda-author.c: rewrite from scratch, rename dvda-author2.c
+	* libc_utils.a : new auxiliary library (libutils directory)
+
+2008-06-20  Fabrice Nicol
+
+	* Features: add videolinking groups to amg2.c and dvda-author2.c
+	            new command-line switches:
+                    input directory parsing, log file,
+	            VIDEO_TS import, access rights to video directory,
+	            end pause, video links
+	* Processing: Use dynamic memory allocation in dvda-author2.c
+	* Patches-Bugfixes
+	* GNU autoconf/automake build scripts for dvda-author,
+	  libFLAC123.a and libc_utils.a (nested)
+	* Code::Blocks projects for Windows users.
