@@ -577,7 +577,7 @@ if (info->mergeflag)
 {
      for (int u=0; u < info->channels; u++)
      {
-      secure_open(info->given_channel[u], "rb", info->audio->channel_fp[u]);
+      info->audio->channel_fp[u] = fopen(info->given_channel[u], "rb");
 
       if (globals.debugging) foutput(INF "Opening %s to get info\n", info->given_channel[u]);
 
