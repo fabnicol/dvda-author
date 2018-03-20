@@ -1,0 +1,556 @@
+dvda-author 16.08 (Aug 2016)
+=====================
+
+
+Installation Instructions
+*************************
+
+Overview
+--------
+To build the application from source code, you will need all the dependencies
+listed in the file DEPENDENCIES, depending on your platform. Please read this file before
+proceeding.
+
+In short, a full build of main application and all dependencies (libraries and executables)
+can be obtained with:
+
+	./autogen
+	mkdir BUILD
+	cd BUILD
+	../configure --enable-all-all && sudo make PARALLEL=-jN 
+
+Administrative rights are necessary for cdrtools to install properly in the local installation 
+directory at make stage. They are unnecessary if cdrtools is not rebuilt.
+
+Another way to circumvent these cdrtools specifics sis to relaunch with `make -k' afresh after 
+a crash at cdrtools build stage.
+
+Then install as usual:
+	(sudo/root login) make install
+
+If you experience issues building from a subdirectory (which is a cleaner building method)
+you can also try building from the package root. Some path issues may be thus avoided on some 
+platforms.
+
+This application uses a patched version of dvdauthor to create menus.
+The default video format for dvdauthor is set to PAL. If you are to create menus for an
+NTSC (non-PAL compatible) player, it is advised to add the following specification to the
+configure command-line:
+
+ ./configure (...command line...) VIDEO_FORMAT=NTSC
+
+You may use PARALLEL=-jN on the make command line with N=2,3 up to 6, depending
+on the number of CPU cores available. This will speed up the building process significantly.
+
+All auxiliary tools will be locally installed under the ./local directory.
+
+
+WARNING
+-------
+
+1. Paths
+
+The auxiliary binaries which are built this way should be in your PATH at run time.
+If you ,leave them in place, you will have to enter a line like:
+
+export PATH=$PATH:$HOME/dvda-author-dev/local/.../bin
+
+with ... either linux/dvda-author-full.build  or win32, depending on your platform,
+before configuring the build as above == and == before running dvda-author too (if from another shell).
+
+To avoid repetitive exports, the former step is automatically executed by the `autogen' script.
+The latter step has not been made automatic to avoid possible versioning conlicts with system-
+installed tools already under /usr/bin or /usr/local/bin.
+
+2. GNU tools
+
+To ensure a smooth building process, check that the GNU autotools (autoconf, automake, libtool),
+and auxiliary programs curl and patch are installed on your system (*nix or MSYS)
+Also check that your version of GNU make is at least 3.82 (preferably 3.99 at least for MSYS).
+Please note that on many platforms GNU make version still is 3.81 and that any build attempt
+will fail without a prior tool update.
+
+Tracing the downloads and builds
+--------------------------------
+file DOWNLOADS traces the downloaded packages
+files PATCHED.DOWNLOADS traces the patched downloads
+file depconf/BUILD.TRACE gives an account of all builds, either successful or failed.
+
+Qt Creator builds
+-----------------
+
+A Qt Creator project is given for a linux build. The project uses pre-built library to be found in 
+directory build/lib/linux.  
+
+Core builds
+-----------
+In case of building issues, you may wish to download no dependencies and enable
+a very minimal (core) build, without fixwav, FLAC, OggFLAC, SoX support and without
+menu authoring features. In this case, just configure with:
+
+	../configure  --enable-core-build
+
+If you wish to download dependencies first and build them later, run:
+
+       ../configure --enable-all-deps
+
+You'll have to reconfigure later using:
+
+       ../configure --enable-all-builds
+
+which just configures building without downloading packages.
+
+An intermediate way out is to download a minimal set of dependencies (FLAC, Ogg and SoX)
+and configure them without building. For this, run:
+
+       ../configure --enable-minimal-deps
+
+To build this set of features (fixwav, FLAC, OggFLAC, SoX enabled but without menu support), run:
+
+	../configure --enable-minimal-build
+
+before running `make' and `make install'.
+
+Alternatively, if your prefer to use compiling defines, you may add
+
+    WITHOUT_FLAC WITHOUT_sox WITHOUT_libogg  as symbolic constants either
+
+at configuration stage :
+
+	../configure CPPFLAGS="-DWITHOUT_FLAC ...."
+
+"Simple configuration" with just:
+
+	../configure
+
+will yield the following configuration :
+
+      -> menu authoring enabled, but without automatic download, nor building configuration of
+	 dependencies
+
+      -> fixwav capability enabled (impaired wav header automatic detection/correction)
+
+      -> FLAC, libogg and libsox bindings disabled.
+
+      
+Missing packages
+----------------
+Should any given package become unavailable in the source code repositories, you can restart 
+the configure script adding:
+
+        --enable-cont
+        
+to your command line, so that configuration proceeds with missing packages. Note however that a full
+build is bound to fail if you do not download and unpack the source code yourself before running make.
+Unpacked packages should have directory names as indicated in m4/dependencies.m4, in the second square bracket of 
+the macros DVDA_CONFIG_EXECUTABLE_INSTALL. 
+
+
+GNU Basic Installation
+======================
+
+Build system:
+
+For a core build:
+
+ gcc-4.7 and GNU make (version 3.82+) only
+
+For dependencies, prerequisites are :
+ autoconf 2.69
+ automake 1.13
+ libtool-2.26 and higher
+
+Optionally:
+ man2html (to build the html help page). Note that the classic perl program
+ (still available on Savannah CVS) is  broken. A replacement may be downloaded using
+  ./configure --enable-man2html-download
+
+Please update you *nix autotools system as checks for version will fail if your version
+of any one of the tools is older than the above.
+
+Users who wish to regenerate the GNU build system should use the autogen script
+included in the package.
+
+Directory config contains GNU build system configuration files.
+Directory m4 contains m4 macros used to by the main configure.ac script.
+
+A summary of the configuration features is available using ./configure --help
+_____________________________________________________________________________________
+
+Under Windows/Cygwin/MSYS
+-------------------------
+
+The building/installation procedure unrolls as for Unix platforms as follows.
+However, users are advised to build under a buiding tree entirely devoid of
+whitespace in file paths. Crashes have arisen repeatedly in such contexts owing
+to a libtool port issue.
+_____________________________________________________________________________________
+
+_____________________________________________________________________________________
+
+With Apple and Darwin-based systems (e.g Mac)
+---------------------------------------------
+
+The building/installation procedure unrolls as for Unix platforms.
+However, you may have to use --with-config=.  for a successful build (see below
+"Installation directories for auxilliary files")
+_____________________________________________________________________________________
+
+
+KDE/GNOME Platforms
+===================
+
+A desktop file will be installed under:
+
+  /usr/share/applications/dvda-author.desktop
+
+thereby providing a menu link to the application in the audio media section.
+
+An icon will be available under /usr/share/pixmaps/dvda-author.png
+which should be in the OS VPATH to be visible in the menu.
+The link will open an x-terinal with the application help. It will later be used
+to launch a graphical interface.
+
+A man page is installed under /usr/local/share/man/man1/dvda-author.1
+
+Check that /usr/local/share/man/man1 is in your PATH for man for otherwise copy
+to /usr/share/man/man1
+
+An html version is shipped with this package.
+
+Windows XP building
+
+See file BUILD.Windows
+
+
+Depedencies
+===========
+
+See file DEPENDENCIES
+
+
+Building dependencies without the GNU build system
+--------------------------------------------------
+
+If you do not use the GNU build system (e.g. building with Code::Blocks project),
+check that the configuration file dvda-author.conf is in the same directory as the main executable (see INSTALL for
+other options).
+
+
+Building dependencies with GNU autoconf
+---------------------------------------
+
+On *nix and *nix-like platforms, dependencies can be rebuilt automatically from source code.
+Requested packages will be downloaded, patched if necessary and installed, some of them locally
+in the local/ subdirectory created at by the main configure script.
+
+Rebuilding dependencies may be useful in the event of version conflicts between what is requested by dvda-author
+source code and what is already installed on your platform.
+
+Please check that you have a functional internet connection before configuring as follows.
+
+To download dependency X, run the following command line in your build directory:
+
+	./configure --enable-X-download
+and 	./configure --enable-X-patch       when X needs patching, which is the case for:
+
+	X=flac,dvdauthor,cdrtools,sox
+
+You can always run:
+
+	 ./configure --help
+
+to get a list of possible configuration options.
+
+Packages will be downloaded from a selected mirror repository and patches from the project Sourceforge repository.
+
+You should add --enable-X-build to the configure command line if you are to build the X sub-package (not just download), e.g.
+
+	./configure --enable-flac-download  --enable-sox-patch --enable-flac-build --enable-sox-build
+
+for a configuration with FLAC and SoX dependencies enabled.
+
+More specifically, from the top source directory:
+
+See file BUGS for issues with libiberty and SoX (older versions) building.
+
+- To build and patch dvdauthor (only necessary if you need DVD-Audio menus):
+
+	./configure --enable-dvdauthor-patch  --enable-dvdauthor-build
+
+- To build and patch mkisofs (and original Schily version of cdrecord in addition):
+
+	./configure --enable-cdrtools-patch  --enable-cdrtools-build
+
+- To build and patch mjpegtools (owing to source code bug), if you need to enable menu authoring only:
+
+	./configure --enable-mjpegtools-patch --enable-mjpegtools-build
+
+- To build help2man:
+
+	./configure --enable-help2man-download  --enable-help2man-build
+
+- To build ImageMagick:
+
+	./configure --enable-ImageMagick-download  --enable-ImageMagick-build
+
+
+- To avoid repreating -build enable options, you may just add to command line:
+
+	--enable-all-builds
+
+  after the -patch and -download options.
+
+If your libFLAC library is installed in a non-standard directory (i.e. not /usr/lib
+or /usr/local/lib) you may have to use configure options
+
+	   --with-flac=/full/path/to/libFLAC.a
+
+to help out the linking process. You may equally
+indicate the path to libsox using --with-sox=/full/path/to/libsox.a
+
+
+Compilers and Options
+=====================
+
+You can give `configure' initial values for configuration parameters
+by setting variables in the command line or in the environment.  Here
+is an example:
+
+     ./configure CC=c99 CFLAGS="-g SHORT_OPTIONS_ONLY"
+
+
+   You can also use the "--with-debug" options as follows:
+
+- to configure with GCC debugging options, run:
+
+    ./configure --with-debug
+
+- to configure with no GCC debugging options and full O3 optimization, run:
+
+    ./configure --with-debug=no
+
+- to configure with user-specific options, run:
+
+    ./configure --with-debug-flags='your specific options'
+
+You may conditionally compile dvda-author to exclude code associated with some modules,
+depending on you requirements. The resulting executable will be smaller, which may or may not
+have a positive effect on running times, depending on modules and hardware:
+
+- to compile without the SoX module configure with:
+
+    --without-sox
+
+- to compile with SoX module and build a statically-linked binary, first installed all SoX
+  libs on your system and use --disable-sox-shared. Should this fail, try the more restrictive
+  option --enable-static-sox, which will look into /usr/lib to find libsox.a and apply tested
+  building options on an Ubuntu (09.04) platform.
+  When patching and building SoX code with --enable-sox-patch --enable-sox-build, static linking
+  is forced to the locally-built library.
+
+- to compile without the fixwav module configure with:
+
+    --without-fixwav
+
+- to compile without FLAC/Ogg FLAC:
+
+    --without-flac
+
+ Alternatively, you may add, repectively:
+
+ #define WITHOUT_sox
+ #define WITHOUT_FLAC
+
+ to src/commonvars.h code.
+
+Users who would like to build this package with other tools should at least define
+the symbolic constants _GNU_SOURCE and __CB__ at compile time.
+
+Optional Symbolic constants can be defined at compile time to specify some features:
+
+  LONG_OPTIONS for command-line long options (starting with --).
+  SHORT_OPTIONS_ONLY to block all such long options.
+  LOCALE=locale to recompile for another locale than the default "C".
+  SETTINGSFILE=filepath to specify default filepath of the configuration file.
+  _LARGEFILE_SOURCE,_LARGE_FILES,_FILE_OFFSET_BITS=64 enable large file support.
+  ALWAYS_INLINE forces code inlining.
+  WITHOUT_sox to compile without SoX code
+  WITHOUT_FLAC to compile without FLAC/OggFLAC code
+  To avoid any (rare) case of console interaction by dvda-author, compile with constant GUI_BEHAVIOR
+  
+
+Required compile-time constants:
+
+  _GNU_SOURCE
+
+Default values are configured as follows:
+
+  a) Unless SHORT_OPTIONS_ONLY is defined, LONG_OPTIONS will be enforced by default;
+  b) LOCALE="C"
+  c) ogg FLAC is enabled
+  d) Symbolic constants like _GNU_SOURCE
+     are defined by the scripts included in this package
+    (top configure.ac file for GNU builds).
+  e) Large file support (constants _LARGE_FILES and  _FILE_OFFSET_BITS=64 are defined)
+
+
+These constants should be set using the CPPFLAGS variable at configure-time for GNU packages:
+Example:
+
+  ./configure "CPPFLAGS=-D_GNU_SOURCE -DLOCALE=fr_FR -DSETTINGSFILE=home/my settings/dvda/dvda.conf"
+
+and with the Code::Blocks, ad the selected constants and values in the Projetc/Build options/#defines tab window.
+
+
+Build system regeneration
+=========================
+
+Run ./autogen from the top package directory instead.
+
+
+Installation directories for auxilliary files
+=============================================
+
+For *nix compatible platforms (including Cygwin and MSYS), if --prefix=directory is not
+used as indicated above, the following installation directories are used:
+
+ for binaries: /usr/bin
+ for installed libraries: /usr/lib
+ for dvda-author.conf and dvd-author.desktop: /usr/share/applications
+ for README and HTML help: /usr/share/doc/dvda-author
+ for images/icons: /usr/share/pixmaps
+
+Also see fixwav man page and README in fixwav/
+
+If --prefix is used, the above directories are replaced with $prefix/<dir> instead of /usr/<dir>
+The KDE/gnome .desktop file is adjusted by configure to integrate a link to the .png image (icon)
+in $prefix/pixmaps.
+
+Configure option --with-config='full path to directory containing dvda-author.conf'
+makes it possible to change the default path to the directory containing
+dvda-author.conf (mainly uselful on non *nix platforms).
+
+See file BUGS for additional advice.
+
+Installation Names
+==================
+
+By default, `make install' installs the package's commands under
+`/usr/bin', include files under `/usr/include', etc.  You
+can specify an installation prefix other than `/usr' by giving
+`configure' the option `--prefix=PREFIX'.
+
+You can cause programs to be installed with an extra prefix or suffix
+on their names by giving `configure' the
+option `--program-prefix=PREFIX' or `--program-suffix=SUFFIX'.
+
+RPM and DEB packages will install under /usr/bin and /usr/include by default.
+
+
+Specifying the System Type
+==========================
+
+There may be some features `configure' cannot figure out automatically,
+but needs to determine by the type of machine the package will run on.
+Usually, assuming the package is built to be run on the _same_
+architectures, `configure' can figure that out, but if it prints a
+message saying it cannot guess the machine type, give it the
+`--build=TYPE' option.  TYPE can either be a short name for the system
+type, such as `sun4', or a canonical name which has the form:
+
+     CPU-COMPANY-SYSTEM
+
+where SYSTEM can have one of these forms:
+
+     OS KERNEL-OS
+
+   See the file `config.sub' for the possible values of each field.  If
+`config.sub' isn't included in this package, then this package doesn't
+need to know the machine type.
+
+If you are _building_ compiler tools for cross-compiling, you should
+use the option `--target=TYPE' to select the type of system they will
+produce code for.
+
+If you want to _use_ a cross compiler, that generates code for a
+platform different from the build platform, you should specify the
+"host" platform (i.e., that on which the generated programs will
+eventually be run) with `--host=TYPE'.
+
+Sharing Defaults
+================
+
+If you want to set default values for `configure' scripts to share, you
+can create a site shell script called `config.site' that gives default
+values for variables like `CC', `cache_file', and `prefix'.
+`configure' looks for `PREFIX/share/config.site' if it exists, then
+`PREFIX/etc/config.site' if it exists.  Or, you can set the
+`CONFIG_SITE' environment variable to the location of the site script.
+A warning: not all `configure' scripts look for a site script.
+
+Defining Variables
+==================
+
+Variables not defined in a site shell script can be set in the
+environment passed to `configure'.  However, some packages may run
+configure again during the build, and the customized values of these
+variables may be lost.  In order to avoid this problem, you should set
+them in the `configure' command line, using `VAR=value'.  For example:
+
+     ./configure CC=/usr/local2/bin/gcc
+
+causes the specified `gcc' to be used as the C compiler (unless it is
+overridden in the site shell script).
+
+Unfortunately, this technique does not work for `CONFIG_SHELL' due to
+an Autoconf bug.  Until the bug is fixed you can use this workaround:
+
+     CONFIG_SHELL=/bin/bash /bin/bash ./configure CONFIG_SHELL=/bin/bash
+
+`configure' Invocation
+======================
+
+`configure' recognizes the following options to control how it operates.
+
+`--help'
+`-h'
+     Print a summary of the options to `configure', and exit.
+
+`--version'
+`-V'
+     Print the version of Autoconf used to generate the `configure'
+     script, and exit.
+
+`--cache-file=FILE'
+     Enable the cache: use and save the results of the tests in FILE,
+     traditionally `config.cache'.  FILE defaults to `/dev/null' to
+     disable caching.
+
+`--config-cache'
+`-C'
+     Alias for `--cache-file=config.cache'.
+
+`--quiet'
+`--silent'
+`-q'
+     Do not print messages saying which checks are being made.  To
+     suppress all normal output, redirect it to `/dev/null' (any error
+     messages will still be shown).
+
+`--srcdir=DIR'
+     Look for the package's source code in directory DIR.  Usually
+     `configure' can determine that directory automatically.
+
+`configure' also accepts some other, not widely useful, options.  Run
+`configure --help' for more details.
+
+
+
+
+Adapted by Fabrice Nicol for dvda-author, 2008-20013.
+Parts of this text Copyright (C) 1994, 1995, 1996, 1999, 2000, 2001, 2002, 2004, 2005,
+2006, 2007 Free Software Foundation, Inc.
+This file is free documentation; the Free Software Foundation gives
+unlimited permission to copy, distribute and modify it.
+
