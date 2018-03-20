@@ -646,11 +646,11 @@ sprintf(loghtmlpath,"%s%s",logpath,".html");
 FILE* dest=fopen(loghtmlpath, "wb");
 if (dest == NULL) return;
 
-#define NAVY            "<p><span style=\"color: navy; font-size: 10pt;  \">"
-#define RED             "<p><span style=\"color: red;  font-size: 12pt   \">"
+#define NAVY            "<p><span style=\"color: navy; font-size: 8pt;  \">"
+#define RED             "<p><span style=\"color: red;  font-size: 8pt   \">"
 #define GREY            "<br/><span style=\"color: grey; font-size: 8pt; \">"
-#define GREEN           "<p><span style=\"color: green; font-size: 10pt; \">"
-#define ORANGE          "<p><span style=\"color: orange;font-size: 12pt; \">"
+#define GREEN           "<p><span style=\"color: green; font-size: 8pt; \">"
+#define ORANGE          "<p><span style=\"color: orange;font-size: 8pt; \">"
 #define MAROON          "<br/><span style=\"color: maroon;font-size: 8pt;\">"
 #define PURPLE          "<br/><span style=\"color: purple;font-size: 8pt;\">"
 #define VIOLET          "<br/><span style=\"color: violet;font-size: 8pt;\">"
