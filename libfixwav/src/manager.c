@@ -209,8 +209,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
       char databasepath[l];
       sprintf(databasepath, "%s%s", info->database, SEPARATOR "database");
       secure_mkdir(info->database, 0755);
-      FILE* database = NULL;
-      secure_open(databasepath, "ab", database);
+      FILE* database = fopen(databasepath, "ab");
       if (database)
       {
         fprintf(database, "Filename    %s\nArtist      %s\nDate        %s\nStyle       %s\nComment     %s\nCopyright   %s\n\n",
