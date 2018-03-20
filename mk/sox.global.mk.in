@@ -1,0 +1,9 @@
+sox_LIB=@sox_LIB@
+sox_LINK=@sox_LINK@
+MAYBE_sox=@MAYBE_sox@
+HAVE_sox=@HAVE_sox@
+HAVE_EXTERNAL_sox=@HAVE_EXTERNAL_sox@
+CONFIGURE_sox_FLAGS=@CONFIGURE_sox_FLAGS@
+sox_BUILD=@sox_BUILD@
+WITH_sox=@WITH_sox@
+sox_DEPENDENCY=Makefile @ROOTDIR@/@MAYBE_sox@
