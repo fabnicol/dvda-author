@@ -127,17 +127,31 @@ public:
 	uint32_t unsent;
 
 	uint16_t preset( const char *filename )
-		{ fName = filename; state |= named; }
+		{ 
+          fName = filename;
+          state |= named;
+          return state;
+         }
+    
 	uint16_t preset( ::FLAC__StreamMetadata *f )
-		{ fmeta = *f; return soundCheck( this ); }
+		{ 
+           fmeta = *f;
+           return soundCheck( this );
+        }
+    
 	uint16_t preset( PES_packet::LPCM_header *LPCM )
-		{ flacHeader::readStreamInfo( LPCM, &fmeta ); return soundCheck( this, false ); }
+		{
+          flacHeader::readStreamInfo( LPCM, &fmeta );
+          return soundCheck( this, false );
+        }
 
 	static int swap2wav( unsigned char *data, uint32_t count,
 		int channels, int bitspersample );
 
 	uint32_t process( byteRange *audio )
-		{ return process( audio->start, audio->len ); }
+		{ 
+           return process( audio->start, audio->len );
+        }
 
 	virtual uint32_t process( unsigned char *buf, uint32_t size ) = 0;
 	virtual uint16_t isOpen() = 0;
