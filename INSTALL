@@ -183,7 +183,8 @@ Under Windows/Cygwin/MSYS
 The building/installation procedure unrolls as for Unix platforms as follows.
 However, users are advised to build under a buiding tree entirely devoid of
 whitespace in file paths. Crashes have arisen repeatedly in such contexts owing
-to a libtool port issue.
+to a libtool port issue. 
+At configure stage, please specify ROOTDIR=$PWD and BUILDDIR=$PWD
 _____________________________________________________________________________________
 
 _____________________________________________________________________________________

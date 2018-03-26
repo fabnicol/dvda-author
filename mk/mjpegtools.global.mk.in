@@ -1,9 +1,0 @@
-mjpegtools_LIB=@mjpegtools_LIB@
-mjpegtools_LINK=@mjpegtools_LINK@
-MAYBE_mjpegtools=@MAYBE_mjpegtools@
-HAVE_mjpegtools=@HAVE_mjpegtools@
-HAVE_EXTERNAL_mjpegtools=@HAVE_EXTERNAL_mjpegtools@
-CONFIGURE_mjpegtools_FLAGS=@CONFIGURE_mjpegtools_FLAGS@
-mjpegtools_BUILD=@mjpegtools_BUILD@
-WITH_mjpegtools=@WITH_mjpegtools@
-mjpegtools_DEPENDENCY=Makefile @ROOTDIR@/@MAYBE_mjpegtools@
