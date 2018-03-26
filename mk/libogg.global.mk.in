@@ -1,9 +1,0 @@
-libogg_LIB=@libogg_LIB@
-libogg_LINK=@libogg_LINK@
-MAYBE_libogg=@MAYBE_libogg@
-HAVE_libogg=@HAVE_libogg@
-HAVE_EXTERNAL_libogg=@HAVE_EXTERNAL_libogg@
-CONFIGURE_libogg_FLAGS=@CONFIGURE_libogg_FLAGS@
-libogg_BUILD=@libogg_BUILD@
-WITH_libogg=@WITH_libogg@
-libogg_DEPENDENCY=Makefile @ROOTDIR@/@MAYBE_libogg@

@@ -56,13 +56,3 @@ stamp*
 *.gz
 *.bz2
 *.xz
-test/
-log/
-Docs/*.wav
-Docs/*.xz
-*.iso
-*.mk
-*.rar
-*.bin
-*.AOB
-

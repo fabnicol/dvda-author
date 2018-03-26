@@ -50,8 +50,8 @@ sox_BUILD=no
 cflags_save="$CFLAGS -std=c99"
 #redefine CFLAGS to avoid systematic -g -O2 introduced by AC_PROG_CC
 #This should come after AC_PROG macros
-AS_IF([test "$BUILDDIR" = ""],[BUILDDIR=$(echo `cd "$builddir" ; pwd` | sed "s/\/c\//c:\//g")])
-AS_IF([test "$ROOTDIR" = ""],[ROOTDIR=$(echo `cd "$srcdir" ; pwd` | sed "s/\/c\//c:\//g")])
+#AS_IF([test "$BUILDDIR" = ""],[BUILDDIR=$(echo `cd "$builddir" ; pwd` | sed "s/\/c\//c:\//g")])
+#AS_IF([test "$ROOTDIR" = ""],[ROOTDIR=$(echo `cd "$srcdir" ; pwd` | sed "s/\/c\//c:\//g")])
 #preparing local build of downloaded libs
 
 m4_include([m4/dependencies.m4])

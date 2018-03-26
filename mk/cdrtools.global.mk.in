@@ -1,9 +1,0 @@
-cdrtools_LIB=@cdrtools_LIB@
-cdrtools_LINK=@cdrtools_LINK@
-MAYBE_cdrtools=@MAYBE_cdrtools@
-HAVE_cdrtools=@HAVE_cdrtools@
-HAVE_EXTERNAL_cdrtools=@HAVE_EXTERNAL_cdrtools@
-CONFIGURE_cdrtools_FLAGS=@CONFIGURE_cdrtools_FLAGS@
-cdrtools_BUILD=@cdrtools_BUILD@
-WITH_cdrtools=@WITH_cdrtools@
-cdrtools_DEPENDENCY=Makefile @ROOTDIR@/@MAYBE_cdrtools@

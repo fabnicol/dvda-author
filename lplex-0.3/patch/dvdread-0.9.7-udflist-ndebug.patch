@@ -1,0 +1,174 @@
+#   ABOUT THE DVDREAD PATCHES:
+#
+#   This is a composite patch with two components:
+#
+#   udflist patch (dvd_udf.c): [OPTIONAL]
+#
+#   This patch allows for listing and extracting the non-VIDEO_TS contents
+#   of a dvd image file. Without it lplex will still be able to extract any
+#   lpcm audio in the dvd image, but won't extract any secondary "dvd-rom"
+#   files which may also be present.
+#
+#   
+#   ndebug_no_check_value patch (dvdread_internal.h) : [OPTIONAL]
+#
+#   libdvdread tends to print out a cascade of warnings if a dvd doesn't pass
+#   its compliance checks.  This patch disables some of these checks if the
+#   NDEBUG flag is defined during compilation.
+#
+#   
+#   INSTALLATION:
+#
+#   1. Download and expand the source tarball:
+#         wget https://launchpad.net/ubuntu/+archive/primary/+files/libdvdread_0.9.7.orig.tar.gz
+#         tar -zxf libdvdread_0.9.7.orig.tar.gz
+#
+#   2. Copy this patch file into the top folder:
+#         cp dvdread-0.9.7-udflist-ndebug.patch libdvdread-0.9.7/
+#
+#   3. Patch from the top folder:
+#         cd libdvdread-0.9.7
+#         patch -p0 < dvdread-0.9.7-udflist-ndebug.patch
+#
+#   4. Build* as follows:
+#         CFLAGS="-DNDEBUG " ./configure --without-libdvdcss --disable-shared
+#         make
+#         make install
+#
+#      (*) In cygwin, configure using -mno-cygwin, e.g.
+#         CC="gcc -mno-cygwin -DNDEBUG " ./configure --without-libdvdcss --disable-shared
+
+--- dvdread/dvd_udf.c.0	2005-09-19 09:43:08.000000000 -0400
++++ dvdread/dvd_udf.c	2008-12-01 15:35:26.076750000 -0500
+@@ -692,6 +692,81 @@ static int UDFMapICB( dvd_reader_t *devi
+   return 0;
+ }
+ 
++// *PATCH* --------------------------------------------------------------------
++// forward declaration
++static int UDFScanDir(  dvd_reader_t *device, struct AD Dir, char *FileName,
++                       struct Partition *partition, struct AD *FileICB,
++                       int cache_file_info);
++                    
++int isImage( dvd_reader_t *device )
++{
++   // **hack**: dvd_reader_t is an opaque pointer to undefined type dvd_reader_s
++   // here, however 'int isImageFile' happens to be its first member.
++   return *(int*)device;
++}
++
++typedef int (*udflist_cb_t)( const char *fname, uint16_t ftype, uint32_t lb, uint32_t len, dvd_reader_t *device );
++
++udflist_cb_t udflist_cb = NULL;
++char udfpath[260];
++int list_skipdirs, list_recursive, list_ct;
++
++int udflist( dvd_reader_t *device, const char *filename,
++   int recursive, int listdirs, udflist_cb_t cb )
++{
++   if( ! isImage( device ) )
++      return -1;
++      
++   uint32_t fsize;
++   list_recursive = recursive;
++   list_skipdirs = listdirs;
++   udflist_cb = cb;
++   list_ct = 0;
++   strcpy(udfpath,filename);
++   strcat(udfpath,"/*");
++   UDFFindFile( device, udfpath, &fsize );
++   return list_ct;
++}
++
++static int udfitem( dvd_reader_t *device, struct AD *file, char *tok,
++   struct Partition *partition, int cache_file_info, uint8_t ftype )
++{
++   if(strlen(tok)==0 )
++      return 0;
++
++   int endbyte = strlen(udfpath);
++   if( udfpath[endbyte-1] == '*'  )
++      udfpath[--endbyte] = '\0';
++   if( udfpath[endbyte-1] != '/'  )
++   {
++      udfpath[endbyte] = '/';
++      udfpath[++endbyte] = '\0';
++   }
++   strcat(udfpath,tok);
++   
++   if( ftype != 4 || ! list_skipdirs )
++   {
++      uint32_t lb = partition->Start + file->Location;
++      
++      if( udflist_cb )
++         udflist_cb( udfpath, ftype, lb, file->Length, device );
++      else
++         fprintf( stderr, "[%d] %8x: %10d - %s\n",
++            ftype, lb * DVD_VIDEO_LB_LEN, file->Length, udfpath );
++
++      list_ct++;
++   }
++   
++   if( ftype == 4 && list_recursive )
++   {
++      struct AD tmpICB;
++      UDFScanDir( device, *file, "*", partition, &tmpICB, cache_file_info);
++   }
++   
++   udfpath[endbyte] = '\0';
++}
++// -------------------------------------------------------------------- *PATCH*
++
+ /**
+  * Dir: Location of directory to scan
+  * FileName: Name of file to look for
+@@ -756,11 +831,26 @@ static int UDFScanDir( dvd_reader_t *dev
+           }
+           UDFMapICB(device, tmpICB, &tmpFiletype,
+                     partition, &tmpFile);
++// *PATCH* --------------------------------------------------------------------
++         if( FileName[0] == '*' && !found  )
++            udfitem(device, &tmpICB, filename, partition, cache_file_info,
++               tmpFiletype);
++// -------------------------------------------------------------------- *PATCH*
+         } else {
+           if( !strcasecmp( FileName, filename ) ) {
+             *FileICB = tmpICB;
+             return 1;
+           }
++// *PATCH* --------------------------------------------------------------------
++         else if( FileName[0] == '*' )
++         {
++            uint8_t tmpFiletype;
++            struct AD tmpFile;
++            UDFMapICB(device, tmpICB, &tmpFiletype, partition, &tmpFile);
++            udfitem(device, &tmpFile, filename, partition, cache_file_info,
++               tmpFiletype);
++         }
++// -------------------------------------------------------------------- *PATCH*
+         }
+       } else {
+         if(cache_file_info && (!in_cache) && found) {
+--- dvdread/dvdread_internal.h.0	2008-06-08 12:42:33.229596500 -0400
++++ dvdread/dvdread_internal.h	2008-11-15 15:27:56.031250000 -0500
+@@ -3,12 +3,20 @@
+ #define DVDREAD_INTERNAL_H
+ 
+ 
++// *PATCH* --------------------------------------------------------------------
++#ifndef NDEBUG
++// -------------------------------------------------------------------- *PATCH*
+ #define CHECK_VALUE(arg)                                                \
+   if(!(arg)) {                                                          \
+     fprintf(stderr, "\n*** libdvdread: CHECK_VALUE failed in %s:%i ***" \
+             "\n*** for %s ***\n\n",                                     \
+             __FILE__, __LINE__, # arg );                                \
+   }
++// *PATCH* --------------------------------------------------------------------
++#else
++#define CHECK_VALUE(arg) (void)(arg) 
++#endif
++// -------------------------------------------------------------------- *PATCH*
+ 
+ 
+ int get_verbose(void);

@@ -1,0 +1,30 @@
+md5.o: md5.c md5.h \
+ C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/string.h \
+ C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/crtdefs.h \
+ C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/_mingw.h \
+ C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/_mingw_mac.h \
+ C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/_mingw_secapi.h \
+ C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/vadefs.h \
+ C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/sdks/_mingw_directx.h \
+ C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/sdks/_mingw_ddk.h \
+ C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/sec_api/string_s.h
+
+md5.h:
+
+C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/string.h:
+
+C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/crtdefs.h:
+
+C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/_mingw.h:
+
+C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/_mingw_mac.h:
+
+C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/_mingw_secapi.h:
+
+C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/vadefs.h:
+
+C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/sdks/_mingw_directx.h:
+
+C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/sdks/_mingw_ddk.h:
+
+C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/sec_api/string_s.h:
