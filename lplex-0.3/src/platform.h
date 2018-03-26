@@ -121,18 +121,18 @@ inline string volumeLabel( const char * path, bool mustBeRoot )
 	{ return ""; }
 
 
-inline bool initPlatform()
-{
-	wxStandardPathsBase& platform = wxStandardPaths::Get();
-    configDir = platform.GetUserDataDir() / "lplex" ;
-    lplexConfig = configDir / "lplex.conf";
-    binDir = "";
-    dataDir = platform.GetDataDir() / "lplex" ;
-	readOnlyPath = fs::path::GetHomeDir();
-    tempDir = platform.GetTempDir();
-	shebang = "#!" + platform.GetExecutablePath() + " -P 1\n";
-	endPause = false;
-}
+// inline bool initPlatform()
+// {
+// 	wxStandardPathsBase& platform = wxStandardPaths::Get();
+//     configDir = platform.GetUserDataDir() / "lplex" ;
+//     lplexConfig = configDir / "lplex.conf";
+//     binDir = "";
+//     dataDir = platform.GetDataDir() / "lplex" ;
+// 	readOnlyPath = fs::path::GetHomeDir();
+//     tempDir = platform.GetTempDir();
+// 	shebang = "#!" + platform.GetExecutablePath() + " -P 1\n";
+// 	endPause = false;
+// }
 
 
 #endif
