@@ -210,7 +210,7 @@ uint16_t init( int argc, char *argv[] )
 {
     //wxImage::AddHandler( new wxJPEGHandler );
 											//set defaults
-	initPlatform();
+	//initPlatform();
     fs_MakeDirs( fs::path(configDir) );
     logInit( (configDir / "lplex.log").generic_string() );
     projectDotLplex = configDir / "project.lplex";
