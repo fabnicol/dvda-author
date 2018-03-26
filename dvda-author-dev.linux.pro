@@ -10,11 +10,11 @@ TARGET = dvda-author
 
 QMAKE_CFLAGS=-std=c99
 
-DEFINES += _GNU_SOURCE __CB HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_fixwav HAVE_jpeg2yuv HAVE_libogg HAVE_iberty HAVE_mpeg2enc HAVE_mplex HAVE_OGG_FLAC HAVE_FLAC HAVE_libogg HAVE_sox
+DEFINES += _GNU_SOURCE __CB HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_fixwav HAVE_libogg HAVE_iberty HAVE_mpeg2enc HAVE_mplex HAVE_OGG_FLAC HAVE_FLAC HAVE_libogg HAVE_sox
 
 #libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame --disable-gomp
 
-linux:LIBS +=   -lFLAC -logg  -lsox   -lz -lsndfile  -lpulse -lpulse-simple -lasound \ #-lwavpack \-lid3tag
+linux:LIBS +=   -lFLAC -logg  -lsox  -lid3tag -lz -lsndfile  -lpulse -lpulse-simple -lasound -lwavpack \
                 -lvorbisenc -lvorbisfile -lvorbis  -logg -lpng -lz -lgomp -lsndfile
 
 CONFIG(release, debug|release) {

@@ -1,1 +1,0 @@
-info->first/middle/last_lpcm_headerquantity = (nb de zéros après 0x80 et avant le stream audio) + 8 

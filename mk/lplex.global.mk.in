@@ -1,9 +1,0 @@
-lplex_LIB=@lplex_LIB@
-lplex_LINK=@lplex_LINK@
-MAYBE_lplex=@MAYBE_lplex@
-HAVE_lplex=@HAVE_lplex@
-HAVE_EXTERNAL_lplex=@HAVE_EXTERNAL_lplex@
-CONFIGURE_lplex_FLAGS=@CONFIGURE_lplex_FLAGS@
-lplex_BUILD=@lplex_BUILD@
-WITH_lplex=@WITH_lplex@
-lplex_DEPENDENCY=Makefile @ROOTDIR@/@MAYBE_lplex@
