@@ -210,7 +210,7 @@ uint16_t init( int argc, char *argv[] )
 {
     //wxImage::AddHandler( new wxJPEGHandler );
 											//set defaults
-	//initPlatform();
+	initPlatform();
     fs_MakeDirs( fs::path(configDir) );
     logInit( (configDir / "lplex.log").generic_string() );
     projectDotLplex = configDir / "project.lplex";
@@ -382,14 +382,14 @@ uint16_t addFiles( fs::path filespec )
 											//...unauthor if it contains a dvd structure
         bool has_vts_subdir = false;
 
-        for(auto& p: fs::directory_iterator(dir))
-        {
-            if (p.path().filename().generic_string() == "VIDEO_TS")
-            {
-                has_vts_subdir = true;
-                break;
-            }
-        }
+//        for(auto& p: fs::directory_iterator(dir))
+//        {
+//            if (p.path().filename().generic_string() == "VIDEO_TS")
+//            {
+//                has_vts_subdir = true;
+//                break;
+//            }
+//        }
 
         if( has_vts_subdir )
 		{
@@ -509,8 +509,8 @@ uint16_t addFiles( fs::path filespec )
 			if( projectFile || isDot )
                 setName( filespec.generic_string().c_str(), isDot ? true : false );
 												//or if reauthoring
-			else
-                reauthoring = setName( specPath.generic_string().c_str() );
+//			else
+//                reauthoring = setName( specPath.generic_string().c_str() );
 		}
 
 		if( projectFile )

@@ -73,7 +73,7 @@ string toUpper(const string &s);
 #define QUOTE(s) ("\"" + string(s) + "\"")
 
 #define Left(X) substr(X)
-#define Right(X, Y)  X.substr(X.length() - Y)
+#define Right(X, Y)  (Y < X.length() ? X.substr( X.length() - Y) : string(""))
 
 // trim from start (in place)
 static inline void ltrim(std::string &s) {
@@ -322,6 +322,7 @@ static inline void blip( counter<T> *ct,
 {
 	static char *pref;
 	if( blip_ct == 0 )
+    {
 		if( _verbose )
 		{
 			_blip = "";
@@ -329,6 +330,7 @@ static inline void blip( counter<T> *ct,
 		}
 		else
 				pref = "";
+    }
 
 	if( ! ( blip_ct % skip ) )
 	{
