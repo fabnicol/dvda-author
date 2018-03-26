@@ -217,11 +217,11 @@ int logInit( const string& filename )
 //    Returns 0
 // ----------------------------------------------------------------------------
 
-int logCopy( const char* filename )
+int logCopy( const fs::path& filename )
 {
-	if( filename )
+	if( ! filename.empty() )
 	{
-		INFO( _f( "Saving log file to \'%s\'\n", filename ) );
+		INFO( _f( "Saving log file to \'%s\'\n", filename.generic_string() ) );
 		fs::copy_file( xlogName, filename );
 	}
 	return 0;

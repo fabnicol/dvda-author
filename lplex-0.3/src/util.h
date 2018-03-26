@@ -42,7 +42,7 @@
 #include <cctype>
 #include <locale>
 
-#define WIN32_COLOR
+#define ANSI_COLOR
 
 using namespace std;
 namespace fs = std::experimental::filesystem;
