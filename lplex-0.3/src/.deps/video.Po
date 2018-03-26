@@ -1,16 +1,16 @@
 video.o: video.cpp /usr/include/stdc-predef.h lplex.hpp \
- ../redist/lplex_precompile.h /usr/include/c++/7/cstdlib \
- /usr/include/x86_64-linux-gnu/c++/7/bits/c++config.h \
- /usr/include/x86_64-linux-gnu/c++/7/bits/os_defines.h \
+ ../redist/lplex_precompile.h /usr/local/include/c++/7.3.0/cstdlib \
+ /usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/c++config.h \
+ /usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/os_defines.h \
  /usr/include/features.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
  /usr/include/x86_64-linux-gnu/bits/long-double.h \
  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
- /usr/include/x86_64-linux-gnu/c++/7/bits/cpu_defines.h \
+ /usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/cpu_defines.h \
  /usr/include/stdlib.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
- /usr/lib/gcc/x86_64-linux-gnu/7/include/stddef.h \
+ /usr/local/lib/gcc/x86_64-pc-linux-gnu/7.3.0/include/stddef.h \
  /usr/include/x86_64-linux-gnu/bits/waitflags.h \
  /usr/include/x86_64-linux-gnu/bits/waitstatus.h \
  /usr/include/x86_64-linux-gnu/bits/floatn.h \
@@ -34,7 +34,6 @@ video.o: video.cpp /usr/include/stdc-predef.h lplex.hpp \
  /usr/include/x86_64-linux-gnu/bits/types/__sigset_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h \
- /usr/include/x86_64-linux-gnu/bits/select2.h \
  /usr/include/x86_64-linux-gnu/sys/sysmacros.h \
  /usr/include/x86_64-linux-gnu/bits/sysmacros.h \
  /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h \
@@ -43,50 +42,59 @@ video.o: video.cpp /usr/include/stdc-predef.h lplex.hpp \
  /usr/include/alloca.h \
  /usr/include/x86_64-linux-gnu/bits/stdlib-bsearch.h \
  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
- /usr/include/x86_64-linux-gnu/bits/stdlib.h \
- /usr/include/c++/7/bits/std_abs.h /usr/include/c++/7/iostream \
- /usr/include/c++/7/ostream /usr/include/c++/7/ios \
- /usr/include/c++/7/iosfwd /usr/include/c++/7/bits/stringfwd.h \
- /usr/include/c++/7/bits/memoryfwd.h /usr/include/c++/7/bits/postypes.h \
- /usr/include/c++/7/cwchar /usr/include/wchar.h \
- /usr/lib/gcc/x86_64-linux-gnu/7/include/stdarg.h \
+ /usr/local/include/c++/7.3.0/bits/std_abs.h \
+ /usr/local/include/c++/7.3.0/iostream \
+ /usr/local/include/c++/7.3.0/ostream /usr/local/include/c++/7.3.0/ios \
+ /usr/local/include/c++/7.3.0/iosfwd \
+ /usr/local/include/c++/7.3.0/bits/stringfwd.h \
+ /usr/local/include/c++/7.3.0/bits/memoryfwd.h \
+ /usr/local/include/c++/7.3.0/bits/postypes.h \
+ /usr/local/include/c++/7.3.0/cwchar /usr/include/wchar.h \
+ /usr/local/lib/gcc/x86_64-pc-linux-gnu/7.3.0/include/stdarg.h \
  /usr/include/x86_64-linux-gnu/bits/wchar.h \
  /usr/include/x86_64-linux-gnu/bits/types/wint_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/mbstate_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/__FILE.h \
  /usr/include/x86_64-linux-gnu/bits/types/FILE.h \
- /usr/include/x86_64-linux-gnu/bits/wchar2.h /usr/include/c++/7/exception \
- /usr/include/c++/7/bits/exception.h \
- /usr/include/c++/7/bits/exception_ptr.h \
- /usr/include/c++/7/bits/exception_defines.h \
- /usr/include/c++/7/bits/cxxabi_init_exception.h \
- /usr/include/c++/7/typeinfo /usr/include/c++/7/bits/hash_bytes.h \
- /usr/include/c++/7/new /usr/include/c++/7/bits/nested_exception.h \
- /usr/include/c++/7/bits/move.h /usr/include/c++/7/bits/concept_check.h \
- /usr/include/c++/7/type_traits /usr/include/c++/7/bits/char_traits.h \
- /usr/include/c++/7/bits/stl_algobase.h \
- /usr/include/c++/7/bits/functexcept.h \
- /usr/include/c++/7/bits/cpp_type_traits.h \
- /usr/include/c++/7/ext/type_traits.h \
- /usr/include/c++/7/ext/numeric_traits.h \
- /usr/include/c++/7/bits/stl_pair.h \
- /usr/include/c++/7/bits/stl_iterator_base_types.h \
- /usr/include/c++/7/bits/stl_iterator_base_funcs.h \
- /usr/include/c++/7/debug/assertions.h \
- /usr/include/c++/7/bits/stl_iterator.h \
- /usr/include/c++/7/bits/ptr_traits.h /usr/include/c++/7/debug/debug.h \
- /usr/include/c++/7/bits/predefined_ops.h /usr/include/c++/7/cstdint \
- /usr/lib/gcc/x86_64-linux-gnu/7/include/stdint.h /usr/include/stdint.h \
- /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
- /usr/include/c++/7/bits/localefwd.h \
- /usr/include/x86_64-linux-gnu/c++/7/bits/c++locale.h \
- /usr/include/c++/7/clocale /usr/include/locale.h \
- /usr/include/x86_64-linux-gnu/bits/locale.h /usr/include/c++/7/cctype \
- /usr/include/ctype.h /usr/include/c++/7/bits/ios_base.h \
- /usr/include/c++/7/ext/atomicity.h \
- /usr/include/x86_64-linux-gnu/c++/7/bits/gthr.h \
- /usr/include/x86_64-linux-gnu/c++/7/bits/gthr-default.h \
+ /usr/local/include/c++/7.3.0/exception \
+ /usr/local/include/c++/7.3.0/bits/exception.h \
+ /usr/local/include/c++/7.3.0/bits/exception_ptr.h \
+ /usr/local/include/c++/7.3.0/bits/exception_defines.h \
+ /usr/local/include/c++/7.3.0/bits/cxxabi_init_exception.h \
+ /usr/local/include/c++/7.3.0/typeinfo \
+ /usr/local/include/c++/7.3.0/bits/hash_bytes.h \
+ /usr/local/include/c++/7.3.0/new \
+ /usr/local/include/c++/7.3.0/bits/nested_exception.h \
+ /usr/local/include/c++/7.3.0/bits/move.h \
+ /usr/local/include/c++/7.3.0/bits/concept_check.h \
+ /usr/local/include/c++/7.3.0/type_traits \
+ /usr/local/include/c++/7.3.0/bits/char_traits.h \
+ /usr/local/include/c++/7.3.0/bits/stl_algobase.h \
+ /usr/local/include/c++/7.3.0/bits/functexcept.h \
+ /usr/local/include/c++/7.3.0/bits/cpp_type_traits.h \
+ /usr/local/include/c++/7.3.0/ext/type_traits.h \
+ /usr/local/include/c++/7.3.0/ext/numeric_traits.h \
+ /usr/local/include/c++/7.3.0/bits/stl_pair.h \
+ /usr/local/include/c++/7.3.0/bits/stl_iterator_base_types.h \
+ /usr/local/include/c++/7.3.0/bits/stl_iterator_base_funcs.h \
+ /usr/local/include/c++/7.3.0/debug/assertions.h \
+ /usr/local/include/c++/7.3.0/bits/stl_iterator.h \
+ /usr/local/include/c++/7.3.0/bits/ptr_traits.h \
+ /usr/local/include/c++/7.3.0/debug/debug.h \
+ /usr/local/include/c++/7.3.0/bits/predefined_ops.h \
+ /usr/local/include/c++/7.3.0/cstdint \
+ /usr/local/lib/gcc/x86_64-pc-linux-gnu/7.3.0/include/stdint.h \
+ /usr/include/stdint.h /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
+ /usr/local/include/c++/7.3.0/bits/localefwd.h \
+ /usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/c++locale.h \
+ /usr/local/include/c++/7.3.0/clocale /usr/include/locale.h \
+ /usr/include/x86_64-linux-gnu/bits/locale.h \
+ /usr/local/include/c++/7.3.0/cctype /usr/include/ctype.h \
+ /usr/local/include/c++/7.3.0/bits/ios_base.h \
+ /usr/local/include/c++/7.3.0/ext/atomicity.h \
+ /usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/gthr.h \
+ /usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/gthr-default.h \
  /usr/include/pthread.h /usr/include/sched.h \
  /usr/include/x86_64-linux-gnu/bits/sched.h \
  /usr/include/x86_64-linux-gnu/bits/cpu-set.h /usr/include/time.h \
@@ -95,92 +103,110 @@ video.o: video.cpp /usr/include/stdc-predef.h lplex.hpp \
  /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h \
  /usr/include/x86_64-linux-gnu/bits/setjmp.h \
- /usr/include/x86_64-linux-gnu/c++/7/bits/atomic_word.h \
- /usr/include/c++/7/bits/locale_classes.h /usr/include/c++/7/string \
- /usr/include/c++/7/bits/allocator.h \
- /usr/include/x86_64-linux-gnu/c++/7/bits/c++allocator.h \
- /usr/include/c++/7/ext/new_allocator.h \
- /usr/include/c++/7/bits/ostream_insert.h \
- /usr/include/c++/7/bits/cxxabi_forced.h \
- /usr/include/c++/7/bits/stl_function.h \
- /usr/include/c++/7/backward/binders.h \
- /usr/include/c++/7/bits/range_access.h \
- /usr/include/c++/7/initializer_list \
- /usr/include/c++/7/bits/basic_string.h \
- /usr/include/c++/7/ext/alloc_traits.h \
- /usr/include/c++/7/bits/alloc_traits.h /usr/include/c++/7/string_view \
- /usr/include/c++/7/limits /usr/include/c++/7/bits/functional_hash.h \
- /usr/include/c++/7/bits/string_view.tcc \
- /usr/include/c++/7/ext/string_conversions.h /usr/include/c++/7/cstdio \
- /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h \
+ /usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/atomic_word.h \
+ /usr/local/include/c++/7.3.0/bits/locale_classes.h \
+ /usr/local/include/c++/7.3.0/string \
+ /usr/local/include/c++/7.3.0/bits/allocator.h \
+ /usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/c++allocator.h \
+ /usr/local/include/c++/7.3.0/ext/new_allocator.h \
+ /usr/local/include/c++/7.3.0/bits/ostream_insert.h \
+ /usr/local/include/c++/7.3.0/bits/cxxabi_forced.h \
+ /usr/local/include/c++/7.3.0/bits/stl_function.h \
+ /usr/local/include/c++/7.3.0/backward/binders.h \
+ /usr/local/include/c++/7.3.0/bits/range_access.h \
+ /usr/local/include/c++/7.3.0/initializer_list \
+ /usr/local/include/c++/7.3.0/bits/basic_string.h \
+ /usr/local/include/c++/7.3.0/ext/alloc_traits.h \
+ /usr/local/include/c++/7.3.0/bits/alloc_traits.h \
+ /usr/local/include/c++/7.3.0/string_view \
+ /usr/local/include/c++/7.3.0/limits \
+ /usr/local/include/c++/7.3.0/bits/functional_hash.h \
+ /usr/local/include/c++/7.3.0/bits/string_view.tcc \
+ /usr/local/include/c++/7.3.0/ext/string_conversions.h \
+ /usr/local/include/c++/7.3.0/cstdio /usr/include/stdio.h \
+ /usr/include/libio.h /usr/include/_G_config.h \
  /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
  /usr/include/x86_64-linux-gnu/bits/sys_errlist.h \
  /usr/include/x86_64-linux-gnu/bits/stdio.h \
- /usr/include/x86_64-linux-gnu/bits/stdio2.h /usr/include/c++/7/cerrno \
- /usr/include/errno.h /usr/include/x86_64-linux-gnu/bits/errno.h \
- /usr/include/linux/errno.h /usr/include/x86_64-linux-gnu/asm/errno.h \
+ /usr/local/include/c++/7.3.0/cerrno /usr/include/errno.h \
+ /usr/include/x86_64-linux-gnu/bits/errno.h /usr/include/linux/errno.h \
+ /usr/include/x86_64-linux-gnu/asm/errno.h \
  /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
- /usr/include/c++/7/bits/basic_string.tcc \
- /usr/include/c++/7/bits/locale_classes.tcc \
- /usr/include/c++/7/system_error \
- /usr/include/x86_64-linux-gnu/c++/7/bits/error_constants.h \
- /usr/include/c++/7/stdexcept /usr/include/c++/7/streambuf \
- /usr/include/c++/7/bits/streambuf.tcc \
- /usr/include/c++/7/bits/basic_ios.h \
- /usr/include/c++/7/bits/locale_facets.h /usr/include/c++/7/cwctype \
- /usr/include/wctype.h /usr/include/x86_64-linux-gnu/bits/wctype-wchar.h \
- /usr/include/x86_64-linux-gnu/c++/7/bits/ctype_base.h \
- /usr/include/c++/7/bits/streambuf_iterator.h \
- /usr/include/x86_64-linux-gnu/c++/7/bits/ctype_inline.h \
- /usr/include/c++/7/bits/locale_facets.tcc \
- /usr/include/c++/7/bits/basic_ios.tcc \
- /usr/include/c++/7/bits/ostream.tcc /usr/include/c++/7/istream \
- /usr/include/c++/7/bits/istream.tcc /usr/include/c++/7/fstream \
- /usr/include/c++/7/bits/codecvt.h \
- /usr/include/x86_64-linux-gnu/c++/7/bits/basic_file.h \
- /usr/include/x86_64-linux-gnu/c++/7/bits/c++io.h \
- /usr/include/c++/7/bits/fstream.tcc /usr/include/c++/7/iomanip \
- /usr/include/c++/7/locale /usr/include/c++/7/bits/locale_facets_nonio.h \
- /usr/include/c++/7/ctime \
- /usr/include/x86_64-linux-gnu/c++/7/bits/time_members.h \
- /usr/include/x86_64-linux-gnu/c++/7/bits/messages_members.h \
- /usr/include/libintl.h /usr/include/c++/7/bits/locale_facets_nonio.tcc \
- /usr/include/c++/7/bits/locale_conv.h \
- /usr/include/c++/7/bits/stringfwd.h /usr/include/c++/7/bits/allocator.h \
- /usr/include/c++/7/bits/codecvt.h /usr/include/c++/7/bits/unique_ptr.h \
- /usr/include/c++/7/utility /usr/include/c++/7/bits/stl_relops.h \
- /usr/include/c++/7/tuple /usr/include/c++/7/array \
- /usr/include/c++/7/bits/uses_allocator.h \
- /usr/include/c++/7/bits/invoke.h /usr/include/c++/7/bits/quoted_string.h \
- /usr/include/c++/7/sstream /usr/include/c++/7/bits/sstream.tcc \
- /usr/include/c++/7/climits \
- /usr/lib/gcc/x86_64-linux-gnu/7/include-fixed/limits.h \
- /usr/lib/gcc/x86_64-linux-gnu/7/include-fixed/syslimits.h \
+ /usr/local/include/c++/7.3.0/bits/basic_string.tcc \
+ /usr/local/include/c++/7.3.0/bits/locale_classes.tcc \
+ /usr/local/include/c++/7.3.0/system_error \
+ /usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/error_constants.h \
+ /usr/local/include/c++/7.3.0/stdexcept \
+ /usr/local/include/c++/7.3.0/streambuf \
+ /usr/local/include/c++/7.3.0/bits/streambuf.tcc \
+ /usr/local/include/c++/7.3.0/bits/basic_ios.h \
+ /usr/local/include/c++/7.3.0/bits/locale_facets.h \
+ /usr/local/include/c++/7.3.0/cwctype /usr/include/wctype.h \
+ /usr/include/x86_64-linux-gnu/bits/wctype-wchar.h \
+ /usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/ctype_base.h \
+ /usr/local/include/c++/7.3.0/bits/streambuf_iterator.h \
+ /usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/ctype_inline.h \
+ /usr/local/include/c++/7.3.0/bits/locale_facets.tcc \
+ /usr/local/include/c++/7.3.0/bits/basic_ios.tcc \
+ /usr/local/include/c++/7.3.0/bits/ostream.tcc \
+ /usr/local/include/c++/7.3.0/istream \
+ /usr/local/include/c++/7.3.0/bits/istream.tcc \
+ /usr/local/include/c++/7.3.0/fstream \
+ /usr/local/include/c++/7.3.0/bits/codecvt.h \
+ /usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/basic_file.h \
+ /usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/c++io.h \
+ /usr/local/include/c++/7.3.0/bits/fstream.tcc \
+ /usr/local/include/c++/7.3.0/iomanip /usr/local/include/c++/7.3.0/locale \
+ /usr/local/include/c++/7.3.0/bits/locale_facets_nonio.h \
+ /usr/local/include/c++/7.3.0/ctime \
+ /usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/time_members.h \
+ /usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/messages_members.h \
+ /usr/include/libintl.h \
+ /usr/local/include/c++/7.3.0/bits/locale_facets_nonio.tcc \
+ /usr/local/include/c++/7.3.0/bits/locale_conv.h \
+ /usr/local/include/c++/7.3.0/bits/stringfwd.h \
+ /usr/local/include/c++/7.3.0/bits/allocator.h \
+ /usr/local/include/c++/7.3.0/bits/codecvt.h \
+ /usr/local/include/c++/7.3.0/bits/unique_ptr.h \
+ /usr/local/include/c++/7.3.0/utility \
+ /usr/local/include/c++/7.3.0/bits/stl_relops.h \
+ /usr/local/include/c++/7.3.0/tuple /usr/local/include/c++/7.3.0/array \
+ /usr/local/include/c++/7.3.0/bits/uses_allocator.h \
+ /usr/local/include/c++/7.3.0/bits/invoke.h \
+ /usr/local/include/c++/7.3.0/bits/quoted_string.h \
+ /usr/local/include/c++/7.3.0/sstream \
+ /usr/local/include/c++/7.3.0/bits/sstream.tcc \
+ /usr/local/include/c++/7.3.0/climits \
+ /usr/local/lib/gcc/x86_64-pc-linux-gnu/7.3.0/include-fixed/limits.h \
+ /usr/local/lib/gcc/x86_64-pc-linux-gnu/7.3.0/include-fixed/syslimits.h \
  /usr/include/limits.h /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
  /usr/include/x86_64-linux-gnu/bits/local_lim.h \
  /usr/include/linux/limits.h \
  /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
  /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
  /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
- /usr/include/c++/7/backward/strstream \
- /usr/include/c++/7/backward/backward_warning.h /usr/include/c++/7/vector \
- /usr/include/c++/7/bits/stl_construct.h \
- /usr/include/c++/7/bits/stl_uninitialized.h \
- /usr/include/c++/7/bits/stl_vector.h \
- /usr/include/c++/7/bits/stl_bvector.h /usr/include/c++/7/bits/vector.tcc \
- /usr/include/c++/7/algorithm /usr/include/c++/7/bits/stl_algo.h \
- /usr/include/c++/7/bits/algorithmfwd.h \
- /usr/include/c++/7/bits/stl_heap.h /usr/include/c++/7/bits/stl_tempbuf.h \
- /usr/include/c++/7/bits/uniform_int_dist.h /usr/include/unistd.h \
- /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
+ /usr/local/include/c++/7.3.0/backward/strstream \
+ /usr/local/include/c++/7.3.0/backward/backward_warning.h \
+ /usr/local/include/c++/7.3.0/vector \
+ /usr/local/include/c++/7.3.0/bits/stl_construct.h \
+ /usr/local/include/c++/7.3.0/bits/stl_uninitialized.h \
+ /usr/local/include/c++/7.3.0/bits/stl_vector.h \
+ /usr/local/include/c++/7.3.0/bits/stl_bvector.h \
+ /usr/local/include/c++/7.3.0/bits/vector.tcc \
+ /usr/local/include/c++/7.3.0/algorithm \
+ /usr/local/include/c++/7.3.0/bits/stl_algo.h \
+ /usr/local/include/c++/7.3.0/bits/algorithmfwd.h \
+ /usr/local/include/c++/7.3.0/bits/stl_heap.h \
+ /usr/local/include/c++/7.3.0/bits/stl_tempbuf.h \
+ /usr/local/include/c++/7.3.0/bits/uniform_int_dist.h \
+ /usr/include/unistd.h /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
  /usr/include/x86_64-linux-gnu/bits/environments.h \
  /usr/include/x86_64-linux-gnu/bits/confname.h \
  /usr/include/x86_64-linux-gnu/bits/getopt_posix.h \
- /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
- /usr/include/x86_64-linux-gnu/bits/unistd.h /usr/include/assert.h \
+ /usr/include/x86_64-linux-gnu/bits/getopt_core.h /usr/include/assert.h \
  /usr/include/getopt.h /usr/include/x86_64-linux-gnu/bits/getopt_ext.h \
- /usr/include/c++/7/math.h /usr/include/c++/7/cmath /usr/include/math.h \
- /usr/include/x86_64-linux-gnu/bits/math-vector.h \
+ /usr/local/include/c++/7.3.0/math.h /usr/local/include/c++/7.3.0/cmath \
+ /usr/include/math.h /usr/include/x86_64-linux-gnu/bits/math-vector.h \
  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
  /usr/include/x86_64-linux-gnu/bits/huge_val.h \
  /usr/include/x86_64-linux-gnu/bits/huge_val_flt128.h \
@@ -195,27 +221,25 @@ video.o: video.cpp /usr/include/stdc-predef.h lplex.hpp \
  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
  /usr/include/x86_64-linux-gnu/bits/iscanonical.h \
  /usr/include/x86_64-linux-gnu/bits/mathinline.h \
- /usr/include/c++/7/bits/specfun.h /usr/include/c++/7/tr1/gamma.tcc \
- /usr/include/c++/7/tr1/special_function_util.h \
- /usr/include/c++/7/tr1/bessel_function.tcc \
- /usr/include/c++/7/tr1/special_function_util.h \
- /usr/include/c++/7/tr1/beta_function.tcc \
- /usr/include/c++/7/tr1/ell_integral.tcc \
- /usr/include/c++/7/tr1/exp_integral.tcc \
- /usr/include/c++/7/tr1/hypergeometric.tcc \
- /usr/include/c++/7/tr1/legendre_function.tcc \
- /usr/include/c++/7/tr1/modified_bessel_func.tcc \
- /usr/include/c++/7/tr1/poly_hermite.tcc \
- /usr/include/c++/7/tr1/poly_laguerre.tcc \
- /usr/include/c++/7/tr1/riemann_zeta.tcc /usr/include/fcntl.h \
+ /usr/local/include/c++/7.3.0/bits/specfun.h \
+ /usr/local/include/c++/7.3.0/tr1/gamma.tcc \
+ /usr/local/include/c++/7.3.0/tr1/special_function_util.h \
+ /usr/local/include/c++/7.3.0/tr1/bessel_function.tcc \
+ /usr/local/include/c++/7.3.0/tr1/special_function_util.h \
+ /usr/local/include/c++/7.3.0/tr1/beta_function.tcc \
+ /usr/local/include/c++/7.3.0/tr1/ell_integral.tcc \
+ /usr/local/include/c++/7.3.0/tr1/exp_integral.tcc \
+ /usr/local/include/c++/7.3.0/tr1/hypergeometric.tcc \
+ /usr/local/include/c++/7.3.0/tr1/legendre_function.tcc \
+ /usr/local/include/c++/7.3.0/tr1/modified_bessel_func.tcc \
+ /usr/local/include/c++/7.3.0/tr1/poly_hermite.tcc \
+ /usr/local/include/c++/7.3.0/tr1/poly_laguerre.tcc \
+ /usr/local/include/c++/7.3.0/tr1/riemann_zeta.tcc /usr/include/fcntl.h \
  /usr/include/x86_64-linux-gnu/bits/fcntl.h \
  /usr/include/x86_64-linux-gnu/bits/fcntl-linux.h \
  /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h \
  /usr/include/linux/falloc.h /usr/include/x86_64-linux-gnu/bits/stat.h \
- /usr/include/x86_64-linux-gnu/bits/fcntl2.h /usr/include/string.h \
- /usr/include/strings.h \
- /usr/include/x86_64-linux-gnu/bits/strings_fortified.h \
- /usr/include/x86_64-linux-gnu/bits/string_fortified.h \
+ /usr/include/string.h /usr/include/strings.h \
  /usr/include/dvdread/dvd_reader.h /usr/include/inttypes.h \
  /usr/include/dvdread/ifo_types.h /usr/include/dvdread/ifo_read.h \
  /usr/include/dvdread/ifo_types.h /usr/include/dvdread/nav_read.h \
@@ -226,22 +250,25 @@ video.o: video.cpp /usr/include/stdc-predef.h lplex.hpp \
  /usr/include/FLAC/stream_decoder.h /usr/include/FLAC++/decoder.h \
  /usr/include/FLAC/stream_decoder.h /usr/include/FLAC++/metadata.h \
  /usr/include/FLAC/metadata.h /usr/include/FLAC/callback.h \
- /usr/include/c++/7/stdlib.h ../redist/md5/md5.h \
+ /usr/local/include/c++/7.3.0/stdlib.h ../redist/md5/md5.h \
  /usr/include/FLAC/format.h ../redist/vlc_bits.h \
- /usr/include/c++/7/experimental/filesystem \
- /usr/include/c++/7/experimental/bits/fs_fwd.h /usr/include/c++/7/chrono \
- /usr/include/c++/7/ratio /usr/include/c++/7/bits/parse_numbers.h \
- /usr/include/c++/7/experimental/bits/fs_path.h \
- /usr/include/c++/7/codecvt /usr/include/c++/7/experimental/bits/fs_dir.h \
- /usr/include/c++/7/ext/concurrence.h \
- /usr/include/c++/7/bits/unique_ptr.h \
- /usr/include/c++/7/bits/shared_ptr.h \
- /usr/include/c++/7/bits/shared_ptr_base.h \
- /usr/include/c++/7/bits/allocated_ptr.h \
- /usr/include/c++/7/bits/refwrap.h \
- /usr/include/c++/7/ext/aligned_buffer.h \
- /usr/include/c++/7/experimental/bits/fs_ops.h util.h platform.h wx.hpp \
- color.h lpcm.hpp flac.hpp processor.hpp ../lplex.def dvd.hpp
+ /usr/local/include/c++/7.3.0/experimental/filesystem \
+ /usr/local/include/c++/7.3.0/experimental/bits/fs_fwd.h \
+ /usr/local/include/c++/7.3.0/chrono /usr/local/include/c++/7.3.0/ratio \
+ /usr/local/include/c++/7.3.0/bits/parse_numbers.h \
+ /usr/local/include/c++/7.3.0/experimental/bits/fs_path.h \
+ /usr/local/include/c++/7.3.0/codecvt \
+ /usr/local/include/c++/7.3.0/experimental/bits/fs_dir.h \
+ /usr/local/include/c++/7.3.0/ext/concurrence.h \
+ /usr/local/include/c++/7.3.0/bits/unique_ptr.h \
+ /usr/local/include/c++/7.3.0/bits/shared_ptr.h \
+ /usr/local/include/c++/7.3.0/bits/shared_ptr_base.h \
+ /usr/local/include/c++/7.3.0/bits/allocated_ptr.h \
+ /usr/local/include/c++/7.3.0/bits/refwrap.h \
+ /usr/local/include/c++/7.3.0/ext/aligned_buffer.h \
+ /usr/local/include/c++/7.3.0/experimental/bits/fs_ops.h util.h \
+ platform.h wx.hpp color.h lpcm.hpp flac.hpp processor.hpp ../lplex.def \
+ dvd.hpp
 
 /usr/include/stdc-predef.h:
 
@@ -249,11 +276,11 @@ lplex.hpp:
 
 ../redist/lplex_precompile.h:
 
-/usr/include/c++/7/cstdlib:
+/usr/local/include/c++/7.3.0/cstdlib:
 
-/usr/include/x86_64-linux-gnu/c++/7/bits/c++config.h:
+/usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/c++config.h:
 
-/usr/include/x86_64-linux-gnu/c++/7/bits/os_defines.h:
+/usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/os_defines.h:
 
 /usr/include/features.h:
 
@@ -267,13 +294,13 @@ lplex.hpp:
 
 /usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
 
-/usr/include/x86_64-linux-gnu/c++/7/bits/cpu_defines.h:
+/usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/cpu_defines.h:
 
 /usr/include/stdlib.h:
 
 /usr/include/x86_64-linux-gnu/bits/libc-header-start.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/7/include/stddef.h:
+/usr/local/lib/gcc/x86_64-pc-linux-gnu/7.3.0/include/stddef.h:
 
 /usr/include/x86_64-linux-gnu/bits/waitflags.h:
 
@@ -323,8 +350,6 @@ lplex.hpp:
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h:
 
-/usr/include/x86_64-linux-gnu/bits/select2.h:
-
 /usr/include/x86_64-linux-gnu/sys/sysmacros.h:
 
 /usr/include/x86_64-linux-gnu/bits/sysmacros.h:
@@ -341,29 +366,27 @@ lplex.hpp:
 
 /usr/include/x86_64-linux-gnu/bits/stdlib-float.h:
 
-/usr/include/x86_64-linux-gnu/bits/stdlib.h:
+/usr/local/include/c++/7.3.0/bits/std_abs.h:
 
-/usr/include/c++/7/bits/std_abs.h:
+/usr/local/include/c++/7.3.0/iostream:
 
-/usr/include/c++/7/iostream:
+/usr/local/include/c++/7.3.0/ostream:
 
-/usr/include/c++/7/ostream:
+/usr/local/include/c++/7.3.0/ios:
 
-/usr/include/c++/7/ios:
+/usr/local/include/c++/7.3.0/iosfwd:
 
-/usr/include/c++/7/iosfwd:
+/usr/local/include/c++/7.3.0/bits/stringfwd.h:
 
-/usr/include/c++/7/bits/stringfwd.h:
+/usr/local/include/c++/7.3.0/bits/memoryfwd.h:
 
-/usr/include/c++/7/bits/memoryfwd.h:
+/usr/local/include/c++/7.3.0/bits/postypes.h:
 
-/usr/include/c++/7/bits/postypes.h:
-
-/usr/include/c++/7/cwchar:
+/usr/local/include/c++/7.3.0/cwchar:
 
 /usr/include/wchar.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/7/include/stdarg.h:
+/usr/local/lib/gcc/x86_64-pc-linux-gnu/7.3.0/include/stdarg.h:
 
 /usr/include/x86_64-linux-gnu/bits/wchar.h:
 
@@ -377,89 +400,87 @@ lplex.hpp:
 
 /usr/include/x86_64-linux-gnu/bits/types/FILE.h:
 
-/usr/include/x86_64-linux-gnu/bits/wchar2.h:
+/usr/local/include/c++/7.3.0/exception:
 
-/usr/include/c++/7/exception:
+/usr/local/include/c++/7.3.0/bits/exception.h:
 
-/usr/include/c++/7/bits/exception.h:
+/usr/local/include/c++/7.3.0/bits/exception_ptr.h:
 
-/usr/include/c++/7/bits/exception_ptr.h:
+/usr/local/include/c++/7.3.0/bits/exception_defines.h:
 
-/usr/include/c++/7/bits/exception_defines.h:
+/usr/local/include/c++/7.3.0/bits/cxxabi_init_exception.h:
 
-/usr/include/c++/7/bits/cxxabi_init_exception.h:
+/usr/local/include/c++/7.3.0/typeinfo:
 
-/usr/include/c++/7/typeinfo:
+/usr/local/include/c++/7.3.0/bits/hash_bytes.h:
 
-/usr/include/c++/7/bits/hash_bytes.h:
+/usr/local/include/c++/7.3.0/new:
 
-/usr/include/c++/7/new:
+/usr/local/include/c++/7.3.0/bits/nested_exception.h:
 
-/usr/include/c++/7/bits/nested_exception.h:
+/usr/local/include/c++/7.3.0/bits/move.h:
 
-/usr/include/c++/7/bits/move.h:
+/usr/local/include/c++/7.3.0/bits/concept_check.h:
 
-/usr/include/c++/7/bits/concept_check.h:
+/usr/local/include/c++/7.3.0/type_traits:
 
-/usr/include/c++/7/type_traits:
+/usr/local/include/c++/7.3.0/bits/char_traits.h:
 
-/usr/include/c++/7/bits/char_traits.h:
+/usr/local/include/c++/7.3.0/bits/stl_algobase.h:
 
-/usr/include/c++/7/bits/stl_algobase.h:
+/usr/local/include/c++/7.3.0/bits/functexcept.h:
 
-/usr/include/c++/7/bits/functexcept.h:
+/usr/local/include/c++/7.3.0/bits/cpp_type_traits.h:
 
-/usr/include/c++/7/bits/cpp_type_traits.h:
+/usr/local/include/c++/7.3.0/ext/type_traits.h:
 
-/usr/include/c++/7/ext/type_traits.h:
+/usr/local/include/c++/7.3.0/ext/numeric_traits.h:
 
-/usr/include/c++/7/ext/numeric_traits.h:
+/usr/local/include/c++/7.3.0/bits/stl_pair.h:
 
-/usr/include/c++/7/bits/stl_pair.h:
+/usr/local/include/c++/7.3.0/bits/stl_iterator_base_types.h:
 
-/usr/include/c++/7/bits/stl_iterator_base_types.h:
+/usr/local/include/c++/7.3.0/bits/stl_iterator_base_funcs.h:
 
-/usr/include/c++/7/bits/stl_iterator_base_funcs.h:
+/usr/local/include/c++/7.3.0/debug/assertions.h:
 
-/usr/include/c++/7/debug/assertions.h:
+/usr/local/include/c++/7.3.0/bits/stl_iterator.h:
 
-/usr/include/c++/7/bits/stl_iterator.h:
+/usr/local/include/c++/7.3.0/bits/ptr_traits.h:
 
-/usr/include/c++/7/bits/ptr_traits.h:
+/usr/local/include/c++/7.3.0/debug/debug.h:
 
-/usr/include/c++/7/debug/debug.h:
+/usr/local/include/c++/7.3.0/bits/predefined_ops.h:
 
-/usr/include/c++/7/bits/predefined_ops.h:
+/usr/local/include/c++/7.3.0/cstdint:
 
-/usr/include/c++/7/cstdint:
-
-/usr/lib/gcc/x86_64-linux-gnu/7/include/stdint.h:
+/usr/local/lib/gcc/x86_64-pc-linux-gnu/7.3.0/include/stdint.h:
 
 /usr/include/stdint.h:
 
 /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h:
 
-/usr/include/c++/7/bits/localefwd.h:
+/usr/local/include/c++/7.3.0/bits/localefwd.h:
 
-/usr/include/x86_64-linux-gnu/c++/7/bits/c++locale.h:
+/usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/c++locale.h:
 
-/usr/include/c++/7/clocale:
+/usr/local/include/c++/7.3.0/clocale:
 
 /usr/include/locale.h:
 
 /usr/include/x86_64-linux-gnu/bits/locale.h:
 
-/usr/include/c++/7/cctype:
+/usr/local/include/c++/7.3.0/cctype:
 
 /usr/include/ctype.h:
 
-/usr/include/c++/7/bits/ios_base.h:
+/usr/local/include/c++/7.3.0/bits/ios_base.h:
 
-/usr/include/c++/7/ext/atomicity.h:
+/usr/local/include/c++/7.3.0/ext/atomicity.h:
 
-/usr/include/x86_64-linux-gnu/c++/7/bits/gthr.h:
+/usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/gthr.h:
 
-/usr/include/x86_64-linux-gnu/c++/7/bits/gthr-default.h:
+/usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/gthr-default.h:
 
 /usr/include/pthread.h:
 
@@ -481,47 +502,47 @@ lplex.hpp:
 
 /usr/include/x86_64-linux-gnu/bits/setjmp.h:
 
-/usr/include/x86_64-linux-gnu/c++/7/bits/atomic_word.h:
+/usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/atomic_word.h:
 
-/usr/include/c++/7/bits/locale_classes.h:
+/usr/local/include/c++/7.3.0/bits/locale_classes.h:
 
-/usr/include/c++/7/string:
+/usr/local/include/c++/7.3.0/string:
 
-/usr/include/c++/7/bits/allocator.h:
+/usr/local/include/c++/7.3.0/bits/allocator.h:
 
-/usr/include/x86_64-linux-gnu/c++/7/bits/c++allocator.h:
+/usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/c++allocator.h:
 
-/usr/include/c++/7/ext/new_allocator.h:
+/usr/local/include/c++/7.3.0/ext/new_allocator.h:
 
-/usr/include/c++/7/bits/ostream_insert.h:
+/usr/local/include/c++/7.3.0/bits/ostream_insert.h:
 
-/usr/include/c++/7/bits/cxxabi_forced.h:
+/usr/local/include/c++/7.3.0/bits/cxxabi_forced.h:
 
-/usr/include/c++/7/bits/stl_function.h:
+/usr/local/include/c++/7.3.0/bits/stl_function.h:
 
-/usr/include/c++/7/backward/binders.h:
+/usr/local/include/c++/7.3.0/backward/binders.h:
 
-/usr/include/c++/7/bits/range_access.h:
+/usr/local/include/c++/7.3.0/bits/range_access.h:
 
-/usr/include/c++/7/initializer_list:
+/usr/local/include/c++/7.3.0/initializer_list:
 
-/usr/include/c++/7/bits/basic_string.h:
+/usr/local/include/c++/7.3.0/bits/basic_string.h:
 
-/usr/include/c++/7/ext/alloc_traits.h:
+/usr/local/include/c++/7.3.0/ext/alloc_traits.h:
 
-/usr/include/c++/7/bits/alloc_traits.h:
+/usr/local/include/c++/7.3.0/bits/alloc_traits.h:
 
-/usr/include/c++/7/string_view:
+/usr/local/include/c++/7.3.0/string_view:
 
-/usr/include/c++/7/limits:
+/usr/local/include/c++/7.3.0/limits:
 
-/usr/include/c++/7/bits/functional_hash.h:
+/usr/local/include/c++/7.3.0/bits/functional_hash.h:
 
-/usr/include/c++/7/bits/string_view.tcc:
+/usr/local/include/c++/7.3.0/bits/string_view.tcc:
 
-/usr/include/c++/7/ext/string_conversions.h:
+/usr/local/include/c++/7.3.0/ext/string_conversions.h:
 
-/usr/include/c++/7/cstdio:
+/usr/local/include/c++/7.3.0/cstdio:
 
 /usr/include/stdio.h:
 
@@ -535,9 +556,7 @@ lplex.hpp:
 
 /usr/include/x86_64-linux-gnu/bits/stdio.h:
 
-/usr/include/x86_64-linux-gnu/bits/stdio2.h:
-
-/usr/include/c++/7/cerrno:
+/usr/local/include/c++/7.3.0/cerrno:
 
 /usr/include/errno.h:
 
@@ -551,105 +570,105 @@ lplex.hpp:
 
 /usr/include/asm-generic/errno-base.h:
 
-/usr/include/c++/7/bits/basic_string.tcc:
+/usr/local/include/c++/7.3.0/bits/basic_string.tcc:
 
-/usr/include/c++/7/bits/locale_classes.tcc:
+/usr/local/include/c++/7.3.0/bits/locale_classes.tcc:
 
-/usr/include/c++/7/system_error:
+/usr/local/include/c++/7.3.0/system_error:
 
-/usr/include/x86_64-linux-gnu/c++/7/bits/error_constants.h:
+/usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/error_constants.h:
 
-/usr/include/c++/7/stdexcept:
+/usr/local/include/c++/7.3.0/stdexcept:
 
-/usr/include/c++/7/streambuf:
+/usr/local/include/c++/7.3.0/streambuf:
 
-/usr/include/c++/7/bits/streambuf.tcc:
+/usr/local/include/c++/7.3.0/bits/streambuf.tcc:
 
-/usr/include/c++/7/bits/basic_ios.h:
+/usr/local/include/c++/7.3.0/bits/basic_ios.h:
 
-/usr/include/c++/7/bits/locale_facets.h:
+/usr/local/include/c++/7.3.0/bits/locale_facets.h:
 
-/usr/include/c++/7/cwctype:
+/usr/local/include/c++/7.3.0/cwctype:
 
 /usr/include/wctype.h:
 
 /usr/include/x86_64-linux-gnu/bits/wctype-wchar.h:
 
-/usr/include/x86_64-linux-gnu/c++/7/bits/ctype_base.h:
+/usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/ctype_base.h:
 
-/usr/include/c++/7/bits/streambuf_iterator.h:
+/usr/local/include/c++/7.3.0/bits/streambuf_iterator.h:
 
-/usr/include/x86_64-linux-gnu/c++/7/bits/ctype_inline.h:
+/usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/ctype_inline.h:
 
-/usr/include/c++/7/bits/locale_facets.tcc:
+/usr/local/include/c++/7.3.0/bits/locale_facets.tcc:
 
-/usr/include/c++/7/bits/basic_ios.tcc:
+/usr/local/include/c++/7.3.0/bits/basic_ios.tcc:
 
-/usr/include/c++/7/bits/ostream.tcc:
+/usr/local/include/c++/7.3.0/bits/ostream.tcc:
 
-/usr/include/c++/7/istream:
+/usr/local/include/c++/7.3.0/istream:
 
-/usr/include/c++/7/bits/istream.tcc:
+/usr/local/include/c++/7.3.0/bits/istream.tcc:
 
-/usr/include/c++/7/fstream:
+/usr/local/include/c++/7.3.0/fstream:
 
-/usr/include/c++/7/bits/codecvt.h:
+/usr/local/include/c++/7.3.0/bits/codecvt.h:
 
-/usr/include/x86_64-linux-gnu/c++/7/bits/basic_file.h:
+/usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/basic_file.h:
 
-/usr/include/x86_64-linux-gnu/c++/7/bits/c++io.h:
+/usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/c++io.h:
 
-/usr/include/c++/7/bits/fstream.tcc:
+/usr/local/include/c++/7.3.0/bits/fstream.tcc:
 
-/usr/include/c++/7/iomanip:
+/usr/local/include/c++/7.3.0/iomanip:
 
-/usr/include/c++/7/locale:
+/usr/local/include/c++/7.3.0/locale:
 
-/usr/include/c++/7/bits/locale_facets_nonio.h:
+/usr/local/include/c++/7.3.0/bits/locale_facets_nonio.h:
 
-/usr/include/c++/7/ctime:
+/usr/local/include/c++/7.3.0/ctime:
 
-/usr/include/x86_64-linux-gnu/c++/7/bits/time_members.h:
+/usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/time_members.h:
 
-/usr/include/x86_64-linux-gnu/c++/7/bits/messages_members.h:
+/usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/messages_members.h:
 
 /usr/include/libintl.h:
 
-/usr/include/c++/7/bits/locale_facets_nonio.tcc:
+/usr/local/include/c++/7.3.0/bits/locale_facets_nonio.tcc:
 
-/usr/include/c++/7/bits/locale_conv.h:
+/usr/local/include/c++/7.3.0/bits/locale_conv.h:
 
-/usr/include/c++/7/bits/stringfwd.h:
+/usr/local/include/c++/7.3.0/bits/stringfwd.h:
 
-/usr/include/c++/7/bits/allocator.h:
+/usr/local/include/c++/7.3.0/bits/allocator.h:
 
-/usr/include/c++/7/bits/codecvt.h:
+/usr/local/include/c++/7.3.0/bits/codecvt.h:
 
-/usr/include/c++/7/bits/unique_ptr.h:
+/usr/local/include/c++/7.3.0/bits/unique_ptr.h:
 
-/usr/include/c++/7/utility:
+/usr/local/include/c++/7.3.0/utility:
 
-/usr/include/c++/7/bits/stl_relops.h:
+/usr/local/include/c++/7.3.0/bits/stl_relops.h:
 
-/usr/include/c++/7/tuple:
+/usr/local/include/c++/7.3.0/tuple:
 
-/usr/include/c++/7/array:
+/usr/local/include/c++/7.3.0/array:
 
-/usr/include/c++/7/bits/uses_allocator.h:
+/usr/local/include/c++/7.3.0/bits/uses_allocator.h:
 
-/usr/include/c++/7/bits/invoke.h:
+/usr/local/include/c++/7.3.0/bits/invoke.h:
 
-/usr/include/c++/7/bits/quoted_string.h:
+/usr/local/include/c++/7.3.0/bits/quoted_string.h:
 
-/usr/include/c++/7/sstream:
+/usr/local/include/c++/7.3.0/sstream:
 
-/usr/include/c++/7/bits/sstream.tcc:
+/usr/local/include/c++/7.3.0/bits/sstream.tcc:
 
-/usr/include/c++/7/climits:
+/usr/local/include/c++/7.3.0/climits:
 
-/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed/limits.h:
+/usr/local/lib/gcc/x86_64-pc-linux-gnu/7.3.0/include-fixed/limits.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed/syslimits.h:
+/usr/local/lib/gcc/x86_64-pc-linux-gnu/7.3.0/include-fixed/syslimits.h:
 
 /usr/include/limits.h:
 
@@ -665,33 +684,33 @@ lplex.hpp:
 
 /usr/include/x86_64-linux-gnu/bits/uio_lim.h:
 
-/usr/include/c++/7/backward/strstream:
+/usr/local/include/c++/7.3.0/backward/strstream:
 
-/usr/include/c++/7/backward/backward_warning.h:
+/usr/local/include/c++/7.3.0/backward/backward_warning.h:
 
-/usr/include/c++/7/vector:
+/usr/local/include/c++/7.3.0/vector:
 
-/usr/include/c++/7/bits/stl_construct.h:
+/usr/local/include/c++/7.3.0/bits/stl_construct.h:
 
-/usr/include/c++/7/bits/stl_uninitialized.h:
+/usr/local/include/c++/7.3.0/bits/stl_uninitialized.h:
 
-/usr/include/c++/7/bits/stl_vector.h:
+/usr/local/include/c++/7.3.0/bits/stl_vector.h:
 
-/usr/include/c++/7/bits/stl_bvector.h:
+/usr/local/include/c++/7.3.0/bits/stl_bvector.h:
 
-/usr/include/c++/7/bits/vector.tcc:
+/usr/local/include/c++/7.3.0/bits/vector.tcc:
 
-/usr/include/c++/7/algorithm:
+/usr/local/include/c++/7.3.0/algorithm:
 
-/usr/include/c++/7/bits/stl_algo.h:
+/usr/local/include/c++/7.3.0/bits/stl_algo.h:
 
-/usr/include/c++/7/bits/algorithmfwd.h:
+/usr/local/include/c++/7.3.0/bits/algorithmfwd.h:
 
-/usr/include/c++/7/bits/stl_heap.h:
+/usr/local/include/c++/7.3.0/bits/stl_heap.h:
 
-/usr/include/c++/7/bits/stl_tempbuf.h:
+/usr/local/include/c++/7.3.0/bits/stl_tempbuf.h:
 
-/usr/include/c++/7/bits/uniform_int_dist.h:
+/usr/local/include/c++/7.3.0/bits/uniform_int_dist.h:
 
 /usr/include/unistd.h:
 
@@ -705,17 +724,15 @@ lplex.hpp:
 
 /usr/include/x86_64-linux-gnu/bits/getopt_core.h:
 
-/usr/include/x86_64-linux-gnu/bits/unistd.h:
-
 /usr/include/assert.h:
 
 /usr/include/getopt.h:
 
 /usr/include/x86_64-linux-gnu/bits/getopt_ext.h:
 
-/usr/include/c++/7/math.h:
+/usr/local/include/c++/7.3.0/math.h:
 
-/usr/include/c++/7/cmath:
+/usr/local/include/c++/7.3.0/cmath:
 
 /usr/include/math.h:
 
@@ -749,33 +766,33 @@ lplex.hpp:
 
 /usr/include/x86_64-linux-gnu/bits/mathinline.h:
 
-/usr/include/c++/7/bits/specfun.h:
+/usr/local/include/c++/7.3.0/bits/specfun.h:
 
-/usr/include/c++/7/tr1/gamma.tcc:
+/usr/local/include/c++/7.3.0/tr1/gamma.tcc:
 
-/usr/include/c++/7/tr1/special_function_util.h:
+/usr/local/include/c++/7.3.0/tr1/special_function_util.h:
 
-/usr/include/c++/7/tr1/bessel_function.tcc:
+/usr/local/include/c++/7.3.0/tr1/bessel_function.tcc:
 
-/usr/include/c++/7/tr1/special_function_util.h:
+/usr/local/include/c++/7.3.0/tr1/special_function_util.h:
 
-/usr/include/c++/7/tr1/beta_function.tcc:
+/usr/local/include/c++/7.3.0/tr1/beta_function.tcc:
 
-/usr/include/c++/7/tr1/ell_integral.tcc:
+/usr/local/include/c++/7.3.0/tr1/ell_integral.tcc:
 
-/usr/include/c++/7/tr1/exp_integral.tcc:
+/usr/local/include/c++/7.3.0/tr1/exp_integral.tcc:
 
-/usr/include/c++/7/tr1/hypergeometric.tcc:
+/usr/local/include/c++/7.3.0/tr1/hypergeometric.tcc:
 
-/usr/include/c++/7/tr1/legendre_function.tcc:
+/usr/local/include/c++/7.3.0/tr1/legendre_function.tcc:
 
-/usr/include/c++/7/tr1/modified_bessel_func.tcc:
+/usr/local/include/c++/7.3.0/tr1/modified_bessel_func.tcc:
 
-/usr/include/c++/7/tr1/poly_hermite.tcc:
+/usr/local/include/c++/7.3.0/tr1/poly_hermite.tcc:
 
-/usr/include/c++/7/tr1/poly_laguerre.tcc:
+/usr/local/include/c++/7.3.0/tr1/poly_laguerre.tcc:
 
-/usr/include/c++/7/tr1/riemann_zeta.tcc:
+/usr/local/include/c++/7.3.0/tr1/riemann_zeta.tcc:
 
 /usr/include/fcntl.h:
 
@@ -789,15 +806,9 @@ lplex.hpp:
 
 /usr/include/x86_64-linux-gnu/bits/stat.h:
 
-/usr/include/x86_64-linux-gnu/bits/fcntl2.h:
-
 /usr/include/string.h:
 
 /usr/include/strings.h:
-
-/usr/include/x86_64-linux-gnu/bits/strings_fortified.h:
-
-/usr/include/x86_64-linux-gnu/bits/string_fortified.h:
 
 /usr/include/dvdread/dvd_reader.h:
 
@@ -839,7 +850,7 @@ lplex.hpp:
 
 /usr/include/FLAC/callback.h:
 
-/usr/include/c++/7/stdlib.h:
+/usr/local/include/c++/7.3.0/stdlib.h:
 
 ../redist/md5/md5.h:
 
@@ -847,37 +858,37 @@ lplex.hpp:
 
 ../redist/vlc_bits.h:
 
-/usr/include/c++/7/experimental/filesystem:
+/usr/local/include/c++/7.3.0/experimental/filesystem:
 
-/usr/include/c++/7/experimental/bits/fs_fwd.h:
+/usr/local/include/c++/7.3.0/experimental/bits/fs_fwd.h:
 
-/usr/include/c++/7/chrono:
+/usr/local/include/c++/7.3.0/chrono:
 
-/usr/include/c++/7/ratio:
+/usr/local/include/c++/7.3.0/ratio:
 
-/usr/include/c++/7/bits/parse_numbers.h:
+/usr/local/include/c++/7.3.0/bits/parse_numbers.h:
 
-/usr/include/c++/7/experimental/bits/fs_path.h:
+/usr/local/include/c++/7.3.0/experimental/bits/fs_path.h:
 
-/usr/include/c++/7/codecvt:
+/usr/local/include/c++/7.3.0/codecvt:
 
-/usr/include/c++/7/experimental/bits/fs_dir.h:
+/usr/local/include/c++/7.3.0/experimental/bits/fs_dir.h:
 
-/usr/include/c++/7/ext/concurrence.h:
+/usr/local/include/c++/7.3.0/ext/concurrence.h:
 
-/usr/include/c++/7/bits/unique_ptr.h:
+/usr/local/include/c++/7.3.0/bits/unique_ptr.h:
 
-/usr/include/c++/7/bits/shared_ptr.h:
+/usr/local/include/c++/7.3.0/bits/shared_ptr.h:
 
-/usr/include/c++/7/bits/shared_ptr_base.h:
+/usr/local/include/c++/7.3.0/bits/shared_ptr_base.h:
 
-/usr/include/c++/7/bits/allocated_ptr.h:
+/usr/local/include/c++/7.3.0/bits/allocated_ptr.h:
 
-/usr/include/c++/7/bits/refwrap.h:
+/usr/local/include/c++/7.3.0/bits/refwrap.h:
 
-/usr/include/c++/7/ext/aligned_buffer.h:
+/usr/local/include/c++/7.3.0/ext/aligned_buffer.h:
 
-/usr/include/c++/7/experimental/bits/fs_ops.h:
+/usr/local/include/c++/7.3.0/experimental/bits/fs_ops.h:
 
 util.h:
 

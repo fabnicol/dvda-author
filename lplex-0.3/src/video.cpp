@@ -178,8 +178,7 @@ ofstream* m2v( uint32_t vFrames, const char *jpeg, const char *m2vName,
 	{
 		INFO( "-inserting Lplex tags into first GOP as User Data field\n" );
 		m2vFile.write( (char*)bigBlock, GOP[0]+4 );
-                char tab[]={0x00,0x00,0x01,0xb2};
-		m2vFile.write(tab, 4 );
+        m2vFile << 0x00 << 0x00 << 0x01 << 0xb2;
 		uDataPos = m2vFile.tellp();
 		m2vFile.write( (char*)userData, sizeofUData );
 		m2vFile.write( (char*)bigBlock+GOP[0]+4, seq[1]-(GOP[0]+4) );
