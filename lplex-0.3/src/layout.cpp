@@ -371,7 +371,7 @@ int dvdLayout::checkSpace()
 		for( int i=0; i < 3; i++ )
 			if( fail & ( 0x01 << i ) )
             {
-                ERR( string(devices[i].path) + string(": not enough space on device ") + string(device( devices[i].id )))
+              //  ERR( string(devices[i].path) + string(": not enough space on device ") + string(device( devices[i].id )))
                 ERR( " - " + string(sizeStr( devices[i].space )) + string(" free )\n") );
             }
 #endif
@@ -597,8 +597,8 @@ int dvdLayout::configure()
             timestamp( titleVframes, job->tv == NTSC ).c_str(),
 			lFile->jpgIndex );
 
-		LOG( lFile->details << " : " <<
-            ( editing ? lFile->fName.generic_string() : lFile->fName.filename() ) << endl );
+// 		LOG( lFile->details << " : " <<
+//             ( editing ? lFile->fName.generic_string() : lFile->fName.filename() ) << endl );
 
 		if( lFile->type & lpcmFile::titleEnd )
 		{
