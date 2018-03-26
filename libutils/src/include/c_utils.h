@@ -76,7 +76,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define MAX_LIST_SIZE   64
 #endif
 
-#define HEX_COLUMNS 8
+#define HEX_COLUMNS 16
 #define FAIL 10
 
 #define PAD 1
@@ -102,7 +102,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
     #define DBG "[DBG]  "
     #define WAR "[WAR]  "
     #define DEV "[DEV]  "
-    #define PAR "[PAR]  "
 
 #else
     #define ANSI_COLOR_RED     "\x1b[31m"
@@ -113,13 +112,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
     #define ANSI_COLOR_CYAN    "\x1b[36m"
     #define ANSI_COLOR_RESET   "\x1b[0m"
 
-    #define MSG_TAG ANSI_COLOR_GREEN    "[MSG]  "   ANSI_COLOR_RESET
-    #define INF     ANSI_COLOR_BLUE     "[INF]  "   ANSI_COLOR_RESET
-    #define ERR     ANSI_COLOR_RED      "\n[ERR]  " ANSI_COLOR_RESET
-    #define DBG     ANSI_COLOR_MAGENTA  "[DBG]  "   ANSI_COLOR_RESET
-    #define WAR     ANSI_COLOR_YELLOW   "[WAR]  "   ANSI_COLOR_RESET
-    #define DEV     ANSI_COLOR_CYAN     "[DEV]  "   ANSI_COLOR_RESET
-    #define PAR     ANSI_COLOR_MAGENTA  "[PAR]  "   ANSI_COLOR_RESET
+    #define MSG_TAG "\x1b[32m[MSG]  \x1b[0m"
+    #define INF "\x1b[34m[INF]  \x1b[0m"
+    #define ERR "\x1b[31m\n[ERR]  \x1b[0m"
+    #define DBG "\x1b[35m[DBG]  \x1b[0m"
+    #define WAR "\x1b[33m[WAR]  \x1b[0m"
+    #define DEV "\x1b[36m[DEV]  \x1b[0m"
 #endif
 
 
@@ -202,7 +200,7 @@ uint64_t filesize(filestat_t f);
 char* filename(filestat_t f);
 FILE* fileptr(filestat_t f);
 
-filestat_t filestat(_Bool b, uint64_t s, const char* fn, FILE* fp);
+filestat_t filestat(_Bool b, uint64_t s, char* fn, FILE* fp);
 
 typedef struct
   {
@@ -299,7 +297,7 @@ int get_endianness();
 void hexdump_header(FILE* infile, uint8_t header_size);
 void hexdump_pointer(uint8_t* tab,  size_t tabsize);
 void hex2file(FILE* out, uint8_t* tab,  size_t tabsize);
-void hex2file_csv(FILE* out, uint8_t* tab,  size_t tabsize);
+void secure_open(const char *path, const char *context, FILE*);
 
 int end_seek(FILE* outfile);
 void parse_wav_header(WaveData* info, WaveHeader* ichunk);
