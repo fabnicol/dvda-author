@@ -123,17 +123,17 @@ struct dvdJpeg
 	string getName() { return rescale ? tName.generic_string() : fName.generic_string(); }
 	int getDim() { return dim + ( rescale ? ( dim < 4 ? 4 : -4 ) : 0 ); }
 
-	char *sizeStr( bool outputSize = true )
+	const char *sizeStr( bool outputSize = true )
 	{
-		return (char*[]){
+		return (const char*[]){
 			"720x480", "704x480", "352x480", "352x240", // NTSC
 			"720x576", "704x576", "352x576", "352x288"  // PAL
 		} [ outputSize ? getDim() : dim ];
 	}
 
-	char *aspStr( bool outputSize = true )
+	const char *aspStr( bool outputSize = true )
 	{
-		return (char*[]){ " 4:3", "16:9" } [ ar ];
+		return (const char*[]){ " 4:3", "16:9" } [ ar ];
 	}
 };
 
@@ -415,7 +415,7 @@ public:
 		Lfiles( lFiles ), menufiles( vFiles ), infofiles( iFiles ), job( plexJob ),
 		readIndex(-1), writeIndex(-1), reader(NULL)
 	{}
-	~dvdLayout() { /* if( editing ) */ saveOpts( this ); if( reader ) delete reader; }
+	~dvdLayout() { /* if( editing ) */ saveOpts( this ); /* if( reader ) delete reader; */ }
 
 	int configure();
 	uint64_t vobEstimate();

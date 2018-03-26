@@ -134,6 +134,27 @@ inline string volumeLabel( const char * path, bool mustBeRoot )
 // 	endPause = false;
 // }
 
+inline bool initPlatform()
+{
+#ifdef lplex_win32
+    fs::path home = fs::path(HOME) / getenv(USER);
+    fs::path appdata = fs::path(getenv("APPDATA"));
+#else
+    fs::path home = fs::path(HOME);
+    fs::path appdata = home / ".local";
+#endif
+
+    configDir = appdata / string("lplex");
+    lplexConfig = configDir / "lplex.ini";
+    binDir = fs::current_path() / fs::path("local") / fs::path("bin");
+    dataDir = appdata /  fs::path("data");
+    readOnlyPath = home;
+    tempDir = fs::temp_directory_path();
+	shebang = "#!/usr/local/bin/lplex -P 1\n";
+	endPause = true;
+    return true;
+}
+
 
 #endif
 
@@ -182,6 +203,7 @@ inline bool initPlatform()
     tempDir = fs::temp_directory_path();
 	shebang = "#!/usr/local/bin/lplex -P 1\n";
 	endPause = true;
+    return true;
 }
 
 // ----------------------------------------------------------------------------
