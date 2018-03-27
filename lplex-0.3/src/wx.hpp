@@ -42,7 +42,6 @@ using namespace std;
 #endif
 
 bool fs_MakeDirs( const fs::path& dirName );
-string fs_EndSep( const char *path );
 string fs_GetTempDir();
 bool fs_DeleteDir( const fs::path& dirName );
 bool fs_EmptyDir( const fs::path& dirName );
