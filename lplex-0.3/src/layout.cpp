@@ -674,7 +674,7 @@ int dvdLayout::getNext()
 		clearbits( job->now, appending );
 
 	if( writeFile->type & lpcmFile::seqStart )
-        nameNow = _f( "%s%s_title_%02d-%02d", job->tempPath.generic_string().c_str(),
+        nameNow = _f( "%s/%s_title_%02d-%02d", job->tempPath.generic_string().c_str(),
             job->name.c_str(), writeFile->group + 1, writeFile->index );
 
 	if( writeFile->type & lpcmFile::titleStart )

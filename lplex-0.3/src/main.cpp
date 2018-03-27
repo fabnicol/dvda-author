@@ -349,7 +349,7 @@ uint16_t addFiles( fs::path filespec )
 {
 	int reauthoring = 0, rel = 0;
     fs::path specPath;
-    fs::directory_entry dir;
+
 	lFileTraverser selector( editing ? edit & strict : true );
 	bool isDot = false;
 
@@ -423,7 +423,6 @@ uint16_t addFiles( fs::path filespec )
 			if( job.inPath.generic_string() == "" )
                 job.inPath = filespec.parent_path();
 		}
-
 											//check if it's an image file
         if( dvd.open( filespec.generic_string().c_str(), false ) )
 		{
@@ -465,13 +464,10 @@ uint16_t addFiles( fs::path filespec )
         setName( specPath.generic_string().c_str() );
 		if( job.media & imagefile )
 			return 0;
-//		else
-//			dir.Open( specPath );
 	}
 											//if authoring, check if project
 	else
 	{
-
         string comp = toUpper(Right(filespec.generic_string(), 6));
 
         if( projectFile &&  comp ==  ".LPLEX")
@@ -521,13 +517,9 @@ uint16_t addFiles( fs::path filespec )
 		}
 	}
 
-    //specPath = fs_EndSep( specPath );
 											//go through and select matching files
     selector.setRoot( specPath.generic_string().c_str(), job.params & unauth ? 0 : reauthoring ? 0 : 1 );
-#if 0
-    dir.Traverse( selector, filespec.generic_string().substr( specPath.generic_string().length() ),
-		wxDIR_FILES | wxDIR_DIRS );
-#endif
+    selector.Traverse(fs::absolute(filespec).generic_string().substr( specPath.generic_string().length()));
 	selector.processFiles();
 
 	if( selector.err & lFileTraverser::mismatchA )
@@ -861,9 +853,44 @@ void lFileTraverser::setRoot( const char *rootPath, int fromParent )
 void lFileTraverser::OnFile( const string& filename )
 {
 	filenames.push_back( filename );
-
 }
 
+
+void lFileTraverser::Traverse(const string &path)
+{
+    string _path = path;
+    
+    if (path[0] == SEPARATOR[0])
+    {
+         if (path.length() > 1)
+         {
+           _path = path.substr(1);        
+         }
+         else return;
+    }
+    
+    for (auto &p:  fs::directory_iterator(_path))
+    {
+       int res  = DIR_CONTINUE;
+       
+       if (fs::is_directory(p))
+       {
+          res = OnDir(p.path().generic_string());   
+       }
+       else
+       if (fs::is_regular_file(p))
+       {
+         OnFile(p.path().generic_string());
+         cerr << "Traversing " << _path << ". Adding: " << p.path().generic_string() << endl;
+         continue;
+       }
+       
+       if (res == DIR_IGNORE) continue;
+       else
+       if (res == DIR_CONTINUE)
+           Traverse(p.path().generic_string());
+    }
+}
 
 // ----------------------------------------------------------------------------
 //    lFileTraverser::processFiles :
@@ -992,13 +1019,15 @@ void lFileTraverser::processFiles()
 // ----------------------------------------------------------------------------
 
 
-void lFileTraverser::OnDir( const string& dirname )
+int lFileTraverser::OnDir( const string& dirname )
 {
 	if( ! dirSpecified ||
             ( Right(dirname, 3) == "BUP" && Right(dirname, 8).Left(4) == "XTRA" ) )
     {
-        //??????
+        return DIR_IGNORE;
     }
+    
+    return DIR_CONTINUE;
 
 }
 
@@ -1347,7 +1376,7 @@ uint16_t setopt( uint16_t opt, const char *optarg )
 
 		case 'd':
 			ok = validatePath( optarg );
-			job.outPath = fs_EndSep( optarg );
+			
             job.outPath = job.outPath.parent_path();
             job.name = job.outPath.filename().generic_string();
             job.outPath = job.outPath.parent_path();
@@ -1416,7 +1445,6 @@ uint16_t setopt( uint16_t opt, const char *optarg )
 
 			case 'i':
 			ok = validatePath( optarg );
-			job.infoPath = fs_EndSep( optarg );
 			job.params |= infodir;
 			break;
 
@@ -1515,29 +1543,24 @@ uint16_t setopt( uint16_t opt, const char *optarg )
 		case 'p':
 			if( ! stricmp( optarg, "adjacent" ) ) break;
 			ok = validatePath( optarg );
-			job.dvdPath = fs_EndSep( optarg );
 			break;
 
 		case 'w':
 			ok = validatePath( optarg );
-			job.tempPath = fs_EndSep( optarg );
 			break;
 
 		case 'a':
 			if( ! stricmp( optarg, "adjacent" ) ) break;
 			ok = validatePath( optarg );
-			job.isoPath = fs_EndSep( optarg );
 			break;
 
 		case 'E':
 			if( ! stricmp( optarg, "adjacent" ) ) break;
 			ok = validatePath( optarg );
-			job.extractTo = fs_EndSep( optarg );
 			break;
 
 		case 'D':
 			ok = validatePath( optarg );
-            //readOnlyPath = fs_EndSep( optarg );
 			break;
 
 		case 'v':
