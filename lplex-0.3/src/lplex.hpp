@@ -194,6 +194,12 @@ enum
 
 enum
 {
+    DIR_IGNORE = 0,
+    DIR_CONTINUE = 1
+};
+
+enum
+{
 	imagefile = 1,
 	dvdr = 2
 };
@@ -342,8 +348,10 @@ public:
 	void setRoot( const char *rootPath, int fromParent );
 	void processFiles();
 
+    void Traverse(const string& path);
+    
     virtual void OnFile( const string& filename );
-    virtual void OnDir( const string& dirname );
+    virtual int OnDir( const string& dirname );
     virtual void OnOpenError( const string& openerrorname );
 
 };

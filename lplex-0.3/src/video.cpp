@@ -533,7 +533,7 @@ int jpegCheck( dvdJpeg &jpeg, bool ntsc, bool rescale )
 //               ntsc ? "PAL" : "NTSC", allowed[ok-1].w, allowed[ok-1].h,
 //               ntsc ? "NTSC" : "PAL", allowed[i].w, allowed[i].h )  );
 
-                jpeg.tName = job.tempPath.generic_string() + jpeg.fName.stem()
+                jpeg.tName = (job.tempPath / jpeg.fName.stem()).generic_string()
 					+ _f( "_rescaled_%s_%dx%d.jpg",
 						ntsc ? "NTSC" : "PAL", allowed[i].w, allowed[i].h );
 

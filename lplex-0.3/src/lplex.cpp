@@ -88,7 +88,7 @@ int author( dvdLayout &layout )
 
 	stopWatch.Start();
 
-	dvdauthorXml xml( (job.tempPath.generic_string() + job.name),
+	dvdauthorXml xml( (job.tempPath / job.name).generic_string(),
 		job.tv, job.group + 1, job.params & dvdStyler, job.prepare < mpegf );
 	xml.write( dvdauthorXml::setDest, job.dvdPath.generic_string(),
 		jpegs[ Lfiles[0].jpgIndex ].ar == dvdJpeg::_16x9 ? true : false );
