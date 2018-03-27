@@ -141,20 +141,6 @@ size_t fs_DirSize( const fs::path& dirName )
  return total_size;
 }
 
-// ----------------------------------------------------------------------------
-//    fs_EndSep :
-// ----------------------------------------------------------------------------
-//    Returns <path>, adding a trailing separator if missing.
-// ----------------------------------------------------------------------------
-
-
-string fs_EndSep( const char *path )
-{
-	string str( path );
-    if( Right(str, 1) != SEPARATOR )
-		str += SEPARATOR;
-	return str;
-}
 
 // ----------------------------------------------------------------------------
 //    fs_validPath :

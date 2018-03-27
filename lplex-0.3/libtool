@@ -11679,7 +11679,7 @@ reload_cmds="\$LD\$reload_flag -o \$output\$reload_objs"
 old_archive_cmds="\$AR \$AR_FLAGS \$oldlib\$oldobjs~\$RANLIB \$tool_oldlib"
 
 # A language specific compiler.
-CC="/usr/local/bin/g++"
+CC="g++"
 
 # Is the compiler the GNU compiler?
 with_gcc=yes
