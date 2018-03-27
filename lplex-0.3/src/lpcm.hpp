@@ -109,13 +109,13 @@ enum Ltype
 inline Ltype isLfile(const char *ext)
 {
 	return
-		! stricmp( ext,"wav" ) ? wavef :
-		! stricmp( ext,"flac" ) ? flacf :
-		! stricmp( ext,"lpcm" ) ? lpcmf :
-		! stricmp( ext,"m2v" ) ? m2vf :
-		! stricmp( ext,"mpg" ) ? mpegf :
-		! stricmp( ext,"vob" ) ? vobf :
-		! stricmp( ext,"iso" ) ? isof :
+		! stricmp( ext,".wav" ) ? wavef :
+		! stricmp( ext,".flac" ) ? flacf :
+		! stricmp( ext,".lpcm" ) ? lpcmf :
+		! stricmp( ext,".m2v" ) ? m2vf :
+		! stricmp( ext,".mpg" ) ? mpegf :
+		! stricmp( ext,".vob" ) ? vobf :
+		! stricmp( ext,".iso" ) ? isof :
 		isNot;
 }
 
