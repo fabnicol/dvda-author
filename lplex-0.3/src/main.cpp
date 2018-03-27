@@ -913,8 +913,8 @@ void lFileTraverser::processFiles()
 	for( int i=0; i < filenames.size(); i++ )
 	{
 		string& filename = filenames[i];
-
 		lFile.fName = filename;
+        cerr << "Auditing file "<< filename << " with extension " << lFile.fName.extension().generic_string().c_str() << endl;
 		bool ok = true;
 
 		LOG(filename << "\n");
@@ -929,7 +929,10 @@ void lFileTraverser::processFiles()
 			lFile.edit = 0;
 
 			if( lFile.format == wavef )
+            {
                 ok = waveHeader::audit( lFile.fName.generic_string().c_str(), &lFile.fmeta );
+                cerr << "Found wav file: " << (ok ? "OK" : "ERR") << endl;
+            }
 			else if( lFile.format == flacf )
                 ok = flacHeader::audit( lFile.fName.generic_string().c_str(), &lFile.fmeta );
 
@@ -962,6 +965,7 @@ void lFileTraverser::processFiles()
 							lFile.group = ++job.group;
 						}
 					}
+#if 0
 					if( jpegs[ lFile.jpgIndex ].getDim() !=
 						jpegs[ Lfiles.back().jpgIndex ].getDim() )
 					{
@@ -974,14 +978,17 @@ void lFileTraverser::processFiles()
 						err |= mismatchV_ar;
 						ok = false;
 					}
+#endif                    
 				}
 				if( ok )
 					Lfiles.push_back( lFile );
 			}
 			else
+            {
                 SCRN(LOG_TAG  "-skipping \'")
                 SCRN(lFile.fName.filename())
                 SCRN("\'\n")
+            }
 
 		}
 
