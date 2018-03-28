@@ -3,12 +3,12 @@
 AM_CPPFLAGS =
 
 AM_CFLAGS = \
-	$(LPLEX_CPPFLAGS) $(LIBFLAC_CFLAGS) $(LIBFLACPP_CFLAGS) \
+	$(LPLEX_CPPFLAGS) $(WX_CPPFLAGS) $(LIBFLAC_CFLAGS) $(LIBFLACPP_CFLAGS) \
 		-w -Wall
 
 AM_CXXFLAGS = \
-	$(LPLEX_CPPFLAGS) $(LIBFLAC_CFLAGS) $(LIBFLACPP_CFLAGS) \
-		-w -Wall -std=c++1z  
+	$(LPLEX_CPPFLAGS) $(WX_CPPFLAGS) $(LIBFLAC_CFLAGS) $(LIBFLACPP_CFLAGS) \
+		-w -Wall
 
 bin_PROGRAMS = lplex
 
@@ -25,7 +25,6 @@ lplex_SOURCES = \
 	dvd.hpp \
 	flac.cpp \
 	flac.hpp \
-	jobs.hpp \
 	layout.cpp \
 	lpcm.cpp \
 	lpcm.hpp \
@@ -44,7 +43,7 @@ lplex_SOURCES = \
 	color.h $(XTRA_SRC)
 
 lplex_LDFLAGS = \
-	-lstdc++fs $(LIBFLAC_LIBS) $(LIBFLACPP_LIBS)
+	$(WX_LIBS) $(LIBFLAC_LIBS) $(LIBFLACPP_LIBS)
 
 lplex_LDADD = \
 	$(top_builddir)/redist/md5/libmd5.a

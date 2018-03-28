@@ -705,7 +705,7 @@ AC_DEFUN([DVDA_PREFIX_DEFAULT],
 AC_DEFUN([GENERATE_GLOBAL_MKS],[
 
 m4_foreach_w([prog],PROGRAM_TARGET_LIST,[
-
+  echo  [Now configuring mk/]prog[.global.mk]
   echo   prog[_LIB]=[@]prog[_LIB@]  > [$ROOTDIR/mk/]prog[.global.mk.in] 
   echo   prog[_LINK]=[@]prog[_LINK@] >> [$ROOTDIR/mk/]prog[.global.mk.in] 
   echo  [MAYBE_]prog=[@MAYBE_]prog[@] >> [$ROOTDIR/mk/]prog[.global.mk.in] 

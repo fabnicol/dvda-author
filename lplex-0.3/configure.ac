@@ -59,6 +59,7 @@ AC_ARG_ENABLE(force-endian,    [  --enable-force-endian=x      Use x-endian byte
 #AC_ARG_ENABLE(wxsegfault-test, [  --disable-wxsegfault-test    Don't try to compile & run the wxWidgets 2.6.3
 #                               segfault test program],,wxsegfault_test=yes)
 
+AM_OPTIONS_WXCONFIG
 
 case "$host" in
 	(*-*-cygwin|*mingw*) 
@@ -142,6 +143,127 @@ AC_SUBST(LIBFLACPP_LIBS)
 # configure wxWidgets
 # --------------------------------------------------------------------------
 
+wxUTF8=1
+AM_PATH_WXCONFIG(2.9.2, ,wxUTF8=0,,)
+if test "$wxUTF8" = 0; then
+	wxFail=0
+	AM_PATH_WXCONFIG(2.7.2, ,wxFail=1,,--unicode=no)
+	if test "$wxFail" = 1; then
+		AC_MSG_ERROR([
+	*   Can't find an appropriate version of wxWidgets. Please check if
+	*      - wx-config is in path.
+	*      - wxWidgets version is either:
+	*          - 2.9.2 or above, any build.
+	*          - 2.7.2 or above and build is ANSI (not unicode).
+
+		])
+	fi
+fi
+# wx-config defaults to gui link flags (-mwindows, etc) which block console io,
+# so we need to redo WX_LIBS
+if test "x$build_win32" != "x" ; then
+   WX_LIBS="$(wx-config --libs core,base | sed -e 's/ -Wl,--subsystem,windows -mwindows//')"
+#   WX_LIBS="$(echo $WX_LIBS | sed -e 's/ -mthreads//')"
+   WX_LIBS="-Wl,--subsystem,console $WX_LIBS -s"
+   WX_LIBS_STATIC=$WX_LIBS
+	AC_SUBST(WX_LIBS)
+	AC_SUBST(WX_LIBS_STATIC)
+fi
+
+# we assume that if wx-config is found, wxWindows is successfully installed.
+
+#AC_PATH_PROG(WX_CONFIG_PATH, wx-config, no, $PATH:/usr/local/bin )
+#if [[ "$WX_CONFIG_PATH" = "no" ]] ; then
+#AC_MSG_ERROR("Couldn't find wx-config: is wx-config in your path?")
+#fi
+
+#AC_MSG_CHECKING([wxWidgets version])
+#wx_version=`${WX_CONFIG_PATH}  --version`
+#AC_MSG_RESULT($wx_version)
+
+#if(wxFail==0 && test "x$build_win32" = "x" && test "x$wxsegfault_test" != "xno") then
+#	AC_MSG_CHECKING([whether unix console segfaults in wxStandardPaths::GetInstallPrefix()])
+#	workaround=-D_workaround_wx_2.6.3_unix_GetInstallPrefix_segfault
+#	
+##if test "x$build-console" = "xyes" ; then
+##	WX_LIBS=`$WX_CONFIG_PATH --unicode=no --libs base`
+##	WX_LIBS=$WX_LIBS -lwxjpeg
+##else
+#	WX_LIBS=`$WX_CONFIG_PATH --unicode=no --libs core,base`
+##fi
+#	WX_CPPFLAGS=`$WX_CONFIG_PATH --unicode=no --cxxflags`
+
+#	ac_save_CXXFLAGS="$CXXFLAGS"
+#	ac_save_LIBS="$LIBS"
+#	CXXFLAGS="$CXXFLAGS $WX_CPPFLAGS"
+#	LIBS="$LIBS $WX_LIBS"
+#	
+#	#rm -f conf.libxxxtest
+#	AC_LANG(C++)
+#	AC_TRY_RUN(
+#	[
+#		#include <wx/app.h>
+#		#include <wx/stdpaths.h>
+#		int main()
+#		{
+#			if ( ! wxInitialize() )
+#				return -1;
+#			wxStandardPaths().GetDataDir();
+#			return 0;
+#		}
+#	],
+#	[	workaround=
+#		AC_MSG_RESULT(no)
+#		AC_SUBST(WX_LIBS)
+#		AC_SUBST(WX_CPPFLAGS)
+#	],
+#	[	wxSegf=`grep -i 'Segmentation fault' config.log`
+#		wxSegf="$wxSegf`grep -i 'SIGSEGV' config.log`"
+#		if [[ "${wxSegf}x" = "x" ]] ; then 
+#			AC_MSG_RESULT(inconclusive)
+#			echo "*   Test program failed, though apparently not because of the
+#*   segfault bug. Activating the segfault workaround nevertheless
+#*   (just in case) and continuing with configure. Please see
+#*   config.log for specifics on the failure, you may need to resolve
+#*   a runtime link issue.
+#"
+#			wxFail=3
+#		else
+#			AC_MSG_RESULT(yes)
+#			echo "*     Activating the segfault workaround and continuing with
+#*     configure."
+##			WX_LIBS=
+##			WX_CPPFLAGS=
+#			wxFail=2
+#		fi
+#	])
+#	
+#	CXXFLAGS="$ac_save_CFLAGS"
+#	LIBS="$ac_save_LIBS"
+#fi
+#if [[ "${wxFail}" = "1" ]] ; then 
+#	echo "*     Please Install wxWidgets 2.6.3 or newer."
+#fi
+#if [[ "${wxFail}" = "1" ]||[ "${wxFail}" = "2" ]||[ "${wxFail}" = "3" ]] ; then 
+#	echo "*   [About the segfault bug in wxWidgets 2.6.3]:
+#*   This release predates a required fix to prevent a segfault in
+#*   the unix console.  lplex will work around this, but if you'd
+#*   like to eliminate the bug (and workaround) out of an
+#*   abundance of paranoia, then please first update the following
+#*   4 files
+#*      - include/wx/stdpaths.h      - include/wx/unix/stdpaths.h
+#*      - src/unix/stdpaths.cpp      - src/common/stdpbase.cpp
+#*   to the latest cvs versions before building and installing
+#*   wxWidgets.  You may need to run
+#*        './configure --disable-wxsegfault-test'
+#*   if you see the test still reporting 'inconclusive' after the fix.
+#"
+##	AC_MSG_ERROR([wxWidgets deficiencies.]);	
+#fi
+
+#if test "x$workaround" != "x" ; then
+#   LPLEX_DEFS="$LPLEX_DEFS $workaround"
+#fi
 
 
 # Checks for library functions.
@@ -150,6 +272,56 @@ AC_SUBST(LIBFLACPP_LIBS)
 # --------------------------------------------------------------------------
 
 _endian=unknown
+
+# ---------------------------------------------------------------------------
+# (slightly modified from:)
+# Macros for configure.ac for wxWindows by Robert Roebling, Phil Blecker,
+# Vadim Zeitlin and Ron Lee
+# This macro (WX_C_BIGENDIAN) is under the wxWindows licence.
+# Version: $Id: acinclude.m4,v 1.27 2005/07/08 20:44:14 MW Exp $
+# ---------------------------------------------------------------------------
+# a slightly better AC_C_BIGENDIAN macro which allows cross-compiling
+# ---------------------------------------------------------------------------
+
+AC_DEFUN([WX_C_BIGENDIAN],
+[AC_CACHE_CHECK([whether byte ordering is bigendian], ac_cv_c_bigendian,
+[ac_cv_c_bigendian=unknown
+# See if sys/param.h defines the BYTE_ORDER macro.
+AC_TRY_COMPILE([#include <sys/types.h>
+#include <sys/param.h>], [
+#if !BYTE_ORDER || !BIG_ENDIAN || !LITTLE_ENDIAN
+ bogus endian macros
+#endif], [# It does; now see whether it defined to BIG_ENDIAN or not.
+AC_TRY_COMPILE([#include <sys/types.h>
+#include <sys/param.h>], [
+#if BYTE_ORDER != BIG_ENDIAN
+ not big endian
+#endif], ac_cv_c_bigendian=yes, ac_cv_c_bigendian=no)])
+if test $ac_cv_c_bigendian = unknown; then
+AC_TRY_RUN([main () {
+  /* Are we little or big endian?  From Harbison&Steele.  */
+  union
+  {
+    long l;
+    char c[sizeof (long)];
+  } u;
+  u.l = 1;
+  exit (u.c[sizeof (long) - 1] == 1);
+}], [ac_cv_c_bigendian=no], [ac_cv_c_bigendian=yes], [ac_cv_c_bigendian=unknown])
+fi])
+if test $ac_cv_c_bigendian = unknown; then
+  AC_MSG_WARN([Assuming little-endian target machine - this may be overriden by adding the line "ac_cv_c_bigendian=${ac_cv_c_bigendian='yes'}" to config.cache file])
+fi
+if test $ac_cv_c_bigendian = yes; then
+	ifelse([$1], , :, [$1])
+else 
+	ifelse([$2], , :, [$2])     
+
+#	_endian=big else _endian=lit
+#  AC_DEFINE(WORDS_BIGENDIAN)
+	
+fi
+])
 
 # --------------------------------------------------------------------------
 # configure byte-order
@@ -162,6 +334,7 @@ elif test "x$force_endian" = "xlittle" ; then
 	_endian=little
 	echo "forcing little-endian byte-order per your request"
 else
+	WX_C_BIGENDIAN(_endian=big,_endian=little)
 	if test "x$force_endian" = "xopp" ; then
 		if test "x$_endian" = "xlittle" ; then
 			_endian=big
