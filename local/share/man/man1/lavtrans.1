@@ -1,0 +1,70 @@
+.TH "lavtrans" "1" "2 June 2001" "MJPEG Tools Team" "MJPEG tools manual"
+
+.SH "NAME"
+lavtrans \- Convert MJPEG videos to other MJPEG video formats
+
+.SH "SYNOPSIS"
+.B lavtrans \-o
+.I outputfile
+.BR \-f\ a | q | i | w
+.RB [ \-i
+.IR num ]
+.I lavfile1 \fP[\fIlavfile2 \fP...\fI lavfileN\fP]
+
+.SH "DESCRIPTION"
+\fBlavtrans\fP can be used to convert the recorded videos from one MJPEG
+"container" format  to another one. It can also be used to split
+the streams, or do destructive edits.
+
+Like all the other \fBmjpegtools\fP(1) lavtrans also accept a
+edit list file in place of actual video files. This allows it to be
+used to construct a stand-alone copy of the editted video sequence
+described in the editlist.
+
+Note that lavtrans can only change the container type of MJPEG video,
+not the format.  As such it is not possible to use it combine streams of
+different format.
+
+.SH "OPTIONS"
+\fBlavtrans\fP accepts the following options:
+
+.TP 5
+.BR \-f " [" a | q | m | i | w ]
+Specifies the output format that should be saved.
+  a \- output to AVI file
+  q \- output to Qicktime file
+  i \- output single JPEG images,
+  w \- output WAV file (sound only!)
+
+.TP 5
+.BI \-i " num"
+Convert a single frame to a JPEG file.
+
+.TP 5
+.BI \-o " outputfile"
+Specifies the name of the output file
+If you want as output single JPEG images the output file string must be a valid format string
+
+.TP 5
+.I filename
+Multiple filenames as input are acceped, also mixing of edit list files and other in video files.
+
+.SH BUGS
+There seem to be problems with the transoding of large Quicktime movies. One 
+other thing is that with interlaced movies only one field is extracted. 
+So you get pictures with the full horizontal size and half vertical size. 
+
+.SH "AUTHOR"
+This man page was written by Bernhard Praschinger.
+.br
+If you have questions, remarks, problems or you just want to contact
+the developers, the main mailing list for the MJPEG\-tools is:
+  \fImjpeg\-users@lists.sourceforge.net\fP
+
+.TP
+For more info, see our website at
+.I http://mjpeg.sourceforge.net
+
+.SH "SEE ALSO"
+.BR mjpegtools (1),
+.BR lavplay (1)

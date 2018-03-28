@@ -73,7 +73,7 @@ public:
 
 	virtual uint64_t read( unsigned char *buf, uint64_t len );
 	virtual uint64_t fillBuf( uint64_t limit=0, counter<uint64_t> *midCount=NULL ) = 0;
-	virtual uint16_t reset( const char * filename, int alignUnit=0 ) = 0;
+    virtual uint16_t reset( const string& filename, int alignUnit=0 ) = 0;
 };
 
 
@@ -83,14 +83,14 @@ class waveReader : public lpcmReader
 public:
 	ifstream waveFile;
 
-	waveReader( const char *filename, unsigned char *buf, uint32_t size,
+    waveReader( const string& filename, unsigned char *buf, uint32_t size,
 		int alignUnit=0 )
-		: lpcmReader( buf, size ) { reset( filename, alignUnit ); }
+        : lpcmReader( buf, size ) { reset( filename, alignUnit ); }
 	~waveReader() { if( waveFile.is_open() ) waveFile.close(); }
 
 	// from lpcmReader
 	virtual uint64_t fillBuf( uint64_t limit=0, counter<uint64_t> *midCount=NULL );
-	virtual uint16_t reset( const char *filename, int alignUnit=0 );
+    virtual uint16_t reset( const string& filename, int alignUnit=0 );
 };
 
 
@@ -101,15 +101,15 @@ public:
 	char *reserve;
 	int32_t maxFrame, unsent;
 
-	flacReader( const char *filename, unsigned char *buf, uint32_t size,
+    flacReader( const string& filename, unsigned char *buf, uint32_t size,
 		int alignUnit=0 )
 		: lpcmReader( buf, size ), FLAC::Decoder::File(), reserve( NULL )
-		{ reset( filename, alignUnit ); }
+        { reset( filename, alignUnit ); }
 	~flacReader() { if( reserve ) delete reserve; }
 
 	// from lpcmReader
 	virtual uint64_t fillBuf( uint64_t limit=0, counter<uint64_t> *midCount=NULL );
-	virtual uint16_t reset( const char *filename, int alignUnit=0 );
+    virtual uint16_t reset( const string& filename, int alignUnit=0 );
 
 	// from FLAC::Decoder::File
 	virtual ::FLAC__StreamDecoderWriteStatus write_callback(
@@ -127,17 +127,31 @@ public:
 	uint32_t unsent;
 
 	uint16_t preset( const char *filename )
-		{ fName = filename; state |= named; }
+		{ 
+          fName = filename;
+          state |= named;
+          return state;
+         }
+    
 	uint16_t preset( ::FLAC__StreamMetadata *f )
-		{ fmeta = *f; return soundCheck( this ); }
+		{ 
+           fmeta = *f;
+           return soundCheck( this );
+        }
+    
 	uint16_t preset( PES_packet::LPCM_header *LPCM )
-		{ flacHeader::readStreamInfo( LPCM, &fmeta ); return soundCheck( this, false ); }
+		{
+          flacHeader::readStreamInfo( LPCM, &fmeta );
+          return soundCheck( this, false );
+        }
 
 	static int swap2wav( unsigned char *data, uint32_t count,
 		int channels, int bitspersample );
 
 	uint32_t process( byteRange *audio )
-		{ return process( audio->start, audio->len ); }
+		{ 
+           return process( audio->start, audio->len );
+        }
 
 	virtual uint32_t process( unsigned char *buf, uint32_t size ) = 0;
 	virtual uint16_t isOpen() = 0;

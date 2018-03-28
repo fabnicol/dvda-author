@@ -1,0 +1,21 @@
+ 
+To run the test build
+---------------------
+
+$ cd local
+local$ export LD_LIBRARY_PATH=$PWD/lib
+local$ ./bin/dvda-author  -g (wavfile) -o out  -W
+
+The -W option avoids installing a (possibly) void configuration file
+under /usr/share/applications/dvda-author-dev/dvda-author.conf
+Alternatively touch a file in this location and rerun without -W.
+
+Full top-menu creation
+----------------------
+
+With top menus:
+
+./bin/dvda-author -W --topmenu -g (wavfile)  --datadir $PWD/share   --workdir $PWD --bindir $PWD/bin --tempdir $PWD/temp --mkisofs
+
+ISO file will be in subdirectory temp/
+To directly burn the disc replace --mkisofs with --cdrecord under elevated privileges.

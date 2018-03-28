@@ -1,0 +1,14 @@
+prefix=/home/fab/Dev/dvda-author/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/ImageMagick-7
+includearchdir=/home/fab/Dev/dvda-author/local/include/ImageMagick-7
+libname=MagickCore-7.Q16HDRI
+ 
+Name: ImageMagick
+Description: ImageMagick - convert, edit, and compose images (ABI Q16HDRI)
+URL: https://www.imagemagick.org
+Version: 7.0.2
+Cflags:  -I${includearchdir} -I${includedir} -fopenmp -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16
+Libs: -L${libdir} -l${libname}
+Libs.private: -L${libdir} -l${libname}     -lfreetype  -ljpeg   -L/usr/local/lib -lpng12 -lz -lm      -lfontconfig -lfreetype    -lXext -lXt   -lSM -lICE -lX11   -lbz2      -lgvc -lcgraph -lcdt -lz  -lm -lgomp     -lm
