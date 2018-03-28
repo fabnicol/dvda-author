@@ -31,21 +31,19 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
+
+using namespace std;
+
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include <sstream>
+
 #include <string.h>
-#include <experimental/filesystem>
-#include <algorithm>
-#include <cctype>
-#include <locale>
-
-#define ANSI_COLOR
-
-using namespace std;
-namespace fs = std::experimental::filesystem;
+//#include <wx/string.h>
+//#include <wx/utils.h>
+//#include <wx/dir.h>
+//#include <wx/filename.h>
 
 #include "platform.h"
 
@@ -57,43 +55,13 @@ namespace fs = std::experimental::filesystem;
 #define MEGABYTE 1048576
 #define GIGABYTE 1073741824
 
+//#define wxSEP wxFILE_SEP_PATH
+#define _f wxString::Format
+#define _s wxString("")
 
-template <typename... Args>
-static inline string _f(const char* format, Args... args)
-{
-    char buffer[5128]={0};
-    sprintf(buffer, format, args...);
-    return string(buffer);
-}
+//#define QUOTE(s) "\"" + s + "\""
+#define QUOTE(s) (wxString(s).Find(' ')==wxNOT_FOUND ? wxString(s) : "\"" + wxString(s) + "\"")
 
-static stringstream  _s;
-
-string toUpper(const string &s);
-
-#define QUOTE(s) ("\"" + string(s) + "\"")
-
-#define Left(X) substr(X)
-#define Right(X, Y)  (Y < X.length() ? X.substr( X.length() - Y) : string(""))
-
-// trim from start (in place)
-static inline void ltrim(std::string &s) {
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
-        return !std::isspace(ch);
-    }));
-}
-
-// trim from end (in place)
-static inline void rtrim(std::string &s) {
-    s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
-        return !std::isspace(ch);
-    }).base(), s.end());
-}
-
-// trim from both ends (in place)
-static inline void trim(std::string &s) {
-    ltrim(s);
-    rtrim(s);
-}
 
 //#define clearbits(val,mask) val |= mask; val ^= mask;
 #define clearbits(val,mask) val = ((val|(mask))^(mask))
@@ -109,10 +77,10 @@ struct byteRange
 void outputhexraw(unsigned char *buf,int n);
 void outputhex(unsigned char *buf,int n,char *title, int address);
 int otherThan( const char c, unsigned char *buf, int n);
-string hexToStr( const unsigned char *buf, int n, int w=16 );
+wxString hexToStr( const unsigned char *buf, int n, int w=16 );
 int strtomd5( md5_byte_t *md5Str, const char *txt );
 size_t filesize( const char * filename );
-string sizeStr( uint64_t size );
+wxString sizeStr( uint64_t size );
 //char device( const char * filename );
 dev_t deviceNum( const char * filename );
 size_t statsize( const char * filename );
@@ -167,7 +135,6 @@ template<class T> void sortUnique( vector<T> &things )
 
 											// logging and messaging. Gets a little convoluted...
 											// ...log & message macros
-#define lplex_console
 
 #ifdef lplex_console
 
@@ -182,10 +149,10 @@ class messenger
 public:
 	enum { _info, _stat, _warn, _err, _fatal };
 	messenger() {}
-	virtual bool err( const string& msg ) = 0;
+	virtual bool err( const wxString& msg ) = 0;
 	virtual bool setMsgMode( int m ) { msgMode = m; }
-	virtual bool update( int val, const string& msg, bool* skip=false ) = 0;
-	virtual bool pulse( const string& msg, bool* skip=false ) = 0;
+	virtual bool update( int val, const wxString& msg, bool* skip=false ) = 0;
+	virtual bool pulse( const wxString& msg, bool* skip=false ) = 0;
 protected:
 	int msgMode;
 };
@@ -203,9 +170,9 @@ extern uint16_t xlogExists, _verbose, _xcode;
 
 #ifdef _ERR2LOG
 extern ofstream xlog;
-extern string xlogName;
-int logInit( const string& logFilename = "" );
-int logCopy( const fs::path& filename ="");
+extern wxString xlogName;
+int logInit( const char* logFilename = NULL );
+int logCopy( const char* filename = NULL );
 int logClose();
 int logDelete();
 int logReopen();
@@ -217,7 +184,7 @@ int logReopen();
 #endif
 
 #define XERR(t) do{ scrub(); if(_verbose) cerr << t; XLOG(t); xlog.flush(); }while(0)
-#define _ERR(t) do{ scrub(); cerr << endl << TINT_ERR(t); cerr.flush(); XLOG((string("\n") + string(t)).c_str()); xlog.flush(); gui_err(t); }while(0)
+#define _ERR(t) do{ scrub(); cerr << endl << TINT_ERR(_s << t); cerr.flush(); XLOG("\n" << t); xlog.flush(); gui_err(t); }while(0)
 
 #if 1
 #define STAT_TAG "STAT: "
@@ -241,7 +208,7 @@ extern colorval warnColor;
 extern colorval blipColor;
 enum { bright=1, dark };
 void setcolors( int scheme = bright );
-#define TINT(t) "" //(colorText){t,tintColor}
+#define TINT(t) (colorText){t,tintColor}
 #define TINT_ERR(t) (colorText){t,errColor}
 #define TINT_STAT(t) t
 #define TINT_INFO(t) t
@@ -265,7 +232,7 @@ void setcolors( int scheme = bright );
 #define ECHOv(t) cerr << t; XLOG(t); xlog.flush()
 
 #define _XLOG(tag,t) XLOG(tag << t); xlog.flush()
-#define _XERR(tag,tint,t) cerr <<  tag << t;
+#define _XERR(tag,tint,t) cerr << tint(_s << tag << t)
 #define _POSTv(tag,tint,t) do{ scrub();_XERR(tag,tint,t);_XLOG(tag,t);}while(0)
 #define _POST(tag,tint,t)  do{ scrub();if(_verbose) _XERR(tag,tint,t);_XLOG(tag,t);}while(0)
 
@@ -280,30 +247,28 @@ void setcolors( int scheme = bright );
 #define LOGv(t)  _POSTv(LOG_TAG,TINT_LOG,t)
 #define WARNv(t) _POSTv(WARN_TAG,TINT_WARN,t)
 
-#define ERR(t) do{ _xcode=2; _ERR( (string(ERR_TAG) + string(t)).c_str() ); }while(0);
+#define ERR(t) do{ _xcode=2; _ERR( ERR_TAG << t ); }while(0)
 
 #ifdef lplex_console
-#define FATAL(t) { _ERR( (string(ERR_TAG) + string(t) + string("\n\n")).c_str() ); exit(-1); }//must follow 'if' statement
+#define FATAL(t) { _ERR( ERR_TAG << t << "\n\n" ); exit(-1); }//must follow 'if' statement
 #else
 #define FATAL(t) { gui_mode(messenger::_fatal); ERR(t); }//must follow 'if' statement
 #endif
 
-#define BLIP(t) do{ if(!_verbose) { unblip(true); cerr << TINT_BLIP( (_blip + string(t)).c_str() ) << flush; } }while(0)
-#define SCRN(t) do{ if(!_verbose) { unblip(true); cerr << t; } }while(0);
+#define BLIP(t) do{ if(!_verbose) { unblip(true); cerr << TINT_BLIP( (_blip << t) ) << flush; } }while(0)
+#define SCRN(t) do{ if(!_verbose) { unblip(true); cerr << t; } }while(0)
 #define POST(t) do{ SCRN(t); XERR(t); }while(0)
 
-#define DBUG(t) _ERR( (string(DBUG_TAG) + string(t)).c_str() )
+#define DBUG(t) _ERR( DBUG_TAG << t )
 
 											// ...screen log & message functions:
 
 extern uint16_t blip_len, blip_ct;
-extern string _blip, _affirm;
+extern wxString _blip, _affirm;
 extern char propellor[];
 
 char * scrub();
 void blip( const char *msg = NULL );
-void blip(const string& msg);
-
 void unblip( bool clear = true );
 
 											// ...standardized counter with progress reporting
@@ -322,7 +287,6 @@ static inline void blip( counter<T> *ct,
 {
 	static char *pref;
 	if( blip_ct == 0 )
-    {
 		if( _verbose )
 		{
 			_blip = "";
@@ -330,7 +294,6 @@ static inline void blip( counter<T> *ct,
 		}
 		else
 				pref = "";
-    }
 
 	if( ! ( blip_ct % skip ) )
 	{
@@ -338,22 +301,23 @@ static inline void blip( counter<T> *ct,
 		{
 			int val = (int)(( ct->now - ct->start ) * 1000 / ( ct->max - ct->start ));
 			blip( _f( "%s%2d.%d%% %s", pref, val / 10, val % 10, suffix ) );
-			gui_update( val, blip_ct == 0 ? (const string&)_blip : "" );
+			gui_update( val, blip_ct == 0 ? (const wxString&)_blip : "" );
 		}
 
 		else
 		{
-			string msg = _f( "%s%d %s", pref, ct->now, suffix );
+			wxString msg = _f( "%s%d %s", pref, ct->now, suffix );
 			blip( msg );
-			gui_pulse( (const string&)msg );
+			gui_pulse( (const wxString&)msg );
 		}
 	}
 	else
 		blip_ct++;
 }
 
-long execute( const string& command, int verbose=_verbose);
-long executeViaScript( const string& command, int verbose=_verbose,
+long execute( const wxString& command, int verbose=_verbose,
+	int (*filter)( const char *, bool )=NULL );
+long executeViaScript( const wxString& command, int verbose=_verbose,
 	int (*filter)( const char *, bool )=NULL );
 
 #endif

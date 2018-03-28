@@ -20,7 +20,7 @@
 
 
 #include "lplex.hpp"
-#include "jobs.hpp"
+
 
 // ----------------------------------------------------------------------------
 //    dvdLayout::readerNext :
@@ -54,10 +54,10 @@ int dvdLayout::readerNext()
 	}
 
 	if( lFile->format == wavef )
-        reader = new waveReader( lFile->fName.generic_string(), bigBlock,
+		reader = new waveReader( lFile->fName.GetFullPath(), bigBlock,
 			sizeof( bigBlock ), dvdSampleSeam );
 	else if( lFile->format == flacf )
-        reader = new flacReader( lFile->fName.generic_string(), bigBlock,
+		reader = new flacReader( lFile->fName.GetFullPath(), bigBlock,
 			sizeof( bigBlock ), dvdSampleSeam );
 
 	if( ! reader )
@@ -82,7 +82,7 @@ int dvdLayout::readerNext()
 // ----------------------------------------------------------------------------
 
 
-string dvdUtil::timestamp( uint32_t f, bool ntsc )
+wxString dvdUtil::timestamp( uint32_t f, bool ntsc )
 {
 	uint32_t fph;
 	uint16_t fps, fpm, hour, min, sec, frame;
@@ -112,7 +112,7 @@ string dvdUtil::timestamp( uint32_t f, bool ntsc )
 // ----------------------------------------------------------------------------
 
 
-string dvdUtil::time( uint32_t f, bool ntsc )
+wxString dvdUtil::time( uint32_t f, bool ntsc )
 {
 	uint16_t min;
 	uint64_t ticks = f * ( ntsc ? 3003 : 3600 );
@@ -287,14 +287,17 @@ int dvdLayout::checkSpace()
 
 	INFOv( spaceTxt << ".\n" );
 
+	wxLongLong space;
+	wxGetDiskSpace( _wxValidPath( job->outPath.GetFullPath() ), NULL, &space );
+	uint64_t freeSpace = space.GetValue();
+	wxGetDiskSpace( _wxValidPath( job->tempPath.GetFullPath() ), NULL, &space );
+	uint64_t tempSpace = space.GetValue();
+	wxGetDiskSpace( _wxValidPath( job->isoPath.GetFullPath() ), NULL, &space );
+	uint64_t isoSpace = space.GetValue();
 
-    uint64_t freeSpace = fs::space(job->outPath).available;
-    uint64_t tempSpace = fs::space(job->tempPath).available;
-    uint64_t isoSpace  = fs::space(job->isoPath).available;
-
-    if ( job->prepare == lpcmf )
+	if( job->prepare == lpcmf )
 		total.estimate = total.audio;
-    else if ( job->prepare == m2vf )
+	else if( job->prepare == m2vf )
 		total.estimate = total.audio + total.video;
 
 	enum{ _dvd = 0x01, _temp = 0x02, _iso = 0x04 };
@@ -355,43 +358,41 @@ int dvdLayout::checkSpace()
 		_xcode = 2;
 #if 0
 		dev_t devices[] = {
-            deviceNum( fs_validPath( job->outPath) ),
-            deviceNum( fs_validPath( job->tempPath) ),
-            deviceNum( fs_validPath( job->isoPath) ) };
+			deviceNum( _wxValidPath( job->outPath.GetFullPath() ) ),
+			deviceNum( _wxValidPath( job->tempPath.GetFullPath() ) ),
+			deviceNum( _wxValidPath( job->isoPath.GetFullPath() ) ) };
 
 		for( int i=0; i < 3; i++ )
 			if( fail & ( 0x01 << i ) )
 				ERR( "Not enough space on device " << device( devices[i] ) << " (" << sizeStr( freeSpace ) << " free)\n" );
 #else
 		struct{ dev_t id; uint64_t space; char *path; } devices[] = {
-            { deviceNum( fs_validPath( job->outPath ) ), freeSpace, "dvdpath " },
-            { deviceNum( fs_validPath( job->tempPath) ), tempSpace, "workpath" },
-            { deviceNum( fs_validPath( job->isoPath) ), isoSpace, "isopath " } };
+			{ deviceNum( _wxValidPath( job->outPath.GetFullPath() ) ), freeSpace, "dvdpath " },
+			{ deviceNum( _wxValidPath( job->tempPath.GetFullPath() ) ), tempSpace, "workpath" },
+			{ deviceNum( _wxValidPath( job->isoPath.GetFullPath() ) ), isoSpace, "isopath " } };
 
 		for( int i=0; i < 3; i++ )
 			if( fail & ( 0x01 << i ) )
-            {
-              //  ERR( string(devices[i].path) + string(": not enough space on device ") + string(device( devices[i].id )))
-                ERR( " - " + string(sizeStr( devices[i].space )) + string(" free )\n") );
-            }
+				ERR( devices[i].path << ": not enough space on device " << device( devices[i].id )
+						<< " - " << sizeStr( devices[i].space ) << " free )\n" );
 #endif
 		LOG( "\n" );
 
 		LOG( _f( "You need one device with %s free\n",
-            sizeStr( total.estimate * ( f + w + s ) ).c_str() ) );
+			sizeStr( total.estimate * ( f + w + s ) ).mb_str() ) );
 
 		if( job->prepare >= vobf || job->params & dvdStyler )
 		{
 			LOG( "\n" );
 			LOG( _f( "or separate free areas of %s (\'dvdpath\')\n",
-                sizeStr( total.estimate ).c_str() ) );
+				sizeStr( total.estimate ).mb_str() ) );
 			LOG( _f( "                        + %s (\'workpath\'%s\n",
-                sizeStr( total.estimate * ( job->params & cleanup ? 1 : 2 ) ).c_str(),
+				sizeStr( total.estimate * ( job->params & cleanup ? 1 : 2 ) ).mb_str(),
 				job->params & cleanup ?
 					( job->prepare >= isof ? " and \'isopath\', shared)" : ")" ) : ")" ) );
 			if( job->prepare >= isof && ! ( job->params & cleanup ) )
 				LOG( _f( "                        + %s (\'isopath\')\n",
-                    sizeStr( total.estimate ).c_str() ) );
+					sizeStr( total.estimate ).mb_str() ) );
 
 			if( w == n )
 			{
@@ -402,10 +403,10 @@ int dvdLayout::checkSpace()
 
 			LOG( "\n" );
 			LOG( "-you can redirect \'dvdpath\', \'workpath\', or \'isopath\' by either\n" );
-            LOG( _f( " -editing %s\n", lplexConfig.filename().c_str() ) );
+			LOG( _f( " -editing %s\n", lplexConfig.GetFullName().mb_str() ) );
 			LOG( " -or using the -w, -a, and -p command line options.\n" );
-            if( job->projectPath != projectDotLplex )
-                LOG( _f( " -or editing %s\n", job->projectPath.generic_string().c_str() ) );
+			if( job->projectPath.GetFullPath() != projectDotLplex )
+				LOG( _f( " -or editing %s\n", job->projectPath.GetFullPath().mb_str() ) );
 		}
 
 		ECHO( endl << endl );
@@ -458,7 +459,7 @@ int dvdLayout::configure()
 	{
 		lFile = &Lfiles->at(i);
 		lFile->index = i;
-		if( lFile->trim.type & jobs::autoSet )
+		if( lFile->trim.type & autoSet )
 		{
 			lFile->trim.type >>= 4;
 		}
@@ -490,21 +491,21 @@ int dvdLayout::configure()
 		{
 			lFile->type |= lpcmFile::trimStart;
 		}
-        if( lFile->trim.type & jobs::discrete )
+		if( lFile->trim.type & discrete )
 		{
 			lFile->type |= lpcmFile::trimStart;
 		}
 
 
-        if( lFile->trim.type & jobs::notrim )
+		if( lFile->trim.type & notrim )
 		{
 			lFile->trim.unit = dvdSampleSeam;
 			lFile->trim.type <<= 4;
-            lFile->trim.type |= jobs::discrete;
+			lFile->trim.type |= discrete;
 			note |= discon;
 		}
 
-        else if( lFile->trim.type & jobs::discrete )
+		else if( lFile->trim.type & discrete )
 		{
 			lFile->trim.unit = dvdAudioFrame;
 			note |= discon;
@@ -514,14 +515,14 @@ int dvdLayout::configure()
 		{
 			lFile->trim.unit = dvdAudioFrame;
 			lFile->trim.type <<= 4;
-            lFile->trim.type |= jobs::discrete;
+			lFile->trim.type |= discrete;
 		}
 
 		else
 			lFile->trim.unit = dvdAVseam;
 
 		if( ! ( lFile->type & lpcmFile::seqStart ) &&
-				( lFile->trim.type & ( jobs::continuous | ( jobs::continuous << 4 ) ) ) )
+				( lFile->trim.type & ( continuous | ( continuous << 4 ) ) ) )
 			lFile->type |= lpcmFile::appended;
 
 		lFile->trim.offset = -orphans;
@@ -530,15 +531,15 @@ int dvdLayout::configure()
 			( audioBytes - lFile->trim.offset + lFile->trim.unit - 1 ) /
 			lFile->trim.unit * lFile->trim.unit;
 
-        if( lFile->trim.type & jobs::discrete )
+		if( lFile->trim.type & discrete )
 			orphans = 0;
 
 		else if( lFile->trim.len != audioBytes )
 		{
 			orphans = audioBytes - lFile->trim.offset - lFile->trim.len;
 												// ...and send it backward if appropriate.
-			if( lFile->trim.shift & jobs::backward ||
-				( lFile->trim.shift & jobs::nearest && abs( orphans ) > ( lFile->trim.unit / 2 ) ) )
+			if( lFile->trim.shift & backward ||
+				( lFile->trim.shift & nearest && abs( orphans ) > ( lFile->trim.unit / 2 ) ) )
 			{
 				lFile->trim.len -= lFile->trim.unit;
 				orphans += lFile->trim.unit;
@@ -559,7 +560,7 @@ int dvdLayout::configure()
 
 		audioGap = lFile->videoFrames * ( job->tv == NTSC ? 3003 : 3600 )
 			- audioFrames * 150;
-        audioPadding = ( lFile->trim.type & jobs::seamless ? 0 :
+		audioPadding = ( lFile->trim.type & seamless ? 0 :
 			lFile->trim.len - ( audioBytes - lFile->trim.offset ) );
 		if( audioPadding )
 			note |= padding;
@@ -570,7 +571,7 @@ int dvdLayout::configure()
 			ECHO( "\n" );
 			ECHO( ( titleset ? LOG_TAG : INFO_TAG ) <<
 				_f( "Title %d - (%s / %s %s)\n", titleset + 1,
-                lpcmEntity::audioInfo( lFile ).c_str(),
+				lpcmEntity::audioInfo( lFile ).mb_str(),
 				jpegs[lFile->jpgIndex].sizeStr(),
 				jpegs[lFile->jpgIndex].aspStr() ) );
 			LOG ( "t:  original : realigned : offset :  pad   : loss :  gap   :     frames     :  timestamp  :jpg: file\n" );
@@ -583,22 +584,22 @@ int dvdLayout::configure()
 		x.getline( p, 100 );
 
 		lFile->details = _f( "%s:%s :%7d :%7d :%5d%s:%7d%s:%7d :%6d : %s :%2d",
-            lFile->type & lpcmFile::seqEnd ? "e" : lFile->trim.type & jobs::discrete ? lFile->trim.type & jobs::padded ? "p" : "d" :
-                lFile->trim.type & jobs::seamless ? "s" : "n" ,
+			lFile->type & lpcmFile::seqEnd ? "e" : lFile->trim.type & discrete ? lFile->trim.type & padded ? "p" : "d" :
+				lFile->trim.type & seamless ? "s" : "n" ,
 			p,
 			lFile->trim.offset,
 			audioPadding,
 			audioLoss,
 				( audioLoss ? "*" : " " ),
 			audioGap + (uint16_t)( 150 * ( (float)audioPadding / (float)dvdAudioFrame ) ),
-                lFile->trim.type & ( jobs::discrete | jobs::notrim ) ? "+" : " ",
+				lFile->trim.type & ( discrete | notrim ) ? "+" : " ",
 			audioFrames,
 			lFile->videoFrames,
-            timestamp( titleVframes, job->tv == NTSC ).c_str(),
+			timestamp( titleVframes, job->tv == NTSC ).mb_str(),
 			lFile->jpgIndex );
 
-// 		LOG( lFile->details << " : " <<
-//             ( editing ? lFile->fName.generic_string() : lFile->fName.filename() ) << endl );
+		LOG( lFile->details << " : " <<
+			( editing ? lFile->fName.GetFullPath() : lFile->fName.GetFullName() ) << endl );
 
 		if( lFile->type & lpcmFile::titleEnd )
 		{
@@ -629,16 +630,16 @@ int dvdLayout::configure()
 			jpegs[i].rescale ? "rescaled to " : "",
 			( job->tv == NTSC ? "NTSC " : "PAL " ), jpegs[i].sizeStr(),
 			jpegs[i].aspStr(),
-            jpegs[i].fName.generic_string().c_str() ) );
+			jpegs[i].fName.GetFullPath().mb_str() ) );
 	}
 	ECHO( "\n\n" );
 
 	for( i=0; i < infofiles->size(); i++ )
 		if( ! infofiles->at(i).reject )
-            total.info += filesize( infofiles->at(i).fName.c_str() );
+			total.info += filesize( infofiles->at(i).fName );
 
 	for( i=0; i < menufiles->size(); i++ )
-        total.info += filesize( menufiles->at(i).c_str() );
+		total.info += filesize( menufiles->at(i) );
 
 	checkSpace();
 }
@@ -674,26 +675,25 @@ int dvdLayout::getNext()
 		clearbits( job->now, appending );
 
 	if( writeFile->type & lpcmFile::seqStart )
-        nameNow = _f( "%s/%s_title_%02d-%02d", job->tempPath.generic_string().c_str(),
-            job->name.c_str(), writeFile->group + 1, writeFile->index );
+		nameNow = _f( "%s%s_title_%02d-%02d", job->tempPath.GetFullPath().mb_str(),
+			job->name.mb_str(), writeFile->group + 1, writeFile->index );
 
 	if( writeFile->type & lpcmFile::titleStart )
 	{
 //      SCRN( "\n" );
 //      SCRN( INFO_TAG << TINT( _f( "Title %d - (%s / %s %s)\n\n",
-        SCRN( "\n")
-        SCRN(TINT( _f( "Title %d - (%s / %s %s)\n\n",
-            writeFile->group + 1, lpcmEntity::audioInfo( writeFile ).c_str(),
+		SCRN( "\n" /*<< INFO_TAG*/ << TINT( _f( "Title %d - (%s / %s %s)\n\n",
+			writeFile->group + 1, lpcmEntity::audioInfo( writeFile ).mb_str(),
 			jpegs[writeFile->jpgIndex].sizeStr(),
-            jpegs[writeFile->jpgIndex].aspStr() ).c_str() ) )
-    }
+			jpegs[writeFile->jpgIndex].aspStr() ) ) );
+		}
 
-	string txt;
+	wxString txt;
 
-    txt = writeFile->fName.filename().generic_string();
+	txt << writeFile->fName.GetFullName();
 	INFO( "Processing " << txt << "\n" );
 	INFO( lpcmEntity::audioInfo( writeFile ) << " : formatting audio...\n" );
-    SCRN( TINT( txt.c_str() ) )
+	SCRN( /*STAT_TAG <<*/ TINT( txt ) );
 	BLIP( " ...formatting audio " );
 	out.open( nameNow + ".lpcm", job->now & appending ?
 		( writeFile->type & lpcmFile::titleStart ?
@@ -701,7 +701,7 @@ int dvdLayout::getNext()
 		ios::binary );
 
 	if( ! out.is_open() )
-        FATAL( "Can't open output file " + nameNow );
+		FATAL( "Can't open output file " << nameNow );
 
 	total.start = total.now = padding = samplePadding = 0;
 	total.max = writeFile->trim.len;
@@ -722,7 +722,7 @@ int dvdLayout::getNext()
 											// if at _eof
 		if( reader->state & lpcmEntity::_eof )
 		{
-            if( writeIndex == readIndex && writeFile->trim.type & jobs::discrete )
+			if( writeIndex == readIndex && writeFile->trim.type & discrete )
 				finished = true;
 
 			if( finished )
@@ -801,7 +801,7 @@ int dvdLayout::getNext()
 // ----------------------------------------------------------------------------
 
 
-string dvdauthorXml::timestampFractional( uint32_t f, bool ntsc, float boost )
+wxString dvdauthorXml::timestampFractional( uint32_t f, bool ntsc, float boost )
 {
 	uint16_t hour, min;
 	uint64_t ticks = f * ( ntsc ? 3003 : 3600 );
@@ -830,7 +830,7 @@ string dvdauthorXml::timestampFractional( uint32_t f, bool ntsc, float boost )
 // ----------------------------------------------------------------------------
 
 
-int dvdauthorXml::write( xmlContext context, const string& str, int flag )
+int dvdauthorXml::write( xmlContext context, const char* str, int flag )
 {
 	static int chapter, titleset=1;
 
@@ -840,11 +840,11 @@ int dvdauthorXml::write( xmlContext context, const string& str, int flag )
 	switch( context )
 	{
 		case open:
-            xml.open(str,
+			xml.open( wxString( str ),
 				fstream::in | fstream::out | fstream::trunc );
 
 			if (! xml.is_open ())
-                FATAL( "Can't open output file " + str );
+				FATAL( "Can't open output file " << str );
 			break;
 
 		case setDest:
@@ -856,11 +856,11 @@ int dvdauthorXml::write( xmlContext context, const string& str, int flag )
 				xml << "<dvdauthor dest=" << "\"" << str << "\"" << ">\n\n";
 			else
 #if 0
-                xml << _f( "<dvdstyler name=\"%s\">\n\n", fs::path( str ).stem().c_str() );
+				xml << _f( "<dvdstyler name=\"%s\">\n\n", wxFileName( str ).GetName().mb_str() );
 #else
 //            xml << _f( "<dvdstyler name=\"%s\" videoFormat=\"%d\" aspectRatio=\"1\" audioFormat=\"%d\" videoBitrate=\"-1\" capacity=\"0\" emptyMenu=\"1\" format=\"4\" jumppad=\"1\">\n\n",
 				xml << _f( "<dvdstyler name=\"%s\" videoFormat=\"%d\" aspectRatio=\"%d\">\n\n",
-                    fs::path( str ).stem().c_str(), video == NTSC ? 3 : 2, flag ? 2 : 1 );
+					wxFileName( str ).GetName().mb_str(), video == NTSC ? 3 : 2, flag ? 2 : 1 );
 #endif
 			if( titlesets > 1 || dvdStyler )
 			{
@@ -871,9 +871,9 @@ int dvdauthorXml::write( xmlContext context, const string& str, int flag )
 #if 0
 						<< ( dvdStyler ? "\t\t\t\t<vob><menu></menu></vob>\n" : "" )
 #else
-//                << ( dvdStyler ? _f( "\t\t\t\t<vob><<menu aspectRatio=\"%d\" videoFormat=\"%s\"></menu></vob>\n").c_str() : "" )
+//                << ( dvdStyler ? _f( "\t\t\t\t<vob><<menu aspectRatio=\"%d\" videoFormat=\"%s\"></menu></vob>\n").mb_str() : "" )
 						<< ( dvdStyler ? _f( "\t\t\t\t<vob><menu videoFormat=\"%s\"></menu></vob>\n",
-                            video == NTSC ? "NTSC" : "PAL" ).c_str() : "" )
+							video == NTSC ? "NTSC" : "PAL" ).mb_str() : "" )
 #endif
 						<< "\t\t\t\t<post>";
 
@@ -906,7 +906,7 @@ int dvdauthorXml::write( xmlContext context, const string& str, int flag )
 				<< ( dvdStyler ? "\t\t\t\t<vob><menu></menu></vob>\n" : "" )
 #else
 						<< ( dvdStyler ? _f( "\t\t\t\t<vob><menu videoFormat=\"%s\"></menu></vob>\n",
-                            video == NTSC ? "NTSC" : "PAL" ).c_str() : "" )
+							video == NTSC ? "NTSC" : "PAL" ).mb_str() : "" )
 #endif
 				<< "\t\t\t\t<post>"
 				<< _f( "if(g1 eq %d){g1=%d; jump title 1;} jump vmgm menu;",
@@ -945,7 +945,7 @@ int dvdauthorXml::write( xmlContext context, const string& str, int flag )
 			<< ( dvdStyler ? "\t\t\t\t<vob><menu></menu></vob>\n" : "" )
 #else
 						<< ( dvdStyler ? _f( "\t\t\t\t<vob><menu videoFormat=\"%s\"></menu></vob>\n",
-                            video == NTSC ? "NTSC" : "PAL" ).c_str() : "" )
+							video == NTSC ? "NTSC" : "PAL" ).mb_str() : "" )
 #endif
 			<< "\t\t\t\t<post>"
 			<< _f( "if(g1 eq %d){g1=%d; jump title 1;} jump vmgm menu;",

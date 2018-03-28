@@ -1,0 +1,9 @@
+dvdauthor_LIB=@dvdauthor_LIB@
+dvdauthor_LINK=@dvdauthor_LINK@
+MAYBE_dvdauthor=@MAYBE_dvdauthor@
+HAVE_dvdauthor=@HAVE_dvdauthor@
+HAVE_EXTERNAL_dvdauthor=@HAVE_EXTERNAL_dvdauthor@
+CONFIGURE_dvdauthor_FLAGS=@CONFIGURE_dvdauthor_FLAGS@
+dvdauthor_BUILD=@dvdauthor_BUILD@
+WITH_dvdauthor=@WITH_dvdauthor@
+dvdauthor_DEPENDENCY=Makefile @ROOTDIR@/@MAYBE_dvdauthor@
