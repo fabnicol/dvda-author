@@ -399,7 +399,7 @@ int waveHeader::open( ifstream &wavefile, FLAC__StreamMetadata *fmeta, bool mute
 {
 	canonical hdr;
 	uint32_t fmtChunk = 0, dataChunk = 0;
-	wxString msg;
+	string msg;
 	struct{ uint8_t ID[4]; uint32_t size; } chunk;
 	off_t filelength;
 
@@ -429,7 +429,7 @@ int waveHeader::open( ifstream &wavefile, FLAC__StreamMetadata *fmeta, bool mute
 
 		chunk.size = lEndian( chunk.size );
 
-		msg << _f( "%c%c%c%c=%d  ", chunk.ID[0], chunk.ID[1], chunk.ID[2], chunk.ID[3], chunk.size );
+        msg += _f( "%c%c%c%c=%d  ", chunk.ID[0], chunk.ID[1], chunk.ID[2], chunk.ID[3], chunk.size );
 
 		if( ! fmtChunk
 			&& chunk.ID[0] == 'f'
@@ -438,7 +438,7 @@ int waveHeader::open( ifstream &wavefile, FLAC__StreamMetadata *fmeta, bool mute
 		{
 			fmtChunk = wavefile.tellg();
 			if( chunk.size > 16 )
-				msg << _f( "[16 read, %d ignored]  ", chunk.size - 16  );
+                msg += _f( "[16 read, %d ignored]  ", chunk.size - 16  );
 
 			wavefile.read( (char *)&hdr+20, chunk.size > 16 ? 16 : chunk.size );
 

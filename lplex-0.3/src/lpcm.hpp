@@ -26,20 +26,15 @@
 #include "lplex_precompile.h"
 #endif
 
+#include <experimental/filesystem>
 
 using namespace std;
+namespace fs = std::experimental::filesystem;
 
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-
-#include <wx/utils.h>
-#include <wx/dir.h>
-#include <wx/filename.h>
-#include <wx/file.h>
-#include <wx/string.h>
-#include <wx/cmdline.h>
 
 #include <md5/md5.h>
 #include <FLAC/format.h>
@@ -48,18 +43,6 @@ using namespace std;
 #include "wx.hpp"
 #include "platform.h"
 
-enum
-{
-	notrim = 0x01,
-	seamless = 0x02,
-	discrete = 0x04,
-	padded = 0x08,
-	autoSet = 0xF0,
-	continuous = seamless | padded,
-	backward = 0x10,
-	nearest = 0x20,
-	forward = 0x40
-};
 
 
 struct alignment
@@ -96,14 +79,14 @@ struct lpcmEntity
 	FLAC__StreamMetadata fmeta;
 	md5_state_t md5;
 	md5_byte_t md5str[16];
-	wxFileName fName;
+    fs::path fName;
 	uint16_t root, index, edit;
 	alignment trim;
 
 	static bool soundCheck( lpcmEntity *l, bool mute=true );
-	static bool soundMatch( lpcmEntity *a, lpcmEntity *b, wxString *errmsg = NULL );
-	static wxString audioInfo( lpcmEntity *l );
-	static wxString audioInfo( FLAC__StreamMetadata *fmeta );
+    static bool soundMatch( lpcmEntity *a, lpcmEntity *b, char* errmsg = nullptr );
+	static string audioInfo( lpcmEntity *l );
+	static string audioInfo( FLAC__StreamMetadata *fmeta );
 };
 
 inline bool operator < (const lpcmEntity& a, const lpcmEntity& b)
@@ -126,13 +109,13 @@ enum Ltype
 inline Ltype isLfile(const char *ext)
 {
 	return
-		! stricmp( ext,"wav" ) ? wavef :
-		! stricmp( ext,"flac" ) ? flacf :
-		! stricmp( ext,"lpcm" ) ? lpcmf :
-		! stricmp( ext,"m2v" ) ? m2vf :
-		! stricmp( ext,"mpg" ) ? mpegf :
-		! stricmp( ext,"vob" ) ? vobf :
-		! stricmp( ext,"iso" ) ? isof :
+		! stricmp( ext,".wav" ) ? wavef :
+		! stricmp( ext,".flac" ) ? flacf :
+		! stricmp( ext,".lpcm" ) ? lpcmf :
+		! stricmp( ext,".m2v" ) ? m2vf :
+		! stricmp( ext,".mpg" ) ? mpegf :
+		! stricmp( ext,".vob" ) ? vobf :
+		! stricmp( ext,".iso" ) ? isof :
 		isNot;
 }
 
