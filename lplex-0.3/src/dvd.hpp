@@ -26,15 +26,17 @@
 #include "lplex_precompile.h"
 #endif
 
+#include <experimental/filesystem>
 
 using namespace std;
+namespace fs = std::experimental::filesystem;
 
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
 #include <climits>
-
+#include <string>
 #include "util.h"
 
 class lpcm_video_ts;
@@ -79,7 +81,7 @@ typedef struct
 	uint64_t start_pts;
 }audio_adr_t;
 
-wxString ifoPrint_audio_attributes( audio_attr_t *attr );
+string ifoPrint_audio_attributes( audio_attr_t *attr );
 
 class lpcm_video_ts
 #ifdef dvdread_udflist
@@ -89,7 +91,7 @@ class lpcm_video_ts
 public:
 	enum { opened = 0x01 };
 
-	wxFileName fName;
+    fs::path fName;
 	int state, tv, titleset, lpcm_id, audioStream, pgc, pg, pgcCell, c;
 	int menuFmt, numTitlesets, numAudioStreams, numCells, numPGCs, numPGs, numPGCcells;
 	FLAC__StreamMetadata fmeta;
@@ -103,7 +105,7 @@ public:
 	dvd_file_t *vob;
 
 	uint32_t idNow;
-	wxString nameNow, label;
+	string nameNow, label;
 
 	lpcm_video_ts( const char * VIDEO_TS=NULL, bool v=true )
 			: state(0), libdvdReader(NULL), verbose(v), isImage(false)
@@ -186,8 +188,8 @@ public:
 
 	{
 		verbose = v;
-		if( job->name.Right(9) == "_UNPACKED" )
-			label = job->name.Left( job->name.Length() - 9 );
+        if( Right(job->name, 9) == "_UNPACKED" )
+			label = job->name.Left( job->name.length() - 9 );
 		else
 			label = job->name;
 
@@ -211,7 +213,7 @@ public:
 //      if( ! ( state & opened ) )
 //      {
 			if( lpcm_video_ts::open(
-					VIDEO_TS ? VIDEO_TS : job->inPath.GetFullPath().mb_str(), fatal ) )
+                    VIDEO_TS ? VIDEO_TS : job->inPath.generic_string().c_str(), fatal ) )
 			{
 				if( ! ( state & singleStep ) )
 					traverse();

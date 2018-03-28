@@ -17,31 +17,33 @@
 	Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
+#include <iostream>
+#include <experimental/filesystem>
+#include "util.h"
 
+namespace fs = std::experimental::filesystem;
+using namespace std;    
 
-#include "wx.hpp"
 
 
 
 // ----------------------------------------------------------------------------
-//    _wxGetTempDir :
+//    fs_GetTempDir :
 // ----------------------------------------------------------------------------
 //    Returns path to system temp directory, including trailing setarator.
 // ----------------------------------------------------------------------------
 
 
-wxString _wxGetTempDir()
+string fs_GetTempDir()
 {
-	wxString temp = wxFileName::CreateTempFileName("dummy");
-	wxRemoveFile(temp);
-	return wxFileName(temp).GetPath
-		( wxPATH_NATIVE | wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR );
+    string temp = (fs::temp_directory_path() / "dummy").generic_string();
+    remove(temp.c_str());
 }
 
 
 
 // ----------------------------------------------------------------------------
-//    _wxEmptyDir :
+//    fs_EmptyDir :
 // ----------------------------------------------------------------------------
 //    Deletes the contents of folder <dirName>.
 //
@@ -49,26 +51,22 @@ wxString _wxGetTempDir()
 // ----------------------------------------------------------------------------
 
 
-bool _wxEmptyDir( const char *dirName )
+bool fs_EmptyDir( const fs::path& dirName )
 {
-	wxLogNull xx;
-	wxDir dir( dirName );
-	if( !dir.IsOpened() )
+	bool res = fs::remove_all(dirName) > 0;
+	if (res)
 	{
-		ERR( "couldn't open " << dirName << "\n" );
-		return false;
+		res = fs::create_directory(dirName);
 	}
-
-	_wxFileKiller killer( dirName );
-	dir.Traverse( killer );
-
-	return true;
+	
+	return res;
 }
 
 
 
+
 // ----------------------------------------------------------------------------
-//    _wxDeleteDir :
+//    fs_DeleteDir :
 // ----------------------------------------------------------------------------
 //    Deletes the folder <dirName> entirely.
 //
@@ -76,174 +74,112 @@ bool _wxEmptyDir( const char *dirName )
 // ----------------------------------------------------------------------------
 
 
-bool _wxDeleteDir( const char *dirName )
+bool fs_DeleteDir(const fs::path& dirName)
 {
-	wxLogNull xx;
-	_wxEmptyDir( dirName );
-	return wxRmdir( dirName );
+	return(fs::remove_all(dirName) > 0);
 }
 
-
-
 // ----------------------------------------------------------------------------
-//    _wxMakeDirs :
+//    fs_MakeDirs :
 // ----------------------------------------------------------------------------
 //    Creates all nonexistent folders in path <dirName>.
 //
 //    Returns true on success, false on fail
 // ----------------------------------------------------------------------------
 
-
-bool _wxMakeDirs( const char *dirName )
+bool fs_MakeDirs( const fs::path& dirName )
 {
-	wxFileName parent = wxFileName( dirName ).GetPath();
-
-	if ( ! wxDir::Exists( parent.GetFullPath() ) )
-		if( ! _wxMakeDirs( parent.GetFullPath() ) )
-			ERR( "couldn't create \'" << parent.GetFullPath() << "\'\n" );
-
-	if ( ! wxDir::Exists( dirName ) )
-		return wxMkdir( dirName );
-
-	return true;
+    return fs::create_directories(dirName);
 }
 
-
-
 // ----------------------------------------------------------------------------
-//    _wxGetAllDirs :
+//    fs_GetAllDirs :
 // ----------------------------------------------------------------------------
 //    Collects all subfolder names under folder <dirName> into array <dirs>.
 //
 //    Returns number of subfolders on success, 0 on fail or no subfolders
 // ----------------------------------------------------------------------------
 
-
-size_t _wxGetAllDirs( const wxString& dirName, wxArrayString *dirs )
+size_t fs_GetAllDirs( const string& dirName, vector<string>& dirs )
 {
-	size_t n=0;
-	wxString filename;
-	wxLogNull xx;
-
-	wxDir dir( dirName );
-	if( !dir.IsOpened() )
-	{
-		ERR( "couldn't open " << dirName << "\n" );
-		return 0;
-	}
-
-	bool cont = dir.GetFirst( &filename, wxEmptyString,
-		wxDIR_DIRS | wxDIR_HIDDEN );
-
-	while( cont )
-	{
-		n++;
-		dirs->Add( dirName + wxSEP + filename );
-		cont = dir.GetNext( &filename );
-	}
-
+	 int n = 0;
+	 for(auto& p: fs::directory_iterator(dirName))
+	 {
+        if (fs::is_directory(p.path()))
+		{
+            dirs.emplace_back(p.path().generic_string());
+		    ++n;
+		}
+	 }
+	 
 	return n;
 }
 
-
-
 // ----------------------------------------------------------------------------
-//    _wxDirSize :
+//    fs_DirSize :
 // ----------------------------------------------------------------------------
 //    Returns size of given directory <dirName> on success, 0 on fail
 // ----------------------------------------------------------------------------
 
-
-
-size_t _wxDirSize( const char *dirName )
+size_t fs_DirSize( const fs::path& dirName )
 {
-	wxLogNull xx;
-	class _wxDirSizer : public wxDirTraverser
-	{
-	public:
-		size_t size;
-
-		_wxDirSizer() : size(0) {}
-
-		virtual wxDirTraverseResult OnFile( const wxString& filename )
+ size_t total_size = 0;
+ 
+ for(auto& p: fs::directory_iterator(dirName))
+ {
+      if (fs::is_directory(p.path()))
 		{
-			size += statsize( filename.mb_str() );
-			return wxDIR_CONTINUE;
+            total_size += fs_DirSize(p.path());
 		}
-
-		virtual wxDirTraverseResult OnDir( const wxString& dirName )
+	  else
+      if (fs::is_regular_file(p.path()))
 		{
-			return wxDIR_CONTINUE;
+            total_size += fs::file_size(p.path());
 		}
-	};
+ }
 
-	wxDir dir( dirName );
-	if( !dir.IsOpened() )
-	{
-		ERR( "couldn't open " << dirName << "\n" );
-		return 0;
-	}
-
-	_wxDirSizer total;
-	dir.Traverse( total );
-
-	return total.size;
+ return total_size;
 }
 
 
-
 // ----------------------------------------------------------------------------
-//    _wxEndSep :
-// ----------------------------------------------------------------------------
-//    Returns <path>, adding a trailing separator if missing.
-// ----------------------------------------------------------------------------
-
-
-wxString _wxEndSep( const char *path )
-{
-#if 0
-	wxFileName fullPath( path );
-	if( ! fullPath.IsDir() )
-		fullPath =  fullPath.GetFullPath() + wxSEP;
-
-	return fullPath.GetFullPath();
-#endif
-	wxString str( path );
-	if( str.Right(1) != wxSEP )
-		str += wxSEP;
-	return str;
-}
-
-
-
-// ----------------------------------------------------------------------------
-//    _wxValidPath :
+//    fs_validPath :
 // ----------------------------------------------------------------------------
 //    Returns <filename> trimmed of nonexistent part, if any.
 // ----------------------------------------------------------------------------
 
-
-const char * _wxValidPath( const char * filename )
+const char * fs_validPath( const fs::path& filename )
 {
-	wxFileName fName( filename );
-	while( fName.GetFullPath() != wxEmptyString && ! fName.DirExists( fName.GetFullPath() ) )
-		fName = fName.GetPath();
-	return ( fName.GetFullPath() == wxEmptyString ?
-		NULL : (const char *)fName.GetFullPath().mb_str() );
+    fs::path p = filename.parent_path();
+    if (fs::exists(p)) return p.generic_string().c_str(); else return nullptr;
 }
 
 
 // ----------------------------------------------------------------------------
-//    _wxFixSeparators :
+//    fs_fixSeparators :
 // ----------------------------------------------------------------------------
 //    Ensures separators in <path> conform to system.
 // ----------------------------------------------------------------------------
 
 
-void _wxFixSeparators( char * path )
+void fs_fixSeparators( char * path )
 {
-	if( wxSEP == '\\' )
-		wxUnix2DosFilename( path );
+    if( SEPARATOR == "\\" )
+    {
+        int i = 0;
+        while (path[i] != '\0')
+        {
+            if (path[i] == '/') path[i] = SEPARATOR[0];
+            ++i;
+        }
+    }
 	else
-		wxDos2UnixFilename( path );
+    {
+        int i = 0;
+        while (path[i] != '\0')
+        {
+            if (path[i] == '\\') path[i] = SEPARATOR[0];
+            ++i;
+        }
+    }
 }

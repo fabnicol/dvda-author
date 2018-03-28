@@ -51,41 +51,5 @@ using namespace std;
 //#include <jpeglib.h>
 #include <vlc_bits.h>
 
-#include <wx/wx.h>
-#include <wx/app.h>
-#include <wx/cmdline.h>
-#include <wx/colour.h>
-#include <wx/dir.h>
-#include <wx/file.h>
-#include <wx/fileconf.h>
-#include <wx/filename.h>
-#include <wx/log.h>
-#include <wx/process.h>
-#include <wx/settings.h>
-#include <wx/stdpaths.h>
-#include <wx/stopwatch.h>
-#include <wx/string.h>
-#include <wx/timer.h>
-#include <wx/txtstrm.h>
-#include <wx/utils.h>
-
-//#include <wx/wxprec.h>
-//#include <wx/dataobj.h>
-//#include <wx/dialog.h>
-//#include <wx/button.h>
-//#include <wx/checkbox.h>
-//#include <wx/clipbrd.h>
-//#include <wx/dnd.h>
-//#include <wx/frame.h>
-//#include <wx/gauge.h>
-//#include <wx/menu.h>
-//#include <wx/panel.h>
-//#include <wx/sizer.h>
-//#include <wx/spinbutt.h>
-//#include <wx/statbox.h>
-//#include <wx/stattext.h>
-//#include <wx/statusbr.h>
-//#include <wx/textctrl.h>
-//#include <wx/textfile.h>
 
 #endif

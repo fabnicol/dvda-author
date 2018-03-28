@@ -102,7 +102,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
     #define DBG "[DBG]  "
     #define WAR "[WAR]  "
     #define DEV "[DEV]  "
-
+    #define PAR "[PAR]  "
 #else
     #define ANSI_COLOR_RED     "\x1b[31m"
     #define ANSI_COLOR_GREEN   "\x1b[32m"
@@ -118,6 +118,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
     #define DBG "\x1b[35m[DBG]  \x1b[0m"
     #define WAR "\x1b[33m[WAR]  \x1b[0m"
     #define DEV "\x1b[36m[DEV]  \x1b[0m"
+    #define PAR "\x1b[36m[DEV]  \x1b[0m"
 #endif
 
 

@@ -243,7 +243,7 @@ int lpcmReader::swap2dvd( unsigned char *data, uint32_t count,
 // ----------------------------------------------------------------------------
 
 
-uint16_t waveReader::reset( const char * filename, int alignUnit )
+uint16_t waveReader::reset( const string& filename, int alignUnit )
 {
 	waveHeader::canonical header;
 
@@ -255,13 +255,13 @@ uint16_t waveReader::reset( const char * filename, int alignUnit )
 	waveFile.open( filename, ios::binary );
 
 	if( ! waveFile.is_open() )
-		FATAL( "Can't find input file " << filename );
+        FATAL( "Can't find input file " + string(filename) );
 
 	fName = filename;
 	state |= named;
 
 	if( ! waveHeader::open( waveFile, &fmeta ) )
-		FATAL( "Can't open wave file " << filename );
+        FATAL( "Can't open wave file " + filename );
 
 	pos.max = unread = flacHeader::bytesUncompressed( &fmeta );
 	surplus = ( alignment ? unread % alignment : 0 );
@@ -345,7 +345,7 @@ uint64_t waveReader::fillBuf( uint64_t limit, counter<uint64_t> *midCount )
 // ----------------------------------------------------------------------------
 
 
-uint16_t flacReader::reset( const char * filename, int alignUnit )
+uint16_t flacReader::reset( const string&  filename, int alignUnit )
 {
 	if( is_valid() )
 		finish();
