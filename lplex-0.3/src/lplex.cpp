@@ -80,11 +80,21 @@ int author( dvdLayout &layout )
 	if( editing )
 		return 0;
 
-    if ( ! fs::exists( job.tempPath ) )
-        fs_MakeDirs( job.tempPath );
+//    if ( ! fs::exists( job.tempPath ) )
+//        fs_MakeDirs( job.tempPath );
 
-    if ( ! fs::exists( job.outPath.parent_path() ) )
-        fs_MakeDirs( job.outPath.parent_path());
+    job.tempPath = fs::path("/home/fab/temp");
+    job.infoPath = fs::path("/home/fab/temp");
+    job.isoPath = fs::path("/home/fab/temp");
+    if ( ! fs::exists( job.tempPath ) )
+    {
+        fs_MakeDirs( job.tempPath);
+    }
+    if ( ! fs::exists( job.outPath ) )
+    {
+        job.outPath = fs::path("/home/fab/out");
+        fs_MakeDirs( job.outPath);
+    }
 
 	stopWatch.Start();
 
