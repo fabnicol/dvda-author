@@ -84,38 +84,38 @@ ofstream* m2v( uint32_t vFrames, const char *jpeg, const char *m2vName,
 	gopInfo GOPheader;
 #endif
 
-    INFO( "Using \'" << fs::path( jpeg ).filename() << "\' to create "
+	INFO( "Using \'" << wxFileName( jpeg ).GetFullName() << "\' to create "
 			<< ( tv == NTSC ? "NTSC" : "PAL" ) << " video stream " );
 	ECHO( "\n" );
 
 	GOPct = ( vFrames + framesPerGOP - 1 ) / framesPerGOP;
 	endFrames = vFrames % framesPerGOP;
 
-    fs::path m2vPath = fs::path( m2vName ).filename();
+	wxString m2vPath( wxFileName( m2vName ).GetPath() + wxSEP );
 
 	_progress.max = 2 * framesPerGOP + endFrames;
 
 	if( executeViaScript(
-        QUOTE( (binDir / "jpeg2yuv").generic_string() )
+		QUOTE( binDir + "jpeg2yuv" )
 			+ " -v 1 -I p "
 			+ ( tv == NTSC ? "-f 29.97 " : "-f 25 " )
 			+ "-n " + _f( "%d ", 2 * framesPerGOP + endFrames )
 			+ "-j " + QUOTE( jpeg )
 			+ " | " +
-        QUOTE( (binDir / "mpeg2enc").generic_string() )
+		QUOTE( binDir + "mpeg2enc" )
 			+ " -v 1 -b 3800 -f 8 -r 0 "
 			+ ( tv == NTSC ? "-n n " : "-n p " )
 			+ ( ws ? "-a 3 " : "-a 2 " )        // 1=1:1, 2=4:3, 3=16:9, 4=2.21:1
 			+ _f( "-G %d -g %d ", framesPerGOP, framesPerGOP )
-            + "-o " + QUOTE( (m2vPath / "mini.m2v").generic_string() ),
+			+ "-o " + QUOTE( m2vPath + "mini.m2v" ),
 		false, &mpeg2encProgress )
 
 	) FATAL( "jpeg2yuv|mpeg2enc failed. See Lplex.log for details.\n" );
 
 
-    ifstream miniFile( (m2vPath / "mini.m2v").generic_string(), ios::binary | ios::ate );
+	ifstream miniFile( m2vPath + "mini.m2v", ios::binary | ios::ate );
 	if( ! miniFile.is_open() )
-        FATAL( "Can't find input file " + (m2vPath / "mini.m2v").generic_string() );
+		FATAL( "Can't find input file " << m2vPath + "mini.m2v" );
 
 	static ofstream m2vFile;
 
@@ -135,7 +135,7 @@ ofstream* m2v( uint32_t vFrames, const char *jpeg, const char *m2vName,
 
 		m2vFile.open( m2vName, ios::binary );
 		if( ! m2vFile.is_open() )
-            FATAL( "Can't open output file " + string(m2vName) );
+			FATAL( "Can't open output file " << m2vName );
 	}
 
 	miniFileSize = miniFile.tellg();
@@ -178,7 +178,8 @@ ofstream* m2v( uint32_t vFrames, const char *jpeg, const char *m2vName,
 	{
 		INFO( "-inserting Lplex tags into first GOP as User Data field\n" );
 		m2vFile.write( (char*)bigBlock, GOP[0]+4 );
-        m2vFile << 0x00 << 0x00 << 0x01 << 0xb2;
+                char tab[]={0x00,0x00,0x01,0xb2};
+		m2vFile.write(tab, 4 );
 		uDataPos = m2vFile.tellp();
 		m2vFile.write( (char*)userData, sizeofUData );
 		m2vFile.write( (char*)bigBlock+GOP[0]+4, seq[1]-(GOP[0]+4) );
@@ -339,24 +340,24 @@ int addJpeg( const char * fname, lplexJob &job, bool zero, bool ws )
 	if( zero && jpegs.size() )
 		jpegs.clear();
 
-    if( jpeg.fName.stem().generic_string().Left( 5 ) == "black" )
+	if( jpeg.fName.GetName().Left( 5 ) == "black" )
 	{
 		alias( jpeg.fName );
 		isBlack = true;
-        if( jpeg.fName.generic_string() == "black" || jpeg.fName.generic_string() == "black_XS" )
-            jpeg.fName = dataDir / ( job.tv == NTSC ? "black_NTSC_352x240.jpg" : "black_PAL_352x288.jpg" );
-        else if( jpeg.fName.generic_string() == "black_S" )
-            jpeg.fName = dataDir / ( job.tv == NTSC ? "black_NTSC_352x480.jpg" : "black_PAL_352x576.jpg" );
-        else if( jpeg.fName.generic_string() == "black_M" )
-            jpeg.fName = dataDir / ( job.tv == NTSC ? "black_NTSC_704x480.jpg" : "black_PAL_704x576.jpg" );
-        else if( jpeg.fName.generic_string() == "black_L" )
-            jpeg.fName = dataDir / ( job.tv == NTSC ? "black_NTSC_720x480.jpg" : "black_PAL_720x576.jpg" );
+		if( jpeg.fName.GetFullPath() == "black" || jpeg.fName.GetFullPath() == "black_XS" )
+			jpeg.fName = dataDir + ( job.tv == NTSC ? "black_NTSC_352x240.jpg" : "black_PAL_352x288.jpg" );
+		else if( jpeg.fName.GetFullPath() == "black_S" )
+			jpeg.fName = dataDir + ( job.tv == NTSC ? "black_NTSC_352x480.jpg" : "black_PAL_352x576.jpg" );
+		else if( jpeg.fName.GetFullPath() == "black_M" )
+			jpeg.fName = dataDir + ( job.tv == NTSC ? "black_NTSC_704x480.jpg" : "black_PAL_704x576.jpg" );
+		else if( jpeg.fName.GetFullPath() == "black_L" )
+			jpeg.fName = dataDir + ( job.tv == NTSC ? "black_NTSC_720x480.jpg" : "black_PAL_720x576.jpg" );
 		else
 			isBlack = false;
 	}
-    else if( jpeg.fName.is_relative() )
+	else if( jpeg.fName.IsRelative() )
 	{
-        jpeg.fName = fs::absolute( jpeg.fName );
+		makeAbsolute( jpeg.fName );
 	}
 
 	// check if previously added
@@ -403,14 +404,14 @@ int addJpeg( const char * fname, lplexJob &job, bool zero, bool ws )
 			if( jpegs.size() == 0 )
 			{
 				if( ! ( job.params & customized ) )
-                    SCRN( STAT_TAG "Checking custom " )
-                SCRN( "jpegs... " )
+					SCRN( STAT_TAG << "Checking custom " );
+				SCRN( "jpegs... " );
 				STAT( "Checking custom screen jpegs...\n" );
 			}
 			LOG( fname << "\n" );
 			LOG( _affirm << jpeg.sizeStr() << "\n" );
 			jpeg.roughGOP = roughGOP( jpeg,
-                (job.tempPath/ "mini.m2v").generic_string().c_str(), job.tv == NTSC );
+				job.tempPath.GetFullPath() + "mini.m2v", job.tv == NTSC );
 			job.params |= customized;
 		}
 	}
@@ -431,9 +432,9 @@ int addJpeg( const char * fname, lplexJob &job, bool zero, bool ws )
 // ----------------------------------------------------------------------------
 
 
-bool alias( fs::path &jpeg )
+bool alias( wxFileName &jpeg )
 {
-    string name = jpeg.stem().generic_string();
+	wxString name = jpeg.GetName();
 
 	if( name == "black" || name == "black_XS" || name == "black_S"
 		|| name == "black_M" || name == "black_L" )
@@ -476,10 +477,10 @@ int jpegCheck( dvdJpeg &jpeg, bool ntsc, bool rescale )
 	struct jpeg_decompress_struct j;
 	struct jpeg_error_mgr jErr;
 
-    FILE *dvdJpeg = fopen( jpeg.fName.generic_string(), "rb" );
+	FILE *dvdJpeg = fopen( jpeg.fName.GetFullPath(), "rb" );
 
 	if ( dvdJpeg == NULL )
-        FATAL( "Can't open jpeg file " + jpeg.fName.generic_string() );
+		FATAL( "Can't open jpeg file " << jpeg.fName.GetFullPath() );
 
 	j.err = jpeg_std_error( &jErr );  /* ?????????? */
 	jpeg_create_decompress( &j );
@@ -498,10 +499,9 @@ int jpegCheck( dvdJpeg &jpeg, bool ntsc, bool rescale )
 
 #endif // libjpeg version
 
-#if 0
 	wxImage jpg;
-    if( ! jpg.LoadFile( jpeg.fName.generic_string(), wxBITMAP_TYPE_JPEG ) )
-        FATAL( "Can't open jpeg file '" + jpeg.fName.generic_string() + "'." );
+	if( ! jpg.LoadFile( jpeg.fName.GetFullPath(), wxBITMAP_TYPE_JPEG ) )
+		FATAL( "Can't open jpeg file '" << jpeg.fName.GetFullPath() << "'." );
 
 	width = jpg.GetWidth();
 	height = jpg.GetHeight();
@@ -533,13 +533,13 @@ int jpegCheck( dvdJpeg &jpeg, bool ntsc, bool rescale )
 //               ntsc ? "PAL" : "NTSC", allowed[ok-1].w, allowed[ok-1].h,
 //               ntsc ? "NTSC" : "PAL", allowed[i].w, allowed[i].h )  );
 
-                jpeg.tName = (job.tempPath / jpeg.fName.stem()).generic_string()
+				jpeg.tName = job.tempPath.GetFullPath() + jpeg.fName.GetName()
 					+ _f( "_rescaled_%s_%dx%d.jpg",
 						ntsc ? "NTSC" : "PAL", allowed[i].w, allowed[i].h );
 
 				jpg.Rescale( allowed[i].w, allowed[i].h, wxIMAGE_QUALITY_HIGH );
 				jpg.SetOption( "quality", "100" );
-                jpg.SaveFile( jpeg.tName.generic_string(), wxBITMAP_TYPE_JPEG );
+				jpg.SaveFile( jpeg.tName.GetFullPath(), wxBITMAP_TYPE_JPEG );
 			}
 			else
 				ok = 0;
@@ -548,11 +548,11 @@ int jpegCheck( dvdJpeg &jpeg, bool ntsc, bool rescale )
 
 	else
 	{
-        SCRN( "\n" )
+		SCRN( "\n" );
 		_verbose = true;
 
 		ERR( _f( "\'%s\' (%dx%d) is not compatible with %s dvd.\n",
-            jpeg.fName.filename().c_str(), width, height,
+			jpeg.fName.GetFullName().mb_str(), width, height,
 			ntsc ? "NTSC" : "PAL" ) );
 		LOG( "\n" );
 		LOG( "Allowable image dimensions are\n" );
@@ -561,10 +561,8 @@ int jpegCheck( dvdJpeg &jpeg, bool ntsc, bool rescale )
 
 		exit( -1 );
 	}
-#endif
 
-    return 0;
-    //return --ok;
+	return --ok;
 }
 
 
@@ -583,18 +581,18 @@ int jpegCheck( dvdJpeg &jpeg, bool ntsc, bool rescale )
 
 uint32_t roughGOP( dvdJpeg &jpegfile, const char *m2vName, bool ntsc )
 {
-	string jpeg = jpegfile.getName();
+	wxString jpeg = jpegfile.getName();
 	uint16_t testFrames = 7, framesPerGOP = ntsc ? 18 : 15;
 	uint32_t IPPPPPP;
 
 	if( executeViaScript(
-        QUOTE( (binDir / "jpeg2yuv").generic_string() )
+		QUOTE( binDir + "jpeg2yuv" )
 			+ " -v 1 -I p "
 			+ ( ntsc ? "-f 29.97 " : "-f 25 " )
 			+ _f( "-n %d ", testFrames )
 			+ "-j " + QUOTE( jpeg )
 			+ " | " +
-        QUOTE( (binDir / "mpeg2enc").generic_string() )
+		QUOTE( binDir + "mpeg2enc" )
 			+ " -v 1 -b 3800 -f 8 -r 0 "
 			+ ( jpegfile.ar == dvdJpeg::_16x9 ? "-a 3 " : "-a 2 " )
 			+ ( ntsc ? "-n n " : "-n p " )
@@ -606,7 +604,7 @@ uint32_t roughGOP( dvdJpeg &jpegfile, const char *m2vName, bool ntsc )
 
 	ifstream mini2File( m2vName, ios::binary | ios::ate );
 	if( ! mini2File.is_open() )
-        FATAL( "Can't find input file " + string(m2vName) );
+		FATAL( "Can't find input file " << m2vName );
 
 	IPPPPPP = mini2File.tellg();
 	mini2File.close();

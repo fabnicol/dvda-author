@@ -96,9 +96,9 @@ int lpcm_video_ts::getPGC()
 // ----------------------------------------------------------------------------
 
 
-string ifoPrint_audio_attributes( audio_attr_t *attr )
+wxString ifoPrint_audio_attributes( audio_attr_t *attr )
 {
-    string info;
+	wxString info;
 
 	if(attr->audio_format == 0
 			&& attr->multichannel_extension == 0
@@ -113,7 +113,7 @@ string ifoPrint_audio_attributes( audio_attr_t *attr )
 			&& attr->unknown3 == 0
 			&& attr->unknown1 == 0) {
 		info += "(unspecified)";
-        return "";
+		return wxEmptyString;
 	}
 
 	switch(attr->audio_format) {
@@ -343,7 +343,7 @@ int lpcm_video_ts::getAudioStream()
 		{
 			if( verbose )
 				INFOv( _f( "Title %02d audio stream %d: %s\n", titleset, audioStream,
-                    ifoPrint_audio_attributes( &ifo->vtsi_mat->vts_audio_attr[audioStream] ).c_str() ) );
+					(const char *)ifoPrint_audio_attributes( &ifo->vtsi_mat->vts_audio_attr[audioStream] ) ) );
 
 											//...if another lpcm stream, repeat
 			if( ifo->vtsi_mat->vts_audio_attr[audioStream].audio_format == 4 )
@@ -460,16 +460,14 @@ int lpcm_video_ts::open( const char * VIDEO_TS, bool fatal )
 	tv = TVformat( ifo );
 	fName = VIDEO_TS;
 
-    label = fName.stem().generic_string();
+	label = fName.GetName();
 	if( label == "" || label == "VIDEO_TS" )
 		label = volumeLabel( VIDEO_TS, true );
 
 	if( verbose )
 	{
-        SCRN( string(INFO_TAG) + string("Opening dvd '"))
-        SCRN(TINT( label.c_str() ))
-        SCRN( "'.\n" )
-        INFO( _f( "Opening dvd '%s'.\n", label.c_str() ) );
+		SCRN( INFO_TAG << "Opening dvd '" << TINT( label ) << "'.\n" );
+		INFO( _f( "Opening dvd '%s'.\n", label.mb_str() ) );
 	}
 
 	state |= opened;
@@ -779,7 +777,7 @@ uint32_t lpcmPGextractor::nextAudioCellPts( uint16_t c )
 lpcmWriter* lpcmPGextractor::getWriter( int writeIndex, int context )
 {
 	static int lastIndex = -1;
-    string txt;
+	wxString txt;
 
 	if( writeIndex < numPGCcells )
 	{
@@ -804,9 +802,9 @@ lpcmWriter* lpcmPGextractor::getWriter( int writeIndex, int context )
 											// ...and initialize as appropriate
 			if( lFile->state & lpcmEntity::specified )
 			{
-                lFile->writer->fName = job->extractPath / lFile->fName;
-                if ( ! editing && ! fs::exists( lFile->writer->fName.parent_path() ) )
-                    fs_MakeDirs( lFile->writer->fName.parent_path() );
+				lFile->writer->fName = job->extractPath.GetFullPath() + wxSEP + lFile->fName.GetFullPath();
+				if ( ! editing && ! wxDir::Exists( lFile->writer->fName.GetPath() ) )
+					_wxMakeDirs( lFile->writer->fName.GetPath() );
 
 				lFile->writer->state = lFile->state;
 				memcpy( &lFile->writer->fmeta, &lFile->fmeta, sizeof( FLAC__StreamMetadata ) );
@@ -831,7 +829,7 @@ lpcmWriter* lpcmPGextractor::getWriter( int writeIndex, int context )
 
 
 				if( editing )
-                    lFile->writer->fName = lFile->writer->fName.generic_string() +
+					lFile->writer->fName = lFile->writer->fName.GetFullPath() +
 						((char*[]){ ".wav", ".flac ", ".lpcm" }) [ lFile->format-1 ];
 				else
 					lFile->writer->open();
@@ -844,7 +842,7 @@ lpcmWriter* lpcmPGextractor::getWriter( int writeIndex, int context )
 			txt = "Continuing ";
 
 		ECHO( "\n" );
-        STAT( txt << lFile->fName.generic_string().substr( lFile->root ) << endl );
+		STAT( txt << lFile->fName.GetFullPath().Mid( lFile->root ) << endl );
 
 		if( state & lplexAuthored )
 		{
@@ -853,9 +851,7 @@ lpcmWriter* lpcmPGextractor::getWriter( int writeIndex, int context )
 		}
 
 		SCRN( "\n" );
-        SCRN( string(STAT_TAG) + txt)
-        SCRN(TINT( lFile->writer->fName.filename().generic_string().c_str() ))
-        SCRN( "... " )
+		SCRN( STAT_TAG << txt << TINT( lFile->writer->fName.GetFullName() ) << "... " );
 
 		lastIndex = audioCells[writeIndex].xIndex;
 		return lFile->writer;
@@ -972,7 +968,7 @@ int lpcmPGextractor::configureCell( int context )
 	blank.group = titleset - 1;
 	blank.trim.offset = blank.trim.len = 0;
 	blank.details = _f( "%02x", lpcm_id );
-
+//   blank.root = job->extractPath.GetFullPath().Len() + 1;
 	blank.root = 0;
 	blank.edit = 0;
 
@@ -1022,7 +1018,7 @@ int lpcmPGextractor::configureCell( int context )
 		if( found = readUserData( lFile, buf + 0x343 ) )
 		{
 			ECHO( _f( "%s(%s) Lplex tags found in nav packet PCI.RECI at LB %d::0x343\n",
-                tag, nameNow.c_str(), cell->start_sector ) );
+				tag, nameNow.mb_str(), cell->start_sector ) );
 		}
 
 		for( uint8_t *look = buf + DVD_VIDEO_LB_LEN + 17;
@@ -1033,7 +1029,7 @@ int lpcmPGextractor::configureCell( int context )
 					if( found += readUserData( lFile, look + 12 ) )
 					{
 						ECHO( _f( "%s(%s) Lplex tags found in GOP User Data field at LB %d::0x%03lx\n",
-                            tag, nameNow.c_str(), cell->start_sector + 1,
+							tag, nameNow.mb_str(), cell->start_sector + 1,
 							look + 12 - DVD_VIDEO_LB_LEN - buf ) );
 						break;
 					}
@@ -1059,7 +1055,7 @@ POST( setw(10) << flacHeader::bytesUncompressed( &lFile->fmeta ) << " :" <<
 setw(10) << lFile->trim.len << " :" <<
 setw(7) << lFile->trim.offset <<" :" <<
 lFile->trim.padding <<" :" <<
-" " << lFile->fName.stem() << endl << setw(0) );
+" " << lFile->fName.GetName() << endl << setw(0) );
 #endif
 		}
 	}
@@ -1136,7 +1132,7 @@ void lpcmPGextractor::udfPrint()
 	std::sort( infofiles->begin(), infofiles->end(), udfSort );
 
 	ECHO( "\n" );
-    INFO( _f( "Udf dvd image '%s':\n", fName.filename().c_str() ) );
+	INFO( _f( "Udf dvd image '%s':\n", fName.GetFullName().mb_str() ) );
 	LOG ( "----------------------------------------------------\n" );
 	LOG ( "   offset      lb       size   path                 \n" );
 	LOG ( "----------------------------------------------------\n" );
@@ -1146,7 +1142,7 @@ void lpcmPGextractor::udfPrint()
 		iFile = &infofiles->at(i);
 		LOG( _f( "%9lx %7ld %10ld %c %s\n",
 			iFile->lb * DVD_VIDEO_LB_LEN, iFile->lb, iFile->size,
-            iFile->reject ? ' ' : '*', iFile->fName.c_str() ) );
+			iFile->reject ? ' ' : '*', iFile->fName.mb_str() ) );
 	}
 	ECHO( "\n" );
 }
@@ -1160,7 +1156,7 @@ void lpcmPGextractor::udfPrint()
 
 uint32_t lpcmPGextractor::vts_start_sector( int titleset )
 {
-    string vob = _f( "VIDEO_TS/VTS_%02i_1.VOB", titleset );
+	wxString vob = _f( "VIDEO_TS/VTS_%02i_1.VOB", titleset );
 	for( int j=0; j < infofiles->size(); j++ )
 		if( infofiles->at(j).fName == vob )
 			return infofiles->at(j).lb;
@@ -1177,7 +1173,7 @@ uint32_t lpcmPGextractor::vts_start_sector( int titleset )
 
 void lpcmPGextractor::udfCopyInfoFiles( const char * path )
 {
-    string iName, outPath;
+	wxString iName, outPath;
 	struct infoFile *iFile;
 	size_t udfStart;
 	fstream outFile, img;
@@ -1185,9 +1181,9 @@ void lpcmPGextractor::udfCopyInfoFiles( const char * path )
 	if( ! infofiles->size() )
 		return;
 
-    outPath = ( path ? path : (const char*)job->extractPath.generic_string() );
+	outPath = ( path ? path : (const char*)job->extractPath.GetFullPath() );
 
-    img.open( job->inPath.generic_string(), ios::binary | ios::in );
+	img.open( job->inPath.GetFullPath(), ios::binary | ios::in );
 	if( ! img )
 	{
 		ERR( "Could not open image file.\n" );
@@ -1198,15 +1194,15 @@ void lpcmPGextractor::udfCopyInfoFiles( const char * path )
 	{
 		iFile = &infofiles->at(i);
 		if( iFile->reject ||
-                fs::path( iFile->fName ).filename() == "Lplex.log" )
+				wxFileName( iFile->fName ).GetFullName() == "Lplex.log" )
 			continue;
 
 		iName = iFile->fName;
-        fs_fixSeparators( (char*)(const char*)iName.c_str() );
+		_wxFixSeparators( (char*)(const char*)iName.mb_str() );
 		INFO( "-copying '" << iName << "'\n" );
 
-        iName = outPath / iName;
-        fs_MakeDirs( fs::path( iName ).parent_path() );
+		iName = outPath + wxSEP + iName;
+		_wxMakeDirs( wxFileName( iName ).GetPath() );
 
 		img.seekg( iFile->lb * DVD_VIDEO_LB_LEN, ios::beg );
 
@@ -1238,7 +1234,7 @@ void lpcmPGextractor::udfCopyInfoFiles( const char * path )
 void udfError( const char *msg )
 {
 	_verbose = true;
-    ERR( string(msg) + "\n" );
+	ERR( msg << "\n" );
 	LOG( "\n" );
 	LOG( "This build of Lplex doesn't support dvd container (.lgz) files.\n" );
 	LOG( "See source code documentation for information on how to rebuild\n" );
