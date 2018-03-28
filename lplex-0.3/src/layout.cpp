@@ -287,7 +287,7 @@ int dvdLayout::checkSpace()
 
 	INFOv( spaceTxt << ".\n" );
 
-
+#if 0
     uint64_t freeSpace = fs::space(job->outPath).available;
     uint64_t tempSpace = fs::space(job->tempPath).available;
     uint64_t isoSpace  = fs::space(job->isoPath).available;
@@ -417,6 +417,7 @@ int dvdLayout::checkSpace()
 	}
 
 	ECHO( "\n" );
+ #endif
 	return 0;
 }
 
