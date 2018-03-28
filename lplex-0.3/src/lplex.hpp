@@ -26,6 +26,7 @@
 #include "lplex_precompile.h"
 #endif
 
+using namespace std;
 
 #include <cstdlib>
 #include <iostream>
@@ -34,11 +35,27 @@
 #include <unistd.h>
 #include <vector>
 #include <algorithm>
+
 #include <assert.h>
 #include <getopt.h>
+
+#include <wx/utils.h>
+#include <wx/dir.h>
+#include <wx/filename.h>
+#include <wx/file.h>
+#include <wx/string.h>
+#include <wx/cmdline.h>
+#include <wx/stdpaths.h>
+#include <wx/app.h>
+#include <wx/log.h>
+#include <wx/textfile.h>
+#include <wx/timer.h>
+#include <wx/process.h>
+#include <wx/fileconf.h>
+#include <wx/stopwatch.h>
+
 #include <math.h>
 #include <md5/md5.h>
-#include <experimental/filesystem>
 
 #include "util.h"
 #include "wx.hpp"
@@ -50,6 +67,7 @@
 #include "lplex.def"
 
 #define VERSION "0.3.1-rc2"
+//#define RELEASE ""
 
 #ifndef build_defs
 #define build_ver ""
@@ -61,9 +79,6 @@
 #define LPLEX_VERSION_STRING VERSION build_ver " " RELEASE
 #endif
 
-
-using namespace std;
-namespace fs = std::experimental::filesystem;
 
 class dvdLayout;
 class lpcmPGextractor;
@@ -114,26 +129,26 @@ extern option long_opts[];
 
 struct dvdJpeg
 {
-	fs::path fName, tName;
+	wxFileName fName, tName;
 	int dim, ar, rescale;
 	uint32_t roughGOP, roughGOP2;
 
 	enum { _4x3, _16x9 };
 	dvdJpeg(int asprat=_4x3) : rescale(0), ar(asprat) {}
-	string getName() { return rescale ? tName.generic_string() : fName.generic_string(); }
+	wxString getName() { return rescale ? tName.GetFullPath() : fName.GetFullPath(); }
 	int getDim() { return dim + ( rescale ? ( dim < 4 ? 4 : -4 ) : 0 ); }
 
-	const char *sizeStr( bool outputSize = true )
+	char *sizeStr( bool outputSize = true )
 	{
-		return (const char*[]){
+		return (char*[]){
 			"720x480", "704x480", "352x480", "352x240", // NTSC
 			"720x576", "704x576", "352x576", "352x288"  // PAL
 		} [ outputSize ? getDim() : dim ];
 	}
 
-	const char *aspStr( bool outputSize = true )
+	char *aspStr( bool outputSize = true )
 	{
-		return (const char*[]){ " 4:3", "16:9" } [ ar ];
+		return (char*[]){ " 4:3", "16:9" } [ ar ];
 	}
 };
 
@@ -157,7 +172,7 @@ struct lpcmFile : public lpcmEntity
 	uint32_t id, dvdFrames, audioFrames, videoFrames;
 	counter<uint32_t> ct;
 	lpcmWriter *writer;
-	string details;
+	wxString details;
 };
 
 inline bool operator < (const lpcmFile& a, const lpcmFile& b)
@@ -165,7 +180,7 @@ inline bool operator < (const lpcmFile& a, const lpcmFile& b)
 
 struct infoFile
 {
-	string fName;
+	wxString fName;
 	uint16_t root, edit;
 	bool reject;
 #ifdef dvdread_udflist
@@ -194,12 +209,6 @@ enum
 
 enum
 {
-    DIR_IGNORE = 0,
-    DIR_CONTINUE = 1
-};
-
-enum
-{
 	imagefile = 1,
 	dvdr = 2
 };
@@ -221,10 +230,10 @@ typedef struct
 	Ltype prepare;
 	uint16_t format, tv, media, flacLevel, jpegNow;
 	int16_t group;
-	string name, extractTo;
-	fs::path inPath, outPath, infoPath, tempPath, isoPath, projectPath;
+	wxString name, extractTo;
+	wxFileName inPath, outPath, infoPath, tempPath, isoPath, projectPath;
 	uint16_t trim, trim0, trimCt, update, now;
-	string mplexArg;
+	wxString mplexArg;
 	bool seqend;
 	uint16_t skip;
 }lplexJob;
@@ -234,13 +243,13 @@ typedef struct
 extern lplexJob job;
 extern vector<lpcmFile> Lfiles;
 extern vector<dvdJpeg> jpegs;
-extern vector<string> dirs;
-extern vector<string> menufiles;
+extern vector<wxString> dirs;
+extern vector<wxString> menufiles;
 extern vector<infoFile> infofiles;
 
 extern unsigned char bigBlock[BIGBLOCKLEN];
 
-extern string defaultOutPath;
+extern wxString defaultOutPath;
 extern char* defaultStill;
 extern _wxStopWatch stopWatch;
 extern int editing;
@@ -248,14 +257,14 @@ extern int debug;
 extern int endPause;
 extern int menuForce;
 extern lpcm_video_ts userMenus;
-extern string menuPath;
+extern wxString menuPath;
 extern int menusMap[99];
 
 uint16_t init( int argc, char *argv[] );
-
-uint16_t addFiles( fs::path filespec );
-string defaultName();
-int checkName( string &jobName, bool trim = false );
+int makeAbsolute( wxFileName &filespec );
+uint16_t addFiles( wxFileName filespec );
+wxString defaultName();
+int checkName( wxString &jobName, bool trim = false );
 uint16_t setName( const char *namePath, bool isDirPath=true );
 void setJobTargets();
 void splitPaths();
@@ -273,11 +282,11 @@ void GPL_notice();
 
 int author( dvdLayout &layout );
 int unauthor( lpcmPGextractor &dvd );
-void copyInfoFiles(const fs::path& nameA );
+void copyInfoFiles( wxString nameA );
 uint16_t readUserData( lpcmEntity *lFile, uint8_t *userData );
 uint16_t writeUserData( lpcmEntity *lFile, uint8_t *userData, uint16_t sizeofUData );
 int tagEmbed();
-int mkisofs(const fs::path &isoPath, const fs::path &dvdPath, const string& name );
+int mkisofs( wxFileName &isoPath, wxFileName &dvdPath, const char *name );
 
 #ifndef lplex_console
 void update( vector<lpcmFile> *lFiles, vector<infoFile> *iFiles, lplexJob *job );
@@ -299,40 +308,38 @@ int addJpeg( const char * fname, lplexJob &job, bool zero=false, bool ws=false )
 int jpegCheck( dvdJpeg &jpeg, bool ntsc, bool rescale );
 uint32_t roughGOP( const char *jpeg, const char *m2vName, bool ntsc );
 uint32_t roughGOP( dvdJpeg &dvdJpeg, const char *m2vName, bool ntsc );
-bool alias( fs::path &jpeg );
+bool alias( wxFileName &jpeg );
 
 ofstream* m2v( uint32_t vFrames, const char *jpeg, const char *m2vName,
 	uint16_t tv=NTSC, bool ws=false, void *userData=NULL, uint32_t sizeofUData=0,
 	uint16_t GOPsize=18, bool append=false, bool endSeq=false, bool close=true );
 
 
-class wxLplexLog : public ofstream
+class wxLplexLog : public wxLog
 {
 public:
-	virtual void DoLog( int level, const char *msg, time_t timestamp )
+	virtual void DoLog( wxLogLevel level, const wxChar *msg, time_t timestamp )
 	{
 		switch( level )
 		{
-			#if 0
-			case FatalError: FATAL( msg ); break;
-			case Error:        ERR( msg ); break;
-			case Warning:     WARN( msg ); break;
-			case Message:     INFO( msg ); break;
-			case Status:      STAT( msg ); break;
-			case Info:        INFO( msg ); break;
-			case Debug:
-			case Trace:
-			case Progress:
-			#endif
+			case wxLOG_FatalError: FATAL( msg ); break;
+			case wxLOG_Error:        ERR( msg ); break;
+			case wxLOG_Warning:     WARN( msg ); break;
+			case wxLOG_Message:     INFO( msg ); break;
+			case wxLOG_Status:      STAT( msg ); break;
+			case wxLOG_Info:        INFO( msg ); break;
+			case wxLOG_Debug:
+			case wxLOG_Trace:
+			case wxLOG_Progress:
 			default:
 				break;
 		}
 	}
-    virtual void DoLogString( const char* *msg, time_t timestamp ) {}
+	virtual void DoLogString( const wxChar *msg, time_t timestamp ) {}
 };
 
 
-class lFileTraverser //: public wxDirTraverser
+class lFileTraverser : public wxDirTraverser
 {
 public:
 
@@ -341,19 +348,16 @@ public:
 	bool dirSpecified;
 	struct lpcmFile lFile;
 	struct infoFile iFile;
-	vector<string> filenames;
+	vector<wxString> filenames;
 
 	lFileTraverser( bool isStrict=true ) : titleset(100), err(0), strict(isStrict) {}
 
 	void setRoot( const char *rootPath, int fromParent );
 	void processFiles();
 
-    void Traverse(const string& path);
-    
-    virtual void OnFile( const string& filename );
-    virtual int OnDir( const string& dirname );
-    virtual void OnOpenError( const string& openerrorname );
-
+	virtual wxDirTraverseResult OnFile( const wxString& filename );
+	virtual wxDirTraverseResult OnDir( const wxString& dirname );
+	virtual wxDirTraverseResult OnOpenError( const wxString& openerrorname );
 };
 
 
@@ -363,23 +367,22 @@ public:
 
 	int video, titlesets, dvdStyler, disabled;
 	fstream xml;
-	string name;
+	wxString name;
 
 	enum xmlContext
 	{
 		open, close, setDest, addTitle, openVob, closeVob, addChapter
 	};
 
-    dvdauthorXml( const string& xmlName, int tv=NTSC, int ct=1, bool styler=0, bool disable=0 ) :
+	dvdauthorXml( const char *xmlName, int tv=NTSC, int ct=1, bool styler=0, bool disable=0 ) :
 		video(tv), titlesets( ct ), dvdStyler( styler ), disabled( disable )
 	{
-        name = _f( "%s_dvd%s.xml", xmlName.c_str(), dvdStyler ? "styler" : "author" );
+		name = _f( "%s_dvd%s.xml", xmlName, dvdStyler ? "styler" : "author" );
 		write( open, name );
 	}
 
-    int write( xmlContext context, const string& str="", int flag=0 );
-
-	static string timestampFractional( uint32_t f, bool ntsc, float boost=0 );
+	int write( xmlContext context, const char* str="", int flag=0 );
+	static wxString timestampFractional( uint32_t f, bool ntsc, float boost=0 );
 };
 
 
@@ -387,8 +390,8 @@ class dvdUtil
 {
 public:
 
-	static string timestamp( uint32_t f, bool ntsc );
-	static string time( uint32_t f, bool ntsc );
+	static wxString timestamp( uint32_t f, bool ntsc );
+	static wxString time( uint32_t f, bool ntsc );
 	static uint64_t m2vEstimate( lpcmFile * lFile, bool ntsc );
 	static uint64_t sizeOnDvd( lpcmFile * lFile, bool ntsc );
 	static int sampleSeam( int channels, int bits_per_sample );
@@ -412,18 +415,18 @@ public:
 	lplexJob *job;
 	lpcmFile *lFile;
 	vector<lpcmFile> *Lfiles;
-	vector<string> *menufiles;
+	vector<wxString> *menufiles;
 	vector<infoFile> *infofiles;
 	lpcmReader *reader;
 	md5_state_t md5sum;
 	counter<uint64_t> ct;
-	string nameNow, spaceTxt;
+	wxString nameNow, spaceTxt;
 
-	dvdLayout( vector<lpcmFile> *lFiles, vector<string> *vFiles, vector<infoFile> *iFiles, lplexJob *plexJob ) :
+	dvdLayout( vector<lpcmFile> *lFiles, vector<wxString> *vFiles, vector<infoFile> *iFiles, lplexJob *plexJob ) :
 		Lfiles( lFiles ), menufiles( vFiles ), infofiles( iFiles ), job( plexJob ),
 		readIndex(-1), writeIndex(-1), reader(NULL)
 	{}
-	~dvdLayout() { /* if( editing ) */ saveOpts( this ); /* if( reader ) delete reader; */ }
+	~dvdLayout() { /* if( editing ) */ saveOpts( this ); if( reader ) delete reader; }
 
 	int configure();
 	uint64_t vobEstimate();

@@ -22,9 +22,8 @@
 #include "platform.h"
 #include "util.h"
 
-#include <sys/stat.h>
 uint16_t xlogExists = 0, _verbose = 0,  _xcode=0, blip_len=0, blip_ct=0;
-string _blip = "", _affirm = "";
+wxString _blip = "", _affirm = "";
 char propellor[] = { '-', '\0', '\\', '\0', '|', '\0', '/', '\0' };
 
 #if defined(WIN32_COLOR) || defined(ANSI_COLOR)
@@ -34,8 +33,6 @@ int colorMode = win32;
 #else
 int colorMode = ansi;
 #endif
-
-
 
 //struct{ char *ansiStr; int winVal; } colorTable[] =
 colorIndex colorTable[] =
@@ -116,7 +113,7 @@ void setcolors( int scheme )
 #ifdef _ERR2LOG
 
 ofstream xlog;
-string xlogName;
+wxString xlogName;
 
 
 char * scrub()
@@ -147,21 +144,9 @@ void scrub( int n )
 void unblip( bool clear )
 {
 	scrub();
-	scrub( _blip.length() );
+	scrub( _blip.Length() );
 	if( clear )
-        _blip.clear();
-}
-
-string toUpper(const string &s)
-{
-    string t = s;
-    for (auto &c : t) c = ::toupper(c);
-    return t;
-}
-
-void blip( const string& msg )
-{
-    blip(msg.c_str());
+		_blip.Empty();
 }
 
 void blip( const char *msg )
@@ -182,6 +167,7 @@ void blip( const char *msg )
 	blip_ct++;
 }
 
+
 // ----------------------------------------------------------------------------
 //    logInit :
 // ----------------------------------------------------------------------------
@@ -190,24 +176,23 @@ void blip( const char *msg )
 //    Returns
 // ----------------------------------------------------------------------------
 
-int logInit( const string& filename )
+
+int logInit( const char* filename )
 {
 	if( xlog.is_open() )
 		xlog.close();
 	xlogExists = 0;
 	xlog.clear();
-    if (! filename.empty() )
-        xlogName = filename;
-	
-	xlog.open( xlogName.c_str() );
-	
-    if( ! xlog.is_open())
-    {
-        ERR( "Couldn't open log file \'" + string(xlogName) + "\'.\n" );
-    }
+	if( filename )
+		xlogName = filename;
+	xlog.open( xlogName.mb_str() );
+	if( ! xlog )
+		ERR( "Couldn't open log file \'" << xlogName << "\'.\n" );
 	else
 		xlogExists = 1;
 }
+
+
 
 // ----------------------------------------------------------------------------
 //    logCopy :
@@ -217,15 +202,19 @@ int logInit( const string& filename )
 //    Returns 0
 // ----------------------------------------------------------------------------
 
-int logCopy( const fs::path& filename )
+
+int logCopy( const char* filename )
 {
-	if( ! filename.empty() )
+	if( filename )
 	{
-		INFO( _f( "Saving log file to \'%s\'\n", filename.generic_string() ) );
-		fs::copy_file( xlogName, filename );
+		INFO( _f( "Saving log file to \'%s\'\n", filename ) );
+		wxCopyFile( xlogName, filename );
 	}
 	return 0;
 }
+
+
+
 
 // ----------------------------------------------------------------------------
 //    logClose :
@@ -234,6 +223,7 @@ int logCopy( const fs::path& filename )
 //
 //    Returns 0
 // ----------------------------------------------------------------------------
+
 
 int logClose()
 {
@@ -256,7 +246,7 @@ int logClose()
 int logDelete()
 {
 	xlog.close();
-	remove( xlogName.c_str() );
+	wxRemoveFile( xlogName );
 	return 0;
 }
 
@@ -332,7 +322,7 @@ void outputhexraw( unsigned char *buf, int n )
 
 int otherThan( const char c, unsigned char *buf, int n )
 {
-    for (int i = 0; i < n; ++i)
+	for (int i=0; i<n; i++)
 		if( buf[i] != c )
 			return 1;
 	return 0;
@@ -348,11 +338,11 @@ int otherThan( const char c, unsigned char *buf, int n )
 // ----------------------------------------------------------------------------
 
 
-string hexToStr( const unsigned char *buf, int n, int w )
+wxString hexToStr( const unsigned char *buf, int n, int w )
 {
-	string str;
-	for ( int i=0; i < n; ++i )
-        str += _f( "%02x", buf[i] );
+	wxString str;
+	for ( int i=0; i < n; i++ )
+		str << /*( i % w ? "" : "\n" ) << */_f( "%02x", buf[i] );
 
 	return str;
 }
@@ -379,7 +369,7 @@ int strtomd5( md5_byte_t *md5Str, const char *txt )
 
 	memset( md5Str, 0, 16 );
 
-	for( i=0; i < 16; ++i )
+	for( i=0; i < 16; i++ )
 	{
 		if ( isxdigit( (int) hexPair[0] ) && isxdigit( (int) hexPair[1] ) &&
 			sscanf( hexPair, "%02X", &val ) == 1 )
@@ -410,7 +400,7 @@ size_t filesize( const char * filename )
 
 	ifstream file( filename, ios::binary | ios::ate );
 	if( ! file.is_open() )
-        ERR( "Can't find input file " + string(filename) + "\n" );
+		ERR( "Can't find input file " << filename << "\n" );
 	size = file.tellg();
 	file.close();
 
@@ -424,7 +414,7 @@ size_t filesize( const char * filename )
 // ----------------------------------------------------------------------------
 
 
-string sizeStr( uint64_t size )
+wxString sizeStr( uint64_t size )
 {
 	if( size > GIGABYTE )
 		return _f( "%s%.2f GB", (double) size / GIGABYTE < 10 ? " " : "",

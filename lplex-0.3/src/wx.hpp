@@ -28,45 +28,78 @@
 
 using namespace std;
 
+#include <wx/utils.h>
+#include <wx/dir.h>
+#include <wx/filename.h>
+#include <wx/file.h>
+#include <wx/string.h>
+#include <wx/cmdline.h>
+#include <wx/stdpaths.h>
+#include <wx/app.h>
+#include <wx/log.h>
+#include <wx/textfile.h>
+#include <wx/timer.h>
+#include <wx/process.h>
+#include <wx/txtstrm.h>
+
 #include "util.h"
 
-
-#if defined __WIN32 || defined _WIN32 || defined _WIN64 || defined __WIN64 || defined MINGW32 || defined MINGW64
-#  define SEPARATOR  "/"
-#  define USER  "USERNAME"
-#  define HOME  "C:\\Users"
-#else
-#  define SEPARATOR "\\"
-#  define USER "USER"
-#  define HOME "HOME"
+#ifndef wxSEP
+#define wxSEP wxFILE_SEP_PATH
 #endif
 
-bool fs_MakeDirs( const fs::path& dirName );
-string fs_GetTempDir();
-bool fs_DeleteDir( const fs::path& dirName );
-bool fs_EmptyDir( const fs::path& dirName );
-size_t fs_GetAllDirs( const string& dirName, vector<string>& dirs );
-size_t fs_DirSize( const fs::path& dirName );
-const char * fs_validPath( const fs::path&  filename );
-void fs_fixSeparators( char * path );
+bool _wxMakeDirs( const char *dirName );
+wxString _wxEndSep( const char *path );
+wxString _wxGetTempDir();
+bool _wxDeleteDir( const char *dirName );
+bool _wxEmptyDir( const char *dirName );
+size_t _wxGetAllDirs( const wxString& dirName, wxArrayString *dirs );
+size_t _wxDirSize( const char *dirName );
+const char * _wxValidPath( const char * filename );
+void _wxFixSeparators( char * path );
 
-class _wxStopWatch 
+class _wxStopWatch : public wxStopWatch
 {
 public:
 	int m, s;
 
 	void pause()
 	{
-		// Pause();
-		// m = Time() / 60000;
-		// s = ( Time() % 60000 ) / 1000;
-		// INFO( _f( "Elapsed time=%d:%02d\n", m, s ) );
-		// SCRN( INFO_TAG << _f( "Done - %d min %02d sec.\n", m, s ) );
+		Pause();
+		m = Time() / 60000;
+		s = ( Time() % 60000 ) / 1000;
+		INFO( _f( "Elapsed time=%d:%02d\n", m, s ) );
+		SCRN( INFO_TAG << _f( "Done - %d min %02d sec.\n", m, s ) );
 	}
-
-    void Start() {}
 };
 
+class _wxFileKiller : public wxDirTraverser
+{
+public:
+
+	wxArrayString dirs;
+
+	_wxFileKiller( const wxString& dirName ) {}
+	~_wxFileKiller()
+	{
+		for( int i = dirs.GetCount() - 1; i > -1; i-- )
+			if( ! (wxRmdir( dirs[i] )) )
+				ERR( _f( "Unable to remove \'%s\'\n", dirs[i].mb_str() ) );
+	}
+
+	virtual wxDirTraverseResult OnFile( const wxString& filename )
+	{
+		if( ! wxRemoveFile( filename ) )
+			ERR( _f("Unable to remove \'%s\'\n", filename.mb_str() ) );
+		return wxDIR_CONTINUE;
+	}
+
+	virtual wxDirTraverseResult OnDir( const wxString& dirName )
+	{
+		dirs.Add( dirName );
+		return wxDIR_CONTINUE;
+	}
+};
 
 
 #endif
