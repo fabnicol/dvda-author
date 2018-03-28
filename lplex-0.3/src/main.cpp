@@ -20,26 +20,26 @@
 
 
 #include "lplex.hpp"
+#include "jobs.hpp"
 
 lplexJob job;
 vector<lpcmFile> Lfiles;
 vector<dvdJpeg> jpegs;
-vector<wxString> dirs;
-vector<wxString> menufiles;
+vector<string> dirs;
+vector<string> menufiles;
 vector<infoFile> infofiles;
 lpcmPGextractor dvd( &Lfiles, &infofiles, &job );
 
 
 unsigned char bigBlock[BIGBLOCKLEN];
 
-wxString dataDir, binDir, configDir, tempDir, cwd;
-wxString readOnlyPath;
-wxFileName lplexConfig;
-wxString projectDotLplex, shebang;
-wxString gzFile;
-wxString menuPath;
+fs::path dataDir, binDir, configDir, tempDir, readOnlyPath;
+fs::path lplexConfig, cwd, projectDotLplex;
+string  shebang;
+string gzFile;
+string menuPath;
 bool startNewTitleset, projectFile, screenJpg, lgz;
-wxString cmdline;
+string cmdline;
 
 _wxStopWatch stopWatch;
 wxLplexLog _wxLog;
@@ -56,7 +56,7 @@ enum
 int debug = 0, editing = 0, edit = 0, endPause, menuForce = 0;
 lpcm_video_ts userMenus;
 int menuMap[99];
-wxFileName optSrc;
+fs::path optSrc;
 enum { inif, commandline, prjf };
 int optindl, optContext;
 
@@ -100,14 +100,9 @@ int main( int argc, char *argv[] )
 	atexit( done );
 	_verbose = false;
 
-	if ( ! wxInitialize() )
-		return -1;
-
-	wxLogNull xx;
-
 	if( init( argc, argv ) )
 	{
-		wxLog::SetActiveTarget( &_wxLog );
+        //wxLog::SetActiveTarget( &_wxLog );
 #ifdef _ERR2LOG
 		xlog << cmdline << "\n-------------------------------------------------------------------------------\n" << endl;
 #endif
@@ -115,9 +110,9 @@ int main( int argc, char *argv[] )
 		{
 #ifdef lgzip_support
 			if( dvd.isOpen() )
-				return udfZip( dvd, true, job.outPath.GetFullPath() ) ? 0 : 1;
-			else if( gzFile != wxEmptyString )
-				return udfUnzip( gzFile, job.outPath.GetFullPath() );
+				return udfZip( dvd, true, job.outPath.generic_string() ) ? 0 : 1;
+			else if( gzFile != "" )
+				return udfUnzip( gzFile, job.outPath.generic_string() );
 			FATAL( "Gzip uninitialized." );
 #else
 			udfError( "Unsupported feature." );
@@ -213,13 +208,13 @@ struct option long_opts[] =
 
 uint16_t init( int argc, char *argv[] )
 {
-	wxImage::AddHandler( new wxJPEGHandler );
+    //wxImage::AddHandler( new wxJPEGHandler );
 											//set defaults
 	initPlatform();
-	_wxMakeDirs( configDir );
-	logInit( configDir + "lplex.log" );
-	projectDotLplex = configDir + "project.lplex";
-	cwd = wxFileName::GetCwd();
+    fs_MakeDirs( fs::path(configDir) );
+    logInit( (configDir / "lplex.log").generic_string() );
+    projectDotLplex = configDir / "project.lplex";
+    cwd = fs::current_path();
 	job.tempPath = tempDir;
 
 	job.params = dvdv | md5 | restore | info | cleanup | rescale;
@@ -234,10 +229,10 @@ uint16_t init( int argc, char *argv[] )
 	job.jpegNow = 0;
 	job.group = -1;
 	job.media = plusR;
-	job.trim = seamless;
+    job.trim = jobs::seamless;
 	job.trim0 = job.trimCt = 0;
-	job.name = wxEmptyString;
-	job.extractTo = wxEmptyString;
+	job.name = "";
+	job.extractTo = "";
 	job.now = 0;
 	job.update = 0;
 
@@ -255,72 +250,79 @@ uint16_t init( int argc, char *argv[] )
 #endif
 #endif
 
-	wxString arg;
+	string arg;
 											// check config file
 
-	wxFileConfig configFile( "lplex", wxEmptyString, lplexConfig.GetFullPath(), wxEmptyString,
-		wxCONFIG_USE_LOCAL_FILE | wxCONFIG_USE_RELATIVE_PATH );
-
-	optSrc = lplexConfig.GetFullName().mb_str();
+    ofstream configFile;
+	optSrc = lplexConfig.filename().c_str();
 	optContext = inif;
 	optindl = -1;
 
 											// ...write a default config file if none exists
-	if( ! wxFileExists( lplexConfig.GetFullPath() ) )
+    if( ! fs::exists(lplexConfig.generic_string() ) )
 	{
-		configFile.Write( "formatout"    , "wav" );
-		configFile.Write( "video"        , "ntsc" );
-		configFile.Write( "md5aware"     , "yes" );
-		configFile.Write( "restore"      , "yes" );
-		configFile.Write( "infofiles"    , "yes" );
-		configFile.Write( "jpeg"         , "black" );
-		configFile.Write( "splice"       , "seamless" );
-		configFile.Write( "shift"        , "backward" );
-		configFile.Write( "cleanup"      , "yes" );
-#ifdef lgzip_support
-		configFile.Write( "create"       , "lgz" );
-#else
-		configFile.Write( "create"       , "iso" );
-#endif
-		configFile.Write( "media"        , "dvd+r" );
-		configFile.Write( "dvdpath"      , "adjacent" );
-		configFile.Write( "isopath"      , "adjacent" );
-		configFile.Write( "extractpath"  , "adjacent" );
-		configFile.Write( "workpath"     , job.tempPath.GetFullPath() );
-		configFile.Write( "readonlypath" , readOnlyPath );
-		configFile.Write( "verbose"      , "no" );
-		configFile.Flush();
-	}
 
+        configFile.open(lplexConfig.generic_string());
+
+        configFile <<  "formatout = wav"  << endl;
+        configFile <<   "video = ntsc" << endl;
+        configFile << "md5aware = yes"  << endl;
+        configFile << "restore = yes"  << endl;
+        configFile << "infofiles = yes"  << endl;
+        configFile << "jpeg  = black"  << endl;
+        configFile << "splice = seamless"  << endl;
+        configFile << "shift = backward"  << endl;
+        configFile << "cleanup = yes"  << endl;
+#ifdef lgzip_support
+        configFile << "create = lgz"  << endl;
+#else
+        configFile << "create = iso"  << endl;
+#endif
+        configFile << "media = dvd+r"  << endl;
+        configFile << "dvdpath = adjacent"  << endl;
+        configFile << "isopath = adjacent"  << endl;
+        configFile << "extractpath = adjacent"  << endl;
+        configFile << "workpath = " << job.tempPath.generic_string()  << endl;
+        configFile << "readonlypath = " << readOnlyPath.generic_string() << endl;
+        configFile <<  "verbose = no"  << endl;
+        configFile.flush();
+	}
+#if 0
 											// ...or read in config file settings
-	else for( optindl=0; long_opts[optindl].name; optindl++ )
+    else for( optindl=0; long_opts[optindl].name; ++optindl )
 	{
-		if( configFile.Read( long_opts[optindl].name, &( arg = wxEmptyString ) ) )
+		if( configFile.Read( long_opts[optindl].name, &( arg = "" ) ) )
 			setopt( long_opts[optindl].val, arg );
 	}
-											// check for unresolved options
+#endif											// check for unresolved options
 
-	if( ! ( job.trim & ( backward | nearest | forward ) ) )
-		job.trim |= backward;
+    if( ! ( job.trim & ( jobs::backward | jobs::nearest | jobs::forward ) ) )
+        job.trim |= jobs::backward;
 											// parse the command line
 	startNewTitleset = true;
 	projectFile = true;
 	lgz = false;
 	optContext = commandline;
-	optSrc = cwd + wxSEP + "command line";
+    optSrc = cwd / "command line";
 	optindl = -1;
 
 #ifdef _ERR2LOG
-	_affirm = "   ";
-	cmdline << "\n-------------------------------------------------------------------------------\n"
-		<< INFO_TAG << "Commandline: ";
-	for( int i=1; i<argc; i++ )
-		cmdline << QUOTE( argv[i] ) << " ";
+
+    _affirm = "   ";
+    cmdline += "\n-------------------------------------------------------------------------------\n";
+    cmdline += INFO_TAG;
+    cmdline += "Commandline: ";
+
+    for( int i=1; i<argc; ++i )
+    {
+        cmdline += QUOTE( argv[i] ) ;
+        cmdline += " ";
+    }
 #endif
 
 	getOpts( argc, argv );
 
-	dirs.push_back( job.inPath.GetPath() );
+    dirs.push_back( job.inPath.parent_path().generic_string() );
 	if( ! ( job.params & ( unauth | gzip ) ) )
 		splitPaths();
 	setJobTargets();
@@ -335,25 +337,6 @@ uint16_t init( int argc, char *argv[] )
 
 
 // ----------------------------------------------------------------------------
-//    makeAbsolute :
-// ----------------------------------------------------------------------------
-//    Converts given relative <filespec> into an absolute path.
-//
-//    Returns offset of original relative path within new absolute path.
-// ----------------------------------------------------------------------------
-
-
-int makeAbsolute( wxFileName &filespec )
-{
-#if 1
-		filespec = optSrc.GetPath() + wxSEP + filespec.GetFullPath();
-#else // doesn't work right in wxWidgets 2.7.2
-		filespec.MakeAbsolute( optSrc.GetPath() );
-#endif
-	return optSrc.GetPath().Length() + 1;
-}
-
-// ----------------------------------------------------------------------------
 //    addFiles :
 // ----------------------------------------------------------------------------
 //    Processes given <filespec> from project file or command line.
@@ -362,51 +345,59 @@ int makeAbsolute( wxFileName &filespec )
 // ----------------------------------------------------------------------------
 
 
-uint16_t addFiles( wxFileName filespec )
+uint16_t addFiles( fs::path filespec )
 {
 	int reauthoring = 0, rel = 0;
-	wxString specPath;
-	wxDir dir;
+    fs::path specPath;
+
 	lFileTraverser selector( editing ? edit & strict : true );
 	bool isDot = false;
 
 	flacHeader::zeroStreamInfo( &selector.lFile.fmeta );
-//   wxLogNull xx;
 
 											//resolve if relative filespec...
-	if( ! wxIsAbsolutePath( filespec.GetFullPath() ) )
-//   if( filespec.IsRelative() ) // this fails if filespec is just 'd:'
+    if( ! ( filespec.is_absolute() ) )
 	{
-		rel = makeAbsolute( filespec );
+        filespec = fs::absolute( filespec );
 
-		if( filespec.GetFullPath().Right(1) == "."  )
+        if( Right(filespec.generic_string(), 1) == "."  )
 		{
-			filespec = filespec.GetPath();
+            filespec = filespec.parent_path();
 			isDot = true;
 		}
 	}
 
 											//if filespec is a directory, open it...
-	if( wxDir::Exists( filespec.GetFullPath() ) )
+    if( fs::exists( filespec) )
 	{
-		STAT( _f("Scanning '%s'.\n", filespec.GetFullPath().mb_str()));
+		STAT( _f("Scanning '%s'.\n", filespec.generic_string().c_str()));
 											//...or its parent if VIDEO_TS folder
-		if( ! filespec.GetFullName().CmpNoCase( "VIDEO_TS" ) )
-			filespec = filespec.GetPath();
 
-		dir.Open( specPath = filespec.GetFullPath() );
+        string comp = filespec.filename().generic_string();
 
-		if ( !dir.IsOpened() )
-			usage( "unable to open input directory" );
-
+        if (  toUpper(comp) !=  "VIDEO_TS" )
+        {
+            filespec = filespec.parent_path();
+        }
 											//...unauthor if it contains a dvd structure
-		if( dir.HasSubDirs( "VIDEO_TS" ) )
+        bool has_vts_subdir = false;
+
+//        for(auto& p: fs::directory_iterator(dir))
+//        {
+//            if (p.path().filename().generic_string() == "VIDEO_TS")
+//            {
+//                has_vts_subdir = true;
+//                break;
+//            }
+//        }
+
+        if( has_vts_subdir )
 		{
-			job.inPath = specPath + wxSEP + "VIDEO_TS";
-			if( job.extractTo != wxEmptyString )
+            job.inPath = specPath / "VIDEO_TS";
+            if( ! job.extractTo.empty())
 				job.outPath = job.extractTo;
 
-			dvd.open( filespec.GetFullPath() );
+            dvd.open( filespec.generic_string().c_str() );
 			job.tv = dvd.tv;
 			clearbits( job.params, jobMode );
 #ifdef dvdread_udflist
@@ -419,33 +410,26 @@ uint16_t addFiles( wxFileName filespec )
 		else
 		{
 			job.params |= auth;
-			job.inPath = _wxEndSep( specPath );
 		}
 
 		selector.dirSpecified = true;
 	}
 											//else if it exists, open parent dir.
-	else if( wxDir::FindFirst( filespec.GetPath(), filespec.GetFullName(), wxDIR_FILES )
-			!= wxEmptyString )
+    else if( fs::exists(filespec))
 	{
 		if( Lfiles.size() == 0 )
 		{
-			dirs.push_back( filespec.GetPath() );
-			if( job.inPath.GetFullPath() == wxEmptyString )
-				job.inPath = filespec.GetPath() + wxSEP;
+            dirs.push_back( filespec.parent_path().generic_string() );
+			if( job.inPath.generic_string() == "" )
+                job.inPath = filespec.parent_path();
 		}
-
-		dir.Open( specPath = filespec.GetPath( wxPATH_NATIVE | wxPATH_GET_VOLUME ));
-		if ( !dir.IsOpened() )
-			FATAL( "Can't open input directory '" << filespec.GetFullPath() << "'." );
-
 											//check if it's an image file
-		if( dvd.open( filespec.GetFullPath(), false ) )
+        if( dvd.open( filespec.generic_string().c_str(), false ) )
 		{
-			specPath += ( wxSEP + filespec.GetName() );
+            specPath = specPath / filespec.stem();
 			job.media = imagefile;
 			job.inPath = filespec;
-			job.name = filespec.GetName();
+            job.name = filespec.stem().generic_string();
 			job.tv = dvd.tv;
 			clearbits( job.params, jobMode );
 #ifndef dvdread_udflist
@@ -471,24 +455,24 @@ uint16_t addFiles( wxFileName filespec )
 											//else not found.
 	else
 	{
-		FATAL( "Can't find '" << filespec.GetFullPath()/*.Mid( rel ) */ << "'." );
+        FATAL( "Can't find '" + filespec.generic_string() + "'." );
 	}
 
 											//if unauthoring, change spec to find any info files
 	if( job.params & unauth )
 	{
-		setName( specPath );
+        setName( specPath.generic_string().c_str() );
 		if( job.media & imagefile )
 			return 0;
-		else
-			dir.Open( specPath );
 	}
 											//if authoring, check if project
 	else
 	{
-		if( projectFile && filespec.GetFullPath().Right(6).CmpNoCase( ".lplex" ) == 0 )
+        string comp = toUpper(Right(filespec.generic_string(), 6));
+
+        if( projectFile &&  comp ==  ".LPLEX")
 		{
-			if( Lfiles.size() == 0 && job.projectPath.GetFullPath() == wxEmptyString )
+            if( Lfiles.size() == 0 && job.projectPath.empty() )
 			{
 				job.projectPath = filespec;
 				job.now |= hasProjectFile;
@@ -497,15 +481,16 @@ uint16_t addFiles( wxFileName filespec )
 		else
 			projectFile = false;
 
-		if( filespec.GetFullPath().Right(4).CmpNoCase( ".lgz" ) == 0 )
+        comp = toUpper(Right(filespec.generic_string(), 4));
+        if( comp  ==  ".LGZ" )
 		{
 			if( Lfiles.size() == 0 )
 			{
 #ifdef lgzip_support
 				job.params |= ( auth | gzip );
-				job.name = filespec.GetName();
-				gzFile = filespec.GetFullPath();
-				job.outPath = job.inPath.GetPath();
+				job.name = filespec.stem();
+				gzFile = filespec.generic_string();
+                job.outPath = job.inPath.parent_path();
 				job.isoPath = job.outPath;
 //            job.projectPath = filespec;
 				return 0;
@@ -518,26 +503,23 @@ uint16_t addFiles( wxFileName filespec )
 		if( ! ( job.now & isNamed ) )
 		{
 			if( projectFile || isDot )
-				setName( filespec.GetFullPath(), isDot ? true : false );
+                setName( filespec.generic_string().c_str(), isDot ? true : false );
 												//or if reauthoring
-			else
-				reauthoring = setName( specPath );
+//			else
+//                reauthoring = setName( specPath.generic_string().c_str() );
 		}
 
 		if( projectFile )
 		{
 			projectFile = false;
-			getOpts( filespec.GetFullPath() );
+            getOpts( filespec.generic_string().c_str() );
 			return 1;
 		}
 	}
 
-	specPath = _wxEndSep( specPath );
 											//go through and select matching files
-	selector.setRoot( specPath, job.params & unauth ? 0 : reauthoring ? 0 : 1 );
-	dir.Traverse( selector, filespec.GetFullPath().Mid( specPath.Len() ),
-		wxDIR_FILES | wxDIR_DIRS );
-
+    selector.setRoot( specPath.generic_string().c_str(), job.params & unauth ? 0 : reauthoring ? 0 : 1 );
+    selector.Traverse(fs::absolute(filespec).generic_string().substr( specPath.generic_string().length()));
 	selector.processFiles();
 
 	if( selector.err & lFileTraverser::mismatchA )
@@ -563,9 +545,13 @@ uint16_t addFiles( wxFileName filespec )
 		if( selector.err & lFileTraverser::invalid || ! Lfiles.size() )
 		{
 			if ( selector.err & lFileTraverser::invalid )
+            {
 				ERR( "Invalid audio encountered.\n" );
+            }
 			else if ( ! Lfiles.size() )
+            {
 				ERR( "No valid audio to process.\n" );
+            }
 
 			LOG( "\n" );
 			LOG( "Valid audio is either wave or flac lpcm,\n" );
@@ -598,51 +584,56 @@ uint16_t addFiles( wxFileName filespec )
 
 uint16_t setName( const char *namePath, bool isDir )
 {
-	if( namePath == projectDotLplex )
+    if( fs::path(namePath) == projectDotLplex )
 		return 0;
 
 	int reauthoring = 0;
-	wxFileName fName( namePath );
+	fs::path fName( namePath );
+    if (! fs::exists(fName))
+    {
+        ERR("Path " + fName.generic_string() + " does not exist.")
+        throw;
+    }
 											//if as yet unspecified, resolve
-	if( job.name == wxEmptyString )
+    if( job.name.empty())
 	{
 											//target name...
-		if( job.projectPath.GetFullPath() != wxEmptyString &&
-			job.projectPath.GetFullPath() != projectDotLplex )
-				job.name = job.projectPath.GetName();
-		if( job.name == wxEmptyString )
-			job.name = fName.GetFullName();
-		if( job.name == wxEmptyString )
+        if( ! job.projectPath.empty() &&
+            job.projectPath != projectDotLplex )
+                job.name = job.projectPath.stem().generic_string();
+        if( job.name.empty())
+            job.name = fName.filename().generic_string();
+        if( job.name.empty())
 			job.name = volumeLabel( namePath, true );
-		if( job.name == wxEmptyString )
+        if( job.name.empty())
 			job.name = defaultName();
   }
 
-	wxLongLong freeSpace;
-	wxGetDiskSpace( _wxValidPath( fName.GetFullPath() ), NULL, &freeSpace );
+    uint64_t freeSpace = fs::space(fName).available;
 										//...and location
 										//if source is on a hard drive
 	if( freeSpace != 0 )
 	{
 										//...default output is next door to input
-		if( ! job.outPath.IsOk() )
+        if(  (fs::status(job.outPath).permissions() & fs::perms::owner_write) == fs::perms::none )
 		{
-//         job.outPath = fName.GetPath() + wxSEP;
-//         job.outPath = fName.GetPath();
-			if( wxFileName::IsDirWritable( fName.GetPath() ) )
+//         job.outPath = fName.parent_path() + SEPARATOR;
+//         job.outPath = fName.parent_path();
+            if( (fs::status( fName.parent_path() ).permissions() & fs::perms::owner_write) != fs::perms::none )
 			{
-				job.outPath = fName.GetPath();
-				if( ! isDir && wxFileName::IsDirWritable( job.outPath.GetPath() ) )
-//               job.outPath.RemoveLastDir();
-					job.outPath = job.outPath.GetPath();
-				job.outPath = job.outPath.GetFullPath() + wxSEP;
+                job.outPath = fName.parent_path();
+                if( ! isDir && (fs::status( job.outPath.parent_path() ).permissions() & fs::perms::owner_write) != fs::perms::none )
+                {
+                    job.outPath = job.outPath.parent_path();
+                }
+                job.outPath = job.outPath;
 			}
 		}
 		reauthoring = checkName( job.name, true );
 	}
 										//if source is read-only or outpath isn't writable
 										//...output is to default folder
-	/* else */ if( ! job.outPath.IsOk() )
+    /* else */ if(  (fs::status(job.outPath).permissions() & fs::perms::owner_write)  == fs::perms::none )
 	{
 		job.outPath = readOnlyPath;
 	}
@@ -651,7 +642,7 @@ uint16_t setName( const char *namePath, bool isDir )
 	{
 		if( job.group > 0 && ! ( job.params & unauth ) )
 		{
-			job.outPath = job.outPath.GetPath() + wxSEP;
+            job.outPath = job.outPath.parent_path();
 			job.name = defaultName();
 		}
 
@@ -680,18 +671,19 @@ uint16_t setName( const char *namePath, bool isDir )
 
 void setJobTargets()
 {
-	if( job.projectPath.GetFullPath() == wxEmptyString )
+	if( job.projectPath.generic_string() == "" )
 		job.projectPath = ( ( edit & dot ) || editing ) && job.outPath != readOnlyPath ?
-			job.inPath.GetFullPath() + job.name + ".lplex" :
+            job.inPath / (job.name + ".lplex") :
 			projectDotLplex;
 
-	if( ! job.isoPath.IsOk() )
-		job.isoPath = job.outPath.GetPath();
-	job.isoPath = _wxEndSep( job.isoPath.GetFullPath() ) + job.name + ".iso";
+    if( (fs::status(job.isoPath).permissions() & fs::perms::owner_write) == fs::perms::none  )
+        job.isoPath = job.outPath.parent_path();
+
+    job.isoPath = job.isoPath / (job.name + ".iso");
 
 	if( ! ( job.params & gzip ) )
-		job.outPath = job.outPath.GetFullPath() + job.name;
-	job.tempPath = job.tempPath.GetFullPath() + job.name + wxSEP;
+        job.outPath = job.outPath / job.name;
+    job.tempPath = job.tempPath / job.name;
 }
 
 
@@ -705,28 +697,28 @@ void setJobTargets()
 
 
 
-int checkName( wxString &jobName, bool trim )
+int checkName( string &jobName, bool trim )
 {
 	int suffix = 0, reauthoring = 0;
 												//...if reauthoring, trim Lplex name suffixes
-	if( jobName.Right( 9 ) == "_UNPACKED" )
+    if( Right(jobName,  9 ) == "_UNPACKED" )
 	{
 		if( ! trim )
 			return 1;
 
 		suffix = 9;
-		if( jobName.Right( 13 ) == "_DVD_UNPACKED" )
+        if( Right(jobName, 13 ) == "_DVD_UNPACKED" )
 		{
 			suffix = 13;
 			reauthoring = 2;
 		}
-		else if( jobName.Right( 15 ).Left( 5 ) == "_DVD_" )
+        else if( Right(jobName, 15 ).Left( 5 ) == "_DVD_" )
 		{
 			suffix = 15;
-			reauthoring = atoi( jobName.Right( 10 ).Left( 1 ) ) + 1;
+            reauthoring = stoi( Right(jobName, 10 ).Left( 1 ) ) + 1;
 		}
 
-		jobName.Truncate( jobName.Len() - suffix );
+        jobName.substr(0,  jobName.length() - suffix );
 	}
 
 	return reauthoring;
@@ -743,12 +735,12 @@ int checkName( wxString &jobName, bool trim )
 // ----------------------------------------------------------------------------
 
 
-wxString defaultName()
+string defaultName()
 {
-	wxDateTime now = wxDateTime::Now();
-	return _f( "%d-%02d-%02d_%02d%02d",
-		now.GetYear(), now.GetMonth() + 1, now.GetDay(),
-		now.GetHour(), now.GetMinute() );
+//	wxDateTime now = wxDateTime::Now();
+//	return _f( "%d-%02d-%02d_%02d%02d",
+//		now.GetYear(), now.GetMonth() + 1, now.GetDay(),
+//		now.GetHour(), now.GetMinute() );
 }
 
 
@@ -759,11 +751,11 @@ wxString defaultName()
 // ----------------------------------------------------------------------------
 
 
-int validatePath( const char *path )
+int validatePath( const fs::path& path )
 {
-	if( ! _wxValidPath( path )  )
+	if( ! fs_validPath( path )  )
 	{
-		ERR( _f( "Invalid path '%s'.\n", path ) );
+        ERR( _f( "Invalid path '%s'.\n", path.generic_string().c_str() ) );
 		return 0;
 	}
 	return 1;
@@ -778,7 +770,7 @@ int validatePath( const char *path )
 
 
 
-bool isSubStr( wxString &A, wxString &B ) { return B.Contains( A ); }
+bool isSubStr( string &A, string &B ) { return ( B.find(A) != string::npos); }
 
 
 
@@ -804,7 +796,7 @@ void splitPaths()
 		{
 			if( isSubStr( dirs[j], infofiles[i].fName ) )
 			{
-				infofiles[i].root = dirs[j].Len();
+                infofiles[i].root = dirs[j].length();
 				break;
 			}
 		}
@@ -812,12 +804,12 @@ void splitPaths()
 
 	for( int i=0; i < Lfiles.size(); i++ )
 	{
-		wxString dir = Lfiles[i].fName.GetFullPath();
+		string dir = Lfiles[i].fName.generic_string();
 		for( int j=0; j < dirs.size(); j++ )
 		{
 			if( isSubStr( dirs[j], dir ) )
 			{
-				Lfiles[i].root = dirs[j].Len();
+                Lfiles[i].root = dirs[j].length();
 				break;
 			}
 		}
@@ -841,12 +833,12 @@ void splitPaths()
 
 void lFileTraverser::setRoot( const char *rootPath, int fromParent )
 {
-	wxFileName rootDir( rootPath );
+	fs::path rootDir( rootPath );
 	if( fromParent )
-		rootDir.RemoveLastDir();
+        rootDir = rootDir.parent_path();
 
-	root = rootDir.GetFullPath().Len();
-	dirs.push_back( rootDir.GetFullPath() );
+    root = rootDir.generic_string().length();
+	dirs.push_back( rootDir.generic_string() );
 }
 
 
@@ -858,12 +850,47 @@ void lFileTraverser::setRoot( const char *rootPath, int fromParent )
 // ----------------------------------------------------------------------------
 
 
-wxDirTraverseResult lFileTraverser::OnFile( const wxString& filename )
+void lFileTraverser::OnFile( const string& filename )
 {
 	filenames.push_back( filename );
-	return wxDIR_CONTINUE;
 }
 
+
+void lFileTraverser::Traverse(const string &path)
+{
+    string _path = path;
+    
+    if (path[0] == SEPARATOR[0])
+    {
+         if (path.length() > 1)
+         {
+           _path = path.substr(1);        
+         }
+         else return;
+    }
+    
+    for (auto &p:  fs::directory_iterator(_path))
+    {
+       int res  = DIR_CONTINUE;
+       
+       if (fs::is_directory(p))
+       {
+          res = OnDir(p.path().generic_string());   
+       }
+       else
+       if (fs::is_regular_file(p))
+       {
+         OnFile(p.path().generic_string());
+         cerr << "Traversing " << _path << ". Adding: " << p.path().generic_string() << endl;
+         continue;
+       }
+       
+       if (res == DIR_IGNORE) continue;
+       else
+       if (res == DIR_CONTINUE)
+           Traverse(p.path().generic_string());
+    }
+}
 
 // ----------------------------------------------------------------------------
 //    lFileTraverser::processFiles :
@@ -876,7 +903,7 @@ wxDirTraverseResult lFileTraverser::OnFile( const wxString& filename )
 
 void lFileTraverser::processFiles()
 {
-	wxString errmsg;
+    char* errmsg = nullptr;
 
 	// ensure alphabetic order; wxDir::Traverse() doesn't necessarily
 	// proceed alphabetically.
@@ -885,13 +912,13 @@ void lFileTraverser::processFiles()
 
 	for( int i=0; i < filenames.size(); i++ )
 	{
-		wxString& filename = filenames[i];
-
+		string& filename = filenames[i];
 		lFile.fName = filename;
+        cerr << "Auditing file "<< filename << " with extension " << lFile.fName.extension().generic_string().c_str() << endl;
 		bool ok = true;
 
 		LOG(filename << "\n");
-		if( ( lFile.format = isLfile( lFile.fName.GetExt() ) )
+        if( ( lFile.format = isLfile( lFile.fName.extension().generic_string().c_str() ) )
 			&& ( lFile.format == wavef || lFile.format == flacf ) )
 		{
 			lFile.group = job.group;
@@ -902,9 +929,12 @@ void lFileTraverser::processFiles()
 			lFile.edit = 0;
 
 			if( lFile.format == wavef )
-				ok = waveHeader::audit( lFile.fName.GetFullPath(), &lFile.fmeta );
+            {
+                ok = waveHeader::audit( lFile.fName.generic_string().c_str(), &lFile.fmeta );
+                cerr << "Found wav file: " << (ok ? "OK" : "ERR") << endl;
+            }
 			else if( lFile.format == flacf )
-				ok = flacHeader::audit( lFile.fName.GetFullPath(), &lFile.fmeta );
+                ok = flacHeader::audit( lFile.fName.generic_string().c_str(), &lFile.fmeta );
 
 			if( ! ok )
 				err |= invalid;
@@ -919,21 +949,23 @@ void lFileTraverser::processFiles()
 
 				else
 				{
-					if( ! lpcmEntity::soundMatch( &lFile, &Lfiles.back(), &errmsg ) )
+                    bool res = lpcmEntity::soundMatch( &lFile, &Lfiles.back(), errmsg );
+                    if( ! res )
 					{
 						err |= mismatchA;
 						if( strict )
-						{
+                        {if (errmsg)
 							ERR( errmsg );
 							ok = false;
 						}
 						else
 						{
-							WARNv( errmsg << "\n" );
+                            if (errmsg) WARNv( string(errmsg) + "\n" );
 							LOG ("-forcing new titleset.\n" );
 							lFile.group = ++job.group;
 						}
 					}
+#if 0
 					if( jpegs[ lFile.jpgIndex ].getDim() !=
 						jpegs[ Lfiles.back().jpgIndex ].getDim() )
 					{
@@ -946,16 +978,21 @@ void lFileTraverser::processFiles()
 						err |= mismatchV_ar;
 						ok = false;
 					}
+#endif                    
 				}
 				if( ok )
 					Lfiles.push_back( lFile );
 			}
 			else
-				SCRN(LOG_TAG << "-skipping \'" << lFile.fName.GetFullName() << "\'\n");
+            {
+                SCRN(LOG_TAG  "-skipping \'")
+                SCRN(lFile.fName.filename())
+                SCRN("\'\n")
+            }
 
 		}
 
-		else if( job.params & info && filename.Right(9) != "lplex.log" )
+        else if( job.params & info && Right(filename, 9) != "lplex.log" )
 		{
 #ifndef lplex_console
 			job.update |= infoUnsorted;
@@ -965,12 +1002,12 @@ void lFileTraverser::processFiles()
 			iFile.root = root;
 			if( job.params & unauth )
 			{
-				if( ( iFile.fName.Mid( root, 8 ) == "VIDEO_TS" ||
-						iFile.fName.Mid( root, 8 ) == "AUDIO_TS" )
-						&& iFile.fName[ root + 8 ] == wxSEP )
+                if( ( iFile.fName.substr( root, 8 ) == "VIDEO_TS" ||
+                        iFile.fName.substr( root, 8 ) == "AUDIO_TS" )
+                        && iFile.fName[ root + 8 ] == SEPARATOR[0] )
 					iFile.reject = true;
-				else if( ( iFile.fName.Mid( root, 4 ) == "XTRA" )
-						&& iFile.fName[ root + 4 ] == wxSEP )
+                else if( ( iFile.fName.substr( root, 4 ) == "XTRA" )
+                        && iFile.fName[ root + 4 ] == SEPARATOR[0] )
 					iFile.root += 5;
 			}
 			iFile.edit = 0;
@@ -989,12 +1026,16 @@ void lFileTraverser::processFiles()
 // ----------------------------------------------------------------------------
 
 
-wxDirTraverseResult lFileTraverser::OnDir( const wxString& dirname )
+int lFileTraverser::OnDir( const string& dirname )
 {
 	if( ! dirSpecified ||
-			( dirname.Right(3) == "BUP" && dirname.Right(8).Left(4) == "XTRA" ) )
-		return wxDIR_IGNORE;
-	return wxDIR_CONTINUE;
+            ( Right(dirname, 3) == "BUP" && Right(dirname, 8).Left(4) == "XTRA" ) )
+    {
+        return DIR_IGNORE;
+    }
+    
+    return DIR_CONTINUE;
+
 }
 
 
@@ -1008,10 +1049,10 @@ wxDirTraverseResult lFileTraverser::OnDir( const wxString& dirname )
 
 
 
-wxDirTraverseResult lFileTraverser::OnOpenError( const wxString& openerrorname )
+void lFileTraverser::OnOpenError( const string& openerrorname )
 {
-	FATAL( "Can't open '" << openerrorname << "'." );
-//   return wxDIR_STOP;
+    FATAL( "Can't open '" + openerrorname + string("'.") );
+
 }
 
 
@@ -1033,9 +1074,9 @@ void getOpts( const char *filename )
 
 	ifstream optFile( filename, ios::binary );
 	if( ! optFile.is_open() )
-		FATAL( "Can't open Project file " << filename );
+        FATAL( "Can't open Project file " + string(filename) );
 
-	wxFileName prev = optSrc;
+	fs::path prev = optSrc;
 	optSrc = filename;
 
 
@@ -1049,14 +1090,16 @@ void getOpts( const char *filename )
 
 
 #ifdef _ERR2LOG
-	cmdline << "\n-------------------------------------------------------------------------------\n"
-		<< INFO_TAG << filename << ":" << "\n\n" << args << "\n";
+    cmdline += "\n-------------------------------------------------------------------------------\n";
+    cmdline += INFO_TAG + string(filename);
+    cmdline += ":" "\n\n" + string(args);
+    cmdline += "\n";
 #endif
 
 	if( ! stdArgs( argc, argv, args, size ) )
 	{
 		delete args;
-		FATAL( "Open-ended quotation in " << filename );
+        FATAL( "Open-ended quotation in " + string(filename) );
 	}
 	else if( argc == 1 )
 	{
@@ -1108,8 +1151,8 @@ bool getOpts( int argc, char *argv[] )
 	optindl = -1;
 
 	char *argv0 = argv[0];
-	wxString argvZero = _f( "\n*ERR: Bad syntax in %s:\n    ", optSrc.GetFullName().mb_str() );
-	argv[0] = (char*)(const char*)argvZero.mb_str();
+	string argvZero = _f( "\n*ERR: Bad syntax in %s:\n    ", optSrc.filename().c_str() );
+	argv[0] = (char*)(const char*)argvZero.c_str();
 //DBUG("argv[0]="<<argv[0]);
 	while(1)
 	{
@@ -1126,11 +1169,11 @@ bool getOpts( int argc, char *argv[] )
 			deprecated = 0;
 		}
 //      else if( opt == ':'  )
-//         usage( _f("Bad syntax in %s: Option missing parameter.\n", optSrc.GetFullName().mb_str() ) );
+//         usage( _f("Bad syntax in %s: Option missing parameter.\n", optSrc.filename().c_str() ) );
 		else if( optarg && optarg[0] == '-'  )
 			usage( _f("%s: option '%s' requires an argument.",
-//            optSrc.GetFullName().mb_str(), argv[optind-2] ) );
-				argv[0] + 7, argv[optind-2] ) );
+//            optSrc.filename().c_str(), argv[optind-2] ) );
+                argv[0] + 7, argv[optind-2] ).c_str() );
 		else if( opt == '?' )
 		{
 //DBUG("argv[0]="<<argv[0]);
@@ -1155,10 +1198,10 @@ bool getOpts( int argc, char *argv[] )
 											//remaining arguments are either...
 	for( int i = 0; i < nonopts; i++ )
 	{
-		wxString argStr = argv[optind];
-		argStr.Trim();
-		argStr.Trim( false );
-		const char *arg = argStr.mb_str();
+		string argStr = argv[optind];
+        trim(argStr);
+
+		const char *arg = argStr.c_str();
 
 											//...markers
 		if( ! stricmp( arg, "ts" ) )
@@ -1200,7 +1243,7 @@ bool getOpts( int argc, char *argv[] )
 		if( argv[optind][strlen(argv[optind])-1] == '\"' )
 			argv[optind][strlen(argv[optind])-1] = '\'';
 
-		addFiles( wxFileName( argv[optind] ) );
+		addFiles( fs::path( argv[optind] ) );
 
 		if( job.params & unauth )
 			return 1;
@@ -1292,7 +1335,7 @@ bool stdArgs( int &argc, char** &argv, char *args, size_t size )
 		{
 			argv[ ++j ] = args + i;
 			firstChar = false;
-			_wxFixSeparators( argv[j] );
+			fs_fixSeparators( argv[j] );
 		}
 	}
 
@@ -1340,10 +1383,10 @@ uint16_t setopt( uint16_t opt, const char *optarg )
 
 		case 'd':
 			ok = validatePath( optarg );
-			job.outPath = _wxEndSep( optarg );
-			job.outPath = job.outPath.GetPath();
-			job.name = job.outPath.GetFullName();
-			job.outPath = job.outPath.GetPath() + wxSEP;
+			
+            job.outPath = job.outPath.parent_path();
+            job.name = job.outPath.filename().generic_string();
+            job.outPath = job.outPath.parent_path();
 			job.params |= ( redirect | userNamed );
 			break;
 
@@ -1409,26 +1452,25 @@ uint16_t setopt( uint16_t opt, const char *optarg )
 
 			case 'i':
 			ok = validatePath( optarg );
-			job.infoPath = _wxEndSep( optarg );
 			job.params |= infodir;
 			break;
 
 			case 'l':
 			if( ! stricmp( optarg, "none" ) )
-				job.trim = notrim;
+                job.trim = jobs::notrim;
 			else if( ! stricmp( optarg, "pad" ) )
-				job.trim = discrete;
+                job.trim = jobs::discrete;
 			else if( ! stricmp( optarg, "discrete" ) )
-				job.trim = discrete;
+                job.trim = jobs::discrete;
 			else if( ! stricmp( optarg, "padded" ) || ! stricmp( optarg, "indiscrete" ) )
 			{
-				job.trim = discrete | padded;
+                job.trim = jobs::discrete | jobs::padded;
 			}
 			else if( ! stricmp( optarg, "seamless" ) )
-				job.trim = seamless;
+                job.trim = jobs::seamless;
 			else ok = false;
 
-			if( job.trim & continuous )
+            if( job.trim & jobs::continuous )
 				job.now |= appending;
 			else
 				clearbits( job.now, appending );
@@ -1436,13 +1478,13 @@ uint16_t setopt( uint16_t opt, const char *optarg )
 			break;
 
 			case 's':
-			clearbits( job.trim, backward | nearest | forward );
+            clearbits( job.trim, jobs::backward | jobs::nearest | jobs::forward );
 			if( ! stricmp( optarg, "backward" ) )
-				job.trim |= backward;
+                job.trim |= jobs::backward;
 			else if( ! stricmp( optarg, "nearest" ) )
-				job.trim |= nearest;
+                job.trim |= jobs::nearest;
 			else if( ! stricmp( optarg, "forward" ) )
-				job.trim |= forward;
+                job.trim |= jobs::forward;
 			else ok = false;
 			break;
 
@@ -1508,29 +1550,24 @@ uint16_t setopt( uint16_t opt, const char *optarg )
 		case 'p':
 			if( ! stricmp( optarg, "adjacent" ) ) break;
 			ok = validatePath( optarg );
-			job.dvdPath = _wxEndSep( optarg );
 			break;
 
 		case 'w':
 			ok = validatePath( optarg );
-			job.tempPath = _wxEndSep( optarg );
 			break;
 
 		case 'a':
 			if( ! stricmp( optarg, "adjacent" ) ) break;
 			ok = validatePath( optarg );
-			job.isoPath = _wxEndSep( optarg );
 			break;
 
 		case 'E':
 			if( ! stricmp( optarg, "adjacent" ) ) break;
 			ok = validatePath( optarg );
-			job.extractTo = _wxEndSep( optarg );
 			break;
 
 		case 'D':
 			ok = validatePath( optarg );
-			readOnlyPath = _wxEndSep( optarg );
 			break;
 
 		case 'v':
@@ -1575,7 +1612,7 @@ uint16_t setopt( uint16_t opt, const char *optarg )
 			{
 				if( ! editing ) editing = true;
 				edit |=  dot;
-				addFiles( wxFileName( "." ) );
+				addFiles( fs::path( "." ) );
 			}
 			else if( ! stricmp( optarg, "strict" ) )
 			{
@@ -1637,9 +1674,9 @@ uint16_t setopt( uint16_t opt, const char *optarg )
 
 	if( ! ok )
 		usage( _f( "Bad syntax in %s:\n    : option '%s' has invalid argument '%s'",
-			optSrc.GetFullName().mb_str(),
-			optindl < 0 ? _f( "-%c", opt ).mb_str() : _f( "--%s", long_opts[optindl].name ).mb_str(),
-			optarg ) );
+			optSrc.filename().c_str(),
+			optindl < 0 ? _f( "-%c", opt ).c_str() : _f( "--%s", long_opts[optindl].name ).c_str(),
+            optarg ).c_str() );
 
 	return 1;
 
@@ -1661,19 +1698,19 @@ bool saveOpts( dvdLayout *layout )
 	lplexJob &job = *layout->job;
 	vector<lpcmFile> &Lfiles = *layout->Lfiles;
 	vector<infoFile> &infofiles = *layout->infofiles;
-	wxString projectFile;
+	string projectFile;
 
 	bool generating;
 
 	if( generating = ! editing )
 	{
 		editing = absolute;
-		projectFile = projectDotLplex;
+        projectFile = projectDotLplex.generic_string();
 	}
 	else
 	{
 		if( job.projectPath == projectDotLplex ) editing = absolute;
-		projectFile = job.projectPath.GetFullPath();
+		projectFile = job.projectPath.generic_string();
 	}
 
 	ofstream optFile;
@@ -1681,7 +1718,7 @@ bool saveOpts( dvdLayout *layout )
 	{
 		optFile.open( projectFile );
 		if( ! optFile.is_open() )
-			FATAL( "Can't open project file '" << projectFile << "'" );
+            FATAL( "Can't open project file '" + projectFile + string("'") );
 	}
 	else
 	{
@@ -1697,13 +1734,14 @@ bool saveOpts( dvdLayout *layout )
 		if( edit & ::mismatch )
 			WARNv( "Multiple titles were auto-generated to accomodate different audio types.\n"
 				<< ( edit & piped ? "\n" :
-					_f( "%sPlease review project file and rearrange layout as appropriate.\n\n", LOG_TAG ).mb_str() ) );
+					_f( "%sPlease review project file and rearrange layout as appropriate.\n\n", LOG_TAG ).c_str() ) );
 		if( ! ( edit & piped ) )
 		{
-			SCRN( "Writing project file '"
-				<< TINT( projectFile ) << "'\n\n" );
+            SCRN( "Writing project file '")
+            SCRN(TINT( projectFile.c_str() ))
+            SCRN("'\n\n" )
 			INFO( "Writing project file '"
-				<< projectFile << "'\n\n" );
+                + projectFile + string( "'\n\n") );
 		}
 	}
 
@@ -1719,7 +1757,7 @@ bool saveOpts( dvdLayout *layout )
 		"# Settings:\n\n";
 
 	if( job.params & redirect && editing == absolute ) dotLplex <<
-		"--dir="         << QUOTE( job.outPath.GetPath() + wxSEP + job.name ) << endl; // -d
+        "--dir="         << QUOTE( (job.outPath.parent_path() /  job.name).generic_string() ) << endl; // -d
 	else dotLplex <<
 		"--name="        << QUOTE( job.name ) << endl; // -n
 
@@ -1727,12 +1765,12 @@ bool saveOpts( dvdLayout *layout )
 		"--md5aware="    << ( job.params & md5 ? T:F ) << endl << // -m
 		"--infoFiles="   << ( job.params & info ? T:F ) << endl << // -x
 		"--splice="      << (
-			job.trim0 & discrete ? job.trim0 & padded ? "padded" : "discrete" :
-			job.trim0 & seamless ? "seamless " : "none" ) << endl << // -l
+            job.trim0 & jobs::discrete ? job.trim0 & jobs::padded ? "padded" : "discrete" :
+            job.trim0 & jobs::seamless ? "seamless " : "none" ) << endl << // -l
 		"--shift="       << (
-			job.trim0 & backward ? "backward" :
-			job.trim0 & nearest ? "nearest" :
-			job.trim0 & forward ? "forward" : "" ) << endl << // -s
+            job.trim0 & jobs::backward ? "backward" :
+            job.trim0 & jobs::nearest ? "nearest" :
+            job.trim0 & jobs::forward ? "forward" : "" ) << endl << // -s
 		"--create="      << ( job.params & dvdStyler ? "dvdStyler" :
 			((char*[]){ "lpcm", "m2v", "mpeg", "dvd", "iso", "lgz" }) [ job.prepare-3 ] ) << endl << // -c
 		"--media="       << ((char*[]){ "dvd+r", "dvd-r", "dl", "none"  } ) [ bitPos[ job.media ] ] << endl << // -z
@@ -1740,17 +1778,17 @@ bool saveOpts( dvdLayout *layout )
 
 	if( jpegs.size() == 1 ) dotLplex <<
 		"--jpeg="        << ( alias( jpegs[0].fName ) ?
-			jpegs[0].fName.GetFullPath() : QUOTE( jpegs[0].fName.GetFullPath() ) ) << endl; // -j
+			jpegs[0].fName.generic_string() : QUOTE( jpegs[0].fName.generic_string() ) ) << endl; // -j
 
 	if( editing == absolute )
 	{
 		dotLplex <<
 		"--video="       << ( job.tv == NTSC ? "ntsc" : "pal" ) << endl << // -t
-//      "--jpeg="        << QUOTE( job.jpeg.GetFullPath() ) << endl << // -j
-		"--dvdpath="     << QUOTE( job.dvdPath.GetPath() ) << endl << // -p
-		"--workpath="    << QUOTE( wxPathOnly( job.tempPath.GetPath() ) ) << endl << // -w
-		"--isopath="     << QUOTE( job.isoPath.GetPath() ) << endl; // -a
-//      "--extractPath=" << QUOTE( job.extractPath.GetPath() ) << endl << // -e
+//      "--jpeg="        << QUOTE( job.jpeg.generic_string() ) << endl << // -j
+        "--dvdpath="     << QUOTE( job.dvdPath.parent_path().generic_string() ) << endl << // -p
+        "--workpath="    << QUOTE(  job.tempPath.parent_path().generic_string()  ) << endl << // -w
+        "--isopath="     << QUOTE( job.isoPath.parent_path().generic_string() ) << endl; // -a
+//      "--extractPath=" << QUOTE( job.extractPath.parent_path() ) << endl << // -e
 	}
 
 	dotLplex <<
@@ -1763,17 +1801,21 @@ bool saveOpts( dvdLayout *layout )
 	{
 		if( editing == relative  )
 			for( int i=0; i < jpegs.size(); i++ )
-				jpegs[i].fName.MakeRelativeTo( job.projectPath.GetPath() );
+            {
+                //jpegs[i].fName.MakeRelativeTo( job.projectPath.parent_path() );
+                jpegs[i].fName = fs::canonical(jpegs[i].fName);
+            }
 
 		if( menufiles.size() )
 		{
 			if( editing == relative  )
 			{
-				wxFileName fName( menuPath );
-				fName.MakeRelativeTo( job.projectPath.GetPath() );
-				menuPath = fName.GetFullPath();
+				fs::path fName( menuPath );
+                //fName.MakeRelativeTo( job.projectPath.parent_path() );
+                fName = fs::canonical(fName);
+				menuPath = fName.generic_string();
 			}
-			dotLplex << "\n--menu" << ( menuForce ? "force=" : "=" ) << QUOTE( menuPath.mb_str() ) << "\n";
+			dotLplex << "\n--menu" << ( menuForce ? "force=" : "=" ) << QUOTE( menuPath.c_str() ) << "\n";
 
 			if( ! generating )
 			{
@@ -1781,11 +1823,12 @@ bool saveOpts( dvdLayout *layout )
 				{
 					if( editing == relative )
 					{
-						wxFileName fName( menufiles[i] );
-						fName.MakeRelativeTo( job.projectPath.GetPath() );
-						menufiles[i] = fName.GetFullPath();
+						fs::path fName( menufiles[i] );
+                        //fName.MakeRelativeTo( job.projectPath.parent_path() );
+                        fName = fs::canonical(fName);
+						menufiles[i] = fName.generic_string();
 					}
-					dotLplex << "# " << QUOTE( menufiles[i].mb_str() ) << "\n";
+					dotLplex << "# " << QUOTE( menufiles[i].c_str() ) << "\n";
 				}
 			}
 		}
@@ -1805,16 +1848,16 @@ bool saveOpts( dvdLayout *layout )
 				titleset = lFile->group;
 				dotLplex << ( titleset ? "\nts" : "" ) <<
 					_f( "\n# Title %d - (%s / %s %s)\n",
-						titleset + 1, lpcmEntity::audioInfo( lFile ).mb_str(),
+						titleset + 1, lpcmEntity::audioInfo( lFile ).c_str(),
 						jpegs[lFile->jpgIndex].sizeStr(), jpegs[lFile->jpgIndex].aspStr() ) << endl;
 			}
 
-			if( lFile->trim.type != trimType && ! ( lFile->trim.type & autoSet ) )
+            if( lFile->trim.type != trimType && ! ( lFile->trim.type & jobs::autoSet ) )
 			{
 				trimType = lFile->trim.type;
 				dotLplex << (
-					trimType & discrete ? trimType & padded ? "padded" : "discrete" :
-					trimType & seamless ? "seamless " : "none" ) << endl;
+                    trimType & jobs::discrete ? trimType & jobs::padded ? "padded" : "discrete" :
+                    trimType & jobs::seamless ? "seamless " : "none" ) << endl;
 			}
 
 			if( lFile->jpgIndex != jpgIndex )
@@ -1822,22 +1865,25 @@ bool saveOpts( dvdLayout *layout )
 				jpgIndex = lFile->jpgIndex;
 				dotLplex << ( jpegs[ jpgIndex ].ar == dvdJpeg::_16x9 ? "jpgw=" : "jpg=" )
 					<< ( alias( jpegs[ jpgIndex ].fName ) ?
-						jpegs[ jpgIndex ].fName.GetFullPath() :
-						QUOTE( jpegs[ jpgIndex ].fName.GetFullPath() ) );
+						jpegs[ jpgIndex ].fName.generic_string() :
+						QUOTE( jpegs[ jpgIndex ].fName.generic_string() ) );
 				dotLplex << endl;
 			}
 
 			if( editing == relative )
-				lFile->fName.MakeRelativeTo( job.projectPath.GetPath() );
+            {
+             //   lFile->fName.MakeRelativeTo( job.projectPath.parent_path() );  // pas de fs::relative
+                 lFile->fName == fs::absolute(lFile->fName);
+            }
 
-			dotLplex << QUOTE( lFile->fName.GetFullPath() );
+			dotLplex << QUOTE( lFile->fName.generic_string() );
 			if( edit & editVerbose )
 			{
-				for( int s=lFile->fName.GetFullPath().Length(); s < 50; s++ )
+				for( int s=lFile->fName.generic_string().length(); s < 50; s++ )
 					dotLplex << ' ';
 				dotLplex << _f("   # %4d MB %7s",
 					(uint32_t) (dvdUtil::sizeOnDvd( lFile, job.tv == NTSC ) / MEGABYTE),
-					dvdUtil::time( lFile->videoFrames, job.tv == NTSC ).mb_str() );
+					dvdUtil::time( lFile->videoFrames, job.tv == NTSC ).c_str() );
 			}
 			dotLplex << endl;
 		}
@@ -1851,9 +1897,10 @@ bool saveOpts( dvdLayout *layout )
 		{
 			if( editing == relative )
 			{
-				wxFileName fName( infofiles[i].fName );
-				fName.MakeRelativeTo( job.projectPath.GetPath() );
-				infofiles[i].fName = fName.GetFullPath();
+				fs::path fName( infofiles[i].fName );
+                //fName = fs::relative(fName, job.projectPath.parent_path());
+                fName = fs::canonical(fName);  // pas de relative
+				infofiles[i].fName = fName.generic_string();
 			}
 			if( infofiles[i].reject )
 				continue;
@@ -1961,7 +2008,6 @@ void version( const char * str )
 #endif
 		<< " flac "     << FLAC__VERSION_STRING
 		<< "  dvdread " << DVDREAD_VERSION
-		<< "  "         << _f(wxVERSION_STRING)
 		<< "\n" );
 }
 
@@ -1982,8 +2028,8 @@ void banner()
 	bannerShown = true;
 	version( " (GNU GPL License)" );
 	POST( "feedback: <audioplex-lpcm@lists.sourceforge.net>\n\n" );
-	wxDateTime now = wxDateTime::Now();
-	INFO( now.FormatISODate().mb_str() << " " << now.FormatISOTime().mb_str() << "\n\n" );
+    //wxDateTime now = wxDateTime::Now();
+    //INFO( now.FormatISODate().c_str() << " " << now.FormatISOTime().c_str() << "\n\n" );
 }
 
 
@@ -2002,7 +2048,7 @@ void usage( const char *str )
 	if( str )
 	{
 		if( str[0] )
-			ERR( str << "\n" );
+            ERR( string(str) + "\n" );
 
 		if( endPause )
 		{

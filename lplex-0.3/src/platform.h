@@ -24,15 +24,13 @@
 #ifndef LPLEX_PCH_INCLUDED
 #include "lplex_precompile.h"
 #endif
+#include <experimental/filesystem>
+#include "wx.hpp"
 
 using namespace std;
+namespace  fs = std::experimental::filesystem;
 
-#include <wx/string.h>
-#include <wx/utils.h>
-#include <wx/dir.h>
-#include <wx/filename.h>
-
-#if defined(__MINGW32__) || defined(__MINGW64__) || defined(__WIN32)
+#if defined(__MINGW32__) || defined(__MINGW64__) || defined(_WIN32) || defined(__WIN32) || defined (__WIN32__) || defined (__WIN64) || defined (_WIN64)
 #define lplex_win32
 #else
 #define lplex_linux
@@ -42,11 +40,9 @@ using namespace std;
 #define lplex_console
 #endif
 
-#define wxSEP wxFILE_SEP_PATH
 
-extern wxString dataDir, binDir, configDir, tempDir, readOnlyPath,
-	projectDotLplex, shebang;
-extern wxFileName lplexConfig;
+extern string 	shebang;
+extern fs::path lplexConfig, configDir, dataDir, binDir, tempDir, readOnlyPath, projectDotLplex;
 
 											// endian swap macros (from dvdread/bswap.h)
 
@@ -121,21 +117,42 @@ extern int endPause;
 inline void _pause() { cerr << "\npress <enter> to close..."; cin.get(); }
 //inline void _pause() { system( "echo press any key to close; read -n 1" ); }
 #define device(d) d
-inline wxString volumeLabel( const char * path, bool mustBeRoot )
-	{ return wxEmptyString; }
+inline string volumeLabel( const char * path, bool mustBeRoot )
+	{ return ""; }
 
+
+// inline bool initPlatform()
+// {
+// 	wxStandardPathsBase& platform = wxStandardPaths::Get();
+//     configDir = platform.GetUserDataDir() / "lplex" ;
+//     lplexConfig = configDir / "lplex.conf";
+//     binDir = "";
+//     dataDir = platform.GetDataDir() / "lplex" ;
+// 	readOnlyPath = fs::path::GetHomeDir();
+//     tempDir = platform.GetTempDir();
+// 	shebang = "#!" + platform.GetExecutablePath() + " -P 1\n";
+// 	endPause = false;
+// }
 
 inline bool initPlatform()
 {
-	wxStandardPathsBase& platform = wxStandardPaths::Get();
-	configDir = platform.GetUserDataDir() + "lplex" + wxSEP;
-	lplexConfig = configDir + "lplex.conf";
-	binDir = wxEmptyString;
-	dataDir = platform.GetDataDir() + wxSEP + "lplex" + wxSEP;
-	readOnlyPath = wxFileName::GetHomeDir();
-	tempDir = platform.GetTempDir() + wxSEP;
-	shebang = "#!" + platform.GetExecutablePath() + " -P 1\n";
-	endPause = false;
+#ifdef lplex_win32
+    fs::path home = fs::path(HOME) / getenv(USER);
+    fs::path appdata = fs::path(getenv("APPDATA"));
+#else
+    fs::path home = fs::path(HOME);
+    fs::path appdata = home / ".local";
+#endif
+
+    configDir = appdata / string("lplex");
+    lplexConfig = configDir / "lplex.ini";
+    binDir = fs::current_path() / fs::path("local") / fs::path("bin");
+    dataDir = appdata /  fs::path("data");
+    readOnlyPath = home;
+    tempDir = fs::temp_directory_path();
+	shebang = "#!/usr/local/bin/lplex -P 1\n";
+	endPause = true;
+    return true;
 }
 
 
@@ -170,15 +187,23 @@ inline const char* device( dev_t device )
 
 inline bool initPlatform()
 {
-	wxStandardPathsBase& platform = wxStandardPaths().Get();
-	configDir = platform.GetUserDataDir() + wxSEP + "lplex" + wxSEP;
-	lplexConfig = configDir + "lplex.ini";
-	binDir = wxFileName( platform.GetExecutablePath() ).GetPath() + wxSEP + "bin" + wxSEP;
-	dataDir = platform.GetDataDir() + wxSEP + "data" + wxSEP;
-	readOnlyPath = wxFileName::GetHomeDir();
-	tempDir = platform.GetTempDir();
+#ifdef lplex_win32
+    string home = string(HOME) + SEPARATOR + getenv(USER);
+    string appdata = string(getenv("APPDATA"));
+#else
+    string home = string(HOME);
+    string appdata = home + SEPARATOR ".local";
+#endif
+
+    configDir = appdata + string(SEPARATOR  "lplex"  SEPARATOR);
+    lplexConfig = configDir / "lplex.ini";
+    binDir = fs::current_path() / fs::path("local") / fs::path("bin");
+    dataDir = appdata /  fs::path("data");
+    readOnlyPath = home;
+    tempDir = fs::temp_directory_path();
 	shebang = "#!/usr/local/bin/lplex -P 1\n";
 	endPause = true;
+    return true;
 }
 
 // ----------------------------------------------------------------------------
@@ -189,21 +214,9 @@ inline bool initPlatform()
 // ----------------------------------------------------------------------------
 
 
-inline wxString volumeLabel( const char * path, bool mustBeRoot=false )
+inline string volumeLabel( const char * path, bool mustBeRoot=false )
 {
-	char label[33];
-	label[0] = '\0';
-	wxString vol = wxFileName( path ).GetVolume();
-
-	if( vol != wxEmptyString )
-	{
-		vol +=  + ":\\";
-		if( ! ( mustBeRoot && vol != path ) )
-			::GetVolumeInformation( vol, label, sizeof(label),
-				NULL, NULL, NULL, NULL, 0 );
-	}
-
-	return wxString(label);
+    return fs::path(path).root_path().generic_string();
 }
 
 

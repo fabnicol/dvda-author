@@ -1,0 +1,133 @@
+.\" 
+.TH "ppmtoy4m" "1" "28 April 2004" "MJPEG Tools Team" "MJPEG tools manual"
+.SH "NAME"
+ppmtoy4m \- Convert PPM images to YUV4MPEG2 stream
+
+.SH "SYNOPSIS"
+.B ppmtoy4m
+.RI [ options ]
+.I [ filename ]
+
+.SH "DESCRIPTION"
+\fBppmtoy4m\fP converts one or more raw PPM images into a YUV4MPEG2 stream
+ready for further processing by other video tools.
+
+Output is to stdout to facilitate piping to other MJPEG tools.
+The size of the output frame(s) is determined from the (first) input image.
+
+Input is a 'raw' format PPM image, read from stdin or from the optional
+filename.  The input may contain multiple PPM images concatenated together;
+\fBppmtoy4m\fP will read and process them sequentially.  All images must have
+identical size and format.  Input images can be interpreted as whole
+progressive frames, interleaved fields, or (in pairs) as sequential fields.
+The input images must have 8 bits per channel (i.e. 'maxval' must be 255).
+
+Input images should be in the usual R'G'B' colorspace.  They are converted
+to the Y'CbCr colorspace (ITU-R BT.601) (and chroma subsampled, if desired)
+before output.
+
+\fBppmtoy4m\fP and \fBy4mtoppm\fP are inverses of each other; you can
+pipe the output of one into the other, and vice-versa.  Note that the
+subsampling and colorspace operations are lossy in both directions.  And,
+when converting to PPM, information on interlacing and sample aspect ratio
+is lost (but can be reconstructed by supplying command-line arguments to
+\fBppmtoy4m\fP).
+
+
+.SH "OPTIONS"
+\fBppmtoy4m\fP accepts the following options:
+
+.TP 5
+.BI \-o " num"
+Frame offset:  skip output of the first 'num' frames.  (default: 0)
+.TP 5
+.BI \-n " num"
+Output a total of 'num' output frames.  Use '0' to specify all frames.
+(default: 0)
+.TP 5
+.BI \-F " n:d"
+Set framerate encoded in output stream, as an exact integer ratio.
+(default:  30000:1001)  Common rates are:
+ 24000:1001 - NTSC 3:2 pulldown converted film
+       24:1 - native film
+       25:1 - PAL/SECAM
+ 30000:1001 - NTSC video
+       50:1 - PAL field rate
+ 60000:1001 - NTSC field rate
+.TP 5
+.BI \-A " n:d"
+Set pixel aspect ratio encoded in output stream, as an exact integer ratio.
+(default:  1:1)  Common ratios are:
+     1:1  - square pixels (computer graphics)
+    10:11 - CCIR-601 NTSC
+    59:54 - CCIR-601 PAL
+.TP 5
+.BI \-B
+Interpret data as being BGR rather than RGB.
+.TP 5
+.BI \-I " x"
+Set interlacing mode, used to interpret the PPM image(s), and also encoded
+in output stream.  (default:  'p')
+ p - progressive, non-interlaced
+ t - top/upper-field-first interlaced
+ b - bottom/lower-field-first interlaced
+.TP 5
+.BI \-L
+For interlaced streams, treat each PPM image as two interleaved fields.
+(Otherwise, two PPM images will be read for each frame; one per field.)
+.TP 5
+.BI \-r 
+Repeat last input frame until output is complete.  If '-n 0' is also specified,
+last input frame will be repeated forever.
+.TP 5
+.BI \-S " mode"
+Set chroma subsampling mode.  (default:  444)
+       444 - 4:4:4 (no subsampling)
+   420jpeg - 4:2:0 JPEG/MPEG-1, interstitial cositing 
+  420mpeg2 - 4:2:0 MPEG-2, horizontal cositing
+
+The subsampled modes use a lousy subsampling filter;
+better results will be achieved by passing the default 4:4:4 output to
+a scaler which supports subsampling, such as \fBy4mscaler\fP(1).
+.TP 5
+.BI \-v " [0,1,2]"
+Set verbosity level.  
+ 0 = warnings and errors only.
+ 1 = add informative messages, too.
+ 2 = add chatty debugging message, too.
+
+.SH "EXAMPLES"
+.hw ppmtoy4m yuvplay tgatoppm
+To convert a file containing a single PPM file into a stream of 15
+(identical) frames:
+
+.RS 5
+ppmtoy4m -n 15 -r some-image.ppm
+.RE
+
+To convert a series of Targa format images (in the current directory)
+to a YUV4MPEG2 stream displayed by yuvplay:
+
+.RS 5
+ls *.tga | xargs -n1 tgatoppm | ppmtoy4m | yuvplay
+.RE
+
+.SH "AUTHOR"
+This man page was written by Matt Marjanovic.
+.br 
+If you have questions, remarks, problems or you just want to contact
+the developers, the main mailing list for the MJPEG\-tools is:
+  \fImjpeg\-users@lists.sourceforge.net\fP
+
+.TP 
+For more info, see our website at
+.I http://mjpeg.sourceforge.net/
+
+.SH "SEE ALSO"
+.BR ppm (5),
+.BR y4mtoppm (1),
+.BR mjpegtools (1),
+.BR mpeg2enc (1),
+.BR y4mscaler (1),
+.BR yuv2lav (1),
+.BR yuvplay (1)

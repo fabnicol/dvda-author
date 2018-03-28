@@ -18,7 +18,7 @@
 */
 
 
-
+using namespace std;
 #include "processor.hpp"
 
 
@@ -31,7 +31,7 @@
 // ----------------------------------------------------------------------------
 
 
-bool lpcmEntity::soundMatch( lpcmEntity *a, lpcmEntity *b, wxString *errmsg )
+bool lpcmEntity::soundMatch( lpcmEntity *a, lpcmEntity *b, char* errmsg )
 {
 	uint16_t bpsA = a->fmeta.data.stream_info.bits_per_sample,
 		khzA = a->fmeta.data.stream_info.sample_rate / 1000,
@@ -54,11 +54,11 @@ bool lpcmEntity::soundMatch( lpcmEntity *a, lpcmEntity *b, wxString *errmsg )
 //         << ( khzOk ? "" : _f( " %dkhz", khzA ) )
 //         << ( chOk  ? "" : _f( " %dch",  chA ) )
 			<< _f( "%dbit %dkhz %dch", bpsA, khzA, chA )
-			<< ") at \'" << a->fName.GetFullName() << "\'.\n" );
+            << ") at \'" << a->fName.filename() << "\'.\n" );
 #else
-		if( errmsg )
-			*errmsg = _f( "Audio mismatch (%dbit %dkhz %dch) at '%s'",
-				bpsA, khzA, chA, a->fName.GetFullName().mb_str() );
+        if(! errmsg)
+            errmsg = (char*) _f( "Audio mismatch (%dbit %dkhz %dch) at '%s'",
+                bpsA, khzA, chA, a->fName.filename().c_str() ).c_str();
 #endif
 
 		return false;
@@ -75,7 +75,7 @@ bool lpcmEntity::soundMatch( lpcmEntity *a, lpcmEntity *b, wxString *errmsg )
 // ----------------------------------------------------------------------------
 
 
-wxString lpcmEntity::audioInfo( lpcmEntity *l )
+string lpcmEntity::audioInfo( lpcmEntity *l )
 {
 	return _f( "%d bit %d khz %d ch",
 		l->fmeta.data.stream_info.bits_per_sample,
@@ -83,7 +83,7 @@ wxString lpcmEntity::audioInfo( lpcmEntity *l )
 		l->fmeta.data.stream_info.channels );
 }
 
-wxString lpcmEntity::audioInfo( FLAC__StreamMetadata *fmeta )
+string lpcmEntity::audioInfo( FLAC__StreamMetadata *fmeta )
 {
 	return _f( "%d bit %d khz %d ch",
 		fmeta->data.stream_info.bits_per_sample,
@@ -123,7 +123,7 @@ bool lpcmEntity::soundCheck( lpcmEntity *l, bool mute )
 	};
 
 	if( ! mute )
-		LOG( _f( "%s%d bit %d khz %d ch\n", _affirm.mb_str(), bps, khz, ch ) );
+		LOG( _f( "%s%d bit %d khz %d ch\n", _affirm.c_str(), bps, khz, ch ) );
 
 	switch( bps ) { case 16: case 24: bpsOk = 1; case 20: break; default: notAllowed = 1; }
 	switch( khz ) { case 48: case 96: khzOk = 1; break; default: notAllowed = 1; }
@@ -144,10 +144,10 @@ bool lpcmEntity::soundCheck( lpcmEntity *l, bool mute )
 	{
 		if( ! mute )
 		{
-			ERR(  ( bpsOk ? "" : _f( "%d bit ", bps ) )
-				<< ( khzOk ? "" : _f( "%d khz ", khz ) )
-				<< ( chOk  ? "" : _f( "%d ch ",  ch ) )
-				<< "lpcm is not " << ( notAllowed ? "allowed in dvd-video\n" : "supported\n" ) );
+            ERR(  ( bpsOk ? string("") : _f( "%d bit ", bps ) )
+                + ( khzOk ? string("") : _f( "%d khz ", khz ) )
+                + ( chOk  ? string("") : _f( "%d ch ",  ch ) )
+                + string("lpcm is not ") + ( notAllowed ? "allowed in dvd-video\n" : "supported\n" ) );
 		}
 
 		clearbits( l->state, specified );
@@ -190,7 +190,7 @@ bool lpcmProcessor::md5compare( const void *md5, const char * prefix )
 	else
 		INFO( prefix << "md5 ok" );
 
-	ECHO( " : " << hexStr( md5, 16 ) << " : " << fName.GetName() << endl );
+    ECHO( " : " << hexStr( md5, 16 ) << " : " << fName.stem() << endl );
 	if( ! r )
 		LOG( "           : " << hexStr( fmeta.data.stream_info.md5sum, 16 )
 			<< " : (original)" << endl );
@@ -306,11 +306,11 @@ uint16_t rawWriter::open()
 	if( rawFile.is_open() )
 		rawFile.close();
 
-	fName = fName.GetFullPath() + ".lpcm";
-	rawFile.open( fName.GetFullPath(), ios::binary );
+    fName = fName.generic_string() + ".lpcm";
+    rawFile.open( fName.generic_string(), ios::binary );
 
 	if( ! rawFile.is_open() )
-		FATAL( "Can't open output file " << fName.GetFullPath() );
+        FATAL( "Can't open output file " + fName.generic_string() );
 
 	md5_init( &md5 );
 	md5_init( &md5raw );
@@ -425,11 +425,11 @@ uint16_t waveWriter::open()
 	if( waveFile.is_open() )
 		waveFile.close();
 
-	fName = fName.GetFullPath() + ".wav";
-	waveFile.open( fName.GetFullPath(), ios::binary );
+    fName = fName.generic_string() + ".wav";
+    waveFile.open( fName.generic_string(), ios::binary );
 
 	if( ! waveFile.is_open() )
-		FATAL( "Can't open output file " << fName.GetFullPath() );
+        FATAL( "Can't open output file " + fName.generic_string() );
 
 	waveHeader::tag( waveFile, &fmeta );
 	md5_init( &md5 );
@@ -539,10 +539,10 @@ uint16_t flacWriter::open()
 	interSamp = fmeta.data.stream_info.channels *
 		fmeta.data.stream_info.bits_per_sample / 8;
 
-	fName = fName.GetFullPath() + ".flac";
+    fName = fName.generic_string() + ".flac";
 
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
-	set_filename( fName.GetFullPath() );
+    set_filename( fName.generic_string() );
 #endif
 	set_channels( fmeta.data.stream_info.channels );
 	set_bits_per_sample( fmeta.data.stream_info.bits_per_sample );
@@ -593,7 +593,7 @@ uint16_t flacWriter::open()
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
 	if( ( err = init() ) != FLAC__FILE_ENCODER_OK )
 #else // flac 1.1.3+
-	if( ( err = init( fName.GetFullPath() ) ) != FLAC__STREAM_ENCODER_INIT_STATUS_OK )
+    if( ( err = init( fName.generic_string() ) ) != FLAC__STREAM_ENCODER_INIT_STATUS_OK )
 #endif
 	{
 		showState( err, "initialization" );
@@ -698,10 +698,10 @@ uint16_t flacWriter::md5Report()
 	if( ! isOpen() )
 		return false;
 
-	ifstream flacFile( fName.GetFullPath(), ios::binary );
+    ifstream flacFile( fName.generic_string(), ios::binary );
 	if( ! flacFile.is_open() )
 	{
-		ERR( "Can't open input file \'" << fName.GetFullPath() << "\'\n" );
+        ERR( "Can't open input file \'" + fName.generic_string() + "\'\n" );
 		return 1;
 	}
 	flacFile.seekg( 0 );
@@ -862,7 +862,7 @@ int flacWriter::swap2flac( FLAC__int32 *flac, unsigned char *udvd,
 	else
 	{
 		// FIX: Handle 20-bit audio and maybe convert other formats.
-		ERR( bitspersample << "bit audio is not supported\n" );
+        ERR( to_string(bitspersample) + "bit audio is not supported\n" );
 	}
 	return 0;
 }

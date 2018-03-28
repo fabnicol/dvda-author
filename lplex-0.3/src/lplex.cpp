@@ -20,7 +20,7 @@
 
 
 #include "lplex.hpp"
-
+#include "jobs.hpp"
 
 // ----------------------------------------------------------------------------
 //    author :
@@ -52,27 +52,27 @@ int author( dvdLayout &layout )
 #endif
 
 	if( job.params & customized ) ECHO( "\n" );
-	wxString txt = " ";
+	string txt = " ";
 	txt +=
-		job.trim0 & discrete ? job.trim0 & padded ? "padded" : "discrete" :
-		job.trim0 & seamless ? "seamless " : "none";
+        job.trim0 & jobs::discrete ? job.trim0 & jobs::padded ? "padded" : "discrete" :
+        job.trim0 & jobs::seamless ? "seamless " : "none";
 
-	if( job.trim & seamless ) txt +=
-		job.trim & backward ? "backward" :
-		job.trim & nearest ? "nearest" :
-		job.trim & forward ? "forward" : "";
+    if( job.trim & jobs::seamless ) txt +=
+        job.trim & jobs::backward ? "backward" :
+        job.trim & jobs::nearest ? "nearest" :
+        job.trim & jobs::forward ? "forward" : "";
 
 	if( job.params & customized )
-		SCRN( "\n\n" );
+        SCRN( "\n\n" )
 
-	INFOv( "Creating "
-		<< ((char*[]){ "LPCM", "M2V", "MPEG", "DVD", "ISO", "LGZ" }) [ job.prepare-3 ]
-		<< " : [ "
-		<< ( job.tv == NTSC ? "NTSC" : "PAL" )
-		<< ( job.params & md5 ? " md5aware" : "" )
-		<< ( job.params & info ? " infofiles" : "" )
-		<< ( job.params & dvdStyler ? " dvdStyler" : "" )
-		<< ( job.trimCt == 0 ? txt.mb_str() : "" ) << " ]\n" );
+    INFOv( string("Creating ")
+        + string(((char*[]){ "LPCM", "M2V", "MPEG", "DVD", "ISO", "LGZ" }) [ job.prepare-3 ])
+        + string(" : [ ")
+        + string(( job.tv == NTSC ? "NTSC" : "PAL" ))
+        + string(( job.params & md5 ? " md5aware" : "" ))
+        + string(( job.params & info ? " infofiles" : "" ))
+        + string(( job.params & dvdStyler ? " dvdStyler" : "" ))
+        + string(( job.trimCt == 0 ? txt.c_str() : "" )) + string(" ]\n") );
 
 
 	layout.configure();
@@ -80,17 +80,17 @@ int author( dvdLayout &layout )
 	if( editing )
 		return 0;
 
-	if ( ! wxDir::Exists( job.tempPath.GetFullPath() ) )
-		_wxMakeDirs( job.tempPath.GetFullPath() );
+    if ( ! fs::exists( job.tempPath ) )
+        fs_MakeDirs( job.tempPath );
 
-	if ( ! wxDir::Exists( job.outPath.GetPath() ) )
-		_wxMakeDirs( job.outPath.GetPath() );
+    if ( ! fs::exists( job.outPath.parent_path() ) )
+        fs_MakeDirs( job.outPath.parent_path());
 
 	stopWatch.Start();
 
-	dvdauthorXml xml( (job.tempPath.GetFullPath() + job.name),
+	dvdauthorXml xml( (job.tempPath / job.name).generic_string(),
 		job.tv, job.group + 1, job.params & dvdStyler, job.prepare < mpegf );
-	xml.write( dvdauthorXml::setDest, job.dvdPath.GetFullPath(),
+	xml.write( dvdauthorXml::setDest, job.dvdPath.generic_string(),
 		jpegs[ Lfiles[0].jpgIndex ].ar == dvdJpeg::_16x9 ? true : false );
 
 	while( layout.getNext() )
@@ -115,18 +115,18 @@ int author( dvdLayout &layout )
 				xml.write( dvdauthorXml::closeVob );
 
 				if( Lfiles[i].type & lpcmFile::titleStart )
-					xml.write( dvdauthorXml::addTitle, job.dvdPath.GetFullPath(),
+					xml.write( dvdauthorXml::addTitle, job.dvdPath.generic_string(),
 						jpegs[ Lfiles[i].jpgIndex ].ar == dvdJpeg::_16x9 ? true : false );
 			}
 			xml.write( dvdauthorXml::openVob, layout.nameNow + ".mpg" );
 		}
 
-		txt.Empty();
-		txt << STAT_TAG << Lfiles[i].fName.GetFullName();
+        txt.clear();
+        txt = STAT_TAG + Lfiles[i].fName.filename().generic_string();
 		if( jpegs.size() > 1 )
 		{
-			txt << " + " << jpegs[ Lfiles[i].jpgIndex ].fName.GetFullName();
-			SCRN( " + " << /* TINT( */ jpegs[ Lfiles[i].jpgIndex ].fName.GetFullName() /* ) */ );
+            txt += string(" + ") + jpegs[ Lfiles[i].jpgIndex ].fName.filename().generic_string();
+            SCRN( string(" + ") +  jpegs[ Lfiles[i].jpgIndex ].fName.filename().generic_string()  )
 		}
 
 		if( job.params & md5 )
@@ -145,24 +145,24 @@ int author( dvdLayout &layout )
 		BLIP( " ...creating video " );
 
 		m2vFile = m2v( Lfiles[i].videoFrames,
-			jpegs[ Lfiles[i].jpgIndex ].getName().mb_str(),
-			layout.nameNow + ".m2v", job.tv,
+			jpegs[ Lfiles[i].jpgIndex ].getName().c_str(),
+            string(layout.nameNow + ".m2v").c_str(), job.tv,
 			jpegs[ Lfiles[i].jpgIndex ].ar == dvdJpeg::_16x9 ? true : false,
 			userData, uDataLen, ( job.tv == NTSC ? 18 : 15 ),
 			job.now & appending,
-			! ( Lfiles[i].trim.type & continuous ),
-			! ( Lfiles[i].trim.type & continuous ) );
+            ! ( Lfiles[i].trim.type & jobs::continuous ),
+            ! ( Lfiles[i].trim.type & jobs::continuous ) );
 
 		xml.write( dvdauthorXml::addChapter, job.now & appending ?
 			dvdauthorXml::timestampFractional( vFrames, job.tv == NTSC, .001 ) : "0" );
 
 		vFrames += Lfiles[i].videoFrames;
 
-		if( Lfiles[i].trim.type & continuous )
-			SCRN( "\n" );
+        if( Lfiles[i].trim.type & jobs::continuous )
+            SCRN( "\n" )
 		ECHO( "\n" );
 
-		if( Lfiles[i].trim.type & continuous &&
+        if( Lfiles[i].trim.type & jobs::continuous &&
 				! ( Lfiles[i].type & lpcmFile::seqEnd ) )
 			continue;
 
@@ -175,7 +175,7 @@ int author( dvdLayout &layout )
 		_progress.max = vFrames;
 
 		if( execute(
-			QUOTE( binDir + "mplex" )
+            QUOTE( (binDir / "mplex").generic_string() )
 				+ " -f 8 " + job.mplexArg + " "
 				+ "-L " + _f( "%d:%d:%d ",
 					Lfiles[i].fmeta.data.stream_info.sample_rate,
@@ -184,25 +184,25 @@ int author( dvdLayout &layout )
 				+ "-o " + QUOTE( layout.nameNow + ".mpg" ) + " "
 				+ QUOTE( layout.nameNow + ".m2v" ) + " "
 				+ QUOTE( layout.nameNow + ".lpcm" ),
-			_verbose, &mplexProgress )
+            _verbose)
 		)
 			FATAL( "mplex failed. See lplex.log for details.\n" );
 
 		ECHO( "\n-------------------------------------------------------------------------------\n\n"  );
-		SCRN( "\n" );
+        SCRN( "\n" )
 
 		if( job.params & cleanup )
 		{
-			wxRemoveFile( layout.nameNow + ".m2v" );
-			wxRemoveFile( layout.nameNow + ".lpcm" );
+            remove(string(layout.nameNow + ".m2v").c_str() );
+            remove(string(layout.nameNow + ".lpcm").c_str() );
 		}
 	}
 
 	if( ! valid_audio )
 		FATAL( "No audio to process!\n" );
 
-	if( wxDir::Exists( job.dvdPath.GetFullPath() ) )
-		_wxDeleteDir( job.dvdPath.GetFullPath() );
+    if( fs::exists( job.dvdPath) )
+        fs_DeleteDir( job.dvdPath);
 
 	xml.write( dvdauthorXml::closeVob );
 
@@ -226,15 +226,15 @@ int author( dvdLayout &layout )
 	if( job.prepare >= vobf )
 	{
 		ECHO( "--------------------------------- DVDAUTHOR -----------------------------------\n\n"  );
-		SCRN( "\n" );
-		SCRN( STAT_TAG << "Authoring DVD... " );
+        SCRN( "\n" )
+        SCRN( STAT_TAG "Authoring DVD... " )
 
 		_progress.start = _progress.now = 0;
 		_progress.max = 2 * (uint32_t) ( layout.vobEstimate() / MEGABYTE );
 
 		if( execute(
-			QUOTE( binDir + "dvdauthor" ) + " -x " + QUOTE( xml.name ),
-			_verbose, &dvdauthorProgress )
+            QUOTE( (binDir / "dvdauthor").generic_string() ) + " -x " + QUOTE( xml.name ),
+            _verbose)
 		)
 			FATAL( "dvdauthor failed. See lplex.log for details.\n" );
 
@@ -249,17 +249,17 @@ int author( dvdLayout &layout )
 		INFO( "Input wave-data signatures:\n" );
 		for( int i=0; i < Lfiles.size(); i++ )
 			LOG( "md5 : " << hexStr( Lfiles[i].md5str, 16 )
-				<< " : " << Lfiles[i].fName.GetName() << endl );
+				<< " : " << Lfiles[i].fName.stem() << endl );
 		ECHO( "\n" );
 		INFO( "Output wave-data signatures:\n" );
 		for( int i=0; i < Lfiles.size(); i++ )
 			LOG( "md5 : " << hexStr( Lfiles[i].fmeta.data.stream_info.md5sum, 16 )
-				<< " : " << Lfiles[i].fName.GetName() << endl );
+				<< " : " << Lfiles[i].fName.stem() << endl );
 		ECHO( "\n" );
 
 		if( job.prepare >= vobf )
 		{
-			SCRN( "\n" << STAT_TAG << "Inserting Lplex tags... \n" );
+            SCRN( "\n"  STAT_TAG  "Inserting Lplex tags... \n" )
 			tagEmbed();
 		}
 	}
@@ -268,12 +268,12 @@ int author( dvdLayout &layout )
 
 	if( job.params & info && job.prepare >= mpegf )
 	{
-		SCRN( STAT_TAG << "Copying info files... \n" );
+        SCRN( STAT_TAG  "Copying info files... \n" )
 
 		INFO( "Creating \'XTRA\' info directory\n" );
-		_wxMakeDirs( job.dvdPath.GetFullPath() + wxSEP + "XTRA" );
+        fs_MakeDirs( job.dvdPath /  fs::path("XTRA") );
 
-		copyInfoFiles( job.dvdPath.GetFullPath() + wxSEP + "XTRA" );
+        copyInfoFiles( job.dvdPath / fs::path("XTRA") );
 	}
 
 	if( job.prepare >= vobf )
@@ -281,22 +281,22 @@ int author( dvdLayout &layout )
 		int *map = NULL;
 		if( menufiles.size() && ( map = mapMenus() ) )
 		{
-			SCRN( STAT_TAG << "Copying custom menu files... \n" );
+            SCRN( STAT_TAG  "Copying custom menu files... \n" )
 			copyMenufiles( map );
 			delete[] map;
 		}
 		if( job.params & cleanup )
-			_wxDeleteDir( job.tempPath.GetFullPath() );
+            fs_DeleteDir( job.tempPath);
 	}
 
 	if( xlogExists )
 	{
-		XLOG( INFO_TAG << _f( "Elapsed time=%ld:%02ld\n", stopWatch.Time()/60000, (stopWatch.Time()%60000)/1000 ) );
+        // XLOG( INFO_TAG << _f( "Elapsed time=%ld:%02ld\n", stopWatch.Time()/60000, (stopWatch.Time()%60000)/1000 ) );
 		logCopy( job.prepare >= mpegf ? (
 			job.params & info ?
-			job.dvdPath.GetFullPath() + wxSEP + "XTRA" + wxSEP + "lplex.log" :
-			job.dvdPath.GetPath() + wxSEP + "lplex.log" ) :
-			job.tempPath.GetPath() + wxSEP + "lplex.log" ) ;
+            job.dvdPath / fs::path("XTRA") / fs::path("lplex.log") :
+            job.dvdPath.parent_path() / fs::path("lplex.log") ) :
+            job.tempPath.parent_path() / fs::path("lplex.log") ) ;
 	}
 
 
@@ -307,44 +307,66 @@ int author( dvdLayout &layout )
 			done = isof;
 	}
 
-	wxString lgzName;
+	string lgzName;
 
 #ifdef lgzip_support
 	if( job.prepare >= lgzf )
 	{
-		SCRN( "\n" );
-		SCRN( STAT_TAG << "Creating dvd container... " );
+        SCRN( "\n" )
+        SCRN( STAT_TAG  "Creating dvd container... " )
 		lpcmPGextractor dvd( &Lfiles, &infofiles, &job, false, false );
-		if( dvd.open( job.isoPath.GetFullPath(), false ) )
+		if( dvd.open( job.isoPath.generic_string(), false ) )
 		{
-			if( lgzName = udfZip( dvd, false, job.inPath.GetFullPath() ) )
+			if( lgzName = udfZip( dvd, false, job.inPath.generic_string() ) )
 				done = lgzf;
 		}
 	}
 #endif
 
-	SCRN( "\n\n" );
+    SCRN( "\n\n" )
 	stopWatch.pause();
 
 	if( xlogExists )
 		logClose();
 
-	SCRN( LOG_TAG << "\n" );
+    SCRN( LOG_TAG  "\n" )
 	if( done >= mpegf )
-		SCRN( LOG_TAG << "Dvd folder    : " << TINT( QUOTE( job.dvdPath.GetFullPath() ) ) << "\n" );
+    {
+        SCRN( LOG_TAG  "Dvd folder    : ")
+        SCRN(TINT( QUOTE( job.dvdPath.generic_string()).c_str()))
+        SCRN("\n")
+    }
 	if( done <= mpegf || ! ( job.params & cleanup ) )
-		SCRN( LOG_TAG << "Work folder   : " << TINT( QUOTE( job.tempPath.GetFullPath() ) ) << "\n" );
+    {
+        SCRN( LOG_TAG  "Work folder   : ")
+        SCRN(TINT( QUOTE( job.tempPath.generic_string()).c_str()))
+        SCRN("\n" )
+    }
 	if( done >= lgzf )
-		SCRN( LOG_TAG << "Dvd container : " << TINT( QUOTE( lgzName ) ) << "\n" );
-	SCRN( LOG_TAG << "Project file  : " << TINT( QUOTE( job.projectPath.GetFullPath() ) ) << "\n" );
+    {
+        SCRN( LOG_TAG  "Dvd container : ")
+        SCRN( TINT( QUOTE( lgzName ).c_str() ))
+        SCRN( "\n" )
+    }
+    SCRN( LOG_TAG  "Project file  : ")
+    SCRN(TINT( QUOTE( job.projectPath.generic_string() ).c_str() ))
+    SCRN( "\n" )
 	if( done >= isof )
-		SCRN( LOG_TAG << "\n"
-			<< LOG_TAG << "Burn '" << TINT( job.isoPath.GetFullPath() ) << "' with any burning app.\n" );
-	else if( job.params & dvdStyler )
-		SCRN( LOG_TAG << "\n"
-			<< LOG_TAG << "To create menus open '" << TINT( xml.name ) << "' in dvdStyler.\n" );
+    {
+        SCRN( LOG_TAG  "\n")
+        SCRN(LOG_TAG  "Burn '")
+        SCRN(TINT( job.isoPath.generic_string().c_str() ))
+        SCRN("' with any burning app.\n" )
+    }
+    else if( job.params & dvdStyler )
+    {
+        SCRN( LOG_TAG  "\n")
+        SCRN( LOG_TAG  "To create menus open '")
+        SCRN(TINT( xml.name.c_str() ))
+        SCRN("' in dvdStyler.\n" )
+    }
 
-	SCRN( "\n" );
+    SCRN( "\n" )
 	return 0;
 }
 
@@ -359,37 +381,39 @@ int author( dvdLayout &layout )
 // ----------------------------------------------------------------------------
 
 
-int mkisofs( wxFileName &isoPath, wxFileName &dvdPath, const char *name )
+int mkisofs(const fs::path &isoPath, const fs::path &dvdPath, const string& name )
 {
 //   ECHO( "\n\n\n---------------------------------- MKISOFS ------------------------------------\n\n"  );
 	int exitCode;
 
-	SCRN( STAT_TAG << "Creating iso image... " );
+    SCRN( STAT_TAG  "Creating iso image... " )
 
-	if ( ! wxDir::Exists( isoPath.GetPath() ) )
-		_wxMakeDirs( isoPath.GetPath() );
+    if ( ! fs::exists( isoPath.parent_path() ) )
+        fs_MakeDirs( isoPath.parent_path());
 
-	wxString volumeID = name;
-	if( volumeID.Right(4) == "_DVD" )
-		volumeID.Truncate( volumeID.Len() - 4 );
-	volumeID.Truncate( 32 );
+	string volumeID = name;
+    if( Right(volumeID, 4) == "_DVD" )
+    {
+        volumeID = volumeID.substr(0, volumeID.length() - 4);
+    }
 
-	INFO( "Creating disc image \'" << isoPath.GetFullPath() << "\'\n" );
-	INFO( "Using volume id \'" << volumeID << "\'\n\n" );
+    volumeID = volumeID.substr(0, 32);
+
+    INFO( "Creating disc image \'" + isoPath.generic_string() + string("\'\n") );
+    INFO( "Using volume id \'" + volumeID + string("\'\n\n") );
 
 	if( exitCode = execute(
-		QUOTE( binDir + "mkisofs" )
+        QUOTE( (binDir / "mkisofs").generic_string() )
 			+ " -dvd-video -udf "
 			+ "-V " + QUOTE( volumeID )
-			+ " -o " + QUOTE( isoPath.GetFullPath() ) + " "
-			+ QUOTE( dvdPath.GetFullPath() ),
-		_verbose, &mkisofsProgress )
+			+ " -o " + QUOTE( isoPath.generic_string() ) + " "
+			+ QUOTE( dvdPath.generic_string() ),
+        _verbose)
 	)
 		ERR( "mkisofs failed. No iso created, see lplex.log for details.\n" );
 
 	return exitCode;
-//   else
-//      done = isof;
+
 }
 
 
@@ -423,17 +447,19 @@ int unauthor( lpcmPGextractor &dvd )
 	POST( "\n" );
 	INFOv( "Extracting    : [ "
 		<< ( job.format == wavef ? "wave" : job.format == flacf ? "flac" : "raw" )
-		<< ( job.format == flacf ? _f( "%d", job.flacLevel ).mb_str() : "" )
+		<< ( job.format == flacf ? _f( "%d", job.flacLevel ).c_str() : "" )
 		<< ( job.params & md5 ? " md5aware" : "" )
 		<< ( job.params & restore ? " restore" : "" )
 		<< ( job.params & info ? " infofiles" : "" ) << " ]\n" );
-	SCRN( INFO_TAG << "Output folder : \'" << TINT( job.extractPath.GetFullPath() ) << "\'\n" );
-	INFO( "Output folder : \'" << job.extractPath.GetFullPath() << "\'\n" );
+    SCRN( INFO_TAG  "Output folder : \'")
+    SCRN(TINT( job.extractPath.generic_string() ))
+    SCRN("\'\n" )
+	INFO( "Output folder : \'" << job.extractPath.generic_string() << "\'\n" );
 
 	editing = false;
 
-	if ( ! editing && ! wxDir::Exists( job.extractPath.GetFullPath() ) )
-		_wxMakeDirs( job.extractPath.GetFullPath() );
+    if ( ! editing && ! fs::exists( job.extractPath.generic_string() ) )
+        fs_MakeDirs( job.extractPath );
 
 	stopWatch.Start();
 	dvd.traverse();
@@ -450,7 +476,7 @@ int test=0;
 		{
 			unfinishedBlock = 0;
 			if( titleset )
-				SCRN( "\n" );
+                SCRN( "\n" )
 			titleset = dvd.titleset;
 
 			vobs = DVDOpenFile( dvd.libdvdReader, dvd.titleset, DVD_READ_TITLE_VOBS );
@@ -473,7 +499,7 @@ if( lFile->edit & lpcmEntity::skip )
 
 if( job.skip && ( c < job.skip ) )
 {
-DBUG("skip "<<c);
+
 continue;
 }
 
@@ -545,7 +571,7 @@ continue;
 						break;
 
 					case _reopen:
-						STAT( "Continuing " << writer->fName.GetName() << endl );
+						STAT( "Continuing " << writer->fName.stem() << endl );
 						break;
 				}
 
@@ -590,7 +616,7 @@ continue;
 
 		if( processErr )
 		{
-			SCRN( "\r" );
+            SCRN( "\r" )
 		}
 		else if( ! ( writer->state & lpcmEntity::metered ) )
 		{
@@ -598,7 +624,7 @@ continue;
 		}
 
 	}
-	SCRN( "\n" );
+    SCRN( "\n" )
 
 	v = _verbose;
 	_verbose = true;
@@ -618,32 +644,32 @@ continue;
 
 	if( job.params & info && infofiles.size() )
 	{
-		SCRN( STAT_TAG << "Copying info files... \n" );
+        SCRN( STAT_TAG  "Copying info files... \n" )
 #ifdef dvdread_udflist
 //      if( job.media & imagefile )
-//         udfCopyInfoFiles( job.extractPath.GetFullPath() );
+//         udfCopyInfoFiles( job.extractPath.generic_string() );
 		if( dvd.isImage )
 			dvd.udfCopyInfoFiles();
 		else
 #endif
-			copyInfoFiles( job.extractPath.GetFullPath() );
+            copyInfoFiles( job.extractPath);
 	}
 
 #ifdef lgzip_support
 	if( job.format >= lgzf )
-		udfZip( dvd, false, job.extractPath.GetFullPath() );
+		udfZip( dvd, false, job.extractPath.generic_string() );
 #endif
 
-	SCRN( "\n" );
+    SCRN( "\n" )
 	stopWatch.pause();
 
 	if( xlogExists )
 	{
-		logCopy( job.extractPath.GetFullPath() + wxSEP + "lplex.log" );
+        logCopy( job.extractPath / fs::path("lplex.log") );
 		logClose();
 	}
 
-	SCRN( "\n" );
+    SCRN( "\n" )
 	ECHO( "\n\n" );
 
 	return 0;
@@ -658,10 +684,10 @@ continue;
 // ----------------------------------------------------------------------------
 
 
-void copyInfoFiles( wxString rootPath )
+void copyInfoFiles(const fs::path& rootPath )
 {
 	uint16_t i;
-	wxString subPath;
+    fs::path subPath;
 
 	if( ! infofiles.size() )
 		return;
@@ -671,15 +697,19 @@ void copyInfoFiles( wxString rootPath )
 		if( infofiles[i].reject )
 			continue;
 
-		if( wxFileName( infofiles[i].fName ).GetFullName().CmpNoCase( "lplex.log" ) == 0 )
+        fs::path i_fName = fs::path(infofiles[i].fName);
+        string comp =  i_fName.filename().generic_string();
+
+        if (toUpper(comp) ==  "LPLEX.LOG" )
 			continue;
 
-		subPath = infofiles[i].fName.Mid( infofiles[i].root );
+        subPath = fs::path(infofiles[i].fName.substr( infofiles[i].root ));
 
 		INFO( "-copying \'" << subPath << "\'\n" );
 
-		_wxMakeDirs( wxFileName( rootPath + wxSEP + subPath ).GetPath() );
-		wxCopyFile( infofiles[i].fName, rootPath + wxSEP + subPath );
+        fs_MakeDirs( ( rootPath / subPath).parent_path() );
+
+        fs::copy_file(i_fName, rootPath / subPath / i_fName);
 	}
 	ECHO( "\n" );
 }
@@ -703,21 +733,21 @@ void copyInfoFiles( wxString rootPath )
 
 uint16_t writeUserData( lpcmEntity *lFile, uint8_t *userData, uint16_t sizeofUData )
 {
-	wxFileName noExt( lFile->fName.GetFullPath() );
-	noExt.ClearExt();
+    fs::path noExt =  lFile->fName;
+    noExt = noExt.parent_path() / noExt.stem();
 
 
-	wxString tag = _f( "<Lplex ver=\"%s\" path=\"%s\" id=\"%d\" shift=\"%d\" md5prev=\"%s\"/>",
+	string tag = _f( "<Lplex ver=\"%s\" path=\"%s\" id=\"%d\" shift=\"%d\" md5prev=\"%s\"/>",
 		VERSION,
-		(const char *)noExt.GetFullPath().Mid( lFile->root ).mb_str(),
+        noExt.generic_string().substr( lFile->root ).c_str(),
 		lFile->index,
 		-lFile->trim.offset,
-		(const char *)hexToStr( lFile->md5str, 16, 1 ).mb_str() );
+        hexToStr( lFile->md5str, 16, 1 ).c_str() );
 
 	flacHeader::write( userData, &lFile->fmeta );
-	const char *buf = tag.mb_str(); // also char_str()
+	const char *buf = tag.c_str(); // also char_str()
 #ifdef wxUTF8
-	int len = tag.mb_str().length();
+	int len = tag.c_str().length();
 #else
 	int len = tag.length();
 #endif
@@ -770,7 +800,7 @@ uint16_t readUserData( lpcmEntity *lFile, uint8_t* userData )
 
 				else if( ! stricmp( attr.name, "path" ) )
 				{
-					_wxFixSeparators( attr.val );
+					fs_fixSeparators( attr.val );
 					lFile->fName = attr.val;
 					lFile->root = 0;
 					lFile->state |= lpcmEntity::named;
@@ -822,9 +852,9 @@ int tagEmbed()
 	uint8_t userData[512];
 
 	fstream vobFile;
-	wxFileName vob = job.dvdPath.GetFullPath() + wxSEP + "VIDEO_TS";
+    fs::path vob = job.dvdPath / "VIDEO_TS";
 
-	lpcmPGtraverser dvd( vob.GetFullPath(), false );
+    lpcmPGtraverser dvd( vob.generic_string().c_str(), false );
 
 	while( dvd.getCell() )
 	{
@@ -866,11 +896,13 @@ int tagEmbed()
 
 							//...open next vob file
 			vobFile.open(
-				vob.GetFullPath() + wxSEP + _f( "VTS_%02i_%i.VOB", titleset, ++v ),
+                (vob / fs::path(_f( "VTS_%02i_%i.VOB", titleset, ++v ))).generic_string(),
 				ios::binary | ios::in | ios::out );
 			if( ! vobFile )
-				ERR( "Could not open " <<
-					vob.GetFullPath() + wxSEP + _f( "VTS_%02i_%i.VOB\n", titleset, v ) );
+            {
+                ERR( "Could not open ")
+                ERR((vob / fs::path(_f( "VTS_%02i_%i.VOB\n", titleset, v ) )).generic_string())
+            }
 							//...and update absolute seek limits
 			_SOF = _EOF;
 			vobFile.seekp( 0, ios::end );
@@ -924,7 +956,7 @@ int mplexProgress( const char *msg, bool echo )
 		{
 			perThousand = atol( msg + 15 ) * 1000 / _progress.max;
 			if( _verbose )
-				cerr << TINT_BLIP( _f( "  %2d.%d%% done", perThousand / 10, perThousand % 10 ) ) << flush;
+                cerr << TINT_BLIP( _f( "  %2d.%d%% done", perThousand / 10, perThousand % 10 ).c_str() ) << flush;
 			else
 				blip( _f( "%2d.%d%%", perThousand / 10, perThousand % 10 ) );
 		}
@@ -1140,24 +1172,24 @@ int addMenus( const char * filename, int tv, bool force )
 	if( menufiles.size() )
 		return 0;
 
-	wxDir video_ts;
-	wxFileName fName( filename );
+    //wxDir video_ts;
+    fs::path fName( filename );
 	userMenus.verbose = false;
 
-	if( fName.IsRelative() )
-		makeAbsolute( fName );
+    if( fName.is_relative() )
+         fName = fs::absolute(fName);
 
 	STAT( _f( "Looking for%s menu resources in \'%s\'...\n",
-		force ? "" : tv==NTSC ? " NTSC" : " PAL", fName.GetFullPath().mb_str() ) );
+		force ? "" : tv==NTSC ? " NTSC" : " PAL", fName.generic_string().c_str() ) );
 
-	if( ! fName.DirExists())
+    if( ! fs::exists(fName))
 	{
-		if( fName.FileExists())
-			fName = wxFileName( fName.GetPath() );
+        if( fs::exists(fName))
+            fName = fs::path( fName.parent_path() );
 	}
 
-	wxString menuSpec( fName.GetFullPath() );
-
+    //string menuSpec( fName.generic_string() );
+#if 0
 	class menuTraverser : public wxDirTraverser
 	{
 	public:
@@ -1166,13 +1198,13 @@ int addMenus( const char * filename, int tv, bool force )
 		lpcm_video_ts *menus;
 		int state, tv;
 		bool force;
-		wxString dir;
+		string dir;
 
 		menuTraverser( lpcm_video_ts *v, int tvsys, const char *topdir, bool isforced )
 				: menus(v), state(0), tv(tvsys), force(isforced)
 			{ OnDir( topdir ); }
 
-		virtual wxDirTraverseResult OnFile(const wxString& fName)
+		virtual wxDirTraverseResult OnFile(const string& fName)
 		{
 			if( state & found && fName.Contains( dir ) )
 			{
@@ -1181,7 +1213,7 @@ int addMenus( const char * filename, int tv, bool force )
 			}
 			return wxDIR_CONTINUE;
 		}
-		virtual wxDirTraverseResult OnDir(const wxString& dirname )
+		virtual wxDirTraverseResult OnDir(const string& dirname )
 		{
 			if( state & found )
 				return wxDIR_IGNORE;
@@ -1191,16 +1223,16 @@ int addMenus( const char * filename, int tv, bool force )
 				{
 					state |= found;
 					if( ! ( job.params & customized ) )
-						SCRN( STAT_TAG << "Checking custom " );
-					SCRN( "menus... " );
+                        SCRN( STAT_TAG  "Checking custom " )
+                    SCRN( "menus... " )
 					STAT( _f("Checking custom %s resources in '%s'\n",
-						menus->menuFmt==NTSC ? "NTSC" : "PAL", dirname.mb_str() ) );
+						menus->menuFmt==NTSC ? "NTSC" : "PAL", dirname.c_str() ) );
 				}
 				else
 				{
 					state |= incompatible;
 					LOG( _f("Incompatible (%s) menus in '%s'.\n",
-						menus->menuFmt==NTSC ? "NTSC" : "PAL", dirname.mb_str() ) );
+						menus->menuFmt==NTSC ? "NTSC" : "PAL", dirname.c_str() ) );
 				}
 				dir = dirname;
 			}
@@ -1210,21 +1242,21 @@ int addMenus( const char * filename, int tv, bool force )
 
 	int state = 0;
 
-	if( video_ts.Open( fName.GetFullPath() ) )
+	if( video_ts.Open( fName.generic_string() ) )
 	{
-		menuTraverser menuFinder( &userMenus, tv, fName.GetFullPath(), force );
+		menuTraverser menuFinder( &userMenus, tv, fName.generic_string(), force );
 		video_ts.Traverse( menuFinder );
 		state = menuFinder.state;
 		if( state == menuTraverser::incompatible )
 		{
-			SCRN( "\n" );
+            SCRN( "\n" )
 			_verbose = true;
 
 			ERR( _f( "Incompatible (%s) menus. You can either\n", menuFinder.menus->menuFmt == NTSC ? "NTSC" : "PAL"  ) );
 			LOG( _f( "-omit the setting '--menu %s' to create a menuless dvd.\n", filename ) );
 			LOG( _f( "-if you have a compatible dvd player, set '--video=%s' to allow\n",
 				menuFinder.menus->menuFmt == NTSC ? "ntsc" : "pal" ) );
-			LOG( _f( "   use of resources in '%s'.\n", menuFinder.dir.mb_str() ) );
+			LOG( _f( "   use of resources in '%s'.\n", menuFinder.dir.c_str() ) );
 			LOG( _f( "-override this test using '--menuforce %s'\n\n", filename ) );
 
 			exit( -1 );
@@ -1233,7 +1265,7 @@ int addMenus( const char * filename, int tv, bool force )
 
 	if( state == 0 )
 	{
-		SCRN( "\n" );
+        SCRN( "\n" )
 		_verbose = true;
 		ERR( "No custom menu resources found. You can\n" );
 		LOG( _f( "-omit the setting '--menu %s' to create a menuless dvd.\n\n", filename ) );
@@ -1246,7 +1278,7 @@ int addMenus( const char * filename, int tv, bool force )
 		job.params |= customized;
 		return 1;
 	}
-
+#endif
 	return 0;
 }
 
@@ -1265,44 +1297,46 @@ void copyMenufiles( int *map )
 	if( ! menufiles.size() )
 		return;
 
-	vector<wxString> xobs;
-	wxString VIDEO_TS = job.dvdPath.GetFullPath() + wxSEP + "VIDEO_TS" + wxSEP;
-	wxString BUP = job.dvdPath.GetFullPath() + wxSEP + "XTRA" + wxSEP + "BUP" + wxSEP;
-	_wxMakeDirs( BUP );
+	vector<string> xobs;
+    fs::path VIDEO_TS = job.dvdPath / "VIDEO_TS";
+    fs::path BUP = job.dvdPath / "XTRA" / "BUP" ;
+    fs_MakeDirs( fs::path(BUP) );
+    fs::path f;
+    for(auto& p: fs::directory_iterator(VIDEO_TS))
+    {
+        f = p.path();
+        if (f.empty()) break;
+        string fName = Right(f.generic_string(), 12);
 
-	wxString f = wxFindFirstFile( VIDEO_TS + "*", wxFILE );
-	while ( f != wxEmptyString )
-	{
-		wxString fName = f.Right(12);
-		if( fName.Right(4) == ".VOB" && fName.Left(4) == "VTS_" && fName[7] != '0' )
+        if( Right(fName, 4) == ".VOB" && fName.Left(4) == "VTS_" && fName[7] != '0' )
 		{
-			fName.Truncate(8);
-			int titleset = atoi( fName.Right(4).mb_str() );
+            fName = fName.substr(0, 8);
+            int titleset = atoi( Right(fName, 4).c_str() );
 
 			if( map[titleset] != titleset )
 			{
 				LOG( _f( "-remapping title %d to VTS_%02d\n" , titleset, map[titleset] ) );
-				fName.Replace( _f( "VTS_%02d", titleset ), _f( "VTS_%02d", map[titleset] ) );
+                fName.replace(4, 2, to_string(map[titleset]));
 			}
-			wxRenameFile( f, VIDEO_TS + fName + ".XOB" );
+
+            fs::rename(f, VIDEO_TS / (fName + ".XOB") );
 			xobs.push_back( fName );
 		}
 
-		else if( fName.Right(4) != ".XOB" )
-			wxRenameFile( f, BUP + fName );
+        else if( Right(fName, 4) != ".XOB" )
+            fs::rename(f, BUP / fName );
 
-		f = wxFindNextFile();
 	}
 
 	for( int i=0; i < xobs.size(); i++ )
-		wxRenameFile( VIDEO_TS + xobs[i] + ".XOB" , VIDEO_TS + xobs[i] + ".VOB" );
+        fs::rename(VIDEO_TS / (xobs[i] + ".XOB"), VIDEO_TS / (xobs[i] + ".VOB") );
 
 	for( int i=0; i < menufiles.size(); i++ )
 	{
 		bool skip = false;
 		for( int j=0; j < xobs.size(); j++ )
 		{
-			if( menufiles[i].Right(12).Left(8) == xobs[j] )
+            if( Right(menufiles[i],12).Left(8) == xobs[j] )
 			{
 				WARN( "-filename conflict. Can't copy \'" << menufiles[i] << "\'\n" );
 				skip = true;
@@ -1312,7 +1346,7 @@ void copyMenufiles( int *map )
 
 		if( ! skip )
 			INFO( "-copying \'" << menufiles[i] << "\'\n" );
-			wxCopyFile( menufiles[i], VIDEO_TS + wxFileName( menufiles[i] ).GetFullName() );
+            fs::copy_file(menufiles[i], VIDEO_TS / fs::path( menufiles[i] ).filename() );
 	}
 	ECHO( "\n" );
 }
@@ -1331,15 +1365,15 @@ void copyMenufiles( int *map )
 
 int* mapMenus()
 {
-	vector<wxString> xobs;
+	vector<string> xobs;
 	if( ! menufiles.size() )
 		return NULL;
 
 	int err = 0;
-	wxString VIDEO_TS = job.dvdPath.GetFullPath() + wxSEP + "VIDEO_TS";
+    const char* VIDEO_TS = (job.dvdPath / "VIDEO_TS").generic_string().c_str();
 	lpcm_video_ts lplexMenus( VIDEO_TS, false );
 	int *map = new int[lplexMenus.numTitlesets+1];
-	VIDEO_TS += wxSEP;
+
 
 	do
 	{
@@ -1372,7 +1406,7 @@ int* mapMenus()
 
 	if( err && ! menuForce )
 	{
-		SCRN( "\n" );
+        SCRN( "\n" )
 		_verbose = true;
 
 		ERR( "Incompatible menu resources. You can either\n" );

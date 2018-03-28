@@ -1,0 +1,91 @@
+.\" 
+.TH "lav2yuv" "1" "6 March 2002" "MJPEG Tools Team" "MJPEG tools manual"
+.SH "NAME"
+lav2yuv \- Convert a MJPEG file to raw yuv
+
+.SH "SYNOPSIS"
+.B lav2yuv
+.RI [ options ]
+.I lavfile1 \fP[\fIlavfile2 \fP...\fI lavfileN\fP]
+
+.SH "DESCRIPTION"
+\fBlav2yuv\fP converts an MJPEG video sequence described by a sequence
+of MJPEG video files and/or edit lists pointing to such files into the
+simple uncompressed planar 4:2:0 Y'CbCr format, as used by \fBmpeg2enc\fP(1) 
+MPEG encoder and image processing filters like
+\fByuvscaler\fP(1) or \fByuv2dfilter\fP(1) or \fByuvdenoise\fP(1).
+
+Output is to stdout so that by piping the output of lav2yuv into a
+suitable pipeline it is possible to process and then encode or play
+back video recorded in any of the mjpegtools MJPEG container formats:
+AVI, quicktime or edit lists describing editted versions of
+video held in such files.
+
+Mixing different files with different video formats is currently not possible.
+
+The \fB\-S \-T \-D\fP options are used for scene detection
+which is used by linux video studio.
+
+.SH "OPTIONS"
+\fBlav2yuv\fP accepts the following options:
+
+.TP 5
+.BI \-m 
+Force mono\-chrome
+.TP 5
+.BI \-c 
+Conceal frames containing corrupt MJPEG data by repeating the
+preceeding good frame.
+.TP 5
+.BI \-S " list.el"
+Output a scene list with scene detection
+.TP 5
+.BI \-T " num"
+Set scene detection threshold to num (default: 4)
+.TP 5
+.BI \-D " num"
+Width decimation to use for scene detection (default: 2)
+.TP 5
+.BI \-o " num"
+Frame offset \- skip \fInum\fP frames at the beginning.  if \fInum\fP is negative
+all but the last \fInum\fP frames are skipped
+.TP 5
+.BI \-f " num"
+Only \fInum\fP frames are written to stdout. 0 means that all frames are processed. 
+.TP 5
+.BI \-A \ width:height
+Set/override the sample aspect ratio (SAR) emitted in the output stream
+header.  Currently, the SAR is only auto-detected for DV files, and
+guessed otherwise.
+.TP 5
+.BI \-P \ width:height
+Set the intended/approximate display aspect ratio (DAR) for the stream.
+This value is only used to guess the SAR when it cannot be detected 
+from the input stream.  The default DAR is '4:3' (corresponding to a
+standard TV screen); another useful value is '16:9' (corresponding to
+widescreen TV).
+.TP 5
+.BI \-C \ chroma
+Set output chroma (default: '420jpeg').
+Currently, '420jpeg', '420mpeg2', '420paldv', '422' are available.
+.TP 5
+.BI \-x
+Exchange fields.  Useful if the field order was reversed during editing.
+.SH "AUTHOR"
+This man page was originally written by Bernhard Praschinger.
+.br 
+If you have questions, remarks, problems or you just want to contact
+the developers, the main mailing list for the MJPEG\-tools is:
+  \fImjpeg\-users@lists.sourceforge.net\fP
+
+.TP 
+For more info, see our website at
+.I http://mjpeg.sourceforge.net
+
+.SH "SEE ALSO"
+.BR mjpegtools (1),
+.BR mpeg2enc (1),
+.BR yuvscaler (1),
+.BR yuv2lav (1),
+.BR yuvdenoise (1),
+.BR yuvplay (1)
