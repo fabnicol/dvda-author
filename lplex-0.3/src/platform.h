@@ -146,7 +146,7 @@ inline bool initPlatform()
 
     configDir = appdata / string("lplex");
     lplexConfig = configDir / "lplex.ini";
-    binDir = fs::current_path() / fs::path("local") / fs::path("bin");
+    binDir = fs::path("/usr/bin"); //fs::current_path() / fs::path("local") / fs::path("bin");
     dataDir = appdata /  fs::path("data");
     readOnlyPath = home;
     tempDir = fs::temp_directory_path();

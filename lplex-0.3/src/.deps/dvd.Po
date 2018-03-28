@@ -1,6 +1,5 @@
 dvd.o: dvd.cpp /usr/include/stdc-predef.h dvd.hpp \
- /home/fab/Dev/dvda-author/lplex-0.3/redist/lplex_precompile.h \
- /usr/local/include/c++/7.3.0/cstdlib \
+ ../redist/lplex_precompile.h /usr/local/include/c++/7.3.0/cstdlib \
  /usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/c++config.h \
  /usr/local/include/c++/7.3.0/x86_64-pc-linux-gnu/bits/os_defines.h \
  /usr/include/features.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
@@ -244,24 +243,15 @@ dvd.o: dvd.cpp /usr/include/stdc-predef.h dvd.hpp \
  /usr/include/dvdread/dvd_reader.h /usr/include/inttypes.h \
  /usr/include/dvdread/ifo_types.h /usr/include/dvdread/ifo_read.h \
  /usr/include/dvdread/ifo_types.h /usr/include/dvdread/nav_read.h \
- /usr/include/dvdread/nav_types.h \
- /home/fab/Dev/dvda-author/local/include/FLAC++/all.h \
- /home/fab/Dev/dvda-author/local/include/FLAC++/export.h \
- /home/fab/Dev/dvda-author/local/include/FLAC++/encoder.h \
- /home/fab/Dev/dvda-author/local/include/FLAC/stream_encoder.h \
- /home/fab/Dev/dvda-author/local/include/FLAC/export.h \
- /home/fab/Dev/dvda-author/local/include/FLAC/format.h \
- /home/fab/Dev/dvda-author/local/include/FLAC/ordinals.h \
- /home/fab/Dev/dvda-author/local/include/FLAC/stream_decoder.h \
- /home/fab/Dev/dvda-author/local/include/FLAC++/decoder.h \
- /home/fab/Dev/dvda-author/local/include/FLAC/stream_decoder.h \
- /home/fab/Dev/dvda-author/local/include/FLAC++/metadata.h \
- /home/fab/Dev/dvda-author/local/include/FLAC/metadata.h \
- /home/fab/Dev/dvda-author/local/include/FLAC/callback.h \
- /usr/local/include/c++/7.3.0/stdlib.h \
- /home/fab/Dev/dvda-author/lplex-0.3/redist/md5/md5.h \
- /home/fab/Dev/dvda-author/local/include/FLAC/format.h \
- /home/fab/Dev/dvda-author/lplex-0.3/redist/vlc_bits.h \
+ /usr/include/dvdread/nav_types.h /usr/include/FLAC++/all.h \
+ /usr/include/FLAC++/export.h /usr/include/FLAC++/encoder.h \
+ /usr/include/FLAC/stream_encoder.h /usr/include/FLAC/export.h \
+ /usr/include/FLAC/format.h /usr/include/FLAC/ordinals.h \
+ /usr/include/FLAC/stream_decoder.h /usr/include/FLAC++/decoder.h \
+ /usr/include/FLAC/stream_decoder.h /usr/include/FLAC++/metadata.h \
+ /usr/include/FLAC/metadata.h /usr/include/FLAC/callback.h \
+ /usr/local/include/c++/7.3.0/stdlib.h ../redist/md5/md5.h \
+ /usr/include/FLAC/format.h ../redist/vlc_bits.h \
  /usr/local/include/c++/7.3.0/experimental/filesystem \
  /usr/local/include/c++/7.3.0/experimental/bits/fs_fwd.h \
  /usr/local/include/c++/7.3.0/chrono /usr/local/include/c++/7.3.0/ratio \
@@ -284,7 +274,7 @@ dvd.o: dvd.cpp /usr/include/stdc-predef.h dvd.hpp \
 
 dvd.hpp:
 
-/home/fab/Dev/dvda-author/lplex-0.3/redist/lplex_precompile.h:
+../redist/lplex_precompile.h:
 
 /usr/local/include/c++/7.3.0/cstdlib:
 
@@ -834,39 +824,39 @@ dvd.hpp:
 
 /usr/include/dvdread/nav_types.h:
 
-/home/fab/Dev/dvda-author/local/include/FLAC++/all.h:
+/usr/include/FLAC++/all.h:
 
-/home/fab/Dev/dvda-author/local/include/FLAC++/export.h:
+/usr/include/FLAC++/export.h:
 
-/home/fab/Dev/dvda-author/local/include/FLAC++/encoder.h:
+/usr/include/FLAC++/encoder.h:
 
-/home/fab/Dev/dvda-author/local/include/FLAC/stream_encoder.h:
+/usr/include/FLAC/stream_encoder.h:
 
-/home/fab/Dev/dvda-author/local/include/FLAC/export.h:
+/usr/include/FLAC/export.h:
 
-/home/fab/Dev/dvda-author/local/include/FLAC/format.h:
+/usr/include/FLAC/format.h:
 
-/home/fab/Dev/dvda-author/local/include/FLAC/ordinals.h:
+/usr/include/FLAC/ordinals.h:
 
-/home/fab/Dev/dvda-author/local/include/FLAC/stream_decoder.h:
+/usr/include/FLAC/stream_decoder.h:
 
-/home/fab/Dev/dvda-author/local/include/FLAC++/decoder.h:
+/usr/include/FLAC++/decoder.h:
 
-/home/fab/Dev/dvda-author/local/include/FLAC/stream_decoder.h:
+/usr/include/FLAC/stream_decoder.h:
 
-/home/fab/Dev/dvda-author/local/include/FLAC++/metadata.h:
+/usr/include/FLAC++/metadata.h:
 
-/home/fab/Dev/dvda-author/local/include/FLAC/metadata.h:
+/usr/include/FLAC/metadata.h:
 
-/home/fab/Dev/dvda-author/local/include/FLAC/callback.h:
+/usr/include/FLAC/callback.h:
 
 /usr/local/include/c++/7.3.0/stdlib.h:
 
-/home/fab/Dev/dvda-author/lplex-0.3/redist/md5/md5.h:
+../redist/md5/md5.h:
 
-/home/fab/Dev/dvda-author/local/include/FLAC/format.h:
+/usr/include/FLAC/format.h:
 
-/home/fab/Dev/dvda-author/lplex-0.3/redist/vlc_bits.h:
+../redist/vlc_bits.h:
 
 /usr/local/include/c++/7.3.0/experimental/filesystem:
 
