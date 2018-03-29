@@ -95,9 +95,8 @@ ofstream* m2v( uint32_t vFrames, const char *jpeg, const char *m2vName,
 
 	_progress.max = 2 * framesPerGOP + endFrames;
 
-	if( executeViaScript(
-        QUOTE( (binDir / "jpeg2yuv").generic_string() )
-			+ " -v 1 -I p "
+    string cmdline = QUOTE( (binDir / "jpeg2yuv").generic_string() )
+            + " -v 1 -I p "
 			+ ( tv == NTSC ? "-f 29.97 " : "-f 25 " )
 			+ "-n " + _f( "%d ", 2 * framesPerGOP + endFrames )
 			+ "-j " + QUOTE( jpeg )
@@ -107,15 +106,19 @@ ofstream* m2v( uint32_t vFrames, const char *jpeg, const char *m2vName,
 			+ ( tv == NTSC ? "-n n " : "-n p " )
 			+ ( ws ? "-a 3 " : "-a 2 " )        // 1=1:1, 2=4:3, 3=16:9, 4=2.21:1
 			+ _f( "-G %d -g %d ", framesPerGOP, framesPerGOP )
-            + "-o " + QUOTE( (m2vPath / "mini.m2v").generic_string() ),
-		false, &mpeg2encProgress )
+            + "-o " + QUOTE( ("/home/fab/temp/out/mini.m2v"));
+            
+    cerr << "[INF] Launching command line:\n" << cmdline << endl << endl;
+    
+	if( executeViaScript(cmdline), false, &mpeg2encProgress )
+    {
+//	  FATAL( "jpeg2yuv|mpeg2enc failed. See Lplex.log for details.\n" );
+    }
 
-	) FATAL( "jpeg2yuv|mpeg2enc failed. See Lplex.log for details.\n" );
-
-
-    ifstream miniFile( (m2vPath / "mini.m2v").generic_string(), ios::binary | ios::ate );
+    ifstream miniFile( "/home/fab/temp/out/mini.m2v" /*(m2vPath / "mini.m2v").generic_string()*/, ios::binary | ios::ate );
+    
 	if( ! miniFile.is_open() )
-        FATAL( "Can't find input file " + (m2vPath / "mini.m2v").generic_string() );
+        FATAL( "Can't find input file /home/fab/temp/out/mini.m2v" /*(m2vPath / "mini.m2v").generic_string()*/ );
 
 	static ofstream m2vFile;
 
@@ -133,7 +136,7 @@ ofstream* m2v( uint32_t vFrames, const char *jpeg, const char *m2vName,
 			m2vFile.close();
 		}
 
-		m2vFile.open( m2vName, ios::binary );
+		m2vFile.open( "/home/fab/temp/out/out_title_01-00.m2v" /*m2vName*/, ios::binary );
 		if( ! m2vFile.is_open() )
             FATAL( "Can't open output file " + string(m2vName) );
 	}
@@ -173,10 +176,11 @@ ofstream* m2v( uint32_t vFrames, const char *jpeg, const char *m2vName,
 	fph = fps * 3600;
 	uint8_t *midGOP = bigBlock + GOP[1];
 #endif
+cerr << "Writing to m2vFile" << endl;
 
 	if( userData && sizeofUData )
 	{
-		INFO( "-inserting Lplex tags into first GOP as User Data field\n" );
+		//INFO( "-inserting Lplex tags into first GOP as User Data field\n" );
 		m2vFile.write( (char*)bigBlock, GOP[0]+4 );
         m2vFile << 0x00 << 0x00 << 0x01 << 0xb2;
 		uDataPos = m2vFile.tellp();
@@ -186,11 +190,13 @@ ofstream* m2v( uint32_t vFrames, const char *jpeg, const char *m2vName,
 	else
 		m2vFile.write( (char*)bigBlock, seq[1] );
 
+    cerr << "End of m2vFile processing 1" << endl; 
 	INFO( _f( "-expanding mini m2v (%d GOP=%d+%d+%d=%df) to %d GOP=%d+%dx%d+%d=%d frames\n",
 		endFrames ? 3 : 2, framesPerGOP, framesPerGOP, endFrames, 2 * framesPerGOP + endFrames,
 		GOPct, framesPerGOP, GOPct - (( vFrames % framesPerGOP ) ? 2 : 1 ),
 		framesPerGOP, endFrames, vFrames ) );
 
+        
 	char *midSeq = (char*)bigBlock + seq[1];
 	uint32_t sizeofMidSeq = seq[2] - seq[1] ;
 
@@ -226,12 +232,12 @@ ofstream* m2v( uint32_t vFrames, const char *jpeg, const char *m2vName,
 	{
 		m2vFile.seekp( 0, ios::end );
 		size_t filesize = m2vFile.tellp();
-		INFO( "Closing \'" << m2vName << "\': " << filesize << " bytes\n");
+		INFO( "Closing \'" <<  "/home/fab/temp/out/out_title_01-00.m2v"  /*m2vName*/ << "\': " << filesize << " bytes\n");
 		m2vFile.close();
 	}
 	else
 		m2vFile.seekp( uDataPos, ios::beg );
-
+cerr << "End of m2vFile processing 2" << endl; 
 	return &m2vFile;
 
 }

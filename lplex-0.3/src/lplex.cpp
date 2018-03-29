@@ -154,6 +154,8 @@ int author( dvdLayout &layout )
 
 		BLIP( " ...creating video " );
 
+        layout.nameNow = "/home/fab/temp/_title_01-00";
+        
 		m2vFile = m2v( Lfiles[i].videoFrames,
 			jpegs[ Lfiles[i].jpgIndex ].getName().c_str(),
             string(layout.nameNow + ".m2v").c_str(), job.tv,
@@ -184,19 +186,26 @@ int author( dvdLayout &layout )
 
 		_progress.max = vFrames;
 
-		if( execute(
-            QUOTE( (binDir / "mplex").generic_string() )
-				+ " -f 8 " + job.mplexArg + " "
+         layout.nameNow ="/home/fab/temp/out/out_title_01-00";
+        
+        string  cmdline =  QUOTE( (binDir / "mplex").generic_string() )
+                + " -f 8 " + job.mplexArg + " "
 				+ "-L " + _f( "%d:%d:%d ",
 					Lfiles[i].fmeta.data.stream_info.sample_rate,
 					Lfiles[i].fmeta.data.stream_info.channels,
 					Lfiles[i].fmeta.data.stream_info.bits_per_sample )
 				+ "-o " + QUOTE( layout.nameNow + ".mpg" ) + " "
 				+ QUOTE( layout.nameNow + ".m2v" ) + " "
-				+ QUOTE( layout.nameNow + ".lpcm" ),
-            _verbose)
-		)
+				+ QUOTE( layout.nameNow + ".lpcm" );
+        
+        cerr << "[MSG] Now launching: \n\n" << cmdline << endl << endl;
+        
+		if( execute(
+             cmdline,
+            _verbose))
+        {
 			FATAL( "mplex failed. See lplex.log for details.\n" );
+        }
 
 		ECHO( "\n-------------------------------------------------------------------------------\n\n"  );
         SCRN( "\n" )
