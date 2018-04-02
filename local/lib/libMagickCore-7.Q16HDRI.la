@@ -14,10 +14,10 @@ library_names='libMagickCore-7.Q16HDRI.so.0.0.0 libMagickCore-7.Q16HDRI.so.0 lib
 old_library='libMagickCore-7.Q16HDRI.a'
 
 # Linker flags that cannot go in dependency_libs.
-inherited_linker_flags=' -pthread -fopenmp'
+inherited_linker_flags=' -fopenmp -pthread'
 
 # Libraries that this one depends upon.
-dependency_libs=' -llcms2 -ljpeg -llqr-1 -lglib-2.0 -lpng16 -lfftw3 -lfontconfig -lfreetype -lwebp -lwmflite -lXext -lXt -lSM -lICE -lX11 -lbz2 -lIlmImf /usr/lib64/libImath.la -L/usr/lib64 /usr/lib64/libHalf.la /usr/lib64/libIexMath.la /usr/lib64/libIlmThread.la -lIex /usr/lib64/libIex.la -lopenjp2 -lgvc -lcgraph -lcdt -lz -lm -lgomp'
+dependency_libs=' -L/usr/local/lib /usr/lib/x86_64-linux-gnu/libfreetype.la -ljpeg -lpng12 -lfontconfig -lXext -lXt -lSM -lICE -lX11 -lbz2 -lgvc -lcgraph -lcdt -lz -lm /usr/local/lib/../lib64/libgomp.la -ldl'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''
@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/home/fab/Dev/dvda-author-dev/local/lib'
+libdir='/home/fab/Dev/dvda-author/local/lib'
