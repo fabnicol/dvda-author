@@ -111,7 +111,7 @@ int user_control(WaveData *info, WaveHeader *header)
   // forcing interactive mode if null audio
   if (bps == 0)
     {
-      info->interactive = true;
+      info->interactive=TRUE;
       return (info->repair=user_control(info, header));
     }
 
@@ -236,7 +236,7 @@ int auto_control(WaveData *info, WaveHeader *header)
       if (regular_nAvgBytesPerSec && regular_wBitsPerSample )
         {
           header->nBlockAlign  = (header->wBitsPerSample * header->channels)/8;
-          header->dwSamplesPerSec = (header->wBitsPerSample && header->channels)? (header->nAvgBytesPerSec * 8)/(header->wBitsPerSample * header->channels) : 0 ;
+          header->dwSamplesPerSec = (header->wBitsPerSample * header->channels)? (header->nAvgBytesPerSec * 8)/(header->wBitsPerSample * header->channels) : 0 ;
           regular_test(header, regular);
           if (regular[0] == 5) return (info->repair);
         }
@@ -246,7 +246,7 @@ int auto_control(WaveData *info, WaveHeader *header)
  ))
         {
           header->nBlockAlign  = (header->wBitsPerSample * header->channels)/8;
-          header->wBitsPerSample   =  ( header->channels && header->dwSamplesPerSec)? (8 * header->nAvgBytesPerSec)/( header->channels * header->dwSamplesPerSec) : 0 ;
+          header->wBitsPerSample   =  ( header->channels * header->dwSamplesPerSec)? (8 * header->nAvgBytesPerSec)/( header->channels * header->dwSamplesPerSec) : 0 ;
           regular_test(header, regular);
           if (regular[0] == 5) return (info->repair);
         }
@@ -255,7 +255,7 @@ int auto_control(WaveData *info, WaveHeader *header)
       if ((regular_nAvgBytesPerSec) && (regular_nBlockAlign ))
         {
           header->wBitsPerSample   = (header->nBlockAlign * 8 )/ header->channels;
-          header->dwSamplesPerSec  = (header->wBitsPerSample && header->channels) ? (header->nAvgBytesPerSec * 8)/(header->wBitsPerSample * header->channels) : 0;
+          header->dwSamplesPerSec  = (header->wBitsPerSample * header->channels)?(header->nAvgBytesPerSec * 8)/(header->wBitsPerSample * header->channels) : 0;
           regular_test(header, regular);
           if (regular[0] == 5) return (info->repair);
         }
@@ -325,8 +325,8 @@ bailing_out:
 
 # ifndef GUI_BEHAVIOR
   if (globals.debugging) foutput("%s\n", INF "Reverting to interactive simple mode.");
-  info->interactive = true;
-  info->repair = user_control(info, header);
+  info->interactive=TRUE;
+  info->repair=user_control(info, header);
 # endif
 
   return (info->repair);
@@ -339,7 +339,7 @@ void regular_test(WaveHeader *head, int* regular)
 
   if (head == NULL) if (globals.debugging) foutput("%s\n", ERR "NULL wave header !");
 
-  _Bool regular_channels  = (head->channels >= 1) && (head->channels < 6);
+  _Bool regular_channels  = (head->channels >= 1) * (head->channels < 6);
   _Bool regular_wBitsPerSample = (head->wBitsPerSample == 16) + (head->wBitsPerSample == 24);
   _Bool regular_dwSamplesPerSec;
 
