@@ -28,7 +28,7 @@ See file COPYING for license.
 
 2009 09.05     bugfixes for fixwav utility and build system. New fixwav features. 
 
-2009 09.09     automatic and user-defined menus ; still pictures (F. Nicol).
+2009 09.09     automatic and user-defined menus ; still pictures (F. Nicol). Single track and "join" group options (Lee Feldkamp).
 
 2010-2013      Code maintainance. New tool chain build system.
 

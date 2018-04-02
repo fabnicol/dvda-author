@@ -646,14 +646,13 @@ sprintf(loghtmlpath,"%s%s",logpath,".html");
 FILE* dest=fopen(loghtmlpath, "wb");
 if (dest == NULL) return;
 
-#define NAVY            "<p><span style=\"color: navy; font-size: 8pt;  \">"
-#define RED             "<p><span style=\"color: red;  font-size: 8pt   \">"
+#define NAVY            "<p><span style=\"color: navy; font-size: 10pt;  \">"
+#define RED             "<p><span style=\"color: red;  font-size: 12pt   \">"
 #define GREY            "<br/><span style=\"color: grey; font-size: 8pt; \">"
-#define GREEN           "<p><span style=\"color: green; font-size: 8pt; \">"
-#define ORANGE          "<p><span style=\"color: orange;font-size: 8pt; \">"
+#define GREEN           "<p><span style=\"color: green; font-size: 10pt; \">"
+#define ORANGE          "<p><span style=\"color: orange;font-size: 12pt; \">"
 #define MAROON          "<br/><span style=\"color: maroon;font-size: 8pt;\">"
 #define PURPLE          "<br/><span style=\"color: purple;font-size: 8pt;\">"
-#define VIOLET          "<br/><span style=\"color: violet;font-size: 8pt;\">"
 #define CLOSETAG1        "</span>"
 #define CLOSETAG2        "</span></p>"
 #define HEADER "<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">\n\
@@ -662,118 +661,61 @@ if (dest == NULL) return;
 </HEAD><BODY>\n"
 
 int length=strlen(NAVY);
-char* line = calloc(1000, sizeof(char));
+char line[1000];
 
 fwrite(HEADER, strlen(HEADER), 1, dest);
 
 do
 {
+
     char* line_ent = fgets(line, 1000, src);
-    
-#   ifndef NO_ANSI_COLORS
-        if (line[0] == '\x1b')
-        {
-            while (line[0] != 'm') ++line;
-            ++line;
-        }
-#   endif
-    
+
     if (line_ent == NULL) return;
 
-    int linelength = strlen(line);
+    int linelength=strlen(line);
 
-    if (linelength > 4 && line[0] == '[' && line[1] == 'I' && line[2] == 'N' && line[3] == 'F' && line[4] == ']')
+    if ((line[0] == '[') && (line[1] == 'I') && (line[2]=='N') && (line[3] == 'F') && (line[4]==']'))
     {
         fwrite(NAVY, length, 1, dest);
-        
-#       ifndef NO_ANSI_COLORS        
-            fwrite(line, 5, 1, dest);
-            line += 5;
-            while (line[0] != 'm') ++line;
-            ++line;
-#       endif        
-            
-        fprintf(dest, "%s%s\n", line, CLOSETAG2);
+        fwrite(line, linelength, 1, dest);
+        fwrite(CLOSETAG2, 11, 1, dest);
+        fputc('\n', dest);
     }
     else if ((line[0] == '[') && (line[1] == 'M') && (line[2]=='S') && (line[3] == 'G') && (line[4]==']'))
     {
         fwrite(GREEN, length, 1, dest);
-        
-#       ifndef NO_ANSI_COLORS        
-            fwrite(line, 5, 1, dest);
-            line += 5;
-            while (line[0] != 'm') ++line;
-            ++line;
-#       endif        
-        
-        fprintf(dest, "%s%s\n", line, CLOSETAG2);
+        fwrite(line, linelength, 1, dest);
+        fwrite(CLOSETAG2, 11, 1, dest);
+        fputc('\n', dest);
     }
     else if ((line[0] == '[') && (line[1] == 'D') && (line[2]=='E') && (line[3] == 'V') && (line[4]==']'))
     {
         fwrite(PURPLE, length, 1, dest);
-        
-#       ifndef NO_ANSI_COLORS        
-            fwrite(line, 5, 1, dest);
-            line += 5;
-            while (line[0] != 'm') ++line;
-            ++line;
-#       endif        
-            
-        fprintf(dest, "%s%s\n", line, CLOSETAG1);
+        fwrite(line, linelength, 1, dest);
+        fwrite(CLOSETAG1, 7, 1, dest);
+        fputc('\n', dest);
     }
     else if ((line[0] == '[') && (line[1] == 'D') && (line[2]=='B') && (line[3] == 'G') && (line[4]==']'))
     {
         fwrite(MAROON, length, 1, dest);
-        
-#       ifndef NO_ANSI_COLORS        
-            fwrite(line, 5, 1, dest);
-            line += 5;
-            while (line[0] != 'm') ++line;
-            ++line;
-#       endif        
-            
-        fprintf(dest, "%s%s\n", line, CLOSETAG1);
-        
+        fwrite(line, linelength, 1, dest);
+        fwrite(CLOSETAG1, 7, 1, dest);
+        fputc('\n', dest);
     }
 
     else if ((line[0] == '[') && (line[1] == 'W') && (line[2]=='A') && (line[3] == 'R') && (line[4]==']'))
     {
         fwrite(ORANGE, length, 1, dest);
-        
-#       ifndef NO_ANSI_COLORS        
-            fwrite(line, 5, 1, dest);
-            line += 5;
-            while (line[0] != 'm') ++line;
-            ++line;
-#       endif        
-            
-        fprintf(dest, "%s%s\n", line, CLOSETAG2);
+        fwrite(line, linelength, 1, dest);
+        fwrite(CLOSETAG2, 11, 1, dest);
+        fputc('\n', dest);
     }
     else if ((line[0] == '[') && (line[1] == 'E') && (line[2]=='R') && (line[3] == 'R') && (line[4]==']'))
     {
         fwrite(RED, length, 1, dest);
-        
-#       ifndef NO_ANSI_COLORS        
-            fwrite(line, 5, 1, dest);
-            line += 5;
-            while (line[0] != 'm') ++line;
-            ++line;
-#       endif        
-            
-        fprintf(dest, "%s%s\n", line, CLOSETAG2);
-    }
-    else if ((line[0] == '[') && (line[1] == 'P') && (line[2]=='A') && (line[3] == 'R') && (line[4]==']'))
-    {
-        fwrite(VIOLET, length, 1, dest);
-        
-#       ifndef NO_ANSI_COLORS        
-            fwrite(line, 5, 1, dest);
-            line += 5;
-            while (line[0] != 'm') ++line;
-            ++line;
-#       endif        
-            
-        fprintf(dest, "%s%s\n", line, CLOSETAG1);
+        fwrite(line, linelength, 1, dest);
+        fwrite(CLOSETAG2, 11, 1, dest);
+        fputc('\n', dest);
     }
     else
     {
@@ -782,7 +724,10 @@ do
         while ((line[u]) && (isspace(line[u]))) u++;
         if (line[u])
         {
-            fprintf(dest, "%s%s%s\n", GREY, line, CLOSETAG1);
+            fwrite(GREY, length, 1, dest);
+            fwrite(line, linelength, 1, dest);
+            fwrite(CLOSETAG1, 7, 1, dest);
+            fputc('\n', dest);
         }
     }
 
@@ -794,7 +739,6 @@ do
     free(loghtmlpath);
     fclose(src);
     fclose(dest);
-    free(line);
 
 #undef NAVY
 #undef RED
@@ -1817,16 +1761,33 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
     return;
 }
 
+/* -------
+ * secure_open
+ *
+ * tries to open file path and allocate file pointer.
+ * Exits on failure, otherwise seeks start of file */
+
 
 uint64_t filesize(filestat_t f) { return f.filesize; }
 char* filename(filestat_t f) { return f.filename; }
 
-filestat_t filestat(_Bool b, uint64_t s, const char* fn, FILE* fp)
+filestat_t filestat(_Bool b, uint64_t s, char* fn, FILE* fp)
 {
     filestat_t str = {b, s, fn, fp};
     return str;
 }
 
+void  secure_open(const char *path, const char *context, FILE* f)
+{
+    if (f != NULL) fclose(f);
+    if ( (f=fopen( path, context ))  == NULL )
+    {
+        printf(ERR "Could not open '%s'\n", path);
+        exit(EXIT_FAILURE);
+    }
+
+    fseek(f, 0, SEEK_SET);
+}
 
 /* -------
  * end_seek
@@ -1950,7 +1911,7 @@ void hex2file(FILE* out, uint8_t* tab,  size_t tabsize)
     {
 //        /* Print the base address. */
 
-
+//        fprintf(out,"%08lX:  ", (long unsigned)count);
         input= Min(tabsize - count, HEX_COLUMNS);
 
         for (i = 0; i < input; i++)
@@ -1963,41 +1924,12 @@ void hex2file(FILE* out, uint8_t* tab,  size_t tabsize)
         fprintf(out, "%s", " | ");
 
         for (i = 0; i < HEX_COLUMNS; i++)
-            fprintf(out,"%c%c", (i < input)? (isprint(tab[i]) ? tab[i] : '.') : ' ');
+            fprintf(out,"%c", (i < input)? (isprint(tab[i]) ? tab[i] : '.') : ' ');
 
        /* break on partial buffer */
     }
     while (count < tabsize);
 
-}
-
-void hex2file_csv(FILE* out, uint8_t* tab,  size_t tabsize)
-{
-    size_t i, count=0, input=0;
-#if 0
-    do
-    {
-//        /* Print the base address. */
-
-        input = Min(tabsize - count, HEX_COLUMNS);
-
-        for (i = 0; i < input - 1; ++i)
-            fprintf(out, "%02X ;", tab[i + count]);
-
-        fprintf(out, "%02X \n", tab[i + input - 1]);
-
-        for (i = 0; i < HEX_COLUMNS - input - 1; ++i)
-            fprintf(out, "%c", ';');
-
-        for (i = HEX_COLUMNS - input - 1; i < HEX_COLUMNS - input; ++i)
-            fprintf(out, "%c", '\n');
-
-        count += HEX_COLUMNS;
-
-       /* break on partial buffer */
-    }
-    while (count < tabsize);
-#endif
 }
 
 void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* fp, FILE* log, _Bool write, _Bool overflow_check)
@@ -2007,10 +1939,10 @@ void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* 
     {
         if (globals.logdecode)
         {
-            fprintf(log, "ERR;SECTOR OVERFLOW at: %08luX ;%s;size read;%d;exceeds by;%d\n", offset, label, size, (int) offset % 2048 + size - 2048);
+            fprintf(log, "SECTOR OVERFLOW at %" PRIu64 ";%s;size read;%d;exceeds by;%d\n", offset, label, size, (int) offset % 2048 + size - 2048);
             fread(tab__, size,1,fp);
-            hex2file_csv(log, tab__, size);
-            //fprintf(log, "%s", "\n");
+            hex2file(log, tab__, size);
+            fprintf(log, "%s", "\n");
             fclose(log);
             fflush(NULL);
         }
@@ -2020,47 +1952,35 @@ void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* 
 
     /* offset_count += */   fread(tab__, size,1,fp);
 
-
+    if (globals.logdecode) fprintf(log, "%" PRIu64 ";%s;", offset, label);
+    if (! globals.logdecode) return;
     if (memcmp(tab__, tab, size) == 0)
     {
-        if (!globals.logdecode)
-         return;
-
-        fprintf(log, "OK ;%08luX;%s;", offset, label);
-        fprintf(log, "%s", "\n");
+        fprintf(log, "%s", "OK\n");
     }
     else
     {
-        if (! globals.logdecode)
-          return;
-
-        fprintf(log, "ERR;%08luX;%s;", offset, label);
-
         if (write)
         {
-            fprintf(log, "%s", "Div:;;;; \n");
-            //hex2file_csv(log, tab__, size);
+            fprintf(log, "%s", "Div: ");
+            hex2file(log, tab__, size);
             fprintf(log, "%s", ";instead of:;");
-            //hex2file_csv(log, tab, size);
+            hex2file(log, tab, size);
         }
-
-        //fprintf(log, "%s", "\n");
+        fprintf(log, "%s", "\n");
     }
 }
 
 void rw_field(uint8_t* tab, int size,const char* label, FILE* fp, FILE* log)
 {
     uint64_t offset = ftello(fp);
-
-    /* offset_count += */
-
-    fread(tab, size, 1, fp);
+    /* offset_count += */   fread(tab, size,1,fp);
 
     if (! globals.logdecode) return;
+    fprintf(log, "%" PRIu64 ";%s;", offset, label);
+    hex2file(log, tab, size);
+    fprintf(log, "%s", "\n");
 
-    fprintf(log, "INF;%08luX;%s;;;;;\n", offset, label);
-    //hex2file_csv(log, tab, size);
-    //fprintf(log, "%s", ";;;;;;;\n");
 }
 
 
@@ -2199,7 +2119,6 @@ errno=0;
     case 0:
         close(tube[0]);
         dup2(tube[1], STDERR_FILENO);
-        foutput("%s%s%s%s\n", DBG "application:", application, " args1:", args[1]);
         execv(application, (char* const*) args);
         foutput("%s%s%s\n", ERR "Runtime failure in ", application," child process");
         perror("");
