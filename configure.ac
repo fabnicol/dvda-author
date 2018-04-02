@@ -234,41 +234,15 @@ m4_map([AC_SUBST],
 
 AC_MSG_NOTICE([Configuring ${PACKAGE_TARNAME}...])
 
-GENERATE_GLOBAL_MKS
-
 
 AS_MKDIR_P([$BUILDDIR/depconf])
 
-AC_CONFIG_FILES([
-         COREBUILD
-         dvda-author.desktop
-	 dvda-author-shared.spec
-	 dvda-author.spec
-	 dvda-author.spec.coreversion
-	 dvda-author.nsi
-	 EXAMPLES
-	 images/Makefile
-	 libutils/src/Makefile
-	 libfixwav/src/Makefile
-	 libiberty/src/Makefile
-	 Makefile
-	 $ROOTDIR/mk/a52dec.mk
-	 $ROOTDIR/mk/cdrtools.mk
-	 $ROOTDIR/mk/dvdauthor.mk
-	 $ROOTDIR/mk/FLAC.mk
-	 $ROOTDIR/mk/functions.mk
-	 $ROOTDIR/mk/help2man.mk
-	 $ROOTDIR/mk/ImageMagick.mk
-	 $ROOTDIR/mk/libogg.mk
-	 $ROOTDIR/mk/libmpeg2.mk
-	 $ROOTDIR/mk/lplex.mk
-         $ROOTDIR/mk/man2html.mk
-	 $ROOTDIR/mk/mjpegtools.mk
-	 $ROOTDIR/mk/sox.mk
-	 sox-libs
-	 src/Makefile])
+AC_CONFIG_FILES([COREBUILD images/Makefile libutils/src/Makefile libfixwav/src/Makefile libiberty/src/Makefile Makefile])
+AC_CONFIG_FILES([$ROOTDIR/mk/a52dec.mk $ROOTDIR/mk/cdrtools.mk $ROOTDIR/mk/dvdauthor.mk $ROOTDIR/mk/FLAC.mk $ROOTDIR/mk/functions.mk])
+AC_CONFIG_FILES([$ROOTDIR/mk/help2man.mk $ROOTDIR/mk/ImageMagick.mk $ROOTDIR/mk/libogg.mk $ROOTDIR/mk/libmpeg2.mk $ROOTDIR/mk/lplex.mk])
+AC_CONFIG_FILES([$ROOTDIR/mk/man2html.mk $ROOTDIR/mk/mjpegtools.mk $ROOTDIR/mk/sox.mk sox-libs src/Makefile EXAMPLES])
 
-
+GENERATE_GLOBAL_MKS
 AC_OUTPUT
 
 AC_MSG_RESULT([

@@ -209,7 +209,8 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
       char databasepath[l];
       sprintf(databasepath, "%s%s", info->database, SEPARATOR "database");
       secure_mkdir(info->database, 0755);
-      FILE* database = fopen(databasepath, "ab");
+      FILE* database = NULL;
+      secure_open(databasepath, "ab", database);
       if (database)
       {
         fprintf(database, "Filename    %s\nArtist      %s\nDate        %s\nStyle       %s\nComment     %s\nCopyright   %s\n\n",
@@ -343,15 +344,15 @@ Checkout:
           if ((info->repair=write_header(info, header)) != FAIL)
           {
               if (globals.debugging) foutput("%s\n", INF "Header copy successful.\n");
-//              if (globals.maxverbose)
-//              {
-//                  S_CLOSE(info->infile)
-//                  S_OPEN(info->outfile, "wb+")
+              if (globals.maxverbose)
+              {
+                  S_CLOSE(info->infile)
+                  S_OPEN(info->outfile, "wb+")
 
-//                  if (globals.debugging) foutput("%s","Dumping new header:\n\n");
+                  if (globals.debugging) foutput("%s","Dumping new header:\n\n");
 
-//                  hexdump_header(info->outfile.fp, HEADER_SIZE);
-//              }
+                  hexdump_header(info->outfile.fp, HEADER_SIZE);
+              }
           }
           else
           {

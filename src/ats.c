@@ -1153,7 +1153,7 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
     {
         open_aob_log();
         fprintf(aob_log, "INF;Read %d audio_bytes;;;;;;\n", result);
-        hex2file_csv(aob_log, audio_buf, result > 16 ? 16 : result);
+        //hex2file_csv(aob_log, audio_buf, result > 16 ? 16 : result);
         //fprintf(aob_log, "%s", ";;;;;;;\n");
         close_aob_log();
     }
