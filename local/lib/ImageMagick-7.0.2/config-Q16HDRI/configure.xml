@@ -7,37 +7,37 @@
 ]>
 <configuremap>
   <configure name="CC" value="gcc"/>
-  <configure name="CFLAGS" value="-I/usr/local/include/libpng12 -I/usr/include/graphviz -I/usr/include/freetype2 -I/usr/include/freetype2   -fopenmp -g -O2 -g -O2 -std=c99 -Wall -mtune=core2 -fexceptions -pthread -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16"/>
-  <configure name="CODER_PATH" value="/home/fab/Dev/dvda-author/local/lib/ImageMagick-7.0.2/modules-Q16HDRI/coders"/>
-  <configure name="CONFIGURE_PATH" value="/home/fab/Dev/dvda-author/local/etc/ImageMagick-7/"/>
-  <configure name="CONFIGURE" value="/home/fab/Dev/dvda-author/ImageMagick-7.0.2-6/configure  '--without-magick-plus-plus' '--without-pango' '--without-tiff' '--without-lzma' '--without-xml' 'JPEG_LIBS=/home/fab/Dev/dvda-author/build/linux/dvda-author-full.build/lib/libjpeg.a' '--prefix=/home/fab/Dev/dvda-author/local' 'CPPFLAGS=-I/home/fab/Dev/dvda-author/local/include' 'CFLAGS=-g -O2 -g -O2 -std=c99'"/>
+  <configure name="CFLAGS" value="-I/usr/include/libpng16 -pthread -I/usr/include/OpenEXR -I/usr/include/lqr-1 -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/openjpeg-2.3  -I/usr/include/graphviz -I/usr/include/freetype2 -I/usr/include/freetype2    -fopenmp -g -O2 -g -O2 -std=c99 -Wall -mtune=haswell -fexceptions -pthread -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16"/>
+  <configure name="CODER_PATH" value="/home/fab/Dev/dvda-author-dev/local/lib/ImageMagick-7.0.2/modules-Q16HDRI/coders"/>
+  <configure name="CONFIGURE_PATH" value="/home/fab/Dev/dvda-author-dev/local/etc/ImageMagick-7/"/>
+  <configure name="CONFIGURE" value="/home/fab/Dev/dvda-author-dev/ImageMagick-7.0.2-6/configure  '--without-magick-plus-plus' '--without-pango' '--without-tiff' '--without-lzma' '--without-xml' 'JPEG_LIBS=/home/fab/Dev/dvda-author-dev/build/linux/dvda-author-full.build/lib/libjpeg.a' '--prefix=/home/fab/Dev/dvda-author-dev/local' 'CPPFLAGS=-I/home/fab/Dev/dvda-author-dev/local/include' 'CFLAGS=-g -O2 -g -O2 -std=c99'"/>
   <configure name="COPYRIGHT" value="Copyright (C) 1999-2016 ImageMagick Studio LLC"/>
-  <configure name="CPPFLAGS" value="-I/home/fab/Dev/dvda-author/local/include/ImageMagick-7"/>
+  <configure name="CPPFLAGS" value="-I/home/fab/Dev/dvda-author-dev/local/include/ImageMagick-7"/>
   <configure name="CXXFLAGS" value="-g -O2 -pthread"/>
   <configure name="CXX" value="g++"/>
   <configure name="DEFS" value="-DHAVE_CONFIG_H"/>
-  <configure name="DELEGATES" value="bzlib mpeg fontconfig freetype jng jpeg png ps x zlib"/>
-  <configure name="DISTCHECK_CONFIG_FLAGS" value="'CFLAGS=-g -O2 -g -O2 -std=c99' 'CPPFLAGS=-I/home/fab/Dev/dvda-author/local/include'  --disable-deprecated  --with-quantum-depth=16  --with-jemalloc=no  --with-umem=no  --with-autotrace=no  --with-gslib=no  --with-fontpath=  --with-lzma=no  --with-pango=no  --with-rsvg=no  --with-tiff=no  --with-xml=no  --with-perl=no "/>
-  <configure name="DOCUMENTATION_PATH" value="/home/fab/Dev/dvda-author/local/share/doc/ImageMagick-7"/>
-  <configure name="EXEC-PREFIX" value="/home/fab/Dev/dvda-author/local"/>
-  <configure name="EXECUTABLE_PATH" value="/home/fab/Dev/dvda-author/local/bin"/>
+  <configure name="DELEGATES" value="bzlib mpeg fftw fontconfig freetype jng jpeg lcms lqr openexr openjp2 png ps webp wmf x zlib"/>
+  <configure name="DISTCHECK_CONFIG_FLAGS" value="'CFLAGS=-g -O2 -g -O2 -std=c99' 'CPPFLAGS=-I/home/fab/Dev/dvda-author-dev/local/include'  --disable-deprecated  --with-quantum-depth=16  --with-jemalloc=no  --with-umem=no  --with-autotrace=no  --with-gslib=no  --with-fontpath=  --with-lzma=no  --with-pango=no  --with-rsvg=no  --with-tiff=no  --with-xml=no  --with-perl=no "/>
+  <configure name="DOCUMENTATION_PATH" value="/home/fab/Dev/dvda-author-dev/local/share/doc/ImageMagick-7"/>
+  <configure name="EXEC-PREFIX" value="/home/fab/Dev/dvda-author-dev/local"/>
+  <configure name="EXECUTABLE_PATH" value="/home/fab/Dev/dvda-author-dev/local/bin"/>
   <configure name="FEATURES" value="DPC HDRI Cipher OpenMP"/>
-  <configure name="FILTER_PATH" value="/home/fab/Dev/dvda-author/local/lib/ImageMagick-7.0.2/modules-Q16HDRI/filters"/>
+  <configure name="FILTER_PATH" value="/home/fab/Dev/dvda-author-dev/local/lib/ImageMagick-7.0.2/modules-Q16HDRI/filters"/>
   <configure name="GIT_REVISION" value="18628:98f9037:20160722" />
   <configure name="HOST" value="x86_64-unknown-linux-gnu"/>
-  <configure name="INCLUDE_PATH" value="/home/fab/Dev/dvda-author/local/include/ImageMagick-7"/>
-  <configure name="LDFLAGS" value="-L/home/fab/Dev/dvda-author/local/lib  "/>
-  <configure name="LIBRARY_PATH" value="/home/fab/Dev/dvda-author/local/lib/ImageMagick-7.0.2"/>
-  <configure name="LIBS" value="    -lfreetype  -ljpeg   -L/usr/local/lib -lpng12 -lz -lm      -lfontconfig -lfreetype    -lXext -lXt   -lSM -lICE -lX11   -lbz2      -lgvc -lcgraph -lcdt -lz  -lm -lgomp    "/>
+  <configure name="INCLUDE_PATH" value="/home/fab/Dev/dvda-author-dev/local/include/ImageMagick-7"/>
+  <configure name="LDFLAGS" value="-L/home/fab/Dev/dvda-author-dev/local/lib  "/>
+  <configure name="LIBRARY_PATH" value="/home/fab/Dev/dvda-author-dev/local/lib/ImageMagick-7.0.2"/>
+  <configure name="LIBS" value="  -llcms2  -lfreetype  -ljpeg  -llqr-1 -lglib-2.0 -lpng16 -lz   -lfftw3   -lfontconfig -lfreetype -lwebp -lwmflite  -lXext -lXt   -lSM -lICE -lX11   -lbz2 -lIlmImf -lImath -lHalf -lIex -lIexMath -lIlmThread -pthread -lopenjp2    -lgvc -lcgraph -lcdt -lz  -lm -lgomp    "/>
   <configure name="LIB_VERSION_NUMBER" value="7,0,2,6"/>
   <configure name="LIB_VERSION" value="0x702"/>
   <configure name="NAME" value="ImageMagick"/>
   <configure name="PCFLAGS" value="-fopenmp -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16"/>
-  <configure name="PREFIX" value="/home/fab/Dev/dvda-author/local"/>
+  <configure name="PREFIX" value="/home/fab/Dev/dvda-author-dev/local"/>
   <configure name="QuantumDepth" value="16"/>
-  <configure name="RELEASE_DATE" value="2018-03-28"/>
-  <configure name="SHAREARCH_PATH" value="/home/fab/Dev/dvda-author/local/lib/ImageMagick-7.0.2/config-Q16HDRI"/>
-  <configure name="SHARE_PATH" value="/home/fab/Dev/dvda-author/local/share/ImageMagick-7"/>
+  <configure name="RELEASE_DATE" value="2018-05-26"/>
+  <configure name="SHAREARCH_PATH" value="/home/fab/Dev/dvda-author-dev/local/lib/ImageMagick-7.0.2/config-Q16HDRI"/>
+  <configure name="SHARE_PATH" value="/home/fab/Dev/dvda-author-dev/local/share/ImageMagick-7"/>
   <configure name="TARGET_CPU" value="x86_64"/>
   <configure name="TARGET_OS" value="linux-gnu"/>
   <configure name="TARGET_VENDOR" value="unknown"/>

@@ -37,7 +37,7 @@
 
 /* Directory where architecture-dependent configuration files live. */
 #ifndef MAGICKCORE_CONFIGURE_PATH
-#define MAGICKCORE_CONFIGURE_PATH "/home/fab/Dev/dvda-author/local/etc/ImageMagick-7/"
+#define MAGICKCORE_CONFIGURE_PATH "/home/fab/Dev/dvda-author-dev/local/etc/ImageMagick-7/"
 #endif
 
 /* Subdirectory of lib where architecture-dependent configuration files live.
@@ -51,7 +51,7 @@
 
 /* Directory where ImageMagick documents live. */
 #ifndef MAGICKCORE_DOCUMENTATION_PATH
-#define MAGICKCORE_DOCUMENTATION_PATH "/home/fab/Dev/dvda-author/local/share/doc/ImageMagick-7/"
+#define MAGICKCORE_DOCUMENTATION_PATH "/home/fab/Dev/dvda-author-dev/local/share/doc/ImageMagick-7/"
 #endif
 
 /* Define if you have Display Postscript */
@@ -62,11 +62,13 @@
 
 /* Directory where executables are installed. */
 #ifndef MAGICKCORE_EXECUTABLE_PATH
-#define MAGICKCORE_EXECUTABLE_PATH "/home/fab/Dev/dvda-author/local/bin/"
+#define MAGICKCORE_EXECUTABLE_PATH "/home/fab/Dev/dvda-author-dev/local/bin/"
 #endif
 
 /* Define if you have FFTW library */
-/* #undef FFTW_DELEGATE */
+#ifndef MAGICKCORE_FFTW_DELEGATE
+#define MAGICKCORE_FFTW_DELEGATE 1
+#endif
 
 /* filter subdirectory. */
 #ifndef MAGICKCORE_FILTER_DIRNAME
@@ -374,7 +376,9 @@
 #endif
 
 /* Define if you have the <lcms2.h> header file. */
-/* #undef HAVE_LCMS2_H */
+#ifndef MAGICKCORE_HAVE_LCMS2_H
+#define MAGICKCORE_HAVE_LCMS2_H 1
+#endif
 
 /* Define if you have the <lcms2/lcms2.h> header file. */
 /* #undef HAVE_LCMS2_LCMS2_H */
@@ -401,7 +405,9 @@
 #endif
 
 /* Define to 1 if the system has the type `locale_t'. */
-/* #undef HAVE_LOCALE_T */
+#ifndef MAGICKCORE_HAVE_LOCALE_T
+#define MAGICKCORE_HAVE_LOCALE_T 1
+#endif
 
 /* Define to 1 if you have the `localtime_r' function. */
 #ifndef MAGICKCORE_HAVE_LOCALTIME_R
@@ -1027,7 +1033,9 @@
 #endif
 
 /* Define to 1 if you have the <xlocale.h> header file. */
-/* #undef HAVE_XLOCALE_H */
+#ifndef MAGICKCORE_HAVE_XLOCALE_H
+#define MAGICKCORE_HAVE_XLOCALE_H 1
+#endif
 
 /* Define to 1 if you have the `_aligned_malloc' function. */
 /* #undef HAVE__ALIGNED_MALLOC */
@@ -1075,12 +1083,12 @@
 
 /* Directory where ImageMagick architecture headers live. */
 #ifndef MAGICKCORE_INCLUDEARCH_PATH
-#define MAGICKCORE_INCLUDEARCH_PATH "/home/fab/Dev/dvda-author/local/include/ImageMagick-7/"
+#define MAGICKCORE_INCLUDEARCH_PATH "/home/fab/Dev/dvda-author-dev/local/include/ImageMagick-7/"
 #endif
 
 /* Directory where ImageMagick headers live. */
 #ifndef MAGICKCORE_INCLUDE_PATH
-#define MAGICKCORE_INCLUDE_PATH "/home/fab/Dev/dvda-author/local/include/ImageMagick-7/"
+#define MAGICKCORE_INCLUDE_PATH "/home/fab/Dev/dvda-author-dev/local/include/ImageMagick-7/"
 #endif
 
 /* ImageMagick is formally installed under prefix */
@@ -1097,14 +1105,18 @@
 #endif
 
 /* Define if you have LCMS library */
-/* #undef LCMS_DELEGATE */
+#ifndef MAGICKCORE_LCMS_DELEGATE
+#define MAGICKCORE_LCMS_DELEGATE 1
+#endif
 
 /* Define if you have OPENJP2 library */
-/* #undef LIBOPENJP2_DELEGATE */
+#ifndef MAGICKCORE_LIBOPENJP2_DELEGATE
+#define MAGICKCORE_LIBOPENJP2_DELEGATE 1
+#endif
 
 /* Directory where architecture-dependent files live. */
 #ifndef MAGICKCORE_LIBRARY_PATH
-#define MAGICKCORE_LIBRARY_PATH "/home/fab/Dev/dvda-author/local/lib/ImageMagick-7.0.2/"
+#define MAGICKCORE_LIBRARY_PATH "/home/fab/Dev/dvda-author-dev/local/lib/ImageMagick-7.0.2/"
 #endif
 
 /* Subdirectory of lib where ImageMagick architecture dependent files are
@@ -1120,7 +1132,9 @@
 #endif
 
 /* Define if you have LQR library */
-/* #undef LQR_DELEGATE */
+#ifndef MAGICKCORE_LQR_DELEGATE
+#define MAGICKCORE_LQR_DELEGATE 1
+#endif
 
 /* Define if using libltdl to support dynamically loadable modules */
 /* #undef LTDL_DELEGATE */
@@ -1166,7 +1180,9 @@
 /* #undef NDEBUG */
 
 /* Define if you have OPENEXR library */
-/* #undef OPENEXR_DELEGATE */
+#ifndef MAGICKCORE_OPENEXR_DELEGATE
+#define MAGICKCORE_OPENEXR_DELEGATE 1
+#endif
 
 /* Name of package */
 #ifndef MAGICKCORE_PACKAGE
@@ -1265,7 +1281,7 @@
 
 /* Directory where architecture-independent configuration files live. */
 #ifndef MAGICKCORE_SHARE_PATH
-#define MAGICKCORE_SHARE_PATH "/home/fab/Dev/dvda-author/local/share/ImageMagick-7/"
+#define MAGICKCORE_SHARE_PATH "/home/fab/Dev/dvda-author-dev/local/share/ImageMagick-7/"
 #endif
 
 /* Subdirectory of lib where architecture-independent configuration files
@@ -1416,7 +1432,9 @@
 #endif
 
 /* Define if you have WEBP library */
-/* #undef WEBP_DELEGATE */
+#ifndef MAGICKCORE_WEBP_DELEGATE
+#define MAGICKCORE_WEBP_DELEGATE 1
+#endif
 
 /* Define to use the Windows GDI32 library */
 /* #undef WINGDI32_DELEGATE */
@@ -1425,7 +1443,9 @@
 /* #undef WITH_DMALLOC */
 
 /* Define if you have WMF library */
-/* #undef WMF_DELEGATE */
+#ifndef MAGICKCORE_WMF_DELEGATE
+#define MAGICKCORE_WMF_DELEGATE 1
+#endif
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */

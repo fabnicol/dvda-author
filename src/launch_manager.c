@@ -109,18 +109,19 @@ int launch_manager(command_t *command)
     memset(singlestar, ' ', naudio_groups);
     char joinmark[naudio_groups][99];
     memset(joinmark, ' ', naudio_groups*99);
-    _Bool singlestar_flag=0, joinmark_flag=0;
+    _Bool singlestar_flag = 0, joinmark_flag = 0;
     unsigned int ppadd = 0;
 
-    for (i=0; i < naudio_groups; ++i)
+    for (i = 0; i < naudio_groups; ++i)
     {
-        nfiles[i]=ntracks[i];
+        nfiles[i] = ntracks[i];
         totntracks += nfiles[i];
 
-        for (j=0; j < nfiles[i];  j++)
+        for (j = 0; j < nfiles[i];  ++j)
         {
             // As files[][] is dynamically allocated with calloc(), 0 values mean command line did not define cga values
             if (files[i][j].cga == 0) files[i][j].cga=cgadef[files[i][j].channels-1];
+            files[i][j].contin_track = (uint8_t) (j != nfiles[i] - 1);
 
             files[i][j].PTS_length=(90000.0*files[i][j].numsamples)/files[i][j].samplerate;
 
@@ -139,18 +140,16 @@ int launch_manager(command_t *command)
             totalsize += files[i][j].numbytes;
 
         }
-
     }
 
 
-    for (i=0; i < nplaygroups; i++)
+    for (i = 0; i < nplaygroups; ++i)
     {
-        int numfiles=ntracks[playtitleset[i]];
+        int numfiles = ntracks[playtitleset[i]];
 
-        for (j=0; j < numfiles;  j++)
+        for (j = 0; j < numfiles;  ++j)
         {
-
-            foutput("%c%c  %d     %02d  %6"PRIu32"   %02d   %d   %10"PRIu64"   ",'D', singlestar[i], i+1, j+1, files[i][j].samplerate, files[i][j].bitspersample, files[i][j].channels, files[i][j].numsamples);
+            foutput("%c%c  %d     %02d  %6"PRIu32"   %02d   %d   %10"PRIu64"   ",'D', singlestar[i], i + 1, j + 1, files[i][j].samplerate, files[i][j].bitspersample, files[i][j].channels, files[i][j].numsamples);
             foutput("%s\n",files[i][j].filename);
         }
     }
@@ -190,10 +189,10 @@ int launch_manager(command_t *command)
         printf(INF "Total of tracks is not coherent: totntracks=%d, return of create_tracktables=%d\n", totntracks, totntracks0);
     }
 
-    for (i=0; i < naudio_groups; i++)
+    for (i = 0; i < naudio_groups; ++i)
     {
         
-        error = create_ats(audiotsdir,i+1,&files[i][0], nfiles[i]);
+        error = create_ats(audiotsdir, i + 1, &files[i][0], nfiles[i]);
         ppadd -= error;
         /* Audio zone system file  parameters  */
 
