@@ -712,10 +712,10 @@
  * OS madness
  */
 #define HAVE_BROKEN_LINUX_EXT2_FS_H 1	/* whether <linux/ext2_fs.h> is broken */
-/* #undef HAVE_BROKEN_SRC_LINUX_EXT2_FS_H */	/* whether /usr/src/linux/include/linux/ext2_fs.h is broken */
-#define HAVE_USABLE_LINUX_EXT2_FS_H 1	/* whether linux/ext2_fs.h is usable at all */
+#define HAVE_BROKEN_SRC_LINUX_EXT2_FS_H 1	/* whether /usr/src/linux/include/linux/ext2_fs.h is broken */
+/* #undef HAVE_USABLE_LINUX_EXT2_FS_H */	/* whether linux/ext2_fs.h is usable at all */
 /* #undef HAVE_BROKEN_SCSI_SCSI_H */		/* whether <scsi/scsi.h> is broken */
-#define HAVE_BROKEN_SRC_SCSI_SCSI_H 1	/* whether /usr/src/linux/include/scsi/scsi.h is broken */
+/* #undef HAVE_BROKEN_SRC_SCSI_SCSI_H */	/* whether /usr/src/linux/include/scsi/scsi.h is broken */
 /* #undef HAVE_BROKEN_SCSI_SG_H */		/* whether <scsi/sg.h> is broken */
 /* #undef HAVE_BROKEN_SRC_SCSI_SG_H */	/* whether /usr/src/linux/include/scsi/sg.h is broken */
 
