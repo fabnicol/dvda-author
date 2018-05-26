@@ -520,7 +520,7 @@ inline static void write_lpcm_header(FILE* fp, uint8_t header_length,fileinfo_t*
     /* offset_count += */   fwrite(sample_size,1,1,fp);
     /* offset_count += */   fwrite(sample_rate,1,1,fp);
     /* offset_count += */   fwrite(unknown2,1,1,fp);
-    /* offset_count += */   fwrite(&channel_assignment,1,1,fp);
+    /* offset_count += */   fwrite(channel_assignment,1,1,fp);
     /* offset_count += */   fwrite(unknown3,1,1,fp);
     /* offset_count += (header_length-8) */
     fwrite(zero,header_length-8,1,fp);
@@ -892,6 +892,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         write_lpcm_header(fp,info->firstpack_lpcm_headerquantity,info,pack_in_title,cc);//info->firstpack_lpcm_headerquantity+4
         /* offset_count+= */
         uint64_t offset = ftello(fp);
+ 
         int res = fwrite(audio_buf,1,audio_bytes,fp);
         if (globals.maxverbose) fprintf(stderr, DBG "\n%" PRIu64 ": Writing %d bytes\n", offset, res);
 
@@ -908,6 +909,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         write_lpcm_header(fp,info->lastpack_lpcm_headerquantity,info,pack_in_title,cc); // +info->lastpack_lpcm_headerquantity +4
         /* offset_count+= */
         uint64_t offset = ftello(fp);
+   
         int res = fwrite(audio_buf,1,audio_bytes,fp);
         if (globals.maxverbose) fprintf(stderr, DBG "%" PRIu64 ": Writing %d bytes\n", offset, res);
         // PATCH Dec. 2013
@@ -927,12 +929,12 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         write_pack_header(fp,SCR); //+14
         write_audio_pes_header(fp,info->midpack_audiopesheaderquantity,0,PTS);//+14
 
-        //PATCH Dec. 2013: reset continuity counters at start of file
-        if (start_of_file) cc=0;
-
         write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,pack_in_title,cc); //info->midpack_lpcm_headerquantity+4
+        //PATCH May. 2018: reset continuity counters at start of file
+        if (start_of_file) cc=0x1f;
         /* offset_count+= */
         uint64_t offset = ftello(fp);
+   
         int res = fwrite(audio_buf,1,audio_bytes,fp);
         if (globals.maxverbose) fprintf(stderr, DBG "%" PRIu64 ": Writing %d bytes\n", offset, res);
 

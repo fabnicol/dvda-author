@@ -279,13 +279,13 @@ int calc_info(fileinfo_t* info)
 
     info->SCRquantity = X[2];
     info->firstpack_audiopesheaderquantity = X[3];
-    info->midpack_audiopesheaderquantity = X[4];
-    info->lastpack_audiopesheaderquantity = X[5];
-    info->firstpack_lpcm_headerquantity=(uint8_t) X[6];
-    info->midpack_lpcm_headerquantity=(uint8_t) X[7];
-    info->lastpack_lpcm_headerquantity=(uint8_t) X[8];
-    info->firstpack_pes_padding = X[9];
-    info->midpack_pes_padding = X[10];
+    info->midpack_audiopesheaderquantity   = X[4];
+    info->lastpack_audiopesheaderquantity  = X[5];
+    info->firstpack_lpcm_headerquantity    =(uint8_t) X[6];
+    info->midpack_lpcm_headerquantity      =(uint8_t) X[7];
+    info->lastpack_lpcm_headerquantity     =(uint8_t) X[8];
+    info->firstpack_pes_padding            = X[9];
+    info->midpack_pes_padding              = X[10];
 
 #undef X
 
@@ -1384,8 +1384,10 @@ inline static void interleave_24_bit_sample_extended(int channels, int count, ui
 
 uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
 {
-    uint32_t n=0, bytesread=0;
-
+    uint32_t n = 0, nc = 0, bytesread = 0;
+    static uint16_t offset;
+    static uint8_t fbuf[36];
+    
     FLAC__bool result;
 
     //PATCH: provided for null audio characteristics, to ensure non-zero divider
@@ -1393,13 +1395,21 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
     if (info->sampleunitsize == 0)
           EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Sample unit size is null");
   
-    if (count > info->sampleunitsize) 
-        count -= count%info->sampleunitsize;
-      else return 0;
+    if (count >= info->sampleunitsize) 
+    {
+        count -= (count+offset) % info->sampleunitsize;
+    }
+    
+    if (offset)
+    {
+       memcpy(buf, fbuf, offset);
+       if (globals.debugging)
+           foutput(WAR "File: %s. Adding %d bytes from last packet for gapless processing...\n", info->filename, offset);
+    }
     
     if (info->type == AFMT_WAVE)
     {
-        n = fread(buf, 1, count, info->audio->fp);
+        n = fread(buf + offset, 1, count, info->audio->fp);
 
         if (info->audio->bytesread + n > info->numbytes)
         {
@@ -1412,7 +1422,7 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
         while ((info->audio->bytesread < info->numbytes)
                && (bytesread < count))
         {
-            n = fread(&buf[bytesread], 1, count - bytesread, info->audio->fp);
+            n = fread(buf + bytesread + offset, 1, count - bytesread, info->audio->fp);
 
             if (info->audio->bytesread + n > info->numbytes)
             {
@@ -1447,19 +1457,74 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
         if (info->audio->n >= count)
         {
             n = count;
-            memcpy(buf, info->audio->buf, count);
+            memcpy(buf + offset, info->audio->buf, count);
             memmove(info->audio->buf, &(info->audio->buf[count]), info-> audio->n - count);
             info->audio->n -= count;
         }
         else
         {
             n = info->audio->n;
-            memcpy(buf, info->audio->buf, info->audio->n);
+            memcpy(buf + offset, info->audio->buf, info->audio->n);
             info->audio->n = 0;
         }
     }
 #endif
+    
+    // PATCH: reinstating Lee Feldkamp's 2009 sampleunitsize rounding
+    // Note: will add extra zeros on decoding!
 
+#if 0  // SIMPLE CASE: zero-adding for each track    
+        uint16_t rmdr = n % info->sampleunitsize;
+        if (rmdr = rmdr) 
+        { 
+            uint16_t padbytes = info->sampleunitsize - rmdr;
+            for(int l = 0; l < padbytes; ++l)  buf[n + l] = 0;
+            n += padbytes;
+            foutput(WAR "Padding track with %d bytes\n", padbytes);
+        }
+        
+        
+        count-=(count+offset)%info->sampleunitsize;
+                if(offset)
+                {
+                    for(int l = 0; l < offset; ++l) buf[l] = fbuf[l];
+                }
+#else // HARD CASE (contin_track): zero-adding just at the end if track size is not a multiple of sampleunitsize.
+       
+        nc = n + offset;  // nc may not be a multiple of info->sampleunitsize only if at end of file, with remaining bytes < size of audio buffer
+        offset = 0;
+        uint16_t rmdr = nc % info->sampleunitsize;
+        
+        if (rmdr == 0)
+        {
+            count = nc;
+            n = nc;
+        } 
+        else 
+        {
+            // normally at end of file
+            
+            if (info->contin_track)
+            {
+                offset = rmdr;
+                count = nc - rmdr;
+                n = 0;  // to force closing file
+                memcpy(fbuf, buf + count, rmdr);
+                if (globals.debugging)
+                   foutput(WAR "File: %s. Shifting %d bytes from offset %d to offset %d to next packet for gapless processing...\n", info->filename, rmdr, count, nc);
+            } 
+            else
+            {
+                uint16_t padbytes = info->sampleunitsize - rmdr;
+                memset(buf + nc, 0, padbytes);
+                count = nc + padbytes;
+                n = count;
+                foutput(WAR "Padding track with %d bytes (ultimate packet).\n", padbytes);
+            }
+        }		
+#endif    
+    // End of patch
+    
     // Convert little-endian WAV samples to big-endian MPEG LPCM samples
 
     if ((info->channels > 6) || (info->channels < 1))
@@ -1470,37 +1535,37 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
 
     switch (info->bitspersample)
     {
-    case 24:
-
-        // Processing 24-bit audio
-        interleave_24_bit_sample_extended(info->channels, count, buf);
-        break;
-
-    case 16:
-
-        // Processing 16-bit audio
-        interleave_sample_extended(info->channels, count, buf);
-        break;
-
-    default:
-
-        /* 20-bit stereo samples are packed as follows:
-        Packet 0: 1980 bytes
-        Packets 1-: 2000 bytes
-
-        Stored similarly to 24-bit:
-
-        4 samples, most significant 16 bits of each sample first, in big-endian
-        order, followed by 2 bytes containing the least-significant 4 bits of
-        each sample.
-
-        I'm guessing  that  20-bits are stored in the most-significant
-        20-bits of the 24.
-        */
-
-        // FIX: Handle 20-bit audio and maybe convert other formats.
-        foutput(ERR "%d bit audio is not supported\n",info->bitspersample);
-        EXIT_ON_RUNTIME_ERROR
+        case 24:
+    
+            // Processing 24-bit audio
+            interleave_24_bit_sample_extended(info->channels, count, buf);
+            break;
+    
+        case 16:
+    
+            // Processing 16-bit audio
+            interleave_sample_extended(info->channels, count, buf);
+            break;
+    
+        default:
+    
+            /* 20-bit stereo samples are packed as follows:
+            Packet 0: 1980 bytes
+            Packets 1-: 2000 bytes
+    
+            Stored similarly to 24-bit:
+    
+            4 samples, most significant 16 bits of each sample first, in big-endian
+            order, followed by 2 bytes containing the least-significant 4 bits of
+            each sample.
+    
+            I'm guessing  that  20-bits are stored in the most-significant
+            20-bits of the 24.
+            */
+    
+            // FIX: Handle 20-bit audio and maybe convert other formats.
+            foutput(ERR "%d bit audio is not supported\n",info->bitspersample);
+            EXIT_ON_RUNTIME_ERROR
     }
 
     return(n);
