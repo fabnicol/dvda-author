@@ -118,7 +118,7 @@ printf("%s","-p, --startsector NNN    Specify the number of the first sector" J 
 printf("%s","                         If NNN=0, falling back on 281 (default).\n" J "Without -p start sector will be computed automatically.\n\n");
 printf("%s","-g                       You may specify up to 9 groups of tracks." J "Minimum: one group.\n");
 printf("%s","                         Enter full path to files if input directory is not set" J "by [-i].\n\n");
-printf("%s","-z, --title           Separate two consecutive titles when files have same audio" J "characteritics within a group.\n");
+printf("%s","-z,                      BROKEN. Separate two consecutive titles when files have same audio" J "characteritics within a group.(\n");
 printf("%s","-Z, --playlist           You may specify up to 9 group copies." J "Total number of groups and copy groups should not exceed 9.\n");
 printf("%s","-n, --no-videozone       Do not generate an empty VIDEO_TS directory.\n\n");
 printf("%s","-w, --rights             Access rights to directories created (octal values)\n\n");
