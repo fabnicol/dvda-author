@@ -505,7 +505,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     
     uint8_t ngiven_channels[9][99] = {{0}};
    
-    for (k=1; k < argc; k++)
+    for (k = 1; k < argc; ++k)
     {
         if (argv[k][0] != '-' || argv[k][1] == '\0') continue;
         switch (argv[k][1])
@@ -513,18 +513,18 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         
         case 'g' :
             
-            k++;
+            ++k;
             
-            for (; k < argc; k++)
+            for (; k < argc; ++k)
             {
                 /*  To explicitly change titles within the same group even if files_i and file_i+1 have same audio characterictics, use:
-                    -g file_1 ... file_i -| file_i+1 file_i+2 ... -g ...
+                    -g file_1 ... file_i -z file_i+1 file_i+2 ... -g ...
                 */
                 // PATCH 09.07
                 
                 
                 if (argv[k][0] !='-')
-                    ntracks[n_g_groups]++;
+                    ++ntracks[n_g_groups];
                 else
                 {
                     if (argv[k][1] == 'z')
@@ -536,7 +536,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
             
             increment_ngroups_check_ceiling(&n_g_groups, NULL);
-            k--;
+            --k;
             break;
             
          case '-':
@@ -743,7 +743,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'g' :
             
             ++k;
-            for (m=0; m+k < argc; m++)
+            for (m = 0; m + k < argc; ++m)
             {
                 if (argv[m + k][0] != '-')
                 {
@@ -767,10 +767,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                         {
                             
                             files[ngroups_scan][m].newtitle= 1;
-                            k++;
+                            ++k;
                             if (globals.veryverbose)
-                                foutput("       files[%d][%d].filename=%s\n", ngroups_scan, m, argv[m+k]);
-                            if ((m+k) < argc) strcpy(files[ngroups_scan][m].filename,strdup(argv[m+k]));
+                                foutput("       files[%d][%d].filename=%s\n", ngroups_scan, m, argv[m + k]);
+                            
+                            if (m + k < argc) files[ngroups_scan][m].filename = argv[m + k];
                         }
                     }
                     else
