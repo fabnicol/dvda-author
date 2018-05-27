@@ -146,7 +146,7 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
       
       for (int title = 0; title < ntitles[group]; ++title)
       {
-        while (track < ntracks[group] && (ntitletracks[group][title] == 0 || !command->files[group][track].newtitle))
+        while (track < ntracks[group] && (ntitletracks[group][title] == 0 || ! command->files[group][track].newtitle))
         {
            ++ntitletracks[group][title];
            titlelength[group][title] += command->files[group][track].PTS_length;
