@@ -101,7 +101,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
         get_afmt(&files[j],audioformats,&numafmts);
         j++;
 
-        while ((j < ntracks) && (j == 0 || !files[j].newtitle) )
+        while ((j < ntracks) && (j == 0 || ! files[j].newtitle) )
         {
             ntitletracks[numtitles]++;
             j++;

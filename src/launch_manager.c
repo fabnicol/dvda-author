@@ -332,13 +332,13 @@ int launch_manager(command_t *command)
         goto SUMMARY;
     }
 
-    for (i=0; i<naudio_groups; i++)
+    for (i = 0; i < naudio_groups; ++i)
     {
         if ((title[i]=(uint8_t *) calloc(ntracks[i], 1)) == NULL) perror(ERR "title[k]");
         {
             title[i][0]=0;
-            for (j=1; j<ntracks[i]; j++)
-                title[i][j]=(files[i][j].newtitle)+title[i][j-1];
+            for (j = 1; j < ntracks[i]; ++j)
+                title[i][j]=(files[i][j].newtitle) + title[i][j-1];
         }
     }
 
