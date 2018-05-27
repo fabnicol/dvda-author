@@ -10,7 +10,7 @@
   libibertyc will be compiled with a name replacement for getopt_long (getopt_long_surrogate)  */
 
 
-#define ALLOWED_OPTIONS_PRINT  "0123456789aA:b:B:c:dD:e:E:f::F::g:G:hH:i:I::j:J:k:K:l:L:m::M:nN:o:O:p:P::qQ:r::R:s:S::tT:u:U::vV:w:Wx:X:y:Y:z:Z:"
+#define ALLOWED_OPTIONS_PRINT  "0123456789aA:b:B:c:CdD:e:E:f::F::g:G:hH:i:I::j:J:k:K:l:Lm::M:nN:o:O:p:P::qQ:r::R:s:S::tT:u:U::vV:w:Wx:X:y:Y:z:Z:"
 
 // Note on options
     // Allowing for 30 non-print characters in command_line_parsing.c 

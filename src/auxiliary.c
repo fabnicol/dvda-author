@@ -129,10 +129,9 @@ printf("%s","-f, --fixwav-virtual(options)  Use .wav header repair utility " J "
 printf("%s","-S, --sox                Use SoX to convert files to .wav." J "By default, only flac, Ogg FLAC " J "and .wav files are accepted.\n\n");
 #endif
 #if !HAVE_core_BUILD
-printf("%s","    --no-padding         Block padding of audio files by dvda-author.\n\n");
-printf("%s","    --minimal-padding    Only pad for evenness of sample count.\n\n");
-printf("%s","-C, --pad-cont           When padding, pad with last known byte, not 0.\n\n");
-printf("%s","-L, --lossy-rounding     Sample count rounding will be performed by cutting audio files.\n\n");
+printf("%s","    --padding            Reverse default behaviour for transition between audio tracks with identical" J "characteristics (number of channels, bit depth and sample rate)." J "If necessary, audio will be padded with 0s instead of being joined (default). " J "Use --pad-cont for padding with last-known byte.\n\n");
+printf("%s","-C, --pad-cont           When padding, pad with last known byte, not 0. See --padding above." J "Deactivates --lossy-rounding\n\n");
+printf("%s","-L, --lossy-rounding     Sample count rounding will be performed by cutting audio files " J "instead of padding (see --padding and --pad-cont)." J "Deactivates --pad-cont and --padding.\n\n");
 
 printf("%s","Menu authoring\n\n");
 

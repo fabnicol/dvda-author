@@ -231,7 +231,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"videolink", required_argument, NULL, 'T'},
         {"loop", optional_argument, NULL, 'U'},
         {"rights", required_argument, NULL, 'w'},
-        {"pad-cont", no_argument, NULL, 'C'},
         {"topmenu", optional_argument, NULL, 'm'},
         {"menustyle", required_argument, NULL, '0'},
         {"xml", required_argument, NULL, 'M'},
@@ -264,6 +263,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"nmenus", required_argument, NULL, '6'},
         {"ncolumns", required_argument, NULL, '7'},
         {"activemenu-palette", required_argument, NULL, '8'},
+        {"padding", no_argument, NULL, 1},
+        {"pad-cont", no_argument, NULL, 'C'},
+        {"lossy-rounding", no_argument, NULL, 'L'},
         {"background-colors", required_argument, NULL, 2},
         {"bindir", required_argument, NULL, 3},
         {"topmenu-slides", required_argument, NULL, 6},
@@ -1144,63 +1146,47 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
             break;
 #endif
-#if 0
+
+/// Reactivated 26 May 2018
+            
         case 1 :
-            globals.padding=0;
-            if (globals.lossy_rounding)
-            {
-                globals.lossy_rounding=0;
-                foutput("%s\n",PAR "  --lossy-rounding was neutralized.");
-            }
-            
-            foutput("%s\n",PAR "  No audio padding will be performed by core dvda-processes.");
-            break;
-            
-        case 2 :
-            globals.minimal_padding=1;
-            foutput("%s\n",PAR "  Minimal padding of audio samples (for evenness).");
+            globals.padding = 1;
+            foutput("%s\n",PAR "Tracks with same audio characteristics will not be joined gapless and padded instead.");
             break;
             
         case 'L' :
-            globals.lossy_rounding=1;
+            globals.lossy_rounding = 1;
             if (globals.padding)
             {
-                globals.padding=0;
-                foutput("%s\n",PAR "  Default padding was neutralized.");
+                globals.padding = 0;
+                foutput("%s\n",PAR "--padding was neutralized.");
             }
             if (globals.padding_continuous)
             {
-                globals.padding_continuous=0;
+                globals.padding_continuous = 0;
                 foutput("%s\n",PAR "  --pad-cont was neutralized");
             }
             
-            foutput("%s\n",PAR "  Sample count rounding will be performed by cutting audio files.");
+            foutput("%s\n",PAR "Sample count rounding will be performed by cutting audio files.");
             break;
-#endif
-#if 0
+
         case 'C' :
-            globals.padding_continuous=1;
-            
-            if (globals.padding == 0)
-            {
-                globals.padding=1;
-                foutput("%s\n",PAR "  --no-padding was neutralized");
-            }
+            globals.padding_continuous = 1;
+            globals.padding = 1;
             if (globals.lossy_rounding)
             {
-                globals.lossy_rounding=0;
-                foutput("%s\n",PAR "  --lossy-rounding was neutralized");
+                globals.lossy_rounding = 0;
+                foutput("%s\n",PAR "--lossy-rounding was neutralized");
             }
-            foutput("%s\n",PAR "  Pad with last known byte, if padding, not 0s.");
+            foutput("%s\n",PAR "Pad with last known byte, if padding, not 0s.");
             break;
-#endif
-            
+///            
             
         case 'm' :
             
             if (optarg)
             {
-                foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  File(s) %s will be used as (spumuxed) top menu\n", optarg);
+                foutput(PAR "  File(s) %s will be used as (spumuxed) top menu\n", optarg);
                 img->topmenu=fn_strtok(optarg, ',' , img->topmenu, 0,NULL,NULL);
                 globals.topmenu=Min(globals.topmenu, RUN_DVDAUTHOR);
             }
@@ -1235,7 +1221,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             
             img->backgroundmpg=fn_strtok(optarg, ',' , img->backgroundmpg, 0,NULL,NULL);
             
-            foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Top background mpg file(s) %s will be used\n", optarg);
+            foutput(PAR "  Top background mpg file(s) %s will be used\n", optarg);
             
             globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             break;
