@@ -217,12 +217,9 @@ typedef struct
     _Bool maxverbose;
     _Bool veryverbose;
     _Bool debugging;
-    #if 0
     _Bool padding;
     _Bool padding_continuous;
-    _Bool minimal_padding;
     _Bool lossy_rounding;
-    #endif
     _Bool rungrowisofs;
 #ifndef WITHOUT_sox
     _Bool sox_enable;

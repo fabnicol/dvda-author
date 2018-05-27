@@ -1264,7 +1264,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
         EXIT_ON_RUNTIME_ERROR
     }
 
-    n=audio_read(&files[i], audio_buf, sizeof(audio_buf));
+    n=audio_read(&files[i], audio_buf, AUDIO_BUFFER_SIZE);
     bytesinbuf=n;
 
     lpcm_payload = files[i].lpcm_payload;
@@ -1289,7 +1289,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
             start_of_file = false;
         }
 
-        if ((pack > 0) && ((pack % (512 * 1024)) == 0))   //?
+        if ((pack > 0) && ((pack % (512 * 1024)) == 0))   
         {
             fclose(fpout);
             ++fileno;
@@ -1300,13 +1300,22 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
 
         if (bytesinbuf < lpcm_payload)
         {
+            if (globals.maxverbose)
+            {
+                foutput("%s %d %s %d\n", 
+                        INF "Reading", 
+                        AUDIO_BUFFER_SIZE - bytesinbuf,
+                        "bytes into buffer at offset",
+                        bytesinbuf);
+            }
+            
             n = audio_read(&files[i],
                            &audio_buf[bytesinbuf],
-                           sizeof(audio_buf) - bytesinbuf);
+                           AUDIO_BUFFER_SIZE - bytesinbuf);
 
             bytesinbuf += n;
 
-            if (n == 0)   /* We have reached the end of the input file */
+            if (n == 0 || files[i].audio->eos == 1)   /* We have reached the end of the input file */
             {
                 files[i].last_sector = pack;
                 audio_close(&files[i]);
@@ -1332,14 +1341,16 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
 
                     files[i].first_sector = files[i-1].last_sector+1;
 
-                    if (audio_open(&files[i])!=0)
+                    if (audio_open(&files[i]) != 0)
                     {
                         foutput(ERR "Could not open %s\n",files[i].filename);
                         EXIT_ON_RUNTIME_ERROR
                     }
 
                     start_of_file = true;
-                    n=audio_read(&files[i], &audio_buf[bytesinbuf], sizeof(audio_buf) - bytesinbuf);
+                    if (globals.veryverbose)
+                        foutput("%s %d %s %d\n", INF "Opening audio buffer at offset", bytesinbuf, "for count: ", AUDIO_BUFFER_SIZE - bytesinbuf);
+                    n = audio_read(&files[i], &audio_buf[bytesinbuf], AUDIO_BUFFER_SIZE - bytesinbuf);
                     bytesinbuf += n;
                     foutput(INF "Processing %s\n", files[i].filename);
                 }
