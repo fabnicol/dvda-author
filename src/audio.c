@@ -1004,7 +1004,9 @@ int audio_open(fileinfo_t* info)
 #endif
 
     info->audio=malloc(sizeof(audio_input_t));
-
+    info->audio->n=0;
+    info->audio->eos=0;
+    
     if (info->type==AFMT_WAVE)
     {
         if (info->mergeflag)
@@ -1027,7 +1029,10 @@ int audio_open(fileinfo_t* info)
         }
         else
         {    
+            if (globals.debugging) foutput("%s %s\n", INF "Opening", info->filename);
+            
             info->audio->fp=fopen(info->filename,"rb");
+            
             if (info->audio->fp==NULL)
             {
                 return(1);
@@ -1046,9 +1051,7 @@ int audio_open(fileinfo_t* info)
     else
     {
         info->audio->flac=FLAC__stream_decoder_new();
-        info->audio->n=0;
-        info->audio->eos=0;
-
+      
         if (info->audio->flac!=NULL)
         {
 
@@ -1169,6 +1172,9 @@ For brevity, we use only the more compact label-based description for each of th
 The in-place transformation code that derives from this description was machine generated to reduce the chance for transcription errors,. Identity expressions, e.g. x[i+1] = x[i+1], are omitted.
 
 The 12 cases are as follows. Their values are encoded in matrix S to be found in src/include/multichannel.h
+The length of each pattern must be equal to info->sampleunitsize i.e, if Nc is the number of channels:
+for 24-bit audio : Nc x 6
+for 16-bit audio : Nc x 2 for Nc <= 2 and Nc x 4 for Nc > 2
 
  16-bit 1  channel
 WAV: 0  1
@@ -1434,7 +1440,6 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
         }
 
         n = bytesread;
-
     }
 
 #ifndef WITHOUT_FLAC
@@ -1448,10 +1453,10 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
             if (result==0)
                 EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Fatal error decoding FLAC file\n")
 
-                if (FLAC__stream_decoder_get_state(info->audio->flac)==FLAC__STREAM_DECODER_END_OF_STREAM)
-                {
-                    info->audio->eos=1;
-                }
+            if (FLAC__stream_decoder_get_state(info->audio->flac) == FLAC__STREAM_DECODER_END_OF_STREAM)
+            {
+                info->audio->eos=1;
+            }
         }
 
         if (info->audio->n >= count)
@@ -1466,63 +1471,95 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
             n = info->audio->n;
             memcpy(buf + offset, info->audio->buf, info->audio->n);
             info->audio->n = 0;
+            count = n;
         }
     }
 #endif
     
+    info->audio->eos = 0;
+    
     // PATCH: reinstating Lee Feldkamp's 2009 sampleunitsize rounding
     // Note: will add extra zeros on decoding!
-
-#if 0  // SIMPLE CASE: zero-adding for each track    
-        uint16_t rmdr = n % info->sampleunitsize;
-        if (rmdr = rmdr) 
-        { 
-            uint16_t padbytes = info->sampleunitsize - rmdr;
-            for(int l = 0; l < padbytes; ++l)  buf[n + l] = 0;
-            n += padbytes;
-            foutput(WAR "Padding track with %d bytes\n", padbytes);
-        }
-        
-        
-        count-=(count+offset)%info->sampleunitsize;
-                if(offset)
+    if (globals.padding == 0 && ! globals.lossy_rounding)       
+    {
+            nc = n + offset;  // nc may not be a multiple of info->sampleunitsize only if at end of file, with remaining bytes < size of audio buffer
+            offset = 0;
+            uint16_t rmdr = nc % info->sampleunitsize;
+            
+            if (rmdr == 0)
+            {
+                count = nc;
+            } 
+            else 
+            {
+                // normally at end of file
+                
+                if (info->contin_track)
                 {
-                    for(int l = 0; l < offset; ++l) buf[l] = fbuf[l];
+                    offset = rmdr;
+                    count = nc - rmdr;
+                    memcpy(fbuf, buf + count, rmdr);
+                    if (globals.debugging)
+                       foutput(WAR "File: %s. Shifting %d bytes from offset %d to offset %d to next packet for gapless processing...\n", info->filename, rmdr, count, nc);
+                } 
+                else
+                {
+                    uint16_t padbytes = info->sampleunitsize - rmdr;
+                    if (padbytes + n > AUDIO_BUFFER_SIZE) 
+                        padbytes = AUDIO_BUFFER_SIZE - n;
+                    
+                    memset(buf + nc, 0, padbytes);
+                    count = nc + padbytes;
+                    foutput(WAR "Padding track with %d bytes (ultimate packet).\n", padbytes);
                 }
-#else // HARD CASE (contin_track): zero-adding just at the end if track size is not a multiple of sampleunitsize.
-       
-        nc = n + offset;  // nc may not be a multiple of info->sampleunitsize only if at end of file, with remaining bytes < size of audio buffer
-        offset = 0;
-        uint16_t rmdr = nc % info->sampleunitsize;
+                
+                info->audio->eos = 1;  // to force closing file
+            }		
+    } 
+    else
+    {
+        count = n;
+        uint16_t rmdr = n % info->sampleunitsize;
         
-        if (rmdr == 0)
-        {
-            count = nc;
-            n = nc;
-        } 
-        else 
-        {
+        if (rmdr) 
+        { 
             // normally at end of file
             
-            if (info->contin_track)
+            if (globals.lossy_rounding)
             {
-                offset = rmdr;
-                count = nc - rmdr;
-                n = 0;  // to force closing file
-                memcpy(fbuf, buf + count, rmdr);
-                if (globals.debugging)
-                   foutput(WAR "File: %s. Shifting %d bytes from offset %d to offset %d to next packet for gapless processing...\n", info->filename, rmdr, count, nc);
-            } 
+               // audio loss at end of audio file may result in a 'blip'
+               count -= rmdr;
+               if (globals.debugging) 
+                   foutput("%s %s %s %d %s %d.\n", WAR "Cutting audio file", info->filename, "by", rmdr, "bytes out of", n);
+            }
             else
             {
                 uint16_t padbytes = info->sampleunitsize - rmdr;
-                memset(buf + nc, 0, padbytes);
-                count = nc + padbytes;
-                n = count;
-                foutput(WAR "Padding track with %d bytes (ultimate packet).\n", padbytes);
+                if (padbytes + n > AUDIO_BUFFER_SIZE) 
+                    padbytes = AUDIO_BUFFER_SIZE - n;
+                
+                uint8_t padding_byte = 0;
+                
+                if (globals.padding_continuous && n)
+                {
+                   padding_byte = buf[n - 1];    
+                }
+                
+                memset(buf + n, padding_byte, padbytes);
+                count += padbytes;
+                
+                if (globals.debugging) 
+                {
+                    foutput(WAR "Padding track with %d bytes", padbytes);
+                    if (globals.padding_continuous && n) foutput("%s", " continuously.");
+                    foutput("%s", "\n");
+                }
             }
-        }		
-#endif    
+            
+             info->audio->eos = 1;  // to force closing file
+        }
+    }
+
     // End of patch
     
     // Convert little-endian WAV samples to big-endian MPEG LPCM samples
@@ -1568,11 +1605,12 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
             EXIT_ON_RUNTIME_ERROR
     }
 
-    return(n);
+    return(count);
 }
 
 int audio_close(fileinfo_t* info)
 {
+    if (globals.debugging) foutput("%s %s\n", INF "Closing audio file", info->filename);
     if (info->type==AFMT_WAVE)
     {
         fclose(info->audio->fp);
