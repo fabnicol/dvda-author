@@ -616,7 +616,6 @@ else
 
   if (info->audio->fp == NULL)
   {
-      puts(info->filename);
       perror("Fichier impossible à ouvrir");
       EXITING
   }
