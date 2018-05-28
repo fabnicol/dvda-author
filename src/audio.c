@@ -1185,7 +1185,7 @@ c2           0   1
  
 WAV:  0  1   2   3
 AOB:  1  0   3   2
-     1:1 1:0 2:1 2:0
+     1:1 1:0 2:1 2:0  [reads : bit 1 of ch1 in original wav audio followed by bit 0 of ch1 followed by bit 1 of ch2 followed by bit 0 of ch2]
 
  16-bit 3  channel
 c1   0   1 
@@ -1197,7 +1197,7 @@ c3                   0   1
  
 WAV: 0  1 | 2   3  | 4  5   | 6   7  | 8  9  | 10  11
 AOB: 5  4 | 11  10 | 1  0   | 3   2  | 7  6  | 9   8
-   3:1 3:0|3:3 3:2 |1:1 1:0 |2:1 2:0 |1:3 1:0| 2:3 2:0
+   3:1 3:0|3:3 3:2 |1:1 1:0 |2:1 2:0 |1:3 1:0| 2:3 2:0  [bit 1 of ch 3 in original wav followed by...]
 
 
  16-bit 4  channel
@@ -1424,8 +1424,8 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
         info->audio->bytesread += n;
         bytesread = n;
 
-        while ((info->audio->bytesread < info->numbytes)
-               && (bytesread < count))
+        while (info->audio->bytesread < info->numbytes
+               && bytesread < count)
         {
             n = fread(buf + bytesread + offset, 1, count - bytesread, info->audio->fp);
 
@@ -1472,11 +1472,12 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
             info->audio->n = 0;
             count = n;
         }
+        
+        info->audio->eos = 0;
     }
 #endif
     
-    info->audio->eos = 0;
-    
+
     // PATCH: reinstating Lee Feldkamp's 2009 sampleunitsize rounding
     // Note: will add extra zeros on decoding!
     if (globals.padding == 0 && ! globals.lossy_rounding)       
@@ -1511,8 +1512,6 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
                     count = nc + padbytes;
                     foutput(WAR "Padding track with %d bytes (ultimate packet).\n", padbytes);
                 }
-                
-                info->audio->eos = 1;  // to force closing file
             }		
     } 
     else
@@ -1554,9 +1553,7 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
                     foutput("%s", "\n");
                 }
             }
-            
-             info->audio->eos = 1;  // to force closing file
-        }
+       }
     }
 
     // End of patch
@@ -1604,7 +1601,7 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
             EXIT_ON_RUNTIME_ERROR
     }
 
-    return(count);
+    return(n);
 }
 
 int audio_close(fileinfo_t* info)
