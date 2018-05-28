@@ -406,9 +406,6 @@ inline static uint16_t read_audio_pes_header(FILE* fp, uint8_t extension_flag, u
     return(PES_packet_len);
 }
 
-
-
-
 uint8_t sub_stream_id[1]={0xa0};
 uint8_t continuity_counter[1]={0x00};
 uint8_t LPCM_header_length[2];
@@ -1315,7 +1312,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
 
             bytesinbuf += n;
 
-            if (n == 0 || files[i].audio->eos == 1)   /* We have reached the end of the input file */
+            if (n == 0)   /* We have reached the end of the input file */
             {
                 files[i].last_sector = pack;
                 audio_close(&files[i]);
