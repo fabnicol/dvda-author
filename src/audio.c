@@ -1387,11 +1387,17 @@ inline static void interleave_24_bit_sample_extended(int channels, int count, ui
 
 // Read numbytes of audio data, and convert it to DVD byte order
 
-uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
+uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
 {
-    uint32_t n = 0, nc = 0, bytesread = 0;
+    uint32_t requested_bytes = AUDIO_BUFFER_SIZE - *bytesinbuffer,
+             buffer_increment = 0,
+            rounded_buffer_increment = 0;
+    
     static uint16_t offset;
+    
     static uint8_t fbuf[36];
+    
+    uint8_t *buf = _buf + *bytesinbuffer;
     
     FLAC__bool result;
 
@@ -1400,9 +1406,9 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
     if (info->sampleunitsize == 0)
           EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Sample unit size is null");
   
-    if (count >= info->sampleunitsize) 
+    if (requested_bytes + offset >= info->sampleunitsize) 
     {
-        count -= (count+offset) % info->sampleunitsize;
+        requested_bytes -= (requested_bytes + offset) % info->sampleunitsize;
     }
     
     if (offset)
@@ -1410,44 +1416,49 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
        memcpy(buf, fbuf, offset);
        if (globals.debugging)
            foutput(WAR "File: %s. Adding %d bytes from last packet for gapless processing...\n", info->filename, offset);
+       buffer_increment = offset;
     }
     
     if (info->type == AFMT_WAVE)
     {
-        n = fread(buf + offset, 1, count, info->audio->fp);
+        uint32_t request = (*bytesinbuffer + offset + requested_bytes < AUDIO_BUFFER_SIZE) ? requested_bytes : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset);
+          
+        buffer_increment += fread(buf + offset, 1, request, info->audio->fp);
 
-        if (info->audio->bytesread + n > info->numbytes)
+        if (info->audio->bytesread + buffer_increment > info->numbytes)
         {
-            n = info->numbytes-info->audio->bytesread;
+            buffer_increment = info->numbytes-info->audio->bytesread;
         }
 
-        info->audio->bytesread += n;
-        bytesread = n;
+        info->audio->bytesread += buffer_increment;
+        uint32_t bytesread = buffer_increment;
 
         while (info->audio->bytesread < info->numbytes
-               && bytesread < count)
+               && bytesread < requested_bytes)
         {
-            n = fread(buf + bytesread + offset, 1, count - bytesread, info->audio->fp);
+            uint32_t request = (*bytesinbuffer + offset + requested_bytes < AUDIO_BUFFER_SIZE) ? requested_bytes - bytesread : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset + bytesread);
+            
+            buffer_increment = fread(buf + bytesread + offset, 1, request, info->audio->fp);
 
-            if (info->audio->bytesread + n > info->numbytes)
+            if (info->audio->bytesread + buffer_increment > info->numbytes)
             {
-                n = info->numbytes - info->audio->bytesread;
+                buffer_increment = info->numbytes - info->audio->bytesread;
             }
 
-            info->audio->bytesread += n;
-            bytesread += n;
+            info->audio->bytesread += buffer_increment;
+            bytesread += buffer_increment;
         }
 
-        n = bytesread;
+        buffer_increment = bytesread;
     }
 
 #ifndef WITHOUT_FLAC
 
     else if ((info->type == AFMT_FLAC) || (info->type == AFMT_OGG_FLAC))
     {
-        while ((info->audio->n < count) && (info->audio->eos==0))
+        while ((info->audio->n < requested_bytes) && (info->audio->eos==0))
         {
-            result=FLAC__stream_decoder_process_single(info->audio->flac);
+            result = FLAC__stream_decoder_process_single(info->audio->flac);
 
             if (result==0)
                 EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Fatal error decoding FLAC file\n")
@@ -1458,19 +1469,22 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
             }
         }
 
-        if (info->audio->n >= count)
+        if (info->audio->n >= requested_bytes)
         {
-            n = count;
-            memcpy(buf + offset, info->audio->buf, count);
-            memmove(info->audio->buf, &(info->audio->buf[count]), info-> audio->n - count);
-            info->audio->n -= count;
+            buffer_increment = requested_bytes;
+            uint32_t request = (*bytesinbuffer + offset + buffer_increment < AUDIO_BUFFER_SIZE) ? buffer_increment  : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset);
+            memcpy(buf + offset, info->audio->buf, request);
+            memmove(info->audio->buf, &(info->audio->buf[requested_bytes]), info-> audio->n - request);
+            info->audio->n -= request;
+            buffer_increment = request;
         }
         else
         {
-            n = info->audio->n;
-            memcpy(buf + offset, info->audio->buf, info->audio->n);
+            buffer_increment = info->audio->n;
+            uint32_t request = (*bytesinbuffer + offset + buffer_increment < AUDIO_BUFFER_SIZE) ? buffer_increment  : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset);
+            memcpy(buf + offset, info->audio->buf, request);
             info->audio->n = 0;
-            count = n;
+            buffer_increment = request;
         }
         
         info->audio->eos = 0;
@@ -1480,45 +1494,43 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
 
     // PATCH: reinstating Lee Feldkamp's 2009 sampleunitsize rounding
     // Note: will add extra zeros on decoding!
+    
+    uint16_t rmdr = buffer_increment % info->sampleunitsize;
+    rounded_buffer_increment = buffer_increment - rmdr;                
+    
     if (globals.padding == 0 && ! globals.lossy_rounding)       
     {
-            nc = n + offset;  // nc may not be a multiple of info->sampleunitsize only if at end of file, with remaining bytes < size of audio buffer
+            // buffer_increment may not be a multiple of info->sampleunitsize only if at end of file, with remaining bytes < size of audio buffer
             offset = 0;
-            uint16_t rmdr = nc % info->sampleunitsize;
             
-            if (rmdr == 0)
-            {
-                count = nc;
-            } 
-            else 
+            if (rmdr)
             {
                 // normally at end of file
                 
                 if (info->contin_track)
                 {
                     offset = rmdr;
-                    count = nc - rmdr;
-                    memcpy(fbuf, buf + count, rmdr);
+                    
+                    memcpy(fbuf, buf + rounded_buffer_increment, rmdr);
+                    buffer_increment = rounded_buffer_increment;
+                    
                     if (globals.debugging)
-                       foutput(WAR "File: %s. Shifting %d bytes from offset %d to offset %d to next packet for gapless processing...\n", info->filename, rmdr, count, nc);
+                       foutput(WAR "File: %s. Shifting %d bytes from offset %d to offset %d to next packet for gapless processing...\n", info->filename, rmdr, rounded_buffer_increment, buffer_increment);
                 } 
                 else
                 {
                     uint16_t padbytes = info->sampleunitsize - rmdr;
-                    if (padbytes + n > AUDIO_BUFFER_SIZE) 
-                        padbytes = AUDIO_BUFFER_SIZE - n;
+                    if (padbytes + buffer_increment > AUDIO_BUFFER_SIZE) 
+                        padbytes = AUDIO_BUFFER_SIZE - buffer_increment;
                     
-                    memset(buf + nc, 0, padbytes);
-                    count = nc + padbytes;
+                    memset(buf + buffer_increment, 0, padbytes);
+                    buffer_increment += padbytes;
                     foutput(WAR "Padding track with %d bytes (ultimate packet).\n", padbytes);
                 }
             }		
     } 
     else
     {
-        count = n;
-        uint16_t rmdr = n % info->sampleunitsize;
-        
         if (rmdr) 
         { 
             // normally at end of file
@@ -1526,30 +1538,31 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
             if (globals.lossy_rounding)
             {
                // audio loss at end of audio file may result in a 'blip'
-               count -= rmdr;
+                
+               buffer_increment = rounded_buffer_increment;
                if (globals.debugging) 
-                   foutput("%s %s %s %d %s %d.\n", WAR "Cutting audio file", info->filename, "by", rmdr, "bytes out of", n);
+                   foutput("%s %s %s %d %s %d.\n", WAR "Cutting audio file", info->filename, "by", rmdr, "bytes out of", buffer_increment);
             }
             else
             {
                 uint16_t padbytes = info->sampleunitsize - rmdr;
-                if (padbytes + n > AUDIO_BUFFER_SIZE) 
-                    padbytes = AUDIO_BUFFER_SIZE - n;
+                if (padbytes + buffer_increment > AUDIO_BUFFER_SIZE) 
+                    padbytes = AUDIO_BUFFER_SIZE - buffer_increment;
                 
                 uint8_t padding_byte = 0;
                 
-                if (globals.padding_continuous && n)
+                if (globals.padding_continuous && buffer_increment)
                 {
-                   padding_byte = buf[n - 1];    
+                   padding_byte = buf[buffer_increment - 1];    
                 }
                 
-                memset(buf + n, padding_byte, padbytes);
-                count += padbytes;
+                memset(buf + buffer_increment, padding_byte, padbytes);
+                buffer_increment += padbytes;
                 
                 if (globals.debugging) 
                 {
                     foutput(WAR "Padding track with %d bytes", padbytes);
-                    if (globals.padding_continuous && n) foutput("%s", " continuously.");
+                    if (globals.padding_continuous && padbytes) foutput("%s", " continuously.");
                     foutput("%s", "\n");
                 }
             }
@@ -1571,13 +1584,13 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
         case 24:
     
             // Processing 24-bit audio
-            interleave_24_bit_sample_extended(info->channels, count, buf);
+            interleave_24_bit_sample_extended(info->channels, buffer_increment, buf);
             break;
     
         case 16:
     
             // Processing 16-bit audio
-            interleave_sample_extended(info->channels, count, buf);
+            interleave_sample_extended(info->channels, buffer_increment, buf);
             break;
     
         default:
@@ -1600,8 +1613,11 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
             foutput(ERR "%d bit audio is not supported\n",info->bitspersample);
             EXIT_ON_RUNTIME_ERROR
     }
-
-    return(n);
+    
+    
+    *bytesinbuffer += buffer_increment;
+    
+    return(buffer_increment);
 }
 
 int audio_close(fileinfo_t* info)
