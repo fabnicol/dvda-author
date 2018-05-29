@@ -1261,9 +1261,8 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
         EXIT_ON_RUNTIME_ERROR
     }
 
-    n=audio_read(&files[i], audio_buf, AUDIO_BUFFER_SIZE);
-    bytesinbuf=n;
-
+    audio_read(&files[i], audio_buf, &bytesinbuf);
+    
     lpcm_payload = files[i].lpcm_payload;
 
     files[i].first_sector=0;
@@ -1278,7 +1277,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
 
             n = write_pes_packet(fpout, &files[i], audio_buf, bytesinbuf, pack_in_title, start_of_file);
 
-            memmove(audio_buf,&audio_buf[n],bytesinbuf-n);
+            memmove(audio_buf, &audio_buf[n], bytesinbuf - n);
             bytesinbuf -= n;
 
             pack++;
@@ -1306,12 +1305,10 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                         bytesinbuf);
             }
             
-            n = audio_read(&files[i],
-                           &audio_buf[bytesinbuf],
-                           AUDIO_BUFFER_SIZE - bytesinbuf);
-
-            bytesinbuf += n;
-
+            n= audio_read(&files[i],
+                           audio_buf,
+                           &bytesinbuf);
+        
             if (n == 0)   /* We have reached the end of the input file */
             {
                 files[i].last_sector = pack;
@@ -1347,8 +1344,9 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                     start_of_file = true;
                     if (globals.veryverbose)
                         foutput("%s %d %s %d\n", INF "Opening audio buffer at offset", bytesinbuf, "for count: ", AUDIO_BUFFER_SIZE - bytesinbuf);
-                    n = audio_read(&files[i], &audio_buf[bytesinbuf], AUDIO_BUFFER_SIZE - bytesinbuf);
-                    bytesinbuf += n;
+                    
+                    audio_read(&files[i], audio_buf, &bytesinbuf);
+                    
                     foutput(INF "Processing %s\n", files[i].filename);
                 }
                 else

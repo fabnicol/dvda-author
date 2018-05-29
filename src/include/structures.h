@@ -68,7 +68,8 @@ typedef struct
     uint8_t midpack_pes_padding;
     // L&T Feldkamp addition (multichannel)
     uint64_t numsamples;
-    uint64_t numbytes; // theoretical file size
+    uint64_t numbytes; // theoretical audio size
+    uint64_t wav_numbytes; // wav audio size
     uint64_t file_size; // file size on disc
     uint64_t *channel_size; // channel size on disc
     uint64_t bytesperframe;
