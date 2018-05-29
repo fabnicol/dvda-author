@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.5.1, 2018-05-28T04:04:46. -->
+<!-- Written by QtCreator 4.5.1, 2018-05-30T00:42:40. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -839,7 +839,7 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:/home/fab/Dev/dvda-author-dev/dvda-author-dev.linux.pro</value>
     <value type="bool" key="QmakeProjectManager.QmakeRunConfiguration.UseLibrarySearchPath">true</value>
-    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.CommandLineArguments">-g /home/fab/Dev/dvda-author-dev/Docs/instrumental.wav -t -o /home/fab/DVD3</value>
+    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.CommandLineArguments">-x /home/fab/DVD -o /home/fab/sound8</value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.ProFile">dvda-author-dev.linux.pro</value>
     <value type="bool" key="Qt4ProjectManager.Qt4RunConfiguration.UseDyldImageSuffix">false</value>
     <value type="bool" key="Qt4ProjectManager.Qt4RunConfiguration.UseTerminal">false</value>
