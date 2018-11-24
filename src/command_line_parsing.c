@@ -2208,8 +2208,23 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         // A simple char* would well be allocated by function, not a char**.
         
         fprintf(stderr, DBG "stillpic_string=%s\n", stillpic_string);
-        pics_per_track=fn_strtok(stillpic_string, ':', pics_per_track, 0,NULL,NULL);
-        uint16_t dim,DIM=0,w;
+        _Bool indir = true;
+        errno = 0;
+        
+        if (is_dir(stillpic_string))
+        {
+            fprintf(stderr, "%s\n", DBG "Traversing") ;
+            pics_per_track = calloc(999, sizeof(char*));
+            
+            traverse_directory(stillpic_string, fill_pics, true, (void*) pics_per_track, NULL);
+        } 
+        else 
+        {
+             pics_per_track=fn_strtok(stillpic_string, ':', pics_per_track, 0,NULL,NULL);    
+             indir = false;
+        }
+                
+        uint16_t dim, DIM = 0, w;
         
         img->npics =(uint16_t*) calloc(totntracks, sizeof(uint16_t));
         if (img->npics == NULL)
@@ -2218,7 +2233,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             goto standard_checks;
         }
         if (pics_per_track)
-            w=arraylength(pics_per_track);
+            w = arraylength(pics_per_track);
         else
         {
             perror("\n"ERR "pics_per_track");
@@ -2235,30 +2250,36 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             goto standard_checks;
         }
         
-        picks_per_track_double_array=calloc(totntracks, sizeof(char**));
+        picks_per_track_double_array = calloc(totntracks, sizeof(char**));
         if (picks_per_track_double_array == NULL) EXIT_ON_RUNTIME_ERROR;
         
-        for (k=0; k < totntracks; k++)
+        for (k = 0; k < totntracks; ++k)
         {
             if (globals.debugging) 
-                fprintf(stderr,DBG "Parsing pictures for track %d\n",k);
+                fprintf(stderr, DBG "Parsing pictures for track %d\n", k);
             
-            picks_per_track_double_array[k]=fn_strtok(pics_per_track[k],
-                                                      ',',
-                                                      picks_per_track_double_array[k],
-                                                      -1,
-                                                      create_stillpic_directory,
-                                                      NULL);
+            if (indir) 
+            {
+                picks_per_track_double_array[k] = calloc(1, sizeof(char*));
+                picks_per_track_double_array[k][0] = pics_per_track[k];
+            }
+            else 
+            picks_per_track_double_array[k] = fn_strtok(pics_per_track[k],
+                                                          ',',
+                                                          picks_per_track_double_array[k],
+                                                          -1,
+                                                          create_stillpic_directory,
+                                                          NULL);
             
-            dim=0;
-            w=0;
+            dim = 0;
+            w   = 0;
             
             if (picks_per_track_double_array[k]) 
             {
                 while (picks_per_track_double_array[k][w] != NULL)
                 {
-                    if (picks_per_track_double_array[k][w][0] != 0) dim++;
-                    w++;
+                    if (picks_per_track_double_array[k][w][0] != 0) ++dim;
+                    ++w;
                 }
             }
             else
@@ -2267,10 +2288,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 goto standard_checks;
             }
             
-            npics[k]=(k)? dim+npics[k-1]: dim;
-            img->npics[k]=dim;
-            DIM+=dim;
-            if (globals.debugging) fprintf(stderr, "\n"DBG "number of pics for track %d: npics[%d] = %d\n", k,k, dim);
+            npics[k]=(k)? dim + npics[k-1]: dim;
+            img->npics[k] = dim;
+            DIM += dim;
+            if (globals.debugging) fprintf(stderr, "\n"DBG "number of pics for track %d: npics[%d] = %d\n", k, k, dim);
             
             if (img->npics[k] > 99)
             {
@@ -2290,12 +2311,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         if (globals.debugging) fprintf(stderr,DBG "Total of %d pictures\n", img->count);
     }
     // or allocate img->blankscreen for dvdv slides by default.
-   
     
     if (still_options_string)
         still_options_parsing(still_options_string, img);
    
-    
 #endif
     
     // Final standard checks
