@@ -112,13 +112,17 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
         case '#' :
             continue;
 
-         case '[':
+       case '[':
              chain++;
-             while ((chain[u] != ']') && (chain[u] != '\0')) {T[u]=chain[u]; u++;}
+             while ((chain[u] != ']') && (chain[u] != '\0'))
+             {
+                 T[u] = chain[u]; 
+                 ++u;
+             }
              if (chain[u] != ']')  EXIT_ON_RUNTIME_ERROR
-	     flag=( u== 1)?SHORTOPTION:LONGOPTION;
+	         flag =( u== 1)?SHORTOPTION:LONGOPTION;
              T[u]='\0';
-             u=0;
+             u = 0;
              mem_s1=mem_s2=0;
              j++;i++;
              break;
@@ -141,9 +145,9 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
 
 		strcpy(T, chain);
 
-		u=strlen(T)-1;
-		while((u) && isblank(T[u])) u--;
-		if (u) T[u]='\0';
+		u = strlen(T) - 1;
+		while((u) && isblank(T[u])) --u;
+		if (u) T[u] = '\0';
                 break;
 
         case SHORTOPTION:
@@ -162,18 +166,18 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
 			break;
 		    case 'O':
 			dataflag=SCREENTEXT;
-			i++;j++;
+			++i; ++j;
 
 			break;
             case 3:
 			dataflag=STILLPICS_TITLE;
 			mem_s2=0;
-			i++;j++;
+			++i; ++j;
 			break;
             case 2:
 			dataflag=STILLOPTIONS_RANK;
 			mem_s2=0;
-			i++;j++;
+			++i; ++j;
 			break;
 
 		    default :
@@ -187,21 +191,22 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
         case LONGOPTION:
 
                 if (strcmp(T, "title") == 0)
-                  { dataflag=TITLE;  }
+                  { dataflag = TITLE;  }
                 else if  (strcmp(T, "screentext") == 0)
-                  { dataflag=SCREENTEXT; i++;j++;}
+                  { dataflag = SCREENTEXT; ++i; ++j;}
                 else if (strcmp(T, "stillpics") == 0)
-                  {dataflag=STILLPICS_TITLE;mem_s2=0;i++;j++;}
+                  {dataflag=STILLPICS_TITLE;mem_s2=0; ++i; ++j;}
                 else if (strcmp(T, "stilloptions") == 0)
-                  {dataflag=STILLOPTIONS_RANK;mem_s2=0;i++;j++;}
-		else dataflag=OTHER;
+                  {dataflag = STILLOPTIONS_RANK;mem_s2=0; ++i; ++j;}
+		else dataflag = OTHER;
                 break;
 
 
 #endif
 
        }
-        s0=strlen(T);
+       
+       s0 = strlen(T);
        switch (flag)
        {
         case ARG:
@@ -210,26 +215,25 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
             case GROUP:
             case TITLE:
             case OTHER:
-		i++;j++;
+		        ++i; ++j;
                 memmove(lexer->commandline[j], T, s0+1);
                 break;
 
             case SCREENTEXT:
-                i++;j++;
+                ++i; ++j;
 
             case SCREENTEXT_GROUP:
 
                 if ((mem_s1>1) && (lexer->commandline[j][mem_s1-1] != '='))
                 {
-		  lexer->commandline[j][mem_s1] = ':';
-		   delta=1;
-
+		          lexer->commandline[j][mem_s1] = ':';
+		          delta=1;
                 }
-                memmove(lexer->commandline[j]+mem_s1+delta, T, s0);
-                lexer->commandline[j][mem_s1+s0+delta] = '=' ;
-                mem_s1+=s0+1+delta;
-                first=1;
-                delta=0;
+                memmove(lexer->commandline[j] + mem_s1 + delta, T, s0);
+                lexer->commandline[j][mem_s1 + s0 + delta] = '=' ;
+                mem_s1 += s0 + 1 + delta;
+                first = 1;
+                delta = 0;
                 break;
 
             case STILLPICS_TITLE:
@@ -238,20 +242,20 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
             case STILLOPTIONS_TRACK:
 
                 if (mem_s2>0)
-		    lexer->commandline[j][mem_s2-1]=(dataflag == STILLPICS_TITLE)? ':' : ',' ;
-		else {i++;j++;}
+		    lexer->commandline[j][mem_s2-1] = (dataflag == STILLPICS_TITLE)? ':' : ',' ;
+		else {++i; ++j;}
 
-                memmove(lexer->commandline[j]+mem_s2, T,s0);
-                mem_s2+=s0+1;
-                if (dataflag==STILLPICS_TITLE) dataflag=STILLPICS_TRACK;
-                if (dataflag==STILLOPTIONS_RANK) dataflag=STILLOPTIONS_TRACK;
+                memmove(lexer->commandline[j] + mem_s2, T, s0);
+                mem_s2 += s0 + 1;
+                if (dataflag == STILLPICS_TITLE)   dataflag = STILLPICS_TRACK;
+                if (dataflag == STILLOPTIONS_RANK) dataflag = STILLOPTIONS_TRACK;
                 break;
 
             case SCREENTEXT_TRACK:
                 memmove(lexer->commandline[j]+mem_s1+(!first), T, s0);
                 if (!first) lexer->commandline[j][mem_s1] = ',' ;
-                mem_s1+=s0+(!first);
-                first=0;
+                mem_s1 += s0 + (! first);
+                first = 0;
                 break;
 
             default:
@@ -262,13 +266,13 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
 
         case SHORTOPTION:
 
-                lexer->commandline[j][0]='-';
-                memmove(lexer->commandline[j]+1, T, s0 +1);
+                lexer->commandline[j][0] = '-';
+                memmove(lexer->commandline[j] + 1, T, s0 + 1);
              break;
 #ifdef LONG_OPTIONS
        case LONGOPTION:
-                lexer->commandline[j][0]=lexer->commandline[j][1]='-';
-                memmove(lexer->commandline[j]+2, T, s0 +1);
+                lexer->commandline[j][0] = lexer->commandline[j][1] = '-';
+                memmove(lexer->commandline[j] + 2, T, s0 +1);
 
 #endif
        }
@@ -285,7 +289,7 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
     char exch[lexer->nlines][MAX_OPTION_LENGTH*2];
     memset(&exch[0][0], 0, MAX_OPTION_LENGTH*2*lexer->nlines);
     u=0;
-    for (j=0; j < lexer->nlines; j++)
+    for (j = 0; j < lexer->nlines; ++j)
     {
 
       if (lexer->commandline[j][0])  strcpy(exch[u],lexer->commandline[j]) ;
@@ -294,7 +298,7 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
       u++;
     }
 
-    for (j=0; j < u; j++) strcpy(lexer->commandline[j], exch[j]);
+    for (j=0; j < u; ++j) strcpy(lexer->commandline[j], exch[j]);
 
     lexer->nlines=u;
 
