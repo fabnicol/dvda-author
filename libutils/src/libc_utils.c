@@ -1058,7 +1058,7 @@ void change_directory(const char * filename)
         {
            if (NULL != filename)
            {
-             fprintf(stderr, ERR "Impossible to cd to %s \n.", filename);
+             fprintf(stderr, ERR "Impossible to cd to %s.\n", filename);
              perror(ANSI_COLOR_RED"\n[ERR]");
            }
            else   

@@ -306,27 +306,30 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
     errno=0;
     static int s;
-    if(s==0) s=strlen(globals.settings.tempdir);
+    if(s==0) s = strlen(globals.settings.tempdir);
     char pict[s+13];
 
     FREE(img->backgroundmpg[rank])
 
-    img->backgroundmpg[rank]=calloc(1+ s + 17+3+ 4+1, sizeof(char));
+    img->backgroundmpg[rank] = calloc(1 + s + 17 + 3 + 4 + 1, sizeof(char));
 
     if (img->action == STILLPICS)
     {
         if (globals.debugging) foutput("%s%u\n", INF "Creating still picture #", rank+1);
 
-        sprintf(img->backgroundmpg[rank], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "background_still_", rank, ".mpg");
+        sprintf(img->backgroundmpg[rank], "%s" SEPARATOR "%s%u%s", globals.settings.tempdir, "background_still_", rank, ".mpg");
 
-        snprintf(pict, sizeof(pict), "%s"SEPARATOR"pic_%03u.jpg", globals.settings.stillpicdir, rank);  // here stillpic[0] is a subdir.
+        snprintf(pict, sizeof(pict), "%s" SEPARATOR "pic_%03u.jpg", globals.settings.stillpicdir, rank);  // here stillpic[0] is a subdir.
 
-        if (globals.debugging) foutput("%s%d%s\n",DBG "Created still picture path #:", rank+1,pict);
+        if (globals.debugging) 
+        {
+            foutput("%s%d%s\n", DBG "Created still picture path #:", rank + 1, pict);
+        }
     }
     else if (img->action == ANIMATEDVIDEO)
     {
         if (globals.debugging) foutput(INF "Creating animated menu rank #%u out of %s\n", rank+1, img->backgroundpic[rank]);
-        sprintf(img->backgroundmpg[rank], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "background_movie_",rank, ".mpg");
+        sprintf(img->backgroundmpg[rank], "%s" SEPARATOR "%s%u%s", globals.settings.tempdir, "background_movie_", rank, ".mpg");
         snprintf(pict, sizeof(pict), "%s", img->backgroundpic[rank]);
         if (img->backgroundcolors)
         {
@@ -341,7 +344,6 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
             if (system(win32quote(command)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed")
                 fflush(NULL);
         }
-
     }
 
     initialize_binary_paths(CREATE_MJPEGTOOLS);
@@ -353,55 +355,52 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     const char *argsmp2enc[]= {MP2ENC_BASENAME, "-o", mp2track , NULL};
     const char *argsjpeg2yuv[]= {JPEG2YUV_BASENAME, "-f", img->framerate, "-I", "p", "-n", "1", "-j", pict, "-A", img->aspectratio, NULL};
     const char *argsmpeg2enc[]= {MPEG2ENC_BASENAME,  "-f", "8", "-n", norm,  "-o", tempfile ,"-a", img->aspect, NULL};
-    const char*  argsmplex[]= {MPLEX_BASENAME, "-f", "8",  "-o", img->backgroundmpg[rank], tempfile, mp2track, NULL};
+    const char *argsmplex[]= {MPLEX_BASENAME, "-f", "8",  "-o", img->backgroundmpg[rank], tempfile, mp2track, NULL};
 
     //////////////////////////
 
-    if (img->action==ANIMATEDVIDEO )
+    if (img->action == ANIMATEDVIDEO )
     {
         if (globals.debugging) foutput("%s\n", INF "Running mp2enc...");
 
-
-        char soundtrack[strlen(globals.settings.tempdir)+11];
+        char soundtrack[strlen(globals.settings.tempdir) + 11];
         sprintf(soundtrack, "%s"SEPARATOR"%s", globals.settings.tempdir, "soundtrack");
         if (file_exists(soundtrack)) unlink(soundtrack);
-        errno=0;
+        errno = 0;
         change_directory(globals.settings.datadir);
-
         copy_file(img->soundtrack[0][0], soundtrack);
         change_directory(globals.settings.workdir);
 
         // using freopen to redirect is safer here
 #ifndef __WIN32__
 
-
         int pid1;
         switch (pid1=fork())
         {
-        case -1:
-            foutput("%s\n", ERR "Could not launch "MP2ENC);
-            break;
-
-        case 0:
-
-
-            if (NULL == freopen(soundtrack, "rb", stdin))
-            {
-                perror(ERR "freopen");
-                clean_exit(EXIT_FAILURE);
-            }
-
-            dup2(STDOUT_FILENO, STDERR_FILENO);
-
-            if (errno) perror(MP2ENC);
-            execv(mp2enc, (char* const*)argsmp2enc);
-            foutput("%s\n", ERR "Runtime failure in mp2enc child process");
-            return errno;
-
-            break;
-
-        default:
-            waitpid(pid1, NULL, 0);
+            case -1:
+                foutput("%s\n", ERR "Could not launch "MP2ENC);
+                break;
+    
+            case 0:
+    
+    
+                if (NULL == freopen(soundtrack, "rb", stdin))
+                {
+                    perror(ERR "freopen");
+                    clean_exit(EXIT_FAILURE);
+                }
+    
+                dup2(STDOUT_FILENO, STDERR_FILENO);
+    
+                if (errno) perror(MP2ENC);
+                execv(mp2enc, (char* const*)argsmp2enc);
+                foutput("%s\n", ERR "Runtime failure in mp2enc child process");
+                return errno;
+    
+                break;
+    
+            default:
+                waitpid(pid1, NULL, 0);
         }
 #else
         const char* s=get_command_line(argsmp2enc);
@@ -440,7 +439,6 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     // Tight system error strategy in order here
     errno=0;
 
-
     FILE *f=fopen(pict, "rb");
     foutput("opening: %s\n", pict);
     if ((errno)||(f == NULL))
@@ -477,64 +475,64 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
     switch (fork())
     {
-    case -1:
-        fprintf(stdout,"%s\n", ERR "Could not launch jpeg2yuv");
-        break;
-
-    case 0:
-
-        close(tube[0]);
-        close(tubeerr[0]);
-        dup2(tube[1], STDOUT_FILENO);
-        // Piping stdout is required here as STDOUT is not a possible duplicate for stdout
-        dup2(tubeerr[1], STDERR_FILENO);
-        execv(jpeg2yuv, (char* const*) argsjpeg2yuv);
-        foutput("%s\n", ERR "Runtime failure in jpeg2yuv child process");
-        perror("menu1");
-
-        return errno;
-
-
-    default:
-        close(tube[1]);
-        close(tubeerr[1]);
-        dup2(tube[0], STDIN_FILENO);
-        if (globals.debugging) foutput("%s\n", INF "Piping to mpeg2enc...");
-
-        switch (pid2 = fork())
-        {
         case -1:
-            foutput("%s\n", ERR "Could not launch mpeg2enc");
+            fprintf(stdout,"%s\n", ERR "Could not launch jpeg2yuv");
             break;
-
+    
         case 0:
-            // This looks like an extra complication as it could be considered to simply use dup2(STDOUT_FILENO, stdout_FILENO) without further piping
-            // However this would reverse the order of jpeg2yuv and mpeg2enc stdout messages, the latter comming first,
-            // which is not desirable as jpeg2yuv is piped into mpeg2enc. Hereby we are realigning these msg streams, which even in bash piping are intermingled,
-            // making it hard to read/use.
-            close(tubeerr2[0]);
-            close(STDOUT_FILENO);
-            dup2(tubeerr2[1], STDERR_FILENO);
-            // End of comment
-            execv(mpeg2enc, (char* const*)argsmpeg2enc);
-            foutput("%s\n", ERR "Runtime failure in mpeg2enc parent process");
-            perror("menu2");
-            return errno;
-
-        default:
-            waitpid(pid2, NULL, 0);
-            dup2(tubeerr[0], STDIN_FILENO);
-
-            while (read(tubeerr[0], &c, 1) == 1) foutput("%c",c);
+    
+            close(tube[0]);
             close(tubeerr[0]);
-            close(tubeerr2[1]);
-            dup2(tubeerr2[0], STDIN_FILENO);
-
-            while (read(tubeerr2[0], &c, 1) == 1) foutput("%c",c);
-            close(tubeerr2[0]);
-            if (globals.debugging) foutput("%s\n", INF "Running mplex...");
-            run(mplex, argsmplex, 0);
-        }
+            dup2(tube[1], STDOUT_FILENO);
+            // Piping stdout is required here as STDOUT is not a possible duplicate for stdout
+            dup2(tubeerr[1], STDERR_FILENO);
+            execv(jpeg2yuv, (char* const*) argsjpeg2yuv);
+            foutput("%s\n", ERR "Runtime failure in jpeg2yuv child process");
+            perror("menu1");
+    
+            return errno;
+    
+    
+        default:
+            close(tube[1]);
+            close(tubeerr[1]);
+            dup2(tube[0], STDIN_FILENO);
+            if (globals.debugging) foutput("%s\n", INF "Piping to mpeg2enc...");
+    
+            switch (pid2 = fork())
+            {
+            case -1:
+                foutput("%s\n", ERR "Could not launch mpeg2enc");
+                break;
+    
+            case 0:
+                // This looks like an extra complication as it could be considered to simply use dup2(STDOUT_FILENO, stdout_FILENO) without further piping
+                // However this would reverse the order of jpeg2yuv and mpeg2enc stdout messages, the latter comming first,
+                // which is not desirable as jpeg2yuv is piped into mpeg2enc. Hereby we are realigning these msg streams, which even in bash piping are intermingled,
+                // making it hard to read/use.
+                close(tubeerr2[0]);
+                close(STDOUT_FILENO);
+                dup2(tubeerr2[1], STDERR_FILENO);
+                // End of comment
+                execv(mpeg2enc, (char* const*)argsmpeg2enc);
+                foutput("%s\n", ERR "Runtime failure in mpeg2enc parent process");
+                perror("menu2");
+                return errno;
+    
+            default:
+                waitpid(pid2, NULL, 0);
+                dup2(tubeerr[0], STDIN_FILENO);
+    
+                while (read(tubeerr[0], &c, 1) == 1) foutput("%c",c);
+                close(tubeerr[0]);
+                close(tubeerr2[1]);
+                dup2(tubeerr2[0], STDIN_FILENO);
+    
+                while (read(tubeerr2[0], &c, 1) == 1) foutput("%c",c);
+                close(tubeerr2[0]);
+                if (globals.debugging) foutput("%s\n", INF "Running mplex...");
+                run(mplex, argsmplex, 0);
+            }
         close(tube[0]);
     }
 
@@ -562,13 +560,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     free((char*) mplexcl);
 #endif
 
-
-
-
     return errno;
-
-
-
 }
 
 
@@ -620,7 +612,7 @@ int generate_background_mpg(pic* img)
                 img->stillpicvobsize[rank]=(uint32_t) (stat_file_size(img->backgroundmpg[rank])/0x800);
                 if (img->stillpicvobsize[rank] > 1024) foutput("%s",WAR "Size of slideshow in excess of the 2MB track limit... some stillpics may not be displayed.\n");
                 if (rank) cat_file(img->backgroundmpg[rank], img->backgroundmpg[0]);
-                rank++;
+                ++rank;
             }
         // The first backgroundmpg file is the one that is used to create AUDIO_SV.VOB in amg2.c
     }
@@ -1186,7 +1178,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
 }
 
 
-int create_stillpic_directory(char* string, uint32_t count)
+int create_stillpic_directory(char* string, int32_t count)
 {
     if (!string)
     {
@@ -1194,18 +1186,17 @@ int create_stillpic_directory(char* string, uint32_t count)
         exit(-1);
     }
 
-
-    static uint32_t  k;
-    change_directory(globals.settings.workdir);
+    static int32_t  k;
+    change_directory(globals.settings.stillpicdir);
     if (k == count)
     {
-        if (globals.debugging) foutput(WAR "Too many pics, only %d sound track%s skipping others...\n", count, (count == 1)?",":"s,");
+        if (globals.debugging) foutput(WAR "Too many pics, only %d sound track%s skipping others...\n", count, (count == 1)? "," : "s,");
         return 0;
     }
 
     if (*string == '\0')
     {
-        if (globals.debugging) foutput(INF "Jumping one track for picture rank=%d\n", k);
+        if (globals.debugging) foutput(INF "Jumping one track for picture rank = %d\n", k);
         return 1;
     }
 
@@ -1214,30 +1205,32 @@ int create_stillpic_directory(char* string, uint32_t count)
 
     if (stat(string, &buf) == -1)
     {
-        fprintf(stderr,ERR "create_stillpic_directory: could not stat file %s\n", string);
+        fprintf(stderr, ERR "create_stillpic_directory: could not stat file %s\n", string);
         exit(-1);
     }
     if (S_IFDIR & buf.st_mode)
     {
         if (globals.debugging) foutput(INF "Directory %s will be parsed for still pics\n", string);
-        globals.settings.stillpicdir=strdup(string);
+        globals.settings.stillpicdir = strdup(string);
         return 0;
     }
     if (S_IFREG & buf.st_mode)
     {
   #endif
-        char dest[strlen(globals.settings.tempdir)+13];
+        char dest[strlen(globals.settings.tempdir) + 13];
         sprintf(dest, "%s"SEPARATOR"pic_%03d.jpg", globals.settings.tempdir, k);
         if (globals.debugging) fprintf(stderr, DBG "Picture %s will be copied to temporary directory as %s.\n", string, dest);
-
+    
         copy_file(string, dest);
-
-        if (k == 0) globals.settings.stillpicdir=strdup(globals.settings.tempdir);
-        k++;
+    
+        if (k == 0) globals.settings.stillpicdir = strdup(globals.settings.tempdir);
+        ++k;
         return 1;
 #ifndef __WIN32__
     }
 #endif
+    
+    change_directory(globals.settings.workdir);
     return 0;
 
 }
