@@ -550,53 +550,53 @@ void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size)
 // Returns NULL on error or array of extracted strings
 // remainder should be allocated prior to call
 
-char** fn_strtok(char* chain, char delim, char** array, uint32_t count, int  (*f)(char*, uint32_t ), char* remainder)
+char** fn_strtok(char* chain, char delim, char** array, int32_t count, int  (*f)(char*, int32_t ), char* remainder)
 {
   if (chain == NULL) return NULL;
   //
-  char *s=strdup(chain);
+  char *s = strdup(chain);
 
   if (s == NULL) return NULL;
-  errno=0;
+  errno = 0;
 
-  uint32_t j=1, k=0;
+  uint32_t j = 1, k = 0;
   int32_t cut[strlen(s)/2];
-  cut[0]=-1;
+  cut[0] = -1;
   do  if (s[j] == delim)
       {
-        cut[++k]=j;
-
+        cut[++k] = j;
       }
   while (s[j++] != '\0');
-  cut[k+1]=j-1;
+  cut[k + 1] = j - 1;
   // exactly k=size-2 cuts, k+1 substrings and array filled with k+1 substrings and NULL-terminating pointer, so array is sized size*sizeof(char)
-  uint32_t size=k+2;
-  array=(char**) calloc(size, sizeof(char*));
+  uint32_t size = k + 2;
+  array = (char**) calloc(size, sizeof(char*));
   if (array == NULL)
   {
       perror("\n"ERR "fn_strtok\n");
       return NULL;
   }
+  
   k=0;
 
-  while (k<= (size-2))
+  while (k <= (size - 2))
     {
-
-      array[k]=calloc(cut[k+1]-cut[k], sizeof (char));
+      array[k] = calloc(cut[k + 1] - cut[k], sizeof (char));
       if (array[k] == NULL)
          { perror(ERR "fn_strtok, array[k]"); return NULL;}
 
-      memcpy(array[k], s+cut[k]+1, cut[k+1]-cut[k]-1);
-      array[k][cut[k+1]-cut[k]-1]=0;
+      memcpy(array[k], s + cut[k] + 1, cut[k + 1] - cut[k] - 1);
+      array[k][cut[k + 1] - cut[k] - 1] = 0;
 
       if ((*f) && ((*f)(array[k], count) == 0)) break;
 
-      k++;
+      ++k;
     }
-  array[k]=NULL;
-  if ((remainder) && (s[cut[k]] !='\0'))
-   strcpy(remainder, s+cut[k]+1);
-  else remainder=NULL;
+  
+  array[k] = NULL;
+  if ((remainder) && (s[cut[k]] != '\0'))
+   strcpy(remainder, s + cut[k] + 1);
+  else remainder = NULL;
   free(s);
 
   if (errno) return NULL;
@@ -609,21 +609,22 @@ char** fn_strtok(char* chain, char delim, char** array, uint32_t count, int  (*f
 int cutloop(char GCC_ATTRIBUTE_UNUSED*c, uint32_t count)
 {
     static uint32_t loop;
-    loop++;
+    ++loop;
     if (count > loop) return 1;
     else
-     loop=0;
+    loop=0;
     return 0;
 }
 
-int arraylength(char ** tab)
+int arraylength(char **tab)
 {
-    int w=0;
+    int w = 0;
     if (tab) while (tab[w] != NULL)
     {
       if (globals.debugging) fprintf(stderr, DBG "parsing tab string %s\n", tab[w]);
-       w++;
+       ++w;
     }
+    
     if (globals.debugging) fprintf(stderr, DBG "found %d strings in tab\n", w);
 
     return w;
