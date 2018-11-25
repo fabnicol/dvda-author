@@ -591,7 +591,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'g' :
             ++u;
             allocate_files = true;
-            foutput("%s%d\n", PAR "allocate_files = ", allocate_files);
+            
             fflush(NULL);
             break;
             
@@ -749,7 +749,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 {
                     if (globals.veryverbose)
                       foutput("       files[%d][%d].filename=%s\n", ngroups_scan, m, argv[m + k]);
-                    
 
                     files[ngroups_scan][m].filename = argv[m+k];
 
@@ -2207,20 +2206,20 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         // heap-allocations is not possible if char** is not returned by function
         // A simple char* would well be allocated by function, not a char**.
         
-        fprintf(stderr, DBG "stillpic_string=%s\n", stillpic_string);
+        if (globals.debugging) fprintf(stderr, DBG "stillpic_string=%s\n", stillpic_string);
         _Bool indir = true;
         errno = 0;
         
         if (is_dir(stillpic_string))
         {
-            fprintf(stderr, "%s\n", DBG "Traversing") ;
+            if (globals.debugging) fprintf(stderr, "%s\n", DBG "Traversing") ;
             pics_per_track = calloc(999, sizeof(char*));
-            
+            globals.settings.stillpicdir = strdup(stillpic_string);
             traverse_directory(stillpic_string, fill_pics, true, (void*) pics_per_track, NULL);
         } 
         else 
         {
-             pics_per_track=fn_strtok(stillpic_string, ':', pics_per_track, 0,NULL,NULL);    
+             pics_per_track = fn_strtok(stillpic_string, ':', pics_per_track, 0,NULL,NULL);    
              indir = false;
         }
                 
@@ -2229,7 +2228,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         img->npics =(uint16_t*) calloc(totntracks, sizeof(uint16_t));
         if (img->npics == NULL)
         {
-            perror("\n"ERR "img->npics");
+            perror("\n" ERR "img->npics");
             goto standard_checks;
         }
         if (pics_per_track)
@@ -2241,7 +2240,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         }
         if (w > totntracks)
         {
-            fprintf(stderr, "\n"ERR "Too many tracks on --stillpics: %d\n",w);
+            fprintf(stderr, "\n"ERR "Too many tracks on --stillpics: %d\n", w);
             goto standard_checks;
         }
         else if (w < totntracks)
@@ -2262,6 +2261,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             {
                 picks_per_track_double_array[k] = calloc(1, sizeof(char*));
                 picks_per_track_double_array[k][0] = pics_per_track[k];
+                create_stillpic_directory(pics_per_track[k], -1);
             }
             else 
             picks_per_track_double_array[k] = fn_strtok(pics_per_track[k],

@@ -94,7 +94,7 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files, uint8_t ngiven_channe
 void free_memory(command_t *command);
 void check_settings_file();
 void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size);
-char** fn_strtok(char* chain, char delim, char** array, uint32_t count, int  (*f)(char*, uint32_t ), char* remainder);
+char** fn_strtok(char* chain, char delim, char** array, int32_t count, int  (*f)(char*, int32_t ), char* remainder);
 int cutloop(char GCC_ATTRIBUTE_UNUSED *c, uint32_t count);
 int arraylength(char ** tab);
 
