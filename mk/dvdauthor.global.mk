@@ -1,0 +1,9 @@
+dvdauthor_LIB=
+dvdauthor_LINK=
+MAYBE_dvdauthor=
+HAVE_dvdauthor=@HAVE_dvdauthor@
+HAVE_EXTERNAL_dvdauthor=@HAVE_EXTERNAL_dvdauthor@
+CONFIGURE_dvdauthor_FLAGS=
+dvdauthor_BUILD=
+WITH_dvdauthor=@WITH_dvdauthor@
+dvdauthor_DEPENDENCY=Makefile /home/fab/Desktop/dvda-author-dev/

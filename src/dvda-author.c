@@ -176,14 +176,11 @@ int main(int argc,  char* const argv[])
     setlocale(LC_ALL, "LOCALE");
 
     char* currentdir = fn_get_current_dir_name ();
-
     int currentdirlength=strlen(currentdir);
-
-    char TEMPDIRROOT[currentdirlength+14];
-    TEMPDIR=calloc(currentdirlength+20, sizeof(char));
-    LPLEXTEMPDIR=calloc(currentdirlength+26, sizeof(char));
-
-    char *EXECDIR=calloc(MAX(currentdirlength, 20)+4+25, sizeof(char));  // /usr/local/bin or /usr/bin under *NIX, "currentdir" directory/bin otherwise (win32...)
+    char TEMPDIRROOT[currentdirlength + 14];
+    TEMPDIR = calloc(currentdirlength + 20, sizeof(char));
+    LPLEXTEMPDIR = calloc(currentdirlength + 26, sizeof(char));
+    char *EXECDIR = calloc(MAX(currentdirlength, 20) + 4 + 25, sizeof(char));  // /usr/local/bin or /usr/bin under *NIX, "currentdir" directory/bin otherwise (win32...)
     // 4 for "/bin and be liberal and allow 25 more characters for the executable name.
 
 #ifdef BINDIR
@@ -242,33 +239,30 @@ int main(int argc,  char* const argv[])
     globalData globals_init=
     {
 
-        /*top menu*/    NO_MENU,  // no top menu
-        /*nooutput*/    0,
-        /*runmkisofs*/  0,  // do not run mkisofs
-        /*autoplay*/    0,  // no autoplay
-        /*text table*/  0,  // no text table
-        /*silence*/     0,
-        1,  // enabling lexer
-        /*logfile*/	0,  // no log
-        /*loghtml*/     0,  //text log
-        /* logdecode */ 0,
-        /*videozone*/   1,  // generates video zone
-        /*videolinking*/0,  // no video link
-        /*playlist*/    0,  // no playlist
-        /*cga*/         0,  // no explicit channel group assignement
-        /*end_pause*/   0,  // no end pause
-    /*devel verbosity*/ 0,
-        /*very verbose*/0,  // not very verbose
-        /*debugging*/   0,  // no debugging-level verbosity
-#if 0
-        /*padding*/     1,  // always padding
+        /*top menu*/        NO_MENU,  // no top menu
+        /*nooutput*/        0,
+        /*runmkisofs*/      0,  // do not run mkisofs
+        /*autoplay*/        0,  // no autoplay
+        /*text table*/      0,  // no text table
+        /*silence*/         0,
+                            1,  // enabling lexer
+        /*logfile*/	        0,  // no log
+        /*loghtml*/         0,  //text log
+        /* logdecode */     0,
+        /*videozone*/       1,  // generates video zone
+        /*videolinking*/    0,  // no video link
+        /*playlist*/        0,  // no playlist
+        /*cga*/             0,  // no explicit channel group assignement
+        /*end_pause*/       0,  // no end pause
+        /*devel verbosity*/ 0,
+        /*very verbose*/    0,  // not very verbose
+        /*debugging*/       0,  // no debugging-level verbosity
+        /*padding*/         0,  // gapless join for like audio tracks, no padding
         /*padding_continuous*/    0,  // no continuous padding
-        /*minimal_padding*/       0,  // no minimal padding
-        /*lossy_rounding*/ 0,  // No audio loss
-#endif
-        /*rungrowisofs*/   0,  // Do not burn with growisofs
+        /*lossy_rounding*/  0,  // No audio loss
+        /*rungrowisofs*/    0,  // Do not burn with growisofs
 #ifndef WITHOUT_sox
-        /*sox_enable*/     0,  // no use of SoX
+        /*sox_enable*/      0,  // no use of SoX
 #endif
 
         /*fixwav_enable*/               1,  // use of fixwav
@@ -278,26 +272,25 @@ int main(int argc,  char* const argv[])
         /* do not correct in place */   0,
         /* be cautious on overwrites*/  0,
         /* not interactive */           0,
-        /* no padding */ 0,
-        /* prune */      0,
-        /* force */      0,
+        /* no padding */    0,
+        /* prune */         0,
+        /* force */         0,
         /* fixwav output suffix*/
         strdup(STANDARD_FIXWAV_SUFFIX),
         /*fixwav_parameters*/ NULL,
 
 
-        /*xml filepath*/  NULL,
-        /*spumux xml*/    NULL,
-        /*cdrecord dev*/  NULL,
+        /*xml filepath*/    NULL,
+        /*spumux xml*/      NULL,
+        /*cdrecord dev*/    NULL,
         /* aob path for decoding */ NULL,
-        /*journal (log)*/ NULL, //(FILE*)
-        /*access rights*/ DEFAULT_ACCESS_RIGHTS,
+        /*journal (log)*/   NULL, //(FILE*)
+        /*access rights*/   DEFAULT_ACCESS_RIGHTS,
         /* it is necessary to use strdup as these settings may be overridden dynamically */
 // Paths:
 
         def
     };
-
 
     pic     img0=
     {

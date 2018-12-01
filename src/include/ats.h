@@ -48,6 +48,7 @@ extern FILE* aob_log;
 # define LAST_PACK    1
 # define MIDDLE_PACK  2
 # define END_OF_AOB 3
+# define CUT_PACK 4
 # define VALID true
 # define NORMAL 0
 # define INVALID false

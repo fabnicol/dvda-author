@@ -2,33 +2,33 @@
 
 
 define docfollow
-	@findstring=$$(find /c/Users/Public/Dev/dvd-audio-dev -maxdepth 1 -name $(strip $1) -print0)
-	echo "[doc]" >> /c/Users/Public/Dev/dvd-audio-dev/depconf/BUILD.TRACE
-	echo "    $1 $$findstring" >> /c/Users/Public/Dev/dvd-audio-dev/depconf/BUILD.TRACE 
+	@findstring=$$(find /home/fab/Desktop/dvda-author-dev -maxdepth 1 -name $(strip $1) -print0)
+	echo "[doc]" >> /home/fab/Desktop/dvda-author-dev/depconf/BUILD.TRACE
+	echo "    $1 $$findstring" >> /home/fab/Desktop/dvda-author-dev/depconf/BUILD.TRACE 
 endef
 
 define index
-	@echo [$1] >> /c/Users/Public/Dev/dvd-audio-dev/depconf/BUILD.TRACE
+	@echo [$1] >> /home/fab/Desktop/dvda-author-dev/depconf/BUILD.TRACE
 	directory=$(MAYBE_$1)
 	if test "$3" = "library" ; then
-	   testvar=$$(find /c/Users/Public/Dev/dvd-audio-dev/$$directory -maxdepth 4 -type f -wholename "*$1$2" -print0)
+	   testvar=$$(find /home/fab/Desktop/dvda-author-dev/$$directory -maxdepth 4 -type f -wholename "*$1$2" -print0)
 	else
-	   testvar=$$(find /c/Users/Public/Dev/dvd-audio-dev/$$directory -maxdepth 4 -type f -wholename "*$($1_TESTBINARY)$2" -print0)
+	   testvar=$$(find /home/fab/Desktop/dvda-author-dev/$$directory -maxdepth 4 -type f -wholename "*$($1_TESTBINARY)$2" -print0)
 	fi
 	if test "$$testvar" != ""; then
-		echo "     built $3: $$testvar for $1" >> /c/Users/Public/Dev/dvd-audio-dev/depconf/BUILD.TRACE
+		echo "     built $3: $$testvar for $1" >> /home/fab/Desktop/dvda-author-dev/depconf/BUILD.TRACE
 		if test "$3" = "library" ; then
-		  testvar2=$$(find /c/Users/Public/Dev/dvd-audio-dev/local/lib -wholename $($1_LIB) -print0)
+		  testvar2=$$(find /home/fab/Desktop/dvda-author-dev/local/lib -wholename $($1_LIB) -print0)
 		else
-		  testvar2=$$(find /c/Users/Public/Dev/dvd-audio-dev/local/bin -name "$($1_TESTBINARY)$(EXEEXT)" -print0)
+		  testvar2=$$(find /home/fab/Desktop/dvda-author-dev/local/bin -name "$($1_TESTBINARY)$(EXEEXT)" -print0)
 		fi
 		if test "$$testvar2" != ""; then
-			echo "     local $3: $$testvar2 from $(MAYBE_$1)" >> /c/Users/Public/Dev/dvd-audio-dev/depconf/BUILD.TRACE
+			echo "     local $3: $$testvar2 from $(MAYBE_$1)" >> /home/fab/Desktop/dvda-author-dev/depconf/BUILD.TRACE
 		else
-			echo "     did not install $3 $1" >> /c/Users/Public/Dev/dvd-audio-dev/depconf/BUILD.TRACE
+			echo "     did not install $3 $1" >> /home/fab/Desktop/dvda-author-dev/depconf/BUILD.TRACE
 		fi
 	else
-	        echo "     no $3 $1" >> /c/Users/Public/Dev/dvd-audio-dev/depconf/BUILD.TRACE
+	        echo "     no $3 $1" >> /home/fab/Desktop/dvda-author-dev/depconf/BUILD.TRACE
 	fi
 endef
 
@@ -42,24 +42,24 @@ define configure_sub_package
 	echo Building $1...
 	configure_flags="$2"
 	if test "$$target_subdir" != ""; then
-	   if test -d  "/c/Users/Public/Dev/dvd-audio-dev/$$target_subdir"; then
-	      mkdir -p "/c/Users/Public/Dev/dvd-audio-dev/$$target_subdir/"
-	      cd "/c/Users/Public/Dev/dvd-audio-dev/$$target_subdir/"
+	   if test -d  "/home/fab/Desktop/dvda-author-dev/$$target_subdir"; then
+	      mkdir -p "/home/fab/Desktop/dvda-author-dev/$$target_subdir/"
+	      cd "/home/fab/Desktop/dvda-author-dev/$$target_subdir/"
 	      if test "$(findstring noconfigure,$5)" = "" ; then 
-       	       cd "/c/Users/Public/Dev/dvd-audio-dev/$$target_subdir"
+       	       cd "/home/fab/Desktop/dvda-author-dev/$$target_subdir"
 	       if test "$3" != "" ; then echo Running shell command...; $(SHELL) "$3" "$4"; fi
 	       cd -
-	       echo Running configure in /c/Users/Public/Dev/dvd-audio-dev/$$target_subdir ...
-	       $(SHELL) "/c/Users/Public/Dev/dvd-audio-dev/$$target_subdir/configure" $$configure_flags --prefix="/c/Users/Public/Dev/dvd-audio-dev/local" CPPFLAGS="-I/c/Users/Public/Dev/dvd-audio-dev/local/include"  $6
+	       echo Running configure in /home/fab/Desktop/dvda-author-dev/$$target_subdir ...
+	       $(SHELL) "/home/fab/Desktop/dvda-author-dev/$$target_subdir/configure" $$configure_flags --prefix="/home/fab/Desktop/dvda-author-dev/local" CPPFLAGS="-I/home/fab/Desktop/dvda-author-dev/local/include"  $6
 	      else
-	       if test "/c/Users/Public/Dev/dvd-audio-dev" != "/c/Users/Public/Dev/dvd-audio-dev"; then cp -rf "/c/Users/Public/Dev/dvd-audio-dev/$$target_subdir" /c/Users/Public/Dev/dvd-audio-dev; fi
+	       if test "/home/fab/Desktop/dvda-author-dev" != "/home/fab/Desktop/dvda-author-dev"; then cp -rf "/home/fab/Desktop/dvda-author-dev/$$target_subdir" /home/fab/Desktop/dvda-author-dev; fi
 	      fi
 	      if test "$$?" = "0"; then  
 	      echo -- *****
 	      echo -- * Now building $1
-	      echo -- * See file /c/Users/Public/Dev/dvd-audio-dev/depconf/BUILD.TRACE --
+	      echo -- * See file /home/fab/Desktop/dvda-author-dev/depconf/BUILD.TRACE --
 	      echo -- *****
-		  echo Now building $1 with command line $(MAKE) $(PARALLEL) MKDIR_P="\"$(MKDIR_P)\""  $(if $6,$6)...  >> /c/Users/Public/Dev/dvd-audio-dev/depconf/BUILD.TRACE
+		  echo Now building $1 with command line $(MAKE) $(PARALLEL) MKDIR_P="\"$(MKDIR_P)\""  $(if $6,$6)...  >> /home/fab/Desktop/dvda-author-dev/depconf/BUILD.TRACE
 		  $(MAKE)  $(if $6,$6) $(PARALLEL) MKDIR_P="$(MKDIR_P)" 
 	      fi
 	      if test "$$?" = "0" -o "$6" != ""; then
@@ -73,7 +73,7 @@ define configure_sub_package
             sleep 1s
 	      fi
 	      if test -f INSTALL.txt; then mv -f INSTALL.txt INSTALL; fi
-	      cd /c/Users/Public/Dev/dvd-audio-dev
+	      cd /home/fab/Desktop/dvda-author-dev
 	   fi
 	fi
 endef
@@ -82,7 +82,7 @@ endef
 define configure_lib_package
 	@$(call configure_sub_package,$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),$2,$3,,$4)
 	if test "$$?" = "0"; then
-	  touch /c/Users/Public/Dev/dvd-audio-dev/depconf/$1.depconf
+	  touch /home/fab/Desktop/dvda-author-dev/depconf/$1.depconf
 	fi
 	$(call index,$1,.a,library)
 endef
@@ -95,13 +95,13 @@ define configure_exec_package
 	fi
 	$(call configure_sub_package,$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),,,$2,$3)
 	if test "$$?" = "0" -o "$6" != ""; then 
-        touch /c/Users/Public/Dev/dvd-audio-dev/depconf/$1.depconf
+        touch /home/fab/Desktop/dvda-author-dev/depconf/$1.depconf
     fi
 	$(call index,$1,$(EXEEXT),binary)
 endef
 
 define clean_package
-	@$(if $1,if test -d  /c/Users/Public/Dev/dvd-audio-dev/$(MAYBE_$1); then cd /c/Users/Public/Dev/dvd-audio-dev/$(MAYBE_$1); $(MAKE)  clean ; cd - ; fi)
+	@$(if $1,if test -d  /home/fab/Desktop/dvda-author-dev/$(MAYBE_$1); then cd /home/fab/Desktop/dvda-author-dev/$(MAYBE_$1); $(MAKE)  clean ; cd - ; fi)
 endef
 
 define depconf
@@ -119,7 +119,7 @@ endef
 define clean_directory
 	for dir in $1; do
 	   if test -d "$$dir" ; then
-	     cd "$$dir"; $(RM) *.a *.po *.o *.1 *.html; cd /c/Users/Public/Dev/dvd-audio-dev
+	     cd "$$dir"; $(RM) *.a *.po *.o *.1 *.html; cd /home/fab/Desktop/dvda-author-dev
 	   fi
 	done
 endef
