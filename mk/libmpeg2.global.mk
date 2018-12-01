@@ -1,0 +1,9 @@
+libmpeg2_LIB=
+libmpeg2_LINK=
+MAYBE_libmpeg2=
+HAVE_libmpeg2=@HAVE_libmpeg2@
+HAVE_EXTERNAL_libmpeg2=@HAVE_EXTERNAL_libmpeg2@
+CONFIGURE_libmpeg2_FLAGS=
+libmpeg2_BUILD=
+WITH_libmpeg2=@WITH_libmpeg2@
+libmpeg2_DEPENDENCY=Makefile /home/fab/Desktop/dvda-author-dev/

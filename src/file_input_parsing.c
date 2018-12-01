@@ -97,8 +97,12 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
     }
 
     if (ng > 1)
-        qsort(gnames, (size_t) ng, (size_t) CHAR_BUFSIZ,
+    {
+        qsort(gnames,
+              (size_t) ng,
+              (size_t) CHAR_BUFSIZ,
               (int (*) (const void *, const void *)) strcmp);
+    }
 
     totng = ng;
     ng = 0;
@@ -110,21 +114,25 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
         ngroups_scan= atoi(gnames[ng]+1);
 
         if ((ngroups_scan > MAX_GROUPS) || (ngroups_scan < 1))
+        {
             EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Subdirectories must be labelled ljm, with l, m any letters and j a number of 1 - 9")
+        }
 
-            change_directory(gnames[ng]);
+        change_directory(gnames[ng]);
 
         DIR *subdir;
-        if ((subdir=opendir(".")) == NULL)
+
+        if ((subdir = opendir(".")) == NULL)
+        {
             EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Input directory could not be opened")
+        }
 
-
-            struct dirent * subdirent;
-        control++;
+        struct dirent * subdirent;
+        ++control;
 
         /* Memory allocation will be based on user input ngroups = Max {ngroups_scan}  */
 
-        ngroups=MAX(ngroups_scan, ngroups);
+        ngroups = MAX(ngroups_scan, ngroups);
 
         ntracks[n_g_groups+ngroups_scan-1]=0;
 
@@ -132,7 +140,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
         int totnt;
         int nt = 0;
 
-        while ((subdirent=readdir(subdir) )!= NULL)
+        while ((subdirent = readdir(subdir) )!= NULL)
         {
             if (subdirent->d_name[0] == '.') continue;
             /* filter extensions, which are known not to be processed in this context */
@@ -145,7 +153,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
             }
 
             strcpy(tnames[nt], subdirent->d_name);
-            nt++;
+            ++nt;
         }
 
         if ((action == READTRACKS) && (nt))
@@ -155,18 +163,18 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
         totnt = nt - 1;
         nt = 0;
 
-        FILE* cgafile;
-        _Bool read_cga_file=0;
-        cgafile=fopen(CGA_FILE, "rb");
-        if (cgafile != NULL)
-        {
-            if (globals.debugging) foutput("%s", MSG_TAG "Channel assignment file was opened\n");
-            read_cga_file=1;
-        }
-        else
-        {
+//        FILE* cgafile;
+//        //_Bool read_cga_file=0;
+//        cgafile=fopen(CGA_FILE, "rb");
+//        if (cgafile != NULL)
+//        {
+//            if (globals.debugging) foutput("%s", MSG_TAG "Channel assignment file was opened\n");
+//            //read_cga_file=1;
+//        }
+//        else
+//        {
             if (globals.debugging) foutput("%s", MSG_TAG "Automatic channel assignment.\n");
-        }
+//        }
 
 
         do
@@ -180,7 +188,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
 
             /* assignment of values is based on ngroups_scan */
 
-            ntracks[n_g_groups+ngroups_scan-1]++;
+            ++ntracks[n_g_groups+ngroups_scan-1];
 
             if (action == READTRACKS)
             {
@@ -196,43 +204,43 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
                 // reads in filenames
                 memmove(files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].filename, buf, CHAR_BUFSIZ);
 
-                if (read_cga_file)
-                {
-                    // reads in channel assignement from file cgafile
-                    // file cgafile.cga must contain left-aligned figures with at most two digits aligned in a single column, corresponding to cga values.
-                    char cga[4]; // 2 digits+newline+\0
+//                if (read_cga_file)
+//                {
+//                    // reads in channel assignement from file cgafile
+//                    // file cgafile.cga must contain left-aligned figures with at most two digits aligned in a single column, corresponding to cga values.
+//                    char cga[4]; // 2 digits+newline+\0
 
-                    if (NULL == fgets(cga, 3, cgafile))
-                    {
-                        perror(ERR "fgets");
-                        clean_exit(EXIT_FAILURE);
-                    }
+//                    if (NULL == fgets(cga, 3, cgafile))
+//                    {
+//                        perror(ERR "fgets");
+//                        clean_exit(EXIT_FAILURE);
+//                    }
 
-                    cga[3]='\0'; // cut at newline
-                    uint8_t cgaint=(uint8_t) atoi(cga);
+//                    cga[3]='\0'; // cut at newline
+//                    uint8_t cgaint=(uint8_t) atoi(cga);
 
-                    // performs checks on channel assignement
-                    if (check_cga_assignment(cgaint))
-                        files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgaint;
-                    else
-                    {
-                        if (globals.debugging) foutput("%s", ERR "Found illegal channel group assignement value, using standard settings.");
-                        files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgadef[files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].channels-1];
-                    }
-                }
-                else
-                    files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgadef[files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].channels-1];
+//                    // performs checks on channel assignement
+//                    if (check_cga_assignment(cgaint))
+//                        files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgaint;
+//                    else
+//                    {
+//                        if (globals.debugging) foutput("%s", ERR "Found illegal channel group assignement value, using standard settings.");
+//                        files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgadef[files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].channels-1];
+//                    }
+//                }
+//                else
+//                    files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgadef[files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].channels-1];
 
 
 
             }
 
-            nt++;
+            ++nt;
         }
 
         while (1);
 
-        ng++;
+        ++ng;
     }
 
     if (action != READTRACKS) foutput(MSG_TAG "%d groups/subdirectories were parsed; ngroups=%d\n", control, ngroups);
@@ -269,109 +277,128 @@ static int check_ignored_extension(void *path)
     if ((dotloc =  strrchr(path, '.')) == NULL) return (1);
 
     while (num--)
-        if (strncmp(dotloc,ign_extension[num],NUMCHAR) == 0) return (1);
+    {
+        if (strncmp(dotloc, ign_extension[num], NUMCHAR) == 0)
+            return (1);
+    }
+
     return (0);
 }
 
-int parse_disk(DIR* dir, mode_t mode, extractlist  *extract, const char* player)
+int parse_disk(const char* audiots_chain, mode_t mode, extractlist  *extract)
 {
-
-    char ngroups_scan=0, control=0;
+    char ngroups_scan=0;
     struct dirent *rootdirent;
 
-    if ((globals.debugging)&& (!globals.nooutput))
-        foutput(INF "Extracting to %s\n", globals.settings.outdir);
+    if (globals.debugging && ! globals.nooutput)
+        foutput(INF "Extracting to %s\n",
+                globals.settings.outdir);
 
-
-    while ((rootdirent=readdir(dir) )!= NULL)
+    globals.fixwav_prepend = true;
+     
+    DIR* dir;
+    
+    if ((dir = opendir(audiots_chain)) == NULL)
+    {
+        foutput("%s\n", audiots_chain);
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not open input directory")
+    }
+    
+   
+    while ((rootdirent = readdir(dir) )!= NULL)
     {
         if (rootdirent->d_name[0] == '.') continue;
 
-        char * d_name_duplicate=strdup(rootdirent->d_name);
+        char *d_name_duplicate = strdup(rootdirent->d_name);
+        
         // duplicating is necessary as strtok alters its first argument
 
         if (d_name_duplicate == NULL)
+        {
             EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "strdup error while parsing disk")
+        }
 
-            // filenames must end in "_0.IFO" and begin in "ATS_"
-            if (strcmp(strtok(d_name_duplicate , "_"), "ATS")) continue;
+        // filenames must end in "_0.IFO" and begin in "ATS_"
+                    
+        if (strcmp(strtok(d_name_duplicate , "_"), "ATS"))
+        continue;
+        
         /* ngroups_scan is XX in ATS_XX_0.IFO  */
 
-        char buffer[3]= {0,0,0};
+        char buffer[3]= {0, 0, 0};
 
         memcpy(buffer, strtok(NULL , "_"), 3);
-        ngroups_scan= (char) atoi(&buffer[0]);
+        ngroups_scan = (char) atoi(buffer);
 
         // does not extract when an extract list (!=NULL) is given and buffer != a list member.
-        if (extract != NULL)
-            if ( (ngroups_scan-extract->extracttitleset[0])
-                    *(ngroups_scan-extract->extracttitleset[1])
-                    *(ngroups_scan-extract->extracttitleset[2])
-                    *(ngroups_scan-extract->extracttitleset[3])
-                    *(ngroups_scan-extract->extracttitleset[4])
-                    *(ngroups_scan-extract->extracttitleset[5])
-                    *(ngroups_scan-extract->extracttitleset[6])
-                    *(ngroups_scan-extract->extracttitleset[7])
-                    *(ngroups_scan-extract->extracttitleset[8]))
-                continue;
+        
+        if (ngroups_scan < 1  || ngroups_scan > 9)
+        {
+           EXIT_ON_RUNTIME_ERROR_VERBOSE("Erreur de nommage des fichiers ATS :  le premier chiffre doit être compris entre 01 et 09.")
+        }
+        
+        if (extract->extracttitleset[ngroups_scan - 1] != 1)
+        continue;
 
-        if (strcmp(strtok(NULL , "_"), "0.IFO")) continue;
+        // Selecting IFO files only
+        
+        if (strcmp(strtok(NULL , "_"), "0.IFO"))
+        continue;
 
         FREE(d_name_duplicate)
 
-
-        char  mesg[11]="Extracting";
-        if (player)
-            strcpy(mesg,"Playing");
-
-        if ((globals.debugging)&& (!globals.nooutput))
-          foutput(INF "%s%s%s%s",mesg," titleset ", rootdirent->d_name," ...\n");
+        char  mesg[11] = "Extracting";
+        
+        if (globals.debugging && ! globals.nooutput)
+        {
+          foutput(INF "%s%s%s%s",
+                  mesg,
+                  " titleset ",
+                  rootdirent->d_name,
+                  " ...\n");
+        }
 
         char output_buf[strlen(globals.settings.outdir) + 3 + 1];
 
-        if (player == NULL)
-        {
-            STRING_WRITE_CHAR_BUFSIZ(output_buf, "%s%s%d", globals.settings.outdir, "/g", ngroups_scan)
-            if (!globals.nooutput)
-                secure_mkdir(output_buf, mode);
+        STRING_WRITE_CHAR_BUFSIZ(output_buf,
+                                 "%s%s%d",
+                                 globals.settings.outdir,
+                                 "/g",
+                                 ngroups_scan)
 
-            if ((globals.debugging)&& (!globals.nooutput))
-                foutput(INF "Extracting to directory %s ...\n", output_buf);
+        change_directory(globals.settings.workdir);
+
+        if (! globals.nooutput)
+        {
+            secure_mkdir(output_buf, mode);
+        }
+
+        if (globals.debugging && ! globals.nooutput)
+        {
+            foutput(INF "Extracting to directory %s ...\n",
+                    output_buf);
+        }
+
+        change_directory(audiots_chain);
+
+        if (ats2wav(ngroups_scan,
+                    audiots_chain,
+                    output_buf,
+                    extract) == EXIT_SUCCESS)
+        {
+            if  (globals.debugging)
+                foutput("%s\n",
+                        INF "Extraction completed.");
         }
         else
-            STRING_WRITE_CHAR_BUFSIZ(output_buf, "%s", globals.settings.tempdir )
-
-            if (ats2wav(rootdirent->d_name, output_buf) == EXIT_SUCCESS)
-            {
-                control++;
-                if  (globals.debugging)
-                if (player == NULL)
-                    foutput("%s\n", INF "Extraction completed.");
-            }
-            else
-            {
-                if (player == NULL) foutput(INF "Error extracting audio in titleset %d\n", ngroups_scan);
-                else   foutput("%s", INF "Error playing audio.\n");
-                continue;
-            }
-
-
+        {
+            foutput(INF "Error extracting audio in titleset %d\n",
+                    ngroups_scan);
+            
+            continue;
+        }
     }
 
-    if  (globals.debugging)
-        switch (control)
-        {
-        case 1:
-            foutput("%s", MSG_TAG "One group was extracted/played.\n");
-            break;
-        case 0:
-            foutput("%s", MSG_TAG "No group was extracted/played.\n");
-            break;
-        default:
-            foutput("\n" MSG_TAG "%d groups were extracted/played.\n", control);
-        }
-
-
-    return control;
+    closedir(dir);
+    return ngroups_scan;
 }
-

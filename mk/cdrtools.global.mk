@@ -1,0 +1,9 @@
+cdrtools_LIB=
+cdrtools_LINK=
+MAYBE_cdrtools=
+HAVE_cdrtools=@HAVE_cdrtools@
+HAVE_EXTERNAL_cdrtools=@HAVE_EXTERNAL_cdrtools@
+CONFIGURE_cdrtools_FLAGS=
+cdrtools_BUILD=
+WITH_cdrtools=@WITH_cdrtools@
+cdrtools_DEPENDENCY=Makefile /home/fab/Desktop/dvda-author-dev/

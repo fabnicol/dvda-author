@@ -1058,7 +1058,7 @@ void change_directory(const char * filename)
         {
            if (NULL != filename)
            {
-             fprintf(stderr, ERR "Impossible to cd to %s \n.", filename);
+             fprintf(stderr, ERR "Impossible to cd to %s.\n", filename);
              perror(ANSI_COLOR_RED"\n[ERR]");
            }
            else   
@@ -1203,13 +1203,34 @@ void stat_file_wrapper(const char *filename, void *total_size, void GCC_UNUSED *
  * Computes the non-recursive sum of root-directory file sizes in a given directory.
  * Note : for the whole (recursive) size, taking the stat st_size value would do the trick */
 
+void fill_pics(const char *filename, void *a, void GCC_UNUSED *unused){
+  
+    static char** array;
+    static int k;
+    array = (char**) a + k++;
+    *array = strdup(filename);
+    a = (void*) array;
+}
+
+_Bool is_file(const char* path) {
+    struct stat buf;
+    stat(path, &buf);
+    return S_ISREG(buf.st_mode);
+}
+
+_Bool is_dir(const char* path) {
+    struct stat buf;
+    stat(path, &buf);
+    return S_ISDIR(buf.st_mode);
+}
+
 int stat_dir_files(const char* src)
 {
     struct stat buf;
     if (stat(src, &buf) == -1)
     {
         perror("\n"ERR "Directory not recognized.\n");
-        exit(EXIT_FAILURE);
+        return(errno);
     }
 
     printf("%c", '\n');

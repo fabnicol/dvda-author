@@ -244,7 +244,7 @@ m4_map([DVDA_TEST_AUX],[
 		[],
 		[],
 		[WEBSITE/utils],
-		[5c895985cb39bf1b8f7610ca5517e85b]
+		[57ea644856b7013546cb7fa0b5978d05]
 	    ],
 	    [
 		[mjpegtools-download],
@@ -319,16 +319,16 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
       [[libiberty],[[[getopt.h],[getopt  getopt_long]],[[stdlib.h],[getsubopt]],
 		[[string.h],[strchrnul]],           [[strndup.h],[strndup]]],[static]]])
 
-    # to be invoked after ENABLE and WITH features
+    # to be invoked after ENABLE and WITH features 
     # insert here application-specific macros that cannot be inserted in another file
 
  # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
 
     DVDA_CONFIG_LIBRARY_LOCAL_INSTALL([
-     [[[sox],[sox-14.4.2]],  [--without-libltdl --without-sndfile --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-magic --disable-fast-install --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
-     [[[libogg],[libogg-1.3.2]],  [--prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]],
+     [[[sox],[sox-14.4.2]],  [--without-libltdl --without-sndfile --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-magic --disable-fast-install --prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]],
+     [[[libogg],[libogg-1.3.2]],  [--prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]],
      [[[FLAC],[flac-1.3.1]],[--enable-static --disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg" \
-       --disable-thorough-tests --disable-oggtest --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include"]]])
+       --disable-thorough-tests --disable-oggtest --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]]])
        
      # installing binaries, normally executables
 
@@ -342,7 +342,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	       [[[lplex], [lplex-0.3]], [--prefix="$BUILDDIR/local" --disable-shared ROOTDIR=$ROOTDIR/lplex-0.3 --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
 	       [[[mjpegtools], [mjpegtools-2.1.0]],
 			       [ --prefix="$BUILDDIR/local" 
-				 --disable-shared  --enable-static --enable-static-build --disable-fast-install --prefix="$BUILDDIR/local" --without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime --disable-simd-accel LIBDIR=/lib LDFLAGS=-L/lib CPPFLAGS=-I/include]],
+				 --disable-shared  --enable-static --enable-static-build --disable-fast-install --prefix="$BUILDDIR/local" --without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime --disable-simd-accel LIBDIR=/lib LDFLAGS=-L/lib CXXFLAGS=-fPIC  CFLAGS=-fPIC CPPFLAGS=-I/include ]],
 	       [[[cdrtools],[cdrtools-3.02]],[--prefix="$BUILDDIR/local"]],
 	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
 	       [[[libmpeg2],[libmpeg2-0.5.1]],[--prefix="$BUILDDIR/local"]],
@@ -353,7 +353,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	    [
 	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --enable-default-video-format=$VIDEO_FORMAT --prefix="$BUILDDIR/local"]],
 	       [[[lplex], [lplex-0.3]], [--prefix="$BUILDDIR/local" --disable-shared ROOTDIR=$ROOTDIR/lplex-0.3 --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include" CPPFLAGS=-I$ROOTDIR/lplex-0.3/redist]],
-	       [[[mjpegtools], [mjpegtools-2.1.0]],[--without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime  --without-pic --disable-shared --enable-static-build --enable-static  --disable-fast-install --prefix="$BUILDDIR/local"]],
+	       [[[mjpegtools], [mjpegtools-2.1.0]],[--without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime   --disable-shared --enable-static-build --enable-static  --disable-fast-install  --prefix="$BUILDDIR/local"  CXXFLAGS=-fPIC  CFLAGS=-fPIC]],
 	       [[[cdrtools],[cdrtools-3.02]],[--prefix="$BUILDDIR/local"]],
 	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
 	       [[[libmpeg2],[libmpeg2-0.5.1]], [--prefix="$BUILDDIR/local"]],

@@ -119,6 +119,7 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
                 command->files[group][track].newtitle = 1;
 
             // PATCH 02 Dec 09 && 12.06
+            
             if (command->files[group][track].newtitle)
             {
                 ++totaltitles;
@@ -141,27 +142,26 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
       if (titlelength[group] == NULL || ntitlepics[group] == NULL || ntitletracks[group] == NULL)
             EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Memory allocation, title track count in AMG")
                     
-     track=0;
+      track=0;
       
       for (int title = 0; title < ntitles[group]; ++title)
       {
-        
-        while (track < ntracks[group] && (ntitletracks[group][title] == 0 || !command->files[group][track].newtitle))
+        while (track < ntracks[group] && (ntitletracks[group][title] == 0 || ! command->files[group][track].newtitle))
         {
            ++ntitletracks[group][title];
            titlelength[group][title] += command->files[group][track].PTS_length;
 
-            if (img)
+           if (img)
             {
                ntitlepics[group][title] += (img->npics)? img->npics[track] : 1;
             }
   
-         track++;
+          ++track;
         } 
-        
       }
       
       maxntracks = MAX(track, maxntracks); 
+      
       if (globals.debugging)  
           foutput(INF "Number of titles for group %d is %d\n",group, ntitles[group]);
       
@@ -998,13 +998,7 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
     uint32_copy(&amg[0xc8], 2);  	// Pointer to sector 3
     uint32_copy(&amg[0xcc], (menusector)? 3 : 0);  	// Pointer to sector 4
     uint32_copy(&amg[0xd4], (globals.text)? 3+(menusector) : 0);  	// Pointer to sector 4 or 5
-    uint32_copy(&amg[0x100], (menusector)? 0x53000000 :
-                                       #ifdef USE_SET1
-                                           0
-                                       #else
-                                           0x1E000000
-                                       #endif
-                                           ); // Unknown;  // 0 used to be uset in SET1
+    uint32_copy(&amg[0x100], (menusector)? 0x53000000 : 0); // Unknown;  // 0x1E000000 used to be uset in SET2
 
     uint32_copy(&amg[0x154], (menusector)? 0x00010000 : 0); // Unknown;
 
@@ -1046,7 +1040,10 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
         ++titleintitleset;
         if (titleintitleset == numtitles[titleset])
         {
-            sectoroffset[titleset + 1] = sectoroffset[titleset] + (command->files[titleset][ntracks[titleset] - 1].last_sector + 1)+sectors->atsi[titleset] * 2;
+            sectoroffset[titleset + 1] = sectoroffset[titleset] + 
+                    (command->files[titleset][ntracks[titleset] - 1].last_sector + 1) 
+                    + sectors->atsi[titleset] * 2;
+            
             if (globals.veryverbose)
             {
                 if (titleset == 0)

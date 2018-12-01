@@ -80,6 +80,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
     */
 
     absolute_sector_offset=(uint32_t) startsector + sectors->samg + 2*(sectors->amg + sectors->asvs) + sectors->topvob + sectors->stillvob +sectors->atsi[0];
+    
     if (globals.veryverbose) 
         foutput("\n"DBG "Using absolute sector offset %d=%d+%d+2.(%d+%d)+%d+%d+%d\n\n", 
                 absolute_sector_offset,
@@ -94,107 +95,94 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
     
     /* Videolinking groups always come last (highest ranks) */
 
-    for (g=0; g<ngroups-nvideolinking_groups; g++)
+    for (g = 0; g < ngroups - nvideolinking_groups; ++g)
     {
-
-        for (j=0; j<ntracks[g]; j++)
+        for (j = 0; j < ntracks[g]; ++j)
         {
-
-            i+=2;
-            samg[i]=g+1;
-            i++;
-            samg[i]=j+1;
-            i++;
-
-            uint32_copy(&samg[i],files[g][j].first_PTS);
+            i += 2;
+            
+            samg[i] = g + 1;
+            ++i;
+            samg[i] = j + 1;
+            ++i;
+            uint32_copy(&samg[i], files[g][j].first_PTS);
             i+=4;
-            uint32_copy(&samg[i],files[g][j].PTS_length);
+            uint32_copy(&samg[i], files[g][j].PTS_length);
             i+=4;
             i+=4;
-            if (j==0)
+            
+            if (j == 0)
             {
-                samg[i]= (files[g][j].channels > 2)? 0xc0 : 0xc8;
+                samg[i] = (files[g][j].channels > 2)? 0xc0 : 0xc8;
             }
             else
             {
-                samg[i]=0x48;
+                samg[i] = 0x40;
+            }
+
+            ++i;
+
+            if (files[g][j].channels > 2)
+            {
+                switch (files[g][j].bitspersample)
+                {
+                    case 16:
+                        samg[i]=0x00;
+                        break;
+                    case 20:
+                        samg[i]=0x11;
+                        break;
+                    case 24:
+                        samg[i]=0x22;
+                        break;
+                    default:
+                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Unsupported bit rate (channels > 2)")
+                }
+            }
+            else
+            {
+                switch (files[g][j].bitspersample)
+                {
+                    case 16:
+                        samg[i]=0x0f;
+                        break;
+                    case 20:
+                        samg[i]=0x1f;
+                        break;
+                    case 24:
+                        samg[i]=0x2f;
+                        break;
+                    default:
+                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Unsupported bit rate (channels <= 2)")
+                }
             }
 
             i++;
 
             if (files[g][j].channels > 2)
             {
-
-                switch (files[g][j].bitspersample)
-                {
-
-                case 16:
-                    samg[i]=0x00;
-                    break;
-                case 20:
-                    samg[i]=0x11;
-                    break;
-                case 24:
-                    samg[i]=0x22;
-                    break;
-
-                default:
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Unsupported bit rate")
-                }
-
-            }
-            else
-            {
-
-                switch (files[g][j].bitspersample)
-                {
-
-                case 16:
-                    samg[i]=0x0f;
-                    break;
-                case 20:
-                    samg[i]=0x1f;
-                    break;
-                case 24:
-                    samg[i]=0x2f;
-                    break;
-
-                default:
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Unsupported bit rate")
-
-                }
-            }
-
-
-            i++;
-
-            if (files[g][j].channels > 2)
-            {
-
                 switch (files[g][j].samplerate)
                 {
-
-                case 48000:
-                    samg[i]=0x00;
-                    break;
-                case 96000:
-                    samg[i]=0x11;
-                    break;
-                case 192000:
-                    samg[i]=0x22;
-                    break;
-                case 44100:
-                    samg[i]=0x88;
-                    break;
-                case 88200:
-                    samg[i]=0x99;
-                    break;
-                case 176400:
-                    samg[i]=0xaa;
-                    break;
-                default:
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Unsupported bit rate")
-
+                    case 48000:
+                        samg[i]=0x00;
+                        break;
+                    case 96000:
+                        samg[i]=0x11;
+                        break;
+                    case 192000:
+                        samg[i]=0x22;
+                        break;
+                    case 44100:
+                        samg[i]=0x88;
+                        break;
+                    case 88200:
+                        samg[i]=0x99;
+                        break;
+                    case 176400:
+                        samg[i]=0xaa;
+                        break;
+                    default:
+                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Unsupported sample rate (channels > 2)")
                 }
             }
             else
@@ -222,46 +210,34 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
                     samg[i]=0xaf;
                     break;
                 default:
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Unsupported bit rate")
+                    fprintf(stderr, ERR "Sample rate : %d - Group %d - Track %d\n", files[g][j].samplerate, g, j);
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Unsupported sample rate (channels <= 2)")
                 }
             }
-            i++;
+            
+            ++i;
             samg[i]= files[g][j].cga;
+            ++i;
 
-            switch (files[g][j].channels)
-            {
-            case 1:
-                samg[i]=0;
-                break;
-            case 2:
-                samg[i]=1;
-                break;
-            case 3:
-                samg[i]=2;
-                break; // L-R-S   other 3-ch configs could be supported -- laf
-            case 4:
-                samg[i]=3;
-                break;
-            case 5:
-                samg[i]=6;
-                break; // other 5-ch configs could be supported -- laf
-            case 6:
-                samg[i]=20;
-                break;
-            default:
-                foutput(ERR "samg: Unsupported number of channels (%d)\n",files[g][j].channels);
-                clean_exit(EXIT_FAILURE);
-            }
-
-            samg[i]=files[g][j].cga;
-
-            i+=21;
-                 
-            uint32_copy(&samg[i],absolute_sector_offset+files[g][j].first_sector);
+            i += 4;
+            uint16_copy(&samg[i],0x1eff);
+            i += 2;
+            uint16_copy(&samg[i],0xff1e);
+            i += 2;
+            uint16_copy(&samg[i],0x2d2d);
+            i += 2;
+            uint16_copy(&samg[i],0x3cff);
+            i += 2;
+            uint16_copy(&samg[i],0xff3c);
+            i += 2;
+            uint16_copy(&samg[i],0x4b4b);
+            i += 6;
+                             
+            uint32_copy(&samg[i], absolute_sector_offset + files[g][j].first_sector);
             i+=4;
-            uint32_copy(&samg[i],absolute_sector_offset+files[g][j].first_sector);
+            uint32_copy(&samg[i], absolute_sector_offset + files[g][j].first_sector);
             i+=4;
-            uint32_copy(&samg[i],absolute_sector_offset+files[g][j].last_sector);
+            uint32_copy(&samg[i], absolute_sector_offset + files[g][j].last_sector);
             i+=4;
 
             /* Memorizing last audio group and track processed */
