@@ -9,7 +9,7 @@
 
 typedef struct
 {
-    uint8_t  nextractgroup[1];
+    uint8_t  nextractgroup;
     uint8_t  extracttitleset[9];
     uint8_t  extracttrackintitleset[9][99];
 } extractlist;
@@ -46,18 +46,9 @@ typedef struct
     _Bool   mergeflag;
     _Bool   dvdv_compliant;
     // L&T Fedkamp addition
-    uint8_t joingap;
-    uint8_t single_track;
-    uint8_t contin;
-    uint8_t contin_track;
     uint8_t cga;
-    uint8_t join_flag;
-    //uint8_t byteorder_testmode;
     uint8_t newtitle;
-    uint8_t padd;
-    // L&T Feldkamp addition (multichannel)
-    uint8_t offset;
-    uint8_t rmdr;
+    uint8_t contin_track;
     // L&T Feldkamp addition (multichannel)
     uint16_t sampleunitsize;
     uint32_t samplerate;
@@ -77,7 +68,8 @@ typedef struct
     uint8_t midpack_pes_padding;
     // L&T Feldkamp addition (multichannel)
     uint64_t numsamples;
-    uint64_t numbytes; // theoretical file size
+    uint64_t numbytes; // theoretical audio size
+    uint64_t wav_numbytes; // wav audio size
     uint64_t file_size; // file size on disc
     uint64_t *channel_size; // channel size on disc
     uint64_t bytesperframe;
@@ -87,7 +79,6 @@ typedef struct
     audio_input_t* audio;  // Used whilst decoding.
     char *filename;
     char **given_channel;
-
 } fileinfo_t;
 
 typedef struct
@@ -227,12 +218,9 @@ typedef struct
     _Bool maxverbose;
     _Bool veryverbose;
     _Bool debugging;
-    #if 0
     _Bool padding;
     _Bool padding_continuous;
-    _Bool minimal_padding;
     _Bool lossy_rounding;
-    #endif
     _Bool rungrowisofs;
 #ifndef WITHOUT_sox
     _Bool sox_enable;

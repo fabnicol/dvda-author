@@ -15,29 +15,13 @@
 #include <stdint.h>
 #include "structures.h"
 #include "libiberty.h"
-
-typedef struct
-{
-    FILE* fpout;
-    const char* filename;
-    int samplerate;
-    uint8_t channels;
-    uint8_t bitspersample;
-    int ntracks;
-    int started;
-    uint64_t last_sector;
-    uint64_t first_sector;
-    uint64_t numsamples;
-    uint64_t numbytes;
-    uint64_t byteswritten;
-    uint64_t pts_length;
-
-} _fileinfo_t;
+#include "fixwav_manager.h"
 
 #define BUFFER_SIZE 3*2048
-int ats2wav(const char* filename, const char* outdir);
 
-int get_ats_audio_i(int, fileinfo_t[9][99]);
+int ats2wav(short ngroups_scan, const char* audiots_dir, const char* outdir, const extractlist* extract);
+
+int get_ats_audio_i(int, fileinfo_t[9][99], WaveData *info);
 int get_ats_audio();
 
 #endif

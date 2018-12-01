@@ -43,6 +43,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 extern globalData globals;
 extern uint8_t channels[21];
+static uint8_t cgadef[]={0,  1,  7,  3,   16,   17};
 
 /* pack_scr was taken from mplex (part of the mjpegtools) */
 #define MARKER_MPEG2_SCR 1
@@ -52,7 +53,7 @@ inline void pack_scr(uint8_t scr_bytes[6],uint64_t SCR_base, uint16_t SCR_ext)
     uint64_t msb, lsb;
 
     msb = (SCR_base>> 32) & 1;
-    lsb = SCR_base ;
+    lsb = SCR_base & (0xFFFFFFFF);
     temp = (MARKER_MPEG2_SCR << 6) | (msb << 5) | ((lsb >> 27) & 0x18) | 0x4 | ((lsb >> 28) & 0x3);
     scr_bytes[0]=temp;
     temp = (lsb & 0x0ff00000) >> 20;
@@ -67,10 +68,6 @@ inline void pack_scr(uint8_t scr_bytes[6],uint64_t SCR_base, uint16_t SCR_ext)
     scr_bytes[5]=temp;
 }
 
-//  ((scr_bytes[0] >> 3) & 0x3)       | ((scr_bytes[0] & 0x3) << 28) | (scr_bytes[1] << 20)  | (scr_bytes[2] >> 3) | ((scr_bytes[2] & 0x3) << 13)   | (scr_bytes[3] << 5) | (scr_bytes[4] >> 3)
-//Ox439E80 =
-
-
 inline static void decode_SCR(uint8_t* scr_bytes, uint64_t* SCRint_ptr)
 {
     uint64_t SCR_base = (scr_bytes[0] >> 3 & 0x7) << 30 | (scr_bytes[0] & 0x3) << 28 |
@@ -81,7 +78,8 @@ inline static void decode_SCR(uint8_t* scr_bytes, uint64_t* SCRint_ptr)
 
     *SCRint_ptr = SCR_base * 300 + SCR_ext;
 
-    if (globals.logdecode) fprintf(aob_log, "NA;SCR_base;%" PRIu64 ";SCR_ext;%" PRIu64 ";SCR_int;%" PRIu64 "\n", SCR_base, SCR_ext, *SCRint_ptr);
+    if (globals.logdecode)
+        fprintf(aob_log, "INF;SCR_base: ;%" PRIu64 ";SCR_ext: ;%" PRIu64 ";SCR_int: ;%" PRIu64 ";\n", SCR_base, SCR_ext, *SCRint_ptr);
 }
 
 #if 0 // not used
@@ -135,7 +133,7 @@ inline static void decode_pts(uint8_t P[5], uint64_t* pts_ptr)
     *pts_ptr = (P[0] >> 1 & 0x3) << 30 | P[1] << 22 | (P[2] >> 1) << 15 | P[3] << 7 | P[4] >> 1;
 
     if (globals.logdecode)
-        fprintf(aob_log, "NA;PTS déc.;%" PRIu64 "\n", *pts_ptr);
+        fprintf(aob_log, "INF;PTS décode;%08lX ;;;;\n", *pts_ptr);
 }
 
 uint8_t pack_start_code[4]={0x00,0x00,0x01,0xBA};
@@ -237,7 +235,11 @@ inline static void write_pes_padding(FILE* fp, uint16_t length)
     }
 
     if (length > 6)
+    {
       length-=6; // We have 6 bytes of PES header.
+      if (globals.maxverbose)
+          foutput("%s %d %s\n", INF " Padding with ", length, " bytes.");
+    }
     else
     {
         foutput("%s\n", ERR "pes_padding length must be higher than 6;");
@@ -245,18 +247,12 @@ inline static void write_pes_padding(FILE* fp, uint16_t length)
     }
 
 
-    /* PATCH Sept 2016 - old 'Dave' code:
-     *  length_bytes[0]=(length&0xff00)>>8;
-     *  length_bytes[1]=(length&0xff);
-     *  Found new padding byte count pattern
-     */
-
-    length_bytes[0] = 0;
+    length_bytes[0] = (length & 0xFF00) >> 8;
 
     /* Take number of bytes to pad in sector (=2048-length)
-     * modulo 256 */
+     * */
 
-    length_bytes[1] = length % 0x100;
+    length_bytes[1] = length & 0xFF;
 
     uint8_t ff_buf[length];
 
@@ -266,6 +262,7 @@ inline static void write_pes_padding(FILE* fp, uint16_t length)
     /* offset_count += 1 */ fwrite(stream_id_padding, 1, 1, fp);
     /* offset_count += 2 */ fwrite(length_bytes, 2, 1, fp);
     /* offset_count += length */ fwrite(ff_buf, length, 1, fp);
+    
 }
 
 inline static void read_pes_padding(FILE* fp, uint16_t length)
@@ -287,7 +284,7 @@ inline static void read_pes_padding(FILE* fp, uint16_t length)
     }
     else
     {
-        foutput("%s\n", "[ERR]  pes_padding length must be higher than 6;");
+        foutput("%s\n", ERR "  pes_padding length must be higher than 6;");
         return;
     }
 
@@ -300,8 +297,8 @@ inline static void read_pes_padding(FILE* fp, uint16_t length)
     /* offset_count += 3 */ CHECK_FIELD(packet_start_code_prefix)
     /* offset_count += 1 */ CHECK_FIELD(stream_id_padding);
 
-    length_bytes[0]=0;
-    length_bytes[1]=length % 0x100;
+    length_bytes[0] = (length & 0xFF00) >> 8;
+    length_bytes[1] = length & 0xFF;
 
     /* offset_count += 2 */ CHECK_FIELD(length_bytes);
 
@@ -409,9 +406,6 @@ inline static uint16_t read_audio_pes_header(FILE* fp, uint8_t extension_flag, u
     return(PES_packet_len);
 }
 
-
-
-
 uint8_t sub_stream_id[1]={0xa0};
 uint8_t continuity_counter[1]={0x00};
 uint8_t LPCM_header_length[2];
@@ -496,7 +490,7 @@ inline static void write_lpcm_header(FILE* fp, uint8_t header_length,fileinfo_t*
         sample_rate[0] = high_nibble << 4 | high_nibble;
     }
 
-    channel_assignment[0] = info->cga;
+    channel_assignment[0] = cgadef[info->channels -1];
 
     bytes_written = pack_in_title == 0 ? 0 : (pack_in_title*info->lpcm_payload)-info->firstpackdecrement;
     // e.g., for 4ch, First pack is 1984, rest are 2000
@@ -523,7 +517,7 @@ inline static void write_lpcm_header(FILE* fp, uint8_t header_length,fileinfo_t*
     /* offset_count += */   fwrite(sample_size,1,1,fp);
     /* offset_count += */   fwrite(sample_rate,1,1,fp);
     /* offset_count += */   fwrite(unknown2,1,1,fp);
-    /* offset_count += */   fwrite(&channel_assignment,1,1,fp);
+    /* offset_count += */   fwrite(channel_assignment,1,1,fp);
     /* offset_count += */   fwrite(unknown3,1,1,fp);
     /* offset_count += (header_length-8) */
     fwrite(zero,header_length-8,1,fp);
@@ -583,7 +577,8 @@ inline static int read_lpcm_header(FILE* fp, fileinfo_t* info, int64_t pack_in_t
 
         if ((sample_rate[0] & 0xf) != 0xf)
         {
-            if (globals.logdecode) fprintf(aob_log, "%s", "NA;coherence_test;sample_rate and sample_size are incoherent (no 0xf lower nibble)\n");
+            if (globals.logdecode)
+                fprintf(aob_log, "%s", "ERR;coherence_test;sample_rate and sample_size are incoherent (no 0xf lower nibble);;;;;\n");
         }
 
     }
@@ -594,7 +589,7 @@ inline static int read_lpcm_header(FILE* fp, fileinfo_t* info, int64_t pack_in_t
 
         if ((sample_rate[0] & 0xf) != high_nibble)
         {
-            if (globals.logdecode) fprintf(aob_log, "%s", "NA;coherence_test;sample_rate and sample_size are incoherent (lower nibble != higher nibble)\n");
+            if (globals.logdecode) fprintf(aob_log, "%s", "ERR;coherence_test;sample_rate and sample_size are incoherent (lower nibble != higher nibble);;;;;\n");
         }
     }
 
@@ -615,12 +610,12 @@ inline static int read_lpcm_header(FILE* fp, fileinfo_t* info, int64_t pack_in_t
         if (info->channels <= 2)
         {
             if (unknown1[0] != 0x10)
-               fprintf(aob_log, "%s%d%s", "incorrect unknown1 lpcm header value: ", unknown1[0], " instead of expected 0x10.\n");
+               fprintf(aob_log, "%s%d%s", "ERR;incorrect unknown1 lpcm header value: ;", unknown1[0], "; instead of expected 0x10;;;;\n");
         }
     else
 
         if (unknown1[0] != 0)
-               fprintf(aob_log, "%s%d%s", "incorrect unknown1 lpcm header value: ", unknown1[0], " instead of expected 0.\n");
+               fprintf(aob_log, "%s%d%s", "ERR;incorrect unknown1 lpcm header value: ;", unknown1[0], "; instead of expected 0;;;;\n");
 
     }
 
@@ -660,21 +655,21 @@ ID\Chan 0   1   2   3   	4   5     info->channels
 
             if (header_length != info->firstpack_lpcm_headerquantity)
             {
-                if (globals.logdecode) fprintf(aob_log, "NA;info->firstpack_lpcm_headerquantity;Disk/Computed: %d;%d\n", header_length, info->firstpack_lpcm_headerquantity);
+                if (globals.logdecode) fprintf(aob_log, "WAR;info->firstpack_lpcm_headerquantity;Disk: ; %d; Computed: ; %d;;\n", header_length, info->firstpack_lpcm_headerquantity);
             }
             break;
 
         case  LAST_PACK:
             if (header_length != info->lastpack_lpcm_headerquantity)
             {
-                if (globals.logdecode) fprintf(aob_log, "NA;info->lastpack_lpcm_headerquantity;Disk/Computed: %d;%d\n", header_length, info->lastpack_lpcm_headerquantity);
+                if (globals.logdecode) fprintf(aob_log, "WAR;info->lastpack_lpcm_headerquantity;Disk: ;%d; Computed: ; %d;;\n", header_length, info->lastpack_lpcm_headerquantity);
             }
             break;
 
         case  MIDDLE_PACK:
             if (header_length != info->midpack_lpcm_headerquantity)
             {
-                if (globals.logdecode) fprintf(aob_log, "NA;info->midpack_lpcm_headerquantity;Disk/Computed: %d;%d\n", header_length, info->midpack_lpcm_headerquantity);
+                if (globals.logdecode) fprintf(aob_log, "WAR;info->midpack_lpcm_headerquantity;Disk: ; %d; Computed: ; %d;;\n", header_length, info->midpack_lpcm_headerquantity);
             }
     }
 
@@ -695,13 +690,13 @@ ID\Chan 0   1   2   3   	4   5     info->channels
     if (first_access_unit_pointer[0] != (frame_offset & 0xff00) >> 8)
     {
         foutput("%s\n", "first_access_unit_pointer: inaccurate bit 0");
-        if (globals.logdecode) fprintf(aob_log, "NA;first_access_unit_pointer byte 0 inaccurate; %d instead of %d\n", first_access_unit_pointer[0], (frame_offset & 0xff00) >> 8);
+        if (globals.logdecode) fprintf(aob_log, "ERR;first_access_unit_pointer byte 0 inaccurate; %d ; instead of;  %d;;;\n", first_access_unit_pointer[0], (frame_offset & 0xff00) >> 8);
     }
 
     if (first_access_unit_pointer[1] != (frame_offset & 0xff))
     {
         foutput("%s\n", "first_access_unit_pointer: inaccurate bit 1");
-        if (globals.logdecode) fprintf(aob_log, "NA;first_access_unit_pointer byte 1 inaccurate; %d instead of %d\n", first_access_unit_pointer[1], frame_offset & 0xff);
+        if (globals.logdecode) fprintf(aob_log, "ERR;first_access_unit_pointer byte 1 inaccurate; %d ; instead of; %d;;;\n", first_access_unit_pointer[1], frame_offset & 0xff);
     }
 
     /* offset_count += */   CHECK_FIELD(unknown3);
@@ -749,19 +744,58 @@ typedef struct
     uint64_t PTSint;
 } pts_t ;
 
-inline static uint64_t calc_SCR(uint64_t pack_in_title, pts_t *p)
+//inline static uint64_t calc_SCR(uint64_t pack_in_title, pts_t *p)
+//{
+//    uint64_t SCRint;
+
+//    if (pack_in_title==0) return 0;
+
+//    long double SCR = (p->PTS - p->PTS0) * 300.0;
+
+//    SCRint = (uint64_t) floor(SCR);
+
+//    // Delta SCR is simply Delta PTS x 300. Use calc_PTS!
+//    return(SCRint);
+//}
+
+
+inline static uint64_t calc_SCR(uint64_t pack_in_title, fileinfo_t* info) 
 {
-    uint64_t SCRint;
+  double SCR;
+  uint64_t SCRint;
 
-    if (pack_in_title==0) return 0;
+  SCR=(pack_in_title <= 4 ? pack_in_title : 4) * (2048.0 * 8.0 * 90000.0 * 300.0) / 10080000.0;
 
-    long double SCR = (p->PTS - p->PTS0) * 300.0;
+  if (info->bitspersample == 16) 
+  {
+      
+    if (pack_in_title >= 4) 
+    {
+      SCR += ((info->SCRquantity * 300.0 * 90000.0) / info->bytespersecond) - 42.85;
+    }
+    
+    if (pack_in_title >= 5)
+    {
+      SCR += (pack_in_title - 4.0) * ((info->lpcm_payload * 300.0 * 90000.0) / info->bytespersecond);
+    }
+    
+  } else {
+      
+    if (pack_in_title >= 4) 
+    {
+      SCR+=((info->SCRquantity * 300.0 * 90000.0) / info->bytespersecond) - 42.85;
+    }
+    
+    if (pack_in_title >= 5) 
+    {
+      SCR+=(pack_in_title - 4.0) * ((info->lpcm_payload * 300.0 * 90000.0) / info->bytespersecond);
+    }
+  }
 
-    SCRint = (uint64_t) floor(SCR);
-
-    // Delta SCR is simply Delta PTS x 300. Use calc_PTS!
-    return(SCRint);
+  SCRint=floor(SCR);
+  return SCRint;
 }
+
 
 
 inline static pts_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
@@ -771,13 +805,7 @@ inline static pts_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
     uint64_t PTSint;
     uint64_t bytes_written;
     long double frames_written;
-                              //16  44100    48000  88200  96000   //24   44100   48000   88200  96000
-      //double M_PTS[2][4] = {//3ch {1795.0, 1650.0, 897.0, 825.0},       {1197.0, 1100.0, 598.0, 550.0}};
-
-                              //4ch  1346.0
-
-      // Empirically PTS(br, sr, ch) = 5280 * 8 * 90000 / (br * sr * ch) = 5280 * 90000 / bytespersecond and M_PTS is floor(PTS(br, sr, ch))
-
+    
     if (info->bytespersecond == 0)
     {
         foutput(WAR "file %s has bytes per second=0\n", info->filename);
@@ -785,7 +813,7 @@ inline static pts_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
         return ptsnull;
     }
 
-    PTS0 = 5280.0 / ((double) info->bytespersecond);
+    PTS0 = 0x249;
 
     if (pack_in_title==0)
     {
@@ -824,17 +852,12 @@ inline static pts_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
                 break;
         }
 
-        /* There seems to be an empirical skew somewhere. Ugly, and to be removed as soon as can be */
 
-        double skew = (info->bitspersample == 16)? 1.0 + 0.007 * (info->channels == 6)
-                                                   : (1.0 + 0.003 * (info->channels > 2 ? info->channels - 2 : 0));
-
-        PTS = ((double) frames_written * k * 8)/((double) (info->samplerate))* skew + PTS0;
+        PTS = 90000.0 * ((double) frames_written * k * 8)/((double) (info->samplerate)) + PTS0;
+        
     }
-
-    PTS  *=  90000.0;
-    PTS0 *=  90000.0;
-
+   
+    
     PTSint=(uint64_t) floor(PTS);
 
     pts_t p = {PTS, PTS0, PTSint};
@@ -852,7 +875,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
     pts_t p = calc_PTS(info,pack_in_title);
 
     uint64_t PTS=p.PTS;
-    uint64_t SCR = calc_SCR(pack_in_title, &p);
+    uint64_t SCR = calc_SCR(pack_in_title, info);
 
     if (pack_in_title==0)
     {
@@ -866,6 +889,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         write_lpcm_header(fp,info->firstpack_lpcm_headerquantity,info,pack_in_title,cc);//info->firstpack_lpcm_headerquantity+4
         /* offset_count+= */
         uint64_t offset = ftello(fp);
+ 
         int res = fwrite(audio_buf,1,audio_bytes,fp);
         if (globals.maxverbose) fprintf(stderr, DBG "\n%" PRIu64 ": Writing %d bytes\n", offset, res);
 
@@ -882,6 +906,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         write_lpcm_header(fp,info->lastpack_lpcm_headerquantity,info,pack_in_title,cc); // +info->lastpack_lpcm_headerquantity +4
         /* offset_count+= */
         uint64_t offset = ftello(fp);
+   
         int res = fwrite(audio_buf,1,audio_bytes,fp);
         if (globals.maxverbose) fprintf(stderr, DBG "%" PRIu64 ": Writing %d bytes\n", offset, res);
         // PATCH Dec. 2013
@@ -901,12 +926,12 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         write_pack_header(fp,SCR); //+14
         write_audio_pes_header(fp,info->midpack_audiopesheaderquantity,0,PTS);//+14
 
-        //PATCH Dec. 2013: reset continuity counters at start of file
-        if (start_of_file) cc=0;
-
         write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,pack_in_title,cc); //info->midpack_lpcm_headerquantity+4
+        //PATCH May. 2018: reset continuity counters at start of file
+        if (start_of_file) cc=0x1f;
         /* offset_count+= */
         uint64_t offset = ftello(fp);
+   
         int res = fwrite(audio_buf,1,audio_bytes,fp);
         if (globals.maxverbose) fprintf(stderr, DBG "%" PRIu64 ": Writing %d bytes\n", offset, res);
 
@@ -985,7 +1010,7 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
     if (globals.logdecode)
     {
         open_aob_log();
-        fprintf(aob_log, "NA;Reading %s packet - pack;%"PRIu64";title;%d\n",
+        fprintf(aob_log, ";;;;;;;\nNEW;Reading; %s ; packet - pack;%"PRIu64";title;%d;\n",
                 POS,
                 pack_in_title,
                 title);
@@ -1014,13 +1039,13 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
 
     /* 14 + (3) + 4 + header_length = 18 + (3) + header_length = offset1-offset */
 
-    if (18 + (position == FIRST_PACK ? 3 : 0) + header_length != offset1 - offset)
+    if ((uint64_t) 18 + (position == FIRST_PACK ? 3 : 0) + header_length != offset1 - offset)
     {
         if (globals.logdecode)
         {
             open_aob_log();
-            fprintf(aob_log, "NA;header_length issue in read_lpcm_header at pack %" PRIu64 ", position %d\n", pack_in_title, position);
-            fprintf(aob_log, "NA;header_length %d, expected: %" PRIu64 "\n", header_length, offset1 - offset - 18 - (position == FIRST_PACK ? 3 : 0));
+            fprintf(aob_log, "ERR;header_length issue in read_lpcm_header at pack: ; %" PRIu64 "; position %d;;;;\n", pack_in_title, position);
+            fprintf(aob_log, "ERR;header_length: ; %d; expected: %" PRIu64 ";;;;\n", header_length, offset1 - offset - 18 - (position == FIRST_PACK ? 3 : 0));
             close_aob_log();
         }
     }
@@ -1042,7 +1067,7 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
                 {
                     open_aob_log();
                     fprintf(aob_log,
-                            "NA;firstpack_audiopesheaderquantity issue in read_audio_pes_header at pack %" PRIu64 ", title %d, position %d\n",
+                            "ERR;firstpack_audiopesheaderquantity issue in read_audio_pes_header at pack: ; %" PRIu64 "; title: ;%d; position: ;%d;\n",
                             pack_in_title,
                             title,
                             position);
@@ -1092,7 +1117,7 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
         if (globals.logdecode)
         {
             open_aob_log();
-            fprintf(aob_log, "NA;PTS issue at pack %" PRIu64 ", position %d. Disc/Computed:;%" PRIu64 ";%" PRIu64 "\n",
+            fprintf(aob_log, "ERR;PTS issue at pack: ; %" PRIu64 "; position: %d; Disc: ;%" PRIu64 "; Computed: ;%" PRIu64 "\n",
                     pack_in_title,
                     position,
                     PTS,
@@ -1103,12 +1128,12 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
     }
 
     uint64_t SCR_calc;
-    if (SCR != (SCR_calc = calc_SCR(pack_in_title, &pts_calc)))
+    if (SCR != (SCR_calc = calc_SCR(pack_in_title, info)))
     {
         if (globals.logdecode)
         {
             open_aob_log();
-            fprintf(aob_log, "NA;SCR issue at pack %" PRIu64 ", position %d. Disc/Computed:;%" PRIu64 ";%" PRIu64 "\n",
+            fprintf(aob_log, "ERR; SCR issue at pack: ; %" PRIu64 "; position: %d; Disc: ;%" PRIu64 "; Computed: ;%" PRIu64 "\n",
                     pack_in_title,
                     position,
                     SCR,
@@ -1122,11 +1147,15 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
     /* offset_count+= audio_bytes */
 
     int result = fread(audio_buf, 1, audio_bytes,fp);
-    open_aob_log();
-    fprintf(aob_log, "NA;Read %d audio_bytes\n", result);
-    hex2file(aob_log, audio_buf, result > 16 ? 16 : result);
-    fprintf(aob_log, "%s", "\n");
-    close_aob_log();
+
+    if (globals.logdecode)
+    {
+        open_aob_log();
+        fprintf(aob_log, "INF;Read %d audio_bytes;;;;;;\n", result);
+        //hex2file_csv(aob_log, audio_buf, result > 16 ? 16 : result);
+        //fprintf(aob_log, "%s", ";;;;;;;\n");
+        close_aob_log();
+    }
 
     // info->midpack_pes_padding + info->lpcm_payload + 38 + info->first/mid/last/pack_lpcm_headerquantity
 
@@ -1165,10 +1194,13 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
     }
 
     uint64_t sector_length = ftello(fp) - offset0;
-    open_aob_log();
-    fprintf(aob_log, "NA;midpack_lpcm_headerquantity;%d;midpack_pes_padding;%d;bitspersample;%d;samplerate;%d\n", info->midpack_lpcm_headerquantity, info->midpack_pes_padding,info->bitspersample, info->samplerate);
-    fprintf(aob_log, "NA;-----;%" PRIu64 "; bytes;------;title pack;%" PRIu64 ";title;%d\n", sector_length, pack_in_title, title);
-    close_aob_log();
+    if (globals.logdecode)
+    {
+        open_aob_log();
+        fprintf(aob_log, "INF;midpack_lpcm_headerquantity;%d;midpack_pes_padding;%d;bitspersample;%d;samplerate;%d\n", info->midpack_lpcm_headerquantity, info->midpack_pes_padding,info->bitspersample, info->samplerate);
+        fprintf(aob_log, "INF;sector length: ; %lu  bytes;------;title pack: ; %lu ; title: ;%d\n", sector_length, pack_in_title, title);
+        close_aob_log();
+    }
     return(position);
 }
 
@@ -1181,11 +1213,11 @@ int decode_ats()
     fileinfo_t files;
     int result = 0;
 
-    fp=fopen(globals.aobpath[0],"rb");
+    fp = fopen(globals.aobpath[0],"rb");
 
     if (fp == NULL)
     {
-        foutput("%s%s%s", "[ERR]  Could not open AOB file *", globals.aobpath[0],"*\n");
+        foutput("%s%s%s", ERR "Could not open AOB file *", globals.aobpath[0],"*\n");
         return(-1);
     }
 
@@ -1229,13 +1261,12 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
         EXIT_ON_RUNTIME_ERROR
     }
 
-    n=audio_read(&files[i], audio_buf, sizeof(audio_buf));
-    bytesinbuf=n;
-
+    audio_read(&files[i], audio_buf, &bytesinbuf);
+    
     lpcm_payload = files[i].lpcm_payload;
 
     files[i].first_sector=0;
-    files[i].first_PTS=calc_PTS(&files[i], 0).PTSint;
+    files[i].first_PTS=calc_PTS(&files[i], 0).PTS0;
 
     foutput(INF "Processing %s\n",files[i].filename);
 
@@ -1244,9 +1275,9 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
         if (bytesinbuf >= lpcm_payload)
         {
 
-            n=write_pes_packet(fpout,&files[i],audio_buf,bytesinbuf,pack_in_title, start_of_file);
+            n = write_pes_packet(fpout, &files[i], audio_buf, bytesinbuf, pack_in_title, start_of_file);
 
-            memmove(audio_buf,&audio_buf[n],bytesinbuf-n);
+            memmove(audio_buf, &audio_buf[n], bytesinbuf - n);
             bytesinbuf -= n;
 
             pack++;
@@ -1254,75 +1285,89 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
             start_of_file = false;
         }
 
-        if ((pack > 0) && ((pack%(512*1024))==0))
+        if ((pack > 0) && ((pack % (512 * 1024)) == 0))   
         {
             fclose(fpout);
-            fileno++;
-            STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/ATS_%02d_%d.AOB",audiotsdir,titleset,fileno)
-            fpout=fopen(outfile,"wb+");
+            ++fileno;
+            STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/ATS_%02d_%d.AOB", audiotsdir, titleset, fileno)
+            fpout = fopen(outfile,"wb+");
             start_of_file = true;
         }
 
         if (bytesinbuf < lpcm_payload)
         {
-            n=audio_read(&files[i],&audio_buf[bytesinbuf],sizeof(audio_buf)-bytesinbuf);
-            bytesinbuf+=n;
-
-            if (n==0)   /* We have reached the end of the input file */
+            if (globals.maxverbose)
             {
-                files[i].last_sector=pack;
+                foutput("%s %d %s %d\n", 
+                        INF "Reading", 
+                        AUDIO_BUFFER_SIZE - bytesinbuf,
+                        "bytes into buffer at offset",
+                        bytesinbuf);
+            }
+            
+            n= audio_read(&files[i],
+                           audio_buf,
+                           &bytesinbuf);
+        
+            if (n == 0)   /* We have reached the end of the input file */
+            {
+                files[i].last_sector = pack;
                 audio_close(&files[i]);
-                i++;
+                ++i;
 
-                if (i<ntracks)
+                if (i < ntracks)
                 {
                     /* If the current track is a different audio format, we must start a new title. */
                     if (files[i].newtitle)
                     {
                         write_pes_packet(fpout, &files[i-1], audio_buf, bytesinbuf, pack_in_title, start_of_file); // Empty audio buffer.
-                        pack++;
-                        bytesinbuf=0;
-                        pack_in_title=0;
 
-                        files[i].first_PTS=calc_PTS(&files[i],pack_in_title).PTSint;
+                        ++pack;
+                        bytesinbuf = 0;
+                        pack_in_title = 0;
+
+                        files[i].first_PTS = calc_PTS(&files[i],pack_in_title).PTS0;
                     }
                     else
                     {
-                        files[i].first_PTS=calc_PTS(&files[i],pack_in_title+1).PTSint;
+                        files[i].first_PTS = calc_PTS(&files[i], pack_in_title+1).PTS0;
                     }
 
-                    files[i].first_sector=files[i-1].last_sector+1;
-                    if (audio_open(&files[i])!=0)
+                    files[i].first_sector = files[i-1].last_sector+1;
+
+                    if (audio_open(&files[i]) != 0)
                     {
                         foutput(ERR "Could not open %s\n",files[i].filename);
                         EXIT_ON_RUNTIME_ERROR
                     }
 
                     start_of_file = true;
-                    n=audio_read(&files[i],&audio_buf[bytesinbuf],sizeof(audio_buf)-bytesinbuf);
-                    bytesinbuf+=n;
-                    foutput(INF "Processing %s\n",files[i].filename);
+                    if (globals.veryverbose)
+                        foutput("%s %d %s %d\n", INF "Opening audio buffer at offset", bytesinbuf, "for count: ", AUDIO_BUFFER_SIZE - bytesinbuf);
+                    
+                    audio_read(&files[i], audio_buf, &bytesinbuf);
+                    
+                    foutput(INF "Processing %s\n", files[i].filename);
                 }
                 else
                 {
                     /* We have reached the last packet of the last file */
-                    if (bytesinbuf==0)
+                    if (bytesinbuf == 0)
                     {
-                        files[i-1].last_sector=pack-1;
+                        files[i-1].last_sector = pack-1;
                     }
                     else
                     {
                         start_of_file = false;
                         write_pes_packet(fpout,&files[i-1],audio_buf,bytesinbuf,pack_in_title, start_of_file); // Empty audio buffer.
-                        bytesinbuf=0;
-                        pack++;
-                        pack_in_title++;
+                        bytesinbuf = 0;
+                        ++pack;
+                        ++pack_in_title;
                     }
                 }
             }
         }
     }
 
-    if (files[0].single_track) files[0].last_sector=files[ntracks-1].last_sector;
     return(1-fileno);
 }

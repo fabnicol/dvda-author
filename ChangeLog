@@ -1,3 +1,7 @@
+2018-05-26 Fabrice Nicol
+        * Fix multichannel and much of --extract
+        * Reactivate deprecated switches: --lossy-rounding, --pad-cont, --padding (inverse of old --no-padding)
+
 2016-08-08 Fabrice Nicol
 	* Fix regressions in later code. Update dependencies and patches.
  	  Build system improvements.

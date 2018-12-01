@@ -102,7 +102,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
     #define DBG "[DBG]  "
     #define WAR "[WAR]  "
     #define DEV "[DEV]  "
-
+    #define PAR "[PAR]  "
 #else
     #define ANSI_COLOR_RED     "\x1b[31m"
     #define ANSI_COLOR_GREEN   "\x1b[32m"
@@ -118,6 +118,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
     #define DBG "\x1b[35m[DBG]  \x1b[0m"
     #define WAR "\x1b[33m[WAR]  \x1b[0m"
     #define DEV "\x1b[36m[DEV]  \x1b[0m"
+    #define PAR "\x1b[37m[PAR]  \x1b[0m"
 #endif
 
 
@@ -322,7 +323,8 @@ int run(const char* application, const char*  args[], const int option);
 uint64_t  parse_file_for_sequence(FILE* fp, uint8_t* tab, size_t sizeoftab);
 void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* fp, FILE* log, _Bool write, _Bool);
 void rw_field(uint8_t* tab, int size,const char* label, FILE* fp, FILE* log);
-
+_Bool is_file(const char* path);
+_Bool is_dir(const char* path);
 
 inline static void  uint32_copy(uint8_t* buf, uint32_t x)
 {
@@ -376,5 +378,6 @@ inline static uint16_t uint16_read_reverse(uint8_t* buf)
 
 uint8_t read_info_chunk(uint8_t* pt, uint8_t* chunk);
 
+void fill_pics(const char *filename, void *a, void GCC_UNUSED *unused);
 
 #endif // C_UTILS_H_INCLUDED
