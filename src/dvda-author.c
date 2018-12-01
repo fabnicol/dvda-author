@@ -176,14 +176,11 @@ int main(int argc,  char* const argv[])
     setlocale(LC_ALL, "LOCALE");
 
     char* currentdir = fn_get_current_dir_name ();
-
     int currentdirlength=strlen(currentdir);
-
-    char TEMPDIRROOT[currentdirlength+14];
-    TEMPDIR=calloc(currentdirlength+20, sizeof(char));
-    LPLEXTEMPDIR=calloc(currentdirlength+26, sizeof(char));
-
-    char *EXECDIR=calloc(MAX(currentdirlength, 20)+4+25, sizeof(char));  // /usr/local/bin or /usr/bin under *NIX, "currentdir" directory/bin otherwise (win32...)
+    char TEMPDIRROOT[currentdirlength + 14];
+    TEMPDIR = calloc(currentdirlength + 20, sizeof(char));
+    LPLEXTEMPDIR = calloc(currentdirlength + 26, sizeof(char));
+    char *EXECDIR = calloc(MAX(currentdirlength, 20) + 4 + 25, sizeof(char));  // /usr/local/bin or /usr/bin under *NIX, "currentdir" directory/bin otherwise (win32...)
     // 4 for "/bin and be liberal and allow 25 more characters for the executable name.
 
 #ifdef BINDIR
