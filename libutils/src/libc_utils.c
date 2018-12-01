@@ -1204,10 +1204,12 @@ void stat_file_wrapper(const char *filename, void *total_size, void GCC_UNUSED *
  * Note : for the whole (recursive) size, taking the stat st_size value would do the trick */
 
 void fill_pics(const char *filename, void *a, void GCC_UNUSED *unused){
-    
-    char** array = (char**) a;
+  
+    static char** array;
+    static int k;
+    array = (char**) a + k++;
     *array = strdup(filename);
-    ++array;
+    a = (void*) array;
 }
 
 _Bool is_file(const char* path) {

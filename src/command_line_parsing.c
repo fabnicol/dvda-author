@@ -41,26 +41,26 @@ unsigned int startsector;
 extern char* OUTDIR, *LOGFILE, *WORKDIR, *TEMPDIR, *LPLEXTEMPDIR;
 static fileinfo_t ** files;
 uint16_t totntracks;
-uint8_t maxbuttons; // to be used in xml.c and menu.c as extern globals
-uint8_t resbuttons; // to be used in xml.c and menu.c as extern globals
-uint8_t ndvdvtitleset1=0,ndvdvtitleset2=0;
-uint8_t mirror_st_flag=0;
-uint8_t* ndvdvslides=NULL; 
-uint8_t* ndvdvtracks=NULL;
+static uint8_t maxbuttons; // to be used in xml.c and menu.c as extern globals
+static uint8_t resbuttons; // to be used in xml.c and menu.c as extern globals
+static uint8_t ndvdvtitleset1=0,ndvdvtitleset2=0;
+static uint8_t mirror_st_flag=0;
+static uint8_t* ndvdvslides=NULL; 
+static uint8_t* ndvdvtracks=NULL;
 
-_Bool soundtracks_flag=0;
-_Bool dvdv_tracks_given=0;
-_Bool lplex_slides_flag=0;
-_Bool dvdv_import_flag=0;
-_Bool mirror_flag=0;
-_Bool full_hybridate_flag=0;
-_Bool         hybridate_flag=0;
+static _Bool soundtracks_flag=0;
+static _Bool dvdv_tracks_given=0;
+static _Bool lplex_slides_flag=0;
+static _Bool dvdv_import_flag=0;
+static _Bool mirror_flag=0;
+static _Bool full_hybridate_flag=0;
+static _Bool         hybridate_flag=0;
 
-char  *stillpic_string=NULL;
-char  **pics_per_track=NULL;
-char ***dvdv_track_array=NULL;
-char ***dvdv_slide_array=NULL;
-char ***picks_per_track_double_array=NULL;
+static char  *stillpic_string=NULL;
+static char  **pics_per_track=NULL;
+static char ***dvdv_track_array=NULL;
+static char ***dvdv_slide_array=NULL;
+static char ***picks_per_track_double_array=NULL;
 
 void parse_double_entry_command_line(char* input_string, char**** DOUBLE_ARRAY, uint8_t** COUNTER_ARRAY, uint8_t* TOTAL, short int audit_flag, char separator) 
 {

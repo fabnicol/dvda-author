@@ -1,9 +1,9 @@
 a52dec_LIB=
 a52dec_LINK=
-MAYBE_a52dec=a52dec-0.7.4
+MAYBE_a52dec=
 HAVE_a52dec=yes
 HAVE_EXTERNAL_a52dec=@HAVE_EXTERNAL_a52dec@
-CONFIGURE_a52dec_FLAGS=--prefix=/home/fab/Dev/dvda-author-dev/local 
-a52dec_BUILD=yes
+CONFIGURE_a52dec_FLAGS=
+a52dec_BUILD=
 WITH_a52dec=@WITH_a52dec@
-a52dec_DEPENDENCY=Makefile /home/fab/Dev/dvda-author-dev/a52dec-0.7.4
+a52dec_DEPENDENCY=Makefile /home/fab/Desktop/dvda-author-dev/
