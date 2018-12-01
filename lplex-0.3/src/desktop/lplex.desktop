@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=lplex
+Version=0.3
+Encoding=UTF-8
+Comment=Create or rip lossless audio DVDs
+Exec=lplex -P 1 %u
+Icon=lplex
+StartupNotify=false
+Terminal=true
+Type=Application
+Categories=AudioVideo;
+MimeType=audio/x-wav;audio/x-flac;application/x-lplexscript;

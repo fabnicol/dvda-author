@@ -1,0 +1,46 @@
+include @BUILDDIR@/mk/lplex.global.mk
+
+lplex_MAKESPEC=auto
+lplex_CONFIGSPEC=exe
+lplex_DEPENDENCY += @BUILDDIR@/depconf/FLAC.depconf Makefile
+lplex_TESTBINARY=lplex
+
+ifeq "@HAVE_automake@" "yes"
+ifeq "@HAVE_autoconf@" "yes"
+ifeq "@HAVE_libtoolize@" "yes"
+
+@BUILDDIR@/depconf/dvdauthor.depconf: $(lplex_DEPENDENCY)
+	 $(if $(MAYBE_lplex),
+	  if test -d @ROOTDIR@/$(MAYBE_lplex) ; then
+	   cd @ROOTDIR@/$(MAYBE_lplex) && $(SHELL) -c "autoreconf -if -Im4 -Iredist" 
+	    if test "$$?" = "0"; then 
+	    cd @BUILDDIR@
+	   else 
+	    echo "autoreconf failed for lplex"
+	    exit -1
+	   fi
+	   mkdir -p @BUILDDIR@/$(MAYBE_lplex) && cd @BUILDDIR@/$(MAYBE_lplex)
+	   $(SHELL) @ROOTDIR@/$(MAYBE_lplex)/configure  $(CONFIGURE_lplex_FLAGS) && $(MAKE) $(PARALLEL) && $(MAKE) install
+	   if test "$$?" = "0"; then touch @BUILDDIR@/depconf/lplex.depconf; fi
+	   cd @BUILDDIR@
+	  fi)
+	$(call index,lplex,$(EXEEXT),binary)
+else
+@BUILDDIR@/depconf/lplex.depconf: 
+	echo "Please install libtoolize"
+	exit -1
+
+
+endif
+else
+@BUILDDIR@/depconf/lplex.depconf: 
+	echo "Please install automake"
+	exit -1
+
+endif
+else
+
+@BUILDDIR@/depconf/lplex.depconf: 
+	echo "Please install autoconf"
+	exit -1
+endif
