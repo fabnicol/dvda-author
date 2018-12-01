@@ -99,20 +99,22 @@ ID\Chan 0   1   2   3   	4   5     info->channels
 
 const uint8_t channels[21] = {1,2,3,4,3,4,5,3,4,5,4,5,6,4,5,4,5,6,5,5,6};
 
+// number of channels x sampling rate in Hz x bit rate = bandwidth <= 9,6 Mbps
+
 static const uint8_t  S[2][6][36]=
-{   {   {0},
-        {0},
-        {5, 4, 11, 10, 1, 0, 3, 2, 7, 6, 9, 8},
-        {5, 4, 7, 6, 13, 12, 15, 14, 1,  0, 3, 2, 9, 8, 11, 10},
-        {5, 4, 7, 6,  9,  8, 15, 14,17, 16, 19, 18, 1, 0, 3, 2, 11, 10, 13, 12},
-        {5, 4, 7, 6, 17, 16, 19, 18, 1, 0, 3, 2, 9, 8, 11, 10, 13, 12, 15, 14, 21, 20, 23, 22}
+{   {   {0}, // 4
+        {0}, // 8
+        {5, 4, 11, 10, 1, 0, 3, 2, 7, 6, 9, 8}, //12 OK for all sampling rates <= 96 kHz
+        {5, 4, 7, 6, 13, 12, 15, 14, 1,  0, 3, 2, 9, 8, 11, 10}, // 16 OK for all sampling rates <= 96 kHz
+        {7, 6, 9, 8, 17, 16, 19, 18, 1, 0, 3, 2, 5, 4, 11, 10, 13, 12, 15, 14}, //20 OK for all sampling rates <= 96 kHz
+        {7, 6, 9, 8, 11, 10, 19, 18, 21, 20, 23, 22, 1, 0, 3, 2, 5, 4, 13, 12, 15, 14, 17, 16} //24  // OK for all sampling rates <= 96 kHz
     },
-    {   {2,  1,  5,  4,  0,  3},
-        {2, 1, 5, 4, 8, 7, 11, 10, 0, 3, 6, 9},
-        {8, 7, 17, 16, 6, 15, 2, 1, 5, 4, 11, 10, 14, 13, 0, 3, 9, 12},
-        {8,  7,  11,  10,  20,  19,  23,  22,  6,  9,  18,  21,  2,  1,  5,  4,  14,  13,  17,  16,  0,  3,  12,  15},
-        {8, 7, 11, 10, 14, 13, 23, 22, 26, 25, 29, 28, 6, 9, 12, 21, 24, 27, 2, 1, 5, 4, 17, 16, 20, 19, 0, 3, 15, 18},
-        {8, 7, 11, 10, 26, 25, 29, 28, 6, 9, 24, 27, 2, 1, 5, 4, 14, 13, 17, 16, 20, 19, 23, 22, 32, 31, 35, 34, 0, 3, 12, 15, 18, 21, 30, 33 }
+    {   {2,  1,  5,  4,  0,  3}, //6  OK for all sampling rates <= 96 kHz
+        {2, 1, 5, 4, 8, 7, 11, 10, 0, 3, 6, 9}, //12 OK for all sampling rates <= 96 kHz
+        {8, 7, 17, 16, 6, 15, 2, 1, 5, 4, 11, 10, 14, 13, 0, 3, 9, 12}, //18 OK for all sampling rates <= 96 kHz
+        {8,  7,  11,  10,  20,  19,  23,  22,  6,  9,  18,  21,  2,  1,  5,  4,  14,  13,  17,  16,  0,  3,  12,  15}, //24 OK for all sampling rates <= 96 kHz
+        {11, 10, 14, 13, 26, 25, 29, 28, 9, 12, 24, 27, 2, 1, 5, 4, 8, 7, 17, 16, 20, 19, 23, 22, 0, 3, 6, 15, 18, 21},  // 30, out for 88.1 kHz and 96 kHz.
+        {8, 7, 11, 10, 26, 25, 29, 28, 6, 9, 24, 27, 2, 1, 5, 4, 14, 13, 17, 16, 20, 19, 23, 22, 32, 31, 35, 34, 0, 3, 12, 15, 18, 21, 30, 33 }  // 36, out for 88.1 kHz and 96 kHz.
     }
 };
 
@@ -245,18 +247,18 @@ int calc_info(fileinfo_t* info)
     static const uint16_t T[2][6][11]=     // 16-bit table
     {
          {{ 	2000, 16,  1984,  2010,	2028, 22, 11, 16, 16 /*old: 10*/, 0, 0 },
-            {	2000, 16,  1984,  2010,	2028, 28 /*old: 22*/ , 11, 16, 16 /*old: 10*/, 0, 0 },
-            { 	2004, 24,  1980,  2010,	2028, 24 /*old: 22*/, 15, 12, 12 /*old: 6*/, 0, 0 },
-            { 	2000, 16,  1980,  2010,	2028, 28 /*old: 22*/, 11, 16, 16 /*old: 10*/, 0, 0 },
-            { 	2000, 20,  1980,  2010, 2028, 22, 15, 16, 16 /*old: 10*/, 0, 0 },
+            {	2000, 16,  1984,  2010,	2028, 28 /*old: 22*/ , 11, 16, 10 /*old: 16*/, 0, 0 },
+            { 	2004, 24,  1980,  2010,	2028, 24 /*old: 22*/, 15, 12, 10 /*old: 12*/, 0, 0 },
+            { 	2000, 16,  1980,  2010,	2028, 28 /*old: 22*/, 11, 16, 10 /*old: 16*/, 0, 0 },
+            { 	2000, 20,  1980,  2010, 2028, 22, 15, 16, 10 /*old: 16*/, 0, 0 },
             { 	1992, 24,  1992, 1993,  2014, 22, 10, 10, 10 /*old: 4*/, 17, 14}},
         // 24-bit table
         {{    	2004, 24,  1980,  2010,	2028, 22, 15, 12, 12 /*old: 10*/, 0, 0 },
-            { 	2004, 24,  1980,  2010,	2028, 24 /*old: 22*/, 15, 12, 12 /*old: 10*/, 0, 0 },
-            { 	1998, 18,  1980,  2010,	2026, 28 /*old: 22 */, 15, 16, 16 /* old 14*/, 0, 0 },
+            { 	2004, 24,  1980,  2010,	2028, 24 /*old: 22*/, 15, 12, 10 /*old: 12*/, 0, 0 },
+            { 	1998, 18,  1980,  2010,	2020 /*old 2026*/, 28 /*old: 22 */, 15, 10 /* old 16 */, 10 /* old 16*/, 0, 8 /* old 6 */ },
             { 	1992, 24,  1968,  1993,	2014, 22, 10, 10,  10 /*old: 8*/, 17, 14 },
-            { 	1980,  0,  1980,  2010, 2008, 28 /*old: 22*/, 15, 16, 16 /*old: 14*/, 0, 20 },
-            { 	1980,  0,  1980,  2010, 2008, 22, 15, 16, 14, 0, 20 }}
+            { 	1980,  0,  1980,  2010, 2002 /* old 2008 */, 22, 15, 10 /* old 16 */, 10 /*old: 16*/, 0, 26 /* old 20 */},  // out for 88.1 kHz and 96 kHz.
+            { 	1980,  0,  1980,  2010, 2008, 22, 15, 16, 16 /* old 14*/, 0, 20 }}  // out for 88.1 kHz and 96 kHz.
     };
 
 /* The following equations are always true by necessity:
@@ -265,52 +267,54 @@ int calc_info(fileinfo_t* info)
     first/mid_pes_padding > 6
 */
 
-#define X T[table_index][info->channels-1]
-
     info->sampleunitsize=
             (table_index == 1)? info->channels * 6 :
                               ((info->channels > 2)? info->channels * 4 :
                                                      info->channels * 2);
+    
+#define X T[table_index][info->channels-1]
+
     info->lpcm_payload = X[0];
     info->firstpackdecrement = X[1];
+
     info->SCRquantity = X[2];
     info->firstpack_audiopesheaderquantity = X[3];
-    info->midpack_audiopesheaderquantity = X[4];
-    info->lastpack_audiopesheaderquantity = X[5];
-    info->firstpack_lpcm_headerquantity=(uint8_t) X[6];
-    info->midpack_lpcm_headerquantity=(uint8_t) X[7];
-    info->lastpack_lpcm_headerquantity=(uint8_t) X[8];
-    info->firstpack_pes_padding = X[9];
-    info->midpack_pes_padding = X[10];
+    info->midpack_audiopesheaderquantity   = X[4];
+    info->lastpack_audiopesheaderquantity  = X[5];
+    info->firstpack_lpcm_headerquantity    =(uint8_t) X[6];
+    info->midpack_lpcm_headerquantity      =(uint8_t) X[7];
+    info->lastpack_lpcm_headerquantity     =(uint8_t) X[8];
+    info->firstpack_pes_padding            = X[9];
+    info->midpack_pes_padding              = X[10];
 
 #undef X
 
-    info->bytespersecond=(info->samplerate*info->bitspersample*info->channels)/8;
+    info->bytespersecond = (info->samplerate * info->bitspersample * info->channels)/8;
 
     switch (info->samplerate)
     {
     case 44100:
     case 48000:
-        info->bytesperframe = 5*info->channels*info->bitspersample;
+        info->bytesperframe = 5;
         break;
     case 88200:
     case 96000:
-        info->bytesperframe = 10*info->channels*info->bitspersample;
+        info->bytesperframe = 10;
         break;
 
     case 176400:
     case 192000:
-        info->bytesperframe = 20*info->channels*info->bitspersample;
+        info->bytesperframe = 20;
         break;
 
     }
 
+    info->bytesperframe *= info->channels * info->bitspersample;
 
-    info->numsamples=(info->numbytes/info->sampleunitsize)*info->sampleunitsize/(info->channels*info->bitspersample/8);
+    info->numsamples
+            = (info->numbytes * 8) / (info->channels * info->bitspersample);
 
-    info->PTS_length=(90000.0*info->numsamples)/info->samplerate;
-
-    /* Patch : padding/pruning is now done in buffers (following version S) */
+    info->PTS_length = (90000.0 * info->numsamples) / info->samplerate;
 
     return(AFMT_WAVE);
 }
@@ -327,7 +331,7 @@ command_t *scan_wavfile_audio_characteristics(command_t *command)
     
     // retrieving information as to sound file format
 
-    error=wav_getinfo(&command->files[i][j]);
+    error = wav_getinfo(&command->files[i][j]);
 
     // dealing with format information
 
@@ -573,23 +577,28 @@ if (info->mergeflag)
 {
      for (int u=0; u < info->channels; u++)
      {
-      secure_open(info->given_channel[u], "rb", info->audio->channel_fp[u]);
+      info->audio->channel_fp[u] = fopen(info->given_channel[u], "rb");
+
       if (globals.debugging) foutput(INF "Opening %s to get info\n", info->given_channel[u]);
+
       int span=compute_header_size(info->audio->channel_fp[u]);
+
       info->channel_header_size[u]=(span > 0) ? span + 8 : MAX_HEADER_SIZE;
       uint8_t header[info->channel_header_size[u]];
       memset(header, 0, info->channel_header_size[u]);
+
       /* PATCH: real size on disc is needed */
-     #if defined __WIN32__
-     info->file_size = read_file_size(info->audio->channel_fp[u],(TCHAR*) info->given_channel[u]);
+
+#    if defined __WIN32__
+        info->file_size = read_file_size(info->audio->channel_fp[u],(TCHAR*) info->given_channel[u]);
      #else
-     info->file_size = read_file_size(info->audio->channel_fp[u], info->given_channel[u]);
+        info->file_size = read_file_size(info->audio->channel_fp[u], info->given_channel[u]);
      #endif
 
      //fread(header, info->channel_header_size[u],1,info->audio->channel_fp[u]);
      fseek(info->audio->channel_fp[u], 0, SEEK_SET);
 
-     if (info->channel_header_size[u] > (span=fread(header, 1, info->channel_header_size[u],info->audio->channel_fp[u])))
+     if (info->channel_header_size[u] > (span = fread(header, 1, info->channel_header_size[u], info->audio->channel_fp[u])))
      {
          foutput(ERR "Could not read header of size %d for channel %d, just read %d character(s)\n", info->channel_header_size[u],u+1, span);
          clean_exit(EXIT_FAILURE);
@@ -597,33 +606,28 @@ if (info->mergeflag)
 
       fclose(info->audio->channel_fp[u]);
 
-      info->type=extract_audio_info_by_all_means(info->given_channel[u], header, info);
+      info->type = extract_audio_info_by_all_means(info->given_channel[u], header, info);
      }
 }
 else
 {
-  //cure_open(info->filename, "rb", info->audio->fp);
 
   info->audio->fp = fopen(info->filename, "rb");
 
   if (info->audio->fp == NULL)
   {
-      puts(info->filename);
       perror("Fichier impossible à ouvrir");
       EXITING
   }
 
   if (globals.debugging) foutput(INF "Opening %s to get info\n", info->filename);
 
-  //int span=compute_header_size(info->audio->fp);
-
-  // info->header_size=(span > 0) ? span + 8 : MAX_HEADER_SIZE;
-
   info->header_size = MAX_HEADER_SIZE;
-
   uint8_t header[info->header_size];
   memset(header, 0, info->header_size);
+
   /* PATCH: real size on disc is needed */
+
  #if defined __WIN32__
     info->file_size = read_file_size(info->audio->fp,(TCHAR*) info->filename);
  #else
@@ -639,7 +643,6 @@ else
      clean_exit(EXIT_FAILURE);
  }
  
- // fclose(info->audio->fp);
   info->type = extract_audio_info_by_all_means(info->filename, header, info);
 
 }
@@ -679,7 +682,7 @@ static inline int wav_getinfo_merged(fileinfo_t *info)
     }
     
         
-    if (info->numbytes/nchannels != numbytes)
+    if (info->numbytes / nchannels != numbytes)
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one channel did not have the same number of bytes as others.")
     }
@@ -728,19 +731,6 @@ int flac_getinfo(fileinfo_t* info)
 
     if (flac!=NULL)
     {
-
-
-        /* Transition from the FLAC 1.1.2 syntax: legacy code recalled below
-        *
-        *	FLAC__file_decoder_set_filename(flac,info->filename);
-        *	FLAC__file_decoder_set_client_data(flac,(void*)info);
-        *	FLAC__file_decoder_set_write_callback(flac,flac_null_write_callback);
-        *	FLAC__file_decoder_set_error_callback(flac,flac_error_callback);
-        *	FLAC__file_decoder_set_metadata_callback(flac,flac_metadata_callback);
-        *
-        * end of legacy code */
-
-        /* Test flac != NULL is not enough to discriminate between Ogg FLAC and native FLAC */
 
         if (info->type == AFMT_FLAC )
 
@@ -815,9 +805,7 @@ int fixwav_repair(fileinfo_t *info)
         return(NO_AFMT_FOUND);
     }
 
-
     strncpy(temp, info->filename, strlen(info->filename)-4);
-
 
     char *outstring=print_time(0);
     short int memory_allocation=sizeof(temp)+5+strlen(outstring)+strlen(globals.fixwav_suffix)+4+1;
@@ -832,8 +820,6 @@ int fixwav_repair(fileinfo_t *info)
     snprintf(&buf[0], memory_allocation, "%s%s%s%s", temp, globals.fixwav_suffix, outstring, ".wav");
 
     // If new string longer than heap allocation of reference strings, cut it
-
-
     /* Default sub-options*/
 
     WaveData wavedata=
@@ -873,30 +859,27 @@ int fixwav_repair(fileinfo_t *info)
 
         return(NO_AFMT_FOUND);
     }
-
-
     else
     {
         if (globals.debugging) SINGLE_DOTS
 
-        info->samplerate=waveheader.dwSamplesPerSec;
-        info->bitspersample=(uint8_t) waveheader.wBitsPerSample;
-        info->channels=(uint8_t) waveheader.channels;
-        info->numbytes=waveheader.data_cksize;
-        info->file_size=info->numbytes+waveheader.header_size_out;
-        info->header_size=waveheader.header_size_out;
+        info->samplerate    = waveheader.dwSamplesPerSec;
+        info->bitspersample = (uint8_t) waveheader.wBitsPerSample;
+        info->channels      = (uint8_t) waveheader.channels;
+        info->numbytes      = waveheader.data_cksize;
+        info->file_size     = info->numbytes+waveheader.header_size_out;
+        info->header_size   = waveheader.header_size_out;
 
         if (wavedata.repair == GOOD_HEADER)
         {
             foutput("%s", MSG_TAG "Proceeding with same file...\n");
-
             return(AFMT_WAVE_GOOD_HEADER);
         }
         else
         {
-            if (!globals.fixwav_virtual_enable)
+            if (! globals.fixwav_virtual_enable)
             {
-                if (!wavedata.in_place)
+                if (! wavedata.in_place)
                 {
                     // info->filename is either allocated on the command-line heap itself (for free, with -g) or freshly allocated with -i
                     // with -g filenames it is not OK to free or realloc, see free_memory, one could just do info->filename=buf;
@@ -951,7 +934,7 @@ char* replace_file_extension(char * filename)
     // -i filenames could in principle be freed.
     // filename cannot be altered directly as there the suffix increases its size and -g names cannot be reallocated
 
-    filename=strndup(new_wav_name, size+9);
+    filename=strdup(new_wav_name);
 
     return (filename);
 }
@@ -1020,7 +1003,9 @@ int audio_open(fileinfo_t* info)
 #endif
 
     info->audio=malloc(sizeof(audio_input_t));
-
+    info->audio->n=0;
+    info->audio->eos=0;
+    
     if (info->type==AFMT_WAVE)
     {
         if (info->mergeflag)
@@ -1043,7 +1028,10 @@ int audio_open(fileinfo_t* info)
         }
         else
         {    
+            if (globals.debugging) foutput("%s %s\n", INF "Opening", info->filename);
+            
             info->audio->fp=fopen(info->filename,"rb");
+            
             if (info->audio->fp==NULL)
             {
                 return(1);
@@ -1062,9 +1050,7 @@ int audio_open(fileinfo_t* info)
     else
     {
         info->audio->flac=FLAC__stream_decoder_new();
-        info->audio->n=0;
-        info->audio->eos=0;
-
+      
         if (info->audio->flac!=NULL)
         {
 
@@ -1185,6 +1171,9 @@ For brevity, we use only the more compact label-based description for each of th
 The in-place transformation code that derives from this description was machine generated to reduce the chance for transcription errors,. Identity expressions, e.g. x[i+1] = x[i+1], are omitted.
 
 The 12 cases are as follows. Their values are encoded in matrix S to be found in src/include/multichannel.h
+The length of each pattern must be equal to info->sampleunitsize i.e, if Nc is the number of channels:
+for 24-bit audio : Nc x 6
+for 16-bit audio : Nc x 2 for Nc <= 2 and Nc x 4 for Nc > 2
 
  16-bit 1  channel
 WAV: 0  1
@@ -1196,7 +1185,7 @@ c2           0   1
  
 WAV:  0  1   2   3
 AOB:  1  0   3   2
-     1:1 1:0 2:1 2:0
+     1:1 1:0 2:1 2:0  [reads : bit 1 of ch1 in original wav audio followed by bit 0 of ch1 followed by bit 1 of ch2 followed by bit 0 of ch2]
 
  16-bit 3  channel
 c1   0   1 
@@ -1208,7 +1197,7 @@ c3                   0   1
  
 WAV: 0  1 | 2   3  | 4  5   | 6   7  | 8  9  | 10  11
 AOB: 5  4 | 11  10 | 1  0   | 3   2  | 7  6  | 9   8
-   3:1 3:0|3:3 3:2 |1:1 1:0 |2:1 2:0 |1:3 1:0| 2:3 2:0
+   3:1 3:0|3:3 3:2 |1:1 1:0 |2:1 2:0 |1:3 1:0| 2:3 2:0  [bit 1 of ch 3 in original wav followed by...]
 
 
  16-bit 4  channel
@@ -1397,182 +1386,243 @@ inline static void interleave_24_bit_sample_extended(int channels, int count, ui
 
 
 // Read numbytes of audio data, and convert it to DVD byte order
-uint32_t audio_read(fileinfo_t* info, uint8_t* buf, uint32_t count)
-{
-    uint32_t n=0, bytesread=0;
-#if 0
-    uint32_t padbytes;
-    static uint32_t rmdr;
-#endif
 
+uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
+{
+    uint32_t requested_bytes = AUDIO_BUFFER_SIZE - *bytesinbuffer,
+             buffer_increment = 0,
+            rounded_buffer_increment = 0;
+    
+    static uint16_t offset;
+    
+    static uint8_t fbuf[36];
+    
+    uint8_t *buf = _buf + *bytesinbuffer;
+    
     FLAC__bool result;
 
     //PATCH: provided for null audio characteristics, to ensure non-zero divider
 
     if (info->sampleunitsize == 0)
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Sample unit size is null");
-
-    if (count > info->sampleunitsize) count-= count%info->sampleunitsize;
-    else return 0;
-
-    if (count%info->sampleunitsize)
+          EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Sample unit size is null");
+  
+    if (requested_bytes + offset >= info->sampleunitsize) 
     {
-        foutput("Requested %d bytes, sampleunitsize=%"PRIu16"\n",count,info->sampleunitsize);
-        fflush(stdout);
+        requested_bytes -= (requested_bytes + offset) % info->sampleunitsize;
+    }
+    
+    if (offset)
+    {
+       memcpy(buf, fbuf, offset);
+       if (globals.debugging)
+           foutput(WAR "File: %s. Adding %d bytes from last packet for gapless processing...\n", info->filename, offset);
+       buffer_increment = offset;
+    }
+    
+    if (info->type == AFMT_WAVE)
+    {
+        uint32_t request = (*bytesinbuffer + offset + requested_bytes < AUDIO_BUFFER_SIZE) ? requested_bytes : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset);
+          
+        buffer_increment += fread(buf + offset, 1, request, info->audio->fp);
+
+        if (info->audio->bytesread + buffer_increment > info->numbytes)
+        {
+            buffer_increment = info->numbytes-info->audio->bytesread;
+        }
+
+        info->audio->bytesread += buffer_increment;
+        uint32_t bytesread = buffer_increment;
+
+        while (info->audio->bytesread < info->numbytes
+               && bytesread < requested_bytes)
+        {
+            uint32_t request = (*bytesinbuffer + offset + requested_bytes < AUDIO_BUFFER_SIZE) ? requested_bytes - bytesread : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset + bytesread);
+            
+            buffer_increment = fread(buf + bytesread + offset, 1, request, info->audio->fp);
+
+            if (info->audio->bytesread + buffer_increment > info->numbytes)
+            {
+                buffer_increment = info->numbytes - info->audio->bytesread;
+            }
+
+            info->audio->bytesread += buffer_increment;
+            bytesread += buffer_increment;
+        }
+
+        buffer_increment = bytesread;
     }
 
-    if (info->type==AFMT_WAVE)
-    {
-        n=fread(buf,1,count,info->audio->fp);
-        if (info->audio->bytesread+n > info->numbytes)
-        {
-            n=info->numbytes-info->audio->bytesread;
-        }
-        info->audio->bytesread+=n;
-        bytesread=n;
-
-        while ((info->audio->bytesread < info->numbytes) && (bytesread < count))
-        {
-            n=fread(&buf[bytesread],1,count-bytesread,info->audio->fp);
-            if (info->audio->bytesread+n > info->numbytes)
-            {
-                n=info->numbytes-info->audio->bytesread;
-            }
-            info->audio->bytesread+=n;
-            bytesread+=n;
-        }
-        n=bytesread;
-		//   Padding occurs here for whole number of samples (from LF version S)
-
-        #if 0
-
-        rmdr = n % info->sampleunitsize;
-        padbytes = info->sampleunitsize - rmdr;
-        
-
-        if (rmdr)
-        {
-            if ((globals.padding)&&(n+padbytes < AUDIO_BUFFER_SIZE))
-            {
-                memset(buf+n, (globals.padding_continuous)? buf[n-1] : 0, padbytes);
-                n+=padbytes;
-                if (globals.debugging) foutput(WAR "Padding track with %d bytes for sample count.\n       Sample unit size is %d\n",padbytes,info->sampleunitsize);
-            }
-            else
-            if (globals.lossy_rounding)
-                {
-                    n-=rmdr;
-                    if (globals.debugging) foutput(WAR "Pruned track by %d bytes for sample count.\n       Sample unit size is %d\n",rmdr,info->sampleunitsize);
-                }
-
-        }
-        rmdr = n %2;
-
-        #endif
-        
-        // end of LF version S import
-
-        
-        #if 0
-        if (rmdr)
-        {
-            if ((globals.padding)&&(n+padbytes < AUDIO_BUFFER_SIZE))
-            {
-                buf[n+1]=(globals.padding_continuous)? buf[n] : 0;
-                n++;
-                if (globals.debugging) foutput(WAR "Padding track with 1 byte for evenness n= %d\n",n);
-            }
-            else
-            if (globals.lossy_rounding)
-                {
-                    n--;
-                    if (globals.debugging) foutput(WAR "Pruned track by 1 byte for evenness n= %d\n",n);
-                }
-        }
-        #endif
-
-    }
 #ifndef WITHOUT_FLAC
 
-    else if ((info->type==AFMT_FLAC) || (info->type==AFMT_OGG_FLAC))
+    else if ((info->type == AFMT_FLAC) || (info->type == AFMT_OGG_FLAC))
     {
-        while ((info->audio->n < count) && (info->audio->eos==0))
+        while ((info->audio->n < requested_bytes) && (info->audio->eos==0))
         {
-            result=FLAC__stream_decoder_process_single(info->audio->flac);
+            result = FLAC__stream_decoder_process_single(info->audio->flac);
 
             if (result==0)
                 EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Fatal error decoding FLAC file\n")
 
-                if (FLAC__stream_decoder_get_state(info->audio->flac)==FLAC__STREAM_DECODER_END_OF_STREAM)
-                {
-                    info->audio->eos=1;
-                }
+            if (FLAC__stream_decoder_get_state(info->audio->flac) == FLAC__STREAM_DECODER_END_OF_STREAM)
+            {
+                info->audio->eos=1;
+            }
         }
-        if (info->audio->n >= count)
+
+        if (info->audio->n >= requested_bytes)
         {
-            n=count;
-            memcpy(buf,info->audio->buf,count);
-            memmove(info->audio->buf,&(info->audio->buf[count]),info->audio->n-count);
-            info->audio->n-=count;
+            buffer_increment = requested_bytes;
+            uint32_t request = (*bytesinbuffer + offset + buffer_increment < AUDIO_BUFFER_SIZE) ? buffer_increment  : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset);
+            memcpy(buf + offset, info->audio->buf, request);
+            memmove(info->audio->buf, &(info->audio->buf[requested_bytes]), info-> audio->n - request);
+            info->audio->n -= request;
+            buffer_increment = request;
         }
         else
         {
-            n=info->audio->n;
-            memcpy(buf,info->audio->buf,info->audio->n);
-            info->audio->n=0;
+            buffer_increment = info->audio->n;
+            uint32_t request = (*bytesinbuffer + offset + buffer_increment < AUDIO_BUFFER_SIZE) ? buffer_increment  : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset);
+            memcpy(buf + offset, info->audio->buf, request);
+            info->audio->n = 0;
+            buffer_increment = request;
         }
+        
+        info->audio->eos = 0;
     }
 #endif
+    
 
+    // PATCH: reinstating Lee Feldkamp's 2009 sampleunitsize rounding
+    // Note: will add extra zeros on decoding!
+    
+    uint16_t rmdr = buffer_increment % info->sampleunitsize;
+    rounded_buffer_increment = buffer_increment - rmdr;                
+    
+    if (globals.padding == 0 && ! globals.lossy_rounding)       
+    {
+            // buffer_increment may not be a multiple of info->sampleunitsize only if at end of file, with remaining bytes < size of audio buffer
+            offset = 0;
+            
+            if (rmdr)
+            {
+                // normally at end of file
+                
+                if (info->contin_track)
+                {
+                    offset = rmdr;
+                    
+                    memcpy(fbuf, buf + rounded_buffer_increment, rmdr);
+                    buffer_increment = rounded_buffer_increment;
+                    
+                    if (globals.debugging)
+                       foutput(WAR "File: %s. Shifting %d bytes from offset %d to offset %d to next packet for gapless processing...\n", info->filename, rmdr, rounded_buffer_increment, buffer_increment);
+                } 
+                else
+                {
+                    uint16_t padbytes = info->sampleunitsize - rmdr;
+                    if (padbytes + buffer_increment > AUDIO_BUFFER_SIZE) 
+                        padbytes = AUDIO_BUFFER_SIZE - buffer_increment;
+                    
+                    memset(buf + buffer_increment, 0, padbytes);
+                    buffer_increment += padbytes;
+                    foutput(WAR "Padding track with %d bytes (ultimate packet).\n", padbytes);
+                }
+            }		
+    } 
+    else
+    {
+        if (rmdr) 
+        { 
+            // normally at end of file
+            
+            if (globals.lossy_rounding)
+            {
+               // audio loss at end of audio file may result in a 'blip'
+                
+               buffer_increment = rounded_buffer_increment;
+               if (globals.debugging) 
+                   foutput("%s %s %s %d %s %d.\n", WAR "Cutting audio file", info->filename, "by", rmdr, "bytes out of", buffer_increment);
+            }
+            else
+            {
+                uint16_t padbytes = info->sampleunitsize - rmdr;
+                if (padbytes + buffer_increment > AUDIO_BUFFER_SIZE) 
+                    padbytes = AUDIO_BUFFER_SIZE - buffer_increment;
+                
+                uint8_t padding_byte = 0;
+                
+                if (globals.padding_continuous && buffer_increment)
+                {
+                   padding_byte = buf[buffer_increment - 1];    
+                }
+                
+                memset(buf + buffer_increment, padding_byte, padbytes);
+                buffer_increment += padbytes;
+                
+                if (globals.debugging) 
+                {
+                    foutput(WAR "Padding track with %d bytes", padbytes);
+                    if (globals.padding_continuous && padbytes) foutput("%s", " continuously.");
+                    foutput("%s", "\n");
+                }
+            }
+       }
+    }
+
+    // End of patch
+    
     // Convert little-endian WAV samples to big-endian MPEG LPCM samples
 
     if ((info->channels > 6) || (info->channels < 1))
     {
-
         foutput(ERR "problem in audio.c ! %d channels \n",info->channels);
         EXIT_ON_RUNTIME_ERROR
     }
 
     switch (info->bitspersample)
     {
-    case 24:
-
-        // Processing 24-bit audio
-        interleave_24_bit_sample_extended(info->channels, count, buf);
-        break;
-
-    case 16:
-
-        // Processing 16-bit audio
-        interleave_sample_extended(info->channels, count, buf);
-        break;
-
-    default:
-
-        /* 20-bit stereo samples are packed as follows:
-        Packet 0: 1980 bytes
-        Packets 1-: 2000 bytes
-
-        Stored similarly to 24-bit:
-
-        4 samples, most significant 16 bits of each sample first, in big-endian
-        order, followed by 2 bytes containing the least-significant 4 bits of
-        each sample.
-
-        I'm guessing  that  20-bits are stored in the most-significant
-        20-bits of the 24.
-        */
-
-        // FIX: Handle 20-bit audio and maybe convert other formats.
-        foutput(ERR "%d bit audio is not supported\n",info->bitspersample);
-        EXIT_ON_RUNTIME_ERROR
+        case 24:
+    
+            // Processing 24-bit audio
+            interleave_24_bit_sample_extended(info->channels, buffer_increment, buf);
+            break;
+    
+        case 16:
+    
+            // Processing 16-bit audio
+            interleave_sample_extended(info->channels, buffer_increment, buf);
+            break;
+    
+        default:
+    
+            /* 20-bit stereo samples are packed as follows:
+            Packet 0: 1980 bytes
+            Packets 1-: 2000 bytes
+    
+            Stored similarly to 24-bit:
+    
+            4 samples, most significant 16 bits of each sample first, in big-endian
+            order, followed by 2 bytes containing the least-significant 4 bits of
+            each sample.
+    
+            I'm guessing  that  20-bits are stored in the most-significant
+            20-bits of the 24.
+            */
+    
+            // FIX: Handle 20-bit audio and maybe convert other formats.
+            foutput(ERR "%d bit audio is not supported\n",info->bitspersample);
+            EXIT_ON_RUNTIME_ERROR
     }
-
-    return(n);
+    
+    
+    *bytesinbuffer += buffer_increment;
+    
+    return(buffer_increment);
 }
 
 int audio_close(fileinfo_t* info)
 {
+    if (globals.debugging) foutput("%s %s\n", INF "Closing audio file", info->filename);
     if (info->type==AFMT_WAVE)
     {
         fclose(info->audio->fp);

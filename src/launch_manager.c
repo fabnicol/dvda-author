@@ -109,105 +109,48 @@ int launch_manager(command_t *command)
     memset(singlestar, ' ', naudio_groups);
     char joinmark[naudio_groups][99];
     memset(joinmark, ' ', naudio_groups*99);
-    _Bool singlestar_flag=0, joinmark_flag=0;
-    unsigned int ppadd = 0, approximation;
+    _Bool singlestar_flag = 0, joinmark_flag = 0;
+    unsigned int ppadd = 0;
 
-
-
-    for (i=0; i < naudio_groups; i++)
+    for (i = 0; i < naudio_groups; ++i)
     {
-        nfiles[i]=ntracks[i];
-        totntracks+=nfiles[i];
+        nfiles[i] = ntracks[i];
+        totntracks += nfiles[i];
 
-        if (files[i][0].single_track)
-        {
-            /* a star indicates a track into which other tracks (may) have been merged */
-            // use nfiles defined above
-            singlestar[i]='*';
-            singlestar_flag=1;
-            ntracks[i]=1;
-
-            uint64_t tl=0;
-            int ii;
-            for (ii=0;ii<nfiles[i];ii++)
-                tl += files[i][ii].PTS_length;
-
-            files[i][0].PTS_length = tl;
-            files[i][0].last_sector = files[i][nfiles[i]-1].last_sector;
-            if (globals.debugging) foutput(MSG_TAG "group %d will be single-track\n", i);
-
-        }
-
-        for (j=0; j < nfiles[i];  j++)
+        for (j = 0; j < nfiles[i];  ++j)
         {
             // As files[][] is dynamically allocated with calloc(), 0 values mean command line did not define cga values
             if (files[i][j].cga == 0) files[i][j].cga=cgadef[files[i][j].channels-1];
+            files[i][j].contin_track = (uint8_t) (j != nfiles[i] - 1);
 
-
-            if (files[i][0].single_track)
-            {
-
-                if ((j) && ((files[i][j].samplerate!=files[i][j-1].samplerate)
-                            || (files[i][j].bitspersample!=files[i][j-1].bitspersample)
-                            || (files[i][j].channels!=files[i][j-1].channels)
-                            || (files[i][j].newtitle)))
-                {
-                    foutput(WAR "File %s (group %d, track %d) cannot be merged\n       into a single track, stopping here...\n", files[i][j].filename, i, j);
-                    //nfiles=j+1;
-                    break;
-                }
-
-
-                if (j) files[i][0].numsamples+=files[i][j].numsamples;
-                //PATCH
-            }
-
-            if (files[i][0].contin)
-            {
-                files[i][j].joingap=1;
-                joinmark_flag=1;
-
-                if (j<nfiles[i]-1)
-                {
-                    files[i][j].contin_track=1;
-                    joinmark[i][j]='=';
-
-                }
-            }
-
-            files[i][j].rmdr = (files[i][j].numbytes) % files[i][j].sampleunitsize;
-            if (files[i][j].padd)  files[i][j].numsamples++;
             files[i][j].PTS_length=(90000.0*files[i][j].numsamples)/files[i][j].samplerate;
-            if (j)
+
+            if ((files[i][j].samplerate > 48000
+                 && (files[i][j].bitspersample == 24
+                     && (files[i][j].channels == 5 || files[i][j].channels == 6)))
+                ||
+                (files[i][j].channels > 2 && files[i][j].samplerate > 96000))		     
             {
-                if  (files[i][j-1].rmdr >0)
-                {
-                    files[i][j].offset = files[i][j-1].rmdr;
-                    files[i][j].numsamples=((files[i][j].numbytes + files[i][j].offset)/files[i][j].sampleunitsize)*files[i][j].sampleunitsize/(files[i][j].channels*files[i][j].bitspersample/8);
-                    files[i][j].PTS_length=(90000.0*files[i][j].numsamples)/files[i][j].samplerate;
-                }
+              foutput("%s %s %s %d %s %d %s %d %s\n", ANSI_COLOR_RED "[ERR] File ", files[i][j].filename, " cannot be recorded to DVD-Audio without MLP encoding (", files[i][j].channels, " channels, ", files[i][j].bitspersample, " bits, ", files[i][j].samplerate, " samples per second.)");    
+              clean_exit(-1);
             }
-
-
-            foutput("%c%c  "ANSI_COLOR_BLUE"%d     "ANSI_COLOR_GREEN"%02d"ANSI_COLOR_YELLOW"  %6"PRIu32"   "ANSI_COLOR_RED"%02d"ANSI_COLOR_RESET"   %d   %10"PRIu64"   ",joinmark[i][j], singlestar[i], i+1, j+1, files[i][j].samplerate, files[i][j].bitspersample, files[i][j].channels, files[i][j].numsamples);
-            foutput("%s\n",files[i][j].filename);
-            totalsize+=files[i][j].numbytes;
+            
+            foutput("%c%c  "ANSI_COLOR_BLUE"%d     "ANSI_COLOR_GREEN"%02d"ANSI_COLOR_YELLOW"  %6"PRIu32"   "ANSI_COLOR_RED"%02d"ANSI_COLOR_RESET"   %d   %10"PRIu64"   ", joinmark[i][j], singlestar[i], i + 1, j + 1, files[i][j].samplerate, files[i][j].bitspersample, files[i][j].channels, files[i][j].numsamples);
+            foutput("%s\n", files[i][j].filename);
+            totalsize += files[i][j].numbytes;
 
         }
-
     }
 
 
-    for (i=0; i < nplaygroups; i++)
+    for (i = 0; i < nplaygroups; ++i)
     {
-        int numfiles=ntracks[playtitleset[i]];
+        int numfiles = ntracks[playtitleset[i]];
 
-        for (j=0; j < numfiles;  j++)
+        for (j = 0; j < numfiles;  ++j)
         {
-
-            foutput("%c%c  %d     %02d  %6"PRIu32"   %02d   %d   %10"PRIu64"   ",'D', singlestar[i], i+1, j+1, files[i][j].samplerate, files[i][j].bitspersample, files[i][j].channels, files[i][j].numsamples);
+            foutput("%c%c  %d     %02d  %6"PRIu32"   %02d   %d   %10"PRIu64"   ",'D', singlestar[i], i + 1, j + 1, files[i][j].samplerate, files[i][j].bitspersample, files[i][j].channels, files[i][j].numsamples);
             foutput("%s\n",files[i][j].filename);
-
         }
     }
 
@@ -224,32 +167,10 @@ int launch_manager(command_t *command)
 
     foutput(MSG_TAG "Size of raw PCM data: %"PRIu64" bytes (%.2f  MB)\n",totalsize, (float) totalsize/(1024*1024));
 
-
-    /* This approximation was contributed by Lee and Tim feldkamp */
-
-    approximation=275+3*naudio_groups+ppadd;
-
-    /* End of formula */
-
-    switch (startsector)
-    {
-
-    case -1:
-
-        startsector=approximation; /* automatic computing of startsector (Lee and Tim Feldman) */
-        foutput(MSG_TAG "Using start sector based on AOBs: %d\n",approximation);
-        break;
-
-    case  0:
-        startsector=STARTSECTOR; /* default value is 281 (Dave Chapman setting) */
-        foutput("%s", MSG_TAG "Using default start sector 281\n");
-        break;
-
-    default:
-
-        foutput(MSG_TAG "Using specified start sector %d instead of estimated %d\n",startsector,approximation);
-    }
-
+    // Software-dependent : 684
+    
+    startsector = 684 + 3 * naudio_groups;
+    
     /* main reference track tables */
     // static allocation with C99, arguably faster and possibly safer than calloc()
     uint8_t   numtitles[naudio_groups];
@@ -258,7 +179,8 @@ int launch_manager(command_t *command)
 
     uint64_t  *titlelength[naudio_groups];
 
-    uint16_t totntracks0=create_tracktables(command, naudio_groups,numtitles,ntitletracks,titlelength,ntitlepics);
+    uint16_t totntracks0 = create_tracktables(command, naudio_groups,numtitles,ntitletracks,titlelength,ntitlepics);
+
     if (globals.veryverbose)
     {
         if (totntracks == totntracks0)
@@ -267,15 +189,14 @@ int launch_manager(command_t *command)
         printf(INF "Total of tracks is not coherent: totntracks=%d, return of create_tracktables=%d\n", totntracks, totntracks0);
     }
 
-
-    for (i=0; i < naudio_groups; i++)
+    for (i = 0; i < naudio_groups; ++i)
     {
         
-        error=create_ats(audiotsdir,i+1,&files[i][0], nfiles[i]);
-        ppadd-=error;
+        error = create_ats(audiotsdir, i + 1, &files[i][0], nfiles[i]);
+        ppadd -= error;
         /* Audio zone system file  parameters  */
 
-        error=create_atsi(command, audiotsdir,i,&sectors.atsi[i], &ntitlepics[i][0]);
+        error = create_atsi(command, audiotsdir,i,&sectors.atsi[i], &ntitlepics[i][0]);
     }
 
     /* creating system VOBs */
@@ -311,13 +232,9 @@ int launch_manager(command_t *command)
     }
 #endif
 
-
-
-
-
     /* Creating AUDIO_PP.IFO */
 
-    last_sector=create_samg(audiotsdir, command, &sectors);
+    last_sector = create_samg(audiotsdir, command, &sectors);
 
     /*   sector_pointer_VIDEO_TS= number of sectors for AOBs + 2* sizeof amg + 2* size of ats*ngroups +system vobs +2*sizeof asvs */
 #if !HAVE_core_BUILD
@@ -415,13 +332,13 @@ int launch_manager(command_t *command)
         goto SUMMARY;
     }
 
-    for (i=0; i<naudio_groups; i++)
+    for (i = 0; i < naudio_groups; ++i)
     {
         if ((title[i]=(uint8_t *) calloc(ntracks[i], 1)) == NULL) perror(ERR "title[k]");
         {
             title[i][0]=0;
-            for (j=1; j<ntracks[i]; j++)
-                title[i][j]=(files[i][j].newtitle)+title[i][j-1];
+            for (j = 1; j < ntracks[i]; ++j)
+                title[i][j]=(files[i][j].newtitle) + title[i][j-1];
         }
     }
 
@@ -470,16 +387,16 @@ SUMMARY:
         errno=0;
         if ((mkisofs=create_binary_path(mkisofs, MKISOFS, SEPARATOR MKISOFS_BASENAME)))
         {
-           foutput("%s\n", INF "Launching mkisofs to create image");
+           foutput("%s%s%s\n", INF "Launching: ", mkisofs, " to create image");
            run(mkisofs, args, 0);
         }
         else
                 foutput("%s\n", ERR "Could not access mkisofs binary.");
 
-        FREE(mkisofs);
+        //FREE(mkisofs);
 
         size=stat_file_size(dvdisopath)/1024;
-        if ((!errno) && (size > 4*SIZE_AMG + 2*SIZE_SAMG +1))  foutput(MSG_TAG "Image was created with size %" PRIu64 " KB.", size);
+        if ((!errno) && (size > 4*SIZE_AMG + 2*SIZE_SAMG +1))  foutput(MSG_TAG "Image was created with size %" PRIu64 " KB.\n", size);
         else
             foutput("%s\n", ERR "ISO file creation failed -- fix issue.");
 
