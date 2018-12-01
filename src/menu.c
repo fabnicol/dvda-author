@@ -307,7 +307,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     errno=0;
     static int s;
     if(s==0) s = strlen(globals.settings.tempdir);
-    char pict[s+13];
+    char pict[s+15];
 
     FREE(img->backgroundmpg[rank])
 
@@ -1191,12 +1191,16 @@ int create_stillpic_directory(char* string, int32_t count)
     if (k == count)
     {
         if (globals.debugging) foutput(WAR "Too many pics, only %d sound track%s skipping others...\n", count, (count == 1)? "," : "s,");
+        
+        change_directory(globals.settings.workdir);
         return 0;
     }
 
     if (*string == '\0')
     {
         if (globals.debugging) foutput(INF "Jumping one track for picture rank = %d\n", k);
+        
+        change_directory(globals.settings.workdir);
         return 1;
     }
 
@@ -1212,6 +1216,8 @@ int create_stillpic_directory(char* string, int32_t count)
     {
         if (globals.debugging) foutput(INF "Directory %s will be parsed for still pics\n", string);
         globals.settings.stillpicdir = strdup(string);
+        
+        change_directory(globals.settings.workdir);
         return 0;
     }
     if (S_IFREG & buf.st_mode)
@@ -1222,9 +1228,10 @@ int create_stillpic_directory(char* string, int32_t count)
         if (globals.debugging) fprintf(stderr, DBG "Picture %s will be copied to temporary directory as %s.\n", string, dest);
     
         copy_file(string, dest);
-    
-        if (k == 0) globals.settings.stillpicdir = strdup(globals.settings.tempdir);
+
         ++k;
+        
+        change_directory(globals.settings.workdir);
         return 1;
 #ifndef __WIN32__
     }
