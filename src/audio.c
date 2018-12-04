@@ -562,8 +562,45 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
 
   // BUGFIX: consequence of generalizing use of fixwav
 
-
   return(info->type = extract_audio_info(info));
+}
+
+
+static inline void clean_file(fileinfo_t* info, int u)
+{
+    FILE* fp = info->mergeflag ? info->audio->channel_fp[u] : info->audio->fp;
+    fseek(fp, -10 * 2048, SEEK_END); // 10 sectors back
+    char temp[10 * 2048] = {0};
+    for (int c = 0; c < 10 * 2048; ++c) 
+    {
+        temp[c] = getc(fp);
+        if (temp[c] == 0) temp[c] = 0x20;
+    }
+    temp[10 * 2048 -1] = 0;
+
+    char* ret = strstr(temp, "LIST");
+    
+    if (ret)
+    {
+        fseek(fp, 0, SEEK_END);
+        off_t size = ftello(fp);
+        fclose(fp);
+        off_t l = strlen(ret);
+        truncate64(info->mergeflag ? info->given_channel[u] : info->filename, size - l - 1);
+        if (info->mergeflag)  
+            info->audio->channel_fp[u] = fopen(info->given_channel[u], "rb"); 
+        else
+            info->audio->fp = fopen(info->filename, "rb");
+    }
+    else
+    {
+        fclose(fp);
+       
+        if (info->mergeflag)  
+            info->audio->channel_fp[u] = fopen(info->given_channel[u], "rb"); 
+        else
+            info->audio->fp = fopen(info->filename, "rb"); 
+    }
 }
 
 static inline int process_wav_get_info(fileinfo_t* info)
@@ -577,13 +614,14 @@ if (info->mergeflag)
 {
      for (int u=0; u < info->channels; u++)
      {
-      info->audio->channel_fp[u] = fopen(info->given_channel[u], "rb");
-
+      info->audio->channel_fp[u] = fopen(info->given_channel[u], "r+b");
+      clean_file(info, u);
+      
       if (globals.debugging) foutput(INF "Opening %s to get info\n", info->given_channel[u]);
 
-      int span=compute_header_size(info->audio->channel_fp[u]);
-
-      info->channel_header_size[u]=(span > 0) ? span + 8 : MAX_HEADER_SIZE;
+      int span = compute_header_size(info->audio->channel_fp[u]);
+ 
+      info->channel_header_size[u] = (span > 0) ? span + 8 : MAX_HEADER_SIZE;
       uint8_t header[info->channel_header_size[u]];
       memset(header, 0, info->channel_header_size[u]);
 
@@ -611,9 +649,10 @@ if (info->mergeflag)
 }
 else
 {
+  info->audio->fp = fopen(info->filename, "r+b");
 
-  info->audio->fp = fopen(info->filename, "rb");
-
+  clean_file(info, 0);
+  
   if (info->audio->fp == NULL)
   {
       perror("Fichier impossible à ouvrir");
@@ -628,25 +667,23 @@ else
 
   /* PATCH: real size on disc is needed */
 
- #if defined __WIN32__
-    info->file_size = read_file_size(info->audio->fp,(TCHAR*) info->filename);
- #else
-    info->file_size = read_file_size(info->audio->fp, info->filename);
- #endif
+  #if defined __WIN32__
+        info->file_size = read_file_size(info->audio->fp,(TCHAR*) info->filename);
+  #else
+        info->file_size = read_file_size(info->audio->fp, info->filename);
+  #endif
   
- fseek(info->audio->fp, 0, SEEK_SET);
- int span = 0;
- if (info->header_size > (span = fread(header, 1, info->header_size,info->audio->fp)))
- {
-     foutput(ERR "Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
-     perror("       ");
-     clean_exit(EXIT_FAILURE);
- }
+  fseek(info->audio->fp, 0, SEEK_SET);
+  int span = 0;
+  if (info->header_size > (span = fread(header, 1, info->header_size, info->audio->fp)))
+  {
+    foutput(ERR "Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
+    perror("       ");
+    clean_exit(EXIT_FAILURE);
+  }
  
   info->type = extract_audio_info_by_all_means(info->filename, header, info);
-
 }
-
 
 return (info->type);
 }
