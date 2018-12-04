@@ -73,7 +73,7 @@
         perror("       ");
         return 0;
     }
-
+    
     file_size = ftello(fp);
 
     fclose(fp);
