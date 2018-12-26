@@ -586,6 +586,7 @@ static inline void clean_file(fileinfo_t* info, int u)
         off_t size = ftello(fp);
         fclose(fp);
         off_t l = strlen(ret);
+        if (globals.debugging) foutput(INF "%s\n", "Untagging LIST chunks.");
         truncate64(info->mergeflag ? info->given_channel[u] : info->filename, size - l - 1);
         if (info->mergeflag)  
             info->audio->channel_fp[u] = fopen(info->given_channel[u], "rb"); 
@@ -595,7 +596,7 @@ static inline void clean_file(fileinfo_t* info, int u)
     else
     {
         fclose(fp);
-       
+        if (globals.debugging) foutput(INF "%s\n", "No LIST chunks.");
         if (info->mergeflag)  
             info->audio->channel_fp[u] = fopen(info->given_channel[u], "rb"); 
         else
@@ -615,7 +616,7 @@ if (info->mergeflag)
      for (int u=0; u < info->channels; u++)
      {
       info->audio->channel_fp[u] = fopen(info->given_channel[u], "r+b");
-      clean_file(info, u);
+      clean_file(info, u); // UNtagging
       
       if (globals.debugging) foutput(INF "Opening %s to get info\n", info->given_channel[u]);
 
@@ -651,7 +652,7 @@ else
 {
   info->audio->fp = fopen(info->filename, "r+b");
 
-  clean_file(info, 0);
+  clean_file(info, 0); // UNtagging
   
   if (info->audio->fp == NULL)
   {
