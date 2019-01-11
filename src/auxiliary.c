@@ -79,8 +79,8 @@ printf("%s","Usage: dvda-author [OPTION]...\n");
 printf("%s","\nOptions:\n\n");
 printf("%s","Output options\n\n");
 
-printf("%s","-h, --help               Diplay this help.\n\n");
-printf("%s","-v, --version            Diplay version.\n\n");
+printf("%s","-h, --help               Display this help.\n\n");
+printf("%s","-v, --version            Display version.\n\n");
 printf("%s","-q, --quiet              Quiet mode.\n\n");
 printf("%s","-d, --debug              Increased verbosity (debugging level)\n\n");
 
