@@ -449,7 +449,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                     FREE(globals.settings.tempdir);
                     globals.settings.tempdir=strdup(optarg);
                     foutput("%s%s\n",PAR "Temporary directory is: ", optarg);
-                    normalize_temporary_paths(NULL);
+
                     break;
                     
                 case 19:
@@ -1521,8 +1521,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 #endif
         }
     }
-    
-    
+
+     normalize_temporary_paths(NULL);
+
 #if !HAVE_core_BUILD
     if (check_version_flag)
     {
@@ -1554,7 +1555,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if ((globals.debugging)&& (!globals.nooutput))
                 foutput(MSG_TAG "Output directory %s has been preserved.\n", globals.settings.outdir);
         }
-                
+
         if (!globals.nooutput)
         {
             errno=secure_mkdir(globals.settings.outdir, 0777);
@@ -2355,12 +2356,12 @@ standard_checks:
     
     errno=0;
     memcpy(command, &command0, sizeof(command0));
-    
+
     if (user_command_line)    
     {
         scan_wavfile_audio_characteristics(command);
     }
-        
+
     process_dvd_video_zone(command);
   
     user_command_line++;

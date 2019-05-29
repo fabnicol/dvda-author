@@ -90,22 +90,23 @@ char *currentdir, *TEMPDIR, *LPLEXTEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
         return command;
  }
 
+inline void allocate_paths(char* s, const char* dir, ulong length)
+{
+    //if (s == NULL)
+    {
+      s = calloc(length + 10, sizeof(char));
+      sprintf(s, "%s"SEPARATOR"%s", globals.settings.tempdir, dir);
+    }
+}
+
 void normalize_temporary_paths(pic* img)
 {
-    static size_t s;
+    ulong s = strlen(globals.settings.tempdir);
 
-    // cannot easily  free(globals.settings.logfile) etc. as embedded  in structure ?
-    s=strlen(globals.settings.tempdir);
-    globals.settings.indir=realloc(globals.settings.indir, (s+10)*sizeof(char));
-    globals.settings.outdir=realloc(globals.settings.outdir, (s+10)*sizeof(char));
-    globals.settings.lplexoutdir=realloc(globals.settings.lplexoutdir, (s+10)*sizeof(char));
-    globals.settings.linkdir=realloc(globals.settings.linkdir, (s+10)*sizeof(char));
-    globals.settings.indir=calloc(s+10,1);
-
-    sprintf(globals.settings.indir, "%s"SEPARATOR"%s", globals.settings.tempdir, "audio");
-    sprintf(globals.settings.outdir, "%s"SEPARATOR"%s", globals.settings.tempdir, "output");
-    sprintf(globals.settings.lplexoutdir, "%s"SEPARATOR"%s", globals.settings.tempdir, "output");
-    sprintf(globals.settings.linkdir, "%s"SEPARATOR"%s", globals.settings.tempdir, "VIDEO_TS");
+    allocate_paths(globals.settings.indir, "audio", s);
+    allocate_paths(globals.settings.outdir, "output", s);
+    allocate_paths(globals.settings.lplexoutdir, "output", s);
+    allocate_paths(globals.settings.linkdir, "VIDEO_TS", s);
 
     if (img != NULL)
     {
