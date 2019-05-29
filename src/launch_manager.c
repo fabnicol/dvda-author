@@ -74,13 +74,14 @@ int launch_manager(command_t *command)
     sectors.topvob=0;
     sectors.stillvob=0;
     memset(sectors.atsi, 0, sizeof(sectors.atsi));
-
+    if (globals.settings.outdir == NULL) globals.settings.outdir = strdup(globals.settings.tempdir);
     uint8_t pathlength=strlen(globals.settings.outdir);
 
     char audiotsdir[pathlength+10];
     char videotsdir[pathlength+10];
 
     sprintf(audiotsdir, "%s"SEPARATOR"AUDIO_TS", globals.settings.outdir);
+    fprintf(stderr, "%s\n",globals.settings.outdir);
     if (!globals.nooutput) secure_mkdir(audiotsdir, globals.access_rights);
     errno=0;
     if (globals.videozone)
