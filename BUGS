@@ -47,3 +47,8 @@ depconf/BUILD.TRACE~ (saves prior BUILD.TRACE)
 DOWNLOADS
 PATCHED.DOWNLOADS
 The filenames are self-explanatory. Please check them before reporting a bug.
+
+
+LINUX
++ Sox runtime failure (aiff)
+
