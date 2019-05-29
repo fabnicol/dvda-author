@@ -28,7 +28,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <stdlib.h>
 #include <stdio.h>
 
-#ifndef __unix__
+#if defined(_WIN32) || defined(__WIN32)
  #undef __STRICT_ANSI__
  #include <io.h>
 #else

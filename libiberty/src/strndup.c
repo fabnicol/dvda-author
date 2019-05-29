@@ -19,7 +19,6 @@
 #include <string.h>
 #include "strndup.h"
 #include "strnlen.h"
-#include "malloc.h"
 
 #undef __strndup
 #undef strndup
