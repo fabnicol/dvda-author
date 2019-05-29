@@ -587,7 +587,7 @@ static inline void clean_file(fileinfo_t* info, int u)
         fclose(fp);
         off_t l = strlen(ret);
         if (globals.debugging) foutput(INF "%s\n", "Untagging LIST chunks.");
-        truncate64(info->mergeflag ? info->given_channel[u] : info->filename, size - l - 1);
+        truncate(info->mergeflag ? info->given_channel[u] : info->filename, size - l - 1);
         if (info->mergeflag)  
             info->audio->channel_fp[u] = fopen(info->given_channel[u], "rb"); 
         else
