@@ -206,8 +206,6 @@ printf("%s","    --no-refresh-outdir  Do not erase and recreate the output direc
 printf("%s","    --bindir path        Path to auxiliary binaries.\n\n");
 #if HAVE_curl
 printf("%s","    --check-version  Only check whether this is the latest version of dvda-author, does not download.\n\n");
-printf("%s","    --download  Download the latest version of dvda-author. Triggers --check-version.\n\n");
-printf("%s","    --download=force  Download the latest version of dvda-author even if the current one is the same." J "Maybe useful for reinstalling or in case of impaired source code.\n\n");
 #endif
 
 printf("%s","Sub-options\n\n");
@@ -662,100 +660,4 @@ char* create_binary_path(char* local_variable, const char* symbolic_constant, co
 }
 
 
-void download_latest_version(_Bool download_new_version_flag,_Bool force_download_flag)
-{
-   #if HAVE_curl
-
-      extern char* curl;
-
-      initialize_binary_paths(CREATE_CURL);
-
-      erase_file("version.current");
-
-      FILE* versionfile;
-      int error=download_file_from_http_server(curl, "version.current", WEBSITE);
-      if ((error == 0) && (NULL != (versionfile=fopen("version.current", "rb"))))
-      {
-    char year[5]={0};
-    char month[5]={0};
-    char build[6]={0};
-
-    if (NULL == fgets(year, 5, versionfile)) clean_exit(EXIT_FAILURE);
-    if (NULL == fgets(month, 5, versionfile)) clean_exit(EXIT_FAILURE);
-    if (NULL == fgets(build, 6, versionfile)) clean_exit(EXIT_FAILURE);
-
-    year[2]=0;
-    month[2]=0;
-    build[3]=0;
-    char* version=strdup(VERSION);
-    char this_year[3]={version[0], version[1], '\0'};
-    char this_month[3]={version[3], version[4], '\0'};
-    char this_build[4]={version[6], version[7], version[8], '\0'};
-    if (globals.veryverbose)
-    {
-    foutput(MSG_TAG "Current version is: %s-%s ", year, month);
-    foutput("build %s\n", build);
-    foutput(MSG_TAG "Software version is: %s-%s ", this_year, this_month);
-    foutput("build %s\n", this_build);
-    }
-
-    int atoi_this_year=atoi(this_year);
-    int atoi_this_month=atoi(this_month);
-    int atoi_year=atoi(year);
-    int atoi_month=atoi(month);
-
-    short test= (atoi_this_year < atoi_year)+
-    (atoi_this_year == atoi_year)*(atoi_this_month < atoi_month)+
-    (atoi_this_year == atoi_year)*(atoi_this_month == atoi_month)*(atoi(this_build) < atoi(build));
-
-    if (test)
-      foutput(INF "A more recent version has been released (%s-%s build %s)\n       Download it from http://dvd-audio.sourceforge.net\n       You can also trigger download by relaunching with dvda-author --download.\n", year, month, build);
-    else
-    {
-      foutput("%s", MSG_TAG "This version is the latest version available.\n");
-      if (download_new_version_flag)
-      {
-
-        if (!force_download_flag)
-        {
-          foutput("%s", MSG_TAG "You do not need to download the new package.\n");
-          foutput("%s", MSG_TAG "To force downloading use --download=force instead\n       Now exiting...\n");
-          clean_exit(EXIT_SUCCESS);
-        }
-        else
-          foutput("%s", MSG_TAG "Downloading the current package anyhow. Please wait...\n");
-
-      }
-    }
-
-
-
-    if (download_new_version_flag)
-    {
-      char dvda_author_fullpath[350]={0};
-      unlink("dvda-author-update.tar.gz");
-      errno=0;
-      sprintf(dvda_author_fullpath, "http://sourceforge.net/projects/dvd-audio/files/dvda-author/%s-%s.%s/%s-%s.%s-%s.tar.gz/download", "dvda-author", year, month, "dvda-author", year, month, build);
-      error=download_fullpath(curl, "dvda-author-update.tar.gz", dvda_author_fullpath);
-      FILE* package;
-      if ((error == 0) && (NULL != (package=fopen("dvda-author-update.tar.gz", "rb"))))
-      {
-
-        fclose(package);
-        foutput(MSG_TAG "New version %s-%s build %s was downloaded as dvda-author-update.tar.gz\n", year, month, build);
-
-      }
-      else
-        foutput("%s", MSG_TAG "Failed to download new version.\n");
-
-      exit(EXIT_SUCCESS);
-
-    }
-    free(version);
-    initialize_binary_paths(FREE_MEMORY);
-
-
-      }
-     #endif
-}
 #endif

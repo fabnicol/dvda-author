@@ -157,7 +157,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     
     int errmsg;
     _Bool allocate_files=false, logrefresh=false, refresh_tempdir=true, refresh_outdir=true;  // refreshing output and temporary directories by default
-    _Bool download_new_version_flag=0, check_version_flag=0, force_download_flag=0;
     DIR *dir;
     parse_t  audiodir;
     extractlist extract;
@@ -269,7 +268,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"background-colors", required_argument, NULL, 2},
         {"bindir", required_argument, NULL, 3},
         {"topmenu-slides", required_argument, NULL, 6},
-        {"download", optional_argument, NULL, 7},
         {"check-version", no_argument, NULL, 8},
         {"import-topmenu", required_argument, NULL, 9},
         {"dvdv-tracks", required_argument, NULL, 17},
@@ -383,16 +381,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                         globals.loghtml=1;
                         break;
                         
-                    case 7:
-                        download_new_version_flag=1;
-                        check_version_flag=1;
-                        if (optarg) force_download_flag=1;
-                        break;
                         
-                    case 8:
-                        check_version_flag=1;
-                        
-                        break;
                         
                 }
             }
@@ -1523,16 +1512,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     }
     
     
-#if !HAVE_core_BUILD
-    if (check_version_flag)
-    {
-#ifdef __WIN32__
-        change_directory(globals.settings.bindir);
-#endif
-        download_latest_version(download_new_version_flag, force_download_flag);
-        if (ngroups == 0) clean_exit(EXIT_SUCCESS);
-    }
-#endif
     
     change_directory(globals.settings.workdir);
     
