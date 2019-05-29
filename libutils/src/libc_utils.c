@@ -779,7 +779,8 @@ void clean_exit(int message)
 
 _Bool s_dir_exists(const char* path)
 {
-  struct stat info;
+   if (path == NULL) path = strdup(globals.settings.tempdir);
+   struct stat info;
 
     if (stat(path, &info) != 0)
     {
@@ -826,9 +827,10 @@ int secure_mkdir (const char *path, mode_t mode)
     int i=0, len;
     if (path == NULL || path[0]=='\0')
     {
-     fprintf(stderr, "%s","\n"ERR "Could not create directory with empty or null path.\n");
-     clean_exit(EXIT_FAILURE);
+     fprintf(stderr, "%s%s%s","\n"ERR "Could not create directory with empty or null path. Using temporary directory : ", globals.settings.tempdir, "\n");
+     return secure_mkdir(globals.settings.tempdir, mode);
     }
+
     len = strlen (path);
 
     // requires std=c99
