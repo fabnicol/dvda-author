@@ -74,7 +74,7 @@ DVDA_MKDIR([local])
 # checks installation dirs
 # For BSD-type packaging, it is preferable not to use /usr/local as a default prefix
 m4_include([m4/dvda.m4])
-DVDA_PREFIX_DEFAULT([/usr])
+DVDA_PREFIX_DEFAULT([/usr/local])
 AC_ARG_WITH(config, [AS_HELP_STRING([--with-config],[Path to directory of configuration file])], [SHORTLINKDIR=$withval], [])
 
 datarootdir="${prefix}/share"
