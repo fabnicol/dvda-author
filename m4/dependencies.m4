@@ -244,7 +244,7 @@ m4_map([DVDA_TEST_AUX],[
 		[],
 		[],
 		[WEBSITE/utils],
-		[57ea644856b7013546cb7fa0b5978d05]
+		[acf64e265b8eda83fb8593229aca6c63]
 	    ],
 	    [
 		[mjpegtools-download],
@@ -252,7 +252,7 @@ m4_map([DVDA_TEST_AUX],[
 		[],
 		[],
 		[WEBSITE/utils],
-		[b5386c145c267f4e073eee84ee94b7a4]
+		[1fef8a52bc925a3dec05db963a0e70c8]
 	    ],
 	    [
 		[libmpeg2-download],
