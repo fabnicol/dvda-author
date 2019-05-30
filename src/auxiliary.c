@@ -305,7 +305,9 @@ WITHOUT_FLAC to compile without FLAC/OggFLAC code\n\n");
 printf("%s", "\nReport bugs to fabnicol@users.sourceforge.net\n");
 return;
 }
-
+#if 0
+#undef SETTINGSFILE
+#define SETTINGSFILE "/usr/local/share/applications/dvda-author-dev/dvda-authhor.conf" 
 void check_settings_file()
 {
 
@@ -337,7 +339,7 @@ void check_settings_file()
     }
 
 }
-
+#endif
 _Bool increment_ngroups_check_ceiling(uint8_t *ngroups, uint8_t * nvideolinking_groups)
 {
 
