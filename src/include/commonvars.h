@@ -26,9 +26,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #ifndef COMMONVARS_H_INCLUDED
 #define COMMONVARS_H_INCLUDED
 
-#if HAVE_CONFIG_H
+//#if HAVE_CONFIG_H
 #include "config.h"
-#endif
+//#endif
 
 #include "libiberty.h"
 
