@@ -1417,10 +1417,10 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
 	  x86_64-*linux*)
 	    LD="${LD-ld} -m elf_x86_64"
 	    ;;
-	  powerpcle-*linux*|powerpc64le-*linux*)
+	  powerpcle-*linux*)
 	    LD="${LD-ld} -m elf64lppc"
 	    ;;
-	  powerpc-*linux*|powerpc64-*linux*)
+	  powerpc-*linux*)
 	    LD="${LD-ld} -m elf64ppc"
 	    ;;
 	  s390*-*linux*|s390*-*tpf*)
@@ -2666,14 +2666,7 @@ freebsd* | dragonfly*)
     *) objformat=elf ;;
     esac
   fi
-  # Handle Gentoo/FreeBSD as it was Linux
-  case $host_vendor in
-    gentoo)
-      version_type=linux ;;
-    *)
-      version_type=freebsd-$objformat ;;
-  esac
-
+  version_type=freebsd-$objformat
   case $version_type in
     freebsd-elf*)
       library_names_spec='$libname$release$shared_ext$versuffix $libname$release$shared_ext$major $libname$shared_ext'
@@ -2684,12 +2677,6 @@ freebsd* | dragonfly*)
     freebsd-*)
       library_names_spec='$libname$release$shared_ext$versuffix $libname$shared_ext$versuffix'
       need_version=yes
-      ;;
-    linux)
-      library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major ${libname}${shared_ext}'
-      soname_spec='${libname}${release}${shared_ext}$major'
-      need_lib_prefix=no
-      need_version=no
       ;;
   esac
   shlibpath_var=LD_LIBRARY_PATH
