@@ -204,9 +204,6 @@ printf("%s","    --no-refresh-tempdir Do not erase and recreate the DVD-Audio te
 printf("%s","    --no-refresh-outdir  Do not erase and recreate the output directory on launch.\n\n");
 #if !HAVE_core_BUILD
 printf("%s","    --bindir path        Path to auxiliary binaries.\n\n");
-#if HAVE_curl
-printf("%s","    --check-version  Only check whether this is the latest version of dvda-author, does not download.\n\n");
-#endif
 
 printf("%s","Sub-options\n\n");
 
