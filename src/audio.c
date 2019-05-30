@@ -528,7 +528,10 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
                       // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
                     else
                       // PATCH looping back to get info
+                    {
+                       info->filename = path;
                        return(info->type = wav_getinfo(info));
+                    }
 // yet without the processing tail below (preserving new header[] array and info structure)
                 }
                 else
@@ -961,12 +964,14 @@ char* replace_file_extension(char * filename)
 // Requires C99
     int size=s-l;
 
-    char new_wav_name[size+9];
+    char new_wav_name[size+l+10];
 
 
     memcpy(new_wav_name, filename, size);
-    memcpy(new_wav_name+size, "_sox.wav", 8);
-    new_wav_name[size+8]='\0';
+    memcpy(new_wav_name+size, "_sox_", 5);
+    memcpy(new_wav_name+size+5, filename+size+1, l-1);
+    memcpy(new_wav_name+size+l+4, ".wav", 4);
+    new_wav_name[size+l+8]='\0';
 
     // Here, tolerating a memory leak for -g filenames.
     // -i filenames could in principle be freed.
@@ -994,7 +999,7 @@ int launch_sox(char** filename)
         
     unlink(new_wav_name);
     errno=0;
-    if (soxconvert(*filename, new_wav_name))
+    if (soxconvert(*filename, new_wav_name) == 0);
     {
         if (globals.debugging)  foutput("%s\n", INF "File was converted.");
 

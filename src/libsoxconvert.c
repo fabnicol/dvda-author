@@ -44,11 +44,11 @@ extern globalData globals;
 #endif
 
 // arcane issue with assert() that justifies this workaround
-#define check(X) if ((X)==0) foutput("%s%d\n", ERR "SoX runtime failure, stage ", stage)
+#define check(X) if ((X)==0) { foutput("%s%d\n", ERR "SoX runtime failure, stage ", stage); return -1;}
 
 int soxconvert(char * input, char* output)
 {
-  static int stage;
+  int stage = 0;
 
 
   static sox_format_t * in, * out; /* input and output files */
@@ -60,7 +60,7 @@ int soxconvert(char * input, char* output)
    foutput("%s\n", INF "Converting file");
 
   /* All libSoX applications must start by initialising the SoX library */
-  check(sox_format_init() == SOX_SUCCESS); stage++;
+  sox_format_init(); // this may fail without much ado
 
   /* Open the input file (with default parameters) */
   check(in = sox_open_read(input, NULL, NULL, NULL)); stage++;
@@ -107,7 +107,7 @@ int soxconvert(char * input, char* output)
   sox_close(in);
   sox_format_quit();
 
-  return errno;
+  return 0;
 }
 
 #endif
