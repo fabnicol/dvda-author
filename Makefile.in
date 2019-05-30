@@ -75,7 +75,6 @@ $(BUILD_SUBDIRS): $(ALL_TARGETS_EXTERNAL) libutils
 
 $(PROGRAM_TARGET_CONFIGS): %.config: @BUILDDIR@/depconf/%.depconf
 	@echo
-	sleep 1s
 	echo Finished building $*...
 
 erase_build.trace:
