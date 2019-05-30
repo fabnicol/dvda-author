@@ -70,7 +70,7 @@ char *currentdir, *TEMPDIR, *LPLEXTEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
         if (lexer->commandline[i] == NULL) perror("\n"ERR "lexer\n");
     }
 
-    if (config_type == CONFIGURATION_FILE) check_settings_file();
+    //if (config_type == CONFIGURATION_FILE) check_settings_file();
 
     errno=0;
 
@@ -90,7 +90,7 @@ char *currentdir, *TEMPDIR, *LPLEXTEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
         return command;
  }
 
-inline void allocate_paths(char* s, const char* dir, ulong length)
+static inline void allocate_paths(char* s, const char* dir, unsigned long length)
 {
     //if (s == NULL)
     {
@@ -101,7 +101,7 @@ inline void allocate_paths(char* s, const char* dir, ulong length)
 
 void normalize_temporary_paths(pic* img)
 {
-    ulong s = strlen(globals.settings.tempdir);
+    unsigned long s = strlen(globals.settings.tempdir);
 
     allocate_paths(globals.settings.indir, "audio", s);
     allocate_paths(globals.settings.outdir, "output", s);
