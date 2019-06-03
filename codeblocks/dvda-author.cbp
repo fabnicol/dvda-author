@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="dvda-author" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/dvda-author" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="-g ~/Dev/dvda-author/Docs/a2_24_44.wav -t -W -T 1 " />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/dvda-author" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-std=c99 -march=core2" />
+			<Add option="-D_GNU_SOURCE" />
+			<Add option="-D__CB" />
+			<Add option="-DHAVE_lplex" />
+			<Add option="-DCOMPILER_IS_GCC" />
+			<Add option="-DHAVE_curl" />
+			<Add option="-DHAVE_fixwav" />
+			<Add option="-DHAVE_libogg" />
+			<Add option="-DHAVE_iberty" />
+			<Add option="-DHAVE_mpeg2enc" />
+			<Add option="-DHAVE_mplex" />
+			<Add option="-DHAVE_OGG_FLAC" />
+			<Add option="-DHAVE_FLAC" />
+			<Add option="-DHAVE_sox" />
+			<Add option="-DHAVE_CONFIG_H" />
+			<Add option='-DVERSION=\\\&quot;dev-9999\\\&quot;' />
+			<Add directory="/home/fab2/Dev/dvda-author/src/include" />
+			<Add directory="../libiberty/src/include" />
+			<Add directory="../libfixwav/src/include" />
+			<Add directory="/home/fab2/Dev/dvda-author/" />
+			<Add directory="../libutils/src/include" />
+			<Add directory="../libutils/src/private" />
+		</Compiler>
+		<Linker>
+			<Add option="-static-libgcc" />
+			<Add option="-lsox" />
+			<Add option="-lFLAC" />
+			<Add option="-lid3tag" />
+			<Add option="-lz" />
+			<Add option="-lsndfile" />
+			<Add option="-lpulse" />
+			<Add option="-lpulse-simple" />
+			<Add option="-lasound" />
+			<Add option="-lwavpack" />
+			<Add option="-lvorbisenc" />
+			<Add option="-lvorbisfile" />
+			<Add option="-lvorbis" />
+			<Add option="-logg" />
+			<Add option="-lpng" />
+			<Add option="-lz" />
+			<Add option="-lgomp" />
+		</Linker>
+		<Unit filename="../config.h" />
+		<Unit filename="../libfixwav/src/checkData.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../libfixwav/src/checkParameters.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../libfixwav/src/fixwav_auxiliary.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../libfixwav/src/include/audio.h" />
+		<Unit filename="../libfixwav/src/include/checkData.h" />
+		<Unit filename="../libfixwav/src/include/checkParameters.h" />
+		<Unit filename="../libfixwav/src/include/fixwav.h" />
+		<Unit filename="../libfixwav/src/include/fixwav_auxiliary.h" />
+		<Unit filename="../libfixwav/src/include/fixwav_manager.h" />
+		<Unit filename="../libfixwav/src/include/launch_fixwav.h" />
+		<Unit filename="../libfixwav/src/include/readHeader.h" />
+		<Unit filename="../libfixwav/src/include/repair.h" />
+		<Unit filename="../libfixwav/src/manager.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../libfixwav/src/readHeader.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../libfixwav/src/repair.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../libiberty/src/getopt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../libiberty/src/getopt1.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../libiberty/src/getsubopt.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../libiberty/src/include/getopt.h" />
+		<Unit filename="../libiberty/src/include/getopt_int.h" />
+		<Unit filename="../libiberty/src/include/getsubopt.h" />
+		<Unit filename="../libiberty/src/include/strchrnul.h" />
+		<Unit filename="../libiberty/src/include/strdup.h" />
+		<Unit filename="../libiberty/src/include/strndup.h" />
+		<Unit filename="../libiberty/src/include/strnlen.h" />
+		<Unit filename="../libiberty/src/malloc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../libiberty/src/strchrnul.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../libiberty/src/strdup.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../libiberty/src/strndup.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../libiberty/src/strnlen.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../libutils/src/include/c_utils.h" />
+		<Unit filename="../libutils/src/include/decode.h" />
+		<Unit filename="../libutils/src/include/export.h" />
+		<Unit filename="../libutils/src/include/format.h" />
+		<Unit filename="../libutils/src/include/libiberty.h" />
+		<Unit filename="../libutils/src/include/ordinals.h" />
+		<Unit filename="../libutils/src/include/stream_decoder.h" />
+		<Unit filename="../libutils/src/include/stream_encoder.h" />
+		<Unit filename="../libutils/src/include/winport.h" />
+		<Unit filename="../libutils/src/libc_utils.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../libutils/src/private/private_c_utils.h" />
+		<Unit filename="../libutils/src/winport.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/amg2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/asvs.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/ats.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/ats2wav.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/atsi2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/audio.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/auxiliary.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/command_line_parsing.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/dvda-author.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/file_input_parsing.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/include/amg.h" />
+		<Unit filename="../src/include/asvs.h" />
+		<Unit filename="../src/include/ats.h" />
+		<Unit filename="../src/include/ats2wav.h" />
+		<Unit filename="../src/include/atsi.h" />
+		<Unit filename="../src/include/audio2.h" />
+		<Unit filename="../src/include/auxiliary.h" />
+		<Unit filename="../src/include/command_line_parsing.h" />
+		<Unit filename="../src/include/commonvars.h" />
+		<Unit filename="../src/include/dvda-author.h" />
+		<Unit filename="../src/include/file_input_parsing.h" />
+		<Unit filename="../src/include/launch_manager.h" />
+		<Unit filename="../src/include/lexer.h" />
+		<Unit filename="../src/include/libsoxconvert.h" />
+		<Unit filename="../src/include/menu.h" />
+		<Unit filename="../src/include/multichannel.h" />
+		<Unit filename="../src/include/ports.h" />
+		<Unit filename="../src/include/samg.h" />
+		<Unit filename="../src/include/sound.h" />
+		<Unit filename="../src/include/structures.h" />
+		<Unit filename="../src/include/version.h" />
+		<Unit filename="../src/include/videoimport.h" />
+		<Unit filename="../src/include/xml.h" />
+		<Unit filename="../src/launch_manager.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/lexer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/libsoxconvert.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/menu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/samg2.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/sound.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/videoimport.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/xml.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
