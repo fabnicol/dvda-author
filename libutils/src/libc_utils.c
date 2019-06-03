@@ -1063,7 +1063,7 @@ void change_directory(const char * filename)
              fprintf(stderr, ERR "Impossible to cd to %s.\n", filename);
              perror(ANSI_COLOR_RED"\n[ERR]");
            }
-           else   
+           else
              fprintf(stderr, "%s",ERR "Null path\n.");
            //exit(EXIT_FAILURE);
         }
@@ -1154,6 +1154,8 @@ void copy_file_wrapper(const char* filename, void* out, void GCC_UNUSED *permiss
 
 int copy_directory(const char* src, const char* dest, mode_t mode)
 {
+    if (strcmp(src, dest) == 0) return(0);
+
     struct stat buf;
 
     if (stat(dest, &buf) == -1)
@@ -1165,6 +1167,8 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
     printf("%c", '\n');
 
     if (globals.debugging)  printf("%s%s\n", INF "Creating directory ", dest);
+
+    errno = 0;
 
     if (secure_mkdir(dest, mode) == 0)
     {
@@ -1206,7 +1210,7 @@ void stat_file_wrapper(const char *filename, void *total_size, void GCC_UNUSED *
  * Note : for the whole (recursive) size, taking the stat st_size value would do the trick */
 
 void fill_pics(const char *filename, void *a, void GCC_UNUSED *unused){
-  
+
     static char** array;
     static int k;
     array = (char**) a + k++;
@@ -1414,11 +1418,11 @@ char* copy_file2dir(const char *existing_file, const char *new_dir)
     counter++;
     // overwrite
      sprintf(dest, "%s%s%s_%d%s", new_dir, SEPARATOR, filestruct->rawfilename, counter, filestruct->extension);
-    
+
     errorlevel=copy_file(existing_file, dest);
 
     free(filestruct);
-    
+
     errno=0;
     if (errorlevel) return NULL;
     else return(dest);
@@ -1627,7 +1631,7 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
     {
         if ((pt=memchr(haystack+span+1, 'f', MAX_HEADER_SIZE-1-span)) != NULL)
         {
-          if ((*(pt + 1) == 'a') && (*(pt + 2) == 'c') && (*(pt + 3) == 't')) 
+          if ((*(pt + 1) == 'a') && (*(pt + 2) == 'c') && (*(pt + 3) == 't'))
           {
            header->has_fact = true;
            memmove(&header->fact_chunk,  "fact", 4 * sizeof(char));
@@ -1635,12 +1639,12 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
           }
           span=pt-haystack;
         }
-        else 
+        else
         break;
 
     }
     while ( span < MAX_HEADER_SIZE-7);
-    
+
     if (header->has_fact)
         printf(INF "Found `fact' chunk\n");
     else
@@ -1655,7 +1659,7 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
 
     do
     {
-        
+
         if ((pt=memchr(haystack+span+1, 'd', MAX_HEADER_SIZE-1-span)) == NULL)
         {
             printf(WAR "Could not find substring 'data' among %d characters\n", MAX_HEADER_SIZE);
@@ -1681,7 +1685,7 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
     header->header_size_in = (span > 0)? (span < 248 ? span + 8 : MAX_HEADER_SIZE) : MAX_HEADER_SIZE;
 
     pt=&haystack[0];
-    
+
     if (header->header_size_in  > 44)
     {
         /* header is non-standard, looking for INFO chunks */
