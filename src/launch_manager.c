@@ -130,12 +130,12 @@ int launch_manager(command_t *command)
                  && (files[i][j].bitspersample == 24
                      && (files[i][j].channels == 5 || files[i][j].channels == 6)))
                 ||
-                (files[i][j].channels > 2 && files[i][j].samplerate > 96000))		     
+                (files[i][j].channels > 2 && files[i][j].samplerate > 96000))
             {
-              foutput("%s %s %s %d %s %d %s %d %s\n", ANSI_COLOR_RED "[ERR] File ", files[i][j].filename, " cannot be recorded to DVD-Audio without MLP encoding (", files[i][j].channels, " channels, ", files[i][j].bitspersample, " bits, ", files[i][j].samplerate, " samples per second.)");    
+              foutput("%s %s %s %d %s %d %s %d %s\n", ANSI_COLOR_RED "[ERR] File ", files[i][j].filename, " cannot be recorded to DVD-Audio without MLP encoding (", files[i][j].channels, " channels, ", files[i][j].bitspersample, " bits, ", files[i][j].samplerate, " samples per second.)");
               clean_exit(-1);
             }
-            
+
             foutput("%c%c  "ANSI_COLOR_BLUE"%d     "ANSI_COLOR_GREEN"%02d"ANSI_COLOR_YELLOW"  %6"PRIu32"   "ANSI_COLOR_RED"%02d"ANSI_COLOR_RESET"   %d   %10"PRIu64"   ", joinmark[i][j], singlestar[i], i + 1, j + 1, files[i][j].samplerate, files[i][j].bitspersample, files[i][j].channels, files[i][j].numsamples);
             foutput("%s\n", files[i][j].filename);
             totalsize += files[i][j].numbytes;
@@ -169,9 +169,9 @@ int launch_manager(command_t *command)
     foutput(MSG_TAG "Size of raw PCM data: %"PRIu64" bytes (%.2f  MB)\n",totalsize, (float) totalsize/(1024*1024));
 
     // Software-dependent : 684
-    
+
     startsector = 684 + 3 * naudio_groups;
-    
+
     /* main reference track tables */
     // static allocation with C99, arguably faster and possibly safer than calloc()
     uint8_t   numtitles[naudio_groups];
@@ -192,7 +192,7 @@ int launch_manager(command_t *command)
 
     for (i = 0; i < naudio_groups; ++i)
     {
-        
+
         error = create_ats(audiotsdir, i + 1, &files[i][0], nfiles[i]);
         ppadd -= error;
         /* Audio zone system file  parameters  */
@@ -299,14 +299,24 @@ int launch_manager(command_t *command)
     if (globals.videolinking)
     {
 
-        get_video_system_file_size(globals.settings.linkdir, maximum_VTSI_rank, sector_pointer_VIDEO_TS, relative_sector_pointer_VTSI);
-        get_video_PTS_ticks(globals.settings.linkdir, videotitlelength, nvideolinking_groups, VTSI_rank);
-
         char    newpath[CHAR_BUFSIZ];
         STRING_WRITE_CHAR_BUFSIZ(newpath, "%s%s", globals.settings.outdir, "/VIDEO_TS")
-        if (globals.videozone)
+        free(globals.settings.linkdir);
+
+        if (globals.settings.linkdir == NULL)
+        {
+             foutput("%s\n", WAR "If no option --videoling is given along with --videolink, it is assumed that VIDEO_TS is adjacent to AUDIO_TS.");
+        }
+        else
+        {
             copy_directory(globals.settings.linkdir, newpath, globals.access_rights);
-        change_directory(globals.settings.workdir);
+            get_video_system_file_size(globals.settings.linkdir, maximum_VTSI_rank, sector_pointer_VIDEO_TS, relative_sector_pointer_VTSI);
+            get_video_PTS_ticks(globals.settings.linkdir, videotitlelength, nvideolinking_groups, VTSI_rank);
+        }
+
+         change_directory(globals.settings.workdir);
+         globals.settings.linkdir = strdup(newpath);
+
     }
 #endif
 

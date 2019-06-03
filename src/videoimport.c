@@ -60,7 +60,13 @@ extern globalData globals;
 void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank, uint64_t sector_pointer_VIDEO_TS, uint32_t *relative_sector_pointer_VTSI)
 {
 
+    if (path_to_VIDEO_TS == NULL || relative_sector_pointer_VTSI == NULL)
+        {
+            EXIT_ON_RUNTIME_ERROR_VERBOSE("path_to_VIDEO_TS and relative_sector_pointer_VTSI should be allocated.")
+        }
+
     int k=0;
+
     int len = strlen (path_to_VIDEO_TS);
     int vtsi_path_length=len +13 +1;
 
@@ -74,7 +80,7 @@ void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank,
     STRING_WRITE(temp,  "%s/VIDEO_TS.IFO", path_to_VIDEO_TS)
 
     if ((temp_file=fopen(temp, "rb")) == NULL)
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not open VIDEO_TS.IFO")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not open VIDEO_TS.IFO. There must be a valid DVD-VIDEO file structure under VIDEO_TS.")
 
         /* retrieving size of VIDEO_TS.IFO
 
@@ -120,8 +126,6 @@ void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank,
 
 
     }
-
-    EXIT_ON_RUNTIME_ERROR
 
 }
 
@@ -176,7 +180,6 @@ void get_video_PTS_ticks(char* path_to_VIDEO_TS, uint32_t *videotitlelength, uin
     }
 
 
-    EXIT_ON_RUNTIME_ERROR
 
 }
 

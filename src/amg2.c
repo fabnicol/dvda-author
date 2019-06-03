@@ -37,7 +37,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <math.h>
 #include "errno.h"
 #include <sys/types.h>
-#ifndef __WIN32__
+#ifndef _WIN32
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -546,7 +546,8 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
             uint8_t vtsi_sec_ptr[4];
 
             uint32_copy(video_titlelength, videotitlelength[k]);
-            uint32_copy(video_titlelength, videotitlelength[k]);
+
+            // relative_sector_pointer_VTSI and VTSI_rank must be preallocated
             uint32_copy(vtsi_sec_ptr, relative_sector_pointer_VTSI[VTSI_rank[k] - 1]);
 
             CHECK_FIELD(videolinking_title)
