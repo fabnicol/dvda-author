@@ -172,9 +172,9 @@ void flac_metadata_callback (const FLAC__StreamDecoder GCC_UNUSED *dec, const FL
 
     if (meta->type==FLAC__METADATA_TYPE_STREAMINFO)
     {
-        info->bitspersample=meta->data.stream_info.bits_per_sample;
+        info->bitspersample=(uint8_t) meta->data.stream_info.bits_per_sample;
         info->samplerate=meta->data.stream_info.sample_rate;
-        info->channels=meta->data.stream_info.channels;
+        info->channels=(uint8_t) meta->data.stream_info.channels;
         info->numsamples=meta->data.stream_info.total_samples;
     }
 }
@@ -432,7 +432,7 @@ command_t *scan_wavfile_audio_characteristics(command_t *command)
                  &&(command->files[i][j-1].samplerate  == 96000 || command->files[i][j-1].samplerate  == 48000));
 
 
-    _Bool increment_group=(j == command->ntracks[i]);
+    bool increment_group=(j == command->ntracks[i]);
 
     j *= 1-increment_group;
     i += increment_group;
@@ -451,7 +451,7 @@ int extract_audio_info(fileinfo_t *info)
 
     /* parsing header again with FIXWAV utility */
 
-    //static _Bool cut;
+    //static bool cut;
 
     //if (!cut)
         info->type=fixwav_repair(info);
@@ -530,6 +530,7 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
                       // PATCH looping back to get info
                     {
                        info->filename = path;
+
                        return(info->type = wav_getinfo(info));
                     }
 // yet without the processing tail below (preserving new header[] array and info structure)
@@ -553,7 +554,10 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
                       // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
                         else
                       // PATCH looping back to get info
-                        return(info->type = wav_getinfo(info));
+                        {
+                            if (info->audio) free(info->audio);
+                            return(info->type = wav_getinfo(info));
+                        }
                           // yet without the processing tail below (preserving new header[] array and info structure)
                   }
                }
@@ -655,11 +659,13 @@ else
 {
   info->audio->fp = fopen(info->filename, "r+b");
 
-  clean_file(info, 0); // UNtagging
+  // clean_file(info, 0); // UNtagging
 
   if (info->audio->fp == NULL)
   {
-      perror("Fichier impossible à ouvrir");
+      fprintf(stderr, ERR "Failed to open %s to get info\n", info->filename);
+      fprintf(stderr, ERR "Currentdir name is : %s\n", get_current_dir_name());
+      perror("Impossible to open file");
       EXITING
   }
 
@@ -685,7 +691,7 @@ else
     perror("       ");
     clean_exit(EXIT_FAILURE);
   }
-
+  if (info->audio) free(info->audio);
   info->type = extract_audio_info_by_all_means(info->filename, header, info);
 }
 
@@ -735,6 +741,7 @@ static inline int wav_getinfo_merged(fileinfo_t *info)
 
 int wav_getinfo(fileinfo_t* info)
 {
+
     info->audio = (audio_input_t*) calloc(1, sizeof(audio_input_t));
 
     if (info->audio == NULL)
@@ -786,6 +793,7 @@ int flac_getinfo(fileinfo_t* info)
 
         else
         {
+#ifdef FLAC_API_SUPPORTS_OGG_FLAC
 #if (FLAC_API_SUPPORTS_OGG_FLAC == 1)
             result=/*FLAC__StreamDecoderInitStatus*/ FLAC__stream_decoder_init_ogg_file  	(
                         /*FLAC__StreamDecoder *  */ 	 flac,
@@ -795,6 +803,7 @@ int flac_getinfo(fileinfo_t* info)
                         /*FLAC__StreamDecoderErrorCallback  */	flac_error_callback,
                         (void *) info
                     );
+#endif
 #endif
         }
 
@@ -859,7 +868,7 @@ int fixwav_repair(fileinfo_t *info)
 
 
     snprintf(&buf[0], memory_allocation, "%s%s%s%s", temp, globals.fixwav_suffix, outstring, ".wav");
-
+    free(outstring);
     // If new string longer than heap allocation of reference strings, cut it
     /* Default sub-options*/
 
@@ -999,16 +1008,16 @@ int launch_sox(char** filename)
 
     unlink(new_wav_name);
     errno=0;
-    if (soxconvert(*filename, new_wav_name) == 0);
+    if (soxconvert(*filename, new_wav_name) == 0)
     {
         if (globals.debugging)  foutput("%s\n", INF "File was converted.");
 
         *filename=new_wav_name;
-
-        return(AFMT_WAVE);
+         return(AFMT_WAVE);
     }
     if (globals.debugging)  foutput("%s\n", INF "SoX could not convert file.");
 
+    free(new_wav_name);
     return(NO_AFMT_FOUND);
 
 }
@@ -1526,6 +1535,7 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
             buffer_increment = info->audio->n;
             uint32_t request = (*bytesinbuffer + offset + buffer_increment < AUDIO_BUFFER_SIZE) ? buffer_increment  : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset);
             memcpy(buf + offset, info->audio->buf, request);
+
             info->audio->n = 0;
             buffer_increment = request;
         }

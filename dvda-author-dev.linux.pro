@@ -10,7 +10,7 @@ TARGET = dvda-author
 
 QMAKE_CFLAGS=-std=c99 -march=core2
 
-DEFINES += _GNU_SOURCE __CB HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_fixwav HAVE_libogg HAVE_iberty HAVE_mpeg2enc HAVE_mplex HAVE_OGG_FLAC HAVE_FLAC HAVE_libogg HAVE_sox HAVE_CONFIG_H
+DEFINES += _GNU_SOURCE __CB HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_fixwav HAVE_libogg HAVE_iberty HAVE_mpeg2enc HAVE_mplex HAVE_OGG_FLAC HAVE_FLAC HAVE_libogg HAVE_sox HAVE_CONFIG_H FLAC_API_SUPPORTS_OGG_FLAC=1
 
 #libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame --disable-gomp
 
@@ -55,10 +55,7 @@ SOURCES += \
     libfixwav/src/fixwav_auxiliary.c \
     libiberty/src/getopt.c \
     libiberty/src/getsubopt.c \
-    libiberty/src/malloc.c \
     libiberty/src/strchrnul.c \
-    libiberty/src/strdup.c \
-    libiberty/src/strndup.c \
     libiberty/src/strnlen.c
 
 OTHER_FILES += \
