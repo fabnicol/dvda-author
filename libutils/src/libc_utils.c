@@ -122,6 +122,30 @@ int download_fullpath(const char* curlpath, const char* filename, const char* fu
 // From Yves Mettier's "C en action" (2009, ENI)
 // Patched somehow.
 
+char *fn_get_current_dir_name (void)
+{
+    char *cwd;
+    int len = 64;
+    char* r;
+    if (NULL == (cwd = malloc (len * sizeof *cwd)))
+    {
+        printf ("%s", ERR "Not enough memory for my_get_cwd.\n");
+        exit (EXIT_FAILURE);
+    }
+    while ((NULL == (r = getcwd (cwd, len))) && (ERANGE == errno))
+    {
+        len += 32;
+        if(NULL == (cwd = realloc (cwd, len * sizeof *cwd)))
+        {
+            printf ("%s", ERR "Not enough memory for my_get_cwd.\n");
+            exit (EXIT_FAILURE);
+        }
+    }
+    if (r)
+        return (cwd);
+    free (cwd);
+    return (NULL);
+}
 
 char* make_absolute(char* filepath)
 {
@@ -134,7 +158,7 @@ char* make_absolute(char* filepath)
         {
             if (r == 0)
             {
-                char* current_dir = get_current_dir_name();
+                char* current_dir = fn_get_current_dir_name();
 
                 if (current_dir == NULL || current_dir[0] == '\0') return "";
                 int u = 0;
@@ -223,7 +247,7 @@ typedef struct slist_t
 int rmdir_recursive (char *root, char *dirname)
 {
     char *cwd;
-    cwd=get_current_dir_name();
+    cwd=fn_get_current_dir_name();
     if (chdir (dirname) == -1)
     {
         if (errno == ENOTDIR)
@@ -241,8 +265,8 @@ int rmdir_recursive (char *root, char *dirname)
 
     if (root)
     {
-        ulong rootlen = strlen (root);
-        ulong dirnamelen = strlen (dirname);
+        unsigned long rootlen = strlen (root);
+        unsigned long dirnamelen = strlen (dirname);
         if (NULL ==
                 (new_root =
                      malloc ((size_t)(rootlen + dirnamelen + 2) * sizeof( *new_root))))
@@ -1081,7 +1105,7 @@ int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED *, void 
     printf("%c", '\n');
 
     if (globals.debugging)  printf("%s%s\n", INF "Traversing dir = ", src);
-    const char* olddir = get_current_dir_name();
+    const char* olddir = fn_get_current_dir_name();
     change_directory(src);
 
     dir_src=opendir(".");
@@ -2173,7 +2197,7 @@ errno=0;
 #else
     const char* s=get_command_line(args);
     char cml[strlen(application)+1+strlen(s)+1+2];
-    sprintf(cml, "\"%s\" %s",  application, s);
+    sprintf(cml, "%s %s",  application, s);
     free((char* ) s);
     if (globals.debugging) foutput(INF "Running: %s\n ", cml);
     errno=system(cml);

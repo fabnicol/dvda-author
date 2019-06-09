@@ -664,7 +664,7 @@ else
   if (info->audio->fp == NULL)
   {
       fprintf(stderr, ERR "Failed to open %s to get info\n", info->filename);
-      fprintf(stderr, ERR "Currentdir name is : %s\n", get_current_dir_name());
+      fprintf(stderr, ERR "Currentdir name is : %s\n", fn_get_current_dir_name());
       perror("Impossible to open file");
       EXITING
   }
