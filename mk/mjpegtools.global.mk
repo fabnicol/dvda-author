@@ -1,9 +1,0 @@
-mjpegtools_LIB=
-mjpegtools_LINK=
-MAYBE_mjpegtools=
-HAVE_mjpegtools=@HAVE_mjpegtools@
-HAVE_EXTERNAL_mjpegtools=@HAVE_EXTERNAL_mjpegtools@
-CONFIGURE_mjpegtools_FLAGS=
-mjpegtools_BUILD=
-WITH_mjpegtools=@WITH_mjpegtools@
-mjpegtools_DEPENDENCY=Makefile /home/fab/Desktop/dvda-author-dev/

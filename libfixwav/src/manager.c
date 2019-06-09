@@ -452,15 +452,17 @@ getout:
   if ((info->repair == FAIL)  || (filesize(info->outfile) == 0)  || ( (info->repair == GOOD_HEADER) && (!info->in_place) && (!info->virtual) ))
     {
       // getting rid of empty files and useless work copies
-      errno=0;
+
       if (file_exists(filename(info->outfile)))
           unlink(filename(info->outfile));
-      if (errno && globals.debugging) foutput("%s%s\n", ERR,  strerror(errno));
+
     }
+
+  errno=0;
 
   if (info->repair != FAIL)
     {
-      errno=0;
+
       return(header);
     }
 

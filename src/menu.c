@@ -281,20 +281,24 @@ void initialize_binary_paths(char level)
         if (count1)
         {
             free((char*) mp2enc);
+            mp2enc=NULL;
             free((char*) jpeg2yuv);
+            jpeg2yuv=NULL;
             free((char*) mpeg2enc);
+            mpeg2enc=NULL;
             free((char*) mplex);
+            mplex=NULL;
         }
-        if (count2) free((char*) spumux);
-        if (count3) free((char*) dvdauthor);
+        if (count2) { free((char*) spumux); spumux = NULL; }
+        if (count3) { free((char*) dvdauthor); dvdauthor = NULL; }
         if (count4)
         {
-            free((char*) mogrify);
-            free((char*) convert);
+            free((char*) mogrify); mogrify = NULL;
+            free((char*) convert); convert = NULL;
         }
-        if (count5) free((char*) mpeg2dec);
-        if (count6) free((char*) curl);
-        if (count7) { free((char*) ac3dec); free((char*) extract_ac3); }
+        if (count5) { free((char*) mpeg2dec); mpeg2dec = NULL; }
+        if (count6) { free((char*) curl); curl = NULL;}
+        if (count7) { free((char*) ac3dec); free((char*) extract_ac3); ac3dec = NULL; extract_ac3 = NULL;}
         break;
     }
 }
@@ -309,7 +313,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     if(s==0) s = strlen(globals.settings.tempdir);
     char pict[s+15];
 
-    FREE(img->backgroundmpg[rank])
+    free(img->backgroundmpg[rank]);
 
     img->backgroundmpg[rank] = calloc(1 + s + 17 + 3 + 4 + 1, sizeof(char));
 
@@ -598,6 +602,7 @@ int generate_background_mpg(pic* img)
             fflush(NULL);
             rank++;
         }
+        globals.backgroundmpgsize = img->nmenus;
     }
     rank=0;
 
@@ -605,6 +610,7 @@ int generate_background_mpg(pic* img)
     {
         FREE(img->backgroundmpg);
         img->backgroundmpg=calloc(img->count, sizeof(char*));
+        globals.backgroundmpgsize = img->count;
         if (img->backgroundmpg)
             while (rank < img->count)
             {
@@ -667,7 +673,7 @@ int launch_spumux(pic* img)
             close(firsttubeerr[0]);
             dup2(firsttubeerr[1], STDERR_FILENO);
 
-           fprintf(stderr, "command line: %s %s %s %s %s", spumux, argsspumux[1], argsspumux[2], argsspumux[3], argsspumux[4]);
+           fprintf(stderr, INF "command line: %s %s %s %s %s", spumux, argsspumux[1], argsspumux[2], argsspumux[3], argsspumux[4]);
             if (freopen(img->backgroundmpg[menu], "rb", stdin) == NULL)
             {
                 fprintf(stderr, "%s",ERR "freopen (stdin)\n");
@@ -791,9 +797,11 @@ int prepare_overlay_img(char* text, int8_t group, pic *img, char* command, char*
     if ((group == -1)&&(text))  // album text
     {
         uint16_t x0= EVEN(x( (group>0)?group:0, img->ncolumns)) ;
+        char * q = quote(picture_save);
         snprintf(command, 2*CHAR_BUFSIZ, "%s %s %s \"rgb(%s)\" %s %s %s %d %s %s %d%c%d %c%s%s %s", mogrify,
                  "+antialias", "-fill", albumcolor, "-font", img->textfont, "-pointsize", DEFAULT_POINTSIZE,
-                 "-draw", " \"text ", x0, ',' , ALBUM_TEXT_Y0,  '\'', text, "\'\"", quote(picture_save));
+                 "-draw", " \"text ", x0, ',' , ALBUM_TEXT_Y0,  '\'', text, "\'\"", q);
+        free(q);
         if (globals.debugging) foutput("%s%s\n", INF "Launching mogrify (title) with command line: ", command);
         if (system(win32quote(command)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed")
             fflush(NULL);
@@ -861,9 +869,14 @@ int mogrify_img(char* text, int8_t group, int8_t track, pic *img, uint8_t maxnum
         deltay1=4;
     }
 
+
     if (track!=-1)
+    {
+        char *q = quote(img->highlightcolor_pic);
         snprintf(str, 10*CHAR_BUFSIZ, " %s \"rgb(%s)\" %s %s %d%s%d %d%s%d%s ",
-                 "-fill", quote(img->highlightcolor_pic), "-draw", " \"rectangle ", x0+deltax0, ",", y0+deltay0,  x0+ deltax1, ",", y0+deltay1, "\"");   // conversion works badly with -colors < 4
+                 "-fill", q, "-draw", " \"rectangle ", x0+deltax0, ",", y0+deltay0,  x0+ deltax1, ",", y0+deltay1, "\"");   // conversion works badly with -colors < 4
+        free(q);
+    }
 
     strcat(command, str);
     snprintf(str2, 10*CHAR_BUFSIZ, " %s \"rgb(%s)\" %s %s %s %d %s %s %d%c%d %s%s%s ",
@@ -941,11 +954,12 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
         // to avoid using reentrant version of strtok (strtok_r, not mingw32 protable)
 
         char remainder[strlen(img->screentextchain)];
-        basemotif=fn_strtok(img->screentextchain, '=', basemotif, 1, cutloop, remainder) ;
+        uint32_t size = 0;
+        basemotif=fn_strtok(img->screentextchain, '=', basemotif, &size, 1, cutloop, remainder) ;
         albumtext=basemotif[0];
-        grouparray=fn_strtok(remainder, ':', grouparray, 0, NULL, NULL) ;
 
-        dim=arraylength(grouparray);
+        grouparray=fn_strtok(remainder, ':', grouparray, &dim, 0, NULL, NULL) ;
+
         tracktext=calloc(dim, sizeof(char**));
         if (tracktext == NULL) perror(ERR "Track text allocation");
         grouptext=calloc(dim, sizeof(char**));
@@ -954,12 +968,13 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
         for (k=0; k < dim; k++)
         {
             char rem[strlen(grouparray[k])];
-            grouptext[k]=fn_strtok(grouparray[k], '=', grouptext[k], 1, cutloop, rem);
-            tracktext[k]=fn_strtok(rem, ',', tracktext[k], 0,NULL, NULL);
+            grouptext[k]=fn_strtok(grouparray[k], '=', grouptext[k], &globals.grouptextsize[k], 1, cutloop, rem);
+            tracktext[k]=fn_strtok(rem, ',', tracktext[k], &globals.tracktextsize[k], 0,NULL, NULL);
             free(grouparray[k]);
         }
 
         free(grouparray);
+
         do
         {
             if (img->hierarchical) test_underline(grouptext[group][0],img);
@@ -983,14 +998,16 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
         albumtext=strdup(DEFAULT_ALBUM_HEADER);
         grouptext=(char ***)calloc(ngroups, sizeof(char**));
         tracktext=(char ***)calloc(ngroups, sizeof(char**));
-        dim=Min(img->ncolumns*img->nmenus,ngroups);
+        dim=ngroups;
 
         for (k=0; k < dim; k++)
         {
             grouptext[k]=calloc(2, sizeof(char**));
+            globals.grouptextsize[k] = 2;
             grouptext[k][0]=calloc(strlen(DEFAULT_GROUP_HEADER_UPPERCASE)+2, sizeof(char));
             sprintf(grouptext[k][0], "%s%d", DEFAULT_GROUP_HEADER_UPPERCASE, k+1);
             tracktext[k]=calloc(ntracks[k]+1, sizeof(char**));
+            globals.tracktextsize[k] = ntracks[k]+1;
             for (j=0; j < ntracks[k]; j++)
             {
                 tracktext[k][j]=calloc(strlen(DEFAULT_TRACK_HEADER)+3, sizeof(char));
@@ -1002,9 +1019,6 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
 
 
     }
-
-
-    if (ngroups > img->ncolumns*img->nmenus) foutput("[WARN]  Limiting menu to %d groups...\n", img->ncolumns*img->nmenus);
 
     track=group=0;
     int8_t offset=0;
@@ -1043,6 +1057,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
         compute_pointsize(img, 10, maxntracks);
 
         prepare_overlay_img(albumtext, -1, img, command1, command2, menu, img->albumcolor);
+        free(albumtext);
 
         if (img->hierarchical)
         {
@@ -1133,20 +1148,31 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
             }
             while  (buttons < menubuttons+arrowbuttons);
 
-        strcat(command2, quote(img->imagepic[menu]));
+        char *q = quote(img->imagepic[menu]);
+        strcat(command2, q);
+        free(q);
         if (globals.veryverbose) foutput(INF "Menu: %d/%d, groupcount: %d/%d.\n       Launching mogrify (image) with command line: %s\n", menu, img->nmenus, groupcount, ngroups, command2);
         if (system(win32quote(command2)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed");
         free(command2);
-
+        command2 = NULL;
         copy_file(img->imagepic[menu], img->highlightpic[menu]);
-
-        strcat(command1, quote(img->highlightpic[menu]));
+        q= quote(img->highlightpic[menu]);
+        strcat(command1, q);
+        free(q);
         if (globals.veryverbose) foutput(INF "Menu: %d/%d, groupcount: %d/%d.\n       Launching mogrify (highlight) with command line: %s\n", menu, img->nmenus, groupcount, ngroups,command1);
         if (system(win32quote(command1)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed");
         free(command1);
+        command1 = NULL;
         char command3[500];
-
-        snprintf(command3, sizeof(command3), "%s %s \"rgb(%s)\"  %s \"rgb(%s)\" %s %s", convert, "-fill", quote(img->selectfgcolor_pic), "-opaque", quote(img->textcolor_pic), quote(img->imagepic[menu]), quote(img->selectpic[menu]));
+        q  = quote(img->selectfgcolor_pic);
+        char* q2 = quote(img->textcolor_pic);
+        char* q3 = quote(img->imagepic[menu]);
+        char* q4 = quote(img->selectpic[menu]);
+        snprintf(command3, sizeof(command3), "%s %s \"rgb(%s)\"  %s \"rgb(%s)\" %s %s", convert, "-fill", q, "-opaque", q2, q3, q4);
+        free(q);
+        free(q2);
+        free(q3);
+        free(q4);
         if (globals.veryverbose) foutput(INF "Menu: %d/%d, groupcount: %d/%d.\n       Launching convert (select) with command line: %s\n",menu, img->nmenus, groupcount, ngroups,command3);
         if (system(win32quote(command3)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed");
 
@@ -1155,13 +1181,20 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
 
 
     }
-    while ((menu < img->nmenus)&& (groupcount < ngroups));
+    while ((menu < img->nmenus)&& (groupcount < dim));
 
-    for(group=0; group < dim; group++)
+    for(group=0; group < dim; ++group)
     {
-        FREE2(grouptext[group]);
-        FREE2(tracktext[group]);
+        for (uint32_t i = 0; i < globals.grouptextsize[group]; ++i)
+            free(grouptext[group][i]);
+        for (uint32_t i = 0; i < globals.tracktextsize[group]; ++i)
+            free(tracktext[group][i]);
+        free(grouptext[group]);
+        free(tracktext[group]);
     }
+
+    free(grouptext);
+    free(tracktext);
 
     if (img->screentextchain)
     {

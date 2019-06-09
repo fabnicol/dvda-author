@@ -44,11 +44,11 @@ extern globalData globals;
 #endif
 
 // arcane issue with assert() that justifies this workaround
-#define check(X) if ((X)==0) foutput("%s%d\n", ERR "SoX runtime failure, stage ", stage)
+#define check(X) if ((X)==0) { foutput("%s%d\n", ERR "SoX runtime failure, stage ", stage); return -1;}
 
 int soxconvert(char * input, char* output)
 {
-  static int stage;
+  int stage = 0;
 
 
   static sox_format_t * in, * out; /* input and output files */
@@ -60,7 +60,7 @@ int soxconvert(char * input, char* output)
    foutput("%s\n", INF "Converting file");
 
   /* All libSoX applications must start by initialising the SoX library */
-  check(sox_format_init() == SOX_SUCCESS); stage++;
+  sox_format_init(); // this may fail without much ado
 
   /* Open the input file (with default parameters) */
   check(in = sox_open_read(input, NULL, NULL, NULL)); stage++;
@@ -89,25 +89,25 @@ int soxconvert(char * input, char* output)
   /* The last effect in the effect chain must be something that only consumes
    * samples; in this case, we use the built-in handler that outputs
    * data to an audio file */
+
   e = sox_create_effect(sox_find_effect("output"));
   args[0] = (char *)out;
   check(sox_effect_options(e, 1, args) == SOX_SUCCESS); stage++;
   check(sox_add_effect(chain, e, &in->signal, &in->signal) == SOX_SUCCESS); stage++;
 
   /* Flow samples through the effects processing chain until EOF is reached */
-
-
   sox_flow_effects(chain, NULL, NULL);
 
   foutput("%s\n", INF "Exiting SoX...");
   /* All done; tidy up: */
+  sox_delete_effects(chain);
   sox_delete_effects_chain(chain);
 
   sox_close(out);
   sox_close(in);
   sox_format_quit();
 
-  return errno;
+  return 0;
 }
 
 #endif

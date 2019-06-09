@@ -32,7 +32,7 @@
  *   - software-level global variables are packed in 'globals' structures */
 extern globalData globals;
 extern unsigned int startsector;
-extern char* INDIR, *OUTDIR, *LOGDIR, *LINKDIR, *WORKDIR, *TEMPDIR;
+extern char* INDIR, *OUTDIR, *LOGDIR, *LINKDIR, *WORKDIR;
 
 // getting rid of some arrows
 #define files command->files
@@ -81,6 +81,7 @@ int launch_manager(command_t *command)
     char videotsdir[pathlength+10];
 
     sprintf(audiotsdir, "%s"SEPARATOR"AUDIO_TS", globals.settings.outdir);
+
     if (!globals.nooutput) secure_mkdir(audiotsdir, globals.access_rights);
     errno=0;
     if (globals.videozone)
@@ -109,7 +110,7 @@ int launch_manager(command_t *command)
     memset(singlestar, ' ', naudio_groups);
     char joinmark[naudio_groups][99];
     memset(joinmark, ' ', naudio_groups*99);
-    _Bool singlestar_flag = 0, joinmark_flag = 0;
+    bool singlestar_flag = 0, joinmark_flag = 0;
     unsigned int ppadd = 0;
 
     for (i = 0; i < naudio_groups; ++i)
@@ -129,12 +130,12 @@ int launch_manager(command_t *command)
                  && (files[i][j].bitspersample == 24
                      && (files[i][j].channels == 5 || files[i][j].channels == 6)))
                 ||
-                (files[i][j].channels > 2 && files[i][j].samplerate > 96000))		     
+                (files[i][j].channels > 2 && files[i][j].samplerate > 96000))
             {
-              foutput("%s %s %s %d %s %d %s %d %s\n", ANSI_COLOR_RED "[ERR] File ", files[i][j].filename, " cannot be recorded to DVD-Audio without MLP encoding (", files[i][j].channels, " channels, ", files[i][j].bitspersample, " bits, ", files[i][j].samplerate, " samples per second.)");    
+              foutput("%s %s %s %d %s %d %s %d %s\n", ANSI_COLOR_RED "[ERR] File ", files[i][j].filename, " cannot be recorded to DVD-Audio without MLP encoding (", files[i][j].channels, " channels, ", files[i][j].bitspersample, " bits, ", files[i][j].samplerate, " samples per second.)");
               clean_exit(-1);
             }
-            
+
             foutput("%c%c  "ANSI_COLOR_BLUE"%d     "ANSI_COLOR_GREEN"%02d"ANSI_COLOR_YELLOW"  %6"PRIu32"   "ANSI_COLOR_RED"%02d"ANSI_COLOR_RESET"   %d   %10"PRIu64"   ", joinmark[i][j], singlestar[i], i + 1, j + 1, files[i][j].samplerate, files[i][j].bitspersample, files[i][j].channels, files[i][j].numsamples);
             foutput("%s\n", files[i][j].filename);
             totalsize += files[i][j].numbytes;
@@ -168,9 +169,9 @@ int launch_manager(command_t *command)
     foutput(MSG_TAG "Size of raw PCM data: %"PRIu64" bytes (%.2f  MB)\n",totalsize, (float) totalsize/(1024*1024));
 
     // Software-dependent : 684
-    
+
     startsector = 684 + 3 * naudio_groups;
-    
+
     /* main reference track tables */
     // static allocation with C99, arguably faster and possibly safer than calloc()
     uint8_t   numtitles[naudio_groups];
@@ -191,7 +192,7 @@ int launch_manager(command_t *command)
 
     for (i = 0; i < naudio_groups; ++i)
     {
-        
+
         error = create_ats(audiotsdir, i + 1, &files[i][0], nfiles[i]);
         ppadd -= error;
         /* Audio zone system file  parameters  */
@@ -295,17 +296,22 @@ int launch_manager(command_t *command)
 
 // returns relative_sector_pointer_VTSI and videotitlelength
 #if !HAVE_core_BUILD
-    if (globals.videolinking)
+    if (globals.videozone)
     {
-
-        get_video_system_file_size(globals.settings.linkdir, maximum_VTSI_rank, sector_pointer_VIDEO_TS, relative_sector_pointer_VTSI);
-        get_video_PTS_ticks(globals.settings.linkdir, videotitlelength, nvideolinking_groups, VTSI_rank);
-
         char    newpath[CHAR_BUFSIZ];
-        STRING_WRITE_CHAR_BUFSIZ(newpath, "%s%s", globals.settings.outdir, "/VIDEO_TS")
-        if (globals.videozone)
-            copy_directory(globals.settings.linkdir, newpath, globals.access_rights);
+        STRING_WRITE_CHAR_BUFSIZ(newpath, "%s" SEPARATOR "%s", globals.settings.outdir, "VIDEO_TS")
+
+        copy_directory(globals.settings.linkdir, newpath, globals.access_rights);
+        if (globals.videolinking)
+        {
+            get_video_system_file_size(globals.settings.linkdir, maximum_VTSI_rank, sector_pointer_VIDEO_TS, relative_sector_pointer_VTSI);
+            get_video_PTS_ticks(globals.settings.linkdir, videotitlelength, nvideolinking_groups, VTSI_rank);
+        }
+
         change_directory(globals.settings.workdir);
+        free(globals.settings.linkdir);
+        globals.settings.linkdir = strdup(newpath);
+
     }
 #endif
 
@@ -432,7 +438,7 @@ SUMMARY:
             int S=TEST? 8:6;
             char* args[S],
             *args0[]={CDRECORD_BASENAME, verbosity,"blank=fast", "-eject","dev=", globals.cdrecorddevice, dvdisoinput, "-gracetime=", "1",  NULL},
-            *args1[]={CDRECORD_BASENAME, verbosity, "blank=fast", "-eject",dvdisoinput, "-gracetime=", "1", NULL};
+            *args1[]={CDRECORD_BASENAME, verbosity,"blank=fast", "-eject",dvdisoinput, "-gracetime=", "1", NULL};
             if TEST memcpy(args, args0, sizeof(args0));
             else memcpy(args, args1, sizeof(args1));
 
@@ -441,13 +447,16 @@ SUMMARY:
 
             if ((cdrecord=create_binary_path(cdrecord, CDRECORD, SEPARATOR CDRECORD_BASENAME)))
             {
-               foutput("\n%s\n", INF "Launching cdrecord to burn disc");
-               run(cdrecord,  (const char**) args, NOWAIT);
+               const char* CLI = get_full_command_line(args);
+               fprintf(stderr, "\n%s%s\n", INF "Launching cdrecord to burn disc using ", CLI);
+              // run(cdrecord,  (const char**) args, NOWAIT);
+               args[0] = cdrecord;
+               system((const char*) CLI);
+               FREE(cdrecord);
             }
             else
                foutput("%s\n", ERR "Could not access to cdrecord binary.");
 
-            FREE(cdrecord);
         }
     }
 
@@ -455,19 +464,16 @@ SUMMARY:
     // freeing files and heap-allocated globals
 
 #ifndef __WIN32__
-    while (waitpid(-1, NULL, 0) >0);
+   // while (waitpid(-1, NULL, 0) >0);
 #endif
-
-
-
-
 
 
     for (j=0; j < naudio_groups; j++)
     {
-        FREE(ntitletracks[j])
-        FREE(titlelength[j])
-        FREE(title[j])
+        free(ntitletracks[j]);
+        free(titlelength[j]);
+        free(ntitlepics[j]);
+        free(title[j]);
     }
 
     free_memory(command);

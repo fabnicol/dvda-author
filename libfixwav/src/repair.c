@@ -42,7 +42,7 @@ repair_wav(WaveData *info, WaveHeader *header )
 {
 
   int repair=GOOD_HEADER;
-  _Bool pad_byte = false;
+  bool pad_byte = false;
 
   errno=0;
 
