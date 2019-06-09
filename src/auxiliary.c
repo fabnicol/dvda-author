@@ -697,12 +697,13 @@ char* create_binary_path(char* local_variable, const char* symbolic_constant, co
         {
             path = conc(globals.settings.bindir, basename);
             local_variable = win32quote(path);
+            free(path);
         }
     }
     else
     {
         path = conc(globals.settings.bindir, basename);
-        local_variable = win32quote(path);
+        local_variable = path;
     }
     if (globals.debugging) foutput(MSG_TAG "Path to %s is %s from bindir=%s and basename=%s\n", basename, local_variable,globals.settings.bindir, basename);
 

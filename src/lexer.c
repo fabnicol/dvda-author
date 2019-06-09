@@ -49,7 +49,7 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
     char *chain=&tab[0];
     if (NULL == chain) perror(ERR "lexer.c chain");
 
-    ulong s0=0, mem_s1=0, mem_s2=0;
+    unsigned long s0=0, mem_s1=0, mem_s2=0;
 
 
     FILE* defaults=fopen(path, "rb");
