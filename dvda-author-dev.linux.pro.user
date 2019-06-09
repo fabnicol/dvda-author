@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.8.2, 2019-06-09T08:21:00. -->
+<!-- Written by QtCreator 4.8.2, 2019-06-09T19:48:39. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -305,7 +305,7 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:/home/fab2/Dev/dvda-author/dvda-author-dev.linux.pro</value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.ProFile">dvda-author-dev.linux.pro</value>
-    <value type="QString" key="RunConfiguration.Arguments">-o outdir --tempdir ~/deitemp   -g  a2_24_44.wav -g /home/fab2/Dev/dvda-author/Docs/a2*aiff -S   -t  -W --datadir ~/Dev/dvda-author  --bindir ~/Dev/dvda-author/local/bin --topmenu</value>
+    <value type="QString" key="RunConfiguration.Arguments">  -g  /home/fab2/Dev/dvda-author/Docs/a2_24_48.wav  -o /home/fab2/outputall -t </value>
     <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>

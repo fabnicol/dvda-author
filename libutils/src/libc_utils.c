@@ -122,30 +122,6 @@ int download_fullpath(const char* curlpath, const char* filename, const char* fu
 // From Yves Mettier's "C en action" (2009, ENI)
 // Patched somehow.
 
-char *fn_get_current_dir_name (void)
-{
-    char *cwd;
-    size_t len = 64;
-    char* r;
-    if (NULL == (cwd = malloc (len * sizeof(*cwd))))
-    {
-        printf ("%s", ERR "Not enough memory for my_get_cwd.\n");
-        exit (EXIT_FAILURE);
-    }
-    while ((NULL == (r = getcwd (cwd, len))) && (ERANGE == errno))
-    {
-        len += 32;
-        if(NULL == (cwd = realloc (cwd, len * sizeof *cwd)))
-        {
-            printf ("%s", ERR "Not enough memory for my_get_cwd.\n");
-            exit (EXIT_FAILURE);
-        }
-    }
-    if (r)
-        return (cwd);
-    free (cwd);
-    return (NULL);
-}
 
 char* make_absolute(char* filepath)
 {
@@ -158,7 +134,7 @@ char* make_absolute(char* filepath)
         {
             if (r == 0)
             {
-                char* current_dir = fn_get_current_dir_name();
+                char* current_dir = get_current_dir_name();
 
                 if (current_dir == NULL || current_dir[0] == '\0') return "";
                 int u = 0;
@@ -169,6 +145,7 @@ char* make_absolute(char* filepath)
                 u = 0;
                 for(char c; (c = filepath[u]) != '\0'; ++u)     buffer[u] = c;
                 clean_path(&path_info);
+                free(current_dir);
                 return (make_absolute(buffer));
 
             }
@@ -222,15 +199,6 @@ char* make_absolute(char* filepath)
 }
 
 
-void action_dir_post (const char *root, const char *dir)
-{
-    if (rmdir (dir))
-    {
-        printf (ERR "Impossible to erase directory %s/%s \n"
-                "(errno = %s)\n", root, dir, strerror (errno));
-        exit (EXIT_FAILURE);
-    }
-}
 
 
 void action_file (const char *file)
@@ -255,7 +223,7 @@ typedef struct slist_t
 int rmdir_recursive (char *root, char *dirname)
 {
     char *cwd;
-    cwd=fn_get_current_dir_name();
+    cwd=get_current_dir_name();
     if (chdir (dirname) == -1)
     {
         if (errno == ENOTDIR)
@@ -289,10 +257,7 @@ int rmdir_recursive (char *root, char *dirname)
     }
     else
     {
-        if (new_root)
-        {
-            free(new_root);
-        }
+        free(new_root);
         new_root = strdup(dirname);
     }
 
@@ -300,6 +265,7 @@ int rmdir_recursive (char *root, char *dirname)
     if (NULL == (FD = opendir (".")))
     {
         printf ("%s", ERR "opendir() issue\n");
+        free(cwd);
         return (-1);
     }
     sl = names;
@@ -316,6 +282,7 @@ int rmdir_recursive (char *root, char *dirname)
         if (NULL == (n = malloc (sizeof *n)))
         {
             printf ("%s", ERR "memory issue\n");
+            free(cwd);
             exit (EXIT_FAILURE);
         }
         n->name = strdup (f->d_name);
@@ -344,17 +311,14 @@ int rmdir_recursive (char *root, char *dirname)
             action_file (sl->name);
     }
 
-
+    bool recurse = false;
     for (sl = names; sl; sl = sl->next)
     {
         if (sl->is_dir)
         {
-            // action_dir_pre (new_root, sl->name);
-            rmdir_recursive (new_root, sl->name);
-            action_dir_post (new_root, sl->name);
+             rmdir_recursive (new_root, sl->name);
         }
     }
-
 
     free (new_root);
     while (names)
@@ -366,11 +330,13 @@ int rmdir_recursive (char *root, char *dirname)
         free (prev);
     }
     if (chdir (cwd) != 0) perror("[ERR]  chdir");
-    free (cwd);
+
+    if (! recurse) free(cwd);
+
     return (0);
 }
 
-// End of Yves Mettier code
+// End of Yves Mettier code (patched)
 
 /* -------
 * rmdir_global
@@ -1474,7 +1440,7 @@ char* copy_file2dir(const char *existing_file, const char *new_dir)
 
 }
 
-char* copy_file2dir_rename(const char *existing_file, const char *new_dir, char* newfilename)
+void copy_file2dir_rename(const char *existing_file, const char *new_dir, char* newfilename)
 {
 // existence of new_dir is not tested
 // existence of file dest is tested and if exists, copy overwrites it
@@ -1487,8 +1453,11 @@ char* copy_file2dir_rename(const char *existing_file, const char *new_dir, char*
     sprintf(dest, "%s%s%s", new_dir, SEPARATOR, newfilename);
 
     path_t *filedest=parse_filepath(dest);
-    if (!filedest) return NULL;
-
+    if (! filedest)
+    {
+        free(dest);
+        return;
+    }
 
     if (filedest->isfile)
     {
@@ -1496,13 +1465,10 @@ char* copy_file2dir_rename(const char *existing_file, const char *new_dir, char*
         unlink(dest);
     }
 
-    errorlevel=copy_file(existing_file, dest);
-
-    free(filedest);
-    errno=0;
-    if (errorlevel) return NULL;
-    else return(dest);
-
+    copy_file(existing_file, dest);
+    free(dest);
+    clean_path(&filedest);
+    return;
 }
 
 int cat_file(const char *existing_file, const char *new_file)

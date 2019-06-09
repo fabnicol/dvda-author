@@ -66,7 +66,8 @@ void parse_double_entry_command_line(char* input_string, char**** DOUBLE_ARRAY, 
 {
     errno=0;
     char** array=NULL;
-    array=fn_strtok(input_string, separator, array, 0, NULL, NULL);
+    uint32_t size = 0;
+    array=fn_strtok(input_string, separator, array, &size, 0, NULL, NULL);
     *TOTAL=arraylength(array);
     if (globals.veryverbose)
     {
@@ -79,7 +80,8 @@ void parse_double_entry_command_line(char* input_string, char**** DOUBLE_ARRAY, 
 
             for (int titleset=0; titleset < *TOTAL; titleset++)
     {
-        (*DOUBLE_ARRAY)[titleset]=fn_strtok(array[titleset], ',', (*DOUBLE_ARRAY)[titleset], 0,NULL, NULL);
+        uint32_t size =  0;
+        (*DOUBLE_ARRAY)[titleset]=fn_strtok(array[titleset], ',', (*DOUBLE_ARRAY)[titleset], &size, 0,NULL, NULL);
         *COUNTER_ARRAY=calloc(*TOTAL, sizeof(uint8_t));
         *COUNTER_ARRAY[titleset]=arraylength(*DOUBLE_ARRAY[titleset]);
 #if DEBUG
@@ -980,7 +982,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'k' :
             foutput("%s", PAR "Generates text table in IFO files.\n\n");
             globals.text=1;
-            textable=fn_strtok(optarg, ',' , textable, 0,NULL,NULL);
+
+            textable=fn_strtok(optarg, ',' , textable, &globals.textablesize, 0,NULL,NULL);
             break;
 
 #if !HAVE_core_BUILD
@@ -1188,7 +1191,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if (optarg)
             {
                 foutput(PAR "  File(s) %s will be used as (spumuxed) top menu\n", optarg);
-                img->topmenu=fn_strtok(optarg, ',' , img->topmenu, 0,NULL,NULL);
+                img->topmenu=fn_strtok(optarg, ',' , img->topmenu, &globals.topmenusize, 0,NULL,NULL);
                 globals.topmenu=Min(globals.topmenu, RUN_DVDAUTHOR);
             }
             else
@@ -1215,12 +1218,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case 'B':
-            foutput("%s%s\n",PAR "  background mpg video: ", optarg);
-            if (img->backgroundmpg == NULL)
-                img->backgroundmpg=calloc(1, sizeof(char*));
-            if (img->backgroundmpg == NULL) perror("\n"ERR "img->backgroundmpg\n");
+            foutput("%s%s\n",PAR "  background mpg video(s): ", optarg);
 
-            img->backgroundmpg=fn_strtok(optarg, ',' , img->backgroundmpg, 0,NULL,NULL);
+            free(img->backgroundmpg[0]);
+            free(img->backgroundmpg);
+            img->backgroundmpg=fn_strtok(optarg, ',' , img->backgroundmpg, &globals.backgroundmpgsize, 0,NULL,NULL);
 
             foutput(PAR "  Top background mpg file(s) %s will be used\n", optarg);
 
@@ -1529,8 +1531,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "You should provide --videodir when using -T (video-linking)")
     }
 
-    normalize_temporary_paths(NULL);
-
     change_directory(globals.settings.workdir);
 
     /* Here it is necessary to check and normalize: temporary directory, number of menus before copying files and allocating new memory */
@@ -1655,7 +1655,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 errno=0;
 
                 char** array=NULL;
-                array=fn_strtok(optarg, ':', array, img->nmenus, cutloop, NULL);
+                uint32_t size = 0;
+                array=fn_strtok(optarg, ':', array, &size, img->nmenus, cutloop, NULL);
 
                 img->soundtrack=(char ***) calloc(img->nmenus, sizeof(char**));
 
@@ -1663,7 +1664,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                 for (u=0; u < img->nmenus; u++)
                 {
-                    img->soundtrack[u]  =fn_strtok(array[u], ',', img->soundtrack[u], 0,NULL, NULL);
+                    img->soundtrack[u]  =fn_strtok(array[u], ',', img->soundtrack[u], &globals.soundtracksize[u], 0,NULL, NULL);
                 }
 
                 int v;
@@ -1824,7 +1825,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 errno=0;
 
                 char** array=NULL;
-                array=fn_strtok(optarg, ':', array, img->nmenus, cutloop, NULL);
+                uint32_t size = 0;
+                array=fn_strtok(optarg, ':', array, &size, img->nmenus, cutloop, NULL);
 
                 if (!array)
                 {
@@ -1836,7 +1838,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                 for (u=0; u < img->nmenus; u++)
                 {
-                    img->topmenu_slide[u]  =fn_strtok(array[u], ',', img->topmenu_slide[u], 0,NULL, NULL);
+                    img->topmenu_slide[u]  =fn_strtok(array[u], ',', img->topmenu_slide[u], &globals.topmenu_slidesize, 0,NULL, NULL);
                     img->topmenu_nslides[u]=arraylength(img->topmenu_slide[u]);
                 }
             }
@@ -1855,7 +1857,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             str=strdup(optarg);
             free(img->backgroundpic);
-            img->backgroundpic=fn_strtok(str,',',img->backgroundpic,0,NULL,NULL);
+            img->backgroundpic=fn_strtok(str,',',img->backgroundpic, &globals.backgroundpicsize, 0,NULL,NULL);
             int backgroundpic_arraylength=0;
             if ((backgroundpic_arraylength=arraylength(img->backgroundpic)) < img->nmenus)
             {
@@ -1901,7 +1903,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s\n", WAR "Check that your image doe not have more than 4 colors, including transparency.");
             str=strdup(optarg);
             free(img->highlightpic);
-            img->highlightpic=fn_strtok(str,',',img->highlightpic,0,NULL,NULL);
+            img->highlightpic=fn_strtok(str,',',img->highlightpic, &globals.highlightpicsize, 0,NULL,NULL);
             int highlight_arraylength=0;
             if ((highlight_arraylength=arraylength(img->highlightpic)) < img->nmenus)
             {
@@ -1923,7 +1925,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s\n", WAR "Check that your image doe not have more than 4 colors, including transparency.");
             str=strdup(optarg);
 
-            img->selectpic=fn_strtok(str,',',img->selectpic,0,NULL,NULL);
+            img->selectpic=fn_strtok(str,',',img->selectpic, &globals.selectpicsize, 0,NULL,NULL);
             int select_arraylength=0;
             if ((select_arraylength=arraylength(img->selectpic)) < img->nmenus)
             {
@@ -1946,7 +1948,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s\n", WAR "Check that your image doe not have more than 4 colors, including transparency.");
             str=strdup(optarg);
 
-            img->imagepic=fn_strtok(str,',',img->imagepic,0,NULL,NULL);
+            img->imagepic=fn_strtok(str,',',img->imagepic, &globals.imagepicsize, 0,NULL,NULL);
             int image_arraylength=0;
             if ((image_arraylength=arraylength(img->imagepic)) < img->nmenus)
             {
@@ -1968,7 +1970,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s%s\n", PAR "Background color(s) for top (and active) menus : ", optarg);
             str=strdup(optarg);
 
-            img->backgroundcolors = fn_strtok(str,':', img->backgroundcolors,0,NULL,NULL);
+            img->backgroundcolors = fn_strtok(str,':', img->backgroundcolors, globals.backgroundcolorssize, 0,NULL,NULL);
             int bgcolors_arraylength = 0;
             if ((bgcolors_arraylength = arraylength(img->backgroundcolors)) < img->nmenus)
             {
@@ -2118,17 +2120,16 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     case RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR :
         change_directory(globals.settings.datadir);
 
-        dest=copy_file2dir_rename(img->backgroundpic[0], globals.settings.tempdir, "bgpic0.jpg");
+        copy_file2dir_rename(img->backgroundpic[0], globals.settings.tempdir, "bgpic0.jpg");
 
         if (img->nmenus > 1)
             for (u=1; u < img->nmenus; u++)
             {
                 char name[13];
                 sprintf(name, "%s%d%s", "bgpic", u,".jpg");
-                dest=copy_file2dir_rename(img->backgroundpic[0], globals.settings.tempdir, name);
+                copy_file2dir_rename(img->backgroundpic[0], globals.settings.tempdir, name);
             }
-        if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Failed to copy background .jpg pictures to temporary directory.")
-                free(dest);
+
 
     case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
         change_directory(globals.settings.datadir);
@@ -2138,7 +2139,13 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Failed to copy background .png blankscreen to temporary directory.")
 
         if (!menupic_input_coherence_test)
+        {
             normalize_temporary_paths(img);
+        }
+            else
+        {
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Trop d'incohérences dans l'allocation des éléments du menu.\n")
+        }
 
         change_directory(globals.settings.workdir);
         free(dest);
@@ -2216,7 +2223,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         }
         else
         {
-             pics_per_track = fn_strtok(stillpic_string, ':', pics_per_track, 0,NULL,NULL);
+             uint32_t size = 0;
+             pics_per_track = fn_strtok(stillpic_string, ':', pics_per_track, &size, 0,NULL,NULL);
              indir = false;
         }
 
@@ -2261,12 +2269,16 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 create_stillpic_directory(pics_per_track[k], -1);
             }
             else
-            picks_per_track_double_array[k] = fn_strtok(pics_per_track[k],
-                                                          ',',
-                                                          picks_per_track_double_array[k],
-                                                          -1,
-                                                          create_stillpic_directory,
-                                                          NULL);
+            {
+                uint32_t size = 0;
+                picks_per_track_double_array[k] = fn_strtok(pics_per_track[k],
+                                                              ',',
+                                                              picks_per_track_double_array[k],
+                                                              &size,
+                                                              -1,
+                                                              create_stillpic_directory,
+                                                              NULL);
+            }
 
             dim = 0;
             w   = 0;
@@ -2724,8 +2736,8 @@ void process_dvd_video_zone(command_t* command)
        uint8_t new_ntracks[9]={0};
        uint8_t ndvdvslides[9]={0};
 
-       char*** new_dvdv_track_array;
-       char*** new_dvdv_slide_array;
+       char*** new_dvdv_track_array = NULL;
+       char*** new_dvdv_slide_array = NULL;
 
        if (delta_titlesets)
            {
@@ -2735,8 +2747,8 @@ void process_dvd_video_zone(command_t* command)
              if (command->ngroups+delta_titlesets > 99)
                EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Exceeded 99 titleset limit.\n       Redesign your audio input so that you do not have more than 99 different audio formats in a row.")
 
-             new_dvdv_track_array=(char***) calloc(command->ngroups + delta_titlesets,sizeof(dvdv_track_array));
-             new_dvdv_slide_array=(char***) calloc(command->ngroups + delta_titlesets, sizeof(dvdv_slide_array));
+             new_dvdv_track_array=(char***) calloc(command->ngroups + delta_titlesets,sizeof(char**));
+             new_dvdv_slide_array=(char***) calloc(command->ngroups + delta_titlesets, sizeof(char**));
 
              int newgroup=-1;
 
@@ -2751,8 +2763,8 @@ void process_dvd_video_zone(command_t* command)
 
              for (int newgroup=0; newgroup< command->ngroups +delta_titlesets; newgroup++)
              {
-               new_dvdv_track_array[newgroup]=calloc(new_ntracks[newgroup], sizeof(dvdv_track_array[newgroup]));
-               new_dvdv_slide_array[newgroup]=calloc(new_ntracks[newgroup], sizeof(dvdv_slide_array[newgroup]));
+               new_dvdv_track_array[newgroup]=calloc(new_ntracks[newgroup], sizeof(char*));
+               new_dvdv_slide_array[newgroup]=calloc(new_ntracks[newgroup], sizeof(char*));
                ndvdvslides[newgroup]=0;
              }
 
@@ -2821,12 +2833,12 @@ void process_dvd_video_zone(command_t* command)
               for (int track=0; track < command->ntracks[group]; track++)
               {
                   free(dvdv_track_array[group][track]);
-                  free(dvdv_slide_array[group][track]);
+                  if (dvdv_slide_array) free(dvdv_slide_array[group][track]);
               }
 
               free(cut_table[group]);
               free(dvdv_track_array[group]);
-              free(dvdv_slide_array[group]);
+              if (dvdv_slide_array) free(dvdv_slide_array[group]);
             }
         }
 

@@ -434,6 +434,20 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t ngiven_channel
 }
 
 
+#define free2(X) {\
+    if (command->img->X) {\
+     for (int i = 0; i < globals.X##size; ++i) free(command->img->X[i]); \
+    }\
+    free(command->img->X); \
+    }
+
+#define free3(X) {\
+    if (command->X) {\
+    for (int i = 0; i < globals.X##size; ++i) free(command->X[i]); \
+    }\
+    free(command->X); \
+    }
+
 void free_memory(command_t *command)
 {
     int i, j;
@@ -468,31 +482,59 @@ void free_memory(command_t *command)
         FREE(command->files)
      }
 
-    FREE(globals.settings.outdir)
-    FREE(globals.settings.workdir)
-    FREE(globals.settings.tempdir)
-    FREE(globals.settings.lplexoutdir)
-    FREE(globals.settings.indir)
-    FREE(globals.settings.linkdir)
-    //FREE(globals.settings.logfile)
-    FREE(globals.settings.settingsfile)
-    //FREE(globals.settings.fixwav_database)
-    FREE(globals.settings.dvdisopath)
-    FREE(globals.settings.stillpicdir)
-    FREE(globals.xml)
+    free(globals.settings.outdir);
+    free(globals.settings.workdir);
+    free(globals.settings.tempdir);
+    free(globals.settings.lplexoutdir);
+    free(globals.settings.indir);
+    free(globals.settings.linkdir);
+    //free(globals.settings.logfile)
+    free(globals.settings.settingsfile);
+    //free(globals.settings.fixwav_database)
+    free(globals.settings.dvdisopath);
+    free(globals.settings.stillpicdir);
+    free(globals.xml);
 
 
 
 if (command && command->img)
 {
-    free(command->img->selectpic);
-    free(command->img->imagepic);
-    free(command->img->backgroundmpg[0]);
-    free(command->img->backgroundmpg);
-    free(command->img->soundtrack[0][0]);
+    free3(textable)
+    free2(topmenu)
+    free2(backgroundmpg)  // Valgrind complains but don't see why (with --topmenu)
+    free2(backgroundpic)  // idem
+    for (int i = 0; i < MAX(1, command->img->nmenus); ++i)
+    {
+        for(uint32_t u = 0; u < globals.soundtracksize[i]; ++u)
+           free(command->img->soundtrack[i][u]);
+
+        free(command->img->soundtrack[i]);
+    }
+    free(command->img->soundtrack);
+    free2(topmenu_slide)
+    free2(highlightpic)
+    free2(selectpic)
+    free2(imagepic)
+    free2(backgroundcolors)
+    free(command->img->audioformat);
+    free(command->img->albumcolor);
+    free(command->img->groupcolor);
+    free(command->img->arrowcolor);
+    if (command->img->nmenus) free(command->img->menuvobsize);
+    free(command->img->bgcolor_pic);
+
+    free(command->img->activetextcolor_palette);
+    free(command->img->activebgcolor_palette);
+    free(command->img->activehighlightcolor_palette);
+    free(command->img->activeselectfgcolor_palette);
+
     free(command->img->textcolor_palette);
-//    free(command->img->highlightcolor_pic/palette)  : do not free
-  //  free(command->img->selectfgcolor_pic/palette)
+    free(command->img->bgcolor_palette);
+    free(command->img->highlightcolor_palette);
+    free(command->img->selectfgcolor_palette);
+
+    free(command->img->highlightcolor_pic);
+    free(command->img->selectfgcolor_pic);
     free(command->img->textcolor_pic);
     free(command->img->textfont);
     free(command->img->blankscreen);
@@ -504,19 +546,14 @@ if (command && command->img)
     free(command->img->activeheader);
     free(command->img->tsvob);
     free(command->img->topmenu_nslides);
-    for (int i = 0; i < command->img->nmenus; ++i)
-       free(command->img->topmenu[i]);
-    free(command->img->topmenu);
 
-    j=0;
-
-    FREE2(command->textable)
-    //if (globals.topmenu)
-    //FREE2(command->img->backgroundpic)
 }
 
 
 }
+
+#undef free2
+#undef free3
 
 void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size)
 {
@@ -557,13 +594,17 @@ void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size)
 // Returns NULL on error or array of extracted strings
 // remainder should be allocated prior to call
 
-char** fn_strtok(char* chain, char delim, char** array, int32_t count, int  (*f)(char*, int32_t ), char* remainder)
+char** fn_strtok(char* chain, char delim, char** array, uint32_t* size, int32_t count, int  (*f)(char*, int32_t ), char* remainder)
 {
-  if (chain == NULL) return NULL;
+  if (chain == NULL || size == NULL) return NULL;
   //
   char *s = strdup(chain);
 
-  if (s == NULL) return NULL;
+  if (s == NULL)
+  {
+      *size = 0;
+      return NULL;
+  }
   errno = 0;
 
   uint32_t j = 1, k = 0;
@@ -576,21 +617,23 @@ char** fn_strtok(char* chain, char delim, char** array, int32_t count, int  (*f)
   while (s[j++] != '\0');
   cut[k + 1] = j - 1;
   // exactly k=size-2 cuts, k+1 substrings and array filled with k+1 substrings and NULL-terminating pointer, so array is sized size*sizeof(char)
-  uint32_t size = k + 2;
-  array = (char**) calloc(size, sizeof(char*));
+  *size = k + 2;
+  array = (char**) calloc(*size, sizeof(char*));
   if (array == NULL)
   {
       perror("\n"ERR "fn_strtok\n");
+      free(s);
+      *size = 0;
       return NULL;
   }
 
   k=0;
 
-  while (k <= (size - 2))
+  while (k <= (*size - 2))
     {
       array[k] = calloc(cut[k + 1] - cut[k], sizeof (char));
       if (array[k] == NULL)
-         { perror(ERR "fn_strtok, array[k]"); return NULL;}
+         { perror(ERR "fn_strtok, array[k]"); free(s); *size = 0; return NULL;}
 
       memcpy(array[k], s + cut[k] + 1, cut[k + 1] - cut[k] - 1);
       array[k][cut[k + 1] - cut[k] - 1] = 0;

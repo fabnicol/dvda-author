@@ -92,63 +92,61 @@ char *currentdir, *TEMPDIR, *LPLEXTEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
 
 static inline void allocate_paths(char** s, const char* dir, unsigned long length)
 {
-    //if (s != NULL) free(s);
-
+    if (s != NULL) free(*s);
     *s = calloc(length + 10, sizeof(char));
     sprintf(*s, "%s"SEPARATOR"%s", globals.settings.tempdir, dir);
-
 }
 
 void normalize_temporary_paths(pic* img)
 {
-    unsigned long s = strlen(globals.settings.tempdir);
+   if (img == NULL) return;
 
-    allocate_paths(&globals.settings.indir, "audio", s);
-    allocate_paths(&globals.settings.outdir, "output", s);
-    allocate_paths(&globals.settings.lplexoutdir, "output", s);
+   int menu;
 
-    if (img != NULL)
+   free(img->backgroundpic);
+   img->backgroundpic=calloc(img->nmenus+1,sizeof(char*));
+   free(img->backgroundmpg);
+   img->backgroundmpg=calloc(img->nmenus+1,sizeof(char*));
+   free(img->imagepic);
+   img->imagepic=calloc(img->nmenus+1,sizeof(char*));
+   free(img->highlightpic);
+   img->highlightpic=calloc(img->nmenus+1,sizeof(char*));
+   free(img->selectpic);
+   img->selectpic=calloc(img->nmenus+1, sizeof(char*));
+
+    // useless to realloc for just one menu !
+
+   int s = strlen(globals.settings.tempdir);
+
+   for (menu=0;  menu < img->nmenus; menu++)
     {
+        free(img->backgroundmpg[menu]);
+        img->backgroundmpg[menu]=(char*)calloc(26+s, sizeof(char));
+        sprintf(img->backgroundmpg[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "background", menu, ".mpg");
 
-       int menu;
-        free(img->backgroundpic);
-        img->backgroundpic=calloc(img->nmenus+1,sizeof(char*));
-  //      img->backgroundmpg=calloc(img->nmenus+1,sizeof(char*));
-        free(img->imagepic);
-        img->imagepic=calloc(img->nmenus+1,sizeof(char*));
-        free(img->highlightpic);
-        img->highlightpic=calloc(img->nmenus+1,sizeof(char*));
-        free(img->selectpic);
-        img->selectpic=calloc(img->nmenus+1, sizeof(char*));
+        free(img->backgroundpic[menu]);
+        img->backgroundpic[menu]=calloc(s+13, sizeof(char));
+        sprintf(img->backgroundpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "bgpic", menu, ".jpg");
 
-        // useless to realloc for just one menu !
+        img->imagepic[menu]=calloc(s+13, sizeof(char));
+        sprintf(img->imagepic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "impic", menu, ".png");
 
-        for (menu=0;  menu < img->nmenus; menu++)
-        {
-    //        img->backgroundmpg[menu]=(char*)calloc(26+s, sizeof(char));
-    //        sprintf(img->backgroundmpg[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "background", menu, ".mpg");
+        free(img->highlightpic[menu]);
+        img->highlightpic[menu]=calloc(s+13,sizeof(char));
+        sprintf(img->highlightpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "hlpic", menu, ".png");
 
-            free(img->backgroundpic[menu]);
-            img->backgroundpic[menu]=calloc(s+13, sizeof(char));
-            sprintf(img->backgroundpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "bgpic", menu, ".jpg");
-
-            img->imagepic[menu]=calloc(s+13, sizeof(char));
-            sprintf(img->imagepic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "impic", menu, ".png");
-
-            free(img->highlightpic[menu]);
-            img->highlightpic[menu]=calloc(s+13,sizeof(char));
-            sprintf(img->highlightpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "hlpic", menu, ".png");
-
-            img->selectpic[menu]=calloc(s+13,sizeof(char));
-            sprintf(img->selectpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "slpic", menu, ".png");
-        }
-
-        img->imagepic[img->nmenus]=NULL;
-        img->highlightpic[img->nmenus]=NULL;
-        img->selectpic[img->nmenus]=NULL;
-//        img->backgroundmpg[img->nmenus]=NULL;
+        img->selectpic[menu]=calloc(s+13,sizeof(char));
+        sprintf(img->selectpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "slpic", menu, ".png");
     }
-                
+
+   img->imagepic[img->nmenus]=NULL;
+   img->highlightpic[img->nmenus]=NULL;
+   img->selectpic[img->nmenus]=NULL;
+   img->backgroundmpg[img->nmenus]=NULL;
+   globals.imagepicsize = img->nmenus + 1;
+   globals.highlightpicsize = img->nmenus + 1;
+   globals.backgroundmpgsize = img->nmenus + 1;
+   globals.selectpicsize = img->nmenus + 1;
 }
 
 
@@ -180,7 +178,7 @@ int main(int argc,  char* const argv[])
 
     setlocale(LC_ALL, "LOCALE");
 
-    char* currentdir = fn_get_current_dir_name ();
+    char* currentdir = get_current_dir_name ();
     int currentdirlength=strlen(currentdir);
     char TEMPDIRROOT[currentdirlength + 14];
     TEMPDIR = calloc(currentdirlength + 20, sizeof(char));
@@ -195,13 +193,9 @@ int main(int argc,  char* const argv[])
 #endif
 
     char *DATADIR=strdup(currentdir);
-    char **BGPIC=calloc(1, sizeof(char*));
     char ***SNDT=calloc(1, sizeof(char**));
     SNDT[0]=calloc(1, sizeof(char*));
     SNDT[0][0]=strdup(DEFAULT_SOUNDTRACK);
-
-
-    BGPIC[0]=strdup(DEFAULT_BACKGROUNDPIC);
 //    IMPIC[0]=calloc(currentdirlength+30, sizeof(char));
 //    HLPIC[0]=calloc(currentdirlength+30, sizeof(char));
 //    SLPIC[0]=calloc(currentdirlength+30, sizeof(char));
@@ -240,6 +234,15 @@ int main(int argc,  char* const argv[])
         .stillpicdir = NULL
 
     };
+
+    uint32_t tab0[9] = {0};
+    tab0[0] = 1;
+    uint32_t tab1[9] = {0};
+    tab1[0] = 1;
+    uint32_t tab2[9] = {0};
+    tab2[0] = 1;
+    char**   tab3    = calloc(1, sizeof(char*));
+    tab3[0] = strdup(DEFAULT_BACKGROUNDPIC);
 
     globalData globals_init=
     {
@@ -280,11 +283,21 @@ int main(int argc,  char* const argv[])
         /* no padding */    0,
         /* prune */         0,
         /* force */         0,
+        /* textablesize */  0,
+        /* topmenusize */   0,
+        .grouptextsize = tab1,
+        .tracktextsize = tab2,
+        .backgroundmpgsize = 0,
+        .backgroundpicsize = 1,
+        .soundtracksize =    tab0,
+        /* topmenu_slidesize */ 0,
+        /* highlightpicsize */  0,
+        /* selectpicsize */     0,
+        /* imagepicsize */      0,
+        /* backgroundcolorssize */ 0,
         /* fixwav output suffix*/
         strdup(STANDARD_FIXWAV_SUFFIX),
         /*fixwav_parameters*/ NULL,
-
-
         /*xml filepath*/    NULL,
         /*spumux xml*/      NULL,
         /*cdrecord dev*/    NULL,
@@ -306,7 +319,7 @@ int main(int argc,  char* const argv[])
         NULL,
         NULL,
         NULL,
-        BGPIC, // black screen for jpg video mpg authoring
+        tab3, // black screen for jpg video mpg authoring
         strdup(DEFAULT_BLANKSCREEN), // black screen for png authoring
         NULL, //backgroundmpg
         NULL, //backgroundcolors
@@ -317,24 +330,24 @@ int main(int argc,  char* const argv[])
         NULL, //tsvob
         SNDT, //soundtrack  silence.wav
         strdup(DEFAULT_AUDIOFORMAT),
-        strdup(DEFAULT_ALBUMCOLOR), //top menu pic textcolor
-        strdup(DEFAULT_GROUPCOLOR), //top menu pic textcolor
-        strdup(DEFAULT_ARROWCOLOR), //top menu pic textcolor
+        strdup(DEFAULT_ALBUMCOLOR), //top menu pic album color
+        strdup(DEFAULT_GROUPCOLOR), //top menu pic group color
+        strdup(DEFAULT_ARROWCOLOR), //top menu pic arrow color
         strdup(DEFAULT_TEXTCOLOR_PIC), //top menu pic textcolor
 
-        DEFAULT_BGCOLOR_PIC, //topmenu pic background color no strdup here (same-string optarg)
-        DEFAULT_HCOLOR_PIC, //topmenu pic highlight color  no strdup here (same-string optarg)
-        DEFAULT_SELCOLOR_PIC, //topmenu pic select action color no strdup here (same-string optarg)
+        strdup(DEFAULT_BGCOLOR_PIC), //topmenu pic background color no strdup here (same-string optarg)
+        strdup(DEFAULT_HCOLOR_PIC), //topmenu pic highlight color  no strdup here (same-string optarg)
+        strdup(DEFAULT_SELCOLOR_PIC), //topmenu pic select action color no strdup here (same-string optarg)
 
         strdup(DEFAULT_ACTIVETEXTCOLOR_PALETTE), //top menu pic textcolor
-        DEFAULT_ACTIVEBGCOLOR_PALETTE, //topmenu pic background color no strdup here (same-string optarg)
-        DEFAULT_ACTIVEHCOLOR_PALETTE, //topmenu pic highlight color  no strdup here (same-string optarg)
-        DEFAULT_ACTIVESELCOLOR_PALETTE, //topmenu pic select action color no strdup here (same-string optarg)
+        strdup(DEFAULT_ACTIVEBGCOLOR_PALETTE), //topmenu pic background color no strdup here (same-string optarg)
+        strdup(DEFAULT_ACTIVEHCOLOR_PALETTE), //topmenu pic highlight color  no strdup here (same-string optarg)
+        strdup(DEFAULT_ACTIVESELCOLOR_PALETTE), //topmenu pic select action color no strdup here (same-string optarg)
 
         strdup(DEFAULT_TEXTCOLOR_PALETTE), //system palette textcolor
-        DEFAULT_BGCOLOR_PALETTE, //palette background color        no strdup here (same-string optarg)
-        DEFAULT_HCOLOR_PALETTE, //palette highlight color    no strdup here (same-string optarg)
-        DEFAULT_SELCOLOR_PALETTE, //palette select action color red   no strdup here (same-string optarg)
+        strdup(DEFAULT_BGCOLOR_PALETTE), //palette background color        no strdup here (same-string optarg)
+        strdup(DEFAULT_HCOLOR_PALETTE), //palette highlight color    no strdup here (same-string optarg)
+        strdup(DEFAULT_SELCOLOR_PALETTE), //palette select action color red   no strdup here (same-string optarg)
 
         strdup(DEFAULT_TEXTFONT), //textfont Courier
         NULL,
@@ -364,7 +377,11 @@ int main(int argc,  char* const argv[])
     globals.settings.tempdir=strdup(TEMPDIR);
     globals.settings.lplextempdir=LPLEXTEMPDIR;
     globals.settings.stillpicdir=strdup(globals.settings.tempdir);
-    //normalize_temporary_paths(NULL); // to be reviewed
+    unsigned long s = strlen(globals.settings.tempdir);
+
+    allocate_paths(&globals.settings.indir, "audio", s);
+    allocate_paths(&globals.settings.outdir, "output", s);
+    allocate_paths(&globals.settings.lplexoutdir, "output", s);
 
     // Null arg is no longer supported, yet...
 
@@ -454,9 +471,6 @@ launch:
         perror(WAR "Detected runtime errors");
     }
 
-    free(SNDT);
-
-    //free(BGPIC);
     return(errno);
 }
 
