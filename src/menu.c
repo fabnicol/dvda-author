@@ -602,6 +602,7 @@ int generate_background_mpg(pic* img)
             fflush(NULL);
             rank++;
         }
+        globals.backgroundmpgsize = img->nmenus;
     }
     rank=0;
 
@@ -609,6 +610,7 @@ int generate_background_mpg(pic* img)
     {
         FREE(img->backgroundmpg);
         img->backgroundmpg=calloc(img->count, sizeof(char*));
+        globals.backgroundmpgsize = img->count;
         if (img->backgroundmpg)
             while (rank < img->count)
             {
@@ -952,11 +954,12 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
         // to avoid using reentrant version of strtok (strtok_r, not mingw32 protable)
 
         char remainder[strlen(img->screentextchain)];
-        basemotif=fn_strtok(img->screentextchain, '=', basemotif, 1, cutloop, remainder) ;
+        uint32_t size = 0;
+        basemotif=fn_strtok(img->screentextchain, '=', basemotif, &size, 1, cutloop, remainder) ;
         albumtext=basemotif[0];
-        grouparray=fn_strtok(remainder, ':', grouparray, 0, NULL, NULL) ;
 
-        dim=arraylength(grouparray);
+        grouparray=fn_strtok(remainder, ':', grouparray, &dim, 0, NULL, NULL) ;
+
         tracktext=calloc(dim, sizeof(char**));
         if (tracktext == NULL) perror(ERR "Track text allocation");
         grouptext=calloc(dim, sizeof(char**));
@@ -965,13 +968,12 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
         for (k=0; k < dim; k++)
         {
             char rem[strlen(grouparray[k])];
-            grouptext[k]=fn_strtok(grouparray[k], '=', grouptext[k], 1, cutloop, rem);
-            tracktext[k]=fn_strtok(rem, ',', tracktext[k], 0,NULL, NULL);
-            FREE(grouparray[k]);
-
+            grouptext[k]=fn_strtok(grouparray[k], '=', grouptext[k], &globals.grouptextsize[k], 1, cutloop, rem);
+            tracktext[k]=fn_strtok(rem, ',', tracktext[k], &globals.tracktextsize[k], 0,NULL, NULL);
+            free(grouparray[k]);
         }
 
-        FREE(grouparray);
+        free(grouparray);
 
         do
         {
@@ -996,14 +998,16 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
         albumtext=strdup(DEFAULT_ALBUM_HEADER);
         grouptext=(char ***)calloc(ngroups, sizeof(char**));
         tracktext=(char ***)calloc(ngroups, sizeof(char**));
-        dim=Min(img->ncolumns*img->nmenus,ngroups);
+        dim=ngroups;
 
         for (k=0; k < dim; k++)
         {
             grouptext[k]=calloc(2, sizeof(char**));
+            globals.grouptextsize[k] = 2;
             grouptext[k][0]=calloc(strlen(DEFAULT_GROUP_HEADER_UPPERCASE)+2, sizeof(char));
             sprintf(grouptext[k][0], "%s%d", DEFAULT_GROUP_HEADER_UPPERCASE, k+1);
             tracktext[k]=calloc(ntracks[k]+1, sizeof(char**));
+            globals.tracktextsize[k] = ntracks[k]+1;
             for (j=0; j < ntracks[k]; j++)
             {
                 tracktext[k][j]=calloc(strlen(DEFAULT_TRACK_HEADER)+3, sizeof(char));
@@ -1015,9 +1019,6 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
 
 
     }
-
-
-    if (ngroups > img->ncolumns*img->nmenus) foutput("[WARN]  Limiting menu to %d groups...\n", img->ncolumns*img->nmenus);
 
     track=group=0;
     int8_t offset=0;
@@ -1056,6 +1057,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
         compute_pointsize(img, 10, maxntracks);
 
         prepare_overlay_img(albumtext, -1, img, command1, command2, menu, img->albumcolor);
+        free(albumtext);
 
         if (img->hierarchical)
         {
@@ -1179,13 +1181,20 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
 
 
     }
-    while ((menu < img->nmenus)&& (groupcount < ngroups));
+    while ((menu < img->nmenus)&& (groupcount < dim));
 
-    for(group=0; group < dim; group++)
+    for(group=0; group < dim; ++group)
     {
-        FREE2(grouptext[group]);
-        FREE2(tracktext[group]);
+        for (uint32_t i = 0; i < globals.grouptextsize[group]; ++i)
+            free(grouptext[group][i]);
+        for (uint32_t i = 0; i < globals.tracktextsize[group]; ++i)
+            free(tracktext[group][i]);
+        free(grouptext[group]);
+        free(tracktext[group]);
     }
+
+    free(grouptext);
+    free(tracktext);
 
     if (img->screentextchain)
     {

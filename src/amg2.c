@@ -176,6 +176,7 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
     return track;
 }
 
+
 #if !HAVE_core_BUILD
 void allocate_topmenus(command_t *command)
 {
@@ -200,6 +201,8 @@ void allocate_topmenus(command_t *command)
         if (img->topmenu[menu]) 
             snprintf(img->topmenu[menu], s + 11, "%s"SEPARATOR"%s%d", globals.settings.tempdir, TOPMENU_NAME, menu);
     }
+
+    globals.topmenusize = img->nmenus;
     return;
 }
 
@@ -229,7 +232,7 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
 
     case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
 
-            generate_menu_pics(img, ngroups, ntracks, maxntracks);
+        generate_menu_pics(img, ngroups, ntracks, maxntracks);
 
         // calling xml project file subroutine for dvdauthor
 
@@ -251,12 +254,15 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
             errno = generate_amgm_xml(ngroups, ntracks, img);
             if (errno) perror("\n"ERR "AMG: amgm_xml\n");
         }
+        if (img->nmenus && img->menuvobsize == NULL)
+        {
+            img->menuvobsize = calloc(img->nmenus, sizeof(uint32_t*));
+            if (img->menuvobsize == NULL) perror("\n"ERR "menuvobsize\n");
+        }
+        if (img->topmenu)
         for (menu = 0; menu < img->nmenus; ++menu)
             if (img->topmenu[menu])
             {
-                if (img->menuvobsize == NULL) img->menuvobsize = calloc(img->nmenus, sizeof(uint32_t*));
-                if (img->menuvobsize == NULL) perror("\n"ERR "menuvobsize\n");
-
                 img->menuvobsize[menu] = stat_file_size(img->topmenu[menu]) / 0x800;
                 if (globals.veryverbose) 
                     foutput(MSG_TAG "Top menu is: %s with size %"PRIu32" KB\n", img->topmenu[menu], img->menuvobsize[menu]);

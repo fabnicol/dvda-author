@@ -235,6 +235,18 @@ typedef struct
     bool fixwav_padding; /* padding */
     bool fixwav_prune; /* prune */
     bool fixwav_force;
+    uint32_t textablesize;
+    uint32_t topmenusize;
+    uint32_t *grouptextsize;
+    uint32_t *tracktextsize;
+    uint32_t backgroundmpgsize;
+    uint32_t backgroundpicsize;
+    uint32_t *soundtracksize;
+    uint32_t topmenu_slidesize;
+    uint32_t highlightpicsize;
+    uint32_t selectpicsize;
+    uint32_t imagepicsize;
+    uint32_t backgroundcolorssize;
     char* fixwav_suffix; /* output suffix for corrected files */
     char* fixwav_parameters;
 
