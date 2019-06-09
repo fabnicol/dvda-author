@@ -366,7 +366,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
 {
     uint16_t i, j = 0, k = 0, titleset = 0, totalplaylisttitles = 0, totalaudiotitles = 0, titleintitleset;
 
-    _Bool menusector = (globals.topmenu <= TS_VOB_TYPE);  // there is a _TS.VOB in these cases
+    bool menusector = (globals.topmenu <= TS_VOB_TYPE);  // there is a _TS.VOB in these cases
     uint8_t naudio_groups = ngroups-vgroups-nplaygroups;  // CHECK
 
     uint32_t  sectoroffset[naudio_groups];
@@ -474,7 +474,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
     for (j = 0; j < totalaudiotitles; ++j)
     {
 
-        _Bool come_last = (titleintitleset == numtitles[titleset] - 1);
+        bool come_last = (titleintitleset == numtitles[titleset] - 1);
 
         uint8_t sec2_title_tag[1] = {((menusector)? ((come_last)? 0xC0 : 0x80) : 0x80 ) | (titleset + 1)}; // Table sector 2 first two bytes per title
         uint8_t n_tracks_per_title[4] = { ntitletracks[titleset][titleintitleset], 0, 0, 0};
@@ -961,7 +961,7 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
 
     uint16_t i, j = 0, k = 0, titleset = 0, totalplaylisttitles = 0, totalaudiotitles = 0, titleintitleset;
 
-    _Bool menusector = (globals.topmenu <= TS_VOB_TYPE);  // there is a _TS.VOB in these cases
+    bool menusector = (globals.topmenu <= TS_VOB_TYPE);  // there is a _TS.VOB in these cases
     uint8_t naudio_groups = ngroups-vgroups-nplaygroups;  // CHECK
 
     uint8_t amg[sectors->amg*2048];
@@ -1025,7 +1025,7 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
     for (j = 0; j < totalaudiotitles; ++j)
     {
 
-        _Bool come_last = (titleintitleset == numtitles[titleset] - 1);
+        bool come_last = (titleintitleset == numtitles[titleset] - 1);
 
         amg[i] = ((menusector)? ((come_last)? 0xC0 : 0x80) : 0x80 ) | (titleset + 1); 			// Table sector 2 first two bytes per title
         amg[++i] = ntitletracks[titleset][titleintitleset];
