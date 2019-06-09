@@ -101,7 +101,7 @@ void check_real_size(WaveData *info, WaveHeader *header)
 
   S_OPEN(info->outfile, "rb+")
 
-  _Bool pad_byte = (header->ckSize % 2 == 1);
+  bool pad_byte = (header->ckSize % 2 == 1);
 
   uint32_t size = stat_file_size(filename(info->outfile));
 

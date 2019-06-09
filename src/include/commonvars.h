@@ -44,6 +44,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define WEBSITE "http://dvd-audio.sourceforge.net"
 #endif
 
+#define bool _Bool
+
 /* This sanity check macros forces LONG_OPTIONS when _GNU_SOURCE has been defined as a compile-time option
  * unless SHORT_OPTIONS_ONLY has been defined to block long options irrespective of the source version
  * _GNU_SOURCE si independently requested by strndup

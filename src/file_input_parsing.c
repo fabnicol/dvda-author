@@ -164,7 +164,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
         nt = 0;
 
 //        FILE* cgafile;
-//        //_Bool read_cga_file=0;
+//        //bool read_cga_file=0;
 //        cgafile=fopen(CGA_FILE, "rb");
 //        if (cgafile != NULL)
 //        {

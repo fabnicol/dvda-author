@@ -50,7 +50,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "menu.h"
 
 extern globalData globals;
-extern char* INDIR, *OUTDIR, *LOGFILE, *TEMPDIR, *LINKDIR, *WORKDIR;
+extern char* INDIR, *OUTDIR, *LOGFILE,  *LINKDIR, *WORKDIR;
 
 void version()
 {
@@ -340,7 +340,7 @@ void check_settings_file()
 
 }
 #endif
-_Bool increment_ngroups_check_ceiling(uint8_t *ngroups, uint8_t * nvideolinking_groups)
+bool increment_ngroups_check_ceiling(uint8_t *ngroups, uint8_t * nvideolinking_groups)
 {
 
     if (*ngroups < 9)
@@ -483,27 +483,36 @@ void free_memory(command_t *command)
 
 
 
-if (command)
+if (command && command->img)
 {
-    //FREE(command->img->selectpic)
-    //FREE(command->img->imagepic)
-    //FREE(command->img->backgroundmpg)
-    FREE(command->img->soundtrack[0][0])
-    FREE(command->img->textcolor_palette)
-    //FREE(command->img->highlightcolor_pic/palette)  : do not free
-    //FREE(command->img->selectfgcolor_pic/palette)
-    FREE(command->img->textcolor_pic)
-    FREE(command->img->textfont)
-//    FREE(command->img->blankscreen)
-    FREE(command->img->screentextchain)
-    FREE(command->img->norm)
-    FREE(command->img->framerate)
-//    FREE(command->img->stillpicvobsize)
-    FREE(command->img->aspectratio)
+    free(command->img->selectpic);
+    free(command->img->imagepic);
+    free(command->img->backgroundmpg[0]);
+    free(command->img->backgroundmpg);
+    free(command->img->soundtrack[0][0]);
+    free(command->img->textcolor_palette);
+//    free(command->img->highlightcolor_pic/palette)  : do not free
+  //  free(command->img->selectfgcolor_pic/palette)
+    free(command->img->textcolor_pic);
+    free(command->img->textfont);
+    free(command->img->blankscreen);
+    free(command->img->screentextchain);
+    free(command->img->norm);
+    free(command->img->framerate);
+    free(command->img->stillpicvobsize);
+    free(command->img->aspectratio);
+    free(command->img->activeheader);
+    free(command->img->tsvob);
+    free(command->img->topmenu_nslides);
+    for (int i = 0; i < command->img->nmenus; ++i)
+       free(command->img->topmenu[i]);
+    free(command->img->topmenu);
 
     j=0;
+
     FREE2(command->textable)
-   // FREE2(command->img->backgroundpic)
+    //if (globals.topmenu)
+    //FREE2(command->img->backgroundpic)
 }
 
 

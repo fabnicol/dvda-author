@@ -99,7 +99,7 @@ errno=0;
 
 
 
-int audit_soundtrack(char* path, _Bool strict)
+int audit_soundtrack(char* path, bool strict)
 {
 
     path_t *s=parse_filepath(path);

@@ -57,7 +57,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 globalData globals;
 char *currentdir, *TEMPDIR, *LPLEXTEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
 
- command_t* lexer_analysis(command_t* command, lexer_t* lexer, const char* config_file, _Bool config_type)
+ command_t* lexer_analysis(command_t* command, lexer_t* lexer, const char* config_file, bool config_type)
  {
     int i;
     lexer->nlines=MAX_LEXER_LINES;
@@ -90,33 +90,35 @@ char *currentdir, *TEMPDIR, *LPLEXTEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
         return command;
  }
 
-static inline void allocate_paths(char* s, const char* dir, unsigned long length)
+static inline void allocate_paths(char** s, const char* dir, unsigned long length)
 {
-    //if (s == NULL)
-    {
-      s = calloc(length + 10, sizeof(char));
-      sprintf(s, "%s"SEPARATOR"%s", globals.settings.tempdir, dir);
-    }
+    //if (s != NULL) free(s);
+
+    *s = calloc(length + 10, sizeof(char));
+    sprintf(*s, "%s"SEPARATOR"%s", globals.settings.tempdir, dir);
+
 }
 
 void normalize_temporary_paths(pic* img)
 {
     unsigned long s = strlen(globals.settings.tempdir);
 
-    allocate_paths(globals.settings.indir, "audio", s);
-    allocate_paths(globals.settings.outdir, "output", s);
-    allocate_paths(globals.settings.lplexoutdir, "output", s);
-    allocate_paths(globals.settings.linkdir, "VIDEO_TS", s);
+    allocate_paths(&globals.settings.indir, "audio", s);
+    allocate_paths(&globals.settings.outdir, "output", s);
+    allocate_paths(&globals.settings.lplexoutdir, "output", s);
 
     if (img != NULL)
     {
 
        int menu;
-
+        free(img->backgroundpic);
         img->backgroundpic=calloc(img->nmenus+1,sizeof(char*));
   //      img->backgroundmpg=calloc(img->nmenus+1,sizeof(char*));
+        free(img->imagepic);
         img->imagepic=calloc(img->nmenus+1,sizeof(char*));
+        free(img->highlightpic);
         img->highlightpic=calloc(img->nmenus+1,sizeof(char*));
+        free(img->selectpic);
         img->selectpic=calloc(img->nmenus+1, sizeof(char*));
 
         // useless to realloc for just one menu !
@@ -126,12 +128,14 @@ void normalize_temporary_paths(pic* img)
     //        img->backgroundmpg[menu]=(char*)calloc(26+s, sizeof(char));
     //        sprintf(img->backgroundmpg[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "background", menu, ".mpg");
 
+            free(img->backgroundpic[menu]);
             img->backgroundpic[menu]=calloc(s+13, sizeof(char));
             sprintf(img->backgroundpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "bgpic", menu, ".jpg");
 
             img->imagepic[menu]=calloc(s+13, sizeof(char));
             sprintf(img->imagepic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "impic", menu, ".png");
 
+            free(img->highlightpic[menu]);
             img->highlightpic[menu]=calloc(s+13,sizeof(char));
             sprintf(img->highlightpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "hlpic", menu, ".png");
 
@@ -357,10 +361,10 @@ int main(int argc,  char* const argv[])
     };
 
     globals=globals_init;
-    globals.settings.tempdir=TEMPDIR;
+    globals.settings.tempdir=strdup(TEMPDIR);
     globals.settings.lplextempdir=LPLEXTEMPDIR;
     globals.settings.stillpicdir=strdup(globals.settings.tempdir);
-    normalize_temporary_paths(NULL); // to be reviewed
+    //normalize_temporary_paths(NULL); // to be reviewed
 
     // Null arg is no longer supported, yet...
 
@@ -382,7 +386,7 @@ int main(int argc,  char* const argv[])
        yet this is useless if command line is just "--version" or "--help" or equivalents */
 
 
-    _Bool project_flag=0;
+    bool project_flag=0;
     char* project_filepath=NULL;
     command_t command0, *command=NULL;
     command0.img=&img0;
@@ -450,6 +454,9 @@ launch:
         perror(WAR "Detected runtime errors");
     }
 
+    free(SNDT);
+
+    //free(BGPIC);
     return(errno);
 }
 

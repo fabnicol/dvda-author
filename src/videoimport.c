@@ -185,7 +185,7 @@ void get_video_PTS_ticks(char* path_to_VIDEO_TS, uint32_t *videotitlelength, uin
 
 
 extern char *mpeg2dec, *mpeg2enc, *pgmtoy4m, *mplex, *extract_ac3, *ac3dec;
-void import_topmenu(char* video_vob_path, pic* img, _Bool MIX_TYPE)
+void import_topmenu(char* video_vob_path, pic* img, bool MIX_TYPE)
 {
  initialize_binary_paths(CREATE_MJPEGTOOLS);
  initialize_binary_paths(CREATE_MPEG2DEC);
