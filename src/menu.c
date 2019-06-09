@@ -281,20 +281,24 @@ void initialize_binary_paths(char level)
         if (count1)
         {
             free((char*) mp2enc);
+            mp2enc=NULL;
             free((char*) jpeg2yuv);
+            jpeg2yuv=NULL;
             free((char*) mpeg2enc);
+            mpeg2enc=NULL;
             free((char*) mplex);
+            mplex=NULL;
         }
-        if (count2) free((char*) spumux);
-        if (count3) free((char*) dvdauthor);
+        if (count2) { free((char*) spumux); spumux = NULL; }
+        if (count3) { free((char*) dvdauthor); dvdauthor = NULL; }
         if (count4)
         {
-            free((char*) mogrify);
-            free((char*) convert);
+            free((char*) mogrify); mogrify = NULL;
+            free((char*) convert); convert = NULL;
         }
-        if (count5) free((char*) mpeg2dec);
-        if (count6) free((char*) curl);
-        if (count7) { free((char*) ac3dec); free((char*) extract_ac3); }
+        if (count5) { free((char*) mpeg2dec); mpeg2dec = NULL; }
+        if (count6) { free((char*) curl); curl = NULL;}
+        if (count7) { free((char*) ac3dec); free((char*) extract_ac3); ac3dec = NULL; extract_ac3 = NULL;}
         break;
     }
 }
@@ -309,7 +313,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     if(s==0) s = strlen(globals.settings.tempdir);
     char pict[s+15];
 
-    FREE(img->backgroundmpg[rank])
+    free(img->backgroundmpg[rank]);
 
     img->backgroundmpg[rank] = calloc(1 + s + 17 + 3 + 4 + 1, sizeof(char));
 
@@ -667,7 +671,7 @@ int launch_spumux(pic* img)
             close(firsttubeerr[0]);
             dup2(firsttubeerr[1], STDERR_FILENO);
 
-           fprintf(stderr, "command line: %s %s %s %s %s", spumux, argsspumux[1], argsspumux[2], argsspumux[3], argsspumux[4]);
+           fprintf(stderr, INF "command line: %s %s %s %s %s", spumux, argsspumux[1], argsspumux[2], argsspumux[3], argsspumux[4]);
             if (freopen(img->backgroundmpg[menu], "rb", stdin) == NULL)
             {
                 fprintf(stderr, "%s",ERR "freopen (stdin)\n");
@@ -791,9 +795,11 @@ int prepare_overlay_img(char* text, int8_t group, pic *img, char* command, char*
     if ((group == -1)&&(text))  // album text
     {
         uint16_t x0= EVEN(x( (group>0)?group:0, img->ncolumns)) ;
+        char * q = quote(picture_save);
         snprintf(command, 2*CHAR_BUFSIZ, "%s %s %s \"rgb(%s)\" %s %s %s %d %s %s %d%c%d %c%s%s %s", mogrify,
                  "+antialias", "-fill", albumcolor, "-font", img->textfont, "-pointsize", DEFAULT_POINTSIZE,
-                 "-draw", " \"text ", x0, ',' , ALBUM_TEXT_Y0,  '\'', text, "\'\"", quote(picture_save));
+                 "-draw", " \"text ", x0, ',' , ALBUM_TEXT_Y0,  '\'', text, "\'\"", q);
+        free(q);
         if (globals.debugging) foutput("%s%s\n", INF "Launching mogrify (title) with command line: ", command);
         if (system(win32quote(command)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed")
             fflush(NULL);
@@ -861,9 +867,14 @@ int mogrify_img(char* text, int8_t group, int8_t track, pic *img, uint8_t maxnum
         deltay1=4;
     }
 
+
     if (track!=-1)
+    {
+        char *q = quote(img->highlightcolor_pic);
         snprintf(str, 10*CHAR_BUFSIZ, " %s \"rgb(%s)\" %s %s %d%s%d %d%s%d%s ",
-                 "-fill", quote(img->highlightcolor_pic), "-draw", " \"rectangle ", x0+deltax0, ",", y0+deltay0,  x0+ deltax1, ",", y0+deltay1, "\"");   // conversion works badly with -colors < 4
+                 "-fill", q, "-draw", " \"rectangle ", x0+deltax0, ",", y0+deltay0,  x0+ deltax1, ",", y0+deltay1, "\"");   // conversion works badly with -colors < 4
+        free(q);
+    }
 
     strcat(command, str);
     snprintf(str2, 10*CHAR_BUFSIZ, " %s \"rgb(%s)\" %s %s %s %d %s %s %d%c%d %s%s%s ",
@@ -956,10 +967,12 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
             char rem[strlen(grouparray[k])];
             grouptext[k]=fn_strtok(grouparray[k], '=', grouptext[k], 1, cutloop, rem);
             tracktext[k]=fn_strtok(rem, ',', tracktext[k], 0,NULL, NULL);
-            free(grouparray[k]);
+            FREE(grouparray[k]);
+
         }
 
-        free(grouparray);
+        FREE(grouparray);
+
         do
         {
             if (img->hierarchical) test_underline(grouptext[group][0],img);
@@ -1133,20 +1146,31 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
             }
             while  (buttons < menubuttons+arrowbuttons);
 
-        strcat(command2, quote(img->imagepic[menu]));
+        char *q = quote(img->imagepic[menu]);
+        strcat(command2, q);
+        free(q);
         if (globals.veryverbose) foutput(INF "Menu: %d/%d, groupcount: %d/%d.\n       Launching mogrify (image) with command line: %s\n", menu, img->nmenus, groupcount, ngroups, command2);
         if (system(win32quote(command2)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed");
         free(command2);
-
+        command2 = NULL;
         copy_file(img->imagepic[menu], img->highlightpic[menu]);
-
-        strcat(command1, quote(img->highlightpic[menu]));
+        q= quote(img->highlightpic[menu]);
+        strcat(command1, q);
+        free(q);
         if (globals.veryverbose) foutput(INF "Menu: %d/%d, groupcount: %d/%d.\n       Launching mogrify (highlight) with command line: %s\n", menu, img->nmenus, groupcount, ngroups,command1);
         if (system(win32quote(command1)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed");
         free(command1);
+        command1 = NULL;
         char command3[500];
-
-        snprintf(command3, sizeof(command3), "%s %s \"rgb(%s)\"  %s \"rgb(%s)\" %s %s", convert, "-fill", quote(img->selectfgcolor_pic), "-opaque", quote(img->textcolor_pic), quote(img->imagepic[menu]), quote(img->selectpic[menu]));
+        q  = quote(img->selectfgcolor_pic);
+        char* q2 = quote(img->textcolor_pic);
+        char* q3 = quote(img->imagepic[menu]);
+        char* q4 = quote(img->selectpic[menu]);
+        snprintf(command3, sizeof(command3), "%s %s \"rgb(%s)\"  %s \"rgb(%s)\" %s %s", convert, "-fill", q, "-opaque", q2, q3, q4);
+        free(q);
+        free(q2);
+        free(q3);
+        free(q4);
         if (globals.veryverbose) foutput(INF "Menu: %d/%d, groupcount: %d/%d.\n       Launching convert (select) with command line: %s\n",menu, img->nmenus, groupcount, ngroups,command3);
         if (system(win32quote(command3)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed");
 

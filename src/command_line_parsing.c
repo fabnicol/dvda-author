@@ -38,7 +38,7 @@
 
 globalData globals;
 unsigned int startsector;
-extern char* OUTDIR, *LOGFILE, *WORKDIR, *TEMPDIR, *LPLEXTEMPDIR;
+extern char* OUTDIR, *LOGFILE, *WORKDIR,  *LPLEXTEMPDIR;
 static fileinfo_t ** files;
 uint16_t totntracks;
 static uint8_t maxbuttons; // to be used in xml.c and menu.c as extern globals
@@ -48,13 +48,13 @@ static uint8_t mirror_st_flag=0;
 static uint8_t* ndvdvslides=NULL;
 static uint8_t* ndvdvtracks=NULL;
 
-static _Bool soundtracks_flag=0;
-static _Bool dvdv_tracks_given=0;
-static _Bool lplex_slides_flag=0;
-static _Bool dvdv_import_flag=0;
-static _Bool mirror_flag=0;
-static _Bool full_hybridate_flag=0;
-static _Bool         hybridate_flag=0;
+static bool soundtracks_flag=0;
+static bool dvdv_tracks_given=0;
+static bool lplex_slides_flag=0;
+static bool dvdv_import_flag=0;
+static bool mirror_flag=0;
+static bool full_hybridate_flag=0;
+static bool         hybridate_flag=0;
 
 static char  *stillpic_string=NULL;
 static char  **pics_per_track=NULL;
@@ -156,7 +156,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     }
 
     int errmsg;
-    _Bool allocate_files=false, logrefresh=false, refresh_tempdir=true, refresh_outdir=true;  // refreshing output and temporary directories by default
+    bool allocate_files=false, logrefresh=false, refresh_tempdir=true, refresh_outdir=true;  // refreshing output and temporary directories by default
     DIR *dir;
     parse_t  audiodir;
     extractlist extract;
@@ -166,7 +166,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 #endif
 #define img command->img  // already allocated, just for notational purposes
 
-    char **argv_scan=calloc(argc, sizeof(char*));
+    char **argv_scan=(char**)calloc(argc, sizeof(char*));
 
     if (argv_scan == NULL)   EXIT_ON_RUNTIME_ERROR
 
@@ -435,20 +435,20 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                     break;
 
                 case 'D' :
-                    FREE(globals.settings.tempdir);
+                    free(globals.settings.tempdir);
                     globals.settings.tempdir=strdup(optarg);
                     foutput("%s%s\n",PAR "Temporary directory is: ", optarg);
 
                     break;
 
                 case 19:
-                    FREE(globals.settings.lplextempdir);
+                    free(globals.settings.lplextempdir);
                     globals.settings.lplextempdir=strdup(optarg);
                     foutput("%s%s\n",PAR "Lplex temporary directory is: ", optarg);
                     break;
 
                 case 20:
-                    FREE(globals.settings.lplexoutdir);
+                    free(globals.settings.lplexoutdir);
                     globals.settings.lplexoutdir=strdup(optarg);
                     foutput("%s%s\n",PAR "Lplex output directory is: ", optarg);
                     break;
@@ -511,9 +511,17 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 */
                 // PATCH 09.07
 
-
                 if (argv[k][0] !='-')
+                {
+                    FILE* f;
+                    if (f = fopen(argv[k], "r")) fclose(f);
+                    else
+                    {
+                      fprintf(stderr, ERR "Le terme %s n'est pas un fichier. Fin du programme...\n", argv[k]);
+                      clean_exit(EXIT_FAILURE);
+                    }
                     ++ntracks[n_g_groups];
+                }
                 else
                 {
                     if (argv[k][1] == 'z')
@@ -587,6 +595,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'i' :
 
             allocate_files=true;
+            free(globals.settings.indir);
             globals.settings.indir=strdup(optarg);
 
             foutput("%s%s\n", PAR "Input directory is: ", 	optarg);
@@ -622,7 +631,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case 'o' :
-
+            free(globals.settings.outdir);
             globals.settings.outdir=strdup(optarg);
 
             foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET "  Output %s%s%s\n", "directory", " is: ", optarg);
@@ -661,7 +670,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             else
                 maximum_VTSI_rank=MAX(VTSI_rank[nvideolinking_groups], maximum_VTSI_rank);
 
-            globals.videozone=1;
             globals.videolinking=1;
 
             increment_ngroups_check_ceiling(&ngroups, &nvideolinking_groups);
@@ -688,6 +696,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         }
     }
+
+
 
     /* Here the group parameters are known: ngroups (total),  n_g_groups (legacy -g syntax), nvideolinking_groups */
 
@@ -834,11 +844,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             *still_options_string=NULL,
             *import_topmenu_path=NULL;
 
-    _Bool import_topmenu_flag=0;
+    bool import_topmenu_flag=0;
     uint16_t npics[totntracks];
 #endif
     char** textable=NULL;
-    _Bool extract_audio_flag=0;
+    bool extract_audio_flag=0;
     optind=0;
     opterr=1;
 
@@ -870,6 +880,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'x' :
             extract_audio_flag = 1;
             FREE(globals.settings.indir)
+            free(globals.settings.indir);
             globals.settings.indir = strdup(optarg);
             break;
 
@@ -1077,7 +1088,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             // allowing for a single title in video-linking group
             //  videolinkg groups are allocated in last position whatever the form of the command line
-            ntracks[ngroups-nvideolinking_groups+nvideolinking_groups_scan-1]=0;
+            ntracks[ngroups-nvideolinking_groups+nvideolinking_groups_scan-1]=1;
 
             files[ngroups-nvideolinking_groups+nvideolinking_groups_scan-1][0].first_PTS=0x249;
             // all other characteristics of videolinking titles ar null (handled by memset)
@@ -1087,7 +1098,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'V' :
             //  video-linking directory to VIDEO_TS structure
 
-            globals.videozone=1;
+            globals.videozone = 1;
+
             free(globals.settings.linkdir);
             globals.settings.linkdir=strdup(optarg);
             foutput("%s%s\n", PAR "VIDEO_TS input directory is: ", optarg);
@@ -1448,6 +1460,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 img->framerate[1]='0';
                 free(img->blankscreen);
                 img->blankscreen=strdup(DEFAULT_BLANKSCREEN_NTSC);
+                free(img->backgroundpic[0]);
                 img->backgroundpic[0]=strdup(DEFAULT_BACKGROUNDPIC_NTSC);
                 foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Video standard is %s", img->norm);
 
@@ -1511,8 +1524,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         }
     }
 
-     normalize_temporary_paths(NULL);
+    if (globals.videolinking == 1 && (globals.videozone == 0 || globals.settings.linkdir == NULL))
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "You should provide --videodir when using -T (video-linking)")
+    }
 
+    normalize_temporary_paths(NULL);
 
     change_directory(globals.settings.workdir);
 
@@ -1538,7 +1555,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         if (!globals.nooutput)
         {
             errno=secure_mkdir(globals.settings.outdir, 0777);
-            errno=secure_mkdir(globals.settings.datadir, 0777);
 
             errno=0;
             if (refresh_tempdir)
@@ -1634,6 +1650,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             else
             {
                 free(img->soundtrack[0][0]);
+                img->soundtrack[0][0] = NULL;
                 img->audioformat=strdup("pcm");
                 errno=0;
 
@@ -1837,7 +1854,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s%s\n",PAR "  background jpg file(s) for generating mpg video: ", optarg);
 
             str=strdup(optarg);
-
+            free(img->backgroundpic);
             img->backgroundpic=fn_strtok(str,',',img->backgroundpic,0,NULL,NULL);
             int backgroundpic_arraylength=0;
             if ((backgroundpic_arraylength=arraylength(img->backgroundpic)) < img->nmenus)
@@ -1883,7 +1900,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s%s\n",PAR "  highlight png file(s) for generating mpg video: ", optarg);
             foutput("%s\n", WAR "Check that your image doe not have more than 4 colors, including transparency.");
             str=strdup(optarg);
-
+            free(img->highlightpic);
             img->highlightpic=fn_strtok(str,',',img->highlightpic,0,NULL,NULL);
             int highlight_arraylength=0;
             if ((highlight_arraylength=arraylength(img->highlightpic)) < img->nmenus)
@@ -1991,7 +2008,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         FREE(convert);
     }
 
-    _Bool menupic_input_coherence_test=0;
+    bool menupic_input_coherence_test=0;
 
     if ((img->imagepic) && (img->highlightpic) && (img->selectpic) && globals.topmenu < NO_MENU)
     {
@@ -2119,12 +2136,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         dest=copy_file2dir(img->blankscreen, globals.settings.tempdir);
 
         if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Failed to copy background .png blankscreen to temporary directory.")
-                free(dest);
 
         if (!menupic_input_coherence_test)
             normalize_temporary_paths(img);
 
         change_directory(globals.settings.workdir);
+        free(dest);
 
     case RUN_SPUMUX_DVDAUTHOR:
         if ((img->imagepic==NULL) && (img->selectpic==NULL)&& (img->highlightpic==NULL))
@@ -2187,7 +2204,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         // A simple char* would well be allocated by function, not a char**.
 
         if (globals.debugging) fprintf(stderr, DBG "stillpic_string=%s\n", stillpic_string);
-        _Bool indir = true;
+        bool indir = true;
         errno = 0;
 
         if (is_dir(stillpic_string))
@@ -2408,7 +2425,7 @@ void process_dvd_video_zone(command_t* command)
     }
 
     FREE(picks_per_track_double_array)
-    free(stillpic_string);
+    FREE(stillpic_string);
 
     if (dvdv_tracks_given)
     {
@@ -2423,10 +2440,10 @@ void process_dvd_video_zone(command_t* command)
                                ndvdvslides,
                                (const int) ndvdvtitleset1);
 
-        free(dvdv_track_array);
-        free(dvdv_slide_array);
-        free(ndvdvslides);
-        free(ndvdvtracks);
+        FREE(dvdv_track_array);
+        FREE(dvdv_slide_array);
+        FREE(ndvdvslides);
+        FREE(ndvdvtracks);
     }
 
     if (dvdv_import_flag)
@@ -2561,15 +2578,15 @@ void process_dvd_video_zone(command_t* command)
                     new_dvdv_track_array[newgroup][track]=strdup(dvdv_track_array[group][track+N]);
                     new_dvdv_slide_array[newgroup][track]=strdup(dvdv_slide_array[group][track+N]);
                     ndvdvslides[newgroup]++;
-                    free(dvdv_slide_array[group][track+N]);
-                    free(dvdv_track_array[group][track+N]);
+                    FREE(dvdv_slide_array[group][track+N]);
+                    FREE(dvdv_track_array[group][track+N]);
                   }
                   N+=new_ntracks[newgroup];
                   newgroup++;
                 }
 
-                  free(dvdv_slide_array[group]);
-                  free(dvdv_track_array[group]);
+                  FREE(dvdv_slide_array[group]);
+                  FREE(dvdv_track_array[group]);
              }
 
             launch_lplex_hybridate(img,
@@ -2584,13 +2601,13 @@ void process_dvd_video_zone(command_t* command)
             {
                 for (int track=0; track < new_ntracks[group]; track++)
                 {
-                      free(new_dvdv_track_array[group][track]);
-                      free(new_dvdv_slide_array[group][track]);
+                      FREE(new_dvdv_track_array[group][track]);
+                      FREE(new_dvdv_slide_array[group][track]);
                 }
 
                  if (group < ndvdvtitleset1) free(cut_table[group]);
-                 free(new_dvdv_track_array[group]);
-                 free(new_dvdv_slide_array[group]);
+                 FREE(new_dvdv_track_array[group]);
+                 FREE(new_dvdv_slide_array[group]);
             }
            }
      else
@@ -2922,7 +2939,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
 {
     char * chain, *subchunk = NULL;
     int j;
-    _Bool cutgroups = 0;
+    bool cutgroups = 0;
 
     memset(extract, 0, sizeof(extractlist));
     uint8_t nextractgroup = 0;

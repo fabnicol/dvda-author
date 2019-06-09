@@ -34,6 +34,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include "version.h"
 //#include "fixwav_manager.h"
+#include "commonvars.h"
+
+#include <stdio.h>
 
 #if defined __WIN32__ || defined _WIN32 || defined __WIN32 || defined __WIN64 || defined _WIN64
 #define SEPARATOR "\\"
@@ -169,16 +172,16 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 typedef struct
 {
- _Bool    isfile;
- _Bool cdup_position[CHAR_BUFSIZ];
- _Bool pwd_position[CHAR_BUFSIZ];
+ bool    isfile;
+ bool cdup_position[CHAR_BUFSIZ];
+ bool pwd_position[CHAR_BUFSIZ];
  char*    directory;
  char*    extension;
  char*    rawfilename;
  char*    filename;
  char*    path;
  uint16_t separators;
- uint16_t length;
+ int16_t length;
 }path_t;
 
 typedef struct
@@ -190,7 +193,7 @@ typedef struct
 
 typedef struct
 {
-   _Bool isopen;
+   bool isopen;
    uint64_t filesize;
    char* filename;
    FILE* fp;
@@ -201,7 +204,7 @@ uint64_t filesize(filestat_t f);
 char* filename(filestat_t f);
 FILE* fileptr(filestat_t f);
 
-filestat_t filestat(_Bool b, uint64_t s, char* fn, FILE* fp);
+filestat_t filestat(bool b, uint64_t s, char* fn, FILE* fp);
 
 typedef struct
   {
@@ -211,15 +214,15 @@ typedef struct
     char* filetitle;
 
     /* global behavior booleans are set to zero by default, being global */
-    _Bool automatic;  /* whether automatic processing mode is selected */
-    _Bool prepend;  /* whether new header is prepended to raw data or overwrites old header */
-    _Bool in_place; /* whether old file is overwritten */
-    _Bool cautious; /* whether to ask user before overwrite */
-    _Bool interactive; /* whether interactive dialogs will be used */
+    bool automatic;  /* whether automatic processing mode is selected */
+    bool prepend;  /* whether new header is prepended to raw data or overwrites old header */
+    bool in_place; /* whether old file is overwritten */
+    bool cautious; /* whether to ask user before overwrite */
+    bool interactive; /* whether interactive dialogs will be used */
     /* global diagnosis values */
-    _Bool padding; /* whether files should be end-padded */
-    _Bool prune; /* whether files ending with 00 should be pruned */
-    _Bool virtual;
+    bool padding; /* whether files should be end-padded */
+    bool prune; /* whether files ending with 00 should be pruned */
+    bool virtual;
     short int repair;
     uint32_t padbytes;
     uint32_t prunedbytes;
@@ -234,8 +237,8 @@ typedef struct
 
 typedef struct
   {
-    _Bool       is_extensible;
-    _Bool       has_fact;
+    bool       is_extensible;
+    bool       has_fact;
     uint8_t     ichunks;
     uint8_t*    header_in;
     uint8_t*    header_out;
@@ -277,24 +280,24 @@ void htmlize(char* logpath);
 
 char * conc(const char* str1, const char* str2);
 char * filepath(const char* str1, const char* str2);
-void pause_dos_type();
-_Bool clean_directory(char* path);
+void pause_dos_type(void);
+bool clean_directory(char* path);
 void clean_exit(int message);
 void starter(compute_t *timer);
 char* print_time(int);
 int secure_mkdir ( const char *path, mode_t mode);
-_Bool s_mkdir (const char *path);
+bool s_mkdir (const char *path);
 void print_commandline(int argc_count, char * const argv[]);
 void change_directory(const char * filename);
 int copy_file(const char *existing_file, const char *new_file);
 int copy_directory(const char* src, const char* dest, mode_t mode);
 int cat_file(const char *existing_file, const char *new_file);
 int copy_file_p(FILE *infile, FILE *outfile, uint32_t position, uint64_t output_size);
-_Bool file_exists(const char* filepath);
+bool file_exists(const char* filepath);
 int stat_dir_files(const char* src);
-_Bool s_dir_exists(const char* path);
-int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED*, void GCC_UNUSED *, void GCC_UNUSED *), _Bool recursive, void GCC_UNUSED* arg2, void GCC_UNUSED* arg3);
-int get_endianness();
+bool s_dir_exists(const char* path);
+int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED*, void GCC_UNUSED *, void GCC_UNUSED *), bool recursive, void GCC_UNUSED* arg2, void GCC_UNUSED* arg3);
+int get_endianness(void);
 void hexdump_header(FILE* infile, uint8_t header_size);
 void hexdump_pointer(uint8_t* tab,  size_t tabsize);
 void hex2file(FILE* out, uint8_t* tab,  size_t tabsize);
@@ -303,11 +306,12 @@ void secure_open(const char *path, const char *context, FILE*);
 int end_seek(FILE* outfile);
 void parse_wav_header(WaveData* info, WaveHeader* ichunk);
 const char* get_command_line(const char* args[]);
-char* get_full_command_line(const char** args);
+char* get_full_command_line(char **args);
 // These functions should be inlined hence in a header file
 char* copy_file2dir(const char *existing_file, const char *new_dir);
 char* copy_file2dir_rename(const char *existing_file, const char *new_dir, char* newfilename);
 path_t *parse_filepath(const char* filepath);
+void clean_path(path_t** );
 char* make_absolute(char* filepath);
 char *fn_get_current_dir_name (void);
 int  rmdir_global(char* path);
@@ -321,10 +325,10 @@ char* quote(const char* path);
 char* win32quote(const char* path);
 int run(const char* application, const char*  args[], const int option);
 uint64_t  parse_file_for_sequence(FILE* fp, uint8_t* tab, size_t sizeoftab);
-void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* fp, FILE* log, _Bool write, _Bool);
+void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* fp, FILE* log, bool write, bool);
 void rw_field(uint8_t* tab, int size,const char* label, FILE* fp, FILE* log);
-_Bool is_file(const char* path);
-_Bool is_dir(const char* path);
+bool is_file(const char* path);
+bool is_dir(const char* path);
 
 inline static void  uint32_copy(uint8_t* buf, uint32_t x)
 {

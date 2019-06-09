@@ -53,7 +53,7 @@ int soxconvert(char * input, char* output)
 
   static sox_format_t * in, * out; /* input and output files */
   sox_effects_chain_t * chain;
-  sox_effect_t * e;
+  sox_effect_t * e, *f;
   char * args[10];
 
 
@@ -89,18 +89,18 @@ int soxconvert(char * input, char* output)
   /* The last effect in the effect chain must be something that only consumes
    * samples; in this case, we use the built-in handler that outputs
    * data to an audio file */
-  e = sox_create_effect(sox_find_effect("output"));
+
+  f = sox_create_effect(sox_find_effect("output"));
   args[0] = (char *)out;
-  check(sox_effect_options(e, 1, args) == SOX_SUCCESS); stage++;
-  check(sox_add_effect(chain, e, &in->signal, &in->signal) == SOX_SUCCESS); stage++;
+  check(sox_effect_options(f, 1, args) == SOX_SUCCESS); stage++;
+  check(sox_add_effect(chain, f, &in->signal, &in->signal) == SOX_SUCCESS); stage++;
 
   /* Flow samples through the effects processing chain until EOF is reached */
-
-
   sox_flow_effects(chain, NULL, NULL);
 
   foutput("%s\n", INF "Exiting SoX...");
   /* All done; tidy up: */
+  sox_delete_effects(chain);
   sox_delete_effects_chain(chain);
 
   sox_close(out);

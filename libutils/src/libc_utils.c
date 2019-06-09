@@ -125,9 +125,9 @@ int download_fullpath(const char* curlpath, const char* filename, const char* fu
 char *fn_get_current_dir_name (void)
 {
     char *cwd;
-    int len = 64;
+    size_t len = 64;
     char* r;
-    if (NULL == (cwd = malloc (len * sizeof *cwd)))
+    if (NULL == (cwd = malloc (len * sizeof(*cwd))))
     {
         printf ("%s", ERR "Not enough memory for my_get_cwd.\n");
         exit (EXIT_FAILURE);
@@ -168,7 +168,7 @@ char* make_absolute(char* filepath)
 
                 u = 0;
                 for(char c; (c = filepath[u]) != '\0'; ++u)     buffer[u] = c;
-
+                clean_path(&path_info);
                 return (make_absolute(buffer));
 
             }
@@ -187,7 +187,7 @@ char* make_absolute(char* filepath)
                 ++u;
                 char c;
                 for(int j = u; (c = filepath[u + 2]) != '\0'; ++j)  buffer[j] = c;
-
+                clean_path(&path_info);
                 return (make_absolute(buffer));
             }
         }
@@ -210,10 +210,12 @@ char* make_absolute(char* filepath)
 
             char c;
             for(int j = u; (c = filepath[u]) != '\0'; ++j)     buffer[j] = c;
+            clean_path(&path_info);
             return (make_absolute(buffer));
         }
     }
 
+    clean_path(&path_info);
     return(strdup(buffer));
 
     // it is up to the user to deallocate filepath string input
@@ -267,15 +269,15 @@ int rmdir_recursive (char *root, char *dirname)
 
     DIR *FD;
     struct dirent *f;
-    char *new_root;
+    char *new_root = NULL;
 
     if (root)
     {
-        int rootlen = strlen (root);
-        int dirnamelen = strlen (dirname);
+        ulong rootlen = strlen (root);
+        ulong dirnamelen = strlen (dirname);
         if (NULL ==
                 (new_root =
-                     malloc ((rootlen + dirnamelen + 2) * sizeof *new_root)))
+                     malloc ((size_t)(rootlen + dirnamelen + 2) * sizeof( *new_root))))
         {
             printf ("%s", ERR "malloc issue\n");
             exit (EXIT_FAILURE);
@@ -286,7 +288,13 @@ int rmdir_recursive (char *root, char *dirname)
         new_root[rootlen + dirnamelen + 1] = '\0';
     }
     else
-        new_root = strdup (dirname);
+    {
+        if (new_root)
+        {
+            free(new_root);
+        }
+        new_root = strdup(dirname);
+    }
 
 
     if (NULL == (FD = opendir (".")))
@@ -430,7 +438,7 @@ void fix_separators(char * path)
 
 char* end_sep(const char *path)
 {
-    int s = strlen(path);
+    size_t s = strlen(path);
     char* out = NULL;
     if (path[s - 1] != '/' && path[s - 1] != '\\')
     {
@@ -462,8 +470,8 @@ path_t *parse_filepath(const char* filepath)
 {
     path_t *chain = calloc(1, sizeof(path_t));
     if (chain == NULL) return NULL;
-    int u, last_separator_position=0, dot_position=0;
-    for (u=0; chain->length == 0 ; ++u)
+    int16_t last_separator_position=0, dot_position=0;
+    for (int16_t u=0; chain->length == 0 ; ++u)
     {
         switch (filepath[u])
         {
@@ -504,12 +512,12 @@ path_t *parse_filepath(const char* filepath)
     chain->filename = strdup(filepath+last_separator_position+1);
     chain->path = strdup(filepath);
     chain->path[last_separator_position] = 0;
-    chain->rawfilename=strdup(filepath);
-    chain->rawfilename[dot_position] = 0;
-    chain->rawfilename += last_separator_position+1;
+    chain->rawfilename=calloc(dot_position - last_separator_position, sizeof(char));
+    memcpy(chain->rawfilename, filepath + last_separator_position + 1, dot_position - last_separator_position -1);
+
     if (last_separator_position >1)
     {
-        for (u=last_separator_position-1; u>=0 ; u--)
+        for (int16_t u=last_separator_position-1; u>=0 ; u--)
         {
             if (chain->path[u] == '/'
 #ifdef __WIN32__
@@ -545,6 +553,22 @@ path_t *parse_filepath(const char* filepath)
 
 
     return chain;
+}
+
+void clean_path(path_t** p)
+{
+    free((*p)->directory);
+    (*p)->directory = NULL;
+    free((*p)->extension);
+    (*p)->extension = NULL;
+    free((*p)->rawfilename);
+    (*p)->rawfilename = NULL;
+    free((*p)->filename);
+    (*p)->filename = NULL;
+    free((*p)->path);
+    (*p)->path = NULL;
+    free(*p);
+
 }
 
 /* -------
@@ -597,7 +621,7 @@ char* filepath(const char* str1, const char* str2)
 * Erases direcory and check for any error
 * ------- */
 
-_Bool clean_directory(char* path)
+bool clean_directory(char* path)
 {
 
     errno=0;
@@ -777,9 +801,9 @@ void clean_exit(int message)
 * terminates if path cannot be accessed.
 * ------- */
 
-_Bool s_dir_exists(const char* path)
+bool s_dir_exists(const char* path)
 {
-   if (path == NULL) path = strdup(globals.settings.tempdir);
+   if (path == NULL) return false;
    struct stat info;
 
     if (stat(path, &info) != 0)
@@ -806,7 +830,7 @@ _Bool s_dir_exists(const char* path)
 * or cannot be allocated. Stops execution.
 * ------- */
 
-_Bool s_mkdir (const char *path)
+bool s_mkdir (const char *path)
 {
 #if defined(__WIN32__) || defined (_WIN32) || defined (_WIN64) || defined (__CYGWIN__) || defined (__MSYS__)
 
@@ -921,7 +945,7 @@ char* get_cl(const char** args, uint16_t start)
 
     for (j = start; j < i; j++)
     {
-        _Bool do_quote=((args[j][0] != '"') && (args[j][0] != '-') && (args[j][0] != '|')) ;
+        bool do_quote=((args[j][0] != '"') && (args[j][0] != '-') && (args[j][0] != '|')) ;
         memcpy(cml + shift, (do_quote)? quote(args[j]): args[j] , size[j] + 2 * do_quote);
         shift += size[j] + 1 + 2 * do_quote;
         cml[shift - 1]=0x20;
@@ -953,7 +977,7 @@ const char* get_command_line(const char** args)
 * ------- */
 
 
-char* get_full_command_line(const char** args)
+char* get_full_command_line(char** args)
 {
     return get_cl(args, 0);
 }
@@ -1081,7 +1105,7 @@ void change_directory(const char * filename)
 * Note :  function may have 4 optional arguments, the first of a const char*, practically a path or filename
 * ------- */
 
-int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED *, void GCC_UNUSED *, void GCC_UNUSED *), _Bool recursive, void GCC_UNUSED* arg2, void GCC_UNUSED* arg3)
+int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED *, void GCC_UNUSED *, void GCC_UNUSED *), bool recursive, void GCC_UNUSED* arg2, void GCC_UNUSED* arg3)
 {
     DIR *dir_src;
 
@@ -1091,7 +1115,7 @@ int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED *, void 
     printf("%c", '\n');
 
     if (globals.debugging)  printf("%s%s\n", INF "Traversing dir = ", src);
-
+    const char* olddir = get_current_dir_name();
     change_directory(src);
 
     dir_src=opendir(".");
@@ -1117,7 +1141,21 @@ int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED *, void 
         if (S_ISREG(buf.st_mode))
         {
             if (globals.debugging) printf("%s = %s\n", INF "Processing file=", d->d_name);
-            f((const char*) d->d_name, arg2, arg3);
+            if (arg3 != NULL)
+            {
+                char* fullpath = calloc(strlen(src) + 1 + strlen(d->d_name) + 1, sizeof (char));
+                sprintf(fullpath, "%s%s%s", src, SEPARATOR, d->d_name);
+                if (globals.veryverbose) fprintf(stderr, INF "Copying %s with arg2 = %s ...\n", fullpath, arg2);
+                // This is to account for both relative and absolute paths as -o arguments
+                change_directory(olddir);
+                change_directory(arg2);
+                f(fullpath, d->d_name, arg3);
+                change_directory(src);
+                free(fullpath);
+
+            }
+            else f((const char*) d->d_name, arg2, arg3);
+
         }
 
         /* does not copy other types of files(symlink, sockets etc). */
@@ -1135,11 +1173,11 @@ int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED *, void 
 
 void copy_file_wrapper(const char* filename, void* out, void GCC_UNUSED *permissions)
 {
-    const char* dest = (const char*) out;
+    //const char* dest = (const char*) out;
     //const mode_t mode = (mode_t) *permissions;
-    char path[BUFSIZ] = {0};
-    sprintf(path, "%s%c%s", dest, '/', filename);
-    copy_file(filename,  path);
+    //char path[BUFSIZ] = {0};
+    //sprintf(path, "%s%s%s", dest, SEPARATOR, filename);
+    copy_file(filename,  out);
 }
 
 /*------- end of private */
@@ -1154,13 +1192,14 @@ void copy_file_wrapper(const char* filename, void* out, void GCC_UNUSED *permiss
 
 int copy_directory(const char* src, const char* dest, mode_t mode)
 {
-    if (strcmp(src, dest) == 0) return(0);
+    if (src == NULL || dest == NULL || strcmp(src, dest) == 0) return(0);
 
     struct stat buf;
 
     if (stat(dest, &buf) == -1)
     {
         perror("\n"ERR "copy_directory could not compute directory size\n");
+        fprintf(stderr, "dest=%s  src=%s\n", dest, src);
         exit(EXIT_FAILURE);
     }
 
@@ -1190,7 +1229,7 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
 * Tests for file existence
 * ------- */
 
-_Bool file_exists(const char* filepath)
+bool file_exists(const char* filepath)
 {
     return(access(filepath, F_OK) != -1 );
 }
@@ -1218,13 +1257,13 @@ void fill_pics(const char *filename, void *a, void GCC_UNUSED *unused){
     a = (void*) array;
 }
 
-_Bool is_file(const char* path) {
+bool is_file(const char* path) {
     struct stat buf;
     stat(path, &buf);
     return S_ISREG(buf.st_mode);
 }
 
-_Bool is_dir(const char* path) {
+bool is_dir(const char* path) {
     struct stat buf;
     stat(path, &buf);
     return S_ISDIR(buf.st_mode);
@@ -1401,7 +1440,7 @@ int copy_file(const char *existing_file, const char *new_file)
 char* copy_file2dir(const char *existing_file, const char *new_dir)
 {
 // existence of new_dir is not tested
-// existence of dile dest is tested and if exists, duplication generates file counter in filename
+// existence of file dest is tested and if exists, duplication generates file counter in filename
 // to ensure continuity of counters, copy file operations should come in a "closely-knit loop" without
 // copy file operations in between for other files
 
@@ -1414,14 +1453,20 @@ char* copy_file2dir(const char *existing_file, const char *new_dir)
 
     char* dest=calloc(filestruct->length+strlen(new_dir)+1+6+2, sizeof(char)); // 6-digit counter +1 underscore; size is a maximum
     if (dest == NULL) return NULL;
-    sprintf(dest, "%s%s%s", new_dir, SEPARATOR, filestruct->filename);
+    //sprintf(dest, "%s%s%s", new_dir, SEPARATOR, filestruct->filename);
     counter++;
     // overwrite
      sprintf(dest, "%s%s%s_%d%s", new_dir, SEPARATOR, filestruct->rawfilename, counter, filestruct->extension);
 
     errorlevel=copy_file(existing_file, dest);
 
-    free(filestruct);
+//    free(filestruct->rawfilename);
+//    free(filestruct->extension);
+//    free(filestruct->path);
+//    free(filestruct->directory);
+//    free(filestruct);
+
+    clean_path(&filestruct);
 
     errno=0;
     if (errorlevel) return NULL;
@@ -1555,7 +1600,7 @@ int copy_file_p(FILE *infile, FILE *outfile, uint32_t position,uint64_t output_s
 
 
 
-int get_endianness()
+int get_endianness(void)
 {
     long i=1;
     const char *p=(const char *) &i;
@@ -1798,7 +1843,7 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
 uint64_t filesize(filestat_t f) { return f.filesize; }
 char* filename(filestat_t f) { return f.filename; }
 
-filestat_t filestat(_Bool b, uint64_t s, char* fn, FILE* fp)
+filestat_t filestat(bool b, uint64_t s, char* fn, FILE* fp)
 {
     filestat_t str = {b, s, fn, fp};
     return str;
@@ -1959,7 +2004,7 @@ void hex2file(FILE* out, uint8_t* tab,  size_t tabsize)
 
 }
 
-void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* fp, FILE* log, _Bool write, _Bool overflow_check)
+void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* fp, FILE* log, bool write, bool overflow_check)
 {
     uint64_t offset = ftello(fp);
     if (overflow_check && offset % 2048 +  (unsigned int) size > 2048)
@@ -2019,7 +2064,7 @@ void fread_endian(uint32_t * p, int t, FILE *f)
 
     /* it is necessary to test endianness here */
     static char u;
-    static _Bool little;
+    static bool little;
 
     /* testing just on first entry */
 

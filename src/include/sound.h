@@ -12,7 +12,7 @@ int launch_lplex_hybridate(const pic* img, const char* create_mode,
                            const char*** slidepath, uint8_t* nslides,
                            int ntitlesets);
 
-int audit_soundtrack(char* path, _Bool strict);
+int audit_soundtrack(char* path, bool strict);
 int resample(const char* in, const char* out,const char* bitrate,const char* samplerate);
 int standardize_wav_header(char* path);
 

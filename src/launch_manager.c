@@ -32,7 +32,7 @@
  *   - software-level global variables are packed in 'globals' structures */
 extern globalData globals;
 extern unsigned int startsector;
-extern char* INDIR, *OUTDIR, *LOGDIR, *LINKDIR, *WORKDIR, *TEMPDIR;
+extern char* INDIR, *OUTDIR, *LOGDIR, *LINKDIR, *WORKDIR;
 
 // getting rid of some arrows
 #define files command->files
@@ -74,14 +74,14 @@ int launch_manager(command_t *command)
     sectors.topvob=0;
     sectors.stillvob=0;
     memset(sectors.atsi, 0, sizeof(sectors.atsi));
-    if (globals.settings.outdir == NULL) globals.settings.outdir = strdup(globals.settings.tempdir);
+
     uint8_t pathlength=strlen(globals.settings.outdir);
 
     char audiotsdir[pathlength+10];
     char videotsdir[pathlength+10];
 
     sprintf(audiotsdir, "%s"SEPARATOR"AUDIO_TS", globals.settings.outdir);
-    fprintf(stderr, "%s\n",globals.settings.outdir);
+
     if (!globals.nooutput) secure_mkdir(audiotsdir, globals.access_rights);
     errno=0;
     if (globals.videozone)
@@ -110,7 +110,7 @@ int launch_manager(command_t *command)
     memset(singlestar, ' ', naudio_groups);
     char joinmark[naudio_groups][99];
     memset(joinmark, ' ', naudio_groups*99);
-    _Bool singlestar_flag = 0, joinmark_flag = 0;
+    bool singlestar_flag = 0, joinmark_flag = 0;
     unsigned int ppadd = 0;
 
     for (i = 0; i < naudio_groups; ++i)
@@ -296,26 +296,21 @@ int launch_manager(command_t *command)
 
 // returns relative_sector_pointer_VTSI and videotitlelength
 #if !HAVE_core_BUILD
-    if (globals.videolinking)
+    if (globals.videozone)
     {
-
         char    newpath[CHAR_BUFSIZ];
-        STRING_WRITE_CHAR_BUFSIZ(newpath, "%s%s", globals.settings.outdir, "/VIDEO_TS")
-        free(globals.settings.linkdir);
+        STRING_WRITE_CHAR_BUFSIZ(newpath, "%s" SEPARATOR "%s", globals.settings.outdir, "VIDEO_TS")
 
-        if (globals.settings.linkdir == NULL)
+        copy_directory(globals.settings.linkdir, newpath, globals.access_rights);
+        if (globals.videolinking)
         {
-             foutput("%s\n", WAR "If no option --videoling is given along with --videolink, it is assumed that VIDEO_TS is adjacent to AUDIO_TS.");
-        }
-        else
-        {
-            copy_directory(globals.settings.linkdir, newpath, globals.access_rights);
             get_video_system_file_size(globals.settings.linkdir, maximum_VTSI_rank, sector_pointer_VIDEO_TS, relative_sector_pointer_VTSI);
             get_video_PTS_ticks(globals.settings.linkdir, videotitlelength, nvideolinking_groups, VTSI_rank);
         }
 
-         change_directory(globals.settings.workdir);
-         globals.settings.linkdir = strdup(newpath);
+        change_directory(globals.settings.workdir);
+        free(globals.settings.linkdir);
+        globals.settings.linkdir = strdup(newpath);
 
     }
 #endif
@@ -443,7 +438,7 @@ SUMMARY:
             int S=TEST? 8:6;
             char* args[S],
             *args0[]={CDRECORD_BASENAME, verbosity,"blank=fast", "-eject","dev=", globals.cdrecorddevice, dvdisoinput, "-gracetime=", "1",  NULL},
-            *args1[]={CDRECORD_BASENAME, verbosity, "blank=fast", "-eject",dvdisoinput, "-gracetime=", "1", NULL};
+            *args1[]={CDRECORD_BASENAME, verbosity,"blank=fast", "-eject",dvdisoinput, "-gracetime=", "1", NULL};
             if TEST memcpy(args, args0, sizeof(args0));
             else memcpy(args, args1, sizeof(args1));
 
@@ -452,13 +447,16 @@ SUMMARY:
 
             if ((cdrecord=create_binary_path(cdrecord, CDRECORD, SEPARATOR CDRECORD_BASENAME)))
             {
-               foutput("\n%s\n", INF "Launching cdrecord to burn disc");
-               run(cdrecord,  (const char**) args, NOWAIT);
+               const char* CLI = get_full_command_line(args);
+               fprintf(stderr, "\n%s%s\n", INF "Launching cdrecord to burn disc using ", CLI);
+              // run(cdrecord,  (const char**) args, NOWAIT);
+               args[0] = cdrecord;
+               system((const char*) CLI);
+               FREE(cdrecord);
             }
             else
                foutput("%s\n", ERR "Could not access to cdrecord binary.");
 
-            FREE(cdrecord);
         }
     }
 
@@ -466,12 +464,8 @@ SUMMARY:
     // freeing files and heap-allocated globals
 
 #ifndef __WIN32__
-    while (waitpid(-1, NULL, 0) >0);
+   // while (waitpid(-1, NULL, 0) >0);
 #endif
-
-
-
-
 
 
     for (j=0; j < naudio_groups; j++)
