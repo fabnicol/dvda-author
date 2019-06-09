@@ -178,7 +178,7 @@ int main(int argc,  char* const argv[])
 
     setlocale(LC_ALL, "LOCALE");
 
-    char* currentdir = get_current_dir_name ();
+    char* currentdir = fn_get_current_dir_name ();
     int currentdirlength=strlen(currentdir);
     char TEMPDIRROOT[currentdirlength + 14];
     TEMPDIR = calloc(currentdirlength + 20, sizeof(char));
