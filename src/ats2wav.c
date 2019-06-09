@@ -236,7 +236,7 @@ inline static int calc_position(FILE* fileptr, const uint64_t offset0)
     return(position);
 }
 
-inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, _Bool *status)
+inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, bool *status)
 {
     if (! info->infile.isopen) aob_open(info);
     
@@ -472,7 +472,7 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
     {
         /* First pass to get basic audio characteristics (sample rate, bit rate, cga */
         
-        _Bool status = VALID;
+        bool status = VALID;
 
         errno = 0;
         if (globals.veryverbose)
@@ -543,7 +543,7 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
         files[i][j].filename = info->outfile.filename;
         wav_output_open(info);
 
-        _Bool debug;
+        bool debug;
 
         if (globals.fixwav_prepend)
         {

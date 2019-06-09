@@ -244,7 +244,7 @@ m4_map([DVDA_TEST_AUX],[
 		[],
 		[],
 		[WEBSITE/utils],
-		[57ea644856b7013546cb7fa0b5978d05]
+		[bc3d886e5272399b2ec2d0b1e2846364]
 	    ],
 	    [
 		[mjpegtools-download],
@@ -252,7 +252,7 @@ m4_map([DVDA_TEST_AUX],[
 		[],
 		[],
 		[WEBSITE/utils],
-		[b5386c145c267f4e073eee84ee94b7a4]
+		[1fef8a52bc925a3dec05db963a0e70c8]
 	    ],
 	    [
 		[libmpeg2-download],
@@ -326,7 +326,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 
     DVDA_CONFIG_LIBRARY_LOCAL_INSTALL([
      [[[sox],[sox-14.4.2]],  [--without-libltdl --without-sndfile --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-magic --disable-fast-install --prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]],
-     [[[libogg],[libogg-1.3.2]],  [--prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]],
+     [[[libogg],[libogg-1.3.2]],  [--enable-static --disable-shared --prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]],
      [[[FLAC],[flac-1.3.1]],[--enable-static --disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg" \
        --disable-thorough-tests --disable-oggtest --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]]])
        

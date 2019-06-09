@@ -62,7 +62,7 @@ static uint8_t cgadef[]={0,  1,  7,  3,   16,   17};
 //20  L    R      Ls      Rs      Lfe
 //21  L    R      Ls      Rs      C       Lfe
 
-inline static _Bool check_cga_assignment(int cgaint)
+inline static bool check_cga_assignment(int cgaint)
 {
     int k;
     /*   Valid Channel group assignment values are:

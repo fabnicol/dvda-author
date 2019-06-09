@@ -1,5 +1,5 @@
 
-OBJECTS=getsubopt.o strdup.o strndup.o strchrnul.o  strnlen.o malloc.o
+OBJECTS=getsubopt.o  strchrnul.o  strnlen.o 
 ifneq "@WITH_sox@" "no"
  OBJECTS+= getopt.o getopt1.o
 endif
