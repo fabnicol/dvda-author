@@ -37,7 +37,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <math.h>
 #include "errno.h"
 #include <sys/types.h>
-#ifndef __WIN32__
+#ifndef _WIN32
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -176,6 +176,7 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
     return track;
 }
 
+
 #if !HAVE_core_BUILD
 void allocate_topmenus(command_t *command)
 {
@@ -200,6 +201,8 @@ void allocate_topmenus(command_t *command)
         if (img->topmenu[menu]) 
             snprintf(img->topmenu[menu], s + 11, "%s"SEPARATOR"%s%d", globals.settings.tempdir, TOPMENU_NAME, menu);
     }
+
+    globals.topmenusize = img->nmenus;
     return;
 }
 
@@ -229,7 +232,7 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
 
     case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
 
-            generate_menu_pics(img, ngroups, ntracks, maxntracks);
+        generate_menu_pics(img, ngroups, ntracks, maxntracks);
 
         // calling xml project file subroutine for dvdauthor
 
@@ -251,12 +254,15 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
             errno = generate_amgm_xml(ngroups, ntracks, img);
             if (errno) perror("\n"ERR "AMG: amgm_xml\n");
         }
+        if (img->nmenus && img->menuvobsize == NULL)
+        {
+            img->menuvobsize = calloc(img->nmenus, sizeof(uint32_t*));
+            if (img->menuvobsize == NULL) perror("\n"ERR "menuvobsize\n");
+        }
+        if (img->topmenu)
         for (menu = 0; menu < img->nmenus; ++menu)
             if (img->topmenu[menu])
             {
-                if (img->menuvobsize == NULL) img->menuvobsize = calloc(img->nmenus, sizeof(uint32_t*));
-                if (img->menuvobsize == NULL) perror("\n"ERR "menuvobsize\n");
-
                 img->menuvobsize[menu] = stat_file_size(img->topmenu[menu]) / 0x800;
                 if (globals.veryverbose) 
                     foutput(MSG_TAG "Top menu is: %s with size %"PRIu32" KB\n", img->topmenu[menu], img->menuvobsize[menu]);
@@ -366,7 +372,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
 {
     uint16_t i, j = 0, k = 0, titleset = 0, totalplaylisttitles = 0, totalaudiotitles = 0, titleintitleset;
 
-    _Bool menusector = (globals.topmenu <= TS_VOB_TYPE);  // there is a _TS.VOB in these cases
+    bool menusector = (globals.topmenu <= TS_VOB_TYPE);  // there is a _TS.VOB in these cases
     uint8_t naudio_groups = ngroups-vgroups-nplaygroups;  // CHECK
 
     uint32_t  sectoroffset[naudio_groups];
@@ -474,7 +480,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
     for (j = 0; j < totalaudiotitles; ++j)
     {
 
-        _Bool come_last = (titleintitleset == numtitles[titleset] - 1);
+        bool come_last = (titleintitleset == numtitles[titleset] - 1);
 
         uint8_t sec2_title_tag[1] = {((menusector)? ((come_last)? 0xC0 : 0x80) : 0x80 ) | (titleset + 1)}; // Table sector 2 first two bytes per title
         uint8_t n_tracks_per_title[4] = { ntitletracks[titleset][titleintitleset], 0, 0, 0};
@@ -546,7 +552,8 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
             uint8_t vtsi_sec_ptr[4];
 
             uint32_copy(video_titlelength, videotitlelength[k]);
-            uint32_copy(video_titlelength, videotitlelength[k]);
+
+            // relative_sector_pointer_VTSI and VTSI_rank must be preallocated
             uint32_copy(vtsi_sec_ptr, relative_sector_pointer_VTSI[VTSI_rank[k] - 1]);
 
             CHECK_FIELD(videolinking_title)
@@ -960,7 +967,7 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
 
     uint16_t i, j = 0, k = 0, titleset = 0, totalplaylisttitles = 0, totalaudiotitles = 0, titleintitleset;
 
-    _Bool menusector = (globals.topmenu <= TS_VOB_TYPE);  // there is a _TS.VOB in these cases
+    bool menusector = (globals.topmenu <= TS_VOB_TYPE);  // there is a _TS.VOB in these cases
     uint8_t naudio_groups = ngroups-vgroups-nplaygroups;  // CHECK
 
     uint8_t amg[sectors->amg*2048];
@@ -1024,7 +1031,7 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
     for (j = 0; j < totalaudiotitles; ++j)
     {
 
-        _Bool come_last = (titleintitleset == numtitles[titleset] - 1);
+        bool come_last = (titleintitleset == numtitles[titleset] - 1);
 
         amg[i] = ((menusector)? ((come_last)? 0xC0 : 0x80) : 0x80 ) | (titleset + 1); 			// Table sector 2 first two bytes per title
         amg[++i] = ntitletracks[titleset][titleintitleset];

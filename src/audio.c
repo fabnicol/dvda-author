@@ -28,7 +28,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 */
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+#include "config.h"
 #endif
 
 #include <stdio.h>
@@ -125,35 +125,35 @@ static const uint8_t  S[2][6][36]=
 #if 0
 static uint8_t  C[2][7][36][2]=
 {
-    {      
+    {
      //3:1 3:0|4:1 4:0|3:3 3:2|4:3 4:2 |1:1 1:0|2:1 2:0 |5:1  5:0|6:1  6:0|1:3  1:2| 2:3 2:2|5:3 5:2 | 6:3 6:2
-     
-        
-        
+
+
+
     },
- //24-bit: 
+ //24-bit:
  //   per output 0-based channel number: {1-based input channel number, 0-based byte rank}
-    {   
+    {
         {{1,1}, {1,0}},
-     
+
         {{1,1}, {1,0}, {2,1}, {2,0}},
-         
+
         {{1,2}, {1,1}, {2,2}, {2,1}, {1,5}, {1,4}, {2,5}, {2,4},
          {1,0}, {2,0}, {1,3}, {2,3}},
-        
+
         {{3,2}, {3,1}, {3,5}, {3,4}, {3,0}, {3,3}, {1,2}, {1,1},
          {2,2}, {2,1}, {1,5}, {1,4}, {2,5}, {2,4}, {1,0}, {2,0},
          {1,3}, {2,3}},
-        
+
         {{3,2}, {3,1}, {4,2}, {4,1}, {3,5}, {3,4}, {4,5}, {4,4},
-         {3,0}, {4,0}, {3,3}, {4,3}, {1,2}, {1,1}, {2,2}, {3,1}, 
-         {1,5}, {1,4}, {2,5}, {2,4}, {1,0}, {2,0}, {1,3}, {2,3}}, 
-        
+         {3,0}, {4,0}, {3,3}, {4,3}, {1,2}, {1,1}, {2,2}, {3,1},
+         {1,5}, {1,4}, {2,5}, {2,4}, {1,0}, {2,0}, {1,3}, {2,3}},
+
         {{1,2}, {3,1}, {4,2}, {4,1}, {5,2}, {5,1}, {3,5}, {3,4},
-         {4,5}, {4,4}, {5,5}, {5,4}, {3,0}, {4,0}, {5,0}, {3,3}, 
+         {4,5}, {4,4}, {5,5}, {5,4}, {3,0}, {4,0}, {5,0}, {3,3},
          {4,3}, {5,3}, {1,2}, {1,1}, {2,2}, {2,1}, {1,5}, {1,4},
          {2,5}, {2,5}, {1,0}, {2,0}, {1,3}, {2,3}},
-                 
+
         {{3,2}, {3,1}, {4,2}, {4,1}, {3,5}, {3,4}, {4,5}, {4,4},
          {3,0}, {4,0}, {3,3}, {4,3}, {1,2}, {1,1}, {2,2}, {2,1},
          {5,2}, {5,1}, {6,2}, {6,1}, {1,5}, {1,4}, {2,5}, {2,4},
@@ -172,9 +172,9 @@ void flac_metadata_callback (const FLAC__StreamDecoder GCC_UNUSED *dec, const FL
 
     if (meta->type==FLAC__METADATA_TYPE_STREAMINFO)
     {
-        info->bitspersample=meta->data.stream_info.bits_per_sample;
+        info->bitspersample=(uint8_t) meta->data.stream_info.bits_per_sample;
         info->samplerate=meta->data.stream_info.sample_rate;
-        info->channels=meta->data.stream_info.channels;
+        info->channels=(uint8_t) meta->data.stream_info.channels;
         info->numsamples=meta->data.stream_info.total_samples;
     }
 }
@@ -271,7 +271,7 @@ int calc_info(fileinfo_t* info)
             (table_index == 1)? info->channels * 6 :
                               ((info->channels > 2)? info->channels * 4 :
                                                      info->channels * 2);
-    
+
 #define X T[table_index][info->channels-1]
 
     info->lpcm_payload = X[0];
@@ -328,7 +328,7 @@ command_t *scan_wavfile_audio_characteristics(command_t *command)
 
     short int  l, delta=0, error=0;
     static uint8_t i,j;
-    
+
     // retrieving information as to sound file format
 
     error = wav_getinfo(&command->files[i][j]);
@@ -430,9 +430,9 @@ command_t *scan_wavfile_audio_characteristics(command_t *command)
          command->files[i][j-1].dvdv_compliant=
                   ((command->files[i][j-1].bitspersample == 16  || command->files[i][j-1].bitspersample == 24)
                  &&(command->files[i][j-1].samplerate  == 96000 || command->files[i][j-1].samplerate  == 48000));
-    
 
-    _Bool increment_group=(j == command->ntracks[i]);
+
+    bool increment_group=(j == command->ntracks[i]);
 
     j *= 1-increment_group;
     i += increment_group;
@@ -451,11 +451,11 @@ int extract_audio_info(fileinfo_t *info)
 
     /* parsing header again with FIXWAV utility */
 
-    //static _Bool cut;
+    //static bool cut;
 
     //if (!cut)
         info->type=fixwav_repair(info);
-     
+
     //cut=((info->type == AFMT_WAVE_FIXED) || (info->type == AFMT_WAVE_GOOD_HEADER));
 
     if (calc_info(info) == NO_AFMT_FOUND)
@@ -500,21 +500,21 @@ static inline int compute_header_size(FILE* fp)
 
 static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, fileinfo_t* info)
 {
-    
+
     if ((memcmp(header,"RIFF",4) != 0) || (memcmp(&header[8],"WAVEfmt",7) != 0))
     {
     #ifndef WITHOUT_FLAC
-    
+
         /* Other formats than WAV: parsing headers */
         if (memcmp(header,"fLaC",4) == 0 )
             return(info->type = AFMT_FLAC);
 
         if ((memcmp(header,"OggS",4) == 0 ) && (memcmp(header+0x17, "FLAC", 4) != 0))
             return(info->type = AFMT_OGG_FLAC);
-    
+
     #endif
     #ifndef WITHOUT_sox
-    
+
             if (globals.sox_enable)
             {
                 // When RIFF fmt headers are not recognized, they are processed by Sox first if -S -F is on command line then checked by fixwav
@@ -528,7 +528,11 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
                       // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
                     else
                       // PATCH looping back to get info
+                    {
+                       info->filename = path;
+
                        return(info->type = wav_getinfo(info));
+                    }
 // yet without the processing tail below (preserving new header[] array and info structure)
                 }
                 else
@@ -550,7 +554,10 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
                       // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
                         else
                       // PATCH looping back to get info
-                        return(info->type = wav_getinfo(info));
+                        {
+                            if (info->audio) free(info->audio);
+                            return(info->type = wav_getinfo(info));
+                        }
                           // yet without the processing tail below (preserving new header[] array and info structure)
                   }
                }
@@ -562,8 +569,46 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
 
   // BUGFIX: consequence of generalizing use of fixwav
 
-
   return(info->type = extract_audio_info(info));
+}
+
+
+static inline void clean_file(fileinfo_t* info, int u)
+{
+    FILE* fp = info->mergeflag ? info->audio->channel_fp[u] : info->audio->fp;
+    fseek(fp, -10 * 2048, SEEK_END); // 10 sectors back
+    char temp[10 * 2048] = {0};
+    for (int c = 0; c < 10 * 2048; ++c)
+    {
+        temp[c] = getc(fp);
+        if (temp[c] == 0) temp[c] = 0x20;
+    }
+    temp[10 * 2048 -1] = 0;
+
+    char* ret = strstr(temp, "LIST");
+
+    if (ret)
+    {
+        fseek(fp, 0, SEEK_END);
+        off_t size = ftello(fp);
+        fclose(fp);
+        off_t l = strlen(ret);
+        if (globals.debugging) foutput(INF "%s\n", "Untagging LIST chunks.");
+        truncate(info->mergeflag ? info->given_channel[u] : info->filename, size - l - 1);
+        if (info->mergeflag)
+            info->audio->channel_fp[u] = fopen(info->given_channel[u], "rb");
+        else
+            info->audio->fp = fopen(info->filename, "rb");
+    }
+    else
+    {
+        fclose(fp);
+        if (globals.debugging) foutput(INF "%s\n", "No LIST chunks.");
+        if (info->mergeflag)
+            info->audio->channel_fp[u] = fopen(info->given_channel[u], "rb");
+        else
+            info->audio->fp = fopen(info->filename, "rb");
+    }
 }
 
 static inline int process_wav_get_info(fileinfo_t* info)
@@ -577,13 +622,14 @@ if (info->mergeflag)
 {
      for (int u=0; u < info->channels; u++)
      {
-      info->audio->channel_fp[u] = fopen(info->given_channel[u], "rb");
+      info->audio->channel_fp[u] = fopen(info->given_channel[u], "r+b");
+      clean_file(info, u); // UNtagging
 
       if (globals.debugging) foutput(INF "Opening %s to get info\n", info->given_channel[u]);
 
-      int span=compute_header_size(info->audio->channel_fp[u]);
+      int span = compute_header_size(info->audio->channel_fp[u]);
 
-      info->channel_header_size[u]=(span > 0) ? span + 8 : MAX_HEADER_SIZE;
+      info->channel_header_size[u] = (span > 0) ? span + 8 : MAX_HEADER_SIZE;
       uint8_t header[info->channel_header_size[u]];
       memset(header, 0, info->channel_header_size[u]);
 
@@ -611,12 +657,15 @@ if (info->mergeflag)
 }
 else
 {
+  info->audio->fp = fopen(info->filename, "r+b");
 
-  info->audio->fp = fopen(info->filename, "rb");
+  // clean_file(info, 0); // UNtagging
 
   if (info->audio->fp == NULL)
   {
-      perror("Fichier impossible à ouvrir");
+      fprintf(stderr, ERR "Failed to open %s to get info\n", info->filename);
+      fprintf(stderr, ERR "Currentdir name is : %s\n", get_current_dir_name());
+      perror("Impossible to open file");
       EXITING
   }
 
@@ -628,25 +677,23 @@ else
 
   /* PATCH: real size on disc is needed */
 
- #if defined __WIN32__
-    info->file_size = read_file_size(info->audio->fp,(TCHAR*) info->filename);
- #else
-    info->file_size = read_file_size(info->audio->fp, info->filename);
- #endif
-  
- fseek(info->audio->fp, 0, SEEK_SET);
- int span = 0;
- if (info->header_size > (span = fread(header, 1, info->header_size,info->audio->fp)))
- {
-     foutput(ERR "Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
-     perror("       ");
-     clean_exit(EXIT_FAILURE);
- }
- 
+  #if defined __WIN32__
+        info->file_size = read_file_size(info->audio->fp,(TCHAR*) info->filename);
+  #else
+        info->file_size = read_file_size(info->audio->fp, info->filename);
+  #endif
+
+  fseek(info->audio->fp, 0, SEEK_SET);
+  int span = 0;
+  if (info->header_size > (span = fread(header, 1, info->header_size, info->audio->fp)))
+  {
+    foutput(ERR "Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
+    perror("       ");
+    clean_exit(EXIT_FAILURE);
+  }
+  if (info->audio) free(info->audio);
   info->type = extract_audio_info_by_all_means(info->filename, header, info);
-
 }
-
 
 return (info->type);
 }
@@ -654,46 +701,47 @@ return (info->type);
 
 static inline int wav_getinfo_merged(fileinfo_t *info)
 {
-    
+
     uint8_t nchannels=info->channels;
     uint8_t bitspersample=info->bitspersample;
     uint32_t samplerate=info->samplerate;
     uint64_t numbytes=info->numbytes;
-    
+
     info->type=process_wav_get_info(info);
-    
+
     if (info->channels != nchannels)
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one non-mono channel was given.")
     }
 
     info->bitspersample /= nchannels;
-    
+
     if (info->bitspersample != bitspersample)
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one channel did not have the same bit depth as others.")
     }
-    
+
     info->samplerate /= nchannels;
-    
+
     if (info->samplerate != samplerate)
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one channel did not have the same sample rate as others.")
     }
-    
-        
+
+
     if (info->numbytes / nchannels != numbytes)
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one channel did not have the same number of bytes as others.")
     }
 
-    // Audio characteristics retained are those of the multichannel file, after the above sanity tests.    
+    // Audio characteristics retained are those of the multichannel file, after the above sanity tests.
     return(info->type);
 }
 
 
 int wav_getinfo(fileinfo_t* info)
 {
+
     info->audio = (audio_input_t*) calloc(1, sizeof(audio_input_t));
 
     if (info->audio == NULL)
@@ -704,7 +752,7 @@ int wav_getinfo(fileinfo_t* info)
 
     if (info->mergeflag)
         wav_getinfo_merged(info);
-    
+
     if (info->filename == NULL)
     {
       foutput("%s\n", ERR "Could not open audio file: filepath pointer is null");
@@ -745,6 +793,7 @@ int flac_getinfo(fileinfo_t* info)
 
         else
         {
+#ifdef FLAC_API_SUPPORTS_OGG_FLAC
 #if (FLAC_API_SUPPORTS_OGG_FLAC == 1)
             result=/*FLAC__StreamDecoderInitStatus*/ FLAC__stream_decoder_init_ogg_file  	(
                         /*FLAC__StreamDecoder *  */ 	 flac,
@@ -754,6 +803,7 @@ int flac_getinfo(fileinfo_t* info)
                         /*FLAC__StreamDecoderErrorCallback  */	flac_error_callback,
                         (void *) info
                     );
+#endif
 #endif
         }
 
@@ -818,7 +868,7 @@ int fixwav_repair(fileinfo_t *info)
 
 
     snprintf(&buf[0], memory_allocation, "%s%s%s%s", temp, globals.fixwav_suffix, outstring, ".wav");
-
+    free(outstring);
     // If new string longer than heap allocation of reference strings, cut it
     /* Default sub-options*/
 
@@ -923,12 +973,14 @@ char* replace_file_extension(char * filename)
 // Requires C99
     int size=s-l;
 
-    char new_wav_name[size+9];
+    char new_wav_name[size+l+10];
 
 
     memcpy(new_wav_name, filename, size);
-    memcpy(new_wav_name+size, "_sox.wav", 8);
-    new_wav_name[size+8]='\0';
+    memcpy(new_wav_name+size, "_sox_", 5);
+    memcpy(new_wav_name+size+5, filename+size+1, l-1);
+    memcpy(new_wav_name+size+l+4, ".wav", 4);
+    new_wav_name[size+l+8]='\0';
 
     // Here, tolerating a memory leak for -g filenames.
     // -i filenames could in principle be freed.
@@ -953,19 +1005,19 @@ int launch_sox(char** filename)
 
     if (globals.debugging)
         foutput("%s       %s -->\n       %s \n", MSG_TAG "Format is neither WAV nor FLAC\n"INF "Converting to WAV with SoX...\n", *filename, new_wav_name);
-        
+
     unlink(new_wav_name);
     errno=0;
-    if (soxconvert(*filename, new_wav_name))
+    if (soxconvert(*filename, new_wav_name) == 0)
     {
         if (globals.debugging)  foutput("%s\n", INF "File was converted.");
 
         *filename=new_wav_name;
-
-        return(AFMT_WAVE);
+         return(AFMT_WAVE);
     }
     if (globals.debugging)  foutput("%s\n", INF "SoX could not convert file.");
 
+    free(new_wav_name);
     return(NO_AFMT_FOUND);
 
 }
@@ -1005,7 +1057,7 @@ int audio_open(fileinfo_t* info)
     info->audio=malloc(sizeof(audio_input_t));
     info->audio->n=0;
     info->audio->eos=0;
-    
+
     if (info->type==AFMT_WAVE)
     {
         if (info->mergeflag)
@@ -1024,14 +1076,14 @@ int audio_open(fileinfo_t* info)
         #endif
                 fseek(info->audio->channel_fp[u], info->channel_header_size[u],SEEK_SET);
             }
-            
+
         }
         else
-        {    
+        {
             if (globals.debugging) foutput("%s %s\n", INF "Opening", info->filename);
-            
+
             info->audio->fp=fopen(info->filename,"rb");
-            
+
             if (info->audio->fp==NULL)
             {
                 return(1);
@@ -1050,7 +1102,7 @@ int audio_open(fileinfo_t* info)
     else
     {
         info->audio->flac=FLAC__stream_decoder_new();
-      
+
         if (info->audio->flac!=NULL)
         {
 
@@ -1180,52 +1232,52 @@ WAV: 0  1
 AOB: 1  0
 
  16-bit 2  channel
-c1    0   1 
-c2           0   1    
- 
+c1    0   1
+c2           0   1
+
 WAV:  0  1   2   3
 AOB:  1  0   3   2
      1:1 1:0 2:1 2:0  [reads : bit 1 of ch1 in original wav audio followed by bit 0 of ch1 followed by bit 1 of ch2 followed by bit 0 of ch2]
 
  16-bit 3  channel
-c1   0   1 
-c2          0   1    
-c3                   0   1    
-                         c1    0   1  
-                         c2            0   1   
-                         c3                    0   1    
- 
+c1   0   1
+c2          0   1
+c3                   0   1
+                         c1    0   1
+                         c2            0   1
+                         c3                    0   1
+
 WAV: 0  1 | 2   3  | 4  5   | 6   7  | 8  9  | 10  11
 AOB: 5  4 | 11  10 | 1  0   | 3   2  | 7  6  | 9   8
    3:1 3:0|3:3 3:2 |1:1 1:0 |2:1 2:0 |1:3 1:0| 2:3 2:0  [bit 1 of ch 3 in original wav followed by...]
 
 
  16-bit 4  channel
-c1   0   1 
-c2          0   1    
-c3                   0   1    
-c4                            0   1    
-                                  c1    0   1  
-                                  c2             0   1   
-                                  c3                      0   1    
-                                  c4                               0    1  
- 
+c1   0   1
+c2          0   1
+c3                   0   1
+c4                            0   1
+                                  c1    0   1
+                                  c2             0   1
+                                  c3                      0   1
+                                  c4                               0    1
+
 WAV: 0  1  | 2  3  | 4   5 |  6   7   | 8  9  | 10  11  | 12  13 | 14  15
 AOB: 5  4  | 7  6  | 13  12|  15  14  | 1  0  | 3   2   | 9   8  | 11  10
     3:1 3:0|4:1 4:0|3:3 3:2| 4:3 4:2  |1:1 1:0|2:1  2:0 | 1:3 1:2| 2:3 2:0
 
 
  16-bit 5  channel
-c1   0   1 
-c2          0   1    
-c3                   0   1    
-c4                            0   1    
+c1   0   1
+c2          0   1
+c3                   0   1
+c4                            0   1
 c5                                    0   1
-                                          c1    0   1  
-                                          c2             0   1   
-                                          c3                      0   1    
-                                          c4                              0    1  
-                                          c5                                       0   1  
+                                          c1    0   1
+                                          c2             0   1
+                                          c3                      0   1
+                                          c4                              0    1
+                                          c5                                       0   1
 
 
 WAV: 0  1  | 2  3  | 4  5  | 6   7  | 8   9  | 10  11 | 12  13 | 14  15 | 16  17 | 18  19
@@ -1234,20 +1286,20 @@ AOB: 5  4  | 7  6  | 9  8  | 15  14 | 17  16 | 19  18 | 1    0 |  3   2 | 11  10
 
 
  16-bit 6  channel
- 
-c1   0   1 
-c2          0   1    
-c3                   0   1    
-c4                            0   1    
+
+c1   0   1
+c2          0   1
+c3                   0   1
+c4                            0   1
 c5                                    0   1
 c6                                            0   1    ----------------------  2nd wav sample ------------
-                                                  c1    0   1  
-                                                  c2             0   1   
-                                                  c3                      0   1    
-                                                  c4                                0  1  
-                                                  c5                                        0   1  
-                                                  c6                                                 0   1 
- 
+                                                  c1    0   1
+                                                  c2             0   1
+                                                  c3                      0   1
+                                                  c4                                0  1
+                                                  c5                                        0   1
+                                                  c6                                                 0   1
+
 WAV: 0  1  | 2  3  | 4  5  | 6   7  | 8  9  | 10  11 | 12  13 | 14  15 | 16  17 | 18  19 | 20  21 | 22  23
 AOB: 5  4  | 7  6  | 17 16 | 19  18 | 1  0  |  3  2  | 9   8  | 11  10 | 13  12 | 15  14 | 21  20 | 23  22
     3:1 3:0|4:1 4:0|3:3 3:2|4:3 4:2 |1:1 1:0|2:1 2:0 |5:1  5:0|6:1  6:0|1:3  1:2| 2:3 2:2|5:3 5:2 | 6:3 6:2
@@ -1260,11 +1312,11 @@ WAV: 0  1  2  3  4  5
 AOB: 2  1  5  4  0  3
 
  24-bit 2  channel
- 
+
 c1   0   1   2
-c2                0   1   2  
+c2                0   1   2
                           c1    0   1   2 -----2nd sample---
-                          c2                0   1   2  
+                          c2                0   1   2
 
 WAV: 0   1   2    3   4   5     6   7   8   9   10  11
 AOB: 2   1   5    4   8   7     11  10  0   3   6   9
@@ -1274,43 +1326,43 @@ AOB: 2   1   5    4   8   7     11  10  0   3   6   9
 
  24-bit 3  channel
 c1   0   1   2
-c2                 0   1   2  
-c3                              0   1   2   
+c2                 0   1   2
+c3                              0   1   2
                                        c1    0   1   2 ----------------- 2nd wav sample ----
-                                       c2                0   1   2  
-                                       c3                              0   1   2   
+                                       c2                0   1   2
+                                       c3                              0   1   2
 
- 
+
 WAV: 0   1   2  |  3    4   5 | 6   7   8 |  9   10  11| 12  13  14 |  15  16  17
 AOB: 8   7   17 |  16   6   15| 2   1   5 |  4   11  10| 14  13  0  |  3   9   12
-     3:2 3:1 3:5| 3:4  3:0 3:3|1:2 1:1 2:2| 2:1 1:5 1:4| 2:5 2:4 1:0|  2:0 1:3 2:3      
+     3:2 3:1 3:5| 3:4  3:0 3:3|1:2 1:1 2:2| 2:1 1:5 1:4| 2:5 2:4 1:0|  2:0 1:3 2:3
 
 
  24-bit 4  channel
 c1   0   1   2
-c2                 0   1   2  
-c3                             0   1   2   
-c4                                           0   1    2 
+c2                 0   1   2
+c3                             0   1   2
+c4                                           0   1    2
                                                      c1   0   1   2 ----------------- 2nd wav sample ----
-                                                     c2               0   1   2  
-                                                     c3                             0   1   2   
-                                                     c4                                          0   1   2 
+                                                     c2               0   1   2
+                                                     c3                             0   1   2
+                                                     c4                                          0   1   2
 
 WAV: 0   1   2  | 3   4    5  | 6   7   8  | 9  10   11 | 12  13  14 | 15  16  17 | 18  19  20 | 21  22  23
 AOB: 8   7   11 | 10  20  19  | 23  22  6  | 9  18   21 | 2   1    5 | 4   14  13 | 17  16   0 | 3   12  15
-     3:2 3:1 4:2| 4:1 3:5 3:4 |4:5  4:4 3:0|4:0 3:3  4:3| 1:2 1:1 2:2|3:1  1:5 1:4| 2:5 2:4 1:0|2:0  1:3 2:3 
+     3:2 3:1 4:2| 4:1 3:5 3:4 |4:5  4:4 3:0|4:0 3:3  4:3| 1:2 1:1 2:2|3:1  1:5 1:4| 2:5 2:4 1:0|2:0  1:3 2:3
 
 
  24-bit 5  channel
 c1   0   1   2
-c2                 0   1   2  
-c3                             0   1   2   
-c4                                         0   1    2 
+c2                 0   1   2
+c3                             0   1   2
+c4                                         0   1    2
 c5                                                     0   1    2
                                                                c1   0   1   2 ----------------- 2nd wav sample --------------
-                                                               c2               0   1   2  
-                                                               c3                            0   1   2   
-                                                               c4                                        0   1   2 
+                                                               c2               0   1   2
+                                                               c3                            0   1   2
+                                                               c4                                        0   1   2
                                                                c5                                                    0   1    2
 
 WAV: 0   1    2 |  3   4   5 | 6   7   8 | 9   10  11 | 12  13  14 |15  16  17 |18  19  20 | 21  22  23| 24  25  26 |27  28  29
@@ -1321,26 +1373,26 @@ AOB: 8   7   11 | 10  14  13 | 23  22  26| 25  29  28 | 6   9   12 |21  24  27 |
 
 
  24-bit 6  channel
- 
+
 c1   0   1   2
-c2                 0   1   2  
-c3                             0   1   2   
-c4                                         0   1    2 
+c2                 0   1   2
+c3                             0   1   2
+c4                                         0   1    2
 c5                                                     0   1    2
 c6                                                                  0   1   2 ----------------------  2nd wav sample ---------------------------------------
                                                                             c1   0   1   2
-                                                                            c2                 0  1  2  
-                                                                            c3                              0  1  2   
-                                                                            c4                                          0  1   2 
+                                                                            c2                 0  1  2
+                                                                            c3                              0  1  2
+                                                                            c4                                          0  1   2
                                                                             c5                                                       0   1    2
-                                                                            c6                                                                     0   1   2 
+                                                                            c6                                                                     0   1   2
 
 WAV: 0   1   2   | 3   4   5 | 6   7   8  | 9  10  11 | 12  13  14 | 15  16  17 | 18  19  20 | 21  22  23 | 24  25  26 | 27  28  29 | 30  31  32 | 33  34  35
 AOB: 8   7   11  | 10  26  25| 29  28  6  | 9  24  27 | 2   1   5  | 4   14  13 | 17  16  20 | 19  23  22 | 32  31  35 | 34  0   3  | 12  15  18 | 21  30  33
      3:2 3:1 4:2 |4:1 3,2 3,1| 4,2 4,1 3:0|4:0 3,0 4,0| 1:2 1:1 2:2| 2:1 5:2 5:1| 6:2 6:1 1,2| 1,1 2,2 2,1| 5,2 5,1 6,2| 6,1 1:0 2:0| 5:0 6:0 1,0| 2,0 5,0 6,0
      3:2 3:1 4:2 |4:1 3:5 3:4| 4:5 4:4 3:0|4:0 3:3 4:3| 1:2 1:1 2:2| 2:1 5:2 5:1| 6:2 6:1 1:5| 1:4 2:5 2:4| 5:5 5:4 6:5| 6:4 1:0 2:0| 5:0 6:0 1:3| 2:3 5:3 6:3
-     
-     
+
+
 The sequences presented above may be verified by constructing an .aob file with an easily identifiable sequence of bytes
 and presenting it to a (correct) dvd-audio extraction program.  The byte order in the extracted wave file should be the inverse
 of that given above.
@@ -1392,25 +1444,25 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
     uint32_t requested_bytes = AUDIO_BUFFER_SIZE - *bytesinbuffer,
              buffer_increment = 0,
             rounded_buffer_increment = 0;
-    
+
     static uint16_t offset;
-    
+
     static uint8_t fbuf[36];
-    
+
     uint8_t *buf = _buf + *bytesinbuffer;
-    
+
     FLAC__bool result;
 
     //PATCH: provided for null audio characteristics, to ensure non-zero divider
 
     if (info->sampleunitsize == 0)
           EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Sample unit size is null");
-  
-    if (requested_bytes + offset >= info->sampleunitsize) 
+
+    if (requested_bytes + offset >= info->sampleunitsize)
     {
         requested_bytes -= (requested_bytes + offset) % info->sampleunitsize;
     }
-    
+
     if (offset)
     {
        memcpy(buf, fbuf, offset);
@@ -1418,11 +1470,11 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
            foutput(WAR "File: %s. Adding %d bytes from last packet for gapless processing...\n", info->filename, offset);
        buffer_increment = offset;
     }
-    
+
     if (info->type == AFMT_WAVE)
     {
         uint32_t request = (*bytesinbuffer + offset + requested_bytes < AUDIO_BUFFER_SIZE) ? requested_bytes : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset);
-          
+
         buffer_increment += fread(buf + offset, 1, request, info->audio->fp);
 
         if (info->audio->bytesread + buffer_increment > info->numbytes)
@@ -1437,7 +1489,7 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
                && bytesread < requested_bytes)
         {
             uint32_t request = (*bytesinbuffer + offset + requested_bytes < AUDIO_BUFFER_SIZE) ? requested_bytes - bytesread : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset + bytesread);
-            
+
             buffer_increment = fread(buf + bytesread + offset, 1, request, info->audio->fp);
 
             if (info->audio->bytesread + buffer_increment > info->numbytes)
@@ -1483,83 +1535,84 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
             buffer_increment = info->audio->n;
             uint32_t request = (*bytesinbuffer + offset + buffer_increment < AUDIO_BUFFER_SIZE) ? buffer_increment  : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset);
             memcpy(buf + offset, info->audio->buf, request);
+
             info->audio->n = 0;
             buffer_increment = request;
         }
-        
+
         info->audio->eos = 0;
     }
 #endif
-    
+
 
     // PATCH: reinstating Lee Feldkamp's 2009 sampleunitsize rounding
     // Note: will add extra zeros on decoding!
-    
+
     uint16_t rmdr = buffer_increment % info->sampleunitsize;
-    rounded_buffer_increment = buffer_increment - rmdr;                
-    
-    if (globals.padding == 0 && ! globals.lossy_rounding)       
+    rounded_buffer_increment = buffer_increment - rmdr;
+
+    if (globals.padding == 0 && ! globals.lossy_rounding)
     {
             // buffer_increment may not be a multiple of info->sampleunitsize only if at end of file, with remaining bytes < size of audio buffer
             offset = 0;
-            
+
             if (rmdr)
             {
                 // normally at end of file
-                
+
                 if (info->contin_track)
                 {
                     offset = rmdr;
-                    
+
                     memcpy(fbuf, buf + rounded_buffer_increment, rmdr);
                     buffer_increment = rounded_buffer_increment;
-                    
+
                     if (globals.debugging)
                        foutput(WAR "File: %s. Shifting %d bytes from offset %d to offset %d to next packet for gapless processing...\n", info->filename, rmdr, rounded_buffer_increment, buffer_increment);
-                } 
+                }
                 else
                 {
                     uint16_t padbytes = info->sampleunitsize - rmdr;
-                    if (padbytes + buffer_increment > AUDIO_BUFFER_SIZE) 
+                    if (padbytes + buffer_increment > AUDIO_BUFFER_SIZE)
                         padbytes = AUDIO_BUFFER_SIZE - buffer_increment;
-                    
+
                     memset(buf + buffer_increment, 0, padbytes);
                     buffer_increment += padbytes;
                     foutput(WAR "Padding track with %d bytes (ultimate packet).\n", padbytes);
                 }
-            }		
-    } 
+            }
+    }
     else
     {
-        if (rmdr) 
-        { 
+        if (rmdr)
+        {
             // normally at end of file
-            
+
             if (globals.lossy_rounding)
             {
                // audio loss at end of audio file may result in a 'blip'
-                
+
                buffer_increment = rounded_buffer_increment;
-               if (globals.debugging) 
+               if (globals.debugging)
                    foutput("%s %s %s %d %s %d.\n", WAR "Cutting audio file", info->filename, "by", rmdr, "bytes out of", buffer_increment);
             }
             else
             {
                 uint16_t padbytes = info->sampleunitsize - rmdr;
-                if (padbytes + buffer_increment > AUDIO_BUFFER_SIZE) 
+                if (padbytes + buffer_increment > AUDIO_BUFFER_SIZE)
                     padbytes = AUDIO_BUFFER_SIZE - buffer_increment;
-                
+
                 uint8_t padding_byte = 0;
-                
+
                 if (globals.padding_continuous && buffer_increment)
                 {
-                   padding_byte = buf[buffer_increment - 1];    
+                   padding_byte = buf[buffer_increment - 1];
                 }
-                
+
                 memset(buf + buffer_increment, padding_byte, padbytes);
                 buffer_increment += padbytes;
-                
-                if (globals.debugging) 
+
+                if (globals.debugging)
                 {
                     foutput(WAR "Padding track with %d bytes", padbytes);
                     if (globals.padding_continuous && padbytes) foutput("%s", " continuously.");
@@ -1570,7 +1623,7 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
     }
 
     // End of patch
-    
+
     // Convert little-endian WAV samples to big-endian MPEG LPCM samples
 
     if ((info->channels > 6) || (info->channels < 1))
@@ -1582,41 +1635,41 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
     switch (info->bitspersample)
     {
         case 24:
-    
+
             // Processing 24-bit audio
             interleave_24_bit_sample_extended(info->channels, buffer_increment, buf);
             break;
-    
+
         case 16:
-    
+
             // Processing 16-bit audio
             interleave_sample_extended(info->channels, buffer_increment, buf);
             break;
-    
+
         default:
-    
+
             /* 20-bit stereo samples are packed as follows:
             Packet 0: 1980 bytes
             Packets 1-: 2000 bytes
-    
+
             Stored similarly to 24-bit:
-    
+
             4 samples, most significant 16 bits of each sample first, in big-endian
             order, followed by 2 bytes containing the least-significant 4 bits of
             each sample.
-    
+
             I'm guessing  that  20-bits are stored in the most-significant
             20-bits of the 24.
             */
-    
+
             // FIX: Handle 20-bit audio and maybe convert other formats.
             foutput(ERR "%d bit audio is not supported\n",info->bitspersample);
             EXIT_ON_RUNTIME_ERROR
     }
-    
-    
+
+
     *bytesinbuffer += buffer_increment;
-    
+
     return(buffer_increment);
 }
 

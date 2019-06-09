@@ -34,7 +34,7 @@ int user_control(WaveData *info, WaveHeader *header)
   char buf[FIXBUF_LEN];
   int repair=GOOD_HEADER;
   unsigned int bps;
-  _Bool ok=false;
+  bool ok=false;
 
   /* The Subchunk1 Number of Channels */
 
@@ -171,12 +171,12 @@ int auto_control(WaveData *info, WaveHeader *header)
 
   regular_test(header, regular);
 
-  _Bool regular_wBitsPerSample  = regular[1];
-  _Bool regular_dwSamplesPerSec
+  bool regular_wBitsPerSample  = regular[1];
+  bool regular_dwSamplesPerSec
   = regular[2];
-  _Bool regular_nBlockAlign = regular[3];
-  _Bool regular_nAvgBytesPerSec = regular[4];
-  _Bool regular_channels   = regular[5];
+  bool regular_nBlockAlign = regular[3];
+  bool regular_nAvgBytesPerSec = regular[4];
+  bool regular_channels   = regular[5];
 
   /* Checking whether there is anything to be done at all */
 
@@ -339,9 +339,9 @@ void regular_test(WaveHeader *head, int* regular)
 
   if (head == NULL) if (globals.debugging) foutput("%s\n", ERR "NULL wave header !");
 
-  _Bool regular_channels  = (head->channels >= 1) && (head->channels < 6);
-  _Bool regular_wBitsPerSample = (head->wBitsPerSample == 16) + (head->wBitsPerSample == 24);
-  _Bool regular_dwSamplesPerSec;
+  bool regular_channels  = (head->channels >= 1) && (head->channels < 6);
+  bool regular_wBitsPerSample = (head->wBitsPerSample == 16) + (head->wBitsPerSample == 24);
+  bool regular_dwSamplesPerSec;
 
   if (head->dwSamplesPerSec)
     regular_dwSamplesPerSec = (head->dwSamplesPerSec % 44100 == 0) + (head->dwSamplesPerSec % 48000 == 0);
@@ -350,13 +350,13 @@ void regular_test(WaveHeader *head, int* regular)
 
   /* bit rates other than 16, 24 and 3 channels are not considered */
 
-  _Bool regular_nBlockAlign=(head->nBlockAlign == 2*16/8)+(head->nBlockAlign == 2*24/8)
+  bool regular_nBlockAlign=(head->nBlockAlign == 2*16/8)+(head->nBlockAlign == 2*24/8)
                            +(head->nBlockAlign == 3*16/8)+(head->nBlockAlign == 3*24/8)
                            +(head->nBlockAlign == 4*16/8)+(head->nBlockAlign == 4*24/8)
                            +(head->nBlockAlign == 5*16/8)+(head->nBlockAlign == 5*24/8)
                            +(head->nBlockAlign == 16/8)+(head->nBlockAlign == 24/8);
 
-  _Bool regular_nAvgBytesPerSec=0;
+  bool regular_nAvgBytesPerSec=0;
 
 
   for (i=1; i < 6; i++)

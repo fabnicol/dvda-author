@@ -18,15 +18,6 @@ Usage: Replace --fixwavprune,interactive with -Fprune,interactive.
 2. Still under Windows,
    cannot output to D:\ (or partition other than C:) folder if program installed under C:\
 
-3. If using SoX, the configure script will automatically build glibc objects, among others getop1.c and getopt.c
-   This is made necessary by a bug in SoX, versions < 14.3, which redefines getopt_long in own source code,
-   causing stack segfaults due to runtime calls by dvda-author routines which should be linked to libc getopt_long,
-   not SoX-redefined getopt_long. This does not occur if --enable-sox-build is used or if the Code::Blocks project is
-   used (full build). Another way out is to compile with CPPFLAGS=-DSHORT_OPTIONS_ONLY
-   (or simply in adding #define SHORT_OPTIONS_ONLY 1 in commonvars.h), thereby using getopt instead of getopt_long.
-   A renaming turnaround has been implemented as of version 09.05, which, however, does not work for MSYS builds.
-   This bug should have disappeared in current SoX code as SoX developer took suggestions to amend their code.
-
 4. Menu authoring.
    Some font sizes (the second parameter in the --font a,b,c switch) may not work for reasons so far unknown. In case of issues,
    change the font size. Issues have been reported with b=20 and b=30, switching to b=18 or b=40 set things right.
@@ -47,3 +38,14 @@ depconf/BUILD.TRACE~ (saves prior BUILD.TRACE)
 DOWNLOADS
 PATCHED.DOWNLOADS
 The filenames are self-explanatory. Please check them before reporting a bug.
+
+
+LINUX
+-----
+
+1. All lplex-related options to be reviewed as they no longer work: --mirror, --hybridate, --full-hybridate, --mirror-strategy
+This may be caused by the fact that lplex works, but with /usr/bin mjpegtools and other tools, plus has data to be installed
+under .config/lpex/data
+This should be easy to fix (June 2009)
+2. --videolink and -T no longer work (segfault)
+
