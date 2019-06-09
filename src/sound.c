@@ -285,12 +285,13 @@ int launch_lplex_hybridate(const pic* img,
 #if HAVE_lplex
 
     if (-1 == lplex_initialise()) return -1;
+#    if 0
     if (ntracks == NULL || nslides == NULL || slidepath == NULL || trackpath == NULL) 
     {
       fprintf(stderr, ERR "Error code: %d\n", (ntracks == NULL )*1+(nslides == NULL)*10+(slidepath == NULL)*100+(trackpath == NULL)*1000);
       EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Allocation of DVD-VIDEO tracks/slides")
     }
-    
+#endif
     const char *args0[DIM_LPLEX_CLI]= {LPLEX_BASENAME, 
                 "--create", create_mode,
                 "--verbose", (globals.debugging)?"true":"false", 
@@ -306,7 +307,8 @@ int launch_lplex_hybridate(const pic* img,
           argssize += (ntracks[group]>0)*(ntracks[group] + (group >0)+ nslides[group]*2);
     }
         
-    const char* args[DIM_LPLEX_CLI+argssize+1];
+   // const char* args[DIM_LPLEX_CLI+argssize+1];
+    const char* args[1024];
     int tot=DIM_LPLEX_CLI;
         
     for (int u=0; u < DIM_LPLEX_CLI; u++) args[u]=(char*) args0[u];
@@ -320,13 +322,13 @@ int launch_lplex_hybridate(const pic* img,
        args[tot]="ts";
        tot++;
       }
-      
+#if 0
       if (ntracks[group] > 0 && nslides[group] == 0)
       {
         fprintf(stderr, ERR "No slides for any track in titleset %d. Fix this issue and relaunch.\n", group);
         EXIT_ON_RUNTIME_ERROR
       }
-      
+
       if (ntracks[group] < nslides[group]) 
              nslides[group]=ntracks[group];  // there can be no more slides than tracks (lplex constraint)
       
@@ -345,13 +347,13 @@ int launch_lplex_hybridate(const pic* img,
               slidepath[group][u] = slidepath[group][nslides[group]-i];
          }
       }
-      
+#endif
       if (globals.veryverbose) foutput(INF "Now listing %d tracks for group %d...\n", ntracks[group], group);
       
       for (int tr=0; tr < ntracks[group]; tr++)
       {
 
-        if (slidepath[group][tr][0] != '\0') 
+        if (slidepath && slidepath[group] && slidepath[group][tr] && slidepath[group][tr][0] != '\0')
         {
           if (img->aspect[0] == '2')
              args[tot]= "jpg";
@@ -379,6 +381,12 @@ int launch_lplex_hybridate(const pic* img,
           tot++;
         }
         else 
+        {
+
+            args[tot]=(char*) trackpath[group][tr];
+                        tot++;
+
+        }
           continue;
         
         
@@ -388,13 +396,13 @@ int launch_lplex_hybridate(const pic* img,
       }
     }
     
-    args[tot]=NULL; 
+    args[tot+1]=NULL;
     
-    for (int u=0; u < DIM_LPLEX_CLI+argssize+1; u++) 
-    //for (int u=0; u < 23; u++) 
-    {
-         fprintf(stderr, "%s ", args[u]);
-    }
+    //for (int u=0; u < DIM_LPLEX_CLI+argssize+1; u++)
+//    for (int u=0; u < 43; u++)
+//    {
+//         fprintf(stderr, "%s ", args[u]);
+//    }
     if (globals.debugging)
         {
             foutput("%s",INF "Launching lplex to create hybrid...\n");
@@ -402,7 +410,7 @@ int launch_lplex_hybridate(const pic* img,
         }
 
         change_directory(globals.settings.workdir);
-        run(lplex, args, 0);
+        system(conc("/home/fab2/Dev/dvda-author/local/bin/lplex ", get_command_line((const char**) args)));
 
      FREE(lplex);
 

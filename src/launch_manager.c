@@ -470,9 +470,10 @@ SUMMARY:
 
     for (j=0; j < naudio_groups; j++)
     {
-        FREE(ntitletracks[j])
-        FREE(titlelength[j])
-        FREE(title[j])
+        free(ntitletracks[j]);
+        free(titlelength[j]);
+        free(ntitlepics[j]);
+        free(title[j]);
     }
 
     free_memory(command);
