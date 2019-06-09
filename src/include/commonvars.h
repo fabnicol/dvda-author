@@ -288,6 +288,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define VLC ""
 #endif
 
+#if defined(_WIN32) || defined(_MINGW32)
+#define EXE ".exe"
+#define NO_ANSI_COLORS
+#endif
+
 #define CREATE_EXTRACT_AC3 7
 #define CREATE_CURL     6
 #define CREATE_MPEG2DEC 5

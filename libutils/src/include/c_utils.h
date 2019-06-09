@@ -313,7 +313,7 @@ void copy_file2dir_rename(const char *existing_file, const char *new_dir, char* 
 path_t *parse_filepath(const char* filepath);
 void clean_path(path_t** );
 char* make_absolute(char* filepath);
-
+char *fn_get_current_dir_name (void);
 int  rmdir_global(char* path);
 int  rmdir_recursive (char *root, char *dirname);
 #if HAVE_curl

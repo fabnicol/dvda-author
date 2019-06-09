@@ -388,18 +388,17 @@ SUMMARY:
         if (file_exists(dvdisopath)) unlink(dvdisopath);
         uint64_t size;
         char* mkisofs=NULL;
-        const char* args[]={MKISOFS_BASENAME, "-dvd-audio", "-v", "-o", dvdisopath, globals.settings.outdir, NULL};
-
         errno=0;
-        if ((mkisofs=create_binary_path(mkisofs, MKISOFS, SEPARATOR MKISOFS_BASENAME)))
+        if ((mkisofs=create_binary_path(mkisofs, MKISOFS, SEPARATOR MKISOFS_BASENAME EXE)))
         {
+           const char* args[]={mkisofs, "-dvd-audio", "-v", "-o", dvdisopath, globals.settings.outdir, NULL};
            foutput("%s%s%s\n", INF "Launching: ", mkisofs, " to create image");
            run(mkisofs, args, 0);
+           free(mkisofs);
         }
         else
                 foutput("%s\n", ERR "Could not access mkisofs binary.");
 
-        //FREE(mkisofs);
 
         size=stat_file_size(dvdisopath)/1024;
         if ((!errno) && (size > 4*SIZE_AMG + 2*SIZE_SAMG +1))  foutput(MSG_TAG "Image was created with size %" PRIu64 " KB.\n", size);
@@ -436,24 +435,21 @@ SUMMARY:
             char *verbosity=(globals.debugging)? "-v":"-s";
 #define TEST (globals.cdrecorddevice[0] != '\0')
             int S=TEST? 8:6;
-            char* args[S],
-            *args0[]={CDRECORD_BASENAME, verbosity,"blank=fast", "-eject","dev=", globals.cdrecorddevice, dvdisoinput, "-gracetime=", "1",  NULL},
-            *args1[]={CDRECORD_BASENAME, verbosity,"blank=fast", "-eject",dvdisoinput, "-gracetime=", "1", NULL};
-            if TEST memcpy(args, args0, sizeof(args0));
-            else memcpy(args, args1, sizeof(args1));
-
+            char* args[S];
+            memset(args, 0, S);
             errno=0;
             char* cdrecord=NULL;
 
-            if ((cdrecord=create_binary_path(cdrecord, CDRECORD, SEPARATOR CDRECORD_BASENAME)))
+            if ((cdrecord=create_binary_path(cdrecord, CDRECORD, SEPARATOR CDRECORD_BASENAME EXE)))
             {
-               const char* CLI = get_full_command_line(args);
-               fprintf(stderr, "\n%s%s\n", INF "Launching cdrecord to burn disc using ", CLI);
-              // run(cdrecord,  (const char**) args, NOWAIT);
-               args[0] = cdrecord;
-               system((const char*) CLI);
-               FREE(cdrecord);
-            }
+                char *args0[]={cdrecord, verbosity,"blank=fast", "-eject","dev=", globals.cdrecorddevice, dvdisoinput, "-gracetime=", "1",  NULL};
+                char *args1[]={cdrecord, verbosity,"blank=fast", "-eject",dvdisoinput, "-gracetime=", "1", NULL};
+                if TEST memcpy(args, args0, sizeof(args0));
+                else memcpy(args, args1, sizeof(args1));
+                foutput("%s%s%s\n", INF "Launching: ", cdrecord, " to create disk");
+                run(cdrecord, (const char**) args, 0);
+                free(cdrecord);
+             }
             else
                foutput("%s\n", ERR "Could not access to cdrecord binary.");
 
