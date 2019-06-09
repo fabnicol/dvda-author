@@ -866,7 +866,7 @@ inline static pts_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
 }
 
 
-inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf, uint32_t bytesinbuffer, uint64_t pack_in_title, _Bool start_of_file)
+inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf, uint32_t bytesinbuffer, uint64_t pack_in_title, bool start_of_file)
 {
 
     int audio_bytes;
@@ -1240,7 +1240,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
     FILE* fpout;
     char outfile[CHAR_BUFSIZ+13+1];
     int i=0, pack=0, fileno=1;
-    _Bool start_of_file = true;
+    bool start_of_file = true;
     uint32_t bytesinbuf=0, n=0, lpcm_payload=0;
     uint8_t audio_buf[AUDIO_BUFFER_SIZE];
     uint64_t pack_in_title=0;

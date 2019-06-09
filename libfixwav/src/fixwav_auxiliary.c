@@ -30,7 +30,7 @@ extern globalData globals;
 * Purpose:  This function displays a yes/no prompt
 *********************************************************************/
 
-_Bool isok()
+bool isok()
 {
   char buf[FIXBUF_LEN]={0};
   get_input(buf);

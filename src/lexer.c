@@ -38,7 +38,7 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
 {
 
     int i=0,j=1,u=0, dataflag=0, flag=0;
-    _Bool first=0, delta=0;
+    bool first=0, delta=0;
     enum {GROUP, TITLE, OTHER, SCREENTEXT, SCREENTEXT_GROUP, SCREENTEXT_TRACK,STILLPICS_TITLE,STILLPICS_TRACK,STILLOPTIONS_RANK,STILLOPTIONS_TRACK,SHORTOPTION,LONGOPTION,ARG};
     char T[MAX_OPTION_LENGTH];
     memset(T, 0, MAX_OPTION_LENGTH);
@@ -49,7 +49,7 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
     char *chain=&tab[0];
     if (NULL == chain) perror(ERR "lexer.c chain");
 
-    uint16_t s0=0, mem_s1=0, mem_s2=0;
+    ulong s0=0, mem_s1=0, mem_s2=0;
 
 
     FILE* defaults=fopen(path, "rb");
@@ -130,7 +130,6 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
         case '/' :
              if (*(chain+1) == '/') continue; // no break
 
-
         default:
              if ((flag == SHORTOPTION) ||  (flag == LONGOPTION)) flag=ARG;
              break;
@@ -145,7 +144,7 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
 
 		strcpy(T, chain);
 
-		u = strlen(T) - 1;
+        u = (int) strlen(T) - 1;
 		while((u) && isblank(T[u])) --u;
 		if (u) T[u] = '\0';
                 break;
@@ -280,7 +279,7 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
 
     }
     while (!feof(defaults) && (i < MAX_LEXER_LINES));
-    lexer->nlines=j+1;
+    lexer->nlines=(uint16_t) j+1;
 
     /* One needs to wipe out empty strings in command line.
       The following works yet is not ideal.
@@ -300,7 +299,7 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
 
     for (j=0; j < u; ++j) strcpy(lexer->commandline[j], exch[j]);
 
-    lexer->nlines=u;
+    lexer->nlines=(uint16_t)u;
 
     clearerr(defaults);
     fclose(defaults);

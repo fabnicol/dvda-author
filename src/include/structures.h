@@ -4,8 +4,7 @@
 
 #include "stream_decoder.h"
 #include "inttypes.h"
-
-
+#include "commonvars.h"
 
 typedef struct
 {
@@ -43,8 +42,8 @@ typedef struct
     uint8_t type;
     uint8_t bitspersample;
     uint8_t channels;
-    _Bool   mergeflag;
-    _Bool   dvdv_compliant;
+    bool   mergeflag;
+    bool   dvdv_compliant;
     // L&T Fedkamp addition
     uint8_t cga;
     uint8_t newtitle;
@@ -83,8 +82,8 @@ typedef struct
 
 typedef struct
 {
-    _Bool manual;
-    _Bool active;
+    bool manual;
+    bool active;
     uint8_t starteffect;
     uint8_t endeffect;
     uint8_t lag;
@@ -93,10 +92,10 @@ typedef struct
 
 typedef struct
 {
-    _Bool refresh;
-    _Bool loop;
-    _Bool hierarchical;
-    _Bool active;
+    bool refresh;
+    bool loop;
+    bool hierarchical;
+    bool active;
     char** highlightpic;
     char** selectpic;
     char** imagepic;
@@ -201,41 +200,53 @@ typedef struct
 typedef struct
 {
     int8_t topmenu;
-    _Bool nooutput;
-    _Bool runmkisofs;
-    _Bool autoplay;
-    _Bool text;
-    _Bool silence;
-    _Bool enable_lexer;
-    _Bool logfile;
-    _Bool loghtml;
-    _Bool logdecode;
-    _Bool videozone;
-    _Bool videolinking;
-    _Bool playlist;
-    _Bool cga;
-    _Bool end_pause;
-    _Bool maxverbose;
-    _Bool veryverbose;
-    _Bool debugging;
-    _Bool padding;
-    _Bool padding_continuous;
-    _Bool lossy_rounding;
-    _Bool rungrowisofs;
+    bool nooutput;
+    bool runmkisofs;
+    bool autoplay;
+    bool text;
+    bool silence;
+    bool enable_lexer;
+    bool logfile;
+    bool loghtml;
+    bool logdecode;
+    bool videozone;
+    bool videolinking;
+    bool playlist;
+    bool cga;
+    bool end_pause;
+    bool maxverbose;
+    bool veryverbose;
+    bool debugging;
+    bool padding;
+    bool padding_continuous;
+    bool lossy_rounding;
+    bool rungrowisofs;
 #ifndef WITHOUT_sox
-    _Bool sox_enable;
+    bool sox_enable;
 #endif
 
-    _Bool fixwav_enable;
-    _Bool fixwav_virtual_enable;
-    _Bool fixwav_automatic; /* automatic behaviour */
-    _Bool fixwav_prepend; /* do not prepend a header */
-    _Bool fixwav_in_place; /* do not correct in place */
-    _Bool fixwav_cautious; /* be cautious on overwrites */
-    _Bool fixwav_interactive; /* not interactive */
-    _Bool fixwav_padding; /* padding */
-    _Bool fixwav_prune; /* prune */
-    _Bool fixwav_force;
+    bool fixwav_enable;
+    bool fixwav_virtual_enable;
+    bool fixwav_automatic; /* automatic behaviour */
+    bool fixwav_prepend; /* do not prepend a header */
+    bool fixwav_in_place; /* do not correct in place */
+    bool fixwav_cautious; /* be cautious on overwrites */
+    bool fixwav_interactive; /* not interactive */
+    bool fixwav_padding; /* padding */
+    bool fixwav_prune; /* prune */
+    bool fixwav_force;
+    uint32_t textablesize;
+    uint32_t topmenusize;
+    uint32_t *grouptextsize;
+    uint32_t *tracktextsize;
+    uint32_t backgroundmpgsize;
+    uint32_t backgroundpicsize;
+    uint32_t *soundtracksize;
+    uint32_t topmenu_slidesize;
+    uint32_t highlightpicsize;
+    uint32_t selectpicsize;
+    uint32_t imagepicsize;
+    uint32_t backgroundcolorssize;
     char* fixwav_suffix; /* output suffix for corrected files */
     char* fixwav_parameters;
 
