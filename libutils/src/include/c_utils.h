@@ -323,7 +323,7 @@ int download_fullpath(const char* curlpath, const char* filename, const char* fu
 void erase_file(const char* path);
 char* quote(const char* path);
 char* win32quote(const char* path);
-int run(const char* application, const char*  args[], const int option);
+int run(const char* application, const char*  args[], const int option, bool fork);
 uint64_t  parse_file_for_sequence(FILE* fp, uint8_t* tab, size_t sizeoftab);
 void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* fp, FILE* log, bool write, bool);
 void rw_field(uint8_t* tab, int size,const char* label, FILE* fp, FILE* log);

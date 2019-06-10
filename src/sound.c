@@ -226,7 +226,7 @@ int launch_lplex_soundtrack(pic* img, const char* create_mode)
         }
 
         change_directory(globals.settings.workdir);
-        run(lplex, args, 0);
+        run(lplex, args, 0, FORK);
         tot=0;
         path_t* aux=parse_filepath(img->soundtrack[menu][0]);
 
