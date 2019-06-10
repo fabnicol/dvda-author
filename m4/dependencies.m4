@@ -184,11 +184,11 @@ m4_map([DVDA_TEST_AUX],[
 	    ],
 	    [
 		[cdrtools-download],
-		[3.02a06],
+		[3.02a09],
 		[],
 		[],
 		[WEBSITE/utils],
-		[49c9d73c09d3ec38c93dae65656a1b0e]
+		[ae85b5330f1f92d909e332ed595bddb7]
 	    ],
 	    [
 		[sox-patch],
@@ -200,19 +200,19 @@ m4_map([DVDA_TEST_AUX],[
 	    ],
 	    [
 		[flac-download],
-		[1.3.1],
-		[],
-		[],
-		[WEBSITE/utils],
-		[b9922c9a0378c88d3e901b234f852698]
-	    ],
-	    [
-		[libogg-download],
 		[1.3.2],
 		[],
 		[],
 		[WEBSITE/utils],
-		[5c3a34309d8b98640827e5d0991a4015]
+		[454f1bfa3f93cc708098d7890d0499bd]
+	    ],
+	    [
+		[libogg-download],
+		[1.3.3],
+		[],
+		[],
+		[WEBSITE/utils],
+		[87ed742047f065046eb6c36745d871b8]
 	    ],
 	    [
 		[help2man-download],
@@ -232,11 +232,11 @@ m4_map([DVDA_TEST_AUX],[
 	    ],
 	    [
 		[ImageMagick-download],
-		[7.0.2-6],
+		[7.0.8-49],
 		[],
 		[],
 		[WEBSITE/utils],
-		[8c03070521ba859bad7df808852e5267]
+		[d7dd10356979787d1ee26482b38246f0]
 	    ],
 	    [
 		[lplex-download],
@@ -327,7 +327,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
     DVDA_CONFIG_LIBRARY_LOCAL_INSTALL([
      [[[sox],[sox-14.4.2]],  [--without-libltdl --without-sndfile --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-magic --disable-fast-install --prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]],
      [[[libogg],[libogg-1.3.2]],  [--enable-static --disable-shared --prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]],
-     [[[FLAC],[flac-1.3.1]],[--enable-static --disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg" \
+     [[[FLAC],[flac-1.3.2]],[--enable-static --disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg" \
        --disable-thorough-tests --disable-oggtest --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]]])
        
      # installing binaries, normally executables
@@ -347,7 +347,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
 	       [[[libmpeg2],[libmpeg2-0.5.1]],[--prefix="$BUILDDIR/local"]],
 	       [[[help2man], [help2man-1.43.3]],[--prefix="$BUILDDIR/local"]],
-	       [[[ImageMagick], [ImageMagick-7.0.2-6]],[--prefix="$BUILDDIR/local" --without-magick-plus-plus --without-pango --without-tiff --without-lzma --without-xml]],
+	       [[[ImageMagick], [ImageMagick-7.0.8-49]],[--prefix="$BUILDDIR/local" --without-magick-plus-plus --without-pango --without-tiff --without-lzma --without-xml]],
 	       [[[man2html], [man2html-1.6]],[bindir="$BUILDDIR/local/bin"]]])
 	    ],
 	    [
@@ -358,7 +358,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
 	       [[[libmpeg2],[libmpeg2-0.5.1]], [--prefix="$BUILDDIR/local"]],
 	       [[[help2man], [help2man-1.43.3]],[--prefix="$BUILDDIR/local"]],
-	       [[[ImageMagick], [ImageMagick-7.0.2-6]],[--prefix="$BUILDDIR/local" --without-magick-plus-plus --without-pango --without-tiff --without-lzma --without-xml JPEG_LIBS="$ROOTDIR/build/linux/dvda-author-full.build/lib/libjpeg.a"]],
+	       [[[ImageMagick], [ImageMagick-7.0.8-49]],[--prefix="$BUILDDIR/local" --without-magick-plus-plus --without-pango --without-tiff --without-lzma --without-xml JPEG_LIBS="$ROOTDIR/build/linux/dvda-author-full.build/lib/libjpeg.a"]],
    	       [[[man2html], [man2html]],[bindir="$BUILDDIR/local/bin" mandir="$BUILDDIR/local/share/man"]]])
 	    ])
     

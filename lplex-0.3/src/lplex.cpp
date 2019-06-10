@@ -2,6 +2,8 @@
 	lplex.cpp - top-level authoring and extraction.
 	Copyright (C) 2006-2011 Bahman Negahban
 
+    Adapted to C++-17 in 2018 by Fabrice Nicol
+
 	This program is free software; you can redistribute it and/or modify it
 	under the terms of the GNU General Public License as published by the
 	Free Software Foundation; either version 2 of the License, or (at your
@@ -37,7 +39,7 @@ int author( dvdLayout &layout )
 	int i, valid_audio = 0, m2vUpdate = -1, multichapter = 0, done = 0;
 	uint16_t uDataLen = 0;
 	uint8_t userData[512];
-	uint32_t vFrames;
+	uint32_t vFrames = 0;
 	ofstream *m2vFile = NULL;
 
 
@@ -66,7 +68,7 @@ int author( dvdLayout &layout )
         SCRN( "\n\n" )
 
     INFOv( string("Creating ")
-        + string(((char*[]){ "LPCM", "M2V", "MPEG", "DVD", "ISO", "LGZ" }) [ job.prepare-3 ])
+        + string(((const char*[]){ "LPCM", "M2V", "MPEG", "DVD", "ISO", "LGZ" }) [ job.prepare-3 ])
         + string(" : [ ")
         + string(( job.tv == NTSC ? "NTSC" : "PAL" ))
         + string(( job.params & md5 ? " md5aware" : "" ))
@@ -80,17 +82,13 @@ int author( dvdLayout &layout )
 	if( editing )
 		return 0;
 
-    if ( ! fs::exists( job.tempPath ) )
-        fs_MakeDirs( job.tempPath );
-
-    if ( ! fs::exists( job.outPath.parent_path() ) )
-        fs_MakeDirs( job.outPath.parent_path());
 
 	stopWatch.Start();
 
-	dvdauthorXml xml( (job.tempPath.generic_string() + job.name),
+	dvdauthorXml xml( (job.tempPath / job.name).string(),
 		job.tv, job.group + 1, job.params & dvdStyler, job.prepare < mpegf );
-	xml.write( dvdauthorXml::setDest, job.dvdPath.generic_string(),
+
+	xml.write( dvdauthorXml::setDest, job.dvdPath.string(),
 		jpegs[ Lfiles[0].jpgIndex ].ar == dvdJpeg::_16x9 ? true : false );
 
 	while( layout.getNext() )
@@ -115,43 +113,49 @@ int author( dvdLayout &layout )
 				xml.write( dvdauthorXml::closeVob );
 
 				if( Lfiles[i].type & lpcmFile::titleStart )
-					xml.write( dvdauthorXml::addTitle, job.dvdPath.generic_string(),
+					xml.write( dvdauthorXml::addTitle, job.dvdPath.string(),
 						jpegs[ Lfiles[i].jpgIndex ].ar == dvdJpeg::_16x9 ? true : false );
 			}
 			xml.write( dvdauthorXml::openVob, layout.nameNow + ".mpg" );
+
 		}
 
+
         txt.clear();
-        txt = STAT_TAG + Lfiles[i].fName.filename().generic_string();
+        txt = STAT_TAG + Lfiles[i].fName.filename().string();
 		if( jpegs.size() > 1 )
 		{
-            txt += string(" + ") + jpegs[ Lfiles[i].jpgIndex ].fName.filename().generic_string();
-            SCRN( string(" + ") +  jpegs[ Lfiles[i].jpgIndex ].fName.filename().generic_string()  )
+            txt += string(" + ") + jpegs[ Lfiles[i].jpgIndex ].fName.filename().string();
+            SCRN( string(" + ") +  jpegs[ Lfiles[i].jpgIndex ].fName.filename().string()  )
 		}
 
 		if( job.params & md5 )
 		{
 			if( m2vUpdate > -1 && Lfiles[m2vUpdate].type & lpcmFile::readComplete )
 			{
-				uDataLen = writeUserData( &Lfiles[m2vUpdate], userData, sizeof( userData ) );
+				uDataLen = writeUserData( &Lfiles[m2vUpdate], userData );
 				m2vFile->write( (char*)userData, uDataLen );
 			}
-			uDataLen = writeUserData( &Lfiles[i], userData, sizeof( userData ) );
+			uDataLen = writeUserData( &Lfiles[i], userData );
 		}
 
 		m2vUpdate = job.params & md5 ?
 			Lfiles[i].type & lpcmFile::readComplete ? -1 : i : -1;
 
 		BLIP( " ...creating video " );
+		cerr << "m2v" << " " << layout.nameNow << ".m2v" << endl;
 
-		m2vFile = m2v( Lfiles[i].videoFrames,
-			jpegs[ Lfiles[i].jpgIndex ].getName().c_str(),
-            string(layout.nameNow + ".m2v").c_str(), job.tv,
-			jpegs[ Lfiles[i].jpgIndex ].ar == dvdJpeg::_16x9 ? true : false,
-			userData, uDataLen, ( job.tv == NTSC ? 18 : 15 ),
-			job.now & appending,
-            ! ( Lfiles[i].trim.type & jobs::continuous ),
-            ! ( Lfiles[i].trim.type & jobs::continuous ) );
+		m2vFile = m2v(Lfiles[i].videoFrames,
+			          jpegs[ Lfiles[i].jpgIndex ].getName().c_str(),
+                      string(layout.nameNow + ".m2v").c_str(),
+		       	      job.tv,
+			          jpegs[ Lfiles[i].jpgIndex ].ar == dvdJpeg::_16x9 ? true : false,
+			          userData,
+		       	      uDataLen,
+		       	      (job.tv == NTSC ? 18 : 15),
+			          job.now & appending,
+                      ! (Lfiles[i].trim.type & jobs::continuous),
+                      ! (Lfiles[i].trim.type & jobs::continuous));
 
 		xml.write( dvdauthorXml::addChapter, job.now & appending ?
 			dvdauthorXml::timestampFractional( vFrames, job.tv == NTSC, .001 ) : "0" );
@@ -160,6 +164,7 @@ int author( dvdLayout &layout )
 
         if( Lfiles[i].trim.type & jobs::continuous )
             SCRN( "\n" )
+
 		ECHO( "\n" );
 
         if( Lfiles[i].trim.type & jobs::continuous &&
@@ -174,19 +179,47 @@ int author( dvdLayout &layout )
 
 		_progress.max = vFrames;
 
+        string o1 = layout.nameNow + string(".mpg");
+        string o2 = layout.nameNow + string(".m2v");
+        string o3 = layout.nameNow + string(".lpcm");
+        string Larg = _f( "%d:%d:%d",
+                          Lfiles[i].fmeta.data.stream_info.sample_rate,
+                          Lfiles[i].fmeta.data.stream_info.channels,
+                          Lfiles[i].fmeta.data.stream_info.bits_per_sample) ;
+
+
+        const vector<const char*>&  cmdline =
+                 {"-f",
+                  "8",
+                  //job.mplexArg.c_str(),
+ 				  "-L",
+                  Larg.c_str(),
+				  "-o",
+                  o1.c_str(),
+                  o2.c_str(),
+                  o3.c_str()
+                 };
+
+        cerr << "[MSG] Now launching: \n\n";
+        for (const char* s: cmdline) cerr << s << " ";
+        cerr << endl << endl;
+
 		if( execute(
-            QUOTE( (binDir / "mplex").generic_string() )
-				+ " -f 8 " + job.mplexArg + " "
-				+ "-L " + _f( "%d:%d:%d ",
-					Lfiles[i].fmeta.data.stream_info.sample_rate,
-					Lfiles[i].fmeta.data.stream_info.channels,
-					Lfiles[i].fmeta.data.stream_info.bits_per_sample )
-				+ "-o " + QUOTE( layout.nameNow + ".mpg" ) + " "
-				+ QUOTE( layout.nameNow + ".m2v" ) + " "
-				+ QUOTE( layout.nameNow + ".lpcm" ),
-            _verbose)
-		)
+                    (binDir / "mplex").string(),
+                    {"-f",
+                     "8",
+                   // job.mplexArg.c_str(),
+                     "-L",
+                     Larg.c_str(),
+                     "-o",
+                     o1.c_str(),
+                     o2.c_str(),
+                     o3.c_str()
+                    },
+                    _verbose))
+        {
 			FATAL( "mplex failed. See lplex.log for details.\n" );
+        }
 
 		ECHO( "\n-------------------------------------------------------------------------------\n\n"  );
         SCRN( "\n" )
@@ -201,8 +234,7 @@ int author( dvdLayout &layout )
 	if( ! valid_audio )
 		FATAL( "No audio to process!\n" );
 
-    if( fs::exists( job.dvdPath) )
-        fs_DeleteDir( job.dvdPath);
+    if  ( fs::exists( job.dvdPath ))   fs_DeleteDir( job.dvdPath);
 
 	xml.write( dvdauthorXml::closeVob );
 
@@ -221,7 +253,7 @@ int author( dvdLayout &layout )
 	else
 		done = job.prepare;
 
-	xml.write( dvdauthorXml::close );
+  	xml.write( dvdauthorXml::close );
 
 	if( job.prepare >= vobf )
 	{
@@ -233,11 +265,12 @@ int author( dvdLayout &layout )
 		_progress.max = 2 * (uint32_t) ( layout.vobEstimate() / MEGABYTE );
 
 		if( execute(
-            QUOTE( (binDir / "dvdauthor").generic_string() ) + " -x " + QUOTE( xml.name ),
-            _verbose)
-		)
+            (binDir / "dvdauthor").string(),
+            {"-x", xml.name.c_str() },
+            _verbose))
+        {
 			FATAL( "dvdauthor failed. See lplex.log for details.\n" );
-
+        }
 		ECHO( "\n-------------------------------------------------------------------------------\n"  );
 		done = vobf;
 	}
@@ -247,12 +280,12 @@ int author( dvdLayout &layout )
 	if( job.params & md5 )
 	{
 		INFO( "Input wave-data signatures:\n" );
-		for( int i=0; i < Lfiles.size(); i++ )
+		for( uint i=0; i < Lfiles.size(); ++i )
 			LOG( "md5 : " << hexStr( Lfiles[i].md5str, 16 )
 				<< " : " << Lfiles[i].fName.stem() << endl );
 		ECHO( "\n" );
 		INFO( "Output wave-data signatures:\n" );
-		for( int i=0; i < Lfiles.size(); i++ )
+		for( uint i=0; i < Lfiles.size(); ++i )
 			LOG( "md5 : " << hexStr( Lfiles[i].fmeta.data.stream_info.md5sum, 16 )
 				<< " : " << Lfiles[i].fName.stem() << endl );
 		ECHO( "\n" );
@@ -260,7 +293,7 @@ int author( dvdLayout &layout )
 		if( job.prepare >= vobf )
 		{
             SCRN( "\n"  STAT_TAG  "Inserting Lplex tags... \n" )
-			tagEmbed();
+			//tagEmbed();
 		}
 	}
 
@@ -285,18 +318,18 @@ int author( dvdLayout &layout )
 			copyMenufiles( map );
 			delete[] map;
 		}
-		if( job.params & cleanup )
-            fs_DeleteDir( job.tempPath);
 	}
 
 	if( xlogExists )
 	{
         // XLOG( INFO_TAG << _f( "Elapsed time=%ld:%02ld\n", stopWatch.Time()/60000, (stopWatch.Time()%60000)/1000 ) );
+#if 0
 		logCopy( job.prepare >= mpegf ? (
 			job.params & info ?
             job.dvdPath / fs::path("XTRA") / fs::path("lplex.log") :
             job.dvdPath.parent_path() / fs::path("lplex.log") ) :
-            job.tempPath.parent_path() / fs::path("lplex.log") ) ;
+            job.tempPath / fs::path("lplex.log") ) ;
+#endif
 	}
 
 
@@ -315,9 +348,9 @@ int author( dvdLayout &layout )
         SCRN( "\n" )
         SCRN( STAT_TAG  "Creating dvd container... " )
 		lpcmPGextractor dvd( &Lfiles, &infofiles, &job, false, false );
-		if( dvd.open( job.isoPath.generic_string(), false ) )
+		if( dvd.open( job.isoPath.string(), false ) )
 		{
-			if( lgzName = udfZip( dvd, false, job.inPath.generic_string() ) )
+			if( lgzName = udfZip( dvd, false, job.inPath.string() ) )
 				done = lgzf;
 		}
 	}
@@ -333,13 +366,13 @@ int author( dvdLayout &layout )
 	if( done >= mpegf )
     {
         SCRN( LOG_TAG  "Dvd folder    : ")
-        SCRN(TINT( QUOTE( job.dvdPath.generic_string()).c_str()))
+        SCRN(TINT( QUOTE( job.dvdPath.string()).c_str()))
         SCRN("\n")
     }
 	if( done <= mpegf || ! ( job.params & cleanup ) )
     {
         SCRN( LOG_TAG  "Work folder   : ")
-        SCRN(TINT( QUOTE( job.tempPath.generic_string()).c_str()))
+        SCRN(TINT( QUOTE( job.tempPath.string()).c_str()))
         SCRN("\n" )
     }
 	if( done >= lgzf )
@@ -349,13 +382,13 @@ int author( dvdLayout &layout )
         SCRN( "\n" )
     }
     SCRN( LOG_TAG  "Project file  : ")
-    SCRN(TINT( QUOTE( job.projectPath.generic_string() ).c_str() ))
+    SCRN(TINT( QUOTE( job.projectPath.string() ).c_str() ))
     SCRN( "\n" )
 	if( done >= isof )
     {
         SCRN( LOG_TAG  "\n")
         SCRN(LOG_TAG  "Burn '")
-        SCRN(TINT( job.isoPath.generic_string().c_str() ))
+        SCRN(TINT( job.isoPath.string().c_str() ))
         SCRN("' with any burning app.\n" )
     }
     else if( job.params & dvdStyler )
@@ -389,7 +422,9 @@ int mkisofs(const fs::path &isoPath, const fs::path &dvdPath, const string& name
     SCRN( STAT_TAG  "Creating iso image... " )
 
     if ( ! fs::exists( isoPath.parent_path() ) )
+    {
         fs_MakeDirs( isoPath.parent_path());
+    }
 
 	string volumeID = name;
     if( Right(volumeID, 4) == "_DVD" )
@@ -399,16 +434,20 @@ int mkisofs(const fs::path &isoPath, const fs::path &dvdPath, const string& name
 
     volumeID = volumeID.substr(0, 32);
 
-    INFO( "Creating disc image \'" + isoPath.generic_string() + string("\'\n") );
+    INFO( "Creating disc image \'" + isoPath.string() + string("\'\n") );
     INFO( "Using volume id \'" + volumeID + string("\'\n\n") );
 
-	if( exitCode = execute(
-        QUOTE( (binDir / "mkisofs").generic_string() )
-			+ " -dvd-video -udf "
-			+ "-V " + QUOTE( volumeID )
-			+ " -o " + QUOTE( isoPath.generic_string() ) + " "
-			+ QUOTE( dvdPath.generic_string() ),
-        _verbose)
+	if( (exitCode = execute(
+            (binDir / "mkisofs").string(),
+			{ "-dvd-video",
+              "-udf",
+			  "-V",
+              volumeID.c_str(),
+			  "-o",
+              isoPath.string().c_str(),
+			  dvdPath.string().c_str()
+             },
+        _verbose))
 	)
 		ERR( "mkisofs failed. No iso created, see lplex.log for details.\n" );
 
@@ -429,13 +468,13 @@ int mkisofs(const fs::path &isoPath, const fs::path &dvdPath, const string& name
 
 int unauthor( lpcmPGextractor &dvd )
 {
-	int i, c, context, titleset = 0, v, processErr, writeIndex, finish;
+	int c, context, titleset = 0, v, processErr, writeIndex = 0, finish;
 	uint16_t s;
 	uint32_t b, blockCt, unfinishedBlock=0;
 	lpcmFile *lFile;
-	lpcmWriter *writer;
-	dvd_file_t *vobs;
-	md5_byte_t md5str[16];
+	lpcmWriter *writer = nullptr;
+	dvd_file_t *vobs = nullptr;
+	//md5_byte_t md5str[16];
 	uint64_t ptsBoundary;
 	counter<uint64_t> total;
 
@@ -452,21 +491,23 @@ int unauthor( lpcmPGextractor &dvd )
 		<< ( job.params & restore ? " restore" : "" )
 		<< ( job.params & info ? " infofiles" : "" ) << " ]\n" );
     SCRN( INFO_TAG  "Output folder : \'")
-    SCRN(TINT( job.extractPath.generic_string() ))
+    SCRN(TINT( job.extractPath.string() ))
     SCRN("\'\n" )
-	INFO( "Output folder : \'" << job.extractPath.generic_string() << "\'\n" );
+	INFO( "Output folder : \'" << job.extractPath.string() << "\'\n" );
 
 	editing = false;
 
-    if ( ! editing && ! fs::exists( job.extractPath.generic_string() ) )
+    if ( ! editing && ! fs::exists( job.extractPath.string() ) )
+    {
         fs_MakeDirs( job.extractPath );
+    }
 
 	stopWatch.Start();
 	dvd.traverse();
 
 	/* TODO (#1#): check extraction free space */
-int test=0;
-	while( context = dvd.getCell() )
+
+	while( (context = dvd.getCell() ))
 	{
 		c = dvd.pgcCell;
 
@@ -630,13 +671,12 @@ continue;
 	_verbose = true;
 
 	ECHO( "\n" );
-	for( i=0; i < Lfiles.size(); i++ )
+	for( uint i=0; i < Lfiles.size(); ++i )
 	{
 		if( Lfiles[i].writer->isOpen() )
 			Lfiles[i].writer->close();
 		if( Lfiles[i].writer->state & lpcmEntity::specified )
 			Lfiles[i].writer->md5Report();
-		delete Lfiles[i].writer;
 	}
 	ECHO( "\n" );
 
@@ -647,7 +687,7 @@ continue;
         SCRN( STAT_TAG  "Copying info files... \n" )
 #ifdef dvdread_udflist
 //      if( job.media & imagefile )
-//         udfCopyInfoFiles( job.extractPath.generic_string() );
+//         udfCopyInfoFiles( job.extractPath.string() );
 		if( dvd.isImage )
 			dvd.udfCopyInfoFiles();
 		else
@@ -657,7 +697,7 @@ continue;
 
 #ifdef lgzip_support
 	if( job.format >= lgzf )
-		udfZip( dvd, false, job.extractPath.generic_string() );
+		udfZip( dvd, false, job.extractPath.string() );
 #endif
 
     SCRN( "\n" )
@@ -698,7 +738,7 @@ void copyInfoFiles(const fs::path& rootPath )
 			continue;
 
         fs::path i_fName = fs::path(infofiles[i].fName);
-        string comp =  i_fName.filename().generic_string();
+        string comp =  i_fName.filename().string();
 
         if (toUpper(comp) ==  "LPLEX.LOG" )
 			continue;
@@ -725,13 +765,12 @@ void copyInfoFiles(const fs::path& rootPath )
 //    Arguments:
 //       <lFile>        - pointer to relevant lpcmEntity descriptor
 //       <userData>     - pointer to destination buffer
-//       <sizeofUData>  - size of destination buffer
 //
 //    Returns actual number of bytes written
 // ----------------------------------------------------------------------------
 
 
-uint16_t writeUserData( lpcmEntity *lFile, uint8_t *userData, uint16_t sizeofUData )
+uint16_t writeUserData( lpcmEntity *lFile, uint8_t *userData )
 {
     fs::path noExt =  lFile->fName;
     noExt = noExt.parent_path() / noExt.stem();
@@ -739,7 +778,7 @@ uint16_t writeUserData( lpcmEntity *lFile, uint8_t *userData, uint16_t sizeofUDa
 
 	string tag = _f( "<Lplex ver=\"%s\" path=\"%s\" id=\"%d\" shift=\"%d\" md5prev=\"%s\"/>",
 		VERSION,
-        noExt.generic_string().substr( lFile->root ).c_str(),
+        noExt.string().substr( lFile->root ).c_str(),
 		lFile->index,
 		-lFile->trim.offset,
         hexToStr( lFile->md5str, 16, 1 ).c_str() );
@@ -846,15 +885,15 @@ uint16_t readUserData( lpcmEntity *lFile, uint8_t* userData )
 
 int tagEmbed()
 {
-	int i, c, s, v, L=-1, titleset=-1;
-	uint64_t addr, _SOF, _EOF;
+	int c, v=0, L=-1, titleset=-1;
+	uint64_t addr, _SOF = 0, _EOF = 0;
 	uint16_t uDataLen;
 	uint8_t userData[512];
 
 	fstream vobFile;
     fs::path vob = job.dvdPath / "VIDEO_TS";
 
-    lpcmPGtraverser dvd( vob.generic_string().c_str(), false );
+    lpcmPGtraverser dvd( vob.string().c_str(), false );
 
 	while( dvd.getCell() )
 	{
@@ -896,12 +935,12 @@ int tagEmbed()
 
 							//...open next vob file
 			vobFile.open(
-                (vob / fs::path(_f( "VTS_%02i_%i.VOB", titleset, ++v ))).generic_string(),
+                (vob / fs::path(_f( "VTS_%02i_%i.VOB", titleset, ++v ))).string(),
 				ios::binary | ios::in | ios::out );
 			if( ! vobFile )
             {
                 ERR( "Could not open ")
-                ERR((vob / fs::path(_f( "VTS_%02i_%i.VOB\n", titleset, v ) )).generic_string())
+                ERR((vob / fs::path(_f( "VTS_%02i_%i.VOB\n", titleset, v ) )).string())
             }
 							//...and update absolute seek limits
 			_SOF = _EOF;
@@ -914,7 +953,8 @@ int tagEmbed()
 
 		vobFile.seekp( addr, ios::beg );
 
-		uDataLen = writeUserData( &Lfiles[++L], userData, sizeof( userData ) );
+		uDataLen = writeUserData( &Lfiles[L++], userData );
+
 		if( uDataLen <= 0xBD ) // 0x400 - 0x343
 		{
 			INFO( "(" <<  dvd.nameNow << ") Inserting Lplex tags at offset 0x343 of LB "
@@ -1180,7 +1220,7 @@ int addMenus( const char * filename, int tv, bool force )
          fName = fs::absolute(fName);
 
 	STAT( _f( "Looking for%s menu resources in \'%s\'...\n",
-		force ? "" : tv==NTSC ? " NTSC" : " PAL", fName.generic_string().c_str() ) );
+		force ? "" : tv==NTSC ? " NTSC" : " PAL", fName.string().c_str() ) );
 
     if( ! fs::exists(fName))
 	{
@@ -1188,7 +1228,7 @@ int addMenus( const char * filename, int tv, bool force )
             fName = fs::path( fName.parent_path() );
 	}
 
-    //string menuSpec( fName.generic_string() );
+    //string menuSpec( fName.string() );
 #if 0
 	class menuTraverser : public wxDirTraverser
 	{
@@ -1242,9 +1282,9 @@ int addMenus( const char * filename, int tv, bool force )
 
 	int state = 0;
 
-	if( video_ts.Open( fName.generic_string() ) )
+	if( video_ts.Open( fName.string() ) )
 	{
-		menuTraverser menuFinder( &userMenus, tv, fName.generic_string(), force );
+		menuTraverser menuFinder( &userMenus, tv, fName.string(), force );
 		video_ts.Traverse( menuFinder );
 		state = menuFinder.state;
 		if( state == menuTraverser::incompatible )
@@ -1306,7 +1346,7 @@ void copyMenufiles( int *map )
     {
         f = p.path();
         if (f.empty()) break;
-        string fName = Right(f.generic_string(), 12);
+        string fName = Right(f.string(), 12);
 
         if( Right(fName, 4) == ".VOB" && fName.Left(4) == "VTS_" && fName[7] != '0' )
 		{
@@ -1328,13 +1368,13 @@ void copyMenufiles( int *map )
 
 	}
 
-	for( int i=0; i < xobs.size(); i++ )
+	for( uint i=0; i < xobs.size(); ++i )
         fs::rename(VIDEO_TS / (xobs[i] + ".XOB"), VIDEO_TS / (xobs[i] + ".VOB") );
 
-	for( int i=0; i < menufiles.size(); i++ )
+	for( uint i=0; i < menufiles.size(); ++i )
 	{
 		bool skip = false;
-		for( int j=0; j < xobs.size(); j++ )
+		for( uint j=0; j < xobs.size(); ++j )
 		{
             if( Right(menufiles[i],12).Left(8) == xobs[j] )
 			{
@@ -1370,7 +1410,7 @@ int* mapMenus()
 		return NULL;
 
 	int err = 0;
-    const char* VIDEO_TS = (job.dvdPath / "VIDEO_TS").generic_string().c_str();
+    const char* VIDEO_TS = (job.dvdPath / "VIDEO_TS").string().c_str();
 	lpcm_video_ts lplexMenus( VIDEO_TS, false );
 	int *map = new int[lplexMenus.numTitlesets+1];
 

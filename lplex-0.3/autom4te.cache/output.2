@@ -643,19 +643,6 @@ JPEG2YUV_PATH
 MPLEX_PATH
 DVDAUTHOR_PATH
 SCRIPT_PATH
-WX_VERSION_MICRO
-WX_VERSION_MINOR
-WX_VERSION_MAJOR
-WX_RESCOMP
-WX_VERSION
-WX_LIBS_STATIC
-WX_LIBS
-WX_CXXFLAGS_ONLY
-WX_CFLAGS_ONLY
-WX_CXXFLAGS
-WX_CFLAGS
-WX_CPPFLAGS
-WX_CONFIG_PATH
 LIBFLACPP_LIBS
 LIBFLACPP_LIBDIR
 LIBFLACPP_CFLAGS
@@ -715,7 +702,6 @@ am__nodep
 AMDEPBACKSLASH
 AMDEP_FALSE
 AMDEP_TRUE
-am__quote
 am__include
 DEPDIR
 OBJEXT
@@ -774,7 +760,6 @@ infodir
 docdir
 oldincludedir
 includedir
-runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -793,7 +778,8 @@ PACKAGE_VERSION
 PACKAGE_TARNAME
 PACKAGE_NAME
 PATH_SEPARATOR
-SHELL'
+SHELL
+am__quote'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
@@ -812,10 +798,6 @@ enable_tool_check
 enable_colors
 enable_pkg_win32
 enable_force_endian
-with_wxdir
-with_wx_config
-with_wx_prefix
-with_wx_exec_prefix
 with_libFLAC
 with_libFLAC_libraries
 with_libFLAC_includes
@@ -877,7 +859,6 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
-runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
@@ -1130,15 +1111,6 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
-  -runstatedir | --runstatedir | --runstatedi | --runstated \
-  | --runstate | --runstat | --runsta | --runst | --runs \
-  | --run | --ru | --r)
-    ac_prev=runstatedir ;;
-  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
-  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
-  | --run=* | --ru=* | --r=*)
-    runstatedir=$ac_optarg ;;
-
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1276,7 +1248,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir runstatedir
+		libdir localedir mandir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1429,7 +1401,6 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
-  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -1504,11 +1475,6 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld @<:@default=no@:>@
   --with-sysroot@<:@=DIR@:>@    Search for dependent libraries within DIR (or the
                           compiler's sysroot if not specified).
-  --with-wxdir=PATH       Use uninstalled version of wxWidgets in PATH
-  --with-wx-config=CONFIG wx-config script to use (optional)
-  --with-wx-prefix=PREFIX Prefix where wxWidgets is installed (optional)
-  --with-wx-exec-prefix=PREFIX
-                          Exec prefix where wxWidgets is installed (optional)
   --with-libFLAC=PFX   Prefix where libFLAC is installed (optional)
   --with-libFLAC-libraries=DIR   Directory where libFLAC library is installed (optional)
   --with-libFLAC-includes=DIR   Directory where libFLAC header files are installed (optional)
@@ -2730,7 +2696,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-am__api_version='1.15'
+am__api_version='1.16'
 
 ac_aux_dir=
 for ac_dir in "$srcdir" "$srcdir/.." "$srcdir/../.."; do
@@ -3275,8 +3241,8 @@ MAKEINFO=${MAKEINFO-"${am_missing_run}makeinfo"}
 
 # For better backward compatibility.  To be removed once Automake 1.9.x
 # dies out for good.  For more background, see:
-# <http://lists.gnu.org/archive/html/automake/2012-07/msg00001.html>
-# <http://lists.gnu.org/archive/html/automake/2012-07/msg00014.html>
+# <https://lists.gnu.org/archive/html/automake/2012-07/msg00001.html>
+# <https://lists.gnu.org/archive/html/automake/2012-07/msg00014.html>
 mkdir_p='$(MKDIR_P)'
 
 # We need awk for the "check" target (and possibly the TAP driver).  The
@@ -3327,7 +3293,7 @@ END
 Aborting the configuration process, to ensure you take notice of the issue.
 
 You can download and install GNU coreutils to get an 'rm' implementation
-that behaves properly: <http://www.gnu.org/software/coreutils/>.
+that behaves properly: <https://www.gnu.org/software/coreutils/>.
 
 If you want to complete the configuration process using your problematic
 'rm' anyway, export the environment variable ACCEPT_INFERIOR_RM_PROGRAM
@@ -3877,45 +3843,45 @@ DEPDIR="${am__leading_dot}deps"
 
 ac_config_commands="$ac_config_commands depfiles"
 
-
-am_make=${MAKE-make}
-cat > confinc << 'END'
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${MAKE-make} supports the include directive" >&5
+$as_echo_n "checking whether ${MAKE-make} supports the include directive... " >&6; }
+cat > confinc.mk << 'END'
 am__doit:
-	@echo this is the am__doit target
+	@echo this is the am__doit target >confinc.out
 .PHONY: am__doit
 END
-# If we don't find an include directive, just comment out the code.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for style of include used by $am_make" >&5
-$as_echo_n "checking for style of include used by $am_make... " >&6; }
 am__include="#"
 am__quote=
-_am_result=none
-# First try GNU make style include.
-echo "include confinc" > confmf
-# Ignore all kinds of additional output from 'make'.
-case `$am_make -s -f confmf 2> /dev/null` in #(
-*the\ am__doit\ target*)
-  am__include=include
-  am__quote=
-  _am_result=GNU
-  ;;
-esac
-# Now try BSD make style include.
-if test "$am__include" = "#"; then
-   echo '.include "confinc"' > confmf
-   case `$am_make -s -f confmf 2> /dev/null` in #(
-   *the\ am__doit\ target*)
-     am__include=.include
-     am__quote="\""
-     _am_result=BSD
+# BSD make does it like this.
+echo '.include "confinc.mk" # ignored' > confmf.BSD
+# Other make implementations (GNU, Solaris 10, AIX) do it like this.
+echo 'include confinc.mk # ignored' > confmf.GNU
+_am_result=no
+for s in GNU BSD; do
+  { echo "$as_me:$LINENO: ${MAKE-make} -f confmf.$s && cat confinc.out" >&5
+   (${MAKE-make} -f confmf.$s && cat confinc.out) >&5 2>&5
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }
+  case $?:`cat confinc.out 2>/dev/null` in @%:@(
+  '0:this is the am__doit target') :
+    case $s in @%:@(
+  BSD) :
+    am__include='.include' am__quote='"' ;; @%:@(
+  *) :
+    am__include='include' am__quote='' ;;
+esac ;; @%:@(
+  *) :
      ;;
-   esac
-fi
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $_am_result" >&5
-$as_echo "$_am_result" >&6; }
-rm -f confinc confmf
+esac
+  if test "$am__include" != "#"; then
+    _am_result="yes ($s style)"
+    break
+  fi
+done
+rm -f confinc.* confmf.*
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${_am_result}" >&5
+$as_echo "${_am_result}" >&6; }
 
 @%:@ Check whether --enable-dependency-tracking was given.
 if test "${enable_dependency_tracking+set}" = set; then :
@@ -6269,7 +6235,7 @@ linux* | k*bsd*-gnu | kopensolaris*-gnu | gnu*)
   lt_cv_deplibs_check_method=pass_all
   ;;
 
-netbsd* | netbsdelf*-gnu)
+netbsd*)
   if echo __ELF__ | $CC -E - | $GREP __ELF__ > /dev/null; then
     lt_cv_deplibs_check_method='match_pattern /lib[^/]+(\.so\.[0-9]+\.[0-9]+|_pic\.a)$'
   else
@@ -7563,10 +7529,10 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
 	  x86_64-*linux*)
 	    LD="${LD-ld} -m elf_x86_64"
 	    ;;
-	  powerpcle-*linux*)
+	  powerpcle-*linux*|powerpc64le-*linux*)
 	    LD="${LD-ld} -m elf64lppc"
 	    ;;
-	  powerpc-*linux*)
+	  powerpc-*linux*|powerpc64-*linux*)
 	    LD="${LD-ld} -m elf64ppc"
 	    ;;
 	  s390*-*linux*|s390*-*tpf*)
@@ -9836,9 +9802,6 @@ $as_echo_n "checking whether the $compiler linker ($LD) supports shared librarie
   openbsd* | bitrig*)
     with_gnu_ld=no
     ;;
-  linux* | k*bsd*-gnu | gnu*)
-    link_all_deplibs=no
-    ;;
   esac
 
   ld_shlibs=yes
@@ -10093,7 +10056,7 @@ _LT_EOF
       fi
       ;;
 
-    netbsd* | netbsdelf*-gnu)
+    netbsd*)
       if echo __ELF__ | $CC -E - | $GREP __ELF__ >/dev/null; then
 	archive_cmds='$LD -Bshareable $libobjs $deplibs $linker_flags -o $lib'
 	wlarc=
@@ -10763,7 +10726,6 @@ $as_echo "$lt_cv_irix_exported_symbol" >&6; }
 	if test yes = "$lt_cv_irix_exported_symbol"; then
           archive_expsym_cmds='$CC -shared $pic_flag $libobjs $deplibs $compiler_flags $wl-soname $wl$soname `test -n "$verstring" && func_echo_all "$wl-set_version $wl$verstring"` $wl-update_registry $wl$output_objdir/so_locations $wl-exports_file $wl$export_symbols -o $lib'
 	fi
-	link_all_deplibs=no
       else
 	archive_cmds='$CC -shared $libobjs $deplibs $compiler_flags -soname $soname `test -n "$verstring" && func_echo_all "-set_version $verstring"` -update_registry $output_objdir/so_locations -o $lib'
 	archive_expsym_cmds='$CC -shared $libobjs $deplibs $compiler_flags -soname $soname `test -n "$verstring" && func_echo_all "-set_version $verstring"` -update_registry $output_objdir/so_locations -exports_file $export_symbols -o $lib'
@@ -10785,7 +10747,7 @@ $as_echo "$lt_cv_irix_exported_symbol" >&6; }
       esac
       ;;
 
-    netbsd* | netbsdelf*-gnu)
+    netbsd*)
       if echo __ELF__ | $CC -E - | $GREP __ELF__ >/dev/null; then
 	archive_cmds='$LD -Bshareable -o $lib $libobjs $deplibs $linker_flags'  # a.out
       else
@@ -11660,7 +11622,14 @@ freebsd* | dragonfly*)
     *) objformat=elf ;;
     esac
   fi
-  version_type=freebsd-$objformat
+  # Handle Gentoo/FreeBSD as it was Linux
+  case $host_vendor in
+    gentoo)
+      version_type=linux ;;
+    *)
+      version_type=freebsd-$objformat ;;
+  esac
+
   case $version_type in
     freebsd-elf*)
       library_names_spec='$libname$release$shared_ext$versuffix $libname$release$shared_ext$major $libname$shared_ext'
@@ -11671,6 +11640,12 @@ freebsd* | dragonfly*)
     freebsd-*)
       library_names_spec='$libname$release$shared_ext$versuffix $libname$shared_ext$versuffix'
       need_version=yes
+      ;;
+    linux)
+      library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major ${libname}${shared_ext}'
+      soname_spec='${libname}${release}${shared_ext}$major'
+      need_lib_prefix=no
+      need_version=no
       ;;
   esac
   shlibpath_var=LD_LIBRARY_PATH
@@ -11898,18 +11873,6 @@ fi
   # people can always --disable-shared, the test was removed, and we
   # assume the GNU/Linux dynamic linker is in use.
   dynamic_linker='GNU/Linux ld.so'
-  ;;
-
-netbsdelf*-gnu)
-  version_type=linux
-  need_lib_prefix=no
-  need_version=no
-  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major ${libname}${shared_ext}'
-  soname_spec='${libname}${release}${shared_ext}$major'
-  shlibpath_var=LD_LIBRARY_PATH
-  shlibpath_overrides_runpath=no
-  hardcode_into_libs=yes
-  dynamic_linker='NetBSD ld.elf_so'
   ;;
 
 netbsd*)
@@ -14806,7 +14769,7 @@ lt_prog_compiler_static_CXX=
 	    ;;
 	esac
 	;;
-      netbsd* | netbsdelf*-gnu)
+      netbsd*)
 	;;
       *qnx* | *nto*)
         # QNX uses GNU C++, but need to define -shared option too, otherwise
@@ -15180,9 +15143,6 @@ $as_echo_n "checking whether the $compiler linker ($LD) supports shared librarie
       exclude_expsyms_CXX='[_]+GLOBAL_OFFSET_TABLE_|[_]+GLOBAL__[FID]_.*|[_]+head_[A-Za-z0-9_]+_dll|[A-Za-z0-9_]+_dll_iname'
       ;;
     esac
-    ;;
-  linux* | k*bsd*-gnu | gnu*)
-    link_all_deplibs_CXX=no
     ;;
   *)
     export_symbols_cmds_CXX='$NM $libobjs $convenience | $global_symbol_pipe | $SED '\''s/.* //'\'' | sort | uniq > $export_symbols'
@@ -15637,7 +15597,14 @@ freebsd* | dragonfly*)
     *) objformat=elf ;;
     esac
   fi
-  version_type=freebsd-$objformat
+  # Handle Gentoo/FreeBSD as it was Linux
+  case $host_vendor in
+    gentoo)
+      version_type=linux ;;
+    *)
+      version_type=freebsd-$objformat ;;
+  esac
+
   case $version_type in
     freebsd-elf*)
       library_names_spec='$libname$release$shared_ext$versuffix $libname$release$shared_ext$major $libname$shared_ext'
@@ -15648,6 +15615,12 @@ freebsd* | dragonfly*)
     freebsd-*)
       library_names_spec='$libname$release$shared_ext$versuffix $libname$shared_ext$versuffix'
       need_version=yes
+      ;;
+    linux)
+      library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major ${libname}${shared_ext}'
+      soname_spec='${libname}${release}${shared_ext}$major'
+      need_lib_prefix=no
+      need_version=no
       ;;
   esac
   shlibpath_var=LD_LIBRARY_PATH
@@ -15875,18 +15848,6 @@ fi
   # people can always --disable-shared, the test was removed, and we
   # assume the GNU/Linux dynamic linker is in use.
   dynamic_linker='GNU/Linux ld.so'
-  ;;
-
-netbsdelf*-gnu)
-  version_type=linux
-  need_lib_prefix=no
-  need_version=no
-  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major ${libname}${shared_ext}'
-  soname_spec='${libname}${release}${shared_ext}$major'
-  shlibpath_var=LD_LIBRARY_PATH
-  shlibpath_overrides_runpath=no
-  hardcode_into_libs=yes
-  dynamic_linker='NetBSD ld.elf_so'
   ;;
 
 netbsd*)
@@ -16544,37 +16505,6 @@ fi
 
 #AC_ARG_ENABLE(wxsegfault-test, [  --disable-wxsegfault-test    Don't try to compile & run the wxWidgets 2.6.3
 #                               segfault test program],,wxsegfault_test=yes)
-
-
-    
-@%:@ Check whether --with-wxdir was given.
-if test "${with_wxdir+set}" = set; then :
-  withval=$with_wxdir;  wx_config_name="$withval/wx-config"
-                  wx_config_args="--inplace"
-fi
-
-    
-@%:@ Check whether --with-wx-config was given.
-if test "${with_wx_config+set}" = set; then :
-  withval=$with_wx_config; wx_config_name="$withval" 
-fi
-
-    
-@%:@ Check whether --with-wx-prefix was given.
-if test "${with_wx_prefix+set}" = set; then :
-  withval=$with_wx_prefix; wx_config_prefix="$withval"
-else
-  wx_config_prefix=""
-fi
-
-    
-@%:@ Check whether --with-wx-exec-prefix was given.
-if test "${with_wx_exec_prefix+set}" = set; then :
-  withval=$with_wx_exec_prefix; wx_config_exec_prefix="$withval"
-else
-  wx_config_exec_prefix=""
-fi
-
 
 
 case "$host" in
@@ -17268,655 +17198,6 @@ LIBFLACPP_LIBS=$(echo $LIBFLACPP_LIBS|sed -e 's/-L //g')
 # configure wxWidgets
 # --------------------------------------------------------------------------
 
-wxUTF8=1
-
-    
-    if test x${WX_CONFIG_NAME+set} != xset ; then
-     WX_CONFIG_NAME=wx-config
-  fi
-
-  if test "x$wx_config_name" != x ; then
-     WX_CONFIG_NAME="$wx_config_name"
-  fi
-
-    if test x$wx_config_exec_prefix != x ; then
-     wx_config_args="$wx_config_args --exec-prefix=$wx_config_exec_prefix"
-     WX_LOOKUP_PATH="$wx_config_exec_prefix/bin"
-  fi
-  if test x$wx_config_prefix != x ; then
-     wx_config_args="$wx_config_args --prefix=$wx_config_prefix"
-     WX_LOOKUP_PATH="$WX_LOOKUP_PATH:$wx_config_prefix/bin"
-  fi
-  if test "$cross_compiling" = "yes"; then
-     wx_config_args="$wx_config_args --host=$host_alias"
-  fi
-
-    if test -x "$WX_CONFIG_NAME" ; then
-     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for wx-config" >&5
-$as_echo_n "checking for wx-config... " >&6; }
-     WX_CONFIG_PATH="$WX_CONFIG_NAME"
-     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $WX_CONFIG_PATH" >&5
-$as_echo "$WX_CONFIG_PATH" >&6; }
-  else
-     # Extract the first word of "$WX_CONFIG_NAME", so it can be a program name with args.
-set dummy $WX_CONFIG_NAME; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_WX_CONFIG_PATH+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $WX_CONFIG_PATH in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_WX_CONFIG_PATH="$WX_CONFIG_PATH" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-as_dummy=""$WX_LOOKUP_PATH:$PATH""
-for as_dir in $as_dummy
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_WX_CONFIG_PATH="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  test -z "$ac_cv_path_WX_CONFIG_PATH" && ac_cv_path_WX_CONFIG_PATH="no"
-  ;;
-esac
-fi
-WX_CONFIG_PATH=$ac_cv_path_WX_CONFIG_PATH
-if test -n "$WX_CONFIG_PATH"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $WX_CONFIG_PATH" >&5
-$as_echo "$WX_CONFIG_PATH" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-  fi
-
-  if test "$WX_CONFIG_PATH" != "no" ; then
-    WX_VERSION=""
-
-    min_wx_version=2.9.2
-    if test -z "" ; then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for wxWidgets version >= $min_wx_version" >&5
-$as_echo_n "checking for wxWidgets version >= $min_wx_version... " >&6; }
-    else
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for wxWidgets version >= $min_wx_version ()" >&5
-$as_echo_n "checking for wxWidgets version >= $min_wx_version ()... " >&6; }
-    fi
-
-            WX_CONFIG_WITH_ARGS="$WX_CONFIG_PATH $wx_config_args "
-
-    WX_VERSION=`$WX_CONFIG_WITH_ARGS --version 2>/dev/null`
-    wx_config_major_version=`echo $WX_VERSION | \
-           sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\1/'`
-    wx_config_minor_version=`echo $WX_VERSION | \
-           sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\2/'`
-    wx_config_micro_version=`echo $WX_VERSION | \
-           sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\3/'`
-
-    wx_requested_major_version=`echo $min_wx_version | \
-           sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\1/'`
-    wx_requested_minor_version=`echo $min_wx_version | \
-           sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\2/'`
-    wx_requested_micro_version=`echo $min_wx_version | \
-           sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\3/'`
-
-    
-    wx_ver_ok=""
-    if test "x$WX_VERSION" != x ; then
-      if test $wx_config_major_version -gt $wx_requested_major_version; then
-        wx_ver_ok=yes
-      else
-        if test $wx_config_major_version -eq $wx_requested_major_version; then
-           if test $wx_config_minor_version -gt $wx_requested_minor_version; then
-              wx_ver_ok=yes
-           else
-              if test $wx_config_minor_version -eq $wx_requested_minor_version; then
-                 if test $wx_config_micro_version -ge $wx_requested_micro_version; then
-                    wx_ver_ok=yes
-                 fi
-              fi
-           fi
-        fi
-      fi
-    fi
-
-
-    if test -n "$wx_ver_ok"; then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes (version $WX_VERSION)" >&5
-$as_echo "yes (version $WX_VERSION)" >&6; }
-      WX_LIBS=`$WX_CONFIG_WITH_ARGS --libs `
-
-                              { $as_echo "$as_me:${as_lineno-$LINENO}: checking for wxWidgets static library" >&5
-$as_echo_n "checking for wxWidgets static library... " >&6; }
-      WX_LIBS_STATIC=`$WX_CONFIG_WITH_ARGS --static --libs  2>/dev/null`
-      if test "x$WX_LIBS_STATIC" = "x"; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-      else
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-      fi
-
-            wx_has_cppflags=""
-      if test $wx_config_major_version -gt 2; then
-        wx_has_cppflags=yes
-      else
-        if test $wx_config_major_version -eq 2; then
-           if test $wx_config_minor_version -gt 2; then
-              wx_has_cppflags=yes
-           else
-              if test $wx_config_minor_version -eq 2; then
-                 if test $wx_config_micro_version -ge 6; then
-                    wx_has_cppflags=yes
-                 fi
-              fi
-           fi
-        fi
-      fi
-
-            wx_has_rescomp=""
-      if test $wx_config_major_version -gt 2; then
-        wx_has_rescomp=yes
-      else
-        if test $wx_config_major_version -eq 2; then
-           if test $wx_config_minor_version -ge 7; then
-              wx_has_rescomp=yes
-           fi
-        fi
-      fi
-      if test "x$wx_has_rescomp" = x ; then
-                  WX_RESCOMP=
-      else
-         WX_RESCOMP=`$WX_CONFIG_WITH_ARGS --rescomp`
-      fi
-
-      if test "x$wx_has_cppflags" = x ; then
-                  WX_CFLAGS=`$WX_CONFIG_WITH_ARGS --cflags `
-         WX_CPPFLAGS=$WX_CFLAGS
-         WX_CXXFLAGS=$WX_CFLAGS
-
-         WX_CFLAGS_ONLY=$WX_CFLAGS
-         WX_CXXFLAGS_ONLY=$WX_CFLAGS
-      else
-                  WX_CPPFLAGS=`$WX_CONFIG_WITH_ARGS --cppflags `
-         WX_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --cxxflags `
-         WX_CFLAGS=`$WX_CONFIG_WITH_ARGS --cflags `
-
-         WX_CFLAGS_ONLY=`echo $WX_CFLAGS | sed "s@^$WX_CPPFLAGS *@@"`
-         WX_CXXFLAGS_ONLY=`echo $WX_CXXFLAGS | sed "s@^$WX_CFLAGS *@@"`
-      fi
-
-      :
-
-    else
-
-       if test "x$WX_VERSION" = x; then
-                    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-       else
-          { $as_echo "$as_me:${as_lineno-$LINENO}: result: no (version $WX_VERSION is not new enough)" >&5
-$as_echo "no (version $WX_VERSION is not new enough)" >&6; }
-       fi
-
-       WX_CFLAGS=""
-       WX_CPPFLAGS=""
-       WX_CXXFLAGS=""
-       WX_LIBS=""
-       WX_LIBS_STATIC=""
-       WX_RESCOMP=""
-
-       if test ! -z ""; then
-
-          wx_error_message="
-    The configuration you asked for $PACKAGE_NAME requires a wxWidgets
-    build with the following settings:
-        
-    but such build is not available.
-
-    To see the wxWidgets builds available on this system, please use
-    'wx-config --list' command. To use the default build, returned by
-    'wx-config --selected-config', use the options with their 'auto'
-    default values."
-
-       fi
-
-       wx_error_message="
-    The requested wxWidgets build couldn't be found.
-    $wx_error_message
-
-    If you still get this error, then check that 'wx-config' is
-    in path, the directory where wxWidgets libraries are installed
-    (returned by 'wx-config --libs' command) is in LD_LIBRARY_PATH
-    or equivalent variable and wxWidgets version is 2.9.2 or above."
-
-       wxUTF8=0
-
-    fi
-  else
-
-    WX_CFLAGS=""
-    WX_CPPFLAGS=""
-    WX_CXXFLAGS=""
-    WX_LIBS=""
-    WX_LIBS_STATIC=""
-    WX_RESCOMP=""
-
-    wxUTF8=0
-
-  fi
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
-      WX_VERSION_MAJOR="$wx_config_major_version"
-  WX_VERSION_MINOR="$wx_config_minor_version"
-  WX_VERSION_MICRO="$wx_config_micro_version"
-  
-  
-  
-
-
-if test "$wxUTF8" = 0; then
-	wxFail=0
-	
-    
-    if test x${WX_CONFIG_NAME+set} != xset ; then
-     WX_CONFIG_NAME=wx-config
-  fi
-
-  if test "x$wx_config_name" != x ; then
-     WX_CONFIG_NAME="$wx_config_name"
-  fi
-
-    if test x$wx_config_exec_prefix != x ; then
-     wx_config_args="$wx_config_args --exec-prefix=$wx_config_exec_prefix"
-     WX_LOOKUP_PATH="$wx_config_exec_prefix/bin"
-  fi
-  if test x$wx_config_prefix != x ; then
-     wx_config_args="$wx_config_args --prefix=$wx_config_prefix"
-     WX_LOOKUP_PATH="$WX_LOOKUP_PATH:$wx_config_prefix/bin"
-  fi
-  if test "$cross_compiling" = "yes"; then
-     wx_config_args="$wx_config_args --host=$host_alias"
-  fi
-
-    if test -x "$WX_CONFIG_NAME" ; then
-     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for wx-config" >&5
-$as_echo_n "checking for wx-config... " >&6; }
-     WX_CONFIG_PATH="$WX_CONFIG_NAME"
-     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $WX_CONFIG_PATH" >&5
-$as_echo "$WX_CONFIG_PATH" >&6; }
-  else
-     # Extract the first word of "$WX_CONFIG_NAME", so it can be a program name with args.
-set dummy $WX_CONFIG_NAME; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_WX_CONFIG_PATH+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $WX_CONFIG_PATH in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_WX_CONFIG_PATH="$WX_CONFIG_PATH" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-as_dummy=""$WX_LOOKUP_PATH:$PATH""
-for as_dir in $as_dummy
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_WX_CONFIG_PATH="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  test -z "$ac_cv_path_WX_CONFIG_PATH" && ac_cv_path_WX_CONFIG_PATH="no"
-  ;;
-esac
-fi
-WX_CONFIG_PATH=$ac_cv_path_WX_CONFIG_PATH
-if test -n "$WX_CONFIG_PATH"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $WX_CONFIG_PATH" >&5
-$as_echo "$WX_CONFIG_PATH" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-  fi
-
-  if test "$WX_CONFIG_PATH" != "no" ; then
-    WX_VERSION=""
-
-    min_wx_version=2.7.2
-    if test -z "--unicode=no" ; then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for wxWidgets version >= $min_wx_version" >&5
-$as_echo_n "checking for wxWidgets version >= $min_wx_version... " >&6; }
-    else
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for wxWidgets version >= $min_wx_version (--unicode=no)" >&5
-$as_echo_n "checking for wxWidgets version >= $min_wx_version (--unicode=no)... " >&6; }
-    fi
-
-            WX_CONFIG_WITH_ARGS="$WX_CONFIG_PATH $wx_config_args --unicode=no"
-
-    WX_VERSION=`$WX_CONFIG_WITH_ARGS --version 2>/dev/null`
-    wx_config_major_version=`echo $WX_VERSION | \
-           sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\1/'`
-    wx_config_minor_version=`echo $WX_VERSION | \
-           sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\2/'`
-    wx_config_micro_version=`echo $WX_VERSION | \
-           sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\3/'`
-
-    wx_requested_major_version=`echo $min_wx_version | \
-           sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\1/'`
-    wx_requested_minor_version=`echo $min_wx_version | \
-           sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\2/'`
-    wx_requested_micro_version=`echo $min_wx_version | \
-           sed 's/\([0-9]*\).\([0-9]*\).\([0-9]*\)/\3/'`
-
-    
-    wx_ver_ok=""
-    if test "x$WX_VERSION" != x ; then
-      if test $wx_config_major_version -gt $wx_requested_major_version; then
-        wx_ver_ok=yes
-      else
-        if test $wx_config_major_version -eq $wx_requested_major_version; then
-           if test $wx_config_minor_version -gt $wx_requested_minor_version; then
-              wx_ver_ok=yes
-           else
-              if test $wx_config_minor_version -eq $wx_requested_minor_version; then
-                 if test $wx_config_micro_version -ge $wx_requested_micro_version; then
-                    wx_ver_ok=yes
-                 fi
-              fi
-           fi
-        fi
-      fi
-    fi
-
-
-    if test -n "$wx_ver_ok"; then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes (version $WX_VERSION)" >&5
-$as_echo "yes (version $WX_VERSION)" >&6; }
-      WX_LIBS=`$WX_CONFIG_WITH_ARGS --libs `
-
-                              { $as_echo "$as_me:${as_lineno-$LINENO}: checking for wxWidgets static library" >&5
-$as_echo_n "checking for wxWidgets static library... " >&6; }
-      WX_LIBS_STATIC=`$WX_CONFIG_WITH_ARGS --static --libs  2>/dev/null`
-      if test "x$WX_LIBS_STATIC" = "x"; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-      else
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-      fi
-
-            wx_has_cppflags=""
-      if test $wx_config_major_version -gt 2; then
-        wx_has_cppflags=yes
-      else
-        if test $wx_config_major_version -eq 2; then
-           if test $wx_config_minor_version -gt 2; then
-              wx_has_cppflags=yes
-           else
-              if test $wx_config_minor_version -eq 2; then
-                 if test $wx_config_micro_version -ge 6; then
-                    wx_has_cppflags=yes
-                 fi
-              fi
-           fi
-        fi
-      fi
-
-            wx_has_rescomp=""
-      if test $wx_config_major_version -gt 2; then
-        wx_has_rescomp=yes
-      else
-        if test $wx_config_major_version -eq 2; then
-           if test $wx_config_minor_version -ge 7; then
-              wx_has_rescomp=yes
-           fi
-        fi
-      fi
-      if test "x$wx_has_rescomp" = x ; then
-                  WX_RESCOMP=
-      else
-         WX_RESCOMP=`$WX_CONFIG_WITH_ARGS --rescomp`
-      fi
-
-      if test "x$wx_has_cppflags" = x ; then
-                  WX_CFLAGS=`$WX_CONFIG_WITH_ARGS --cflags `
-         WX_CPPFLAGS=$WX_CFLAGS
-         WX_CXXFLAGS=$WX_CFLAGS
-
-         WX_CFLAGS_ONLY=$WX_CFLAGS
-         WX_CXXFLAGS_ONLY=$WX_CFLAGS
-      else
-                  WX_CPPFLAGS=`$WX_CONFIG_WITH_ARGS --cppflags `
-         WX_CXXFLAGS=`$WX_CONFIG_WITH_ARGS --cxxflags `
-         WX_CFLAGS=`$WX_CONFIG_WITH_ARGS --cflags `
-
-         WX_CFLAGS_ONLY=`echo $WX_CFLAGS | sed "s@^$WX_CPPFLAGS *@@"`
-         WX_CXXFLAGS_ONLY=`echo $WX_CXXFLAGS | sed "s@^$WX_CFLAGS *@@"`
-      fi
-
-      :
-
-    else
-
-       if test "x$WX_VERSION" = x; then
-                    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-       else
-          { $as_echo "$as_me:${as_lineno-$LINENO}: result: no (version $WX_VERSION is not new enough)" >&5
-$as_echo "no (version $WX_VERSION is not new enough)" >&6; }
-       fi
-
-       WX_CFLAGS=""
-       WX_CPPFLAGS=""
-       WX_CXXFLAGS=""
-       WX_LIBS=""
-       WX_LIBS_STATIC=""
-       WX_RESCOMP=""
-
-       if test ! -z "--unicode=no"; then
-
-          wx_error_message="
-    The configuration you asked for $PACKAGE_NAME requires a wxWidgets
-    build with the following settings:
-        --unicode=no
-    but such build is not available.
-
-    To see the wxWidgets builds available on this system, please use
-    'wx-config --list' command. To use the default build, returned by
-    'wx-config --selected-config', use the options with their 'auto'
-    default values."
-
-       fi
-
-       wx_error_message="
-    The requested wxWidgets build couldn't be found.
-    $wx_error_message
-
-    If you still get this error, then check that 'wx-config' is
-    in path, the directory where wxWidgets libraries are installed
-    (returned by 'wx-config --libs' command) is in LD_LIBRARY_PATH
-    or equivalent variable and wxWidgets version is 2.7.2 or above."
-
-       wxFail=1
-
-    fi
-  else
-
-    WX_CFLAGS=""
-    WX_CPPFLAGS=""
-    WX_CXXFLAGS=""
-    WX_LIBS=""
-    WX_LIBS_STATIC=""
-    WX_RESCOMP=""
-
-    wxFail=1
-
-  fi
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
-      WX_VERSION_MAJOR="$wx_config_major_version"
-  WX_VERSION_MINOR="$wx_config_minor_version"
-  WX_VERSION_MICRO="$wx_config_micro_version"
-  
-  
-  
-
-
-	if test "$wxFail" = 1; then
-		as_fn_error $? "
-	*   Can't find an appropriate version of wxWidgets. Please check if
-	*      - wx-config is in path.
-	*      - wxWidgets version is either:
-	*          - 2.9.2 or above, any build.
-	*          - 2.7.2 or above and build is ANSI (not unicode).
-
-		" "$LINENO" 5
-	fi
-fi
-# wx-config defaults to gui link flags (-mwindows, etc) which block console io,
-# so we need to redo WX_LIBS
-if test "x$build_win32" != "x" ; then
-   WX_LIBS="$(wx-config --libs core,base | sed -e 's/ -Wl,--subsystem,windows -mwindows//')"
-#   WX_LIBS="$(echo $WX_LIBS | sed -e 's/ -mthreads//')"
-   WX_LIBS="-Wl,--subsystem,console $WX_LIBS -s"
-   WX_LIBS_STATIC=$WX_LIBS
-	
-	
-fi
-
-# we assume that if wx-config is found, wxWindows is successfully installed.
-
-#AC_PATH_PROG(WX_CONFIG_PATH, wx-config, no, $PATH:/usr/local/bin )
-#if [[ "$WX_CONFIG_PATH" = "no" ]] ; then
-#AC_MSG_ERROR("Couldn't find wx-config: is wx-config in your path?")
-#fi
-
-#AC_MSG_CHECKING([wxWidgets version])
-#wx_version=`${WX_CONFIG_PATH}  --version`
-#AC_MSG_RESULT($wx_version)
-
-#if(wxFail==0 && test "x$build_win32" = "x" && test "x$wxsegfault_test" != "xno") then
-#	AC_MSG_CHECKING([whether unix console segfaults in wxStandardPaths::GetInstallPrefix()])
-#	workaround=-D_workaround_wx_2.6.3_unix_GetInstallPrefix_segfault
-#	
-##if test "x$build-console" = "xyes" ; then
-##	WX_LIBS=`$WX_CONFIG_PATH --unicode=no --libs base`
-##	WX_LIBS=$WX_LIBS -lwxjpeg
-##else
-#	WX_LIBS=`$WX_CONFIG_PATH --unicode=no --libs core,base`
-##fi
-#	WX_CPPFLAGS=`$WX_CONFIG_PATH --unicode=no --cxxflags`
-
-#	ac_save_CXXFLAGS="$CXXFLAGS"
-#	ac_save_LIBS="$LIBS"
-#	CXXFLAGS="$CXXFLAGS $WX_CPPFLAGS"
-#	LIBS="$LIBS $WX_LIBS"
-#	
-#	#rm -f conf.libxxxtest
-#	AC_LANG(C++)
-#	AC_TRY_RUN(
-#	[
-#		#include <wx/app.h>
-#		#include <wx/stdpaths.h>
-#		int main()
-#		{
-#			if ( ! wxInitialize() )
-#				return -1;
-#			wxStandardPaths().GetDataDir();
-#			return 0;
-#		}
-#	],
-#	[	workaround=
-#		AC_MSG_RESULT(no)
-#		AC_SUBST(WX_LIBS)
-#		AC_SUBST(WX_CPPFLAGS)
-#	],
-#	[	wxSegf=`grep -i 'Segmentation fault' config.log`
-#		wxSegf="$wxSegf`grep -i 'SIGSEGV' config.log`"
-#		if [[ "${wxSegf}x" = "x" ]] ; then 
-#			AC_MSG_RESULT(inconclusive)
-#			echo "*   Test program failed, though apparently not because of the
-#*   segfault bug. Activating the segfault workaround nevertheless
-#*   (just in case) and continuing with configure. Please see
-#*   config.log for specifics on the failure, you may need to resolve
-#*   a runtime link issue.
-#"
-#			wxFail=3
-#		else
-#			AC_MSG_RESULT(yes)
-#			echo "*     Activating the segfault workaround and continuing with
-#*     configure."
-##			WX_LIBS=
-##			WX_CPPFLAGS=
-#			wxFail=2
-#		fi
-#	])
-#	
-#	CXXFLAGS="$ac_save_CFLAGS"
-#	LIBS="$ac_save_LIBS"
-#fi
-#if [[ "${wxFail}" = "1" ]] ; then 
-#	echo "*     Please Install wxWidgets 2.6.3 or newer."
-#fi
-#if [[ "${wxFail}" = "1" ]||[ "${wxFail}" = "2" ]||[ "${wxFail}" = "3" ]] ; then 
-#	echo "*   [About the segfault bug in wxWidgets 2.6.3]:
-#*   This release predates a required fix to prevent a segfault in
-#*   the unix console.  lplex will work around this, but if you'd
-#*   like to eliminate the bug (and workaround) out of an
-#*   abundance of paranoia, then please first update the following
-#*   4 files
-#*      - include/wx/stdpaths.h      - include/wx/unix/stdpaths.h
-#*      - src/unix/stdpaths.cpp      - src/common/stdpbase.cpp
-#*   to the latest cvs versions before building and installing
-#*   wxWidgets.  You may need to run
-#*        './configure --disable-wxsegfault-test'
-#*   if you see the test still reporting 'inconclusive' after the fix.
-#"
-##	AC_MSG_ERROR([wxWidgets deficiencies.]);	
-#fi
-
-#if test "x$workaround" != "x" ; then
-#   LPLEX_DEFS="$LPLEX_DEFS $workaround"
-#fi
 
 
 # Checks for library functions.
@@ -17925,18 +17206,6 @@ fi
 # --------------------------------------------------------------------------
 
 _endian=unknown
-
-# ---------------------------------------------------------------------------
-# (slightly modified from:)
-# Macros for configure.ac for wxWindows by Robert Roebling, Phil Blecker,
-# Vadim Zeitlin and Ron Lee
-# This macro (WX_C_BIGENDIAN) is under the wxWindows licence.
-# Version: $Id: acinclude.m4,v 1.27 2005/07/08 20:44:14 MW Exp $
-# ---------------------------------------------------------------------------
-# a slightly better AC_C_BIGENDIAN macro which allows cross-compiling
-# ---------------------------------------------------------------------------
-
-
 
 # --------------------------------------------------------------------------
 # configure byte-order
@@ -17949,97 +17218,6 @@ elif test "x$force_endian" = "xlittle" ; then
 	_endian=little
 	echo "forcing little-endian byte-order per your request"
 else
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether byte ordering is bigendian" >&5
-$as_echo_n "checking whether byte ordering is bigendian... " >&6; }
-if ${ac_cv_c_bigendian+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_cv_c_bigendian=unknown
-# See if sys/param.h defines the BYTE_ORDER macro.
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <sys/types.h>
-#include <sys/param.h>
-int
-main ()
-{
-
-#if !BYTE_ORDER || !BIG_ENDIAN || !LITTLE_ENDIAN
- bogus endian macros
-#endif
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  # It does; now see whether it defined to BIG_ENDIAN or not.
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <sys/types.h>
-#include <sys/param.h>
-int
-main ()
-{
-
-#if BYTE_ORDER != BIG_ENDIAN
- not big endian
-#endif
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  ac_cv_c_bigendian=yes
-else
-  ac_cv_c_bigendian=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-if test $ac_cv_c_bigendian = unknown; then
-if test "$cross_compiling" = yes; then :
-  ac_cv_c_bigendian=unknown
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-main () {
-  /* Are we little or big endian?  From Harbison&Steele.  */
-  union
-  {
-    long l;
-    char c[sizeof (long)];
-  } u;
-  u.l = 1;
-  exit (u.c[sizeof (long) - 1] == 1);
-}
-_ACEOF
-if ac_fn_cxx_try_run "$LINENO"; then :
-  ac_cv_c_bigendian=no
-else
-  ac_cv_c_bigendian=yes
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
-fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_c_bigendian" >&5
-$as_echo "$ac_cv_c_bigendian" >&6; }
-if test $ac_cv_c_bigendian = unknown; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Assuming little-endian target machine - this may be overriden by adding the line \"ac_cv_c_bigendian=${ac_cv_c_bigendian='yes'}\" to config.cache file" >&5
-$as_echo "$as_me: WARNING: Assuming little-endian target machine - this may be overriden by adding the line \"ac_cv_c_bigendian=${ac_cv_c_bigendian='yes'}\" to config.cache file" >&2;}
-fi
-if test $ac_cv_c_bigendian = yes; then
-	_endian=big
-else 
-	_endian=little     
-
-#	_endian=big else _endian=lit
-#  AC_DEFINE(WORDS_BIGENDIAN)
-	
-fi
-
 	if test "x$force_endian" = "xopp" ; then
 		if test "x$_endian" = "xlittle" ; then
 			_endian=big
@@ -19188,7 +18366,7 @@ cat >>$CONFIG_STATUS <<_ACEOF || ac_write_fail=1
 #
 # INIT-COMMANDS
 #
-AMDEP_TRUE="$AMDEP_TRUE" ac_aux_dir="$ac_aux_dir"
+AMDEP_TRUE="$AMDEP_TRUE" MAKE="${MAKE-make}"
 
 
 # The HP-UX ksh and POSIX shell print the target directory to stdout
@@ -20191,29 +19369,35 @@ $as_echo "$as_me: executing $ac_file commands" >&6;}
   # Older Autoconf quotes --file arguments for eval, but not when files
   # are listed without --file.  Let's play safe and only enable the eval
   # if we detect the quoting.
-  case $CONFIG_FILES in
-  *\'*) eval set x "$CONFIG_FILES" ;;
-  *)   set x $CONFIG_FILES ;;
-  esac
+  # TODO: see whether this extra hack can be removed once we start
+  # requiring Autoconf 2.70 or later.
+  case $CONFIG_FILES in @%:@(
+  *\'*) :
+    eval set x "$CONFIG_FILES" ;; @%:@(
+  *) :
+    set x $CONFIG_FILES ;; @%:@(
+  *) :
+     ;;
+esac
   shift
-  for mf
+  # Used to flag and report bootstrapping failures.
+  am_rc=0
+  for am_mf
   do
     # Strip MF so we end up with the name of the file.
-    mf=`echo "$mf" | sed -e 's/:.*$//'`
-    # Check whether this is an Automake generated Makefile or not.
-    # We used to match only the files named 'Makefile.in', but
-    # some people rename them; so instead we look at the file content.
-    # Grep'ing the first line is not enough: some people post-process
-    # each Makefile.in and add a new line on top of each file to say so.
-    # Grep'ing the whole file is not good either: AIX grep has a line
+    am_mf=`$as_echo "$am_mf" | sed -e 's/:.*$//'`
+    # Check whether this is an Automake generated Makefile which includes
+    # dependency-tracking related rules and includes.
+    # Grep'ing the whole file directly is not great: AIX grep has a line
     # limit of 2048, but all sed's we know have understand at least 4000.
-    if sed -n 's,^#.*generated by automake.*,X,p' "$mf" | grep X >/dev/null 2>&1; then
-      dirpart=`$as_dirname -- "$mf" ||
-$as_expr X"$mf" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
-	 X"$mf" : 'X\(//\)[^/]' \| \
-	 X"$mf" : 'X\(//\)$' \| \
-	 X"$mf" : 'X\(/\)' \| . 2>/dev/null ||
-$as_echo X"$mf" |
+    sed -n 's,^am--depfiles:.*,X,p' "$am_mf" | grep X >/dev/null 2>&1 \
+      || continue
+    am_dirpart=`$as_dirname -- "$am_mf" ||
+$as_expr X"$am_mf" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
+	 X"$am_mf" : 'X\(//\)[^/]' \| \
+	 X"$am_mf" : 'X\(//\)$' \| \
+	 X"$am_mf" : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X"$am_mf" |
     sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
 	    s//\1/
 	    q
@@ -20231,53 +19415,48 @@ $as_echo X"$mf" |
 	    q
 	  }
 	  s/.*/./; q'`
-    else
-      continue
-    fi
-    # Extract the definition of DEPDIR, am__include, and am__quote
-    # from the Makefile without running 'make'.
-    DEPDIR=`sed -n 's/^DEPDIR = //p' < "$mf"`
-    test -z "$DEPDIR" && continue
-    am__include=`sed -n 's/^am__include = //p' < "$mf"`
-    test -z "$am__include" && continue
-    am__quote=`sed -n 's/^am__quote = //p' < "$mf"`
-    # Find all dependency output files, they are included files with
-    # $(DEPDIR) in their names.  We invoke sed twice because it is the
-    # simplest approach to changing $(DEPDIR) to its actual value in the
-    # expansion.
-    for file in `sed -n "
-      s/^$am__include $am__quote\(.*(DEPDIR).*\)$am__quote"'$/\1/p' <"$mf" | \
-	 sed -e 's/\$(DEPDIR)/'"$DEPDIR"'/g'`; do
-      # Make sure the directory exists.
-      test -f "$dirpart/$file" && continue
-      fdir=`$as_dirname -- "$file" ||
-$as_expr X"$file" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
-	 X"$file" : 'X\(//\)[^/]' \| \
-	 X"$file" : 'X\(//\)$' \| \
-	 X"$file" : 'X\(/\)' \| . 2>/dev/null ||
-$as_echo X"$file" |
-    sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
+    am_filepart=`$as_basename -- "$am_mf" ||
+$as_expr X/"$am_mf" : '.*/\([^/][^/]*\)/*$' \| \
+	 X"$am_mf" : 'X\(//\)$' \| \
+	 X"$am_mf" : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X/"$am_mf" |
+    sed '/^.*\/\([^/][^/]*\)\/*$/{
 	    s//\1/
 	    q
 	  }
-	  /^X\(\/\/\)[^/].*/{
+	  /^X\/\(\/\/\)$/{
 	    s//\1/
 	    q
 	  }
-	  /^X\(\/\/\)$/{
-	    s//\1/
-	    q
-	  }
-	  /^X\(\/\).*/{
+	  /^X\/\(\/\).*/{
 	    s//\1/
 	    q
 	  }
 	  s/.*/./; q'`
-      as_dir=$dirpart/$fdir; as_fn_mkdir_p
-      # echo "creating $dirpart/$file"
-      echo '# dummy' > "$dirpart/$file"
-    done
+    { echo "$as_me:$LINENO: cd "$am_dirpart" \
+      && sed -e '/# am--include-marker/d' "$am_filepart" \
+        | $MAKE -f - am--depfiles" >&5
+   (cd "$am_dirpart" \
+      && sed -e '/# am--include-marker/d' "$am_filepart" \
+        | $MAKE -f - am--depfiles) >&5 2>&5
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); } || am_rc=$?
   done
+  if test $am_rc -ne 0; then
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Something went wrong bootstrapping makefile fragments
+    for automatic dependency tracking.  Try re-running configure with the
+    '--disable-dependency-tracking' option to at least be able to build
+    the package (albeit without support for automatic dependency tracking).
+See \`config.log' for more details" "$LINENO" 5; }
+  fi
+  { am_dirpart=; unset am_dirpart;}
+  { am_filepart=; unset am_filepart;}
+  { am_mf=; unset am_mf;}
+  { am_rc=; unset am_rc;}
+  rm -f conftest-deps.mk
 }
  ;;
     "libtool":C) 

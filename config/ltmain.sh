@@ -1,5 +1,5 @@
 #! /bin/sh
-## DO NOT EDIT - This file generated from ../libtool-2.4.6/build-aux/ltmain.in
+## DO NOT EDIT - This file generated from ./build-aux/ltmain.in
 ##               by inline-source v2014-01-03.01
 
 # libtool (GNU libtool) 2.4.6
@@ -64,7 +64,7 @@ package_revision=2.4.6
 # libraries, which are installed to $pkgauxdir.
 
 # Set a version string for this script.
-scriptversion=2015-01-20.17; # UTC
+scriptversion=2015-10-04.22; # UTC
 
 # General shell script boiler plate, and helper functions.
 # Written by Gary V. Vaughan, 2004
@@ -1091,6 +1091,57 @@ func_relative_path ()
 }
 
 
+# func_quote ARG
+# --------------
+# Aesthetically quote one ARG, store the result into $func_quote_result.  Note
+# that we keep attention to performance here (so far O(N) complexity as long as
+# func_append is O(1)).
+func_quote ()
+{
+    $debug_cmd
+
+    func_quote_result=$1
+
+    case $func_quote_result in
+      *[\\\`\"\$]*)
+        case $func_quote_result in
+          *[\[\*\?]*)
+            func_quote_result=`$ECHO "$func_quote_result" | $SED "$sed_quote_subst"`
+            return 0
+            ;;
+        esac
+
+        func_quote_old_IFS=$IFS
+        for _G_char in '\' '`' '"' '$'
+        do
+          # STATE($1) PREV($2) SEPARATOR($3)
+          set start "" ""
+          func_quote_result=dummy"$_G_char$func_quote_result$_G_char"dummy
+          IFS=$_G_char
+          for _G_part in $func_quote_result
+          do
+            case $1 in
+            quote)
+              func_append func_quote_result "$3$2"
+              set quote "$_G_part" "\\$_G_char"
+              ;;
+            start)
+              set first "" ""
+              func_quote_result=
+              ;;
+            first)
+              set quote "$_G_part" ""
+              ;;
+            esac
+          done
+          IFS=$func_quote_old_IFS
+        done
+        ;;
+      *) ;;
+    esac
+}
+
+
 # func_quote_for_eval ARG...
 # --------------------------
 # Aesthetically quote ARGs to be evaled later.
@@ -1107,12 +1158,8 @@ func_quote_for_eval ()
     func_quote_for_eval_unquoted_result=
     func_quote_for_eval_result=
     while test 0 -lt $#; do
-      case $1 in
-        *[\\\`\"\$]*)
-	  _G_unquoted_arg=`printf '%s\n' "$1" |$SED "$sed_quote_subst"` ;;
-        *)
-          _G_unquoted_arg=$1 ;;
-      esac
+      func_quote "$1"
+      _G_unquoted_arg=$func_quote_result
       if test -n "$func_quote_for_eval_unquoted_result"; then
 	func_append func_quote_for_eval_unquoted_result " $_G_unquoted_arg"
       else
@@ -4966,7 +5013,7 @@ func_win32_libid ()
     ;;
   *executable*) # but shell scripts are "executable" too...
     case $win32_fileres in
-    *PE32*Intel\ 80386,\ for\ MS\ Windows*)
+    *MS\ Windows\ PE\ Intel*)
       win32_libid_type="x86 DLL"
       ;;
     esac
@@ -5258,7 +5305,8 @@ else
   if test \"\$libtool_execute_magic\" != \"$magic\"; then
     file=\"\$0\""
 
-    qECHO=`$ECHO "$ECHO" | $SED "$sed_quote_subst"`
+    func_quote "$ECHO"
+    qECHO=$func_quote_result
     $ECHO "\
 
 # A function that is used when there is no print builtin or printf.
@@ -5554,7 +5602,7 @@ EOF
 
 /* declarations of non-ANSI functions */
 #if defined __MINGW32__
-# if defined(__STRICT_ANSI__) && !defined(__MINGW64_VERSION_MAJOR) || defined(_POSIX_)
+# ifdef __STRICT_ANSI__
 int _putenv (const char *);
 # endif
 #elif defined __CYGWIN__
@@ -6456,41 +6504,6 @@ EOF
 }
 # end: func_emit_cwrapperexe_src
 
-# func_emit_exe_manifest
-# emit a Win32 UAC manifest for executable on stdout
-# Must ONLY be called from within func_mode_link because
-# it depends on a number of variable set therein.
-func_emit_exe_manifest ()
-{
-    cat <<EOF
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-  <assemblyIdentity version="1.0.0.0"
-EOF
-
-    case $host in
-    i?86-*-* )   echo '     processorArchitecture="x86"' ;;
-    ia64-*-* )   echo '     processorArchitecture="ia64"' ;;
-    x86_64-*-* ) echo '     processorArchitecture="amd64"' ;;
-    *)           echo '     processorArchitecture="*"' ;;
-    esac
-
-    cat <<EOF
-     name="$host_os.$PROGRAM.$outputname"
-     type="win32"/>
-
-  <!-- Identify the application security requirements. -->
-  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
-    <security>
-      <requestedPrivileges>
-        <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
-      </requestedPrivileges>
-    </security>
-  </trustInfo>
-</assembly>
-EOF
-}
-
 # func_win32_import_lib_p ARG
 # True if ARG is an import lib, as indicated by $file_magic_cmd
 func_win32_import_lib_p ()
@@ -7307,13 +7320,14 @@ func_mode_link ()
       # -tp=*                Portland pgcc target processor selection
       # --sysroot=*          for sysroot support
       # -O*, -g*, -flto*, -fwhopr*, -fuse-linker-plugin GCC link-time optimization
+      # -specs=*             GCC specs files
       # -stdlib=*            select c++ std lib with clang
-      # -{shared,static}-libgcc, -static-{libgfortran|libstdc++}
-      #                      link against specified runtime library
+      # -fsanitize=*         Clang/GCC memory and address sanitizer
+      # -fuse-ld=*           Linker select flags for GCC
       -64|-mips[0-9]|-r[0-9][0-9]*|-xarch=*|-xtarget=*|+DA*|+DD*|-q*|-m*| \
       -t[45]*|-txscale*|-p|-pg|--coverage|-fprofile-*|-F*|@*|-tp=*|--sysroot=*| \
       -O*|-g*|-flto*|-fwhopr*|-fuse-linker-plugin|-fstack-protector*|-stdlib=*| \
-      -shared-libgcc|-static-libgcc|-static-libgfortran|-static-libstdc++)
+      -specs=*|-fsanitize=*|-fuse-ld=*)
         func_quote_for_eval "$arg"
 	arg=$func_quote_for_eval_result
         func_append compile_command " $arg"
@@ -8561,9 +8575,7 @@ func_mode_link ()
 		  eval libdir=`$SED -n -e 's/^libdir=\(.*\)$/\1/p' $deplib`
 		  test -z "$libdir" && \
 		    func_fatal_error "'$deplib' is not a valid libtool archive"
-		  abs_inode=`ls -i "$deplib" | awk '{print $1}'`
-		    lib_inode=`ls -i "$libdir/$(basename $deplib)" | awk '{print $1}'`
-		  test "$abs_inode" != "$lib_inode" && \
+		  test "$absdir" != "$libdir" && \
 		    func_warning "'$deplib' seems to be moved"
 
 		  path=-L$absdir
@@ -9864,7 +9876,20 @@ EOF
 	  last_robj=
 	  k=1
 
-	  if test -n "$save_libobjs" && test : != "$skipped_export" && test -n "$file_list_spec"; then
+	  if test -n "$save_libobjs" && test : != "$skipped_export" && test yes = "$with_gnu_ld"; then
+	    output=$output_objdir/$output_la.lnkscript
+	    func_verbose "creating GNU ld script: $output"
+	    echo 'INPUT (' > $output
+	    for obj in $save_libobjs
+	    do
+	      func_to_tool_file "$obj"
+	      $ECHO "$func_to_tool_file_result" >> $output
+	    done
+	    echo ')' >> $output
+	    func_append delfiles " $output"
+	    func_to_tool_file "$output"
+	    output=$func_to_tool_file_result
+	  elif test -n "$save_libobjs" && test : != "$skipped_export" && test -n "$file_list_spec"; then
 	    output=$output_objdir/$output_la.lnk
 	    func_verbose "creating linker input file list: $output"
 	    : > $output
@@ -9883,19 +9908,6 @@ EOF
 	    func_append delfiles " $output"
 	    func_to_tool_file "$output"
 	    output=$firstobj\"$file_list_spec$func_to_tool_file_result\"
-	  elif test -n "$save_libobjs" && test : != "$skipped_export" && test yes = "$with_gnu_ld"; then
-	    output=$output_objdir/$output_la.lnkscript
-	    func_verbose "creating GNU ld script: $output"
-	    echo 'INPUT (' > $output
-	    for obj in $save_libobjs
-	    do
-	      func_to_tool_file "$obj"
-	      $ECHO "$func_to_tool_file_result" >> $output
-	    done
-	    echo ')' >> $output
-	    func_append delfiles " $output"
-	    func_to_tool_file "$output"
-	    output=$func_to_tool_file_result
 	  else
 	    if test -n "$save_libobjs"; then
 	      func_verbose "creating reloadable object files..."
@@ -10546,8 +10558,8 @@ EOF
 	    relink_command="$var=$func_quote_for_eval_result; export $var; $relink_command"
 	  fi
 	done
-	relink_command="(cd `pwd`; $relink_command)"
-	relink_command=`$ECHO "$relink_command" | $SED "$sed_quote_subst"`
+	func_quote "(cd `pwd`; $relink_command)"
+	relink_command=$func_quote_result
       fi
 
       # Only actually do things if not in dry run mode.
@@ -10574,7 +10586,7 @@ EOF
 	    cwrappersource=$output_path/$objdir/lt-$output_name.c
 	    cwrapper=$output_path/$output_name.exe
 	    $RM $cwrappersource $cwrapper
-	    trap "$RM $cwrappersource $cwrapper $cwrapper.manifest; exit $EXIT_FAILURE" 1 2 15
+	    trap "$RM $cwrappersource $cwrapper; exit $EXIT_FAILURE" 1 2 15
 
 	    func_emit_cwrapperexe_src > $cwrappersource
 
@@ -10594,16 +10606,6 @@ EOF
 	    $opt_dry_run || {
 	      # note: this script will not be executed, so do not chmod.
 	      if test "x$build" = "x$host"; then
-		# Create the UAC manifests first if necessary (but the
-		# manifest files must have executable permission regardless).
-		case $output_name in
-		  *instal*|*patch*|*setup*|*update*)
-		    func_emit_exe_manifest > $cwrapper.manifest
-		    func_emit_exe_manifest > $output_path/$objdir/$output_name.exe.manifest
-		    chmod +x $cwrapper.manifest
-		    chmod +x $output_path/$objdir/$output_name.exe.manifest
-		  ;;
-		esac
 		$cwrapper --lt-dump-script > $func_ltwrapper_scriptname_result
 	      else
 		func_emit_wrapper no > $func_ltwrapper_scriptname_result
@@ -10803,7 +10805,8 @@ EOF
       done
       # Quote the link command for shipping.
       relink_command="(cd `pwd`; $SHELL \"$progpath\" $preserve_args --mode=relink $libtool_args @inst_prefix_dir@)"
-      relink_command=`$ECHO "$relink_command" | $SED "$sed_quote_subst"`
+      func_quote "$relink_command"
+      relink_command=$func_quote_result
       if test yes = "$hardcode_automatic"; then
 	relink_command=
       fi
@@ -11128,9 +11131,8 @@ func_mode_uninstall ()
 	    # note $name still contains .exe if it was in $file originally
 	    # as does the version of $file that was added into $rmfiles
 	    func_append rmfiles " $odir/$name $odir/${name}S.$objext"
-	    func_append rmfiles " ${name}.manifest $objdir/${name}.manifest"
 	    if test yes = "$fast_install" && test -n "$relink_command"; then
-	      func_append rmfiles " $odir/lt-$name $objdir/lt-${name}.manifest"
+	      func_append rmfiles " $odir/lt-$name"
 	    fi
 	    if test "X$noexename" != "X$name"; then
 	      func_append rmfiles " $odir/lt-$noexename.c"

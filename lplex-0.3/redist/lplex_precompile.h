@@ -11,7 +11,7 @@ using namespace std;
 #include <iomanip>
 #include <climits>
 #include <streambuf>
-#include <strstream>
+#include <sstream>
 #include <vector>
 #include <algorithm>
 
@@ -27,7 +27,10 @@ using namespace std;
 #include <fcntl.h>
 #include <string.h>
 
+#ifndef __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS 1
+#endif
+
 #include <stdint.h>
                                  // prevents #error from dvdread/ifo_types.h
 #ifndef INT32_MAX
@@ -51,5 +54,8 @@ using namespace std;
 //#include <jpeglib.h>
 #include <vlc_bits.h>
 
+#ifndef uint
+#define uint uint32_t
+#endif
 
 #endif
