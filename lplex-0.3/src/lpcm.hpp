@@ -2,6 +2,8 @@
 	lpcm.hpp - general lpcm descriptors, dvd-v and wave header utilities.
 	Copyright (C) 2006-2011 Bahman Negahban
 
+    Adapted to C++-17 in 2018 by Fabrice Nicol
+
 	This program is free software; you can redistribute it and/or modify it
 	under the terms of the GNU General Public License as published by the
 	Free Software Foundation; either version 2 of the License, or (at your
@@ -26,10 +28,10 @@
 #include "lplex_precompile.h"
 #endif
 
-#include <experimental/filesystem>
+#include <filesystem>
 
 using namespace std;
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 #include <cstdlib>
 #include <iostream>
@@ -109,13 +111,13 @@ enum Ltype
 inline Ltype isLfile(const char *ext)
 {
 	return
-		! stricmp( ext,"wav" ) ? wavef :
-		! stricmp( ext,"flac" ) ? flacf :
-		! stricmp( ext,"lpcm" ) ? lpcmf :
-		! stricmp( ext,"m2v" ) ? m2vf :
-		! stricmp( ext,"mpg" ) ? mpegf :
-		! stricmp( ext,"vob" ) ? vobf :
-		! stricmp( ext,"iso" ) ? isof :
+		! stricmp( ext,".wav" ) ? wavef :
+		! stricmp( ext,".flac" ) ? flacf :
+		! stricmp( ext,".lpcm" ) ? lpcmf :
+		! stricmp( ext,".m2v" ) ? m2vf :
+		! stricmp( ext,".mpg" ) ? mpegf :
+		! stricmp( ext,".vob" ) ? vobf :
+		! stricmp( ext,".iso" ) ? isof :
 		isNot;
 }
 

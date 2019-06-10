@@ -2,6 +2,8 @@
 	main.cpp - interface and input management.
 	Copyright (C) 2006-2009 Bahman Negahban
 
+    Adapted to C++-17 in 2018 by Fabrice Nicol
+
 	This program is free software; you can redistribute it and/or modify it
 	under the terms of the GNU General Public License as published by the
 	Free Software Foundation; either version 2 of the License, or (at your
@@ -19,30 +21,40 @@
 
 
 
+#include <sstream>
+#include <iomanip>
+#include <bitset>
+
 #include "lplex.hpp"
 #include "jobs.hpp"
 
+// Globals
+
 lplexJob job;
+_wxStopWatch stopWatch;
+wxLplexLog _wxLog;
+lpcm_video_ts userMenus;
+
 vector<lpcmFile> Lfiles;
 vector<dvdJpeg> jpegs;
 vector<string> dirs;
 vector<string> menufiles;
 vector<infoFile> infofiles;
-lpcmPGextractor dvd( &Lfiles, &infofiles, &job );
 
+lpcmPGextractor dvd( &Lfiles, &infofiles, &job );
 
 unsigned char bigBlock[BIGBLOCKLEN];
 
-fs::path dataDir, binDir, configDir, tempDir, readOnlyPath;
+fs::path dataDir, binDir, configDir, tempDir, isoPath, readOnlyPath;
 fs::path lplexConfig, cwd, projectDotLplex;
+fs::path optSrc;
+
 string  shebang;
 string gzFile;
 string menuPath;
-bool startNewTitleset, projectFile, screenJpg, lgz;
 string cmdline;
 
-_wxStopWatch stopWatch;
-wxLplexLog _wxLog;
+bool startNewTitleset, projectFile, screenJpg, lgz;
 
 enum
 {
@@ -53,22 +65,26 @@ enum
 	mismatch = 0x80
 };
 
-int debug = 0, editing = 0, edit = 0, endPause, menuForce = 0;
-lpcm_video_ts userMenus;
-int menuMap[99];
-fs::path optSrc;
 enum { inif, commandline, prjf };
+
+int debug = 0, editing = 0, edit = 0, endPause, menuForce = 0;
+int menuMap[99];
 int optindl, optContext;
 
+// Initialization of class jobs static private members
+
+int jobs::notrim = 0x01;
+int jobs::seamless = 0x02;
+int jobs::discrete = 0x04;
+int jobs::padded = 0x08;
+int jobs::autoSet = 0xF0;
+int jobs::continuous = seamless | padded;
+int jobs::backward = 0x10;
+int jobs::nearest = 0x20;
+int jobs::forward = 0x40;
 
 #ifdef lplex_console
 
-
-// ----------------------------------------------------------------------------
-//    done :
-// ----------------------------------------------------------------------------
-//    atexit() cleanup.
-// ----------------------------------------------------------------------------
 
 int exitct=0;
 
@@ -99,10 +115,13 @@ int main( int argc, char *argv[] )
 {
 	atexit( done );
 	_verbose = false;
+	int res = 0;
 
 	if( init( argc, argv ) )
 	{
-        //wxLog::SetActiveTarget( &_wxLog );
+
+
+
 #ifdef _ERR2LOG
 		xlog << cmdline << "\n-------------------------------------------------------------------------------\n" << endl;
 #endif
@@ -110,9 +129,9 @@ int main( int argc, char *argv[] )
 		{
 #ifdef lgzip_support
 			if( dvd.isOpen() )
-				return udfZip( dvd, true, job.outPath.generic_string() ) ? 0 : 1;
+				res = udfZip( dvd, true, job.outPath.string() ) ? 0 : 1;
 			else if( gzFile != "" )
-				return udfUnzip( gzFile, job.outPath.generic_string() );
+				res = udfUnzip( gzFile, job.outPath.string() );
 			FATAL( "Gzip uninitialized." );
 #else
 			udfError( "Unsupported feature." );
@@ -121,13 +140,24 @@ int main( int argc, char *argv[] )
 //      else
 		if( job.params & unauth )
 		{
-			return unauthor( dvd );
+			res = unauthor( dvd );
 		}
 		else
 		{
 			dvdLayout layout( &Lfiles, &menufiles, &infofiles, &job );
-			return author( layout );
+			res = author( layout );
 		}
+
+		if ((job.params & cleanup) && fs::exists(job.tempPath))
+        {
+            fs_DeleteDir(job.tempPath);
+
+            if (fs::exists(job.tempPath))
+                cerr << "[ERR] Temporary path not deleted" << endl;
+        }
+
+		return res;
+
 	}
 	else
 		usage( "No files to process" );
@@ -208,15 +238,15 @@ struct option long_opts[] =
 
 uint16_t init( int argc, char *argv[] )
 {
-    //wxImage::AddHandler( new wxJPEGHandler );
-											//set defaults
 	initPlatform();
     fs_MakeDirs( fs::path(configDir) );
-    logInit( (configDir / "lplex.log").generic_string() );
+    logInit( (configDir / "lplex.log").string() );
     projectDotLplex = configDir / "project.lplex";
     cwd = fs::current_path();
 	job.tempPath = tempDir;
-
+	// By default output name is : <YYYY-MM-DD_HHMM>_DVD
+	job.outPath = cwd ;
+    job.isoPath = isoPath;
 	job.params = dvdv | md5 | restore | info | cleanup | rescale;
 #ifdef lgzip_support
 	job.prepare = lgzf;
@@ -231,7 +261,7 @@ uint16_t init( int argc, char *argv[] )
 	job.media = plusR;
     job.trim = jobs::seamless;
 	job.trim0 = job.trimCt = 0;
-	job.name = "";
+	job.name = defaultName() + "_DVD";
 	job.extractTo = "";
 	job.now = 0;
 	job.update = 0;
@@ -250,19 +280,17 @@ uint16_t init( int argc, char *argv[] )
 #endif
 #endif
 
-	string arg;
 											// check config file
 
     ofstream configFile;
 	optSrc = lplexConfig.filename().c_str();
 	optContext = inif;
 	optindl = -1;
-
 											// ...write a default config file if none exists
-    if( ! fs::exists(lplexConfig.generic_string() ) )
+    if( ! fs::exists(lplexConfig) )
 	{
 
-        configFile.open(lplexConfig.generic_string());
+        configFile.open(lplexConfig.string());
 
         configFile <<  "formatout = wav"  << endl;
         configFile <<   "video = ntsc" << endl;
@@ -282,8 +310,8 @@ uint16_t init( int argc, char *argv[] )
         configFile << "dvdpath = adjacent"  << endl;
         configFile << "isopath = adjacent"  << endl;
         configFile << "extractpath = adjacent"  << endl;
-        configFile << "workpath = " << job.tempPath.generic_string()  << endl;
-        configFile << "readonlypath = " << readOnlyPath.generic_string() << endl;
+        configFile << "workpath = " << job.tempPath.string()  << endl;
+        configFile << "readonlypath = " << readOnlyPath.string() << endl;
         configFile <<  "verbose = no"  << endl;
         configFile.flush();
 	}
@@ -296,8 +324,10 @@ uint16_t init( int argc, char *argv[] )
 	}
 #endif											// check for unresolved options
 
-    if( ! ( job.trim & ( jobs::backward | jobs::nearest | jobs::forward ) ) )
+    if ( ! ( job.trim & ( jobs::backward | jobs::nearest | jobs::forward ) ) )
+    {
         job.trim |= jobs::backward;
+    }
 											// parse the command line
 	startNewTitleset = true;
 	projectFile = true;
@@ -322,7 +352,7 @@ uint16_t init( int argc, char *argv[] )
 
 	getOpts( argc, argv );
 
-    dirs.push_back( job.inPath.parent_path().generic_string() );
+    dirs.push_back( job.inPath.parent_path().string() );
 	if( ! ( job.params & ( unauth | gzip ) ) )
 		splitPaths();
 	setJobTargets();
@@ -347,9 +377,9 @@ uint16_t init( int argc, char *argv[] )
 
 uint16_t addFiles( fs::path filespec )
 {
-	int reauthoring = 0, rel = 0;
+	//int reauthoring = 0, rel = 0;
     fs::path specPath;
-    fs::directory_entry dir;
+
 	lFileTraverser selector( editing ? edit & strict : true );
 	bool isDot = false;
 
@@ -360,7 +390,7 @@ uint16_t addFiles( fs::path filespec )
 	{
         filespec = fs::absolute( filespec );
 
-        if( Right(filespec.generic_string(), 1) == "."  )
+        if( Right(filespec.string(), 1) == "."  )
 		{
             filespec = filespec.parent_path();
 			isDot = true;
@@ -370,26 +400,26 @@ uint16_t addFiles( fs::path filespec )
 											//if filespec is a directory, open it...
     if( fs::exists( filespec) )
 	{
-		STAT( _f("Scanning '%s'.\n", filespec.generic_string().c_str()));
+		STAT( _f("Scanning '%s'.\n", filespec.string().c_str()));
 											//...or its parent if VIDEO_TS folder
 
-        string comp = filespec.filename().generic_string();
+        string comp = filespec.filename().string();
 
         if (  toUpper(comp) !=  "VIDEO_TS" )
         {
-            filespec = filespec.parent_path();
+           // filespec = filespec.parent_path();
         }
 											//...unauthor if it contains a dvd structure
         bool has_vts_subdir = false;
 
-        for(auto& p: fs::directory_iterator(dir))
-        {
-            if (p.path().filename().generic_string() == "VIDEO_TS")
-            {
-                has_vts_subdir = true;
-                break;
-            }
-        }
+//        for(auto& p: fs::directory_iterator(dir))
+//        {
+//            if (p.path().filename().string() == "VIDEO_TS")
+//            {
+//                has_vts_subdir = true;
+//                break;
+//            }
+//        }
 
         if( has_vts_subdir )
 		{
@@ -397,7 +427,7 @@ uint16_t addFiles( fs::path filespec )
             if( ! job.extractTo.empty())
 				job.outPath = job.extractTo;
 
-            dvd.open( filespec.generic_string().c_str() );
+            dvd.open( filespec.string().c_str() );
 			job.tv = dvd.tv;
 			clearbits( job.params, jobMode );
 #ifdef dvdread_udflist
@@ -412,25 +442,29 @@ uint16_t addFiles( fs::path filespec )
 			job.params |= auth;
 		}
 
-		selector.dirSpecified = true;
+		selector.dirSpecified = fs::is_directory(filespec);
 	}
-											//else if it exists, open parent dir.
+#if 0								//else if it exists, open parent dir.
     else if( fs::exists(filespec))
 	{
 		if( Lfiles.size() == 0 )
 		{
-            dirs.push_back( filespec.parent_path().generic_string() );
-			if( job.inPath.generic_string() == "" )
+            dirs.push_back( filespec.parent_path().string() );
+			if( job.inPath.string() == "" )
                 job.inPath = filespec.parent_path();
 		}
 
-											//check if it's an image file
-        if( dvd.open( filespec.generic_string().c_str(), false ) )
+        cerr << "job.inPath: " << job.inPath << endl;
+        cerr << "job.inPath: " << specPath << endl;
+        cerr << "filespec.GetFullPath(): " << filespec << endl;
+
+        //check if it's an image file
+        if( dvd.open( filespec.string().c_str(), false ) )
 		{
             specPath = specPath / filespec.stem();
 			job.media = imagefile;
 			job.inPath = filespec;
-            job.name = filespec.stem().generic_string();
+            job.name = filespec.stem().string();
 			job.tv = dvd.tv;
 			clearbits( job.params, jobMode );
 #ifndef dvdread_udflist
@@ -444,6 +478,7 @@ uint16_t addFiles( fs::path filespec )
 #endif
 				job.params |= unauth;
 		}
+
 		else if( dvd.isImage )
 		{
 			FATAL( "No lpcm audio found on dvd image." );
@@ -453,26 +488,23 @@ uint16_t addFiles( fs::path filespec )
 
 		selector.dirSpecified = false;
 	}
-											//else not found.
+#endif											//else not found.
 	else
 	{
-        FATAL( "Can't find '" + filespec.generic_string() + "'." );
+        FATAL( "Can't find '" + filespec.string() + "'." );
 	}
 
 											//if unauthoring, change spec to find any info files
 	if( job.params & unauth )
 	{
-        setName( specPath.generic_string().c_str() );
+        setName( specPath.string().c_str() );
 		if( job.media & imagefile )
 			return 0;
-//		else
-//			dir.Open( specPath );
 	}
 											//if authoring, check if project
 	else
 	{
-
-        string comp = toUpper(Right(filespec.generic_string(), 6));
+        string comp = toUpper(Right(filespec.string(), 6));
 
         if( projectFile &&  comp ==  ".LPLEX")
 		{
@@ -485,7 +517,7 @@ uint16_t addFiles( fs::path filespec )
 		else
 			projectFile = false;
 
-        comp = toUpper(Right(filespec.generic_string(), 4));
+        comp = toUpper(Right(filespec.string(), 4));
         if( comp  ==  ".LGZ" )
 		{
 			if( Lfiles.size() == 0 )
@@ -493,7 +525,7 @@ uint16_t addFiles( fs::path filespec )
 #ifdef lgzip_support
 				job.params |= ( auth | gzip );
 				job.name = filespec.stem();
-				gzFile = filespec.generic_string();
+				gzFile = filespec.string();
                 job.outPath = job.inPath.parent_path();
 				job.isoPath = job.outPath;
 //            job.projectPath = filespec;
@@ -507,27 +539,23 @@ uint16_t addFiles( fs::path filespec )
 		if( ! ( job.now & isNamed ) )
 		{
 			if( projectFile || isDot )
-                setName( filespec.generic_string().c_str(), isDot ? true : false );
+                setName( filespec.string().c_str(), isDot ? true : false );
 												//or if reauthoring
-			else
-                reauthoring = setName( specPath.generic_string().c_str() );
+//			else
+//                reauthoring = setName( specPath.string().c_str() );
 		}
 
 		if( projectFile )
 		{
 			projectFile = false;
-            getOpts( filespec.generic_string().c_str() );
+            getOpts( filespec.string().c_str() );
 			return 1;
 		}
 	}
-
-    //specPath = fs_EndSep( specPath );
 											//go through and select matching files
-    selector.setRoot( specPath.generic_string().c_str(), job.params & unauth ? 0 : reauthoring ? 0 : 1 );
-#if 0
-    dir.Traverse( selector, filespec.generic_string().substr( specPath.generic_string().length() ),
-		wxDIR_FILES | wxDIR_DIRS );
-#endif
+
+
+    selector.Traverse(fs::absolute(filespec).string().substr( specPath.string().length()));
 	selector.processFiles();
 
 	if( selector.err & lFileTraverser::mismatchA )
@@ -589,6 +617,8 @@ uint16_t addFiles( fs::path filespec )
 //    Returns 0 on success.
 // ----------------------------------------------------------------------------
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 
 uint16_t setName( const char *namePath, bool isDir )
 {
@@ -599,7 +629,7 @@ uint16_t setName( const char *namePath, bool isDir )
 	fs::path fName( namePath );
     if (! fs::exists(fName))
     {
-        ERR("Path " + fName.generic_string() + " does not exist.")
+        ERR("Path " + fName.string() + " does not exist.")
         throw;
     }
 											//if as yet unspecified, resolve
@@ -608,9 +638,9 @@ uint16_t setName( const char *namePath, bool isDir )
 											//target name...
         if( ! job.projectPath.empty() &&
             job.projectPath != projectDotLplex )
-                job.name = job.projectPath.stem().generic_string();
+                job.name = job.projectPath.stem().string();
         if( job.name.empty())
-            job.name = fName.filename().generic_string();
+            job.name = fName.filename().string();
         if( job.name.empty())
 			job.name = volumeLabel( namePath, true );
         if( job.name.empty())
@@ -618,27 +648,25 @@ uint16_t setName( const char *namePath, bool isDir )
   }
 
     uint64_t freeSpace = fs::space(fName).available;
+
+    cerr << "[MSG] Free space on "<< fName << " is " << freeSpace/(1024*1024) << " MB.\n\n";
+
 										//...and location
 										//if source is on a hard drive
 	if( freeSpace != 0 )
 	{
 										//...default output is next door to input
-        if(  (fs::status(job.outPath).permissions() & fs::perms::owner_write) == fs::perms::none )
+        if (job.outPath.empty())
 		{
-//         job.outPath = fName.parent_path() + SEPARATOR;
-//         job.outPath = fName.parent_path();
             if( (fs::status( fName.parent_path() ).permissions() & fs::perms::owner_write) != fs::perms::none )
 			{
                 job.outPath = fName.parent_path();
-                if( ! isDir && (fs::status( job.outPath.parent_path() ).permissions() & fs::perms::owner_write) != fs::perms::none )
-                {
-                    job.outPath = job.outPath.parent_path();
-                }
-                job.outPath = job.outPath;
+
 			}
 		}
 		reauthoring = checkName( job.name, true );
 	}
+    else throw;
 										//if source is read-only or outpath isn't writable
 										//...output is to default folder
     /* else */ if(  (fs::status(job.outPath).permissions() & fs::perms::owner_write)  == fs::perms::none )
@@ -667,6 +695,8 @@ uint16_t setName( const char *namePath, bool isDir )
 	job.now |= isNamed;
 	return reauthoring;
 }
+#pragma GCC diagnostic pop
+
 
 
 
@@ -679,27 +709,42 @@ uint16_t setName( const char *namePath, bool isDir )
 
 void setJobTargets()
 {
-	if( job.projectPath.generic_string() == "" )
+	if( job.projectPath.string() == "" )
 		job.projectPath = ( ( edit & dot ) || editing ) && job.outPath != readOnlyPath ?
             job.inPath / (job.name + ".lplex") :
 			projectDotLplex;
 
-    if( (fs::status(job.isoPath).permissions() & fs::perms::owner_write) == fs::perms::none  )
-        job.isoPath = job.outPath.parent_path();
+  if (fs::exists(job.isoPath))
+    {
+       fs_DeleteDir(job.isoPath);
+      }
 
     job.isoPath = job.isoPath / (job.name + ".iso");
 
 	if( ! ( job.params & gzip ) )
         job.outPath = job.outPath / job.name;
     job.tempPath = job.tempPath / job.name;
-}
+
+    if (fs::exists(job.outPath))
+    {
+       fs_DeleteDir(job.outPath);
+    }
+
+    if  (fs::exists(job.tempPath))
+    {
+          fs_DeleteDir(job.tempPath);
+      }
+
+    fs_MakeDirs(job.outPath);
+    fs_MakeDirs(job.tempPath);
+ }
 
 
 // ----------------------------------------------------------------------------
 //    checkName :
 // ----------------------------------------------------------------------------
 //    Checks whether <jobName> is recycled, and whether to <trim> old suffixes.
-//
+//:
 //    Returns incremented cycle count if recycled.
 // ----------------------------------------------------------------------------
 
@@ -732,25 +777,22 @@ int checkName( string &jobName, bool trim )
 	return reauthoring;
 }
 
-
-
-
-
 // ----------------------------------------------------------------------------
 //    defaultName :
 // ----------------------------------------------------------------------------
 //    Returns a string of the form YYYY-MM-DD_HHMM
 // ----------------------------------------------------------------------------
 
-
 string defaultName()
 {
-//	wxDateTime now = wxDateTime::Now();
-//	return _f( "%d-%02d-%02d_%02d%02d",
-//		now.GetYear(), now.GetMonth() + 1, now.GetDay(),
-//		now.GetHour(), now.GetMinute() );
-}
+  time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
+  stringstream st;
 
+  st << put_time(localtime(&now), "%Y-%m-%d_%H%M");
+
+  return st.str();
+
+}
 
 // ----------------------------------------------------------------------------
 //    validatePath :
@@ -763,7 +805,7 @@ int validatePath( const fs::path& path )
 {
 	if( ! fs_validPath( path )  )
 	{
-        ERR( _f( "Invalid path '%s'.\n", path.generic_string().c_str() ) );
+        ERR( _f( "Invalid path '%s'.\n", path.string().c_str() ) );
 		return 0;
 	}
 	return 1;
@@ -798,9 +840,9 @@ void splitPaths()
 	sortUnique<infoFile>( infofiles );
 
 
-	for( int i=0; i < infofiles.size(); i++ )
+	for( uint i=0; i < infofiles.size(); ++i )
 	{
-		for( int j=0; j < dirs.size(); j++ )
+		for( uint j=0; j < dirs.size(); ++j )
 		{
 			if( isSubStr( dirs[j], infofiles[i].fName ) )
 			{
@@ -810,10 +852,10 @@ void splitPaths()
 		}
 	}
 
-	for( int i=0; i < Lfiles.size(); i++ )
+	for( uint i=0; i < Lfiles.size(); ++i )
 	{
-		string dir = Lfiles[i].fName.generic_string();
-		for( int j=0; j < dirs.size(); j++ )
+		string dir = Lfiles[i].fName.string();
+		for( uint j=0; j < dirs.size(); ++j )
 		{
 			if( isSubStr( dirs[j], dir ) )
 			{
@@ -839,14 +881,22 @@ void splitPaths()
 
 
 
-void lFileTraverser::setRoot( const char *rootPath, int fromParent )
+string  lFileTraverser::setRoot( const char *rootPath, int fromParent )
 {
 	fs::path rootDir( rootPath );
-	if( fromParent )
+	if( fromParent && fs::is_directory(rootDir))
         rootDir = rootDir.parent_path();
+    const fs::path&  curPath = fs::current_path();
+    int res = chdir(rootPath);
+    if (res == -1)
+    {
+        cerr << "[ERR]  Impossible to change directory to " << rootPath << endl;
+        throw;
+    }
 
-    root = rootDir.generic_string().length();
-	dirs.push_back( rootDir.generic_string() );
+    root = rootDir.string().length();
+	dirs.push_back( rootDir.string() );
+    return curPath.string();
 }
 
 
@@ -861,9 +911,51 @@ void lFileTraverser::setRoot( const char *rootPath, int fromParent )
 void lFileTraverser::OnFile( const string& filename )
 {
 	filenames.push_back( filename );
-
 }
 
+
+void lFileTraverser::Traverse(const string &path)
+{
+    string _path = path;
+#if 0
+    if (path[0] == SEPARATOR[0])
+    {
+         if (path.length() > 1)
+         {
+           _path = path.substr(1);
+         }
+         else return;
+    }
+#endif
+
+    if (fs::is_regular_file(_path))
+    {
+      OnFile(_path);
+      cerr << "[INF] Adding " << _path << endl;
+    }
+    else
+    for (auto &p:  fs::directory_iterator(_path))
+    {
+       int res  = DIR_CONTINUE;
+
+       if (fs::is_directory(p))
+       {
+          res = OnDir(p.path().string());
+       }
+       else
+       if (fs::is_regular_file(p))
+       {
+         OnFile(p.path().string());
+         continue;
+       }
+
+       if (res == DIR_IGNORE) continue;
+       else
+       if (res == DIR_CONTINUE)
+           Traverse(p.path().string());
+    }
+
+}
 
 // ----------------------------------------------------------------------------
 //    lFileTraverser::processFiles :
@@ -880,18 +972,19 @@ void lFileTraverser::processFiles()
 
 	// ensure alphabetic order; wxDir::Traverse() doesn't necessarily
 	// proceed alphabetically.
+
 	if( filenames.size() > 1 )
 		std::sort( filenames.begin(), filenames.end() );
 
-	for( int i=0; i < filenames.size(); i++ )
+	for( uint i=0; i < filenames.size(); ++i )
 	{
 		string& filename = filenames[i];
-
 		lFile.fName = filename;
+
 		bool ok = true;
 
 		LOG(filename << "\n");
-        if( ( lFile.format = isLfile( lFile.fName.extension().generic_string().c_str() ) )
+        if( ( lFile.format = isLfile( lFile.fName.extension().string().c_str() ) )
 			&& ( lFile.format == wavef || lFile.format == flacf ) )
 		{
 			lFile.group = job.group;
@@ -902,9 +995,12 @@ void lFileTraverser::processFiles()
 			lFile.edit = 0;
 
 			if( lFile.format == wavef )
-                ok = waveHeader::audit( lFile.fName.generic_string().c_str(), &lFile.fmeta );
+            {
+                ok = waveHeader::audit( lFile.fName.string().c_str(), &lFile.fmeta );
+                if (verbose > 0) cerr << "Found wav file: " << (ok ? "OK" : "ERR") << endl;
+            }
 			else if( lFile.format == flacf )
-                ok = flacHeader::audit( lFile.fName.generic_string().c_str(), &lFile.fmeta );
+                ok = flacHeader::audit( lFile.fName.string().c_str(), &lFile.fmeta );
 
 			if( ! ok )
 				err |= invalid;
@@ -914,6 +1010,7 @@ void lFileTraverser::processFiles()
 				if( startNewTitleset )
 				{
 					lFile.group = ++job.group;
+					if (verbose > 0) cerr << "[INFO] File " << filename << " belongs to group " << job.group << endl;
 					startNewTitleset = false;
 				}
 
@@ -935,6 +1032,7 @@ void lFileTraverser::processFiles()
 							lFile.group = ++job.group;
 						}
 					}
+#if 1
 					if( jpegs[ lFile.jpgIndex ].getDim() !=
 						jpegs[ Lfiles.back().jpgIndex ].getDim() )
 					{
@@ -947,14 +1045,17 @@ void lFileTraverser::processFiles()
 						err |= mismatchV_ar;
 						ok = false;
 					}
+#endif
 				}
 				if( ok )
 					Lfiles.push_back( lFile );
 			}
 			else
+            {
                 SCRN(LOG_TAG  "-skipping \'")
                 SCRN(lFile.fName.filename())
                 SCRN("\'\n")
+            }
 
 		}
 
@@ -992,13 +1093,15 @@ void lFileTraverser::processFiles()
 // ----------------------------------------------------------------------------
 
 
-void lFileTraverser::OnDir( const string& dirname )
+int lFileTraverser::OnDir( const string& dirname )
 {
 	if( ! dirSpecified ||
             ( Right(dirname, 3) == "BUP" && Right(dirname, 8).Left(4) == "XTRA" ) )
     {
-        //??????
+        return DIR_IGNORE;
     }
+
+    return DIR_CONTINUE;
 
 }
 
@@ -1068,8 +1171,10 @@ void getOpts( const char *filename )
 	else if( argc == 1 )
 	{
 		editing = true;
-                char *tab[]={ "", "." };
+        char *tab[]={ strdup(""), strdup(".") };
 		getOpts( 2, tab );
+        free(tab[0]);
+        free(tab[1]);
 	}
 	else
 	{
@@ -1098,13 +1203,11 @@ bool getOpts( int argc, char *argv[] )
 {
 	int opt, nonopts;
 											//Store current getopt state...
-
 	int _opterr = opterr;            // (if error message should be printed)
 	int _optind = optind;            // (index into parent argv vector)
 	int _optopt = optopt;            // (character checked for validity)
 //   int _optreset = optreset;        // (reset getopt) **undeclared in unix**
 	char *_optarg = optarg;          // (argument associated with option)
-
 											//... and reset.
 	opterr = 1;
 	optind = 1;
@@ -1148,6 +1251,34 @@ bool getOpts( int argc, char *argv[] )
 
 		optindl = -1;
 	}
+
+
+	if (job.tempPath.empty())
+    {
+        cerr << "[ERR] Working path is empty." << endl;
+        throw;
+    }
+
+    normalize_windows_paths(job.tempPath);
+
+    if ( ! fs::exists( job.tempPath ) )
+    {
+        fs_MakeDirs( job.tempPath );
+    }
+
+    if (job.outPath.empty())
+    {
+        cerr << "[ERR] Output path is empty." << endl;
+        throw;
+    }
+
+    normalize_windows_paths(job.outPath);
+
+    if ( ! fs::exists( job.outPath ) )
+    {
+        fs_MakeDirs( job.outPath);
+    }
+
 
 	argv[0] = argv0;
 	banner();
@@ -1207,6 +1338,8 @@ bool getOpts( int argc, char *argv[] )
 		if( argv[optind][strlen(argv[optind])-1] == '\"' )
 			argv[optind][strlen(argv[optind])-1] = '\'';
 
+
+
 		addFiles( fs::path( argv[optind] ) );
 
 		if( job.params & unauth )
@@ -1242,7 +1375,7 @@ bool stdArgs( int &argc, char** &argv, char *args, size_t size )
 	argc = 1;
 	bool enquoted = false, inComment=false, firstChar=true;
 
-	for( int i=0; i < size; i++ )
+	for( uint i=0; i < size; ++i )
 	{
 		bool whitespace = true;
 		switch( args[i] )
@@ -1290,7 +1423,7 @@ bool stdArgs( int &argc, char** &argv, char *args, size_t size )
 	argv[0] = NULL;
 	firstChar = true;
 
-	for( int i=0, j=0; i < size; i++ )
+	for( uint i=0, j=0; i < size; ++i )
 	{
 		if( args[i] == '\0' )
 			firstChar = true;
@@ -1323,7 +1456,7 @@ bool stdArgs( int &argc, char** &argv, char *args, size_t size )
 
 uint16_t setopt( uint16_t opt, const char *optarg )
 {
-	uint16_t t;
+	uint16_t t = 0;
 	char *comma = NULL;
 	bool ok = true, isTrue = 0, isFalse = 0;
 
@@ -1346,11 +1479,29 @@ uint16_t setopt( uint16_t opt, const char *optarg )
 			break;
 
 		case 'd':
-			ok = validatePath( optarg );
-			job.outPath = fs_EndSep( optarg );
-            job.outPath = job.outPath.parent_path();
-            job.name = job.outPath.filename().generic_string();
-            job.outPath = job.outPath.parent_path();
+
+            job.outPath = fs::path(optarg);
+
+            if (! fs::is_directory(job.outPath))
+            {
+                cerr << "[ERR] " << optarg << " is not a directory." << endl;
+                fs_MakeDirs(job.outPath);
+                ok = validatePath( optarg );
+            }
+
+            if (fs::is_directory(job.outPath))
+            {
+              fs::path parent = job.outPath.parent_path();
+              job.name = job.outPath.string().substr(parent.string().length() + 1);
+              job.outPath = parent;
+            }
+            else
+            {
+                cerr << "[ERR] Could not create directory " << optarg << endl;
+                throw;
+            }
+
+
 			job.params |= ( redirect | userNamed );
 			break;
 
@@ -1416,7 +1567,7 @@ uint16_t setopt( uint16_t opt, const char *optarg )
 
 			case 'i':
 			ok = validatePath( optarg );
-			job.infoPath = fs_EndSep( optarg );
+            job.infoPath = fs::path(optarg);
 			job.params |= infodir;
 			break;
 
@@ -1459,6 +1610,8 @@ uint16_t setopt( uint16_t opt, const char *optarg )
 
 			case 'N':
 			menuForce = true;
+            [[fallthrough]];
+
 			case 'M':
 			addMenus( optarg, job.tv, menuForce );
 //         menuForce = false;
@@ -1515,29 +1668,52 @@ uint16_t setopt( uint16_t opt, const char *optarg )
 		case 'p':
 			if( ! stricmp( optarg, "adjacent" ) ) break;
 			ok = validatePath( optarg );
-			job.dvdPath = fs_EndSep( optarg );
+            job.dvdPath = fs::path(optarg);
 			break;
 
 		case 'w':
-			ok = validatePath( optarg );
-			job.tempPath = fs_EndSep( optarg );
+
+            job.tempPath =  fs::path(optarg);
+            if (! fs::is_directory(job.tempPath))
+            {
+                cerr << "[INF] " << " Creating directory " << optarg <<  endl;
+                fs_MakeDirs(job.tempPath);
+                ok = validatePath( optarg );
+            }
+
+            if (! fs::is_directory(job.tempPath))
+            {
+                cerr << "[ERR] Could not create directory " << optarg << endl;
+                throw;
+            }
 			break;
 
 		case 'a':
 			if( ! stricmp( optarg, "adjacent" ) ) break;
-			ok = validatePath( optarg );
-			job.isoPath = fs_EndSep( optarg );
+			job.isoPath = fs::path(optarg);
+			if (!  fs::is_directory(job.isoPath))
+            {
+                cerr << "[INF] " << " Creating directory " << optarg <<  endl;
+                fs_MakeDirs(job.isoPath);
+                ok = validatePath( optarg );
+             }
+
+            if (! fs::is_directory(job.isoPath))
+            {
+                cerr << "[ERR] Could not create directory " << optarg << endl;
+                throw;
+            }
 			break;
 
 		case 'E':
 			if( ! stricmp( optarg, "adjacent" ) ) break;
 			ok = validatePath( optarg );
-			job.extractTo = fs_EndSep( optarg );
+            job.extractTo = optarg;
 			break;
 
 		case 'D':
 			ok = validatePath( optarg );
-            //readOnlyPath = fs_EndSep( optarg );
+            readOnlyPath = optarg;
 			break;
 
 		case 'v':
@@ -1557,9 +1733,9 @@ uint16_t setopt( uint16_t opt, const char *optarg )
 			GPL_notice();
 			exit(0);
 
-		case '?':
+		case '?': [[fallthrough]];
 		case 'h':
-			usage();
+			usage(); [[fallthrough]];
 
 		case 'e':
 			if( comma )
@@ -1643,13 +1819,16 @@ uint16_t setopt( uint16_t opt, const char *optarg )
 	}
 
 	if( ! ok )
+    {
 		usage( _f( "Bad syntax in %s:\n    : option '%s' has invalid argument '%s'",
 			optSrc.filename().c_str(),
 			optindl < 0 ? _f( "-%c", opt ).c_str() : _f( "--%s", long_opts[optindl].name ).c_str(),
             optarg ).c_str() );
+    }
+
+
 
 	return 1;
-
 }
 
 
@@ -1670,17 +1849,17 @@ bool saveOpts( dvdLayout *layout )
 	vector<infoFile> &infofiles = *layout->infofiles;
 	string projectFile;
 
-	bool generating;
+	bool generating = true;  // = false?
 
-	if( generating = ! editing )
+	if( generating == ! editing )  // = ! editing
 	{
 		editing = absolute;
-        projectFile = projectDotLplex.generic_string();
+        projectFile = projectDotLplex.string();
 	}
 	else
 	{
 		if( job.projectPath == projectDotLplex ) editing = absolute;
-		projectFile = job.projectPath.generic_string();
+		projectFile = job.projectPath.string();
 	}
 
 	ofstream optFile;
@@ -1716,7 +1895,7 @@ bool saveOpts( dvdLayout *layout )
 	}
 
 
-	char *T = "yes", *F = "no";
+	constexpr const char *T = "yes", *F = "no";
 	int bitPos[] = { 0,1,2,0,3,0,0,0,4 };
 
 	dotLplex << shebang << endl <<
@@ -1727,7 +1906,7 @@ bool saveOpts( dvdLayout *layout )
 		"# Settings:\n\n";
 
 	if( job.params & redirect && editing == absolute ) dotLplex <<
-        "--dir="         << QUOTE( (job.outPath.parent_path() /  job.name).generic_string() ) << endl; // -d
+        "--dir="         << QUOTE( (job.outPath.parent_path() /  job.name).string() ) << endl; // -d
 	else dotLplex <<
 		"--name="        << QUOTE( job.name ) << endl; // -n
 
@@ -1742,35 +1921,35 @@ bool saveOpts( dvdLayout *layout )
             job.trim0 & jobs::nearest ? "nearest" :
             job.trim0 & jobs::forward ? "forward" : "" ) << endl << // -s
 		"--create="      << ( job.params & dvdStyler ? "dvdStyler" :
-			((char*[]){ "lpcm", "m2v", "mpeg", "dvd", "iso", "lgz" }) [ job.prepare-3 ] ) << endl << // -c
-		"--media="       << ((char*[]){ "dvd+r", "dvd-r", "dl", "none"  } ) [ bitPos[ job.media ] ] << endl << // -z
+			((const char*[]){ "lpcm", "m2v", "mpeg", "dvd", "iso", "lgz" }) [ job.prepare-3 ] ) << endl << // -c
+		"--media="       << ((const char*[]){ "dvd+r", "dvd-r", "dl", "none"  } ) [ bitPos[ job.media ] ] << endl << // -z
 		"--cleanup="     << ( job.params & cleanup ? T:F ) << endl; // -C
 
 	if( jpegs.size() == 1 ) dotLplex <<
 		"--jpeg="        << ( alias( jpegs[0].fName ) ?
-			jpegs[0].fName.generic_string() : QUOTE( jpegs[0].fName.generic_string() ) ) << endl; // -j
+			jpegs[0].fName.string() : QUOTE( jpegs[0].fName.string() ) ) << endl; // -j
 
 	if( editing == absolute )
 	{
 		dotLplex <<
 		"--video="       << ( job.tv == NTSC ? "ntsc" : "pal" ) << endl << // -t
-//      "--jpeg="        << QUOTE( job.jpeg.generic_string() ) << endl << // -j
-        "--dvdpath="     << QUOTE( job.dvdPath.parent_path().generic_string() ) << endl << // -p
-        "--workpath="    << QUOTE(  job.tempPath.parent_path().generic_string()  ) << endl << // -w
-        "--isopath="     << QUOTE( job.isoPath.parent_path().generic_string() ) << endl; // -a
-//      "--extractPath=" << QUOTE( job.extractPath.parent_path() ) << endl << // -e
-	}
+   //     "--jpeg="         << QUOTE( job.jpeg.string() ) << endl << // -j
+        "--dvdpath="   << QUOTE( job.dvdPath.parent_path().string() ) << endl << // -p
+        "--workpath=" << QUOTE(  job.tempPath.parent_path().string()  ) << endl << // -w
+        "--isopath="    << QUOTE( job.isoPath.parent_path().string() ) << endl; // -a
+   //     "--extractPath=" << QUOTE( job.extractPath.parent_path() ) << endl << // -e
+    }
 
 	dotLplex <<
 		"--verbose="     << ( _verbose ? T:F ) << endl << // -v
 		( generating ? "#" : "" ) <<
-		"--editing="     << ((char*[]){ "false", "relative", "absolute" }) [ editing ]
+		"--editing="     << ((const char*[]){ "false", "relative", "absolute" }) [ editing ]
 			<< ( edit & editVerbose ? ",v" : "" ) << endl; // -Y
 
 	if( Lfiles.size() )
 	{
 		if( editing == relative  )
-			for( int i=0; i < jpegs.size(); i++ )
+			for( uint i=0; i < jpegs.size(); ++i )
             {
                 //jpegs[i].fName.MakeRelativeTo( job.projectPath.parent_path() );
                 jpegs[i].fName = fs::canonical(jpegs[i].fName);
@@ -1783,20 +1962,20 @@ bool saveOpts( dvdLayout *layout )
 				fs::path fName( menuPath );
                 //fName.MakeRelativeTo( job.projectPath.parent_path() );
                 fName = fs::canonical(fName);
-				menuPath = fName.generic_string();
+				menuPath = fName.string();
 			}
 			dotLplex << "\n--menu" << ( menuForce ? "force=" : "=" ) << QUOTE( menuPath.c_str() ) << "\n";
 
 			if( ! generating )
 			{
-				for( int i=0; i < menufiles.size(); i++ )
+				for( uint i=0; i < menufiles.size(); ++i )
 				{
 					if( editing == relative )
 					{
 						fs::path fName( menufiles[i] );
                         //fName.MakeRelativeTo( job.projectPath.parent_path() );
                         fName = fs::canonical(fName);
-						menufiles[i] = fName.generic_string();
+						menufiles[i] = fName.string();
 					}
 					dotLplex << "# " << QUOTE( menufiles[i].c_str() ) << "\n";
 				}
@@ -1809,7 +1988,7 @@ bool saveOpts( dvdLayout *layout )
 		uint16_t trimType = job.trimCt ? 0 : job.trim0 & 0x0F;
 		lpcmFile *lFile;
 
-		for( int i=0; i < Lfiles.size(); i++ )
+		for( uint i=0; i < Lfiles.size(); ++i )
 		{
 			lFile = &Lfiles.at(i);
 
@@ -1835,8 +2014,8 @@ bool saveOpts( dvdLayout *layout )
 				jpgIndex = lFile->jpgIndex;
 				dotLplex << ( jpegs[ jpgIndex ].ar == dvdJpeg::_16x9 ? "jpgw=" : "jpg=" )
 					<< ( alias( jpegs[ jpgIndex ].fName ) ?
-						jpegs[ jpgIndex ].fName.generic_string() :
-						QUOTE( jpegs[ jpgIndex ].fName.generic_string() ) );
+						jpegs[ jpgIndex ].fName.string() :
+						QUOTE( jpegs[ jpgIndex ].fName.string() ) );
 				dotLplex << endl;
 			}
 
@@ -1846,10 +2025,10 @@ bool saveOpts( dvdLayout *layout )
                  lFile->fName == fs::absolute(lFile->fName);
             }
 
-			dotLplex << QUOTE( lFile->fName.generic_string() );
+			dotLplex << QUOTE( lFile->fName.string() );
 			if( edit & editVerbose )
 			{
-				for( int s=lFile->fName.generic_string().length(); s < 50; s++ )
+				for( int s=lFile->fName.string().length(); s < 50; s++ )
 					dotLplex << ' ';
 				dotLplex << _f("   # %4d MB %7s",
 					(uint32_t) (dvdUtil::sizeOnDvd( lFile, job.tv == NTSC ) / MEGABYTE),
@@ -1863,20 +2042,20 @@ bool saveOpts( dvdLayout *layout )
 	{
 		dotLplex << "\n# XTRA - Info files\n" << endl;
 
-		for( int i=0; i < infofiles.size(); i++ )
+		for( uint i=0; i < infofiles.size(); ++i )
 		{
 			if( editing == relative )
 			{
 				fs::path fName( infofiles[i].fName );
                 //fName = fs::relative(fName, job.projectPath.parent_path());
                 fName = fs::canonical(fName);  // pas de relative
-				infofiles[i].fName = fName.generic_string();
+				infofiles[i].fName = fName.string();
 			}
 			if( infofiles[i].reject )
 				continue;
 			dotLplex << QUOTE( infofiles[i].fName ) << "\n";
 		}
-		for( int i=0; i < infofiles.size(); i++ )
+		for( uint i=0; i < infofiles.size(); ++i )
 		{
 			if( infofiles[i].reject )
 				dotLplex << "#" << QUOTE( infofiles[i].fName ) << "\n";
@@ -1887,6 +2066,8 @@ bool saveOpts( dvdLayout *layout )
 
 	if( ! ( edit & piped ) )
 		dotLplex.close();
+
+    return true;
 }
 
 

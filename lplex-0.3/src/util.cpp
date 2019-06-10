@@ -2,6 +2,8 @@
 	util.cpp - misc utilities.
 	Copyright (C) 2006-2011 Bahman Negahban
 
+    Adapted to C++-17 in 2018 by Fabrice Nicol
+
 	This program is free software; you can redistribute it and/or modify it
 	under the terms of the GNU General Public License as published by the
 	Free Software Foundation; either version 2 of the License, or (at your
@@ -118,8 +120,40 @@ void setcolors( int scheme )
 ofstream xlog;
 string xlogName;
 
+void normalize_windows_paths(string & path __attribute__((unused)))
+{
+#ifndef __linux__
+    replace(path.begin(), path.end(), '/', '\\');
+#endif
+}
 
-char * scrub()
+void normalize_windows_paths(fs::path &path __attribute__((unused)))
+{
+#ifndef __linux__
+    string _path = path.string();
+    replace(_path.begin(), _path.end(), '/', '\\');
+    path = fs::path(_path);
+#endif
+}
+
+
+char* normalize_windows_paths(const char* path)
+{
+#ifndef __linux__
+    string _path = string(path);
+    char* out = const_cast<char*>(_path.c_str());
+
+    for(int i=0; out[i] != '\0'; ++i)
+    {
+       if (out[i] == '/') out[i] = '\\';
+    }
+    return (strdup(out));
+#else
+    return const_cast<char*>(path);
+#endif
+}
+
+const char * scrub()
 {
 	int l = blip_len;
 	while( l )
@@ -190,17 +224,19 @@ void blip( const char *msg )
 //    Returns
 // ----------------------------------------------------------------------------
 
-int logInit( const string& filename )
+void logInit( const string& filename )
 {
 	if( xlog.is_open() )
 		xlog.close();
 	xlogExists = 0;
 	xlog.clear();
     if (! filename.empty() )
+    {
         xlogName = filename;
-	
+    }
+
 	xlog.open( xlogName.c_str() );
-	
+
     if( ! xlog.is_open())
     {
         ERR( "Couldn't open log file \'" + string(xlogName) + "\'.\n" );
@@ -217,11 +253,11 @@ int logInit( const string& filename )
 //    Returns 0
 // ----------------------------------------------------------------------------
 
-int logCopy( const char* filename )
+int logCopy( const fs::path& filename )
 {
-	if( filename )
+	if( ! filename.empty() )
 	{
-		INFO( _f( "Saving log file to \'%s\'\n", filename ) );
+		INFO( _f( "Saving log file to \'%s\'\n", filename.string() ) );
 		fs::copy_file( xlogName, filename );
 	}
 	return 0;
@@ -282,6 +318,10 @@ int logReopen()
 	return 0;
 }
 
+#else
+ofstream xlog;
+string xlogName;
+char * scrub() {}
 #endif
 
 
@@ -348,7 +388,7 @@ int otherThan( const char c, unsigned char *buf, int n )
 // ----------------------------------------------------------------------------
 
 
-string hexToStr( const unsigned char *buf, int n, int w )
+string hexToStr( const unsigned char *buf, int n, int w __attribute__((unused)))
 {
 	string str;
 	for ( int i=0; i < n; ++i )

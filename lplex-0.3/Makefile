@@ -373,7 +373,7 @@ top_build_prefix =
 top_builddir = .
 top_srcdir = .
 ACLOCAL_AMFLAGS = -Im4
-SUBDIRS = data redist redist/md5 patch src src/desktop doc msw
+SUBDIRS = data redist redist/md5 patch src src/desktop doc msw data
 lplexdocdir = ${prefix}/doc/lplex
 lplexdoc_DATA = \
 	README\

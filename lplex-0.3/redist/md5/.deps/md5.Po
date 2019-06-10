@@ -1,30 +1,31 @@
-md5.o: md5.c md5.h \
- C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/string.h \
- C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/crtdefs.h \
- C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/_mingw.h \
- C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/_mingw_mac.h \
- C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/_mingw_secapi.h \
- C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/vadefs.h \
- C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/sdks/_mingw_directx.h \
- C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/sdks/_mingw_ddk.h \
- C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/sec_api/string_s.h
+md5.o: md5.c /usr/include/stdc-predef.h md5.h /usr/include/string.h \
+ /usr/include/bits/libc-header-start.h /usr/include/features.h \
+ /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
+ /usr/include/bits/long-double.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-64.h \
+ /usr/lib/gcc/x86_64-pc-linux-gnu/9.1.0/include/stddef.h \
+ /usr/include/bits/string_fortified.h
+
+/usr/include/stdc-predef.h:
 
 md5.h:
 
-C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/string.h:
+/usr/include/string.h:
 
-C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/crtdefs.h:
+/usr/include/bits/libc-header-start.h:
 
-C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/_mingw.h:
+/usr/include/features.h:
 
-C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/_mingw_mac.h:
+/usr/include/sys/cdefs.h:
 
-C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/_mingw_secapi.h:
+/usr/include/bits/wordsize.h:
 
-C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/vadefs.h:
+/usr/include/bits/long-double.h:
 
-C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/sdks/_mingw_directx.h:
+/usr/include/gnu/stubs.h:
 
-C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/sdks/_mingw_ddk.h:
+/usr/include/gnu/stubs-64.h:
 
-C:/Users/Public/Dev/msys2/mingw64/x86_64-w64-mingw32/include/sec_api/string_s.h:
+/usr/lib/gcc/x86_64-pc-linux-gnu/9.1.0/include/stddef.h:
+
+/usr/include/bits/string_fortified.h:

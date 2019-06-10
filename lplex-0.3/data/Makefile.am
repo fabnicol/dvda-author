@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
 #lplex_datadir = $(prefix)/@NO_PREFIX_PACKAGE_DATA_DIR@/@PACKAGE@
-lplex_datadir = @datadir@/$(PACKAGE)
+lplex_datadir = @datadir/$(PACKAGE)
 
 lplex_data_DATA = \
 	black_NTSC_352x240.jpg \
