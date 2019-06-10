@@ -124,27 +124,13 @@ int download_fullpath(const char* curlpath, const char* filename, const char* fu
 
 char *fn_get_current_dir_name (void)
 {
-    char *cwd;
-    int len = 64;
-    char* r;
-    if (NULL == (cwd = malloc (len * sizeof *cwd)))
-    {
-        printf ("%s", ERR "Not enough memory for my_get_cwd.\n");
-        exit (EXIT_FAILURE);
-    }
-    while ((NULL == (r = getcwd (cwd, len))) && (ERANGE == errno))
-    {
-        len += 32;
-        if(NULL == (cwd = realloc (cwd, len * sizeof *cwd)))
-        {
-            printf ("%s", ERR "Not enough memory for my_get_cwd.\n");
-            exit (EXIT_FAILURE);
-        }
-    }
-    if (r)
-        return (cwd);
-    free (cwd);
-    return (NULL);
+#ifdef __linux__
+   return get_current_dir_name();
+#else
+#if defined _WIN32 || defined _MINGW32 || defined __MINGW32 || defined __unix__  || defined __apple__
+    return getwd(NULL);
+#endif
+#endif
 }
 
 char* make_absolute(char* filepath)
@@ -2156,10 +2142,11 @@ char* quote(const char* path)
 // Launches an application in a fork and duplicates its stdout into stdout; waits for it to return;
 
 
-int run(const char* application, const char*  args[], const int option)
+int run(const char* application, const char*  args[], const int option, bool _fork)
 {
 errno=0;
-#if !defined __WIN32__
+if (_fork)
+{
     int pid;
     int tube[2];
     char c;
@@ -2194,14 +2181,17 @@ errno=0;
         close(tube[0]);
 
     }
-#else
+}
+else
+{
+
     const char* s=get_command_line(args);
     char cml[strlen(application)+1+strlen(s)+1+2];
     sprintf(cml, "%s %s",  application, s);
     free((char* ) s);
     if (globals.debugging) foutput(INF "Running: %s\n ", cml);
     errno=system(cml);
-#endif
+}
 
     return errno;
 }

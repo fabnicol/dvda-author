@@ -340,7 +340,15 @@ int launch_manager(command_t *command)
 
     for (i = 0; i < naudio_groups; ++i)
     {
-        if ((title[i]=(uint8_t *) calloc(ntracks[i], 1)) == NULL) perror(ERR "title[k]");
+        title[i]=(uint8_t *) calloc(ntracks[i], 1);
+
+        if (title[i] == NULL)
+        {
+            perror(ERR "title[k]");
+
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Impossible to create title arrays")
+        }
+        else
         {
             title[i][0]=0;
             for (j = 1; j < ntracks[i]; ++j)
@@ -393,7 +401,12 @@ SUMMARY:
         {
            const char* args[]={mkisofs, "-dvd-audio", "-v", "-o", dvdisopath, globals.settings.outdir, NULL};
            foutput("%s%s%s\n", INF "Launching: ", mkisofs, " to create image");
-           run(mkisofs, args, 0);
+
+           run(mkisofs, args, 0, FORK);
+
+#ifndef _WIN32
+    while (waitpid(-1, NULL, 0) >0);
+#endif
            free(mkisofs);
         }
         else
@@ -404,9 +417,7 @@ SUMMARY:
         if ((!errno) && (size > 4*SIZE_AMG + 2*SIZE_SAMG +1))  foutput(MSG_TAG "Image was created with size %" PRIu64 " KB.\n", size);
         else
             foutput("%s\n", ERR "ISO file creation failed -- fix issue.");
-
     }
-
 
     if (globals.cdrecorddevice)
     {
@@ -427,14 +438,14 @@ SUMMARY:
             sprintf(string, "%s%c%s", globals.cdrecorddevice, '=', dvdisoinput);
             char*  args[]={"growisofs", "-Z", string, NULL};
 #define GROWISOFS "/usr/bin/growisofs"
-            run(GROWISOFS, (const char**) args, 0);
+            run(GROWISOFS, (const char**) args, 0, FORK);
         }
         else
         {
 
             char *verbosity=(globals.debugging)? "-v":"-s";
 #define TEST (globals.cdrecorddevice[0] != '\0')
-            int S=TEST? 8:6;
+            int S=TEST? 10:8;
             char* args[S];
             memset(args, 0, S);
             errno=0;
@@ -447,22 +458,19 @@ SUMMARY:
                 if TEST memcpy(args, args0, sizeof(args0));
                 else memcpy(args, args1, sizeof(args1));
                 foutput("%s%s%s\n", INF "Launching: ", cdrecord, " to create disk");
-                run(cdrecord, (const char**) args, 0);
+
+                run(cdrecord, (const char**) args, 0, true);
                 free(cdrecord);
              }
             else
                foutput("%s\n", ERR "Could not access to cdrecord binary.");
 
         }
+
     }
 
     #endif
     // freeing files and heap-allocated globals
-
-#ifndef __WIN32__
-   // while (waitpid(-1, NULL, 0) >0);
-#endif
-
 
     for (j=0; j < naudio_groups; j++)
     {
