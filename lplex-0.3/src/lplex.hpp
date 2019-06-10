@@ -2,6 +2,8 @@
 	lplex.hpp - top-level authoring and extraction.
 	Copyright (C) 2006-2011 Bahman Negahban
 
+    Adapted to C++-17 in 2018 by Fabrice Nicol
+
 	This program is free software; you can redistribute it and/or modify it
 	under the terms of the GNU General Public License as published by the
 	Free Software Foundation; either version 2 of the License, or (at your
@@ -38,7 +40,7 @@
 #include <getopt.h>
 #include <math.h>
 #include <md5/md5.h>
-#include <experimental/filesystem>
+#include <filesystem>
 
 #include "util.h"
 #include "wx.hpp"
@@ -63,7 +65,7 @@
 
 
 using namespace std;
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 class dvdLayout;
 class lpcmPGextractor;
@@ -115,25 +117,25 @@ extern option long_opts[];
 struct dvdJpeg
 {
 	fs::path fName, tName;
-	int dim, ar, rescale;
+	int dim, rescale, ar;
 	uint32_t roughGOP, roughGOP2;
 
 	enum { _4x3, _16x9 };
 	dvdJpeg(int asprat=_4x3) : rescale(0), ar(asprat) {}
-	string getName() { return rescale ? tName.generic_string() : fName.generic_string(); }
+	string getName() { return rescale ? tName.string() : fName.string(); }
 	int getDim() { return dim + ( rescale ? ( dim < 4 ? 4 : -4 ) : 0 ); }
 
-	char *sizeStr( bool outputSize = true )
+	const char *sizeStr( bool outputSize = true )
 	{
-		return (char*[]){
+		return (const char*[]){
 			"720x480", "704x480", "352x480", "352x240", // NTSC
 			"720x576", "704x576", "352x576", "352x288"  // PAL
 		} [ outputSize ? getDim() : dim ];
 	}
 
-	char *aspStr( bool outputSize = true )
+	const char *aspStr()
 	{
-		return (char*[]){ " 4:3", "16:9" } [ ar ];
+		return (const char*[]){ " 4:3", "16:9" } [ ar ];
 	}
 };
 
@@ -194,6 +196,12 @@ enum
 
 enum
 {
+    DIR_IGNORE = 0,
+    DIR_CONTINUE = 1
+};
+
+enum
+{
 	imagefile = 1,
 	dvdr = 2
 };
@@ -250,6 +258,7 @@ uint16_t init( int argc, char *argv[] );
 uint16_t addFiles( fs::path filespec );
 string defaultName();
 int checkName( string &jobName, bool trim = false );
+
 uint16_t setName( const char *namePath, bool isDirPath=true );
 void setJobTargets();
 void splitPaths();
@@ -269,7 +278,7 @@ int author( dvdLayout &layout );
 int unauthor( lpcmPGextractor &dvd );
 void copyInfoFiles(const fs::path& nameA );
 uint16_t readUserData( lpcmEntity *lFile, uint8_t *userData );
-uint16_t writeUserData( lpcmEntity *lFile, uint8_t *userData, uint16_t sizeofUData );
+uint16_t writeUserData( lpcmEntity *lFile, uint8_t *userData);
 int tagEmbed();
 int mkisofs(const fs::path &isoPath, const fs::path &dvdPath, const string& name );
 
@@ -291,6 +300,7 @@ int* mapMenus();
 
 int addJpeg( const char * fname, lplexJob &job, bool zero=false, bool ws=false );
 int jpegCheck( dvdJpeg &jpeg, bool ntsc, bool rescale );
+
 uint32_t roughGOP( const char *jpeg, const char *m2vName, bool ntsc );
 uint32_t roughGOP( dvdJpeg &dvdJpeg, const char *m2vName, bool ntsc );
 bool alias( fs::path &jpeg );
@@ -303,7 +313,11 @@ ofstream* m2v( uint32_t vFrames, const char *jpeg, const char *m2vName,
 class wxLplexLog : public ofstream
 {
 public:
-	virtual void DoLog( int level, const char *msg, time_t timestamp )
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
+    virtual void DoLog( int level, const char *msg, time_t timestamp )
 	{
 		switch( level )
 		{
@@ -322,7 +336,10 @@ public:
 				break;
 		}
 	}
+
+
     virtual void DoLogString( const char* *msg, time_t timestamp ) {}
+#pragma GCC diagnostic pop
 };
 
 
@@ -331,7 +348,7 @@ class lFileTraverser //: public wxDirTraverser
 public:
 
 	enum{ invalid=0x1, mismatchA=0x2, mismatchV=0x4, mismatchV_ar=0x8, notFound=0x10 };
-	uint16_t root, err, titleset, strict;
+	uint16_t root, titleset, err, strict;
 	bool dirSpecified;
 	struct lpcmFile lFile;
 	struct infoFile iFile;
@@ -339,11 +356,13 @@ public:
 
 	lFileTraverser( bool isStrict=true ) : titleset(100), err(0), strict(isStrict) {}
 
-	void setRoot( const char *rootPath, int fromParent );
+	string setRoot( const char *rootPath, int fromParent );
 	void processFiles();
 
+    void Traverse(const string& path);
+
     virtual void OnFile( const string& filename );
-    virtual void OnDir( const string& dirname );
+    virtual int OnDir( const string& dirname );
     virtual void OnOpenError( const string& openerrorname );
 
 };
@@ -354,12 +373,12 @@ class dvdauthorXml
 public:
 
 	int video, titlesets, dvdStyler, disabled;
-	fstream xml;
+	ofstream xml;
 	string name;
 
 	enum xmlContext
 	{
-		open, close, setDest, addTitle, openVob, closeVob, addChapter
+		open, close, setDest, addTitle, openVob, closeVob, addChapter, fileclose
 	};
 
     dvdauthorXml( const string& xmlName, int tv=NTSC, int ct=1, bool styler=0, bool disable=0 ) :
@@ -396,16 +415,19 @@ class dvdLayout : public dvdUtil
 public:
 
 	uint16_t dvdAudioFrame, dvdSampleSeam;
-	int16_t readIndex, writeIndex;
-	uint32_t dvdVideoFrame, dvdAVseam;
+	uint32_t dvdVideoFrame;
+    uint32_t dvdAVseam;
 	struct{ uint64_t estimate, audio, video, info; } total;
 
 	alignment trim;
-	lplexJob *job;
+
 	lpcmFile *lFile;
 	vector<lpcmFile> *Lfiles;
 	vector<string> *menufiles;
 	vector<infoFile> *infofiles;
+    lplexJob *job;
+  	int16_t readIndex;
+    int16_t writeIndex;
 	lpcmReader *reader;
 	md5_state_t md5sum;
 	counter<uint64_t> ct;
@@ -415,12 +437,12 @@ public:
 		Lfiles( lFiles ), menufiles( vFiles ), infofiles( iFiles ), job( plexJob ),
 		readIndex(-1), writeIndex(-1), reader(NULL)
 	{}
-	~dvdLayout() { /* if( editing ) */ saveOpts( this ); if( reader ) delete reader; }
+	~dvdLayout() { /* if( editing ) */ saveOpts( this ); /* if( reader ) delete reader; */ }
 
 	int configure();
 	uint64_t vobEstimate();
 	int checkSpace();
-	int setAudioUnits( FLAC__StreamMetadata *fmeta );
+	void setAudioUnits( FLAC__StreamMetadata *fmeta );
 	int readerNext();
 	int getNext();
 };
@@ -429,9 +451,11 @@ public:
 class xmlAttr
 {
 public:
-	int i;
+
 	char *buf;
-	char *name, *val;
+	char *name;
+    char *val;
+    int i;
 
 	xmlAttr( char *buffer ) : buf(buffer), name(NULL), val(NULL), i(0) {}
 

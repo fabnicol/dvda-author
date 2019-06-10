@@ -2,6 +2,8 @@
 	lpcm.cpp - general lpcm descriptors, dvd-v and wave header utilities.
 	Copyright (C) 2006-2011 Bahman Negahban
 
+    Adapted to C++-17 in 2018 by Fabrice Nicol
+
 	This program is free software; you can redistribute it and/or modify it
 	under the terms of the GNU General Public License as published by the
 	Free Software Foundation; either version 2 of the License, or (at your
@@ -47,7 +49,7 @@ uint16_t PES_packet::payload( PES_packet::header* PS1,
 	static uint8_t orphanage[11];
 	static uint16_t orphans, sampleSize = 1, bps, ch;
 	uint16_t i, o;
-	uint8_t buf, *seam;
+	uint8_t * seam = nullptr;
 
 	audio->start = dataAddr( PS1 );
 	audio->len = dataLen( PS1 ) + 1;
@@ -142,7 +144,7 @@ uint16_t PES_packet::payload( PES_packet::header* PS1,
 		mode ^= adopt;
 	}
 
-	if( orphans = ( audio->len % sampleSize ) )
+	if( (orphans = ( audio->len % sampleSize )) )
 	{
 		audio->len -= orphans;
 		for( o=0; o < orphans; o++ )
@@ -205,7 +207,7 @@ uint64_t PES_packet::readpts( uint8_t* buf )
 
 void PES_packet::display(PES_packet::header* h)
 {
-	unsigned char* b = (uint8_t*) h;
+
 	uint32_t pts = readpts( h );
 
 	cerr <<
@@ -221,7 +223,7 @@ void PES_packet::display(PES_packet::header* h)
 
 void PES_packet::display(PES_packet::LPCM_header* h)
 {
-	unsigned char* b = (uint8_t*) h;
+
 	cerr <<
 		"streamID    :" << hex << (short) h->streamID << dec << endl <<
 		"frames      :" << (short) h->frames << endl <<
@@ -401,10 +403,12 @@ int waveHeader::open( ifstream &wavefile, FLAC__StreamMetadata *fmeta, bool mute
 	uint32_t fmtChunk = 0, dataChunk = 0;
 	string msg;
 	struct{ uint8_t ID[4]; uint32_t size; } chunk;
-	off_t filelength;
 
-	wavefile.seekg ( 0, ios::end );
+    wavefile.seekg ( 0, ios::end );
+#if 0
+	off_t filelength;
 	filelength = wavefile.tellg();
+#endif
 
 	wavefile.seekg( 0 );
 	wavefile.read( (char *)&hdr, 12 );

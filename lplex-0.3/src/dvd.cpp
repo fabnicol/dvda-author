@@ -1,6 +1,7 @@
 /*
 	dvd.cpp - dvd navigation using libdvdread.
 	Copyright (C) 2006-2011 Bahman Negahban
+    Adapted to C++-17 in 2018 by Fabrice Nicol
 
 	This program is free software; you can redistribute it and/or modify it
 	under the terms of the GNU General Public License as published by the
@@ -433,12 +434,22 @@ int lpcm_video_ts::open( const char * VIDEO_TS, bool fatal )
 		close();
 
 	// suppress console output during libdvdread calls
-	putenv( "DVDREAD_VERBOSE=0" );
-	putenv( "DVDCSS_VERBOSE=0" );
-	freopen( NUL, "wt", stderr );
-	libdvdReader = DVDOpen( VIDEO_TS );
-	freopen( CON, "wt", stderr );
+	putenv( const_cast<char*>("DVDREAD_VERBOSE=0" ));
+	putenv( const_cast<char*>("DVDCSS_VERBOSE=0" ));
+	FILE* res = freopen( NUL, "wt", stderr );
+    if (res == nullptr)
+    {
+        cerr << "[ERR] Cannot open /dev/null" << endl;
+        throw;
+    }
 
+	libdvdReader = DVDOpen( VIDEO_TS );
+	res = freopen( CON, "wt", stderr );
+    if (res == nullptr)
+    {
+        cerr << "[ERR] Cannot open console" << endl;
+        throw;
+    }
 	if( ! libdvdReader )
 	{
 		if( fatal )
@@ -446,10 +457,19 @@ int lpcm_video_ts::open( const char * VIDEO_TS, bool fatal )
 		return 0;
 	}
 
-	freopen( NUL, "wt", stderr );
+	res = freopen( NUL, "wt", stderr );
+    if (res == nullptr)
+    {
+        cerr << "[ERR] Cannot open /dev/null" << endl;
+        throw;
+    }
 	ifo = ifoOpen( libdvdReader, 0 );
-	freopen( CON, "wt", stderr );
-
+	res = freopen( CON, "wt", stderr );
+    if (res == nullptr)
+    {
+        cerr << "[ERR] Cannot open console" << endl;
+        throw;
+    }
 	if( ! ifo )
 	{
 		if( fatal )
@@ -460,7 +480,7 @@ int lpcm_video_ts::open( const char * VIDEO_TS, bool fatal )
 	tv = TVformat( ifo );
 	fName = VIDEO_TS;
 
-    label = fName.stem().generic_string();
+    label = fName.stem().string();
 	if( label == "" || label == "VIDEO_TS" )
 		label = volumeLabel( VIDEO_TS, true );
 
@@ -607,8 +627,9 @@ int lpcmPGtraverser::getCell( bool searchBeyond )
 	{
 		idNow = titleset * 100000 + audioStream * 10000
 			+ ( pgc + 1 )* 100 + ( pg + 1 );
-		nameNow =_f( "%02d_%d_%02d_%02d",
-			titleset, audioStream, pgc + 1, pg + 1 );
+
+		nameNow =_f( "%02d_%d_%02d_%02d", titleset, audioStream, pgc + 1, pg + 1 );
+
 		pg++;
 		context = _isNew;
 	}
@@ -645,7 +666,7 @@ int lpcmPGextractor::getCell( bool searchBeyond )
 	if( state & traversed )
 		return getCellTraversed();
 
-	while( context = lpcmPGtraverser::getCell( searchBeyond ) )
+	while( (context = lpcmPGtraverser::getCell( searchBeyond )) )
 	{
 		if( audioCells[ pgcCell ].xIndex != -1 )
 			return context;
@@ -698,7 +719,7 @@ int lpcmPGextractor::getCellTraversed()
 
 	if( ++pgcCell == numPGCcells )
 	{
-		if( ++pgcIndex < audioTables.size() )
+		if( ++pgcIndex < (int) audioTables.size() )
 		{
 			audioCells = audioTables.at( pgcIndex ).audioCells;
 			titleset = audioTables.at( pgcIndex ).titleset;
@@ -709,7 +730,7 @@ int lpcmPGextractor::getCellTraversed()
 			pgc = audioTables.at( pgcIndex ).pgc;
 			numPGCcells = audioTables.at( pgcIndex ).numPGCcells;
 			pg = pgcCell = 0;
-#if 0
+#if DEBUG
 DBUG( "pgcIndex=" << pgcIndex );
 for( int c=0; c < numPGCcells + 1; c++ )
 {
@@ -726,10 +747,8 @@ DBUG( "cell=" << c << " : start=" << audioCells[c].start_sector
 
 	if( ! audioCells[ pgcCell ].secondary )
 	{
-		idNow = titleset * 100000 + audioStream * 10000
-			+ ( pgc + 1 )* 100 + ( pg + 1 );
-		nameNow =_f( "%02d_%d_%02d_%02d",
-			titleset, audioStream, pgc + 1, pg + 1 );
+		idNow = titleset * 100000 + audioStream * 10000	+ ( pgc + 1 )* 100 + ( pg + 1 );
+		nameNow =_f( "%02d_%d_%02d_%02d", titleset, audioStream, pgc + 1, pg + 1 );
 		pg++;
 		context = _isNew;
 	}
@@ -831,8 +850,8 @@ lpcmWriter* lpcmPGextractor::getWriter( int writeIndex, int context )
 
 
 				if( editing )
-                    lFile->writer->fName = lFile->writer->fName.generic_string() +
-						((char*[]){ ".wav", ".flac ", ".lpcm" }) [ lFile->format-1 ];
+                    lFile->writer->fName = lFile->writer->fName.string() +
+						((const char*[]){ ".wav", ".flac ", ".lpcm" }) [ lFile->format-1 ];
 				else
 					lFile->writer->open();
 			}
@@ -844,7 +863,7 @@ lpcmWriter* lpcmPGextractor::getWriter( int writeIndex, int context )
 			txt = "Continuing ";
 
 		ECHO( "\n" );
-        STAT( txt << lFile->fName.generic_string().substr( lFile->root ) << endl );
+        STAT( txt << lFile->fName.string().substr( lFile->root ) << endl );
 
 		if( state & lplexAuthored )
 		{
@@ -854,7 +873,7 @@ lpcmWriter* lpcmPGextractor::getWriter( int writeIndex, int context )
 
 		SCRN( "\n" );
         SCRN( string(STAT_TAG) + txt)
-        SCRN(TINT( lFile->writer->fName.filename().generic_string().c_str() ))
+        SCRN(TINT( lFile->writer->fName.filename().string().c_str() ))
         SCRN( "... " )
 
 		lastIndex = audioCells[writeIndex].xIndex;
@@ -917,7 +936,7 @@ int lpcmPGextractor::configurePGC()
 		return 0;
 
 											// for each cell in program...
-	while( context = getCell( false ) )
+	while( (context = getCell( false )) )
 		found |= configureCell( context );
 
 											// warn if ignoring restrictions
@@ -934,7 +953,7 @@ int lpcmPGextractor::configurePGC()
 		}
 	}
 
-#if 0
+#if DEBUG
 for( int c=0; c < numCells + 1; c++ )
 {
 DBUG( "cell=" << c << " : start=" << audioCells[c].start_sector
@@ -1019,7 +1038,7 @@ int lpcmPGextractor::configureCell( int context )
 
 		const char *tag = ( state & singleStep ? INFO_TAG : LOG_TAG );
 										// see if Lplex-authored...
-		if( found = readUserData( lFile, buf + 0x343 ) )
+		if( (found = readUserData( lFile, buf + 0x343 )) )
 		{
 			ECHO( _f( "%s(%s) Lplex tags found in nav packet PCI.RECI at LB %d::0x343\n",
                 tag, nameNow.c_str(), cell->start_sector ) );
@@ -1053,7 +1072,7 @@ int lpcmPGextractor::configureCell( int context )
 			}
 			lFile->trim.padding =
 				( audioframe - lFile->trim.len % audioframe ) % audioframe;
-#if 0
+#if DEBUG
 POST( "\n    dvd    : restored  : offset :  pad   :  file\n" );
 POST( setw(10) << flacHeader::bytesUncompressed( &lFile->fmeta ) << " :" <<
 setw(10) << lFile->trim.len << " :" <<
@@ -1108,10 +1127,12 @@ int lpcmPGextractor::udfItem( const char *fname, uint16_t ftype, uint32_t lb, ui
 	else if( iFile.fName.Left(5) == "XTRA/" )
 		iFile.fName = fname + 6;
 
-//   if( ! infofiles->size() )
-//      INFO( "---offset:----lb:-------size-------------------------\n" );
-//   LOG( _f( " %8lx:%6ld: %10ld %c %s\n",
-//      lb * DVD_VIDEO_LB_LEN, lb, len, iFile.reject ? ' ' : '*', fname ) );
+#if DEBUG
+   if( ! infofiles->size() )
+      INFO( "---offset:----lb:-------size-------------------------\n" );
+   LOG( _f( " %8lx:%6ld: %10ld %c %s\n",
+      lb * DVD_VIDEO_LB_LEN, lb, len, iFile.reject ? ' ' : '*', fname ) );
+#endif
 
 	infofiles->push_back( iFile );
 
@@ -1185,9 +1206,9 @@ void lpcmPGextractor::udfCopyInfoFiles( const char * path )
 	if( ! infofiles->size() )
 		return;
 
-    outPath = ( path ? path : (const char*)job->extractPath.generic_string() );
+    outPath = ( path ? path : (const char*)job->extractPath.string() );
 
-    img.open( job->inPath.generic_string(), ios::binary | ios::in );
+    img.open( job->inPath.string(), ios::binary | ios::in );
 	if( ! img )
 	{
 		ERR( "Could not open image file.\n" );

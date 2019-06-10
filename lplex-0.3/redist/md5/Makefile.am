@@ -2,7 +2,7 @@
 
 AM_CPPFLAGS =
 AM_CFLAGS = -Wall
-AM_CXXFLAGS = -Wall
+AM_CXXFLAGS = -Wall -s
 
 noinst_LIBRARIES = libmd5.a
 

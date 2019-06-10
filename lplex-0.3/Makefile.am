@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 ACLOCAL_AMFLAGS=-Im4
 
-SUBDIRS = data redist redist/md5 patch src src/desktop doc msw
+SUBDIRS = data redist redist/md5 patch src src/desktop doc msw data
 
 lplexdocdir = ${prefix}/doc/lplex
 lplexdoc_DATA = \

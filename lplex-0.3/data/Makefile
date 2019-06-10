@@ -291,7 +291,7 @@ top_builddir = ..
 top_srcdir = ..
 
 #lplex_datadir = $(prefix)/@NO_PREFIX_PACKAGE_DATA_DIR@/lplex
-lplex_datadir = ${datarootdir}/$(PACKAGE)
+lplex_datadir = @datadir/$(PACKAGE)
 lplex_data_DATA = \
 	black_NTSC_352x240.jpg \
 	black_NTSC_352x480.jpg \

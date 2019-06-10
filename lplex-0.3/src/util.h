@@ -2,6 +2,8 @@
 	util.h - misc utilities.
 	Copyright (C) 2006-2011 Bahman Negahban
 
+    Adapted to C++-17 in 2018 by Fabrice Nicol
+
 	This program is free software; you can redistribute it and/or modify it
 	under the terms of the GNU General Public License as published by the
 	Free Software Foundation; either version 2 of the License, or (at your
@@ -37,19 +39,17 @@
 #include <iomanip>
 #include <sstream>
 #include <string.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <algorithm>
 #include <cctype>
 #include <locale>
 
-#define WIN32_COLOR
+#define ANSI_COLOR
 
 using namespace std;
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 #include "platform.h"
-
-#define __STDC_LIMIT_MACROS 1
 #include <stdint.h>
 #include <vlc_bits.h>
 #include <md5/md5.h>
@@ -72,8 +72,8 @@ string toUpper(const string &s);
 
 #define QUOTE(s) ("\"" + string(s) + "\"")
 
-#define Left(X) substr(X)
-#define Right(X, Y)  X.substr(X.length() - Y)
+#define Left(X) substr(0, X)
+#define Right(X, Y)  (Y < X.length() ? X.substr( X.length() - Y) : string(""))
 
 // trim from start (in place)
 static inline void ltrim(std::string &s) {
@@ -200,11 +200,12 @@ extern messenger *myMessenger;
 extern uint16_t xlogExists, _verbose, _xcode;
 
 #define _ERR2LOG
+extern ofstream xlog;
 
 #ifdef _ERR2LOG
-extern ofstream xlog;
+
 extern string xlogName;
-int logInit( const string& logFilename = "" );
+void logInit( const string& logFilename = "" );
 int logCopy( const fs::path& filename ="");
 int logClose();
 int logDelete();
@@ -214,10 +215,16 @@ int logReopen();
 
 #else
 #define XLOG(t) 0
+int logInit( const string& logFilename = "" ){}
+int logCopy( const fs::path& filename =""){}
+int logClose(){}
+int logDelete(){}
+int logReopen(){}
+
 #endif
 
 #define XERR(t) do{ scrub(); if(_verbose) cerr << t; XLOG(t); xlog.flush(); }while(0)
-#define _ERR(t) do{ scrub(); cerr << endl << TINT_ERR(t); cerr.flush(); XLOG((string("\n") + string(t)).c_str()); xlog.flush(); gui_err(t); }while(0)
+#define _ERR(t) do{ scrub(); cerr << endl << TINT_ERR(t); cerr.flush(); XLOG((string("\n") + string(t)).c_str()); xlog.flush();  }while(0)
 
 #if 1
 #define STAT_TAG "STAT: "
@@ -283,7 +290,10 @@ void setcolors( int scheme = bright );
 #define ERR(t) do{ _xcode=2; _ERR( (string(ERR_TAG) + string(t)).c_str() ); }while(0);
 
 #ifdef lplex_console
-#define FATAL(t) { _ERR( (string(ERR_TAG) + string(t) + string("\n\n")).c_str() ); exit(-1); }//must follow 'if' statement
+#define FATAL(t) {  \
+    cerr << ERR_TAG << t << endl;\
+    throw;}//must follow 'if' statement
+
 #else
 #define FATAL(t) { gui_mode(messenger::_fatal); ERR(t); }//must follow 'if' statement
 #endif
@@ -300,10 +310,13 @@ extern uint16_t blip_len, blip_ct;
 extern string _blip, _affirm;
 extern char propellor[];
 
-char * scrub();
+const char * scrub();
 void blip( const char *msg = NULL );
 void blip(const string& msg);
 
+void normalize_windows_paths(string &path);
+char*  normalize_windows_paths(const char* path);
+void   normalize_windows_paths(fs::path &path);
 void unblip( bool clear = true );
 
 											// ...standardized counter with progress reporting
@@ -312,7 +325,7 @@ template<class T> struct counter
 {
 	T start, now, max;
 	counter<T>( T s=0,  T n=0,  T m=0 ) : start(s), now(n), max(m) {}
-	counter<T> & operator = (const counter<T> & other)
+	void operator = (const counter<T> & other)
 	{ start = other.start; now = other.now; max = other.max; }
 };
 
@@ -322,13 +335,15 @@ static inline void blip( counter<T> *ct,
 {
 	static char *pref;
 	if( blip_ct == 0 )
+    {
 		if( _verbose )
 		{
 			_blip = "";
-			pref = (char*)prefix;
+			pref = strdup(prefix);
 		}
 		else
-				pref = "";
+				pref = strdup("");
+    }
 
 	if( ! ( blip_ct % skip ) )
 	{
@@ -336,22 +351,25 @@ static inline void blip( counter<T> *ct,
 		{
 			int val = (int)(( ct->now - ct->start ) * 1000 / ( ct->max - ct->start ));
 			blip( _f( "%s%2d.%d%% %s", pref, val / 10, val % 10, suffix ) );
-			gui_update( val, blip_ct == 0 ? (const string&)_blip : "" );
+
 		}
 
 		else
 		{
 			string msg = _f( "%s%d %s", pref, ct->now, suffix );
 			blip( msg );
-			gui_pulse( (const string&)msg );
+
 		}
 	}
 	else
 		blip_ct++;
+
+    free(pref);
 }
 
-long execute( const string& command, int verbose=_verbose);
-long executeViaScript( const string& command, int verbose=_verbose,
-	int (*filter)( const char *, bool )=NULL );
+long execute( const string& application, const vector<const char*>& command, int verbose = _verbose);
 
+long execute( const string& application,  const vector<const char*>& args,
+              const string& application2, const vector<const char*>& args2,
+              int verbose);
 #endif
