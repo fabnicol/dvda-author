@@ -995,7 +995,7 @@ configure:16793: result: yes
 configure:16806: checking for udflist in -ldvdread
 configure:16832: gcc -o conftest -g -O2 -g -O2 -std=c99 -I/home/fab2/Dev/dvda-author/lplex-0.3/redist  conftest.c -ldvdread -ldl
  -ldvdread  >&5
-/usr/lib/gcc/x86_64-pc-linux-gnu/9.1.0/../../../../x86_64-pc-linux-gnu/bin/ld: /tmp/ccE8GBwH.o: in function `main':
+/usr/lib/gcc/x86_64-pc-linux-gnu/9.1.0/../../../../x86_64-pc-linux-gnu/bin/ld: /tmp/ccD8LeQl.o: in function `main':
 /home/fab2/Dev/dvda-author/lplex-0.3/conftest.c:46: undefined reference to `udflist'
 collect2: error: ld returned 1 exit status
 configure:16832: $? = 1
@@ -1123,16 +1123,13 @@ config.status:1192: creating doc/Makefile
 config.status:1192: creating msw/Makefile
 config.status:1192: creating msw/util/Makefile
 config.status:1192: creating config.h
-config.status:1373: config.h is unchanged
 config.status:1421: executing depfiles commands
 config.status:1498: cd redist/md5       && sed -e '/# am--include-marker/d' Makefile         | make -f - am--depfiles
 make[1]: Entering directory '/home/fab2/Dev/dvda-author/lplex-0.3/redist/md5'
-make[1]: Nothing to be done for 'am--depfiles'.
 make[1]: Leaving directory '/home/fab2/Dev/dvda-author/lplex-0.3/redist/md5'
 config.status:1503: $? = 0
 config.status:1498: cd src       && sed -e '/# am--include-marker/d' Makefile         | make -f - am--depfiles
 make[1]: Entering directory '/home/fab2/Dev/dvda-author/lplex-0.3/src'
-make[1]: Nothing to be done for 'am--depfiles'.
 make[1]: Leaving directory '/home/fab2/Dev/dvda-author/lplex-0.3/src'
 config.status:1503: $? = 0
 config.status:1421: executing libtool commands

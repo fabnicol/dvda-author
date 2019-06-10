@@ -2,6 +2,8 @@
 	processor.hpp - lpcm audio processing.
 	Copyright (C) 2006-2011 Bahman Negahban
 
+    Adapted to C++-17 in 2018 by Fabrice Nicol
+
 	This program is free software; you can redistribute it and/or modify it
 	under the terms of the GNU General Public License as published by the
 	Free Software Foundation; either version 2 of the License, or (at your
@@ -127,17 +129,31 @@ public:
 	uint32_t unsent;
 
 	uint16_t preset( const char *filename )
-		{ fName = filename; state |= named; }
+		{
+          fName = filename;
+          state |= named;
+          return state;
+         }
+
 	uint16_t preset( ::FLAC__StreamMetadata *f )
-		{ fmeta = *f; return soundCheck( this ); }
+		{
+           fmeta = *f;
+           return soundCheck( this );
+        }
+
 	uint16_t preset( PES_packet::LPCM_header *LPCM )
-		{ flacHeader::readStreamInfo( LPCM, &fmeta ); return soundCheck( this, false ); }
+		{
+          flacHeader::readStreamInfo( LPCM, &fmeta );
+          return soundCheck( this, false );
+        }
 
 	static int swap2wav( unsigned char *data, uint32_t count,
 		int channels, int bitspersample );
 
 	uint32_t process( byteRange *audio )
-		{ return process( audio->start, audio->len ); }
+		{
+           return process( audio->start, audio->len );
+        }
 
 	virtual uint32_t process( unsigned char *buf, uint32_t size ) = 0;
 	virtual uint16_t isOpen() = 0;
@@ -213,10 +229,14 @@ public:
 	virtual uint16_t md5Report();
 
 	// from FLAC::Encoder::File
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 	virtual void progress_callback (FLAC__uint64 bytes_written,
 		FLAC__uint64 samples_written,
 		unsigned frames_written,
 		unsigned total_frames_estimate) {}
+#pragma GCC diagnostic pop
+
 };
 
 

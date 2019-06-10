@@ -2,6 +2,8 @@
 	writer.cpp - wave, flac and raw lpcm output processing.
 	Copyright (C) 2006-2011 Bahman Negahban
 
+    Adapted to C++-17 in 2018 by Fabrice Nicol
+
 	This program is free software; you can redistribute it and/or modify it
 	under the terms of the GNU General Public License as published by the
 	Free Software Foundation; either version 2 of the License, or (at your
@@ -137,6 +139,7 @@ bool lpcmEntity::soundCheck( lpcmEntity *l, bool mute )
 #endif
 				if( ch <= maxDvdChans[( bps-16)/4][(khz/48)-1] ) break;
 				else bpsOk = khzOk = 0;
+                [[fallthrough]];
 			default: chOk = 0; notAllowed = 1;
 		}
 
@@ -306,11 +309,11 @@ uint16_t rawWriter::open()
 	if( rawFile.is_open() )
 		rawFile.close();
 
-    fName = fName.generic_string() + ".lpcm";
-    rawFile.open( fName.generic_string(), ios::binary );
+    fName = fName.string() + ".lpcm";
+    rawFile.open( fName.string(), ios::binary );
 
 	if( ! rawFile.is_open() )
-        FATAL( "Can't open output file " + fName.generic_string() );
+        FATAL( "Can't open output file " + fName.string() );
 
 	md5_init( &md5 );
 	md5_init( &md5raw );
@@ -383,6 +386,7 @@ uint16_t rawWriter::close()
 	rawFile.close();
 	md5_finish( &md5raw, md5strRaw );
 	md5_finish( &md5, md5str );
+    return 0;
 }
 
 
@@ -425,11 +429,11 @@ uint16_t waveWriter::open()
 	if( waveFile.is_open() )
 		waveFile.close();
 
-    fName = fName.generic_string() + ".wav";
-    waveFile.open( fName.generic_string(), ios::binary );
+    fName = fName.string() + ".wav";
+    waveFile.open( fName.string(), ios::binary );
 
 	if( ! waveFile.is_open() )
-        FATAL( "Can't open output file " + fName.generic_string() );
+        FATAL( "Can't open output file " + fName.string() );
 
 	waveHeader::tag( waveFile, &fmeta );
 	md5_init( &md5 );
@@ -539,10 +543,10 @@ uint16_t flacWriter::open()
 	interSamp = fmeta.data.stream_info.channels *
 		fmeta.data.stream_info.bits_per_sample / 8;
 
-    fName = fName.generic_string() + ".flac";
+    fName = fName.string() + ".flac";
 
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
-    set_filename( fName.generic_string() );
+    set_filename( fName.string() );
 #endif
 	set_channels( fmeta.data.stream_info.channels );
 	set_bits_per_sample( fmeta.data.stream_info.bits_per_sample );
@@ -593,7 +597,7 @@ uint16_t flacWriter::open()
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
 	if( ( err = init() ) != FLAC__FILE_ENCODER_OK )
 #else // flac 1.1.3+
-    if( ( err = init( fName.generic_string() ) ) != FLAC__STREAM_ENCODER_INIT_STATUS_OK )
+    if( ( err = init( fName.string() ) ) != FLAC__STREAM_ENCODER_INIT_STATUS_OK )
 #endif
 	{
 		showState( err, "initialization" );
@@ -698,10 +702,10 @@ uint16_t flacWriter::md5Report()
 	if( ! isOpen() )
 		return false;
 
-    ifstream flacFile( fName.generic_string(), ios::binary );
+    ifstream flacFile( fName.string(), ios::binary );
 	if( ! flacFile.is_open() )
 	{
-        ERR( "Can't open input file \'" + fName.generic_string() + "\'\n" );
+        ERR( "Can't open input file \'" + fName.string() + "\'\n" );
 		return 1;
 	}
 	flacFile.seekg( 0 );
@@ -953,7 +957,7 @@ void flacWriter::showState( int initcode, const char *msg )
 #else // flac 1.1.3+
 
 	if( initcode )
-		LOG( _f( " %2d: '%s'\n", initcode, (char*[]){
+		LOG( _f( " %2d: '%s'\n", initcode, (const char*[]){
 				"FLAC__STREAM_ENCODER_INIT_STATUS_OK",
 				"FLAC__STREAM_ENCODER_INIT_STATUS_ENCODER_ERROR",
 				"FLAC__STREAM_ENCODER_INIT_STATUS_UNSUPPORTED_CONTAINER",
@@ -971,7 +975,7 @@ void flacWriter::showState( int initcode, const char *msg )
 			} [initcode] ) );
 
 	FLAC__StreamEncoderState status = get_state();
-	LOG( _f( " %2d: '%s'\n", status, (char*[]){
+	LOG( _f( " %2d: '%s'\n", status, (const char*[]){
 			"FLAC__STREAM_ENCODER_OK",
 			"FLAC__STREAM_ENCODER_UNINITIALIZED",
 			"FLAC__STREAM_ENCODER_OGG_ERROR",

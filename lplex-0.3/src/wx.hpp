@@ -2,6 +2,8 @@
 	wx.hpp - misc wxwidgets extensions.
 	Copyright (C) 2006-2011 Bahman Negahban
 
+    Adapted to C++-17 in 2018 by Fabrice Nicol
+
 	This program is free software; you can redistribute it and/or modify it
 	under the terms of the GNU General Public License as published by the
 	Free Software Foundation; either version 2 of the License, or (at your
@@ -31,27 +33,15 @@ using namespace std;
 #include "util.h"
 
 
-#if defined __WIN32 || defined _WIN32 || defined _WIN64 || defined __WIN64 || defined MINGW32 || defined MINGW64
-#  define SEPARATOR  "/"
-#  define USER  "USERNAME"
-#  define HOME  "C:\\Users"
-#else
-#  define SEPARATOR "\\"
-#  define USER "USER"
-#  define HOME "HOME"
-#endif
-
 bool fs_MakeDirs( const fs::path& dirName );
-string fs_EndSep( const char *path );
 string fs_GetTempDir();
 bool fs_DeleteDir( const fs::path& dirName );
-bool fs_EmptyDir( const fs::path& dirName );
 size_t fs_GetAllDirs( const string& dirName, vector<string>& dirs );
 size_t fs_DirSize( const fs::path& dirName );
-const char * fs_validPath( const fs::path&  filename );
+bool fs_validPath( const fs::path&  filename );
 void fs_fixSeparators( char * path );
 
-class _wxStopWatch 
+class _wxStopWatch
 {
 public:
 	int m, s;

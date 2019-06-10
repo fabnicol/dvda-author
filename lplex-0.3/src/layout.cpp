@@ -2,6 +2,8 @@
 	layout.cpp - dvd layout design and management.
 	Copyright (C) 2006-2011 Bahman Negahban
 
+    Adapted to C++-17 in 2018 by Fabrice Nicol
+
 	This program is free software; you can redistribute it and/or modify it
 	under the terms of the GNU General Public License as published by the
 	Free Software Foundation; either version 2 of the License, or (at your
@@ -41,11 +43,11 @@ int dvdLayout::readerNext()
 		lFile = &Lfiles->at( readIndex - 1 );
 		memcpy( &lFile->md5str, &reader->fmeta.data.stream_info.md5sum, 16 );
 		lFile->type |= lpcmFile::readComplete;
-		delete reader;
+		//delete reader;
 		reader = NULL;
 	}
 
-	if( readIndex < Lfiles->size() )
+	if( readIndex < (int) Lfiles->size() )
 		lFile = &Lfiles->at( readIndex );
 	else
 	{
@@ -54,10 +56,10 @@ int dvdLayout::readerNext()
 	}
 
 	if( lFile->format == wavef )
-        reader = new waveReader( lFile->fName.generic_string(), bigBlock,
+        reader = new waveReader( lFile->fName.string(), bigBlock,
 			sizeof( bigBlock ), dvdSampleSeam );
 	else if( lFile->format == flacf )
-        reader = new flacReader( lFile->fName.generic_string(), bigBlock,
+        reader = new flacReader( lFile->fName.string(), bigBlock,
 			sizeof( bigBlock ), dvdSampleSeam );
 
 	if( ! reader )
@@ -194,7 +196,7 @@ int dvdUtil::AVseam( int audioFrameLen, bool ntsc )
 // ----------------------------------------------------------------------------
 
 
-int dvdLayout::setAudioUnits( FLAC__StreamMetadata *fmeta )
+void dvdLayout::setAudioUnits( FLAC__StreamMetadata *fmeta )
 {
 	dvdSampleSeam = sampleSeam( fmeta );
 	dvdAudioFrame = audioFrame( fmeta );
@@ -287,7 +289,7 @@ int dvdLayout::checkSpace()
 
 	INFOv( spaceTxt << ".\n" );
 
-
+#if 0
     uint64_t freeSpace = fs::space(job->outPath).available;
     uint64_t tempSpace = fs::space(job->tempPath).available;
     uint64_t isoSpace  = fs::space(job->isoPath).available;
@@ -371,7 +373,7 @@ int dvdLayout::checkSpace()
 		for( int i=0; i < 3; i++ )
 			if( fail & ( 0x01 << i ) )
             {
-                ERR( string(devices[i].path) + string(": not enough space on device ") + string(device( devices[i].id )))
+              //  ERR( string(devices[i].path) + string(": not enough space on device ") + string(device( devices[i].id )))
                 ERR( " - " + string(sizeStr( devices[i].space )) + string(" free )\n") );
             }
 #endif
@@ -405,7 +407,7 @@ int dvdLayout::checkSpace()
             LOG( _f( " -editing %s\n", lplexConfig.filename().c_str() ) );
 			LOG( " -or using the -w, -a, and -p command line options.\n" );
             if( job->projectPath != projectDotLplex )
-                LOG( _f( " -or editing %s\n", job->projectPath.generic_string().c_str() ) );
+                LOG( _f( " -or editing %s\n", job->projectPath.string().c_str() ) );
 		}
 
 		ECHO( endl << endl );
@@ -417,6 +419,7 @@ int dvdLayout::checkSpace()
 	}
 
 	ECHO( "\n" );
+ #endif
 	return 0;
 }
 
@@ -430,7 +433,7 @@ int dvdLayout::checkSpace()
 //    Returns
 // ----------------------------------------------------------------------------
 
-#include <strstream>
+#include <sstream>
 
 int dvdLayout::configure()
 {
@@ -447,14 +450,14 @@ int dvdLayout::configure()
 		discon = 0x4
 	};
 
-	int i, titleset = 100, note = 0, titleStartIndex;
+	int titleset = 100, note = 0;
 	int32_t orphans = 0, audioFrames, audioLoss, audioGap, audioPadding;
 	uint64_t audioBytes;
-	uint32_t titleVframes;
+	uint32_t titleVframes = 0;
 
 	total.audio = total.video = total.info = 0;
 
-	for( i=0; i < Lfiles->size(); i++ )
+	for( uint i=0; i < Lfiles->size(); ++i )
 	{
 		lFile = &Lfiles->at(i);
 		lFile->index = i;
@@ -472,7 +475,6 @@ int dvdLayout::configure()
 			titleset = lFile->group;
 			titleVframes = 0;
 			orphans = 0;
-			titleStartIndex = i;
 			lFile->type |= lpcmFile::titleStart;
 		}
 
@@ -546,7 +548,7 @@ int dvdLayout::configure()
 		}
 
 		audioFrames = lFile->trim.len / dvdAudioFrame;
-		if( audioLoss = lFile->trim.len % dvdAudioFrame )
+		if( (audioLoss = lFile->trim.len % dvdAudioFrame ))
 			note |= loss;
 
 												//One lpcm audio frame = 150 PTS ticks
@@ -578,7 +580,7 @@ int dvdLayout::configure()
 		}
 
 		char p[100];
-		strstream x;
+		stringstream x;
 		x << setw(10) << audioBytes << " :" << setw(10) << lFile->trim.len << endl;
 		x.getline( p, 100 );
 
@@ -597,8 +599,8 @@ int dvdLayout::configure()
             timestamp( titleVframes, job->tv == NTSC ).c_str(),
 			lFile->jpgIndex );
 
-		LOG( lFile->details << " : " <<
-            ( editing ? lFile->fName.generic_string() : lFile->fName.filename() ) << endl );
+// 		LOG( lFile->details << " : " <<
+//             ( editing ? lFile->fName.string() : lFile->fName.filename() ) << endl );
 
 		if( lFile->type & lpcmFile::titleEnd )
 		{
@@ -623,24 +625,25 @@ int dvdLayout::configure()
 	ECHO( "\n" );
 
 	INFO( "Screen Jpeg" << ( jpegs.size() > 1 ? "s" : "" ) << "\n" );
-	for( i=0; i < jpegs.size(); i++ )
+	for( uint i=0; i < jpegs.size(); ++i )
 	{
 		LOG( _f( "%2d (%s%s%s %s) : %s\n", i,
 			jpegs[i].rescale ? "rescaled to " : "",
 			( job->tv == NTSC ? "NTSC " : "PAL " ), jpegs[i].sizeStr(),
 			jpegs[i].aspStr(),
-            jpegs[i].fName.generic_string().c_str() ) );
+            jpegs[i].fName.string().c_str() ) );
 	}
 	ECHO( "\n\n" );
 
-	for( i=0; i < infofiles->size(); i++ )
+	for( uint i=0; i < infofiles->size(); ++i )
 		if( ! infofiles->at(i).reject )
             total.info += filesize( infofiles->at(i).fName.c_str() );
 
-	for( i=0; i < menufiles->size(); i++ )
+	for( uint i=0; i < menufiles->size(); ++i )
         total.info += filesize( menufiles->at(i).c_str() );
 
 	checkSpace();
+	return 0;
 }
 
 
@@ -657,7 +660,7 @@ int dvdLayout::configure()
 
 int dvdLayout::getNext()
 {
-	if( ++writeIndex >= Lfiles->size() )
+	if( ++writeIndex >= (int) Lfiles->size() )
 			return 0;
 	if( readIndex == -1 )
 		readerNext();
@@ -674,7 +677,7 @@ int dvdLayout::getNext()
 		clearbits( job->now, appending );
 
 	if( writeFile->type & lpcmFile::seqStart )
-        nameNow = _f( "%s%s_title_%02d-%02d", job->tempPath.generic_string().c_str(),
+        nameNow = _f( "%s/%s_title_%02d-%02d", job->tempPath.string().c_str(),
             job->name.c_str(), writeFile->group + 1, writeFile->index );
 
 	if( writeFile->type & lpcmFile::titleStart )
@@ -690,11 +693,12 @@ int dvdLayout::getNext()
 
 	string txt;
 
-    txt = writeFile->fName.filename().generic_string();
+    txt = writeFile->fName.filename().string();
 	INFO( "Processing " << txt << "\n" );
 	INFO( lpcmEntity::audioInfo( writeFile ) << " : formatting audio...\n" );
     SCRN( TINT( txt.c_str() ) )
 	BLIP( " ...formatting audio " );
+
 	out.open( nameNow + ".lpcm", job->now & appending ?
 		( writeFile->type & lpcmFile::titleStart ?
 			ios::binary : ios::binary | ios::app ) :
@@ -728,8 +732,8 @@ int dvdLayout::getNext()
 			if( finished )
 			{
 				padding = writeFile->trim.len - ( total.now + reader->ct.now );
-				if( samplePadding = ( total.now + reader->ct.now ) %
-					sampleSeam( &reader->fmeta ) )
+				if( (samplePadding = ( total.now + reader->ct.now ) %
+					sampleSeam( &reader->fmeta ) ))
 				{
 					memset( bigBlock + reader->ct.now, '\0', samplePadding );
 					padding -= samplePadding;
@@ -840,16 +844,15 @@ int dvdauthorXml::write( xmlContext context, const string& str, int flag )
 	switch( context )
 	{
 		case open:
-            xml.open(str,
-				fstream::in | fstream::out | fstream::trunc );
+            xml.open(str, ofstream::out | ofstream::trunc);
 
 			if (! xml.is_open ())
-                FATAL( "Can't open output file " + str );
+                cerr << "[ERR] Could not open xml" << endl;
 			break;
 
 		case setDest:
 			xml
-//<?xml version="1.0" encoding="Windows-1252" ?>
+
 			<< "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 
 			if( ! dvdStyler )
@@ -871,7 +874,7 @@ int dvdauthorXml::write( xmlContext context, const string& str, int flag )
 #if 0
 						<< ( dvdStyler ? "\t\t\t\t<vob><menu></menu></vob>\n" : "" )
 #else
-//                << ( dvdStyler ? _f( "\t\t\t\t<vob><<menu aspectRatio=\"%d\" videoFormat=\"%s\"></menu></vob>\n").c_str() : "" )
+
 						<< ( dvdStyler ? _f( "\t\t\t\t<vob><menu videoFormat=\"%s\"></menu></vob>\n",
                             video == NTSC ? "NTSC" : "PAL" ).c_str() : "" )
 #endif
@@ -971,7 +974,7 @@ int dvdauthorXml::write( xmlContext context, const string& str, int flag )
 		case addChapter:
 			xml
 			<< ( chapter ? "," : "\n\t\t\t\t\tchapters=\"" )
-			<< "\n\t\t\t\t\t" << str;
+			<< str;
 			chapter = 1;
 			break;
 
@@ -991,11 +994,12 @@ int dvdauthorXml::write( xmlContext context, const string& str, int flag )
 			<< ( dvdStyler ? "</dvdstyler>\n" : "</dvdauthor>\n" );
 
 #ifdef _ERR2LOG
-			xml.seekg( 0 );
-			xlog << xml.rdbuf() << endl;
+	//		xml.seekg( 0 );
+		//	xlog << xml.rdbuf() << endl;
 #endif
 
-			xml.close();
+			xml.flush();
+            xml.close();
 			break;
 
 		default:
