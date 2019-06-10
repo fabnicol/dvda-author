@@ -291,6 +291,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #if defined(_WIN32) || defined(_MINGW32)
 #define EXE ".exe"
 #define NO_ANSI_COLORS
+#else
+#define EXE ""
 #endif
 
 #define CREATE_EXTRACT_AC3 7
@@ -349,11 +351,13 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define DEFAULT_ACTIVEHCOLOR_PALETTE    "0x902235"	//green	album, group text and underline color
 #define DEFAULT_ACTIVESELCOLOR_PALETTE "0x88B33A"  // ochre : the text turns ochre on pressing the remote for the highlighted text "0x286DF0"  // blue
 
-// Experience teaches this:
-#ifdef __WIN32__
+
+#ifdef _WIN32
 #define DEFAULT_TEXTFONT  "Arial"
+#define FORK false
 #else
 #define DEFAULT_TEXTFONT  "Courier-Bold"
+#define FORK true
 #endif
 
 #define DEFAULT_SVHIGHLIGHTTEXT

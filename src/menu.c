@@ -535,7 +535,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
                 while (read(tubeerr2[0], &c, 1) == 1) foutput("%c",c);
                 close(tubeerr2[0]);
                 if (globals.debugging) foutput("%s\n", INF "Running mplex...");
-                run(mplex, argsmplex, 0);
+                run(mplex, argsmplex, 0, FORK);
             }
         close(tube[0]);
     }
@@ -739,23 +739,13 @@ int launch_dvdauthor()
 
     if (globals.debugging) foutput("%s\n", INF "Launching dvdauthor to add virtual machine commands to top menu");
 
-    const char* args[]= {DVDAUTHOR_BASENAME, "-o", globals.settings.outdir, "-x", globals.xml, NULL};
+    const char* args[]= {dvdauthor, "-o", globals.settings.outdir, "-x", globals.xml, NULL};
 
-#ifndef __WIN32__
-    run(dvdauthor, args, 0);
-#else
-    const char* s=get_command_line(args);
-    char cml[strlen(dvdauthor)+1+strlen(s)+1];
-    sprintf(cml, "%s %s", dvdauthor, s);
-    system(win32quote(cml));
-    free((char*) s);
-#endif
+    run(dvdauthor, (const char** )args, 0, FORK);
 
-
-#ifndef __WIN32__
+#ifndef _WIN32
     sync();
 #endif
-
 
     return errno;
 }
