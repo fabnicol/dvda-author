@@ -697,7 +697,9 @@ char* create_binary_path(char* local_variable, const char* symbolic_constant, co
         {
             path = conc(globals.settings.bindir, basename);
             local_variable = win32quote(path);
+#   if defined (__WIN32__) || defined (_WIN32) || defined (_WIN64) || defined (__WIN32) || defined (__WIN64) || defined(__MSYS__)
             free(path);
+#endif
         }
     }
     else
