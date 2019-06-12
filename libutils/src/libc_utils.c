@@ -31,6 +31,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #if defined(_WIN32) || defined(__WIN32)
  #undef __STRICT_ANSI__
  #include <io.h>
+ #include <windows.h>
 #else
  #include <unistd.h>
 #endif
@@ -126,10 +127,12 @@ char *fn_get_current_dir_name (void)
 {
 #ifdef __linux__
    return get_current_dir_name();
-#else
-#if defined _WIN32 || defined _MINGW32 || defined __MINGW32 || defined __unix__  || defined __apple__
+#elif defined _MINGW32 || defined _WIN32
+ WCHAR Buffer[CHAR_BUFSIZ];
+ 
+ return (char*) GetCurrentDirectory(CHAR_BUFSIZ, Buffer);
+#elif defined __MSYS__ || defined __CYGWIN__  || defined __unix__  || defined __apple__
     return getwd(NULL);
-#endif
 #endif
 }
 
@@ -2141,10 +2144,10 @@ char* quote(const char* path)
 
 // Launches an application in a fork and duplicates its stdout into stdout; waits for it to return;
 
-
 int run(const char* application, const char*  args[], const int option, bool _fork)
 {
 errno=0;
+#if defined __CYGWIN__ || defined __unix__ || defined __apple__ || defined __linux__
 if (_fork)
 {
     int pid;
@@ -2183,6 +2186,7 @@ if (_fork)
     }
 }
 else
+#endif
 {
 
     const char* s=get_command_line(args);
