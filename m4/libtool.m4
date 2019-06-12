@@ -1417,10 +1417,10 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
 	  x86_64-*linux*)
 	    LD="${LD-ld} -m elf_x86_64"
 	    ;;
-	  powerpcle-*linux*|powerpc64le-*linux*)
+	  powerpcle-*linux*)
 	    LD="${LD-ld} -m elf64lppc"
 	    ;;
-	  powerpc-*linux*|powerpc64-*linux*)
+	  powerpc-*linux*)
 	    LD="${LD-ld} -m elf64ppc"
 	    ;;
 	  s390*-*linux*|s390*-*tpf*)
@@ -2666,14 +2666,7 @@ freebsd* | dragonfly*)
     *) objformat=elf ;;
     esac
   fi
-  # Handle Gentoo/FreeBSD as it was Linux
-  case $host_vendor in
-    gentoo)
-      version_type=linux ;;
-    *)
-      version_type=freebsd-$objformat ;;
-  esac
-
+  version_type=freebsd-$objformat
   case $version_type in
     freebsd-elf*)
       library_names_spec='$libname$release$shared_ext$versuffix $libname$release$shared_ext$major $libname$shared_ext'
@@ -2684,12 +2677,6 @@ freebsd* | dragonfly*)
     freebsd-*)
       library_names_spec='$libname$release$shared_ext$versuffix $libname$shared_ext$versuffix'
       need_version=yes
-      ;;
-    linux)
-      library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}$major ${libname}${shared_ext}'
-      soname_spec='${libname}${release}${shared_ext}$major'
-      need_lib_prefix=no
-      need_version=no
       ;;
   esac
   shlibpath_var=LD_LIBRARY_PATH
@@ -5121,6 +5108,7 @@ _LT_EOF
       _LT_TAGVAR(enable_shared_with_static_runtimes, $1)=yes
       _LT_TAGVAR(export_symbols_cmds, $1)='$NM $libobjs $convenience | $global_symbol_pipe | $SED -e '\''/^[[BCDGRS]][[ ]]/s/.*[[ ]]\([[^ ]]*\)/\1 DATA/;s/^.*[[ ]]__nm__\([[^ ]]*\)[[ ]][[^ ]]*/\1 DATA/;/^I[[ ]]/d;/^[[AITW]][[ ]]/s/.* //'\'' | sort | uniq > $export_symbols'
       _LT_TAGVAR(exclude_expsyms, $1)=['[_]+GLOBAL_OFFSET_TABLE_|[_]+GLOBAL__[FID]_.*|[_]+head_[A-Za-z0-9_]+_dll|[A-Za-z0-9_]+_dll_iname']
+      _LT_TAGVAR(file_list_spec, $1)='@'
 
       if $LD --help 2>&1 | $GREP 'auto-import' > /dev/null; then
         _LT_TAGVAR(archive_cmds, $1)='$CC -shared $libobjs $deplibs $compiler_flags -o $output_objdir/$soname $wl--enable-auto-image-base -Xlinker --out-implib -Xlinker $lib'
@@ -6695,6 +6683,7 @@ if test yes != "$_lt_caught_CXX_error"; then
 	  _LT_TAGVAR(allow_undefined_flag, $1)=unsupported
 	  _LT_TAGVAR(always_export_symbols, $1)=no
 	  _LT_TAGVAR(enable_shared_with_static_runtimes, $1)=yes
+	  _LT_TAGVAR(file_list_spec, $1)='@'
 
 	  if $LD --help 2>&1 | $GREP 'auto-import' > /dev/null; then
 	    _LT_TAGVAR(archive_cmds, $1)='$CC -shared -nostdlib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags -o $output_objdir/$soname $wl--enable-auto-image-base -Xlinker --out-implib -Xlinker $lib'
@@ -7544,7 +7533,7 @@ if AC_TRY_EVAL(ac_compile); then
   for p in `eval "$output_verbose_link_cmd"`; do
     case $prev$p in
 
-    -L* | -R* | -l*)
+    -L* | -R* | -l* | */libclang_rt.*.a)
        # Some compilers place space between "-{L,R}" and the path.
        # Remove the space.
        if test x-L = "$p" ||
