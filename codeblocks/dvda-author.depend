@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1558830067 source:/home/fab2/Dev/dvda-author/libfixwav/src/checkData.c
+1561237496 source:/home/fab2/Dev/dvda-author/libfixwav/src/checkData.c
 	<config.h>
 	<stdio.h>
 	<stdlib.h>
@@ -22,7 +22,7 @@
 
 1559249254 /home/fab2/Dev/dvda-author//config.h
 
-1558830067 /home/fab2/Dev/dvda-author/libutils/src/include/libiberty.h
+1561237496 /home/fab2/Dev/dvda-author/libutils/src/include/libiberty.h
 	"strdup.h"
 	"getopt.h"
 	"getopt_int.h"
@@ -32,55 +32,57 @@
 	"strnlen.h"
 	"getsubopt.h"
 
-1558830067 /home/fab2/Dev/dvda-author/libiberty/src/include/strdup.h
+1561237496 /home/fab2/Dev/dvda-author/libiberty/src/include/strdup.h
 
-1558830067 /home/fab2/Dev/dvda-author/libiberty/src/include/getopt.h
+1561237496 /home/fab2/Dev/dvda-author/libiberty/src/include/getopt.h
 	<ctype.h>
 
-1558830067 /home/fab2/Dev/dvda-author/libiberty/src/include/getopt_int.h
+1561237496 /home/fab2/Dev/dvda-author/libiberty/src/include/getopt_int.h
 
-1558830067 /home/fab2/Dev/dvda-author/libiberty/src/include/strchrnul.h
+1561237496 /home/fab2/Dev/dvda-author/libiberty/src/include/strchrnul.h
 
-1558830067 /home/fab2/Dev/dvda-author/libiberty/src/include/strndup.h
+1561237496 /home/fab2/Dev/dvda-author/libiberty/src/include/strndup.h
 	<stdio.h>
 	<sys/types.h>
 
-1558830067 /home/fab2/Dev/dvda-author/libiberty/src/include/strnlen.h
+1561237496 /home/fab2/Dev/dvda-author/libiberty/src/include/strnlen.h
 	<stdlib.h>
 
-1558830067 /home/fab2/Dev/dvda-author/libiberty/src/include/getsubopt.h
+1561237496 /home/fab2/Dev/dvda-author/libiberty/src/include/getsubopt.h
 
-1558830067 /home/fab2/Dev/dvda-author/libfixwav/src/include/fixwav.h
+1561237496 /home/fab2/Dev/dvda-author/libfixwav/src/include/fixwav.h
 	<assert.h>
 	<stdint.h>
 
-1558830067 /home/fab2/Dev/dvda-author/libfixwav/src/include/fixwav_auxiliary.h
+1561237496 /home/fab2/Dev/dvda-author/libfixwav/src/include/fixwav_auxiliary.h
 	"fixwav_manager.h"
 
-1558830067 /home/fab2/Dev/dvda-author/libfixwav/src/include/fixwav_manager.h
+1561237496 /home/fab2/Dev/dvda-author/libfixwav/src/include/fixwav_manager.h
 	<sys/stat.h>
 	<sys/types.h>
 	<stdint.h>
 	"c_utils.h"
 
-1558830067 /home/fab2/Dev/dvda-author/libutils/src/include/c_utils.h
+1561237496 /home/fab2/Dev/dvda-author/libutils/src/include/c_utils.h
 	"config.h"
 	"version.h"
+	"commonvars.h"
+	<stdio.h>
 	<sys/types.h>
 	<sys/stat.h>
 	<string.h>
 	<stdint.h>
 	<sys/resource.h>
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/version.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/version.h
 	"config.h"
 
-1558830067 /home/fab2/Dev/dvda-author/libfixwav/src/include/checkData.h
+1561237496 /home/fab2/Dev/dvda-author/libfixwav/src/include/checkData.h
 
-1558830067 /home/fab2/Dev/dvda-author/libfixwav/src/include/repair.h
+1561237496 /home/fab2/Dev/dvda-author/libfixwav/src/include/repair.h
 	"fixwav_manager.h"
 
-1558830067 /home/fab2/Dev/dvda-author/libutils/src/include/winport.h
+1561237496 /home/fab2/Dev/dvda-author/libutils/src/include/winport.h
 	"config.h"
 	"c_utils.h"
 	<sys/types.h>
@@ -97,25 +99,26 @@
 	<fcntl.h>
 	<unistd.h>
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/structures.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/structures.h
 	"stream_decoder.h"
 	"inttypes.h"
+	"commonvars.h"
 
-1558830067 /home/fab2/Dev/dvda-author/libutils/src/include/stream_decoder.h
+1561237496 /home/fab2/Dev/dvda-author/libutils/src/include/stream_decoder.h
 	<stdio.h>
 	"export.h"
 	"format.h"
 
-1558830067 /home/fab2/Dev/dvda-author/libutils/src/include/export.h
+1561237496 /home/fab2/Dev/dvda-author/libutils/src/include/export.h
 
-1558830067 /home/fab2/Dev/dvda-author/libutils/src/include/format.h
+1561237496 /home/fab2/Dev/dvda-author/libutils/src/include/format.h
 	"export.h"
 	"ordinals.h"
 
-1558830067 /home/fab2/Dev/dvda-author/libutils/src/include/ordinals.h
+1561237496 /home/fab2/Dev/dvda-author/libutils/src/include/ordinals.h
 	<inttypes.h>
 
-1558830067 source:/home/fab2/Dev/dvda-author/libfixwav/src/checkParameters.c
+1561237496 source:/home/fab2/Dev/dvda-author/libfixwav/src/checkParameters.c
 	<config.h>
 	<stdio.h>
 	<stdlib.h>
@@ -131,10 +134,10 @@
 	"structures.h"
 	"libiberty.h"
 
-1558830067 /home/fab2/Dev/dvda-author/libfixwav/src/include/checkParameters.h
+1561237496 /home/fab2/Dev/dvda-author/libfixwav/src/include/checkParameters.h
 	"fixwav_manager.h"
 
-1558830067 source:/home/fab2/Dev/dvda-author/libfixwav/src/fixwav_auxiliary.c
+1561237496 source:/home/fab2/Dev/dvda-author/libfixwav/src/fixwav_auxiliary.c
 	<config.h>
 	<stdio.h>
 	<stdlib.h>
@@ -147,7 +150,7 @@
 	"c_utils.h"
 	"structures.h"
 
-1558830067 source:/home/fab2/Dev/dvda-author/libfixwav/src/manager.c
+1561237496 source:/home/fab2/Dev/dvda-author/libfixwav/src/manager.c
 	<config.h>
 	<stdlib.h>
 	<stdio.h>
@@ -172,14 +175,14 @@
 	"commonvars.h"
 	"libiberty.h"
 
-1558830067 /home/fab2/Dev/dvda-author/libfixwav/src/include/readHeader.h
+1561237496 /home/fab2/Dev/dvda-author/libfixwav/src/include/readHeader.h
 	"fixwav_manager.h"
 
-1559249096 /home/fab2/Dev/dvda-author/src/include/commonvars.h
+1561237781 /home/fab2/Dev/dvda-author/src/include/commonvars.h
 	"config.h"
 	"libiberty.h"
 
-1558830067 source:/home/fab2/Dev/dvda-author/libfixwav/src/readHeader.c
+1561237496 source:/home/fab2/Dev/dvda-author/libfixwav/src/readHeader.c
 	<config.h>
 	<stdlib.h>
 	<stdio.h>
@@ -193,7 +196,7 @@
 	"structures.h"
 	"libiberty.h"
 
-1558830067 source:/home/fab2/Dev/dvda-author/libfixwav/src/repair.c
+1561237496 source:/home/fab2/Dev/dvda-author/libfixwav/src/repair.c
 	<config.h>
 	<stdio.h>
 	<stdlib.h>
@@ -214,7 +217,7 @@
 	"structures.h"
 	"libiberty.h"
 
-1558830067 source:/home/fab2/Dev/dvda-author/libiberty/src/getopt.c
+1561237496 source:/home/fab2/Dev/dvda-author/libiberty/src/getopt.c
 	<stdio.h>
 	<stdlib.h>
 	<unistd.h>
@@ -225,13 +228,13 @@
 	"getopt.h"
 	"getopt_int.h"
 
-1558830067 source:/home/fab2/Dev/dvda-author/libiberty/src/getopt1.c
+1561237496 source:/home/fab2/Dev/dvda-author/libiberty/src/getopt1.c
 	"getopt.h"
 	"getopt_int.h"
 	<stdio.h>
 	<stdlib.h>
 
-1558830067 source:/home/fab2/Dev/dvda-author/libiberty/src/getsubopt.c
+1561237496 source:/home/fab2/Dev/dvda-author/libiberty/src/getsubopt.c
 	<stdlib.h>
 	<string.h>
 	<string.h>
@@ -241,7 +244,7 @@
 1558830067 source:/home/fab2/Dev/dvda-author/libiberty/src/malloc.c
 	<sys/types.h>
 
-1558830067 source:/home/fab2/Dev/dvda-author/libiberty/src/strchrnul.c
+1561237496 source:/home/fab2/Dev/dvda-author/libiberty/src/strchrnul.c
 	<string.h>
 	<stdlib.h>
 	"strchrnul.h"
@@ -258,15 +261,16 @@
 	<stdio.h>
 	<sys/types.h>
 
-1558830067 source:/home/fab2/Dev/dvda-author/libiberty/src/strnlen.c
+1561237496 source:/home/fab2/Dev/dvda-author/libiberty/src/strnlen.c
 	<string.h>
 	"strnlen.h"
 
-1559520110 source:/home/fab2/Dev/dvda-author/libutils/src/libc_utils.c
+1561237510 source:/home/fab2/Dev/dvda-author/libutils/src/libc_utils.c
 	"config.h"
 	<stdlib.h>
 	<stdio.h>
 	<io.h>
+	<windows.h>
 	<unistd.h>
 	<dirent.h>
 	<stdarg.h>
@@ -284,9 +288,9 @@
 	"libiberty.h"
 	"winport.h"
 
-1558830067 /home/fab2/Dev/dvda-author/libutils/src/private/private_c_utils.h
+1561237496 /home/fab2/Dev/dvda-author/libutils/src/private/private_c_utils.h
 
-1558830067 source:/home/fab2/Dev/dvda-author/libutils/src/winport.c
+1561237496 source:/home/fab2/Dev/dvda-author/libutils/src/winport.c
 	"config.h"
 	<sys/types.h>
 	<stdio.h>
@@ -298,7 +302,7 @@
 	"structures.h"
 	<unistd.h>
 
-1559517090 source:/home/fab2/Dev/dvda-author/src/amg2.c
+1561237496 source:/home/fab2/Dev/dvda-author/src/amg2.c
 	"config.h"
 	"commonvars.h"
 	<stdio.h>
@@ -321,7 +325,7 @@
 	"launch_manager.h"
 	"asvs.h"
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/auxiliary.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/auxiliary.h
 	"config.h"
 	<sys/stat.h>
 	<sys/types.h>
@@ -333,14 +337,14 @@
 	"commonvars.h"
 	"structures.h"
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/audio2.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/audio2.h
 	<stdio.h>
 	<stdint.h>
 	<sys/types.h>
 	<sys/stat.h>
 	"structures.h"
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/amg.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/amg.h
 	<stdio.h>
 	<stdint.h>
 	<inttypes.h>
@@ -348,22 +352,22 @@
 	"structures.h"
 	"decode.h"
 
-1558830067 /home/fab2/Dev/dvda-author/libutils/src/include/decode.h
+1561237496 /home/fab2/Dev/dvda-author/libutils/src/include/decode.h
 	"c_utils.h"
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/xml.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/xml.h
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/menu.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/menu.h
 	"config.h"
 	"structures.h"
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/launch_manager.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/launch_manager.h
 	"structures.h"
 	"commonvars.h"
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/asvs.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/asvs.h
 
-1559177185 source:/home/fab2/Dev/dvda-author/src/asvs.c
+1561237496 source:/home/fab2/Dev/dvda-author/src/asvs.c
 	"commonvars.h"
 	<stdio.h>
 	<stdlib.h>
@@ -378,7 +382,7 @@
 	"auxiliary.h"
 	"asvs.h"
 
-1559177185 source:/home/fab2/Dev/dvda-author/src/ats.c
+1561237496 source:/home/fab2/Dev/dvda-author/src/ats.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -392,13 +396,13 @@
 	"commonvars.h"
 	"ats.h"
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/ats.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/ats.h
 	<stdio.h>
 	<stdint.h>
 	"audio2.h"
 	"decode.h"
 
-1559177185 source:/home/fab2/Dev/dvda-author/src/ats2wav.c
+1561237496 source:/home/fab2/Dev/dvda-author/src/ats2wav.c
 	"ats2wav.h"
 	"ats.h"
 	"c_utils.h"
@@ -406,7 +410,7 @@
 	"multichannel.h"
 	"auxiliary.h"
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/ats2wav.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/ats2wav.h
 	<stdio.h>
 	<string.h>
 	<stdlib.h>
@@ -420,9 +424,9 @@
 	"libiberty.h"
 	"fixwav_manager.h"
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/multichannel.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/multichannel.h
 
-1559177185 source:/home/fab2/Dev/dvda-author/src/atsi2.c
+1561237496 source:/home/fab2/Dev/dvda-author/src/atsi2.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -436,13 +440,13 @@
 	"auxiliary.h"
 	"atsi.h"
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/atsi.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/atsi.h
 	<stdio.h>
 	<stdint.h>
 	"audio2.h"
 	"structures.h"
 
-1559518686 source:/home/fab2/Dev/dvda-author/src/audio.c
+1561237496 source:/home/fab2/Dev/dvda-author/src/audio.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -465,16 +469,16 @@
 	"libsoxconvert.h"
 	"multichannel.h"
 
-1558830067 /home/fab2/Dev/dvda-author/libfixwav/src/include/audio.h
+1561237496 /home/fab2/Dev/dvda-author/libfixwav/src/include/audio.h
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/command_line_parsing.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/command_line_parsing.h
 	"structures.h"
 	"commonvars.h"
 	"fixwav_manager.h"
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/libsoxconvert.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/libsoxconvert.h
 
-1559249096 source:/home/fab2/Dev/dvda-author/src/auxiliary.c
+1561237496 source:/home/fab2/Dev/dvda-author/src/auxiliary.c
 	<stdlib.h>
 	<stdio.h>
 	<sys/stat.h>
@@ -495,7 +499,7 @@
 	"commonvars.h"
 	"menu.h"
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/ports.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/ports.h
 	<io.h>
 	<sys/resource.h>
 	"commonvars.h"
@@ -503,19 +507,19 @@
 	"libiberty/src/include/getsubopt.h"
 	"libiberty/src/include/strdup.h"
 
-1558830067 /home/fab2/Dev/dvda-author//libiberty/src/include/strndup.h
+1561237496 /home/fab2/Dev/dvda-author//libiberty/src/include/strndup.h
 	<stdio.h>
 	<sys/types.h>
 
-1558830067 /home/fab2/Dev/dvda-author//libiberty/src/include/getsubopt.h
+1561237496 /home/fab2/Dev/dvda-author//libiberty/src/include/getsubopt.h
 
-1558830067 /home/fab2/Dev/dvda-author//libiberty/src/include/strdup.h
+1561237496 /home/fab2/Dev/dvda-author//libiberty/src/include/strdup.h
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/file_input_parsing.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/file_input_parsing.h
 	"auxiliary.h"
 	<dirent.h>
 
-1559518759 source:/home/fab2/Dev/dvda-author/src/command_line_parsing.c
+1561237496 source:/home/fab2/Dev/dvda-author/src/command_line_parsing.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -546,18 +550,18 @@
 	"videoimport.h"
 	"ats.h"
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/dvda-author.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/dvda-author.h
 	"commonvars.h"
 	"structures.h"
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/sound.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/sound.h
 	"structures.h"
 	<stdio.h>
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/videoimport.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/videoimport.h
 	<inttypes.h>
 
-1559249096 source:/home/fab2/Dev/dvda-author/src/dvda-author.c
+1561237496 source:/home/fab2/Dev/dvda-author/src/dvda-author.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -584,10 +588,10 @@
 	"commonvars.h"
 	"dvda-author.h"
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/lexer.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/lexer.h
 	"structures.h"
 
-1559177185 source:/home/fab2/Dev/dvda-author/src/file_input_parsing.c
+1561237496 source:/home/fab2/Dev/dvda-author/src/file_input_parsing.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -599,7 +603,7 @@
 	"ports.h"
 	"commonvars.h"
 
-1559520565 source:/home/fab2/Dev/dvda-author/src/launch_manager.c
+1561237496 source:/home/fab2/Dev/dvda-author/src/launch_manager.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -625,12 +629,12 @@
 	"file_input_parsing.h"
 	"launch_manager.h"
 
-1559177185 /home/fab2/Dev/dvda-author/src/include/samg.h
+1561237496 /home/fab2/Dev/dvda-author/src/include/samg.h
 	<stdio.h>
 	<stdint.h>
 	"audio2.h"
 
-1559177185 source:/home/fab2/Dev/dvda-author/src/lexer.c
+1561237496 source:/home/fab2/Dev/dvda-author/src/lexer.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -642,7 +646,7 @@
 	"auxiliary.h"
 	"c_utils.h"
 
-1559181451 source:/home/fab2/Dev/dvda-author/src/libsoxconvert.c
+1561237496 source:/home/fab2/Dev/dvda-author/src/libsoxconvert.c
 	<sox.h>
 	<stdio.h>
 	<errno.h>
@@ -650,7 +654,7 @@
 	"structures.h"
 	"libsoxconvert.h"
 
-1559177185 source:/home/fab2/Dev/dvda-author/src/menu.c
+1561238272 source:/home/fab2/Dev/dvda-author/src/menu.c
 	"menu.h"
 	<stdio.h>
 	<stdlib.h>
@@ -670,7 +674,7 @@
 	"auxiliary.h"
 	"amg.h"
 
-1559177185 source:/home/fab2/Dev/dvda-author/src/samg2.c
+1561237496 source:/home/fab2/Dev/dvda-author/src/samg2.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -683,7 +687,7 @@
 	"c_utils.h"
 	"auxiliary.h"
 
-1559177185 source:/home/fab2/Dev/dvda-author/src/sound.c
+1561237496 source:/home/fab2/Dev/dvda-author/src/sound.c
 	"config.h"
 	"sound.h"
 	"fixwav.h"
@@ -695,7 +699,7 @@
 	<stdlib.h>
 	<unistd.h>
 
-1559177185 source:/home/fab2/Dev/dvda-author/src/videoimport.c
+1561237496 source:/home/fab2/Dev/dvda-author/src/videoimport.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -715,7 +719,7 @@
 	"menu.h"
 	"sound.h"
 
-1559177185 source:/home/fab2/Dev/dvda-author/src/xml.c
+1561237496 source:/home/fab2/Dev/dvda-author/src/xml.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
