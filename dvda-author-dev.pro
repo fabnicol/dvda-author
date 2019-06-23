@@ -2,7 +2,7 @@ TEMPLATE = app
 CONFIG += console ordered
 CONFIG -= app_bundle
 CONFIG -= qt
-
+QMAKE_MAC_SDK = macosx
 TARGET = dvda-author
 QMAKE_CFLAGS += -std=c99
 
