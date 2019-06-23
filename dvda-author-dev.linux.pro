@@ -8,14 +8,14 @@ QMAKE_CC = /usr/bin/gcc
 
 TARGET = dvda-author
 
-QMAKE_CFLAGS=-std=c99 -march=core2
+QMAKE_CFLAGS=-std=c99 -march=core2 -fPIC
 
-DEFINES += _GNU_SOURCE __CB HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_fixwav HAVE_libogg HAVE_iberty HAVE_mpeg2enc HAVE_mplex HAVE_OGG_FLAC HAVE_FLAC HAVE_libogg HAVE_sox HAVE_CONFIG_H FLAC_API_SUPPORTS_OGG_FLAC=1
+DEFINES += _GNU_SOURCE __CB__ HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_fixwav HAVE_libogg HAVE_iberty HAVE_mpeg2enc HAVE_mplex HAVE_OGG_FLAC HAVE_FLAC HAVE_libogg HAVE_sox  FLAC_API_SUPPORTS_OGG_FLAC=1
 
 #libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame --disable-gomp
 
-linux:LIBS +=   -lFLAC -logg  -lsox  -lid3tag -lz -lsndfile  -lpulse -lpulse-simple -lasound -lwavpack \
-                -lvorbisenc -lvorbisfile -lvorbis  -logg -lpng -lz -lgomp -lsndfile
+linux:LIBS +=    /usr/lib64/libsox.a  /usr/lib64/libFLAC.a /usr/lib64/libogg.a  /usr/lib64/libid3tag.a /usr/lib64/libz.a /usr/lib64/libsndfile.a  -lpulse -lpulse-simple  /usr/lib64/libwavpack.a \
+                /usr/lib64/libvorbisenc.a /usr/lib64/libvorbisfile.a /usr/lib64/libvorbis.a  /usr/lib64/libogg.a /usr/lib64/libpng.a -fopenmp -pthread
 
 CONFIG(release, debug|release) {
 LIBS +=   -s
