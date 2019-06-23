@@ -1047,7 +1047,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
         compute_pointsize(img, 10, maxntracks);
 
         prepare_overlay_img(albumtext, -1, img, command1, command2, menu, img->albumcolor);
-        free(albumtext);
+        //free(albumtext);  // segfault here under linux for unknown reasons. TO: fix it.
 
         if (img->hierarchical)
         {
