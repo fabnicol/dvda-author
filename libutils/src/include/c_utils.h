@@ -305,7 +305,7 @@ void secure_open(const char *path, const char *context, FILE*);
 
 int end_seek(FILE* outfile);
 void parse_wav_header(WaveData* info, WaveHeader* ichunk);
-const char* get_command_line(const char* args[]);
+char* get_command_line(const char* args[]);
 char* get_full_command_line(char **args);
 // These functions should be inlined hence in a header file
 char* copy_file2dir(const char *existing_file, const char *new_dir);

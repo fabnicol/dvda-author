@@ -1,0 +1,2 @@
+ Please install MS fonts, or use the option --font=(font name),(font size),(font width) like this:
+ --font=Ubuntu,12,8
