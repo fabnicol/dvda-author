@@ -303,19 +303,29 @@ void initialize_binary_paths(char level)
     }
 }
 
+static char* pict;
 
 int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 {
-
-
     errno=0;
-    static int s;
-    if(s==0) s = strlen(globals.settings.tempdir);
-    char pict[s+15];
+    static unsigned long s;
+
+    if(s==0)
+    {
+        s = MAX(strlen(globals.settings.stillpicdir) + 15, strlen(img->backgroundpic[rank]) + 1);
+        pict  = calloc(s, sizeof(char*));
+    }
+
+    // Important memory fix here
+    // On SOME Unix platforms (e.g. Fedora 10 vs. Gentoo 201906 or Ubuntu 1904), not all, passing variable-size arrays to fork
+    // does not work at RUNTIME. Memory should be allocated on heap.
+    // buffer overflow potential issue to be checked here. Widening buffer as first unsatisfactory step. TOD: fix this.
+
+
 
     free(img->backgroundmpg[rank]);
 
-    img->backgroundmpg[rank] = calloc(1 + s + 17 + 3 + 4 + 1, sizeof(char));
+    img->backgroundmpg[rank] = calloc(1 + strlen(globals.settings.tempdir) + 17 + 3 + 4 + 1, sizeof(char));
 
     if (img->action == STILLPICS)
     {
@@ -334,7 +344,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     {
         if (globals.debugging) foutput(INF "Creating animated menu rank #%u out of %s\n", rank+1, img->backgroundpic[rank]);
         sprintf(img->backgroundmpg[rank], "%s" SEPARATOR "%s%u%s", globals.settings.tempdir, "background_movie_", rank, ".mpg");
-        snprintf(pict, sizeof(pict), "%s", img->backgroundpic[rank]);
+        strcpy(pict, img->backgroundpic[rank]);
         if (img->backgroundcolors)
         {
             if (globals.veryverbose) foutput("%s\n", INF "Colorizing background jpg files prior to multiplexing...");
@@ -436,7 +446,19 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     }
 
     if (globals.debugging)
-        foutput("%s\n", INF "Running jpeg2yuv...");
+    {
+        foutput("%s %s ...\n", INF "Running ", jpeg2yuv);
+        char* jpeg2yuvcl = get_command_line(argsjpeg2yuv);
+        free(jpeg2yuvcl);
+   }
+
+     if (globals.veryverbose)
+     {
+        foutput("%s %s ...\n", INF "Then piping to ...", mpeg2enc);
+        char* mpeg2enccl = get_command_line(argsmpeg2enc);
+        free(mpeg2enccl);
+
+     }
 
     // Owing to the piping of the stdout streams (necessary for coherence of output) existence checks must be tightened up.
     // System will freeze should an input file not exit, as mjpegtools to not always exit on system error. This may cause a loop in the piping of jpeg2yuv to mpeg2enc
@@ -491,7 +513,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
             // Piping stdout is required here as STDOUT is not a possible duplicate for stdout
             dup2(tubeerr[1], STDERR_FILENO);
             execv(jpeg2yuv, (char* const*) argsjpeg2yuv);
-            foutput("%s\n", ERR "Runtime failure in jpeg2yuv child process");
+            fprintf(stderr, "%s\n", ERR "Runtime failure in jpeg2yuv child process");
             perror("menu1");
     
             return errno;
@@ -545,13 +567,11 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
 // This is unsatisfactory yet will do for porting purposes.
 
-    const char* jpegcl = get_command_line(argsjpeg2yuv);
-    const char* mpegcl=get_command_line(argsmpeg2enc);
     const char* mplexcl=get_command_line(argsmplex);
 
-    char cml2[strlen(jpeg2yuv)+1+strlen(jpegcl)+3+strlen(mpeg2enc)+1+strlen(mpegcl)+1];
+    char cml2[strlen(jpeg2yuv)+1+strlen(jpeg2yuvcl)+3+strlen(mpeg2enc)+1+strlen(mpeg2enccl)+1];
 
-    sprintf(cml2, "%s %s | %s %s",jpeg2yuv, jpegcl,mpeg2enc, mpegcl);
+    sprintf(cml2, "%s %s | %s %s",jpeg2yuv, jpeg2yuvcl,mpeg2enc, mpeg2enccl);
 
     system(win32quote(cml2));
 
@@ -559,8 +579,8 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
     sprintf(cml3, "%s %s",mplex, mplexcl);
     system(win32quote(cml3));
-    free((char*) jpegcl);
-    free((char*) mpegcl);
+    free((char*) jpeg2yuvcl);
+    free((char*) mpeg2enccl);
     free((char*) mplexcl);
 #endif
 
@@ -624,6 +644,8 @@ int generate_background_mpg(pic* img)
     }
 
     FREE(mp2track)
+
+    FREE(pict)
 
     if ((globals.debugging) && (!errno))
         foutput("%s\n", INF "MPG background authoring OK.");
