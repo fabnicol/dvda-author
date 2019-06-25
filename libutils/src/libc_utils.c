@@ -131,11 +131,11 @@ char *fn_get_current_dir_name (void)
  WCHAR Buffer[CHAR_BUFSIZ];
  
  return (char*) GetCurrentDirectory(CHAR_BUFSIZ, Buffer);
-#elif defined __MSYS__ || defined __CYGWIN__  || defined __unix__  || defined __apple__
+#else
     char *cwd = NULL;
     int len = 4096;
     char* r = NULL;
-    if (NULL == (cwd = malloc (len * sizeof char)))
+    if (NULL == (cwd = malloc (len * sizeof(char))))
     {
         fprintf (stderr, "%s", ERR "Not enough memory for my_get_cwd.\n");
         exit (EXIT_FAILURE);
@@ -143,7 +143,7 @@ char *fn_get_current_dir_name (void)
     while ((NULL == (r = getcwd (cwd, len))) && (ERANGE == errno))
     {
         len += 32;
-        if(NULL == (cwd = realloc (cwd, len * sizeofi char)))
+        if(NULL == (cwd = realloc (cwd, len * sizeof(char))))
         {
             printf ("%s", ERR "Not enough memory for my_get_cwd.\n");
             exit (EXIT_FAILURE);
@@ -155,6 +155,7 @@ char *fn_get_current_dir_name (void)
     clean_exit(-1);
  
 #endif
+return "";
 }
 
 char* make_absolute(char* filepath)
@@ -1303,6 +1304,35 @@ int stat_dir_files(const char* src)
 
     traverse_directory(src, stat_file_wrapper, false, (void*) &total_size, NULL);
 
+    printf("%s" PRIu64 "\n", "[MSG] Directory file size is ", total_size);
+    return(errno);
+}
+
+static inline void counter(const char* GCC_UNUSED a, void* total, void* GCC_UNUSED b)
+{
+ ++*((int* ) total);
+}
+
+
+int count_dir_files(const char* src, int *total)
+{
+    errno = 0;
+    struct stat buf;
+    if (stat(src, &buf) == -1)
+    {   
+        perror("\n"ERR "Directory not recognized.\n");
+        return(errno);
+    }
+    
+    printf("%c", '\n');
+    
+    if (globals.debugging)  printf("%s%s\n", "[INF] Counting files in ...", src);
+    
+    *total = 0;
+    
+    traverse_directory(src, counter, true, (void*) total, NULL);
+    
+    printf("%s%d%s\n", "[MSG] Directory has ", *total, " files.");
     return(errno);
 }
 
