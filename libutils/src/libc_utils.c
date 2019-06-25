@@ -125,14 +125,35 @@ int download_fullpath(const char* curlpath, const char* filename, const char* fu
 
 char *fn_get_current_dir_name (void)
 {
-#ifdef __linux__
+#if defined __linux__ && ! defined __apple__
    return get_current_dir_name();
 #elif defined _MINGW32 || defined _WIN32
  WCHAR Buffer[CHAR_BUFSIZ];
  
  return (char*) GetCurrentDirectory(CHAR_BUFSIZ, Buffer);
 #elif defined __MSYS__ || defined __CYGWIN__  || defined __unix__  || defined __apple__
-    return getwd(NULL);
+    char *cwd = NULL;
+    int len = 4096;
+    char* r = NULL;
+    if (NULL == (cwd = malloc (len * sizeof char)))
+    {
+        fprintf (stderr, "%s", ERR "Not enough memory for my_get_cwd.\n");
+        exit (EXIT_FAILURE);
+    }
+    while ((NULL == (r = getcwd (cwd, len))) && (ERANGE == errno))
+    {
+        len += 32;
+        if(NULL == (cwd = realloc (cwd, len * sizeofi char)))
+        {
+            printf ("%s", ERR "Not enough memory for my_get_cwd.\n");
+            exit (EXIT_FAILURE);
+        }
+    }
+    if (r)
+        return (cwd);
+    perror("Allocate current path");
+    clean_exit(-1);
+ 
 #endif
 }
 
