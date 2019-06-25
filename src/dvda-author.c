@@ -178,7 +178,13 @@ int main(int argc,  char* const argv[])
 
     setlocale(LC_ALL, "LOCALE");
 
-    char* currentdir = fn_get_current_dir_name ();
+    char* currentdir = strdup("/Users/fab/dvda-author/src") ; //fn_get_current_dir_name ();
+    if (currentdir == NULL)
+    {
+      fprintf("%s\n", ERR "Répertoire courant non alloué");
+      clean_exit(-1);
+    }
+
     int currentdirlength=strlen(currentdir);
     char TEMPDIRROOT[currentdirlength + 14];
     TEMPDIR = calloc(currentdirlength + 20, sizeof(char));

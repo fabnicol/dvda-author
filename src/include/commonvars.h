@@ -59,7 +59,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define DEFAULT_DVDA_AUTHOR_PROJECT_FILENAME "dvda-author.dap"
 
 #ifndef _GNU_SOURCE
-#error ANSI_COLOR_RED"\n[ERR]  This version uses GNU extensions to C: try to compile again with #define _GNU_SOURCE"
+#define _GNU_SOURCE
 #else
 #if !defined(LONG_OPTIONS) && !defined(SHORT_OPTIONS_ONLY)
 #define LONG_OPTIONS
