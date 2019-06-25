@@ -258,12 +258,20 @@ int rmdir_recursive (char *root, char *dirname)
 {
     char *cwd;
     cwd=fn_get_current_dir_name();
+    if (globals.veryverbose)
+    {
+        fprintf(stderr, "%s%s%s\n", INF "Changing directory to |", dirname, "|");
+    }
+
     if (chdir (dirname) == -1)
     {
         if (errno == ENOTDIR)
-        return 0;
-        //printf ( ERR "chdir() issue with dirname=%s\n", dirname);
-        else return (-1);
+            perror(ERR "chdir issue, not a directory");
+        else {
+            perror(ERR "chdir other issue");
+        }
+
+        clean_exit(-1);
     }
 
     slist_t *names = NULL;
@@ -363,7 +371,14 @@ int rmdir_recursive (char *root, char *dirname)
         names = names->next;
         free (prev);
     }
-    if (chdir (cwd) != 0) perror("[ERR]  chdir");
+
+    fprintf(stderr, "%s%s%s\n", INF "Changing directory to |", cwd, "|");
+
+    if (chdir (cwd) != 0)
+    {
+        perror("[ERR]  chdir to cwd");
+        clean_exit(-1);
+    }
 
     if (! recurse) free(cwd);
 
@@ -1075,6 +1090,11 @@ char* print_time(int verbose)
 
 void change_directory(const char * filename)
 {
+    if (! filename || filename[0] == '\0')
+    {
+        fprintf(stderr, "%s",ERR "Null path\n.");
+        clean_exit(-1);
+    }
 
     if (chdir(filename) == -1)
     {
@@ -1082,20 +1102,17 @@ void change_directory(const char * filename)
             printf(ERR "%s is not a directory\n", filename);
         else
         {
-           if (NULL != filename)
-           {
              fprintf(stderr, ERR "Impossible to cd to %s.\n", filename);
              perror(ANSI_COLOR_RED"\n[ERR]");
-           }
-           else
-             fprintf(stderr, "%s",ERR "Null path\n.");
-           //exit(EXIT_FAILURE);
+             clean_exit(-1);
         }
     }
-    else if (globals.debugging)
+    else
+    {
+        if (globals.debugging)
         printf(DBG "Current working directory is now %s\n", filename);
+    }
 }
-
 
 /*--------
 * traverse_directory(path, function, boolean)
