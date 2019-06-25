@@ -5,7 +5,7 @@ CONFIG += console ordered
 CONFIG -= app_bundle
 CONFIG -= qt
 QMAKE_CC = /usr/bin/gcc
-
+SRCDIR="/home/fab2/Dev/dvda-author/"
 TARGET = dvda-author
 
 QMAKE_CFLAGS=-std=c99 -march=core2 -fPIC
@@ -14,8 +14,21 @@ DEFINES += _GNU_SOURCE __CB__ HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_fixwav H
 
 #libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame --disable-gomp
 
-linux:LIBS +=    /usr/lib64/libsox.a  /usr/lib64/libFLAC.a /usr/lib64/libogg.a  /usr/lib64/libid3tag.a /usr/lib64/libz.a /usr/lib64/libsndfile.a  -lpulse -lpulse-simple  /usr/lib64/libwavpack.a \
-                /usr/lib64/libvorbisenc.a /usr/lib64/libvorbisfile.a /usr/lib64/libvorbis.a  /usr/lib64/libogg.a /usr/lib64/libpng.a -fopenmp -pthread
+linux:LIBS +=	"/usr/lib64/libFLAC.a"  "/usr/lib64/libgsm.a"  "/usr/lib64/libMagick++-7.Q16.a" "/usr/lib64/libMagickCore-7.Q16.a" "/usr/lib64/libMagickWand-7.Q16.a" $$SRCDIR"local/lib/liblavfile.a"  $$SRCDIR"local/lib/liblavjpeg.a" $$SRCDIR"local/lib/libsox.a" \
+                        "/usr/lib64/libsndfile.a" \
+                        "/usr/lib64/libvorbisenc.a" \
+                        "/usr/lib64/libvorbisfile.a"  \
+                        "/usr/lib64/libvorbis.a" \
+                        "/usr/lib64/libwavpack.a" \
+                        "/usr/lib64/libogg.a" \
+                        "/usr/lib64/libpng.a" \
+                        "/usr/lib64/libz.a" \
+                        "/usr/local/lib/libao.a" \
+                        "/usr/lib/libasound.a" \
+                        -lpulse-simple \
+                        -lpulse \
+                        -ldl \
+                        -pthread
 
 CONFIG(release, debug|release) {
 LIBS +=   -s
