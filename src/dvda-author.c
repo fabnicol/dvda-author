@@ -182,7 +182,7 @@ int main(int argc,  char* const argv[])
 
     if (currentdir == NULL)
     {
-      fprintf("%s\n", ERR "Répertoire courant non alloué");
+      fprintf(stderr, "%s\n", ERR "Répertoire courant non alloué");
       clean_exit(-1);
     }
 

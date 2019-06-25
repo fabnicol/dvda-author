@@ -168,9 +168,9 @@ int launch_manager(command_t *command)
 
     foutput(MSG_TAG "Size of raw PCM data: %"PRIu64" bytes (%.2f  MB)\n",totalsize, (float) totalsize/(1024*1024));
 
-    // Software-dependent : 684
-
-    startsector = 684 + 3 * naudio_groups;
+// These are Schily values for mkisofs. However little seems to hinge on this for practical purposes.
+    
+    startsector = 272;
 
     /* main reference track tables */
     // static allocation with C99, arguably faster and possibly safer than calloc()
