@@ -99,8 +99,6 @@ void menu_characteristics_coherence_test(pic* img, uint8_t ngroups)
 
 void create_activemenu(pic* img)
 {
-
-    
     if (img->tsvob == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "No matrix AUDIO_TS.VOB available for generating active menus.")
 
     uint8_t j;
@@ -127,6 +125,7 @@ void create_activemenu(pic* img)
     }
     uint8_t tsvobpt[tsvobsize];
     memset(tsvobpt, 0, tsvobsize);
+
     FILE * tsvobfile=fopen(img->tsvob, "rb");
 
     if (!globals.nooutput && fread(tsvobpt, activeheadersize, 1, activeheaderfile) == 0) perror(ERR "fread [active menu authoring, stage 1]");
@@ -180,13 +179,20 @@ void create_activemenu(pic* img)
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Cannot open AUDIO_SV.VOB for generating active menus.")
 
      fprintf(stdout, "\n"DBG "Creating active menu: will patch AUDIO_TS.VOB into AUDIO_SV.VOB=%s\n\n",img->stillvob);
+
      for (j=0; j < totntracks; j++)
          fwrite(tsvobpt, tsvobsize, 1, svvobfile);
      fclose(svvobfile);
     }
 
     free(activeheader);
-    if (globals.topmenu == TEMPORARY_AUTOMATIC_MENU) unlink(img->tsvob);
+
+    if (globals.topmenu == TEMPORARY_AUTOMATIC_MENU)
+    {
+        unlink(img->tsvob);
+        img->tsvob = NULL;
+    }
+
     return;
 }
 

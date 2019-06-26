@@ -214,7 +214,7 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
     int menu = 0;
 
     char outfile[strlen(audiotsdir) + 14];
-    sprintf(outfile, "%s"SEPARATOR"AUDIO_TS.VOB", audiotsdir);
+    sprintf(outfile, "%s" SEPARATOR "AUDIO_TS.VOB", audiotsdir);
     img->action = ANIMATEDVIDEO;
 
     switch(globals.topmenu)
@@ -296,8 +296,6 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
 
     // launch dvdauthor before create_amg, so that the size of AUDIO_TS.VOB can be assessed dynamically
 
-
-
     fflush(NULL);
     // otherwise the ISO file may well be unordered even if AUDIO_TS files are OK after exit
 #ifndef __WIN32__
@@ -305,10 +303,18 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
 #endif
     uint32_t size=0;
 
-    size = (uint32_t) stat_file_size(outfile) / 0x800;
-    if (globals.debugging) foutput(MSG_TAG "Size of AUDIO_TS.VOB is: %u sectors\n" , size );
+    if (file_exists(outfile))
+    {
+      size = (uint32_t) stat_file_size(outfile) / 0x800;
+      if (globals.debugging) foutput(MSG_TAG "Size of AUDIO_TS.VOB is: %u sectors\n" , size );
 
-    img->tsvob=strdup(outfile);
+      img->tsvob=strdup(outfile);
+    }
+    else
+    {
+        img->tsvob = NULL;
+        if (globals.debugging) foutput("%s", ERR "Failed to create to menu AUDIO_TS.VOB\n");
+    }
     return (size); //expressed in sectors
 }
 
@@ -316,8 +322,10 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
 int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles, uint16_t **ntitlepics, pic* image, sect* sectors, uint16_t totntracks)
 {
     char outfile[strlen(audiotsdir)+14];
-    int  k;
+    int  k = 0;
+    int nb_sv_vob =0;
     foutput("%s\n", INF "Creating ASVS...");
+
     image->action = STILLPICS;
 
     if (image->stillvob == NULL)
@@ -342,28 +350,65 @@ int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles
 
     }
 
+    if (file_exists(image->stillvob))
+    {
+        nb_sv_vob = 1;
+    }
+    else
+    {
+        sectors->asvs = 0;
+        image->action = ANIMATEDVIDEO;
+        image->count = 0;
+        image->stillvob = 0;
+        image->active = false;
+        return 0;
+    }
 
     if (!image->active)
     {
         STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/AUDIO_SV.VOB", audiotsdir)
         copy_file(image->stillvob, outfile);
-        image->stillvob = strdup(outfile);
+        if (file_exists(outfile))
+        {
+            nb_sv_vob = 1;
+            image->stillvob = strdup(outfile);
+        }
+        else
+        {
+            sectors->asvs = 0;
+            image->action = ANIMATEDVIDEO;
+            image->count = 0;
+            image->stillvob = 0;
+            image->active = false;
+            return 0;
+        }
+
     }
 
 
     fflush(NULL);
-#ifndef __WIN32__
+#ifndef _WIN32
     sync();
 #endif
 
+    int nb_asv_files = create_asvs(audiotsdir, naudio_groups, numtitles, ntitlepics, sectors->asvs, image);
 
-    create_asvs(audiotsdir, naudio_groups, numtitles, ntitlepics, sectors->asvs, image);
+    if (nb_asv_files)
+    {
+      STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/AUDIO_SV.IFO", audiotsdir)
+      sectors->asvs = (uint8_t) stat_file_size(outfile) / 0x800;
+    }
+    else
+    {
+        sectors->asvs = 0;
+        image->action = ANIMATEDVIDEO;
+        image->count = 0;
+        image->stillvob = 0;
+        image->active = false;
+        return 0;
+    }
 
-    STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/AUDIO_SV.IFO", audiotsdir)
-    sectors->asvs = stat_file_size(outfile) / 0x800;
-
-    return(errno);  //expressed in sectors
-
+    return(nb_sv_vob + nb_asv_files);
 }
 #endif
 
@@ -960,7 +1005,7 @@ return 0;
 }
 
 
-uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *videotitlelength, uint32_t* relative_sector_pointer_VTSI,
+int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *videotitlelength, uint32_t* relative_sector_pointer_VTSI,
                     uint8_t *numtitles, uint8_t** ntitletracks, uint64_t** titlelength)
 {
     errno=0;
@@ -1471,14 +1516,14 @@ uint8_t* create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_
 
     size_t  sizeofamg=sizeof(amg);
 
-    create_file(audiotsdir, "AUDIO_TS.IFO", amg, sizeofamg);
+    int nb_amg_files = create_file(audiotsdir, "AUDIO_TS.IFO", amg, sizeofamg);
 
-    create_file(audiotsdir, "AUDIO_TS.BUP", amg, sizeofamg);
+    nb_amg_files += create_file(audiotsdir, "AUDIO_TS.BUP", amg, sizeofamg);
 
     if (errno)
-        return(NULL);
+        return 0;
     else
-        return numtitles;
+        return nb_amg_files;
     
 #undef files
 #undef ntracks

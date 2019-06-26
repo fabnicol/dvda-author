@@ -451,9 +451,11 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t ngiven_channel
 void free_memory(command_t *command)
 {
     int i, j;
-#if !HAVE_core_BUILD
+
+#if ! defined HAVE_core_BUILD
     initialize_binary_paths(FREE_BINARY_PATH_SPACE);
 #endif
+
     if (command)
     {
         short int naudio_groups=command->ngroups-command->nvideolinking_groups;
@@ -487,14 +489,11 @@ void free_memory(command_t *command)
     free(globals.settings.tempdir);
     free(globals.settings.lplexoutdir);
     free(globals.settings.indir);
-    free(globals.settings.linkdir);
     //free(globals.settings.logfile)
     free(globals.settings.settingsfile);
     //free(globals.settings.fixwav_database)
     free(globals.settings.dvdisopath);
     free(globals.settings.stillpicdir);
-    free(globals.xml);
-
 
 
 if (command && command->img)
@@ -555,7 +554,7 @@ if (command && command->img)
 #undef free2
 #undef free3
 
-void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size)
+int create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size)
 {
   char outfile[strlen(audiotsdir)+strlen(basename)+1+1];
   sprintf(outfile, "%s"SEPARATOR"%s",audiotsdir, basename);
@@ -566,7 +565,7 @@ void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size)
   FILE* f;
   if (!globals.nooutput)
   {
-      f=fopen(outfile,"wb");
+      f = fopen(outfile,"wb");
   if (f == NULL)
     fprintf(stderr, ERR "%s could not be opened properly.\n", basename);
   if (errno) perror("\n"ERR "in create_file\n");
@@ -577,11 +576,11 @@ void create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size)
     else
     fprintf(stderr, ERR "%s could not be created properly -- fwrite error.\n", basename);
 
-
     if (fclose(f)== EOF)
     fprintf(stderr, ERR "%s could not be closed properly.", basename);
   }
 
+  return file_exists(outfile);
 }
 // fn_strtok is a strtok replacement function that, unlike strtok, takes care of the input chain and can be invoked safely in loops or whose delimiting char can be changed without
 // using strtok_r to get safe.
