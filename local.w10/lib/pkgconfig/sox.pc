@@ -1,0 +1,12 @@
+prefix=/c/Users/Public/Dev/dvda-author-dev/sox-14.4.2/../local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: SoX
+Description: Audio file format and effects library
+Version: 14.4.2
+URL: http://sox.sourceforge.net
+Libs: -L${libdir} -lsox
+Libs.private:  -lssp
+Cflags: -I${includedir}

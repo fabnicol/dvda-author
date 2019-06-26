@@ -255,7 +255,7 @@ repair_wav(WaveData *info, WaveHeader *header )
              header->data_cksize,
              (uint32_t) filesize(info->infile) - header->header_size_in - (uint32_t) pad_byte,
              (uint32_t) filesize(info->infile), header->header_size_in, pad_byte);
-             
+
       header->data_cksize = filesize(info->infile)  - header->header_size_in - (uint32_t) pad_byte;
       repair = BAD_HEADER;
     }
@@ -266,7 +266,7 @@ repair_wav(WaveData *info, WaveHeader *header )
 int launch_repair(WaveData *info, WaveHeader *header)
 {
   uint8_t *p=header->header_out;
-  
+
   if (globals.debugging) foutput( "%s", INF "Writing new header...\n" );
 
   /* if -o option is not used, fixwav will overwrite existing data; confirmation dialog */
@@ -327,11 +327,11 @@ int launch_repair(WaveData *info, WaveHeader *header)
 
   uint32_copy_reverse(p, header->data_ckID), p+=4;
   uint32_copy_reverse(p, header->data_cksize);
- 
+
   return(info->repair) ;
 }
 
-int write_header(WaveData *info, WaveHeader *header)
+int dvda_write_header(WaveData *info, WaveHeader *header)
 {
   // Only repairing headers virtually to cut down computing times (--fixwav-virtual)
 

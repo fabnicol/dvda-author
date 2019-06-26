@@ -1,0 +1,15 @@
+prefix=/c/Users/Public/Dev/ImageMagick/ImageMagick-7.0.8-48/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/ImageMagick-7
+includearchdir=/c/Users/Public/Dev/ImageMagick/ImageMagick-7.0.8-48/local/include/ImageMagick-7
+libname=MagickWand-7.Q16HDRI
+ 
+Name: MagickWand
+Description: MagickWand - C API for ImageMagick (ABI Q16HDRI)
+URL: https://github.com/ImageMagick
+Version: 7.0.8
+Requires: MagickCore
+Cflags: -I${includearchdir} -I${includedir} -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16
+Libs: -L${libdir} -l${libname}
+Libs.private: -L${libdir} -l${libname}     -lfreetype -lpng16 -lm -lz  -ljpeg   -lpng16 -lm -lz                -llzma       -lxml2 -licui18n -licuuc -licudata -lpthread -lm -lz -llzma -liconv -lm  -lz     -lm     -lgomp -lm

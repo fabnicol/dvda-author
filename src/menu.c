@@ -341,7 +341,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
         snprintf(pict, sizeof(pict), "%s" SEPARATOR "pic_%03u.jpg", globals.settings.stillpicdir, rank);  // here stillpic[0] is a subdir.
 
-        if (globals.debugging) 
+        if (globals.debugging)
         {
             foutput("%s%d%s\n", DBG "Created still picture path #:", rank + 1, pict);
         }
@@ -392,7 +392,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
         change_directory(globals.settings.workdir);
 
         // using freopen to redirect is safer here
-#ifndef __WIN32__
+#ifndef _WIN32
 
         int pid1;
         switch (pid1=fork())
@@ -400,25 +400,25 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
             case -1:
                 foutput("%s\n", ERR "Could not launch "MP2ENC);
                 break;
-    
+
             case 0:
-    
-    
+
+
                 if (NULL == freopen(soundtrack, "rb", stdin))
                 {
                     perror(ERR "freopen");
                     clean_exit(EXIT_FAILURE);
                 }
-    
+
                 dup2(STDOUT_FILENO, STDERR_FILENO);
-    
+
                 if (errno) perror(MP2ENC);
                 execv(mp2enc, (char* const*)argsmp2enc);
                 foutput("%s\n", ERR "Runtime failure in mp2enc child process");
                 return errno;
-    
+
                 break;
-    
+
             default:
                 waitpid(pid1, NULL, 0);
         }
@@ -432,7 +432,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 #endif
     }
 
-#ifndef __WIN32__
+#ifndef _WIN32
 
 
     sync();
@@ -454,16 +454,11 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     if (globals.debugging)
     {
         foutput("%s %s ...\n", INF "Running ", jpeg2yuv);
-        char* jpeg2yuvcl = get_command_line(argsjpeg2yuv);
-        free(jpeg2yuvcl);
-   }
+     }
 
      if (globals.veryverbose)
      {
         foutput("%s %s ...\n", INF "Then piping to ...", mpeg2enc);
-        char* mpeg2enccl = get_command_line(argsmpeg2enc);
-        free(mpeg2enccl);
-
      }
 
     // Owing to the piping of the stdout streams (necessary for coherence of output) existence checks must be tightened up.
@@ -510,9 +505,9 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
         case -1:
             fprintf(stdout,"%s\n", ERR "Could not launch jpeg2yuv");
             break;
-    
+
         case 0:
-    
+
             close(tube[0]);
             close(tubeerr[0]);
             dup2(tube[1], STDOUT_FILENO);
@@ -521,22 +516,22 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
             execv(jpeg2yuv, (char* const*) argsjpeg2yuv);
             fprintf(stderr, "%s\n", ERR "Runtime failure in jpeg2yuv child process");
             perror("menu1");
-    
+
             return errno;
-    
-    
+
+
         default:
             close(tube[1]);
             close(tubeerr[1]);
             dup2(tube[0], STDIN_FILENO);
             if (globals.debugging) foutput("%s\n", INF "Piping to mpeg2enc...");
-    
+
             switch (pid2 = fork())
             {
             case -1:
                 foutput("%s\n", ERR "Could not launch mpeg2enc");
                 break;
-    
+
             case 0:
                 // This looks like an extra complication as it could be considered to simply use dup2(STDOUT_FILENO, stdout_FILENO) without further piping
                 // However this would reverse the order of jpeg2yuv and mpeg2enc stdout messages, the latter comming first,
@@ -550,16 +545,16 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
                 foutput("%s\n", ERR "Runtime failure in mpeg2enc parent process");
                 perror("menu2");
                 return errno;
-    
+
             default:
                 waitpid(pid2, NULL, 0);
                 dup2(tubeerr[0], STDIN_FILENO);
-    
+
                 while (read(tubeerr[0], &c, 1) == 1) foutput("%c",c);
                 close(tubeerr[0]);
                 close(tubeerr2[1]);
                 dup2(tubeerr2[0], STDIN_FILENO);
-    
+
                 while (read(tubeerr2[0], &c, 1) == 1) foutput("%c",c);
                 close(tubeerr2[0]);
                 if (globals.debugging) foutput("%s\n", INF "Running mplex...");
@@ -570,6 +565,8 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
 #else
 
+      char* mpeg2enccl = get_command_line(argsmpeg2enc);
+     char* jpeg2yuvcl = get_command_line(argsjpeg2yuv);
 
 // This is unsatisfactory yet will do for porting purposes.
 
@@ -585,6 +582,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
     sprintf(cml3, "%s %s",mplex, mplexcl);
     system(win32quote(cml3));
+
     free((char*) jpeg2yuvcl);
     free((char*) mpeg2enccl);
     free((char*) mplexcl);
@@ -800,11 +798,11 @@ uint16_t y(uint8_t track, uint8_t maxnumtracks)
 int prepare_overlay_img(char* text, int8_t group, pic *img, char* command, char* command2, int menu, char* albumcolor)
 {
     initialize_binary_paths(3);
-    
+
     int size=strlen(globals.settings.tempdir)+11;
     char picture_save[size];
     sprintf(picture_save, "%s"SEPARATOR"%s", globals.settings.tempdir, "svpic.png");
-    
+
     if (file_exists(picture_save)) unlink(picture_save);
     errno=0;
     change_directory(globals.settings.datadir);
@@ -1242,7 +1240,7 @@ int create_stillpic_directory(char* string, int32_t count)
     if (k == count)
     {
         if (globals.debugging) foutput(WAR "Too many pics, only %d sound track%s skipping others...\n", count, (count == 1)? "," : "s,");
-        
+
         change_directory(globals.settings.workdir);
         return 0;
     }
@@ -1250,7 +1248,7 @@ int create_stillpic_directory(char* string, int32_t count)
     if (*string == '\0')
     {
         if (globals.debugging) foutput(INF "Jumping one track for picture rank = %d\n", k);
-        
+
         change_directory(globals.settings.workdir);
         return 1;
     }
@@ -1267,7 +1265,7 @@ int create_stillpic_directory(char* string, int32_t count)
     {
         if (globals.debugging) foutput(INF "Directory %s will be parsed for still pics\n", string);
         globals.settings.stillpicdir = strdup(string);
-        
+
         change_directory(globals.settings.workdir);
         return 0;
     }
@@ -1277,17 +1275,17 @@ int create_stillpic_directory(char* string, int32_t count)
         char dest[strlen(globals.settings.tempdir) + 13];
         sprintf(dest, "%s"SEPARATOR"pic_%03d.jpg", globals.settings.tempdir, k);
         if (globals.debugging) fprintf(stderr, DBG "Picture %s will be copied to temporary directory as %s.\n", string, dest);
-    
+
         copy_file(string, dest);
 
         ++k;
-        
+
         change_directory(globals.settings.workdir);
         return 1;
 #ifndef __WIN32__
     }
 #endif
-    
+
     change_directory(globals.settings.workdir);
     return 0;
 

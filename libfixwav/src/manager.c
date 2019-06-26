@@ -198,7 +198,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
   if (info->prepend) goto Repair;
   errno = 0;
   parse_wav_header(info, header);
-     
+
   /* if found info tags, dumps them in textfile database, which can only occur if span > 36 */
 
   if (header->ichunks > 0)
@@ -341,7 +341,7 @@ Checkout:
       if (! info->virtual)
       {
 
-          if ((info->repair=write_header(info, header)) != FAIL)
+          if ((info->repair=dvda_write_header(info, header)) != FAIL)
           {
               if (globals.debugging) foutput("%s\n", INF "Header copy successful.\n");
               if (globals.maxverbose)

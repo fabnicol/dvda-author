@@ -71,7 +71,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 // if CHAR_BUSFIZ not defined at compile time, then is 512
 #ifndef CHAR_BUFSIZ
-#define CHAR_BUFSIZ    1024
+#define CHAR_BUFSIZ    2048
 #endif
 #define MAX_HEADER_SIZE 255
 

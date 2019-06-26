@@ -169,7 +169,7 @@ int launch_manager(command_t *command)
     foutput(MSG_TAG "Size of raw PCM data: %"PRIu64" bytes (%.2f  MB)\n",totalsize, (float) totalsize/(1024*1024));
 
 // These are Schily values for mkisofs. However little seems to hinge on this for practical purposes.
-    
+
     startsector = 272;
 
     /* main reference track tables */
@@ -250,7 +250,7 @@ int launch_manager(command_t *command)
     {
         copy_directory(globals.settings.linkdir, videotsdir, globals.access_rights);
         int nb_video_files = 0;
-        if ((nb_video_files  = count_dir_files(&videotsdir[0])) == 0)
+        if ((nb_video_files  = count_dir_files(&videotsdir[0])) != 0)
         {
           startsector += nb_video_files;
           globals.settings.linkdir = strdup(videotsdir);

@@ -128,9 +128,15 @@ char *fn_get_current_dir_name (void)
 #if defined __linux__ && ! defined __apple__
    return get_current_dir_name();
 #elif defined _MINGW32 || defined _WIN32
- WCHAR Buffer[CHAR_BUFSIZ];
- 
- return (char*) GetCurrentDirectory(CHAR_BUFSIZ, Buffer);
+ LPTSTR Buffer = (LPTSTR ) malloc (CHAR_BUFSIZ * sizeof(char));
+
+DWORD  ret = GetCurrentDirectory((DWORD) CHAR_BUFSIZ, Buffer);
+if (ret == 0 || ret > CHAR_BUFSIZ)
+        {
+            printf ("%s", ERR "Not enough memory for GetCurrentDirectory \n");
+            exit (EXIT_FAILURE);
+        }
+return (char*) Buffer;
 #else
     char *cwd = NULL;
     int len = 4096;
@@ -153,7 +159,7 @@ char *fn_get_current_dir_name (void)
         return (cwd);
     perror("Allocate current path");
     clean_exit(-1);
- 
+
 #endif
 return "";
 }
@@ -1298,13 +1304,13 @@ int stat_dir_files(const char* src)
 
     printf("%c", '\n');
 
-    if (globals.debugging)  printf("%s%s\n", ANSI_COLOR_BLUE" [INF] "ANSI_COLOR_RESET" Summing up directory file sizes...", src);
+    if (globals.debugging)  printf("%s%s\n", INF " Summing up directory file sizes...", src);
 
     uint64_t total_size = 0;
 
     traverse_directory(src, stat_file_wrapper, false, (void*) &total_size, NULL);
 
-    printf("%s" PRIu64 "\n", "[MSG] Directory file size is ", total_size);
+    printf("%s" PRIu64 "\n", MSG_TAG "Directory file size is ", total_size);
     return(errno);
 }
 
@@ -1320,20 +1326,20 @@ int count_dir_files(const char* src)
 
     struct stat buf;
     if (stat(src, &buf) == -1)
-    {   
+    {
         perror("\n"ERR "Directory not recognized.\n");
         return(errno);
     }
-    
+
     printf("%c", '\n');
-    
-    if (globals.debugging)  printf("%s%s\n", "[INF] Counting files in ...", src);
-    
+
+    if (globals.debugging)  printf("%s%s\n", INF "[Counting files in ...", src);
+
     int total = 0;
-    
+
     traverse_directory(src, counter, true, (void*) &total, NULL);
-    
-    printf("%s%d%s\n", "[MSG] Directory has ", total, " files.");
+
+    printf("%s%d%s\n", MSG_TAG "Directory has ", total, " files.");
     return(total);
 }
 
