@@ -1239,7 +1239,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
 {
     FILE* fpout;
     char outfile[CHAR_BUFSIZ+13+1];
-    int i=0, pack=0, fileno=1;
+    int i=0, pack=0, fileno = 1;
     bool start_of_file = true;
     uint32_t bytesinbuf=0, n=0, lpcm_payload=0;
     uint8_t audio_buf[AUDIO_BUFFER_SIZE];
@@ -1369,5 +1369,5 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
         }
     }
 
-    return(1-fileno);
+    return(fileno);
 }

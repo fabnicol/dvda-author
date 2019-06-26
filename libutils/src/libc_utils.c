@@ -1163,7 +1163,7 @@ int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED *, void 
             {
                 char* fullpath = calloc(strlen(src) + 1 + strlen(d->d_name) + 1, sizeof (char));
                 sprintf(fullpath, "%s%s%s", src, SEPARATOR, d->d_name);
-                if (globals.veryverbose) fprintf(stderr, INF "Copying %s with arg2 = %s ...\n", fullpath, arg2);
+                if (globals.veryverbose) fprintf(stderr, INF "Copying %s with arg2 = %s ...\n", fullpath, (char*) arg2);
                 // This is to account for both relative and absolute paths as -o arguments
                 change_directory(olddir);
                 change_directory(arg2);
@@ -1314,9 +1314,10 @@ static inline void counter(const char* GCC_UNUSED a, void* total, void* GCC_UNUS
 }
 
 
-int count_dir_files(const char* src, int *total)
+int count_dir_files(const char* src)
 {
     errno = 0;
+
     struct stat buf;
     if (stat(src, &buf) == -1)
     {   
@@ -1328,12 +1329,12 @@ int count_dir_files(const char* src, int *total)
     
     if (globals.debugging)  printf("%s%s\n", "[INF] Counting files in ...", src);
     
-    *total = 0;
+    int total = 0;
     
-    traverse_directory(src, counter, true, (void*) total, NULL);
+    traverse_directory(src, counter, true, (void*) &total, NULL);
     
-    printf("%s%d%s\n", "[MSG] Directory has ", *total, " files.");
-    return(errno);
+    printf("%s%d%s\n", "[MSG] Directory has ", total, " files.");
+    return(total);
 }
 
 #if 0

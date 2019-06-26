@@ -295,6 +295,7 @@ int cat_file(const char *existing_file, const char *new_file);
 int copy_file_p(FILE *infile, FILE *outfile, uint32_t position, uint64_t output_size);
 bool file_exists(const char* filepath);
 int stat_dir_files(const char* src);
+int count_dir_files(const char* src);
 bool s_dir_exists(const char* path);
 int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED*, void GCC_UNUSED *, void GCC_UNUSED *), bool recursive, void GCC_UNUSED* arg2, void GCC_UNUSED* arg3);
 int get_endianness(void);

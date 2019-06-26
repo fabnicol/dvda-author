@@ -80,15 +80,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
     //
 
     // In principle, VIDEO_TS files should be scanned too 
-    int nb_files = 0;
-    if (count_dir_files(audiotsdir, &nb_files) == 0)
-    {
-      startsector += nb_files;
-    }
-    else
-    {
-      foutput("%s%s\n", ERR "Could not count number of files in ", audiotsdir);
-    }
+
 
 
     absolute_sector_offset=(uint32_t) startsector + sectors->samg + 2*(sectors->amg + sectors->asvs) + sectors->topvob + sectors->stillvob +sectors->atsi[0];
