@@ -447,12 +447,17 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
     uint32_copy(&atsi[28],(*atsi_sectors)-1); // Last sector in ATSI
     uint32_copy(&atsi[196],(*atsi_sectors));      // Start sector of ATST_AOBS
 
-    STRING_WRITE_CHAR_BUFSIZ(basename, "ATS_%02d_0.IFO",titleset+1)
-    create_file(audiotsdir, basename, atsi, 2048*(*atsi_sectors));
-    STRING_WRITE_CHAR_BUFSIZ(basename, "ATS_%02d_0.BUP",titleset+1)
-    create_file(audiotsdir, basename, atsi, 2048*(*atsi_sectors));
+    int nb_atsi_files = 0;
 
-    return(0);
+    STRING_WRITE_CHAR_BUFSIZ(basename, "ATS_%02d_0.IFO",titleset+1)
+
+    nb_atsi_files += create_file(audiotsdir, basename, atsi, 2048*(*atsi_sectors));
+
+    STRING_WRITE_CHAR_BUFSIZ(basename, "ATS_%02d_0.BUP",titleset+1)
+
+    nb_atsi_files += create_file(audiotsdir, basename, atsi, 2048*(*atsi_sectors));
+
+    return(nb_atsi_files);
     #undef files
     #undef ntracks
     #undef img
