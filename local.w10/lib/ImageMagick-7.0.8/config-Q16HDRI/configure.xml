@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuremap [
+  <!ELEMENT configuremap (configure)+>
+  <!ATTLIST configuremap xmlns CDATA #FIXED ''>
+  <!ELEMENT configure EMPTY>
+  <!ATTLIST configure xmlns CDATA #FIXED '' name NMTOKEN #REQUIRED
+    value CDATA #REQUIRED>
+]>
+<!--
+  ImageMagick build configuration.
+-->
+<configuremap>
+  <configure name="CC" value="gcc"/>
+  <configure name="CFLAGS" value="-I/usr/include/libxml2 -I/usr/include/libpng16  -I/usr/include/freetype2 -I/usr/include/libpng16    -g -O2 -Wall -mtune=haswell -fexceptions -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16"/>
+  <configure name="CODER_PATH" value="/c/Users/Public/Dev/ImageMagick/ImageMagick-7.0.8-48/local/lib/ImageMagick-7.0.8/modules-Q16HDRI/coders"/>
+  <configure name="CONFIGURE_PATH" value="/c/Users/Public/Dev/ImageMagick/ImageMagick-7.0.8-48/local/etc/ImageMagick-7/"/>
+  <configure name="CONFIGURE" value="./configure  '--prefix=/c/Users/Public/Dev/ImageMagick/ImageMagick-7.0.8-48/local' '--without-threads' 'PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/share/pkgconfig:/lib/pkgconfig'"/>
+  <configure name="COPYRIGHT" value="Copyright (C) 1999-2019 ImageMagick Studio LLC"/>
+  <configure name="CPPFLAGS" value="-I/c/Users/Public/Dev/ImageMagick/ImageMagick-7.0.8-48/local/include/ImageMagick-7"/>
+  <configure name="CXXFLAGS" value="-g -O2"/>
+  <configure name="CXX" value="g++"/>
+  <configure name="DEFS" value="-DHAVE_CONFIG_H"/>
+  <configure name="DELEGATES" value="mpeg freetype jng jpeg lzma png xml zlib"/>
+  <configure name="DISTCHECK_CONFIG_FLAGS" value=" --disable-deprecated  --with-quantum-depth=16  --with-jemalloc=no  --with-umem=no  --with-autotrace=no  --with-gslib=no  --with-fontpath=  --with-rsvg=no  --with-perl=no "/>
+  <configure name="DOCUMENTATION_PATH" value="/c/Users/Public/Dev/ImageMagick/ImageMagick-7.0.8-48/local/share/doc/ImageMagick-7"/>
+  <configure name="EXEC-PREFIX" value="/c/Users/Public/Dev/ImageMagick/ImageMagick-7.0.8-48/local"/>
+  <configure name="EXECUTABLE_PATH" value="/c/Users/Public/Dev/ImageMagick/ImageMagick-7.0.8-48/local/bin"/>
+  <configure name="FEATURES" value="DPC HDRI Cipher"/>
+  <configure name="FILTER_PATH" value="/c/Users/Public/Dev/ImageMagick/ImageMagick-7.0.8-48/local/lib/ImageMagick-7.0.8/modules-Q16HDRI/filters"/>
+  <configure name="GIT_REVISION" value="15687" />
+  <configure name="HOST" value="x86_64-pc-msys"/>
+  <configure name="INCLUDE_PATH" value="/c/Users/Public/Dev/ImageMagick/ImageMagick-7.0.8-48/local/include/ImageMagick-7"/>
+  <configure name="LDFLAGS" value="-L/c/Users/Public/Dev/ImageMagick/ImageMagick-7.0.8-48/local/lib "/>
+  <configure name="LIBRARY_PATH" value="/c/Users/Public/Dev/ImageMagick/ImageMagick-7.0.8-48/local/lib/ImageMagick-7.0.8"/>
+  <configure name="LIBS" value="    -lfreetype -lpng16 -lm -lz  -ljpeg   -lpng16 -lm -lz                -llzma       -lxml2 -licui18n -licuuc -licudata -lpthread -lm -lz -llzma -liconv -lm  -lz     -lm     -lgomp"/>
+  <configure name="LIB_VERSION_NUMBER" value="7,0,8,48"/>
+  <configure name="LIB_VERSION" value="0x708"/>
+  <configure name="NAME" value="ImageMagick"/>
+  <configure name="PCFLAGS" value="-DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16"/>
+  <configure name="PREFIX" value="/c/Users/Public/Dev/ImageMagick/ImageMagick-7.0.8-48/local"/>
+  <configure name="QuantumDepth" value="16"/>
+  <configure name="RELEASE_DATE" value="2019-06-05"/>
+  <configure name="SHAREARCH_PATH" value="/c/Users/Public/Dev/ImageMagick/ImageMagick-7.0.8-48/local/lib/ImageMagick-7.0.8/config-Q16HDRI"/>
+  <configure name="SHARE_PATH" value="/c/Users/Public/Dev/ImageMagick/ImageMagick-7.0.8-48/local/share/ImageMagick-7"/>
+  <configure name="TARGET_CPU" value="x86_64"/>
+  <configure name="TARGET_OS" value="msys"/>
+  <configure name="TARGET_VENDOR" value="pc"/>
+  <configure name="VERSION" value="7.0.8"/>
+  <configure name="WEBSITE" value="https://imagemagick.org"/>
+</configuremap>
