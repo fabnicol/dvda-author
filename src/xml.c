@@ -27,6 +27,7 @@ int  generate_amgm_xml(uint8_t ngroups, uint8_t *ntracks, pic* img)
 
     // Writing XML code
     FILE *xmlfile;
+
     if (globals.xml == NULL)
     {
         char xmlfilepath[strlen(globals.settings.tempdir)+8+STRLEN_SEPARATOR];

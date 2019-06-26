@@ -58,8 +58,9 @@ int launch_manager(command_t *command)
         return(EXIT_SUCCESS);
     }
 
-    errno=0;
-    int i, j, error;
+    errno = 0;
+    int i = 0, j = 0;
+    int nb_aob_files = 0;
 
     uint32_t  last_sector;
     uint64_t totalsize=0;
@@ -111,7 +112,6 @@ int launch_manager(command_t *command)
     char joinmark[naudio_groups][99];
     memset(joinmark, ' ', naudio_groups*99);
     bool singlestar_flag = 0, joinmark_flag = 0;
-    unsigned int ppadd = 0;
 
     for (i = 0; i < naudio_groups; ++i)
     {
@@ -190,34 +190,43 @@ int launch_manager(command_t *command)
         printf(INF "Total of tracks is not coherent: totntracks=%d, return of create_tracktables=%d\n", totntracks, totntracks0);
     }
 
+    int nb_atsi_files = 0;
+
     for (i = 0; i < naudio_groups; ++i)
     {
+        nb_aob_files += create_ats(audiotsdir, i + 1, &files[i][0], nfiles[i]);
 
-        error = create_ats(audiotsdir, i + 1, &files[i][0], nfiles[i]);
-        ppadd -= error;
         /* Audio zone system file  parameters  */
 
-        error = create_atsi(command, audiotsdir,i,&sectors.atsi[i], &ntitlepics[i][0]);
+        nb_atsi_files += create_atsi(command, audiotsdir,i,&sectors.atsi[i], &ntitlepics[i][0]);
     }
+
+    int nb_asv_files = 0;
 
     /* creating system VOBs */
 #if !HAVE_core_BUILD
-    if (globals.topmenu < NO_MENU)  sectors.topvob=create_topmenu(audiotsdir, command); // if no top menu is requested, but simply active ones, generate matrix top menu and unlink it at the end
+    if (globals.topmenu < NO_MENU)
+        sectors.topvob = create_topmenu(audiotsdir, command); // if no top menu is requested, but simply active ones, generate matrix top menu and unlink it at the end
+
+    if (sectors.topvob == 0) globals.topmenu = NO_MENU;
 
     if (img->active)
         {
             if (globals.debugging) foutput("%s", INF "Adding active menu.\n");
 
             create_activemenu(img);
+            if (globals.topmenu == TEMPORARY_AUTOMATIC_MENU)
+                sectors.topvob = 0;  //  deleting AUDIO_TS.VOB in this case (just used for creating AUDIO_SV.VOB
         }
 
     if ((img->count) || (img->stillvob) || (img->active))
     {
 
     if (img->stillpicvobsize == NULL)
-    // allocation to be revised
+    // TODO: allocation to be revised
        img->stillpicvobsize=(uint32_t*) calloc(totntracks, sizeof(uint32_t));
 
+     nb_asv_files =
         create_stillpics(
             audiotsdir,
             naudio_groups,
@@ -226,12 +235,44 @@ int launch_manager(command_t *command)
             img,
             &sectors,
             totntracks);
-        if (img->stillvob)
+
+     if (nb_asv_files)
+     {
+      if (img->stillvob)
              sectors.stillvob=stat_file_size(img->stillvob)/0x800;  //expressed in sectors
-        if (globals.debugging) foutput(MSG_TAG "Size of AUDIO_SV.VOB is: %u sectors\n" , sectors.stillvob);
+           if (globals.debugging) foutput(MSG_TAG "Size of AUDIO_SV.VOB is: %u sectors\n" , sectors.stillvob);
+     }
 
     }
 #endif
+
+    if (globals.videozone)
+    {
+        copy_directory(globals.settings.linkdir, videotsdir, globals.access_rights);
+        int nb_video_files = 0;
+        if ((nb_video_files  = count_dir_files(&videotsdir[0])) == 0)
+        {
+          startsector += nb_video_files;
+          globals.settings.linkdir = strdup(videotsdir);
+        }
+        else
+        {
+          foutput("%s%s%s\n", ERR "Could not count number of files in ", audiotsdir, "\n" MSG_TAG "Disabling VIDEO_TS import and videolinking...");
+          ngroups -= nvideolinking_groups;
+          nvideolinking_groups = 0;
+          globals.videozone = 0;
+          globals.videolinking = 0;
+        }
+    }
+
+    // Starting at 272 (Schily's padding sector count) and increasing count with number of files (system files, plus data files including video files)
+
+    startsector += 3  // AUDIO_TS.IFO + AUDIO_TS.BUP + SAMG, behavior is made stricter below for create_amg
+                + (img->tsvob != NULL && sectors.topvob != 0)   // AUDIO_TS.VOB
+                + nb_asv_files // AUDIO_SV.VOB + AUDIO_SV.IFO + AUDIO_SV.BUP
+                + nb_aob_files + nb_atsi_files; // number of ATS_XX_0.IFO + ATS_XX_0.BUP system files
+
+    // Now starsector iw worth 272 + total number of AOB, VOB and IFO files.
 
     /* Creating AUDIO_PP.IFO */
 
@@ -298,10 +339,6 @@ int launch_manager(command_t *command)
 #if !HAVE_core_BUILD
     if (globals.videozone)
     {
-        char    newpath[CHAR_BUFSIZ];
-        STRING_WRITE_CHAR_BUFSIZ(newpath, "%s" SEPARATOR "%s", globals.settings.outdir, "VIDEO_TS")
-
-        copy_directory(globals.settings.linkdir, newpath, globals.access_rights);
         if (globals.videolinking)
         {
             get_video_system_file_size(globals.settings.linkdir, maximum_VTSI_rank, sector_pointer_VIDEO_TS, relative_sector_pointer_VTSI);
@@ -310,32 +347,27 @@ int launch_manager(command_t *command)
 
         change_directory(globals.settings.workdir);
         free(globals.settings.linkdir);
-        globals.settings.linkdir = strdup(newpath);
-
     }
 #endif
 
     uint8_t *title[naudio_groups];
+    int
+    nb_amg_files =       // normally 2 !
+        create_amg(
+            audiotsdir,
+            command,
+            &sectors,
+            videotitlelength,
+            relative_sector_pointer_VTSI,
+            numtitles,
+            ntitletracks,
+            titlelength
+            );
 
-    create_amg(
-        audiotsdir,
-        command,
-        &sectors,
-        videotitlelength,
-        relative_sector_pointer_VTSI,
-        numtitles,
-        ntitletracks,
-        titlelength
-        );
-
-
-    // Lax behaviour
-
-    if (numtitles == NULL)
+    if (numtitles == NULL || nb_amg_files == 0)
     {
         foutput("%s\n", ERR "Critical error: failed to generate AUDIO_TS.IFO");
-        foutput("%s\n", ERR "Continuing with non-compliant DVD-Audio structure...");
-        goto SUMMARY;
+        clean_exit(-1);
     }
 
     for (i = 0; i < naudio_groups; ++i)
@@ -356,7 +388,35 @@ int launch_manager(command_t *command)
         }
     }
 
+    int ntotalfiles;
+
 SUMMARY:
+
+    //
+    // checking coherence of startsector by recounting number of files
+    // should always be OK unless some hardware issue or user interceptin came in at the worst of times
+    //
+    ntotalfiles =  count_dir_files(audiotsdir);
+    ntotalfiles += count_dir_files(videotsdir);
+
+    if (startsector == ntotalfiles  + 272)
+    {
+      int ad = startsector * 2048;
+      if (globals.debugging)
+         foutput("%s%d%s%d%s%#08X%s\n", MSG_TAG "Coherence test for ISO start sector... OK, : ", startsector, " sectors (adress: ", ad, ", ", ad, ")");
+    }
+    else
+    {
+      foutput("%s%s%d%s%d\n", WAR "Coherence test for ISO start sector failed: ", "start sector assessed as: ", startsector, " but should be: ", 272 + ntotalfiles);
+      if (globals.debugging)
+      {
+          foutput("%s%s\n", DBG "img->tsbob not null: ", img->tsvob != NULL ? "yes" : "no");
+          foutput("%s%d\n", DBG "sectors.topvob: ",      sectors.topvob);
+          foutput("%s%d\n", DBG "nb_aob_files: ",  nb_aob_files);
+          foutput("%s%d\n", DBG "nb_asv_files: ",  nb_asv_files);
+          foutput("%s%d\n", DBG "nb_atsi_files: ", nb_atsi_files);
+      }
+    }
 
     errno=0;
 
