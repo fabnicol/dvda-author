@@ -44,7 +44,7 @@ extern globalData globals;
 #endif
 
 // arcane issue with assert() that justifies this workaround
-#define check(X) if ((X)==0) { foutput("%s%d\n", ERR "SoX runtime failure, stage ", stage); return -1;}
+#define check(X) do { if ((X)==0) { foutput("%s%d\n", ERR "SoX runtime failure, stage ", stage); return -1;} } while(0);
 
 int soxconvert(char * input, char* output)
 {

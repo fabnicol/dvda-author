@@ -41,8 +41,8 @@ unsigned int startsector;
 extern char* OUTDIR, *LOGFILE, *WORKDIR,  *LPLEXTEMPDIR;
 static fileinfo_t ** files;
 uint16_t totntracks;
-static uint8_t maxbuttons; // to be used in xml.c and menu.c as extern globals
-static uint8_t resbuttons; // to be used in xml.c and menu.c as extern globals
+uint8_t maxbuttons; // to be used in xml.c and menu.c as extern globals
+uint8_t resbuttons; // to be used in xml.c and menu.c as extern globals
 static uint8_t ndvdvtitleset1=0,ndvdvtitleset2=0;
 static uint8_t mirror_st_flag=0;
 static uint8_t* ndvdvslides=NULL;
@@ -84,7 +84,7 @@ void parse_double_entry_command_line(char* input_string, char**** DOUBLE_ARRAY, 
         (*DOUBLE_ARRAY)[titleset]=fn_strtok(array[titleset], ',', (*DOUBLE_ARRAY)[titleset], &size, 0,NULL, NULL);
         *COUNTER_ARRAY=calloc(*TOTAL, sizeof(uint8_t));
         *COUNTER_ARRAY[titleset]=arraylength(*DOUBLE_ARRAY[titleset]);
-#if DEBUG
+#ifndef DEBUG
         if (globals.veryverbose)
         {
             if (audit_flag == AUDIT_DVD_VIDEO_AUDIO_FORMAT)
@@ -168,7 +168,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 #endif
 #define img command->img  // already allocated, just for notational purposes
 
-    char **argv_scan=(char**)calloc(argc, sizeof(char*));
+    char **argv_scan=(char**)calloc((unsigned long)argc, sizeof(char*));
 
     if (argv_scan == NULL)   EXIT_ON_RUNTIME_ERROR
 
@@ -224,7 +224,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"no-refresh-tempdir",no_argument, NULL, 4},
         {"no-refresh-outdir",no_argument, NULL, 5},
         {"extract", required_argument, NULL, 'x'},
-    #if !HAVE_core_BUILD
+    #ifndef HAVE_core_BUILD
         {"videodir", required_argument, NULL, 'V'},
         {"fixwav", optional_argument, NULL, 'F'},
         {"fixwav-virtual", optional_argument, NULL, 'f'},
@@ -349,6 +349,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                     case 't':
                         globals.veryverbose=1;
+                        /* fall through */
+                        __attribute__((fallthrough));
                         // no break
 
                     case 'd':
@@ -359,6 +361,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                     case 'L':
                         logrefresh=1; // no break
+                        /* fall through */
+                        __attribute__((fallthrough));
 
                     case 'l' :
 
@@ -516,7 +520,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 if (argv[k][0] !='-')
                 {
                     FILE* f;
-                    if (f = fopen(argv[k], "r")) fclose(f);
+                    if ((f = fopen(argv[k], "r")) == NULL) fclose(f);
                     else
                     {
                       fprintf(stderr, ERR "Le terme %s n'est pas un fichier. Fin du programme...\n", argv[k]);
@@ -649,7 +653,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             refresh_tempdir=0;
             break;
 
-#if !HAVE_core_BUILD
+#ifndef HAVE_core_BUILD
 
         case 'T':
 
@@ -1119,6 +1123,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'f':
             globals.fixwav_virtual_enable=1;
             foutput("%s\n", PAR "Virtual fixwav enabled.");
+            /* fall through */
+            __attribute__((fallthrough));
+
             // case 'F' must follow breakless
 
         case 'F':
@@ -1970,7 +1977,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s%s\n", PAR "Background color(s) for top (and active) menus : ", optarg);
             str=strdup(optarg);
 
-            img->backgroundcolors = fn_strtok(str,':', img->backgroundcolors, globals.backgroundcolorssize, 0,NULL,NULL);
+            img->backgroundcolors = fn_strtok(str,':', img->backgroundcolors, &globals.backgroundcolorssize, 0,NULL,NULL);
             int bgcolors_arraylength = 0;
             if ((bgcolors_arraylength = arraylength(img->backgroundcolors)) < img->nmenus)
             {
@@ -2129,7 +2136,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 sprintf(name, "%s%d%s", "bgpic", u,".jpg");
                 copy_file2dir_rename(img->backgroundpic[0], globals.settings.tempdir, name);
             }
-
+        /* fall through */
+        __attribute__((fallthrough));
 
     case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
         change_directory(globals.settings.datadir);
@@ -2149,6 +2157,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         change_directory(globals.settings.workdir);
         free(dest);
+        /* fall through */
+        __attribute__((fallthrough));
+
 
     case RUN_SPUMUX_DVDAUTHOR:
         if ((img->imagepic==NULL) && (img->selectpic==NULL)&& (img->highlightpic==NULL))
@@ -2379,7 +2390,7 @@ standard_checks:
 
 void process_dvd_video_zone(command_t* command)
 {
-#if ! HAVE_core_BUILD
+#ifndef HAVE_core_BUILD
 
  #if HAVE_lplex
     if (hybridate_flag || full_hybridate_flag)
@@ -3052,7 +3063,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
 
         for (j = 0; j < 9; ++j)
         {
-            for (k = 0; k < 99; ++j)
+            for (k = 0; k < 99; ++k)
             {
                 if ((extract->extracttitleset[j]) && (extract->extracttrackintitleset[j][k]))
                     foutput(INF "                   %02d      |      %02d\n", j, k );

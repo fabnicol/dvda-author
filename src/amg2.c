@@ -58,8 +58,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 extern globalData globals;
 extern char* TEMPDIR;
-uint16_t  maxntracks;
-uint16_t totaltitles;
+static uint16_t  maxntracks;
+static uint16_t totaltitles;
 
 /* Limitations */
 
@@ -228,7 +228,10 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
 
         // do not overwrite !
 
-        generate_background_mpg(img); // do not break;
+        generate_background_mpg(img);
+        /* fall through */
+        __attribute__((fallthrough));
+
 
     case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
 

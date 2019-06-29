@@ -36,8 +36,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 extern globalData globals;
 extern uint8_t channels[21];
-
-unsigned char wav_header[80]= {'R','I','F','F',   //  0 - ChunkID
+#if 0
+static unsigned char wav_header[80]= {'R','I','F','F',   //  0 - ChunkID
                                0,0,0,0,            //  4 - ChunkSize (filesize-8)
                                'W','A','V','E',    //  8 - Format
                                'f','m','t',' ',    // 12 - SubChunkID
@@ -59,7 +59,7 @@ unsigned char wav_header[80]= {'R','I','F','F',   //  0 - ChunkID
                                'd','a','t','a',    // 72 - ckID
                                0,0,0,0             // 76 - ckSize -> // 79
                               };
-
+#endif
 // Reverse table (to be used to convert AOBs to WAVs
 
 static const uint8_t  T[2][6][36]=
@@ -605,9 +605,9 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
                 
         if (written_bytes != numbytes)
         {
-            foutput(WAR "IFO number of written bytes: %" PRIu64 
+            foutput(WAR "IFO number of written bytes: %" PRIu64
                     " differs from scanned AOB number of written bytes: %" PRIu64
-                    " by %d bytes.\n"WAR "Giving priority to scanned written bytes.\n",
+                    " by %" PRIu64 " bytes.\n"WAR "Giving priority to scanned written bytes.\n",
                     written_bytes, 
                     numbytes,
                     written_bytes - numbytes);

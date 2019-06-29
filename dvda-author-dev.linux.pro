@@ -8,9 +8,9 @@ QMAKE_CC = /usr/bin/gcc
 SRCDIR="/home/fab2/Dev/dvda-author/"
 TARGET = dvda-author
 
-QMAKE_CFLAGS=-std=c99 -march=core2 -fPIC
+QMAKE_CFLAGS=-std=c99 -march=core2 -fPIC -ftrack-macro-expansion=0
 
-DEFINES += _GNU_SOURCE __CB__ HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_fixwav HAVE_libogg HAVE_iberty HAVE_mpeg2enc HAVE_mplex HAVE_OGG_FLAC HAVE_FLAC HAVE_libogg HAVE_sox  FLAC_API_SUPPORTS_OGG_FLAC=1
+DEFINES +=  _GNU_SOURCE __CB__ HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_fixwav HAVE_libogg HAVE_iberty HAVE_mpeg2enc HAVE_mplex HAVE_OGG_FLAC HAVE_FLAC HAVE_libogg HAVE_sox  FLAC_API_SUPPORTS_OGG_FLAC=1
 
 #libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame --disable-gomp
 

@@ -128,7 +128,9 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
              break;
 
         case '/' :
-             if (*(chain+1) == '/') continue; // no break
+             if (*(chain+1) == '/') continue;
+             /* fall through */
+             __attribute__((fallthrough));
 
         default:
              if ((flag == SHORTOPTION) ||  (flag == LONGOPTION)) flag=ARG;
@@ -220,6 +222,8 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
 
             case SCREENTEXT:
                 ++i; ++j;
+                /* fall through */
+                __attribute__((fallthrough));
 
             case SCREENTEXT_GROUP:
 

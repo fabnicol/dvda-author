@@ -999,7 +999,7 @@ char* get_command_line(const char** args)
 * ------- */
 
 
-char* get_full_command_line(char** args)
+char* get_full_command_line(const char** args)
 {
     return get_cl(args, 0);
 }
@@ -1310,7 +1310,7 @@ int stat_dir_files(const char* src)
 
     traverse_directory(src, stat_file_wrapper, false, (void*) &total_size, NULL);
 
-    printf("%s" PRIu64 "\n", MSG_TAG "Directory file size is ", total_size);
+    printf("%s%" PRIu64 "\n", MSG_TAG "Directory file size is ", total_size);
     return(errno);
 }
 
@@ -1897,7 +1897,7 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
 uint64_t filesize(filestat_t f) { return f.filesize; }
 char* filename(filestat_t f) { return f.filename; }
 
-filestat_t filestat(bool b, uint64_t s, char* fn, FILE* fp)
+filestat_t filestat(bool b, uint64_t s, const char* fn, FILE* fp)
 {
     filestat_t str = {b, s, fn, fp};
     return str;
