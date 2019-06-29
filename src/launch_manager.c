@@ -390,8 +390,6 @@ int launch_manager(command_t *command)
 
     int ntotalfiles;
 
-SUMMARY:
-
     //
     // checking coherence of startsector by recounting number of files
     // should always be OK unless some hardware issue or user interceptin came in at the worst of times
@@ -465,7 +463,7 @@ SUMMARY:
            run(mkisofs, args, 0, FORK);
 
 #ifndef _WIN32
-    while (waitpid(-1, NULL, 0) >0);
+           while (waitpid(-1, NULL, 0) >0) {}
 #endif
            free(mkisofs);
         }

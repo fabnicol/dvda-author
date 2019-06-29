@@ -129,7 +129,7 @@ printf("%s","-f, --fixwav-virtual(options)  Use .wav header repair utility " J "
 #ifndef WITHOUT_sox
 printf("%s","-S, --sox                Use SoX to convert files to .wav." J "By default, only flac, Ogg FLAC " J "and .wav files are accepted.\n\n");
 #endif
-#if !HAVE_core_BUILD
+#ifndef HAVE_core_BUILD
 printf("%s","    --padding            Reverse default behaviour for transition between audio tracks with identical" J "characteristics (number of channels, bit depth and sample rate)." J "If necessary, audio will be padded with 0s instead of being joined (default). " J "Use --pad-cont for padding with last-known byte.\n\n");
 printf("%s","-C, --pad-cont           When padding, pad with last known byte, not 0. See --padding above." J "Deactivates --lossy-rounding\n\n");
 printf("%s","-L, --lossy-rounding     Sample count rounding will be performed by cutting audio files " J "instead of padding (see --padding and --pad-cont)." J "Deactivates --pad-cont and --padding.\n\n");
@@ -202,7 +202,7 @@ printf("%s","  , --lplex-tempdir directory  Temporary directory for DVD-Video fi
 printf("%s","-X, --workdir directory  Working directory: current directory in command line relative paths." J "By default, the current directory." J "With Code::Blocks and similar IDE, you may have to specify your root package directory as argument to --workdir.\n\n");
 printf("%s","    --no-refresh-tempdir Do not erase and recreate the DVD-Audio temporary directory on launch.\n\n");
 printf("%s","    --no-refresh-outdir  Do not erase and recreate the output directory on launch.\n\n");
-#if !HAVE_core_BUILD
+#ifndef HAVE_core_BUILD
 printf("%s","    --bindir path        Path to auxiliary binaries.\n\n");
 
 printf("%s","Sub-options\n\n");
@@ -279,7 +279,7 @@ printf("%s", "Examples:\n");
 printf("%s", "\n\
 -create a 3-group DVD-Audio disc (legacy syntax):\n\n\
   dvda-author -g file1.wav file2.flac -g file3.flac -g file4.wav\n\n");
-#if !HAVE_core_BUILD
+#ifndef HAVE_core_BUILD
 printf("%s", "-create a hybrid DVD disc with both AUDIO_TS mirroring audio_input_directory\n\n\
   and VIDEO_TS imported from directory VID, outputs disc structure to directory\n\n");
 printf("%s", " DVD_HYBRID and links video titleset #2 of VIDEO_TS to AUDIO_TS:\n\n");
@@ -305,12 +305,12 @@ WITHOUT_FLAC to compile without FLAC/OggFLAC code\n\n");
 printf("%s", "\nReport bugs to fabnicol@users.sourceforge.net\n");
 return;
 }
-#if 0
+
 #undef SETTINGSFILE
 #define SETTINGSFILE "/usr/local/share/applications/dvda-author-dev/dvda-authhor.conf" 
 void check_settings_file()
 {
-
+#if 0
     /* If a command-line build system is not used, e.g. with editors like Code::Blocks, it is unwieldy to define SETTINGSFILE so creating automatically to avoid crashes */
     /* It may also be useful if configuration file was installed in a directory with inappropriate access rights */
 
@@ -337,9 +337,9 @@ void check_settings_file()
 
         fclose(settingsfile);
     }
-
-}
 #endif
+}
+
 bool increment_ngroups_check_ceiling(uint8_t *ngroups, uint8_t * nvideolinking_groups)
 {
 
@@ -390,17 +390,19 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t ngiven_channel
         if ((files[i]=(fileinfo_t *) calloc(ntracks[i], sizeof(fileinfo_t))) == NULL)
             EXIT_ON_RUNTIME_ERROR
 
-        memory += (float) (ntracks[i])*sizeof(fileinfo_t)/1024;
+        memory += (double) (ntracks[i])*sizeof(fileinfo_t)/1024;
 
         if (globals.debugging)
-            foutput(MSG_TAG "g-type  audio group  :  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i,  ntracks[i], memory);
+            foutput(MSG_TAG "g-type  audio group  :  %d   Allocating:  %d  track(s)  (strings=%.1g kB)\n", i,  ntracks[i], memory);
     }
 
     for (i=n_g_groups ; i < ngroups-nvideolinking_groups; i++)
     {
 
         if ((files[i]=(fileinfo_t *) calloc(ntracks[i], sizeof(fileinfo_t)) )== NULL)
+        {
             EXIT_ON_RUNTIME_ERROR
+        }
 
             for (j=0; j < ntracks[i]; j++)
             {
@@ -414,7 +416,9 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t ngiven_channel
                 for  (int u=0; u< ngiven_channels[i][j]; u++)
                   {
                     if ((files[i][j].given_channel[u]=calloc(CHAR_BUFSIZ, sizeof(char)) )== NULL)
+                    {
                                 EXIT_ON_RUNTIME_ERROR
+                    }
                   }
              }
 
@@ -423,11 +427,15 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t ngiven_channel
     for (i=ngroups-nvideolinking_groups ; i < ngroups; i++)
     {
         if ((files[i]=(fileinfo_t *) calloc(1, sizeof(fileinfo_t))) == NULL)
+        {
             EXIT_ON_RUNTIME_ERROR
-            memory+=(float) sizeof(fileinfo_t)/1024;
+        }
+
+        memory+=(double) sizeof(fileinfo_t)/1024;
+
         /* sanity check: 0 tracks should be allocated */
         if (globals.debugging)
-            foutput(MSG_TAG "Video-linking group  :  %d   Allocating:  %d  track(s)  (strings=%.1f kB)\n", i, ntracks[i], memory);
+            foutput(MSG_TAG "Video-linking group  :  %d   Allocating:  %d  track(s)  (strings=%.1g kB)\n", i, ntracks[i], memory);
     }
 
     return files;
@@ -436,14 +444,14 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t ngiven_channel
 
 #define free2(X) {\
     if (command->img->X) {\
-     for (int i = 0; i < globals.X##size; ++i) free(command->img->X[i]); \
+     for (unsigned int i = 0; i < globals.X##size; ++i) free(command->img->X[i]); \
     }\
     free(command->img->X); \
     }
 
 #define free3(X) {\
     if (command->X) {\
-    for (int i = 0; i < globals.X##size; ++i) free(command->X[i]); \
+    for (unsigned int i = 0; i < globals.X##size; ++i) free(command->X[i]); \
     }\
     free(command->X); \
     }
@@ -655,9 +663,9 @@ char** fn_strtok(char* chain, char delim, char** array, uint32_t* size, int32_t 
 // This loop cut may be useful to use with fn_strtok
 // first arg is spurious
 
-int cutloop(char GCC_ATTRIBUTE_UNUSED*c, uint32_t count)
+int cutloop(char GCC_ATTRIBUTE_UNUSED*c, int32_t count)
 {
-    static uint32_t loop;
+    static int32_t loop;
     ++loop;
     if (count > loop) return 1;
     else

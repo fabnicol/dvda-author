@@ -55,7 +55,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 /*  Global  options */
 
 globalData globals;
-char *currentdir, *TEMPDIR, *LPLEXTEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
+static char *LPLEXTEMPDIR;
+char* TEMPDIR;
 
  command_t* lexer_analysis(command_t* command, lexer_t* lexer, const char* config_file, bool config_type)
  {
@@ -70,17 +71,18 @@ char *currentdir, *TEMPDIR, *LPLEXTEMPDIR, *LOGFILE, *INDIR, *OUTDIR, *LINKDIR;
         if (lexer->commandline[i] == NULL) perror("\n"ERR "lexer\n");
     }
 
-    //if (config_type == CONFIGURATION_FILE) check_settings_file();
+    if (config_type == CONFIGURATION_FILE) check_settings_file();
 
     errno=0;
 
     config_lexer(config_file, lexer);
 
-
     if (command == NULL)
+    {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not allocate command-line structure")
+    }
 
-        command=command_line_parsing(lexer->nlines, lexer->commandline, command);
+    command=command_line_parsing(lexer->nlines, lexer->commandline, command);
 
     for (i=0; i < MAX_LEXER_LINES; i++)
         FREE(lexer->commandline[i])

@@ -38,13 +38,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #ifdef __GNU_LIBRARY__
 #include <unistd.h>
 #endif
-#include "structures.h"
 #include "export.h"
 #include "audio2.h"
 #include "audio.h"
 #include "stream_decoder.h"
-#include "c_utils.h"
-
 #include "fixwav.h"
 #include "fixwav_manager.h"
 
@@ -200,7 +197,9 @@ FLAC__StreamDecoderWriteStatus flac_write_callback(const FLAC__StreamDecoder GCC
     uint32_t i;
 
     if ((info->audio->n+data_size) > sizeof(info->audio->buf))
+    {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Internal error - FLAC buffer overflown")
+    }
 
 
         // Store data in interim buffer in WAV format - i.e. Little-endian interleaved samples
@@ -275,17 +274,17 @@ int calc_info(fileinfo_t* info)
 #define X T[table_index][info->channels-1]
 
     info->lpcm_payload = X[0];
-    info->firstpackdecrement = X[1];
+    info->firstpackdecrement = (uint8_t) X[1];
 
     info->SCRquantity = X[2];
     info->firstpack_audiopesheaderquantity = X[3];
     info->midpack_audiopesheaderquantity   = X[4];
     info->lastpack_audiopesheaderquantity  = X[5];
-    info->firstpack_lpcm_headerquantity    =(uint8_t) X[6];
-    info->midpack_lpcm_headerquantity      =(uint8_t) X[7];
-    info->lastpack_lpcm_headerquantity     =(uint8_t) X[8];
-    info->firstpack_pes_padding            = X[9];
-    info->midpack_pes_padding              = X[10];
+    info->firstpack_lpcm_headerquantity    = (uint8_t) X[6];
+    info->midpack_lpcm_headerquantity      = (uint8_t) X[7];
+    info->lastpack_lpcm_headerquantity     = (uint8_t) X[8];
+    info->firstpack_pes_padding            = (uint8_t) X[9];
+    info->midpack_pes_padding              = (uint8_t) X[10];
 
 #undef X
 
@@ -326,7 +325,8 @@ int calc_info(fileinfo_t* info)
 command_t *scan_wavfile_audio_characteristics(command_t *command)
 {
 
-    short int  l, delta=0, error=0;
+    short int  l, delta=0;
+    int error=0;
     static uint8_t i,j;
 
     // retrieving information as to sound file format
@@ -445,7 +445,7 @@ command_t *scan_wavfile_audio_characteristics(command_t *command)
     return(command);
 }
 
-int extract_audio_info(fileinfo_t *info)
+uint8_t extract_audio_info(fileinfo_t *info)
 {
     info->type=AFMT_WAVE;
 
@@ -1138,7 +1138,9 @@ int audio_open(fileinfo_t* info)
                         foutput("%s\n", MSG_TAG "OGG_FLAC decoder was initialized");
                 }
                 else
+                {
                     EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Type of file unknown")
+                }
 
 
 
@@ -1403,7 +1405,8 @@ Now follows the actual manipulation code.  Note that performing the transformati
 
 inline static void interleave_sample_extended(int channels, int count, uint8_t * buf)
 {
-    int x,i, size=channels*4;
+    int i, size=channels*4;
+    uint8_t x;
     uint8_t _buf[size];
     switch (channels)
     {
@@ -1411,7 +1414,7 @@ inline static void interleave_sample_extended(int channels, int count, uint8_t *
         case 2:
 
             for (i = 0; i < count; i += 2)
-                x = buf[i+1], buf[i+1] = buf[i], buf[i] = x;
+            { x = buf[i+1]; buf[i+1] = buf[i]; buf[i] = x; }
             break;
 
         default:

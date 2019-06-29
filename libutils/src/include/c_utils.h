@@ -58,12 +58,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <sys/resource.h>
 #endif
 
-
-
-#ifdef __GNUC__
 #define GCC_INLINE __attribute__((always_inline))
 #define GCC_UNUSED __attribute__((__unused__))
-#endif
 
 #define MAX_OPTION_LENGTH 3000
 
@@ -148,9 +144,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #undef foutput
 #endif
 
-#define foutput(X,...)   do { if (!globals.silence) printf(X, __VA_ARGS__);\
-                               if (globals.logfile) \
-                                fprintf(globals.journal, X, __VA_ARGS__);} while(0)
+#define foutput(X,...)   do { if (!globals.silence) { printf(X, __VA_ARGS__); } ;   if (globals.logfile) { fprintf(globals.journal, X, __VA_ARGS__);}  } while(0)
 
 
 
@@ -204,7 +198,7 @@ uint64_t filesize(filestat_t f);
 char* filename(filestat_t f);
 FILE* fileptr(filestat_t f);
 
-filestat_t filestat(bool b, uint64_t s, char* fn, FILE* fp);
+filestat_t filestat(bool b, uint64_t s, const char* fn, FILE* fp);
 
 typedef struct
   {
@@ -307,7 +301,7 @@ void secure_open(const char *path, const char *context, FILE*);
 int end_seek(FILE* outfile);
 void parse_wav_header(WaveData* info, WaveHeader* ichunk);
 char* get_command_line(const char* args[]);
-char* get_full_command_line(char **args);
+char* get_full_command_line(const char **args);
 // These functions should be inlined hence in a header file
 char* copy_file2dir(const char *existing_file, const char *new_dir);
 void copy_file2dir_rename(const char *existing_file, const char *new_dir, char* newfilename);
@@ -378,8 +372,9 @@ inline static uint32_t uint32_read_reverse(uint8_t* buf)
 
 inline static uint16_t uint16_read_reverse(uint8_t* buf)
 {
-	return( buf[0]  | buf[1] << 8);
+    return((uint16_t)(buf[0]  | buf[1] << 8));
 }
+
 
 uint8_t read_info_chunk(uint8_t* pt, uint8_t* chunk);
 
