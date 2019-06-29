@@ -25,14 +25,30 @@ linux:LIBS +=	"/usr/lib64/libFLAC.a"  "/usr/lib64/libgsm.a"  "/usr/lib64/libMagi
                         "/usr/lib64/libz.a" \
                         "/usr/local/lib/libao.a" \
                         "/usr/lib/libasound.a" \
-                        -lpulse-simple \
-                        -lpulse \
-                        -ldl \
-                        -pthread
+                        "/usr/lib64/libdvdread.a" \
+                        "/usr/lib64/libjpeg.a" \
+                        "/usr/lib64/libwebp.a" \
+                        "/usr/lib/gcc/x86_64-pc-linux-gnu/9.1.0/libgomp.a" \
+                        "/usr/local/lib/libpulse-simple.a" \
+                        "/usr/local/lib/libpulse.a" \
+                        "/usr/local/lib/pulseaudio/libpulsecommon-12.2.a" \
+                        "/usr/lib64/libxcb.a" \
+                        "/usr/lib64/libXdmcp.a" \
+                        "/usr/lib64/libXau.a" \
+                        "/usr/lib64/libdbus-1.a" \
+                        "/usr/lib64/libSDL.a" \
+                        -lasyncns \
+                        "/usr/lib64/librt.a" \
+                        "/usr/lib64/libresolv.a" \
+                          "/usr/lib/gcc/x86_64-pc-linux-gnu/9.1.0/libstdc++.a" \
+                      #  -lm \
+                        -pthread \
+                       "/usr/lib/gcc/x86_64-pc-linux-gnu/9.1.0/libgcc.a" \
+                        -ldl
 
 CONFIG(release, debug|release) {
 LIBS +=   -s
-QMAKE_CFLAGS=-march=core2 -O3 -Wno-unused-result -static -static-libgcc -s
+QMAKE_CFLAGS=-march=core2 -O3 -Wno-unused-result -static -static-libgcc -static-libstdc++ -s
 }
 
 
