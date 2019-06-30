@@ -97,7 +97,7 @@ void erase_file(const char* path)
 }
 
 
-#if HAVE_curl
+#if defined HAVE_curl && HAVE_curl == 1
 
 int download_file_from_http_server(const char* curlpath, const char* filename, const char* server)
 {

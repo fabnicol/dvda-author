@@ -98,7 +98,7 @@ char** fn_strtok(char* chain, char delim, char** array, uint32_t* size,  int32_t
 int cutloop(char GCC_ATTRIBUTE_UNUSED *c, int32_t count);
 int arraylength(char ** tab);
 
-#if !HAVE_core_BUILD
+#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
 char* create_binary_path(char* local_variable, const char* symbolic_constant, const char* basename);
 void download_latest_version(bool download_new_version_flag,bool force_download_flag);
 #endif

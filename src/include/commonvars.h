@@ -121,11 +121,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 
 
-#ifndef HAVE_NO_MKISOFS_PATCH
+#if !defined HAVE_NO_MKISOFS_PATCH || HAVE_NO_MKISOFS_PATCH == 0
 #define HAVE_NO_MKISOFS_PATCH 0
 #endif
 
-#ifndef HAVE_NO_DVDAUTHOR_PATCH
+#if !defined HAVE_NO_DVDAUTHOR_PATCH || HAVE_NO_DVDAUTHOR_PATCH == 0
 #define HAVE_NO_DVDAUTHOR_PATCH 0
 #endif
 

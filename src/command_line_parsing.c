@@ -224,7 +224,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"no-refresh-tempdir",no_argument, NULL, 4},
         {"no-refresh-outdir",no_argument, NULL, 5},
         {"extract", required_argument, NULL, 'x'},
-    #ifndef HAVE_core_BUILD
+    #if !defined HAVE_core_BUILD || !HAVE_core_BUILD
         {"videodir", required_argument, NULL, 'V'},
         {"fixwav", optional_argument, NULL, 'F'},
         {"fixwav-virtual", optional_argument, NULL, 'f'},
@@ -653,7 +653,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             refresh_tempdir=0;
             break;
 
-#ifndef HAVE_core_BUILD
+#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
 
         case 'T':
 
@@ -837,7 +837,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             totntracks+=ntracks[k];
 
     ngroups_scan=0;
-#if !HAVE_core_BUILD
+#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
     int nvideolinking_groups_scan=0, strlength=0;
     char *piccolorchain,
             *activepiccolorchain,
@@ -990,7 +990,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             textable=fn_strtok(optarg, ',' , textable, &globals.textablesize, 0,NULL,NULL);
             break;
 
-#if !HAVE_core_BUILD
+#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
 
         case 12:
 
@@ -1606,7 +1606,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     // Coherence checks
     // You first have to test here.
 
-#if !HAVE_core_BUILD
+#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
 
     menu_characteristics_coherence_test(img, ngroups);
 
@@ -1640,7 +1640,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {
         case 'Q':
 
-#if  HAVE_lplex || HAVE_lplex_BUILD
+#if  (defined HAVE_lplex  && HAVE_lplex == 1) || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
 
             if (img->backgroundmpg)
             {
@@ -1691,7 +1691,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case 17:
 
-#if  HAVE_lplex || lplex_BUILD
+#if  (defined HAVE_lplex  && HAVE_lplex == 1) || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
 
             foutput("%s\n",PAR "Generate DVD-VIDEO audio tracks");
             if (globals.veryverbose)
@@ -1718,7 +1718,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case 18:
 
-#if HAVE_lplex || HAVE_lplex_BUILD
+#if (defined HAVE_lplex  && HAVE_lplex == 1) || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
 
             foutput("%s\n",PAR "Generate DVD-VIDEO slides");
             if (globals.veryverbose)
@@ -1744,7 +1744,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case 21:
 
-#if HAVE_lplex || HAVE_lplex_BUILD
+#if (defined HAVE_lplex  && HAVE_lplex == 1) || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
 
             foutput("%s\n",PAR "  Import DVD-Audio tracks to DVD-Video zone.");
             dvdv_import_flag=1;
@@ -1756,7 +1756,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 
         case 22:
-#if HAVE_lplex || HAVE_lplex_BUILD
+#if (defined HAVE_lplex  && HAVE_lplex == 1) || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
             foutput("%s\n",PAR "  Make mirror: import DVD-Audio tracks into DVD-Video zone\n       and resample them if necessary.");
             mirror_flag=1;
 #else
@@ -1765,7 +1765,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case 23:
-#if HAVE_lplex || HAVE_lplex_BUILD
+#if (defined HAVE_lplex  && HAVE_lplex == 1) || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
             foutput("%s\n",PAR "  Make mirror: import DVD-Audio tracks into DVD-Video zone\n       and resample them if necessary.");
             foutput(PAR "Mirroring strategy: %s\n",optarg);
             mirror_flag=1;
@@ -1776,7 +1776,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case 24:
-#if HAVE_lplex || HAVE_lplex_BUILD
+#if (defined HAVE_lplex  && HAVE_lplex == 1) || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
             foutput("%s\n", PAR "Will create minimal hybrid disk.");
             foutput(PAR "Mirroring strategy: %s\n","high");
             hybridate_flag=1;
@@ -1786,7 +1786,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case 25:
-#if HAVE_lplex || HAVE_lplex_BUILD
+#if (defined HAVE_lplex  && HAVE_lplex == 1) || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
             foutput("%s\n", PAR "Will create full hybrid disk.");
             foutput(PAR "Mirroring strategy: %s\n","high");
             full_hybridate_flag=1;
@@ -2390,9 +2390,9 @@ standard_checks:
 
 void process_dvd_video_zone(command_t* command)
 {
-#ifndef HAVE_core_BUILD
+#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
 
- #if HAVE_lplex
+ #if (defined HAVE_lplex  && HAVE_lplex == 1) || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
     if (hybridate_flag || full_hybridate_flag)
     {
 

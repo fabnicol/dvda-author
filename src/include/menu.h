@@ -1,4 +1,4 @@
-#ifndef HAVE_MENU_H
+#if !HAVE_MENU_H
 #define HAVE_MENU_H
 
 #ifdef HAVE_CONFIG_H
@@ -7,7 +7,7 @@
 
 #include "structures.h"
 
-#if !HAVE_core_BUILD
+#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
 
 int  generate_background_mpg(pic* img);
 int prepare_overlay_img(char* text, int8_t group, pic *img, char* command, char* command2, int menu, char* albumcolor);

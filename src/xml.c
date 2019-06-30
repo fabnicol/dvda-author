@@ -1,7 +1,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#if !HAVE_core_BUILD
+#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

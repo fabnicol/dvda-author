@@ -129,7 +129,7 @@ printf("%s","-f, --fixwav-virtual(options)  Use .wav header repair utility " J "
 #ifndef WITHOUT_sox
 printf("%s","-S, --sox                Use SoX to convert files to .wav." J "By default, only flac, Ogg FLAC " J "and .wav files are accepted.\n\n");
 #endif
-#ifndef HAVE_core_BUILD
+#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
 printf("%s","    --padding            Reverse default behaviour for transition between audio tracks with identical" J "characteristics (number of channels, bit depth and sample rate)." J "If necessary, audio will be padded with 0s instead of being joined (default). " J "Use --pad-cont for padding with last-known byte.\n\n");
 printf("%s","-C, --pad-cont           When padding, pad with last known byte, not 0. See --padding above." J "Deactivates --lossy-rounding\n\n");
 printf("%s","-L, --lossy-rounding     Sample count rounding will be performed by cutting audio files " J "instead of padding (see --padding and --pad-cont)." J "Deactivates --pad-cont and --padding.\n\n");
@@ -202,7 +202,7 @@ printf("%s","  , --lplex-tempdir directory  Temporary directory for DVD-Video fi
 printf("%s","-X, --workdir directory  Working directory: current directory in command line relative paths." J "By default, the current directory." J "With Code::Blocks and similar IDE, you may have to specify your root package directory as argument to --workdir.\n\n");
 printf("%s","    --no-refresh-tempdir Do not erase and recreate the DVD-Audio temporary directory on launch.\n\n");
 printf("%s","    --no-refresh-outdir  Do not erase and recreate the output directory on launch.\n\n");
-#ifndef HAVE_core_BUILD
+#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
 printf("%s","    --bindir path        Path to auxiliary binaries.\n\n");
 
 printf("%s","Sub-options\n\n");
@@ -279,7 +279,7 @@ printf("%s", "Examples:\n");
 printf("%s", "\n\
 -create a 3-group DVD-Audio disc (legacy syntax):\n\n\
   dvda-author -g file1.wav file2.flac -g file3.flac -g file4.wav\n\n");
-#ifndef HAVE_core_BUILD
+#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
 printf("%s", "-create a hybrid DVD disc with both AUDIO_TS mirroring audio_input_directory\n\n\
   and VIDEO_TS imported from directory VID, outputs disc structure to directory\n\n");
 printf("%s", " DVD_HYBRID and links video titleset #2 of VIDEO_TS to AUDIO_TS:\n\n");
@@ -460,7 +460,7 @@ void free_memory(command_t *command)
 {
     int i, j;
 
-#if ! defined HAVE_core_BUILD
+#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
     initialize_binary_paths(FREE_BINARY_PATH_SPACE);
 #endif
 
@@ -690,7 +690,7 @@ int arraylength(char **tab)
  // if installed with autotools, if bindir overrides then use override, otherwise use config.h value;
 // if not installed with autotools, then use command line value or last-resort hard-code set defaults and test for result
 
-#if !HAVE_core_BUILD
+#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
 char* create_binary_path(char* local_variable, const char* symbolic_constant, const char* basename)
 {
 

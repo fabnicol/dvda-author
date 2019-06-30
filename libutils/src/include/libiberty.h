@@ -1,6 +1,6 @@
-#ifndef HAVE_LIBIBERTY_H
+#if !HAVE_LIBIBERTY_H
 
-#if HAVE_libiberty_BUILD
+#if defined HAVE_libiberty_BUILD && HAVE_libiberty_BUILD == 1
 #include "strdup.h"
 #include "getopt.h"
 #include "getopt_int.h"

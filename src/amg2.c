@@ -177,7 +177,7 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
 }
 
 
-#if !HAVE_core_BUILD
+#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
 void allocate_topmenus(command_t *command)
 {
     if (img->topmenu == NULL) 

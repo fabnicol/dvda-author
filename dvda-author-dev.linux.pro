@@ -10,7 +10,7 @@ TARGET = dvda-author
 
 QMAKE_CFLAGS=-std=c99 -march=core2 -fPIC -ftrack-macro-expansion=0
 
-DEFINES +=  _GNU_SOURCE __CB__ HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_fixwav HAVE_libogg HAVE_iberty HAVE_mpeg2enc HAVE_mplex HAVE_OGG_FLAC HAVE_FLAC HAVE_libogg HAVE_sox  FLAC_API_SUPPORTS_OGG_FLAC=1
+DEFINES +=   _GNU_SOURCE __CB__ HAVE_lplex=1 COMPILER_IS_GCC HAVE_curl=1 HAVE_fixwav=1 HAVE_libogg=1 HAVE_iberty=1 HAVE_mpeg2enc=1 HAVE_mplex=1 HAVE_OGG_FLAC=1 HAVE_FLAC=1 HAVE_libogg=1 HAVE_sox=1  FLAC_API_SUPPORTS_OGG_FLAC=1
 
 #libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame
 linux: QMAKE_LFLAGS += -L/usr/lib64
@@ -28,7 +28,7 @@ linux:LIBS +=	 "/usr/lib64/libgsm.a"  "/usr/lib64/libMagick++-7.Q16.a" "/usr/lib
                         "/usr/lib64/libpng.a" \
                         "/usr/lib64/libz.a" \
                         "/usr/local/lib/libao.a" \
-                        "/usr/lib/libasound.a" \
+                        "/usr/local/lib64/libasound.a" \
                         "/usr/lib64/libdvdread.a" \
                         "/usr/lib64/libjpeg.a" \
                         "/usr/lib64/libwebp.a" \

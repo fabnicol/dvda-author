@@ -30,7 +30,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#ifndef HAVE_core_BUILD
+#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -40,7 +40,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <stdarg.h>
 #include <sys/time.h>
 #include <errno.h>
-#ifndef __WIN32__
+#ifndef _WIN32
 #include <unistd.h>
 #endif
 #include <string.h>
