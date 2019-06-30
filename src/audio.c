@@ -360,7 +360,7 @@ command_t *scan_wavfile_audio_characteristics(command_t *command)
         j++;
         break;
 #if !defined WITHOUT_libogg
-#if HAVE_OGG_FLAC
+#if defined HAVE_OGG_FLAC && HAVE_OGG_FLAC == 1
     case AFMT_OGG_FLAC:
         if (globals.debugging) foutput(MSG_TAG "Found Ogg FLAC format for %s\n", command->files[i][j].filename);
         error=flac_getinfo(&command->files[i][j]);

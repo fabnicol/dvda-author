@@ -1,7 +1,7 @@
 
 //#undef __STRICT_ANSI__
-#include "menu.h"
-#ifndef HAVE_core_BUILD
+
+#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,7 +22,7 @@
 #include "winport.h"
 #include "auxiliary.h"
 #include "amg.h"
-
+#include "menu.h"
 
 extern globalData globals;
 

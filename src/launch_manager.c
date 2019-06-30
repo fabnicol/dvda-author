@@ -17,7 +17,6 @@
 #include "amg.h"
 #include "samg.h"
 #include "asvs.h"
-#include "videoimport.h"
 #include "c_utils.h"
 #include "ports.h"
 #include "auxiliary.h"
@@ -26,6 +25,7 @@
 #include "winport.h"
 #include "file_input_parsing.h"
 #include "launch_manager.h"
+#include "videoimport.h"
 
 /* Remark on data structures:
  *   - command-line data belong to 'command' structures
@@ -204,7 +204,7 @@ int launch_manager(command_t *command)
     int nb_asv_files = 0;
 
     /* creating system VOBs */
-#if !HAVE_core_BUILD
+#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
     if (globals.topmenu < NO_MENU)
         sectors.topvob = create_topmenu(audiotsdir, command); // if no top menu is requested, but simply active ones, generate matrix top menu and unlink it at the end
 
@@ -281,7 +281,7 @@ int launch_manager(command_t *command)
     last_sector = create_samg(audiotsdir, command, &sectors);
 
     /*   sector_pointer_VIDEO_TS= number of sectors for AOBs + 2* sizeof amg + 2* size of ats*ngroups +system vobs +2*sizeof asvs */
-#if !HAVE_core_BUILD
+#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
     sector_pointer_VIDEO_TS= 2*(sectors.amg+sectors.asvs)+sectors.stillvob+sectors.topvob;
 
     for (i=0; i < naudio_groups; i++)
@@ -338,7 +338,7 @@ int launch_manager(command_t *command)
     */
 
 // returns relative_sector_pointer_VTSI and videotitlelength
-#if !HAVE_core_BUILD
+#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
     if (globals.videozone)
     {
         if (globals.videolinking)
@@ -440,7 +440,7 @@ int launch_manager(command_t *command)
     // Crucial, otherwise the ISO file may well be unordered even if AUDIO_TS files are OK after exit
     fflush(NULL);
 
-#if !HAVE_core_BUILD
+#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
     //
     if (globals.runmkisofs)
     {

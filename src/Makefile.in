@@ -7,7 +7,7 @@ CAT=/bin/cat
 ## to avoid conflicts, we take care to add either -l to LDFLAGS links of libs to LDADD, except for static build.
 ## if giving FLAC or Ogg as input, do also give the other one for compatibility reasons.
 ## Definitions: WITH_LIB: activates this capability
-#               HAVE_EXTERNAL_LIB: use specified lib, e.g. --with-lib=/full/path/to/lib
+#               HAVE_EXTERNAL_LIB: use specified lib, e.g. --with-lib=/full/path/to/lib64
 ##              HAVE_LIB: LIB has been tested to be system-installed, so linking should be OK (in principle)
 
 
@@ -27,7 +27,7 @@ include @BUILDDIR@/mk/libogg.global.mk
 DEBUG_FLAGS ?= @DEBUG_FLAGS@
 
 CFLAGS += -D_GNU_SOURCE
-LDFLAGS :=-L/usr/local/lib -L/usr/lib  
+LDFLAGS :=-L/usr/local/lib64 -L/usr/lib64  
 
 ifeq "$(DEBUG_FLAGS)" ""
    LDFLAGS += -s
@@ -60,7 +60,7 @@ ifneq "@MAYBE_libiberty@" ""
 endif
 
 ifeq "$(sox_BUILD)" "yes"
-     LDLIBS  += SOX_LIB_DEPS
+     LDLIBS  += SOX_LIB_DEPS -pthread -ldl
 endif
 
 STATIC_LIBS=FLAC libogg sox

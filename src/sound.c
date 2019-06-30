@@ -21,7 +21,7 @@ extern globalData globals;
 char* sox=NULL;
 int sox_initialise()
 {
-#if HAVE_libsox
+#if defined HAVE_libsox && HAVE_libsox == 1
     errno=0;
     sox=create_binary_path(sox, SOX, SEPARATOR SOX_BASENAME);
     if(!sox) return -1;
@@ -33,7 +33,7 @@ return 0;
 int resample(const char* in, const char* out, const char* bitrate, const char* samplerate)
 {
 errno=0;
-#if HAVE_libsox
+#if defined HAVE_libsox && HAVE_libsox == 1
 if (-1 == sox_initialise()) 
  return -1;
    
@@ -172,7 +172,7 @@ char* lplex=NULL;
 
 int lplex_initialise()
 {
-#if HAVE_lplex
+#if defined HAVE_lplex && HAVE_lplex == 1
     errno=0;
     lplex=create_binary_path(lplex, LPLEX, SEPARATOR LPLEX_BASENAME);
     if(!lplex) return -1;
@@ -184,7 +184,7 @@ return 0;
 
 int launch_lplex_soundtrack(pic* img, const char* create_mode)
 {
-#if HAVE_lplex    
+#if defined HAVE_lplex && HAVE_lplex == 1
     
     if (-1 == lplex_initialise()) return -1;
   
@@ -282,7 +282,7 @@ int launch_lplex_hybridate(const pic* img,
                            const int ntitlesets)
 
 {
-#if HAVE_lplex
+#if defined HAVE_lplex && HAVE_lplex == 1
 
     if (-1 == lplex_initialise()) return -1;
 #    if 0
