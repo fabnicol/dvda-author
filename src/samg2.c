@@ -224,17 +224,17 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
             ++i;
 
             i += 4;
-            uint16_copy(&samg[i],0x1eff);
+           // uint16_copy(&samg[i],0x1eff);
             i += 2;
-            uint16_copy(&samg[i],0xff1e);
+           // uint16_copy(&samg[i],0xff1e);
             i += 2;
-            uint16_copy(&samg[i],0x2d2d);
+           // uint16_copy(&samg[i],0x2d2d);
             i += 2;
-            uint16_copy(&samg[i],0x3cff);
+           // uint16_copy(&samg[i],0x3cff);
             i += 2;
-            uint16_copy(&samg[i],0xff3c);
+           // uint16_copy(&samg[i],0xff3c);
             i += 2;
-            uint16_copy(&samg[i],0x4b4b);
+           // uint16_copy(&samg[i],0x4b4b);
             i += 6;
                              
             uint32_copy(&samg[i], absolute_sector_offset + files[g][j].first_sector);

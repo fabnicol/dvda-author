@@ -30,7 +30,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#if !HAVE_core_BUILD
+#ifndef HAVE_core_BUILD
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -217,7 +217,7 @@ void import_topmenu(char* video_vob_path, pic* img, bool MIX_TYPE)
  sprintf(framerate, "%s%s", img->framerate, ":1");
  char imported_topmenu[strlen(globals.settings.tempdir)+28+1];
  sprintf(imported_topmenu, "%s%s", globals.settings.tempdir, "/imported_topmenu_video.m2v");
- if (framerate == NULL) exit(0);
+
  const char* args[]={mpeg2dec, "-s", "-o", "pgmpipe", quote(video_vob_path),"|", pgmtoy4m, "-i", "p", "-r", framerate, "|", mpeg2enc, "-f", "8", "-o", quote(imported_topmenu),NULL};
  char* cml=get_full_command_line(args);
  errno=system(win32quote((const char*) cml));

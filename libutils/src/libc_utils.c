@@ -492,7 +492,7 @@ path_t *parse_filepath(const char* filepath)
 {
     path_t *chain = calloc(1, sizeof(path_t));
     if (chain == NULL) return NULL;
-    int16_t last_separator_position=0, dot_position=0;
+    int16_t last_separator_position=0, dot_position=-1;
     for (int16_t u=0; chain->length == 0 ; ++u)
     {
         switch (filepath[u])
@@ -534,7 +534,22 @@ path_t *parse_filepath(const char* filepath)
     chain->filename = strdup(filepath+last_separator_position+1);
     chain->path = strdup(filepath);
     chain->path[last_separator_position] = 0;
+    if (dot_position >= 0 && dot_position - last_separator_position < 1)
+    {
+        fprintf(stderr, "%s%s\n", ERR "dot placed before last separator: file path issue with ", filepath);
+        clean_exit(EXIT_FAILURE);
+    }
+    if (dot_position == -1)  // not dots
+    {
+        dot_position = chain->length;
+    }
+
     chain->rawfilename=calloc(dot_position - last_separator_position, sizeof(char));
+    if (chain->rawfilename == NULL)
+    {
+        perror("Allocation of rawfilename");
+        clean_exit(EXIT_FAILURE);
+    }
     memcpy(chain->rawfilename, filepath + last_separator_position + 1, dot_position - last_separator_position -1);
 
     if (last_separator_position >1)
@@ -1333,7 +1348,7 @@ int count_dir_files(const char* src)
 
     printf("%c", '\n');
 
-    if (globals.debugging)  printf("%s%s\n", INF "[Counting files in ...", src);
+    if (globals.debugging)  printf("%s%s\n", INF "Counting files in ...", src);
 
     int total = 0;
 

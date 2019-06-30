@@ -299,7 +299,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
         i+=2;
         
         //PATCH 09.09
-        if ((img->count) || (img->stillvob) || (img->active))
+        if (img->count || img->stillvob || img->active)
             uint16_copy(&atsi[i], 16 + 32 * ntitletracks[j]);                 // Pointer to a stillpic data table
         
         i+=2;
@@ -351,7 +351,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
             i += 4;
         }
         
-        if ((img->count) || (img->stillvob) || (img->active))
+        if (img->count || img->stillvob || img->active)
         {
 
             /* Stills records */

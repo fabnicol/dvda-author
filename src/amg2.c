@@ -367,7 +367,7 @@ int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles
         return 0;
     }
 
-    if (!image->active)
+    if (! image->active)
     {
         STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/AUDIO_SV.VOB", audiotsdir)
         copy_file(image->stillvob, outfile);
@@ -394,12 +394,12 @@ int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles
     sync();
 #endif
 
-    int nb_asv_files = create_asvs(audiotsdir, naudio_groups, numtitles, ntitlepics, sectors->asvs, image);
+    int nb_asvs_files = create_asvs(audiotsdir, naudio_groups, numtitles, ntitlepics, sectors->asvs, image);
 
-    if (nb_asv_files)
+    if (nb_asvs_files)
     {
       STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/AUDIO_SV.IFO", audiotsdir)
-      sectors->asvs = (uint8_t) stat_file_size(outfile) / 0x800;
+      sectors->asvs = (uint8_t) (stat_file_size(outfile) / 0x800);
     }
     else
     {
@@ -411,7 +411,7 @@ int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles
         return 0;
     }
 
-    return(nb_sv_vob + nb_asv_files);
+    return(nb_sv_vob + nb_asvs_files);
 }
 #endif
 
@@ -1036,23 +1036,23 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
 
     memcpy(amg, "DVDAUDIO-AMG", 12);
 
-    uint32_copy(&amg[12], 2 * sectors->amg + sectors->topvob - 1);		// Relative sector pointer to Last sector in AMG ie size (AUDIO_TS.IFO+AUDIO_TS.VOB+AUDIO_TS.BUP)-1 in sectors
-    uint32_copy(&amg[28], sectors->amg - 1);		// Last sector in AMGI
-    uint16_copy(&amg[32], 0x0012); 	// DVD Specifications
-    uint16_copy(&amg[38], 0x0001); 	// Number of Volumes
-    uint16_copy(&amg[40], 0x0001); 	// Current Volume
-    amg[42] = 1;  		    		// Disc Side
-    amg[47] = globals.autoplay;
+    uint32_copy(&amg[0xC], 2 * sectors->amg + sectors->topvob - 1);		// Relative sector pointer to Last sector in AMG ie size (AUDIO_TS.IFO+AUDIO_TS.VOB+AUDIO_TS.BUP)-1 in sectors
+    uint32_copy(&amg[0x1C], sectors->amg - 1);		// Last sector in AMGI
+    uint16_copy(&amg[0x20], 0x0012); 	// DVD Specifications
+    uint16_copy(&amg[0x26], 0x0001); 	// Number of Volumes
+    uint16_copy(&amg[0x28], 0x0001); 	// Current Volume
+    amg[0x2A] = 1;  		    		// Disc Side
+    amg[0x2F] = globals.autoplay;
     if (sectors->stillvob) 
         uint32_copy(&amg[48], 2 * sectors->amg + sectors->topvob);		// relative sector pointer to AUDIO_SV.VOB=same value as 0x when no SV.VOB
-    amg[62] = 0;  					// Number of AUDIO_TS video titlesets (DVD-Audio norm video titlesets are AOBs)
-    amg[63] = ngroups; 		        // Number of audio titlesets, must include video linking groups
-    uint32_copy(&amg[128], 0x07ff);
-    uint32_copy(&amg[0xc0], menusector * sectors->amg);  	// Pointer to sector 2
+    amg[0x3E] = 0;  					// Number of AUDIO_TS video titlesets (DVD-Audio norm video titlesets are AOBs)
+    amg[0x3F] = ngroups; 		        // Number of audio titlesets, must include video linking groups
+    uint32_copy(&amg[0x80], 0x07ff);
+    uint32_copy(&amg[0xc0], menusector * sectors->amg);  	// Pointer to end of file (number of sectors)
     uint32_copy(&amg[0xc4], 1);  	// Pointer to sector 2
     uint32_copy(&amg[0xc8], 2);  	// Pointer to sector 3
     uint32_copy(&amg[0xcc], (menusector)? 3 : 0);  	// Pointer to sector 4
-    uint32_copy(&amg[0xd4], (globals.text)? 3+(menusector) : 0);  	// Pointer to sector 4 or 5
+    uint32_copy(&amg[0xd4], (globals.text)? 3+(menusector) : 0);  	// Pointer to sector 5
     uint32_copy(&amg[0x100], (menusector)? 0x53000000 : 0); // Unknown;  // 0x1E000000 used to be uset in SET2
 
     uint32_copy(&amg[0x154], (menusector)? 0x00010000 : 0); // Unknown;

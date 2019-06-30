@@ -61,12 +61,12 @@ int create_asvs(char* audiotsdir,int naudio_groups, uint8_t *numtitles, uint16_t
 
     uint16_copy(&asvs[0xE], 0x0012);  // DVD Spec
     asvs[0x13]=2; // unknown
-    asvs[0x18]=0x53; // unknown
-    asvs[0x19]=0x1; // activates buttons // numbre of menus ?
+    asvs[0x18]=0x53; // unknown, or 0x43
+    asvs[0x19]=0x1; // activates buttons // number of menus ? // or 0
 
-    uint32_copy(&asvs[0x20], (uint32_t) strtoul(img->activetextcolor_palette,NULL,16));   // This palette is taken as is from a commercial DVD: unselected text (display)
+    uint32_copy(&asvs[0x20], (uint32_t) strtoul(img->activebgcolor_palette,NULL,16));   // This palette is taken as is from a commercial DVD: unselected text (display)  // broken
     //uint32_copy(&asvs[0x24], (uint32_t) 0x80E6807F);
-    uint32_copy(&asvs[0x28], (uint32_t) strtoul(img->activebgcolor_palette,NULL,16)); // album, group headers and highlighted text
+    uint32_copy(&asvs[0x28], (uint32_t) strtoul(img->activetextcolor_palette,NULL,16)); // album, group headers and highlighted text
     uint32_copy(&asvs[0x2C], (uint32_t) strtoul(img->activehighlightcolor_palette,NULL,16)); //highlight motif
     uint32_copy(&asvs[0x30], (uint32_t) strtoul(img->activeselectfgcolor_palette,NULL,16)); // select action text only
    /*
@@ -84,7 +84,8 @@ int create_asvs(char* audiotsdir,int naudio_groups, uint8_t *numtitles, uint16_t
     k=0x60;
     t=0x378;
 
-int loop=0;
+int loop = 0;
+int index = 0;
 
     while  ((titleset < naudio_groups) && (title < numtitles[titleset]))
     {
@@ -93,22 +94,22 @@ int loop=0;
         npics=ntitlepics[titleset][title];
         if (npics)
         {
-		asvs[k]=npics;
-		k+=2;
-		uint16_copy(&asvs[k], pict+1);   // 1-based
-		pict+=npics;
-		k+=2;
-		uint32_copy(&asvs[k], totpicsectors);
-		for (j=0; j < npics; j++)
-		{
-		    if (j) uint16_copy(&asvs[t], totpicsectors);
-		    t+=2;
-		    totpicsectors+=img->stillpicvobsize[j];     //pict [] is 0-based: pict[0] for first track
-		    if (totpicsectors > 1024) foutput(ERR "Exceeding stillpic buffer limit (2 MB) at pict #%d.\n", j);
-		}
-		k+=4;
-		img->stillpicvobsize+=npics;
-		totnumtitles++;
+            asvs[k]=npics;
+            k+=2;
+            uint16_copy(&asvs[k], pict+1);   // 1-based
+            pict+=npics;
+            k+=2;
+            uint32_copy(&asvs[k], totpicsectors);
+            for (j=0; j < npics; ++j)
+            {
+                if (j) uint16_copy(&asvs[t], totpicsectors);
+                t += 2;
+                totpicsectors += img->stillpicvobsize[index + j];     //pict [] is 0-based: pict[0] for first track
+                if (totpicsectors > 1024) foutput(ERR "Exceeding stillpic buffer limit (2 MB) at pict #%d.\n", j);
+            }
+            k+=4;
+            index += npics;
+            totnumtitles++;
         }
 
         title++;
@@ -125,8 +126,8 @@ int loop=0;
     uint16_copy(&asvs[0xC], totnumtitles);
     uint32_copy(&asvs[0x14], /* size of VOB associated with : change TODO */ totpicsectors-1);
 
-    create_file(audiotsdir, "AUDIO_SV.IFO", asvs, sectors_asvs*2048);
-    create_file(audiotsdir, "AUDIO_SV.BUP", asvs, sectors_asvs*2048);
+    int nb_asv_files = create_file(audiotsdir, "AUDIO_SV.IFO", asvs, sectors_asvs*2048);
+    nb_asv_files += create_file(audiotsdir, "AUDIO_SV.BUP", asvs, sectors_asvs*2048);
     fflush(NULL);
-    return errno;
+    return nb_asv_files;
 }

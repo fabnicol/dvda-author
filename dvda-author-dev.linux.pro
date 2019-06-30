@@ -12,15 +12,19 @@ QMAKE_CFLAGS=-std=c99 -march=core2 -fPIC -ftrack-macro-expansion=0
 
 DEFINES +=  _GNU_SOURCE __CB__ HAVE_lplex COMPILER_IS_GCC HAVE_curl HAVE_fixwav HAVE_libogg HAVE_iberty HAVE_mpeg2enc HAVE_mplex HAVE_OGG_FLAC HAVE_FLAC HAVE_libogg HAVE_sox  FLAC_API_SUPPORTS_OGG_FLAC=1
 
-#libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame --disable-gomp
-
-linux:LIBS +=	"/usr/lib64/libFLAC.a"  "/usr/lib64/libgsm.a"  "/usr/lib64/libMagick++-7.Q16.a" "/usr/lib64/libMagickCore-7.Q16.a" "/usr/lib64/libMagickWand-7.Q16.a" $$SRCDIR"local/lib/liblavfile.a"  $$SRCDIR"local/lib/liblavjpeg.a" $$SRCDIR"local/lib/libsox.a" \
+#libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame
+linux: QMAKE_LFLAGS += -L/usr/lib64
+linux:LIBS +=	 "/usr/lib64/libgsm.a"  "/usr/lib64/libMagick++-7.Q16.a" "/usr/lib64/libMagickCore-7.Q16.a" "/usr/lib64/libMagickWand-7.Q16.a" $$SRCDIR"local/lib/liblavfile.a"  $$SRCDIR"local/lib/liblavjpeg.a" $$SRCDIR"local/lib/libsox.a" \
                         "/usr/lib64/libsndfile.a" \
                         "/usr/lib64/libvorbisenc.a" \
                         "/usr/lib64/libvorbisfile.a"  \
                         "/usr/lib64/libvorbis.a" \
                         "/usr/lib64/libwavpack.a" \
+                        "/usr/lib64/libFLAC.a" \
                         "/usr/lib64/libogg.a" \
+                        "/usr/lib64/libopusfile.a" \
+                        "/usr/lib64/libopus.a" \
+                        "/usr/lib64/libopusurl.a" \
                         "/usr/lib64/libpng.a" \
                         "/usr/lib64/libz.a" \
                         "/usr/local/lib/libao.a" \
@@ -37,18 +41,19 @@ linux:LIBS +=	"/usr/lib64/libFLAC.a"  "/usr/lib64/libgsm.a"  "/usr/lib64/libMagi
                         "/usr/lib64/libXau.a" \
                         "/usr/lib64/libdbus-1.a" \
                         "/usr/lib64/libSDL.a" \
-                        -lasyncns \
+                        "/usr/lib/gcc/x86_64-pc-linux-gnu/9.1.0/libgcc_eh.a" \
+                        -static -static-libgcc \
                         "/usr/lib64/librt.a" \
                         "/usr/lib64/libresolv.a" \
-                          "/usr/lib/gcc/x86_64-pc-linux-gnu/9.1.0/libstdc++.a" \
-                      #  -lm \
                         -pthread \
-                       "/usr/lib/gcc/x86_64-pc-linux-gnu/9.1.0/libgcc.a" \
                         -ldl
+
+
 
 CONFIG(release, debug|release) {
 LIBS +=   -s
-QMAKE_CFLAGS=-march=core2 -O3 -Wno-unused-result -static -static-libgcc -static-libstdc++ -s
+
+QMAKE_CFLAGS=-march=core2 -O3 -Wno-unused-result
 }
 
 
