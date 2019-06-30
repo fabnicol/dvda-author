@@ -325,7 +325,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
  # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
 
     DVDA_CONFIG_LIBRARY_LOCAL_INSTALL([
-     [[[sox],[sox-14.4.2]],  [--without-libltdl --without-sndfile --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-magic --disable-fast-install --prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]],
+     [[[sox],[sox-14.4.2]],  [--without-libltdl --without-sndfile --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-magic --disable-fast-install --enable-static --disable-shared --prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]],
      [[[libogg],[libogg-1.3.2]],  [--enable-static --disable-shared --prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]],
      [[[FLAC],[flac-1.3.2]],[--enable-static --disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg" \
        --disable-thorough-tests --disable-oggtest --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]]])
