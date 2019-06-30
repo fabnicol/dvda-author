@@ -219,7 +219,8 @@ int launch_manager(command_t *command)
                 sectors.topvob = 0;  //  deleting AUDIO_TS.VOB in this case (just used for creating AUDIO_SV.VOB
         }
 
-    if ((img->count) || (img->stillvob) || (img->active))
+
+    if (img->count || img->stillvob || img->active)
     {
 
     if (img->stillpicvobsize == NULL)
@@ -235,6 +236,7 @@ int launch_manager(command_t *command)
             img,
             &sectors,
             totntracks);
+
 
      if (nb_asv_files)
      {
@@ -257,7 +259,7 @@ int launch_manager(command_t *command)
         }
         else
         {
-          foutput("%s%s%s\n", ERR "Could not count number of files in ", audiotsdir, "\n" MSG_TAG "Disabling VIDEO_TS import and videolinking...");
+          foutput("%s%s%s\n", MSG_TAG "Could not count number of files in ", videotsdir, "\n" MSG_TAG "Disabling VIDEO_TS import and videolinking...");
           ngroups -= nvideolinking_groups;
           nvideolinking_groups = 0;
           globals.videozone = 0;

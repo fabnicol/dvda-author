@@ -520,7 +520,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 if (argv[k][0] !='-')
                 {
                     FILE* f;
-                    if ((f = fopen(argv[k], "r")) == NULL) fclose(f);
+                    if ((f = fopen(argv[k], "r")) != NULL) fclose(f);
                     else
                     {
                       fprintf(stderr, ERR "Le terme %s n'est pas un fichier. Fin du programme...\n", argv[k]);

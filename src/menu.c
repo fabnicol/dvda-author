@@ -1,7 +1,7 @@
 
 //#undef __STRICT_ANSI__
 #include "menu.h"
-#if !HAVE_core_BUILD
+#ifndef HAVE_core_BUILD
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -103,10 +103,10 @@ void create_activemenu(pic* img)
 
     uint8_t j;
     uint64_t i;
-    uint16_t activeheadersize=0;
+    uint64_t activeheadersize=0;
 
     char* activeheader=copy_file2dir(img->activeheader, globals.settings.tempdir);
-    activeheadersize=stat_file_size(activeheader);
+    activeheadersize = stat_file_size(activeheader);
 
     FILE* activeheaderfile=NULL;
 
@@ -115,13 +115,14 @@ void create_activemenu(pic* img)
 
     /* processing */
 
-    puts(INF "Using already created top menus.\n");
+    foutput("%s\n", INF "Using already created top menus.\n");
+
     uint64_t tsvobsize=0;
-    tsvobsize=stat_file_size(img->tsvob);
+    tsvobsize = stat_file_size(img->tsvob);
     if (tsvobsize <= activeheadersize)
     {
         perror(ERR "AUDIO_TS.VOB is too small.\n");
-        exit(EXIT_FAILURE) ;
+        clean_exit(EXIT_FAILURE) ;
     }
     uint8_t tsvobpt[tsvobsize];
     memset(tsvobpt, 0, tsvobsize);
@@ -206,7 +207,7 @@ char* spumux=NULL;
 char* convert=NULL;
 char* mpeg2dec=NULL;
 char* pgmtoy4m=NULL;
-char* curl=NULL;
+static char* curl=NULL;
 char* extract_ac3=NULL;
 char* ac3dec=NULL;
 
@@ -236,7 +237,7 @@ void initialize_binary_paths(char level)
             jpeg2yuv=create_binary_path(jpeg2yuv,JPEG2YUV, SEPARATOR JPEG2YUV_BASENAME);
             mpeg2enc=create_binary_path(mpeg2enc,MPEG2ENC, SEPARATOR MPEG2ENC_BASENAME);
             mplex=create_binary_path(mplex, MPLEX, SEPARATOR MPLEX_BASENAME);
-            pgmtoy4m=create_binary_path(pgmtoy4m, PGMTOY4M, SEPARATOR PGMTOY4M_BASENAME);
+            pgmtoy4m=create_binary_path(pgmtoy4m, MPLEX, SEPARATOR MPLEX_BASENAME);
             count1++;
         }
         break;
@@ -318,7 +319,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
     if(s==0)
     {
-        s = MAX(strlen(globals.settings.stillpicdir) + 15, strlen(img->backgroundpic[rank]) + 1);
+        s = MAX(strlen(globals.settings.stillpicdir) + 26, strlen(img->backgroundpic[rank]) + 1);
         pict  = calloc(s, sizeof(char*));
     }
 
@@ -339,7 +340,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
         sprintf(img->backgroundmpg[rank], "%s" SEPARATOR "%s%u%s", globals.settings.tempdir, "background_still_", rank, ".mpg");
 
-        snprintf(pict, sizeof(pict), "%s" SEPARATOR "pic_%03u.jpg", globals.settings.stillpicdir, rank);  // here stillpic[0] is a subdir.
+        sprintf(pict, "%s" SEPARATOR "pic_%03u.jpg", globals.settings.stillpicdir, rank);  // here stillpic[0] is a subdir.
 
         if (globals.debugging)
         {
@@ -812,7 +813,7 @@ int prepare_overlay_img(char* text, int8_t group, pic *img, char* command, char*
 
     if ((group == -1)&&(text))  // album text
     {
-        uint16_t x0= EVEN(x( (group>0)?group:0, img->ncolumns)) ;
+        uint16_t x0= EVEN(x( (group > 0 ? group : 0), img->ncolumns)) ;
         char * q = quote(picture_save);
         snprintf(command, 2*CHAR_BUFSIZ, "%s %s %s \"rgb(%s)\" %s %s %s %d %s %s %d%c%d %c%s%s %s", mogrify,
                  "+antialias", "-fill", albumcolor, "-font", img->textfont, "-pointsize", DEFAULT_POINTSIZE,
@@ -951,15 +952,15 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
     FILE* f;
     uint8_t group=0, track=0, buttons=0, menu=0, arrowbuttons=1, groupcount=0, menubuttons;
 
-    uint16_t size;
+    uint16_t size = 0;
     uint16_t maxtracklength=0;
     int dim=0, k, j;
     char** grouparray=NULL, **basemotif=NULL, *albumtext=NULL, ***tracktext=NULL, ***grouptext=NULL;
 
     if (!img->hierarchical)
     {
-        maxbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)/img->nmenus;
-        resbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)%img->nmenus;
+        maxbuttons=Min(MAX_BUTTON_Y_NUMBER-2, totntracks) / img->nmenus;
+        resbuttons=Min(MAX_BUTTON_Y_NUMBER-2, totntracks) % img->nmenus;
     }
 
 
