@@ -21,7 +21,7 @@
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="-g  /Users/fab/dvda-author/Docs/a2_16_44.wav -t -W  --opmenu --datadir " />
+				<Option parameters='-g  &quot;C:\Users\Public\Dev\dvda-author\Docs\a2_16_44.wav&quot; -t -W  --datadir  &quot;C:\Users\Public\Dev\dvda-author&quot; --bindir &quot;C:\Users\Public\Dev\dvd-audio-dvda-author-gui-qt4\bin&quot; --topmenu --menustyle active' />
 				<Compiler>
 					<Add option="-O2" />
 				</Compiler>
