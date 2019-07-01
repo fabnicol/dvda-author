@@ -530,7 +530,14 @@ path_t *parse_filepath(const char* filepath)
         }
     }
 
-    chain->extension = strdup(filepath+dot_position);
+     if (dot_position == -1)  // not dots
+    {
+        dot_position = chain->length;
+        chain->extension = strdup("");
+    }
+    else
+      chain->extension = strdup(filepath+dot_position);
+
     chain->filename = strdup(filepath+last_separator_position+1);
     chain->path = strdup(filepath);
     chain->path[last_separator_position] = 0;
@@ -539,10 +546,7 @@ path_t *parse_filepath(const char* filepath)
         fprintf(stderr, "%s%s\n", ERR "dot placed before last separator: file path issue with ", filepath);
         clean_exit(EXIT_FAILURE);
     }
-    if (dot_position == -1)  // not dots
-    {
-        dot_position = chain->length;
-    }
+
 
     chain->rawfilename=calloc(dot_position - last_separator_position, sizeof(char));
     if (chain->rawfilename == NULL)
@@ -1508,10 +1512,10 @@ int copy_file(const char *existing_file, const char *new_file)
 
 char* copy_file2dir(const char *existing_file, const char *new_dir)
 {
-// existence of new_dir is not tested
-// existence of file dest is tested and if exists, duplication generates file counter in filename
-// to ensure continuity of counters, copy file operations should come in a "closely-knit loop" without
-// copy file operations in between for other files
+    // existence of new_dir is not tested
+    // existence of file dest is tested and if exists, duplication generates file counter in filename
+    // to ensure continuity of counters, copy file operations should come in a "closely-knit loop" without
+    // copy file operations in between for other files
 
     static uint32_t counter;
     int errorlevel;
@@ -1529,11 +1533,11 @@ char* copy_file2dir(const char *existing_file, const char *new_dir)
 
     errorlevel=copy_file(existing_file, dest);
 
-//    free(filestruct->rawfilename);
-//    free(filestruct->extension);
-//    free(filestruct->path);
-//    free(filestruct->directory);
-//    free(filestruct);
+    //    free(filestruct->rawfilename);
+    //    free(filestruct->extension);
+    //    free(filestruct->path);
+    //    free(filestruct->directory);
+    //    free(filestruct);
 
     clean_path(&filestruct);
 
