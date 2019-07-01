@@ -25,6 +25,7 @@ autom4te.cache
 build-*
 configure
 help2man* 
+man2html*
 local*
 lplex*
 menu*
