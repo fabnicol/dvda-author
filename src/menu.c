@@ -428,6 +428,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
         uint16_t size=strlen(s);
         char cml[strlen(mp2enc)+size+3+strlen(img->soundtrack[0][0])+1+1+2];
         sprintf(cml, "%s %s < %s", mp2enc, s, win32quote(img->soundtrack[0][0]));
+        foutput("%s\n", INF "Launching: ", cml);
         free((char *) s);
         system(win32quote(cml));
 #endif
