@@ -532,8 +532,7 @@ path_t *parse_filepath(const char* filepath)
 
      if (dot_position == -1)  // not dots
     {
-        dot_position = chain->length;
-        chain->extension = strdup("");
+         chain->extension = strdup("");
     }
     else
       chain->extension = strdup(filepath+dot_position);
@@ -547,14 +546,18 @@ path_t *parse_filepath(const char* filepath)
         clean_exit(EXIT_FAILURE);
     }
 
+   if (dot_position < 0) dot_position = chain->length + 1;
 
-    chain->rawfilename=calloc(dot_position - last_separator_position, sizeof(char));
-    if (chain->rawfilename == NULL)
+   if (dot_position - last_separator_position >=1)
     {
-        perror("Allocation of rawfilename");
-        clean_exit(EXIT_FAILURE);
-    }
-    memcpy(chain->rawfilename, filepath + last_separator_position + 1, dot_position - last_separator_position -1);
+        chain->rawfilename=calloc(dot_position - last_separator_position, sizeof(char));
+        if (chain->rawfilename == NULL)
+        {
+            perror("Allocation of rawfilename");
+            clean_exit(EXIT_FAILURE);
+        }
+        memcpy(chain->rawfilename, filepath + last_separator_position + 1, dot_position - last_separator_position -1);
+    } else chain->rawfilename = strdup(".");
 
     if (last_separator_position >1)
     {
