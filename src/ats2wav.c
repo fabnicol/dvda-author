@@ -458,16 +458,89 @@ inline static uint64_t get_pes_packet_audio(WaveData *info, WaveHeader *header, 
     return(fpout_size_increment);
 }
 
-int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
+static inline void filestat_clean(filestat_t* f)
+{
+    free(f->filename);
+    f->filename = NULL;
+    if (f->fp != NULL) fclose(f->fp);
+    f->isopen = false;
+}
+
+static inline filestat_t filestat_copy(filestat_t f)
+{
+    filestat_t out;
+    out.filename = f.filename ? strdup(f.filename) : NULL;
+    out.isopen = f.isopen;
+    if (out.isopen)
+    {
+        out.fp = fopen(f.filename, "rb+");  // beware of concurrency
+    }
+    else out.fp = NULL;
+    out.filesize = f.filesize;
+    return out;
+}
+
+static inline WaveData* wavedata_copy(const WaveData* w)
+{
+    WaveData* out = calloc(1, sizeof (WaveData));
+    if (out == NULL) return NULL;
+
+    out->database  = w->database ? strdup(w->database) : NULL;
+    out->filetitle = w->filetitle ? strdup(w->filetitle) : NULL;
+    out->automatic = w->automatic;
+    out->prepend   = w->prepend;
+    out->in_place  = w->in_place;
+    out->cautious  = w->cautious;
+    out->interactive = w->interactive;
+    out->padding     = w->padding;
+    out->prune       = w->prune;
+    out->virtual     = w->virtual;
+    out->repair      = w->repair;
+    out->padbytes    = w->padbytes;
+    out->prunedbytes = w->prunedbytes;
+
+    out->infile  = filestat_copy(w->infile);
+    out->outfile = filestat_copy(w->outfile);
+    return out;
+}
+
+static inline void wavedata_clean(WaveData* w)
+{
+    free(w->database);
+    w->database = NULL;
+    free(w->filetitle);
+    w->filetitle = NULL;
+    filestat_clean(&w->infile);
+    if (! w->in_place) filestat_clean(&w->outfile);
+    free(w);
+    w = NULL;
+}
+
+int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
 {
     uint64_t pack = 0;
     int j = 0; // necessary (track count)
     int position = FIRST_PACK;
 
     WaveHeader header;
-    
-    const char* dirpath = info->outfile.filename;
-    
+
+    info->infile.isopen = false;
+    info->infile.filename = globals.aobpath[i];
+    info->infile.filesize = stat_file_size(info->infile.filename);
+
+    char g_i[3];
+    sprintf(g_i, "g%d", i + 1);
+
+    char* dir_g_i = filepath(globals.settings.outdir, g_i);
+
+    if (! s_dir_exists(dir_g_i))
+    {
+        secure_mkdir(dir_g_i, globals.access_rights);
+        if (globals.veryverbose)
+                foutput("%s |%s|\n", INF "Creating directory", dir_g_i);
+    }
+
+
     while (position != END_OF_AOB)
     {
         /* First pass to get basic audio characteristics (sample rate, bit rate, cga */
@@ -486,15 +559,15 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
         while (position == FIRST_PACK 
                || position == MIDDLE_PACK);
         
-        files[i][j].bitspersample = header.wBitsPerSample;
-        files[i][j].samplerate = header.dwSamplesPerSec;
-        files[i][j].channels = header.channels;
+        files[i][j]->bitspersample = header.wBitsPerSample;
+        files[i][j]->samplerate    = header.dwSamplesPerSec;
+        files[i][j]->channels      = header.channels;
         
         uint64_t x = 0, numsamples = 0, numbytes = 0, wav_numbytes = 0;
         
-        if (files[i][j].PTS_length)     // Use IFO files
+        if (files[i][j]->PTS_length)     // Use IFO files
         {
-            numsamples = (files[i][j].PTS_length * files[i][j].samplerate) / 90000;
+            numsamples = (files[i][j]->PTS_length * files[i][j]->samplerate) / 90000;
             
             if (numsamples)
                 x = 90000 * numsamples;
@@ -506,12 +579,12 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
             
             // Adjust for rounding errors:
             
-            if (x < files[i][j].PTS_length * files[i][j].samplerate)
+            if (x < files[i][j]->PTS_length * files[i][j]->samplerate)
             {
                 ++numsamples;
             }
             
-            numbytes = (numsamples * files[i][j].channels * files[i][j].bitspersample) / 8;
+            numbytes = (numsamples * files[i][j]->channels * files[i][j]->bitspersample) / 8;
             const short int table_index = header.wBitsPerSample == 24 ? 1 : 0;
             int sampleunitsize = permut_size[table_index][header.channels - 1];
             
@@ -521,27 +594,27 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
             
             wav_numbytes = numbytes;
             
-            if (rmdr) numbytes +=  (sampleunitsize - rmdr) ;
+            if (rmdr) wav_numbytes +=  (sampleunitsize - rmdr) ;
             
         }
 
-//        if (errno)
-//        {
-//           foutput(ERR "Error while trying to recover audio characteristics of file %s.\n        Exiting...\n",
-//                   filename(info->infile));
-//           exit(-7);
-//        }
+        if (errno)
+        {
+           foutput(ERR "Error while trying to recover audio characteristics of file %s.\n        Exiting...\n",
+                   filename(info->infile));
+           exit(-7);
+        }
 
-//        if (status == INVALID)
-//        {
-//           foutput(ERR "Error while trying to recover audio characteristics : invalid status or input file %s.\n        Exiting...\n",
-//                   filename(info->infile));
-//           exit(-8);
-//        }
+        if (status == INVALID)
+        {
+           foutput(ERR "Error while trying to recover audio characteristics : invalid status or input file %s.\n        Exiting...\n",
+                   filename(info->infile));
+           exit(-8);
+        }
 
-        wav_output_path_create(dirpath, info);
-        files[i][j].filename = info->outfile.filename;
-        wav_output_open(info);
+        wav_output_path_create(dir_g_i, info);
+
+        files[i][j]->filename = strdup(info->outfile.filename);
 
         bool debug;
 
@@ -555,33 +628,24 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
             globals.debugging = false;
 
             info->outfile.filesize = 0;  // necessary to reset so that header can be generated in empty file
-            filestat_t temp = info->infile;
-            
-            info->infile = info->outfile;
-            info->prepend = true;
-            info->infile.fp = fopen(info->infile.filename, "wb+");
-            
-            if (info->infile.fp != NULL)
-            {
-                info->infile.isopen = true;
-            }
-            else
-            {
-                EXIT_ON_RUNTIME_ERROR_VERBOSE("WAV header-prepending issue.")
-            }
-            
-            fixwav(info, &header);
+                        
+            WaveData* info2 = wavedata_copy(info);
 
-            S_CLOSE(info->outfile)  // necessary here, forbidden with the second fixwav below.
+            info2->prepend = true;
+            info2->in_place = true;
+            info2->infile = info2->outfile;
 
-            info->infile = temp;
+            fixwav(info2, &header);
+
+            wavedata_clean(info2);
+
             errno = 0;
 
             if (globals.veryverbose)
                 foutput(MSG_TAG "%s\n", "Header prepended.");
-            
-            wav_output_open(info);
         }
+
+        wav_output_open(info);
 
         /* second pass to get the audio */
 
@@ -601,9 +665,11 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
 
         foutput(MSG_TAG "Wrote %" 
                 PRIu64 " audio bytes.\n", written_bytes);
-        
-                
-        if (written_bytes != numbytes)
+
+        files[i][j]->wav_numbytes = written_bytes;
+        files[i][j]->numbytes  = written_bytes;
+
+        if (files[i][j]->PTS_length && written_bytes != numbytes)
         {
             foutput(WAR "IFO number of written bytes: %" PRIu64
                     " differs from scanned AOB number of written bytes: %" PRIu64
@@ -615,31 +681,32 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
             numbytes = written_bytes;
         }
         
-        info->outfile.filesize = numbytes + header.header_size_out;
-        
-        if (wav_numbytes != numbytes)
-        {
-            int delta = numbytes - wav_numbytes;
-            info->outfile.filesize -= delta;
-            int res = truncate(info->outfile.filename, info->outfile.filesize );
-            files[i][j].wav_numbytes = res == 0 ? wav_numbytes : numbytes;
-            if (globals.veryverbose) 
+        info->outfile.filesize = written_bytes + header.header_size_out;
+
+        if (files[i][j]->PTS_length && wav_numbytes < numbytes)
             {
-               if (res == 0) 
-                   foutput(MSG_TAG "Truncated %d bytes at end of file %s.\n", delta, info->outfile.filename);
-               else
-               {
-                   foutput(ERR "Failed to truncate %d bytes at end of file %s.\n", delta, info->outfile.filename);        
-               }
+                int delta = numbytes - wav_numbytes;
+                info->outfile.filesize -= delta;
+                if (globals.veryverbose)
+                foutput(INF "Number of bytes in file %s not aligned with sampling units by %d bytes.\n", info->outfile.filename, delta);
+                int res = truncate(info->outfile.filename, info->outfile.filesize );
+                files[i][j]->wav_numbytes = res == 0 ? wav_numbytes : numbytes;
+                if (globals.veryverbose)
+                {
+                   if (res == 0)
+                       foutput(MSG_TAG "Truncated %d bytes at end of file %s.\n", delta, info->outfile.filename);
+                   else
+                   {
+                       foutput(ERR "Failed to truncate %d bytes at end of file %s.\n", delta, info->outfile.filename);
+                   }
+                }
             }
-        }
                 
         foutput(MSG_TAG "Wrote %s, %" PRIu64 " bytes, %.2f MB.\n",
-                                filename(info->outfile),
+                                info->outfile.filename,
                                 info->outfile.filesize,
                                 (double) info->outfile.filesize / (double) (1024 * 1024));                
             
-
         if (globals.fixwav_prepend)
         {
             /* WAV output is now OK except for the wav file size-based header data.
@@ -647,11 +714,14 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
              * the exact audio content bytesize. Also we no longer prepend the header
              * but overwrite the existing one */
 
-            info->prepend = false;
-            filestat_t temp = info->infile;
-            info->infile = info->outfile;
+            WaveData* info2 = wavedata_copy(info);
+            info2->prepend = false;
+            info2->in_place = true;
+            info2->infile = info->outfile;
 
-            fixwav(info, &header);
+            fixwav(info2, &header);
+
+            wavedata_clean(info2);
 
             if (j == 99)
             {
@@ -660,10 +730,9 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
 
             // Possible adjustment here
             
-            files[i][j].numbytes = header.data_cksize;
+            files[i][j]->wav_numbytes = header.data_cksize;
 
             globals.debugging = debug;
-            info->infile = temp;
             errno = 0;
         }
 
@@ -685,42 +754,52 @@ int get_ats_audio_i(int i, fileinfo_t files[9][99], WaveData *info)
         
     }
 
-    S_CLOSE(info->infile)
-    free(info);    
-    
+    free(dir_g_i);
+
     return(errno);
 }
 
-static void audio_extraction_layout(fileinfo_t files[9][99])
+static void audio_extraction_layout(fileinfo_t* files[9][99])
 {
     foutput("\n%s", "DVD Layout\n");
-    foutput("%s\n",ANSI_COLOR_BLUE"Group"ANSI_COLOR_GREEN"  Track    "ANSI_COLOR_YELLOW"Rate"ANSI_COLOR_RED" Bits"ANSI_COLOR_RESET"  Ch   Audio bytes    Wav bytes     Filename\n");
+    foutput("%s\n",ANSI_COLOR_BLUE"Group"ANSI_COLOR_GREEN"  Track    "ANSI_COLOR_YELLOW"Rate"ANSI_COLOR_RED" Bits"ANSI_COLOR_RESET"  Ch  Input audio (B)   Output wav (B)     Filename\n");
 
     for (int i = 0; i < 9; ++i)
-        for (int j = 0; j < 99 && files[i][j].filename != NULL; ++j)
+        for (int j = 0; j < 99 && files[i][j]->filename != NULL; ++j)
         {
-           foutput("  "ANSI_COLOR_BLUE"%d     "ANSI_COLOR_GREEN"%02d"ANSI_COLOR_YELLOW"  %6"PRIu32"   "ANSI_COLOR_RED"%02d"ANSI_COLOR_RESET"   %d   %10"PRIu64"   %10"PRIu64"   ",
-                     i+1, j+1, files[i][j].samplerate, files[i][j].bitspersample, files[i][j].channels, files[i][j].numbytes, files[i][j].wav_numbytes);
-           foutput("%s\n",files[i][j].filename);
+           foutput("  "ANSI_COLOR_BLUE"%d     "ANSI_COLOR_GREEN"%02d"ANSI_COLOR_YELLOW"  %6"PRIu32"   "ANSI_COLOR_RED"%02d"ANSI_COLOR_RESET"   %d       %10"PRIu64"   %10"PRIu64"   ",
+                     i+1, j+1, files[i][j]->samplerate, files[i][j]->bitspersample, files[i][j]->channels, files[i][j]->numbytes, files[i][j]->wav_numbytes);
+           foutput("%s\n",files[i][j]->filename);
         }
 
     foutput("\n\n%s\n\n", MSG_TAG "The Audio bytes column gives the exact audio size of extracted files,\n" MSG_TAG "excluding the header (44 bytes for mono/stereo or 80 bytes for multichannel.)");
 }
 
-
 int get_ats_audio()
 {
-    fileinfo_t files[9][99] = {{{0}}};
-    
+    fileinfo_t* files[9][99];
+    for (int i = 0; i < 9; ++i)
+        for (int j = 0; j < 99; ++j)
+        {
+            files[i][j] = (fileinfo_t*) calloc(1, sizeof(fileinfo_t));
+            if (files[i][j] == NULL)
+                return -1;
+        }
+
+    if (! s_dir_exists(globals.settings.outdir)) secure_mkdir(globals.settings.outdir, globals.access_rights);
+
+    change_directory(globals.settings.outdir);
+
     for (int i = 0; i < 9 && globals.aobpath[i] != NULL; ++i)
     {
       if (globals.veryverbose)
-         foutput("%s%d%s\n", INF "Extracting audio for AOB n°", i+1, " (1-based).");
+         foutput("%s%d%s\n", INF "Extracting audio for AOB n°", i+1, ".");
 
-      WaveData *info = NULL;
-      
-      get_ats_audio_i(i, files, info);
-      
+      WaveData info;
+
+      errno = 0;
+      get_ats_audio_i(i, files, &info);
+
       if (globals.veryverbose)
               foutput("%s\n", INF "Reached ead of AOB.");
     }
@@ -728,9 +807,13 @@ int get_ats_audio()
     if (globals.fixwav_prepend)
         audio_extraction_layout(files);
 
+    for (int i = 0; i < 9; ++i)
+        for (int j = 0; j < 99; ++j)
+        {
+            free(files[i][j]);
+        }
     return(errno);
 }
-
 
 int scan_ats_ifo(fileinfo_t *files, uint8_t *buf)
 {
@@ -801,7 +884,7 @@ int ats2wav(short ngroups_scan, const char* audiots_dir, const char *outdir, con
 {
     FILE* file = NULL;
     unsigned int ntracks = 0;
-    fileinfo_t files[9][99];
+    fileinfo_t* files[9][99] = {{NULL}};
     memset(files, 0, sizeof(files));
     uint8_t buf[BUFFER_SIZE];
     uint16_t nbytesread=0; 
@@ -903,5 +986,6 @@ int ats2wav(short ngroups_scan, const char* audiots_dir, const char *outdir, con
     
     audio_extraction_layout(files);
     
+
     return(EXIT_SUCCESS);
 }

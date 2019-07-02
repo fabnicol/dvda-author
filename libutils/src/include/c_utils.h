@@ -325,6 +325,8 @@ void rw_field(uint8_t* tab, int size,const char* label, FILE* fp, FILE* log);
 bool is_file(const char* path);
 bool is_dir(const char* path);
 
+char* filter_dir_files(const char* src, const char* filter);
+
 inline static void  uint32_copy(uint8_t* buf, uint32_t x)
 {
     buf[0]=(x>>24)&0xff;
