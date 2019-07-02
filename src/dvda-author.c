@@ -178,7 +178,7 @@ int main(int argc,  char* const argv[])
 
     // Locale, time and log management
 
-    setlocale(LC_ALL, "LOCALE");
+    setlocale(LC_ALL, LOCALE);
 
     char* currentdir = fn_get_current_dir_name();
 

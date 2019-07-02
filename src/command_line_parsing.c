@@ -1806,14 +1806,22 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case 28:
-            foutput("%s%s\n", PAR "Extracting AOB to raw signed-integer PCM (headerless waav): ", optarg);
+            foutput("%s%s\n", PAR "Extracting AOB to raw signed-integer PCM (headerless wav): ", optarg);
             aob2wav_parsing(optarg);
             break;
 
         case 29:
-            foutput("%s%s\n", PAR "Extracting AOB to wav: ", optarg);
-            globals.fixwav_prepend = true;
-            aob2wav_parsing(optarg);
+            globals.fixwav_prepend = true; //?
+            if (strstr(optarg, ".AOB") != NULL)
+            {
+              foutput("%s%s\n", PAR "Extracting AOB to wav: ", optarg);
+              aob2wav_parsing(optarg);
+            }
+            else  // using the directory with file structure
+            {
+              aob2wav_parsing(filter_dir_files(optarg, ".AOB"));
+            }
+
             break;
 
         case 30:
@@ -2049,16 +2057,14 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         if (globals.logdecode)
         {
             decode_ats();
-            exit(0);
+            clean_exit(EXIT_SUCCESS);
         }
         else
         {
           get_ats_audio();
-          exit(0);
+          clean_exit(EXIT_SUCCESS);
         }
     }
-
-
 
     // Now copying to temporary directory, depending on type of menu creation, trying to minimize work, depending of type of disc build.
     char* dest;
@@ -2863,17 +2869,31 @@ void process_dvd_video_zone(command_t* command)
 
 void aob2wav_parsing(char *ssopt)
 {
-    char *chain ;//, *subchunk = NULL;
-    if (ssopt) chain = strdup(ssopt); else return;
+    char *chain = NULL;//, *subchunk = NULL;
+    if (ssopt)
+    {
+        chain = strdup(ssopt);
+    }
+    else
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Extraction processor has not valid AOB path input.")
+    }
     int i = 0;
 
     if (chain != NULL)
     {
         globals.aobpath = (char**) calloc(9, sizeof(char*));
         if (globals.aobpath == NULL)
-           perror(ERR "TAB allocation");
+        {
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Extraction processor failed at input stage.")
+        }
+
 
         globals.aobpath[0] = strtok(chain, ",");
+    }
+    else
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Extraction processor has not valid AOB path input or memory allocation failed.")
     }
 
     while (i < 9 && (globals.aobpath[++i] = strtok(NULL, ",")) != NULL) ;

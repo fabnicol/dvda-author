@@ -125,8 +125,11 @@ int download_fullpath(const char* curlpath, const char* filename, const char* fu
 
 char *fn_get_current_dir_name (void)
 {
+
 #if defined __linux__ && ! defined __apple__
-   return get_current_dir_name();
+  char *path = NULL;
+  path = get_current_dir_name();
+   return path;
 #elif defined _MINGW32 || defined _WIN32
  LPTSTR Buffer = (LPTSTR ) malloc (CHAR_BUFSIZ * sizeof(char));
 
@@ -1289,6 +1292,29 @@ void stat_file_wrapper(const char *filename, void *total_size, void GCC_UNUSED *
     total_size = (void* ) sum;
 }
 
+static inline void filter_file_wrapper(const char *filename, void *chain, void *filter)
+{
+    unsigned long S = strlen(filename);
+    const char* f = (const char*) filter;
+
+    unsigned long s = strlen(f);
+
+    if (S < 2) return;
+    char* compound_chain = (char*) chain;
+
+    for (int i = 0; f[i] != 0; ++i)
+    {
+        if (filename[S -1 - i] != f[s - 1 - i]) return;
+    }
+
+    char compound_chain_[strlen(chain) + 2 + strlen(filename)];
+
+    sprintf(compound_chain_, "%s%c%s", compound_chain, ',', chain);
+
+    chain = (void* ) compound_chain_;
+}
+
+
 /* stat_dir_files
  *
  * Computes the non-recursive sum of root-directory file sizes in a given directory.
@@ -1363,6 +1389,30 @@ int count_dir_files(const char* src)
 
     printf("%s%d%s\n", MSG_TAG "Directory has ", total, " files.");
     return(total);
+}
+
+char* filter_dir_files(const char* src, const char* filter)
+{
+    errno = 0;
+
+    struct stat buf;
+    if (stat(src, &buf) == -1)
+    {
+        perror("\n"ERR "Directory not recognized.\n");
+        return(errno);
+    }
+
+    printf("%c", '\n');
+
+    if (globals.debugging)  printf("%s%s%s%s\n", INF "Filtering files in ...", src, " whith ", filter);
+
+    int total = 0;
+
+    char chain[CHAR_BUFSIZ] = {0};
+
+    traverse_directory(src, filter_file_wrapper, true, (void*) chain, (void*) filter);
+
+    return(strdup(chain));
 }
 
 #if 0

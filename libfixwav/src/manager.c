@@ -56,14 +56,53 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
   // display the total file size for convenience
   // Patch on version 0.1.1: -int +uint64_t (int is not enough for files > 2GB)
   // NB: under Windows, use stat_file_size if file not open, otherwise use read_file_size
-  if (! info->in_place || filesize(info->infile) > 0)
-  {
-    S_OPEN(info->infile, "rb+")
 
-    if (info->infile.fp == NULL) return NULL;
+  if (file_exists(info->infile.filename))
+      info->infile.filesize = stat_file_size(info->infile.filename);
+  else {
+      errno = 0;
   }
 
-  if (!errno)
+//  TO EARLY : outfile may not exist yet !
+
+//  if (! info->in_place)
+//  {
+//   if (file_exists(info->outfile.filename))
+//      info->outfile.filesize = stat_file_size(info->outfile.filename);
+//  }
+//  else
+//  {
+//      info->outfile.filesize  = info->infile.filesize;
+//  }
+
+  if (! info->in_place && filesize(info->infile) == 0)
+    {
+      if (globals.debugging) foutput( "%s\n", WAR "File size is null; skipping ..." );
+      info->repair=FAIL;
+      goto getout;
+    }
+
+   if (info->in_place)
+   {
+       if (filesize(info->infile) == 0)
+           info->infile.fp = fopen(info->infile.filename, "wb+");
+       else
+           info->infile.fp = fopen(info->infile.filename, "rb+");
+   }
+   else
+      info->infile.fp = fopen(info->infile.filename, "rb");
+
+   if (info->infile.fp == NULL) return NULL;
+
+   info->infile.isopen = true;
+
+  if (info->in_place)
+  {
+      info->outfile.fp = info->infile.fp;
+      info->outfile.isopen = true;
+  }
+
+  if (! errno)
     {
       if (globals.debugging) foutput( "\n\n--FIXWAV section %d--\n\n"MSG_TAG "File size is %"PRIu64" bytes\n", section, filesize(info->infile));
     }
@@ -74,12 +113,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
       goto getout;
     }
 
-  if (! info->in_place && filesize(info->infile) == 0)
-    {
-      if (globals.debugging) foutput( "%s\n", WAR "File size is null; skipping ..." );
-      info->repair=FAIL;
-      goto getout;
-    }
+
 
   errno=0;
 
