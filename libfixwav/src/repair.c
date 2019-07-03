@@ -59,7 +59,6 @@ repair_wav(WaveData *info, WaveHeader *header )
 
       if (repair == BAD_HEADER)
       {
-#       ifndef GUI_BEHAVIOR
           if (info->interactive)
             {
               if (globals.debugging) foutput("%s\n", "[INT]  Please confirm [y/n] ");
@@ -70,14 +69,10 @@ repair_wav(WaveData *info, WaveHeader *header )
                 }
             }
           else
-#       endif
             if (globals.debugging) foutput("%s\n", "[INT]  Non-interactive mode: assuming correct repair.");
      }
   }
-# ifndef GUI_BEHAVIOR
-  else
-    repair= (user_control(info, header) == BAD_HEADER)? BAD_HEADER: (repair == BAD_HEADER)? BAD_HEADER : GOOD_HEADER ;
-# endif
+
 
   if (globals.debugging) foutput("%s\n", INF "Core audio characteristics were checked.\n       Now processing data subchunk");
 

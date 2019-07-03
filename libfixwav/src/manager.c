@@ -113,8 +113,6 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
       goto getout;
     }
 
-
-
   errno=0;
 
   /* verify that the filename ends with 'wav' */
@@ -265,10 +263,6 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   if (readHeader(info->infile.fp, header) == FAIL || info->prepend || header->header_size_in == MAX_HEADER_SIZE)
   {
-#     ifndef GUI_BEHAVIOR
-        info->interactive = 1;
-        info->automatic = 0;
-#     endif
         header->header_size_in = 0;
         info->repair = BAD_HEADER;
   }
@@ -413,9 +407,12 @@ Checkout:
       else
       {
 
-          //if (globals.debugging) foutput( "%s\n", MSG_TAG "Fixwav status 4:\n       WAVE header is incorrect, yet no changes were made to existing header." );
-          //header->header_out = header->header_in;
-          //header->header_size_out = header->header_size_in;
+          if (globals.debugging) foutput( "%s\n", MSG_TAG "Fixwav status 4:\n       WAVE header is incorrect, yet no changes were made to existing header." );
+          free(header->header_out);
+          header->header_out = NULL;
+          header->header_in = NULL;
+          header->header_size_out = 0;
+          header->header_size_in = 0;
       }
 
       break;

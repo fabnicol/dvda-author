@@ -97,6 +97,8 @@ ID\Chan 0   1   2   3   	4   5     info->channels
 const uint8_t channels[21] = {1,2,3,4,3,4,5,3,4,5,4,5,6,4,5,4,5,6,5,5,6};
 
 // number of channels x sampling rate in Hz x bit rate = bandwidth <= 9,6 Mbps
+// Each permutation table has length : 2 x sample size (channels x nbitspersample / 8 e.g. 2 x 6 x 24 / 8 = 36 for 6-ch. 24-bit audio, whatever the sample rate)
+// So audio input must come in pair values of samples.
 
 static const uint8_t  S[2][6][36]=
 {   {   {0}, // 4
@@ -313,7 +315,9 @@ int calc_info(fileinfo_t* info)
     info->numsamples
             = (info->numbytes * 8) / (info->channels * info->bitspersample);
 
-    info->PTS_length = (90000.0 * info->numsamples) / info->samplerate;
+    info->PTS_length = (90000.0 * info->numsamples) / info->samplerate;  // = duration in seconds x 90000
+
+    // a rounding error of 1 in PTS_LENGTH = samplerate / 90000 in numsamples = samplerate / (8 x 90000) x channels x bitspersample in bytes.
 
     return(AFMT_WAVE);
 }
@@ -880,7 +884,7 @@ int fixwav_repair(fileinfo_t *info)
         globals.fixwav_prepend, /* do not prepend a header */
         globals.fixwav_in_place, /* do not correct in place */
         globals.fixwav_cautious, /* whether to ask user about overwrite */
-        globals.fixwav_interactive, /* not interactive */
+        globals.fixwav_interactive, /* interactive */
         globals.fixwav_padding, /* padding */
         globals.fixwav_prune, /* prune */
         globals.fixwav_virtual_enable, /* whether header should be fixed virtually */
@@ -1093,7 +1097,7 @@ int audio_open(fileinfo_t* info)
     #else
             info->file_size = read_file_size(info->audio->fp, info->filename);
     #endif
-            fseek(info->audio->fp, info->header_size,SEEK_SET);
+               fseek(info->audio->fp, info->header_size,SEEK_SET);
         }
 
         info->audio->bytesread=0;

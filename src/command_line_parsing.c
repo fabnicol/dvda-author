@@ -2910,7 +2910,7 @@ void fixwav_parsing(char *ssopt)
     char * chain=ssopt;
     char* value=NULL;
     char* tokens[]=
-    { "simple-mode","prepend","in-place","interactive","padding","prune","output","force", "cautious", "infodir", NULL};
+    { "simple-mode","prepend","in-place","interactive","padding","prune","output","force", "cautious", "infodir","virtual","real", NULL};
 
     while ((subopt = getsubopt(&chain, tokens, &value)) != -1)
     {
@@ -2971,6 +2971,20 @@ void fixwav_parsing(char *ssopt)
                 foutput("%s       %s%s",PAR "  Fixwav will output info chunk from wav headers to:\n", globals.settings.fixwav_database, SEPARATOR "database\n");
             }
             break;
+
+         case 10:
+            globals.fixwav_virtual_enable=1;
+            globals.fixwav_in_place=0;
+
+            foutput("%s",PAR "  Force virtual behavior (files remain unmodified) over in_place and previous settings.\n");
+            break;
+
+         case 11:
+            globals.fixwav_virtual_enable=0;
+
+            foutput("%s",PAR "  Force real behavior (files will be modified) over previous settings.\n");
+            break;
+
         }
     }
 

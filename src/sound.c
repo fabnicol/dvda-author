@@ -80,6 +80,7 @@ errno=0;
         };
 
         fixwav(&wavedata, &waveheader);
+
        if (globals.veryverbose) 
             {
                 foutput(MSG_TAG "LPCM diagnostics: bps=%d, sample rate=%d, channels=%d \n", 

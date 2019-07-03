@@ -231,7 +231,7 @@ typedef struct
     bool fixwav_prepend; /* do not prepend a header */
     bool fixwav_in_place; /* do not correct in place */
     bool fixwav_cautious; /* be cautious on overwrites */
-    bool fixwav_interactive; /* not interactive */
+    bool fixwav_interactive; /* interactive */
     bool fixwav_padding; /* padding */
     bool fixwav_prune; /* prune */
     bool fixwav_force;

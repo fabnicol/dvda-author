@@ -159,12 +159,12 @@ inline static void  aob_open(WaveData *info)
     }
 }
 
-inline static void wav_output_path_create(const char* dirpath, WaveData *info)
+inline static void wav_output_path_create(const char* dirpath, WaveData *info, int title)
 {
-    static int title;
+    static int track;
 
-    char Title[14] = {0};
-    sprintf(Title, "title_%d.wav", ++title);
+    char Title[23] = {0};
+    sprintf(Title, "track_%02d_title_%02d_.wav", ++track, title);
 
     info->outfile.filename = filepath(dirpath, Title);
 }
@@ -236,7 +236,7 @@ inline static int calc_position(FILE* fileptr, const uint64_t offset0)
     return(position);
 }
 
-inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, bool *status)
+inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, bool *status, uint8_t* continuity)
 {
     if (! info->infile.isopen) aob_open(info);
     
@@ -244,19 +244,33 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, bool
      
     int position = calc_position(info->infile.fp, offset0);
     
-    fseeko(info->infile.fp, offset0 + 35 + (position == FIRST_PACK ? 21 : 0), SEEK_SET);
+    fseeko(info->infile.fp, offset0 + 29 + (position == FIRST_PACK ? 21 : 0), SEEK_SET);
 
     uint8_t sample_size[1] = {0};
     uint8_t sample_rate[1] = {0};
-    
-    int result = fread(sample_size, 1, 1, info->infile.fp);
-    
+    uint8_t continuity_counter[1] = {0};
+
+    int result = fread(continuity_counter, 1, 1, info->infile.fp);
+
+    if (result != 1)
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting continuity counter.")
+    }
+
+    *continuity = continuity_counter[0];
+
+    fseeko(info->infile.fp, 5, SEEK_CUR);  // +6
+
+    result = fread(sample_size, 1, 1, info->infile.fp);
+
+
     if (result != 1)
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting sample size.")
     }
     
     result = fread(sample_rate, 1, 1, info->infile.fp);
+
     if (result != 1)
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting sample rate.")
@@ -346,7 +360,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, bool
 }
 
 
-inline static uint64_t get_pes_packet_audio(WaveData *info, WaveHeader *header, int *position)
+inline static uint64_t get_pes_packet_audio(WaveData *info, WaveHeader *header, int *position, uint8_t* continuity)
 {
 
     int audio_bytes;
@@ -405,7 +419,9 @@ inline static uint64_t get_pes_packet_audio(WaveData *info, WaveHeader *header, 
         
                 case MIDDLE_PACK :
                     audio_bytes = lpcm_payload;
-                    fseeko(info->infile.fp, offset0 + 32 + midpack_lpcm_headerquantity, SEEK_SET);
+                    fseeko(info->infile.fp, offset0 + 29, SEEK_SET);
+                    fread(continuity, 1, 1, info->infile.fp);
+                    fseeko(info->infile.fp, midpack_lpcm_headerquantity + 2, SEEK_CUR);
                     break;
         
                 case LAST_PACK :
@@ -521,6 +537,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
     uint64_t pack = 0;
     int j = 0; // necessary (track count)
     int position = FIRST_PACK;
+    uint8_t continuity = 0;
 
     WaveHeader header;
 
@@ -540,6 +557,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                 foutput("%s |%s|\n", INF "Creating directory", dir_g_i);
     }
 
+    // Start of title loop j
 
     while (position != END_OF_AOB)
     {
@@ -548,17 +566,32 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
         bool status = VALID;
 
         errno = 0;
+        int k = 0;
+        bool new_track  = false;
+
+        uint8_t continuity_save = 0;
+
         if (globals.veryverbose)
-            foutput("%s %d %s %d\n", MSG_TAG "Group ", i + 1, "Track ", j + 1);
+        {
+            foutput("%s %d %s %d %s\n", MSG_TAG "Group ", i + 1, "Title ", j + 1, "Track 1");
+        }
+
         do
         {
-            position = peek_pes_packet_audio(info, &header, &status);
+            position = peek_pes_packet_audio(info, &header, &status, &continuity);
             
             if (status == VALID) break;
         }
         while (position == FIRST_PACK 
                || position == MIDDLE_PACK);
         
+        if (continuity != 0)
+        {
+            if (globals.maxverbose)
+                foutput("%s %d\n", MSG_TAG "Continuity counter has wrong value (should be 0): ", continuity);
+        }
+
+
         files[i][j]->bitspersample = header.wBitsPerSample;
         files[i][j]->samplerate    = header.dwSamplesPerSec;
         files[i][j]->channels      = header.channels;
@@ -612,146 +645,168 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
            exit(-8);
         }
 
-        wav_output_path_create(dir_g_i, info);
 
-        files[i][j]->filename = strdup(info->outfile.filename);
+        // Track loop
 
-        bool debug;
+           do {
 
-        if (globals.fixwav_prepend)
-        {
-            /* generate header in empty file. We must allow prepend and in_place for empty files */
+                bool debug;
 
-            debug = globals.debugging;
+                wav_output_path_create(dir_g_i, info, j);
 
-            /* Hush it up as there will be spurious error mmsg */
-            globals.debugging = false;
+                files[i][j]->filename = strdup(info->outfile.filename);
 
-            info->outfile.filesize = 0;  // necessary to reset so that header can be generated in empty file
-                        
-            WaveData* info2 = wavedata_copy(info);
+                wav_output_open(info);
 
-            info2->prepend = true;
-            info2->in_place = true;
-            info2->infile = info2->outfile;
-
-            fixwav(info2, &header);
-
-            wavedata_clean(info2);
-
-            errno = 0;
-
-            if (globals.veryverbose)
-                foutput(MSG_TAG "%s\n", "Header prepended.");
-        }
-
-        wav_output_open(info);
-
-        /* second pass to get the audio */
-
-        position = FIRST_PACK;
-        uint64_t written_bytes = 0;
-        
-        do
-        {
-            written_bytes += get_pes_packet_audio(info, &header, &position);
-            if (globals.maxverbose)
-                foutput(MSG_TAG "Pack %lu, Number of written bytes: %lu\n", 
-                        pack + 1,
-                        written_bytes);
-        }
-        while (position == FIRST_PACK 
-               || position == MIDDLE_PACK);
-
-        foutput(MSG_TAG "Wrote %" 
-                PRIu64 " audio bytes.\n", written_bytes);
-
-        files[i][j]->wav_numbytes = written_bytes;
-        files[i][j]->numbytes  = written_bytes;
-
-        if (files[i][j]->PTS_length && written_bytes != numbytes)
-        {
-            foutput(WAR "IFO number of written bytes: %" PRIu64
-                    " differs from scanned AOB number of written bytes: %" PRIu64
-                    " by %" PRIu64 " bytes.\n"WAR "Giving priority to scanned written bytes.\n",
-                    written_bytes, 
-                    numbytes,
-                    written_bytes - numbytes);
-        
-            numbytes = written_bytes;
-        }
-        
-        info->outfile.filesize = written_bytes + header.header_size_out;
-
-        if (files[i][j]->PTS_length && wav_numbytes < numbytes)
-            {
-                int delta = numbytes - wav_numbytes;
-                info->outfile.filesize -= delta;
-                if (globals.veryverbose)
-                foutput(INF "Number of bytes in file %s not aligned with sampling units by %d bytes.\n", info->outfile.filename, delta);
-                int res = truncate(info->outfile.filename, info->outfile.filesize );
-                files[i][j]->wav_numbytes = res == 0 ? wav_numbytes : numbytes;
-                if (globals.veryverbose)
+                if (globals.fixwav_prepend)
                 {
-                   if (res == 0)
-                       foutput(MSG_TAG "Truncated %d bytes at end of file %s.\n", delta, info->outfile.filename);
-                   else
-                   {
-                       foutput(ERR "Failed to truncate %d bytes at end of file %s.\n", delta, info->outfile.filename);
-                   }
+                    /* generate header in empty file. We must allow prepend and in_place for empty files */
+
+                    debug = globals.debugging;
+
+                    /* Hush it up as there will be spurious error mmsg */
+                    globals.debugging = false;
+
+                    info->outfile.filesize = 0;  // necessary to reset so that header can be generated in empty file
+
+                    WaveData* info2 = wavedata_copy(info);
+
+                    info2->prepend = true;
+                    info2->in_place = true;
+                    info2->infile = info2->outfile;
+
+                    fixwav(info2, &header);
+
+                    wavedata_clean(info2);
+
+                    errno = 0;
+
+                    if (globals.veryverbose)
+                        foutput(MSG_TAG "%s\n", "Header prepended.");
                 }
-            }
-                
-        foutput(MSG_TAG "Wrote %s, %" PRIu64 " bytes, %.2f MB.\n",
-                                info->outfile.filename,
-                                info->outfile.filesize,
-                                (double) info->outfile.filesize / (double) (1024 * 1024));                
-            
-        if (globals.fixwav_prepend)
-        {
-            /* WAV output is now OK except for the wav file size-based header data.
-             * ckSize, data_ckSize and nBlockAlign must be readjusted by computing
-             * the exact audio content bytesize. Also we no longer prepend the header
-             * but overwrite the existing one */
 
-            WaveData* info2 = wavedata_copy(info);
-            info2->prepend = false;
-            info2->in_place = true;
-            info2->infile = info->outfile;
 
-            fixwav(info2, &header);
 
-            wavedata_clean(info2);
+                /* second pass to get the audio */
 
-            if (j == 99)
-            {
-                EXIT_ON_RUNTIME_ERROR_VERBOSE("DVD-Audio specifications only allow 99 titles per group.")
-            }
+                position = FIRST_PACK;
+                uint64_t written_bytes = 0;
 
-            // Possible adjustment here
-            
-            files[i][j]->wav_numbytes = header.data_cksize;
+                do
+                {
+                    continuity_save = continuity;
+                    written_bytes += get_pes_packet_audio(info, &header, &position, &continuity);
 
-            globals.debugging = debug;
-            errno = 0;
-        }
+                    if (globals.maxverbose)
+                        foutput(MSG_TAG "Pack %lu, Number of written bytes: %lu\n",
+                                pack + 1,
+                                written_bytes);
 
-        S_CLOSE(info->outfile)
-                
-        if (position == LAST_PACK)
-        {
-            if (globals.veryverbose)        
-                    foutput("%s\n", INF "Closing track and opening new one.");
-        }
-        else
-        if (position == END_OF_AOB)
-        {
-            if (globals.veryverbose)        
-                    foutput("%s\n", INF "Closing last track of AOB.");
-        }
-        
-        ++j;  // track rank
-        
+                    if (continuity_save != 0 && continuity_save != 0x1F && continuity == 0)
+                    {
+                        ++k;
+                        if (globals.veryverbose)
+                            foutput("%s %d %s %d %s %d\n", MSG_TAG "Group ", i + 1, "Title ", j + 1, "Track ", k);
+                        break;
+                    }
+                }
+                while (position == FIRST_PACK
+                       || position == MIDDLE_PACK);
+
+                new_track = false;
+
+                foutput(MSG_TAG "Wrote %"
+                        PRIu64 " audio bytes.\n", written_bytes);
+
+                files[i][j]->wav_numbytes = written_bytes;
+                files[i][j]->numbytes  = written_bytes;
+
+                if (files[i][j]->PTS_length && written_bytes != numbytes)
+                {
+                    foutput(WAR "IFO number of written bytes: %" PRIu64
+                            " differs from scanned AOB number of written bytes: %" PRIu64
+                            " by %" PRIu64 " bytes.\n"WAR "Giving priority to scanned written bytes.\n",
+                            written_bytes,
+                            numbytes,
+                            written_bytes - numbytes);
+
+                    numbytes = written_bytes;
+                }
+
+                info->outfile.filesize = written_bytes + header.header_size_out;
+
+                if (files[i][j]->PTS_length && wav_numbytes < numbytes)
+                    {
+                        int delta = numbytes - wav_numbytes;
+                        info->outfile.filesize -= delta;
+                        if (globals.veryverbose)
+                        foutput(INF "Number of bytes in file %s not aligned with sampling units by %d bytes.\n", info->outfile.filename, delta);
+                        int res = truncate(info->outfile.filename, info->outfile.filesize );
+                        files[i][j]->wav_numbytes = res == 0 ? wav_numbytes : numbytes;
+                        if (globals.veryverbose)
+                        {
+                           if (res == 0)
+                               foutput(MSG_TAG "Truncated %d bytes at end of file %s.\n", delta, info->outfile.filename);
+                           else
+                           {
+                               foutput(ERR "Failed to truncate %d bytes at end of file %s.\n", delta, info->outfile.filename);
+                           }
+                        }
+                    }
+
+                foutput(MSG_TAG "Wrote %s, %" PRIu64 " bytes, %.2f MB.\n",
+                                        info->outfile.filename,
+                                        info->outfile.filesize,
+                                        (double) info->outfile.filesize / (double) (1024 * 1024));
+
+                if (globals.fixwav_prepend)
+                {
+                    /* WAV output is now OK except for the wav file size-based header data.
+                     * ckSize, data_ckSize and nBlockAlign must be readjusted by computing
+                     * the exact audio content bytesize. Also we no longer prepend the header
+                     * but overwrite the existing one */
+
+                    WaveData* info2 = wavedata_copy(info);
+                    info2->prepend = false;
+                    info2->in_place = true;
+                    info2->infile = info->outfile;
+
+                    fixwav(info2, &header);
+
+                    wavedata_clean(info2);
+
+                    if (j == 99)
+                    {
+                        EXIT_ON_RUNTIME_ERROR_VERBOSE("DVD-Audio specifications only allow 99 titles per group.")
+                    }
+
+                    // Possible adjustment here
+
+                    files[i][j]->wav_numbytes = header.data_cksize;
+
+                    globals.debugging = debug;
+                    errno = 0;
+                }
+
+                S_CLOSE(info->outfile)
+
+                if (position == LAST_PACK)
+                {
+                    if (globals.veryverbose)
+                            foutput("%s\n", INF "Closing track and opening new one.");
+                }
+                else
+                if (position == END_OF_AOB)
+                {
+                    if (globals.veryverbose)
+                            foutput("%s\n", INF "Closing last track of AOB.");
+                }
+
+            }   while (position != END_OF_AOB && position != LAST_PACK);
+
+           // End of track loop
+
+        ++j;  // Title loop
     }
 
     free(dir_g_i);

@@ -212,9 +212,9 @@ printf("%s", "\n    fixwav sub-options:\n\n"\
 K"Deactivate default automatic mode and advanced options.\n"\
 K"User will be asked for more information.\n\n"\
 "prepend"\
-K"Prepend header to raw file\n\n"\
+K"Prepend header to raw file, maybe virtually\n\n"\
 "in-place"\
-K"Correct header in the original file (not advised)\n\n"\
+K"Correct header in the original file (not advised) unless real is set later\n\n"\
 "cautious"\
 K"Be cautious when overwriting files in-place\n\n"\
 "interactive"\
@@ -229,6 +229,10 @@ K"Launches fixwav before SoX for mangled headers\n\n"\
 K"Copy corrected file to new filepath with string suffix sf\n\n"\
 "infodir=db\n"\
 K"Copy info chunks from wav headers to file db"SEPARATOR"database\n\n"\
+"virtual"\
+K"Forces virtual behavior over previous settings (files will be unmodified)\n\n"\
+"real"\
+K"Forces real behavior over previous settings (files will be modified)\n\n"\
 "  Sub-options should be separated by commas and appended\n\n\
   after short option or after = sign if long option is used:\n\n\
   -f/-Fsuboption or --fixwav(-virtual)=suboption\n\n\
