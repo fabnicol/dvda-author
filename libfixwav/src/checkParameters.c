@@ -323,11 +323,6 @@ bailing_out:
   }
   if (globals.debugging) foutput("\n%s\n", WAR "Sorry, automatic mode cannot be used:\n       not enough information left in header.");
 
-# ifndef GUI_BEHAVIOR
-  if (globals.debugging) foutput("%s\n", INF "Reverting to interactive simple mode.");
-  info->interactive=TRUE;
-  info->repair=user_control(info, header);
-# endif
 
   return (info->repair);
 
