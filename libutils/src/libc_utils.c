@@ -78,9 +78,6 @@ void pause_dos_type()
         if (reply == '\n' && r != NULL) return;
     }
     while(1);
-
-
-
 }
 
 
@@ -242,9 +239,6 @@ char* make_absolute(char* filepath)
     // it is up to the user to deallocate filepath string input
 }
 
-
-
-
 void action_file (const char *file)
 {
     if (unlink (file))
@@ -255,7 +249,6 @@ void action_file (const char *file)
     }
 }
 
-
 typedef struct slist_t
 {
     char *name;
@@ -263,14 +256,13 @@ typedef struct slist_t
     struct slist_t *next;
 } slist_t;
 
-
 int rmdir_recursive (char *root, char *dirname)
 {
     char *cwd;
     cwd=fn_get_current_dir_name();
     if (globals.veryverbose)
     {
-        fprintf(stderr, "%s%s%s\n", INF "Changing directory to |", dirname, "|");
+        fprintf(stderr, "%s%s%s\n", INF "Changing directory to `", dirname, "`");
     }
 
     if (chdir (dirname) == -1)
@@ -280,7 +272,6 @@ int rmdir_recursive (char *root, char *dirname)
         else {
             perror(ERR "chdir other issue");
         }
-
         clean_exit(-1);
     }
 
@@ -382,7 +373,7 @@ int rmdir_recursive (char *root, char *dirname)
         free (prev);
     }
 
-    fprintf(stderr, "%s%s%s\n", INF "Changing directory to |", cwd, "|");
+    if (globals.veryverbose) fprintf(stderr, "%s%s%s\n", INF "Changing directory to `", cwd, "`");
 
     if (chdir (cwd) != 0)
     {
@@ -1154,14 +1145,18 @@ void change_directory(const char * filename)
 * Note :  function may have 4 optional arguments, the first of a const char*, practically a path or filename
 * ------- */
 
-int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED *, void GCC_UNUSED *, void GCC_UNUSED *), bool recursive, void GCC_UNUSED* arg2, void GCC_UNUSED* arg3)
+int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED *,
+                                                  void GCC_UNUSED *,
+                                                  void GCC_UNUSED *),
+                       bool recursive,
+                       void GCC_UNUSED* arg2,
+                       void GCC_UNUSED* arg3)
 {
     DIR *dir_src;
-
     struct stat buf;
     struct dirent *d;
 
-    printf("%c", '\n');
+    fprintf(stderr, "%c", '\n');
 
     if (globals.debugging)  printf("%s%s\n", INF "Traversing dir = ", src);
     const char* olddir = fn_get_current_dir_name();
@@ -1175,26 +1170,27 @@ int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED *, void 
 
         if (stat(d->d_name, &buf) == -1)
         {
-            perror("\n"ERR "stat in traverse_directory\n");
-            exit(EXIT_FAILURE);
+            //perror("\n"ERR "stat in traverse_directory\n");
+           // change_directory(olddir);
+           // change_directory(src);
+            //exit(EXIT_FAILURE);
+            break;
         }
 
         if (recursive && S_ISDIR(buf.st_mode))
         {
-
             errno = traverse_directory(d->d_name, f, recursive, arg2, arg3);
-
             continue;
         }
 
         if (S_ISREG(buf.st_mode))
         {
             if (globals.debugging) printf("%s = %s\n", INF "Processing file=", d->d_name);
-            if (arg3 != NULL)
+            if (arg3 != NULL && is_dir(arg2))
             {
-                char* fullpath = calloc(strlen(src) + 1 + strlen(d->d_name) + 1, sizeof (char));
-                sprintf(fullpath, "%s%s%s", src, SEPARATOR, d->d_name);
-                if (globals.veryverbose) fprintf(stderr, INF "Copying %s with arg2 = %s ...\n", fullpath, (char*) arg2);
+                char* fullpath = calloc(strlen((char*) arg2) + 1 + strlen(src) + 1 + strlen(d->d_name) + 1, sizeof (char));
+                sprintf(fullpath, "%s%s%s%s%s", (char*) arg2, SEPARATOR, src, SEPARATOR, d->d_name);
+                if (globals.veryverbose) fprintf(stderr, INF "Processing %s in directory  %s ...\n", fullpath, (char*) arg2);
                 // This is to account for both relative and absolute paths as -o arguments
                 change_directory(olddir);
                 change_directory(arg2);
@@ -1292,26 +1288,36 @@ void stat_file_wrapper(const char *filename, void *total_size, void GCC_UNUSED *
     total_size = (void* ) sum;
 }
 
-static inline void filter_file_wrapper(const char *filename, void *chain, void *filter)
+static char* chain;
+
+static inline void filter_file_wrapper(const char *filename,  void* GCC_UNUSED src, void *filter)
 {
     unsigned long S = strlen(filename);
+    unsigned long C = strlen(chain);
     const char* f = (const char*) filter;
 
     unsigned long s = strlen(f);
 
     if (S < 2) return;
-    char* compound_chain = (char*) chain;
 
     for (int i = 0; f[i] != 0; ++i)
     {
         if (filename[S -1 - i] != f[s - 1 - i]) return;
     }
 
-    char compound_chain_[strlen(chain) + 2 + strlen(filename)];
-
-    sprintf(compound_chain_, "%s%c%s", compound_chain, ',', chain);
-
-    chain = (void* ) compound_chain_;
+    if (C)
+    {
+      char compound_chain_[C + 2 + S];
+      if (globals.veryverbose) fprintf(stderr, "%s %s to %s...\n", INF "Adding ", filename, (char*) chain);
+      sprintf(compound_chain_, "%s%c%s", chain, ',', filename);
+      free(chain);
+      chain = (void*) strdup(compound_chain_);
+    }
+    else
+    {
+        if (globals.veryverbose) fprintf(stderr, "%s %s ...\n", INF "Adding ", filename);
+        sprintf(chain, "%s", filename);
+    }
 }
 
 
@@ -1391,7 +1397,7 @@ int count_dir_files(const char* src)
     return(total);
 }
 
-char* filter_dir_files(const char* src, const char* filter)
+char* filter_dir_files(char* src,  char* filter)
 {
     errno = 0;
 
@@ -1404,13 +1410,11 @@ char* filter_dir_files(const char* src, const char* filter)
 
     printf("%c", '\n');
 
-    if (globals.debugging)  printf("%s%s%s%s\n", INF "Filtering files in ...", src, " whith ", filter);
+    if (globals.debugging)  printf("%s%s%s%s\n", INF "Filtering files in ...", src, " with ", filter);
 
-    int total = 0;
+    chain = calloc(CHAR_BUFSIZ, sizeof(char));
 
-    char chain[CHAR_BUFSIZ] = {0};
-
-    traverse_directory(src, filter_file_wrapper, true, (void*) chain, (void*) filter);
+    traverse_directory(src, filter_file_wrapper, true,  (void*) src, (void*) filter);
 
     return(strdup(chain));
 }

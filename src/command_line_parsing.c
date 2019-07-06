@@ -2882,12 +2882,11 @@ void aob2wav_parsing(char *ssopt)
 
     if (chain != NULL)
     {
-        globals.aobpath = (char**) calloc(9, sizeof(char*));
+        globals.aobpath = (char**) calloc(81, sizeof(char*));  // 9 groups but there may be upt to 9 partial AOBs per group
         if (globals.aobpath == NULL)
         {
             EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Extraction processor failed at input stage.")
         }
-
 
         globals.aobpath[0] = strtok(chain, ",");
     }
@@ -2896,7 +2895,7 @@ void aob2wav_parsing(char *ssopt)
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Extraction processor has not valid AOB path input or memory allocation failed.")
     }
 
-    while (i < 9 && (globals.aobpath[++i] = strtok(NULL, ",")) != NULL) ;
+    while (i < 81 && (globals.aobpath[++i] = strtok(NULL, ",")) != NULL) ;
 
     //free(chain);
 

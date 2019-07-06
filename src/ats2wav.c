@@ -360,7 +360,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, bool
 }
 
 
-inline static uint64_t get_pes_packet_audio(WaveData *info, WaveHeader *header, int *position, uint8_t* continuity)
+inline static uint64_t get_pes_packet_audio(WaveData *info, WaveHeader *header, int *position, uint8_t* continuity, uint64_t* written_bytes, uint64_t wav_numbytes)
 {
 
     int audio_bytes;
@@ -390,7 +390,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info, WaveHeader *header, 
 
 #   define X T[table_index][header->channels-1]
 
-    const int lpcm_payload = X[0];
+    int lpcm_payload = X[0];
     const int firstpackdecrement = X[1];
     const int lastpack_audiopesheaderquantity = X[2];
     const int firstpack_lpcm_headerquantity = X[3];
@@ -406,6 +406,11 @@ inline static uint64_t get_pes_packet_audio(WaveData *info, WaveHeader *header, 
     uint64_t offset0 = ftello(info->infile.fp);
     
     int res  = 0, result;    
+
+    if (wav_numbytes > 0 && wav_numbytes - *written_bytes < lpcm_payload)
+    {
+        lpcm_payload = wav_numbytes - *written_bytes;
+    }
     
     do {
             *position = calc_position(info->infile.fp, offset0);
@@ -471,6 +476,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info, WaveHeader *header, 
     if (globals.maxverbose)
            foutput(MSG_TAG "Position : %d\n", *position);
     
+    *written_bytes += fpout_size_increment;
     return(fpout_size_increment);
 }
 
@@ -591,7 +597,6 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                 foutput("%s %d\n", MSG_TAG "Continuity counter has wrong value (should be 0): ", continuity);
         }
 
-
         files[i][j]->bitspersample = header.wBitsPerSample;
         files[i][j]->samplerate    = header.dwSamplesPerSec;
         files[i][j]->channels      = header.channels;
@@ -607,7 +612,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
             else
             {
                 foutput("%s", ERR "Found null samplerate or PTS length. Exiting...\n");
-                clean_exit(EXIT_FAILURE);
+                files[i][j]->PTS_length = 0;
             }
             
             // Adjust for rounding errors:
@@ -625,9 +630,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
             
             int rmdr = numbytes % sampleunitsize ;
             
-            wav_numbytes = numbytes;
-            
-            if (rmdr) wav_numbytes +=  (sampleunitsize - rmdr) ;
+            wav_numbytes = numbytes +  (rmdr ? sampleunitsize - rmdr : 0);
             
         }
 
@@ -695,7 +698,12 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                 do
                 {
                     continuity_save = continuity;
-                    written_bytes += get_pes_packet_audio(info, &header, &position, &continuity);
+                    get_pes_packet_audio(info, &header, &position, &continuity, &written_bytes, wav_numbytes);
+
+                    if (wav_numbytes && wav_numbytes - written_bytes < files[i][j]->lpcm_payload)
+                    {
+
+                    }
 
                     if (globals.maxverbose)
                         foutput(MSG_TAG "Pack %lu, Number of written bytes: %lu\n",
@@ -845,7 +853,7 @@ int get_ats_audio()
 
     change_directory(globals.settings.outdir);
 
-    for (int i = 0; i < 9 && globals.aobpath[i] != NULL; ++i)
+    for (int i = 0; i < 81 && globals.aobpath[i] != NULL; ++i)
     {
       if (globals.veryverbose)
          foutput("%s%d%s\n", INF "Extracting audio for AOB n°", i+1, ".");
@@ -853,6 +861,45 @@ int get_ats_audio()
       WaveData info;
 
       errno = 0;
+
+      char* ifo_filename = strdup(globals.aobpath[i]);
+
+      unsigned long s = strlen(ifo_filename); // "ATS_0%d_0.IFO"
+      ifo_filename[s - 1] = 'O';
+      ifo_filename[s - 2] = 'F';
+      ifo_filename[s - 3] = 'I';
+      ifo_filename[s - 5] = '0';
+
+      FILE* file = NULL;
+      if ((file = fopen(ifo_filename, "rb")) == NULL)
+      {
+          EXIT_ON_RUNTIME_ERROR_VERBOSE("IFO file could not be opened.")
+      }
+
+      if (globals.debugging)
+          printf( INF "Reading file %s\n", ifo_filename);
+
+      char* buf[2048 * 4] = {0};
+
+      int nbytesread = fread(buf, 1, sizeof(buf), file);
+
+      if (globals.debugging)
+          printf( INF "Read %d bytes\n", nbytesread);
+
+      fclose(file);
+
+      if (memcmp(buf, "DVDAUDIO-ATS", 12) != 0)
+      {
+          foutput(ERR "%s is not an ATSI file (ATS_XX_0.IFO)\n", ifo_filename);
+          clean_exit(EXIT_FAILURE);
+      }
+
+      printf("%c", '\n');
+
+      /* now scan tracks to be extracted */
+
+      scan_ats_ifo(&files[0][0], buf);
+
       get_ats_audio_i(i, files, &info);
 
       if (globals.veryverbose)
