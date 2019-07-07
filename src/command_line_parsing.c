@@ -224,6 +224,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"no-refresh-tempdir",no_argument, NULL, 4},
         {"no-refresh-outdir",no_argument, NULL, 5},
         {"extract", required_argument, NULL, 'x'},
+        {"xlist", required_argument, NULL, 13},
     #if !defined HAVE_core_BUILD || !HAVE_core_BUILD
         {"videodir", required_argument, NULL, 'V'},
         {"fixwav", optional_argument, NULL, 'F'},
@@ -854,8 +855,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     bool import_topmenu_flag=0;
     uint16_t npics[totntracks];
 #endif
-    char** textable=NULL;
-    bool extract_audio_flag=0;
+    char** textable = NULL;
+    bool extract_audio_flag = 0;
+    char* extract_args = NULL;
     optind=0;
     opterr=1;
 
@@ -888,6 +890,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             extract_audio_flag = 1;
             free(globals.settings.indir);
             globals.settings.indir = strdup(optarg);
+            break;
+
+        case 13:
+            extract_args = strdup(optarg);
             break;
 
         case 'n' :
@@ -1589,11 +1595,18 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     if (extract_audio_flag)
     {
-        extract_list_parsing(globals.settings.indir, &extract);
+        extract_list_parsing(extract_args, &extract); // first recovering the list of groups and tracks to be extracted
 
-        ats2wav_parsing(globals.settings.indir, &extract);
+        ats2wav_parsing(globals.settings.indir, &extract); // then extracting them
 
         return(NULL);
+    }
+    else
+    {
+        if (extract_args != NULL)   // sanity test : indir must be known
+        {
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "You should use -x (disc or directory) along wth --xlist")
+        }
     }
 
     // Coherence checks
@@ -3112,7 +3125,6 @@ void extract_list_parsing(const char *arg, extractlist* extract)
 
     FREE(chain)
 }
-
 
 void ats2wav_parsing(const char *arg, extractlist* extract)
 {
