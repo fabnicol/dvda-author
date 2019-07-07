@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/types.h>
-#ifndef __WIN32__
+#ifndef _WIN32
 #include <sys/wait.h>
 #include <unistd.h>
 #endif
