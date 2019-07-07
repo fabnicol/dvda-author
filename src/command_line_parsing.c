@@ -283,6 +283,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"log-decode", required_argument,NULL, 27},
         {"aob-extract", required_argument,NULL, 28},
         {"aob2wav", required_argument,NULL, 29},
+        {"forensic", no_argument,NULL, 12},
         {"outfile", required_argument,NULL, 30},
         {"scan-info", required_argument, NULL, 31},
 
@@ -885,7 +886,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case 'x' :
             extract_audio_flag = 1;
-            FREE(globals.settings.indir)
             free(globals.settings.indir);
             globals.settings.indir = strdup(optarg);
             break;
@@ -991,13 +991,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
 #if !defined HAVE_core_BUILD || !HAVE_core_BUILD
-
-        case 12:
-
-            extract_audio_flag=1;
-            FREE(globals.settings.indir)
-
-            break;
 
         case '9':
             /* --datadir is the directory  where the menu/ files are located. Under* nix it automatically installed under /usr/share/applications/dvda-author by the autotools
@@ -1626,6 +1619,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     /* Fifth pass: it is now possible to safely copy files to temporary directory for menu and still pic creation  */
     // First parsing for input files (pics and mpgs)
 
+    bool use_ifo_files = true;
     char * str=NULL;
     optind=0;
     opterr=1;
@@ -1811,7 +1805,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case 29:
-            globals.fixwav_prepend = true; //?
+            globals.fixwav_prepend = true;
             if (strstr(optarg, ".AOB") != NULL)
             {
               foutput("%s%s\n", PAR "Extracting AOB to wav: ", optarg);
@@ -1822,6 +1816,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
               aob2wav_parsing(filter_dir_files(optarg, ".AOB"));
             }
 
+            break;
+
+        case 12:
+              foutput("%s\n", PAR "Using forensic mode: *IFO system files will not be used.");
+              foutput("%s\n", PAR "Use this mode if IFO files are missing or mangled, or AOB files have been partially restored using recovery tools.");
+              use_ifo_files = false;
             break;
 
         case 30:
@@ -2061,7 +2061,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         }
         else
         {
-          get_ats_audio();
+          get_ats_audio(use_ifo_files);
           clean_exit(EXIT_SUCCESS);
         }
     }

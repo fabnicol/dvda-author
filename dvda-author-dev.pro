@@ -19,20 +19,19 @@ CONFIG(debug, debug|release) {
 
 #to avoid ansi colors in output console add NO_ANSI_COLORS to the DEFINES directive
 
-DEFINES +=   _GNU_SOURCE  HAVE_lplex COMPILER_IS_GCC HAVE_curl  HAVE_libogg HAVE_libiberty HAVE_mplex HAVE_jpeg2yuv HAVE_mpeg2enc HAVE_mjpegtools HAVE_libogg HAVE_libsox  NO_ANSI_COLORS #WITHOUT_sox #WITHOUT_FLAC
+DEFINES +=   _GNU_SOURCE  HAVE_lplex COMPILER_IS_GCC HAVE_curl  HAVE_libogg HAVE_libiberty HAVE_mplex HAVE_jpeg2yuv HAVE_mpeg2enc HAVE_mjpegtools HAVE_libogg HAVE_libsox #WITHOUT_sox #WITHOUT_FLAC
 
-Build = $$PWD/build
+Build = /home/fab/Dev/dvda-author/
 
 #libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame --disable-gomp
 
-linux:LIBS +=  -L/usr/lib/i386-linux-gnu -L$(LIBROOT) $$Build/linux/dvda-author-full.build/lib/libogg.so $$Build/linux/dvda-author-full.build/lib/libFLAC.a  -lsox -lid3tag  -lz  -lpulse -lpulse-simple -lasound  \
+linux:LIBS +=  -L/usr/lib64 -L$(LIBROOT) -L$$Build/local/lib/ -logg -lFLAC  -lsox -lid3tag  -lz  -lpulse -lpulse-simple -lasound  \
                   -logg  -lvorbis -lz 
 
 #$(LIBROOT)/libjpeg.a
 
-INCLUDEPATH = src/include libiberty/src/include libutils/src/include libutils/src/include libutils/src/private libfixwav/src/include \
-           $$Build/linux/dvda-author-full.build/include/FLAC$$Build/linux/dvda-author-full.build/include/ogg$$Build/linux/dvda-author-full.build/include/FLAC/$$Build/linux/dvda-author-full.build/include/libsoxconvert \
-           $$Build/linux/dvda-author-full.build/include
+INCLUDEPATH = src/include libiberty/src/include libutils/src/include libutils/src/include libutils/src/private libfixwav/src/include local $$Build/local/include
+
 
 SOURCES += \
     src/amg2.c \
@@ -63,10 +62,7 @@ SOURCES += \
     libfixwav/src/fixwav_auxiliary.c \
     libiberty/src/getopt.c \
     libiberty/src/getsubopt.c \
-    libiberty/src/malloc.c \
     libiberty/src/strchrnul.c \
-    libiberty/src/strdup.c \
-    libiberty/src/strndup.c \
     libiberty/src/strnlen.c
 
 OTHER_FILES += \
@@ -230,7 +226,5 @@ HEADERS += \
     libiberty/src/include/getopt.h \
     libiberty/src/include/getsubopt.h \
     libiberty/src/include/strchrnul.h \
-    libiberty/src/include/strdup.h \
-    libiberty/src/include/strndup.h \
     libiberty/src/include/strnlen.h
 

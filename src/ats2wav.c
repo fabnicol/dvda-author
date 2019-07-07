@@ -648,9 +648,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
            exit(-8);
         }
 
-
         // Track loop
-
            do {
 
                 bool debug;
@@ -661,7 +659,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
 
                 wav_output_open(info);
 
-                if (globals.fixwav_prepend)
+                if (globals.fixwav_prepend)  // --aob2wav rather than --aob-extract
                 {
                     /* generate header in empty file. We must allow prepend and in_place for empty files */
 
@@ -687,8 +685,6 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                     if (globals.veryverbose)
                         foutput(MSG_TAG "%s\n", "Header prepended.");
                 }
-
-
 
                 /* second pass to get the audio */
 
@@ -838,10 +834,10 @@ static void audio_extraction_layout(fileinfo_t* files[9][99])
     foutput("\n\n%s\n\n", MSG_TAG "The Audio bytes column gives the exact audio size of extracted files,\n" MSG_TAG "excluding the header (44 bytes for mono/stereo or 80 bytes for multichannel.)");
 }
 
-int get_ats_audio()
+int get_ats_audio(bool use_ifo_files)
 {
-    fileinfo_t* files[9][99];
-    for (int i = 0; i < 9; ++i)
+    fileinfo_t* files[81][99]; // 9 groups but possibly up to 9 AOBs per group (ATS_01_1.AOB...ATS_01_9.AOB)
+    for (int i = 0; i < 81; ++i)
         for (int j = 0; j < 99; ++j)
         {
             files[i][j] = (fileinfo_t*) calloc(1, sizeof(fileinfo_t));
@@ -862,43 +858,47 @@ int get_ats_audio()
 
       errno = 0;
 
-      char* ifo_filename = strdup(globals.aobpath[i]);
-
-      unsigned long s = strlen(ifo_filename); // "ATS_0%d_0.IFO"
-      ifo_filename[s - 1] = 'O';
-      ifo_filename[s - 2] = 'F';
-      ifo_filename[s - 3] = 'I';
-      ifo_filename[s - 5] = '0';
-
-      FILE* file = NULL;
-      if ((file = fopen(ifo_filename, "rb")) == NULL)
+      if (use_ifo_files)
       {
-          EXIT_ON_RUNTIME_ERROR_VERBOSE("IFO file could not be opened.")
+          unsigned long s = strlen(globals.aobpath[i]); // "ATS_0%d_0.IFO"
+
+          char* ifo_filename = strdup(globals.aobpath[i]);
+          ifo_filename[s - 5] = '0';
+          ifo_filename[s - 3] = 'I';
+          ifo_filename[s - 2] = 'F';
+          ifo_filename[s - 1] = 'O';
+
+          FILE* file = NULL;
+          if ((file = fopen(ifo_filename, "rb")) == NULL)
+          {
+              EXIT_ON_RUNTIME_ERROR_VERBOSE("IFO file could not be opened.")
+          }
+
+          if (globals.debugging)
+              foutput( INF "Reading IFO file %s\n", ifo_filename);
+
+          char* buf[2048 * 3] = {0};
+
+          int nbytesread = fread(buf, 1, sizeof(buf), file);
+
+          if (globals.veryverbose)
+              printf( INF "Read IFO file: %d bytes\n", nbytesread);
+
+          fclose(file);
+
+          if (memcmp(buf, "DVDAUDIO-ATS", 12) != 0)
+          {
+              foutput(ERR "%s is not an ATSI file (ATS_XX_0.IFO)\n", ifo_filename);
+              clean_exit(EXIT_FAILURE);
+          }
+
+          printf("%c", '\n');
+
+          /* now scan tracks to be extracted */
+
+          scan_ats_ifo(&files[i][0], buf);
+          free(ifo_filename);
       }
-
-      if (globals.debugging)
-          printf( INF "Reading file %s\n", ifo_filename);
-
-      char* buf[2048 * 4] = {0};
-
-      int nbytesread = fread(buf, 1, sizeof(buf), file);
-
-      if (globals.debugging)
-          printf( INF "Read %d bytes\n", nbytesread);
-
-      fclose(file);
-
-      if (memcmp(buf, "DVDAUDIO-ATS", 12) != 0)
-      {
-          foutput(ERR "%s is not an ATSI file (ATS_XX_0.IFO)\n", ifo_filename);
-          clean_exit(EXIT_FAILURE);
-      }
-
-      printf("%c", '\n');
-
-      /* now scan tracks to be extracted */
-
-      scan_ats_ifo(&files[0][0], buf);
 
       get_ats_audio_i(i, files, &info);
 
@@ -909,7 +909,7 @@ int get_ats_audio()
     if (globals.fixwav_prepend)
         audio_extraction_layout(files);
 
-    for (int i = 0; i < 9; ++i)
+    for (int i = 0; i < 81; ++i)
         for (int j = 0; j < 99; ++j)
         {
             free(files[i][j]);

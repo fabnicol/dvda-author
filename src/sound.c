@@ -12,7 +12,7 @@
 #include "launch_manager.h"
 #include <errno.h>
 #include <stdlib.h>
-#ifndef __WIN32__
+#ifndef _WIN32
 #include <unistd.h>
 #endif
 extern globalData globals;
@@ -43,11 +43,11 @@ change_directory(globals.settings.workdir);
 foutput(INF "Running SoX for resampling to %s bit-%s kHz audio: %s --> %s\n",bitrate,samplerate,in,out);
 if (strcmp(bitrate, "16") == 0)
 { 
-  errno=run(sox, args16, 0);
+  errno=run(sox, args16, 0, true);
 }
 else 
 {
-  errno=run(sox, args24, 0);
+  errno=run(sox, args24, 0, true);
   if (errno == 0) errno=standardize_wav_header((char*) out);
 } 
 #endif
