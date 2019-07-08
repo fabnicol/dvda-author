@@ -2331,10 +2331,36 @@ if (_fork)
         close(tube[1]);
         dup2(tube[0], STDIN_FILENO);
         while (read(tube[0], &c, 1) == 1) foutput("%c", c);
-        if (option != NOWAIT) waitpid(pid, NULL, option);
+        if (option != NOWAIT)
+        {
+           int wstatus = -1;
+
+            do {
+                  int w = waitpid(pid, &wstatus, option);
+                  if (w == -1) {
+                      perror(ERR "waitpid");
+                      fprintf(stderr, ERR "mkisofs pid was: %d\n", pid);
+                      clean_exit(EXIT_FAILURE);
+                  }
+
+                  if (WIFEXITED(wstatus)) {
+                      if (globals.veryverbose)
+                        fprintf(stdout, "%sProcess %s (pid %d) exited, status=%d\n", (WEXITSTATUS(wstatus) == 0 ? MSG_TAG : WAR), application, pid, WEXITSTATUS(wstatus));
+                  } else if (WIFSIGNALED(wstatus)) {
+                      fprintf(stderr, WAR "killed by signal %d\n", WTERMSIG(wstatus));
+                  } else if (WIFSTOPPED(wstatus)) {
+                      fprintf(stderr, WAR "stopped by signal %d\n", WSTOPSIG(wstatus));
+                  } else if (WIFCONTINUED(wstatus)) {
+                      printf(WAR "continued\n");
+                  }
+                } while (!WIFEXITED(wstatus) && !WIFSIGNALED(wstatus));
+
+        }
         close(tube[0]);
 
     }
+
+    return  pid;
 }
 else
 #endif
@@ -2346,9 +2372,8 @@ else
     free((char* ) s);
     if (globals.debugging) foutput(INF "Running: %s\n ", cml);
     errno=system(cml);
-}
-
     return errno;
+}
 }
 
   uint64_t parse_file_for_sequence(FILE* fp, uint8_t* tab, size_t sizeoftab)

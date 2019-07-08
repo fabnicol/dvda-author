@@ -44,6 +44,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #else
 #define SEPARATOR  "/"
 #define STRLEN_SEPARATOR 1
+#include <sys/wait.h>
 #endif
 
 #include <sys/types.h>
@@ -160,7 +161,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
 #define NOWAIT -1
-
+#define WAIT WUNTRACED | WCONTINUED
 /* Structures */
 
 

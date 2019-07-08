@@ -97,7 +97,7 @@ ID\Chan 0   1   2   3   	4   5     info->channels
 const uint8_t channels[21] = {1,2,3,4,3,4,5,3,4,5,4,5,6,4,5,4,5,6,5,5,6};
 
 // number of channels x sampling rate in Hz x bit rate = bandwidth <= 9,6 Mbps
-// Each permutation table has length : 2 x sample size (channels x nbitspersample / 8 e.g. 2 x 6 x 24 / 8 = 36 for 6-ch. 24-bit audio, whatever the sample rate)
+// Each permutation table has length : 2 x sample size (nchannels x nbitspersample / 8 e.g. 2 x 6 x 24 / 8 = 36 for 6-ch. 24-bit audio, whatever the sample rate)
 // So audio input must come in pair values of samples.
 
 static const uint8_t  S[2][6][36]=
@@ -262,16 +262,21 @@ int calc_info(fileinfo_t* info)
             { 	1980,  0,  1980,  2010, 2008, 22, 15, 16, 16 /* old 14*/, 0, 20 }}  // out for 88.1 kHz and 96 kHz.
     };
 
-/* The following equations are always true by necessity:
-    firstpack_lpcm_headerquantity + firstpack_pes_padding + payload - firstpackdecrement = 1995
-    midpack_lpcm_headerquantity   + payload + midpack_pes_padding = 2016
-    first/mid_pes_padding > 6
-*/
+//
+// The following equations are always true by necessity:
+//    firstpack_lpcm_headerquantity + firstpack_pes_padding + payload - firstpackdecrement = 1995
+//    midpack_lpcm_headerquantity   + payload + midpack_pes_padding = 2016
+//    first/mid_pes_padding > 6
+//
 
-    info->sampleunitsize=
-            (table_index == 1)? info->channels * 6 :
-                              ((info->channels > 2)? info->channels * 4 :
-                                                     info->channels * 2);
+    info->sampleunitsize = 2 * info->channels * info->bitspersample / 8;
+
+//
+// Revision of sampleunitsize (8 July 2019) may have to do with some gapless issues.
+// Previous code was:
+//  info->sampleunitsize = (table_index == 1)? info->channels * 6 :
+//                                    ((info->channels > 2)? info->channels * 4 :
+//                                     info->channels * 2);
 
 #define X T[table_index][info->channels-1]
 
@@ -317,7 +322,7 @@ int calc_info(fileinfo_t* info)
 
     info->PTS_length = (90000.0 * info->numsamples) / info->samplerate;  // = duration in seconds x 90000
 
-    // a rounding error of 1 in PTS_LENGTH = samplerate / 90000 in numsamples = samplerate / (8 x 90000) x channels x bitspersample in bytes.
+    // a rounding error of 1 in PTS_LENGTH = samplerate / 90000 in numsamples = samplerate / (8 x 90000) x nchannels x bitspersample in bytes.
 
     return(AFMT_WAVE);
 }

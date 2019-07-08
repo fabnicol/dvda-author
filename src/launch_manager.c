@@ -124,7 +124,7 @@ int launch_manager(command_t *command)
             if (files[i][j].cga == 0) files[i][j].cga=cgadef[files[i][j].channels-1];
             files[i][j].contin_track = (uint8_t) (j != nfiles[i] - 1);
 
-            files[i][j].PTS_length=(90000.0*files[i][j].numsamples)/files[i][j].samplerate;
+    //        files[i][j].PTS_length=(90000.0*files[i][j].numsamples)/files[i][j].samplerate; already done
 
             if ((files[i][j].samplerate > 48000
                  && (files[i][j].bitspersample == 24
@@ -462,11 +462,8 @@ int launch_manager(command_t *command)
            const char* args[]={mkisofs, "-dvd-audio", "-v", "-o", dvdisopath, globals.settings.outdir, NULL};
            foutput("%s%s%s\n", INF "Launching: ", mkisofs, " to create image");
 
-           run(mkisofs, args, 0, FORK);
+           int pid = run(mkisofs, args, WAIT, FORK);
 
-#ifndef _WIN32
-           while (waitpid(-1, NULL, 0) >0) {}
-#endif
            free(mkisofs);
         }
         else
@@ -476,7 +473,10 @@ int launch_manager(command_t *command)
         size=stat_file_size(dvdisopath)/1024;
         if ((!errno) && (size > 4*SIZE_AMG + 2*SIZE_SAMG +1))  foutput(MSG_TAG "Image was created with size %" PRIu64 " KB.\n", size);
         else
+        {
             foutput("%s\n", ERR "ISO file creation failed -- fix issue.");
+            perror("mkisofs");
+        }
     }
 
     if (globals.cdrecorddevice)
@@ -498,7 +498,7 @@ int launch_manager(command_t *command)
             sprintf(string, "%s%c%s", globals.cdrecorddevice, '=', dvdisoinput);
             char*  args[]={"growisofs", "-Z", string, NULL};
 #define GROWISOFS "/usr/bin/growisofs"
-            run(GROWISOFS, (const char**) args, 0, FORK);
+            run(GROWISOFS, (const char**) args, WAIT, FORK);
         }
         else
         {
@@ -519,7 +519,7 @@ int launch_manager(command_t *command)
                 else memcpy(args, args1, sizeof(args1));
                 foutput("%s%s%s\n", INF "Launching: ", cdrecord, " to create disk");
 
-                run(cdrecord, (const char**) args, 0, true);
+                run(cdrecord, (const char**) args, WAIT, true);
                 free(cdrecord);
              }
             else

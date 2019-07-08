@@ -560,7 +560,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
                 while (read(tubeerr2[0], &c, 1) == 1) foutput("%c",c);
                 close(tubeerr2[0]);
                 if (globals.debugging) foutput("%s\n", INF "Running mplex...");
-                run(mplex, argsmplex, 0, FORK);
+                run(mplex, argsmplex, WAIT, FORK);
             }
         close(tube[0]);
     }
@@ -769,7 +769,7 @@ int launch_dvdauthor()
 
     const char* args[]= {dvdauthor, "-o", globals.settings.outdir, "-x", globals.xml, NULL};
 
-    run(dvdauthor, (const char** )args, 0, FORK);
+    run(dvdauthor, (const char** )args, WAIT, FORK);
 
 #ifndef _WIN32
     sync();
