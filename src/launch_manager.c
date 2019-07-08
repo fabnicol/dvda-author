@@ -124,8 +124,6 @@ int launch_manager(command_t *command)
             if (files[i][j].cga == 0) files[i][j].cga=cgadef[files[i][j].channels-1];
             files[i][j].contin_track = (uint8_t) (j != nfiles[i] - 1);
 
-    //        files[i][j].PTS_length=(90000.0*files[i][j].numsamples)/files[i][j].samplerate; already done
-
             if ((files[i][j].samplerate > 48000
                  && (files[i][j].bitspersample == 24
                      && (files[i][j].channels == 5 || files[i][j].channels == 6)))
@@ -139,10 +137,8 @@ int launch_manager(command_t *command)
             foutput("%c%c  "ANSI_COLOR_BLUE"%d     "ANSI_COLOR_GREEN"%02d"ANSI_COLOR_YELLOW"  %6"PRIu32"   "ANSI_COLOR_RED"%02d"ANSI_COLOR_RESET"   %d   %10"PRIu64"   ", joinmark[i][j], singlestar[i], i + 1, j + 1, files[i][j].samplerate, files[i][j].bitspersample, files[i][j].channels, files[i][j].numsamples);
             foutput("%s\n", files[i][j].filename);
             totalsize += files[i][j].numbytes;
-
         }
     }
-
 
     for (i = 0; i < nplaygroups; ++i)
     {
@@ -168,9 +164,9 @@ int launch_manager(command_t *command)
 
     foutput(MSG_TAG "Size of raw PCM data: %"PRIu64" bytes (%.2f  MB)\n",totalsize, (float) totalsize/(1024*1024));
 
-// These are Schily values for mkisofs. However little seems to hinge on this for practical purposes.
+    // These are Schily values for mkisofs. However little seems to hinge on this for practical purposes.
 
-    startsector = 272;
+    startsector = STARTSECTOR;
 
     /* main reference track tables */
     // static allocation with C99, arguably faster and possibly safer than calloc()

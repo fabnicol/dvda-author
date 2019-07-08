@@ -79,7 +79,6 @@ static const uint8_t  T[2][6][36]=
 
 // sizes of preceding table
 
-static const uint8_t  permut_size[2][6] = {{4, 8, 12, 16, 20, 24}, {6, 12, 18, 24, 30, 36}};
 
 static void deinterleave_24_bit_sample_extended(uint8_t channels, int count, uint8_t *buf)
 {
@@ -538,6 +537,7 @@ static inline void wavedata_clean(WaveData* w)
     w = NULL;
 }
 
+
 int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
 {
     uint64_t pack = 0;
@@ -562,6 +562,9 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
         if (globals.veryverbose)
                 foutput("%s |%s|\n", INF "Creating directory", dir_g_i);
     }
+
+    const int lpcm_payload[2][6] = {{2000,	2000, 2004,	2000,	2000,	1992}, // 16-bit table
+                                    { 2004, 	2004, 	1998, 	1992, 	1980, 	1980}}; //24-bitt able
 
     // Start of title loop j
 
@@ -602,16 +605,19 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
         files[i][j]->channels      = header.channels;
         
         uint64_t x = 0, numsamples = 0, numbytes = 0, wav_numbytes = 0;
-        
+        int bitrank = header.wBitsPerSample == 24 ? 1 : 0;
+
         if (files[i][j]->PTS_length)     // Use IFO files
         {
             numsamples = (files[i][j]->PTS_length * files[i][j]->samplerate) / 90000;
+
+            files[i][j]->lpcm_payload = lpcm_payload[bitrank][header.channels - 1];
             
             if (numsamples)
                 x = 90000 * numsamples;
             else
             {
-                foutput("%s", ERR "Found null samplerate or PTS length. Exiting...\n");
+                foutput("%s", ERR "Found null samplerate or PTS length. Continuing in forensic mode...\n");
                 files[i][j]->PTS_length = 0;
             }
             
@@ -623,8 +629,8 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
             }
             
             numbytes = (numsamples * files[i][j]->channels * files[i][j]->bitspersample) / 8;
-            const short int table_index = header.wBitsPerSample == 24 ? 1 : 0;
-            int sampleunitsize = permut_size[table_index][header.channels - 1];
+
+            int sampleunitsize = header.wBitsPerSample /8 * header.channels *2;
             
             // Taking modulo
             
@@ -696,46 +702,60 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                     continuity_save = continuity;
                     get_pes_packet_audio(info, &header, &position, &continuity, &written_bytes, wav_numbytes);
 
-                    if (wav_numbytes && wav_numbytes - written_bytes < files[i][j]->lpcm_payload)
+                    if (globals.maxverbose)
                     {
+                        if (wav_numbytes)
+                        {
+                                foutput(MSG_TAG "Pack %lu, Number of written bytes: %lu / File bytes: %lu\n",
+                                        pack + 1,
+                                        written_bytes,
+                                        wav_numbytes);
 
+                        }
+                        else
+                        {
+                                 foutput(MSG_TAG "Pack %lu, Number of written bytes: %lu\n",
+                                        pack + 1,
+                                        written_bytes);
+                        }
                     }
 
-                    if (globals.maxverbose)
-                        foutput(MSG_TAG "Pack %lu, Number of written bytes: %lu\n",
-                                pack + 1,
-                                written_bytes);
+                    if (wav_numbytes == 0)
+                    {
+                        if (continuity_save != 0 && continuity_save != 0x1F && continuity == 0)
+                        {
+                           ++k;
+                           if (globals.veryverbose)
+                              foutput("%s %d %s %d %s %d  %s %lu\n", MSG_TAG "Group ", i + 1, "Title ", j + 1, "Track ", k, "Written bytes: ", written_bytes);
+                           // written bytes are in excess in case of gapless tracks
 
-                    if (continuity_save != 0 && continuity_save != 0x1F && continuity == 0)
+                           break;
+                        }
+                    }
+                    else
+                    if (wav_numbytes >= written_bytes && wav_numbytes - written_bytes < files[i][j]->lpcm_payload)
                     {
                         ++k;
+                        if (globals.debugging)
+                              foutput("%s %d %s %d %s %d %s %lu\n", MSG_TAG "Group ", i + 1, "Title ", j + 1, "Track ", k, "File bytes: ", wav_numbytes);
+
                         if (globals.veryverbose)
-                            foutput("%s %d %s %d %s %d\n", MSG_TAG "Group ", i + 1, "Title ", j + 1, "Track ", k);
+                              foutput(WAR "Cutting pack into two gapless tracks at offset: %" PRIu64
+                                            " to complete file up to: %" PRIu64
+                                            " starting from %" PRIu64 " bytes.\n",
+                                            wav_numbytes - written_bytes,
+                                            wav_numbytes,
+                                            written_bytes);
                         break;
                     }
                 }
                 while (position == FIRST_PACK
                        || position == MIDDLE_PACK);
 
-                new_track = false;
-
-                foutput(MSG_TAG "Wrote %"
-                        PRIu64 " audio bytes.\n", written_bytes);
-
                 files[i][j]->wav_numbytes = written_bytes;
                 files[i][j]->numbytes  = written_bytes;
 
-                if (files[i][j]->PTS_length && written_bytes != numbytes)
-                {
-                    foutput(WAR "IFO number of written bytes: %" PRIu64
-                            " differs from scanned AOB number of written bytes: %" PRIu64
-                            " by %" PRIu64 " bytes.\n"WAR "Giving priority to scanned written bytes.\n",
-                            written_bytes,
-                            numbytes,
-                            written_bytes - numbytes);
-
-                    numbytes = written_bytes;
-                }
+                new_track = false;
 
                 info->outfile.filesize = written_bytes + header.header_size_out;
 
@@ -838,6 +858,7 @@ static void audio_extraction_layout(fileinfo_t* files[9][99])
 static inline int scan_ats_ifo(fileinfo_t **files, uint8_t *buf)
 {
     int i, title, track;
+    static int group;
 
     i = 2048;
 
@@ -892,11 +913,21 @@ static inline int scan_ats_ifo(fileinfo_t **files, uint8_t *buf)
     }
 
     if (globals.debugging)
+    {
+        ++group;
+
+        printf(ANSI_COLOR_BLUE "Group " ANSI_COLOR_GREEN "   Track/N  " ANSI_COLOR_YELLOW  "first sector" ANSI_COLOR_RED "  last sector"
+               ANSI_COLOR_YELLOW "  first pts" ANSI_COLOR_RED "    pts length\n");
+
         for (track = 0; track < ntracks; ++track)
         {
-            printf("     Track/N first sector  last sector  first pts    pts length\n     %02d/%02d  %12u%12u%12" PRIu64 "%12" PRIu64 "\n\n",
-                   track+1, ntracks, files[track]->first_sector, files[track]->last_sector, files[track]->first_PTS, files[track]->PTS_length);
+              printf(ANSI_COLOR_BLUE "%02d  " ANSI_COLOR_GREEN "      %02d/%02d" ANSI_COLOR_YELLOW " %12u" ANSI_COLOR_RED "%12u"
+                     ANSI_COLOR_YELLOW "%12" PRIu64 ANSI_COLOR_RED "%12" PRIu64 "\n",
+                   group, track+1, ntracks, files[track]->first_sector, files[track]->last_sector,
+                     files[track]->first_PTS, files[track]->PTS_length);
         }
+        printf("\n");
+    }
 
     return(ntracks);
 }
@@ -977,7 +1008,6 @@ int get_ats_audio(bool use_ifo_files)
     
     if (globals.fixwav_prepend)
         audio_extraction_layout(files);
-
 
     return(errno);
 }
