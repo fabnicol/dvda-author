@@ -70,8 +70,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define PROGRAM ANSI_COLOR_RED"DVD-A author"ANSI_COLOR_RESET
 
 /* filesystem constants expressed in sectors */
+
 #define DEFAULT_ACCESS_RIGHTS 0755
-#define STARTSECTOR  281
+#ifndef STARTSECTOR
+#  define STARTSECTOR  272
+#endif
+
 // sizes are in sector
 #define SIZE_AMG  3
 #define SIZE_ASVS 2
