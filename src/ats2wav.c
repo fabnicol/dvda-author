@@ -164,7 +164,7 @@ inline static void wav_output_path_create(const char* dirpath, WaveData *info, i
     static int track;
 
     char Title[23] = {0};
-    sprintf(Title, "track_%02d_title_%02d_.wav", ++track, title);
+    sprintf(Title, "track_%02d_title_%02d_.wav", ++track, title + 1);
 
     info->outfile.filename = filepath(dirpath, Title);
 }
@@ -834,6 +834,73 @@ static void audio_extraction_layout(fileinfo_t* files[9][99])
     foutput("\n\n%s\n\n", MSG_TAG "The Audio bytes column gives the exact audio size of extracted files,\n" MSG_TAG "excluding the header (44 bytes for mono/stereo or 80 bytes for multichannel.)");
 }
 
+
+static inline int scan_ats_ifo(fileinfo_t **files, uint8_t *buf)
+{
+    int i, title, track;
+
+    i = 2048;
+
+    int numtitles = uint16_read(buf + i);
+    int ntracks = 0;
+
+    uint8_t ntitletracks[numtitles];
+    uint32_t titlelength;
+
+    i += 8;
+    i += 8 * numtitles;
+
+    for (title = 0; title < numtitles; ++title)
+    {
+        i += 2;
+
+        ntitletracks[title] = buf[i];
+
+        i += 2;
+
+        titlelength = uint32_read(buf + i);
+
+        i += 12;
+
+        for (track = 0; track < ntitletracks[title]; ++track)
+        {
+            i += 6;
+
+            files[ntracks + track]->first_PTS  = uint32_read(buf + i);
+
+            i += 4;
+
+            files[ntracks + track]->PTS_length = uint32_read(buf + i);
+
+            i += 10;
+        }
+
+
+        for (track = 0; track < ntitletracks[title]; ++track)
+        {
+            i += 4;
+
+            files[ntracks + track]->first_sector = uint32_read(buf +i);
+            i += 4;
+
+            files[ntracks + track]->last_sector = uint32_read(buf +i);
+            i += 4;
+        }
+
+        ntracks += ntitletracks[title];
+
+    }
+
+    if (globals.debugging)
+        for (track = 0; track < ntracks; ++track)
+        {
+            printf("     Track/N first sector  last sector  first pts    pts length\n     %02d/%02d  %12u%12u%12" PRIu64 "%12" PRIu64 "\n\n",
+                   track+1, ntracks, files[track]->first_sector, files[track]->last_sector, files[track]->first_PTS, files[track]->PTS_length);
+        }
+
+    return(ntracks);
+}
+
 int get_ats_audio(bool use_ifo_files)
 {
     fileinfo_t* files[81][99]; // 9 groups but possibly up to 9 AOBs per group (ATS_01_1.AOB...ATS_01_9.AOB)
@@ -860,7 +927,7 @@ int get_ats_audio(bool use_ifo_files)
 
       if (use_ifo_files)
       {
-          unsigned long s = strlen(globals.aobpath[i]); // "ATS_0%d_0.IFO"
+          unsigned long s = strlen(globals.aobpath[i]);
 
           char* ifo_filename = strdup(globals.aobpath[i]);
           ifo_filename[s - 5] = '0';
@@ -877,9 +944,9 @@ int get_ats_audio(bool use_ifo_files)
           if (globals.debugging)
               foutput( INF "Reading IFO file %s\n", ifo_filename);
 
-          char* buf[2048 * 3] = {0};
+          uint8_t buf[2048 * 3] = {0};
 
-          int nbytesread = fread(buf, 1, sizeof(buf), file);
+          int nbytesread = fread(buf, 1, 3 * 2048, file);
 
           if (globals.veryverbose)
               printf( INF "Read IFO file: %d bytes\n", nbytesread);
@@ -896,7 +963,9 @@ int get_ats_audio(bool use_ifo_files)
 
           /* now scan tracks to be extracted */
 
-          scan_ats_ifo(&files[i][0], buf);
+          scan_ats_ifo(&files[i][0], &buf[0]);
+
+
           free(ifo_filename);
       }
 
@@ -909,185 +978,16 @@ int get_ats_audio(bool use_ifo_files)
     if (globals.fixwav_prepend)
         audio_extraction_layout(files);
 
-    for (int i = 0; i < 81; ++i)
-        for (int j = 0; j < 99; ++j)
-        {
-            free(files[i][j]);
-        }
-    return(errno);
-}
 
-int scan_ats_ifo(fileinfo_t *files, uint8_t *buf)
-{
-    int i, j, k, t=0, ntracks, ntracks1, numtitles;
-    i = 2048;
-    numtitles = uint16_read(buf + i);
-    
-    uint8_t titleptr[numtitles];
-    
-    i += 8;
-    ntracks = 0;
-    
-    for (j = 0; j < numtitles; ++j)
-    {
-        i += 4;
-        titleptr[j] = uint32_read(buf + i);
-        i += 4;
-    }
-    
-    for (j = 0; j < numtitles; ++j)
-    {
-        i = 0x802 + titleptr[j];
-        ntracks1 = buf[i];
-        i += 14;
-        
-        t = ntracks;
-        
-        for (k = 0; k < ntracks1; ++k)
-        {
-            i += 10;
-            
-            files[t].PTS_length = uint32_read(buf + i);
-            
-            i += 10;
-            ++t;
-        }
-        
-        t = ntracks;
-        
-        /* 12 byte sector records */
-        
-        for (k = 0; k < ntracks1; ++k)
-        {
-            i += 4;
-            files[t].first_sector = uint32_read(buf + i);
-            
-            i += 4;
-            files[t].last_sector = uint32_read(buf + i);
-            
-            i += 4;
-            ++t;
-        }
-        
-        ntracks += ntracks1;
-    }
-    
-    if (globals.debugging)
-        for (i = 0; i < ntracks; ++i)
-        {
-            printf("     Track/N first sector  last sector   pts length\n     %02d/%02d    %12u %12u %12"PRIu64"\n\n",
-                   i+1, ntracks, files[i].first_sector, files[i].last_sector, files[i].PTS_length);
-        }
- 
-    return(ntracks);
+    return(errno);
 }
 
 int ats2wav(short ngroups_scan, const char* audiots_dir, const char *outdir, const extractlist* extract)
 {
-    FILE* file = NULL;
-    unsigned int ntracks = 0;
-    fileinfo_t* files[9][99] = {{NULL}};
-    memset(files, 0, sizeof(files));
-    uint8_t buf[BUFFER_SIZE];
-    uint16_t nbytesread=0; 
-    
-    /* First check the DVDAUDIO-ATS tag at start of ATS_XX_0.IFO */
-        
-    char filename[13] = {0};
 
-    if (ngroups_scan > 9 || ngroups_scan < 1)
-    {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Group rank should be between 1 and 9")
-    }
-    
-    sprintf(filename, "ATS_0%d_0.IFO", ngroups_scan);
-    
-    if ((file = fopen(filename, "rb")) == NULL)
-    {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE("IFO file could not be opened.")
-    }
-    
-    if (globals.debugging)
-        printf( INF "Reading file %s\n", filename);
-    
-    nbytesread = fread(buf, 1, sizeof(buf), file);
-    
-    if (globals.debugging)
-        printf( INF "Read %d bytes\n", nbytesread);
-    
-    fclose(file);
-    
-    if (memcmp(buf, "DVDAUDIO-ATS", 12) != 0)
-    {
-        printf(ERR "%s is not an ATSI file (ATS_XX_0.IFO)\n", filename);
-        return(EXIT_FAILURE);
-    }
-    
-    printf("%c", '\n');
-        
-    /* now scan tracks to be extracted */
-        
-    ntracks = scan_ats_ifo(&files[0][0], buf);
-    
-    if (outdir == NULL) exit(0);
-
-    if (globals.maxverbose)
-    {
-        EXPLAIN("%s%d%s\n", DBG " Scanning ", ntracks, "tracks")
-    }
-    
-    if (! extract || (extract && extract->extracttitleset[ngroups_scan] == 1))
-    {
-       if (globals.veryverbose)
-       {
-          foutput("%s%d%s\n",
-                  INF "Extracting audio for AOB n°",
-                  ngroups_scan,
-                  " (1-based).");
-       }
- 
-       sprintf(filename, "ATS_0%d_1.AOB", ngroups_scan);
-       
-       WaveData *info = (WaveData*) calloc(1, sizeof(WaveData));
-
-       info->database = NULL;
-       info->filetitle = NULL;
-       info->automatic = true;
-       info->prepend = globals.fixwav_prepend;
-       info->in_place = true;
-       info->cautious = false;
-       info->interactive = false;
-       info->padding = false;
-       info->prune = false;
-       info->virtual = false;
-       info->repair = 0;
-       info->padbytes = 0;
-       info->prunedbytes = 0;
-       //info->infile =  filestat(false, 0, globals.aobpath[i], NULL);
-
-       info->infile =  filestat(false,
-                                0,
-                                filepath(audiots_dir, filename),
-                                NULL);
-
-       info->outfile = filestat(false,
-                                0,
-                                outdir,
-                                NULL);
-
-       get_ats_audio_i(ngroups_scan - 1,
-                       files,
-                       info);
+    //get_ats;
           
-       if (globals.veryverbose)
-       {
-           foutput("%s\n",
-                   INF "Reached ead of AOB.");
-       }
-    }
-    
-    audio_extraction_layout(files);
-    
+
 
     return(EXIT_SUCCESS);
 }
