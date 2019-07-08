@@ -43,11 +43,11 @@ change_directory(globals.settings.workdir);
 foutput(INF "Running SoX for resampling to %s bit-%s kHz audio: %s --> %s\n",bitrate,samplerate,in,out);
 if (strcmp(bitrate, "16") == 0)
 { 
-  errno=run(sox, args16, 0, true);
+  errno=run(sox, args16, WAIT, true);
 }
 else 
 {
-  errno=run(sox, args24, 0, true);
+  errno=run(sox, args24, WAIT, true);
   if (errno == 0) errno=standardize_wav_header((char*) out);
 } 
 #endif
@@ -227,7 +227,7 @@ int launch_lplex_soundtrack(pic* img, const char* create_mode)
         }
 
         change_directory(globals.settings.workdir);
-        run(lplex, args, 0, FORK);
+        run(lplex, args, WAIT, FORK);
         tot=0;
         path_t* aux=parse_filepath(img->soundtrack[menu][0]);
 

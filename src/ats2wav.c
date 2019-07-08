@@ -821,12 +821,12 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
 static void audio_extraction_layout(fileinfo_t* files[9][99])
 {
     foutput("\n%s", "DVD Layout\n");
-    foutput("%s\n",ANSI_COLOR_BLUE"Group"ANSI_COLOR_GREEN"  Track    "ANSI_COLOR_YELLOW"Rate"ANSI_COLOR_RED" Bits"ANSI_COLOR_RESET"  Ch  Input audio (B)   Output wav (B)     Filename\n");
+    foutput("%s\n",ANSI_COLOR_BLUE "Group" ANSI_COLOR_GREEN "  Track    " ANSI_COLOR_YELLOW "Rate" ANSI_COLOR_RED " Bits" ANSI_COLOR_RESET "  Ch  Input audio (B)   Output wav (B)     Filename\n");
 
     for (int i = 0; i < 9; ++i)
         for (int j = 0; j < 99 && files[i][j]->filename != NULL; ++j)
         {
-           foutput("  "ANSI_COLOR_BLUE"%d     "ANSI_COLOR_GREEN"%02d"ANSI_COLOR_YELLOW"  %6"PRIu32"   "ANSI_COLOR_RED"%02d"ANSI_COLOR_RESET"   %d       %10"PRIu64"   %10"PRIu64"   ",
+           foutput("  "ANSI_COLOR_BLUE "%d     " ANSI_COLOR_GREEN "%02d"ANSI_COLOR_YELLOW "  %6" PRIu32 "   " ANSI_COLOR_RED "%02d" ANSI_COLOR_RESET "   %d       %10" PRIu64 "   %10" PRIu64"   ",
                      i+1, j+1, files[i][j]->samplerate, files[i][j]->bitspersample, files[i][j]->channels, files[i][j]->numbytes, files[i][j]->wav_numbytes);
            foutput("%s\n",files[i][j]->filename);
         }
