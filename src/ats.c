@@ -1305,7 +1305,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                         bytesinbuf);
             }
             
-            n= audio_read(&files[i],
+            n = audio_read(&files[i],
                            audio_buf,
                            &bytesinbuf);
         

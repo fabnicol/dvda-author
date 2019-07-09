@@ -1185,7 +1185,7 @@ int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED *,
 
         if (S_ISREG(buf.st_mode))
         {
-            if (globals.debugging) printf("%s = %s\n", INF "Processing file=", d->d_name);
+            if (globals.debugging) printf("%s: %s\n", INF "Processing file", d->d_name);
             if (arg3 != NULL && is_dir(arg2))
             {
                 char* fullpath = calloc(strlen((char*) arg2) + 1 + strlen(src) + 1 + strlen(d->d_name) + 1, sizeof (char));
