@@ -1320,6 +1320,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                     /* If the current track is a different audio format, we must start a new title. */
                     if (files[i].newtitle)
                     {
+                        start_of_file = true;
                         write_pes_packet(fpout, &files[i-1], audio_buf, bytesinbuf, pack_in_title, start_of_file); // Empty audio buffer.
 
                         ++pack;
