@@ -766,11 +766,10 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                            {
                               rmdr_payload = (unsigned long) (wav_numbytes - written_bytes);
                               if (globals.veryverbose) foutput("%s %lu %s\n", INF "Cutting next sector using ", rmdr_payload, " bytes.");
-                           }
-                           else
-                           if (globals.maxverbose)
-                           {
-                              foutput("%s %lu\n", INF "Looping next sector...", pack_in_group);
+                              if (globals.maxverbose)
+                               {
+                                  foutput("%s %lu\n", INF "Looping next sector...", pack_in_group);
+                               }
                            }
                         }
                         else
@@ -779,6 +778,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
 
                             files[i][track]->wav_numbytes = written_bytes;
                             files[i][track]->numbytes  = written_bytes;
+
                             ++track;
                             if (globals.veryverbose)
                             {
@@ -796,6 +796,21 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                                                 rmdr_payload,
                                                 wav_numbytes - rmdr_payload ,
                                                 wav_numbytes);
+
+                                  if (files[i][track-1]->last_sector != pack_in_group)
+                                  {
+                                      foutput(WAR "IFO last sector incorrect: %lu against current %lu\n", files[i][track-1]->last_sector , pack_in_group);
+                                  }
+
+                                  if (continuity != 0)
+                                  {
+                                      foutput(WAR "sector continuity counter not null, value : %d, previous value %d\n", continuity, continuity_save);
+                                  }
+                                  else
+                                  {
+                                          foutput(WAR "sector continuity counter null as expected, previous value %d\n",  continuity_save);
+                                  }
+
                             }
 
                             break;
@@ -827,6 +842,21 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                 if (wav_numbytes - written_bytes > files[i][track]->lpcm_payload)
                 {
                   foutput(WAR "Remaining bytes %lu in excess of payload %d \n", wav_numbytes - written_bytes, files[i][track]->lpcm_payload);
+
+                  if (files[i][track]->last_sector != pack_in_group)
+                  {
+                      foutput(WAR "IFO last sector incorrect: %lu against current %lu\n", files[i][track]->last_sector , pack_in_group);
+                  }
+
+                  if (continuity != 0)
+                  {
+                      foutput(WAR "sector continuity counter not null, value : %d, previous value %d\n", continuity, continuity_save);
+                  }
+                  else
+                  {
+                          foutput(WAR "sector continuity counter null as expected, previous value %d\n",  continuity_save);
+                  }
+
                   files[i][track]->numbytes  = written_bytes;
                 }
 
