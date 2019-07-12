@@ -396,6 +396,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 #   define X T[table_index][header->channels-1]
 
     int lpcm_payload = X[0];
+    int lpcm_payload_cut = 0;
     const int firstpackdecrement = X[1];
     const int lastpack_audiopesheaderquantity = X[2];
     const int firstpack_lpcm_headerquantity = X[3];
@@ -411,14 +412,19 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
     uint64_t offset0 = ftello(info->infile.fp);
     
     int res  = 0, result;    
+    static bool gapless_cut;
+    static bool gapless_rmdr;
+    int lpcm_payload_rmdr = 0;
 
     if (wav_numbytes > 0 && wav_numbytes - *written_bytes < lpcm_payload)
     {
-        lpcm_payload = wav_numbytes - *written_bytes;
+        lpcm_payload_cut = wav_numbytes - *written_bytes;
+        gapless_cut = true;
+        lpcm_payload_rmdr = lpcm_payload - lpcm_payload_cut;
     }
     
     do {
-            *position = calc_position(info->infile.fp, offset0);
+            if (! gapless_rmdr) *position = calc_position(info->infile.fp, offset0);
             
             switch(*position)
             {
@@ -431,13 +437,16 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
                     break;
         
                 case MIDDLE_PACK :
-                    audio_bytes = lpcm_payload;
-                    fseeko(info->infile.fp, offset0 + 29, SEEK_SET);
-                    fread(continuity, 1, 1, info->infile.fp);
-                    fseeko(info->infile.fp, midpack_lpcm_headerquantity + 2, SEEK_CUR);
-                    ++*pack_in_track;
-                    ++*pack_in_title;
-                    ++*pack_in_group;
+                    audio_bytes = gapless_cut ? lpcm_payload_cut : (gapless_rmdr ? lpcm_payload_rmdr : lpcm_payload);
+                    if (! gapless_rmdr)
+                    {
+                        fseeko(info->infile.fp, offset0 + 29, SEEK_SET);
+                        fread(continuity, 1, 1, info->infile.fp);
+                        fseeko(info->infile.fp, midpack_lpcm_headerquantity + 2, SEEK_CUR);
+                        ++*pack_in_track;
+                        ++*pack_in_title;
+                        ++*pack_in_group;
+                    }
                     break;
         
                 case LAST_PACK :
@@ -480,7 +489,13 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
         S_CLOSE(info->outfile)
     }
 
-    uint64_t offset1 = offset0 + 2048;
+    uint64_t offset1 = offset0;
+
+    if (gapless_cut) offset1 = ftello(info->infile.fp);
+    else
+        if (gapless_rmdr) offset1 = /* got to 2048 */;
+    else
+            offset1 = offset0 +2048;
         
     if (offset1 >= filesize(info->infile))
         *position = END_OF_AOB;
@@ -768,7 +783,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                               if (globals.veryverbose) foutput("%s %lu %s\n", INF "Cutting next sector using ", rmdr_payload, " bytes.");
                               if (globals.maxverbose)
                                {
-                                  foutput("%s %lu\n", INF "Looping next sector...", pack_in_group);
+                                  foutput("%s %lu\n", INF "Looping next sector...", pack_in_group - 1);
                                }
                            }
                         }
@@ -788,29 +803,31 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                                                 " to complete file from: %" PRIu64
                                                 " to: %" PRIu64 " audio bytes.\n",
                                                 track,             // 1-based
-                                                pack_in_track, // 1-based
-                                                title + 1,         // 1-based
-                                                pack_in_title, // 1-based
+                                                pack_in_track - 1, // 1-based
+                                                title + 1,         // 0-based
+                                                pack_in_title - 1, // 1-based
                                                 i + 1,         // 1-based
-                                                pack_in_group,
+                                                pack_in_group - 1, // 1-based
                                                 rmdr_payload,
-                                                wav_numbytes - rmdr_payload ,
+                                                wav_numbytes - rmdr_payload,
                                                 wav_numbytes);
 
-                                  if (files[i][track-1]->last_sector != pack_in_group)
+                                  if (files[i][track-1]->last_sector != pack_in_group - 1)  // 0-based v. 1-based
                                   {
-                                      foutput(WAR "IFO last sector incorrect: %lu against current %lu\n", files[i][track-1]->last_sector , pack_in_group);
+                                      foutput(WAR "IFO last sector incorrect: %lu against current %lu\n", files[i][track-1]->last_sector, pack_in_group - 1);
                                   }
 
-                                  if (continuity != 0)
+                                  if (position != LAST_PACK && position != END_OF_AOB)
                                   {
-                                      foutput(WAR "sector continuity counter not null, value : %d, previous value %d\n", continuity, continuity_save);
-                                  }
-                                  else
-                                  {
+                                      if (continuity != 0)
+                                      {
+                                          foutput(WAR "sector continuity counter not null, value : %d, previous value %d\n", continuity, continuity_save);
+                                      }
+                                      else
+                                      {
                                           foutput(WAR "sector continuity counter null as expected, previous value %d\n",  continuity_save);
+                                      }
                                   }
-
                             }
 
                             break;
@@ -822,11 +839,11 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                                           " File bytes: %" PRIu64
                                           " Written bytes:: %" PRIu64 " audio bytes.\n",
                                           track,             // 1-based
-                                          pack_in_track, // 1-based
-                                          title + 1,         // 1-based
-                                          pack_in_title, // 1-based
-                                          i + 1,         // 1-based
-                                          pack_in_group,
+                                          pack_in_track - 1, // 1-based
+                                          title + 1,         // 0-based
+                                          pack_in_title - 1, // 1-based
+                                          i + 1,         // 0-based
+                                          pack_in_group - 1,
                                           wav_numbytes,
                                           written_bytes);
 
@@ -843,18 +860,9 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                 {
                   foutput(WAR "Remaining bytes %lu in excess of payload %d \n", wav_numbytes - written_bytes, files[i][track]->lpcm_payload);
 
-                  if (files[i][track]->last_sector != pack_in_group)
+                  if (files[i][track]->last_sector != pack_in_group - 1)
                   {
-                      foutput(WAR "IFO last sector incorrect: %lu against current %lu\n", files[i][track]->last_sector , pack_in_group);
-                  }
-
-                  if (continuity != 0)
-                  {
-                      foutput(WAR "sector continuity counter not null, value : %d, previous value %d\n", continuity, continuity_save);
-                  }
-                  else
-                  {
-                          foutput(WAR "sector continuity counter null as expected, previous value %d\n",  continuity_save);
+                      foutput(WAR "IFO last sector incorrect: %lu against current %lu\n", files[i][track]->last_sector, pack_in_group - 1);
                   }
 
                   files[i][track]->numbytes  = written_bytes;
