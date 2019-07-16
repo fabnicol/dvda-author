@@ -162,6 +162,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     DIR *dir;
     parse_t  audiodir;
     extractlist extract;
+    downmix downmixtable;
+    downmixtable.use_table = true;
 
 #ifdef img
 #undef img
@@ -287,6 +289,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"forensic", no_argument,NULL, 12},
         {"outfile", required_argument,NULL, 30},
         {"scan-info", required_argument, NULL, 31},
+        {"downmix", required_argument, NULL, 32},
 
     #endif
         {NULL, 0, NULL, 0}
@@ -856,6 +859,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     uint16_t npics[totntracks];
 #endif
     char** textable = NULL;
+    char** downmixtexttable = NULL;
+    int downmixsize = 0;
     bool extract_audio_flag = 0;
     char* extract_args = NULL;
     optind=0;
@@ -986,6 +991,26 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'c' :
             foutput("%s\n",PAR "Channel group assignement activated.");
             globals.cga=1;
+            break;
+
+        case 32:
+            foutput("%s\n",PAR "Downmix coefficients: ", optarg);
+            downmixtexttable=fn_strtok(optarg, ',' , downmixtexttable, &downmixsize, 0,NULL,NULL); // 12
+            if (downmixsize < 12) EXIT_ON_RUNTIME_ERROR_VERBOSE("Downmix coefficients should be 12. See help.")
+            command->db.use_table = false;
+            command->db.Lf_l = strtof(downmixtexttable[0], NULL);
+            command->db.Lf_r = strtof(downmixtexttable[1], NULL);
+            command->db.Rf_l = strtof(downmixtexttable[2], NULL);
+            command->db.Rf_r = strtof(downmixtexttable[3], NULL);
+            command->db.C_l = strtof(downmixtexttable[4], NULL);
+            command->db.C_r = strtof(downmixtexttable[5], NULL);
+            command->db.S_l = strtof(downmixtexttable[6], NULL);
+            command->db.S_r = strtof(downmixtexttable[7], NULL);
+            command->db.Rs_l = strtof(downmixtexttable[8], NULL);
+            command->db.Rs_r = strtof(downmixtexttable[9], NULL);
+            command->db.LFE_l = strtof(downmixtexttable[10], NULL);
+            command->db.LFE_r = strtof(downmixtexttable[11], NULL);
+
             break;
 
 
@@ -2390,6 +2415,7 @@ standard_checks:
         img,
         files,
         textable,
+        downmixtable
     };
 
     errno=0;

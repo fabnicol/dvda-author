@@ -66,12 +66,116 @@ int get_afmt(fileinfo_t* info, audioformat_t* audioformats, int* numafmts) {
   return(i);
 }
 
+static inline uint16_t downmix_coeff(float db)
+{
+    //    ...
+    //    0xFF off
+    //    0xFE = -61.8 dB
+    //    ...
+    //    0xFE - l = -61.8 + l x 0.4 dB   0 < l < 47 (0x2F)
+    //    ...
+    //    0xFF - 0x30 = 0xCF = 207 = -42.9 dB
+    //    l < 8
+    //    0xCF - l = -42.9 + l x 0.4 dB
+    //    ...
+    //    -42.9, -42.5, -42.1, -41.7, -41.3, -40.9, -40.5, -40.1
+    //    ...
+    //    0xCF - 7  =  0xC8 = 200 = -40.1 dB
+    //    0xC7 = 199 = -41.2 dB
+    //    l < 7
+    //    0xC7 -l = -41.2 + l x 0.2 dB
+    //    -41.2, -41, -40.8, -40.6, -40.4, -40.2, -40
+    //    0xC1 = -40 dB
+    //    0xC0 = -39.7 dB
+    //    l < 14
+    //    0xC0 - l = -39.7  + l x 0.2 dB
+    //    l < 14
+    //    0xB2 - l = -36.8  + l x 0.2 dB
+    //    l < 14
+    //    0xA4 - l = -33.9  + l x 0.2 dB
+    //    l < 15
+    //    0x96 - l = -31    + l x 0.2 dB
+    //    l < 14
+    //    0x87 - l = -27.9  + l x 0.2 dB
+    //    l < 14
+    //    0x79 - l = -25    + l x 0.2 dB
+    //    l < 15
+    //    0x6B - l = -22.1  + l x 0.2 dB
+    //    l < 14
+    //    0x5C - l = -19    + l x 0.2 dB
+    //    l < 14
+    //    0x4E - l = -16.1  + l x 0.2 dB
+    //    l < 14
+    //    0x40 - l = -13.2  + l x 0.2 dB
+    //    l < 15
+    //    0x31 - l = -10.1  + l x 0.2 dB
+    //    l < 14
+    //    0x23 - l = -7.2   + l x 0.2 dB
+    //    l < 14
+    //    0x15 - l = -4.3   + l x 0.2 dB
+    //    l < 8
+    //    0x07 - l = -1.4   + l x 0.2 dB
+    //    0x00  = -0 dB
+
+ if (db < 0 || db > 100.0) return 0;
+
+ uint16_t c = 0;
+ if (db >= 0 && db <= 1.4)  c =  (uint16_t) db * 5;
+ else
+ if (db <= 4.3)    c =  (uint16_t) (0x15 - (4.3 - db) / 0.2) ;
+ else
+ if (db <= 7.2)    c =  (uint16_t) (0x23 - (7.2 - db) / 0.2) ;
+ else
+ if (db <= 10.1)   c =  (uint16_t) (0x31 - (10.1 - db) / 0.2) ;
+ else
+ if (db <= 13.2)   c =  (uint16_t) (0x40 - (13.2 - db) / 0.2) ;
+ else
+ if (db <= 16.1)   c =  (uint16_t) (0x4E - (16.1 - db) / 0.2) ;
+ else
+ if (db <= 19)     c =  (uint16_t) (0x5C - (19 - db) / 0.2) ;
+ else
+ if (db <= 22.1)   c =  (uint16_t) (0x6B - (22.1 - db) / 0.2) ;
+ else
+ if (db <= 25)     c =  (uint16_t) (0x79 - (25 - db) / 0.2) ;
+ else
+ if (db <= 27.9)   c =  (uint16_t) (0x87 - (27.9 - db) / 0.2) ;
+ else
+ if (db <= 31)     c =  (uint16_t) (0x96 - (31 - db) / 0.2) ;
+ else
+ if (db <= 33.9)   c =  (uint16_t) (0xA4 - (33.9 - db) / 0.2) ;
+ else
+ if (db <= 36.8)   c =  (uint16_t) (0xB2 - (36.8 - db) / 0.2) ;
+ else
+ if (db <= 39.7)   c =  (uint16_t) (0xC0 - (39.7 - db) / 0.2) ;
+ else
+ if (db <= 41.2)
+ {
+     if (db == 40.1) c = 0xC8;
+     else
+     if (db == 40.5) c = 0xC9;
+     else
+     if (db == 40.9) c = 0xCA;
+     else
+     c =  (uint16_t) (0xC7 - (41.2 - db) / 0.2) ;
+ }
+ else
+ if (db <= 42.9)   c =  (uint16_t) (0xCF - (42.9 - db) / 0.4) ;
+ else
+ if (db <= 61.8)   c =  (uint16_t) (0xFE - (61.8 - db) / 0.4) ;
+ else
+ if (db == 100.0) c = 0xFF; // off
+
+ return c;
+}
+
+
 
 int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* atsi_sectors, uint16_t * ntitlepics)
 {
     #define files command->files[titleset]
     #define ntracks command->ntracks[titleset]
     #define img command->img
+    #define db command->db
 
     int i,j,k,t,x;
     char basename[CHAR_BUFSIZ+12+1];
@@ -221,29 +325,47 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
     // downmix coefficients
     //[200806] : if a menu is generated: uint8_copy(&atsi[336],0x01);
 
-#ifdef USE_SET1
 
-    uint16_copy(&atsi[384],0x0000);
-    uint16_copy(&atsi[386],0x1eff);
-    uint16_copy(&atsi[388],0xff1e);
-    uint16_copy(&atsi[390],0x2d2d);
-    uint16_copy(&atsi[392],0x3cff);
-    uint16_copy(&atsi[394],0xff3c);
-    uint16_copy(&atsi[396],0x4b4b);
-    uint16_copy(&atsi[398],0x0000);
+    if (db.use_table)
+    {
+        for (int w = 0; w < 16; ++w)
+        {
+    //    uint16_copy(&atsi[384 + w * 18],0x0000); no-op
+          uint16_copy(&atsi[386 + w * 18],0x1eff);
+          uint16_copy(&atsi[388 + w * 18],0xff1e);
+          uint16_copy(&atsi[390 + w * 18],0x2d2d);
+          uint16_copy(&atsi[392 + w * 18],0x3cff);
+          uint16_copy(&atsi[394 + w * 18],0xff3c);
+          uint16_copy(&atsi[396 + w * 18],0x4b4b);
+    //    uint16_copy(&atsi[398 + w * 18],0x0000);  no-op
+    //    uint16_copy(&atsi[400 + w * 18],0x0000);  no-op
+        }
+    }
+    else
+    {
 
-#else
-    // new default downmix coefficient (Sept. 2016)
-    uint16_copy(&atsi[384],0x0000);
-    uint16_copy(&atsi[386],0x00ff);
-    uint16_copy(&atsi[388],0xff00);
-    uint16_copy(&atsi[390],0x1e1e);
-    uint16_copy(&atsi[392],0x3232);
-    uint16_copy(&atsi[394],0x3232);
-    uint16_copy(&atsi[396],0x1e1e);
-    uint16_copy(&atsi[398],0x0000);
+        i = 0x180;
 
-#endif
+        for (int w = 0; w < 16; ++w)
+        {
+    //    uint16_copy(&atsi[i + w * 18],0x0000); no-op
+          atsi[i + 2 + w * 18] =  downmix_coeff(db.Lf_l);  // Left front speaker channel to left stereo speaker
+          atsi[i + 3 + w * 18] =  downmix_coeff(db.Lf_r);  // Left front speaker channel to right stereo speaker
+          atsi[i + 4 + i] =  downmix_coeff(db.Rf_l);       // Right front speaker channel to left stereo speaker
+          atsi[i + 5 + i] =  downmix_coeff(db.Rf_r);       // Right front speaker channel to right stereo speaker
+          atsi[i + 6 + i] =  downmix_coeff(db.C_l);        // Center speaker channel to left stereo speaker
+          atsi[i + 7 + i] =  downmix_coeff(db.C_r);        // Center speaker channel to right stereo speaker
+          atsi[i + 8 + i] =  downmix_coeff(db.S_l);        // Left surround or Surround speaker channel to left stereo speaker
+          atsi[i + 9  + i] =  downmix_coeff(db.S_r);       // Left surround or Surround speaker channel to left stereo speaker
+          atsi[i + 10 + i] =  downmix_coeff(db.Rs_l);      // Right surround to left stereo speaker
+          atsi[i + 11 + i] =  downmix_coeff(db.Rs_r);      // Right surround to right stereo speaker
+          atsi[i + 12 + i] =  downmix_coeff(db.LFE_l);     // Low-frequency effects (subwoofer) to left stereo speaker
+          atsi[i + 13 + i] =  downmix_coeff(db.LFE_r);     // Low-frequency effects (subwoofer) to right stereo speaker
+    //    uint16_copy(&atsi[i + 14 + w * 18],0x0000);  no-op
+    //    uint16_copy(&atsi[i + 15 + w * 18],0x0000);  no-op
+        }
+    }
+
     /* SECTOR 2 */
 
     i = 0x800;
@@ -461,4 +583,5 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
     #undef files
     #undef ntracks
     #undef img
+    #undef db
 }

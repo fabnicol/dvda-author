@@ -155,6 +155,23 @@ typedef struct
 
 typedef struct
 {
+  float Lf_l;
+  float Lf_r;
+  float Rf_l;
+  float Rf_r;
+  float C_l;
+  float C_r;
+  float S_l;
+  float S_r;
+  float Rs_l;
+  float Rs_r;
+  float LFE_l;
+  float LFE_r;
+  bool use_table;
+} downmix;
+
+typedef struct
+{
     uint8_t ngroups;
     uint8_t n_g_groups;
     uint8_t nplaygroups;
@@ -166,6 +183,7 @@ typedef struct
     pic*    img;
     fileinfo_t **files;
     char** textable;
+    downmix db;
 }command_t;
 
 
