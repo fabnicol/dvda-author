@@ -126,6 +126,7 @@ printf("%s","-Z, --playlist           You may specify up to 9 group copies." J "
 printf("%s","-n, --no-videozone       Do not generate an empty VIDEO_TS directory.\n\n");
 printf("%s","-w, --rights             Access rights to directories created (octal values)\n\n");
 printf("%s","-c, --cga                Enter channel group assignment right after group (-g).\n\n");
+printf("%s","    --downmix            Enter downmix coefficients in dB. If track has more than 2 channels, each channel (Lf, Rf, C, Ls or S, Rs, LFE)" J "will be mapped to left (l) and/or right (r) stereo channel" J "with volume reduced by x dB, x the channel downmix coefficient." J "Enter positive dB values corresponding to each channel volume reduction, mapped to left or right stereo, separated by commas." J "Schema is --downmix Lf.l,Lf.r,Rf.l,Rf.r,C.l,C.r,S.l,S.r,Rs.l,Rs.r,LFE.l,LFE.r" J "Use 100 for 'off' value and 0 for no volume reduction. Example : --downmix 6.2,100,100,7.2,0,0,13,13,16,16,0,0 \n\n");
 printf("%s","-F, --fixwav(options)    Bad wav headers will be fixed by fixwav." J "Can be run alone without DVD-AUDIO output by adding --nooutput.\n\n");
 printf("%s","-f, --fixwav-virtual(options)  Use .wav header repair utility " J "without any write operation.\n\n");
 #ifndef WITHOUT_sox

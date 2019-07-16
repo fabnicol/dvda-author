@@ -35,5 +35,4 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "structures.h"
 int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* atsi_sectors, uint16_t * ntitlepics);
 int get_afmt(fileinfo_t* info, audioformat_t* audioformats, int* numafmts);
-#define USE_SET1
 #endif

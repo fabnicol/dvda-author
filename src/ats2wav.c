@@ -396,7 +396,6 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 #   define X T[table_index][header->channels-1]
 
     int lpcm_payload = X[0];
-    int lpcm_payload_cut = 0;
     const int firstpackdecrement = X[1];
     const int lastpack_audiopesheaderquantity = X[2];
     const int firstpack_lpcm_headerquantity = X[3];
@@ -412,20 +411,24 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
     uint64_t offset0 = ftello(info->infile.fp);
     
     int res  = 0, result;    
-    static bool gapless_cut;
-    static bool gapless_rmdr;
-    int lpcm_payload_rmdr = 0;
+    int lpcm_payload_cut = 0;
+    static int lpcm_payload_rmdr;
 
-    if (wav_numbytes > 0 && wav_numbytes - *written_bytes < lpcm_payload)
+    if (*position != CUT_PACK_RMDR)
     {
-        lpcm_payload_cut = wav_numbytes - *written_bytes;
-        gapless_cut = true;
-        lpcm_payload_rmdr = lpcm_payload - lpcm_payload_cut;
+        *position = calc_position(info->infile.fp, offset0);
+        if (wav_numbytes > 0)
+        {
+            lpcm_payload_cut = wav_numbytes - *written_bytes;
+            if (lpcm_payload_cut < lpcm_payload)
+            {
+                *position = CUT_PACK;
+            }
+        }
     }
-    
-    do {
-            if (! gapless_rmdr) *position = calc_position(info->infile.fp, offset0);
-            
+
+    uint64_t offset1;
+
             switch(*position)
             {
                 case FIRST_PACK :
@@ -434,19 +437,36 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
                     *pack_in_track = 1;
                     *pack_in_title = 1;
                     ++*pack_in_group;
+                    offset1 = 2048;
                     break;
         
+                case CUT_PACK:
+                    audio_bytes = lpcm_payload_cut;
+                    lpcm_payload_rmdr = lpcm_payload - lpcm_payload_cut;
+                    fseeko(info->infile.fp, offset0 + 29, SEEK_SET);
+                    fread(continuity, 1, 1, info->infile.fp);
+                    fseeko(info->infile.fp, midpack_lpcm_headerquantity + 2, SEEK_CUR);
+                    ++*pack_in_track;
+                    ++*pack_in_title;
+                    ++*pack_in_group;
+                    offset1 = 0;
+                    *position = CUT_PACK_RMDR;
+                    break;
+
+                case CUT_PACK_RMDR:
+                    offset1 = 2048 - offset0 % 2048 ;
+                    audio_bytes = lpcm_payload_rmdr ;
+                    break;
+
                 case MIDDLE_PACK :
-                    audio_bytes = gapless_cut ? lpcm_payload_cut : (gapless_rmdr ? lpcm_payload_rmdr : lpcm_payload);
-                    if (! gapless_rmdr)
-                    {
-                        fseeko(info->infile.fp, offset0 + 29, SEEK_SET);
-                        fread(continuity, 1, 1, info->infile.fp);
-                        fseeko(info->infile.fp, midpack_lpcm_headerquantity + 2, SEEK_CUR);
-                        ++*pack_in_track;
-                        ++*pack_in_title;
-                        ++*pack_in_group;
-                    }
+                    audio_bytes = lpcm_payload;
+                    fseeko(info->infile.fp, offset0 + 29, SEEK_SET);
+                    fread(continuity, 1, 1, info->infile.fp);
+                    fseeko(info->infile.fp, midpack_lpcm_headerquantity + 2, SEEK_CUR);
+                    ++*pack_in_track;
+                    ++*pack_in_title;
+                    ++*pack_in_group;
+                    offset1 = 2048;
                     break;
         
                 case LAST_PACK :
@@ -462,11 +482,10 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
                     ++*pack_in_track;
                     ++*pack_in_title;
                     ++*pack_in_group;
+                    offset1 = 2048;
                     break;
-    
-            }
-    } 
-    while(0);
+             }
+
 
     // Here "cut" for a so-called 'gapless' track
     // The cut should respect the size of permutation tables.
@@ -484,23 +503,15 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 
     int fpout_size_increment = fwrite(audio_buf, 1, res, info->outfile.fp);
     
-    if (*position == LAST_PACK)
+    if (*position == LAST_PACK || *position == CUT_PACK)
     {
         S_CLOSE(info->outfile)
     }
 
-    uint64_t offset1 = offset0;
-
-    if (gapless_cut) offset1 = ftello(info->infile.fp);
-    else
-        if (gapless_rmdr) offset1 = /* got to 2048 */;
-    else
-            offset1 = offset0 +2048;
-        
-    if (offset1 >= filesize(info->infile))
+    if (offset1 + offset0 >= filesize(info->infile))
         *position = END_OF_AOB;
     else
-        fseeko(info->infile.fp, offset1, SEEK_SET);
+        fseeko(info->infile.fp, offset1, SEEK_CUR);
    
     if (globals.maxverbose)
            foutput(MSG_TAG "Position : %d\n", *position);
@@ -777,7 +788,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
 
                         if (wav_numbytes > written_bytes)
                         {
-                           if (wav_numbytes - written_bytes <= files[i][track]->lpcm_payload)
+                           if (position == CUT_PACK)
                            {
                               rmdr_payload = (unsigned long) (wav_numbytes - written_bytes);
                               if (globals.veryverbose) foutput("%s %lu %s\n", INF "Cutting next sector using ", rmdr_payload, " bytes.");
@@ -785,6 +796,8 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                                {
                                   foutput("%s %lu\n", INF "Looping next sector...", pack_in_group - 1);
                                }
+
+                              position = CUT_PACK_RMDR;
                            }
                         }
                         else
@@ -851,8 +864,8 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                         }
                     }
                 }
-                while (position == FIRST_PACK
-                       || position == MIDDLE_PACK);
+                while (position != LAST_PACK
+                       && position != END_OF_AOB);
 
                 new_track = false;
 
