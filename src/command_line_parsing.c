@@ -162,8 +162,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     DIR *dir;
     parse_t  audiodir;
     extractlist extract;
-    downmix downmixtable;
-    downmixtable.custom_table = false;
+    downmix downmixtable[16];
+    for (int i = 0; i < 16; ++i) downmixtable[i].custom_table = false;
 
 #ifdef img
 #undef img
@@ -854,7 +854,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     uint16_t npics[totntracks];
 #endif
     char** textable = NULL;
-    char** downmixtexttable = NULL;
+    char** downmixtexttable[16] = {NULL};
+    int dbtable = 0;
     int downmixsize = 0;
     bool extract_audio_flag = 0;
     char* extract_args = NULL;
@@ -987,21 +988,29 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case 32:
             foutput("%s%s\n",PAR "Downmix coefficients: ", optarg);
-            downmixtexttable=fn_strtok(optarg, ',' , downmixtexttable, &downmixsize, 0,NULL,NULL); // 12
-            if (downmixsize < 12) EXIT_ON_RUNTIME_ERROR_VERBOSE("Downmix coefficients should be 12. See help.")
-            command->db.custom_table = true;
-            command->db.Lf_l  = strtof(downmixtexttable[0], NULL);
-            command->db.Lf_r  = strtof(downmixtexttable[1], NULL);
-            command->db.Rf_l  = strtof(downmixtexttable[2], NULL);
-            command->db.Rf_r  = strtof(downmixtexttable[3], NULL);
-            command->db.C_l   = strtof(downmixtexttable[4], NULL);
-            command->db.C_r   = strtof(downmixtexttable[5], NULL);
-            command->db.S_l   = strtof(downmixtexttable[6], NULL);
-            command->db.S_r   = strtof(downmixtexttable[7], NULL);
-            command->db.Rs_l  = strtof(downmixtexttable[8], NULL);
-            command->db.Rs_r  = strtof(downmixtexttable[9], NULL);
-            command->db.LFE_l = strtof(downmixtexttable[10], NULL);
-            command->db.LFE_r = strtof(downmixtexttable[11], NULL);
+            if (dbtable >= 15)
+            {
+                foutput("%s\n",ERR "There should be between 0 and 16 downmix tables and no more.");
+                foutput("%s\n",WAR "Ignoring additional table...");
+                break;
+            }
+
+            downmixtexttable[dbtable]=fn_strtok(optarg, ',' , downmixtexttable[dbtable], &downmixsize, 0,NULL,NULL); // 12
+            if (downmixsize < 12) EXIT_ON_RUNTIME_ERROR_VERBOSE("Downmix coefficients should be 12. See dvda-author --help.")
+            downmixtable[dbtable].custom_table = true;
+            downmixtable[dbtable].Lf_l  = strtof(downmixtexttable[dbtable][0], NULL);
+            downmixtable[dbtable].Lf_r  = strtof(downmixtexttable[dbtable][1], NULL);
+            downmixtable[dbtable].Rf_l  = strtof(downmixtexttable[dbtable][2], NULL);
+            downmixtable[dbtable].Rf_r  = strtof(downmixtexttable[dbtable][3], NULL);
+            downmixtable[dbtable].C_l   = strtof(downmixtexttable[dbtable][4], NULL);
+            downmixtable[dbtable].C_r   = strtof(downmixtexttable[dbtable][5], NULL);
+            downmixtable[dbtable].S_l   = strtof(downmixtexttable[dbtable][6], NULL);
+            downmixtable[dbtable].S_r   = strtof(downmixtexttable[dbtable][7], NULL);
+            downmixtable[dbtable].Rs_l  = strtof(downmixtexttable[dbtable][8], NULL);
+            downmixtable[dbtable].Rs_r  = strtof(downmixtexttable[dbtable][9], NULL);
+            downmixtable[dbtable].LFE_l = strtof(downmixtexttable[dbtable][10], NULL);
+            downmixtable[dbtable].LFE_r = strtof(downmixtexttable[dbtable][11], NULL);
+            ++dbtable;
             break;
 
         case 33:
@@ -1014,18 +1023,24 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
 
             if (track < totntracks)
+            {
                (&files[0][0] + track)->downmix_table_rank = (uint8_t) tr - 1;
+            }
             else
             {
                 foutput("%s %d\n", ERR "Downmix table index can only be specified for as many tracks there are: ", totntracks);
                 EXIT_ON_RUNTIME_ERROR_VERBOSE("Exiting...")
             }
+
             ++track;
             break;
 
         case 34:
             foutput("%s%s\n", MSG_TAG "Provider: ", optarg);
+
             memcpy(provider, optarg, Min(strlen(optarg), 30));
+            if (strlen(optarg) < 30)
+               memset(provider + strlen(optarg), 0, 30 - strlen(optarg));
             break;
 
         case 'k' :
@@ -2399,7 +2414,20 @@ standard_checks:
     if ( nplaygroups+ngroups > 8)
     {
         if (globals.debugging) foutput("%s\n", ERR "There cannot be more copy groups than audio groups. Limiting to 9 groups...");
-        nplaygroups=MAX(0, 9-ngroups);
+        nplaygroups = MAX(0, 9-ngroups);
+    }
+
+    // Completing downmix tables up to 16...
+
+    if (dbtable < 16 && dbtable > 0)
+    {
+       if (globals.veryverbose)
+           foutput("%s\n", WAR "Completing downmix tables up to 16...");
+
+        for (int j = dbtable; j < 16; ++j)
+        {
+            downmixtable[j] = downmixtable[j % dbtable];
+        }
     }
 
     // ngroups does not include copy groups from then on -- nplaygroups are just virtual (no added bytes to disc)

@@ -326,7 +326,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
     //[200806] : if a menu is generated: uint8_copy(&atsi[336],0x01);
     // is inserted even if non-surround
 
-    if (! db.custom_table)
+    if (! db[0].custom_table)
     {
         for (int w = 0; w < 16; ++w)
         {
@@ -347,18 +347,18 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
         for (int w = 0; w < 16; ++w)
         {
     //    uint16_copy(&atsi[i + w * 18],0x0000); no-op
-          atsi[i + 2 + w * 18] =   downmix_coeff(db.Lf_l);  // Left front speaker channel to left stereo speaker
-          atsi[i + 3 + w * 18] =   downmix_coeff(db.Lf_r);  // Left front speaker channel to right stereo speaker
-          atsi[i + 4 + w * 18]  =  downmix_coeff(db.Rf_l);       // Right front speaker channel to left stereo speaker
-          atsi[i + 5 + w * 18]  =  downmix_coeff(db.Rf_r);       // Right front speaker channel to right stereo speaker
-          atsi[i + 6 + w * 18]  =  downmix_coeff(db.C_l);        // Center speaker channel to left stereo speaker
-          atsi[i + 7 + w * 18]  =  downmix_coeff(db.C_r);        // Center speaker channel to right stereo speaker
-          atsi[i + 8 + w * 18]  =  downmix_coeff(db.S_l);        // Left surround or Surround speaker channel to left stereo speaker
-          atsi[i + 9 + w * 18] =   downmix_coeff(db.S_r);       // Left surround or Surround speaker channel to left stereo speaker
-          atsi[i + 10 + w * 18] =  downmix_coeff(db.Rs_l);      // Right surround to left stereo speaker
-          atsi[i + 11 + w * 18] =  downmix_coeff(db.Rs_r);      // Right surround to right stereo speaker
-          atsi[i + 12 + w * 18] =  downmix_coeff(db.LFE_l);     // Low-frequency effects (subwoofer) to left stereo speaker
-          atsi[i + 13 + w * 18] =  downmix_coeff(db.LFE_r);     // Low-frequency effects (subwoofer) to right stereo speaker
+          atsi[i + 2 + w * 18] =   downmix_coeff(db[w].Lf_l);  // Left front speaker channel to left stereo speaker
+          atsi[i + 3 + w * 18] =   downmix_coeff(db[w].Lf_r);  // Left front speaker channel to right stereo speaker
+          atsi[i + 4 + w * 18]  =  downmix_coeff(db[w].Rf_l);       // Right front speaker channel to left stereo speaker
+          atsi[i + 5 + w * 18]  =  downmix_coeff(db[w].Rf_r);       // Right front speaker channel to right stereo speaker
+          atsi[i + 6 + w * 18]  =  downmix_coeff(db[w].C_l);        // Center speaker channel to left stereo speaker
+          atsi[i + 7 + w * 18]  =  downmix_coeff(db[w].C_r);        // Center speaker channel to right stereo speaker
+          atsi[i + 8 + w * 18]  =  downmix_coeff(db[w].S_l);        // Left surround or Surround speaker channel to left stereo speaker
+          atsi[i + 9 + w * 18] =   downmix_coeff(db[w].S_r);       // Left surround or Surround speaker channel to left stereo speaker
+          atsi[i + 10 + w * 18] =  downmix_coeff(db[w].Rs_l);      // Right surround to left stereo speaker
+          atsi[i + 11 + w * 18] =  downmix_coeff(db[w].Rs_r);      // Right surround to right stereo speaker
+          atsi[i + 12 + w * 18] =  downmix_coeff(db[w].LFE_l);     // Low-frequency effects (subwoofer) to left stereo speaker
+          atsi[i + 13 + w * 18] =  downmix_coeff(db[w].LFE_r);     // Low-frequency effects (subwoofer) to right stereo speaker
     //    uint16_copy(&atsi[i + 14 + w * 18],0x0000);  no-op
     //    uint16_copy(&atsi[i + 15 + w * 18],0x0000);  no-op
         }

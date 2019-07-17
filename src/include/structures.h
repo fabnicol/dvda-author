@@ -185,7 +185,7 @@ typedef struct
     pic*    img;
     fileinfo_t **files;
     char** textable;
-    downmix db;
+    downmix *db;
 }command_t;
 
 typedef struct
