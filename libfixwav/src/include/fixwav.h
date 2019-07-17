@@ -5,9 +5,9 @@
 #include <assert.h>
 #include <stdint.h>
 
-
+#ifndef GUI_BEHAVIOR
 #define GUI_BEHAVIOR
-
+#endif
 
 #define TRUE 1
 #define FALSE 0

@@ -410,7 +410,7 @@ uint8_t sub_stream_id[1]={0xa0};
 uint8_t continuity_counter[1]={0x00};
 uint8_t LPCM_header_length[2];
 uint8_t first_access_unit_pointer[2];
-uint8_t unknown1[1]={0x10};   // e.g. 0x10 for stereo, 0x00 for surround
+uint8_t downmix_index[1] = {0x00};   //  0x10 for stereo or mono, 0x00 for surround or rank of downmix table
 uint8_t sample_size[1]={0x0f};  // 0x0f=16-bit, 0x1f=20-bit, 0x2f=24-bit
 uint8_t sample_rate[1]={0x0f};  // 0x0f=48KHz, 0x1f=96KHz, 0x2f=192KHz,0x8f=44.1KHz, 0x9f=88.2KHz, 0xaf=176.4KHz
 uint8_t unknown2[1]={0x00};
@@ -418,7 +418,7 @@ uint8_t channel_assignment[1]={0};  // The channel assignment - 0=C; 1=L,R; 17=L
 uint8_t unknown3[1]={0x80};
 uint8_t zero[16]={0};
 
-inline static void write_lpcm_header(FILE* fp, uint8_t header_length,fileinfo_t* info, int64_t pack_in_title, uint8_t counter)
+inline static void write_lpcm_header(FILE* fp, uint8_t header_length, fileinfo_t* info, int64_t pack_in_title, uint8_t counter)
 {
 
     int frame_offset;
@@ -454,7 +454,7 @@ inline static void write_lpcm_header(FILE* fp, uint8_t header_length,fileinfo_t*
 
     if (info->channels < 3)
     {
-        unknown1[0]=0x10;
+        downmix_index[0]=0x10;
 
         switch (info->bitspersample)
         {
@@ -473,7 +473,10 @@ inline static void write_lpcm_header(FILE* fp, uint8_t header_length,fileinfo_t*
     }
     else
     {
-        unknown1[0]=0x00;
+        // rank of downmix table if there is one: 0 for 1st table, 1 for 2nd etc. up to 15 for the 16th table (0x0F)
+
+        downmix_index[0]= info->downmix_table_rank;
+
         switch (info->bitspersample)
         {
         case 16:
@@ -513,7 +516,7 @@ inline static void write_lpcm_header(FILE* fp, uint8_t header_length,fileinfo_t*
     /* offset_count += 2 */ fwrite(LPCM_header_length,2,1,fp);
     /* offset_count += 2 */ fwrite(first_access_unit_pointer,2,1,fp);
 
-    /* offset_count += */   fwrite(unknown1,1,1,fp);
+    /* offset_count += */   fwrite(downmix_index,1,1,fp);
     /* offset_count += */   fwrite(sample_size,1,1,fp);
     /* offset_count += */   fwrite(sample_rate,1,1,fp);
     /* offset_count += */   fwrite(unknown2,1,1,fp);
@@ -541,7 +544,7 @@ inline static int read_lpcm_header(FILE* fp, fileinfo_t* info, int64_t pack_in_t
 
     /* offset_count += 2 */ RW_FIELD(first_access_unit_pointer);
 
-    /* offset_count += */   RW_FIELD(unknown1);
+    /* offset_count += */   RW_FIELD(downmix_index);
     /* offset_count += */   RW_FIELD(sample_size);
     /* offset_count += */   RW_FIELD(sample_rate);
 
@@ -573,7 +576,6 @@ inline static int read_lpcm_header(FILE* fp, fileinfo_t* info, int64_t pack_in_t
 
     if (sample_size[0] == 0x0f || sample_size[0] == 0x2f)
     {
-        unknown1[0] = 0x10;
 
         if ((sample_rate[0] & 0xf) != 0xf)
         {
@@ -585,8 +587,6 @@ inline static int read_lpcm_header(FILE* fp, fileinfo_t* info, int64_t pack_in_t
     else
     if (sample_size[0] == 0x00 || sample_size[0] == 0x22)
     {
-        unknown1[0] = 0x00;
-
         if ((sample_rate[0] & 0xf) != high_nibble)
         {
             if (globals.logdecode) fprintf(aob_log, "%s", "ERR;coherence_test;sample_rate and sample_size are incoherent (lower nibble != higher nibble);;;;;\n");
@@ -609,13 +609,13 @@ inline static int read_lpcm_header(FILE* fp, fileinfo_t* info, int64_t pack_in_t
     {
         if (info->channels <= 2)
         {
-            if (unknown1[0] != 0x10)
-               fprintf(aob_log, "%s%d%s", "ERR;incorrect unknown1 lpcm header value: ;", unknown1[0], "; instead of expected 0x10;;;;\n");
+            if (downmix_index[0] != 0x10)
+               fprintf(aob_log, "%s%d%s", "ERR;incorrect unknown1 lpcm header value: ;", downmix_index[0], "; instead of expected 0x10;;;;\n");
         }
     else
 
-        if (unknown1[0] != 0)
-               fprintf(aob_log, "%s%d%s", "ERR;incorrect unknown1 lpcm header value: ;", unknown1[0], "; instead of expected 0;;;;\n");
+        if (downmix_index[0] > 0xF)
+               fprintf(aob_log, "%s%d%s", "ERR;incorrect downmix index lpcm header value: ;", downmix_index[0], "; instead of expected 0-0xF;;;;\n");
 
     }
 

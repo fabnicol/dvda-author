@@ -44,8 +44,8 @@ typedef struct
     uint8_t channels;
     bool   mergeflag;
     bool   dvdv_compliant;
-    // L&T Fedkamp addition
-    uint8_t cga;
+    uint8_t cga; // L&T Fedkamp addition
+    uint8_t downmix_table_rank;
     uint8_t newtitle;
     uint8_t contin_track;
     // L&T Feldkamp addition (multichannel)
@@ -167,7 +167,8 @@ typedef struct
   float Rs_r;
   float LFE_l;
   float LFE_r;
-  bool use_table;
+  bool custom_table;
+
 } downmix;
 
 typedef struct
@@ -180,14 +181,12 @@ typedef struct
     uint8_t maximum_VTSI_rank;
     uint8_t *VTSI_rank;
     uint8_t *ntracks;
+    char* provider;
     pic*    img;
     fileinfo_t **files;
     char** textable;
     downmix db;
 }command_t;
-
-
-
 
 typedef struct
 {
@@ -275,10 +274,7 @@ typedef struct
     FILE *journal;
     uint16_t access_rights;
     defaults settings;
-
 } globalData ;
-
-
 
 typedef struct
 {
