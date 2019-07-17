@@ -1047,6 +1047,7 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
         uint32_copy(&amg[48], 2 * sectors->amg + sectors->topvob);		// relative sector pointer to AUDIO_SV.VOB=same value as 0x when no SV.VOB
     amg[0x3E] = 0;  					// Number of AUDIO_TS video titlesets (DVD-Audio norm video titlesets are AOBs)
     amg[0x3F] = ngroups; 		        // Number of audio titlesets, must include video linking groups
+    memcpy(amg + 0x40, command->provider, 30); // produced by author/software at most 30 chars.
     uint32_copy(&amg[0x80], 0x07ff);
     uint32_copy(&amg[0xc0], menusector * sectors->amg);  	// Pointer to end of file (number of sectors)
     uint32_copy(&amg[0xc4], 1);  	// Pointer to sector 2

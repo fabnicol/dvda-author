@@ -33,10 +33,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #if !defined HAVE_core_BUILD || !HAVE_core_BUILD
 #include <stdio.h>
 #include <stdlib.h>
-
 #include <sys/stat.h>
 #include <sys/types.h>
-
 #include <stdarg.h>
 #include <sys/time.h>
 #include <errno.h>
@@ -53,9 +51,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "menu.h"
 #include "sound.h"
 
-
 extern globalData globals;
-
 
 void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank, uint64_t sector_pointer_VIDEO_TS, uint32_t *relative_sector_pointer_VTSI)
 {
@@ -70,29 +66,29 @@ void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank,
     int len = strlen (path_to_VIDEO_TS);
     int vtsi_path_length=len +13 +1;
 
-    /* requires std=c99 */
+//  Requires std=c99
 
     char  temp[vtsi_path_length];
 
     FILE  *temp_file;
 
-
     STRING_WRITE(temp,  "%s/VIDEO_TS.IFO", path_to_VIDEO_TS)
 
     if ((temp_file=fopen(temp, "rb")) == NULL)
+    {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not open VIDEO_TS.IFO. There must be a valid DVD-VIDEO file structure under VIDEO_TS.")
+    }
 
-        /* retrieving size of VIDEO_TS.IFO
+//  Retrieving size of VIDEO_TS.IFO
+//  The size of VIDEO_TS.IFO + VIDEO_TS.VOB + VIDEO_TS.BUP
+//  is at offset 0xC (0-based, one must add 1 to get real sector size)
 
-        The size of VIDEO_TS.IFO + VIDEO_TS.VOB + VIDEO_TS.BUP
-        	is at offset 0xC (0-based, one must add 1 to get real sector size)
-        */
+    if (fseek(temp_file, 0xC, SEEK_SET) != 0)
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not seek offset 0x0C of VIDEO_TS.IFO")
+    }
 
-
-        if (fseek(temp_file, 0xC, SEEK_SET) != 0)
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not seek offset 0x0C of VIDEO_TS.IFO")
-
-            fread_endian(relative_sector_pointer_VTSI, 0, temp_file);
+    fread_endian(relative_sector_pointer_VTSI, 0, temp_file);
 
     relative_sector_pointer_VTSI[0] += sector_pointer_VIDEO_TS + 1;
 
@@ -109,22 +105,20 @@ void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank,
             EXIT_ON_RUNTIME_ERROR
         }
 
-        /* retrieving size of VTS_XX_0.IFO */
+ // retrieving size of VTS_XX_0.IFO
 
         if (fseek(temp_file, 0xC, SEEK_SET) !=0)
+        {
             EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not seek offset 0xC of VTS....IFO")
+        }
 
-
-            fread_endian(relative_sector_pointer_VTSI, k, temp_file);
+        fread_endian(relative_sector_pointer_VTSI, k, temp_file);
 
         relative_sector_pointer_VTSI[k] += relative_sector_pointer_VTSI[k-1] +1;
-
 
         if (globals.debugging) foutput(INF "Retrieving relative sector pointer to VTSI %d : %"PRIu32"\n", k+1, relative_sector_pointer_VTSI[k]);
 
         fclose(temp_file);
-
-
     }
 
 }
@@ -137,13 +131,13 @@ void get_video_PTS_ticks(char* path_to_VIDEO_TS, uint32_t *videotitlelength, uin
     int vtsi_path_length=len +13 +1;
     uint8_t hours=0, minutes=0, seconds=0;
 
-    /* requires std=c99 */
+// Requires std=c99
 
     char  temp[vtsi_path_length];
 
     FILE  *temp_file;
 
-    /* Parsing again rather than integrating to videoimport function for development purposes */
+// Parsing again rather than integrating to videoimport function for development purposes
 
     for (k=0 ; k< nvideolinking_groups ; k++)
     {
@@ -156,30 +150,35 @@ void get_video_PTS_ticks(char* path_to_VIDEO_TS, uint32_t *videotitlelength, uin
             EXIT_ON_RUNTIME_ERROR
         }
 
-        /* retrieving length of VTS_XX_0.IFO in PTS ticks
-            offsets 4, 5, 6 of  VTS_ PGC are coded in BCD(a hex represents a decimal).
-            maybe unavailable on some discs or located at other offsets than PLAYBACK_TIME_OFFSET */
-
+//  retrieving length of VTS_XX_0.IFO in PTS ticks
+//  offsets 4, 5, 6 of  VTS_ PGC are coded in BCD(a hex represents a decimal).
+//  maybe unavailable on some discs or located at other offsets than PLAYBACK_TIME_OFFSET
 
         fseek(temp_file, PLAYBACK_TIME_OFFSET, SEEK_SET);
 
         if (fread(&hours, 1, 1, temp_file) != 1)
+        {
             EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not read 1 byte at offset 4 of PGC")
+        }
 
-            if (fread(&minutes, 1, 1, temp_file) != 1)
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not read 1 byte at offset 5 of PGC")
+        if (fread(&minutes, 1, 1, temp_file) != 1)
+        {
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not read 1 byte at offset 5 of PGC")
+        }
 
-                if (fread(&seconds, 1, 1, temp_file) != 1)
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not read 1 byte at offset 6 of PGC")
+        if (fread(&seconds, 1, 1, temp_file) != 1)
+        {
+             EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not read 1 byte at offset 6 of PGC")
+        }
 
-                    /* frames will not be considered */
+// frames will not be considered
 
-                    videotitlelength[k] = 90000 *(3600 * BCD(hours)  + 60 *BCD(minutes)  + BCD(seconds));
-        if (globals.debugging) foutput("\n"MSG_TAG "Linked video group=%d \n       hours=%x  minutes=%x  seconds=%x\n       PTS ticks=%"PRIu32" length (seconds)=%"PRIu32" \n", VTSI_rank[k], hours, minutes, seconds, videotitlelength[k], videotitlelength[k]/90000);
+        videotitlelength[k] = 90000 *(3600 * BCD(hours)  + 60 *BCD(minutes)  + BCD(seconds));
+
+        if (globals.debugging)
+            foutput("\n"MSG_TAG "Linked video group=%d \n       hours=%x  minutes=%x  seconds=%x\n       PTS ticks=%"PRIu32" length (seconds)=%"PRIu32" \n", VTSI_rank[k], hours, minutes, seconds, videotitlelength[k], videotitlelength[k]/90000);
 
     }
-
-
 
 }
 
@@ -190,39 +189,40 @@ void import_topmenu(char* video_vob_path, pic* img, bool MIX_TYPE)
  initialize_binary_paths(CREATE_MJPEGTOOLS);
  initialize_binary_paths(CREATE_MPEG2DEC);
 
- // Limitation to be removed later?
+// Limitation to be removed later?
 
  img->nmenus=1;
  int s=strlen(globals.settings.tempdir);
 
  if (MIX_TYPE == USE_VTS_SOUNDTRACK)
  {
-   // FREE(img->soundtrack[0]
-  // extract lpcm from VTS or else convert mp2/ac3 to lpcm  then assign img->soundtrack[0]=result
+
+//  FREE(img->soundtrack[0]
+//  extract lpcm from VTS or else convert mp2/ac3 to lpcm  then assign img->soundtrack[0]=result
+
   initialize_binary_paths(CREATE_EXTRACT_AC3);
   FREE(img->soundtrack[0][0])
-  img->soundtrack[0][0]=calloc(STRLEN_SEPARATOR+ s + 20+3+ 4+1, sizeof(char));
+  img->soundtrack[0][0]=calloc(STRLEN_SEPARATOR + s + 20 + 3 + 4 + 1, sizeof(char));
   sprintf(img->soundtrack[0][0], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "extracted_soundtrack",0, ".wav");
 
+  const char* argsextract[]={extract_ac3, video_vob_path, "-",  "-s", "|",
+                             ac3dec, "-o", "wav", "-p", img->soundtrack[0][0], NULL};
 
-
-  const char* argsextract[]={extract_ac3, video_vob_path, "-",  "-s", "|", ac3dec, "-o", "wav", "-p", img->soundtrack[0][0], NULL};
   char* cml=get_full_command_line(argsextract);
   errno=system(win32quote((const char*) cml));
   free(cml);
  }
-
 
  char framerate[strlen(img->framerate)+3];
  sprintf(framerate, "%s%s", img->framerate, ":1");
  char imported_topmenu[strlen(globals.settings.tempdir)+28+1];
  sprintf(imported_topmenu, "%s%s", globals.settings.tempdir, "/imported_topmenu_video.m2v");
 
- const char* args[]={mpeg2dec, "-s", "-o", "pgmpipe", quote(video_vob_path),"|", pgmtoy4m, "-i", "p", "-r", framerate, "|", mpeg2enc, "-f", "8", "-o", quote(imported_topmenu),NULL};
+ const char* args[]={mpeg2dec, "-s", "-o", "pgmpipe", quote(video_vob_path),"|",
+                     pgmtoy4m, "-i", "p", "-r", framerate, "|", mpeg2enc, "-f", "8", "-o", quote(imported_topmenu),NULL};
  char* cml=get_full_command_line(args);
  errno=system(win32quote((const char*) cml));
  free(cml);
-
 
  img->backgroundmpg=calloc(img->nmenus, sizeof(char*));
  FREE(img->backgroundmpg[0])
@@ -232,9 +232,9 @@ void import_topmenu(char* video_vob_path, pic* img, bool MIX_TYPE)
 
  launch_lplex_soundtrack(img, "lpcm");
 
- const char*  argsmplex[]={mplex, "-f", "8", "-L", "48000:2:16", "-o", img->backgroundmpg[0], imported_topmenu, img->soundtrack[0][0], NULL};
+ const char*  argsmplex[]={mplex, "-f", "8", "-L", "48000:2:16",
+                           "-o", img->backgroundmpg[0], imported_topmenu, img->soundtrack[0][0], NULL};
  run(mplex, argsmplex, WAIT, FORK);
-
 
 }
 #endif

@@ -135,20 +135,20 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     static uint8_t nplaygroups;
     static uint8_t nvideolinking_groups;
     static uint8_t maximum_VTSI_rank;
-
     static uint8_t VTSI_rank[MAXIMUM_LINKED_VTS];
     static uint8_t ntracks[9]={0};
-
     static uint8_t playtitleset[9]= {0};
-
     extern char *optarg;
     extern int optind, opterr;
     int k, c;
+    char provider[30] = "Provided by dvda-author GPLv3";
 
     static char ALLOWED_OPTIONS[256];
-    // Allowing for 30 non-print characters for short options
+
+    // Allowing for 40 non-print characters for short options
     // Note that the :/:: diacritics are only needed for short options and that long options argument status is defined in struct longopts, so
     // this trick is OK if only long options are used for non-print short options.
+
     if (!user_command_line)
     {
 
@@ -163,7 +163,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     parse_t  audiodir;
     extractlist extract;
     downmix downmixtable;
-    downmixtable.use_table = true;
+    downmixtable.custom_table = false;
 
 #ifdef img
 #undef img
@@ -290,7 +290,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"outfile", required_argument,NULL, 30},
         {"scan-info", required_argument, NULL, 31},
         {"downmix", required_argument, NULL, 32},
-
+        {"dtable", required_argument, NULL, 33},
+        {"provider", required_argument, NULL, 34},
     #endif
         {NULL, 0, NULL, 0}
     };
@@ -420,7 +421,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     if (user_command_line)
     {
-
         int j;
         c=getopt_long(argc, argv_scan, ALLOWED_OPTIONS, longopts, &longindex);
 
@@ -431,49 +431,47 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             while ((c=getopt(argc, argv_scan, ALLOWED_OPTIONS)) != -1)
 #endif
             {
-
                 switch (c)
                 {
-                case 'g':  // normal group file input (command line)
-                case 'T':  // video title input
-                case 'i':  // directory audio imput
+                    case 'g':  // normal group file input (command line)
+                    case 'T':  // video title input
+                    case 'i':  // directory audio imput
 
-                    ngroups=nvideolinking_groups=n_g_groups=0;
-                    if (globals.veryverbose)
-                        foutput("%s\n", INF "Overriding configuration file specifications for audio input");
-                    // Useless to continue parsing
-                    //reset++;
-                    break;
+                        ngroups=nvideolinking_groups=n_g_groups=0;
+                        if (globals.veryverbose)
+                            foutput("%s\n", INF "Overriding configuration file specifications for audio input");
+                        // Useless to continue parsing
+                        //reset++;
+                        break;
 
-                case 'D' :
-                    free(globals.settings.tempdir);
-                    globals.settings.tempdir=strdup(optarg);
-                    foutput("%s%s\n",PAR "Temporary directory is: ", optarg);
+                    case 'D' :
+                        free(globals.settings.tempdir);
+                        globals.settings.tempdir=strdup(optarg);
+                        foutput("%s%s\n",PAR "Temporary directory is: ", optarg);
 
-                    break;
+                        break;
 
-                case 19:
-                    free(globals.settings.lplextempdir);
-                    globals.settings.lplextempdir=strdup(optarg);
-                    foutput("%s%s\n",PAR "Lplex temporary directory is: ", optarg);
-                    break;
+                    case 19:
+                        free(globals.settings.lplextempdir);
+                        globals.settings.lplextempdir=strdup(optarg);
+                        foutput("%s%s\n",PAR "Lplex temporary directory is: ", optarg);
+                        break;
 
-                case 20:
-                    free(globals.settings.lplexoutdir);
-                    globals.settings.lplexoutdir=strdup(optarg);
-                    foutput("%s%s\n",PAR "Lplex output directory is: ", optarg);
-                    break;
+                    case 20:
+                        free(globals.settings.lplexoutdir);
+                        globals.settings.lplexoutdir=strdup(optarg);
+                        foutput("%s%s\n",PAR "Lplex output directory is: ", optarg);
+                        break;
 
-                case 'X':
-                    free(globals.settings.workdir);
-                    globals.settings.workdir=strdup(optarg);
-                    foutput("%s%s\n",PAR "Working directory is: ", optarg);
-                    // WARNING never launch a command line with --mkisofs in the WORKDIR directory
-                    change_directory(globals.settings.workdir);
+                    case 'X':
+                        free(globals.settings.workdir);
+                        globals.settings.workdir=strdup(optarg);
+                        foutput("%s%s\n",PAR "Working directory is: ", optarg);
+                        // WARNING never launch a command line with --mkisofs in the WORKDIR directory
+                        change_directory(globals.settings.workdir);
 
-                    //reset++;
-                    break;
-
+                        //reset++;
+                        break;
 
                 }
             }
@@ -692,7 +690,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'F' :
         case 'f' :
 
-
             /* adjusting fixwav library globals to current ones
              * use local variables to initialise */
 
@@ -701,8 +698,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 clean_exit(EXIT_SUCCESS);
             }
             break;
-
-
 #endif
 
         }
@@ -863,11 +858,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     int downmixsize = 0;
     bool extract_audio_flag = 0;
     char* extract_args = NULL;
+    int track = 0;
+    int tr = 0;
     optind=0;
     opterr=1;
-
-
-
 
 #ifdef LONG_OPTIONS
     while ((c=getopt_long(argc, argv, ALLOWED_OPTIONS, longopts, &longindex)) != -1)
@@ -969,7 +963,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
             break;
 
-
         case 'W' :
             foutput("%s\n",PAR "Lexer was deactivated");
             globals.enable_lexer=0;
@@ -985,7 +978,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 break;
             }
             playtitleset[nplaygroups]=atoi(optarg);
-
             break;
 
         case 'c' :
@@ -994,30 +986,51 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case 32:
-            foutput("%s\n",PAR "Downmix coefficients: ", optarg);
+            foutput("%s%s\n",PAR "Downmix coefficients: ", optarg);
             downmixtexttable=fn_strtok(optarg, ',' , downmixtexttable, &downmixsize, 0,NULL,NULL); // 12
             if (downmixsize < 12) EXIT_ON_RUNTIME_ERROR_VERBOSE("Downmix coefficients should be 12. See help.")
-            command->db.use_table = false;
-            command->db.Lf_l = strtof(downmixtexttable[0], NULL);
-            command->db.Lf_r = strtof(downmixtexttable[1], NULL);
-            command->db.Rf_l = strtof(downmixtexttable[2], NULL);
-            command->db.Rf_r = strtof(downmixtexttable[3], NULL);
-            command->db.C_l = strtof(downmixtexttable[4], NULL);
-            command->db.C_r = strtof(downmixtexttable[5], NULL);
-            command->db.S_l = strtof(downmixtexttable[6], NULL);
-            command->db.S_r = strtof(downmixtexttable[7], NULL);
-            command->db.Rs_l = strtof(downmixtexttable[8], NULL);
-            command->db.Rs_r = strtof(downmixtexttable[9], NULL);
+            command->db.custom_table = true;
+            command->db.Lf_l  = strtof(downmixtexttable[0], NULL);
+            command->db.Lf_r  = strtof(downmixtexttable[1], NULL);
+            command->db.Rf_l  = strtof(downmixtexttable[2], NULL);
+            command->db.Rf_r  = strtof(downmixtexttable[3], NULL);
+            command->db.C_l   = strtof(downmixtexttable[4], NULL);
+            command->db.C_r   = strtof(downmixtexttable[5], NULL);
+            command->db.S_l   = strtof(downmixtexttable[6], NULL);
+            command->db.S_r   = strtof(downmixtexttable[7], NULL);
+            command->db.Rs_l  = strtof(downmixtexttable[8], NULL);
+            command->db.Rs_r  = strtof(downmixtexttable[9], NULL);
             command->db.LFE_l = strtof(downmixtexttable[10], NULL);
             command->db.LFE_r = strtof(downmixtexttable[11], NULL);
-
             break;
 
+        case 33:
+            foutput("%s%d%s\n",PAR "Downmix table for track: ", track, optarg);
+            tr = atoi(optarg);
+            if (tr > 16 || tr < 1)
+            {
+              foutput("%s\n", ERR "Downmix table index should be an integer between 1 and 16");
+              EXIT_ON_RUNTIME_ERROR_VERBOSE("Exiting...")
+            }
+
+            if (track < totntracks)
+               (&files[0][0] + track)->downmix_table_rank = (uint8_t) tr - 1;
+            else
+            {
+                foutput("%s %d\n", ERR "Downmix table index can only be specified for as many tracks there are: ", totntracks);
+                EXIT_ON_RUNTIME_ERROR_VERBOSE("Exiting...")
+            }
+            ++track;
+            break;
+
+        case 34:
+            foutput("%s%s\n", MSG_TAG "Provider: ", optarg);
+            memcpy(provider, optarg, Min(strlen(optarg), 30));
+            break;
 
         case 'k' :
             foutput("%s", PAR "Generates text table in IFO files.\n\n");
             globals.text=1;
-
             textable=fn_strtok(optarg, ',' , textable, &globals.textablesize, 0,NULL,NULL);
             break;
 
@@ -1036,9 +1049,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if (img->activeheader) sprintf(img->activeheader, "%s"SEPARATOR"%s", optarg, "menu"SEPARATOR"activeheader");
             free(globals.settings.datadir);
             globals.settings.datadir=strdup(optarg);
-
             break;
-
 
         case 'A':
 
@@ -1063,7 +1074,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                 img->stillpicvobsize=(uint32_t*) calloc(totntracks, sizeof(uint32_t));
             }
-
             break;
 
         case '1':
@@ -1111,7 +1121,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 globals.cdrecorddevice=strdup(optarg);
             break;
 
-
         case 'T':
 
             ngroups_scan++;
@@ -1123,7 +1132,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             files[ngroups-nvideolinking_groups+nvideolinking_groups_scan-1][0].first_PTS=0x249;
             // all other characteristics of videolinking titles ar null (handled by memset)
-
             break;
 
         case 'V' :
@@ -1134,7 +1142,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             free(globals.settings.linkdir);
             globals.settings.linkdir=strdup(optarg);
             foutput("%s%s\n", PAR "VIDEO_TS input directory is: ", optarg);
-
             break;
 
         case 'U':
@@ -1142,7 +1149,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s", PAR "Loop menu background video\n");
             img->loop=1;
             break;
-
 
         case 'f':
             globals.fixwav_virtual_enable=1;
@@ -1357,7 +1363,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             img->refresh=1;
 
             break;
-
 
         case '8':
             activepiccolorchain=strdup(optarg);
@@ -2412,6 +2417,7 @@ standard_checks:
         maximum_VTSI_rank,
         VTSI_rank,
         ntracks,
+        provider,
         img,
         files,
         textable,
