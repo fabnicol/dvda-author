@@ -466,6 +466,11 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
             i += 4;
             
             uint32_copy(&atsi[i], files[k + t].PTS_length);
+            FILE* file = fopen("/home/fab/log", "a");
+            char l[5] = {0};
+            sprintf(l, "%d", files[k + t].PTS_length);
+            fwrite(l, 4, 1, file);
+            fclose(file);
             i += 10;
         }
         
@@ -543,7 +548,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
         
                   if ((img->options) && (img->options[s+u])&&(img->options[s+u]->onset))
                      uint32_copy(&atsi[i],img->options[s+u]->onset*90000);
-                  else if ((img->options==NULL) || (img->options[s] == NULL) || (img->options[s]->manual == 0))
+                  else if ((img->options == NULL) || (img->options[s] == NULL) || (img->options[s]->manual == 0))
                      uint32_copy(&atsi[i], pictrackcount*90000); // defaulting to 1 second intervals
                   i+=4;
                   if ((img->options) && (img->options[s+u]))
@@ -565,7 +570,6 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
     // Pointer to following data
 
     uint32_copy(&atsi[0x0804],i-0x801);
-
 
     // PATCH 09.07: i > 2048*2 instead of i > 2048
     if (i > 4096)
