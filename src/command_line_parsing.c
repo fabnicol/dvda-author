@@ -1677,7 +1677,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     /* Fifth pass: it is now possible to safely copy files to temporary directory for menu and still pic creation  */
     // First parsing for input files (pics and mpgs)
 
-    bool use_ifo_files = true;
+    bool use_ifo_files = false;
     char * str=NULL;
     optind=0;
     opterr=1;
@@ -1858,8 +1858,17 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case 28:
-            foutput("%s%s\n", PAR "Extracting AOB to raw signed-integer PCM (headerless wav): ", optarg);
-            aob2wav_parsing(optarg);
+
+            use_ifo_files = false;
+            if (strstr(optarg, ".AOB") != NULL)
+            {
+              foutput("%s%s\n", PAR "Extracting AOB to raw signed-integer PCM (headerless wav): ", optarg);
+              aob2wav_parsing(optarg);
+            }
+            else  // using the directory with file structure
+            {
+              aob2wav_parsing(filter_dir_files(optarg, ".AOB"));
+            }
             break;
 
         case 29:
@@ -1873,6 +1882,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             {
               aob2wav_parsing(filter_dir_files(optarg, ".AOB"));
             }
+            use_ifo_files = true;
 
             break;
 
