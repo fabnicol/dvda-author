@@ -420,7 +420,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
         if (wav_numbytes > 0)
         {
             lpcm_payload_cut = wav_numbytes - *written_bytes;
-            if (lpcm_payload_cut < lpcm_payload)
+            if (lpcm_payload_cut < lpcm_payload && *position == MIDDLE_PACK)
             {
                 *position = CUT_PACK;
             }
@@ -503,7 +503,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 
     int fpout_size_increment = fwrite(audio_buf, 1, res, info->outfile.fp);
     
-    if (*position == LAST_PACK || *position == CUT_PACK)
+    if (*position == LAST_PACK || *position == CUT_PACK_RMDR)
     {
         S_CLOSE(info->outfile)
     }
@@ -511,7 +511,8 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
     if (offset1 + offset0 >= filesize(info->infile))
         *position = END_OF_AOB;
     else
-        fseeko(info->infile.fp, offset1, SEEK_CUR);
+        if (offset1)
+           fseeko(info->infile.fp, offset0 + offset1, SEEK_SET);
    
     if (globals.maxverbose)
            foutput(MSG_TAG "Position : %d\n", *position);
@@ -938,7 +939,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
 
                 S_CLOSE(info->outfile)
 
-                if (position == LAST_PACK)
+                if (position == LAST_PACK || position == CUT_PACK_RMDR)
                 {
                     if (globals.veryverbose)
                             foutput("%s\n", INF "Closing track and opening new one.");
