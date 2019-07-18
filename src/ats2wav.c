@@ -368,10 +368,12 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
                                             unsigned long *pack_in_title,
                                             unsigned long *pack_in_group)
 {
+
     int audio_bytes;
     uint8_t PES_packet_len_bytes[2];
     uint8_t audio_buf[2048 * 2]; // in case of incomplete buffer shift
-
+    uint8_t continuity_save = *continuity;
+    bool forensic_cut = false;
     // CAUTION : check coherence of this table and the S table of audio.c, of which it is only a subset.
 
     const uint16_t T[2][6][6]=     // 16-bit table
@@ -462,6 +464,16 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
                     audio_bytes = lpcm_payload;
                     fseeko(info->infile.fp, offset0 + 29, SEEK_SET);
                     fread(continuity, 1, 1, info->infile.fp);
+                    if (wav_numbytes == 0 && continuity_save != 0 && continuity_save != 0x1F && *continuity == 0)
+                    {
+                       // written bytes are in excess in case of gapless tracks
+                       // rolling back, no pack increment
+                       fseeko(info->infile.fp, offset0, SEEK_SET);
+                       forensic_cut = true;
+                       offset1 = 0;  // do not go ahead until next file loop
+                       *position = CUT_PACK_RMDR;
+                       break;
+                    }
                     fseeko(info->infile.fp, midpack_lpcm_headerquantity + 2, SEEK_CUR);
                     ++*pack_in_track;
                     ++*pack_in_title;
@@ -489,19 +501,24 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 
     // Here "cut" for a so-called 'gapless' track
     // The cut should respect the size of permutation tables.
-           
-    res += fread(audio_buf + res, 1, audio_bytes, info->infile.fp);
 
-    if (globals.maxverbose)    
-    {
-       foutput(MSG_TAG "Audio bytes: %d, res: %d\n", audio_bytes, res);
-       if (res != audio_bytes)
-           foutput(WAR "Caution : Read %d instead of %d\n", res, audio_bytes);
-    }
-    
-    convert_buffer(header, audio_buf, res);
+    int fpout_size_increment = 0;
 
-    int fpout_size_increment = fwrite(audio_buf, 1, res, info->outfile.fp);
+    if (! forensic_cut)
+       {
+            res += fread(audio_buf + res, 1, audio_bytes, info->infile.fp);
+
+            if (globals.maxverbose)
+            {
+               foutput(MSG_TAG "Audio bytes: %d, res: %d\n", audio_bytes, res);
+               if (res != audio_bytes)
+                   foutput(WAR "Caution : Read %d instead of %d\n", res, audio_bytes);
+            }
+
+            convert_buffer(header, audio_buf, res);
+
+            fpout_size_increment = fwrite(audio_buf, 1, res, info->outfile.fp);
+       }
     
     if (*position == LAST_PACK || *position == CUT_PACK_RMDR)
     {
@@ -637,7 +654,6 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                 foutput("%s %d\n", MSG_TAG "Continuity counter has wrong value (should be 0): ", continuity);
         }
 
-
         // Track loop
            do {
 
@@ -771,18 +787,11 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
 
                     if (wav_numbytes == 0)
                     {
-                        if (continuity_save != 0 && continuity_save != 0x1F && continuity == 0)
-                        {
-
-                           files[i][track]->wav_numbytes = 0;
-                           files[i][track]->numbytes  = written_bytes;
-                           ++track;
-                           if (globals.veryverbose)
-                              foutput("%s %d %s %d %s %d  %s %lu\n", MSG_TAG "Group ", i + 1, "Title ", title + 1, "Track ", track, "Written bytes: ", written_bytes);
-                           // written bytes are in excess in case of gapless tracks
-
-                           break;
-                        }
+                         files[i][track]->wav_numbytes = 0;
+                         files[i][track]->numbytes  = written_bytes;
+                         ++track;
+                         if (globals.veryverbose)
+                            foutput("%s %d %s %d %s %d  %s %lu\n", MSG_TAG "Group ", i + 1, "Title ", title + 1, "Track ", track, "Written bytes: ", written_bytes);
                     }
                     else
                     {
