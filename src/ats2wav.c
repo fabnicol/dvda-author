@@ -757,6 +757,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                 do
                 {
                     continuity_save = continuity;
+
                     get_pes_packet_audio(info,
                                          &header,
                                          &position,
@@ -787,11 +788,15 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
 
                     if (wav_numbytes == 0)
                     {
-                         files[i][track]->wav_numbytes = 0;
-                         files[i][track]->numbytes  = written_bytes;
-                         ++track;
-                         if (globals.veryverbose)
-                            foutput("%s %d %s %d %s %d  %s %lu\n", MSG_TAG "Group ", i + 1, "Title ", title + 1, "Track ", track, "Written bytes: ", written_bytes);
+                        if (continuity_save != 0 && continuity_save != 0x1F && continuity == 0)
+                        {
+                             files[i][track]->wav_numbytes = 0;
+                             files[i][track]->numbytes  = written_bytes;
+                             ++track;
+                             if (globals.veryverbose)
+                                foutput("%s %d %s %d %s %d  %s %lu\n", MSG_TAG "Group ", i + 1, "Title ", title + 1, "Track ", track, "Written bytes: ", written_bytes);
+                             break;
+                        }
                     }
                     else
                     {
@@ -879,7 +884,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
 
                 new_track = false;
 
-                if (wav_numbytes - written_bytes > files[i][track]->lpcm_payload)
+                if (wav_numbytes && wav_numbytes - written_bytes > files[i][track]->lpcm_payload)
                 {
                   foutput(WAR "Remaining bytes %lu in excess of payload %d \n", wav_numbytes - written_bytes, files[i][track]->lpcm_payload);
 
