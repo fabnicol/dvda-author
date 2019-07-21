@@ -1,4 +1,4 @@
-prefix=/home/fab2/Dev/dvda-author/local
+prefix=/home/fab/Dev/dvda-author/local
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include

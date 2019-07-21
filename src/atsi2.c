@@ -466,11 +466,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
             i += 4;
             
             uint32_copy(&atsi[i], files[k + t].PTS_length);
-            FILE* file = fopen("/home/fab/log", "a");
-            char l[5] = {0};
-            sprintf(l, "%d", files[k + t].PTS_length);
-            fwrite(l, 4, 1, file);
-            fclose(file);
+
             i += 10;
         }
         
