@@ -425,6 +425,14 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
             if (lpcm_payload_cut < lpcm_payload && *position == MIDDLE_PACK)
             {
                 *position = CUT_PACK;
+                if (globals.veryverbose) foutput(INF "Cutting track sector %lu using %lu %s\n",
+                                                 *pack_in_track,
+                                                 lpcm_payload_cut,
+                                                 " bytes.");
+                if (globals.maxverbose)
+                 {
+                   foutput("%s %lu\n", INF "Looping next sector...", pack_in_group - 1);
+                 }
             }
         }
     }
@@ -520,7 +528,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
             fpout_size_increment = fwrite(audio_buf, 1, res, info->outfile.fp);
        }
     
-    if (*position == LAST_PACK || *position == CUT_PACK_RMDR)
+    if (*position == LAST_PACK || (*position == CUT_PACK_RMDR && offset1 == 0))
     {
         S_CLOSE(info->outfile)
     }
@@ -529,7 +537,10 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
         *position = END_OF_AOB;
     else
         if (offset1)
+        {
            fseeko(info->infile.fp, offset0 + offset1, SEEK_SET);
+           if (*position == CUT_PACK_RMDR) *position = MIDDLE_PACK;
+        }
    
     if (globals.maxverbose)
            foutput(MSG_TAG "Position : %d\n", *position);
@@ -639,14 +650,15 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
         uint8_t continuity_save = 0;
         unsigned long pack_in_title = 1;
 
-        do
-        {
-            position = peek_pes_packet_audio(info, &header, &status, &continuity);
-            
-            if (status == VALID) break;
-        }
-        while (position == FIRST_PACK 
-               || position == MIDDLE_PACK);
+        if (position != CUT_PACK_RMDR)
+            do
+            {
+                position = peek_pes_packet_audio(info, &header, &status, &continuity);
+
+                if (status == VALID) break;
+            }
+            while (position == FIRST_PACK
+                   || position == MIDDLE_PACK);
         
         if (continuity != 0)
         {
@@ -750,7 +762,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
 
                 /* second pass to get the audio */
 
-                position = FIRST_PACK;
+                if (position != CUT_PACK_RMDR) position = FIRST_PACK;
                 uint64_t written_bytes = 0;
                 unsigned long rmdr_payload = 0;
 
@@ -800,25 +812,29 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                     }
                     else
                     {
-
                         if (wav_numbytes > written_bytes)
                         {
-                           if (position == CUT_PACK)
-                           {
-                              rmdr_payload = (unsigned long) (wav_numbytes - written_bytes);
-                              if (globals.veryverbose) foutput("%s %lu %s\n", INF "Cutting next sector using ", rmdr_payload, " bytes.");
-                              if (globals.maxverbose)
-                               {
-                                  foutput("%s %lu\n", INF "Looping next sector...", pack_in_group - 1);
-                               }
+                            if (globals.maxverbose)
+                            {
+                                foutput(INF "Track %d Pack %lu | Title %d Pack %lu | Group %d Pack %lu : "
+                                              " to complete file from: %" PRIu64
+                                              " to: %" PRIu64 " audio bytes.\n",
+                                              track,             // 1-based
+                                              pack_in_track - 1, // 1-based
+                                              title + 1,         // 0-based
+                                              pack_in_title - 1, // 1-based
+                                              i + 1,         // 1-based
+                                              pack_in_group - 1, // 1-based
+                                              wav_numbytes - rmdr_payload,
+                                              wav_numbytes);
+                            }
 
-                              position = CUT_PACK_RMDR;
-                           }
+                            rmdr_payload = wav_numbytes - written_bytes;
+
                         }
                         else
                         if (wav_numbytes == written_bytes)
                         {
-
                             files[i][track]->wav_numbytes = written_bytes;
                             files[i][track]->numbytes  = written_bytes;
 
@@ -845,7 +861,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                                       foutput(WAR "IFO last sector incorrect: %lu against current %lu\n", files[i][track-1]->last_sector, pack_in_group - 1);
                                   }
 
-                                  if (position != LAST_PACK && position != END_OF_AOB)
+                                  if (position != LAST_PACK && position != END_OF_AOB && position != CUT_PACK_RMDR)
                                   {
                                       if (continuity != 0)
                                       {

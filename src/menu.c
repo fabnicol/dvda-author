@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <errno.h>
 #include <math.h>
@@ -17,12 +18,12 @@
 #include <sys/stat.h>
 #include "structures.h"
 #include "c_utils.h"
-#include "commonvars.h"
 #include "launch_manager.h"
 #include "winport.h"
 #include "auxiliary.h"
 #include "amg.h"
 #include "menu.h"
+#include "commonvars.h"
 
 extern globalData globals;
 

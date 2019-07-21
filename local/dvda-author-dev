@@ -1,6 +1,0 @@
-#!/bin/bash
-export LD_LIBRARY_PATH=/opt/dvda-author/lib
-export MAGICK_CONFIGURE_PATH=/opt/dvda-author/lib/ImageMagick-7.0.8/config-Q16HDRI/ 
-/opt/dvda-author/dvda  -W --bindir /opt/dvda-author/bin --datadir /opt/dvda-author --workdir /opt/dvda-author/ $*
-unset LD_LIBRARY_PATH
-
