@@ -43,7 +43,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 extern globalData globals;
 extern uint8_t channels[21];
-static uint8_t cgadef[]={0,  1,  7,  3,   16,   17};
+static uint8_t default_cga[]={0,  1,  7,  3,   16,   17};
 
 /* pack_scr was taken from mplex (part of the mjpegtools) */
 #define MARKER_MPEG2_SCR 1
@@ -493,7 +493,7 @@ inline static void write_lpcm_header(FILE* fp, uint8_t header_length, fileinfo_t
         sample_rate[0] = high_nibble << 4 | high_nibble;
     }
 
-    channel_assignment[0] = cgadef[info->channels -1];
+    channel_assignment[0] = default_cga[info->channels -1];
 
     bytes_written = pack_in_title == 0 ? 0 : (pack_in_title*info->lpcm_payload)-info->firstpackdecrement;
     // e.g., for 4ch, First pack is 1984, rest are 2000

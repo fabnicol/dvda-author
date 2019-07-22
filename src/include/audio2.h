@@ -37,20 +37,21 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #define AFMT_WAVE 1
 #define AFMT_FLAC 2
+#define AFMT_MLP 5
 #define AFMT_OGG_FLAC 3
 #define NO_AFMT_FOUND 4
 #define AFMT_WAVE_GOOD_HEADER 10
 #define AFMT_WAVE_FIXED 11
 
 
-int wav_getinfo(fileinfo_t* info);
+int audiofile_getinfo(fileinfo_t* info);
 int flac_getinfo(fileinfo_t* info);
 int audio_open(fileinfo_t* info);
 uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer);
 int audio_close(fileinfo_t* info);
 int fixwav_repair(fileinfo_t *info);
 int launch_sox(char** filename);
-command_t *scan_wavfile_audio_characteristics(command_t *command);
+command_t *scan_audiofile_characteristics(command_t *command);
 void read_defaults();
 
 

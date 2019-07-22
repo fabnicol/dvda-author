@@ -54,6 +54,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "libsoxconvert.h"
 #endif
 #include "multichannel.h"
+#include "file_input_parsing.h"
 
 
 extern globalData globals;
@@ -331,104 +332,112 @@ int calc_info(fileinfo_t* info)
 // This function cleans up the list of input files by filtering out non-compliant audio input (format undefined or impossible to correct by other options)
 // Group and track numbers are readjusted and shifted down (recursively) when one or more files are rejected
 
-command_t *scan_wavfile_audio_characteristics(command_t *command)
+command_t *scan_audiofile_characteristics(command_t *command)
 {
-
     short int  l, delta=0;
     int error=0;
     static uint8_t i,j;
 
     // retrieving information as to sound file format
 
-    error = wav_getinfo(&command->files[i][j]);
+    error = audiofile_getinfo(&command->files[i][j]);
 
     // dealing with format information
 
     switch (error)
     {
-    case AFMT_WAVE:
-        if (globals.debugging) foutput(MSG_TAG "Found WAVE format for %s\n", command->files[i][j].filename);
-        command->files[i][j].type=AFMT_WAVE;
-        j++;
-        break;
-    case AFMT_WAVE_FIXED:
-        if (globals.debugging) foutput(MSG_TAG "Found WAVE format (fixed) for %s\n", command->files[i][j].filename);
-        command->files[i][j].type=AFMT_WAVE;
-        j++;
-        break;
-    case AFMT_WAVE_GOOD_HEADER:
-        if (globals.debugging) foutput(MSG_TAG "Found WAVE format (original) for %s\n", command->files[i][j].filename);
-        command->files[i][j].type=AFMT_WAVE;
-        j++;
-        break;
+        case AFMT_WAVE:
+            if (globals.debugging) foutput(MSG_TAG "Found WAVE format for %s\n", command->files[i][j].filename);
+            command->files[i][j].type=AFMT_WAVE;
+            j++;
+            break;
 
-#ifndef WITHOUT_FLAC
-    case AFMT_FLAC:
-        if (globals.debugging) foutput(MSG_TAG "Found FLAC format for %s\n", command->files[i][j].filename);
-        error=flac_getinfo(&command->files[i][j]);
-        j++;
-        break;
-#if !defined WITHOUT_libogg
-#if defined HAVE_OGG_FLAC && HAVE_OGG_FLAC == 1
-    case AFMT_OGG_FLAC:
-        if (globals.debugging) foutput(MSG_TAG "Found Ogg FLAC format for %s\n", command->files[i][j].filename);
-        error=flac_getinfo(&command->files[i][j]);
-        j++;
-        break;
-#endif
-#endif
-#endif
+        case AFMT_WAVE_FIXED:
+            if (globals.debugging) foutput(MSG_TAG "Found WAVE format (fixed) for %s\n", command->files[i][j].filename);
+            command->files[i][j].type=AFMT_WAVE;
+            j++;
+            break;
 
-    case NO_AFMT_FOUND:
-        if (globals.debugging) foutput(ERR "No compatible format was found for %s\n       Skipping file...\n", command->files[i][j].filename);
+        case AFMT_WAVE_GOOD_HEADER:
+            if (globals.debugging) foutput(MSG_TAG "Found WAVE format (original) for %s\n", command->files[i][j].filename);
+            command->files[i][j].type=AFMT_WAVE;
+            j++;
+            break;
 
-        // House-cleaning rules: getting rid of files with unknown format
+        case AFMT_MLP:
+            if (globals.debugging) foutput(MSG_TAG "Found MLP format for %s\n", command->files[i][j].filename);
+            command->files[i][j].type = AFMT_MLP;
+            j++;
+            break;
 
-        // taking off one track;
+    #ifndef WITHOUT_FLAC
+        case AFMT_FLAC:
+            if (globals.debugging) foutput(MSG_TAG "Found FLAC format for %s\n", command->files[i][j].filename);
+            error=flac_getinfo(&command->files[i][j]);
+            j++;
+            break;
 
-        command->ntracks[i]--;
+    #if !defined WITHOUT_libogg
+    #if defined HAVE_OGG_FLAC && HAVE_OGG_FLAC == 1
+        case AFMT_OGG_FLAC:
+            if (globals.debugging) foutput(MSG_TAG "Found Ogg FLAC format for %s\n", command->files[i][j].filename);
+            error=flac_getinfo(&command->files[i][j]);
+            j++;
+            break;
+    #endif
+    #endif
+    #endif
 
-        // group demotion: if there is no track left in groups, taking off one group
+        case NO_AFMT_FOUND:
+            if (globals.debugging) foutput(ERR "No compatible format was found for %s\n       Skipping file...\n", command->files[i][j].filename);
 
-        if (command->ntracks[i] == 0)
-        {
-            // taking off one group
+            // House-cleaning rules: getting rid of files with unknown format
 
-            command->ngroups--;
+            // taking off one track;
 
-            // getting out of both loops, check end on inner=end of outer
-            if (i == command->ngroups-command->nvideolinking_groups)
-              {
-                  if (i) return(command);
-                  else exit(EXIT_FAILURE);
-              }
+            command->ntracks[i]--;
 
-            // shifting indices for ntracks: all groups have indices decremented, so ntracks[g+1] is now ntracks[g]
+            // group demotion: if there is no track left in groups, taking off one group
 
-            for (l=i; l < command->ngroups-command->nvideolinking_groups; l++)
+            if (command->ntracks[i] == 0)
             {
-                command->ntracks[l]=command->ntracks[l+1];
-                if (globals.debugging)
-                    foutput(INF "Shifting track count for group=%d->%d\n", l+1, l+2);
+                // taking off one group
+
+                command->ngroups--;
+
+                // getting out of both loops, check end on inner=end of outer
+                if (i == command->ngroups-command->nvideolinking_groups)
+                  {
+                      if (i) return(command);
+                      else exit(EXIT_FAILURE);
+                  }
+
+                // shifting indices for ntracks: all groups have indices decremented, so ntracks[g+1] is now ntracks[g]
+
+                for (l=i; l < command->ngroups-command->nvideolinking_groups; l++)
+                {
+                    command->ntracks[l]=command->ntracks[l+1];
+                    if (globals.debugging)
+                        foutput(INF "Shifting track count for group=%d->%d\n", l+1, l+2);
+                }
+                // delta is a flag for group demotion
+                delta=1;
+
+
             }
-            // delta is a flag for group demotion
-            delta=1;
+            // shifting indices for files (two cases: delta=0 for same group track-shifting, delta=1 for group demotion
 
+            for (l=j; l < command->ntracks[i+delta]; l++)
+            {
+                // a recursion is unavoidable save for j=last track in group
+                int i_shift=i+delta;
+                int l_shift=l+1-delta;
+                if (globals.debugging)
+                    foutput(INF "Shifting indices for group=%d->%d, track=%d->%d\n", i+1, i_shift+1, l+1, l_shift+1);
 
-        }
-        // shifting indices for files (two cases: delta=0 for same group track-shifting, delta=1 for group demotion
-
-        for (l=j; l < command->ntracks[i+delta]; l++)
-        {
-            // a recursion is unavoidable save for j=last track in group
-            int i_shift=i+delta;
-            int l_shift=l+1-delta;
-            if (globals.debugging)
-                foutput(INF "Shifting indices for group=%d->%d, track=%d->%d\n", i+1, i_shift+1, l+1, l_shift+1);
-
-            command->files[i][l]=command->files[i_shift][l_shift];
-        }
-        break;
+                command->files[i][l]=command->files[i_shift][l_shift];
+            }
+            break;
     }
 
 // assigning channel
@@ -450,7 +459,7 @@ command_t *scan_wavfile_audio_characteristics(command_t *command)
 
         return command;
 // recursion
-    if (command->files[i][j].filename) scan_wavfile_audio_characteristics(command);
+    if (command->files[i][j].filename) scan_audiofile_characteristics(command);
     return(command);
 }
 
@@ -510,19 +519,121 @@ static inline int compute_header_size(FILE* fp)
 static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, fileinfo_t* info)
 {
 
-    if ((memcmp(header,"RIFF",4) != 0) || (memcmp(&header[8],"WAVEfmt",7) != 0))
+    if (header[4] == 0xF8 && header[5] == 0x72 && header[6] == 0x6F && header[7] == 0xBB)
     {
-    #ifndef WITHOUT_FLAC
+        unsigned long pathl = strlen(path);
+        if (pathl > 3)
+        {
+         if (path[pathl - 1] == 'p'
+             && path[pathl - 2] == 'l'
+             && path[pathl - 3] == 'm'
+             && path[pathl - 4] == '.')
+         {
+             foutput("%s %s\n", INF "Auditing MLP file", path);
+         }
+         else
+         {
+              if (globals.veryverbose)
+              {
+                  foutput("%s %s %s\n", WAR "Audio file", path, "has MLP major sync header yet no file extenion .mlp. Proceeding as if MLP...");
+              }
+         }
 
-        /* Other formats than WAV: parsing headers */
+        }
+        else
+        {
+            if (globals.veryverbose)
+            {
+                foutput("%s %s %s\n", WAR "Audio file", path, "has MLP major sync header yet no file extenion .mlp. Proceeding as if MLP...");
+            }
+        }
+
+        switch (header[8])
+        {
+            case 0x00:
+            case 0x0f:
+                info->bitspersample = 16;
+            break;
+
+            case 0x11:
+            case 0x1f:
+                info->bitspersample = 20;
+                break;
+
+            case 0x22:
+            case 0x2f:
+                info->bitspersample = 24;
+                break;
+
+            default:
+                break;
+        }
+
+        switch (header[9])
+        {
+            case 0x00:
+            case 0x0f:
+                info->samplerate = 48000;
+                break;
+
+            case 0x11:
+            case 0x1f:
+                info->samplerate = 96000;
+                break;
+
+            case 0x22:
+            case 0x2f:
+                info->samplerate = 192000;
+                break;
+
+            case 0x88:
+            case 0x8f:
+                info->samplerate = 44100;
+                break;
+
+            case 0x99:
+            case 0x9f:
+                info->samplerate = 88200;
+                break;
+
+            case 0xaa:
+            case 0xaf:
+                info->samplerate = 176400;
+                break;
+
+            default:
+                break;
+        }
+
+        info->cga =  check_cga_assignment(header[11]);
+        info->channels = cga_to_channel(info->cga);
+        if (info->cga == 0xFF)
+        {
+            foutput(ERR "Could not detect number of channels for MLP file %s with channel group assignment: %d\n", info->filename, header[11]);
+        }
+        else
+        if (info->channels == 0)
+        {
+            foutput(ERR "Could not detect number of channels for MLP file %s with channel group assignment: %d (%s)\n", info->filename, info->cga, cga_define[info->cga]);
+        }
+
+        return(info->type = AFMT_MLP);
+    }
+    else
+    if (memcmp(header,"RIFF",4) != 0 || memcmp(&header[8],"WAVEfmt",7) != 0)
+    {
+#      ifndef WITHOUT_FLAC
+
+        // Other formats than WAV: parsing headers
+
         if (memcmp(header,"fLaC",4) == 0 )
             return(info->type = AFMT_FLAC);
 
         if ((memcmp(header,"OggS",4) == 0 ) && (memcmp(header+0x17, "FLAC", 4) != 0))
             return(info->type = AFMT_OGG_FLAC);
 
-    #endif
-    #ifndef WITHOUT_sox
+#      endif
+#      ifndef WITHOUT_sox
 
             if (globals.sox_enable)
             {
@@ -540,9 +651,10 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
                     {
                        info->filename = path;
 
-                       return(info->type = wav_getinfo(info));
+                       return(info->type = audiofile_getinfo(info));
                     }
-// yet without the processing tail below (preserving new header[] array and info structure)
+          // yet without the processing tail below (preserving new header[] array and info structure)
+
                 }
                 else
                 {
@@ -565,16 +677,16 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
                       // PATCH looping back to get info
                         {
                             if (info->audio) free(info->audio);
-                            return(info->type = wav_getinfo(info));
+                            return(info->type = audiofile_getinfo(info));
                         }
                           // yet without the processing tail below (preserving new header[] array and info structure)
                   }
                }
             }
 
-   #endif
+#      endif
 
-}
+    }
 
   // BUGFIX: consequence of generalizing use of fixwav
 
@@ -620,7 +732,7 @@ static inline void clean_file(fileinfo_t* info, int u)
     }
 }
 
-static inline int process_wav_get_info(fileinfo_t* info)
+static inline int process_audiofile_info(fileinfo_t* info)
 {
 // C99 needed
 
@@ -716,7 +828,7 @@ static inline int wav_getinfo_merged(fileinfo_t *info)
     uint32_t samplerate=info->samplerate;
     uint64_t numbytes=info->numbytes;
 
-    info->type=process_wav_get_info(info);
+    info->type=process_audiofile_info(info);
 
     if (info->channels != nchannels)
     {
@@ -748,7 +860,7 @@ static inline int wav_getinfo_merged(fileinfo_t *info)
 }
 
 
-int wav_getinfo(fileinfo_t* info)
+int audiofile_getinfo(fileinfo_t* info)
 {
 
     info->audio = (audio_input_t*) calloc(1, sizeof(audio_input_t));
@@ -772,7 +884,7 @@ int wav_getinfo(fileinfo_t* info)
       if (globals.debugging) foutput(INF "Opening %s to get info\n", info->filename);
     }
 
-    process_wav_get_info(info);
+    process_audiofile_info(info);
 
     return(info->type);
 }
@@ -784,7 +896,7 @@ int flac_getinfo(fileinfo_t* info)
     FLAC__StreamDecoder* flac;
     FLAC__StreamDecoderInitStatus  result=0;
 
-    flac=FLAC__stream_decoder_new();
+    flac = FLAC__stream_decoder_new();
 
     if (flac!=NULL)
     {
@@ -1067,7 +1179,8 @@ int audio_open(fileinfo_t* info)
     info->audio->n=0;
     info->audio->eos=0;
 
-    if (info->type==AFMT_WAVE)
+
+    if (info->type == AFMT_WAVE || info->type == AFMT_MLP)
     {
         if (info->mergeflag)
         {
@@ -1091,18 +1204,21 @@ int audio_open(fileinfo_t* info)
         {
             if (globals.debugging) foutput("%s %s\n", INF "Opening", info->filename);
 
-            info->audio->fp=fopen(info->filename,"rb");
+            info->audio->fp = fopen(info->filename,"rb");
 
-            if (info->audio->fp==NULL)
+            if (info->audio->fp == NULL)
             {
                 return(1);
             }
-    #ifdef __WIN32__
-            info->file_size = read_file_size(info->audio->fp, (TCHAR*) info->filename);
-    #else
-            info->file_size = read_file_size(info->audio->fp, info->filename);
-    #endif
-               fseek(info->audio->fp, info->header_size,SEEK_SET);
+
+#           ifdef _WIN32
+              info->file_size = read_file_size(info->audio->fp, (TCHAR*) info->filename);
+#           else
+              info->file_size = read_file_size(info->audio->fp, info->filename);
+#           endif
+
+            if (info->type == AFMT_MLP)
+                fseek(info->audio->fp, info->header_size, SEEK_SET);
         }
 
         info->audio->bytesread=0;

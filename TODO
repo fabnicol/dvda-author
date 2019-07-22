@@ -1,27 +1,10 @@
 
 FIX BUGS:
 
-audio.c:
-          scan_wavfile_audio_characteristics
-            Infinite loop at end of block
-
-          wav_getinfo
-            issue with info->audio allocation
-
-          process_wav_get_info
-            does not retrieve info->type
-
-launch-manager.c:
-
-          launch_manager :178
-            segfaults on nullptr.
-
-
 
 
 Short term
 ----------
-use SoX to automatically merge files (mono and stereo) into multichannel, check on cga
 
 fix lack of relative paths for -x -o
 add sanity check if -o . ! (avoid cur dir erasure...)

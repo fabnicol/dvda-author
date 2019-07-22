@@ -98,7 +98,7 @@ int launch_manager(command_t *command)
     change_directory(globals.settings.workdir);
 
     foutput("\n%s", "DVD Layout\n");
-    foutput("%s\n",ANSI_COLOR_BLUE"Group"ANSI_COLOR_GREEN"  Track    "ANSI_COLOR_YELLOW"Rate"ANSI_COLOR_RED" Bits"ANSI_COLOR_RESET"  Ch        Length  Filename\n");
+    foutput("%s\n",ANSI_COLOR_BLUE"Group"ANSI_COLOR_GREEN"  Track    "ANSI_COLOR_YELLOW"Rate"ANSI_COLOR_RED" Bits"ANSI_COLOR_RESET"  Ch Ch. Assignt.      Length  Filename\n");
 
     // ngroups does not include copy groups from then on -- nplaygroups are just virtual (no added bytes to disc)
     // number of groups=ngroups+nplaygroups
@@ -121,7 +121,10 @@ int launch_manager(command_t *command)
         for (j = 0; j < nfiles[i];  ++j)
         {
             // As files[][] is dynamically allocated with calloc(), 0 values mean command line did not define cga values
-            if (files[i][j].cga == 0) files[i][j].cga=cgadef[files[i][j].channels-1];
+
+            if (files[i][j].cga == 0 || files[i][j].cga == 0xFF)  // non-assigned (calloc 0 value) or assigned with illegal value previously detected as such (0xFF)
+                files[i][j].cga = default_cga[files[i][j].channels-1];
+
             files[i][j].contin_track = (uint8_t) (j != nfiles[i] - 1);
 
             if ((files[i][j].samplerate > 48000
@@ -130,12 +133,32 @@ int launch_manager(command_t *command)
                 ||
                 (files[i][j].channels > 2 && files[i][j].samplerate > 96000))
             {
-              foutput("%s %s %s %d %s %d %s %d %s\n", ANSI_COLOR_RED "[ERR] File ", files[i][j].filename, " cannot be recorded to DVD-Audio without MLP encoding (", files[i][j].channels, " channels, ", files[i][j].bitspersample, " bits, ", files[i][j].samplerate, " samples per second.)");
+              foutput("%s %s %s %d %s %d %s %d %s\n",
+                      ANSI_COLOR_RED "[ERR] File ",
+                      files[i][j].filename,
+                      " cannot be recorded to DVD-Audio without MLP encoding (",
+                      files[i][j].channels,
+                      " channels, ",
+                      files[i][j].bitspersample,
+                      " bits, ",
+                      files[i][j].samplerate,
+                      " samples per second.)");
               clean_exit(-1);
             }
 
-            foutput("%c%c  "ANSI_COLOR_BLUE"%d     "ANSI_COLOR_GREEN"%02d"ANSI_COLOR_YELLOW"  %6"PRIu32"   "ANSI_COLOR_RED"%02d"ANSI_COLOR_RESET"   %d   %10"PRIu64"   ", joinmark[i][j], singlestar[i], i + 1, j + 1, files[i][j].samplerate, files[i][j].bitspersample, files[i][j].channels, files[i][j].numsamples);
+            foutput("%c%c  " ANSI_COLOR_BLUE "%d     " ANSI_COLOR_GREEN "%02d" ANSI_COLOR_YELLOW "  %6" PRIu32 "   " ANSI_COLOR_RED "%02d" ANSI_COLOR_RESET "   %d %s   %10" PRIu64 "   ",
+                    joinmark[i][j],
+                    singlestar[i],
+                    i + 1,
+                    j + 1,
+                    files[i][j].samplerate,
+                    files[i][j].bitspersample,
+                    files[i][j].channels,
+                    files[i][j].cga < 21 ? cga_define[files[i][j].cga] : "Unknown",
+                    files[i][j].numsamples);
+
             foutput("%s\n", files[i][j].filename);
+
             totalsize += files[i][j].numbytes;
         }
     }
