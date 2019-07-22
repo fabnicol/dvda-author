@@ -125,7 +125,47 @@ printf("%s","-z,                      BROKEN. Separate two consecutive titles wh
 printf("%s","-Z, --playlist           You may specify up to 9 group copies." J "Total number of groups and copy groups should not exceed 9.\n");
 printf("%s","-n, --no-videozone       Do not generate an empty VIDEO_TS directory.\n\n");
 printf("%s","-w, --rights             Access rights to directories created (octal values)\n\n");
-printf("%s","-c, --cga                Enter channel group assignment right after group (-g).\n\n");
+printf("%s","-c, --cga                Enter channel group assignment right after group, e.g: -g file1...fileN -c cga1...cgaN" J "Channel assignment should match number of channels of each file"
+J "Combine channels using either decimal indexes in following table or hyphenated channel assignement labels"
+J " e.g. -g a.wav -g b.wav -c Lf-Rf-C2-Lfe2-S2 --cga 17"
+J "Channel group assignment (CGA)"
+J "    Index     1    2        3         4        5       6"
+J "      0       M"
+J "      1       L     R"
+J "      2       Lf    Rf      S2"
+J "      3       Lf    Rf      Ls2      Rs2"
+J "      4       Lf    Rf      Lfe2"
+J "      5       Lf    Rf      Lfe2     S2"
+J "      6       Lf    Rf      Lfe2     Ls2      Rs2"
+J "      7       Lf    Rf      C2"
+J "      8       Lf    Rf      C2       S2"
+J "      9       Lf    Rf      C2       Ls2      Rs2"
+J "      0xA-10  Lf    Rf      C2       Lfe2"
+J "      0xB-11  Lf    Rf      C2       Lfe2     S2"
+J "      0xC-12  Lf    Rf      C2       Lfe2     Ls2      Rs2"
+J "      0xD-13  Lf    Rf      C        S2"
+J "      0xE-14  Lf    Rf      C        Ls2      Rs2"
+J "      0xF-15  Lf    Rf      C        Lfe2"
+J "      0x10-16 Lf    Rf      C        Lfe2     S2"
+J "      0x11-17 Lf    Rf      C        Lfe2     Ls2      Rs2"
+J "      0x12-18 Lf    Rf      Ls       Rs       Lfe2"
+J "      0x13-19 Lf    Rf      Ls       Rs       C2"
+J "      0x14-20 Lf    Rf      Ls       Rs       C2       Lfe2"
+J " Keys:"
+J " Index 2 means channel belongs to Group2"
+J " M: Mono"
+J " Lf: Left front"
+J " Rf: Right front"
+J " Ls: Left surround (behind)"
+J " Rs: Right front"
+J " C:  Center"
+J " Lfe: Low Frequency Effect (Subwoofer)"
+J " S: Surround (just one behind)"
+J " Ls: Left  surround"
+J " Rs: Right surround"
+J " Each group must have either same sample rate or be even multiples (e.g. 96kHz/48 kHz or 88.2 kHz/44.1 kHz)"
+J " Within groups, bitrate may differ but sample rate cannot. \n\n");
+
 printf("%s","    --downmix            Enter downmix coefficients in dB. If track has more than 2 channels, each channel (Lf, Rf, C, Ls or S, Rs, LFE)" J \
 "will be mapped to left (l) and/or right (r) stereo channel" J \
 "with volume reduced by x dB, x the channel downmix coefficient." J \

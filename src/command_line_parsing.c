@@ -748,6 +748,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'g' :
 
             ++k;
+
             for (m = 0; m + k < argc; ++m)
             {
                 if (argv[m + k][0] != '-')
@@ -765,6 +766,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 else
                 {
                     //PATCH 09.07 (overflow)
+
                     if (argv[m+k][1] == 'z')
                     {
                         if (m < ntracks[ngroups_scan])
@@ -808,23 +810,42 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 }
             }
 
-            k+=m-1;
+            k += m-1;
             ngroups_scan++;
             break;
 
         case 'c' :
 
-            k++;
-            globals.cga=1;
-            for (m = 0; m+k < argc && argv[m+k][0] !='-'; ++m)
-            {
-                if (globals.debugging) foutput("       files[%d][%d].cga=%s\n", ngroups_scan, m, argv[m+k]);
-                //uint8_t cgaint=atoi(argv[m+k]);
+            // -g file1...fileN... -c cga1...cgaN...
 
-//                if (check_cga_assignment(cgaint))
-//                    files[ngroups_scan][m].cga=cgaint;
-//                else if (globals.debugging) foutput("%s", ERR "Found illegal channel group assignement value, using standard settings.");
+            ++k;
+
+            globals.cga = 1;
+            for (m = 0; m + k < argc && argv[m + k][0] != '-'; ++m)
+            {
+                if (ngroups_scan)
+                {
+                    if (globals.debugging) foutput("Group %d Track %d Channel assignment %s\n", ngroups_scan - 1, m, argv[m+k]);
+                    if (argv[m + k][0] == '0' || strcmp(argv[m + k], "Mono") == 0) continue; // mono case
+
+                    char* endptr = NULL;
+
+                    long cgaint = strtol(argv[m+k], &endptr, 10);  // first try base 10
+                    if (cgaint == 0 || (endptr != NULL && *endptr != '\0'))  // invalid decimal entry
+                    {
+                      cgaint = (long) get_cga_index(argv[m+k]);
+                    }
+
+                    files[ngroups_scan - 1][m].cga = check_cga_assignment(cgaint);
+
+                    if (cgaint == 0xFF)
+                    {
+                        if (globals.debugging) foutput("%s", ERR "Found illegal channel group assignement value, using standard settings.");
+                        // this is done later
+                    }
+                }
             }
+
             k += m-1;
         }
     }
@@ -983,7 +1004,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case 'c' :
             foutput("%s\n",PAR "Channel group assignement activated.");
-            globals.cga=1;
+            globals.cga = 1;
             break;
 
         case 32:
@@ -2467,7 +2488,7 @@ standard_checks:
 
     if (user_command_line)
     {
-        scan_wavfile_audio_characteristics(command);
+        scan_audiofile_characteristics(command);
     }
 
     process_dvd_video_zone(command);
