@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Tests for ffmpeg-as-lib import
+# Build with ./configure --disable-vaapi
+# make --> cannot link ffmpeg (absence of main)
+# cd fftools
+# run this:
+
+rm libffmpeg*.a
+rm test
+rm test2
+ar rcs  libffmpeg.a  *.o
+LIBS="-L/usr/lib64/gstreamer-1.0/ ./libffmpeg.a ../libavcodec/libavcodec.a ../libavutil/libavutil.a ../libavformat/libavformat.a ../libavcodec/libavcodec.a ../libavutil/libavutil.a ../libavfilter/libavfilter.a ../libswscale/libswscale.a ../libswresample/libswresample.a ../libavutil/libavutil.a ../libavdevice/libavdevice.a ../libavfilter/libavfilter.a ../libavcodec/libavcodec.a  -lvdpau -lX11 -lXext -lxcb -lxcb-xfixes -lxcb-shm -lxcb-shape -lXv -lSDL2 -lsndfile -lasound -pthread  -llzma -lbz2 -lm -lz"
+gcc -I. -I.. -o test.o   -c test.c
+gcc -I. -I.. -o test2.o  -c test2.c
+gcc -o test   test.o  $(echo $LIBS)
+gcc -o test2  test2.o $(echo $LIBS)
+
+
+# This adds a whopping 19 MB to main binary. Could be cut down surely by strictly limiting number of encoders/decoders, muxers and protocols.
+# However disabling all but mlp did not work. Possibly vdpau is necessary, but not just that. Target non-wav non-mpeg coders first.
