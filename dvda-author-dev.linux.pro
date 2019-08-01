@@ -16,7 +16,15 @@ DEFINES += STARTSECTOR=272 # Schily magic value
 
 #libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame
 linux: QMAKE_LFLAGS += -L/usr/lib64
-linux:LIBS +=	 "/usr/lib64/libgsm.a"  "/usr/lib64/libMagick++-7.Q16.a" "/usr/lib64/libMagickCore-7.Q16.a" "/usr/lib64/libMagickWand-7.Q16.a" $$SRCDIR"local/lib/liblavfile.a"  $$SRCDIR"local/lib/liblavjpeg.a" $$SRCDIR"local/lib/libsox.a" \
+linux:LIBS +=	 "/usr/lib64/libgsm.a"  "/usr/lib64/libMagick++-7.Q16.a" "/usr/lib64/libMagickCore-7.Q16.a" "/usr/lib64/libMagickWand-7.Q16.a" \
+                        $$SRCDIR"local/lib/liblavfile.a" \
+                        $$SRCDIR"local/lib/liblavjpeg.a" \
+                        $$SRCDIR"local/lib/libsox.a" \
+                        $$SRCDIR"local/lib/libffmpeg.a" \
+                        $$SRCDIR"local/lib/libavfilter.a" \
+                        $$SRCDIR"local/lib/libavformat.a" \
+                        $$SRCDIR"local/lib/libavcodec.a" \
+                        $$SRCDIR"local/lib/libavutil.a" \
                         "/usr/lib64/libsndfile.a" \
                         "/usr/lib64/libvorbisenc.a" \
                         "/usr/lib64/libvorbisfile.a"  \
@@ -58,9 +66,7 @@ LIBS +=   -s
 QMAKE_CFLAGS=-march=core2 -O3 -Wno-unused-result
 }
 
-
-
-INCLUDEPATH = src/include libutils/src/include libutils/src/include libutils/src/private libfixwav/src/include libs/include/FLAC libs/include/libsoxconvert libiberty/src/include
+INCLUDEPATH = src/include libutils/src/include libutils/src/include libutils/src/private libfixwav/src/include libs/include/FLAC libs/include/libsoxconvert libiberty/src/include ffmpeg
 
 SOURCES += \
     src/amg2.c \
