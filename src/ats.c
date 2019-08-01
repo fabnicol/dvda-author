@@ -39,6 +39,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "auxiliary.h"
 #include "commonvars.h"
 #include "ats.h"
+#include "fftools/ffmpeg.h"
+#include "libavcodec/mlplayout.h"
 
 
 extern globalData globals;
@@ -828,7 +830,34 @@ inline static pts_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
     uint64_t PTSint;
     uint64_t bytes_written;
     long double frames_written;
-    
+
+    if (info->type == AFMT_MLP)
+    {
+        char* tab[8] = {"ffmpeg_lib", "-v", "-8", "-i", info->filename, "-f", "null", "-"};
+        foutput(INF "Searching MLP layout for file %s. Please wait...\n", info->filename);
+        ffmpeg_lib(8, &tab[0]);
+        struct MLP_LAYOUT* m = get_mlp_layout();
+        if (m == NULL)
+        {
+          foutput(ERR "%s", "Layout coud not be retrieved.\n");
+          exit(-2);
+        } else {
+          foutput(MSG_TAG "%s", "Layout retrieved.\n");
+        }
+
+        if (globals.maxverbose)
+        {
+            for (int i = 0;  i < MAX_AOB_SECTORS; ++i)
+            {
+                if (i && m[i].pkt_pos == 0) break;
+                fprintf(stderr, "%u ; %u ; %u \n", m[i].pkt_pos, m[i].nb_samples, m[i].rank);
+            }
+        }
+     // now m[i].pkt_pos indicates offset of MLP packet in mlp file that is just after sector m[i].rank in "mlp-type" AOB
+     // m[i].nb_samples gives number of corresponding PCM samples after decoding.
+     // PTS must be computed using this.
+    }
+
     if (info->bytespersecond == 0)
     {
         foutput(WAR "file %s has bytes per second=0\n", info->filename);
