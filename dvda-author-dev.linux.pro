@@ -37,13 +37,13 @@ linux:LIBS +=	 "/usr/lib64/libgsm.a"  "/usr/lib64/libMagick++-7.Q16.a" "/usr/lib
                         "/usr/lib64/libopusurl.a" \
                         "/usr/lib64/libpng.a" \
                         "/usr/lib64/libz.a" \
-                        "/usr/local/lib/libao.a" \
-                        "/usr/local/lib64/libasound.a" \
+                        "/opt/lib/libao.a" \                # Xiph libao
+                        "/opt/lib/libasound.a" \            # Alsa project alsa-libs package
                         "/usr/lib64/libdvdread.a" \
                         "/usr/lib64/libjpeg.a" \
                         "/usr/lib64/libwebp.a" \
                         "/usr/lib/gcc/x86_64-pc-linux-gnu/9.1.0/libgomp.a" \
-                        "/usr/local/lib/libpulse-simple.a" \
+                        "/usr/local/lib/libpulse-simple.a" \                       # pulseaudio package
                         "/usr/local/lib/libpulse.a" \
                         "/usr/local/lib/pulseaudio/libpulsecommon-12.2.a" \
                         "/usr/lib64/libxcb.a" \

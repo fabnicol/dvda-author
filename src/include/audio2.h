@@ -52,8 +52,9 @@ int audio_close(fileinfo_t* info);
 int fixwav_repair(fileinfo_t *info);
 int launch_sox(char** filename);
 command_t *scan_audiofile_characteristics(command_t *command);
-void read_defaults();
-
-
+void read_defaults(void);
+uint8_t wav2cga_channels(fileinfo_t *info);
+uint8_t get_cga_index(const char* cga);
+uint8_t check_cga_assignment(long cgaint);
 int calc_info(fileinfo_t* info);
 #endif

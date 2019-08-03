@@ -366,31 +366,27 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #define DEFAULT_SVHIGHLIGHTTEXT
 #define DEFAULT_SVHIGHLIGHTMOTIF	"0x51F05A"  //red		//    SVHIGHLIGHTMOTIF
-
-
-
-static const char* DEFAULT_BLANKSCREEN="menu/black_" NORM ".png";
-static const char* DEFAULT_BLANKSCREEN_NTSC="menu/black_" "NTSC_720x480" ".png";    // In principle blank for preparing titles yet can have some background
-static const char* DEFAULT_BACKGROUNDPIC="menu/black_" NORM ".jpg";  // for mpeg authoring
-static const char* DEFAULT_BACKGROUNDPIC_NTSC="menu/black_" "NTSC_720x480" ".jpg";  // for mpeg authoring
-static const char* DEFAULT_ACTIVEHEADER="menu/activeheader";
-static const char* DEFAULT_ASPECT_RATIO="4:3";
-static const int DEFAULT_POINTSIZE=25;
-static const int DEFAULT_FONTWIDTH=6;  // 6 pixels for size 10 in Courier
-static const char* DEFAULT_SCREENTEXT="ALBUM=Group 1 - Track 1,Group 1 - Track 2:Group 2 - Track 1,Group 2 - Track 2";
-static const int MAX_LEXER_LINES=100;
-static const int MAXSTILLPICVOBSIZE=20 * 1024 * 1024;  // 20 MB limit for stillvobs
-static const int ACTIVEHEADER_INSERTOFFSET=0xBB;
-static const char* DEFAULT_AUDIOFORMAT="mp2";
-
-static const int AUDIT_STRICT_TOPMENU_AUDIO_FORMAT=1;
-static const int AUDIT_DVD_VIDEO_AUDIO_FORMAT=0;
-static const int NO_FIXWAV_AUDIT=2;
-
+#define DEFAULT_BLANKSCREEN "menu/black_" NORM ".png"
+#define DEFAULT_BLANKSCREEN_NTSC "menu/black_" "NTSC_720x480" ".png"    // In principle blank for preparing titles yet can have some background
+#define DEFAULT_BACKGROUNDPIC "menu/black_" NORM ".jpg"  // for mpeg authoring
+#define DEFAULT_BACKGROUNDPIC_NTSC "menu/black_" "NTSC_720x480" ".jpg"  // for mpeg authoring
+#define DEFAULT_ACTIVEHEADER "menu/activeheader"
+#define DEFAULT_ASPECT_RATIO "4:3"
+#define DEFAULT_POINTSIZE  25
+#define DEFAULT_FONTWIDTH  6  // 6 pixels for size 10 in Courier
+#define DEFAULT_SCREENTEXT "ALBUM=Group 1 - Track 1,Group 1 - Track 2:Group 2 - Track 1,Group 2 - Track 2";
+#define MAX_LEXER_LINES  100
+#define MAXSTILLPICVOBSIZE  20 * 1024 * 1024  // 20 MB limit for stillvobs
+#define ACTIVEHEADER_INSERTOFFSET  0xBB
+#define DEFAULT_AUDIOFORMAT "mp2"
+#define AUDIT_STRICT_TOPMENU_AUDIO_FORMAT  1
+#define AUDIT_DVD_VIDEO_AUDIO_FORMAT  0
+#define NO_FIXWAV_AUDIT  2
 #define TEMPORARY_AUTOMATIC_MENU -5
 #define AUTOMATIC_MENU -4 // automate all menu authoring process
 
 // for values higher than -2 and lower than 4 top menu is generated
+
 #define RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR -1
 #define RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR 0
 #define RUN_SPUMUX_DVDAUTHOR 1 // automate some of the authoring process (run spumux and dvdauthor)

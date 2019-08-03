@@ -65,6 +65,7 @@ typedef struct
     uint8_t lastpack_lpcm_headerquantity;
     uint8_t firstpack_pes_padding;
     uint8_t midpack_pes_padding;
+    uint32_t dw_channel_mask;
     // L&T Feldkamp addition (multichannel)
     uint64_t numsamples;
     uint64_t numbytes; // theoretical audio size
