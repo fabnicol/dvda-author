@@ -33,7 +33,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "multichannel.h"
 #include "auxiliary.h"
 
-
+extern uint32_t cga2wav_channels[21];
 extern globalData globals;
 extern uint8_t channels[21];
 #if 0
@@ -342,9 +342,6 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, bool
 
     header->nBlockAlign =  header->wBitsPerSample / 8 * header->channels ;
     header->nAvgBytesPerSec = header->nBlockAlign * header->dwSamplesPerSec;
-
-    uint32_t cga2wav_channels[21] = {0x4, 0x3,   0x103, 0x33,  0xB,  0x10B, 0x3B,  0x7,  0x107, 0x37,
-                                     0xF, 0x10F, 0x3F,  0x107, 0x37, 0xF,   0x10F, 0x3F, 0x3B,  0x37, 0x3B};
 
     if (channel_assignment[0] < 21)
     {

@@ -31,8 +31,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <math.h>
 #include <errno.h>
+
 #include "structures.h"
 #include "audio2.h"
 #include "c_utils.h"
@@ -41,7 +43,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "ats.h"
 #include "fftools/ffmpeg.h"
 #include "libavcodec/mlplayout.h"
-
+#include "decode.h"
+#include "c_utils.h"
 
 extern globalData globals;
 extern uint8_t channels[21];
@@ -769,58 +772,32 @@ typedef struct
     uint64_t PTSint;
 } pts_t ;
 
-//inline static uint64_t calc_SCR(uint64_t pack_in_title, pts_t *p)
-//{
-//    uint64_t SCRint;
-
-//    if (pack_in_title==0) return 0;
-
-//    long double SCR = (p->PTS - p->PTS0) * 300.0;
-
-//    SCRint = (uint64_t) floor(SCR);
-
-//    // Delta SCR is simply Delta PTS x 300. Use calc_PTS!
-//    return(SCRint);
-//}
-
 
 inline static uint64_t calc_SCR(uint64_t pack_in_title, fileinfo_t* info) 
 {
-  double SCR;
+  uint64_t SCR;
   uint64_t SCRint;
+  static uint64_t SCR1;
 
-  SCR=(pack_in_title <= 4 ? pack_in_title : 4) * (2048.0 * 8.0 * 90000.0 * 300.0) / 10080000.0;
-
-  if (info->bitspersample == 16) 
+  switch (pack_in_title)
   {
-      
-    if (pack_in_title >= 4) 
-    {
-      SCR += ((info->SCRquantity * 300.0 * 90000.0) / info->bytespersecond) - 42.85;
-    }
-    
-    if (pack_in_title >= 5)
-    {
-      SCR += (pack_in_title - 4.0) * ((info->lpcm_payload * 300.0 * 90000.0) / info->bytespersecond);
-    }
-    
-  } else {
-      
-    if (pack_in_title >= 4) 
-    {
-      SCR+=((info->SCRquantity * 300.0 * 90000.0) / info->bytespersecond) - 42.85;
-    }
-    
-    if (pack_in_title >= 5) 
-    {
-      SCR+=(pack_in_title - 4.0) * ((info->lpcm_payload * 300.0 * 90000.0) / info->bytespersecond);
-    }
+    case 0: return 0;
+    case 1:
+          SCR = (info->lpcm_payload - info->firstpackdecrement) * 300.0 * 90000.0 / info->bytespersecond;
+          break;
+    case 2:
+          SCR1 = info->lpcm_payload * 300.0 * 90000.0 / info->bytespersecond;  // do not compute each time ! Once is enough
+          SCR += SCR1;
+          break;
+
+    default:
+         SCR += SCR1;
+         break;
   }
 
-  SCRint=floor(SCR);
+  SCRint = floor(SCR);
   return SCRint;
 }
-
 
 
 inline static pts_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)

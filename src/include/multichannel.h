@@ -17,7 +17,8 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-
+#include <stdint.h>
+#include <string.h>
 
 #ifndef MULTICHANNEL_H_INCLUDED
 #define MULTICHANNEL_H_INCLUDED
@@ -58,12 +59,11 @@ static inline void permutation(uint8_t *buf,
 
 #endif
 
-    memcpy(buf,_buf, size);
+    memcpy(buf,_buf, (size_t) size);
 }
 
 /* WAVFORMAT_EXTENSIBLE SPECS at offset 0x29-0x2B in wav headers */
 
-#ifndef SPEAKER_RESERVED
 
 # define SPEAKER_FRONT_LEFT             0x1
 # define SPEAKER_FRONT_RIGHT            0x2
@@ -84,11 +84,58 @@ static inline void permutation(uint8_t *buf,
 # define SPEAKER_TOP_BACK_CENTER        0x10000
 # define SPEAKER_TOP_BACK_RIGHT         0x20000
 # define SPEAKER_RESERVED               0x80000000
-#endif
 
 /* DVD-A multichanenl specs (= info->cga at relative offset 0x26 of AOB 2048-byte sectors, except for the first (at 0x3B) */
 
 #if 0
+Wav channels are interleave in the order of the above table from top to bottom.
+
+
+dwChannelMask is normally at offset 40 (0x28) on 4 bytes in WAV_FORMAT_EXTENSIBLE headers
+
+Issue is that CGA in DVD-Ausio is more flexible with form example cgas 10 and 13 or 12 and 17 corresponding to same dwChannelMask
+This is caused by chroup-splitting in the DVD-A norm, which is currently unsupported in dvda-author.
+As a result the mapping is not bijective.
+Using higer cga values to disambiguate.
+
+// Channel group assignment (CGA)
+//
+//        1    2        3         4        5       6
+//0       M
+//1       L     R
+//2       Lf    Rf      S*
+//3       Lf    Rf      Ls*      Rs*
+//4       Lf    Rf      Lfe*
+//5       Lf    Rf      Lfe*     S*
+//6       Lf    Rf      Lfe*     Ls*      Rs*
+//7       Lf    Rf      C*
+//8       Lf    Rf      C*       S*
+//0x9     Lf    Rf      C*       Ls*      Rs*
+//0xA-10  Lf    Rf      C*       Lfe*
+//0xB-11  Lf    Rf      C*       Lfe*     S*
+//0xC-12  Lf    Rf      C*       Lfe*     Ls*      Rs*
+//0xD-13  Lf    Rf      C        S*
+//0xE-14  Lf    Rf      C        Ls*      Rs*
+//0xF-15  Lf    Rf      C        Lfe*
+//0x10-16 Lf    Rf      C        Lfe*     S*
+//0x11-17 Lf    Rf      C        Lfe*     Ls*      Rs*
+//0x12-18 Lf    Rf      Ls       Rs       Lfe*
+//0x13-19 Lf    Rf      Ls       Rs       C*
+//0x14-20 Lf    Rf      Ls       Rs       C*       Lfe*
+// Keys:
+// * In Group2
+// Each group must have either same sample rate or be even multiples (e.g. 96kHz/48 kHz or 88.2 kHz/44.1 kHz)
+// Within groups, bitrate may differ but sample rate cannot.
+// M: Mono
+// Lf: Left front
+// Rf: Right front
+// Ls: Left surround (behind)
+// Rs: Right front
+// C:  Center
+// Lfe: Low Frequency Effect (Subwoofer)
+// S: Surround (just one behind)
+// Ls: Left  surround
+// Rs: Right surround
 
 DVD-A                                       WAV_FORMAT_EXTENSIBLE
 
@@ -112,9 +159,8 @@ DVD-A                                       WAV_FORMAT_EXTENSIBLE
 17 	L 	R 	C 	Lfe 	Ls 	Rs              SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  | SPEAKER_FRONT_CENTER  | SPEAKER_LOW_FREQUENCY | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT 0x3F
 18 	L 	R 	Ls 	Rs 	Lfe                     SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  |  SPEAKER_BACK_LEFT    | SPEAKER_BACK_RIGHT    | SPEAKER_LOW_FREQUENCY       0x3B
 19 	L 	R 	Ls 	Rs 	C                       SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  |  SPEAKER_BACK_LEFT    | SPEAKER_BACK_RIGHT    | SPEAKER_FRONT_CENTER        0x37
-20 	L 	R 	Ls 	Rs 	C 	Lfe                 SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  |  SPEAKER_BACK_LEFT    | SPEAKER_BACK_RIGHT    | SPEAKER_FRONT_CENTER | SPEAKER_LOW_FREQUENCY  0x3B
+20 	L 	R 	Ls 	Rs 	C 	Lfe                 SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT  |  SPEAKER_BACK_LEFT    | SPEAKER_BACK_RIGHT    | SPEAKER_FRONT_CENTER | SPEAKER_LOW_FREQUENCY  0x3F
 
-cga2wav_channels[21] = {0x4, 0x3, 0x103, 0x33, 0xB, 0x10B, 0x3B, 0x7, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x3B, 0x37, 0x3B };
 
 #endif
 

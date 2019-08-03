@@ -91,7 +91,7 @@ int readHeader(FILE * infile, WaveHeader *header)
     22,0,               // 36 - wav extension  (0 or 22 bytes)
     if not 0:
     0,0,                // 38 - number of valid bits
-    0,0,0,0,            // 40 - speaker position mask
+    0,0,0,0,            // 40 - speaker position mask (dwChannelMmask)
     [16 B]              // 44 - GUID including WAV_FORMAT_PCM or WAV_FORMAT_EXTENSIBLE
     'f','a','c','t',    // 60 - fact chunk, optional for PCM here minimum)
     0,0,0,4,            // 64 - net length of fact chunk

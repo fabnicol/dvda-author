@@ -30,9 +30,12 @@
 /* Remark on data structures:
  *   - command-line data belong to 'command' structures
  *   - software-level global variables are packed in 'globals' structures */
+
 extern globalData globals;
 extern unsigned int startsector;
 extern char* INDIR, *OUTDIR, *LOGDIR, *LINKDIR, *WORKDIR;
+extern uint8_t wav2cga_channels(fileinfo_t*);
+extern const char* cga_define[21];
 
 // getting rid of some arrows
 #define files command->files
@@ -123,7 +126,7 @@ int launch_manager(command_t *command)
             // As files[][] is dynamically allocated with calloc(), 0 values mean command line did not define cga values
 
             if (files[i][j].cga == 0 || files[i][j].cga == 0xFF)  // non-assigned (calloc 0 value) or assigned with illegal value previously detected as such (0xFF)
-                files[i][j].cga = default_cga[files[i][j].channels-1];
+                files[i][j].cga = wav2cga_channels(files[i][j].dw_channel_mask);
 
             files[i][j].contin_track = (uint8_t) (j != nfiles[i] - 1);
 
