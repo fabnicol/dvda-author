@@ -5,6 +5,7 @@
 #include "stream_decoder.h"
 #include "inttypes.h"
 #include "commonvars.h"
+#include "libavcodec/mlplayout.h"
 
 typedef struct
 {
@@ -13,6 +14,11 @@ typedef struct
     uint8_t  extracttrackintitleset[9][99];
 } extractlist;
 
+typedef struct
+{
+   uint64_t PTSint[MAX_AOB_SECTORS];
+   uint64_t DTSint[MAX_AOB_SECTORS];
+} pts_t;
 
 typedef struct
 {
