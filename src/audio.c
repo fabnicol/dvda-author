@@ -349,17 +349,63 @@ static uint8_t  C[2][7][36][2]=
 
 #ifndef WITHOUT_FLAC
 
+# define SPEAKER_FRONT_LEFT             0x1
+# define SPEAKER_FRONT_RIGHT            0x2
+# define SPEAKER_FRONT_CENTER           0x4
+# define SPEAKER_LOW_FREQUENCY          0x8
+# define SPEAKER_BACK_LEFT              0x10
+# define SPEAKER_BACK_RIGHT             0x20
+# define SPEAKER_FRONT_LEFT_OF_CENTER   0x40
+# define SPEAKER_FRONT_RIGHT_OF_CENTER  0x80
+# define SPEAKER_BACK_CENTER            0x100
+# define SPEAKER_SIDE_LEFT              0x200
+# define SPEAKER_SIDE_RIGHT             0x400
+# define SPEAKER_TOP_CENTER             0x800
+# define SPEAKER_TOP_FRONT_LEFT         0x1000
+# define SPEAKER_TOP_FRONT_CENTER       0x2000
+# define SPEAKER_TOP_FRONT_RIGHT        0x4000
+# define SPEAKER_TOP_BACK_LEFT          0x8000
+# define SPEAKER_TOP_BACK_CENTER        0x10000
+# define SPEAKER_TOP_BACK_RIGHT         0x20000
+# define SPEAKER_RESERVED               0x80000000
+
+
+
 void flac_metadata_callback (const FLAC__StreamDecoder GCC_UNUSED *dec, const FLAC__StreamMetadata *meta, void *data)
 {
+#if 0
+    From FLAC docs:
 
+    Where defined, the channel order follows SMPTE/ITU-R recommendations. The assignments are as follows:
+
+        1 channel: mono                  //  dwChannelMask  0x4
+        2 channels: left, right          //                 0x3
+        3 channels: left, right, center  //                 0x7
+        4 channels: front left, front right, back left, back right    //  0x33
+        5 channels: front left, front right, front center, back/surround left, back/surround right   //  0x37
+        6 channels: front left, front right, front center, LFE, back/surround left, back/surround right  // 0x3F
+
+    table {0x4, 0x3, 0x7, 0x33, 0x37, 0x3F }
+
+    For stereo there are additional refinemaents pertaining to SIDE speaker in the flac docs.
+    But these are useless for DVD-A which does not allow side speakers to CGA table.
+
+#endif
+
+    static const uint32_t flac2dw_channel_mask[6] = {0x4, 0x3, 0x7, 0x33, 0x37, 0x3F };
     fileinfo_t *info = (fileinfo_t *) data;
 
     if (meta->type==FLAC__METADATA_TYPE_STREAMINFO)
     {
-        info->bitspersample=(uint8_t) meta->data.stream_info.bits_per_sample;
-        info->samplerate=meta->data.stream_info.sample_rate;
-        info->channels=(uint8_t) meta->data.stream_info.channels;
-        info->numsamples=meta->data.stream_info.total_samples;
+        info->bitspersample   = (uint8_t) meta->data.stream_info.bits_per_sample;
+        info->samplerate      = meta->data.stream_info.sample_rate;
+        info->channels        = (uint8_t) meta->data.stream_info.channels;
+        info->numsamples      = meta->data.stream_info.total_samples;
+        if (info->channels > 6 || info->channels < 1)
+        {
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "FLAC file has illegal number of channels.")
+        }
+        info->dw_channel_mask = flac2dw_channel_mask[info->channels - 1];
     }
 }
 
@@ -703,7 +749,7 @@ static inline int compute_header_size(FILE* fp)
 static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, fileinfo_t* info)
 {
 
-    if (header[4] == 0xF8 && header[5] == 0x72 && header[6] == 0x6F && header[7] == 0xBB)
+    if (header[4] == 0xF8 && header[5] == 0x72 && header[6] == 0x6F && header[7] == 0xBB)   // MLP case
     {
         unsigned long pathl = strlen(path);
         if (pathl > 3)
@@ -1224,6 +1270,7 @@ int fixwav_repair(fileinfo_t *info)
         info->numbytes      = waveheader.data_cksize;
         info->file_size     = info->numbytes+waveheader.header_size_out;
         info->header_size   = waveheader.header_size_out;
+        info->dw_channel_mask = waveheader.dwChannelMask;
 
         if (wavedata.repair == GOOD_HEADER)
         {
