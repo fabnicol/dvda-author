@@ -35,7 +35,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <math.h>
 #include <errno.h>
 
-#include "structures.h"
 #include "audio2.h"
 #include "c_utils.h"
 #include "auxiliary.h"
@@ -45,6 +44,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "libavcodec/mlplayout.h"
 #include "decode.h"
 #include "c_utils.h"
+#include "structures.h"
 
 extern globalData globals;
 extern uint8_t channels[21];
@@ -421,17 +421,17 @@ inline static uint16_t read_audio_pes_header(FILE* fp, uint8_t extension_flag, u
     return(PES_packet_len);
 }
 
-uint8_t sub_stream_id[1] = {0xa0};
+uint8_t sub_stream_id[1]      = {0xa0};
 uint8_t continuity_counter[1] = {0x00};
 uint8_t LPCM_header_length[2];
 uint8_t first_access_unit_pointer[2];
-uint8_t downmix_index[1] = {0x00};   //  0x10 for stereo or mono, 0x00 for surround or rank of downmix table
-uint8_t sample_size[1] = {0x0f};     // 0x0f=16-bit, 0x1f=20-bit, 0x2f=24-bit
-uint8_t sample_rate[1] = {0x0f};     // 0x0f=48KHz, 0x1f=96KHz, 0x2f=192KHz,0x8f=44.1KHz, 0x9f=88.2KHz, 0xaf=176.4KHz
-uint8_t unknown2[1] = {0x00};
-uint8_t channel_assignment[1] = {0}; // The channel assignment - 0=C; 1=L,R; 17=L,R,C,lfe,Ls,Rs
-uint8_t unknown3[1] = {0x80};
-uint8_t zero[16] = {0};
+uint8_t downmix_index[1]      = {0x00};   // 0x10 for stereo or mono, 0x00 for surround or rank of downmix table
+uint8_t sample_size[1]        = {0x0f};   // 0x0f=16-bit, 0x1f=20-bit, 0x2f=24-bit
+uint8_t sample_rate[1]        = {0x0f};   // 0x0f=48KHz, 0x1f=96KHz, 0x2f=192KHz,0x8f=44.1KHz, 0x9f=88.2KHz, 0xaf=176.4KHz
+uint8_t unknown2[1]           = {0x00};
+uint8_t channel_assignment[1] = {0};      // The channel assignment - 0=C; 1=L,R; 17=L,R,C,lfe,Ls,Rs
+uint8_t unknown3[1]           = {0x80};
+uint8_t zero[16]              = {0};
 
 inline static void write_lpcm_header(FILE* fp, uint8_t header_length, fileinfo_t* info, int64_t pack_in_title, uint8_t counter)
 {
@@ -741,37 +741,6 @@ ID\Chan 0   1   2   3   	4   5     info->channels
     return header_length;
 }
 
-// to be modified
-#if 0
-inline static uint64_t calc_PTS_start(fileinfo_t* info, uint64_t pack_in_title)
-{
-    double PTS;
-    uint64_t PTSint;
-    uint64_t bytes_written;
-
-    if (pack_in_title==0)
-    {
-        PTS=585.0;
-    }
-    else
-    {
-        bytes_written=(pack_in_title*info->lpcm_payload)-info->firstpackdecrement;
-        // e.g., for 4ch, First pack is 1984, rest are 2000
-        PTS=((bytes_written*90000.0)/(info->bytespersecond*1.0))+585.0;
-    }
-
-    PTSint=floor(PTS);
-    return(PTSint);
-}
-#endif
-
-typedef struct
-{
-    double PTS;
-    double PTS0;
-    uint64_t PTSint;
-} pts_t ;
-
 
 inline static uint64_t calc_SCR(uint64_t pack_in_title, fileinfo_t* info) 
 {
@@ -795,12 +764,12 @@ inline static uint64_t calc_SCR(uint64_t pack_in_title, fileinfo_t* info)
          break;
   }
 
-  SCRint = floor(SCR);
+  SCRint = (uint64_t) floor(SCR);
   return SCRint;
 }
 
 
-inline static pts_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
+inline static uint64_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
 {
     double PTS;
     double PTS0;
@@ -832,78 +801,47 @@ inline static pts_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
         }
      // now m[i].pkt_pos indicates offset of MLP packet in mlp file that is just after sector m[i].rank in "mlp-type" AOB
      // m[i].nb_samples gives number of corresponding PCM samples after decoding.
-     // PTS must be computed using this.
+     // PTS must be computed using this. (TODO)
     }
 
     if (info->bytespersecond == 0)
     {
         foutput(WAR "file %s has bytes per second=0\n", info->filename);
-        pts_t ptsnull = {0,0,0};
-        return ptsnull;
+
+        return 0;
     }
 
-    PTS0 = 0x249;
+    uint64_t totpayload;
 
     if (pack_in_title==0)
     {
-       PTS = PTS0;
+       totpayload = info->lpcm_payload - info->firstpackdecrement;
     }
     else
     {
-        bytes_written=pack_in_title * info->lpcm_payload;// - info->firstpackdecrement;
-
-        // e.g., for 4ch, First pack is 1984, rest are 2000
-
-        frames_written = bytes_written/info->bytesperframe;
-
-        if (frames_written * info->bytesperframe < bytes_written)
-        {
-            ++frames_written;
-        }
-
-        // 1 48Khz-based frame is 1200Hz, 1 44.1KHz frame is 1102.5Hz
-
-        double k = 0;
-
-        switch (info->samplerate)
-        {
-            case 44100:
-            case 48000:
-                k = 5;
-                break;
-            case 88200:
-            case 96000:
-                k = 10;
-                break;
-            case 176400:
-            case 192000:
-                k = 20;
-                break;
-        }
-
-
-        PTS = 90000.0 * ((double) frames_written * k * 8)/((double) (info->samplerate)) + PTS0;
-        
+       totpayload += info->lpcm_payload;
     }
-   
-    
-    PTSint=(uint64_t) floor(PTS);
 
-    pts_t p = {PTS, PTS0, PTSint};
+   PTS = totpayload / info->bytesperframe;
+   PTS = ceil(PTS) * info->bytesperframe;  // ceiling round
+   PTS /= info->bytespersecond;
+   PTS *= 90000; // 1 s = 90,000 PTS ticks
 
-    return(p);
+   PTSint = (uint64_t) round(PTS);  // normal round
+
+   if (pack_in_title==0) PTS0 = PTS;
+
+
+   return(PTSint);
 }
 
 
 inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf, uint32_t bytesinbuffer, uint64_t pack_in_title, bool start_of_file)
 {
-
     int audio_bytes;
     static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
 
-    pts_t p = calc_PTS(info,pack_in_title);
-
-    uint64_t PTS      = p.PTS;
+    uint64_t PTS      = calc_PTS(info, pack_in_title);
     uint64_t SCR      = calc_SCR(pack_in_title, info);
     uint8_t  mlp_flag = info->type == AFMT_MLP ? 0xC0 : 0x80;
 
@@ -1140,9 +1078,9 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
 
 
 
-    pts_t pts_calc = calc_PTS(info, pack_in_title);
+    uint64_t pts_calc = calc_PTS(info, pack_in_title);
 
-    if (PTS != pts_calc.PTSint)
+    if (PTS != pts_calc)
     {
         if (globals.logdecode)
         {
@@ -1151,7 +1089,7 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
                     pack_in_title,
                     position,
                     PTS,
-                    pts_calc.PTSint);
+                    pts_calc);
 
             close_aob_log();
         }
@@ -1296,7 +1234,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
     lpcm_payload = files[i].lpcm_payload;
 
     files[i].first_sector=0;
-    files[i].first_PTS=calc_PTS(&files[i], 0).PTS0;
+    files[i].first_PTS = calc_PTS(&files[i], 0);
 
     foutput(INF "Processing %s\n",files[i].filename);
 
@@ -1357,11 +1295,11 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                         bytesinbuf = 0;
                         pack_in_title = 0;
 
-                        files[i].first_PTS = calc_PTS(&files[i],pack_in_title).PTS0;
+                        files[i].first_PTS = calc_PTS(&files[i],pack_in_title);
                     }
                     else
                     {
-                        files[i].first_PTS = calc_PTS(&files[i], pack_in_title+1).PTS0;
+                        files[i].first_PTS = calc_PTS(&files[i], pack_in_title + 1);  // the current pack is unchanged but the first PTS will start at next sector in gapless conntexts
                     }
 
                     files[i].first_sector = files[i-1].last_sector+1;
