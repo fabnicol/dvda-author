@@ -167,20 +167,13 @@ inline static void write_pack_header(FILE* fp,  uint64_t SCRint)
 
 inline static void read_pack_header(FILE* fp,  uint64_t* SCRint_ptr)
 {
-
     uint8_t scr_bytes[6]={0};
-
     open_aob_log();
-
     CHECK_FIELD(pack_start_code)
-
     RW_FIELD(scr_bytes)
-
     decode_SCR(scr_bytes, SCRint_ptr);
-
     CHECK_FIELD(program_mux_rate_bytes)
     CHECK_FIELD(pack_stuffing_length_byte)
-
     close_aob_log();
 }
 
@@ -318,12 +311,12 @@ uint8_t flags1[1]={0x81};  // various flags - original_or_copy=1
 uint8_t flags2[1]={0};  // various flags - contains pts_dts_flags and extension_flag
 uint8_t PES_header_data_length[1]={0};
 uint8_t PES_extension_flags[1]={0x1e};  // PSTD_buffer_flag=1
-uint8_t PTS_DTS_data[5];
-uint8_t unknown_mlp[5] = {0};
+uint8_t PTS_data[5];
+uint8_t DTS_data[5];
 uint8_t PSTD_buffer_scalesize[2];
 const uint16_t PSTD = 10;
 
-inline static void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uint8_t mlp_flag, uint8_t extension_flag, uint64_t PTS)
+inline static void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uint8_t mlp_flag, uint8_t extension_flag, uint64_t PTS, uint64_t DTS)
 {
     // yields 0xC10D (first pack)  then 0xC00A (following packs) for MLP
     // yields 0x8108 (first pack)  then 0x8005 (following packs) for MLP
@@ -354,15 +347,16 @@ inline static void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uin
     /* offset_count += */   fwrite(flags2, 1, 1, fp); // MLP change
     /* offset_count += */   fwrite(PES_header_data_length, 1, 1, fp);
 
-    pack_pts(PTS_DTS_data, PTS); //MLP to change infto pack_pts_dts_data
+    pack_pts(PTS_data, PTS);
 
-    /* PATCH LOCATION 1: +0x18=24 */
+    /* PATCH LOCATION 1: +0x17=23 */
 
-    /* offset_count += 5 */ fwrite(PTS_DTS_data, 5, 1, fp);
+    /* offset_count += 5 */ fwrite(PTS_data, 5, 1, fp);
 
-    if (mlp_flag == 0xC0)
+    if (DTS)
     {
-        /* offset_count += 5 */ fwrite(unknown_mlp, 5, 1, fp);
+         pack_pts(DTS_data, DTS);
+        /* offset_count += 5 */ fwrite(DTS_data, 5, 1, fp);
     }
 
     if (extension_flag)  // only there at start of first pack. Looks correct for both MLP and PCM
@@ -403,9 +397,9 @@ inline static uint16_t read_audio_pes_header(FILE* fp, uint8_t extension_flag, u
     CHECK_FIELD(flags2);
     CHECK_FIELD(PES_header_data_length);
 
-    RW_FIELD(PTS_DTS_data);
+    RW_FIELD(PTS_data);
 
-    decode_pts(PTS_DTS_data, PTS_ptr);
+    decode_pts(PTS_data, PTS_ptr);
 
     if (extension_flag)
     {
@@ -769,20 +763,25 @@ inline static uint64_t calc_SCR(uint64_t pack_in_title, fileinfo_t* info)
 }
 
 
-inline static uint64_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
+inline static pts_t calc_PTS_DTS_MLP(fileinfo_t* info, uint64_t pack_in_title)
 {
-    double PTS;
-    double PTS0;
-    uint64_t PTSint;
-    uint64_t bytes_written;
-    long double frames_written;
+        if (info->type != AFMT_MLP)
+        {
 
-    if (info->type == AFMT_MLP)
-    {
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "MLP requested")
+        }
+
+        if (info->samplerate != 44100 && info->bitspersample != 16 && info->channels != 2)
+        {
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "MLP is currently supported only for 2ch 24-bit 44100 kHz audio")
+        }
         char* tab[8] = {"ffmpeg_lib", "-v", "-8", "-i", info->filename, "-f", "null", "-"};
         foutput(INF "Searching MLP layout for file %s. Please wait...\n", info->filename);
         ffmpeg_lib(8, &tab[0]);
+
         struct MLP_LAYOUT* m = get_mlp_layout();
+        // TODO : check if get_mlp_layout has correct PCM saple count for all audio characteristics
+
         if (m == NULL)
         {
           foutput(ERR "%s", "Layout coud not be retrieved.\n");
@@ -799,14 +798,62 @@ inline static uint64_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
                 fprintf(stderr, "%u ; %u ; %u \n", m[i].pkt_pos, m[i].nb_samples, m[i].rank);
             }
         }
-     // now m[i].pkt_pos indicates offset of MLP packet in mlp file that is just after sector m[i].rank in "mlp-type" AOB
-     // m[i].nb_samples gives number of corresponding PCM samples after decoding.
-     // PTS must be computed using this. (TODO)
-    }
+    // now m[i].pkt_pos indicates offset of MLP packet in mlp file that is just after sector m[i].rank in "mlp-type" AOB
+    // m[i].nb_samples gives number of corresponding PCM samples after decoding.
+    // PTS must be computed using this.
+
+    // Algorithm : at each sector of rank (1-based) N of 2048 B, compute :
+    // - sum of header size S before N in B
+    // - total byte size = 2048  * (N-1) - S + 0xE  (0xE is where header starts for PTS)
+    // - run parallel count of PKT pos through MLP decoder, gives Rank of packet and POS of packet
+    // - take Rank such that POS (0-based) of MLP packet superior or equal to total byte size
+    // - Rank * 40 = NPCMsamples		(Rank 0-based, numer of frames of 40 samples)
+    // - NPCMsamples * c * br / 8 = Nbyteswritten
+    // - Nbyteswritten / (c * sr * br / 8 ) = duration
+    // Or : duration = NPCMsamples /sr
+    // PTS = ceiling(duration * 90000)		   = ceiling(Rank * 40  / sr * 90000) = ceiling(Rank / sr * 360000)
+    // DTS = floor(duration * 90000)
+    // Add :
+    // PTS = PTS + PTS0
+    // DTS = DTS + DTS0
+    // PTS0=105
+    // DTS0=24
+    // Write PTS at offset 23 on 5 bytes in sector header (+
+    // Write DTS at offset 28 on 5 bytes in sector header
+    // PTS0=105	↔ 0xE	TODO : check PTS0 calc wrt br sr c
+    //		TODO : see if MLP PCM nbytes per frame remains at 40
+
+        pts_t res;
+        memset(res.PTSint, 0, MAX_AOB_SECTORS);
+        memset(res.DTSint, 0, MAX_AOB_SECTORS);
+
+        res.DTSint[0] = 105;  // TODO : check if this is OK for auther audio characteristics
+        res.PTSint[0] = 24;   // TODO : check if this is OK for auther audio characteristic
+        for (int i = 1; i < MAX_AOB_SECTORS && m[i].pkt_pos != 0; ++i)
+        {
+          double temp = m[i].nb_samples / info->samplerate * 90000;
+          res.DTSint[i] = (uint64_t) floor(temp) - res.DTSint[0];
+          res.PTSint[i] = (uint64_t) ceil(temp)  - res.PTSint[0];
+        }
+
+        // now for sector 0-ranked i, use PST[i] and DTS[i] in write_pes_header at offset 23/28
+        // there may be 1 to 3 remaining useless indexes used for complete audio data description in m[]
+
+        return res;
+}
+
+
+inline static uint64_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
+{
+    double PTS;
+
+    uint64_t PTSint;
+    uint64_t bytes_written;
+    long double frames_written;
 
     if (info->bytespersecond == 0)
     {
-        foutput(WAR "file %s has bytes per second=0\n", info->filename);
+        foutput(WAR "file %s has 0 bytes per second\n", info->filename);
 
         return 0;
     }
@@ -829,9 +876,6 @@ inline static uint64_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title)
 
    PTSint = (uint64_t) round(PTS);  // normal round
 
-   if (pack_in_title==0) PTS0 = PTS;
-
-
    return(PTSint);
 }
 
@@ -841,8 +885,23 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
     int audio_bytes;
     static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
 
-    uint64_t PTS      = calc_PTS(info, pack_in_title);
-    uint64_t SCR      = calc_SCR(pack_in_title, info);
+    uint64_t PTS;
+    uint64_t DTS = 0;
+
+    if (info->type != AFMT_MLP)
+    {
+        PTS = calc_PTS(info, pack_in_title);
+    }
+    else
+    {
+        pts_t res;
+        res = calc_PTS_DTS_MLP(info, pack_in_title);
+        PTS = res.PTSint;
+        DTS = res.DTSint;
+    }
+
+    uint64_t SCR      = calc_SCR(pack_in_title, info);  // TODO: to be revised for MLP !!! (high on list)
+
     uint8_t  mlp_flag = info->type == AFMT_MLP ? 0xC0 : 0x80;
 
     if (pack_in_title==0)
@@ -852,7 +911,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         write_pack_header(fp,SCR); //+14
         write_system_header(fp); //+18
 
-        write_audio_pes_header(fp, info->firstpack_audiopesheaderquantity, mlp_flag, 1, PTS); //+17
+        write_audio_pes_header(fp, info->firstpack_audiopesheaderquantity, mlp_flag, 1, PTS, DTS); //+17
         audio_bytes = info->lpcm_payload - info->firstpackdecrement;
         write_lpcm_header(fp,info->firstpack_lpcm_headerquantity,info,pack_in_title,cc);//info->firstpack_lpcm_headerquantity+4
         /* offset_count+= */
@@ -870,7 +929,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         audio_bytes=bytesinbuffer;
         write_pack_header(fp,SCR); //+14
         if (globals.maxverbose) fprintf(stderr, DBG "LAST PACK: audio_bytes: %d, info->lastpack_audiopesheaderquantity %d \n", audio_bytes, info->lastpack_audiopesheaderquantity);
-        write_audio_pes_header(fp, info->lastpack_audiopesheaderquantity + audio_bytes, mlp_flag, 0, PTS);  // +14 for PCM or +19 for MLP
+        write_audio_pes_header(fp, info->lastpack_audiopesheaderquantity + audio_bytes, mlp_flag, 0, PTS, DTS);  // +14 for PCM or +19 for MLP
         write_lpcm_header(fp,info->lastpack_lpcm_headerquantity,info,pack_in_title,cc); // +info->lastpack_lpcm_headerquantity +4
         /* offset_count+= */
         uint64_t offset = ftello(fp);
@@ -882,7 +941,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         int16_t padding_quantity = 2016 - info->lastpack_lpcm_headerquantity - audio_bytes;
         if (padding_quantity < 0)
         {
-            foutput("[ERR]  Padding quantity error (last title packet): lastpack_lpcm_headerquantity %d; audio_bytes %d\n", info->lastpack_lpcm_headerquantity, audio_bytes);
+            foutput(ERR "Padding quantity error (last title packet): lastpack_lpcm_headerquantity %d; audio_bytes %d\n", info->lastpack_lpcm_headerquantity, audio_bytes);
             return audio_bytes;
         }
         write_pes_padding(fp, (uint16_t) padding_quantity);
@@ -892,7 +951,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
     {
         audio_bytes=info->lpcm_payload;
         write_pack_header(fp,SCR); //+14
-        write_audio_pes_header(fp,info->midpack_audiopesheaderquantity, mlp_flag, 0,PTS);//+14
+        write_audio_pes_header(fp,info->midpack_audiopesheaderquantity, mlp_flag, 0,PTS, DTS);//+14
 
         write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,pack_in_title,cc); //info->midpack_lpcm_headerquantity+4
         //PATCH May. 2018: reset continuity counters at start of file
