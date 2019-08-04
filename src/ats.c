@@ -1028,7 +1028,6 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
                 POS = "middle";
             }
 
-            fseek(fp, offset0 + 18, SEEK_SET);
         }
 
         ++pack_in_title;
@@ -1052,92 +1051,113 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
     /***       +18  if first  ***/
     if (position == FIRST_PACK) read_system_header(fp);
 
-    /* skipping read_audio_pes_header to identify info */
-    uint64_t offset = ftello(fp);
+    int header_length = 0;
 
-    fseek(fp, 14 + (position == FIRST_PACK ? 3 : 0), SEEK_CUR);
+    uint64_t offset1 = 0;
 
-    /***       info->first/mid/last/pack_lpcm_headerquantity + 4    ***/
-    int header_length = read_lpcm_header(fp, info, pack_in_title, position);
-
-    uint64_t offset1 = ftello(fp);
-
-    fseek(fp, offset, SEEK_SET);
-
-    /* 14 + (3) + 4 + header_length = 18 + (3) + header_length = offset1-offset */
-
-    if ((uint64_t) 18 + (position == FIRST_PACK ? 3 : 0) + header_length != offset1 - offset)
+    if (info->type != AFMT_MLP)
     {
-        if (globals.logdecode)
-        {
-            open_aob_log();
-            fprintf(aob_log, "ERR;header_length issue in read_lpcm_header at pack: ; %" PRIu64 "; position %d;;;;\n", pack_in_title, position);
-            fprintf(aob_log, "ERR;header_length: ; %d; expected: %" PRIu64 ";;;;\n", header_length, offset1 - offset - 18 - (position == FIRST_PACK ? 3 : 0));
-            close_aob_log();
-        }
+            /* skipping read_audio_pes_header to identify info */
+
+            uint64_t offset = ftello(fp);
+
+            fseek(fp, 14 + (position == FIRST_PACK ? 3 : 0), SEEK_CUR);
+
+            /***       info->first/mid/last/pack_lpcm_headerquantity + 4    ***/
+            header_length = read_lpcm_header(fp, info, pack_in_title, position);
+
+            offset1 = ftello(fp);
+
+            fseek(fp, offset, SEEK_SET);
+
+            /* 14 + (3) + 4 + header_length = 18 + (3) + header_length = offset1-offset */
+
+            if ((uint64_t) 18 + (position == FIRST_PACK ? 3 : 0) + header_length != offset1 - offset)
+            {
+                if (globals.logdecode)
+                {
+                    open_aob_log();
+                    fprintf(aob_log, "ERR;header_length issue in read_lpcm_header at pack: ; %" PRIu64 "; position %d;;;;\n", pack_in_title, position);
+                    fprintf(aob_log, "ERR;header_length: ; %d; expected: %" PRIu64 ";;;;\n", header_length, offset1 - offset - 18 - (position == FIRST_PACK ? 3 : 0));
+                    close_aob_log();
+                }
+            }
+    }
+    else
+    {
+        header_length = position == FIRST_PACK ? 64 : 43;
     }
 
     /* AFTER read_lpcm_header, which is used to identify info members */
 
     uint16_t PES_packet_len = 0;
+    uint64_t pts_calc = 0;
 
-    switch(position)
+    if (info->type != AFMT_MLP)
     {
-        case FIRST_PACK :
+        switch(position)
+        {
+            case FIRST_PACK :
 
-            audio_bytes = info->lpcm_payload - info->firstpackdecrement;
+                audio_bytes = info->lpcm_payload - info->firstpackdecrement;
 
-            PES_packet_len = read_audio_pes_header(fp, 1, &PTS); //+17
-            if (info->firstpack_audiopesheaderquantity != PES_packet_len)
-            {
-                if (globals.logdecode)
+                PES_packet_len = read_audio_pes_header(fp, 1, &PTS); //+17
+                if (info->firstpack_audiopesheaderquantity != PES_packet_len)
                 {
-                    open_aob_log();
-                    fprintf(aob_log,
-                            "ERR;firstpack_audiopesheaderquantity issue in read_audio_pes_header at pack: ; %" PRIu64 "; title: ;%d; position: ;%d;\n",
-                            pack_in_title,
-                            title,
-                            position);
-                    close_aob_log();
+                    if (globals.logdecode)
+                    {
+                        open_aob_log();
+                        fprintf(aob_log,
+                                "ERR;firstpack_audiopesheaderquantity issue in read_audio_pes_header at pack: ; %" PRIu64 "; title: ;%d; position: ;%d;\n",
+                                pack_in_title,
+                                title,
+                                position);
+                        close_aob_log();
+                    }
                 }
-            }
-            break;
+                break;
 
-        case MIDDLE_PACK :
+            case MIDDLE_PACK :
 
-            audio_bytes=info->lpcm_payload;
+                audio_bytes = info->lpcm_payload;
 
-            /***   +14   ***/
+                /***   +14   ***/
 
-            PES_packet_len = read_audio_pes_header(fp, 0, &PTS);
+                PES_packet_len = read_audio_pes_header(fp, 0, &PTS);
 
-            if (info->midpack_audiopesheaderquantity != PES_packet_len)
-            {
-                if (globals.logdecode)
+                if (info->midpack_audiopesheaderquantity != PES_packet_len)
                 {
-                    open_aob_log();
-                    fprintf(aob_log, "NA;midpack_audiopesheaderquantity issue in read_audio_pes_header at pack %" PRIu64 ";Disk/computed;%d;%d\n",
-                            pack_in_title,
-                            PES_packet_len,
-                            info->midpack_audiopesheaderquantity);
-                    close_aob_log();
+                    if (globals.logdecode)
+                    {
+                        open_aob_log();
+                        fprintf(aob_log, "NA;midpack_audiopesheaderquantity issue in read_audio_pes_header at pack %" PRIu64 ";Disk/computed;%d;%d\n",
+                                pack_in_title,
+                                PES_packet_len,
+                                info->midpack_audiopesheaderquantity);
+                        close_aob_log();
+                    }
                 }
-            }
 
-            break;
+                break;
 
-        case LAST_PACK :
+            case LAST_PACK :
 
-            PES_packet_len = read_audio_pes_header(fp, 0, &PTS); //+14
+                PES_packet_len = read_audio_pes_header(fp, 0, &PTS); //+14
 
-            audio_bytes = PES_packet_len - info->lastpack_audiopesheaderquantity;
+                audio_bytes = PES_packet_len - info->lastpack_audiopesheaderquantity;
 
-            break;
+                break;
+        }
+
+         pts_calc = calc_PTS(info, pack_in_title);
     }
-
-
-
-    uint64_t pts_calc = calc_PTS(info, pack_in_title);
+    else
+    {
+        audio_bytes = 2048 - header_length;  // sureley false for last pack but well
+        read_audio_pes_header(fp, position == FIRST_PACK, &PTS);  // extension for first pack only
+        pts_t res = calc_PTS_DTS_MLP(info, pack_in_title);
+        pts_calc = res.PTSint;
+    }
 
     if (PTS != pts_calc)
     {
@@ -1155,6 +1175,7 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
     }
 
     uint64_t SCR_calc;
+
     if (SCR != (SCR_calc = calc_SCR(pack_in_title, info)))
     {
         if (globals.logdecode)
@@ -1169,7 +1190,16 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
         }
     }
 
-    fseek(fp, offset1, SEEK_SET);
+    if (info->type != AFMT_MLP)
+    {
+       fseek(fp, offset1, SEEK_SET);
+    }
+    else
+    {
+        // just lazy to do more for now
+       fseek(fp, offset0 + 2048, SEEK_SET);
+       return(position);
+    }
 
     /* offset_count+= audio_bytes */
 
@@ -1221,13 +1251,25 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
     }
 
     uint64_t sector_length = ftello(fp) - offset0;
+
     if (globals.logdecode)
     {
         open_aob_log();
-        fprintf(aob_log, "INF;midpack_lpcm_headerquantity;%d;midpack_pes_padding;%d;bitspersample;%d;samplerate;%d\n", info->midpack_lpcm_headerquantity, info->midpack_pes_padding,info->bitspersample, info->samplerate);
-        fprintf(aob_log, "INF;sector length: ; %lu  bytes;------;title pack: ; %lu ; title: ;%d\n", sector_length, pack_in_title, title);
+
+        fprintf(aob_log, "INF;midpack_lpcm_headerquantity;%d;midpack_pes_padding;%d;bitspersample;%d;samplerate;%d\n",
+                info->midpack_lpcm_headerquantity,
+                info->midpack_pes_padding,
+                info->bitspersample,
+                info->samplerate);
+
+        fprintf(aob_log, "INF;sector length: ; %lu  bytes;------;title pack: ; %lu ; title: ;%d\n",
+                sector_length,
+                pack_in_title,
+                title);
+
         close_aob_log();
     }
+
     return(position);
 }
 
