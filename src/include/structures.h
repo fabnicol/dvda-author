@@ -16,8 +16,8 @@ typedef struct
 
 typedef struct
 {
-   uint64_t PTSint[MAX_AOB_SECTORS];
-   uint64_t DTSint[MAX_AOB_SECTORS];
+   uint64_t *PTSint;
+   uint64_t *DTSint;
 } pts_t;
 
 typedef struct
