@@ -736,7 +736,7 @@ ID\Chan 0   1   2   3   	4   5     info->channels
 }
 
 
-inline static uint64_t calc_SCR(uint64_t pack_in_title, fileinfo_t* info) 
+inline static uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_title)
 {
   uint64_t SCR;
   uint64_t SCRint;
@@ -900,7 +900,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         DTS = res.DTSint;
     }
 
-    uint64_t SCR      = calc_SCR(pack_in_title, info);  // TODO: to be revised for MLP !!! (high on list)
+    uint64_t SCR      = calc_SCR(info, pack_in_title);  // TODO: to be revised for MLP !!! (high on list)
 
     uint8_t  mlp_flag = info->type == AFMT_MLP ? 0xC0 : 0x80;
 
@@ -1176,7 +1176,7 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
 
     uint64_t SCR_calc;
 
-    if (SCR != (SCR_calc = calc_SCR(pack_in_title, info)))
+    if (SCR != (SCR_calc = calc_SCR(info, pack_in_title)))
     {
         if (globals.logdecode)
         {
