@@ -52,15 +52,9 @@
 static uint32_t rank;
 static uint32_t totnbsamples;
 
-struct MLP_LAYOUT mlp_layout[MAX_AOB_SECTORS] = {{0,0,0}};
+struct MLP_LAYOUT mlp_layout[MAX_AOB_SECTORS] = {{0,0}};
 
 static unsigned long SECT_RANK, SECT_RANK_OLD;
-
-
-struct MLP_LAYOUT* get_mlp_layout(void)
-{
-    return mlp_layout;
-}
 
 
 typedef struct SubStream {
@@ -1145,7 +1139,7 @@ static int output_data(MLPDecodeContext *m, unsigned int substr,
     PKT_POS_SECT = frame->pkt_pos + HEADER_OFFSET;
 
     SECT_RANK_OLD = SECT_RANK;
-    SECT_RANK = PKT_POS_SECT / 2048;  // Note 0xE is related to PTS0 = 105
+    SECT_RANK = PKT_POS_SECT / 2048;
 
     int new_sector = (SECT_RANK != SECT_RANK_OLD);
     

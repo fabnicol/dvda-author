@@ -1,6 +1,7 @@
 static const AVFilter * const filter_list[] = {
     &ff_af_aformat,
     &ff_af_anull,
+    &ff_af_aresample,
     &ff_af_atrim,
     &ff_vf_format,
     &ff_vf_hflip,

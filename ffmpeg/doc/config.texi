@@ -363,7 +363,7 @@
 @set have-perl yes
 @set have-pod2man yes
 @c @set have-texi2html no
-@set config-doc yes
+@c @set config-doc no
 @set config-htmlpages yes
 @set config-manpages yes
 @set config-podpages yes
@@ -385,9 +385,9 @@
 @c @set config-muxing-example no
 @c @set config-qsvdec-example no
 @set config-remuxing-example yes
-@c @set config-resampling-audio-example no
+@set config-resampling-audio-example yes
 @c @set config-scaling-video-example no
-@c @set config-transcode-aac-example no
+@set config-transcode-aac-example yes
 @set config-transcoding-example yes
 @c @set config-vaapi-encode-example no
 @c @set config-vaapi-transcode-example no
@@ -489,7 +489,7 @@
 @c @set config-libxcb-shm no
 @c @set config-libxcb-shape no
 @c @set config-libxcb-xfixes no
-@set config-lzma yes
+@c @set config-lzma no
 @c @set config-schannel no
 @c @set config-sdl2 no
 @c @set config-securetransport no
@@ -537,7 +537,7 @@
 @c @set config-postproc no
 @set config-avformat yes
 @set config-avcodec yes
-@c @set config-swresample no
+@set config-swresample yes
 @c @set config-avresample no
 @set config-avutil yes
 @c @set config-ffplay no
@@ -1528,38 +1528,6 @@
 @c @set config-vp8-parser no
 @c @set config-vp9-parser no
 @c @set config-xma-parser no
-@c @set config-alsa-indev no
-@c @set config-android-camera-indev no
-@c @set config-avfoundation-indev no
-@c @set config-bktr-indev no
-@c @set config-decklink-indev no
-@c @set config-dshow-indev no
-@c @set config-fbdev-indev no
-@c @set config-gdigrab-indev no
-@c @set config-iec61883-indev no
-@c @set config-jack-indev no
-@c @set config-kmsgrab-indev no
-@c @set config-lavfi-indev no
-@c @set config-openal-indev no
-@c @set config-oss-indev no
-@c @set config-pulse-indev no
-@c @set config-sndio-indev no
-@c @set config-v4l2-indev no
-@c @set config-vfwcap-indev no
-@c @set config-xcbgrab-indev no
-@c @set config-libcdio-indev no
-@c @set config-libdc1394-indev no
-@c @set config-alsa-outdev no
-@c @set config-caca-outdev no
-@c @set config-decklink-outdev no
-@c @set config-fbdev-outdev no
-@c @set config-opengl-outdev no
-@c @set config-oss-outdev no
-@c @set config-pulse-outdev no
-@c @set config-sdl2-outdev no
-@c @set config-sndio-outdev no
-@c @set config-v4l2-outdev no
-@c @set config-xv-outdev no
 @c @set config-abench-filter no
 @c @set config-acompressor-filter no
 @c @set config-acontrast-filter no
@@ -1599,7 +1567,7 @@
 @c @set config-aphaser-filter no
 @c @set config-apulsator-filter no
 @c @set config-arealtime-filter no
-@c @set config-aresample-filter no
+@set config-aresample-filter yes
 @c @set config-areverse-filter no
 @c @set config-aselect-filter no
 @c @set config-asendcmd-filter no
