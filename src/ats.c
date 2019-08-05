@@ -760,10 +760,14 @@ inline static uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_title)
 
   SCRint = (uint64_t) floor(SCR);
   return SCRint;
+
+  // For MLP seems to be : in sector count as many raw (not counting AOB headers) MLP bytes, see corresponding PCM bytes output (using get_mlp_layout)
+  // then use PCM bytespersecond so that duration = PCM byte output (sector) / bytespersecond * 90000 * 300
+  // SCR starts after 000001BA, normally with 0x44 at lower offsets, on 6 bytes.
 }
 
 
-inline static pts_t calc_PTS_DTS_MLP(fileinfo_t* info, uint64_t pack_in_title)
+inline static pts_t calc_PTS_DTS_MLP(fileinfo_t* info)
 {
         if (info->type != AFMT_MLP)
         {
@@ -777,6 +781,7 @@ inline static pts_t calc_PTS_DTS_MLP(fileinfo_t* info, uint64_t pack_in_title)
         }
         char* tab[8] = {"ffmpeg_lib", "-v", "-8", "-i", info->filename, "-f", "null", "-"};
         foutput(INF "Searching MLP layout for file %s. Please wait...\n", info->filename);
+
         ffmpeg_lib(8, &tab[0]);
 
         struct MLP_LAYOUT* m = get_mlp_layout();
@@ -824,8 +829,8 @@ inline static pts_t calc_PTS_DTS_MLP(fileinfo_t* info, uint64_t pack_in_title)
     //		TODO : see if MLP PCM nbytes per frame remains at 40
 
         pts_t res;
-        memset(res.PTSint, 0, MAX_AOB_SECTORS);
-        memset(res.DTSint, 0, MAX_AOB_SECTORS);
+        res.PTSint = calloc(MAX_AOB_SECTORS, sizeof (uint64_t));
+        res.DTSint = calloc(MAX_AOB_SECTORS, sizeof (uint64_t));
 
         res.DTSint[0] = 105;  // TODO : check if this is OK for auther audio characteristics
         res.PTSint[0] = 24;   // TODO : check if this is OK for auther audio characteristic
@@ -887,17 +892,21 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
 
     uint64_t PTS;
     uint64_t DTS = 0;
+    pts_t res_mlp;
 
-    if (info->type != AFMT_MLP)
+    if (info->type == AFMT_MLP)
     {
-        PTS = calc_PTS(info, pack_in_title);
+        if (pack_in_title == 0)  // once and for all for file info->filename, assuming a file has just one title in it (normally the case)
+        {
+            res_mlp = calc_PTS_DTS_MLP(info);
+        }
+
+        PTS = res_mlp.PTSint[pack_in_title];
+        DTS = res_mlp.DTSint[pack_in_title];
     }
     else
     {
-        pts_t res;
-        res = calc_PTS_DTS_MLP(info, pack_in_title);
-        PTS = res.PTSint;
-        DTS = res.DTSint;
+        PTS = calc_PTS(info, pack_in_title);
     }
 
     uint64_t SCR      = calc_SCR(info, pack_in_title);  // TODO: to be revised for MLP !!! (high on list)
@@ -946,6 +955,12 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         }
         write_pes_padding(fp, (uint16_t) padding_quantity);
 
+        if (info->type == AFMT_MLP)
+        {
+            free(res_mlp.PTSint);
+            free(res_mlp.DTSint);
+        }
+
     }
     else
     {
@@ -988,9 +1003,27 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
     static uint64_t pack_in_title;
     static int title;
     int audio_bytes;
+    pts_t res_mlp;
+
 
     if (fp == NULL) return 0;
     uint64_t offset0 = ftello(fp);
+
+    if (pack_in_title == 0)
+    {
+        fseek(fp, 0x44, SEEK_SET);
+        uint8_t buf[3];
+        fread(buf, 3, 1, fp);
+        if (buf[0] == 0xF8 && buf[1] == 0x72 && buf[2] == 0x6f)
+        {
+            if (globals.maxverbose)
+            {
+                foutput("%s %s.\n", MSG_TAG "Detected MLP format for", info->filename);
+            }
+
+            info->type = AFMT_MLP;
+        }
+    }
 
     fseek(fp, offset0 +14, SEEK_SET);
 
@@ -1153,10 +1186,25 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf)
     }
     else
     {
+
         audio_bytes = 2048 - header_length;  // sureley false for last pack but well
         read_audio_pes_header(fp, position == FIRST_PACK, &PTS);  // extension for first pack only
-        pts_t res = calc_PTS_DTS_MLP(info, pack_in_title);
-        pts_calc = res.PTSint;
+        //if (pack_in_title == 0)  // once and for all in title
+        //  res_mlp = calc_PTS_DTS_MLP(info);
+        // pts_calc = res_mlp.PTSint;
+        // for MLP one would need to extract audio from sectors, delimiting titles and send them
+        // to decoder for calc_PTS_DTS_MLP to work (needs a file as input)
+        // feasable but of limited use and complicated
+        // setting pts_cal at O
+        if (globals.logdecode)
+        {
+            open_aob_log();
+            fprintf(aob_log, "%s\n",  "WAR;MLP case, PTS not calculated / supported in --log-decoded, just read from input.");
+            fprintf(aob_log, "INF;bitspersample %d;samplerate %d\n",
+                    info->bitspersample,
+                    info->samplerate);
+            close_aob_log();
+        }
     }
 
     if (PTS != pts_calc)

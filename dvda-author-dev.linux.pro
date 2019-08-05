@@ -10,7 +10,7 @@ TARGET = dvda-author
 
 QMAKE_CFLAGS=-std=c99 -march=core2 -fPIC -ftrack-macro-expansion=0
 
-DEFINES +=   _GNU_SOURCE __CB__ GUI_BEHAVIOR HAVE_lplex=1 COMPILER_IS_GCC HAVE_curl=1 HAVE_fixwav=1 HAVE_libogg=1 HAVE_iberty=1 HAVE_mpeg2enc=1 HAVE_mplex=1 HAVE_OGG_FLAC=1 HAVE_FLAC=1 HAVE_libogg=1 HAVE_sox=1  FLAC_API_SUPPORTS_OGG_FLAC=1 USE_SET
+DEFINES +=   _GNU_SOURCE __CB__ GUI_BEHAVIOR HAVE_lplex=1 COMPILER_IS_GCC HAVE_curl=1 HAVE_fixwav=1 HAVE_libogg=1 HAVE_iberty=1 HAVE_mpeg2enc=1 HAVE_mplex=1 HAVE_OGG_FLAC=1 HAVE_FLAC=1 HAVE_libogg=1 HAVE_sox=1  FLAC_API_SUPPORTS_OGG_FLAC=1 USE_SET  DEBUG_MLP
 
 DEFINES += STARTSECTOR=272 # Schily magic value
 
