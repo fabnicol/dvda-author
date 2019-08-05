@@ -147,7 +147,7 @@ static uint8_t cga_to_channel(uint8_t cgaint)
 
 inline uint8_t wav2cga_channels(fileinfo_t *info)
 {
-    if (info->channels > 6 || info->channels < 1)
+    if (info == NULL || info->channels > 6 || info->channels < 1)
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Channels are not correctly encoded")
     }

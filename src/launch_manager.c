@@ -126,7 +126,7 @@ int launch_manager(command_t *command)
             // As files[][] is dynamically allocated with calloc(), 0 values mean command line did not define cga values
 
             if (files[i][j].cga == 0 || files[i][j].cga == 0xFF)  // non-assigned (calloc 0 value) or assigned with illegal value previously detected as such (0xFF)
-                files[i][j].cga = wav2cga_channels(files[i][j].dw_channel_mask);
+                files[i][j].cga = wav2cga_channels(&files[i][j]);
 
             files[i][j].contin_track = (uint8_t) (j != nfiles[i] - 1);
 
