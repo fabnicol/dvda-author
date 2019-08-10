@@ -16,8 +16,8 @@ typedef struct
 
 typedef struct
 {
-   uint64_t *PTSint;
-   uint64_t *DTSint;
+   uint32_t PTSint;
+   uint32_t DTSint;
 } pts_t;
 
 typedef struct

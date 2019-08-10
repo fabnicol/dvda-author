@@ -84,13 +84,13 @@ all:    @PACKAGE_NAME@
 CPPFLAGS += $(foreach prog,$(STATIC_LIBS),$(if $(MAYBE_$(prog)),-I@ROOTDIR@/$(MAYBE_$(prog))/src))
 
 CPPFLAGS += $(foreach prog,$(STATIC_LIBS),$$(if test "$($(prog)_LIB)" = "" -a "$($(prog)_LINK)" = ""; then echo -DWITHOUT_$(prog); fi))
-
+CPPFLAGS += -I@ROOTDIR@/ffmpeg
 $(OBJECTS): %.o: @ROOTDIR@/src/%.c
 	$(CC)  -c @DEFS@ $(CFLAGS) $(CPPFLAGS)  $< -o $@ 
 
 LDLIBS_append += $(foreach prog,$(STATIC_LIBS),$($(prog)_LIB) $($(prog)_LINK))  
 
-LDLIBS += $(LDLIBS_append) 
+LDLIBS += $(LDLIBS_append) -L@ROOTDIR@/ffmpeg/ffools -lffmpeg
 
 @PACKAGE_NAME@: $(OBJECTS) $(LDLIBS_append)
 

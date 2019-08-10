@@ -6,6 +6,7 @@
 struct MLP_LAYOUT
 {
  uint32_t pkt_pos;
+ uint32_t pkt_pos_src;
  uint32_t nb_samples;
  uint32_t rank;
 };
@@ -14,7 +15,6 @@ struct MLP_LAYOUT
 #  define MAX_AOB_SECTORS 1024 * 512 // 1024 * 1024 * 1024 (max AOB size is 1GB) / 2048 (sector size)
 #endif
 
-extern struct MLP_LAYOUT mlp_layout[MAX_AOB_SECTORS];
-struct MLP_LAYOUT* get_mlp_layout(void);
+void get_mlp_layout(struct MLP_LAYOUT*, unsigned long size);
 
 #endif // MLPLAYOUT_H_INCLUDED

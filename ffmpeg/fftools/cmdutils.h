@@ -28,7 +28,7 @@
 #include "libavcodec/avcodec.h"
 #include "libavfilter/avfilter.h"
 #include "libavformat/avformat.h"
-#include "libswscale/swscale.h"
+//#include "libswscale/swscale.h"
 
 #ifdef _WIN32
 #undef main /* We don't want SDL to override our main() */
