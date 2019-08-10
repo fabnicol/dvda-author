@@ -1,0 +1,6 @@
+<?xml version = "1.0"?>
+<SFF-DVD id="{9CD9C704-2477-47E2-AFE9-9F6A4ACFA5F6}" name="Album" location="Z:\home\nicol\Dev\dvda-author\Docs\MLP\SFF.XML" version="v0.41.990705" >
+<DVDVIDEOATTR-PTR file="Album_VAttr.XML" />
+<PLAYLIST-PTR id="{A61D55A0-579D-4929-897C-080DC7D195D4}" file="Group 1_Group.XML" />
+</SFF-DVD>
+

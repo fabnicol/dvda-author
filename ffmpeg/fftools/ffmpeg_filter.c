@@ -38,6 +38,7 @@
 #include "libavutil/pixfmt.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/samplefmt.h"
+#include "libswscale/swscale.h"
 
 static const enum AVPixelFormat *get_compliance_unofficial_pix_fmts(enum AVCodecID codec_id, const enum AVPixelFormat default_formats[])
 {

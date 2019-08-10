@@ -14,10 +14,10 @@ library_names=''
 old_library='libMagickCore-7.Q16HDRI.a'
 
 # Linker flags that cannot go in dependency_libs.
-inherited_linker_flags=' -pthread -fopenmp'
+inherited_linker_flags=' -fopenmp -pthread'
 
 # Libraries that this one depends upon.
-dependency_libs=' -llcms2 -ljpeg -lpng16 -ldjvulibre -lfftw3 -lfontconfig -lfreetype -lwebpmux -lwebp /usr/lib64/libwmflite.la -lXext -lXt -lSM -lICE -lX11 -lbz2 -lopenjp2 /usr/lib64/libgvc.la -L/usr/lib64 -lltdl -lxdot -lcgraph -lpathplan /usr/lib64/libltdl.la -ldl /usr/lib64/libxdot.la /usr/lib64/libpathplan.la -lexpat /usr/lib64/libcgraph.la -lcdt /usr/lib64/libcdt.la -lz -lm'
+dependency_libs=' /usr/lib/x86_64-linux-gnu/libjpeg.la -lpng16 -lXext -lX11 -lz -lm'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''
@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/home/fab/Dev/dvda-author/local/lib'
+libdir='/home/nicol/Dev/dvda-author/local/lib'

@@ -511,18 +511,32 @@ int calc_info(fileinfo_t* info)
 
 #define X T[table_index][info->channels-1]
 
-    info->lpcm_payload = X[0];
-    info->firstpackdecrement = (uint8_t) X[1];
-
-    info->SCRquantity = X[2];
-    info->firstpack_audiopesheaderquantity = X[3];
-    info->midpack_audiopesheaderquantity   = X[4];
+    info->firstpack_audiopesheaderquantity = X[3]; // apparently valid for both MLP and PCM
+    info->midpack_audiopesheaderquantity   = X[4]; // TODO: check this!
     info->lastpack_audiopesheaderquantity  = X[5];
-    info->firstpack_lpcm_headerquantity    = (uint8_t) X[6];
-    info->midpack_lpcm_headerquantity      = (uint8_t) X[7];
-    info->lastpack_lpcm_headerquantity     = (uint8_t) X[8];
-    info->firstpack_pes_padding            = (uint8_t) X[9];
-    info->midpack_pes_padding              = (uint8_t) X[10];
+
+    if (info->type == AFMT_MLP)   // only tested for 2/16-24/44 and 3/16/96
+    {
+        info->lpcm_payload = 2005;
+        info->firstpackdecrement = 21;
+        info->firstpack_lpcm_headerquantity    = 6;
+        info->midpack_lpcm_headerquantity      = 6;
+        info->lastpack_lpcm_headerquantity     = 6;
+    }
+    else
+    {
+        info->lpcm_payload = X[0];
+        info->firstpackdecrement = (uint8_t) X[1];
+        info->SCRquantity = X[2]; // now useless. Left here for compatibility. Deprecated.
+
+        info->firstpack_lpcm_headerquantity    = (uint8_t) X[6];
+        info->midpack_lpcm_headerquantity      = (uint8_t) X[7];
+        info->lastpack_lpcm_headerquantity     = (uint8_t) X[8];
+        info->firstpack_pes_padding            = (uint8_t) X[9];
+        info->midpack_pes_padding              = (uint8_t) X[10];
+    }
+
+
 
 #undef X
 

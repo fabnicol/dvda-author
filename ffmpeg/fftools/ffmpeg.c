@@ -105,10 +105,7 @@
 #include "cmdutils.h"
 
 #include "libavutil/avassert.h"
-#include "libavcodec/mlplayout.h"
 
-
-extern struct MLP_LAYOUT mlp_layout[MAX_AOB_SECTORS];
 
 const char program_name[] = "ffmpeg";
 const int program_birth_year = 2000;
@@ -4843,12 +4840,6 @@ static int64_t getmaxrss(void)
 
 static void log_callback_null(void *ptr, int level, const char *fmt, va_list vl)
 {
-}
-
-
-struct MLP_LAYOUT* get_mlp_layout(void)
-{
-    return mlp_layout;
 }
 
 int ffmpeg_lib(int argc, char **argv)
