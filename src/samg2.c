@@ -109,24 +109,36 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
             ++i;
             samg[i] = j + 1;
             ++i;
-            uint32_copy(&samg[i], files[g][j].first_PTS);
+            uint32_copy(&samg[i], files[g][j].first_PTS); // MLP check 0x51 (2/24/44) - 0x4B (3/16/96)
             i+=4;
-            uint32_copy(&samg[i], files[g][j].PTS_length);
+            uint32_copy(&samg[i], files[g][j].PTS_length); // MLP check 0x0DBBA0 (2/24/44-3/16/96)
             i+=4;
             i+=4;
             
             if (j == 0)
             {
-                samg[i] = (files[g][j].channels > 2)? 0xc0 : 0xc8;
+                if (files[g][j].type == AFMT_MLP)
+                {
+                   samg[i] = 0xD8;  // 3/16/96 and 2/24/44: no dep to channel or sample rate
+                }
+                else
+                {
+                   samg[i] = (files[g][j].channels > 2)? 0xc0 : 0xc8;
+                }
             }
             else
             {
+                if (files[g][j].type == AFMT_MLP)
+                {
+                   samg[i] = 0x58;      // 3/16/96 and 2/24/44: no dep to channel or sample rate
+                }
+                else
                 samg[i] = 0x40;
             }
 
             ++i;
 
-            if (files[g][j].channels > 2)
+            if (files[g][j].channels > 2)  // Table OK too for MLP
             {
                 switch (files[g][j].bitspersample)
                 {
@@ -163,7 +175,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
 
             i++;
 
-            if (files[g][j].channels > 2)
+            if (files[g][j].channels > 2) // Table OK too for MLP
             {
                 switch (files[g][j].samplerate)
                 {
@@ -220,7 +232,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
             }
             
             ++i;
-            samg[i]= files[g][j].cga;
+            samg[i]= files[g][j].cga; // OK MLP
             ++i;
 
             i += 4;
