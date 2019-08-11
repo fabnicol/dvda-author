@@ -35,6 +35,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <math.h>
 #ifdef __GNU_LIBRARY__
 #include <unistd.h>
 #endif
@@ -55,7 +56,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 #include "multichannel.h"
 #include "file_input_parsing.h"
-
+#include "fftools/ffmpeg.h"
 
 extern globalData globals;
 static const uint8_t default_cga[6] = {0,  1,  7,  3,   16,   17};  //default channel assignment
@@ -467,7 +468,7 @@ void flac_error_callback(const FLAC__StreamDecoder GCC_UNUSED *dec,
 int calc_info(fileinfo_t* info)
 {
 //PATCH: provided for null dividers.
-    if (info->samplerate == 0 || info->channels == 0 || info->channels == 0)
+    if (info->samplerate == 0 || info->channels == 0 || info->bitspersample == 0)
     {
         foutput("%s%s%s\n", ANSI_COLOR_RED"\n[ERR] ", info->filename, ANSI_COLOR_RESET"  Null audio characteristics");
         return(NO_AFMT_FOUND);
@@ -513,7 +514,7 @@ int calc_info(fileinfo_t* info)
 
     info->firstpack_audiopesheaderquantity = X[3]; // apparently valid for both MLP and PCM
     info->midpack_audiopesheaderquantity   = X[4]; // TODO: check this!
-    info->lastpack_audiopesheaderquantity  = X[5];
+    info->lastpack_audiopesheaderquantity  = (uint8_t) X[5];
 
     if (info->type == AFMT_MLP)   // only tested for 2/16-24/44 and 3/16/96
     {
@@ -536,36 +537,83 @@ int calc_info(fileinfo_t* info)
         info->midpack_pes_padding              = (uint8_t) X[10];
     }
 
-
-
 #undef X
 
     info->bytespersecond = (info->samplerate * info->bitspersample * info->channels)/8;
 
     switch (info->samplerate)
     {
-    case 44100:
-    case 48000:
-        info->bytesperframe = 5;
-        break;
-    case 88200:
-    case 96000:
-        info->bytesperframe = 10;
-        break;
+        case 44100:
+        case 48000:
+            info->samplesperframe = 5;
+            break;
+        case 88200:
+        case 96000:
+            info->samplesperframe = 10;
+            break;
 
-    case 176400:
-    case 192000:
-        info->bytesperframe = 20;
-        break;
-
+        case 176400:
+        case 192000:
+            info->samplesperframe = 20;
+            break;
     }
 
-    info->bytesperframe *= info->channels * info->bitspersample;
+    // e.g 240 for 2/24/44.1 or 960 for 6/16/96
+    info->bytesperframe = info->samplesperframe * info->channels * info->bitspersample;
 
-    info->numsamples
+    info->samplesperframe *= 8;
+
+    if (info->type == AFMT_MLP)
+    {
+        unsigned long size = info->file_size / info->lpcm_payload + 4;
+
+        info->mlp_layout = (struct MLP_LAYOUT *) calloc(size, sizeof (struct MLP_LAYOUT));
+
+        char* tab[8] = {"ffmpeg_lib", "-v", "-8", "-i", info->filename, "-f", "null", "-"};
+        foutput(INF "Searching MLP layout for file %s. Please wait...\n", info->filename);
+
+        ffmpeg_lib(8, &tab[0]);
+
+         get_mlp_layout(&info->mlp_layout[0], size); // allowing for 2 null lines
+
+        // TODO : check if get_mlp_layout has correct PCM saple count for all audio characteristics
+
+        if (info->mlp_layout == NULL)
+        {
+          foutput(ERR "%s", "Layout coud not be retrieved.\n");
+          exit(-2);
+        } else {
+          foutput(MSG_TAG "%s", "Layout retrieved.\n");
+        }
+
+        // compute "length" of layout. Should be size - 2 normally... but preferring to check better
+        int index = 0;
+        for (; index < MAX_AOB_SECTORS; ++index)
+        {
+            if (index && info->mlp_layout[index].nb_samples == 0) break;
+        }
+
+        info->numsamples = info->mlp_layout[index - 1].nb_samples;
+        info->numbytes = info->numsamples * info->channels * (info->bitspersample / 8);
+
+        if (globals.maxverbose)
+        {
+            for (int i = 0;  i < MAX_AOB_SECTORS; ++i)
+            {
+                if (i && info->mlp_layout[i].pkt_pos == 0) break;
+                fprintf(stderr, "%u ; %u ; %u \n",
+                        info->mlp_layout[i].pkt_pos, info->mlp_layout[i].nb_samples, info->mlp_layout[i].rank);
+            }
+        }
+    }
+    else
+    {
+      info->numsamples
             = (info->numbytes * 8) / (info->channels * info->bitspersample);
+    }
 
-    info->PTS_length = (90000.0 * info->numsamples) / info->samplerate;  // = duration in seconds x 90000
+    double ptsl = floor((90000.0 * info->numsamples) / info->samplerate);  // = duration in seconds x 90000
+    info->PTS_length = (uint64_t) ptsl;
 
     // a rounding error of 1 in PTS_LENGTH = samplerate / 90000 in numsamples = samplerate / (8 x 90000) x nchannels x bitspersample in bytes.
 
@@ -722,7 +770,7 @@ uint8_t extract_audio_info(fileinfo_t *info)
 
     if (calc_info(info) == NO_AFMT_FOUND)
     {
-      return(info->type=NO_AFMT_FOUND);
+      return(info->type = NO_AFMT_FOUND);
     }
 
     return(info->type);
@@ -860,6 +908,12 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
         {
             foutput(ERR "Could not detect number of channels for MLP file %s with channel group assignment: %d (%s)\n", info->filename, info->cga, cga_define[info->cga]);
         }
+
+        // Now on to audio layout and numbytes
+        // check info->file_size is known
+        // calc lpcm_payload here
+
+        calc_info(info);
 
         return(info->type = AFMT_MLP);
     }

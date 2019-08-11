@@ -40,7 +40,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "auxiliary.h"
 #include "commonvars.h"
 #include "ats.h"
-#include "fftools/ffmpeg.h"
+
 #include "libavcodec/mlplayout.h"
 #include "decode.h"
 #include "c_utils.h"
@@ -823,23 +823,25 @@ inline static void calc_PTS_DTS_MLP(fileinfo_t* info, const struct MLP_LAYOUT* m
     // Add :
     // PTS = PTS + PTS0
     // DTS = DTS + DTS0
-    // PTS0=105
-    // DTS0=24
-    // Write PTS at offset 23 on 5 bytes in sector header (+
+    // PTS0 = floor of PTS tick duration of playing samples in 1 frame = floor(samplesperframe/samplerate x 90000) + 24
+    // DTS0 = 24 or 23 (?)
+    // Write PTS at offset 23 on 5 bytes in sector header
     // Write DTS at offset 28 on 5 bytes in sector header
-    // PTS0=105	↔ 0xE	TODO : check PTS0 calc wrt br sr c
-    //		TODO : see if MLP PCM nbytes per frame remains at 40
 
+        double pts0 = floor(info->samplesperframe * 90000.0 / (double) info->samplerate);
 
+        info->first_PTS = (uint32_t) pts0;
         res[0].DTSint = 23;  // TODO : check if this is OK for auther audio characteristics
-        res[0].PTSint = 105;   // TODO : check if this is OK for auther audio characteristic
+        res[0].PTSint = info->first_PTS + 24;
+
         for (int i = 1; i < MAX_AOB_SECTORS && m[i].pkt_pos != 0; ++i)
         {
           double temp = (double) m[i].nb_samples / (double) info->samplerate * 90000.0;
-
-          res[i].DTSint = (uint64_t) floor(temp) + res[0].DTSint;
+          double dtsint = floor(temp);
+          double ptsint = ceil(temp);
+          res[i].DTSint = (uint32_t)  dtsint + res[0].DTSint;
           res[i].DTSint++;
-          res[i].PTSint = (uint64_t) ceil(temp)  + res[0].PTSint;
+          res[i].PTSint = (uint32_t) ptsint + res[0].PTSint;
         }
 
         // now for sector 0-ranked i, use PST[i] and DTS[i] in write_pes_header at offset 23/28
@@ -884,7 +886,9 @@ inline static uint32_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title, uint32
         return 0;
     }
 
-    if (pack_in_title == 0)
+    if (pack_in_title == 0) return 0;
+
+    if (pack_in_title == 1)
     {
        *totpayload = info->lpcm_payload - info->firstpackdecrement;
     }
@@ -920,39 +924,11 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
     {
         mlp_flag = 0xC0;
 
-        pts_t res_mlp[MAX_AOB_SECTORS] = {{0, 0, 0}};
+        pts_t res_mlp[MAX_AOB_SECTORS] = {{0, 0}};
 
         if (pack_in_title == 0)  // once and for all for file info->filename, assuming a file has just one title in it (normally the case)
         {
-            unsigned long size = info->file_size / info->lpcm_payload + 4;
 
-            m = (struct MLP_LAYOUT *) calloc(size, sizeof (struct MLP_LAYOUT));
-
-            char* tab[8] = {"ffmpeg_lib", "-v", "-8", "-i", info->filename, "-f", "null", "-"};
-            foutput(INF "Searching MLP layout for file %s. Please wait...\n", info->filename);
-
-            ffmpeg_lib(8, &tab[0]);
-
-             get_mlp_layout(&m[0], size); // allowing for 2 null lines
-
-            // TODO : check if get_mlp_layout has correct PCM saple count for all audio characteristics
-
-            if (m == NULL)
-            {
-              foutput(ERR "%s", "Layout coud not be retrieved.\n");
-              exit(-2);
-            } else {
-              foutput(MSG_TAG "%s", "Layout retrieved.\n");
-            }
-
-            if (globals.maxverbose)
-            {
-                for (int i = 0;  i < MAX_AOB_SECTORS; ++i)
-                {
-                    if (i && m[i].pkt_pos == 0) break;
-                    fprintf(stderr, "%u ; %u ; %u \n", m[i].pkt_pos, m[i].nb_samples, m[i].rank);
-                }
-            }
 
             calc_PTS_DTS_MLP(info, m, &res_mlp[0]);
             calc_SCR_MLP(info, m, &res_scr[0]);
@@ -966,12 +942,30 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
     else
     {
         mlp_flag = 0x80;
+        if (pack_in_title == 0) cumbytes = 0;
         PTS = calc_PTS(info, pack_in_title, &cumbytes);
         SCR = calc_SCR(info, pack_in_title);
     }
 
-    if (pack_in_title == 0 || start_of_file)
-        info->first_PTS = PTS;
+    static bool wait_for_next_pack;
+
+    // Two cases arise: if new file is new title, then pack_in_title == 0
+    // and catch PTS into first_PS
+    // Else if new file is same title (gapless case), then pack_in_title != 0
+    // and wait for next loop to assign first_PTS. The "shifted" bytes from
+    // new file to previous file's last pack are not taken into consideration
+    // for first_PTS assignment.
+
+    if (start_of_file)
+    {
+        if(pack_in_title == 0 || wait_for_next_pack)
+        {
+            info->first_PTS = PTS;
+            wait_for_next_pack = false;
+        }
+        else
+            wait_for_next_pack = true;
+    }
 
     if (pack_in_title == 0)
     {
@@ -979,7 +973,9 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         foutput(INF "Writing first packet - pack=%"PRIu64", bytesinbuffer=%d\n",pack_in_title,bytesinbuffer);
 
         write_pack_header(fp,SCR); //+14
+
         write_system_header(fp); //+18
+
         write_audio_pes_header(fp, info->firstpack_audiopesheaderquantity, mlp_flag, 1, PTS, DTS); //+17
 
         audio_bytes = info->lpcm_payload - info->firstpackdecrement;
@@ -1004,10 +1000,17 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
 
         foutput(INF "Writing last packet - pack=%" PRIu64 ", bytesinbuffer=%d\n", pack_in_title, bytesinbuffer);
         audio_bytes=bytesinbuffer;
+
         write_pack_header(fp,SCR); //+14
-        if (globals.maxverbose) fprintf(stderr, DBG "LAST PACK: audio_bytes: %d, info->lastpack_audiopesheaderquantity %d \n", audio_bytes, info->lastpack_audiopesheaderquantity);
+
+        if (globals.maxverbose)
+            fprintf(stderr, DBG "LAST PACK: audio_bytes: %d, info->lastpack_audiopesheaderquantity %d \n",
+                    audio_bytes, info->lastpack_audiopesheaderquantity);
+
         write_audio_pes_header(fp, info->lastpack_audiopesheaderquantity + audio_bytes, mlp_flag, 0, PTS, DTS);  // +14 for PCM or +19 for MLP
+
         write_lpcm_header(fp, info->lastpack_lpcm_headerquantity, info, pack_in_title,cc, m);
+
         // +info->lastpack_lpcm_headerquantity +4 (PCM) or +10 (MLP), headers always 43 B
         /* offset_count+= */
         uint64_t offset = ftello(fp);
@@ -1032,7 +1035,9 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
     else
     {
         audio_bytes=info->lpcm_payload;
+
         write_pack_header(fp,SCR); //+14
+
         write_audio_pes_header(fp,info->midpack_audiopesheaderquantity, mlp_flag, 0,PTS, DTS);//+14
 
         write_lpcm_header(fp,info->midpack_lpcm_headerquantity,info,pack_in_title,cc, m);
@@ -1515,11 +1520,11 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                 {
                     /* If the current track is a different audio format, we must start a new title. */
 
-                    start_of_file = true;
-
                     if (files[i].newtitle)
                     {
-                        write_pes_packet(fpout, &files[i-1], audio_buf, bytesinbuf, pack_in_title, start_of_file); // Empty audio buffer.
+                        // Empty audio buffer
+
+                        write_pes_packet(fpout, &files[i-1], audio_buf, bytesinbuf, pack_in_title, start_of_file);
 
                         ++pack;
                         bytesinbuf = 0;
@@ -1534,6 +1539,8 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                         foutput(ERR "Could not open %s\n",files[i].filename);
                         EXIT_ON_RUNTIME_ERROR
                     }
+
+                    start_of_file = true;
 
                     if (globals.veryverbose)
                         foutput("%s %d %s %d\n", INF "Opening audio buffer at offset", bytesinbuf, "for count: ", AUDIO_BUFFER_SIZE - bytesinbuf);

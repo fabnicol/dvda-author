@@ -48,43 +48,42 @@ typedef struct
     uint8_t type;
     uint8_t bitspersample;
     uint8_t channels;
-    bool   mergeflag;
-    bool   dvdv_compliant;
-    uint8_t cga; // L&T Fedkamp addition
+    uint8_t cga;
     uint8_t downmix_table_rank;
     uint8_t newtitle;
     uint8_t contin_track;
-    // L&T Feldkamp addition (multichannel)
-    uint16_t sampleunitsize;
-    uint32_t samplerate;
-    uint32_t first_sector;
-    uint32_t last_sector;
-    // L&T Feldkamp addition (multichannel)
-    uint32_t lpcm_payload;
     uint8_t firstpackdecrement;
-    uint32_t SCRquantity;
-    uint32_t firstpack_audiopesheaderquantity;
-    uint32_t midpack_audiopesheaderquantity;
-    uint32_t lastpack_audiopesheaderquantity;
     uint8_t firstpack_lpcm_headerquantity;
     uint8_t midpack_lpcm_headerquantity;
     uint8_t lastpack_lpcm_headerquantity;
     uint8_t firstpack_pes_padding;
     uint8_t midpack_pes_padding;
+    uint8_t samplesperframe;
+    uint8_t lastpack_audiopesheaderquantity;
+    uint16_t sampleunitsize;
+    uint16_t bytesperframe;
+    uint16_t lpcm_payload;
+    uint16_t SCRquantity;
+    uint16_t firstpack_audiopesheaderquantity;
+    uint16_t midpack_audiopesheaderquantity;
+    bool   mergeflag;
+    bool   dvdv_compliant;
+    uint32_t samplerate;
+    uint32_t first_sector;
+    uint32_t last_sector;
     uint32_t dw_channel_mask;
-    // L&T Feldkamp addition (multichannel)
+    uint32_t first_PTS;
+    uint32_t PTS_length;
     uint64_t numsamples;
     uint64_t numbytes; // theoretical audio size
     uint64_t wav_numbytes; // wav audio size
     uint64_t file_size; // file size on disc
     uint64_t *channel_size; // channel size on disc
-    uint64_t bytesperframe;
     uint64_t bytespersecond;
-    uint64_t first_PTS;
-    uint64_t PTS_length;
     audio_input_t* audio;  // Used whilst decoding.
     char *filename;
     char **given_channel;
+    struct MLP_LAYOUT *mlp_layout;
 } fileinfo_t;
 
 typedef struct
