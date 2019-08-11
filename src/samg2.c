@@ -109,9 +109,11 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
             ++i;
             samg[i] = j + 1;
             ++i;
-            uint32_copy(&samg[i], files[g][j].first_PTS); // MLP check 0x51 (2/24/44) - 0x4B (3/16/96)
+            uint32_copy(&samg[i], files[g][j].first_PTS); // MLP check 0x51 (2/24/44) - 0x4B (3/16/96).
+            // for MLP this looks rather like samples per frame, e.g. 80 samples (480 B) for 3/16/96
+            // i.e {5, 10, 20} * 8
             i+=4;
-            uint32_copy(&samg[i], files[g][j].PTS_length); // MLP check 0x0DBBA0 (2/24/44-3/16/96)
+            uint32_copy(&samg[i], files[g][j].PTS_length); // MLP check OK: 0x0DBBA0 (2/24/44-3/16/96) for 10s
             i+=4;
             i+=4;
             
