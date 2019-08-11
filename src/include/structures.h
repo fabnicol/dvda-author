@@ -49,7 +49,7 @@ typedef struct
     uint8_t bitspersample;
     uint8_t channels;
     uint8_t cga;
-    uint8_t downmix_table_rank;
+    int8_t downmix_table_rank;
     uint8_t newtitle;
     uint8_t contin_track;
     uint8_t firstpackdecrement;

@@ -102,14 +102,19 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
             /* counts the number of tracks with same-type audio characteristics, per group and title
             *  into ntitletracks[group][numtitles[group]], and corresponding PTS length in titlelength[group][numtitles[group]] */
 
-            // PATCH 13.11 on 12.06
+        // PATCH 13.11 on 12.06
+        // PATCH MLP: TODO check this
+        // Note: apparently MLP does not allow "gapless" same-audio characteristics titles, which
+        // means that 3 following tracks with same audio specs will create 3 titles instead of 1 for
+        // gapless PCM. TODO: check if this is software-dependent
 
             if (track)
             {
               if (command->files[group][track].samplerate != command->files[group][track-1].samplerate
                 || command->files[group][track].bitspersample != command->files[group][track-1].bitspersample
                 || command->files[group][track].channels != command->files[group][track-1].channels
-                || command->files[group][track].cga != command->files[group][track-1].cga)
+                || command->files[group][track].cga != command->files[group][track-1].cga
+                || command->files[group][track].type == AFMT_MLP)
 
                 {
                   command->files[group][track].newtitle = 1;
@@ -1063,6 +1068,9 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
     /* Sector 2 */
 
     i = 0x800;
+    // Note: apparently MLP does not allow "gapless" same-audio characteristics titles, which
+    // means that 3 following tracks with same audio specs will create 3 titles instead of 1 for
+    // gapless PCM. TODO: check if this is software-dependent
     uint16_copy(&amg[i], totaltitles);		// total number of titles, audio and videolinking titles included
     i += 2;
 

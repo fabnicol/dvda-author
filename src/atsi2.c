@@ -46,23 +46,37 @@ int get_afmt(fileinfo_t* info, audioformat_t* audioformats, int* numafmts) {
   int i;
   int found;
 
-  found=0;
-  i=0;
-  while ((i < *numafmts) && (!found)) {
-    if ((info->samplerate==audioformats[i].samplerate) && (info->bitspersample==audioformats[i].bitspersample) && (info->channels==audioformats[i].channels)) {
-      found=1;
-    } else {
+  found = 0;
+  i = 0;
+
+  while (i < *numafmts && ! found)
+  {
+    if (info->samplerate == audioformats[i].samplerate
+        && info->bitspersample == audioformats[i].bitspersample
+        && info->channels == audioformats[i].channels)
+    {
+      found = 1;
+    }
+    else
+    {
       i++;
     }
   }
-  if (!found) {
-    audioformats[i].samplerate=info->samplerate;
-    audioformats[i].channels=info->channels;
-    //audioformats[i].cga=info->cga;
-    audioformats[i].bitspersample=info->bitspersample;
+
+  if (! found)
+  {
+    audioformats[i].samplerate = info->samplerate;
+    audioformats[i].channels = info->channels;
+    audioformats[i].cga = info->cga;
+    audioformats[i].bitspersample = info->bitspersample;
     (*numafmts)++;
   }
-  if (*numafmts == 9) EXIT_ON_RUNTIME_ERROR_VERBOSE("DVD-Audio discs cannot manage more than 8 different audio formats per group.\n       Resample tracks or create a new group.")
+
+  if (*numafmts == 9)
+  {
+      EXIT_ON_RUNTIME_ERROR_VERBOSE("DVD-Audio discs cannot manage more than 8 different audio formats per group.\n       Resample tracks or create a new group.")
+  }
+
   return(i);
 }
 
@@ -191,17 +205,17 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
 
     memset(atsi,0,sizeof(atsi));
     memcpy(&atsi[0],"DVDAUDIO-ATS",12);
-    uint16_copy(&atsi[32],0x0012);  // DVD Specifications version
-    uint32_copy(&atsi[128],0x07ff); // End byte address of ATSI_MAT
-    uint32_copy(&atsi[204],1);      // Start sector of ATST_PGCI_UT
+    uint16_copy(&atsi[0x20], 0x0012);  // DVD Specifications version
+    uint32_copy(&atsi[0x80], 0x07ff); // End byte address of ATSI_MAT
+    uint32_copy(&atsi[0xCC], 1);      // Start sector of ATST_PGCI_UT
 
-    i=256;
-    j=0;
-    numtitles=0;
-    ntitletracks[numtitles]=0;
+    i = 256;
+    j = 0;
+    numtitles = 0;
+    ntitletracks[numtitles] = 0;
     while (j < ntracks)
     {
-        ntitletracks[numtitles]=1;
+        ntitletracks[numtitles] = 1;
         get_afmt(&files[j],audioformats,&numafmts);
         ++j;
 
@@ -215,7 +229,9 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
 
     for (j = 0; j < numafmts; ++j)
     {
+        // TODO: CHECK this as 0X1 was observed (MLP DW) for menuless disc (3/16/96, G1T3).
         uint16_copy(&atsi[i], 0x0000);  // [200806] 0x0000 if a menu is not generated; otherwise sector pointer from start of audio zone (AUDIO_PP.IFO to last sector of audio system space (here AUDIO_TS.IFO)
+        // Following loop table is OK for MLP too
         i+=2;
         if (files[j].channels > 2)
         {
@@ -370,7 +386,12 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
     i = 0x800;
     uint16_copy(&atsi[i], numtitles);
     // [200806] The number numtitles must be equal to number of audio zone titles plus video zone titles linked to. Gapless tracks are packed in the same title.
-    
+
+    // MLP ONLY
+    // TODO
+    // TODO: check 0xAF (G1T3, 3/16/96) at 0x807, unknown code
+    // TODO
+
     // Padding
     i += 8;
 
@@ -379,7 +400,9 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
         uint16_copy(&atsi[i], 0x8000 + (j + 1) * 0x100);
         ++i;
         uint16_copy(&atsi[i], 0x0100); // Unknown.  Not related to channel count. TO BE CHECKED.
-    
+
+        // TODO: MLP looks like 0x0101, not 0x0100
+
         // To be filled later - pointer to a following table.
         i += 7;
     }
@@ -441,7 +464,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
             
             // Downmix table index
 
-            if (files[j].channels < 2) //  0x10 for stereo or mono
+            if (files[j].channels < 2 || files[k + t].downmix_table_rank) //  0x10 for stereo or mono // or if no sownmix table
             {
                x |= 0x0010;
             }
