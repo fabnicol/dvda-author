@@ -919,20 +919,18 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
     uint64_t res_scr[MAX_AOB_SECTORS] = {0};
     static uint32_t cumbytes;
     uint8_t  mlp_flag = 0;
+    pts_t* res_mlp;
 
     if (info->type == AFMT_MLP)
     {
         mlp_flag = 0xC0;
 
-        pts_t res_mlp[MAX_AOB_SECTORS] = {{0, 0}};
-
         if (pack_in_title == 0)  // once and for all for file info->filename, assuming a file has just one title in it (normally the case)
         {
-
-
+            res_mlp = calloc(MAX_AOB_SECTORS, sizeof (pts_t));
+            if (res_mlp == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not allocate res_mlp.")
             calc_PTS_DTS_MLP(info, m, &res_mlp[0]);
             calc_SCR_MLP(info, m, &res_scr[0]);
-
         }
 
         PTS = res_mlp[pack_in_title].PTSint;
@@ -1029,6 +1027,10 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
                 return audio_bytes;
             }
             write_pes_padding(fp, (uint16_t) padding_quantity);
+        }
+        else
+        {
+          free(res_mlp);
         }
 
     }
@@ -1514,6 +1516,7 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
             {
                 files[i].last_sector = pack;
                 audio_close(&files[i]);
+                if (files[i].type == AFMT_MLP) free(files[i].mlp_layout);
                 ++i;
 
                 if (i < ntracks)

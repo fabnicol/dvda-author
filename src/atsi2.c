@@ -387,11 +387,6 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
     uint16_copy(&atsi[i], numtitles);
     // [200806] The number numtitles must be equal to number of audio zone titles plus video zone titles linked to. Gapless tracks are packed in the same title.
 
-    // MLP ONLY
-    // TODO
-    // TODO: check 0xAF (G1T3, 3/16/96) at 0x807, unknown code
-    // TODO
-
     // Padding
     i += 8;
 
@@ -399,9 +394,18 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
     {
         uint16_copy(&atsi[i], 0x8000 + (j + 1) * 0x100);
         ++i;
-        uint16_copy(&atsi[i], 0x0100); // Unknown.  Not related to channel count. TO BE CHECKED.
+        uint16_t format_flag;
+        if (files[j].type == AFMT_MLP)
+        {
+          format_flag = files[j].channels > 2 ? 0x0101 : 0x0001;
+        }
+        else
+        {
+          format_flag = 0x0100;
+        }
 
-        // TODO: MLP looks like 0x0101, not 0x0100
+        // MLP looks like 0x0101, when mulltichannel, 0x0001 when stereo or mono, PCM unfirmly 0x0100
+        uint16_copy(&atsi[i], format_flag);
 
         // To be filled later - pointer to a following table.
         i += 7;
