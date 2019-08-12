@@ -21,6 +21,7 @@ linux:LIBS +=	 "/usr/lib64/libgsm.a"  "/usr/lib64/libMagick++-7.Q16.a" "/usr/lib
                         $$SRCDIR"local/lib/liblavjpeg.a" \
                         $$SRCDIR"local/lib/libsox.a" \
                         $$SRCDIR"local/lib/libffmpeg.a" \
+                        $$SRCDIR"local/lib/libswresample.a" \
                         $$SRCDIR"local/lib/libavfilter.a" \
                         $$SRCDIR"local/lib/libavformat.a" \
                         $$SRCDIR"local/lib/libavcodec.a" \
