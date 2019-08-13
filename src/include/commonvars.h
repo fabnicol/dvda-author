@@ -32,9 +32,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include "libiberty.h"
 
+#ifndef START_MLP_BYTESHIFT
+#define START_MLP_BYTESHIFT 23
+#endif
 
 // With Code::Blocks and similar IDE, specify your root package directory as argument to --workdir
-
 
 #ifdef __CB__
 #define INSTALL_CONF_DIR "."
