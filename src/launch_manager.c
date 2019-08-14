@@ -107,13 +107,13 @@ int launch_manager(command_t *command)
     // number of groups=ngroups+nplaygroups
     // number of audio groups=ngroups-nvideolinking_groups
 
-    uint8_t naudio_groups=ngroups-nvideolinking_groups;
+    uint8_t naudio_groups = ngroups-nvideolinking_groups;
     uint8_t nfiles[naudio_groups];
-    uint16_t totntracks=0;
+    uint16_t totntracks = 0;
     char singlestar[naudio_groups];
     memset(singlestar, ' ', naudio_groups);
     char joinmark[naudio_groups][99];
-    memset(joinmark, ' ', naudio_groups*99);
+    memset(joinmark, ' ', naudio_groups * 99);
     bool singlestar_flag = 0, joinmark_flag = 0;
 
     for (i = 0; i < naudio_groups; ++i)
@@ -449,8 +449,17 @@ int launch_manager(command_t *command)
     {
         for (j=0; j < ntracks[i]; j++)
         {
-            foutput("    "ANSI_COLOR_BLUE"%d   "   ANSI_COLOR_YELLOW"%02d/"ANSI_COLOR_RED"%02d"ANSI_COLOR_GREEN"    %2d"ANSI_COLOR_RESET"  %10"PRIu32"  %10"PRIu32"  %10"PRIu64"  ",i+1, title[i][j]+1,numtitles[i], j+1,files[i][j].first_sector,files[i][j].last_sector,files[i][j].first_PTS);
-            foutput("%10"PRIu64"  %2d\n",files[i][j].PTS_length, files[i][j].cga);
+            foutput("    "ANSI_COLOR_BLUE"%d   "   ANSI_COLOR_YELLOW"%02d/"ANSI_COLOR_RED"%02d"ANSI_COLOR_GREEN"    %2d"ANSI_COLOR_RESET"  %10"PRIu32"  %10"PRIu32"  %10"PRIu64"  ",
+                    i+1,
+                    title[i][j]+1,numtitles[i],
+                    j+1,
+                    files[i][j].first_sector,
+                    files[i][j].last_sector,
+                    files[i][j].first_PTS);
+
+            foutput("%10"PRIu64"  %2d\n",
+                    files[i][j].PTS_length,
+                    files[i][j].cga);
         }
     }
 

@@ -474,7 +474,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
             }
             else
             {
-               x |= files[k + t].downmix_table_rank; //0x0 to 0x0F, rank of downmix table
+               x |= files[k + t].downmix_table_rank - 1; //0x0 to 0x0F, rank of downmix table
             }
 
             uint16_copy(&atsi[i], x);
@@ -604,7 +604,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
         *atsi_sectors=2;
     }
 
-    uint32_copy(&atsi[12],files[ntracks - 1].last_sector+(2 * (*atsi_sectors))); // Pointer to last sector in ATS (i.e. numsectors-1)
+    uint32_copy(&atsi[12], files[ntracks - 1].last_sector+(2 * (*atsi_sectors))); // Pointer to last sector in ATS (i.e. numsectors-1)
     uint32_copy(&atsi[28],  *atsi_sectors - 1); // Last sector in ATSI
     uint32_copy(&atsi[196], *atsi_sectors);      // Start sector of ATST_AOBS
 

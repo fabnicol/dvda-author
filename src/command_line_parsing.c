@@ -163,6 +163,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     parse_t  audiodir;
     extractlist extract;
     downmix downmixtable[16];
+
     for (int i = 0; i < 16; ++i) downmixtable[i].custom_table = false;
 
 #ifdef img
@@ -881,7 +882,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     bool extract_audio_flag = 0;
     char* extract_args = NULL;
     int track = 0;
-    int tr = 0;
+    int enter_downmix_table = -1;
     optind=0;
     opterr=1;
 
@@ -1036,8 +1037,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case 33:
             foutput("%s%d%s\n",PAR "Downmix table for track: ", track, optarg);
-            tr = atoi(optarg);
-            if (tr > 16 || tr < 1)
+            enter_downmix_table = atoi(optarg);
+            if (enter_downmix_table > 16 || enter_downmix_table < 1)
             {
               foutput("%s\n", ERR "Downmix table index should be an integer between 1 and 16");
               EXIT_ON_RUNTIME_ERROR_VERBOSE("Exiting...")
@@ -1045,7 +1046,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             if (track < totntracks)
             {
-               (&files[0][0] + track)->downmix_table_rank = (uint8_t) tr - 1;
+               (&files[0][0] + track)->downmix_table_rank = (uint8_t) enter_downmix_table;
             }
             else
             {
@@ -1209,9 +1210,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 fixwav_parsing(globals.fixwav_parameters);
             }
 
-
             break;
-
 
 #ifndef WITHOUT_sox
 
@@ -1320,7 +1319,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             img->sec=atoi(sec);
 
             break;
-
 
         case 'Y':
             palettecolorchain=strdup(optarg);
@@ -1570,14 +1568,10 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Using %d menu screens.\n", img->nmenus);
             break;
 
-
-
         case '7':
             img->ncolumns=atoi(optarg);
             foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Using %d menu columns.\n", img->ncolumns);
-
             break;
-
 
         case 3:
 
@@ -1591,7 +1585,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 9:
             import_topmenu_flag=1;
             import_topmenu_path=strdup(optarg);
-
             globals.topmenu=RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR;
             break;
 #endif
@@ -1997,7 +1990,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             img->backgroundpic[0][len2-2]='p';
             img->backgroundpic[0][len2-3]='j';
 
-
             globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR );
 
             break;
@@ -2016,7 +2008,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 for (u=0; u + highlight_arraylength < img->nmenus; u++)
                     copy_file(img->highlightpic[highlight_arraylength-1], img->highlightpic[u+highlight_arraylength]);
             }
-
 
             free(str);
 
@@ -2098,9 +2089,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     if (img->nmenus && img->blankscreen && globals.topmenu < NO_MENU)
     {
-
         if (globals.veryverbose) foutput("%s\n", INF "Converting overlay .png blankscreen to .jg blankscreen for mpg authoring...");
-
         char* convert=NULL;
         char cl[500]; //do not use command as an array name !
         convert = create_binary_path(convert, CONVERT, SEPARATOR CONVERT_BASENAME);
@@ -2255,7 +2244,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         /* fall through */
         __attribute__((fallthrough));
 
-
     case RUN_SPUMUX_DVDAUTHOR:
         if ((img->imagepic==NULL) && (img->selectpic==NULL)&& (img->highlightpic==NULL))
         {
@@ -2264,7 +2252,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             globals.topmenu=Min(RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR, globals.topmenu);
         }
         break;
-
 
     case RUN_DVDAUTHOR:
         if ((img->backgroundmpg) && (globals.xml))
@@ -2288,12 +2275,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 fclose(f);
                 puts(MSG_TAG "--> top vob requirement...OK");
             }
-
-
         }
         break;
+
     case NO_MENU:
         break;
+
     default:
         errno=1;
     }
@@ -2460,6 +2447,7 @@ standard_checks:
             downmixtable[j] = downmixtable[j % dbtable];
         }
     }
+
 
     // ngroups does not include copy groups from then on -- nplaygroups are just virtual (no added bytes to disc)
     // number of groups=ngroups+nplaygroups
@@ -2656,9 +2644,7 @@ void process_dvd_video_zone(command_t* command)
             }
 
             if (ndvdvtracks[group]) ndvdvtitleset1++;
-
         }
-
 
         globals.videozone=0;
 
@@ -2766,7 +2752,6 @@ void process_dvd_video_zone(command_t* command)
             //  free(dvdv_slide_array[group]);
             }
      }
-
     }
 
     if (mirror_flag)
@@ -3087,7 +3072,6 @@ void fixwav_parsing(char *ssopt)
 
             foutput("%s",PAR "  Force real behavior (files will be modified) over previous settings.\n");
             break;
-
         }
     }
 

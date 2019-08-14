@@ -475,7 +475,7 @@ int calc_info(fileinfo_t* info)
     }
 
 // assemble numbers for the various combinations
-    short int table_index=(info->bitspersample == 24)? 1 : 0 ;
+    short int table_index = info->bitspersample == 24? 1 : 0 ;
 
     static const uint16_t T[2][6][11]=     // 16-bit table
     {
@@ -514,7 +514,6 @@ int calc_info(fileinfo_t* info)
 
     info->firstpack_audiopesheaderquantity = X[3]; // apparently valid for both MLP and PCM
     info->midpack_audiopesheaderquantity   = X[4]; // TODO: check this!
-    info->lastpack_audiopesheaderquantity  = (uint8_t) X[5];
 
     if (info->type == AFMT_MLP)   // only tested for 2/16-24/44 and 3/16/96
     {
@@ -523,13 +522,14 @@ int calc_info(fileinfo_t* info)
         info->firstpack_lpcm_headerquantity    = 6;
         info->midpack_lpcm_headerquantity      = 6;
         info->lastpack_lpcm_headerquantity     = 6;
+        info->lastpack_audiopesheaderquantity  = 13;
     }
     else
     {
         info->lpcm_payload = X[0];
         info->firstpackdecrement = (uint8_t) X[1];
         info->SCRquantity = X[2]; // now useless. Left here for compatibility. Deprecated.
-
+        info->lastpack_audiopesheaderquantity  = (uint8_t) X[5];
         info->firstpack_lpcm_headerquantity    = (uint8_t) X[6];
         info->midpack_lpcm_headerquantity      = (uint8_t) X[7];
         info->lastpack_lpcm_headerquantity     = (uint8_t) X[8];
@@ -586,6 +586,20 @@ int calc_info(fileinfo_t* info)
           foutput(MSG_TAG "%s", "Layout retrieved.\n");
         }
 
+        if (globals.maxverbose)
+        {
+            fprintf(stderr, "%s ; %s ; %s \n",
+                    "PKT POS", "NB SAMPLES", "RANK");
+
+            for (int i = 0;  i < MAX_AOB_SECTORS; ++i)
+            {
+                if (i && info->mlp_layout[i].pkt_pos == 0) break;
+
+                fprintf(stderr, "%u ; %u ; %u \n",
+                        info->mlp_layout[i].pkt_pos, info->mlp_layout[i].nb_samples, info->mlp_layout[i].rank);
+            }
+        }
+
         // compute "length" of layout. Should be size - 2 normally... but preferring to check better
         int index = 0;
         for (; index < MAX_AOB_SECTORS; ++index)
@@ -594,17 +608,10 @@ int calc_info(fileinfo_t* info)
         }
 
         info->numsamples = info->mlp_layout[index - 1].nb_samples;
-        info->numbytes = info->numsamples * info->channels * (info->bitspersample / 8);
+        info->numbytes = info->file_size;
+        info->pcm_numbytes = info->numsamples * info->channels * (info->bitspersample / 8); //This is for PCM, not MLP
 
-        if (globals.maxverbose)
-        {
-            for (int i = 0;  i < MAX_AOB_SECTORS; ++i)
-            {
-                if (i && info->mlp_layout[i].pkt_pos == 0) break;
-                fprintf(stderr, "%u ; %u ; %u \n",
-                        info->mlp_layout[i].pkt_pos, info->mlp_layout[i].nb_samples, info->mlp_layout[i].rank);
-            }
-        }
+
     }
     else
     {
@@ -813,6 +820,7 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
 
     if (header[4] == 0xF8 && header[5] == 0x72 && header[6] == 0x6F && header[7] == 0xBB)   // MLP case
     {
+        info->type = AFMT_MLP;
         unsigned long pathl = strlen(path);
         if (pathl > 3)
         {
@@ -899,6 +907,7 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
 
         info->cga =  check_cga_assignment(header[11]);
         info->channels = cga_to_channel(info->cga);
+        info->header_size = 0;  // this is the file header size, not the AOB header sizes (64 for first pack, 43 for others)
         if (info->cga == 0xFF)
         {
             foutput(ERR "Could not detect number of channels for MLP file %s with channel group assignment: %d\n", info->filename, header[11]);
@@ -1322,7 +1331,6 @@ int fixwav_repair(fileinfo_t *info)
 
     if (res == NULL )
     {
-
         if (globals.debugging) SINGLE_DOTS
         foutput("\n%s\n", INF "Fixwav repair was unsuccessful; file will be skipped.");
 
@@ -1336,7 +1344,7 @@ int fixwav_repair(fileinfo_t *info)
         info->bitspersample = (uint8_t) waveheader.wBitsPerSample;
         info->channels      = (uint8_t) waveheader.channels;
         info->numbytes      = waveheader.data_cksize;
-        info->file_size     = info->numbytes+waveheader.header_size_out;
+        info->file_size     = info->numbytes + waveheader.header_size_out;
         info->header_size   = waveheader.header_size_out;
         info->dw_channel_mask = waveheader.dwChannelMask;
 
@@ -1473,11 +1481,9 @@ int audio_open(fileinfo_t* info)
 #ifndef WITHOUT_FLAC
     FLAC__StreamDecoderInitStatus result=0;
 #endif
-
     info->audio=malloc(sizeof(audio_input_t));
     info->audio->n=0;
     info->audio->eos=0;
-
 
     if (info->type == AFMT_WAVE || info->type == AFMT_MLP)
     {
@@ -1497,7 +1503,6 @@ int audio_open(fileinfo_t* info)
         #endif
                 fseek(info->audio->channel_fp[u], info->channel_header_size[u],SEEK_SET);
             }
-
         }
         else
         {
@@ -1517,7 +1522,7 @@ int audio_open(fileinfo_t* info)
 #           endif
 
             if (info->type == AFMT_MLP)
-                fseek(info->audio->fp, info->header_size, SEEK_SET);
+                fseek(info->audio->fp, 0, SEEK_SET);
         }
 
         info->audio->bytesread=0;
@@ -1529,7 +1534,6 @@ int audio_open(fileinfo_t* info)
 
         if (info->audio->flac!=NULL)
         {
-
             if  (info->type==AFMT_FLAC)
             {
 
@@ -1566,9 +1570,7 @@ int audio_open(fileinfo_t* info)
                     EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Type of file unknown")
                 }
 
-
-
-                    if (result!=FLAC__STREAM_DECODER_INIT_STATUS_OK)
+            if (result!=FLAC__STREAM_DECODER_INIT_STATUS_OK)
                     {
                         FLAC__stream_decoder_delete(info->audio->flac);
 
@@ -1600,23 +1602,17 @@ int audio_open(fileinfo_t* info)
                         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Failed to initialise FLAC decoder\n");
                     }
 
-
             if (!FLAC__stream_decoder_process_until_end_of_metadata(info->audio->flac))
             {
                 FLAC__stream_decoder_delete(info->audio->flac);
                 EXIT_ON_RUNTIME_ERROR_VERBOSE( ERR "Failed to read metadata from FLAC file\n")
 
             }
-
-
-
         }
         else    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not initialise FLAC decoder")
 
         }
 #endif
-
-
     return(0);
 }
 
@@ -1870,7 +1866,7 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
 {
     uint32_t requested_bytes = AUDIO_BUFFER_SIZE - *bytesinbuffer,
              buffer_increment = 0,
-            rounded_buffer_increment = 0;
+             rounded_buffer_increment = 0;
 
     static uint16_t offset;
 
@@ -1885,20 +1881,29 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
     if (info->sampleunitsize == 0)
           EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Sample unit size is null");
 
+    if ((info->channels > 6) || (info->channels < 1))
+    {
+        foutput(ERR "problem in audio.c ! %d channels \n",info->channels);
+        EXIT_ON_RUNTIME_ERROR
+    }
+
     if (requested_bytes + offset >= info->sampleunitsize)
     {
         requested_bytes -= (requested_bytes + offset) % info->sampleunitsize;
     }
 
-    if (offset)
+    if (info->type != AFMT_MLP)  // gapless mode still not supported for MLP
     {
-       memcpy(buf, fbuf, offset);
-       if (globals.debugging)
-           foutput(WAR "File: %s. Adding %d bytes from last packet for gapless processing...\n", info->filename, offset);
-       buffer_increment = offset;
+        if (offset)
+        {
+           memcpy(buf, fbuf, offset);
+           if (globals.debugging)
+               foutput(WAR "File: %s. Adding %d bytes from last packet for gapless processing...\n", info->filename, offset);
+           buffer_increment = offset;
+        }
     }
 
-    if (info->type == AFMT_WAVE)
+    if (info->type == AFMT_WAVE || info->type == AFMT_MLP)
     {
         uint32_t request = (*bytesinbuffer + offset + requested_bytes < AUDIO_BUFFER_SIZE) ? requested_bytes : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset);
 
@@ -1915,7 +1920,8 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
         while (info->audio->bytesread < info->numbytes
                && bytesread < requested_bytes)
         {
-            uint32_t request = (*bytesinbuffer + offset + requested_bytes < AUDIO_BUFFER_SIZE) ? requested_bytes - bytesread : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset + bytesread);
+            uint32_t request = (*bytesinbuffer + offset + requested_bytes < AUDIO_BUFFER_SIZE) ?
+                                     requested_bytes - bytesread : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset + bytesread);
 
             buffer_increment = fread(buf + bytesread + offset, 1, request, info->audio->fp);
 
@@ -1971,31 +1977,58 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
     }
 #endif
 
-
-    // PATCH: reinstating Lee Feldkamp's 2009 sampleunitsize rounding
-    // Note: will add extra zeros on decoding!
-
-    uint16_t rmdr = buffer_increment % info->sampleunitsize;
-    rounded_buffer_increment = buffer_increment - rmdr;
-
-    if (globals.padding == 0 && ! globals.lossy_rounding)
+    if (info->type != AFMT_MLP)
     {
-            // buffer_increment may not be a multiple of info->sampleunitsize only if at end of file, with remaining bytes < size of audio buffer
-            offset = 0;
+        // PATCH: reinstating Lee Feldkamp's 2009 sampleunitsize rounding
+        // Note: will add extra zeros on decoding!
 
+        uint16_t rmdr = buffer_increment % info->sampleunitsize;
+        rounded_buffer_increment = buffer_increment - rmdr;
+
+        if (globals.padding == 0 && ! globals.lossy_rounding)
+        {
+                // buffer_increment may not be a multiple of info->sampleunitsize only if at end of file, with remaining bytes < size of audio buffer
+                offset = 0;
+
+                if (rmdr)
+                {
+                    // normally at end of file
+
+                    if (info->contin_track)
+                    {
+                        offset = rmdr;
+
+                        memcpy(fbuf, buf + rounded_buffer_increment, rmdr);
+                        buffer_increment = rounded_buffer_increment;
+
+                        if (globals.debugging)
+                           foutput(WAR "File: %s. Shifting %d bytes from offset %d to offset %d to next packet for gapless processing...\n", info->filename, rmdr, rounded_buffer_increment, buffer_increment);
+                    }
+                    else
+                    {
+                        uint16_t padbytes = info->sampleunitsize - rmdr;
+                        if (padbytes + buffer_increment > AUDIO_BUFFER_SIZE)
+                            padbytes = AUDIO_BUFFER_SIZE - buffer_increment;
+
+                        memset(buf + buffer_increment, 0, padbytes);
+                        buffer_increment += padbytes;
+                        foutput(WAR "Padding track with %d bytes (ultimate packet).\n", padbytes);
+                    }
+                }
+        }
+        else
+        {
             if (rmdr)
             {
                 // normally at end of file
 
-                if (info->contin_track)
+                if (globals.lossy_rounding)
                 {
-                    offset = rmdr;
+                   // audio loss at end of audio file may result in a 'blip'
 
-                    memcpy(fbuf, buf + rounded_buffer_increment, rmdr);
-                    buffer_increment = rounded_buffer_increment;
-
-                    if (globals.debugging)
-                       foutput(WAR "File: %s. Shifting %d bytes from offset %d to offset %d to next packet for gapless processing...\n", info->filename, rmdr, rounded_buffer_increment, buffer_increment);
+                   buffer_increment = rounded_buffer_increment;
+                   if (globals.debugging)
+                       foutput("%s %s %s %d %s %d.\n", WAR "Cutting audio file", info->filename, "by", rmdr, "bytes out of", buffer_increment);
                 }
                 else
                 {
@@ -2003,97 +2036,61 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
                     if (padbytes + buffer_increment > AUDIO_BUFFER_SIZE)
                         padbytes = AUDIO_BUFFER_SIZE - buffer_increment;
 
-                    memset(buf + buffer_increment, 0, padbytes);
+                    uint8_t padding_byte = 0;
+
+                    if (globals.padding_continuous && buffer_increment)
+                    {
+                       padding_byte = buf[buffer_increment - 1];
+                    }
+
+                    memset(buf + buffer_increment, padding_byte, padbytes);
                     buffer_increment += padbytes;
-                    foutput(WAR "Padding track with %d bytes (ultimate packet).\n", padbytes);
+
+                    if (globals.debugging)
+                    {
+                        foutput(WAR "Padding track with %d bytes", padbytes);
+                        if (globals.padding_continuous && padbytes) foutput("%s", " continuously.");
+                        foutput("%s", "\n");
+                    }
                 }
-            }
-    }
-    else
-    {
-        if (rmdr)
+           }
+        }
+
+        // End of patch
+        // Convert little-endian WAV samples to big-endian MPEG LPCM samples
+
+        switch (info->bitspersample)
         {
-            // normally at end of file
+            case 24:
+                // Processing 24-bit audio
+                interleave_24_bit_sample_extended(info->channels, buffer_increment, buf);
+                break;
 
-            if (globals.lossy_rounding)
-            {
-               // audio loss at end of audio file may result in a 'blip'
+            case 16:
+                // Processing 16-bit audio
+                interleave_sample_extended(info->channels, buffer_increment, buf);
+                break;
 
-               buffer_increment = rounded_buffer_increment;
-               if (globals.debugging)
-                   foutput("%s %s %s %d %s %d.\n", WAR "Cutting audio file", info->filename, "by", rmdr, "bytes out of", buffer_increment);
-            }
-            else
-            {
-                uint16_t padbytes = info->sampleunitsize - rmdr;
-                if (padbytes + buffer_increment > AUDIO_BUFFER_SIZE)
-                    padbytes = AUDIO_BUFFER_SIZE - buffer_increment;
+            default:
+                // 20-bit stereo samples are packed as follows:
+                // Packet 0: 1980 bytes
+                // Packets 1-: 2000 bytes
 
-                uint8_t padding_byte = 0;
+                // Stored similarly to 24-bit:
 
-                if (globals.padding_continuous && buffer_increment)
-                {
-                   padding_byte = buf[buffer_increment - 1];
-                }
+                // 4 samples, most significant 16 bits of each sample first, in big-endian
+                // order, followed by 2 bytes containing the least-significant 4 bits of
+                // each sample.
 
-                memset(buf + buffer_increment, padding_byte, padbytes);
-                buffer_increment += padbytes;
+                // I'm guessing  that  20-bits are stored in the most-significant
+                // 20-bits of the 24.
 
-                if (globals.debugging)
-                {
-                    foutput(WAR "Padding track with %d bytes", padbytes);
-                    if (globals.padding_continuous && padbytes) foutput("%s", " continuously.");
-                    foutput("%s", "\n");
-                }
-            }
-       }
+                // FIX: Handle 20-bit audio and maybe convert other formats.
+
+                foutput(ERR "%d bit audio is not supported\n",info->bitspersample);
+                EXIT_ON_RUNTIME_ERROR
+        }
     }
-
-    // End of patch
-
-    // Convert little-endian WAV samples to big-endian MPEG LPCM samples
-
-    if ((info->channels > 6) || (info->channels < 1))
-    {
-        foutput(ERR "problem in audio.c ! %d channels \n",info->channels);
-        EXIT_ON_RUNTIME_ERROR
-    }
-
-    switch (info->bitspersample)
-    {
-        case 24:
-
-            // Processing 24-bit audio
-            interleave_24_bit_sample_extended(info->channels, buffer_increment, buf);
-            break;
-
-        case 16:
-
-            // Processing 16-bit audio
-            interleave_sample_extended(info->channels, buffer_increment, buf);
-            break;
-
-        default:
-
-            /* 20-bit stereo samples are packed as follows:
-            Packet 0: 1980 bytes
-            Packets 1-: 2000 bytes
-
-            Stored similarly to 24-bit:
-
-            4 samples, most significant 16 bits of each sample first, in big-endian
-            order, followed by 2 bytes containing the least-significant 4 bits of
-            each sample.
-
-            I'm guessing  that  20-bits are stored in the most-significant
-            20-bits of the 24.
-            */
-
-            // FIX: Handle 20-bit audio and maybe convert other formats.
-            foutput(ERR "%d bit audio is not supported\n",info->bitspersample);
-            EXIT_ON_RUNTIME_ERROR
-    }
-
 
     *bytesinbuffer += buffer_increment;
 

@@ -260,7 +260,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
 
             /* Memorizing last audio group and track processed */
 
-            last_sector=absolute_sector_offset+files[g][j].last_sector;
+            last_sector = absolute_sector_offset + files[g][j].last_sector;
         }
 
         /* absolute pointer to first AOB in titleset/group=
@@ -268,19 +268,22 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
          */
 
         if (g < ngroups-nvideolinking_groups-1)
+        {
             absolute_sector_offset += files[g][ntracks[g]-1].last_sector+1
                                       +sectors->atsi[g]+sectors->atsi[g+1];
-
+        }
 
     }
 
-
     printf(MSG_TAG "SAMG pointers\n       Last audio group=%d\n       Last audio track=%d\n       Absolute sector pointer to last AOB sector=%"PRIu32"\n", last_audio_group, last_audio_track, last_sector);
-    for (i=1; i < 8; i++)
-        memcpy(samg+i*sizeofsamg,samg, sizeofsamg);
 
-    create_file(audiotsdir, "AUDIO_PP.IFO", samg, sizeofsamg*8);
+    for (i = 1; i < 8; ++i)
+        memcpy(samg + i * sizeofsamg, samg, sizeofsamg);
+
+    create_file(audiotsdir, "AUDIO_PP.IFO", samg, sizeofsamg * 8);
+
     return(last_sector);
+
 #undef files
 #undef ntracks
 #undef ngroups

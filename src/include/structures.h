@@ -76,6 +76,7 @@ typedef struct
     uint32_t PTS_length;
     uint64_t numsamples;
     uint64_t numbytes; // theoretical audio size
+    uint64_t pcm_numbytes; // theoretical audio size
     uint64_t wav_numbytes; // wav audio size
     uint64_t file_size; // file size on disc
     uint64_t *channel_size; // channel size on disc

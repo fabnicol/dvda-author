@@ -20,11 +20,11 @@ linux:LIBS +=	 "/usr/lib64/libgsm.a"  "/usr/lib64/libMagick++-7.Q16.a" "/usr/lib
                         $$SRCDIR"local/lib/liblavfile.a" \
                         $$SRCDIR"local/lib/liblavjpeg.a" \
                         $$SRCDIR"local/lib/libsox.a" \
-                        $$SRCDIR"local/lib/libffmpeg.a" \
+                        $$SRCDIR"ffmpeg/fftools/libffmpeg.a" \
                         $$SRCDIR"local/lib/libswresample.a" \
                         $$SRCDIR"local/lib/libavfilter.a" \
                         $$SRCDIR"local/lib/libavformat.a" \
-                        $$SRCDIR"local/lib/libavcodec.a" \
+                        $$SRCDIR"ffmpeg/libavcodec/libavcodec.a" \
                         $$SRCDIR"local/lib/libavutil.a" \
                         "/usr/lib64/libsndfile.a" \
                         "/usr/lib64/libvorbisenc.a" \

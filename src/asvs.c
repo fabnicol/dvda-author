@@ -89,8 +89,6 @@ int index = 0;
 
     while  ((titleset < naudio_groups) && (title < numtitles[titleset]))
     {
-
-
         npics=ntitlepics[titleset][title];
         if (npics)
         {

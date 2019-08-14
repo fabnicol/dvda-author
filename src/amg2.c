@@ -89,7 +89,7 @@ static uint16_t totaltitles;
 uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t ntitles[], uint8_t *ntitletracks[], uint64_t *titlelength[], uint16_t **ntitlepics)
 {
     
-    /* Normal case: audio files */
+    // Normal case: audio files
     // Files are packed together according to audio characteristics: bit rate, sampel rate, number of channels
 
    for (uint8_t group = 0; group < naudio_groups; ++group)
@@ -99,9 +99,8 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
 
     for  (int track = 0; track < ntracks[group]; ++track)
     {
-            /* counts the number of tracks with same-type audio characteristics, per group and title
-            *  into ntitletracks[group][numtitles[group]], and corresponding PTS length in titlelength[group][numtitles[group]] */
-
+        // counts the number of tracks with same-type audio characteristics, per group and title
+        // into ntitletracks[group][numtitles[group]], and corresponding PTS length in titlelength[group][numtitles[group]]
         // PATCH 13.11 on 12.06
         // PATCH MLP: TODO check this
         // Note: apparently MLP does not allow "gapless" same-audio characteristics titles, which
@@ -110,12 +109,11 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
 
             if (track)
             {
-              if (command->files[group][track].samplerate != command->files[group][track-1].samplerate
+              if (command->files[group][track].samplerate     != command->files[group][track-1].samplerate
                 || command->files[group][track].bitspersample != command->files[group][track-1].bitspersample
-                || command->files[group][track].channels != command->files[group][track-1].channels
-                || command->files[group][track].cga != command->files[group][track-1].cga
-                || command->files[group][track].type == AFMT_MLP)
-
+                || command->files[group][track].channels      != command->files[group][track-1].channels
+                || command->files[group][track].cga           != command->files[group][track-1].cga
+                || command->files[group][track].type          == AFMT_MLP)
                 {
                   command->files[group][track].newtitle = 1;
                 }
