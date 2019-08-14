@@ -57,7 +57,10 @@ static unsigned long SECT_RANK, SECT_RANK_OLD;
 
 void get_mlp_layout(struct MLP_LAYOUT* m, unsigned long size)
 {
-    memcpy(m, &mlp_layout[0], sizeof(struct MLP_LAYOUT) * size);
+    for (int i = 0; i < size; ++i) 
+    { 
+        m[i] = mlp_layout[i];
+    }
 }
 
 typedef struct SubStream {
@@ -1137,7 +1140,7 @@ static int output_data(MLPDecodeContext *m, unsigned int substr,
 
     static unsigned long PKT_POS_SECT;
     static unsigned long HEADER_OFFSET;
-    static uint32_t pkt_pos_before;
+//    static uint32_t pkt_pos_before;
 
     if (HEADER_OFFSET == 0) HEADER_OFFSET = 64;
 
@@ -1152,7 +1155,7 @@ static int output_data(MLPDecodeContext *m, unsigned int substr,
     {
         if (new_sector) HEADER_OFFSET += 43;
         mlp_layout[rank].pkt_pos = frame->pkt_pos;
-        mlp_layout[rank].pkt_pos_src = pkt_pos_before;
+//        mlp_layout[rank].pkt_pos_src = pkt_pos_before;
         mlp_layout[rank].nb_samples = totnbsamples;
         mlp_layout[rank].rank = SECT_RANK;
         ++rank;
@@ -1165,7 +1168,7 @@ static int output_data(MLPDecodeContext *m, unsigned int substr,
     }
 
     totnbsamples += frame->nb_samples;
-    pkt_pos_before = frame->pkt_pos;
+//    pkt_pos_before = frame->pkt_pos;
 
     ///** END PATCH
     

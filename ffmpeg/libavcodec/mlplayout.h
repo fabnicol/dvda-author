@@ -6,7 +6,6 @@
 struct MLP_LAYOUT
 {
  uint32_t pkt_pos;
- uint32_t pkt_pos_src;
  uint32_t nb_samples;
  uint32_t rank;
 };

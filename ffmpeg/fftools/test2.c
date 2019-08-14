@@ -6,7 +6,7 @@
 int main(int argc, char** argv)
 {
 // -v 48 for debug
-char* tab[10] = {"ffmpeg_lib", "-v", "48", "-i", "/home/nicol/Dev/dvda-author/Docs/MLP/3_16_96/a3_16_96.mlp", "-strict", "-2", "-f", "null", "-"};
+char* tab[10] = {"ffmpeg_lib", "-v", "48", "-i", "/home/fab/Dev/dvda-author/Docs/a2_24_44.mlp", "-strict", "-2", "-f", "null", "-"};
 puts("searching...");  
 
 ffmpeg_lib(10, &tab[0]);
@@ -24,11 +24,11 @@ get_mlp_layout(m, st.st_size / 1968 + 3); // 1968 is the minimum payload. +3 for
 
 fprintf(stdout, "Size of file: %d B, %d sectors\n", st.st_size, st.st_size / 2048);
 
-fprintf(stderr, "%s ; %s ; %s; %s; %s \n", "PKT_POS_PTS", "NB_SAMPLES_PTS", "PKT_POS_SCR", "NB_SAMPLES_SCR", "RANK");  
+fprintf(stderr, "%s ; %s ; %s; %s; \n", "PKT_POS_PTS", "NB_SAMPLES_PTS",  "NB_SAMPLES_SCR", "RANK");  
 
 for (int i = 0;  i < MAX_AOB_SECTORS; ++i) {
     if (i && m[i].pkt_pos == 0) return 0;
-    fprintf(stderr, "%u ; %u ; %u ; %u ; %u \n", m[i].pkt_pos, m[i].nb_samples, m[i].pkt_pos_src, m[i].nb_samples >= 40 ?  m[i].nb_samples - 40 : 0, m[i].rank);
+    fprintf(stderr, "%u ; %u ; %u ; %u \n", m[i].pkt_pos, m[i].nb_samples, m[i].nb_samples >= 40 ?  m[i].nb_samples - 40 : 0, m[i].rank);
 }
 free(m);
 return -1;
