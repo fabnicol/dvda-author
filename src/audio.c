@@ -1604,8 +1604,10 @@ int audio_open(fileinfo_t* info)
               info->file_size = read_file_size(info->audio->fp, info->filename);
 #           endif
 
-            if (info->type == AFMT_MLP)
-                fseek(info->audio->fp, 0, SEEK_SET);
+            fseek(info->audio->fp,
+                  info->type == AFMT_MLP ? 0 : info->header_size,
+                  SEEK_SET);
+
         }
 
         info->audio->bytesread=0;
