@@ -365,7 +365,7 @@ return;
 }
 
 #undef SETTINGSFILE
-#define SETTINGSFILE "/usr/local/share/applications/dvda-author-dev/dvda-authhor.conf" 
+#define SETTINGSFILE "/usr/local/share/applications/dvda-author-dev/dvda-authhor.conf"
 void check_settings_file()
 {
 #if 0
