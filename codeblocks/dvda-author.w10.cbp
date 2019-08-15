@@ -11,7 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters='-g  &quot;C:\Users\Public\Dev\dvda-author\Docs\a2_16_44.wav&quot; -t -W  --datadir  &quot;C:\Users\Public\Dev\dvda-author&quot; --bindir &quot;C:\Users\Public\Dev\dvd-audio-dvda-author-gui-qt4\bin&quot; --topmenu --menustyle active' />
+				<Option parameters="-g ~/Dev/dvda-author/Docs/a2_24_44.wav -t -W -T 1 " />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
@@ -21,7 +21,6 @@
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters='-g  &quot;C:\Users\Public\Dev\dvda-author\Docs\a2_16_44.wav&quot; -t -W  --datadir  &quot;C:\Users\Public\Dev\dvda-author&quot; --bindir &quot;C:\Users\Public\Dev\dvd-audio-dvda-author-gui-qt4\bin&quot; --topmenu --menustyle active' />
 				<Compiler>
 					<Add option="-O2" />
 				</Compiler>
@@ -31,13 +30,11 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="-march=core2" />
-			<Add option="-O3" />
 			<Add option="-Wall" />
-			<Add option="-std=c99" />
 			<Add option="-m64" />
+			<Add option="-std=c99 -march=core2" />
 			<Add option="-D_GNU_SOURCE" />
-			<Add option="-D__CB__" />
+			<Add option="-D__CB" />
 			<Add option="-DHAVE_lplex" />
 			<Add option="-DCOMPILER_IS_GCC" />
 			<Add option="-DHAVE_curl" />
@@ -49,45 +46,59 @@
 			<Add option="-DHAVE_OGG_FLAC" />
 			<Add option="-DHAVE_FLAC" />
 			<Add option="-DHAVE_sox" />
-			<Add option="-D_WIN32" />
 			<Add directory="../src/include" />
 			<Add directory="../libiberty/src/include" />
 			<Add directory="../libfixwav/src/include" />
-			<Add directory="../" />
+			<Add directory="../dvda-author/" />
 			<Add directory="../libutils/src/include" />
 			<Add directory="../libutils/src/private" />
-			<Add directory="../local.w10/include" />
+			<Add directory="../../dvda-author" />
+			<Add directory="../ffmpeg" />
+			<Add directory="../local/include" />
 		</Compiler>
 		<Linker>
 			<Add option="-static-libgcc" />
 			<Add option="-static" />
 			<Add option="-m64" />
-			<Add option="-lsox" />
-			<Add option="-lFLAC" />
-			<Add option="-lsndfile" />
-			<Add option="-lspeex" />
-			<Add option="-lvorbisenc" />
-			<Add option="-lvorbisfile" />
-			<Add option="-lvorbis" />
-			<Add option="-logg" />
-			<Add option="-lpng" />
 			<Add option="-lgomp" />
 			<Add option="-pthread" />
 			<Add option="-fopenmp" />
-			<Add option="-lopencore-amrnb" />
-			<Add option="-lopencore-amrwb" />
-			<Add option="-ltwolame" />
-			<Add option="-lmp3lame" />
-			<Add option="-lwavpack" />
-			<Add option="-lwebp" />
-			<Add option="-lexpat" />
-			<Add option="-lid3" />
-			<Add option="-lwinmm" />
 			<Add option="-lm" />
-			<Add option="-lz" />
+			<Add library="../ffmpeg/libswresample/libswresample.a" />
+			<Add library="../ffmpeg/libavformat/libavformat.a" />
+			<Add library="../ffmpeg/libavfilter/libavfilter.a" />
+			<Add library="../ffmpeg/libavcodec/libavcodec.a" />
+			<Add library="../ffmpeg/libavutil/libavutil.a" />
+			<Add library="../local.w10/lib/libsox.a" />
+			<Add library="../local.w10/lib/libFLAC.a" />
+			<Add library="../local.w10/lib/libsox.a" />
+			<Add library="../local.w10/lib/libopencore-amrnb.a" />
+			<Add library="../local.w10/lib/libopencore-amrwb.a" />
+			<Add library="../local.w10/lib/liba52.a" />
+			<Add library="../local.w10/lib/libid3.a" />
+			<Add library="../local.w10/lib/libjpeg.a" />
+			<Add library="../local.w10/lib/libmp3lame.a" />
+			<Add library="../local.w10/lib/libpng.a" />
+			<Add library="../local.w10/lib/libsndfile.a" />
+			<Add library="../local.w10/lib/libspeex.a" />
+			<Add library="../local.w10/lib/libtwolame.a" />
+			<Add library="../local.w10/lib/libvorbisenc.a" />
+			<Add library="../local.w10/lib/libvorbisfile.a" />
+			<Add library="../local.w10/lib/libvorbis.a" />
+			<Add library="../local.w10/lib/libwavpack.a" />
+			<Add library="../local.w10/lib/libwebp.a" />
+			<Add library="../local.w10/lib/libogg.a" />
+			<Add library="../local.w10/lib/libz.a" />
+			<Add library="winmm" />
+			<Add library="bcrypt" />
+			<Add directory="../../../../msys64/mingw64/lib" />
+			<Add directory="../../../../msys64/mingw64/bin" />
 			<Add directory="../local.w10/lib" />
+			<Add directory="../local.w10/bin" />
+			<Add directory="../../../../Windows/SysWOW64" />
 		</Linker>
 		<Unit filename="../config.h" />
+		<Unit filename="../ffmpeg/libavcodec/mlplayout.h" />
 		<Unit filename="../libfixwav/src/checkData.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -234,7 +245,6 @@
 			<code_completion />
 			<envvars />
 			<debugger />
-			<fortran_project />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>
