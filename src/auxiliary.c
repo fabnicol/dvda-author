@@ -176,7 +176,7 @@ printf("%s","    --downmix            Enter downmix coefficients in dB. If track
 "Each track can be indexed using --dtable to be downmixed with the corresponding table." J \
 "Example : --downmix 6.2,100,100,7.2,0,0,13,13,16,16,0,0 --downmix 5.2,100,100,8.2,0,0,10,10,12,12,0,0 --dtable 2 --dtable 1" J \
 "means that track 1 will be downmixed using the second table and track 2 the first one.\n\n");
-printf("%s","    --dtable             Enter downmix table rank as indicated above.\n\n");
+printf("%s","    --dtable             Enter downmix table rank (1-based) as indicated above.\n\n");
 printf("%s","    --provider           Enter provider name.\n\n");
 printf("%s","-F, --fixwav(options)    Bad wav headers will be fixed by fixwav." J "Can be run alone without DVD-AUDIO output by adding --nooutput.\n\n");
 printf("%s","-f, --fixwav-virtual(options)  Use .wav header repair utility " J "without any write operation.\n\n");

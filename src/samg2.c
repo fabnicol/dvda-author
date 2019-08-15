@@ -58,30 +58,29 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
 #define ngroups command->ngroups
 #define nvideolinking_groups command->nvideolinking_groups
 
-    int i=0,j=0,g,  last_audio_group=0, last_audio_track=0;
-    uint32_t absolute_sector_offset, last_sector=0;
+    int i = 0, j = 0, g, last_audio_group = 0, last_audio_track = 0;
+
+    uint32_t absolute_sector_offset, last_sector = 0;
     // size of SAMG is 64 sectors, 8 duplicates of matrix SAMG.
-    uint8_t samg[2048*sectors->samg];
-    size_t sizeofsamg=sizeof(samg)/8;
 
-    memset(samg,0,sizeofsamg);
-    memcpy(&samg[0],"DVDAUDIOSAPP",12);
+    uint8_t samg[2048 * sectors->samg];
+    size_t sizeofsamg = sizeof(samg) / 8;
 
-    for (g=0; g < ngroups; g++)
-        j+=ntracks[g];
+    memset(samg, 0, sizeofsamg);
+    memcpy(&samg[0], "DVDAUDIOSAPP", 12);
 
-    uint16_copy(&samg[12],j);
-    uint16_copy(&samg[14],0x0012);
+    for (g = 0; g < ngroups; ++g)
+        j += ntracks[g];
+
+    uint16_copy(&samg[12], j);
+    uint16_copy(&samg[14], 0x0012);
 
     i=16;
 
     //
-    //   absolute_sector_offset =startsector +  sizeof(AUDIO_PP.IFO)+sizeof(AUDIO_TS.IFO)+sizeof(AUDIO_TS.BUP)+ sizeof AUDIO_SV.IFO/BUP +size of AUDIO_TS/SV.VOB+sizeof(ATS_01_1.IFO)
+    // Absolute_sector_offset =startsector +  sizeof(AUDIO_PP.IFO)+sizeof(AUDIO_TS.IFO)+sizeof(AUDIO_TS.BUP)+ sizeof AUDIO_SV.IFO/BUP +size of AUDIO_TS/SV.VOB+sizeof(ATS_01_1.IFO)
     //
-
     // In principle, VIDEO_TS files should be scanned too 
-
-
 
     absolute_sector_offset=(uint32_t) startsector + sectors->samg + 2*(sectors->amg + sectors->asvs) + sectors->topvob + sectors->stillvob +sectors->atsi[0];
     
@@ -145,13 +144,13 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
                 switch (files[g][j].bitspersample)
                 {
                     case 16:
-                        samg[i]=0x00;
+                        samg[i] = 0x00;
                         break;
                     case 20:
-                        samg[i]=0x11;
+                        samg[i] = 0x11;
                         break;
                     case 24:
-                        samg[i]=0x22;
+                        samg[i] = 0x22;
                         break;
                     default:
                         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Unsupported bit rate (channels > 2)")
@@ -162,13 +161,13 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
                 switch (files[g][j].bitspersample)
                 {
                     case 16:
-                        samg[i]=0x0f;
+                        samg[i] = 0x0f;
                         break;
                     case 20:
-                        samg[i]=0x1f;
+                        samg[i] = 0x1f;
                         break;
                     case 24:
-                        samg[i]=0x2f;
+                        samg[i] = 0x2f;
                         break;
                     default:
                         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Unsupported bit rate (channels <= 2)")
@@ -182,22 +181,22 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
                 switch (files[g][j].samplerate)
                 {
                     case 48000:
-                        samg[i]=0x00;
+                        samg[i] = 0x00;
                         break;
                     case 96000:
-                        samg[i]=0x11;
+                        samg[i] = 0x11;
                         break;
                     case 192000:
-                        samg[i]=0x22;
+                        samg[i] = 0x22;
                         break;
                     case 44100:
-                        samg[i]=0x88;
+                        samg[i] = 0x88;
                         break;
                     case 88200:
-                        samg[i]=0x99;
+                        samg[i] = 0x99;
                         break;
                     case 176400:
-                        samg[i]=0xaa;
+                        samg[i] = 0xaa;
                         break;
                     default:
                         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Unsupported sample rate (channels > 2)")
@@ -205,27 +204,26 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
             }
             else
             {
-
                 switch (files[g][j].samplerate)
                 {
 
                 case 48000:
-                    samg[i]=0x0f;
+                    samg[i] = 0x0f;
                     break;
                 case 96000:
-                    samg[i]=0x1f;
+                    samg[i] = 0x1f;
                     break;
                 case 192000:
-                    samg[i]=0x2f;
+                    samg[i] = 0x2f;
                     break;
                 case 44100:
-                    samg[i]=0x8f;
+                    samg[i] = 0x8f;
                     break;
                 case 88200:
-                    samg[i]=0x9f;
+                    samg[i] = 0x9f;
                     break;
                 case 176400:
-                    samg[i]=0xaf;
+                    samg[i] = 0xaf;
                     break;
                 default:
                     fprintf(stderr, ERR "Sample rate : %d - Group %d - Track %d\n", files[g][j].samplerate, g, j);

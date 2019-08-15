@@ -225,77 +225,77 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
          // If only active menus, no top menus, create automatic top menus to be unlinked later on
          // unless some extra info is given (then globals.topmenu < ACTIVE_MENU_ONLY)
     
-    case TEMPORARY_AUTOMATIC_MENU:
-    case AUTOMATIC_MENU:
-    case RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR :
+        case TEMPORARY_AUTOMATIC_MENU:
+        case AUTOMATIC_MENU:
+        case RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR :
 
-        // do not overwrite !
+            // do not overwrite !
 
-        generate_background_mpg(img);
-        /* fall through */
-        __attribute__((fallthrough));
+            generate_background_mpg(img);
+            /* fall through */
+            __attribute__((fallthrough));
 
 
-    case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
+        case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
 
-        generate_menu_pics(img, ngroups, ntracks, maxntracks);
+            generate_menu_pics(img, ngroups, ntracks, maxntracks);
 
-        // calling xml project file subroutine for dvdauthor
+            // calling xml project file subroutine for dvdauthor
 
-    case RUN_SPUMUX_DVDAUTHOR:
+        case RUN_SPUMUX_DVDAUTHOR:
 
-        allocate_topmenus(command);
+            allocate_topmenus(command);
 
-        errno = generate_spumux_xml(ngroups, ntracks, maxntracks, img);
-        if (errno) perror("\n"ERR "AMG: spumux_xml\n");
-        
-        errno = launch_spumux(img);
-        if (errno) perror("\n"ERR "AMG: spumux\n");
+            errno = generate_spumux_xml(ngroups, ntracks, maxntracks, img);
+            if (errno) perror("\n"ERR "AMG: spumux_xml\n");
 
-    case  RUN_DVDAUTHOR :
+            errno = launch_spumux(img);
+            if (errno) perror("\n"ERR "AMG: spumux\n");
 
-        if (!globals.xml)
-        {
-            if (globals.debugging) foutput("%s\n", INF "Generating AMGM Xml project for dvdauthor (patched)...");
-            errno = generate_amgm_xml(ngroups, ntracks, img);
-            if (errno) perror("\n"ERR "AMG: amgm_xml\n");
-        }
-        if (img->nmenus && img->menuvobsize == NULL)
-        {
-            img->menuvobsize = calloc(img->nmenus, sizeof(uint32_t*));
-            if (img->menuvobsize == NULL) perror("\n"ERR "menuvobsize\n");
-        }
-        if (img->topmenu)
-        for (menu = 0; menu < img->nmenus; ++menu)
-            if (img->topmenu[menu])
+        case  RUN_DVDAUTHOR :
+
+            if (!globals.xml)
             {
-                img->menuvobsize[menu] = stat_file_size(img->topmenu[menu]) / 0x800;
-                if (globals.veryverbose) 
-                    foutput(MSG_TAG "Top menu is: %s with size %"PRIu32" KB\n", img->topmenu[menu], img->menuvobsize[menu]);
+                if (globals.debugging) foutput("%s\n", INF "Generating AMGM Xml project for dvdauthor (patched)...");
+                errno = generate_amgm_xml(ngroups, ntracks, img);
+                if (errno) perror("\n"ERR "AMG: amgm_xml\n");
+            }
+            if (img->nmenus && img->menuvobsize == NULL)
+            {
+                img->menuvobsize = calloc(img->nmenus, sizeof(uint32_t*));
+                if (img->menuvobsize == NULL) perror("\n"ERR "menuvobsize\n");
+            }
+            if (img->topmenu)
+            for (menu = 0; menu < img->nmenus; ++menu)
+                if (img->topmenu[menu])
+                {
+                    img->menuvobsize[menu] = stat_file_size(img->topmenu[menu]) / 0x800;
+                    if (globals.veryverbose)
+                        foutput(MSG_TAG "Top menu is: %s with size %"PRIu32" KB\n", img->topmenu[menu], img->menuvobsize[menu]);
+                }
+
+            launch_dvdauthor();
+            break;
+
+        case TS_VOB_TYPE:
+            if (img->menuvobsize == NULL)
+                img->menuvobsize = calloc(img->nmenus, sizeof(uint32_t*));
+            if (img->menuvobsize == NULL) perror("\n"ERR "menuvobsize\n");
+
+            img->menuvobsize[0] = stat_file_size(img->tsvob) / (0x800 * img->nmenus);
+            for (menu = 0; menu < img->nmenus; menu++)
+            {
+                img->menuvobsize[menu] = img->menuvobsize[0];
+                if (globals.veryverbose) foutput(MSG_TAG "Top menu is: %s with size %d KB\n", outfile,img->menuvobsize[menu]);
             }
 
-        launch_dvdauthor();
-        break;
+            copy_file(img->tsvob, outfile);
 
-    case TS_VOB_TYPE:
-        if (img->menuvobsize == NULL)
-            img->menuvobsize = calloc(img->nmenus, sizeof(uint32_t*));
-        if (img->menuvobsize == NULL) perror("\n"ERR "menuvobsize\n");
+            break;
 
-        img->menuvobsize[0] = stat_file_size(img->tsvob) / (0x800 * img->nmenus);
-        for (menu = 0; menu < img->nmenus; menu++)
-        {
-            img->menuvobsize[menu] = img->menuvobsize[0];
-            if (globals.veryverbose) foutput(MSG_TAG "Top menu is: %s with size %d KB\n", outfile,img->menuvobsize[menu]);
-        }
-
-        copy_file(img->tsvob, outfile);
-
-        break;
-
-    default:
-        foutput("%s\n", WAR "Incoherence of menu status in create_topmenu");
-        exit(EXIT_FAILURE);
+        default:
+            foutput("%s\n", WAR "Incoherence of menu status in create_topmenu");
+            exit(EXIT_FAILURE);
 
         break;
     }
@@ -1019,9 +1019,9 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
     uint16_t i, j = 0, k = 0, titleset = 0, totalplaylisttitles = 0, totalaudiotitles = 0, titleintitleset;
 
     bool menusector = (globals.topmenu <= TS_VOB_TYPE);  // there is a _TS.VOB in these cases
-    uint8_t naudio_groups = ngroups-vgroups-nplaygroups;  // CHECK
+    uint8_t naudio_groups = ngroups - vgroups - nplaygroups;  // CHECK
 
-    uint8_t amg[sectors->amg*2048];
+    uint8_t amg[sectors->amg * 2048];
     uint32_t  sectoroffset[naudio_groups];
 
     totalaudiotitles = totaltitles;
@@ -1031,7 +1031,7 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
         for (j = 0; j < nplaygroups; ++j)
             totalplaylisttitles += numtitles[playtitleset[j]];
 
-    totaltitles+=totalplaylisttitles;
+    totaltitles += totalplaylisttitles;
 
     if (globals.debugging) foutput(MSG_TAG "AMG: totaltitles=%d\n", totaltitles);
 
@@ -1058,9 +1058,7 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
     uint32_copy(&amg[0xcc], (menusector)? 3 : 0);  	// Pointer to sector 4
     uint32_copy(&amg[0xd4], (globals.text)? 3+(menusector) : 0);  	// Pointer to sector 5
     uint32_copy(&amg[0x100], (menusector)? 0x53000000 : 0); // Unknown;  // 0x1E000000 used to be uset in SET2
-
     uint32_copy(&amg[0x154], (menusector)? 0x00010000 : 0); // Unknown;
-
     uint32_copy(&amg[0x15C], (img->h + img->min + img->sec)? 0x00018001 : 0); // 2ch 48k LPCM audio (signed big endian) in mpeg2 top menu, 1 stream,
 
     /* Sector 2 */

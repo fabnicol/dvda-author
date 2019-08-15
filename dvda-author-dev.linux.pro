@@ -101,6 +101,7 @@ SOURCES += \
     libiberty/src/strchrnul.c \
     libiberty/src/strnlen.c
 
+
 OTHER_FILES += \
     src/dvda-author.conf \
     libfixwav/AUTHORS \
@@ -262,7 +263,7 @@ HEADERS += \
     libiberty/src/include/strchrnul.h \
     libiberty/src/include/strdup.h \
     libiberty/src/include/strndup.h \
-    libiberty/src/include/strnlen.h
+    libiberty/src/include/strnlen.h \
 
 DISTFILES += \
     libfixwav/fixwav.autorepair.md \

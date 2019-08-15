@@ -25,6 +25,7 @@ typedef struct
     uint8_t bitspersample;
     uint8_t channels;
     uint8_t cga;
+    uint8_t type;
     uint32_t samplerate;
 } audioformat_t;
 

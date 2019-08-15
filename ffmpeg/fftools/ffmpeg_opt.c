@@ -2096,7 +2096,7 @@ static void init_output_filter(OutputFilter *ofilter, OptionsContext *o,
 static int init_complex_filters(void)
 {
     int i, ret = 0;
-
+    nb_filtergraphs = 0;
     for (i = 0; i < nb_filtergraphs; i++) {
         ret = init_complex_filtergraph(filtergraphs[i]);
         if (ret < 0)
@@ -3319,6 +3319,7 @@ int ffmpeg_parse_options(int argc, char **argv)
     }
 
     /* create the complex filtergraphs */
+
     ret = init_complex_filters();
     if (ret < 0) {
         av_log(NULL, AV_LOG_FATAL, "Error initializing complex filters.\n");
