@@ -1,0 +1,126 @@
+.TH "mp2enc" "1" "2 June 2001" "MJPEG Tools Team" "MJPEG tools manual"
+
+.SH "NAME"
+.LP 
+.br 
+mp2enc \- Simple MPEG-1 layer-II audio encoder
+.br 
+
+.SH "SYNOPSIS"
+.B mp2enc
+.RB [ -v
+.IR num ]
+.RB [ -b
+.IR bitrate_kbps ]
+.RB [ -r
+.IR output_sampling_rate_hz ]
+.RB [ -R
+.IR rate,chans,bits ]
+.RB [ -s
+]
+.RB [ -m
+]
+.RB [ -e
+]
+.RB [ -V
+]
+.RB [ -? ]
+.BI -o \ output_filename
+
+.SH "DESCRIPTION"
+Mp2enc is a simple MPEG-1 layer-I/II audio encoder.  It is actually a very
+mildly warmed over version of the MPEG Software Simulation Group's
+reference encoder.  It accepts a WAV file or stream on stdin and
+ouputs an a layer-I/II elementary audio stream.  It is included in the
+\fBmjpegtools\fP(1) primarily for reasons of completeness and because it
+is able to perform sampling rate conversion.
+.PP
+Those seeking a faster (and probably higher quality) layer II encoder are
+recommended to use \fBtoolame\fP(1) which can be obtained from:
+.IP
+\fIhttp://www.planckenergy.com\fP
+
+
+.SH "GENERAL FUNCTION LETTERS"
+.TP
+.BI -o \ output_filename
+Specifies the name for the output file.
+
+An integer format code (e.g. %d) in the name is replaced the number of
+the file generated (see printf(3)).
+.TP
+.BI -v \ num
+Set verbosity level to num.  0 = warnings and errors only, 1 = information as well, 2=really verbose.
+.B -?
+Display a synopsis of the command syntax.
+
+.TP
+.BI -R \ rate,chans,bits
+Indicate, that the input is raw PCM without header. You must specify 3
+numbers: rate is the samplerate in Hz, chans is the number of channels
+(1 or 2) and bits is the number of bits per sample. 8 bits are unsigned,
+16 bits are signed in machine native byte order.
+
+.br
+.SH "FUNCTION LETTERS CONTROLLING OUTPUT STREAM STRUCTURE"
+.TP
+.BI -b \ bitrate
+
+This sets the bit-rate of the output stream in kBit/sec.  Typical
+values for layer II might be 224kbps for good-quality audio suitable for capturing
+Dolby pro-logic signals.  A rate of 192kbps or 128kbps is reasonable
+for low quality audio (e.g. mono TV audio).  Really high compression
+is, of course, better achieved using MPEG-1 layer III ("MP3") audio
+encoding or AAC. A more appropriate value for layer I might be 384kbps.
+
+.TP
+.BI -r \ sampling_rate
+Sets the audio sampling rate of the reconstructed output signal in Hz.
+Legal values are 32000, 44100 and 48000Hz.   mp2enc will automatically
+sample-rate convert the input signal if necessary.
+
+.TP
+.BI -l \ layer
+Sets the audio layer.
+Legal values are 1 and 2. The default is layer II.
+
+.TP
+.BI -s
+Force stereo output.  A mono input signal is channel doubled before
+encoding to make it stereo.  This is useful for players
+which simply can't handle a non-stero signal.
+.TP
+.BI -m
+Force mono output.  A stereo input signal is down-mixed before encoding.
+Useful if you've captured a mono signal in stereo and your player can
+handle mono MPEG-1 Layer 2 audio.
+.TP
+.BI -e
+Use CRC error protection.
+.TP
+.BI -V
+Force VCD compatible output. The primary effect of this is to make certain that
+the sampling rate is set to 44100 (-r 44100).  The VCD2.0 specifications 
+permit mono audio at 64, 
+96 and 192 kbits/sec and stereo at 128, 192, 224, and 384 kbits/sec. Using 
+\fB-V\fP checks that the bitrate is valid for the number of channels.
+The defaults (unless -m or -b are used) are stereo at 224 kbits/sec.
+.TP
+.BI -o \ outputpathname
+The name of the output file to generate.  If '-' is given as the pathname output is written to standard output.
+.SH "BUGS"
+Mono output does not work for layer I.
+.SH AUTHOR
+This man page was written by Andrew Stevens.
+.br
+If you have questions, remarks, problems or you just want to contact
+the developers, the main mailing list for the MJPEG\-tools is:
+  \fImjpeg\-users@lists.sourceforge.net\fP
+
+.TP
+For more info, see our website at
+.I http://mjpeg.sourceforge.net
+
+.SH "SEE ALSO"
+.BR mpeg2enc "(1), " mp2enc "(1), " lavrec "(1), " lavplay "(1), "
+.BR lav2yuv "(1), " lav2wav "(1), " yuvscaler "(1)"

@@ -6,7 +6,7 @@
 #define CONFIG_THIS_YEAR 2019
 #define FFMPEG_DATADIR "/usr/local/share/ffmpeg"
 #define AVCONV_DATADIR "/usr/local/share/ffmpeg"
-#define CC_IDENT "gcc 8 (Ubuntu 8.3.0-6ubuntu1)"
+#define CC_IDENT "gcc 9.1.0 (Gentoo 9.1.0-r1 p1.1)"
 #define av_restrict restrict
 #define EXTERN_PREFIX ""
 #define EXTERN_ASM 
@@ -367,8 +367,8 @@
 #define HAVE_STRUCT_SOCKADDR_STORAGE 0
 #define HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC 1
 #define HAVE_STRUCT_V4L2_FRMIVALENUM_DISCRETE 1
-#define HAVE_MAKEINFO 0
-#define HAVE_MAKEINFO_HTML 0
+#define HAVE_MAKEINFO 1
+#define HAVE_MAKEINFO_HTML 1
 #define HAVE_OPENCL_D3D11 0
 #define HAVE_OPENCL_DRM_ARM 0
 #define HAVE_OPENCL_DRM_BEIGNET 0
@@ -379,10 +379,10 @@
 #define HAVE_POD2MAN 1
 #define HAVE_TEXI2HTML 0
 #define CONFIG_DOC 0
-#define CONFIG_HTMLPAGES 0
+#define CONFIG_HTMLPAGES 1
 #define CONFIG_MANPAGES 1
 #define CONFIG_PODPAGES 1
-#define CONFIG_TXTPAGES 0
+#define CONFIG_TXTPAGES 1
 #define CONFIG_AVIO_DIR_CMD_EXAMPLE 1
 #define CONFIG_AVIO_READING_EXAMPLE 1
 #define CONFIG_DECODE_AUDIO_EXAMPLE 1
@@ -494,7 +494,7 @@
 #define CONFIG_OPENGL 0
 #define CONFIG_POCKETSPHINX 0
 #define CONFIG_VAPOURSYNTH 0
-#define CONFIG_ALSA 0
+#define CONFIG_ALSA 1
 #define CONFIG_APPKIT 0
 #define CONFIG_AVFOUNDATION 0
 #define CONFIG_BZLIB 0
