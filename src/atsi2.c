@@ -68,6 +68,7 @@ int get_afmt(fileinfo_t* info, audioformat_t* audioformats, int* numafmts) {
     audioformats[i].samplerate = info->samplerate;
     audioformats[i].channels = info->channels;
     audioformats[i].cga = info->cga;
+    audioformats[i].type = info->type;
     audioformats[i].bitspersample = info->bitspersample;
     (*numafmts)++;
   }
@@ -198,13 +199,14 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
     int numtitles;
     int ntitletracks[99];
     uint64_t title_length;
-    int numafmts=0;
+    int numafmts = 0;
     //TODO: is 18 a maximum?
     audioformat_t audioformats[18];
     static uint16_t trackcount, pictitlecount;
+    bool maybe_multichannel = false;
 
-    memset(atsi,0,sizeof(atsi));
-    memcpy(&atsi[0],"DVDAUDIO-ATS",12);
+    memset(atsi, 0, sizeof(atsi));
+    memcpy(&atsi[0], "DVDAUDIO-ATS", 12);
     uint16_copy(&atsi[0x20], 0x0012);  // DVD Specifications version
     uint32_copy(&atsi[0x80], 0x07ff); // End byte address of ATSI_MAT
     uint32_copy(&atsi[0xCC], 1);      // Start sector of ATST_PGCI_UT
@@ -213,10 +215,13 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
     j = 0;
     numtitles = 0;
     ntitletracks[numtitles] = 0;
+
     while (j < ntracks)
     {
         ntitletracks[numtitles] = 1;
-        get_afmt(&files[j],audioformats,&numafmts);
+
+        get_afmt(&files[j], audioformats, &numafmts);
+
         ++j;
 
         while ((j < ntracks) && (j == 0 || ! files[j].newtitle) )
@@ -224,50 +229,60 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
             ++ntitletracks[numtitles];
             ++j;
         }
-        numtitles++;
+        ++numtitles;
     }
 
     for (j = 0; j < numafmts; ++j)
     {
-        // TODO: CHECK this as 0X1 was observed (MLP DW) for menuless disc (3/16/96, G1T3).
-        uint16_copy(&atsi[i], 0x0000);  // [200806] 0x0000 if a menu is not generated; otherwise sector pointer from start of audio zone (AUDIO_PP.IFO to last sector of audio system space (here AUDIO_TS.IFO)
+        // TODO: CHECK this as 0X1 was observed (MLP) for menuless disc (3/16/96 DW, G1T3, 2/24/44 DVDA-C).
+
+        uint16_copy(&atsi[i], (audioformats[j].type == AFMT_MLP) << 8);
+
         // Following loop table is OK for MLP too
+
         i+=2;
+
         if (files[j].channels > 2)
         {
+            maybe_multichannel = true;
+
             switch (audioformats[j].bitspersample)
             {
-            case 16:
-                atsi[i]=0x00;
-                break;
-            case 20:
-                atsi[i]=0x11;
-                break;
-            case 24:
-                atsi[i]=0x22;
-                break;
-            default:
-                break;
-            }
+                case 16:
+                    atsi[i] = 0x00;
+                    break;
 
+                case 20:
+                    atsi[i] = 0x11;
+                    break;
+
+                case 24:
+                    atsi[i] = 0x22;
+                    break;
+
+                default:
+                    break;
+            }
         }
         else
         {
-
             switch (audioformats[j].bitspersample)
             {
 
-            case 16:
-                atsi[i]=0x0f;
-                break;
-            case 20:
-                atsi[i]=0x1f;
-                break;
-            case 24:
-                atsi[i]=0x2f;
-                break;
-            default:
-                break;
+                case 16:
+                    atsi[i] = 0x0f;
+                    break;
+
+                case 20:
+                    atsi[i] = 0x1f;
+                    break;
+
+                case 24:
+                    atsi[i] = 0x2f;
+                    break;
+
+                default:
+                    break;
             }
         }
         i++;
@@ -327,64 +342,67 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
             }
         }
 
-        i++;
+        ++i;
 
-        atsi[i]= files[j].cga;
-        i++;
+        atsi[i] = files[j].cga;
+        ++i;
 
-        atsi[i]=0x00; // ??? Unknown part of audio format
+        atsi[i] = 0x00; // ??? Unknown part of audio format
         // PATCH 09.07: off-by-one error (i+=11)
-        i+=11; // ??? Padding
+        i += 11; // ??? Padding
         // EOP
     }
 
     // downmix coefficients
-    //[200806] : if a menu is generated: uint8_copy(&atsi[336],0x01);
+    //[200806] : if a menu is generated: uint8_copy(&atsi[336],0x01); // TODO check ?
     // is inserted even if non-surround
 
-    if (! db[0].custom_table)
+    if (maybe_multichannel)
     {
-        for (int w = 0; w < 16; ++w)
+        if (! db[0].custom_table)
         {
-    //    uint16_copy(&atsi[384 + w * 18],0x0000); no-op
-          uint16_copy(&atsi[386 + w * 18],0x1eff);
-          uint16_copy(&atsi[388 + w * 18],0xff1e);
-          uint16_copy(&atsi[390 + w * 18],0x2d2d);
-          uint16_copy(&atsi[392 + w * 18],0x3cff);
-          uint16_copy(&atsi[394 + w * 18],0xff3c);
-          uint16_copy(&atsi[396 + w * 18],0x4b4b);
-    //    uint16_copy(&atsi[398 + w * 18],0x0000);  no-op
-    //    uint16_copy(&atsi[400 + w * 18],0x0000);  no-op
+            for (int w = 0; w < 16; ++w)
+            {
+        //    uint16_copy(&atsi[384 + w * 18],0x0000); no-op
+              uint16_copy(&atsi[386 + w * 18],0x1eff);
+              uint16_copy(&atsi[388 + w * 18],0xff1e);
+              uint16_copy(&atsi[390 + w * 18],0x2d2d);
+              uint16_copy(&atsi[392 + w * 18],0x3cff);
+              uint16_copy(&atsi[394 + w * 18],0xff3c);
+              uint16_copy(&atsi[396 + w * 18],0x4b4b);
+        //    uint16_copy(&atsi[398 + w * 18],0x0000);  no-op
+        //    uint16_copy(&atsi[400 + w * 18],0x0000);  no-op
+            }
+        }
+        else
+        {
+            i = 0x180;
+            for (int w = 0; w < 16; ++w)
+            {
+        //    uint16_copy(&atsi[i + w * 18],0x0000); no-op
+              atsi[i + 2 + w * 18]  =  downmix_coeff(db[w].Lf_l);  // Left front speaker channel to left stereo speaker
+              atsi[i + 3 + w * 18]  =  downmix_coeff(db[w].Lf_r);  // Left front speaker channel to right stereo speaker
+              atsi[i + 4 + w * 18]  =  downmix_coeff(db[w].Rf_l);       // Right front speaker channel to left stereo speaker
+              atsi[i + 5 + w * 18]  =  downmix_coeff(db[w].Rf_r);       // Right front speaker channel to right stereo speaker
+              atsi[i + 6 + w * 18]  =  downmix_coeff(db[w].C_l);        // Center speaker channel to left stereo speaker
+              atsi[i + 7 + w * 18]  =  downmix_coeff(db[w].C_r);        // Center speaker channel to right stereo speaker
+              atsi[i + 8 + w * 18]  =  downmix_coeff(db[w].S_l);        // Left surround or Surround speaker channel to left stereo speaker
+              atsi[i + 9 + w * 18]  =  downmix_coeff(db[w].S_r);       // Left surround or Surround speaker channel to left stereo speaker
+              atsi[i + 10 + w * 18] =  downmix_coeff(db[w].Rs_l);      // Right surround to left stereo speaker
+              atsi[i + 11 + w * 18] =  downmix_coeff(db[w].Rs_r);      // Right surround to right stereo speaker
+              atsi[i + 12 + w * 18] =  downmix_coeff(db[w].LFE_l);     // Low-frequency effects (subwoofer) to left stereo speaker
+              atsi[i + 13 + w * 18] =  downmix_coeff(db[w].LFE_r);     // Low-frequency effects (subwoofer) to right stereo speaker
+        //    uint16_copy(&atsi[i + 14 + w * 18],0x0000);  no-op
+        //    uint16_copy(&atsi[i + 15 + w * 18],0x0000);  no-op
+            }
         }
     }
-    else
-    {
-        i = 0x180;
-        for (int w = 0; w < 16; ++w)
-        {
-    //    uint16_copy(&atsi[i + w * 18],0x0000); no-op
-          atsi[i + 2 + w * 18] =   downmix_coeff(db[w].Lf_l);  // Left front speaker channel to left stereo speaker
-          atsi[i + 3 + w * 18] =   downmix_coeff(db[w].Lf_r);  // Left front speaker channel to right stereo speaker
-          atsi[i + 4 + w * 18]  =  downmix_coeff(db[w].Rf_l);       // Right front speaker channel to left stereo speaker
-          atsi[i + 5 + w * 18]  =  downmix_coeff(db[w].Rf_r);       // Right front speaker channel to right stereo speaker
-          atsi[i + 6 + w * 18]  =  downmix_coeff(db[w].C_l);        // Center speaker channel to left stereo speaker
-          atsi[i + 7 + w * 18]  =  downmix_coeff(db[w].C_r);        // Center speaker channel to right stereo speaker
-          atsi[i + 8 + w * 18]  =  downmix_coeff(db[w].S_l);        // Left surround or Surround speaker channel to left stereo speaker
-          atsi[i + 9 + w * 18] =   downmix_coeff(db[w].S_r);       // Left surround or Surround speaker channel to left stereo speaker
-          atsi[i + 10 + w * 18] =  downmix_coeff(db[w].Rs_l);      // Right surround to left stereo speaker
-          atsi[i + 11 + w * 18] =  downmix_coeff(db[w].Rs_r);      // Right surround to right stereo speaker
-          atsi[i + 12 + w * 18] =  downmix_coeff(db[w].LFE_l);     // Low-frequency effects (subwoofer) to left stereo speaker
-          atsi[i + 13 + w * 18] =  downmix_coeff(db[w].LFE_r);     // Low-frequency effects (subwoofer) to right stereo speaker
-    //    uint16_copy(&atsi[i + 14 + w * 18],0x0000);  no-op
-    //    uint16_copy(&atsi[i + 15 + w * 18],0x0000);  no-op
-        }
-    }
-
 
     /* SECTOR 2 */
 
     i = 0x800;
     uint16_copy(&atsi[i], numtitles);
+
     // [200806] The number numtitles must be equal to number of audio zone titles plus video zone titles linked to. Gapless tracks are packed in the same title.
 
     // Padding
@@ -404,7 +422,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
           format_flag = 0x0100;
         }
 
-        // MLP looks like 0x0101, when mulltichannel, 0x0001 when stereo or mono, PCM unfirmly 0x0100
+        // MLP looks like 0x0101, when multichannel, 0x0001 when stereo or mono, PCM unfirmly 0x0100
         uint16_copy(&atsi[i], format_flag);
 
         // To be filled later - pointer to a following table.
@@ -427,11 +445,11 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
         atsi[i] = ntitletracks[j];
         ++i;
         
-        title_length=0;
+        title_length = 0;
         
         for (t = 0; t < ntitletracks[j]; ++t)
         {
-            title_length += files[k+t].PTS_length;
+            title_length += files[k + t].PTS_length;
         }
         
         uint32_copy(&atsi[i], title_length);
@@ -468,13 +486,13 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
             
             // Downmix table index
 
-            if (files[j].channels < 2 || files[k + t].downmix_table_rank) //  0x10 for stereo or mono // or if no sownmix table
+            if (files[j].channels < 2 || files[k + t].downmix_table_rank == 0) //  0x10 for stereo or mono // or if no downmix table, so means: "no downmix"
             {
                x |= 0x0010;
             }
             else
             {
-               x |= files[k + t].downmix_table_rank - 1; //0x0 to 0x0F, rank of downmix table
+               x |= files[k + t].downmix_table_rank - 1; //0x0 to 0x0F, rank of downmix table (0-based)
             }
 
             uint16_copy(&atsi[i], x);
@@ -581,8 +599,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
                     atsi[i]=img->options[s+u]->endeffect;
                   i++;
                   u++;
-                  pictrackcount++;
-                }
+                  pictrackcount++;               }
 
             }
         }
@@ -604,7 +621,7 @@ int create_atsi(command_t *command, char* audiotsdir,uint8_t titleset,uint8_t* a
         *atsi_sectors=2;
     }
 
-    uint32_copy(&atsi[12], files[ntracks - 1].last_sector+(2 * (*atsi_sectors))); // Pointer to last sector in ATS (i.e. numsectors-1)
+    uint32_copy(&atsi[12], files[ntracks - 1].last_sector + 2 * *atsi_sectors); // Pointer to last sector in ATS (i.e. numsectors-1)
     uint32_copy(&atsi[28],  *atsi_sectors - 1); // Last sector in ATSI
     uint32_copy(&atsi[196], *atsi_sectors);      // Start sector of ATST_AOBS
 

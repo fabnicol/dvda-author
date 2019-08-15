@@ -1,10 +1,15 @@
 #!/bin/bash
+
 if test -f libffmpeg*.a; then rm libffmpeg*.a; fi
 if test -f  test2; then rm test2; fi
+if test -f  test3; then rm test3; fi
 ar rcs  libffmpeg.a  *.o
-strip --strip-debug libffmpeg.a
+
 LIBS="-L/usr/lib64/gstreamer-1.0/ ./libffmpeg.a ../libavfilter/libavfilter.a ../libavformat/libavformat.a ../libavcodec/libavcodec.a ../libavutil/libavutil.a ../libswresample/libswresample.a  -pthread  -lm"
 
-gcc -I. -I.. -o test2.o  -c test2.c
+gcc -I. -I..  -o test2.o  -c test2.c
+gcc -I. -I.. -O3 -march=core-avx2 -o test3.o  -c test3.c
+gcc -o test3  test3.o $(echo $LIBS)
+strip -s test3
 gcc -o test2  test2.o $(echo $LIBS)
-strip -s ./test2
+

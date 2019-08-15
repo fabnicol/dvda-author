@@ -39,6 +39,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #ifdef __GNU_LIBRARY__
 #include <unistd.h>
 #endif
+#include <sys/stat.h>
 #include "export.h"
 #include "audio2.h"
 #include "audio.h"
@@ -56,8 +57,14 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 #include "multichannel.h"
 #include "file_input_parsing.h"
-#include "fftools/ffmpeg.h"
 #include "libavcodec/mlplayout.h"
+#include "libavutil/opt.h"
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+#include "libswresample/swresample.h"
+
+
+
 extern globalData globals;
 static const uint8_t default_cga[6] = {0,  1,  7,  3,   16,   17};  //default channel assignment
 uint32_t cga2wav_channels[21] = {0x4, 0x3, 0x103, 0x33, 0xB, 0x10B, 0x3B, 0x7, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x3B, 0x37, 0x3B };
@@ -465,6 +472,89 @@ void flac_error_callback(const FLAC__StreamDecoder GCC_UNUSED *dec,
 
 #endif
 
+
+int decode_mlp_file(fileinfo_t* info) {
+
+    // initialize all muxers, demuxers and protocols for libavformat
+    // (does nothing if called twice during the course of one program execution)
+    av_register_all();
+
+    const char* path = info->filename;
+
+    // get format from audio file
+    AVFormatContext* format = avformat_alloc_context();
+
+    if (avformat_open_input(&format, path, NULL, NULL) != 0) {
+        fprintf(stderr, ERR "Could not open file '%s'\n", path);
+        return -1;
+    }
+    if (avformat_find_stream_info(format, NULL) < 0) {
+        fprintf(stderr, ERR "Could not retrieve stream info from file '%s'\n", path);
+        return -1;
+    }
+
+    // Find the index of the first audio stream
+
+    int stream_index = -1;
+    for (int i = 0; i < format->nb_streams; ++i) {
+        if (format->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
+            stream_index = i;
+            break;
+        }
+    }
+
+    if (stream_index == -1) {
+        fprintf(stderr, ERR "Could not retrieve audio stream from file '%s'\n", path);
+        return -1;
+    }
+
+    AVStream* stream = format->streams[stream_index];
+
+    // find & open codec
+    AVCodecContext* codec = stream->codec;
+
+    if (avcodec_open2(codec, avcodec_find_decoder(codec->codec_id), NULL) < 0) {
+        fprintf(stderr, ERR "Failed to open decoder for stream #%u in file '%s'\n", stream_index, path);
+        return -1;
+    }
+
+    // prepare to read data
+    AVPacket packet;
+    av_init_packet(&packet);
+    AVFrame* frame = av_frame_alloc();
+    if (!frame) {
+        fprintf(stderr, ERR "Error allocating the frame\n");
+        return -1;
+    }
+
+    while (av_read_frame(format, &packet) >= 0) {
+        // decode one frame
+        int gotFrame;
+        if (avcodec_decode_audio4(codec, frame, &gotFrame, &packet) < 0) {
+            break;
+        }
+        if (!gotFrame) {
+            continue;
+        }
+    }
+
+    unsigned long size = info->file_size / info->lpcm_payload + 4;
+
+    info->mlp_layout = (struct MLP_LAYOUT *) calloc(size, sizeof (struct MLP_LAYOUT));
+
+    get_mlp_layout(info->mlp_layout, size); // 1968 is the minimum payload. +3 for last sector buffer
+
+    // clean up
+    av_frame_free(&frame);
+    avcodec_close(codec);
+    avformat_free_context(format);
+
+    // success
+    return 0;
+
+}
+
+
 int calc_info(fileinfo_t* info)
 {
 //PATCH: provided for null dividers.
@@ -565,16 +655,9 @@ int calc_info(fileinfo_t* info)
 
     if (info->type == AFMT_MLP)
     {
-        unsigned long size = info->file_size / info->lpcm_payload + 4;
-
-        info->mlp_layout = (struct MLP_LAYOUT *) calloc(size, sizeof (struct MLP_LAYOUT));
-
-        char* tab[8] = {"ffmpeg_lib", "-v", "-8", "-i", info->filename, "-f", "null", "-"};
         foutput(INF "Searching MLP layout for file %s. Please wait...\n", info->filename);
 
-        ffmpeg_lib(8, &tab[0]);
-
-        get_mlp_layout(&info->mlp_layout[0], size); // allowing for 2 null lines
+        decode_mlp_file(info);
 
         // TODO : check if get_mlp_layout has correct PCM saple count for all audio characteristics
 
