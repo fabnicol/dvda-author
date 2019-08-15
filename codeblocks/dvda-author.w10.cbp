@@ -64,14 +64,8 @@
 			<Add option="-pthread" />
 			<Add option="-fopenmp" />
 			<Add option="-lm" />
-			<Add library="../ffmpeg/libswresample/libswresample.a" />
-			<Add library="../ffmpeg/libavformat/libavformat.a" />
-			<Add library="../ffmpeg/libavfilter/libavfilter.a" />
-			<Add library="../ffmpeg/libavcodec/libavcodec.a" />
-			<Add library="../ffmpeg/libavutil/libavutil.a" />
 			<Add library="../local.w10/lib/libsox.a" />
 			<Add library="../local.w10/lib/libFLAC.a" />
-			<Add library="../local.w10/lib/libsox.a" />
 			<Add library="../local.w10/lib/libopencore-amrnb.a" />
 			<Add library="../local.w10/lib/libopencore-amrwb.a" />
 			<Add library="../local.w10/lib/liba52.a" />
@@ -89,6 +83,11 @@
 			<Add library="../local.w10/lib/libwebp.a" />
 			<Add library="../local.w10/lib/libogg.a" />
 			<Add library="../local.w10/lib/libz.a" />
+			<Add library="../local.w10/lib/libswresample.a" />
+			<Add library="../local.w10/lib/libavfilter.a" />
+			<Add library="../local.w10/lib/libavformat.a" />
+			<Add library="../local.w10/lib/libavcodec.a" />
+			<Add library="../local.w10/lib/libavutil.a" />
 			<Add library="winmm" />
 			<Add library="bcrypt" />
 			<Add directory="../../../../msys64/mingw64/lib" />
@@ -245,6 +244,7 @@
 			<code_completion />
 			<envvars />
 			<debugger />
+			<fortran_project />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>
