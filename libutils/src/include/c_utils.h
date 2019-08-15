@@ -39,12 +39,14 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <stdio.h>
 
 #if defined __WIN32__ || defined _WIN32 || defined __WIN32 || defined __WIN64 || defined _WIN64
-#define SEPARATOR "\\"
-#define STRLEN_SEPARATOR 2
+#  define SEPARATOR "\\"
+#  define STRLEN_SEPARATOR 2
+#define WAIT 0
 #else
 #define SEPARATOR  "/"
 #define STRLEN_SEPARATOR 1
 #include <sys/wait.h>
+#define WAIT WUNTRACED | WCONTINUED
 #endif
 
 #include <sys/types.h>
@@ -161,7 +163,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
 #define NOWAIT -1
-#define WAIT WUNTRACED | WCONTINUED
+
 /* Structures */
 
 
