@@ -250,7 +250,7 @@ inline static void write_pes_padding(FILE* fp, uint16_t length)
     /* offset_count += 1 */ fwrite(stream_id_padding, 1, 1, fp);
     /* offset_count += 2 */ fwrite(length_bytes, 2, 1, fp);
     /* offset_count += length */ fwrite(ff_buf, length, 1, fp);
-    
+
 }
 
 inline static void read_pes_padding(FILE* fp, uint16_t length)
@@ -828,7 +828,7 @@ inline static uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_title)
 }
 
 
-inline static void calc_PTS_DTS_MLP(fileinfo_t* info, pts_t* res)
+inline static void calc_PTS_DTS_MLP(fileinfo_t* info)
 {
     if (info->type != AFMT_MLP)
     {
@@ -867,14 +867,14 @@ inline static void calc_PTS_DTS_MLP(fileinfo_t* info, pts_t* res)
     {
       double ptsint = ceil((double) (info->mlp_layout[i].nb_samples  + info->samplesperframe)/ (double) info->samplerate * 90000.0);
       double dtsint = ceil((double) info->mlp_layout[i].nb_samples/ (double) info->samplerate * 90000.0);
-      res[i].PTSint = (uint32_t) ptsint;
-      res[i].DTSint = (uint32_t)  dtsint;
-      res[i].PTSint += start_byteshift;
-      res[i].DTSint += start_byteshift;
+      info->pts[i] = (uint32_t) ptsint;
+      info->dts[i] = (uint32_t)  dtsint;
+      info->pts[i] += start_byteshift;
+      info->dts[i] += start_byteshift;
       if (i && info->mlp_layout[i].pkt_pos == 0) break;
     }
 
-    ++res[0].DTSint;
+    ++info->dts[0] ;
 
     // now for sector 0-ranked i, use PST[i] and DTS[i] in write_pes_header at offset 23/28
     // there may be 1 to 3 remaining useless indexes used for complete audio data description in m[]
@@ -884,7 +884,6 @@ inline static void calc_PTS_DTS_MLP(fileinfo_t* info, pts_t* res)
     // Note: these spreads are 1/90000 th of a second ~ 0.5 (1ch 44.1 kHz) to 40 bytes (6 ch. 192 KHz) of pcm at worst
 
 }
-
 
 // SCR for MLP is poorly understood and very software-specific.
 // Sonic has a different start slope for the first four sectors then the steep one thereafter at 90000 * 300 / samplerate
@@ -920,9 +919,7 @@ inline static void calc_PTS_DTS_MLP(fileinfo_t* info, pts_t* res)
 //
 // To be tested
 
-
-
-inline static void calc_SCR_MLP(fileinfo_t* info, uint64_t* res)
+inline static void calc_SCR_MLP(fileinfo_t* info)
 {
     if (info->type != AFMT_MLP)
     {
@@ -939,7 +936,7 @@ inline static void calc_SCR_MLP(fileinfo_t* info, uint64_t* res)
       sectorbytes += 2005;
       double byteshift = info->mlp_layout[i].pkt_pos - sectorbytes;  // very wild guess through regression
       temp += 26.0 - byteshift / 14.0;                     // that looks like close at a handful PTS ticks off
-      res[i] = ((uint64_t) round(temp)) * 300 ;  // giving up on SCR_ext ticks
+      info->scr[i] = ((uint64_t) round(temp)) * 300 ;  // giving up on SCR_ext ticks
     }
     return;
 }
@@ -981,29 +978,19 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
     int audio_bytes;
     static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
 
-    uint32_t PTS;
+    uint32_t PTS = 0;
     uint32_t DTS = 0;
     uint64_t SCR = 0;
-    uint64_t res_scr[MAX_AOB_SECTORS] = {0};
     static uint32_t cumbytes;
     uint8_t  mlp_flag = 0;
-    pts_t* res_mlp;
 
     if (info->type == AFMT_MLP)
     {
         mlp_flag = 0xC0;
 
-        if (pack_in_title == 0)  // once and for all for file info->filename, assuming a file has just one title in it (normally the case)
-        {
-            res_mlp = calloc(MAX_AOB_SECTORS, sizeof (pts_t));
-            if (res_mlp == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not allocate res_mlp.")
-            calc_PTS_DTS_MLP(info, &res_mlp[0]);
-            calc_SCR_MLP(info, &res_scr[0]);
-        }
-
-        PTS = res_mlp[pack_in_title].PTSint;
-        DTS = res_mlp[pack_in_title].DTSint;
-        SCR = res_scr[pack_in_title];
+        PTS = info->pts[pack_in_title];
+        DTS = info->dts[pack_in_title];
+        SCR = info->scr[pack_in_title];
     }
     else
     {
@@ -1052,7 +1039,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         /* offset_count+= */
 
         uint64_t offset = ftello(fp);
- 
+
         int res = fwrite(audio_buf, 1, audio_bytes, fp);
         if (globals.maxverbose) fprintf(stderr, DBG "\n%" PRIu64 ": Writing %d bytes\n", offset, res);
 
@@ -1080,7 +1067,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         /* offset_count+= */
 
         uint64_t offset = ftello(fp);
-   
+
         int res = fwrite(audio_buf, 1, audio_bytes, fp);
         if (globals.maxverbose) fprintf(stderr, DBG "%" PRIu64 ": Writing %d bytes\n", offset, res);
 
@@ -1100,7 +1087,6 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         else
         {
             write_pes_padding(fp, 2048 - (ftello(fp) % 2048));
-            free(res_mlp);
         }
     }
     else
@@ -1120,7 +1106,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         if (start_of_file) cc=0x1f;
 
         uint64_t offset = ftello(fp);
-   
+
         int res = fwrite(audio_buf,1,audio_bytes,fp);
         if (globals.maxverbose) fprintf(stderr, DBG "%" PRIu64 ": Writing %d bytes\n", offset, res);
 
@@ -1128,7 +1114,6 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         if (info->type != AFMT_MLP)
            write_pes_padding(fp,info->midpack_pes_padding);//info->midpack_pes_padding +6
     }
-
 
     if (cc == 0x1f)
     {
@@ -1138,6 +1123,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
     {
         cc++;
     }
+
 
     return(audio_bytes);
 }
@@ -1519,7 +1505,44 @@ int decode_ats()
     return(0);
 }
 
-int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
+static inline void free_mlp_tracktable(fileinfo_t* info)
+{
+    if (info->type == AFMT_MLP)
+    {
+           free(info->pts);
+           free(info->dts);
+           free(info->scr);
+           free(info->mlp_layout);
+            info->pts = NULL;
+            info->dts = NULL;
+            info->scr = NULL;
+            info->mlp_layout = NULL;
+    }
+}
+
+
+static inline void allocate_mlp_tracktable(fileinfo_t* info)
+{
+    if (info->type == AFMT_MLP)
+    {
+            info->pts = NULL;
+            info->dts = NULL;
+            info->scr = NULL;
+            info->pts = calloc(MAX_AOB_SECTORS, sizeof (uint32_t));
+            info->dts = calloc(MAX_AOB_SECTORS, sizeof (uint32_t));
+            info->scr = calloc(MAX_AOB_SECTORS,  sizeof(uint64_t));
+
+            if (info->pts == NULL || info->dts == NULL || info->scr == NULL)
+            {
+                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not allocate memory for PTS / DTS / SCR computation .")
+            }
+
+            calc_PTS_DTS_MLP(info);
+            calc_SCR_MLP(info);
+    }
+}
+
+int create_ats(char* audiotsdir, int titleset, fileinfo_t* files, int ntracks)
 {
     FILE* fpout;
     char outfile[CHAR_BUFSIZ+13+1];
@@ -1540,11 +1563,13 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
     }
 
     audio_read(&files[i], audio_buf, &bytesinbuf);
-    
+
     lpcm_payload = files[i].lpcm_payload;
 
     files[i].first_sector=0;
     uint64_t totpayload = 0;
+
+    allocate_mlp_tracktable(&files[i]);
 
     foutput(INF "Processing %s\n",files[i].filename);
 
@@ -1574,22 +1599,21 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
         {
             if (globals.maxverbose)
             {
-                foutput("%s %d %s %d\n", 
-                        INF "Reading", 
+                foutput("%s %d %s %d\n",
+                        INF "Reading",
                         AUDIO_BUFFER_SIZE - bytesinbuf,
                         "bytes into buffer at offset",
                         bytesinbuf);
             }
-            
+
             n = audio_read(&files[i],
                            audio_buf,
                            &bytesinbuf);
-        
+
             if (n == 0)   /* We have reached the end of the input file */
             {
                 files[i].last_sector = pack;
                 audio_close(&files[i]);
-                //if (files[i].type == AFMT_MLP) free(files[i].mlp_layout);
                 ++i;
 
                 if (i < ntracks)
@@ -1616,13 +1640,15 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
                         EXIT_ON_RUNTIME_ERROR
                     }
 
+                    allocate_mlp_tracktable(&files[i]);
+
                     start_of_file = true;
 
                     if (globals.veryverbose)
                         foutput("%s %d %s %d\n", INF "Opening audio buffer at offset", bytesinbuf, "for count: ", AUDIO_BUFFER_SIZE - bytesinbuf);
-                    
+
                     audio_read(&files[i], audio_buf, &bytesinbuf);
-                    
+
                     foutput(INF "Processing %s\n", files[i].filename);
                 }
                 else
@@ -1645,5 +1671,9 @@ int create_ats(char* audiotsdir,int titleset,fileinfo_t* files, int ntracks)
         }
     }
 
+    // Under W10 (msys64 compiler), unlike Linux, deallocating MLP tables should be done once the loop is completed.
+    // Iterative deallocation yields stack violation issues which are poorly understood.
+
+    for (int j = 0; j <= i; ++j ) free_mlp_tracktable(&files[i]);
     return(fileno);
 }

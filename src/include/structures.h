@@ -16,12 +16,6 @@ typedef struct
 
 typedef struct
 {
-   uint32_t PTSint;
-   uint32_t DTSint;
-} pts_t;
-
-typedef struct
-{
     uint8_t bitspersample;
     uint8_t channels;
     uint8_t cga;
@@ -75,6 +69,9 @@ typedef struct
     uint32_t dw_channel_mask;
     uint32_t first_PTS;
     uint32_t PTS_length;
+    uint32_t *pts;
+    uint32_t *dts;
+    uint64_t *scr;
     uint64_t numsamples;
     uint64_t numbytes; // theoretical audio size
     uint64_t pcm_numbytes; // theoretical audio size
