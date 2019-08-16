@@ -527,16 +527,62 @@ int decode_mlp_file(fileinfo_t* info) {
         return -1;
     }
 
-    while (av_read_frame(format, &packet) >= 0) {
+  int cumsize = 0;
+
+  if(globals.maxverbose)
+  {
+    char path[20] = {0};
+    static int count;
+    ++ count;
+
+    sprintf(path, "audio_%d.raw", count);
+    fprintf(stderr, INF "Decoding file %s  to raw data in path: %s\n", info->filename, path);
+
+    FILE* fp = fopen(path, "wb+");
+    while (av_read_frame(format, &packet) >= 0)
+    {
         // decode one frame
         int gotFrame;
-        if (avcodec_decode_audio4(codec, frame, &gotFrame, &packet) < 0) {
-            break;
+        int ret;
+        if ((ret = avcodec_decode_audio4(codec, frame, &gotFrame, &packet)) < 0) {
+
+                fprintf(stderr, ERR "Error decoding audio frame (%s)\n", av_err2str(ret));
+                return ret;
         }
-        if (!gotFrame) {
-            continue;
+
+        if (gotFrame) {
+
+            size_t unpadded_linesize = info->channels * frame->nb_samples * av_get_bytes_per_sample(frame->format);
+
+            fwrite(frame->extended_data[0], 1, unpadded_linesize, fp);
+            fprintf(stderr, "Nb samples: %d FR_PTS: %d PKT_POS: %d PKT_DURATION: %d FR_PKT_SIZE; %d\n",
+                        frame->nb_samples,
+                        frame->pts,
+                        frame->pkt_pos,
+                        frame->pkt_duration,
+                        frame->pkt_size);
+
+        } else {
+                continue;
         }
     }
+
+    fclose(fp);
+  }
+  else
+  {
+      while (av_read_frame(format, &packet) >= 0)
+      {
+          // decode one frame
+          int gotFrame;
+          if (avcodec_decode_audio4(codec, frame, &gotFrame, &packet) < 0) {
+              break;
+          }
+          if (!gotFrame) {
+              continue;
+          }
+      }
+  }
 
     unsigned long size = info->file_size / info->lpcm_payload + 4;
 
@@ -549,7 +595,7 @@ int decode_mlp_file(fileinfo_t* info) {
     avcodec_close(codec);
     avformat_free_context(format);
 
-    // success
+      // success
     return 0;
 
 }
