@@ -873,9 +873,9 @@ out:
                                                     argv[m+k+2]);
 
 
-                    files[ngroups_scan - 1][m].resample_channels      = atoi(argv[m+k]);
-                    files[ngroups_scan - 1][m].resample_bitspersample = atoi(argv[m+k+1]);
-                    files[ngroups_scan - 1][m].resample_samplerate    = atoi(argv[m+k+2]);
+                    files[ngroups_scan - 1][m / 3].resample_channels      = atoi(argv[m+k]);
+                    files[ngroups_scan - 1][m / 3].resample_bitspersample = atoi(argv[m+k+1]);
+                    files[ngroups_scan - 1][m / 3].resample_samplerate    = atoi(argv[m+k+2]);
 
                 }
 
