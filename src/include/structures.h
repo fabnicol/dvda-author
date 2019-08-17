@@ -38,31 +38,31 @@ typedef struct
 
 typedef struct
 {
-    uint8_t header_size;
+    uint8_t  header_size;
     uint8_t* channel_header_size;
-    uint8_t type;
-    uint8_t bitspersample;
-    uint8_t channels;
-    uint8_t cga;
-    int8_t downmix_table_rank;
-    uint8_t newtitle;
-    uint8_t contin_track;
-    uint8_t firstpackdecrement;
-    uint8_t firstpack_lpcm_headerquantity;
-    uint8_t midpack_lpcm_headerquantity;
-    uint8_t lastpack_lpcm_headerquantity;
-    uint8_t firstpack_pes_padding;
-    uint8_t midpack_pes_padding;
-    uint8_t samplesperframe;
-    uint8_t lastpack_audiopesheaderquantity;
+    uint8_t  type;
+    uint8_t  bitspersample;
+    uint8_t  channels;
+    uint8_t  cga;
+    int8_t   downmix_table_rank;
+    uint8_t  newtitle;
+    uint8_t  contin_track;
+    uint8_t  firstpackdecrement;
+    uint8_t  firstpack_lpcm_headerquantity;
+    uint8_t  midpack_lpcm_headerquantity;
+    uint8_t  lastpack_lpcm_headerquantity;
+    uint8_t  firstpack_pes_padding;
+    uint8_t  midpack_pes_padding;
+    uint8_t  samplesperframe;
+    uint8_t  lastpack_audiopesheaderquantity;
     uint16_t sampleunitsize;
     uint16_t bytesperframe;
     uint16_t lpcm_payload;
     uint16_t SCRquantity;
     uint16_t firstpack_audiopesheaderquantity;
     uint16_t midpack_audiopesheaderquantity;
-    bool   mergeflag;
-    bool   dvdv_compliant;
+    bool     mergeflag;
+    bool     dvdv_compliant;
     uint32_t samplerate;
     uint32_t first_sector;
     uint32_t last_sector;
@@ -80,9 +80,10 @@ typedef struct
     uint64_t *channel_size; // channel size on disc
     uint64_t bytespersecond;
     audio_input_t* audio;  // Used whilst decoding.
-    char *filename;
-    char **given_channel;
-    struct MLP_LAYOUT *mlp_layout;
+    char    *filename;
+    char    *out_filename;
+    char    **given_channel;
+    struct  MLP_LAYOUT *mlp_layout;
 } fileinfo_t;
 
 typedef struct
@@ -186,10 +187,10 @@ typedef struct
     uint8_t maximum_VTSI_rank;
     uint8_t *VTSI_rank;
     uint8_t *ntracks;
-    char* provider;
+    char*   provider;
     pic*    img;
     fileinfo_t **files;
-    char** textable;
+    char**  textable;
     downmix *db;
 }command_t;
 

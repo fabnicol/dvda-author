@@ -38,6 +38,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define AFMT_WAVE 1
 #define AFMT_FLAC 2
 #define AFMT_MLP 5
+#define AFMT_LPCM 6
 #define AFMT_OGG_FLAC 3
 #define NO_AFMT_FOUND 4
 #define AFMT_WAVE_GOOD_HEADER 10
