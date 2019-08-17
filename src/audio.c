@@ -62,7 +62,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
 #include "libswresample/swresample.h"
-
+#include "c_utils.h"
 
 
 extern globalData globals;
@@ -958,8 +958,8 @@ static inline int compute_header_size(FILE* fp)
       .repair = 0,
       .padbytes = 0,
       .prunedbytes = 0,
-      .infile = { false, 0, "unknown", NULL},
-      .outfile = {false, 0, "st", NULL },
+      .infile = { false, AFMT_WAVE, 0, "unknown", NULL},
+      .outfile = {false, AFMT_WAVE, 0, "st", NULL },
     };
 
     wavinfo.infile.fp = fp;
@@ -968,27 +968,27 @@ static inline int compute_header_size(FILE* fp)
 }
 
 
-static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, fileinfo_t* info)
+static inline int extract_audio_info_by_all_means(uint8_t* header, fileinfo_t* info)
 {
 
     if (header[4] == 0xF8 && header[5] == 0x72 && header[6] == 0x6F && header[7] == 0xBB)   // MLP case
     {
         info->type = AFMT_MLP;
-        unsigned long pathl = strlen(path);
+        unsigned long pathl = strlen(info->filename);
         if (pathl > 3)
         {
-         if (path[pathl - 1] == 'p'
-             && path[pathl - 2] == 'l'
-             && path[pathl - 3] == 'm'
-             && path[pathl - 4] == '.')
+         if (info->filename[pathl - 1] == 'p'
+             && info->filename[pathl - 2] == 'l'
+             && info->filename[pathl - 3] == 'm'
+             && info->filename[pathl - 4] == '.')
          {
-             foutput("%s %s\n", INF "Auditing MLP file", path);
+             foutput("%s %s\n", INF "Auditing MLP file", info->filename);
          }
          else
          {
               if (globals.veryverbose)
               {
-                  foutput("%s %s %s\n", WAR "Audio file", path, "has MLP major sync header yet no file extenion .mlp. Proceeding as if MLP...");
+                  foutput("%s %s %s\n", WAR "Audio file", info->filename, "has MLP major sync header yet no file extenion .mlp. Proceeding as if MLP...");
               }
          }
 
@@ -997,7 +997,7 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
         {
             if (globals.veryverbose)
             {
-                foutput("%s %s %s\n", WAR "Audio file", path, "has MLP major sync header yet no file extenion .mlp. Proceeding as if MLP...");
+                foutput("%s %s %s\n", WAR "Audio file", info->filename, "has MLP major sync header yet no file extenion .mlp. Proceeding as if MLP...");
             }
         }
 
@@ -1080,7 +1080,8 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
         return(info->type = AFMT_MLP);
     }
     else
-    if (memcmp(header,"RIFF",4) != 0 || memcmp(&header[8],"WAVEfmt",7) != 0)
+    if (info->resample_samplerate != 0 || info->resample_bitspersample != 0 || info->resample_channels != 0 ||
+        memcmp(header,"RIFF",4) != 0 || memcmp(&header[8],"WAVEfmt",7) != 0)
     {
 #      ifndef WITHOUT_FLAC
 
@@ -1103,14 +1104,12 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
                 if (!globals.fixwav_force)
                 {
 
-                    if (launch_sox(&path) == NO_AFMT_FOUND)
+                    if (launch_sox(info) == NO_AFMT_FOUND)
                        return(info->type);
                       // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
                     else
                       // PATCH looping back to get info
                     {
-                       info->filename = path;
-
                        return(info->type = audiofile_getinfo(info));
                     }
           // yet without the processing tail below (preserving new header[] array and info structure)
@@ -1130,7 +1129,7 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
                      default:
                        // PATCH looping back to get info
 
-                        if (launch_sox(&path) == NO_AFMT_FOUND)
+                        if (launch_sox(info) == NO_AFMT_FOUND)
                         return(info->type);
                       // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
                         else
@@ -1233,7 +1232,7 @@ if (info->mergeflag)
 
       fclose(info->audio->channel_fp[u]);
 
-      info->type = extract_audio_info_by_all_means(info->given_channel[u], header, info);
+      info->type = extract_audio_info_by_all_means(header, info);
      }
 }
 else
@@ -1273,7 +1272,7 @@ else
     clean_exit(EXIT_FAILURE);
   }
   if (info->audio) free(info->audio);
-  info->type = extract_audio_info_by_all_means(info->filename, header, info);
+  info->type = extract_audio_info_by_all_means(header, info);
 }
 
 return (info->type);
@@ -1453,25 +1452,25 @@ int fixwav_repair(fileinfo_t *info)
     // If new string longer than heap allocation of reference strings, cut it
     /* Default sub-options*/
 
-    WaveData wavedata=
-    {
-        .database = globals.settings.fixwav_database,  /* database path for collecting info chunks in headers */
-        .filetitle = NULL,
-        globals.fixwav_automatic, /* automatic behaviour */
-        globals.fixwav_prepend, /* do not prepend a header */
-        globals.fixwav_in_place, /* do not correct in place */
-        globals.fixwav_cautious, /* whether to ask user about overwrite */
-        globals.fixwav_interactive, /* interactive */
-        globals.fixwav_padding, /* padding */
-        globals.fixwav_prune, /* prune */
-        globals.fixwav_virtual_enable, /* whether header should be fixed virtually */
-        0  /* repair status */,
-        0, /* padbytes */
-        0, /* pruned bytes */
-        .infile = {false, 0, info->filename, NULL},  /* filestat */
-        .outfile = {false, 0, buf, NULL}
-    };
+    WaveData wavedata;
 
+    wavedata.database = globals.settings.fixwav_database;  /* database path for collecting info chunks in headers */
+    wavedata.filetitle = NULL;
+    wavedata.automatic = globals.fixwav_automatic; /* automatic behaviour */
+    wavedata.prepend = globals.fixwav_prepend; /* do not prepend a header */
+    wavedata.in_place = globals.fixwav_in_place; /* do not correct in place */
+    wavedata.cautious = globals.fixwav_cautious; /* whether to ask user about overwrite */
+    wavedata.interactive = globals.fixwav_interactive; /* interactive */
+    wavedata.padding = globals.fixwav_padding; /* padding */
+    wavedata.prune = globals.fixwav_prune; /* prune */
+    wavedata.virtual = globals.fixwav_virtual_enable; /* whether header should be fixed virtually */
+    wavedata.repair = 0;  /* repair status */
+    wavedata.padbytes = 0; /* padbytes */
+    wavedata.prunedbytes =  0; /* pruned bytes */
+    filestat_t in = {false, AFMT_WAVE, 0, info->filename, NULL};
+    wavedata.infile = in;  /* filestat */
+    filestat_t out =  {false, AFMT_WAVE, 0, buf, NULL};
+    wavedata.outfile = out;
 
     if (globals.debugging)
     {
@@ -1536,7 +1535,7 @@ int fixwav_repair(fileinfo_t *info)
 
 //#ifndef WITHOUT_sox
 
-char* replace_file_extension(char * filename)
+char* replace_file_extension(const char * filename)
 {
     int l=0,s=strlen(filename);
 
@@ -1547,16 +1546,16 @@ char* replace_file_extension(char * filename)
     if (1 == s-l)
     {
         foutput("%s\n", ERR "To convert to WAV SoX.needs to indentify audio format and filename.\n       Use extension of type '.format'\n");
-        if (globals.debugging)  foutput("%s\n", INF "Skipping file.\n ");
+        if (globals.debugging)  foutput("%s %s \n", INF "Skipping file ", filename);
         return(NULL);
     }
 
 // Requires C99
     int size=s-l;
 
-    char new_wav_name[size+l+10];
+   char* new_wav_name = (char* )calloc(size+l+10, sizeof(char));
 
-
+   if (new_wav_name == NULL) return NULL;
     memcpy(new_wav_name, filename, size);
     memcpy(new_wav_name+size, "_sox_", 5);
     memcpy(new_wav_name+size+5, filename+size+1, l-1);
@@ -1567,38 +1566,58 @@ char* replace_file_extension(char * filename)
     // -i filenames could in principle be freed.
     // filename cannot be altered directly as there the suffix increases its size and -g names cannot be reallocated
 
-    filename=strdup(new_wav_name);
-
-    return (filename);
+    return (new_wav_name);
 }
 
 #ifndef WITHOUT_sox
-int launch_sox(char** filename)
+int launch_sox(fileinfo_t* info)
 {
-
-    char* new_wav_name=replace_file_extension(*filename);
+    char* new_wav_name = replace_file_extension(info->filename);
 
     if (new_wav_name == NULL)
     {
-        perror(ERR "SoX string suffix was not allocted");
+        perror(ERR "SoX string suffix was not allocated");
         return(NO_AFMT_FOUND);
     }
 
-    if (globals.debugging)
-        foutput("%s       %s -->\n       %s \n", MSG_TAG "Format is neither WAV nor FLAC\n"INF "Converting to WAV with SoX...\n", *filename, new_wav_name);
-
     unlink(new_wav_name);
-    errno=0;
-    if (soxconvert(*filename, new_wav_name) == 0)
-    {
-        if (globals.debugging)  foutput("%s\n", INF "File was converted.");
+    errno = 0;
 
-        *filename=new_wav_name;
+    int res = -1;
+
+    if (info->resample_channels == 0 || info->resample_bitspersample == 0 || info->resample_samplerate == 0)
+    {
+        if (globals.debugging)
+            foutput("%s       %s -->\n       %s \n", INF "Converting to WAV with SoX...\n", info->filename, new_wav_name);
+
+        res = soxconvert(info->filename, new_wav_name);
+    }
+    else
+    {
+        if (globals.debugging)
+            foutput("%s       %s -->\n       %s \n       and resampling to %d/%d/%d...\n", INF "Converting to WAV with SoX \n",
+                    info->filename, new_wav_name,
+                    info->resample_channels, info->resample_bitspersample, info->resample_samplerate);
+
+        res = resample(info->filename, new_wav_name, info->resample_channels, info->resample_bitspersample, info->resample_samplerate);
+        // avoiding infinite loops
+        info->resample_samplerate = 0 ;
+        info->resample_bitspersample = 0;
+        info->resample_channels = 0 ;
+    }
+
+    if (res == 0)
+    {
+        if (globals.debugging)  foutput("%s %s\n", INF "File was converted into", new_wav_name);
+
+        // info->filename cannot be freed here
+        info->filename = new_wav_name;
+
          return(AFMT_WAVE);
     }
+
     if (globals.debugging)  foutput("%s\n", INF "SoX could not convert file.");
 
-    free(new_wav_name);
     return(NO_AFMT_FOUND);
 
 }

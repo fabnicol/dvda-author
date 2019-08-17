@@ -43,6 +43,8 @@ typedef struct
     uint8_t  type;
     uint8_t  bitspersample;
     uint8_t  channels;
+    uint8_t  resample_bitspersample;
+    uint8_t  resample_channels;
     uint8_t  cga;
     int8_t   downmix_table_rank;
     uint8_t  newtitle;
@@ -64,6 +66,7 @@ typedef struct
     bool     mergeflag;
     bool     dvdv_compliant;
     uint32_t samplerate;
+    uint32_t resample_samplerate;
     uint32_t first_sector;
     uint32_t last_sector;
     uint32_t dw_channel_mask;

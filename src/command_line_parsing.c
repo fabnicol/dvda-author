@@ -293,6 +293,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"downmix", required_argument, NULL, 32},
         {"dtable", required_argument, NULL, 33},
         {"provider", required_argument, NULL, 34},
+        {"resample", required_argument, NULL, 35},
     #endif
         {NULL, 0, NULL, 0}
     };
@@ -595,11 +596,13 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput(PAR "Access rights (octal mode)=%o\n", globals.access_rights);
             break;
 
+        case 35:
+            goto out;
+
         case 'g' :
             ++u;
             allocate_files = true;
-
-            fflush(NULL);
+            //fflush(NULL);
             break;
 
         case 'i' :
@@ -704,14 +707,15 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         }
     }
 
+out:
 
 
     /* Here the group parameters are known: ngroups (total),  n_g_groups (legacy -g syntax), nvideolinking_groups */
 
     /* command line copy is now useless: freeing space */
 
+     FREE(argv_scan[k])
     for (k=0; k<argc; k++)
-        FREE(argv_scan[k])
                 FREE(argv_scan)
 
                 /* Performing memory allocation (calloc)
@@ -729,14 +733,14 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                 /* Allocate memory if and only if groups are to be (re)created on command line */
 
-       if (allocate_files)
-        {
-            files=dynamic_memory_allocate(files, ngiven_channels, ntracks, ngroups, n_g_groups, nvideolinking_groups);
-        }
+    if (allocate_files)
+    {
+        files=dynamic_memory_allocate(files, ngiven_channels, ntracks, ngroups, n_g_groups, nvideolinking_groups);
+    }
 
             /* COMMAND-LINE PARSING: fourth pass to assign filenames without allocating new memory (pointing to argv) */
 
-            int m, ngroups_scan=0;
+    int m, ngroups_scan=0;
 
     if ((n_g_groups)&&(globals.debugging)) foutput("%s", INF "Assigning command-line filenames...\n");
 
@@ -848,6 +852,39 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
 
             k += m-1;
+            break;
+
+        case '-':
+            if (! user_command_line || strcmp(argv[k], "--resample") != 0) break;
+              // -g file1...fileN... --resample 2 24 96000 2 16 44100...
+            globals.sox_enable = 1;
+
+            if (argc < k + 5) break;
+            ++k;
+
+            for (m = 0; m + k < argc && argv[m + k][0] != '-'; m += 3)
+            {
+                if (ngroups_scan)
+                {
+                    if (globals.debugging) foutput(MSG_TAG "Group %d Track %d Resample assignment %s %s %s\n",
+                                                    ngroups_scan, m + 1,
+                                                    argv[m+k],
+                                                    argv[m+k+1],
+                                                    argv[m+k+2]);
+
+
+                    files[ngroups_scan - 1][m].resample_channels      = atoi(argv[m+k]);
+                    files[ngroups_scan - 1][m].resample_bitspersample = atoi(argv[m+k+1]);
+                    files[ngroups_scan - 1][m].resample_samplerate    = atoi(argv[m+k+2]);
+
+                }
+
+            }
+
+            k += m-1;
+
+            break;
+
         }
     }
 
@@ -1221,8 +1258,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s\n", PAR "Audio formats other than WAV and FLAC will be converted by sox tool.");
 
             break;
-#endif
 
+
+#endif
 /// Reactivated 26 May 2018
 
         case 1 :
@@ -1587,6 +1625,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             import_topmenu_path=strdup(optarg);
             globals.topmenu=RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR;
             break;
+
 #endif
         }
     }
@@ -2815,7 +2854,11 @@ void process_dvd_video_zone(command_t* command)
                     char new_sample_rate_str[6]={0};
                     sprintf(new_bit_rate_str, "%d", new_bit_rate);
                     sprintf(new_sample_rate_str, "%d", new_sample_rate);
-                    resample(files[group][track].filename,dvdv_track_array[group][track],new_bit_rate_str, new_sample_rate_str);
+                    resample(files[group][track].filename,
+                             dvdv_track_array[group][track],
+                             files[group][track].channels,
+                             new_bit_rate_str,
+                             new_sample_rate_str);
                 }
             }
 

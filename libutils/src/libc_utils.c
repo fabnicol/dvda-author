@@ -1975,7 +1975,7 @@ char* filename(filestat_t f) { return f.filename; }
 
 filestat_t filestat(bool b, uint64_t s, const char* fn, FILE* fp)
 {
-    filestat_t str = {b, s, fn, fp};
+    filestat_t str = {b, 0, s, fn, fp};
     return str;
 }
 

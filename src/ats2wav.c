@@ -636,6 +636,7 @@ static inline filestat_t filestat_copy(filestat_t f)
     filestat_t out;
     out.filename = f.filename ? strdup(f.filename) : NULL;
     out.isopen = f.isopen;
+    out.type = f.type;
     if (out.isopen)
     {
         out.fp = fopen(f.filename, "rb+");  // beware of concurrency
@@ -1088,8 +1089,16 @@ static void audio_extraction_layout(fileinfo_t* files[9][99])
     for (int i = 0; i < 81; ++i)
         for (int j = 0; j < 99 && files[i][j]->filename != NULL; ++j)
         {
-           foutput("  "ANSI_COLOR_BLUE "%d     " ANSI_COLOR_GREEN "%02d"ANSI_COLOR_YELLOW "  %6" PRIu32 "   " ANSI_COLOR_RED "%02d" ANSI_COLOR_RESET "   %d       %10" PRIu64 "   %10" PRIu64"   %10" PRIu64"   %10" PRIu64"   %10" PRIu64"   ",
-                     i+1, j+1, files[i][j]->samplerate, files[i][j]->bitspersample, files[i][j]->channels, files[i][j]->wav_numbytes, files[i][j]->numbytes, files[i][j]->first_sector, files[i][j]->last_sector, files[i][j]->PTS_length);
+           foutput("  "ANSI_COLOR_BLUE "%d     " ANSI_COLOR_GREEN "%02d"
+                   ANSI_COLOR_YELLOW "  %6" PRIu32 "   " ANSI_COLOR_RED "%02d"
+                   ANSI_COLOR_RESET "   %d       %10" PRIu64
+                   "   %10" PRIu64"   %10" PRIu64"   %10" PRIu64
+                   "   %10" PRIu64"   ",
+                     i+1, j+1,
+                   files[i][j]->samplerate, files[i][j]->bitspersample,
+                   files[i][j]->channels, files[i][j]->wav_numbytes,
+                   files[i][j]->numbytes, files[i][j]->first_sector,
+                   files[i][j]->last_sector, files[i][j]->PTS_length);
            foutput("%s\n",files[i][j]->filename);
         }
 
