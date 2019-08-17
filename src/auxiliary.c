@@ -181,7 +181,8 @@ printf("%s","    --provider           Enter provider name.\n\n");
 printf("%s","-F, --fixwav(options)    Bad wav headers will be fixed by fixwav." J "Can be run alone without DVD-AUDIO output by adding --nooutput.\n\n");
 printf("%s","-f, --fixwav-virtual(options)  Use .wav header repair utility " J "without any write operation.\n\n");
 #ifndef WITHOUT_sox
-printf("%s","-S, --sox                Use SoX to convert files to .wav." J "By default, only flac, Ogg FLAC " J "and .wav files are accepted.\n\n");
+printf("%s","-S, --sox                Use SoX to convert file format to .wav." J "Without -S or --resample (see below), only flac, Ogg FLAC " J "and .wav files are accepted.\n\n");
+printf("%s","    --resample c b s     Use SoX to convert file format to .wav, and/or change channel to c, bitrate to b, samplerate to s." J "You do not need to use -S with --resample." J "Always provide the three values c b and s separated by white space in the same order as in the previous -g files.\n\n");
 #endif
 #if !defined HAVE_core_BUILD || !HAVE_core_BUILD
 printf("%s","    --padding            Reverse default behaviour for transition between audio tracks with identical" J "characteristics (number of channels, bit depth and sample rate)." J "If necessary, audio will be padded with 0s instead of being joined (default). " J "Use --pad-cont for padding with last-known byte.\n\n");
