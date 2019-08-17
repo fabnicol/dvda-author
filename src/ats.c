@@ -362,6 +362,7 @@ inline static void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uin
         }
     }
     else
+    if (PTS)
     {
        pack_pts(PTS_data, PTS);
        /* offset_count += 5 */ fwrite(PTS_data, 5, 1, fp);
@@ -1051,13 +1052,19 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
     else if (bytesinbuffer < info->lpcm_payload)
     {
         foutput(INF "Writing last packet - pack=%" PRIu64 ", bytesinbuffer=%d\n", pack_in_title, bytesinbuffer);
-        audio_bytes=bytesinbuffer;
+        audio_bytes = bytesinbuffer;
 
         write_pack_header(fp,SCR); //+14
 
         if (globals.maxverbose)
             fprintf(stderr, DBG "LAST PACK: audio_bytes: %d, info->lastpack_audiopesheaderquantity %d \n",
                     audio_bytes, info->lastpack_audiopesheaderquantity);
+
+        if (info->type == AFMT_MLP)
+        {
+            DTS = 0;
+            PTS = 0;
+        }
 
         write_audio_pes_header(fp, info->lastpack_audiopesheaderquantity + audio_bytes, 0, 0, PTS, DTS);  // +14 for PCM or +19 for MLP
 

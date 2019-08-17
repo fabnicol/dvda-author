@@ -186,10 +186,12 @@ inline static void wav_output_open(WaveData *info)
 }
 
 
-inline static int calc_position(FILE* fileptr, const uint64_t offset0)
+inline static int calc_position(WaveData* info, const uint32_t offset0)
 {
-    uint8_t buf[4];
+    uint8_t buf[6];
     int position;
+    FILE* fileptr = info->infile.fp;
+//    uint32_t offset1 = offset0 + info->infile.type == AFMT_MLP ? 0 : 14;
 
     fseeko(fileptr, offset0 + 14, SEEK_SET);
     int result = fread(buf, 4, 1, fileptr);
@@ -198,38 +200,54 @@ inline static int calc_position(FILE* fileptr, const uint64_t offset0)
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting packet position.")
     }
-    
+        
+//    if (info->infile.type == AFMT_MLP)
+//    {
+//        if (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBE)
+//        {
+//            if ((buf[4] << 8 & buf[5] + (offset1 + 5) % 2048) == 0)
+//            {
+//                position = LAST_PACK;
+//                if (globals.maxverbose)
+//                {
+//                    fprintf(stderr, MSG_TAG "Reached last pack at offset %u for file %s\n", offset1, info->infile.filename);
+//                }
+//            }
+//        }
+//    }
+//    else
+//    {
+        // got to system header and read first 4 bytes to detect whether pack is start or not
 
-    /* got to system header and read first 4 bytes to detect whether pack is start or not */
-
-    if (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB)
-    {
-        position = FIRST_PACK;
-    }
-    else
-    {
-        /* go to end of sector : if end of file, then last pack, idem if new pack detected ; otherwise middle pack */
-
-        int res = fseeko(fileptr, 2044, SEEK_CUR);
-
-        if (res != 0)
+        if (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB)
         {
-            position = LAST_PACK;
+            position = FIRST_PACK;
         }
         else
         {
-            int n = fread(buf, 1, 4, fileptr);
+            /* go to end of sector : if end of file, then last pack, idem if new pack detected ; otherwise middle pack */
 
-            if (n != 4 || (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB))
+            int res = fseek(fileptr, 2044, SEEK_CUR);
+
+            if (res != 0)
             {
                 position = LAST_PACK;
             }
             else
             {
-                position = MIDDLE_PACK;
+                int n = fread(buf, 1, 4, fileptr);
+
+                if (n != 4 || (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB))
+                {
+                    position = LAST_PACK;
+                }
+                else
+                {
+                    position = MIDDLE_PACK;
+                }
             }
         }
-    }
+//    }
     
     return(position);
 }
@@ -238,11 +256,18 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, bool
 {
     if (! info->infile.isopen) aob_open(info);
     
-    uint64_t offset0 = ftello(info->infile.fp);
-     
-    int position = calc_position(info->infile.fp, offset0);
+    uint32_t offset0 = ftell(info->infile.fp);
+
+    int position = calc_position(info, offset0);
+
+    if (info->infile.type == AFMT_MLP)
+    {
+        *status = VALID;
+        fseeko(info->infile.fp, offset0, SEEK_SET);
+        return position;
+    }
     
-    fseeko(info->infile.fp, offset0 + 29 + (position == FIRST_PACK ? 21 : 0), SEEK_SET);
+    fseek(info->infile.fp, offset0 + 29 + (position == FIRST_PACK ? 21 : 0), SEEK_SET);
 
     uint8_t sample_size[1] = {0};
     uint8_t sample_rate[1] = {0};
@@ -260,7 +285,6 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, bool
     fseeko(info->infile.fp, 5, SEEK_CUR);  // +6
 
     result = fread(sample_size, 1, 1, info->infile.fp);
-
 
     if (result != 1)
     {
@@ -391,32 +415,73 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
     };
 
     const short int table_index = header->wBitsPerSample == 24 ? 1 : 0;
+    const uint16_t U[6] = {2005, 21, 13, 6, 6, 6};
 
 #   define X T[table_index][header->channels-1]
 
-    int lpcm_payload = X[0];
-    const int firstpackdecrement = X[1];
-    const int lastpack_audiopesheaderquantity = X[2];
-    const int firstpack_lpcm_headerquantity = X[3];
-    const int midpack_lpcm_headerquantity   = X[4];
-    const int lastpack_lpcm_headerquantity  = X[5];
+    int lpcm_payload;
+    int firstpackdecrement;
+    int lastpack_audiopesheaderquantity;
+    int firstpack_lpcm_headerquantity;
+    int midpack_lpcm_headerquantity;
+    int lastpack_lpcm_headerquantity;
 
-#   undef X
-
-    //////////////////////////////
+    uint8_t buff[27] = {0};
 
     if (! info->infile.isopen) aob_open(info);
 
     uint64_t offset0 = ftello(info->infile.fp);
-    
+
+    fread(buff, 27, 1, info->infile.fp);
+
+    if (buff[0] == 0 && buff[1] == 0 && buff[2] == 1 && buff[3] == 0xBA && buff[4] == 0x44)
+    {
+        if (buff[0x27] == 0xC1 || buff[0x15] == 0xC0)
+        {
+            info->infile.fp = AFMT_MLP;
+            *position = FIRST_PACK;
+        }
+        else
+        if (buff[0x27] == 0x27 || buff[0x15] == 0x80)
+        {
+            info->infile.fp = AFMT_LPCM;
+            *position = MIDDLE_PACK;
+        }
+    }
+
+    if (info->infile.type == AFMT_LPCM)
+    {
+        lpcm_payload = X[0];
+        firstpackdecrement = X[1];
+        lastpack_audiopesheaderquantity = X[2];
+        firstpack_lpcm_headerquantity = X[3];
+        midpack_lpcm_headerquantity   = X[4];
+        lastpack_lpcm_headerquantity  = X[5];
+    }
+    else
+    {
+        lpcm_payload = U[0];
+        firstpackdecrement = U[1];
+        lastpack_audiopesheaderquantity = U[2];
+        firstpack_lpcm_headerquantity = U[3];
+        midpack_lpcm_headerquantity   = U[4];
+        lastpack_lpcm_headerquantity  = U[5];
+    }
+
+#   undef X
+
+
     int res  = 0, result;    
     int lpcm_payload_cut = 0;
     static int lpcm_payload_rmdr;
 
+    fseek(info->infile.fp, offset0, SEEK_SET);
+
     if (*position != CUT_PACK_RMDR)
     {
         *position = calc_position(info->infile.fp, offset0);
-        if (wav_numbytes > 0)
+
+        if (info->infile.type == AFMT_LPCM && wav_numbytes > 0)
         {
             lpcm_payload_cut = wav_numbytes - *written_bytes;
             if (lpcm_payload_cut < lpcm_payload && *position == MIDDLE_PACK)
@@ -440,7 +505,11 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
             {
                 case FIRST_PACK :
                     audio_bytes = lpcm_payload - firstpackdecrement;
-                    fseeko(info->infile.fp, offset0 + 53 + firstpack_lpcm_headerquantity, SEEK_SET);
+                    fseek(info->infile.fp,
+                          info->infile.fp == AFMT_LPCM ?
+                               offset0 + 53 + firstpack_lpcm_headerquantity :
+                               offset0 + 64,
+                          SEEK_SET);
                     *pack_in_track = 1;
                     *pack_in_title = 1;
                     ++*pack_in_group;
@@ -450,9 +519,9 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
                 case CUT_PACK:
                     audio_bytes = lpcm_payload_cut;
                     lpcm_payload_rmdr = lpcm_payload - lpcm_payload_cut;
-                    fseeko(info->infile.fp, offset0 + 29, SEEK_SET);
+                    fseek(info->infile.fp, offset0 + 29, SEEK_SET);
                     fread(continuity, 1, 1, info->infile.fp);
-                    fseeko(info->infile.fp, midpack_lpcm_headerquantity + 2, SEEK_CUR);
+                    fseek(info->infile.fp, midpack_lpcm_headerquantity + 2, SEEK_CUR);
                     ++*pack_in_track;
                     ++*pack_in_title;
                     ++*pack_in_group;
@@ -467,19 +536,26 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 
                 case MIDDLE_PACK :
                     audio_bytes = lpcm_payload;
-                    fseeko(info->infile.fp, offset0 + 29, SEEK_SET);
-                    fread(continuity, 1, 1, info->infile.fp);
-                    if (wav_numbytes == 0 && continuity_save != 0 && continuity_save != 0x1F && *continuity == 0)
+                    if (info->infile.type == AFMT_LPCM)
                     {
-                       // written bytes are in excess in case of gapless tracks
-                       // rolling back, no pack increment
-                       fseeko(info->infile.fp, offset0, SEEK_SET);
-                       forensic_cut = true;
-                       offset1 = 0;  // do not go ahead until next file loop
-                       *position = CUT_PACK_RMDR;
-                       break;
+                        fseek(info->infile.fp, offset0 + 29, SEEK_SET);
+                        fread(continuity, 1, 1, info->infile.fp);
+                        if (wav_numbytes == 0 && continuity_save != 0 && continuity_save != 0x1F && *continuity == 0)
+                        {
+                           // written bytes are in excess in case of gapless tracks
+                           // rolling back, no pack increment
+                           fseeko(info->infile.fp, offset0, SEEK_SET);
+                           forensic_cut = true;
+                           offset1 = 0;  // do not go ahead until next file loop
+                           *position = CUT_PACK_RMDR;
+                           break;
+                        }
+                        fseek(info->infile.fp, midpack_lpcm_headerquantity + 2, SEEK_CUR);
                     }
-                    fseeko(info->infile.fp, midpack_lpcm_headerquantity + 2, SEEK_CUR);
+                    else
+                    {
+                        fseek(info->infile.fp, offset0 + 43, SEEK_SET);
+                    }
                     ++*pack_in_track;
                     ++*pack_in_title;
                     ++*pack_in_group;
@@ -487,7 +563,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
                     break;
         
                 case LAST_PACK :
-                    fseeko(info->infile.fp, offset0 + 18, SEEK_SET);
+                    fseek(info->infile.fp, offset0 + 18, SEEK_SET);
                     result = fread(PES_packet_len_bytes, 1, 2, info->infile.fp);
                     if (result != 2)
                     {
@@ -511,7 +587,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 
     if (! forensic_cut)
        {
-            res += fread(audio_buf + res, 1, audio_bytes, info->infile.fp);
+            res += fread(audio_buf, 1, audio_bytes, info->infile.fp);
 
             if (globals.maxverbose)
             {
@@ -520,7 +596,8 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
                    foutput(WAR "Caution : Read %d instead of %d\n", res, audio_bytes);
             }
 
-            convert_buffer(header, audio_buf, res);
+            if (info->infile.type == AFMT_LPCM)
+                convert_buffer(header, audio_buf, res);
 
             fpout_size_increment = fwrite(audio_buf, 1, res, info->outfile.fp);
        }
@@ -535,7 +612,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
     else
         if (offset1)
         {
-           fseeko(info->infile.fp, offset0 + offset1, SEEK_SET);
+           fseek(info->infile.fp, offset0 + offset1, SEEK_SET);
            if (*position == CUT_PACK_RMDR) *position = MIDDLE_PACK;
         }
    
@@ -604,6 +681,85 @@ static inline void wavedata_clean(WaveData* w)
     w = NULL;
 }
 
+static inline int get_position(int position, WaveData* info, WaveHeader* header, bool* status, uint8_t* continuity)
+{
+    if (position != CUT_PACK_RMDR)
+        do
+        {
+            position = peek_pes_packet_audio(info, header, status, continuity);
+
+            if (*status == VALID) break;
+        }
+        while (position == FIRST_PACK
+               || position == MIDDLE_PACK);
+
+    if (*continuity != 0)
+    {
+        if (globals.maxverbose)
+            foutput("%s %d\n", MSG_TAG "Continuity counter has wrong value (should be 0): ", *continuity);
+    }
+
+    return position;
+}
+
+
+
+static inline uint32_t scan_wav_characteristics(fileinfo_t* info, WaveHeader* header)
+{
+    info->bitspersample = header->wBitsPerSample;
+    info->samplerate    = header->dwSamplesPerSec;
+    info->channels      = header->channels;
+
+    uint32_t x = 0, numsamples = 0, numbytes = 0, wav_numbytes = 0;
+    int bitrank = header->wBitsPerSample == 24 ? 1 : 0;
+
+    const int lpcm_payload[2][6] = {{2000,	2000, 2004,	2000,	2000,	1992}, // 16-bit table
+                                    { 2004, 	2004, 	1998, 	1992, 	1980, 	1980}}; //24-bit table
+
+    if (info->PTS_length)     // Use IFO files
+    {
+        numsamples = (info->PTS_length * info->samplerate) / 90000;
+
+        info->lpcm_payload = lpcm_payload[bitrank][header->channels - 1];
+
+        if (numsamples)
+            x = 90000 * numsamples;
+        else
+        {
+            foutput("%s", ERR "Found null samplerate or PTS length. Continuing in forensic mode...\n");
+            info->PTS_length = 0;
+        }
+
+        // Adjust for rounding errors:
+
+        if (x < info->PTS_length * info->samplerate)
+        {
+            ++numsamples;
+        }
+
+        numbytes = (numsamples * info->channels * info->bitspersample) / 8;
+
+        int sampleunitsize = header->wBitsPerSample / 8 * header->channels * 2;
+
+        // Taking modulo
+
+        int rmdr = numbytes % sampleunitsize ;
+
+        wav_numbytes = numbytes +  (rmdr ? sampleunitsize - rmdr : 0);
+
+    }
+
+    if (errno)
+    {
+       foutput(ERR "Error while trying to recover audio characteristics of file %s.\n        Exiting...\n",
+               info->filename);
+       exit(-7);
+    }
+
+    return wav_numbytes;
+}
+
+
 
 int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
 {
@@ -632,9 +788,6 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                 foutput("%s |%s|\n", INF "Creating directory", dir_g_i);
     }
 
-    const int lpcm_payload[2][6] = {{2000,	2000, 2004,	2000,	2000,	1992}, // 16-bit table
-                                    { 2004, 	2004, 	1998, 	1992, 	1980, 	1980}}; //24-bit table
-
     // Start of title loop title
 
     while (position != END_OF_AOB)
@@ -646,81 +799,18 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
         bool new_track  = false;
         uint8_t continuity_save = 0;
         unsigned long pack_in_title = 1;
+        uint32_t wav_numbytes = 0;
 
-        if (position != CUT_PACK_RMDR)
-            do
-            {
-                position = peek_pes_packet_audio(info, &header, &status, &continuity);
-
-                if (status == VALID) break;
-            }
-            while (position == FIRST_PACK
-                   || position == MIDDLE_PACK);
-        
-        if (continuity != 0)
-        {
-            if (globals.maxverbose)
-                foutput("%s %d\n", MSG_TAG "Continuity counter has wrong value (should be 0): ", continuity);
-        }
+        position = get_position(position, info, &header, &status, &continuity);
 
         // Track loop
-           do {
-
-                files[i][track]->bitspersample = header.wBitsPerSample;
-                files[i][track]->samplerate    = header.dwSamplesPerSec;
-                files[i][track]->channels      = header.channels;
-
-                uint64_t x = 0, numsamples = 0, numbytes = 0, wav_numbytes = 0;
-                int bitrank = header.wBitsPerSample == 24 ? 1 : 0;
-
-                if (files[i][track]->PTS_length)     // Use IFO files
+        do {
+                if (info->infile.type == AFMT_LPCM)
                 {
-                    numsamples = (files[i][track]->PTS_length * files[i][track]->samplerate) / 90000;
-
-                    files[i][track]->lpcm_payload = lpcm_payload[bitrank][header.channels - 1];
-
-                    if (numsamples)
-                        x = 90000 * numsamples;
-                    else
-                    {
-                        foutput("%s", ERR "Found null samplerate or PTS length. Continuing in forensic mode...\n");
-                        files[i][track]->PTS_length = 0;
-                    }
-
-                    // Adjust for rounding errors:
-
-                    if (x < files[i][track]->PTS_length * files[i][track]->samplerate)
-                    {
-                        ++numsamples;
-                    }
-
-                    numbytes = (numsamples * files[i][track]->channels * files[i][track]->bitspersample) / 8;
-
-                    int sampleunitsize = header.wBitsPerSample / 8 * header.channels * 2;
-
-                    // Taking modulo
-
-                    int rmdr = numbytes % sampleunitsize ;
-
-                    wav_numbytes = numbytes +  (rmdr ? sampleunitsize - rmdr : 0);
-
+                   wav_numbytes = scan_wav_characteristics(files[i][track], &header);
                 }
 
-                if (errno)
-                {
-                   foutput(ERR "Error while trying to recover audio characteristics of file %s.\n        Exiting...\n",
-                           filename(info->infile));
-                   exit(-7);
-                }
-
-                if (status == INVALID)
-                {
-                   foutput(ERR "Error while trying to recover audio characteristics : invalid status or input file %s.\n        Exiting...\n",
-                           filename(info->infile));
-                   exit(-8);
-                }
-
-               bool debug;
+                bool debug;
 
                 unsigned long pack_in_track = 1;
 
@@ -730,7 +820,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
 
                 wav_output_open(info);
 
-                if (globals.fixwav_prepend)  // --aob2wav rather than --aob-extract
+                if (info->infile.type == AFMT_LPCM && globals.fixwav_prepend)  // --aob2wav rather than --aob-extract
                 {
                     /* generate header in empty file. We must allow prepend and in_place for empty files */
 
@@ -797,7 +887,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
 
                     if (wav_numbytes == 0)
                     {
-                        if (continuity_save != 0 && continuity_save != 0x1F && continuity == 0)
+                        if (info->infile.type == AFMT_MLP || (continuity_save != 0 && continuity_save != 0x1F && continuity == 0))
                         {
                              files[i][track]->wav_numbytes = 0;
                              files[i][track]->numbytes  = written_bytes;
@@ -935,7 +1025,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                                         info->outfile.filesize,
                                         (double) info->outfile.filesize / (double) (1024 * 1024));
 
-                if (globals.fixwav_prepend)
+                if (info->infile.type == AFMT_LPCM && globals.fixwav_prepend)
                 {
                     /* WAV output is now OK except for the wav file size-based header data.
                      * ckSize, data_ckSize and nBlockAlign must be readjusted by computing

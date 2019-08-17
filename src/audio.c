@@ -522,52 +522,76 @@ int decode_mlp_file(fileinfo_t* info) {
     AVPacket packet;
     av_init_packet(&packet);
     AVFrame* frame = av_frame_alloc();
-    if (!frame) {
+    if (!frame)
+    {
         fprintf(stderr, ERR "Error allocating the frame\n");
         return -1;
     }
 
   int cumsize = 0;
 
-  if(globals.maxverbose)
+  if (globals.maxverbose || info->out_filename != NULL)
   {
-    char path[20] = {0};
-    static int count;
-    ++ count;
+    FILE* fp = NULL;
 
-    sprintf(path, "audio_%d.raw", count);
-    fprintf(stderr, INF "Decoding file %s  to raw data in path: %s\n", info->filename, path);
+    if (info->out_filename != NULL)
+    {
+      fp = fopen(info->out_filename, "wb+");
+      if (fp == NULL)
+      {
+          fprintf(stderr, ERR "Could not open destination file %s\n", info->out_filename);
+          info->out_filename = NULL;
+      }
+      else
+      {
+          fprintf(stderr, INF "Decoding file %s  to raw data in path: %s\n", info->filename, info->out_filename);
+      }
+    }
 
-    FILE* fp = fopen(path, "wb+");
+    int bytespersample = info->channels * info->bitspersample / 8 ;
+    int32_t cumbytes_written = 0;
+
     while (av_read_frame(format, &packet) >= 0)
     {
         // decode one frame
         int gotFrame;
         int ret;
-        if ((ret = avcodec_decode_audio4(codec, frame, &gotFrame, &packet)) < 0) {
-
-                fprintf(stderr, ERR "Error decoding audio frame (%s)\n", av_err2str(ret));
-                return ret;
+        if ((ret = avcodec_decode_audio4(codec, frame, &gotFrame, &packet)) < 0)
+        {
+            fprintf(stderr, ERR "Error decoding audio frame (%s)\n", av_err2str(ret));
+            return ret;
         }
 
-        if (gotFrame) {
+        if (gotFrame)
+        {
+            size_t unpadded_linesize =bytespersample * frame->nb_samples ;
 
-            size_t unpadded_linesize = info->channels * frame->nb_samples * av_get_bytes_per_sample(frame->format);
+            int32_t bytes_written = fwrite(frame->extended_data[0], 1, unpadded_linesize, fp);
 
-            fwrite(frame->extended_data[0], 1, unpadded_linesize, fp);
-            fprintf(stderr, "Nb samples: %d FR_PTS: %d PKT_POS: %d PKT_DURATION: %d FR_PKT_SIZE; %d\n",
-                        frame->nb_samples,
-                        frame->pts,
-                        frame->pkt_pos,
-                        frame->pkt_duration,
-                        frame->pkt_size);
+            if (globals.maxverbose)
+            {
+                fprintf(stderr, "Nb samples: %d FR_PTS: %d PKT_POS: %d PKT_DURATION: %d FR_PKT_SIZE; %d\n",
+                            frame->nb_samples,
+                            frame->pts,
+                            frame->pkt_pos,
+                            frame->pkt_duration,
+                            frame->pkt_size);
+            }
 
-        } else {
-                continue;
+            cumbytes_written += bytes_written;
+        }
+        else
+        {
+           continue;
         }
     }
 
+    errno = 0;
     fclose(fp);
+    if (errno)
+        fprintf(stderr, ERR "Could not close file %s\n", info->out_filename);
+    else
+        fprintf(stderr, MSG_TAG "Extracted %ld to file %s\n", cumbytes_written, info->out_filename);
   }
   else
   {

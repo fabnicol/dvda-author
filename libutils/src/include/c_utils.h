@@ -191,6 +191,7 @@ typedef struct
 typedef struct
 {
    bool isopen;
+   uint8_t type;
    uint64_t filesize;
    char* filename;
    FILE* fp;
