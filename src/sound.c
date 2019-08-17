@@ -29,77 +29,6 @@ int sox_initialise()
 return 0;
 }
 
-
-int resample(const char* in, const char* out, const char* bitrate, const char* samplerate)
-{
-errno=0;
-#if defined HAVE_libsox && HAVE_libsox == 1
-if (-1 == sox_initialise()) 
- return -1;
-   
-char *args24[]= {SOX_BASENAME,  (char*) in, "-b", (char*) bitrate,(char*) out, "rate", "-v", "-I", "-b", "90", (char*)samplerate, NULL};
-char *args16[]= {SOX_BASENAME,  (char*) in, "-b", (char*) bitrate, (char*) out, "rate", "-s", "-a", (char*)samplerate, "dither", "-s", NULL};
-change_directory(globals.settings.workdir);
-foutput(INF "Running SoX for resampling to %s bit-%s kHz audio: %s --> %s\n",bitrate,samplerate,in,out);
-if (strcmp(bitrate, "16") == 0)
-{ 
-  errno=run(sox, args16, WAIT, true);
-}
-else 
-{
-  errno=run(sox, args24, WAIT, true);
-  if (errno == 0) errno=standardize_wav_header((char*) out);
-} 
-#endif
-return errno;
-}
-
-
-int standardize_wav_header(char* path)
-{
-errno=0;
-
-        static WaveHeader waveheader;
-        WaveData wavedata=
-        {
-            .database = NULL,
-            .filetitle = NULL,
-            1, /* automatic behaviour */
-            0, /* prepending */
-            1, /* in-place*/
-            0, /* not cautious */
-            0, /* not interactive */
-            0, /* end-padding=no*/
-            0, /* no pruning */
-            1, /* virtual fix */
-            0, /* repair status */
-            0, /* padbytes */
-            0, /* pruned bytes */
-            .infile = {false, 0, path, NULL}, /* filestat */
-            .outfile = {false, 0, NULL, NULL} /* filestat */
-        };
-
-        fixwav(&wavedata, &waveheader);
-
-       if (globals.veryverbose) 
-            {
-                foutput(MSG_TAG "LPCM diagnostics: bps=%d, sample rate=%d, channels=%d \n", 
-                         waveheader.wBitsPerSample, waveheader.dwSamplesPerSec, waveheader.channels);
-            }
-       if ((waveheader.wBitsPerSample != 16 && waveheader.wBitsPerSample != 24) || (waveheader.dwSamplesPerSec != 48000 && waveheader.dwSamplesPerSec != 96000) ||
-           (waveheader.channels > 6 || waveheader.channels == 0))
-            {
-                foutput("%s",ERR "Did not manage to standardize wav header.\n");
-                errno=1;
-            }
-       
-
-    return errno;
-
-}
-
-
-
 int audit_soundtrack(char* path, bool strict)
 {
 
@@ -123,8 +52,8 @@ int audit_soundtrack(char* path, bool strict)
             0,  /* repair status */
             0, /* padbytes */
             0, /* pruned bytes */
-            .infile = {false, 0, path, NULL}, /* filestat */
-            .outfile = {false, 0, NULL, NULL} /* filestat */
+            .infile = {false, AFMT_WAVE, 0, path, NULL}, /* filestat */
+            .outfile = {false, AFMT_WAVE, 0, NULL, NULL} /* filestat */
         };
 
         fixwav(&wavedata, &waveheader);
