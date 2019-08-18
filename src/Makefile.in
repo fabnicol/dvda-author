@@ -90,7 +90,7 @@ $(OBJECTS): %.o: @ROOTDIR@/src/%.c
 
 LDLIBS_append += $(foreach prog,$(STATIC_LIBS),$($(prog)_LIB) $($(prog)_LINK))  
 
-LDLIBS += $(LDLIBS_append) -L@ROOTDIR@/ffmpeg/ffools -lffmpeg
+LDLIBS += $(LDLIBS_append) @ROOTDIR@/local/lib/libswresample.a  @ROOTDIR@/local/lib/libavformat.a @ROOTDIR@/local/lib/libavfilter.a  @ROOTDIR@/local/lib/libavcodec.a  @ROOTDIR@/local/lib/libavutil.a 
 
 @PACKAGE_NAME@: $(OBJECTS) $(LDLIBS_append)
 

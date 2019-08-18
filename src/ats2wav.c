@@ -185,70 +185,95 @@ inline static void wav_output_open(WaveData *info)
     }
 }
 
+inline static void get_audio_format(WaveData *info)
+{
+    uint8_t buff[0x28] = {0};
+
+    if (! info->infile.isopen) aob_open(info);
+
+    uint32_t offset = ftell(info->infile.fp);
+
+    int res = fread(buff, 1, 0x28, info->infile.fp);
+    if (res != 0x28)
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "File is to short to compute audio format")
+    }
+
+    if (buff[0] == 0 && buff[1] == 0 && buff[2] == 1 && buff[3] == 0xBA && buff[4] == 0x44)
+    {
+       if (
+             buff[0x27] == 0xC1 ||    // first MLP pack header
+             buff[0x15] == 0xC0 ||    // middle MLP pack header
+             (buff[0x15] == 0x00
+              && buff[0x16] == 0x00
+              && buff[0x17] == 0xa1)  // last MLP pack header
+          )
+        {
+            info->infile.type = AFMT_MLP;
+        }
+        else
+        if (buff[0x27] == 0x81 || buff[0x15] == 0x80)
+        {
+            info->infile.type = AFMT_LPCM;
+        }
+        else
+        {
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not find start of flags2 0xC0/0xC1/0x81/0x80")
+        }
+    }
+    else
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not find start of pack header 0x00001BA")
+    }
+
+    fseek(info->infile.fp, offset, SEEK_SET);
+}
 
 inline static int calc_position(WaveData* info, const uint32_t offset0)
 {
     uint8_t buf[6];
     int position;
-    FILE* fileptr = info->infile.fp;
-//    uint32_t offset1 = offset0 + info->infile.type == AFMT_MLP ? 0 : 14;
 
-    fseeko(fileptr, offset0 + 14, SEEK_SET);
-    int result = fread(buf, 4, 1, fileptr);
+    fseek(info->infile.fp, offset0 + 14, SEEK_SET);
+    int result = fread(buf, 4, 1, info->infile.fp);
     
     if (result != 1)
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting packet position.")
     }
         
-//    if (info->infile.type == AFMT_MLP)
-//    {
-//        if (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBE)
-//        {
-//            if ((buf[4] << 8 & buf[5] + (offset1 + 5) % 2048) == 0)
-//            {
-//                position = LAST_PACK;
-//                if (globals.maxverbose)
-//                {
-//                    fprintf(stderr, MSG_TAG "Reached last pack at offset %u for file %s\n", offset1, info->infile.filename);
-//                }
-//            }
-//        }
-//    }
-//    else
-//    {
-        // got to system header and read first 4 bytes to detect whether pack is start or not
 
-        if (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB)
+    if (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB)
+    {
+        position = FIRST_PACK;
+    }
+    else
+    {
+        /* go to end of sector : if end of file, then last pack, idem if new pack detected ; otherwise middle pack */
+
+        int res = fseek(info->infile.fp, 2044, SEEK_CUR);
+
+        if (res != 0)
         {
-            position = FIRST_PACK;
+            position = LAST_PACK;
         }
         else
         {
-            /* go to end of sector : if end of file, then last pack, idem if new pack detected ; otherwise middle pack */
+            int n = fread(buf, 1, 4, info->infile.fp);
 
-            int res = fseek(fileptr, 2044, SEEK_CUR);
-
-            if (res != 0)
+            if (n != 4 || (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB))
             {
                 position = LAST_PACK;
             }
             else
             {
-                int n = fread(buf, 1, 4, fileptr);
-
-                if (n != 4 || (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB))
-                {
-                    position = LAST_PACK;
-                }
-                else
-                {
-                    position = MIDDLE_PACK;
-                }
+                position = MIDDLE_PACK;
             }
         }
-//    }
-    
+    }
+
+    fseek(info->infile.fp, offset0, SEEK_SET);
+
     return(position);
 }
 
@@ -258,12 +283,14 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, bool
     
     uint32_t offset0 = ftell(info->infile.fp);
 
+    get_audio_format(info);
+
     int position = calc_position(info, offset0);
 
     if (info->infile.type == AFMT_MLP)
     {
         *status = VALID;
-        fseeko(info->infile.fp, offset0, SEEK_SET);
+
         return position;
     }
     
@@ -426,28 +453,9 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
     int midpack_lpcm_headerquantity;
     int lastpack_lpcm_headerquantity;
 
-    uint8_t buff[27] = {0};
+    uint32_t offset0 = ftell(info->infile.fp);
 
-    if (! info->infile.isopen) aob_open(info);
-
-    uint64_t offset0 = ftello(info->infile.fp);
-
-    fread(buff, 27, 1, info->infile.fp);
-
-    if (buff[0] == 0 && buff[1] == 0 && buff[2] == 1 && buff[3] == 0xBA && buff[4] == 0x44)
-    {
-        if (buff[0x27] == 0xC1 || buff[0x15] == 0xC0)
-        {
-            info->infile.fp = AFMT_MLP;
-            *position = FIRST_PACK;
-        }
-        else
-        if (buff[0x27] == 0x27 || buff[0x15] == 0x80)
-        {
-            info->infile.fp = AFMT_LPCM;
-            *position = MIDDLE_PACK;
-        }
-    }
+    get_audio_format(info);
 
     if (info->infile.type == AFMT_LPCM)
     {
@@ -479,7 +487,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 
     if (*position != CUT_PACK_RMDR)
     {
-        *position = calc_position(info->infile.fp, offset0);
+        *position = calc_position(info, offset0);
 
         if (info->infile.type == AFMT_LPCM && wav_numbytes > 0)
         {
@@ -571,7 +579,10 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
                     }
                     audio_bytes = (PES_packet_len_bytes[0] << 8 | PES_packet_len_bytes[1]) - lastpack_audiopesheaderquantity;
                     /* skipping rest of audio_pes_header, i.e 8 bytes + lpcm_header */
-                    fseeko(info->infile.fp, offset0 + 32 + lastpack_lpcm_headerquantity, SEEK_SET);
+                    if (info->infile.type == AFMT_LPCM)
+                        fseeko(info->infile.fp, offset0 + 32 + lastpack_lpcm_headerquantity, SEEK_SET);
+                    else
+                        fseeko(info->infile.fp, offset0 + 33, SEEK_SET);
                     ++*pack_in_track;
                     ++*pack_in_title;
                     ++*pack_in_group;
@@ -888,7 +899,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
 
                     if (wav_numbytes == 0)
                     {
-                        if (info->infile.type == AFMT_MLP || (continuity_save != 0 && continuity_save != 0x1F && continuity == 0))
+                        if (files[i][track]->type != AFMT_MLP && continuity_save != 0 && continuity_save != 0x1F && continuity == 0)
                         {
                              files[i][track]->wav_numbytes = 0;
                              files[i][track]->numbytes  = written_bytes;
@@ -1000,7 +1011,11 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                   files[i][track]->numbytes  = written_bytes;
                 }
 
-                info->outfile.filesize = written_bytes + header.header_size_out;
+                if (files[i][track]->type != AFMT_MLP)
+                    info->outfile.filesize = written_bytes + header.header_size_out;
+                else
+                    info->outfile.filesize = written_bytes;
+
 
 //                if (files[i][k]->PTS_length && wav_numbytes < numbytes)
 //                    {
@@ -1061,6 +1076,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                 {
                     if (globals.veryverbose)
                             foutput("%s\n", INF "Closing track and opening new one.");
+                    foutput("%s\n", WAR "Currently MLP tracks are extracted as separate titles, even if with same audio characteristics.");
                 }
                 else
                 if (position == END_OF_AOB)
