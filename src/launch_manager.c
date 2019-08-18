@@ -88,12 +88,9 @@ int launch_manager(command_t *command)
 
     if (!globals.nooutput) secure_mkdir(audiotsdir, globals.access_rights);
     errno=0;
-    if (globals.videozone)
-    {
-        STRING_WRITE_CHAR_BUFSIZ(videotsdir, "%s"SEPARATOR"VIDEO_TS", globals.settings.outdir)
-        if (!globals.nooutput) secure_mkdir(videotsdir, globals.access_rights);
+    STRING_WRITE_CHAR_BUFSIZ(videotsdir, "%s"SEPARATOR"VIDEO_TS", globals.settings.outdir)
+    if (globals.videozone && !globals.nooutput) secure_mkdir(videotsdir, globals.access_rights);
         errno=0;
-    }
 
     /* Step 1 - parse all audio files and store the file formats, lengths etc */
 
@@ -419,6 +416,8 @@ int launch_manager(command_t *command)
     // should always be OK unless some hardware issue or user interceptin came in at the worst of times
     //
     ntotalfiles =  count_dir_files(audiotsdir);
+
+    // BUG: if hybridation, videotsdir not defined!
     ntotalfiles += count_dir_files(videotsdir);
 
     if (startsector == ntotalfiles  + 272)

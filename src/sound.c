@@ -201,7 +201,7 @@ int launch_lplex_soundtrack(pic* img, const char* create_mode)
 /*  Create disc hybrid using track paths of priorly converted (16-24 bits/48-96 kHz) audio files */
 
 #undef DIM_LPLEX_CLI 
-#define DIM_LPLEX_CLI 13
+#define DIM_LPLEX_CLI 15
 
 int launch_lplex_hybridate(const pic* img, 
                            const char* create_mode,
@@ -224,6 +224,7 @@ int launch_lplex_hybridate(const pic* img,
 #endif
     const char *args0[DIM_LPLEX_CLI]= {LPLEX_BASENAME, 
                 "--create", create_mode,
+                "--pause", "no",
                 "--verbose", (globals.debugging)?"true":"false", 
                 "--workPath", globals.settings.lplextempdir, 
                 "-x", "false",
@@ -234,12 +235,16 @@ int launch_lplex_hybridate(const pic* img,
     
     for (int group=0; group < ntitlesets; group++)
     {
-          argssize += (ntracks[group]>0)*(ntracks[group] + (group >0)+ nslides[group]*2);
+
+        if (nslides)
+            argssize += (ntracks[group] > 0) * (ntracks[group] + (group > 0)+ nslides[group] * 2);
+        else
+            argssize += (ntracks[group] > 0) * (ntracks[group] + (group > 0));
     }
         
    // const char* args[DIM_LPLEX_CLI+argssize+1];
     const char* args[1024];
-    int tot=DIM_LPLEX_CLI;
+    int tot = DIM_LPLEX_CLI;
         
     for (int u=0; u < DIM_LPLEX_CLI; u++) args[u]=(char*) args0[u];
     
@@ -340,7 +345,7 @@ int launch_lplex_hybridate(const pic* img,
         }
 
         change_directory(globals.settings.workdir);
-        system(conc("/home/fab2/Dev/dvda-author/local/bin/lplex ", get_command_line((const char**) args)));
+        system(conc("/home/fab/Dev/dvda-author/local/bin/lplex ", get_command_line((const char**) args)));
 
      FREE(lplex);
 
