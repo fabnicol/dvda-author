@@ -41,7 +41,7 @@
 #endif
 
 #include "libavformat/avformat.h"
-#include "libavdevice/avdevice.h"
+//#include "libavdevice/avdevice.h"
 #include "libswresample/swresample.h"
 #include "libavutil/opt.h"
 #include "libavutil/channel_layout.h"

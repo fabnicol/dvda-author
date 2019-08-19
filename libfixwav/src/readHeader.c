@@ -37,7 +37,9 @@ int readHeader(FILE * infile, WaveHeader *header)
   uint8_t buffer[header->header_size_in];
   memset(buffer, 0, header->header_size_in);
   p=buffer;
-  rewind(infile);
+
+  fseek(infile, 0, SEEK_SET);
+
   count=fread(buffer, 1, header->header_size_in, infile ) ;
   /* Total is 44 bytes */
 
@@ -150,8 +152,7 @@ Extended Wav:
 /* 16-19 */ header->fmt_ckSize  = READ_4_bytes
 /* 20-21 */ header->wFormatTag= READ_2_bytes
 /* 22-23 */ header->channels = READ_2_bytes
-/* 24-27 */ header->dwSamplesPerSec
-= READ_4_bytes
+/* 24-27 */ header->dwSamplesPerSec= READ_4_bytes
 /* 28-31 */ header->nAvgBytesPerSec=READ_4_bytes
 /* 32-33 */ header->nBlockAlign=READ_2_bytes
 /* 34-35 */ header->wBitsPerSample =READ_2_bytes

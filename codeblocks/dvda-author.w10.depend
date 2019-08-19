@@ -20,7 +20,7 @@
 	"winport.h"
 	"structures.h"
 
-1561949699 c:\users\public\dev\dvda-author\libutils\src\include\libiberty.h
+1565915536 c:\users\public\dev\dvda-author\libutils\src\include\libiberty.h
 	"strdup.h"
 	"getopt.h"
 	"getopt_int.h"
@@ -48,7 +48,7 @@
 
 1561592353 c:\users\public\dev\dvda-author\libiberty\src\include\getsubopt.h
 
-1561592353 c:\users\public\dev\dvda-author\libfixwav\src\include\fixwav.h
+1565915536 c:\users\public\dev\dvda-author\libfixwav\src\include\fixwav.h
 	<assert.h>
 	<stdint.h>
 
@@ -61,11 +61,12 @@
 	<stdint.h>
 	"c_utils.h"
 
-1561949699 c:\users\public\dev\dvda-author\libutils\src\include\c_utils.h
+1565915536 c:\users\public\dev\dvda-author\libutils\src\include\c_utils.h
 	"config.h"
 	"version.h"
 	"commonvars.h"
 	<stdio.h>
+	<sys/wait.h>
 	<sys/types.h>
 	<sys/stat.h>
 	<string.h>
@@ -75,7 +76,7 @@
 1561592368 c:\users\public\dev\dvda-author\src\include\version.h
 	"config.h"
 
-1561949700 c:\users\public\dev\dvda-author\src\include\commonvars.h
+1565915550 c:\users\public\dev\dvda-author\src\include\commonvars.h
 	"config.h"
 	"libiberty.h"
 
@@ -84,7 +85,7 @@
 1561592353 c:\users\public\dev\dvda-author\libfixwav\src\include\repair.h
 	"fixwav_manager.h"
 
-1561949699 c:\users\public\dev\dvda-author\libutils\src\include\winport.h
+1565915536 c:\users\public\dev\dvda-author\libutils\src\include\winport.h
 	"config.h"
 	"c_utils.h"
 	<sys/types.h>
@@ -101,10 +102,11 @@
 	<fcntl.h>
 	<unistd.h>
 
-1561592368 c:\users\public\dev\dvda-author\src\include\structures.h
+1565919700 c:\users\public\dev\dvda-author\src\include\structures.h
 	"stream_decoder.h"
 	"inttypes.h"
 	"commonvars.h"
+	"libavcodec/mlplayout.h"
 
 1561592354 c:\users\public\dev\dvda-author\libutils\src\include\stream_decoder.h
 	<stdio.h>
@@ -120,7 +122,7 @@
 1561592354 c:\users\public\dev\dvda-author\libutils\src\include\ordinals.h
 	<inttypes.h>
 
-1561592463 source:c:\users\public\dev\dvda-author\libfixwav\src\checkparameters.c
+1565915536 source:c:\users\public\dev\dvda-author\libfixwav\src\checkparameters.c
 	<config.h>
 	<stdio.h>
 	<stdlib.h>
@@ -152,7 +154,7 @@
 	"c_utils.h"
 	"structures.h"
 
-1561592463 source:c:\users\public\dev\dvda-author\libfixwav\src\manager.c
+1565915536 source:c:\users\public\dev\dvda-author\libfixwav\src\manager.c
 	<config.h>
 	<stdlib.h>
 	<stdio.h>
@@ -180,7 +182,7 @@
 1561592353 c:\users\public\dev\dvda-author\libfixwav\src\include\readheader.h
 	"fixwav_manager.h"
 
-1561592463 source:c:\users\public\dev\dvda-author\libfixwav\src\readheader.c
+1565915536 source:c:\users\public\dev\dvda-author\libfixwav\src\readheader.c
 	<config.h>
 	<stdlib.h>
 	<stdio.h>
@@ -194,7 +196,7 @@
 	"structures.h"
 	"libiberty.h"
 
-1561592463 source:c:\users\public\dev\dvda-author\libfixwav\src\repair.c
+1565915536 source:c:\users\public\dev\dvda-author\libfixwav\src\repair.c
 	<config.h>
 	<stdio.h>
 	<stdlib.h>
@@ -248,7 +250,7 @@
 	<string.h>
 	"strnlen.h"
 
-1561949699 source:c:\users\public\dev\dvda-author\libutils\src\libc_utils.c
+1565915536 source:c:\users\public\dev\dvda-author\libutils\src\libc_utils.c
 	"config.h"
 	<stdlib.h>
 	<stdio.h>
@@ -285,7 +287,7 @@
 	"structures.h"
 	<unistd.h>
 
-1561949700 source:c:\users\public\dev\dvda-author\src\amg2.c
+1565915550 source:c:\users\public\dev\dvda-author\src\amg2.c
 	"config.h"
 	"commonvars.h"
 	<stdio.h>
@@ -308,7 +310,7 @@
 	"launch_manager.h"
 	"asvs.h"
 
-1561949700 c:\users\public\dev\dvda-author\src\include\auxiliary.h
+1565915550 c:\users\public\dev\dvda-author\src\include\auxiliary.h
 	"config.h"
 	<sys/stat.h>
 	<sys/types.h>
@@ -320,7 +322,7 @@
 	"commonvars.h"
 	"structures.h"
 
-1561592367 c:\users\public\dev\dvda-author\src\include\audio2.h
+1565915550 c:\users\public\dev\dvda-author\src\include\audio2.h
 	<stdio.h>
 	<stdint.h>
 	<sys/types.h>
@@ -338,9 +340,9 @@
 1561592353 c:\users\public\dev\dvda-author\libutils\src\include\decode.h
 	"c_utils.h"
 
-1561949700 c:\users\public\dev\dvda-author\src\include\xml.h
+1565915550 c:\users\public\dev\dvda-author\src\include\xml.h
 
-1561949700 c:\users\public\dev\dvda-author\src\include\menu.h
+1565915550 c:\users\public\dev\dvda-author\src\include\menu.h
 	"config.h"
 	"structures.h"
 
@@ -348,9 +350,9 @@
 	"structures.h"
 	"commonvars.h"
 
-1561949700 c:\users\public\dev\dvda-author\src\include\asvs.h
+1565915550 c:\users\public\dev\dvda-author\src\include\asvs.h
 
-1561949700 source:c:\users\public\dev\dvda-author\src\asvs.c
+1565915550 source:c:\users\public\dev\dvda-author\src\asvs.c
 	"commonvars.h"
 	<stdio.h>
 	<stdlib.h>
@@ -365,27 +367,31 @@
 	"auxiliary.h"
 	"asvs.h"
 
-1561592464 source:c:\users\public\dev\dvda-author\src\ats.c
+1565920584 source:c:\users\public\dev\dvda-author\src\ats.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
+	<stdint.h>
 	<math.h>
 	<errno.h>
-	"structures.h"
 	"audio2.h"
 	"c_utils.h"
 	"auxiliary.h"
 	"commonvars.h"
 	"ats.h"
+	"libavcodec/mlplayout.h"
+	"decode.h"
+	"c_utils.h"
+	"structures.h"
 
-1561592367 c:\users\public\dev\dvda-author\src\include\ats.h
+1565915550 c:\users\public\dev\dvda-author\src\include\ats.h
 	<stdio.h>
 	<stdint.h>
 	"audio2.h"
 	"decode.h"
 
-1561949700 source:c:\users\public\dev\dvda-author\src\ats2wav.c
+1565915550 source:c:\users\public\dev\dvda-author\src\ats2wav.c
 	"ats2wav.h"
 	"ats.h"
 	"c_utils.h"
@@ -393,7 +399,7 @@
 	"multichannel.h"
 	"auxiliary.h"
 
-1561592367 c:\users\public\dev\dvda-author\src\include\ats2wav.h
+1565915550 c:\users\public\dev\dvda-author\src\include\ats2wav.h
 	<stdio.h>
 	<string.h>
 	<stdlib.h>
@@ -407,9 +413,11 @@
 	"libiberty.h"
 	"fixwav_manager.h"
 
-1561592368 c:\users\public\dev\dvda-author\src\include\multichannel.h
+1565915550 c:\users\public\dev\dvda-author\src\include\multichannel.h
+	<stdint.h>
+	<string.h>
 
-1561949700 source:c:\users\public\dev\dvda-author\src\atsi2.c
+1565915550 source:c:\users\public\dev\dvda-author\src\atsi2.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -423,19 +431,21 @@
 	"auxiliary.h"
 	"atsi.h"
 
-1561592367 c:\users\public\dev\dvda-author\src\include\atsi.h
+1565915550 c:\users\public\dev\dvda-author\src\include\atsi.h
 	<stdio.h>
 	<stdint.h>
 	"audio2.h"
 	"structures.h"
 
-1561949700 source:c:\users\public\dev\dvda-author\src\audio.c
+1565915550 source:c:\users\public\dev\dvda-author\src\audio.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 	<errno.h>
+	<math.h>
 	<unistd.h>
+	<sys/stat.h>
 	"export.h"
 	"audio2.h"
 	"audio.h"
@@ -449,8 +459,14 @@
 	"sox.h"
 	"libsoxconvert.h"
 	"multichannel.h"
+	"file_input_parsing.h"
+	"libavcodec/mlplayout.h"
+	"libavutil/opt.h"
+	"libavcodec/avcodec.h"
+	"libavformat/avformat.h"
+	"libswresample/swresample.h"
 
-1561949699 c:\users\public\dev\dvda-author\libfixwav\src\include\audio.h
+1565915536 c:\users\public\dev\dvda-author\libfixwav\src\include\audio.h
 	"c_utils.h"
 	"structures.h"
 
@@ -466,7 +482,7 @@
 
 1561592368 c:\users\public\dev\dvda-author\src\include\libsoxconvert.h
 
-1561949700 source:c:\users\public\dev\dvda-author\src\auxiliary.c
+1565915550 source:c:\users\public\dev\dvda-author\src\auxiliary.c
 	<stdlib.h>
 	<stdio.h>
 	<sys/stat.h>
@@ -487,7 +503,7 @@
 	"commonvars.h"
 	"menu.h"
 
-1561949700 c:\users\public\dev\dvda-author\src\include\ports.h
+1565915550 c:\users\public\dev\dvda-author\src\include\ports.h
 	<io.h>
 	<sys/resource.h>
 	"commonvars.h"
@@ -503,11 +519,11 @@
 
 1561592353 c:\users\public\dev\dvda-author\\libiberty\src\include\strdup.h
 
-1561592367 c:\users\public\dev\dvda-author\src\include\file_input_parsing.h
+1565915550 c:\users\public\dev\dvda-author\src\include\file_input_parsing.h
 	"auxiliary.h"
 	<dirent.h>
 
-1561949700 source:c:\users\public\dev\dvda-author\src\command_line_parsing.c
+1565915550 source:c:\users\public\dev\dvda-author\src\command_line_parsing.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -538,7 +554,7 @@
 	"videoimport.h"
 	"ats.h"
 
-1561592367 c:\users\public\dev\dvda-author\src\include\dvda-author.h
+1565915550 c:\users\public\dev\dvda-author\src\include\dvda-author.h
 	"commonvars.h"
 	"structures.h"
 
@@ -549,7 +565,7 @@
 1561592368 c:\users\public\dev\dvda-author\src\include\videoimport.h
 	<inttypes.h>
 
-1561949700 source:c:\users\public\dev\dvda-author\src\dvda-author.c
+1565915550 source:c:\users\public\dev\dvda-author\src\dvda-author.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -579,7 +595,7 @@
 1561592367 c:\users\public\dev\dvda-author\src\include\lexer.h
 	"structures.h"
 
-1561592464 source:c:\users\public\dev\dvda-author\src\file_input_parsing.c
+1565915550 source:c:\users\public\dev\dvda-author\src\file_input_parsing.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -591,7 +607,7 @@
 	"ports.h"
 	"commonvars.h"
 
-1561949700 source:c:\users\public\dev\dvda-author\src\launch_manager.c
+1565915550 source:c:\users\public\dev\dvda-author\src\launch_manager.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -622,7 +638,7 @@
 	<stdint.h>
 	"audio2.h"
 
-1561949700 source:c:\users\public\dev\dvda-author\src\lexer.c
+1565915550 source:c:\users\public\dev\dvda-author\src\lexer.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -634,7 +650,7 @@
 	"auxiliary.h"
 	"c_utils.h"
 
-1561949700 source:c:\users\public\dev\dvda-author\src\libsoxconvert.c
+1565915550 source:c:\users\public\dev\dvda-author\src\libsoxconvert.c
 	<sox.h>
 	<stdio.h>
 	<errno.h>
@@ -642,7 +658,7 @@
 	"structures.h"
 	"libsoxconvert.h"
 
-1561949700 source:c:\users\public\dev\dvda-author\src\samg2.c
+1565915550 source:c:\users\public\dev\dvda-author\src\samg2.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -655,7 +671,7 @@
 	"c_utils.h"
 	"auxiliary.h"
 
-1561949700 source:c:\users\public\dev\dvda-author\src\sound.c
+1565915550 source:c:\users\public\dev\dvda-author\src\sound.c
 	"config.h"
 	"sound.h"
 	"fixwav.h"
@@ -667,7 +683,7 @@
 	<stdlib.h>
 	<unistd.h>
 
-1561949700 source:c:\users\public\dev\dvda-author\src\videoimport.c
+1565915550 source:c:\users\public\dev\dvda-author\src\videoimport.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -687,7 +703,7 @@
 	"menu.h"
 	"sound.h"
 
-1561949700 source:c:\users\public\dev\dvda-author\src\xml.c
+1565915550 source:c:\users\public\dev\dvda-author\src\xml.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -1702,4 +1718,296 @@
 	<limits.h>
 	<stdarg.h>
 	<stddef.h>
+
+1565915524 c:\users\public\dev\dvda-author\ffmpeg\config.h
+
+1565915527 c:\users\public\dev\dvda-author\ffmpeg\libavcodec\mlplayout.h
+	<stdint.h>
+
+1561592367 c:\users\public\dev\dvda-author\local\include\sox.h
+	<limits.h>
+	<stdarg.h>
+	<stddef.h>
+
+1565915535 c:\users\public\dev\dvda-author\ffmpeg\libavutil\opt.h
+	"rational.h"
+	"avutil.h"
+	"dict.h"
+	"log.h"
+	"pixfmt.h"
+	"samplefmt.h"
+	"version.h"
+
+1565915535 c:\users\public\dev\dvda-author\ffmpeg\libavutil\rational.h
+	<stdint.h>
+	<limits.h>
+	"attributes.h"
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\attributes.h
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\avutil.h
+	"common.h"
+	"error.h"
+	"rational.h"
+	"version.h"
+	"macros.h"
+	"mathematics.h"
+	"log.h"
+	"pixfmt.h"
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\common.h
+	<errno.h>
+	<inttypes.h>
+	<limits.h>
+	<math.h>
+	<stdint.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"attributes.h"
+	"macros.h"
+	"version.h"
+	"libavutil/avconfig.h"
+	"config.h"
+	"intmath.h"
+	"common.h"
+	"mem.h"
+	"internal.h"
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\macros.h
+
+1565915535 c:\users\public\dev\dvda-author\ffmpeg\libavutil\version.h
+	"macros.h"
+
+1565915492 c:\users\public\dev\dvda-author\ffmpeg\libavutil\avconfig.h
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\intmath.h
+	<stdint.h>
+	"config.h"
+	"attributes.h"
+	"arm/intmath.h"
+	"x86/intmath.h"
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\arm\intmath.h
+	<stdint.h>
+	"config.h"
+	"libavutil/attributes.h"
+
+1565915535 c:\users\public\dev\dvda-author\ffmpeg\libavutil\x86\intmath.h
+	<stdint.h>
+	<stdlib.h>
+	<intrin.h>
+	<immintrin.h>
+	"config.h"
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\mem.h
+	<limits.h>
+	<stdint.h>
+	"attributes.h"
+	"error.h"
+	"avutil.h"
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\error.h
+	<errno.h>
+	<stddef.h>
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\internal.h
+	<limits.h>
+	<stdint.h>
+	<stddef.h>
+	<assert.h>
+	"config.h"
+	"attributes.h"
+	"timer.h"
+	"cpu.h"
+	"dict.h"
+	"macros.h"
+	"mem.h"
+	"pixfmt.h"
+	"version.h"
+	"x86/emms.h"
+	"libm.h"
+	<crtversion.h>
+
+1565915535 c:\users\public\dev\dvda-author\ffmpeg\libavutil\timer.h
+	"config.h"
+	<unistd.h>
+	<sys/ioctl.h>
+	<asm/unistd.h>
+	<linux/perf_event.h>
+	<stdlib.h>
+	<stdint.h>
+	<inttypes.h>
+	<mach/mach_time.h>
+	"log.h"
+	"aarch64/timer.h"
+	"arm/timer.h"
+	"ppc/timer.h"
+	"x86/timer.h"
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\log.h
+	<stdarg.h>
+	"avutil.h"
+	"attributes.h"
+	"version.h"
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\aarch64\timer.h
+	<stdint.h>
+	"config.h"
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\arm\timer.h
+	<stdint.h>
+	"config.h"
+
+1565915535 c:\users\public\dev\dvda-author\ffmpeg\libavutil\ppc\timer.h
+	<stdint.h>
+	"config.h"
+
+1565915535 c:\users\public\dev\dvda-author\ffmpeg\libavutil\x86\timer.h
+	<stdint.h>
+	<intrin.h>
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\cpu.h
+	<stddef.h>
+	"attributes.h"
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\dict.h
+	<stdint.h>
+	"version.h"
+
+1565915535 c:\users\public\dev\dvda-author\ffmpeg\libavutil\pixfmt.h
+	"libavutil/avconfig.h"
+	"version.h"
+
+1565915535 c:\users\public\dev\dvda-author\ffmpeg\libavutil\x86\emms.h
+	"config.h"
+	"libavutil/attributes.h"
+	"libavutil/cpu.h"
+	<mmintrin.h>
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\libm.h
+	<math.h>
+	"config.h"
+	"attributes.h"
+	"intfloat.h"
+	"mathematics.h"
+	"libavutil/mips/libm_mips.h"
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\intfloat.h
+	<stdint.h>
+	"attributes.h"
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\mathematics.h
+	<stdint.h>
+	<math.h>
+	"attributes.h"
+	"rational.h"
+	"intfloat.h"
+
+1565915535 c:\users\public\dev\dvda-author\ffmpeg\libavutil\mips\libm_mips.h
+
+1565915535 c:\users\public\dev\dvda-author\ffmpeg\libavutil\samplefmt.h
+	<stdint.h>
+	"avutil.h"
+	"attributes.h"
+
+1565915525 c:\users\public\dev\dvda-author\ffmpeg\libavcodec\avcodec.h
+	<errno.h>
+	"libavutil/samplefmt.h"
+	"libavutil/attributes.h"
+	"libavutil/avutil.h"
+	"libavutil/buffer.h"
+	"libavutil/cpu.h"
+	"libavutil/channel_layout.h"
+	"libavutil/dict.h"
+	"libavutil/frame.h"
+	"libavutil/hwcontext.h"
+	"libavutil/log.h"
+	"libavutil/pixfmt.h"
+	"libavutil/rational.h"
+	"version.h"
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\buffer.h
+	<stdint.h>
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\channel_layout.h
+	<stdint.h>
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\frame.h
+	<stddef.h>
+	<stdint.h>
+	"avutil.h"
+	"buffer.h"
+	"dict.h"
+	"rational.h"
+	"samplefmt.h"
+	"pixfmt.h"
+	"version.h"
+
+1565915534 c:\users\public\dev\dvda-author\ffmpeg\libavutil\hwcontext.h
+	"buffer.h"
+	"frame.h"
+	"log.h"
+	"pixfmt.h"
+
+1565915527 c:\users\public\dev\dvda-author\ffmpeg\libavcodec\version.h
+	"libavutil/version.h"
+
+1565915530 c:\users\public\dev\dvda-author\ffmpeg\libavformat\avformat.h
+	<time.h>
+	<stdio.h>
+	"libavcodec/avcodec.h"
+	"libavutil/dict.h"
+	"libavutil/log.h"
+	"avio.h"
+	"libavformat/version.h"
+
+1565915530 c:\users\public\dev\dvda-author\ffmpeg\libavformat\avio.h
+	<stdint.h>
+	"libavutil/common.h"
+	"libavutil/dict.h"
+	"libavutil/log.h"
+	"libavformat/version.h"
+
+1565915533 c:\users\public\dev\dvda-author\ffmpeg\libavformat\version.h
+	"libavutil/version.h"
+
+1565915536 c:\users\public\dev\dvda-author\ffmpeg\libswresample\swresample.h
+	<stdint.h>
+	"libavutil/channel_layout.h"
+	"libavutil/frame.h"
+	"libavutil/samplefmt.h"
+	"libswresample/version.h"
+
+1565915536 c:\users\public\dev\dvda-author\ffmpeg\libswresample\version.h
+	"libavutil/avutil.h"
+
+1561592353 c:\users\public\dev\dvda-author\dvda-author\\libiberty\src\include\strndup.h
+	<stdio.h>
+	<sys/types.h>
+
+1561592353 c:\users\public\dev\dvda-author\dvda-author\\libiberty\src\include\getsubopt.h
+
+1561592353 c:\users\public\dev\dvda-author\dvda-author\\libiberty\src\include\strdup.h
+
+1565915550 source:c:\users\public\dev\dvda-author\src\menu.c
+	<stdio.h>
+	<stdlib.h>
+	<stdint.h>
+	<string.h>
+	<errno.h>
+	<math.h>
+	<sys/types.h>
+	<sys/wait.h>
+	<unistd.h>
+	<fcntl.h>
+	<sys/stat.h>
+	"structures.h"
+	"c_utils.h"
+	"launch_manager.h"
+	"winport.h"
+	"auxiliary.h"
+	"amg.h"
+	"menu.h"
+	"commonvars.h"
 

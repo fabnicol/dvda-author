@@ -82,15 +82,18 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
       goto getout;
     }
 
-   if (info->in_place)
+   if (! info->infile.isopen)
    {
-       if (filesize(info->infile) == 0)
-           info->infile.fp = fopen(info->infile.filename, "wb+");
+       if (info->in_place)
+       {
+           if (filesize(info->infile) == 0)
+               info->infile.fp = fopen(info->infile.filename, "wb+");
+           else
+               info->infile.fp = fopen(info->infile.filename, "rb+");
+       }
        else
-           info->infile.fp = fopen(info->infile.filename, "rb+");
+          info->infile.fp = fopen(info->infile.filename, "rb");
    }
-   else
-      info->infile.fp = fopen(info->infile.filename, "rb");
 
    if (info->infile.fp == NULL) return NULL;
 
@@ -161,6 +164,9 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
       adjust=(info->prepend)+(info->in_place)+(info->prune)+(info->padding);
       info->prepend=info->in_place=info->prune=info->padding=0;
     }
+
+   // fixwav cannot prepend to existing file. Create empty file first, prepend into it, then write
+   // audio, then adjust header.
 
    if (info->prepend)
    {
@@ -340,7 +346,8 @@ Checkout:
 
   /* checkout stage: check and possibly repair header data */
 
-  header_size = header->channels > 2 ? HEADER_EXTENSIBLE_SIZE : HEADER_SIZE;
+  header_size = (header->channels > 2 || header->wBitsPerSample > 16) ? HEADER_EXTENSIBLE_SIZE : HEADER_SIZE;
+  header->is_extensible = (header_size == HEADER_EXTENSIBLE_SIZE);
   uint8_t *standard_header;
 
   switch (info->repair)
@@ -364,7 +371,7 @@ Checkout:
 
       /* to do: correct in_place facility and check padbytes */
 
-      if ((info->repair=launch_repair(info, header)) == FAIL) break;
+      if ((info->repair = launch_repair(info, header)) == FAIL) break;
 
       if (! info->virtual)
       {
@@ -374,7 +381,7 @@ Checkout:
               if (globals.debugging) foutput("%s\n", INF "Header copy successful.\n");
               if (globals.maxverbose)
               {
-                  S_OPEN(info->outfile, "wb+")
+                  if (! info->outfile.isopen) S_OPEN(info->outfile, "rb+");
 
                   if (globals.debugging) foutput("%s","Dumping new header:\n\n");
 

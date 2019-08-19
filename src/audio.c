@@ -31,39 +31,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "config.h"
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <math.h>
-#ifdef __GNU_LIBRARY__
-#include <unistd.h>
-#endif
-#include <sys/stat.h>
-#include "export.h"
 #include "audio2.h"
-#include "audio.h"
-#include "stream_decoder.h"
-#include "fixwav.h"
-#include "fixwav_manager.h"
-
-#include "auxiliary.h"
-#include "commonvars.h"
-#include "command_line_parsing.h"
-#include "winport.h"
-#ifndef WITHOUT_sox
-#include "sox.h"
-#include "libsoxconvert.h"
-#endif
-#include "multichannel.h"
-#include "file_input_parsing.h"
-#include "libavcodec/mlplayout.h"
-#include "libavutil/opt.h"
-#include "libavcodec/avcodec.h"
-#include "libavformat/avformat.h"
-#include "libswresample/swresample.h"
-
-
 
 extern globalData globals;
 static const uint8_t default_cga[6] = {0,  1,  7,  3,   16,   17};  //default channel assignment
@@ -473,87 +441,296 @@ void flac_error_callback(const FLAC__StreamDecoder GCC_UNUSED *dec,
 #endif
 
 
-int decode_mlp_file(fileinfo_t* info) {
-
+int decode_mlp_file(fileinfo_t* info)
+{
     // initialize all muxers, demuxers and protocols for libavformat
     // (does nothing if called twice during the course of one program execution)
-    av_register_all();
 
-    const char* path = info->filename;
+  av_register_all();
+
+  const char* path = info->filename;
 
     // get format from audio file
-    AVFormatContext* format = avformat_alloc_context();
+  AVFormatContext* format = avformat_alloc_context();
 
-    if (avformat_open_input(&format, path, NULL, NULL) != 0) {
+  if (avformat_open_input(&format, path, NULL, NULL) != 0)
+  {
         fprintf(stderr, ERR "Could not open file '%s'\n", path);
         return -1;
-    }
-    if (avformat_find_stream_info(format, NULL) < 0) {
+  }
+
+  if (avformat_find_stream_info(format, NULL) < 0)
+  {
         fprintf(stderr, ERR "Could not retrieve stream info from file '%s'\n", path);
         return -1;
-    }
+  }
 
-    // Find the index of the first audio stream
+ // Find the index of the first audio stream
 
-    int stream_index = -1;
-    for (int i = 0; i < format->nb_streams; ++i) {
-        if (format->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
-            stream_index = i;
-            break;
-        }
-    }
+  int stream_index = -1;
+  for (int i = 0; i < format->nb_streams; ++i)
+  {
+      if (format->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
+      {
+          stream_index = i;
+          break;
+      }
+  }
 
-    if (stream_index == -1) {
+  if (stream_index == -1)
+  {
         fprintf(stderr, ERR "Could not retrieve audio stream from file '%s'\n", path);
         return -1;
-    }
+  }
 
-    AVStream* stream = format->streams[stream_index];
+  AVStream* stream = format->streams[stream_index];
 
-    // find & open codec
-    AVCodecContext* codec = stream->codec;
+  // find & open codec
 
-    if (avcodec_open2(codec, avcodec_find_decoder(codec->codec_id), NULL) < 0) {
+  AVCodecContext* codec = stream->codec;
+
+  codec->request_sample_fmt = av_get_alt_sample_fmt(codec->sample_fmt, 0);
+
+  if (avcodec_open2(codec, avcodec_find_decoder(codec->codec_id), NULL) < 0)
+    {
         fprintf(stderr, ERR "Failed to open decoder for stream #%u in file '%s'\n", stream_index, path);
         return -1;
     }
 
     // prepare to read data
-    AVPacket packet;
-    av_init_packet(&packet);
-    AVFrame* frame = av_frame_alloc();
-    if (!frame) {
+  AVPacket packet;
+  av_init_packet(&packet);
+  AVFrame* frame = av_frame_alloc();
+
+  if (!frame)
+    {
         fprintf(stderr, ERR "Error allocating the frame\n");
         return -1;
     }
 
-    while (av_read_frame(format, &packet) >= 0) {
+  int cumsize = 0;
+  FILE* fp = NULL;
+  WaveData   info2;
+  WaveHeader header;
+
+ int32_t cumbytes_written = 0;
+
+ if (globals.decode || globals.maxverbose)
+ {
+   int32_t bytes_written = 0;
+
+   while (av_read_frame(format, &packet) >= 0)
+    {
         // decode one frame
         int gotFrame;
-        if (avcodec_decode_audio4(codec, frame, &gotFrame, &packet) < 0) {
+        int ret;
+        if ((ret = avcodec_decode_audio4(codec, frame, &gotFrame, &packet)) < 0)
+        {
+            fprintf(stderr, ERR "Error decoding audio frame (%s)\n", av_err2str(ret));
+            errno = 0;
+            if (fp) fclose(fp);
+            if (errno)
+                fprintf(stderr, ERR "Could not close file %s\n", info->out_filename);
+            else
+                fprintf(stderr, MSG_TAG "Extracted %ld bytes from file %s to file %s\n", cumbytes_written, path, info->out_filename);
             break;
         }
-        if (!gotFrame) {
-            continue;
+
+        if (gotFrame)
+        {
+
+            if (globals.decode && bytes_written == 0)
+            {
+              if (info->out_filename && globals.fixwav_prepend)
+              {
+                    fprintf(stderr, INF "Decoding file %s  to raw data in path: %s\n", info->filename, info->out_filename);
+                    int debug = globals.debugging;
+
+                    // Hush it up as there will be spurious error mmsg
+
+                    globals.debugging = false;
+
+                    // initializ
+
+                    memset(&info2, 0, sizeof (WaveData));
+                    memset(&header, 0, sizeof (WaveHeader));
+
+                    // WaveData info: file and header prepending characteristics
+
+                    info2.prepend = true;
+                    info2.in_place = true;
+                    info2.cautious = false;
+                    info2.automatic = true;
+                    info2.interactive = false;
+                    info2.prunedbytes = 0;
+                    info2.padbytes = 0;
+                    info2.virtual = false;
+                    info2.outfile.filename = info->out_filename;
+                    info2.outfile.fp = fp;
+                    info2.infile = info2.outfile;
+                    info2.infile.isopen = false;
+
+                    // WaveHeader info : audio and header characteristics
+
+                    header.is_extensible = true;
+                    header.header_size_out = 80;
+                    header.channels = frame->channels;
+                    header.nBlockAlign = frame->channels * codec->bits_per_raw_sample / 8 ;
+                    header.wBitsPerSample = codec->bits_per_raw_sample;
+                    header.dwChannelMask = (frame->channel_layout < 21 && frame->channel_layout > 0) ? cga2wav_channels[frame->channel_layout] : 0;
+                    header.dwSamplesPerSec = frame->sample_rate;
+
+                    // Prepend header to empty file. Will close files.
+
+                    fixwav(&info2, &header);
+
+                    // Restore verbosity levels
+
+                    globals.debugging = debug;
+
+
+              }
+
+              fp = fopen(info->out_filename, "ab+");
+              if (fp == NULL)
+               {
+                   fprintf(stderr, ERR "Could not open destination file %s\n", info->out_filename);
+                   info->out_filename = NULL;
+                   globals.decode = false;
+               }
+
+            }
+
+            if (globals.decode && fp)
+            {
+                size_t unpadded_linesize = 0;
+
+                int sampleSize = av_get_bytes_per_sample(codec->sample_fmt);
+
+                if (sampleSize == 2)
+                {
+                    unpadded_linesize = frame->channels *  sampleSize * frame->nb_samples;
+                    bytes_written = fwrite(frame->extended_data[0], 1, unpadded_linesize, fp);
+                }
+                else
+                if (sampleSize == 4)    // 32 bits -> 24 bits (codec->bits_per_raw_sample)
+                {
+
+                  uint32_t bytes_written_sample = 0;
+                   for(int s = 0; s < frame->nb_samples; ++s)
+                   {
+                    for(int c = 0; c < codec->channels; ++c)
+                     {
+                        uint32_t val = ((int32_t*) frame->extended_data[0])[s * codec->channels + c];
+                        val  >>= 8; // sampleSize * 8 - codec->bits_per_raw_sample
+
+                       bytes_written_sample += fwrite(&val, 1, 3, fp);
+                     }
+                   }
+
+                   bytes_written = bytes_written_sample;
+                }
+                else
+                {
+                        fprintf(stderr, "Invalid sample size %d.\n", sampleSize);
+                        fclose(fp);
+                        break;
+                }
+
+            }
+
+            if (globals.maxverbose)
+            {
+                fprintf(stderr, "Nb samples: %d FR_PTS: %d PKT_POS: %d PKT_DURATION: %d FR_PKT_SIZE; %d\n",
+                            frame->nb_samples,
+                            frame->pts,
+                            frame->pkt_pos,
+                            frame->pkt_duration,
+                            frame->pkt_size);
+            }
+
+            cumbytes_written += bytes_written;
+        }
+        else
+        {
+           continue;
         }
     }
 
+
+    errno = 0;
+
+    if (globals.decode && info->out_filename && globals.fixwav_prepend)
+    {
+//         WAV output is now OK except for the wav file size-based header data.
+//         ckSize, data_ckSize and nBlockAlign must be readjusted by computing
+//         the exact audio content bytesize. Also we no longer prepend the header
+//         but overwrite the existing one
+
+        fp = fopen(info->out_filename, "rb+");
+        if (fp == NULL)
+         {
+             fprintf(stderr, ERR "Could not open destination file %s\n", info->out_filename);
+             info->out_filename = NULL;
+             globals.decode = false;
+         }
+         else
+         {
+            info2.infile.fp = fp;
+            info2.infile.isopen = true;
+
+            // No longer prepend to empty file but overwrite in place
+
+            info2.prepend = false;
+            info2.in_place = true;
+
+            errno = 0;
+
+            fixwav(&info2, &header);
+
+            if (errno)
+                fprintf(stderr, ERR "Error detected in header correction  for %s\n", info->out_filename);
+            else
+                fprintf(stderr, MSG_TAG "Extracted %ld bytes to file %s\n", cumbytes_written, info->out_filename);
+         }
+    }
+ }
+ else
+ {
+    while (av_read_frame(format, &packet) >= 0)
+    {
+      // decode one frame
+      int gotFrame;
+      if (avcodec_decode_audio4(codec, frame, &gotFrame, &packet) < 0)
+      {
+          break;
+      }
+
+      if (!gotFrame)
+      {
+          continue;
+      }
+    }
+  }
+
+
+clean_up:
+
+  if (! globals.decode && info->file_size && info->lpcm_payload)
+  {
     unsigned long size = info->file_size / info->lpcm_payload + 4;
 
     info->mlp_layout = (struct MLP_LAYOUT *) calloc(size, sizeof (struct MLP_LAYOUT));
 
     get_mlp_layout(info->mlp_layout, size); // 1968 is the minimum payload. +3 for last sector buffer
+  }
 
-    // clean up
-    av_frame_free(&frame);
-    avcodec_close(codec);
-    avformat_free_context(format);
+  av_frame_free(&frame);
+  avcodec_close(codec);
+  avformat_free_context(format);
 
-    // success
-    return 0;
-
+  return errno;
 }
-
 
 int calc_info(fileinfo_t* info)
 {
@@ -657,7 +834,13 @@ int calc_info(fileinfo_t* info)
     {
         foutput(INF "Searching MLP layout for file %s. Please wait...\n", info->filename);
 
-        decode_mlp_file(info);
+        int res = decode_mlp_file(info);
+
+        if (res)
+        {
+            fprintf(stderr, "%s\n", WAR "Errors occurred during decoding...");
+            fprintf(stderr, WAR "%s\n",  strerror(res));
+        }
 
         // TODO : check if get_mlp_layout has correct PCM saple count for all audio characteristics
 
@@ -690,11 +873,9 @@ int calc_info(fileinfo_t* info)
             if (index && info->mlp_layout[index].nb_samples == 0) break;
         }
 
-        info->numsamples = info->mlp_layout[index - 1].nb_samples;
-        info->numbytes = info->file_size;
+        info->numsamples   = info->mlp_layout[index - 1].nb_samples;
+        info->numbytes     = info->file_size;
         info->pcm_numbytes = info->numsamples * info->channels * (info->bitspersample / 8); //This is for PCM, not MLP
-
-
     }
     else
     {
@@ -702,8 +883,9 @@ int calc_info(fileinfo_t* info)
             = (info->numbytes * 8) / (info->channels * info->bitspersample);
     }
 
-    double ptsl = floor((90000.0 * info->numsamples) / info->samplerate);  // = duration in seconds x 90000
-    info->PTS_length = (uint64_t) ptsl;
+    // Make coherent with calc_PTS
+
+    info->PTS_length = (uint32_t) convert_to_PTS(info);
 
     // a rounding error of 1 in PTS_LENGTH = samplerate / 90000 in numsamples = samplerate / (8 x 90000) x nchannels x bitspersample in bytes.
 
@@ -888,8 +1070,8 @@ static inline int compute_header_size(FILE* fp)
       .repair = 0,
       .padbytes = 0,
       .prunedbytes = 0,
-      .infile = { false, 0, "unknown", NULL},
-      .outfile = {false, 0, "st", NULL },
+      .infile = { false, AFMT_WAVE, 0, "unknown", NULL},
+      .outfile = {false, AFMT_WAVE, 0, "st", NULL },
     };
 
     wavinfo.infile.fp = fp;
@@ -898,27 +1080,28 @@ static inline int compute_header_size(FILE* fp)
 }
 
 
-static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, fileinfo_t* info)
+inline bool audit_mlp_header(uint8_t* header, fileinfo_t* info, bool calc)
 {
+    if (header[0] != 0xF8 || header[1] != 0x72 || header[2] != 0x6F || header[3] != 0xBB)
+        return false;
 
-    if (header[4] == 0xF8 && header[5] == 0x72 && header[6] == 0x6F && header[7] == 0xBB)   // MLP case
-    {
-        info->type = AFMT_MLP;
-        unsigned long pathl = strlen(path);
-        if (pathl > 3)
+    info->type = AFMT_MLP;
+    if (info->filename == NULL) return false;
+    unsigned long pathl = strlen(info->filename);
+    if (pathl > 3)
         {
-         if (path[pathl - 1] == 'p'
-             && path[pathl - 2] == 'l'
-             && path[pathl - 3] == 'm'
-             && path[pathl - 4] == '.')
+         if (info->filename[pathl - 1] == 'p'
+             && info->filename[pathl - 2] == 'l'
+             && info->filename[pathl - 3] == 'm'
+             && info->filename[pathl - 4] == '.')
          {
-             foutput("%s %s\n", INF "Auditing MLP file", path);
+             foutput("%s %s\n", INF "Auditing MLP file", info->filename);
          }
          else
          {
               if (globals.veryverbose)
               {
-                  foutput("%s %s %s\n", WAR "Audio file", path, "has MLP major sync header yet no file extenion .mlp. Proceeding as if MLP...");
+                  foutput("%s %s %s\n", WAR "Audio file", info->filename, "has MLP major sync header yet no file extenion .mlp. Proceeding as if MLP...");
               }
          }
 
@@ -927,11 +1110,11 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
         {
             if (globals.veryverbose)
             {
-                foutput("%s %s %s\n", WAR "Audio file", path, "has MLP major sync header yet no file extenion .mlp. Proceeding as if MLP...");
+                foutput("%s %s %s\n", WAR "Audio file", info->filename, "has MLP major sync header yet no file extenion .mlp. Proceeding as if MLP...");
             }
         }
 
-        switch (header[8])
+        switch (header[4])
         {
             case 0x00:
             case 0x0f:
@@ -952,7 +1135,7 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
                 break;
         }
 
-        switch (header[9])
+        switch (header[5])
         {
             case 0x00:
             case 0x0f:
@@ -988,29 +1171,42 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
                 break;
         }
 
-        info->cga =  check_cga_assignment(header[11]);
-        info->channels = cga_to_channel(info->cga);
-        info->header_size = 0;  // this is the file header size, not the AOB header sizes (64 for first pack, 43 for others)
-        if (info->cga == 0xFF)
-        {
-            foutput(ERR "Could not detect number of channels for MLP file %s with channel group assignment: %d\n", info->filename, header[11]);
-        }
-        else
-        if (info->channels == 0)
-        {
-            foutput(ERR "Could not detect number of channels for MLP file %s with channel group assignment: %d (%s)\n", info->filename, info->cga, cga_define[info->cga]);
-        }
+    info->cga         = check_cga_assignment(header[7]);
+    info->channels    = cga_to_channel(info->cga);
+    info->header_size = 0;  // this is the file header size, not the AOB header sizes (64 for first pack, 43 for others)
 
-        // Now on to audio layout and numbytes
-        // check info->file_size is known
-        // calc lpcm_payload here
+    if (info->cga == 0xFF)
+    {
+        foutput(ERR "Could not detect number of channels for MLP file %s with channel group assignment: %d\n",
+                info->filename, header[7]);
+    }
+    else
+    if (info->channels == 0)
+    {
+        foutput(ERR "Could not detect number of channels for MLP file %s with channel group assignment: %d (%s)\n",
+                info->filename, info->cga, cga_define[info->cga]);
+    }
 
-        calc_info(info);
+    // Now on to audio layout and numbytes
+    // check info->file_size is known
+    // calc lpcm_payload here
 
+    if (calc) calc_info(info);
+
+    return true;
+}
+
+static inline int extract_audio_info_by_all_means(uint8_t* header, fileinfo_t* info)
+{
+    if (audit_mlp_header(header + 4, info, true))
+    {
+        foutput("%s\n", MSG_TAG "Found MLP audio: %d channels, %d bits per sample, %d Hz",
+                info->channels, info->bitspersample, info->samplerate);
         return(info->type = AFMT_MLP);
     }
     else
-    if (memcmp(header,"RIFF",4) != 0 || memcmp(&header[8],"WAVEfmt",7) != 0)
+    if (info->resample_samplerate != 0 || info->resample_bitspersample != 0 || info->resample_channels != 0 ||
+        memcmp(header,"RIFF",4) != 0 || memcmp(&header[8],"WAVEfmt",7) != 0)
     {
 #      ifndef WITHOUT_FLAC
 
@@ -1033,14 +1229,12 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
                 if (!globals.fixwav_force)
                 {
 
-                    if (launch_sox(&path) == NO_AFMT_FOUND)
+                    if (launch_sox(info) == NO_AFMT_FOUND)
                        return(info->type);
                       // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
                     else
                       // PATCH looping back to get info
                     {
-                       info->filename = path;
-
                        return(info->type = audiofile_getinfo(info));
                     }
           // yet without the processing tail below (preserving new header[] array and info structure)
@@ -1060,7 +1254,7 @@ static inline int extract_audio_info_by_all_means(char* path, uint8_t* header, f
                      default:
                        // PATCH looping back to get info
 
-                        if (launch_sox(&path) == NO_AFMT_FOUND)
+                        if (launch_sox(info) == NO_AFMT_FOUND)
                         return(info->type);
                       // It is necessary to reassign info->file_size as conversion may have marginal effects on size (due to headers/meta-info)
                         else
@@ -1163,7 +1357,7 @@ if (info->mergeflag)
 
       fclose(info->audio->channel_fp[u]);
 
-      info->type = extract_audio_info_by_all_means(info->given_channel[u], header, info);
+      info->type = extract_audio_info_by_all_means(header, info);
      }
 }
 else
@@ -1203,7 +1397,7 @@ else
     clean_exit(EXIT_FAILURE);
   }
   if (info->audio) free(info->audio);
-  info->type = extract_audio_info_by_all_means(info->filename, header, info);
+  info->type = extract_audio_info_by_all_means(header, info);
 }
 
 return (info->type);
@@ -1383,25 +1577,25 @@ int fixwav_repair(fileinfo_t *info)
     // If new string longer than heap allocation of reference strings, cut it
     /* Default sub-options*/
 
-    WaveData wavedata=
-    {
-        .database = globals.settings.fixwav_database,  /* database path for collecting info chunks in headers */
-        .filetitle = NULL,
-        globals.fixwav_automatic, /* automatic behaviour */
-        globals.fixwav_prepend, /* do not prepend a header */
-        globals.fixwav_in_place, /* do not correct in place */
-        globals.fixwav_cautious, /* whether to ask user about overwrite */
-        globals.fixwav_interactive, /* interactive */
-        globals.fixwav_padding, /* padding */
-        globals.fixwav_prune, /* prune */
-        globals.fixwav_virtual_enable, /* whether header should be fixed virtually */
-        0  /* repair status */,
-        0, /* padbytes */
-        0, /* pruned bytes */
-        .infile = {false, 0, info->filename, NULL},  /* filestat */
-        .outfile = {false, 0, buf, NULL}
-    };
+    WaveData wavedata;
 
+    wavedata.database = globals.settings.fixwav_database;  /* database path for collecting info chunks in headers */
+    wavedata.filetitle = NULL;
+    wavedata.automatic = globals.fixwav_automatic; /* automatic behaviour */
+    wavedata.prepend = globals.fixwav_prepend; /* do not prepend a header */
+    wavedata.in_place = globals.fixwav_in_place; /* do not correct in place */
+    wavedata.cautious = globals.fixwav_cautious; /* whether to ask user about overwrite */
+    wavedata.interactive = globals.fixwav_interactive; /* interactive */
+    wavedata.padding = globals.fixwav_padding; /* padding */
+    wavedata.prune = globals.fixwav_prune; /* prune */
+    wavedata.virtual = globals.fixwav_virtual_enable; /* whether header should be fixed virtually */
+    wavedata.repair = 0;  /* repair status */
+    wavedata.padbytes = 0; /* padbytes */
+    wavedata.prunedbytes =  0; /* pruned bytes */
+    filestat_t in = {false, AFMT_WAVE, 0, info->filename, NULL};
+    wavedata.infile = in;  /* filestat */
+    filestat_t out =  {false, AFMT_WAVE, 0, buf, NULL};
+    wavedata.outfile = out;
 
     if (globals.debugging)
     {
@@ -1466,69 +1660,96 @@ int fixwav_repair(fileinfo_t *info)
 
 //#ifndef WITHOUT_sox
 
-char* replace_file_extension(char * filename)
+// repl must include the dot
+
+char* replace_file_extension(const char * filename, const char* infix, const char* new_extension)
 {
-    int l=0,s=strlen(filename);
+    int l = 0, s = strlen(filename);
 
     do
-        l++;
-    while ((l < s-1) && (filename[s-l] != '.'));
+        ++l;
 
-    if (1 == s-l)
+    while ((l < s - 1) && (filename[s - l] != '.'));
+
+    if (1 == s - l)
     {
         foutput("%s\n", ERR "To convert to WAV SoX.needs to indentify audio format and filename.\n       Use extension of type '.format'\n");
-        if (globals.debugging)  foutput("%s\n", INF "Skipping file.\n ");
+        if (globals.debugging)  foutput("%s %s \n", INF "Skipping file ", filename);
         return(NULL);
     }
 
-// Requires C99
-    int size=s-l;
+   // Requires C99
 
-    char new_wav_name[size+l+10];
+   int size = s - l;
+   int repl_length = strlen(new_extension);
+   int infix_length = strlen(infix);
 
+   char* new_wav_name = (char* ) calloc(s + repl_length + infix_length + 1, sizeof(char));
 
+   if (new_wav_name == NULL) return NULL;
     memcpy(new_wav_name, filename, size);
-    memcpy(new_wav_name+size, "_sox_", 5);
-    memcpy(new_wav_name+size+5, filename+size+1, l-1);
-    memcpy(new_wav_name+size+l+4, ".wav", 4);
-    new_wav_name[size+l+8]='\0';
+    if (infix_length)
+       memcpy(new_wav_name + size, infix, infix_length);
+    memcpy(new_wav_name + size + infix_length, filename + size + 1, l - 1);
+    memcpy(new_wav_name + s - 1 + infix_length, new_extension, repl_length);
+    new_wav_name[s + infix_length + repl_length] = '\0';
 
     // Here, tolerating a memory leak for -g filenames.
     // -i filenames could in principle be freed.
     // filename cannot be altered directly as there the suffix increases its size and -g names cannot be reallocated
 
-    filename=strdup(new_wav_name);
-
-    return (filename);
+    return (new_wav_name);
 }
 
 #ifndef WITHOUT_sox
-int launch_sox(char** filename)
+int launch_sox(fileinfo_t* info)
 {
-
-    char* new_wav_name=replace_file_extension(*filename);
+    char* new_wav_name = replace_file_extension(info->filename, "_sox_", ".wav");
 
     if (new_wav_name == NULL)
     {
-        perror(ERR "SoX string suffix was not allocted");
+        perror(ERR "SoX string suffix was not allocated");
         return(NO_AFMT_FOUND);
     }
 
-    if (globals.debugging)
-        foutput("%s       %s -->\n       %s \n", MSG_TAG "Format is neither WAV nor FLAC\n"INF "Converting to WAV with SoX...\n", *filename, new_wav_name);
-
     unlink(new_wav_name);
-    errno=0;
-    if (soxconvert(*filename, new_wav_name) == 0)
-    {
-        if (globals.debugging)  foutput("%s\n", INF "File was converted.");
+    errno = 0;
 
-        *filename=new_wav_name;
+    int res = -1;
+
+    if (info->resample_channels == 0 || info->resample_bitspersample == 0 || info->resample_samplerate == 0)
+    {
+        if (globals.debugging)
+            foutput("%s       %s -->\n       %s \n", INF "Converting to WAV with SoX...\n", info->filename, new_wav_name);
+
+        res = soxconvert(info->filename, new_wav_name);
+    }
+    else
+    {
+        if (globals.debugging)
+            foutput("%s       %s -->\n       %s \n       and resampling to %d/%d/%d...\n", INF "Converting to WAV with SoX \n",
+                    info->filename, new_wav_name,
+                    info->resample_channels, info->resample_bitspersample, info->resample_samplerate);
+
+        res = resample(info->filename, new_wav_name, info->resample_channels, info->resample_bitspersample, info->resample_samplerate);
+        // avoiding infinite loops
+        info->resample_samplerate = 0 ;
+        info->resample_bitspersample = 0;
+        info->resample_channels = 0 ;
+    }
+
+    if (res == 0)
+    {
+        if (globals.debugging)  foutput("%s %s\n", INF "File was converted into", new_wav_name);
+
+        // info->filename cannot be freed here
+        info->filename = new_wav_name;
+
          return(AFMT_WAVE);
     }
+
     if (globals.debugging)  foutput("%s\n", INF "SoX could not convert file.");
 
-    free(new_wav_name);
     return(NO_AFMT_FOUND);
 
 }

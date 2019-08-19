@@ -11,7 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="-g ~/Dev/dvda-author/Docs/a2_24_44.wav -t -W -T 1 " />
+				<Option parameters='-g &quot;C:\Users\Public\Dev\dvda-author\Docs\MLP\2_16_44\a2_16_44.mlp&quot; -W -t -o &quot;C:\Users\Public\Dev\dvda-author\out&quot; --maxverbose' />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
@@ -21,6 +21,7 @@
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option parameters='-g &quot;C:\Users\Public\Dev\dvda-author\Docs\a2_24_44.wav&quot; -W -t -o &quot;C:\Users\Public\Dev\dvda-author\out&quot; --cdrecord --bindir &quot;C:\Users\Public\Dev\dvda-author\local.w10\bin&quot;' />
 				<Compiler>
 					<Add option="-O2" />
 				</Compiler>
@@ -30,7 +31,9 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add option="-march=corei7-avx" />
 			<Add option="-Wall" />
+			<Add option="-fPIC" />
 			<Add option="-m64" />
 			<Add option="-std=c99 -march=core2" />
 			<Add option="-D_GNU_SOURCE" />
@@ -57,6 +60,7 @@
 			<Add directory="../local/include" />
 		</Compiler>
 		<Linker>
+			<Add option="-O2" />
 			<Add option="-static-libgcc" />
 			<Add option="-static" />
 			<Add option="-m64" />
@@ -64,14 +68,9 @@
 			<Add option="-pthread" />
 			<Add option="-fopenmp" />
 			<Add option="-lm" />
-			<Add library="../ffmpeg/libswresample/libswresample.a" />
-			<Add library="../ffmpeg/libavformat/libavformat.a" />
-			<Add library="../ffmpeg/libavfilter/libavfilter.a" />
-			<Add library="../ffmpeg/libavcodec/libavcodec.a" />
-			<Add library="../ffmpeg/libavutil/libavutil.a" />
+			<Add option="-fPIC" />
 			<Add library="../local.w10/lib/libsox.a" />
 			<Add library="../local.w10/lib/libFLAC.a" />
-			<Add library="../local.w10/lib/libsox.a" />
 			<Add library="../local.w10/lib/libopencore-amrnb.a" />
 			<Add library="../local.w10/lib/libopencore-amrwb.a" />
 			<Add library="../local.w10/lib/liba52.a" />
@@ -89,6 +88,11 @@
 			<Add library="../local.w10/lib/libwebp.a" />
 			<Add library="../local.w10/lib/libogg.a" />
 			<Add library="../local.w10/lib/libz.a" />
+			<Add library="../local.w10/lib/libswresample.a" />
+			<Add library="../local.w10/lib/libavfilter.a" />
+			<Add library="../local.w10/lib/libavformat.a" />
+			<Add library="../local.w10/lib/libavcodec.a" />
+			<Add library="../local.w10/lib/libavutil.a" />
 			<Add library="winmm" />
 			<Add library="bcrypt" />
 			<Add directory="../../../../msys64/mingw64/lib" />
@@ -245,6 +249,7 @@
 			<code_completion />
 			<envvars />
 			<debugger />
+			<fortran_project />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>
