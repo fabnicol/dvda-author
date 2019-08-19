@@ -301,7 +301,7 @@ int launch_repair(WaveData *info, WaveHeader *header)
 
   /* WAVE_FORMAT_EXTENSIBLE SPECIFICS */
 
-  if (header->channels > 2)
+  if (header->is_extensible)
   {
 
       header->cbSize = 0x16; // extension is 22 bytes

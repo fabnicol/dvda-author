@@ -1084,9 +1084,6 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                 {
                     fileinfo_t decinfo;
                     decinfo.filename = info->outfile.filename;
-                    decinfo.bitspersample = files[i][track]->bitspersample;
-                    decinfo.channels = files[i][track]->channels;
-                    decinfo.cga = files[i][track]->cga;
                     decinfo.out_filename = replace_file_extension(decinfo.filename, "_dec_", ".wav");
                     decode_mlp_file(&decinfo);
                 }
