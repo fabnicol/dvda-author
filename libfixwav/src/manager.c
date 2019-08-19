@@ -162,6 +162,9 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
       info->prepend=info->in_place=info->prune=info->padding=0;
     }
 
+   // fixwav cannot prepend to existing file. Create empty file first, prepend into it, then write
+   // audio, then adjust header.
+
    if (info->prepend)
    {
        adjust=(info->in_place)+(info->virtual);

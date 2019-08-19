@@ -294,6 +294,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"dtable", required_argument, NULL, 33},
         {"provider", required_argument, NULL, 34},
         {"resample", required_argument, NULL, 35},
+        {"decode", no_argument, NULL, 36},
     #endif
         {NULL, 0, NULL, 0}
     };
@@ -1261,6 +1262,12 @@ out:
 
 
 #endif
+
+        case 36:
+
+            fprintf(stderr, "%s\n", PAR "Extracted audio wil be decoded from MLP to WAV");
+            globals.decode = true;
+            break;
 /// Reactivated 26 May 2018
 
         case 1 :
