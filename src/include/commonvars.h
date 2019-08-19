@@ -46,6 +46,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define WEBSITE "http://dvd-audio.sourceforge.net"
 #endif
 
+#ifndef FORENSIC_MLP_DECODE
+#define FORENSIC_MLP_DECODE 0
+#endif
+
 #define bool _Bool
 
 /* This sanity check macros forces LONG_OPTIONS when _GNU_SOURCE has been defined as a compile-time option

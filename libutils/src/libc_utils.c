@@ -1352,7 +1352,8 @@ int stat_dir_files(const char* src)
     struct stat buf;
     if (stat(src, &buf) == -1)
     {
-        perror("\n"ERR "Directory not recognized.\n");
+        fprintf(stderr, "%s%s%s\n", ERR "Directory '", src, "'");
+        perror(ERR "Directory not recognized.\n");
         return(errno);
     }
 
@@ -1381,7 +1382,8 @@ int count_dir_files(const char* src)
     struct stat buf;
     if (stat(src, &buf) == -1)
     {
-        perror("\n"ERR "Directory not recognized.\n");
+        fprintf(stderr, "%s%s%s\n", ERR "Directory '", src, "'");
+        perror(ERR "Directory not recognized.\n");
         return(errno);
     }
 
@@ -1404,7 +1406,8 @@ char* filter_dir_files(char* src,  char* filter)
     struct stat buf;
     if (stat(src, &buf) == -1)
     {
-        perror("\n"ERR "Directory not recognized.\n");
+        fprintf(stderr, "%s%s%s\n", ERR "Directory '", src, "'");
+        perror(ERR "Directory not recognized.\n");
         return(errno);
     }
 
@@ -1975,7 +1978,7 @@ char* filename(filestat_t f) { return f.filename; }
 
 filestat_t filestat(bool b, uint64_t s, const char* fn, FILE* fp)
 {
-    filestat_t str = {b, s, fn, fp};
+    filestat_t str = {b, 0, s, fn, fp};
     return str;
 }
 

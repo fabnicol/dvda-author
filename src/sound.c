@@ -4,17 +4,6 @@
 
 #include "sound.h"
 
-#include "fixwav.h"
-#include "fixwav_manager.h"
-
-#include "c_utils.h"
-#include "auxiliary.h"
-#include "launch_manager.h"
-#include <errno.h>
-#include <stdlib.h>
-#ifndef _WIN32
-#include <unistd.h>
-#endif
 extern globalData globals;
 
 // Checks whether video soundtracks comply with standard for AUDIO_TS.VOB authoring
@@ -29,75 +18,72 @@ int sox_initialise()
 return 0;
 }
 
-
-int resample(const char* in, const char* out, const char* bitrate, const char* samplerate)
+inline void filestat_clean(filestat_t* f)
 {
-errno=0;
-#if defined HAVE_libsox && HAVE_libsox == 1
-if (-1 == sox_initialise()) 
- return -1;
-   
-char *args24[]= {SOX_BASENAME,  (char*) in, "-b", (char*) bitrate,(char*) out, "rate", "-v", "-I", "-b", "90", (char*)samplerate, NULL};
-char *args16[]= {SOX_BASENAME,  (char*) in, "-b", (char*) bitrate, (char*) out, "rate", "-s", "-a", (char*)samplerate, "dither", "-s", NULL};
-change_directory(globals.settings.workdir);
-foutput(INF "Running SoX for resampling to %s bit-%s kHz audio: %s --> %s\n",bitrate,samplerate,in,out);
-if (strcmp(bitrate, "16") == 0)
-{ 
-  errno=run(sox, args16, WAIT, true);
-}
-else 
-{
-  errno=run(sox, args24, WAIT, true);
-  if (errno == 0) errno=standardize_wav_header((char*) out);
-} 
-#endif
-return errno;
+    free(f->filename);
+    f->filename = NULL;
+    if (f->fp != NULL) fclose(f->fp);
+    f->isopen = false;
 }
 
-
-int standardize_wav_header(char* path)
+inline filestat_t filestat_copy(filestat_t f)
 {
-errno=0;
-
-        static WaveHeader waveheader;
-        WaveData wavedata=
-        {
-            .database = NULL,
-            .filetitle = NULL,
-            1, /* automatic behaviour */
-            0, /* prepending */
-            1, /* in-place*/
-            0, /* not cautious */
-            0, /* not interactive */
-            0, /* end-padding=no*/
-            0, /* no pruning */
-            1, /* virtual fix */
-            0, /* repair status */
-            0, /* padbytes */
-            0, /* pruned bytes */
-            .infile = {false, 0, path, NULL}, /* filestat */
-            .outfile = {false, 0, NULL, NULL} /* filestat */
-        };
-
-        fixwav(&wavedata, &waveheader);
-
-       if (globals.veryverbose) 
-            {
-                foutput(MSG_TAG "LPCM diagnostics: bps=%d, sample rate=%d, channels=%d \n", 
-                         waveheader.wBitsPerSample, waveheader.dwSamplesPerSec, waveheader.channels);
-            }
-       if ((waveheader.wBitsPerSample != 16 && waveheader.wBitsPerSample != 24) || (waveheader.dwSamplesPerSec != 48000 && waveheader.dwSamplesPerSec != 96000) ||
-           (waveheader.channels > 6 || waveheader.channels == 0))
-            {
-                foutput("%s",ERR "Did not manage to standardize wav header.\n");
-                errno=1;
-            }
-       
-
-    return errno;
-
+    filestat_t out;
+    out.filename = f.filename ? strdup(f.filename) : NULL;
+    out.isopen = f.isopen;
+    out.type = f.type;
+    if (out.isopen)
+    {
+        out.fp = fopen(f.filename, "rb+");  // beware of concurrency
+    }
+    else out.fp = NULL;
+    out.filesize = f.filesize;
+    return out;
 }
 
+inline WaveData* wavedata_copy(const WaveData* w)
+{
+    WaveData* out = calloc(1, sizeof (WaveData));
+    if (out == NULL)
+    {
+      fprintf(stderr, "%s\n", ERR "Could not allocate WaveData");
+    }
+    if (w == NULL) return out;
+    out->database  = w->database ? strdup(w->database) : NULL;
+    out->filetitle = w->filetitle ? strdup(w->filetitle) : NULL;
+    out->automatic = w->automatic;
+    out->prepend   = w->prepend;
+    out->in_place  = w->in_place;
+    out->cautious  = w->cautious;
+    out->interactive = w->interactive;
+    out->padding     = w->padding;
+    out->prune       = w->prune;
+    out->virtual     = w->virtual;
+    out->repair      = w->repair;
+    out->padbytes    = w->padbytes;
+    out->prunedbytes = w->prunedbytes;
+
+    out->infile  = filestat_copy(w->infile);
+    out->outfile = filestat_copy(w->outfile);
+    return out;
+}
+
+inline void wavedata_clean(WaveData* w)
+{
+    free(w->database);
+    w->database = NULL;
+    free(w->filetitle);
+    w->filetitle = NULL;
+    filestat_clean(&w->infile);
+    if (! w->in_place) filestat_clean(&w->outfile);
+    free(w);
+    w = NULL;
+}
+
+inline WaveData* wavedata_init(void)
+{
+    return wavedata_copy(NULL);
+}
 
 
 int audit_soundtrack(char* path, bool strict)
@@ -123,8 +109,8 @@ int audit_soundtrack(char* path, bool strict)
             0,  /* repair status */
             0, /* padbytes */
             0, /* pruned bytes */
-            .infile = {false, 0, path, NULL}, /* filestat */
-            .outfile = {false, 0, NULL, NULL} /* filestat */
+            .infile = {false, AFMT_WAVE, 0, path, NULL}, /* filestat */
+            .outfile = {false, AFMT_WAVE, 0, NULL, NULL} /* filestat */
         };
 
         fixwav(&wavedata, &waveheader);
@@ -272,7 +258,7 @@ int launch_lplex_soundtrack(pic* img, const char* create_mode)
 /*  Create disc hybrid using track paths of priorly converted (16-24 bits/48-96 kHz) audio files */
 
 #undef DIM_LPLEX_CLI 
-#define DIM_LPLEX_CLI 13
+#define DIM_LPLEX_CLI 15
 
 int launch_lplex_hybridate(const pic* img, 
                            const char* create_mode,
@@ -295,6 +281,7 @@ int launch_lplex_hybridate(const pic* img,
 #endif
     const char *args0[DIM_LPLEX_CLI]= {LPLEX_BASENAME, 
                 "--create", create_mode,
+                "--pause", "no",
                 "--verbose", (globals.debugging)?"true":"false", 
                 "--workPath", globals.settings.lplextempdir, 
                 "-x", "false",
@@ -305,12 +292,16 @@ int launch_lplex_hybridate(const pic* img,
     
     for (int group=0; group < ntitlesets; group++)
     {
-          argssize += (ntracks[group]>0)*(ntracks[group] + (group >0)+ nslides[group]*2);
+
+        if (nslides)
+            argssize += (ntracks[group] > 0) * (ntracks[group] + (group > 0)+ nslides[group] * 2);
+        else
+            argssize += (ntracks[group] > 0) * (ntracks[group] + (group > 0));
     }
         
    // const char* args[DIM_LPLEX_CLI+argssize+1];
     const char* args[1024];
-    int tot=DIM_LPLEX_CLI;
+    int tot = DIM_LPLEX_CLI;
         
     for (int u=0; u < DIM_LPLEX_CLI; u++) args[u]=(char*) args0[u];
     
@@ -411,7 +402,7 @@ int launch_lplex_hybridate(const pic* img,
         }
 
         change_directory(globals.settings.workdir);
-        system(conc("/home/fab2/Dev/dvda-author/local/bin/lplex ", get_command_line((const char**) args)));
+        system(conc("/home/fab/Dev/dvda-author/local/bin/lplex ", get_command_line((const char**) args)));
 
      FREE(lplex);
 

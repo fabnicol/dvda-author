@@ -208,8 +208,7 @@ int auto_control(WaveData *info, WaveHeader *header)
 
       // {N, S} case
 
-      if (regular_wBitsPerSample && regular_dwSamplesPerSec
-)
+      if (regular_wBitsPerSample && regular_dwSamplesPerSec)
         {
           header->nAvgBytesPerSec = (header->dwSamplesPerSec
  * header->wBitsPerSample * header->channels)/8;
@@ -220,8 +219,7 @@ int auto_control(WaveData *info, WaveHeader *header)
         }
 
       // {N, B}
-      if (regular_nBlockAlign && regular_dwSamplesPerSec
-)
+      if (regular_nBlockAlign && regular_dwSamplesPerSec)
         {
           header->wBitsPerSample  = header->channels ? (header->nBlockAlign * 8) / header->channels: 0;
           header->nAvgBytesPerSec = (header->dwSamplesPerSec
@@ -332,7 +330,7 @@ void regular_test(WaveHeader *head, int* regular)
 {
   int i, j, k, l;
 
-  if (head == NULL) if (globals.debugging) foutput("%s\n", ERR "NULL wave header !");
+  if (head == NULL) if (globals.debugging) fprintf(stderr, "%s\n", ERR "NULL wave header !");
 
   bool regular_channels  = (head->channels >= 1) && (head->channels < 6);
   bool regular_wBitsPerSample = (head->wBitsPerSample == 16) + (head->wBitsPerSample == 24);

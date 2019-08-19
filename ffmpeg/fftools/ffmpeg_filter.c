@@ -38,7 +38,7 @@
 #include "libavutil/pixfmt.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/samplefmt.h"
-#include "libswscale/swscale.h"
+//#include "libswscale/swscale.h"
 
 static const enum AVPixelFormat *get_compliance_unofficial_pix_fmts(enum AVCodecID codec_id, const enum AVPixelFormat default_formats[])
 {
@@ -785,12 +785,14 @@ static int configure_input_video_filter(FilterGraph *fg, InputFilter *ifilter,
     if(!sar.den)
         sar = (AVRational){0,1};
     av_bprint_init(&args, 0, AV_BPRINT_SIZE_AUTOMATIC);
+#if 0
     av_bprintf(&args,
              "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:"
              "pixel_aspect=%d/%d:sws_param=flags=%d",
              ifilter->width, ifilter->height, ifilter->format,
              tb.num, tb.den, sar.num, sar.den,
              SWS_BILINEAR + ((ist->dec_ctx->flags&AV_CODEC_FLAG_BITEXACT) ? SWS_BITEXACT:0));
+#endif    
     if (fr.num && fr.den)
         av_bprintf(&args, ":frame_rate=%d/%d", fr.num, fr.den);
     snprintf(name, sizeof(name), "graph %d input from stream %d:%d", fg->index,

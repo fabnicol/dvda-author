@@ -301,7 +301,7 @@ int launch_repair(WaveData *info, WaveHeader *header)
 
   /* WAVE_FORMAT_EXTENSIBLE SPECIFICS */
 
-  if (header->channels > 2)
+  if (header->is_extensible)
   {
 
       header->cbSize = 0x16; // extension is 22 bytes
@@ -317,7 +317,14 @@ int launch_repair(WaveData *info, WaveHeader *header)
 
       memcpy(p, FACT, 8), p+=8;
 
-      uint32_copy_reverse(p, header->data_cksize/(header->channels * header->wBitsPerSample / 8)), p+=4;
+      if (header->channels && header->wBitsPerSample)
+      {
+          uint32_copy_reverse(p, header->data_cksize/(header->channels * header->wBitsPerSample / 8)), p+=4;
+      }
+      else
+      {
+        info->repair = BAD_DATA;
+      }
   }
 
   uint32_copy_reverse(p, header->data_ckID), p+=4;

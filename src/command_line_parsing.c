@@ -293,6 +293,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"downmix", required_argument, NULL, 32},
         {"dtable", required_argument, NULL, 33},
         {"provider", required_argument, NULL, 34},
+        {"resample", required_argument, NULL, 35},
+        {"decode", no_argument, NULL, 36},
     #endif
         {NULL, 0, NULL, 0}
     };
@@ -595,11 +597,13 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput(PAR "Access rights (octal mode)=%o\n", globals.access_rights);
             break;
 
+        case 35:
+            goto out;
+
         case 'g' :
             ++u;
             allocate_files = true;
-
-            fflush(NULL);
+            //fflush(NULL);
             break;
 
         case 'i' :
@@ -704,15 +708,16 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         }
     }
 
+out:
 
 
     /* Here the group parameters are known: ngroups (total),  n_g_groups (legacy -g syntax), nvideolinking_groups */
 
     /* command line copy is now useless: freeing space */
 
-    for (k=0; k<argc; k++)
-        FREE(argv_scan[k])
-                FREE(argv_scan)
+//     FREE(argv_scan[k])
+//     for (k=0; k<argc; k++)
+//                FREE(argv_scan)
 
                 /* Performing memory allocation (calloc)
                 *
@@ -729,14 +734,14 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                 /* Allocate memory if and only if groups are to be (re)created on command line */
 
-       if (allocate_files)
-        {
-            files=dynamic_memory_allocate(files, ngiven_channels, ntracks, ngroups, n_g_groups, nvideolinking_groups);
-        }
+    if (allocate_files)
+    {
+        files=dynamic_memory_allocate(files, ngiven_channels, ntracks, ngroups, n_g_groups, nvideolinking_groups);
+    }
 
             /* COMMAND-LINE PARSING: fourth pass to assign filenames without allocating new memory (pointing to argv) */
 
-            int m, ngroups_scan=0;
+    int m, ngroups_scan=0;
 
     if ((n_g_groups)&&(globals.debugging)) foutput("%s", INF "Assigning command-line filenames...\n");
 
@@ -848,6 +853,39 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
 
             k += m-1;
+            break;
+
+        case '-':
+            if (! user_command_line || strcmp(argv[k], "--resample") != 0) break;
+              // -g file1...fileN... --resample 2 24 96000 2 16 44100...
+            globals.sox_enable = 1;
+
+            if (argc < k + 5) break;
+            ++k;
+
+            for (m = 0; m + k < argc && argv[m + k][0] != '-'; m += 3)
+            {
+                if (ngroups_scan)
+                {
+                    if (globals.debugging) foutput(MSG_TAG "Group %d Track %d Resample assignment %s %s %s\n",
+                                                    ngroups_scan, m + 1,
+                                                    argv[m+k],
+                                                    argv[m+k+1],
+                                                    argv[m+k+2]);
+
+
+                    files[ngroups_scan - 1][m / 3].resample_channels      = atoi(argv[m+k]);
+                    files[ngroups_scan - 1][m / 3].resample_bitspersample = atoi(argv[m+k+1]);
+                    files[ngroups_scan - 1][m / 3].resample_samplerate    = atoi(argv[m+k+2]);
+
+                }
+
+            }
+
+            k += m-1;
+
+            break;
+
         }
     }
 
@@ -1221,8 +1259,16 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s\n", PAR "Audio formats other than WAV and FLAC will be converted by sox tool.");
 
             break;
+
+
 #endif
 
+        case 36:
+
+            fprintf(stderr, "%s\n", PAR "Extracted audio will be decoded from MLP to WAV");
+            globals.decode = true;
+            globals.fixwav_prepend = true;
+            break;
 /// Reactivated 26 May 2018
 
         case 1 :
@@ -1587,6 +1633,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             import_topmenu_path=strdup(optarg);
             globals.topmenu=RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR;
             break;
+
 #endif
         }
     }
@@ -1872,11 +1919,12 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             break;
 
         case 28:
-
+            globals.fixwav_prepend = false;
             use_ifo_files = false;
             if (strstr(optarg, ".AOB") != NULL)
             {
-              foutput("%s%s\n", PAR "Extracting AOB to raw signed-integer PCM (headerless wav): ", optarg);
+              foutput("%s %s %s\n", PAR "Extracting AOB to",
+                      globals.decode ? "raw signed-integer PCM: " : "original audio format (headerless WAV or MLP):", optarg);
               aob2wav_parsing(optarg);
             }
             else  // using the directory with file structure
@@ -1889,14 +1937,15 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             globals.fixwav_prepend = true;
             if (strstr(optarg, ".AOB") != NULL)
             {
-              foutput("%s%s\n", PAR "Extracting AOB to wav: ", optarg);
+              foutput("%s %s %s\n", PAR "Extracting AOB to",
+                       globals.decode ? "WAV format: " : "original audio format (WAV or MLP):", optarg);
               aob2wav_parsing(optarg);
             }
             else  // using the directory with file structure
             {
               aob2wav_parsing(filter_dir_files(optarg, ".AOB"));
             }
-            use_ifo_files = true;
+            //use_ifo_files = true;
 
             break;
 
@@ -2496,11 +2545,16 @@ void process_dvd_video_zone(command_t* command)
 
         lplex_slides_flag=1;
         int g=0;
-        dvdv_slide_array=calloc(command->ngroups, sizeof(char**));
+
+        // Create a double array for slides, as many as groups and ntracks
+
+        dvdv_slide_array = calloc(command->ngroups, sizeof(char**));
         if (dvdv_slide_array == NULL) EXIT_ON_RUNTIME_ERROR
-        dvdv_slide_array[0]=calloc(command->ntracks[g], sizeof(char *));
+        dvdv_slide_array[0] = calloc(command->ntracks[g], sizeof(char *));
         if (dvdv_slide_array[0] == NULL) EXIT_ON_RUNTIME_ERROR
-        if (ndvdvslides == NULL) ndvdvslides=calloc(command->ngroups, sizeof(uint8_t));
+
+        // Group counter of dvd-video slides
+        if (ndvdvslides == NULL) ndvdvslides = calloc(command->ngroups, sizeof(uint8_t));
         if (ndvdvslides == NULL) EXIT_ON_RUNTIME_ERROR
 
         int N=command->ntracks[0];
@@ -2508,16 +2562,17 @@ void process_dvd_video_zone(command_t* command)
 
         for (int t=0;  t < totntracks; t++)
         {
-            if (g < command->ngroups-1 && t >= N)
+            // Create a double array for slides, as many as groups and ntracks
+
+          if (g < command->ngroups-1 && t >= N)
             {
                 T = 0;
                 TT=0;
                 N += command->ntracks[g];
                 g++;
-                dvdv_slide_array[g]=calloc(command->ntracks[g], sizeof(char *));
+                dvdv_slide_array[g] = calloc(command->ntracks[g], sizeof(char *));
                 if (dvdv_slide_array[g] == NULL) EXIT_ON_RUNTIME_ERROR
             }
-
 
           if (full_hybridate_flag || (hybridate_flag && files[g][T].dvdv_compliant))
           {
@@ -2525,13 +2580,18 @@ void process_dvd_video_zone(command_t* command)
                  picks_per_track_double_array[t] == NULL ||
                  picks_per_track_double_array[t][0] == NULL)
                  {
-                   char slide[strlen(globals.settings.workdir)+STRLEN_SEPARATOR+strlen(img->blankscreen)+1];
+                   char slide[strlen(globals.settings.workdir) + STRLEN_SEPARATOR + strlen(img->blankscreen)+1];
                    sprintf(slide, "%s%s%s", globals.settings.workdir,SEPARATOR,img->blankscreen);
-                          dvdv_slide_array[g][TT]=strdup(slide);
+
+                   // Assign a default slide if an explicit pic is not given on command line
+
+                          dvdv_slide_array[g][TT] = strdup(slide);
                  }
                  else
                  {
-                      dvdv_slide_array[g][TT]=strdup(picks_per_track_double_array[t][0]);
+                   // Assign explicit pic given on command line
+
+                      dvdv_slide_array[g][TT] = strdup(picks_per_track_double_array[t][0]);
                  }
 
             ndvdvslides[g]++;
@@ -2541,12 +2601,15 @@ void process_dvd_video_zone(command_t* command)
          T++;
         }
 
-        for (int u=0; u <= g ; u++) fprintf(stderr, "\n[PICS]  %d\n", ndvdvslides[u]);
+        // Print out count of slides per group
 
+        for (int u=0; u <= g ; u++) fprintf(stderr, "\n[PICS]  %d\n", ndvdvslides[u]);
     }
 
     FREE(picks_per_track_double_array)
     FREE(stillpic_string);
+
+    // When dvd-video tracks are provided, just create the VIDEO_TS folder using lplex whith given tracks and above slides
 
     if (dvdv_tracks_given)
     {
@@ -2567,10 +2630,18 @@ void process_dvd_video_zone(command_t* command)
         FREE(ndvdvtracks);
     }
 
+    // when dvd-video tracks should be imported from dvd-audio zone
+    // First case: sheer import, no modification of files, so files that do not conform to dvd-video standards are excluded
+
     if (dvdv_import_flag)
     {
         ndvdvtitleset1=0;
+
+        // create dvd-video track double array per group, track
+
         dvdv_track_array=(char***) calloc(command->ngroups, sizeof(char**));  // is a maximum
+
+        // counter of tracks per group
         ndvdvtracks=(uint8_t*) calloc(command->ngroups, sizeof(uint8_t));
         int* cut_table[command->ngroups];
         int delta_titlesets=0;
@@ -2581,6 +2652,9 @@ void process_dvd_video_zone(command_t* command)
             for (int track=0; track < command->ntracks[group]; track++)
             {
                 if (ndvdvtracks == NULL) EXIT_ON_RUNTIME_ERROR
+
+                // check if file indexed group, track could be imported to dvd-video zone
+
                 if(files[group][track].dvdv_compliant)
                 {
                     if (globals.veryverbose)
@@ -2593,7 +2667,8 @@ void process_dvd_video_zone(command_t* command)
                                        command->files[group][track].samplerate);
                     }
 
-                    ndvdvtracks[group]++;
+                    // add it to group counter
+                    ++ndvdvtracks[group];
 
                 }
                 else
@@ -2607,22 +2682,32 @@ void process_dvd_video_zone(command_t* command)
 
             }
 
-            dvdv_track_array[group]=(char**) calloc(ndvdvtracks[group], sizeof(char*));
+            // group counter is used to dimension the double track array
+
+            dvdv_track_array[group] = (char**) calloc(ndvdvtracks[group], sizeof(char*));
             uint32_t lplex_audio_characteristics_test[ndvdvtracks[group]];
             memset(lplex_audio_characteristics_test, '0', ndvdvtracks[group]);
-            cut_table[group]=(int*) calloc(ndvdvtracks[group], sizeof(int));
-            cut_table[group][0]=1;
+            cut_table[group] = (int*) calloc(ndvdvtracks[group], sizeof(int));
+            cut_table[group][0] = 1;
 
-            int TT=0;
-            for (int track=0; track < command->ntracks[group]; track++)
+            int TT = 0;
+            for (int track = 0; track < command->ntracks[group]; ++track)
             {
-
                 if (command->files[group][track].dvdv_compliant)
                 {
-                   dvdv_track_array[group][TT]=strdup(command->files[group][track].filename);
-                   lplex_audio_characteristics_test[TT]=(((uint8_t)files[group][track].bitspersample)<<16)
-                                                             |(((uint8_t)(files[group][track].samplerate/1000)) << 8)
-                                                             |files[group][track].channels;
+                   // Now fill in the dvd-video track array with dvd-video compliant files
+
+                   dvdv_track_array[group][TT] = strdup(command->files[group][track].filename);
+
+                   // array designed to gather audio characteristics of each file
+
+                   lplex_audio_characteristics_test[TT] = (((uint8_t)files[group][track].bitspersample) << 16)
+                                                             | (((uint8_t) (files[group][track].samplerate / 1000)) << 8)
+                                                             | files[group][track].channels;
+
+                   // checking if audio characteristics differ from one track to the following
+                   // this to ensure that the specific lplex contraint (same audio char in a given titleset) is respected
+                   // add titleset in this case. Which is not a big constraint as dvd-video allows 99 titlesets
 
                    if  (TT && lplex_audio_characteristics_test[TT] != lplex_audio_characteristics_test[TT-1])
                    {
@@ -2631,28 +2716,35 @@ void process_dvd_video_zone(command_t* command)
                                dvdv_track_array[group][TT],
                                dvdv_track_array[group][TT-1]);
 
-                       foutput( "  %d, %d\n", lplex_audio_characteristics_test[TT], lplex_audio_characteristics_test[TT-1]);
+                       foutput( "  %d, %d\n", lplex_audio_characteristics_test[TT], lplex_audio_characteristics_test[TT - 1]);
 
                        foutput("%s\n", ANSI_COLOR_RED"\n[WAR]"ANSI_COLOR_RESET"  Adding titleset");
-                       delta_titlesets++;
+                       ++delta_titlesets;
+
+                       // array cut_table is used to mark where a new ts should be added
+
                        cut_table[group][TT]=1;
                    }
 
-                   TT++;
+                   ++TT;
                 }
-
             }
 
+            // adjust dvd-video titleset counter
             if (ndvdvtracks[group]) ndvdvtitleset1++;
+
         }
 
-        globals.videozone=0;
+        globals.videozone=true;
 
        if (ndvdvtitleset1 == 0)
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "You requested hybridation yet no DVD-Video standard-compliant\n       audio file was found on input.\n")
 
+
        if (delta_titlesets)
            {
+            // This is the exception case in which extra titlesets should be added because of differing audio characteristics
+
             uint8_t new_ntracks[9]={0};
             uint8_t ndvdvslides[9]={0};
 
@@ -2731,6 +2823,8 @@ void process_dvd_video_zone(command_t* command)
            }
      else
      {
+          // This is the common case: same audio characteristics in each titleset
+
           launch_lplex_hybridate(img,
                                "dvd",
                                (const char***) dvdv_track_array,
@@ -2739,12 +2833,15 @@ void process_dvd_video_zone(command_t* command)
                                ndvdvslides,
                                (const int) ndvdvtitleset1);
 
+          // apparent memory management issue
+
             for (int group=0; group < ndvdvtitleset1; group++)
             {
               for (int track=0; track < ndvdvtracks[group]; track++)
               {
-             //    free(dvdv_track_array[group][track]);
-                 free(dvdv_slide_array[group][track]);
+             //    free(dvdv_track_array[group][track]);y
+
+                 // free(dvdv_slide_array[group][track]);
               }
 
              // free(cut_table[group]);
@@ -2753,6 +2850,8 @@ void process_dvd_video_zone(command_t* command)
             }
      }
     }
+
+    // Second case: when files do not conform to rhe dvd-video standard, resample them and add them to dvd-video zone
 
     if (mirror_flag)
     {
@@ -2785,23 +2884,37 @@ void process_dvd_video_zone(command_t* command)
                     unsigned sample_floor;
                     unsigned bps_floor;
 
+                    // mirror_st_flag indicates the strategy used: if HIGH, upsample, otherwise downsample
+
                     if (mirror_st_flag == HIGH)
                     {
-                     sample_floor=48000;
-                     bps_floor=16;
+                     sample_floor = 48000;
+                     bps_floor    = 16;
                     }
                     else //LOW
                     {
-                     sample_floor=96000;
-                     bps_floor=24;
+                     sample_floor = 96000;
+                     bps_floor    = 24;
                     }
 
-                    new_sample_rate=(files[group][track].samplerate <= sample_floor)? 48000 : 96000;
-                    new_bit_rate=(files[group][track].bitspersample <= bps_floor)? 16 : 24;
+                    // e.g: with LOW, 88200 kHz/96000 kHz is resampled 48000d kHz, with HIGH is resampled 96000 kHz
+                    // e.g: with LOW, 24-bit/20-bit (to be implemented) is resampled to 16-bit, with HIGH left at or upsampled to 24-bit.
 
-                    lplex_audio_characteristics_test[track]=(new_bit_rate<<16)|((new_sample_rate/1000)<<8)|files[group][track].channels;
+                    new_sample_rate = (files[group][track].samplerate <= sample_floor)? 48000 : 96000;
+                    new_bit_rate = (files[group][track].bitspersample <= bps_floor)? 16 : 24;
+
+                    // DVD-Video only authorizes 9-kHz with Mono/Stereo
+
+                    if (new_sample_rate == 96000 && files[group][track].channels > 2)
+                    {
+                        files[group][track].channels = 2;
+                        foutput("%s\n", INF "Resampling %d channels to stereo...", files[group][track].channels);
+                    }
+
+
+                    lplex_audio_characteristics_test[track] = new_bit_rate << 16 | ((new_sample_rate / 1000) << 8 |files[group][track].channels);
                     int size=strlen(files[group][track].filename);
-                    if (strcmp(files[group][track].filename+size-4, ".wav") !=0)
+                    if (strcmp(files[group][track].filename + size-4, ".wav") !=0)
                     {
                         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Automatic mirroring is only supported for wav files.")
                     }
@@ -2811,15 +2924,16 @@ void process_dvd_video_zone(command_t* command)
                     sprintf(newpath+size-4, "%s", ".res.wav");
 
                     dvdv_track_array[group][track]=strdup(newpath);
-                    char new_bit_rate_str[3]={0};
-                    char new_sample_rate_str[6]={0};
-                    sprintf(new_bit_rate_str, "%d", new_bit_rate);
-                    sprintf(new_sample_rate_str, "%d", new_sample_rate);
-                    resample(files[group][track].filename,dvdv_track_array[group][track],new_bit_rate_str, new_sample_rate_str);
+                    resample(files[group][track].filename,
+                             dvdv_track_array[group][track],
+                             files[group][track].channels ,  // DVD-Video supports up to 8 channels yet check if lplex does
+                             new_bit_rate,
+                             new_sample_rate);
                 }
             }
 
-            /* Now checking the lplex constraint on same-type audio characteristics per titleset */
+            // Now checking the lplex constraint on same-type audio characteristics per titleset
+
             cut_table[group][0]=1;
             for (int i=1; i < command->ntracks[group]; i++)
                if  (lplex_audio_characteristics_test[i] != lplex_audio_characteristics_test[i-1])
@@ -2844,6 +2958,8 @@ void process_dvd_video_zone(command_t* command)
 
        char*** new_dvdv_track_array = NULL;
        char*** new_dvdv_slide_array = NULL;
+
+       // Adding extra titlesets
 
        if (delta_titlesets)
            {
