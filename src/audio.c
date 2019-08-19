@@ -510,53 +510,8 @@ int decode_mlp_file(fileinfo_t* info)
 
   int cumsize = 0;
   FILE* fp = NULL;
-  WaveData *info2;
+  WaveData   info2;
   WaveHeader header;
-
-  if (globals.decode)
-  {
-    if (info->out_filename)
-    {
-     fp = fopen(info->out_filename, "wb+");
-     if (fp == NULL)
-      {
-          fprintf(stderr, ERR "Could not open destination file %s\n", info->out_filename);
-          info->out_filename = NULL;
-          globals.decode = false;
-      }
-      else
-      {
-          fprintf(stderr, INF "Decoding file %s  to raw data in path: %s\n", info->filename, info->out_filename);
-          int debug = globals.debugging;
-
-          /* Hush it up as there will be spurious error mmsg */
-          globals.debugging = false;
-
-          info2 = wavedata_init();
-
-          info2->prepend = true;
-          info2->in_place = true;
-          info2->outfile.filename = info->out_filename;
-          info2->outfile.fp = fp;
-          info2->infile = info2->outfile;
-          info2->infile.isopen = true;
-
-          header.is_extensible = true;
-          header.header_size_in = 0;
-          header.header_size_out = 64;
-          header.channels = frame->channels;
-          header.nBlockAlign = frame->channels * codec->bits_per_raw_sample / 8 ;
-          header.wBitsPerSample = codec->bits_per_raw_sample;
-          header.dwChannelMask = cga2wav_channels[info->cga];
-          header.dwSamplesPerSec = frame->sample_rate;
-
-          fixwav(info2, &header);
-
-          globals.debugging = debug;
-
-      }
-    }
-  }
 
  int32_t cumbytes_written = 0;
 
@@ -581,7 +536,56 @@ int decode_mlp_file(fileinfo_t* info)
 
         if (gotFrame)
         {
-            int32_t bytes_written = 0;
+            static int32_t bytes_written = 0;
+            if (globals.decode && bytes_written == 0)
+            {
+              if (info->out_filename)
+              {
+                    fprintf(stderr, INF "Decoding file %s  to raw data in path: %s\n", info->filename, info->out_filename);
+                    int debug = globals.debugging;
+
+                    /* Hush it up as there will be spurious error mmsg */
+                    globals.debugging = false;
+                    fprintf(stderr, "%s\n",  ERR "Error allocating the frame1\n");
+
+                    fprintf(stderr, "%s\n",  ERR "Error allocating the frame2!\n");
+
+                    info2.prepend = true;
+                    info2.in_place = true;
+                    info2.cautious = false;
+                    info2.automatic = true;
+                    info2.interactive = false;
+                    info2.prunedbytes = 0;
+                    info2.padbytes = 0;
+                    info2.virtual = false;
+                    fprintf(stderr, "%s\n",  ERR "Error allocating the frame3\n");
+                    info2.outfile.filename = info->out_filename;
+                    info2.outfile.fp = fp;
+                    info2.infile = info2.outfile;
+                    info2.infile.isopen = false;;
+                    header.is_extensible = true;
+                    header.header_size_out = 80;
+                    header.channels = frame->channels;
+                    header.nBlockAlign = frame->channels * codec->bits_per_raw_sample / 8 ;
+                    header.wBitsPerSample = codec->bits_per_raw_sample;
+                    header.dwChannelMask = (frame->channel_layout < 21 && frame->channel_layout > 0) ? cga2wav_channels[frame->channel_layout] : 0;
+                    header.dwSamplesPerSec = frame->sample_rate;
+
+                    fixwav(&info2, &header);
+
+                    globals.debugging = debug;
+
+
+              }
+              fp = fopen(info->out_filename, "ab+");
+              if (fp == NULL)
+               {
+                   fprintf(stderr, ERR "Could not open destination file %s\n", info->out_filename);
+                   info->out_filename = NULL;
+                   globals.decode = false;
+               }
+
+            }
 
             if (globals.decode && fp)
             {
@@ -598,16 +602,20 @@ int decode_mlp_file(fileinfo_t* info)
                 else
                 if (sampleSize == 4)    // 32 bits -> 24 bits (codec->bits_per_raw_sample)
                 {
-                  for(int s = 0; s < frame->nb_samples; ++s)
+
+                  uint32_t bytes_written_sample = 0;
+                   for(int s = 0; s < frame->nb_samples; ++s)
                    {
                     for(int c = 0; c < codec->channels; ++c)
                      {
                         uint32_t val = ((int32_t*) frame->extended_data[0])[s * codec->channels + c];
                         val  >>= 8; // sampleSize * 8 - codec->bits_per_raw_sample
 
-                       fwrite(&val, 3, 1, fp);
+                       bytes_written_sample += fwrite(&val, 1, 3, fp);
                      }
                    }
+
+                   bytes_written = bytes_written_sample;
                 }
                 else
                 {
@@ -645,11 +653,15 @@ int decode_mlp_file(fileinfo_t* info)
          * ckSize, data_ckSize and nBlockAlign must be readjusted by computing
          * the exact audio content bytesize. Also we no longer prepend the header
          * but overwrite the existing one */
+        if (fp) fclose(fp);
+        fp = fopen(info->out_filename, "rb+");
+        info2.infile.fp = fp;
+        info2.infile.isopen = true;
+        fseek(fp, 0, SEEK_SET);
+        info2.prepend = false;
+        info2.in_place = true;
 
-        info2->prepend = false;
-        info2->in_place = true;
-
-        fixwav(info2, &header);
+        fixwav(&info2, &header);
 
         fclose(fp);
 

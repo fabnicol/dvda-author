@@ -82,15 +82,18 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
       goto getout;
     }
 
-   if (info->in_place)
+   if (! info->infile.isopen)
    {
-       if (filesize(info->infile) == 0)
-           info->infile.fp = fopen(info->infile.filename, "wb+");
+       if (info->in_place)
+       {
+           if (filesize(info->infile) == 0)
+               info->infile.fp = fopen(info->infile.filename, "wb+");
+           else
+               info->infile.fp = fopen(info->infile.filename, "rb+");
+       }
        else
-           info->infile.fp = fopen(info->infile.filename, "rb+");
+          info->infile.fp = fopen(info->infile.filename, "rb");
    }
-   else
-      info->infile.fp = fopen(info->infile.filename, "rb");
 
    if (info->infile.fp == NULL) return NULL;
 
@@ -343,7 +346,8 @@ Checkout:
 
   /* checkout stage: check and possibly repair header data */
 
-  header_size = header->channels > 2 ? HEADER_EXTENSIBLE_SIZE : HEADER_SIZE;
+  header_size = (header->channels > 2 || header->wBitsPerSample > 16) ? HEADER_EXTENSIBLE_SIZE : HEADER_SIZE;
+  header->is_extensible = (header_size == HEADER_EXTENSIBLE_SIZE);
   uint8_t *standard_header;
 
   switch (info->repair)
@@ -367,7 +371,7 @@ Checkout:
 
       /* to do: correct in_place facility and check padbytes */
 
-      if ((info->repair=launch_repair(info, header)) == FAIL) break;
+      if ((info->repair = launch_repair(info, header)) == FAIL) break;
 
       if (! info->virtual)
       {
