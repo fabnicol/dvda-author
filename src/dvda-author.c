@@ -257,43 +257,44 @@ int main(int argc,  char* const argv[])
     {
 
         /*top menu*/        NO_MENU,  // no top menu
-        /*nooutput*/        0,
-        /*runmkisofs*/      0,  // do not run mkisofs
-        /*autoplay*/        0,  // no autoplay
-        /*text table*/      0,  // no text table
-        /*silence*/         0,
-                            1,  // enabling lexer
-        /*logfile*/	        0,  // no log
-        /*loghtml*/         0,  //text log
-        /* logdecode */     0,
-        /*videozone*/       1,  // generates video zone
-        /*videolinking*/    0,  // no video link
-        /*playlist*/        0,  // no playlist
-        /*cga*/             0,  // no explicit channel group assignement
-        /*end_pause*/       0,  // no end pause
-        /*devel verbosity*/ 0,
-        /*very verbose*/    0,  // not very verbose
-        /*debugging*/       0,  // no debugging-level verbosity
-        /*padding*/         0,  // gapless join for like audio tracks, no padding
-        /*padding_continuous*/    0,  // no continuous padding
-        /*lossy_rounding*/  0,  // No audio loss
-        /*rungrowisofs*/    0,  // Do not burn with growisofs
+        /*nooutput*/        false,
+        /*runmkisofs*/      false,  // do not run mkisofs
+        /*autoplay*/        false,  // no autoplay
+        /*text table*/      false,  // no text table
+        /*silence*/         false,
+                            true,   // enabling lexer
+        /*logfile*/	        false,  // no log
+        /*loghtml*/         false,  // text log
+        /* logdecode */     false,  // no forensic aanalysis of system files
+        /*videozone*/       true,   // generates video zone
+        /*videolinking*/    false,  // no video link
+        /*decode */         true,   // decode MLP to WAV
+        /*playlist*/        false,  // no playlist
+        /*cga*/             false,  // no explicit channel group assignement
+        /*end_pause*/       false,  // no end pause
+        /*devel verbosity*/ false,  // no enhanced verbosity
+        /*very verbose*/    false,  // not very verbose
+        /*debugging*/       false,  // no debugging-level verbosity
+        /*padding*/         false,  // gapless join for like audio tracks, no padding
+        /*padding_continuous*/   false,  // no continuous padding
+        /*lossy_rounding*/  false,  // No audio loss
+        /*rungrowisofs*/    false,  // Do not burn with growisofs
 #ifndef WITHOUT_sox
-        /*sox_enable*/      0,  // no use of SoX
+        /*sox_enable*/      false,  // no use of SoX
 #endif
 
-        /*fixwav_enable*/               1,  // use of fixwav
-        /*fixwav_virtual_enable*/       1,  // use of fixwav (virtual headers)
-        /* automatic behaviour */       1,
-        /* do not prepend a header */   0,
-        /* do not correct in place */   0,
-        /* be cautious on overwrites*/  0,
-        /* not interactive */           0,
-        /* no padding */    0,
-        /* prune */         0,
-        /* force */         0,
-        /* textablesize */  0,
-        /* topmenusize */   0,
+        /*fixwav_enable*/               true,  // use of fixwav
+        /*fixwav_virtual_enable*/       true,  // use of fixwav (virtual headers)
+        /* automatic behaviour */       true,
+        /* do not prepend a header */   false,
+        /* do not correct in place */   false,
+        /* be cautious on overwrites*/  false,
+        /* not interactive */           false,
+        /* no padding */    false,
+        /* prune */         false,
+        /* force */         false,
+        /* textablesize */  false,
+        /* topmenusize */   false,
         .grouptextsize = tab1,
         .tracktextsize = tab2,
         .backgroundmpgsize = 0,

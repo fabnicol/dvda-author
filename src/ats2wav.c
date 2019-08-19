@@ -158,11 +158,12 @@ inline static void  aob_open(WaveData *info)
     }
 }
 
-inline static void wav_output_path_create(const char* dirpath, WaveData *info, int track, int title)
+inline static void output_path_create(const char* dirpath, WaveData *info, int track, int title, const char* extension)
 {
 
-    char Title[23] = {0};
-    sprintf(Title, "track_%02d_title_%02d_.wav", track + 1, title + 1);
+    char Title[19 + strlen(extension)];
+    memset(Title, 0, 19 + strlen(extension));
+    sprintf(Title, "track_%02d_title_%02d%s", track + 1, title + 1, extension);
 
     info->outfile.filename = filepath(dirpath, Title);
 }
@@ -290,11 +291,76 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, bool
     if (info->infile.type == AFMT_MLP)
     {
         *status = VALID;
+        fileinfo_t decinfo;
+        decinfo.filename = info->infile.filename; // only fields read as input
+        decinfo.out_filename = NULL; // do not decode here, just collect info
 
+#if FORENSIC_MLP_DECODE == 1
+        // This is overkill as ffmpeg decoder provides internal audio characteristics at decoding stage
+        // Left as last-resort for possible uses
+        // By default define as 0
+
+        if (position == FIRST_PACK)
+        {
+            fseek(info->infile.fp, offset0 + 68, SEEK_SET);
+            uint8_t buff[12];
+            int res = fread(buff, 1, 12, info->infile.fp);
+            if (res != 12)
+            {
+                fseek(info->infile.fp, offset0, SEEK_SET);
+                 *status = INVALID;
+                return position;
+            }
+            if ( ! audit_mlp_header(buff, &decinfo, false))
+            {
+                *status = INVALID;
+            }
+            fseek(info->infile.fp, offset0, SEEK_SET);
+            return position;
+        }
+        else
+        {
+           // This is useless unless the first pack AOB header is broken or lacking
+           // and a forensic try at extraction is performed
+
+           uint8_t buff[2048] = {0};
+           int res = fread(buff, 1, 2048, info->infile.fp);
+           if (res != 2048)   // last sector, just return
+           {
+               fseek(info->infile.fp, offset0, SEEK_SET);
+               return position;
+           }
+
+
+          short int count = 0;
+          bool err = false;
+          while ((err = audit_mlp_header(buff + count, &decinfo, false)) == false && count < 2040)
+          {
+              ++count;
+          }
+
+          if (res == false)
+          {
+              fseek(info->infile.fp, offset0, SEEK_SET);
+              if (globals.veryverbose)
+                  fprintf(stderr, "%s\n", ERR "Could not find major header to peek audio info from MLP file.");
+              *status = INVALID;
+              return position;
+          }
+
+          header->wBitsPerSample = decinfo.bitspersample;
+          header->channels = decinfo.channels;
+          header->dwSamplesPerSec = decinfo.samplerate;
+        }
+
+        fseek(info->infile.fp, offset0, SEEK_SET);
+#endif
         return position;
     }
     
-    fseek(info->infile.fp, offset0 + 29 + (position == FIRST_PACK ? 21 : 0), SEEK_SET);
+    uint32_t offset_shift = 29 + (position == FIRST_PACK ? 21 : 0);
+
+    fseek(info->infile.fp, offset0 + offset_shift, SEEK_SET);
 
     uint8_t sample_size[1] = {0};
     uint8_t sample_rate[1] = {0};
@@ -424,27 +490,6 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
     bool forensic_cut = false;
     // CAUTION : check coherence of this table and the S table of audio.c, of which it is only a subset.
 
-    const uint16_t T[2][6][6]=     // 16-bit table
-    {
-         {{ 	2000, 16,   22, 11, 16, 16},
-            {	2000, 16,   28, 11, 16, 10},
-            { 	2004, 24,   24, 15, 12, 10},
-            { 	2000, 16,   28, 11, 16, 10},
-            { 	2000, 20,   22, 15, 16, 10},
-            { 	1992, 24,   22, 10, 10, 10}},
-        // 24-bit table
-        {{    	2004, 24,   22, 15, 12, 12},
-            { 	2004, 24,   24, 15, 12, 10},
-            { 	1998, 18,   28, 15, 10, 10},
-            { 	1992, 24,   22, 10, 10, 10},
-            { 	1980,  0,   22, 15, 10, 10},
-            { 	1980,  0,   22, 15, 16, 16}}
-    };
-
-    const short int table_index = header->wBitsPerSample == 24 ? 1 : 0;
-    const uint16_t U[6] = {2005, 21, 13, 6, 6, 6};
-
-#   define X T[table_index][header->channels-1]
 
     int lpcm_payload;
     int firstpackdecrement;
@@ -459,15 +504,39 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 
     if (info->infile.type == AFMT_LPCM)
     {
+#   define X T[table_index][header->channels-1]
+
+        const uint16_t T[2][6][6]=     // 16-bit table
+        {
+             {{ 	2000, 16,   22, 11, 16, 16},
+                {	2000, 16,   28, 11, 16, 10},
+                { 	2004, 24,   24, 15, 12, 10},
+                { 	2000, 16,   28, 11, 16, 10},
+                { 	2000, 20,   22, 15, 16, 10},
+                { 	1992, 24,   22, 10, 10, 10}},
+            // 24-bit table
+            {{    	2004, 24,   22, 15, 12, 12},
+                { 	2004, 24,   24, 15, 12, 10},
+                { 	1998, 18,   28, 15, 10, 10},
+                { 	1992, 24,   22, 10, 10, 10},
+                { 	1980,  0,   22, 15, 10, 10},
+                { 	1980,  0,   22, 15, 16, 16}}
+        };
+
+        const short int table_index = header->wBitsPerSample == 24 ? 1 : 0;
         lpcm_payload = X[0];
         firstpackdecrement = X[1];
         lastpack_audiopesheaderquantity = X[2];
         firstpack_lpcm_headerquantity = X[3];
         midpack_lpcm_headerquantity   = X[4];
         lastpack_lpcm_headerquantity  = X[5];
+
+#   undef X
     }
     else
     {
+        const uint16_t U[6] = {2005, 21, 13, 6, 6, 6};
+
         lpcm_payload = U[0];
         firstpackdecrement = U[1];
         lastpack_audiopesheaderquantity = U[2];
@@ -475,9 +544,6 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
         midpack_lpcm_headerquantity   = U[4];
         lastpack_lpcm_headerquantity  = U[5];
     }
-
-#   undef X
-
 
     int res  = 0, result;    
     int lpcm_payload_cut = 0;
@@ -634,64 +700,6 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
     return(fpout_size_increment);
 }
 
-static inline void filestat_clean(filestat_t* f)
-{
-    free(f->filename);
-    f->filename = NULL;
-    if (f->fp != NULL) fclose(f->fp);
-    f->isopen = false;
-}
-
-static inline filestat_t filestat_copy(filestat_t f)
-{
-    filestat_t out;
-    out.filename = f.filename ? strdup(f.filename) : NULL;
-    out.isopen = f.isopen;
-    out.type = f.type;
-    if (out.isopen)
-    {
-        out.fp = fopen(f.filename, "rb+");  // beware of concurrency
-    }
-    else out.fp = NULL;
-    out.filesize = f.filesize;
-    return out;
-}
-
-static inline WaveData* wavedata_copy(const WaveData* w)
-{
-    WaveData* out = calloc(1, sizeof (WaveData));
-    if (out == NULL) return NULL;
-
-    out->database  = w->database ? strdup(w->database) : NULL;
-    out->filetitle = w->filetitle ? strdup(w->filetitle) : NULL;
-    out->automatic = w->automatic;
-    out->prepend   = w->prepend;
-    out->in_place  = w->in_place;
-    out->cautious  = w->cautious;
-    out->interactive = w->interactive;
-    out->padding     = w->padding;
-    out->prune       = w->prune;
-    out->virtual     = w->virtual;
-    out->repair      = w->repair;
-    out->padbytes    = w->padbytes;
-    out->prunedbytes = w->prunedbytes;
-
-    out->infile  = filestat_copy(w->infile);
-    out->outfile = filestat_copy(w->outfile);
-    return out;
-}
-
-static inline void wavedata_clean(WaveData* w)
-{
-    free(w->database);
-    w->database = NULL;
-    free(w->filetitle);
-    w->filetitle = NULL;
-    filestat_clean(&w->infile);
-    if (! w->in_place) filestat_clean(&w->outfile);
-    free(w);
-    w = NULL;
-}
 
 static inline int get_position(int position, WaveData* info, WaveHeader* header, bool* status, uint8_t* continuity)
 {
@@ -800,11 +808,11 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                 foutput("%s |%s|\n", INF "Creating directory", dir_g_i);
     }
 
-    // Start of title loop title
+    // Start of title loop
 
     while (position != END_OF_AOB)
     {
-        /* First pass to get basic audio characteristics (sample rate, bit rate, cga */
+        /* First pass to get basic audio characteristics (sample rate, bit rate, cga) of title */
         
         bool status = VALID;
         errno = 0;
@@ -826,7 +834,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
 
                 unsigned long pack_in_track = 1;
 
-                wav_output_path_create(dir_g_i, info, track, title);
+                output_path_create(dir_g_i, info, track, title, info->infile.type == AFMT_LPCM ? ".wav" : ".mlp");
 
                 files[i][track]->filename = strdup(info->outfile.filename);
 
@@ -1071,6 +1079,17 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
                 }
 
                 S_CLOSE(info->outfile)
+
+                if (info->infile.type == AFMT_MLP && globals.decode && file_exists(info->outfile.filename))
+                {
+                    fileinfo_t decinfo;
+                    decinfo.filename = info->outfile.filename;
+                    decinfo.bitspersample = files[i][track]->bitspersample;
+                    decinfo.channels = files[i][track]->channels;
+                    decinfo.cga = files[i][track]->cga;
+                    decinfo.out_filename = replace_file_extension(decinfo.filename, "_dec_", ".wav");
+                    decode_mlp_file(&decinfo);
+                }
 
                 if (position == LAST_PACK || position == CUT_PACK_RMDR)
                 {

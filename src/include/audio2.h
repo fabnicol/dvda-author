@@ -27,12 +27,40 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #ifndef _AUDIO_H
 #define _AUDIO_H
-
 #include <stdio.h>
-#include <stdint.h>
-#include <sys/types.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <math.h>
+#ifdef __GNU_LIBRARY__
+#include <unistd.h>
+#endif
 #include <sys/stat.h>
+#include <sys/types.h>
+#include "export.h"
+
+#include "stream_decoder.h"
+#include "fixwav.h"
+#include "fixwav_manager.h"
+#include "auxiliary.h"
+#include "commonvars.h"
+#include "command_line_parsing.h"
+#include "winport.h"
+#ifndef WITHOUT_sox
+#include "sox.h"
+#include "libsoxconvert.h"
+#endif
+#include "multichannel.h"
+#include "file_input_parsing.h"
+#include "libavcodec/mlplayout.h"
+#include "libavutil/opt.h"
+#include "libavcodec/avcodec.h"
+#include "libavformat/avformat.h"
+#include "libswresample/swresample.h"
+#include "c_utils.h"
+#include "ats.h"
 #include "structures.h"
+
 
 
 #define AFMT_WAVE 1
@@ -58,4 +86,8 @@ uint8_t wav2cga_channels(fileinfo_t *info);
 uint8_t get_cga_index(const char* cga);
 uint8_t check_cga_assignment(long cgaint);
 int calc_info(fileinfo_t* info);
+int decode_mlp_file(fileinfo_t* info);
+bool audit_mlp_header(uint8_t* header, fileinfo_t* info, bool);
+
+char* replace_file_extension(const char * filename, const char* infix, const char* new_extension);
 #endif

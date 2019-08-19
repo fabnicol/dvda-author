@@ -4,17 +4,6 @@
 
 #include "sound.h"
 
-#include "fixwav.h"
-#include "fixwav_manager.h"
-
-#include "c_utils.h"
-#include "auxiliary.h"
-#include "launch_manager.h"
-#include <errno.h>
-#include <stdlib.h>
-#ifndef _WIN32
-#include <unistd.h>
-#endif
 extern globalData globals;
 
 // Checks whether video soundtracks comply with standard for AUDIO_TS.VOB authoring
@@ -28,6 +17,71 @@ int sox_initialise()
 #endif
 return 0;
 }
+
+inline void filestat_clean(filestat_t* f)
+{
+    free(f->filename);
+    f->filename = NULL;
+    if (f->fp != NULL) fclose(f->fp);
+    f->isopen = false;
+}
+
+inline filestat_t filestat_copy(filestat_t f)
+{
+    filestat_t out;
+    out.filename = f.filename ? strdup(f.filename) : NULL;
+    out.isopen = f.isopen;
+    out.type = f.type;
+    if (out.isopen)
+    {
+        out.fp = fopen(f.filename, "rb+");  // beware of concurrency
+    }
+    else out.fp = NULL;
+    out.filesize = f.filesize;
+    return out;
+}
+
+inline WaveData* wavedata_copy(const WaveData* w)
+{
+    WaveData* out = calloc(1, sizeof (WaveData));
+    if (out == NULL) return NULL;
+    if (w == NULL) return out;
+    out->database  = w->database ? strdup(w->database) : NULL;
+    out->filetitle = w->filetitle ? strdup(w->filetitle) : NULL;
+    out->automatic = w->automatic;
+    out->prepend   = w->prepend;
+    out->in_place  = w->in_place;
+    out->cautious  = w->cautious;
+    out->interactive = w->interactive;
+    out->padding     = w->padding;
+    out->prune       = w->prune;
+    out->virtual     = w->virtual;
+    out->repair      = w->repair;
+    out->padbytes    = w->padbytes;
+    out->prunedbytes = w->prunedbytes;
+
+    out->infile  = filestat_copy(w->infile);
+    out->outfile = filestat_copy(w->outfile);
+    return out;
+}
+
+inline void wavedata_clean(WaveData* w)
+{
+    free(w->database);
+    w->database = NULL;
+    free(w->filetitle);
+    w->filetitle = NULL;
+    filestat_clean(&w->infile);
+    if (! w->in_place) filestat_clean(&w->outfile);
+    free(w);
+    w = NULL;
+}
+
+inline WaveData* wavedata_init(void)
+{
+    return wavedata_copy(NULL);
+}
+
 
 int audit_soundtrack(char* path, bool strict)
 {

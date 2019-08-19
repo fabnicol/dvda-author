@@ -308,7 +308,6 @@ const uint16_t PSTD = 10;
 
 inline static void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uint8_t mlp_flag, uint8_t extension_flag, uint32_t PTS, uint32_t DTS)
 {
-
     switch(mlp_flag)
     {
       case  0xC0:
@@ -323,7 +322,6 @@ inline static void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uin
         PES_header_data_length[0] = 5;
         break;
     }
-
 
     if (extension_flag)
     {
@@ -868,6 +866,7 @@ inline static void calc_PTS_DTS_MLP(fileinfo_t* info)
     {
       double ptsint = ceil((double) (info->mlp_layout[i].nb_samples  + info->samplesperframe)/ (double) info->samplerate * 90000.0);
       double dtsint = ceil((double) info->mlp_layout[i].nb_samples/ (double) info->samplerate * 90000.0);
+      // Here rounding to the next bytesperframe does not seem to be necessary unlike in the PCM case. TODO: check.
       info->pts[i] = (uint32_t) ptsint;
       info->dts[i] = (uint32_t)  dtsint;
       info->pts[i] += start_byteshift;
@@ -940,6 +939,17 @@ inline static void calc_SCR_MLP(fileinfo_t* info)
       info->scr[i] = ((uint64_t) round(temp)) * 300 ;  // giving up on SCR_ext ticks
     }
     return;
+}
+
+
+uint32_t convert_to_PTS(fileinfo_t* info)
+{
+    double ptsl;
+    ptsl   =  info->numsamples / info->bytesperframe;
+    ptsl   =  ceil(ptsl) * info->bytesperframe;  // ceiling round
+    ptsl  /=  info->bytespersecond;
+    ptsl  *=  90000.0; // 1 s = 90,000 PTS ticks
+    return (uint32_t) round(ptsl);
 }
 
 inline static uint32_t calc_PTS(fileinfo_t* info, uint64_t pack_in_title, uint32_t *totpayload)

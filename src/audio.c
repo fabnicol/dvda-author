@@ -31,39 +31,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "config.h"
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <math.h>
-#ifdef __GNU_LIBRARY__
-#include <unistd.h>
-#endif
-#include <sys/stat.h>
-#include "export.h"
 #include "audio2.h"
-#include "audio.h"
-#include "stream_decoder.h"
-#include "fixwav.h"
-#include "fixwav_manager.h"
-
-#include "auxiliary.h"
-#include "commonvars.h"
-#include "command_line_parsing.h"
-#include "winport.h"
-#ifndef WITHOUT_sox
-#include "sox.h"
-#include "libsoxconvert.h"
-#endif
-#include "multichannel.h"
-#include "file_input_parsing.h"
-#include "libavcodec/mlplayout.h"
-#include "libavutil/opt.h"
-#include "libavcodec/avcodec.h"
-#include "libavformat/avformat.h"
-#include "libswresample/swresample.h"
-#include "c_utils.h"
-
 
 extern globalData globals;
 static const uint8_t default_cga[6] = {0,  1,  7,  3,   16,   17};  //default channel assignment
@@ -473,85 +441,128 @@ void flac_error_callback(const FLAC__StreamDecoder GCC_UNUSED *dec,
 #endif
 
 
-int decode_mlp_file(fileinfo_t* info) {
-
+int decode_mlp_file(fileinfo_t* info)
+{
     // initialize all muxers, demuxers and protocols for libavformat
     // (does nothing if called twice during the course of one program execution)
-    av_register_all();
 
-    const char* path = info->filename;
+  av_register_all();
+
+  const char* path = info->filename;
 
     // get format from audio file
-    AVFormatContext* format = avformat_alloc_context();
+  AVFormatContext* format = avformat_alloc_context();
 
-    if (avformat_open_input(&format, path, NULL, NULL) != 0) {
+  if (avformat_open_input(&format, path, NULL, NULL) != 0)
+  {
         fprintf(stderr, ERR "Could not open file '%s'\n", path);
         return -1;
-    }
-    if (avformat_find_stream_info(format, NULL) < 0) {
+  }
+
+  if (avformat_find_stream_info(format, NULL) < 0)
+  {
         fprintf(stderr, ERR "Could not retrieve stream info from file '%s'\n", path);
         return -1;
-    }
+  }
 
-    // Find the index of the first audio stream
+ // Find the index of the first audio stream
 
-    int stream_index = -1;
-    for (int i = 0; i < format->nb_streams; ++i) {
-        if (format->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
-            stream_index = i;
-            break;
-        }
-    }
+  int stream_index = -1;
+  for (int i = 0; i < format->nb_streams; ++i)
+  {
+      if (format->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
+      {
+          stream_index = i;
+          break;
+      }
+  }
 
-    if (stream_index == -1) {
+  if (stream_index == -1)
+  {
         fprintf(stderr, ERR "Could not retrieve audio stream from file '%s'\n", path);
         return -1;
-    }
+  }
 
-    AVStream* stream = format->streams[stream_index];
+  AVStream* stream = format->streams[stream_index];
 
-    // find & open codec
-    AVCodecContext* codec = stream->codec;
+  // find & open codec
 
-    if (avcodec_open2(codec, avcodec_find_decoder(codec->codec_id), NULL) < 0) {
+  AVCodecContext* codec = stream->codec;
+
+  codec->request_sample_fmt = av_get_alt_sample_fmt(codec->sample_fmt, 0);
+
+  if (avcodec_open2(codec, avcodec_find_decoder(codec->codec_id), NULL) < 0)
+    {
         fprintf(stderr, ERR "Failed to open decoder for stream #%u in file '%s'\n", stream_index, path);
         return -1;
     }
 
     // prepare to read data
-    AVPacket packet;
-    av_init_packet(&packet);
-    AVFrame* frame = av_frame_alloc();
-    if (!frame)
+  AVPacket packet;
+  av_init_packet(&packet);
+  AVFrame* frame = av_frame_alloc();
+
+  if (!frame)
     {
         fprintf(stderr, ERR "Error allocating the frame\n");
         return -1;
     }
 
   int cumsize = 0;
+  FILE* fp = NULL;
+  WaveData *info2;
+  WaveHeader header;
 
-  if (globals.maxverbose || info->out_filename != NULL)
+  if (globals.decode)
   {
-    FILE* fp = NULL;
-
-    if (info->out_filename != NULL)
+    if (info->out_filename)
     {
-      fp = fopen(info->out_filename, "wb+");
-      if (fp == NULL)
+     fp = fopen(info->out_filename, "wb+");
+     if (fp == NULL)
       {
           fprintf(stderr, ERR "Could not open destination file %s\n", info->out_filename);
           info->out_filename = NULL;
+          globals.decode = false;
       }
       else
       {
           fprintf(stderr, INF "Decoding file %s  to raw data in path: %s\n", info->filename, info->out_filename);
+          int debug = globals.debugging;
+
+          /* Hush it up as there will be spurious error mmsg */
+          globals.debugging = false;
+
+          info2 = wavedata_init();
+
+          info2->prepend = true;
+          info2->in_place = true;
+          info2->outfile.filename = info->out_filename;
+          info2->outfile.fp = fp;
+          info2->infile = info2->outfile;
+          info2->infile.isopen = true;
+
+          header.is_extensible = true;
+          header.header_size_in = 0;
+          header.header_size_out = 64;
+          header.channels = frame->channels;
+          header.nBlockAlign = frame->channels * codec->bits_per_raw_sample / 8 ;
+          header.wBitsPerSample = codec->bits_per_raw_sample;
+          header.dwChannelMask = cga2wav_channels[info->cga];
+          header.dwSamplesPerSec = frame->sample_rate;
+
+          fixwav(info2, &header);
+
+          globals.debugging = debug;
+
       }
     }
+  }
 
-    int bytespersample = info->channels * info->bitspersample / 8 ;
-    int32_t cumbytes_written = 0;
+ int32_t cumbytes_written = 0;
 
-    while (av_read_frame(format, &packet) >= 0)
+ if (globals.decode || globals.maxverbose)
+ {
+   while (av_read_frame(format, &packet) >= 0)
     {
         // decode one frame
         int gotFrame;
@@ -559,14 +570,53 @@ int decode_mlp_file(fileinfo_t* info) {
         if ((ret = avcodec_decode_audio4(codec, frame, &gotFrame, &packet)) < 0)
         {
             fprintf(stderr, ERR "Error decoding audio frame (%s)\n", av_err2str(ret));
+            errno = 0;
+            if (fp) fclose(fp);
+            if (errno)
+                fprintf(stderr, ERR "Could not close file %s\n", info->out_filename);
+            else
+                fprintf(stderr, MSG_TAG "Extracted %ld bytes from file %s to file %s\n", cumbytes_written, path, info->out_filename);
             return ret;
         }
 
         if (gotFrame)
         {
-            size_t unpadded_linesize =bytespersample * frame->nb_samples ;
+            int32_t bytes_written = 0;
 
-            int32_t bytes_written = fwrite(frame->extended_data[0], 1, unpadded_linesize, fp);
+            if (globals.decode && fp)
+            {
+                size_t unpadded_linesize = 0;
+
+                int sampleSize = av_get_bytes_per_sample(codec->sample_fmt);
+
+                if (sampleSize == 2)
+                {
+
+                    unpadded_linesize = frame->channels *  sampleSize * frame->nb_samples;
+                    bytes_written = fwrite(frame->extended_data[0], 1, unpadded_linesize, fp);
+                }
+                else
+                if (sampleSize == 4)    // 32 bits -> 24 bits (codec->bits_per_raw_sample)
+                {
+                  for(int s = 0; s < frame->nb_samples; ++s)
+                   {
+                    for(int c = 0; c < codec->channels; ++c)
+                     {
+                        uint32_t val = ((int32_t*) frame->extended_data[0])[s * codec->channels + c];
+                        val  >>= 8; // sampleSize * 8 - codec->bits_per_raw_sample
+
+                       fwrite(&val, 3, 1, fp);
+                     }
+                   }
+                }
+                else
+                {
+                        fprintf(stderr, "Invalid sample size %d.\n", sampleSize);
+                        fclose(fp);
+                        goto clean_up;
+                }
+
+            }
 
             if (globals.maxverbose)
             {
@@ -586,44 +636,65 @@ int decode_mlp_file(fileinfo_t* info) {
         }
     }
 
+
     errno = 0;
-    fclose(fp);
-    if (errno)
-        fprintf(stderr, ERR "Could not close file %s\n", info->out_filename);
-    else
-        fprintf(stderr, MSG_TAG "Extracted %ld to file %s\n", cumbytes_written, info->out_filename);
-  }
-  else
-  {
-      while (av_read_frame(format, &packet) >= 0)
+
+    if (globals.decode && fp)
+    {
+        /* WAV output is now OK except for the wav file size-based header data.
+         * ckSize, data_ckSize and nBlockAlign must be readjusted by computing
+         * the exact audio content bytesize. Also we no longer prepend the header
+         * but overwrite the existing one */
+
+        info2->prepend = false;
+        info2->in_place = true;
+
+        fixwav(info2, &header);
+
+        fclose(fp);
+
+        if (errno)
+            fprintf(stderr, ERR "Could not close file %s\n", info->out_filename);
+        else
+            fprintf(stderr, MSG_TAG "Extracted %ld bytes to file %s\n", cumbytes_written, info->out_filename);
+    }
+ }
+ else
+ {
+    while (av_read_frame(format, &packet) >= 0)
+    {
+      // decode one frame
+      int gotFrame;
+      if (avcodec_decode_audio4(codec, frame, &gotFrame, &packet) < 0)
       {
-          // decode one frame
-          int gotFrame;
-          if (avcodec_decode_audio4(codec, frame, &gotFrame, &packet) < 0) {
-              break;
-          }
-          if (!gotFrame) {
-              continue;
-          }
+          break;
       }
+
+      if (!gotFrame)
+      {
+          continue;
+      }
+    }
   }
 
+  if (! globals.decode)
+  {
     unsigned long size = info->file_size / info->lpcm_payload + 4;
 
     info->mlp_layout = (struct MLP_LAYOUT *) calloc(size, sizeof (struct MLP_LAYOUT));
 
     get_mlp_layout(info->mlp_layout, size); // 1968 is the minimum payload. +3 for last sector buffer
+  }
 
-    // clean up
-    av_frame_free(&frame);
-    avcodec_close(codec);
-    avformat_free_context(format);
+clean_up:
 
-      // success
-    return 0;
+  av_frame_free(&frame);
+  avcodec_close(codec);
+  avformat_free_context(format);
 
+  //wavedata_clean(info2); segfaults
+  return errno;
 }
-
 
 int calc_info(fileinfo_t* info)
 {
@@ -727,7 +798,13 @@ int calc_info(fileinfo_t* info)
     {
         foutput(INF "Searching MLP layout for file %s. Please wait...\n", info->filename);
 
-        decode_mlp_file(info);
+        int res = decode_mlp_file(info);
+
+        if (res)
+        {
+            fprintf(stderr, "%s\n", WAR "Errors occurred during decoding...");
+            fprintf(stderr, WAR "%s\n",  strerror(res));
+        }
 
         // TODO : check if get_mlp_layout has correct PCM saple count for all audio characteristics
 
@@ -760,11 +837,9 @@ int calc_info(fileinfo_t* info)
             if (index && info->mlp_layout[index].nb_samples == 0) break;
         }
 
-        info->numsamples = info->mlp_layout[index - 1].nb_samples;
-        info->numbytes = info->file_size;
+        info->numsamples   = info->mlp_layout[index - 1].nb_samples;
+        info->numbytes     = info->file_size;
         info->pcm_numbytes = info->numsamples * info->channels * (info->bitspersample / 8); //This is for PCM, not MLP
-
-
     }
     else
     {
@@ -772,8 +847,9 @@ int calc_info(fileinfo_t* info)
             = (info->numbytes * 8) / (info->channels * info->bitspersample);
     }
 
-    double ptsl = floor((90000.0 * info->numsamples) / info->samplerate);  // = duration in seconds x 90000
-    info->PTS_length = (uint64_t) ptsl;
+    // Make coherent with calc_PTS
+
+    info->PTS_length = (uint32_t) convert_to_PTS(info);
 
     // a rounding error of 1 in PTS_LENGTH = samplerate / 90000 in numsamples = samplerate / (8 x 90000) x nchannels x bitspersample in bytes.
 
@@ -968,14 +1044,15 @@ static inline int compute_header_size(FILE* fp)
 }
 
 
-static inline int extract_audio_info_by_all_means(uint8_t* header, fileinfo_t* info)
+inline bool audit_mlp_header(uint8_t* header, fileinfo_t* info, bool calc)
 {
+    if (header[0] != 0xF8 || header[1] != 0x72 || header[2] != 0x6F || header[3] != 0xBB)
+        return false;
 
-    if (header[4] == 0xF8 && header[5] == 0x72 && header[6] == 0x6F && header[7] == 0xBB)   // MLP case
-    {
-        info->type = AFMT_MLP;
-        unsigned long pathl = strlen(info->filename);
-        if (pathl > 3)
+    info->type = AFMT_MLP;
+    if (info->filename == NULL) return false;
+    unsigned long pathl = strlen(info->filename);
+    if (pathl > 3)
         {
          if (info->filename[pathl - 1] == 'p'
              && info->filename[pathl - 2] == 'l'
@@ -1001,7 +1078,7 @@ static inline int extract_audio_info_by_all_means(uint8_t* header, fileinfo_t* i
             }
         }
 
-        switch (header[8])
+        switch (header[4])
         {
             case 0x00:
             case 0x0f:
@@ -1022,7 +1099,7 @@ static inline int extract_audio_info_by_all_means(uint8_t* header, fileinfo_t* i
                 break;
         }
 
-        switch (header[9])
+        switch (header[5])
         {
             case 0x00:
             case 0x0f:
@@ -1058,25 +1135,37 @@ static inline int extract_audio_info_by_all_means(uint8_t* header, fileinfo_t* i
                 break;
         }
 
-        info->cga =  check_cga_assignment(header[11]);
-        info->channels = cga_to_channel(info->cga);
-        info->header_size = 0;  // this is the file header size, not the AOB header sizes (64 for first pack, 43 for others)
-        if (info->cga == 0xFF)
-        {
-            foutput(ERR "Could not detect number of channels for MLP file %s with channel group assignment: %d\n", info->filename, header[11]);
-        }
-        else
-        if (info->channels == 0)
-        {
-            foutput(ERR "Could not detect number of channels for MLP file %s with channel group assignment: %d (%s)\n", info->filename, info->cga, cga_define[info->cga]);
-        }
+    info->cga         = check_cga_assignment(header[7]);
+    info->channels    = cga_to_channel(info->cga);
+    info->header_size = 0;  // this is the file header size, not the AOB header sizes (64 for first pack, 43 for others)
 
-        // Now on to audio layout and numbytes
-        // check info->file_size is known
-        // calc lpcm_payload here
+    if (info->cga == 0xFF)
+    {
+        foutput(ERR "Could not detect number of channels for MLP file %s with channel group assignment: %d\n",
+                info->filename, header[7]);
+    }
+    else
+    if (info->channels == 0)
+    {
+        foutput(ERR "Could not detect number of channels for MLP file %s with channel group assignment: %d (%s)\n",
+                info->filename, info->cga, cga_define[info->cga]);
+    }
 
-        calc_info(info);
+    // Now on to audio layout and numbytes
+    // check info->file_size is known
+    // calc lpcm_payload here
 
+    if (calc) calc_info(info);
+
+    return true;
+}
+
+static inline int extract_audio_info_by_all_means(uint8_t* header, fileinfo_t* info)
+{
+    if (audit_mlp_header(header + 4, info, true))
+    {
+        foutput("%s\n", MSG_TAG "Found MLP audio: %d channels, %d bits per sample, %d Hz",
+                info->channels, info->bitspersample, info->samplerate);
         return(info->type = AFMT_MLP);
     }
     else
@@ -1535,32 +1624,39 @@ int fixwav_repair(fileinfo_t *info)
 
 //#ifndef WITHOUT_sox
 
-char* replace_file_extension(const char * filename)
+// repl must include the dot
+
+char* replace_file_extension(const char * filename, const char* infix, const char* new_extension)
 {
-    int l=0,s=strlen(filename);
+    int l = 0, s = strlen(filename);
 
     do
-        l++;
-    while ((l < s-1) && (filename[s-l] != '.'));
+        ++l;
 
-    if (1 == s-l)
+    while ((l < s - 1) && (filename[s - l] != '.'));
+
+    if (1 == s - l)
     {
         foutput("%s\n", ERR "To convert to WAV SoX.needs to indentify audio format and filename.\n       Use extension of type '.format'\n");
         if (globals.debugging)  foutput("%s %s \n", INF "Skipping file ", filename);
         return(NULL);
     }
 
-// Requires C99
-    int size=s-l;
+   // Requires C99
 
-   char* new_wav_name = (char* )calloc(size+l+10, sizeof(char));
+   int size = s - l;
+   int repl_length = strlen(new_extension);
+   int infix_length = strlen(infix);
+
+   char* new_wav_name = (char* ) calloc(s + repl_length + infix_length + 1, sizeof(char));
 
    if (new_wav_name == NULL) return NULL;
     memcpy(new_wav_name, filename, size);
-    memcpy(new_wav_name+size, "_sox_", 5);
-    memcpy(new_wav_name+size+5, filename+size+1, l-1);
-    memcpy(new_wav_name+size+l+4, ".wav", 4);
-    new_wav_name[size+l+8]='\0';
+    if (infix_length)
+       memcpy(new_wav_name + size, infix, infix_length);
+    memcpy(new_wav_name + size + infix_length, filename + size + 1, l - 1);
+    memcpy(new_wav_name + s - 1 + infix_length, new_extension, repl_length);
+    new_wav_name[s + infix_length + repl_length] = '\0';
 
     // Here, tolerating a memory leak for -g filenames.
     // -i filenames could in principle be freed.
@@ -1572,7 +1668,7 @@ char* replace_file_extension(const char * filename)
 #ifndef WITHOUT_sox
 int launch_sox(fileinfo_t* info)
 {
-    char* new_wav_name = replace_file_extension(info->filename);
+    char* new_wav_name = replace_file_extension(info->filename, "_sox_", ".wav");
 
     if (new_wav_name == NULL)
     {
