@@ -531,7 +531,7 @@ int decode_mlp_file(fileinfo_t* info)
                 fprintf(stderr, ERR "Could not close file %s\n", info->out_filename);
             else
                 fprintf(stderr, MSG_TAG "Extracted %ld bytes from file %s to file %s\n", cumbytes_written, path, info->out_filename);
-            return ret;
+            break;
         }
 
         if (gotFrame)
@@ -549,7 +549,8 @@ int decode_mlp_file(fileinfo_t* info)
                     fprintf(stderr, "%s\n",  ERR "Error allocating the frame1\n");
 
                     fprintf(stderr, "%s\n",  ERR "Error allocating the frame2!\n");
-
+                    memset(&info2, 0, sizeof (WaveData));
+                    memset(&header, 0, sizeof (WaveHeader));
                     info2.prepend = true;
                     info2.in_place = true;
                     info2.cautious = false;
@@ -621,7 +622,7 @@ int decode_mlp_file(fileinfo_t* info)
                 {
                         fprintf(stderr, "Invalid sample size %d.\n", sampleSize);
                         fclose(fp);
-                        goto clean_up;
+                        break;
                 }
 
             }
@@ -647,13 +648,13 @@ int decode_mlp_file(fileinfo_t* info)
 
     errno = 0;
 
-    if (globals.decode && fp)
+    if (globals.decode && info->out_filename)
     {
         /* WAV output is now OK except for the wav file size-based header data.
          * ckSize, data_ckSize and nBlockAlign must be readjusted by computing
          * the exact audio content bytesize. Also we no longer prepend the header
          * but overwrite the existing one */
-        if (fp) fclose(fp);
+
         fp = fopen(info->out_filename, "rb+");
         info2.infile.fp = fp;
         info2.infile.isopen = true;
@@ -662,8 +663,6 @@ int decode_mlp_file(fileinfo_t* info)
         info2.in_place = true;
 
         fixwav(&info2, &header);
-
-        fclose(fp);
 
         if (errno)
             fprintf(stderr, ERR "Could not close file %s\n", info->out_filename);
