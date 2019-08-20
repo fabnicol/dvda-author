@@ -1945,7 +1945,9 @@ out:
             {
               aob2wav_parsing(filter_dir_files(optarg, ".AOB"));
             }
-            //use_ifo_files = true;
+
+            use_ifo_files = false;
+            // using IFO files is not mature yet.
 
             break;
 

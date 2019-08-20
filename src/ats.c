@@ -360,7 +360,7 @@ inline static void write_audio_pes_header(FILE* fp, uint16_t PES_packet_len, uin
         }
     }
     else
-    if (PTS)
+    if (mlp_flag == 0x80)  // write only if PCM (even at PTS == 0)
     {
        pack_pts(PTS_data, PTS);
        /* offset_count += 5 */ fwrite(PTS_data, 5, 1, fp);
@@ -1040,7 +1040,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
 
         write_system_header(fp); //+18
 
-        write_audio_pes_header(fp, info->firstpack_audiopesheaderquantity, mlp_flag, 1, PTS, DTS); //+17
+        write_audio_pes_header(fp, info->firstpack_audiopesheaderquantity, mlp_flag, 1, PTS, DTS); //+17 for PCM, 22 for MLP
 
         audio_bytes = info->lpcm_payload - info->firstpackdecrement;
 
@@ -1054,7 +1054,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         int res = fwrite(audio_buf, 1, audio_bytes, fp);
         if (globals.maxverbose) fprintf(stderr, DBG "\n%" PRIu64 ": Writing %d bytes\n", offset, res);
 
-        // Apparenlty no padding for MLP files
+        // Apparently no padding for MLP files
 
         if (info->type != AFMT_MLP)
             write_pes_padding(fp, info->firstpack_pes_padding);//+6+info->firstpack_pes_padding
