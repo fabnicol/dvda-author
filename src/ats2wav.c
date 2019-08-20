@@ -221,13 +221,17 @@ inline static void get_audio_format(WaveData *info, bool new_title, bool* status
             info->infile.type = AFMT_MLP;
         }
         else
-        if (buff[0x27] == 0x80 || buff[0x3C] == 0x80)
+        if (buff[0x27] == 0x80 || buff[0x3C] == 0x81)
         {
             info->infile.type = AFMT_LPCM;
         }
         else
         {
-            if (globals.strict_check) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not find start of flags2 0xC0/0xC1/0x81/0x80")
+            if (globals.strict_check)
+            {
+                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not find start of flags2 0xC0/0xC1/0x81/0x80")
+            }
+
             *status = INVALID;
         }
     }
@@ -245,6 +249,8 @@ inline static int calc_position(WaveData* info, const uint32_t offset0)
 {
     uint8_t buf[6];
     int position;
+
+    // Same form MLP PCM-like AOB headers and true PCM headers
 
     fseek(info->infile.fp, offset0 + 14, SEEK_SET);
     int result = fread(buf, 4, 1, info->infile.fp);
@@ -537,12 +543,12 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
         };
 
         const short int table_index = header->wBitsPerSample == 24 ? 1 : 0;
-        lpcm_payload = X[0];
-        firstpackdecrement = X[1];
+        lpcm_payload                    = X[0];
+        firstpackdecrement              = X[1];
         lastpack_audiopesheaderquantity = X[2];
-        firstpack_lpcm_headerquantity = X[3];
-        midpack_lpcm_headerquantity   = X[4];
-        lastpack_lpcm_headerquantity  = X[5];
+        firstpack_lpcm_headerquantity   = X[3];
+        midpack_lpcm_headerquantity     = X[4];
+        lastpack_lpcm_headerquantity    = X[5];
 
 #   undef X
     }
@@ -550,12 +556,12 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
     {
         const uint16_t U[6] = {2005, 21, 13, 6, 6, 6};
 
-        lpcm_payload = U[0];
-        firstpackdecrement = U[1];
+        lpcm_payload                    = U[0];
+        firstpackdecrement              = U[1];
         lastpack_audiopesheaderquantity = U[2];
-        firstpack_lpcm_headerquantity = U[3];
-        midpack_lpcm_headerquantity   = U[4];
-        lastpack_lpcm_headerquantity  = U[5];
+        firstpack_lpcm_headerquantity   = U[3];
+        midpack_lpcm_headerquantity     = U[4];
+        lastpack_lpcm_headerquantity    = U[5];
     }
 
     int res  = 0, result;    
@@ -939,7 +945,12 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                              files[i][track]->wav_numbytes = 0;
                              files[i][track]->numbytes  = written_bytes;
                              if (globals.veryverbose)
-                                foutput("%s %d %s %d %s %d  %s %lu\n", MSG_TAG "Group ", i + 1, "Title ", title + 1, "Track ", track + 1, "Written bytes: ", written_bytes);
+                                foutput("%s %d %s %d %s %d  %s %lu\n",
+                                        MSG_TAG "Group ",
+                                        i + 1, "Title ",
+                                        title + 1, "Track ",
+                                        track + 1, "Written bytes: ",
+                                        written_bytes);
                              break;
                         }
                     }
@@ -1032,7 +1043,9 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
 
                 if (wav_numbytes && wav_numbytes - written_bytes > files[i][track]->lpcm_payload)
                 {
-                  foutput(WAR "Remaining bytes %lu in excess of payload %d \n", wav_numbytes - written_bytes, files[i][track]->lpcm_payload);
+                  foutput(WAR "Remaining bytes %lu in excess of payload %d \n",
+                          wav_numbytes - written_bytes,
+                          files[i][track]->lpcm_payload);
 
                   if (files[i][track]->last_sector != pack_in_group - 1)
                   {
