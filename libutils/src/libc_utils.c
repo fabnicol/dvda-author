@@ -1399,7 +1399,7 @@ int count_dir_files(const char* src)
     return(total);
 }
 
-char* filter_dir_files(char* src,  char* filter)
+char* filter_dir_files(const char* src,  char* filter)
 {
     errno = 0;
 
@@ -1408,7 +1408,7 @@ char* filter_dir_files(char* src,  char* filter)
     {
         fprintf(stderr, "%s%s%s\n", ERR "Directory '", src, "'");
         perror(ERR "Directory not recognized.\n");
-        return(errno);
+        return NULL;
     }
 
     printf("%c", '\n');
@@ -1977,7 +1977,7 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
 uint64_t filesize(filestat_t f) { return f.filesize; }
 char* filename(filestat_t f) { return f.filename; }
 
-filestat_t filestat(bool b, uint64_t s, const char* fn, FILE* fp)
+filestat_t filestat(bool b, uint64_t s, char* fn, FILE* fp)
 {
     filestat_t str = {b, 0, s, fn, fp};
     return str;

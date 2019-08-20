@@ -272,6 +272,7 @@ int main(int argc,  char* const argv[])
         /*playlist*/        false,  // no playlist
         /*cga*/             false,  // no explicit channel group assignement
         /*end_pause*/       false,  // no end pause
+/*strict audio extraction */false,  // do not systematically check headers
         /*devel verbosity*/ false,  // no enhanced verbosity
         /*very verbose*/    false,  // not very verbose
         /*debugging*/       false,  // no debugging-level verbosity

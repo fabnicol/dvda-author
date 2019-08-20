@@ -186,8 +186,15 @@ inline static void wav_output_open(WaveData *info)
     }
 }
 
-inline static void get_audio_format(WaveData *info)
+inline static void get_audio_format(WaveData *info, bool new_title, bool* status)
 {
+    if (! new_title && ! globals.strict_check && *status == VALID) return;
+
+    // avoid useless checks depending on strictness requirements
+    // In some cases headers may be corrupt but not audio or marginally.
+    // Allowing to keep going with extraction if globals.strict_check == false
+    // Unless no previous correct detection in same title (*status != VALID)
+
     uint8_t buff[0x3D] = {0};
 
     if (! info->infile.isopen) aob_open(info);
@@ -220,15 +227,18 @@ inline static void get_audio_format(WaveData *info)
         }
         else
         {
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not find start of flags2 0xC0/0xC1/0x81/0x80")
+            if (globals.strict_check) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not find start of flags2 0xC0/0xC1/0x81/0x80")
+            *status = INVALID;
         }
     }
     else
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not find start of pack header 0x00001BA")
+        if (globals.strict_check) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not find start of pack header 0x00001BA")
+        *status = INVALID;
     }
 
-    fseek(info->infile.fp, offset, SEEK_SET);
+    res = fseek(info->infile.fp, offset, SEEK_SET);
+    if (res == 0) *status = VALID;
 }
 
 inline static int calc_position(WaveData* info, const uint32_t offset0)
@@ -279,13 +289,14 @@ inline static int calc_position(WaveData* info, const uint32_t offset0)
     return(position);
 }
 
-inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, bool *status, uint8_t* continuity)
+inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header,
+                                        bool *status, uint8_t* continuity, bool new_title)
 {
     if (! info->infile.isopen) aob_open(info);
     
     uint32_t offset0 = ftell(info->infile.fp);
 
-    get_audio_format(info);
+    get_audio_format(info, new_title, status);
 
     int position = calc_position(info, offset0);
 
@@ -476,9 +487,10 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header, bool
 inline static uint64_t get_pes_packet_audio(WaveData *info,
                                             WaveHeader *header,
                                             int *position,
+                                            bool* status,
                                             uint8_t* continuity,
-                                            uint64_t* written_bytes,
-                                            uint64_t wav_numbytes,
+                                            uint32_t* written_bytes,
+                                            uint32_t wav_numbytes,
                                             unsigned long *pack_in_track,
                                             unsigned long *pack_in_title,
                                             unsigned long *pack_in_group)
@@ -500,7 +512,8 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 
     uint32_t offset0 = ftell(info->infile.fp);
 
-    if (position != CUT_PACK && position != CUT_PACK_RMDR) get_audio_format(info);
+    if (*position != CUT_PACK && *position != CUT_PACK_RMDR)
+        get_audio_format(info, (*position == FIRST_PACK), status);
 
     if (info->infile.type == AFMT_LPCM)
     {
@@ -561,13 +574,13 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
             if (lpcm_payload_cut < lpcm_payload && *position == MIDDLE_PACK)
             {
                 *position = CUT_PACK;
-                if (globals.veryverbose) foutput(INF "Cutting track sector %lu using %lu %s\n",
+                if (globals.veryverbose) foutput(INF "Cutting track sector %lu using %d %s\n",
                                                  *pack_in_track,
                                                  lpcm_payload_cut,
                                                  " bytes.");
                 if (globals.maxverbose)
                  {
-                   foutput("%s %lu\n", INF "Looping next sector...", pack_in_group - 1);
+                   foutput("%s %lu\n", INF "Looping next sector...", *pack_in_group - 1);
                  }
             }
         }
@@ -580,7 +593,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
                 case FIRST_PACK :
                     audio_bytes = lpcm_payload - firstpackdecrement;
                     fseek(info->infile.fp,
-                          info->infile.fp == AFMT_LPCM ?
+                          info->infile.type == AFMT_LPCM ?
                                offset0 + 53 + firstpack_lpcm_headerquantity :
                                offset0 + 64,
                           SEEK_SET);
@@ -701,12 +714,14 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 }
 
 
-static inline int get_position(int position, WaveData* info, WaveHeader* header, bool* status, uint8_t* continuity)
+static inline int get_position(int position, WaveData* info, WaveHeader* header, bool* status,
+                               uint8_t* continuity)
 {
     if (position != CUT_PACK_RMDR)
         do
         {
-            position = peek_pes_packet_audio(info, header, status, continuity);
+            position = peek_pes_packet_audio(info, header, status,
+                                             continuity, position == FIRST_PACK);
 
             if (*status == VALID) break;
         }
@@ -730,7 +745,7 @@ static inline uint32_t scan_wav_characteristics(fileinfo_t* info, WaveHeader* he
     info->samplerate    = header->dwSamplesPerSec;
     info->channels      = header->channels;
 
-    uint32_t x = 0, numsamples = 0, numbytes = 0, wav_numbytes = 0;
+    uint32_t numsamples = 0, numbytes = 0, wav_numbytes = 0;
     int bitrank = header->wBitsPerSample == 24 ? 1 : 0;
 
     const int lpcm_payload[2][6] = {{2000,	2000, 2004,	2000,	2000,	1992}, // 16-bit table
@@ -808,7 +823,6 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
         
         bool status = VALID;
         errno = 0;
-        bool new_track  = false;
         uint8_t continuity_save = 0;
         unsigned long pack_in_title = 1;
         uint32_t wav_numbytes = 0;
@@ -828,8 +842,6 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                    wav_numbytes = scan_wav_characteristics(files[i][track], &header);
                 }
 
-                bool debug;
-
                 unsigned long pack_in_track = 1;
 
                 output_path_create(dir_g_i, info, track, title, info->infile.type == AFMT_LPCM ? ".wav" : ".mlp");
@@ -843,11 +855,6 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                 if (info->infile.type == AFMT_LPCM && globals.fixwav_prepend)  // --aob2wav rather than --aob-extract
                 {
                     /* generate header in empty file. We must allow prepend and in_place for empty files */
-
-                    debug = globals.debugging;
-
-                    /* Hush it up as there will be spurious error mmsg */
-                    globals.debugging = false;
 
                     info->outfile.filesize = 0;  // necessary to reset so that header can be generated in empty file
 
@@ -888,7 +895,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                 /* second pass to get the audio */
 
                 if (position != CUT_PACK_RMDR) position = FIRST_PACK;
-                uint64_t written_bytes = 0;
+                uint32_t written_bytes = 0;
                 unsigned long rmdr_payload = 0;
 
 
@@ -899,6 +906,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                     get_pes_packet_audio(info,
                                          &header,
                                          &position,
+                                         &status,
                                          &continuity,
                                          &written_bytes,
                                          wav_numbytes,
@@ -910,7 +918,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                     {
                         if (wav_numbytes)
                         {
-                                foutput(MSG_TAG "Pack %lu, Number of written bytes: %lu / File bytes: %lu\n",
+                                foutput(MSG_TAG "Pack %lu, Number of written bytes: %u / File bytes: %u\n",
                                         pack_in_track,
                                         written_bytes,
                                         wav_numbytes);
@@ -918,7 +926,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                         }
                         else
                         {
-                                 foutput(MSG_TAG "Pack %lu, Number of written bytes: %lu\n",
+                                 foutput(MSG_TAG "Pack %lu, Number of written bytes: %u\n",
                                         pack_in_track,
                                         written_bytes);
                         }
@@ -943,7 +951,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                             {
                                 foutput(INF "Track %d Pack %lu | Title %d Pack %lu | Group %d Pack %lu : "
                                               " to complete file from: %" PRIu64
-                                              " to: %" PRIu64 " audio bytes.\n",
+                                              " to: %" PRIu32 " audio bytes.\n",
                                               track + 1,             // 1-based
                                               pack_in_track - 1, // 1-based
                                               title + 1,         // 0-based
@@ -965,11 +973,11 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
 
                             if (globals.veryverbose)
                             {
-                                  foutput("%s %d %s %d %s %d %s %lu\n", MSG_TAG "Group ", i + 1, "Title ", title + 1, "Track ", track + 1, "File bytes: ", wav_numbytes);
+                                  foutput("%s %d %s %d %s %d %s %u\n", MSG_TAG "Group ", i + 1, "Title ", title + 1, "Track ", track + 1, "File bytes: ", wav_numbytes);
 
                                   foutput(INF "Track %d Pack %lu | Title %d Pack %lu | Group %d Pack %lu - Cutting tracks at offset: %" PRIu64
                                                 " to complete file from: %" PRIu64
-                                                " to: %" PRIu64 " audio bytes.\n",
+                                                " to: %" PRIu32 " audio bytes.\n",
                                                 track + 1,             // 1-based
                                                 pack_in_track - 1, // 1-based
                                                 title + 1,         // 0-based
@@ -982,7 +990,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
 
                                   if (files[i][track]->last_sector != pack_in_group - 1)  // 0-based v. 1-based
                                   {
-                                      foutput(WAR "IFO last sector incorrect: %lu against current %lu\n", files[i][track]->last_sector, pack_in_group - 1);
+                                      foutput(WAR "IFO last sector incorrect: %u against current %lu\n", files[i][track]->last_sector, pack_in_group - 1);
                                   }
 
                                   if (position != LAST_PACK && position != END_OF_AOB && position != CUT_PACK_RMDR)
@@ -1004,8 +1012,8 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                        if (wav_numbytes < written_bytes)
                        {
                             foutput(INF "Track %d Pack %lu | Title %d Pack %lu | Group %d Pack %lu - issue "
-                                          " File bytes: %" PRIu64
-                                          " Written bytes:: %" PRIu64 " audio bytes.\n",
+                                          " File bytes: %" PRIu32
+                                          " Written bytes:: %" PRIu32 " audio bytes.\n",
                                           track + 1,             // 1-based
                                           pack_in_track - 1, // 1-based
                                           title + 1,         // 0-based
@@ -1021,8 +1029,6 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                 }
                 while (position != LAST_PACK
                        && position != END_OF_AOB);
-
-                new_track = false;
 
                 if (wav_numbytes && wav_numbytes - written_bytes > files[i][track]->lpcm_payload)
                 {
@@ -1138,8 +1144,8 @@ static void audio_extraction_layout(fileinfo_t* files[9][99])
            foutput("  "ANSI_COLOR_BLUE "%d     " ANSI_COLOR_GREEN "%02d"
                    ANSI_COLOR_YELLOW "  %6" PRIu32 "   " ANSI_COLOR_RED "%02d"
                    ANSI_COLOR_RESET "   %d       %10" PRIu64
-                   "   %10" PRIu64"   %10" PRIu64"   %10" PRIu64
-                   "   %10" PRIu64"   ",
+                   "   %10" PRIu64"   %10" PRIu32"   %10" PRIu32
+                   "   %10" PRIu32"   ",
                      i+1, j+1,
                    files[i][j]->samplerate, files[i][j]->bitspersample,
                    files[i][j]->channels, files[i][j]->wav_numbytes,
@@ -1156,14 +1162,13 @@ static inline int scan_ats_ifo(fileinfo_t **files, uint8_t *buf)
 {
     int i, title, track;
     static int group;
-
+    uint32_t titlelength;
     i = 2048;
 
     int numtitles = uint16_read(buf + i);
     int ntracks = 0;
 
     uint8_t ntitletracks[numtitles];
-    uint32_t titlelength;
 
     i += 8;
     i += 8 * numtitles;
@@ -1316,12 +1321,3 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
     return(errno);
 }
 
-int ats2wav(short ngroups_scan, const DIR* dir, const char *outdir, const extractlist* extract)
-{
-
-    //get_ats;
-          
-
-
-    return(EXIT_SUCCESS);
-}

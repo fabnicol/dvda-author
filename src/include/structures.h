@@ -241,6 +241,7 @@ typedef struct
     bool playlist;
     bool cga;
     bool end_pause;
+    bool strict_check;
     bool maxverbose;
     bool veryverbose;
     bool debugging;
