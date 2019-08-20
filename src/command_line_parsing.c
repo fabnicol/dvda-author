@@ -3201,14 +3201,17 @@ void extract_list_parsing(const char *arg, extractlist* extract)
 {
     char * chain, *subchunk = NULL;
     int j;
-    bool cutgroups = 0;
+    bool cutgroups = false;
 
     memset(extract, 0, sizeof(extractlist));
     uint8_t nextractgroup = 0;
 
-    chain = strdup(arg);
-    fprintf(stderr, "chain : %s\n", chain);
-    cutgroups = (strchr(chain, ':') == NULL)? 0: 1;
+    if (arg)
+    {
+        chain = strdup(arg);
+        if (globals.veryverbose) fprintf(stderr, DBG "Extract list : %s\n", chain);
+         cutgroups = strchr(chain, ':') == NULL ? 0 : 1;
+    }
 
     if (! cutgroups)
     {
@@ -3224,63 +3227,62 @@ void extract_list_parsing(const char *arg, extractlist* extract)
         extract->nextractgroup = 9;
         return;
     }
-    else
-    {
 
-    /* strtok modifies its first argument.
-    * If '-' not found, returns all the string, otherwise cuts it */
+
+    //     strtok modifies its first argument.
+    //     If '-' not found, returns all the string, otherwise cuts it
 
     strtok(chain, "-");
 
     if (globals.debugging)
         foutput("%s\n", INF "Analysing --extract suboptions...");
 
-   // Now strtok will return NULL if '-' not found, otherwise * to start of token
+    // Now strtok will return NULL if '-' not found, otherwise * to start of token
 
-        while (true)
+    while (true)
+    {
+        if ((subchunk = strtok(NULL, "-")) == NULL)
+            break;
+
+        int groupindex = subchunk[0] - '0';
+        if (groupindex > 9 || groupindex < 1)
         {
-            if ((subchunk = strtok(NULL, "-")) == NULL)
-                break;
-
-            int groupindex = subchunk[0] - '0';
-            if (groupindex > 9 || groupindex < 1)
-            {
-                fprintf(stderr, ERR "Group index %d\n", groupindex);
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect group : rank should be included between 1 and 9.")
-                break;
-            }
-
-            char colon = *(subchunk + 1);
-
-            if (colon != ':')
-            {
-                foutput("%s\n", WAR "Incorrect --extract suboptions, format is --extract=group1:track1,track11,...,track1n-...-groupN:trackN1,trackN2,...,trackNn");
-                foutput("%s\n", WAR "Example --extract=3:1,3,4-5:6,7\nperforms of extraction of tracks n°1, 3 and 4 in group 1 and tracks 6 and 7 in group 5.\n ");
-                return;
-            }
-
-            char* subchunk_copy = strdup(subchunk);
-            strtok(subchunk_copy + 2, ",");
-
-            char *trackchunk = NULL;
-            int trackindex = 0;
-
-            while ((trackchunk = strtok(subchunk, ",")) != NULL)
-            {
-
-                trackindex = atoi(trackchunk);
-                if (trackindex < 1 || trackindex > 99)
-                {
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect track number : rank should be included between 1 and 99.");
-                }
-
-                extract->extracttitleset[groupindex - 1] = 1;
-                extract->extracttrackintitleset[groupindex - 1][trackindex - 1] = 1;
-            }
-
-            free(subchunk_copy);
+            fprintf(stderr, ERR "Group index %d\n", groupindex);
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect group : rank should be included between 1 and 9.")
+            break;
         }
+
+        char colon = *(subchunk + 1);
+
+        if (colon != ':')
+        {
+            foutput("%s\n", WAR "Incorrect --extract suboptions, format is --extract=group1:track1,track11,...,track1n-...-groupN:trackN1,trackN2,...,trackNn");
+            foutput("%s\n", WAR "Example --extract=3:1,3,4-5:6,7\nperforms of extraction of tracks n°1, 3 and 4 in group 1 and tracks 6 and 7 in group 5.\n ");
+            return;
+        }
+
+        char* subchunk_copy = strdup(subchunk);
+        strtok(subchunk_copy + 2, ",");
+
+        char *trackchunk = NULL;
+        int trackindex = 0;
+
+        while ((trackchunk = strtok(subchunk, ",")) != NULL)
+        {
+
+            trackindex = atoi(trackchunk);
+            if (trackindex < 1 || trackindex > 99)
+            {
+                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect track number : rank should be included between 1 and 99.");
+            }
+
+            extract->extracttitleset[groupindex - 1] = 1;
+            extract->extracttrackintitleset[groupindex - 1][trackindex - 1] = 1;
+        }
+
+        free(subchunk_copy);
     }
+
 
     for (j = 0; j < 9; ++j)
     {
@@ -3344,11 +3346,7 @@ void ats2wav_parsing(const char *arg, extractlist* extract)
 
     foutput(INF "Extracting audio from %s\n", audiots_chain);
 
-    parse_disk(audiots_chain, globals.access_rights, extract);
-
-    if (closedir(dir) == -1)
-        foutput( "%s\n", ERR "Impossible to close dir");
-
+    parse_disk(dir, globals.access_rights, extract);
     free(chain);
     free(audiots_chain);
 }

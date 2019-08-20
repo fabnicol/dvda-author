@@ -285,7 +285,7 @@ static int check_ignored_extension(void *path)
     return (0);
 }
 
-int parse_disk(const char* audiots_chain, mode_t mode, extractlist  *extract)
+int parse_disk(const DIR* dir, mode_t mode, extractlist  *extract)
 {
     char ngroups_scan=0;
     struct dirent *rootdirent;
@@ -296,17 +296,11 @@ int parse_disk(const char* audiots_chain, mode_t mode, extractlist  *extract)
 
     globals.fixwav_prepend = true;
      
-    DIR* dir;
-    
-    if ((dir = opendir(audiots_chain)) == NULL)
+    while (true)
     {
-        foutput("%s\n", audiots_chain);
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not open input directory")
-    }
-    
-   
-    while ((rootdirent = readdir(dir) )!= NULL)
-    {
+        rootdirent = readdir(dir);
+        if (rootdirent == NULL)
+            break;
         if (rootdirent->d_name[0] == '.') continue;
 
         char *d_name_duplicate = strdup(rootdirent->d_name);
@@ -379,24 +373,24 @@ int parse_disk(const char* audiots_chain, mode_t mode, extractlist  *extract)
                     output_buf);
         }
 
-        change_directory(audiots_chain);
+       // change_directory(audiots_chain);
 
-        if (ats2wav(ngroups_scan,
-                    audiots_chain,
-                    output_buf,
-                    extract) == EXIT_SUCCESS)
-        {
-            if  (globals.debugging)
-                foutput("%s\n",
-                        INF "Extraction completed.");
-        }
-        else
-        {
-            foutput(INF "Error extracting audio in titleset %d\n",
-                    ngroups_scan);
+//        if (ats2wav(ngroups_scan,
+//                    audiots_chain,
+//                    output_buf,
+//                    extract) == EXIT_SUCCESS)
+//        {
+//            if  (globals.debugging)
+//                foutput("%s\n",
+//                        INF "Extraction completed.");
+//        }
+//        else
+//        {
+//            foutput(INF "Error extracting audio in titleset %d\n",
+//                    ngroups_scan);
             
-            continue;
-        }
+//            continue;
+//        }
     }
 
     closedir(dir);
