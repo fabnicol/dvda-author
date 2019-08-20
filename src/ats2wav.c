@@ -221,7 +221,7 @@ inline static void get_audio_format(WaveData *info, bool new_title, bool* status
             info->infile.type = AFMT_MLP;
         }
         else
-        if (buff[0x27] == 0x80 || buff[0x3C] == 0x81)
+        if (buff[0x15] == 0x80 && buff[0x27] == 0x80 ||  buff[0x27] == 0x81 && buff[0x3C] == 0x80)  //  middle-last pack  || first pack
         {
             info->infile.type = AFMT_LPCM;
         }
@@ -229,15 +229,27 @@ inline static void get_audio_format(WaveData *info, bool new_title, bool* status
         {
             if (globals.strict_check)
             {
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not find start of flags2 0xC0/0xC1/0x81/0x80")
+                fprintf(stderr, "%s offset: %d %s\n", WAR "\nCould not find start of flags2 0xC0/0xC1/0x81/0x80", offset, info->infile.filename);
+                EXIT_ON_RUNTIME_ERROR
             }
+            else
+              if (globals.debugging)
+                fprintf(stderr, "%s offset: %d %s\n", WAR "\nCould not find start of flags2 0xC0/0xC1/0x81/0x80", offset, info->infile.filename);
 
             *status = INVALID;
         }
     }
     else
     {
-        if (globals.strict_check) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not find start of pack header 0x00001BA")
+        if (globals.strict_check)
+        {
+            fprintf(stderr, "%s %d %s\n", WAR "\nCould not find start of pack header 0x00001BA", offset, info->infile.filename);
+            EXIT_ON_RUNTIME_ERROR
+        }
+        else
+            if (globals.debugging)
+                fprintf(stderr, "%s offset: %d %s\n", WAR "\nCould not find start of pack header 0x00001BA", offset, info->infile.filename);
+
         *status = INVALID;
     }
 
@@ -482,13 +494,11 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header,
     {
       header->dwChannelMask = cga2wav_channels[channel_assignment[0]];
     }
-
    
     fseeko(info->infile.fp, offset0, SEEK_SET);
 
     return position;
 }
-
 
 inline static uint64_t get_pes_packet_audio(WaveData *info,
                                             WaveHeader *header,
@@ -501,7 +511,6 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
                                             unsigned long *pack_in_title,
                                             unsigned long *pack_in_group)
 {
-
     int audio_bytes;
     uint8_t PES_packet_len_bytes[2];
     uint8_t audio_buf[2048 * 2]; // in case of incomplete buffer shift
@@ -594,86 +603,86 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 
     uint64_t offset1;
 
-            switch(*position)
+    switch(*position)
+    {
+        case FIRST_PACK :
+            audio_bytes = lpcm_payload - firstpackdecrement;
+            fseek(info->infile.fp,
+                  info->infile.type == AFMT_LPCM ?
+                       offset0 + 53 + firstpack_lpcm_headerquantity :
+                       offset0 + 64,
+                  SEEK_SET);
+            *pack_in_track = 1;
+            *pack_in_title = 1;
+            ++*pack_in_group;
+            offset1 = 2048;
+            break;
+
+        case CUT_PACK:
+            audio_bytes = lpcm_payload_cut;
+            lpcm_payload_rmdr = lpcm_payload - lpcm_payload_cut;
+            fseek(info->infile.fp, offset0 + 29, SEEK_SET);
+            fread(continuity, 1, 1, info->infile.fp);
+            fseek(info->infile.fp, midpack_lpcm_headerquantity + 2, SEEK_CUR);
+            ++*pack_in_track;
+            ++*pack_in_title;
+            ++*pack_in_group;
+            offset1 = 0;
+            *position = CUT_PACK_RMDR;
+            break;
+
+        case CUT_PACK_RMDR:
+            offset1 = 2048 - offset0 % 2048 ;
+            audio_bytes = lpcm_payload_rmdr ;
+            break;
+
+        case MIDDLE_PACK :
+            audio_bytes = lpcm_payload;
+            if (info->infile.type == AFMT_LPCM)
             {
-                case FIRST_PACK :
-                    audio_bytes = lpcm_payload - firstpackdecrement;
-                    fseek(info->infile.fp,
-                          info->infile.type == AFMT_LPCM ?
-                               offset0 + 53 + firstpack_lpcm_headerquantity :
-                               offset0 + 64,
-                          SEEK_SET);
-                    *pack_in_track = 1;
-                    *pack_in_title = 1;
-                    ++*pack_in_group;
-                    offset1 = 2048;
-                    break;
-        
-                case CUT_PACK:
-                    audio_bytes = lpcm_payload_cut;
-                    lpcm_payload_rmdr = lpcm_payload - lpcm_payload_cut;
-                    fseek(info->infile.fp, offset0 + 29, SEEK_SET);
-                    fread(continuity, 1, 1, info->infile.fp);
-                    fseek(info->infile.fp, midpack_lpcm_headerquantity + 2, SEEK_CUR);
-                    ++*pack_in_track;
-                    ++*pack_in_title;
-                    ++*pack_in_group;
-                    offset1 = 0;
-                    *position = CUT_PACK_RMDR;
-                    break;
+                fseek(info->infile.fp, offset0 + 29, SEEK_SET);
+                fread(continuity, 1, 1, info->infile.fp);
+                if (wav_numbytes == 0 && continuity_save != 0 && continuity_save != 0x1F && *continuity == 0)
+                {
+                   // written bytes are in excess in case of gapless tracks
+                   // rolling back, no pack increment
+                   fseeko(info->infile.fp, offset0, SEEK_SET);
+                   forensic_cut = true;
+                   offset1 = 0;  // do not go ahead until next file loop
+                   *position = CUT_PACK_RMDR;
+                   break;
+                }
+                fseek(info->infile.fp, midpack_lpcm_headerquantity + 2, SEEK_CUR);
+            }
+            else
+            {
+                fseek(info->infile.fp, offset0 + 43, SEEK_SET);
+            }
+            ++*pack_in_track;
+            ++*pack_in_title;
+            ++*pack_in_group;
+            offset1 = 2048;
+            break;
 
-                case CUT_PACK_RMDR:
-                    offset1 = 2048 - offset0 % 2048 ;
-                    audio_bytes = lpcm_payload_rmdr ;
-                    break;
-
-                case MIDDLE_PACK :
-                    audio_bytes = lpcm_payload;
-                    if (info->infile.type == AFMT_LPCM)
-                    {
-                        fseek(info->infile.fp, offset0 + 29, SEEK_SET);
-                        fread(continuity, 1, 1, info->infile.fp);
-                        if (wav_numbytes == 0 && continuity_save != 0 && continuity_save != 0x1F && *continuity == 0)
-                        {
-                           // written bytes are in excess in case of gapless tracks
-                           // rolling back, no pack increment
-                           fseeko(info->infile.fp, offset0, SEEK_SET);
-                           forensic_cut = true;
-                           offset1 = 0;  // do not go ahead until next file loop
-                           *position = CUT_PACK_RMDR;
-                           break;
-                        }
-                        fseek(info->infile.fp, midpack_lpcm_headerquantity + 2, SEEK_CUR);
-                    }
-                    else
-                    {
-                        fseek(info->infile.fp, offset0 + 43, SEEK_SET);
-                    }
-                    ++*pack_in_track;
-                    ++*pack_in_title;
-                    ++*pack_in_group;
-                    offset1 = 2048;
-                    break;
-        
-                case LAST_PACK :
-                    fseek(info->infile.fp, offset0 + 18, SEEK_SET);
-                    result = fread(PES_packet_len_bytes, 1, 2, info->infile.fp);
-                    if (result != 2)
-                    {
-                            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting last pack.")
-                    }
-                    audio_bytes = (PES_packet_len_bytes[0] << 8 | PES_packet_len_bytes[1]) - lastpack_audiopesheaderquantity;
-                    /* skipping rest of audio_pes_header, i.e 8 bytes + lpcm_header */
-                    if (info->infile.type == AFMT_LPCM)
-                        fseeko(info->infile.fp, offset0 + 32 + lastpack_lpcm_headerquantity, SEEK_SET);
-                    else
-                        fseeko(info->infile.fp, offset0 + 33, SEEK_SET);
-                    ++*pack_in_track;
-                    ++*pack_in_title;
-                    ++*pack_in_group;
-                    offset1 = 2048;
-                    break;
-             }
+        case LAST_PACK :
+            fseek(info->infile.fp, offset0 + 18, SEEK_SET);
+            result = fread(PES_packet_len_bytes, 1, 2, info->infile.fp);
+            if (result != 2)
+            {
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting last pack.")
+            }
+            audio_bytes = (PES_packet_len_bytes[0] << 8 | PES_packet_len_bytes[1]) - lastpack_audiopesheaderquantity;
+            /* skipping rest of audio_pes_header, i.e 8 bytes + lpcm_header */
+            if (info->infile.type == AFMT_LPCM)
+                fseeko(info->infile.fp, offset0 + 32 + lastpack_lpcm_headerquantity, SEEK_SET);
+            else
+                fseeko(info->infile.fp, offset0 + 33, SEEK_SET);
+            ++*pack_in_track;
+            ++*pack_in_title;
+            ++*pack_in_group;
+            offset1 = 2048;
+            break;
+     }
 
 
     // Here "cut" for a so-called 'gapless' track
