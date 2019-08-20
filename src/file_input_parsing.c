@@ -285,6 +285,7 @@ static int check_ignored_extension(void *path)
     return (0);
 }
 
+#if 0 // DEPRECATED
 int parse_disk(const DIR* dir, mode_t mode, extractlist  *extract)
 {
     char ngroups_scan=0;
@@ -373,26 +374,25 @@ int parse_disk(const DIR* dir, mode_t mode, extractlist  *extract)
                     output_buf);
         }
 
-       // change_directory(audiots_chain);
+        if (ats2wav(ngroups_scan,
+                    dir,
+                    output_buf,
+                    extract) == EXIT_SUCCESS)
+        {
+            if  (globals.debugging)
+                foutput("%s\n",
+                        INF "Extraction completed.");
+        }
+        else
+        {
+            foutput(INF "Error extracting audio in titleset %d\n",
+                    ngroups_scan);
 
-//        if (ats2wav(ngroups_scan,
-//                    audiots_chain,
-//                    output_buf,
-//                    extract) == EXIT_SUCCESS)
-//        {
-//            if  (globals.debugging)
-//                foutput("%s\n",
-//                        INF "Extraction completed.");
-//        }
-//        else
-//        {
-//            foutput(INF "Error extracting audio in titleset %d\n",
-//                    ngroups_scan);
-            
-//            continue;
-//        }
+            continue;
+        }
     }
 
     closedir(dir);
     return ngroups_scan;
 }
+#endif

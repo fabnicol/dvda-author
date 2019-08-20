@@ -10,8 +10,8 @@
 typedef struct
 {
     uint8_t  nextractgroup;
-    uint8_t  extracttitleset[9];
-    uint8_t  extracttrackintitleset[9][99];
+    uint8_t  extracttitleset[81];
+    uint8_t  extracttrackintitleset[81][99];
 } extractlist;
 
 typedef struct
