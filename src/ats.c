@@ -1074,9 +1074,10 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         {
             DTS = 0;
             PTS = 0;
+            mlp_flag = 0;
         }
 
-        write_audio_pes_header(fp, info->lastpack_audiopesheaderquantity + audio_bytes, 0, 0, PTS, DTS);  // +14 for PCM or +19 for MLP
+        write_audio_pes_header(fp, info->lastpack_audiopesheaderquantity + audio_bytes, mlp_flag, 0, PTS, DTS);  // +14 for PCM or +19 for MLP
 
         write_lpcm_header(fp, info->lastpack_lpcm_headerquantity, info, pack_in_title, cc, true);
 

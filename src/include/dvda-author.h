@@ -34,7 +34,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 // g, j, s are treated by getopt as non-argumental although they take a non-limited number of (non-getopt compliant) arguments
 
 void normalize_temporary_paths(pic* img);
-static const char*  PAL_NORM="pal";
+#define  PAL_NORM "pal"
 command_t* lexer_analysis(command_t* command, lexer_t* lexer, const char* config_file, bool config_type);
 #endif // DVDA-AUTHOR_H_INCLUDED
 

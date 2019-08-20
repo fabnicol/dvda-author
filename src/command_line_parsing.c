@@ -289,6 +289,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"aob2wav", required_argument,NULL, 29},
         {"forensic", no_argument,NULL, 12},
         {"outfile", required_argument,NULL, 30},
+        {"strict", no_argument,NULL, 31},
         {"downmix", required_argument, NULL, 32},
         {"dtable", required_argument, NULL, 33},
         {"provider", required_argument, NULL, 34},
@@ -947,6 +948,7 @@ out:
 
         case 'x' :
             extract_audio_flag = 1;
+            globals.fixwav_prepend = true;
             free(globals.settings.indir);
             globals.settings.indir = strdup(optarg);
             break;
@@ -1268,7 +1270,10 @@ out:
             globals.decode = true;
             globals.fixwav_prepend = true;
             break;
-/// Reactivated 26 May 2018
+
+        case 31:
+            globals.strict_check = true;  // false by default
+            break;
 
         case 1 :
             globals.padding = 1;
