@@ -188,14 +188,15 @@ inline static void wav_output_open(WaveData *info)
 
 inline static void get_audio_format(WaveData *info)
 {
-    uint8_t buff[0x28] = {0};
+    uint8_t buff[0x3D] = {0};
 
     if (! info->infile.isopen) aob_open(info);
 
     uint32_t offset = ftell(info->infile.fp);
+    if (info->infile.filesize - offset <= 2048) return; // last pack: no practical use.
 
-    int res = fread(buff, 1, 0x28, info->infile.fp);
-    if (res != 0x28)
+    int res = fread(buff, 1, 0x3D, info->infile.fp);
+    if (res != 0x3D)
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "File is to short to compute audio format")
     }
@@ -203,8 +204,8 @@ inline static void get_audio_format(WaveData *info)
     if (buff[0] == 0 && buff[1] == 0 && buff[2] == 1 && buff[3] == 0xBA && buff[4] == 0x44)
     {
        if (
-             buff[0x27] == 0xC1 ||    // first MLP pack header
-             buff[0x15] == 0xC0 ||    // middle MLP pack header
+             buff[0x15] == 0xC0 ||    // first MLP pack header
+             buff[0x27] == 0xC1 ||    // middle MLP pack header
              (buff[0x15] == 0x00
               && buff[0x16] == 0x00
               && buff[0x17] == 0xa1)  // last MLP pack header
@@ -213,7 +214,7 @@ inline static void get_audio_format(WaveData *info)
             info->infile.type = AFMT_MLP;
         }
         else
-        if (buff[0x27] == 0x81 || buff[0x15] == 0x80)
+        if (buff[0x27] == 0x80 || buff[0x3C] == 0x80)
         {
             info->infile.type = AFMT_LPCM;
         }
@@ -499,7 +500,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 
     uint32_t offset0 = ftell(info->infile.fp);
 
-    get_audio_format(info);
+    if (position != CUT_PACK && position != CUT_PACK_RMDR) get_audio_format(info);
 
     if (info->infile.type == AFMT_LPCM)
     {
@@ -737,28 +738,20 @@ static inline uint32_t scan_wav_characteristics(fileinfo_t* info, WaveHeader* he
 
     if (info->PTS_length)     // Use IFO files
     {
-        numsamples = (info->PTS_length * info->samplerate) / 90000;
+        numsamples = ceil(((double) info->PTS_length / (double) 90000) * (double) info->samplerate);
 
         info->lpcm_payload = lpcm_payload[bitrank][header->channels - 1];
 
-        if (numsamples)
-            x = 90000 * numsamples;
-        else
+        if (numsamples == 0)
         {
             foutput("%s", ERR "Found null samplerate or PTS length. Continuing in forensic mode...\n");
             info->PTS_length = 0;
         }
 
-        // Adjust for rounding errors:
 
-        if (x < info->PTS_length * info->samplerate)
-        {
-            ++numsamples;
-        }
+        numbytes = numsamples * info->channels * (info->bitspersample / 8);
 
-        numbytes = (numsamples * info->channels * info->bitspersample) / 8;
-
-        int sampleunitsize = header->wBitsPerSample / 8 * header->channels * 2;
+        int sampleunitsize = (header->wBitsPerSample / 8) * header->channels * 2;
 
         // Taking modulo
 

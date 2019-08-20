@@ -880,12 +880,14 @@ int calc_info(fileinfo_t* info)
     else
     {
       info->numsamples
-            = (info->numbytes * 8) / (info->channels * info->bitspersample);
+            = info->numbytes / (info->channels * (info->bitspersample / 8));
     }
 
     // Make coherent with calc_PTS
 
-    info->PTS_length = (uint32_t) convert_to_PTS(info);
+    info->PTS_length = (uint32_t) round((double) info->numsamples / (double) info->samplerate * 90000);
+
+    // (uint32_t) convert_to_PTS(info) is another good option but has the disadvantage of rounding too much for extraction in gapless case.
 
     // a rounding error of 1 in PTS_LENGTH = samplerate / 90000 in numsamples = samplerate / (8 x 90000) x nchannels x bitspersample in bytes.
 
