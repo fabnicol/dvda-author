@@ -202,7 +202,7 @@ uint64_t filesize(filestat_t f);
 char* filename(filestat_t f);
 FILE* fileptr(filestat_t f);
 
-filestat_t filestat(bool b, uint64_t s, const char* fn, FILE* fp);
+filestat_t filestat(bool b, uint64_t s, char* fn, FILE* fp);
 
 typedef struct
   {
@@ -329,7 +329,7 @@ void rw_field(uint8_t* tab, int size,const char* label, FILE* fp, FILE* log);
 bool is_file(const char* path);
 bool is_dir(const char* path);
 
-char* filter_dir_files(char* src, char* filter);
+char* filter_dir_files(const char* src, char* filter);
 
 inline static void  uint32_copy(uint8_t* buf, uint32_t x)
 {

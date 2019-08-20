@@ -289,7 +289,6 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"aob2wav", required_argument,NULL, 29},
         {"forensic", no_argument,NULL, 12},
         {"outfile", required_argument,NULL, 30},
-        {"scan-info", required_argument, NULL, 31},
         {"downmix", required_argument, NULL, 32},
         {"dtable", required_argument, NULL, 33},
         {"provider", required_argument, NULL, 34},
@@ -2131,10 +2130,6 @@ out:
             globals.topmenu = Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             break;
 
-        case 31:
-            foutput("%s%s\n", PAR "Scanning information given by IFO file : ", optarg);
-            ats2wav(optarg[5] - '0', NULL, NULL, NULL);
-            break;
         }
     }
 
@@ -2913,7 +2908,7 @@ void process_dvd_video_zone(command_t* command)
                     if (new_sample_rate == 96000 && files[group][track].channels > 2)
                     {
                         files[group][track].channels = 2;
-                        foutput("%s\n", INF "Resampling %d channels to stereo...", files[group][track].channels);
+                        foutput(INF "Resampling %d channels to stereo...\n", files[group][track].channels);
                     }
 
 
@@ -3113,8 +3108,9 @@ void aob2wav_parsing(const char *ssopt, const extractlist* extract)
     }
     else
     {
-        char first_token = strtok(chain, ",");
-        if (extract->extracttitleset[0]) globals.aobpath[i] = first_token;
+        char* first_token = strtok(chain, ",");
+        if (extract->extracttitleset[0])
+            globals.aobpath[i] = first_token;
 
         while (extract->extracttitleset[++i]
               && i < extract->nextractgroup
