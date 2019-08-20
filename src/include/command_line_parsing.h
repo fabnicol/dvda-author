@@ -24,10 +24,10 @@ void process_dvd_video_zone(command_t* command);
 #include "fixwav_manager.h"
 void fixwav_parsing(char *ssopt);
 
-void ats2wav_parsing(const char * arg, extractlist* extract);
+void ats2wav_parsing(const char * arg, const extractlist* extract);
 void extract_list_parsing(const char *arg, extractlist* extract);
 void still_options_parsing(char *ssopt, pic* img);
 
-void aob2wav_parsing(char *ssopt);
+void aob2wav_parsing(const char *ssopt, const extractlist* extract);
 //void parse_double_entry_command_line(char*** DOUBLE_ARRAY, uint8_t* COUNTER_ARRAY, uint8_t* TOTAL, short audit_flag);
 #endif

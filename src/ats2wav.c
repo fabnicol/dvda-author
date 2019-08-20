@@ -773,7 +773,7 @@ static inline uint32_t scan_wav_characteristics(fileinfo_t* info, WaveHeader* he
 
 
 
-int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
+int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
 {
 
     int title = 0;
@@ -817,6 +817,12 @@ int get_ats_audio_i(int i, fileinfo_t* files[9][99], WaveData *info)
 
         // Track loop
         do {
+                if (files[i][track] == NULL)
+                {
+                    ++track;
+                    continue;
+                }
+
                 if (info->infile.type == AFMT_LPCM)
                 {
                    wav_numbytes = scan_wav_characteristics(files[i][track], &header);
@@ -1223,23 +1229,31 @@ static inline int scan_ats_ifo(fileinfo_t **files, uint8_t *buf)
     return(ntracks);
 }
 
-int get_ats_audio(bool use_ifo_files)
+int get_ats_audio(bool use_ifo_files, const extractlist* extract)
 {
-    fileinfo_t* files[81][99]; // 9 groups but possibly up to 9 AOBs per group (ATS_01_1.AOB...ATS_01_9.AOB)
-    for (int i = 0; i < 81; ++i)
+    fileinfo_t* files[81][99] = {{NULL}}; // 9 groups but possibly up to 9 AOBs per group (ATS_01_1.AOB...ATS_01_9.AOB)
+    for (int i = 0; i < 81 && (extract == NULL || i < extract->nextractgroup); ++i)
+    {
+        if (extract != NULL && ! extract->extracttitleset[i]) continue;
+
         for (int j = 0; j < 99; ++j)
         {
+            if (extract != NULL && ! extract->extracttrackintitleset[i][j]) continue;
             files[i][j] = (fileinfo_t*) calloc(1, sizeof(fileinfo_t));
             if (files[i][j] == NULL)
                 return -1;
         }
+    }
 
     if (! s_dir_exists(globals.settings.outdir)) secure_mkdir(globals.settings.outdir, globals.access_rights);
 
     change_directory(globals.settings.outdir);
 
-    for (int i = 0; i < 81 && globals.aobpath[i] != NULL; ++i)
+    for (int i = 0; i < 81;  ++i)
     {
+
+      if (globals.aobpath[i] == NULL) continue;
+
       if (globals.veryverbose)
          foutput("%s%d%s\n", INF "Extracting audio for AOB n°", i+1, ".");
 
@@ -1302,7 +1316,7 @@ int get_ats_audio(bool use_ifo_files)
     return(errno);
 }
 
-int ats2wav(short ngroups_scan, const char* audiots_dir, const char *outdir, const extractlist* extract)
+int ats2wav(short ngroups_scan, const DIR* dir, const char *outdir, const extractlist* extract)
 {
 
     //get_ats;

@@ -161,7 +161,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     bool allocate_files=false, logrefresh=false, refresh_tempdir=true, refresh_outdir=true;  // refreshing output and temporary directories by default
     DIR *dir;
     parse_t  audiodir;
-    extractlist extract;
+    extractlist* extract = NULL;
     downmix downmixtable[16];
 
     for (int i = 0; i < 16; ++i) downmixtable[i].custom_table = false;
@@ -1701,11 +1701,10 @@ out:
 
     if (extract_audio_flag)
     {
-        extract_list_parsing(extract_args, &extract); // first recovering the list of groups and tracks to be extracted
+        extract_list_parsing(extract_args, extract); // first recovering the list of groups and tracks to be extracted
 
-        ats2wav_parsing(globals.settings.indir, &extract); // then extracting them
+        ats2wav_parsing(globals.settings.indir, extract); // then extracting them
 
-        return(NULL);
     }
     else
     {
@@ -1925,11 +1924,13 @@ out:
             {
               foutput("%s %s %s\n", PAR "Extracting AOB to",
                       globals.decode ? "raw signed-integer PCM: " : "original audio format (headerless WAV or MLP):", optarg);
-              aob2wav_parsing(optarg);
+              aob2wav_parsing(optarg, NULL);
             }
             else  // using the directory with file structure
             {
-              aob2wav_parsing(filter_dir_files(optarg, ".AOB"));
+               // filter_dir_files finds all AOBs in dir optarg, and returns list of AOBs separated by commas if several.
+
+                aob2wav_parsing(filter_dir_files(optarg, ".AOB"), NULL);
             }
             break;
 
@@ -1939,11 +1940,11 @@ out:
             {
               foutput("%s %s %s\n", PAR "Extracting AOB to",
                        globals.decode ? "WAV format: " : "original audio format (WAV or MLP):", optarg);
-              aob2wav_parsing(optarg);
+              aob2wav_parsing(optarg, NULL);
             }
             else  // using the directory with file structure
             {
-              aob2wav_parsing(filter_dir_files(optarg, ".AOB"));
+              aob2wav_parsing(filter_dir_files(optarg, ".AOB"), NULL);
             }
 
             use_ifo_files = false;
@@ -2190,7 +2191,9 @@ out:
         }
         else
         {
-          get_ats_audio(use_ifo_files);
+          get_ats_audio(use_ifo_files, extract);
+          if (extract_audio_flag)
+             free(extract);
           clean_exit(EXIT_SUCCESS);
         }
     }
@@ -3073,8 +3076,9 @@ void process_dvd_video_zone(command_t* command)
 
 }
 
+// Takes a list of AOB files as input, optionally seperated by commas
 
-void aob2wav_parsing(char *ssopt)
+void aob2wav_parsing(const char *ssopt, const extractlist* extract)
 {
     char *chain = NULL;//, *subchunk = NULL;
     if (ssopt)
@@ -3085,24 +3089,37 @@ void aob2wav_parsing(char *ssopt)
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Extraction processor has not valid AOB path input.")
     }
+
     int i = 0;
 
     if (chain != NULL)
     {
-        globals.aobpath = (char**) calloc(81, sizeof(char*));  // 9 groups but there may be upt to 9 partial AOBs per group
+        globals.aobpath = (char**) calloc(extract ? extract->nextractgroup : 81, sizeof(char*));  // 9 groups but there may be upt to 9 partial AOBs per group
         if (globals.aobpath == NULL)
         {
             EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Extraction processor failed at input stage.")
         }
-
-        globals.aobpath[0] = strtok(chain, ",");
     }
     else
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Extraction processor has not valid AOB path input or memory allocation failed.")
     }
 
-    while (i < 81 && (globals.aobpath[++i] = strtok(NULL, ",")) != NULL) ;
+
+    if (extract == NULL)
+    {
+       globals.aobpath[0] = strtok(chain, ",");
+       while (i < 81 && (globals.aobpath[++i] = strtok(NULL, ",")) != NULL) {}
+    }
+    else
+    {
+        char first_token = strtok(chain, ",");
+        if (extract->extracttitleset[0]) globals.aobpath[i] = first_token;
+
+        while (extract->extracttitleset[++i]
+              && i < extract->nextractgroup
+              && (globals.aobpath[i] = strtok(NULL, ",")) != NULL) {}
+    }
 
     //free(chain);
 
@@ -3203,7 +3220,13 @@ void extract_list_parsing(const char *arg, extractlist* extract)
     int j;
     bool cutgroups = false;
 
-    memset(extract, 0, sizeof(extractlist));
+    extract = calloc(1, sizeof(extractlist));
+
+    if (extract == NULL)
+    {
+        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not allocate table for extracted files")
+    }
+
     uint8_t nextractgroup = 0;
 
     if (arg)
@@ -3215,7 +3238,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
 
     if (! cutgroups)
     {
-        for (int j = 0; j < 9; ++j)
+        for (int j = 0; j < 81; ++j)
         {
             for (int k = 0; k < 99; ++k)
             {
@@ -3224,7 +3247,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
             }
         }
 
-        extract->nextractgroup = 9;
+        extract->nextractgroup = 81;
         return;
     }
 
@@ -3244,13 +3267,18 @@ void extract_list_parsing(const char *arg, extractlist* extract)
         if ((subchunk = strtok(NULL, "-")) == NULL)
             break;
 
-        int groupindex = subchunk[0] - '0';
-        if (groupindex > 9 || groupindex < 1)
+        static int groupindex;
+
+        int groupindex_ = atoi(subchunk);
+
+        if (groupindex_ > 9 || groupindex_ < 1)
         {
             fprintf(stderr, ERR "Group index %d\n", groupindex);
             EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect group : rank should be included between 1 and 9.")
             break;
         }
+
+        if (groupindex == groupindex_) ++groupindex;  // several AOBs for the same group (one is > 1GB)
 
         char colon = *(subchunk + 1);
 
@@ -3270,7 +3298,34 @@ void extract_list_parsing(const char *arg, extractlist* extract)
         while ((trackchunk = strtok(subchunk, ",")) != NULL)
         {
 
+            if (strcmp(trackchunk, "...") == 0)
+            {
+                char* trackchunk2 = NULL;
+                int trackindex2 = 0;
+
+                while ((trackchunk2 = strtok(subchunk, ",")) != NULL)
+                {
+                    trackindex2 = atoi(trackchunk2);
+                }
+
+                if (trackindex2)
+                {
+                    if (trackindex2 < 1 || trackindex2 > 99 || trackindex > 98)
+                    {
+                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect track number : rank should be included between 1 and 99.");
+                    }
+
+                    for (int i = trackindex + 1; i <= trackindex2; ++i)
+                    {
+                      extract->extracttitleset[groupindex - 1] = 1;
+                      extract->extracttrackintitleset[groupindex - 1][i - 1] = 1;
+                    }
+                }
+
+            }
+
             trackindex = atoi(trackchunk);
+
             if (trackindex < 1 || trackindex > 99)
             {
                 EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect track number : rank should be included between 1 and 99.");
@@ -3284,11 +3339,11 @@ void extract_list_parsing(const char *arg, extractlist* extract)
     }
 
 
-    for (j = 0; j < 9; ++j)
+    for (j = 0; j < 81; ++j)
     {
-        for (int k = 0; k < 99; ++j)
+        for (int k = 0; k < 99; ++k)
         {
-            if ((extract->extracttitleset[j]) && (extract->extracttrackintitleset[j][k]))
+            if (extract && extract->extracttitleset[j] && extract->extracttrackintitleset[j][k])
             {
                 ++nextractgroup;
                 break;
@@ -3298,11 +3353,11 @@ void extract_list_parsing(const char *arg, extractlist* extract)
 
     if (globals.debugging)
     {
-        foutput("%s", PAR "EXTRACTING: titleset   |   track\n");
+        foutput("%s", PAR "EXTRACTING: AOB   |   track\n");
 
         int k;
 
-        for (j = 0; j < 9; ++j)
+        for (j = 0; j < 81; ++j)
         {
             for (k = 0; k < 99; ++k)
             {
@@ -3321,8 +3376,9 @@ void extract_list_parsing(const char *arg, extractlist* extract)
     FREE(chain)
 }
 
-void ats2wav_parsing(const char *arg, extractlist* extract)
+void ats2wav_parsing(const char *arg, const extractlist* extract)
 {
+#if 0 //DEPRECATED
     DIR *dir = NULL;
 
     char *chain = strdup(arg);
@@ -3346,9 +3402,19 @@ void ats2wav_parsing(const char *arg, extractlist* extract)
 
     foutput(INF "Extracting audio from %s\n", audiots_chain);
 
+
     parse_disk(dir, globals.access_rights, extract);
+    change_directory(audiots_chain);
+
     free(chain);
     free(audiots_chain);
+
+#endif
+
+   const char* chain = filter_dir_files(arg, ".AOB");
+
+   aob2wav_parsing(chain, extract);
+
 }
 #ifdef img
 #undef img

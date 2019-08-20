@@ -1417,6 +1417,7 @@ char* filter_dir_files(char* src,  char* filter)
 
     chain = calloc(CHAR_BUFSIZ, sizeof(char));
 
+    // chain is a global
     traverse_directory(src, filter_file_wrapper, true,  (void*) src, (void*) filter);
 
     return(strdup(chain));
