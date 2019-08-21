@@ -144,6 +144,11 @@ inline static void  aob_open(WaveData *info)
 
     if (file_exists(info->infile.filename))
         info->infile.filesize = stat_file_size(info->infile.filename);
+    else
+    {
+        fprintf(stderr, ERR "File *%s* does not exist\n", info->infile.filename);
+        EXIT_ON_RUNTIME_ERROR
+    }
 
     info->infile.fp = fopen(info->infile.filename, "rb")  ;
 
@@ -1124,12 +1129,19 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
 
                 S_CLOSE(info->outfile)
 
-                if (info->infile.type == AFMT_MLP && globals.decode && file_exists(info->outfile.filename))
+                if (info->infile.type == AFMT_MLP && globals.decode)
                 {
-                    fileinfo_t decinfo;
-                    decinfo.filename = info->outfile.filename;
-                    decinfo.out_filename = replace_file_extension(decinfo.filename, "_dec_", ".wav");
-                    decode_mlp_file(&decinfo);
+                    if (file_exists(info->outfile.filename))
+                    {
+                        fileinfo_t decinfo;
+                        decinfo.filename = info->outfile.filename;
+                        decinfo.out_filename = replace_file_extension(decinfo.filename, "_dec_", ".wav");
+                        decode_mlp_file(&decinfo);
+                    }
+                    else
+                    {
+                        fprintf(stderr, ERR "File '%s' could not be extracted.\n", info->outfile.filename);
+                    }
                 }
 
                 if (position == LAST_PACK || position == CUT_PACK_RMDR)
@@ -1265,7 +1277,7 @@ static inline int scan_ats_ifo(fileinfo_t **files, uint8_t *buf)
 int get_ats_audio(bool use_ifo_files, const extractlist* extract)
 {
     fileinfo_t* files[81][99] = {{NULL}}; // 9 groups but possibly up to 9 AOBs per group (ATS_01_1.AOB...ATS_01_9.AOB)
-    for (int i = 0; i < 81 && (extract == NULL || i < extract->nextractgroup); ++i)
+    for (int i = 0; i < 81; ++i)
     {
         if (extract != NULL && ! extract->extracttitleset[i]) continue;
 

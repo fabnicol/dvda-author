@@ -59,8 +59,11 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   if (file_exists(info->infile.filename))
       info->infile.filesize = stat_file_size(info->infile.filename);
-  else {
-      errno = 0;
+  else
+  {
+
+          fprintf(stderr, ERR "File *%s* does not exist\n", info->infile.filename);
+          clean_exit(EXIT_FAILURE);
   }
 
 //  TO EARLY : outfile may not exist yet !

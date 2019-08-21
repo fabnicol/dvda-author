@@ -615,6 +615,11 @@ if (command && command->img)
 
 }
 
+if (globals.aobpath)
+{
+    for (int i = 0; i < 81; ++i) free(globals.aobpath[i]);
+    free(globals.aobpath);
+}
 
 }
 
