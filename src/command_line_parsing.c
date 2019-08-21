@@ -1705,7 +1705,17 @@ out:
 
     if (extract_audio_flag)
     {
-        extract_list_parsing(extract_args, extract); // first recovering the list of groups and tracks to be extracted
+        if (extract_args)
+        {
+            extract = calloc(1, sizeof(extractlist));
+
+            if (extract == NULL)
+            {
+                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not allocate table for extracted files")
+            }
+
+            extract_list_parsing(extract_args, extract); // first recovering the list of groups and tracks to be extracted
+        }
 
         ats2wav_parsing(globals.settings.indir, extract); // then extracting them
 
@@ -3094,7 +3104,8 @@ void aob2wav_parsing(const char *ssopt, const extractlist* extract)
 
     if (chain != NULL)
     {
-        globals.aobpath = (char**) calloc(extract ? extract->nextractgroup : 81, sizeof(char*));  // 9 groups but there may be upt to 9 partial AOBs per group
+        globals.aobpath = (char**) calloc(extract ? (extract->nextractgroup + 1) : 81, sizeof(char*));  // 9 groups but there may be upt to 9 partial AOBs per group. The +1 is for stop tests.
+
         if (globals.aobpath == NULL)
         {
             EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Extraction processor failed at input stage.")
@@ -3105,7 +3116,6 @@ void aob2wav_parsing(const char *ssopt, const extractlist* extract)
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Extraction processor has not valid AOB path input or memory allocation failed.")
     }
 
-
     if (extract == NULL)
     {
        globals.aobpath[0] = strtok(chain, ",");
@@ -3113,16 +3123,37 @@ void aob2wav_parsing(const char *ssopt, const extractlist* extract)
     }
     else
     {
-        char* first_token = strtok(chain, ",");
-        if (extract->extracttitleset[0])
-            globals.aobpath[i] = first_token;
+       // Here the chain is not really used except for the path
 
-        while (extract->extracttitleset[++i]
-              && i < extract->nextractgroup
-              && (globals.aobpath[i] = strtok(NULL, ",")) != NULL) {}
+        char* first_token = strtok(chain, ",");
+        path_t *p = parse_filepath(first_token);
+        int count = 0;
+
+        for (int i = 1; i < 10; ++i)
+        {
+            for (int j = 1; j < 10; ++j)
+            {
+               char str [13 + strlen(p->path) + 1];
+               sprintf(str, "%s/ATS_0%d_%d.AOB", p->path, i, j);
+               if (file_exists(str))
+               {
+                  if (extract->extracttitleset[i - 1 + j - 1])
+                  {
+                      globals.aobpath[count++] = strdup(str);
+                      if (globals.veryverbose)
+                      {
+                          fprintf(stderr, "Adding %s to extract list (rank %d)\n", globals.aobpath[count - 1], count);
+                      }
+                  }
+               }
+            }
+        }
+
+        free(p);
+
     }
 
-    //free(chain);
+    free(chain);
 
     return;
 }
@@ -3217,16 +3248,8 @@ void fixwav_parsing(char *ssopt)
 
 void extract_list_parsing(const char *arg, extractlist* extract)
 {
-    char * chain, *subchunk = NULL;
+    char * chain, *subchunk = NULL, *saveptr1, *saveptr2;
     int j;
-    bool cutgroups = false;
-
-    extract = calloc(1, sizeof(extractlist));
-
-    if (extract == NULL)
-    {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not allocate table for extracted files")
-    }
 
     uint8_t nextractgroup = 0;
 
@@ -3234,111 +3257,154 @@ void extract_list_parsing(const char *arg, extractlist* extract)
     {
         chain = strdup(arg);
         if (globals.veryverbose) fprintf(stderr, DBG "Extract list : %s\n", chain);
-         cutgroups = strchr(chain, ':') == NULL ? 0 : 1;
     }
 
-    if (! cutgroups)
-    {
-        for (int j = 0; j < 81; ++j)
-        {
-            for (int k = 0; k < 99; ++k)
-            {
-                extract->extracttitleset[j] = 1;
-                extract->extracttrackintitleset[j][k] = 1;
-            }
-        }
+    bool cutgroups = false, cuttracks = false;
 
-        extract->nextractgroup = 81;
-        return;
-    }
+    cutgroups = (strchr(chain, '-') != NULL);
 
-
-    //     strtok modifies its first argument.
+    //     strtok_r modifies its first argument, so always strdup befor applying.
     //     If '-' not found, returns all the string, otherwise cuts it
 
-    strtok(chain, "-");
+    if (cutgroups) subchunk = strtok_r(chain, "-", &saveptr1);
 
     if (globals.debugging)
         foutput("%s\n", INF "Analysing --extract suboptions...");
 
-    // Now strtok will return NULL if '-' not found, otherwise * to start of token
+    // Now strtok_r will return NULL if '-' not found, otherwise pointer to start of token
+    long groupindex = 0;
 
     while (true)
     {
-        if ((subchunk = strtok(NULL, "-")) == NULL)
-            break;
+        if (cutgroups && groupindex)
+        {
+           if ((subchunk = strtok_r(NULL, "-", &saveptr1)) == NULL)
+               break;
+        }
+        else
+        {
+            // just one group
+            if (groupindex) break;
+            subchunk = chain;  // getopt_long() ensures there is at least one arg
+        }
 
-        static int groupindex;
+        long groupindex_ =  strtol(&subchunk[0], NULL, 10);
+        static long last_groupindex;
+        static long increment;
 
-        int groupindex_ = atoi(subchunk);
-
-        if (groupindex_ > 9 || groupindex_ < 1)
+        if (groupindex_ == EINVAL || groupindex_ == ERANGE || groupindex_ > 9 || groupindex_ < 1)
         {
             fprintf(stderr, ERR "Group index %d\n", groupindex);
             EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect group : rank should be included between 1 and 9.")
             break;
         }
 
-        if (groupindex == groupindex_) ++groupindex;  // several AOBs for the same group (one is > 1GB)
+        if (last_groupindex == groupindex_) ++increment;  // several AOBs for the same group (one is > 1GB)
 
-        char colon = *(subchunk + 1);
+        groupindex = groupindex_ + increment;
+        last_groupindex = groupindex_;
 
+        char colon = subchunk[1];
+        char* subchunk_copy = NULL;
+        char *trackchunk = NULL;
+
+        if (colon == 0)
+        {
+            // all tracks in indicated group
+            extract->extracttitleset[groupindex - 1] = 1;
+            for (int j = 0; j < 99; ++j)
+               extract->extracttrackintitleset[groupindex - 1][j] = 1;
+        }
+        else
         if (colon != ':')
         {
             foutput("%s\n", WAR "Incorrect --extract suboptions, format is --extract=group1:track1,track11,...,track1n-...-groupN:trackN1,trackN2,...,trackNn");
             foutput("%s\n", WAR "Example --extract=3:1,3,4-5:6,7\nperforms of extraction of tracks n°1, 3 and 4 in group 1 and tracks 6 and 7 in group 5.\n ");
             return;
         }
-
-        char* subchunk_copy = strdup(subchunk);
-        strtok(subchunk_copy + 2, ",");
-
-        char *trackchunk = NULL;
-        int trackindex = 0;
-
-        while ((trackchunk = strtok(subchunk, ",")) != NULL)
+        else
         {
+            subchunk_copy = strdup(subchunk) + 2;
 
-            if (strcmp(trackchunk, "...") == 0)
+            cuttracks = strchr(subchunk_copy, ',') != NULL;
+
+            if (cuttracks)
             {
-                char* trackchunk2 = NULL;
-                int trackindex2 = 0;
-
-                while ((trackchunk2 = strtok(subchunk, ",")) != NULL)
-                {
-                    trackindex2 = atoi(trackchunk2);
-                }
-
-                if (trackindex2)
-                {
-                    if (trackindex2 < 1 || trackindex2 > 99 || trackindex > 98)
-                    {
-                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect track number : rank should be included between 1 and 99.");
-                    }
-
-                    for (int i = trackindex + 1; i <= trackindex2; ++i)
-                    {
-                      extract->extracttitleset[groupindex - 1] = 1;
-                      extract->extracttrackintitleset[groupindex - 1][i - 1] = 1;
-                    }
-                }
-
+                trackchunk = strtok_r(subchunk_copy, ",", &saveptr2);
+            }
+            else
+            {
+                trackchunk =  subchunk_copy;
             }
 
-            trackindex = atoi(trackchunk);
 
-            if (trackindex < 1 || trackindex > 99)
+            long trackindex = 0;
+
+            while (true)
+            {
+                if (cuttracks && trackindex)
+                {
+                  if ((trackchunk = strtok_r(NULL, ",", &saveptr2)) == NULL)
+                      break;
+
+                  if (strcmp(trackchunk, "...") == 0)
+                  {
+                      char* trackchunk2 = NULL;
+                      long trackindex2 = 0;
+
+                      while ((trackchunk2 = strtok_r(NULL, ",", &saveptr2)) != NULL)
+                      {
+                          if (trackindex2) break;
+                          trackindex2 = strtol(trackchunk2, NULL, 10);
+                          if (trackindex2 == EINVAL || trackindex2 == ERANGE || trackindex2 > 99 || trackindex2 < 1)
+                          {
+                              EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect track number: rank should be included between 1 and 99.");
+                          }
+                      }
+
+                      if (trackindex >= trackindex2 )
+                      {
+                          EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect track numbers : ... should be between a and b, a < b");
+                      }
+
+                      for (int t = trackindex + 1; t <= trackindex2; ++t)
+                      {
+                        extract->extracttitleset[groupindex - 1] = 1;
+                        extract->extracttrackintitleset[groupindex - 1][t - 1] = 1;
+                      }
+
+                      continue;
+                  }
+                }
+                else
+                {
+                    // first track or just one track, be it from strtok_r or just inline
+
+                    if (trackindex) break;
+                    extract->extracttitleset[groupindex - 1] = 1;
+                    trackindex = strtol(trackchunk, NULL, 10);
+                    if (trackindex == EINVAL || trackindex == ERANGE || trackindex > 99 || trackindex < 1)
+                    {
+                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect track number: rank should be included between 1 and 99.");
+                    }
+
+                    extract->extracttrackintitleset[groupindex - 1][trackindex - 1] = 1;
+                    continue;
+                }
+
+
+           trackindex = strtol(trackchunk, NULL, 10);
+
+           if (trackindex == EINVAL || trackindex == ERANGE || trackindex < 1 || trackindex > 99)
             {
                 EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect track number : rank should be included between 1 and 99.");
             }
 
-            extract->extracttitleset[groupindex - 1] = 1;
-            extract->extracttrackintitleset[groupindex - 1][trackindex - 1] = 1;
-        }
-
-        free(subchunk_copy);
+           extract->extracttitleset[groupindex - 1] = 1;
+           extract->extracttrackintitleset[groupindex - 1][trackindex - 1] = 1;
+         }
+      }
     }
-
 
     for (j = 0; j < 81; ++j)
     {
@@ -3352,7 +3418,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
         }
     }
 
-    if (globals.debugging)
+    if (globals.maxverbose)
     {
         foutput("%s", PAR "EXTRACTING: AOB   |   track\n");
 
@@ -3363,7 +3429,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
             for (k = 0; k < 99; ++k)
             {
                 if ((extract->extracttitleset[j]) && (extract->extracttrackintitleset[j][k]))
-                    foutput(INF "                   %02d      |      %02d\n", j, k );
+                    foutput(INF "                   %02d      |      %02d\n", j + 1, k + 1);
             }
         }
     }

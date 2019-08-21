@@ -361,7 +361,7 @@ Checkout:
     case	BAD_HEADER :
     case    BAD_DATA :
 
-      if (globals.debugging) foutput( "%s\n", MSG_TAG "Fixwav status 4:\n       WAVE header corrupt." );
+      if (globals.debugging) foutput( "%s\n", MSG_TAG "Fixwav status 4:\n       WAVE header has to be fixed." );
 
       standard_header = calloc(header_size, 1);
       if (standard_header == NULL) return NULL;

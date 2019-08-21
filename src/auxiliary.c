@@ -110,7 +110,7 @@ printf("%s","    --project [file]     Launches a dvda-author project." J "The pr
 printf("%s","-i, --input directory    Input directory with audio files." J "Each subdirectory is a group.\n\n");
 printf("%s","-o, --output directory   Output directory.\n\n");
 printf("%s","-x, --extract {disc or directory} Extract DVD-Audio to directory -o." J "Groups are labelled g1, g2 in output directory.\n\n");
-printf("%s","    --xlist 1:1,...,t1n-2:1,...,t2n-...-N:1,...,tNn  Optional hyphen-separated list of groups to be extracted" J "may be added with -x." J "Groups ranks are followed by colons." J "Tracks to be extracted may be listed separated by commas after colon." J "If not specified, all the group will be extracted." J "Contiguous tracks may be represented by `...`" J "e.g. 2-3-4:1,2...7,9 means: extract groups 2 and 3 entirely and tracks 2 to 7 and 9 for in group 4.\n\n");
+printf("%s","    --xlist 1:1,...,t1n-2:1,...,t2n-...-N:1,...,tNn  Optional hyphen-separated list of groups to be extracted" J "may be added with -x." J "Tracks to be extracted in a given group are indicated after a colon." J "Tracks to be extracted may be listed separated by commas after colon." J "If not specified, all the group will be extracted." J "Contiguous tracks may be represented by `...` between commas" J "e.g. 2-3-4:1,2,...,7,9 means: extract groups 2 and 3 entirely and tracks 2 to 7 and 9 for in group 4.\n\n");
 printf("%s","    --aob-extract {directory or AOB[,AOB...]}    Direct AOB file audio content extraction. " J "Unlike -x, this option does not use .IFO files. Use this option in combination with -o. No wav header is generated." J "Several AOB files may be listed, separated by commas.\n\n");
 printf("%s","    --aob2wav {directory or AOB[,AOB...]}        Like --aob-extract but a wav header is prepended to audio content.\n\n");
 printf("%s","    --forensic           Use this mode with --aob-extract, --aob2wav or -x if IFO files are missing or mangled, or AOB files" J "have been partially restored using recovery tools.\n\n");
@@ -344,7 +344,7 @@ printf("%s", "-create a hybrid DVD disc with both AUDIO_TS mirroring audio_input
 printf("%s", " DVD_HYBRID and links video titleset #2 of VIDEO_TS to AUDIO_TS:\n\n");
 printf("%s","  dvda-author -i ~"SEPARATOR"audio"SEPARATOR"audio_input_directory"K"-o DVD_HYBRID -V Video"SEPARATOR"VID -T 2 \n\n");
 printf("%s", "-create an audio folder from an existing DVD-Audio disc:\n\n\
-  dvda-author --extract /media/cdrom -xlist 1-3:2-5:3...7,9-6-7 -o dir\n\n");
+  dvda-author --extract /media/cdrom -xlist 1-3:2-5:3,...,7,9-6-7 -o dir\n\n");
 printf("%s","will extract audio groups 1, 3 (track 2), 5 (tracks 3 to 7 and 9), 6 and 7 of the disc to\n\n\
 dir"SEPARATOR"g1, dir"SEPARATOR"g3, dir"SEPARATOR"g5, dir"SEPARATOR"g6, and dir"SEPARATOR"g7 respectively.\n\n");
 printf("%s", "\nRequired compile-time constants:\n\n_GNU_SOURCE, __CB__ if compiling with Code::Blocks or similar IDE.\n\n");
