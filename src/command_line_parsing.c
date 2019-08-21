@@ -1924,7 +1924,7 @@ out:
         case 27:
             foutput("%s\n", PAR "Decode disk and log MPEG specifics.");
             globals.logdecode = true;
-            globals.aobpath = (char**) calloc(1, sizeof(char *));
+            globals.aobpath = (char**) calloc(81, sizeof(char *)); // so far rhe default alloc
             if (globals.aobpath)
                 globals.aobpath[0] = strdup(optarg);
             else
@@ -2197,15 +2197,15 @@ out:
         if (globals.logdecode)
         {
             decode_ats();
-            clean_exit(EXIT_SUCCESS);
         }
         else
         {
           get_ats_audio(use_ifo_files, extract);
           if (extract_audio_flag)
              free(extract);
-          clean_exit(EXIT_SUCCESS);
         }
+        free_memory(command);
+        clean_exit(EXIT_SUCCESS);
     }
 
     // Now copying to temporary directory, depending on type of menu creation, trying to minimize work, depending of type of disc build.
@@ -3104,7 +3104,7 @@ void aob2wav_parsing(const char *ssopt, const extractlist* extract)
 
     if (chain != NULL)
     {
-        globals.aobpath = (char**) calloc(extract ? (extract->nextractgroup + 1) : 81, sizeof(char*));  // 9 groups but there may be upt to 9 partial AOBs per group. The +1 is for stop tests.
+        globals.aobpath = (char**) calloc(81, sizeof(char*));  // groups may not be successive so extract->nextractgroups is not the appropriate counter
 
         if (globals.aobpath == NULL)
         {
@@ -3118,8 +3118,14 @@ void aob2wav_parsing(const char *ssopt, const extractlist* extract)
 
     if (extract == NULL)
     {
-       globals.aobpath[0] = strtok(chain, ",");
-       while (i < 81 && (globals.aobpath[++i] = strtok(NULL, ",")) != NULL) {}
+       for (char* str = chain, *c; i < 81 && (c = strtok(str, ",")) != NULL; ++i, str = NULL)
+       {
+           globals.aobpath[i] = strdup(c);
+           if (globals.veryverbose)
+           {
+               fprintf(stderr, MSG_TAG "Adding %s to extract list (rank %d)\n", globals.aobpath[i], i + 1);
+           }
+       }
     }
     else
     {
