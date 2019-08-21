@@ -849,7 +849,11 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                 if (files[i][track] == NULL)
                 {
                     ++track;
-                    continue;
+                    if (track < 99)
+                       continue;
+                    else
+                      return 0;
+
                 }
 
                 if (info->infile.type == AFMT_LPCM)
@@ -1155,15 +1159,17 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
     return(errno);
 }
 
-static void audio_extraction_layout(fileinfo_t* files[9][99])
+static void audio_extraction_layout(fileinfo_t* files[81][99])
 {
     foutput("\n%s", "DVD Layout\n");
     foutput("%s\n",ANSI_COLOR_BLUE "Group" ANSI_COLOR_GREEN "  Track    " ANSI_COLOR_YELLOW "Rate" ANSI_COLOR_RED " Bits" ANSI_COLOR_RESET "  Ch  Input audio (B)   Output wav (B) 1st sector  last sect. PTS length  Filename\n");
 
     for (int i = 0; i < 81; ++i)
-        for (int j = 0; j < 99 && files[i][j]->filename != NULL; ++j)
+        for (int j = 0; j < 99; ++j)
         {
-           foutput("  "ANSI_COLOR_BLUE "%d     " ANSI_COLOR_GREEN "%02d"
+            if (files[i][j] == NULL || files[i][j]->filename == NULL) continue;
+
+            foutput("  "ANSI_COLOR_BLUE "%d     " ANSI_COLOR_GREEN "%02d"
                    ANSI_COLOR_YELLOW "  %6" PRIu32 "   " ANSI_COLOR_RED "%02d"
                    ANSI_COLOR_RESET "   %d       %10" PRIu64
                    "   %10" PRIu64"   %10" PRIu32"   %10" PRIu32
@@ -1279,7 +1285,7 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
     for (int i = 0; i < 81;  ++i)
     {
 
-      if (globals.aobpath[i] == NULL) continue;
+      if (globals.aobpath[i] == NULL) break;
 
       if (globals.veryverbose)
          foutput("%s%d%s\n", INF "Extracting audio for AOB n°", i+1, ".");
