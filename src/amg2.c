@@ -113,7 +113,8 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
                 || command->files[group][track].bitspersample != command->files[group][track-1].bitspersample
                 || command->files[group][track].channels      != command->files[group][track-1].channels
                 || command->files[group][track].cga           != command->files[group][track-1].cga
-                || command->files[group][track].type          == AFMT_MLP)
+                || command->files[group][track].type          == AFMT_MLP
+                || command->files[group][track - 1].type      == AFMT_MLP)
                 {
                   command->files[group][track].newtitle = 1;
                 }

@@ -127,11 +127,15 @@ int launch_manager(command_t *command)
 
             files[i][j].contin_track = (uint8_t) (j != nfiles[i] - 1);
 
-            if ((files[i][j].samplerate > 48000
-                 && (files[i][j].bitspersample == 24
-                     && (files[i][j].channels == 5 || files[i][j].channels == 6)))
+            // MLP necessary for 5+/24/88200+ and 3+/16+/176400+
+
+            if (files[i][j].type != AFMT_MLP
+                    &&
+                (files[i][j].samplerate > 48000
+                 && files[i][j].bitspersample == 24
+                 && (files[i][j].channels == 5 || files[i][j].channels == 6)
                 ||
-                (files[i][j].channels > 2 && files[i][j].samplerate > 96000))
+                files[i][j].channels > 2 && files[i][j].samplerate > 96000))
             {
               foutput("%s %s %s %d %s %d %s %d %s\n",
                       ANSI_COLOR_RED "[ERR] File ",
