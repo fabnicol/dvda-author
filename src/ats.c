@@ -800,10 +800,10 @@ inline static uint64_t calc_SCR(fileinfo_t* info, uint64_t pack_in_title)
   {
     case 0: return 0;
     case 1:
-          SCR = (info->lpcm_payload - info->firstpackdecrement) * 300.0 * 90000.0 / info->bytespersecond;
+          SCR = (info->lpcm_payload - info->firstpackdecrement) * 300.0 * (90000.0 / info->bytespersecond);
           break;
     case 2:
-          SCR1 = info->lpcm_payload * 300.0 * 90000.0 / info->bytespersecond;  // do not compute each time ! Once is enough
+          SCR1 = info->lpcm_payload * 300.0 * (90000.0 / info->bytespersecond);  // do not compute each time ! Once is enough
           SCR += SCR1;
           break;
 
@@ -919,6 +919,8 @@ inline static void calc_PTS_DTS_MLP(fileinfo_t* info)
 //
 // To be tested
 
+// MLP files always start a new title. They are not "gapless" to date, so SCR = 0 on title start.
+
 inline static void calc_SCR_MLP(fileinfo_t* info)
 {
     if (info->type != AFMT_MLP)
@@ -929,6 +931,7 @@ inline static void calc_SCR_MLP(fileinfo_t* info)
    // struct MLP_LAYOUT already retrieved
 
     double sectorbytes = 1984;
+    info->scr[0] = 0; // normally no op
 
     for (int i = 1; i < MAX_AOB_SECTORS && info->mlp_layout[i].pkt_pos != 0; ++i)
     {

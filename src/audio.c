@@ -456,15 +456,15 @@ int decode_mlp_file(fileinfo_t* info)
   if (avformat_open_input(&format, path, NULL, NULL) != 0)
   {
         fprintf(stderr, ERR "Could not open file '%s'\n", path);
-        return -1;
+        EXIT_ON_RUNTIME_ERROR
   }
 
   if (avformat_find_stream_info(format, NULL) < 0)
   {
         fprintf(stderr, ERR "Could not retrieve stream info from file '%s'\n", path);
-        return -1;
+        EXIT_ON_RUNTIME_ERROR
   }
-
+   errno = 0;  // hushes up an ioctl report
  // Find the index of the first audio stream
 
   int stream_index = -1;
@@ -480,7 +480,7 @@ int decode_mlp_file(fileinfo_t* info)
   if (stream_index == -1)
   {
         fprintf(stderr, ERR "Could not retrieve audio stream from file '%s'\n", path);
-        return -1;
+        EXIT_ON_RUNTIME_ERROR
   }
 
   AVStream* stream = format->streams[stream_index];
@@ -494,18 +494,20 @@ int decode_mlp_file(fileinfo_t* info)
   if (avcodec_open2(codec, avcodec_find_decoder(codec->codec_id), NULL) < 0)
     {
         fprintf(stderr, ERR "Failed to open decoder for stream #%u in file '%s'\n", stream_index, path);
-        return -1;
+        EXIT_ON_RUNTIME_ERROR
     }
 
     // prepare to read data
   AVPacket packet;
+
   av_init_packet(&packet);
+
   AVFrame* frame = av_frame_alloc();
 
   if (!frame)
     {
         fprintf(stderr, ERR "Error allocating the frame\n");
-        return -1;
+        EXIT_ON_RUNTIME_ERROR
     }
 
   int cumsize = 0;
@@ -518,7 +520,7 @@ int decode_mlp_file(fileinfo_t* info)
  if (globals.decode || globals.maxverbose)
  {
    int32_t bytes_written = 0;
-
+   errno = 0;
    while (av_read_frame(format, &packet) >= 0)
     {
         // decode one frame
@@ -657,9 +659,6 @@ int decode_mlp_file(fileinfo_t* info)
         }
     }
 
-
-    errno = 0;
-
     if (globals.decode && info->out_filename && globals.fixwav_prepend)
     {
 //         WAV output is now OK except for the wav file size-based header data.
@@ -697,6 +696,7 @@ int decode_mlp_file(fileinfo_t* info)
  }
  else
  {
+
     while (av_read_frame(format, &packet) >= 0)
     {
       // decode one frame
@@ -838,7 +838,7 @@ int calc_info(fileinfo_t* info)
 
         if (res)
         {
-            fprintf(stderr, "%s\n", WAR "Errors occurred during decoding...");
+            fprintf(stderr, "%s\n", WAR "Errors occurred on decoding...");
             fprintf(stderr, WAR "%s\n",  strerror(res));
         }
 
