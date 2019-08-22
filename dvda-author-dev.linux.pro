@@ -1,3 +1,4 @@
+
 DEFINES += VERSION=\\\"dev-9999\\\"
 
 TEMPLATE = app
