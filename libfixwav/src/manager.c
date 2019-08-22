@@ -59,24 +59,8 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
 
   if (file_exists(info->infile.filename))
       info->infile.filesize = stat_file_size(info->infile.filename);
-  else
-  {
 
-          fprintf(stderr, ERR "File *%s* does not exist\n", info->infile.filename);
-          clean_exit(EXIT_FAILURE);
-  }
-
-//  TO EARLY : outfile may not exist yet !
-
-//  if (! info->in_place)
-//  {
-//   if (file_exists(info->outfile.filename))
-//      info->outfile.filesize = stat_file_size(info->outfile.filename);
-//  }
-//  else
-//  {
-//      info->outfile.filesize  = info->infile.filesize;
-//  }
+  // outfile or infile may not exist yet, do not balk out
 
   if (! info->in_place && filesize(info->infile) == 0)
     {
@@ -112,12 +96,7 @@ WaveHeader  *fixwav(WaveData *info, WaveHeader *header)
     {
       if (globals.debugging) foutput( "\n\n--FIXWAV section %d--\n\n"MSG_TAG "File size is %"PRIu64" bytes\n", section, filesize(info->infile));
     }
-  else
-    {
-      perror("\n"ERR "Could not stat regular file\n");
-      info->repair=FAIL;
-      goto getout;
-    }
+
 
   errno=0;
 
