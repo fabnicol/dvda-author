@@ -60,7 +60,6 @@ typedef struct
     uint16_t sampleunitsize;
     uint16_t bytesperframe;
     uint16_t lpcm_payload;
-    uint16_t SCRquantity;
     uint16_t firstpack_audiopesheaderquantity;
     uint16_t midpack_audiopesheaderquantity;
     bool     mergeflag;

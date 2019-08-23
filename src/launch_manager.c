@@ -129,26 +129,45 @@ int launch_manager(command_t *command)
 
             // MLP necessary for 5+/24/88200+ and 3+/16+/176400+
 
-            if (files[i][j].type != AFMT_MLP
-                    &&
-                (files[i][j].samplerate > 48000
-                 && files[i][j].bitspersample == 24
-                 && (files[i][j].channels == 5 || files[i][j].channels == 6)
-                ||
-                files[i][j].channels > 2 && files[i][j].samplerate > 96000))
+            if (files[i][j].type != AFMT_MLP)
             {
-              foutput("%s %s %s %d %s %d %s %d %s\n",
-                      ANSI_COLOR_RED "[ERR] File ",
-                      files[i][j].filename,
-                      " cannot be recorded to DVD-Audio without MLP encoding (",
-                      files[i][j].channels,
-                      " channels, ",
-                      files[i][j].bitspersample,
-                      " bits, ",
-                      files[i][j].samplerate,
-                      " samples per second.)");
-              clean_exit(-1);
+                 if
+                ((files[i][j].samplerate > 48000    && files[i][j].bitspersample == 24
+                  || files[i][j].samplerate > 96000)
+                 && (files[i][j].channels == 5 || files[i][j].channels == 6)
+                )
+                {
+                  foutput("%s %s %s %d %s %d %s %d %s\n",
+                          ANSI_COLOR_RED "[ERR] File ",
+                          files[i][j].filename,
+                          " cannot be recorded to DVD-Audio without MLP encoding (",
+                          files[i][j].channels,
+                          " channels, ",
+                          files[i][j].bitspersample,
+                          " bits, ",
+                          files[i][j].samplerate,
+                          " samples per second.)");
+                  clean_exit(-1);
+                }
             }
+            else
+            {
+                if (files[i][j].channels > 2 && files[i][j].samplerate > 96000)
+                {
+                  foutput("%s %s %s %d %s %d %s %d %s\n",
+                          ANSI_COLOR_RED "[ERR] Surround file ",
+                          files[i][j].filename,
+                          " cannot be recorded to DVD-Audio even with MLP encoding (",
+                          files[i][j].channels,
+                          " channels, ",
+                          files[i][j].bitspersample,
+                          " bits, ",
+                          files[i][j].samplerate,
+                          " samples per second.)");
+                  clean_exit(-1);
+                }
+            }
+
 
             foutput("%c%c  " ANSI_COLOR_BLUE "%d     " ANSI_COLOR_GREEN "%02d" ANSI_COLOR_YELLOW "  %6" PRIu32 "   " ANSI_COLOR_RED "%02d" ANSI_COLOR_RESET "   %d %s   %10" PRIu64 "   ",
                     joinmark[i][j],

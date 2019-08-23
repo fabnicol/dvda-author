@@ -1075,9 +1075,9 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
 
         if (info->type == AFMT_MLP)
         {
-            DTS = 0;
-            PTS = 0;
-            mlp_flag = 0;
+            //DTS = 0;
+            //PTS = 0;
+            //mlp_flag = 0;  Contradictory input: not nul for 6/15/44100... null for other audio formats...
         }
 
         write_audio_pes_header(fp, info->lastpack_audiopesheaderquantity + audio_bytes, mlp_flag, 0, PTS, DTS);  // +14 for PCM or +19 for MLP

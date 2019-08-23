@@ -744,22 +744,25 @@ int calc_info(fileinfo_t* info)
 // assemble numbers for the various combinations
     short int table_index = info->bitspersample == 24? 1 : 0 ;
 
-    static const uint16_t T[2][6][11]=     // 16-bit table
+    static const uint16_t T[2][6][10]=     // 16-bit table
     {
-         {{ 	2000, 16,  1984,  2010,	2028, 22, 11, 16, 16 /*old: 10*/, 0, 0 },
-            {	2000, 16,  1984,  2010,	2028, 28 /*old: 22*/ , 11, 16, 10 /*old: 16*/, 0, 0 },
-            { 	2004, 24,  1980,  2010,	2028, 24 /*old: 22*/, 15, 12, 10 /*old: 12*/, 0, 0 },
-            { 	2000, 16,  1980,  2010,	2028, 28 /*old: 22*/, 11, 16, 10 /*old: 16*/, 0, 0 },
-            { 	2000, 20,  1980,  2010, 2028, 22, 15, 16, 10 /*old: 16*/, 0, 0 },
-            { 	1992, 24,  1992, 1993,  2014, 22, 10, 10, 10 /*old: 4*/, 17, 14}},
+         {{ 	2000, 16,  2010,	2028, 22, 11, 16, 16, 0,  0 },
+            {	2000, 16,  2010,	2028, 28, 11, 16, 10, 0,  0 },
+            { 	2004, 24,  2010,	2028, 24, 15, 12, 10, 0,  0 },
+            { 	2000, 16,  2010,	2028, 28, 11, 16, 10, 0,  0 },
+            { 	2000, 20,  2010,    2028, 22, 15, 16, 10, 0,  0 },
+            {   1992, 24,  1993,    2014, 22, 10, 10, 10, 17, 14}},
         // 24-bit table
-        {{    	2004, 24,  1980,  2010,	2028, 22, 15, 12, 12 /*old: 10*/, 0, 0 },
-            { 	2004, 24,  1980,  2010,	2028, 24 /*old: 22*/, 15, 12, 10 /*old: 12*/, 0, 0 },
-            { 	1998, 18,  1980,  2010,	2020 /*old 2026*/, 28 /*old: 22 */, 15, 10 /* old 16 */, 10 /* old 16*/, 0, 8 /* old 6 */ },
-            { 	1992, 24,  1968,  1993,	2014, 22, 10, 10,  10 /*old: 8*/, 17, 14 },
-            { 	1980,  0,  1980,  2010, 2002 /* old 2008 */, 22, 15, 10 /* old 16 */, 10 /*old: 16*/, 0, 26 /* old 20 */},  // out for 88.1 kHz and 96 kHz.
-            { 	1980,  0,  1980,  2010, 2008, 22, 15, 16, 16 /* old 14*/, 0, 20 }}  // out for 88.1 kHz and 96 kHz.
+        {{    	2004, 24,  2010,	2028, 22, 15, 12, 12, 0,  0 },
+            { 	2004, 24,  2010,	2028, 24, 15, 12, 10, 0,  0 },
+            {   1998, 18,  2010,    2020, 28, 15, 10, 10, 0,  8},
+            { 	1992, 24,  1993,	2014, 22, 10, 10, 10, 17, 14 },
+            { 	1980,  0,  2010,    2002, 22, 15, 10, 10, 0,  26 },  // out for 88.1 kHz and 96 kHz.
+            { 	1980,  0,  2010,    2008, 22, 15, 16, 16, 0,  20 }}  // out for 88.1 kHz and 96 kHz.
     };
+
+  static const uint16_t U[8] =
+            {  2005, 21, 2010, 2028, 23, 6, 6, 6};  // no padding quantities
 
 //
 // The following equations are always true by necessity:
@@ -779,34 +782,34 @@ int calc_info(fileinfo_t* info)
 
 #define X T[table_index][info->channels-1]
 
-    info->firstpack_audiopesheaderquantity = X[3]; // apparently valid for both MLP and PCM
-    info->midpack_audiopesheaderquantity   = X[4]; // TODO: check this!
-
-    if (info->type == AFMT_MLP)   // only tested for 2/16-24/44 and 3/16/96
+    if (info->type == AFMT_MLP)   // only tested for 2/16-24/44, 3/16/96 and 6/16/44, 5/16/44, 4/16/44, 3/16-24/44
     {
-        info->lpcm_payload = 2005;
-        info->firstpackdecrement = 21;
-        info->firstpack_lpcm_headerquantity    = 6;
-        info->midpack_lpcm_headerquantity      = 6;
-        info->lastpack_lpcm_headerquantity     = 6;
-        info->lastpack_audiopesheaderquantity  = 13;
+        info->lpcm_payload                     = U[0];
+        info->firstpackdecrement               = (uint8_t) U[1];
+        info->firstpack_audiopesheaderquantity = U[2];
+        info->midpack_audiopesheaderquantity   = U[3];
+        info->lastpack_audiopesheaderquantity  = (uint8_t) U[4];
+        info->firstpack_lpcm_headerquantity    = (uint8_t) U[5];
+        info->midpack_lpcm_headerquantity      = (uint8_t) U[6];
+        info->lastpack_lpcm_headerquantity     = (uint8_t) U[7];
     }
     else
     {
-        info->lpcm_payload = X[0];
-        info->firstpackdecrement = (uint8_t) X[1];
-        info->SCRquantity = X[2]; // now useless. Left here for compatibility. Deprecated.
-        info->lastpack_audiopesheaderquantity  = (uint8_t) X[5];
-        info->firstpack_lpcm_headerquantity    = (uint8_t) X[6];
-        info->midpack_lpcm_headerquantity      = (uint8_t) X[7];
-        info->lastpack_lpcm_headerquantity     = (uint8_t) X[8];
-        info->firstpack_pes_padding            = (uint8_t) X[9];
-        info->midpack_pes_padding              = (uint8_t) X[10];
+        info->lpcm_payload                     = X[0];
+        info->firstpackdecrement               = (uint8_t) X[1];
+        info->firstpack_audiopesheaderquantity = X[2];
+        info->midpack_audiopesheaderquantity   = X[3];
+        info->lastpack_audiopesheaderquantity  = (uint8_t) X[4];
+        info->firstpack_lpcm_headerquantity    = (uint8_t) X[5];
+        info->midpack_lpcm_headerquantity      = (uint8_t) X[6];
+        info->lastpack_lpcm_headerquantity     = (uint8_t) X[7];
+        info->firstpack_pes_padding            = (uint8_t) X[8];
+        info->midpack_pes_padding              = (uint8_t) X[9];
     }
 
 #undef X
 
-    info->bytespersecond = (info->samplerate * info->bitspersample * info->channels)/8;
+    info->bytespersecond = (info->samplerate * info->bitspersample * info->channels) / 8;
 
     switch (info->samplerate)
     {
