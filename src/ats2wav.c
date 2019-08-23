@@ -568,7 +568,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
     }
     else
     {
-        const uint16_t U[6] = {2005, 21, 13, 6, 6, 6};
+        const uint16_t U[6] = {2005, 21, 23, 6, 6, 6};
 
         lpcm_payload                    = U[0];
         firstpackdecrement              = U[1];
@@ -681,7 +681,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
             if (info->infile.type == AFMT_LPCM)
                 fseeko(info->infile.fp, offset0 + 32 + lastpack_lpcm_headerquantity, SEEK_SET);
             else
-                fseeko(info->infile.fp, offset0 + 33, SEEK_SET);
+                fseeko(info->infile.fp, offset0 + 43, SEEK_SET);
             ++*pack_in_track;
             ++*pack_in_title;
             ++*pack_in_group;
