@@ -131,7 +131,7 @@ J "Combine channels using either decimal indexes in following table or hyphenate
 J " e.g. -g a.wav -g b.wav -c Lf-Rf-C2-Lfe2-S2 --cga 17"
 J "Channel group assignment (CGA)"
 J "    Index     1    2        3         4        5       6"
-J "      0       M"
+J "      0       Mono"
 J "      1       L     R"
 J "      2       Lf    Rf      S2"
 J "      3       Lf    Rf      Ls2      Rs2"
@@ -154,7 +154,7 @@ J "      0x13-19 Lf    Rf      Ls       Rs       C2"
 J "      0x14-20 Lf    Rf      Ls       Rs       C2       Lfe2"
 J " Keys:"
 J " Index 2 means channel belongs to Group2"
-J " M: Mono"
+J " L-R: Stereo"
 J " Lf: Left front"
 J " Rf: Right front"
 J " Ls: Left surround (behind)"
@@ -164,8 +164,8 @@ J " Lfe: Low Frequency Effect (Subwoofer)"
 J " S: Surround (just one behind)"
 J " Ls: Left  surround"
 J " Rs: Right surround"
-J " Each group must have either same sample rate or be even multiples (e.g. 96kHz/48 kHz or 88.2 kHz/44.1 kHz)"
-J " Within groups, bitrate may differ but sample rate cannot. \n\n");
+J " Each group must have either same sample rate or be even multiples (e.g. 96kHz/48 kHz or 88.2 kHz/44.1 kHz)." J "The latter case is not yet supported."
+J " Within groups, bit rate may differ but sample rate cannot. \n\n");
 
 printf("%s","    --downmix            Enter downmix coefficients in dB. If track has more than 2 channels, each channel (Lf, Rf, C, Ls or S, Rs, LFE)" J \
 "will be mapped to left (l) and/or right (r) stereo channel" J \
