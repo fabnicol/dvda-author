@@ -6,6 +6,7 @@ Purpose: Create an Audio Titleset
 dvda-author  - Author a DVD-Audio DVD
 
 (C) Dave Chapman <dave@dchapman.com> 2005
+(C) Fabrice Nicol <fabnicol@users.sourceforge.net> 20015-2019 for multichannel and MLP capabilities
 
 The latest version can be found at http://dvd-audio.sourceforge.net
 
