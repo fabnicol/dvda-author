@@ -179,7 +179,7 @@ inline uint8_t wav2cga_channels(fileinfo_t *info)
 
 
 const char* cga_define[21] = {"Mono",
-                                     "Stereo",
+                                     "L-R",
                                      "Lf-Rf-S2",
                                      "Lf-Rf-Ls2-Rs2",
                                      "Lf-Rf-Lfe2",
