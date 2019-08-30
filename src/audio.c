@@ -1176,7 +1176,8 @@ inline bool audit_mlp_header(uint8_t* header, fileinfo_t* info, bool calc)
                 break;
         }
 
-    info->cga         = check_cga_assignment(header[7]);
+    info->cga         = check_cga_assignment(header[7]);  // TODO: check that MLP cgas are the same as DVD-A. Still not clear.
+
     info->channels    = cga_to_channel(info->cga);
     info->header_size = 0;  // this is the file header size, not the AOB header sizes (64 for first pack, 43 for others)
 
