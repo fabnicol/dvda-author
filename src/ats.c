@@ -42,7 +42,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "commonvars.h"
 #include "ats.h"
 
-#include "libavcodec/mlplayout.h"
+#include "mlplayout.h"
 #include "decode.h"
 #include "c_utils.h"
 #include "structures.h"
@@ -844,11 +844,11 @@ inline static void calc_PTS_DTS_MLP(fileinfo_t* info)
     // - total byte size = 2048  * (N-1) - S   (0xE is where header starts for PTS)
     // - run parallel count of PKT pos through MLP decoder, gives Rank of packet and POS of packet
     // - take Rank such that POS (0-based) of MLP packet strictly superior to total byte size
-    // - Rank * 40 = NPCMsamples		(Rank 0-based, numer of frames of 40 samples)
+    // - Rank * {40,80,160} = NPCMsamples		(Rank 0-based, numer of frames of {40,80,160} samples)
     // - NPCMsamples * c * br / 8 = Nbyteswritten
     // - Nbyteswritten / (c * sr * br / 8 ) = duration
     // Or : duration = NPCMsamples /sr
-    // PTS = ceiling(duration * 90000)		   = ceiling(Rank * 40  / sr * 90000) = ceiling(Rank / sr * 360000)
+    // PTS = ceiling(duration * 90000)		   = ceiling(Rank * {40,80,160}  / sr * 90000) = ceiling(Rank / sr * 360000)
     // DTS = floor(duration * 90000)
     // Add :
     // PTS = PTS + PTS0
@@ -863,16 +863,17 @@ inline static void calc_PTS_DTS_MLP(fileinfo_t* info)
 
     const uint32_t start_byteshift = START_MLP_BYTESHIFT;
 
-    for (int i = 0; i < MAX_AOB_SECTORS; ++i)
+    for (int i = 0; i < info->mlp_layout_size && i < MAX_AOB_SECTORS; ++i)
     {
       double ptsint = ceil((double) (info->mlp_layout[i].nb_samples  + info->samplesperframe)/ (double) info->samplerate * 90000.0);
       double dtsint = ceil((double) info->mlp_layout[i].nb_samples/ (double) info->samplerate * 90000.0);
+
       // Here rounding to the next bytesperframe does not seem to be necessary unlike in the PCM case. TODO: check.
+
       info->pts[i] = (uint32_t) ptsint;
       info->dts[i] = (uint32_t)  dtsint;
       info->pts[i] += start_byteshift;
       info->dts[i] += start_byteshift;
-      if (i && info->mlp_layout[i].pkt_pos == 0) break;
     }
 
     ++info->dts[0] ;
@@ -904,7 +905,7 @@ inline static void calc_PTS_DTS_MLP(fileinfo_t* info)
 //
 //   for (int i = 1; i < MAX_AOB_SECTORS && m[i].pkt_pos != 0; ++i)
 //   {
-//    double temp = (double) (m[i].nb_samples - 40.0) / (double) info->samplerate * 90000.0 * 300.0
+//    double temp = (double) (m[i].nb_samples - {40.0,80.0,160.0}) / (double) info->samplerate * 90000.0 * 300.0
 //
 //    double res = ceil(temp);
 //
@@ -933,10 +934,29 @@ inline static void calc_SCR_MLP(fileinfo_t* info)
 
     double sectorbytes = 1984;
     info->scr[0] = 0; // normally no op
+    double pcm_sample_lag;
 
-    for (int i = 1; i < MAX_AOB_SECTORS && info->mlp_layout[i].pkt_pos != 0; ++i)
+    switch(info->samplerate)
     {
-      double temp = (double) (info->mlp_layout[i].nb_samples - 40.0) / (double) info->samplerate * 90000;  // PTS ticks first
+      case 44100:
+      case 48000:   // fallthrough
+          pcm_sample_lag = 40.0;
+        break;
+
+      case 88200:
+      case 96000:
+        pcm_sample_lag = 80.0;
+        break;
+
+      case 176400:
+      case 192000:
+        pcm_sample_lag = 160.0;
+        break;
+    }
+
+    for (int i = 1; i < info->mlp_layout_size && i < MAX_AOB_SECTORS; ++i)
+    {
+      double temp = (double) (info->mlp_layout[i].nb_samples - pcm_sample_lag) / (double) info->samplerate * 90000;  // PTS ticks first
       sectorbytes += 2005;
       double byteshift = info->mlp_layout[i].pkt_pos - sectorbytes;  // very wild guess through regression
       temp += 26.0 - byteshift / 14.0;                     // that looks like close at a handful PTS ticks off

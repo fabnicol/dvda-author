@@ -5,7 +5,7 @@
 #include "stream_decoder.h"
 #include "inttypes.h"
 #include "commonvars.h"
-#include "libavcodec/mlplayout.h"
+#include "mlplayout.h"
 
 typedef struct
 {
@@ -71,6 +71,7 @@ typedef struct
     uint32_t dw_channel_mask;
     uint32_t first_PTS;
     uint32_t PTS_length;
+    uint32_t mlp_layout_size;
     uint32_t *pts;
     uint32_t *dts;
     uint64_t *scr;
