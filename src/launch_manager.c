@@ -98,7 +98,7 @@ int launch_manager(command_t *command)
     change_directory(globals.settings.workdir);
 
     foutput("\n%s", "DVD Layout\n");
-    foutput("%s\n",ANSI_COLOR_BLUE"Group"ANSI_COLOR_GREEN"  Track    "ANSI_COLOR_YELLOW"Rate"ANSI_COLOR_RED" Bits"ANSI_COLOR_RESET"  Ch Ch. Assignt.      Length  Filename\n");
+    foutput("%s\n",ANSI_COLOR_BLUE"Group"ANSI_COLOR_GREEN"  Track    "ANSI_COLOR_YELLOW"Rate"ANSI_COLOR_RED" Bits"ANSI_COLOR_RESET"  Ch  CGA    N_Samples  Filename\n");
 
     // ngroups does not include copy groups from then on -- nplaygroups are just virtual (no added bytes to disc)
     // number of groups=ngroups+nplaygroups
@@ -465,7 +465,7 @@ int launch_manager(command_t *command)
     errno=0;
 
     foutput("%c\n", '\n');
-    foutput("%s\n" , ANSI_COLOR_BLUE"Group"ANSI_COLOR_YELLOW"   Title"ANSI_COLOR_GREEN"  Track"ANSI_COLOR_RESET"  First Sect   Last Sect  First PTS  PTS length cga\n");
+    foutput("%s\n" , ANSI_COLOR_BLUE"Group"ANSI_COLOR_YELLOW"   Title"ANSI_COLOR_GREEN"  Track"ANSI_COLOR_RESET"  First_Sect   Last_Sect  First_PTS  PTS_length cga\n");
 
     for (i=0; i <naudio_groups; i++)
     {
@@ -515,7 +515,7 @@ int launch_manager(command_t *command)
            const char* args[]={mkisofs, "-dvd-audio", "-v", "-o", dvdisopath, globals.settings.outdir, NULL};
            foutput("%s%s%s\n", INF "Launching: ", mkisofs, " to create image");
 
-           int pid = run(mkisofs, args, WAIT, FORK);
+           run(mkisofs, args, WAIT, FORK);
 
            free(mkisofs);
         }

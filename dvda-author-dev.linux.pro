@@ -21,7 +21,6 @@ linux:LIBS +=	 "/usr/lib64/libgsm.a"  "/usr/lib64/libMagick++-7.Q16.a" "/usr/lib
                         $$SRCDIR"local/lib/liblavfile.a" \
                         $$SRCDIR"local/lib/liblavjpeg.a" \
                         $$SRCDIR"local/lib/libsox.a" \
-                        $$SRCDIR"ffmpeg/fftools/libffmpeg.a" \
                         $$SRCDIR"local/lib/libswresample.a" \
                         $$SRCDIR"local/lib/libavfilter.a" \
                         $$SRCDIR"local/lib/libavformat.a" \
@@ -265,6 +264,7 @@ HEADERS += \
     libiberty/src/include/strdup.h \
     libiberty/src/include/strndup.h \
     libiberty/src/include/strnlen.h \
+    src/include/mlplayout.h
 
 DISTFILES += \
     libfixwav/fixwav.autorepair.md \
