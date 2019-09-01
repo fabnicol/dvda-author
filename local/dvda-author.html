@@ -2,7 +2,7 @@
 <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
 </HEAD><BODY>
 <H1>DVDA-AUTHOR</H1>
-Section: User Commands (1)<BR>Updated: August 2019<BR><A HREF="#index">Index</A>
+Section: User Commands (1)<BR>Updated: September 2019<BR><A HREF="#index">Index</A>
 <A HREF="http://localhost/cgi-bin/man/man2html">Return to Main Contents</A><HR>
 
 <A NAME="lbAB">&nbsp;</A>
@@ -225,7 +225,7 @@ Channel group assignment (CGA)
 <DT>Index<DD>
 1    2        3         4        5       6
 <DT>0<DD>
-M
+Mono
 <DT>1<DD>
 L     R
 <DT>2<DD>
@@ -271,7 +271,7 @@ Keys:
 <DT><DD>
 Index 2 means channel belongs to Group2
 <DT><DD>
-M: Mono
+L-R: Stereo
 <DT><DD>
 Lf: Left front
 <DT><DD>
@@ -291,9 +291,11 @@ surround
 <DT><DD>
 Rs: Right surround
 <DT><DD>
-Each group must have either same sample rate or be even multiples (e.g. 96kHz/48 kHz or 88.2 kHz/44.1 kHz)
+Each group must have either same sample rate or be even multiples (e.g. 96kHz/48 kHz or 88.2 kHz/44.1 kHz).
 <DT><DD>
-Within groups, bitrate may differ but sample rate cannot.
+The latter case is not yet supported.
+<DT><DD>
+Within groups, bit rate may differ but sample rate cannot.
 <DT><B>--downmix</B><DD>
 Enter downmix coefficients in dB. If track has more than 2 channels, each channel (Lf, Rf, C, Ls or S, Rs, LFE)
 <DT><DD>
@@ -1090,6 +1092,6 @@ should give you access to the complete manual.
 This document was created by
 <A HREF="http://github.com/hamano/man2html/">man2html</A>,
 using the manual pages.<BR>
-Time: 00:22:51 GMT, August 23, 2019
+Time: 21:01:27 GMT, September 01, 2019
 </BODY>
 </HTML>

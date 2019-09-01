@@ -38,7 +38,7 @@
 #include "mlpdsp.h"
 #include "mlp.h"
 #include "config.h"
-#include "mlplayout.h"
+
 /** number of bits used for VLC lookup - longest Huffman code is 9 */
 #if ARCH_ARM
 #define VLC_BITS            5
@@ -48,20 +48,6 @@
 #define VLC_STATIC_SIZE     512
 #endif
 
-static uint32_t rank;
-static uint32_t totnbsamples;
-
-static struct MLP_LAYOUT mlp_layout[MAX_AOB_SECTORS] = {{0,0,0,0}};
-
-static unsigned long SECT_RANK, SECT_RANK_OLD;
-
-void get_mlp_layout(struct MLP_LAYOUT* m, unsigned long size)
-{
-    for (int i = 0; i < size; ++i) 
-    { 
-        m[i] = mlp_layout[i];
-    }
-}
 
 typedef struct SubStream {
     /// Set if a valid restart header has been read. Otherwise the substream cannot be decoded.
@@ -1075,7 +1061,7 @@ static void fill_noise_buffer(MLPDecodeContext *m, unsigned int substr)
 /** Write the audio data into the output buffer. */
 
 static int output_data(MLPDecodeContext *m, unsigned int substr,
-                       AVFrame *frame, int *got_frame_ptr,  int reached_eof)
+                       AVFrame *frame, int *got_frame_ptr)
 {
     AVCodecContext *avctx = m->avctx;
     SubStream *s = &m->substream[substr];
@@ -1136,42 +1122,7 @@ static int output_data(MLPDecodeContext *m, unsigned int substr,
     if ((ret = ff_side_data_update_matrix_encoding(frame, s->matrix_encoding)) < 0)
         return ret;
 
-    ///**  BEGIN PATCH
-
-    static unsigned long PKT_POS_SECT;
-    static unsigned long HEADER_OFFSET;
-//    static uint32_t pkt_pos_before;
-
-    if (HEADER_OFFSET == 0) HEADER_OFFSET = 64;
-
-    PKT_POS_SECT = frame->pkt_pos + HEADER_OFFSET;
-
-    SECT_RANK_OLD = SECT_RANK;
-    SECT_RANK = (PKT_POS_SECT - 1)/ 2048;
-
-    int new_sector = (SECT_RANK != SECT_RANK_OLD);
-    
-    if (new_sector || rank == 0 || reached_eof)
-    {
-        if (new_sector) HEADER_OFFSET += 43;
-        mlp_layout[rank].pkt_pos = frame->pkt_pos;
-//        mlp_layout[rank].pkt_pos_src = pkt_pos_before;
-        mlp_layout[rank].nb_samples = totnbsamples;
-        mlp_layout[rank].rank = SECT_RANK;
-        ++rank;
-        if (reached_eof)
-        {
-            mlp_layout[rank].pkt_pos = frame->pkt_pos + frame->pkt_size;
-            mlp_layout[rank].nb_samples = totnbsamples + frame->nb_samples;
-            mlp_layout[rank].rank = SECT_RANK; // 0 based
-        }
-    }
-
-    totnbsamples += frame->nb_samples;
-//    pkt_pos_before = frame->pkt_pos;
-
-    ///** END PATCH
-    
+       
     *got_frame_ptr = 1;
 
     return 0;
@@ -1223,7 +1174,6 @@ static int read_access_unit(AVCodecContext *avctx, void* data,
     }
 
     substream_start = 0;
-    int reached_eof = 0;
     
     for (substr = 0; substr < m->num_substreams; substr++) {
         int extraword_present, checkdata_present, end, nonrestart_substr;
@@ -1340,7 +1290,6 @@ static int read_access_unit(AVCodecContext *avctx, void* data,
             if (substr == m->max_decoded_substream)
             {
                 av_log(m->avctx, AV_LOG_INFO, "End of stream indicated.\n");
-                reached_eof = 1;
             }
         }
 
@@ -1370,7 +1319,7 @@ next_substr:
         buf += substream_data_len[substr];
     }
 
-    if ((ret = output_data(m, m->max_decoded_substream, data, got_frame_ptr, reached_eof)) < 0)
+    if ((ret = output_data(m, m->max_decoded_substream, data, got_frame_ptr)) < 0)
         return ret;
 
     return length;

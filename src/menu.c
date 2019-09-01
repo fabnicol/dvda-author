@@ -783,15 +783,15 @@ int launch_dvdauthor()
 
 uint16_t x(uint8_t group, uint8_t ngroups)
 {
-    return  Min(norm_x, (20+((norm_x-20)*group)/ngroups + EMPIRICAL_X_SHIFT));
+    return  Min(norm_x, (20 + ((norm_x - 20) * group) / ngroups + EMPIRICAL_X_SHIFT));
 }
 
 // text is within button (i,j) with left-justified spacing of 10 pixels wrt left border
 uint16_t y(uint8_t track, uint8_t maxnumtracks)
 {
 
-    int labelheight=(norm_y-56-40-maxnumtracks*12)/maxnumtracks;
-    int y_top=56 + track*(labelheight+12)+ labelheight/2 ;
+    int labelheight=(norm_y - 56 - 40 - maxnumtracks * 12) / maxnumtracks;
+    int y_top = 56 + track * (labelheight + 12)+ labelheight / 2 ;
 
     return y_top;
 
@@ -968,7 +968,7 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
 
     if (img->screentextchain)
     {
-        size=(uint16_t) ((norm_x-40-20*(img->ncolumns-1))/img->ncolumns);
+        size=(uint16_t) ((norm_x - 40 - 20 * (img->ncolumns - 1)) / img->ncolumns);
 
         // to avoid using reentrant version of strtok (strtok_r, not mingw32 protable)
 

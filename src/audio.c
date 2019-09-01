@@ -510,14 +510,13 @@ int decode_mlp_file(fileinfo_t* info)
         EXIT_ON_RUNTIME_ERROR
     }
 
-  int cumsize = 0;
   FILE* fp = NULL;
   WaveData   info2;
   WaveHeader header;
 
  int32_t cumbytes_written = 0;
 
- if (globals.decode || globals.maxverbose)
+ if (globals.decode)
  {
    int32_t bytes_written = 0;
    errno = 0;
@@ -641,17 +640,19 @@ int decode_mlp_file(fileinfo_t* info)
 
             }
 
+            cumbytes_written += bytes_written;
+
             if (globals.maxverbose)
             {
-                fprintf(stderr, "Nb samples: %d FR_PTS: %d PKT_POS: %d PKT_DURATION: %d FR_PKT_SIZE; %d\n",
-                            frame->nb_samples,
-                            frame->pts,
-                            frame->pkt_pos,
-                            frame->pkt_duration,
-                            frame->pkt_size);
+                    fprintf(stderr, "Bytes_written: %d Nb samples: %d FR_PTS: %ld PKT_POS: %ld PKT_DURATION: %ld FR_PKT_SIZE; %ld\n",
+                                cumbytes_written,
+                                frame->nb_samples,
+                                frame->pts,
+                                frame->pkt_pos,
+                                frame->pkt_duration,
+                                frame->pkt_size);
             }
 
-            cumbytes_written += bytes_written;
         }
         else
         {
@@ -696,6 +697,22 @@ int decode_mlp_file(fileinfo_t* info)
  }
  else
  {
+    uint32_t rank = 0;
+    uint32_t totnbsamples = 0;
+    unsigned long PKT_POS_SECT = 0;
+    unsigned long HEADER_OFFSET = 0;
+    unsigned long SECT_RANK = 0;
+    unsigned long SECT_RANK_OLD = 0;
+
+    if (info->file_size && info->lpcm_payload)
+    {
+        uint32_t size = info->file_size / info->lpcm_payload + 4;
+        info->mlp_layout = (struct MLP_LAYOUT *) calloc(size, sizeof (struct MLP_LAYOUT));
+    }
+    else
+    {
+        goto clean_up; // do sth more verbose
+    }
 
     while (av_read_frame(format, &packet) >= 0)
     {
@@ -703,27 +720,63 @@ int decode_mlp_file(fileinfo_t* info)
       int gotFrame;
       if (avcodec_decode_audio4(codec, frame, &gotFrame, &packet) < 0)
       {
-          break;
+           break;
       }
 
-      if (!gotFrame)
+      if (gotFrame)
+      {
+              if (HEADER_OFFSET == 0) HEADER_OFFSET = 64;
+
+              PKT_POS_SECT = frame->pkt_pos + HEADER_OFFSET;
+
+              SECT_RANK_OLD = SECT_RANK;
+              SECT_RANK = (PKT_POS_SECT - 1)/ 2048;
+
+              bool new_sector = (SECT_RANK != SECT_RANK_OLD);
+
+              if (new_sector || rank == 0)
+              {
+                    if (new_sector) HEADER_OFFSET += 43;
+                    info->mlp_layout[rank].pkt_pos = frame->pkt_pos;
+                    info->mlp_layout[rank].nb_samples = totnbsamples;
+                    info->mlp_layout[rank].rank = SECT_RANK;
+
+                    ++rank;
+              }
+
+              totnbsamples += frame->nb_samples;
+
+              if (globals.maxverbose)
+              {
+                  fprintf(stderr, "Sect: %lu samples_written: %d Nb samples: %d FR_PTS: %ld PKT_POS: %ld PKT_DURATION: %ld FR_PKT_SIZE; %ld\n",
+                              SECT_RANK,
+                              totnbsamples,
+                              frame->nb_samples,
+                              frame->pts,
+                              frame->pkt_pos,
+                              frame->pkt_duration,
+                              frame->pkt_size);
+              }
+      }
+      else
       {
           continue;
       }
+
+    }
+
+    info->mlp_layout[rank].pkt_pos = frame->pkt_pos;
+    info->mlp_layout[rank].nb_samples = totnbsamples;
+    info->mlp_layout[rank].rank = SECT_RANK;
+    info->mlp_layout_size = rank + 1;
+
+    if (globals.maxverbose)
+    {
+        fprintf(stderr, "** \n Layout size: %d **\n", info->mlp_layout_size);
     }
   }
 
-
 clean_up:
-
-  if (! globals.decode && info->file_size && info->lpcm_payload)
-  {
-    unsigned long size = info->file_size / info->lpcm_payload + 4;
-
-    info->mlp_layout = (struct MLP_LAYOUT *) calloc(size, sizeof (struct MLP_LAYOUT));
-
-    get_mlp_layout(info->mlp_layout, size); // 1968 is the minimum payload. +3 for last sector buffer
-  }
 
   av_frame_free(&frame);
   avcodec_close(codec);
@@ -855,28 +908,10 @@ int calc_info(fileinfo_t* info)
           foutput(MSG_TAG "%s", "Layout retrieved.\n");
         }
 
-        if (globals.maxverbose)
-        {
-            fprintf(stderr, "%s ; %s ; %s \n",
-                    "PKT POS", "NB SAMPLES", "RANK");
-
-            for (int i = 0;  i < MAX_AOB_SECTORS; ++i)
-            {
-                if (i && info->mlp_layout[i].pkt_pos == 0) break;
-
-                fprintf(stderr, "%u ; %u ; %u \n",
-                        info->mlp_layout[i].pkt_pos, info->mlp_layout[i].nb_samples, info->mlp_layout[i].rank);
-            }
-        }
-
         // compute "length" of layout. Should be size - 2 normally... but preferring to check better
         int index = 0;
-        for (; index < MAX_AOB_SECTORS; ++index)
-        {
-            if (index && info->mlp_layout[index].nb_samples == 0) break;
-        }
 
-        info->numsamples   = info->mlp_layout[index - 1].nb_samples;
+        info->numsamples   = info->mlp_layout[info->mlp_layout_size - 1].nb_samples;
         info->numbytes     = info->file_size;
         info->pcm_numbytes = info->numsamples * info->channels * (info->bitspersample / 8); //This is for PCM, not MLP
     }
@@ -1206,7 +1241,7 @@ static inline int extract_audio_info_by_all_means(uint8_t* header, fileinfo_t* i
 {
     if (audit_mlp_header(header + 4, info, true))
     {
-        foutput("%s\n", MSG_TAG "Found MLP audio: %d channels, %d bits per sample, %d Hz",
+        foutput(MSG_TAG "Found MLP audio: %d channels, %d bits per sample, %d Hz\n",
                 info->channels, info->bitspersample, info->samplerate);
         return(info->type = AFMT_MLP);
     }
