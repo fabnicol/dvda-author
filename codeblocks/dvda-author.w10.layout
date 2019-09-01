@@ -2,84 +2,19 @@
 <CodeBlocks_layout_file>
 	<FileVersion major="1" minor="0" />
 	<ActiveTarget name="Release" />
-	<File name="..\src\include\menu.h" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="735" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="..\libfixwav\src\fixwav_auxiliary.c" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1105" topLine="11" />
-		</Cursor>
-	</File>
-	<File name="..\libfixwav\src\manager.c" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="7422" topLine="231" />
-		</Cursor>
-	</File>
-	<File name="..\src\command_line_parsing.c" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="79713" topLine="2052" />
-		</Cursor>
-	</File>
-	<File name="..\ffmpeg\libavcodec\mlplayout.h" open="1" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="..\ffmpeg\libavcodec\mlplayout.h" open="0" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="311" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="..\src\ats.c" open="1" top="0" tabpos="14" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="54944" topLine="1625" />
-		</Cursor>
-	</File>
-	<File name="..\src\include\auxiliary.h" open="1" top="0" tabpos="17" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="..\src\include\auxiliary.h" open="1" top="0" tabpos="16" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="3341" topLine="91" />
 		</Cursor>
 	</File>
-	<File name="..\libiberty\src\strchrnul.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="..\src\audio.c" open="1" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="2703" topLine="22" />
-		</Cursor>
-	</File>
-	<File name="..\src\sound.c" open="1" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="8289" topLine="237" />
-		</Cursor>
-	</File>
-	<File name="..\src\auxiliary.c" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="37044" topLine="601" />
-		</Cursor>
-	</File>
-	<File name="..\libutils\src\include\c_utils.h" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="4935" topLine="137" />
-		</Cursor>
-	</File>
-	<File name="..\src\launch_manager.c" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="8672" topLine="226" />
-		</Cursor>
-	</File>
-	<File name="..\libutils\src\libc_utils.c" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="30404" topLine="1170" />
-		</Cursor>
-	</File>
-	<File name="..\src\menu.c" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="3650" topLine="86" />
-		</Cursor>
-	</File>
-	<File name="..\src\include\structures.h" open="1" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2180" topLine="51" />
-		</Cursor>
-	</File>
-	<File name="..\src\samg2.c" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1700" topLine="30" />
+			<Cursor1 position="55351" topLine="1608" />
 		</Cursor>
 	</File>
 	<File name="..\libfixwav\src\repair.c" open="1" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -87,9 +22,74 @@
 			<Cursor1 position="2329" topLine="54" />
 		</Cursor>
 	</File>
-	<File name="..\src\audio.c" open="1" top="0" tabpos="16" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="..\libiberty\src\strchrnul.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="55351" topLine="1608" />
+			<Cursor1 position="2703" topLine="22" />
+		</Cursor>
+	</File>
+	<File name="..\src\include\structures.h" open="1" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2180" topLine="51" />
+		</Cursor>
+	</File>
+	<File name="..\libfixwav\src\manager.c" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="7422" topLine="231" />
+		</Cursor>
+	</File>
+	<File name="..\src\menu.c" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3650" topLine="86" />
+		</Cursor>
+	</File>
+	<File name="..\src\samg2.c" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1700" topLine="30" />
+		</Cursor>
+	</File>
+	<File name="..\src\launch_manager.c" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="8672" topLine="226" />
+		</Cursor>
+	</File>
+	<File name="..\src\command_line_parsing.c" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="79713" topLine="2052" />
+		</Cursor>
+	</File>
+	<File name="..\src\auxiliary.c" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="37512" topLine="601" />
+		</Cursor>
+	</File>
+	<File name="..\libutils\src\libc_utils.c" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="30404" topLine="1170" />
+		</Cursor>
+	</File>
+	<File name="..\src\sound.c" open="1" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="8289" topLine="237" />
+		</Cursor>
+	</File>
+	<File name="..\src\ats.c" open="1" top="0" tabpos="14" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="54944" topLine="1625" />
+		</Cursor>
+	</File>
+	<File name="..\libutils\src\include\c_utils.h" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="4935" topLine="137" />
+		</Cursor>
+	</File>
+	<File name="..\libfixwav\src\fixwav_auxiliary.c" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1105" topLine="11" />
+		</Cursor>
+	</File>
+	<File name="..\src\include\menu.h" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="735" topLine="0" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>
