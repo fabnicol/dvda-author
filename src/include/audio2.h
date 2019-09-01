@@ -52,7 +52,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 #include "multichannel.h"
 #include "file_input_parsing.h"
-#include "libavcodec/mlplayout.h"
+#include "mlplayout.h"
 #include "libavutil/opt.h"
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"

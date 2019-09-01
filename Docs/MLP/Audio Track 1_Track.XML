@@ -1,9 +1,0 @@
-<?xml version = "1.0"?>
-<TRACK-DOC  name="Audio Track 1" location="Z:\home\nicol\Dev\dvda-author\Docs\MLP\Audio Track 1_Track.XML" version="v0.41.990705" >
-<SEARCH location="Z:\home\nicol\Dev\dvda-author\Docs\MLP" sub="no" />
-<TRACK id="{38F9E308-8817-4E04-82D5-43D6225D582D}" name="Audio Track 1" artist="Default Artist" >
-<AUDIO-PTR file="a2_16_44_tr01.XML" />
-</TRACK>
-
-</TRACK-DOC>
-
