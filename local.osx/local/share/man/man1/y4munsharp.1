@@ -1,0 +1,67 @@
+.TH "y4munsharp" "1" "11 November 2004" "MJPEG Tools Team" "MJPEG tools manual"
+.SH "NAME"
+y4munsharp \- Unsharp filter for YUV4MPEG2 streams
+.SH "SYNOPSIS"
+.B y4munsharp
+.RI [ options ]
+.SH "DESCRIPTION"
+\fBy4munsharp\fP is an implementation of the  GIMP unsharp filter for 
+YUV4MPEG2 streams.  The usual 3 parameters for unshap mask processing
+(radius, amount and threshold) are specified on the command line.  By default
+only the Y' (luma) component is processed although processing of the CbCr 
+(chroma) may be requested by a commandline option.
+Output must be either to a pipe or a file, leaving stdout as a terminal
+will elicit an error and the program will exit.
+.SH "OPTIONS"
+\fBy4munsharp\fP accepts the following options:
+.TP 5
+.BI \-v " num"
+Set verbosity level (0 = quiet, 1 = normal, 2 = debug)
+(default: 1)
+.TP 5
+.BI \-h
+Print a suage summary and exit
+.TP 5
+.BI \-L " radius,amount,threshold"
+Y' (luma) unsharp parameters.
+The \fIradius\fP and \fIamount" arguments are floating point numbers.  The
+\fIthreshold\fP argument is an integer.
+(default: 3.0,0.3,4)
+.BI \-C " radius,amount,threshold"
+CbCr (chroma) unsharp parameters.  The chroma is not processed unless this
+option is given.  Arguments are the same type as for the -L option above.
+(default: none)
+.TP 5
+.BI \-N 
+Filtering can produce output outside the 16 to 240 range for Y' and 16 to
+235 for CbCr.  By default values outside the legal range are clipped/cored
+(values over 240 for Y' are set to 240 for example).  Using \fB-N\fP the
+limits 0 and 255 are used instead.
+.SH "EXAMPLES"
+A mild setting:
+.nf
+y4munsharp -L 2.0,0.3,0
+.sp
+An aggressive setting:
+y4munsharp -L 5.0,0.5,0
+.SH "NOTES"
+The radius, amount, threshold parameters have the same meaning 
+as the GIMP's unsharp plugin.  This means you can use the GIMP on selected
+frame still images to determine suitable settings for \fBy4munsharp\fP.  The
+key thing to remember is to be subtle - you just barely want to notice the
+sharpening effect.  If the effect is obvious ("jumps out at you") then the
+parameters are set too aggressively.
+.PP
+The chroma is not processed for a several reasons:  1) The eye
+is much more sensitive to changes in brightness,  2) the chroma is usually
+subsampled and doesn't contribute much to the perceived 
+sharpness of an image \- so not processing the chroma provides a boost in 
+speed of processing the image, and 3) possible artifacting - changes in Y'
+just make an image brighter/darker but changes in Cb or Cr can change  colors
+and possibly lead to shifts in hue.  Use the \fB-C\fP option to enable
+processing of the chroma planes.
+.SH "BUGS"
+Only the 3 plane YUV4MPEG2 formats are supported.
+.PP
+Only progressive, top field first or bottom field first interlaced streams
+are handled.  The mixed interlaced stream format is not supported.

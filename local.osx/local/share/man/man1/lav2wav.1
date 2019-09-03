@@ -1,0 +1,85 @@
+.TH "lav2wav" "1" "2 June 2001" "MJPEG Tools Team" "MJPEG tools manual"
+
+.SH "NAME"
+lav2wav \- Extract the audio out of MJPEG container files to stdout
+
+.SH "SYNOPSIS"
+.B lav2wav
+.RB [ \-s
+.IR num ]
+.RB [ \-c
+.IR num ]
+.RB [ \-v
+.IR num ]
+.RB [ \-I ]
+.RB [ \-R ]
+.RB [ \-r 
+.IR samplerate,
+.IR bitesize,
+.IR channels ]
+.I lavfile1 \fP[\fIlavfile2 \fP...\fI lavfileN\fP]
+
+.SH "DESCRIPTION"
+\fBlav2wav\fP can be used to extract the audio to stdout.
+This output goes to stdout and can be saved as a wav file or piped to
+another sound processing tool that is able to handle the wav format. 
+This can be mp2enc and toolame for mpeg layer 2 audio, 
+or for example lame for mpeg layer 3 audio. 
+.LP 
+The input files may be any combination of AVI (.avi),
+Quicktime (.qt) or editlist files so long as they are all lavtools\-
+readable (e.g. MJPEG-encoded AVI/Quicktime or DV type 2 AVI).
+
+.SH "OPTIONS"
+\fBlav2wav\fP accepts the following options:
+
+.TP 5
+.BI \-s " num"
+Start extracting at video frame (num)
+.TP 5
+.BI \-c " num"
+Extract (num) frames of audio
+.TP 5
+.BI \-v " num"
+Verbosity level (0, 1 or 2)
+.TP 5
+.BI \-I 
+Ignore unsupported bitrates/bits per sample
+.TP 5
+.BI \-R
+If the file does not contain any sound. lav2wav will create silence with
+44100kHz Sampelrate, 16 Bit audio bitsize and 2 Chanels
+.TP 5
+.BI \-r " sr,bs,ch"
+If the file does not contain any sound lav2wav will generate silence with the
+values you supply the samplerate (sr), audio-bitsize (bs) and channel (ch). 
+
+.SH BUGS
+The "WAV" file format (technically: RIFF) is really very much less
+than ideal for a tool intended to be used in pipelines as lav2wav is.
+The problem is that the header includes a field specifying the length
+of the file.  This can't be filled in except by seeking back to the
+begining and over-writing.  If the output is unseekable (e.g. pipe)
+lav2wav simply writes a large length into the header and leaves it at
+that.  Most tools like sox(1) or mp2enc(1) either ignore the length
+field anyway or only give a warning.
+.br
+The audio length is inacurate calculated when lav2wav generates silence.
+This happens only if you have NTSC framerate and than it creates for every
+hour of video 1.1498sec too less of silence. 
+
+.SH "AUTHOR"
+This man page was written by Bernhard Praschinger.
+.br
+If you have questions, remarks, problems or you just want to contact
+the developers, the main mailing list for the MJPEG\-tools is:
+  \fImjpeg\-users@lists.sourceforge.net\fP
+
+.TP
+For more info, see our website at
+.I http://mjpeg.sourceforge.net
+
+.SH "SEE ALSO"
+.BR mjpegtools (1),
+.BR mp2enc (1),
+.BR sox(1)

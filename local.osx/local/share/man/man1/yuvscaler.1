@@ -1,0 +1,202 @@
+.TH "yuvscaler" "1" "26 Septembre 2001" "MJPEG Tools Team" "MJPEG tools manual"
+
+.SH NAME
+yuvscaler \- UPscales or DOWNscales a YUV4MPEG2 stream to a specified format
+
+.SH SYNOPSIS
+.B yuvscaler 
+.RB [ -I
+.IR input_keyword ]
+.RB [ -M 
+.IR mode_keyword ]
+.RB [ -O
+.IR output_keyword ]
+.RB [ -n\ p | s | n ]
+.RB [ -v\ 0 - 2 ]
+.RB [ -h ]
+
+.SH DESCRIPTION
+\fByuvscaler\fP is a general (UP or DOWN) scaling utility that is provided to
+allow conversion between different video formats. It reads in a
+YUV4MPEG2 format stream from stdin (such as that produced
+by \fBlav2yuv\fP) and outputs such stream to stdout (e.g. to be
+consumed by \fBmpeg2enc\fP).
+The most common use of yuvscaler is to generate input suitable
+for MPEG encoding to VCD or SVCD formats using \fBmpeg2enc\fP(1).
+
+\fByuvscaler\fP will automatically take into account PAL/SECAM and
+NTSC format, as well as widescreen (16:9) format and interlacing. Use
+of yuvscaler was designed to be straightforward.
+
+.SH EXAMPLES
+
+\fBVCD encoding:\fP
+.br
+lav2yuv my-file.avi | yuvscaler -O VCD | mpeg2enc -f 1 -o vcd.%d.m1v
+
+\fBSVCD encoding:\fP
+.br
+lav2yuv my-file.qt | yuvscaler -O SVCD | mpeg2enc -f 4 -o svcd.%d.m2v
+
+\fBEncoding anamorphic 16:9 as letterboxed VCD:\fP
+.br
+lav2yuv my-ana16-9.eli | yuvscaler -M WIDE2VCD | mpeg2enc -f 1 -o letterbox_vcd.%d.m1v
+
+\fBEncoding anamorphic 16:9 as letterboxed SVCD:\fP
+.br
+lav2yuv my-ana16-9.eli | yuvscaler -M WIDE2STD -O SVCD | mpeg2enc -f 4 -o letterbox_svcd.%d.m2v
+
+\fBEncoding anamorphic 16:9 as letterboxed DVD:\fP
+.br
+lav2yuv my-ana16-9.eli | yuvscaler -M WIDE2STD -O DVD | mpeg2enc -f 8 -o letterbox_dvd.%d.m2v
+
+.SH OPTIONS
+
+.TP 
+.B -I \fIinput_keyword\fP
+.IP
+Specifies input processing options.  Input options may be combined by using
+multiple \fB-I\fP flags. Possible \fIinput_keyword\fPs are:
+
+.IP
+\fBUSE_WidthxHeight+WidthOffset+HeightOffset\fP to select a useful area of
+the input frame (all multiple of 2, Height and HeightOffset multiple of 4 if interlaced), the rest
+of the image being discarded
+.IP
+\fBACTIVE_WidthxHeight+WidthOffset+HeightOffset\fP to select an active area
+of the input frame (all multiple of 2, Height and HeightOffset multiple of 4 if interlaced), the rest
+of the image being made black
+
+.TP 
+.B -M \fImode_keyword\fP
+.IP
+Sets the scaling mode options.  Scaling mode options can be combined by giving several
+\fB-M\fP flags.
+Possible  are:
+
+.IP
+\fBBICUBIC\fP - to use the (Mitchell-Netravalli) high-quality bicubic upsacling
+and/or downscaling algorithm
+.IP
+\fBRESAMPLE\fP - to use a classical resampling algorithm -only for
+downscaling- that goes much faster than bicubic. For coherence reason,
+\fByuvscaler\fP will use RESAMPLE if only downscaling is necessary,
+BICUBIC if not.
+.IP
+\fBWIDE2STD\fP - convert widescreen anamorphic (16:9) input video
+into letterboxed (4:3), generating necessary black lines.  Note that
+for MPEG applications if your \fIplayer\fP can properly decode
+anamorphic video you may wish to leave the video unscaled and simply
+specify the approprate format during MPEG encoding (see \fBmpeg2enc\fP(1)).
+.IP
+\fBRATIO_WidthIn_WidthOut_HeightIn_HeightOut\fP to specified
+scaling ratios of WidthIn/WidthOut for width and
+HeightIN/HeightOut for height to be applied to the useful area. The
+output frames that result from scaling can have a different format
+than the output format specified using \fB-O\fP options(s).  In this
+case, \fByuvscaler\fP automatically generate necessary black lines and
+columns and/or skips necessary lines and columns to center the scaled
+image in the output frame.
+.IP
+\fBWIDE2VCD\fP to scale anamorphic widescreen (16:9) frames into letterboxed 
+VCD format (equivalent to -M WIDE2STD -O VCD).  
+.IP
+\fBFASTVCD\fP to transcode full sized frames to VCD 
+(equivalent to -M RATIO_2_1_2_1 -O VCD, see below).
+.IP
+\fBFAST_WIDE2VCD\fP to transcode full-sized anamorphic (16:9) frames to 
+letter-boxed VCD (equivalent to -M WIDE2STD -M RATIO_2_1_2_1 -O VCD, see below).
+.IP
+\fBNO_HEADER\fP to suppress stream header generation on output
+.IP
+\fBMMX\fP to use MMX functions for BICUBIC scaling (experimental feature!!)
+.IP
+
+.TP 
+.B -O \fIoutput_keyword\fP
+
+.IP
+Sets the output frame format options.  Output format
+options can be combined by giving several \fB-O\fP flags.
+By default, output frames size will be the same as input frame sizes, as
+well as output frames interlacing if coherent with output keyword
+specification which prevails, top_first if not. 
+
+.IP
+\fBMONOCHROME\fP to generate monochrome frames on output.  Chrominance
+information for the scaled pixels is set neutral (white).  MPEG
+encoding of black and white video will be both inefficient \fIand\fP
+show annonying chrominance artifacts unless this is done.
+.IP
+\fBVCD\fP to generate VCD compliant frames on output (taking care of
+PAL and NTSC standards). Non-interlaced output.
+.IP
+\fBSVCD\fP to generate SVCD compliant frames on output (taking care of
+PAL and NTSC standards). Top-field-first interlaced frames.
+.IP
+\fBDVD\fP to generate DVD compliant frames on output (taking care of
+PAL and NTSC standards). Top-field-first interlaced frames.
+.IP
+\fBSIZE_WidthxHeight\fP to generate frames of size WidthxHeight on
+output (multiple of 4)
+.IP
+If VCD, SVCD or DVD keywords are not used, output interlacing is taken of the
+same type as input. By default, output frames size will be the same as input
+frame size.
+.IP
+
+.TP 
+.B -n p|s|n
+(usually not necessary) if norm could not be determined from data flux, specifies the OUTPUT norm
+for VCD/SVCD (p=pal,s=secam,n=ntsc).
+
+.TP
+.B -v 0|1|2
+Specifies the degree of verbosity: 0=quiet, 1=normal, 2=verbose/debug
+
+.TP
+.B -h
+Prints a summary of command line syntax.
+
+
+
+.PP
+\fBNote:\fP The most useful downscaling ratios are handled using dedicated optimised
+scaling routines. They are:
+.IP
+RATIO_WidthIn_WidthOut_2_1 => Full-sized frame to VCD downscaling
+.IP
+RATIO_3_2_1_1 => Full-sized frame to SVCD downscaling
+.IP
+RATIO_1_1_4_3 => WIDE2STD downscaling mode
+.IP
+RATIO_WidthIn_WidthOut_1_1 => downscaling only concerns width, not height
+.IP
+RATIO_1_1_HeightIn_HeightOut => downscaling only concerns height, not width
+.IP
+RATIO_2_1_2_1 => FASTVCD, slightly width distorted (real ratio 45 to 22) but faster
+full-sized frame to VCD downscaling (-M RATIO_2_1_2_1 -O VCD)
+.IP
+RATIO_WidthIn_WidthOut_8_3 => specific to WIDE2VCD downscaling (-M WIDE2STD -O VCD)
+.IP
+RATIO_2_1_8_3 => specific to (slighly distorted) FAST_WIDE2VCD downscaling (-M WIDE2STD -M RATIO_2_1_2_1 -O VCD)
+.IP
+RATIO_1_1_1_1 => copy useful input part of possible several files into output frames
+
+
+.SH AUTHOR
+This man page was written by Xavier Biquard et al.
+.br
+If you have questions, remarks, problems or you just want to contact
+the developers, the main mailing list for the MJPEG\-tools is:
+  \fImjpeg\-users@lists.sourceforge.net\fP
+
+.TP
+For more info, see our website at
+.I http://mjpeg.sourceforge.net/
+
+.SH SEE ALSO
+.BR mjpegtools (1),
+.BR lavpipe (1),
+.BR lav2yuv (1)
+.BR mpeg2enc (1)

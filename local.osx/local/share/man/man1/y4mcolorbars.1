@@ -1,0 +1,121 @@
+.\" 
+.TH "y4mcolorbars" "1" "28 April 2004" "MJPEG Tools Team" "MJPEG tools manual"
+.SH "NAME"
+y4mcolorbars \- Create a YUV4MPEG2 stream containing a colorbar test pattern
+
+.SH "SYNOPSIS"
+.B y4mcolorbars
+.RI [ options ]
+
+.SH "DESCRIPTION"
+\fBy4mcolorbars\fP creates a YUV4MPEG2 stream consisting entirely of frames
+containing a colorbar test pattern.  The pattern attempts to reproduce the
+standard SMPTE EG-1-1990 colorbar test signal as faithfully as possible,
+given the constraints of the Y'CbCr colorspace.
+
+Output is to stdout to facilitate piping to other MJPEG tools.
+
+.SH "OPTIONS"
+\fBy4mcolorbars\fP accepts the following options:
+
+.TP 5
+.BI \-n " num"
+Output a total of 'num' output frames. [default: 1]
+.TP 5
+.BI \-F " n:d"
+Set framerate encoded in output stream, as an exact integer ratio.
+Common rates are:
+ 24000:1001 - NTSC 3:2 pulldown converted film
+       24:1 - native film
+       25:1 - PAL/SECAM
+ 30000:1001 - NTSC video [default]
+       50:1 - PAL field rate
+ 60000:1001 - NTSC field rate
+.TP 5
+.BI \-W " w"
+Set frame width. [default: 720]
+.TP 5
+.BI \-H " h"
+Set frame height. [default: 480]
+.TP 5
+.BI \-A " n:d"
+Set pixel aspect ratio encoded in output stream, as an exact integer ratio.
+Common ratios are:
+     1:1  - square pixels (e.g. computer graphics)
+    10:11 - CCIR-601 NTSC [default]
+    59:54 - CCIR-601 PAL
+.TP 5
+.BI \-I " x"
+Set interlacing mode, used to interpret the PPM image(s), and also encoded
+in output stream.
+ p - progressive, non-interlaced [default]
+ t - top/upper-field-first interlaced
+ b - bottom/lower-field-first interlaced
+.TP 5
+.BI \-Q " n"
+Data to place in the "-I/+Q" patches in the bottom row of the pattern:
+ 0 -  -I and +Q at 20% (20IRE)  [default]
+ 1 -  -I and +Q at 50% (50IRE)
+ 2 -  +Cb and +Cr at 100%
+
+.TP 5
+.BI \-S " mode"
+Set chroma subsampling mode.
+       444 - 4:4:4 (no subsampling) [default]
+   420jpeg - 4:2:0 JPEG/MPEG-1, interstitial cositing 
+  420mpeg2 - 4:2:0 MPEG-2, horizontal cositing
+
+The supported subsampled modes use a lousy subsampling filter;
+better results will be achieved by passing the default 4:4:4 output to
+a scaler which supports subsampling, such as \fBy4mscaler\fP(1).
+.TP 5
+.BI \-v " [0,1,2]"
+Set verbosity level.  
+ 0 -  warnings and errors only.
+ 1 -  add informative messages, too. [default]
+ 2 -  add chatty debugging message, too.
+
+.SH "EXAMPLES"
+.hw y4mcolorbars yuvplay tgatoppm
+To create and display 200 frames of colorbars corresponding to a 
+top-field-first interlaced 4:3 NTSC source:
+
+.RS 5
+y4mcolorbars -n 200 -It -S 420jpeg | yuvplay
+.RE
+
+To create and display 200 frames of colorbars corresponding to a 
+bottom-field-first interlaced 4:3 PAL source:
+
+.RS 5
+y4mcolorbars -n 200 -H 576 -F 25:1 -A 59:54 -Ib | yuvplay
+.RE
+
+.SH "BUGS"
+First, it's not clear to the author (who hasn't actually ever seen the SMPTE
+EG-1-1990 document itself) what the absolute excursion of the -I and +Q regions
+is supposed to be; however, the phase is correct, and that should be the
+critical feature.  Second, the PLUGE bars, of -4 and +4 IRE, can never be
+precisely synthesized --- the Y' digital space maps [16,235] over the
+full luma excursion, but the full luma excursion in analog space depends
+on whether or not 7.5 IRE NTSC setup is being used by whatever device
+eventually produces the analog output.  However, the difference
+is within 1-bit of Y' accuracy anyway.
+
+.SH "AUTHOR"
+This man page was written by Matt Marjanovic.
+.br 
+If you have questions, remarks, problems or you just want to contact
+the developers, the main mailing list for the MJPEG\-tools is:
+  \fImjpeg\-users@lists.sourceforge.net\fP
+
+.TP 
+For more info, see our website at
+.I http://mjpeg.sourceforge.net
+
+.SH "SEE ALSO"
+.BR mjpegtools (1),
+.BR mpeg2enc (1),
+.BR y4mscaler (1),
+.BR yuv2lav (1),
+.BR yuvplay (1)

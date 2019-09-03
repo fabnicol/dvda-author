@@ -1,0 +1,110 @@
+.TH "yuvmedianfilter" "1" "24 February 2003" "y4mutils" "MJPEG tools manual"
+
+.SH "NAME"
+yuvmedianfilter \- A filter for yuv images produced by the mjpeg tools
+
+.SH "SYNOPSIS"
+.B yuvmedianfilter
+.RB [ \-r
+.IR num ]
+.RB [ \-R
+.IR num ]
+.RB [ \-t
+.IR num ]
+.RB [ \-T
+.IR num ]
+.RB [ \-I
+.IR num ]
+.RB [ \-f ]
+.RB [ \-w
+.IR num ]
+.RB [ \-s
+.IR num ]
+.RB [ \-v
+.IR num ]
+.RB [ \-h ]
+
+.SH "DESCRIPTION"
+\fByuvmedianfilter\fP is designed to enhance/filter images.  It takes the input from STDIN and writes output to STDOUT.  
+.br
+This filter looks around the current point for a radius and averages the values that fall inside a threshold.
+So the image is softened and the edges become more sharp. If the input 
+material is noisy (it is always noisy but you do not always see it) the 
+output images are improved and
+the encoder spends less bandwidth encoding noise.
+The more sophisticated version of image filtering is yuvdenoise. But you can use both programs in the encoding procces.
+It cannot process a recorded file and write the improved version to another file. 
+
+.SH "OPTIONS"
+\fByuvmedianfilter\fP accepts the following options:
+
+.TP 5
+.BI \-r " num"
+Radius for luma median (default: 2 pixels)
+.TP 5
+.BI \-R " num"
+Radius for chroma median (default: 2 pixels)
+.TP 5
+.BI \-t " num"
+Trigger threshold for luma (default: 2 [0=disable])
+.TP 5
+.BI \-T " num"
+Trigger threshold for chroma (default: 2 [0=disable])
+.TP 5
+.BI \-I " num"
+Interlacing type (0=no, 1=yes, default: taken from yuv stream)
+.TP 5
+.BI \-f
+Fast mode, i.e. the threshold is ignored, and a simple mean of the
+surrounding values is calculated.
+.TP 5
+.BI \-w " num"
+In fast mode, the weight given to the current value versus the
+surrounding values.  Default is 8.
+.br
+Note that certain combinations of radii and weights have been
+optimized to be even faster -- radius 1 and weight 2.667, radius 1
+and weight 8, and radius 2 and weight 8.
+.TP 5
+.BI \-c " num"
+In slow mode, more than this fraction of the pixels must be within the
+threshold; otherwise the pixel is simply the weighted mean of pixels
+within a radius of 1.  Default is 0.33333.
+.TP 5
+.BI \-s " num"
+Number of beginning frames to skip.  The first num frames are written
+to stdout unfiltered.  This is useful for resuming an interrupted
+job without having to duplicate work.
+.TP 5
+.BI \-v " num"
+Verbosity level (0, 1 or 2)
+.TP 5
+.BI \-h 
+Print out a help message
+
+.SH BUGS
+It is slow.  Using a radius greater than the default of 2 is painfully slow.
+
+.SH "AUTHOR"
+This man page was written by Bernhard Praschinger.
+.br
+The yuvmedianfilter program was written by Mike Bernson, and adapted to the yuv4mpeg2 stream header format by Steven M. Schultz.
+
+.br
+If you have questions, remarks, problems or you just want to contact
+the developers, the main mailing list for the MJPEG\-tools is:
+  \fImjpeg\-users@lists.sourceforge.net\fP
+
+.TP
+For more info, see our website at
+.I http://mjpeg.sourceforge.net
+
+.SH "SEE ALSO"
+.BR mjpegtools (1),
+.BR jpeg2yuv (1),
+.BR lav2yuv (1),
+.BR mpeg2enc (1),
+.BR ppmtoy4m (1),
+.BR yuv2lav (1),
+.BR yuvdenoise (1),
+.BR yuvscaler (1)

@@ -471,7 +471,7 @@ int launch_manager(command_t *command)
     {
         for (j=0; j < ntracks[i]; j++)
         {
-            foutput("    "ANSI_COLOR_BLUE"%d   "   ANSI_COLOR_YELLOW"%02d/"ANSI_COLOR_RED"%02d"ANSI_COLOR_GREEN"    %2d"ANSI_COLOR_RESET"  %10"PRIu32"  %10"PRIu32"  %10"PRIu64"  ",
+            foutput("    "ANSI_COLOR_BLUE"%d   "   ANSI_COLOR_YELLOW"%02d/"ANSI_COLOR_RED"%02d"ANSI_COLOR_GREEN"    %2d"ANSI_COLOR_RESET"  %10"PRIu32"  %10"PRIu32"  %10"PRIu32"  ",
                     i+1,
                     title[i][j]+1,numtitles[i],
                     j+1,

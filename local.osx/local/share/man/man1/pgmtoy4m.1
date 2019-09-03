@@ -1,0 +1,64 @@
+.TH "pgmtoy4m" "1" "16 December 2003" "y4mutils" "MJPEG tools manual"
+.SH "NAME"
+pgmtoy4m \- Convert mpeg2dec pgm and pgmpipe output to YUV4MPEG2
+.SH "SYNOPSIS"
+.B pgmtoy4m
+.RI [ options ]
+.SH "DESCRIPTION"
+\fBpgmtoy4m\fP repacks the PGM output from \fBmpeg2dec\fP into YUV4MPEG2
+4:2:0p.    No actual changes to the data are made.  The data is unpacked from
+the quasi-PGM format and placed in YUV4MPEG2 format with the specified
+sample aspect, frame rate and field order.
+Output must be either to a pipe or a file, leaving stdout as a terminal will
+elicit an error and the program will exit.
+.SH "OPTIONS"
+\fBpgmtoy4m\fP accepts the following options:
+.TP 5
+.BI \-v " num"
+Set verbosity level.
+(default: 0)
+.TP 5 
+.BI \-h
+Print a usage summary and exit.
+.TP 5
+.BI \-i " t|b|p"
+Set the interlacing mode.  Top field first (t), bottom field first (b) or 
+progressive/none (p).
+(default: t)
+.TP 5
+.BI \-a " sar"
+Set the sample aspect ratio.  
+(default: 10:11)
+.TP 5
+.BI \-r " frame rate"
+Set the frame rate.
+(default: 30000:1001)
+.SH "EXAMPLES"
+.nf
+mpeg2dec -s -o pgmpipe file.mpg | pgmtoy4m -a 10:11 -r 24000:1001 -i b | yuvplay
+.sp
+mpeg2dec -s -o pgm file.mpg
+cat *.pgm | pgmtoy4m -r 30000:1001 -i t | yuvplay
+.fi
+.SH "NOTES"
+This program is specifically designed to work with the output of mpeg2dec
+and is \fBNOT\fP a general PGM (NetPBM) tool!
+.sp
+From the introduction in the source file:
+.sp
+.nf
+ * Note: mpeg2dec uses a variation of the PGM format - they're really not
+ * "Grey Maps" but rather a catenation of the 420P data (commonly called
+ * "YUV").    The type is P5 ("raw") and the number of rows is really
+ * the total of the Y', Cb and Cr heights.   The Cb and Cr data is "joined"
+ * together.  After the Y' rows you have 1 row of Cb and 1 row of Cr per 
+ * "row" of PGM data.
+
+ * NOTE: You MAY need to know the field order (top/bottom field first),
+ *      sample aspect ratio and frame rate because the PGM format makes
+ *      none of that information available!
+.fi
+.SH "AUTHOR"
+This manpage was written by Steven Schultz (sms at 2bsd dot com).
+.SH "BUGS"
+Possible but none known at the present time.
