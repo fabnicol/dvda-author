@@ -762,7 +762,7 @@ out:
                     if (globals.veryverbose)
                       foutput("       files[%d][%d].filename=%s\n", ngroups_scan, m, argv[m + k]);
 
-                    files[ngroups_scan][m].filename = argv[m+k];
+                    files[ngroups_scan][m].filename = strdup(argv[m+k]);
 
                     //char b[150]={0};
                     //strcpy(b, argv[m+k]);

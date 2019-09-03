@@ -4,7 +4,7 @@
 # required to use the MagickWand library.
 #
 
-prefix=/home/nicol/Dev/dvda-author/local
+prefix=/Users/fab/dvda-author/local
 exec_prefix=${prefix}
 
 usage="\
@@ -35,22 +35,22 @@ while test $# -gt 0; do
       echo $exec_prefix
       ;;
     --version)
-      echo '7.0.8 Q16 HDRI'
+      echo '7.0.2 Q16 HDRI'
       ;;
     --cflags)
-      /usr/bin/pkg-config --cflags MagickWand
+      PKG_CONFIG_PATH="${exec_prefix}/lib/pkgconfig" pkg-config --cflags MagickWand
       ;;
     --cxxflags)
-      /usr/bin/pkg-config --cflags MagickWand
+      PKG_CONFIG_PATH="${exec_prefix}/lib/pkgconfig" pkg-config --cflags MagickWand
       ;;
     --cppflags)
-      /usr/bin/pkg-config --cflags MagickWand
+      PKG_CONFIG_PATH="${exec_prefix}/lib/pkgconfig" pkg-config --cflags MagickWand
       ;;
     --ldflags)
-      /usr/bin/pkg-config --libs MagickWand
+      PKG_CONFIG_PATH="${exec_prefix}/lib/pkgconfig" pkg-config --libs MagickWand
       ;;
     --libs)
-      /usr/bin/pkg-config --libs MagickWand
+      PKG_CONFIG_PATH="${exec_prefix}/lib/pkgconfig" pkg-config --libs MagickWand
       ;;
     *)
       echo "${usage}" 1>&2

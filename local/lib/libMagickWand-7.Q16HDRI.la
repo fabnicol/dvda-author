@@ -5,25 +5,25 @@
 # It is necessary for linking the library.
 
 # The name that we can dlopen(3).
-dlname=''
+dlname='libMagickWand-7.Q16HDRI.0.dylib'
 
 # Names of this library.
-library_names=''
+library_names='libMagickWand-7.Q16HDRI.0.dylib libMagickWand-7.Q16HDRI.dylib'
 
 # The name of the static archive.
 old_library='libMagickWand-7.Q16HDRI.a'
 
 # Linker flags that cannot go in dependency_libs.
-inherited_linker_flags=' -fopenmp -pthread'
+inherited_linker_flags='  -fopenmp -pthread'
 
 # Libraries that this one depends upon.
-dependency_libs=' /home/nicol/Dev/dvda-author/local/lib/libMagickCore-7.Q16HDRI.la /usr/lib/x86_64-linux-gnu/libjpeg.la -lpng16 -lXext -lz -lX11 -lgomp -lm'
+dependency_libs=' /Users/fab/dvda-author/local/lib/libMagickCore-7.Q16HDRI.la -L/usr/local/Cellar/little-cms2/2.9/lib -L/usr/local/opt/freetype/lib -L/usr/local/Cellar/libpng/1.6.37/lib -L/usr/local/Cellar/fontconfig/2.13.1/lib -L/usr/local/Cellar/openjpeg/2.3.1/lib -llcms2 -ljpeg -lpng16 -lfontconfig -lfreetype -lwebp -lbz2 -lopenjp2 -lz -lgomp -lm'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''
 
 # Version information for libMagickWand-7.Q16HDRI.
-current=6
+current=0
 age=0
 revision=0
 
@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/home/nicol/Dev/dvda-author/local/lib'
+libdir='/Users/fab/dvda-author/local/lib'

@@ -1,8 +1,8 @@
-/* @(#)stdio.h	1.14 16/11/06 Copyright 2009-2016 J. Schilling */
+/* @(#)stdio.h	1.9 14/01/02 Copyright 2009-2014 J. Schilling */
 /*
  *	Abstraction from stdio.h
  *
- *	Copyright (c) 2009-2016 J. Schilling
+ *	Copyright (c) 2009-2014 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -27,22 +27,9 @@
 #include <schily/mconfig.h>
 #endif
 
-#ifdef	INCL_MYSTDIO
-#ifndef _INCL_MYSTDIO_H
-#include <mystdio.h>
-#define	_INCL_MYSTDIO_H
-#endif
-
-#else	/* INCL_MYSTDIO */
-
 #ifndef _INCL_STDIO_H
 #include <stdio.h>
 #define	_INCL_STDIO_H
-#endif
-#endif	/* INCL_MYSTDIO */
-
-#ifdef __cplusplus
-extern "C" {
 #endif
 
 #ifdef	HAVE_LARGEFILES
@@ -88,12 +75,9 @@ extern "C" {
  * partially unhide the FILE structure in a 64 bit environment on Solaris
  * to allow to run putc_unlocked() as a marcro.
  *
- * If you believe you can do this on onther platforms, send a note.
+ * If you believe you can do this on onther platforms, send a note. 
  */
 #if	defined(__SVR4) && defined(__sun) && defined(_LP64)
-#ifndef	_SCHILY_TYPES_H
-#include <schily/types.h>	/* Needed for ssize_t */
-#endif
 
 /*
  * This is how the 64 bit FILE * begins on Solaris.
@@ -105,12 +89,6 @@ struct SCHILY__FILE_TAG {
 	ssize_t		_cnt;	/* number of available characters in buffer */
 };
 
-#define	__getc_unlocked(p)	(--(p)->_cnt < 0 \
-					? __filbuf((FILE *)p) \
-					: (int)*(p)->_ptr++)
-
-#define	getc_unlocked(p)	__getc_unlocked((struct SCHILY__FILE_TAG *)p)
-
 #define	__putc_unlocked(x, p)	(--(p)->_cnt < 0 \
 					? __flsbuf((x), (FILE *)(p)) \
 					: (int)(*(p)->_ptr++ = \
@@ -118,17 +96,10 @@ struct SCHILY__FILE_TAG {
 
 #define	putc_unlocked(x, p)	__putc_unlocked(x, (struct SCHILY__FILE_TAG *)p)
 
-extern int	__filbuf __PR((FILE *));
 extern int	__flsbuf __PR((int, FILE *));
 
-#else	/* !defined(__SVR4) && defined(__sun) && defined(_LP64) */
-#undef	FAST_GETC_PUTC
-#endif	/* !defined(__SVR4) && defined(__sun) && defined(_LP64) */
+#endif	/* defined(__SVR4) && defined(__sun) && defined(_LP64) */
 #endif	/* FAST_GETC_PUTC */
-
-#ifdef __cplusplus
-}
-#endif
 
 #else	/* !NO_SCHILY_STDIO_H */
 #undef	_SCHILY_STDIO_H			/* #undef here to pass "hdrchk" */

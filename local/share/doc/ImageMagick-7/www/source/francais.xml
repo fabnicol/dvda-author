@@ -38,8 +38,8 @@
         <message name="CacheResourcesExhausted">
           Ressources du cache épuisées
         </message>
-        <message name="IncompatibleAPI">
-          incompatible API
+        <message name="InconsistentPersistentCacheDepth">
+          profondeur du cache persistant inconsistante
         </message>
         <message name="NoPixelsDefinedInCache">
           pas de pixels définis dans le cache
@@ -68,16 +68,10 @@
         <message name="UnableToReadPixelCache">
           impossible de lire le cache pixels
         </message>
-        <message name="UnableToWritePixelCache">
-          impossible d'écrire le cache pixels
-        </message>
       </error>
       <fatalerror>
         <message name="UnableToAcquireCacheView">
           échec allocation cache view
-        </message>
-        <message name="UnableToExtendPixelCache">
-          impossible extend le cache pixels
         </message>
       </fatalerror>
     </cache>
@@ -113,7 +107,7 @@
         <message name="ImageDoesNotHaveAThumbnail">
           image sans vignette EXIF
         </message>
-        <message name="ImageDoesNotHaveAnAlphaChannel">
+        <message name="ImageDoesNotHaveAAlphaChannel">
           l'image n'a pas de canal de transparence
         </message>
         <message name="ImageIsNotTiled">
@@ -157,9 +151,6 @@
         </message>
         <message name="NoDataReturned">
           aucune donnée fournie
-        </message>
-        <message name="NoImagesDefined">
-          aucune image définie
         </message>
         <message name="NoImageVectorGraphics">
           pas d'image en graphique vectoriel; unable to generate SVG
@@ -313,16 +304,13 @@
             impossible de décompresser l'image
           </message>
           <message name="UnexpectedEndOfFile">
-            fin de fichier inattendue
+            Fin de fichier inattendue
           </message>
           <message name="UnexpectedSamplingFactor">
-            facteur d'échantillonnage inattendu
+            Facteur d'échantillonnage inattendu
           </message>
           <message name="UnknownPatternType">
-            type de motif inconnu
-          </message>
-          <message name="UnrecognizedAlphaChannelOption">
-            alpha de canal l'option non reconnus
+            Type de motif inconnu
           </message>
           <message name="UnrecognizedBitsPerPixel">
             bits par pixel non reconnus
@@ -341,7 +329,7 @@
         </fatalerror>
         <warning>
           <message name="InsufficientImageDataInFile">
-            pas assez de données d'image dans le fichier
+            Pas assez de données d'image dans le fichier
           </message>
           <message name="LengthAndFilesizeDoNotMatch">
             Longueur et taille du fichier ne correspondent pas
@@ -468,9 +456,6 @@
     <file>
       <open>
         <error>
-          <message name="AnErrorHasOccurredReadingFromFile">
-            an error has occurred reading from file
-          </message>
           <message name="UnableToCreateTemporaryFile">
             impossible de créer un fichier temporaire
           </message>
@@ -510,11 +495,8 @@
         <message name="ImageDepthNotSupported">
           profondeur d'image non supportée
         </message>
-        <message name="ImageMorphologyDiffers">
-          différences dans la morphology de l'image
-        </message>
-        <message name="ImageListRequired">
-          une liste d'images est requise
+        <message name="ImageSequenceRequired">
+          une séquence d'images est requise
         </message>
         <message name="ImageSizeDiffers">
           différences dans la taille de l'image
@@ -567,9 +549,6 @@
           <message name="DelegateLibrarySupportNotBuiltIn">
             delegate library support not built-in
           </message>
-          <message name="NoEncodeDelegateForThisImageFormat">
-            pas de délégué pour encoder ce format d'image
-          </message>
         </warning>
       </delegate>
     </missing>
@@ -601,17 +580,8 @@
     </module>
     <option>
       <error>
-        <message name="ClutImageRequired">
-          color lookup table image requise
-        </message>
         <message name="CompositeImageRequired">
           image composite requise
-        </message>
-        <message name="CurlyBrasesNestedTooDeeply">
-          trop d'imbrication de curly braces
-        </message>
-        <message name="DepreciatedOptionNoCode">
-          l'option dépréciée, incapable d'exécuter
         </message>
         <message name="DivideByZero">
           division par zéro
@@ -625,27 +595,6 @@
         <message name="GeometryDoesNotContainImage">
           image non incluse dans la géométrie
         </message>
-        <message name="InterpretPropertyFailure">
-          l'échec d'interpréter s'échappe de propriété d'image
-        </message>
-        <message name="InvalidArgument">
-          argument invalide pour l'option
-        </message>
-        <message name="InvalidUseOfOption">
-          Invalide utilisation de l'option
-        </message>
-        <message name="InvalidGeometry">
-          géométrie invalide
-        </message>
-        <message name="InvalidImageIndex">
-          index de l'image non valide
-        </message>
-        <message name="InvalidNumberList">
-          liste des numéros non valide
-        </message>
-        <message name="InvalidSetting">
-          invalide de réglage
-        </message>
         <message name="ImagesAreNotTheSameSize">
           images diffèrent par la taille
         </message>
@@ -655,6 +604,12 @@
         <message name="ImageWidthsOrHeightsDiffer">
           différences dans la hauteur ou la largeur de l'image
         </message>
+        <message name="InvalidArgument">
+          argument invalide pour l'option
+        </message>
+        <message name="InvalidGeometry">
+          géométrie invalide
+        </message>
         <message name="KernelWidthMustBeAnOddNumber">
           la largeur du grain doit être un nombre impair
         </message>
@@ -662,10 +617,9 @@
           image map requise
         </message>
         <message name="MissingArgument">
-          manque argument obligatoire
+          l'option a besoin d'un argument
         </message>
         <message name="MissingAnImageFilename">
-        <!-- FUTURE: Depreciate using MissingOutputFilename -->
           nom de fichier d'image absent
         </message>
         <message name="MissingExpression">
@@ -673,9 +627,6 @@
         </message>
         <message name="MissingNullSeparator">
           Séparateur nul pour liste d'image absent
-        </message>
-        <message name="MissingOutputFilename">
-          output filename absente
         </message>
         <message name="MustSpecifyAnImageName">
           Il faut spécifier un nom d'image
@@ -689,20 +640,14 @@
         <message name="NoClipPathDefined">
           pas de chemin de coupe défini
         </message>
-        <message name="NoImagesForWrite">
-          pas d'images pour écriture
-        </message>
-        <message name="NoImagesFound">
-          pas d'image pour un fonctionnement
+        <message name="NoImagesDefined">
+          pas d'images définies
         </message>
         <message name="NoImageVectorGraphics">
           pas de graphiques vectoriels
         </message>
         <message name="NoSuchImage">
           image inconnue
-        </message>
-        <message name="NoSuchImageChannel">
-          image channel inconnue
         </message>
         <message name="NoSuchOption">
           option inconnue
@@ -722,9 +667,6 @@
         <message name="ReferenceIsNotMyType">
           référence de type erroné
         </message>
-        <message name="SetReadOnlyProperty">
-          tenter d'établir propriété en lecture seule
-        </message>
         <message name="SteganoImageRequired">
           image stégano requise
         </message>
@@ -734,12 +676,6 @@
         <message name="SubimageSpecificationReturnsNoImages">
           la spécification de sous-image ne permet pas de fournir des images
         </message>
-        <message name="TwoOrMoreImagesRequired">
-          deux ou plusieurs images nécessaires
-        </message>
-        <message name="UnableToAccessPath">
-          incapables d'accéder chemin du fichier
-        </message>
         <message name="UnableToOpenFile">
           impossible d'ouvrir le fichier
         </message>
@@ -748,9 +684,6 @@
         </message>
         <message name="UnableToParseKernel">
           impossible d'analyser l'kernel string
-        </message>
-        <message name="UnbalancedBraces">
-          brace non fermée
         </message>
         <message name="UnbalancedParenthesis">
           parenthèse non fermée
@@ -765,7 +698,7 @@
           couleur non reconnue
         </message>
         <message name="UnrecognizedColorspace">
-          espace colorimétrique non reconnu
+          espace colorimétrique de l'image non reconnu
         </message>
         <message name="UnrecognizedComposeOperator">
           opérateur de composition non reconnu
@@ -866,9 +799,6 @@
         <message name="UnrecognizedStretchType">
           type de stretch non reconnu
         </message>
-        <message name="UnrecognizedStyleType">
-          type de style non reconnu
-        </message>
         <message name="UnrecognizedType">
           type non reconnu
         </message>
@@ -898,23 +828,11 @@
         </message>
       </error>
       <fatalerror>
-        <message name="FilenameTruncated">
-          image filename truncated
-        </message>
         <message name="MissingAnImageFilename">
           nom de fichier d'image absent
         </message>
-        <message name="ScriptIsBinary">
-          de script en binaire
-        </message>
-        <message name="ScriptTokenMemoryFailed">
-          de script token trop gros
-        </message>
-        <message name="ScriptUnbalancedQuotes">
-          de script token avec des citations asymétriques
-        </message>
-        <message name="UnableToOpenScript">
-          impossible d'ouvrir le script
+        <message name="FilenameTruncated">
+          image filename truncated
         </message>
         <message name="UnrecognizedColormapType">
           type de table de couleurs non reconnnu
@@ -951,29 +869,11 @@
         </message>
       </fatalerror>
       <warning>
-        <message name="DepreciatedOption">
-          Option a été remplacée
-        </message>
         <message name="GeometryDoesNotContainImage">
           image non incluse dans la géométrie
         </message>
-        <message name="InterpretPropertyFailure">
-          *** failure in interpret image property escapes ***
-        </message>
-        <message name="InvalidSetting">
-          invalide de réglage
-        </message>
-        <message name="NoImageForProperty">
-          Pas d'image pour appliquer une propriété
-        </message>
-        <message name="NoImageInfoForProperty">
-          Pas d'image info (wand) pour appliquer une propriété
-        </message>
         <message name="NoSuchElement">
           élément absent de la liste
-        </message>
-        <message name="UnknownImageProperty">
-          image propriété non reconnus
         </message>
         <message name="UnrecognizedColor">
           couleur non reconnue
@@ -1008,9 +908,6 @@
           </message>
           <message name="MemoryAllocationFailed">
             Échec allocation mémoire
-          </message>
-          <message name="TooManyObjects">
-            too many objects
           </message>
           <message name="UnableToAcquireString">
             échec acquisition de la chaine
@@ -1359,11 +1256,6 @@
         Réduire le brillant du contraste de l'image
       </message>
     </DullContrast>
-    <Encode>
-      <message name="Image">
-        encode l'image
-      </message>
-    </Encode>
     <Equalize>
       <message name="Image">
         Egaliser l'image

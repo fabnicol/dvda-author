@@ -4,39 +4,30 @@ TEMPLATE = app
 CONFIG += console ordered
 CONFIG -= app_bundle
 CONFIG -= qt
-QMAKE_CC = /usr/bin/gcc
-SRCDIR="/home/nicol/Dev/dvda-author/"
+#QMAKE_CC = /usr/bin/gcc
+SRCDIR="/Users/fab/dvda-author/"
 TARGET = dvda-author
 
-QMAKE_CFLAGS=-std=c99 -march=core2 -fPIC -ftrack-macro-expansion=0
+QMAKE_CFLAGS=-std=c99 -march=core2 -fPIC
 
 DEFINES +=   _GNU_SOURCE __CB__ GUI_BEHAVIOR HAVE_lplex=1 COMPILER_IS_GCC HAVE_curl=1 HAVE_fixwav=1 HAVE_libogg=1 HAVE_iberty=1 HAVE_mpeg2enc=1 HAVE_mplex=1 HAVE_OGG_FLAC=1 HAVE_FLAC=1 HAVE_libogg=1 HAVE_sox=1  FLAC_API_SUPPORTS_OGG_FLAC=1 USE_SET  DEBUG_MLP
 
 DEFINES += STARTSECTOR=272 # Schily magic value
 
 #libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame
-linux: QMAKE_LFLAGS += -L/usr/lib64
-linux:LIBS +=	\
+QMAKE_LFLAGS += -L/usr/local/lib
+LIBS +=	\
                         $$SRCDIR"local/lib/liblavfile.a" \
                         $$SRCDIR"local/lib/liblavjpeg.a" \
-                        $$SRCDIR"local/lib/libsox.a" \
-                        $$SRCDIR"local/lib/libffmpeg.a" \
+                        -lsox \
+-lFLAC \
                         $$SRCDIR"local/lib/libswresample.a" \
                         $$SRCDIR"local/lib/libavfilter.a" \
                         $$SRCDIR"local/lib/libavformat.a" \
                         $$SRCDIR"local/lib/libavcodec.a" \
                         $$SRCDIR"local/lib/libavutil.a" \
-                        -lsndfile \
-                        -lvorbis \
-                        -lvorbisfile  \
-                        -lvorbis \
-                        -lFLAC \
-                        -logg \
-                        -lpng \
+/usr/local/lib/libvorbis.a -lvorbisenc -lvorbisfile \
                         -lz \
-                        -ldvdread \
-                        -ljpeg \
-                        -pthread \
                         -ldl
 
 
@@ -47,7 +38,7 @@ LIBS +=   -s
 QMAKE_CFLAGS=-march=core2 -O3 -Wno-unused-result
 }
 
-INCLUDEPATH = src/include libutils/src/include libutils/src/include libutils/src/private libfixwav/src/include libs/include/FLAC libs/include/libsoxconvert libiberty/src/include ffmpeg
+INCLUDEPATH = local/include src/include libutils/src/include libutils/src/include libutils/src/private libfixwav/src/include libs/include/FLAC libs/include/libsoxconvert libiberty/src/include ffmpeg
 
 SOURCES += \
     src/amg2.c \

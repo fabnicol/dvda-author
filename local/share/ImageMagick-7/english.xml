@@ -205,9 +205,6 @@
         </message>
       </error>
       <warning>
-        <message name="ExifProfileSizeExceedsLimit">
-          exif profile size exceeds limit and will be truncated
-        </message>
         <message name="LosslessToLossyJPEGConversion">
           lossless to lossy JPEG conversion
         </message>
@@ -324,14 +321,14 @@
           <message name="UnrecognizedAlphaChannelOption">
             unrecognized alpha channel option
           </message>
+          <message name="UnrecognizedBitsPerPixel">
+            unrecognized bits per pixel
+          </message>
           <message name="UnrecognizedImageCompression">
             unrecognized compression
           </message>
           <message name="UnrecognizedNumberOfColors">
             unrecognized number of colors
-          </message>
-          <message name="UnsupportedBitsPerPixel">
-            unsupported bits per pixel
           </message>
         </error>
         <fatalerror>
@@ -463,9 +460,6 @@
         <message name="URLNotFound">
           URL not found
         </message>
-        <message name="VectorGraphicsNestedTooDeeply">
-          vector graphics nested too deeply
-        </message>
       </error>
     </draw>
     <file>
@@ -541,9 +535,6 @@
         <message name="AssociateProfile">
           associate profile with image, a source and destination color profile required for transform
         </message>
-        <message name="UnableToTransformColorspace">
-          unable to transform colorspace
-        </message>
       </warning>
     </image>
     <filter>
@@ -616,7 +607,7 @@
         <message name="CompositeImageRequired">
           composite image required
         </message>
-        <message name="CurlyBracesNestedTooDeeply">
+        <message name="CurlyBrasesNestedTooDeeply">
           curly braces nested too deeply
         </message>
         <message name="DeprecatedOptionNoCode">
@@ -657,9 +648,6 @@
         </message>
         <message name="ImagesAreNotTheSameSize">
           images are not the same size
-        </message>
-        <message name="ImagePagesAreNotCoalesced">
-          image pages are not coalesced
         </message>
         <message name="ImageSizeMustExceedBevelWidth">
           size must exceed bevel width
@@ -1004,7 +992,7 @@
     <policy>
       <error>
         <message name="NotAuthorized">
-          attempt to perform an operation not allowed by the security policy
+          not authorized
         </message>
       </error>
     </policy>
@@ -1021,17 +1009,11 @@
     <resource>
       <limit>
         <error>
-          <message name="ListLengthExceedsLimit">
-            list length exceeds limit
-          </message>
-          <message name="MemoryAllocationFailed">
-            memory allocation failed
-          </message>
           <message name="PixelCacheAllocationFailed">
             pixel cache allocation failed
           </message>
-          <message name="TooManyExceptions">
-            too many exceptions
+          <message name="MemoryAllocationFailed">
+            memory allocation failed
           </message>
           <message name="TooManyObjects">
             too many objects

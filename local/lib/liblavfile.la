@@ -14,10 +14,10 @@ library_names=''
 old_library='liblavfile.a'
 
 # Linker flags that cannot go in dependency_libs.
-inherited_linker_flags=' -pthread'
+inherited_linker_flags=' '
 
 # Libraries that this one depends upon.
-dependency_libs=' /usr/lib/x86_64-linux-gnu/libjpeg.la /home/nicol/Dev/dvda-author/local/lib/libmjpegutils.la -lm'
+dependency_libs=' -ljpeg /Users/fab/dvda-author/local/lib/libmjpegutils.la -lm'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''
@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/home/nicol/Dev/dvda-author/local/lib'
+libdir='/Users/fab/dvda-author/local/lib'

@@ -1,11 +1,11 @@
 /*
-  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
-  You may not use this file except in compliance with the License.  You may
+  You may not use this file except in compliance with the License.
   obtain a copy of the License at
   
-    https://imagemagick.org/script/license.php
+    http://www.imagemagick.org/script/license.php
   
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
@@ -55,13 +55,13 @@ extern MagickExport CacheView
   *DestroyCacheView(CacheView *);
 
 extern MagickExport ClassType
-  GetCacheViewStorageClass(const CacheView *) magick_attribute((__pure__));
+  GetCacheViewStorageClass(const CacheView *);
 
 extern MagickExport ColorspaceType
-  GetCacheViewColorspace(const CacheView *) magick_attribute((__pure__));
+  GetCacheViewColorspace(const CacheView *);
 
 extern MagickExport const Image
-  *GetCacheViewImage(const CacheView *) magick_attribute((__pure__));
+  *GetCacheViewImage(const CacheView *);
 
 extern MagickExport const Quantum
   *GetCacheViewVirtualPixels(const CacheView *,const ssize_t,const ssize_t,
@@ -69,8 +69,7 @@ extern MagickExport const Quantum
   *GetCacheViewVirtualPixelQueue(const CacheView *) magick_hot_spot;
 
 extern MagickExport const void
-  *GetCacheViewVirtualMetacontent(const CacheView *)
-    magick_attribute((__pure__));
+  *GetCacheViewVirtualMetacontent(const CacheView *);
 
 extern MagickExport MagickBooleanType
   GetOneCacheViewAuthenticPixel(const CacheView *,const ssize_t,const ssize_t,
@@ -88,7 +87,7 @@ extern MagickExport MagickBooleanType
     magick_hot_spot;
 
 extern MagickExport MagickSizeType
-  GetCacheViewExtent(const CacheView *) magick_attribute((__pure__));
+  GetCacheViewExtent(const CacheView *);
 
 extern MagickExport Quantum
   *GetCacheViewAuthenticPixelQueue(CacheView *) magick_hot_spot,

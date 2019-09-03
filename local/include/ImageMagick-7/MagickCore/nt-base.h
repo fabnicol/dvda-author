@@ -1,12 +1,12 @@
 /*
-  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
-
-  You may not use this file except in compliance with the License.  You may
+  
+  You may not use this file except in compliance with the License.
   obtain a copy of the License at
-
-    https://imagemagick.org/script/license.php
-
+  
+    http://www.imagemagick.org/script/license.php
+  
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,7 +39,7 @@ extern "C" {
 #include <errno.h>
 #include <malloc.h>
 #include <sys/utime.h>
-#if defined(_DEBUG) && !defined(__MINGW32__)
+#if defined(_DEBUG) && !defined(__MINGW32__) && !defined(__MINGW64__)
 #include <crtdbg.h>
 #endif
 
@@ -105,10 +105,7 @@ extern "C" {
 #if !defined(fileno)
 #  define fileno  _fileno
 #endif
-#if !defined(freelocale)
-#  define freelocale  _free_locale
-#endif
-#if !defined(fseek) && !defined(__MINGW32__)
+#if !defined(fseek) && !defined(__MINGW32__) && !defined(__MINGW64__)
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(Windows95) && \
   !(defined(_MSC_VER) && (_MSC_VER < 1400)) && \
   !(defined(__MSVCRT_VERSION__) && (__MSVCRT_VERSION__ < 0x800))
@@ -127,7 +124,7 @@ extern "C" {
 #if !defined(fsync)
 #  define fsync  _commit
 #endif
-#if !defined(ftell) && !defined(__MINGW32__)
+#if !defined(ftell) && !defined(__MINGW32__) && !defined(__MINGW64__)
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(Windows95) && \
   !(defined(_MSC_VER) && (_MSC_VER < 1400)) && \
   !(defined(__MSVCRT_VERSION__) && (__MSVCRT_VERSION__ < 0x800))
@@ -263,12 +260,6 @@ extern "C" {
 #if !defined(tempnam)
 #  define tempnam  _tempnam_s
 #endif
-#if !defined(tolower_l)
-#define tolower_l  _tolower_l
-#endif
-#if !defined(toupper_l)
-#define toupper_l  _toupper_l
-#endif
 #if !defined(umask)
 #  define umask  _umask
 #endif
@@ -276,14 +267,14 @@ extern "C" {
 #  define unlink  _unlink
 #endif
 #if !defined(utime)
-#  define utime(filename,time)  _utime(filename,(struct _utimbuf*) time)
+#  define utime  _utime
 #endif
 #if !defined(vfprintf_l)
 #define vfprintf_l  _vfprintf_l
 #endif
 #if !defined(vsnprintf)
 #if !defined(_MSC_VER) || (defined(_MSC_VER) && _MSC_VER < 1500)
-#define vsnprintf _vsnprintf
+#define vsnprintf _vsnprintf 
 #endif
 #endif
 #if !defined(vsnprintf_l)

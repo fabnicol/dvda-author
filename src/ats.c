@@ -870,8 +870,8 @@ inline static void calc_PTS_DTS_MLP(fileinfo_t* info)
 
       // Here rounding to the next bytesperframe does not seem to be necessary unlike in the PCM case. TODO: check.
 
-      info->pts[i] = (uint32_t) ptsint;
-      info->dts[i] = (uint32_t)  dtsint;
+      info->pts[i] = (uint32_t) lrint(ptsint);
+      info->dts[i] = (uint32_t) lrint(dtsint);
       info->pts[i] += start_byteshift;
       info->dts[i] += start_byteshift;
     }

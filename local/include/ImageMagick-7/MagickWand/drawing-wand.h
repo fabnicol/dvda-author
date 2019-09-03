@@ -1,11 +1,11 @@
 /*
-  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
-  You may not use this file except in compliance with the License.  You may
+  You may not use this file except in compliance with the License.
   obtain a copy of the License at
   
-    https://imagemagick.org/script/license.php
+    http://www.imagemagick.org/script/license.php
   
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,25 +40,25 @@ extern WandExport char
   *DrawGetVectorGraphics(DrawingWand *);
 
 extern WandExport ClipPathUnits
-  DrawGetClipUnits(const DrawingWand *) magick_attribute((__pure__));
+  DrawGetClipUnits(const DrawingWand *);
 
 extern WandExport DecorationType
-  DrawGetTextDecoration(const DrawingWand *) magick_attribute((__pure__));
+  DrawGetTextDecoration(const DrawingWand *);
 
 extern WandExport DirectionType
   DrawGetTextDirection(const DrawingWand *);
 
 extern WandExport double
-  DrawGetFillOpacity(const DrawingWand *) magick_attribute((__pure__)),
-  DrawGetFontSize(const DrawingWand *) magick_attribute((__pure__)),
-  DrawGetOpacity(const DrawingWand *) magick_attribute((__pure__)),
+  DrawGetFillOpacity(const DrawingWand *),
+  DrawGetFontSize(const DrawingWand *),
+  DrawGetOpacity(const DrawingWand *),
   *DrawGetStrokeDashArray(const DrawingWand *,size_t *),
-  DrawGetStrokeDashOffset(const DrawingWand *) magick_attribute((__pure__)),
-  DrawGetStrokeOpacity(const DrawingWand *) magick_attribute((__pure__)),
-  DrawGetStrokeWidth(const DrawingWand *) magick_attribute((__pure__)),
-  DrawGetTextKerning(DrawingWand *) magick_attribute((__pure__)),
-  DrawGetTextInterlineSpacing(DrawingWand *) magick_attribute((__pure__)),
-  DrawGetTextInterwordSpacing(DrawingWand *) magick_attribute((__pure__));
+  DrawGetStrokeDashOffset(const DrawingWand *),
+  DrawGetStrokeOpacity(const DrawingWand *),
+  DrawGetStrokeWidth(const DrawingWand *),
+  DrawGetTextKerning(DrawingWand *),
+  DrawGetTextInterlineSpacing(DrawingWand *),
+  DrawGetTextInterwordSpacing(DrawingWand *);
 
 extern WandExport DrawInfo
   *PeekDrawingWand(const DrawingWand *);
@@ -76,27 +76,25 @@ extern WandExport ExceptionType
   DrawGetExceptionType(const DrawingWand *);
 
 extern WandExport FillRule
-  DrawGetClipRule(const DrawingWand *) magick_attribute((__pure__)),
-  DrawGetFillRule(const DrawingWand *) magick_attribute((__pure__));
+  DrawGetClipRule(const DrawingWand *),
+  DrawGetFillRule(const DrawingWand *);
 
 extern WandExport GravityType
-  DrawGetGravity(const DrawingWand *) magick_attribute((__pure__));
+  DrawGetGravity(const DrawingWand *);
 
 extern WandExport LineCap
-  DrawGetStrokeLineCap(const DrawingWand *) magick_attribute((__pure__));
+  DrawGetStrokeLineCap(const DrawingWand *);
 
 extern WandExport LineJoin
-  DrawGetStrokeLineJoin(const DrawingWand *) magick_attribute((__pure__));
+  DrawGetStrokeLineJoin(const DrawingWand *);
 
 extern WandExport MagickBooleanType
   DrawClearException(DrawingWand *),
-  DrawComposite(DrawingWand *,const CompositeOperator,const double,
-    const double,const double,const double,MagickWand *),
+  DrawComposite(DrawingWand *,const CompositeOperator,const double,const double,
+    const double,const double,MagickWand *),
   DrawGetFontResolution(const DrawingWand *,double *,double *),
-  DrawGetStrokeAntialias(const DrawingWand *) magick_attribute((__pure__)),
-  DrawGetTextAntialias(const DrawingWand *) magick_attribute((__pure__)),
-  DrawGetTypeMetrics(const DrawingWand *,const char *,MagickBooleanType,
-    TypeMetric *),
+  DrawGetStrokeAntialias(const DrawingWand *),
+  DrawGetTextAntialias(const DrawingWand *),
   DrawPopPattern(DrawingWand *),
   DrawPushPattern(DrawingWand *,const char *,const double,const double,
     const double,const double),
@@ -121,8 +119,8 @@ extern WandExport StyleType
   DrawGetFontStyle(const DrawingWand *);
 
 extern WandExport size_t
-  DrawGetFontWeight(const DrawingWand *) magick_attribute((__pure__)),
-  DrawGetStrokeMiterLimit(const DrawingWand *) magick_attribute((__pure__));
+  DrawGetFontWeight(const DrawingWand *),
+  DrawGetStrokeMiterLimit(const DrawingWand *);
 
 extern WandExport void
   ClearDrawingWand(DrawingWand *),

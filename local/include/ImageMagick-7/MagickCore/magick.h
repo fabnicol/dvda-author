@@ -1,11 +1,11 @@
 /*
-  Copyright 1999-2019 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2016 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
-  You may not use this file except in compliance with the License.  You may
+  You may not use this file except in compliance with the License.
   obtain a copy of the License at
   
-    https://imagemagick.org/script/license.php
+    http://www.imagemagick.org/script/license.php
   
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,12 +41,9 @@ typedef enum
   CoderEncoderThreadSupportFlag = 0x0008,
   CoderEndianSupportFlag = 0x0010,
   CoderRawSupportFlag = 0x0020,
-  CoderSeekableStreamFlag = 0x0040, /* deprecated */
+  CoderSeekableStreamFlag = 0x0040,
   CoderStealthFlag = 0x0080,
-  CoderUseExtensionFlag = 0x0100,
-  CoderDecoderSeekableStreamFlag = 0x0200,
-  CoderEncoderSeekableStreamFlag = 0x0400,
-
+  CoderUseExtensionFlag = 0x0100
 } MagickInfoFlag;
 
 typedef Image
@@ -104,10 +101,10 @@ extern MagickExport const char
   *GetMagickMimeType(const MagickInfo *);
 
 extern MagickExport DecodeImageHandler
-  *GetImageDecoder(const MagickInfo *) magick_attribute((__pure__));
+  *GetImageDecoder(const MagickInfo *);
 
 extern MagickExport EncodeImageHandler
-  *GetImageEncoder(const MagickInfo *) magick_attribute((__pure__));
+  *GetImageEncoder(const MagickInfo *);
 
 extern MagickExport int
   GetMagickPrecision(void),
@@ -115,21 +112,16 @@ extern MagickExport int
 
 extern MagickExport MagickBooleanType
   GetImageMagick(const unsigned char *,const size_t,char *),
-  GetMagickAdjoin(const MagickInfo *) magick_attribute((__pure__)),
-  GetMagickBlobSupport(const MagickInfo *) magick_attribute((__pure__)),
-  GetMagickDecoderSeekableStream(const MagickInfo *)
-    magick_attribute((__pure__)),
-  GetMagickDecoderThreadSupport(const MagickInfo *)
-    magick_attribute((__pure__)),
-  GetMagickEncoderSeekableStream(const MagickInfo *)
-     magick_attribute((__pure__)),
-  GetMagickEncoderThreadSupport(const MagickInfo *)
-    magick_attribute((__pure__)),
-  GetMagickEndianSupport(const MagickInfo *) magick_attribute((__pure__)),
-  GetMagickRawSupport(const MagickInfo *) magick_attribute((__pure__)),
-  GetMagickStealth(const MagickInfo *) magick_attribute((__pure__)),
-  GetMagickUseExtension(const MagickInfo *) magick_attribute((__pure__)),
-  IsMagickCoreInstantiated(void) magick_attribute((__pure__)),
+  GetMagickAdjoin(const MagickInfo *),
+  GetMagickBlobSupport(const MagickInfo *),
+  GetMagickDecoderThreadSupport(const MagickInfo *),
+  GetMagickEncoderThreadSupport(const MagickInfo *),
+  GetMagickEndianSupport(const MagickInfo *),
+  GetMagickRawSupport(const MagickInfo *),
+  GetMagickSeekableStream(const MagickInfo *),
+  GetMagickStealth(const MagickInfo *),
+  GetMagickUseExtension(const MagickInfo *),
+  IsMagickCoreInstantiated(void),
   RegisterMagickInfo(MagickInfo *),
   UnregisterMagickInfo(const char *);
 
