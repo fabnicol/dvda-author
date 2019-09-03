@@ -35,28 +35,28 @@ while test $# -gt 0; do
       echo $exec_prefix
       ;;
     --version)
-      echo '7.0.2 Q16 HDRI'
+      echo '7.0.8 Q16 HDRI'
       ;;
     --cflags)
-      pkg-config --cflags MagickCore
+      /usr/local/bin/pkg-config --cflags MagickCore
       ;;
     --cxxflags)
-      pkg-config --cflags MagickCore
+      /usr/local/bin/pkg-config --cflags MagickCore
       ;;
     --cppflags)
-      pkg-config --cflags MagickCore
+      /usr/local/bin/pkg-config --cflags MagickCore
       ;;
     --ldflags)
-      pkg-config --libs MagickCore
+      /usr/local/bin/pkg-config --libs MagickCore
       ;;
     --libs)
-      pkg-config --libs MagickCore
+      /usr/local/bin/pkg-config --libs MagickCore
       ;;
     --coder-path)
-      echo "/Users/fab/dvda-author/local/lib/ImageMagick-7.0.2/modules-Q16HDRI/coders"
+      echo "/Users/fab/dvda-author/local/lib/ImageMagick-7.0.8/modules-Q16HDRI/coders"
       ;;
     --filter-path)
-      echo "/Users/fab/dvda-author/local/lib/ImageMagick-7.0.2/modules-Q16HDRI/filters"
+      echo "/Users/fab/dvda-author/local/lib/ImageMagick-7.0.8/modules-Q16HDRI/filters"
       ;;
     *)
       echo "${usage}" 1>&2

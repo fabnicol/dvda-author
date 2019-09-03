@@ -151,7 +151,12 @@
 #define MAGICKCORE_HAVE_CLOCK 1
 #endif
 
-/* Define to 1 if you have clock_gettime. */
+/* Define to 1 if you have the `clock_getres' function. */
+#ifndef MAGICKCORE_HAVE_CLOCK_GETRES
+#define MAGICKCORE_HAVE_CLOCK_GETRES 1
+#endif
+
+/* Define to 1 if you have the `clock_gettime' function. */
 #ifndef MAGICKCORE_HAVE_CLOCK_GETTIME
 #define MAGICKCORE_HAVE_CLOCK_GETTIME 1
 #endif
@@ -419,7 +424,7 @@
 #define MAGICKCORE_HAVE_LONG_DOUBLE_WIDER 1
 #endif
 
-/* Define to 1 if the system has the type 'long long int'. */
+/* Define to 1 if the system has the type `long long int'. */
 #ifndef MAGICKCORE_HAVE_LONG_LONG_INT
 #define MAGICKCORE_HAVE_LONG_LONG_INT 1
 #endif
@@ -499,7 +504,9 @@
 #endif
 
 /* Define to 1 if you have the <OpenCL/cl.h> header file. */
-/* #undef HAVE_OPENCL_CL_H */
+#ifndef MAGICKCORE_HAVE_OPENCL_CL_H
+#define MAGICKCORE_HAVE_OPENCL_CL_H 1
+#endif
 
 /* Define to 1 if you have the <OS.h> header file. */
 /* #undef HAVE_OS_H */
@@ -581,11 +588,6 @@
 /* Define to 1 if you have the `rand_r' function. */
 #ifndef MAGICKCORE_HAVE_RAND_R
 #define MAGICKCORE_HAVE_RAND_R 1
-#endif
-
-/* Define to 1 if you have the `readdir_r' function. */
-#ifndef MAGICKCORE_HAVE_READDIR_R
-#define MAGICKCORE_HAVE_READDIR_R 1
 #endif
 
 /* Define to 1 if you have the `readlink' function. */
@@ -944,7 +946,7 @@
 #define MAGICKCORE_HAVE_UNISTD_H 1
 #endif
 
-/* Define to 1 if the system has the type 'unsigned long long int'. */
+/* Define to 1 if the system has the type `unsigned long long int'. */
 #ifndef MAGICKCORE_HAVE_UNSIGNED_LONG_LONG_INT
 #define MAGICKCORE_HAVE_UNSIGNED_LONG_LONG_INT 1
 #endif
@@ -1075,6 +1077,9 @@
 #define MAGICKCORE_HDRI_ENABLE_OBSOLETE_IN_H 1
 #endif
 
+/* Define if you have libheif library */
+/* #undef HEIC_DELEGATE */
+
 /* Define if you have jemalloc memory allocation library */
 /* #undef HasJEMALLOC */
 
@@ -1116,13 +1121,13 @@
 
 /* Directory where architecture-dependent files live. */
 #ifndef MAGICKCORE_LIBRARY_PATH
-#define MAGICKCORE_LIBRARY_PATH "/Users/fab/dvda-author/local/lib/ImageMagick-7.0.2/"
+#define MAGICKCORE_LIBRARY_PATH "/Users/fab/dvda-author/local/lib/ImageMagick-7.0.8/"
 #endif
 
 /* Subdirectory of lib where ImageMagick architecture dependent files are
    installed. */
 #ifndef MAGICKCORE_LIBRARY_RELATIVE_PATH
-#define MAGICKCORE_LIBRARY_RELATIVE_PATH "ImageMagick-7.0.2"
+#define MAGICKCORE_LIBRARY_RELATIVE_PATH "ImageMagick-7.0.8"
 #endif
 
 /* Binaries in libraries path base name (will be during install linked to bin)
@@ -1134,8 +1139,12 @@
 /* Define if you have LQR library */
 /* #undef LQR_DELEGATE */
 
-/* Define if using libltdl to support dynamically loadable modules */
+/* Define if using libltdl to support dynamically loadable modules and OpenCL
+   */
 /* #undef LTDL_DELEGATE */
+
+/* Native module suffix */
+/* #undef LTDL_MODULE_EXT */
 
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 #ifndef MAGICKCORE_LT_OBJDIR
@@ -1155,7 +1164,7 @@
 
 /* Target Host OS */
 #ifndef MAGICKCORE_MAGICK_TARGET_OS
-#define MAGICKCORE_MAGICK_TARGET_OS darwin16.0.0
+#define MAGICKCORE_MAGICK_TARGET_OS darwin16.7.0
 #endif
 
 /* Target Host Vendor */
@@ -1173,6 +1182,9 @@
 
 /* Magick API method prefix */
 /* #undef NAMESPACE_PREFIX */
+
+/* Magick API method prefix tag */
+/* #undef NAMESPACE_PREFIX_TAG */
 
 /* Define to 1 if assertions should be disabled. */
 /* #undef NDEBUG */
@@ -1197,7 +1209,7 @@
 
 /* Define to the full name and version of this package. */
 #ifndef MAGICKCORE_PACKAGE_STRING
-#define MAGICKCORE_PACKAGE_STRING "ImageMagick 7.0.2-6"
+#define MAGICKCORE_PACKAGE_STRING "ImageMagick 7.0.8-49"
 #endif
 
 /* Define to the one symbol short name of this package. */
@@ -1207,12 +1219,12 @@
 
 /* Define to the home page for this package. */
 #ifndef MAGICKCORE_PACKAGE_URL
-#define MAGICKCORE_PACKAGE_URL "http://www.imagemagick.org"
+#define MAGICKCORE_PACKAGE_URL "https://imagemagick.org"
 #endif
 
 /* Define to the version of this package. */
 #ifndef MAGICKCORE_PACKAGE_VERSION
-#define MAGICKCORE_PACKAGE_VERSION "7.0.2-6"
+#define MAGICKCORE_PACKAGE_VERSION "7.0.8-49"
 #endif
 
 /* Define if you have PANGOCAIRO library */
@@ -1243,6 +1255,9 @@
 
 /* Define if you have RAQM library */
 /* #undef RAQM_DELEGATE */
+
+/* Define if you have LIBRAW library */
+/* #undef RAW_R_DELEGATE */
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #ifndef MAGICKCORE_RETSIGTYPE
@@ -1422,7 +1437,12 @@
 
 /* Version number of package */
 #ifndef MAGICKCORE_VERSION
-#define MAGICKCORE_VERSION "7.0.2-6"
+#define MAGICKCORE_VERSION "7.0.8-49"
+#endif
+
+/* Define if you have WEBPMUX library */
+#ifndef MAGICKCORE_WEBPMUX_DELEGATE
+#define MAGICKCORE_WEBPMUX_DELEGATE 1
 #endif
 
 /* Define if you have WEBP library */
@@ -1475,6 +1495,9 @@
 #define MAGICKCORE_ZLIB_DELEGATE 1
 #endif
 
+/* Define if you have ZSTD library */
+/* #undef ZSTD_DELEGATE */
+
 /* Enable large inode numbers on Mac OS X 10.5.  */
 #ifndef _DARWIN_USE_64_BIT_INODE
 # define _DARWIN_USE_64_BIT_INODE 1
@@ -1525,7 +1548,7 @@
 /* # undef __CHAR_UNSIGNED__ */
 #endif
 
-/* Define to appropriate substitue if compiler does not have __func__ */
+/* Define to appropriate substitute if compiler does not have __func__ */
 /* #undef __func__ */
 
 /* Define to empty if `const' does not conform to ANSI C. */

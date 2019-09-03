@@ -35,22 +35,22 @@ while test $# -gt 0; do
       echo $exec_prefix
       ;;
     --version)
-      echo '7.0.2 Q16 HDRI'
+      echo '7.0.8 Q16 HDRI'
       ;;
     --cflags)
-      PKG_CONFIG_PATH="${exec_prefix}/lib/pkgconfig" pkg-config --cflags MagickWand
+      /usr/local/bin/pkg-config --cflags MagickWand
       ;;
     --cxxflags)
-      PKG_CONFIG_PATH="${exec_prefix}/lib/pkgconfig" pkg-config --cflags MagickWand
+      /usr/local/bin/pkg-config --cflags MagickWand
       ;;
     --cppflags)
-      PKG_CONFIG_PATH="${exec_prefix}/lib/pkgconfig" pkg-config --cflags MagickWand
+      /usr/local/bin/pkg-config --cflags MagickWand
       ;;
     --ldflags)
-      PKG_CONFIG_PATH="${exec_prefix}/lib/pkgconfig" pkg-config --libs MagickWand
+      /usr/local/bin/pkg-config --libs MagickWand
       ;;
     --libs)
-      PKG_CONFIG_PATH="${exec_prefix}/lib/pkgconfig" pkg-config --libs MagickWand
+      /usr/local/bin/pkg-config --libs MagickWand
       ;;
     *)
       echo "${usage}" 1>&2

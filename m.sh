@@ -10,6 +10,9 @@ cd -
 cd libiberty/src
 make CC=/usr/local/bin/gcc-9 CXX=/usr/local/bin/g++-9 LD=/usr/local/bin/g++-9   
 cd -
+cd libutils/src
+make CC=/usr/local/bin/gcc-9 CXX=/usr/local/bin/g++-9 LD=/usr/local/bin/g++-9
+cd -
 cd libfixwav/src
 make CC=/usr/local/bin/gcc-9 CXX=/usr/local/bin/g++-9 LD=/usr/local/bin/g++-9 
 cd -

@@ -5,10 +5,10 @@
 # It is necessary for linking the library.
 
 # The name that we can dlopen(3).
-dlname='libMagickCore-7.Q16HDRI.0.dylib'
+dlname=''
 
 # Names of this library.
-library_names='libMagickCore-7.Q16HDRI.0.dylib libMagickCore-7.Q16HDRI.dylib'
+library_names=''
 
 # The name of the static archive.
 old_library='libMagickCore-7.Q16HDRI.a'
@@ -17,13 +17,13 @@ old_library='libMagickCore-7.Q16HDRI.a'
 inherited_linker_flags='  -fopenmp -pthread'
 
 # Libraries that this one depends upon.
-dependency_libs=' -L/usr/local/Cellar/little-cms2/2.9/lib -llcms2 -L/usr/local/opt/freetype/lib -ljpeg -L/usr/local/Cellar/libpng/1.6.37/lib -lpng16 -L/usr/local/Cellar/fontconfig/2.13.1/lib -lfontconfig -lfreetype -lwebp -lbz2 -L/usr/local/Cellar/openjpeg/2.3.1/lib -lopenjp2 -lz -lm -lgomp'
+dependency_libs=' -L/usr/local/Cellar/little-cms2/2.9/lib -llcms2 -L/usr/local/opt/freetype/lib -ljpeg -L/usr/local/Cellar/libpng/1.6.37/lib -lpng16 -L/usr/local/Cellar/fontconfig/2.13.1/lib -lfontconfig -lfreetype -L/usr/local/Cellar/webp/1.0.3/lib -lwebpmux -lwebp -lbz2 -L/usr/local/Cellar/openjpeg/2.3.1/lib -lopenjp2 -lz -lm'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''
 
 # Version information for libMagickCore-7.Q16HDRI.
-current=0
+current=6
 age=0
 revision=0
 
