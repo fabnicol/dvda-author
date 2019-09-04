@@ -1,0 +1,79 @@
+.\" 
+.TH "yuvinactive" "1" "30 October 2003" "MJPEG Tools Team" "MJPEG tools manual"
+.SH "NAME"
+yuvinactive \- Set a part of the video to a defined state
+
+.SH "SYNOPSIS"
+.B yuvinactive
+.RI [ options ]
+.I </dev/stdin >/dev/stdout
+
+.SH "DESCRIPTION"
+\fByuvinactive\fP operates with a area (rectangle) you define. 
+By default is sets it to really black. But you can tell tell yuvinactive
+to darken the area, or fill it with a certain color. It can also make the
+content of the area unreadable, like extreme softening of the area. 
+Or copy the surrounding area into the the specified area.  
+You usually have to use the -i option which sets the area in which yuvinactive
+will work. If no additional option is given yuvinactive stet the area to black.
+But you can use the \fB-d -s -a -c options\fP to tell yuvinactive that it
+shall do something different with that area. You can only use one additional
+option. yuvinactive was built to remove unwanted things like a logo, from the
+movie. 
+
+.SH "OPTIONS"
+\fBlav2yuv\fP accepts the following options:
+
+.TP 5
+.BI \-h
+Some help output
+.TP 5
+.BI \-i "XxY+XOFF+YOFF"
+Specifies the area yuvinactive shall work with. With this option the area
+is set to black. There are no restrictions because of interlacing. 
+.TP 5
+.BI \-d " num"
+How much darker the area should be compared to the original color.
+This is done by setting a lower value for the luma. The value is in percent
+from the original luma. 
+.TP 5
+.BI \-s " num"
+Here you specify a certain color in the yuv format. 
+.TP 5
+.BI \-a " num"
+With this option the program uses on pixel and averages the surrounding 
+pixels with the same color to make the original less readable. 
+The number tells the the program how much pixels around the original 
+pixel should be overwritten with the same color. You have to use a even number
+here
+.TP 5
+.BI \-c " num"
+Sets the number of surrounding pixels yuvinactive should use to copy them into
+the given area. You have to use a even number here. yuvinactive uses the lines
+above and below the specified area for copying them into the area. 
+
+.SH "BUGS"
+Right, there are bugs hidden. The thing is not well tested, and not every 
+option might work. yuvinactive is in the first state of becoming a useful
+program.
+
+.SH "AUTHOR"
+This man page was originally written by Bernhard Praschinger.
+.br 
+If you have questions, remarks, problems or you just want to contact
+the developers, the main mailing list for the MJPEG\-tools is:
+  \fImjpeg\-users@lists.sourceforge.net\fP
+
+.TP 
+For more info, see our website at
+.I http://mjpeg.sourceforge.net
+
+.SH "SEE ALSO"
+.BR mjpegtools (1),
+.BR lav2yuv (1),
+.BR mpeg2enc (1),
+.BR yuvscaler (1),
+.BR yuv2lav (1),
+.BR yuvdenoise (1),
+.BR yuvplay (1),
+.BR yuvmedianfilter (1)

@@ -1,0 +1,63 @@
+.TH "yuvplay" "1" "8 April 2002" "MJPEG Tools Team" "MJPEG tools manual"
+
+.SH NAME
+yuvplay \- Display YUV4MPEG2 streams (using SDL)
+
+.SH SYNOPSIS
+.B yuvplay
+.RB [ options ]
+
+.SH DESCRIPTION
+\fByuvplay\fP produces on-screen playback of a YUV4MPEG2 stream
+which is provided to stdin, typically through piping from the stdout of
+\fBlavpipe\fP(1), \fBlav2yuv\fP(1), \fBmpeg2dec\fP(1) or a similar
+program.  It should be noted that for pure
+playback lavplay should be a superior option.  yuvplay is intended
+primarily as a debugging or diagnostic utility when setting up video
+processing pipelines.  
+
+.SH OPTIONS
+\fByuvplay\fP accepts the following options:
+.TP 8
+.BI \-s \ WxH
+The size of the SDL window.  By default, it uses the size of the 
+input video stream scaled to yield 1:1 pixels (using the sample aspect ratio
+encoded in the stream header).
+However, you can specify any size you want.
+WxH is the width x height of the scaled window.
+
+.TP 8
+.BI \-t title
+Set the window title.
+
+.TP 8
+.BI \-f " num"
+Override the framerate specified in the input stream header.
+
+.TP 8
+.BI \-c
+By default, yuvplay will try to play at the framerate of the input movie.
+With this option, yuvplay will just play all the frames as fast as it can.
+
+.TP 8
+.BI \-v \ [0, 1, 2]
+Set the verbosity of user feedback.  Default is "1":  errors, warnings, and
+info messages.
+
+.SH AUTHOR
+This man page was originally written by Ronald Bultje (and since edited
+by Matt Marjanovic).
+.br
+If you have questions, remarks, problems or you just want to contact
+the developers, the main mailing list for the MJPEG\-tools is:
+  \fImjpeg\-users@lists.sourceforge.net\fP
+
+.TP
+For more info, see our website at
+.I http://mjpeg.sourceforge.net/
+
+.SH SEE ALSO
+.BR mjpegtools (1),
+.BR lavpipe (1),
+.BR lav2yuv (1)
+.BR lavplay (1)

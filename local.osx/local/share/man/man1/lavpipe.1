@@ -1,0 +1,244 @@
+.TH "lavpipe" "1" "2 June 2001" "MJPEG Tools Team" "MJPEG tools manual"
+
+.SH "NAME"
+lavpipe \- creates raw YUV streams from pipe list scripts
+
+.SH "SYNOPSIS"
+.B lavpipe
+.RB [ -o
+.IR num ]
+.RB [ -n
+.IR num ]
+.I pipe-list
+
+.SH "DESCRIPTION"
+lavpipe reads a script file called 'pipe list'
+that is of a similar structure as the edit lists that
+can be fed into lav2yuv.  For info about the pipe list format
+see below.
+
+The pipe list defines several video sources and filters
+that are combined by lavpipe to produce a single output YUV
+stream on stdout (which for example can be compressed and
+stored to disk via
+.BR mpeg2enc "(1) or " yuv2lav "(1))."
+
+.SH "OPTIONS"
+The command line options are used to output a specific
+part of the resulting video stream.  That means you can
+tell lavpipe how many frames to skip and how many frames
+to deliver from that point on.
+
+.TP
+.BI "-o " num
+This is the frame offset of the output video. The first
+.I num
+frames of the resulting video simply are neither calculated
+nor written to stdout. This value defaults to 0.
+
+.TP
+.BI "-n " num
+This is the frame count. If the input files or streams defined
+in the pipe list script are long enough, the output will be
+of exactly
+.I num
+frames length. A value of 0 means that all frames until the
+last one as defined in the pipe list will be written out, as
+long as there's some input (0 is the default).
+
+.TP
+.I pipe-list
+This is name of the pipe list file that lavpipe will 'execute'.
+For information about this file's format see below.
+
+.TP
+.B -?
+Display a synopsis of the command syntax.
+
+.SH "EXAMPLES"
+
+.TP
+lavpipe -o 100 -n 25 film.pli
+would calculate and output to stdout frames 100 to 124 as
+defined in film.pli (in PAL this would be the 5th second of
+the film).
+.TP
+lavpipe input.pli | yuv2lav -q80 output.avi
+would save the movie assembled by lavpipe as a single AVI file.
+
+.SH "USAGE"
+In this section the format of lavpipe's input files the pipe
+list scripts is explained. If you need some examples or a more
+detailed tutorial, please read the
+.BR mjpegtools "(1) manpage's section about"
+.BR "CREATING MOVIE TRANSITIONS" ". and the file"
+.I README.lavpipe
+that should be included in the distribution.
+Also feel free to contact us via the mailing list (see below).
+
+A pipe list contains of two parts: the YUV
+.B source list
+and after this, as many
+.B sequence descriptions
+as wanted. It always begins with the following two lines:
+
+.TP
+.B LAV Pipe List
+This is the first line in every pipe list script. It is used as
+a simple test if lavpipe really was given a pipe list script and
+not your PhD thesis as input.
+
+.TP
+.BR NTSC | PAL
+This is the second line in every pipe list and can be either PAL
+or NTSC, depending on what video standard you use. I don't remember
+if this is used at the moment.
+
+.PP
+Now follows the
+.BR "source list" :
+
+.TP
+.I num
+This is the number of input commands. lavpipe will read the next
+.I num
+lines and interpret them as input stream commands.
+
+.TP
+.IR command \ ( num \ times)
+This is a valid command line with two variables $o and $n that
+will be replaced by lavpipe with the offset and number of frames
+that the program has to output. Example:
+.br
+.B lav2yuv -o $o -f $n input.avi
+
+.PP
+.RB "Thus, an example " "source list" " could look like this:"
+.br
+.B 2
+.br
+.B lav2yuv -o $o -f $n scene1.avi
+.br
+.B lav2yuv -o $o -f $n scene2.avi
+
+after this you can append as many
+.B sequence descriptions
+as needed. Each of them is built up as follows:
+
+.TP
+.I num
+The number of frames that this sequence will last.
+
+.TP
+.I num
+The number of inputs that will be used in this sequence.
+This number must of course be less than or equal to the
+number of inputs that are defined above.
+
+.TP
+.IR idx " [" ofs "] (" num " times)"
+These are the indices to the sources that are defined
+at the beginning of the file (first source is 0) with
+an optional frame offset (i.e. sequence starts with
+.RI "frame number " ofs " of this input.) - this value"
+defaults to 0. Example:
+.br
+.B 0 150
+
+.TP
+.I command
+This is a valid command line to a YUV filter tool that reads
+.IR num " input streams and writes one output stream, combining"
+its inputs. Optionally, the filter tool can be given the two
+$o and $n variables that will be replaced by lavpipe as in
+the source commands (see above). For further info read
+.IR README.lavpipe " or the documentation for the filter"
+programs (if available). An example filter could look like this:
+.br
+.B transist.flt -o 0 -O 255 -s $o -n $n -d 50
+.br
+And if the sequence only has one input that simply should be
+copied to the output, you can use a dash instead of a command line:
+.br
+.B -
+
+.PP
+And here's an example for a complete pipe list that implements
+a transistion from scene1.avi to scene2.avi
+.sp
+.B REMOVE THE COMMENTS AFTER The  #
+.sp
+.B LAV Pipe List
+.br
+.B PAL
+.br
+.B 2
+.br
+.B lav2yuv -o $o -f $n scene1.avi
+.br
+.B lav2yuv -o $o -f $n scene2.avi
+.br
+.BR 50   "            # first sequence: 50 frames"
+.br
+.BR 1   "             #   contains one input:"
+.br
+.BR "0 0" "           #     scene1.avi, offset 0"
+.br
+.BR -   "             #   simple output"
+.br
+.BR 25   "            # second sequence: 25 frames"
+.br
+.BR 2   "             #   contains two inputs:"
+.br
+.BR "0 50" "          #     scene1.avi, offset 50"
+.br
+.BR 1   "             #     scene2.avi, offset 0"
+.br
+.BR "transist.flt -o 0 -O 255 -s $o -n $n -d 50" " # transistion"
+.br
+.BR 50   "            # third sequence: 50 frames"
+.br
+.BR 1   "             #   contains one input:"
+.br
+.BR "1 25" "          #     scene2.avi, offset 25"
+.br
+.BR -   "             #   simple output"
+
+.SH "BUGS"
+I'm sure there are enough of them. lavpipe often accepts
+malformed pipe lists and then writes out a video that was
+all but intended - without warning.
+.sp
+.B The mention of $n above is wrong.  At one time there were two parameters but now a program is allowed to produce as many frames as it wants.  THe author of the program hard coded, for reasons unknown, $n to be 0.
+.SH "NOTES"
+There are also some serious limitations in the system, such
+as frame-by-frame processing. But as the goal when writing
+lavpipe was the simplicity of the pipeline, other tools will
+have to be written to do more interesting tasks.
+.br
+But I want to note that it is very well possible to write
+a pipe list that combines several files, and then use that
+pipe list as an input for another pipe list by simply
+using the lavpipe command in the source list (see above) -
+this can be already used to do some nice things, if you
+have some nice filters.
+.sp
+.B Comments are NOT allowed in pipelist files.  The comments (text after #) above are for illustration only.
+.SH AUTHOR
+This man page was written by Philipp Zabel.
+.br
+If you have questions, remarks, problems or you just want to contact
+the developers, the main mailing list for the MJPEG\-tools is:
+  \fImjpeg\-users@lists.sourceforge.net\fP
+
+.TP
+For more info, see our website at
+.I http://mjpeg.sourceforge.net
+
+.SH "SEE ALSO"
+.BR lav2yuv (1),
+.BR lavplay (1),
+.BR lavrec (1),
+.BR mpeg2enc (1),
+.BR yuv2lav (1),
+.BR yuvscaler (1)

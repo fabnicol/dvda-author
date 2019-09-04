@@ -1,0 +1,85 @@
+#!/bin/sh
+
+usage()
+{
+echo "Usage: transcode -S|-V [-T] [-s mins] [-b bitrate] [-F framerate] [-o dstfile] srcfile ..."
+echo "o - output file root name"
+echo "b - bitrate for video in kbps"
+echo "s - sleep for specified number of minutes before starting work"
+echo "T - Use test encoder"
+echo "S - Transcode for SVCD or"
+echo "V - Transcode for VCD"
+echo "F - fhe frame rate can also be specified, choose one if needed: "
+mpeg2enc -F -h
+exit 0
+}
+
+#  Use this commented-out version if you haven't got sox and toolame
+#MP2ENC="nice -n 29 wav2mp2 -v -o" 
+MPEG2ENC=mpeg2enc
+MPLEX=mplex
+if [ $# -lt 3 ]
+then
+usage
+fi
+outpat=".%d"
+outfile=transcoded
+bitrate=""
+sleep=0
+decode="YUVh"
+while getopts ":o:b:s:F:SVTXh" opt
+do
+case $opt in
+s) sleep=$OPTARG
+;;
+b) bitrate="-b $OPTARG"
+;;
+o) outfile=$OPTARG
+;;
+F) framerate="-F $OPTARG"
+;;
+T)
+echo Using test encoder
+MPEG2ENC="mpeg2enc.test"
+MPLEX=mplex.test
+;;
+h)
+echo hi-res mode
+MPEGOPTS="$MPEGOPTS -H"
+;;
+X)
+echo Using test encoder max speed
+MPEGOPTS="$MPEGOPTS -4 1 -2 1"
+;;
+V)
+echo Generating VCD stream
+MPEGOPTS="$MPEGOPTS -f 1"
+decode="YUVh"
+;;
+S)
+echo Generating SVCD stream
+MPEGOPTS="$MPEGOPTS -f 4 -q 9 -P -V 200"
+bitrate="-b 2500"
+decode="YUVs"
+;;
+?) usage
+;;
+esac
+done
+if [ x"$MPEGOPTS" = "x" ]
+then
+echo "Must specify -V or -S!"
+useage
+fi
+shift `expr $OPTIND - 1`
+sleep `expr $sleep * 60`
+
+cat $* | mpeg2dec -s -o $decode | \
+        ${MPEG2ENC} ${MPEGOPTS} $bitrate $framerate -o $outfile.m1v
+
+cat $* | extract_a52 - -s | a52dec -m wav | \
+        sox -t wav /dev/stdin -t wav -r 44100 /dev/stdout | \
+        toolame -p 2 -b 224 /dev/stdin $outfile.mp2
+
+# Eventually mux-ing goes here!
+

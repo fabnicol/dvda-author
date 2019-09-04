@@ -1,0 +1,79 @@
+.TH "yuvycsnoise" "1" "5 February 2002" "MJPEG Tools Team" "MJPEG tools manual"
+
+.SH NAME
+yuvycsnoise \- Noise filter specialized for NTSC Y/C separation noise
+
+.SH SYNOPSIS
+.B yuvycsnoise
+.RB [ \-t ]
+.RB [ \-m\ t | b | i | c ]
+.RB [ \-S
+.IR MIN ]
+.RB [ \-T
+.IR ERRT [\fB,\fP MAXT ]]
+.RB [ \-B
+.IR ERRB [\fB,\fP MAXB ]]
+.RB [ \-I
+.IR ERRI [\fB,\fP MAXI ]]
+.RB [ \-C
+.IR ERRC [\fB,\fP MAXC ]]
+
+.SH DESCRIPTION
+If video capture hardware has only a poor Y/C separator,
+at vertical stripe (especially red/blue), noises appear
+which seem checker flag and bright/dark invert per 1 frame.
+\fByuvycsnoise\fP reduces noises of this type.
+
+.SH OPTIONS
+\fByuvycsnoise\fP accepts the following options:
+.TP 8
+.BI \-t
+test. Instead of noise reduction, noises will be marked as black pixel.
+.TP 8
+.BI \-m \ METHOD
+(default: \fBtbic\fP).
+.br
+Select method.
+\fIMETHOD\fP is string in which each character mean method.
+ \fBt\fP: 'triframe' method of luma noise reduction.
+ \fBb\fP: 'biframe' method of luma noise reduction.
+ \fBi\fP: 'infield' method of luma noise reduction.
+ \fBc\fP: chroma noise reduction. use 3 frames as 'triframe'.
+.TP 8
+.BI \-S \ MIN
+(default: 4).
+.br
+Set minimum threshold of luma/chroma difference
+which is treated as noise.
+.TP 8
+.BI \-T \ ERRT \fR[\fP, MAXT\fR]\fP
+(default: 32,255).
+.TP 8
+.BI \-B \ ERRB \fR[\fP, MAXB\fR]\fP
+(default: 32,255).
+.TP 8
+.BI \-I \ ERRI \fR[\fP, MAXI\fR]\fP
+(default: 16,255).
+.TP 8
+.BI \-C \ ERRC \fR[\fP, MAXC\fR]\fP
+(default: 12,255).
+.br
+Set threshold of luma/chroma difference of each methods.
+\fIERRx\fP is maximum error of luma/chroma of pixels around
+target pixel, which should be same if target contain noise.
+\fIMAXx\fP is maximum threshold of luma/chroma difference of
+target pixel from luma/chroma after noise reduced.
+
+.SH AUTHOR
+\fByuvycsnoise\fP was written by Kawamata/Hitoshi.
+.br
+If you have questions, remarks, problems or you just want to contact
+the developers, the main mailing list for the MJPEG\-tools is:
+  \fImjpeg\-users@lists.sourceforge.net\fP
+
+.TP
+For more info, see our website at
+.I http://mjpeg.sourceforge.net/
+
+.SH SEE ALSO
+.BR mjpegtools (1)

@@ -1,0 +1,128 @@
+.TH "yuvfps" "1" "8 Jan 2006" "MJPEG Tools Team" "MJPEG tools manual"
+
+.SH NAME
+yuvfps \- Converts to a different frame rate
+
+.SH SYNOPSIS
+.B yuvfps 
+.RB [ -r 
+.IR Num:Den ]
+.RB [ -s 
+.IR Num:Den ]
+.RB [ -i
+.IR Interlacing ]
+.RB [ -I
+.IR Interlacing ]
+.RB [ -c ]
+.RB [ -n ]
+.RB [ -w ]
+.RB [ -v\ 0 - 2 ]
+.RB [ -h ]
+
+.SH DESCRIPTION
+\fByuvfps\fP is a general (UP or DOWN) resampling utility that is provided to
+allow the generation of video streams with the frame rates required for each
+standard video format. \fByuvfps\fP reads a YUV4MPEG stream from the standard
+input and outputs a YUV4MPEG stream to the standard output in which frames from
+the original ones are skipped (downsampling) or duplicated (upsampling).
+This allows for other mjpegtools that require a specific frame rate to 
+process the stream.
+
+\fByuvfps\fP uses by default Bresenham's algorithm to do the resampling so that the new
+video stream is similar to the original one. Note, however, that downscaling
+is a non-reversible operation because frames are dropped. Moreover, the resulting
+video stream may not have the exact same duration as the original one if the
+new frame rate is not a whole multiple of the original rate.
+  
+As an alternative to simply dropping or duplicating frames each output
+frame/field can be produced as a weighted average of the two temporally
+closest input frames/fields.
+In this mode, \fByuvfps\fP can also change the interlacing mode of the stream.
+
+\fByuvfps\fP also can "fix" the framerate specified in the YUV4MPEG header. 
+This allows for the generation of effects (fast-forwarding, slow motion) and
+also when the source stream has some framerate that is very close, but not 
+exactly, the rate required for some standard video (for example, 24.9 vs 25). 
+
+.SH OPTIONS
+
+.TP 
+.B -r \fBNum:Den\fP
+.IP
+Specifies the resulting stream frame rate.
+.TP 
+.B -s \fBNum:Den\fP
+.IP
+Ignores the frame rate in the input stream and assumes this frame rate for the 
+input stream. 
+.TP
+.B -i \fBInterlacing\fP
+.IP
+Specifies the interlacing mode of the resulting stream.
+The interlacing mode can be changed only when using the weighted average
+resampling mode (the -w option).
+.IP
+p - progressive (non-interlaced)
+.br
+t - top-field first
+.br
+b - bottom-field first
+.TP
+.B -I \fBInterlacing\fP
+.IP
+Ignores the interlacing mode information in the input stream and assumes this
+interlacing mode for the input stream.
+The possible values are the same as for the -i option.
+.TP 
+.B -c 
+.IP
+Changes the stream header frame rate and interlacing mode in the output
+stream but copies frames from the original stream without changes.
+The -r and -i options specify the frame rate and interlacing mode for the
+output stream header.
+.TP
+.B -n 
+.IP
+By default yuvfps tries to find a normalized framerate. Some programs create 
+framerates like: 29969909:1000000 which is actually th typical NTSC framerate
+of 30000:1001. yuvfps prints out the normalizes values and the original when
+it starts. If you think the normalized value is not correct and want 
+yuvfps to use the original given number you have to add that option. So 
+yuvfps does not try to normalize the values. 
+.TP
+.B -w
+.IP
+Produce each output frame/field as a weighted average of the two temporally
+closest input frames/fields instead of simply dropping or duplicating
+frames.
+The blending of two adjacent frames/fields reduces visible stepping
+compared to the default drop/duplicate algorithm but as a drawback it
+makes fast moving objects appear blurred and is much slower.
+.TP
+.B \-v " [0,1,2]"
+.IP
+Set verbosity level.
+ 0 = warnings and error messages only. 
+ 1 = add informative messages, like the framerate conversation information.
+ 2 = add chatty debugging message, too.
+
+.SH AUTHOR
+This man page was written by Alfonso García-Patiño Barbolani.
+.br
+Johannes Lehtinen added information about the weighted average resampling
+mode and the related options.
+.br
+If you have questions, remarks, problems or you just want to contact
+the developers, the main mailing list for the MJPEG\-tools is:
+  \fImjpeg\-users@lists.sourceforge.net\fP
+
+.TP
+For more info, see our website at
+.I http://mjpeg.sourceforge.net/
+
+.SH SEE ALSO
+.BR yuvscaler (1),
+.BR mjpegtools (1),
+.BR lavpipe (1),
+.BR lav2yuv (1)
+.BR mpeg2enc (1)

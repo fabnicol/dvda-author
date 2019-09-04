@@ -1,0 +1,3008 @@
+.\"
+.TH "MJPEG tools" "MJPEG Linux Square" "MJPEG tools manual"
+.LP
+
+MJPEG HOWTO - An introduction to the MJPEG-toolsPraschinger Bernhardv2.00MJPEG capture/editting/replay and MPEG encoding toolset description
+.PP
+Introduction
+
+.PP
+I wrote this things down, because I had many sheets with notes on them.
+This should be some kind of summary of collected knowledge over a long 
+period of time.
+Andrew Stevens helped with encoding and VCD knowledge and hints.
+.PP
+Mjpegtools is a set of programs that can do recording, playback, editing
+and eventual MPEG compression of audio and video under Linux.
+.PP
+Although primarily intended for use with capture / playback boards based on the
+Zoran ZR36067 MJPEG codec chip mjpegtools can easily be used to process
+and compress MJPEG video streams captured using xawtv using simple
+frame-buffer devices.
+.PP
+The HOWTO for the tools intended to give an an introduction to the MJPEG-tools
+and the creation of MPEG 1/2 videos. VCD, SVCD and DVD and the transcoding of 
+existing mpeg streams.
+.PP
+For more information about the programs read the corresponding man-page.
+.PP
+Achtung es gibt auch eine deutsche Version bei:
+.PP
+There is also a manpage of this text. You can read it with
+\(rqman mjpegtools\(rq if installed. 
+We also have a info version you should be able to read it with info 
+.PP
+The text version of this text is available via cvs. You should get it with the
+tarball or the precompiled package (RPM and deb).
+.PP
+In the following picture you see the typical workflow when you record a video,
+cut it afterwards and encode it. In the picture you also see the connections
+to other programs. These parts are in grey. The parts in blue can be done with
+the mjpegtools. 
+.PP
+Video encoding workflow
+.PP
+Unsorted list of useful Hints
+
+.PP
+You have to compile and install the mjpeg_play package, for this read the
+README & INSTALL.real an follow the hints from the configure script.
+If you do not want to compile it, you can download the mjpeg .RPM or .DEB
+package at Sourceforge, or if available use the one that comes with your distribution.
+.PP
+There is a script in the scripts/ directory. This script is something that
+shows you a way it can be done. It also creates (under certain
+circumstances) videos that look quite good. Better videos you will only get by
+tuning the parameters.
+.PP
+If you use a Linux kernel from the 2.4 series you will usually have to load the drivers for the Buz or DC10 or LML33 cards. You have to run the update script providing as option the name of your card
+you have. The script is usually in /usr/src/driver-zoran/.
+The zoran kernel driver below the kernel 2.4.4 do not work.
+You have to use the driver available from:
+.PP
+In the 2.6. Linux kernel is the driver for the zoran cards included, you just need 
+to make sure that it is loaded correct. If you have a x64 machine and an kernel 
+that is newer than 2.6.30 we'd be happy to hear that you are able to record from 
+the zoran based card. I'm not soure if that combination works.
+.PP
+The driver for the Matrox Marvel card also works, more information about it:
+.PP
+If you compile the tools on a P6 based computer (PPro, P-II, P-III, P-4,
+Athlon,Duron) then never try to let them run on a P5 based computer
+(Pentium, Pentium-MMX, K6, K6-x, Cyrix, Via, Winchip). You'll get a 
+\(rqillegal instruction\(rq and the program won't work. That is the same for the newer CPU as well. If you use specific optimizations be aware of them. 
+.PP
+If lav2yuv dumps core then one possible cause is
+no dv support was included. To enable it make sure that libdv is installed
+on the system.  This will be necessary if you are using a digital camera 
+(or analog to DV converter such as the Canopus ADVC100 and converting the 
+dv avi format into the MPEG format.
+.PP
+Start xawtv to see if you get an picture. If you want to use HW-playback of
+the recorded streams you have to start xawtv (any TV application works) once
+to get the streams played back. You should also check the settings of your
+mixer in the sound card. If you use v4l2 you should give mplayer a try to watch the picture 
+.PP
+If you compile the tools on a platform other than Linux not all tools 
+will work.   Mjpegtools on a OS/X system for example will not have V4L
+(video4linux) capability.
+.PP
+Never try to stop or start the TV application when lavrec runs. If you start
+or stop the TV application lavrec will stop recording, or your computer could
+get \(rqfrozen\(rq\&. This is a problem of v4l (video4linux).
+.PP
+This problem is solved with v4l2. If you use v4l2 you can record the video and stop and start the tv application whenever you want.
+But v4l2 is currently (7. Jan. 2003) only supported for the zoran based cards (BUZ, DC10, DC10+, LML33) if you use the CVS driver from mjpeg.sf.net tagged with ZORAN_VIDEODEV_2.
+And this driver only works with the 2.4.20 kernel and the 2.5.* development kernel.
+.PP
+One last thing about the data you get before we start:
+.PP
+.DS
+.sp 
+.ft RR
+.nf
+Audio: ( Samplerate * Channels * Bitsize ) / (8 * 1024)
+CD Quality:(44100 Samples/sec * 2 Chanels * 16 Bit) / (8 * 1024)=172,2 kB/sec
+
+The 8 * 1024 convert the value from bit/sec to kByte/sec
+
+Video: (width * height * framerate * quality ) / (200 * 1024)
+PAL HALF Size : (352 * 288 * 25 * 80) / (200 * 1024) = 990 kB/sec
+PAL FULL size : (720 * 576 * 25 * 80) / (200 * 1024) = 4050 kB/sec
+NTSC HALF size: (352 * 240 * 30 * 80) / (200 * 1024) = 990 kB/sec
+NTSC FULL size: (720 * 480 * 30 * 80) / (200 * 1024) = 4050 kB/sec
+.DE
+.fi 
+.ec
+.ft P
+.sp
+.PP
+The 1024 converts the Bytes to kBytes. Not every card can record the size
+mentioned. The Buz and Marvel G400 for example can only record a size of 
+720x576 when using -d 1, the DC10 records a size of 384x288 when using -d 2.
+.PP
+When you add audio and video datarate this is what your hard disk has to be 
+able to write constantly streaming, else you will have lost frames.
+.PP
+If you want to play with the \fB--mjpeg-buffer-size\fP\&. Remember the value 
+should be at least big enough that one frame fits in it. The size of one frame 
+is: (width * height * quality ) / (200 * 1024) = kB 
+If the buffer is too small the rate calculation doesn't match any more and 
+buffer overflows can happen. The maximum value is 512kB.
+.PP
+How video works and the difference between the video types is explained here:
+.PP
+There you also find how to create MPEG Still Images for VCD/SVCD.
+.PP
+A good description of DV (Digital Video) can be found here:
+.PP
+.SH Some books we found usefull
+
+.PP
+written in English:
+.nr ll +1
+.nr t\n(ll 0
+.if \n(ll>1 .RS
+.nr bi 1
+.PP
+Digital Video and HDTV by Charles Poyton (ISBN 1-55860-792-7)
+.nr bi 1
+.PP
+Digital Video Compression by Peter Symes (ISBN 0-07-142487-3)
+.nr bi 1
+.PP
+Video Demystified by Keith Jack (ISBN 1-878707-56-6)
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+written in German:
+.nr ll +1
+.nr t\n(ll 0
+.if \n(ll>1 .RS
+.nr bi 1
+.PP
+Fernsehtechnik von Rudolf Maeusl (ISBN 3-7785-2374-0)
+.nr bi 1
+.PP
+Professionelle Videotechnik - analoge und digitale Grundlagen von
+U. Schmidt (ISBN 3-540-43974-9)
+.nr bi 1
+.PP
+Digitale Film- und Videotechnik von U. Schmidt (ISBN 3-446-21827-0)
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+If you know some other really good book about that, write us!
+.PP
+Recording videos
+
+.PP
+
+.SH lavrec examples
+
+.PP
+Recording with lavrec looks like this:
+.PP
+\fB> lavrec -f a -i P -d 2 record.avi\fP
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.IP ""
+.nr bi 1
+.PP
+Should start recording now,
+.IP "-f a"
+.nr bi 1
+.PP
+use AVI as output format,
+.IP "-i P"
+.nr bi 1
+.PP
+use as input source the SVHS-In with PAL format,
+.IP "-d 2"
+.nr bi 1
+.PP
+the size of the pictures are half size (352x288)
+.IP "record.avi"
+.nr bi 1
+.PP
+name of the created file.
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+Recording is finished by pressing Ctrl-C (on German Keyboards: Strg-C). 
+Sometimes using \fB-f A\fP instead of \fB-f a\fP might be necessary
+.PP
+Other example:
+.PP
+\fB> lavrec -f q -i n -d 1 -q 80 -s -l 80 -R l -U record.avi \fP
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.IP ""
+.nr bi 1
+.PP
+Should start recording now, 
+.IP "-f q"
+.nr bi 1
+.PP
+use Quicktime as output format, 
+.IP "-i n"
+.nr bi 1
+.PP
+use Composite-In with NTSC format, 
+.IP "-d 1"
+.nr bi 1
+.PP
+record pictures with full size (640x480) 
+.IP "-q 80"
+.nr bi 1
+.PP
+set the quality to 80% of the captured image 
+.IP "-s"
+.nr bi 1
+.PP
+use stereo mode (default mono) 
+.IP "-l 80"
+.nr bi 1
+.PP
+set the recording level to 80% of the max during recording 
+.IP "-R l"
+.nr bi 1
+.PP
+set the recording source to Line-In 
+.IP "-U"
+.nr bi 1
+.PP
+With this lavrec uses the read instead of mmap for recording this is needed if your sound card does not
+support the mmap for recording.
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+Setting the mixer does not work with every sound card.  If you record with 2
+different settings and both recordings are equally loud you should setup 
+the mixer with a mixer program.  After that you should use the 
+\fB-l -1\fP option when you record using lavrec
+.PP
+The size of the image depends on the card you use.  At full size (-d 1)
+you get these image sizes: BUZ and LML33: 720x576, the DC10 and DC30: 768x576
+.PP
+Other example:
+.PP
+\fB> lavrec -w -f a -i S -d 2 -l -1 record%02d.avi\fP
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.IP ""
+.nr bi 1
+.PP
+Should start recording,
+.IP "-w"
+.nr bi 1
+.PP
+Waits for user confirmation to start (press enter) 
+.IP "-f a"
+.nr bi 1
+.PP
+use AVI as output format, 
+.IP "-i S"
+.nr bi 1
+.PP
+use SECAM SVHS-Input (SECAM Composite recording is also possible: -i s)
+.IP "-d 2"
+.nr bi 1
+.PP
+the size of the pictures are half size
+.IP "-l -1"
+.nr bi 1
+.PP
+do not touch the mixer settings
+.IP "record%02d.avi"
+.nr bi 1
+.PP
+Here lavrec creates the first file named record00.avi after the file has reached a size of 1.6GB (after about 20 Minutes recording) it starts a new sequence named record01.avi and so on till the recording is stopped or the disk is full.
+With the release of the 1.9.0 Version mjpegtools is able to handle AVI files larger than 2GB. So that option is present for compatibility.
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+Other example:
+.PP
+\fB> lavrec -f a -i t -q 80 -d 2 -C europe-west:SE20 test.avi\fP
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.IP ""
+.nr bi 1
+.PP
+Should start recording now, 
+.IP "-f a"
+.nr bi 1
+.PP
+use AVI as output format, 
+.IP "-i t"
+.nr bi 1
+.PP
+use tuner input, 
+.IP "-q 80"
+.nr bi 1
+.PP
+set the quality to 80% of the captured image 
+.IP "-d 2"
+.nr bi 1
+.PP
+the size of the pictures are half size (352x288) 
+.IP "-C"
+.nr bi 1
+.PP
+choose TV channels, and the corresponding -it and -iT (video source:
+TV tuner) can currently be used on the Marvel G200/G400 and the Matrox
+Millenium G200/G400 with Rainbow Runner extension (BTTV-Support is under
+construction). For more information on how to make the TV tuner parts of these
+cards work, see the Marvel/Linux project on:
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+Last example:
+.PP
+\fB> lavrec -f a -i p -g 352x288 -q 80 -s -l 70 -R l --software-encoding
+test03.avi\fP
+.PP
+The two new options are \fB-g 352x288\fP, which sets the size of the
+video to be recorded when using \fB--software-encoding\fP, this enables
+the software encoding of the recorded images. With this option you can also
+record from a bttv based card. The processor load is high. This option only
+works for generic video4linux cards (such as the brooktree-848/878 based 
+cards), it doesn't work for zoran-based cards.
+.PP
+
+.SH Other recording hints
+
+.PP
+All lavtools accept a file description like file*.avi so you do not have
+to name each file but that is a posibility.
+.PP
+Note: More options are described in the man-page, but with this you should be able to get started.
+.PP
+Here are some hints for sensible settings. Turn the quality to 80%
+or more for -d 2 capture. At full resolution as low as 40% seems to
+be visually \(rqperfect\(rq\&. -d 2 is already better than VHS video
+(a *lot*!). For a Marvel you should not set the quality higher than 50 when
+you record at full size (-d 1). If you use higher settings (-q 60) it is
+more likely that you will encounter problems. Higher settings
+will result in framedrops. 
+If you're aiming to create VCD's then there is little to be gained
+recording at full resolution as you need to reduce to -d 2 resolution
+later anyway.
+.PP
+you can record at other sizes than the obvious -d 1/2/4. You can use 
+combinations where you use halve horizontal size and full vertical size: -d 21.
+This would record for NTSC at a size of 352x480. This helps if you want to
+create SVCDs, scaling the 352 Pixles put to 480 is not that visible for the eye
+as if you would use the other combination -d 12.  Where you have the full
+horzontal resolution and half vertical this Version will have a size of
+720x288 for NTSC
+.PP
+
+.SH Some information about the typical lavrec output while recording
+
+.PP
+0.06.14:22 int: 00040 lst:0 ins:0 del:0 ae:0 td1=0.014 td2=0.029
+.PP
+The first part shows the time lavrec is recording.
+\fBint:\fP the interval between two frames. \fBlst:\fP the number of
+lost frames. \fBins and del:\fP are the number of frames inserted and
+deleted for sync correction. \fBae:\fP number of audio errors.
+\fBtd1 and td2\fP are the audio/video time-difference.
+.PP
+.nr ll +1
+.nr t\n(ll 0
+.if \n(ll>1 .RS
+.nr bi 1
+.PP
+
+\fB(int) frame interval\fP should be around 33 (NTSC) or 40
+(PAL/SECAM). If it is very different, you'll likely get a bad recording
+and/or many lost frames
+.nr bi 1
+.PP
+
+\fB(lst) lost frames\fP are bad and mean that something is not working
+very well during recording (too slow HD, too high CPU usage, ...) Try
+recording with a greater decimation and possibly a lower quality.
+.nr bi 1
+.PP
+
+\fB(ins, del) inserted OR deleted frames\fP of them are normal \(->
+sync. If you have many lost AND inserted frames, you're asking too much
+of your machine.  Use less demanding options or try
+a different sound card.
+.nr bi 1
+.PP
+
+\fB(ae) audio errors\fP are never good. Should be 0
+.nr bi 1
+.PP
+
+\fB(td1, td2) time difference\fPis always floating around 0, unless
+sync correction is disabled (--synchronization!=2, 2 is default).
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+.SH Notes about \(rqinterlace field order - what can go wrong and how to fix it\(rq
+
+.PP
+Firstly, what does it mean for interlace field order to be wrong?
+.PP
+The mjpegtools image processing chain is frame-oriented. Since it
+is video material that is captured each frame comprised of a top field (the
+0th, 2nd, 4th and so lines) and a bottom field (the 1st, 3rd, 5th and so
+on lines).
+.PP
+There are three bad things that can happen with fields
+
+.PP
+.nr ll +1
+.nr el +1
+.nr t\n(ll 1
+.nr e\n(el 0 1
+.af e\n(el \*(f\n(el
+.if \n(ll>1 .RS
+.nr bi 1
+.PP
+
+This is really only an issue for movies in PAL video where each film
+frame is sent as a pair of fields. These can be sent top or bottom field
+first and sadly it's not always the same, though bottom-first appears to be
+usual. If you capture with the wrong field order (you start capturing
+each frame with a bottom rather than a top or vice versa) the frames of the
+movie get split *between* frames in the stream. Played back on a
+TV where each field is displayed on its own this is harmless. The sequence
+of fields played back is exactly the same as the sequence of fields
+broadcast. Unfortunately, playing back on a Computer monitor where both
+fields of a frame appear at once it looks *terrible* because each
+frame is effectively mixing two moments 1/25sec apart in time.
+.nr bi 1
+.PP
+
+The two fields can simply be swapped somehow so that top gets treat
+as bottom and bottom treat as top. Juddering and \(rqslicing\(rq is the
+result. This occasionally seems to happen due to hardware glitches in the
+capture card.
+.nr bi 1
+.PP
+
+Somewhere in capturing/processing the *order* in time of the two
+fields in each frame can get mislabeled somehow. This is not good as it
+means that when playback eventually takes place a field containing an
+image sampled earlier in time comes after an image sampled later.
+Weird \(rqjuddering\(rq effects are the results.
+.if \n(ll>1 .RE
+.nr el -1
+.nr ll -1
+.PP
+How can I recognize if I have one of these Problems ? 
+
+.PP
+.nr ll +1
+.nr el +1
+.nr t\n(ll 1
+.nr e\n(el 0 1
+.af e\n(el \*(f\n(el
+.if \n(ll>1 .RS
+.nr bi 1
+.PP
+This can be hard to spot. If you have mysteriously flickery pictures
+during playback try encoding a snippet with the reverse field-order
+forced (see below). If things improve you know what the
+problem was and what the solution is! 
+.nr bi 1
+.PP
+The two fields can simply be swapped somehow so that top gets treat
+as bottom and bottom treat as top. Juddering and \(rqslicing\(rq is
+the result. This occasionally seems to happen due to hardware glitches in
+the capture card. That problem looks like that:
+
+.PP
+Interlacing problem
+.PP
+.nr bi 1
+.PP
+Somewhere in capturing/processing the *order* in time of the two
+fields in each frame can get mislabeled somehow. This is not good as it
+means that when playback eventually takes place a field containing an image
+sampled earlier in time comes after an image sampled later. Weird 
+\(rqjuddering\(rq effects are the result.
+.if \n(ll>1 .RE
+.nr el -1
+.nr ll -1
+.PP
+If you use glav or lavplay be sure that you also use the \fB-F/--flicker\fP
+option. This disables some things that improve the picture.
+.PP
+If you want to look at the video you can also use yuvplay:
+.PP
+\fB> lav2yuv \(br ... \(br yuvplay\fP
+.PP
+If there is a field order problem you should see it with yuvplay.
+.PP
+How can you fix it? 
+
+.PP
+.nr ll +1
+.nr el +1
+.nr t\n(ll 1
+.nr e\n(el 0 1
+.af e\n(el \*(f\n(el
+.if \n(ll>1 .RS
+.nr bi 1
+.PP
+To fix this one the fields need to be \(rqshifted\(rq through
+the frames. Use yuvcorrect's \fB-T BOTT_FORWARD/TOP_FORWARD\fP to
+shift the way fields are allocated to frames. You can find out the current
+field order for an MJPEG file by looking at the first few lines of debug
+output from: \fB> lav2yuv -v 2 the_mjpeg_file > /dev/null\fP 
+Or re-record exchanging \fB-f a\fP for \fB-F A\fP or vice-versa. 
+.nr bi 1
+.PP
+This isn't too bad either. Use a tool that simply swaps the top
+and bottom fields a second time. yuvcorrect can do this use the
+\fB-T LINE_SWITCH\fP\&. 
+.nr bi 1
+.PP
+Is easy to fix. Either tell a tool someplace to relabel the fields or
+simply tell the player to play back in swapped order (the latter can be done
+\(rqindirectly\(rq by telling mpeg2enc when encoding to \fBreverse the
+flag (-z b\(brt)\fP that tells the decoder which field order to use. 
+.if \n(ll>1 .RE
+.nr el -1
+.nr ll -1
+.PP
+\fBIn order to determine exactly what type of interlacing problem you
+have, you need to extract some frames from the recorded stream and take a
+look at them:\fP
+.PP
+.DS
+.sp 
+.ft RR
+.nf
+> mkdir pnm 
+> lav2yuv -f 40 video.avi \(br y4mtoppm \(br pnmsplit - pnm/image%d.pnm 
+> rm pnm/image?.pnm 
+> cd pnm 
+> xv 
+.DE
+.fi 
+.ec
+.ft P
+.sp
+.PP
+First we create a directory where we store the images. The lav2yuv -f 40
+writes only the first 40 frames to stdout. The program y4mtoppm converts
+the frames to pnm images and the pnmsplit splits the picture into two
+frames in the picture to two single pictures. Then we remove the first 10
+images because pnmsplit does not support the %0xd numbering. Without
+a leading zero in the number, the files will be sorted in the wrong order,
+leading to confusing playback.
+.PP
+Use your favorite graphic program (xv for example) to view the pictures. As
+each picture only contain one field out of two they will appear scaled
+vertically. If you look at the pictures you should see the movie slowly
+advancing.
+.PP
+If you have a film you should always see 2 pictures that are nearly the same
+(because the film frame is split into two field for broadcasting) after each 
+other.
+You can observe this easily if you have comb effects when
+you pause the film because both fields will be displayed at the same time. The
+two pictures that belong together should have an even number and the following
+odd number. So if you take a look on pictures: 4 and 5 are nearly identical,
+5 and 6 differ (have movement), 6 and 7 identical, 7 and 8 differ , ....
+.PP
+To fix this problem you have to use yuvcorrect's \fB-T BOTT_FORWARD or
+TOP_FORWARD\fP\&. You can also have the problem that the field order
+(top/bottom) is still wrong. You may have to use yuvcorrect a second time
+with \fB-M LINE_SWITCH\fP, or use the mpeg2enc \fB-z (b\(brt)\fP option.
+.PP
+To see if you guessed correctly extract the frames again and reorder them
+using yuvcorrect:
+.PP
+\fB> lav2yuv -f 40 video.avi \(br yuvcorrect -T OPTION \(br y4mtoppm \(br pnmsplit - pnm/image%d.pnm \fP
+.PP
+Where \(rqOPTION\(rq is what you think will correct the problem.
+This is for material converted from film. Material produced directly for TV
+is addressed below.
+.PP
+Hey, what about NTSC movies ?
+
+.PP
+Movies are broadcast in NTSC using \(rq3:2\(rq pulldown which means
+that half the capture frames contain fields from 1 movie frame and half
+fields from 2 frames. To undo this effect for efficient MPEG encoding you
+need to use yuvkineco. 
+.PP
+If you have an interlaced source like a TV camera you have a frame consists
+of two fields that are recorded at different points in time.
+Spotting the problem here is harder. You need to find something
+moving horizontally from the left to the right. When you extract the fields,
+the thing should move in small steps from the left to the right, not one
+large step forward, small step back, large forward, small back......
+You have to use the same options mentioned aboth to correct the problem.
+.PP
+Do not expect that the field order is always the same (top- or bottom-first)
+It may change between the channels, between the films, and it may even change
+within a film. If it changes constant you may have to encode with the mpeg2enc
+-I 1 or even -I 2.
+.PP
+You can only have this problems if you record at full size !!! 
+.PP
+Creating videos from other sources
+
+.PP
+Here are some hints and descriptions of how to create the videos from other
+sources like images and other video types.
+.PP
+You might also be interested in taking a look at the
+\fBTranscoding of existing MPEG-2\fP section.
+.PP
+.SH Creating videos from images
+
+.PP
+You can use jpeg2yuv to create a yuv stream from separate JPEG images. This
+stream is sent to stdout, so that it can either be saved into a file,
+encoded directly to a mpeg video using mpeg2enc or used for anything else.
+.PP
+Saving an yuv stream can be done like this:
+.PP
+\fB> jpeg2yuv -f 25 -I p -j image%05d.jpg > result.yuv\fP
+.PP
+Creates the file result.yuv containing the yuv video data with 25 FPS. The
+-f option is used to set the frame rate. Note that image%05d.jpg
+means that the jpeg files are named image00000.jpg, image00001.jpg and so
+on. (05 means five digits, 04 means four digits, etc.) The -I p is needed
+for specifing the interlacing. You have to check which type you have.
+If you don't have interlacing just choose p for progressive
+.PP
+If you want to encode a mpeg video directly from jpeg images without saving
+a separate video file type:
+.PP
+\fB> jpeg2yuv -f 25 -I p -j image%05d.jpg \(br mpeg2enc -o mpegfile.m1v\fP
+.PP
+Does the same as above but saves a mpeg video rather than a yuv video. See
+mpeg2enc section for details on how to use mpeg2enc.
+.PP
+You can also use yuvscaler between jpeg2yuv and mpeg2enc. If you want to
+create a SVCD from your source images:
+.PP
+\fB> jpeg2yuv -f 25 -I p -j image%05d.jpg \(br yuvscaler -O SVCD
+\(br  mpeg2enc -f 4 -o video.m2v\fP
+.PP
+You can use the -b option to set the number of the image to start with. The
+number of images to be processed can be specified with the -n number. For
+example, if your first image is image01.jpg rather than image00.jpg and 
+you only want 60 images to be processed type:
+.PP
+\fB>jpeg2yuv -b 1 -f 25 -I p -n 60 -j image*.jpg \(br yuv2lav -o stream_without_sound.avi\fP
+.PP
+Adding the sound to the stream then:
+.PP
+\fB> lavaddwav stream_without_sound.avi sound.wav stream_with_sound.avi\fP
+.PP
+For ppm input there is the ppmtoy4m util. There is a manpage for ppmtoy4m that
+should be consulted for additional information.
+.PP
+To create a mpeg video try this:
+.PP
+\fB>cat *.ppm \(br ppmtoy4m -o 75 -n 60 -F 25:1 \(br mpeg2enc -o output.m1v\fP
+.PP
+cat each *.ppm file to ppmtoy4m. There the first 75 frames (pictures) are
+ignored and next 60 are encoded by mpeg2enc to output.m1v. You can run it
+without the -o and -n option. The -F  options sets the frame rate, default
+is NTSC (30000:1001), for PAL you have to use -F 25:1.
+.PP
+Other picture formats can also be used if there is a converter to ppm.
+.PP
+\fB>ls *.tga \(br xargs -n1 tgatoppm \(br ppmtoy4m \(br yuvplay\fP
+.PP
+A list of filenames (ls *.tga) is given to xargs that executes the tgatoppm 
+with one (-n 1) argument per call, and feeds the output into ppmtoy4m.
+This time the video is only shown on the screen. The xargs is only needed
+if the converter (tgatoppm) can only operate on a single image at a time.
+.PP
+If you want to use the ImageMagick 'convert' tool (a Swiss Army Knife) try:
+.PP
+\fB>convert *.gif ppm:- \(br ppmtoy4m \(br yuvplay\fP
+.PP
+That means take all '.jpg' images in directory, convert to PPM format,
+pipe to stdout, then to ppmtoy4m for conversion to y4m ....
+.PP
+.SH Decoding streams with mplayer 
+
+.PP
+Decoding the streams with mplayer is a nice way of bringing every video
+that mplayer can play back to something you can edit or encode to 
+mpeg with mjpegtools. This method has been tested with mplayer 
+1.0rc2 and should work with newer versions
+.PP
+\fB>mkfifo stream.yuv\fP
+.PP
+\fB>cat stream.yuv \(br yuv2lav -o mjpeg_wo.avi &\fP
+.PP
+\fB>mplayer -nosound -noframedrop -vo yuv4mpeg anyfile.mpg\fP
+.PP
+\fB>mplayer -vo null -ao pcm:file=anyfile.wav anyfile.mpg\fP
+.PP
+Now you have an example of a mjpeg encoded AVI without sound. The 
+sound will be in anyfile.wav. You can choose if you want to add the sound 
+to the AVI with \fBlavaddwav\fP and edit the file before encoding.
+.PP
+You can also use instead of yuv2lav, mpeg2enc or any other tool from the 
+mjpeg tools so your command might also look like that:
+.PP
+\fB> cat stream.yuv \(br yuvdenoise \(br yuvscaler -O SVCD \(br mpeg2enc -f 4 -o video_svcd.m2v\fP
+.PP
+cat the wav file into \fBmp2enc\fP to encode it to MP2 audio. The 
+\fB-vo yuv4mpeg\fP option works well with other input types mentioned in
+the mplayer documentation. 
+.SH Decoding MPEG-2 streams with mpeg2dec
+
+.PP
+You can decode mpeg2 streams with the patched mpeg2dec version which 
+creates yuv streams. You can pipe that into any other mjpegtools program. 
+Or you use a mpeg2dec version directly from the libmpeg2  project and use 
+the output mode pgmpipe. With the \fBpgmtoy4m\fP program
+you can convert that pgm output back to yuv.
+.PP
+If you ask yourself why there is a patched version and pgmtoy4m.
+The answer is that the patch for yuv output was sent several
+times to the libmpeg2 developers but was never included.
+Now we have two ways around that problem. Decoding looks like this:
+.PP
+\fB> mpeg2dec -s -o pgmpipe ANYTS.VOB \(br pgmtoy4m -i t -a 10:11 -r 30000:1001 \(br mpeg2enc -f 8 newvideo.m2v\fP
+.PP
+You can decode the audio as described in the 
+\fBTranscoding of existing MPEG-2\fP Section.
+.PP
+.SH Other things to know
+
+.PP
+If you have Transport streams from your DVB card, or Satelite Receiver
+you might want to demultiplex or cut them. A nice tool for that is 
+\fBProject X\fP available from: 
+.PP
+You can process the streams afterwards as you would do with any mpeg movie
+or demultiplexed audio video. So the \fBTranscoding of existing MPEG-2\fP
+section of this document will be of interest.Checking if recording was successful
+
+.PP
+You can use lavplay or glav. \fBIMPORTANT: NEVER\fP try to run xawtv
+and lavplay or glav with hardware playback, it will not work. For
+software playback it works fine.
+.PP
+\fB>lavplay -p S record.avi\fP
+.PP
+You should see the recorded video and hear the sound. But the decoding
+of the video is done by the CPU which will place a heavy load on the system.
+The advantage of this method is you don't need xawtv.
+.PP
+The better way:
+.PP
+\fB>lavplay -p H record.avi\fP
+.PP
+The video is decoded and played by the hardware. The system load is very low.
+This will play it back on-screen using the hardware rather than
+software decoding.
+.PP
+You might also try:
+.PP
+\fB> lavply -p C record.avi\fP
+.PP
+Which will play it back using the hardware but to the video output of
+the card.
+.PP
+\fB> glav record.avi\fP
+.PP
+Does the same as lavplay but you have an nice GUI. The options for
+glav and lavplay are nearly the same. Using no option SW playback is used.
+.PP
+Using hardware playback a signal for the Composite and SVHS OUT is
+generated so you can view the movie on your TV.
+.PP
+\fB> lav2yuv test.eli \(br yuvplay\fP
+.PP
+Is a other way to get the video without sound. You can use yuvplay
+once in the encoding command. When you use yuvplay in the encoding
+command you see the changes made by filters and scaling. You can also
+use it for slow-motion debugging.
+.PP
+\fBNOTE:\fP After loading the driver's you have to start xawtv to
+set up some things lavplay and glav do not, but they are needed for
+HW-Playback. Don't forget to close xawtv !!
+.PP
+\fBNOTE2:\fP Do not try to send glav an lavplay into background, wont work
+correct !!!
+.PP
+\fBNOTE3:\fP SECAM playback is now (12.3.2001) only in monochrome but the
+recording and encoding is done right.
+.PP
+\fBNOTE4:\fPBad cables may reduce the quality of the image. Normally
+you can't see this but when there is text you might notice a small
+shadow. When you see this you should change the cable.
+.PP
+\fBComing soon:\fP There is a tool which makes recoding videos very simple:
+Linux Studio. You can download it at:
+.PP
+Edit the video
+
+.PP
+.SH Edit with glav
+
+.PP
+Most tasks can be easily done by glav. Like deleting parts of the video,
+cut paste and copy parts of the videos.
+.PP
+glav button description
+.PP
+The modifications should be saved because glav does not destructively edit
+the video. This means that the original video is left untouched
+and the modifications are kept in an extra \(rqEdit List\(rq file
+readable with a text editor. These files can be used as an input to the other
+lavtools programs such as lav2wav, lav2yuv, lavtrans.
+.PP
+If you want to cut off the beginning and the end of the stream mark the
+beginning and the and, and use the \(rqsave select\(rq button. The
+edit list file is than used as input for the lavtools. If you want to split
+a recorded video to some smaller parts simply select the parts and 
+then save each part to a different listfile.
+.PP
+You can see all changes to the video and sound NOW and you do not need to
+recalculate anything.
+.PP
+If you want to get a \&"destructive\&" version of your edited video use:
+.PP
+\fB> lavtrans -o short_version.avi -f a editlist.eli\fP
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.IP "-o"
+.nr bi 1
+.PP
+specifies the output name
+.IP "-f a"
+.nr bi 1
+.PP
+specifies the output format (AVI for example)
+.IP "editlist.eli"
+.nr bi 1
+.PP
+is the list file where the modifications are described.
+You generate the list file with the \&"save all\&" or \(rqsave select\(rq
+buttons in glav.
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+
+.SH Unify videos
+
+.PP
+\fB> lavtrans -o stream.qt -f q record_1.avi record_2.avi ... record_n.avi\fP
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.IP "-o"
+.nr bi 1
+.PP
+specifies the outputfile name
+.IP "-f q"
+.nr bi 1
+.PP
+specifies the output format, quicktime in this case
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+This is usually not needed. Keep in your mind that there is a 2GB
+file-size-limit on 32Bit systems with an older glibc. Usually not a problem these days
+.PP
+
+.SH Separate sound
+
+.PP
+\fB> lavtrans -o sound.wav -f w stream.avi\fP
+.PP
+Creates a wav file with the sound of the stream.avi
+Maybe needed if you want to remove noise or if you want
+to convert it to another sound format.
+.PP
+Another way to split the sound is:
+.PP
+\fB> lav2wav editlist.eli >sound.wav\fP
+.PP
+
+.SH Separate images
+
+.PP
+\fB>mkdir jpg; lavtrans -o jpg/image%05d.jpg -f i stream.avi\fP
+.PP
+First create the directory \(rqjpg\(rq\&. Then lavtrans will create
+single JPG images in the jpg directory from the stream.avi file. The
+files will be named: image00000.jpg, image00001.jpg ....
+.PP
+The jpg images created contain the whole picture. But if you have recorded 
+at full size the images are stored interlaced. Usually the picture viewers
+show only the first field in the jpg file.
+.PP
+
+.PP
+If you want to have the image in a single file you can use that version
+.PP
+\fB> lav2yuv -f 1 stream.avi \(br y4mtoppm -L >file.pnm\fP
+.PP
+If you want to split the fields into single files use that:
+.PP
+\fB>  lav2yuv -f 5 ../stream.avi \(br y4mtoppm \(br
+pnmsplit - image%d.pnm\fP
+.PP
+Maybe interesting if you need sample images and do not want to play
+around with grabbing a single image.
+.PP
+
+.SH Creating movie transitions
+
+.PP
+Thanks to Philipp Zabel's lavpipe we can now make simple transitions
+between movies or combine multiple layers of movies.
+.PP
+Philipp wrote this HOWTO on how to make transitions:
+.PP
+Let's assume simple this scene: We have two input videos intro.avi
+and epilogue.mov and want to make intro.avi transition into epilogue.mov with a
+duration of one second (that is 25 frames for PAL or 30 frames for NTSC).
+.PP
+Intro.avi and epiloque.mov have to be of the same format (the same
+frame rate and resolution). In this example they
+are both 352x288 PAL files. intro.avi contains 250 frames and
+epilogue.mov is 1000 frames long.
+.PP
+Therefore our output file will contain: 
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.IP ""
+.nr bi 1
+.PP
+the first 225 frames of intro.avi
+.IP ""
+.nr bi 1
+.PP
+a 25 frame transition containing the last 25 frames of intro.avi and
+the first 25 frames of epilogue.mov
+.IP ""
+.nr bi 1
+.PP
+the last 975 frames of epilogue.mov
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+We could get the last 25 frames of intro.avi by calling:
+.PP
+\fB>lav2yuv -o 225 -f 25 intro.avi\fP
+.PP
+\fB-o 255\fP, the offset, tells lav2yuv to begin with frame # 225 and
+\fB -f 25\fP makes it output 25 frames from there on.
+.PP
+Another possibility (because negative offsets are counted from the end)is:
+.PP
+\fB> lav2yuv -o -25 intro.avi\fP
+.PP
+And the first 25 frames of epilogue.mov:
+.PP
+\fB> lav2yuv -f 25 epilogue.mov\fP
+.PP
+\fB-o\fP defaults to an offset of zero
+.PP
+But we need to combine the two streams with lavpipe. So the call would be:
+.PP
+\fB> lavpipe \(rqlav2yuv -o 255 -f 25 intro.avi\(rq \(rqlav2yuv -f 25 epilogue.mov\(rq \fP
+.PP
+The output of this is a raw yuv stream that can be fed into 
+transist.flt.
+.PP
+transist.flt needs to be informed about the duration of the transition and
+the opacity of the second stream at the beginning and at the end of the
+transition:
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.IP "-o num"
+.nr bi 1
+.PP
+opacity of second input at the beginning [0-255]
+.IP "-O num"
+.nr bi 1
+.PP
+opacity of second input at the end [0-255]
+.IP "-d num"
+.nr bi 1
+.PP
+duration of transition in frames
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+An opacity of 0 means that the second stream is fully transparent
+(only stream one visible), at 255 stream two is fully opaque.
+.PP
+In our case the correct call (transition from stream 1 to stream 2)
+would be:
+.PP
+\fB> transist.flt -o 0 -O 255 -d 25\fP
+.PP
+The -s and -n parameters equate to the -o and -f parameters of lav2yuv
+and are only needed if anybody wants to render only a portion of the  
+transition for whatever reason. Please note that this only affects the
+weighting calculations - none of the input is really skipped.  If you
+use the skip parameter (-s 30, for example) you also need to skip the first
+30 frames in lav2yuv (-o 30) in order to get the expected result. If you
+didn't understand this send an email to the authors or simply ignore
+-s and -n. The whole procedure will eventually be automated.
+.PP
+Now we want to compress the yuv stream with yuv2lav:
+.PP
+\fB> yuv2lav -f a -q 80 -o transition.avi\fP
+.PP
+Reads the yuv stream from stdin and outputs an avi file (-f a) with
+compressed jpeg frames of quality 80.
+.PP
+Now we have the whole command for creating a transition:
+.PP
+\fB> ypipe \(rqlav2yuv -o 255 -f 25 intro.avi\(rq \(rqlav2yuv
+-f 25 epilogue.mov\(rq \(br transist.flt -o 0 -O 255 -d 25 \(br yuv2lav -f a -q 80 -o transition.avi\fP
+.PP
+The resulting video can be written as a LAV Edit List (a plain text file)
+containing the following lines:
+.PP
+.DS
+.sp 
+.ft RR
+.nf
+LAV Edit List
+PAL
+3
+intro.avi
+transition.avi
+epilogue.mov
+0 0 224
+1 0 24
+2 25 999
+.DE
+.fi 
+.ec
+.ft P
+.sp
+.PP
+This file can be fed into glav or lavplay, or you can pipe it into 
+mpeg2enc with lav2yuv or combine the whole stuff into one single mjpeg
+file with lavtrans or lav2yuv\(bryuv2lav.
+.PP
+Converting the stream to MPEG or DIVx videos
+
+.PP
+First there is some general description in the encoding process and afterwards
+there is a detailed description of some commonly used output formats. 
+.PP
+If you want a one command conversation to mpeg videos try lav2mpeg in
+the scripts directory
+.PP
+The encoding with the lav2mpeg script looks like this for mpeg1 output:
+.PP
+\fB>lav2mpeg -a 160 -b 2110 -d 320x240 -m mpeg1 -o output.mpg file.eli\fP
+.PP
+.nr ll +1
+.nr t\n(ll 0
+.if \n(ll>1 .RS
+.nr bi 1
+.PP
+Will create a mpeg1 with videobitrate of 2110kBit/sec and audiobitrate of 
+160 kBit/sec
+.nr bi 1
+.PP
+at a resolution of 320x240
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+Or for the generation of mpeg2 output:
+.PP
+\fBlav2mpeg -o mpeg2 -O output.mpg file.eli\fP
+.PP
+.nr ll +1
+.nr t\n(ll 0
+.if \n(ll>1 .RS
+.nr bi 1
+.PP
+Will create a mpeg2 with default bitrate in same resolution as the input
+resolution
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+Better results can be accomplished, however, by trying various options
+and find out which ones work best for you. These are discussed below.
+.PP
+The creation of MPEG-1 movies is explained with more examples and in
+greater detail because most of the things that can be used for MPEG-1 also work 
+for the other output formats
+.PP
+For the creation of of VCD/SVCD Stills sequences (-f 6 / -f 7 in mpeg2enc) you
+should see:
+
+Still sequences are needed for the creation of menus in VCD/SVCD. The
+creation of menus is described in the doku of vcdimager.
+.PP
+.SH Creating sound
+
+.PP
+MPEG-1 videos need MPEG-1-Layer2 (MP2) sound files. For MPEG-2 videos you can
+use MPEG-1-Layer2 and MPEG1-Layer3 (MP3). MP3 audio is not an
+offically valid audio format but many VCD players will recognize it.   MP3
+audio is not valid for DVDs.
+You should stick to MP2 because many of the MPEG-2 players
+(DVD Player for example, usually the Windows Versions have
+great problems with this too) are not able to play MPEG2-Video and MP3 sound.
+.PP
+mp2enc is a MP2 Audio encoder. The toolame encoder is also able
+to produce an MP2 file. Toolame is much
+faster than mp2enc but toolame does not peform resampling (48000 to 44100
+samples/second).  Many hardware players will play SVCDs using 48000 rate
+audio.  For MP3 creation I'm be sure you have an encoder.
+.PP
+Example:
+.PP
+\fB> lav2wav stream.avi \(br mp2enc -o sound.mp2\fP
+.PP
+This creates a mpeg sound file out of the stream.avi with 224kBit/sec
+bitrate and a sample rate of 48kHz. If you audio file has 44.1kHz mp2enc
+resamples the audio to create a 48kHz output. If you want a 44.1kHz 
+output sample rate you have to add -r 44100 to the mp2enc command
+.PP
+Example
+.PP
+\fB> cat sound.wav \(br mp2enc -v 2 -V -o sound.mp2\fP
+.PP
+This creates a VCD (-V bitrate=224, stereo, sampling rate:44100)
+compatible output from the wav file.
+.PP
+With -v 2 mp2enc is more verbose, while encoding you see the number of sec of
+audio already encoded.
+.PP
+You can test the output with:
+.PP
+\fB> plaympeg sound.mp2\fP
+.PP
+\fBNOTE:\fP plaympeg is a MPEG-1 Player for Linux, you can use other players
+as wellr. For audio testing you can also use mpg123. For both audio and video 
+playing there are the universal player like VLC mplayer and others.
+.PP
+.SH Converting video
+
+.PP
+Creating MPEG-1 and MPEG-2 videos.
+.PP
+Normally the first video you create is not the best. For optimal
+quality/size you need to play with the bitrate, search radius, noise
+filter .... The options of mpeg2enc are described in the manpage of
+mpeg2enc.
+.PP
+Example:
+.PP
+\fBlav2yuv stream.avi stream1.avi \(br mpeg2enc -o video.m1v\fP
+.PP
+This creates an video file with the default constant bitrate of 1152kBit/sec.
+This is the bitrate you need if you want to create VCDs. You can specify more
+files and also use the placeholder %nd. Where \fBn\fP describes
+the number. By default mpeg2enc assumes that you want to encode a not interlaced video to Mpeg-1. If you want to encode a full size video with interlacing that command above will fail.
+.PP
+Example:
+.PP
+\fB> lav2yuv streami%02d.avi \(br mpeg2enc -b 1500 -r 16 -o video.m1v\fP
+.PP
+mpeg2enc creates a video with a bitrate of 1500kBit/s uses
+an search radius of 16. That means when trying to find similar 16*16
+macroblocks of pixels between frames the encoder looks up to 16
+pixels away from the current position of each block. It looks twice as
+far when comparing frames 1 frame apart and so on. Reasonable values
+are 16 or 24. The default is 16 so adding the option here is useless.
+Lower values (0, 8), improve the encoding speed but you get lower
+quality (more visible artifacts) while higher values (24, 32) improve the
+quality at the cost of the speed. With the file description of
+stream%02d.avi all files are processed that match this pattern
+with 00, 01....
+.PP
+Scaling
+
+.PP
+Using yuvscaler one can now also scale the video before encoding it.
+This can be useful for users with a DC10 or DC10+ cards which captures
+at -d 1 768x576 or -d 2 384x288 (PAL/SECAM) or -d 1 640x480 (NTSC).
+.PP
+You get a full description of all commands by reading the manpage or running:
+.PP
+\fB>yuvscaler -h\fP
+.PP
+Example:
+.PP
+\fB> lav2yuv stream.avi \(br yuvscaler -O VCD \(br mpeg2enc -o video.m1v\fP
+.PP
+This will scale the stream to VCD size which for PAL/SECAM is 352x288 and
+for NTSC is 352x240. The scaled yuvstream is encoded to MPEG-1.
+.PP
+It can also do SVCD scaling to 480x480 (NTSC) or 480x576 (PAL/SECAM):
+.PP
+\fB> lav2yuv stream.avi \(br
+yuvscaler -O SVCD -M BICUBIC \(br mpeg2enc -o video.m1v\fP
+.PP
+The mode keyword (-M) forces yuvscaler to use the higher quality
+bicubic algorithms for downscaling and not the default resample
+algorithms. Upscaling is always done using the bicubic algorithm.
+.PP
+Example:
+.PP
+\fB> lav2yuv stream.avi \(br yuvscaler -I USE_450x340+20+30
+-O SIZE_320x200 \(br mpeg2enc -o video.m1v \fP
+.PP
+Here we only use a part of the input and specify a nonstandard output 
+resolution.
+.PP
+\fBNOTE:\fP yuvscaler can set a active area, and set everything else to
+black using: -I ACTIVE_WidthxHeight+WidthOffset+HeightOffset High quality scaling: y4mscaler
+
+.PP
+y4mscaler has been arround for quite some time. But it was for a quite long time a extra tool you needed to compile. There is a comprehensive manpage explaining all the details, there also a lot fo helpful information on the website: 
+
+One unique feature is that is it able to change the subsampling, and Choma Modes. And you can choose the scaler kernels, depending on the source that can help a lot. 
+.PP
+Example:
+.PP
+\fB> cat raw.yuv \(br y4mscaler -O infer=CLIP -O preset=DVD -O sar=PAL_Wide
+\(br mpeg2enc video.m1v \fP
+.PP
+In this example y4mscaler will take the input stream and scale it to the coresponding PAL size. The sar option tell to scale is to a wide format (16:9). 
+The \fBinfer=clip\fP option will tells y4mscaler that it can clip the top and bottom bars away to scale it to the resulting size.
+.PP
+Example:
+.PP
+\fB> mpeg2dec -o pgmpipe deluxe.m2v \(br  pgmtoy4m -x 420jpeg -r 25:1 -i t \(br y4mscaler -I sar=64:36 -I active=344x476+100+48 -O preset=DVD \(br mpeg2enc -f 8 video.m1v \fP
+.PP
+This is a more the job for y4mscaler. 
+We have a weird PAL MPEG source format with 544x576 pixels in a wide screen 16:9 format, that makes black bars all around the original 4:3 image. 
+This command scales the image up to a original 4:3 size, and takes just the interesting center. 
+The SAR is the sample aspect ratio get lost somewhere so we specify it in the beginning.
+So it is specified again, than you tell y4mscaller the active size of the picture it shall use to scale up. The active keyword is treated different in y4mscaler and yuvscaler. 
+The DVD is a preset for the output format you want. From the stream parameters y4mscaler knows that it is a PAL stream and the output parameters. If you wanted a 16:9 output you would have to use the keyword: DVD_WIDE. 
+.PP
+Testing is done by:
+.PP
+\fB> mplayer video.m1v\fP
+.PP
+\fBNOTE:\fPThese are only examples. There are more options you can use. You
+can use most of them together to create high quality videos with the
+lowest possible bitrate.
+.PP
+\fBNOTE2:\fPThe higher you set the search radius the longer the conversion
+will take. In general the more options used the longer encoding takes.
+.PP
+\fBNOTE3:\fPMPEG-1 was not designed to be a VBR (variable bitrate stream) !!
+So if you encode with -q 15 mpeg2enc sets the maximal bitrate -b to
+1152. If you want a VBR MPEG-1 you have to set -b very high (2500).
+.PP
+\fBNOTE4:\fPMaybe you should give better names than video.mpg. A good idea
+is to use the options as part of the filename
+(for example: \fBvideo_b1500_r16_41_21.m1v\fP).
+Another possibility is to call all the layer 2 audio files \(rq\&.mp2\(rq all the
+MPEG-1 video files \(rq\&.m1v\(rq and all MPEG-2 video files 
+\(rq\&.m2v\(rq Easy to see what's happening then. Reserve .mpg for
+multiplexed MPEG-1/2 streams.
+.PP
+.SH Putting the streams together
+
+.PP
+Example:
+.PP
+\fB> mplex sound.mp2 video.m1v -o my_video.m1v\fP
+.PP
+Puts the sound.mp2 and the video.m1v stream together to my_video.mpg
+.PP
+Now you can use your preferred MPEG player and watch it. All players (gtv for
+example) based on the SMPEG library work well for MPEG-1. Other players 
+(which can play MPEG-2 as well as MPEG-1 movies) are: xmovie, xine, and 
+MPlayer VLC, to name some.
+.PP
+\fBNOTE:\fP If you have specified the \fB-S\fP option for mpeg2enc
+mplex will automatically split the files if there is in the output filename
+a %d (looks like: -o test%d.mpg) The files generated this way
+are separate stand-alone MPEG steams!
+.PP
+\fBNOTE2:\fP xine might have a problem with seeking through videos.
+mplayer has a problem with the \(rqseek backward/forward\(rq with 
+variable bitrate streams because it goes forward in the file the amount of
+data for a constant bitrate stream. That amount might be significantly more
+than 10 seconds or one minute (those are the amount mplayer seeks for each
+press of the arrow keys). So don't wonder if it seeks much more time
+forward or backward than you expect.
+.PP
+\fBVariable bit-rate multiplexing:\fP
+Remember to tell mplex you're encoding VBR (-V option) as well as
+mpeg2enc (see the example scripts). It *could* auto-detect but it is not
+working yet. You should tell mplex a video buffer size at least as large
+as the one you specified to \(rqmpeg2enc\(rq Sensible numbers for
+MPEG-1 might be a ceiling bit-rate of 2800Kbps, a quality ceiling
+(quantization floor) of 6 and a buffer size of 400K.
+.PP
+Example:
+.PP
+\fB> mplex -V -r 1740 audio.mp2 video_vbr.m1v -o vbr_stream.mpg\fP
+.PP
+Here we multiplex a variable bitrate stream. mplex is a single
+pass multiplexer so it can't detect the maximal bitrate and we have to
+specify it. The data rate for the output stream is: audio bitrate +  
+peak videobitrate + 1-2% for mplex information. If audio (-b 224) is
+224kBit and the video is 1500kBit (encoded with -b 1500 -q 9) then we
+have 1724 * 1.01 or about 1740kBit.
+.PP
+Example:
+.PP
+\fB> plaympeg my_video.mpg\fP
+.PP
+or
+.PP
+\fB> mplayer my_video.mpg\fP
+.SH Creating MPEG-1 Videos
+
+.PP
+For MPEG-1 videos you can use MP2 audio and MPEG-1 video. A subset of
+MPEG-1 movies are VCD's. You can use VBR (Variable BitRate) for the
+Video (although VCDs are almost always use CBR video) but the Audio has to 
+be CBR (Constant BitRate).
+.PP
+MPEG-1 is recommended for picture sizes up to 352x288 for PAL and
+352x240 for NTSC for larger sizes MPEG-2 is the better choice.
+There is no exact resolution where MPEG-1 is better than MPEG-2.
+Just to make soure, MPEG-1 can't handle interlaced sources. If you video
+is interlaced you need MPEG-2 to get it proper encoded.
+.PP
+MPEG-1 Audio creation Example
+
+.PP
+\fB> lav2wav editlist.eli \(br mp2enc -r 44100 -o sound.mp2\fP
+.PP
+You can save some bits by telling
+mp2enc to use a lower bitrate (-b option) like 160 or 192 kBit/s.
+The -r 44100 option forces mp2enc to generate a 44.1kHz audio file.
+.PP
+\fB> lav2wav editlist.eli \(br mp2enc -b 128 -m -o sound.mp2\fP
+.PP
+This creates a mono output with an bitrate of 128kBit/sec bitrate.   
+The input this time is the editlistfile (can have any name) created  
+with glav so all changes you made in glav are direct processed and   
+handed over to mp2enc.  You do NOT have to create an edited stream
+with lavtrans to get it converted properly.
+.PP
+MPEG-1 Video creation example
+
+.PP
+\fB> lav2yuv editlist.eli \(br mpeg2enc -b 2000 -r 24 -q 6 -o video.m1v\fP
+.PP
+mpeg2enc creates an video with an bitrate of 2000kBit/s (or
+2048000Bit/s) but the -q flag activates the variable bitrate and a
+quality factor of 6. It uses a search radius of 24.
+.PP
+\fBExplanation:\fPwhen mpeg2enc is invoked without the 'q'
+flag it creates \(rqconstantbit-rate\(rq MPEG streams. Where (loosely
+speaking) the strength of compression (and hence picture quality) is
+adjusted to ensure that on average each frame of video has exactly the
+specified number of bits. Such constant bit-rate streams are needed for
+broadcasting and for low-cost hardware like DVD and VCD players which use
+slow fixed-speed player hardware.
+.PP
+Obviously this is fairly inefficient as it means inactive scenes use
+up bits that could better be \(rqspent\(rq on rapidly changing scenes.
+Setting the 'q' flag tells mpeg2enc to generate variable bit-rate
+streams. For such streams the bit-rate specified is simply the maximum
+permissible. The 'q' parameter specifies the minimum degree of
+compression to be applied by specifying how exactly picture
+information is recorded. Typically 'q' would be set so that quiet
+scenes would use less than the specified maximum (around 6 or 8) but
+fast moving scenes would still be bit-rate limited. For archival
+purposes setting a maximum bit-rate high enough never to be reached
+(e.g. 10Mbps) and a q of 2 or 3 are reasonable choices.
+.PP
+Example:
+.PP
+\fB> lav2yuv stream.avi \(br yuvscaler -I ACTIVE_352x240+0+24
+\(br mpeg2enc -b 1152 -r 16 -4 1 -2 1 -o video.m1v\fP
+.PP
+Usually there is at the top and at the bottom a nearly black border
+and a lot of bandwidth is used for something you do not like. The
+yuvscaler -I ACTIVE option sets everything that is not in the
+described area to black but the imagesize (352x288) is not changed.
+So you have a real black border the encoder only uses a few bits for
+encoding them. You are still compatible with the VCD's format in this example.
+To determine the active window extract one frame to the jpeg format:
+.PP
+\fB> lavtrans -f i -i 100 -o frame.jpg test.avi\fP
+.PP
+Than use your favorite graphic display program to determine the active size.
+The -4 1 and -2 1 options improves the quality about 10% but conversion
+is slower.
+.PP
+At the size of 352x288 (1/2 PAL size created when using the -d 2 
+option when recording) the needed bitrate is/should be between 1000 -
+1500kBit/s. For NTSC it should be about the same, because the image is smaller
+but there are more frames per second than in PAL.
+.PP
+Anyways, the major factor is quality of the original and the degree of
+filtering. Poor quality unfiltered material typically needs a higher
+rate to avoid visible artifacts.
+If you want to reduce bit-rate without annoying artifacts when
+compressing broadcast material you should try one (or more) of the noise 
+filters.
+.PP
+Example:
+.PP
+\fB> lav2yuv stream.avi \(br mpeg2enc -b 1500 -n s -g 6 -G 20 -P -o
+video.m1v\fP
+.PP
+Here the stream.avi will be encoded with:
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.IP "-b 1500"
+.nr bi 1
+.PP
+a Bitrate of 1500kBit/sec
+.IP "-n s"
+.nr bi 1
+.PP
+the input Video norm is forced to SECAM
+.IP "-P"
+.nr bi 1
+.PP
+This ensures that 2 B frames appear between adjacent I/P
+frames. Several common MPEG-1 decoders can't handle streams that do not
+have 2 B-frames between I/P frames
+.IP "-g 6 -G 20"
+.nr bi 1
+.PP
+the encoder can dynamically change the
+group-of-pictures size to reflect scene changes. This is done by setting a
+maximum GOP (-G flag) size larger than the minimum (-g flag).   
+For VCDs sensible values might be a minimum of 9 and a maximum of 15.
+For SVCD 9 and 15 would be good values. If you only want to play it   
+back on SW player you can use other min-max values.
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+Example:
+.PP
+\fB> lav2yuv stream*.avi \(br mpeg2enc -b 1500 -r 16 -4 1 -2 1
+-S 630 -B 260 -o video_n1_1500_r16_41_21_S630_B240.m1v\fP
+.PP
+lav2yuv processes all the stream files. Then mpeg2enc is given some
+options that make the encoded stream look nicer. Using
+\fB-S 630\fP means that mpeg2enc marks the stream so that mplex
+generates a new stream every 630MB. One important thing is the use of
+the \fB-B\fP option which specifies the non-video (audio and mplex
+information) bitrate. The \fB-B\fP value of 260 should be fine for audio   
+with 224kBit and mplex information. For further information take a  
+look at the encoding scripts in the scripts directory.
+.PP
+MPEG-1 Multiplexing Example
+
+.PP
+Example:
+.PP
+\fB >mplex sound.mp2 video.m1v -o my_video.mpg\fP
+.PP
+Puts the sound.mp2 and the video.m1v stream together to my_video.mpg.
+It only works that easy if you have CBR (the -q option was not used with
+mpeg2enc).
+.PP
+Example:
+.PP
+\fBmplex -V -r 1740 audio.mp2 video_vbr.m1v -o vbr_stream.mpg\fP
+.PP
+Here we multiplex a variable bitrate stream. mplex is now a single
+pass multiplexer so it can't detect the maximal bitrate and we have to
+specify it. The data rate for the output stream is: \fBaudio bitrate +
+peak videobitrate + 1-2% for mplex information\fP\&. If audio (-b 224)
+has 224kBit, video has 1500kBit (was encoded with -b 1500 -q 9) then we   
+have 1724 * 1.01 or about 1740kBit.
+.PP
+.SH Creating MPEG-2 Videos
+
+.PP
+MPEG-2 is recommended for sources with a greater picture than 352x240
+for NTSC and 352x288 for PAL. MPEG-2 can also handle interlaced sources
+like recording from TV at full resolution.
+.PP
+MPEG-2 allows the usage of mpeg layer 3 (mp3) sound. So you can use   
+your favorite mp3encoder for the creation of the sound.  However, MP3 audio 
+is not valid for DVDs.  It is best to use MP2 (Layer 2) audio.  The audio 
+can also be a VBR stream.
+.PP
+MPEG-2 is usually a VBR stream. MPEG-2 creation with optimization requires a
+lot of CPU power.  A film with the double resolution is NOT
+4 times larger than an MPEG-1 stream. Depending on your quality
+settings it will be about 1.5 up to 3 times larger than the MPEG-1
+stream at its lower resolution.MPEG-2 audio creation example
+
+.PP
+\fB> lav2wav editlist.eli \(br mp2enc -o sound.mp2\fP
+.PP
+You can save some bits by telling
+mp2enc to use a lower bitrate (-b option) like 160 or 192 kBit/s. You might
+want to add -r 44100 so that mpeg2enc generates 44.1kHz sampling rate audio.
+I hope I don't need to explain the usage of an MP3 Encoder.
+But you should not use all the fancy options that are available.MPEG-2 Video creation example
+
+.PP
+\fB> lav2yuv editlist.eli \(br mpeg2enc -f 3 -b 3000 -q 9
+-o video.m2v\fP
+.PP
+A very simple example for MPEG-2 Video.
+The most important option is the -f 3. That tells mpeg2enc that it
+should create a MPEG-2 stream. Because it is a generic MPEG-2 you have
+to use the -b bitrate options. And should use the -q option because
+you usually want a space saving VBR stream. When using VBR streams the
+-b option tells mpeg2enc the maximum bitrate that can be used. The -q  
+option tell mpeg2enc what quality the streams should have.  The bitrate has
+an upper bound of the value specified by -b.
+.PP
+\fB> lav2yuv editlist.eli \(br mpeg2enc -f 3 -4 1 -2 1 -q7 -b 4500
+-V 300 -P -g 6 -G 18 -I 1 -o video.m2v\fP
+.PP
+This will generate a higher quality MPEG-2 stream because the -4 1 and
+-2 1 options were used.  With -b 4500 -q 7 you tell mpeg2enc the 
+maximal bitrate and the quality factor.  -V is the video buffer size
+used for decoding the stream. For SW playback it can be much higher
+than the default. Dynamic GOP is set with -g and -G.  A larger GOP size can
+help reduce the bit-rate required for a given quality but very large sizes
+can introduce artifacts due to DCT/iDCT accumulated rounding errors.
+The -P option
+also ensures that 2 B frames appear between adjacent I/P frames. The
+-I 1 option tells mpeg2enc that the source is a interlaced material
+like videos. There is (time consuming) interlaced motion
+compensation logic present in mpeg2enc.  Mpeg2enc will use that logic
+if the size of the frames you encode is larger than the VCD size for  
+your TV Norm.
+.PP
+If you deinterlacing the movie with yuvdeinterlace 
+you should tell mpeg2enc that it does not need to 
+do motion estimation for interlaced material. You have to use the -I 0
+option of mpeg2enc to say that the frames are already deinterlaced.
+This will save a lot of time when encoding. If you don't use -I 0 it will
+not cause problems, the encoding will just take longer.
+.PP
+You can also use scaling an options that optimize (denoise) the 
+images to get smaller streams.  These options are explained in detail
+in the following sections.Which values should be used for VBR Encoding?
+
+.PP
+The -q option controls the minimum quantization of the output stream.
+Quantization controls the precision with which image information is
+encoded. The lower the value the better the image quality.  Values below 4
+are extremes and should only be used if you know what you are doing
+.PP
+Usually you have to set up a maximum bitrate with the -b option.
+The tricky task is to set a value for the -q option and the -b option
+that produces a nice movie without using too much bandwidth and does not 
+introduce too many artifacts.
+.PP
+A quality factor should be chosen that way that the mplex output of
+Peak bit-rate and average bit-rate differ by about 20-25%\&.
+If the difference is very small (less than < 10%) it is likely
+that you will begin to see artifacts in high motion scenes.  The most common
+cause of the average rate being too close (or equal) to the maximum rate
+is wrong value for the maximal bitrate or a quality factor that is too 
+high.
+.PP
+A combination that will produce more artifacts than you can count is a  
+SVCD with a maximal video bitrate of 2500kBit and a quality factor of 1 or 2.
+For SVCD with a video limit of 2500kBit a quality factor of 7-11 fits
+quite good (8 is the default). If you use filter programs or have a very 
+good source like digital TV, DVD like material or rendered pictures you can
+use a quality factor of 6 when creating SVCDs.  If your SVCD/DVD
+player supports non-standard bitrates  you can increase the bitrate above 
+the standard maximum of 2788 kBit/sec (video plus audio). 
+When using a higher bitrate and quality factor
+action scenes will look much better but of course the playing time of the
+disc will be less.
+.PP
+The same (7-11) quality factor for a full size picture and a top
+bitrate of 3500 to 4000 kBit will produce few artifacts.
+.PP
+For SVCD/DVD you can expect a result like the one described if the
+maximal bitrate is not set too low:
+.PP
+
+.DS
+.sp 
+.ft RR
+.nf
+   q <= 6 real sharp pictures, and good quality
+   q <= 8 good quality
+   q >= 10 average quality
+   q >= 11 not that good
+   q >= 13 here even still sequences might look blocky
+.DE
+.fi 
+.ec
+.ft P
+.sp
+Encoding destination TV (interlaced) or Monitor (progressive)
+
+.PP
+MPEG-2 supports interlaced data in addition to the progressive format. 
+A MPEG-2 movie can be interlaced or progressive. It depends on the source 
+(film or broadcast) and on the viewing device.
+.PP
+If you encode a film both fields should be the same. Deinterlace the
+stream with yuvdeinterlace, or if you have a high quality source, and  
+don't need to use the denoiser with yuvcorrect -T NOT_INTERLACED. Also
+set the mpeg2enc interlace-mode (-I) option to 0. This means that
+there is no interlacing.
+We do not really need deinterlacing here because there is no motion 
+between the fields of the frame. We only need to unite the two fields into a
+single progressive frame.
+.PP
+This movie should play back an any device (TV or Monitor) without
+problems.
+.PP
+If you have an interlaced source (broadcast) you can encode it as     
+interlaced stream. Or deinterlace the stream and encode it as
+progressive stream. If you deinterlace it with yuvdeinterlace you will
+lose details.
+But if you plan to play the recorded stream on your DVD player and your
+TV it would not be wise to perform deinterlacing.  If you only want to play it
+back on the Monitor (progressive display) the picture looks better
+when playing it back if it is deinterlaced. If the player you use can
+do deinterlacing it does not matter if your encoded video has
+interlaced frames or progressive frames.
+.PP
+If you plan to deinterlace the stream you can only do this with
+yuvdeinterlace and set the mpeg2enc -I 0. If you do not want to
+deinterlace the stream you do not need to set any special option (do
+not use yuvdeinterlace and mpeg2enc -I 0)
+.PP
+If you like to pause the stream and look on the still you should
+deinterlace. Because then the image is flicker free when pausing.
+.PP
+If you have a film (progressive) with parts from a broadcast
+(interlaced) mixed together (like in a documentary where some parts
+from a speaker are recorded interlaced and other parts are filmed)
+you have to choose between good film sequences with average still images
+or average looking film sequences with good still images.
+.PP
+For good film with average stills do not deinterlace.  For average film 
+sequences with good stills then deinterlace (using yuvdeinterlace and 
+mpeg2enc -I 0).MPEG-2 Multiplexing example
+
+.PP
+\fB> mplex -f 3 -b 300 -r 4750 -V audio.mp3 video.m2v -o final.mpg\fP
+.PP
+Now both streams (a mp3 audio and a mpeg2 video) are multiplex into a 
+single stream (final.mpg). You  
+have to use the \fB-f 3\fP option to tell mplex the output format. You also
+have to add the \fB-b\fP decoder buffers size option with the same value used when 
+encoding the video. -\fBr\fP is that rate of video + audio +1-2% of mplex
+information.
+.PP
+The \fB-V\fPoption tells that your source for mplexing is a VBR stream. If
+you don't use this option mplex creates something like a CBR stream
+with the bitrate you have told it with the \fB-r\fP option.  These streams  are
+usually get BIG.
+.PP
+.SH Creating Video CDs (VCDs)
+
+.PP
+VCD is a constrained version of MPEG-1 video.
+VCD format was defined by Philips. The goal was to use a single speed
+CD-drive and other cheap hardware (not flexible) to have a
+cheap HW-Player. Because of that there are limitations for video and audio 
+used to make a VCD. The bitrate for video is 1152kBit and 224kBit/sec MP2 audio.
+You are not allowed to use the -q option, dynamic GOP sizes and the video 
+buffer is limited to 46kB.
+The image size is limited to 352x240 for NTSC, an to 352x288 for PAL.
+.PP
+If you have no VCD (only) player and you plan to use your DVD 
+player then it is quite possible that the DVD player will be 
+flexible enough to allow higher bitrates, dynamic GOP sizes, larger video 
+buffer and so onVCD Audio creation Example
+
+.PP
+\fB> lav2wav stream.avi \(br mp2enc -V -o sound.mp2\fP
+.PP
+\fB-V\fP force VCD 2.0 compatible output.
+There the audio samplerate is fixed to 44.1kHz. And  you can choose the audio
+bitrate for mono audio to be 64, 96 or 192kBit/sec. If you have stereo audio 
+you can choose 128, 192, 224 or 384kBit/sec. 
+For hardware players, you should stick to 44.1 224kBps Stereo layer 2 Audio.VCD Video creation Example
+
+.PP
+\fB> lav2yuv stream.avi \(br yuvscaler -O VCD \(br
+mpeg2enc -f 1 -r 16 -o video.mpg\fP
+.PP
+For VCD compatible output the -f 1 sets all options in mpeg2enc as
+needed. It seems that many VCD players (Avex for example) are not able to
+play MPEG streams that are encoded with a search radius greater than 16 so
+do not use the -r option to override the default of 16.
+.PP
+\fB> lav2yuv streams.eli \(br
+mpeg2enc -f 1 -4 1 -2 1 -S 630 -B 260 -P -o video.m1v\fP
+.PP
+Using \fB\&'-S 630'\fP means that mpeg2enc marks the stream so
+that mplex generates a new stream every 630MB. One important thing is the use
+of the \fB-B\fP option which specifies the non-video (audio and mplex
+information) bitrate. The -B value of 260 should be fine for audio
+with 224kBit and mplex information. For further information take a   
+look at the encoding scripts in the scripts directory. The
+multiplexed streams should easily fit on a 650MB CD.
+.PP
+The default value (-B) is 700MB for the video. mpeg2enc marks
+automatically every stream at that size if the -B option is not used to set
+a different value.  If you have a CD where you can write more data (perhaps
+as much as 800MB) you have to set the -S option or otherwise mpeg2enc will 
+mark the stream at 700 MB, and mplex will split the stream there. 
+Which is almost certainly not what you want.
+.PP
+VCD Multiplexing Example
+
+.PP
+\fB> mplex -f 1 sound.mp2 video.mpg -o vcd_out.mpg\fP
+.PP
+The -f 1 option turns on a lot of weird stuff that otherwise has no
+place in a respectable multiplexer!Creating the CD
+
+.PP
+The multiplexed streams have to be converted to an VCD compatible.  
+This is done by vcdimager
+.PP
+\fB> vcdimager testvideo.mpg\fP
+.PP
+Creates a \fBvideocd.bin\fP, the data file, and a \fBvideocd.cue\fP
+which is used as control file for cdrdao.
+.PP
+You use cdrdao to burn the image. Cdrdao is yet another fine
+Sourceforge project which is found at:
+Notes
+
+.PP
+For MPEG-1 encoding a typical (45 minute running time) show or 90 odd
+minute movie from an analog broadcast a constant bit-rate of around
+1800 kBit/sec should be ideal. The resulting files are around 700M for
+45 minutes which fits nicely as a raw XA MODE2 data track on a CD-R.
+For pure digital sources (DTV or DVD streams and similar) VCD 1152
+works fine.
+.PP
+\fBNote:\fP If you encode VBR MPEG-1 (-q) remember the Hardware was
+probably not designed to do the playback because it is not in the
+specifications. If it works be very happy. I've noticed that it helps
+when you have an MPEG-1 stream to tell vcdimager that it is an SVCD.
+vcdimager complains (but only with a warning and not a fatal error) but
+you should be able to burn it. This could convince the player to use
+different routines in its firmware and play it back correct but there is 
+no guarantee of that.Storing MPEGs
+
+.PP
+If you record the data as XA mode 2 tracks you can fit appreciably
+more on a CD (at the expense of error correction/detection). You can
+use vcdimager to do this and vcdxrip (part of the vcdimager package)
+to extract (\(rqrip\(rq) the resulting files. For better Quality
+there are SVCD and XVCD and DVD.
+.PP
+Currently SVCD is fully supported with a pre-set format in mplex
+and tools to create disks. MPEG streams that can be played by DVD
+player hardware and software can readily produced using mpeg2enc/mplex
+.PP
+If your player doesn't support SVCD you may well find it can handle
+VCD streams that have much higher than standard bit-rates. Often as
+much as 2500kBit/sec is possible. The several brands of DVD players
+can also play wildly out of spec SVCD and VCD discs.
+With higher bit-rates and good quality source material it is worth
+trying mpeg2enc's -h flag which produce a stream that is as sharp as
+the limits of the VCD standard permits. 
+.PP
+However, if your player supports it and you have the patience for the
+longer encoding times SVCD is a much better alternative. Using a
+more efficient MPEG format SVCD more than doubles VCD's resolution
+while typically producing files that are less than twice as big.
+.SH Creating SVCD
+
+.PP
+Super Video CD (SVCD) is an enhancement to Video CD that was developed by 
+a Chinese government-backed committee of manufacturers and researchers. 
+The final SVCD spec was announced in September 1998.
+A good explanation of the SVCD format from Philips can be found here:
+\&.
+.PP
+Record at full TV resolution (means: -d 1 for PAL this is 720x576)
+The resolution is for NTSC is 480x480 of PAL 480x576, so you know why you
+should record at full size.SVCD Audio creation Example
+
+.PP
+\fB> lav2wav stream.avi \(br mp2enc -V -e -o sound.mp2\fP
+.PP
+The SVCD specifications permit a much wider choice of audio rates,
+it is not necessary to use 224 kBit/sec. Any audio rate between
+32 and 384 kBit/sec is permitted. The audio may be VBR (Variable Bit
+Rate). The -e enables the CRC error protection for the audio. The CRC has
+to be enabled to be SVCD standard compliant but it seems that most players don't
+pay attention to the CRC information. The CRC information need 2 bytes per
+Audio frame
+.PP
+The approximate frame length formula for MPEG-1 layer-II is:
+.PP
+.DS
+.sp 
+.ft RR
+.nf
+(frame length in bytes) = 144 * (byte rate) / (sample rate)
+.DE
+.fi 
+.ec
+.ft P
+.sp
+.PP
+If you have the typical VCD settings the CRC data needs about 0,27%
+of the whole data. In the worst case where you have a MONO 32k Bitrate
+stream the CRC data needs 1,92%\&.SVCD Video creation example
+
+.PP
+\fB> lav2yuv stream.avi \(br yuvscaler -O SVCD \(br mpeg2enc -f 4 -q 7 -I 1 -V 200 -o video.m2v\fP
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.IP "-f 4"
+.nr bi 1
+.PP
+sets the options for mpeg2enc to SVCD
+.IP "-q 7"
+.nr bi 1
+.PP
+tell mpeg2enc to generate a variable bitrate stream
+.IP "-I 1"
+.nr bi 1
+.PP
+tell mpeg2enc to assume that the original signal is field
+interlaced video where the odd rows of pixels are sampled a half frame
+interval after the even ones in each frame. The -I 0 (progressive
+output (no field pictures)) option will also work for PAL
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+You can use lower bitrates but the SVCD standard limits \fBtotal
+bit-rate (audio and video) to 2788800 Bit/sec\fP\&. So with 224Kbps audio
+and overhead 2550 may already be marginally too tight. Since the SVCD
+format permits any audio rate between 32 and 384 kBit/sec you can save
+a few bits/sec by using 192k audio (or for non-musical material 160k).
+.PP
+SVCD supports variable bitrate (VBR), because MPEG-2 is usually VBR,
+but with the top video bitrate limit of 2500kBit/sec. With the -f 4
+flag the encoder also sets dynamic GOP with a low limit of -g 6 and a
+high limit of -G 18. This saves a few bits/sec and improves the
+picture quality during scene changes.
+When encoding with -f 4 mpeg2enc ignores the video bitrate (-b) and   
+search radius (-r) options. If you use -f 5 you have to specify the bitrate
+and other options to mpeg2enc.
+.PP
+Another possibility for movies in PAL (European style 25 frames/50
+fields per sec) video is:
+.PP
+\fB> lav2yuv stream.avi \(br yuvscaler -O SVCD \(br
+mpeg2enc -f 4 -I 0 -V 300 -o video.m2v\fP
+.PP
+Movies are shot on film at 24 frames/sec. For PAL broadcast the film is
+simply shown slightly \(rqtoo fast\(rq at 25 frame/sec (much to the
+pain of people with an absolute pitch sense of pitch). The -I 0 flag turns 
+off the tedious calculations needed to compensate for field
+interlacing giving much faster encoding.
+.PP
+Unfortunately, movies broadcast in NTSC (US style 30 frames/60 fields
+sec) video this will produce very poor compression. The \(rqpulldown\(rq  
+sampling used to produce 60 fields a second from a 24 frame a second  
+movie means half the frames in an NTSC *are* field interlaced.
+.PP
+Don't forget the -S and -B options mentioned above. You want the
+stream to fit on a CD don't you ?SVCD multiplexing example
+
+.PP
+\fB> mplex -f 4 -b 300 -r 2750 sound.mp2 video.m2v -o svcd_out.mpg\fP
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.IP "-f 4"
+.nr bi 1
+.PP
+tells mplex to mplex a SVCD
+.IP "-r 2750"
+.nr bi 1
+.PP
+is the calculated Audio + Video Bitrate + 1-2% multiplex
+information
+.IP "-b 300"
+.nr bi 1
+.PP
+is the buffer available on the playback device (the same value as
+used for the video encoding (mpeg2enc's -V option).
+.if \n(ll>1 .RE
+.nr ll -1
+SVCD creating the CD
+
+.PP
+Example:
+.PP
+\fB> vcdimager -t svcd testvideo.mpg\fP
+.PP
+Creates a \fBvideocd.bin\fP, the data file, and a \fBvideocd.cue\fP
+which is used as control file for cdrdao.
+.PP
+Use cdrdao to burn the image as mentioned earlier.
+.PP
+\fBNOTE:\fPIf you want to build \(rqcustom\(rq VCD/SVCD you will
+need to use the mplex -f 2 and -f 5 switches.
+.PP
+\fBNOTE:\fPThe VCD and SVCD stuff may work on your HW player or not. There
+are many reports that it works quite well. Don't be worried if it does
+not work. Nor am I responsible for unusable CDs. (\(rqcoasters\(rq)
+.SH Creating DVD's
+
+.PP
+This statement was correct a few years ago: 
+Everything in this section is new. 
+The limitations I mention here might not exist in the current version.
+Currently (Dec. 2007) DVD creating is working. 
+.PP
+You need obviously a DVD writer. I did own a Ricoh DVD+RW that works, and I know
+of a DVD-RAM writer that is able to to burn DVD-R. That disks also work with
+a DVD-Player. Now most DVD writers ar able to burn both media + and -, so that
+should not be a problem any more.  
+Which programs you use for burning depends on the DVD writer
+drive. 
+.PP
+For the creation and writing of the VOB, IFO and BUP files we use
+dvdauthor. Aviable from Sourceforge (you might have guessed it)
+\&.DVD Audio creation example
+
+.PP
+\fB> lav2wav stream.eli \(br mp2enc -o sound.mp2\fP
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.PP
+The sample rate has to be 48kHz. The mp2enc does create by default a  
+sample rate of 48kHz. If it is not a 48kHz mp2enc will resample 
+the audio to get the sample rate.  If the audio is recorded at 48kHz then
+no resampling is needed and toolame can be used for the encoding (it is 
+faster than mp2enc).
+.if \n(ll>1 .RE
+.nr ll -1
+DVD Video creation example
+
+.PP
+\fB> lav2yuv stream.eli \(br mpeg2enc -f 8 -o video.m2v\fP
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.IP "-f 8"
+.nr bi 1
+.PP
+This sets the options correctly for a MPEG-2 video that is compliant
+with the DVD standard.  The maximum bitrate is set to 7500kBps and the
+video buffer size is set to 230KB. The default quality factor is set to 8.
+mpeg2enc sets currenty no automatic sequence length as it does for VCD/SVCD. 
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+The other options to get a low bitrate and high quality stream can
+also be used to override the default settings mentioned above.  You can 
+also use yuvdenoise to increase the picture quality if the input data is
+noisy (from a VHS tape for example).
+A typical command will look like this:
+.PP
+\fBlav2yuv moby.eli \(br yuvdenoise \(br mpeg2enc -f 8 -q 7 -4 1 -2 1 -P -I 0 -N -o video_DVD.m2v\fPDVD multiplexing example
+
+.PP
+\fB> mplex -f 8 sound.mp2 video.m2v -o my_dvdlikestream.mpg\fP
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.IP "-f 8"
+.nr bi 1
+.PP
+Here again we specify that we want to have DVD like MPEG stream. 
+mplex cannot do all the fancy things allowed for a DVD, but it is close enough
+that the HW-DVD players accept it.
+.IP "-o"
+.nr bi 1
+.PP
+there we specify the output filename. 
+.if \n(ll>1 .RE
+.nr ll -1
+DVD creation example
+
+.PP
+This topic will be covered by the documentation of the dvdauthor
+program.  For questions please see 
+In general it will work like this:
+.PP
+\fB> dvdauthor -o output/ stream1.mpg stream2.mpg ... my_dvdlikestream.mpg; dvdauthor -T -o output/ \fP
+.PP
+You will get a directory with AUDIO_TS and VIDEO_TS directories.
+Burning the data from the disk to a DVD+-R/+-RW writer would be done 
+like this:
+.PP
+\fBgrowisofs -Z /dev/scd2 -dvd-video mydvd/\fP
+.PP
+If you own a DVD+RW/+R drive a good place for more information is:
+
+page. You also need a version of the cdrtools with \fBdvd-video\fP support.
+The cdrtools 1.11a27 is known to work but newer versions already exist. 
+.PP
+For other writers the commands to write a DVD will be different. You can get
+some more information in the
+dvdauthor package. There is no guarantee that it will work at all !!!
+.SH Creating DIVX Videos
+
+lav2avi.sh
+
+.PP
+Another way of creating DIVX is the program
+\fBmencoder\fP which is from the mplayer project.
+\&. 
+For more information about mencoder
+please read mencoder/mplayer help and documents. A first and a second pass 
+give at
+the end of pass hints for bitrate which can be used for encoding to specific
+size (650 MB, 700 MB and 800 MB). The script lav2avi.sh uses this 
+information if provided (for short streams it is omitted by mencoder).
+Look for parameter \fIpreferedSize\fP in the script. You can also 
+specify other parameters used for encoding with \fIencoderParam\fP option 
+in the script. For a description of the usable parameters take a look in the
+mplayer/mencoder manual.
+.PP
+The outputfilename is that name of your input file (first option)
+but with the extension avi. If the size of file is
+less then specified by \fIpreferedSize\fP it's because the source was
+of very high quality (no noise) and the specified bitrate was higher than
+required.
+You usually get 700MB for 1.5 hour film at half
+image size with bitrate around 900 that means for divx good quality (assuming
+good quality source material of course).
+.PP
+The script does a 3 step encoding:
+.PP
+.nr ll +1
+.nr t\n(ll 0
+.if \n(ll>1 .RS
+.nr bi 1
+.PP
+1st step - audio encoding 
+.nr bi 1
+.PP
+2nd step - first video pass
+.nr bi 1
+.PP
+3rd step - second video pass
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+The mplayer/mencoder documentation deprecates the use of the 3 pass
+encoding method (it can cause A/V sync problems) and recommends the use of
+the 2 pass method.   The mencoder/mplayer documentation is extensive and
+has many helpful hints (and a bitrate calculator in the TOOLS/ directory).
+.PP
+For encoding use the fast ffmpeg (lavc) codec. It
+gives nice results together with high good performance. For audio encoding mp3
+is used. For encoding of all parts it uses unix pipes. This mean that you
+DO NOT need additional space on your hard drive where all glav
+manipulations will be done. For audio encoding the script uses a FIFO queue.
+.PP
+If you want to tweak the script for your own needs use these hints:
+.nr ll +1
+.nr t\n(ll 0
+.if \n(ll>1 .RS
+.nr bi 1
+.PP
+Output of 1st step is file called \fBframeno.avi\fP with encoded audio
+.nr bi 1
+.PP
+2nd step is using \fBframeno.avi\fP and output is text file called \fIlavc_stats.txt\fP with timing informations
+.nr bi 1
+.PP
+3rd step is using \fBframeno.avi\fP and \fIlavc_stats.txt\fP for encoding the stream to the output file \fBmovie2.avi\fP
+.nr bi 1
+.PP
+If you want change only video bitrate keep the file \fBframeno.avi\fP comment out the 1st step encoding and repeate 2nd and 3rd step. Dont forget to remove the line where the \fBframeno.avi\fP is removed.
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+Optimizing the stream
+
+.PP
+Using filters helps to increase the image quality of constant bitrate (CBR)
+video streams. With VBR (variable bit rate) video the filesize is reduced.
+.PP
+Example:
+.PP
+\fB> lav2yuv stream.avi \(br yuvmedianfilter \(br
+mpeg2enc -o video.m1v\fP
+.PP
+Here the yuvmedianfilter program is used to improve the image. This 
+removes some of low frequence noise in the images. It also softens
+the image a little. It takes a center pointer and averages the pixels around it
+that fall within the specified threshold. It then replaces the center pixel with
+this new value.
+You can also use the -r (radius) option for an other search radius.
+.PP
+\fBNOTE:\fPa radius greater than the default value of 2 is horrendously slow!
+.PP
+yuvmedianfilter has separate settings for luma and chroma. You can control 
+the search radius and the trigger threshold independently.  If you use a
+threshold of 0 then filtering is disabled (-t 0 disables luma filtering, 
+-T 0 disables chroma filtering).
+.PP
+\fB> lav2yuv stream.avi \(br yuvmedianfilter -r 3 -t 4 -T 0 \(br mpeg2enc -o video.m1v\fP
+.PP
+This example uses a search radius of 3 pixels for the
+luma, a threshold of 4 (the default is 2), and disables filtering for 
+the chroma components.   Sometimes, depending on the
+source material, median filtering of the chroma can cause a slight color
+shift towards green.   Filtering on the luma component (disabling the chroma
+filtering) is the solution to that problem.
+.PP
+Example:
+.PP
+\fB> lav2yuv stream.avi \(br yuvdenoise \(br mpeg2enc -o video.m1v\fP
+.PP
+Now we are using yuvdenoise to improve the image. The filter mainly
+reduces color and luminance-noise and flickering due to phase errors but is
+also effective at removing speckles.
+.PP
+yuvdenoise denoises interlaced if the input is interlaced.
+You can of course change the denoiser threshold (-g/t).
+Creating a black border can lower the bitrate of the encoded stream 
+because pure black areas compress much better than noise (captures 
+from analog sources such as VHS and 8mm usually have several lines at 
+the time and bottom that are very noisy). For this you can use the scaler.
+.PP
+yuvdenoise uses a different approach to filter the noise.  More information
+about how yuvdenoise works as well as descriptions of its options are found
+in the manpage.
+.PP
+If you have a high quality source you should lower the filter to 
+levels like that: -g 0,255,255 -t 2,2,2.  You might also
+use the mpeg2enc \fB-h/--keep-hf\fP option. That option tells mpeg2enc to
+keep as much high frequency information as possible.   Using -h will
+greatly increase the bitrate (filesize).  If the bitrate is too close to
+the maximum (set with -b) the encoder will have to decrease the quality
+to avoid exceeding the maximum bitrate.
+.PP
+A builtin filter in mpeg2enc is the -N/--reduce-HF option.  This
+option is not really filter in the usual sense.  Rather it changes
+how exactly the high frequency information is encoded.  Often the high
+frequency is noise.  You also have high frequencies on sharp borders or
+transitions. The -N option can have values between 0.0 and 2.0 where 0.0
+does nothing (disables the high frequency quantizer boost) and 2.0 gives
+the maximum quantization boost.  The value to use depends on the desired
+output quality and filesize.  Values of -N less than 0.5 are very subtle
+while a value of 1.0 will achieve a good balance between bitrate reduction
+and output quality.   Using -N values above 1.5 will noticeably reduce the
+sharpness of the output picture and are normally used only for poor quality
+sources (VHS tapes for example).
+.PP
+Using yuvmedianfilter's capability to only filter the chroma (-T) is
+moderately effective at reducing noise in dark scenes without softening
+the image during normal (brighter) scenes.   Median filtering of the luma
+(-t) will produce a lower bitrate but can cause loss of detail (softening).
+Chroma only medianfiltering is less agressive and is a good choice to use
+in combination with yuvdenoise.
+.PP
+Combining the filters yuvdenoise, yuvmedianfilter and the mpeg2enc -N
+option gives a very fine degree of control over the bitrate (filesize).
+The reduction (or increase) in the bitrate depends on the source material
+and the exact encoding/filter options used.  So we can give no exact
+numbers how much each option and combination will reduce the filesize, only
+guidelines.
+.PP
+Usually you should use the -N option in a range from 0.5 to 1.5.  Below
+0.5 it does not reduce the bitrate very much (but does preserve sharpness).
+At 1.5 and higher you will notice a softening in the video and possibly
+artifacts (halo/ringing) around edges of objects (text/subtitles especially).
+If you combine the filters you should use yuvdenoise and maybe afterwards
+yuvmedianfilter.  Maybe yuvmedianfilter even after scaling.  Having
+yuvmedianfilter in the chain does not reduce the bitrate that much.  Often
+the use of yuvdenoise is enough.  The yuvmedianfilter helps much if you
+have low quality sources, and not that much if you already have a rather
+good quality.  When you combine the filter and option you will very likely
+reduce the filesize to about the half of the filesize without using the
+options and programs.
+.PP
+In general aggressive filtering will produce smaller files (lower bitrate)
+but reduce the quality (details) of the picture.  Less aggressive
+filtering/processing will preserve more detail but result in larger files.
+.PP
+Example:
+.PP
+\fB> lav2yuv stream.avi \(br yuvkineco -F 1 \(br mpeg2enc -o video.m1v\fP
+.PP
+yuvkineco is used for NTSC sources. It does the conversation from
+30000.0/1001.0 (about 29.97) fps to 24000.0/1001.0 (about 23.976) fps, you
+can call it \(rqreverse 2-3 pulldown\(rq more info about this in the
+README.2-3pulldown. yuvkineco does only remove NTSC specific problems.
+.PP
+If you want to improve the image you should also use yuvdenoise:
+.PP
+\fB> lav2yuv stream.avi \(br yuvkineco \(br yuvdenoise \(br mpeg2enc -o video.m1v\fP
+.PP
+Example
+.PP
+\fB> lav2yuv stream.avi \(br yuvycsnoise \(br mpeg2enc -o video.m1v\fP
+.PP
+yuvycsnoise is also used for NTSC and is specialized for NTSC Y/C
+separation noise. If video capture hardware has only a poor Y/C
+separator then at vertical stripes (especially red/blue) noises appear
+which seem checker flag and bright/dark invert per 1 frame.
+yuvycsnoise reduces noises of this type. You can also use different
+thresholds for luma/chroma and the optimizing method.  This filter is
+not needed with working with DV (Digital Video) data.
+.PP
+yuvycsnoise works only correct when we have NTSC with:
+.PP
+.nr ll +1
+.nr t\n(ll 0
+.if \n(ll>1 .RS
+.nr bi 1
+.PP
+full height (480 lines)
+.nr bi 1
+.PP
+full motion captured (29.97 fps)
+.nr bi 1
+.PP
+captured with poor Y/C separator hardware
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+For more information about the yuvkineco and yuvycsnoise read the
+README in the yuvfilters directory.
+.PP
+If you want to experiment to determine the optimal settings for the 
+denoiser, scaler and so on replace the mpeg2enc with yuvplay.
+yuvplay plays back the yuv frames so you can see if the options you have
+chosen are making the thing better or worse.
+.PP
+A command would look like this:
+.PP
+\fB> lav2yuv stream.eli \(br yuvdenoise -options \(br
+yuvscaler -options \(br yuvplay\fP
+.PP
+If you want to know how much each tool lowers the average bitrate.
+You can use this table to see what you can expect if you have a full size
+video and want to create a DVD with a qality factor of 5 and the allowed
+maximal bitrate of 8500kb/sec. 
+.PP
+.nr ll +1
+.nr t\n(ll 0
+.if \n(ll>1 .RS
+.nr bi 1
+.PP
+no denoising : 8300 kb/s (mostly hitting the upper bound)
+.nr bi 1
+.PP
+yuvenoise : 7700 kb/s
+.nr bi 1
+.PP
+mpeg2enc --reduce-hf : 7400 kb/s
+.nr bi 1
+.PP
+yuvdenoise + yuvmedianfilter : 6000 kb/s
+.nr bi 1
+.PP
+yuvdenoise + mpeg2enc --reduce-hf : 4900 kb/s
+.nr bi 1
+.PP
+all of the above : 3600 kb/s
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+While \fB-N\(br--reduce-hf\fP or yuvdenoise alone is only a modest
+improvement, together they reduce the bitrate substantially.
+There is not really much visible difference between using yuvdenoise alone
+and yuvdenoise with mpeg2enc --reduce-hf. The usefull values are between 0.0
+and 1.5. Where you can say that the higher the quality factor you want, the
+less this option improves. At a quality factor 4 you save using -N 1.0
+about 1%\&. If you want a quality factor of 9 and use the -N 1.0
+you might save up to 40%\&. But you might save less, that depends on 
+the video you encode!!!
+.PP
+If you ask yourself why not alyways use all of the above filters? 
+The answers are that the image softens (loss of detail) and the encoding
+time increases.  Most of the filters each require about the same amount of
+time as mpeg2enc needs for encoding the video.
+.PP
+If you have very high quality material and want to keep every detail you
+should try to use the mpeg2enc --keep-hf\(br-h on the other hand.
+.PP
+\fBNote:\fP The bitrate reduction you have depends on the material
+and on the noise of the images. 
+.PP
+A other interresting mpeg2enc option is the
+\fB-E\(br--unit-coeff-elim\fP
+option. This option is disabled by default. If you enable it, a special
+\&"unit coefficient elimination\&" algorithm, is applied to the encoded
+picture blocks.   Basically this proceedure forces blocks of a type that do not
+carry much information (but use many bits to encode) to be skipped. A negative
+value examines the base (DC) as well as the AC coefficients. A positive value 
+means that only texture (AC) coefficients are examined and possibly zeroed.
+The recommended 
+values lies between -20 and +20. You usually can expect that you have a 5% 
+decreased filesize. The amount the bitrate is reduced can vary considerably,
+the range spans from not really noticable up to 20%\&.
+.PP
+If you think a other quantization matrice will help use the  
+\fB-K\(br--custom-quant-matrices\fP option. You can try out your own 
+quanitsation matrice or use another builtin than the default.
+You can choose between kvcd, tmpgenc, hi-res, and your own. Using -K usually 
+makes the file smaller except the hi-res option (that makes files considerably
+larger). Exact guidelines are hard to give,
+sometime a other quanitsation matrix saves almost nothing, and the
+next time up to 20%\&. More than 20% is very unlikely, 10-15% at a moderate 
+qualityfactor (-q 8-10) are likely.  The higher the qualiy the less it saves,
+at a quality factor of 4-6 the reduction in bitrate may only be 5%
+.PP
+One thing to keep in mind is that the unit coefficient elimination and 
+the quantization matrix option are decreasing the bitrate while maintaining 
+the same visual quality.   At this point you can chose to use the smaller 
+file to increase the amount of video that will fit on the disc media or you 
+could chose to increase the quality even more by lowering the -q value by 1
+and make a larger (but higher quality) file.
+.SH Scaling and offset correction
+
+.PP
+The basic scaling is described in the \fBConverting video\fP section
+.PP
+The scaling takes a part of the picture and scales it to a larger
+or smaller size. The scaling is done by yuvscaler:
+.PP
+\fBlav2yuv test.eli \(br yuvscaler -I USE_400x400+50+100 \(br yuvplay\fP
+.PP
+Here we only take part of the picture and scale it up to the size of
+the original frame.  But yuvscaler also changes the pixel aspect ratio.
+That means when you look at the stream using yuvplay it looks like a square 
+in our example.  After scaling, if the sample (pixel) aspect ratio were not
+changed, the video would not display with the proper aspect ratio.
+Yuvscaler compensates by adjusting the sample aspect ratio.
+If you have a interlaced video, the height and HeightOffset have to be a
+multiple by 4 if the video is interlaced. Else the values (width, height,
+widthoffset, heightoffset) have to be a multiple of 2.
+.PP
+A problem that cannot be solved easily with scaling is when the 
+picture is not centered horizontal. On one side you have no black pixels and
+on the other you have 30 for example. Scaling is here is the wrong solution. 
+y4mshift is the perfect solution because it can shift the image to the
+left or right.
+.PP
+\fBlav2yuv test.eli \(br y4mshift -n 20 \(br mpeg2enc -f 3 -b 4000 -q 10 -o video.m2v\fP
+.PP
+That will shift the image 20 pixels to the right. If you use a negative
+the image is shift to the left. You have to use a even number. The inserted
+pixels are set to black.
+.PP
+Some might wonder why the image is not centered and there is a black border
+around the image when you view what you have recorded. The reason for the
+black border is in history of the CRT (Cathode Ray Tube) TV technology. 
+The history of the TV standard s a very interesting story but that topic
+is described in other (large) books.
+.PP
+The TV does not show the full picture. A part of the picture is not shown
+because the TV sets overscan (sometimes as much as 10% but more common
+today is 5%).  But when you capture
+the video with a card you see the whole image including
+the border that TVs lose due to overscanning.
+A horizontal offset is usually not a problem of the capture card. It is
+a problem when the film is broadcast and not well synchronized with the image.
+This means that the scan of the source not exactly synchronized with the
+carrier signal, you wont see that on TV.
+.SH Frame rate conversion
+
+.PP
+Ever needed to convert the framerate from PAL to NTSC or the other
+direction around ? Or something much simpler like converting the
+framerate from 24FPS to 24000:1001 for conversation from a film frame
+rate to a valid NTSC frame rate.
+.PP
+Than \fByuvfps\fP is your program. It can lower the framerate by dropping
+frames or create a higher framerate by replicating frames. If you have a wrong
+framerate in the header you can only change the header of the YUV stream
+and not modify the stream.
+.PP
+Because the frames are only replicated (copied) you should denoise first and
+then change the framerate and scale at als last step. If you have a
+interlaced source you should also deinterlace before changeing the
+framerate. If you create a higher frame rate it is very likely that
+you will have weird flickers when you play it back. If you convert PAL to
+NTSC (30000:1001 FPS about 29,97 FPS) the frame rate will lower by about
+the factor 480/576 (NTSC lines / PAL lines).
+If you lower the frame rate from PAL to NTSC 
+(at 24000:1001) or NTSC FILM (24FPS) the bitrate will be about 
+(480 Lines * 24 FPS) / (576 Lines * 25FPS).
+If you change the frame rate before denoising the yuvdenoise 
+will have problems finding the noise across the frames and the 
+needed bandwith will slightly increase.
+.PP
+Example
+.PP
+\fB> lav2yuv video.eli \(br yuvfps -r 30000:1001 \(br yuvscaler -O SVCD \(br mpeg2enc -f 4 -o video_ntsc_svcd.m2v\fP
+.PP
+This is a example to convert the source video to a NTSC video running at
+30000:1001 FPS (or about 29,97FPS) at SVCD size.
+.PP
+Example
+.PP
+\fB> lav2yuv video.eli \(br yuvdenoise \(br yuvfps -r 24000:1001 \(br yuvscaler -O SIZE_720x480 \(br
+mpeg2enc -f 3 -b 4000 -q 7 -o video_ntsc.m2v\fP
+.PP
+This example shows how you should use the tools. Denoise first and
+than change the framerate and in the last step change the image size.
+.PP
+It can happen that yuvscaler or mpeg2enc do not detect the TV norm
+correct. If that happens you have to add the norm option \fB-n n/p/s\fP
+to the program that chooses the wrong norm.
+.PP
+If you know that the header tells the wrong framerate, you
+can simply change the framerate of the yuv header this way:
+.PP
+\fB> lav2yuv video.eli \(br yuvfps -r 25:1 -c \(br
+mpeg2enc -f 3 -b 4000 -q 7 -o video_pal.m2v\fP
+.PP
+You need the \fB-c\fP option. To tell yuvfps that it only should change
+the header of the stream. With the \fB-r 25:1\fP you tell yuvfps the
+frame rate it should write into the header. In your example the PAL frame
+rate of 25 FPS. You always have to use the fractional form.
+.PP
+If you know that the header is wrong, and you need a different output 
+bitrate you can do this in a single step:
+.PP
+\fB> lav2yuv video.eli \(br yuvfps -s 24:1 -r 25:1 \(br mpeg2enc -o video.m1v\fPTranscoding of existing MPEG-2
+
+.PP
+For transcoding existing MPEG-2 streams from digital TV cards or
+DVD a lower data-rate than for broadcast will give good results.
+Standard VCD 1152 kbps typically works just fine for MPEG-1. The
+difference is in the Signal/Noise ratio of the original. The noise in 
+the analog stuff makes it much harder to compress.
+.PP
+You will also need to manually adjust the audio delay offset relative to
+video when multiplexing. Very often around 150ms delay seems to do
+the trick.
+.PP
+You have to download the ac3dec and mpeg2dec packages. You can find
+them at their homepage: mpeg2dec ( 
+) and ac3dec. 
+For decoding the audio streams mpg123 and mplayer can be very helpfull. 
+You also need sox and toolame.
+.PP
+In the scripts directory there is a \fBmpegtranscode\fP script that
+does most of the work.
+.PP
+So transcoding looks like this:
+.PP
+\fB> mjpegtranscode -V -o vcd_stream mpeg2src.mpg\fP
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.IP "-V"
+.nr bi 1
+.PP
+set's the options so that a VCD compatible stream is generated
+.IP "-o vcd_stream"
+.nr bi 1
+.PP
+a vcd_stream.m1v (video) and vcd_stream.mp2 (audio) is
+created
+.IP "mpeg2src.mpg"
+.nr bi 1
+.PP
+specifies the source stream
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+The script prints also something like this:
+.PP
+\fB> SYNC 234 mSec\fP
+.PP
+You will need to adjust the audio/video startup delays when
+multiplexing to ensure audio and video are synchronized.
+The exact delay (in milliseconds) that you need to pass to mplex to
+synchronize audio and video using the \(rq-v\(rq\&" is printed by the
+extract_a52 tool labeled \(rqSYNC\(rq when run with the
+\(rqs\(rq flag. This is the value th mjpegtranscode script prints out
+after the \fBSYNC\fP word.
+.PP
+Then you need to multiplex them like this:
+.PP
+\fB> mplex -f 1 -O 234 vcd_stream.mp2 vcd_stream.m1v -o lowrate.mpg\fP
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.IP "-f 1"
+.nr bi 1
+.PP
+Mux format is set to VCD
+.IP "-O 234"
+.nr bi 1
+.PP
+Video timestamp offset in mSec, generated by the mjpegtranscoding
+script, there negative values are allowed
+.IP "vcd_stream.mp2 & vcd_stream.m1v"
+.nr bi 1
+.PP
+generated files by the script
+.IP "lowrate.mpg"
+.nr bi 1
+.PP
+the VCD compatible output stream
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+Here we have a SVCD (MPEG-2 video) example:
+.PP
+\fB> mjpegtranscode -S -o svcd_stream mpeg2src.mpg\fP
+.PP
+You have to multiplex it with:
+.PP
+\fB> mplex -f 4 -O 234 svcd_stream.mp2 svcd_stream.m2v -o lowrate.mpg\fP
+.PP
+\fBProblem:\fP
+There is sometimes a problem with NTSC and VCD playback because movies
+may be recoded with 3:2 pulldown NTSC with 60 fields/sec. mpeg2dec is
+designed for playback on computers and generates the original
+24frames/sec bitrate. If you encode the video now 30frames/sec video
+is created. This video is now much too short for the encoded audio.
+.PP
+The transcoding can be made to work but it must be done manually:
+.PP
+\fB> mpeg2dec -s -o pgmpipe mpeg2src.mpg \(br pgmtoy4m -a 59:54 -r 25:1 -i t \(br
+mpeg2enc -I 0 -f 4 -q 9 -V 230 -p -P -o svcd_stream.m2v\fP
+.PP
+The -p tells mpeg2enc to generate header flags for 3:2 pull down of
+24fps movie. It may also work if you do not add the -p flag.
+You do not need the -p flag when transcoding to VCD format because it
+is not supported in mpeg1.
+.SH If you want to do every step on your own it will look something like this
+
+.PP
+Extracting Audio:
+.PP
+\fB> cat test2.mpg \(br extract_a52 - -s \(br ac3dec -o wav -p sound.wav 2>/dev/null\fP
+.PP
+One of the first lines showed contains the label \(rqSYNC\(rq you
+have to use this time later when multiplexing. The 2>/dev/null
+redirects the output of ac3dec to /dev/null.  
+In the next step you generate the mpeg audio file:
+.PP
+\fB> cat sound.wav \(br mp2enc -V -v 2 -o audio.mp2\fP
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.IP "-V"
+.nr bi 1
+.PP
+forces VCD format, the sampling rate is converted to 44.1kHz from 48kHz
+.IP "-v 2"
+.nr bi 1
+.PP
+unnecessary but if you use it mp2enc tells you how many seconds
+of the audio file are already encoded.
+.IP "-o"
+.nr bi 1
+.PP
+Specifies the output file.
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+\fBcat test2.mpg \(br extract_a52 - -s \(br ac3dec -o wav \(br
+sox -t wav /dev/stdin -t wav -r 44100 /dev/stdout \(br toolame -p 2 -b 224 /dev/stdin audio.mp2\fP
+.PP
+One of the first lines again output contains the label \(rqSYNC\(rq\&.
+You have to use this time (referred to as \&"SYNC_value\&" below) when doing the 
+multiplexing.
+.PP
+For VCD creation use:
+.PP
+\fB> mpeg2dec -s -o pgmpipe test2.mpg \(br pgmtoy4m -a 59:54 -r 25:1 -i t \(br mpeg2enc -s -o video_vcd.m1v\fP
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.IP ""
+.nr bi 1
+.PP
+mpeg2dec:
+.IP "-s"
+.nr bi 1
+.PP
+tells mpeg2dec to use program stream demultiplexer
+.IP "-o pgmpipe"
+.nr bi 1
+.PP
+the output format of the pictures, suitable for pgmtoy4m
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+Mplex with:
+.PP
+\fB> mplex -f 1 -O SYNC_value audio.mp2 video_vcd.m1v -o vcd_stream.mpg\fP
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.IP "-f 1"
+.nr bi 1
+.PP
+generates an VCD stream
+.IP "-O SYNC_value"
+.nr bi 1
+.PP
+the value mentioned above
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+For SVCD creation use:
+.PP
+\fB> mpeg2dec -s -o mpeg2src.mpg \(br pgmtoy4m -a 59:54 -r 25:1 -i t  \(br mpeg2enc -f 4 -q 9 -V 230 -o video_svcd.mpg\fP
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.IP "-q 9"
+.nr bi 1
+.PP
+Quality factor for the stream (VBR stream) (default q: 12)
+.IP "-V 230"
+.nr bi 1
+.PP
+Target video buffer size in KB
+.IP "-o"
+.nr bi 1
+.PP
+Output file
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+Mplex with:
+.PP
+\fB> mplex -f 4 -b 230 audio.mp2 video_svcd -o svcd_stream.mpg\fP
+.PP
+.nr ll +1
+.nr t\n(ll 2
+.if \n(ll>1 .RS
+.IP "-f 4"
+.nr bi 1
+.PP
+generate an SVCD stream
+.IP "-b 200"
+.nr bi 1
+.PP
+Specify the video buffer size by the playback device.
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+For other video output formats this might work:
+.PP
+\fB> mpeg2dec -s -o pgmpipe test2.mpg \(br pgmtoy4m -a 59:54 -r 25:1 -i t \(br
+yuvscaler -O SIZE_320x200 -O NOT_INTERLACED \(br
+mpeg2enc -o strange_video.m1v\fP
+.PP
+If you want to edit mpeg streams this also works but in a slightly
+different way. For demultiplexing you can use bbdmux from the bbtools
+package. Splits out either video or audio very cleanly. 
+You can't get it any more from the homepage from Brent Beyler, it can
+still be found when you search for it using that keywords \(rq
+bbtools linux -suse -blackbox\(rq\&. Currenty it can be found at:
+.PP
+First run:
+.PP
+\fB> bbdmux myvideo.mpg\fP
+.PP
+You should get something like this:
+.PP
+.DS
+.sp 
+.ft RR
+.nf
+Found stream id 0xE0 = Video Stream 0
+Found stream id 0xC0 = MPEG Audio Stream 0
+Found stream id 0xBE = Padding Stream
+.DE
+.fi 
+.ec
+.ft P
+.sp
+.PP
+Extract audio with:
+.PP
+\fB> bbdmux myvideo.mpg 0xC0 audio.mp1\fP
+.PP
+Convert it to wav:
+.PP
+\fB> mpg123 -w audio.wav audio.m1v\fP
+.PP
+Extract video with:
+.PP
+\fB> bbdmux myvideo.mpg 0xE0 video.m1v\fP
+.PP
+Converting video to an mjpeg avi stream:
+.PP
+\fB> mpeg2dec -o pgmpipe video.m1v \(br pgmtoy4m -a 59:54 -r 25:1 -i t \(br yuv2lav -f a -o test.avi\fP
+.PP
+Then adding the sound to the avi:
+.PP
+\fB> lavaddwav test.avi audio.wav final.avi\fP
+.PP
+If the source video has already the size of the target video use -o
+YUV. Using YUVh makes the video the half size!
+The rest can be done just like editing and encoding other streams.
+If you have videos with ac3 sound you only have to adapt the commands
+above.
+.PP
+Extracting Audio:
+.PP
+\fB> cat test2.mpg \(br extract_a52 - -s \(br
+ac3dec -o wav 2>dev/null >sound.wav\fP
+.PP
+Extract video and adding the audio in a single step :
+.PP
+\fB> mpeg2dec -s -o pgmpipe \(br pgmtoy4m -a 59:54 -r 25:1 -i t \(br yuvscaler -O VCD \(br yuv2lav -f a -q 85 -w sound.wav -o test.avi\fP
+.PP
+\fBNOTE:\fPYou need much disk space. 1GB of video has a size of about 2GB
+at SVCD format and of course disk space is needed for some temp files.
+Converting the video to mjpeg also takes some time.
+On my Athlon 500 I never get more than 6-7 Frames a second.
+You loose quality each time you convert a stream into an other format! Trading Quality/Speed
+
+.PP
+If absolute quality is your objective a modest improvement can be
+achieved using the -4 and -2 flags.
+These control how ruthlessly mpeg2enc discards bad looking matches
+between sections of adjacent frames during the early stages of the
+search when it is working with 4*4 and 2*2 clusters of pixels rather
+than individual pixels. Setting -4 1 -2 1 maximizes quality. -4 4 -2 4
+maximizes speed. Note that because the statistical criteria mpeg2enc
+uses for discarding bad looking matches are usually fairly reliable
+the increase/decrease in quality is modest (but noticeable).
+.PP
+Reducing the radius of the search for matching sections of images also
+increases speed. However due to the way the search algorithm works the
+search radius is in effect rounded to the nearest multiple of 8.
+Furthermore on modern CPU's the speed gained by reducing the radius
+below 16 is not large enough to make the marked quality reduction
+worthwhile for most applications.
+.SH Creating streams to be played from disk using Software players
+
+.PP
+Usually MPEG player software is much more flexible than the hardware
+built into DVD and VCD players. This flexibility allows for
+significantly better compression to be achieved for the same quality.
+The trick is to generate video streams that use big video buffers
+(500KB or more) and variable bitrate encoding (the -f / -q flag to 
+mpeg2enc). Software players will often also correctly play back the   
+more efficient MPEG layer 3 (yes, \(rqMP3\(rq audio format.
+A good MP3 encoder like lame will produce results comparable to layer 2 at
+224Kbps at 128Kbps or 160Kbps.SMP and distributed Encoding
+
+.PP
+Distributed encoding is a quite dark theory for the typical Machine in 2013. 
+So most users can safely skip that point. SMP Encoding is more interresting for 
+the average computer
+.PP
+The degree to which mpeg2enc tries to split work between concurrently
+executing threads is controlled by the -M or --multi-thread [0..32]
+option. This optimizes mpeg2enc for the specified number of CPUs. By
+default (-M 1) mpeg2enc runs with just a little multi-threading: 
+reading of frames happens concurrently with compression. This is done
+to allow encoding pipelines that are split across several machines  
+(see below) to work efficiently without the need for special buffering
+programs.
+If you are encoding on a single-CPU machine where RAM is tight you may
+find turning off multithreading altogether by setting -M 0 works
+slightly more efficiently.
+.PP
+For SMP machines with two ore more processors you can speed up
+mpeg2enc by setting the number of concurrently executing encoding
+threads's you wish to utilize (e.g. -M 2). Setting -M 2 or -M 3 on a
+2-way machine should allow you to speed up encoding by around 80%\&.
+Values above 3 are accepted but have very little effect even on 4 cpu systems.
+.PP
+If you have a real fast SMP machine (currently 1.Aug.03) like a dual
+Athlon MP 2600 or something similar the -M 2 and the filtering might not
+keep both (or more)  CPU's busy. The use of the buffer or bfr program
+with a 10-20MB buffer helps to keep both CPUs busy.
+.PP
+Obviously if your encoding pipeline contains several filtering stages
+it is likely that you can keep two or more CPU's busy simultaneously
+even without using -M. Denoising using yuvdenoise or yuvmedianfilter is 
+particular demanding and uses almost as much processing power as 
+MPEG encoding.
+.PP
+It you more than one computer you can also split the encoding pipeline
+between computers using the standard 'rsh' or 'rcmd'
+remote shell execution commands. For example, if you have two computers:
+.PP
+\fB> rsh machine1 lav2yuv \(rqmycapture.eli \(br
+yuvscaler -O SVCD \(br yuvdenoise\(rq \(br
+mpeg2enc -f 4 -o mycapture.m2vi\fP
+.PP
+Here the computer where you execute the command is doing the MPEG
+encoding and \(rqmachine1\(rq is the machine that is decoding
+scaling and denoising the captured video.
+.PP
+Obviously, for this to work \(rqmachine1\(rq has to be able to
+access the video and the computer where the command is executed has to have
+space for the encoded video. In practice, it is usually well worth setting
+up network file-storage using \(rqNFS\(rq or other packages if you are
+going to do stuff like this.
+If you have three computers you can take this a stage further, one
+computer could do the decoding and scaling, the next could do
+denoising and the third could do MPEG encoding:
+.PP
+\fB> rsh machine1 \(rqlav2yuv mycapture.eli \(br
+yuvscaler -O SVCD\(rq \(br
+yuvdenoise \(br rsh machine3 mpeg2enc -f 4 -o mycapture.m2v\fP
+.PP
+\fBNOTE:\fPHow the remote command executions are set up so that the
+data is sent direct from the machine that produces it to the machine that   
+consumes it.
+.PP
+In practice for this to be worthwhile the network you are using must  
+be fast enough to avoid becoming a bottleneck. For Pentium-III class
+machines or above you will need a 100Mbps Ethernet.
+.PP
+For really fast machines a switched 100MBps Ethernet (or better!) may
+be needed.Setting up the rshd (\(rqRemote Shell Daemon\(rq needed for
+rsh to do its work and configuring \(rqrsh\(rq is beyond the scope of
+this document, but its a standard package and should be easily installed
+and activated on any Linux or BSD distribution.
+.PP
+Be aware that this is potentially a security issue so use with care on
+machines that are visible to outside networks!Interoperability
+
+.PP
+Quicktime files capturing using lavrec can be edited using Broadcast2000.
+But Broadcast2000 is not available any more on heroinewarrior. 
+mjpeg AVI files captured using the streamer tool from the xawtv
+package can be edited and compressed and played back using software.
+Hardware playback is not possible for such files due to limitations in
+the Zoran hardware currently supported. Videos recorded with
+NuppelVideo can also be processed with the mjpeg tools.
+.PP
+If you have a Macintosh (MAC) and want to use the mjpeg tools look there:
+.PP
+MPEG files produced using the tools are know to play back correctly on:
+.PP
+.nr ll +1
+.nr t\n(ll 0
+.if \n(ll>1 .RS
+.nr bi 1
+.PP
+dxr2 (hardware decoder card)
+.nr bi 1
+.PP
+xine 
+.nr bi 1
+.PP
+xmovie 
+.nr bi 1
+.PP
+mplayer 
+.nr bi 1
+.PP
+vlc 
+.nr bi 1
+.PP
+MPEG-1 only: gtv 
+.nr bi 1
+.PP
+MS Media player version 6 and 7 and later version
+.nr bi 1
+.PP
+severals Software based DVD Player
+.if \n(ll>1 .RE
+.nr ll -1
+.PP
+To find out what you HW-player (most of the time DVD player) can do
+take a look at:
+.PP
+It seems that the MS Media player likes MPEG-1 streams more if you
+have used -f 1 when multiplexing.
+.PP
+If you have any problems or suggestions feel free to mail me (Bernhard
+Praschinger): 
+There is a lot of stuff added from the HINTS which Andrew Stevens 
+created. Wolfgang Goeller and Steven M. Schultz checked the document 
+for bugs and spelling mistakes.
+.PP
+And to the people who have helped me with program descriptions and
+hints, \fBthanks\fP
+.SH "SEE ALSO"
+.br 
+.LP 
+The mjpeg homepage is at:
+.br 
+http://mjpeg.sourceforge.net/
+.br 
+http://sourceforge.net/projects/mjpeg
+
+vcdimager  is aviable at: 
+.br 
+http://www.vcdimager.org/
+.br 
+
+cdrdao   is aviable at:
+.br 
+http://cdrdao.sourceforge.net/index.html
+.br 
+
+Linux Video Studio is aviable at:
+.br 
+http://ronald.bitfreak.net
+
+The lavtools:
+.br 
+.BR jpeg2yuv(1),
+.BR lav2wav(1),
+.BR lav2yuv(1),
+.BR lavpipe(1),
+.BR lavplay(1),
+.BR lavrec(1),
+.BR lavtrans(1),
+.BR lavinfo(1),
+.BR mp2enc(1),
+.BR mpeg2enc(1),
+.BR mplex(1),
+.BR ppmtoy4m (1),
+.BR pnmtoy4m (1),
+.BR yuv2lav(1),
+.BR yuvdenoise(1),
+.BR yuvkineco(1),
+.BR yuvmedianfilter(1),
+.BR yuvplay(1),
+.BR yuvfps(1),
+.BR yuvscaler(1),
+.BR yuvycsnoise(1),
+.BR y4mblack(1),
+.BR y4mcolorbars(1),
+.BR y4mdenoise(1),
+.BR y4mhist(1),
+.BR y4minterlace(1),
+.BR y4mshift(1),
+.BR y4mstabilizer(1),
+.BR y4mtopnm(1).
+.BR y4mtoppm(1).
+
+.br
+Tools without a man page: lavaddwaw, glav
+
