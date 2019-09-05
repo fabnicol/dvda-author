@@ -132,7 +132,7 @@ static void convert_buffer(WaveHeader* header, uint8_t *buf, int count)
 
         default:
             // FIX: Handle 20-bit audio and maybe convert other formats.
-            printf("[ERR]  %d bit %d channel audio is not supported\n", header->wBitsPerSample, header->channels);
+            fprintf(stderr, "[ERR]  %d bit %d channel audio is not supported\n", header->wBitsPerSample, header->channels);
             return;
             //exit(EXIT_FAILURE);
     }
@@ -1296,17 +1296,17 @@ static inline int scan_ats_ifo(fileinfo_t **files, uint8_t *buf)
     {
         ++group;
 
-        printf(ANSI_COLOR_BLUE "Group " ANSI_COLOR_GREEN "   Track/N  " ANSI_COLOR_YELLOW  "first sector" ANSI_COLOR_RED "  last sector"
-               ANSI_COLOR_YELLOW "  first pts" ANSI_COLOR_RED "    pts length\n");
+        foutput("%s\n", ANSI_COLOR_BLUE "Group " ANSI_COLOR_GREEN "   Track/N  " ANSI_COLOR_YELLOW  "first sector" ANSI_COLOR_RED "  last sector"
+               ANSI_COLOR_YELLOW "  first pts" ANSI_COLOR_RED "    pts length");
 
         for (track = 0; track < ntracks; ++track)
         {
-              printf(ANSI_COLOR_BLUE "%02d  " ANSI_COLOR_GREEN "      %02d/%02d" ANSI_COLOR_YELLOW " %12u" ANSI_COLOR_RED "%12u"
-                     ANSI_COLOR_YELLOW "%12" PRIu64 ANSI_COLOR_RED "%12" PRIu64 "\n",
-                   group, track+1, ntracks, files[track]->first_sector, files[track]->last_sector,
-                     files[track]->first_PTS, files[track]->PTS_length);
+              foutput(ANSI_COLOR_BLUE "%02d  " ANSI_COLOR_GREEN "      %02d/%02d" ANSI_COLOR_YELLOW " %12u" ANSI_COLOR_RED "%12u"
+                     ANSI_COLOR_YELLOW "%12u" ANSI_COLOR_RED "%12u",
+                        group, track+1, ntracks, files[track]->first_sector, files[track]->last_sector,
+                        files[track]->first_PTS, files[track]->PTS_length);
         }
-        printf("\n");
+        foutput("%s","\n");
     }
 
     return(ntracks);
@@ -1368,7 +1368,7 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
           int nbytesread = fread(buf, 1, 3 * 2048, file);
 
           if (globals.veryverbose)
-              printf( INF "Read IFO file: %d bytes\n", nbytesread);
+              foutput( INF "Read IFO file: %d bytes\n", nbytesread);
 
           fclose(file);
 
@@ -1378,7 +1378,7 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
               clean_exit(EXIT_FAILURE);
           }
 
-          printf("%c", '\n');
+          foutput("%c", '\n');
 
           /* now scan tracks to be extracted */
 

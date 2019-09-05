@@ -65,7 +65,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define HEADER(X, Y)      do{ \
                           foutput("\n%s\n",     " ---------- " X" version "Y" ----------");\
                           foutput("\n%s\n", INFO_GNU);\
-    print_time(1); puts("");}while(0);
+    print_time(1); foutput("%s", "\n");}while(0);
 
 
 #define FREE(X)  { free(X) ; X = NULL; }

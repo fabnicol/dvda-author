@@ -198,13 +198,13 @@ int launch_manager(command_t *command)
     }
 
     if (singlestar_flag)
-        printf ("\n%s\n", "A star indicates a single-track group.");
+        foutput("\n%s\n", "A star indicates a single-track group.");
 
     if (joinmark_flag)
-        printf ("\n%s\n", "An = sign indicates that this file and the following will be joined.");
+        foutput("\n%s\n", "An = sign indicates that this file and the following will be joined.");
 
     if (nplaygroups)
-        printf ("\n%s\n", "a D flag indicates a duplicated group (followed by original group rank).");
+        foutput("\n%s\n", "a D flag indicates a duplicated group (followed by original group rank).");
 
     foutput("%c\n", '\n');
 
@@ -229,7 +229,7 @@ int launch_manager(command_t *command)
         if (totntracks == totntracks0)
          foutput("%s\n", INF "Coherence check on total of tracks... OK");
         else
-        printf(INF "Total of tracks is not coherent: totntracks=%d, return of create_tracktables=%d\n", totntracks, totntracks0);
+        foutput(INF "Total of tracks is not coherent: totntracks=%d, return of create_tracktables=%d\n", totntracks, totntracks0);
     }
 
     int nb_atsi_files = 0;

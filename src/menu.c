@@ -180,7 +180,7 @@ void create_activemenu(pic* img)
      if (svvobfile == NULL)
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Cannot open AUDIO_SV.VOB for generating active menus.")
 
-     fprintf(stdout, "\n"DBG "Creating active menu: will patch AUDIO_TS.VOB into AUDIO_SV.VOB=%s\n\n",img->stillvob);
+     foutput("\n"DBG "Creating active menu: will patch AUDIO_TS.VOB into AUDIO_SV.VOB=%s\n\n",img->stillvob);
 
      for (j=0; j < totntracks; j++)
          fwrite(tsvobpt, tsvobsize, 1, svvobfile);
@@ -506,7 +506,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     switch (fork())
     {
         case -1:
-            fprintf(stdout,"%s\n", ERR "Could not launch jpeg2yuv");
+            fprintf(stderr,"%s\n", ERR "Could not launch jpeg2yuv");
             break;
 
         case 0:

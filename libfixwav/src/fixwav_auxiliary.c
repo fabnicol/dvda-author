@@ -34,7 +34,7 @@ bool isok()
 {
   char buf[FIXBUF_LEN]={0};
   get_input(buf);
-  printf("%c", '\n');
+  fprintf(stderr, "%c", '\n');
 
   // With silent mode, replies are implicitly OK.
   switch (toupper(buf[0]))

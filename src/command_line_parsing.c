@@ -2332,7 +2332,7 @@ out:
             errno=0;
             if (fopen(globals.xml, "rb") != NULL)
                 fclose(fopen(globals.xml, "rb"));
-            if (!errno) puts(MSG_TAG "--> dvdauthor requirement...OK");
+            if (!errno) foutput("%s\n", MSG_TAG "--> dvdauthor requirement...OK");
         }
         else errno=1;
         break;
@@ -2346,7 +2346,7 @@ out:
             if ((f=fopen(img->tsvob, "rb")) != NULL)
             {
                 fclose(f);
-                puts(MSG_TAG "--> top vob requirement...OK");
+                foutput("%s\n", MSG_TAG "--> top vob requirement...OK");
             }
         }
         break;

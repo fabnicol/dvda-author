@@ -69,7 +69,7 @@ void pause_dos_type()
 {
     char reply;
     char buffer[150];
-    puts("Press twice on Enter to continue...");
+    fprintf(stderr, "%s\n", "Press twice on Enter to continue...");
 
     do
     {
@@ -110,7 +110,7 @@ int download_fullpath(const char* curlpath, const char* filename, const char* fu
 {
     char command[30+1+strlen(filename)+strlen(fullpath)];
     sprintf(command, "%s -# -f -o %s --location %s", curlpath, filename, fullpath);
-    if (globals.veryverbose) printf(INF "downloading: %s\n", command);
+    if (globals.veryverbose) fprintf(stderr, INF "downloading: %s\n", command);
     return system(win32quote(command));
 }
 
@@ -133,7 +133,7 @@ char *fn_get_current_dir_name (void)
 DWORD  ret = GetCurrentDirectory((DWORD) CHAR_BUFSIZ, Buffer);
 if (ret == 0 || ret > CHAR_BUFSIZ)
         {
-            printf ("%s", ERR "Not enough memory for GetCurrentDirectory \n");
+            fprintf (stderr, "%s", ERR "Not enough memory for GetCurrentDirectory \n");
             exit (EXIT_FAILURE);
         }
 return (char*) Buffer;
@@ -151,7 +151,7 @@ return (char*) Buffer;
         len += 32;
         if(NULL == (cwd = realloc (cwd, len * sizeof(char))))
         {
-            printf ("%s", ERR "Not enough memory for my_get_cwd.\n");
+            fprintf (stderr, "%s", ERR "Not enough memory for my_get_cwd.\n");
             exit (EXIT_FAILURE);
         }
     }
@@ -243,7 +243,7 @@ void action_file (const char *file)
 {
     if (unlink (file))
     {
-        printf (ERR "Impossible to erase file %s \n"
+        fprintf (stderr, ERR "Impossible to erase file %s \n"
                 "(errno = %s)\n", file, strerror (errno));
         exit (EXIT_FAILURE);
     }
@@ -290,7 +290,7 @@ int rmdir_recursive (char *root, char *dirname)
                 (new_root =
                      malloc ((size_t)(rootlen + dirnamelen + 2) * sizeof( *new_root))))
         {
-            printf ("%s", ERR "malloc issue\n");
+            fprintf (stderr, "%s", ERR "malloc issue\n");
             exit (EXIT_FAILURE);
         }
         memcpy (new_root, root, rootlen);
@@ -307,7 +307,7 @@ int rmdir_recursive (char *root, char *dirname)
 
     if (NULL == (FD = opendir (".")))
     {
-        printf ("%s", ERR "opendir() issue\n");
+        fprintf (stderr, "%s", ERR "opendir() issue\n");
         free(cwd);
         return (-1);
     }
@@ -324,7 +324,7 @@ int rmdir_recursive (char *root, char *dirname)
             continue;
         if (NULL == (n = malloc (sizeof *n)))
         {
-            printf ("%s", ERR "memory issue\n");
+            fprintf (stderr, "%s", ERR "memory issue\n");
             free(cwd);
             exit (EXIT_FAILURE);
         }
@@ -579,7 +579,7 @@ path_t *parse_filepath(const char* filepath)
         chain->isfile=0;
         if (globals.veryverbose)
         {
-            printf(MSG_TAG "Path %s is not a file\n", filepath);
+            fprintf(stderr, MSG_TAG "Path %s is not a file\n", filepath);
         }
     }
     else
@@ -667,20 +667,20 @@ bool clean_directory(char* path)
 
     if (s_dir_exists(path))
     {
-      if (globals.veryverbose) printf("%s%s\n", INF "Cleaning directory ", path);
+      if (globals.veryverbose) fprintf(stderr, "%s%s\n", INF "Cleaning directory ", path);
       errno=rmdir_global(path);
     }
 
     if (errno)
     {
         if (globals.veryverbose)
-            printf("%s%s\n", MSG_TAG "Failed to clean directory ", path);
+            fprintf(stderr, "%s%s\n", MSG_TAG "Failed to clean directory ", path);
         return 0;
     }
     else
     {
         if (globals.veryverbose)
-            printf("%s\n", MSG_TAG "OK.");
+            fprintf(stderr, "%s\n", MSG_TAG "OK.");
         return 1;
     }
 }
@@ -846,14 +846,14 @@ bool s_dir_exists(const char* path)
 
     if (stat(path, &info) != 0)
     {
-        if (globals.veryverbose) printf( MSG_TAG "Directory to be created: %s \n", path);
+        if (globals.veryverbose) fprintf(stderr,  MSG_TAG "Directory to be created: %s \n", path);
         errno = 0;
         return false;
     }
     else
     if (info.st_mode & S_IFDIR)
     {
-        if (globals.veryverbose) printf( WAR "Directory %s already exists.\n", path);
+        if (globals.veryverbose) fprintf(stderr,  WAR "Directory %s already exists.\n", path);
         errno = 0;
     }
 
@@ -900,7 +900,7 @@ int secure_mkdir (const char *path, mode_t mode)
 
     if  ((len<1) && (globals.debugging))
     {
-        printf("%s\n",ERR "Path length could not be allocated by secure_mkdir:\n       Your compiler may not be C99-compliant");
+        fprintf(stderr, "%s\n",ERR "Path length could not be allocated by secure_mkdir:\n       Your compiler may not be C99-compliant");
         clean_exit(EXIT_FAILURE);
     }
 
@@ -933,7 +933,7 @@ int secure_mkdir (const char *path, mode_t mode)
                 {
                     fprintf(stderr, "Impossible to create directory '%s'\n", d);
                     perror("\n"ERR "mkdir ");  // EEXIST error messages are often spurious
-                    puts(path);
+                    fprintf(stderr, "%s\n", path);
                     clean_exit(EXIT_FAILURE);
                 }
             }
@@ -948,8 +948,8 @@ int secure_mkdir (const char *path, mode_t mode)
     if  (MKDIR(path, mode) == -1)
     {
 
-        printf(ERR "Impossible to create directory '%s'\n", path);
-        printf("       permission was: %d\n       %s\n", mode, strerror(errno));
+        fprintf(stderr, ERR "Impossible to create directory '%s'\n", path);
+        fprintf(stderr, "       permission was: %d\n       %s\n", mode, strerror(errno));
         errno=0;
         clean_exit(EXIT_FAILURE);
     }
@@ -990,7 +990,7 @@ char* get_cl(const char** args, uint16_t start)
     }
 
     cml[shift - 1]=0;
-    if (globals.debugging) printf(INF "Command line: %s\n", cml);
+    if (globals.debugging) foutput(INF "Command line: %s\n", cml);
 
     return cml;
 }
@@ -1051,11 +1051,12 @@ void print_commandline(int argc, char * const argv[])
 {
     int i=0;
 
-    if (globals.debugging) printf("%s \n", INF "Running:");
+    if (globals.debugging) foutput("%s \n", INF "Running:");
 
     for (i=0; i < argc ; i++)
-        printf("%s ",  argv[i]);
-    printf("%s", "\n\n");
+        foutput("%s ",  argv[i]);
+
+    foutput("%s", "\n\n");
 
 }
 
@@ -1085,20 +1086,20 @@ char* print_time(int verbose)
     {
         if (strftime(outstr, sizeof(outstr), "%d %b %Y, %Hh %Mm %Ss", tmp) == 0)
         {
-            printf("%s\n", "strftime returned 0");
+            fprintf(stderr, "%s\n", "strftime returned 0");
             exit(EXIT_FAILURE);
         }
     }
 
     else if (strftime(outstr, sizeof(outstr), "%Hh %Mm %Ss", tmp) == 0)
     {
-        printf("%s\n", "strftime returned 0");
+        fprintf(stderr, "%s\n", "strftime returned 0");
         exit(EXIT_FAILURE);
     }
 
     if (verbose)
     {
-        printf("\nCurrent time is: %s", outstr);
+        fprintf(stderr, "\nCurrent time is: %s", outstr);
         return NULL;
     }
     else
@@ -1122,7 +1123,7 @@ void change_directory(const char * filename)
     if (chdir(filename) == -1)
     {
         if (errno == ENOTDIR)
-            printf(ERR "%s is not a directory\n", filename);
+            fprintf(stderr, ERR "%s is not a directory\n", filename);
         else
         {
              fprintf(stderr, ERR "Impossible to cd to %s.\n", filename);
@@ -1133,7 +1134,7 @@ void change_directory(const char * filename)
     else
     {
         if (globals.debugging)
-        printf(DBG "Current working directory is now %s\n", filename);
+          fprintf(stderr, DBG "Current working directory is now %s\n", filename);
     }
 }
 
@@ -1158,7 +1159,7 @@ int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED *,
 
     fprintf(stderr, "%c", '\n');
 
-    if (globals.debugging)  printf("%s%s\n", INF "Traversing dir = ", src);
+    if (globals.debugging)  fprintf(stderr, "%s%s\n", INF "Traversing dir = ", src);
     const char* olddir = fn_get_current_dir_name();
     change_directory(src);
 
@@ -1185,7 +1186,7 @@ int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED *,
 
         if (S_ISREG(buf.st_mode))
         {
-            if (globals.debugging) printf("%s: %s\n", INF "Processing file", d->d_name);
+            if (globals.debugging) fprintf(stderr, "%s: %s\n", INF "Processing file", d->d_name);
             if (arg3 != NULL && is_dir(arg2))
             {
                 char* fullpath = calloc(strlen((char*) arg2) + 1 + strlen(src) + 1 + strlen(d->d_name) + 1, sizeof (char));
@@ -1208,7 +1209,7 @@ int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED *,
         else continue;
     }
 
-    if (globals.debugging)   printf("%s", INF "Done. Backtracking... \n\n");
+    if (globals.debugging)   fprintf(stderr, "%s", INF "Done. Backtracking... \n\n");
     closedir(dir_src);
     return(errno);
 }
@@ -1248,22 +1249,22 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
         exit(EXIT_FAILURE);
     }
 
-    printf("%c", '\n');
+    fprintf(stderr, "%c", '\n');
 
-    if (globals.debugging)  printf("%s%s\n", INF "Creating directory ", dest);
+    if (globals.debugging)  fprintf(stderr, "%s%s\n", INF "Creating directory ", dest);
 
     errno = 0;
 
     if (secure_mkdir(dest, mode) == 0)
     {
 
-      if (globals.debugging)   printf(INF "Copying in %s ...\n", src);
+      if (globals.debugging)   fprintf(stderr, INF "Copying in %s ...\n", src);
 
        traverse_directory(src, copy_file_wrapper, true, (void*) dest, (void*) &mode);
     }
     else
     if (globals.debugging)
-        printf("%s%s\n", INF "No files copied to ", dest);
+        fprintf(stderr, "%s%s\n", INF "No files copied to ", dest);
 
     return(errno);
 }
@@ -1357,15 +1358,15 @@ int stat_dir_files(const char* src)
         return(errno);
     }
 
-    printf("%c", '\n');
+    fprintf(stderr, "%c", '\n');
 
-    if (globals.debugging)  printf("%s%s\n", INF " Summing up directory file sizes...", src);
+    if (globals.debugging)  fprintf(stderr, "%s%s\n", INF " Summing up directory file sizes...", src);
 
     uint64_t total_size = 0;
 
     traverse_directory(src, stat_file_wrapper, false, (void*) &total_size, NULL);
 
-    printf("%s%" PRIu64 "\n", MSG_TAG "Directory file size is ", total_size);
+    fprintf(stderr, "%s%" PRIu64 "\n", MSG_TAG "Directory file size is ", total_size);
     return(errno);
 }
 
@@ -1387,15 +1388,15 @@ int count_dir_files(const char* src)
         return(errno);
     }
 
-    printf("%c", '\n');
+    fprintf(stderr, "%c", '\n');
 
-    if (globals.debugging)  printf("%s%s\n", INF "Counting files in ...", src);
+    if (globals.debugging)  fprintf(stderr, "%s%s\n", INF "Counting files in ...", src);
 
     int total = 0;
 
     traverse_directory(src, counter, true, (void*) &total, NULL);
 
-    printf("%s%d%s\n", MSG_TAG "Directory has ", total, " files.");
+    fprintf(stderr, "%s%d%s\n", MSG_TAG "Directory has ", total, " files.");
     return(total);
 }
 
@@ -1411,9 +1412,9 @@ char* filter_dir_files(const char* src,  char* filter)
         return NULL;
     }
 
-    printf("%c", '\n');
+    fprintf(stderr, "%c", '\n');
 
-    if (globals.debugging)  printf("%s%s%s%s\n", INF "Filtering files in ...", src, " with ", filter);
+    if (globals.debugging)  fprintf(stderr, "%s%s%s%s\n", INF "Filtering files in ...", src, " with ", filter);
 
     chain = calloc(CHAR_BUFSIZ, sizeof(char));
 
@@ -1443,13 +1444,13 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
         exit(EXIT_FAILURE);
     }
 
-    printf("%c", '\n');
+    fprintf(stderr, "%c", '\n');
 
-    if (globals.debugging)  printf("%s%s\n", INF "Creating dir=", dest);
+    if (globals.debugging)  fprintf(stderr, "%s%s\n", INF "Creating dir=", dest);
 
     secure_mkdir(dest, mode);
 
-    if (globals.debugging)   printf(INF "Copying in %s ...\n", src);
+    if (globals.debugging)   fprintf(stderr, INF "Copying in %s ...\n", src);
     change_directory(src);
 
     dir_src=opendir(".");
@@ -1467,7 +1468,7 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
         if (S_ISDIR(buf.st_mode))
         {
 
-            if (globals.debugging) printf("%s %s %s %s\n", INF "Copying dir=", f->d_name, " to=", path);
+            if (globals.debugging) fprintf(stderr, "%s %s %s %s\n", INF "Copying dir=", f->d_name, " to=", path);
 
             errno=copy_directory(f->d_name, path, mode);
 
@@ -1475,7 +1476,7 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
         }
         if (S_ISREG(buf.st_mode))
         {
-            if (globals.debugging) printf("%s%s to= %s\n", INF "Copying file=", f->d_name, path);
+            if (globals.debugging) fprintf(stderr, "%s%s to= %s\n", INF "Copying file=", f->d_name, path);
             errno=copy_file(f->d_name, path);
         }
         /* does not copy other types of files(symlink, sockets etc). */
@@ -1483,7 +1484,7 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
         else continue;
     }
 
-    if (globals.debugging)   printf("%s", INF "Done. Backtracking... \n\n");
+    if (globals.debugging)   fprintf(stderr, "%s", INF "Done. Backtracking... \n\n");
     closedir(dir_src);
     return(errno);
 }
@@ -1500,7 +1501,7 @@ int copy_file_no_p(FILE *infile, FILE *outfile)
     double counter=0;
     size_t chunk=0;
 
-    if (globals.veryverbose) printf("%s","       |");
+    if (globals.veryverbose) fprintf(stderr, "%s","       |");
     errno=0;
     while (!feof(infile))
     {
@@ -1532,10 +1533,10 @@ int copy_file_no_p(FILE *infile, FILE *outfile)
         putchar('|');
         counter=counter-1;
         counter=(counter*sizeof(char)*BUFSIZ+chunk)/1024;
-        printf("\n"MSG_TAG "Copied %.2lf KB.\n", counter);
-        if (!errno) puts("\n" MSG_TAG "Copy completed.");
+        fprintf(stderr, "\n"MSG_TAG "Copied %.2lf KB.\n", counter);
+        if (!errno) fprintf(stderr, "\n", MSG_TAG "Copy completed.");
         else
-            puts("\n"ERR "Copy failed.");
+            fprintf(stderr, "%s\n", "\n"ERR "Copy failed.");
 
     }
     return(errno);
@@ -1580,7 +1581,7 @@ char* copy_file2dir(const char *existing_file, const char *new_dir)
 
     static uint32_t counter;
     int errorlevel;
-    if (globals.veryverbose) printf(INF "Copying file %s to directory %s\n", existing_file, new_dir);
+    if (globals.veryverbose) fprintf(stderr, INF "Copying file %s to directory %s\n", existing_file, new_dir);
 
     path_t* filestruct=parse_filepath(existing_file);
     if (!filestruct) return NULL;
@@ -1615,7 +1616,7 @@ void copy_file2dir_rename(const char *existing_file, const char *new_dir, char* 
 
 
     int errorlevel;
-    if (globals.veryverbose) printf(INF "Copying file %s to directory %s\n", existing_file, new_dir);
+    if (globals.veryverbose) fprintf(stderr, INF "Copying file %s to directory %s\n", existing_file, new_dir);
 
     char *dest=calloc(strlen(newfilename)+strlen(new_dir)+1+1, sizeof(char));
     sprintf(dest, "%s%s%s", new_dir, SEPARATOR, newfilename);
@@ -1799,10 +1800,10 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
     }
 
     if (header->is_extensible)
-        printf(INF "Found extensible WAV header\n");
+        fprintf(stderr, INF "Found extensible WAV header\n");
     else
     {
-        printf(INF "Found non-standard extensible-like WAV header, continue parsing...\n");
+        fprintf(stderr, INF "Found non-standard extensible-like WAV header, continue parsing...\n");
         header->is_extensible = true;
     }
 
@@ -1825,10 +1826,10 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
     while ( span < MAX_HEADER_SIZE-7);
 
     if (header->has_fact)
-        printf(INF "Found `fact' chunk\n");
+        fprintf(stderr, INF "Found `fact' chunk\n");
     else
     {
-        printf(INF "No `fact' chunk in header.\n");
+        fprintf(stderr, INF "No `fact' chunk in header.\n");
     }
 
 
@@ -1841,7 +1842,7 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
 
         if ((pt=memchr(haystack+span+1, 'd', MAX_HEADER_SIZE-1-span)) == NULL)
         {
-            printf(WAR "Could not find substring 'data' among %d characters\n", MAX_HEADER_SIZE);
+            fprintf(stderr, WAR "Could not find substring 'data' among %d characters\n", MAX_HEADER_SIZE);
             if (globals.debugging)
             {
                 hexdump_header(info->infile.fp, MAX_HEADER_SIZE);
@@ -1907,10 +1908,10 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
                 {
 
                     if (header->ichunks)
-                        printf(MSG_TAG "Found %d info chunks among %d characters\n       INAM %s\n       IART %s\n       ICMT %s\n       ICOP %s\n       ICRD %s\n       IGNR %s\n",
+                        fprintf(stderr, MSG_TAG "Found %d info chunks among %d characters\n       INAM %s\n       IART %s\n       ICMT %s\n       ICOP %s\n       ICRD %s\n       IGNR %s\n",
                                header->ichunks, span, header->INAM, header->IART, header->ICMT, header->ICOP, header->ICRD, header->IGNR);
                     else
-                        printf(MSG_TAG "Could not find info chunks among %d characters\n", span);
+                        fprintf(stderr, MSG_TAG "Could not find info chunks among %d characters\n", span);
 
                 }
                 break;
@@ -1944,23 +1945,23 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
 
     if (header->ichunks)
     {
-        printf(MSG_TAG "Found %d info chunks in extended header\n", header->ichunks);
+        fprintf(stderr, MSG_TAG "Found %d info chunks in extended header\n", header->ichunks);
         if (globals.debugging)
         {
-            printf(MSG_TAG "See file `database' under directory %s\n", info->database);
+            fprintf(stderr, MSG_TAG "See file `database' under directory %s\n", info->database);
         }
     }
 
     if (globals.debugging)
     {
         if (span != 36)
-            printf( MSG_TAG "Size of header is non-standard (scanned %d characters)\n", header->header_size_in);
+            fprintf(stderr,  MSG_TAG "Size of header is non-standard (scanned %d characters)\n", header->header_size_in);
         else
-            printf("%s", MSG_TAG "Size of header is standard\n");
+            fprintf(stderr, "%s", MSG_TAG "Size of header is standard\n");
 
         if (header->header_size_in  < 44)
         {
-            printf( "[MSF]  Size of header is too short, some audio will be lost (%d bytes).\n", header->header_size_in  - span);
+            fprintf(stderr,  "[MSF]  Size of header is too short, some audio will be lost (%d bytes).\n", header->header_size_in  - span);
         }
     }
 
@@ -1988,7 +1989,7 @@ void  secure_open(const char *path, const char *context, FILE* f)
     if (f != NULL) fclose(f);
     if ( (f=fopen( path, context ))  == NULL )
     {
-        printf(ERR "Could not open '%s'\n", path);
+        fprintf(stderr, ERR "Could not open '%s'\n", path);
         exit(EXIT_FAILURE);
     }
 
@@ -2005,8 +2006,8 @@ int end_seek(FILE *outfile)
 {
     if ( fseek(outfile, 0, SEEK_END) == -1)
     {
-        printf( "\n%s\n", ERR "Error seeking to end of output file" );
-        printf( "%s\n", "     File was not changed\n" );
+        fprintf(stderr,  "\n%s\n", ERR "Error seeking to end of output file" );
+        fprintf(stderr,  "%s\n", "     File was not changed\n" );
         return(FAIL);
     }
     return(0);
@@ -2026,14 +2027,14 @@ void hexdump_header(FILE* infile, uint8_t header_size)
 {
     unsigned char data[ HEX_COLUMNS ];
     size_t i, size=0, count=0, input=0;
-    printf( "%c", '\n' );
+    fprintf(stderr,  "%c", '\n' );
     do
     {
 
         memset(data, 0, HEX_COLUMNS);
 
         /* Print the base address. */
-        printf("%08lX:  ", (long unsigned)count);
+        fprintf(stderr, "%08lX:  ", (long unsigned)count);
 
 
         input= Min(header_size -count, HEX_COLUMNS);
@@ -2047,17 +2048,17 @@ void hexdump_header(FILE* infile, uint8_t header_size)
 
             /* Print the hex values. */
             for ( i = 0; i < HEX_COLUMNS; i++ )
-                printf("%02X ", data[i]);
+                fprintf(stderr, "%02X ", data[i]);
 
             /* Print the characters. */
             for ( i = 0; i < HEX_COLUMNS; i++ )
-                printf("%c", (i < input)? (isprint(data[i]) ? data[i] : '.') : ' ');
+                fprintf(stderr, "%c", (i < input)? (isprint(data[i]) ? data[i] : '.') : ' ');
 
-            printf("%c", '\n');
+            fprintf(stderr, "%c", '\n');
         }
         else
         {
-            printf("%s\n", ERR "Header was not properly read by hexdump_header()");
+            fprintf(stderr, "%s\n", ERR "Header was not properly read by hexdump_header()");
         }
 
         /* break on partial buffer */
@@ -2065,7 +2066,7 @@ void hexdump_header(FILE* infile, uint8_t header_size)
     while ( count < header_size );
 
 
-    printf( "%c", '\n' );
+    fprintf(stderr,  "%c", '\n' );
 
 }
 
@@ -2264,7 +2265,7 @@ char* win32quote(const char* path)
     if (result) return (result);
     else
     {
-        printf(ERR "Could not allocate quoted string for %s.\n", path);
+        fprintf(stderr, ERR "Could not allocate quoted string for %s.\n", path);
         return NULL;
     }
 
@@ -2291,7 +2292,7 @@ char* quote(const char* path)
     if (result) return (result);
     else
     {
-        printf(ERR "Could not allocate quoted string for %s.\n", path);
+        fprintf(stderr, ERR "Could not allocate quoted string for %s.\n", path);
         return NULL;
     }
 }
@@ -2349,13 +2350,13 @@ if (_fork)
 
                   if (WIFEXITED(wstatus)) {
                       if (globals.veryverbose)
-                        fprintf(stdout, "%sProcess %s (pid %d) exited, status=%d\n", (WEXITSTATUS(wstatus) == 0 ? MSG_TAG : WAR), application, pid, WEXITSTATUS(wstatus));
+                        fprintf(stderr, "%sProcess %s (pid %d) exited, status=%d\n", (WEXITSTATUS(wstatus) == 0 ? MSG_TAG : WAR), application, pid, WEXITSTATUS(wstatus));
                   } else if (WIFSIGNALED(wstatus)) {
                       fprintf(stderr, WAR "killed by signal %d\n", WTERMSIG(wstatus));
                   } else if (WIFSTOPPED(wstatus)) {
                       fprintf(stderr, WAR "stopped by signal %d\n", WSTOPSIG(wstatus));
                   } else if (WIFCONTINUED(wstatus)) {
-                      printf(WAR "continued\n");
+                      fprintf(stderr, WAR "continued\n");
                   }
                 } while (!WIFEXITED(wstatus) && !WIFSIGNALED(wstatus));
 
