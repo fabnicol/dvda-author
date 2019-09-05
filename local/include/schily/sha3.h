@@ -1,10 +1,10 @@
-/* @(#)sha3.h	1.4 15/12/27 2015 J. Schilling */
+/* @(#)sha3.h	1.6 16/10/26 2015-2016 J. Schilling */
 /* sha3.h */
 /*
  * SHA3 hash code taken from
  * https://github.com/rhash/RHash/tree/master/librhash
  *
- * Portions Copyright (c) 2015 J. Schilling
+ * Portions Copyright (c) 2015-2016 J. Schilling
  */
 #ifndef	_SCHILY_SHA3_H
 #define	_SCHILY_SHA3_H
@@ -27,6 +27,15 @@ extern "C" {
 #define	sha3_512_hash_size	64
 #define	sha3_max_permutation_size 25
 #define	sha3_max_rate_in_qwords	24
+
+#define	SHA3_224_DIGEST_LENGTH		sha3_224_hash_size
+#define	SHA3_224_DIGEST_STRING_LENGTH	(SHA3_224_DIGEST_LENGTH * 2 + 1)
+#define	SHA3_256_DIGEST_LENGTH		sha3_256_hash_size
+#define	SHA3_256_DIGEST_STRING_LENGTH	(SHA3_256_DIGEST_LENGTH * 2 + 1)
+#define	SHA3_384_DIGEST_LENGTH		sha3_384_hash_size
+#define	SHA3_384_DIGEST_STRING_LENGTH	(SHA3_384_DIGEST_LENGTH * 2 + 1)
+#define	SHA3_512_DIGEST_LENGTH		sha3_512_hash_size
+#define	SHA3_512_DIGEST_STRING_LENGTH	(SHA3_512_DIGEST_LENGTH * 2 + 1)
 
 /*
  * SHA3 Algorithm context.
@@ -75,7 +84,7 @@ void rhash_keccak_final	__PR((sha3_ctx *ctx, unsigned char *result));
 #endif	/* HAVE_LONGLONG */
 
 #ifdef __cplusplus
-} /* extern "C" */
-#endif /* __cplusplus */
+}
+#endif
 
 #endif /* _SCHILY_SHA3_H */

@@ -295,6 +295,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"provider", required_argument, NULL, 34},
         {"resample", required_argument, NULL, 35},
         {"decode", no_argument, NULL, 36},
+        {"sync", no_argument, NULL, 37},
     #endif
         {NULL, 0, NULL, 0}
     };
@@ -1266,9 +1267,17 @@ out:
 
         case 36:
 
-            fprintf(stderr, "%s\n", PAR "Extracted audio will be decoded from MLP to WAV");
+            foutput("%s\n", PAR "Extracted audio will be decoded from MLP to WAV");
             globals.decode = true;
             globals.fixwav_prepend = true;
+            break;
+
+        case 37:
+
+            foutput("%s\n", PAR "Syncing extraction to playback...");
+            globals.decode = true;
+            globals.fixwav_prepend = false;
+            globals.extract_sleep = true;
             break;
 
         case 31:

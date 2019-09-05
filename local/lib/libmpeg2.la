@@ -32,4 +32,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/Users/fab/dvda-author/local/lib'
+libdir='/home/nicol/Dev/dvda-author/local/lib'

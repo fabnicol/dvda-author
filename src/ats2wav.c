@@ -806,7 +806,20 @@ static inline uint32_t scan_wav_characteristics(fileinfo_t* info, WaveHeader* he
     return wav_numbytes;
 }
 
+#ifdef _WIN32
+static void usleep(unsigned int usec)
+{
+    HANDLE timer;
+    LARGE_INTEGER ft;
 
+    ft.QuadPart = -(10 * (__int64)usec);
+
+    timer = CreateWaitableTimer(NULL, TRUE, NULL);
+    SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
+    WaitForSingleObject(timer, INFINITE);
+    CloseHandle(timer);
+}
+#endif
 
 int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
 {
@@ -926,6 +939,11 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                 do
                 {
                     continuity_save = continuity;
+                    clock_t now,then;
+                    if (globals.extract_sleep)
+                    {
+                       then = clock();
+                    }
 
                     get_pes_packet_audio(info,
                                          &header,
@@ -1053,6 +1071,26 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                                           written_bytes);
 
                             EXIT_ON_RUNTIME_ERROR_VERBOSE("Incoherent byte counts.")
+                        }
+                    }
+
+                    // Wait for bufferized extraction to be fed into ffplay (disc playback)
+
+                    if (globals.extract_sleep) // waith for buffer to fill in minimally 0.5 s
+                    {
+                        if (pack_in_track >
+                                (unsigned long)
+                                lrint(ceil((0.5 * files[i][track]->bytespersecond) / (double) files[i][track]->lpcm_payload)))
+                        {
+                            double lpcm_time_elapsed = files[i][track]->lpcm_payload / files[i][track]->bytespersecond * 1000000;
+                            clock_t now = clock();
+                            double real_time = (double)((now - then) / CLOCKS_PER_SEC) * 1000000;
+                            long spread = lrint(ceil(lpcm_time_elapsed - real_time));
+
+                            if (spread > 0) // surely always the case, checking for paranoia
+                            {
+                                 usleep((unsigned int) spread);
+                            }
                         }
                     }
                 }

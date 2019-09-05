@@ -265,10 +265,11 @@ int main(int argc,  char* const argv[])
                             true,   // enabling lexer
         /*logfile*/	        false,  // no log
         /*loghtml*/         false,  // text log
-        /* logdecode */     false,  // no forensic aanalysis of system files
+        /* logdecode */     false,  // no forensic analysis of system files
         /*videozone*/       true,   // generates video zone
         /*videolinking*/    false,  // no video link
-        /*decode */         false,   // decode MLP to WAV
+        /*decode */         false,  // decode MLP to WAV
+        /*extract_sleep*/   false,  // slow down extraction for buffering
         /*playlist*/        false,  // no playlist
         /*cga*/             false,  // no explicit channel group assignement
         /*end_pause*/       false,  // no end pause

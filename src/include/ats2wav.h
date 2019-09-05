@@ -7,9 +7,12 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifndef __WIN32__
+#include <time.h>
+#ifndef _WIN32
 #include <fcntl.h>
 #include <unistd.h>
+#else
+#include <windows.h>
 #endif
 #include <dirent.h>
 #include <inttypes.h>

@@ -1,8 +1,8 @@
-/* @(#)shedit.h	1.7 15/08/29 Copyright 2006-2015 J. Schilling */
+/* @(#)shedit.h	1.14 17/01/18 Copyright 2006-2017 J. Schilling */
 /*
  *	Definitions for libshedit, the history editor for the shell.
  *
- *	Copyright (c) 2006-2015 J. Schilling
+ *	Copyright (c) 2006-2017 J. Schilling
  */
 /*
  * The contents of this file are subject to the terms of the
@@ -26,6 +26,9 @@
 #endif
 #ifndef	_SCHILY_TYPES_H
 #include <schily/types.h>
+#endif
+#ifndef	_SCHILY_SCHILY_H
+#include <schily/schily.h>
 #endif
 
 #ifdef	__cplusplus
@@ -52,11 +55,13 @@ extern "C" {
 extern	int	shedit_egetc	__PR((void));
 extern	int	shedit_getdelim	__PR((void));
 extern	void	shedit_treset	__PR((void));
-extern	void	shedit_bhist	__PR((void));
+extern	void	shedit_bhist	__PR((int **intrcpp));
 extern	void	shedit_bshist	__PR((int **intrpp));
 extern	void	shedit_append_line __PR((char *linep, unsigned int len,
 						unsigned int pos));
 extern	void	shedit_chghistory __PR((char *__val));
+extern	void	shedit_histrange __PR((unsigned *firstp,
+					unsigned *lastp, unsigned *nextp));
 extern	void	shedit_remap	__PR((void));
 extern	void	shedit_list_map	__PR((int *f));
 extern	int	shedit_del_map	__PR((char *from));
@@ -67,6 +72,24 @@ extern	void	shedit_igneof	__PR((BOOL (*ieof) (void)));
 extern	void	shedit_setprompts __PR((int promptidx, int nprompts,
 							char *newprompts[]));
 
+/*
+ * Keep #defines in sync with bsh/bsh.h
+ */
+#define	HI_NOINTR	0	/* History traversal noninterruptable	*/
+#define	HI_INTR		1	/* History traversal is interruptable	*/
+#define	HI_NONUM	2	/* Do not print numbers			*/
+#define	HI_TAB		4	/* Print TABs				*/
+#define	HI_REVERSE	8	/* Print in reverse order		*/
+#define	HI_PRETTYP	16	/* Pretty Type non-printable chars	*/
+#define	HI_ANSI_NL	32	/* Convert ASCII newlines to ANSI nl	*/
+
+extern	int	shedit_history		__PR((int *f, int **intrcpp, int flg,
+					int _first, int _last, char *_subst));
+extern	int	shedit_search_history	__PR((int **intrcpp, int flg,
+					int _first, char *_pat));
+extern	int	shedit_remove_history	__PR((int **intrcpp, int flg,
+					int _first, char *_pat));
+extern	int	shedit_read_history	__PR((int *f, int **intrcpp, int flg));
 #ifdef	__cplusplus
 }
 #endif

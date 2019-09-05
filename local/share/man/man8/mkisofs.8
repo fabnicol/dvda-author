@@ -1,21 +1,8 @@
 '\" t
 .\" To print, first run through tbl
 .\" -*- nroff -*-
-.\" @(#)mkisofs.8	1.155 15/12/15 Copyright 1997-2015 J. Schilling
-.\"
-.\" This program is free software; you can redistribute it and/or modify
-.\" it under the terms of the GNU General Public License version 2
-.\" as published by the Free Software Foundation.
-.\"
-.\" This program is distributed in the hope that it will be useful,
-.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
-.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-.\" GNU General Public License for more details.
-.\"
-.\" You should have received a copy of the GNU General Public License along with
-.\" this program; see the file COPYING.  If not, write to the Free Software
-.\" Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-.\"
+.\" @(#)mkisofs.8	1.160 17/12/10 Copyright 1997-2015 J. Schilling
+.\"@@C@@
 .\"
 .if t .ds a \v'-0.55m'\h'0.00n'\z.\h'0.40n'\z.\v'0.55m'\h'-0.40n'a
 .if t .ds o \v'-0.55m'\h'0.00n'\z.\h'0.45n'\z.\v'0.55m'\h'-0.45n'o
@@ -29,7 +16,7 @@
 .if n .ds o oe
 .if n .ds u ue
 .if n .ds s sz
-.TH MKISOFS 8 "2015/12/15" "Version 3.02"
+.TH MKISOFS 8 "2017/12/10" "Version 3.02"
 .SH NAME
 mkisofs \- create an hybrid ISO-9660/JOLIET/HFS/UDF filesystem-image with optional Rock Ridge attributes.
 .SH SYNOPSIS
@@ -263,6 +250,16 @@ This options allows lower case characters to appear in ISO-9660 filenames.
 This violates the ISO-9660 standard, but it happens to work on some systems.
 Use with caution.
 .TP
+.B \-no\-allow\-lowercase
+This resets the effect of
+.B \-allow\-lowercase
+and even works when 
+.BR \-U ,
+.B \-untranslated\-filenames
+or
+.B \-iso\-level 4
+have been used to allow lowercase filenames.
+.TP
 .B \-allow\-multidot
 This options allows more than one dot to appear in ISO-9660 filenames.
 A leading dot is not affected by this option, it
@@ -297,6 +294,10 @@ The option
 is default on UNIX like operating systems.
 Be careful when using this option on a filesystem without unique
 inode numbers as it may result in files containing the wrong content on CD.
+.sp
+See the option
+.B \-duplicates\-once
+for a method that works on filesystems without unique inode numbers.
 .sp
 If inodes are not cached,
 .B mkisofs
@@ -342,6 +343,17 @@ and
 will not be able to create
 .B "correct inode numbers
 for zero sized files.
+.TP
+.B \-duplicates\-once
+Tells
+.B mkisofs
+to use a message digest checksum to identify identical files as
+apparently hard linked files.
+This allows 
+.B mkisofs
+to archive inode numbers and hard links even when it is run on
+non-POSIX platforms like
+.BR DOS .
 .TP
 .BI \-b " eltorito_boot_image
 .TP
@@ -859,9 +871,23 @@ Use with caution.
 .B \-D
 .TP
 .B \-disable\-deep\-relocation
-Do not use deep directory relocation, and instead just pack them in the
-way we see them.
-.br
+Do not use
+.B Rock Ridge
+deep directory relocation, and instead just pack directories in the
+way they are in the master directory tree.
+.sp
+This option was needed with old
+.B mkisofs
+versions to avoid a visible directory
+.BR rr_moved .
+Since August 2006,
+.B mkisofs
+correctly hides the
+.B rr_moved
+directory from the
+.B Rock Ridge
+filesystem.
+.sp
 If ISO-9660:1999 has not been selected,
 this violates the ISO-9660 standard, but it happens to work on many systems.
 Use with caution.
@@ -1184,6 +1210,19 @@ option. See README.hide for more details.
 A file containing a list of
 .I globs
 to be hidden as above.
+
+.PD 0
+.TP
+.B \-hide\-ignorecase
+.TP
+.B \-exclude\-ignorecase
+.PD
+Ignore the case of the filenames with the
+.B \-hide*
+options
+and with the
+.B \-exclude\-list
+option.
 
 .TP
 .BI \-input\-charset " charset
@@ -1805,6 +1844,13 @@ sort the order of the file names that appear
 in the ISO-9660 directory. It sorts the order in which the file data is
 written to the CD image - which may be useful in order to optimize the
 data layout on a CD. See README.sort for more details.
+.TP
+.BI \-isort " sort file
+Similiar to
+.B \-sort
+but the case if the filenames in the
+.B sort file
+is ignored.
 .TP
 .BI \-sparc\-boot " img_sun4,img_sun4c,img_sun4m,img_sun4d,img_sun4e
 See
