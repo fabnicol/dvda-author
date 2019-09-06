@@ -165,7 +165,7 @@ inline static void  aob_open(WaveData *info)
 
 inline static void output_path_create(const char* dirpath, WaveData *info, int track, int title, const char* extension)
 {
-
+    if (globals.extract_sleep) return;
     char Title[19 + strlen(extension)];
     memset(Title, 0, 19 + strlen(extension));
     sprintf(Title, "track_%02d_title_%02d%s", track + 1, title + 1, extension);
@@ -175,6 +175,11 @@ inline static void output_path_create(const char* dirpath, WaveData *info, int t
 
 inline static void wav_output_open(WaveData *info)
 {
+    if (globals.extract_sleep)
+    {
+        info->outfile.fp = stdout;
+        return;
+    }
     if (globals.veryverbose)
     {
         foutput(INF "Opening file %s ...\n", info->outfile.filename);
@@ -350,8 +355,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header,
             {
                 *status = INVALID;
             }
-            fseek(info->infile.fp, offset0, SEEK_SET);
-            return position;
+
         }
         else
         {
@@ -374,7 +378,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header,
               ++count;
           }
 
-          if (res == false)
+          if (err == false)
           {
               fseek(info->infile.fp, offset0, SEEK_SET);
               if (globals.veryverbose)
@@ -382,14 +386,15 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header,
               *status = INVALID;
               return position;
           }
-
-          header->wBitsPerSample = decinfo.bitspersample;
-          header->channels = decinfo.channels;
-          header->dwSamplesPerSec = decinfo.samplerate;
         }
 
-        fseek(info->infile.fp, offset0, SEEK_SET);
 #endif
+
+        header->wBitsPerSample = decinfo.bitspersample;
+        header->channels = decinfo.channels;
+        header->dwSamplesPerSec = decinfo.samplerate;
+        header->nAvgBytesPerSec = decinfo.samplerate * decinfo.channels * (decinfo.bitspersample / 8);
+        fseek(info->infile.fp, offset0, SEEK_SET);
         return position;
     }
     
@@ -879,11 +884,22 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                    wav_numbytes = scan_wav_characteristics(files[i][track], &header);
                 }
 
+                unsigned long pack_sync_floor = 0;
+
+                if (globals.extract_sleep)
+                {
+                   pack_sync_floor = (unsigned long) lrint(ceil((0.5 * (double) header.nAvgBytesPerSec)
+                                                         / 2000));  // rough rounding
+                }
+
                 unsigned long pack_in_track = 1;
 
-                output_path_create(dir_g_i, info, track, title, info->infile.type == AFMT_LPCM ? ".wav" : ".mlp");
+                output_path_create(dir_g_i, info, track, title, info->infile.type == AFMT_LPCM ?
+                                                                    (globals.fixwav_prepend ? ".wav" : ".raw")
+                                                                : ".mlp");
 
-                files[i][track]->filename = strdup(info->outfile.filename);
+                if (! globals.extract_sleep)
+                    files[i][track]->filename = strdup("stdout");
 
                 wav_output_open(info);
 
@@ -926,7 +942,6 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                     {
                         fprintf(stderr, WAR "Header repair issue (code %d)", info2.repair);
                     }
-
                 }
 
                 /* second pass to get the audio */
@@ -1078,20 +1093,32 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
 
                     if (globals.extract_sleep) // waith for buffer to fill in minimally 0.5 s
                     {
-                        if (pack_in_track >
-                                (unsigned long)
-                                lrint(ceil((0.5 * files[i][track]->bytespersecond) / (double) files[i][track]->lpcm_payload)))
+                        if (pack_in_track >  pack_sync_floor)
                         {
-                            double lpcm_time_elapsed = files[i][track]->lpcm_payload / files[i][track]->bytespersecond * 1000000;
+                            double head_start = 0.95; // leaving a bit of a head start
+                            // For MLP, useless to decode to have the exact PCM playback corresponding to a sector
+                            // using statistical notions of MLP duration wrt. PCM
+                            if (info->infile.type == AFMT_MLP)
+                            {
+                                head_start = 1.25;  // This may be a bit too much in limited critical cases, with consecutive audio playback blips
+                            }
+                            double lpcm_time_elapsed = (head_start * 2000.0) / (double) header.nAvgBytesPerSec * 1000000.0;
                             clock_t now = clock();
-                            double real_time = (double)((now - then) / CLOCKS_PER_SEC) * 1000000;
+                            double real_time = (double)((now - then) / CLOCKS_PER_SEC) * 1000000.0;
                             long spread = lrint(ceil(lpcm_time_elapsed - real_time));
 
                             if (spread > 0) // surely always the case, checking for paranoia
                             {
-                                 usleep((unsigned int) spread);
+                                 usleep((unsigned int)  spread);
                             }
                         }
+
+                        // This will be piped to:
+                        // for LPCM: ffplay -i pipe:0 -f s`bitrate'le  -ar samplerate -ac channels -autoexit -nodisp
+                        // for MLP:  ffplay -i pipe:0 -f mlp  -autoexit -nodisp -infbuf
+                        // (MLP has audio characteristics inbedded in sync headers)
+                        // -infbuf is there to make up for the quicker increase of the MLP stdout data, and possible ffplay input buffer saturation
+                        // if this option is not set.
                     }
                 }
                 while (position != LAST_PACK
@@ -1332,16 +1359,60 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
 
     change_directory(globals.settings.outdir);
 
+#ifndef _WIN32
+   if (globals.play)
+   {
+        sync();
+        int pid;
+        char c, d;
+        int tube[2];
+        int tubeerr[2];
+
+        if (pipe(tube) || pipe(tubeerr))
+        {
+            perror(ERR "Pipe");
+            return errno;
+        }
+
+          // -i pipe:0 -f mlp  -autoexit -nodisp -infbuf
+
+        char *argsffplay[] = {FFPLAY_BASENAME, "-i", "pipe:0", "-f", "mlp", "-autoexit", "-nodisp", "-infbuf", NULL};
+        char *ffplay = NULL;
+        ffplay = create_binary_path(ffplay, FFPLAY, SEPARATOR FFPLAY_BASENAME);
+        switch (pid = fork())
+        {
+            case -1:
+                fprintf(stderr,"%s\n", ERR "Could not launch ffplay");
+                break;
+
+            case 0:
+                close(tube[1]);
+                close(tubeerr[1]);
+                dup2(tube[0], STDIN_FILENO);
+                execv(ffplay, (char* const*) argsffplay);
+                fprintf(stderr, "%s\n", ERR "Runtime failure in ffplay child process");
+                perror("");
+                return errno;
+
+            default:
+                close(tube[0]);
+                close(tubeerr[0]);
+
+                dup2(tube[1], STDOUT_FILENO);
+                //while (read(STDOUT_FILENO, &c, 1) == 1) write(tube[1], &c, 1);
+        }
+   }
+
+#endif
+
     for (int i = 0; i < 81;  ++i)
     {
-
       if (globals.aobpath[i] == NULL) break;
 
       if (globals.veryverbose)
          foutput("%s%d%s\n", INF "Extracting audio for AOB n°", i+1, ".");
 
       WaveData info;
-
       errno = 0;
 
       if (use_ifo_files)

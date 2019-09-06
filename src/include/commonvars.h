@@ -172,6 +172,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define JPEG2YUV_BASENAME  "jpeg2yuv"
 #endif
 
+#ifndef FFPLAY_BASENAME
+#define FFPLAY_BASENAME  "ffplay"
+#endif
+
 #ifndef DVDA_AUTHOR_BASENAME
 #define DVDA_AUTHOR_BASENAME "dvda-author"
 #endif
@@ -248,6 +252,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define JPEG2YUV ""
 #endif
 
+#ifndef FFPLAY
+#define FFPLAY ""
+#endif
 
 #ifndef SPUMUX
 #define SPUMUX ""
@@ -448,7 +455,7 @@ static const int NTSC_Y=480;
 
 #define READTRACKS 1
 
-#define INFO_GNU   ANSI_COLOR_BLUE "[LICENSE]" ANSI_COLOR_RESET "  Copyright Dave Chapman 2005-Fabrice Nicol 2007-2016\n\
+#define INFO_GNU   ANSI_COLOR_BLUE "[LICENSE]" ANSI_COLOR_RESET "  Copyright Dave Chapman 2005-Fabrice Nicol 2007-2019\n\
 <fabnicol@users.sourceforge.net>-Lee and Tim Feldkamp 2008-2009\n\
 This file is part of dvda-author.\n\
 dvda-author is free software: you can redistribute it and/or modify \n\

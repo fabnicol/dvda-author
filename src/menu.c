@@ -222,9 +222,9 @@ void initialize_binary_paths(char level)
     case CREATE_EXTRACT_AC3:
         if (!count7)
         {
-            extract_ac3=create_binary_path(extract_ac3, EXTRACT_AC3, SEPARATOR EXTRACT_AC3_BASENAME);
-            ac3dec=create_binary_path(ac3dec, AC3DEC, SEPARATOR AC3DEC_BASENAME);
-            count7++;
+            extract_ac3 = create_binary_path(extract_ac3, EXTRACT_AC3, SEPARATOR EXTRACT_AC3_BASENAME);
+            ac3dec      = create_binary_path(ac3dec, AC3DEC, SEPARATOR AC3DEC_BASENAME);
+            ++count7;
         }
         break;
 
@@ -234,20 +234,20 @@ void initialize_binary_paths(char level)
             // if installed with autotools, if bindir overrides then use override, otherwise use config.h value;
             // if not installed with autotools, then use command line value or last-resort hard-code set defaults and test for result
 
-            mp2enc=create_binary_path(mp2enc, MP2ENC, SEPARATOR MP2ENC_BASENAME);
-            jpeg2yuv=create_binary_path(jpeg2yuv,JPEG2YUV, SEPARATOR JPEG2YUV_BASENAME);
-            mpeg2enc=create_binary_path(mpeg2enc,MPEG2ENC, SEPARATOR MPEG2ENC_BASENAME);
-            mplex=create_binary_path(mplex, MPLEX, SEPARATOR MPLEX_BASENAME);
-            pgmtoy4m=create_binary_path(pgmtoy4m, MPLEX, SEPARATOR MPLEX_BASENAME);
-            count1++;
+            mp2enc   = create_binary_path(mp2enc, MP2ENC, SEPARATOR MP2ENC_BASENAME);
+            jpeg2yuv = create_binary_path(jpeg2yuv,JPEG2YUV, SEPARATOR JPEG2YUV_BASENAME);
+            mpeg2enc = create_binary_path(mpeg2enc,MPEG2ENC, SEPARATOR MPEG2ENC_BASENAME);
+            mplex    = create_binary_path(mplex, MPLEX, SEPARATOR MPLEX_BASENAME);
+            pgmtoy4m = create_binary_path(pgmtoy4m, MPLEX, SEPARATOR MPLEX_BASENAME);
+            ++count1;
         }
         break;
 
     case CREATE_SPUMUX:
         if (!count2)
         {
-            spumux=create_binary_path(spumux, SPUMUX, SEPARATOR SPUMUX_BASENAME);
-            count2++;
+            spumux = create_binary_path(spumux, SPUMUX, SEPARATOR SPUMUX_BASENAME);
+            ++count2;
         }
         break;
 

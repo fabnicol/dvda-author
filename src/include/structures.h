@@ -239,6 +239,7 @@ typedef struct
     bool videolinking;
     bool decode;
     bool extract_sleep;
+    bool play;
     bool playlist;
     bool cga;
     bool end_pause;

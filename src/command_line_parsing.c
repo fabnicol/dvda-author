@@ -295,7 +295,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"provider", required_argument, NULL, 34},
         {"resample", required_argument, NULL, 35},
         {"decode", no_argument, NULL, 36},
-        {"sync", no_argument, NULL, 37},
+        {"sync", required_argument, NULL, 37},
+        {"play", required_argument, NULL, 38},
     #endif
         {NULL, 0, NULL, 0}
     };
@@ -340,33 +341,36 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 #endif
 
                 case 'h' :
-                        globals.silence=0;
+                        globals.silence=false;
                         help();
                         clean_exit(EXIT_SUCCESS);
                         break;
 
                     case 'v' :
-                        globals.silence=0;
+                        globals.silence=false;
                         version();
                         clean_exit(EXIT_SUCCESS);
                         break;
 
-                    case 'q' :
-                        globals.silence=1;
-                        globals.debugging=0;
+                    case 'q':
+                    case  37:     // --sync
+                        globals.silence = true;          // hush it upt on stdout to avoid polluting ffplay stdin
+                        globals.debugging=false;
+                        globals.veryverbose=false;
+                        globals.maxverbose=false;
                         // Radical measure yet not portable outside the *nix realm ?
                         break;
 
                     case 't':
-                        globals.veryverbose=1;
+                        globals.veryverbose=true;
                         /* fall through */
                         __attribute__((fallthrough));
                         // no break
 
                     case 'd':
 
-                        globals.debugging=1;
-                        globals.silence=0;
+                        globals.debugging=true;
+                        globals.silence=false;
                         break;
 
                     case 'L':
@@ -379,22 +383,22 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                         if (optarg)
                         {
                             globals.settings.logfile=strdup(optarg);
-                            globals.logfile=1;
+                            globals.logfile=true;
 
                             if (optarg[0] == '-')
                             {
-                                globals.logfile=0;
+                                globals.logfile=false;
                                 foutput("%s\n", ERR "Enter a log path next time!");
                                 exit(EXIT_FAILURE);
                             }
                             else
-                                globals.logfile=1;
+                                globals.logfile=true;
                         }
 
                         break;
 
                     case 1 :
-                        globals.loghtml=1;
+                        globals.loghtml=true;
                         break;
 
 
@@ -403,7 +407,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
 
 
-                if (((user_command_line) || (!globals.enable_lexer)) && (!globals.silence))
+                if (((user_command_line) || (!globals.enable_lexer)) && (! globals.silence))
                 {
 
                     if (globals.logfile)
@@ -415,9 +419,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                     }
 
-                    HEADER(PROGRAM, VERSION)
+                        HEADER(PROGRAM, VERSION)
                             SINGLE_DOTS
-
                 }
 
     optind=0;
@@ -924,6 +927,7 @@ out:
     int enter_downmix_table = -1;
     optind=0;
     opterr=1;
+    bool use_ifo_files = false;
 
 #ifdef LONG_OPTIONS
     while ((c=getopt_long(argc, argv, ALLOWED_OPTIONS, longopts, &longindex)) != -1)
@@ -1272,12 +1276,28 @@ out:
             globals.fixwav_prepend = true;
             break;
 
-        case 37:
+        case 38:  // --play, like --sync but with piping to ffplay
+            globals.play = true;
+            // fallthrough
 
-            foutput("%s\n", PAR "Syncing extraction to playback...");
-            globals.decode = true;
-            globals.fixwav_prepend = false;
-            globals.extract_sleep = true;
+        case 37:  // --sync
+
+            foutput("%s\n", PAR "Syncing extraction to stdou for piping to external tools...");
+            globals.decode = false;           // useless to decode as ffplay has MLP playback on board
+            globals.fixwav_prepend = false;  // no headers (raw pcm)
+            globals.extract_sleep = true;    // output to stdout
+            use_ifo_files = false;
+            if (strstr(optarg, ".AOB") != NULL)
+            {
+              foutput("%s %s %s\n", PAR "Extracting ", optarg, " to stdout...");
+              aob2wav_parsing(optarg, NULL);
+            }
+            else  // using the directory with file structure
+            {
+               // filter_dir_files finds all AOBs in dir optarg, and returns list of AOBs separated by commas if several.
+                foutput("%s %s %s\n", PAR "Extracting disc files in ", optarg, " to stdout...");
+                aob2wav_parsing(filter_dir_files(optarg, ".AOB"), NULL);
+            }
             break;
 
         case 31:
@@ -1760,7 +1780,6 @@ out:
     /* Fifth pass: it is now possible to safely copy files to temporary directory for menu and still pic creation  */
     // First parsing for input files (pics and mpgs)
 
-    bool use_ifo_files = false;
     char * str=NULL;
     optind=0;
     opterr=1;

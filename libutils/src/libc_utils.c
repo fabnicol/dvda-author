@@ -1099,7 +1099,7 @@ char* print_time(int verbose)
 
     if (verbose)
     {
-        fprintf(stderr, "\nCurrent time is: %s", outstr);
+        fprintf(stderr, "\nCurrent time is: %s\n", outstr);
         return NULL;
     }
     else
@@ -1388,8 +1388,6 @@ int count_dir_files(const char* src)
         return(errno);
     }
 
-    fprintf(stderr, "%c", '\n');
-
     if (globals.debugging)  fprintf(stderr, "%s%s\n", INF "Counting files in ...", src);
 
     int total = 0;
@@ -1411,8 +1409,6 @@ char* filter_dir_files(const char* src,  char* filter)
         perror(ERR "Directory not recognized.\n");
         return NULL;
     }
-
-    fprintf(stderr, "%c", '\n');
 
     if (globals.debugging)  fprintf(stderr, "%s%s%s%s\n", INF "Filtering files in ...", src, " with ", filter);
 

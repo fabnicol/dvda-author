@@ -95,6 +95,6 @@ int truncate_from_end(char* filename, uint64_t offset);
 #ifndef S_OPEN
 #  define S_OPEN(X, Y) do {  if (file_exists(X.filename) && ! X.isopen)  {  if (! X.filesize) { X.filesize =  stat_file_size(X.filename); } ;  X.fp = fopen(X.filename, Y);  X.isopen = (X.fp != NULL); } } while(0);
 
-#  define S_CLOSE(X) do { if (X.isopen && X.fp != NULL) { fclose(X.fp); X.isopen = false; X.fp = NULL; } } while(0);
+#  define S_CLOSE(X) do { if (! globals.extract_sleep && X.isopen && X.fp != NULL) { fclose(X.fp); X.isopen = false; X.fp = NULL; } } while(0);
 
 #endif // WINPORT_H_INCLUDED

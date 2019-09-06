@@ -112,6 +112,7 @@ printf("%s","-o, --output directory   Output directory.\n\n");
 printf("%s","-x, --extract {disc or directory} Extract DVD-Audio to directory -o." J "Groups are labelled g1, g2 in output directory.\n\n");
 printf("%s","    --xlist 1:1,...,t1n-2:1,...,t2n-...-N:1,...,tNn  Optional hyphen-separated list of groups to be extracted" J "may be added with -x." J "Tracks to be extracted in a given group are indicated after a colon." J "Tracks to be extracted may be listed separated by commas after colon." J "If not specified, all the group will be extracted." J "Contiguous tracks may be represented by `...` between commas" J "e.g. 2-3-4:1,2,...,7,9 means: extract groups 2 and 3 entirely and tracks 2 to 7 and 9 for in group 4.\n\n");
 printf("%s","    --aob-extract {directory or AOB[,AOB...]}    Direct AOB file audio content extraction. " J "Unlike -x, this option does not use .IFO files. Use this option in combination with -o. No wav header is generated." J "Several AOB files may be listed, separated by commas.\n\n");
+printf("%s","    --sync {directory or AOB[,AOB...]}        Like --aob-extract but output is to stdout for piping to third-party software." J "Only audio content is directed to stdout." J "Extraction is slowed down to standard playback levels after extracting the equivalent of 0.5 second playback.\n\n");
 printf("%s","    --aob2wav {directory or AOB[,AOB...]}        Like --aob-extract but a wav header is prepended to audio content.\n\n");
 printf("%s","    --forensic           Use this mode with --aob-extract, --aob2wav or -x if IFO files are missing or mangled, or AOB files" J "have been partially restored using recovery tools.\n\n");
 printf("%s","    --strict             Use this option with --aob-extract, --aob2wav or -x to stop extraction in case of severe header issues. May be useful in combination with --forensic to manually repair header issues.\n\n");
@@ -769,7 +770,7 @@ char* create_binary_path(char* local_variable, const char* symbolic_constant, co
         {
             path = conc(globals.settings.bindir, basename);
             local_variable = win32quote(path);
-#   if defined (__WIN32__) || defined (_WIN32) || defined (_WIN64) || defined (__WIN32) || defined (__WIN64) || defined(__MSYS__)
+#   if (defined _WIN32 || defined __MSYS__)
             free(path);
 #endif
         }

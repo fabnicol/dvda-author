@@ -172,16 +172,15 @@ int auto_control(WaveData *info, WaveHeader *header)
   regular_test(header, regular);
 
   bool regular_wBitsPerSample  = regular[1];
-  bool regular_dwSamplesPerSec
-  = regular[2];
+  bool regular_dwSamplesPerSec = regular[2];
   bool regular_nBlockAlign = regular[3];
   bool regular_nAvgBytesPerSec = regular[4];
   bool regular_channels   = regular[5];
 
   /* Checking whether there is anything to be done at all */
 
-  if (header->nAvgBytesPerSec == (header->dwSamplesPerSec * header->wBitsPerSample * header->channels) / 8
-      && header->nBlockAlign == (header->channels * header->wBitsPerSample) / 8
+  if (header->nAvgBytesPerSec == header->dwSamplesPerSec * (header->wBitsPerSample / 8) * header->channels
+      && header->nBlockAlign == header->channels * (header->wBitsPerSample / 8)
       && (regular[0] == 5 || header->channels % 3 == 0 || header->wBitsPerSample  == 20)
      )
     {
