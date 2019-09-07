@@ -37,7 +37,9 @@ extern uint32_t cga2wav_channels[21];
 extern globalData globals;
 extern uint8_t channels[21];
 static double total_duration = 0;
-clock_t then;
+static clock_t then;
+static pid_t pid;
+static bool done = false;
 
 #if 0
 static unsigned char wav_header[80]= {'R','I','F','F',   //  0 - ChunkID
@@ -826,6 +828,7 @@ static void usleep(unsigned int usec)
 }
 #endif
 
+
 int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
 {
 
@@ -867,8 +870,6 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
 
         position = get_position(position, info, &header, &status, &continuity);
 
-        static bool done = false;
-
 #ifndef _WIN32
    if (globals.play && done == false)
    {
@@ -903,11 +904,11 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
         else
         {
             char sr[7];
-            sprintf(sr, "%d", files[0][0]->samplerate);
+            sprintf(sr, "%d", header.dwSamplesPerSec);
             char br[6];
-            sprintf(br, "s%dle", files[0][0]->bitspersample);  // s24le or s16le (after decoding)
+            sprintf(br, "s%dle", header.wBitsPerSample);  // s24le or s16le (after decoding)
             char ch[2];
-            sprintf(ch, "%d", files[0][0]->channels);
+            sprintf(ch, "%d", header.channels);
 
             char* t[11] = {FFPLAY_BASENAME, "-i", "pipe:0",
                                   "-f", br, "-ar", sr, "-ac", ch,
@@ -917,7 +918,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
             argsffplay[11] = NULL;
         }
 
-        switch (fork())
+        switch (pid = fork())
         {
             case -1:
                 fprintf(stderr,"%s\n", ERR "Could not launch ffplay");
@@ -1500,6 +1501,28 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
 
       if (globals.veryverbose)
               foutput("%s\n", INF "Reached ead of AOB.");
+
+      clock_t now = clock();
+      double failsafe = 1.1;
+
+      if (total_duration * failsafe > (now - then) / (double) CLOCKS_PER_SEC)
+      {
+          unsigned int wait_time = total_duration * failsafe  - (now - then) / (double) CLOCKS_PER_SEC;
+
+          double H = floor(total_duration / 3600.0);
+          double M = floor((total_duration - H * 3600.0) / 60.0);
+          double S = floor(total_duration - H * 3600.0 - M * 60.0);
+
+          foutput("\nTotal duration: %f  seconds (%02.0f h %02.0f m %02.0f s)\n",
+                  floor(total_duration),
+                  H,  M, S);
+
+          usleep(lrint(ceil(wait_time * 1000000.0)));
+
+          int res = kill(pid, SIGKILL);
+          if (res == 0) done = true;
+      }
+
     }
     
     if (globals.fixwav_prepend)
@@ -1507,23 +1530,6 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
 
         // Unfortunately ffplay does not exit, and must be stopped some other way.
 
-    clock_t now = clock();
-    double failsafe = 1.1;
-
-    if (total_duration * failsafe > (now - then) / (double) CLOCKS_PER_SEC)
-    {
-        unsigned int wait_time = total_duration * failsafe  - (now - then) / (double) CLOCKS_PER_SEC;
-
-        double H = floor(total_duration / 3600.0);
-        double M = floor((total_duration - H * 3600.0) / 60.0);
-        double S = floor(total_duration - H * 3600.0 - M * 60.0);
-
-        foutput("\nTotal duration: %f  seconds (%02.0f h %02.0f m %02.0f s)\n",
-                floor(total_duration),
-                H,  M, S);
-
-        usleep(lrint(ceil(wait_time * 1000000.0)));
-    }
 
     // Waits for child to end without -autoexit, based on audio duration.
     return(errno);
