@@ -867,7 +867,88 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
 
         position = get_position(position, info, &header, &status, &continuity);
 
-        then = clock();
+        static bool done = false;
+
+#ifndef _WIN32
+   if (globals.play && done == false)
+   {
+        sync();
+        done = true;
+        char c, d;
+        int tube[2];
+        int tubeerr[2];
+
+        if (pipe(tube) || pipe(tubeerr))
+        {
+            perror(ERR "Pipe");
+            return errno;
+        }
+
+        char *ffplay = NULL;
+        ffplay = create_binary_path(ffplay, FFPLAY, SEPARATOR FFPLAY_BASENAME);
+        char **argsffplay;
+        argsffplay = calloc(info->infile.type == AFMT_MLP ? 8 : 12, sizeof(char*));
+        if (argsffplay == NULL)
+        {
+            perror(ERR "Allocation of ffplay args");
+            continue;
+        }
+
+        if (info->infile.type == AFMT_MLP)
+        {
+          char* t[8] = {FFPLAY_BASENAME, "-i", "pipe:0", "-f", "mlp", "-nodisp", "-infbuf"};
+          for(int w = 0; w < 7; ++w) { argsffplay[w] = strdup(t[w]) ;}
+          argsffplay[7] = NULL;
+        }
+        else
+        {
+            char sr[7];
+            sprintf(sr, "%d", files[0][0]->samplerate);
+            char br[6];
+            sprintf(br, "s%dle", files[0][0]->bitspersample);  // s24le or s16le (after decoding)
+            char ch[2];
+            sprintf(ch, "%d", files[0][0]->channels);
+
+            char* t[11] = {FFPLAY_BASENAME, "-i", "pipe:0",
+                                  "-f", br, "-ar", sr, "-ac", ch,
+                                  "-nodisp", "-infbuf"};
+
+            for(int w = 0; w < 11; ++w) { argsffplay[w] = strdup(t[w]) ;}
+            argsffplay[11] = NULL;
+        }
+
+        switch (fork())
+        {
+            case -1:
+                fprintf(stderr,"%s\n", ERR "Could not launch ffplay");
+                break;
+
+            case 0:
+                close(tube[1]);
+                close(tubeerr[1]);
+                dup2(tube[0], STDIN_FILENO);
+                for(int w = 0; w < 7; ++w) { fprintf(stderr, "%s\n", argsffplay[w]); }
+                execv(ffplay, (char* const*) argsffplay);
+                fprintf(stderr, "%s\n", ERR "Runtime failure in ffplay child process");
+                perror("");
+                return errno;
+
+            default:
+                close(tube[0]);
+                close(tubeerr[0]);
+
+                dup2(tube[1], STDOUT_FILENO);
+        }
+
+        for (int w = 0; w <  (info->infile.type == AFMT_MLP ? 8 : 11); ++w)
+            free(argsffplay[w]);
+
+        free(argsffplay);
+   }
+
+#endif
+
+    then = clock();
         // Track loop
         do {
                 if (files[i][track] == NULL)
@@ -1362,87 +1443,6 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
 
     change_directory(globals.settings.outdir);
 
-    static bool done = false;
-
-#ifndef _WIN32
-if (globals.play && done == false)
-{
-    sync();
-    done = true;
-    char c, d;
-    int tube[2];
-    int tubeerr[2];
-
-    if (pipe(tube) || pipe(tubeerr))
-    {
-        perror(ERR "Pipe");
-        return errno;
-    }
-
-    char *ffplay = NULL;
-    ffplay = create_binary_path(ffplay, FFPLAY, SEPARATOR FFPLAY_BASENAME);
-    //char **argsffplay;
-    //argsffplay = calloc(/*info->infile.type == AFMT_MLP ? 8 : 12*/8, sizeof(char*));
-    char* argsffplay[8] = {FFPLAY_BASENAME, "-i", "pipe:0", "-f", "mlp", "-nodisp", "-infbuf", NULL};
-    if (argsffplay == NULL)
-    {
-        perror(ERR "Allocation of ffplay args");
-        //continue;
-    }
-
-  //  if (info->infile.type == AFMT_MLP)
-    if (true)
-    {
-    //  char* t[8] = {FFPLAY_BASENAME, "-i", "pipe:0", "-f", "mlp", "-nodisp", "-infbuf"};
-    //  for(int w = 0; w < 7; ++w) { argsffplay[w] = strdup(t[w]) ;}
-    //  argsffplay[7] = NULL;
-    }
-    else
-    {
-        char sr[7];
-        sprintf(sr, "%d", files[0][0]->samplerate);
-        char br[6];
-        sprintf(br, "s%dle", files[0][0]->bitspersample);  // s24le or s16le (after decoding)
-        char ch[2];
-        sprintf(ch, "%d", files[0][0]->channels);
-
-        char* t[11] = {FFPLAY_BASENAME, "-i", "pipe:0",
-                              "-f", br, "-ar", sr, "-ac", ch,
-                              "-nodisp", "-infbuf"};
-
-        for(int w = 0; w < 11; ++w) { argsffplay[w] = strdup(t[w]) ;}
-        argsffplay[11] = NULL;
-    }
-
-    switch (fork())
-    {
-        case -1:
-            fprintf(stderr,"%s\n", ERR "Could not launch ffplay");
-            break;
-
-        case 0:
-            close(tube[1]);
-            close(tubeerr[1]);
-            dup2(tube[0], STDIN_FILENO);
-            for(int w = 0; w < 7; ++w) { fprintf(stderr, "%s\n", argsffplay[w]); }
-            execv(ffplay, (char* const*) argsffplay);
-            fprintf(stderr, "%s\n", ERR "Runtime failure in ffplay child process");
-            perror("");
-            return errno;
-
-        default:
-            close(tube[0]);
-            close(tubeerr[0]);
-
-            dup2(tube[1], STDOUT_FILENO);
-    }
-
-//    for (int w = 0; w <  /*(info->infile.type == AFMT_MLP ? 8 : 11)*/ 8; ++w)
-//        free(argsffplay[w]);
-
-//    free(argsffplay);
-}
-#endif
     for (int i = 0; i < 81;  ++i)
     {
       if (globals.aobpath[i] == NULL) break;
