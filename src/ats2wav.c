@@ -36,6 +36,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 extern uint32_t cga2wav_channels[21];
 extern globalData globals;
 extern uint8_t channels[21];
+static double total_duration = 0;
+clock_t then;
+
 #if 0
 static unsigned char wav_header[80]= {'R','I','F','F',   //  0 - ChunkID
                                0,0,0,0,            //  4 - ChunkSize (filesize-8)
@@ -762,8 +765,6 @@ static inline int get_position(int position, WaveData* info, WaveHeader* header,
     return position;
 }
 
-
-
 static inline uint32_t scan_wav_characteristics(fileinfo_t* info, WaveHeader* header)
 {
     info->bitspersample = header->wBitsPerSample;
@@ -787,7 +788,6 @@ static inline uint32_t scan_wav_characteristics(fileinfo_t* info, WaveHeader* he
             foutput("%s", ERR "Found null samplerate or PTS length. Continuing in forensic mode...\n");
             info->PTS_length = 0;
         }
-
 
         numbytes = numsamples * info->channels * (info->bitspersample / 8);
 
@@ -867,6 +867,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
 
         position = get_position(position, info, &header, &status, &continuity);
 
+        then = clock();
         // Track loop
         do {
                 if (files[i][track] == NULL)
@@ -876,7 +877,6 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                        continue;
                     else
                       return 0;
-
                 }
 
                 if (info->infile.type == AFMT_LPCM)
@@ -893,7 +893,6 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                 }
 
                 unsigned long pack_in_track = 1;
-
                 output_path_create(dir_g_i, info, track, title, info->infile.type == AFMT_LPCM ?
                                                                     (globals.fixwav_prepend ? ".wav" : ".raw")
                                                                 : ".mlp");
@@ -954,11 +953,6 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                 do
                 {
                     continuity_save = continuity;
-                    clock_t now,then;
-                    if (globals.extract_sleep)
-                    {
-                       then = clock();
-                    }
 
                     get_pes_packet_audio(info,
                                          &header,
@@ -1138,6 +1132,14 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                   files[i][track]->numbytes  = written_bytes;
                 }
 
+
+                if (header.nAvgBytesPerSec)
+                {
+                    double increment = (double) written_bytes / (double) header.nAvgBytesPerSec; // in seconds
+                    if (info->infile.type == AFMT_MLP) increment *= 4; // rough ceiling
+                    total_duration += increment;
+                }
+
                 if (files[i][track]->type != AFMT_MLP)
                     info->outfile.filesize = written_bytes + header.header_size_out;
                 else
@@ -1303,7 +1305,6 @@ static inline int scan_ats_ifo(fileinfo_t **files, uint8_t *buf)
             i += 10;
         }
 
-
         for (track = 0; track < ntitletracks[title]; ++track)
         {
             i += 4;
@@ -1333,6 +1334,8 @@ static inline int scan_ats_ifo(fileinfo_t **files, uint8_t *buf)
                         group, track+1, ntracks, files[track]->first_sector, files[track]->last_sector,
                         files[track]->first_PTS, files[track]->PTS_length);
         }
+
+
         foutput("%s","\n");
     }
 
@@ -1359,52 +1362,87 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
 
     change_directory(globals.settings.outdir);
 
+    static bool done = false;
+
 #ifndef _WIN32
-   if (globals.play)
-   {
-        sync();
-        int pid;
-        char c, d;
-        int tube[2];
-        int tubeerr[2];
+if (globals.play && done == false)
+{
+    sync();
+    done = true;
+    char c, d;
+    int tube[2];
+    int tubeerr[2];
 
-        if (pipe(tube) || pipe(tubeerr))
-        {
-            perror(ERR "Pipe");
+    if (pipe(tube) || pipe(tubeerr))
+    {
+        perror(ERR "Pipe");
+        return errno;
+    }
+
+    char *ffplay = NULL;
+    ffplay = create_binary_path(ffplay, FFPLAY, SEPARATOR FFPLAY_BASENAME);
+    //char **argsffplay;
+    //argsffplay = calloc(/*info->infile.type == AFMT_MLP ? 8 : 12*/8, sizeof(char*));
+    char* argsffplay[8] = {FFPLAY_BASENAME, "-i", "pipe:0", "-f", "mlp", "-nodisp", "-infbuf", NULL};
+    if (argsffplay == NULL)
+    {
+        perror(ERR "Allocation of ffplay args");
+        //continue;
+    }
+
+  //  if (info->infile.type == AFMT_MLP)
+    if (true)
+    {
+    //  char* t[8] = {FFPLAY_BASENAME, "-i", "pipe:0", "-f", "mlp", "-nodisp", "-infbuf"};
+    //  for(int w = 0; w < 7; ++w) { argsffplay[w] = strdup(t[w]) ;}
+    //  argsffplay[7] = NULL;
+    }
+    else
+    {
+        char sr[7];
+        sprintf(sr, "%d", files[0][0]->samplerate);
+        char br[6];
+        sprintf(br, "s%dle", files[0][0]->bitspersample);  // s24le or s16le (after decoding)
+        char ch[2];
+        sprintf(ch, "%d", files[0][0]->channels);
+
+        char* t[11] = {FFPLAY_BASENAME, "-i", "pipe:0",
+                              "-f", br, "-ar", sr, "-ac", ch,
+                              "-nodisp", "-infbuf"};
+
+        for(int w = 0; w < 11; ++w) { argsffplay[w] = strdup(t[w]) ;}
+        argsffplay[11] = NULL;
+    }
+
+    switch (fork())
+    {
+        case -1:
+            fprintf(stderr,"%s\n", ERR "Could not launch ffplay");
+            break;
+
+        case 0:
+            close(tube[1]);
+            close(tubeerr[1]);
+            dup2(tube[0], STDIN_FILENO);
+            for(int w = 0; w < 7; ++w) { fprintf(stderr, "%s\n", argsffplay[w]); }
+            execv(ffplay, (char* const*) argsffplay);
+            fprintf(stderr, "%s\n", ERR "Runtime failure in ffplay child process");
+            perror("");
             return errno;
-        }
 
-          // -i pipe:0 -f mlp  -autoexit -nodisp -infbuf
+        default:
+            close(tube[0]);
+            close(tubeerr[0]);
 
-        char *argsffplay[] = {FFPLAY_BASENAME, "-i", "pipe:0", "-f", "mlp", "-autoexit", "-nodisp", "-infbuf", NULL};
-        char *ffplay = NULL;
-        ffplay = create_binary_path(ffplay, FFPLAY, SEPARATOR FFPLAY_BASENAME);
-        switch (pid = fork())
-        {
-            case -1:
-                fprintf(stderr,"%s\n", ERR "Could not launch ffplay");
-                break;
+            dup2(tube[1], STDOUT_FILENO);
+    }
 
-            case 0:
-                close(tube[1]);
-                close(tubeerr[1]);
-                dup2(tube[0], STDIN_FILENO);
-                execv(ffplay, (char* const*) argsffplay);
-                fprintf(stderr, "%s\n", ERR "Runtime failure in ffplay child process");
-                perror("");
-                return errno;
+//    for (int w = 0; w <  /*(info->infile.type == AFMT_MLP ? 8 : 11)*/ 8; ++w)
+//        free(argsffplay[w]);
 
-            default:
-                close(tube[0]);
-                close(tubeerr[0]);
-
-                dup2(tube[1], STDOUT_FILENO);
-                //while (read(STDOUT_FILENO, &c, 1) == 1) write(tube[1], &c, 1);
-        }
-   }
-
+//    free(argsffplay);
+}
 #endif
-
     for (int i = 0; i < 81;  ++i)
     {
       if (globals.aobpath[i] == NULL) break;
@@ -1467,6 +1505,27 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
     if (globals.fixwav_prepend)
         audio_extraction_layout(files);
 
+        // Unfortunately ffplay does not exit, and must be stopped some other way.
+
+    clock_t now = clock();
+    double failsafe = 1.1;
+
+    if (total_duration * failsafe > (now - then) / (double) CLOCKS_PER_SEC)
+    {
+        unsigned int wait_time = total_duration * failsafe  - (now - then) / (double) CLOCKS_PER_SEC;
+
+        double H = floor(total_duration / 3600.0);
+        double M = floor((total_duration - H * 3600.0) / 60.0);
+        double S = floor(total_duration - H * 3600.0 - M * 60.0);
+
+        foutput("\nTotal duration: %f  seconds (%02.0f h %02.0f m %02.0f s)\n",
+                floor(total_duration),
+                H,  M, S);
+
+        usleep(lrint(ceil(wait_time * 1000000.0)));
+    }
+
+    // Waits for child to end without -autoexit, based on audio duration.
     return(errno);
 }
 
