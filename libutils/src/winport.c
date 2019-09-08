@@ -67,7 +67,17 @@ int truncate_from_end(char* filename, uint64_t offset)
     return truncate(filename, offset);
 }
 
+# ifdef _WIN32
 
+void kill(const char* p)
+{
+    char* t;
+    calloc(t, 17 + strlen(p));
+    sprintf(t, "%s%s", "taskkill /im /f ", p);
+    system(t);
+}
+
+# endif // _WIN32
 
 
 

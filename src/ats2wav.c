@@ -1,5 +1,5 @@
 /*
-  
+
 ats2wav - extract uncompressed LPCM audio from a DVD-Audio disc
 
 Copyright Dave Chapman <dave@dchapman.com> 2005,
@@ -70,8 +70,8 @@ static unsigned char wav_header[80]= {'R','I','F','F',   //  0 - ChunkID
 static const uint8_t  T[2][6][36]=
      {{ {0}, // 4
         {0}, // 8
-        {5, 4, 7, 6, 1, 0, 9, 8, 11, 10, 3, 2}, 
-        {9, 8, 11, 10, 1, 0, 3, 2, 13, 12, 15, 14, 5, 4 ,7, 6}, 
+        {5, 4, 7, 6, 1, 0, 9, 8, 11, 10, 3, 2},
+        {9, 8, 11, 10, 1, 0, 3, 2, 13, 12, 15, 14, 5, 4 ,7, 6},
         {9, 8, 11, 10, 13, 12, 1, 0, 3, 2, 15, 14, 17, 16, 19, 18, 5, 4, 7, 6}, //20, rev
         {13, 12, 15, 14, 17, 16, 1, 0, 3, 2, 5, 4, 19, 18, 21, 20, 23, 22, 7, 6, 9, 8, 11, 10}}, //rev
       {{4,  1,  0,  5,  3,  2},
@@ -189,7 +189,7 @@ inline static void wav_output_open(WaveData *info)
     {
         foutput(INF "Opening file %s ...\n", info->outfile.filename);
     }
-    
+
     info->outfile.fp = fopen(info->outfile.filename, "ab");
     if (info->outfile.fp != NULL)
     {
@@ -281,12 +281,12 @@ inline static int calc_position(WaveData* info, const uint32_t offset0)
 
     fseek(info->infile.fp, offset0 + 14, SEEK_SET);
     int result = fread(buf, 4, 1, info->infile.fp);
-    
+
     if (result != 1)
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting packet position.")
     }
-        
+
 
     if (buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB)
     {
@@ -326,7 +326,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header,
                                         bool *status, uint8_t* continuity, bool new_title)
 {
     if (! info->infile.isopen) aob_open(info);
-    
+
     uint32_t offset0 = ftell(info->infile.fp);
 
     get_audio_format(info, new_title, status);
@@ -402,7 +402,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header,
         fseek(info->infile.fp, offset0, SEEK_SET);
         return position;
     }
-    
+
     uint32_t offset_shift = 29 + (position == FIRST_PACK ? 21 : 0);
 
     fseek(info->infile.fp, offset0 + offset_shift, SEEK_SET);
@@ -428,14 +428,14 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header,
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting sample size.")
     }
-    
+
     result = fread(sample_rate, 1, 1, info->infile.fp);
 
     if (result != 1)
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting sample rate.")
     }
-    
+
     uint8_t high_nibble = (sample_rate[0] & 0xf0) >> 4;
 
     switch(high_nibble)
@@ -497,7 +497,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header,
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting channel.")
     }
-    
+
     if (channel_assignment[0] > 20) *status = INVALID;
 
     header->channels = (channel_assignment[0] < 21) ? channels[channel_assignment[0]] : 0;
@@ -509,7 +509,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header,
     {
       header->dwChannelMask = cga2wav_channels[channel_assignment[0]];
     }
-   
+
     fseeko(info->infile.fp, offset0, SEEK_SET);
 
     return position;
@@ -588,7 +588,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
         lastpack_lpcm_headerquantity    = U[5];
     }
 
-    int res  = 0, result;    
+    int res  = 0, result;
     int lpcm_payload_cut = 0;
     static int lpcm_payload_rmdr;
 
@@ -721,7 +721,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 
             fpout_size_increment = fwrite(audio_buf, 1, res, info->outfile.fp);
        }
-    
+
     if (*position == LAST_PACK || (*position == CUT_PACK_RMDR && offset1 == 0))
     {
         S_CLOSE(info->outfile)
@@ -735,10 +735,10 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
            fseek(info->infile.fp, offset0 + offset1, SEEK_SET);
            if (*position == CUT_PACK_RMDR) *position = MIDDLE_PACK;
         }
-   
+
     if (globals.maxverbose)
            foutput(MSG_TAG "Position : %d\n", *position);
-    
+
     *written_bytes += fpout_size_increment;
     return(fpout_size_increment);
 }
@@ -813,7 +813,7 @@ static inline uint32_t scan_wav_characteristics(fileinfo_t* info, WaveHeader* he
     return wav_numbytes;
 }
 
-#ifdef _WIN32
+#if defined _WIN32 && defined __NO_ISOCEXT
 static void usleep(unsigned int usec)
 {
     HANDLE timer;
@@ -861,7 +861,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
     while (position != END_OF_AOB)
     {
         /* First pass to get basic audio characteristics (sample rate, bit rate, cga) of title */
-        
+
         bool status = VALID;
         errno = 0;
         uint8_t continuity_save = 0;
@@ -1519,12 +1519,18 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
 
           usleep(lrint(ceil(wait_time * 1000000.0)));
 
-          int res = kill(pid, SIGKILL);
-          if (res == 0) done = true;
+#ifdef _WIN32
+
+       int res = kill("ffplay");
+       // to be developed
+#else
+         int res = kill(pid, SIGKILL);
+#endif // _WIN32
+         if (res == 0) done = true;
       }
 
     }
-    
+
     if (globals.fixwav_prepend)
         audio_extraction_layout(files);
 

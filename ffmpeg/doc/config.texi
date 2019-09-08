@@ -171,9 +171,9 @@
 @set have-simd-align-64 yes
 @c @set have-atomic-cas-ptr no
 @c @set have-machine-rw-barrier no
-@c @set have-memorybarrier no
+@set have-memorybarrier yes
 @set have-mm-empty yes
-@c @set have-rdtsc no
+@set have-rdtsc yes
 @c @set have-sem-timedwait no
 @set have-sync-val-compare-and-swap yes
 @set have-cabs yes
@@ -188,38 +188,38 @@
 @c @set have-cdio-paranoia-h no
 @c @set have-cdio-paranoia-paranoia-h no
 @c @set have-cuda-h no
-@set have-dispatch-dispatch-h yes
+@c @set have-dispatch-dispatch-h no
 @c @set have-dev-bktr-ioctl-bt848-h no
 @c @set have-dev-bktr-ioctl-meteor-h no
 @c @set have-dev-ic-bt8xx-h no
 @c @set have-dev-video-bktr-ioctl-bt848-h no
 @c @set have-dev-video-meteor-ioctl-meteor-h no
-@c @set have-direct-h no
+@set have-direct-h yes
 @set have-dirent-h yes
-@c @set have-dxgidebug-h no
-@c @set have-dxva-h no
+@set have-dxgidebug-h yes
+@set have-dxva-h yes
 @c @set have-es2-gl-h no
 @c @set have-gsm-h no
-@c @set have-io-h no
+@set have-io-h yes
 @c @set have-linux-perf-event-h no
 @c @set have-machine-ioctl-bt848-h no
 @c @set have-machine-ioctl-meteor-h no
-@c @set have-malloc-h no
+@set have-malloc-h yes
 @c @set have-opencv2-core-core-c-h no
 @c @set have-opengl-gl3-h no
-@set have-poll-h yes
+@c @set have-poll-h no
 @set have-sys-param-h yes
-@set have-sys-resource-h yes
-@set have-sys-select-h yes
+@c @set have-sys-resource-h no
+@c @set have-sys-select-h no
 @c @set have-sys-soundcard-h no
 @set have-sys-time-h yes
-@set have-sys-un-h yes
+@c @set have-sys-un-h no
 @c @set have-sys-videoio-h no
-@set have-termios-h yes
+@c @set have-termios-h no
 @c @set have-udplite-h no
 @set have-unistd-h yes
 @c @set have-valgrind-valgrind-h no
-@c @set have-windows-h no
+@set have-windows-h yes
 @c @set have-winsock2-h no
 @c @set have-intrinsics-neon no
 @set have-atanf yes
@@ -251,7 +251,7 @@
 @set have-sinf yes
 @set have-trunc yes
 @set have-truncf yes
-@c @set have-dos-paths no
+@set have-dos-paths yes
 @c @set have-libc-msvcrt no
 @c @set have-mmal-parameter-video-max-num-callbacks no
 @c @set have-section-data-rel-ro no
@@ -259,55 +259,55 @@
 @c @set have-uwp no
 @c @set have-winrt no
 @set have-access yes
-@c @set have-aligned-malloc no
-@set have-arc4random yes
+@set have-aligned-malloc yes
+@c @set have-arc4random no
 @set have-clock-gettime yes
 @c @set have-closesocket no
-@c @set have-commandlinetoargvw no
-@set have-fcntl yes
+@set have-commandlinetoargvw yes
+@c @set have-fcntl no
 @c @set have-getaddrinfo no
 @c @set have-gethrtime no
 @set have-getopt yes
-@c @set have-getprocessaffinitymask no
-@c @set have-getprocessmemoryinfo no
-@c @set have-getprocesstimes no
-@set have-getrusage yes
-@c @set have-getsystemtimeasfiletime no
+@set have-getprocessaffinitymask yes
+@set have-getprocessmemoryinfo yes
+@set have-getprocesstimes yes
+@c @set have-getrusage no
+@set have-getsystemtimeasfiletime yes
 @set have-gettimeofday yes
-@set have-glob yes
+@c @set have-glob no
 @c @set have-glxgetprocaddress no
 @set have-gmtime-r yes
 @c @set have-inet-aton no
 @set have-isatty yes
-@c @set have-kbhit no
+@set have-kbhit yes
 @set have-localtime-r yes
-@set have-lstat yes
+@c @set have-lstat no
 @c @set have-lzo1x-999-compress no
-@set have-mach-absolute-time yes
-@c @set have-mapviewoffile no
+@c @set have-mach-absolute-time no
+@set have-mapviewoffile yes
 @c @set have-memalign no
 @set have-mkstemp yes
-@set have-mmap yes
+@c @set have-mmap no
 @set have-mprotect yes
 @set have-nanosleep yes
-@c @set have-peeknamedpipe no
-@set have-posix-memalign yes
+@set have-peeknamedpipe yes
+@c @set have-posix-memalign no
 @c @set have-pthread-cancel no
 @c @set have-sched-getaffinity no
-@set have-secitemimport yes
-@c @set have-setconsoletextattribute no
-@c @set have-setconsolectrlhandler no
-@c @set have-setmode no
-@set have-setrlimit yes
-@c @set have-sleep no
-@set have-strerror-r yes
-@set have-sysconf yes
-@set have-sysctl yes
+@c @set have-secitemimport no
+@set have-setconsoletextattribute yes
+@set have-setconsolectrlhandler yes
+@set have-setmode yes
+@c @set have-setrlimit no
+@set have-sleep yes
+@c @set have-strerror-r no
+@c @set have-sysconf no
+@c @set have-sysctl no
 @set have-usleep yes
 @c @set have-utgetostypefromstring no
-@c @set have-virtualalloc no
+@set have-virtualalloc yes
 @c @set have-wglgetprocaddress no
-@c @set have-bcrypt no
+@set have-bcrypt yes
 @c @set have-vaapi-drm no
 @c @set have-vaapi-x11 no
 @c @set have-vdpau-x11 no
@@ -320,7 +320,7 @@
 @c @set have-as-func no
 @c @set have-as-object-arch no
 @c @set have-asm-mod-q no
-@set have-blocks-extension yes
+@c @set have-blocks-extension no
 @set have-ebp-available yes
 @set have-ebx-available yes
 @c @set have-gnu-as no
@@ -345,14 +345,14 @@
 @c @set have-struct-ipv6-mreq no
 @c @set have-struct-msghdr-msg-flags no
 @c @set have-struct-pollfd no
-@set have-struct-rusage-ru-maxrss yes
+@c @set have-struct-rusage-ru-maxrss no
 @c @set have-struct-sctp-event-subscribe no
 @c @set have-struct-sockaddr-in6 no
 @c @set have-struct-sockaddr-sa-len no
 @c @set have-struct-sockaddr-storage no
 @c @set have-struct-stat-st-mtim-tv-nsec no
 @c @set have-struct-v4l2-frmivalenum-discrete no
-@set have-makeinfo yes
+@c @set have-makeinfo no
 @c @set have-makeinfo-html no
 @c @set have-opencl-d3d11 no
 @c @set have-opencl-drm-arm no
@@ -367,7 +367,7 @@
 @c @set config-htmlpages no
 @set config-manpages yes
 @set config-podpages yes
-@set config-txtpages yes
+@c @set config-txtpages no
 @set config-avio-dir-cmd-example yes
 @set config-avio-reading-example yes
 @set config-decode-audio-example yes
@@ -379,7 +379,7 @@
 @set config-filter-audio-example yes
 @set config-filtering-audio-example yes
 @set config-filtering-video-example yes
-@set config-http-multiclient-example yes
+@c @set config-http-multiclient-example no
 @set config-hw-decode-example yes
 @set config-metadata-example yes
 @c @set config-muxing-example no
@@ -480,19 +480,19 @@
 @c @set config-pocketsphinx no
 @c @set config-vapoursynth no
 @c @set config-alsa no
-@set config-appkit yes
-@set config-avfoundation yes
+@c @set config-appkit no
+@c @set config-avfoundation no
 @c @set config-bzlib no
-@set config-coreimage yes
+@c @set config-coreimage no
 @c @set config-iconv no
 @c @set config-libxcb no
 @c @set config-libxcb-shm no
 @c @set config-libxcb-shape no
 @c @set config-libxcb-xfixes no
 @c @set config-lzma no
-@c @set config-schannel no
+@set config-schannel yes
 @c @set config-sdl2 no
-@set config-securetransport yes
+@c @set config-securetransport no
 @c @set config-sndio no
 @c @set config-xlib no
 @c @set config-zlib no
@@ -504,7 +504,7 @@
 @c @set config-omx no
 @c @set config-opencl no
 @c @set config-amf no
-@set config-audiotoolbox yes
+@c @set config-audiotoolbox no
 @c @set config-crystalhd no
 @c @set config-cuda no
 @c @set config-cuvid no

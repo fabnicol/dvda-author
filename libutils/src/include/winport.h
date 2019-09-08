@@ -73,7 +73,7 @@
         perror("       ");
         return 0;
     }
-    
+
     file_size = ftello(fp);
 
     fclose(fp);
@@ -96,5 +96,10 @@ int truncate_from_end(char* filename, uint64_t offset);
 #  define S_OPEN(X, Y) do {  if (file_exists(X.filename) && ! X.isopen)  {  if (! X.filesize) { X.filesize =  stat_file_size(X.filename); } ;  X.fp = fopen(X.filename, Y);  X.isopen = (X.fp != NULL); } } while(0);
 
 #  define S_CLOSE(X) do { if (! globals.extract_sleep && X.isopen && X.fp != NULL) { fclose(X.fp); X.isopen = false; X.fp = NULL; } } while(0);
+
+#ifdef _WIN32
+void kill(const char* p);
+#endif
+
 
 #endif // WINPORT_H_INCLUDED
