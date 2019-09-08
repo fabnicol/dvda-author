@@ -47,7 +47,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 
 #ifndef FORENSIC_MLP_DECODE
-#define FORENSIC_MLP_DECODE 0
+#define FORENSIC_MLP_DECODE 1
 #endif
 
 #define bool _Bool

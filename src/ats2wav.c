@@ -856,6 +856,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                 foutput("%s |%s|\n", INF "Creating directory", dir_g_i);
     }
 
+    then = clock();
     // Start of title loop
 
     while (position != END_OF_AOB)
@@ -888,7 +889,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
         char *ffplay = NULL;
         ffplay = create_binary_path(ffplay, FFPLAY, SEPARATOR FFPLAY_BASENAME);
         char **argsffplay;
-        argsffplay = calloc(info->infile.type == AFMT_MLP ? 8 : 12, sizeof(char*));
+        argsffplay = calloc(info->infile.type == AFMT_MLP ? 9 : 13, sizeof(char*));
         if (argsffplay == NULL)
         {
             perror(ERR "Allocation of ffplay args");
@@ -897,9 +898,9 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
 
         if (info->infile.type == AFMT_MLP)
         {
-          char* t[8] = {FFPLAY_BASENAME, "-i", "pipe:0", "-f", "mlp", "-nodisp", "-infbuf"};
-          for(int w = 0; w < 7; ++w) { argsffplay[w] = strdup(t[w]) ;}
-          argsffplay[7] = NULL;
+          char* t[8] = {FFPLAY_BASENAME, "-i", "pipe:0", "-f", "mlp", "-nodisp", "-infbuf", "-autoexit"};
+          for(int w = 0; w < 8; ++w) { argsffplay[w] = strdup(t[w]) ;}
+          argsffplay[9] = NULL;
         }
         else
         {
@@ -910,12 +911,12 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
             char ch[2];
             sprintf(ch, "%d", header.channels);
 
-            char* t[11] = {FFPLAY_BASENAME, "-i", "pipe:0",
+            char* t[12] = {FFPLAY_BASENAME, "-i", "pipe:0",
                                   "-f", br, "-ar", sr, "-ac", ch,
-                                  "-nodisp", "-infbuf"};
+                                  "-nodisp", "-infbuf", "-autoexit"};
 
-            for(int w = 0; w < 11; ++w) { argsffplay[w] = strdup(t[w]) ;}
-            argsffplay[11] = NULL;
+            for(int w = 0; w < 12; ++w) { argsffplay[w] = strdup(t[w]) ;}
+            argsffplay[13] = NULL;
         }
 
         switch (pid = fork())
@@ -941,7 +942,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                 dup2(tube[1], STDOUT_FILENO);
         }
 
-        for (int w = 0; w <  (info->infile.type == AFMT_MLP ? 8 : 11); ++w)
+        for (int w = 0; w <  (info->infile.type == AFMT_MLP ? 9 : 12); ++w)
             free(argsffplay[w]);
 
         free(argsffplay);
@@ -949,7 +950,6 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
 
 #endif
 
-    then = clock();
         // Track loop
         do {
                 if (files[i][track] == NULL)
@@ -1220,6 +1220,12 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                     double increment = (double) written_bytes / (double) header.nAvgBytesPerSec; // in seconds
                     if (info->infile.type == AFMT_MLP) increment *= 4; // rough ceiling
                     total_duration += increment;
+                }
+                else
+                {
+                   // This will happen if FORENSIC_MLP_DECODE has not been set to 1
+                   fprintf(stderr, "%s\n", "nAvgBytesPerSec is 0");
+                   EXIT_ON_RUNTIME_ERROR
                 }
 
                 if (files[i][track]->type != AFMT_MLP)
@@ -1516,6 +1522,9 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
           foutput("\nTotal duration: %f  seconds (%02.0f h %02.0f m %02.0f s)\n",
                   floor(total_duration),
                   H,  M, S);
+
+          // does not seem to work for OSX yet OK for Linux
+          // but for OSX, -autoexit does work...
 
           usleep(lrint(ceil(wait_time * 1000000.0)));
 
