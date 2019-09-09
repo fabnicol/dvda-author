@@ -238,7 +238,7 @@ typedef struct
     bool videozone;
     bool videolinking;
     bool decode;
-    bool extract_sleep;
+    bool pipe;
     bool play;
     bool playlist;
     bool cga;

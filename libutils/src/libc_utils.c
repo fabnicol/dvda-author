@@ -1003,7 +1003,7 @@ char* get_cl(const char** args, uint16_t start)
 * of a pipe
 * ------- */
 
-char* get_command_line(const char** args)
+char* get_command_line(const char* args[])
 {
     return get_cl(args, 1);
 }

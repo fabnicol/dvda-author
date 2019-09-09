@@ -9,22 +9,24 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+
 #ifndef _GNU_SOURCE
-#define _GNU_SOURCE 1
+#  define _GNU_SOURCE 1
 #endif
+
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifndef __WIN32__
-#include <unistd.h>
-#endif
-#define off64_t  long long
 #include <dirent.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <string.h>
+
+#ifndef _WIN32
+#  include <unistd.h>
+#endif
 
 #include "fixwav.h"
 #include "fixwav_auxiliary.h"
@@ -38,6 +40,8 @@
 #include "winport.h"
 #include "commonvars.h"
 #include "libiberty.h"
+
+#define off64_t  long long
 
 extern globalData globals;
 

@@ -8,24 +8,26 @@
 #include <sys/types.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "c_utils.h"
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <string.h>
 
 #if defined __WIN32__|| defined _WIN64 || defined _WIN32 || defined __WIN32 || defined __WIN64
 
 #  include <tchar.h>
-#  include <sys/stat.h>
-#  include <string.h>
 #  include <windows.h>
-#  include <strsafe.h>
 
+// define before strsafe include
+#define STRSAFE_NO_DEPRECATE
+#  include <strsafe.h>
 
   void ErrorExit(PTSTR);
 
-#  ifndef __MINGW32__
+#  else
 #    include <sys/resource.h>
-#  endif
-
 #endif
+
+#include "c_utils.h"
 
  inline static uint64_t stat_file_size(const char* filename)
 {
@@ -95,28 +97,40 @@ int truncate_from_end(char* filename, uint64_t offset);
 #ifndef S_OPEN
 #  define S_OPEN(X, Y) do {  if (file_exists(X.filename) && ! X.isopen)  {  if (! X.filesize) { X.filesize =  stat_file_size(X.filename); } ;  X.fp = fopen(X.filename, Y);  X.isopen = (X.fp != NULL); } } while(0);
 
-#  define S_CLOSE(X) do { if (! globals.extract_sleep && X.isopen && X.fp != NULL) { fclose(X.fp); X.isopen = false; X.fp = NULL; } } while(0);
+#  define S_CLOSE(X) do { if (! globals.pipe && X.isopen && X.fp != NULL) { fclose(X.fp); X.isopen = false; X.fp = NULL; } } while(0);
 
 #ifdef _WIN32
 
-  void kill(const char* p);
 
-  DWORDLONG pipe_to_child_stdin(CHAR* name,
-                          CHAR** args,
-                          HANDLE g_hChildStd_IN_Rd,
-                          HANDLE g_hChildStd_IN_Wr,
-                          HANDLE g_hChildStd_ERR_Rd,
-                          HANDLE g_hChildStd_ERR_Wr);
+  typedef      HANDLE  FILE_DESCRIPTOR;
 
-  DWORD write_to_child_stdin(void* chBuf,
-      DWORD dwBytesToBeWritten,
-      HANDLE g_hChildStd_IN_Rd,
-      HANDLE g_hChildStd_IN_Wr,
-      HANDLE g_hChildStd_ERR_Rd,
-      HANDLE g_hChildStd_ERR_Wr);
+  int kill(const char* p);
 
 void ErrorExit(PTSTR lpszFunction);
+
+#else
+     typedef      (int*)  FILE_DESCRIPTOR
+#   ifndef  DWORDLONG
+#      define DWORDLONG   uint64_t
+#   endif
+#   ifndef  DWORD
+#      define DWOR unsigned long int
+#   endif
 #endif
+
+ DWORDLONG pipe_to_child_stdin(const char* name,
+                          char** args,
+                          int GCC_UNUSED  buffer_size,
+                          FILE_DESCRIPTOR g_hChildStd_IN_Rd,
+                          FILE_DESCRIPTOR g_hChildStd_IN_Wr,
+                          FILE_DESCRIPTOR g_hChildStd_ERR_Rd,
+                          FILE_DESCRIPTOR g_hChildStd_ERR_Wr);
+
+ DWORD write_to_child_stdin(
+      void* chBuf,
+      DWORD dwBytesToBeWritten,
+       HANDLE g_hChildStd_IN_Wr);
+
 
 
 #endif // WINPORT_H_INCLUDED

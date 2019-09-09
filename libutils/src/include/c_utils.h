@@ -29,36 +29,36 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define C_UTILS_H_INCLUDED
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#  include "config.h"
 #endif
-
-#include "version.h"
-//#include "fixwav_manager.h"
-#include "commonvars.h"
 
 #include <stdio.h>
-
-#if defined __WIN32__ || defined _WIN32 || defined __WIN32 || defined __WIN64 || defined _WIN64
-#  define SEPARATOR "\\"
-#  define STRLEN_SEPARATOR 2
-#define WAIT 0
-#else
-#define SEPARATOR  "/"
-#define STRLEN_SEPARATOR 1
-#include <sys/wait.h>
-#define WAIT WUNTRACED | WCONTINUED
-#endif
-
 #include <sys/types.h>
-#if defined __WIN32__ || defined _WIN32 || defined __WIN32 || defined __WIN64 || defined _WIN64
 #include <sys/stat.h>
-//#else
-//#include <io.h>
-#endif
 #include <string.h>
 #include <stdint.h>
+
+#include "version.h"
+#include "commonvars.h"
+
+#if defined __WIN32__ || defined _WIN32 || defined __WIN32 || defined __WIN64 || defined _WIN64
+
+#  include <io.h>
+#  define SEPARATOR "\\"
+#  define STRLEN_SEPARATOR 2
+#  define WAIT 0
+#
+#else
+#
+#  define SEPARATOR  "/"
+#  define STRLEN_SEPARATOR 1
+#  include <sys/wait.h>
+#  define WAIT WUNTRACED | WCONTINUED
+
+#endif
+
 #ifndef __MINGW32__
-#include <sys/resource.h>
+#  include <sys/resource.h>
 #endif
 
 #define GCC_INLINE __attribute__((always_inline))

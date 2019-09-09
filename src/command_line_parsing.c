@@ -1285,7 +1285,7 @@ out:
             foutput("%s\n", PAR "Syncing extraction to stdou for piping to external tools...");
             globals.decode = false;           // useless to decode as ffplay has MLP playback on board
             globals.fixwav_prepend = false;  // no headers (raw pcm)
-            globals.extract_sleep = true;    // output to stdout
+            globals.pipe = true;    // output to stdout
             use_ifo_files = false;
             if (strstr(optarg, ".AOB") != NULL)
             {

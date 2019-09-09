@@ -29,16 +29,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define _GNU_SOURCE
 #endif
 
-#include <sys/types.h>
-#include <stdio.h>
-#include <sys/stat.h>
-#include <stdint.h>
 #include "winport.h"
 #include "private_c_utils.h"
 #include "c_utils.h"
 #include "structures.h"
 
-extern globalData global_utils ;
+extern globalData globals;
 
 /* met issues on GNU/Linux with stat st_size field ( a few bytes off real size. USe below code from
    http://www.securecoding.cert.org  */
@@ -68,18 +64,20 @@ int truncate_from_end(char* filename, uint64_t offset)
 
 # ifdef _WIN32
 
-void kill(const char* p)
+int  kill(const char* p)
 {
     char* t;
-    calloc(t, 17 + strlen(p));
+    t = calloc(17 + strlen(p), sizeof(char));
     sprintf(t, "%s%s", "taskkill /im /f ", p);
-    system(t);
+    int res = system(t);
     free(t);
+    return res;
 }
 
 // CHAR* name: name of the child
 // CHAR** args: command line args of the child
 // Open a pipe to feed child's stdin with bytes later to be written
+// buffer_size: tehcnical (size of buffer)
 // + child's HANDLE
 // HANDLE g_hChildStd_IN_Rd: child stdin (read)
 // HANDLE g_hChildStd_IN_Wr: child stdin (write)
@@ -87,8 +85,9 @@ void kill(const char* p)
 // HANDLE g_hChildStd_ERR_Wr: child stderr (write)
 // returns number of bytes written
 
-DWORDLONG pipe_to_child_stdin(CHAR* name,
-                          CHAR** args,
+DWORDLONG pipe_to_child_stdin(const char* name,
+                          char **args,
+                          int GCC_UNUSED  buffer_size,
                           HANDLE g_hChildStd_IN_Rd,
                           HANDLE g_hChildStd_IN_Wr,
                           HANDLE g_hChildStd_ERR_Rd,
@@ -111,7 +110,15 @@ DWORDLONG pipe_to_child_stdin(CHAR* name,
    if ( ! SetHandleInformation(g_hChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0) )
       ErrorExit(TEXT("Stdin SetHandleInformation"));
 
-   TCHAR szCmdline[]=TEXT(name); //+args
+   TCHAR *szCmdline =  calloc(strlen(name) + 1, sizeof(TCHAR));
+
+   if (szCmdline == NULL)
+   {
+       fprintf(stderr, "%s\n", ERR "Could not allocate commandline of child process");
+       perror("");
+       clean_exit(EXIT_FAILURE);
+   }
+
    PROCESS_INFORMATION piProcInfo;
    STARTUPINFO siStartInfo;
    BOOL bSuccess = FALSE;
@@ -124,12 +131,15 @@ DWORDLONG pipe_to_child_stdin(CHAR* name,
    siStartInfo.hStdInput = g_hChildStd_IN_Rd;
    siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
 
-   bSuccess = CreateProcess(NULL,
+   char* commandline = get_command_line(args);
+
+   bSuccess = CreateProcessA(
       szCmdline,
+      commandline,
       NULL,
       NULL,
       TRUE,
-      0,
+      NORMAL_PRIORITY_CLASS ,
       NULL,
       NULL,
       &siStartInfo,
@@ -144,26 +154,45 @@ DWORDLONG pipe_to_child_stdin(CHAR* name,
    }
 
    DWORD dwRead, dwWritten;
-   CHAR chBuf[BUFSIZE];
-   BOOL bSuccess = FALSE;
-   HANDLE hParentStdErr = GetStdHandle(STD_ERROR_HANDLE);
-   DWORDLONG   dwlWrittentBytes;
-
-   for (; dwlWrittentBytes < MAXUINT64;)
+   CHAR *chBuf = calloc(buffer_size, sizeof(CHAR));
+    if (chBuf == NULL)
    {
-      bSuccess = ReadFile( g_hChildStd_ERR_Rd, chBuf, BUFSIZE, &dwRead, NULL);
-      if( ! bSuccess) break;
+       fprintf(stderr, "%s\n", ERR "Could not allocate  buffer for piping to child process");
+       perror("");
+       clean_exit(EXIT_FAILURE);
+   }
+
+   bSuccess = FALSE;
+   HANDLE hParentStdErr = GetStdHandle(STD_ERROR_HANDLE);
+
+   DWORDLONG   dwlWrittentBytes = 0;
+
+   for ( ; dwlWrittentBytes < UINT64_MAX ; )
+   {
+      bSuccess = ReadFile( g_hChildStd_ERR_Rd, chBuf, buffer_size, &dwRead, NULL);
+      //if( ! bSuccess) break;
 
       bSuccess = WriteFile(hParentStdErr, chBuf,
                            dwRead, &dwWritten, NULL);
-      if (! bSuccess ) break;
+      //if (! bSuccess ) break;
    }
 
    dwlWrittentBytes += dwWritten;
 
+   free(szCmdline);
+   free(chBuf);
+   free(commandline);
+
+   HANDLE hParentStdOut = GetStdHandle(STD_ERROR_HANDLE);
+
+   if ( ! CloseHandle(hParentStdErr) )
+       ErrorExit(TEXT("Parent stderr CloseHandle"));
+
+   if ( ! CloseHandle(hParentStdOut) )
+       ErrorExit(TEXT("Parent stdout CloseHandle"));
+
    return dwlWrittentBytes;
    // Now write to the child stdin pipe as in follwing function
-
 }
 
 // Writes to child stdin a buffer chBuf of length dwBytesToBeWritten
@@ -173,12 +202,9 @@ DWORDLONG pipe_to_child_stdin(CHAR* name,
 DWORD write_to_child_stdin(
       void* chBuf,
       DWORD dwBytesToBeWritten,
-      HANDLE g_hChildStd_IN_Rd,
-      HANDLE g_hChildStd_IN_Wr,
-      HANDLE g_hChildStd_ERR_Rd,
-      HANDLE g_hChildStd_ERR_Wr)
+      HANDLE g_hChildStd_IN_Wr)
 {
-    DWORD dwRead, dwWritten;
+    DWORD dwWritten;
 
     BOOL bSuccess = FALSE;
 
@@ -187,13 +213,25 @@ DWORD write_to_child_stdin(
     if (globals.debugging)
     {
        if (! bSuccess)  fprintf(stderr, "%s\n", ERR "Error in write process to stdin.");
-       if (globals.maxverbose) fprintf(stderr, "%s%d%s%d\n", MSG_TAG "Wrote ", dwWritten, " bytes out of ", dwBytesToBeWritten);
+       if (globals.maxverbose) fprintf(stderr, "%s%lu%s%lu\n", MSG_TAG "Wrote ", dwWritten, " bytes out of ", dwBytesToBeWritten);
     }
+    return dwWritten;
+}
+
+void close_handles(HANDLE g_hChildStd_IN_Rd,
+      HANDLE g_hChildStd_IN_Wr,
+      HANDLE g_hChildStd_ERR_Rd,
+      HANDLE g_hChildStd_ERR_Wr)
+{
 
     if ( ! CloseHandle(g_hChildStd_IN_Wr) )
        ErrorExit(TEXT("StdInWr CloseHandle"));
-
-    return dwWritten;
+    if ( ! CloseHandle(g_hChildStd_IN_Rd) )
+       ErrorExit(TEXT("StdInRd CloseHandle"));
+    if ( ! CloseHandle(g_hChildStd_ERR_Wr) )
+       ErrorExit(TEXT("StdErrWr CloseHandle"));
+    if ( ! CloseHandle(g_hChildStd_ERR_Rd) )
+       ErrorExit(TEXT("StdErrRd CloseHandle"));
 }
 
 // Microsoft website boilerplate, public domain.
@@ -227,7 +265,102 @@ void ErrorExit(PTSTR lpszFunction)
     LocalFree(lpDisplayBuf);
     ExitProcess(1);
 }
+#else
 
+// name: name of the child
+// args: command line args of the child
+// Open a pipe to feed child's stdin with bytes later to be writte
+// returns pid of process or errno;
+// for compatibility with windows, returns long long unsigned int
+
+DWORDLONG pipe_to_child_stdin(const char* name,
+                          char** args,
+                          int GCC_UNUSED  buffer_size,
+                          FILE_DESCRIPTOR g_hChildStd_IN_Rd,
+                          FILE_DESCRIPTORg_hChildStd_IN_Wr,
+                          FILE_DESCRIPTORg_hChildStd_ERR_Rd,
+                          FILE_DESCRIPTORg_hChildStd_ERR_Wr);
+{
+       char tube[2] = {*tube0, *tube1};
+       char tubeerr[2] = {*tubeerr0, *tubeerr1};
+
+        if (pipe(tube) || pipe(tubeerr))
+        {
+            perror(ERR "Pipe");
+            return errno;
+        }
+
+        switch (pid = fork())
+        {
+            case -1:
+                fprintf(stderr,"%s\n", ERR "Could not launch ffplay");
+                break;
+
+            case 0:
+                close(tube[1]);
+                close(tubeerr[1]);
+                dup2(tube[0], STDIN_FILENO);
+                execv(ffplay, (char* const*) argsffplay);
+                fprintf(stderr, "%s\n", ERR "Runtime failure in ffplay child process");
+                perror("");
+                return errno;
+
+            default:
+                close(tube[0]);
+                close(tubeerr[0]);
+                dup2(tube[1], STDOUT_FILENO);
+        }
+
+        return pid;
+ }
+
+void close_handles(
+        int* tube0,
+        int* tube1,
+        int* tubeerr0,
+        int* tubeerr1)
+{
+      close(*tube1]);
+      close(*tube0]);
+      close(*tubeerr1);
+      close(*tubeerr0);
+}
+
+unsigned long int write_to_child_stdin(
+     void* chBuf,
+     unsigned long int dwBytesToBeWritten,
+     int* GCC_UNUSED g_hChildStd_IN_Wr)
+{
+    unsigned long int dwWritten;
+    errno = 0;
+    dwWritten = fwrite(chBuf, 1, dwBytesToBeWritten,  stdout);
+
+    if (globals.debugging)
+    {
+       if (errno != 0)  fprintf(stderr, "%s\n", ERR "Error in write process to stdin.");
+       if (globals.maxverbose) fprintf(stderr, "%s%lu%s%lu\n", MSG_TAG "Wrote ", dwWritten, " bytes out of ", dwBytesToBeWritten);
+    }
+    return dwWritten;
+}
+
+{
+    long unsigned int dwWritten;
+
+    bool bSuccess = false;
+
+    bSuccess = WriteFile(g_hChildStd_IN_Wr, chBuf, dwBytesToBeWritten, &dwWritten, NULL);
+
+    if (globals.debugging)
+    {
+       if (! bSuccess)  fprintf(stderr, "%s\n", ERR "Error in write process to stdin.");
+       if (globals.maxverbose) fprintf(stderr, "%s%lu%s%lu\n", MSG_TAG "Wrote ", dwWritten, " bytes out of ", dwBytesToBeWritten);
+    }
+
+    if ( ! CloseHandle(g_hChildStd_IN_Wr) )
+       ErrorExit(TEXT("StdInWr CloseHandle"));
+
+    return dwWritten;
+}
 
 # endif // _WIN32
 
