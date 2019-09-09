@@ -636,21 +636,27 @@ char * conc(const char* str1, const char* str2)
     else return dest;
 }
 
-char* filepath(const char* str1, const char* str2)
+char* join(const char* str1, const char* str2, const char* sep)
 {
     if ((!str1) || (!str2)) return NULL;
     errno=0;
     uint16_t s1=strlen(str1);
     uint16_t s2=strlen(str2);
+    uint16_t s3=strlen(sep);
 
-    char* dest=calloc(s1 + s2 + 2, sizeof(char));
+    char* dest=calloc(s1 + s2 + s3 + 1, sizeof(char));
 
     strcpy(dest, str1);
-    strcat(dest, SEPARATOR);
+    strcat(dest, sep);
     strcat(dest, str2);
 
     if (errno) return NULL;
     else return dest;
+}
+
+char* filepath(const char* str1, const char* str2)
+{
+    return join(str1, str2, SEPARATOR) ;
 }
 
 /*-------
@@ -965,7 +971,7 @@ int secure_mkdir (const char *path, mode_t mode)
 * of a pipe
 * ------- */
 
-char* get_cl(const char** args, uint16_t start)
+char* get_cl(char** args, uint16_t start)
 {
     if (args == NULL) return NULL;
     uint16_t tot = 0, i = start, j, shift = 0;
@@ -1003,7 +1009,7 @@ char* get_cl(const char** args, uint16_t start)
 * of a pipe
 * ------- */
 
-char* get_command_line(const char* args[])
+char* get_command_line(char* args[])
 {
     return get_cl(args, 1);
 }
@@ -1015,9 +1021,27 @@ char* get_command_line(const char* args[])
 * ------- */
 
 
-char* get_full_command_line(const char** args)
+char* get_full_command_line(char** args)
 {
     return get_cl(args, 0);
+}
+
+
+/*--------
+* get_fullpath_command_line
+*
+* Same as above yet also returns application full path (and name)
+* ------- */
+
+
+char* get_fullpath_command_line(char* local_variable, const char* symbolic_constant, char** args)
+{
+    char* binary = create_binary_path(local_variable, symbolic_constant, args[0]);
+    char* argscl  = get_command_line(args);
+    char* cli = join(binary, argscl, " ");
+    free(binary);
+    free(argscl);
+    return cli;
 }
 
 
@@ -1530,7 +1554,7 @@ int copy_file_no_p(FILE *infile, FILE *outfile)
         counter=counter-1;
         counter=(counter*sizeof(char)*BUFSIZ+chunk)/1024;
         fprintf(stderr, "\n"MSG_TAG "Copied %.2lf KB.\n", counter);
-        if (!errno) fprintf(stderr, "\n", MSG_TAG "Copy completed.");
+        if (!errno) fprintf(stderr, "%s\n", MSG_TAG "Copy completed.");
         else
             fprintf(stderr, "%s\n", "\n"ERR "Copy failed.");
 
@@ -2367,7 +2391,7 @@ else
 #endif
 {
 
-    const char* s=get_command_line(args);
+    char* s=get_command_line(args);
     char cml[strlen(application)+1+strlen(s)+1+2];
     sprintf(cml, "%s %s",  application, s);
     free((char* ) s);
@@ -2410,3 +2434,37 @@ else
     return (uint64_t) fileoffset;
 
 }
+
+char* create_binary_path(char* local_variable, const char* symbolic_constant, const char* basename)
+{
+
+    char* path = NULL;
+
+    if (symbolic_constant[0])
+    {
+        if (globals.settings.bindir == NULL)
+            local_variable = strdup(symbolic_constant);
+        else
+        {
+            char* exe = conc(basename, EXE);
+            path = conc(globals.settings.bindir, exe);
+            free(exe);
+            local_variable = win32quote(path);
+#   if (defined _WIN32 || defined __MSYS__)
+            free(path);
+#endif
+        }
+    }
+    else
+    {
+        char* exe = conc(basename, EXE);
+        path = conc(globals.settings.bindir, conc(basename, EXE));
+        free(exe);
+        local_variable = path;
+    }
+    if (globals.debugging) foutput(MSG_TAG "Path to %s is %s from bindir=%s and basename=%s\n", basename, local_variable,globals.settings.bindir, basename);
+
+    return local_variable;
+
+}
+

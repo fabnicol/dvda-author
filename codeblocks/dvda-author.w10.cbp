@@ -11,7 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters='-g &quot;C:\Users\Public\Dev\dvda-author\Docs\MLP\2_16_44\a2_16_44.mlp&quot; -W -t -o &quot;C:\Users\Public\Dev\dvda-author\out&quot; --maxverbose' />
+				<Option parameters='-W -q --play &quot;C:\Users\Public\Dev\dvda-author\out&quot; --bindir &quot;C:\Users\Public\Dev\dvda-author\local.w10\bin&quot;  --maxverbose' />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>

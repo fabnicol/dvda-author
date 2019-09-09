@@ -374,10 +374,10 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
     norm[0]=img->norm[0];
     norm[1]=0;
 
-    const char *argsmp2enc[]= {MP2ENC_BASENAME, "-o", mp2track , NULL};
-    const char *argsjpeg2yuv[]= {JPEG2YUV_BASENAME, "-f", img->framerate, "-I", "p", "-n", "1", "-j", pict, "-A", img->aspectratio, NULL};
-    const char *argsmpeg2enc[]= {MPEG2ENC_BASENAME,  "-f", "8", "-n", norm,  "-o", tempfile ,"-a", img->aspect, NULL};
-    const char *argsmplex[]= {MPLEX_BASENAME, "-f", "8",  "-o", img->backgroundmpg[rank], tempfile, mp2track, NULL};
+    char *argsmp2enc[]= {MP2ENC_BASENAME, "-o", mp2track , NULL};
+    char *argsjpeg2yuv[]= {JPEG2YUV_BASENAME, "-f", img->framerate, "-I", "p", "-n", "1", "-j", pict, "-A", img->aspectratio, NULL};
+    char *argsmpeg2enc[]= {MPEG2ENC_BASENAME,  "-f", "8", "-n", norm,  "-o", tempfile ,"-a", img->aspect, NULL};
+    char *argsmplex[]= {MPLEX_BASENAME, "-f", "8",  "-o", img->backgroundmpg[rank], tempfile, mp2track, NULL};
 
     //////////////////////////
 
@@ -568,7 +568,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile)
 
 #else
 
-      char* mpeg2enccl = get_command_line(argsmpeg2enc);
+     char* mpeg2enccl = get_command_line(argsmpeg2enc);
      char* jpeg2yuvcl = get_command_line(argsjpeg2yuv);
 
 // This is unsatisfactory yet will do for porting purposes.
@@ -739,7 +739,7 @@ int launch_spumux(pic* img)
 
 #else
 
-        const char* s=get_command_line(argsspumux);
+        char* s=get_command_line(argsspumux);
         uint16_t size=strlen(s);
         char cml[strlen(spumux)+1+size+3+strlen(img->backgroundmpg[menu])+2+3+strlen(img->topmenu[menu])+2+1];
         sprintf(cml, "%s %s < %s > %s",spumux, s, win32quote(img->backgroundmpg[menu]), win32quote(img->topmenu[menu]));

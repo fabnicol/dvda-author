@@ -144,7 +144,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 
 #ifndef VLC_BASENAME
-#define VLC_BASENAME "vlc" 
+#define VLC_BASENAME "vlc"
 #endif
 
 #ifndef MKISOFS_BASENAME
@@ -305,11 +305,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define VLC ""
 #endif
 
-#if defined(_WIN32) || defined(_MINGW32)
-#define EXE ".exe"
-#define NO_ANSI_COLORS
+#ifdef _WIN32
+#  define EXE ".exe"
+#  define NO_ANSI_COLORS
 #else
-#define EXE ""
+#  define EXE ""
 #endif
 
 #define CREATE_EXTRACT_AC3 7

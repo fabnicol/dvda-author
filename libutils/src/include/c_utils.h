@@ -277,6 +277,7 @@ typedef struct
 void htmlize(char* logpath);
 
 char * conc(const char* str1, const char* str2);
+char* join(const char* str1, const char* str2, const char* sep);
 char * filepath(const char* str1, const char* str2);
 void pause_dos_type(void);
 bool clean_directory(char* path);
@@ -304,8 +305,9 @@ void secure_open(const char *path, const char *context, FILE*);
 
 int end_seek(FILE* outfile);
 void parse_wav_header(WaveData* info, WaveHeader* ichunk);
-char* get_command_line(const char* args[]);
-char* get_full_command_line(const char **args);
+char* get_command_line(char* args[]);
+char* get_full_command_line(char **args);
+char* get_fullpath_command_line(char* local_variable, const char* symbolic_constant, char** args);
 // These functions should be inlined hence in a header file
 char* copy_file2dir(const char *existing_file, const char *new_dir);
 void copy_file2dir_rename(const char *existing_file, const char *new_dir, char* newfilename);
@@ -385,5 +387,6 @@ inline static uint16_t uint16_read_reverse(uint8_t* buf)
 uint8_t read_info_chunk(uint8_t* pt, uint8_t* chunk);
 
 void fill_pics(const char *filename, void *a, void GCC_UNUSED *unused);
+char* create_binary_path(char* local_variable, const char* symbolic_constant, const char* basename);
 
 #endif // C_UTILS_H_INCLUDED

@@ -754,38 +754,4 @@ int arraylength(char **tab)
     return w;
 }
 
- // if installed with autotools, if bindir overrides then use override, otherwise use config.h value;
-// if not installed with autotools, then use command line value or last-resort hard-code set defaults and test for result
 
-#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
-char* create_binary_path(char* local_variable, const char* symbolic_constant, const char* basename)
-{
-
-    char* path = NULL;
-
-    if (symbolic_constant[0])
-    {
-        if (globals.settings.bindir == NULL)
-            local_variable = strdup(symbolic_constant);
-        else
-        {
-            path = conc(globals.settings.bindir, basename);
-            local_variable = win32quote(path);
-#   if (defined _WIN32 || defined __MSYS__)
-            free(path);
-#endif
-        }
-    }
-    else
-    {
-        path = conc(globals.settings.bindir, basename);
-        local_variable = path;
-    }
-    if (globals.debugging) foutput(MSG_TAG "Path to %s is %s from bindir=%s and basename=%s\n", basename, local_variable,globals.settings.bindir, basename);
-
-    return local_variable;
-
-}
-
-
-#endif

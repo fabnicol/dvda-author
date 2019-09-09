@@ -45,6 +45,8 @@ static FILE_DESCRIPTOR   g_hChildStd_IN_Rd = NULL;
 static FILE_DESCRIPTOR   g_hChildStd_IN_Wr = NULL;
 static FILE_DESCRIPTOR   g_hChildStd_ERR_Rd = NULL;
 static FILE_DESCRIPTOR   g_hChildStd_ERR_Wr = NULL;
+static FILE_DESCRIPTOR   hParentStdErr = NULL;
+static PROCESS_INFORMATION piProcInfo;
 
 #if 0
 static unsigned char wav_header[80]= {'R','I','F','F',   //  0 - ChunkID
@@ -735,6 +737,9 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
               fpout_size_increment = write_to_child_stdin(audio_buf,
                                                                                           res,
                                                                                           g_hChildStd_IN_Wr); // only useful for Windows
+
+               pipe_to_parent_stderr(g_hChildStd_ERR_Rd, hParentStdErr, 2005); // only useful for Windows
+
            }
            else
            fpout_size_increment = fwrite(audio_buf, 1, res, info->outfile.fp);
@@ -796,6 +801,8 @@ static inline uint32_t scan_wav_characteristics(fileinfo_t* info, WaveHeader* he
 
     const int lpcm_payload[2][6] = {{2000,	2000, 2004,	2000,	2000,	1992}, // 16-bit table
                                     { 2004, 	2004, 	1998, 	1992, 	1980, 	1980}}; //24-bit table
+
+    errno = 0;
 
     if (info->PTS_length)     // Use IFO files
     {
@@ -885,67 +892,68 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
         uint8_t continuity_save = 0;
         unsigned long pack_in_title = 1;
         uint32_t wav_numbytes = 0;
+        uint64_t sterr_writtenBytes = 0;
 
         position = get_position(position, info, &header, &status, &continuity);
 
-   if (globals.play && done == false)
-   {
-        fflush(NULL);
-        done = true;
-
-        char *ffplay = NULL;
-        ffplay = create_binary_path(ffplay, FFPLAY, SEPARATOR FFPLAY_BASENAME);
-        char **argsffplay;
-        argsffplay = calloc(info->infile.type == AFMT_MLP ? 9 : 13, sizeof(char*));
-        if (argsffplay == NULL)
+        if (globals.play && done == false)
         {
-            perror(ERR "Allocation of ffplay args");
-            continue;
+            fflush(NULL);
+            done = true;
+
+            char *ffplay = NULL;
+            ffplay = create_binary_path(ffplay, FFPLAY, SEPARATOR FFPLAY_BASENAME);
+
+            char **argsffplay;
+            argsffplay = calloc(info->infile.type == AFMT_MLP ? 9 : 13, sizeof(char*));
+            if (argsffplay == NULL)
+            {
+                perror(ERR "Allocation of ffplay args");
+                continue;
+            }
+
+            if (info->infile.type == AFMT_MLP)
+            {
+              char* t[8] = {FFPLAY_BASENAME, "-i", "pipe:0", "-f", "mlp", "-nodisp", "-infbuf", "-autoexit"};
+              for (int w = 0; w < 8; ++w) { argsffplay[w] = strdup(t[w]) ;}
+              argsffplay[9] = NULL;
+            }
+            else
+            {
+                char sr[7];
+                sprintf(sr, "%d", header.dwSamplesPerSec);
+                char br[6];
+                sprintf(br, "s%2dle", header.wBitsPerSample);  // s24le or s16le (after decoding)
+                char ch[2];
+                sprintf(ch, "%1d", header.channels);
+
+                char* t[12] = {FFPLAY_BASENAME, "-i", "pipe:0",
+                                      "-f", br, "-ar", sr, "-ac", ch,
+                                      "-nodisp", "-infbuf", "-autoexit"};
+
+                for(int w = 0; w < 12; ++w) { argsffplay[w] = strdup(t[w]) ;}
+                argsffplay[13] = NULL;
+            }
+
+           STARTUPINFO siStartInfo;
+
+            pipe_to_child_stdin(
+                                             ffplay,
+                                             argsffplay,
+                                             2005,  // only useful for Windows
+                                             &g_hChildStd_IN_Rd,
+                                             &g_hChildStd_IN_Wr,
+                                             &g_hChildStd_ERR_Rd,
+                                             &g_hChildStd_ERR_Wr,
+                                             &hParentStdErr,
+                                             &piProcInfo,
+                                             &siStartInfo);
+
+            for (int w = 0; w <  (info->infile.type == AFMT_MLP ? 9 : 12); ++w)
+                free(argsffplay[w]);
+
+            free(argsffplay);
         }
-
-        if (info->infile.type == AFMT_MLP)
-        {
-          char* t[8] = {FFPLAY_BASENAME, "-i", "pipe:0", "-f", "mlp", "-nodisp", "-infbuf", "-autoexit"};
-          for (int w = 0; w < 8; ++w) { argsffplay[w] = strdup(t[w]) ;}
-          argsffplay[9] = NULL;
-        }
-        else
-        {
-            char sr[7];
-            sprintf(sr, "%d", header.dwSamplesPerSec);
-            char br[6];
-            sprintf(br, "s%2dle", header.wBitsPerSample);  // s24le or s16le (after decoding)
-            char ch[2];
-            sprintf(ch, "%1d", header.channels);
-
-            char* t[12] = {FFPLAY_BASENAME, "-i", "pipe:0",
-                                  "-f", br, "-ar", sr, "-ac", ch,
-                                  "-nodisp", "-infbuf", "-autoexit"};
-
-            for(int w = 0; w < 12; ++w) { argsffplay[w] = strdup(t[w]) ;}
-            argsffplay[13] = NULL;
-        }
-
-       uint64_t cumbyteswritten = pipe_to_child_stdin(
-                                         ffplay,
-                                         argsffplay,
-                                         2005,  // only useful for Windows
-                                         g_hChildStd_IN_Rd,
-                                         g_hChildStd_IN_Wr,
-                                         g_hChildStd_ERR_Rd,
-                                         g_hChildStd_ERR_Wr);
-
-        for (int w = 0; w <  (info->infile.type == AFMT_MLP ? 9 : 12); ++w)
-            free(argsffplay[w]);
-
-        free(argsffplay);
-
-        if (globals.maxverbose)
-        {
-           fprintf(stderr, MSG_TAG  "Write %lu bytes to stdout or pipe", cumbyteswritten);
-        }
-
-   }
 
         // Track loop
         do {
@@ -1528,14 +1536,16 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
               int res = 0;
 
               close_handles( g_hChildStd_IN_Rd,
-                                             g_hChildStd_IN_Wr,
-                                             g_hChildStd_ERR_Rd,
-                                             g_hChildStd_ERR_Wr);
+                                         g_hChildStd_IN_Wr,
+                                         g_hChildStd_ERR_Rd,
+                                         g_hChildStd_ERR_Wr);
+
+              // + child process handles commented out
 
     #            ifdef _WIN32
-                              kill("ffplay");
+                              res = kill(piProcInfo);
     #            else
-                              int res = kill(pid, SIGKILL);
+                              res = kill(pid, SIGKILL);
     #            endif // _WIN32
 
                 if (res == 0) done = true;

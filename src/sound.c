@@ -114,7 +114,7 @@ int audit_soundtrack(char* path, bool strict)
         };
 
         fixwav(&wavedata, &waveheader);
-        
+
         if (strict)
         {
             if ((waveheader.dwSamplesPerSec == 48000) && (waveheader.wBitsPerSample == 16) && (waveheader.channels == 2))
@@ -130,7 +130,7 @@ int audit_soundtrack(char* path, bool strict)
        }
        else
         {
-            if ((waveheader.dwSamplesPerSec == 48000 || waveheader.dwSamplesPerSec == 96000) 
+            if ((waveheader.dwSamplesPerSec == 48000 || waveheader.dwSamplesPerSec == 96000)
              && (waveheader.wBitsPerSample == 16 || waveheader.wBitsPerSample == 24))
             {
                 if (globals.veryverbose) foutput("%s", MSG_TAG "LPCM requirements [fq=48|96k, bps=16|24] are satisfied by soundtrack input\n");
@@ -172,10 +172,10 @@ return 0;
 int launch_lplex_soundtrack(pic* img, const char* create_mode)
 {
 #if defined HAVE_lplex && HAVE_lplex == 1
-    
+
     if (-1 == lplex_initialise()) return -1;
-  
-    const char *args0[DIM_LPLEX_CLI]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm};  
+
+    const char *args0[DIM_LPLEX_CLI]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm};
     int u, menu, tot=0;
     img->backgroundmpg=calloc(img->nmenus, sizeof(char*));
     for (menu=0; menu < img->nmenus; menu++)
@@ -257,15 +257,15 @@ int launch_lplex_soundtrack(pic* img, const char* create_mode)
 
 /*  Create disc hybrid using track paths of priorly converted (16-24 bits/48-96 kHz) audio files */
 
-#undef DIM_LPLEX_CLI 
+#undef DIM_LPLEX_CLI
 #define DIM_LPLEX_CLI 15
 
-int launch_lplex_hybridate(const pic* img, 
+int launch_lplex_hybridate(const pic* img,
                            const char* create_mode,
-                           const char*** trackpath, 
-                           const uint8_t* ntracks, 
-                           const char*** slidepath, 
-                           uint8_t* nslides, 
+                           const char*** trackpath,
+                           const uint8_t* ntracks,
+                           const char*** slidepath,
+                           uint8_t* nslides,
                            const int ntitlesets)
 
 {
@@ -273,23 +273,23 @@ int launch_lplex_hybridate(const pic* img,
 
     if (-1 == lplex_initialise()) return -1;
 #    if 0
-    if (ntracks == NULL || nslides == NULL || slidepath == NULL || trackpath == NULL) 
+    if (ntracks == NULL || nslides == NULL || slidepath == NULL || trackpath == NULL)
     {
       fprintf(stderr, ERR "Error code: %d\n", (ntracks == NULL )*1+(nslides == NULL)*10+(slidepath == NULL)*100+(trackpath == NULL)*1000);
       EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Allocation of DVD-VIDEO tracks/slides")
     }
 #endif
-    const char *args0[DIM_LPLEX_CLI]= {LPLEX_BASENAME, 
+    const char *args0[DIM_LPLEX_CLI]= {LPLEX_BASENAME,
                 "--create", create_mode,
                 "--pause", "no",
-                "--verbose", (globals.debugging)?"true":"false", 
-                "--workPath", globals.settings.lplextempdir, 
+                "--verbose", (globals.debugging)?"true":"false",
+                "--workPath", globals.settings.lplextempdir,
                 "-x", "false",
                 "--video", img->norm,
                 "--dir", globals.settings.lplexoutdir};
-    
+
     int argssize=0;
-    
+
     for (int group=0; group < ntitlesets; group++)
     {
 
@@ -298,17 +298,17 @@ int launch_lplex_hybridate(const pic* img,
         else
             argssize += (ntracks[group] > 0) * (ntracks[group] + (group > 0));
     }
-        
+
    // const char* args[DIM_LPLEX_CLI+argssize+1];
     const char* args[1024];
     int tot = DIM_LPLEX_CLI;
-        
+
     for (int u=0; u < DIM_LPLEX_CLI; u++) args[u]=(char*) args0[u];
-    
+
     for (int group=0; group < ntitlesets; group++)
     {
       if (globals.veryverbose) foutput(INF "Now processing titleset %d/%d...\n", group, ntitlesets);
-      
+
       if (group && ntracks[group])
       {
        args[tot]="ts";
@@ -321,27 +321,27 @@ int launch_lplex_hybridate(const pic* img,
         EXIT_ON_RUNTIME_ERROR
       }
 
-      if (ntracks[group] < nslides[group]) 
+      if (ntracks[group] < nslides[group])
              nslides[group]=ntracks[group];  // there can be no more slides than tracks (lplex constraint)
-      
-      if (nslides[group] < ntracks[group]) 
+
+      if (nslides[group] < ntracks[group])
       {
          int i;
          for (i=1; i <= nslides[group] && slidepath[group][nslides[group]-i][0] == '\0'; i++);
-         if (i == (nslides[group]+1)) 
+         if (i == (nslides[group]+1))
          {
              fprintf(stderr, ERR "Fewer slides (%d) than tracks (%d) for titleset %d. Fix this issue and relaunch.\n", nslides[group], ntracks[group], group);
              EXIT_ON_RUNTIME_ERROR
          }
          else
          {
-           for (int u=nslides[group]-i+1; u <= ntracks[group] ; u++) 
+           for (int u=nslides[group]-i+1; u <= ntracks[group] ; u++)
               slidepath[group][u] = slidepath[group][nslides[group]-i];
          }
       }
 #endif
       if (globals.veryverbose) foutput(INF "Now listing %d tracks for group %d...\n", ntracks[group], group);
-      
+
       for (int tr=0; tr < ntracks[group]; tr++)
       {
 
@@ -357,22 +357,22 @@ int launch_lplex_hybridate(const pic* img,
             fprintf(stderr, ERR "Found aspect code img->aspect[0]=%c.\n       For DVD-Video editing only 4:3 and 16:9 aspect ratios are supported.\n",img->aspect[0]);
             EXIT_ON_RUNTIME_ERROR
           }
-          
-          /* 
+
+          /*
              If fewer slides than tracks, follow this strategy:
                    - if slide path name is empty, copy previous one (corresponds to --dvdv-slides=...,,...)
-                  - otherwise go presume there is one slide per track, go to end of slides array and copy 
-                    the last one as many times as necessary 
+                  - otherwise go presume there is one slide per track, go to end of slides array and copy
+                    the last one as many times as necessary
           */
           tot++;
-          
-          
+
+
           args[tot]=(char*) slidepath[group][tr];
           tot++;
           args[tot]=(char*) trackpath[group][tr];
           tot++;
         }
-        else 
+        else
         {
 
             args[tot]=(char*) trackpath[group][tr];
@@ -380,16 +380,16 @@ int launch_lplex_hybridate(const pic* img,
 
         }
           continue;
-        
-        
-      //  if (tot == argssize+DIM_LPLEX_CLI) 
+
+
+      //  if (tot == argssize+DIM_LPLEX_CLI)
         //  EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Two many tracks/slides")
-          
+
       }
     }
-    
+
     args[tot+1]=NULL;
-    
+
     //for (int u=0; u < DIM_LPLEX_CLI+argssize+1; u++)
 //    for (int u=0; u < 43; u++)
 //    {
@@ -402,11 +402,12 @@ int launch_lplex_hybridate(const pic* img,
         }
 
         change_directory(globals.settings.workdir);
-        system(conc("/home/fab/Dev/dvda-author/local/bin/lplex ", get_command_line((const char**) args)));
-
+        char* cli;
+        system(cli = conc("/home/fab/Dev/dvda-author/local/bin/lplex ", get_command_line((const char**) args)));
+     free(cli);
      FREE(lplex);
 
-#endif  
+#endif
     return errno;
 }
 
