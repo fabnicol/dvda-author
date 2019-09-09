@@ -4,28 +4,28 @@
 #if defined HAVE_CONFIG_H && !defined __CB__
 #include "config.h"
 #endif
-#include "c_utils.h"
+
 #include <sys/types.h>
 #include <stdint.h>
 #include <stdio.h>
-#if defined(__WIN32__) || defined(_WIN64) || defined(_WIN32) || defined(__WIN32) || defined (__WIN64)
-#include <tchar.h>
-#include <windows.h>
-#include <sys/stat.h>
-#include <string.h>
+#include "c_utils.h"
 
-#ifndef __MINGW32__
-#include <sys/resource.h>
+#if defined __WIN32__|| defined _WIN64 || defined _WIN32 || defined __WIN32 || defined __WIN64
+
+#  include <tchar.h>
+#  include <sys/stat.h>
+#  include <string.h>
+#  include <windows.h>
+#  include <strsafe.h>
+
+
+  void ErrorExit(PTSTR);
+
+#  ifndef __MINGW32__
+#    include <sys/resource.h>
+#  endif
+
 #endif
-#else
-#include <sys/stat.h>
-#endif
-
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
 
  inline static uint64_t stat_file_size(const char* filename)
 {
@@ -98,7 +98,24 @@ int truncate_from_end(char* filename, uint64_t offset);
 #  define S_CLOSE(X) do { if (! globals.extract_sleep && X.isopen && X.fp != NULL) { fclose(X.fp); X.isopen = false; X.fp = NULL; } } while(0);
 
 #ifdef _WIN32
-void kill(const char* p);
+
+  void kill(const char* p);
+
+  DWORDLONG pipe_to_child_stdin(CHAR* name,
+                          CHAR** args,
+                          HANDLE g_hChildStd_IN_Rd,
+                          HANDLE g_hChildStd_IN_Wr,
+                          HANDLE g_hChildStd_ERR_Rd,
+                          HANDLE g_hChildStd_ERR_Wr);
+
+  DWORD write_to_child_stdin(void* chBuf,
+      DWORD dwBytesToBeWritten,
+      HANDLE g_hChildStd_IN_Rd,
+      HANDLE g_hChildStd_IN_Wr,
+      HANDLE g_hChildStd_ERR_Rd,
+      HANDLE g_hChildStd_ERR_Wr);
+
+void ErrorExit(PTSTR lpszFunction);
 #endif
 
 

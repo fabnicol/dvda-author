@@ -24,6 +24,7 @@
 				<Option parameters='-g &quot;C:\Users\Public\Dev\dvda-author\Docs\a2_24_44.wav&quot; -W -t -o &quot;C:\Users\Public\Dev\dvda-author\out&quot; --cdrecord --bindir &quot;C:\Users\Public\Dev\dvda-author\local.w10\bin&quot;' />
 				<Compiler>
 					<Add option="-O2" />
+					<Add option="-D_WIN32" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
