@@ -41,12 +41,12 @@ static clock_t then;
 static pid_t pid;
 static bool done = false;
 
-static FILE_DESCRIPTOR   g_hChildStd_IN_Rd = NULL;
-static FILE_DESCRIPTOR   g_hChildStd_IN_Wr = NULL;
-static FILE_DESCRIPTOR   g_hChildStd_ERR_Rd = NULL;
-static FILE_DESCRIPTOR   g_hChildStd_ERR_Wr = NULL;
-static FILE_DESCRIPTOR   hParentStdErr = NULL;
-static PROCESS_INFORMATION piProcInfo;
+static FILE_DESCRIPTOR   g_hChildStd_IN_Rd = 0;
+static FILE_DESCRIPTOR   g_hChildStd_IN_Wr = 0;
+static FILE_DESCRIPTOR   g_hChildStd_ERR_Rd = 0;
+static FILE_DESCRIPTOR   g_hChildStd_ERR_Wr = 0;
+static FILE_DESCRIPTOR   hParentStdErr = 0;
+static PROCESS_INFORMATION *piProcInfo = NULL;
 
 #if 0
 static unsigned char wav_header[80]= {'R','I','F','F',   //  0 - ChunkID
@@ -735,10 +735,10 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
            if (globals.play)
            {
               fpout_size_increment = write_to_child_stdin(audio_buf,
-                                                                                          res,
-                                                                                          g_hChildStd_IN_Wr); // only useful for Windows
+                                                          res,
+                                                          g_hChildStd_IN_Wr); // only useful for Windows
 
-               pipe_to_parent_stderr(g_hChildStd_ERR_Rd, hParentStdErr, 2005); // only useful for Windows
+              pipe_to_parent_stderr(g_hChildStd_ERR_Rd, hParentStdErr, 2005); // only useful for Windows
 
            }
            else
@@ -892,7 +892,6 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
         uint8_t continuity_save = 0;
         unsigned long pack_in_title = 1;
         uint32_t wav_numbytes = 0;
-        uint64_t sterr_writtenBytes = 0;
 
         position = get_position(position, info, &header, &status, &continuity);
 
@@ -914,7 +913,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
             if  (strcmp(globals.player, VLC_BASENAME) == 0)
             {
                    if (globals.player_path[0] == '\0')
-                       player = strdup(PLAYER_PATH);
+                      player = strdup(VLC_PATH);
                    else
                       player = globals.player_path;
             }
@@ -941,7 +940,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                   t[1] = "-";
                   t[2] = "-I";
                   t[3] = "dummy";
-                  t[4] = "--dummy-quiet";
+                  t[4] = "--quiet";
                   t[5] = "--play-and-exit";
                }
 
@@ -977,7 +976,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                   t[1] = "-";
                   t[2] = "-I";
                   t[3] = "dummy";
-                  t[4] = "--dummy-quiet";
+                  t[4] = "--quiet";
                   t[5] = "--demux=rawaud";
                   t[6] = "--rawaud-channels";
                   t[7] =  ch;
@@ -987,7 +986,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                 }
             }
 
-           STARTUPINFO siStartInfo;
+            STARTUPINFO *siStartInfo;
 
             pipe_to_child_stdin(
                                              player,
@@ -998,8 +997,8 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                                              &g_hChildStd_ERR_Rd,
                                              &g_hChildStd_ERR_Wr,
                                              &hParentStdErr,
-                                             &piProcInfo,
-                                             &siStartInfo);
+                                             piProcInfo,
+                                             siStartInfo);
 
         }
 
@@ -1606,9 +1605,9 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
               int res = 0;
 
               close_handles( g_hChildStd_IN_Rd,
-                                         g_hChildStd_IN_Wr,
-                                         g_hChildStd_ERR_Rd,
-                                         g_hChildStd_ERR_Wr);
+                             g_hChildStd_IN_Wr,
+                             g_hChildStd_ERR_Rd,
+                             g_hChildStd_ERR_Wr);
 
               // + child process handles commented out
 

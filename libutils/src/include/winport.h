@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <string.h>
+#include <errno.h>
 
 #if defined __WIN32__|| defined _WIN64 || defined _WIN32 || defined __WIN32 || defined __WIN64
 
@@ -23,8 +24,9 @@
 
   void ErrorExit(PTSTR);
 
-#  else
-#    include <sys/resource.h>
+#else
+#   include <sys/resource.h>
+#   include <unistd.h>
 #endif
 
 #include "c_utils.h"
@@ -110,12 +112,18 @@ int truncate_from_end(char* filename, uint64_t offset);
 void ErrorExit(PTSTR lpszFunction);
 
 #else
-     typedef      (int*)  FILE_DESCRIPTOR
+     typedef      int  FILE_DESCRIPTOR;
 #   ifndef  DWORDLONG
 #      define DWORDLONG   uint64_t
 #   endif
 #   ifndef  DWORD
-#      define DWOR unsigned long int
+#      define DWORD unsigned long int
+#   endif
+#   ifndef PROCESS_INFORMATION
+#      define PROCESS_INFORMATION void*
+#   endif
+#   ifndef STARTUPINFO
+#      define STARTUPINFO void*
 #   endif
 #endif
 
@@ -131,9 +139,9 @@ void ErrorExit(PTSTR lpszFunction);
                           STARTUPINFO *siStartInfo);
 
  DWORD write_to_child_stdin(
-      void* chBuf,
+      uint8_t* chBuf,
       DWORD dwBytesToBeWritten,
-       HANDLE g_hChildStd_IN_Wr);
+      FILE_DESCRIPTOR g_hChildStd_IN_Wr);
 
 DWORDLONG pipe_to_parent_stderr(FILE_DESCRIPTOR GCC_UNUSED  g_hChildStd_ERR_Rd,
                                 FILE_DESCRIPTOR GCC_UNUSED  hParentStdErr,

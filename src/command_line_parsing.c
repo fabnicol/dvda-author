@@ -1306,7 +1306,7 @@ out:
         case 39:
             foutput("%s%s\n", PAR "Choosing playback with: ", optarg);
 
-            if (strcmp(optarg, "VLC_BASENAME")  && strcmp(optarg, "FFPLAY_BASENAME"))
+            if (strcmp(optarg, VLC_BASENAME)  && strcmp(optarg, FFPLAY_BASENAME))
              {
                  foutput("%s\n", ERR "Only ffplay and VLC are currently supported for playback.");
                  clean_exit(EXIT_FAILURE);

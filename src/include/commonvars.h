@@ -307,10 +307,12 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #ifndef _WIN32
 #  define PLAYER FFPLAY_BASENAME
-#  define PLAYER_PATH  "/usr/bin/vlc"
+#  define VLC_PATH  "/usr/bin/vlc"
+#  define PLAYER_PATH  ""
 #else
-# define PLAYER VLC_BASENAME
-#  define PLAYER_PATH  "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe"
+#  define PLAYER VLC_BASENAME
+#  define VLC_PATH  "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe"
+#  define PLAYER_PATH  VLC_PATH
 #endif
 
 #ifdef _WIN32

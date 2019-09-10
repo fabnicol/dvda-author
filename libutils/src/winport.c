@@ -164,7 +164,7 @@ void  pipe_to_child_stdin(const char* name,
 // Same handles as above
 
 DWORD write_to_child_stdin(
-      void* chBuf,
+      char* chBuf,
       DWORD dwBytesToBeWritten,
       HANDLE g_hChildStd_IN_Wr)
 {
@@ -273,23 +273,33 @@ void ErrorExit(PTSTR lpszFunction)
 
 // for compatibility with windows, returns long long unsigned int
 
+
 void pipe_to_child_stdin(const char* name,
                           char** args,
                           int GCC_UNUSED  buffer_size,
-                          FILE_DESCRIPTOR g_hChildStd_IN_Rd,
-                          FILE_DESCRIPTOR g_hChildStd_IN_Wr,
-                          FILE_DESCRIPTOR g_hChildStd_ERR_Rd,
-                          FILE_DESCRIPTOR g_hChildStd_ERR_Wr,
-                          FILE_DESCRIPTOR hParentStdErr );  // &STDERR_FILENO
+                          FILE_DESCRIPTOR *g_hChildStd_IN_Rd,
+                          FILE_DESCRIPTOR *g_hChildStd_IN_Wr,
+                          FILE_DESCRIPTOR *g_hChildStd_ERR_Rd,
+                          FILE_DESCRIPTOR *g_hChildStd_ERR_Wr,
+                          FILE_DESCRIPTOR GCC_UNUSED *hParentStdErr,  // &STDERR_FILENO
+                          PROCESS_INFORMATION GCC_UNUSED *piProcInfo, // Windows only
+                          STARTUPINFO GCC_UNUSED *siStartInfo)        // Windows only
 {
-       char tube[2] = {*tube0, *tube1};
-       char tubeerr[2] = {*tubeerr0, *tubeerr1};
+       static int tube[2];
+       static int tubeerr[2];
 
-        if (pipe(tube) || pipe(tubeerr))
+       if (pipe(tube) || pipe(tubeerr))
         {
             perror(ERR "Pipe");
-            return errno;
+            clean_exit(-1);
         }
+
+        *g_hChildStd_IN_Rd = tube[0];
+        *g_hChildStd_IN_Wr = tube[1];
+        *g_hChildStd_ERR_Rd = tubeerr[0];
+        *g_hChildStd_ERR_Wr = tubeerr[1];
+
+        pid_t pid;
 
         switch (pid = fork())
         {
@@ -301,11 +311,11 @@ void pipe_to_child_stdin(const char* name,
                 close(tube[1]);
                 close(tubeerr[0]);
                 dup2(tube[0], STDIN_FILENO);
-                dup2(tubeerr[1], *hParentStdErr);
-                execv(ffplay, (char* const*) argsffplay);
+                dup2(tubeerr[1], STDERR_FILENO);
+                execv(name, (char* const*) args);
                 fprintf(stderr, "%s\n", ERR "Runtime failure in ffplay child process");
                 perror("");
-                return errno;
+                clean_exit(-1);
 
             default:
                 close(tube[0]);
@@ -324,16 +334,16 @@ void close_handles(
         int* tubeerr1,
         int* GCC_UNUSED parent_stderr)
 {
-      close(*tube1]);
-      close(*tube0]);
+      close(*tube1);
+      close(*tube0);
       close(*tubeerr1);
       close(*tubeerr0);
 }
 
 unsigned long int write_to_child_stdin(
-     void* chBuf,
+     uint8_t* chBuf,
      unsigned long int dwBytesToBeWritten,
-     int* GCC_UNUSED g_hChildStd_IN_Wr)
+     int GCC_UNUSED g_hChildStd_IN_Wr)
 {
     unsigned long int dwWritten;
     errno = 0;
