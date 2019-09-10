@@ -359,7 +359,7 @@ unsigned long int write_to_child_stdin(
 
 unsigned long int  pipe_to_parent_stderr(FILE_DESCRIPTOR GCC_UNUSED g_hChildStd_ERR_Rd,
                                          FILE_DESCRIPTOR GCC_UNUSED hParentStdErr,
-                                         int GCC_UNUSED buffer_size) {}  // no opt, only there for Windows compatibility
+                                         int GCC_UNUSED buffer_size) {return 0;}  // no opt, only there for Windows compatibility
 
 # endif // _WIN32
 

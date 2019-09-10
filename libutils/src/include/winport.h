@@ -143,7 +143,7 @@ void ErrorExit(PTSTR lpszFunction);
       DWORD dwBytesToBeWritten,
       FILE_DESCRIPTOR g_hChildStd_IN_Wr);
 
-DWORDLONG pipe_to_parent_stderr(FILE_DESCRIPTOR GCC_UNUSED  g_hChildStd_ERR_Rd,
+DWORD pipe_to_parent_stderr(FILE_DESCRIPTOR GCC_UNUSED  g_hChildStd_ERR_Rd,
                                 FILE_DESCRIPTOR GCC_UNUSED  hParentStdErr,
                                 int GCC_UNUSED buffer_size);
 
