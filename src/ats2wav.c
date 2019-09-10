@@ -92,30 +92,31 @@ static const uint8_t  T[2][6][36]=
 // sizes of preceding table
 
 
-static void deinterleave_24_bit_sample_extended(uint8_t channels, int count, uint8_t *buf)
+static void deinterleave_24_bit_sample_extended(uint8_t channels, int *count, uint8_t *buf)
 {
     // Processing 16-bit case
     int i, size=channels*6;
     // Requires C99
     uint8_t _buf[size];
+    *count -= *count % size;  // leaving out possible incomplete permutations at buffer end
 
-    for (i=0; i < count ; i += size)
+    for (i=0; i < *count; i += size)
         permutation(buf+i, _buf, 1, channels, T, size);
 
 }
 
-static void deinterleave_sample_extended(uint8_t channels, int count, uint8_t *buf)
+static void deinterleave_sample_extended(uint8_t channels, int *count, uint8_t *buf)
 {
-
     int x,i, size = channels * 4;
-
     uint8_t _buf[size];
 
     switch (channels)
     {
     case 1:
     case 2:
-        for (i = 0; i < count; i += 2)
+
+        *count -= *count % 2;           // leaving out the hypothetical odd byte at the end
+        for (i = 0; i < *count; i += 2)
         {
             x = buf[i];
             buf[i] = buf[i + 1];
@@ -124,12 +125,13 @@ static void deinterleave_sample_extended(uint8_t channels, int count, uint8_t *b
         break;
 
     default:
-        for (i =0; i < count ; i += size)
+        *count -= *count % size;   // leaving out possible incomplete permutations at buffer end
+        for (i =0; i < *count ; i += size)
             permutation(buf+i, _buf, 0, channels, T, size);
     }
 }
 
-static void convert_buffer(WaveHeader* header, uint8_t *buf, int count)
+static void convert_buffer(WaveHeader* header, uint8_t *buf, int *count)
 {
     switch (header->wBitsPerSample)
     {
@@ -540,7 +542,8 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 {
     int audio_bytes;
     uint8_t PES_packet_len_bytes[2];
-    uint8_t audio_buf[2048 * 2]; // in case of incomplete buffer shift
+    static uint8_t delta;              // should be static to preserve hypothetical 'leftover' byte count from prior loop.
+    static uint8_t audio_buf[2048];    // should be static to preserve hypothetical 'leftover' bytes from prior loop.
     uint8_t continuity_save = *continuity;
     bool forensic_cut = false;
     // CAUTION : check coherence of this table and the S table of audio.c, of which it is only a subset.
@@ -580,12 +583,12 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 
         const short int table_index = header->wBitsPerSample == 24 ? 1 : 0;
 
-        lpcm_payload                                   = X[0];
-        firstpackdecrement                          = X[1];
+        lpcm_payload                     = X[0];
+        firstpackdecrement               = X[1];
         lastpack_audiopesheaderquantity  = X[2];
-        firstpack_lpcm_headerquantity       = X[3];
-        midpack_lpcm_headerquantity       = X[4];
-        lastpack_lpcm_headerquantity       = X[5];
+        firstpack_lpcm_headerquantity    = X[3];
+        midpack_lpcm_headerquantity      = X[4];
+        lastpack_lpcm_headerquantity     = X[5];
 
 #   undef X
     }
@@ -720,7 +723,12 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 
     if (! forensic_cut)
        {
-            res += fread(audio_buf, 1, audio_bytes, info->infile.fp);
+            // delta is the hypothetical leftover byte count from prior loop
+            // delta < channels * (bitrate == 16 ? 4 : 6) unless channels == 1 or 2 and bitrate == 2 (delta < 2)
+            // so there is 2048 - 35 = 2013 bytes of head room in buffer (in the worst case).
+            // This is OK as audio_bytes <= lpcm_payload <= 2004 (MLP not concerned but anyhow at 2005)
+
+            res = fread(audio_buf + delta, 1, audio_bytes, info->infile.fp);
 
             if (globals.maxverbose)
             {
@@ -729,25 +737,48 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
                    foutput(WAR "Caution : Read %d instead of %d\n", res, audio_bytes);
             }
 
-            if (info->infile.type == AFMT_LPCM)
-                convert_buffer(header, audio_buf, res);
+            int writ = res;
 
-           if (globals.play)
-           {
+            if (info->infile.type == AFMT_LPCM)
+                convert_buffer(header, audio_buf, &writ);
+
+            if (globals.play)
+            {
               fpout_size_increment = write_to_child_stdin(audio_buf,
-                                                          res,
+                                                          writ,
                                                           g_hChildStd_IN_Wr); // only useful for Windows
 
-              pipe_to_parent_stderr(g_hChildStd_ERR_Rd, hParentStdErr, 2005); // only useful for Windows
+               pipe_to_parent_stderr(g_hChildStd_ERR_Rd, hParentStdErr, 2005); // only useful for Windows
 
-           }
-           else
-           fpout_size_increment = fwrite(audio_buf, 1, res, info->outfile.fp);
+            }
+            else
+            fpout_size_increment = fwrite(audio_buf, 1, writ, info->outfile.fp);
+
+            if (info->infile.type == AFMT_LPCM)
+            {
+                delta = res - writ;  // cannot mathematically be strictly negative and is < 6 x 6 = 36 and most probably 0
+
+                if (delta > 0)
+                {
+                    if (globals.maxverbose)
+                        foutput("%s%d%s\n", WAR "Left out ", delta, " bytes in buffer.");
+
+                    for (int w = 0; w < delta; ++w) audio_buf[w] = audio_buf[writ + w];
+                }
+            }
+
        }
 
     if (*position == LAST_PACK || (*position == CUT_PACK_RMDR && offset1 == 0))
     {
         S_CLOSE(info->outfile)
+
+        // Well should delta be non-zero, there will be a handful of bytes left out in extracted signe LE PCM (WAV or raw).
+        // But the bytes thereby left out might not form coherent audio as the inverse permutation is not possible
+        // Mathematically there is a slight probability of lossy audio extraction iff the leftover bytes form part of
+        // a permutation cycle within the overall permutation and thereby could be inversed. But only for of subset of channels anyhow.
+        // So we perform a "complete-channels" extraction procedure, leaving out possibly coherent audio for an incomplete set of speakers.
+
     }
 
     if (offset1 + offset0 >= filesize(info->infile))
