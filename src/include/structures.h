@@ -284,6 +284,8 @@ typedef struct
     char** spu_xml;
     char* cdrecorddevice;
     char** aobpath;
+    char* player;
+    char* player_path;
     FILE *journal;
     uint16_t access_rights;
     defaults settings;

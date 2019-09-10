@@ -11,7 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters='-W -q --sync &quot;C:\Users\Public\Dev\dvda-author\out&quot; --bindir &quot;C:\Users\Public\Dev\dvda-author\local.w10\bin&quot;  ' />
+				<Option parameters='-W -q --play &quot;C:\Users\Public\Dev\dvda-author\out&quot; --bindir &quot;C:\Users\Public\Dev\dvda-author\local.w10\bin&quot;  ' />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>

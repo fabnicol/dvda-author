@@ -270,7 +270,7 @@ int main(int argc,  char* const argv[])
         /*videolinking*/    false,  // no video link
         /*decode */         false,  // decode MLP to WAV
         /*pipe*/   false,  // slow down extraction for buffering tp extrernal tools
-        /*play*/            false,  // pipe to ffplay
+        /*play*/            false,  // pipe to ffplay or other player
         /*playlist*/        false,  // no playlist
         /*cga*/             false,  // no explicit channel group assignement
         /*end_pause*/       false,  // no end pause
@@ -315,6 +315,8 @@ int main(int argc,  char* const argv[])
         /*spumux xml*/      NULL,
         /*cdrecord dev*/    NULL,
         /* aob path for decoding */ NULL,
+       /*player*/            strdup(PLAYER),  // pipe to ffplay
+        /*player-path*/            strdup(PLAYER_PATH),  // full path to player
         /*journal (log)*/   NULL, //(FILE*)
         /*access rights*/   DEFAULT_ACCESS_RIGHTS,
         /* it is necessary to use strdup as these settings may be overridden dynamically */

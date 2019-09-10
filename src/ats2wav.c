@@ -177,7 +177,7 @@ inline static void  aob_open(WaveData *info)
 
 inline static void output_path_create(const char* dirpath, WaveData *info, int track, int title, const char* extension)
 {
-    if (globals.pipe) return;
+
     int L = strlen(extension); // includes the dot
     if (L > 4)
     {
@@ -901,22 +901,50 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
             fflush(NULL);
             done = true;
 
-            char *ffplay = NULL;
-            ffplay = create_binary_path(ffplay, FFPLAY, SEPARATOR FFPLAY_BASENAME);
+            char *player = NULL;
 
-            char **argsffplay;
-            argsffplay = calloc(info->infile.type == AFMT_MLP ? 9 : 13, sizeof(char*));
-            if (argsffplay == NULL)
+            if  (strcmp(globals.player, FFPLAY_BASENAME) == 0)
             {
-                perror(ERR "Allocation of ffplay args");
-                continue;
+                if (globals.player_path[0] == '\0')
+                  player = create_binary_path(player, FFPLAY, SEPARATOR FFPLAY_BASENAME);
+                else
+                  player = globals.player_path;
             }
+            else
+            if  (strcmp(globals.player, VLC_BASENAME) == 0)
+            {
+                   if (globals.player_path[0] == '\0')
+                       player = strdup(PLAYER_PATH);
+                   else
+                      player = globals.player_path;
+            }
+
+            char* t[13] = {NULL};
 
             if (info->infile.type == AFMT_MLP)
             {
-              char* t[8] = {FFPLAY_BASENAME, "-i", "pipe:0", "-f", "mlp", "-nodisp", "-infbuf", "-autoexit"};
-              for (int w = 0; w < 8; ++w) { argsffplay[w] = strdup(t[w]) ;}
-              argsffplay[9] = NULL;
+
+              if (strcmp(globals.player, FFPLAY_BASENAME) == 0)
+              {
+                  t[0] = FFPLAY_BASENAME;
+                  t[1] = "-i";
+                  t[2] = "pipe:0";
+                  t[3] = "-f";
+                  t[4] = "mlp";
+                  t[5] = "-nodisp";
+                  t[6] = "-infbuf";
+                  t[7] = "-autoexit";
+              }
+              else
+              {
+                  t[0] = VLC_BASENAME;
+                  t[1] = "-";
+                  t[2] = "-I";
+                  t[3] = "dummy";
+                  t[4] = "--dummy-quiet";
+                  t[5] = "--play-and-exit";
+               }
+
             }
             else
             {
@@ -927,19 +955,43 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                 char ch[2];
                 sprintf(ch, "%1d", header.channels);
 
-                char* t[12] = {FFPLAY_BASENAME, "-i", "pipe:0",
-                                      "-f", br, "-ar", sr, "-ac", ch,
-                                      "-nodisp", "-infbuf", "-autoexit"};
+                if (strcmp(globals.player, FFPLAY_BASENAME) == 0)
+                {
+                  t[0] = FFPLAY_BASENAME;
+                  t[1] = "-i";
+                  t[2] = "pipe:0";
+                  t[3] = "-f";
+                  t[4] = br;
+                  t[5] = "-nodisp";
+                  t[6] = "-infbuf";
+                  t[7] = "-autoexit";
+                  t[8] = "-ar";
+                  t[9] = sr;
+                  t[10] = "-ac";
+                  t[11] = ch;
+                }
+                else
+                {
 
-                for(int w = 0; w < 12; ++w) { argsffplay[w] = strdup(t[w]) ;}
-                argsffplay[13] = NULL;
+                  t[0] = VLC_BASENAME;
+                  t[1] = "-";
+                  t[2] = "-I";
+                  t[3] = "dummy";
+                  t[4] = "--dummy-quiet";
+                  t[5] = "--demux=rawaud";
+                  t[6] = "--rawaud-channels";
+                  t[7] =  ch;
+                  t[8] = "--rawaud-samplerate";
+                  t[9] = sr;
+                  t[10] = "--play-and-exit";
+                }
             }
 
            STARTUPINFO siStartInfo;
 
             pipe_to_child_stdin(
-                                             ffplay,
-                                             argsffplay,
+                                             player,
+                                             t,
                                              2005,  // only useful for Windows
                                              &g_hChildStd_IN_Rd,
                                              &g_hChildStd_IN_Wr,
@@ -949,10 +1001,6 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                                              &piProcInfo,
                                              &siStartInfo);
 
-            for (int w = 0; w <  (info->infile.type == AFMT_MLP ? 9 : 12); ++w)
-                free(argsffplay[w]);
-
-            free(argsffplay);
         }
 
         // Track loop
@@ -980,12 +1028,34 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                 }
 
                 unsigned long pack_in_track = 1;
-                output_path_create(dir_g_i, info, track, title, info->infile.type == AFMT_LPCM ?
+
+                if (globals.pipe)
+                {
+                    files[i][track]->filename = strdup("stdout");
+                    int result;
+
+#                  ifdef _WIN32
+                       // Set "stdout" to have binary mode:
+                       if (! globals.play)
+                       {
+                            fflush(stdout);
+                            int result = _setmode( _fileno( stdout ), _O_BINARY );
+                            if( result == -1 )
+                            {
+                               perror( ERR "Cannot set mode" );
+                               clean_exit(EXIT_FAILURE);
+                            }
+                           else
+                           if( globals.veryverbose)
+                               foutput("%s", MSG_TAG "'stdout successfully changed to binary mode\n" );
+                       }
+#                  endif
+                }
+
+                else
+                    output_path_create(dir_g_i, info, track, title, info->infile.type == AFMT_LPCM ?
                                                                     (globals.fixwav_prepend ? ".wav" : ".raw")
                                                                 : ".mlp");
-
-                if (! globals.pipe)
-                    files[i][track]->filename = strdup("stdout");
 
                 wav_output_open(info);
 
@@ -1544,6 +1614,10 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
 
     #            ifdef _WIN32
                               res = kill(piProcInfo);
+                              fflush(stdout);
+                              fflush(stdin);
+                              fflush(stderr);
+                            _setmode(_fileno(stdout), _O_TEXT);
     #            else
                               res = kill(pid, SIGKILL);
     #            endif // _WIN32

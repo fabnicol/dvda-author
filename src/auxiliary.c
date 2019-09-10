@@ -107,13 +107,15 @@ printf("%s", J"SoX-supported formats with -S enabled\n");
 printf("%s", J"except for lossy formats.\n");
 #endif
 printf("%s","    --project [file]     Launches a dvda-author project." J "The project file should have the same syntax as dvda-author.conf [see file HOW_TO.conf]" J "By default, launches dvda-author.dap in the current directory.\n\n");
-printf("%s","-i, --input directory    Input directory with audio files." J "Each subdirectory is a group.\n\n");
-printf("%s","-o, --output directory   Output directory.\n\n");
+printf("%s","-i, --input directory [dir]   Input directory with audio files." J "Each subdirectory is a group.\n\n");
+printf("%s","-o, --output directory  [dir]  Output directory.\n\n");
 printf("%s","-x, --extract {disc or directory} Extract DVD-Audio to directory -o." J "Groups are labelled g1, g2 in output directory.\n\n");
 printf("%s","    --xlist 1:1,...,t1n-2:1,...,t2n-...-N:1,...,tNn  Optional hyphen-separated list of groups to be extracted" J "may be added with -x." J "Tracks to be extracted in a given group are indicated after a colon." J "Tracks to be extracted may be listed separated by commas after colon." J "If not specified, all the group will be extracted." J "Contiguous tracks may be represented by `...` between commas" J "e.g. 2-3-4:1,2,...,7,9 means: extract groups 2 and 3 entirely and tracks 2 to 7 and 9 for in group 4.\n\n");
 printf("%s","    --aob-extract {directory or AOB[,AOB...]}    Direct AOB file audio content extraction. " J "Unlike -x, this option does not use .IFO files. Use this option in combination with -o. No wav header is generated." J "Several AOB files may be listed, separated by commas." J "If a directory is used, it must immediately contain an AUDIO_TS subdirectory to be read. This includes disc player roots.\n\n");
 printf("%s","    --sync {directory or AOB[,AOB...]}        Like --aob-extract but output is to stdout for piping to third-party software." J "Only audio content is directed to stdout." J "Extraction is slowed down to standard playback levels after extracting the equivalent of 0.5 second playback.\n\n");
 printf("%s","    --play {directory or AOB[,AOB...]}        Play audio content using ffplay (https://ffmpeg.org)." J "Main process will exit automatically some time after playback is finished." J "Limitations: currently not available under Windows. Each group in the disc must be either MLP or have same audio characteristics throughout.\n\n");
+printf("%s","    --player [ffplay | vlc]   Choose a player for play-back (with --play)." J "Currently only ffplay (default) and vlc (default for Windows) are supported." J "ffplay may have issues (Sept. 2019) with some mlp files under Windows." J "Prior installation of VLC is requested for \n\n");
+printf("%s","    --player-path [path]  Full path with filename and extension to the player, if --player=vlc is used" J "and the path is not the standard install path (under Program Files for Windows or /usr/bin otherwise)\n\n");
 printf("%s","    --aob2wav {directory or AOB[,AOB...]}        Like --aob-extract but a wav header is prepended to audio content.\n\n");
 printf("%s","    --forensic           Use this mode with --aob-extract, --aob2wav or -x if IFO files are missing or mangled, or AOB files" J "have been partially restored using recovery tools.\n\n");
 printf("%s","    --strict             Use this option with --aob-extract, --aob2wav or -x to stop extraction in case of severe header issues. May be useful in combination with --forensic to manually repair header issues.\n\n");

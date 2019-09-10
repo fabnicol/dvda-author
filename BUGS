@@ -34,9 +34,9 @@ MLP
 ---
 
 TODO: check for 24 bits.
-Windows: --sync does not work for MLP (failed lossleck checks) and creates noise for LPCM when piped to ffplay.
-Linux and Mac behave OK in this respect.
-Should be fixed before fixing --play to pott to Windows. Fieature is only working under *nix.
+Windows: 
+Feature --play is only working under *nix.
+--sync: loss of 3 buffers of 1024 bytes each at end of PCM extract, otherwise OK for PCM and MLP. 
 
 
 Special tracing files

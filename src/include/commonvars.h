@@ -305,6 +305,14 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define VLC ""
 #endif
 
+#ifndef _WIN32
+#  define PLAYER FFPLAY_BASENAME
+#  define PLAYER_PATH  "/usr/bin/vlc"
+#else
+# define PLAYER VLC_BASENAME
+#  define PLAYER_PATH  "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe"
+#endif
+
 #ifdef _WIN32
 #  define EXE ".exe"
 #  define NO_ANSI_COLORS

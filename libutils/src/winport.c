@@ -172,6 +172,20 @@ DWORD write_to_child_stdin(
 
     BOOL bSuccess = FALSE;
 
+     // Set "stdin" to have binary mode:
+
+     fflush(stdin);
+     int result = _setmode( _fileno( stdin ), _O_BINARY );
+
+     if  ( result == -1 )
+        {
+           perror( ERR "Cannot set mode" );
+           clean_exit(EXIT_FAILURE);
+        }
+     else
+     if ( globals.veryverbose)
+          foutput("%s", MSG_TAG "'stdout successfully changed to binary mode\n" );
+
     bSuccess = WriteFile(g_hChildStd_IN_Wr, chBuf, dwBytesToBeWritten, &dwWritten, NULL);
 
     if (globals.debugging)

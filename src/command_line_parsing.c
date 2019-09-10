@@ -145,14 +145,14 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     static char ALLOWED_OPTIONS[256];
 
-    // Allowing for 40 non-print characters for short options
+    // Allowing for 48 non-print characters for short options
     // Note that the :/:: diacritics are only needed for short options and that long options argument status is defined in struct longopts, so
     // this trick is OK if only long options are used for non-print short options.
 
     if (!user_command_line)
     {
 
-        for (k=0; k < 40; k++)
+        for (k=0; k < 48; ++k)
             ALLOWED_OPTIONS[k]=k;
         strcat(ALLOWED_OPTIONS, ALLOWED_OPTIONS_PRINT);
     }
@@ -297,6 +297,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"decode", no_argument, NULL, 36},
         {"sync", required_argument, NULL, 37},
         {"play", required_argument, NULL, 38},
+        {"player", required_argument, NULL, 39},
+        {"player-path", required_argument, NULL, 40},
     #endif
         {NULL, 0, NULL, 0}
     };
@@ -1277,6 +1279,7 @@ out:
             break;
 
         case 38:  // --play, like --sync but with piping to ffplay
+            foutput("%s%s\n", PAR "Will play back ", optarg);
             globals.play = true;
             // fallthrough
 
@@ -1298,6 +1301,32 @@ out:
                 foutput("%s %s %s\n", PAR "Extracting disc files in ", optarg, " to stdout...");
                 aob2wav_parsing(filter_dir_files(optarg, ".AOB"), NULL);
             }
+            break;
+
+        case 39:
+            foutput("%s%s\n", PAR "Choosing playback with: ", optarg);
+
+            if (strcmp(optarg, "VLC_BASENAME")  && strcmp(optarg, "FFPLAY_BASENAME"))
+             {
+                 foutput("%s\n", ERR "Only ffplay and VLC are currently supported for playback.");
+                 clean_exit(EXIT_FAILURE);
+             }
+
+            free(globals.player);
+            globals.player = strdup(optarg);
+            break;
+
+        case 40:
+            foutput("%s%s\n", PAR "Choosing player executable path with filename: ", optarg);
+
+            if (! file_exists(optarg))
+            {
+                foutput("%s%s\n", ERR "Found no executable under path ", optarg);
+                 clean_exit(EXIT_FAILURE);
+            }
+
+            free(globals.player_path);
+            globals.player_path = strdup(optarg);
             break;
 
         case 31:
@@ -3328,7 +3357,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
 
         if (groupindex_ == EINVAL || groupindex_ == ERANGE || groupindex_ > 9 || groupindex_ < 1)
         {
-            fprintf(stderr, ERR "Group index %d\n", groupindex);
+            fprintf(stderr, ERR "Group index %lu\n", groupindex);
             EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect group : rank should be included between 1 and 9.")
             break;
         }
