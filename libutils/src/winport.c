@@ -74,9 +74,9 @@ int  pkill(const char* p)
     return res;
 }
 
-int kill(PROCESS_INFORMATION pi)
+int kill(PROCESS_INFORMATION *pi)
 {
-    TerminateProcess(pi.hProcess, 255);
+    return TerminateProcess(pi->hProcess, 255);
 }
 
 // CHAR* name: name of the child
@@ -97,7 +97,6 @@ void  pipe_to_child_stdin(const char* name,
                           HANDLE *g_hChildStd_IN_Wr,
                           HANDLE *g_hChildStd_ERR_Rd,
                           HANDLE *g_hChildStd_ERR_Wr,
-                          HANDLE *hParentStdErr,
                           PROCESS_INFORMATION *piProcInfo,
                           STARTUPINFO *siStartInfo)
 {
@@ -118,8 +117,6 @@ void  pipe_to_child_stdin(const char* name,
    if ( ! SetHandleInformation(*g_hChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0) )
       ErrorExit(TEXT("Stdin SetHandleInformation"));
 
-   *hParentStdErr = GetStdHandle(STD_ERROR_HANDLE);
-
    BOOL bSuccess = FALSE;
 
    ZeroMemory(piProcInfo, sizeof(PROCESS_INFORMATION) );
@@ -133,6 +130,16 @@ void  pipe_to_child_stdin(const char* name,
    char* cli = get_command_line(args);
    char* commandline = join(name, cli, " ");
    free(cli);
+
+   int result = _setmode( _fileno( g_hChildStd_IN_Wr ), _O_BINARY );
+   if  ( result == -1 )
+        {
+           perror( ERR "Cannot set mode" );
+           clean_exit(EXIT_FAILURE);
+        }
+     else
+     if ( globals.veryverbose)
+          foutput("%s", MSG_TAG "'stdout successfully changed to binary mode\n" );
 
    bSuccess = CreateProcessA(
       name,
@@ -150,8 +157,8 @@ void  pipe_to_child_stdin(const char* name,
       ErrorExit(TEXT("CreateProcess"));
    else
    {
-      //CloseHandle(piProcInfo->hProcess);
-      //CloseHandle(piProcInfo->hThread);
+      CloseHandle(piProcInfo->hProcess);
+      CloseHandle(piProcInfo->hThread);
    }
 
    free(commandline);
@@ -164,7 +171,7 @@ void  pipe_to_child_stdin(const char* name,
 // Same handles as above
 
 DWORD write_to_child_stdin(
-      char* chBuf,
+      uint8_t* chBuf,
       DWORD dwBytesToBeWritten,
       HANDLE g_hChildStd_IN_Wr)
 {
@@ -172,22 +179,9 @@ DWORD write_to_child_stdin(
 
     BOOL bSuccess = FALSE;
 
-     // Set "stdin" to have binary mode:
-
-     fflush(stdin);
-     int result = _setmode( _fileno( stdin ), _O_BINARY );
-
-     if  ( result == -1 )
-        {
-           perror( ERR "Cannot set mode" );
-           clean_exit(EXIT_FAILURE);
-        }
-     else
-     if ( globals.veryverbose)
-          foutput("%s", MSG_TAG "'stdout successfully changed to binary mode\n" );
 
     bSuccess = WriteFile(g_hChildStd_IN_Wr, chBuf, dwBytesToBeWritten, &dwWritten, NULL);
-
+    fflush(stdin);
     if (globals.debugging)
     {
        if (! bSuccess)  fprintf(stderr, "%s\n", ERR "Error in write process to stdin.");
@@ -197,7 +191,8 @@ DWORD write_to_child_stdin(
     return dwWritten;
 }
 
-DWORDLONG pipe_to_parent_stderr(FILE_DESCRIPTOR GCC_UNUSED g_hChildStd_ERR_Rd,
+#if 0
+DWORD pipe_to_parent_stderr(FILE_DESCRIPTOR GCC_UNUSED g_hChildStd_ERR_Rd,
                                                                   FILE_DESCRIPTOR GCC_UNUSED hParentStdErr,
                                                                   int GCC_UNUSED buffer_size)
 {
@@ -209,16 +204,18 @@ DWORDLONG pipe_to_parent_stderr(FILE_DESCRIPTOR GCC_UNUSED g_hChildStd_ERR_Rd,
    bSuccess = ReadFile( g_hChildStd_ERR_Rd, chBuf, buffer_size, &dwRead, NULL);
 
    if (bSuccess)
-    bSuccess = WriteFile(hParentStdErr, chBuf,  dwRead, &dwWritten, NULL);
+    {
+        bSuccess = WriteFile(hParentStdErr, chBuf,  dwRead, &dwWritten, NULL);
+    }
 
     return dwWritten ;
 }
+#endif
 
 void close_handles(HANDLE g_hChildStd_IN_Rd,
       HANDLE g_hChildStd_IN_Wr,
       HANDLE g_hChildStd_ERR_Rd,
-      HANDLE g_hChildStd_ERR_Wr,
-      HANDLE hParentStdErr)
+      HANDLE g_hChildStd_ERR_Wr)
 {
 
     if ( ! CloseHandle(g_hChildStd_IN_Wr) )
@@ -230,8 +227,6 @@ void close_handles(HANDLE g_hChildStd_IN_Rd,
     if ( ! CloseHandle(g_hChildStd_ERR_Rd) )
        ErrorExit(TEXT("StdErrRd CloseHandle"));
 
-   if ( ! CloseHandle(hParentStdErr) )
-       ErrorExit(TEXT("Parent stderr CloseHandle"));
 }
 
 // Microsoft website boilerplate, public domain.
@@ -340,7 +335,7 @@ void close_handles(
       close(*tubeerr0);
 }
 
-unsigned long int write_to_child_stdin(
+uint32_t write_to_child_stdin(
      uint8_t* chBuf,
      unsigned long int dwBytesToBeWritten,
      int GCC_UNUSED g_hChildStd_IN_Wr)

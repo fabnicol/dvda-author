@@ -541,10 +541,7 @@ void free_memory(command_t *command)
                     foutput(INF "Freeing i=%d  j=%d\n",i, j );
                 FREE(command->files[i][j].filename)
                 //FREE(command->files[i][j].filetitle)
-
             }
-
-
         }
 
         for (i=0; i < naudio_groups ; i++)

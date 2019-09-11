@@ -41,13 +41,14 @@ static clock_t then;
 static pid_t pid;
 static bool done = false;
 
-static FILE_DESCRIPTOR   g_hChildStd_IN_Rd = 0;
-static FILE_DESCRIPTOR   g_hChildStd_IN_Wr = 0;
-static FILE_DESCRIPTOR   g_hChildStd_ERR_Rd = 0;
-static FILE_DESCRIPTOR   g_hChildStd_ERR_Wr = 0;
-static FILE_DESCRIPTOR   hParentStdErr = 0;
-static PROCESS_INFORMATION *piProcInfo = NULL;
-
+static FILE_DESCRIPTOR   g_hChildStd_IN_Rd;
+static FILE_DESCRIPTOR   g_hChildStd_IN_Wr;
+static FILE_DESCRIPTOR   g_hChildStd_ERR_Rd;
+static FILE_DESCRIPTOR   g_hChildStd_ERR_Wr;
+static PROCESS_INFORMATION pi;
+static PROCESS_INFORMATION *piProcInfo = &pi;
+static STARTUPINFO si;
+static STARTUPINFO *siStartInfo = &si;
 #if 0
 static unsigned char wav_header[80]= {'R','I','F','F',   //  0 - ChunkID
                                0,0,0,0,            //  4 - ChunkSize (filesize-8)
@@ -748,7 +749,8 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
                                                           writ,
                                                           g_hChildStd_IN_Wr); // only useful for Windows
 
-               pipe_to_parent_stderr(g_hChildStd_ERR_Rd, hParentStdErr, 2005); // only useful for Windows
+               if (fpout_size_increment  != writ ) fprintf(stderr, ERR "wrote %d bytes out of %d\n", fpout_size_increment, writ);
+               //pipe_to_parent_stderr(g_hChildStd_ERR_Rd, hParentStdErr, 2005); // only useful for Windows
 
             }
             else
@@ -884,64 +886,21 @@ static void usleep(unsigned int usec)
 }
 #endif
 
-int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
+static void open_player(const WaveData *info, const WaveHeader  *header)
 {
+       fflush(NULL);
 
-    int title = 0;
-    int track = 0;
-    unsigned long pack_in_group = 0;
-    int position = FIRST_PACK;
-    uint8_t continuity = 0;
+       char *player = NULL;
 
-    WaveHeader header;
-
-    info->infile.isopen = false;
-    info->infile.filename = globals.aobpath[i];
-    info->infile.filesize = stat_file_size(info->infile.filename);
-
-    char g_i[3];
-    sprintf(g_i, "g%1d", i + 1);
-
-    char* dir_g_i = filepath(globals.settings.outdir, g_i);
-
-    if (! s_dir_exists(dir_g_i))
-    {
-        secure_mkdir(dir_g_i, globals.access_rights);
-        if (globals.veryverbose)
-                foutput("%s |%s|\n", INF "Creating directory", dir_g_i);
-    }
-
-    then = clock();
-    // Start of title loop
-
-    while (position != END_OF_AOB)
-    {
-        /* First pass to get basic audio characteristics (sample rate, bit rate, cga) of title */
-
-        bool status = VALID;
-        errno = 0;
-        uint8_t continuity_save = 0;
-        unsigned long pack_in_title = 1;
-        uint32_t wav_numbytes = 0;
-
-        position = get_position(position, info, &header, &status, &continuity);
-
-        if (globals.play && done == false)
-        {
-            fflush(NULL);
-            done = true;
-
-            char *player = NULL;
-
-            if  (strcmp(globals.player, FFPLAY_BASENAME) == 0)
+       if  (strcmp(globals.player, FFPLAY_BASENAME) == 0)
             {
                 if (globals.player_path[0] == '\0')
                   player = create_binary_path(player, FFPLAY, SEPARATOR FFPLAY_BASENAME);
                 else
                   player = globals.player_path;
             }
-            else
-            if  (strcmp(globals.player, VLC_BASENAME) == 0)
+       else
+       if  (strcmp(globals.player, VLC_BASENAME) == 0)
             {
                    if (globals.player_path[0] == '\0')
                       player = strdup(VLC_PATH);
@@ -949,10 +908,10 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                       player = globals.player_path;
             }
 
-            char* t[13] = {NULL};
+       char* t[13] = {NULL};
 
-            if (info->infile.type == AFMT_MLP)
-            {
+       if (info->infile.type == AFMT_MLP)
+           {
 
               if (strcmp(globals.player, FFPLAY_BASENAME) == 0)
               {
@@ -979,11 +938,11 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
             else
             {
                 char sr[7];
-                sprintf(sr, "%d", header.dwSamplesPerSec);
+                sprintf(sr, "%d", header->dwSamplesPerSec);
                 char br[6];
-                sprintf(br, "s%2dle", header.wBitsPerSample);  // s24le or s16le (after decoding)
+                sprintf(br, "s%2dle", header->wBitsPerSample);  // s24le or s16le (after decoding)
                 char ch[2];
-                sprintf(ch, "%1d", header.channels);
+                sprintf(ch, "%1d", header->channels);
 
                 if (strcmp(globals.player, FFPLAY_BASENAME) == 0)
                 {
@@ -1017,20 +976,71 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                 }
             }
 
-            STARTUPINFO *siStartInfo;
-
             pipe_to_child_stdin(
                                              player,
                                              t,
-                                             2005,  // only useful for Windows
+                                             2048,  // only useful for Windows
                                              &g_hChildStd_IN_Rd,
                                              &g_hChildStd_IN_Wr,
                                              &g_hChildStd_ERR_Rd,
                                              &g_hChildStd_ERR_Wr,
-                                             &hParentStdErr,
                                              piProcInfo,
                                              siStartInfo);
 
+}
+
+int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
+{
+
+    int title = 0;
+    int track = 0;
+    unsigned long pack_in_group = 0;
+    int position = FIRST_PACK;
+    uint8_t continuity = 0;
+
+    WaveHeader header;
+
+    info->infile.isopen = false;
+    info->infile.filename = globals.aobpath[i];
+    info->infile.filesize = stat_file_size(info->infile.filename);
+
+    char g_i[3];
+    sprintf(g_i, "g%1d", i + 1);
+
+    char* dir_g_i = filepath(globals.settings.outdir, g_i);
+
+    if (! s_dir_exists(dir_g_i))
+    {
+        secure_mkdir(dir_g_i, globals.access_rights);
+        if (globals.veryverbose)
+                foutput("%s |%s|\n", INF "Creating directory", dir_g_i);
+    }
+
+    then = clock();
+
+   static bool done;
+
+    // Start of title loop
+
+    while (position != END_OF_AOB)
+    {
+       //* First pass to get basic audio characteristics (sample rate, bit rate, cga) of title
+
+        bool status = VALID;
+        errno = 0;
+        uint8_t continuity_save = 0;
+        unsigned long pack_in_title = 1;
+        uint32_t wav_numbytes = 0;
+
+        position = get_position(position, info, &header, &status, &continuity);
+
+        // header info fetched by get_position is needed by player, which otherwise would have been started earlier
+        // guarding against multiple launches: just one per session and AOB
+
+         if (! done && globals.play)
+        {
+             open_player(info, &header);
+             done = true;
         }
 
         // Track loop
@@ -1087,7 +1097,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                                                                     (globals.fixwav_prepend ? ".wav" : ".raw")
                                                                 : ".mlp");
 
-                wav_output_open(info);
+                if (! globals.play) wav_output_open(info);
 
                 WaveData info2;
 
@@ -1615,7 +1625,7 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
       clock_t now = clock();
       double failsafe = 1.1;
 
-      if (globals.play)
+      if (globals.pipe)
       {
           if (total_duration * failsafe > (now - then) / (double) CLOCKS_PER_SEC)
           {
@@ -1633,35 +1643,34 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
               // but for OSX, -autoexit does work...
 
               usleep(lrint(ceil(wait_time * 1000000.0)));
-              int res = 0;
+          }
 
-              close_handles( g_hChildStd_IN_Rd,
-                             g_hChildStd_IN_Wr,
-                             g_hChildStd_ERR_Rd,
-                             g_hChildStd_ERR_Wr);
 
-              // + child process handles commented out
+             if (globals.play)
+             {
+                  close_handles( g_hChildStd_IN_Rd,
+                                 g_hChildStd_IN_Wr,
+                                 g_hChildStd_ERR_Rd,
+                                 g_hChildStd_ERR_Wr);
+
+                  // + child process handles commented out
 
     #            ifdef _WIN32
-                              res = kill(piProcInfo);
-                              fflush(stdout);
-                              fflush(stdin);
-                              fflush(stderr);
-                            _setmode(_fileno(stdout), _O_TEXT);
-    #            else
-                              res = kill(pid, SIGKILL);
-    #            endif // _WIN32
+                               kill(piProcInfo);
 
-                if (res == 0) done = true;
+    #            else
+                               kill(pid, SIGKILL);
+    #            endif // _WIN32
+              }
+
+             fflush(NULL);
          }
        }
-    }
 
     if (globals.fixwav_prepend)
         audio_extraction_layout(files);
 
-        // Unfortunately ffplay does not exit, and must be stopped some other way.
-
+    // Unfortunately ffplay does not always exit (under GNU/Linux), and must be stopped some other way.
     // Waits for child to end without -autoexit, based on audio duration.
     return(errno);
 }

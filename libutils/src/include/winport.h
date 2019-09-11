@@ -107,7 +107,7 @@ int truncate_from_end(char* filename, uint64_t offset);
   typedef      HANDLE  FILE_DESCRIPTOR;
 
   int pkill(const char* p);
-  int kill(PROCESS_INFORMATION pi);
+  int kill(PROCESS_INFORMATION *pi);
 
 void ErrorExit(PTSTR lpszFunction);
 
@@ -134,7 +134,6 @@ void ErrorExit(PTSTR lpszFunction);
                           FILE_DESCRIPTOR *g_hChildStd_IN_Wr,
                           FILE_DESCRIPTOR *g_hChildStd_ERR_Rd,
                           FILE_DESCRIPTOR *g_hChildStd_ERR_Wr,
-                          FILE_DESCRIPTOR *hParentStdErr,
                           PROCESS_INFORMATION *piProcInfo,
                           STARTUPINFO *siStartInfo);
 
@@ -142,10 +141,10 @@ void ErrorExit(PTSTR lpszFunction);
       uint8_t* chBuf,
       DWORD dwBytesToBeWritten,
       FILE_DESCRIPTOR g_hChildStd_IN_Wr);
-
+#if 0
 DWORD pipe_to_parent_stderr(FILE_DESCRIPTOR GCC_UNUSED  g_hChildStd_ERR_Rd,
                                 FILE_DESCRIPTOR GCC_UNUSED  hParentStdErr,
                                 int GCC_UNUSED buffer_size);
 
-
+ #endif
 #endif // WINPORT_H_INCLUDED
