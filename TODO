@@ -6,9 +6,16 @@ FIX BUGS:
 Short term
 ----------
 
+fix silent segfault at very end of -x
+packaging: include deps as debian packages for mjpegtools and magick at least
+(nagging magick config issue)
+
+lplex:
+fix issue of aux path binaries: add --bindir option to force local bins
+fix 24-bit issue
+
 fix lack of relative paths for -x -o
 add sanity check if -o . ! (avoid cur dir erasure...)
-fix ats2wav
 
 Long term
 ---------
