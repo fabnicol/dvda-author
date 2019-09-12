@@ -130,9 +130,12 @@ printf("%s","-z,                      BROKEN. Separate two consecutive titles wh
 printf("%s","-Z, --playlist           You may specify up to 9 group copies." J "Total number of groups and copy groups should not exceed 9.\n");
 printf("%s","-n, --no-videozone       Do not generate an empty VIDEO_TS directory.\n\n");
 printf("%s","-w, --rights             Access rights to directories created (octal values)\n\n");
-printf("%s","-c, --cga                Enter channel group assignment right after group, e.g: -g file1...fileN -c cga1...cgaN" J "Channel assignment should match number of channels of each file"
+printf("%s","    --merge [channels]   The following tracks are mono and will be merged into multichannel." J "They must be ordered as Lf-Rf-C-LFE-Ls-Rs (see table below) and may be specified further by --cga to disambiguate combinations wrt group1/group2 types." J "To be used with -g (e.g. -g --merge ... --merge ... -g --merge ...). Under development.\n");
+printf("%s","-c, --cga                Enter channel group assignment right after group, e.g: -g file1...fileN -c cga1...cgaN" J "Channel assignment should match number of channels of each file" J "If --merge is used, each cga value applies to the respective merged channels in linear order."
 J "Combine channels using either decimal indexes in following table or hyphenated channel assignement labels"
-J " e.g. -g a.wav -g b.wav -c Lf-Rf-C2-Lfe2-S2 --cga 17"
+J " e.g. -g a.wav --merged b1.wav b2.wav b3.wav b4.wav b5.wav b6.wav -c Lf-Rf-C2-Lfe2-S2 --cga 17"
+J "means: apply channel assignment Lf-Rf-C2-Lfe2-S2 to first track and Lf-Rf-C-Lfe2-Ls2-Rs2 (index 17)"
+J "to second track formed by 6 merged mono channels b1.wav to b6.wav"
 J "Channel group assignment (CGA)"
 J "    Index     1    2        3         4        5       6"
 J "      0       Mono"
@@ -434,72 +437,99 @@ bool increment_ngroups_check_ceiling(uint8_t *ngroups, uint8_t * nvideolinking_g
 
 fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t ngiven_channels[9][99], uint8_t* ntracks,  uint8_t  ngroups, uint8_t n_g_groups, uint8_t nvideolinking_groups)
 {
-
     float memory=0;
-    int i, j;
+    int i, j = 0;
 
     /*   n_g_groups: number of g-type audio groups ('Dave code usage')
      *   nvideolinking_groups: number of video-linking groups
      *   ngroups   : total number of groups
      *   ngroups = n_g_groups + nvideolinking_groups
-     */
-
-    /* It is crucial to use calloc as boolean flags are used */
+     * It is crucial to use calloc as boolean flags are used */
 
     if ((files= (fileinfo_t **) calloc(ngroups, sizeof(fileinfo_t *))) == NULL)
-        EXIT_ON_RUNTIME_ERROR
-
-    for (i=0 ; i < n_g_groups; i++)
     {
-        if ((files[i]=(fileinfo_t *) calloc(ntracks[i], sizeof(fileinfo_t))) == NULL)
-            EXIT_ON_RUNTIME_ERROR
-
-        memory += (double) (ntracks[i])*sizeof(fileinfo_t)/1024;
-
-        if (globals.debugging)
-            foutput(MSG_TAG "g-type  audio group  :  %d   Allocating:  %d  track(s)  (strings=%.1g kB)\n", i,  ntracks[i], memory);
+        EXIT_ON_RUNTIME_ERROR
     }
 
-    for (i=n_g_groups ; i < ngroups-nvideolinking_groups; i++)
+    for (i = 0 ; i < n_g_groups; ++i)
     {
+        if ((files[i]=(fileinfo_t *) calloc(ntracks[i], sizeof(fileinfo_t))) == NULL)
+        {
+            EXIT_ON_RUNTIME_ERROR
+        }
 
+       if (globals.debugging)
+            {
+               memory += (double) (ntracks[i])*sizeof(fileinfo_t)/1024;
+               foutput(MSG_TAG
+                       "g-type  audio group  :  %d   Allocating:  %d  track(s)  (strings=%.1g kB)\n",
+                       i,
+                       ntracks[i],
+                       memory);
+            }
+
+        for (j = 0; j < ntracks[i]; ++j)
+        {
+            if ((files[i][j].audio = (audio_input_t*) calloc(1, sizeof(audio_input_t))) == NULL)
+            {
+                EXIT_ON_RUNTIME_ERROR
+            }
+           if (ngiven_channels[i][j] == 0) continue;
+           files[i][j].given_channel = (char**) calloc(ngiven_channels[i][j], sizeof(char*));
+           files[i][j].channels = ngiven_channels[i][j]; // maybe redundant
+           files[i][j].audio->channel_fp = (FILE**) malloc(ngiven_channels[i][j] * sizeof(FILE*));
+           files[i][j].channel_header_size=calloc(ngiven_channels[i][j], sizeof(uint8_t));
+           for  (int u = 0; u < ngiven_channels[i][j]; ++u)
+           {
+            if ((files[i][j].given_channel[u]=calloc(CHAR_BUFSIZ, sizeof(char)) )== NULL)
+            {
+                        EXIT_ON_RUNTIME_ERROR
+            }
+            if ((files[i][j].audio->channel_fp[u] = (FILE*) malloc(sizeof(FILE))) == NULL)
+            {
+                        EXIT_ON_RUNTIME_ERROR
+            }
+           }
+        }
+    }
+
+    // Allocating i-syntax groups
+
+    for (i = n_g_groups ; i < ngroups-nvideolinking_groups; ++i)
+    {
         if ((files[i]=(fileinfo_t *) calloc(ntracks[i], sizeof(fileinfo_t)) )== NULL)
         {
             EXIT_ON_RUNTIME_ERROR
         }
 
-            for (j=0; j < ntracks[i]; j++)
+        for (j=0; j < ntracks[i]; j++)
+        {
+            if ((files[i][j].filename = (char*) calloc(CHAR_BUFSIZ, sizeof(char)) )== NULL)
             {
-                if ((files[i][j].filename = (char*) calloc(CHAR_BUFSIZ, sizeof(char)) )== NULL)
-                    EXIT_ON_RUNTIME_ERROR
-                if (ngiven_channels)
-                    {
-                      files[i][j].given_channel = (char**) calloc(ngiven_channels[i][j], sizeof(char*));
-                      files[i][j].channel_header_size=calloc(ngiven_channels[i][j], sizeof(uint8_t));
-                    }
-                for  (int u=0; u< ngiven_channels[i][j]; u++)
-                  {
-                    if ((files[i][j].given_channel[u]=calloc(CHAR_BUFSIZ, sizeof(char)) )== NULL)
-                    {
-                                EXIT_ON_RUNTIME_ERROR
-                    }
-                  }
-             }
-
+                EXIT_ON_RUNTIME_ERROR
+            }
+        }
     }
 
-    for (i=ngroups-nvideolinking_groups ; i < ngroups; i++)
+    // Allocating videolinking groups
+
+    for (i=ngroups-nvideolinking_groups ; i < ngroups; ++i)
     {
         if ((files[i]=(fileinfo_t *) calloc(1, sizeof(fileinfo_t))) == NULL)
         {
             EXIT_ON_RUNTIME_ERROR
         }
 
-        memory+=(double) sizeof(fileinfo_t)/1024;
-
         /* sanity check: 0 tracks should be allocated */
         if (globals.debugging)
-            foutput(MSG_TAG "Video-linking group  :  %d   Allocating:  %d  track(s)  (strings=%.1g kB)\n", i, ntracks[i], memory);
+        {
+            memory+=(double) sizeof(fileinfo_t)/1024;
+            foutput(MSG_TAG
+                    "Video-linking group  :  %d   Allocating:  %d  track(s)  (strings=%.1g kB)\n",
+                    i,
+                    ntracks[i],
+                    memory);
+        }
     }
 
     return files;

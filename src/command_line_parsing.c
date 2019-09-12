@@ -521,13 +521,13 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'g' :
 
             ++k;
+            increment_ngroups_check_ceiling(&n_g_groups, NULL);
 
             for (; k < argc; ++k)
             {
                 /*  To explicitly change titles within the same group even if files_i and file_i+1 have same audio characterictics, use:
                     -g file_1 ... file_i -z file_i+1 file_i+2 ... -g ...
                 */
-                // PATCH 09.07
 
                 if (argv[k][0] !='-')
                 {
@@ -539,40 +539,34 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                       clean_exit(EXIT_FAILURE);
                     }
                     ++ntracks[n_g_groups];
+
                 }
                 else
                 {
                     if (argv[k][1] == 'z')
                         continue;
                     else
-                        break;
-                }
+                    {
+                        // syntax is -g --merge channel11 ... channelp1 --merge --merge channel12 ... channelk2 ...
 
+                        while(strlen(argv[k]) == 7 && strcmp(argv[k]+2, "merge") == 0)
+                        {
+                            ++k;
+                            ++ntracks[n_g_groups - 1];
+                            for ( ;k < argc && argv[k][0] != '-'; ++k)
+                            {
+                                    ++ngiven_channels[n_g_groups - 1][ntracks[n_g_groups - 1] - 1];
+                            }
+                            --k;
+                        }
+
+                        break;
+                    }
+                }
             }
 
-            increment_ngroups_check_ceiling(&n_g_groups, NULL);
             --k;
             break;
-
-         case '-':
-            if ((strlen(argv[k]) != 7 ) || (strcmp(argv[k]+2, "merge") != 0))
-              break;
-
-            k++;
-
-            ntracks[n_g_groups]++;
-            for (;k < argc; k++)
-            {
-               if (argv[k][0] !='-')
-               {
-                    ngiven_channels[n_g_groups][ntracks[n_g_groups]]++;
-               }
-                else
-                  break;
-
-            }
-
-            k--;
 
         }
     }
@@ -797,8 +791,8 @@ out:
                     {
                      if (ngiven_channels[ngroups_scan][m])
                      {
-                       strcpy(files[ngroups_scan][m].filename,"merged channels");
-                       files[ngroups_scan][m].channels=ngiven_channels[ngroups_scan][m];
+
+                       files[ngroups_scan][m].channels=ngiven_channels[ngroups_scan][m]; // supposing merged channels are only mono (not tested)
                        files[ngroups_scan][m].mergeflag=1;
 
                        if (globals.veryverbose)
@@ -806,15 +800,15 @@ out:
                          foutput("       files[%d][%d].filename=%s\n", ngroups_scan, m, "merged channels:");
                        }
 
-                       for (int u=0; u < ngiven_channels[ngroups_scan][m]; u++)
+                       for (int u = 0; u < ngiven_channels[ngroups_scan][m]; ++u)
                        {
                         if (globals.veryverbose)
-                          foutput("                               %s\n", argv[m+k+u]);
+                          foutput("                               %s\n", argv[m+k+1+u]);
 
-                        strcpy(files[ngroups_scan][m].given_channel[u],argv[m+k+u]);
+                        strcpy(files[ngroups_scan][m].given_channel[u],argv[m+k+1+u]);
                        }
 
-                       m+=ngiven_channels[ngroups_scan][m];
+                       m += ngiven_channels[ngroups_scan][m];
                      }
                     }
                     else

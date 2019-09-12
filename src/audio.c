@@ -1089,7 +1089,7 @@ uint8_t extract_audio_info(fileinfo_t *info)
 
     //static bool cut;
 
-    //if (!cut)
+    if (! info->mergeflag)
         info->type=fixwav_repair(info);
 
     //cut=((info->type == AFMT_WAVE_FIXED) || (info->type == AFMT_WAVE_GOOD_HEADER));
@@ -1502,25 +1502,40 @@ static inline int wav_getinfo_merged(fileinfo_t *info)
 int audiofile_getinfo(fileinfo_t* info)
 {
 
-    info->audio = (audio_input_t*) calloc(1, sizeof(audio_input_t));
-
     if (info->audio == NULL)
     {
       foutput("%s\n", ERR "Could not open audio file: filepath pointer is null");
       EXITING
     }
 
-    if (info->mergeflag)
-        wav_getinfo_merged(info);
+//    if (info->mergeflag)
+//        wav_getinfo_merged(info);
 
-    if (info->filename == NULL)
+    if (info->mergeflag)
     {
-      foutput("%s\n", ERR "Could not open audio file: filepath pointer is null");
-      EXITING
+        if (info->given_channel == NULL)
+        {
+          foutput("%s\n", ERR "Could not open audio file: filepath pointer is null");
+          EXITING
+        }
+        else
+        {
+          if (globals.debugging)
+              for (int u = 0; u < info->channels; ++u)
+                  foutput(INF "Opening %s to get info\n", info->given_channel[u]);
+        }
     }
     else
     {
-      if (globals.debugging) foutput(INF "Opening %s to get info\n", info->filename);
+        if (info->filename == NULL)
+        {
+          foutput("%s\n", ERR "Could not open audio file: filepath pointer is null");
+          EXITING
+        }
+        else
+        {
+          if (globals.debugging) foutput(INF "Opening %s to get info\n", info->filename);
+        }
     }
 
     process_audiofile_info(info);
@@ -2188,17 +2203,20 @@ inline static void interleave_sample_extended_merged(int channels, int count, ui
         case 2:
 
             for (i = 0; i < count; i += 2)
-            { x = buf[i+1]; buf[i+1] = buf[i]; buf[i] = x; }   // check this out
+            { x = *(buf[0] + i + 1); *(buf[0] + i + 1) = *(buf[0] + i); *(buf + i) = x; }   // check this out
             break;
 
         default:
 
             for (i = 0; i < count; i += size)
-                permutation_merged(buf+i, _buf, 0, channels, S, size);
+            {
+                permutation_merged(buf, _buf, 0, channels, S, size);
+                for (int w = 0; w < channels; ++w) buf[w] += i;
+            }
             break;
     }
 }
-// At the end we have what lloks like a simple uint8_t* and we shall used this recast array juste like buf in the simple interleave.
+// At the end we have what looks like a simple uint8_t* and we shall used this recast array juste like buf in the simple interleave.
 
 
 inline static void interleave_sample_extended(int channels, int count, uint8_t * buf)
@@ -2223,18 +2241,26 @@ inline static void interleave_sample_extended(int channels, int count, uint8_t *
     }
 }
 
-inline static void interleave_24_bit_sample_extended(int channels, int count, uint8_t * buf)
-
+inline static void interleave_24_bit_sample_extended_merged(int channels, int count, uint8_t ** buf)
 {
-
     int i, size=channels*6;
     uint8_t _buf[size];
 
+    for (i = 0; i < count; i += size)
+    {
+        permutation_merged(buf, _buf, 0, channels, S, size);
+        for (int w = 0; w < channels; ++w) buf[w] += size;
+
+    }
+}
+
+inline static void interleave_24_bit_sample_extended(int channels, int count, uint8_t * buf)
+{
+    int i, size=channels*6;
+    uint8_t _buf[size];
 
     for (i = 0; i < count; i += size)
         permutation(buf+i, _buf, 1, channels, S, size);
-
-
 }
 
 
@@ -2439,12 +2465,7 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
 
         // End of patch
         // Convert little-endian WAV samples to big-endian MPEG LPCM samples
-if (info.mergeflag)
-{
 
-}
-else
-{
         switch (info->bitspersample)
         {
             case 24:
@@ -2476,7 +2497,7 @@ else
                 foutput(ERR "%d bit audio is not supported\n",info->bitspersample);
                 EXIT_ON_RUNTIME_ERROR
         }
-}
+
 
 out:
 
@@ -2502,3 +2523,203 @@ int audio_close(fileinfo_t* info)
     return(0);
 }
 
+//
+// to be fixed ! Translate all below in termes of mono files.
+//
+
+uint32_t audio_read_merged(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
+{
+    // For merged mono files, the buffers are not succesive chunks but compounded after a bytes pop of each mono
+    // to be implemented. Equivalent to classical numbers for multichannel wav.
+
+    uint32_t requested_bytes = AUDIO_BUFFER_SIZE - *bytesinbuffer,
+             buffer_increment = 0,
+             rounded_buffer_increment = 0;
+
+    static uint16_t offset;
+
+    static uint8_t fbuf[36];
+
+    uint8_t *buf = _buf + *bytesinbuffer;
+
+    FLAC__bool result;
+
+    //PATCH: provided for null audio characteristics, to ensure non-zero divider
+
+    if (info->sampleunitsize == 0)
+          EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Sample unit size is null");
+
+    if ((info->channels > 6) || (info->channels < 1))
+    {
+        foutput(ERR "problem in audio.c ! %d channels \n",info->channels);
+        EXIT_ON_RUNTIME_ERROR
+    }
+
+    if (requested_bytes + offset >= info->sampleunitsize)
+    {
+        requested_bytes -= (requested_bytes + offset) % info->sampleunitsize;
+    }
+
+    if (info->type != AFMT_MLP)  // gapless mode still not supported for MLP
+    {
+        if (offset)
+        {
+           memcpy(buf, fbuf, offset);
+           if (globals.debugging)
+               foutput(WAR "File: %s. Adding %d bytes from last packet for gapless processing...\n", info->filename, offset);
+           buffer_increment = offset;
+        }
+    }
+
+    if (info->type == AFMT_WAVE || info->type == AFMT_MLP)
+    {
+        uint32_t request = (*bytesinbuffer + offset + requested_bytes < AUDIO_BUFFER_SIZE) ? requested_bytes : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset);
+
+        buffer_increment += fread(buf + offset, 1, request, info->audio->fp);
+
+        if (info->audio->bytesread + buffer_increment > info->numbytes)
+        {
+            buffer_increment = info->numbytes-info->audio->bytesread;
+        }
+
+        info->audio->bytesread += buffer_increment;
+        uint32_t bytesread = buffer_increment;
+
+        while (info->audio->bytesread < info->numbytes
+               && bytesread < requested_bytes)
+        {
+            uint32_t request = (*bytesinbuffer + offset + requested_bytes < AUDIO_BUFFER_SIZE) ?
+                                     requested_bytes - bytesread : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset + bytesread);
+
+            buffer_increment = fread(buf + bytesread + offset, 1, request, info->audio->fp);
+
+            if (info->audio->bytesread + buffer_increment > info->numbytes)
+            {
+                buffer_increment = info->numbytes - info->audio->bytesread;
+            }
+
+            info->audio->bytesread += buffer_increment;
+            bytesread += buffer_increment;
+        }
+
+        buffer_increment = bytesread;
+    }
+
+#ifndef WITHOUT_FLAC
+
+    else if ((info->type == AFMT_FLAC) || (info->type == AFMT_OGG_FLAC))
+    {
+        while ((info->audio->n < requested_bytes) && (info->audio->eos==0))
+        {
+            result = FLAC__stream_decoder_process_single(info->audio->flac);
+
+            if (result==0)
+                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Fatal error decoding FLAC file\n")
+
+            if (FLAC__stream_decoder_get_state(info->audio->flac) == FLAC__STREAM_DECODER_END_OF_STREAM)
+            {
+                info->audio->eos=1;
+            }
+        }
+
+        if (info->audio->n >= requested_bytes)
+        {
+            buffer_increment = requested_bytes;
+            uint32_t request = (*bytesinbuffer + offset + buffer_increment < AUDIO_BUFFER_SIZE) ? buffer_increment  : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset);
+            memcpy(buf + offset, info->audio->buf, request);
+            memmove(info->audio->buf, &(info->audio->buf[requested_bytes]), info-> audio->n - request);
+            info->audio->n -= request;
+            buffer_increment = request;
+        }
+        else
+        {
+            buffer_increment = info->audio->n;
+            uint32_t request = (*bytesinbuffer + offset + buffer_increment < AUDIO_BUFFER_SIZE) ? buffer_increment  : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset);
+            memcpy(buf + offset, info->audio->buf, request);
+
+            info->audio->n = 0;
+            buffer_increment = request;
+        }
+
+        info->audio->eos = 0;
+    }
+#endif
+
+    if (info->type == AFMT_MLP) goto out;
+
+        // PATCH: reinstating Lee Feldkamp's 2009 sampleunitsize rounding
+        // Note: will add extra zeros on decoding!
+
+        uint16_t rmdr = buffer_increment % info->sampleunitsize;
+        rounded_buffer_increment = buffer_increment - rmdr;
+
+                if (rmdr)
+                {
+                    // normally at end of file
+
+                    if (info->contin_track)
+                    {
+                        offset = rmdr;
+
+                        memcpy(fbuf, buf + rounded_buffer_increment, rmdr);
+                        buffer_increment = rounded_buffer_increment;
+
+                        if (globals.debugging)
+                           foutput(WAR "File: %s. Shifting %d bytes from offset %d to offset %d to next packet for gapless processing...\n", info->filename, rmdr, rounded_buffer_increment, buffer_increment);
+                    }
+                    else
+                    {
+                        uint16_t padbytes = info->sampleunitsize - rmdr;
+                        if (padbytes + buffer_increment > AUDIO_BUFFER_SIZE)
+                            padbytes = AUDIO_BUFFER_SIZE - buffer_increment;
+
+                        memset(buf + buffer_increment, 0, padbytes);
+                        buffer_increment += padbytes;
+                        foutput(WAR "Padding track with %d bytes (ultimate packet).\n", padbytes);
+                    }
+                }
+
+        // End of patch
+        // Convert little-endian WAV samples to big-endian MPEG LPCM samples
+
+    switch (info->bitspersample)
+    {
+        case 24:
+            // Processing 24-bit audio
+            interleave_24_bit_sample_extended_merged(info->channels, buffer_increment, &buf);
+            break;
+
+        case 16:
+            // Processing 16-bit audio
+            interleave_sample_extended_merged(info->channels, buffer_increment, &buf);
+            break;
+
+        default:
+            foutput(ERR "%d bit audio is not supported\n",info->bitspersample);
+            EXIT_ON_RUNTIME_ERROR
+    }
+
+out:
+
+    *bytesinbuffer += buffer_increment;
+
+    return(buffer_increment);
+}
+
+
+int audio_close_merged(fileinfo_t* info)
+{
+    if (globals.debugging) foutput("%s %s\n", INF "Closing audio file", info->filename);
+    if (info->type==AFMT_WAVE)
+    {
+        fclose(info->audio->fp);
+    }
+#ifndef WITHOUT_FLAC
+    else if ((info->type==AFMT_FLAC) || (info->type == AFMT_OGG_FLAC))
+    {
+        FLAC__stream_decoder_delete(info->audio->flac);
+    }
+#endif
+    // info->audio[i][j] will be freed before exit in free_memory.
+    return(0);
+}

@@ -77,8 +77,8 @@ static inline void permutation_merged(uint8_t **buf,
 
     for (j=0; j < size ; ++j)
     {
-        channel      = reference_table_merged[bits_per_second_flag][channels-1][j][1];
-        byte_index = reference_table_merged[bits_per_second_flag][channels-1][j][2];
+       int  channel      = reference_table[bits_per_second_flag][channels-1][j][0];
+        int byte_index   = reference_table[bits_per_second_flag][channels-1][j][1];
         _buf[j] = buf[channel][byte_index];
     }
 
