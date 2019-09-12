@@ -276,7 +276,6 @@ void pipe_to_child_stdin(const char* name,
                           FILE_DESCRIPTOR *g_hChildStd_IN_Wr,
                           FILE_DESCRIPTOR *g_hChildStd_ERR_Rd,
                           FILE_DESCRIPTOR *g_hChildStd_ERR_Wr,
-                          FILE_DESCRIPTOR GCC_UNUSED *hParentStdErr,  // &STDERR_FILENO
                           PROCESS_INFORMATION GCC_UNUSED *piProcInfo, // Windows only
                           STARTUPINFO GCC_UNUSED *siStartInfo)        // Windows only
 {
@@ -335,10 +334,10 @@ void close_handles(
       close(*tubeerr0);
 }
 
-uint32_t write_to_child_stdin(
+DWORD write_to_child_stdin(
      uint8_t* chBuf,
-     unsigned long int dwBytesToBeWritten,
-     int GCC_UNUSED g_hChildStd_IN_Wr)
+     DWORD dwBytesToBeWritten,
+     FILE_DESCRIPTOR GCC_UNUSED g_hChildStd_IN_Wr)
 {
     unsigned long int dwWritten;
     errno = 0;
