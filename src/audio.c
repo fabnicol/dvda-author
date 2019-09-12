@@ -274,11 +274,10 @@ static const uint8_t  S[2][6][36]=
         {8, 7, 17, 16, 6, 15, 2, 1, 5, 4, 11, 10, 14, 13, 0, 3, 9, 12}, //18 OK for all sampling rates <= 96 kHz
         {8,  7,  11,  10,  20,  19,  23,  22,  6,  9,  18,  21,  2,  1,  5,  4,  14,  13,  17,  16,  0,  3,  12,  15}, //24 OK for all sampling rates <= 96 kHz
         {11, 10, 14, 13, 26, 25, 29, 28, 9, 12, 24, 27, 2, 1, 5, 4, 8, 7, 17, 16, 20, 19, 23, 22, 0, 3, 6, 15, 18, 21},  // 30, out for 88.1 kHz and 96 kHz.
-		
+
         {8, 7, 11, 10, 26, 25, 29, 28, 6, 9, 24, 27, 2, 1, 5, 4, 14, 13, 17, 16, 20, 19, 23, 22, 32, 31, 35, 34, 0, 3, 12, 15, 18, 21, 30, 33 }  // 36, out for 88.1 kHz and 96 kHz.
     }
 };
-
 
 
 // Direct conversion table when separate mono channels are given on command line
@@ -315,7 +314,7 @@ static uint8_t  C[2][6][36][2]=
         {{1,2}, {1,1}, {2,2}, {2,1}, {1,5}, {1,4}, {2,5}, {2,4},  // 24/2
          {1,0}, {2,0}, {1,3}, {2,3}},
 
- 
+
         {{3,2}, {3,1}, {3,5}, {3,4}, {3,0}, {3,3}, {1,2}, {1,1},  // 24/3
          {2,2}, {2,1}, {1,5}, {1,4}, {2,5}, {2,4}, {1,0}, {2,0},
          {1,3}, {2,3}},
@@ -328,7 +327,7 @@ static uint8_t  C[2][6][36][2]=
          {4,0}, {5,0}, {4,3}, {5,3}, {1,2}, {1,1}, {2,2}, {2,1},
          {3,2}, {3,1}, {1,5}, {1,4}, {2,5}, {2,4}, {3,5}, {3,4},
          {1,0}, {2,0}, {3,0}, {1,3}, {2,3}, {3,3}},
-    
+
         {{3,2}, {3,1}, {4,2}, {4,1}, {3,5}, {3,4}, {4,5}, {4,4},  // 24/6
          {3,0}, {4,0}, {3,3}, {4,3}, {1,2}, {1,1}, {2,2}, {2,1},
          {5,2}, {5,1}, {6,2}, {6,1}, {1,5}, {1,4}, {2,5}, {2,4},
@@ -2177,6 +2176,31 @@ Now follows the actual manipulation code.  Note that performing the transformati
 */
 
 
+
+inline static void interleave_sample_extended_merged(int channels, int count, uint8_t ** buf)
+{
+    int i, size=channels*4;
+    uint8_t x;
+    uint8_t _buf[size];
+    switch (channels)
+    {
+        case 1:
+        case 2:
+
+            for (i = 0; i < count; i += 2)
+            { x = buf[i+1]; buf[i+1] = buf[i]; buf[i] = x; }   // check this out
+            break;
+
+        default:
+
+            for (i = 0; i < count; i += size)
+                permutation_merged(buf+i, _buf, 0, channels, S, size);
+            break;
+    }
+}
+// At the end we have what lloks like a simple uint8_t* and we shall used this recast array juste like buf in the simple interleave.
+
+
 inline static void interleave_sample_extended(int channels, int count, uint8_t * buf)
 {
     int i, size=channels*4;
@@ -2218,6 +2242,9 @@ inline static void interleave_24_bit_sample_extended(int channels, int count, ui
 
 uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
 {
+    // For merged mono files, the buffers are not succesive chunks but compounded after a bytes pop of each mono
+    // to be implemented. Equivalent to classical numbers for multichannel wav.
+
     uint32_t requested_bytes = AUDIO_BUFFER_SIZE - *bytesinbuffer,
              buffer_increment = 0,
              rounded_buffer_increment = 0;
@@ -2331,8 +2358,8 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
     }
 #endif
 
-    if (info->type != AFMT_MLP)
-    {
+    if (info->type == AFMT_MLP) goto out;
+
         // PATCH: reinstating Lee Feldkamp's 2009 sampleunitsize rounding
         // Note: will add extra zeros on decoding!
 
@@ -2412,7 +2439,12 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
 
         // End of patch
         // Convert little-endian WAV samples to big-endian MPEG LPCM samples
+if (info.mergeflag)
+{
 
+}
+else
+{
         switch (info->bitspersample)
         {
             case 24:
@@ -2444,7 +2476,9 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
                 foutput(ERR "%d bit audio is not supported\n",info->bitspersample);
                 EXIT_ON_RUNTIME_ERROR
         }
-    }
+}
+
+out:
 
     *bytesinbuffer += buffer_increment;
 
