@@ -37,7 +37,7 @@ static inline void permutation(uint8_t *buf,
 {
     int j;
 
-    for (j=0; j < size ; j++)
+    for (j=0; j < size ; ++j)
     {
         _buf[j] = buf[reference_table[bits_per_second_flag][channels-1][j]];
     }
@@ -61,6 +61,30 @@ static inline void permutation(uint8_t *buf,
 
     memcpy(buf,_buf, (size_t) size);
 }
+
+
+static inline void permutation_merged(uint8_t **buf,
+                               uint8_t *_buf,
+                               int bits_per_second_flag,
+                               uint8_t channels,
+                               const uint8_t reference_table[][6][36][2],
+                               int size)
+{
+    int j;
+
+    //  buf is double array of channel times 4 bytes (16-bit case) or 6 bytes (24-bit case): buf[channels][bitrate / 4]
+    // except for 16-bit ch 1/2
+
+    for (j=0; j < size ; ++j)
+    {
+        channel      = reference_table_merged[bits_per_second_flag][channels-1][j][1];
+        byte_index = reference_table_merged[bits_per_second_flag][channels-1][j][2];
+        _buf[j] = buf[channel][byte_index];
+    }
+
+    memcpy((uint8_t *) buf[0],_buf, (size_t) size);
+}
+
 
 /* WAVFORMAT_EXTENSIBLE SPECS at offset 0x29-0x2B in wav headers */
 
