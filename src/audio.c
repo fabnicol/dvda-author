@@ -1089,7 +1089,7 @@ uint8_t extract_audio_info(fileinfo_t *info)
 
     //static bool cut;
 
-    //if (!cut)
+    if (! info->mergeflag)
         info->type=fixwav_repair(info);
 
     //cut=((info->type == AFMT_WAVE_FIXED) || (info->type == AFMT_WAVE_GOOD_HEADER));
@@ -1502,25 +1502,40 @@ static inline int wav_getinfo_merged(fileinfo_t *info)
 int audiofile_getinfo(fileinfo_t* info)
 {
 
-    info->audio = (audio_input_t*) calloc(1, sizeof(audio_input_t));
-
     if (info->audio == NULL)
     {
       foutput("%s\n", ERR "Could not open audio file: filepath pointer is null");
       EXITING
     }
 
-    if (info->mergeflag)
-        wav_getinfo_merged(info);
+//    if (info->mergeflag)
+//        wav_getinfo_merged(info);
 
-    if (info->filename == NULL)
+    if (info->mergeflag)
     {
-      foutput("%s\n", ERR "Could not open audio file: filepath pointer is null");
-      EXITING
+        if (info->given_channel == NULL)
+        {
+          foutput("%s\n", ERR "Could not open audio file: filepath pointer is null");
+          EXITING
+        }
+        else
+        {
+          if (globals.debugging)
+              for (int u = 0; u < info->channels; ++u)
+                  foutput(INF "Opening %s to get info\n", info->given_channel[u]);
+        }
     }
     else
     {
-      if (globals.debugging) foutput(INF "Opening %s to get info\n", info->filename);
+        if (info->filename == NULL)
+        {
+          foutput("%s\n", ERR "Could not open audio file: filepath pointer is null");
+          EXITING
+        }
+        else
+        {
+          if (globals.debugging) foutput(INF "Opening %s to get info\n", info->filename);
+        }
     }
 
     process_audiofile_info(info);
