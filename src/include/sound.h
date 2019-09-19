@@ -14,14 +14,14 @@
 #include "auxiliary.h"
 #include "launch_manager.h"
 
-int launch_lplex_soundtrack(pic* img,const char* create_mode);
+int launch_lplex_soundtrack(pic* img,const char* create_mode, globalData*);
 
 int launch_lplex_hybridate(const pic* img, const char* create_mode,
                            const char*** trackpath,const uint8_t* ntracks,
                            const char*** slidepath, uint8_t* nslides,
-                           int ntitlesets);
+                           int ntitlesets, globalData*);
 
-int audit_soundtrack(char* path, bool strict);
+int audit_soundtrack(char* path, bool strict, globalData*);
 WaveData* wavedata_copy(const WaveData* w);
 void wavedata_clean(WaveData* w);
 WaveData* wavedata_init(void);

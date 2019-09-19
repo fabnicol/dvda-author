@@ -36,7 +36,7 @@
 /* NOTE: SoX API noticeably changed as of v. 14.3.0 */
 
 
-extern globalData globals;
+
 
 #if ((SOX_LIB_VERSION_CODE >>8 & 0xff) < 3)
 #error ---------------------------------------------------------------------------------
@@ -48,7 +48,7 @@ extern globalData globals;
 // arcane issue with assert() that justifies this workaround
 #define check(X) do { if ((X)==0) { foutput("%s%d\n", ERR "SoX runtime failure, stage ", stage); return -1;} } while(0);
 
-int soxconvert(char * input, char* output)
+int soxconvert(char * input, char* output, globalData* globals)
 {
   int stage = 0;
 

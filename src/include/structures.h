@@ -23,19 +23,6 @@ typedef struct
     uint32_t samplerate;
 } audioformat_t;
 
-
-typedef struct
-{
-    FILE* fp;
-    FILE** channel_fp;
-    FLAC__StreamDecoder* flac;
-    // Used for FLAC decoding:
-    uint8_t buf[1024*256];
-    uint32_t n;
-    uint32_t eos;
-    uint32_t bytesread;
-} audio_input_t;
-
 typedef struct
 {
     uint8_t  header_size;
@@ -46,6 +33,7 @@ typedef struct
     uint8_t  resample_bitspersample;
     uint8_t  resample_channels;
     uint8_t  cga;
+    uint8_t  buf[1024*256];
     int8_t   downmix_table_rank;
     uint8_t  newtitle;
     uint8_t  contin_track;
@@ -72,6 +60,9 @@ typedef struct
     uint32_t first_PTS;
     uint32_t PTS_length;
     uint32_t mlp_layout_size;
+    uint32_t n;
+    uint32_t eos;
+    uint32_t bytesread;
     uint32_t *pts;
     uint32_t *dts;
     uint64_t *scr;
@@ -82,7 +73,9 @@ typedef struct
     uint64_t file_size; // file size on disc
     uint64_t *channel_size; // channel size on disc
     uint64_t bytespersecond;
-    audio_input_t* audio;  // Used whilst decoding.
+    FILE* fp;
+    FILE** channel_fp;
+    FLAC__StreamDecoder* flac;
     char    *filename;
     char    *out_filename;
     char    **given_channel;
@@ -204,92 +197,6 @@ typedef struct
 
 } parse_t;
 
-typedef struct
-{
-    char  *settingsfile;
-    char  *logfile;
-    char  *indir;
-    char  *outdir;
-    char  *outfile;
-    char  *lplexoutdir;
-    char  *workdir;
-    char  *tempdir;
-    char  *lplextempdir;
-    char  *linkdir;
-    char  *bindir;
-    char  *datadir;
-    char  *fixwav_database;
-    char  *dvdisopath;
-    char  *stillpicdir;
-} defaults ;
-
-typedef struct
-{
-    int8_t topmenu;
-    bool nooutput;
-    bool runmkisofs;
-    bool autoplay;
-    bool text;
-    bool silence;
-    bool enable_lexer;
-    bool logfile;
-    bool loghtml;
-    bool logdecode;
-    bool videozone;
-    bool videolinking;
-    bool decode;
-    bool pipe;
-    bool play;
-    bool playlist;
-    bool cga;
-    bool end_pause;
-    bool strict_check;
-    bool maxverbose;
-    bool veryverbose;
-    bool debugging;
-    bool padding;
-    bool padding_continuous;
-    bool lossy_rounding;
-    bool rungrowisofs;
-#ifndef WITHOUT_sox
-    bool sox_enable;
-#endif
-
-    bool fixwav_enable;
-    bool fixwav_virtual_enable;
-    bool fixwav_automatic; /* automatic behaviour */
-    bool fixwav_prepend; /* do not prepend a header */
-    bool fixwav_in_place; /* do not correct in place */
-    bool fixwav_cautious; /* be cautious on overwrites */
-    bool fixwav_interactive; /* interactive */
-    bool fixwav_padding; /* padding */
-    bool fixwav_prune; /* prune */
-    bool fixwav_force;
-    uint32_t textablesize;
-    uint32_t topmenusize;
-    uint32_t *grouptextsize;
-    uint32_t *tracktextsize;
-    uint32_t backgroundmpgsize;
-    uint32_t backgroundpicsize;
-    uint32_t *soundtracksize;
-    uint32_t topmenu_slidesize;
-    uint32_t highlightpicsize;
-    uint32_t selectpicsize;
-    uint32_t imagepicsize;
-    uint32_t backgroundcolorssize;
-    char* fixwav_suffix; /* output suffix for corrected files */
-    char* fixwav_parameters;
-
-    char* xml;
-    char** spu_xml;
-    char* cdrecorddevice;
-    char** aobpath;
-    char* player;
-    char* player_path;
-    FILE *journal;
-    uint16_t access_rights;
-    defaults settings;
-} globalData ;
 
 typedef struct
 {

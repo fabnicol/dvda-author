@@ -4,6 +4,6 @@
 #include "structures.h"
 #include "commonvars.h"
 
-int  launch_manager(command_t *command);
+int  launch_manager(command_t *command, globalData*);
 
 #endif

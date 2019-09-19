@@ -50,7 +50,7 @@ ifeq "@sox_BUILD@" "yes"
  ALL_TARGETS_EXTERNAL += do_sox_lib_deps_subst
 endif
 
-ALL_TARGETS += $(ALL_TARGETS_EXTERNAL) $(BUILD_SUBDIRS) 
+ALL_TARGETS += ffmpeg $(ALL_TARGETS_EXTERNAL) $(BUILD_SUBDIRS) 
 
 .PHONY: all    libutils
 
@@ -65,13 +65,17 @@ man2html.config: @BUILDDIR@/depconf/man2html.depconf
 export CPPFLAGS
 export PARALLEL
 
+ffmpeg:
+	cd ffmpeg && /bine/bash config.cli && $(MAKE) 
+	find . -name '*\.a' -exec cp -vf {}  ../local/lib \;
+	cd -
+
 libutils:
 	$(MAKE) --directory=@BUILDDIR@/libutils/src
 
 $(BUILD_SUBDIRS): $(ALL_TARGETS_EXTERNAL) libutils
 	@echo Running make in directory $@...
 	$(MAKE) $(PARALLEL) --directory=$@
-
 
 $(PROGRAM_TARGET_CONFIGS): %.config: @BUILDDIR@/depconf/%.depconf
 	@echo

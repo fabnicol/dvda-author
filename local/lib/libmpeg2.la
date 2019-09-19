@@ -5,10 +5,10 @@
 # It is necessary for linking the library.
 
 # The name that we can dlopen(3).
-dlname=''
+dlname='../bin/libmpeg2-0.dll'
 
 # Names of this library.
-library_names=''
+library_names='libmpeg2.dll.a'
 
 # The name of the static archive.
 old_library='libmpeg2.a'
@@ -32,4 +32,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/home/nicol/Dev/dvda-author/local/lib'
+libdir='/c/Users/Public/Dev/dvda-author/local/lib'

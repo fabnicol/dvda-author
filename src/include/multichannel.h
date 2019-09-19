@@ -63,7 +63,7 @@ static inline void permutation(uint8_t *buf,
 }
 
 
-static inline void permutation_merged(uint8_t **buf,
+static inline void permutation_merged(uint8_t *buf,
                                uint8_t *_buf,
                                int bits_per_second_flag,
                                uint8_t channels,
@@ -71,18 +71,15 @@ static inline void permutation_merged(uint8_t **buf,
                                int size)
 {
     int j;
-
-    //  buf is double array of channel times 4 bytes (16-bit case) or 6 bytes (24-bit case): buf[channels][bitrate / 4]
-    // except for 16-bit ch 1/2
-
-    for (j=0; j < size ; ++j)
+    // bytes_index is the byte index rank in the 2-sample permutation unit
+    for (j = 0; j < size ; ++j)
     {
-       int  channel      = reference_table[bits_per_second_flag][channels-1][j][0];
-        int byte_index   = reference_table[bits_per_second_flag][channels-1][j][1];
-        _buf[j] = buf[channel][byte_index];
+       int  channel     = reference_table[bits_per_second_flag][channels-1][j][0];
+       int byte_index   = reference_table[bits_per_second_flag][channels-1][j][1];
+       _buf[j] = buf[channel * (bits_per_second_flag ? 6 : 4) + byte_index];
     }
 
-    memcpy((uint8_t *) buf[0],_buf, (size_t) size);
+    memcpy(buf, _buf, (size_t) size);
 }
 
 

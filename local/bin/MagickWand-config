@@ -4,7 +4,7 @@
 # required to use the MagickWand library.
 #
 
-prefix=/home/nicol/Dev/dvda-author/local
+prefix=/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local
 exec_prefix=${prefix}
 
 usage="\

@@ -9,7 +9,7 @@
 
 void initialise_globals_fixwav(bool silence, bool logfile, FILE* journal);
 bool isok();
-void get_input( char* buf );
+void get_input( char* buf , globalData*);
 
 
 

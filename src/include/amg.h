@@ -37,11 +37,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "decode.h"
 #define USE_SET1
 int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *videotitlelength, uint32_t* relative_sector_pointer_VTSI,
-                    uint8_t *numtitles, uint8_t** ntitletracks, uint64_t** titlelength);
-uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *numtitles, uint8_t *ntitletracks[], uint64_t *titlelength[], uint16_t **ntitlepics);
-uint32_t create_topmenu(char* audiotsdir, command_t* command);
-int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles, uint16_t **ntitlepics, pic* img, sect* sectors, uint16_t totntracks);
-void allocate_topmenus(command_t *command);
+                    uint8_t *numtitles, uint8_t** ntitletracks, uint64_t** titlelength, globalData*);
+uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t *numtitles, uint8_t *ntitletracks[], uint64_t *titlelength[], uint16_t **ntitlepics, globalData*);
+uint32_t create_topmenu(char* audiotsdir, command_t* command, globalData*);
+int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles, uint16_t **ntitlepics, pic* img, sect* sectors, uint16_t totntracks, globalData*);
+void allocate_topmenus(command_t *command, globalData*);
 
 #endif
 

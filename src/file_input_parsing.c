@@ -39,9 +39,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 static int check_ignored_extension(void *);
 
 
-extern globalData globals;
 
-int read_tracks(char  *full_path, uint8_t *ntracks, char * parent_directory, char* filename, uint8_t ngroups_scan)
+
+int read_tracks(char  *full_path, uint8_t *ntracks, char * parent_directory, char* filename, uint8_t ngroups_scan, globalData* globals)
 {
 
     if (ntracks[ngroups_scan] < MAX_GROUP_ITEMS)
@@ -50,7 +50,7 @@ int read_tracks(char  *full_path, uint8_t *ntracks, char * parent_directory, cha
         if (parent_directory != NULL)
         {
 
-            snprintf(full_path, CHAR_BUFSIZ, "%s%s%s%s%s", globals.settings.indir, SEPARATOR, parent_directory,SEPARATOR, filename);
+            snprintf(full_path, CHAR_BUFSIZ, "%s%s%s%s%s", globals->settings.indir, SEPARATOR, parent_directory,SEPARATOR, filename);
         }
         else
             STRING_WRITE_CHAR_BUFSIZ(full_path, "%s", filename)
@@ -59,7 +59,7 @@ int read_tracks(char  *full_path, uint8_t *ntracks, char * parent_directory, cha
     else
     {
         foutput(MSG_TAG "Error: Too many input files specified - group %d, track %d\n",ngroups_scan,ntracks[ngroups_scan]);
-        clean_exit(EXIT_SUCCESS);
+        clean_exit(EXIT_SUCCESS, globals);
     }
 
     return(ntracks[ngroups_scan]);
@@ -68,7 +68,7 @@ int read_tracks(char  *full_path, uint8_t *ntracks, char * parent_directory, cha
 
 
 parse_t
-parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fileinfo_t **files)
+parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fileinfo_t **files, globalData* globals)
 {
 
     int ngroups_scan=0, ngroups=0, control=0;
@@ -80,7 +80,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
     int totng;
     int ng = 0;
 
-    if (globals.debugging) foutput("%s\n", INF "Parsing audio input directory");
+    if (globals->debugging) foutput("%s\n", INF "Parsing audio input directory");
 
 
     while ((rootdirent=readdir(dir) )!= NULL)
@@ -118,7 +118,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
             EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Subdirectories must be labelled ljm, with l, m any letters and j a number of 1 - 9")
         }
 
-        change_directory(gnames[ng]);
+        change_directory(gnames[ng], globals);
 
         DIR *subdir;
 
@@ -168,12 +168,12 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
 //        cgafile=fopen(CGA_FILE, "rb");
 //        if (cgafile != NULL)
 //        {
-//            if (globals.debugging) foutput("%s", MSG_TAG "Channel assignment file was opened\n");
+//            if (globals->debugging) foutput("%s", MSG_TAG "Channel assignment file was opened\n");
 //            //read_cga_file=1;
 //        }
 //        else
 //        {
-            if (globals.debugging) foutput("%s", MSG_TAG "Automatic channel assignment.\n");
+            if (globals->debugging) foutput("%s", MSG_TAG "Automatic channel assignment.\n");
 //        }
 
 
@@ -182,7 +182,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
             if (nt > totnt)
             {
                 closedir(subdir);
-                change_directory(globals.settings.indir);
+                change_directory(globals->settings.indir, globals);
                 break;
             }
 
@@ -196,9 +196,9 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
                 memset(buf, 0, CHAR_BUFSIZ);
 
                 // builds trak names
-                read_tracks(buf, ntracks, gnames[ng], tnames[nt], ngroups_scan);
+                read_tracks(buf, ntracks, gnames[ng], tnames[nt], ngroups_scan, globals);
 
-                if (globals.debugging)
+                if (globals->debugging)
                     foutput(INF "Copying directory files[%d][%d]\n", n_g_groups+ngroups_scan-1, ntracks[n_g_groups+ngroups_scan-1]-1);
 
                 // reads in filenames
@@ -224,7 +224,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
 //                        files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=cgaint;
 //                    else
 //                    {
-//                        if (globals.debugging) foutput("%s", ERR "Found illegal channel group assignement value, using standard settings.");
+//                        if (globals->debugging) foutput("%s", ERR "Found illegal channel group assignement value, using standard settings.");
 //                        files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].cga=default_cga[files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].channels-1];
 //                    }
 //                }
@@ -291,12 +291,12 @@ int parse_disk(const DIR* dir, mode_t mode, extractlist  *extract)
     char ngroups_scan=0;
     struct dirent *rootdirent;
 
-    if (globals.debugging && ! globals.nooutput)
+    if (globals->debugging && ! globals->nooutput)
         foutput(INF "Extracting to %s\n",
-                globals.settings.outdir);
+                globals->settings.outdir);
 
-    globals.fixwav_prepend = true;
-     
+    globals->fixwav_prepend = true;
+
     while (true)
     {
         rootdirent = readdir(dir);
@@ -305,7 +305,7 @@ int parse_disk(const DIR* dir, mode_t mode, extractlist  *extract)
         if (rootdirent->d_name[0] == '.') continue;
 
         char *d_name_duplicate = strdup(rootdirent->d_name);
-        
+
         // duplicating is necessary as strtok alters its first argument
 
         if (d_name_duplicate == NULL)
@@ -314,10 +314,10 @@ int parse_disk(const DIR* dir, mode_t mode, extractlist  *extract)
         }
 
         // filenames must end in "_0.IFO" and begin in "ATS_"
-                    
+
         if (strcmp(strtok(d_name_duplicate , "_"), "ATS"))
         continue;
-        
+
         /* ngroups_scan is XX in ATS_XX_0.IFO  */
 
         char buffer[3]= {0, 0, 0};
@@ -326,25 +326,25 @@ int parse_disk(const DIR* dir, mode_t mode, extractlist  *extract)
         ngroups_scan = (char) atoi(buffer);
 
         // does not extract when an extract list (!=NULL) is given and buffer != a list member.
-        
+
         if (ngroups_scan < 1  || ngroups_scan > 9)
         {
            EXIT_ON_RUNTIME_ERROR_VERBOSE("Erreur de nommage des fichiers ATS :  le premier chiffre doit être compris entre 01 et 09.")
         }
-        
+
         if (extract->extracttitleset[ngroups_scan - 1] != 1)
         continue;
 
         // Selecting IFO files only
-        
+
         if (strcmp(strtok(NULL , "_"), "0.IFO"))
         continue;
 
         FREE(d_name_duplicate)
 
         char  mesg[11] = "Extracting";
-        
-        if (globals.debugging && ! globals.nooutput)
+
+        if (globals->debugging && ! globals->nooutput)
         {
           foutput(INF "%s%s%s%s",
                   mesg,
@@ -353,22 +353,22 @@ int parse_disk(const DIR* dir, mode_t mode, extractlist  *extract)
                   " ...\n");
         }
 
-        char output_buf[strlen(globals.settings.outdir) + 3 + 1];
+        char output_buf[strlen(globals->settings.outdir) + 3 + 1];
 
         STRING_WRITE_CHAR_BUFSIZ(output_buf,
                                  "%s%s%d",
-                                 globals.settings.outdir,
+                                 globals->settings.outdir,
                                  "/g",
                                  ngroups_scan)
 
-        change_directory(globals.settings.workdir);
+        change_directory(globals->settings.workdir);
 
-        if (! globals.nooutput)
+        if (! globals->nooutput)
         {
             secure_mkdir(output_buf, mode);
         }
 
-        if (globals.debugging && ! globals.nooutput)
+        if (globals->debugging && ! globals->nooutput)
         {
             foutput(INF "Extracting to directory %s ...\n",
                     output_buf);
@@ -379,7 +379,7 @@ int parse_disk(const DIR* dir, mode_t mode, extractlist  *extract)
                     output_buf,
                     extract) == EXIT_SUCCESS)
         {
-            if  (globals.debugging)
+            if  (globals->debugging)
                 foutput("%s\n",
                         INF "Extraction completed.");
         }

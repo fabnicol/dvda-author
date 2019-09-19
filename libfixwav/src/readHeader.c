@@ -21,9 +21,9 @@
 #include "structures.h"
 #include "libiberty.h"
 
-extern globalData globals;
 
-int readHeader(FILE * infile, WaveHeader *header)
+
+int readHeader(FILE * infile, WaveHeader *header, globalData *globals)
 {
 
   if (infile == NULL)  return 0;
@@ -45,7 +45,7 @@ int readHeader(FILE * infile, WaveHeader *header)
 
   if  (count != header->header_size_in)
     {
-      if (globals.debugging) foutput(ERR "Failed to read header from input file\n       Size is: %d, read: %" PRIu64 " bytes\n", header->header_size_in, count );
+      if (globals->debugging) foutput(ERR "Failed to read header from input file\n       Size is: %d, read: %" PRIu64 " bytes\n", header->header_size_in, count );
 
       return(FAIL);
     }
@@ -97,7 +97,7 @@ int readHeader(FILE * infile, WaveHeader *header)
     [16 B]              // 44 - GUID including WAV_FORMAT_PCM or WAV_FORMAT_EXTENSIBLE
     'f','a','c','t',    // 60 - fact chunk, optional for PCM here minimum)
     0,0,0,4,            // 64 - net length of fact chunk
-    0,0,0,0,            // 68 - number of samples written per channel out (uint32_t)
+    0,0,0,0,            // 68 - number of samples written (uint32_t)
    // some software pack up various tags in here... + x bytes
     'd','a','t','a',    // 72 + x - Sunchunk2IDO
     0,0,0,0             // 76 + x - 80 Subchunk2Size = filesize - padbyte - N
@@ -105,7 +105,7 @@ int readHeader(FILE * infile, WaveHeader *header)
   Samples follow.
   Pad byte at EF if sample count is odd.
 #endif
- 
+
 /* wavwritehdr:  write .wav headers as follows:
 
 bytes      variable      description
@@ -187,10 +187,10 @@ if (header->has_fact)
   rewind(infile);
 
   /* and dump the header */
-  if (globals.veryverbose)
+  if (globals->veryverbose)
   {
-      if (globals.debugging) foutput( "%s\n", MSG_TAG "Existing header data.\n" INF "Looking for the words 'RIFF', 'WAVE', 'fmt'," );
-      if (globals.debugging) foutput( "%s\n", "       or 'data' to see if this is even a somewhat valid WAVE header:" );
+      if (globals->debugging) foutput( "%s\n", MSG_TAG "Existing header data.\n" INF "Looking for the words 'RIFF', 'WAVE', 'fmt'," );
+      if (globals->debugging) foutput( "%s\n", "       or 'data' to see if this is even a somewhat valid WAVE header:" );
       hexdump_header(infile, header->header_size_in);
   }
 

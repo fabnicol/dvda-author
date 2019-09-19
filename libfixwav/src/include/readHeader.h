@@ -3,6 +3,6 @@
 #include "fixwav_manager.h"
 
 
-int readHeader(FILE * infile, WaveHeader *header);
+int readHeader(FILE * infile, WaveHeader *header, globalData*);
 
 #endif // READHEADER_H_INCLUDED

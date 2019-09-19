@@ -30,11 +30,7 @@
 #include "auxiliary.h"
 #include "c_utils.h"
 
-extern globalData globals;
-
-
-
-lexer_t *config_lexer(const char* path, lexer_t *lexer)
+lexer_t *config_lexer(const char* path, lexer_t *lexer, globalData* globals)
 {
 
     int i=0,j=1,u=0, dataflag=0, flag=0;
@@ -71,7 +67,7 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
 
         if (NULL==fgets(chain, 500, defaults))
           {
-            if (globals.debugging) foutput("Could not get chain at line %d\n",i);
+            if (globals->debugging) foutput("Could not get chain at line %d\n",i);
             continue;
           }
 
@@ -116,7 +112,7 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
              chain++;
              while ((chain[u] != ']') && (chain[u] != '\0'))
              {
-                 T[u] = chain[u]; 
+                 T[u] = chain[u];
                  ++u;
              }
              if (chain[u] != ']')  EXIT_ON_RUNTIME_ERROR
@@ -206,7 +202,7 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
 #endif
 
        }
-       
+
        s0 = strlen(T);
        switch (flag)
        {
@@ -308,7 +304,7 @@ lexer_t *config_lexer(const char* path, lexer_t *lexer)
     clearerr(defaults);
     fclose(defaults);
 
-    print_commandline(lexer->nlines, lexer->commandline);
+    print_commandline(lexer->nlines, lexer->commandline, globals);
 
     return lexer;
 }

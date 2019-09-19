@@ -125,7 +125,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define STANDARD_FIXWAV_DATABASE_PATH "database"
 
 #ifndef BINDIR
-#ifndef __WIN32__
+#if ! defined _WIN32 && ! defined LOCAL_BUILD
 #define BINDIR "/usr/bin"
 #endif
 #endif
@@ -452,9 +452,15 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #define PAL_FRAME_RATE "25"
 
-static const int PAL_X=720;   // ntsc 720
-static const int PAL_Y=576;   // ntsc 480
-static const int NTSC_Y=480;
+#ifndef PAL_X
+#define PAL_X 720   // ntsc 720
+#endif
+#ifndef PAL_Y
+#define PAL_Y 576   // ntsc 480
+#endif
+#ifndef NTSC_Y
+#define NTSC_Y 480
+#endif
 
 #define INFO_EXECTIME1  MSG_TAG "User execution time: %u minutes %u seconds %u microseconds\n"
 #define INFO_EXECTIME2  MSG_TAG "System execution time: %u minutes %u seconds %u microseconds\n"
@@ -479,8 +485,8 @@ GNU General Public License for more details.\n\
 You should have received a copy of the GNU General Public License \n\
 along with dvda-author.  If not, see http://www.gnu.org/licenses/.\n"
 
-#define SINGLE_DOTS  if (!globals.silence)  foutput("\n%s\n",         "------------------------------------------------------------");
-#define DOUBLE_DOTS  if (!globals.silence)  foutput("\n%s",              "============================================================");
+#define SINGLE_DOTS  if (!globals->silence)  foutput("\n%s\n",         "------------------------------------------------------------");
+#define DOUBLE_DOTS  if (!globals->silence)  foutput("\n%s",              "============================================================");
 #define J "\n\n                         "  //left-aligns definition strings
 #define K "\n                  "  // short left-aligns definition strings
 

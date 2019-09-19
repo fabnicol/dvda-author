@@ -4,7 +4,7 @@
 
 #include "sound.h"
 
-extern globalData globals;
+
 
 // Checks whether video soundtracks comply with standard for AUDIO_TS.VOB authoring
 char* sox=NULL;
@@ -86,10 +86,10 @@ inline WaveData* wavedata_init(void)
 }
 
 
-int audit_soundtrack(char* path, bool strict)
+int audit_soundtrack(char* path, bool strict, globalData* globals)
 {
 
-    path_t *s=parse_filepath(path);
+    path_t *s=parse_filepath(path, globals);
     errno=0;
     if (s->isfile)
     {
@@ -113,13 +113,13 @@ int audit_soundtrack(char* path, bool strict)
             .outfile = {false, AFMT_WAVE, 0, NULL, NULL} /* filestat */
         };
 
-        fixwav(&wavedata, &waveheader);
+        fixwav(&wavedata, &waveheader, globals);
 
         if (strict)
         {
             if ((waveheader.dwSamplesPerSec == 48000) && (waveheader.wBitsPerSample == 16) && (waveheader.channels == 2))
             {
-                if (globals.veryverbose) foutput("%s", MSG_TAG "LPCM requirements [fq=48k, bps=16, c=2] are satisfied by soundtrack input\n");
+                if (globals->veryverbose) foutput("%s", MSG_TAG "LPCM requirements [fq=48k, bps=16, c=2] are satisfied by soundtrack input\n");
                 errno=0;
             }
             else
@@ -133,7 +133,7 @@ int audit_soundtrack(char* path, bool strict)
             if ((waveheader.dwSamplesPerSec == 48000 || waveheader.dwSamplesPerSec == 96000)
              && (waveheader.wBitsPerSample == 16 || waveheader.wBitsPerSample == 24))
             {
-                if (globals.veryverbose) foutput("%s", MSG_TAG "LPCM requirements [fq=48|96k, bps=16|24] are satisfied by soundtrack input\n");
+                if (globals->veryverbose) foutput("%s", MSG_TAG "LPCM requirements [fq=48|96k, bps=16|24] are satisfied by soundtrack input\n");
                 errno=0;
             }
             else
@@ -157,11 +157,11 @@ int audit_soundtrack(char* path, bool strict)
 
 char* lplex=NULL;
 
-int lplex_initialise()
+int lplex_initialise(globalData* globals)
 {
 #if defined HAVE_lplex && HAVE_lplex == 1
     errno=0;
-    lplex=create_binary_path(lplex, LPLEX, SEPARATOR LPLEX_BASENAME);
+    lplex=create_binary_path(lplex, LPLEX, SEPARATOR LPLEX_BASENAME, globals);
     if(!lplex) return -1;
 #endif
 return 0;
@@ -169,13 +169,13 @@ return 0;
 
 #define DIM_LPLEX_CLI 11
 
-int launch_lplex_soundtrack(pic* img, const char* create_mode)
+int launch_lplex_soundtrack(pic* img, const char* create_mode, globalData* globals)
 {
 #if defined HAVE_lplex && HAVE_lplex == 1
 
-    if (-1 == lplex_initialise()) return -1;
+    if (-1 == lplex_initialise(globals)) return -1;
 
-    const char *args0[DIM_LPLEX_CLI]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals.debugging)?"true":"false", "--workPath", globals.settings.tempdir, "-x", "false", "--video", img->norm};
+    const char *args0[DIM_LPLEX_CLI]= {LPLEX_BASENAME, "--create", create_mode, "--verbose", (globals->debugging)?"true":"false", "--workPath", globals->settings.tempdir, "-x", "false", "--video", img->norm};
     int u, menu, tot=0;
     img->backgroundmpg=calloc(img->nmenus, sizeof(char*));
     for (menu=0; menu < img->nmenus; menu++)
@@ -206,21 +206,21 @@ int launch_lplex_soundtrack(pic* img, const char* create_mode)
         }
 
         args[DIM_LPLEX_CLI+tot]=NULL;
-        if (globals.debugging)
+        if (globals->debugging)
         {
             foutput(INF "Launching lplex to create top menu #%d with soundtrack...\n", menu);
-            foutput(INF "with command line %s\n", get_full_command_line((const  char**) args));
+            foutput(INF "with command line %s\n", get_full_command_line((const  char**) args, globals));
         }
 
-        change_directory(globals.settings.workdir);
-        run(lplex, args, WAIT, FORK);
+        change_directory(globals->settings.workdir, globals);
+        run(lplex, args, WAIT, FORK, globals);
         tot=0;
-        path_t* aux=parse_filepath(img->soundtrack[menu][0]);
+        path_t* aux=parse_filepath(img->soundtrack[menu][0], globals);
 
         if (aux->directory == NULL)
         {
             free(aux); // resorting to relative filenames withing current working dir
-            aux=parse_filepath(globals.settings.workdir);
+            aux=parse_filepath(globals->settings.workdir, globals);
             if (aux->filename == NULL)
             {
                 foutput("%s", ERR "Use non-root audio folder, with appropriate access rights.\n");
@@ -229,13 +229,13 @@ int launch_lplex_soundtrack(pic* img, const char* create_mode)
             else
             {
                 aux->directory=aux->filename;
-                foutput("[ING]  Using filepaths relative to %s.\n", globals.settings.workdir);
+                foutput("[ING]  Using filepaths relative to %s.\n", globals->settings.workdir);
             }
         }
 
-        char adjacent[2*strlen(aux->directory)+strlen(globals.settings.tempdir)+4+20+2+1];
+        char adjacent[2*strlen(aux->directory)+strlen(globals->settings.tempdir)+4+20+2+1];
 
-        sprintf(adjacent, "%s%s%s%s%s%s%s", globals.settings.tempdir, SEPARATOR, aux->directory, "_DVD", SEPARATOR, aux->directory, "_DVD_title_01-00.mpg");
+        sprintf(adjacent, "%s%s%s%s%s%s%s", globals->settings.tempdir, SEPARATOR, aux->directory, "_DVD", SEPARATOR, aux->directory, "_DVD_title_01-00.mpg");
 
 #ifndef __WIN32__
 
@@ -246,7 +246,7 @@ int launch_lplex_soundtrack(pic* img, const char* create_mode)
         // End of *nix code
 #endif
 
-        char* dest=copy_file2dir(adjacent, globals.settings.tempdir); // automatic renaming of dest
+        char* dest=copy_file2dir(adjacent, globals->settings.tempdir, globals); // automatic renaming of dest
         img->backgroundmpg[menu]=strdup(dest);
         free(aux);
         free(dest);
@@ -266,12 +266,13 @@ int launch_lplex_hybridate(const pic* img,
                            const uint8_t* ntracks,
                            const char*** slidepath,
                            uint8_t* nslides,
-                           const int ntitlesets)
+                           const int ntitlesets,
+                           globalData* globals)
 
 {
 #if defined HAVE_lplex && HAVE_lplex == 1
 
-    if (-1 == lplex_initialise()) return -1;
+    if (-1 == lplex_initialise(globals)) return -1;
 #    if 0
     if (ntracks == NULL || nslides == NULL || slidepath == NULL || trackpath == NULL)
     {
@@ -282,11 +283,11 @@ int launch_lplex_hybridate(const pic* img,
     const char *args0[DIM_LPLEX_CLI]= {LPLEX_BASENAME,
                 "--create", create_mode,
                 "--pause", "no",
-                "--verbose", (globals.debugging)?"true":"false",
-                "--workPath", globals.settings.lplextempdir,
+                "--verbose", (globals->debugging)?"true":"false",
+                "--workPath", globals->settings.lplextempdir,
                 "-x", "false",
                 "--video", img->norm,
-                "--dir", globals.settings.lplexoutdir};
+                "--dir", globals->settings.lplexoutdir};
 
     int argssize=0;
 
@@ -307,7 +308,7 @@ int launch_lplex_hybridate(const pic* img,
 
     for (int group=0; group < ntitlesets; group++)
     {
-      if (globals.veryverbose) foutput(INF "Now processing titleset %d/%d...\n", group, ntitlesets);
+      if (globals->veryverbose) foutput(INF "Now processing titleset %d/%d...\n", group, ntitlesets);
 
       if (group && ntracks[group])
       {
@@ -340,7 +341,7 @@ int launch_lplex_hybridate(const pic* img,
          }
       }
 #endif
-      if (globals.veryverbose) foutput(INF "Now listing %d tracks for group %d...\n", ntracks[group], group);
+      if (globals->veryverbose) foutput(INF "Now listing %d tracks for group %d...\n", ntracks[group], group);
 
       for (int tr=0; tr < ntracks[group]; tr++)
       {
@@ -395,15 +396,15 @@ int launch_lplex_hybridate(const pic* img,
 //    {
 //         fprintf(stderr, "%s ", args[u]);
 //    }
-    if (globals.debugging)
+    if (globals->debugging)
         {
             foutput("%s",INF "Launching lplex to create hybrid...\n");
-            foutput(INF "with command line %s\n", get_full_command_line((const char**) args));
+            foutput(INF "with command line %s\n", get_full_command_line((const char**) args, globals));
         }
 
-        change_directory(globals.settings.workdir);
+        change_directory(globals->settings.workdir, globals);
         char* cli;
-        system(cli = conc("/home/fab/Dev/dvda-author/local/bin/lplex ", get_command_line((const char**) args)));
+        system(cli = conc("/home/fab/Dev/dvda-author/local/bin/lplex ", get_command_line((const char**) args, globals)));
      free(cli);
      FREE(lplex);
 

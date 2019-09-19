@@ -14,7 +14,7 @@
 
 #define _LITTLE_ENDIAN_WRITE_2_bytes(Y, X) LITTLE_ENDIAN_WRITE_2_bytes(Y, X)\
                                            Y+=2;
-                                           
+
 #define LITTLE_ENDIAN_WRITE_4_bytes(Y, X)  uint32_copy_reverse(Y, X);
 
 #define _LITTLE_ENDIAN_WRITE_4_bytes(Y, X) LITTLE_ENDIAN_WRITE_4_bytes(Y, X)\
@@ -25,8 +25,8 @@
 /* Function declarations */
 
 
-WaveHeader    *fixwav(WaveData *info, WaveHeader *header);
-int repair_wav(WaveData *info, WaveHeader *header );
+WaveHeader    *fixwav(WaveData *info, WaveHeader *header, globalData*);
+int repair_wav(WaveData *info, WaveHeader *header, globalData*);
 void print_fixwav_help();
 
 

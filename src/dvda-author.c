@@ -54,11 +54,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "dvda-author.h"
 /*  Global  options */
 
-globalData globals;
+
 static char *LPLEXTEMPDIR;
 char* TEMPDIR;
 
- command_t* lexer_analysis(command_t* command, lexer_t* lexer, const char* config_file, bool config_type)
+ command_t* lexer_analysis(command_t* command, lexer_t* lexer, const char* config_file, bool config_type, globalData *globals)
  {
     int i;
     lexer->nlines=MAX_LEXER_LINES;
@@ -75,14 +75,14 @@ char* TEMPDIR;
 
     errno=0;
 
-    config_lexer(config_file, lexer);
+    config_lexer(config_file, lexer, globals);
 
     if (command == NULL)
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not allocate command-line structure")
     }
 
-    command=command_line_parsing(lexer->nlines, lexer->commandline, command);
+    command=command_line_parsing(lexer->nlines, lexer->commandline, command, globals);
 
     for (i=0; i < MAX_LEXER_LINES; i++)
         FREE(lexer->commandline[i])
@@ -92,65 +92,12 @@ char* TEMPDIR;
         return command;
  }
 
-static inline void allocate_paths(char** s, const char* dir, unsigned long length)
+static inline void allocate_paths(char** s, const char* dir, unsigned long length, globalData *globals)
 {
     if (s != NULL) free(*s);
     *s = calloc(length + 10, sizeof(char));
-    sprintf(*s, "%s"SEPARATOR"%s", globals.settings.tempdir, dir);
+    sprintf(*s, "%s"SEPARATOR"%s", globals->settings.tempdir, dir);
 }
-
-void normalize_temporary_paths(pic* img)
-{
-   if (img == NULL) return;
-
-   int menu;
-
-   free(img->backgroundpic);
-   img->backgroundpic=calloc(img->nmenus+1,sizeof(char*));
-   free(img->backgroundmpg);
-   img->backgroundmpg=calloc(img->nmenus+1,sizeof(char*));
-   free(img->imagepic);
-   img->imagepic=calloc(img->nmenus+1,sizeof(char*));
-   free(img->highlightpic);
-   img->highlightpic=calloc(img->nmenus+1,sizeof(char*));
-   free(img->selectpic);
-   img->selectpic=calloc(img->nmenus+1, sizeof(char*));
-
-    // useless to realloc for just one menu !
-
-   int s = strlen(globals.settings.tempdir);
-
-   for (menu=0;  menu < img->nmenus; menu++)
-    {
-        free(img->backgroundmpg[menu]);
-        img->backgroundmpg[menu]=(char*)calloc(26+s, sizeof(char));
-        sprintf(img->backgroundmpg[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "background", menu, ".mpg");
-
-        free(img->backgroundpic[menu]);
-        img->backgroundpic[menu]=calloc(s+13, sizeof(char));
-        sprintf(img->backgroundpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "bgpic", menu, ".jpg");
-
-        img->imagepic[menu]=calloc(s+13, sizeof(char));
-        sprintf(img->imagepic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "impic", menu, ".png");
-
-        free(img->highlightpic[menu]);
-        img->highlightpic[menu]=calloc(s+13,sizeof(char));
-        sprintf(img->highlightpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "hlpic", menu, ".png");
-
-        img->selectpic[menu]=calloc(s+13,sizeof(char));
-        sprintf(img->selectpic[menu], "%s"SEPARATOR"%s%d%s", globals.settings.tempdir, "slpic", menu, ".png");
-    }
-
-   img->imagepic[img->nmenus]=NULL;
-   img->highlightpic[img->nmenus]=NULL;
-   img->selectpic[img->nmenus]=NULL;
-   img->backgroundmpg[img->nmenus]=NULL;
-   globals.imagepicsize = img->nmenus + 1;
-   globals.highlightpicsize = img->nmenus + 1;
-   globals.backgroundmpgsize = img->nmenus + 1;
-   globals.selectpicsize = img->nmenus + 1;
-}
-
 
 int main(int argc,  char* const argv[])
 {
@@ -185,7 +132,7 @@ int main(int argc,  char* const argv[])
     if (currentdir == NULL)
     {
       fprintf(stderr, "%s\n", ERR "Répertoire courant non alloué");
-      clean_exit(-1);
+      exit(-1);
     }
 
     int currentdirlength=strlen(currentdir);
@@ -195,26 +142,20 @@ int main(int argc,  char* const argv[])
     char *EXECDIR = calloc(MAX(currentdirlength, 20) + 4 + 25, sizeof(char));  // /usr/local/bin or /usr/bin under *NIX, "currentdir" directory/bin otherwise (win32...)
     // 4 for "/bin and be liberal and allow 25 more characters for the executable name.
 
-#ifdef BINDIR
+#if defined BINDIR && ! defined LOCAL_BUILD
     memcpy(EXECDIR, BINDIR, strlen(BINDIR));
 #else
-    sprintf(EXECDIR, "%s/bin", currentdir);
+    sprintf(EXECDIR, "%s" SEPARATOR "bin", currentdir);
 #endif
 
     char *DATADIR=strdup(currentdir);
     char ***SNDT=calloc(1, sizeof(char**));
     SNDT[0]=calloc(1, sizeof(char*));
     SNDT[0][0]=strdup(DEFAULT_SOUNDTRACK);
-//    IMPIC[0]=calloc(currentdirlength+30, sizeof(char));
-//    HLPIC[0]=calloc(currentdirlength+30, sizeof(char));
-//    SLPIC[0]=calloc(currentdirlength+30, sizeof(char));
-
 
     sprintf(TEMPDIRROOT, "%s%s%s", currentdir,(currentdir[0] == 0)? "" : SEPARATOR , TEMPDIR_SUBFOLDER_PREFIX DVDA_AUTHOR_BASENAME);
-
     sprintf(TEMPDIR, "%s"SEPARATOR"%s", TEMPDIRROOT, "temp");
     sprintf(LPLEXTEMPDIR, "%s"SEPARATOR"%s", TEMPDIRROOT, "temp.lplex");
-
 
     // Global settings are hard-code set by default as follows:
     errno=0;
@@ -228,11 +169,7 @@ int main(int argc,  char* const argv[])
         .outdir = NULL,
         .outfile = NULL,
         .lplexoutdir = NULL,
-    #ifdef __WIN32__
-         .workdir = strdup(DEFAULT_WORKDIR),// working directory: under Windows, c:\ if not defined at compile time, otherwise 'currentdir' environment variable
-    #else
-         .workdir = strdup(currentdir),
-    #endif
+        .workdir = strdup(currentdir),
         .tempdir = NULL,
         .lplextempdir = NULL,
         .linkdir = NULL,
@@ -253,7 +190,7 @@ int main(int argc,  char* const argv[])
     char**   tab3    = calloc(1, sizeof(char*));
     tab3[0] = strdup(DEFAULT_BACKGROUNDPIC);
 
-    globalData globals_init=
+    globalData globals=
     {
 
         /*top menu*/        NO_MENU,  // no top menu
@@ -315,8 +252,8 @@ int main(int argc,  char* const argv[])
         /*spumux xml*/      NULL,
         /*cdrecord dev*/    NULL,
         /* aob path for decoding */ NULL,
-       /*player*/            strdup(PLAYER),  // pipe to ffplay
-        /*player-path*/            strdup(PLAYER_PATH),  // full path to player
+        /*player*/            strdup(PLAYER),  // pipe to ffplay
+        /*player-path*/     strdup(PLAYER_PATH),  // full path to player
         /*journal (log)*/   NULL, //(FILE*)
         /*access rights*/   DEFAULT_ACCESS_RIGHTS,
         /* it is necessary to use strdup as these settings may be overridden dynamically */
@@ -324,6 +261,7 @@ int main(int argc,  char* const argv[])
 
         def
     };
+
 
     pic     img0=
     {
@@ -388,21 +326,27 @@ int main(int argc,  char* const argv[])
 
     };
 
-    globals=globals_init;
-    globals.settings.tempdir=strdup(TEMPDIR);
-    globals.settings.lplextempdir=LPLEXTEMPDIR;
-    globals.settings.stillpicdir=strdup(globals.settings.tempdir);
+    if (! globals.settings.tempdir) globals.settings.tempdir=strdup(TEMPDIR);
+    if (! globals.settings.lplextempdir) globals.settings.lplextempdir=LPLEXTEMPDIR;
+    if (! globals.settings.stillpicdir) globals.settings.stillpicdir=strdup(globals.settings.tempdir);
     unsigned long s = strlen(globals.settings.tempdir);
 
-    allocate_paths(&globals.settings.indir, "audio", s);
-    allocate_paths(&globals.settings.outdir, "output", s);
-    allocate_paths(&globals.settings.lplexoutdir, "output", s);
+    allocate_paths(&globals.settings.indir, "audio", s, &globals);
+    allocate_paths(&globals.settings.outdir, "output", s, &globals);
+    allocate_paths(&globals.settings.lplexoutdir, "output", s, &globals);
+
+#ifdef DEBUG
+    fprintf(stderr, "globals.settings.tempdir  %s\nglobals.settings.lplextempdir  %s\nglobals.settings.stillpicdir  %s\nglobals.settings.indir  %s\nglobals.settings.outdir  %s\nglobals.settings.lplexoutdir  %s\ncurrentdir  %s\nglobals.settings.workdir  %s\n",
+            globals.settings.tempdir,globals.settings.lplextempdir,globals.settings.stillpicdir,globals.settings.indir,
+            globals.settings.outdir,globals.settings.lplexoutdir,currentdir, globals.settings.workdir);
+
+#endif
 
     // Null arg is no longer supported, yet...
 
     if (argc == 1)
     {
-        foutput("\n%s", "dvda-author syntax:\n------------------\n");
+        fprintf(stderr, "\n%s", "dvda-author syntax:\n------------------\n");
         help();
         return(errno);
     }
@@ -439,21 +383,21 @@ int main(int argc,  char* const argv[])
            else
               project_filepath=strdup(DEFAULT_DVDA_AUTHOR_PROJECT_FILENAME);
 
-           path_t *pstruct=parse_filepath(project_filepath);
+           path_t *pstruct=parse_filepath(project_filepath, &globals);
            if (pstruct && pstruct->isfile)
            {
-             //if (globals.debugging)
-             foutput(INF "Parsing project file %s\n", project_filepath);
+             //if (globals->debugging)
+             fprintf(stderr, INF "Parsing project file %s\n", project_filepath);
            }
            else
            {
-            foutput(ERR "Failed to parse project file %s\n       Exiting...\n", project_filepath);
-            clean_exit(EXIT_FAILURE);
+            fprintf(stderr, ERR "Failed to parse project file %s\n       Exiting...\n", project_filepath);
+            clean_exit(EXIT_FAILURE, &globals);
            }
            free(pstruct);
         }
 
-    lexer_analysis(command, lexer, SETTINGSFILE, CONFIGURATION_FILE);
+    lexer_analysis(command, lexer, SETTINGSFILE, CONFIGURATION_FILE, &globals);
 
         /* launch core processes after parsing user command-line, possibly overriding defaut values */
 
@@ -462,10 +406,10 @@ launch:
 
         if (project_flag)
 
-          launch_manager(lexer_analysis(command, lexer, project_filepath, PROJECT_FILE));
+          launch_manager(lexer_analysis(command, lexer, project_filepath, PROJECT_FILE, &globals), &globals);
         else
 
-          launch_manager(command_line_parsing(argc, argv, command));
+          launch_manager(command_line_parsing(argc, argv, command, &globals), &globals);
 
     // allocated in command_line_parsing()
 

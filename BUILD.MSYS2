@@ -9,6 +9,10 @@ Unless otherwise indicated, software needs compiling on the MSYS2 console (pink 
 Some patching is occasionally needed and overall it is necessary, when compiling on the MSYS2 console, to point configure 
 or CPPLFAGS/LDFLAGS to mingw64 paths resulting from builds using the Mingw64 console or pacman x86_64 specific installs.
 
+First of all, set:
+
+export ROOTDIR=$PWD before configuring
+
 Dependencies and building specifics
 ===================================
 

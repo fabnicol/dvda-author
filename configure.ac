@@ -38,6 +38,11 @@ LT_INIT
 AS_IF([test -f DOWNLOADS], [rm -f DOWNLOADS])
 AS_IF([test -f PATCHED.DOWNLOADS], [rm -f PATCHED.DOWNLOADS])
 
+AS_CASE([${build}],
+          [*-*-mingw32*],
+		  [export EXEEXTENSION=".exe"],
+		  [export EXEEXTENSION=""])
+		  		  
 # probably spurious on most platforms yet useful on MSYS
 CPPFLAGS="$CPPFLAGS -I/usr/include -I/usr/local/include"
 #default configuration
@@ -50,8 +55,9 @@ sox_BUILD=no
 cflags_save="$CFLAGS -std=c99"
 #redefine CFLAGS to avoid systematic -g -O2 introduced by AC_PROG_CC
 #This should come after AC_PROG macros
-AS_IF([test "$BUILDDIR" = ""],[export BUILDDIR=$(echo $PWD | sed "s/\/c\//c:\//g")])
-AS_IF([test "$ROOTDIR" = ""], [export  ROOTDIR=$(echo $PWD | sed "s/\/c\//c:\//g")])
+AS_IF([test "$BUILDDIR" = ""],[export BUILDDIR=$PWD])
+AS_IF([test "$ROOTDIR" = ""], [export  ROOTDIR=$PWD])
+
 #preparing local build of downloaded libs
 
 m4_include([m4/dependencies.m4])
@@ -178,14 +184,11 @@ AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],
      [AC_DEFINE([COMPILER_IS_GCC], [1], [Whether compiler is GNU GCC])])
  ])
 
-
 AC_PROG_CC_C99
 
 AS_IF([ test "x$ac_cv_prog_cc_stdc" = "xno" ], [AC_MSG_WARN([Compiler does not support size-variable static arrays.
 Please install C99-compliant compiuler. Aborting...])
 						AS_EXIT])
-
-
 
 AC_C_VARARRAYS
 AC_C_CONST
@@ -225,15 +228,11 @@ AC_CHECK_TYPES([fpos_t], [AC_MSG_RESULT([fpos_t exists on platform])],[AC_MSG_WA
 AC_SYS_LARGEFILE
 AC_DEFINE([_FILE_OFFSET_BITS], [64], [Large file support enabled])
 
-
-m4_map([AC_SUBST],
-       [[[ROOTDIR]],[[CFLAGS]], [[BUILDDIR]],[[SHORTLINKDIR]], [[PIXDIR]],[[MENUDIR]],
-       [[LIBSOXCONVERT_CPPFLAGS]],[[DEBUG_FLAGS]],[[VERSION]],[[PROGRAM_TARGETS]]])
+m4_map([AC_SUBST],[[[ROOTDIR]],[[CFLAGS]],[[BUILDDIR]],[[SHORTLINKDIR]],[[PIXDIR]],[[MENUDIR]],[[LIBSOXCONVERT_CPPFLAGS]],[[DEBUG_FLAGS]],[[VERSION]],[[PROGRAM_TARGETS]],[[EXEEXTENSION]]])
 
 # correspondence between X_BUILD shell variables and subdirectory names. Could be avoided with lesser flexibility in naming conventions.
 
 AC_MSG_NOTICE([Configuring ${PACKAGE_TARNAME}...])
-
 
 AS_MKDIR_P([$BUILDDIR/depconf])
 

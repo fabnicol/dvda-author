@@ -3,8 +3,8 @@
 
 #include "fixwav_manager.h"
 
-int launch_repair(WaveData *info, WaveHeader *header);
-int dvda_write_header(WaveData *info, WaveHeader* header);
+int launch_repair(WaveData *info, WaveHeader *header, globalData*);
+int dvda_write_header(WaveData *info, WaveHeader* header, globalData*);
 
 #endif
 // REPAIR_H_INCLUDED
