@@ -485,10 +485,6 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t ngiven_channel
             {
                         EXIT_ON_RUNTIME_ERROR
             }
-            if ((files[i][j].audio->channel_fp[u] = (FILE*) malloc(sizeof(FILE))) == NULL)
-            {
-                        EXIT_ON_RUNTIME_ERROR
-            }
            }
         }
     }

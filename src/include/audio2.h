@@ -77,6 +77,7 @@ int audiofile_getinfo(fileinfo_t* info);
 int flac_getinfo(fileinfo_t* info);
 int audio_open(fileinfo_t* info);
 uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer);
+uint32_t audio_read_merged(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer);
 int audio_close(fileinfo_t* info);
 int fixwav_repair(fileinfo_t *info);
 int launch_sox(fileinfo_t *info);

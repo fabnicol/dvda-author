@@ -1647,9 +1647,11 @@ int create_ats(char* audiotsdir, int titleset, fileinfo_t* files, int ntracks)
                         bytesinbuf);
             }
 
-            n = audio_read(&files[i],
-                           audio_buf,
-                           &bytesinbuf);
+
+               n = audio_read(&files[i],
+                              audio_buf,
+                              &bytesinbuf);
+
 
             if (n == 0)   /* We have reached the end of the input file */
             {
@@ -1665,7 +1667,12 @@ int create_ats(char* audiotsdir, int titleset, fileinfo_t* files, int ntracks)
                     {
                         // Empty audio buffer
 
-                        write_pes_packet(fpout, &files[i-1], audio_buf, bytesinbuf, pack_in_title, start_of_file);
+                        write_pes_packet(fpout,
+                                         &files[i-1],
+                                         audio_buf,
+                                         bytesinbuf,
+                                         pack_in_title,
+                                         start_of_file);
 
                         ++pack;
                         bytesinbuf = 0;
@@ -1686,7 +1693,12 @@ int create_ats(char* audiotsdir, int titleset, fileinfo_t* files, int ntracks)
                     start_of_file = true;
 
                     if (globals.veryverbose)
-                        foutput("%s %d %s %d\n", INF "Opening audio buffer at offset", bytesinbuf, "for count: ", AUDIO_BUFFER_SIZE - bytesinbuf);
+                        foutput("%s %d %s %d\n",
+                                INF "Opening audio buffer at offset",
+                                bytesinbuf,
+                                "for count: ",
+                                AUDIO_BUFFER_SIZE - bytesinbuf);
+
 
                     audio_read(&files[i], audio_buf, &bytesinbuf);
 
@@ -1702,7 +1714,13 @@ int create_ats(char* audiotsdir, int titleset, fileinfo_t* files, int ntracks)
                     else
                     {
                         start_of_file = false;
-                        write_pes_packet(fpout, &files[i-1], audio_buf, bytesinbuf, pack_in_title, start_of_file); // Empty audio buffer.
+                        write_pes_packet(fpout,
+                                         &files[i-1],
+                                         audio_buf,
+                                         bytesinbuf,
+                                         pack_in_title,
+                                         start_of_file); // Empty audio buffer.
+
                         bytesinbuf = 0;
                         ++pack;
                         ++pack_in_title;

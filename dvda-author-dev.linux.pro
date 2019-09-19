@@ -42,7 +42,7 @@ LIBS +=	 "/usr/lib64/libgsm.a"  "/usr/lib64/libMagick++-7.Q16.a" "/usr/lib64/lib
                         "/usr/lib64/libdvdread.a" \
                         "/usr/lib64/libjpeg.a" \
                         "/usr/lib64/libwebp.a" \
-                        "/usr/lib/gcc/x86_64-pc-linux-gnu/9.1.0/libgomp.a" \
+                        "/usr/lib/gcc/x86_64-pc-linux-gnu/9.2.0/libgomp.a" \
                         "/usr/local/lib/libpulse-simple.a" \                       # pulseaudio package
                         "/usr/local/lib/libpulse.a" \
                         "/usr/local/lib/pulseaudio/libpulsecommon-12.2.a" \
@@ -51,7 +51,7 @@ LIBS +=	 "/usr/lib64/libgsm.a"  "/usr/lib64/libMagick++-7.Q16.a" "/usr/lib64/lib
                         "/usr/lib64/libXau.a" \
                         "/usr/lib64/libdbus-1.a" \
                         "/usr/lib64/libSDL.a" \
-                        "/usr/lib/gcc/x86_64-pc-linux-gnu/9.1.0/libgcc_eh.a" \
+                        "/usr/lib/gcc/x86_64-pc-linux-gnu/9.2.0/libgcc_eh.a" \
                         -static -static-libgcc \
                         "/usr/lib64/librt.a" \
                         "/usr/lib64/libresolv.a" \
