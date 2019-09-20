@@ -967,32 +967,32 @@ command_t *scan_audiofile_characteristics(command_t *command)
         case AFMT_WAVE:
             if (globals.debugging) foutput(MSG_TAG "Found WAVE format for %s\n", command->files[i][j].filename);
             command->files[i][j].type=AFMT_WAVE;
-            j++;
+            ++j;
             break;
 
         case AFMT_WAVE_FIXED:
             if (globals.debugging) foutput(MSG_TAG "Found WAVE format (fixed) for %s\n", command->files[i][j].filename);
             command->files[i][j].type=AFMT_WAVE;
-            j++;
+            ++j;
             break;
 
         case AFMT_WAVE_GOOD_HEADER:
             if (globals.debugging) foutput(MSG_TAG "Found WAVE format (original) for %s\n", command->files[i][j].filename);
             command->files[i][j].type=AFMT_WAVE;
-            j++;
+            ++j;
             break;
 
         case AFMT_MLP:
             if (globals.debugging) foutput(MSG_TAG "Found MLP format for %s\n", command->files[i][j].filename);
             command->files[i][j].type = AFMT_MLP;
-            j++;
+            ++j;
             break;
 
     #ifndef WITHOUT_FLAC
         case AFMT_FLAC:
             if (globals.debugging) foutput(MSG_TAG "Found FLAC format for %s\n", command->files[i][j].filename);
             error=flac_getinfo(&command->files[i][j]);
-            j++;
+            ++j;
             break;
 
     #if !defined WITHOUT_libogg
@@ -1000,20 +1000,26 @@ command_t *scan_audiofile_characteristics(command_t *command)
         case AFMT_OGG_FLAC:
             if (globals.debugging) foutput(MSG_TAG "Found Ogg FLAC format for %s\n", command->files[i][j].filename);
             error=flac_getinfo(&command->files[i][j]);
-            j++;
+            ++j;
             break;
     #endif
     #endif
     #endif
 
         case NO_AFMT_FOUND:
-            if (globals.debugging) foutput(ERR "No compatible format was found for %s\n       Skipping file...\n", command->files[i][j].filename);
+            if (globals.debugging)
+                foutput(ERR "No compatible format was found for %s\n       Skipping file...\n",
+                        command->files[i][j].filename);
 
             // House-cleaning rules: getting rid of files with unknown format
-
             // taking off one track;
 
-            command->ntracks[i]--;
+            if (command->ntracks[i])
+                command->ntracks[i]--;
+            else
+            {
+                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "No valid audio format in group")
+            }
 
             // group demotion: if there is no track left in groups, taking off one group
 
@@ -1027,7 +1033,7 @@ command_t *scan_audiofile_characteristics(command_t *command)
                 if (i == command->ngroups-command->nvideolinking_groups)
                   {
                       if (i) return(command);
-                      else exit(EXIT_FAILURE);
+                      else clean_exit(EXIT_FAILURE);
                   }
 
                 // shifting indices for ntracks: all groups have indices decremented, so ntracks[g+1] is now ntracks[g]
@@ -1092,7 +1098,14 @@ uint8_t extract_audio_info(fileinfo_t *info)
     if (info->mergeflag)
     {
        info->filename = info->given_channel[0];
-       info->type=fixwav_repair(info);
+
+       // preserving true channel count
+       int ch = info->channels;
+
+       // now getting bit rate, sample rate etc.
+       info->type = fixwav_repair(info);
+
+       info->channels = ch;
 
      // this should be amended with audio groups 1 and 2 are implemented
     }
@@ -1387,6 +1400,8 @@ info->type = NO_AFMT_FOUND;
 
 if (info->mergeflag)
 {
+     info->audio->channel_fp = (FILE**) malloc(info->channels * sizeof(FILE*));
+
      for (int u=0; u < info->channels; u++)
      {
       info->audio->channel_fp[u] = fopen(info->given_channel[u], "r+b");
@@ -1424,6 +1439,7 @@ if (info->mergeflag)
 }
 else
 {
+  info->audio=malloc(sizeof(audio_input_t));
   info->audio->fp = fopen(info->filename, "r+b");
 
   // clean_file(info, 0); // UNtagging
@@ -1466,57 +1482,8 @@ return (info->type);
 }
 
 
-static inline int wav_getinfo_merged(fileinfo_t *info)
-{
-
-    uint8_t nchannels=info->channels;
-    uint8_t bitspersample=info->bitspersample;
-    uint32_t samplerate=info->samplerate;
-    uint64_t numbytes=info->numbytes;
-
-    info->type=process_audiofile_info(info);
-
-    if (info->channels != nchannels)
-    {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one non-mono channel was given.")
-    }
-
-    info->bitspersample /= nchannels;
-
-    if (info->bitspersample != bitspersample)
-    {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one channel did not have the same bit depth as others.")
-    }
-
-    info->samplerate /= nchannels;
-
-    if (info->samplerate != samplerate)
-    {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one channel did not have the same sample rate as others.")
-    }
-
-
-    if (info->numbytes / nchannels != numbytes)
-    {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  At least one channel did not have the same number of bytes as others.")
-    }
-
-    // Audio characteristics retained are those of the multichannel file, after the above sanity tests.
-    return(info->type);
-}
-
-
 int audiofile_getinfo(fileinfo_t* info)
 {
-
-    if (info->audio == NULL)
-    {
-      foutput("%s\n", ERR "Could not open audio file: filepath pointer is null");
-      EXITING
-    }
-
-//    if (info->mergeflag)
-//        wav_getinfo_merged(info);
 
     if (info->mergeflag)
     {
@@ -1536,7 +1503,7 @@ int audiofile_getinfo(fileinfo_t* info)
     {
         if (info->filename == NULL)
         {
-          foutput("%s\n", ERR "Could not open audio file: filepath pointer is null");
+          fprintf(stderr, "%s\n", ERR "Could not open audio file: filepath pointer is null");
           EXITING
         }
         else
@@ -1862,7 +1829,7 @@ int audio_open(fileinfo_t* info)
 #ifndef WITHOUT_FLAC
     FLAC__StreamDecoderInitStatus result=0;
 #endif
-    //info->audio=malloc(sizeof(audio_input_t));
+    info->audio = malloc(sizeof(audio_input_t));
     info->audio->n=0;
     info->audio->eos=0;
 

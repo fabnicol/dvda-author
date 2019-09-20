@@ -456,32 +456,29 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                     case 'D' :
                         free(globals.settings.tempdir);
                         globals.settings.tempdir=strdup(optarg);
-                        foutput("%s%s\n",PAR "Temporary directory is: ", optarg);
-
+                        foutput("%s%s\n", PAR "Temporary directory is: ", optarg);
                         break;
 
                     case 19:
                         free(globals.settings.lplextempdir);
                         globals.settings.lplextempdir=strdup(optarg);
-                        foutput("%s%s\n",PAR "Lplex temporary directory is: ", optarg);
+                        foutput("%s%s\n", PAR "Lplex temporary directory is: ", optarg);
                         break;
 
                     case 20:
                         free(globals.settings.lplexoutdir);
                         globals.settings.lplexoutdir=strdup(optarg);
-                        foutput("%s%s\n",PAR "Lplex output directory is: ", optarg);
+                        foutput("%s%s\n", PAR "Lplex output directory is: ", optarg);
                         break;
 
                     case 'X':
                         free(globals.settings.workdir);
                         globals.settings.workdir=strdup(optarg);
-                        foutput("%s%s\n",PAR "Working directory is: ", optarg);
+                        foutput("%s%s\n", PAR "Working directory is: ", optarg);
                         // WARNING never launch a command line with --mkisofs in the WORKDIR directory
                         change_directory(globals.settings.workdir);
-
                         //reset++;
                         break;
-
                 }
             }
 
@@ -514,11 +511,11 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
     for (k = 1; k < argc; ++k)
     {
-        if (argv[k][0] != '-' || argv[k][1] == '\0') continue;
-        switch (argv[k][1])
-        {
+      if (argv[k][0] != '-' || argv[k][1] == '\0') continue;
+      switch (argv[k][1])
+      {
 
-        case 'g' :
+       case 'g' :
 
             ++k;
             increment_ngroups_check_ceiling(&n_g_groups, NULL);
@@ -538,7 +535,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                       fprintf(stderr, ERR "Le terme %s n'est pas un fichier. Fin du programme...\n", argv[k]);
                       clean_exit(EXIT_FAILURE);
                     }
-                    ++ntracks[n_g_groups];
+                    ++ntracks[n_g_groups - 1];
 
                 }
                 else
@@ -549,13 +546,13 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                     {
                         // syntax is -g --merge channel11 ... channelp1 --merge --merge channel12 ... channelk2 ...
 
-                        while(strlen(argv[k]) == 7 && strcmp(argv[k]+2, "merge") == 0)
+                        while (strlen(argv[k]) == 7 && strcmp(argv[k]+2, "merge") == 0)
                         {
                             ++k;
                             ++ntracks[n_g_groups - 1];
                             for ( ;k < argc && argv[k][0] != '-'; ++k)
                             {
-                                    ++ngiven_channels[n_g_groups - 1][ntracks[n_g_groups - 1] - 1];
+                                ++ngiven_channels[n_g_groups - 1][ntracks[n_g_groups - 1] - 1];
                             }
                             --k;
                         }
@@ -647,11 +644,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'o' :
             free(globals.settings.outdir);
             globals.settings.outdir=strdup(optarg);
-
             foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET "  Output %s%s%s\n", "directory", " is: ", optarg);
-
             break;
-
 
         case 5:
             refresh_outdir=0;
@@ -710,9 +704,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
 out:
 
-
     /* Here the group parameters are known: ngroups (total),  n_g_groups (legacy -g syntax), nvideolinking_groups */
-
     /* command line copy is now useless: freeing space */
 
 //     FREE(argv_scan[k])
@@ -750,7 +742,6 @@ out:
         if (argv[k][0] != '-') continue;
         switch (argv[k][1])
         {
-
         case 'g' :
 
             ++k;
@@ -762,7 +753,8 @@ out:
                     if (globals.veryverbose)
                       foutput("       files[%d][%d].filename=%s\n", ngroups_scan, m, argv[m + k]);
 
-                    files[ngroups_scan][m].filename = strdup(argv[m+k]);
+                    files[ngroups_scan][m].filename = argv[m+k];
+                    files[ngroups_scan][m].mergeflag = 0;
 
                     //char b[150]={0};
                     //strcpy(b, argv[m+k]);
@@ -783,7 +775,12 @@ out:
                             if (globals.veryverbose)
                                 foutput("       files[%d][%d].filename=%s\n", ngroups_scan, m, argv[m + k]);
 
-                            if (m + k < argc) files[ngroups_scan][m].filename = argv[m + k];
+                            if (m + k < argc)
+                            {
+                                files[ngroups_scan][m].filename = argv[m + k];
+                                files[ngroups_scan][m].mergeflag = 0;
+                            }
+
                         }
                     }
                     else
@@ -818,6 +815,7 @@ out:
 
             k += m-1;
             ngroups_scan++;
+
             break;
 
         case 'c' :
@@ -1494,7 +1492,6 @@ out:
                 img->selectfgcolor_pic=strdup(DEFAULT_SELCOLOR_PIC);
             }
 
-
             globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             img->refresh=1;
 
@@ -1644,11 +1641,9 @@ out:
                 foutput("%s\n",ERR "Only options are 'ntsc', 'secam' or (default) 'pal'.");
                 clean_exit(EXIT_FAILURE);
             }
-
             break;
 
         case '5':
-
             img->aspect=optarg;
             if (optarg[0] == '1')
                 img->aspectratio=strdup("1:1");
@@ -1700,62 +1695,62 @@ out:
     }
 
     change_directory(globals.settings.workdir);
-
     /* Here it is necessary to check and normalize: temporary directory, number of menus before copying files and allocating new memory */
     // Cleaning operations
 
 
-    if (user_command_line)
-    {
-        errno=0;
-        if ((refresh_outdir) && (!globals.nooutput))
-        {
-            clean_directory(globals.settings.outdir);
-            clean_directory(globals.settings.lplexoutdir);
-            if (errno) foutput("%s\n",MSG_TAG "No output directory to be cleaned");
-        }
-        else
-        {
-            if ((globals.debugging)&& (!globals.nooutput))
-                foutput(MSG_TAG "Output directory %s has been preserved.\n", globals.settings.outdir);
-        }
+ if (user_command_line)
+ {
+     errno=0;
 
-        if (!globals.nooutput)
-        {
-            errno=secure_mkdir(globals.settings.outdir, 0777);
+     if ((refresh_outdir) && (!globals.nooutput))
+     {
+         clean_directory(globals.settings.outdir);
+         clean_directory(globals.settings.lplexoutdir);
+         if (errno) foutput("%s\n",MSG_TAG "No output directory to be cleaned");
+     }
+     else
+     {
+         if ((globals.debugging)&& (!globals.nooutput))
+             foutput(MSG_TAG "Output directory %s has been preserved.\n", globals.settings.outdir);
+     }
 
-            errno=0;
-            if (refresh_tempdir)
-            {
-                clean_directory(globals.settings.tempdir);
-                if (errno && globals.veryverbose) perror("\n"ERR "Found errors while cleaning directory");
-            }
+     if (!globals.nooutput)
+     {
+         errno=secure_mkdir(globals.settings.outdir, 0777);
 
-            errno=secure_mkdir(globals.settings.tempdir, globals.access_rights);
-            errno += secure_mkdir(globals.settings.lplextempdir, globals.access_rights);
+         errno=0;
+         if (refresh_tempdir)
+         {
+             clean_directory(globals.settings.tempdir);
+             if (errno && globals.veryverbose) perror("\n"ERR "Found errors while cleaning directory");
+         }
 
-            if (errno)
-            {
-                if (errno != EEXIST)
-                {
-                    perror("\n"ERR "Could not create temporary directory\n");
-                }
-            }
-            else if (refresh_tempdir)
-            {
-                if (globals.debugging)
-                    foutput(PAR "DVD-Audio temporary directory %s has been removed and recreated.\n", globals.settings.tempdir);
-            }
-            else
-            {
-                if (globals.debugging)
-                    foutput(PAR "DVD-Audio temporary directory %s has been preserved.\n", globals.settings.tempdir);
-            }
-            errno=0;
-        }
-    }
+         errno=secure_mkdir(globals.settings.tempdir, globals.access_rights);
+         errno += secure_mkdir(globals.settings.lplextempdir, globals.access_rights);
 
-    if (extract_audio_flag)
+         if (errno)
+         {
+             if (errno != EEXIST)
+             {
+                 perror("\n"ERR "Could not create temporary directory\n");
+             }
+         }
+         else if (refresh_tempdir)
+         {
+             if (globals.debugging)
+                 foutput(PAR "DVD-Audio temporary directory %s has been removed and recreated.\n", globals.settings.tempdir);
+         }
+         else
+         {
+             if (globals.debugging)
+                 foutput(PAR "DVD-Audio temporary directory %s has been preserved.\n", globals.settings.tempdir);
+         }
+         errno=0;
+     }
+ }
+
+ if (extract_audio_flag)
     {
         if (extract_args)
         {
@@ -2586,6 +2581,7 @@ standard_checks:
         downmixtable
     };
 
+
     errno=0;
     memcpy(command, &command0, sizeof(command0));
 
@@ -2741,8 +2737,12 @@ void process_dvd_video_zone(command_t* command)
                 {
                     if (globals.veryverbose)
                     {
-                        foutput(MSG_TAG "Failed to be tested DVD-Video compliant: %s\n", command->files[group][track].filename);
-                        foutput(MSG_TAG "group %d track %d: bits per sample=%d samplerate=%d\n", group, track, command->files[group][track].bitspersample, command->files[group][track].samplerate);
+                        foutput(MSG_TAG "Failed to be tested DVD-Video compliant: %s\n",
+                                command->files[group][track].filename);
+                        foutput(MSG_TAG "group %d track %d: bits per sample=%d samplerate=%d\n",
+                                group, track,
+                                command->files[group][track].bitspersample,
+                                command->files[group][track].samplerate);
                     }
                 }
 
@@ -3074,12 +3074,10 @@ void process_dvd_video_zone(command_t* command)
                   N+=new_ntracks[newgroup];
                   newgroup++;
                 }
-
                 free(dvdv_slide_array[group]);
                 free(dvdv_track_array[group]);
              }
            }
-
 
         globals.videozone=0;
 

@@ -470,21 +470,19 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t ngiven_channel
 
         for (j = 0; j < ntracks[i]; ++j)
         {
-            if ((files[i][j].audio = (audio_input_t*) calloc(1, sizeof(audio_input_t))) == NULL)
-            {
-                EXIT_ON_RUNTIME_ERROR
-            }
-           if (ngiven_channels[i][j] == 0) continue;
-           files[i][j].given_channel = (char**) calloc(ngiven_channels[i][j], sizeof(char*));
-           files[i][j].channels = ngiven_channels[i][j]; // maybe redundant
-           files[i][j].audio->channel_fp = (FILE**) malloc(ngiven_channels[i][j] * sizeof(FILE*));
-           files[i][j].channel_header_size=calloc(ngiven_channels[i][j], sizeof(uint8_t));
-           for  (int u = 0; u < ngiven_channels[i][j]; ++u)
+           if (ngiven_channels[i][j])
            {
-            if ((files[i][j].given_channel[u]=calloc(CHAR_BUFSIZ, sizeof(char)) )== NULL)
-            {
-                        EXIT_ON_RUNTIME_ERROR
-            }
+               files[i][j].given_channel = (char**) calloc(ngiven_channels[i][j], sizeof(char*));
+               files[i][j].channels = ngiven_channels[i][j]; // maybe redundant
+
+               files[i][j].channel_header_size=calloc(ngiven_channels[i][j], sizeof(uint8_t));
+               for  (int u = 0; u < ngiven_channels[i][j]; ++u)
+               {
+                if ((files[i][j].given_channel[u]=calloc(CHAR_BUFSIZ, sizeof(char)) )== NULL)
+                {
+                            EXIT_ON_RUNTIME_ERROR
+                }
+               }
            }
         }
     }
