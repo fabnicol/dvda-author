@@ -568,10 +568,6 @@ void free_memory(command_t *command)
             }
         }
 
-        for (i=0; i < naudio_groups ; i++)
-           for (j=0; j < command->ntracks[i]; j++)
-              FREE(command->files[i][j].audio)
-
         for (i=0; i < command->ngroups; i++)
             FREE(command->files[i])
         FREE(command->files)

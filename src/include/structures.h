@@ -23,19 +23,6 @@ typedef struct
     uint32_t samplerate;
 } audioformat_t;
 
-
-typedef struct
-{
-    FILE* fp;
-    FILE** channel_fp;
-    FLAC__StreamDecoder* flac;
-    // Used for FLAC decoding:
-    uint8_t buf[1024*256];
-    uint32_t n;
-    uint32_t eos;
-    uint32_t bytesread;
-} audio_input_t;
-
 typedef struct
 {
     uint8_t  header_size;
@@ -46,6 +33,7 @@ typedef struct
     uint8_t  resample_bitspersample;
     uint8_t  resample_channels;
     uint8_t  cga;
+    uint8_t  buf[1024*256];
     int8_t   downmix_table_rank;
     uint8_t  newtitle;
     uint8_t  contin_track;
@@ -72,6 +60,9 @@ typedef struct
     uint32_t first_PTS;
     uint32_t PTS_length;
     uint32_t mlp_layout_size;
+    uint32_t n;
+    uint32_t eos;
+    uint32_t bytesread;
     uint32_t *pts;
     uint32_t *dts;
     uint64_t *scr;
@@ -82,7 +73,9 @@ typedef struct
     uint64_t file_size; // file size on disc
     uint64_t *channel_size; // channel size on disc
     uint64_t bytespersecond;
-    audio_input_t* audio;  // Used whilst decoding.
+    FILE* fp;
+    FILE** channel_fp;
+    FLAC__StreamDecoder* flac;
     char    *filename;
     char    *out_filename;
     char    **given_channel;

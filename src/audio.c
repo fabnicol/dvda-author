@@ -419,27 +419,27 @@ FLAC__StreamDecoderWriteStatus flac_write_callback(const FLAC__StreamDecoder GCC
     uint32_t samples = frame->header.blocksize;
     uint32_t i;
 
-    if ((info->audio->n+data_size) > sizeof(info->audio->buf))
+    if ((info->n+data_size) > sizeof(info->buf))
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Internal error - FLAC buffer overflown")
     }
 
 
         // Store data in interim buffer in WAV format - i.e. Little-endian interleaved samples
-        i=info->audio->n;
+        i=info->n;
     for (c_samp = d_samp = 0; c_samp < samples; c_samp++)
     {
         for (c_chan = 0; c_chan < frame->header.channels; c_chan++, d_samp++)
         {
-            info->audio->buf[i++]=(buf[c_chan][c_samp]&0xff);
-            info->audio->buf[i++]=(buf[c_chan][c_samp]&0xff00)>>8;
+            info->buf[i++]=(buf[c_chan][c_samp]&0xff);
+            info->buf[i++]=(buf[c_chan][c_samp]&0xff00)>>8;
             if (info->bitspersample==24)
             {
-                info->audio->buf[i++]=(buf[c_chan][c_samp]&0xff0000)>>16;
+                info->buf[i++]=(buf[c_chan][c_samp]&0xff0000)>>16;
             }
         }
     }
-    info->audio->n=i;
+    info->n=i;
 
     return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
@@ -1099,13 +1099,7 @@ uint8_t extract_audio_info(fileinfo_t *info)
     {
        info->filename = info->given_channel[0];
 
-       // preserving true channel count
-       int ch = info->channels;
-
-       // now getting bit rate, sample rate etc.
        info->type = fixwav_repair(info);
-
-       info->channels = ch;
 
      // this should be amended with audio groups 1 and 2 are implemented
     }
@@ -1335,7 +1329,6 @@ static inline int extract_audio_info_by_all_means(uint8_t* header, fileinfo_t* i
                         else
                       // PATCH looping back to get info
                         {
-                            if (info->audio) free(info->audio);
                             return(info->type = audiofile_getinfo(info));
                         }
                           // yet without the processing tail below (preserving new header[] array and info structure)
@@ -1355,12 +1348,12 @@ static inline int extract_audio_info_by_all_means(uint8_t* header, fileinfo_t* i
 
 static inline void clean_file(fileinfo_t* info, int u)
 {
-    FILE* fp = info->mergeflag ? info->audio->channel_fp[u] : info->audio->fp;
-    fseek(fp, -10 * 2048, SEEK_END); // 10 sectors back
+
+    fseek(info->mergeflag ? info->channel_fp[u] : info->fp, -10 * 2048, SEEK_END); // 10 sectors back
     char temp[10 * 2048] = {0};
     for (int c = 0; c < 10 * 2048; ++c)
     {
-        temp[c] = getc(fp);
+        temp[c] = getc(info->mergeflag ? info->channel_fp[u] : info->fp);
         if (temp[c] == 0) temp[c] = 0x20;
     }
     temp[10 * 2048 -1] = 0;
@@ -1369,25 +1362,18 @@ static inline void clean_file(fileinfo_t* info, int u)
 
     if (ret)
     {
-        fseek(fp, 0, SEEK_END);
-        off_t size = ftello(fp);
-        fclose(fp);
+        fseek(info->mergeflag ? info->channel_fp[u] : info->fp, 0, SEEK_END);
+        off_t size = ftello(info->mergeflag ? info->channel_fp[u] : info->fp);
+        fclose(info->mergeflag ? info->channel_fp[u] : info->fp);
         off_t l = strlen(ret);
         if (globals.debugging) foutput(INF "%s\n", "Untagging LIST chunks.");
         truncate(info->mergeflag ? info->given_channel[u] : info->filename, size - l - 1);
-        if (info->mergeflag)
-            info->audio->channel_fp[u] = fopen(info->given_channel[u], "rb");
-        else
-            info->audio->fp = fopen(info->filename, "rb");
+
     }
     else
     {
-        fclose(fp);
+        fclose(info->mergeflag ? info->channel_fp[u] : info->fp);
         if (globals.debugging) foutput(INF "%s\n", "No LIST chunks.");
-        if (info->mergeflag)
-            info->audio->channel_fp[u] = fopen(info->given_channel[u], "rb");
-        else
-            info->audio->fp = fopen(info->filename, "rb");
     }
 }
 
@@ -1400,16 +1386,20 @@ info->type = NO_AFMT_FOUND;
 
 if (info->mergeflag)
 {
-     info->audio->channel_fp = (FILE**) malloc(info->channels * sizeof(FILE*));
+     info->channel_fp = (FILE**) malloc(info->channels * sizeof(FILE*));
 
      for (int u=0; u < info->channels; u++)
      {
-      info->audio->channel_fp[u] = fopen(info->given_channel[u], "r+b");
+      info->channel_fp[u] = fopen(info->given_channel[u], "r+b");
       clean_file(info, u); // UNtagging
+      if (globals.veryverbose) fprintf(stderr, INF "Opening %s to get info\n", info->given_channel[u]);
+      info->channel_fp[u] = fopen(info->given_channel[u], "rb");
+      if (info->channel_fp[u] == NULL)
+      {
+          EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not open channel file")
+      }
 
-      if (globals.debugging) foutput(INF "Opening %s to get info\n", info->given_channel[u]);
-
-      int span = compute_header_size(info->audio->channel_fp[u]);
+      int span = compute_header_size(info->channel_fp[u]);
 
       info->channel_header_size[u] = (span > 0) ? span + 8 : MAX_HEADER_SIZE;
       uint8_t header[info->channel_header_size[u]];
@@ -1418,33 +1408,34 @@ if (info->mergeflag)
       /* PATCH: real size on disc is needed */
 
 #    if defined __WIN32__
-        info->file_size = read_file_size(info->audio->channel_fp[u],(TCHAR*) info->given_channel[u]);
+        info->file_size = read_file_size(info->channel_fp[u],(TCHAR*) info->given_channel[u]);
      #else
-        info->file_size = read_file_size(info->audio->channel_fp[u], info->given_channel[u]);
+        info->file_size = read_file_size(info->channel_fp[u], info->given_channel[u]);
      #endif
 
-     //fread(header, info->channel_header_size[u],1,info->audio->channel_fp[u]);
-     fseek(info->audio->channel_fp[u], 0, SEEK_SET);
 
-     if (info->channel_header_size[u] > (span = fread(header, 1, info->channel_header_size[u], info->audio->channel_fp[u])))
+     fseek(info->channel_fp[u], 0, SEEK_SET);
+
+     if (info->channel_header_size[u] > (span = fread(header, 1, info->channel_header_size[u], info->channel_fp[u])))
      {
          foutput(ERR "Could not read header of size %d for channel %d, just read %d character(s)\n", info->channel_header_size[u],u+1, span);
          clean_exit(EXIT_FAILURE);
      }
 
-      fclose(info->audio->channel_fp[u]);
 
       info->type = extract_audio_info_by_all_means(header, info);
      }
 }
 else
 {
-  info->audio=malloc(sizeof(audio_input_t));
-  info->audio->fp = fopen(info->filename, "r+b");
 
-  // clean_file(info, 0); // UNtagging
+  info->fp = fopen(info->filename, "r+b");
 
-  if (info->audio->fp == NULL)
+  clean_file(info, 0); // UNtagging
+
+  info->fp = fopen(info->filename, "r+b");
+
+  if (info->fp == NULL)
   {
       fprintf(stderr, ERR "Failed to open %s to get info\n", info->filename);
       fprintf(stderr, ERR "Currentdir name is : %s\n", fn_get_current_dir_name());
@@ -1454,27 +1445,29 @@ else
 
   if (globals.debugging) foutput(INF "Opening %s to get info\n", info->filename);
 
-  info->header_size = MAX_HEADER_SIZE;
+  int span = compute_header_size(info->fp);
+
+  info->header_size  = (span > 0) ? span + 8 : MAX_HEADER_SIZE;
   uint8_t header[info->header_size];
   memset(header, 0, info->header_size);
 
   /* PATCH: real size on disc is needed */
 
   #if defined __WIN32__
-        info->file_size = read_file_size(info->audio->fp,(TCHAR*) info->filename);
+        info->file_size = read_file_size(info->fp,(TCHAR*) info->filename);
   #else
-        info->file_size = read_file_size(info->audio->fp, info->filename);
+        info->file_size = read_file_size(info->fp, info->filename);
   #endif
 
-  fseek(info->audio->fp, 0, SEEK_SET);
-  int span = 0;
-  if (info->header_size > (span = fread(header, 1, info->header_size, info->audio->fp)))
+  fseek(info->fp, 0, SEEK_SET);
+
+  if (info->header_size > (span = fread(header, 1, info->header_size, info->fp)))
   {
     foutput(ERR "Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
     perror("       ");
     clean_exit(EXIT_FAILURE);
   }
-  if (info->audio) free(info->audio);
+
   info->type = extract_audio_info_by_all_means(header, info);
 }
 
@@ -1663,10 +1656,11 @@ int fixwav_repair(fileinfo_t *info)
 
         info->samplerate    = waveheader.dwSamplesPerSec;
         info->bitspersample = (uint8_t) waveheader.wBitsPerSample;
-        info->channels      = (uint8_t) waveheader.channels;
+        if (! info->mergeflag) info->channels      = (uint8_t) waveheader.channels;
         info->numbytes      = waveheader.data_cksize;
+        if (info->mergeflag) info->numbytes *= info->channels;
         info->file_size     = info->numbytes + waveheader.header_size_out;
-        info->header_size   = waveheader.header_size_out;
+        //info->header_size   = waveheader.header_size_out;
         info->dw_channel_mask = waveheader.dwChannelMask;
 
         if (wavedata.repair == GOOD_HEADER)
@@ -1799,39 +1793,15 @@ int launch_sox(fileinfo_t* info)
 }
 #endif
 
-// to be used somewhere
-
-void mono_channel_open(fileinfo_t* info)
-{
-    if (info->type != AFMT_WAVE) return;
-
-    for (int u=0; u < info->channels; u++)
-    {
-        info->audio->channel_fp[u]=fopen(info->given_channel[u],"rb");
-        if (info->audio->channel_fp[u]==NULL)
-        {
-            return;
-        }
-#ifdef __WIN32__
-        info->channel_size[u] = read_file_size(info->audio->channel_fp[u], (TCHAR*) info->given_channel[u]);
-#else
-        info->channel_size[u] = read_file_size(info->audio->channel_fp[u], info->given_channel[u]);
-#endif
-        fseek(info->audio->channel_fp[u], info->header_size,SEEK_SET);
-
-        info->audio->bytesread=0;
-    }
-}
-
 
 int audio_open(fileinfo_t* info)
 {
 #ifndef WITHOUT_FLAC
     FLAC__StreamDecoderInitStatus result=0;
 #endif
-    info->audio = malloc(sizeof(audio_input_t));
-    info->audio->n=0;
-    info->audio->eos=0;
+
+    info->n=0;
+    info->eos=0;
 
     if (info->type == AFMT_WAVE || info->type == AFMT_MLP)
     {
@@ -1839,57 +1809,57 @@ int audio_open(fileinfo_t* info)
         {
             for (int u=0; u < info->channels; ++u)
             {
-                info->audio->channel_fp[u]=fopen(info->given_channel[u],"rb");
+                info->channel_fp[u]=fopen(info->given_channel[u],"rb");
 
-                if (info->audio->channel_fp[u]==NULL)
+                if (info->channel_fp[u]==NULL)
                 {
                     return(1);
                 }
         #ifdef __WIN32__
-                info->file_size += read_file_size(info->audio->channel_fp[u], (TCHAR*) info->given_channel[u]);
+                info->file_size += read_file_size(info->channel_fp[u], (TCHAR*) info->given_channel[u]);
         #else
-                info->file_size += read_file_size(info->audio->channel_fp[u], info->given_channel[u]);
+                info->file_size += read_file_size(info->channel_fp[u], info->given_channel[u]);
         #endif
-                fseek(info->audio->channel_fp[u], info->channel_header_size[u],SEEK_SET);
+                fseek(info->channel_fp[u], info->channel_header_size[u],SEEK_SET);
             }
         }
         else
         {
             if (globals.debugging) foutput("%s %s\n", INF "Opening", info->filename);
 
-            info->audio->fp = fopen(info->filename,"rb");
+            info->fp = fopen(info->filename,"rb");
 
-            if (info->audio->fp == NULL)
+            if (info->fp == NULL)
             {
                 return(1);
             }
 
 #           ifdef _WIN32
-              info->file_size = read_file_size(info->audio->fp, (TCHAR*) info->filename);
+              info->file_size = read_file_size(info->fp, (TCHAR*) info->filename);
 #           else
-              info->file_size = read_file_size(info->audio->fp, info->filename);
+              info->file_size = read_file_size(info->fp, info->filename);
 #           endif
 
-            fseek(info->audio->fp,
+            fseek(info->fp,
                   info->type == AFMT_MLP ? 0 : info->header_size,
                   SEEK_SET);
 
         }
 
-        info->audio->bytesread=0;
+        info->bytesread=0;
     }
 #ifndef WITHOUT_FLAC
     else
     {
-        info->audio->flac=FLAC__stream_decoder_new();
+        info->flac=FLAC__stream_decoder_new();
 
-        if (info->audio->flac!=NULL)
+        if (info->flac!=NULL)
         {
             if  (info->type==AFMT_FLAC)
             {
 
                 result=/*FLAC__StreamDecoderInitStatus*/ FLAC__stream_decoder_init_file  	(
-                            /*FLAC__StreamDecoder *  */ 	 info->audio->flac,
+                            /*FLAC__StreamDecoder *  */ 	 info->flac,
                             /*char * */ 	info->filename,
                             /*FLAC__StreamDecoderWriteCallback */ 	flac_write_callback,
                             /*FLAC__StreamDecoderMetadataCallback */ 	flac_metadata_callback,
@@ -1905,7 +1875,7 @@ int audio_open(fileinfo_t* info)
                 {
 
                     result=/*FLAC__StreamDecoderInitStatus*/ FLAC__stream_decoder_init_ogg_file  	(
-                                /*FLAC__StreamDecoder *  */ 	 info->audio->flac,
+                                /*FLAC__StreamDecoder *  */ 	 info->flac,
                                 /*char * */ 	info->filename,
                                 /*FLAC__StreamDecoderWriteCallback */ 	flac_write_callback,
                                 /*FLAC__StreamDecoderMetadataCallback */ 	flac_metadata_callback,
@@ -1923,7 +1893,7 @@ int audio_open(fileinfo_t* info)
 
             if (result!=FLAC__STREAM_DECODER_INIT_STATUS_OK)
                     {
-                        FLAC__stream_decoder_delete(info->audio->flac);
+                        FLAC__stream_decoder_delete(info->flac);
 
                         /* error diagnosis */
 
@@ -1953,9 +1923,9 @@ int audio_open(fileinfo_t* info)
                         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Failed to initialise FLAC decoder\n");
                     }
 
-            if (!FLAC__stream_decoder_process_until_end_of_metadata(info->audio->flac))
+            if (!FLAC__stream_decoder_process_until_end_of_metadata(info->flac))
             {
-                FLAC__stream_decoder_delete(info->audio->flac);
+                FLAC__stream_decoder_delete(info->flac);
                 EXIT_ON_RUNTIME_ERROR_VERBOSE( ERR "Failed to read metadata from FLAC file\n")
 
             }
@@ -2296,30 +2266,30 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
     {
         uint32_t request = (*bytesinbuffer + offset + requested_bytes < AUDIO_BUFFER_SIZE) ? requested_bytes : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset);
 
-        buffer_increment += fread(buf + offset, 1, request, info->audio->fp);
+        buffer_increment += fread(buf + offset, 1, request, info->fp);
 
-        if (info->audio->bytesread + buffer_increment > info->numbytes)
+        if (info->bytesread + buffer_increment > info->numbytes)
         {
-            buffer_increment = info->numbytes-info->audio->bytesread;
+            buffer_increment = info->numbytes-info->bytesread;
         }
 
-        info->audio->bytesread += buffer_increment;
+        info->bytesread += buffer_increment;
         uint32_t bytesread = buffer_increment;
 
-        while (info->audio->bytesread < info->numbytes
+        while (info->bytesread < info->numbytes
                && bytesread < requested_bytes)
         {
             uint32_t request = (*bytesinbuffer + offset + requested_bytes < AUDIO_BUFFER_SIZE) ?
                                      requested_bytes - bytesread : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset + bytesread);
 
-            buffer_increment = fread(buf + bytesread + offset, 1, request, info->audio->fp);
+            buffer_increment = fread(buf + bytesread + offset, 1, request, info->fp);
 
-            if (info->audio->bytesread + buffer_increment > info->numbytes)
+            if (info->bytesread + buffer_increment > info->numbytes)
             {
-                buffer_increment = info->numbytes - info->audio->bytesread;
+                buffer_increment = info->numbytes - info->bytesread;
             }
 
-            info->audio->bytesread += buffer_increment;
+            info->bytesread += buffer_increment;
             bytesread += buffer_increment;
         }
 
@@ -2330,39 +2300,39 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer)
 
     else if ((info->type == AFMT_FLAC) || (info->type == AFMT_OGG_FLAC))
     {
-        while ((info->audio->n < requested_bytes) && (info->audio->eos==0))
+        while ((info->n < requested_bytes) && (info->eos==0))
         {
-            result = FLAC__stream_decoder_process_single(info->audio->flac);
+            result = FLAC__stream_decoder_process_single(info->flac);
 
             if (result==0)
                 EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Fatal error decoding FLAC file\n")
 
-            if (FLAC__stream_decoder_get_state(info->audio->flac) == FLAC__STREAM_DECODER_END_OF_STREAM)
+            if (FLAC__stream_decoder_get_state(info->flac) == FLAC__STREAM_DECODER_END_OF_STREAM)
             {
-                info->audio->eos=1;
+                info->eos=1;
             }
         }
 
-        if (info->audio->n >= requested_bytes)
+        if (info->n >= requested_bytes)
         {
             buffer_increment = requested_bytes;
             uint32_t request = (*bytesinbuffer + offset + buffer_increment < AUDIO_BUFFER_SIZE) ? buffer_increment  : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset);
-            memcpy(buf + offset, info->audio->buf, request);
-            memmove(info->audio->buf, &(info->audio->buf[requested_bytes]), info-> audio->n - request);
-            info->audio->n -= request;
+            memcpy(buf + offset, info->buf, request);
+            memmove(info->buf, &(info->buf[requested_bytes]), info->n - request);
+            info->n -= request;
             buffer_increment = request;
         }
         else
         {
-            buffer_increment = info->audio->n;
+            buffer_increment = info->n;
             uint32_t request = (*bytesinbuffer + offset + buffer_increment < AUDIO_BUFFER_SIZE) ? buffer_increment  : AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset);
-            memcpy(buf + offset, info->audio->buf, request);
+            memcpy(buf + offset, info->buf, request);
 
-            info->audio->n = 0;
+            info->n = 0;
             buffer_increment = request;
         }
 
-        info->audio->eos = 0;
+        info->eos = 0;
     }
 #endif
 
@@ -2495,15 +2465,15 @@ int audio_close(fileinfo_t* info)
     if (globals.debugging) foutput("%s %s\n", INF "Closing audio file", info->filename);
     if (info->type==AFMT_WAVE)
     {
-        fclose(info->audio->fp);
+        fclose(info->fp);
     }
 #ifndef WITHOUT_FLAC
     else if ((info->type==AFMT_FLAC) || (info->type == AFMT_OGG_FLAC))
     {
-        FLAC__stream_decoder_delete(info->audio->flac);
+        FLAC__stream_decoder_delete(info->flac);
     }
 #endif
-    // info->audio[i][j] will be freed before exit in free_memory.
+
     return(0);
 }
 
@@ -2560,22 +2530,26 @@ uint32_t audio_read_merged(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuf
     if (info->type == AFMT_WAVE || info->type == AFMT_MLP)
     {
         uint32_t request = (*bytesinbuffer + offset + requested_bytes < AUDIO_BUFFER_SIZE) ? requested_bytes / info->channels :
-                                  (AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset)) / info->channels;
+                                  (AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset)) / (info->channels * (info->bitspersample / 8)) ;
 
-        for (int w = 0; w < info->channels; ++w)
+        for (int z = 0; z < request; ++z)
         {
-           buffer_increment += fread(buf + offset + w * request, 1, request, info->audio->channel_fp[w]);
+            for (int w = 0; w < info->channels; ++w)
+            {
+               buffer_increment += fread(buf + offset + w * info->bitspersample / 8, 1, info->bitspersample / 8, info->channel_fp[w]);
+            }
         }
 
-        if (info->audio->bytesread + buffer_increment > info->numbytes)
+        if (info->bytesread + buffer_increment > info->numbytes)
         {
-            buffer_increment = info->numbytes-info->audio->bytesread;
+            buffer_increment = info->numbytes-info->bytesread;
         }
 
-        info->audio->bytesread += buffer_increment;
+        info->bytesread += buffer_increment;
         uint32_t bytesread = buffer_increment;
 
-        while (info->audio->bytesread < info->numbytes
+#if 0
+        while (info->bytesread < info->numbytes
                && bytesread < requested_bytes)
         {
             uint32_t request = (*bytesinbuffer + offset + requested_bytes < AUDIO_BUFFER_SIZE) ?
@@ -2586,18 +2560,23 @@ uint32_t audio_read_merged(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuf
 
             for (int u = 0; u < info->channels; ++u)
             {
-               buffer_increment += fread(buf + bytesread + offset + u * request, 1, request, info->audio->channel_fp[u]);
+               int got = fread(buf + bytesread + offset + u * request, 1, request, info->channel_fp[u]);
+               if (got < request)
+               {
+                   fprintf(stderr, ERR "%s%d%s%s\n", "Could not load ", request, " bytes from ", info->given_channel[u]);
+               }
+                buffer_increment += got;
             }
 
-            if (info->audio->bytesread + buffer_increment > info->numbytes)
+            if (info->bytesread + buffer_increment > info->numbytes)
             {
-                buffer_increment = info->numbytes - info->audio->bytesread;
+                buffer_increment = info->numbytes - info->bytesread;
             }
 
-            info->audio->bytesread += buffer_increment;
+            info->bytesread += buffer_increment;
             bytesread += buffer_increment;
         }
-
+#endif
         buffer_increment = bytesread;
     }
 
@@ -2674,8 +2653,8 @@ int audio_close_merged(fileinfo_t* info)
     if (info->type==AFMT_WAVE)
     {
         for (int u = 0; u < info->channels; ++u)
-            fclose(info->audio->channel_fp[u]);
+            fclose(info->channel_fp[u]);
     }
-    // info->audio[i][j] will be freed before exit in free_memory.
+
     return(0);
 }
