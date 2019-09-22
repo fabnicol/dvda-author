@@ -452,9 +452,15 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #define PAL_FRAME_RATE "25"
 
-static const int PAL_X=720;   // ntsc 720
-static const int PAL_Y=576;   // ntsc 480
-static const int NTSC_Y=480;
+#ifndef PAL_X
+#define PAL_X 720   // ntsc 720
+#endif
+#ifndef PAL_Y
+#define PAL_Y 576   // ntsc 480
+#endif
+#ifndef NTSC_Y
+#define NTSC_Y 480
+#endif
 
 #define INFO_EXECTIME1  MSG_TAG "User execution time: %u minutes %u seconds %u microseconds\n"
 #define INFO_EXECTIME2  MSG_TAG "System execution time: %u minutes %u seconds %u microseconds\n"

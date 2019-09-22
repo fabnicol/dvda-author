@@ -71,10 +71,7 @@ static inline void permutation_merged(uint8_t *buf,
                                int size)
 {
     int j;
-
-    //  buf is double array of channel times 4 bytes (16-bit case) or 6 bytes (24-bit case): buf[channels][bitrate / 4]
-    // except for 16-bit ch 1/2
-
+    // bytes_index is the byte index rank in the 2-sample permutation unit
     for (j = 0; j < size ; ++j)
     {
        int  channel     = reference_table[bits_per_second_flag][channels-1][j][0];

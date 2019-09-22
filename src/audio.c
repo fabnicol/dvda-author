@@ -37,7 +37,6 @@ extern globalData globals;
 static const uint8_t default_cga[6] = {0,  1,  7,  3,   9,   12};  //default channel assignment
 uint32_t cga2wav_channels[21] = {0x4, 0x3, 0x103, 0x33, 0xB, 0x10B, 0x3B, 0x7, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x3B, 0x37, 0x3B };
 
-
 // Channel group assignment (CGA)
 //
 //        1    2        3         4        5       6
@@ -177,7 +176,6 @@ inline uint8_t wav2cga_channels(fileinfo_t *info)
     }
  }
 
-
 const char* cga_define[21] = {"Mono",
                                      "L-R",
                                      "Lf-Rf-S2",
@@ -210,14 +208,12 @@ inline uint8_t get_cga_index(const char* cga)
     return 0xFF;
 }
 
-
 inline uint8_t check_cga_assignment(long cgaint)
 {
     if (cgaint >= 0 && cgaint <= 20) return (uint8_t) cgaint;
 
     return 0xFF;
 }
-
 
 /*
 *
@@ -279,25 +275,27 @@ static const uint8_t  S[2][6][36]=
     }
 };
 
-
-// Direct conversion table when separate mono channels are given on command line
-//  {1-based input channel number, 0-based byte rank} = {c, b}
-//  c = 1,..., channels
-//  b = 0,..., 4*ch - 1 for 16 bit-audio and 6*ch -1 for 24-bit.
 //
-#if 0  // why 7?
+// Direct conversion table when separate mono channels are given on command line
+// {1-based input channel number, 0-based byte rank} = {c, b}
+// c = 1,..., channels
+// b = 0,..., 3 for 16-bit audio and 0,...,5 for 24-bit.
+// except for c == 1 || c == 2 for 16-bit (b=0, 1}
+//
+
 static uint8_t  C[2][6][36][2]=
 {
   //16-bit:
-
     {
+        // 1 sample of 2 bytes each per mono channel = 2 x ch bytes in all
 		{{1,1}, {1,0}},                                           // 16/1
 		{{1,1}, {1,0}, {2,1}, {2,0}},                             // 16/2
+        // 2 samples of 2 bytes each per mono channel = 4 x ch bytes in all
 		{{3,1}, {3,0}, {3,3}, {3,2}, {1,1}, {1,0},{2,1}, {2,0},
 		 {1,3}, {1,2}, {2,3}, {2,2}},                             // 16/3
 		{{3,1}, {3,0}, {4,1}, {4,0}, {3,3}, {3,2}, {4,3}, {4,2},
 		 {1,1}, {1,0}, {2,1}, {2,0}, {1,3}, {1,2}, {2,3}, {2,0}}, // 16/4
-		{{4,1}, {4,0}, {5,1}, {5,0}, {4,3}, {4,2}, {5,3}, {5,2}
+        {{4,1}, {4,0}, {5,1}, {5,0}, {4,3}, {4,2}, {5,3}, {5,2},
 		 {1,1}, {1,0}, {2,1}, {2,0}, {3,1}, {3,0}, {1,3}, {1,2},  // 16/5
 		 {2,3}, {2,2}, {3,3}, {3,2}},
 		{{4,1}, {4,0}, {5,1}, {5,0}, {6,1}, {6,0}, {4,3}, {4,2},  // 16/6
@@ -305,29 +303,22 @@ static uint8_t  C[2][6][36][2]=
 		 {3,1}, {3,0}, {1,3}, {1,2}, {2,3}, {2,2}, {3,3}, {2,2}}
 	},
 
- //24-bit:
+ //24-bit: always 2 samples of 3 bytes each per mono channel = 6 x ch bytes in all
 
     {
-
         {{1,2}, {1,1}, {1,5}, {1,4}, {1,0}, {1,3}},               // 24/1
-
         {{1,2}, {1,1}, {2,2}, {2,1}, {1,5}, {1,4}, {2,5}, {2,4},  // 24/2
          {1,0}, {2,0}, {1,3}, {2,3}},
-
-
         {{3,2}, {3,1}, {3,5}, {3,4}, {3,0}, {3,3}, {1,2}, {1,1},  // 24/3
          {2,2}, {2,1}, {1,5}, {1,4}, {2,5}, {2,4}, {1,0}, {2,0},
          {1,3}, {2,3}},
-
         {{3,2}, {3,1}, {4,2}, {4,1}, {3,5}, {3,4}, {4,5}, {4,4},  // 24/4
          {3,0}, {4,0}, {3,3}, {4,3}, {1,2}, {1,1}, {2,2}, {2,1},
          {1,5}, {1,4}, {2,5}, {2,4}, {1,0}, {2,0}, {1,3}, {2,3}},
-
         {{4,2}, {4,1}, {5,2}, {5,1}, {4,5}, {4,4}, {5,5}, {5,4},  // 24/5
          {4,0}, {5,0}, {4,3}, {5,3}, {1,2}, {1,1}, {2,2}, {2,1},
          {3,2}, {3,1}, {1,5}, {1,4}, {2,5}, {2,4}, {3,5}, {3,4},
          {1,0}, {2,0}, {3,0}, {1,3}, {2,3}, {3,3}},
-
         {{3,2}, {3,1}, {4,2}, {4,1}, {3,5}, {3,4}, {4,5}, {4,4},  // 24/6
          {3,0}, {4,0}, {3,3}, {4,3}, {1,2}, {1,1}, {2,2}, {2,1},
          {5,2}, {5,1}, {6,2}, {6,1}, {1,5}, {1,4}, {2,5}, {2,4},
@@ -335,7 +326,7 @@ static uint8_t  C[2][6][36][2]=
          {1,3}, {2,3}, {5,3}, {6,3}}
     }
 };
-#endif
+
 
 #ifndef WITHOUT_FLAC
 
@@ -358,8 +349,6 @@ static uint8_t  C[2][6][36][2]=
 # define SPEAKER_TOP_BACK_CENTER        0x10000
 # define SPEAKER_TOP_BACK_RIGHT         0x20000
 # define SPEAKER_RESERVED               0x80000000
-
-
 
 void flac_metadata_callback (const FLAC__StreamDecoder GCC_UNUSED *dec, const FLAC__StreamMetadata *meta, void *data)
 {
@@ -416,35 +405,31 @@ FLAC__StreamDecoderWriteStatus flac_write_callback(const FLAC__StreamDecoder GCC
 
     unsigned int c_samp, c_chan, d_samp;
     uint32_t data_size = frame->header.blocksize * frame->header.channels * (info->bitspersample / 8);
-    uint32_t samples = frame->header.blocksize;
+    uint32_t samples =   frame->header.blocksize;
     uint32_t i;
 
-    if ((info->n+data_size) > sizeof(info->buf))
+    if ((info->n + data_size) > sizeof(info->buf))
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Internal error - FLAC buffer overflown")
     }
-
-
         // Store data in interim buffer in WAV format - i.e. Little-endian interleaved samples
-        i=info->n;
+        i = info->n;
     for (c_samp = d_samp = 0; c_samp < samples; c_samp++)
     {
         for (c_chan = 0; c_chan < frame->header.channels; c_chan++, d_samp++)
         {
-            info->buf[i++]=(buf[c_chan][c_samp]&0xff);
-            info->buf[i++]=(buf[c_chan][c_samp]&0xff00)>>8;
+            info->buf[i++] = (buf[c_chan][c_samp] & 0xff);
+            info->buf[i++] = (buf[c_chan][c_samp] & 0xff00)>>8;
             if (info->bitspersample==24)
             {
                 info->buf[i++]=(buf[c_chan][c_samp]&0xff0000)>>16;
             }
         }
     }
-    info->n=i;
+    info->n = i;
 
     return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
-
-
 
 void flac_error_callback(const FLAC__StreamDecoder GCC_UNUSED *dec,
                          FLAC__StreamDecoderErrorStatus GCC_UNUSED status, void GCC_UNUSED *data)
@@ -453,7 +438,6 @@ void flac_error_callback(const FLAC__StreamDecoder GCC_UNUSED *dec,
 }
 
 #endif
-
 
 int decode_mlp_file(fileinfo_t* info)
 {
@@ -602,8 +586,6 @@ int decode_mlp_file(fileinfo_t* info)
                     // Restore verbosity levels
 
                     globals.debugging = debug;
-
-
               }
 
               fp = fopen(info->out_filename, "ab+");
@@ -1071,15 +1053,14 @@ command_t *scan_audiofile_characteristics(command_t *command)
    if (error != NO_AFMT_FOUND && (j))
          command->files[i][j-1].dvdv_compliant=
                   ((command->files[i][j-1].bitspersample == 16  || command->files[i][j-1].bitspersample == 24)
-                 &&(command->files[i][j-1].samplerate  == 96000 || command->files[i][j-1].samplerate  == 48000));
+               && (command->files[i][j-1].samplerate  == 96000 || command->files[i][j-1].samplerate  == 48000));
 
+    bool increment_group = (j == command->ntracks[i]);
 
-    bool increment_group=(j == command->ntracks[i]);
-
-    j *= 1-increment_group;
+    j *= 1 - increment_group;
     i += increment_group;
 
-    if (i == command->ngroups-command->nvideolinking_groups)
+    if (i == command->ngroups - command->nvideolinking_groups)
 
         return command;
 // recursion
@@ -2159,8 +2140,7 @@ inline static void interleave_sample_extended_merged(int channels, int count, ui
 
             for (i = 0; i < count; i += size)
             {
-                permutation_merged(buf, _buf, 0, channels, S, size);
-                for (int w = 0; w < channels; ++w) buf[w] += i;
+                permutation_merged(buf + i, _buf, 0, channels, C, size);
             }
             break;
     }
@@ -2185,21 +2165,19 @@ inline static void interleave_sample_extended(int channels, int count, uint8_t *
         default:
 
             for (i = 0; i < count; i += size)
-                permutation(buf+i, _buf, 0, channels, S, size);
+                permutation(buf + i, _buf, 0, channels, S, size);
             break;
     }
 }
 
-inline static void interleave_24_bit_sample_extended_merged(int channels, int count, uint8_t ** buf)
+inline static void interleave_24_bit_sample_extended_merged(int channels, int count, uint8_t *buf)
 {
     int i, size=channels*6;
     uint8_t _buf[size];
 
     for (i = 0; i < count; i += size)
     {
-        permutation_merged(buf, _buf, 1, channels, S, size);
-        for (int w = 0; w < channels; ++w) buf[w] += size;
-
+        permutation_merged(buf + i, _buf, 1, channels, C, size);
     }
 }
 
@@ -2532,11 +2510,13 @@ uint32_t audio_read_merged(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuf
         uint32_t request = (*bytesinbuffer + offset + requested_bytes < AUDIO_BUFFER_SIZE) ? requested_bytes / info->channels :
                                   (AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset)) / (info->channels * (info->bitspersample / 8)) ;
 
+        int unitsize = info->bitspersample == 16 ? (info->channels < 3 ? 1 : 4) : 6;
+
         for (int z = 0; z < request; ++z)
         {
             for (int w = 0; w < info->channels; ++w)
             {
-               buffer_increment += fread(buf + offset + w * info->bitspersample / 8, 1, info->bitspersample / 8, info->channel_fp[w]);
+               buffer_increment += fread(buf + offset + w * unitsize, 1, unitsize, info->channel_fp[w]);
             }
         }
 
@@ -2642,7 +2622,6 @@ out:
 
     return(buffer_increment);
 }
-
 
 int audio_close_merged(fileinfo_t* info)
 {
