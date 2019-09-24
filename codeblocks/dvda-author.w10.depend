@@ -77,7 +77,7 @@
 1567982607 c:\users\public\dev\dvda-author\src\include\version.h
 	"config.h"
 
-1568169610 c:\users\public\dev\dvda-author\src\include\commonvars.h
+1569362193 c:\users\public\dev\dvda-author\src\include\commonvars.h
 	"config.h"
 	"libiberty.h"
 
@@ -102,7 +102,7 @@
 	<unistd.h>
 	"c_utils.h"
 
-1568169610 c:\users\public\dev\dvda-author\src\include\structures.h
+1569362193 c:\users\public\dev\dvda-author\src\include\structures.h
 	"stream_decoder.h"
 	"inttypes.h"
 	"commonvars.h"
@@ -275,7 +275,7 @@
 
 1567982548 c:\users\public\dev\dvda-author\libutils\src\private\private_c_utils.h
 
-1568178583 source:c:\users\public\dev\dvda-author\libutils\src\winport.c
+1569362193 source:c:\users\public\dev\dvda-author\libutils\src\winport.c
 	"config.h"
 	"winport.h"
 	"private_c_utils.h"
@@ -318,7 +318,7 @@
 	"commonvars.h"
 	"structures.h"
 
-1568169610 c:\users\public\dev\dvda-author\src\include\audio2.h
+1569362193 c:\users\public\dev\dvda-author\src\include\audio2.h
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -386,7 +386,7 @@
 	"auxiliary.h"
 	"asvs.h"
 
-1568169610 source:c:\users\public\dev\dvda-author\src\ats.c
+1569363804 source:c:\users\public\dev\dvda-author\src\ats.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -410,7 +410,7 @@
 	"audio2.h"
 	"decode.h"
 
-1568177556 source:c:\users\public\dev\dvda-author\src\ats2wav.c
+1568178657 source:c:\users\public\dev\dvda-author\src\ats2wav.c
 	"ats2wav.h"
 	"ats.h"
 	"c_utils.h"
@@ -435,7 +435,7 @@
 	"libiberty.h"
 	"fixwav_manager.h"
 
-1568169610 c:\users\public\dev\dvda-author\src\include\multichannel.h
+1569362193 c:\users\public\dev\dvda-author\src\include\multichannel.h
 	<stdint.h>
 	<string.h>
 
@@ -459,7 +459,7 @@
 	"audio2.h"
 	"structures.h"
 
-1568169610 source:c:\users\public\dev\dvda-author\src\audio.c
+1569362193 source:c:\users\public\dev\dvda-author\src\audio.c
 	"config.h"
 	"audio2.h"
 
@@ -481,7 +481,7 @@
 	"sox.h"
 	<stdlib.h>
 
-1568177559 source:c:\users\public\dev\dvda-author\src\auxiliary.c
+1569362193 source:c:\users\public\dev\dvda-author\src\auxiliary.c
 	<stdlib.h>
 	<stdio.h>
 	<sys/stat.h>
@@ -522,7 +522,7 @@
 	"auxiliary.h"
 	<dirent.h>
 
-1568169610 source:c:\users\public\dev\dvda-author\src\command_line_parsing.c
+1569362193 source:c:\users\public\dev\dvda-author\src\command_line_parsing.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>

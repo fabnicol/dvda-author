@@ -11,7 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters='-W -q  --player vlc --play &quot;C:\Users\Public\outmlp&quot; --bindir &quot;C:\Users\Public\Dev\dvda-author\local.w10\bin&quot;  ' />
+				<Option parameters='-W  --bindir &quot;C:\Users\Public\Dev\dvda-author\local.w10\bin&quot; -g &quot;C:\Users\Public\Dev\dvda-author\Docs\a2_16_48.wav&quot; -t -o &quot;C:\Users\Public\Dev\out&quot; --maxverbose' />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
@@ -21,7 +21,7 @@
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters='-W -q --play &quot;C:\Users\Public\Dev\dvda-author\out&quot; --bindir &quot;C:\Users\Public\Dev\dvda-author\local.w10\bin&quot;' />
+				<Option parameters='-W  --bindir &quot;C:\Users\Public\Dev\dvda-author\local.w10\bin&quot; -g &quot;C:\Users\Public\Dev\dvda-author\Docs\a2_16_48.wav&quot; -t -o &quot;C:\Users\Public\Dev\out&quot; ' />
 				<Compiler>
 					<Add option="-O2" />
 					<Add option="-D_WIN32" />

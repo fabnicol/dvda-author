@@ -1150,7 +1150,7 @@ inline static int write_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_bu
         uint64_t offset = ftello(fp);
 
         int res = fwrite(audio_buf,1,audio_bytes,fp);
-        if (globals.maxverbose) fprintf(stderr, DBG "%" PRIu64 ": Writing %d bytes\n", offset, res);
+        if (globals.maxverbose) fprintf(stderr, DBG "%" PRIu64 ": Writing %d bytes bytesinbuffer %d payload %d\n", offset, res, bytesinbuffer, info->lpcm_payload);
 
         if (info->type != AFMT_MLP)
            write_pes_padding(fp,info->midpack_pes_padding);//info->midpack_pes_padding +6
