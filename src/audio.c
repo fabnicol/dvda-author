@@ -2529,7 +2529,7 @@ uint32_t audio_read_merged(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuf
         uint32_t bytesread = buffer_increment;
 
 #if 0
-        while (bytesread  &&  info->bytesread < info->numbytes
+        while (buffer_increment  &&  info->bytesread < info->numbytes
                && bytesread < requested_bytes)
         {
             uint32_t request = (*bytesinbuffer + offset + requested_bytes < AUDIO_BUFFER_SIZE) ?
