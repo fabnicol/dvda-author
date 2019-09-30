@@ -11,4 +11,4 @@ URL: https://github.com/ImageMagick
 Version: 7.0.8
 Cflags:  -I${includearchdir} -I${includedir} -fopenmp -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16
 Libs: -L${libdir} -l${libname}
-Libs.private: -L${libdir} -l${libname}       -ljpeg   -lpng16 -lz            -lXext    -lX11           -lz     -lm     -lgomp -lm
+Libs.private: -L${libdir} -l${libname}       -ljpeg   -lpng16 -lz            -lXext    -lX11   -lbz2        -lz     -lm     -lgomp -lm
