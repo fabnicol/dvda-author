@@ -218,7 +218,7 @@
 @set have-termios-h yes
 @c @set have-udplite-h no
 @set have-unistd-h yes
-@set have-valgrind-valgrind-h yes
+@c @set have-valgrind-valgrind-h no
 @c @set have-windows-h no
 @c @set have-winsock2-h no
 @c @set have-intrinsics-neon no
@@ -479,7 +479,7 @@
 @c @set config-opengl no
 @c @set config-pocketsphinx no
 @c @set config-vapoursynth no
-@c @set config-alsa no
+@set config-alsa yes
 @c @set config-appkit no
 @c @set config-avfoundation no
 @c @set config-bzlib no

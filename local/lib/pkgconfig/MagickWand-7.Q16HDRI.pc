@@ -1,8 +1,8 @@
-prefix=/home/nicol/Dev/dvda-author/local
+prefix=/home/fab/Desktop/dvda-author/local
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include/ImageMagick-7
-includearchdir=/home/nicol/Dev/dvda-author/local/include/ImageMagick-7
+includearchdir=/home/fab/Desktop/dvda-author/local/include/ImageMagick-7
 libname=MagickWand-7.Q16HDRI
  
 Name: MagickWand
@@ -12,4 +12,4 @@ Version: 7.0.8
 Requires: MagickCore
 Cflags: -I${includearchdir} -I${includedir} -fopenmp -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16
 Libs: -L${libdir} -l${libname}
-Libs.private: -L${libdir} -l${libname}       -ljpeg   -lpng16 -lz            -lXext    -lX11   -lbz2        -lz     -lm     -lgomp -lm
+Libs.private: -L${libdir} -l${libname}  -ljbig   -lfreetype  -ljpeg   -lpng16 -lz      -lfontconfig -lfreetype      -lXext    -lSM -lICE -lX11   -lbz2        -lz     -lm     -lgomp -lm

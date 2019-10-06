@@ -880,7 +880,7 @@ bool s_mkdir (const char *path)
 
     return (secure_mkdir(path, 0777) == 0);
 #else
-    return (secure_mkdir(path, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_ISVTX) == 0);
+    return (secure_mkdir(path,  S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) == 0);
 #endif
 }
 
