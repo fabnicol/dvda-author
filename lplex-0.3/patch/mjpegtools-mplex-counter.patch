@@ -1,0 +1,55 @@
+#   ABOUT THE MJPEGTOOLS PATCH:
+#
+#
+#   mjpegtools-mplex-counter.patch : [OPTIONAL]
+#
+#   This is a purely cosmetic patch to implement a progress counter
+#   while mplex is running (which can take dozens of minutes at a
+#   time).  Without it the paranoid among us (e.g. myself) are
+#   reduced to staring hopefully at the hard-disk activity light to
+#   make sure something's actually happening.
+#
+#   Note: this patch is valid for mjpegtools-1.9.0 and above.
+#   
+#   
+#   INSTALLATION:
+#
+#   1. Download the source tarball (currently mjpegtools-2.0.0.tar.gz)
+#      from <http://sourceforge.net/projects/mjpeg/> and expand.
+#
+#   2. Copy this patch file into the top folder.
+#
+#   3. Open a terminal, cd into the above-mentioned folder,
+#      and patch:
+#         patch -p0 < mjpegtools-mplex-counter.patch
+#
+#   4. Build as usual:
+#         cd ..
+#         ./configure
+#         make
+#         make install
+
+--- mplex/multiplexor.cpp.0	2008-05-10 06:56:04.000000000 -0400
++++ mplex/multiplexor.cpp	2009-09-24 17:30:19.000000000 -0400
+@@ -1100,6 +1100,9 @@ void Multiplexor::Multiplex()
+ 	ByteposTimecode( sector_transport_size, ticks_per_sector );
+ 	seg_state = start_segment;
+ 	running_out = false;
++//------------------------Lplex frame counter patch --------------------------		
++	int ct=0;
++//----------------------------------------------------------------------------		
+ 	for(;;)
+ 	{
+ 		bool completion = true;
+@@ -1209,6 +1212,11 @@ void Multiplexor::Multiplex()
+ 			master = 
+ 				vstreams.size() > 0 ? 
+ 				static_cast<VideoStream*>(vstreams[0]) : 0 ;
++//------------------------Lplex frame counter patch --------------------------		
++         if( ++ct % 512 == 0 )
++			   if( ! master->MuxCompleted() )
++	           fprintf( stderr, "  PATCH: Frame %-6d\r", master->DecodeOrder() );
++//----------------------------------------------------------------------------		
+ 			if( psstrm->SegmentLimReached() )
+ 			{
+ 				if( split_at_seq_end )

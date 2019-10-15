@@ -1,0 +1,224 @@
+# depslib dependency file v1.0
+1559240706 source:/home/fab/Dev/dvda-author/lplex-0.3/redist/md5/md5.c
+	"md5.h"
+	<string.h>
+
+1559240706 /home/fab/Dev/dvda-author/lplex-0.3/redist/md5/md5.h
+
+1559603412 source:/home/fab/Dev/dvda-author/lplex-0.3/src/dvd.cpp
+	"dvd.hpp"
+
+1559603412 /home/fab/Dev/dvda-author/lplex-0.3/src/dvd.hpp
+	"lplex_precompile.h"
+	<filesystem>
+	<cstdlib>
+	<iostream>
+	<fstream>
+	<iomanip>
+	<climits>
+	<string>
+	"util.h"
+	"lplex.hpp"
+	<stdint.h>
+	<dvdread/dvd_reader.h>
+	<dvdread/ifo_types.h>
+	<dvdread/ifo_read.h>
+	<dvdread/nav_read.h>
+	"../patch/udflist.h"
+
+1559240706 /home/fab/Dev/dvda-author/lplex-0.3/redist/lplex_precompile.h
+	<cstdlib>
+	<iostream>
+	<fstream>
+	<iomanip>
+	<climits>
+	<streambuf>
+	<sstream>
+	<vector>
+	<algorithm>
+	<unistd.h>
+	<assert.h>
+	<getopt.h>
+	<math.h>
+	<stdio.h>
+	<ctype.h>
+	<errno.h>
+	<fcntl.h>
+	<string.h>
+	<stdint.h>
+	<dvdread/dvd_reader.h>
+	<dvdread/ifo_types.h>
+	<dvdread/ifo_read.h>
+	<dvdread/nav_read.h>
+	<FLAC++/all.h>
+	<md5/md5.h>
+	<FLAC/format.h>
+	<vlc_bits.h>
+
+1559240706 /home/fab/Dev/dvda-author/lplex-0.3/redist/vlc_bits.h
+
+1559603412 /home/fab/Dev/dvda-author/lplex-0.3/src/util.h
+	"lplex_precompile.h"
+	<stdio.h>
+	<ctype.h>
+	<errno.h>
+	<fcntl.h>
+	<cstdlib>
+	<iostream>
+	<fstream>
+	<iomanip>
+	<sstream>
+	<string.h>
+	<filesystem>
+	<algorithm>
+	<cctype>
+	<locale>
+	"platform.h"
+	<stdint.h>
+	<vlc_bits.h>
+	<md5/md5.h>
+	"color.h"
+
+1559603412 /home/fab/Dev/dvda-author/lplex-0.3/src/platform.h
+	"lplex_precompile.h"
+	<filesystem>
+	"wx.hpp"
+	<windows.h>
+
+1559603412 /home/fab/Dev/dvda-author/lplex-0.3/src/wx.hpp
+	"lplex_precompile.h"
+	"util.h"
+
+1559603412 /home/fab/Dev/dvda-author/lplex-0.3/src/color.h
+	<iostream>
+	<windows.h>
+
+1559603412 /home/fab/Dev/dvda-author/lplex-0.3/src/lplex.hpp
+	"lplex_precompile.h"
+	<cstdlib>
+	<iostream>
+	<fstream>
+	<iomanip>
+	<unistd.h>
+	<vector>
+	<algorithm>
+	<assert.h>
+	<getopt.h>
+	<math.h>
+	<md5/md5.h>
+	<filesystem>
+	"util.h"
+	"wx.hpp"
+	"platform.h"
+	"lpcm.hpp"
+	"flac.hpp"
+	"processor.hpp"
+	"lplex.def"
+	"dvd.hpp"
+
+1559603412 /home/fab/Dev/dvda-author/lplex-0.3/src/lpcm.hpp
+	"lplex_precompile.h"
+	<filesystem>
+	<cstdlib>
+	<iostream>
+	<fstream>
+	<iomanip>
+	<md5/md5.h>
+	<FLAC/format.h>
+	"util.h"
+	"wx.hpp"
+	"platform.h"
+
+1559603412 /home/fab/Dev/dvda-author/lplex-0.3/src/flac.hpp
+	"lplex_precompile.h"
+	<cstdlib>
+	<iostream>
+	<fstream>
+	<iomanip>
+	<FLAC++/all.h>
+	"util.h"
+	"lpcm.hpp"
+
+1559603412 /home/fab/Dev/dvda-author/lplex-0.3/src/processor.hpp
+	"lplex_precompile.h"
+	<FLAC++/all.h>
+	"util.h"
+	"lpcm.hpp"
+	"flac.hpp"
+
+1571099234 /home/fab/Dev/dvda-author/lplex-0.3/lplex.def
+
+1559240706 /home/fab/Dev/dvda-author/lplex-0.3/patch/udflist.h
+	<dvdread/dvd_reader.h>
+	<vector>
+
+1559603412 source:/home/fab/Dev/dvda-author/lplex-0.3/src/exec.cpp
+	"util.h"
+	<cstdio>
+	<fstream>
+	<cerrno>
+	<fstream>
+	<cstdlib>
+	<windows.h>
+	<cstdio>
+	<tchar.h>
+	<tchar.h>
+	<strsafe.h>
+	<unistd.h>
+	<sys/types.h>
+	<sys/wait.h>
+
+1559603412 source:/home/fab/Dev/dvda-author/lplex-0.3/src/flac.cpp
+	"flac.hpp"
+
+1559603412 source:/home/fab/Dev/dvda-author/lplex-0.3/src/layout.cpp
+	"lplex.hpp"
+	"jobs.hpp"
+	<sstream>
+
+1559603412 /home/fab/Dev/dvda-author/lplex-0.3/src/jobs.hpp
+
+1559603412 source:/home/fab/Dev/dvda-author/lplex-0.3/src/lgzip.cpp
+
+1559603412 source:/home/fab/Dev/dvda-author/lplex-0.3/src/lpcm.cpp
+	"lpcm.hpp"
+	"processor.hpp"
+
+1559603412 source:/home/fab/Dev/dvda-author/lplex-0.3/src/lplex.cpp
+	"lplex.hpp"
+	"jobs.hpp"
+
+1559603412 source:/home/fab/Dev/dvda-author/lplex-0.3/src/main.cpp
+	<sstream>
+	<iomanip>
+	<bitset>
+	"lplex.hpp"
+	"jobs.hpp"
+
+1559603412 source:/home/fab/Dev/dvda-author/lplex-0.3/src/reader.cpp
+	"processor.hpp"
+	"multichannel.cpp"
+
+1559603412 source:/home/fab/Dev/dvda-author/lplex-0.3/src/util.cpp
+	"platform.h"
+	"util.h"
+	<sys/stat.h>
+
+1559603412 source:/home/fab/Dev/dvda-author/lplex-0.3/src/video.cpp
+	"lplex.hpp"
+	<jpeglib.h>
+
+1559603412 source:/home/fab/Dev/dvda-author/lplex-0.3/src/writer.cpp
+	"processor.hpp"
+	"multichannel.cpp"
+
+1559603412 source:/home/fab/Dev/dvda-author/lplex-0.3/src/wx.cpp
+	<iostream>
+	<filesystem>
+	"util.h"
+	<dirent.h>
+	<sys/stat.h>
+
+1571099529 source:/home/fab/Dev/dvda-author/lplex-0.3/codeblocks/lplex/main.cpp
+	<iostream>
+
