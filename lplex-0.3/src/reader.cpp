@@ -291,7 +291,7 @@ uint16_t waveReader::reset( const string& filename, int alignUnit )
 //
 //    Arguments:
 //       <limit>     - fill limit (to nearest block alignment if omitted)
-//       <midCount>  - reset values for counter (0 if omitted or NULL)
+//       <midCount>  - reset values for counter (0 if omitted or nullptr)
 //
 //    Returns number of bytes processed.
 // ----------------------------------------------------------------------------
@@ -407,7 +407,7 @@ uint16_t flacReader::reset( const string&  filename, int alignUnit )
 //    Arguments:
 //       <limit>     - fill limit (to nearest block alignment under nearest
 //                     flac frame if omitted)
-//       <midCount>  - reset values for counter (0 if omitted or NULL)
+//       <midCount>  - reset values for counter (0 if omitted or nullptr)
 //
 //    Returns number of bytes processed.
 // ----------------------------------------------------------------------------

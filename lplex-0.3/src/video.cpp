@@ -509,7 +509,7 @@ int jpegCheck( dvdJpeg &jpeg, bool ntsc, bool rescale )
 
     FILE *dvdJpeg = fopen( jpeg.fName.string(), "rb" );
 
-	if ( dvdJpeg == NULL )
+	if ( dvdJpeg == nullptr )
         FATAL( "Can't open jpeg file " + jpeg.fName.string() );
 
 	j.err = jpeg_std_error( &jErr );  /* ?????????? */

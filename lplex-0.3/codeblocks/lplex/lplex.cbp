@@ -11,6 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option parameters="~/Dev/dvda-author/Docs/a2_24_48.wav" />
 				<Compiler>
 					<Add option="-Weffc++" />
 					<Add option="-m64" />
@@ -85,6 +86,7 @@
 		<Extensions>
 			<code_completion />
 			<debugger />
+			<envvars />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>

@@ -311,7 +311,7 @@ extern string _blip, _affirm;
 extern char propellor[];
 
 const char * scrub();
-void blip( const char *msg = NULL );
+void blip( const char *msg = nullptr );
 void blip(const string& msg);
 
 void normalize_windows_paths(string &path);
@@ -325,8 +325,13 @@ template<class T> struct counter
 {
 	T start, now, max;
 	counter<T>( T s=0,  T n=0,  T m=0 ) : start(s), now(n), max(m) {}
-	void operator = (const counter<T> & other)
-	{ start = other.start; now = other.now; max = other.max; }
+
+	counter<T>& operator = (const counter<T> & other)
+	{
+	  start = other.start;
+	  now = other.now;
+	  max = other.max;
+	}
 };
 
 template<class T>

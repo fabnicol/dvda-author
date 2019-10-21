@@ -114,16 +114,31 @@ extern option long_opts[];
 #define DVD_VIDEO_LB_LEN 2048
 #define BIGBLOCKLEN ( DVD_VIDEO_LB_LEN * BIGBLOCKCT )
 
-struct dvdJpeg
+class dvdJpeg
 {
-	fs::path fName, tName;
-	int dim, rescale, ar;
-	uint32_t roughGOP, roughGOP2;
+	public:
+
+	fs::path fName ="";
+	fs::path tName = "";
+	int dim = 0;
+	int rescale = 0;
+	int ar = 0;
+	uint32_t roughGOP = 0;
+	uint32_t roughGOP2 = 0;
 
 	enum { _4x3, _16x9 };
-	dvdJpeg(int asprat=_4x3) : rescale(0), ar(asprat) {}
-	string getName() { return rescale ? tName.string() : fName.string(); }
-	int getDim() { return dim + ( rescale ? ( dim < 4 ? 4 : -4 ) : 0 ); }
+
+	dvdJpeg(int asprat =_4x3) : rescale {0}, ar {asprat} {}
+
+	string getName()
+	{
+	  return rescale ? tName.string() : fName.string();
+	}
+
+	int getDim()
+	{
+	  return dim + ( rescale ? ( dim < 4 ? 4 : -4 ) : 0 );
+	}
 
 	const char *sizeStr( bool outputSize = true )
 	{
@@ -135,13 +150,17 @@ struct dvdJpeg
 
 	const char *aspStr()
 	{
-		return (const char*[]){ " 4:3", "16:9" } [ ar ];
+		return (const char*[])
+		{
+		   " 4:3", "16:9"
+		} [ ar ];
 	}
 };
 
 
-struct lpcmFile : public lpcmEntity
+class lpcmFile : public lpcmEntity
 {
+public:
 	enum
 	{
 		untyped = 0x0,
@@ -155,10 +174,10 @@ struct lpcmFile : public lpcmEntity
 		readComplete = 0x80
 	};
 
-	uint16_t group, type, format, jpgIndex;
-	uint32_t id, dvdFrames, audioFrames, videoFrames;
-	counter<uint32_t> ct;
-	lpcmWriter *writer;
+	uint16_t group =0, type = 0, format = 0, jpgIndex = 0;
+	uint32_t id = 0, dvdFrames = 0, audioFrames = 0, videoFrames =0;
+	counter<uint32_t> ct = counter<uint32_t>();
+	lpcmWriter *writer = nullptr;
 	string details;
 };
 
@@ -271,7 +290,7 @@ bool stdArgs( int &argc, char** &argv, char *args, size_t size );
 
 void version( const char * str="" );
 void banner();
-void usage( const char *str=NULL );
+void usage( const char *str=nullptr );
 void GPL_notice();
 
 int author( dvdLayout &layout );
@@ -306,7 +325,7 @@ uint32_t roughGOP( dvdJpeg &dvdJpeg, const char *m2vName, bool ntsc );
 bool alias( fs::path &jpeg );
 
 ofstream* m2v( uint32_t vFrames, const char *jpeg, const char *m2vName,
-	uint16_t tv=NTSC, bool ws=false, void *userData=NULL, uint32_t sizeofUData=0,
+	uint16_t tv=NTSC, bool ws=false, void *userData=nullptr, uint32_t sizeofUData=0,
 	uint16_t GOPsize=18, bool append=false, bool endSeq=false, bool close=true );
 
 
@@ -347,9 +366,9 @@ class lFileTraverser //: public wxDirTraverser
 {
 public:
 
-	enum{ invalid=0x1, mismatchA=0x2, mismatchV=0x4, mismatchV_ar=0x8, notFound=0x10 };
-	uint16_t root, titleset, err, strict;
-	bool dirSpecified;
+	enum { invalid=0x1, mismatchA=0x2, mismatchV=0x4, mismatchV_ar=0x8, notFound=0x10 };
+	uint16_t root = 0, titleset = 0, err =0, strict = 0;
+	bool dirSpecified = false;
 	struct lpcmFile lFile;
 	struct infoFile iFile;
 	vector<string> filenames;
@@ -365,6 +384,8 @@ public:
     virtual int OnDir( const string& dirname );
     virtual void OnOpenError( const string& openerrorname );
 
+    virtual
+    ~lFileTraverser() {}
 };
 
 
@@ -372,7 +393,10 @@ class dvdauthorXml
 {
 public:
 
-	int video, titlesets, dvdStyler, disabled;
+	int video = 0;
+	int titlesets = 0;
+	int dvdStyler = 0;
+	int disabled = 0;
 	ofstream xml;
 	string name;
 
@@ -382,15 +406,15 @@ public:
 	};
 
     dvdauthorXml( const string& xmlName, int tv=NTSC, int ct=1, bool styler=0, bool disable=0 ) :
-		video(tv), titlesets( ct ), dvdStyler( styler ), disabled( disable )
+		video {tv}, titlesets {ct}, dvdStyler {styler}, disabled {disable}
 	{
         name = _f( "%s_dvd%s.xml", xmlName.c_str(), dvdStyler ? "styler" : "author" );
 		write( open, name );
 	}
 
-    int write( xmlContext context, const string& str="", int flag=0 );
+    int write(xmlContext context, const string& str = "", int flag = 0 );
 
-	static string timestampFractional( uint32_t f, bool ntsc, float boost=0 );
+	static string timestampFractional(uint32_t f, bool ntsc, float boost = 0 );
 };
 
 
@@ -414,9 +438,10 @@ class dvdLayout : public dvdUtil
 {
 public:
 
-	uint16_t dvdAudioFrame, dvdSampleSeam;
-	uint32_t dvdVideoFrame;
-    uint32_t dvdAVseam;
+	uint16_t dvdAudioFrame = 0;
+	uint16_t dvdSampleSeam = 0;
+	uint32_t dvdVideoFrame = 0;
+    uint32_t dvdAVseam = 0;
 	struct{ uint64_t estimate, audio, video, info; } total;
 
 	alignment trim;
@@ -429,14 +454,15 @@ public:
   	int16_t readIndex;
     int16_t writeIndex;
 	lpcmReader *reader;
-	md5_state_t md5sum;
-	counter<uint64_t> ct;
+	md5_state_t md5sum = {0};
+	counter<uint64_t> ct = counter<uint64_t>();
 	string nameNow, spaceTxt;
 
 	dvdLayout( vector<lpcmFile> *lFiles, vector<string> *vFiles, vector<infoFile> *iFiles, lplexJob *plexJob ) :
-		Lfiles( lFiles ), menufiles( vFiles ), infofiles( iFiles ), job( plexJob ),
-		readIndex(-1), writeIndex(-1), reader(NULL)
+                Lfiles {lFiles}, menufiles {vFiles}, infofiles {iFiles}, job {plexJob},
+                readIndex {-1}, writeIndex {-1}, reader {nullptr}
 	{}
+
 	~dvdLayout() { /* if( editing ) */ saveOpts( this ); /* if( reader ) delete reader; */ }
 
 	int configure();
@@ -457,7 +483,7 @@ public:
     char *val;
     int i;
 
-	xmlAttr( char *buffer ) : buf(buffer), name(NULL), val(NULL), i(0) {}
+	xmlAttr( char *buffer ) : buf(buffer), name(nullptr), val(nullptr), i(0) {}
 
 	uint16_t get()
 	{

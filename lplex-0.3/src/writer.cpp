@@ -435,7 +435,7 @@ uint16_t waveWriter::open()
 	if( ! waveFile.is_open() )
         FATAL( "Can't open output file " + fName.string() );
 
-	waveHeader::tag( waveFile, &fmeta );
+	waveHeader::tag( fName, fmeta );
 	md5_init( &md5 );
 
 	interSamp = fmeta.data.stream_info.bits_per_sample *
@@ -493,7 +493,7 @@ uint32_t waveWriter::process( unsigned char *buf, uint32_t size )
 
 uint16_t waveWriter::close()
 {
-	waveHeader::tag( waveFile, &fmeta );
+	waveHeader::tag( fName, fmeta );
 	waveFile.close();
 	md5_finish( &md5, md5str );
 	return 0;

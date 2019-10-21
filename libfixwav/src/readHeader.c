@@ -97,7 +97,7 @@ int readHeader(FILE * infile, WaveHeader *header)
     [16 B]              // 44 - GUID including WAV_FORMAT_PCM or WAV_FORMAT_EXTENSIBLE
     'f','a','c','t',    // 60 - fact chunk, optional for PCM here minimum)
     0,0,0,4,            // 64 - net length of fact chunk
-    0,0,0,0,            // 68 - number of samples written per channel out (uint32_t)
+    0,0,0,0,            // 68 - number of samples written (uint32_t)
    // some software pack up various tags in here... + x bytes
     'd','a','t','a',    // 72 + x - Sunchunk2IDO
     0,0,0,0             // 76 + x - 80 Subchunk2Size = filesize - padbyte - N

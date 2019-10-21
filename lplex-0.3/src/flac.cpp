@@ -55,7 +55,7 @@ void flacHeader::readStreamInfo( uint8_t* buf, FLAC__StreamMetadata *meta )
 }
 
 
-void flacHeader::readStreamInfo( waveHeader::canonical *wave, FLAC__StreamMetadata *meta )
+void flacHeader::readStreamInfo( waveHeader::extensible *wave, FLAC__StreamMetadata *meta )
 {
 	meta->data.stream_info.min_blocksize =
 	meta->data.stream_info.max_blocksize =
@@ -69,7 +69,7 @@ void flacHeader::readStreamInfo( waveHeader::canonical *wave, FLAC__StreamMetada
 }
 
 
-void flacHeader::readStreamInfo( PES_packet::LPCM_header *LPCM, FLAC__StreamMetadata *meta )
+void flacHeader::readStreamInfo(const PES_packet::LPCM_header *LPCM, FLAC__StreamMetadata *meta )
 {
 	meta->data.stream_info.min_blocksize =
 	meta->data.stream_info.max_blocksize =

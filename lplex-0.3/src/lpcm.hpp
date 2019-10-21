@@ -45,7 +45,13 @@ namespace fs = std::filesystem;
 #include "wx.hpp"
 #include "platform.h"
 
+#ifndef WAVE_FORMAT_PCM
+#define WAVE_FORMAT_PCM 1
+#endif
 
+#ifndef WAVE_FORMAT_EXTENSIBLE
+#define WAVE_FORMAT_EXTENSIBLE 0xFFFE
+#endif
 
 struct alignment
 {
@@ -77,13 +83,13 @@ struct lpcmEntity
 		disabled = 0x10
 	};
 
-	uint16_t state;
+	uint16_t state = 0;
 	FLAC__StreamMetadata fmeta;
 	md5_state_t md5;
 	md5_byte_t md5str[16];
-    fs::path fName;
-	uint16_t root, index, edit;
-	alignment trim;
+    fs::path fName = "";
+	uint16_t root = 0, index = 0, edit = 0;
+	alignment trim = alignment();
 
 	static bool soundCheck( lpcmEntity *l, bool mute=true );
     static bool soundMatch( lpcmEntity *a, lpcmEntity *b, char* errmsg = nullptr );
@@ -159,7 +165,7 @@ public:
 
 
 
-	static inline LPCM_header* lpcmAddr(PES_packet::header* PS1)
+	static inline const LPCM_header* lpcmAddr(const PES_packet::header* PS1)
 		{ return (LPCM_header*)( (uint8_t*)PS1 + 9 + PS1->headerLen ); }
 
 	static inline uint8_t* dataAddr(PES_packet::header* PS1)
@@ -168,50 +174,48 @@ public:
 	static inline uint16_t dataLen(PES_packet::header* PS1)
 		{ return bEndian( PS1->packetLen ) - PS1->headerLen - 11; }
 
-	static inline uint8_t* firstFrame(PES_packet::LPCM_header* LPCM)
+	static inline uint8_t* firstFrame(const PES_packet::LPCM_header* LPCM)
 		{ return (uint8_t*)LPCM + 3 + bEndian( LPCM->dataPointer ); }
 
 	static inline uint8_t* firstFrame(PES_packet::header* PS1)
 		{ return firstFrame( lpcmAddr( PS1 ) ); }
 
-	static inline uint16_t bitsPerSample(PES_packet::LPCM_header* LPCM)
+	static inline uint16_t bitsPerSample(const PES_packet::LPCM_header* LPCM)
 		{ return ( LPCM->flags2 >> 6 ) * 4 + 16; }
 
 	static inline uint16_t bytesPerSample(PES_packet::LPCM_header* LPCM)
 		{ return bitsPerSample( LPCM ) / 2; }
 
-	static inline uint8_t audioType(PES_packet::LPCM_header* LPCM)
+	static inline uint8_t audioType(const PES_packet::LPCM_header* LPCM)
 		{ return ( LPCM->flags2 | 0x30 ) ^ 0x30; }
 
-	static inline uint16_t quantization(PES_packet::LPCM_header* LPCM)
+	static inline uint16_t quantization(const PES_packet::LPCM_header* LPCM)
 		{ return ( LPCM->flags2 >> 6 )* 4 + 16; }
 
-	static inline uint32_t frequency(PES_packet::LPCM_header* LPCM)
+	static inline uint32_t frequency(const PES_packet::LPCM_header* LPCM)
 		{ return 48000 * (((( LPCM->flags2 >> 4 ) | 0xFC ) ^ 0xFC ) + 1 ); }
 
-	static inline uint16_t channels(PES_packet::LPCM_header* LPCM)
+	static inline uint16_t channels(const PES_packet::LPCM_header* LPCM)
 		{ return ( ( LPCM->flags2 | 0xF8 ) ^ 0xF8 ) + 1; }
 
-	static inline uint16_t bytesPerFrame(PES_packet::LPCM_header* LPCM)
+	static inline uint16_t bytesPerFrame(const PES_packet::LPCM_header* LPCM)
 	{
 		return frequency(LPCM) * channels(LPCM) * quantization(LPCM) /
 			( 8 /*bits per byte*/ * 600 /*dvd lpcm audio frames per sec*/ );
 	}
 
-	static inline uint16_t bitsPerSample(PES_packet::header* PS1)
+	static inline uint16_t bitsPerSample(const PES_packet::header* PS1)
 		{ return bitsPerSample( lpcmAddr( PS1 ) ); }
-	static inline uint16_t bytesPerSample(PES_packet::header* PS1)
-		{ return bytesPerSample( lpcmAddr( PS1 ) ); }
 
-	static inline uint8_t audioType(PES_packet::header* PS1)
+	static inline uint8_t audioType(const PES_packet::header* PS1)
 		{ return audioType( lpcmAddr( PS1 ) ); }
-	static inline uint16_t quantization(PES_packet::header* PS1)
+	static inline uint16_t quantization(const PES_packet::header* PS1)
 		{ return quantization( lpcmAddr( PS1 ) ); }
-	static inline uint16_t frequency(PES_packet::header* PS1)
+	static inline uint16_t frequency(const PES_packet::header* PS1)
 		{ return frequency( lpcmAddr( PS1 ) ); }
-	static inline uint16_t channels(PES_packet::header* PS1)
-		{ return channels( lpcmAddr( PS1 ) ); }
-	static inline uint16_t bytesPerFrame(PES_packet::header* PS1)
+	static inline uint16_t channels(const PES_packet::header* PS1)
+		{ return channels( lpcmAddr(PS1 ) ); }
+	static inline uint16_t bytesPerFrame(const PES_packet::header* PS1)
 		{ return bytesPerFrame( lpcmAddr( PS1 ) ); }
 
 
@@ -229,16 +233,16 @@ public:
 		{ return readpts( (uint8_t*)PS1 + 9 ); }
 	static uint64_t readpts( uint8_t* buf );
 
-	static LPCM_header * isLpcmPacket( unsigned char *lb )
+	static const LPCM_header * isLpcmPacket( unsigned char *lb )
 	{
 		header *PS1 = (header*) &lb[ 14 ];
 		if( PS1->startCode == bEndian( (uint32_t) 0x000001BD ) )
 		{
-			LPCM_header *LPCM = lpcmAddr( PS1 );
+			const LPCM_header *LPCM = lpcmAddr( PS1 );
 			if( LPCM->streamID >= 0xA0 )
 				return LPCM;
 		}
-		return NULL;
+		return nullptr;
 	}
 
 
@@ -249,6 +253,8 @@ public:
 class waveHeader
 {
 public:
+
+
 	struct canonical
 	{
 		uint8_t chunkID[4];
@@ -262,19 +268,73 @@ public:
 		uint32_t byteRate;
 		uint16_t blockAlign;
 		uint16_t bitsPerSample;
-		uint8_t subchunk2ID[4];
+		uint8_t subchunk2ID[4];  // if subchunk2ID != 'd' then extensible!
 		uint32_t subchunk2Size;
+
 	};
 
-	static int tag( ofstream& out, FLAC__StreamMetadata *meta=0 );
-	static int tag( ofstream& out, PES_packet::LPCM_header* LPCM=0 );
-	static int tag( ofstream& out, PES_packet::header* PS1 )
-		{ return tag( out, PES_packet::lpcmAddr( PS1 ) ); }
+	struct extensible
+	{
+		uint8_t chunkID[4];
+		uint32_t chunkSize;
+		uint8_t format[4];
+		uint8_t subChunkID[4];
+		uint32_t SubChunkSize;
+		uint16_t audioFormat;
+		uint16_t numChannels;
+		uint32_t sampleRate;
+		uint32_t byteRate;
+		uint16_t blockAlign;
+		uint16_t bitsPerSample;
+		uint8_t  wavext[2];  // if wavext != 'd' then extensible!
+		uint16_t validBits;  // normally = bitsPerSample
+		uint32_t dwChannelMask;
+		uint8_t  GUID[16];
+		uint8_t  ckID[4];
+		uint32_t ckSize;  // = 4
+		uint32_t dwSampleLength;
+    	uint8_t subchunk2ID[4];  // if subchunk2ID != 'd' then extensible!
+		uint32_t subchunk2Size;
 
-	static int open( ifstream &wavefile, FLAC__StreamMetadata *fmeta, bool mute=false );
-	static int audit( const char *filename, FLAC__StreamMetadata *fmeta );
+	};
+
+// N is the offset of "data" + 8.
+// N = 46 (minimal extension, no fact), 58 (minimal extension, fact), 68 (long extension, no fact) or 80 (long extention, minimal fact) or 80 + x (long extension, non-standard tagged fact)
+
+//  {'R','I','F','F',    //  0 - ChunkID
+//    0,0,0,0,            //  4 - ChunkSize (filesize - 8 - padbyte)
+//    'W','A','V','E',    //  8 - Format
+//    'f','m','t',' ',    // 12 - SubChunkID
+//    40,0,0,0,           // 16 - SubChunkSize  // 18 or 40 for PCM as 16 is only for WAVE_FORMAT_PCM
+//    1,0,                // 20 - AudioFormat (1=16-bit)
+//    2,0,                // 22 - NumChannels
+//    0,0,0,0,            // 24 - SampleRate in Hz
+//    0,0,0,0,            // 28 - Byte Rate (SampleRate*NumChannels*(BitsPerSample/8)
+//    4,0,                // 32 - BlockAlign (== NumChannels * BitsPerSample/8)
+//    16,0,               // 34 - BitsPerSample
+//    22,0,               // 36 - wav extension  (0 or 22 bytes)
+//    if not 0:
+//    0,0,                // 38 - number of valid bits, usually = 34
+//    0,0,0,0,            // 40 - speaker position mask (dwChannelMmask)
+//    [16 B]              // 44 - GUID including WAV_FORMAT_PCM or WAV_FORMAT_EXTENSIBLE
+//    'f','a','c','t',    // 60 - fact chunk, optional for PCM here minimum)
+//    0,0,0,4,            // 64 - net length of fact chunk
+//    0,0,0,0,            // 68 - number of samples written  (uint32_t)
+//   // some software pack up various tags in here... + x bytes
+//    'd','a','t','a',    // 72 + x - Sunchunk2IDO
+//    0,0,0,0             // 76 + x - 80 Subchunk2Size = filesize - padbyte - N
+//  };
+
+
+	static int tag(const fs::path&, const FLAC__StreamMetadata& meta);
+	static int tag(const fs::path&, const PES_packet::LPCM_header* LPCM=0 );
+	static int tag(const fs::path& fName, const PES_packet::header* PS1 )
+		{ return tag( fName, PES_packet::lpcmAddr( PS1 ) ); }
+
+	static int open( ifstream &wavefile, const FLAC__StreamMetadata *fmeta, bool mute=false );
+	static int audit( const char *filename, const FLAC__StreamMetadata *fmeta );
 	static void display( canonical* h, const char* prefix="", ostream &stream=cerr  );
-
+    static void display( extensible* h, const char* prefix="", ostream &stream=cerr  );
 };
 
 

@@ -44,7 +44,7 @@ int dvdLayout::readerNext()
 		memcpy( &lFile->md5str, &reader->fmeta.data.stream_info.md5sum, 16 );
 		lFile->type |= lpcmFile::readComplete;
 		//delete reader;
-		reader = NULL;
+		reader = nullptr;
 	}
 
 	if( readIndex < (int) Lfiles->size() )
@@ -713,11 +713,9 @@ int dvdLayout::getNext()
 
 	md5_init( &md5sum );
 
-	while( reader->fillBuf( total.max - total.now , mid ? &midCount : NULL ) )
+	while( reader->fillBuf( total.max - total.now , mid ? &midCount : nullptr ) )
 	{
-#ifndef lplex_console
-		wxYieldIfNeeded();
-#endif
+
 		mid = false;
 											// if at trimpoint
 		if ( total.now + reader->ct.now == total.max )
