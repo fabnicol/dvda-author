@@ -14,11 +14,11 @@
 #include "winport.h"
 #include "auxiliary.h"
 
-extern globalData globals;
+
 extern uint16_t norm_x, norm_y, totntracks;
 extern uint8_t maxbuttons, resbuttons;
 
-int  generate_amgm_xml(uint8_t ngroups, uint8_t *ntracks, pic* img)
+int  generate_amgm_xml(uint8_t ngroups, uint8_t *ntracks, pic* img, globalData* globals)
 {
 
     errno=0;
@@ -28,20 +28,20 @@ int  generate_amgm_xml(uint8_t ngroups, uint8_t *ntracks, pic* img)
     // Writing XML code
     FILE *xmlfile;
 
-    if (globals.xml == NULL)
+    if (globals->xml == NULL)
     {
-        char xmlfilepath[strlen(globals.settings.tempdir)+8+STRLEN_SEPARATOR];
+        char xmlfilepath[strlen(globals->settings.tempdir)+8+STRLEN_SEPARATOR];
         memset(xmlfilepath, 0, sizeof(xmlfilepath));
-        sprintf(xmlfilepath,"%s"SEPARATOR"%s", globals.settings.tempdir,"xmltemp");
-        globals.xml=strdup(xmlfilepath);
+        sprintf(xmlfilepath,"%s"SEPARATOR"%s", globals->settings.tempdir,"xmltemp");
+        globals->xml=strdup(xmlfilepath);
     }
 
-    xmlfile = fopen(globals.xml, "wb");
-    if (xmlfile == NULL)        
+    xmlfile = fopen(globals->xml, "wb");
+    if (xmlfile == NULL)
     {
-      EXIT_ON_RUNTIME_ERROR_VERBOSE("Could not open xmlfile")        
+      EXIT_ON_RUNTIME_ERROR_VERBOSE("Could not open xmlfile")
     }
-            
+
     fprintf(xmlfile, "%s%s%s%s%s\n",
             "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n\
 <dvdauthor jumppad=\"1\">\n\
@@ -164,7 +164,7 @@ int  generate_amgm_xml(uint8_t ngroups, uint8_t *ntracks, pic* img)
     fclose(xmlfile);
 
     if (errno) foutput("%s\n", ERR "Could not generate Xml project file properly for generating DVD-Audio menu");
-    else if (globals.debugging) foutput("%s\n", MSG_TAG "Xml dvdauthor project file was generated.");
+    else if (globals->debugging) foutput("%s\n", MSG_TAG "Xml dvdauthor project file was generated.");
 
     return(errno);
 }
@@ -201,33 +201,33 @@ static inline void compute_coordinates(uint8_t ncol, uint8_t maxntracks, uint16_
 }
 
 
-int  generate_spumux_xml(uint8_t ngroups, uint8_t *ntracks, uint16_t maxntracks, pic* img)
+int  generate_spumux_xml(uint8_t ngroups, uint8_t *ntracks, uint16_t maxntracks, pic* img, globalData* globals)
 {
 
     uint8_t buttons=0, arrowbuttons, menubuttons, menu=0, track=0, group=0, groupcount=0, offset=0;
     uint16_t x0[ngroups], y0[MAX_BUTTON_NUMBER], x1[ngroups], y1[MAX_BUTTON_NUMBER];
     errno=0;
     FILE *spu_xmlfile=NULL;
-    if (globals.debugging) foutput(MSG_TAG "Max ntracks: %d\n", maxntracks);
+    if (globals->debugging) foutput(MSG_TAG "Max ntracks: %d\n", maxntracks);
 
-    if (globals.spu_xml == NULL) globals.spu_xml=calloc(img->nmenus,sizeof(char *));
-    if (globals.spu_xml == NULL) perror(ERR "spuxml\n");
-    if (globals.debugging) foutput("%s\n", INF "Generating Xml project for spumux...");
+    if (globals->spu_xml == NULL) globals->spu_xml=calloc(img->nmenus,sizeof(char *));
+    if (globals->spu_xml == NULL) perror(ERR "spuxml\n");
+    if (globals->debugging) foutput("%s\n", INF "Generating Xml project for spumux...");
 
 
     do
     {
         // Writing XML code
 
-        if (globals.spu_xml[menu] == NULL)
+        if (globals->spu_xml[menu] == NULL)
         {
-            char spu_xmlfilepath[strlen(globals.settings.tempdir)+20];
+            char spu_xmlfilepath[strlen(globals->settings.tempdir)+20];
             memset(spu_xmlfilepath,0,sizeof(spu_xmlfilepath));
-            sprintf(spu_xmlfilepath, "%s"SEPARATOR"%s%d%s", globals.settings.tempdir,"spu_xmltemp_",menu,".xml");
-            globals.spu_xml[menu]=strdup(spu_xmlfilepath);
+            sprintf(spu_xmlfilepath, "%s"SEPARATOR"%s%d%s", globals->settings.tempdir,"spu_xmltemp_",menu,".xml");
+            globals->spu_xml[menu]=strdup(spu_xmlfilepath);
         }
 
-        if (!globals.nooutput) spu_xmlfile=fopen(globals.spu_xml[menu], "wb");
+        if (!globals->nooutput) spu_xmlfile=fopen(globals->spu_xml[menu], "wb");
 
         /*  We take a basic picture of 720x576 and divide it into a maximum of 3 columns (max 3 groups) and 20 tracks per group
          *  Left/Right Border= 20, top border=56 pixels, bottom border=16 pix. Inter-column spacing=20 pixels, inter-line spacing=12 pixels
@@ -240,9 +240,9 @@ int  generate_spumux_xml(uint8_t ngroups, uint8_t *ntracks, uint16_t maxntracks,
          *  the coordinates of this button will be (x0,y0,x1,y1)=(left x,top y,right x,bottom y) :
          *   button(g, t(g))=floor(20+ 700*(g-1)/G, 56 + 516*(t(g)-1)/T, 700*g/G, 56 + 516*t(g)/T) */
 
-        if (globals.debugging)     foutput(INF "Creating spumux xml file %s for menu %d\n", globals.spu_xml[menu], menu);
+        if (globals->debugging)     foutput(INF "Creating spumux xml file %s for menu %d\n", globals->spu_xml[menu], menu);
 
-        if (spu_xmlfile == NULL)   foutput(ERR "spumux xml file %s for menu %d could not be opened\n", globals.spu_xml[menu], menu);
+        if (spu_xmlfile == NULL)   foutput(ERR "spumux xml file %s for menu %d could not be opened\n", globals->spu_xml[menu], menu);
 
         fprintf(spu_xmlfile, "%s%s%s%s%s%s%s%s%s%s%s%s",
                 "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n\
@@ -353,7 +353,7 @@ int  generate_spumux_xml(uint8_t ngroups, uint8_t *ntracks, uint16_t maxntracks,
 
 
     if (errno) foutput("%s\n", ERR "Could not generate spumux xml project file properly for generating DVD-Audio menu");
-    else if (globals.debugging) foutput("%s\n", MSG_TAG "spumux xml dvdauthor project file was generated.");
+    else if (globals->debugging) foutput("%s\n", MSG_TAG "spumux xml dvdauthor project file was generated.");
 
     return(errno);
 }

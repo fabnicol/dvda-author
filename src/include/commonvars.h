@@ -485,8 +485,8 @@ GNU General Public License for more details.\n\
 You should have received a copy of the GNU General Public License \n\
 along with dvda-author.  If not, see http://www.gnu.org/licenses/.\n"
 
-#define SINGLE_DOTS  if (!globals.silence)  foutput("\n%s\n",         "------------------------------------------------------------");
-#define DOUBLE_DOTS  if (!globals.silence)  foutput("\n%s",              "============================================================");
+#define SINGLE_DOTS  if (!globals->silence)  foutput("\n%s\n",         "------------------------------------------------------------");
+#define DOUBLE_DOTS  if (!globals->silence)  foutput("\n%s",              "============================================================");
 #define J "\n\n                         "  //left-aligns definition strings
 #define K "\n                  "  // short left-aligns definition strings
 

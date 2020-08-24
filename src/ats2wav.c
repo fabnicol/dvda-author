@@ -34,12 +34,11 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "auxiliary.h"
 
 extern uint32_t cga2wav_channels[21];
-extern globalData globals;
+
 extern uint8_t channels[21];
 static double total_duration = 0;
 static clock_t then;
 static pid_t pid;
-static bool done = false;
 
 static FILE_DESCRIPTOR   g_hChildStd_IN_Rd;
 static FILE_DESCRIPTOR   g_hChildStd_IN_Wr;
@@ -154,7 +153,7 @@ static void convert_buffer(WaveHeader* header, uint8_t *buf, int *count)
 }
 
 
-inline static void  aob_open(WaveData *info)
+inline static void  aob_open(WaveData *info, globalData* globals)
 {
 
     if (file_exists(info->infile.filename))
@@ -178,7 +177,7 @@ inline static void  aob_open(WaveData *info)
     }
 }
 
-inline static void output_path_create(const char* dirpath, WaveData *info, int track, int title, const char* extension)
+inline static void output_path_create(const char* dirpath, WaveData *info, int track, int title, const char* extension, globalData* globals)
 {
 
     int L = strlen(extension); // includes the dot
@@ -193,14 +192,14 @@ inline static void output_path_create(const char* dirpath, WaveData *info, int t
     info->outfile.filename = filepath(dirpath, Title);
 }
 
-inline static void wav_output_open(WaveData *info)
+inline static void wav_output_open(WaveData *info, globalData* globals)
 {
-    if (globals.pipe)
+    if (globals->pipe)
     {
         info->outfile.fp = stdout;
         return;
     }
-    if (globals.veryverbose)
+    if (globals->veryverbose)
     {
         foutput(INF "Opening file %s ...\n", info->outfile.filename);
     }
@@ -216,18 +215,18 @@ inline static void wav_output_open(WaveData *info)
     }
 }
 
-inline static void get_audio_format(WaveData *info, bool new_title, bool* status)
+inline static void get_audio_format(WaveData *info, bool new_title, bool* status, globalData* globals)
 {
-    if (! new_title && ! globals.strict_check && *status == VALID) return;
+    if (! new_title && ! globals->strict_check && *status == VALID) return;
 
     // avoid useless checks depending on strictness requirements
     // In some cases headers may be corrupt but not audio or marginally.
-    // Allowing to keep going with extraction if globals.strict_check == false
+    // Allowing to keep going with extraction if globals->strict_check == false
     // Unless no previous correct detection in same title (*status != VALID)
 
     uint8_t buff[0x3D] = {0};
 
-    if (! info->infile.isopen) aob_open(info);
+    if (! info->infile.isopen) aob_open(info, globals);
 
     uint32_t offset = ftell(info->infile.fp);
     if (info->infile.filesize - offset <= 2048) return; // last pack: no practical use.
@@ -257,13 +256,13 @@ inline static void get_audio_format(WaveData *info, bool new_title, bool* status
         }
         else
         {
-            if (globals.strict_check)
+            if (globals->strict_check)
             {
                 fprintf(stderr, "%s offset: %d %s\n", WAR "\nCould not find start of flags2 0xC0/0xC1/0x81/0x80", offset, info->infile.filename);
                 EXIT_ON_RUNTIME_ERROR
             }
             else
-              if (globals.debugging)
+              if (globals->debugging)
                 fprintf(stderr, "%s offset: %d %s\n", WAR "\nCould not find start of flags2 0xC0/0xC1/0x81/0x80", offset, info->infile.filename);
 
             *status = INVALID;
@@ -271,13 +270,13 @@ inline static void get_audio_format(WaveData *info, bool new_title, bool* status
     }
     else
     {
-        if (globals.strict_check)
+        if (globals->strict_check)
         {
             fprintf(stderr, "%s %d %s\n", WAR "\nCould not find start of pack header 0x00001BA", offset, info->infile.filename);
             EXIT_ON_RUNTIME_ERROR
         }
         else
-            if (globals.debugging)
+            if (globals->debugging)
                 fprintf(stderr, "%s offset: %d %s\n", WAR "\nCould not find start of pack header 0x00001BA", offset, info->infile.filename);
 
         *status = INVALID;
@@ -287,7 +286,7 @@ inline static void get_audio_format(WaveData *info, bool new_title, bool* status
     if (res == 0) *status = VALID;
 }
 
-inline static int calc_position(WaveData* info, const uint32_t offset0)
+inline static int calc_position(WaveData* info, const uint32_t offset0, globalData* globals)
 {
     uint8_t buf[6];
     int position;
@@ -338,15 +337,16 @@ inline static int calc_position(WaveData* info, const uint32_t offset0)
 }
 
 inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header,
-                                        bool *status, uint8_t* continuity, bool new_title)
+                                        bool *status, uint8_t* continuity, bool new_title,
+                                        globalData* globals)
 {
-    if (! info->infile.isopen) aob_open(info);
+    if (! info->infile.isopen) aob_open(info, globals);
 
     uint32_t offset0 = ftell(info->infile.fp);
 
-    get_audio_format(info, new_title, status);
+    get_audio_format(info, new_title, status, globals);
 
-    int position = calc_position(info, offset0);
+    int position = calc_position(info, offset0, globals);
 
     if (info->infile.type == AFMT_MLP)
     {
@@ -371,7 +371,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header,
                  *status = INVALID;
                 return position;
             }
-            if ( ! audit_mlp_header(buff, &decinfo, false))
+            if ( ! audit_mlp_header(buff, &decinfo, false, globals))
             {
                 *status = INVALID;
             }
@@ -393,7 +393,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header,
 
           short int count = 0;
           bool err = false;
-          while ((err = audit_mlp_header(buff + count, &decinfo, false)) == false && count < 2040)
+          while ((err = audit_mlp_header(buff + count, &decinfo, false, globals)) == false && count < 2040)
           {
               ++count;
           }
@@ -401,7 +401,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header,
           if (err == false)
           {
               fseek(info->infile.fp, offset0, SEEK_SET);
-              if (globals.veryverbose)
+              if (globals->veryverbose)
                   fprintf(stderr, "%s\n", ERR "Could not find major header to peek audio info from MLP file.");
               *status = INVALID;
               return position;
@@ -539,7 +539,9 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
                                             uint32_t wav_numbytes,
                                             unsigned long *pack_in_track,
                                             unsigned long *pack_in_title,
-                                            unsigned long *pack_in_group)
+                                            unsigned long *pack_in_group,
+
+                                            globalData* globals)
 {
     int audio_bytes;
     uint8_t PES_packet_len_bytes[2];
@@ -559,7 +561,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
     uint32_t offset0 = ftell(info->infile.fp);
 
     if (*position != CUT_PACK && *position != CUT_PACK_RMDR)
-        get_audio_format(info, (*position == FIRST_PACK), status);
+        get_audio_format(info, (*position == FIRST_PACK), status, globals);
 
     if (info->infile.type == AFMT_LPCM)
     {
@@ -613,7 +615,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 
     if (*position != CUT_PACK_RMDR)
     {
-        *position = calc_position(info, offset0);
+        *position = calc_position(info, offset0, globals);
 
         if (info->infile.type == AFMT_LPCM && wav_numbytes > 0)
         {
@@ -621,11 +623,11 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
             if (lpcm_payload_cut < lpcm_payload && *position == MIDDLE_PACK)
             {
                 *position = CUT_PACK;
-                if (globals.veryverbose) foutput(INF "Cutting track sector %lu using %d %s\n",
+                if (globals->veryverbose) foutput(INF "Cutting track sector %lu using %d %s\n",
                                                  *pack_in_track,
                                                  lpcm_payload_cut,
                                                  " bytes.");
-                if (globals.maxverbose)
+                if (globals->maxverbose)
                  {
                    foutput("%s %lu\n", INF "Looping next sector...", *pack_in_group - 1);
                  }
@@ -731,7 +733,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 
             res = fread(audio_buf + delta, 1, audio_bytes, info->infile.fp);
 
-            if (globals.maxverbose)
+            if (globals->maxverbose)
             {
                foutput(MSG_TAG "Audio bytes: %d, res: %d\n", audio_bytes, res);
                if (res != audio_bytes)
@@ -743,11 +745,12 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
             if (info->infile.type == AFMT_LPCM)
                 convert_buffer(header, audio_buf, &writ);
 
-            if (globals.play)
+            if (globals->play)
             {
               fpout_size_increment = write_to_child_stdin(audio_buf,
                                                           writ,
-                                                          g_hChildStd_IN_Wr); // only useful for Windows
+                                                          g_hChildStd_IN_Wr,
+                                                          globals); // only useful for Windows
 
                if (fpout_size_increment  != writ ) fprintf(stderr, ERR "wrote %d bytes out of %d\n", fpout_size_increment, writ);
                //pipe_to_parent_stderr(g_hChildStd_ERR_Rd, hParentStdErr, 2005); // only useful for Windows
@@ -762,7 +765,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 
                 if (delta > 0)
                 {
-                    if (globals.maxverbose)
+                    if (globals->maxverbose)
                         foutput("%s%d%s\n", WAR "Left out ", delta, " bytes in buffer.");
 
                     for (int w = 0; w < delta; ++w) audio_buf[w] = audio_buf[writ + w];
@@ -792,7 +795,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
            if (*position == CUT_PACK_RMDR) *position = MIDDLE_PACK;
         }
 
-    if (globals.maxverbose)
+    if (globals->maxverbose)
            foutput(MSG_TAG "Position : %d\n", *position);
 
     *written_bytes += fpout_size_increment;
@@ -801,13 +804,13 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
 
 
 static inline int get_position(int position, WaveData* info, WaveHeader* header, bool* status,
-                               uint8_t* continuity)
+                               uint8_t* continuity, globalData* globals)
 {
     if (position != CUT_PACK_RMDR)
         do
         {
             position = peek_pes_packet_audio(info, header, status,
-                                             continuity, position == FIRST_PACK);
+                                             continuity, position == FIRST_PACK, globals);
 
             if (*status == VALID) break;
         }
@@ -816,14 +819,14 @@ static inline int get_position(int position, WaveData* info, WaveHeader* header,
 
     if (*continuity != 0)
     {
-        if (globals.maxverbose)
+        if (globals->maxverbose)
             foutput("%s %d\n", MSG_TAG "Continuity counter has wrong value (should be 0): ", *continuity);
     }
 
     return position;
 }
 
-static inline uint32_t scan_wav_characteristics(fileinfo_t* info, WaveHeader* header)
+static inline uint32_t scan_wav_characteristics(fileinfo_t* info, WaveHeader* header, globalData* globals)
 {
     info->bitspersample = header->wBitsPerSample;
     info->samplerate    = header->dwSamplesPerSec;
@@ -886,26 +889,26 @@ static void usleep(unsigned int usec)
 }
 #endif
 
-static void open_player(const WaveData *info, const WaveHeader  *header)
+static void open_player(const WaveData *info, const WaveHeader  *header, globalData* globals)
 {
        fflush(NULL);
 
        char *player = NULL;
 
-       if  (strcmp(globals.player, FFPLAY_BASENAME) == 0)
+       if  (strcmp(globals->player, FFPLAY_BASENAME) == 0)
             {
-                if (globals.player_path[0] == '\0')
-                  player = create_binary_path(player, FFPLAY, SEPARATOR FFPLAY_BASENAME);
+                if (globals->player_path[0] == '\0')
+                  player = create_binary_path(player, FFPLAY, SEPARATOR FFPLAY_BASENAME, globals);
                 else
-                  player = globals.player_path;
+                  player = globals->player_path;
             }
        else
-       if  (strcmp(globals.player, VLC_BASENAME) == 0)
+       if  (strcmp(globals->player, VLC_BASENAME) == 0)
             {
-                   if (globals.player_path[0] == '\0')
+                   if (globals->player_path[0] == '\0')
                       player = strdup(VLC_PATH);
                    else
-                      player = globals.player_path;
+                      player = globals->player_path;
             }
 
        char* t[13] = {NULL};
@@ -913,7 +916,7 @@ static void open_player(const WaveData *info, const WaveHeader  *header)
        if (info->infile.type == AFMT_MLP)
            {
 
-              if (strcmp(globals.player, FFPLAY_BASENAME) == 0)
+              if (strcmp(globals->player, FFPLAY_BASENAME) == 0)
               {
                   t[0] = FFPLAY_BASENAME;
                   t[1] = "-i";
@@ -944,7 +947,7 @@ static void open_player(const WaveData *info, const WaveHeader  *header)
                 char ch[2];
                 sprintf(ch, "%1d", header->channels);
 
-                if (strcmp(globals.player, FFPLAY_BASENAME) == 0)
+                if (strcmp(globals->player, FFPLAY_BASENAME) == 0)
                 {
                   t[0] = FFPLAY_BASENAME;
                   t[1] = "-i";
@@ -977,19 +980,20 @@ static void open_player(const WaveData *info, const WaveHeader  *header)
             }
 
             pipe_to_child_stdin(
-                                             player,
-                                             t,
-                                             2048,  // only useful for Windows
-                                             &g_hChildStd_IN_Rd,
-                                             &g_hChildStd_IN_Wr,
-                                             &g_hChildStd_ERR_Rd,
-                                             &g_hChildStd_ERR_Wr,
-                                             piProcInfo,
-                                             siStartInfo);
+                                 player,
+                                 t,
+                                 2048,  // only useful for Windows
+                                 &g_hChildStd_IN_Rd,
+                                 &g_hChildStd_IN_Wr,
+                                 &g_hChildStd_ERR_Rd,
+                                 &g_hChildStd_ERR_Wr,
+                                 piProcInfo,
+                                 siStartInfo,
+                                 globals);
 
 }
 
-int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
+int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info, globalData* globals)
 {
 
     int title = 0;
@@ -1001,18 +1005,18 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
     WaveHeader header;
 
     info->infile.isopen = false;
-    info->infile.filename = globals.aobpath[i];
+    info->infile.filename = globals->aobpath[i];
     info->infile.filesize = stat_file_size(info->infile.filename);
 
     char g_i[3];
     sprintf(g_i, "g%1d", i + 1);
 
-    char* dir_g_i = filepath(globals.settings.outdir, g_i);
+    char* dir_g_i = filepath(globals->settings.outdir, g_i);
 
-    if (! s_dir_exists(dir_g_i))
+    if (! s_dir_exists(dir_g_i, globals))
     {
-        secure_mkdir(dir_g_i, globals.access_rights);
-        if (globals.veryverbose)
+        secure_mkdir(dir_g_i, globals->access_rights, globals);
+        if (globals->veryverbose)
                 foutput("%s |%s|\n", INF "Creating directory", dir_g_i);
     }
 
@@ -1032,14 +1036,14 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
         unsigned long pack_in_title = 1;
         uint32_t wav_numbytes = 0;
 
-        position = get_position(position, info, &header, &status, &continuity);
+        position = get_position(position, info, &header, &status, &continuity, globals);
 
         // header info fetched by get_position is needed by player, which otherwise would have been started earlier
         // guarding against multiple launches: just one per session and AOB
 
-         if (! done && globals.play)
+         if (! done && globals->play)
         {
-             open_player(info, &header);
+             open_player(info, &header, globals);
              done = true;
         }
 
@@ -1056,12 +1060,12 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
 
                 if (info->infile.type == AFMT_LPCM)
                 {
-                   wav_numbytes = scan_wav_characteristics(files[i][track], &header);
+                   wav_numbytes = scan_wav_characteristics(files[i][track], &header, globals);
                 }
 
                 unsigned long pack_sync_floor = 0;
 
-                if (globals.pipe)
+                if (globals->pipe)
                 {
                    pack_sync_floor = (unsigned long) lrint(ceil((0.5 * (double) header.nAvgBytesPerSec)
                                                          / 2000));  // rough rounding
@@ -1069,24 +1073,25 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
 
                 unsigned long pack_in_track = 1;
 
-                if (globals.pipe)
+                if (globals->pipe)
                 {
                     files[i][track]->filename = strdup("stdout");
-                    int result;
+
 
 #                  ifdef _WIN32
+
                        // Set "stdout" to have binary mode:
-                       if (! globals.play)
+                       if (! globals->play)
                        {
                             fflush(stdout);
                             int result = _setmode( _fileno( stdout ), _O_BINARY );
                             if( result == -1 )
                             {
                                perror( ERR "Cannot set mode" );
-                               clean_exit(EXIT_FAILURE);
+                               clean_exit(EXIT_FAILURE, globals);
                             }
                            else
-                           if( globals.veryverbose)
+                           if( globals->veryverbose)
                                foutput("%s", MSG_TAG "'stdout successfully changed to binary mode\n" );
                        }
 #                  endif
@@ -1094,14 +1099,14 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
 
                 else
                     output_path_create(dir_g_i, info, track, title, info->infile.type == AFMT_LPCM ?
-                                                                    (globals.fixwav_prepend ? ".wav" : ".raw")
-                                                                : ".mlp");
+                                                                    (globals->fixwav_prepend ? ".wav" : ".raw")
+                                                                : ".mlp", globals);
 
-                if (! globals.play) wav_output_open(info);
+                if (! globals->play) wav_output_open(info, globals);
 
                 WaveData info2;
 
-                if (info->infile.type == AFMT_LPCM && globals.fixwav_prepend)  // --aob2wav rather than --aob-extract
+                if (info->infile.type == AFMT_LPCM && globals->fixwav_prepend)  // --aob2wav rather than --aob-extract
                 {
                     /* generate header in empty file. We must allow prepend and in_place for empty files */
 
@@ -1122,15 +1127,15 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
 
                     // fixwav will close the file
 
-                    fixwav(&info2, &header);
+                    fixwav(&info2, &header, globals);
 
                     // needs to reopen in append mode
 
-                    wav_output_open(info);
+                    wav_output_open(info, globals);
 
                     errno = 0;
 
-                    if (globals.veryverbose && (info2.repair == GOOD_HEADER || info2.repair == COPY_SUCCESS))
+                    if (globals->veryverbose && (info2.repair == GOOD_HEADER || info2.repair == COPY_SUCCESS))
                     {
                         foutput(MSG_TAG "%s\n", "Header prepended.");
                     }
@@ -1160,9 +1165,10 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                                          wav_numbytes,
                                          &pack_in_track,
                                          &pack_in_title,
-                                         &pack_in_group);
+                                         &pack_in_group,
+                                         globals);
 
-                    if (globals.maxverbose)
+                    if (globals->maxverbose)
                     {
                         if (wav_numbytes)
                         {
@@ -1186,7 +1192,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                         {
                              files[i][track]->wav_numbytes = 0;
                              files[i][track]->numbytes  = written_bytes;
-                             if (globals.veryverbose)
+                             if (globals->veryverbose)
                                 foutput("%s %d %s %d %s %d  %s %lu\n",
                                         MSG_TAG "Group ",
                                         i + 1, "Title ",
@@ -1200,7 +1206,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                     {
                         if (wav_numbytes > written_bytes)
                         {
-                            if (globals.maxverbose)
+                            if (globals->maxverbose)
                             {
                                 foutput(INF "Track %d Pack %lu | Title %d Pack %lu | Group %d Pack %lu : "
                                               " to complete file from: %" PRIu64
@@ -1224,7 +1230,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                             files[i][track]->wav_numbytes = written_bytes;
                             files[i][track]->numbytes  = written_bytes;
 
-                            if (globals.veryverbose)
+                            if (globals->veryverbose)
                             {
                                   foutput("%s %d %s %d %s %d %s %u\n", MSG_TAG "Group ", i + 1, "Title ", title + 1, "Track ", track + 1, "File bytes: ", wav_numbytes);
 
@@ -1282,7 +1288,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
 
                     // Wait for bufferized extraction to be fed into ffplay (disc playback)
 
-                    if (globals.pipe) // waith for buffer to fill in minimally 0.5 s
+                    if (globals->pipe) // waith for buffer to fill in minimally 0.5 s
                     {
                         if (pack_in_track >  pack_sync_floor)
                         {
@@ -1352,11 +1358,11 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                     {
                         int delta = numbytes - wav_numbytes;
                         info->outfile.filesize -= delta;
-                        if (globals.veryverbose)
+                        if (globals->veryverbose)
                         foutput(INF "Number of bytes in file %s not aligned with sampling units by %d bytes.\n", info->outfile.filename, delta);
                         int res = truncate(info->outfile.filename, info->outfile.filesize );
                         files[i][k]->wav_numbytes = res == 0 ? wav_numbytes : numbytes;
-                        if (globals.veryverbose)
+                        if (globals->veryverbose)
                         {
                            if (res == 0)
                                foutput(MSG_TAG "Truncated %d bytes at end of file %s.\n", delta, info->outfile.filename);
@@ -1372,7 +1378,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                                         info->outfile.filesize,
                                         (double) info->outfile.filesize / (double) (1024 * 1024));
 
-                if (info->infile.type == AFMT_LPCM && globals.fixwav_prepend)
+                if (info->infile.type == AFMT_LPCM && globals->fixwav_prepend)
                 {
                     /* WAV output is now OK except for the wav file size-based header data.
                      * ckSize, data_ckSize and nBlockAlign must be readjusted by computing
@@ -1383,7 +1389,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
                     info2.in_place = true;
                     info2.infile = info->outfile;
 
-                    fixwav(&info2, &header);
+                    fixwav(&info2, &header, globals);
 
                     if (track == 99)
                     {
@@ -1399,14 +1405,14 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
 
                 S_CLOSE(info->outfile)
 
-                if (info->infile.type == AFMT_MLP && globals.decode)
+                if (info->infile.type == AFMT_MLP && globals->decode)
                 {
                     if (file_exists(info->outfile.filename))
                     {
                         fileinfo_t decinfo;
                         decinfo.filename = info->outfile.filename;
-                        decinfo.out_filename = replace_file_extension(decinfo.filename, "_dec_", ".wav");
-                        decode_mlp_file(&decinfo);
+                        decinfo.out_filename = replace_file_extension(decinfo.filename, "_dec_", ".wav", globals);
+                        decode_mlp_file(&decinfo, globals);
                     }
                     else
                     {
@@ -1416,14 +1422,14 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
 
                 if (position == LAST_PACK || position == CUT_PACK_RMDR)
                 {
-                    if (globals.veryverbose)
+                    if (globals->veryverbose)
                             foutput("%s\n", INF "Closing track and opening new one.");
                     foutput("%s\n", WAR "Currently MLP tracks are extracted as separate titles, even if with same audio characteristics.");
                 }
                 else
                 if (position == END_OF_AOB)
                 {
-                    if (globals.veryverbose)
+                    if (globals->veryverbose)
                             foutput("%s\n", INF "Closing last track of AOB.");
                 }
 
@@ -1441,7 +1447,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info)
     return(errno);
 }
 
-static void audio_extraction_layout(fileinfo_t* files[81][99])
+static void audio_extraction_layout(fileinfo_t* files[81][99], globalData* globals)
 {
     foutput("\n%s", "DVD Layout\n");
     foutput("%s\n",ANSI_COLOR_BLUE "Group" ANSI_COLOR_GREEN "  Track    " ANSI_COLOR_YELLOW "Rate" ANSI_COLOR_RED " Bits" ANSI_COLOR_RESET "  Ch  Input audio (B)   Output wav (B) 1st sector  last sect. PTS length  Filename\n");
@@ -1468,11 +1474,11 @@ static void audio_extraction_layout(fileinfo_t* files[81][99])
 }
 
 
-static inline int scan_ats_ifo(fileinfo_t **files, uint8_t *buf)
+static inline int scan_ats_ifo(fileinfo_t **files, uint8_t *buf, globalData* globals)
 {
     int i, title, track;
     static int group;
-    uint32_t titlelength;
+    uint32_t titlelength = 0;
     i = 2048;
 
     int numtitles = uint16_read(buf + i);
@@ -1523,7 +1529,7 @@ static inline int scan_ats_ifo(fileinfo_t **files, uint8_t *buf)
 
     }
 
-    if (globals.debugging)
+    if (globals->debugging)
     {
         ++group;
 
@@ -1544,7 +1550,7 @@ static inline int scan_ats_ifo(fileinfo_t **files, uint8_t *buf)
     return(ntracks);
 }
 
-int get_ats_audio(bool use_ifo_files, const extractlist* extract)
+int get_ats_audio(bool use_ifo_files, const extractlist* extract, globalData* globals)
 {
     fileinfo_t* files[81][99] = {{NULL}}; // 9 groups but possibly up to 9 AOBs per group (ATS_01_1.AOB...ATS_01_9.AOB)
     for (int i = 0; i < 81; ++i)
@@ -1560,25 +1566,25 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
         }
     }
 
-    if (! s_dir_exists(globals.settings.outdir)) secure_mkdir(globals.settings.outdir, globals.access_rights);
+    if (! s_dir_exists(globals->settings.outdir, globals)) secure_mkdir(globals->settings.outdir, globals->access_rights, globals);
 
-    change_directory(globals.settings.outdir);
+    change_directory(globals->settings.outdir, globals);
 
     for (int i = 0; i < 81;  ++i)
     {
-      if (globals.aobpath[i] == NULL) break;
+      if (globals->aobpath[i] == NULL) break;
 
-      if (globals.veryverbose)
-         foutput("%s%d%s\n", INF "Extracting audio for AOB nÂ°", i+1, ".");
+      if (globals->veryverbose)
+         foutput("%s%d%s\n", INF "Extracting audio for AOB n°", i+1, ".");
 
       WaveData info;
       errno = 0;
 
       if (use_ifo_files)
       {
-          unsigned long s = strlen(globals.aobpath[i]);
+          unsigned long s = strlen(globals->aobpath[i]);
 
-          char* ifo_filename = strdup(globals.aobpath[i]);
+          char* ifo_filename = strdup(globals->aobpath[i]);
           ifo_filename[s - 5] = '0';
           ifo_filename[s - 3] = 'I';
           ifo_filename[s - 2] = 'F';
@@ -1590,14 +1596,14 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
               EXIT_ON_RUNTIME_ERROR_VERBOSE("IFO file could not be opened.")
           }
 
-          if (globals.debugging)
+          if (globals->debugging)
               foutput( INF "Reading IFO file %s\n", ifo_filename);
 
           uint8_t buf[2048 * 3] = {0};
 
           int nbytesread = fread(buf, 1, 3 * 2048, file);
 
-          if (globals.veryverbose)
+          if (globals->veryverbose)
               foutput( INF "Read IFO file: %d bytes\n", nbytesread);
 
           fclose(file);
@@ -1605,27 +1611,27 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
           if (memcmp(buf, "DVDAUDIO-ATS", 12) != 0)
           {
               foutput(ERR "%s is not an ATSI file (ATS_XX_0.IFO)\n", ifo_filename);
-              clean_exit(EXIT_FAILURE);
+              clean_exit(EXIT_FAILURE, globals);
           }
 
           foutput("%c", '\n');
 
           /* now scan tracks to be extracted */
 
-          scan_ats_ifo(&files[i][0], &buf[0]);
+          scan_ats_ifo(&files[i][0], &buf[0], globals);
 
           free(ifo_filename);
       }
 
-      get_ats_audio_i(i, files, &info);
+      get_ats_audio_i(i, files, &info, globals);
 
-      if (globals.veryverbose)
+      if (globals->veryverbose)
               foutput("%s\n", INF "Reached ead of AOB.");
 
       clock_t now = clock();
       double failsafe = 1.1;
 
-      if (globals.pipe)
+      if (globals->pipe)
       {
           if (total_duration * failsafe > (now - then) / (double) CLOCKS_PER_SEC)
           {
@@ -1646,7 +1652,7 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
           }
 
 
-             if (globals.play)
+             if (globals->play)
              {
                   close_handles( g_hChildStd_IN_Rd,
                                  g_hChildStd_IN_Wr,
@@ -1667,8 +1673,8 @@ int get_ats_audio(bool use_ifo_files, const extractlist* extract)
          }
        }
 
-    if (globals.fixwav_prepend)
-        audio_extraction_layout(files);
+    if (globals->fixwav_prepend)
+        audio_extraction_layout(files, globals);
 
     // Unfortunately ffplay does not always exit (under GNU/Linux), and must be stopped some other way.
     // Waits for child to end without -autoexit, based on audio duration.

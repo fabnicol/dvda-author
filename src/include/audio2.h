@@ -73,22 +73,22 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define AFMT_WAVE_FIXED 11
 
 
-int audiofile_getinfo(fileinfo_t* info);
-int flac_getinfo(fileinfo_t* info);
-int audio_open(fileinfo_t* info);
-uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer);
-uint32_t audio_read_merged(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer);
-int audio_close(fileinfo_t* info);
-int fixwav_repair(fileinfo_t *info);
-int launch_sox(fileinfo_t *info);
-command_t *scan_audiofile_characteristics(command_t *command);
+int audiofile_getinfo(fileinfo_t* info, globalData* );
+int flac_getinfo(fileinfo_t* info, globalData*);
+int audio_open(fileinfo_t* info, globalData*);
+uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer, globalData* globals);
+uint32_t audio_read_merged(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer, globalData* globals);
+int audio_close(fileinfo_t* info, globalData* );
+int fixwav_repair(fileinfo_t *info, globalData*);
+int launch_sox(fileinfo_t *info, globalData* globals);
+command_t *scan_audiofile_characteristics(command_t *command, globalData*);
 void read_defaults(void);
-uint8_t wav2cga_channels(fileinfo_t *info);
+uint8_t wav2cga_channels(fileinfo_t *info, globalData*);
 uint8_t get_cga_index(const char* cga);
 uint8_t check_cga_assignment(long cgaint);
-int calc_info(fileinfo_t* info);
-int decode_mlp_file(fileinfo_t* info);
-bool audit_mlp_header(uint8_t* header, fileinfo_t* info, bool);
+int calc_info(fileinfo_t* info, globalData*);
+int decode_mlp_file(fileinfo_t* info, globalData* globals);
+bool audit_mlp_header(uint8_t* header, fileinfo_t* info, bool, globalData*);
 
-char* replace_file_extension(const char * filename, const char* infix, const char* new_extension);
+char* replace_file_extension(const char * filename, const char* infix, const char* new_extension, globalData*);
 #endif

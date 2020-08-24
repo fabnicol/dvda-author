@@ -47,10 +47,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "auxiliary.h"
 
 
-extern globalData globals;
+
 extern unsigned int startsector;
 
-uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
+uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors, globalData* globals)
 {
 
 #define files command->files
@@ -80,12 +80,12 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
     //
     // Absolute_sector_offset =startsector +  sizeof(AUDIO_PP.IFO)+sizeof(AUDIO_TS.IFO)+sizeof(AUDIO_TS.BUP)+ sizeof AUDIO_SV.IFO/BUP +size of AUDIO_TS/SV.VOB+sizeof(ATS_01_1.IFO)
     //
-    // In principle, VIDEO_TS files should be scanned too 
+    // In principle, VIDEO_TS files should be scanned too
 
     absolute_sector_offset=(uint32_t) startsector + sectors->samg + 2*(sectors->amg + sectors->asvs) + sectors->topvob + sectors->stillvob +sectors->atsi[0];
-    
-    if (globals.veryverbose) 
-        foutput("\n"DBG "Using absolute sector offset %d=%d+%d+2.(%d+%d)+%d+%d+%d\n\n", 
+
+    if (globals->veryverbose)
+        foutput("\n"DBG "Using absolute sector offset %d=%d+%d+2.(%d+%d)+%d+%d+%d\n\n",
                 absolute_sector_offset,
                 startsector,
                 sectors->samg,
@@ -93,9 +93,8 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
                 sectors->asvs,
                 sectors->topvob,
                 sectors->stillvob,
-                sectors->atsi[0]
-                );
-    
+                sectors->atsi[0]);
+
     /* Videolinking groups always come last (highest ranks) */
 
     for (g = 0; g < ngroups - nvideolinking_groups; ++g)
@@ -103,7 +102,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
         for (j = 0; j < ntracks[g]; ++j)
         {
             i += 2;
-            
+
             samg[i] = g + 1;
             ++i;
             samg[i] = j + 1;
@@ -115,7 +114,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
             uint32_copy(&samg[i], files[g][j].PTS_length); // MLP check OK: 0x0DBBA0 (2/24/44-3/16/96) for 10s
             i+=4;
             i+=4;
-            
+
             if (j == 0)
             {
                 if (files[g][j].type == AFMT_MLP)
@@ -230,7 +229,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
                     EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Unsupported sample rate (channels <= 2)")
                 }
             }
-            
+
             ++i;
             samg[i]= files[g][j].cga; // OK MLP
             ++i;
@@ -248,7 +247,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
             i += 2;
            // uint16_copy(&samg[i],0x4b4b);
             i += 6;
-                             
+
             uint32_copy(&samg[i], absolute_sector_offset + files[g][j].first_sector);
             i+=4;
             uint32_copy(&samg[i], absolute_sector_offset + files[g][j].first_sector);
@@ -278,7 +277,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors)
     for (i = 1; i < 8; ++i)
         memcpy(samg + i * sizeofsamg, samg, sizeofsamg);
 
-    create_file(audiotsdir, "AUDIO_PP.IFO", samg, sizeofsamg * 8);
+    create_file(audiotsdir, "AUDIO_PP.IFO", samg, sizeofsamg * 8, globals);
 
     return(last_sector);
 

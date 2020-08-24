@@ -19,15 +19,15 @@
     // is defined in struct longopts in command_line_parsing.c, so
     // this trick is OK if only long options are used for non-print short options.
 
-command_t *command_line_parsing(int , char* const argv[],  command_t *command);
-void process_dvd_video_zone(command_t* command);
+command_t *command_line_parsing(int , char* const argv[],  command_t *command, globalData* globals);
+void process_dvd_video_zone(command_t* command, globalData*);
 #include "fixwav_manager.h"
-void fixwav_parsing(char *ssopt);
+void fixwav_parsing(char *ssopt, globalData*);
 
-void ats2wav_parsing(const char * arg, const extractlist* extract);
-void extract_list_parsing(const char *arg, extractlist* extract);
-void still_options_parsing(char *ssopt, pic* img);
+void ats2wav_parsing(const char * arg, const extractlist* extract, globalData* globals);
+void extract_list_parsing(const char *arg, extractlist* extract, globalData* globals);
+void still_options_parsing(char *ssopt, pic* img, globalData*);
 
-void aob2wav_parsing(const char *ssopt, const extractlist* extract);
+void aob2wav_parsing(const char *ssopt, const extractlist* extract, globalData*);
 //void parse_double_entry_command_line(char*** DOUBLE_ARRAY, uint8_t* COUNTER_ARRAY, uint8_t* TOTAL, short audit_flag);
 #endif

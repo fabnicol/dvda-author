@@ -36,7 +36,7 @@
 
 /*  #define _GNU_SOURCE must appear before <string.h> and <getopt.h> for strndup  and getopt_long*/
 
-globalData globals;
+
 unsigned int startsector;
 extern char* OUTDIR, *LOGFILE, *WORKDIR,  *LPLEXTEMPDIR;
 static fileinfo_t ** files;
@@ -62,14 +62,16 @@ static char ***dvdv_track_array=NULL;
 static char ***dvdv_slide_array=NULL;
 static char ***picks_per_track_double_array=NULL;
 
-void parse_double_entry_command_line(char* input_string, char**** DOUBLE_ARRAY, uint8_t** COUNTER_ARRAY, uint8_t* TOTAL, short int audit_flag, char separator)
+void parse_double_entry_command_line(char* input_string, char**** DOUBLE_ARRAY,
+                                     uint8_t** COUNTER_ARRAY, uint8_t* TOTAL,
+                                     short int audit_flag, char separator, globalData* globals)
 {
     errno=0;
     char** array=NULL;
     uint32_t size = 0;
-    array=fn_strtok(input_string, separator, array, &size, 0, NULL, NULL);
+    array=fn_strtok(input_string, separator, array, &size, 0, NULL, NULL, globals);
     *TOTAL=arraylength(array);
-    if (globals.veryverbose)
+    if (globals->veryverbose)
     {
         fprintf(stderr, MSG_TAG "Found %d DVD-VIDEO group(s)/titleset(s)\n", *TOTAL);
         for (int u=0; u < *TOTAL; u++) fprintf(stderr, MSG_TAG "Found group/titleset %d files: %s\n", u+1, array[u]);
@@ -81,11 +83,11 @@ void parse_double_entry_command_line(char* input_string, char**** DOUBLE_ARRAY, 
             for (int titleset=0; titleset < *TOTAL; titleset++)
     {
         uint32_t size =  0;
-        (*DOUBLE_ARRAY)[titleset]=fn_strtok(array[titleset], ',', (*DOUBLE_ARRAY)[titleset], &size, 0,NULL, NULL);
+        (*DOUBLE_ARRAY)[titleset]=fn_strtok(array[titleset], ',', (*DOUBLE_ARRAY)[titleset], &size, 0,NULL, NULL, globals);
         *COUNTER_ARRAY=calloc(*TOTAL, sizeof(uint8_t));
         *COUNTER_ARRAY[titleset]=arraylength(*DOUBLE_ARRAY[titleset]);
 #ifndef DEBUG
-        if (globals.veryverbose)
+        if (globals->veryverbose)
         {
             if (audit_flag == AUDIT_DVD_VIDEO_AUDIO_FORMAT)
                 fprintf(stderr, MSG_TAG "Found %d audio track(s) for DVD-VIDEO titleset %d\n", *COUNTER_ARRAY[titleset], *TOTAL);
@@ -98,7 +100,7 @@ void parse_double_entry_command_line(char* input_string, char**** DOUBLE_ARRAY, 
         {
 #ifndef WITHOUT_lplex
             if ((audit_flag == AUDIT_DVD_VIDEO_AUDIO_FORMAT) || (audit_flag == AUDIT_STRICT_TOPMENU_AUDIO_FORMAT))
-                errno=audit_soundtrack((*DOUBLE_ARRAY)[titleset][track], audit_flag);
+                errno=audit_soundtrack((*DOUBLE_ARRAY)[titleset][track], audit_flag, globals);
 #endif
             // else case: images, noop.
 
@@ -111,7 +113,7 @@ void parse_double_entry_command_line(char* input_string, char**** DOUBLE_ARRAY, 
                 EXIT_ON_RUNTIME_ERROR
             }
             else
-                if (globals.debugging)
+                if (globals->debugging)
                     foutput(MSG_TAG "Checked that track %s is DVD-VIDEO compliant\n",
                             (*DOUBLE_ARRAY)[titleset][track]);
         }
@@ -121,7 +123,7 @@ void parse_double_entry_command_line(char* input_string, char**** DOUBLE_ARRAY, 
 }
 
 
-command_t *command_line_parsing(int argc, char* const argv[], command_t *command)
+command_t *command_line_parsing(int argc, char* const argv[], command_t *command, globalData* globals)
 {
 
     // It is crucial that the reinitialization of optarg be with optind=0, not optind=1
@@ -182,13 +184,13 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     // By default, videozone is generated ; use -n to deactivate.
     // When lexer is deactivated, parse command line directly.
 
-    if (!globals.enable_lexer) user_command_line=1;
+    if (!globals->enable_lexer) user_command_line=1;
 
     /* distributed dvda-author.conf silences dafault configuration file option verbosity (q) */
     /* you can alter this by commenting out #q in dvda-author.conf before install */
     /* for parsing user command line, revert to default verbose mode, unless -q is set */
 
-    if (user_command_line)     globals.silence=0;
+    if (user_command_line)     globals->silence=0;
 
     /* crucial: initialise before any call to getopt */
     optind=0;
@@ -335,7 +337,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                 case '-' :
                     if  (strcmp(optarg, "version") == 0)
                     {
-                        version();
+                        version(globals);
                         break;
                     }
 
@@ -343,36 +345,42 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 #endif
 
                 case 'h' :
-                        globals.silence=false;
+                        globals->silence=false;
                         help();
-                        clean_exit(EXIT_SUCCESS);
+                        clean_exit(EXIT_SUCCESS, globals);
                         break;
 
                     case 'v' :
-                        globals.silence=false;
-                        version();
-                        clean_exit(EXIT_SUCCESS);
+                        globals->silence=false;
+                        version(globals);
+                        clean_exit(EXIT_SUCCESS, globals);
                         break;
 
                     case 'q':
                     case  37:     // --sync
-                        globals.silence = true;          // hush it upt on stdout to avoid polluting ffplay stdin
-                        globals.debugging=false;
-                        globals.veryverbose=false;
-                        globals.maxverbose=false;
+                        globals->silence = true;          // hush it upt on stdout to avoid polluting ffplay stdin
+                        globals->debugging=false;
+                        globals->veryverbose=false;
+                        globals->maxverbose=false;
                         // Radical measure yet not portable outside the *nix realm ?
                         break;
 
                     case 't':
-                        globals.veryverbose=true;
+                        globals->veryverbose=true;
                         /* fall through */
                         __attribute__((fallthrough));
                         // no break
 
                     case 'd':
 
-                        globals.debugging=true;
-                        globals.silence=false;
+                        globals->debugging=true;
+                        globals->silence=false;
+                        break;
+
+                   case 'D' :
+                        free(globals->settings.tempdir);
+                        globals->settings.tempdir=strdup(optarg);
+                        foutput("%s%s\n", PAR "Temporary directory is: ", optarg);
                         break;
 
                     case 'L':
@@ -384,23 +392,23 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                         if (optarg)
                         {
-                            globals.settings.logfile=strdup(optarg);
-                            globals.logfile=true;
+                            globals->settings.logfile=strdup(optarg);
+                            globals->logfile=true;
 
                             if (optarg[0] == '-')
                             {
-                                globals.logfile=false;
+                                globals->logfile=false;
                                 foutput("%s\n", ERR "Enter a log path next time!");
                                 exit(EXIT_FAILURE);
                             }
                             else
-                                globals.logfile=true;
+                                globals->logfile=true;
                         }
 
                         break;
 
                     case 1 :
-                        globals.loghtml=true;
+                        globals->loghtml=true;
                         break;
 
 
@@ -409,15 +417,15 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             }
 
 
-                if (((user_command_line) || (!globals.enable_lexer)) && (! globals.silence))
+                if (((user_command_line) || (!globals->enable_lexer)) && (! globals->silence))
                 {
 
-                    if (globals.logfile)
+                    if (globals->logfile)
                     {
                         if (logrefresh)
-                            globals.journal=fopen(globals.settings.logfile, "wb");
+                            globals->journal=fopen(globals->settings.logfile, "wb");
                         else
-                            globals.journal=fopen(globals.settings.logfile, "ab");
+                            globals->journal=fopen(globals->settings.logfile, "ab");
 
                     }
 
@@ -447,36 +455,34 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                     case 'i':  // directory audio imput
 
                         ngroups=nvideolinking_groups=n_g_groups=0;
-                        if (globals.veryverbose)
+                        if (globals->veryverbose)
                             foutput("%s\n", INF "Overriding configuration file specifications for audio input");
                         // Useless to continue parsing
                         //reset++;
                         break;
 
-                    case 'D' :
-                        free(globals.settings.tempdir);
-                        globals.settings.tempdir=strdup(optarg);
-                        foutput("%s%s\n", PAR "Temporary directory is: ", optarg);
-                        break;
+
 
                     case 19:
-                        free(globals.settings.lplextempdir);
-                        globals.settings.lplextempdir=strdup(optarg);
+                        free(globals->settings.lplextempdir);
+                        globals->settings.lplextempdir=strdup(optarg);
                         foutput("%s%s\n", PAR "Lplex temporary directory is: ", optarg);
                         break;
 
                     case 20:
-                        free(globals.settings.lplexoutdir);
-                        globals.settings.lplexoutdir=strdup(optarg);
+                        free(globals->settings.lplexoutdir);
+                        globals->settings.lplexoutdir=strdup(optarg);
                         foutput("%s%s\n", PAR "Lplex output directory is: ", optarg);
                         break;
 
                     case 'X':
-                        free(globals.settings.workdir);
-                        globals.settings.workdir=strdup(optarg);
+                        free(globals->settings.workdir);
+                        globals->settings.workdir=strdup(optarg);
                         foutput("%s%s\n", PAR "Working directory is: ", optarg);
+
                         // WARNING never launch a command line with --mkisofs in the WORKDIR directory
-                        change_directory(globals.settings.workdir);
+                        change_directory(globals->settings.workdir, globals);
+
                         //reset++;
                         break;
                 }
@@ -487,21 +493,21 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
     optind=0;
     opterr=1;
 
-    if ((globals.debugging) && (user_command_line))
+    if ((globals->debugging) && (user_command_line))
     {
         foutput("%s\n", INF "Parsing user command line");
-        print_commandline(argc, argv);
+        print_commandline(argc, argv, globals);
 
         foutput("%c", '\n');
     }
 
-    if (globals.logfile) foutput("%s%s\n",PAR "Log file is: ", globals.settings.logfile);
+    if (globals->logfile) foutput("%s%s\n",PAR "Log file is: ", globals->settings.logfile);
 
     /* COMMAND-LINE PARSING: second pass to determine memory allocation (thereby avoiding heap loss)
      * We give up getopt here to allow for legacy "Dave" syntax with multiple tracks as -g arguments
      * (not compatible with getopt or heavy to implement with it.  */
 
-    if (globals.debugging) foutput("%s\n", INF "First scan of track list for memory allocation...");
+    if (globals->debugging) foutput("%s\n", INF "First scan of track list for memory allocation...");
 
     // n_g_groups count command-line groups of type -g
     // ngiven_channels: number of given channels for group index n_g_group and at track 0-based rank ntracks
@@ -518,7 +524,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
        case 'g' :
 
             ++k;
-            increment_ngroups_check_ceiling(&n_g_groups, NULL);
+            increment_ngroups_check_ceiling(&n_g_groups, NULL, globals);
 
             for (; k < argc; ++k)
             {
@@ -533,7 +539,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
                     else
                     {
                       fprintf(stderr, ERR "Le terme %s n'est pas un fichier. Fin du programme...\n", argv[k]);
-                      clean_exit(EXIT_FAILURE);
+                      clean_exit(EXIT_FAILURE, globals);
                     }
                     ++ntracks[n_g_groups - 1];
 
@@ -590,8 +596,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {
         case 'w':
             /* input must be in octal form */
-            globals.access_rights=(mode_t) strtol(optarg, NULL, 8);
-            foutput(PAR "Access rights (octal mode)=%o\n", globals.access_rights);
+            globals->access_rights=(mode_t) strtol(optarg, NULL, 8);
+            foutput(PAR "Access rights (octal mode)=%o\n", globals->access_rights);
             break;
 
         case 35:
@@ -606,16 +612,16 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         case 'i' :
 
             allocate_files=true;
-            free(globals.settings.indir);
-            globals.settings.indir=strdup(optarg);
+            free(globals->settings.indir);
+            globals->settings.indir=strdup(optarg);
 
             foutput("%s%s\n", PAR "Input directory is: ", 	optarg);
 
             if ((dir=opendir(optarg)) == NULL)
                 EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Input directory could not be opened")
 
-            change_directory(globals.settings.indir);
-            audiodir=parse_directory(dir, ntracks, n_g_groups, 0, files_dummy);
+            change_directory(globals->settings.indir, globals);
+            audiodir=parse_directory(dir, ntracks, n_g_groups, 0, files_dummy, globals);
 
             ngroups=audiodir.ngroups;
 
@@ -624,26 +630,26 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             if (closedir(dir) == -1)
                 foutput( "%s\n", ERR "Impossible to close dir");
 
-            change_directory(globals.settings.workdir);
+            change_directory(globals->settings.workdir, globals);
 
             break;
 
         case 10:
             foutput("%s\n",PAR "Will run with no output.");
-            globals.nooutput=1;
-            globals.logfile=0;
+            globals->nooutput=1;
+            globals->logfile=0;
             break;
 
         case 11:
             foutput("%s\n",PAR "Will run with maximal debugging information.");
-            globals.debugging=1;
-            globals.veryverbose=1;
-            globals.maxverbose=1;
+            globals->debugging=1;
+            globals->veryverbose=1;
+            globals->maxverbose=1;
             break;
 
         case 'o' :
-            free(globals.settings.outdir);
-            globals.settings.outdir=strdup(optarg);
+            free(globals->settings.outdir);
+            globals->settings.outdir=strdup(optarg);
             foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET "  Output %s%s%s\n", "directory", " is: ", optarg);
             break;
 
@@ -678,9 +684,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             else
                 maximum_VTSI_rank=MAX(VTSI_rank[nvideolinking_groups], maximum_VTSI_rank);
 
-            globals.videolinking=1;
+            globals->videolinking=1;
 
-            increment_ngroups_check_ceiling(&ngroups, &nvideolinking_groups);
+            increment_ngroups_check_ceiling(&ngroups, &nvideolinking_groups, globals);
 
             break;
 
@@ -694,7 +700,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             if ((optarg != NULL) && (strstr(optarg, "help")))
             {
-                clean_exit(EXIT_SUCCESS);
+                clean_exit(EXIT_SUCCESS, globals);
             }
             break;
 #endif
@@ -728,14 +734,14 @@ out:
 
     if (allocate_files)
     {
-        files=dynamic_memory_allocate(files, ngiven_channels, ntracks, ngroups, n_g_groups, nvideolinking_groups);
+        files=dynamic_memory_allocate(files, ngiven_channels, ntracks, ngroups, n_g_groups, nvideolinking_groups, globals);
     }
 
             /* COMMAND-LINE PARSING: fourth pass to assign filenames without allocating new memory (pointing to argv) */
 
     int m, ngroups_scan=0;
 
-    if ((n_g_groups)&&(globals.debugging)) foutput("%s", INF "Assigning command-line filenames...\n");
+    if ((n_g_groups)&&(globals->debugging)) foutput("%s", INF "Assigning command-line filenames...\n");
 
     for (k=0; k < argc; ++k)
     {
@@ -750,7 +756,7 @@ out:
             {
                 if (argv[m + k][0] != '-')
                 {
-                    if (globals.veryverbose)
+                    if (globals->veryverbose)
                       foutput("       files[%d][%d].filename=%s\n", ngroups_scan, m, argv[m + k]);
 
                     files[ngroups_scan][m].filename = argv[m+k];
@@ -772,7 +778,7 @@ out:
 
                             files[ngroups_scan][m].newtitle= 1;
                             ++k;
-                            if (globals.veryverbose)
+                            if (globals->veryverbose)
                                 foutput("       files[%d][%d].filename=%s\n", ngroups_scan, m, argv[m + k]);
 
                             if (m + k < argc)
@@ -792,14 +798,14 @@ out:
                        files[ngroups_scan][m].channels=ngiven_channels[ngroups_scan][m]; // supposing merged channels are only mono (not tested)
                        files[ngroups_scan][m].mergeflag=1;
 
-                       if (globals.veryverbose)
+                       if (globals->veryverbose)
                        {
                          foutput("       files[%d][%d].filename=%s\n", ngroups_scan, m, "merged channels:");
                        }
 
                        for (int u = 0; u < ngiven_channels[ngroups_scan][m]; ++u)
                        {
-                        if (globals.veryverbose)
+                        if (globals->veryverbose)
                           foutput("                               %s\n", argv[m+k+1+u]);
 
                         strcpy(files[ngroups_scan][m].given_channel[u],argv[m+k+1+u]);
@@ -824,12 +830,12 @@ out:
 
             ++k;
 
-            globals.cga = 1;
+            globals->cga = 1;
             for (m = 0; m + k < argc && argv[m + k][0] != '-'; ++m)
             {
                 if (ngroups_scan)
                 {
-                    if (globals.debugging) foutput("Group %d Track %d Channel assignment %s\n", ngroups_scan - 1, m, argv[m+k]);
+                    if (globals->debugging) foutput("Group %d Track %d Channel assignment %s\n", ngroups_scan - 1, m, argv[m+k]);
                     if (argv[m + k][0] == '0' || strcmp(argv[m + k], "Mono") == 0) continue; // mono case
 
                     char* endptr = NULL;
@@ -844,7 +850,7 @@ out:
 
                     if (cgaint == 0xFF)
                     {
-                        if (globals.debugging) foutput("%s", ERR "Found illegal channel group assignement value, using standard settings.");
+                        if (globals->debugging) foutput("%s", ERR "Found illegal channel group assignement value, using standard settings.");
                         // this is done later
                     }
                 }
@@ -856,7 +862,7 @@ out:
         case '-':
             if (! user_command_line || strcmp(argv[k], "--resample") != 0) break;
               // -g file1...fileN... --resample 2 24 96000 2 16 44100...
-            globals.sox_enable = 1;
+            globals->sox_enable = 1;
 
             if (argc < k + 5) break;
             ++k;
@@ -865,7 +871,7 @@ out:
             {
                 if (ngroups_scan)
                 {
-                    if (globals.debugging) foutput(MSG_TAG "Group %d Track %d Resample assignment %s %s %s\n",
+                    if (globals->debugging) foutput(MSG_TAG "Group %d Track %d Resample assignment %s %s %s\n",
                                                     ngroups_scan, m + 1,
                                                     argv[m+k],
                                                     argv[m+k+1],
@@ -934,7 +940,7 @@ out:
 
         case 'a' :
             foutput("%s\n",PAR "Autoplay on.");
-            globals.autoplay=1;
+            globals->autoplay=1;
             break;
 
         case 't' :
@@ -947,9 +953,9 @@ out:
 
         case 'x' :
             extract_audio_flag = 1;
-            globals.fixwav_prepend = true;
-            free(globals.settings.indir);
-            globals.settings.indir = strdup(optarg);
+            globals->fixwav_prepend = true;
+            free(globals->settings.indir);
+            globals->settings.indir = strdup(optarg);
             break;
 
         case 13:
@@ -958,12 +964,12 @@ out:
 
         case 'n' :
             // There is no videozone in this case
-            if (globals.videolinking)
+            if (globals->videolinking)
             {
                 foutput("%s\n", WAR "You cannot delete video zone with -n if -V is activated too.\n      Ignoring -n...");
                 break;
             }
-            globals.videozone=0;
+            globals->videozone=0;
             foutput("%s\n",PAR "No video zone");
             break;
 
@@ -971,11 +977,11 @@ out:
             if ((dir=opendir(optarg)) == NULL)
                 EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Input directory could not be opened")
 
-                        change_directory(globals.settings.indir);
+                        change_directory(globals->settings.indir, globals);
 
-            parse_directory(dir, ntracks, n_g_groups, READTRACKS, files);
+            parse_directory(dir, ntracks, n_g_groups, READTRACKS, files, globals);
 
-            change_directory(globals.settings.workdir);
+            change_directory(globals->settings.workdir, globals);
 
             if (closedir(dir) == -1)
                 foutput( "%s\n", ERR "Impossible to close dir");
@@ -993,7 +999,7 @@ out:
             {
             case   EINVAL :
                 foutput( "%s\n",  ERR "Incorrect offset value");
-                clean_exit(EXIT_SUCCESS);
+                clean_exit(EXIT_SUCCESS, globals);
                 break;
             case   ERANGE :
                 EXIT_ON_RUNTIME_ERROR_VERBOSE( ERR "Offset range--overflowing LONG INT.");
@@ -1014,28 +1020,28 @@ out:
         case 'P':
             if ((optarg != NULL) && (strcmp(optarg, "0") == 0))
             {
-                globals.end_pause=0;
+                globals->end_pause=0;
                 foutput("%s\n",PAR "End pause will be suppressed.");
             }
             else
             {
-                globals.end_pause=1;
+                globals->end_pause=1;
                 foutput("%s\n",PAR "Adding end pause.");
             }
             break;
 
         case 'W' :
             foutput("%s\n",PAR "Lexer was deactivated");
-            globals.enable_lexer=0;
+            globals->enable_lexer=0;
             break;
 
         case 'Z' :
             foutput("%s%d\n",PAR "Duplicate group #", nplaygroups+1);
-            globals.playlist=1;
+            globals->playlist=1;
             nplaygroups++;
             if (nplaygroups > 8)
             {
-                if (globals.debugging) foutput("%s\n", ERR "There cannot be more than 9 copy groups. Skipping...");
+                if (globals->debugging) foutput("%s\n", ERR "There cannot be more than 9 copy groups. Skipping...");
                 break;
             }
             playtitleset[nplaygroups]=atoi(optarg);
@@ -1043,7 +1049,7 @@ out:
 
         case 'c' :
             foutput("%s\n",PAR "Channel group assignement activated.");
-            globals.cga = 1;
+            globals->cga = 1;
             break;
 
         case 32:
@@ -1055,7 +1061,7 @@ out:
                 break;
             }
 
-            downmixtexttable[dbtable]=fn_strtok(optarg, ',' , downmixtexttable[dbtable], &downmixsize, 0,NULL,NULL); // 12
+            downmixtexttable[dbtable]=fn_strtok(optarg, ',' , downmixtexttable[dbtable], &downmixsize, 0,NULL,NULL, globals); // 12
             if (downmixsize < 12) EXIT_ON_RUNTIME_ERROR_VERBOSE("Downmix coefficients should be 12. See dvda-author --help.")
             downmixtable[dbtable].custom_table = true;
             downmixtable[dbtable].Lf_l  = strtof(downmixtexttable[dbtable][0], NULL);
@@ -1105,8 +1111,8 @@ out:
 
         case 'k' :
             foutput("%s", PAR "Generates text table in IFO files.\n\n");
-            globals.text=1;
-            textable=fn_strtok(optarg, ',' , textable, &globals.textablesize, 0,NULL,NULL);
+            globals->text=1;
+            textable=fn_strtok(optarg, ',' , textable, &globals->textablesize, 0,NULL,NULL, globals);
             break;
 
 #if !defined HAVE_core_BUILD || !HAVE_core_BUILD
@@ -1122,15 +1128,15 @@ out:
             if (img->soundtrack[0][0]) sprintf(img->soundtrack[0][0], "%s"SEPARATOR"%s", optarg, "menu"SEPARATOR"silence.wav");
             img->activeheader=realloc(img->activeheader, (strlength+1+1+17)*sizeof(char));  // activeheader
             if (img->activeheader) sprintf(img->activeheader, "%s"SEPARATOR"%s", optarg, "menu"SEPARATOR"activeheader");
-            free(globals.settings.datadir);
-            globals.settings.datadir=strdup(optarg);
+            free(globals->settings.datadir);
+            globals->settings.datadir=strdup(optarg);
             break;
 
         case 'A':
 
             foutput("%s%s\n", PAR "topmenu VOB: ", optarg);
             img->tsvob=strdup(optarg);
-            globals.topmenu=Min(globals.topmenu, TS_VOB_TYPE);
+            globals->topmenu=Min(globals->topmenu, TS_VOB_TYPE);
 
             break;
 
@@ -1168,32 +1174,32 @@ out:
 
         case 'I':
             foutput("%s\n", PAR "Run mkisofs to author disc image.");
-            globals.runmkisofs=1;
+            globals->runmkisofs=1;
             if (optarg)
             {
-                globals.settings.dvdisopath=strdup(optarg);
+                globals->settings.dvdisopath=strdup(optarg);
                 foutput("%s%s\n", PAR "ISO file path is: ", optarg);
             }
             break;
 
         case 'r':
             foutput("%s\n", PAR "Make ISO image then run cdrecord to burn disc image.");
-            globals.runmkisofs=1;
+            globals->runmkisofs=1;
             if ((optarg) && (strlen(optarg) >4 ) )
-                globals.cdrecorddevice=strdup(optarg);
+                globals->cdrecorddevice=strdup(optarg);
             else
             {
                 foutput("%s%s%s\n", WAR "Device command ", (optarg)?optarg:"", " will be interpolated.\n       Run cdrecord -scanbus to check for available drivers");
-                globals.cdrecorddevice=strdup("");
+                globals->cdrecorddevice=strdup("");
             }
             break;
 
         case 'R':
             foutput("%s\n", PAR "Make ISO image the run growisofs to burn disc image.");
-            globals.runmkisofs=1;
-            globals.rungrowisofs=1;
+            globals->runmkisofs=1;
+            globals->rungrowisofs=1;
             if ((optarg) && (strlen(optarg) >4 ) )
-                globals.cdrecorddevice=strdup(optarg);
+                globals->cdrecorddevice=strdup(optarg);
             break;
 
         case 'T':
@@ -1212,10 +1218,10 @@ out:
         case 'V' :
             //  video-linking directory to VIDEO_TS structure
 
-            globals.videozone = 1;
+            globals->videozone = 1;
 
-            free(globals.settings.linkdir);
-            globals.settings.linkdir=strdup(optarg);
+            free(globals->settings.linkdir);
+            globals->settings.linkdir=strdup(optarg);
             foutput("%s%s\n", PAR "VIDEO_TS input directory is: ", optarg);
             break;
 
@@ -1226,7 +1232,7 @@ out:
             break;
 
         case 'f':
-            globals.fixwav_virtual_enable=1;
+            globals->fixwav_virtual_enable=1;
             foutput("%s\n", PAR "Virtual fixwav enabled.");
             /* fall through */
             __attribute__((fallthrough));
@@ -1237,15 +1243,15 @@ out:
 
             /* Uses fixwav to fix bad headers*/
 
-            globals.fixwav_enable=1;
-            globals.fixwav_parameters=optarg;
-            globals.fixwav_automatic=1; /* default */
+            globals->fixwav_enable=1;
+            globals->fixwav_parameters=optarg;
+            globals->fixwav_automatic=1; /* default */
             foutput("%s\n", PAR "Bad wav headers will be fixed by fixwav");
             if (optarg != NULL)
             {
                 foutput("%s%s\n", PAR "fixwav command line: ", optarg);
                 /* sub-option analysis */
-                fixwav_parsing(globals.fixwav_parameters);
+                fixwav_parsing(globals->fixwav_parameters, globals);
             }
 
             break;
@@ -1255,7 +1261,7 @@ out:
         case 'S':
 
             /* Uses sox to convert different input formats */
-            globals.sox_enable = 1;
+            globals->sox_enable = 1;
             foutput("%s\n", PAR "Audio formats other than WAV and FLAC will be converted by sox tool.");
 
             break;
@@ -1266,32 +1272,32 @@ out:
         case 36:
 
             foutput("%s\n", PAR "Extracted audio will be decoded from MLP to WAV");
-            globals.decode = true;
-            globals.fixwav_prepend = true;
+            globals->decode = true;
+            globals->fixwav_prepend = true;
             break;
 
         case 38:  // --play, like --sync but with piping to ffplay
             foutput("%s%s\n", PAR "Will play back ", optarg);
-            globals.play = true;
+            globals->play = true;
             // fallthrough
 
         case 37:  // --sync
 
             foutput("%s\n", PAR "Syncing extraction to stdou for piping to external tools...");
-            globals.decode = false;           // useless to decode as ffplay has MLP playback on board
-            globals.fixwav_prepend = false;  // no headers (raw pcm)
-            globals.pipe = true;    // output to stdout
+            globals->decode = false;           // useless to decode as ffplay has MLP playback on board
+            globals->fixwav_prepend = false;  // no headers (raw pcm)
+            globals->pipe = true;    // output to stdout
             use_ifo_files = false;
             if (strstr(optarg, ".AOB") != NULL)
             {
               foutput("%s %s %s\n", PAR "Extracting ", optarg, " to stdout...");
-              aob2wav_parsing(optarg, NULL);
+              aob2wav_parsing(optarg, NULL, globals);
             }
             else  // using the directory with file structure
             {
                // filter_dir_files finds all AOBs in dir optarg, and returns list of AOBs separated by commas if several.
                 foutput("%s %s %s\n", PAR "Extracting disc files in ", optarg, " to stdout...");
-                aob2wav_parsing(filter_dir_files(optarg, ".AOB"), NULL);
+                aob2wav_parsing(filter_dir_files(optarg, ".AOB", globals), NULL, globals);
             }
             break;
 
@@ -1301,11 +1307,11 @@ out:
             if (strcmp(optarg, VLC_BASENAME)  && strcmp(optarg, FFPLAY_BASENAME))
              {
                  foutput("%s\n", ERR "Only ffplay and VLC are currently supported for playback.");
-                 clean_exit(EXIT_FAILURE);
+                 clean_exit(EXIT_FAILURE, globals);
              }
 
-            free(globals.player);
-            globals.player = strdup(optarg);
+            free(globals->player);
+            globals->player = strdup(optarg);
             break;
 
         case 40:
@@ -1314,32 +1320,32 @@ out:
             if (! file_exists(optarg))
             {
                 foutput("%s%s\n", ERR "Found no executable under path ", optarg);
-                 clean_exit(EXIT_FAILURE);
+                 clean_exit(EXIT_FAILURE, globals);
             }
 
-            free(globals.player_path);
-            globals.player_path = strdup(optarg);
+            free(globals->player_path);
+            globals->player_path = strdup(optarg);
             break;
 
         case 31:
-            globals.strict_check = true;  // false by default
+            globals->strict_check = true;  // false by default
             break;
 
         case 1 :
-            globals.padding = 1;
+            globals->padding = 1;
             foutput("%s\n",PAR "Tracks with same audio characteristics will not be joined gapless and padded instead.");
             break;
 
         case 'L' :
-            globals.lossy_rounding = 1;
-            if (globals.padding)
+            globals->lossy_rounding = 1;
+            if (globals->padding)
             {
-                globals.padding = 0;
+                globals->padding = 0;
                 foutput("%s\n",PAR "--padding was neutralized.");
             }
-            if (globals.padding_continuous)
+            if (globals->padding_continuous)
             {
-                globals.padding_continuous = 0;
+                globals->padding_continuous = 0;
                 foutput("%s\n",PAR "  --pad-cont was neutralized");
             }
 
@@ -1347,11 +1353,11 @@ out:
             break;
 
         case 'C' :
-            globals.padding_continuous = 1;
-            globals.padding = 1;
-            if (globals.lossy_rounding)
+            globals->padding_continuous = 1;
+            globals->padding = 1;
+            if (globals->lossy_rounding)
             {
-                globals.lossy_rounding = 0;
+                globals->lossy_rounding = 0;
                 foutput("%s\n",PAR "--lossy-rounding was neutralized");
             }
             foutput("%s\n",PAR "Pad with last known byte, if padding, not 0s.");
@@ -1363,30 +1369,30 @@ out:
             if (optarg)
             {
                 foutput(PAR "  File(s) %s will be used as (spumuxed) top menu\n", optarg);
-                img->topmenu=fn_strtok(optarg, ',' , img->topmenu, &globals.topmenusize, 0,NULL,NULL);
-                globals.topmenu=Min(globals.topmenu, RUN_DVDAUTHOR);
+                img->topmenu=fn_strtok(optarg, ',' , img->topmenu, &globals->topmenusize, 0,NULL,NULL, globals);
+                globals->topmenu=Min(globals->topmenu, RUN_DVDAUTHOR);
             }
             else
             {
                 foutput("%s\n",PAR "  Automatic generation of top menu...");
-                globals.topmenu=Min(globals.topmenu, AUTOMATIC_MENU);
+                globals->topmenu=Min(globals->topmenu, AUTOMATIC_MENU);
             }
 
             break;
 
         case 'M' :
             foutput("%s%s\n",PAR "  dvdauthor Xml project: ", optarg);
-            globals.xml=strdup(optarg);
-            globals.topmenu=Min(globals.topmenu, RUN_DVDAUTHOR);
+            globals->xml=strdup(optarg);
+            globals->topmenu=Min(globals->topmenu, RUN_DVDAUTHOR);
             break;
 
         case 'H' :
             foutput("%s%s\n",PAR "  spumux Xml project: ", optarg);
             static int spurank;
             while (spurank >= img->nmenus) 	img->nmenus++;
-            if (img->nmenus) globals.spu_xml=realloc(globals.spu_xml, img->nmenus*sizeof(char*));
-            globals.spu_xml[spurank++]=strdup(optarg);
-            globals.topmenu=Min(globals.topmenu, RUN_SPUMUX_DVDAUTHOR);
+            if (img->nmenus) globals->spu_xml=realloc(globals->spu_xml, img->nmenus*sizeof(char*));
+            globals->spu_xml[spurank++]=strdup(optarg);
+            globals->topmenu=Min(globals->topmenu, RUN_SPUMUX_DVDAUTHOR);
             break;
 
         case 'B':
@@ -1394,11 +1400,11 @@ out:
 
             free(img->backgroundmpg[0]);
             free(img->backgroundmpg);
-            img->backgroundmpg=fn_strtok(optarg, ',' , img->backgroundmpg, &globals.backgroundmpgsize, 0,NULL,NULL);
+            img->backgroundmpg=fn_strtok(optarg, ',' , img->backgroundmpg, &globals->backgroundmpgsize, 0,NULL,NULL, globals);
 
             foutput(PAR "  Top background mpg file(s) %s will be used\n", optarg);
 
-            globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+            globals->topmenu=Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             break;
 
         case 'u':
@@ -1492,7 +1498,7 @@ out:
                 img->selectfgcolor_pic=strdup(DEFAULT_SELCOLOR_PIC);
             }
 
-            globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+            globals->topmenu=Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             img->refresh=1;
 
             break;
@@ -1539,21 +1545,21 @@ out:
             }
 
 
-            globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+            globals->topmenu=Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             img->refresh=1;
 
             break;
 
         case 'O':
             img->screentextchain=strdup(optarg);
-            if (globals.veryverbose) foutput("%s %s\n",PAR "  Screen textchain is:", img->screentextchain);
-            globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+            if (globals->veryverbose) foutput("%s %s\n",PAR "  Screen textchain is:", img->screentextchain);
+            globals->topmenu=Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             img->refresh=1;
             break;
 
         case 'K':
             img->highlightformat=(int8_t) atoi(optarg);
-            globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+            globals->topmenu=Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             img->refresh=1;
             break;
 
@@ -1578,7 +1584,7 @@ out:
                 foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Font width: %d\n", img->fontwidth);
 
             }
-            globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+            globals->topmenu=Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             img->refresh=1;
             break;
 
@@ -1591,7 +1597,7 @@ out:
 
                 if (img->textfont) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Fontname: %s\n", img->textfont);
             }
-            globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+            globals->topmenu=Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             img->refresh=1;
             break;
 
@@ -1602,7 +1608,7 @@ out:
                 img->pointsize=(int8_t) atoi(fontchain);
                 foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Point size: %d\n", img->pointsize);
             }
-            globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+            globals->topmenu=Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             img->refresh=1;
             break;
 
@@ -1613,7 +1619,7 @@ out:
                 img->fontwidth=(int8_t) atoi(fontchain);
                 foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Font width: %d\n", img->fontwidth);
             }
-            globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+            globals->topmenu=Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             img->refresh=1;
             break;
 
@@ -1639,7 +1645,7 @@ out:
             else if ((strcmp(optarg,"pal") != 0) && (strcmp(optarg,"secam") != 0))
             {
                 foutput("%s\n",ERR "Only options are 'ntsc', 'secam' or (default) 'pal'.");
-                clean_exit(EXIT_FAILURE);
+                clean_exit(EXIT_FAILURE, globals);
             }
             break;
 
@@ -1673,8 +1679,8 @@ out:
         case 3:
 
             strlength=strlen(optarg);
-            globals.settings.bindir=realloc(globals.settings.bindir, (strlength+1)*sizeof(char));
-            strcpy(globals.settings.bindir, optarg);
+            globals->settings.bindir=realloc(globals->settings.bindir, (strlength+1)*sizeof(char));
+            strcpy(globals->settings.bindir, optarg);
 
             foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Using directory %s for auxiliary binaries.\n", optarg);
             break;
@@ -1682,19 +1688,19 @@ out:
         case 9:
             import_topmenu_flag=1;
             import_topmenu_path=strdup(optarg);
-            globals.topmenu=RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR;
+            globals->topmenu=RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR;
             break;
 
 #endif
         }
     }
 
-    if (globals.videolinking == 1 && (globals.videozone == 0 || globals.settings.linkdir == NULL))
+    if (globals->videolinking == 1 && (globals->videozone == 0 || globals->settings.linkdir == NULL))
     {
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "You should provide --videodir when using -T (video-linking)")
     }
 
-    change_directory(globals.settings.workdir);
+    change_directory(globals->settings.workdir, globals);
     /* Here it is necessary to check and normalize: temporary directory, number of menus before copying files and allocating new memory */
     // Cleaning operations
 
@@ -1703,31 +1709,32 @@ out:
  {
      errno=0;
 
-     if ((refresh_outdir) && (!globals.nooutput))
+     if ((refresh_outdir) && (!globals->nooutput))
      {
-         clean_directory(globals.settings.outdir);
-         clean_directory(globals.settings.lplexoutdir);
+         clean_directory(globals->settings.outdir, globals);
+         clean_directory(globals->settings.lplexoutdir, globals);
          if (errno) foutput("%s\n",MSG_TAG "No output directory to be cleaned");
      }
      else
      {
-         if ((globals.debugging)&& (!globals.nooutput))
-             foutput(MSG_TAG "Output directory %s has been preserved.\n", globals.settings.outdir);
+         if ((globals->debugging)&& (!globals->nooutput))
+             foutput(MSG_TAG "Output directory %s has been preserved.\n", globals->settings.outdir);
      }
 
-     if (!globals.nooutput)
+     if (!globals->nooutput)
      {
-         errno=secure_mkdir(globals.settings.outdir, 0777);
+         errno=secure_mkdir(globals->settings.outdir, 0777, globals);
 
          errno=0;
          if (refresh_tempdir)
          {
-             clean_directory(globals.settings.tempdir);
-             if (errno && globals.veryverbose) perror("\n"ERR "Found errors while cleaning directory");
+             clean_directory(globals->settings.tempdir, globals);
+             if (errno && globals->veryverbose) perror("\n"ERR "Found errors while cleaning directory");
          }
 
-         errno=secure_mkdir(globals.settings.tempdir, globals.access_rights);
-         errno += secure_mkdir(globals.settings.lplextempdir, globals.access_rights);
+         errno=secure_mkdir(globals->settings.tempdir, globals->access_rights, globals);
+
+         errno += secure_mkdir(globals->settings.lplextempdir, globals->access_rights, globals);
 
          if (errno)
          {
@@ -1738,13 +1745,13 @@ out:
          }
          else if (refresh_tempdir)
          {
-             if (globals.debugging)
-                 foutput(PAR "DVD-Audio temporary directory %s has been removed and recreated.\n", globals.settings.tempdir);
+             if (globals->debugging)
+                 foutput(PAR "DVD-Audio temporary directory %s has been removed and recreated.\n", globals->settings.tempdir);
          }
          else
          {
-             if (globals.debugging)
-                 foutput(PAR "DVD-Audio temporary directory %s has been preserved.\n", globals.settings.tempdir);
+             if (globals->debugging)
+                 foutput(PAR "DVD-Audio temporary directory %s has been preserved.\n", globals->settings.tempdir);
          }
          errno=0;
      }
@@ -1761,10 +1768,10 @@ out:
                 EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not allocate table for extracted files")
             }
 
-            extract_list_parsing(extract_args, extract); // first recovering the list of groups and tracks to be extracted
+            extract_list_parsing(extract_args, extract, globals); // first recovering the list of groups and tracks to be extracted
         }
 
-        ats2wav_parsing(globals.settings.indir, extract); // then extracting them
+        ats2wav_parsing(globals->settings.indir, extract, globals); // then extracting them
 
     }
     else
@@ -1780,16 +1787,16 @@ out:
 
 #if !defined HAVE_core_BUILD || !HAVE_core_BUILD
 
-    menu_characteristics_coherence_test(img, ngroups);
+    menu_characteristics_coherence_test(img, ngroups, globals);
 
 #ifndef __CB__
 #if !HAVE_mpeg2enc || !HAVE_mplex  || !HAVE_jpeg2yuv
 
-//    if (globals.topmenu <= RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR)
+//    if (globals->topmenu <= RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR)
 //    {
 //        foutput("%s\n", ERR "You need mplex, mpeg2enc and jpeg2yuv to author\n       a background screen, please install these applications.");
 //        foutput("%s\n", WAR "Continuing without menu authoring...");
-//        globals.topmenu = NO_MENU;
+//        globals->topmenu = NO_MENU;
 //    }
 
 #endif
@@ -1835,7 +1842,7 @@ out:
 
                 char** array=NULL;
                 uint32_t size = 0;
-                array=fn_strtok(optarg, ':', array, &size, img->nmenus, cutloop, NULL);
+                array=fn_strtok(optarg, ':', array, &size, img->nmenus, cutloop, NULL, globals);
 
                 img->soundtrack=(char ***) calloc(img->nmenus, sizeof(char**));
 
@@ -1843,18 +1850,18 @@ out:
 
                 for (u=0; u < img->nmenus; u++)
                 {
-                    img->soundtrack[u]  =fn_strtok(array[u], ',', img->soundtrack[u], &globals.soundtracksize[u], 0,NULL, NULL);
+                    img->soundtrack[u]  =fn_strtok(array[u], ',', img->soundtrack[u], &globals->soundtracksize[u], 0,NULL, NULL, globals);
                 }
 
                 int v;
                 for (u=0; u < img->nmenus; u++)
                     for (v=0; v < arraylength(img->soundtrack[u]); v++)
-                        errno+=audit_soundtrack(img->soundtrack[u][v],AUDIT_STRICT_TOPMENU_AUDIO_FORMAT);
+                        errno+=audit_soundtrack(img->soundtrack[u][v],AUDIT_STRICT_TOPMENU_AUDIO_FORMAT, globals);
 
             }
 
             soundtracks_flag=1;
-            globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+            globals->topmenu=Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
 
 #else
             foutput("%s", ERR "Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
@@ -1866,7 +1873,7 @@ out:
 #if  (defined HAVE_lplex  && HAVE_lplex == 1) || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
 
             foutput("%s\n",PAR "Generate DVD-VIDEO audio tracks");
-            if (globals.veryverbose)
+            if (globals->veryverbose)
             {
                 foutput("%s\n",PAR "Will create DVD-VIDEO from following audio files:");
             }
@@ -1878,7 +1885,7 @@ out:
             }
             else
             {
-                parse_double_entry_command_line(optarg, &dvdv_track_array, &ndvdvtracks, &ndvdvtitleset1, AUDIT_DVD_VIDEO_AUDIO_FORMAT, ':');
+                parse_double_entry_command_line(optarg, &dvdv_track_array, &ndvdvtracks, &ndvdvtitleset1, AUDIT_DVD_VIDEO_AUDIO_FORMAT, ':', globals);
                 if (ndvdvtracks == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE("ndvdtracks null")
                 dvdv_tracks_given=1;
             }
@@ -1893,7 +1900,7 @@ out:
 #if (defined HAVE_lplex  && HAVE_lplex == 1) || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
 
             foutput("%s\n",PAR "Generate DVD-VIDEO slides");
-            if (globals.veryverbose)
+            if (globals->veryverbose)
             {
                 foutput("%s\n",PAR "Will create DVD-VIDEO slides from following files:");
             }
@@ -1905,7 +1912,7 @@ out:
             }
             else
             {
-                parse_double_entry_command_line(optarg, &dvdv_slide_array, &ndvdvslides, &ndvdvtitleset2, NO_FIXWAV_AUDIT,':');
+                parse_double_entry_command_line(optarg, &dvdv_slide_array, &ndvdvslides, &ndvdvtitleset2, NO_FIXWAV_AUDIT,':', globals);
                 lplex_slides_flag=1;
             }
 
@@ -1969,42 +1976,42 @@ out:
 
         case 27:
             foutput("%s\n", PAR "Decode disk and log MPEG specifics.");
-            globals.logdecode = true;
-            globals.aobpath = (char**) calloc(81, sizeof(char *)); // so far rhe default alloc
-            if (globals.aobpath)
-                globals.aobpath[0] = strdup(optarg);
+            globals->logdecode = true;
+            globals->aobpath = (char**) calloc(81, sizeof(char *)); // so far rhe default alloc
+            if (globals->aobpath)
+                globals->aobpath[0] = strdup(optarg);
             else
                 EXIT_ON_RUNTIME_ERROR_VERBOSE("Could not allocate AOB path file.")
             break;
 
         case 28:
-            globals.fixwav_prepend = false;
+            globals->fixwav_prepend = false;
             use_ifo_files = false;
             if (strstr(optarg, ".AOB") != NULL)
             {
               foutput("%s %s %s\n", PAR "Extracting AOB to",
-                      globals.decode ? "raw signed-integer PCM: " : "original audio format (headerless WAV or MLP):", optarg);
-              aob2wav_parsing(optarg, NULL);
+                      globals->decode ? "raw signed-integer PCM: " : "original audio format (headerless WAV or MLP):", optarg);
+              aob2wav_parsing(optarg, NULL, globals);
             }
             else  // using the directory with file structure
             {
                // filter_dir_files finds all AOBs in dir optarg, and returns list of AOBs separated by commas if several.
 
-                aob2wav_parsing(filter_dir_files(optarg, ".AOB"), NULL);
+                aob2wav_parsing(filter_dir_files(optarg, ".AOB", globals), NULL, globals);
             }
             break;
 
         case 29:
-            globals.fixwav_prepend = true;
+            globals->fixwav_prepend = true;
             if (strstr(optarg, ".AOB") != NULL)
             {
               foutput("%s %s %s\n", PAR "Extracting AOB to",
-                       globals.decode ? "WAV format: " : "original audio format (WAV or MLP):", optarg);
-              aob2wav_parsing(optarg, NULL);
+                       globals->decode ? "WAV format: " : "original audio format (WAV or MLP):", optarg);
+              aob2wav_parsing(optarg, NULL, globals);
             }
             else  // using the directory with file structure
             {
-              aob2wav_parsing(filter_dir_files(optarg, ".AOB"), NULL);
+              aob2wav_parsing(filter_dir_files(optarg, ".AOB", globals), NULL, globals);
             }
 
             use_ifo_files = false;
@@ -2019,9 +2026,9 @@ out:
             break;
 
         case 30:
-            globals.settings.outfile = strdup(optarg);
-            foutput("%s%s\n", PAR "AOB log filepath: ", globals.settings.outfile);
-            if (file_exists(globals.settings.outfile)) unlink(globals.settings.outfile);
+            globals->settings.outfile = strdup(optarg);
+            foutput("%s%s\n", PAR "AOB log filepath: ", globals->settings.outfile);
+            if (file_exists(globals->settings.outfile)) unlink(globals->settings.outfile);
             break;
 
         case 6 :
@@ -2035,7 +2042,7 @@ out:
 
                 char** array=NULL;
                 uint32_t size = 0;
-                array=fn_strtok(optarg, ':', array, &size, img->nmenus, cutloop, NULL);
+                array=fn_strtok(optarg, ':', array, &size, img->nmenus, cutloop, NULL, globals);
 
                 if (!array)
                 {
@@ -2047,11 +2054,11 @@ out:
 
                 for (u=0; u < img->nmenus; u++)
                 {
-                    img->topmenu_slide[u]  =fn_strtok(array[u], ',', img->topmenu_slide[u], &globals.topmenu_slidesize, 0,NULL, NULL);
+                    img->topmenu_slide[u]  =fn_strtok(array[u], ',', img->topmenu_slide[u], &globals->topmenu_slidesize, 0,NULL, NULL, globals);
                     img->topmenu_nslides[u]=arraylength(img->topmenu_slide[u]);
                 }
             }
-            globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+            globals->topmenu=Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
 
             break;
 
@@ -2066,19 +2073,19 @@ out:
 
             str=strdup(optarg);
             free(img->backgroundpic);
-            img->backgroundpic=fn_strtok(str,',',img->backgroundpic, &globals.backgroundpicsize, 0,NULL,NULL);
+            img->backgroundpic=fn_strtok(str,',',img->backgroundpic, &globals->backgroundpicsize, 0,NULL,NULL, globals);
             int backgroundpic_arraylength=0;
             if ((backgroundpic_arraylength=arraylength(img->backgroundpic)) < img->nmenus)
             {
 
                 foutput("%s\n",WAR "You did not give enough filenames, completing with last one");
                 for (u=0; u + backgroundpic_arraylength < img->nmenus; u++)
-                    copy_file(img->backgroundpic[backgroundpic_arraylength-1], img->backgroundpic[u+backgroundpic_arraylength]);
+                    copy_file(img->backgroundpic[backgroundpic_arraylength-1], img->backgroundpic[u+backgroundpic_arraylength], globals);
             }
 
 
             free(str);
-            globals.topmenu=Min(globals.topmenu, RUN_SPUMUX_DVDAUTHOR);
+            globals->topmenu=Min(globals->topmenu, RUN_SPUMUX_DVDAUTHOR);
             img->refresh=1;
 
             break;
@@ -2095,14 +2102,14 @@ out:
             if  ((img->blankscreen[len-1] != 'g') || (img->blankscreen[len-2] != 'n') || (img->blankscreen[len-3] != 'p'))
             {
                 foutput("%s\n", ERR "You should use a .png background picture... exiting.");
-                clean_exit(EXIT_FAILURE);
+                clean_exit(EXIT_FAILURE, globals);
             }
             // note that within a switch, some compilers do not authorize char dest[len+1]
 
             img->backgroundpic[0][len2-2]='p';
             img->backgroundpic[0][len2-3]='j';
 
-            globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR );
+            globals->topmenu=Min(globals->topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR );
 
             break;
 
@@ -2111,19 +2118,19 @@ out:
             foutput("%s\n", WAR "Check that your image doe not have more than 4 colors, including transparency.");
             str=strdup(optarg);
             free(img->highlightpic);
-            img->highlightpic=fn_strtok(str,',',img->highlightpic, &globals.highlightpicsize, 0,NULL,NULL);
+            img->highlightpic=fn_strtok(str,',',img->highlightpic, &globals->highlightpicsize, 0,NULL,NULL, globals);
             int highlight_arraylength=0;
             if ((highlight_arraylength=arraylength(img->highlightpic)) < img->nmenus)
             {
 
                 foutput("%s\n",WAR "You did not give enough filenames, completing with last one");
                 for (u=0; u + highlight_arraylength < img->nmenus; u++)
-                    copy_file(img->highlightpic[highlight_arraylength-1], img->highlightpic[u+highlight_arraylength]);
+                    copy_file(img->highlightpic[highlight_arraylength-1], img->highlightpic[u+highlight_arraylength], globals);
             }
 
             free(str);
 
-            globals.topmenu = Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR );
+            globals->topmenu = Min(globals->topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR );
             img->refresh=1;
             break;
 
@@ -2132,20 +2139,20 @@ out:
             foutput("%s\n", WAR "Check that your image doe not have more than 4 colors, including transparency.");
             str=strdup(optarg);
 
-            img->selectpic=fn_strtok(str,',',img->selectpic, &globals.selectpicsize, 0,NULL,NULL);
+            img->selectpic=fn_strtok(str,',',img->selectpic, &globals->selectpicsize, 0,NULL,NULL, globals);
             int select_arraylength=0;
             if ((select_arraylength=arraylength(img->selectpic)) < img->nmenus)
             {
 
                 foutput("%s\n",WAR "You did not give enough filenames, completing with last one");
                 for (u=0; u + select_arraylength < img->nmenus; u++)
-                    copy_file(img->selectpic[select_arraylength-1], img->selectpic[u+select_arraylength]);
+                    copy_file(img->selectpic[select_arraylength-1], img->selectpic[u+select_arraylength], globals);
             }
 
 
             free(str);
 
-            globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR );
+            globals->topmenu=Min(globals->topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR );
             img->refresh=1;
             break;
 
@@ -2155,20 +2162,20 @@ out:
             foutput("%s\n", WAR "Check that your image doe not have more than 4 colors, including transparency.");
             str=strdup(optarg);
 
-            img->imagepic=fn_strtok(str,',',img->imagepic, &globals.imagepicsize, 0,NULL,NULL);
+            img->imagepic=fn_strtok(str,',',img->imagepic, &globals->imagepicsize, 0,NULL,NULL, globals);
             int image_arraylength=0;
             if ((image_arraylength=arraylength(img->imagepic)) < img->nmenus)
             {
 
                 foutput("%s\n",WAR "You did not give enough filenames, completing with last one");
                 for (u=0; u + image_arraylength < img->nmenus; u++)
-                    copy_file(img->imagepic[image_arraylength -1], img->imagepic[u+image_arraylength ]);
+                    copy_file(img->imagepic[image_arraylength -1], img->imagepic[u+image_arraylength ], globals);
             }
 
 
             free(str);
 
-            globals.topmenu=Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR );
+            globals->topmenu=Min(globals->topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR );
             img->refresh=1;
             break;
 
@@ -2177,7 +2184,7 @@ out:
             foutput("%s%s\n", PAR "Background color(s) for top (and active) menus : ", optarg);
             str=strdup(optarg);
 
-            img->backgroundcolors = fn_strtok(str,':', img->backgroundcolors, &globals.backgroundcolorssize, 0,NULL,NULL);
+            img->backgroundcolors = fn_strtok(str,':', img->backgroundcolors, &globals->backgroundcolorssize, 0,NULL,NULL, globals);
             int bgcolors_arraylength = 0;
             if ((bgcolors_arraylength = arraylength(img->backgroundcolors)) < img->nmenus)
             {
@@ -2188,24 +2195,24 @@ out:
             }
 
             free(str);
-            globals.topmenu = Min(globals.topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+            globals->topmenu = Min(globals->topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             break;
 
         }
     }
 
 
-    if (img->nmenus && img->blankscreen && globals.topmenu < NO_MENU)
+    if (img->nmenus && img->blankscreen && globals->topmenu < NO_MENU)
     {
-        if (globals.veryverbose) foutput("%s\n", INF "Converting overlay .png blankscreen to .jg blankscreen for mpg authoring...");
+        if (globals->veryverbose) foutput("%s\n", INF "Converting overlay .png blankscreen to .jg blankscreen for mpg authoring...");
         char* convert=NULL;
         char cl[500]; //do not use command as an array name !
-        convert = create_binary_path(convert, CONVERT, SEPARATOR CONVERT_BASENAME);
+        convert = create_binary_path(convert, CONVERT, SEPARATOR CONVERT_BASENAME, globals);
         if (file_exists(img->backgroundpic[0])) unlink(img->backgroundpic[0]);
         errno=0;
-        change_directory(globals.settings.datadir);
+        change_directory(globals->settings.datadir, globals);
         snprintf(cl, 500, "%s %s %s", convert, img->blankscreen , img->backgroundpic[0]);
-        if (globals.veryverbose) foutput(INF "Launching convert with command line %s\n",  cl);
+        if (globals->veryverbose) foutput(INF "Launching convert with command line %s\n",  cl);
         if (system(win32quote(cl)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed")
         fflush(NULL);
         FREE(convert);
@@ -2213,16 +2220,16 @@ out:
 
     bool menupic_input_coherence_test=0;
 
-    if ((img->imagepic) && (img->highlightpic) && (img->selectpic) && globals.topmenu < NO_MENU)
+    if ((img->imagepic) && (img->highlightpic) && (img->selectpic) && globals->topmenu < NO_MENU)
     {
         for (u=0;  u < img->nmenus; u++)
         {
             if ((img->imagepic[u]) && (img->highlightpic[u]) && (img->selectpic[u]))
             {
                 path_t *i,*h,*s;
-                i=parse_filepath(img->imagepic[u]);
-                h=parse_filepath(img->highlightpic[u]);
-                s=parse_filepath(img->selectpic[u]);
+                i=parse_filepath(img->imagepic[u], globals);
+                h=parse_filepath(img->highlightpic[u], globals);
+                s=parse_filepath(img->selectpic[u], globals);
 
                 if ((i->isfile) && (h->isfile) && (s->isfile))
                     menupic_input_coherence_test=1;
@@ -2232,26 +2239,26 @@ out:
                 if ((img->imagepic[u]) || (img->highlightpic[u]) || (img->selectpic[u]))
                 {
                     foutput("%s",WAR "You should enter three menu-authoring custom-made .png pictures, for main image, highlight and select action.\nn       Reverting to automatic mode.\n\n");
-                    globals.topmenu=Min(globals.topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+                    globals->topmenu=Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
                 }
             }
         }
     }
 
-    if (globals.aobpath != NULL)
+    if (globals->aobpath != NULL)
     {
-        if (globals.logdecode)
+        if (globals->logdecode)
         {
-            decode_ats();
+            decode_ats(globals);
         }
         else
         {
-          get_ats_audio(use_ifo_files, extract);
+          get_ats_audio(use_ifo_files, extract, globals);
           if (extract_audio_flag)
              free(extract);
         }
-        free_memory(command);
-        clean_exit(EXIT_SUCCESS);
+        free_memory(command, globals);
+        clean_exit(EXIT_SUCCESS, globals);
     }
 
     // Now copying to temporary directory, depending on type of menu creation, trying to minimize work, depending of type of disc build.
@@ -2267,14 +2274,14 @@ out:
     if (soundtracks_flag)
     {
         if (img->topmenu_slide)
-            launch_lplex_soundtrack(img, "mpeg");
+            launch_lplex_soundtrack(img, "mpeg", globals);
         else
             if (import_topmenu_flag)
-                import_topmenu(import_topmenu_path, img, MIX_NEW_SOUNDTRACK);
+                import_topmenu(import_topmenu_path, img, MIX_NEW_SOUNDTRACK, globals);
     }
     else
         if (import_topmenu_flag)
-            import_topmenu(import_topmenu_path, img, USE_VTS_SOUNDTRACK);
+            import_topmenu(import_topmenu_path, img, USE_VTS_SOUNDTRACK, globals);
 
     if (hybridate_flag)
     {
@@ -2312,44 +2319,44 @@ out:
     if ( dvdv_import_flag && mirror_flag )
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "You should not use --mirror along with --import-dvdv: do you really want to resample?\n       Exiting...\n");
 
-    switch (globals.topmenu)
+    switch (globals->topmenu)
     {
     case TEMPORARY_AUTOMATIC_MENU:
 
     case AUTOMATIC_MENU:
 
     case RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR :
-        change_directory(globals.settings.datadir);
+        change_directory(globals->settings.datadir, globals);
 
-        copy_file2dir_rename(img->backgroundpic[0], globals.settings.tempdir, "bgpic0.jpg");
+        copy_file2dir_rename(img->backgroundpic[0], globals->settings.tempdir, "bgpic0.jpg", globals);
 
         if (img->nmenus > 1)
             for (u=1; u < img->nmenus; u++)
             {
                 char name[13];
                 sprintf(name, "%s%d%s", "bgpic", u,".jpg");
-                copy_file2dir_rename(img->backgroundpic[0], globals.settings.tempdir, name);
+                copy_file2dir_rename(img->backgroundpic[0], globals->settings.tempdir, name, globals);
             }
         /* fall through */
         __attribute__((fallthrough));
 
     case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
-        change_directory(globals.settings.datadir);
+        change_directory(globals->settings.datadir, globals);
 
-        dest=copy_file2dir(img->blankscreen, globals.settings.tempdir);
+        dest=copy_file2dir(img->blankscreen, globals->settings.tempdir, globals);
 
         if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Failed to copy background .png blankscreen to temporary directory.")
 
         if (!menupic_input_coherence_test)
         {
-            normalize_temporary_paths(img);
+            normalize_temporary_paths(img, globals);
         }
             else
         {
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Trop d'incohÃ©rences dans l'allocation des Ã©lÃ©ments du menu.\n")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Trop d'incohérences dans l'allocation des éléments du menu.\n")
         }
 
-        change_directory(globals.settings.workdir);
+        change_directory(globals->settings.workdir, globals);
         free(dest);
         /* fall through */
         __attribute__((fallthrough));
@@ -2359,16 +2366,16 @@ out:
         {
             foutput("%s\n", WAR "You need all subtitle images");
             foutput("%s\n", WAR "Continuing with menu picture authoring...");
-            globals.topmenu=Min(RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR, globals.topmenu);
+            globals->topmenu=Min(RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR, globals->topmenu);
         }
         break;
 
     case RUN_DVDAUTHOR:
-        if ((img->backgroundmpg) && (globals.xml))
+        if ((img->backgroundmpg) && (globals->xml))
         {
             errno=0;
-            if (fopen(globals.xml, "rb") != NULL)
-                fclose(fopen(globals.xml, "rb"));
+            if (fopen(globals->xml, "rb") != NULL)
+                fclose(fopen(globals->xml, "rb"));
             if (!errno) foutput("%s\n", MSG_TAG "--> dvdauthor requirement...OK");
         }
         else errno=1;
@@ -2398,9 +2405,9 @@ out:
     if ((errno)&&(user_command_line))
     {
         foutput("%s\n", WAR "Not enough information. Continuing with automatic menu authoring...");
-        globals.topmenu=AUTOMATIC_MENU;
+        globals->topmenu=AUTOMATIC_MENU;
         // retest now
-        menu_characteristics_coherence_test(img, ngroups);
+        menu_characteristics_coherence_test(img, ngroups, globals);
         errno=0;
     }
 
@@ -2413,21 +2420,21 @@ out:
         // heap-allocations is not possible if char** is not returned by function
         // A simple char* would well be allocated by function, not a char**.
 
-        if (globals.debugging) fprintf(stderr, DBG "stillpic_string=%s\n", stillpic_string);
+        if (globals->debugging) fprintf(stderr, DBG "stillpic_string=%s\n", stillpic_string);
         bool indir = true;
         errno = 0;
 
         if (is_dir(stillpic_string))
         {
-            if (globals.debugging) fprintf(stderr, "%s\n", DBG "Traversing") ;
+            if (globals->debugging) fprintf(stderr, "%s\n", DBG "Traversing") ;
             pics_per_track = calloc(999, sizeof(char*));
-            globals.settings.stillpicdir = strdup(stillpic_string);
-            traverse_directory(stillpic_string, fill_pics, true, (void*) pics_per_track, NULL);
+            globals->settings.stillpicdir = strdup(stillpic_string);
+            traverse_directory(stillpic_string, fill_pics, true, (void*) pics_per_track, NULL, globals);
         }
         else
         {
              uint32_t size = 0;
-             pics_per_track = fn_strtok(stillpic_string, ':', pics_per_track, &size, 0,NULL,NULL);
+             pics_per_track = fn_strtok(stillpic_string, ':', pics_per_track, &size, 0,NULL,NULL, globals);
              indir = false;
         }
 
@@ -2462,14 +2469,14 @@ out:
 
         for (k = 0; k < totntracks; ++k)
         {
-            if (globals.debugging)
+            if (globals->debugging)
                 fprintf(stderr, DBG "Parsing pictures for track %d\n", k);
 
             if (indir)
             {
                 picks_per_track_double_array[k] = calloc(1, sizeof(char*));
                 picks_per_track_double_array[k][0] = pics_per_track[k];
-                create_stillpic_directory(pics_per_track[k], -1);
+                create_stillpic_directory(pics_per_track[k], -1, globals);
             }
             else
             {
@@ -2480,7 +2487,7 @@ out:
                                                               &size,
                                                               -1,
                                                               create_stillpic_directory,
-                                                              NULL);
+                                                              NULL, globals);
             }
 
             dim = 0;
@@ -2503,7 +2510,7 @@ out:
             npics[k]=(k)? dim + npics[k-1]: dim;
             img->npics[k] = dim;
             DIM += dim;
-            if (globals.debugging) fprintf(stderr, "\n"DBG "number of pics for track %d: npics[%d] = %d\n", k, k, dim);
+            if (globals->debugging) fprintf(stderr, "\n"DBG "number of pics for track %d: npics[%d] = %d\n", k, k, dim);
 
             if (img->npics[k] > 99)
             {
@@ -2520,12 +2527,12 @@ out:
             goto standard_checks;
         }
         img->count=DIM;
-        if (globals.debugging) fprintf(stderr,DBG "Total of %d pictures\n", img->count);
+        if (globals->debugging) fprintf(stderr,DBG "Total of %d pictures\n", img->count);
     }
     // or allocate img->blankscreen for dvdv slides by default.
 
     if (still_options_string)
-        still_options_parsing(still_options_string, img);
+        still_options_parsing(still_options_string, img, globals);
 
 #endif
 
@@ -2535,13 +2542,13 @@ standard_checks:
 
     if (nplaygroups > ngroups-nvideolinking_groups)
     {
-        if (globals.debugging) foutput(ERR "There cannot be more copy groups than audio groups. Limiting to %d groups...\n", ngroups-nvideolinking_groups);
+        if (globals->debugging) foutput(ERR "There cannot be more copy groups than audio groups. Limiting to %d groups...\n", ngroups-nvideolinking_groups);
         nplaygroups=ngroups-nvideolinking_groups;
     }
 
     if ( nplaygroups+ngroups > 8)
     {
-        if (globals.debugging) foutput("%s\n", ERR "There cannot be more copy groups than audio groups. Limiting to 9 groups...");
+        if (globals->debugging) foutput("%s\n", ERR "There cannot be more copy groups than audio groups. Limiting to 9 groups...");
         nplaygroups = MAX(0, 9-ngroups);
     }
 
@@ -2549,7 +2556,7 @@ standard_checks:
 
     if (dbtable < 16 && dbtable > 0)
     {
-       if (globals.veryverbose)
+       if (globals->veryverbose)
            foutput("%s\n", WAR "Completing downmix tables up to 16...");
 
         for (int j = dbtable; j < 16; ++j)
@@ -2587,17 +2594,17 @@ standard_checks:
 
     if (user_command_line)
     {
-        scan_audiofile_characteristics(command);
+        scan_audiofile_characteristics(command, globals);
     }
 
-    process_dvd_video_zone(command);
+    process_dvd_video_zone(command, globals);
 
     user_command_line++;
     return(command);
 }
 
 
-void process_dvd_video_zone(command_t* command)
+void process_dvd_video_zone(command_t* command, globalData* globals)
 {
 #if !defined HAVE_core_BUILD || !HAVE_core_BUILD
 
@@ -2642,8 +2649,8 @@ void process_dvd_video_zone(command_t* command)
                  picks_per_track_double_array[t] == NULL ||
                  picks_per_track_double_array[t][0] == NULL)
                  {
-                   char slide[strlen(globals.settings.workdir) + STRLEN_SEPARATOR + strlen(img->blankscreen)+1];
-                   sprintf(slide, "%s%s%s", globals.settings.workdir,SEPARATOR,img->blankscreen);
+                   char slide[strlen(globals->settings.workdir) + STRLEN_SEPARATOR + strlen(img->blankscreen)+1];
+                   sprintf(slide, "%s%s%s", globals->settings.workdir,SEPARATOR,img->blankscreen);
 
                    // Assign a default slide if an explicit pic is not given on command line
 
@@ -2675,7 +2682,7 @@ void process_dvd_video_zone(command_t* command)
 
     if (dvdv_tracks_given)
     {
-        globals.videozone=0;
+        globals->videozone=0;
 
         foutput("%s\n", MSG_TAG "With --dvdv-tracks, no testing of audio file compliance will be performed!");
         launch_lplex_hybridate(img,
@@ -2684,7 +2691,7 @@ void process_dvd_video_zone(command_t* command)
                                (const uint8_t*) ndvdvtracks,
                                (const char***) dvdv_slide_array,
                                ndvdvslides,
-                               (const int) ndvdvtitleset1);
+                               (const int) ndvdvtitleset1, globals);
 
         FREE(dvdv_track_array);
         FREE(dvdv_slide_array);
@@ -2719,7 +2726,7 @@ void process_dvd_video_zone(command_t* command)
 
                 if(files[group][track].dvdv_compliant)
                 {
-                    if (globals.veryverbose)
+                    if (globals->veryverbose)
                     {
                         foutput(MSG_TAG "Tested DVD-Video compliant: %s\n", files[group][track].filename);
                         foutput(MSG_TAG "group %d track %d: bits per sample=%d samplerate=%d\n",
@@ -2735,7 +2742,7 @@ void process_dvd_video_zone(command_t* command)
                 }
                 else
                 {
-                    if (globals.veryverbose)
+                    if (globals->veryverbose)
                     {
                         foutput(MSG_TAG "Failed to be tested DVD-Video compliant: %s\n",
                                 command->files[group][track].filename);
@@ -2801,7 +2808,7 @@ void process_dvd_video_zone(command_t* command)
 
         }
 
-        globals.videozone=true;
+        globals->videozone=true;
 
        if (ndvdvtitleset1 == 0)
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "You requested hybridation yet no DVD-Video standard-compliant\n       audio file was found on input.\n")
@@ -2816,7 +2823,7 @@ void process_dvd_video_zone(command_t* command)
 
             char*** new_dvdv_track_array;
             char*** new_dvdv_slide_array;
-            if (globals.veryverbose)
+            if (globals->veryverbose)
                    foutput(WAR "%d titlesets will have to be added.\n", delta_titlesets);
 
              if (ndvdvtitleset1+delta_titlesets > 99)
@@ -2872,7 +2879,7 @@ void process_dvd_video_zone(command_t* command)
                                    (const uint8_t*) new_ntracks,
                                    (const char***) new_dvdv_slide_array,
                                    ndvdvslides,
-                                   (const int) ndvdvtitleset1+delta_titlesets);
+                                   (const int) ndvdvtitleset1+delta_titlesets, globals);
 
             for (int group=0; group < ndvdvtitleset1+delta_titlesets; group++)
             {
@@ -2897,7 +2904,7 @@ void process_dvd_video_zone(command_t* command)
                                (const uint8_t*) ndvdvtracks,
                                (const char***) dvdv_slide_array,
                                ndvdvslides,
-                               (const int) ndvdvtitleset1);
+                               (const int) ndvdvtitleset1, globals);
 
           // apparent memory management issue
 
@@ -3029,7 +3036,7 @@ void process_dvd_video_zone(command_t* command)
 
        if (delta_titlesets)
            {
-             if (globals.veryverbose)
+             if (globals->veryverbose)
                    foutput(WAR "%d titlesets will have to be added.\n", delta_titlesets);
 
              if (command->ngroups+delta_titlesets > 99)
@@ -3079,7 +3086,7 @@ void process_dvd_video_zone(command_t* command)
              }
            }
 
-        globals.videozone=0;
+        globals->videozone=0;
 
         if (delta_titlesets)
         {
@@ -3089,7 +3096,7 @@ void process_dvd_video_zone(command_t* command)
                                    (const uint8_t*) new_ntracks,
                                    (const char***) new_dvdv_slide_array,
                                    ndvdvslides,
-                                   (const int) command->ngroups+delta_titlesets);
+                                   (const int) command->ngroups+delta_titlesets, globals);
 
             for (int group=0; group < command->ngroups+delta_titlesets; group++)
             {
@@ -3112,7 +3119,7 @@ void process_dvd_video_zone(command_t* command)
                                    (const uint8_t*) command->ntracks,
                                    (const char***) dvdv_slide_array,
                                    ndvdvslides,
-                                   (const int) command->ngroups);
+                                   (const int) command->ngroups, globals);
 
             for (int group=0; group < command->ngroups; group++)
             {
@@ -3137,7 +3144,7 @@ void process_dvd_video_zone(command_t* command)
 
 // Takes a list of AOB files as input, optionally seperated by commas
 
-void aob2wav_parsing(const char *ssopt, const extractlist* extract)
+void aob2wav_parsing(const char *ssopt, const extractlist* extract, globalData* globals)
 {
     char *chain = NULL;//, *subchunk = NULL;
     if (ssopt)
@@ -3153,9 +3160,9 @@ void aob2wav_parsing(const char *ssopt, const extractlist* extract)
 
     if (chain != NULL)
     {
-        globals.aobpath = (char**) calloc(81, sizeof(char*));  // groups may not be successive so extract->nextractgroups is not the appropriate counter
+        globals->aobpath = (char**) calloc(81, sizeof(char*));  // groups may not be successive so extract->nextractgroups is not the appropriate counter
 
-        if (globals.aobpath == NULL)
+        if (globals->aobpath == NULL)
         {
             EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Extraction processor failed at input stage.")
         }
@@ -3169,10 +3176,10 @@ void aob2wav_parsing(const char *ssopt, const extractlist* extract)
     {
        for (char* str = chain, *c; i < 81 && (c = strtok(str, ",")) != NULL; ++i, str = NULL)
        {
-           globals.aobpath[i] = strdup(c);
-           if (globals.veryverbose)
+           globals->aobpath[i] = strdup(c);
+           if (globals->veryverbose)
            {
-               fprintf(stderr, MSG_TAG "Adding %s to extract list (rank %d)\n", globals.aobpath[i], i + 1);
+               fprintf(stderr, MSG_TAG "Adding %s to extract list (rank %d)\n", globals->aobpath[i], i + 1);
            }
        }
     }
@@ -3181,7 +3188,7 @@ void aob2wav_parsing(const char *ssopt, const extractlist* extract)
        // Here the chain is not really used except for the path
 
         char* first_token = strtok(chain, ",");
-        path_t *p = parse_filepath(first_token);
+        path_t *p = parse_filepath(first_token, globals);
         int count = 0;
 
         for (int i = 1; i < 10; ++i)
@@ -3194,10 +3201,10 @@ void aob2wav_parsing(const char *ssopt, const extractlist* extract)
                {
                   if (extract->extracttitleset[i - 1 + j - 1])
                   {
-                      globals.aobpath[count++] = strdup(str);
-                      if (globals.veryverbose)
+                      globals->aobpath[count++] = strdup(str);
+                      if (globals->veryverbose)
                       {
-                          fprintf(stderr, "Adding %s to extract list (rank %d)\n", globals.aobpath[count - 1], count);
+                          fprintf(stderr, "Adding %s to extract list (rank %d)\n", globals->aobpath[count - 1], count);
                       }
                   }
                }
@@ -3214,7 +3221,7 @@ void aob2wav_parsing(const char *ssopt, const extractlist* extract)
 }
 
 
-void fixwav_parsing(char *ssopt)
+void fixwav_parsing(char *ssopt, globalData* globals)
 {
     int subopt;
     char * chain=ssopt;
@@ -3228,69 +3235,69 @@ void fixwav_parsing(char *ssopt)
         {
         case 0:
             foutput("%s\n", PAR "  Fixwav: simple mode activated, advanced features deactivated.");
-            globals.fixwav_automatic=0;
+            globals->fixwav_automatic=0;
             break;
 
         case 1:
             foutput("%s\n", PAR "  Fixwav: prepending header to raw file.");
-            globals.fixwav_prepend=1;
+            globals->fixwav_prepend=1;
             break;
 
         case 2:
             foutput("%s\n", PAR "  Fixwav: file header will be repaired in place.");
-            globals.fixwav_in_place=1;
+            globals->fixwav_in_place=1;
             break;
 
         case 3:
             foutput("%s\n", PAR "  Fixwav: interactive mode activated.");
-            globals.fixwav_interactive=1;
+            globals->fixwav_interactive=1;
             break;
 
         case 4:
             foutput("%s\n", PAR "  Fixwav: padding activated.");
-            globals.fixwav_padding=1;
+            globals->fixwav_padding=1;
             break;
 
         case 5:
             foutput("%s\n", PAR "  Fixwav: pruning silence at end of files.");
-            globals.fixwav_prune=1;
+            globals->fixwav_prune=1;
             break;
 
         case 6:
 
-            FREE(globals.fixwav_suffix)
-                    globals.fixwav_suffix=strdup(value);
-            foutput( PAR "  Fixwav output suffix: %s\n", globals.fixwav_suffix);
+            FREE(globals->fixwav_suffix)
+            globals->fixwav_suffix=strdup(value);
+            foutput( PAR "  Fixwav output suffix: %s\n", globals->fixwav_suffix);
             break;
 
         case 7:
-            globals.fixwav_force=1;
+            globals->fixwav_force=1;
             foutput("%s",PAR "  Fixwav will be launched before SoX for seriously mangled headers.\n");
             break;
 
         case 8:
-            globals.fixwav_cautious=1;
+            globals->fixwav_cautious=1;
             foutput("%s",PAR "  Fixwav will ask user permission to overwrite files in place.\n");
             break;
 
         case 9:
-            FREE(globals.settings.fixwav_database)
-                    globals.settings.fixwav_database=strdup(value);
-            if (!globals.nooutput) {
-                secure_mkdir(globals.settings.fixwav_database, 0755);
-                foutput("%s       %s%s",PAR "  Fixwav will output info chunk from wav headers to:\n", globals.settings.fixwav_database, SEPARATOR "database\n");
+            FREE(globals->settings.fixwav_database)
+                    globals->settings.fixwav_database=strdup(value);
+            if (!globals->nooutput) {
+                secure_mkdir(globals->settings.fixwav_database, 0755, globals);
+                foutput("%s       %s%s",PAR "  Fixwav will output info chunk from wav headers to:\n", globals->settings.fixwav_database, SEPARATOR "database\n");
             }
             break;
 
          case 10:
-            globals.fixwav_virtual_enable=1;
-            globals.fixwav_in_place=0;
+            globals->fixwav_virtual_enable=1;
+            globals->fixwav_in_place=0;
 
             foutput("%s",PAR "  Force virtual behavior (files remain unmodified) over in_place and previous settings.\n");
             break;
 
          case 11:
-            globals.fixwav_virtual_enable=0;
+            globals->fixwav_virtual_enable=0;
 
             foutput("%s",PAR "  Force real behavior (files will be modified) over previous settings.\n");
             break;
@@ -3301,9 +3308,9 @@ void fixwav_parsing(char *ssopt)
 }
 
 
-void extract_list_parsing(const char *arg, extractlist* extract)
+void extract_list_parsing(const char *arg, extractlist* extract, globalData* globals)
 {
-    char * chain, *subchunk = NULL, *saveptr1, *saveptr2;
+    char * chain = NULL, *subchunk = NULL, *saveptr1, *saveptr2;
     int j;
 
     uint8_t nextractgroup = 0;
@@ -3311,7 +3318,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
     if (arg)
     {
         chain = strdup(arg);
-        if (globals.veryverbose) fprintf(stderr, DBG "Extract list : %s\n", chain);
+        if (globals->veryverbose) fprintf(stderr, DBG "Extract list : %s\n", chain);
     }
 
     bool cutgroups = false, cuttracks = false;
@@ -3323,7 +3330,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
 
     if (cutgroups) subchunk = strtok_r(chain, "-", &saveptr1);
 
-    if (globals.debugging)
+    if (globals->debugging)
         foutput("%s\n", INF "Analysing --extract suboptions...");
 
     // Now strtok_r will return NULL if '-' not found, otherwise pointer to start of token
@@ -3374,7 +3381,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
         if (colon != ':')
         {
             foutput("%s\n", WAR "Incorrect --extract suboptions, format is --extract=group1:track1,track11,...,track1n-...-groupN:trackN1,trackN2,...,trackNn");
-            foutput("%s\n", WAR "Example --extract=3:1,3,4-5:6,7\nperforms of extraction of tracks nÂ°1, 3 and 4 in group 1 and tracks 6 and 7 in group 5.\n ");
+            foutput("%s\n", WAR "Example --extract=3:1,3,4-5:6,7\nperforms of extraction of tracks n°1, 3 and 4 in group 1 and tracks 6 and 7 in group 5.\n ");
             return;
         }
         else
@@ -3473,7 +3480,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
         }
     }
 
-    if (globals.maxverbose)
+    if (globals->maxverbose)
     {
         foutput("%s", PAR "EXTRACTING: AOB   |   track\n");
 
@@ -3498,7 +3505,7 @@ void extract_list_parsing(const char *arg, extractlist* extract)
     FREE(chain)
 }
 
-void ats2wav_parsing(const char *arg, const extractlist* extract)
+void ats2wav_parsing(const char *arg, const extractlist* extract, globalData* globals)
 {
 #if 0 //DEPRECATED
     DIR *dir = NULL;
@@ -3525,7 +3532,7 @@ void ats2wav_parsing(const char *arg, const extractlist* extract)
     foutput(INF "Extracting audio from %s\n", audiots_chain);
 
 
-    parse_disk(dir, globals.access_rights, extract);
+    parse_disk(dir, globals->access_rights, extract);
     change_directory(audiots_chain);
 
     free(chain);
@@ -3533,15 +3540,15 @@ void ats2wav_parsing(const char *arg, const extractlist* extract)
 
 #endif
 
-   const char* chain = filter_dir_files(arg, ".AOB");
+   const char* chain = filter_dir_files(arg, ".AOB", globals);
 
-   aob2wav_parsing(chain, extract);
+   aob2wav_parsing(chain, extract, globals);
 
 }
 #ifdef img
 #undef img
 
-void still_options_parsing(char *ssopt, pic* img)
+void still_options_parsing(char *ssopt, pic* img, globalData* globals)
 {
     int subopt, k;
     char* chain = ssopt;
@@ -3671,3 +3678,60 @@ void still_options_parsing(char *ssopt, pic* img)
     return;
 }
 #endif
+
+// A possible bug in gcc makes it obligatory to put this function in this file, not dvda-author.c
+
+void normalize_temporary_paths(pic* img, globalData* globals)
+{
+   if (img == NULL) return;
+
+   int menu;
+
+   for (int k = 0; k < img->nmenus; ++k) free(img->backgroundpic[k]);
+   free(img->backgroundpic);
+   img->backgroundpic=calloc(img->nmenus+1,sizeof(char*));
+
+   if (img->backgroundmpg) for (int k = 0; k < img->nmenus; ++k) free(img->backgroundmpg[k]);
+   free(img->backgroundmpg);
+   img->backgroundmpg=calloc(img->nmenus+1,sizeof(char*));
+
+   if (img->imagepic)  for (int k = 0; k < img->nmenus; ++k) free(img->imagepic[k]);
+   free(img->imagepic);
+   img->imagepic=calloc(img->nmenus+1,sizeof(char*));
+
+   if (img->highlightpic) for (int k = 0; k < img->nmenus; ++k) free(img->highlightpic[k]);
+   free(img->highlightpic);
+   img->highlightpic=calloc(img->nmenus+1,sizeof(char*));
+
+   if (img->selectpic) for (int k = 0; k < img->nmenus; ++k) free(img->selectpic[k]);
+   free(img->selectpic);
+   img->selectpic=calloc(img->nmenus+1, sizeof(char*));
+
+////    // useless to realloc for just one menu !
+
+   int s = strlen(globals->settings.tempdir);
+
+   for (menu=0;  menu < img->nmenus; menu++)
+    {
+        img->backgroundmpg[menu]=(char*)calloc(26+s, sizeof(char));
+        sprintf(img->backgroundmpg[menu], "%s"SEPARATOR"%s%d%s", globals->settings.tempdir, "background", menu, ".mpg");
+
+        img->backgroundpic[menu]=calloc(s+13, sizeof(char));
+        sprintf(img->backgroundpic[menu], "%s"SEPARATOR"%s%d%s", globals->settings.tempdir, "bgpic", menu, ".jpg");
+
+        img->imagepic[menu]=calloc(s+13, sizeof(char));
+        sprintf(img->imagepic[menu], "%s"SEPARATOR"%s%d%s", globals->settings.tempdir, "impic", menu, ".png");
+
+        img->highlightpic[menu]=calloc(s+13,sizeof(char));
+        sprintf(img->highlightpic[menu], "%s"SEPARATOR"%s%d%s", globals->settings.tempdir, "hlpic", menu, ".png");
+
+        img->selectpic[menu]=calloc(s+13,sizeof(char));
+        sprintf(img->selectpic[menu], "%s"SEPARATOR"%s%d%s", globals->settings.tempdir, "slpic", menu, ".png");
+    }
+
+   globals->imagepicsize = img->nmenus + 1;
+   globals->highlightpicsize = img->nmenus + 1;
+   globals->backgroundmpgsize = img->nmenus + 1;
+   globals->selectpicsize = img->nmenus + 1;
+}
+

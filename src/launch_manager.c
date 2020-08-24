@@ -31,10 +31,10 @@
  *   - command-line data belong to 'command' structures
  *   - software-level global variables are packed in 'globals' structures */
 
-extern globalData globals;
+
 extern unsigned int startsector;
 extern char* INDIR, *OUTDIR, *LOGDIR, *LINKDIR, *WORKDIR;
-extern uint8_t wav2cga_channels(fileinfo_t*);
+extern uint8_t wav2cga_channels(fileinfo_t*,globalData*);
 extern const char* cga_define[21];
 
 // getting rid of some arrows
@@ -51,13 +51,13 @@ extern const char* cga_define[21];
 
 
 
-int launch_manager(command_t *command)
+int launch_manager(command_t *command, globalData *globals)
 
 {
     /* sanity check */
     if (command == NULL)
     {
-        free_memory(command);
+        free_memory(command, globals);
         return(EXIT_SUCCESS);
     }
 
@@ -72,30 +72,30 @@ int launch_manager(command_t *command)
 
 
     // Late initialization
-    sectors.amg=SIZE_AMG+globals.text+(globals.topmenu <= TS_VOB_TYPE);
+    sectors.amg=SIZE_AMG+globals->text+(globals->topmenu <= TS_VOB_TYPE);
     sectors.samg=SIZE_SAMG;
     sectors.asvs= ((img->count) || (img->stillvob) || (img->active))? SIZE_ASVS : 0;
     sectors.topvob=0;
     sectors.stillvob=0;
     memset(sectors.atsi, 0, sizeof(sectors.atsi));
 
-    uint8_t pathlength=strlen(globals.settings.outdir);
+    uint8_t pathlength=strlen(globals->settings.outdir);
 
     char audiotsdir[pathlength+10];
     char videotsdir[pathlength+10];
 
-    sprintf(audiotsdir, "%s"SEPARATOR"AUDIO_TS", globals.settings.outdir);
+    sprintf(audiotsdir, "%s"SEPARATOR"AUDIO_TS", globals->settings.outdir);
 
-    if (!globals.nooutput) secure_mkdir(audiotsdir, globals.access_rights);
+    if (!globals->nooutput) secure_mkdir(audiotsdir, globals->access_rights, globals);
     errno=0;
-    STRING_WRITE_CHAR_BUFSIZ(videotsdir, "%s"SEPARATOR"VIDEO_TS", globals.settings.outdir)
-    if (globals.videozone && !globals.nooutput) secure_mkdir(videotsdir, globals.access_rights);
+    STRING_WRITE_CHAR_BUFSIZ(videotsdir, "%s"SEPARATOR"VIDEO_TS", globals->settings.outdir)
+    if (globals->videozone && !globals->nooutput) secure_mkdir(videotsdir, globals->access_rights, globals);
         errno=0;
 
     /* Step 1 - parse all audio files and store the file formats, lengths etc */
 
     SINGLE_DOTS
-    change_directory(globals.settings.workdir);
+    change_directory(globals->settings.workdir, globals);
 
     foutput("\n%s", "DVD Layout\n");
     foutput("%s\n",ANSI_COLOR_BLUE"Group"ANSI_COLOR_GREEN"  Track    "ANSI_COLOR_YELLOW"Rate"ANSI_COLOR_RED" Bits"ANSI_COLOR_RESET"  Ch  CGA    N_Samples  Filename\n");
@@ -123,7 +123,7 @@ int launch_manager(command_t *command)
             // As files[][] is dynamically allocated with calloc(), 0 values mean command line did not define cga values
 
             if (files[i][j].cga == 0 || files[i][j].cga == 0xFF)  // non-assigned (calloc 0 value) or assigned with illegal value previously detected as such (0xFF)
-                files[i][j].cga = wav2cga_channels(&files[i][j]);
+                files[i][j].cga = wav2cga_channels(&files[i][j], globals);
 
             files[i][j].contin_track = (uint8_t) (j != nfiles[i] - 1);
 
@@ -147,7 +147,7 @@ int launch_manager(command_t *command)
                           " bits, ",
                           files[i][j].samplerate,
                           " samples per second.)");
-                  clean_exit(-1);
+                  clean_exit(-1, globals);
                 }
             }
             else
@@ -164,7 +164,7 @@ int launch_manager(command_t *command)
                           " bits, ",
                           files[i][j].samplerate,
                           " samples per second.)");
-                  clean_exit(-1);
+                  clean_exit(-1, globals);
                 }
             }
 
@@ -222,9 +222,9 @@ int launch_manager(command_t *command)
 
     uint64_t  *titlelength[naudio_groups];
 
-    uint16_t totntracks0 = create_tracktables(command, naudio_groups,numtitles,ntitletracks,titlelength,ntitlepics);
+    uint16_t totntracks0 = create_tracktables(command, naudio_groups,numtitles,ntitletracks,titlelength,ntitlepics, globals);
 
-    if (globals.veryverbose)
+    if (globals->veryverbose)
     {
         if (totntracks == totntracks0)
          foutput("%s\n", INF "Coherence check on total of tracks... OK");
@@ -236,28 +236,28 @@ int launch_manager(command_t *command)
 
     for (i = 0; i < naudio_groups; ++i)
     {
-        nb_aob_files += create_ats(audiotsdir, i + 1, &files[i][0], nfiles[i]);
+        nb_aob_files += create_ats(audiotsdir, i + 1, &files[i][0], nfiles[i], globals);
 
         /* Audio zone system file  parameters  */
 
-        nb_atsi_files += create_atsi(command, audiotsdir,i,&sectors.atsi[i], &ntitlepics[i][0]);
+        nb_atsi_files += create_atsi(command, audiotsdir,i,&sectors.atsi[i], &ntitlepics[i][0], globals);
     }
 
     int nb_asv_files = 0;
 
     /* creating system VOBs */
-#if !defined HAVE_core_BUILD || !HAVE_core_BUILD
-    if (globals.topmenu < NO_MENU)
-        sectors.topvob = create_topmenu(audiotsdir, command); // if no top menu is requested, but simply active ones, generate matrix top menu and unlink it at the end
+#if !HAVE_core_BUILD
+    if (globals->topmenu < NO_MENU)
+        sectors.topvob = create_topmenu(audiotsdir, command, globals); // if no top menu is requested, but simply active ones, generate matrix top menu and unlink it at the end
 
-    if (sectors.topvob == 0) globals.topmenu = NO_MENU;
+    if (sectors.topvob == 0) globals->topmenu = NO_MENU;
 
     if (img->active)
         {
-            if (globals.debugging) foutput("%s", INF "Adding active menu.\n");
+            if (globals->debugging) foutput("%s", INF "Adding active menu.\n");
 
-            create_activemenu(img);
-            if (globals.topmenu == TEMPORARY_AUTOMATIC_MENU)
+            create_activemenu(img, globals);
+            if (globals->topmenu == TEMPORARY_AUTOMATIC_MENU)
                 sectors.topvob = 0;  //  deleting AUDIO_TS.VOB in this case (just used for creating AUDIO_SV.VOB
         }
 
@@ -277,35 +277,36 @@ int launch_manager(command_t *command)
             ntitlepics,
             img,
             &sectors,
-            totntracks);
+            totntracks,
+            globals);
 
 
      if (nb_asv_files)
      {
       if (img->stillvob)
              sectors.stillvob=stat_file_size(img->stillvob)/0x800;  //expressed in sectors
-           if (globals.debugging) foutput(MSG_TAG "Size of AUDIO_SV.VOB is: %u sectors\n" , sectors.stillvob);
+           if (globals->debugging) foutput(MSG_TAG "Size of AUDIO_SV.VOB is: %u sectors\n" , sectors.stillvob);
      }
 
     }
 #endif
 
-    if (globals.videozone)
+    if (globals->videozone)
     {
-        copy_directory(globals.settings.linkdir, videotsdir, globals.access_rights);
+        copy_directory(globals->settings.linkdir, videotsdir, globals->access_rights, globals);
         int nb_video_files = 0;
-        if ((nb_video_files  = count_dir_files(&videotsdir[0])) != 0)
+        if ((nb_video_files  = count_dir_files(&videotsdir[0], globals)) != 0)
         {
           startsector += nb_video_files;
-          globals.settings.linkdir = strdup(videotsdir);
+          globals->settings.linkdir = strdup(videotsdir);
         }
         else
         {
           foutput("%s%s%s\n", MSG_TAG "Could not count number of files in ", videotsdir, "\n" MSG_TAG "Disabling VIDEO_TS import and videolinking...");
           ngroups -= nvideolinking_groups;
           nvideolinking_groups = 0;
-          globals.videozone = 0;
-          globals.videolinking = 0;
+          globals->videozone = 0;
+          globals->videolinking = 0;
         }
     }
 
@@ -320,7 +321,7 @@ int launch_manager(command_t *command)
 
     /* Creating AUDIO_PP.IFO */
 
-    last_sector = create_samg(audiotsdir, command, &sectors);
+    last_sector = create_samg(audiotsdir, command, &sectors, globals);
 
     /*   sector_pointer_VIDEO_TS= number of sectors for AOBs + 2* sizeof amg + 2* size of ats*ngroups +system vobs +2*sizeof asvs */
 #if !defined HAVE_core_BUILD || !HAVE_core_BUILD
@@ -335,7 +336,7 @@ int launch_manager(command_t *command)
         sector_pointer_VIDEO_TS +=2*sectors.atsi[i];
     }
 
-    if (globals.debugging)
+    if (globals->debugging)
     {
         foutput("       Sector pointer to VIDEO_TS from AUDIO_TS= %"PRIu64" sectors\n", sector_pointer_VIDEO_TS);
         foutput( "%s", INF "Checking coherence of pointers...");
@@ -381,16 +382,16 @@ int launch_manager(command_t *command)
 
 // returns relative_sector_pointer_VTSI and videotitlelength
 #if !defined HAVE_core_BUILD || !HAVE_core_BUILD
-    if (globals.videozone)
+    if (globals->videozone)
     {
-        if (globals.videolinking)
+        if (globals->videolinking)
         {
-            get_video_system_file_size(globals.settings.linkdir, maximum_VTSI_rank, sector_pointer_VIDEO_TS, relative_sector_pointer_VTSI);
-            get_video_PTS_ticks(globals.settings.linkdir, videotitlelength, nvideolinking_groups, VTSI_rank);
+            get_video_system_file_size(globals->settings.linkdir, maximum_VTSI_rank, sector_pointer_VIDEO_TS, relative_sector_pointer_VTSI, globals);
+            get_video_PTS_ticks(globals->settings.linkdir, videotitlelength, nvideolinking_groups, VTSI_rank, globals);
         }
 
-        change_directory(globals.settings.workdir);
-        free(globals.settings.linkdir);
+        change_directory(globals->settings.workdir, globals);
+        free(globals->settings.linkdir);
     }
 #endif
 
@@ -405,13 +406,13 @@ int launch_manager(command_t *command)
             relative_sector_pointer_VTSI,
             numtitles,
             ntitletracks,
-            titlelength
-            );
+            titlelength,
+            globals);
 
     if (numtitles == NULL || nb_amg_files == 0)
     {
         foutput("%s\n", ERR "Critical error: failed to generate AUDIO_TS.IFO");
-        clean_exit(-1);
+        clean_exit(-1, globals);
     }
 
     for (i = 0; i < naudio_groups; ++i)
@@ -438,21 +439,21 @@ int launch_manager(command_t *command)
     // checking coherence of startsector by recounting number of files
     // should always be OK unless some hardware issue or user interceptin came in at the worst of times
     //
-    ntotalfiles =  count_dir_files(audiotsdir);
+    ntotalfiles =  count_dir_files(audiotsdir, globals);
 
     // BUG: if hybridation, videotsdir not defined!
-    ntotalfiles += count_dir_files(videotsdir);
+    ntotalfiles += count_dir_files(videotsdir, globals);
 
     if (startsector == ntotalfiles  + 272)
     {
       int ad = startsector * 2048;
-      if (globals.debugging)
+      if (globals->debugging)
          foutput("%s%d%s%d%s%#08X%s\n", MSG_TAG "Coherence test for ISO start sector... OK, : ", startsector, " sectors (adress: ", ad, ", ", ad, ")");
     }
     else
     {
       foutput("%s%s%d%s%d\n", WAR "Coherence test for ISO start sector failed: ", "start sector assessed as: ", startsector, " but should be: ", 272 + ntotalfiles);
-      if (globals.debugging)
+      if (globals->debugging)
       {
           foutput("%s%s\n", DBG "img->tsbob not null: ", img->tsvob != NULL ? "yes" : "no");
           foutput("%s%d\n", DBG "sectors.topvob: ",      sectors.topvob);
@@ -495,27 +496,27 @@ int launch_manager(command_t *command)
 
 #if !defined HAVE_core_BUILD || !HAVE_core_BUILD
     //
-    if (globals.runmkisofs)
+    if (globals->runmkisofs)
     {
 
         char dvdisopath[CHAR_BUFSIZ];
         memset(dvdisopath, '0', CHAR_BUFSIZ);
-        if (globals.settings.dvdisopath == NULL)
+        if (globals->settings.dvdisopath == NULL)
         {
-            sprintf(dvdisopath, "%s"SEPARATOR"%s", globals.settings.tempdir, "dvd.iso");
+            sprintf(dvdisopath, "%s"SEPARATOR"%s", globals->settings.tempdir, "dvd.iso");
         }
-        else memcpy(dvdisopath, globals.settings.dvdisopath, CHAR_BUFSIZ) ;
+        else memcpy(dvdisopath, globals->settings.dvdisopath, CHAR_BUFSIZ) ;
 
         if (file_exists(dvdisopath)) unlink(dvdisopath);
         uint64_t size;
         char* mkisofs=NULL;
         errno=0;
-        if ((mkisofs=create_binary_path(mkisofs, MKISOFS, SEPARATOR MKISOFS_BASENAME EXE)))
+        if ((mkisofs=create_binary_path(mkisofs, MKISOFS, SEPARATOR MKISOFS_BASENAME EXE, globals)))
         {
-           const char* args[]={mkisofs, "-dvd-audio", "-v", "-o", dvdisopath, globals.settings.outdir, NULL};
+           const char* args[]={mkisofs, "-dvd-audio", "-v", "-o", dvdisopath, globals->settings.outdir, NULL};
            foutput("%s%s%s\n", INF "Launching: ", mkisofs, " to create image");
 
-           run(mkisofs, args, WAIT, FORK);
+           run(mkisofs, args, WAIT, FORK, globals);
 
            free(mkisofs);
         }
@@ -532,47 +533,47 @@ int launch_manager(command_t *command)
         }
     }
 
-    if (globals.cdrecorddevice)
+    if (globals->cdrecorddevice)
     {
 
         char dvdisoinput[CHAR_BUFSIZ];
         memset(dvdisoinput, '0', CHAR_BUFSIZ);
-        if (globals.settings.dvdisopath == NULL)
+        if (globals->settings.dvdisopath == NULL)
         {
-            sprintf(dvdisoinput, "%s"SEPARATOR"%s", globals.settings.tempdir, "dvd.iso");
+            sprintf(dvdisoinput, "%s"SEPARATOR"%s", globals->settings.tempdir, "dvd.iso");
         }
-        else memcpy(dvdisoinput, globals.settings.dvdisopath, CHAR_BUFSIZ) ;
+        else memcpy(dvdisoinput, globals->settings.dvdisopath, CHAR_BUFSIZ) ;
         errno=0;
 
-        if (globals.rungrowisofs)
+        if (globals->rungrowisofs)
         {
             foutput("\n%s\n", INF "Launching growisofs to burn disc");
-            char string[strlen(globals.cdrecorddevice)+2+strlen(dvdisoinput)];
-            sprintf(string, "%s%c%s", globals.cdrecorddevice, '=', dvdisoinput);
+            char string[strlen(globals->cdrecorddevice)+2+strlen(dvdisoinput)];
+            sprintf(string, "%s%c%s", globals->cdrecorddevice, '=', dvdisoinput);
             char*  args[]={"growisofs", "-Z", string, NULL};
 #define GROWISOFS "/usr/bin/growisofs"
-            run(GROWISOFS, (const char**) args, WAIT, FORK);
+            run(GROWISOFS, (const char**) args, WAIT, FORK, globals);
         }
         else
         {
 
-            char *verbosity=(globals.debugging)? "-v":"-s";
-#define TEST (globals.cdrecorddevice[0] != '\0')
+            char *verbosity=(globals->debugging)? "-v":"-s";
+#define TEST (globals->cdrecorddevice[0] != '\0')
             int S=TEST? 10:8;
             char* args[S];
             memset(args, 0, S);
             errno=0;
             char* cdrecord=NULL;
 
-            if ((cdrecord=create_binary_path(cdrecord, CDRECORD, SEPARATOR CDRECORD_BASENAME EXE)))
+            if ((cdrecord=create_binary_path(cdrecord, CDRECORD, SEPARATOR CDRECORD_BASENAME EXE, globals)))
             {
-                char *args0[]={cdrecord, verbosity,"blank=fast", "-eject","dev=", globals.cdrecorddevice, dvdisoinput, "-gracetime=", "1",  NULL};
+                char *args0[]={cdrecord, verbosity,"blank=fast", "-eject","dev=", globals->cdrecorddevice, dvdisoinput, "-gracetime=", "1",  NULL};
                 char *args1[]={cdrecord, verbosity,"blank=fast", "-eject",dvdisoinput, "-gracetime=", "1", NULL};
                 if TEST memcpy(args, args0, sizeof(args0));
                 else memcpy(args, args1, sizeof(args1));
                 foutput("%s%s%s\n", INF "Launching: ", cdrecord, " to create disk");
 
-                run(cdrecord, (const char**) args, WAIT, true);
+                run(cdrecord, (const char**) args, WAIT, true, globals);
                 free(cdrecord);
              }
             else
@@ -593,7 +594,7 @@ int launch_manager(command_t *command)
         free(title[j]);
     }
 
-    free_memory(command);
+    free_memory(command, globals);
 
     return (errno);
 }
