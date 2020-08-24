@@ -321,6 +321,21 @@ static int dv_extract_timecode(DVDemuxContext* c, const uint8_t* frame, char *tc
 
 /* The following 3 functions constitute our interface to the world */
 
+static int dv_init_demux(AVFormatContext *s, DVDemuxContext *c)
+{
+    c->vst = avformat_new_stream(s, NULL);
+    if (!c->vst)
+        return AVERROR(ENOMEM);
+
+    c->fctx                   = s;
+    c->vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
+    c->vst->codecpar->codec_id   = AV_CODEC_ID_DVVIDEO;
+    c->vst->codecpar->bit_rate   = 25000000;
+    c->vst->start_time        = 0;
+
+    return 0;
+}
+
 DVDemuxContext *avpriv_dv_init_demux(AVFormatContext *s)
 {
     DVDemuxContext *c;
@@ -329,17 +344,10 @@ DVDemuxContext *avpriv_dv_init_demux(AVFormatContext *s)
     if (!c)
         return NULL;
 
-    c->vst = avformat_new_stream(s, NULL);
-    if (!c->vst) {
+    if (dv_init_demux(s, c)) {
         av_free(c);
         return NULL;
     }
-
-    c->fctx                   = s;
-    c->vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
-    c->vst->codecpar->codec_id   = AV_CODEC_ID_DVVIDEO;
-    c->vst->codecpar->bit_rate   = 25000000;
-    c->vst->start_time        = 0;
 
     return c;
 }
@@ -452,7 +460,7 @@ void ff_dv_offset_reset(DVDemuxContext *c, int64_t frame_offset)
  ************************************************************/
 
 typedef struct RawDVContext {
-    DVDemuxContext *dv_demux;
+    DVDemuxContext  dv_demux;
     uint8_t         buf[DV_MAX_FRAME_SIZE];
 } RawDVContext;
 
@@ -462,31 +470,26 @@ static int dv_read_timecode(AVFormatContext *s) {
     int64_t pos = avio_tell(s->pb);
 
     // Read 3 DIF blocks: Header block and 2 Subcode blocks.
-    int partial_frame_size = 3 * 80;
-    uint8_t *partial_frame = av_mallocz(sizeof(*partial_frame) *
-                                        partial_frame_size);
-
+#define PARTIAL_FRAME_SIZE (3 * 80)
+    uint8_t partial_frame[PARTIAL_FRAME_SIZE];
     RawDVContext *c = s->priv_data;
-    if (!partial_frame)
-        return AVERROR(ENOMEM);
 
-    ret = avio_read(s->pb, partial_frame, partial_frame_size);
+    ret = avio_read(s->pb, partial_frame, PARTIAL_FRAME_SIZE);
     if (ret < 0)
         goto finish;
 
-    if (ret < partial_frame_size) {
+    if (ret < PARTIAL_FRAME_SIZE) {
         ret = -1;
         goto finish;
     }
 
-    ret = dv_extract_timecode(c->dv_demux, partial_frame, timecode);
+    ret = dv_extract_timecode(&c->dv_demux, partial_frame, timecode);
     if (ret)
         av_dict_set(&s->metadata, "timecode", timecode, 0);
     else
         av_log(s, AV_LOG_ERROR, "Detected timecode is invalid\n");
 
 finish:
-    av_free(partial_frame);
     avio_seek(s->pb, pos, SEEK_SET);
     return ret;
 }
@@ -495,16 +498,16 @@ static int dv_read_header(AVFormatContext *s)
 {
     unsigned state, marker_pos = 0;
     RawDVContext *c = s->priv_data;
+    int ret;
 
-    c->dv_demux = avpriv_dv_init_demux(s);
-    if (!c->dv_demux)
-        return -1;
+    if ((ret = dv_init_demux(s, &c->dv_demux)) < 0)
+        return ret;
 
     state = avio_rb32(s->pb);
     while ((state & 0xffffff7f) != 0x1f07003f) {
         if (avio_feof(s->pb)) {
             av_log(s, AV_LOG_ERROR, "Cannot find DV header.\n");
-            return -1;
+            return AVERROR_INVALIDDATA;
         }
         if (state == 0x003f0700 || state == 0xff3f0700)
             marker_pos = avio_tell(s->pb);
@@ -518,21 +521,22 @@ static int dv_read_header(AVFormatContext *s)
     AV_WB32(c->buf, state);
 
     if (avio_read(s->pb, c->buf + 4, DV_PROFILE_BYTES - 4) != DV_PROFILE_BYTES - 4 ||
-        avio_seek(s->pb, -DV_PROFILE_BYTES, SEEK_CUR) < 0)
+        avio_seek(s->pb, -DV_PROFILE_BYTES, SEEK_CUR) < 0) {
         return AVERROR(EIO);
-
-    c->dv_demux->sys = av_dv_frame_profile(c->dv_demux->sys,
-                                           c->buf,
-                                           DV_PROFILE_BYTES);
-    if (!c->dv_demux->sys) {
-        av_log(s, AV_LOG_ERROR,
-               "Can't determine profile of DV input stream.\n");
-        return -1;
     }
 
-    s->bit_rate = av_rescale_q(c->dv_demux->sys->frame_size,
+    c->dv_demux.sys = av_dv_frame_profile(c->dv_demux.sys,
+                                           c->buf,
+                                           DV_PROFILE_BYTES);
+    if (!c->dv_demux.sys) {
+        av_log(s, AV_LOG_ERROR,
+               "Can't determine profile of DV input stream.\n");
+        return AVERROR_INVALIDDATA;
+    }
+
+    s->bit_rate = av_rescale_q(c->dv_demux.sys->frame_size,
                                (AVRational) { 8, 1 },
-                               c->dv_demux->sys->time_base);
+                               c->dv_demux.sys->time_base);
 
     if (s->pb->seekable & AVIO_SEEKABLE_NORMAL)
         dv_read_timecode(s);
@@ -545,14 +549,14 @@ static int dv_read_packet(AVFormatContext *s, AVPacket *pkt)
     int size;
     RawDVContext *c = s->priv_data;
 
-    size = avpriv_dv_get_packet(c->dv_demux, pkt);
+    size = avpriv_dv_get_packet(&c->dv_demux, pkt);
 
     if (size < 0) {
         int ret;
         int64_t pos = avio_tell(s->pb);
-        if (!c->dv_demux->sys)
+        if (!c->dv_demux.sys)
             return AVERROR(EIO);
-        size = c->dv_demux->sys->frame_size;
+        size = c->dv_demux.sys->frame_size;
         ret = avio_read(s->pb, c->buf, size);
         if (ret < 0) {
             return ret;
@@ -560,7 +564,7 @@ static int dv_read_packet(AVFormatContext *s, AVPacket *pkt)
             return AVERROR(EIO);
         }
 
-        size = avpriv_dv_produce_packet(c->dv_demux, pkt, c->buf, size, pos);
+        size = avpriv_dv_produce_packet(&c->dv_demux, pkt, c->buf, size, pos);
     }
 
     return size;
@@ -570,20 +574,13 @@ static int dv_read_seek(AVFormatContext *s, int stream_index,
                         int64_t timestamp, int flags)
 {
     RawDVContext *r   = s->priv_data;
-    DVDemuxContext *c = r->dv_demux;
+    DVDemuxContext *c = &r->dv_demux;
     int64_t offset    = dv_frame_offset(s, c, timestamp, flags);
 
     if (avio_seek(s->pb, offset, SEEK_SET) < 0)
         return -1;
 
     ff_dv_offset_reset(c, offset / c->sys->frame_size);
-    return 0;
-}
-
-static int dv_read_close(AVFormatContext *s)
-{
-    RawDVContext *c = s->priv_data;
-    av_freep(&c->dv_demux);
     return 0;
 }
 
@@ -636,7 +633,6 @@ AVInputFormat ff_dv_demuxer = {
     .read_probe     = dv_probe,
     .read_header    = dv_read_header,
     .read_packet    = dv_read_packet,
-    .read_close     = dv_read_close,
     .read_seek      = dv_read_seek,
     .extensions     = "dv,dif",
 };
