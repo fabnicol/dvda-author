@@ -3,7 +3,7 @@
 
 
 int check_sample_count(WaveData *info, WaveHeader *header);
-void check_real_size(WaveData *info, WaveHeader *header);
-int prune(WaveData *info, WaveHeader *header);
-int pad_end_of_file(WaveData* info);
+void check_real_size(WaveData *info, WaveHeader *header, globalData*);
+int prune(WaveData *info, WaveHeader *header, globalData*);
+int pad_end_of_file(WaveData* info, globalData*);
 #endif // CHECKDATA_H_INCLUDED

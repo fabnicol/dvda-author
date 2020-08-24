@@ -34,7 +34,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "c_utils.h"
 #include "structures.h"
 
-extern globalData globals;
+
 
 /* met issues on GNU/Linux with stat st_size field ( a few bytes off real size. USe below code from
    http://www.securecoding.cert.org  */
@@ -98,7 +98,8 @@ void  pipe_to_child_stdin(const char* name,
                           HANDLE *g_hChildStd_ERR_Rd,
                           HANDLE *g_hChildStd_ERR_Wr,
                           PROCESS_INFORMATION *piProcInfo,
-                          STARTUPINFO *siStartInfo)
+                          STARTUPINFO *siStartInfo,
+                          globalData* globals)
 {
    SECURITY_ATTRIBUTES saAttr;
    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -127,7 +128,7 @@ void  pipe_to_child_stdin(const char* name,
    siStartInfo->hStdInput = *g_hChildStd_IN_Rd;
    siStartInfo->dwFlags |= STARTF_USESTDHANDLES;
 
-   char* cli = get_command_line(args);
+   char* cli = get_command_line(args, globals);
    char* commandline = join(name, cli, " ");
    free(cli);
 
@@ -135,10 +136,10 @@ void  pipe_to_child_stdin(const char* name,
    if  ( result == -1 )
         {
            perror( ERR "Cannot set mode" );
-           clean_exit(EXIT_FAILURE);
+           clean_exit(EXIT_FAILURE, globals);
         }
      else
-     if ( globals.veryverbose)
+     if ( globals->veryverbose)
           foutput("%s", MSG_TAG "'stdout successfully changed to binary mode\n" );
 
    bSuccess = CreateProcessA(
@@ -173,7 +174,8 @@ void  pipe_to_child_stdin(const char* name,
 DWORD write_to_child_stdin(
       uint8_t* chBuf,
       DWORD dwBytesToBeWritten,
-      HANDLE g_hChildStd_IN_Wr)
+      HANDLE g_hChildStd_IN_Wr,
+      globalData* globals)
 {
     DWORD dwWritten;
 
@@ -182,10 +184,10 @@ DWORD write_to_child_stdin(
 
     bSuccess = WriteFile(g_hChildStd_IN_Wr, chBuf, dwBytesToBeWritten, &dwWritten, NULL);
     fflush(stdin);
-    if (globals.debugging)
+    if (globals->debugging)
     {
        if (! bSuccess)  fprintf(stderr, "%s\n", ERR "Error in write process to stdin.");
-       if (globals.maxverbose) fprintf(stderr, "%s%lu%s%lu\n", MSG_TAG "Wrote ", dwWritten, " bytes out of ", dwBytesToBeWritten);
+       if (globals->maxverbose) fprintf(stderr, "%s%lu%s%lu\n", MSG_TAG "Wrote ", dwWritten, " bytes out of ", dwBytesToBeWritten);
     }
 
     return dwWritten;
@@ -343,10 +345,10 @@ DWORD write_to_child_stdin(
     errno = 0;
     dwWritten = fwrite(chBuf, 1, dwBytesToBeWritten,  stdout);
 
-    if (globals.debugging)
+    if (globals->debugging)
     {
        if (errno != 0)  fprintf(stderr, "%s\n", ERR "Error in write process to stdin.");
-       if (globals.maxverbose) fprintf(stderr, "%s%lu%s%lu\n", MSG_TAG "Wrote ", dwWritten, " bytes out of ", dwBytesToBeWritten);
+       if (globals->maxverbose) fprintf(stderr, "%s%lu%s%lu\n", MSG_TAG "Wrote ", dwWritten, " bytes out of ", dwBytesToBeWritten);
     }
     return dwWritten;
 }

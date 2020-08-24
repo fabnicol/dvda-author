@@ -1,7 +1,7 @@
 include @BUILDDIR@/mk/dvdauthor.global.mk
 
 dvdauthor_MAKESPEC=manual
-dvdauthor_TESTBINARY=dvdauthor
+dvdauthor_TESTBINARY=dvdauthor@EXEEXTENSION@
 
 ifeq "@HAVE_automake@" "yes"
 ifeq "@HAVE_autoconf@" "yes"

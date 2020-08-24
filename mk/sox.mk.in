@@ -14,7 +14,7 @@ ifeq "@HAVE_libtoolize@" "yes"
 			exit -1
 		fi
 	fi
-	$(call configure_lib_package,sox,'/usr/bin/autoreconf',-if,CFLAGS=)
+	$(call configure_lib_package,sox,"/usr/bin/autoreconf",-if,CFLAGS=)
 else
 @BUILDDIR@/depconf/sox.depconf: 
 	echo "Please install libtoolize"

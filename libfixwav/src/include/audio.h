@@ -12,6 +12,6 @@
 int fixwav_getinfo(char* filename);
 
 int launch_sox(char** filename);
-uint8_t extract_audio_info(fileinfo_t *info, uint8_t * header);
+uint8_t extract_audio_info(fileinfo_t *info, uint8_t * header, globalData* globals);
 
 #endif

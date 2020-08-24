@@ -5,13 +5,13 @@
 
 
 #ifndef CHECK_FIELD_
-#define CHECK_FIELD_(X, fp, log) test_field(X##__, X, sizeof(X), #X, fp, log, true, true);
+#define CHECK_FIELD_(X, fp, log) test_field(X##__, X, sizeof(X), #X, fp, log, true, true, globals);
 #endif
 #ifndef CHECK_FIELD_NOWRITE_
-#define CHECK_FIELD_NOWRITE_(X, fp, log) test_field(X##__, X, sizeof(X), #X, fp, log, false, true);
+#define CHECK_FIELD_NOWRITE_(X, fp, log) test_field(X##__, X, sizeof(X), #X, fp, log, false, true, globals);
 #endif
 #ifndef RW_FIELD_
-#define RW_FIELD_(X, fp, log) rw_field(X, sizeof(X), #X, fp, log);
+#define RW_FIELD_(X, fp, log) rw_field(X, sizeof(X), #X, fp, log, globals);
 #endif
 
 #ifdef CHECK_FIELD

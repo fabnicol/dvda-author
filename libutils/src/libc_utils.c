@@ -57,13 +57,13 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //#include "ports.h"
 #include "c_utils.h"
 #include "private_c_utils.h"
-// here include your main application's header containing a globalData structure with main application globals.
+// here include your main application's header containing a globalData structure with main application globals->
 #include "structures.h"
 #include "libiberty.h"
 #include "winport.h"
 
 #undef __MS_types__
-extern globalData globals;
+
 
 void pause_dos_type()
 {
@@ -96,21 +96,21 @@ void erase_file(const char* path)
 
 #if defined HAVE_curl && HAVE_curl == 1
 
-int download_file_from_http_server(const char* curlpath, const char* filename, const char* server)
+int download_file_from_http_server(const char* curlpath, const char* filename, const char* server, globalData* globals)
 {
     char command[strlen(server)+strlen(filename)+strlen(curlpath) + 32];
 
     sprintf(command, "%s -# -f  -o %s --location %s/%s", curlpath, filename, server, filename);
     fprintf(stderr, INF "downloading %s from server %s\n", filename, server);
-    if (globals.veryverbose) fprintf(stderr, DBG "...%s\n", command);
+    if (globals->veryverbose) fprintf(stderr, DBG "...%s\n", command);
     return system(win32quote(command));
 }
 
-int download_fullpath(const char* curlpath, const char* filename, const char* fullpath)
+int download_fullpath(const char* curlpath, const char* filename, const char* fullpath, globalData* globals)
 {
     char command[30+1+strlen(filename)+strlen(fullpath)];
     sprintf(command, "%s -# -f -o %s --location %s", curlpath, filename, fullpath);
-    if (globals.veryverbose) fprintf(stderr, INF "downloading: %s\n", command);
+    if (globals->veryverbose) fprintf(stderr, INF "downloading: %s\n", command);
     return system(win32quote(command));
 }
 
@@ -164,9 +164,9 @@ return (char*) Buffer;
 return "";
 }
 
-char* make_absolute(char* filepath)
+char* make_absolute(char* filepath, globalData* globals)
 {
-    path_t* path_info = parse_filepath(filepath);
+    path_t* path_info = parse_filepath(filepath, globals);
     char buffer[2*CHAR_BUFSIZ] = {0};
 
     for (int r = 0; r < path_info->separators; ++r)
@@ -187,7 +187,7 @@ char* make_absolute(char* filepath)
                 for(char c; (c = filepath[u]) != '\0'; ++u)     buffer[u] = c;
                 clean_path(&path_info);
                 free(current_dir);
-                return (make_absolute(buffer));
+                return (make_absolute(buffer, globals));
 
             }
             else
@@ -206,7 +206,7 @@ char* make_absolute(char* filepath)
                 char c;
                 for(int j = u; (c = filepath[u + 2]) != '\0'; ++j)  buffer[j] = c;
                 clean_path(&path_info);
-                return (make_absolute(buffer));
+                return (make_absolute(buffer, globals));
             }
         }
         else
@@ -229,7 +229,7 @@ char* make_absolute(char* filepath)
             char c;
             for(int j = u; (c = filepath[u]) != '\0'; ++j)     buffer[j] = c;
             clean_path(&path_info);
-            return (make_absolute(buffer));
+            return (make_absolute(buffer, globals));
         }
     }
 
@@ -256,11 +256,11 @@ typedef struct slist_t
     struct slist_t *next;
 } slist_t;
 
-int rmdir_recursive (char *root, char *dirname)
+int rmdir_recursive (char *root, char *dirname, globalData* globals)
 {
     char *cwd;
     cwd=fn_get_current_dir_name();
-    if (globals.veryverbose)
+    if (globals->veryverbose)
     {
         fprintf(stderr, "%s%s%s\n", INF "Changing directory to `", dirname, "`");
     }
@@ -272,7 +272,7 @@ int rmdir_recursive (char *root, char *dirname)
         else {
             perror(ERR "chdir other issue");
         }
-        clean_exit(-1);
+        clean_exit(-1, globals);
     }
 
     slist_t *names = NULL;
@@ -359,7 +359,7 @@ int rmdir_recursive (char *root, char *dirname)
     {
         if (sl->is_dir)
         {
-             rmdir_recursive (new_root, sl->name);
+             rmdir_recursive (new_root, sl->name, globals);
         }
     }
 
@@ -373,12 +373,12 @@ int rmdir_recursive (char *root, char *dirname)
         free (prev);
     }
 
-    if (globals.veryverbose) fprintf(stderr, "%s%s%s\n", INF "Changing directory to `", cwd, "`");
+    if (globals->veryverbose) fprintf(stderr, "%s%s%s\n", INF "Changing directory to `", cwd, "`");
 
     if (chdir (cwd) != 0)
     {
         perror("[ERR]  chdir to cwd");
-        clean_exit(-1);
+        clean_exit(-1, globals);
     }
 
     if (! recurse) free(cwd);
@@ -396,9 +396,9 @@ int rmdir_recursive (char *root, char *dirname)
 * ------- */
 
 
-int rmdir_global(char* path)
+int rmdir_global(char* path, globalData* globals)
 {
-    int error=rmdir_recursive(NULL, path);
+    int error=rmdir_recursive(NULL, path, globals);
     return (error);
 }
 
@@ -452,7 +452,7 @@ void fix_separators(char * path)
 * ------- */
 
 
-char* end_sep(const char *path)
+char* end_sep(const char *path, globalData* globals)
 {
     size_t s = strlen(path);
     char* out = NULL;
@@ -462,7 +462,7 @@ char* end_sep(const char *path)
      if (out == NULL)
      {
          perror("Allocation end_sep");
-         clean_exit(EXIT_FAILURE);
+         clean_exit(EXIT_FAILURE, globals);
      }
 
      memcpy(out, path, s * sizeof(char));
@@ -482,7 +482,7 @@ char* end_sep(const char *path)
 * Returns structure path_t
 * ------- */
 
-path_t *parse_filepath(const char* filepath)
+path_t *parse_filepath(const char* filepath, globalData* globals)
 {
     path_t *chain = calloc(1, sizeof(path_t));
     if (chain == NULL) return NULL;
@@ -537,7 +537,7 @@ path_t *parse_filepath(const char* filepath)
     if (dot_position >= 0 && dot_position - last_separator_position < 1)
     {
         fprintf(stderr, "%s%s\n", ERR "dot placed before last separator: file path issue with ", filepath);
-        clean_exit(EXIT_FAILURE);
+        clean_exit(EXIT_FAILURE, globals);
     }
 
    if (dot_position < 0) dot_position = chain->length + 1;
@@ -548,7 +548,7 @@ path_t *parse_filepath(const char* filepath)
         if (chain->rawfilename == NULL)
         {
             perror("Allocation of rawfilename");
-            clean_exit(EXIT_FAILURE);
+            clean_exit(EXIT_FAILURE, globals);
         }
         memcpy(chain->rawfilename, filepath + last_separator_position + 1, dot_position - last_separator_position -1);
     } else chain->rawfilename = strdup(".");
@@ -577,7 +577,7 @@ path_t *parse_filepath(const char* filepath)
     if ((errno) || (f == NULL))
     {
         chain->isfile=0;
-        if (globals.veryverbose)
+        if (globals->veryverbose)
         {
             fprintf(stderr, MSG_TAG "Path %s is not a file\n", filepath);
         }
@@ -665,27 +665,27 @@ char* filepath(const char* str1, const char* str2)
 * Erases direcory and check for any error
 * ------- */
 
-bool clean_directory(char* path)
+bool clean_directory(char* path, globalData* globals)
 {
 
     errno=0;
     if (path == NULL) return (EXIT_FAILURE);
 
-    if (s_dir_exists(path))
+    if (s_dir_exists(path, globals))
     {
-      if (globals.veryverbose) fprintf(stderr, "%s%s\n", INF "Cleaning directory ", path);
-      errno=rmdir_global(path);
+      if (globals->veryverbose) fprintf(stderr, "%s%s\n", INF "Cleaning directory ", path);
+      errno=rmdir_global(path, globals);
     }
 
     if (errno)
     {
-        if (globals.veryverbose)
+        if (globals->veryverbose)
             fprintf(stderr, "%s%s\n", MSG_TAG "Failed to clean directory ", path);
         return 0;
     }
     else
     {
-        if (globals.veryverbose)
+        if (globals->veryverbose)
             fprintf(stderr, "%s\n", MSG_TAG "OK.");
         return 1;
     }
@@ -825,13 +825,13 @@ do
 * Logs time; flushes all streams;  erase empty backup dirs; closes log;
 * ------- */
 
-void clean_exit(int message)
+void clean_exit(int message, globalData* globals)
 {
     fflush(NULL);
 
-    if (globals.logfile)
+    if (globals->logfile)
     {
-        fclose(globals.journal);
+        fclose(globals->journal);
     }
 
     exit(message);
@@ -845,21 +845,21 @@ void clean_exit(int message)
 * terminates if path cannot be accessed.
 * ------- */
 
-bool s_dir_exists(const char* path)
+bool s_dir_exists(const char* path, globalData* globals)
 {
    if (path == NULL) return false;
    struct stat info;
 
     if (stat(path, &info) != 0)
     {
-        if (globals.veryverbose) fprintf(stderr,  MSG_TAG "Directory to be created: %s \n", path);
+        if (globals->veryverbose) fprintf(stderr,  MSG_TAG "Directory to be created: %s \n", path);
         errno = 0;
         return false;
     }
     else
     if (info.st_mode & S_IFDIR)
     {
-        if (globals.veryverbose) fprintf(stderr,  WAR "Directory %s already exists.\n", path);
+        if (globals->veryverbose) fprintf(stderr,  WAR "Directory %s already exists.\n", path);
         errno = 0;
     }
 
@@ -874,29 +874,29 @@ bool s_dir_exists(const char* path)
 * or cannot be allocated. Stops execution.
 * ------- */
 
-bool s_mkdir (const char *path)
+bool s_mkdir (const char *path, globalData* globals)
 {
 #if defined(__WIN32__) || defined (_WIN32) || defined (_WIN64) || defined (__CYGWIN__) || defined (__MSYS__)
 
-    return (secure_mkdir(path, 0777) == 0);
+    return (secure_mkdir(path, 0777, globals) == 0);
 #else
     return (secure_mkdir(path,  S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) == 0);
 #endif
 }
 
-int secure_mkdir (const char *path, mode_t mode)
+int secure_mkdir (const char* path, mode_t mode, globalData *globals)
 {
 
  /* test for existence */
 
-    if (s_dir_exists(path)) return 0;
+    if (s_dir_exists(path, globals)) return 0;
 
 
     int i=0, len;
     if (path == NULL || path[0]=='\0')
     {
-     fprintf(stderr, "%s%s%s","\n"ERR "Could not create directory with empty or null path. Using temporary directory : ", globals.settings.tempdir, "\n");
-     return secure_mkdir(globals.settings.tempdir, mode);
+     fprintf(stderr, "%s%s%s","\n"ERR "Could not create directory with empty or null path. Using temporary directory : ", globals->settings.tempdir, "\n");
+     return secure_mkdir(path, globals->access_rights, globals);
     }
 
     len = strlen (path);
@@ -904,10 +904,10 @@ int secure_mkdir (const char *path, mode_t mode)
     // requires std=c99
 
 
-    if  ((len<1) && (globals.debugging))
+    if  ((len<1) && (globals->debugging))
     {
         fprintf(stderr, "%s\n",ERR "Path length could not be allocated by secure_mkdir:\n       Your compiler may not be C99-compliant");
-        clean_exit(EXIT_FAILURE);
+        clean_exit(EXIT_FAILURE, globals);
     }
 
     char d[len+1];
@@ -918,7 +918,7 @@ int secure_mkdir (const char *path, mode_t mode)
     if (d == NULL)
     {
         perror("\n"MSG_TAG "Error: could not allocate directory path string\n");
-        clean_exit(EXIT_FAILURE);
+        clean_exit(EXIT_FAILURE, globals);
     }
 
 
@@ -933,14 +933,14 @@ int secure_mkdir (const char *path, mode_t mode)
             d[i] = '\0';
 
             errno = 0;
-            if (! s_dir_exists(d))
+            if (! s_dir_exists(d, globals))
             {
-                if ((MKDIR(d, mode) == -1))
+                if ((MKDIR(d, globals->access_rights) == -1))
                 {
                     fprintf(stderr, "Impossible to create directory '%s'\n", d);
                     perror("\n"ERR "mkdir ");  // EEXIST error messages are often spurious
                     fprintf(stderr, "%s\n", path);
-                    clean_exit(EXIT_FAILURE);
+                    clean_exit(EXIT_FAILURE, globals);
                 }
             }
 
@@ -957,7 +957,7 @@ int secure_mkdir (const char *path, mode_t mode)
         fprintf(stderr, ERR "Impossible to create directory '%s'\n", path);
         fprintf(stderr, "       permission was: %d\n       %s\n", mode, strerror(errno));
         errno=0;
-        clean_exit(EXIT_FAILURE);
+        clean_exit(EXIT_FAILURE, globals);
     }
 
     return(errno);
@@ -971,7 +971,7 @@ int secure_mkdir (const char *path, mode_t mode)
 * of a pipe
 * ------- */
 
-char* get_cl(char** args, uint16_t start)
+char* get_cl(char** args, uint16_t start, globalData* globals)
 {
     if (args == NULL) return NULL;
     uint16_t tot = 0, i = start, j, shift = 0;
@@ -996,7 +996,7 @@ char* get_cl(char** args, uint16_t start)
     }
 
     cml[shift - 1]=0;
-    if (globals.debugging) foutput(INF "Command line: %s\n", cml);
+    if (globals->debugging) foutput(INF "Command line: %s\n", cml);
 
     return cml;
 }
@@ -1009,9 +1009,9 @@ char* get_cl(char** args, uint16_t start)
 * of a pipe
 * ------- */
 
-char* get_command_line(char* args[])
+char* get_command_line(char* args[], globalData* globals)
 {
-    return get_cl(args, 1);
+    return get_cl(args, 1, globals);
 }
 
 /*--------
@@ -1021,9 +1021,9 @@ char* get_command_line(char* args[])
 * ------- */
 
 
-char* get_full_command_line(char** args)
+char* get_full_command_line(char** args, globalData* globals)
 {
-    return get_cl(args, 0);
+    return get_cl(args, 0, globals);
 }
 
 
@@ -1034,10 +1034,10 @@ char* get_full_command_line(char** args)
 * ------- */
 
 
-char* get_fullpath_command_line(char* local_variable, const char* symbolic_constant, char** args)
+char* get_fullpath_command_line(char* local_variable, const char* symbolic_constant, char** args, globalData* globals)
 {
-    char* binary = create_binary_path(local_variable, symbolic_constant, args[0]);
-    char* argscl  = get_command_line(args);
+    char* binary = create_binary_path(local_variable, symbolic_constant, args[0], globals);
+    char* argscl  = get_command_line(args, globals);
     char* cli = join(binary, argscl, " ");
     free(binary);
     free(argscl);
@@ -1071,11 +1071,11 @@ void starter(compute_t *timer)
 * Prints command line
 * ------- */
 
-void print_commandline(int argc, char * const argv[])
+void print_commandline(int argc, char * const argv[], globalData* globals)
 {
     int i=0;
 
-    if (globals.debugging) foutput("%s \n", INF "Running:");
+    if (globals->debugging) foutput("%s \n", INF "Running:");
 
     for (i=0; i < argc ; i++)
         foutput("%s ",  argv[i]);
@@ -1136,12 +1136,12 @@ char* print_time(int verbose)
 * Carefully changes directory, reporting errors
 * ------- */
 
-void change_directory(const char * filename)
+void change_directory(const char * filename, globalData* globals)
 {
     if (! filename || filename[0] == '\0')
     {
         fprintf(stderr, "%s",ERR "Null path\n.");
-        clean_exit(-1);
+        clean_exit(-1, globals);
     }
 
     if (chdir(filename) == -1)
@@ -1152,12 +1152,12 @@ void change_directory(const char * filename)
         {
              fprintf(stderr, ERR "Impossible to cd to %s.\n", filename);
              perror(ANSI_COLOR_RED"\n[ERR]");
-             clean_exit(-1);
+             clean_exit(-1, globals);
         }
     }
     else
     {
-        if (globals.debugging)
+        if (globals->debugging)
           fprintf(stderr, DBG "Current working directory is now %s\n", filename);
     }
 }
@@ -1172,10 +1172,11 @@ void change_directory(const char * filename)
 
 int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED *,
                                                   void GCC_UNUSED *,
-                                                  void GCC_UNUSED *),
+                                                  void GCC_UNUSED *, globalData* globals),
                        bool recursive,
                        void GCC_UNUSED* arg2,
-                       void GCC_UNUSED* arg3)
+                       void GCC_UNUSED* arg3,
+                       globalData* globals)
 {
     DIR *dir_src;
     struct stat buf;
@@ -1183,9 +1184,9 @@ int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED *,
 
     fprintf(stderr, "%c", '\n');
 
-    if (globals.debugging)  fprintf(stderr, "%s%s\n", INF "Traversing dir = ", src);
+    if (globals->debugging)  fprintf(stderr, "%s%s\n", INF "Traversing dir = ", src);
     const char* olddir = fn_get_current_dir_name();
-    change_directory(src);
+    change_directory(src, globals);
 
     dir_src=opendir(".");
 
@@ -1204,27 +1205,27 @@ int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED *,
 
         if (recursive && S_ISDIR(buf.st_mode))
         {
-            errno = traverse_directory(d->d_name, f, recursive, arg2, arg3);
+            errno = traverse_directory(d->d_name, f, recursive, arg2, arg3, globals);
             continue;
         }
 
         if (S_ISREG(buf.st_mode))
         {
-            if (globals.debugging) fprintf(stderr, "%s: %s\n", INF "Processing file", d->d_name);
+            if (globals->debugging) fprintf(stderr, "%s: %s\n", INF "Processing file", d->d_name);
             if (arg3 != NULL && is_dir(arg2))
             {
                 char* fullpath = calloc(strlen((char*) arg2) + 1 + strlen(src) + 1 + strlen(d->d_name) + 1, sizeof (char));
                 sprintf(fullpath, "%s%s%s%s%s", (char*) arg2, SEPARATOR, src, SEPARATOR, d->d_name);
-                if (globals.veryverbose) fprintf(stderr, INF "Processing %s in directory  %s ...\n", fullpath, (char*) arg2);
+                if (globals->veryverbose) fprintf(stderr, INF "Processing %s in directory  %s ...\n", fullpath, (char*) arg2);
                 // This is to account for both relative and absolute paths as -o arguments
-                change_directory(olddir);
-                change_directory(arg2);
-                f(fullpath, d->d_name, arg3);
-                change_directory(src);
+                change_directory(olddir, globals);
+                change_directory(arg2, globals);
+                f(fullpath, d->d_name, arg3, globals);
+                change_directory(src, globals);
                 free(fullpath);
 
             }
-            else f((const char*) d->d_name, arg2, arg3);
+            else f((const char*) d->d_name, arg2, arg3, globals);
 
         }
 
@@ -1233,7 +1234,7 @@ int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED *,
         else continue;
     }
 
-    if (globals.debugging)   fprintf(stderr, "%s", INF "Done. Backtracking... \n\n");
+    if (globals->debugging)   fprintf(stderr, "%s", INF "Done. Backtracking... \n\n");
     closedir(dir_src);
     return(errno);
 }
@@ -1241,13 +1242,10 @@ int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED *,
 /*------- start of private */
 
 
-void copy_file_wrapper(const char* filename, void* out, void GCC_UNUSED *permissions)
+void copy_file_wrapper(const char* filename, void* out, void GCC_UNUSED *permissions, globalData* globals)
 {
-    //const char* dest = (const char*) out;
-    //const mode_t mode = (mode_t) *permissions;
-    //char path[BUFSIZ] = {0};
-    //sprintf(path, "%s%s%s", dest, SEPARATOR, filename);
-    copy_file(filename,  out);
+
+    copy_file(filename,  out, globals);
 }
 
 /*------- end of private */
@@ -1260,7 +1258,7 @@ void copy_file_wrapper(const char* filename, void* out, void GCC_UNUSED *permiss
 * Returns errno.
 * ------- */
 
-int copy_directory(const char* src, const char* dest, mode_t mode)
+int copy_directory(const char* src, const char* dest, mode_t mode, globalData* globals)
 {
     if (src == NULL || dest == NULL || strcmp(src, dest) == 0) return(0);
 
@@ -1275,19 +1273,19 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
 
     fprintf(stderr, "%c", '\n');
 
-    if (globals.debugging)  fprintf(stderr, "%s%s\n", INF "Creating directory ", dest);
+    if (globals->debugging)  fprintf(stderr, "%s%s\n", INF "Creating directory ", dest);
 
     errno = 0;
 
-    if (secure_mkdir(dest, mode) == 0)
+    if (secure_mkdir(dest, mode, globals) == 0)
     {
 
-      if (globals.debugging)   fprintf(stderr, INF "Copying in %s ...\n", src);
+      if (globals->debugging)   fprintf(stderr, INF "Copying in %s ...\n", src);
 
-       traverse_directory(src, copy_file_wrapper, true, (void*) dest, (void*) &mode);
+       traverse_directory(src, copy_file_wrapper, true, (void*) dest, (void*) &mode, globals);
     }
     else
-    if (globals.debugging)
+    if (globals->debugging)
         fprintf(stderr, "%s%s\n", INF "No files copied to ", dest);
 
     return(errno);
@@ -1304,7 +1302,7 @@ bool file_exists(const char* filepath)
     return(access(filepath, F_OK) != -1 );
 }
 
-void stat_file_wrapper(const char *filename, void *total_size, void GCC_UNUSED *unused)
+void stat_file_wrapper(const char *filename, void *total_size, void GCC_UNUSED *unused, globalData GCC_UNUSED *globals)
 {
     uint64_t* sum = (uint64_t *) total_size;
 
@@ -1315,7 +1313,7 @@ void stat_file_wrapper(const char *filename, void *total_size, void GCC_UNUSED *
 
 static char* chain;
 
-static inline void filter_file_wrapper(const char *filename,  void* GCC_UNUSED src, void *filter)
+static inline void filter_file_wrapper(const char *filename,  void* GCC_UNUSED src, void *filter, globalData *globals)
 {
     unsigned long S = strlen(filename);
     unsigned long C = strlen(chain);
@@ -1333,14 +1331,14 @@ static inline void filter_file_wrapper(const char *filename,  void* GCC_UNUSED s
     if (C)
     {
       char compound_chain_[C + 2 + S];
-      if (globals.veryverbose) fprintf(stderr, "%s %s to %s...\n", INF "Adding ", filename, (char*) chain);
+      if (globals->veryverbose) fprintf(stderr, "%s %s to %s...\n", INF "Adding ", filename, (char*) chain);
       sprintf(compound_chain_, "%s%c%s", chain, ',', filename);
       free(chain);
       chain = (void*) strdup(compound_chain_);
     }
     else
     {
-        if (globals.veryverbose) fprintf(stderr, "%s %s ...\n", INF "Adding ", filename);
+        if (globals->veryverbose) fprintf(stderr, "%s %s ...\n", INF "Adding ", filename);
         sprintf(chain, "%s", filename);
     }
 }
@@ -1351,7 +1349,7 @@ static inline void filter_file_wrapper(const char *filename,  void* GCC_UNUSED s
  * Computes the non-recursive sum of root-directory file sizes in a given directory.
  * Note : for the whole (recursive) size, taking the stat st_size value would do the trick */
 
-void fill_pics(const char *filename, void *a, void GCC_UNUSED *unused){
+void fill_pics(const char *filename, void *a, void GCC_UNUSED *unused, globalData* globals){
 
     static char** array;
     static int k;
@@ -1372,7 +1370,7 @@ bool is_dir(const char* path) {
     return S_ISDIR(buf.st_mode);
 }
 
-int stat_dir_files(const char* src)
+int stat_dir_files(const char* src, globalData* globals)
 {
     struct stat buf;
     if (stat(src, &buf) == -1)
@@ -1384,23 +1382,21 @@ int stat_dir_files(const char* src)
 
     fprintf(stderr, "%c", '\n');
 
-    if (globals.debugging)  fprintf(stderr, "%s%s\n", INF " Summing up directory file sizes...", src);
-
     uint64_t total_size = 0;
 
-    traverse_directory(src, stat_file_wrapper, false, (void*) &total_size, NULL);
+    traverse_directory(src, stat_file_wrapper, false, (void*) &total_size, NULL, globals);
 
     fprintf(stderr, "%s%" PRIu64 "\n", MSG_TAG "Directory file size is ", total_size);
     return(errno);
 }
 
-static inline void counter(const char* GCC_UNUSED a, void* total, void* GCC_UNUSED b)
+static inline void counter(const char* GCC_UNUSED a, void* total, void* GCC_UNUSED b, globalData GCC_UNUSED *globals)
 {
  ++*((int* ) total);
 }
 
 
-int count_dir_files(const char* src)
+int count_dir_files(const char* src, globalData* globals)
 {
     errno = 0;
 
@@ -1412,17 +1408,17 @@ int count_dir_files(const char* src)
         return(errno);
     }
 
-    if (globals.debugging)  fprintf(stderr, "%s%s\n", INF "Counting files in ...", src);
+    if (globals->debugging)  fprintf(stderr, "%s%s\n", INF "Counting files in ...", src);
 
     int total = 0;
 
-    traverse_directory(src, counter, true, (void*) &total, NULL);
+    traverse_directory(src, counter, true, (void*) &total, NULL, globals);
 
     fprintf(stderr, "%s%d%s\n", MSG_TAG "Directory has ", total, " files.");
     return(total);
 }
 
-char* filter_dir_files(const char* src,  char* filter)
+char* filter_dir_files(const char* src,  char* filter, globalData* globals)
 {
     errno = 0;
 
@@ -1434,12 +1430,12 @@ char* filter_dir_files(const char* src,  char* filter)
         return NULL;
     }
 
-    if (globals.debugging)  fprintf(stderr, "%s%s%s%s\n", INF "Filtering files in ...", src, " with ", filter);
+    if (globals->debugging)  fprintf(stderr, "%s%s%s%s\n", INF "Filtering files in ...", src, " with ", filter);
 
     chain = calloc(CHAR_BUFSIZ, sizeof(char));
 
     // chain is a global
-    traverse_directory(src, filter_file_wrapper, true,  (void*) src, (void*) filter);
+    traverse_directory(src, filter_file_wrapper, true,  (void*) src, (void*) filter, globals);
 
     return(strdup(chain));
 }
@@ -1456,7 +1452,7 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
     struct dirent *f;
     char path[BUFSIZ];
 
-    if (globals.nooutput) return 0;
+    if (globals->nooutput) return 0;
 
     if (stat(dest, &buf) == -1)
     {
@@ -1466,11 +1462,11 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
 
     fprintf(stderr, "%c", '\n');
 
-    if (globals.debugging)  fprintf(stderr, "%s%s\n", INF "Creating dir=", dest);
+    if (globals->debugging)  fprintf(stderr, "%s%s\n", INF "Creating dir=", dest);
 
     secure_mkdir(dest, mode);
 
-    if (globals.debugging)   fprintf(stderr, INF "Copying in %s ...\n", src);
+    if (globals->debugging)   fprintf(stderr, INF "Copying in %s ...\n", src);
     change_directory(src);
 
     dir_src=opendir(".");
@@ -1488,7 +1484,7 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
         if (S_ISDIR(buf.st_mode))
         {
 
-            if (globals.debugging) fprintf(stderr, "%s %s %s %s\n", INF "Copying dir=", f->d_name, " to=", path);
+            if (globals->debugging) fprintf(stderr, "%s %s %s %s\n", INF "Copying dir=", f->d_name, " to=", path);
 
             errno=copy_directory(f->d_name, path, mode);
 
@@ -1496,7 +1492,7 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
         }
         if (S_ISREG(buf.st_mode))
         {
-            if (globals.debugging) fprintf(stderr, "%s%s to= %s\n", INF "Copying file=", f->d_name, path);
+            if (globals->debugging) fprintf(stderr, "%s%s to= %s\n", INF "Copying file=", f->d_name, path);
             errno=copy_file(f->d_name, path);
         }
         /* does not copy other types of files(symlink, sockets etc). */
@@ -1504,14 +1500,14 @@ int copy_directory(const char* src, const char* dest, mode_t mode)
         else continue;
     }
 
-    if (globals.debugging)   fprintf(stderr, "%s", INF "Done. Backtracking... \n\n");
+    if (globals->debugging)   fprintf(stderr, "%s", INF "Done. Backtracking... \n\n");
     closedir(dir_src);
     return(errno);
 }
 
 #endif
 
-int copy_file_no_p(FILE *infile, FILE *outfile)
+int copy_file_no_p(FILE *infile, FILE *outfile, globalData* globals)
 {
 
 
@@ -1521,7 +1517,7 @@ int copy_file_no_p(FILE *infile, FILE *outfile)
     double counter=0;
     size_t chunk=0;
 
-    if (globals.veryverbose) fprintf(stderr, "%s","       |");
+    if (globals->veryverbose) fprintf(stderr, "%s","       |");
     errno=0;
     while (!feof(infile))
     {
@@ -1537,7 +1533,7 @@ int copy_file_no_p(FILE *infile, FILE *outfile)
 
         fwrite(buf, chunk* sizeof(char), 1 , outfile);
         counter++;
-        if (globals.veryverbose) putchar('-');
+        if (globals->veryverbose) putchar('-');
 
         if (ferror(outfile))
         {
@@ -1548,7 +1544,7 @@ int copy_file_no_p(FILE *infile, FILE *outfile)
 
 
 
-    if (globals.veryverbose)
+    if (globals->veryverbose)
     {
         putchar('|');
         counter=counter-1;
@@ -1564,12 +1560,12 @@ int copy_file_no_p(FILE *infile, FILE *outfile)
 
 // Adapted from Yve Mettier's O'Reilly "C en action" book, chapter 10.
 
-int copy_file(const char *existing_file, const char *new_file)
+int copy_file(const char *existing_file, const char *new_file, globalData* globals)
 {
 
     FILE *fn, *fe;
     int errorlevel;
-    if (globals.debugging) fprintf(stderr, "\n"DBG "Copying file %s\n", existing_file);
+    if (globals->debugging) fprintf(stderr, "\n"DBG "Copying file %s\n", existing_file);
     if (NULL == (fe = fopen(existing_file, "rb")))
     {
         fprintf(stderr, ERR "Impossible to open file '%s' in read mode\n", existing_file);
@@ -1583,16 +1579,16 @@ int copy_file(const char *existing_file, const char *new_file)
     }
 
 
-    errorlevel=copy_file_no_p(fe, fn);
+    errorlevel=copy_file_no_p(fe, fn, globals);
     fclose(fe);
     fclose(fn);
-    if (globals.debugging && errorlevel == 0)
+    if (globals->debugging && errorlevel == 0)
       fprintf(stderr, DBG "File was copied as: %s\n", new_file);
 
     return(errorlevel);
 }
 
-char* copy_file2dir(const char *existing_file, const char *new_dir)
+char* copy_file2dir(const char *existing_file, const char *new_dir, globalData* globals)
 {
     // existence of new_dir is not tested
     // existence of file dest is tested and if exists, duplication generates file counter in filename
@@ -1601,9 +1597,9 @@ char* copy_file2dir(const char *existing_file, const char *new_dir)
 
     static uint32_t counter;
     int errorlevel;
-    if (globals.veryverbose) fprintf(stderr, INF "Copying file %s to directory %s\n", existing_file, new_dir);
+    if (globals->veryverbose) fprintf(stderr, INF "Copying file %s to directory %s\n", existing_file, new_dir);
 
-    path_t* filestruct=parse_filepath(existing_file);
+    path_t* filestruct=parse_filepath(existing_file, globals);
     if (!filestruct) return NULL;
 
     char* dest=calloc(filestruct->length+strlen(new_dir)+1+6+2, sizeof(char)); // 6-digit counter +1 underscore; size is a maximum
@@ -1613,7 +1609,7 @@ char* copy_file2dir(const char *existing_file, const char *new_dir)
     // overwrite
      sprintf(dest, "%s%s%s_%d%s", new_dir, SEPARATOR, filestruct->rawfilename, counter, filestruct->extension);
 
-    errorlevel=copy_file(existing_file, dest);
+    errorlevel=copy_file(existing_file, dest, globals);
 
     //    free(filestruct->rawfilename);
     //    free(filestruct->extension);
@@ -1629,19 +1625,19 @@ char* copy_file2dir(const char *existing_file, const char *new_dir)
 
 }
 
-void copy_file2dir_rename(const char *existing_file, const char *new_dir, char* newfilename)
+void copy_file2dir_rename(const char *existing_file, const char *new_dir, char* newfilename, globalData* globals)
 {
 // existence of new_dir is not tested
 // existence of file dest is tested and if exists, copy overwrites it
 
 
-    int errorlevel;
-    if (globals.veryverbose) fprintf(stderr, INF "Copying file %s to directory %s\n", existing_file, new_dir);
+
+    if (globals->veryverbose) fprintf(stderr, INF "Copying file %s to directory %s\n", existing_file, new_dir);
 
     char *dest=calloc(strlen(newfilename)+strlen(new_dir)+1+1, sizeof(char));
     sprintf(dest, "%s%s%s", new_dir, SEPARATOR, newfilename);
 
-    path_t *filedest=parse_filepath(dest);
+    path_t *filedest=parse_filepath(dest, globals);
     if (! filedest)
     {
         free(dest);
@@ -1654,13 +1650,13 @@ void copy_file2dir_rename(const char *existing_file, const char *new_dir, char* 
         unlink(dest);
     }
 
-    copy_file(existing_file, dest);
+    copy_file(existing_file, dest, globals);
     free(dest);
     clean_path(&filedest);
     return;
 }
 
-int cat_file(const char *existing_file, const char *new_file)
+int cat_file(const char *existing_file, const char *new_file, globalData* globals)
 {
     FILE *fn, *fe;
     int errorlevel;
@@ -1678,7 +1674,7 @@ int cat_file(const char *existing_file, const char *new_file)
     }
 
 
-    errorlevel=copy_file_no_p(fe, fn);
+    errorlevel=copy_file_no_p(fe, fn, globals);
     fclose(fe);
     fclose(fn);
 
@@ -1780,13 +1776,13 @@ int get_endianness(void)
 
 }
 
-void parse_wav_header(WaveData* info, WaveHeader* header)
+void parse_wav_header(WaveData* info, WaveHeader* header, globalData* globals)
 {
     uint8_t haystack[MAX_HEADER_SIZE] = {0};
 
     if (errno)
     {
-      perror(ERR "parse_wav_header");
+      perror(ERR "parse_wav_header - could not allocate haystack");
 
       fflush(NULL);
       exit(-1);
@@ -1863,7 +1859,7 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
         if ((pt=memchr(haystack+span+1, 'd', MAX_HEADER_SIZE-1-span)) == NULL)
         {
             fprintf(stderr, WAR "Could not find substring 'data' among %d characters\n", MAX_HEADER_SIZE);
-            if (globals.debugging)
+            if (globals->debugging)
             {
                 hexdump_header(info->infile.fp, MAX_HEADER_SIZE);
             }
@@ -1924,7 +1920,7 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
             if ((pt=memchr(haystack+infoindex+1, 0x49, span-1-infoindex)) == NULL)
             {
 
-                if (globals.debugging)
+                if (globals->debugging)
                 {
 
                     if (header->ichunks)
@@ -1966,13 +1962,13 @@ void parse_wav_header(WaveData* info, WaveHeader* header)
     if (header->ichunks)
     {
         fprintf(stderr, MSG_TAG "Found %d info chunks in extended header\n", header->ichunks);
-        if (globals.debugging)
+        if (globals->debugging)
         {
             fprintf(stderr, MSG_TAG "See file `database' under directory %s\n", info->database);
         }
     }
 
-    if (globals.debugging)
+    if (globals->debugging)
     {
         if (span != 36)
             fprintf(stderr,  MSG_TAG "Size of header is non-standard (scanned %d characters)\n", header->header_size_in);
@@ -2159,12 +2155,12 @@ void hex2file(FILE* out, uint8_t* tab,  size_t tabsize)
 
 }
 
-void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* fp, FILE* log, bool write, bool overflow_check)
+void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* fp, FILE* log, bool write, bool overflow_check, globalData* globals)
 {
     uint64_t offset = ftello(fp);
     if (overflow_check && offset % 2048 +  (unsigned int) size > 2048)
     {
-        if (globals.logdecode)
+        if (globals->logdecode)
         {
             fprintf(log, "SECTOR OVERFLOW at %" PRIu64 ";%s;size read;%d;exceeds by;%d\n", offset, label, size, (int) offset % 2048 + size - 2048);
             fread(tab__, size,1,fp);
@@ -2179,8 +2175,8 @@ void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* 
 
     /* offset_count += */   fread(tab__, size,1,fp);
 
-    if (globals.logdecode) fprintf(log, "%" PRIu64 ";%s;", offset, label);
-    if (! globals.logdecode) return;
+    if (globals->logdecode) fprintf(log, "%" PRIu64 ";%s;", offset, label);
+    if (! globals->logdecode) return;
     if (memcmp(tab__, tab, size) == 0)
     {
         fprintf(log, "%s", "OK\n");
@@ -2198,12 +2194,12 @@ void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* 
     }
 }
 
-void rw_field(uint8_t* tab, int size,const char* label, FILE* fp, FILE* log)
+void rw_field(uint8_t* tab, int size,const char* label, FILE* fp, FILE* log, globalData* globals)
 {
     uint64_t offset = ftello(fp);
     /* offset_count += */   fread(tab, size,1,fp);
 
-    if (! globals.logdecode) return;
+    if (! globals->logdecode) return;
     fprintf(log, "%" PRIu64 ";%s;", offset, label);
     hex2file(log, tab, size);
     fprintf(log, "%s", "\n");
@@ -2320,7 +2316,7 @@ char* quote(const char* path)
 
 // Launches an application in a fork and duplicates its stdout into stdout; waits for it to return;
 
-int run(const char* application, const char*  args[], const int option, bool _fork)
+int run(const char* application, const char*  args[], const int option, bool _fork, globalData* globals)
 {
 errno=0;
 #if defined __CYGWIN__ || defined __unix__ || defined __apple__ || defined __linux__
@@ -2369,7 +2365,7 @@ if (_fork)
                   }
 
                   if (WIFEXITED(wstatus)) {
-                      if (globals.veryverbose)
+                      if (globals->veryverbose)
                         fprintf(stderr, "%sProcess %s (pid %d) exited, status=%d\n", (WEXITSTATUS(wstatus) == 0 ? MSG_TAG : WAR), application, pid, WEXITSTATUS(wstatus));
                   } else if (WIFSIGNALED(wstatus)) {
                       fprintf(stderr, WAR "killed by signal %d\n", WTERMSIG(wstatus));
@@ -2391,11 +2387,11 @@ else
 #endif
 {
 
-    char* s=get_command_line(args);
+    char* s=get_command_line((char**) args, globals);
     char cml[strlen(application)+1+strlen(s)+1+2];
     sprintf(cml, "%s %s",  application, s);
     free((char* ) s);
-    if (globals.debugging) foutput(INF "Running: %s\n ", cml);
+    if (globals->debugging) foutput(INF "Running: %s\n ", cml);
     errno=system(cml);
     return errno;
 }
@@ -2435,19 +2431,19 @@ else
 
 }
 
-char* create_binary_path(char* local_variable, const char* symbolic_constant, const char* basename)
+char* create_binary_path(char* local_variable, const char* symbolic_constant, const char* basename, globalData* globals)
 {
 
     char* path = NULL;
 
     if (symbolic_constant[0])
     {
-        if (globals.settings.bindir == NULL)
+        if (globals->settings.bindir == NULL)
             local_variable = strdup(symbolic_constant);
         else
         {
             char* exe = conc(basename, EXE);
-            path = conc(globals.settings.bindir, exe);
+            path = conc(globals->settings.bindir, exe);
             free(exe);
             local_variable = win32quote(path);
 #   if (defined _WIN32 || defined __MSYS__)
@@ -2458,11 +2454,11 @@ char* create_binary_path(char* local_variable, const char* symbolic_constant, co
     else
     {
         char* exe = conc(basename, EXE);
-        path = conc(globals.settings.bindir, conc(basename, EXE));
+        path = conc(globals->settings.bindir, conc(basename, EXE));
         free(exe);
         local_variable = path;
     }
-    if (globals.debugging) foutput(MSG_TAG "Path to %s is %s from bindir=%s and basename=%s\n", basename, local_variable,globals.settings.bindir, basename);
+    if (globals->debugging) foutput(MSG_TAG "Path to %s is %s from bindir=%s and basename=%s\n", basename, local_variable,globals->settings.bindir, basename);
 
     return local_variable;
 

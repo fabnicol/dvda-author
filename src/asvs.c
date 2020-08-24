@@ -45,8 +45,8 @@ with current title starting at pic n
 #include "asvs.h"
 
 
-extern globalData globals;
-int create_asvs(char* audiotsdir,int naudio_groups, uint8_t *numtitles, uint16_t ** ntitlepics,  uint8_t sectors_asvs, pic* img)
+
+int create_asvs(char* audiotsdir,int naudio_groups, uint8_t *numtitles, uint16_t ** ntitlepics,  uint8_t sectors_asvs, pic* img, globalData* globals)
 {
 
     uint8_t titleset=0, title=0;
@@ -124,8 +124,8 @@ int index = 0;
     uint16_copy(&asvs[0xC], totnumtitles);
     uint32_copy(&asvs[0x14], /* size of VOB associated with : change TODO */ totpicsectors-1);
 
-    int nb_asv_files = create_file(audiotsdir, "AUDIO_SV.IFO", asvs, sectors_asvs*2048);
-    nb_asv_files += create_file(audiotsdir, "AUDIO_SV.BUP", asvs, sectors_asvs*2048);
+    int nb_asv_files = create_file(audiotsdir, "AUDIO_SV.IFO", asvs, sectors_asvs*2048, globals);
+    nb_asv_files += create_file(audiotsdir, "AUDIO_SV.BUP", asvs, sectors_asvs*2048, globals);
     fflush(NULL);
     return nb_asv_files;
 }

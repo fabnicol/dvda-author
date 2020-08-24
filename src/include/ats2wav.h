@@ -24,7 +24,7 @@
 
 #define BUFFER_SIZE 3*2048
 
-int get_ats_audio_i(int, fileinfo_t* [9][99], WaveData *info);
-int get_ats_audio(bool use_ifo_files, const extractlist* extract);
+int get_ats_audio_i(int, fileinfo_t* [9][99], WaveData *info, globalData*);
+int get_ats_audio(bool use_ifo_files, const extractlist* extract, globalData*);
 
 #endif

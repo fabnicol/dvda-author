@@ -99,7 +99,7 @@ int truncate_from_end(char* filename, uint64_t offset);
 #ifndef S_OPEN
 #  define S_OPEN(X, Y) do {  if (file_exists(X.filename) && ! X.isopen)  {  if (! X.filesize) { X.filesize =  stat_file_size(X.filename); } ;  X.fp = fopen(X.filename, Y);  X.isopen = (X.fp != NULL); } } while(0);
 
-#  define S_CLOSE(X) do { if (! globals.pipe && X.isopen && X.fp != NULL) { fclose(X.fp); X.isopen = false; X.fp = NULL; } } while(0);
+#  define S_CLOSE(X) do { if (! globals->pipe && X.isopen && X.fp != NULL) { fclose(X.fp); X.isopen = false; X.fp = NULL; } } while(0);
 
 #ifdef _WIN32
 
@@ -135,12 +135,14 @@ void ErrorExit(PTSTR lpszFunction);
                           FILE_DESCRIPTOR *g_hChildStd_ERR_Rd,
                           FILE_DESCRIPTOR *g_hChildStd_ERR_Wr,
                           PROCESS_INFORMATION *piProcInfo,
-                          STARTUPINFO *siStartInfo);
+                          STARTUPINFO *siStartInfo,
+                          globalData* globals);
 
  DWORD write_to_child_stdin(
       uint8_t* chBuf,
       DWORD dwBytesToBeWritten,
-      FILE_DESCRIPTOR g_hChildStd_IN_Wr);
+      FILE_DESCRIPTOR g_hChildStd_IN_Wr,
+      globalData*);
 #if 0
 DWORD pipe_to_parent_stderr(FILE_DESCRIPTOR GCC_UNUSED  g_hChildStd_ERR_Rd,
                                 FILE_DESCRIPTOR GCC_UNUSED  hParentStdErr,

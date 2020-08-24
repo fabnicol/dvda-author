@@ -56,7 +56,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "launch_manager.h"
 #include "asvs.h"
 
-extern globalData globals;
 extern char* TEMPDIR;
 static uint16_t  maxntracks;
 static uint16_t totaltitles;
@@ -86,9 +85,9 @@ static uint16_t totaltitles;
 #define VTSI_rank command->VTSI_rank
 
 
-uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t ntitles[], uint8_t *ntitletracks[], uint64_t *titlelength[], uint16_t **ntitlepics)
+uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t ntitles[], uint8_t *ntitletracks[], uint64_t *titlelength[], uint16_t **ntitlepics, globalData *globals)
 {
-    
+
     // Normal case: audio files
     // Files are packed together according to audio characteristics: bit rate, sampel rate, number of channels
 
@@ -123,7 +122,7 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
                 command->files[group][track].newtitle = 1;
 
             // PATCH 02 Dec 09 && 12.06
-            
+
             if (command->files[group][track].newtitle)
             {
                 ++totaltitles;
@@ -134,20 +133,20 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
             #endif
      }
     }
-    
+
     int8_t track = 0;
-  
+
     for  (int group = 0; group < naudio_groups; ++group)
     {
       ntitletracks[group] = calloc(ntitles[group], sizeof(uint8_t));
         ntitlepics[group] = calloc(ntitles[group], sizeof(uint64_t));
        titlelength[group] = calloc(ntitles[group], sizeof(uint64_t));
-        
+
       if (titlelength[group] == NULL || ntitlepics[group] == NULL || ntitletracks[group] == NULL)
             EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Memory allocation, title track count in AMG")
-                    
+
       track=0;
-      
+
       for (int title = 0; title < ntitles[group]; ++title)
       {
         while (track < ntracks[group] && (ntitletracks[group][title] == 0 || ! command->files[group][track].newtitle))
@@ -159,22 +158,22 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
             {
                ntitlepics[group][title] += (img->npics)? img->npics[track] : 1;
             }
-  
+
           ++track;
-        } 
+        }
       }
-      
-      maxntracks = MAX(track, maxntracks); 
-      
-      if (globals.debugging)  
+
+      maxntracks = MAX(track, maxntracks);
+
+      if (globals->debugging)
           foutput(INF "Number of titles for group %d is %d\n",group, ntitles[group]);
-      
+
       if (track  != ntracks[group])
       {
         fprintf(stderr, "\nCounted %d tracks instead of %d for group %d\n", track, ntracks[group], group);
         EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incoherent title count")
       }
-           
+
     }
 
     return track;
@@ -182,36 +181,36 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
 
 
 #if !defined HAVE_core_BUILD || !HAVE_core_BUILD
-void allocate_topmenus(command_t *command)
+void allocate_topmenus(command_t *command, globalData *globals)
 {
-    if (img->topmenu == NULL) 
+    if (img->topmenu == NULL)
         img->topmenu = calloc(img->nmenus, sizeof(char *));
-    
-    if (img->topmenu == NULL) 
+
+    if (img->topmenu == NULL)
         perror("\n"ERR "img->topmenu 1\n");
-    
-    int menu, s = strlen(globals.settings.tempdir);
+
+    int menu, s = strlen(globals->settings.tempdir);
 
     int topmenu_name_length  = strlen(TOPMENU_NAME);
     for (menu = 0; menu < img->nmenus; ++menu)
     {
-        if (img->topmenu[menu] == NULL) 
-            img->topmenu[menu] = calloc(s + topmenu_name_length + 4, sizeof(char));   
+        if (img->topmenu[menu] == NULL)
+            img->topmenu[menu] = calloc(s + topmenu_name_length + 4, sizeof(char));
            // topmenu name length + 1 for SEPARATOR + 2 decimals + 0-end
-        
-        if (img->topmenu[menu] == NULL)  
+
+        if (img->topmenu[menu] == NULL)
             perror("\n"ERR "Topmenu filename memory issue.");
-        
-        if (img->topmenu[menu]) 
-            snprintf(img->topmenu[menu], s + 11, "%s"SEPARATOR"%s%d", globals.settings.tempdir, TOPMENU_NAME, menu);
+
+        if (img->topmenu[menu])
+            snprintf(img->topmenu[menu], s + 11, "%s"SEPARATOR"%s%d", globals->settings.tempdir, TOPMENU_NAME, menu);
     }
 
-    globals.topmenusize = img->nmenus;
+    globals->topmenusize = img->nmenus;
     return;
 }
 
 
-uint32_t create_topmenu(char* audiotsdir, command_t* command)
+uint32_t create_topmenu(char* audiotsdir, command_t* command, globalData* globals)
 {
     // Here authoring top VOB
     // first generate pics if necessary and background mpg from them
@@ -221,44 +220,44 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
     sprintf(outfile, "%s" SEPARATOR "AUDIO_TS.VOB", audiotsdir);
     img->action = ANIMATEDVIDEO;
 
-    switch(globals.topmenu)
+    switch(globals->topmenu)
     {
          // If only active menus, no top menus, create automatic top menus to be unlinked later on
-         // unless some extra info is given (then globals.topmenu < ACTIVE_MENU_ONLY)
-    
+         // unless some extra info is given (then globals->topmenu < ACTIVE_MENU_ONLY)
+
         case TEMPORARY_AUTOMATIC_MENU:
         case AUTOMATIC_MENU:
         case RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR :
 
             // do not overwrite !
 
-            generate_background_mpg(img);
+            generate_background_mpg(img, globals);
             /* fall through */
             __attribute__((fallthrough));
 
 
         case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
 
-            generate_menu_pics(img, ngroups, ntracks, maxntracks);
+            generate_menu_pics(img, ngroups, ntracks, maxntracks, globals);
 
             // calling xml project file subroutine for dvdauthor
 
         case RUN_SPUMUX_DVDAUTHOR:
 
-            allocate_topmenus(command);
+            allocate_topmenus(command, globals);
 
             errno = generate_spumux_xml(ngroups, ntracks, maxntracks, img);
             if (errno) perror("\n"ERR "AMG: spumux_xml\n");
 
-            errno = launch_spumux(img);
+            errno = launch_spumux(img, globals);
             if (errno) perror("\n"ERR "AMG: spumux\n");
 
         case  RUN_DVDAUTHOR :
 
-            if (!globals.xml)
+            if (!globals->xml)
             {
-                if (globals.debugging) foutput("%s\n", INF "Generating AMGM Xml project for dvdauthor (patched)...");
-                errno = generate_amgm_xml(ngroups, ntracks, img);
+                if (globals->debugging) foutput("%s\n", INF "Generating AMGM Xml project for dvdauthor (patched)...");
+                errno = generate_amgm_xml(ngroups, ntracks, img, globals);
                 if (errno) perror("\n"ERR "AMG: amgm_xml\n");
             }
             if (img->nmenus && img->menuvobsize == NULL)
@@ -271,11 +270,11 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
                 if (img->topmenu[menu])
                 {
                     img->menuvobsize[menu] = stat_file_size(img->topmenu[menu]) / 0x800;
-                    if (globals.veryverbose)
+                    if (globals->veryverbose)
                         foutput(MSG_TAG "Top menu is: %s with size %"PRIu32" KB\n", img->topmenu[menu], img->menuvobsize[menu]);
                 }
 
-            launch_dvdauthor();
+            launch_dvdauthor(globals);
             break;
 
         case TS_VOB_TYPE:
@@ -287,10 +286,10 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
             for (menu = 0; menu < img->nmenus; menu++)
             {
                 img->menuvobsize[menu] = img->menuvobsize[0];
-                if (globals.veryverbose) foutput(MSG_TAG "Top menu is: %s with size %d KB\n", outfile,img->menuvobsize[menu]);
+                if (globals->veryverbose) foutput(MSG_TAG "Top menu is: %s with size %d KB\n", outfile,img->menuvobsize[menu]);
             }
 
-            copy_file(img->tsvob, outfile);
+            copy_file(img->tsvob, outfile, globals);
 
             break;
 
@@ -313,20 +312,21 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command)
     if (file_exists(outfile))
     {
       size = (uint32_t) stat_file_size(outfile) / 0x800;
-      if (globals.debugging) foutput(MSG_TAG "Size of AUDIO_TS.VOB is: %u sectors\n" , size );
+      if (globals->debugging) foutput(MSG_TAG "Size of AUDIO_TS.VOB is: %u sectors\n" , size );
 
       img->tsvob=strdup(outfile);
     }
     else
     {
         img->tsvob = NULL;
-        if (globals.debugging) foutput("%s", ERR "Failed to create to menu AUDIO_TS.VOB\n");
+        if (globals->debugging) foutput("%s", ERR "Failed to create to menu AUDIO_TS.VOB\n");
     }
     return (size); //expressed in sectors
 }
 
 
-int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles, uint16_t **ntitlepics, pic* image, sect* sectors, uint16_t totntracks)
+int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles,
+                     uint16_t **ntitlepics, pic* image, sect* sectors, uint16_t totntracks, globalData* globals)
 {
     char outfile[strlen(audiotsdir)+14];
     int  k = 0;
@@ -337,7 +337,7 @@ int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles
 
     if (image->stillvob == NULL)
     {
-        generate_background_mpg(image);
+        generate_background_mpg(image, globals);
         if (image->backgroundmpg == NULL)
         {
             image->backgroundmpg = calloc(1, sizeof(char*));
@@ -374,7 +374,7 @@ int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles
     if (! image->active)
     {
         STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/AUDIO_SV.VOB", audiotsdir)
-        copy_file(image->stillvob, outfile);
+        copy_file(image->stillvob, outfile, globals);
         if (file_exists(outfile))
         {
             nb_sv_vob = 1;
@@ -398,7 +398,7 @@ int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles
     sync();
 #endif
 
-    int nb_asvs_files = create_asvs(audiotsdir, naudio_groups, numtitles, ntitlepics, sectors->asvs, image);
+    int nb_asvs_files = create_asvs(audiotsdir, naudio_groups, numtitles, ntitlepics, sectors->asvs, image, globals);
 
     if (nb_asvs_files)
     {
@@ -420,11 +420,13 @@ int create_stillpics(char* audiotsdir, uint8_t naudio_groups, uint8_t *numtitles
 #endif
 
 
-uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, uint8_t* numtitles, uint8_t** ntitletracks, uint64_t** titlelength, uint32_t *videotitlelength, uint32_t* relative_sector_pointer_VTSI)
+uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, uint8_t* numtitles,
+                    uint8_t** ntitletracks, uint64_t** titlelength, uint32_t *videotitlelength,
+                    uint32_t* relative_sector_pointer_VTSI, globalData* globals)
 {
     uint16_t i, j = 0, k = 0, titleset = 0, totalplaylisttitles = 0, totalaudiotitles = 0, titleintitleset;
 
-    bool menusector = (globals.topmenu <= TS_VOB_TYPE);  // there is a _TS.VOB in these cases
+    bool menusector = (globals->topmenu <= TS_VOB_TYPE);  // there is a _TS.VOB in these cases
     uint8_t naudio_groups = ngroups-vgroups-nplaygroups;  // CHECK
 
     uint32_t  sectoroffset[naudio_groups];
@@ -432,13 +434,13 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
     totalaudiotitles = totaltitles;
     totaltitles += vgroups;
 
-    if (globals.playlist)
+    if (globals->playlist)
         for (j = 0; j < nplaygroups; ++j)
             totalplaylisttitles += numtitles[playtitleset[j]];
 
     totaltitles+=totalplaylisttitles;
 
-    if (globals.debugging) foutput(MSG_TAG "Dec. AMG: totaltitles=%d\n", totaltitles);
+    if (globals->debugging) foutput(MSG_TAG "Dec. AMG: totaltitles=%d\n", totaltitles);
 
     char* path = filepath(audiotsdir, "AUDIO_TS.IFO");
 
@@ -450,7 +452,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
         exit(-3);
     }
 
-    open_aob_log();
+    open_aob_log(globals);
 
     uint8_t amgtag[12] = "DVDAUDIO-AMG";
     uint8_t sect_ptr_last_amg[4] = {0};   // Relative sector pointer to Last sector in AMG ie size (AUDIO_TS.IFO+AUDIO_TS.VOB+AUDIO_TS.BUP)-1 in sectors
@@ -459,7 +461,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
     uint8_t n_volumes[2] = {0};           // Number of Volumes
     uint8_t current_volume[2] = {0};      // Current Volume
     uint8_t disc_side[1] = {1};
-    uint8_t autoplay[1] = {globals.autoplay};
+    uint8_t autoplay[1] = {globals->autoplay};
     uint8_t sect_ptr_sv_vob[4] = {0};     	// relative sector pointer to AUDIO_SV.VOB=same value as 0x when no SV.VOB
     uint8_t n_menu_aobs[1] = {0};	// Number of AUDIO_TS video titlesets (DVD-Audio norm video titlesets are AOBs)
     uint8_t n_groups[1] = {ngroups};       // Number of audio titlesets, must include video linking groups
@@ -468,7 +470,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
     uint8_t sec2_ptr[4] = {0}; // Pointer to sector 2
     uint8_t sec3_ptr[4] = {0}; // Pointer to sector 3
     uint8_t sec4_ptr[4] = {0}; // Pointer to sector 4
-    uint8_t sec5_ptr[4] = {globals.text ? 3 + menusector : 0}; // Pointer to sector 5
+    uint8_t sec5_ptr[4] = {globals->text ? 3 + menusector : 0}; // Pointer to sector 5
     uint8_t unknown2[4] = {0};
     uint8_t unknown3[4] = {0};
     uint8_t top_menu_lpcm_tag[4] = {0}; // 2ch 48k LPCM audio (signed big endian) in mpeg2 top menu, 1 stream,
@@ -555,7 +557,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
         if (titleintitleset == numtitles[titleset])
         {
             sectoroffset[titleset + 1] = sectoroffset[titleset] + (command->files[titleset][ntracks[titleset] - 1].last_sector + 1)+sectors->atsi[titleset] * 2;
-            if (globals.veryverbose)
+            if (globals->veryverbose)
             {
                 if (titleset == 0)
                     foutput(MSG_TAG "sectoroffset[%d]=%u=2*(%d+%d)+%u+%u\n",
@@ -586,7 +588,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
 
     // supposing one title per videolinking group
     // temporarily disabled for decoding
-    if (globals.videolinking)
+    if (globals->videolinking)
     {
         for (k=0; k < vgroups ; ++k)
         {
@@ -618,13 +620,13 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
         }
     }
 #if 0
-    if (globals.playlist)
+    if (globals->playlist)
     {
         //copy of other groups
 
         for (j = 0; j < nplaygroups; ++j)
         {
-            if (globals.debugging) foutput(INF "Encoding copy group (#%d)\n", j+1);
+            if (globals->debugging) foutput(INF "Encoding copy group (#%d)\n", j+1);
 
             for (k = 0; k < numtitles[playtitleset[j]]; ++k)
             {
@@ -681,7 +683,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
 
     // supposing one title per videolinking group
     // temporarily disabled for decoding
-    if (globals.videolinking)
+    if (globals->videolinking)
     {
         for (k = 0; k < vgroups ; ++k)
         {
@@ -704,13 +706,13 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
         }
     }
 
-    if (globals.playlist)
+    if (globals->playlist)
     {
         //copy of other groups
 
         for (j = 0; j < nplaygroups; ++j)
         {
-            if (globals.debugging) foutput(INF "Encoding copy group (#%d)\n", j + 1);
+            if (globals->debugging) foutput(INF "Encoding copy group (#%d)\n", j + 1);
 
             for (k = 0; k < numtitles[playtitleset[j]]; ++k)
             {
@@ -733,7 +735,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
 
     if (menusector)
     {
-        if (globals.debugging) foutput("%s\n", INF "Creating menu ifo, AUDIO_TS.IFO sector 4");
+        if (globals->debugging) foutput("%s\n", INF "Creating menu ifo, AUDIO_TS.IFO sector 4");
         uint64_t menuvobsize_sum = 0;
 
         /* Looks like VMG_PGCI_UT */
@@ -865,7 +867,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
 
         /* coherence test */
 
-        if (globals.veryverbose)
+        if (globals->veryverbose)
         {
             if (sectors->topvob == menuvobsize_sum + img->nmenus - 1
                                   + img->menuvobsize[img->nmenus-1] -1)
@@ -881,9 +883,9 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
 
     /* partial implementation: is only valid for one group and type of content="Music content", code 0x38. For "song" replace 0x38 with 0x40 below*/
 
-    if ((globals.text) && naudio_groups == 1)
+    if ((globals->text) && naudio_groups == 1)
     {
-        if (globals.debugging)
+        if (globals->debugging)
             foutput("%s\n", INF "Creating DVDATXTDT-MG, AUDIO_TS.IFO");
 
         int c, d;
@@ -1013,13 +1015,13 @@ return 0;
 
 
 int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *videotitlelength, uint32_t* relative_sector_pointer_VTSI,
-                    uint8_t *numtitles, uint8_t** ntitletracks, uint64_t** titlelength)
+                    uint8_t *numtitles, uint8_t** ntitletracks, uint64_t** titlelength, globalData* globals)
 {
     errno=0;
 
     uint16_t i, j = 0, k = 0, titleset = 0, totalplaylisttitles = 0, totalaudiotitles = 0, titleintitleset;
 
-    bool menusector = (globals.topmenu <= TS_VOB_TYPE);  // there is a _TS.VOB in these cases
+    bool menusector = (globals->topmenu <= TS_VOB_TYPE);  // there is a _TS.VOB in these cases
     uint8_t naudio_groups = ngroups - vgroups - nplaygroups;  // CHECK
 
     uint8_t amg[sectors->amg * 2048];
@@ -1028,13 +1030,13 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
     totalaudiotitles = totaltitles;
     totaltitles += vgroups;
 
-    if (globals.playlist)
+    if (globals->playlist)
         for (j = 0; j < nplaygroups; ++j)
             totalplaylisttitles += numtitles[playtitleset[j]];
 
     totaltitles += totalplaylisttitles;
 
-    if (globals.debugging) foutput(MSG_TAG "AMG: totaltitles=%d\n", totaltitles);
+    if (globals->debugging) foutput(MSG_TAG "AMG: totaltitles=%d\n", totaltitles);
 
     memset(amg, 0, sizeof(amg));
 
@@ -1046,8 +1048,8 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
     uint16_copy(&amg[0x26], 0x0001); 	// Number of Volumes
     uint16_copy(&amg[0x28], 0x0001); 	// Current Volume
     amg[0x2A] = 1;  		    		// Disc Side
-    amg[0x2F] = globals.autoplay;
-    if (sectors->stillvob) 
+    amg[0x2F] = globals->autoplay;
+    if (sectors->stillvob)
         uint32_copy(&amg[48], 2 * sectors->amg + sectors->topvob);		// relative sector pointer to AUDIO_SV.VOB=same value as 0x when no SV.VOB
     amg[0x3E] = 0;  					// Number of AUDIO_TS video titlesets (DVD-Audio norm video titlesets are AOBs)
     amg[0x3F] = ngroups; 		        // Number of audio titlesets, must include video linking groups
@@ -1057,7 +1059,7 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
     uint32_copy(&amg[0xc4], 1);  	// Pointer to sector 2
     uint32_copy(&amg[0xc8], 2);  	// Pointer to sector 3
     uint32_copy(&amg[0xcc], (menusector)? 3 : 0);  	// Pointer to sector 4
-    uint32_copy(&amg[0xd4], (globals.text)? 3+(menusector) : 0);  	// Pointer to sector 5
+    uint32_copy(&amg[0xd4], (globals->text)? 3+(menusector) : 0);  	// Pointer to sector 5
     uint32_copy(&amg[0x100], (menusector)? 0x53000000 : 0); // Unknown;  // 0x1E000000 used to be uset in SET2
     uint32_copy(&amg[0x154], (menusector)? 0x00010000 : 0); // Unknown;
     uint32_copy(&amg[0x15C], (img->h + img->min + img->sec)? 0x00018001 : 0); // 2ch 48k LPCM audio (signed big endian) in mpeg2 top menu, 1 stream,
@@ -1101,11 +1103,11 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
         ++titleintitleset;
         if (titleintitleset == numtitles[titleset])
         {
-            sectoroffset[titleset + 1] = sectoroffset[titleset] + 
-                    (command->files[titleset][ntracks[titleset] - 1].last_sector + 1) 
+            sectoroffset[titleset + 1] = sectoroffset[titleset] +
+                    (command->files[titleset][ntracks[titleset] - 1].last_sector + 1)
                     + sectors->atsi[titleset] * 2;
-            
-            if (globals.veryverbose)
+
+            if (globals->veryverbose)
             {
                 if (titleset == 0)
                     foutput(MSG_TAG "sectoroffset[%d]=%u=2*(%d+%d)+%u+%u\n",
@@ -1115,7 +1117,7 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
                             sectors->asvs,
                             sectors->stillvob,
                             sectors->topvob);
-                
+
                 foutput(MSG_TAG "sectoroffset[%d]=%u=sectoroffset[%d]+(command->files[%d][ntracks[%d]-1].last_sector+1)+2*%d\n",
                         titleset+1,
                         sectoroffset[titleset + 1],
@@ -1123,7 +1125,7 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
                         titleset,
                         titleset,
                         sectors->atsi[titleset]);
-                
+
             }
 
             titleintitleset = 0;
@@ -1136,7 +1138,7 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
 
     // supposing one title per videolinking group
 
-    if (globals.videolinking)
+    if (globals->videolinking)
     {
         for (k=0; k < vgroups ; ++k)
         {
@@ -1145,7 +1147,7 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
                 amg[i]=0x00|(titleset+1);                  // Table sector 2 first two bytes per title, non-last video linking title
             else
             */
-            
+
             amg[i] = 0x40 | (++titleset);                  // Table sector 2 first two bytes per title, last video linking title
             amg[++i] = 1;                                        // Experiment limitation: just one video chapter is visible within video zone title
             amg[++i] = 1;                                        // Experiment limitation: just one video chapter is visible within video zone title (repeated)
@@ -1159,13 +1161,13 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
         }
     }
 
-    if (globals.playlist)
+    if (globals->playlist)
     {
         //copy of other groups
 
         for (j = 0; j < nplaygroups; ++j)
         {
-            if (globals.debugging) foutput(INF "Encoding copy group (#%d)\n", j+1);
+            if (globals->debugging) foutput(INF "Encoding copy group (#%d)\n", j+1);
 
             for (k = 0; k < numtitles[playtitleset[j]]; ++k)
             {
@@ -1187,7 +1189,7 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
     i = 0x1000;
     uint16_copy(&amg[i], totaltitles);		// total number of titles, audio and videolinking titles included
     i += 2;
-    
+
     // pointer to end of sector table : 4 (bytes used) + 14 (size of table) *number of tables (totaltitles) -1
     uint16_copy(&amg[i], 4 + 14 * totaltitles -1);
     i += 2;
@@ -1221,7 +1223,7 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
 
     // supposing one title per videolinking group
 
-    if (globals.videolinking)
+    if (globals->videolinking)
     {
         for (k = 0; k < vgroups ; ++k)
         {
@@ -1244,13 +1246,13 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
         }
     }
 
-    if (globals.playlist)
+    if (globals->playlist)
     {
         //copy of other groups
 
         for (j = 0; j < nplaygroups; ++j)
         {
-            if (globals.debugging) foutput(INF "Encoding copy group (#%d)\n", j + 1);
+            if (globals->debugging) foutput(INF "Encoding copy group (#%d)\n", j + 1);
 
             for (k = 0; k < numtitles[playtitleset[j]]; ++k)
             {
@@ -1273,7 +1275,7 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
 
     if (menusector)
     {
-        if (globals.debugging) foutput("%s\n", INF "Creating menu ifo, AUDIO_TS.IFO sector 4");
+        if (globals->debugging) foutput("%s\n", INF "Creating menu ifo, AUDIO_TS.IFO sector 4");
         uint64_t menuvobsize_sum = 0;
 
         /* Looks like VMG_PGCI_UT */
@@ -1281,7 +1283,7 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
         uint32_copy(&amg[0x1800], 0x00010000); // 0-3 Number of language units + 2 bytes of padding
         uint32_copy(&amg[0x1804], 0x00000151 + (img->nmenus - 1) * 0x13A); // 4-7 Address of last byte= length of table-1
         uint32_copy(&amg[0x1808], 0x656E0080); // 'en' for English, cound add 'g'=0x67 as third byte and 0x80 for existence of menu.
-        
+
         //  compare with VIDEO_TS.IFO, same bytes.
         uint32_copy(&amg[0x180C], 0x00000010); // relative pointer to start of language unit=0x1810
 
@@ -1405,12 +1407,12 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
 
         /* coherence test */
 
-        if (globals.veryverbose)
+        if (globals->veryverbose)
         {
-            if (sectors->topvob == menuvobsize_sum + img->nmenus - 1 
+            if (sectors->topvob == menuvobsize_sum + img->nmenus - 1
                                   + img->menuvobsize[img->nmenus-1] -1)
                 foutput("%s", MSG_TAG "Menu vob size coherence test...OK\n");
-            
+
             else foutput(MSG_TAG "Menu vob size coherence test failed: sectors->topvob=%u against %" PRIu64 "\n",
                          sectors->topvob,
                          menuvobsize_sum + img->nmenus -1 + img->menuvobsize[img->nmenus - 1] -1);
@@ -1421,13 +1423,13 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
 
     /* partial implementation: is only valid for one group and type of content="Music content", code 0x38. For "song" replace 0x38 with 0x40 below*/
 
-    if ((globals.text) && naudio_groups == 1)
+    if ((globals->text) && naudio_groups == 1)
     {
-        if (globals.debugging) 
+        if (globals->debugging)
             foutput("%s\n", INF "Creating DVDATXTDT-MG, AUDIO_TS.IFO");
-        
+
         int c, d;
-        
+
         d = (sectors->amg - 1) * 0x800;
         i = d;
         memcpy(&amg[i], "DVDATXTDT-MG", 12);
@@ -1469,7 +1471,7 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
         {
             if (textable[trackindex]!= NULL)
                 lcount += strlen(textable[trackindex]) + 1;
-            
+
             if (trackindex < ntracks[0] - 2)
             {
                 i += 8;
@@ -1489,7 +1491,7 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
                 amg[i + 1] = 0x3;
                 amg[i + 5] = 0x38;
             }
-            
+
             amg[i] = lcount;
             ++trackindex;
         }
@@ -1505,9 +1507,9 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
                 amg[i + 5] = 0x38;
             }
         }
-        
+
         ++i;
-        
+
         for (trackindex = 0; trackindex < ntracks[0]; ++trackindex)
         {
             c = (textable[trackindex]) ? strlen(textable[trackindex]) : 0;
@@ -1516,7 +1518,7 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
             amg[i] = 0x9;
             ++i;
         }
-        
+
         amg[d + 0x13] = i - 1;
         amg[d + 0x1F] = i - 1 - 0x1C;
     }
@@ -1525,15 +1527,15 @@ int create_amg(char* audiotsdir, command_t *command, sect* sectors, uint32_t *vi
 
     size_t  sizeofamg=sizeof(amg);
 
-    int nb_amg_files = create_file(audiotsdir, "AUDIO_TS.IFO", amg, sizeofamg);
+    int nb_amg_files = create_file(audiotsdir, "AUDIO_TS.IFO", amg, sizeofamg, globals);
 
-    nb_amg_files += create_file(audiotsdir, "AUDIO_TS.BUP", amg, sizeofamg);
+    nb_amg_files += create_file(audiotsdir, "AUDIO_TS.BUP", amg, sizeofamg, globals);
 
     if (errno)
         return 0;
     else
         return nb_amg_files;
-    
+
 #undef files
 #undef ntracks
 #undef ngroups

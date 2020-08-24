@@ -29,12 +29,13 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 // Always end the lists of options with an option that has :: (to ensure space for spec_index(2)[2]) */
 #include "commonvars.h"
 #include "structures.h"
+#include "c_utils.h"
 /* allowed options for lexer.h */
 
 // g, j, s are treated by getopt as non-argumental although they take a non-limited number of (non-getopt compliant) arguments
 
-void normalize_temporary_paths(pic* img);
+void normalize_temporary_paths(pic* img, globalData* globals);
 #define  PAL_NORM "pal"
-command_t* lexer_analysis(command_t* command, lexer_t* lexer, const char* config_file, bool config_type);
+command_t* lexer_analysis(command_t* command, lexer_t* lexer, const char* config_file, bool config_type, globalData*);
 #endif // DVDA-AUTHOR_H_INCLUDED
 

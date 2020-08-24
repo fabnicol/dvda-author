@@ -51,9 +51,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "menu.h"
 #include "sound.h"
 
-extern globalData globals;
 
-void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank, uint64_t sector_pointer_VIDEO_TS, uint32_t *relative_sector_pointer_VTSI)
+void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank, uint64_t sector_pointer_VIDEO_TS, uint32_t *relative_sector_pointer_VTSI, globalData* globals)
 {
 
     if (path_to_VIDEO_TS == NULL || relative_sector_pointer_VTSI == NULL)
@@ -116,7 +115,7 @@ void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank,
 
         relative_sector_pointer_VTSI[k] += relative_sector_pointer_VTSI[k-1] +1;
 
-        if (globals.debugging) foutput(INF "Retrieving relative sector pointer to VTSI %d : %"PRIu32"\n", k+1, relative_sector_pointer_VTSI[k]);
+        if (globals->debugging) foutput(INF "Retrieving relative sector pointer to VTSI %d : %"PRIu32"\n", k+1, relative_sector_pointer_VTSI[k]);
 
         fclose(temp_file);
     }
@@ -124,7 +123,7 @@ void get_video_system_file_size(char * path_to_VIDEO_TS,  int maximum_VTSI_rank,
 }
 
 
-void get_video_PTS_ticks(char* path_to_VIDEO_TS, uint32_t *videotitlelength, uint8_t nvideolinking_groups, uint8_t* VTSI_rank)
+void get_video_PTS_ticks(char* path_to_VIDEO_TS, uint32_t *videotitlelength, uint8_t nvideolinking_groups, uint8_t* VTSI_rank, globalData* globals)
 {
     int k;
     int len = strlen (path_to_VIDEO_TS);
@@ -175,8 +174,14 @@ void get_video_PTS_ticks(char* path_to_VIDEO_TS, uint32_t *videotitlelength, uin
 
         videotitlelength[k] = 90000 *(3600 * BCD(hours)  + 60 *BCD(minutes)  + BCD(seconds));
 
-        if (globals.debugging)
-            foutput("\n"MSG_TAG "Linked video group=%d \n       hours=%x  minutes=%x  seconds=%x\n       PTS ticks=%"PRIu32" length (seconds)=%"PRIu32" \n", VTSI_rank[k], hours, minutes, seconds, videotitlelength[k], videotitlelength[k]/90000);
+        if (globals->debugging)
+            foutput("\n"MSG_TAG "Linked video group=%d \n       hours=%x  minutes=%x  seconds=%x\n       PTS ticks=%"PRIu32" length (seconds)=%"PRIu32" \n",
+                    VTSI_rank[k],
+                    hours,
+                    minutes,
+                    seconds,
+                    videotitlelength[k],
+                    videotitlelength[k]/90000);
 
     }
 
@@ -184,15 +189,16 @@ void get_video_PTS_ticks(char* path_to_VIDEO_TS, uint32_t *videotitlelength, uin
 
 
 extern char *mpeg2dec, *mpeg2enc, *pgmtoy4m, *mplex, *extract_ac3, *ac3dec;
-void import_topmenu(char* video_vob_path, pic* img, bool MIX_TYPE)
+
+void import_topmenu(char* video_vob_path, pic* img, bool MIX_TYPE, globalData* globals)
 {
- initialize_binary_paths(CREATE_MJPEGTOOLS);
- initialize_binary_paths(CREATE_MPEG2DEC);
+ initialize_binary_paths(CREATE_MJPEGTOOLS, globals);
+ initialize_binary_paths(CREATE_MPEG2DEC, globals);
 
 // Limitation to be removed later?
 
  img->nmenus=1;
- int s=strlen(globals.settings.tempdir);
+ int s=strlen(globals->settings.tempdir);
 
  if (MIX_TYPE == USE_VTS_SOUNDTRACK)
  {
@@ -200,27 +206,27 @@ void import_topmenu(char* video_vob_path, pic* img, bool MIX_TYPE)
 //  FREE(img->soundtrack[0]
 //  extract lpcm from VTS or else convert mp2/ac3 to lpcm  then assign img->soundtrack[0]=result
 
-  initialize_binary_paths(CREATE_EXTRACT_AC3);
+  initialize_binary_paths(CREATE_EXTRACT_AC3, globals);
   FREE(img->soundtrack[0][0])
   img->soundtrack[0][0]=calloc(STRLEN_SEPARATOR + s + 20 + 3 + 4 + 1, sizeof(char));
-  sprintf(img->soundtrack[0][0], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "extracted_soundtrack",0, ".wav");
+  sprintf(img->soundtrack[0][0], "%s"SEPARATOR"%s%u%s", globals->settings.tempdir, "extracted_soundtrack",0, ".wav");
 
   const char* argsextract[]={extract_ac3, video_vob_path, "-",  "-s", "|",
                              ac3dec, "-o", "wav", "-p", img->soundtrack[0][0], NULL};
 
-  char* cml=get_full_command_line(argsextract);
+  char* cml=get_full_command_line(argsextract, globals);
   errno=system(win32quote((const char*) cml));
   free(cml);
  }
 
  char framerate[strlen(img->framerate)+3];
  sprintf(framerate, "%s%s", img->framerate, ":1");
- char imported_topmenu[strlen(globals.settings.tempdir)+28+1];
- sprintf(imported_topmenu, "%s%s", globals.settings.tempdir, "/imported_topmenu_video.m2v");
+ char imported_topmenu[strlen(globals->settings.tempdir)+28+1];
+ sprintf(imported_topmenu, "%s%s", globals->settings.tempdir, "/imported_topmenu_video.m2v");
 
  const char* args[]={mpeg2dec, "-s", "-o", "pgmpipe", quote(video_vob_path),"|",
                      pgmtoy4m, "-i", "p", "-r", framerate, "|", mpeg2enc, "-f", "8", "-o", quote(imported_topmenu),NULL};
- char* cml=get_full_command_line(args);
+ char* cml=get_full_command_line(args, globals);
  errno=system(win32quote((const char*) cml));
  free(cml);
 
@@ -228,13 +234,13 @@ void import_topmenu(char* video_vob_path, pic* img, bool MIX_TYPE)
  FREE(img->backgroundmpg[0])
  img->backgroundmpg[0]=calloc(1+ s + 17+3+ 4+1, sizeof(char));
 
- sprintf(img->backgroundmpg[0], "%s"SEPARATOR"%s%u%s", globals.settings.tempdir, "background_movie_",0, ".mpg");
+ sprintf(img->backgroundmpg[0], "%s"SEPARATOR"%s%u%s", globals->settings.tempdir, "background_movie_",0, ".mpg");
 
- launch_lplex_soundtrack(img, "lpcm");
+ launch_lplex_soundtrack(img, "lpcm", globals);
 
  const char*  argsmplex[]={mplex, "-f", "8", "-L", "48000:2:16",
                            "-o", img->backgroundmpg[0], imported_topmenu, img->soundtrack[0][0], NULL};
- run(mplex, argsmplex, WAIT, FORK);
+ run(mplex, argsmplex, WAIT, FORK, globals);
 
 }
 #endif

@@ -22,7 +22,7 @@
 #include "c_utils.h"
 #include "structures.h"
 
-extern globalData globals;
+
 
 /*********************************************************************
 * Function: isok
@@ -30,10 +30,10 @@ extern globalData globals;
 * Purpose:  This function displays a yes/no prompt
 *********************************************************************/
 
-bool isok()
+bool isok(globalData* globals)
 {
   char buf[FIXBUF_LEN]={0};
-  get_input(buf);
+  get_input(buf, globals);
   fprintf(stderr, "%c", '\n');
 
   // With silent mode, replies are implicitly OK.
@@ -48,7 +48,7 @@ bool isok()
 
     default  :
       fprintf(stderr, "%s\n",WAR "Unknown--Enter reply again");
-      return(isok());
+      return(isok(globals));
     }
 }
 
@@ -58,7 +58,7 @@ bool isok()
 /* Purpose:  This function performs a "safe" read of the user's      */
 /*           input and puts the results in the caller's buffer       */
 /*********************************************************************/
-void get_input( char* buf )
+void get_input( char* buf, globalData* globals )
 {
   if (fgets(buf, FIXBUF_LEN, stdin) == NULL)
     foutput("%s\n", ERR "fgets crash");

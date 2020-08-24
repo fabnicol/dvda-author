@@ -2,7 +2,7 @@ include @BUILDDIR@/mk/cdrtools.global.mk
 
 cdrtools_MAKESPEC=auto
 cdrtools_CONFIGSPEC=exe
-cdrtools_TESTBINARY=cdrecord
+cdrtools_TESTBINARY=cdrecord@EXEEXTENSION@
 INS_BASE="@BUILDDIR@/local"
 
 

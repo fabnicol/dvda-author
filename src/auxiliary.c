@@ -49,10 +49,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "commonvars.h"
 #include "menu.h"
 
-extern globalData globals;
+
 extern char* INDIR, *OUTDIR, *LOGFILE,  *LINKDIR, *WORKDIR;
 
-void version()
+void version(globalData* globals)
 {
 
     foutput("%s%s%s", "dvda-author version ", VERSION, "\nCopyright  2005 Dave Chapman; 2008-2009 Lee and Tim Feldkamp; 2007-2016 Fabrice Nicol.\n\n");
@@ -407,7 +407,7 @@ void check_settings_file()
 #endif
 }
 
-bool increment_ngroups_check_ceiling(uint8_t *ngroups, uint8_t * nvideolinking_groups)
+bool increment_ngroups_check_ceiling(uint8_t *ngroups, uint8_t * nvideolinking_groups, globalData* globals)
 {
 
     if (*ngroups < 9)
@@ -419,7 +419,7 @@ bool increment_ngroups_check_ceiling(uint8_t *ngroups, uint8_t * nvideolinking_g
             else
             {
                 foutput(ERR "DVD-Audio only supports up to 9 groups; audio groups=%d; video-linking groups=%d\n", *ngroups, *nvideolinking_groups);
-                clean_exit(EXIT_SUCCESS);
+                clean_exit(EXIT_SUCCESS, globals);
             }
         }
         ++*ngroups;
@@ -430,12 +430,12 @@ bool increment_ngroups_check_ceiling(uint8_t *ngroups, uint8_t * nvideolinking_g
             foutput(ERR "DVD-Audio only supports up to 9 groups; audio groups=%d; video-linking groups=%d\n", *ngroups, *nvideolinking_groups);
         else
             foutput(ERR "DVD-Audio only supports up to 9 groups; audio groups=%d\n", *ngroups);
-        clean_exit(EXIT_SUCCESS);
+        clean_exit(EXIT_SUCCESS, globals);
     }
     return 1;
 }
 
-fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t ngiven_channels[9][99], uint8_t* ntracks,  uint8_t  ngroups, uint8_t n_g_groups, uint8_t nvideolinking_groups)
+fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t ngiven_channels[9][99], uint8_t* ntracks,  uint8_t  ngroups, uint8_t n_g_groups, uint8_t nvideolinking_groups, globalData* globals)
 {
     float memory=0;
     int i, j = 0;
@@ -458,7 +458,7 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t ngiven_channel
             EXIT_ON_RUNTIME_ERROR
         }
 
-       if (globals.debugging)
+       if (globals->debugging)
             {
                memory += (double) (ntracks[i])*sizeof(fileinfo_t)/1024;
                foutput(MSG_TAG
@@ -515,7 +515,7 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t ngiven_channel
         }
 
         /* sanity check: 0 tracks should be allocated */
-        if (globals.debugging)
+        if (globals->debugging)
         {
             memory+=(double) sizeof(fileinfo_t)/1024;
             foutput(MSG_TAG
@@ -532,24 +532,24 @@ fileinfo_t** dynamic_memory_allocate(fileinfo_t **  files,uint8_t ngiven_channel
 
 #define free2(X) {\
     if (command->img->X) {\
-     for (unsigned int i = 0; i < globals.X##size; ++i) free(command->img->X[i]); \
+     for (unsigned int i = 0; i < globals->X##size; ++i) free(command->img->X[i]); \
     }\
     free(command->img->X); \
     }
 
 #define free3(X) {\
     if (command->X) {\
-    for (unsigned int i = 0; i < globals.X##size; ++i) free(command->X[i]); \
+    for (unsigned int i = 0; i < globals->X##size; ++i) free(command->X[i]); \
     }\
     free(command->X); \
     }
 
-void free_memory(command_t *command)
+void free_memory(command_t *command, globalData* globals)
 {
     int i, j;
 
 #if !defined HAVE_core_BUILD || !HAVE_core_BUILD
-    initialize_binary_paths(FREE_BINARY_PATH_SPACE);
+    initialize_binary_paths(FREE_BINARY_PATH_SPACE, globals);
 #endif
 
     if (command)
@@ -561,7 +561,7 @@ void free_memory(command_t *command)
 
             for (j=0; j < command->ntracks[i]; j++)
             {
-                if (globals.debugging)
+                if (globals->debugging)
                     foutput(INF "Freeing i=%d  j=%d\n",i, j );
                 FREE(command->files[i][j].filename)
                 //FREE(command->files[i][j].filetitle)
@@ -573,16 +573,16 @@ void free_memory(command_t *command)
         FREE(command->files)
      }
 
-    free(globals.settings.outdir);
-    free(globals.settings.workdir);
-    free(globals.settings.tempdir);
-    free(globals.settings.lplexoutdir);
-    free(globals.settings.indir);
-    //free(globals.settings.logfile)
-    free(globals.settings.settingsfile);
-    //free(globals.settings.fixwav_database)
-    free(globals.settings.dvdisopath);
-    free(globals.settings.stillpicdir);
+    free(globals->settings.outdir);
+    free(globals->settings.workdir);
+    free(globals->settings.tempdir);
+    free(globals->settings.lplexoutdir);
+    free(globals->settings.indir);
+    //free(globals->settings.logfile)
+    free(globals->settings.settingsfile);
+    //free(globals->settings.fixwav_database)
+    free(globals->settings.dvdisopath);
+    free(globals->settings.stillpicdir);
 
 
 if (command && command->img)
@@ -591,14 +591,16 @@ if (command && command->img)
     free2(topmenu)
     free2(backgroundmpg)  // Valgrind complains but don't see why (with --topmenu)
     free2(backgroundpic)  // idem
-    for (int i = 0; i < MAX(1, command->img->nmenus); ++i)
-    {
-        for(uint32_t u = 0; u < globals.soundtracksize[i]; ++u)
-           free(command->img->soundtrack[i][u]);
-
-        free(command->img->soundtrack[i]);
-    }
-    free(command->img->soundtrack);
+    if (command->img->soundtrack)
+//    for (int i = 0; i < MAX(1, command->img->nmenus); ++i)
+//    {
+//        if (command->img->soundtrack)
+//        for(uint32_t u = 0; u < globals->soundtracksize[i]; ++u)
+//           free(command->img->soundtrack[i][u]);
+//
+//        free(command->img->soundtrack[i]);
+//    }
+//    free(command->img->soundtrack);
     free2(topmenu_slide)
     free2(highlightpic)
     free2(selectpic)
@@ -637,10 +639,10 @@ if (command && command->img)
 
 }
 
-if (globals.aobpath)
+if (globals->aobpath)
 {
-    for (int i = 0; i < 81; ++i) free(globals.aobpath[i]);
-    free(globals.aobpath);
+    for (int i = 0; i < 81; ++i) free(globals->aobpath[i]);
+    free(globals->aobpath);
 }
 
 }
@@ -648,16 +650,16 @@ if (globals.aobpath)
 #undef free2
 #undef free3
 
-int create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size)
+int create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size, globalData* globals)
 {
   char outfile[strlen(audiotsdir)+strlen(basename)+1+1];
   sprintf(outfile, "%s"SEPARATOR"%s",audiotsdir, basename);
-  foutput(INF "Creating %s\n",outfile);
+  fprintf(stderr, INF "Creating %s\n",outfile);
 
   if (file_exists(outfile)) unlink(outfile); // I sometimes had issues under linux when unlink was not called in rare cases. Reset errno to 0 just after.
   errno=0;
   FILE* f;
-  if (!globals.nooutput)
+  if (!globals->nooutput)
   {
       f = fopen(outfile,"wb");
   if (f == NULL)
@@ -687,7 +689,7 @@ int create_file(char* audiotsdir, char* basename, uint8_t* array, size_t size)
 // Returns NULL on error or array of extracted strings
 // remainder should be allocated prior to call
 
-char** fn_strtok(char* chain, char delim, char** array, uint32_t* size, int32_t count, int  (*f)(char*, int32_t ), char* remainder)
+char** fn_strtok(char* chain, char delim, char** array, uint32_t* size, int32_t count, int  (*f)(char*, int32_t , globalData*), char* remainder, globalData* globals)
 {
   if (chain == NULL || size == NULL) return NULL;
   //
@@ -731,7 +733,7 @@ char** fn_strtok(char* chain, char delim, char** array, uint32_t* size, int32_t 
       memcpy(array[k], s + cut[k] + 1, cut[k + 1] - cut[k] - 1);
       array[k][cut[k + 1] - cut[k] - 1] = 0;
 
-      if ((*f) && ((*f)(array[k], count) == 0)) break;
+      if ((*f) && ((*f)(array[k], count, globals) == 0)) break;
 
       ++k;
     }
@@ -749,7 +751,7 @@ char** fn_strtok(char* chain, char delim, char** array, uint32_t* size, int32_t 
 // This loop cut may be useful to use with fn_strtok
 // first arg is spurious
 
-int cutloop(char GCC_ATTRIBUTE_UNUSED*c, int32_t count)
+int cutloop(char GCC_ATTRIBUTE_UNUSED*c, int32_t count, globalData GCC_UNUSED* globals)
 {
     static int32_t loop;
     ++loop;
@@ -764,12 +766,8 @@ int arraylength(char **tab)
     int w = 0;
     if (tab) while (tab[w] != NULL)
     {
-      if (globals.debugging) fprintf(stderr, DBG "parsing tab string %s\n", tab[w]);
        ++w;
     }
-
-    if (globals.debugging) fprintf(stderr, DBG "found %d strings in tab\n", w);
-
     return w;
 }
 

@@ -147,7 +147,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #undef foutput
 #endif
 
-#define foutput(X,...)   do { if (!globals.silence) { printf(X, __VA_ARGS__); } ;   if (globals.logfile) { fprintf(globals.journal, X, __VA_ARGS__);}  } while(0)
+#define foutput(X,...)   do { if (!globals->silence) { printf(X, __VA_ARGS__); } ;   if (globals->logfile) { fprintf(globals->journal, X, __VA_ARGS__);}  } while(0)
 
 
 
@@ -272,6 +272,95 @@ typedef struct
 
   } WaveHeader;
 
+
+typedef struct
+{
+    char  *settingsfile;
+    char  *logfile;
+    char  *indir;
+    char  *outdir;
+    char  *outfile;
+    char  *lplexoutdir;
+    char  *workdir;
+    char  *tempdir;
+    char  *lplextempdir;
+    char  *linkdir;
+    char  *bindir;
+    char  *datadir;
+    char  *fixwav_database;
+    char  *dvdisopath;
+    char  *stillpicdir;
+} defaults ;
+
+typedef struct
+{
+    int8_t topmenu;
+    bool nooutput;
+    bool runmkisofs;
+    bool autoplay;
+    bool text;
+    bool silence;
+    bool enable_lexer;
+    bool logfile;
+    bool loghtml;
+    bool logdecode;
+    bool videozone;
+    bool videolinking;
+    bool decode;
+    bool pipe;
+    bool play;
+    bool playlist;
+    bool cga;
+    bool end_pause;
+    bool strict_check;
+    bool maxverbose;
+    bool veryverbose;
+    bool debugging;
+    bool padding;
+    bool padding_continuous;
+    bool lossy_rounding;
+    bool rungrowisofs;
+#ifndef WITHOUT_sox
+    bool sox_enable;
+#endif
+
+    bool fixwav_enable;
+    bool fixwav_virtual_enable;
+    bool fixwav_automatic; /* automatic behaviour */
+    bool fixwav_prepend; /* do not prepend a header */
+    bool fixwav_in_place; /* do not correct in place */
+    bool fixwav_cautious; /* be cautious on overwrites */
+    bool fixwav_interactive; /* interactive */
+    bool fixwav_padding; /* padding */
+    bool fixwav_prune; /* prune */
+    bool fixwav_force;
+    uint32_t textablesize;
+    uint32_t topmenusize;
+    uint32_t *grouptextsize;
+    uint32_t *tracktextsize;
+    uint32_t backgroundmpgsize;
+    uint32_t backgroundpicsize;
+    uint32_t *soundtracksize;
+    uint32_t topmenu_slidesize;
+    uint32_t highlightpicsize;
+    uint32_t selectpicsize;
+    uint32_t imagepicsize;
+    uint32_t backgroundcolorssize;
+    char* fixwav_suffix; /* output suffix for corrected files */
+    char* fixwav_parameters;
+
+    char* xml;
+    char** spu_xml;
+    char* cdrecorddevice;
+    char** aobpath;
+    char* player;
+    char* player_path;
+    FILE *journal;
+    uint16_t access_rights;
+    defaults settings;
+} globalData ;
+
+
 /* Prototypes */
 
 void htmlize(char* logpath);
@@ -280,23 +369,25 @@ char * conc(const char* str1, const char* str2);
 char* join(const char* str1, const char* str2, const char* sep);
 char * filepath(const char* str1, const char* str2);
 void pause_dos_type(void);
-bool clean_directory(char* path);
-void clean_exit(int message);
+bool clean_directory(char* path, globalData*);
+void clean_exit(int message, globalData*);
 void starter(compute_t *timer);
 char* print_time(int);
-int secure_mkdir ( const char *path, mode_t mode);
-bool s_mkdir (const char *path);
-void print_commandline(int argc_count, char * const argv[]);
-void change_directory(const char * filename);
-int copy_file(const char *existing_file, const char *new_file);
-int copy_directory(const char* src, const char* dest, mode_t mode);
-int cat_file(const char *existing_file, const char *new_file);
+int secure_mkdir ( const char *path, mode_t mode, globalData*);
+bool s_mkdir (const char *path, globalData*);
+void print_commandline(int argc_count, char * const argv[], globalData* globals);
+void change_directory(const char * filename, globalData*);
+int copy_file(const char *existing_file, const char *new_file, globalData*);
+
+int copy_directory(const char* src, const char* dest, mode_t mode, globalData* );
+int cat_file(const char *existing_file, const char *new_file, globalData*);
 int copy_file_p(FILE *infile, FILE *outfile, uint32_t position, uint64_t output_size);
 bool file_exists(const char* filepath);
-int stat_dir_files(const char* src);
-int count_dir_files(const char* src);
-bool s_dir_exists(const char* path);
-int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED*, void GCC_UNUSED *, void GCC_UNUSED *), bool recursive, void GCC_UNUSED* arg2, void GCC_UNUSED* arg3);
+int stat_dir_files(const char* src, globalData*);
+int count_dir_files(const char* src, globalData*);
+bool s_dir_exists(const char* path, globalData*);
+int traverse_directory(const char* src, void (*f)(const char GCC_UNUSED*, void GCC_UNUSED *, void GCC_UNUSED *, globalData*),
+                        bool recursive, void GCC_UNUSED* arg2, void GCC_UNUSED* arg3, globalData*);
 int get_endianness(void);
 void hexdump_header(FILE* infile, uint8_t header_size);
 void hexdump_pointer(uint8_t* tab,  size_t tabsize);
@@ -304,34 +395,34 @@ void hex2file(FILE* out, uint8_t* tab,  size_t tabsize);
 void secure_open(const char *path, const char *context, FILE*);
 
 int end_seek(FILE* outfile);
-void parse_wav_header(WaveData* info, WaveHeader* ichunk);
-char* get_command_line(char* args[]);
-char* get_full_command_line(char **args);
-char* get_fullpath_command_line(char* local_variable, const char* symbolic_constant, char** args);
+void parse_wav_header(WaveData* info, WaveHeader* ichunk, globalData*);
+char* get_command_line(char* args[], globalData*);
+char* get_full_command_line(char **args, globalData*);
+char* get_fullpath_command_line(char* local_variable, const char* symbolic_constant, char** args, globalData*);
 // These functions should be inlined hence in a header file
-char* copy_file2dir(const char *existing_file, const char *new_dir);
-void copy_file2dir_rename(const char *existing_file, const char *new_dir, char* newfilename);
-path_t *parse_filepath(const char* filepath);
+char* copy_file2dir(const char *existing_file, const char *new_dir, globalData*);
+void copy_file2dir_rename(const char *existing_file, const char *new_dir, char* newfilename, globalData*);
+path_t *parse_filepath(const char* filepath, globalData*);
 void clean_path(path_t** );
-char* make_absolute(char* filepath);
+char* make_absolute(char* filepath, globalData*);
 char *fn_get_current_dir_name (void);
-int  rmdir_global(char* path);
-int  rmdir_recursive (char *root, char *dirname);
+int  rmdir_global(char* path, globalData*);
+int  rmdir_recursive (char *root, char *dirname, globalData*);
 #if !defined HAVE_curl || HAVE_curl == 1
-int download_file_from_http_server(const char* curlpath, const char* file, const char* server);
-int download_fullpath(const char* curlpath, const char* filename, const char* fullpath);
+int download_file_from_http_server(const char* curlpath, const char* file, const char* server, globalData*);
+int download_fullpath(const char* curlpath, const char* filename, const char* fullpath, globalData*);
 #endif
 void erase_file(const char* path);
 char* quote(const char* path);
 char* win32quote(const char* path);
-int run(const char* application, const char*  args[], const int option, bool fork);
+int run(const char* application, const char*  args[], const int option, bool fork, globalData*);
 uint64_t  parse_file_for_sequence(FILE* fp, uint8_t* tab, size_t sizeoftab);
-void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* fp, FILE* log, bool write, bool);
-void rw_field(uint8_t* tab, int size,const char* label, FILE* fp, FILE* log);
+void test_field(uint8_t* tab__, uint8_t* tab, int size,const char* label, FILE* fp, FILE* log, bool write, bool, globalData*);
+void rw_field(uint8_t* tab, int size,const char* label, FILE* fp, FILE* log, globalData*);
 bool is_file(const char* path);
 bool is_dir(const char* path);
 
-char* filter_dir_files(const char* src, char* filter);
+char* filter_dir_files(const char* src, char* filter, globalData* );
 
 inline static void  uint32_copy(uint8_t* buf, uint32_t x)
 {
@@ -386,7 +477,7 @@ inline static uint16_t uint16_read_reverse(uint8_t* buf)
 
 uint8_t read_info_chunk(uint8_t* pt, uint8_t* chunk);
 
-void fill_pics(const char *filename, void *a, void GCC_UNUSED *unused);
-char* create_binary_path(char* local_variable, const char* symbolic_constant, const char* basename);
+void fill_pics(const char *filename, void *a, void GCC_UNUSED *unused, globalData* globals);
+char* create_binary_path(char* local_variable, const char* symbolic_constant, const char* basename, globalData*);
 
 #endif // C_UTILS_H_INCLUDED
