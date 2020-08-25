@@ -1,35 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<FileVersion major="1" minor="0" />
-	<ActiveTarget name="Debug" />
-	<File name="../libutils/src/include/winport.h" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<ActiveTarget name="Release" />
+	<File name="../libutils/src/winport.c" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="3542" topLine="108" />
-		</Cursor>
-	</File>
-	<File name="../src/audio.c" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="88848" topLine="2490" />
-		</Cursor>
-	</File>
-	<File name="../src/include/audio2.h" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1497" topLine="14" />
-		</Cursor>
-	</File>
-	<File name="../libutils/src/libc_utils.c" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1008" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="../src/dvda-author.c" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="15050" topLine="376" />
-		</Cursor>
-	</File>
-	<File name="../libutils/src/include/c_utils.h" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="10096" topLine="331" />
+			<Cursor1 position="9775" topLine="307" />
 		</Cursor>
 	</File>
 	<File name="../libfixwav/src/checkData.c" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -37,19 +12,44 @@
 			<Cursor1 position="5443" topLine="122" />
 		</Cursor>
 	</File>
+	<File name="../libutils/src/libc_utils.c" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1008" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="../libutils/src/include/winport.h" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3542" topLine="108" />
+		</Cursor>
+	</File>
+	<File name="../src/dvda-author.c" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="15050" topLine="376" />
+		</Cursor>
+	</File>
 	<File name="../src/include/ports.h" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="1948" topLine="10" />
 		</Cursor>
 	</File>
-	<File name="../src/menu.c" open="1" top="1" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="../src/include/audio2.h" open="1" top="1" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="4125" topLine="104" />
+			<Cursor1 position="2142" topLine="38" />
 		</Cursor>
 	</File>
-	<File name="../libutils/src/winport.c" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="../src/audio.c" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="9775" topLine="307" />
+			<Cursor1 position="87192" topLine="2487" />
+		</Cursor>
+	</File>
+	<File name="../src/menu.c" open="0" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="../libutils/src/include/c_utils.h" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="10096" topLine="331" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>

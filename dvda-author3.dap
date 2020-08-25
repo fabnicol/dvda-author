@@ -1,163 +1,98 @@
-## dvda-author configuration file version 09.10
-
-# Important syntactic changes wrt priori versions
-# Use command line switches between brackets: [switch]
-# You may skip any number of blank characters and lines excep when indicated
-# You may comment with character #
-## Do use the = sign for optional arguments, ie:
-
-#[pause=0]
-
-# For arguments or switches, always go to the following line
-
-# using fixwav as a header-checker, cautiously pruning silence at end of files
-# use commas to separate fixwav suboptions as on command line
-
-#[fixwav]	 prune,cautious
-
-#start disc at once
-
-//[autoplay]
-
-# I/O parameters
-## audio input directory
-
-[logrefresh]
-   /home/fab/log
-
-[g]
-       /home/fab/a.wav
-       /home/fab/a.wav
-[g]
-       /home/fab/a.wav
-
-[output]
-       /home/fab/DVD
-
-# Menu authoring
-# suboption syntax is simplified for lexer. Do not skip any line after [screentext]
-# Skip ONE blank line between album text and group text; skip ONE blank line between
-# group text and track text. Skip no lines between tracks.
-# No need for quotes anywhere.
-##
-[screentext]
-      Bach trial
-
-        Groupe 1
-
-                trial track1
-		trial track2
-
-        Groupe 2
-
-                trial track3
-
-#[topmenu]
-#
-#[highlight]
-#  /home/fab/Dev/test/highlight.png
-#
-#[image]
-#  /home/fab/Dev/test/image.png
-#
-#
-#[select]
-#  /home/fab/Dev/test/select.png
-
-
-[norm]
-     ntsc
-
-[background-mpg]
-  /home/fab/Dev/test/background2.mpg
-
-
-#[menustyle]
-#        hierarchical
-[nmenus]
-        1
-
-#[highlightformat]
-#        1
-
-# Slideshow authoring
-# suboption syntax is simplified for lexer. Skip ONE blank line between pictures paths when changing tracks
-# Do not skip white lines between picture paths.
-# No need for quotes. First picture track can start at following line or after skipped lines
-#
-#
-#[stillpics]
-#
-#          /home/fab/A.jpg
-#          /home/fab/B.jpg
-#          /home/fab/C.jpg
-#          /home/fab/A.jpg
-#
-#          /home/fab/A.jpg
-#          /home/fab/B.jpg
-#          /home/fab/C.jpg
-#
-#          /home/fab/A.jpg
-#
-## Picture options
-## Skip ONE blank line between picture options. Rank should be mentioned, even if consecutive.
-## First picture options can start at following line or after any number of white lines.
-#
-#[stilloptions]
-#
-#               rank=0
-#               start=1
-#               starteffect=fade
-#               lag=5
-#               endeffect=dissolve
-#
-#               rank=1
-#               start=15
-#               starteffect=fade
-#               lag=5
-#               endeffect=fade
-#
-#               rank=2
-#               start=25
-#               starteffect=fade
-#               lag=5
-#
-#               rank=3
-#               start=40
-#               starteffect=fade
-#
-#               rank=4
-#               start=1
-#               starteffect=fade
-#
-#               rank=5
-#               start=20
-#               starteffect=fade
-#
-#               rank=6
-#               start=1
-#               starteffect=fade
-#
-#               rank=7
-#               start=20
-#               starteffect=fade
-#
-#[background-colors]
-#  100,50,20
-
-
-[cdrecord]
-
-[veryverbose]
-
-
-[tempdir]
-  /home/fab/tempdir3
-
-[datadir]
- /home/fab/Dev/dvda-author-10.06
-
-[bindir]
-  /usr/bin
-
-## end of config file
+<?xml version="1.0"?>
+<project>
+ <system>
+  <switch label="startsector">
+    <value></value>
+  </switch>
+  <switch label="sox">
+    <value>1</value>
+  </switch>
+  <switch label="log">
+    <value>0</value>
+  </switch>
+  <switch label="runMkisofs">
+    <value>1</value>
+  </switch>
+  <switch label="mkisofsPath">
+    <value>/home/fab/dvd.iso</value>
+  </switch>
+  <switch label="burnDisc">
+    <value>1</value>
+  </switch>
+  <switch label="dvdwriterPath">
+    <value>10,0,0</value>
+  </switch>
+  <switch label="debug">
+    <value>0</value>
+  </switch>
+ </system>
+ <data>
+  <switch label="videodir">
+    <value></value>
+  </switch>
+  <switch label="videoTitleRank">
+    <value>0</value>
+  </switch>
+  <switch label="sourceDir">
+    <value></value>
+  </switch>
+  <switch label="group 1">
+    <file>/home/fab/Dev/dvda-author/Docs/a2_16_44.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a2_16_48.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a2_16_88.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a2_16_96.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a2_16_176.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a2_16_192.wav</file>
+  </switch>
+  <switch label="group 2">
+    <file>/home/fab/Dev/dvda-author/Docs/a2_24_44.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a2_24_48.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a2_24_88.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a2_24_96.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a2_24_176.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a2_24_192.wav</file>
+  </switch>
+  <switch label="group 3">
+    <file>/home/fab/Dev/dvda-author/Docs/a3_16_44.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a3_16_48.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a3_16_88.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a3_16_96.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a3_24_44.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a3_24_48.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a3_24_88.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a3_24_96.wav</file>
+  </switch>
+  <switch label="group 4">
+    <file>/home/fab/Dev/dvda-author/Docs/a4_16_44.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a4_16_48.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a4_16_88.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a4_16_96.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a4_24_44.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a4_24_48.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a4_24_88.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a4_24_96.wav</file>
+  </switch>
+  <switch label="group 5">
+    <file>/home/fab/Dev/dvda-author/Docs/a5_16_44.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a5_16_48.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a5_16_88.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a5_16_96.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a5_24_48.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a5_24_44.wav</file>
+  </switch>
+  <switch label="group 6">
+    <file>/home/fab/Dev/dvda-author/Docs/a6_16_44.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a6_16_48.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a6_16_88.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a6_16_96.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a6_24_44.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a6_24_48.wav</file>
+  </switch>
+  <switch label="parent->recentFiles[0]">
+    <value>/home/fab/Téléchargements/gnu-linux/dvda-author3.dvp</value>
+  </switch>
+  <switch label="targetDir">
+    <value>/home/fab/output</value>
+  </switch>
+ </data>
+</project>
