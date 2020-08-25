@@ -71,8 +71,8 @@ class lpcmPGextractor;
 #ifdef dvdread_udflist
 #include "../patch/udflist.h"
 #ifdef lgzip_support
-const char * udfZip( lpcmPGextractor &dvd, bool verbose=true, const char * outPath = nullptr );
-int udfUnzip( const char *fName, const char * outPath = nullptr );
+const char * udfZip( lpcmPGextractor &dvd, bool verbose=true, const char * outPath = NULL );
+int udfUnzip( const char *fName, const char * outPath = NULL );
 #endif
 #endif
 #ifndef lgzip_support
@@ -96,24 +96,10 @@ class lpcm_video_ts
 public:
 	enum { opened = 0x01 };
 
-    fs::path fName = "";
-    int state;
-    int tv = 0;
-    int titleset = 0;
-    int lpcm_id = 0;
-    int audioStream = 0;
-    int pgc = 0;
-    int pg = 0;
-    int pgcCell = 0;
-    int c = 0;
-	int menuFmt = 0;
-	int numTitlesets = 0;
-	int numAudioStreams = 0;
-	int numCells = 0;
-	int numPGCs = 0;
-	int numPGs = 0;
-	int numPGCcells = 0;
-  	int audioframe = 0;
+    fs::path fName;
+    int state, tv, titleset, lpcm_id, audioStream, pgc, pg, pgcCell, c;
+	int menuFmt, numTitlesets, numAudioStreams, numCells, numPGCs, numPGs, numPGCcells;
+  	int audioframe;
 
   	dvd_reader_t *libdvdReader;
   	bool verbose, isImage;
@@ -127,12 +113,10 @@ public:
 	uint32_t idNow;
 	string nameNow, label;
 
-	lpcm_video_ts(const char * VIDEO_TS = nullptr,
-	              bool v = true)
-     	: state {0}, libdvdReader {nullptr}, verbose {v}, isImage {false}
-		{
-		  if (VIDEO_TS) open(VIDEO_TS);
-		}
+	lpcm_video_ts( const char * VIDEO_TS=NULL, bool v=true )
+			: state(0), libdvdReader(NULL), verbose(v), isImage(false)
+		{ if( VIDEO_TS ) open( VIDEO_TS ); }
+	~lpcm_video_ts() { close(); }
 
 	bool isOpen() { return state & opened; }
 	virtual int open( const char * VIDEO_TS, bool fatal=true );
@@ -140,7 +124,7 @@ public:
 	{
 		if( libdvdReader )
 			DVDClose( libdvdReader );
-		libdvdReader = nullptr;
+		libdvdReader = NULL;
 		state = 0;
 	}
 
@@ -164,13 +148,6 @@ public:
 	virtual int udfItem( const char *fname, uint16_t ftype, uint32_t lb, uint32_t len );
 	virtual void udfPrint() {}
 #endif
-
-virtual
-	~lpcm_video_ts()
-	 {
-	   close();
-	 }
-
 };
 
 
@@ -178,7 +155,7 @@ virtual
 class lpcmPGtraverser : public lpcm_video_ts
 {
 public:
-	lpcmPGtraverser( const char * VIDEO_TS=nullptr, bool v=true ) : lpcm_video_ts( VIDEO_TS, v ) {}
+	lpcmPGtraverser( const char * VIDEO_TS=NULL, bool v=true ) : lpcm_video_ts( VIDEO_TS, v ) {}
 	virtual int getCell( bool searchBeyond = true );
 };
 
@@ -217,7 +194,7 @@ public:
 	vector<audioTableData> audioTables;
 
 	lpcmPGextractor( vector<lpcmFile> *lFiles, vector<infoFile> *iFiles, lplexJob *plexJob, bool travel=false, bool v=true ) :
-		Lfiles( lFiles ), infofiles( iFiles ), job( plexJob ), audioCells(nullptr),
+		Lfiles( lFiles ), infofiles( iFiles ), job( plexJob ), audioCells(NULL),
 		readIndex(-1), writeIndex(-1), pgcIndex(-1)
 
 	{
@@ -242,7 +219,7 @@ public:
 	virtual int configureCell( int context );
 	virtual int getCell( bool searchBeyond = true );
 
-	virtual int open( const char * VIDEO_TS = nullptr, bool fatal=true )
+	virtual int open( const char * VIDEO_TS = NULL, bool fatal=true )
 	{
 //      if( ! ( state & opened ) )
 //      {
@@ -264,7 +241,7 @@ public:
 #ifdef dvdread_udflist
 	virtual int udfItem( const char *fname, uint16_t ftype, uint32_t lb, uint32_t len );
 	virtual void udfPrint();
-	void udfCopyInfoFiles( const char * path=nullptr );
+	void udfCopyInfoFiles( const char * path=NULL );
 	uint32_t vts_start_sector( int titleset );
 #endif
 

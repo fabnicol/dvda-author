@@ -44,6 +44,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <time.h>
 #include <ctype.h>
 #include <sys/stat.h>
+#include <limits.h>
 
 #ifdef __unix__
  #include <sys/wait.h>
@@ -164,78 +165,23 @@ return (char*) Buffer;
 return "";
 }
 
-char* make_absolute(char* filepath, globalData* globals)
+char* make_absolute(char* filepath)
 {
-    path_t* path_info = parse_filepath(filepath, globals);
-    char buffer[2*CHAR_BUFSIZ] = {0};
 
-    for (int r = 0; r < path_info->separators; ++r)
-    {
-        if (path_info->pwd_position[r])
-        {
-            if (r == 0)
-            {
-                char* current_dir = fn_get_current_dir_name();
+    char* buf = (char*) calloc(MAX_PATH, sizeof(char));
+    if (buf == NULL) return NULL;
+    #ifdef _WIN32
 
-                if (current_dir == NULL || current_dir[0] == '\0') return "";
-                int u = 0;
-                for(char c; (c = current_dir[u]) != '\0'; ++u)  buffer[u] = c;
+            GetFullPathName (filepath,
+                         MAX_PATH,
+                         buf,
+                         NULL);
 
-                buffer[u] = SEPARATOR[0];
+     #else
+           realpath(strdup(optarg), buf);
 
-                u = 0;
-                for(char c; (c = filepath[u]) != '\0'; ++u)     buffer[u] = c;
-                clean_path(&path_info);
-                free(current_dir);
-                return (make_absolute(buffer, globals));
-
-            }
-            else
-            {
-                int u = 0;
-                int counter = 0;
-                while(counter < r)
-                {
-                    buffer[u] = filepath[u];
-                    if (filepath[u] == SEPARATOR[0]) ++counter;
-                    ++u;
-                }
-
-                buffer[u] =  SEPARATOR[0];
-                ++u;
-                char c;
-                for(int j = u; (c = filepath[u + 2]) != '\0'; ++j)  buffer[j] = c;
-                clean_path(&path_info);
-                return (make_absolute(buffer, globals));
-            }
-        }
-        else
-        if (path_info->cdup_position[r])
-        {
-
-            int u = 0;
-            int counter = 0;
-
-            while(counter < r)
-            {
-                if (counter < r - 1) buffer[u] = filepath[u];
-                if (filepath[u] == SEPARATOR[0]) ++counter;
-                ++u;
-            }
-
-            buffer[u] =  SEPARATOR[0];
-            ++u;
-
-            char c;
-            for(int j = u; (c = filepath[u]) != '\0'; ++j)     buffer[j] = c;
-            clean_path(&path_info);
-            return (make_absolute(buffer, globals));
-        }
-    }
-
-    clean_path(&path_info);
-    return(strdup(buffer));
-
+     #endif
+     return (char*) buf;
     // it is up to the user to deallocate filepath string input
 }
 
@@ -2464,3 +2410,17 @@ char* create_binary_path(char* local_variable, const char* symbolic_constant, co
 
 }
 
+char* get_current_directory (globalData* globals)
+{
+   char* cwd = (char*) calloc(MAX_PATH, sizeof(char));
+   getcwd(cwd, MAX_PATH);
+   if ((cwd != NULL))
+    {
+       if (globals->debugging)
+        fprintf(stderr, "Current working dir: %s\n", cwd);
+       return cwd;
+    }
+
+     perror("getcwd() error");
+     return NULL;
+}

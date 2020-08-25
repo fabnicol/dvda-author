@@ -40,7 +40,7 @@ int author( dvdLayout &layout )
 	uint16_t uDataLen = 0;
 	uint8_t userData[512];
 	uint32_t vFrames = 0;
-	ofstream *m2vFile = nullptr;
+	ofstream *m2vFile = NULL;
 
 
 #ifndef lgzip_support
@@ -86,18 +86,17 @@ int author( dvdLayout &layout )
 	stopWatch.Start();
 
 	dvdauthorXml xml( (job.tempPath / job.name).string(),
-	                  job.tv,
-	                  job.group + 1,
-	                  job.params & dvdStyler,
-	                  job.prepare < mpegf );
+		job.tv, job.group + 1, job.params & dvdStyler, job.prepare < mpegf );
 
-	xml.write( dvdauthorXml::setDest,
-               job.dvdPath.string(),
-		       jpegs[ Lfiles[0].jpgIndex ].ar == dvdJpeg::_16x9 ? true : false );
+	xml.write( dvdauthorXml::setDest, job.dvdPath.string(),
+		jpegs[ Lfiles[0].jpgIndex ].ar == dvdJpeg::_16x9 ? true : false );
 
 	while( layout.getNext() )
 	{
-		++valid_audio;
+#ifndef lplex_console
+		wxYieldIfNeeded();
+#endif
+		valid_audio++;
 		multichapter |= ( job.now & appending );
 
 		if( job.prepare <= lpcmf )
@@ -114,20 +113,16 @@ int author( dvdLayout &layout )
 				xml.write( dvdauthorXml::closeVob );
 
 				if( Lfiles[i].type & lpcmFile::titleStart )
-                {
-           			xml.write( dvdauthorXml::addTitle,
-                               job.dvdPath.string(),
-						       jpegs[ Lfiles[i].jpgIndex ].ar == dvdJpeg::_16x9 ? true : false );
-                }
+					xml.write( dvdauthorXml::addTitle, job.dvdPath.string(),
+						jpegs[ Lfiles[i].jpgIndex ].ar == dvdJpeg::_16x9 ? true : false );
 			}
-
 			xml.write( dvdauthorXml::openVob, layout.nameNow + ".mpg" );
+
 		}
 
 
         txt.clear();
         txt = STAT_TAG + Lfiles[i].fName.filename().string();
-
 		if( jpegs.size() > 1 )
 		{
             txt += string(" + ") + jpegs[ Lfiles[i].jpgIndex ].fName.filename().string();
@@ -141,12 +136,11 @@ int author( dvdLayout &layout )
 				uDataLen = writeUserData( &Lfiles[m2vUpdate], userData );
 				m2vFile->write( (char*)userData, uDataLen );
 			}
-
 			uDataLen = writeUserData( &Lfiles[i], userData );
 		}
 
 		m2vUpdate = job.params & md5 ?
-			        Lfiles[i].type & lpcmFile::readComplete ? -1 : i : -1;
+			Lfiles[i].type & lpcmFile::readComplete ? -1 : i : -1;
 
 		BLIP( " ...creating video " );
 		cerr << "m2v" << " " << layout.nameNow << ".m2v" << endl;
@@ -163,9 +157,8 @@ int author( dvdLayout &layout )
                       ! (Lfiles[i].trim.type & jobs::continuous),
                       ! (Lfiles[i].trim.type & jobs::continuous));
 
-		xml.write( dvdauthorXml::addChapter,
-                   job.now & appending ?
-			       dvdauthorXml::timestampFractional( vFrames, job.tv == NTSC, .001 ) : "0" );
+		xml.write( dvdauthorXml::addChapter, job.now & appending ?
+			dvdauthorXml::timestampFractional( vFrames, job.tv == NTSC, .001 ) : "0" );
 
 		vFrames += Lfiles[i].videoFrames;
 
@@ -318,7 +311,7 @@ int author( dvdLayout &layout )
 
 	if( job.prepare >= vobf )
 	{
-		int *map = nullptr;
+		int *map = NULL;
 		if( menufiles.size() && ( map = mapMenus() ) )
 		{
             SCRN( STAT_TAG  "Copying custom menu files... \n" )
@@ -581,7 +574,7 @@ continue;
 			uint64_t unsent;
 			byteRange audio;
 			PES_packet::header *PS1;
-			const PES_packet::LPCM_header *LPCM;
+			PES_packet::LPCM_header *LPCM;
 			uint8_t mode = ( job.format == lpcmf ? 0 : PES_packet::swap ) | PES_packet::adopt;
 
 			for ( s=0; s < blockCt; s++ )
@@ -1070,7 +1063,7 @@ int _tag0 = 0;
 int mpeg2encProgress( const char *msg, bool echo )
 {
 	uint16_t pct;
-	char *pos = nullptr;
+	char *pos = NULL;
 	if(   msg[1] == '*'
 		&& msg[2] == 'E'
 		&& msg[3] == 'R' )
@@ -1414,7 +1407,7 @@ int* mapMenus()
 {
 	vector<string> xobs;
 	if( ! menufiles.size() )
-		return nullptr;
+		return NULL;
 
 	int err = 0;
     const char* VIDEO_TS = (job.dvdPath / "VIDEO_TS").string().c_str();

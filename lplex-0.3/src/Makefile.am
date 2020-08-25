@@ -8,7 +8,7 @@ AM_CFLAGS = \
 
 AM_CXXFLAGS = \
 	$(LPLEX_CPPFLAGS) $(LIBFLAC_CFLAGS) $(LIBFLACPP_CFLAGS) \
-		-w -Wall -std=c++17 -s
+		-w -Wall -std=c++17 -s -DMAX_NB_AGENTS
 
 bin_PROGRAMS = lplex
 

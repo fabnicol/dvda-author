@@ -511,7 +511,7 @@ int launch_manager(command_t *command, globalData *globals)
         uint64_t size;
         char* mkisofs=NULL;
         errno=0;
-        if ((mkisofs=create_binary_path(mkisofs, MKISOFS, SEPARATOR MKISOFS_BASENAME EXE, globals)))
+        if ((mkisofs=create_binary_path(mkisofs, MKISOFS, SEPARATOR MKISOFS_BASENAME, globals)))
         {
            const char* args[]={mkisofs, "-dvd-audio", "-v", "-o", dvdisopath, globals->settings.outdir, NULL};
            foutput("%s%s%s\n", INF "Launching: ", mkisofs, " to create image");
@@ -565,7 +565,7 @@ int launch_manager(command_t *command, globalData *globals)
             errno=0;
             char* cdrecord=NULL;
 
-            if ((cdrecord=create_binary_path(cdrecord, CDRECORD, SEPARATOR CDRECORD_BASENAME EXE, globals)))
+            if ((cdrecord=create_binary_path(cdrecord, CDRECORD, SEPARATOR CDRECORD_BASENAME, globals)))
             {
                 char *args0[]={cdrecord, verbosity,"blank=fast", "-eject","dev=", globals->cdrecorddevice, dvdisoinput, "-gracetime=", "1",  NULL};
                 char *args1[]={cdrecord, verbosity,"blank=fast", "-eject",dvdisoinput, "-gracetime=", "1", NULL};

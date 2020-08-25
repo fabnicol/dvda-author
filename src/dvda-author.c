@@ -142,26 +142,20 @@ int main(int argc,  char* const argv[])
     char *EXECDIR = calloc(MAX(currentdirlength, 20) + 4 + 25, sizeof(char));  // /usr/local/bin or /usr/bin under *NIX, "currentdir" directory/bin otherwise (win32...)
     // 4 for "/bin and be liberal and allow 25 more characters for the executable name.
 
-#ifdef BINDIR
+#if defined BINDIR && ! defined LOCAL_BUILD
     memcpy(EXECDIR, BINDIR, strlen(BINDIR));
 #else
-    sprintf(EXECDIR, "%s/bin", currentdir);
+    sprintf(EXECDIR, "%s" SEPARATOR "bin", currentdir);
 #endif
 
     char *DATADIR=strdup(currentdir);
     char ***SNDT=calloc(1, sizeof(char**));
     SNDT[0]=calloc(1, sizeof(char*));
     SNDT[0][0]=strdup(DEFAULT_SOUNDTRACK);
-//    IMPIC[0]=calloc(currentdirlength+30, sizeof(char));
-//    HLPIC[0]=calloc(currentdirlength+30, sizeof(char));
-//    SLPIC[0]=calloc(currentdirlength+30, sizeof(char));
-
 
     sprintf(TEMPDIRROOT, "%s%s%s", currentdir,(currentdir[0] == 0)? "" : SEPARATOR , TEMPDIR_SUBFOLDER_PREFIX DVDA_AUTHOR_BASENAME);
-
     sprintf(TEMPDIR, "%s"SEPARATOR"%s", TEMPDIRROOT, "temp");
     sprintf(LPLEXTEMPDIR, "%s"SEPARATOR"%s", TEMPDIRROOT, "temp.lplex");
-
 
     // Global settings are hard-code set by default as follows:
     errno=0;
@@ -175,11 +169,7 @@ int main(int argc,  char* const argv[])
         .outdir = NULL,
         .outfile = NULL,
         .lplexoutdir = NULL,
-    #ifdef __WIN32__
-         .workdir = strdup(DEFAULT_WORKDIR),// working directory: under Windows, c:\ if not defined at compile time, otherwise 'currentdir' environment variable
-    #else
-         .workdir = strdup(currentdir),
-    #endif
+        .workdir = strdup(currentdir),
         .tempdir = NULL,
         .lplextempdir = NULL,
         .linkdir = NULL,
@@ -262,8 +252,8 @@ int main(int argc,  char* const argv[])
         /*spumux xml*/      NULL,
         /*cdrecord dev*/    NULL,
         /* aob path for decoding */ NULL,
-       /*player*/            strdup(PLAYER),  // pipe to ffplay
-        /*player-path*/            strdup(PLAYER_PATH),  // full path to player
+        /*player*/            strdup(PLAYER),  // pipe to ffplay
+        /*player-path*/     strdup(PLAYER_PATH),  // full path to player
         /*journal (log)*/   NULL, //(FILE*)
         /*access rights*/   DEFAULT_ACCESS_RIGHTS,
         /* it is necessary to use strdup as these settings may be overridden dynamically */
@@ -271,6 +261,7 @@ int main(int argc,  char* const argv[])
 
         def
     };
+
 
     pic     img0=
     {
@@ -335,7 +326,6 @@ int main(int argc,  char* const argv[])
 
     };
 
-
     if (! globals.settings.tempdir) globals.settings.tempdir=strdup(TEMPDIR);
     if (! globals.settings.lplextempdir) globals.settings.lplextempdir=LPLEXTEMPDIR;
     if (! globals.settings.stillpicdir) globals.settings.stillpicdir=strdup(globals.settings.tempdir);
@@ -344,6 +334,13 @@ int main(int argc,  char* const argv[])
     allocate_paths(&globals.settings.indir, "audio", s, &globals);
     allocate_paths(&globals.settings.outdir, "output", s, &globals);
     allocate_paths(&globals.settings.lplexoutdir, "output", s, &globals);
+
+#ifdef DEBUG
+    fprintf(stderr, "globals.settings.tempdir  %s\nglobals.settings.lplextempdir  %s\nglobals.settings.stillpicdir  %s\nglobals.settings.indir  %s\nglobals.settings.outdir  %s\nglobals.settings.lplexoutdir  %s\ncurrentdir  %s\nglobals.settings.workdir  %s\n",
+            globals.settings.tempdir,globals.settings.lplextempdir,globals.settings.stillpicdir,globals.settings.indir,
+            globals.settings.outdir,globals.settings.lplexoutdir,currentdir, globals.settings.workdir);
+
+#endif
 
     // Null arg is no longer supported, yet...
 

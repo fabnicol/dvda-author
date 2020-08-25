@@ -41,7 +41,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "version.h"
 #include "commonvars.h"
 
-#if defined __WIN32__ || defined _WIN32 || defined __WIN32 || defined __WIN64 || defined _WIN64
+#if defined _WIN32
 
 #  include <io.h>
 #  define SEPARATOR "\\"
@@ -404,7 +404,7 @@ char* copy_file2dir(const char *existing_file, const char *new_dir, globalData*)
 void copy_file2dir_rename(const char *existing_file, const char *new_dir, char* newfilename, globalData*);
 path_t *parse_filepath(const char* filepath, globalData*);
 void clean_path(path_t** );
-char* make_absolute(char* filepath, globalData*);
+char* make_absolute(char* filepath);
 char *fn_get_current_dir_name (void);
 int  rmdir_global(char* path, globalData*);
 int  rmdir_recursive (char *root, char *dirname, globalData*);
@@ -479,5 +479,5 @@ uint8_t read_info_chunk(uint8_t* pt, uint8_t* chunk);
 
 void fill_pics(const char *filename, void *a, void GCC_UNUSED *unused, globalData* globals);
 char* create_binary_path(char* local_variable, const char* symbolic_constant, const char* basename, globalData*);
-
+char* get_current_directory (globalData* globals);
 #endif // C_UTILS_H_INCLUDED

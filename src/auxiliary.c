@@ -89,7 +89,7 @@ printf("%s","  , --maxverbose         Like -t with maximum verbosity on audio bu
 printf("%s","    --no-output          Does not produce any file structure except for --fixwav." J "Computations will be performed.\n\n\n\n");
 printf("%s","-P, --pause              Insert a final pause before exiting.\n\n");
 printf("%s","-P0, --pause=0           Suppress a final pause before exiting" J "if specified in configuration file.\n\n");
-printf("%s","-l, --log  path          Ouput a log to filepath." J "Argument must be supplied.\n\n");
+printf("%s","-l, --log  path          Ouput a log to (absolute or relative) filepath." J "Argument must be supplied.\n\n");
 printf("%s","-L, --logrefresh path    Same as -l but prior log will be erased on launching again.\n\n");
 printf("%s","    --loghtml            Transform the log into HTML format, with colorized messages, adjacent to log with extension .html added.\n\n");
 printf("%s","-k, --text               Generates text table in IFO files" J "Under development, implemented for 1-group discs." J "Use file information as arguments separated by commas.\n\n");
@@ -107,25 +107,25 @@ printf("%s", J"SoX-supported formats with -S enabled\n");
 printf("%s", J"except for lossy formats.\n");
 #endif
 printf("%s","    --project [file]     Launches a dvda-author project." J "The project file should have the same syntax as dvda-author.conf [see file HOW_TO.conf]" J "By default, launches dvda-author.dap in the current directory.\n\n");
-printf("%s","-i, --input directory [dir]   Input directory with audio files." J "Each subdirectory is a group.\n\n");
-printf("%s","-o, --output directory  [dir]  Output directory.\n\n");
+printf("%s","-i, --input directory [dir]   Absolute or relative path to input directory with audio files." J "Each subdirectory is a group.\n\n");
+printf("%s","-o, --output directory  [dir]  Absolute or relative path to output directory.\n\n");
 printf("%s","-x, --extract {disc or directory} Extract DVD-Audio to directory -o." J "Groups are labelled g1, g2 in output directory.\n\n");
 printf("%s","    --xlist 1:1,...,t1n-2:1,...,t2n-...-N:1,...,tNn  Optional hyphen-separated list of groups to be extracted" J "may be added with -x." J "Tracks to be extracted in a given group are indicated after a colon." J "Tracks to be extracted may be listed separated by commas after colon." J "If not specified, all the group will be extracted." J "Contiguous tracks may be represented by `...` between commas" J "e.g. 2-3-4:1,2,...,7,9 means: extract groups 2 and 3 entirely and tracks 2 to 7 and 9 for in group 4.\n\n");
 printf("%s","    --aob-extract {directory or AOB[,AOB...]}    Direct AOB file audio content extraction. " J "Unlike -x, this option does not use .IFO files. Use this option in combination with -o. No wav header is generated." J "Several AOB files may be listed, separated by commas." J "If a directory is used, it must immediately contain an AUDIO_TS subdirectory to be read. This includes disc player roots.\n\n");
 printf("%s","    --sync {directory or AOB[,AOB...]}        Like --aob-extract but output is to stdout for piping to third-party software." J "Only audio content is directed to stdout." J "Extraction is slowed down to standard playback levels after extracting the equivalent of 0.5 second playback.\n\n");
 printf("%s","    --play {directory or AOB[,AOB...]}        Play audio content using ffplay (https://ffmpeg.org)." J "Main process will exit automatically some time after playback is finished." J "Limitations: currently not available under Windows. Each group in the disc must be either MLP or have same audio characteristics throughout.\n\n");
 printf("%s","    --player [ffplay | vlc]   Choose a player for play-back (with --play)." J "Currently only ffplay (default) and vlc (default for Windows) are supported." J "ffplay may have issues (Sept. 2019) with some mlp files under Windows." J "Prior installation of VLC is requested for \n\n");
-printf("%s","    --player-path [path]  Full path with filename and extension to the player, if --player=vlc is used" J "and the path is not the standard install path (under Program Files for Windows or /usr/bin otherwise)\n\n");
+printf("%s","    --player-path [path]  Absolute or relative path with filename and extension to the player, if --player=vlc is used" J "and the path is not the standard install path (under Program Files for Windows or /usr/bin otherwise)\n\n");
 printf("%s","    --aob2wav {directory or AOB[,AOB...]}        Like --aob-extract but a wav header is prepended to audio content.\n\n");
 printf("%s","    --forensic           Use this mode with --aob-extract, --aob2wav or -x if IFO files are missing or mangled, or AOB files" J "have been partially restored using recovery tools.\n\n");
 printf("%s","    --strict             Use this option with --aob-extract, --aob2wav or -x to stop extraction in case of severe header issues. May be useful in combination with --forensic to manually repair header issues.\n\n");
 printf("%s","    --decode             Use this option with --extract or --aob2wav to decode MLP audio to the WAV format." J "This option is based onthe ffmpeg decoder and is subject to the same legal restrictions as those applying to the MLP ffmpeg decoder.\n\n");
 printf("%s","    --log-decode [AOB]   Decode AOB file and log MPEG specifics. Should be used only in conjunction with --outfile\n\n");
-printf("%s","    --outfile [file]     Path to the log generated by --log-decode. Caution : should be alone in its own directory.\n\n");
+printf("%s","    --outfile [file]     Absolute or relative path to the log generated by --log-decode. Caution : should be alone in its own directory.\n\n");
 printf("%s","-p, --startsector NNN    Specify the number of the first sector" J "of the AUDIO_PP.IFO file in the output of mkisofs.\n\n");
 printf("%s","                         If NNN=0, falling back on 281 (default).\n" J "Without -p start sector will be computed automatically.\n\n");
-printf("%s","-g                       You may specify up to 9 groups of tracks." J "Minimum: one group.\n");
-printf("%s","                         Enter full path to files if input directory is not set" J "by [-i].\n\n");
+printf("%s","-g                       Start of a group. You may specify up to 9 groups of tracks." J "Minimum: one group.\n");
+printf("%s","                         Enter full or relative path to files if input directory is not set" J "by [-i].\n\n");
 printf("%s","-z,                      BROKEN. Separate two consecutive titles when files have same audio" J "characteritics within a group.(\n");
 printf("%s","-Z, --playlist           You may specify up to 9 group copies." J "Total number of groups and copy groups should not exceed 9.\n");
 printf("%s","-n, --no-videozone       Do not generate an empty VIDEO_TS directory.\n\n");
@@ -201,8 +201,8 @@ printf("%s","Menu authoring\n\n");
 
 printf("%s","-m, --topmenu(=mpgfiles) Generates top menu from comma-separated list of mpgfiles." J "Without argument, automatic menu generation is launched.\n\n");
 printf("%s","-u, --duration hh:mm:ss Duration of top menu file, if provided." J "It is mandatory when --topmenu has an argument file.\n\n");
-printf("%s","-M, --xml filepath       Generates dvdauthor xml project" J "to filepath.\n\n");
-printf("%s","-H, --spuxml filepath    Generates spumux xml project" J "to filepath.\n\n");
+printf("%s","-M, --xml filepath       Generates dvdauthor xml project" J "to (absolute or relative) filepath.\n\n");
+printf("%s","-H, --spuxml filepath    Generates spumux xml project" J "to (absolute or relative) filepath.\n\n");
 printf("%s","-G, --image file         Menu Background image for customized menu authoring.\n\n");
 printf("%s","-E, --highlight file     Menu Highlight image for customized menu authoring.\n\n");
 printf("%s","-e, --select  file       Menu Select image " J "image that appears on pressing Enter with remote control\n");
@@ -247,7 +247,7 @@ printf("%s","DVD-VIDEO zone authoring\n\n");
 printf("%s","    --lplex-output dir   Output directory for lplex" J "Default is same as specified -o value" J "or default output directory.\n\n");
 printf("%s","    --dvdv-tracks ...    Add tracks to be added to DVD-VIDEO zone using lplex:" J "track11,...,trackn1:track12,...,trackn2:..." J "for trackij the ith track of video titleset j.\n\n");
 printf("%s","    --dvdv-slides ...    Add slides to be added to DVD-VIDEO zone using lplex:" J "slide11,...,sliden1:slide12,...,slide2:..." J "for slideij the ith slide of video titleset j." J "Each track should have a corresponding slide." J "Add two commas in a row for repeating previous slide." J "There can be a maximum of 1 slide per track.\n\n");
-printf("%s","-V, --videodir directory Path to VIDEO_TS input directory\n\n");
+printf("%s","-V, --videodir directory Absolute or relative Path to VIDEO_TS input directory\n\n");
 printf("%s","-T, --videolink rank     Rank of video titleset linked to in video zone" J "(XX in VTS_XX_0.IFO)." J "In this case the path to the VIDEO_TS linked to" J "must be indicated.\n\n");
 printf("%s","    --dvdv-import        Create DVD-VIDEO zone from DVD-AUDIO zone." J "Import DVD-Video standard compliant files (16-24 bit/48-96 kHz" J "from DVD-AUDIO to DVD-VIDEO.\n\n");
 printf("%s","    --mirror             Like --dvdv-import but resample audio tracks" J "if they are not DVD-Video compliant (.wav files only)\n\n");
@@ -262,11 +262,11 @@ printf("%s","Software configuration\n\n");
 printf("%s","-D, --tempdir directory  Temporary directory for DVD-Audio files (dvda-author)." J "Optional. CAUTION: tempdir will be erased unless --no-refresh-tempdir is used.\n\n");
 printf("%s","-9, --datadir directory  Data directory with subdirectory `menu' containing at least default backgrounds for menus. Optional, only to be used when menus are created.\n\n");
 printf("%s","  , --lplex-tempdir directory  Temporary directory for DVD-Video files (lplex)" J "Optional.\n\n");
-printf("%s","-X, --workdir directory  Working directory: current directory in command line relative paths." J "By default, the current directory." J "With Code::Blocks and similar IDE, you may have to specify your root package directory as argument to --workdir.\n\n");
+printf("%s","-X, --workdir directory  Absolute or relative path to working directory: current directory in command line relative paths." J "By default, the current directory." J "With Code::Blocks and similar IDE, you may have to specify your root package directory as argument to --workdir.\n\n");
 printf("%s","    --no-refresh-tempdir Do not erase and recreate the DVD-Audio temporary directory on launch.\n\n");
 printf("%s","    --no-refresh-outdir  Do not erase and recreate the output directory on launch.\n\n");
 #if !defined HAVE_core_BUILD || !HAVE_core_BUILD
-printf("%s","    --bindir path        Path to auxiliary binaries.\n\n");
+printf("%s","    --bindir path        Absolute or relative path to auxiliary binaries.\n\n");
 
 printf("%s","Sub-options\n\n");
 
@@ -338,9 +338,6 @@ printf("%s","\n\nNote: for optional arguments noted (=...) above, usage is eithe
 printf("%s","\n\nThere must be a maximum of 9 audio groups.\n\n");
 printf("%s","Each subdirectory of an audio input directory will contain titles\n\nfor a separate audio group.\n\n\
 A number between 1 and 9 must be included as the second character of the\n\nsubdirectory relative name.\n\n");
-printf("%s", "Full Input/Output paths must be specified unless default settings are set.\n\n");
-printf("\n%s", "By default, defaults are set in /full path to dvda-author folder/defaults\n\n");
-
 
 printf("%s", "Examples:\n");
 printf("%s", "\n\

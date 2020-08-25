@@ -2,11 +2,9 @@
 FIX BUGS:
 
 
-
 Short term
 ----------
 
-fix silent segfault at very end of -x
 packaging: include deps as debian packages for mjpegtools and magick at least
 (nagging magick config issue)
 
@@ -25,7 +23,6 @@ Long term
 -add multi-vid
 
 link groups
--add album text and group text to text table
 -add automatic import of mono or stereo wavs for multichannel authoring.
 
 

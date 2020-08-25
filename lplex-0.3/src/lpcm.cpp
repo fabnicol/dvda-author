@@ -257,115 +257,49 @@ void PES_packet::displayFlags(PES_packet::LPCM_header* h)
 //
 //    Returns 1
 // ----------------------------------------------------------------------------
-//
 
-int waveHeader::tag(const fs::path &path, const FLAC__StreamMetadata& meta )
+
+int waveHeader::tag( ofstream& out, FLAC__StreamMetadata *meta )
 {
-//  {'R','I','F','F',    //  0 - ChunkID
-//    0,0,0,0,            //  4 - chunkSize (filesize - 8 - padbyte)
-//    'W','A','V','E',    //  8 - format
-//    'f','m','t',' ',    // 12 - subChunkID
-//    40,0,0,0,           // 16 - subChunkSize  // 40 for extensible PCM as 16 is only for WAVE_FORMAT_PCM
-//    0xFE, 0xFF,          // 20 - audioFormat (1=16-bit)
-//    2,0,                // 22 - numChannels
-//    0,0,0,0,            // 24 - sampleRate in Hz
-//    0,0,0,0,            // 28 - byteRate (SampleRate*NumChannels*(BitsPerSample/8)
-//    4,0,                // 32 - blockAlign (== NumChannels * BitsPerSample/8)
-//    16,0,               // 34 - bitsPerSample
-//    22,0,               // 36 - wavext  (0 or 22 bytes)
-//    if not 0:
-//    0,0,                // 38 - validBits
-//    0,0,0,0,            // 40 - dwChannelMmask
-//    [16 B]              // 44 - GUID
-//    'f','a','c','t',    // 60 - ckID
-//    4,0,0,0,            // 64 - ckSize
-//    0,0,0,0,            // 68 - dwSampleLength
-//   // some software pack up various tags in here... + x bytes
-//    'd','a','t','a',    // 72 + x - sunchunk2ID
-//    0,0,0,0             // 76 + x - 80 subchunk2Size
-//  };
+	static uint8_t h[44]=
+	{
+		'R','I','F','F',  //  0 - ChunkID
+		0,0,0,0,          //  4 - ChunkSize (filesize-8 or rawdata+36)
+		'W','A','V','E',  //  8 - Format
+		'f','m','t',' ',  // 12 - SubChunkID
+		16,0,0,0,         // 16 - SubChunkSize (16 or 22? for PCM)
+		1,0,              // 20 - AudioFormat (1 for PCM)
+		2,0,              // 22 - NumChannels
+		0,0,0,0,          // 24 - SampleRate (Hz)
+		0,0,0,0,          // 28 - Byte Rate (SampleRate*NumChannels*BitsPerSample/8)
+		4,0,              // 32 - BlockAlign (NumChannels*BitsPerSample/8)
+		16,0,             // 34 - BitsPerSample
+		'd','a','t','a',  // 36 - Subchunk2ID
+		0,0,0,0           // 40 - Subchunk2Size (NumSamples*NumChannels*BitsPerSample/8)
+	};
 
-    extensible w;
+	canonical *w = (canonical*)h;
+	uint32_t fileSize, prev;
 
-	uint32_t fileSize;
-	fileSize = fs::file_size(path);
-    cga2wav_channels[6] = {0x4, 0x3, 0x7, 0x33, 0x10F, 0x3F};
+	if( meta )
+	{
+		w->numChannels = lEndian( meta->data.stream_info.channels );
+		w->sampleRate = lEndian( meta->data.stream_info.sample_rate );
+		w->bitsPerSample = lEndian( meta->data.stream_info.bits_per_sample );
+		w->blockAlign = lEndian( meta->data.stream_info.channels * meta->data.stream_info.bits_per_sample / 8 );
+		w->byteRate = lEndian( meta->data.stream_info.sample_rate * lEndian( w->blockAlign ) );
+	}
 
-  	if( ! LPCM ) return -1;
+	if( (prev = out.tellp())== 0 ) prev = 44;
+	out.seekp( 0, ios::end );
+	fileSize = out.tellp();
 
-    w.chunkID[0] = 'R';
-    w.chunkID[1] = 'I';
-    w.chunkID[2] = 'F';
-    w.chunkID[3] = 'F';
-    w.chunkSize = filesize - 8;
-    w.format[0] = 'W';
-    w.format[1] = 'A';
-    w.format[2] = 'V';
-    w.format[3] = 'E';
-    w.subChunkID[0] = 'f';
-    w.subChunkID[1] = 'm';
-    w.subChunkID[2] = 't';
-    w.subChunkID[3] = ' ';
-    w.subChunkSize = 40;
-    w.audioFormat = 0xFFFE;
-
-    w.numChannels = meta.data.stream_info.channels ;
-    w.sampleRate = meta.data.stream_info.sample_rate ;
-    w.bitsPerSample = meta.data.stream_info.bits_per_sample ;
-    w.blockAlign = meta.data.stream_info.channels * meta.data.stream_info.bits_per_sample / 8 ;
-    w.byteRate = meta.data.stream_info.sample_rate * w->blockAlign;
-
-    w.wavext = 22;
-    w.validBits = w.bitsPerSample;
-    w.dwChannelMask = cga2wav_channels[w.numChannels - 1];
-    w.ckID[0] = 'f';
-    w.ckID[1] = 'a';
-    w.ckID[2] = 'c';
-    w.ckID[3] = 't';
-    w.ckSize = 4;
-    w.subchunk2ID[0] = 'd';
-    w.subchunk2ID[1] = 'a';
-    w.subchunk2ID[2] = 't';
-    w.subchunk2ID[3] = 'a';
-    w.subchunk2Size = filesize - 80 - (fileSize % 2);
-
-    uint8_t P[80];
-    uint8_t *p=&P[0];
-
-    uint32_copy_reverse(p, w.chunkID), p+=4;
-    uint32_copy_reverse(p, w.chunkSize), p+=4;
-    uint32_copy_reverse(p, w.format), p+=4;
-    uint32_copy_reverse(p, w.subChunkID), p+=4;
-    uint32_copy_reverse(p, w.SubChunkSize), p+=4;
-    uint16_copy_reverse(p, w.audioFormat), p+=2;
-    uint16_copy_reverse(p, w.numChannels), p+=2;
-    uint32_copy_reverse(p, w.sampleRate), p+=4;
-    uint32_copy_reverse(p, w.byteRate), p+=4;
-    uint16_copy_reverse(p, w.blockAlign), p+=2;
-    uint16_copy_reverse(p, w.bitsPerSample), p+=2;
-    uint16_copy_reverse(p, w.wavext), p+=2;
-    uint16_copy_reverse(p, w.bitsPerSample), p+=2;  // in principle, wValidBitsPerSample
-    uint32_copy_reverse(p, w.dwChannelMask), p+=4;
-    const uint8_t GUID[16] = {1, 0, 0, 0, 0, 0, 0x10, 0, 0x80, 0, 0, 0xaa, 0, 0x38, 0x9b, 0x71};
-    memcpy(p, GUID, 16), p+=16;
-    uint32_copy_reverse(p, w.ckID), p+=4;
-    uint32_copy_reverse(p, w.ckSize), p+=4;
-    if (w.numChannels&& w.bitsPerSample)
-      {
-        uint32_copy_reverse(p, (fileSize /(header->channels * header->wBitsPerSample / 8)), p+=4;  //dwSampleLength
-      }
-
-    uint32_copy_reverse(p, w.subchunk2ID), p+=4;
-    uint32_copy_reverse(p, w.subchunk2Size);
-
-	ofstream out;
-	out.open(path, ios::binary);
+	w->chunkSize = fileSize ? lEndian( fileSize - 8 ) : 0;
+	w->subchunk2Size = fileSize ? lEndian( fileSize - 44 ) : 0;
 
 	out.seekp( 0, ios::beg );
-	out.write( P, 80);
-	out.seekp( 80, ios::beg );
-
-	return 1;
+	out.write( (char*)h, 44 );
+	out.seekp( prev, ios::beg );
 
 	return 1;
 }
@@ -378,125 +312,56 @@ int waveHeader::tag(const fs::path &path, const FLAC__StreamMetadata& meta )
 //    Variant of above using PES packet lpcm header for audio characteristics.
 // ----------------------------------------------------------------------------
 
-// apparently not used
 
-inline static void uint32_copy_reverse(uint8_t* buf, uint32_t x)
+int waveHeader::tag( ofstream& out, PES_packet::LPCM_header* LPCM)
 {
-    buf[0]=x&0xff;
-    buf[1]=(x&0xff00)>>8;
-    buf[2]=(x&0xff0000)>>16;
-    buf[3]=x>>24;
-}
+	static uint8_t h[44]=
+	{
+		'R','I','F','F',  //  0 - ChunkID
+		0,0,0,0,          //  4 - ChunkSize (filesize-8 or rawdata+36)
+		'W','A','V','E',  //  8 - Format
+		'f','m','t',' ',  // 12 - SubChunkID
+		16,0,0,0,         // 16 - SubChunkSize (16 or 22? for PCM)
+		1,0,              // 20 - AudioFormat (1 for PCM)
+		2,0,              // 22 - NumChannels
+		0,0,0,0,          // 24 - SampleRate (Hz)
+		0,0,0,0,          // 28 - Byte Rate (SampleRate*NumChannels*BitsPerSample/8)
+		4,0,              // 32 - BlockAlign (NumChannels*BitsPerSample/8)
+		16,0,             // 34 - BitsPerSample
+		'd','a','t','a',  // 36 - Subchunk2ID
+		0,0,0,0           // 40 - Subchunk2Size (NumSamples*NumChannels*BitsPerSample/8)
+	};
 
-inline static void uint16_copy_reverse(uint8_t* buf, uint16_t x)
-{
-    buf[0]=x&0xff;
-    buf[1]=(x&0xff00)>>8;
-}
+	canonical* w = (canonical*)h;
+	uint32_t fileSize, prev;
 
-int waveHeader::tag(const fs::path &path, const PES_packet::LPCM_header* LPCM)
-{
-//  {'R','I','F','F',    //  0 - ChunkID
-//    0,0,0,0,            //  4 - chunkSize (filesize - 8 - padbyte)
-//    'W','A','V','E',    //  8 - format
-//    'f','m','t',' ',    // 12 - subChunkID
-//    40,0,0,0,           // 16 - subChunkSize  // 40 for extensible PCM as 16 is only for WAVE_FORMAT_PCM
-//    0xFE, 0xFF,          // 20 - audioFormat (1=16-bit)
-//    2,0,                // 22 - numChannels
-//    0,0,0,0,            // 24 - sampleRate in Hz
-//    0,0,0,0,            // 28 - byteRate (SampleRate*NumChannels*(BitsPerSample/8)
-//    4,0,                // 32 - blockAlign (== NumChannels * BitsPerSample/8)
-//    16,0,               // 34 - bitsPerSample
-//    22,0,               // 36 - wavext  (0 or 22 bytes)
-//    if not 0:
-//    0,0,                // 38 - validBits
-//    0,0,0,0,            // 40 - dwChannelMmask
-//    [16 B]              // 44 - GUID
-//    'f','a','c','t',    // 60 - ckID
-//    4,0,0,0,            // 64 - ckSize
-//    0,0,0,0,            // 68 - dwSampleLength
-//   // some software pack up various tags in here... + x bytes
-//    'd','a','t','a',    // 72 + x - sunchunk2ID
-//    0,0,0,0             // 76 + x - 80 subchunk2Size
-//  };
+	if( LPCM )
+	{
+//      w->SubChunkSize = ;
+//      w->audioFormat;
+		w->numChannels = PES_packet::channels(LPCM);
+		w->sampleRate = PES_packet::frequency(LPCM);
+		w->bitsPerSample = PES_packet::bitsPerSample(LPCM);
+		w->blockAlign = w->numChannels * w->bitsPerSample / 8;
+		w->byteRate = w->sampleRate * w->blockAlign;
 
-    extensible w;
+		w->numChannels = lEndian( w->numChannels );
+		w->sampleRate = lEndian( w->sampleRate );
+		w->bitsPerSample = lEndian( w->bitsPerSample );
+		w->blockAlign = lEndian( w->blockAlign );
+		w->byteRate = lEndian( w->byteRate );
+	}
 
-	uint32_t fileSize;
-	fileSize = fs::file_size(path);
-    cga2wav_channels[6] = {0x4, 0x3, 0x7, 0x33, 0x10F, 0x3F};
+	if( (prev = out.tellp())== 0 ) prev = 44;
+	out.seekp( 0, ios::end );
+	fileSize = out.tellp();
 
-  	if( ! LPCM ) return -1;
-
-    w.chunkID[0] = 'R';
-    w.chunkID[1] = 'I';
-    w.chunkID[2] = 'F';
-    w.chunkID[3] = 'F';
-    w.chunkSize = filesize - 8;
-    w.format[0] = 'W';
-    w.format[1] = 'A';
-    w.format[2] = 'V';
-    w.format[3] = 'E';
-    w.subChunkID[0] = 'f';
-    w.subChunkID[1] = 'm';
-    w.subChunkID[2] = 't';
-    w.subChunkID[3] = ' ';
-    w.subChunkSize = 40;
-    w.audioFormat = 0xFFFE;
-    w.numChannels = PES_packet::channels(LPCM);
-    w.sampleRate = PES_packet::frequency(LPCM);
-    w.bitsPerSample = PES_packet::bitsPerSample(LPCM);
-    w.blockAlign = w->numChannels * w->bitsPerSample / 8;
-    w.byteRate = w->sampleRate * w->blockAlign;
-    w.wavext = 22;
-    w.validBits = w.bitsPerSample;
-    w.dwChannelMask = cga2wav_channels[w.numChannels - 1];
-    w.ckID[0] = 'f';
-    w.ckID[1] = 'a';
-    w.ckID[2] = 'c';
-    w.ckID[3] = 't';
-    w.ckSize = 4;
-    w.subchunk2ID[0] = 'd';
-    w.subchunk2ID[1] = 'a';
-    w.subchunk2ID[2] = 't';
-    w.subchunk2ID[3] = 'a';
-    w.subchunk2Size = filesize - 80 - (fileSize % 2);
-
-    uint8_t P[80];
-    uint8_t *p=&P[0];
-
-    uint32_copy_reverse(p, w.chunkID), p+=4;
-    uint32_copy_reverse(p, w.chunkSize), p+=4;
-    uint32_copy_reverse(p, w.format), p+=4;
-    uint32_copy_reverse(p, w.subChunkID), p+=4;
-    uint32_copy_reverse(p, w.SubChunkSize), p+=4;
-    uint16_copy_reverse(p, w.audioFormat), p+=2;
-    uint16_copy_reverse(p, w.numChannels), p+=2;
-    uint32_copy_reverse(p, w.sampleRate), p+=4;
-    uint32_copy_reverse(p, w.byteRate), p+=4;
-    uint16_copy_reverse(p, w.blockAlign), p+=2;
-    uint16_copy_reverse(p, w.bitsPerSample), p+=2;
-    uint16_copy_reverse(p, w.wavext), p+=2;
-    uint16_copy_reverse(p, w.bitsPerSample), p+=2;  // in principle, wValidBitsPerSample
-    uint32_copy_reverse(p, w.dwChannelMask), p+=4;
-    const uint8_t GUID[16] = {1, 0, 0, 0, 0, 0, 0x10, 0, 0x80, 0, 0, 0xaa, 0, 0x38, 0x9b, 0x71};
-    memcpy(p, GUID, 16), p+=16;
-    uint32_copy_reverse(p, w.ckID), p+=4;
-    uint32_copy_reverse(p, w.ckSize), p+=4;
-    if (w.numChannels&& w.bitsPerSample)
-      {
-        uint32_copy_reverse(p, (fileSize /(header->channels * header->wBitsPerSample / 8)), p+=4;  //dwSampleLength
-      }
-
-    uint32_copy_reverse(p, w.subchunk2ID), p+=4;
-    uint32_copy_reverse(p, w.subchunk2Size);
-
-	ofstream out;
-	out.open(path, ios::binary);
+	w->chunkSize = fileSize ? lEndian( fileSize - 8 ) : 0;
+	w->subchunk2Size = fileSize ? lEndian( fileSize - 44 ) : 0;
 
 	out.seekp( 0, ios::beg );
-	out.write( P, 80);
-	out.seekp( 80, ios::beg );
+	out.write( (char*)h, 44 );
+	out.seekp( prev, ios::beg );
 
 	return 1;
 }
@@ -512,7 +377,7 @@ int waveHeader::tag(const fs::path &path, const PES_packet::LPCM_header* LPCM)
 // ----------------------------------------------------------------------------
 
 
-int waveHeader::audit( const char *filename, const FLAC__StreamMetadata *fmeta )
+int waveHeader::audit( const char *filename, FLAC__StreamMetadata *fmeta )
 {
 	ifstream infile( filename, ios::binary );
 	int r = open( infile, fmeta, true );
@@ -532,10 +397,10 @@ int waveHeader::audit( const char *filename, const FLAC__StreamMetadata *fmeta )
 // ----------------------------------------------------------------------------
 
 
-int waveHeader::open( ifstream &wavefile, const FLAC__StreamMetadata *fmeta, bool mute )
+int waveHeader::open( ifstream &wavefile, FLAC__StreamMetadata *fmeta, bool mute )
 {
-	extensible hdr;
-	uint32_t fmtChunk = 0, dataChunk = 0, factChunk = 0;
+	canonical hdr;
+	uint32_t fmtChunk = 0, dataChunk = 0;
 	string msg;
 	struct{ uint8_t ID[4]; uint32_t size; } chunk;
 
@@ -566,22 +431,9 @@ int waveHeader::open( ifstream &wavefile, const FLAC__StreamMetadata *fmeta, boo
 		if( wavefile.eof() || wavefile.peek() == EOF )
 			break;
 
-    	if (! fmtChunk)
-        {
-            chunk.size = lEndian( chunk.size );  // 16 (canonical) or 40 (extensible)
-            switch (chunk.size)
-            {
-                case 16:
-                    msg += _f("%s ",  "Canonical header");
-                    break;
-                case 40:
-                    msg += _f("%s ",  "Extensible header");
-                    break;
-                default:
-                    ERR("Wav header type not recognized (neither canonical nor extensible");
-                    return 0;
-            }
-        }
+		chunk.size = lEndian( chunk.size );
+
+        msg += _f( "%c%c%c%c=%d  ", chunk.ID[0], chunk.ID[1], chunk.ID[2], chunk.ID[3], chunk.size );
 
 		if( ! fmtChunk
 			&& chunk.ID[0] == 'f'
@@ -589,34 +441,19 @@ int waveHeader::open( ifstream &wavefile, const FLAC__StreamMetadata *fmeta, boo
 			&& chunk.ID[2] == 't' )
 		{
 			fmtChunk = wavefile.tellg();
+			if( chunk.size > 16 )
+                msg += _f( "[16 read, %d ignored]  ", chunk.size - 16  );
 
-			wavefile.read((char *)&hdr + 20, chunk.size);
+			wavefile.read( (char *)&hdr+20, chunk.size > 16 ? 16 : chunk.size );
 
-			if( hdr.audioFormat != WAVE_FORMAT_PCM && hdr.audioFormat != WAVE_FORMAT_EXTENSIBLE)
+			if( hdr.audioFormat != 1 )
 			{
 				ERR( "Audio is not lpcm.\n" );
 				return 0;
 			}
 			continue;
 		}
-		else if( ! factChunk
-            && hdr.audioFormat == WAVE_FORMAT_EXTENSIBLE
-			&& chunk.ID[0] == 'f'
-			&& chunk.ID[1] == 'a'
-			&& chunk.ID[2] == 'c'
-			&& chunk.ID[3] == 't' )
-		{
-		    factChunk = wavefile.tellg();
-            chunk.size = lEndian( chunk.size );  // 4
-            if (chunk.size != 4)
-            {
-                 ERR("fact chunk issue (should be 4)");
-                 return 0;
-            }
 
-		    wavefile.read((char *)&hdr + 68, chunk.size);
-        	continue;
-		}
 		else if( ! dataChunk
 			&& chunk.ID[0] == 'd'
 			&& chunk.ID[1] == 'a'
@@ -625,34 +462,35 @@ int waveHeader::open( ifstream &wavefile, const FLAC__StreamMetadata *fmeta, boo
 		{
 			hdr.subchunk2Size = lEndian( chunk.size );
 			dataChunk = wavefile.tellg();
+#if 0
+			if( hdr.subchunk2Size != filelength - dataChunk )
+			{
+				hdr.subchunk2Size = filelength - dataChunk;
+			}
+#endif
 		}
-		else
-        {
-            char c;
-            while( wavefile.read(&c, 1).good() )
-            {
-                if (c != 'd') continue;
-                char data[4] = {0};
-                wavefile.read(&data[0], 3);
-                if (strcmp(data, "ata") == 0)
-                {
-                    wavefile.read( &data[0], 4);
-                    memcpy(&chunk.size, data, 4);
-                    hdr.subchunk2Size = lEndian( chunk.size );
-			        dataChunk = wavefile.tellg();
-                }
-                else
-                {
 
-                 ERR("Could not find data tag");
-                 return 0;
-                }
-            }
-            return 0;
-        }
+		wavefile.seekg( chunk.size, ios::cur );
 	}
+
+	if( fmtChunk && dataChunk )
+	{
+		if( ! mute && ( fmtChunk != 20 || dataChunk != 44 ) )
+			LOG( "Non-canonical header. Subchunks: " << msg << "\n" );
+		flacHeader::readStreamInfo( &hdr, fmeta );
+		wavefile.clear();
+		wavefile.seekg( dataChunk );
+		return 1;
+	}
+
+	ERR( _f( "Non-canonical header. Can't find %s%s%s chunk%s.\n",
+		fmtChunk ? "" : "'fmt'", ! fmtChunk && ! dataChunk ? " or " : "",
+		dataChunk ? "" : "'data'", ! fmtChunk && ! dataChunk ? "s" : "" ) );
+	ECHO( "Try converting this file to flac and using that instead." );
 	return 0;
 }
+
+
 
 // ----------------------------------------------------------------------------
 //    waveHeader::display :

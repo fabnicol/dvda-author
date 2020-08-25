@@ -13,6 +13,8 @@ lplexdoc_DATA = \
 
 EXTRA_DIST = $(lplexdoc_DATA) doc/lplex.1 autogen.sh
 
+
+
 # not 100% sure about this since it causes a double recursion, but libs don't build without it
 $(top_builddir)/redist/md5/libmd5.a:
 	cd $(top_builddir)/redist/md5 && $(MAKE) $(AM_MAKEFLAGS) libmd5.a
@@ -31,4 +33,16 @@ dist-hook:
 		fi \
 	done
 
+if HAVE_FREEDESKTOP
+
+Desktop=$(shell xdg-user-dir DESKTOP)
+
+install-data-hook:
+	@if test -e "$(Desktop)/lplex.desktop" ; then echo -e "\n\n"\
+	"      A launcher has been placed on your desktop to facilitate\n"\
+	"      drag-and-drop usage of lplex. Please move/remove this as you\n"\
+	"      prefer, a backup copy is available in your '~/.lplex' folder\n"\
+	"      should you need it again later.\n\n" ; fi
+
+endif
 

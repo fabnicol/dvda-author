@@ -60,6 +60,9 @@
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
 
+/* Define if running the test suite so that test #27 works on MinGW. */
+#undef LT_MINGW_STATIC_TESTSUITE_HACK
+
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
 

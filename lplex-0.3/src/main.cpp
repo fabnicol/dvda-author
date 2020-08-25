@@ -1136,7 +1136,7 @@ void lFileTraverser::OnOpenError( const string& openerrorname )
 void getOpts( const char *filename )
 {
 	int argc = 0;
-	char **argv=nullptr, *args=nullptr;
+	char **argv=NULL, *args=NULL;
 	size_t size;
 
 	ifstream optFile( filename, ios::binary );
@@ -1420,7 +1420,7 @@ bool stdArgs( int &argc, char** &argv, char *args, size_t size )
 		return false;
 
 	argv = new char*[ argc ];
-	argv[0] = nullptr;
+	argv[0] = NULL;
 	firstChar = true;
 
 	for( uint i=0, j=0; i < size; ++i )
@@ -1457,13 +1457,13 @@ bool stdArgs( int &argc, char** &argv, char *args, size_t size )
 uint16_t setopt( uint16_t opt, const char *optarg )
 {
 	uint16_t t = 0;
-	char *comma = nullptr;
+	char *comma = NULL;
 	bool ok = true, isTrue = 0, isFalse = 0;
 
 	if( optarg && ( comma = (char*)strrchr( optarg, ',' ) ) )
 		comma[0] = '\0';
 
-	if( optarg == nullptr || ! stricmp( optarg, "yes" ) || ! stricmp( optarg, "true" ) || ! stricmp( optarg, "1" ) )
+	if( optarg == NULL || ! stricmp( optarg, "yes" ) || ! stricmp( optarg, "true" ) || ! stricmp( optarg, "1" ) )
 		isTrue = true;
 	else if( ! stricmp( optarg, "no" ) || ! stricmp( optarg, "false" ) || ! stricmp( optarg, "0" ) )
 		isFalse = true;

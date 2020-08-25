@@ -125,7 +125,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #define STANDARD_FIXWAV_DATABASE_PATH "database"
 
 #ifndef BINDIR
-#ifndef __WIN32__
+#if ! defined _WIN32 && ! defined LOCAL_BUILD
 #define BINDIR "/usr/bin"
 #endif
 #endif

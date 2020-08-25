@@ -47,11 +47,11 @@ extern "C" {
 #define MagickppLibAddendum  "-49"
 #define MagickppLibInterface  4
 #define MagickppLibMinInterface  4
-#define MagickReleaseDate  "2019-10-06"
+#define MagickReleaseDate  "2020-08-24"
 #define MagickAuthoritativeLicense  \
   "https://imagemagick.org/script/license.php"
 #define MagickAuthoritativeURL  "https://imagemagick.org"
-#define MagickHomeURL  "file:///home/fab/Desktop/dvda-author/local/share/doc/ImageMagick-7/index.html"
+#define MagickHomeURL  "file:///cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local/share/doc/ImageMagick-7/index.html"
 #if (MAGICKCORE_QUANTUM_DEPTH == 8)
 #define MagickQuantumDepth  "Q8"
 #define MagickQuantumRange  "255"

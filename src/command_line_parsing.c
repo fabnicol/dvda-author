@@ -379,8 +379,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                    case 'D' :
                         free(globals->settings.tempdir);
-                        globals->settings.tempdir=strdup(optarg);
-                        foutput("%s%s\n", PAR "Temporary directory is: ", optarg);
+                        globals->settings.tempdir=make_absolute(optarg);
+                        foutput("%s%s\n", PAR "Temporary directory is: ", globals->settings.tempdir);
                         break;
 
                     case 'L':
@@ -392,7 +392,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                         if (optarg)
                         {
-                            globals->settings.logfile=strdup(optarg);
+                            globals->settings.logfile=make_absolute(optarg);
+                            foutput("%s%s\n", PAR "Path to log file is: ", globals->settings.logfile);
                             globals->logfile=true;
 
                             if (optarg[0] == '-')
@@ -465,20 +466,20 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
                     case 19:
                         free(globals->settings.lplextempdir);
-                        globals->settings.lplextempdir=strdup(optarg);
-                        foutput("%s%s\n", PAR "Lplex temporary directory is: ", optarg);
+                        globals->settings.lplextempdir=make_absolute(optarg);
+                        foutput("%s%s\n", PAR "Lplex temporary directory is: ", globals->settings.lplextempdir);
                         break;
 
                     case 20:
                         free(globals->settings.lplexoutdir);
-                        globals->settings.lplexoutdir=strdup(optarg);
-                        foutput("%s%s\n", PAR "Lplex output directory is: ", optarg);
+                        globals->settings.lplexoutdir=make_absolute(optarg);
+                        foutput("%s%s\n", PAR "Lplex output directory is: ", globals->settings.lplexoutdir);
                         break;
 
                     case 'X':
                         free(globals->settings.workdir);
-                        globals->settings.workdir=strdup(optarg);
-                        foutput("%s%s\n", PAR "Working directory is: ", optarg);
+                        globals->settings.workdir=make_absolute(optarg);
+                        foutput("%s%s\n", PAR "Working directory is: ", globals->settings.workdir);
 
                         // WARNING never launch a command line with --mkisofs in the WORKDIR directory
                         change_directory(globals->settings.workdir, globals);
@@ -613,9 +614,9 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
             allocate_files=true;
             free(globals->settings.indir);
-            globals->settings.indir=strdup(optarg);
+            globals->settings.indir=make_absolute(optarg);
 
-            foutput("%s%s\n", PAR "Input directory is: ", 	optarg);
+            foutput("%s%s\n", PAR "Input directory is: ", 	globals->settings.indir);
 
             if ((dir=opendir(optarg)) == NULL)
                 EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Input directory could not be opened")
@@ -649,8 +650,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
 
         case 'o' :
             free(globals->settings.outdir);
-            globals->settings.outdir=strdup(optarg);
-            foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET "  Output %s%s%s\n", "directory", " is: ", optarg);
+            globals->settings.outdir = make_absolute(optarg);
+            foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET "  Output %s%s%s\n", "directory", " is: ", globals->settings.outdir);
             break;
 
         case 5:
@@ -928,6 +929,7 @@ out:
     optind=0;
     opterr=1;
     bool use_ifo_files = false;
+    static int spurank;
 
 #ifdef LONG_OPTIONS
     while ((c=getopt_long(argc, argv, ALLOWED_OPTIONS, longopts, &longindex)) != -1)
@@ -955,7 +957,8 @@ out:
             extract_audio_flag = 1;
             globals->fixwav_prepend = true;
             free(globals->settings.indir);
-            globals->settings.indir = strdup(optarg);
+            globals->settings.indir = make_absolute(optarg);
+
             break;
 
         case 13:
@@ -977,7 +980,7 @@ out:
             if ((dir=opendir(optarg)) == NULL)
                 EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Input directory could not be opened")
 
-                        change_directory(globals->settings.indir, globals);
+            change_directory(globals->settings.indir, globals);
 
             parse_directory(dir, ntracks, n_g_groups, READTRACKS, files, globals);
 
@@ -1121,23 +1124,21 @@ out:
             /* --datadir is the directory  where the menu/ files are located. Under* nix it automatically installed under /usr/share/applications/dvda-author by the autotools
                With other building modes or platforms however, it may be useful to indicate where the menu/ directory will be*/
             // We use realloc here to allow for prior allocation (.conf file etc.) without memory loss
-
-            foutput(PAR "Using data directory %s\n", optarg);
-            strlength = strlen(optarg);
-            img->soundtrack[0][0]=realloc(img->soundtrack[0][0], (strlength+1+1+16)*sizeof(char)); // "silence.wav"
-            if (img->soundtrack[0][0]) sprintf(img->soundtrack[0][0], "%s"SEPARATOR"%s", optarg, "menu"SEPARATOR"silence.wav");
-            img->activeheader=realloc(img->activeheader, (strlength+1+1+17)*sizeof(char));  // activeheader
-            if (img->activeheader) sprintf(img->activeheader, "%s"SEPARATOR"%s", optarg, "menu"SEPARATOR"activeheader");
             free(globals->settings.datadir);
-            globals->settings.datadir=strdup(optarg);
+            globals->settings.datadir=make_absolute(optarg);
+            foutput(PAR "Using data directory %s\n", globals->settings.datadir);
+            strlength = strlen(globals->settings.datadir);
+            img->soundtrack[0][0]=realloc(img->soundtrack[0][0], (strlength+1+1+16)*sizeof(char)); // "silence.wav"
+            if (img->soundtrack[0][0]) sprintf(img->soundtrack[0][0], "%s"SEPARATOR"%s", globals->settings.datadir, "menu"SEPARATOR"silence.wav");
+            img->activeheader=realloc(img->activeheader, (strlength+1+1+17)*sizeof(char));  // activeheader
+            if (img->activeheader) sprintf(img->activeheader, "%s"SEPARATOR"%s", globals->settings.datadir, "menu"SEPARATOR"activeheader");
             break;
 
         case 'A':
 
-            foutput("%s%s\n", PAR "topmenu VOB: ", optarg);
-            img->tsvob=strdup(optarg);
+            img->tsvob=make_absolute(optarg);
             globals->topmenu=Min(globals->topmenu, TS_VOB_TYPE);
-
+            foutput("%s%s\n", PAR "Topmenu VOB: ", globals->topmenu);
             break;
 
         case '0':
@@ -1161,8 +1162,8 @@ out:
 
             if (!img->active)
             {
-                foutput("%s%s\n",PAR "still pictures VOB: ", optarg);
-                img->stillvob=strdup(optarg);
+                img->stillvob = make_absolute(optarg);
+                foutput("%s%s\n",PAR "still pictures VOB: ", img->stillvob);
             }
             img->npics =(uint16_t*) calloc(totntracks, sizeof(uint16_t));
             for (k=0; k < totntracks; k++)
@@ -1177,8 +1178,8 @@ out:
             globals->runmkisofs=1;
             if (optarg)
             {
-                globals->settings.dvdisopath=strdup(optarg);
-                foutput("%s%s\n", PAR "ISO file path is: ", optarg);
+                globals->settings.dvdisopath=make_absolute(optarg);
+                foutput("%s%s\n", PAR "ISO file path is: ", globals->settings.dvdisopath);
             }
             break;
 
@@ -1221,8 +1222,8 @@ out:
             globals->videozone = 1;
 
             free(globals->settings.linkdir);
-            globals->settings.linkdir=strdup(optarg);
-            foutput("%s%s\n", PAR "VIDEO_TS input directory is: ", optarg);
+            globals->settings.linkdir=make_absolute(optarg);
+            foutput("%s%s\n", PAR "VIDEO_TS input directory is: ", globals->settings.linkdir);
             break;
 
         case 'U':
@@ -1315,16 +1316,16 @@ out:
             break;
 
         case 40:
-            foutput("%s%s\n", PAR "Choosing player executable path with filename: ", optarg);
 
+            free(globals->player_path);
+            globals->player_path = make_absolute(optarg);
+            foutput("%s%s\n", PAR "Choosing player executable path with filename: ", globals->player_path);
             if (! file_exists(optarg))
             {
-                foutput("%s%s\n", ERR "Found no executable under path ", optarg);
+                foutput("%s%s\n", ERR "Found no executable under path ", globals->player_path);
                  clean_exit(EXIT_FAILURE, globals);
             }
 
-            free(globals->player_path);
-            globals->player_path = strdup(optarg);
             break;
 
         case 31:
@@ -1381,18 +1382,20 @@ out:
             break;
 
         case 'M' :
-            foutput("%s%s\n",PAR "  dvdauthor Xml project: ", optarg);
-            globals->xml=strdup(optarg);
+
+            globals->xml=make_absolute(optarg);
+            foutput("%s%s\n",PAR "  dvdauthor Xml project: ", globals->xml);
             globals->topmenu=Min(globals->topmenu, RUN_DVDAUTHOR);
             break;
 
         case 'H' :
-            foutput("%s%s\n",PAR "  spumux Xml project: ", optarg);
-            static int spurank;
+
             while (spurank >= img->nmenus) 	img->nmenus++;
             if (img->nmenus) globals->spu_xml=realloc(globals->spu_xml, img->nmenus*sizeof(char*));
-            globals->spu_xml[spurank++]=strdup(optarg);
+            globals->spu_xml[spurank]=make_absolute(optarg);
             globals->topmenu=Min(globals->topmenu, RUN_SPUMUX_DVDAUTHOR);
+            foutput("%s%s\n",PAR "  spumux Xml project: ", globals->spu_xml[spurank]);
+            spurank++;
             break;
 
         case 'B':
@@ -1678,16 +1681,16 @@ out:
 
         case 3:
 
-            strlength=strlen(optarg);
-            globals->settings.bindir=realloc(globals->settings.bindir, (strlength+1)*sizeof(char));
-            strcpy(globals->settings.bindir, optarg);
+            free(globals->settings.bindir);
+            globals->settings.bindir = make_absolute(optarg);
 
-            foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Using directory %s for auxiliary binaries.\n", optarg);
+            foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Using directory %s for auxiliary binaries.\n", globals->settings.bindir);
             break;
 
         case 9:
             import_topmenu_flag=1;
-            import_topmenu_path=strdup(optarg);
+            import_topmenu_path=make_absolute(optarg);
+            foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Using pre-authored top menu %s .\n", import_topmenu_path);
             globals->topmenu=RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR;
             break;
 
@@ -1975,11 +1978,11 @@ out:
             break;
 
         case 27:
-            foutput("%s\n", PAR "Decode disk and log MPEG specifics.");
+            foutput("%s\n", PAR "Decode 1 AOB and log MPEG specifics.");
             globals->logdecode = true;
-            globals->aobpath = (char**) calloc(81, sizeof(char *)); // so far rhe default alloc
+            globals->aobpath = (char**) calloc(81, sizeof(char *));
             if (globals->aobpath)
-                globals->aobpath[0] = strdup(optarg);
+                globals->aobpath[0] = make_absolute(optarg);
             else
                 EXIT_ON_RUNTIME_ERROR_VERBOSE("Could not allocate AOB path file.")
             break;
@@ -2026,7 +2029,7 @@ out:
             break;
 
         case 30:
-            globals->settings.outfile = strdup(optarg);
+            globals->settings.outfile = make_absolute(optarg);
             foutput("%s%s\n", PAR "AOB log filepath: ", globals->settings.outfile);
             if (file_exists(globals->settings.outfile)) unlink(globals->settings.outfile);
             break;
@@ -2063,15 +2066,14 @@ out:
             break;
 
         case 'b':
-
+            str=strdup(optarg);
             if (img->backgroundmpg)
             {
                 foutput("%s\n", ERR "Background mpg file already specified, skipping...");
                 break;
             }
-            foutput("%s%s\n",PAR "  background jpg file(s) for generating mpg video: ", optarg);
+            foutput("%s%s\n",PAR "  background jpg file(s) for generating mpg video: ", str);
 
-            str=strdup(optarg);
             free(img->backgroundpic);
             img->backgroundpic=fn_strtok(str,',',img->backgroundpic, &globals->backgroundpicsize, 0,NULL,NULL, globals);
             int backgroundpic_arraylength=0;
@@ -2083,7 +2085,6 @@ out:
                     copy_file(img->backgroundpic[backgroundpic_arraylength-1], img->backgroundpic[u+backgroundpic_arraylength], globals);
             }
 
-
             free(str);
             globals->topmenu=Min(globals->topmenu, RUN_SPUMUX_DVDAUTHOR);
             img->refresh=1;
@@ -2092,10 +2093,8 @@ out:
 
         case 'N':
 
-            foutput(PAR "Using %s top menu background picture.\n", optarg);
-
-
-            img->blankscreen=strdup(optarg);
+            img->blankscreen=make_absolute(optarg);
+            foutput(PAR "Using %s top menu background picture.\n", img->blankscreen);
             int len, len2;
             len=strlen(img->blankscreen);
             len2=strlen(img->backgroundpic[0]);
@@ -2116,7 +2115,7 @@ out:
         case 'E':
             foutput("%s%s\n",PAR "  highlight png file(s) for generating mpg video: ", optarg);
             foutput("%s\n", WAR "Check that your image doe not have more than 4 colors, including transparency.");
-            str=strdup(optarg);
+            str=optarg;
             free(img->highlightpic);
             img->highlightpic=fn_strtok(str,',',img->highlightpic, &globals->highlightpicsize, 0,NULL,NULL, globals);
             int highlight_arraylength=0;
@@ -2136,8 +2135,8 @@ out:
 
         case 'e' :
             foutput("%s%s\n", PAR "select png file(s) for generating mpg video: ", optarg);
-            foutput("%s\n", WAR "Check that your image doe not have more than 4 colors, including transparency.");
-            str=strdup(optarg);
+            foutput("%s\n", WAR "Check that your image does not have more than 4 colors, including transparency.");
+            str=optarg;
 
             img->selectpic=fn_strtok(str,',',img->selectpic, &globals->selectpicsize, 0,NULL,NULL, globals);
             int select_arraylength=0;
@@ -2160,7 +2159,7 @@ out:
 
             foutput("%s%s\n",PAR "image png file(s) for generating mpg video: ", optarg);
             foutput("%s\n", WAR "Check that your image doe not have more than 4 colors, including transparency.");
-            str=strdup(optarg);
+            str=optarg;
 
             img->imagepic=fn_strtok(str,',',img->imagepic, &globals->imagepicsize, 0,NULL,NULL, globals);
             int image_arraylength=0;
@@ -2428,7 +2427,7 @@ out:
         {
             if (globals->debugging) fprintf(stderr, "%s\n", DBG "Traversing") ;
             pics_per_track = calloc(999, sizeof(char*));
-            globals->settings.stillpicdir = strdup(stillpic_string);
+            globals->settings.stillpicdir = make_absolute(stillpic_string);
             traverse_directory(stillpic_string, fill_pics, true, (void*) pics_per_track, NULL, globals);
         }
         else
@@ -3282,7 +3281,7 @@ void fixwav_parsing(char *ssopt, globalData* globals)
 
         case 9:
             FREE(globals->settings.fixwav_database)
-                    globals->settings.fixwav_database=strdup(value);
+                    globals->settings.fixwav_database=make_absolute(value);
             if (!globals->nooutput) {
                 secure_mkdir(globals->settings.fixwav_database, 0755, globals);
                 foutput("%s       %s%s",PAR "  Fixwav will output info chunk from wav headers to:\n", globals->settings.fixwav_database, SEPARATOR "database\n");

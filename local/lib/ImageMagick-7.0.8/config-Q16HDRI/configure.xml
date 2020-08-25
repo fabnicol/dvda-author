@@ -11,40 +11,40 @@
 -->
 <configuremap>
   <configure name="CC" value="gcc"/>
-  <configure name="CFLAGS" value="-I/usr/include/libpng16 -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/uuid -I/usr/include/freetype2 -I/usr/include/libpng16   -fopenmp -g -O2 -g -O2 -std=c99 -Wall -mtune=haswell -fexceptions -pthread -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16"/>
-  <configure name="CODER_PATH" value="/home/fab/Desktop/dvda-author/local/lib/ImageMagick-7.0.8/modules-Q16HDRI/coders"/>
-  <configure name="CONFIGURE_PATH" value="/home/fab/Desktop/dvda-author/local/etc/ImageMagick-7/"/>
-  <configure name="CONFIGURE" value="/home/fab/Desktop/dvda-author/ImageMagick-7.0.8-49/configure  '--without-magick-plus-plus' '--without-pango' '--without-tiff' '--without-lzma' '--without-xml' '--enable-static' '--disable-shared' 'JPEG_LIBS=/home/fab/Desktop/dvda-author/build/linux/dvda-author-full.build/lib/libjpeg.a' '--prefix=/home/fab/Desktop/dvda-author/local' 'CPPFLAGS=-I/home/fab/Desktop/dvda-author/local/include' 'CFLAGS=-g -O2 -g -O2 -std=c99'"/>
+  <configure name="CFLAGS" value=" -fopenmp -g -O2 -Wall -mtune=haswell -fexceptions -pthread -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16"/>
+  <configure name="CODER_PATH" value="/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local/lib/ImageMagick-7.0.8/modules-Q16HDRI/coders"/>
+  <configure name="CONFIGURE_PATH" value="/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local/etc/ImageMagick-7/"/>
+  <configure name="CONFIGURE" value="./configure  '--prefix=/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local' '--without-magick-plus-plus' '--without-pango' '--without-tiff' '--without-lzma' '--without-xml'"/>
   <configure name="COPYRIGHT" value="Copyright (C) 1999-2019 ImageMagick Studio LLC"/>
-  <configure name="CPPFLAGS" value="-I/home/fab/Desktop/dvda-author/local/include/ImageMagick-7"/>
+  <configure name="CPPFLAGS" value="-I/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local/include/ImageMagick-7"/>
   <configure name="CXXFLAGS" value="-g -O2 -pthread"/>
   <configure name="CXX" value="g++"/>
   <configure name="DEFS" value="-DHAVE_CONFIG_H"/>
-  <configure name="DELEGATES" value="bzlib mpeg fontconfig freetype jbig jng jpeg png ps x zlib"/>
-  <configure name="DISTCHECK_CONFIG_FLAGS" value="'CFLAGS=-g -O2 -g -O2 -std=c99' 'CPPFLAGS=-I/home/fab/Desktop/dvda-author/local/include'  --disable-deprecated  --with-quantum-depth=16  --with-jemalloc=no  --with-umem=no  --with-autotrace=no  --with-gslib=no  --with-fontpath=  --with-lzma=no  --with-pango=no  --with-rsvg=no  --with-tiff=no  --with-xml=no  --with-perl=no "/>
-  <configure name="DOCUMENTATION_PATH" value="/home/fab/Desktop/dvda-author/local/share/doc/ImageMagick-7"/>
-  <configure name="EXEC-PREFIX" value="/home/fab/Desktop/dvda-author/local"/>
-  <configure name="EXECUTABLE_PATH" value="/home/fab/Desktop/dvda-author/local/bin"/>
+  <configure name="DELEGATES" value="mpeg"/>
+  <configure name="DISTCHECK_CONFIG_FLAGS" value=" --disable-deprecated  --with-quantum-depth=16  --with-jemalloc=no  --with-umem=no  --with-autotrace=no  --with-gslib=no  --with-fontpath=  --with-lzma=no  --with-pango=no  --with-rsvg=no  --with-tiff=no  --with-xml=no  --with-perl=no "/>
+  <configure name="DOCUMENTATION_PATH" value="/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local/share/doc/ImageMagick-7"/>
+  <configure name="EXEC-PREFIX" value="/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local"/>
+  <configure name="EXECUTABLE_PATH" value="/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local/bin"/>
   <configure name="FEATURES" value="DPC HDRI Cipher OpenMP"/>
-  <configure name="FILTER_PATH" value="/home/fab/Desktop/dvda-author/local/lib/ImageMagick-7.0.8/modules-Q16HDRI/filters"/>
+  <configure name="FILTER_PATH" value="/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local/lib/ImageMagick-7.0.8/modules-Q16HDRI/filters"/>
   <configure name="GIT_REVISION" value="15708" />
-  <configure name="HOST" value="x86_64-pc-linux-gnu"/>
-  <configure name="INCLUDE_PATH" value="/home/fab/Desktop/dvda-author/local/include/ImageMagick-7"/>
-  <configure name="LDFLAGS" value="-L/home/fab/Desktop/dvda-author/local/lib  "/>
-  <configure name="LIBRARY_PATH" value="/home/fab/Desktop/dvda-author/local/lib/ImageMagick-7.0.8"/>
-  <configure name="LIBS" value=" -ljbig   -lfreetype  -ljpeg   -lpng16 -lz      -lfontconfig -lfreetype      -lXext    -lSM -lICE -lX11   -lbz2        -lz     -lm     -lgomp"/>
+  <configure name="HOST" value="x86_64-unknown-cygwin"/>
+  <configure name="INCLUDE_PATH" value="/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local/include/ImageMagick-7"/>
+  <configure name="LDFLAGS" value="-L/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local/lib "/>
+  <configure name="LIBRARY_PATH" value="/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local/lib/ImageMagick-7.0.8"/>
+  <configure name="LIBS" value="                                     -lgdi32  -lm     -lgomp"/>
   <configure name="LIB_VERSION_NUMBER" value="7,0,8,49"/>
   <configure name="LIB_VERSION" value="0x708"/>
   <configure name="NAME" value="ImageMagick"/>
   <configure name="PCFLAGS" value="-fopenmp -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16"/>
-  <configure name="PREFIX" value="/home/fab/Desktop/dvda-author/local"/>
+  <configure name="PREFIX" value="/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local"/>
   <configure name="QuantumDepth" value="16"/>
-  <configure name="RELEASE_DATE" value="2019-10-06"/>
-  <configure name="SHAREARCH_PATH" value="/home/fab/Desktop/dvda-author/local/lib/ImageMagick-7.0.8/config-Q16HDRI"/>
-  <configure name="SHARE_PATH" value="/home/fab/Desktop/dvda-author/local/share/ImageMagick-7"/>
+  <configure name="RELEASE_DATE" value="2020-08-24"/>
+  <configure name="SHAREARCH_PATH" value="/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local/lib/ImageMagick-7.0.8/config-Q16HDRI"/>
+  <configure name="SHARE_PATH" value="/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local/share/ImageMagick-7"/>
   <configure name="TARGET_CPU" value="x86_64"/>
-  <configure name="TARGET_OS" value="linux-gnu"/>
-  <configure name="TARGET_VENDOR" value="pc"/>
+  <configure name="TARGET_OS" value="cygwin"/>
+  <configure name="TARGET_VENDOR" value="unknown"/>
   <configure name="VERSION" value="7.0.8"/>
   <configure name="WEBSITE" value="https://imagemagick.org"/>
 </configuremap>

@@ -42,13 +42,11 @@ using namespace std;
 class lpcmProcessor : public lpcmEntity
 {
 public:
-	counter<uint64_t> ct = counter<uint64_t>();
+	counter<uint64_t> ct;
 	lpcmProcessor() { state = 0; }
 
 	bool md5compare( const void *md5, const char * prefix="" );
 	bool eof() { return state & _eof; }
-
-protected: ~lpcmProcessor()	{}
 };
 
 
@@ -58,32 +56,26 @@ class lpcmReader : public lpcmProcessor
 public:
 	unsigned char *bigBuf;
 	uint32_t sizeofbigBuf;
-	uint16_t alignment = 0, surplus = 0;
-	uint64_t unread = 0;
-	uint64_t gcount = 0;
-	uint64_t bufPos = 0;
-	counter<uint64_t> pos = counter<uint64_t>();
+	uint16_t alignment, surplus;
+	uint64_t unread;
+	uint64_t gcount;
+	uint64_t bufPos;
+	counter<uint64_t> pos;
 
 
 	lpcmReader( unsigned char *buf, uint32_t size )
-		: bigBuf {buf}, sizeofbigBuf {size} { }
+		: bigBuf( buf ), sizeofbigBuf( size ) { bufPos = 0; }
 
 	void setbuf( unsigned char *buf, uint32_t size )
-		{
-		  bigBuf = buf;
-		  sizeofbigBuf = size;
-		}
-
+		{ bigBuf = buf; sizeofbigBuf = size; }
 	static int swap2dvd( unsigned char *data, uint32_t count,
-		                 int channels, int bitspersample );
+		int channels, int bitspersample );
 
 	int adjust( int prepend, bool pad );
 
 	virtual uint64_t read( unsigned char *buf, uint64_t len );
-	virtual uint64_t fillBuf( uint64_t limit=0, counter<uint64_t> *midCount=nullptr ) = 0;
+	virtual uint64_t fillBuf( uint64_t limit=0, counter<uint64_t> *midCount=NULL ) = 0;
     virtual uint16_t reset( const string& filename, int alignUnit=0 ) = 0;
-
-    protected: ~lpcmReader() {}
 };
 
 
@@ -96,17 +88,11 @@ public:
     waveReader( const string& filename, unsigned char *buf, uint32_t size,
 		int alignUnit=0 )
         : lpcmReader( buf, size ) { reset( filename, alignUnit ); }
+	~waveReader() { if( waveFile.is_open() ) waveFile.close(); }
 
 	// from lpcmReader
-	virtual uint64_t fillBuf( uint64_t limit=0, counter<uint64_t> *midCount=nullptr );
+	virtual uint64_t fillBuf( uint64_t limit=0, counter<uint64_t> *midCount=NULL );
     virtual uint16_t reset( const string& filename, int alignUnit=0 );
-
-protected:
-	~waveReader()
-	{
-	  if( waveFile.is_open() ) waveFile.close();
-	}
-
 };
 
 
@@ -115,16 +101,16 @@ class flacReader : public lpcmReader, public FLAC::Decoder::File
 {
 public:
 	char *reserve;
-	int32_t maxFrame = 0, unsent = 0;
+	int32_t maxFrame, unsent;
 
     flacReader( const string& filename, unsigned char *buf, uint32_t size,
 		int alignUnit=0 )
-		: lpcmReader( buf, size ), FLAC::Decoder::File(), reserve( nullptr )
+		: lpcmReader( buf, size ), FLAC::Decoder::File(), reserve( NULL )
         { reset( filename, alignUnit ); }
 	~flacReader() { if( reserve ) delete reserve; }
 
 	// from lpcmReader
-	virtual uint64_t fillBuf( uint64_t limit=0, counter<uint64_t> *midCount=nullptr );
+	virtual uint64_t fillBuf( uint64_t limit=0, counter<uint64_t> *midCount=NULL );
     virtual uint16_t reset( const string& filename, int alignUnit=0 );
 
 	// from FLAC::Decoder::File
@@ -155,7 +141,7 @@ public:
            return soundCheck( this );
         }
 
-	uint16_t preset(const PES_packet::LPCM_header *LPCM )
+	uint16_t preset( PES_packet::LPCM_header *LPCM )
 		{
           flacHeader::readStreamInfo( LPCM, &fmeta );
           return soundCheck( this, false );
@@ -174,9 +160,6 @@ public:
 	virtual uint16_t open() = 0;
 	virtual uint16_t close() = 0;
 	virtual uint16_t md5Report() = 0;
-
-	protected:
-	~lpcmWriter() {}
 };
 
 
@@ -186,11 +169,11 @@ class rawWriter : public lpcmWriter
 public:
 	uint16_t interSamp;
 	ofstream rawFile;
-	md5_state_t md5raw = {0};
-	md5_byte_t md5strRaw[16] = {'\0'};
+	md5_state_t md5raw;
+	md5_byte_t md5strRaw[16];
 
 	rawWriter() {}
-
+	~rawWriter() {}
 
 	// from lpcmWriter
 	virtual uint32_t process( unsigned char *buf, uint32_t size );
@@ -198,9 +181,6 @@ public:
 	virtual uint16_t isOpen() { return rawFile.is_open(); }
 	virtual uint16_t close();
 	virtual uint16_t md5Report();
-
-	protected:
-		~rawWriter() {}
 };
 
 
@@ -208,10 +188,11 @@ public:
 class waveWriter : public lpcmWriter
 {
 public:
-	uint16_t interSamp = 0;
+	uint16_t interSamp;
 	ofstream waveFile;
 
 	waveWriter() {}
+	~waveWriter() {}
 
 	// from lpcmWriter
 	virtual uint32_t process( unsigned char *buf, uint32_t size );
@@ -219,10 +200,6 @@ public:
 	virtual uint16_t isOpen() { return waveFile.is_open(); }
 	virtual uint16_t close();
 	virtual uint16_t md5Report();
-
-protected:
-
-	~waveWriter() {}
 };
 
 

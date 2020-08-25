@@ -1,45 +1,19 @@
-md5.o: md5.c /usr/include/stdc-predef.h md5.h /usr/include/string.h \
- /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
- /usr/include/features.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
- /usr/include/x86_64-linux-gnu/bits/wordsize.h \
- /usr/include/x86_64-linux-gnu/bits/long-double.h \
- /usr/include/x86_64-linux-gnu/gnu/stubs.h \
- /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
- /usr/lib/gcc/x86_64-linux-gnu/9/include/stddef.h \
- /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
- /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
- /usr/include/strings.h \
- /usr/include/x86_64-linux-gnu/bits/strings_fortified.h \
- /usr/include/x86_64-linux-gnu/bits/string_fortified.h
-
-/usr/include/stdc-predef.h:
-
+md5.o: md5.c md5.h C:/msys64/mingw64/x86_64-w64-mingw32/include/string.h \
+ C:/msys64/mingw64/x86_64-w64-mingw32/include/crtdefs.h \
+ C:/msys64/mingw64/x86_64-w64-mingw32/include/corecrt.h \
+ C:/msys64/mingw64/x86_64-w64-mingw32/include/_mingw.h \
+ C:/msys64/mingw64/x86_64-w64-mingw32/include/_mingw_mac.h \
+ C:/msys64/mingw64/x86_64-w64-mingw32/include/_mingw_secapi.h \
+ C:/msys64/mingw64/x86_64-w64-mingw32/include/vadefs.h \
+ C:/msys64/mingw64/x86_64-w64-mingw32/include/sdks/_mingw_ddk.h \
+ C:/msys64/mingw64/x86_64-w64-mingw32/include/sec_api/string_s.h
 md5.h:
-
-/usr/include/string.h:
-
-/usr/include/x86_64-linux-gnu/bits/libc-header-start.h:
-
-/usr/include/features.h:
-
-/usr/include/x86_64-linux-gnu/sys/cdefs.h:
-
-/usr/include/x86_64-linux-gnu/bits/wordsize.h:
-
-/usr/include/x86_64-linux-gnu/bits/long-double.h:
-
-/usr/include/x86_64-linux-gnu/gnu/stubs.h:
-
-/usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/9/include/stddef.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/locale_t.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/__locale_t.h:
-
-/usr/include/strings.h:
-
-/usr/include/x86_64-linux-gnu/bits/strings_fortified.h:
-
-/usr/include/x86_64-linux-gnu/bits/string_fortified.h:
+C:/msys64/mingw64/x86_64-w64-mingw32/include/string.h:
+C:/msys64/mingw64/x86_64-w64-mingw32/include/crtdefs.h:
+C:/msys64/mingw64/x86_64-w64-mingw32/include/corecrt.h:
+C:/msys64/mingw64/x86_64-w64-mingw32/include/_mingw.h:
+C:/msys64/mingw64/x86_64-w64-mingw32/include/_mingw_mac.h:
+C:/msys64/mingw64/x86_64-w64-mingw32/include/_mingw_secapi.h:
+C:/msys64/mingw64/x86_64-w64-mingw32/include/vadefs.h:
+C:/msys64/mingw64/x86_64-w64-mingw32/include/sdks/_mingw_ddk.h:
+C:/msys64/mingw64/x86_64-w64-mingw32/include/sec_api/string_s.h:

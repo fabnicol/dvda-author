@@ -3,6 +3,6 @@
 #undef  build_host
 #undef  build_defs
 #define build_ver  "-x64"
-#define build_host "x86_64-pc-linux-gnu"
+#define build_host "x86_64-w64-mingw32"
 #define build_defs ""
 
