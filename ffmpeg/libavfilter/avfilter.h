@@ -79,7 +79,7 @@ int avfilter_pad_count(const AVFilterPad *pads);
  * Get the name of an AVFilterPad.
  *
  * @param pads an array of AVFilterPads
- * @param pad_idx index of the pad in the array it; is the caller's
+ * @param pad_idx index of the pad in the array; it is the caller's
  *                responsibility to ensure the index is valid
  *
  * @return name of the pad_idx'th pad in pads
@@ -489,15 +489,6 @@ struct AVFilterLink {
     AVFilterFormats *out_samplerates;
     struct AVFilterChannelLayouts  *in_channel_layouts;
     struct AVFilterChannelLayouts *out_channel_layouts;
-
-    /**
-     * Audio only, the destination filter sets this to a non-zero value to
-     * request that buffers with the given number of samples should be sent to
-     * it. AVFilterPad.needs_fifo must also be set on the corresponding input
-     * pad.
-     * Last buffer before EOF will be padded with silence.
-     */
-    int request_samples;
 
     /** stage of the initialization of the link properties (dimensions, etc) */
     enum {
@@ -947,7 +938,7 @@ AVFilterContext *avfilter_graph_get_filter(AVFilterGraph *graph, const char *nam
 /**
  * Create and add a filter instance into an existing graph.
  * The filter instance is created from the filter filt and inited
- * with the parameters args and opaque.
+ * with the parameter args. opaque is currently ignored.
  *
  * In case of success put in *filt_ctx the pointer to the created
  * filter instance, otherwise set *filt_ctx to NULL.

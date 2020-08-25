@@ -404,7 +404,7 @@ char* copy_file2dir(const char *existing_file, const char *new_dir, globalData*)
 void copy_file2dir_rename(const char *existing_file, const char *new_dir, char* newfilename, globalData*);
 path_t *parse_filepath(const char* filepath, globalData*);
 void clean_path(path_t** );
-char* make_absolute(char* filepath);
+char* make_absolute(char* filepath, globalData*);
 char *fn_get_current_dir_name (void);
 int  rmdir_global(char* path, globalData*);
 int  rmdir_recursive (char *root, char *dirname, globalData*);

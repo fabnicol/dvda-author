@@ -48,7 +48,6 @@
 #define VLC_STATIC_SIZE     512
 #endif
 
-
 typedef struct SubStream {
     /// Set if a valid restart header has been read. Otherwise the substream cannot be decoded.
     uint8_t     restart_seen;
@@ -267,7 +266,7 @@ static inline int read_huff_channels(MLPDecodeContext *m, GetBitContext *gbp,
             return AVERROR_INVALIDDATA;
 
         if (lsb_bits > 0)
-            result = (result << lsb_bits) + get_bits(gbp, lsb_bits);
+            result = (result << lsb_bits) + get_bits_long(gbp, lsb_bits);
 
         result  += cp->sign_huff_offset;
         result *= 1 << quant_step_size;
@@ -830,7 +829,7 @@ static int read_channel_params(MLPDecodeContext *m, unsigned int substr,
     cp->codebook  = get_bits(gbp, 2);
     cp->huff_lsbs = get_bits(gbp, 5);
 
-    if (cp->huff_lsbs > 24) {
+    if (cp->codebook > 0 && cp->huff_lsbs > 24) {
         av_log(m->avctx, AV_LOG_ERROR, "Invalid huff_lsbs.\n");
         cp->huff_lsbs = 0;
         return AVERROR_INVALIDDATA;
@@ -1122,7 +1121,6 @@ static int output_data(MLPDecodeContext *m, unsigned int substr,
     if ((ret = ff_side_data_update_matrix_encoding(frame, s->matrix_encoding)) < 0)
         return ret;
 
-       
     *got_frame_ptr = 1;
 
     return 0;
@@ -1174,7 +1172,7 @@ static int read_access_unit(AVCodecContext *avctx, void* data,
     }
 
     substream_start = 0;
-    
+
     for (substr = 0; substr < m->num_substreams; substr++) {
         int extraword_present, checkdata_present, end, nonrestart_substr;
 
@@ -1288,9 +1286,7 @@ static int read_access_unit(AVCodecContext *avctx, void* data,
                 return AVERROR_INVALIDDATA;
 
             if (substr == m->max_decoded_substream)
-            {
                 av_log(m->avctx, AV_LOG_INFO, "End of stream indicated.\n");
-            }
         }
 
         if (substream_parity_present[substr]) {

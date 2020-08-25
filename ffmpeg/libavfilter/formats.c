@@ -24,7 +24,6 @@
 #include "libavutil/common.h"
 #include "libavutil/eval.h"
 #include "libavutil/pixdesc.h"
-#include "libavutil/parseutils.h"
 #include "avfilter.h"
 #include "internal.h"
 #include "formats.h"
@@ -34,14 +33,14 @@
 /**
  * Add all refs from a to ret and destroy a.
  */
-#define MERGE_REF(ret, a, fmts, type, fail)                                \
+#define MERGE_REF(ret, a, fmts, type, fail_statement)                      \
 do {                                                                       \
     type ***tmp;                                                           \
     int i;                                                                 \
                                                                            \
     if (!(tmp = av_realloc_array(ret->refs, ret->refcount + a->refcount,   \
                                  sizeof(*tmp))))                           \
-        goto fail;                                                         \
+        { fail_statement }                                                 \
     ret->refs = tmp;                                                       \
                                                                            \
     for (i = 0; i < a->refcount; i ++) {                                   \
@@ -55,50 +54,54 @@ do {                                                                       \
 } while (0)
 
 /**
- * Add all formats common for a and b to ret, copy the refs and destroy
- * a and b.
+ * Add all formats common to a and b to a, add b's refs to a and destroy b.
+ * If check is set, nothing is modified and it is only checked whether
+ * the formats are compatible.
+ * If empty_allowed is set and one of a,b->nb is zero, the lists are
+ * merged; otherwise, it is treated as error.
  */
-#define MERGE_FORMATS(ret, a, b, fmts, nb, type, fail)                          \
-do {                                                                            \
-    int i, j, k = 0, count = FFMIN(a->nb, b->nb);                               \
-                                                                                \
-    if (!(ret = av_mallocz(sizeof(*ret))))                                      \
-        goto fail;                                                              \
-                                                                                \
-    if (count) {                                                                \
-        if (!(ret->fmts = av_malloc_array(count, sizeof(*ret->fmts))))          \
-            goto fail;                                                          \
-        for (i = 0; i < a->nb; i++)                                             \
-            for (j = 0; j < b->nb; j++)                                         \
-                if (a->fmts[i] == b->fmts[j]) {                                 \
-                    if(k >= FFMIN(a->nb, b->nb)){                               \
-                        av_log(NULL, AV_LOG_ERROR, "Duplicate formats in %s detected\n", __FUNCTION__); \
-                        av_free(ret->fmts);                                     \
-                        av_free(ret);                                           \
-                        return NULL;                                            \
-                    }                                                           \
-                    ret->fmts[k++] = a->fmts[i];                                \
-                }                                                               \
-    }                                                                           \
-    ret->nb = k;                                                                \
-    /* check that there was at least one common format */                       \
-    if (!ret->nb)                                                               \
-        goto fail;                                                              \
-                                                                                \
-    MERGE_REF(ret, a, fmts, type, fail);                                        \
-    MERGE_REF(ret, b, fmts, type, fail);                                        \
+#define MERGE_FORMATS(a, b, fmts, nb, type, check, empty_allowed)          \
+do {                                                                       \
+    int i, j, k = 0, skip = 0;                                             \
+                                                                           \
+    if (empty_allowed) {                                                   \
+        if (!a->nb || !b->nb) {                                            \
+            if (check)                                                     \
+                return 1;                                                  \
+            if (!a->nb)                                                    \
+                FFSWAP(type *, a, b);                                      \
+            skip = 1;                                                      \
+        }                                                                  \
+    }                                                                      \
+    if (!skip) {                                                           \
+        for (i = 0; i < a->nb; i++)                                        \
+            for (j = 0; j < b->nb; j++)                                    \
+                if (a->fmts[i] == b->fmts[j]) {                            \
+                    if (check)                                             \
+                        return 1;                                          \
+                    a->fmts[k++] = a->fmts[i];                             \
+                    break;                                                 \
+                }                                                          \
+        /* Check that there was at least one common format.                \
+         * Notice that both a and b are unchanged if not. */               \
+        if (!k)                                                            \
+            return 0;                                                      \
+        av_assert2(!check);                                                \
+        a->nb = k;                                                         \
+    }                                                                      \
+                                                                           \
+    MERGE_REF(a, b, fmts, type, return AVERROR(ENOMEM););                  \
 } while (0)
 
-AVFilterFormats *ff_merge_formats(AVFilterFormats *a, AVFilterFormats *b,
-                                  enum AVMediaType type)
+static int merge_formats_internal(AVFilterFormats *a, AVFilterFormats *b,
+                                  enum AVMediaType type, int check)
 {
-    AVFilterFormats *ret = NULL;
     int i, j;
     int alpha1=0, alpha2=0;
     int chroma1=0, chroma2=0;
 
     if (a == b)
-        return a;
+        return 1;
 
     /* Do not lose chroma or alpha in merging.
        It happens if both lists have formats with chroma (resp. alpha), but
@@ -122,56 +125,58 @@ AVFilterFormats *ff_merge_formats(AVFilterFormats *a, AVFilterFormats *b,
 
     // If chroma or alpha can be lost through merging then do not merge
     if (alpha2 > alpha1 || chroma2 > chroma1)
-        return NULL;
+        return 0;
 
-    MERGE_FORMATS(ret, a, b, formats, nb_formats, AVFilterFormats, fail);
+    MERGE_FORMATS(a, b, formats, nb_formats, AVFilterFormats, check, 0);
 
-    return ret;
-fail:
-    if (ret) {
-        av_freep(&ret->refs);
-        av_freep(&ret->formats);
-    }
-    av_freep(&ret);
-    return NULL;
+    return 1;
 }
 
-AVFilterFormats *ff_merge_samplerates(AVFilterFormats *a,
-                                      AVFilterFormats *b)
+int ff_can_merge_formats(const AVFilterFormats *a, const AVFilterFormats *b,
+                         enum AVMediaType type)
 {
-    AVFilterFormats *ret = NULL;
-
-    if (a == b) return a;
-
-    if (a->nb_formats && b->nb_formats) {
-        MERGE_FORMATS(ret, a, b, formats, nb_formats, AVFilterFormats, fail);
-    } else if (a->nb_formats) {
-        MERGE_REF(a, b, formats, AVFilterFormats, fail);
-        ret = a;
-    } else {
-        MERGE_REF(b, a, formats, AVFilterFormats, fail);
-        ret = b;
-    }
-
-    return ret;
-fail:
-    if (ret) {
-        av_freep(&ret->refs);
-        av_freep(&ret->formats);
-    }
-    av_freep(&ret);
-    return NULL;
+    return merge_formats_internal((AVFilterFormats *)a,
+                                  (AVFilterFormats *)b, type, 1);
 }
 
-AVFilterChannelLayouts *ff_merge_channel_layouts(AVFilterChannelLayouts *a,
-                                                 AVFilterChannelLayouts *b)
+int ff_merge_formats(AVFilterFormats *a, AVFilterFormats *b,
+                     enum AVMediaType type)
 {
-    AVFilterChannelLayouts *ret = NULL;
+    av_assert2(a->refcount && b->refcount);
+    return merge_formats_internal(a, b, type, 0);
+}
+
+static int merge_samplerates_internal(AVFilterFormats *a,
+                                      AVFilterFormats *b, int check)
+{
+    if (a == b) return 1;
+
+    MERGE_FORMATS(a, b, formats, nb_formats, AVFilterFormats, check, 1);
+    return 1;
+}
+
+int ff_can_merge_samplerates(const AVFilterFormats *a, const AVFilterFormats *b)
+{
+    return merge_samplerates_internal((AVFilterFormats *)a, (AVFilterFormats *)b, 1);
+}
+
+int ff_merge_samplerates(AVFilterFormats *a, AVFilterFormats *b)
+{
+    av_assert2(a->refcount && b->refcount);
+    return merge_samplerates_internal(a, b, 0);
+}
+
+int ff_merge_channel_layouts(AVFilterChannelLayouts *a,
+                             AVFilterChannelLayouts *b)
+{
+    uint64_t *channel_layouts;
     unsigned a_all = a->all_layouts + a->all_counts;
     unsigned b_all = b->all_layouts + b->all_counts;
     int ret_max, ret_nb = 0, i, j, round;
 
-    if (a == b) return a;
+    av_assert2(a->refcount && b->refcount);
+
+    if (a == b) return 1;
 
     /* Put the most generic set in a, to avoid doing everything twice */
     if (a_all < b_all) {
@@ -187,18 +192,16 @@ AVFilterChannelLayouts *ff_merge_channel_layouts(AVFilterChannelLayouts *a,
             /* Not optimal: the unknown layouts of b may become known after
                another merge. */
             if (!j)
-                return NULL;
+                return 0;
             b->nb_channel_layouts = j;
         }
-        MERGE_REF(b, a, channel_layouts, AVFilterChannelLayouts, fail);
-        return b;
+        MERGE_REF(b, a, channel_layouts, AVFilterChannelLayouts, return AVERROR(ENOMEM););
+        return 1;
     }
 
     ret_max = a->nb_channel_layouts + b->nb_channel_layouts;
-    if (!(ret = av_mallocz(sizeof(*ret))) ||
-        !(ret->channel_layouts = av_malloc_array(ret_max,
-                                                 sizeof(*ret->channel_layouts))))
-        goto fail;
+    if (!(channel_layouts = av_malloc_array(ret_max, sizeof(*channel_layouts))))
+        return AVERROR(ENOMEM);
 
     /* a[known] intersect b[known] */
     for (i = 0; i < a->nb_channel_layouts; i++) {
@@ -206,8 +209,9 @@ AVFilterChannelLayouts *ff_merge_channel_layouts(AVFilterChannelLayouts *a,
             continue;
         for (j = 0; j < b->nb_channel_layouts; j++) {
             if (a->channel_layouts[i] == b->channel_layouts[j]) {
-                ret->channel_layouts[ret_nb++] = a->channel_layouts[i];
+                channel_layouts[ret_nb++] = a->channel_layouts[i];
                 a->channel_layouts[i] = b->channel_layouts[j] = 0;
+                break;
             }
         }
     }
@@ -221,7 +225,7 @@ AVFilterChannelLayouts *ff_merge_channel_layouts(AVFilterChannelLayouts *a,
             bfmt = FF_COUNT2LAYOUT(av_get_channel_layout_nb_channels(fmt));
             for (j = 0; j < b->nb_channel_layouts; j++)
                 if (b->channel_layouts[j] == bfmt)
-                    ret->channel_layouts[ret_nb++] = a->channel_layouts[i];
+                    channel_layouts[ret_nb++] = a->channel_layouts[i];
         }
         /* 1st round: swap to prepare 2nd round; 2nd round: put it back */
         FFSWAP(AVFilterChannelLayouts *, a, b);
@@ -232,23 +236,23 @@ AVFilterChannelLayouts *ff_merge_channel_layouts(AVFilterChannelLayouts *a,
             continue;
         for (j = 0; j < b->nb_channel_layouts; j++)
             if (a->channel_layouts[i] == b->channel_layouts[j])
-                ret->channel_layouts[ret_nb++] = a->channel_layouts[i];
+                channel_layouts[ret_nb++] = a->channel_layouts[i];
     }
 
-    ret->nb_channel_layouts = ret_nb;
-    if (!ret->nb_channel_layouts)
-        goto fail;
-    MERGE_REF(ret, a, channel_layouts, AVFilterChannelLayouts, fail);
-    MERGE_REF(ret, b, channel_layouts, AVFilterChannelLayouts, fail);
-    return ret;
-
-fail:
-    if (ret) {
-        av_freep(&ret->refs);
-        av_freep(&ret->channel_layouts);
+    if (!ret_nb) {
+        av_free(channel_layouts);
+        return 0;
     }
-    av_freep(&ret);
-    return NULL;
+
+    if (a->refcount > b->refcount)
+        FFSWAP(AVFilterChannelLayouts *, a, b);
+
+    MERGE_REF(b, a, channel_layouts, AVFilterChannelLayouts,
+              { av_free(channel_layouts); return AVERROR(ENOMEM); });
+    av_freep(&b->channel_layouts);
+    b->channel_layouts    = channel_layouts;
+    b->nb_channel_layouts = ret_nb;
+    return 1;
 }
 
 int ff_fmt_is_in(int fmt, const int *fmts)
@@ -289,7 +293,7 @@ AVFilterFormats *ff_make_format_list(const int *fmts)
     return formats;
 }
 
-AVFilterChannelLayouts *ff_make_formatu64_list(const uint64_t *fmts)
+AVFilterChannelLayouts *ff_make_format64_list(const int64_t *fmts)
 {
     MAKE_FORMAT_LIST(AVFilterChannelLayouts,
                      channel_layouts, nb_channel_layouts);
@@ -300,16 +304,12 @@ AVFilterChannelLayouts *ff_make_formatu64_list(const uint64_t *fmts)
     return formats;
 }
 
+#if LIBAVFILTER_VERSION_MAJOR < 8
 AVFilterChannelLayouts *avfilter_make_format64_list(const int64_t *fmts)
 {
-    MAKE_FORMAT_LIST(AVFilterChannelLayouts,
-                     channel_layouts, nb_channel_layouts);
-    if (count)
-        memcpy(formats->channel_layouts, fmts,
-               sizeof(*formats->channel_layouts) * count);
-
-    return formats;
+    return ff_make_format64_list(fmts);
 }
+#endif
 
 #define ADD_FORMAT(f, fmt, unref_fn, type, list, nb)        \
 do {                                                        \
@@ -317,7 +317,6 @@ do {                                                        \
     void *oldf = *f;                                        \
                                                             \
     if (!(*f) && !(*f = av_mallocz(sizeof(**f)))) {         \
-        unref_fn(f);                                        \
         return AVERROR(ENOMEM);                             \
     }                                                       \
                                                             \
@@ -369,15 +368,46 @@ AVFilterFormats *ff_all_formats(enum AVMediaType type)
     return ret;
 }
 
-const int64_t avfilter_all_channel_layouts[] = {
-#include "all_channel_layouts.inc"
-    -1
-};
+int ff_formats_pixdesc_filter(AVFilterFormats **rfmts, unsigned want, unsigned rej)
+{
+    unsigned nb_formats, fmt, flags;
+    AVFilterFormats *formats = NULL;
 
-// AVFilterFormats *avfilter_make_all_channel_layouts(void)
-// {
-//     return avfilter_make_format64_list(avfilter_all_channel_layouts);
-// }
+    while (1) {
+        nb_formats = 0;
+        for (fmt = 0;; fmt++) {
+            const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(fmt);
+            if (!desc)
+                break;
+            flags = desc->flags;
+            if (!(desc->flags & AV_PIX_FMT_FLAG_HWACCEL) &&
+                !(desc->flags & AV_PIX_FMT_FLAG_PLANAR) &&
+                (desc->log2_chroma_w || desc->log2_chroma_h))
+                flags |= FF_PIX_FMT_FLAG_SW_FLAT_SUB;
+            if ((flags & (want | rej)) != want)
+                continue;
+            if (formats)
+                formats->formats[nb_formats] = fmt;
+            nb_formats++;
+        }
+        if (formats) {
+            av_assert0(formats->nb_formats == nb_formats);
+            *rfmts = formats;
+            return 0;
+        }
+        formats = av_mallocz(sizeof(*formats));
+        if (!formats)
+            return AVERROR(ENOMEM);
+        formats->nb_formats = nb_formats;
+        if (nb_formats) {
+            formats->formats = av_malloc_array(nb_formats, sizeof(*formats->formats));
+            if (!formats->formats) {
+                av_freep(&formats);
+                return AVERROR(ENOMEM);
+            }
+        }
+    }
+}
 
 AVFilterFormats *ff_planar_sample_fmts(void)
 {
@@ -456,7 +486,7 @@ do {                                        \
 do {                                                               \
     int idx = -1;                                                  \
                                                                    \
-    if (!*ref || !(*ref)->refs)                                    \
+    if (!ref || !*ref || !(*ref)->refs)                            \
         return;                                                    \
                                                                    \
     FIND_REF_INDEX(ref, idx);                                      \
@@ -518,7 +548,8 @@ void ff_formats_changeref(AVFilterFormats **oldref, AVFilterFormats **newref)
             int ret = ref_fn(fmts, &ctx->inputs[i]->out_fmts);      \
             if (ret < 0) {                                          \
                 unref_fn(&fmts);                                    \
-                av_freep(&fmts->list);                              \
+                if (fmts)                                           \
+                    av_freep(&fmts->list);                          \
                 av_freep(&fmts);                                    \
                 return ret;                                         \
             }                                                       \
@@ -530,7 +561,8 @@ void ff_formats_changeref(AVFilterFormats **oldref, AVFilterFormats **newref)
             int ret = ref_fn(fmts, &ctx->outputs[i]->in_fmts);      \
             if (ret < 0) {                                          \
                 unref_fn(&fmts);                                    \
-                av_freep(&fmts->list);                              \
+                if (fmts)                                           \
+                    av_freep(&fmts->list);                          \
                 av_freep(&fmts);                                    \
                 return ret;                                         \
             }                                                       \
@@ -571,8 +603,7 @@ int ff_set_common_formats(AVFilterContext *ctx, AVFilterFormats *formats)
                        ff_formats_ref, ff_formats_unref, formats);
 }
 
-static int default_query_formats_common(AVFilterContext *ctx,
-                                        AVFilterChannelLayouts *(layouts)(void))
+int ff_default_query_formats(AVFilterContext *ctx)
 {
     int ret;
     enum AVMediaType type = ctx->inputs  && ctx->inputs [0] ? ctx->inputs [0]->type :
@@ -583,7 +614,7 @@ static int default_query_formats_common(AVFilterContext *ctx,
     if (ret < 0)
         return ret;
     if (type == AVMEDIA_TYPE_AUDIO) {
-        ret = ff_set_common_channel_layouts(ctx, layouts());
+        ret = ff_set_common_channel_layouts(ctx, ff_all_channel_counts());
         if (ret < 0)
             return ret;
         ret = ff_set_common_samplerates(ctx, ff_all_samplerates());
@@ -592,16 +623,6 @@ static int default_query_formats_common(AVFilterContext *ctx,
     }
 
     return 0;
-}
-
-int ff_default_query_formats(AVFilterContext *ctx)
-{
-    return default_query_formats_common(ctx, ff_all_channel_counts);
-}
-
-int ff_query_formats_all_layouts(AVFilterContext *ctx)
-{
-    return default_query_formats_common(ctx, ff_all_channel_layouts);
 }
 
 /* internal functions for parsing audio format arguments */
@@ -618,32 +639,6 @@ int ff_parse_pixel_format(enum AVPixelFormat *ret, const char *arg, void *log_ct
         }
     }
     *ret = pix_fmt;
-    return 0;
-}
-
-int ff_parse_sample_format(int *ret, const char *arg, void *log_ctx)
-{
-    char *tail;
-    int sfmt = av_get_sample_fmt(arg);
-    if (sfmt == AV_SAMPLE_FMT_NONE) {
-        sfmt = strtol(arg, &tail, 0);
-        if (*tail || av_get_bytes_per_sample(sfmt)<=0) {
-            av_log(log_ctx, AV_LOG_ERROR, "Invalid sample format '%s'\n", arg);
-            return AVERROR(EINVAL);
-        }
-    }
-    *ret = sfmt;
-    return 0;
-}
-
-int ff_parse_time_base(AVRational *ret, const char *arg, void *log_ctx)
-{
-    AVRational r;
-    if(av_parse_ratio(&r, arg, INT_MAX, 0, log_ctx) < 0 ||r.num<=0  ||r.den<=0) {
-        av_log(log_ctx, AV_LOG_ERROR, "Invalid time base '%s'\n", arg);
-        return AVERROR(EINVAL);
-    }
-    *ret = r;
     return 0;
 }
 

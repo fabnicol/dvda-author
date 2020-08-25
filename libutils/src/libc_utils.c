@@ -165,7 +165,7 @@ return (char*) Buffer;
 return "";
 }
 
-char* make_absolute(char* filepath)
+char* make_absolute(char* filepath, globalData* globals)
 {
 
     char* buf = (char*) calloc(MAX_PATH, sizeof(char));

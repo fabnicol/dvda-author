@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<FileVersion major="1" minor="0" />
+	<ActiveTarget name="Debug" />
+	<File name="../../src/processor.hpp" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1095" topLine="13" />
+		</Cursor>
+	</File>
+	<File name="../../src/dvd.cpp" open="1" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="23292" topLine="821" />
+		</Cursor>
+	</File>
+	<File name="../../src/flac.cpp" open="1" top="0" tabpos="18" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2389" topLine="24" />
+		</Cursor>
+	</File>
+	<File name="../../src/main.cpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="10020" topLine="339" />
+		</Cursor>
+	</File>
+	<File name="../../redist/md5/md5.c" open="1" top="0" tabpos="14" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2715" topLine="38" />
+		</Cursor>
+	</File>
+	<File name="../../src/platform.h" open="1" top="0" tabpos="20" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2726" topLine="69" />
+		</Cursor>
+	</File>
+	<File name="../../src/wx.cpp" open="1" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="4489" topLine="93" />
+		</Cursor>
+	</File>
+	<File name="../../src/lplex.hpp" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3418" topLine="151" />
+		</Cursor>
+	</File>
+	<File name="../../patch/udflist.h" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3254" topLine="46" />
+		</Cursor>
+	</File>
+	<File name="../../src/writer.cpp" open="1" top="0" tabpos="15" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="12241" topLine="413" />
+		</Cursor>
+	</File>
+	<File name="../../src/layout.cpp" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="5793" topLine="172" />
+		</Cursor>
+	</File>
+	<File name="../../src/exec.cpp" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="8808" topLine="248" />
+		</Cursor>
+	</File>
+	<File name="../../src/dvd.hpp" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="4135" topLine="123" />
+		</Cursor>
+	</File>
+	<File name="../../src/lplex.cpp" open="1" top="0" tabpos="19" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="16937" topLine="538" />
+		</Cursor>
+	</File>
+	<File name="../../src/lpcm.hpp" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="8813" topLine="240" />
+		</Cursor>
+	</File>
+	<File name="../../src/video.cpp" open="0" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1252" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="../../src/util.h" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="6832" topLine="252" />
+		</Cursor>
+	</File>
+	<File name="../../src/lpcm.cpp" open="1" top="0" tabpos="16" split="0" active="1" splitpos="0" zoom_1="2" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="11013" topLine="359" />
+		</Cursor>
+	</File>
+	<File name="../../redist/md5/md5.h" open="1" top="0" tabpos="13" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="3061" topLine="23" />
+		</Cursor>
+	</File>
+	<File name="../../src/flac.hpp" open="1" top="0" tabpos="17" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1521" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="../../src/reader.cpp" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="13231" topLine="451" />
+		</Cursor>
+	</File>
+</CodeBlocks_layout_file>

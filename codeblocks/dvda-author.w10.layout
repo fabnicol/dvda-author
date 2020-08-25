@@ -52,7 +52,7 @@
 			<Cursor1 position="6317" topLine="219" />
 		</Cursor>
 	</File>
-	<File name="..\src\launch_manager.c" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="..\src\libsoxconvert.c" open="1" top="0" tabpos="24" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="8956" topLine="236" />
 		</Cursor>
@@ -107,7 +107,7 @@
 			<Cursor1 position="11947" topLine="309" />
 		</Cursor>
 	</File>
-	<File name="..\src\include\command_line_parsing.h" open="1" top="0" tabpos="28" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="..\libiberty\src\strchrnul.c" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="1639" topLine="0" />
 		</Cursor>
@@ -132,7 +132,7 @@
 			<Cursor1 position="1072" topLine="12" />
 		</Cursor>
 	</File>
-	<File name="..\src\file_input_parsing.c" open="1" top="0" tabpos="21" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="..\src\launch_manager.c" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="1988" topLine="68" />
 		</Cursor>
@@ -217,7 +217,7 @@
 			<Cursor1 position="631" topLine="21" />
 		</Cursor>
 	</File>
-	<File name="..\src\libsoxconvert.c" open="1" top="0" tabpos="24" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="..\src\include\ats2wav.h" open="1" top="0" tabpos="20" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="1505" topLine="0" />
 		</Cursor>

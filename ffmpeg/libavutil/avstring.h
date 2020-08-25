@@ -24,6 +24,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "attributes.h"
+#include "version.h"
 
 /**
  * @addtogroup lavu_string
@@ -155,10 +156,14 @@ static inline size_t av_strnlen(const char *s, size_t len)
  */
 char *av_asprintf(const char *fmt, ...) av_printf_format(1, 2);
 
+#if FF_API_D2STR
 /**
  * Convert a number to an av_malloced string.
+ * @deprecated  use av_asprintf() with "%f" or a more specific format
  */
+attribute_deprecated
 char *av_d2str(double d);
+#endif
 
 /**
  * Unescape the given string until a non escaped terminating char,
@@ -274,16 +279,21 @@ char *av_strireplace(const char *str, const char *from, const char *to);
 
 /**
  * Thread safe basename.
- * @param path the path, on DOS both \ and / are considered separators.
+ * @param path the string to parse, on DOS both \ and / are considered separators.
  * @return pointer to the basename substring.
+ * If path does not contain a slash, the function returns a copy of path.
+ * If path is a NULL pointer or points to an empty string, a pointer
+ * to a string "." is returned.
  */
 const char *av_basename(const char *path);
 
 /**
  * Thread safe dirname.
- * @param path the path, on DOS both \ and / are considered separators.
- * @return the path with the separator replaced by the string terminator or ".".
- * @note the function may change the input string.
+ * @param path the string to parse, on DOS both \ and / are considered separators.
+ * @return A pointer to a string that's the parent directory of path.
+ * If path is a NULL pointer or points to an empty string, a pointer
+ * to a string "." is returned.
+ * @note the function may modify the contents of the path, so copies should be passed.
  */
 const char *av_dirname(char *path);
 
