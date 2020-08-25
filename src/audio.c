@@ -1080,7 +1080,13 @@ uint8_t extract_audio_info(fileinfo_t *info, globalData* globals)
     {
        info->filename = info->given_channel[0];
 
+  // preserving true channel count
+       int ch = info->channels;
+
+       // now getting bit rate, sample rate etc.
        info->type = fixwav_repair(info, globals);
+
+       info->channels = ch;
 
      // this should be amended with audio groups 1 and 2 are implemented
     }
@@ -1425,30 +1431,29 @@ else
       EXITING
   }
 
-  if (globals->debugging) foutput(INF "Opening %s to get info\n", info->filename);
+   if (globals->debugging) foutput(INF "Opening %s to get info\n", info->filename);
 
-  int span = compute_header_size(info->fp, globals);
-
-  info->header_size  = (span > 0) ? span + 8 : MAX_HEADER_SIZE;
+  info->header_size = MAX_HEADER_SIZE;
   uint8_t header[info->header_size];
   memset(header, 0, info->header_size);
 
   /* PATCH: real size on disc is needed */
 
   #if defined __WIN32__
-        info->file_size = read_file_size(info->fp,(TCHAR*) info->filename);
+        info->file_size = read_file_size(info->audio->fp,(TCHAR*) info->filename);
   #else
         info->file_size = read_file_size(info->fp, info->filename);
   #endif
 
   fseek(info->fp, 0, SEEK_SET);
-
+  int span = 0;
   if (info->header_size > (span = fread(header, 1, info->header_size, info->fp)))
   {
     foutput(ERR "Could not read header of size %d, just read %d character(s)\n", info->header_size, span);
     perror("       ");
     clean_exit(EXIT_FAILURE, globals);
   }
+
 
   info->type = extract_audio_info_by_all_means(header, info, globals);
 }
@@ -2511,17 +2516,12 @@ uint32_t audio_read_merged(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuf
 
     if (info->type == AFMT_WAVE || info->type == AFMT_MLP)
     {
-        uint32_t request = (*bytesinbuffer + offset + requested_bytes < AUDIO_BUFFER_SIZE) ? requested_bytes / info->channels :
-                                  (AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset)) / (info->channels * (info->bitspersample / 8)) ;
+          uint32_t request = (*bytesinbuffer + offset + requested_bytes < AUDIO_BUFFER_SIZE) ? requested_bytes / info->channels :
+                                  (AUDIO_BUFFER_SIZE - (*bytesinbuffer + offset)) / info->channels;
 
-        int unitsize = info->bitspersample == 16 ? (info->channels < 3 ? 1 : 4) : 6;
-
-        for (int z = 0; z < request; ++z)
+        for (int w = 0; w < info->channels; ++w)
         {
-            for (int w = 0; w < info->channels; ++w)
-            {
-               buffer_increment += fread(buf + offset + w * unitsize, 1, unitsize, info->channel_fp[w]);
-            }
+           buffer_increment += fread(buf + offset + w * request, 1, request, info->channel_fp[w]);
         }
 
         if (info->bytesread + buffer_increment > info->numbytes)
@@ -2532,8 +2532,7 @@ uint32_t audio_read_merged(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuf
         info->bytesread += buffer_increment;
         uint32_t bytesread = buffer_increment;
 
-#if 0
-        while (buffer_increment  &&  info->bytesread < info->numbytes
+        while (info->bytesread < info->numbytes
                && bytesread < requested_bytes)
         {
             uint32_t request = (*bytesinbuffer + offset + requested_bytes < AUDIO_BUFFER_SIZE) ?
@@ -2544,12 +2543,7 @@ uint32_t audio_read_merged(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuf
 
             for (int u = 0; u < info->channels; ++u)
             {
-               int got = fread(buf + bytesread + offset + u * request, 1, request, info->channel_fp[u]);
-               if (got < request)
-               {
-                   fprintf(stderr, ERR "%s%d%s%s\n", "Could not load ", request, " bytes from ", info->given_channel[u]);
-               }
-                buffer_increment += got;
+               buffer_increment += fread(buf + bytesread + offset + u * request, 1, request, info->channel_fp[u]);
             }
 
             if (info->bytesread + buffer_increment > info->numbytes)
@@ -2560,7 +2554,7 @@ uint32_t audio_read_merged(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuf
             info->bytesread += buffer_increment;
             bytesread += buffer_increment;
         }
-#endif
+
         buffer_increment = bytesread;
     }
 

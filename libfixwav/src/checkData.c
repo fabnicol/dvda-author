@@ -177,7 +177,7 @@ int prune(WaveData *info, WaveHeader *header, globalData* globals)
       if (info->in_place) fclose(info->infile.fp);
       offset=-count;
 #else
-      offset=size -count;
+      offset=0; //size -count;
 
 #endif
       // Truncating only if changes made in place, otherwise truncations results from incomplete copying at Checkout stage

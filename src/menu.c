@@ -409,7 +409,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile, globalDa
                 if (NULL == freopen(soundtrack, "rb", stdin))
                 {
                     perror(ERR "freopen");
-                    clean_exit(EXIT_FAILURE);
+                    clean_exit(EXIT_FAILURE, globals);
                 }
 
                 dup2(STDOUT_FILENO, STDERR_FILENO);
@@ -482,7 +482,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile, globalDa
         {
             foutput(ERR "still pic: %s", pict);
         }
-        clean_exit(EXIT_FAILURE);
+        clean_exit(EXIT_FAILURE, globals);
     }
     fclose(f);
     errno=0;
@@ -561,7 +561,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile, globalDa
                 while (read(tubeerr2[0], &c, 1) == 1) foutput("%c",c);
                 close(tubeerr2[0]);
                 if (globals->debugging) foutput("%s\n", INF "Running mplex...");
-                run(mplex, argsmplex, WAIT, FORK);
+                run(mplex, argsmplex, WAIT, FORK, globals);
             }
         close(tube[0]);
     }
@@ -1269,7 +1269,7 @@ int create_stillpic_directory(char* string, int32_t count, globalData* globals)
         if (globals->debugging) foutput(INF "Directory %s will be parsed for still pics\n", string);
         globals->settings.stillpicdir = strdup(string);
 
-        change_directory(globals->settings.workdir);
+        change_directory(globals->settings.workdir, globals);
         return 0;
     }
     if (S_IFREG & buf.st_mode)

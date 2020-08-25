@@ -53,6 +53,7 @@
 			<Add directory="../" />
 			<Add directory="../libutils/src/include" />
 			<Add directory="../libutils/src/private" />
+			<Add directory="../ffmpeg" />
 		</Compiler>
 		<Linker>
 			<Add option="-lsox" />
@@ -65,6 +66,11 @@
 			<Add option="-lvorbis" />
 			<Add option="-logg" />
 			<Add option="-lpng" />
+			<Add option="-lm" />
+			<Add library="../local/lib/libavformat.a" />
+			<Add library="../local/lib/libavcodec.a" />
+			<Add library="../local/lib/libavfilter.a" />
+			<Add library="../local/lib/libavutil.a" />
 		</Linker>
 		<Unit filename="../config.h" />
 		<Unit filename="../libfixwav/src/checkData.c">
@@ -209,10 +215,6 @@
 		<Unit filename="../src/xml.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Extensions>
-			<code_completion />
-			<envvars />
-			<debugger />
-		</Extensions>
+		<Extensions />
 	</Project>
 </CodeBlocks_project_file>

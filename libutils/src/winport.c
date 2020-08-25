@@ -279,7 +279,8 @@ void pipe_to_child_stdin(const char* name,
                           FILE_DESCRIPTOR *g_hChildStd_ERR_Rd,
                           FILE_DESCRIPTOR *g_hChildStd_ERR_Wr,
                           PROCESS_INFORMATION GCC_UNUSED *piProcInfo, // Windows only
-                          STARTUPINFO GCC_UNUSED *siStartInfo)        // Windows only
+                          STARTUPINFO GCC_UNUSED *siStartInfo,
+                          globalData* globals)        // Windows only
 {
        static int tube[2];
        static int tubeerr[2];
@@ -287,7 +288,7 @@ void pipe_to_child_stdin(const char* name,
        if (pipe(tube) || pipe(tubeerr))
         {
             perror(ERR "Pipe");
-            clean_exit(-1);
+            clean_exit(-1, globals);
         }
 
         *g_hChildStd_IN_Rd = tube[0];
@@ -311,7 +312,7 @@ void pipe_to_child_stdin(const char* name,
                 execv(name, (char* const*) args);
                 fprintf(stderr, "%s\n", ERR "Runtime failure in ffplay child process");
                 perror("");
-                clean_exit(-1);
+                clean_exit(-1, globals);
 
             default:
                 close(tube[0]);
@@ -339,7 +340,7 @@ void close_handles(
 DWORD write_to_child_stdin(
      uint8_t* chBuf,
      DWORD dwBytesToBeWritten,
-     FILE_DESCRIPTOR GCC_UNUSED g_hChildStd_IN_Wr)
+     FILE_DESCRIPTOR GCC_UNUSED g_hChildStd_IN_Wr, globalData* globals)
 {
     unsigned long int dwWritten;
     errno = 0;
