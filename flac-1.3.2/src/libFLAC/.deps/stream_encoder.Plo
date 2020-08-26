@@ -72,9 +72,9 @@ stream_encoder.lo: stream_encoder.c /usr/include/stdc-predef.h \
  ../../include/FLAC/ordinals.h include/protected/stream_encoder.h \
  ../../include/FLAC/stream_encoder.h ../../include/FLAC/stream_decoder.h \
  include/private/ogg_encoder_aspect.h \
- /home/fab/Dev/dvda-author2/local/include/ogg/ogg.h \
- /home/fab/Dev/dvda-author2/local/include/ogg/os_types.h \
- /home/fab/Dev/dvda-author2/local/include/ogg/config_types.h \
+ /home/fab/Dev/dvda-author/local/include/ogg/ogg.h \
+ /home/fab/Dev/dvda-author/local/include/ogg/os_types.h \
+ /home/fab/Dev/dvda-author/local/include/ogg/config_types.h \
  ../../include/FLAC/ordinals.h include/private/float.h \
  include/private/bitwriter.h include/private/bitmath.h \
  include/private/crc.h include/private/cpu.h include/private/fixed.h \
@@ -266,11 +266,11 @@ include/protected/stream_encoder.h:
 
 include/private/ogg_encoder_aspect.h:
 
-/home/fab/Dev/dvda-author2/local/include/ogg/ogg.h:
+/home/fab/Dev/dvda-author/local/include/ogg/ogg.h:
 
-/home/fab/Dev/dvda-author2/local/include/ogg/os_types.h:
+/home/fab/Dev/dvda-author/local/include/ogg/os_types.h:
 
-/home/fab/Dev/dvda-author2/local/include/ogg/config_types.h:
+/home/fab/Dev/dvda-author/local/include/ogg/config_types.h:
 
 ../../include/FLAC/ordinals.h:
 

@@ -14,10 +14,10 @@ library_names=''
 old_library='libmjpegutils.a'
 
 # Linker flags that cannot go in dependency_libs.
-inherited_linker_flags=''
+inherited_linker_flags=' -pthread'
 
 # Libraries that this one depends upon.
-dependency_libs=' -L/c/msys64/mingw64/lib'
+dependency_libs=' -lm'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''
@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='c:/Users/Public/Dev/dvda-author/local/lib'
+libdir='/home/fab/Dev/dvda-author/local/lib'

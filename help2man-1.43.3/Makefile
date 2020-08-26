@@ -10,7 +10,7 @@
 # Written by Brendan O'Dea <bod@debian.org>
 
 srcdir = .
-prefix = /home/fab/Dev/dvda-author2/local
+prefix = /home/fab/Dev/dvda-author/help2man-1.43.3/../local
 exec_prefix = ${prefix}
 
 bindir = ${exec_prefix}/bin
@@ -31,10 +31,10 @@ LINGUAS = $(basename $(notdir $(wildcard $(srcdir)/po/*.po)))
 CC = gcc
 PERL = perl
 LIBS = -ldl 
-INSTALL = /bin/sh /home/fab/Dev/dvda-author2/config/install-sh 
+INSTALL = /usr/bin/install -c
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
-INSTALL_DATA = /bin/sh /home/fab/Dev/dvda-author2/config/install-sh  -m 644
+INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_INFO = /usr/bin/install-info
 MAKEINFO = /usr/bin/makeinfo
 MSGFMT = /usr/bin/msgfmt

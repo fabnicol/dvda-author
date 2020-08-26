@@ -15,7 +15,9 @@
 /* #undef BUILD_MODULES */
 
 /* Define if you have the bzip2 library */
-/* #undef BZLIB_DELEGATE */
+#ifndef MAGICKCORE_BZLIB_DELEGATE
+#define MAGICKCORE_BZLIB_DELEGATE 1
+#endif
 
 /* Define if you have CAIRO library */
 /* #undef CAIRO_DELEGATE */
@@ -35,7 +37,7 @@
 
 /* Directory where architecture-dependent configuration files live. */
 #ifndef MAGICKCORE_CONFIGURE_PATH
-#define MAGICKCORE_CONFIGURE_PATH "/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local/etc/ImageMagick-7/"
+#define MAGICKCORE_CONFIGURE_PATH "/home/fab/Dev/dvda-author/local/etc/ImageMagick-7/"
 #endif
 
 /* Subdirectory of lib where architecture-dependent configuration files live.
@@ -49,7 +51,7 @@
 
 /* Directory where ImageMagick documents live. */
 #ifndef MAGICKCORE_DOCUMENTATION_PATH
-#define MAGICKCORE_DOCUMENTATION_PATH "/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local/share/doc/ImageMagick-7/"
+#define MAGICKCORE_DOCUMENTATION_PATH "/home/fab/Dev/dvda-author/local/share/doc/ImageMagick-7/"
 #endif
 
 /* Define if you have Display Postscript */
@@ -60,7 +62,7 @@
 
 /* Directory where executables are installed. */
 #ifndef MAGICKCORE_EXECUTABLE_PATH
-#define MAGICKCORE_EXECUTABLE_PATH "/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local/bin/"
+#define MAGICKCORE_EXECUTABLE_PATH "/home/fab/Dev/dvda-author/local/bin/"
 #endif
 
 /* Define if you have FFTW library */
@@ -75,13 +77,17 @@
 /* #undef FLIF_DELEGATE */
 
 /* Define if you have FONTCONFIG library */
-/* #undef FONTCONFIG_DELEGATE */
+#ifndef MAGICKCORE_FONTCONFIG_DELEGATE
+#define MAGICKCORE_FONTCONFIG_DELEGATE 1
+#endif
 
 /* Define if you have FlashPIX library */
 /* #undef FPX_DELEGATE */
 
 /* Define if you have FREETYPE library */
-/* #undef FREETYPE_DELEGATE */
+#ifndef MAGICKCORE_FREETYPE_DELEGATE
+#define MAGICKCORE_FREETYPE_DELEGATE 1
+#endif
 
 /* Define if you have Ghostscript library or framework */
 /* #undef GS_DELEGATE */
@@ -371,7 +377,9 @@
 #endif
 
 /* Define if you have the <lcms2.h> header file. */
-/* #undef HAVE_LCMS2_H */
+#ifndef MAGICKCORE_HAVE_LCMS2_H
+#define MAGICKCORE_HAVE_LCMS2_H 1
+#endif
 
 /* Define if you have the <lcms2/lcms2.h> header file. */
 /* #undef HAVE_LCMS2_LCMS2_H */
@@ -385,7 +393,9 @@
 #endif
 
 /* Define to 1 if you have the <linux/unistd.h> header file. */
-/* #undef HAVE_LINUX_UNISTD_H */
+#ifndef MAGICKCORE_HAVE_LINUX_UNISTD_H
+#define MAGICKCORE_HAVE_LINUX_UNISTD_H 1
+#endif
 
 /* Define to 1 if you have the `lltostr' function. */
 /* #undef HAVE_LLTOSTR */
@@ -425,9 +435,7 @@
 #endif
 
 /* Define to 1 if you have the <machine/param.h> header file. */
-#ifndef MAGICKCORE_HAVE_MACHINE_PARAM_H
-#define MAGICKCORE_HAVE_MACHINE_PARAM_H 1
-#endif
+/* #undef HAVE_MACHINE_PARAM_H */
 
 /* Define to 1 if you have the <mach-o/dyld.h> header file. */
 /* #undef HAVE_MACH_O_DYLD_H */
@@ -548,9 +556,7 @@
 #endif
 
 /* Define to 1 if you have the <process.h> header file. */
-#ifndef MAGICKCORE_HAVE_PROCESS_H
-#define MAGICKCORE_HAVE_PROCESS_H 1
-#endif
+/* #undef HAVE_PROCESS_H */
 
 /* Define if you have POSIX threads libraries and header files. */
 #ifndef MAGICKCORE_HAVE_PTHREAD
@@ -558,7 +564,9 @@
 #endif
 
 /* Have PTHREAD_PRIO_INHERIT. */
-/* #undef HAVE_PTHREAD_PRIO_INHERIT */
+#ifndef MAGICKCORE_HAVE_PTHREAD_PRIO_INHERIT
+#define MAGICKCORE_HAVE_PTHREAD_PRIO_INHERIT 1
+#endif
 
 /* Define to 1 if you have the `pwrite' function. */
 #ifndef MAGICKCORE_HAVE_PWRITE
@@ -601,7 +609,9 @@
 #endif
 
 /* Define to 1 if you have the `sendfile' function. */
-/* #undef HAVE_SENDFILE */
+#ifndef MAGICKCORE_HAVE_SENDFILE
+#define MAGICKCORE_HAVE_SENDFILE 1
+#endif
 
 /* Define to 1 if you have the `setlocale' function. */
 #ifndef MAGICKCORE_HAVE_SETLOCALE
@@ -614,10 +624,14 @@
 #endif
 
 /* X11 server supports shape extension */
-/* #undef HAVE_SHAPE */
+#ifndef MAGICKCORE_HAVE_SHAPE
+#define MAGICKCORE_HAVE_SHAPE 1
+#endif
 
 /* X11 server supports shared memory extension */
-/* #undef HAVE_SHARED_MEMORY */
+#ifndef MAGICKCORE_HAVE_SHARED_MEMORY
+#define MAGICKCORE_HAVE_SHARED_MEMORY 1
+#endif
 
 /* Define to 1 if you have the `sigaction' function. */
 #ifndef MAGICKCORE_HAVE_SIGACTION
@@ -635,9 +649,7 @@
 #endif
 
 /* Define to 1 if you have the `spawnvp' function. */
-#ifndef MAGICKCORE_HAVE_SPAWNVP
-#define MAGICKCORE_HAVE_SPAWNVP 1
-#endif
+/* #undef HAVE_SPAWNVP */
 
 /* Define to 1 if you have the `sqrt' function. */
 #ifndef MAGICKCORE_HAVE_SQRT
@@ -718,14 +730,10 @@
 #endif
 
 /* Define to 1 if you have the `strlcat' function. */
-#ifndef MAGICKCORE_HAVE_STRLCAT
-#define MAGICKCORE_HAVE_STRLCAT 1
-#endif
+/* #undef HAVE_STRLCAT */
 
 /* Define to 1 if you have the `strlcpy' function. */
-#ifndef MAGICKCORE_HAVE_STRLCPY
-#define MAGICKCORE_HAVE_STRLCPY 1
-#endif
+/* #undef HAVE_STRLCPY */
 
 /* Define to 1 if you have the `strncasecmp' function. */
 #ifndef MAGICKCORE_HAVE_STRNCASECMP
@@ -824,7 +832,9 @@
 #endif
 
 /* Define to 1 if you have the <sys/sendfile.h> header file. */
-/* #undef HAVE_SYS_SENDFILE_H */
+#ifndef MAGICKCORE_HAVE_SYS_SENDFILE_H
+#define MAGICKCORE_HAVE_SYS_SENDFILE_H 1
+#endif
 
 /* Define to 1 if you have the <sys/socket.h> header file. */
 #ifndef MAGICKCORE_HAVE_SYS_SOCKET_H
@@ -1004,9 +1014,7 @@
 #endif
 
 /* Define to 1 if you have the <windows.h> header file. */
-#ifndef MAGICKCORE_HAVE_WINDOWS_H
-#define MAGICKCORE_HAVE_WINDOWS_H 1
-#endif
+/* #undef HAVE_WINDOWS_H */
 
 /* Define to 1 if `fork' works. */
 #ifndef MAGICKCORE_HAVE_WORKING_FORK
@@ -1070,12 +1078,12 @@
 
 /* Directory where ImageMagick architecture headers live. */
 #ifndef MAGICKCORE_INCLUDEARCH_PATH
-#define MAGICKCORE_INCLUDEARCH_PATH "/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local/include/ImageMagick-7/"
+#define MAGICKCORE_INCLUDEARCH_PATH "/home/fab/Dev/dvda-author/local/include/ImageMagick-7/"
 #endif
 
 /* Directory where ImageMagick headers live. */
 #ifndef MAGICKCORE_INCLUDE_PATH
-#define MAGICKCORE_INCLUDE_PATH "/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local/include/ImageMagick-7/"
+#define MAGICKCORE_INCLUDE_PATH "/home/fab/Dev/dvda-author/local/include/ImageMagick-7/"
 #endif
 
 /* ImageMagick is formally installed under prefix */
@@ -1084,20 +1092,26 @@
 #endif
 
 /* Define if you have JBIG library */
-/* #undef JBIG_DELEGATE */
+#ifndef MAGICKCORE_JBIG_DELEGATE
+#define MAGICKCORE_JBIG_DELEGATE 1
+#endif
 
 /* Define if you have JPEG library */
-/* #undef JPEG_DELEGATE */
+#ifndef MAGICKCORE_JPEG_DELEGATE
+#define MAGICKCORE_JPEG_DELEGATE 1
+#endif
 
 /* Define if you have LCMS library */
-/* #undef LCMS_DELEGATE */
+#ifndef MAGICKCORE_LCMS_DELEGATE
+#define MAGICKCORE_LCMS_DELEGATE 1
+#endif
 
 /* Define if you have OPENJP2 library */
 /* #undef LIBOPENJP2_DELEGATE */
 
 /* Directory where architecture-dependent files live. */
 #ifndef MAGICKCORE_LIBRARY_PATH
-#define MAGICKCORE_LIBRARY_PATH "/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local/lib/ImageMagick-7.0.8/"
+#define MAGICKCORE_LIBRARY_PATH "/home/fab/Dev/dvda-author/local/lib/ImageMagick-7.0.8/"
 #endif
 
 /* Subdirectory of lib where ImageMagick architecture dependent files are
@@ -1140,12 +1154,12 @@
 
 /* Target Host OS */
 #ifndef MAGICKCORE_MAGICK_TARGET_OS
-#define MAGICKCORE_MAGICK_TARGET_OS cygwin
+#define MAGICKCORE_MAGICK_TARGET_OS linux-gnu
 #endif
 
 /* Target Host Vendor */
 #ifndef MAGICKCORE_MAGICK_TARGET_VENDOR
-#define MAGICKCORE_MAGICK_TARGET_VENDOR unknown
+#define MAGICKCORE_MAGICK_TARGET_VENDOR pc
 #endif
 
 /* Module directory name without ABI part. */
@@ -1213,7 +1227,9 @@
 /* #undef PIPES_SUPPORT */
 
 /* Define if you have PNG library */
-/* #undef PNG_DELEGATE */
+#ifndef MAGICKCORE_PNG_DELEGATE
+#define MAGICKCORE_PNG_DELEGATE 1
+#endif
 
 /* Define to necessary symbol if this constant uses a non-standard name on
    your system. */
@@ -1266,7 +1282,7 @@
 
 /* Directory where architecture-independent configuration files live. */
 #ifndef MAGICKCORE_SHARE_PATH
-#define MAGICKCORE_SHARE_PATH "/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local/share/ImageMagick-7/"
+#define MAGICKCORE_SHARE_PATH "/home/fab/Dev/dvda-author/local/share/ImageMagick-7/"
 #endif
 
 /* Subdirectory of lib where architecture-independent configuration files
@@ -1417,15 +1433,17 @@
 #endif
 
 /* Define if you have WEBPMUX library */
-/* #undef WEBPMUX_DELEGATE */
+#ifndef MAGICKCORE_WEBPMUX_DELEGATE
+#define MAGICKCORE_WEBPMUX_DELEGATE 1
+#endif
 
 /* Define if you have WEBP library */
-/* #undef WEBP_DELEGATE */
+#ifndef MAGICKCORE_WEBP_DELEGATE
+#define MAGICKCORE_WEBP_DELEGATE 1
+#endif
 
 /* Define to use the Windows GDI32 library */
-#ifndef MAGICKCORE_WINGDI32_DELEGATE
-#define MAGICKCORE_WINGDI32_DELEGATE 1
-#endif
+/* #undef WINGDI32_DELEGATE */
 
 /* Define if using the dmalloc debugging malloc package */
 /* #undef WITH_DMALLOC */
@@ -1451,21 +1469,23 @@
 #endif
 
 /* Define if you have X11 library */
-/* #undef X11_DELEGATE */
+#ifndef MAGICKCORE_X11_DELEGATE
+#define MAGICKCORE_X11_DELEGATE 1
+#endif
 
 /* Define if you have XML library */
 /* #undef XML_DELEGATE */
 
 /* Define to 1 if the X Window System is missing or not being used. */
-#ifndef MAGICKCORE_X_DISPLAY_MISSING
-#define MAGICKCORE_X_DISPLAY_MISSING 1
-#endif
+/* #undef X_DISPLAY_MISSING */
 
 /* Build self-contained, embeddable, zero-configuration ImageMagick */
 /* #undef ZERO_CONFIGURATION_SUPPORT */
 
 /* Define if you have ZLIB library */
-/* #undef ZLIB_DELEGATE */
+#ifndef MAGICKCORE_ZLIB_DELEGATE
+#define MAGICKCORE_ZLIB_DELEGATE 1
+#endif
 
 /* Define if you have ZSTD library */
 /* #undef ZSTD_DELEGATE */

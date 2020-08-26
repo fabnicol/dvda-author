@@ -61,9 +61,9 @@ ogg_helper.lo: ogg_helper.c /usr/include/stdc-predef.h ../../config.h \
  /usr/include/x86_64-linux-gnu/bits/unistd_ext.h /usr/include/inttypes.h \
  /usr/include/utime.h /usr/lib/gcc/x86_64-linux-gnu/9/include/stdarg.h \
  include/private/ogg_helper.h \
- /home/fab/Dev/dvda-author2/local/include/ogg/ogg.h \
- /home/fab/Dev/dvda-author2/local/include/ogg/os_types.h \
- /home/fab/Dev/dvda-author2/local/include/ogg/config_types.h \
+ /home/fab/Dev/dvda-author/local/include/ogg/ogg.h \
+ /home/fab/Dev/dvda-author/local/include/ogg/os_types.h \
+ /home/fab/Dev/dvda-author/local/include/ogg/config_types.h \
  ../../include/FLAC/stream_encoder.h /usr/include/stdio.h \
  /usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h \
@@ -227,11 +227,11 @@ ogg_helper.lo: ogg_helper.c /usr/include/stdc-predef.h ../../config.h \
 
 include/private/ogg_helper.h:
 
-/home/fab/Dev/dvda-author2/local/include/ogg/ogg.h:
+/home/fab/Dev/dvda-author/local/include/ogg/ogg.h:
 
-/home/fab/Dev/dvda-author2/local/include/ogg/os_types.h:
+/home/fab/Dev/dvda-author/local/include/ogg/os_types.h:
 
-/home/fab/Dev/dvda-author2/local/include/ogg/config_types.h:
+/home/fab/Dev/dvda-author/local/include/ogg/config_types.h:
 
 ../../include/FLAC/stream_encoder.h:
 

@@ -11,9 +11,9 @@ ogg_decoder_aspect.lo: ogg_decoder_aspect.c /usr/include/stdc-predef.h \
  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
  /usr/include/strings.h ../../include/FLAC/assert.h \
  include/private/ogg_decoder_aspect.h \
- /home/fab/Dev/dvda-author2/local/include/ogg/ogg.h \
- /home/fab/Dev/dvda-author2/local/include/ogg/os_types.h \
- /home/fab/Dev/dvda-author2/local/include/ogg/config_types.h \
+ /home/fab/Dev/dvda-author/local/include/ogg/ogg.h \
+ /home/fab/Dev/dvda-author/local/include/ogg/os_types.h \
+ /home/fab/Dev/dvda-author/local/include/ogg/config_types.h \
  /usr/include/inttypes.h /usr/lib/gcc/x86_64-linux-gnu/9/include/stdint.h \
  /usr/include/stdint.h /usr/include/x86_64-linux-gnu/bits/types.h \
  /usr/include/x86_64-linux-gnu/bits/timesize.h \
@@ -89,11 +89,11 @@ ogg_decoder_aspect.lo: ogg_decoder_aspect.c /usr/include/stdc-predef.h \
 
 include/private/ogg_decoder_aspect.h:
 
-/home/fab/Dev/dvda-author2/local/include/ogg/ogg.h:
+/home/fab/Dev/dvda-author/local/include/ogg/ogg.h:
 
-/home/fab/Dev/dvda-author2/local/include/ogg/os_types.h:
+/home/fab/Dev/dvda-author/local/include/ogg/os_types.h:
 
-/home/fab/Dev/dvda-author2/local/include/ogg/config_types.h:
+/home/fab/Dev/dvda-author/local/include/ogg/config_types.h:
 
 /usr/include/inttypes.h:
 

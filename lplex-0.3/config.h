@@ -5,7 +5,7 @@
 #define HAVE_ATEXIT 1
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
-/* #undef HAVE_DLFCN_H */
+#define HAVE_DLFCN_H 1
 
 /* Define to 1 if you have the <fcntl.h> header file. */
 #define HAVE_FCNTL_H 1
@@ -23,7 +23,7 @@
 #define HAVE_MEMSET 1
 
 /* Define to 1 if you have the `popen' function. */
-/* #undef HAVE_POPEN */
+#define HAVE_POPEN 1
 
 /* Define to 1 if you have the `putenv' function. */
 #define HAVE_PUTENV 1
@@ -60,9 +60,6 @@
 
 /* Define to 1 if the system has the type `_Bool'. */
 #define HAVE__BOOL 1
-
-/* Define if running the test suite so that test #27 works on MinGW. */
-#define LT_MINGW_STATIC_TESTSUITE_HACK 1
 
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 #define LT_OBJDIR ".libs/"
