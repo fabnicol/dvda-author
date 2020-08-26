@@ -146,6 +146,8 @@ typedef struct
     uint8_t action;
     uint8_t nmenus;
     uint8_t ncolumns;
+    uint8_t maxbuttons;
+    uint8_t resbuttons;
     uint16_t count;
     uint16_t* npics;
     uint16_t* topmenu_nslides;

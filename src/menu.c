@@ -32,8 +32,6 @@
 
 uint16_t norm_x=PAL_X, norm_y=PAL_Y;  // TODO: adjust for ntsc #define NTSC_Y 480
 extern uint16_t totntracks;
-uint8_t maxbuttons, resbuttons;
-
 
 
 void menu_characteristics_coherence_test(pic* img, uint8_t ngroups, globalData* globals)
@@ -87,8 +85,8 @@ void menu_characteristics_coherence_test(pic* img, uint8_t ngroups, globalData* 
 
         }
 
-        maxbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)/img->nmenus;
-        resbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)%img->nmenus;
+        img->maxbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)/img->nmenus;
+        img->resbuttons=Min(MAX_BUTTON_Y_NUMBER-2,totntracks)%img->nmenus;
     }
 
 
@@ -959,10 +957,9 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
 
     if (!img->hierarchical)
     {
-        maxbuttons=Min(MAX_BUTTON_Y_NUMBER-2, totntracks) / img->nmenus;
-        resbuttons=Min(MAX_BUTTON_Y_NUMBER-2, totntracks) % img->nmenus;
+        img->maxbuttons=Min(MAX_BUTTON_Y_NUMBER-2, totntracks) / img->nmenus;
+        img->resbuttons=Min(MAX_BUTTON_Y_NUMBER-2, totntracks) % img->nmenus;
     }
-
 
     if (img->screentextchain)
     {
@@ -1062,13 +1059,13 @@ int generate_menu_pics(pic* img, uint8_t ngroups, uint8_t *ntracks, uint8_t maxn
 
         if (img->hierarchical)
         {
-            maxbuttons=(menu == 0)? ngroups : Min(MAX_BUTTON_Y_NUMBER-2,ntracks[groupcount]);
-            resbuttons=0;
+            img->maxbuttons=(menu == 0)? ngroups : Min(MAX_BUTTON_Y_NUMBER-2,ntracks[groupcount]);
+            img->resbuttons=0;
         }
 
 
         arrowbuttons=(menu < img->nmenus-1)+(menu > 0);
-        menubuttons=(menu < img->nmenus-1)? maxbuttons : maxbuttons+resbuttons;
+        menubuttons=(menu < img->nmenus-1)? img->maxbuttons : img->maxbuttons+img->resbuttons;
 
         buttons=0;
 

@@ -47,8 +47,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "c_utils.h"
 #include "structures.h"
 
-
-extern uint8_t channels[21];
+static const uint8_t channels[21] = {1,2,3,4,3,4,5,3,4,5,4,5,6,4,5,4,5,6,5,5,6};
 
 
 /* pack_scr was taken from mplex (part of the mjpegtools) */

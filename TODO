@@ -1,6 +1,7 @@
 
 FIX BUGS:
 
+Videolinking recentely broken under windows/msys2. possibly globals.
 
 Short term
 ----------

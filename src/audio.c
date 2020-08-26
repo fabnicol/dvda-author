@@ -35,7 +35,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
 static const uint8_t default_cga[6] = {0,  1,  7,  3,   9,   12};  //default channel assignment
-uint32_t cga2wav_channels[21] = {0x4, 0x3, 0x103, 0x33, 0xB, 0x10B, 0x3B, 0x7, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x3B, 0x37, 0x3B };
+static uint32_t cga2wav_channels[21] = {0x4, 0x3, 0x103, 0x33, 0xB, 0x10B, 0x3B, 0x7, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x3B, 0x37, 0x3B };
 
 
 // Channel group assignment (CGA)
@@ -178,7 +178,7 @@ inline uint8_t wav2cga_channels(fileinfo_t *info, globalData* globals)
  }
 
 
-const char* cga_define[21] = {"Mono",
+static const char* cga_define[21] = {"Mono",
                                      "L-R",
                                      "Lf-Rf-S2",
                                      "Lf-Rf-Ls2-Rs2",
@@ -255,7 +255,7 @@ ID\Chan 0   1   2   3   	4   5     info->channels
     20 	L 	R 	Ls 	Rs 	    C  	Lfe    6
 */
 
-const uint8_t channels[21] = {1,2,3,4,3,4,5,3,4,5,4,5,6,4,5,4,5,6,5,5,6};
+static const uint8_t channels[21] = {1,2,3,4,3,4,5,3,4,5,4,5,6,4,5,4,5,6,5,5,6};
 
 // number of channels x sampling rate in Hz x bit rate = bandwidth <= 9,6 Mbps
 // Each permutation table has length : 2 x sample size (nchannels x nbitspersample / 8 e.g. 2 x 6 x 24 / 8 = 36 for 6-ch. 24-bit audio, whatever the sample rate)

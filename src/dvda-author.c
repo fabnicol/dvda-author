@@ -317,6 +317,8 @@ int main(int argc,  char* const argv[])
         NOPICS,  // neither still pics nor video top menu
         0,   // no topmenu screen
         DEFAULT_MENU_NCOLUMNS,
+        0,   // maxbuttons
+        0,   // resbuttons
         0,  // pic count
         NULL, // npics table
         NULL,

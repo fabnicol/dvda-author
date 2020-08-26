@@ -16,7 +16,7 @@
 
 
 extern uint16_t norm_x, norm_y, totntracks;
-extern uint8_t maxbuttons, resbuttons;
+
 
 int  generate_amgm_xml(uint8_t ngroups, uint8_t *ntracks, pic* img, globalData* globals)
 {
@@ -50,16 +50,21 @@ int  generate_amgm_xml(uint8_t ngroups, uint8_t *ntracks, pic* img, globalData* 
    <video format=\"",img->norm,"\" />\n\
    <audio format=\"", img->audioformat, "\" lang=\"en\" />");
     fprintf(xmlfile, "%s\n","   <pgc>");
+
+    if (globals->debugging) foutput("%s\n", img->hierarchical ? INF "Hierarchical menus" : "Non-hierarchical menus");
+
     do
     {
         if (img->hierarchical)
         {
-            maxbuttons=(menu == 0)? ngroups: Min(MAX_BUTTON_Y_NUMBER-2,ntracks[groupcount]);
-            resbuttons=0;
+            img->maxbuttons=(menu == 0)? ngroups: Min(MAX_BUTTON_Y_NUMBER-2,ntracks[groupcount]);
+            img->resbuttons=0;
         }
 
         arrowbuttons=(menu < img->nmenus-1)+(menu > 0);
-        menubuttons=(menu < img->nmenus-1)? maxbuttons : maxbuttons+resbuttons;
+        menubuttons=(menu < img->nmenus-1)? img->maxbuttons : img->maxbuttons+img->resbuttons;
+
+        foutput(INF "Menu: %d\n", menu);
 
         if (img->hierarchical)
         {
@@ -68,8 +73,10 @@ int  generate_amgm_xml(uint8_t ngroups, uint8_t *ntracks, pic* img, globalData* 
                 do
                 {
                     groupcount++;
+                    foutput(INF "Menu: %d\n", menu);
                     buttons++;
                     fprintf(xmlfile, "       %s%02d%s%d%s\n", "<button name=\"button",groupcount, "\">jump menu ",groupcount+1,";</button>");
+                    foutput(INF "Menu: %d Button %d\n", menu, buttons);
                 }
                 while (groupcount < ngroups);
                 groupcount=0;
@@ -83,12 +90,12 @@ int  generate_amgm_xml(uint8_t ngroups, uint8_t *ntracks, pic* img, globalData* 
                     buttons++;
                     track++;
                     fprintf(xmlfile, "       %s%02d%s%d%s%d%s\n", "<button name=\"button",buttons, "\">jump group ",groupcount+1," track ",track,";</button>");
+                    foutput(INF "Button: %d  Group: %d Track %d\n", buttons, group+1, track);
                 }
                 while ((buttons < menubuttons) && (track < ntracks[groupcount]));
 
                 if (track == ntracks[groupcount])
                 {
-
                     groupcount++;
                     track=0;
                 }
@@ -104,7 +111,7 @@ int  generate_amgm_xml(uint8_t ngroups, uint8_t *ntracks, pic* img, globalData* 
                     buttons++;
                     track++;
                     fprintf(xmlfile, "       %s%02d%s%d%s%d%s\n", "<button name=\"button",buttons, "\">jump group ",groupcount+1," track ",track,";</button>");
-
+                    foutput(INF "Button: %d Group %d Track %d \n", buttons, group+1, track);
                 }
                 while ((buttons < menubuttons) && (track < ntracks[groupcount]));
 
@@ -256,12 +263,12 @@ int  generate_spumux_xml(uint8_t ngroups, uint8_t *ntracks, uint16_t maxntracks,
 
         if (img->hierarchical)
         {
-            maxbuttons=(menu == 0)? ngroups: Min(MAX_BUTTON_Y_NUMBER-2,ntracks[groupcount]);
-            resbuttons=0;
+            img->maxbuttons=(menu == 0)? ngroups: Min(MAX_BUTTON_Y_NUMBER-2,ntracks[groupcount]);
+            img->resbuttons=0;
         }
 
         arrowbuttons=(menu < img->nmenus-1)+(menu > 0);
-        menubuttons=(menu < img->nmenus-1)? maxbuttons : maxbuttons+resbuttons;
+        menubuttons=(menu < img->nmenus-1)? img->maxbuttons : img->maxbuttons+img->resbuttons;
         compute_coordinates(img->ncolumns, maxntracks, x0, y0, x1, y1);
 
         if (img->hierarchical)

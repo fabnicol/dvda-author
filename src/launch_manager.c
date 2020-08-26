@@ -35,7 +35,28 @@
 extern unsigned int startsector;
 extern char* INDIR, *OUTDIR, *LOGDIR, *LINKDIR, *WORKDIR;
 extern uint8_t wav2cga_channels(fileinfo_t*,globalData*);
-extern const char* cga_define[21];
+static const char* cga_define[21] = {"Mono",
+                                     "L-R",
+                                     "Lf-Rf-S2",
+                                     "Lf-Rf-Ls2-Rs2",
+                                     "Lf-Rf-Lfe2",
+                                     "Lf-Rf-Lfe2-S2",
+                                     "Lf-Rf-Lfe2-Ls2-Rs2",
+                                     "Lf-Rf-C2",
+                                     "Lf-Rf-C2-S2",
+                                     "Lf-Rf-C2-Ls2-Rs2",
+                                     "Lf-Rf-C2-Lfe2",
+                                     "Lf-Rf-C2-Lfe2-S2",
+                                     "Lf-Rf-C2-Lfe2-Ls2-Rs2",
+                                     "Lf-Rf-C-S2",
+                                     "Lf-Rf-C-Ls2-Rs2",
+                                     "Lf-Rf-C-Lfe2",
+                                     "Lf-Rf-C-Lfe2-S2",
+                                     "Lf-Rf-C-Lfe2-Ls2-Rs2",
+                                     "Lf-Rf-Ls-Rs-Lfe2",
+                                     "Lf-Rf-Ls-Rs-C2",
+                                     "Lf-Rf-Ls-Rs-C2-Lfe2"};  //Litteral  channel assignment
+
 
 // getting rid of some arrows
 #define files command->files

@@ -41,8 +41,6 @@ unsigned int startsector;
 extern char* OUTDIR, *LOGFILE, *WORKDIR,  *LPLEXTEMPDIR;
 static fileinfo_t ** files;
 uint16_t totntracks;
-uint8_t maxbuttons; // to be used in xml.c and menu.c as extern globals
-uint8_t resbuttons; // to be used in xml.c and menu.c as extern globals
 static uint8_t ndvdvtitleset1=0,ndvdvtitleset2=0;
 static uint8_t mirror_st_flag=0;
 static uint8_t* ndvdvslides=NULL;

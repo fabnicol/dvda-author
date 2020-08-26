@@ -102,7 +102,7 @@
 	<unistd.h>
 	"c_utils.h"
 
-1598205724 c:\users\public\dev\dvda-author\src\include\structures.h
+1598451137 c:\users\public\dev\dvda-author\src\include\structures.h
 	"stream_decoder.h"
 	"inttypes.h"
 	"commonvars.h"
@@ -413,7 +413,7 @@
 	"audio2.h"
 	"decode.h"
 
-1598281755 source:c:\users\public\dev\dvda-author\src\ats2wav.c
+1598452075 source:c:\users\public\dev\dvda-author\src\ats2wav.c
 	"ats2wav.h"
 	"ats.h"
 	"c_utils.h"
@@ -462,7 +462,7 @@
 	"audio2.h"
 	"structures.h"
 
-1598401090 source:c:\users\public\dev\dvda-author\src\audio.c
+1598452075 source:c:\users\public\dev\dvda-author\src\audio.c
 	"config.h"
 	"audio2.h"
 
@@ -525,7 +525,7 @@
 	"auxiliary.h"
 	<dirent.h>
 
-1598306650 source:c:\users\public\dev\dvda-author\src\command_line_parsing.c
+1598451418 source:c:\users\public\dev\dvda-author\src\command_line_parsing.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -577,7 +577,7 @@
 	<inttypes.h>
 	"c_utils.h"
 
-1598307911 source:c:\users\public\dev\dvda-author\src\dvda-author.c
+1598451613 source:c:\users\public\dev\dvda-author\src\dvda-author.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -620,7 +620,7 @@
 	"ports.h"
 	"commonvars.h"
 
-1598308237 source:c:\users\public\dev\dvda-author\src\launch_manager.c
+1598451833 source:c:\users\public\dev\dvda-author\src\launch_manager.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -708,7 +708,7 @@
 	"menu.h"
 	"sound.h"
 
-1598277107 source:c:\users\public\dev\dvda-author\src\xml.c
+1598451613 source:c:\users\public\dev\dvda-author\src\xml.c
 	"config.h"
 	<stdio.h>
 	<stdlib.h>
@@ -2001,7 +2001,7 @@
 
 1561592353 c:\users\public\dev\dvda-author\dvda-author\\libiberty\src\include\strdup.h
 
-1598401090 source:c:\users\public\dev\dvda-author\src\menu.c
+1598451484 source:c:\users\public\dev\dvda-author\src\menu.c
 	<stdio.h>
 	<stdlib.h>
 	<stdint.h>
