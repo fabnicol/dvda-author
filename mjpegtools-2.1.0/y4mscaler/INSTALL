@@ -1,0 +1,25 @@
+
+0) Make sure you have the MJPEGtools library and header files installed
+   on your system.  The Makefile is setup to look for these in
+       /usr/local/lib/libmjpegutils.a
+   and
+       /usr/local/include/mjpegtools/
+
+   You may need/want to edit "Makefile" to change MJPEG_PREFIX or other
+   relevant parameters.
+
+1) You may need to edit "y4m-config.h".  The foreign build interface of
+   MJPEGtools isn't quite up-to-speed yet.  This file contains the necessary
+   #defines from "mjpeg-config.h" for *my* system.  Yours may be different.
+  
+   If you have built MJPEGtools, you can just copy it into y4m-config.h and
+   everything should work a-ok.
+
+2) Do a "make".
+
+3) No errors?  Great.  There is no "make install".  Just move "y4mscaler"
+   to wherever you want it.
+
+4) Scale away.
+
+-matt m.

@@ -1,0 +1,64 @@
+mjpegtools (1.9.0-0) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Kawamata/Hitoshi <hitoshi.kawamata@nifty.com>  Wed,  7 Mar 2007 17:03:26 +0100
+
+
+mjpegtools (1.7.0-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Kawamata/Hitoshi <hitoshi.kawamata@nifty.com>  Sun,  5 Sep 2004 17:16:43 +0900
+
+mjpegtools (1.6.3-2) unstable; urgency=low
+
+  * Configure option --enable-cmov-extension has been removed,
+    so use --host to specify cpu.
+  * For now, --enable-zalpha causes compiling error, so remove it.
+
+ -- Kawamata/Hitoshi <hitoshi.kawamata@nifty.com>  Wed,  5 May 2004 11:11:06 +0900
+
+mjpegtools (1.6.3-1) unstable; urgency=low
+
+  * New upstream release.
+  * Remove mjpegtools.{postinst,prerm} because now START-INFO-DIR-ENTRY available.
+
+ -- Kawamata/Hitoshi <hitoshi.kawamata@nifty.com>  Sat, 28 Feb 2004 11:13:13 +0900
+
+mjpegtools (1.6.2-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Kawamata/Hitoshi <hitoshi.kawamata@nifty.com>  Wed,  4 Feb 2004 10:19:29 +0900
+
+mjpegtools (1.6.1.93-3) unstable; urgency=low
+
+  * remove libquicktime4linux-dev from Build-Depends, need libquicktime-dev even on woody.
+
+ -- Kawamata/Hitoshi <hitoshi.kawamata@nifty.com>  Thu, 29 Jan 2004 10:50:16 +0900
+
+mjpegtools (1.6.1.93-2) unstable; urgency=low
+
+  * Using libtool -release, rename package libmjpegtools0 to libmjpegtools-1.6.
+
+ -- Kawamata/Hitoshi <hitoshi.kawamata@nifty.com>  Sun, 25 Jan 2004 16:27:05 +0900
+
+mjpegtools (1.6.1.93-1) unstable; urgency=low
+
+  * Add mjpegtools.{postinst,prerm} to use install-info without automatically adding by dh_installinfo.
+  * Limit Build-Depends libjpeg-mmx-dev [i386] to libjpeg-mmx-dev (>= 0.1.4) [i386].
+
+ -- Kawamata/Hitoshi <hitoshi.kawamata@nifty.com>  Mon, 29 Dec 2003 14:33:58 +0900
+
+mjpegtools (1.6.1.93-0) unstable; urgency=low
+
+  * New upstream release.
+
+ -- KAWAMATA Hitoshi <hitoshi.kawamata@nifty.com>  Tue, 23 Dec 2003 15:00:33 +0900
+
+mjpegtools (1.6.1.92-0) unstable; urgency=low
+
+  * Initial Release.
+
+ -- KAWAMATA Hitoshi <hitoshi.kawamata@nifty.com>  Sat, 20 Dec 2003 09:00:00 +0900

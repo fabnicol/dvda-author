@@ -54,7 +54,7 @@
 @set have-sse42 yes
 @set have-ssse3 yes
 @set have-xop yes
-@set have-cpunop yes
+@c @set have-cpunop no
 @set have-i686 yes
 @c @set have-mipsfpu no
 @c @set have-mips32r2 no
@@ -88,7 +88,7 @@
 @c @set have-amd3dnowext-external no
 @set have-avx-external yes
 @set have-avx2-external yes
-@c @set have-avx512-external no
+@set have-avx512-external yes
 @set have-fma3-external yes
 @set have-fma4-external yes
 @set have-mmx-external yes
@@ -268,10 +268,12 @@
 @c @set have-getaddrinfo no
 @c @set have-gethrtime no
 @set have-getopt yes
+@c @set have-getmodulehandle no
 @c @set have-getprocessaffinitymask no
 @c @set have-getprocessmemoryinfo no
 @c @set have-getprocesstimes no
 @set have-getrusage yes
+@c @set have-getstdhandle no
 @c @set have-getsystemtimeasfiletime no
 @set have-gettimeofday yes
 @set have-glob yes
@@ -297,6 +299,7 @@
 @c @set have-secitemimport no
 @c @set have-setconsoletextattribute no
 @c @set have-setconsolectrlhandler no
+@c @set have-setdlldirectory no
 @c @set have-setmode no
 @set have-setrlimit yes
 @c @set have-sleep no
@@ -355,8 +358,9 @@
 @c @set have-struct-sockaddr-storage no
 @set have-struct-stat-st-mtim-tv-nsec yes
 @set have-struct-v4l2-frmivalenum-discrete yes
-@c @set have-makeinfo no
-@c @set have-makeinfo-html no
+@c @set have-libdrm-getfb2 no
+@set have-makeinfo yes
+@set have-makeinfo-html yes
 @c @set have-opencl-d3d11 no
 @c @set have-opencl-drm-arm no
 @c @set have-opencl-drm-beignet no
@@ -367,10 +371,10 @@
 @set have-pod2man yes
 @c @set have-texi2html no
 @c @set config-doc no
-@c @set config-htmlpages no
+@set config-htmlpages yes
 @set config-manpages yes
 @set config-podpages yes
-@c @set config-txtpages no
+@set config-txtpages yes
 @set config-avio-list-dir-example yes
 @set config-avio-reading-example yes
 @set config-decode-audio-example yes
@@ -498,6 +502,7 @@
 @c @set config-libxcb-shape no
 @c @set config-libxcb-xfixes no
 @c @set config-lzma no
+@c @set config-mediafoundation no
 @c @set config-schannel no
 @c @set config-sdl2 no
 @c @set config-securetransport no

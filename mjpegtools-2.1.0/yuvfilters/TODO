@@ -1,0 +1,50 @@
+# -*- mode:Outline -*-
+
+ (DONE)
+ * yuvycsnoise
+ Noise filter specialized for NTSC Y/C separation noise.
+ Only Y noise reduced because UV noise should be
+ removed when convert to 4:2:0 from 4:2:2.
+ ** add method don't use previous frame but compare more pixels
+ ** UV noise
+ * yuvkineco
+ ** insert yuvycsnoise
+ ** BUG: when "-N CycleList", permit InputFPSCODE < 4
+
+* yuvfilter
+ Replace main.c.
+ All filter statically linked (or dynamically load filter),
+ from command line arguments, generate pipeline of filters.
+
+* yuvycsnoise
+** speed up
+
+* yuvkineco
+** add munual command
+*** W?: replace whole frame by previous
+*** Y?: replace top field by previous
+** ditect cut change
+ Use different field compare threshold
+ at after cut changed from after new cycle detected.
+*** cut changed at bottom field in a frame: deinterlace?
+** add options
+*** deinterlace (line double)
+*** not output yuv for only create cycle list (needed?)
+*** field compare threshold [3/2]
+*** field compare threshold after cut changed
+*** noise level threshold   [7/8]
+*** initial noise level	    [5]
+*** ?
+** speed up
+** gstreamer plugin?
+
+* lavkineco
+** only do 2nd try
+** replace MJPEG fields without decode/encode
+** implement as gstreamer plugin?
+
+* gkineco
+ interactive kineco with GUI
+** implement as gstreamer plugin?
+
+* wrapper for yuvfilters to be gstreamer filter

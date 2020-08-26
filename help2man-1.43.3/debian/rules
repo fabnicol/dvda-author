@@ -1,0 +1,111 @@
+#!/usr/bin/make -f
+
+# Debian build rules for help2man.
+
+# Copyright (C) 2012 Free Software Foundation, Inc.
+
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved.  This file is offered as-is,
+# without any warranty.
+
+# Written by Brendan O'Dea <bod@debian.org>
+
+SHELL = /bin/bash
+DEB_BUILD_GNU_TYPE := $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+DEB_HOST_GNU_TYPE  := $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+
+ifneq ($(DEB_BUILD_GNU_TYPE),$(DEB_HOST_GNU_TYPE))
+ CONFARGS = --host=$(DEB_HOST_GNU_TYPE)
+endif
+
+build: build-arch build-indep
+build-arch build-indep: build-stamp
+build-stamp:
+	dh_testdir
+	./configure --prefix=/usr --enable-nls --mandir='$${prefix}/share/man' \
+	    --infodir='$${prefix}/share/info' $(CONFARGS)
+
+	$(MAKE)
+	$(MAKE) help2man.h2m # for examples
+	touch build-stamp
+
+clean:
+	test README -nt help2man.PL # maintainer sanity check
+	dh_testdir
+	dh_testroot
+	[ ! -f Makefile ] || $(MAKE) distclean
+	rm -f build-stamp install-stamp
+	dh_clean
+
+install: install-stamp
+install-stamp: build-stamp
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/help2man
+	touch install-stamp
+
+# Build architecture-independent files here.
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installdocs
+	dh_installinfo
+	dh_installexamples
+	dh_installchangelogs
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_perl -V
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+# Build architecture-dependent files here.
+binary-indep: build install
+# We have nothing to do by default.
+
+source diff:
+	@echo >&2 'source and diff are obsolete - use dpkg-source -b'; false
+
+# maintainer pre-release setup
+AM = COPYING INSTALL install-sh mkinstalldirs
+AM_DIR = $(shell ls -d /usr/share/automake* 2>/dev/null | tail -1)
+VERSION = $(shell ./help2man.PL --version)
+maint-prep:
+	test -n $(AM_DIR)
+	test `dpkg-parsechangelog | sed -n 's/^Version:\s\+//p'` = $(VERSION)
+	cp $(addprefix $(AM_DIR)/,$(AM)) .
+	(echo "		README for GNU help2man version $(VERSION)"; \
+	 echo; \
+	 echo "help2man is a script to create simple man pages from the --help and"; \
+	 echo "--version output of programs."; \
+	 echo ""; \
+	 echo "  http://www.gnu.org/software/help2man/"; \
+	 echo "  ftp://ftp.gnu.org/gnu/help2man/help2man-$(VERSION).tar.gz"; \
+	 echo ""; \
+	 echo "  git://anonscm.debian.org/users/bod/help2man.git"; \
+	 echo "  http://anonscm.debian.org/git/users/bod/help2man.git"; \
+	 echo ""; \
+	 echo "Since most GNU documentation is now in info format, this provides a"; \
+	 echo "way to generate a placeholder man page pointing to that resource while"; \
+	 echo "still providing some useful information."; \
+	 echo ""; \
+	 echo "-- "; \
+	 echo "Brendan O'Dea <bod@debian.org>") >README
+	ln -sf debian/changelog ChangeLog
+	autoconf
+	./configure
+	$(MAKE) update-po all distclean
+
+maint-clean: maint-prep
+	./configure
+	$(MAKE) maintainer-clean
+	rm -f README ChangeLog $(AM)
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary maint-prep maint-clean

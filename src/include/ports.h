@@ -46,8 +46,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 	getrusage(RUSAGE_SELF, &end);\
 	unsigned int SEC1=end.ru_utime.tv_sec - timer.start->ru_utime.tv_sec - timer.nothing->ru_utime.tv_sec, SEC2=end.ru_stime.tv_sec- timer.start->ru_stime.tv_sec - timer.nothing->ru_stime.tv_sec;\
     unsigned int MICRSEC1=end.ru_utime.tv_usec - timer.start->ru_utime.tv_usec - timer.nothing->ru_utime.tv_usec, MICRSEC2=end.ru_stime.tv_usec- timer.start->ru_stime.tv_usec - timer.nothing->ru_stime.tv_usec;\
-                foutput(INFO_EXECTIME1, SEC1/60, SEC1%60, MICRSEC1 );\
-                foutput(INFO_EXECTIME2, SEC2/60, SEC2%60, MICRSEC2 );\
+                fprintf(stderr, "%s %d %d %d\n", INFO_EXECTIME1, SEC1/60, SEC1%60, MICRSEC1 );\
+                fprintf(stderr, "%s %d %d %d\n", INFO_EXECTIME2, SEC2/60, SEC2%60, MICRSEC2 );\
 				} while(0);
 
 

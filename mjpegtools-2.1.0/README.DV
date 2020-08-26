@@ -1,0 +1,110 @@
+
+    MJPEGtools v1.6.0 and onwards, when compiled with libdv, support DV video
+    streams, stored as "Type 2 AVI" files.
+
+
+Building and installation (if you want to compile from source):
+
+    1. Download and install libdv from libdv.sourceforge.net.  (v0.9 and up
+	are known to work.)
+
+    2. Download and unpack the v1.6.0 source tarball, or get a clean CVS
+        checkout of the development branch of mjpeg_play.
+
+    3. configure && make && make install in mjpeg_play
+        This should automatically detect libdv if it is installed.
+
+
+Grabbing DV input:
+
+    0. You should already have a DV camcorder and an IEEE-1394 board and
+       everything set up for 1394 capture, otherwise have a look at:
+           http://linux1394.sourceforge.net/
+           http://www.schirmacher.de/arne/dvgrab/
+
+       Two programs that I found very useful for resolving problems and
+       controlling the camcorder through IEEE 1394 are:
+            dvcont - http://www.spectsoft.com/idi/dvcont/
+          gscanbus - http://www.ivistar.de/0500opensource.php3?lang=en
+
+       If your camcorder allows you to record either 12bit or 16bit audio you
+       should make sure to set it to 16bit recording since that is the sound
+       format expected by the MJPEGtools.  Some camcorders have 12bit sound
+       as the default factory setting, so check that *before* you start
+       recording your videos.
+
+    1. Start replay on the camcorder.
+
+    2. Use dvgrab with the option "--format dv2" to capture the DV data in AVI
+       'Type 2' format.  Only this format is supported by lav2yuv; capturing
+       with the default '--format dv1' won't work.
+
+    3. If you want to preview and edit (simple cut and paste editing) the raw
+       DV files you can use kino from:
+           http://www.schirmacher.de/arne/kino/
+.
+       Make sure to set dv2 format for saving in the preferences.
+
+
+Using lav2yuv with DV:
+
+    Simply follow all other documentation for "lav2yuv"; your Type 2 DV AVI
+    file will be treated similarly to an MJPEG AVI file.
+
+    For example:
+
+          lav2yuv my-dv-file.avi | yuvplay
+
+    * lav2yuv accepts DV AVI files directly or as parts of editlists.
+    * Both PAL and NTSC streams are handled.
+    * Sample aspect ratio is automatically detected.  Interlacing is always
+      set to bottom-field-first (because DV is always bottom-field-first).
+    * You can extract the sound from the DV files using either "lav2wav" or
+      "lavtrans -f w".  Once extracted to a WAV file, you can encode it to
+      MPEG Layer II audio with "mp2enc", which is capable of resampling the
+      48kHz stream to 44.1kHz.  (Some hardware VCD and SVCD players will
+      accept 48kHz audio, however this is non-standard.)
+
+
+
+
+------------------------------------------------------------------------------
+
+Additional Notes (of purely HISTORICAL value)
+    1. The recent version of lav2yuv can also read raw YUV data from
+       quicktime files that were written in planar YUV 4:2:0 format. This is
+       one of the output file formats offered by bcast2000 for rendering
+       scenes.
+    2. This is a short description of the de-interlacing algorithm taken from 
+       the source file DI_TwoFrame.c from deinterlace.sourceforge.net.  This
+       algorithm is a combination of simpler algorithms found in Windows
+       programs like flaskMPEG or AVIsynth.
+
+///////////////////////////////////////////////////////////////////////////////
+// Deinterlace the latest field, attempting to weave wherever it won'tcause
+// visible artifacts.
+//
+// The data from the most recently captured field is always copied to theoverlay
+// verbatim.  For the data from the previous field, the following algorithm is
+// applied to each pixel.
+//
+// We use the following notation for the top, middle, and bottom pixels
+// of concern:
+//
+// Field 1 | Field 2 | Field 3 | Field 4 |
+//         |   T0    |         |   T1    | scanline we copied in lastiteration
+//   M0    |         |    M1   |         | intermediate scanline fromalternate field
+//         |   B0    |         |   B1    | scanline we just copied
+//
+// We will weave M1 into the image if any of the following is true:
+//   - M1 is similar to either B1 or T1.  This indicates that no weave
+//     artifacts would be visible.  The SpatialTolerance setting controls
+//     how far apart the luminances can be before pixels are considered
+//     non-similar.
+//   - T1 and B1 and M1 are old.  In that case any weave artifact that
+//     appears isn't due to fast motion, since it was there in the previous
+//     frame too.  By "old" I mean similar to their counterparts in the
+//     previous frame; TemporalTolerance controls the maximum squared
+//     luminance difference above which a pixel is considered "new".
+//
+///////////////////////////////////////////////////////////////////////////////

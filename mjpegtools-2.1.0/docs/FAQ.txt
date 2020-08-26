@@ -1,0 +1,238 @@
+
+1.		Questions about Motion JPEG (MJPEG) (and MJPEG AVI)
+
+1.1		What is MJPEG?
+
+MJPEG stands for Motion JPEG and is basically video encoded as a
+series of JPEG compressed images.  Unfortunately, it is not a proper
+rigorously defined standard like MPEG.  For a start MJPEG really only
+says frames of video are encoded as JPEG.  To package them together
+into a sequence with audio and synchronisation information a "carrier"
+format is needed.  This is typically either Microsoft's "AVI" or
+Apple's Quicktime format.
+
+1.2 I've created an MJPEG AVI or Quicktime file with mjpegtools but it
+won't play on my Windows/MacOS machine (or vice versa!).
+
+The Problem is that lack of rigorous definition of MJPEG.  The JPEG
+format has a lot of options and, due to the need for speed, the JPEG
+encoders/decoders used in MJPEG codecs only support a small subset.
+Worse, the different codecs support different subsets.   Its a pain!
+
+1.3	   Why is there a 2GB file-size restriction on individual AVI files
+created using mjpegtools?
+
+The original AVI format is inherently limited to files no larger than
+2GB as certain internal pointers are only held as 32-bit values.  The
+"OpenDML" extensiojns subsequently extended the format to support much
+larger files.  Unfortunately, the mjpegtools do not currently support
+this format.  
+
+1.4	   How do I get around the 2GB file-size restriction on individual AVI files created using mjpegtools?
+
+The work-around is to use Quicktime or multiple AVI files.  All the
+mjpegtools will work with a seq of AVI's just as happily as they would
+with a single file.  To create a sequence of AVI's using lavrec you
+use a pathname pattern rather than a pathname.  A "%d" in the pathname
+you specify is replaced by a sequence number (1,2,3,4,5,6) and so on
+and files created as needed.
+
+2.		Questions about MPEG VCD, SVCD and DVD
+
+2.1		What is the difference between MPEG-1 and MPEG-2.
+
+MPEG-2 is (basically) a superset of MPEG-1 that is much more flexible
+in terms of data-rates and formats and can handle interlaced video.
+There's more to it than that but most of the the other differences
+relate to support for digital TV broadcasting.
+
+2.2	   How does MPEG-1/MPEG-2 compare to MPEG-4 video (or "DivX")
+
+The MPEG-4 video compression standard provides somewhat better
+compression at low-to-medium bit-rates (up to around 1Mbps).
+Basically, MPEG-4 still gives useful pictures where MPEG-1 or MPEG-2
+would start to break down. To do this it has special encoding modes
+for efficiently encoding subsampled (down-scaled) images and for
+masking the artefacts caused by very low data-rate encoding.  At
+higher data-rates these features aren't really needed and bring
+relatively little. MPEG's own figures suggest MPEG-4 gains about 15%
+over MPEG-1/2 at around 1MBps,  more at lower rates less and between 5-10%
+at datarates above 2Mbps.
+
+These figures are, however, for encoders working with comparable
+parameters.  One reason why DivX seemed to be such a big leap over
+MPEG-1 was that most MPEG-1 encoders generated very conservative
+MPEG-1 like that used for standard VCD disks. When encoding for a
+Software decoder running on a computer lots of extra MPEG features can
+be used to improve compression.  Top amoungst these is the use of variable bit
+rate encoding and assuming large buffers in the decoder.
+
+Basically, if you want to put an acceptable quality encoding of a
+Movie onto 1 CD MPEG-4 is the sensible choice.  If you want higher
+quality and are willing to use 2 CD's or more MPEG-1/2 will work at
+least as well and will allow you to use VCD and SVCD formats that can be
+played on DVD players.
+
+If you need to encode interlaced material at high quality MPEG-2 is a
+sensible choice because MPEG-4 cannot encode interlaced video
+directly.  It needs it to be deinterlaced first.
+
+
+2.3	 What is this "multiplexing" business?
+
+An MPEG video stream (as found say on a DVD) is actually one or more
+video streams proper interleaved with one or more audio streams in a
+special carrier format.  The carrier format also holds the
+synchronisation and timing information needed to deliver the audio and
+video data to the decoder at just the right time to avoid glitches
+without overflowing its memory buffers. Multiplexing takes the video
+and audio streams specified and wraps them up in the carrier format
+(generating the synchronisation and timing information as it goes).
+The latest versions of the multiplexer "mplex" don't actually need
+intermediate files for the video and audio streams.  You can feed them
+direct from the encoders via fifo's (named pipes - see the "mkfifo" command).
+See 4.3
+
+
+2.4	   Why do I need to use special settings to encode and multiplex MPEG
+for VCD, SVCD or DVD.
+
+The MPEG standards are *huge* with many rarely-used or even downright
+exotic options.  For use in consumer disk players particular narrowly
+defined subsets of MPEG were specified that also added additional
+features (e.g. Dolby Digital and DTS audio for DTS) and special
+extensions for the disk application (e.g. subtitle images).
+Unfortunately, consumer electronics people being who they are the
+standards also specify some things that are very "unnatural".  You
+have to tell the encoder
+
+2.5 Can I capture video and compress it so that I can burn it to CD
+and play it in my DVD player?
+
+Your best bet is probably to compress it as an SVCD stream and use the
+"vcdimager" program to create the burnable CD image. Many current DVD
+players can play SVCD format CDs.  Unfortunately, there's currently no
+free authoring software that would allow the same to be done for
+DVD-format MPEG.  Hopefully, this will change someday.
+
+2.6 I've just encoded a huge MPEG file on my P133 an it took *ages*.
+    Is there any way I can split it to fit ontp VCD's without re-encoding?
+
+In theory this is sort-of possible.  In practice there aren't any free
+tools around that can do the fine surgery on the synchronisation
+information and copying of headers that would be necessary.  If you
+want to play back using a computer the best solution is simply to
+split the file for storage and join it again for playback.
+
+
+3.		Questions about the MJPEG and audio drivers.
+
+3.1		I've got a Buz card and I just can get it to capture without lots
+of dropped frames.
+
+Unfortunately, some aspects of the Buz design make it very sensitive
+to devices that share or affect the computer's PCI bus that behave
+less-than-perfectly.  The extent of the problems depend both on the
+quality of the BIOS and the mainboard chipset.  VIA-based mainboards
+are generally particularly awkward in this respect.  The DC10(+) and LML33
+boards are much less sensitive than the Buz.
+
+
+3.2	   I can capture nicely if I disable audio (-a 0 to lavrec) but bad things happen if I enable it.
+
+Unfortunately, the quality of Linux audio drivers *recording*
+facilities can still be very patchy.  Especially, the "mmap"
+programming interface that lavrec prefers to use.  Often simply
+telling it to use the (slightly less accurate) "read" interface fixes
+the problem.  Sometimes, the driver is just plain broken and the only
+solution is to wait for the problem to be fixed or to get another
+sound card.
+
+
+4.	  Questions about MPEG encoding with mjpegtools
+
+4.1	  Damn!  When I burn an SVCD my player plays trash.
+
+	  Unfortunately, the quality of the firmware for SVCD in many DVD
+	  players for markets outside Asia is rather poor.  Various nasty
+	  little bugs can cause SVCD to fail to play back.  To help
+	  the unfortunates with such players there some special bug fix flags.
+
+	  --correct-svcd-hds
+
+	  May help 16:9 streams to play back correctly on correct players.
+	  This is not on by default because it breaks all SVCD playback on many
+	  players
+
+	  --no-altscan-mpeg2
+
+	  Some players seem not be able to cope with the "alternative"
+	  pattern for scanning pixel blocks that MPEG2 supports.  This
+	  flag forces mpeg2enc to use only the less efficient "normal" pattern.
+
+
+4.2	  When I encode stuff it is just too damn slow how can speed things up?
+
+	  o If you're encoding MPEG2 (-f 3,4,5 and 8) and encoding
+	  non-interlaced video (e.g. movies) you then you can make big
+	  speed gains by switching off the special calculations needed for
+	  encoding moving interlaced scenes by setting '-I 0'.  Note that
+	  even for interlaced material it is faster to deinterlace and encode
+	  deinterlaced video than encode with interlaced support.  However, this
+	  can cause some quality loss (it depends a lot on the source material). 
+
+	  o You can trade (very modest) reduction in compression for significant
+	  speed gains by using the -4 and -2 flags.
+
+	  o If you have a long processing pipeline with scaling and
+	  denoising then these tasks take about as much CPU as the MPEG
+	  encoding itself.  If you split the work across several CPU's
+	  either in a multi-processor machine or using a fast network then
+	  things can go much faster.
+
+	  E.g. if you have the a remote shell login daemon running on
+	  machine1
+
+	  rsh machine1 "lav2yuv blah.avi | yuvdenoise ... | yuvscale ..." \
+		 | mpeg2enc ...
+
+	  will split the work between the machine you're working on machine1.
+	  The best way to split the work depends of course on the relative speeds
+	  of the machines.   If you have more than two machines you can split the
+	  work even more.  Later release of the mjpegtools will probably gain a
+	  special "network pipe" mode for maximising efficiency with this kind of
+	  setup.
+
+	  Even if you're only doing "lav2yuv | mpeg2enc" for MJPEG some gains may be
+	  possible using this approach as MJPEG decoding takes a not insignificant
+	  amount of time.
+
+	  o If you have a multi-processor machine and its not running at full load
+	  during encoding you can tell mpeg2enc to run multiple encoding threads
+	  using the -M flag.  Here's what I do when encoding on a pair of dual
+	  P-III machines:
+
+	  rsh machine1 "lav2yuv ... | yuvdenoise ... " | mpeg2enc -M 2 ...
+
+4.3	  How can I avoid those space-hogging intermediate files generated by
+	  mpeg2enc and the MPEG audio encoder?
+
+	  The mplex multiplexer can accept data from fifo's (named pipes)
+	  as well as intermediate files.  This means you can directly pipe
+	  the output of the MPEG audio and video encoders in mplex and
+	  generate the final multiplexed MPEG stream directly.  The recipe if 
+	  you're using "mp2enc" for audio encoding is as follows:
+
+	  mkfifo audio
+	  mkfifo video
+	  ... mpeg2enc ... -o video &
+	  ... mp2enc ... -o audio &
+	  mplex ... audio video -o audvid.mpg
+	  rm audio
+	  rm video
+
+	  Easy isn't it!
+
+
+5.	  Question about Digital Video in General
+

@@ -5,10 +5,10 @@
 # It is necessary for linking the library.
 
 # The name that we can dlopen(3).
-dlname='../bin/cygMagickCore-7.Q16HDRI-6.dll'
+dlname=''
 
 # Names of this library.
-library_names='libMagickCore-7.Q16HDRI.dll.a'
+library_names=''
 
 # The name of the static archive.
 old_library='libMagickCore-7.Q16HDRI.a'
@@ -17,7 +17,7 @@ old_library='libMagickCore-7.Q16HDRI.a'
 inherited_linker_flags=' -fopenmp -pthread'
 
 # Libraries that this one depends upon.
-dependency_libs=' -lgdi32'
+dependency_libs=' -ljbig -llcms2 -ljpeg -lpng16 -lfontconfig -lfreetype -lwebpmux -lwebp -lXext -lXt -lSM -lICE -lX11 -lbz2 -lz -lm'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''
@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/cygdrive/c/Users/Public/Dev/dvda-author/ImageMagick-7.0.8-49/../local/lib'
+libdir='/home/fab/Dev/dvda-author/local/lib'

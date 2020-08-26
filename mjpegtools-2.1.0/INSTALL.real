@@ -1,0 +1,79 @@
+	This file is NOT called INSTALL because 'autoreconf -f -i' overwrites
+	INSTALL.  The original INSTALL file (this file) is now called
+	INSTALL.real which autoconf will leave alone.
+
+Linux MPEG/MJPEG Audio/Video tools - MJPEG TOOLS
+================================================
+
+The mjpegtools are a set of utilities for video-decoding, -recording,
+-playback, -editing and -encoding. Most parts of this software are
+distributed under the terms of the Gnu Public License (GPL). See
+the individual source files for the exact terms.  Mjpegtools is known to build 
+and install on Linux, BSD and OS/X.  On other systems you are on yor own - maybe
+you'll be lucky.
+
+REQUIRED/RECOMMENDED SOFTWARE
+=============================
+For compiling the mjpegtools you will at least need the following
+pieces of software:
+
+glib           : http://www.gtk.org/
+(g)cc/g++/c++  : http://gcc.gnu.org/ 
+libjpeg        : http://www.ijg.org/
+XFree86        : http://www.xfree86.org/
+
+These are almost always included with every distribution.
+
+However, with this, many of the tools and many features of the tools
+will not be compiled by default. The following software is advised
+for getting the extra features of the mjpegtools:
+
+Gtk+           : http://www.gtk.org/
+libDV          : http://libdv.sourceforge.net/
+SDL            : http://www.libsdl.org/
+
+Some of these are not installed by default with some distributions. If any
+of them are not found this will be logged during the ./configure process.
+
+COMPILING SUPPORT LIBRARIES
+===========================
+The following library is highly recommended for compiling the mjpegtools:
+
+libquicktime   : http://libquicktime.sourceforge.net/
+
+Lastly unpack libquicktime and run './configure', 'make' and 'make install'.
+As usual when installing new libraries it may be necessary to run 'ldconfig' 
+after 'make install'.
+
+COMPILING THE MJPEGTOOLS
+========================
+Unpack the tarball and run './autogen.sh' to create the configure script.  In
+the simplest form the configure script is run like this:
+
+	./configure
+
+If you do NOT want to include quicktime support you may specify 
+'--with-quicktime=no', otherwise the presence of libquicktime will be 
+autodetected.  This is not recommended since Quicktime is a very useful 
+format.
+
+You can possibly use other options, such as '--enable-large-file' to enable 
+support for > 2GB file support.  This is NOT needed by default since autoconf
+automatically generates the checks for largefile support.  Binaries compiled 
+with large file support will *not* run on systems lacking large file support!  
+Next, run 'make' and 'make install'. You're now ready to use the mjpegtools!
+The MJPEG HOWTO (mjpeg_howto.txt or 'man mjpegtools') is a good place to start.
+
+HELP
+====
+For problems, bugs or questions, please send your e-mails to the
+mjpegtools malinglist (mjpeg-users@lists.sourceforge.net), or to
+one of the developers individually.
+
+Have fun,
+
+/Andrew <andrew.stevens@mnet-online.de>
+/Gernot <gz@lysator.liu.se>
+/Ronald <rbultje@ronald.bitfreak.net>
+/Bernhard <shadowlord@utanet.at>
+/many others (see AUTHORS)

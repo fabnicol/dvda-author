@@ -28,11 +28,13 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <stdlib.h>
 #include <stdio.h>
 
-#if defined(_WIN32) || defined(__WIN32)
+#if defined(_WIN32)
  #undef __STRICT_ANSI__
  #include <io.h>
  #include <windows.h>
-#else
+ #else
+ #include <limits.h>
+ #define MAX_PATH PATH_MAX
  #include <unistd.h>
 #endif
 
@@ -826,7 +828,7 @@ bool s_mkdir (const char *path, globalData* globals)
 
     return (secure_mkdir(path, 0777, globals) == 0);
 #else
-    return (secure_mkdir(path,  S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) == 0);
+    return (secure_mkdir(path,  S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, globals) == 0);
 #endif
 }
 
@@ -2307,7 +2309,7 @@ if (_fork)
                   if (w == -1) {
                       perror(ERR "waitpid");
                       fprintf(stderr, ERR "mkisofs pid was: %d\n", pid);
-                      clean_exit(EXIT_FAILURE);
+                      clean_exit(EXIT_FAILURE, globals);
                   }
 
                   if (WIFEXITED(wstatus)) {

@@ -1,0 +1,373 @@
+0.7.1: 2012 August 20
+	No longer silently fail to build dvdunauthor if libdvdread is not present;
+		must be explicitly disabled with --disable-dvdunauthor, otherwise configure
+		reports an error
+	Allow format specification at top level of dvdauthor control file
+	mpeg2desc now reports more details about video frames
+	More explanatory XML-parsing errors
+
+0.7.0: 2010 October 23
+	Reworked subtitle file reading so it can now deal with encodings like UTF-16
+	Default encoding for subtitle files is no longer ISO-8859-1, but taken from
+		user's locale
+	Add fontconfig support following a patch by Nicolas George
+	Remove dvdauthor config files and make command line -o option take precedence over
+		XML dest attribute.
+	Video format no longer has hard-coded default to NTSC, unless you invoke configure
+		with --enable-default-video-format=NTSC. You can also configure with
+		--enable-default-video-format=PAL to default to PAL.
+	Implement configuration of default video format as per the proposal at
+		<http://create.freedesktop.org/wiki/Video_Format_Pref>.
+	File names are no longer converted to locale encoding, unless you invoke configure
+		with --enable-localize-filenames.
+	You can now specify fill and outline colours and outline thickness for text subtitles.
+		Colours can be specified in additional ways, including by name and in HSV space.
+	You can now also specify a shadow offset and colour for text subtitles
+	Allow non-title PGCs in a titleset
+	The VM language now allows C-style comments, as well as CDATA sections
+	Add --nomux and --nodvdauthor-data options to spumux (thanks to TED for sponsoring this)
+
+0.6.18: 2010 March 18
+	implement link-subset jumps
+	implement audio and subpicture content attributes
+	use dynamically-sized buffer for building IFO files
+	version jump to forestall fork confusion
+
+0.6.15-ldo: 2010 March 4
+	consistently check for errors on all file opens and when creating output directories
+	fix remapping of colours for more than 8 subpicture streams
+	recover from SCR moving backwards as per suggestion from Philippe Sarazin
+	add patch from Wolfgang Wershofen to print out chapter timecodes
+	validate all XML integer arguments and attribute values
+	fix spurious error parsing video caption option
+	incorporate Fedora patch from Ville Skyttä to allow building with GraphicsMagick
+		instead of ImageMagick
+	incorporate FriBidi patches from Ville Skyttä
+	auto-action buttons have spatial extents too
+	fill in more details in man pages
+	include an adaptation of Martin Crossley's ivtv patch
+
+0.6.14: February 24, 2007
+	popen mode must be 'r' or 'w', not 'rb' or 'wb'
+	make spuunmux escape filenames in xml file
+	properly skip padding bytes in pack header in spuunmux
+	only allow spuunmux to process mpeg-2 files
+	fix bug in setting the resolution field of VTS/VMGM
+
+0.6.13: January 13, 2007
+	fix handling of audio packets that have no PTS
+	patch from Romain Chantereau to fix libmagick6 not including stdarg (Closes: Debian Bug#317463)
+	fix int/unsigned problem: dvdauthor dumps core on some mpegs (Closes: Debian Bug#345105)
+	substantially reduce runtime memory requirements
+	fix numerous memory leaks
+	support '-', '&FD', and pipes more consistently and for more places
+	if possible, make color #0 (of the 4 color subtitle palette) be transparent (Closes: Debian Bug#387828)
+	fix byte overflow on PGC Command Table Size (Lucas Pierce)
+	minor errorchecking for vobs with no filenames
+	fix segfault relating to jumppad
+	fix omission of jumppad table if a menu pgc was defined with ptt or title entry
+	incorporate Debian manpages for dvdunauthor, dvddirdel, mpeg2desc, and spuunmux
+	loosely support 24, 30, and 60fps
+	buttons need even 'Y' coordinates
+
+0.6.12: January 7, 2007
+	print offending vob names on audio discontinuity
+	change assert to verbose warning for more than 128 commands per pgc
+	fix spumux "read 0, expected 4" false warning
+	fix border condition with TMAPT table
+	add -n flag to skip writing output
+	add remap support for subtitle command #7 (CHG_COLCON)
+	fix sector number overflow in IFO files
+	don't escape command sent to shell
+	fix underflow wraparound in computing dts for subtitles
+	fill in reference pointers for all 3 frames even if less than 3 exist
+	allow last vobu of cell to have a forward pointer to self
+	fix TMAPT bug (ptsbase=0; matches Bullitt)
+	support random(FOO) in vm
+	allow the use of all 16 GPRMS via 'allgprm="yes"' option
+	embed commands within the VOB if only one instruction
+	set entries within the actual PGC instead of creating extra PGCs whenever possible
+	vm_optimize combines set GPRM/SPRM and link command (Michael Kreuzer)
+	warn if the button value is not a multiple of 1024
+	fix CreateCallAdr: first 2 bytes of C_ADT contains number of vobs (Michael Kreuzer)
+	fix TocGen: set frame rate (Michael Kreuzer)
+	fix spuunmux button output to work with spumux (Michael Kreuzer)
+	make counters work; allow hex, kilo, and lang numeric codes (Michael Kreuzer)
+	remove all vestiges of button handling from post if not necessary (Michael Kreuzer)
+	new vm commands added: break, goto (Michael Kreuzer)
+	dvdunauthor uncompiles pre, post, fpc, cell, and button commands
+	add 'crop' keyword for widescreen (crops 4:3 image for 16:9 tvs)
+	if audio extends beyond video, then set sector pts accordingly
+	support separate subpicture streams for normal, widescreen, letterbox, and panscan
+	allow text subtitles to be forced on
+
+0.6.11: February 10, 2005
+	fix compile error on newer gcc compilers
+	ensure a row of a subtitle takes less than 1440 bits
+	fix warnings
+	fix 64-bit support (iconv)
+	fix video and sector pts values to be more consistant
+	fix ImageMagick 6.x.x alpha detection
+	improved dvdunauthor by Ralf Engels
+	full sized pts/scr support (for 13+ hours DVD's)
+	support really long subtitles
+	fix jumps from FPC to VMGM menus (was using LinkPGCN, now uses JumpSS -- fixes crash in Ogle and Pioneer 343
+	fix ability to have multiple entries for a PGC
+	fix bug when decoding some subtitles
+	switch to automake
+	have mpeg2desc parse mpeg1 headers (thanks to Nico Sabbi)
+	fix handling of NTSC 3:2 pulldown (end PTS was != start PTS of next VOBU)
+
+0.6.10: March 15, 2004
+	better audio type detection logic
+	clear seamless flag on audio discontinuity
+	only allow <titles> to exist once per titleset
+	use 'name' attribute for buttons and actions in spumux (to be consistant with dvdauthor)
+	dynamically allocate PGC buffer
+	allow up to 2730 titles
+	allow reading from filedescriptors for VOBs, palette, and XML
+	allow empty pre, post, cell, etc commands (parses to NOP)
+	optimize link & button=X instructions together
+	fix parsing of textsub->transparent
+	add text subtitle documentation
+	fix SVCD subtitling
+	support specifying resume cells from calls; default to #1 for post commands
+	make spuunmux use read instead of lseek (works on pipes)
+	fix YUV handling in spuunmux and subgen
+	handle 99 titlesets in dvdunauthor
+	support nonexistant audio channels
+	lazy colormap allocation
+	support VOBU's without audio or video
+
+0.6.9: January 16, 2004
+	cap maximum # of tmapt entries to 2040
+	convert filenames from UTF8 to locale
+	strip out END marker from program stream (clean up mplex output)
+	allow more than 512 chapters/titles
+	fix handling of programs (not chapters)
+	make VMGM IFO scanner deal with lowercase filenames
+	fix handling of text subtitles that use frame #'s as timecodes
+	fix bug in mpeg audio header scanning
+	languages must be in lowercase
+	better audio gap setting
+	fix PAL/NTSC issue
+	rename dvddirgen to dvddirdel to better reflect purpose
+	better support for nonstandard frame rates
+	don't set seamless flag for cells with commands or stilltime
+	bounds check #cells/vob, programs/pgc
+
+0.6.8: December 14, 2003
+	allow xoffset and yoffset in spu tags
+	support multiple menu languages
+	support mpeg-1 video
+	support incorrect frame rates
+	fix/allow open GOP's on cell boundaries if sequential playback
+	fix bug in analyzing video codes (spurious sequence end codes)
+	add proper scanning of ac3 and pcm audio stream details
+	add support for NTSC closed captioning
+	support 96khz audio
+	support holes in video (aka audio cd's)
+	make subtitle placement dependent on pack dts, not video pts
+	add spuunmux; properly handle menu button colors
+	include XML schemas for XML verification
+
+0.6.7: November 24, 2003
+	autodetect io.h presense for Cygwin
+	have spumux deal with incomplete reads/writes to/from pipes
+	have spumux work with odd sized subtitles
+	allow XML comments in dvd code
+	support else for if statements
+	add 'not' boolean expr
+	add support for cells and programs
+	add mini optimizer
+	fix subtitle ptr logic in VOBU packets (perfectly matches Grosse Pointe Blank)
+	make ff/rew ptr handling more like commercial dvds
+	fix corner case in reference frame end calculation
+
+0.6.6: November 13, 2003
+	fix makefile for case insensitive filesystem (adds .PHONY rule)
+	allow jumps to menu entries from VMGM without jumppad
+	fix bug where jumppads were not generated in a VMGM if no VMGM menus existed
+	allow forced subtitles -- now all menus REQUIRE 'force="1"' option
+	base chapters on PTS not SCR
+	allow expressions
+
+0.6.5: November 6, 2003
+	workaround for libxml2 2.5.4 -- manually check for whitespace in TEXT elements
+	fix xml parser when chapters are not specified
+	support <video widescreen="nopanscan|noletterbox" />
+	have jumps to other titles within the same titleset use JumpVTS_TT, not LinkPGCN
+	add some error checking on title/chapter jumping
+	fix bug when stuffing subtitles
+
+0.6.4: November 1, 2003
+	fix bug in if statement -- it was doing the opposite
+	set O_BINARY for stdin, stdout in spumux
+	allow pgcs without any sources
+
+0.6.3: October 30, 2003
+	fix bug in setting audio, subtitle, angle, button values
+	more documentation
+
+0.6.2: October 27, 2003
+	fix segfault when parsing certain xml files
+	add HTML documentation
+
+0.6.1: October 26, 2003
+	fix incorrect command length field for menu entries
+	move menu entry pgcs to the end of the list to make numbering simpler
+	allow jumping/calling to a wider variety of targets
+	fix bug in autonavigation
+	fix segfault if button is not defined in spumux
+	fix stilltime for vobs
+	add stilltime for pgc
+	reduce libxml2 requirement to 2.5.0
+
+0.6.0: October 21, 2003
+	rename submux to spumux
+	set default button to #1 when entering a menu
+	add support for autoaction buttons
+	pass button navigation and color information from spumux to dvdauthor
+	support (optional) ImageMagick (or GraphicsMagick) libraries
+	create new programming language for buttons, pre, post, and fpc cmds
+	use XML configuration files for dvdauthor and spumux
+
+0.5.4: October 4, 2003
+	vobu pointers only point within a cell -- fixes chapter playback for some players (thanks to <selva at mailaps dot org>)
+	fix uninitialized variable hasseqend (thanks to <selva at mailaps dot org>)
+	read button color index information from palette file (thanks to <selva at mailaps dot org>)
+	fix handling of vobus without video (thanks to <selva at mailaps dot org>)
+	fix handling of audio sectors that are outside the pts range of the vobu (thanks to <selva at mailaps dot org>)
+	compute pts based on frame counts (handles 3:2 correctly)
+	fix incorrect NTSC fps (29.97 instead of 29.97002997.....)
+	fix discontinuity flag on TMAP -- should be on all chapters, not just vob boundaries, also should be set for future discontinuity, not past
+	compute audio gap (for AC3 and MP2 only...)
+	fix handling of field encoded video
+	allow post commands on menus
+	fix subtitles that have packets within 6 bytes of a sector (thanks to <panteltje>)
+	allow specification of button movement (thanks to Mark Rages)
+
+0.5.3: May 3, 2003
+	tighten mpeg boundary gap
+	add discontinuity flag to TMAPT table
+	clean up Makefile.in based on FreeBSD port (thanks to <pb at freebsd dot org>)
+	add exit and fpc commands
+	allow specification of 'post' commands
+	allow specification of which menu is the entry menu for title, root, audio, subtitle, angle, and ptt
+	allow setting of subtitle track as a command
+	set palette per PGC
+	allow palette to be RGB if the filename ends in .rgb (case insensitive)
+	rewrite the aspect ratio in the sequence header
+	add 'make uninstall'
+
+0.5.2: April 30, 2003
+	fix STC discontinuity and VOB/cell idn assignment bugs
+	fix multiple titles within a titleset
+	allow - for stdin
+	allow multiple commands per button
+	allow setting of audio track
+
+0.5.1: March 19, 2003
+	WARNING -- THIS RELEASE IS UNTESTED
+	multiple titles within a titleset
+	added submux (from Jan Panteltje <panteltje at yahoo dot com>)
+	multiple menus for deeper navigation
+	fix bug in detecting mp2 tracks
+
+0.5.0: February 25, 2003
+	basic menu support
+        don't allow both nopanscan and noletterbox, unless you're 4x3 -- then enforce both
+        vobu_se_e_ptm now written when sequence_end_code found
+        fix bug that doesn't write out of bounds ff/rew data correctly
+        fix pts computation bug for last vobu
+        fix bug in audio and subtitle track detection
+        fix c_eltm, e_eltm (again) -- calc in 30fps not 29.97fps (wtf?)
+        fix ff so it doesn't round up
+        add RPM spec file dvdauthor.spec (thanks to Dr. Peter Bieringer <pb at bieringer dot de>)
+        infer PCM bits/channel (though cannot infer #channels)
+        sort of handle VOBU's without video (needs work)
+        tweak TMAPT table in IFO files (god I hate NTSC)
+
+0.4.3: February 19, 2003
+	don't presume no pan/scan; add options nopanscan, noletterbox
+	fix TMAPT generation bug from 0.4.2
+	reduce makedvd's function
+
+0.4.2: February 19, 2003
+	fix subtitle support
+	make mpeg2desc print substream info on private1
+	make dvddirgen work with dirs that have spaces
+	fix c_eltm, e_eltm, s_ptm, and e_ptm
+	autodetection of ac3/mp2/dts audio channels and subpicture channels
+	provide sector pointers for multiple audio and subpicture channels
+
+0.4.1: February 14, 2003
+	fix fatal bug in dvdvtsgen and dvdtocgen
+	force user to specify -r to dvddirgen to delete dirs
+	distribute files as user writable
+
+0.4.0: February 13, 2003
+	allow letterboxing
+	compile under Mac OSX
+	fix bug with AC3 playback
+	autoconf
+	largefile support
+	remove dependence on getopt_long
+	more efficient background mplex'ing (starts them sequentially instead of in parallel)
+	support multiple audio tracks (from Jan Panteltje <panteltje at yahoo dot com>)
+	support subpicture tracks (from Jan Panteltje <panteltje at yahoo dot com>)
+	make subpicture colors more readable (from Jan Panteltje <panteltje at yahoo dot com>)
+	allow specification of palette on commandline (from Jan Panteltje <panteltje at yahoo dot com>)
+	allow shell commands as vobs
+	allow working dir to be specified in a config file
+
+0.3.1: December 31, 2002
+	makevob retains proper a/v sync
+	performance improvements to ifogen -- O(n) realloc (instead of O(n^2)) and O(n lg n) vobu fixup (instead of O(n^2))
+	handle chapter mpegs that don't start at 0.00 sec
+
+0.3.0: November 16, 2002
+	fix bug in tocgen where the VTS was not being properly described
+	better status messages from ifogen
+	support multiple titlesets (thus multiple titles -- 1 per vts)
+	allow specification of audio format (but no autodetect)
+	fix bug in makedvd w.r.t. filenames with spaces
+
+0.2.3: November 14, 2002
+	auto detect settings from mpeg video stream:
+		frame rate (thus ntsc vs pal; only 29.97 and 25 suported)
+		resolution
+		aspect ratio
+	make said settings overridable on the command line
+	update README
+	fix bug that could cause ifogen to miss 0-10% of the picture frames thus causing poor ff/rew
+
+0.2.2: November 12, 2002
+	no more qsort! (finally!)
+	make makedvd more compatible (no more ++, workaround for no mktemp)
+	fix makevob (mpeg2desc is very fifo-savvy now)
+	fix # chapter in VIDEO_TS.IFO (for Ogle, Mplayer, and some settop DVD players)
+
+0.2.1: November 11, 2002
+	fix segfault on file not found
+	allow spaces in mpg filenames
+	fix bug in handling mpegs with much longer audio tracks than video tracks
+	fix vobu_e_pts values (fixes playback on Pioneer DV343)
+
+0.2.0: September 22, 2002
+	work with clips > 1 gig
+	support multiple chapters
+
+0.1.2: July 31, 2002
+	fix ff/rew
+
+0.1.1: July 31, 2002
+	allow variable size GOP's
+	work with clips > 4 minutes
+	nicer logging
+
+0.1.0: July 30, 2002
+	Initial release.  Can write roughly a 4 minute video clip to a dvd
+	and it will play!  limitations include 511 GOP's, 15 frames per
+	GOP, 29.97 fps, 720x480, 48kHz audio encoded with mpeg1.  But it
+	works!

@@ -1,0 +1,22 @@
+2000 Jul	A.Stevens
+		Added more intelligent motion compensation search.
+		Basically, the program now first does a coarse search
+		based on 2*2 pel squares, comparing intensity sums.
+		Since a good match (low difference) here can be
+		expected to correlated with a good 1 and 1/2 pel match
+		it uses only the best fraction (default 1/10th) of these
+		as starting points for more expensive 1 pel search.  The
+		best 1 pel match is then used as the basis for a best
+		1/2 pel match.
+
+
+		Integrated SSE/MMX code based on original contribution
+		by Chris Atenasio.  N.b. see INSTALL for details
+		of compilation with SSE/MMX.
+	
+2000 Jul/Aug	Lots to add - see README for the summary...
+
+2003		A.Stevens
+		Shifted to C++ replaced original phase oriented processing
+		with macro-block oriented processing.
+		

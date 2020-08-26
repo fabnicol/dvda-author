@@ -1,0 +1,128 @@
+#!/bin/sh
+#
+# English text: see below!
+#
+# Veränderung: vorher wurde immer mit 720x576 bzw für VCD mit
+# 352x288 aufgenommen, jetzt mit lavrec -d 1. 
+# Das bedeutet für die dc10plus: 768x576.
+# Für lavplay muss dann je nach Version die Option -w768x576 verwendet werden.
+#
+# Für mpeg2enc muss über yuvscaler die Grösse eingestellt werden.
+# "codiere" muss auch in der entsprechenden Version verwendet werden.
+#
+# CHANGES: The old script used the fixed size 720x576 for recording.
+# Now I use lavrec -d 1.
+# For the dc10plus that means: You record with 768x576.
+# For lavplay you need the option -w768x576.
+# You also need "yuvscaler" in your tree and the
+# correct version of "codiere" - some options have changed :-))
+#
+# Dieses Shell-Script setzt für die AVI-files das
+# Verzeichnis /video voraus - bei mir ein Link auf
+# das tatsächliche Verzeichnis. 
+# 
+# This shell-sript assumes a directory /video for the AVI-files
+# (This might be well a link to your actual directory.)
+#
+# You can get rid of German questions by searching for the
+# keyword English and some little changes.
+
+echo -e "\nPlease adapt the directory, in that your movie-files will be"
+echo -e "That's line 38 of the script!"
+echo -e "After that: delete line 30 to 36 of this script\n"
+echo -e "\nBitte das Verzeichnis in Zeile 38 anpassen!\n"
+echo -e "\nDanach Zeile 30 - 36 des scripts löschen\n"
+#
+exit 0
+
+direct=/video  # !!!! 
+
+#
+# Setzen des Mixers:  lavrec kommt nicht mit jeder Soundkarte
+# ganz klar: Hier sollte das erfolgen, z.B. mit aumix oder 
+# ossxmix
+#
+# Setting the mixer directly is better, than setting the volume
+# with lavrec - too many soundcards and drivers ... :-)
+# It's a good idea to do this now e.g. with aumix or ossxmix or ...
+#
+# Example: aumix -f $direct/.aumixrc
+#
+#
+#
+# I also use the following name-convention:
+# filesnames starting with captials are avi-files or
+# encoded files.
+# Editlists must not start with captials.
+# Of course it's up to you to change this :-))
+#
+# Die Qualitätsangabe ist ein wenig obsolet:
+# Eigentlich ist bei Wiedergabe über einen DVD-Player
+# alles unter 80 wenig sinnvoll.
+# 
+# mpeg 2 und SVCD verlangen 720x576 anders geht es noch nicht!
+#
+# Wegen des Shellscripts "codiere" verwende ich folgende Konvention:
+# Dateinamen, die mit Grossbuchstaben beginnen, sind AVI-files.
+# editlisten beginnen mit Kleinbuchstaben. Man kann das natürlich
+# auch anders machen. :-)) 
+# 
+echo -e "Dateiname (Bitte mit Grossbuchstaben anfangen) ?? \c"
+#
+# English: echo -e "Filename to record to (Please start with captial) ?? \c"
+#
+read titel
+echo -e "Qualität 30 -100 ( Enter = 100 ) \c"
+#
+# English: echo -e "Quality 30 - 100 (ENTER = 100 ) \c"
+#
+read qual
+if [ -z "$qual" ]
+then
+qual=100
+fi
+#
+# Falls doch einmal von 768 runter gerechnet werden kann :-))
+#
+echo -e "SVCD = A    VCD = B  (Enter = SVCD) \c"
+read format
+if [ -z "$format" ] || [ "$format" = "a" ] || [ "$format" = "A" ]
+then
+# format="-d 1 -g 720x576"
+format="-d 1"
+else
+format="-d 2"
+titel=${titel}_vcd
+fi
+echo -e "\n Dauer in Minuten? (Enter = 180 Min) \c"
+#
+# English: echo -e "\n Recording time in minutes (ENTER = 180 min) \c"
+#
+read minuten
+if [ -z "$minuten" ]
+then
+minuten=180
+fi
+zeit=`expr $minuten \* 60`
+echo " Aufnahmedauer für $titel: $zeit Sekunden "
+#
+# English: echo "Recording time for $titel: $zeit seconds "
+#
+echo -e "Wartezeit (Min) or ENTER um sofort anzufangen  \c"
+#
+# English: echo -e "Minutes to wait or ENTER to start recording \c"
+#
+read warte
+if [ -z "$warte" ]
+then
+warte=0
+else
+warte=`expr $warte \* 60`
+fi
+sleep $warte
+# lavrec -f a -i p -a 16 $format -r 44100 -s -l 75 -R l -q $qual -t $zeit $direct/${titel}%03d.avi
+lavrec -f a -i P -n 128 -c 2 -a 16 $format -r 44100 -s -l -1 -R l -q $qual -t $zeit $direct/${titel}%03d.avi
+#
+# c = Korrektur für audio und video Sync  t=sekunden
+# f = format ( A und a sind Avi )
+# 
