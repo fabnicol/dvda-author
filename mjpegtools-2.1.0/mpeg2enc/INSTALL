@@ -1,0 +1,10 @@
+Additional Notes on compilation and installation
+
+SSE/MMX Support
+
+The top-level ./configure script should automatically turn on the inclusion of
+SSE/MMX routines for x86 processors.
+
+Note that the .o files for MMX and SSE are included as well
+as the assembly language source.  This should save hassle for those who can't
+be bothered with the job of installing nasm. The files are tiny...

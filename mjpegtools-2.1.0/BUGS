@@ -1,0 +1,40 @@
+
+1.	MPEG2 support for progressive sequences frame (-F 0) and  
+	field-interlaced (-F 3) is now well tested.  Field
+	sequences (-F 1 and -F 2) appear to be working but aren't yet thoroughly
+	tested and lack some recent optimisations available for
+	progressive sequences.  
+
+2. 	Currently the VCD HR Stills muxing stuff assumes *all* HR stills
+  	are the same size which is given in the initial vbv_buffer_size...
+	This will work with mpeg2enc (which does this) but will fail fail fail
+	with other streams.
+
+3.	The VBVbuffer delay code in the MPEG encoder is hopeless broken.  
+	It is currently turned off
+	and needs re-implementing from scratch.  Not urgent though since
+	no decoder ever seems to take any notice of it.  Certainly I never
+	figured out the the damn thing would be useful for once your
+	mux-er has	checked for /ensured video buffer size bounding.
+
+
+4.	mpeg2enc is currently broken for 422 and 444 video. The problem is that
+	the calculations for checking chrominance in the the motion compensation
+	search assume 2-pel sub-sampled U and V in X and Y.
+
+5. 	lavplay, lavrec seek problem when you have movies that are longer than
+	2:30, they play back well but the slider in glav does not work
+	proper when about 2:30 is reached
+
+6.	zoran card/lavrec problem on modern machines. It works only if you
+	don't have more than 2GB of Ram. A patch exists but didn't make into
+	the kernel. The Patch does not apply well on a newer Kernel thatn
+	2.6.20
+
+7.	mjpegtools do not compile when you have X11 an SDL installed. And 
+	disable SDL with a configure option.
+
+8.	2.6.38 Kernels don't have v4l(1) any more. So lavrec does not work any
+	more. Actually you can't compile lavrec. the configure script detects
+	that and disables lavrec if the kernel headers for v4l are not found.
+	lavrec should be updated to us v4l2 

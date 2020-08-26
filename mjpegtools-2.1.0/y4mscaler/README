@@ -1,0 +1,18 @@
+
+This is "y4mscaler", a program which scales, crops, and shifts Y'CbCr video.
+It consumes and produces YUV4MPEG2 streams, as used by the MJPEGtools suite.
+
+Read the manual page, "y4mscaler.1", for more information.
+
+This program is released under the Gnu Public License (GPL), of which a copy
+ is included in the file "COPYING".
+
+Please send any bug reports, feature request, or other commentary to:
+   < dmg @ mir.com >.
+
+For more information and/or updates, consult:
+   http://www.mir.com/DMG/y4mscaler.html
+
+
+Have fun,
+-matt marjanovic

@@ -1,0 +1,34 @@
+DVDAUTHOR
+
+. allow different buttons for p&s, lb, etc
+
+. moving buttons
+
+. improve (and test) audio gap detection
+
+. resurrect buttongroup code
+
+. add support for timers (need optimizer: set two variables at once, or just provide 'settimer(X,Y) function)
+
+. add support for counting GPRMs (i.e. 'g3 counter on;' or 'g3 counter off;')
+
+. allow jumppad to span multiple pgc's
+
+. multiangle support!
+
+. make it a library?
+
+SPUMUX
+
+. rework subtitle rendering to use Pango
+
+. deal with 16 color subtitles
+
+. add way to map color->color for generating select images
+
+. librarify spumux?
+
+
+DOCUMENTATION
+
+. provide a full example case on the website, buttons, menus, multiple chapters without pauses, etc.

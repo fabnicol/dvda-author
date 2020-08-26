@@ -1,0 +1,486 @@
+#!/bin/sh
+#
+# codiere ist ein Shellscript das entweder AVI-files bearbeitet.
+# Bei AVI-Files wird der Name des AVI-Files auch für die komprimierten
+# Files verwendet - erweitert um entsprechende Änderungen.
+# AVI-Files beginnen - so setzt es das script voraus - mit
+# einem Grossbuchstaben und enden mit Kleinbuchstaben.
+# Editlisten beginnen mit Kleinbuchstaben und es wird folgendes
+# Schema verwendet: ja01[a - z] wird zum ersten File zusammengefasst.
+# Die Dateien ja02[a-7] werden zum zweiten File zusammengefasst.
+#
+# codiere is a shell-script that works with AVI-files and
+# editlists. In case of AVI-Files the name of the file is used
+# also for the output-Name. In case of editlists you are asked
+# for the name of the output-file.
+# It is mandatory that AVI-files start with a capital letter.
+# It is mandatory, that editlist-files don't start with capitals.
+# For editlists the following scheme is used:
+# Files ja01[a-z] will be used for the first output-file
+# Files ja02[a-z] will be used for the second output-file.
+# 
+# If you want to get rid of the German questions: I tried to
+# translate everything - just browse the script for the word
+# English - and change it to your preferences.
+#
+# A second word of warning: Change the input- and output- directories 
+# to your needs
+# Otherwise the script might not work :-)
+#
+echo -e "\n READ & ADAPT THE SHELL-SCRIPT TO YOUR NEEDS (LINE 37+38)" 
+echo -e "After that: Delete lines 30 to 36\n"
+echo -e "\nBitte das Shellscript anpassen Zeile 37 und 38"
+echo -e "danach Zeilen 30 - 36 entfernen\n"
+#
+exit 0
+
+directin=/video/   # CHANGE HERE and keep BOTH slashes
+directout=/toast2/ # CHANGE HERE and keep BOTH slashes
+#
+# The following options are for yuvscaler - not used for now
+# The variables are needed but have no meaning for now -
+# that's work in Progress.
+# Die folgenden Zeilen sind Arbeitsvorbereitung - die Variablen
+# werden gebraucht, haben aber noch keine weitere Bedeutung!
+# ---------------start work in progress--------------------------
+yuvform=""
+#
+# yuvform="-n p" newer option - not used for now.
+# yuvform not used for now
+# yuvform="-n p"   # p = PAL   n = NTSC    s = SECAM
+# 
+# 
+# for now: not used: yuvinform=
+#
+# yuvinform="-I INTERLACED_ODD_FIRST"
+#
+yuvinform=""
+#
+# N.B: yuvoutform new format is not used for now
+#
+#
+# -----------------End work in progress-----------------
+cd $directin
+echo -e "\n  Ist der erste Buchstabe gross, werden avi-Files bearbeitet."
+echo "  Ist der erste Buchstabe klein,"
+echo "  werden ohne weitere Prüfung editlisten vorausgesetzt"
+echo -e "\n\n Welche Dateien bearbeiten? \c"
+# English:
+# echo -e "\n If the first letter oft the filename is a capital letter
+# echo "I'll asume avi-files."
+# echo "  Otherwise editlists are assumed."
+# echo -e "\n\n Which files should I process? \c"
+read c
+#
+echo -e "M = Monochrome oder ENTER = Farbe \c"
+# English echo -e " M = Monochrome   ENTER = Colour \c"
+read bw
+if [ "$bw" = "m" ] || [ "$bw" = "M" ]
+then
+bwfilter="-m"
+# 
+# yuvscoutadd="-O MONOCHROME" # not used for now
+yuvscoutadd=""
+#
+else
+yuvscoptadd=""
+bwfilter=" "
+fi
+#
+echo -e "LAV2YUVfilter: 0 = n0 d1   1 = n1 d1   2 = n1 d2  3 = n1 d3 (Enter = 2) \c"
+read filter
+if [ -z "$filter" ]
+then
+filter=2
+fi
+#
+# Nun folgen - absichtlich eingerückt - die verschiedenen Filterfunktionen
+# Ich habe hier experimentelle Werte verwendet - bei mir ergab es so die
+# besten Resultate. Für Rückmeldungen bin ich dankbar.
+#
+# English
+# I used the values, that proofed best for my eyes. Your mileage may vary.
+# Feedback is very welcome.
+#
+	if [ "$filter" = "0" ] 
+	then
+	filter="-n 0 -d 1"
+	mpegoptadd="-q 4"
+	mplexoptadd="-V"
+	fi
+	if [ "$filter" = "1" ]
+	then
+	filter="-n 1 -d 1"
+	mpegoptadd=" -q 5"
+	mplexoptadd=" -V"
+	fi
+	if [ "$filter" = "2" ]
+	then
+	filter="-n 1 -d 2"
+	mpegoptadd=" -q 5"
+	mplexoptadd=" -V"
+	fi
+	if [ "$filter" = "3" ]
+	then
+	filter="-n 1 -d 3"
+	mpegoptadd="-q 6"
+	mplexoptadd="-V"
+	fi
+#
+
+filter="${filter} ${bwfilter}"
+
+#
+#
+# FRAMEOFFSET
+#
+echo -e "Frameoffset in Frames? (ENTER=0) \c"
+read offq
+if [ -z "$offq" ]
+then
+offset=""
+else
+offset="-o $offset"
+fi
+echo -e "Bitrate 1152 - 2500 (ENTER=2500) \c"
+read brat
+if [ -z "$brat" ]
+then
+brat=2500
+fi
+
+# Breitband-Video: Das sind die Filme, bei denen oben und unten
+# ein schwarzer Rand zu sehen ist und bei manchen Fernsehern
+# die Seiten ein wenig abgeschnitten werden. Also: Leinwandfilme,
+# die im Fernsehen ausgestrahlt werden.
+# Da empfiehlt es sich, diese fast schwarzen Ränder abzuschneiden.
+# Das verbessert die Kompression weil nicht im Schwarz-Flimmern
+# nach Veränderungen gesucht werden muss.
+#
+# Wideformat Video: Those Hollywood-Movies where you have the
+# bottom and top with large black stripes.
+#
+echo -e "B = Breitbandfilm  V = VHS-Video   ENTER = Direkt ab Tuner \c"
+#
+# English 
+# echo -e "B = Wideformat-movie     Enter = normal video \c"
+#
+read breit
+if [ -z "$breit" ]
+	then
+	BREIT=0
+	else
+	if [ "$breit" = "b" ] || [ "$breit" = "B" ]
+		then
+		BREIT=1
+		else
+		BREIT=2
+	fi
+fi
+#
+# Wurde die Aufnahme bereits als vcd gemacht und enthält die
+# Hinweis darauf im Namen? Dann muss nicht viel gefragt werden,
+# ausser nach der Bitrate. SVCD und XVCD können aus diesen
+# Aufnahmen sowieso nicht mehr gemacht werden :-)
+# Die Randbreiten wurden experimentell gewonnen, wenn jemand
+# das genauer machen kann: Bitte verbessern!
+#
+# Auch bei "normalen" VHS bzw. Video - Aufnahmen wird oben und
+# unten ein kleiner Rand abgeschnitten. Die obersten und untersten
+# Zeilen enthalten meistens nur Geflimmer.
+#
+# If recorded as vcd (taken from extension):
+# There i no need to ask for the kind of file, you want to
+# create :-) 
+# No further questions necessary, assume optimal values
+# The values for the margins are experimental - I cut off some lines
+# from the recorded movie, that are normaly not useful. The amount
+# depends on the source you used for recording.
+# Improvements are welcome.
+#
+VCD=""
+if [ ${c} \> "Zz" ] # Dateiname mit Kleinbuchstabe First letter not a capital
+	then
+	VCD=$( cat ${c}* 2>/dev/null | grep vcd ) # get argument from editlist
+	else
+	VCD=$( ls ${c}* 2>/dev/null | grep vcd ) # get argument from filename
+fi
+if [ -n "$VCD" ] 
+	then
+	#
+	# Optimale Werte einstellen - Zeit spielt keine Rolle, ist
+	# sowieso rasend schnell.
+	# Assume optimal values - no further questions concering quality.
+	# VCD is always very fast - if recorded as VCD
+	quopt="-4 1 -2 1"
+	yuvscopts="$yuvform $yuvinform $yuvoutform -k VCD"
+	YUVMEDIAN=1
+	SCALER=0
+	if [ $BREIT = "1" ]
+	then
+	lavopt="-s 0 $filter -a 352x202+0+43"
+        else
+		if [ "$BREIT" = "2" ]
+		then
+		lavopt="-s 0 $filter -a 352x240+0+24"
+		else
+		lavopt="-s 0 $filter -a 352x270+0+9"
+		fi
+	fi
+	mpegopt="-m 1 -s -h -b $brat $quopt -r 16 "
+	mplexopt="-m 1 -f 2 -S 840"
+#
+#
+	add="${brat}_vcd"
+	o="VCD MPEG 1 : $brat "
+else   # According to filenames it's no VCD-record - ask more questions.
+# 
+# Ist keine VCD-Aufnahme - deshalb ist Abfrage sinnvoll
+#
+
+SCALER=1
+	echo -e 'Der yuvmedianfilter filtert zusätzlich "noise" - braucht aber Zeit'
+	echo -e "Yuvmdianfilter einsetzen  J = Ja   N oder ENTER = Nein \c"
+	read yu 
+	if [ -z "$yu" ]
+		then
+		YUVMEDIAN=0
+		else
+		if [ $yu = "j" ] || [ "$yu" = "J" ] || [ "$yu" = "y" ] 
+			then
+			YUVMEDIAN=1
+			else
+			YUVMDEIAN=0
+		fi
+	fi # End for YUVMEDIANFILTER ?
+#
+	echo -e "Felddiagnose a=optimal b=schnell=ENTER ( 30% schneller, reicht meistens) \c"
+# English: echo -e "a = optimised for quality b = optimised=ENTER for speed in most cases ok \c"
+	read qopt
+	if [ -z "$qopt" ]
+	then
+	qopt=b
+	fi
+	if [ $qopt = "a" ] || [ "qopt" = "A" ]
+		then
+		quopt="-4 1 -2 1"
+		else
+		quopt=" "
+		fi
+		echo -e "\nA = SVCD    B = XVCD   C = VCD   ( ENTER = SVCD ) \c"
+		read F
+		if [ -z "$F" ]
+			then
+			F="a"
+			fi
+		if [ "$F" = "A" ] || [ "$F" = "a" ]
+		then
+		d=$brat
+		yuvtarget="-k SVCD"
+       	yuvscopts="$yuvform $yuvinform $yuvoutform $yuvtarget"
+		f=2
+		if [ "$BREIT" = "1" ]
+		then
+		lavopt="-s 0 $filter -a 768x406+0+85"
+		else
+			if [ "$BREIT" = "2" ]
+			then
+			lavopt="-s 0 $filter -a 768x480+0+48"
+			else
+			lavopt="-s 0 $filter -a 768x540+0+18"
+			fi
+		fi
+		mpegopt=" -m 2 -b $brat $mpegoptadd $quopt -r 16 -F 0"
+		mplexopt="-m 2 -f 4 -S 840 $mplexoptadd"
+		o="SVCD MPEG 2 mit $brat "
+		add="${brat}_m2"
+	fi
+	if [ "$F" = "B" ] || [ "$F" = "b" ]
+		then
+		d=$brat
+		f=1
+		yuvtarget="-k SVCD"
+       	yuvscopts="$yuvform $yuvinform $yuvoutform $yuvtarget"
+		if [ "$BREIT" = "1" ]
+		then
+		lavopt="-s 0 $filter -a 768x406+0+85"
+		else
+			if [ "$BREIT" = "2" ]
+			then
+			lavopt="-s 0 $filter -a 768x480+0+48"
+			else
+			lavopt="-s 0 $filter -a 768x540+0+18"
+			fi
+		fi
+		mpegopt="-m 1 -h -b $brat $quopt -r 16 "
+		mplexopt="-m 2 -f 4 -S 840"
+#
+#
+		add="${brat}_xvcd"
+		o="XVCD MPEG 1 mit $brat "
+	fi
+	if [ "$F" = "C" ] || [ "$F" = "c" ]
+		then
+		d=$brat
+		yuvtarget="-k VCD"
+       	yuvscopts="$yuvform $yuvinform $yuvoutform $yuvtarget"
+		f=1
+		if [ $BREIT = "1" ]
+		then
+		lavopt="-s 0 $filter -a 768x406+0+85"
+       		else
+			if [ "$BREIT" = "2" ]
+			then
+			lavopt="-s 0 $filter -a 768x480+0+48"
+			else
+			lavopt="-s 0 $filter -a 768x540+0+18"
+			fi
+		fi
+		mpegopt="-m 1 -b $brat $quopt -r 16 "
+		mplexopt="mplex -m 1 -f 2"
+		add="${brat}_vcd"
+		o="VCD MPEG 1 mit $brat "
+	fi
+fi  
+#
+# Ende Abfrage ob es eine VCD-Aufnahme ist
+# End of "Is it a VCD-record or do I need more Information"
+#
+if [ ${c} \> "Zz" ] # Dateiname mit Kleinbuchstabe First letter not a capital
+	then
+	echo -e "\n Bitte Ausgabe-Name angeben \c"
+# English echo -e "\n Enter Output-Name \c"
+	read aus
+fi
+# 
+#
+#
+echo -e "\nWartezeit in Minuten  (Enter startet sofort, CTRL-C unterbricht) \c"
+# English echo -e "\n Enter delay in minutes (Just ENTER starts, CTRL-C to break \c"
+read warte
+if [ -z "$warte" ]
+	then
+	warte=0
+	else
+	warte=`expr $warte \* 60`
+fi
+sleep $warte
+if [ ${c} \> "Zz" ] # Dateiname mit Kleinbuchstabe
+	then
+	auszahl="1"
+	maches="ja"
+	null=`expr $auszahl \< "10"`
+	if [ -n $null ]
+	then
+	auszahl="0"$auszahl 
+	fi
+	klein=${c}${auszahl}*
+	machs=`ls $klein 2>/dev/null`
+	if [ -n "$machs" ]
+	then
+	maches="ja"
+	else
+    echo "Keine Dateien zur Verarbeitung gefunden"
+# English echo "No files found "
+	maches="nein"
+	fi
+	date >startzeit_$c
+	while [ "$maches" = "ja" ]
+	do
+	if [ -f ${directout}${aus}${auszahl}_${add} ] || [ -f ${directin}${aus}${auszahl}_${add}.mpg ]
+		then
+		echo "MPEG-File ${directout}${aus}${auszahl}_${add} exists"
+		else
+	if [ "$YUVMEDIAN" = "1" ]
+	then
+	if [ "$SCALER" = "1" ]  # And YUVMEDIAN=1
+	then
+	lav2yuv $lavopt $offset $klein | yuvscaler $yuvscopts | yuvmedianfilter | mpeg2enc -h -s $mpegopt -o ${directout}${aus}${auszahl}_${add}
+	else
+	lav2yuv $lavopt $offset $klein | yuvmedianfilter | mpeg2enc -h -s $mpegopt -o ${directout}${aus}${auszahl}_${add} 
+	fi	# end for SCALER
+	else
+	if [ "$SCALER" = "1" ]  # And YUVMEDIAN=0
+	then
+	lav2yuv $lavopt $offset $klein | yuvscaler $yuvscopts | mpeg2enc -h -s $mpegopt -o ${directout}${aus}${auszahl}_${add}
+        else
+	lav2yuv $lavopt $offset $klein | mpeg2enc -h -s $mpegopt -o ${directout}${aus}${auszahl}_${add}
+	fi	# End for SCALER
+	fi     # End for YUVMEDIAN
+	fi     # End: existing file
+    if [ -f ${directout}${aus}${auszahl}.snd ]
+	then
+	echo "Soundfile ${directout}${aus}${auszahl}.snd exists"
+	else
+	lav2wav $klein | mp2enc -V -o ${directout}${aus}${auszahl}.snd
+	fi
+	if [ -f ${directout}${aus}${auszahl}_${add}.mpg ]
+	then
+	echo "${directout}${aus}${auszahl}_${add}.mpg exists"
+	else
+	mplex -v 0 $mplexopt $mplexoptadd -o ${directin}${aus}${auszahl}_$add.mpg ${directout}${aus}${auszahl}_$add ${directout}${aus}${auszahl}.snd
+	fi
+	auszahl=`expr $auszahl \+ 1`
+#        echo $auszahl
+	null=`expr $auszahl \< "10"`
+	if [ $null = "1" ]
+	then
+	auszahl="0"$auszahl
+	fi
+	klein=${c}${auszahl}*
+#        echo $klein
+	machs=`ls $klein 2>/dev/null`
+	if [ -n "$machs" ]
+	then
+    maches="ja"
+	else
+	maches="nein"
+	fi
+	done
+else
+#
+# Input-file-name starts with capital letter
+# Source-Datei beginnt mit Grossbuchstabe
+#
+for i in ${c}*avi
+do
+a=`basename $i .avi`
+if [ -f ${directout}${a}_${add} ] || [ -f ${directout}${a}_${add}.mpg ]
+then
+echo "MPEG-File ${a}_${add} exists"
+else
+	if [ "$YUVMEDIAN" = "1" ]
+	then
+	if [ "$SCALER" = "1" ]
+		then
+	echo "	lav2yuv $lavopt $offset $i  | yuvscaler $yuvscopts | yuvmedianfilter | mpeg2enc $mpegopt -h -s -o ${directout}${a}_${add}"
+		else
+		lav2yuv $lavopt $offset $i  | yuvmedianfilter | mpeg2enc $mpegopt -h -s -o ${directout}${a}_${add}
+	fi	# for SCALER
+	else
+	if [ "$SCALER" = "1" ]   # And YUVMEDIAN = 0
+		then
+		lav2yuv $lavopt $offset $i  | yuvscaler $yuvscopts | mpeg2enc $mpegopt -h -s -o ${directout}${a}_${add}
+		else		# SCALER 0 0 And YUVMEDIAN = 0
+		lav2yuv $lavopt $offset $i  | mpeg2enc $mpegopt -h -s -o ${directout}${a}_${add}
+		fi # FOR SCALER
+	fi # FOR YUVMEDIAN
+fi	# For existing file
+if [ -f ${a}.snd ]
+then
+echo "Soundfile exists"
+else
+lav2wav $i | mp2enc -V -o ${directout}${a}${auszahl}.snd
+fi
+if [ -f ${directout}${a}_${add}.mpg ]
+then
+echo "MPLEX-File ${directout}${a}_${d}_mp${f}.mpg exists"
+else
+$mplexopt ${a}_${add} ${a}.snd ${directout}${a}_${add}.mpg
+if [ -f ${a}_${add}.mpg ]
+then
+rm ${a}_${add}
+fi
+fi
+done
+fi

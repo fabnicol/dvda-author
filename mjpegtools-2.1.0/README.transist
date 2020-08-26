@@ -1,0 +1,99 @@
+This file describes how to make a transistion from one video file
+to another using the current sample implementations.
+Especially ypipe will be replaced (hopefully) soon by a more
+capable program.
+
+The programs involved in this process are:
+
+ - lav2yuv, which decompresses the given input files (or any portions
+            of them) and gives us raw yuv frame streams that can be
+            piped through the several tools.
+ - ypipe, which starts two instances of lav2yuv and combines the two
+          input streams into one, in which every even frame is from
+          the first and every odd frame from the second input.
+ - transist.flt, which takes the frame-interlaced stream from
+                 ypipe and writes out the final transistion.
+ - yuv2lav or mpeg2enc, which compress the resulting yuv stream
+                        into an mjpeg or mpeg file.
+
+Let's assume simple this scenery: We have two input videos, intro.avi
+and epilogue.qt and want make intro.avi transist into epilogue.qt
+with a duration of one second (that is 25 frames for PAL or 30 frames
+for NTSC).
+
+intro.avi and epiloque.qt have to be of the same format regarding
+frame rate and image resolution, at the moment.
+In this example they are both 352x288 PAL files. intro.avi contains
+250 frames and epilogue.qt is 1000 frames long.
+
+Therefor our output file will contain:
+ - the first 225 frames of intro.avi
+ - a 25 frame transistion containing the last 25 frames of intro.avi
+   and the first 25 frames of epilogue.qt
+ - the last 975 frames of epilogue.qt
+
+We could get the last 25 frames of intro.avi by calling:
+  lav2yuv -o 225 -f 25 intro.avi
+(-o 225, the offset, tells lav2yuv to begin with frame # 225
+ and -f 25 makes it output 25 frames from there on)
+Another possibility is:
+  lav2yuv -o -25 intro.avi
+(negative offsets are counted from the end)
+
+And the first 25 frames of epilogue.qt:
+  lav2yuv -f 25 epilogue.qt
+(-o defaults to an offset of zero)
+
+But we need to combine the two streams with ypipe. So the call would be:
+  ypipe "lav2yuv -o 255 -f 25 intro.avi" "lav2yuv -f 25 epilogue.qt"
+The output of this is a raw yuv stream that can be fed into
+transist.flt.
+
+transist.flt needs to be informed about the duration of the transistion
+and the opacity of the second stream at the beginning and at the end
+of the transistion:
+ -o num   opacity of second input at the beginning [0-255]
+ -O num   opacity of second input at the end [0-255]
+ -d num   duration of transistion in frames
+An opacity of 0 means that the second stream is fully transparent
+(only stream one visible), at 255 stream two is fully opaque.
+In our case the correct call (transistion from stream 1 to stream 2)
+would be:
+  transist.flt -o 0 -O 255 -d 25
+The -s and -n parameters equal to the -o and -f parameters of lav2yuv
+and are only needed if anybody wants to render only a portion of the
+transistion for whatever reason. Please note that this only affects
+the weighting calculations - none of the input is really skipped, so
+that if you pass the skip parameter (-s 30, for example), you also
+need to skip the first 30 frames in lav2yuv (-o 30) in order to get
+the expected result. If you didn't understand this, send an email to
+the authors or simply ignore -s and -n.
+The whole procedure will be automated later, anyway.
+
+Now we want to compress the yuv stream with yuv2lav.
+  yuv2lav -f a -q 80 -o transistion.avi
+Reads the yuv stream from stdin and outputs an avi file (-f a)
+with compressed jpeg frames of quality 80.
+
+Now we have the whole command for creating a transistion:
+
+ypipe "lav2yuv -o 255 -f 25 intro.avi" "lav2yuv -f 25 epilogue.qt" | \
+transist.flt -o 0 -O 255 -d 25 | yuv2lav -f a -q 80 -o transistion.avi
+
+(This is one line.) The resulting video can be written as a LAV Edit List,
+a plain text file containing the following lines:
+
+LAV Edit List
+PAL
+3
+intro.avi
+transistion.avi
+epilogue.qt
+0 0 224
+1 0 24
+2 25 999
+
+This file can be fed into xlav or lavplay, or you
+can pipe it into mpeg2enc with lav2yuv or combine
+the whole stuff into one single mjpeg file with
+lavtrans or lav2yuv|yuv2lav.

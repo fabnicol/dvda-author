@@ -1,0 +1,45 @@
+AltiVec optimized library for MJPEG tools MPEG-1/2 Video Encoder
+-----------------------------------------------------------------------------
+
+Copyright (C) 2002  James Klicman <james@klicman.org>
+
+Performance statistics for these optimizations are available at
+http://klicman.org/altivec/.
+
+
+Platform specific comments:
+
+    Linux:
+    
+	AltiVec enabled compilers are now widely distributed.  However,
+	the AltiVec support in the GNU GCC 3.1, 3.2 and even the latest
+	3.3.1 release all have known bugs which cause invalid code or
+	compile failures. It is likely that release GCC 3.3.2 will
+	be a functional compiler for this AltiVec code. Until then,
+	gcc 2.96.4 with the Motorola AltiVec patches works just fine
+	and may even provide better AltiVec instruction scheduling.
+	There are AltiVec enabled GCC compilers maintained by Kaoru
+	Fukui at ftp://ppc.linux.or.jp/pub/users/fukui/.
+
+        You will also need a recent binutils package. I've verified that
+        binutils-2.12.90.0.7 works. It is also the recommended version
+        for GCC 3.1. There may also be suitable binutils packages at
+        Kaoru's FTP site.
+    
+    Mac OS X:
+    
+        If you have the developer tools, you're all set.
+
+
+General comments:
+
+    Additional performance can be gained by setting the -mcpu option. For
+    GCC 2.95.* use -mcpu=750, for GCC 3.1 and higher try -mcpu=7400 or
+    -mcpu=7450.
+
+    This option can be added during configuration by setting the CFLAGS
+    environment variable.  Since the encoder (mpeg2enc) and multiplexor
+    (mplex) are now written in C++ the CXXFLAGS environment variable should
+    also be set.  For example:
+
+    env CFLAGS="-O2 -mcpu=750" CXXFLAGS="-O2 -mcpu=750" ./configure

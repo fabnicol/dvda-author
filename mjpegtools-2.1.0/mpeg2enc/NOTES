@@ -1,0 +1,115 @@
+SOME NOTES IN AND AROUND MPEG ENCODING
+
+(1) The importance of precision...
+
+Its not just quantizing "about right" that matters.
+
+However, mp1e has a very very good idea:  why not precompile a 
+combined quantisation / fdct matrix with the multipliers set up
+"just right" to include the necessary frig factors.  If nothing
+else it saves accumulating numeric errors in the intermediate
+results of the coefficients!
+
+That mp1e guy was *smart*...
+
+(2)
+
+If you want to accurately compute an integer division using 
+multiplication...
+
+
+Notation:  [x](k)  means x floor-ed to nearest k.  [x] is [x] to the nearest
+unit.
+
+
+[x / d](1)  = [Kx/d](K) = [ [K/d]x +(K%d)x/d ](K) / K
+
+Observe that for large K >> d  [K/d]x >> (K%d)x/d
+so that the (K%d)x/d is in effect a rounding correction
+and hence need not itself be desperately accurate.  Thus we
+expand another step to obtain...
+
+           = [[K/d]x  + [(K%d)[K/d]x + d](K)/K ](K) /K
+
+Where d is a very small correction factor. We now observe that since
+we're flooring to K on the outside we're really only interested in
+whether the rounding factor generates a "carry" so it doesn't need to
+be 100% accurate.
+
+		  = [[K/d]x ](K)/K + [[K/d]x]%K + (K%d)[K/d]x + d](K)/K
+
+For K twice word size the first term is simply the high word of the
+product [K/d]x
+
+The second term is simply the low word of the product [K/d]x plus the
+term (K%d)[K/d]x + d which for large K and small d will fit into a
+single word.  Thus the carry can at most be a single bit.
+
+We can compute it "exactly" adding a small fixed round up d (32
+appears to work nicely for K=2^16) and d < 256).  However, for MPEG
+applications we have fairly limited range of d and x.  For these we
+can get "almost" right results with a (coarse approximation).  We know
+0 <= K%d < d.  We also know the factor gets very small for larger d.
+Thus we really only need a correction that "works" for small d.
+Taking a wild guess to try x ~= (K%d)[K/d]x for smallish d.
+
+
+Miracle of miracles it works just great!  No too-lows, and only very
+rare too highs for large x.
+
+Thus [x/d] ~= hiword([K/d]x) + (loword([K/d]x)+x) >= K )
+
+Clever eh.  The actual computation we quantize in MPEG is
+
+[coefficient[i]*32 + quantisation/2) / quantisation*2*coeffquant[i] ]
+
+So, combining with Mr mp1e's sneakiness what we need is a table of
+[K/quantisation*2*coeffquant[i]] for each quantisation.  Ooooerrr...
+
+If we want to get *really* clever we combine the quantisation with the
+DCT coefficients to go yet faster.... 
+
+
+(3) Predicting motion vectors....
+
+
+You'd think you could use the motion vectors from the P frame as an
+upper bound for the those needed in the following (in encoding order)
+B-frames.  Wrrrrrooooong.  Doesn't work. Well, actually it works, but:
+
+(a) The gains ain't impressive (10% maybe).
+(b) The is some quality loss.
+(c) It is well night impossible to get *any* gains in the MPEG-2
+interlaced (field MC case) which is where you'd really want the speed gains.
+
+(4)	The wonderful DCT quantisation matrix
+	
+	Experiments have revealed that if you're compressing on the margins of	
+	acceptable quality you do *far* better if you squeeze the higher
+	frequency DCT coefficients using the quantisation matrix rather than
+	simply allow the encoder to jack up the global quantisation factor.
+
+	Why?  The latter starts run an unacceptable risk of producing
+	noticeable mosaic-ing due to big DC offssets.  The latter just
+	starts blurring the results by killing off h.f. components.
+
+
+(5)	Spares and Sub-sampled matching.
+
+	You get *good* results searching for sub-sampled matches at
+	sub-sampling resolution.
+	
+	However, if you go below the sampling resolution you *will* miss
+	the odd good match.
+	
+	Furthermore, the sad of sub-sampled match leading (eventually) to
+	an optimal 1-pel match can be surprisingly much higher than you'd
+	expect. 6*sad scaled for sampling density can occasionally be
+	observed.  I was amazed...
+
+	Andrew
+
+
+
+
+
