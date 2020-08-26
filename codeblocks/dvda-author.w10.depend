@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1598280531 source:c:\users\public\dev\dvda-author\libfixwav\src\checkdata.c
+1598401089 source:c:\users\public\dev\dvda-author\libfixwav\src\checkdata.c
 	<config.h>
 	<stdio.h>
 	<stdlib.h>
@@ -250,12 +250,13 @@
 	<string.h>
 	"strnlen.h"
 
-1598306963 source:c:\users\public\dev\dvda-author\libutils\src\libc_utils.c
+1598401089 source:c:\users\public\dev\dvda-author\libutils\src\libc_utils.c
 	"config.h"
 	<stdlib.h>
 	<stdio.h>
 	<io.h>
 	<windows.h>
+	<limits.h>
 	<unistd.h>
 	<dirent.h>
 	<stdarg.h>
@@ -276,7 +277,7 @@
 
 1598084683 c:\users\public\dev\dvda-author\libutils\src\private\private_c_utils.h
 
-1598206837 source:c:\users\public\dev\dvda-author\libutils\src\winport.c
+1598401089 source:c:\users\public\dev\dvda-author\libutils\src\winport.c
 	"config.h"
 	"winport.h"
 	"private_c_utils.h"
@@ -461,7 +462,7 @@
 	"audio2.h"
 	"structures.h"
 
-1598281445 source:c:\users\public\dev\dvda-author\src\audio.c
+1598401090 source:c:\users\public\dev\dvda-author\src\audio.c
 	"config.h"
 	"audio2.h"
 
@@ -483,7 +484,7 @@
 	"sox.h"
 	<stdlib.h>
 
-1598306595 source:c:\users\public\dev\dvda-author\src\auxiliary.c
+1598324122 source:c:\users\public\dev\dvda-author\src\auxiliary.c
 	<stdlib.h>
 	<stdio.h>
 	<sys/stat.h>
@@ -504,7 +505,7 @@
 	"commonvars.h"
 	"menu.h"
 
-1598084700 c:\users\public\dev\dvda-author\src\include\ports.h
+1598401090 c:\users\public\dev\dvda-author\src\include\ports.h
 	<io.h>
 	<sys/resource.h>
 	"commonvars.h"
@@ -1723,7 +1724,7 @@
 	<stdarg.h>
 	<stddef.h>
 
-1568169605 c:\users\public\dev\dvda-author\ffmpeg\config.h
+1598410143 c:\users\public\dev\dvda-author\ffmpeg\config.h
 
 1565915527 c:\users\public\dev\dvda-author\ffmpeg\libavcodec\mlplayout.h
 	<stdint.h>
@@ -1783,7 +1784,7 @@
 1598086955 c:\users\public\dev\dvda-author\ffmpeg\libavutil\version.h
 	"macros.h"
 
-1598087436 c:\users\public\dev\dvda-author\ffmpeg\libavutil\avconfig.h
+1598408923 c:\users\public\dev\dvda-author\ffmpeg\libavutil\avconfig.h
 
 1598086942 c:\users\public\dev\dvda-author\ffmpeg\libavutil\intmath.h
 	<stdint.h>
@@ -2000,7 +2001,7 @@
 
 1561592353 c:\users\public\dev\dvda-author\dvda-author\\libiberty\src\include\strdup.h
 
-1598281637 source:c:\users\public\dev\dvda-author\src\menu.c
+1598401090 source:c:\users\public\dev\dvda-author\src\menu.c
 	<stdio.h>
 	<stdlib.h>
 	<stdint.h>
