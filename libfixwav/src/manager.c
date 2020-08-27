@@ -332,7 +332,7 @@ Checkout:
 
   /* checkout stage: check and possibly repair header data */
 
-  header_size = (header->channels > 2 || header->wBitsPerSample > 16) ? HEADER_EXTENSIBLE_SIZE : HEADER_SIZE;
+  header_size = (header->channels > 2 /* || header->wBitsPerSample > 16 */) ? HEADER_EXTENSIBLE_SIZE : HEADER_SIZE;
   header->is_extensible = (header_size == HEADER_EXTENSIBLE_SIZE);
   uint8_t *standard_header;
 

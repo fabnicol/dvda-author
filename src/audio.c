@@ -587,9 +587,10 @@ int decode_mlp_file(fileinfo_t* info, globalData* globals)
 
                     // WaveHeader info : audio and header characteristics
 
-                    header.is_extensible = true;
+
                     header.header_size_out = 80;
                     header.channels = frame->channels;
+                    header.is_extensible = header.channels > 2;
                     header.nBlockAlign = frame->channels * codec->bits_per_raw_sample / 8 ;
                     header.wBitsPerSample = codec->bits_per_raw_sample;
                     header.dwChannelMask = (frame->channel_layout < 21 && frame->channel_layout > 0) ? cga2wav_channels[frame->channel_layout] : 0;

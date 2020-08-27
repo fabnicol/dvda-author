@@ -1,7 +1,8 @@
 
 FIX BUGS:
 
-Videolinking recentely broken under windows/msys2. possibly globals.
+Extraction broken for 2/24/(48), ok for 2/16 and multichannel (windows).
+Possibly qfact extended headers not supported for 2/24 by players, however ffplay and ffprobe react this way too.
 
 Short term
 ----------
