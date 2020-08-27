@@ -2570,6 +2570,7 @@ standard_checks:
 
     command_t command0=
     {
+        0,
         ngroups,
         n_g_groups,
         nplaygroups,

@@ -57,7 +57,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "asvs.h"
 
 extern char* TEMPDIR;
-static uint16_t  maxntracks;
 static uint16_t totaltitles;
 
 /* Limitations */
@@ -85,7 +84,7 @@ static uint16_t totaltitles;
 #define VTSI_rank command->VTSI_rank
 
 
-uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t ntitles[], uint8_t *ntitletracks[], uint64_t *titlelength[], uint16_t **ntitlepics, globalData *globals)
+uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t ntitles[], uint8_t *ntitletracks[], uint64_t *titlelength[], uint16_t **ntitlepics, globalData* globals)
 {
 
     // Normal case: audio files
@@ -163,7 +162,7 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
         }
       }
 
-      maxntracks = MAX(track, maxntracks);
+      command->maxntracks = MAX(track, command->maxntracks);
 
       if (globals->debugging)
           foutput(INF "Number of titles for group %d is %d\n",group, ntitles[group]);
@@ -238,7 +237,7 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command, globalData* global
 
         case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
 
-            generate_menu_pics(img, ngroups, ntracks, maxntracks, globals);
+            generate_menu_pics(command, img, ngroups, ntracks, globals);
 
             // calling xml project file subroutine for dvdauthor
 
@@ -246,7 +245,7 @@ uint32_t create_topmenu(char* audiotsdir, command_t* command, globalData* global
 
             allocate_topmenus(command, globals);
 
-            errno = generate_spumux_xml(ngroups, ntracks, maxntracks, img);
+            errno = generate_spumux_xml(command, ngroups, ntracks, img, globals);
             if (errno) perror("\n"ERR "AMG: spumux_xml\n");
 
             errno = launch_spumux(img, globals);
@@ -642,7 +641,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
             }
         }
     }
-#endif
+
 
     /* Sector 3 */
 
@@ -1005,7 +1004,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
 #undef img
 #undef textable
 #undef VTSI_rank
-
+#endif
 free(path);
 return 0;
 }

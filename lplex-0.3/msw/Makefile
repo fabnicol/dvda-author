@@ -236,7 +236,7 @@ DEPDIR = .deps
 DLLTOOL = false
 DSYMUTIL = 
 DUMPBIN = 
-DVDAUTHOR_PATH = 
+DVDAUTHOR_PATH = /usr/bin/dvdauthor
 ECHO_C = 
 ECHO_N = -n
 ECHO_T = 
@@ -249,7 +249,7 @@ INSTALL_DATA = /bin/sh /home/fab/Dev/dvda-author/config/install-sh  -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
-JPEG2YUV_PATH = 
+JPEG2YUV_PATH = /usr/bin/jpeg2yuv
 LD = /usr/bin/ld -m elf_x86_64
 LDFLAGS = 
 LIBFLACPP_CFLAGS =  -I/home/fab/Dev/dvda-author/local/include
@@ -271,8 +271,8 @@ MAKEINFO = ${SHELL} /home/fab/Dev/dvda-author/lplex-0.3/missing makeinfo
 MANIFEST_TOOL = :
 MKDIR_P = /usr/bin/mkdir -p
 MKISOFS_PATH = /usr/local/bin/mkisofs
-MPEG2ENC_PATH = 
-MPLEX_PATH = 
+MPEG2ENC_PATH = /usr/bin/mpeg2enc
+MPLEX_PATH = /usr/bin/mplex
 NM = /usr/bin/nm -B
 NMEDIT = 
 OBJDUMP = objdump
@@ -712,7 +712,7 @@ uninstall-am: uninstall-msw_releaseDATA
 #	test -z "$(msw_releasedir)/bin" || mkdir -p "$(msw_releasedir)/bin"
 #	test -z "$(msw_releasedir)/data" || mkdir -p "$(msw_releasedir)/data"
 #	cp -f $(bindir)/lplex.exe $(msw_releasedir)/
-
+#	cp -fr $(datadir)/$(PACKAGE)/* $(msw_releasedir)/data/
 #	@( \
 #	pending=$(msw_releasedir)/lplex.exe ; \
 #	while test "x$$pending" != "x" ; do \

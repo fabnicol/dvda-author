@@ -181,41 +181,41 @@ int  generate_amgm_xml(uint8_t ngroups, uint8_t *ntracks, pic* img, globalData* 
 
 
 
-static inline void compute_coordinates(uint8_t ncol, uint8_t maxntracks, uint16_t* x0, uint16_t* y0, uint16_t* x1, uint16_t* y1)
+static inline void compute_coordinates(command_t* command, uint8_t ncol, uint16_t* x0, uint16_t* y0, uint16_t* x1, uint16_t* y1)
 {
 
-    int i,j;
-    uint16_t delta=0;
+    int i, j;
+    uint16_t delta = 0;
 
-    delta=EVEN((norm_y-60)/((maxntracks+4)*2));
-    x1[0]=EVEN(x(1,ncol))-12;
-    x0[0]=EMPIRICAL_X_SHIFT+20-12;
-    y0[0]=EVEN(y(1,maxntracks+4)-delta);
-    y1[0]=EVEN(y(2,maxntracks+4)-delta);
+    delta=EVEN((norm_y - 60)/((command->maxntracks + 4) * 2));
+    x1[0]=EVEN(x(1,ncol)) - 12;
+    x0[0]=EMPIRICAL_X_SHIFT + 20 - 12;
+    y0[0]=EVEN(y(1,command->maxntracks + 4) - delta);
+    y1[0]=EVEN(y(2,command->maxntracks + 4) - delta);
 
-    for (i=1; i < ncol; i++)
+    for (i = 1; i < ncol; ++i)
     {
-        x1[i]=EVEN(x(i+1, ncol))-12 ;
+        x1[i]=EVEN(x(i+1, ncol)) - 12 ;
         x0[i]=x1[i-1] ;
     }
 
-    for ( j=1; j < maxntracks+2; j++)
+    for (j = 1; j < command->maxntracks + 2; ++j)
     {
-        y1[j]=EVEN(y(j+2, maxntracks+4)-delta);
-        y0[j]=y1[j-1];
+        y1[j]=EVEN(y(j + 2, command->maxntracks + 4) - delta);
+        y0[j]=y1[j - 1];
     }
 
 }
 
 
-int  generate_spumux_xml(uint8_t ngroups, uint8_t *ntracks, uint16_t maxntracks, pic* img, globalData* globals)
+int  generate_spumux_xml(command_t* command, uint8_t ngroups, uint8_t *ntracks, pic* img, globalData* globals)
 {
 
     uint8_t buttons=0, arrowbuttons, menubuttons, menu=0, track=0, group=0, groupcount=0, offset=0;
     uint16_t x0[ngroups], y0[MAX_BUTTON_NUMBER], x1[ngroups], y1[MAX_BUTTON_NUMBER];
     errno=0;
     FILE *spu_xmlfile=NULL;
-    if (globals->debugging) foutput(MSG_TAG "Max ntracks: %d\n", maxntracks);
+    if (globals->debugging) foutput(MSG_TAG "Max ntracks: %d\n", command->maxntracks);
 
     if (globals->spu_xml == NULL) globals->spu_xml=calloc(img->nmenus,sizeof(char *));
     if (globals->spu_xml == NULL) perror(ERR "spuxml\n");
@@ -269,7 +269,7 @@ int  generate_spumux_xml(uint8_t ngroups, uint8_t *ntracks, uint16_t maxntracks,
 
         arrowbuttons=(menu < img->nmenus-1)+(menu > 0);
         menubuttons=(menu < img->nmenus-1)? img->maxbuttons : img->maxbuttons+img->resbuttons;
-        compute_coordinates(img->ncolumns, maxntracks, x0, y0, x1, y1);
+        compute_coordinates(command, img->ncolumns, x0, y0, x1, y1);
 
         if (img->hierarchical)
         {
@@ -336,12 +336,12 @@ int  generate_spumux_xml(uint8_t ngroups, uint8_t *ntracks, uint16_t maxntracks,
             do
             {
                 buttons++;
-                fprintf(spu_xmlfile, "%s%d%s%s%d%s%s%d%s%s%02d%s%s%d%s\n", "       <button x0=\"", x0[img->ncolumns-1],"\""," y0=\"",y0[maxntracks],"\""," x1=\"",x1[img->ncolumns-1],"\""," name=\"button", buttons, "\""," y1=\"",y1[maxntracks],"\"/>");
+                fprintf(spu_xmlfile, "%s%d%s%s%d%s%s%d%s%s%02d%s%s%d%s\n", "       <button x0=\"", x0[img->ncolumns-1],"\""," y0=\"",y0[command->maxntracks],"\""," x1=\"",x1[img->ncolumns-1],"\""," name=\"button", buttons, "\""," y1=\"",y1[command->maxntracks],"\"/>");
 
                 if ((menu) && (menu < img->nmenus-1))
                 {
                     buttons++;
-                    fprintf(spu_xmlfile, "%s%d%s%s%d%s%s%d%s%s%02d%s%s%d%s\n", "       <button x0=\"",x0[img->ncolumns-1],"\""," y0=\"",y0[maxntracks+1],"\""," x1=\"",x1[img->ncolumns-1],"\""," name=\"button", buttons, "\""," y1=\"",y1[maxntracks+1],"\"/>");
+                    fprintf(spu_xmlfile, "%s%d%s%s%d%s%s%d%s%s%02d%s%s%d%s\n", "       <button x0=\"",x0[img->ncolumns-1],"\""," y0=\"",y0[command->maxntracks+1],"\""," x1=\"",x1[img->ncolumns-1],"\""," name=\"button", buttons, "\""," y1=\"",y1[command->maxntracks+1],"\"/>");
                 }
             }
             while  (buttons < menubuttons+arrowbuttons);

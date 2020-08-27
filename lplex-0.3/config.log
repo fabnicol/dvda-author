@@ -27,15 +27,12 @@ uname -v = #46-Ubuntu SMP Fri Jul 10 00:24:02 UTC 2020
 /usr/bin/oslevel       = unknown
 /bin/universe          = unknown
 
-PATH: /home/fab/bin
 PATH: /usr/local/sbin
 PATH: /usr/local/bin
 PATH: /usr/sbin
 PATH: /usr/bin
 PATH: /sbin
 PATH: /bin
-PATH: /usr/games
-PATH: /usr/local/games
 PATH: /snap/bin
 
 
@@ -1000,7 +997,7 @@ configure:12368: result: yes
 configure:12381: checking for udflist in -ldvdread
 configure:12407: gcc -o conftest -g -O2 -g -O2 -std=c99 -I/home/fab/Dev/dvda-author/lplex-0.3/redist  conftest.c -ldvdread -ldl
  -ldvdread  >&5
-/usr/bin/ld: /tmp/cc5bMdUf.o: in function `main':
+/usr/bin/ld: /tmp/ccQS2jeG.o: in function `main':
 /home/fab/Dev/dvda-author/lplex-0.3/conftest.c:46: undefined reference to `udflist'
 collect2: error: ld returned 1 exit status
 configure:12407: $? = 1
@@ -1080,20 +1077,24 @@ configure:12825: g++ -o conftest -g -O2 -I/home/fab/Dev/dvda-author/lplex-0.3/re
 configure:12825: $? = 0
 configure:12825: result: yes
 configure:12911: checking for dvdauthor
-configure:12944: result: no
+configure:12929: found /usr/bin/dvdauthor
+configure:12941: result: /usr/bin/dvdauthor
+configure:12952: checking dvdauthor version
+configure:12956: result: 0.7.2.
 configure:12978: checking for mplex
-configure:13011: result: no
+configure:12996: found /usr/bin/mplex
+configure:13008: result: /usr/bin/mplex
+configure:13023: checking mplex version
+configure:13028: result: 2.1.0 (2.2.7)
 configure:13048: checking for jpeg2yuv
-configure:13081: result: no
+configure:13066: found /usr/bin/jpeg2yuv
+configure:13078: result: /usr/bin/jpeg2yuv
 configure:13088: checking for mpeg2enc
-configure:13121: result: no
+configure:13106: found /usr/bin/mpeg2enc
+configure:13118: result: /usr/bin/mpeg2enc
 configure:13128: checking for mkisofs
 configure:13146: found /usr/local/bin/mkisofs
 configure:13158: result: /usr/local/bin/mkisofs
-configure:13170: WARNING: lplex requires dvdauthor 0.6.14+ at runtime
-configure:13175: WARNING: lplex requires mplex 2.2.5+ at runtime (pkg: mjpegtools 1.9.0+)
-configure:13180: WARNING: lplex requires jpeg2yuv at runtime (pkg: mjpegtools)
-configure:13185: WARNING: lplex requires mpeg2enc at runtime (pkg: mjpegtools)
 configure:13310: checking that generated files are newer than configure
 configure:13316: result: done
 configure:13359: creating ./config.status
@@ -1124,16 +1125,13 @@ config.status:1189: creating doc/Makefile
 config.status:1189: creating msw/Makefile
 config.status:1189: creating msw/util/Makefile
 config.status:1189: creating config.h
-config.status:1370: config.h is unchanged
 config.status:1418: executing depfiles commands
 config.status:1495: cd redist/md5       && sed -e '/# am--include-marker/d' Makefile         | make -f - am--depfiles
 make[1]: Entering directory '/home/fab/Dev/dvda-author/lplex-0.3/redist/md5'
-make[1]: Nothing to be done for 'am--depfiles'.
 make[1]: Leaving directory '/home/fab/Dev/dvda-author/lplex-0.3/redist/md5'
 config.status:1500: $? = 0
 config.status:1495: cd src       && sed -e '/# am--include-marker/d' Makefile         | make -f - am--depfiles
 make[1]: Entering directory '/home/fab/Dev/dvda-author/lplex-0.3/src'
-make[1]: Nothing to be done for 'am--depfiles'.
 make[1]: Leaving directory '/home/fab/Dev/dvda-author/lplex-0.3/src'
 config.status:1500: $? = 0
 config.status:1418: executing libtool commands
@@ -1205,10 +1203,14 @@ ac_cv_lib_dl_dlopen=yes
 ac_cv_lib_dvdread_ifoOpen=yes
 ac_cv_lib_dvdread_udflist=no
 ac_cv_objext=o
+ac_cv_path_DVDAUTHOR_PATH=/usr/bin/dvdauthor
 ac_cv_path_EGREP='/usr/bin/grep -E'
 ac_cv_path_FGREP='/usr/bin/grep -F'
 ac_cv_path_GREP=/usr/bin/grep
+ac_cv_path_JPEG2YUV_PATH=/usr/bin/jpeg2yuv
 ac_cv_path_MKISOFS_PATH=/usr/local/bin/mkisofs
+ac_cv_path_MPEG2ENC_PATH=/usr/bin/mpeg2enc
+ac_cv_path_MPLEX_PATH=/usr/bin/mplex
 ac_cv_path_SED=/usr/bin/sed
 ac_cv_path_lt_DD=/usr/bin/dd
 ac_cv_path_mkdir=/usr/bin/mkdir
@@ -1301,7 +1303,7 @@ DEPDIR='.deps'
 DLLTOOL='false'
 DSYMUTIL=''
 DUMPBIN=''
-DVDAUTHOR_PATH=''
+DVDAUTHOR_PATH='/usr/bin/dvdauthor'
 ECHO_C=''
 ECHO_N='-n'
 ECHO_T=''
@@ -1317,7 +1319,7 @@ INSTALL_DATA='/bin/sh /home/fab/Dev/dvda-author/config/install-sh  -m 644'
 INSTALL_PROGRAM='${INSTALL}'
 INSTALL_SCRIPT='${INSTALL}'
 INSTALL_STRIP_PROGRAM='$(install_sh) -c -s'
-JPEG2YUV_PATH=''
+JPEG2YUV_PATH='/usr/bin/jpeg2yuv'
 LD='/usr/bin/ld -m elf_x86_64'
 LDFLAGS=''
 LIBFLACPP_CFLAGS=' -I/home/fab/Dev/dvda-author/local/include'
@@ -1341,8 +1343,8 @@ MAKEINFO='${SHELL} /home/fab/Dev/dvda-author/lplex-0.3/missing makeinfo'
 MANIFEST_TOOL=':'
 MKDIR_P='/usr/bin/mkdir -p'
 MKISOFS_PATH='/usr/local/bin/mkisofs'
-MPEG2ENC_PATH=''
-MPLEX_PATH=''
+MPEG2ENC_PATH='/usr/bin/mpeg2enc'
+MPLEX_PATH='/usr/bin/mplex'
 MSW_RELEASE_FALSE=''
 MSW_RELEASE_TRUE='#'
 NM='/usr/bin/nm -B'

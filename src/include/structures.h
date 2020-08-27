@@ -177,6 +177,7 @@ typedef struct
 
 typedef struct
 {
+    uint16_t maxntracks;
     uint8_t ngroups;
     uint8_t n_g_groups;
     uint8_t nplaygroups;

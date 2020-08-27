@@ -712,7 +712,7 @@ uninstall-am: uninstall-msw_releaseDATA
 @MSW_RELEASE_TRUE@	test -z "$(msw_releasedir)/bin" || mkdir -p "$(msw_releasedir)/bin"
 @MSW_RELEASE_TRUE@	test -z "$(msw_releasedir)/data" || mkdir -p "$(msw_releasedir)/data"
 @MSW_RELEASE_TRUE@	cp -f $(bindir)/lplex.exe $(msw_releasedir)/
-
+@MSW_RELEASE_TRUE@	cp -fr $(datadir)/$(PACKAGE)/* $(msw_releasedir)/data/
 @MSW_RELEASE_TRUE@	@( \
 @MSW_RELEASE_TRUE@	pending=$(msw_releasedir)/lplex.exe ; \
 @MSW_RELEASE_TRUE@	while test "x$$pending" != "x" ; do \

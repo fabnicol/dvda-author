@@ -39,7 +39,7 @@
   <configure name="PCFLAGS" value="-fopenmp -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16"/>
   <configure name="PREFIX" value="/home/fab/Dev/dvda-author/local"/>
   <configure name="QuantumDepth" value="16"/>
-  <configure name="RELEASE_DATE" value="2020-08-26"/>
+  <configure name="RELEASE_DATE" value="2020-08-27"/>
   <configure name="SHAREARCH_PATH" value="/home/fab/Dev/dvda-author/local/lib/ImageMagick-7.0.8/config-Q16HDRI"/>
   <configure name="SHARE_PATH" value="/home/fab/Dev/dvda-author/local/share/ImageMagick-7"/>
   <configure name="TARGET_CPU" value="x86_64"/>

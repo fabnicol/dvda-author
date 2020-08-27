@@ -11,9 +11,9 @@ define index
 	@echo [$1] >> @BUILDDIR@/depconf/BUILD.TRACE
 	directory=$(MAYBE_$1)
 	if test "$3" = "library" ; then
-	   testvar=$$(find @BUILDDIR@/$$directory -maxdepth 4 -type f -wholename "*$1$2" -print0)
+	   testvar=$$(find  @BUILDDIR@/$$directory -maxdepth 4 -type f,l  -wholename "*$1$2" -print0)
 	else
-	   testvar=$$(find @BUILDDIR@/$$directory -maxdepth 4 -type f -wholename "*$($1_TESTBINARY)$2" -print0)
+	   testvar=$$(find  @BUILDDIR@/$$directory -maxdepth 4 -type f,l  -wholename "*$($1_TESTBINARY)$2" -print0)
 	fi
 	if test "$$testvar" != ""; then
 		echo "     built $3: $$testvar for $1" >> @BUILDDIR@/depconf/BUILD.TRACE

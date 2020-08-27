@@ -11,24 +11,14 @@ define index
 	@echo [$1] >> /home/fab/Dev/dvda-author/depconf/BUILD.TRACE
 	directory=$(MAYBE_$1)
 	if test "$3" = "library" ; then
-	   testvar=$$(find /home/fab/Dev/dvda-author/$$directory -maxdepth 4 -type f -wholename "*$1$2" -print0)
+		testvar2=$$(find /home/fab/Dev/dvda-author/local/lib -name "*$($1_LIB)" -print0)
 	else
-	   testvar=$$(find /home/fab/Dev/dvda-author/$$directory -maxdepth 4 -type f -wholename "*$($1_TESTBINARY)$2" -print0)
+		testvar2=$$(find /home/fab/Dev/dvda-author/local/bin -name "*$($1_TESTBINARY)$(EXEEXT)" -print0)
 	fi
-	if test "$$testvar" != ""; then
-		echo "     built $3: $$testvar for $1" >> /home/fab/Dev/dvda-author/depconf/BUILD.TRACE
-		if test "$3" = "library" ; then
-		  testvar2=$$(find /home/fab/Dev/dvda-author/local/lib -wholename $($1_LIB) -print0)
-		else
-		  testvar2=$$(find /home/fab/Dev/dvda-author/local/bin -name "$($1_TESTBINARY)$(EXEEXT)" -print0)
-		fi
-		if test "$$testvar2" != ""; then
-			echo "     local $3: $$testvar2 from $(MAYBE_$1)" >> /home/fab/Dev/dvda-author/depconf/BUILD.TRACE
-		else
-			echo "     did not install $3 $1" >> /home/fab/Dev/dvda-author/depconf/BUILD.TRACE
-		fi
+	if test "$$testvar2" != ""; then
+		echo "     local $3: $$testvar2 from $(MAYBE_$1)" >> /home/fab/Dev/dvda-author/depconf/BUILD.TRACE
 	else
-	        echo "     no $3 $1" >> /home/fab/Dev/dvda-author/depconf/BUILD.TRACE
+		echo "     did not install $3 $1" >> /home/fab/Dev/dvda-author/depconf/BUILD.TRACE
 	fi
 endef
 

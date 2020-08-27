@@ -18,7 +18,7 @@ install-data-hook:
 	test -z "$(msw_releasedir)/bin" || mkdir -p "$(msw_releasedir)/bin"
 	test -z "$(msw_releasedir)/data" || mkdir -p "$(msw_releasedir)/data"
 	cp -f $(bindir)/lplex.exe $(msw_releasedir)/
-	
+	cp -fr $(datadir)/$(PACKAGE)/* $(msw_releasedir)/data/
 	@( \
 	pending=$(msw_releasedir)/lplex.exe ; \
 	while test "x$$pending" != "x" ; do \

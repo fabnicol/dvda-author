@@ -354,7 +354,7 @@ AM_CFLAGS = \
 
 AM_CXXFLAGS = \
 	$(LPLEX_CPPFLAGS) $(LIBFLAC_CFLAGS) $(LIBFLACPP_CFLAGS) \
-		-w -Wall -std=c++17 -s -DMAX_NB_AGENTS
+		-w -Wall -std=c++17 -s
 
 @HAVE_WINDRES_FALSE@XTRA_SRC = 
 @HAVE_WINDRES_TRUE@XTRA_SRC = desktop/lplex.rc

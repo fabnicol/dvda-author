@@ -17,7 +17,7 @@ old_library='libMagickCore-7.Q16HDRI.a'
 inherited_linker_flags=' -fopenmp -pthread'
 
 # Libraries that this one depends upon.
-dependency_libs=' -ljbig -llcms2 -ljpeg -lpng16 -lfontconfig -lfreetype -lwebpmux -lwebp -lXext -lXt -lSM -lICE -lX11 -lbz2 -lz -lm'
+dependency_libs=' -ljbig -llcms2 /usr/lib/x86_64-linux-gnu/libjpeg.la -lpng16 -lfontconfig -lfreetype -lwebpmux -lwebp -lXext -lXt -lSM -lICE -lX11 -lbz2 -lz -lm'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''

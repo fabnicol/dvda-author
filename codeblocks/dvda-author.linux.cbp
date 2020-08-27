@@ -11,8 +11,9 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="-g  /Users/fab/dvda-author/Docs/a2_16_44.wav -t -W  " />
+				<Option parameters='./dvda-author-dev -g &quot;/home/fab/Dev/dvda-author/Docs/a2_16_48.wav&quot; -P0 -W -o /home/fab/output -S --tempdir /home/fab/temp --lplex-tempdir /home/fab/ltemp -n --no-refresh-outdir --topmenu --datadir /home/fab/Dev/dvda-author  --bindir /home/fab/Dev/dvda-author/local/bin  -t --cdrecord=10,0,0' />
 				<Compiler>
+					<Add option="-Og" />
 					<Add option="-g" />
 				</Compiler>
 			</Target>
@@ -30,7 +31,6 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="-O3" />
 			<Add option="-Wall" />
 			<Add option="-std=c99 -march=core2" />
 			<Add option="-D_GNU_SOURCE" />
