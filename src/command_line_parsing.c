@@ -2578,7 +2578,7 @@ standard_checks:
         maximum_VTSI_rank,
         VTSI_rank,
         ntracks,
-        provider,
+        strdup(provider),
         img,
         files,
         textable,

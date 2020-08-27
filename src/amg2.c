@@ -642,7 +642,7 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
             }
         }
     }
-
+#endif
 
     /* Sector 3 */
 
@@ -1005,9 +1005,6 @@ uint8_t* decode_amg(const char *audiotsdir, command_t *command, sect* sectors, u
 #undef img
 #undef textable
 #undef VTSI_rank
-
-
-#endif
 
 free(path);
 return 0;

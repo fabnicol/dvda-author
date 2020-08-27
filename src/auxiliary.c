@@ -633,6 +633,7 @@ if (command && command->img)
     free(command->img->activeheader);
     free(command->img->tsvob);
     free(command->img->topmenu_nslides);
+    free(command->provider);
 
 }
 
