@@ -384,9 +384,9 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header,
            // This is useless unless the first pack AOB header is broken or lacking
            // and a forensic try at extraction is performed
 
-           uint8_t buff[2048] = {0};
-           int res = fread(buff, 1, 2048, info->infile.fp);
-           if (res != 2048)   // last sector, just return
+           uint8_t buff[2048*10] = {0};
+           int res = fread(buff, 1, 2048*10, info->infile.fp);
+           if (res != 2048*10)   // last sector, just return
            {
                fseek(info->infile.fp, offset0, SEEK_SET);
                return position;
@@ -395,7 +395,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header,
 
           short int count = 0;
           bool err = false;
-          while ((err = audit_mlp_header(buff + count, &decinfo, false, globals)) == false && count < 2040)
+          while ((err = audit_mlp_header(buff + count, &decinfo, false, globals)) == false && count < 2040*10)
           {
               ++count;
           }
