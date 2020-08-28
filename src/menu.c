@@ -98,7 +98,7 @@ void menu_characteristics_coherence_test(pic* img, uint8_t ngroups, globalData* 
 
 void create_activemenu(pic* img, globalData* globals)
 {
-    if (img->tsvob == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "No matrix AUDIO_TS.VOB available for generating active menus.")
+    if (img->tsvob == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE( "No matrix AUDIO_TS.VOB available for generating active menus.")
 
     uint8_t j;
     uint64_t i;
@@ -176,7 +176,7 @@ void create_activemenu(pic* img, globalData* globals)
     {
      svvobfile=fopen(img->stillvob, "wb");
      if (svvobfile == NULL)
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Cannot open AUDIO_SV.VOB for generating active menus.")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( "Cannot open AUDIO_SV.VOB for generating active menus.")
 
      foutput("\n"DBG "Creating active menu: will patch AUDIO_TS.VOB into AUDIO_SV.VOB=%s\n\n",img->stillvob);
 
@@ -361,7 +361,7 @@ int create_mpg(pic* img, uint16_t rank, char* mp2track, char* tempfile, globalDa
             snprintf(command, 500, "%s -fill \"rgb(%s)\" -colorize 66%% %s", mogrify, img->backgroundcolors[rank], img->backgroundpic[rank]);
 
             if (globals->debugging) foutput(INF "Launching mogrify to colorize menu: %d with command line %s\n", rank, command);
-            if (system(win32quote(command)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed")
+            if (system(win32quote(command)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE( "System command failed")
                 fflush(NULL);
         }
     }
@@ -820,13 +820,13 @@ int prepare_overlay_img(char* text, int8_t group, pic *img, char* command, char*
                  "-draw", " \"text ", x0, ',' , ALBUM_TEXT_Y0,  '\'', text, "\'\"", q);
         free(q);
         if (globals->debugging) foutput("%s%s\n", INF "Launching mogrify (title) with command line: ", command);
-        if (system(win32quote(command)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed")
+        if (system(win32quote(command)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE( "System command failed")
             fflush(NULL);
     }
 
     if ((img->imagepic[menu]==NULL) || (img->highlightpic[menu]==NULL) || (img->imagepic[menu]==NULL))
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "pic pathnames");
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( "pic pathnames");
         return -1;
     }
 
@@ -1170,7 +1170,7 @@ int generate_menu_pics(command_t* command, pic* img, uint8_t ngroups, uint8_t *n
         strcat(command2, q);
         free(q);
         if (globals->veryverbose) foutput(INF "Menu: %d/%d, groupcount: %d/%d.\n       Launching mogrify (image) with command line: %s\n", menu, img->nmenus, groupcount, ngroups, command2);
-        if (system(win32quote(command2)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed");
+        if (system(win32quote(command2)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE( "System command failed");
         free(command2);
         command2 = NULL;
         copy_file(img->imagepic[menu], img->highlightpic[menu], globals);
@@ -1178,7 +1178,7 @@ int generate_menu_pics(command_t* command, pic* img, uint8_t ngroups, uint8_t *n
         strcat(command1, q);
         free(q);
         if (globals->veryverbose) foutput(INF "Menu: %d/%d, groupcount: %d/%d.\n       Launching mogrify (highlight) with command line: %s\n", menu, img->nmenus, groupcount, ngroups,command1);
-        if (system(win32quote(command1)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed");
+        if (system(win32quote(command1)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE( "System command failed");
         free(command1);
         command1 = NULL;
         char command3[500];
@@ -1192,7 +1192,7 @@ int generate_menu_pics(command_t* command, pic* img, uint8_t ngroups, uint8_t *n
         free(q3);
         free(q4);
         if (globals->veryverbose) foutput(INF "Menu: %d/%d, groupcount: %d/%d.\n       Launching convert (select) with command line: %s\n",menu, img->nmenus, groupcount, ngroups,command3);
-        if (system(win32quote(command3)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed");
+        if (system(win32quote(command3)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE( "System command failed");
 
         menu++;
         group=0;

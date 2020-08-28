@@ -277,7 +277,7 @@ int launch_lplex_hybridate(const pic* img,
     if (ntracks == NULL || nslides == NULL || slidepath == NULL || trackpath == NULL)
     {
       fprintf(stderr, ERR "Error code: %d\n", (ntracks == NULL )*1+(nslides == NULL)*10+(slidepath == NULL)*100+(trackpath == NULL)*1000);
-      EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Allocation of DVD-VIDEO tracks/slides")
+      EXIT_ON_RUNTIME_ERROR_VERBOSE( "Allocation of DVD-VIDEO tracks/slides")
     }
 #endif
     const char *args0[DIM_LPLEX_CLI]= {LPLEX_BASENAME,
@@ -384,7 +384,7 @@ int launch_lplex_hybridate(const pic* img,
 
 
       //  if (tot == argssize+DIM_LPLEX_CLI)
-        //  EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Two many tracks/slides")
+        //  EXIT_ON_RUNTIME_ERROR_VERBOSE("Two many tracks/slides")
 
       }
     }

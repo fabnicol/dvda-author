@@ -26,6 +26,7 @@
 #include "file_input_parsing.h"
 #include "launch_manager.h"
 #include "videoimport.h"
+#include "mlp.h"
 
 /* Remark on data structures:
  *   - command-line data belong to 'command' structures
@@ -69,8 +70,6 @@ static const char* cga_define[21] = {"Mono",
 #define textable command->textable
 #define VTSI_rank command->VTSI_rank
 #define maximum_VTSI_rank command->maximum_VTSI_rank
-
-
 
 int launch_manager(command_t *command, globalData *globals)
 
@@ -153,7 +152,7 @@ int launch_manager(command_t *command, globalData *globals)
             if (files[i][j].type != AFMT_MLP)
             {
                  if
-                ((files[i][j].samplerate > 48000    && files[i][j].bitspersample == 24
+                (((files[i][j].samplerate > 48000    && files[i][j].bitspersample == 24)
                   || files[i][j].samplerate > 96000)
                  && (files[i][j].channels == 5 || files[i][j].channels == 6)
                 )
@@ -189,8 +188,26 @@ int launch_manager(command_t *command, globalData *globals)
                 }
             }
 
+            totalsize += files[i][j].numbytes;
+        }
+    }
 
-            foutput("%c%c  " ANSI_COLOR_BLUE "%d     " ANSI_COLOR_GREEN "%02d" ANSI_COLOR_YELLOW "  %6" PRIu32 "   " ANSI_COLOR_RED "%02d" ANSI_COLOR_RESET "   %d %s   %10" PRIu64 "   ",
+    for (int i = 0; i < naudio_groups ; ++i)
+        for (int j = 0; j < nfiles[i]; ++j)
+        {
+            if (globals->to_mlp) encode_mlp_file(&files[i][j], globals);
+            if (globals->encode_to_mlp_dvd) transport_to_mlp(&files[i][j], globals);
+        }
+
+    foutput("\n%s", "DVD MLP Layout\n");
+    foutput("%s\n",ANSI_COLOR_BLUE"Group"ANSI_COLOR_GREEN"  Track    "ANSI_COLOR_YELLOW"Rate"ANSI_COLOR_RED" Bits"ANSI_COLOR_RESET"  Ch  CGA        N_Samples  Status  Filename\n");
+
+    for (int i = 0; i < naudio_groups ; ++i)
+        for (int j = 0; j < nfiles[i]; ++j)
+        {
+          if (globals->to_mlp)
+            {
+                foutput("%c%c  " ANSI_COLOR_BLUE "%d     " ANSI_COLOR_GREEN "%02d" ANSI_COLOR_YELLOW "  %6" PRIu32 "   " ANSI_COLOR_RED "%02d" ANSI_COLOR_RESET "   %d %s %s",
                     joinmark[i][j],
                     singlestar[i],
                     i + 1,
@@ -199,13 +216,28 @@ int launch_manager(command_t *command, globalData *globals)
                     files[i][j].bitspersample,
                     files[i][j].channels,
                     files[i][j].cga < 21 ? cga_define[files[i][j].cga] : "Unknown",
-                    files[i][j].numsamples);
+                    "   converted");
+
+                foutput("  To file %s\n", files[i][j].mlp_filename);
+            }
+
+            char* MLP_ENCODED = globals->encode_to_mlp_dvd ? "  MLPDVD" : "        ";
+
+            foutput("%c%c  " ANSI_COLOR_BLUE "%d     " ANSI_COLOR_GREEN "%02d" ANSI_COLOR_YELLOW "  %6" PRIu32 "   " ANSI_COLOR_RED "%02d" ANSI_COLOR_RESET "   %d %s   %10" PRIu64 " %s ",
+                    joinmark[i][j],
+                    singlestar[i],
+                    i + 1,
+                    j + 1,
+                    files[i][j].samplerate,
+                    files[i][j].bitspersample,
+                    files[i][j].channels,
+                    files[i][j].cga < 21 ? cga_define[files[i][j].cga] : "Unknown",
+                    files[i][j].numsamples,
+                    MLP_ENCODED);
 
             foutput("%s\n", files[i][j].filename);
-
-            totalsize += files[i][j].numbytes;
         }
-    }
+
 
     for (i = 0; i < nplaygroups; ++i)
     {
@@ -444,7 +476,7 @@ int launch_manager(command_t *command, globalData *globals)
         {
             perror(ERR "title[k]");
 
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Impossible to create title arrays")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE( "Impossible to create title arrays")
         }
         else
         {
@@ -501,7 +533,7 @@ int launch_manager(command_t *command, globalData *globals)
                     files[i][j].last_sector,
                     files[i][j].first_PTS);
 
-            foutput("%10"PRIu64"  %2d\n",
+            foutput("%10"PRIu32"  %2d\n",
                     files[i][j].PTS_length,
                     files[i][j].cga);
         }

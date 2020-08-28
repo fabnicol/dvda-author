@@ -78,6 +78,7 @@ typedef struct
     FLAC__StreamDecoder* flac;
     char    *filename;
     char    *out_filename;
+    char    *mlp_filename;
     char    **given_channel;
     struct  MLP_LAYOUT *mlp_layout;
 } fileinfo_t;

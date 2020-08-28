@@ -430,6 +430,21 @@ char* end_sep(const char *path, globalData* globals)
 * Returns structure path_t
 * ------- */
 
+void free_filepath(path_t* p)
+{
+ free(p->directory);
+ p->directory = NULL;
+ free(p->extension);
+ p->extension = NULL;
+ free(p->rawfilename);
+ p->rawfilename = NULL;
+ free(p->filename);
+ p->filename = NULL;
+ free(p->path);
+ p->path = NULL;
+ free(p);
+}
+
 path_t *parse_filepath(const char* filepath, globalData* globals)
 {
     path_t *chain = calloc(1, sizeof(path_t));
@@ -543,18 +558,7 @@ path_t *parse_filepath(const char* filepath, globalData* globals)
 
 void clean_path(path_t** p)
 {
-    free((*p)->directory);
-    (*p)->directory = NULL;
-    free((*p)->extension);
-    (*p)->extension = NULL;
-    free((*p)->rawfilename);
-    (*p)->rawfilename = NULL;
-    free((*p)->filename);
-    (*p)->filename = NULL;
-    free((*p)->path);
-    (*p)->path = NULL;
-    free(*p);
-
+    free_filepath(*p);
 }
 
 /* -------

@@ -79,7 +79,7 @@ char* TEMPDIR;
 
     if (command == NULL)
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not allocate command-line structure")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( "Could not allocate command-line structure")
     }
 
     command=command_line_parsing(lexer->nlines, lexer->commandline, command, globals);
@@ -131,7 +131,7 @@ int main(int argc,  char* const argv[])
 
     if (currentdir == NULL)
     {
-      fprintf(stderr, "%s\n", ERR "RÃ©pertoire courant non allouÃ©");
+      fprintf(stderr, "%s\n", ERR "Répertoire courant non alloué");
       exit(-1);
     }
 
@@ -206,7 +206,9 @@ int main(int argc,  char* const argv[])
         /*videozone*/       true,   // generates video zone
         /*videolinking*/    false,  // no video link
         /*decode */         false,  // decode MLP to WAV
-        /*pipe*/   false,  // slow down extraction for buffering tp extrernal tools
+        /*encode */         false,  // encode to MLP
+        /*to_mlp*/          false,  // create MLP files while encoding to MLP
+        /*pipe*/            false,  // slow down extraction for buffering tp extrernal tools
         /*play*/            false,  // pipe to ffplay or other player
         /*playlist*/        false,  // no playlist
         /*cga*/             false,  // no explicit channel group assignement

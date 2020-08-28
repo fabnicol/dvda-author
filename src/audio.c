@@ -32,7 +32,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 
 #include "audio2.h"
-
+#include "mlp.h"
 
 static const uint8_t default_cga[6] = {0,  1,  7,  3,   9,   12};  //default channel assignment
 static uint32_t cga2wav_channels[21] = {0x4, 0x3, 0x103, 0x33, 0xB, 0x10B, 0x3B, 0x7, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x3B, 0x37, 0x3B };
@@ -125,7 +125,7 @@ inline uint8_t wav2cga_channels(fileinfo_t *info, globalData* globals)
 {
     if (info == NULL || info->channels > 6 || info->channels < 1)
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Channels are not correctly encoded")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( "Channels are not correctly encoded")
     }
 
     uint32_t dw_channel_mask = info->dw_channel_mask;
@@ -455,350 +455,6 @@ void flac_error_callback(const FLAC__StreamDecoder GCC_UNUSED *dec,
 #endif
 
 
-int decode_mlp_file(fileinfo_t* info, globalData* globals)
-{
-    // initialize all muxers, demuxers and protocols for libavformat
-    // (does nothing if called twice during the course of one program execution)
-
-  av_register_all();
-
-  const char* path = info->filename;
-
-    // get format from audio file
-  AVFormatContext* format = avformat_alloc_context();
-
-  if (avformat_open_input(&format, path, NULL, NULL) != 0)
-  {
-        fprintf(stderr, ERR "Could not open file '%s'\n", path);
-        EXIT_ON_RUNTIME_ERROR
-  }
-
-  if (avformat_find_stream_info(format, NULL) < 0)
-  {
-        fprintf(stderr, ERR "Could not retrieve stream info from file '%s'\n", path);
-        EXIT_ON_RUNTIME_ERROR
-  }
-   errno = 0;  // hushes up an ioctl report
- // Find the index of the first audio stream
-
-  int stream_index = -1;
-  for (int i = 0; i < format->nb_streams; ++i)
-  {
-      if (format->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
-      {
-          stream_index = i;
-          break;
-      }
-  }
-
-  if (stream_index == -1)
-  {
-        fprintf(stderr, ERR "Could not retrieve audio stream from file '%s'\n", path);
-        EXIT_ON_RUNTIME_ERROR
-  }
-
-  AVStream* stream = format->streams[stream_index];
-
-  // find & open codec
-
-  AVCodecContext* codec = stream->codec;
-
-  codec->request_sample_fmt = av_get_alt_sample_fmt(codec->sample_fmt, 0);
-
-  if (avcodec_open2(codec, avcodec_find_decoder(codec->codec_id), NULL) < 0)
-    {
-        fprintf(stderr, ERR "Failed to open decoder for stream #%u in file '%s'\n", stream_index, path);
-        EXIT_ON_RUNTIME_ERROR
-    }
-
-    // prepare to read data
-  AVPacket packet;
-
-  av_init_packet(&packet);
-
-  AVFrame* frame = av_frame_alloc();
-
-  if (!frame)
-    {
-        fprintf(stderr, ERR "Error allocating the frame\n");
-        EXIT_ON_RUNTIME_ERROR
-    }
-
-  FILE* fp = NULL;
-  WaveData   info2;
-  WaveHeader header;
-
- int32_t cumbytes_written = 0;
-
- if (globals->decode)
- {
-   int32_t bytes_written = 0;
-   errno = 0;
-   while (av_read_frame(format, &packet) >= 0)
-    {
-        // decode one frame
-        int gotFrame;
-        int ret;
-        if ((ret = avcodec_decode_audio4(codec, frame, &gotFrame, &packet)) < 0)
-        {
-            fprintf(stderr, ERR "Error decoding audio frame (%s)\n", av_err2str(ret));
-            errno = 0;
-            if (fp) fclose(fp);
-            if (errno)
-                fprintf(stderr, ERR "Could not close file %s\n", info->out_filename);
-            else
-                fprintf(stderr, MSG_TAG "Extracted %ld bytes from file %s to file %s\n", cumbytes_written, path, info->out_filename);
-            break;
-        }
-
-        if (gotFrame)
-        {
-
-            if (globals->decode && bytes_written == 0)
-            {
-              if (info->out_filename && globals->fixwav_prepend)
-              {
-                    fprintf(stderr, INF "Decoding file %s  to raw data in path: %s\n", info->filename, info->out_filename);
-                    int debug = globals->debugging;
-
-                    // Hush it up as there will be spurious error mmsg
-
-                    globals->debugging = false;
-
-                    // initializ
-
-                    memset(&info2, 0, sizeof (WaveData));
-                    memset(&header, 0, sizeof (WaveHeader));
-
-                    // WaveData info: file and header prepending characteristics
-
-                    info2.prepend = true;
-                    info2.in_place = true;
-                    info2.cautious = false;
-                    info2.automatic = true;
-                    info2.interactive = false;
-                    info2.prunedbytes = 0;
-                    info2.padbytes = 0;
-                    info2.virtual = false;
-                    info2.outfile.filename = info->out_filename;
-                    info2.outfile.fp = fp;
-                    info2.infile = info2.outfile;
-                    info2.infile.isopen = false;
-
-                    // WaveHeader info : audio and header characteristics
-
-
-                    header.header_size_out = 80;
-                    header.channels = frame->channels;
-                    header.is_extensible = header.channels > 2;
-                    header.nBlockAlign = frame->channels * codec->bits_per_raw_sample / 8 ;
-                    header.wBitsPerSample = codec->bits_per_raw_sample;
-                    header.dwChannelMask = (frame->channel_layout < 21 && frame->channel_layout > 0) ? cga2wav_channels[frame->channel_layout] : 0;
-                    header.dwSamplesPerSec = frame->sample_rate;
-
-                    // Prepend header to empty file. Will close files.
-
-                    fixwav(&info2, &header, globals);
-
-                    // Restore verbosity levels
-
-                    globals->debugging = debug;
-
-
-              }
-
-              fp = fopen(info->out_filename, "ab+");
-              if (fp == NULL)
-               {
-                   fprintf(stderr, ERR "Could not open destination file %s\n", info->out_filename);
-                   info->out_filename = NULL;
-                   globals->decode = false;
-               }
-
-            }
-
-            if (globals->decode && fp)
-            {
-                size_t unpadded_linesize = 0;
-
-                int sampleSize = av_get_bytes_per_sample(codec->sample_fmt);
-
-                if (sampleSize == 2)
-                {
-                    unpadded_linesize = frame->channels *  sampleSize * frame->nb_samples;
-                    bytes_written = fwrite(frame->extended_data[0], 1, unpadded_linesize, fp);
-                }
-                else
-                if (sampleSize == 4)    // 32 bits -> 24 bits (codec->bits_per_raw_sample)
-                {
-
-                  uint32_t bytes_written_sample = 0;
-                   for(int s = 0; s < frame->nb_samples; ++s)
-                   {
-                    for(int c = 0; c < codec->channels; ++c)
-                     {
-                        uint32_t val = ((int32_t*) frame->extended_data[0])[s * codec->channels + c];
-                        val  >>= 8; // sampleSize * 8 - codec->bits_per_raw_sample
-
-                       bytes_written_sample += fwrite(&val, 1, 3, fp);
-                     }
-                   }
-
-                   bytes_written = bytes_written_sample;
-                }
-                else
-                {
-                        fprintf(stderr, "Invalid sample size %d.\n", sampleSize);
-                        fclose(fp);
-                        break;
-                }
-
-            }
-
-            cumbytes_written += bytes_written;
-
-            if (globals->maxverbose)
-            {
-                    fprintf(stderr, "Bytes_written: %d Nb samples: %d FR_PTS: %ld PKT_POS: %ld PKT_DURATION: %ld FR_PKT_SIZE; %ld\n",
-                                cumbytes_written,
-                                frame->nb_samples,
-                                frame->pts,
-                                frame->pkt_pos,
-                                frame->pkt_duration,
-                                frame->pkt_size);
-            }
-
-        }
-        else
-        {
-           continue;
-        }
-    }
-
-    if (globals->decode && info->out_filename && globals->fixwav_prepend)
-    {
-//         WAV output is now OK except for the wav file size-based header data.
-//         ckSize, data_ckSize and nBlockAlign must be readjusted by computing
-//         the exact audio content bytesize. Also we no longer prepend the header
-//         but overwrite the existing one
-
-        fp = fopen(info->out_filename, "rb+");
-        if (fp == NULL)
-         {
-             fprintf(stderr, ERR "Could not open destination file %s\n", info->out_filename);
-             info->out_filename = NULL;
-             globals->decode = false;
-         }
-         else
-         {
-            info2.infile.fp = fp;
-            info2.infile.isopen = true;
-
-            // No longer prepend to empty file but overwrite in place
-
-            info2.prepend = false;
-            info2.in_place = true;
-
-            errno = 0;
-
-            fixwav(&info2, &header, globals);
-
-            if (errno)
-                fprintf(stderr, ERR "Error detected in header correction  for %s\n", info->out_filename);
-            else
-                fprintf(stderr, MSG_TAG "Extracted %ld bytes to file %s\n", cumbytes_written, info->out_filename);
-         }
-    }
- }
- else
- {
-    uint32_t rank = 0;
-    uint32_t totnbsamples = 0;
-    unsigned long PKT_POS_SECT = 0;
-    unsigned long HEADER_OFFSET = 0;
-    unsigned long SECT_RANK = 0;
-    unsigned long SECT_RANK_OLD = 0;
-
-    if (info->file_size && info->lpcm_payload)
-    {
-        uint32_t size = info->file_size / info->lpcm_payload + 4;
-        info->mlp_layout = (struct MLP_LAYOUT *) calloc(size, sizeof (struct MLP_LAYOUT));
-    }
-    else
-    {
-        goto clean_up; // do sth more verbose
-    }
-
-    while (av_read_frame(format, &packet) >= 0)
-    {
-      // decode one frame
-      int gotFrame;
-      if (avcodec_decode_audio4(codec, frame, &gotFrame, &packet) < 0)
-      {
-           break;
-      }
-
-      if (gotFrame)
-      {
-              if (HEADER_OFFSET == 0) HEADER_OFFSET = 64;
-
-              PKT_POS_SECT = frame->pkt_pos + HEADER_OFFSET;
-
-              SECT_RANK_OLD = SECT_RANK;
-              SECT_RANK = (PKT_POS_SECT - 1)/ 2048;
-
-              bool new_sector = (SECT_RANK != SECT_RANK_OLD);
-
-              if (new_sector || rank == 0)
-              {
-                    if (new_sector) HEADER_OFFSET += 43;
-                    info->mlp_layout[rank].pkt_pos = frame->pkt_pos;
-                    info->mlp_layout[rank].nb_samples = totnbsamples;
-                    info->mlp_layout[rank].rank = SECT_RANK;
-
-                    ++rank;
-              }
-
-              totnbsamples += frame->nb_samples;
-
-              if (globals->maxverbose)
-              {
-                  fprintf(stderr, "Sect: %lu samples_written: %d Nb samples: %d FR_PTS: %ld PKT_POS: %ld PKT_DURATION: %ld FR_PKT_SIZE; %ld\n",
-                              SECT_RANK,
-                              totnbsamples,
-                              frame->nb_samples,
-                              frame->pts,
-                              frame->pkt_pos,
-                              frame->pkt_duration,
-                              frame->pkt_size);
-              }
-      }
-      else
-      {
-          continue;
-      }
-
-    }
-
-    info->mlp_layout[rank].pkt_pos = frame->pkt_pos;
-    info->mlp_layout[rank].nb_samples = totnbsamples;
-    info->mlp_layout[rank].rank = SECT_RANK;
-    info->mlp_layout_size = rank + 1;
-
-    if (globals->maxverbose)
-    {
-        fprintf(stderr, "** \n Layout size: %d **\n", info->mlp_layout_size);
-    }
-  }
-
-clean_up:
-
-  av_frame_free(&frame);
-  avcodec_close(codec);
-  avformat_free_context(format);
-
-  return errno;
-}
 
 int calc_info(fileinfo_t* info, globalData* globals)
 {
@@ -1019,7 +675,7 @@ command_t *scan_audiofile_characteristics(command_t *command, globalData* global
                 command->ntracks[i]--;
             else
             {
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "No valid audio format in group")
+                EXIT_ON_RUNTIME_ERROR_VERBOSE( "No valid audio format in group")
             }
 
             // group demotion: if there is no track left in groups, taking off one group
@@ -1176,7 +832,7 @@ inline bool audit_mlp_header(uint8_t* header, fileinfo_t* info, bool calc, globa
          {
               if (globals->veryverbose)
               {
-                  foutput("%s %s %s\n", WAR "Audio file", info->filename, "has MLP major sync header yet no file extenion .mlp. Proceeding as if MLP...");
+                  foutput("%s %s %s\n", WAR "Audio file", info->filename, "has MLP major sync header yet no file extension .mlp. Proceeding as if MLP...");
               }
          }
 
@@ -1185,7 +841,7 @@ inline bool audit_mlp_header(uint8_t* header, fileinfo_t* info, bool calc, globa
         {
             if (globals->veryverbose)
             {
-                foutput("%s %s %s\n", WAR "Audio file", info->filename, "has MLP major sync header yet no file extenion .mlp. Proceeding as if MLP...");
+                foutput("%s %s %s\n", WAR "Audio file", info->filename, "has MLP major sync header yet no file extension .mlp. Proceeding as if MLP...");
             }
         }
 
@@ -1560,7 +1216,7 @@ int flac_getinfo(fileinfo_t* info, globalData* globals)
     }
     else
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Fatal error - could not create FLAC OR OGG FLAC decoder\n")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( "Fatal error - could not create FLAC OR OGG FLAC decoder\n")
     }
 
 
@@ -1568,14 +1224,14 @@ int flac_getinfo(fileinfo_t* info, globalData* globals)
     {
 
         FLAC__stream_decoder_delete(flac);
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Failed to initialise FLAC decoder\n");
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( "Failed to initialise FLAC decoder\n");
     }
 
     if (!FLAC__stream_decoder_process_until_end_of_metadata(flac))
     {
 
         FLAC__stream_decoder_delete(flac);
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Failed to read metadata from FLAC file\n");
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( "Failed to read metadata from FLAC file\n");
     }
     FLAC__stream_decoder_finish(flac);
 
@@ -1919,7 +1575,7 @@ int audio_open(fileinfo_t* info, globalData* globals)
                 }
                 else
                 {
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Type of file unknown")
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE( "Type of file unknown")
                 }
 
             if (result!=FLAC__STREAM_DECODER_INIT_STATUS_OK)
@@ -1951,17 +1607,17 @@ int audio_open(fileinfo_t* info, globalData* globals)
                                 foutput("%s\n", ERR "Error unknown by FLAC API.");
                             }
 
-                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Failed to initialise FLAC decoder\n");
+                        EXIT_ON_RUNTIME_ERROR_VERBOSE( "Failed to initialise FLAC decoder\n");
                     }
 
             if (!FLAC__stream_decoder_process_until_end_of_metadata(info->flac))
             {
                 FLAC__stream_decoder_delete(info->flac);
-                EXIT_ON_RUNTIME_ERROR_VERBOSE( ERR "Failed to read metadata from FLAC file\n")
+                EXIT_ON_RUNTIME_ERROR_VERBOSE("Failed to read metadata from FLAC file\n")
 
             }
         }
-        else    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not initialise FLAC decoder")
+        else    EXIT_ON_RUNTIME_ERROR_VERBOSE( "Could not initialise FLAC decoder")
 
         }
 #endif
@@ -2269,7 +1925,7 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer, gl
     //PATCH: provided for null audio characteristics, to ensure non-zero divider
 
     if (info->sampleunitsize == 0)
-          EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Sample unit size is null");
+          EXIT_ON_RUNTIME_ERROR_VERBOSE( "Sample unit size is null");
 
     if ((info->channels > 6) || (info->channels < 1))
     {
@@ -2336,7 +1992,7 @@ uint32_t audio_read(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuffer, gl
             result = FLAC__stream_decoder_process_single(info->flac);
 
             if (result==0)
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Fatal error decoding FLAC file\n")
+                EXIT_ON_RUNTIME_ERROR_VERBOSE( "Fatal error decoding FLAC file\n")
 
             if (FLAC__stream_decoder_get_state(info->flac) == FLAC__STREAM_DECODER_END_OF_STREAM)
             {
@@ -2531,7 +2187,7 @@ uint32_t audio_read_merged(fileinfo_t* info, uint8_t* _buf, uint32_t *bytesinbuf
 
     if (info->sampleunitsize == 0)
     {
-          EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Sample unit size is null");
+          EXIT_ON_RUNTIME_ERROR_VERBOSE( "Sample unit size is null");
     }
 
     if (info->channels > 6 || info->channels < 1)

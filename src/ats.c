@@ -835,7 +835,7 @@ inline static void calc_PTS_DTS_MLP(fileinfo_t* info, globalData* globals)
 {
     if (info->type != AFMT_MLP)
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "MLP requested")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( "MLP requested")
     }
 
     // now m[i].pkt_pos indicates offset of MLP packet in mlp file that is just after sector m[i].rank in "mlp-type" AOB
@@ -903,7 +903,7 @@ inline static void calc_PTS_DTS_MLP(fileinfo_t* info, globalData* globals)
 // {
 //   if (info->type != AFMT_MLP)
 //   {
-//      EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "MLP requested")
+//      EXIT_ON_RUNTIME_ERROR_VERBOSE( "MLP requested")
 //   }
 //
 //   for (int i = 1; i < MAX_AOB_SECTORS && m[i].pkt_pos != 0; ++i)
@@ -930,7 +930,7 @@ inline static void calc_SCR_MLP(fileinfo_t* info, globalData* globals)
 {
     if (info->type != AFMT_MLP)
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "MLP requested")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( "MLP requested")
     }
 
    // struct MLP_LAYOUT already retrieved
@@ -1377,7 +1377,7 @@ int read_pes_packet(FILE* fp, fileinfo_t* info, uint8_t* audio_buf, globalData* 
     {
         if (header_length > 2040)
         {
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not compute reasonable header length (< 2040)")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE( "Could not compute reasonable header length (< 2040)")
         }
 
         audio_bytes = 2048 - (uint32_t) header_length;  // sureley false for last pack but well
@@ -1580,7 +1580,7 @@ static inline void allocate_mlp_tracktable(fileinfo_t* info, globalData* globals
 
             if (info->pts == NULL || info->dts == NULL || info->scr == NULL)
             {
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not allocate memory for PTS / DTS / SCR computation .")
+                EXIT_ON_RUNTIME_ERROR_VERBOSE( "Could not allocate memory for PTS / DTS / SCR computation .")
             }
 
             calc_PTS_DTS_MLP(info, globals);

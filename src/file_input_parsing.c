@@ -115,7 +115,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
 
         if ((ngroups_scan > MAX_GROUPS) || (ngroups_scan < 1))
         {
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Subdirectories must be labelled ljm, with l, m any letters and j a number of 1 - 9")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE( "Subdirectories must be labelled ljm, with l, m any letters and j a number of 1 - 9")
         }
 
         change_directory(gnames[ng], globals);
@@ -124,7 +124,7 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
 
         if ((subdir = opendir(".")) == NULL)
         {
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Input directory could not be opened")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE( "Input directory could not be opened")
         }
 
         struct dirent * subdirent;
@@ -310,7 +310,7 @@ int parse_disk(const DIR* dir, mode_t mode, extractlist  *extract)
 
         if (d_name_duplicate == NULL)
         {
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "strdup error while parsing disk")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE( "strdup error while parsing disk")
         }
 
         // filenames must end in "_0.IFO" and begin in "ATS_"

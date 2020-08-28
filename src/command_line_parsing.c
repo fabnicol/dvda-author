@@ -299,6 +299,8 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
         {"play", required_argument, NULL, 38},
         {"player", required_argument, NULL, 39},
         {"player-path", required_argument, NULL, 40},
+        {"mlp-files", no_argument, NULL, 41},
+        {"encode", no_argument, NULL, 42},
     #endif
         {NULL, 0, NULL, 0}
     };
@@ -617,7 +619,7 @@ command_t *command_line_parsing(int argc, char* const argv[], command_t *command
             foutput("%s%s\n", PAR "Input directory is: ", 	globals->settings.indir);
 
             if ((dir=opendir(optarg)) == NULL)
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Input directory could not be opened")
+                EXIT_ON_RUNTIME_ERROR_VERBOSE( "Input directory could not be opened")
 
             change_directory(globals->settings.indir, globals);
             audiodir=parse_directory(dir, ntracks, n_g_groups, 0, files_dummy, globals);
@@ -976,7 +978,7 @@ out:
 
         case 'i' :
             if ((dir=opendir(optarg)) == NULL)
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Input directory could not be opened")
+                EXIT_ON_RUNTIME_ERROR_VERBOSE( "Input directory could not be opened")
 
             change_directory(globals->settings.indir, globals);
 
@@ -1003,7 +1005,7 @@ out:
                 clean_exit(EXIT_SUCCESS, globals);
                 break;
             case   ERANGE :
-                EXIT_ON_RUNTIME_ERROR_VERBOSE( ERR "Offset range--overflowing LONG INT.");
+                EXIT_ON_RUNTIME_ERROR_VERBOSE("Offset range--overflowing LONG INT.");
                 break;
             }
             errno=0;
@@ -1275,6 +1277,20 @@ out:
             globals->fixwav_prepend = true;
             break;
 
+        case 41:  //--mlp-files
+
+            foutput("%s%s\n", PAR "Audio will be encoded to MLP and corresponding files will be placed in ", globals->settings.tempdir);
+            globals->to_mlp = true;
+
+            break;
+
+       case 42:  //--encode
+
+            foutput("%s\n", PAR "Audio will be encoded to MLP");
+            globals->to_mlp = true;
+            globals->encode_to_mlp_dvd = true;
+            break;
+
         case 38:  // --play, like --sync but with piping to ffplay
             foutput("%s%s\n", PAR "Will play back ", optarg);
             globals->play = true;
@@ -1437,7 +1453,7 @@ out:
                 img->highlightcolor_palette=strdup(strtok(NULL, ":"));
                 img->selectfgcolor_palette=strdup(strtok(NULL, ":"));
                 if ((img->selectfgcolor_palette == NULL)|| (img->highlightcolor_palette ==NULL) ||  (img->textcolor_palette ==NULL))
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Color chain is illegal: enter text:highlight:select color separated by a colon");
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE( "Color chain is illegal: enter text:highlight:select color separated by a colon");
                 errno=0;
                 if (img->textcolor_palette) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Top menu palette text color: %s %lx\n", img->textcolor_palette, strtoul(img->textcolor_palette,NULL,16));
                 //if (img->textcolor_palette) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Top menu palette background color: %s %lx\n", img->bgcolor_palette, strtoul(img->bgcolor_palette,NULL,16));
@@ -1446,16 +1462,16 @@ out:
 
                 if (errno == ERANGE)
                 {
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "At least one YCrCb coding overflows: check switch --palette")
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE( "At least one YCrCb coding overflows: check switch --palette")
                 }
                 else
                 {
                     if (errno)
-                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Check switch --palette")
+                        EXIT_ON_RUNTIME_ERROR_VERBOSE( "Check switch --palette")
                 }
             }
             else
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Color chain could not be allocated");
+                EXIT_ON_RUNTIME_ERROR_VERBOSE( "Color chain could not be allocated");
 
             break;
 
@@ -1478,7 +1494,7 @@ out:
                 img->highlightcolor_pic=strdup(strtok(NULL, ":"));
                 img->selectfgcolor_pic=strdup(strtok(NULL, ":"));
                 if ((img->selectfgcolor_pic == NULL)|| (img->highlightcolor_pic ==NULL) || (img->bgcolor_pic == NULL) || (img->textcolor_pic ==NULL))
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Picture color chain is illegal: enter text,background,highlight,select color\n        separated by a colon, with rgb components by commas");
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE( "Picture color chain is illegal: enter text,background,highlight,select color\n        separated by a colon, with rgb components by commas");
                 if (img->textcolor_pic) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Top menu text color: rgb(%s)\n", img->textcolor_pic);
                 if (img->bgcolor_pic) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Top menu background color: rgb(%s)\n", img->bgcolor_pic);
                 if (img->highlightcolor_pic) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Top menu highlight color: rgb(%s)\n", img->highlightcolor_pic);
@@ -1486,7 +1502,7 @@ out:
 
             }
             else
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Picture color chain could not be allocated");
+                EXIT_ON_RUNTIME_ERROR_VERBOSE( "Picture color chain could not be allocated");
 
             if ((strcmp(img->selectfgcolor_pic, img->highlightcolor_pic) == 0) || (strcmp(img->textcolor_pic, img->highlightcolor_pic) == 0) || (strcmp(img->textcolor_pic, img->selectfgcolor_pic) == 0))
             {
@@ -1524,7 +1540,7 @@ out:
                 img->activehighlightcolor_palette=strdup(strtok(NULL, ":"));
                 img->activeselectfgcolor_palette=strdup(strtok(NULL, ":"));
                 if ((img->activeselectfgcolor_palette == NULL)|| (img->activehighlightcolor_palette ==NULL) || (img->activebgcolor_palette == NULL) || (img->activetextcolor_palette ==NULL))
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Active picture color chain is illegal: enter text,background,highlight,select color\n        separated by a colon, with rgb components by commas");
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE( "Active picture color chain is illegal: enter text,background,highlight,select color\n        separated by a colon, with rgb components by commas");
                 if (img->activetextcolor_palette) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Active menu text color: rgb(%s)\n", img->activetextcolor_palette);
                 if (img->activebgcolor_palette) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Active menu background color: rgb(%s)\n", img->activebgcolor_palette);
                 if (img->activehighlightcolor_palette) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Active menu highlight color: rgb(%s)\n", img->activehighlightcolor_palette);
@@ -1532,7 +1548,7 @@ out:
 
             }
             else
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Active picture color chain could not be allocated");
+                EXIT_ON_RUNTIME_ERROR_VERBOSE( "Active picture color chain could not be allocated");
 
             if ((strcmp(img->activeselectfgcolor_palette, img->activehighlightcolor_palette) == 0) || (strcmp(img->activetextcolor_palette, img->activehighlightcolor_palette) == 0) || (strcmp(img->activetextcolor_palette, img->activeselectfgcolor_palette) == 0))
             {
@@ -1578,7 +1594,7 @@ out:
                 img->pointsize=(int8_t) atoi(strtok(NULL, ","));
                 img->fontwidth=(int8_t) atoi(strtok(NULL, ","));
                 if ((img->textfont == NULL)|| (img->pointsize <1) || (img->fontwidth < 1) )
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Font chain is illegal: enter font,font size,font width (width in pixels for size=10)");
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE( "Font chain is illegal: enter font,font size,font width (width in pixels for size=10)");
 
                 if (img->textfont) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Font: %s\n", img->textfont);
                 foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Point size: %d\n", img->pointsize);
@@ -1698,7 +1714,7 @@ out:
 
     if (globals->videolinking == 1 && (globals->videozone == 0 || globals->settings.linkdir == NULL))
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "You should provide --videodir when using -T (video-linking)")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( "You should provide --videodir when using -T (video-linking)")
     }
 
     change_directory(globals->settings.workdir, globals);
@@ -1766,7 +1782,7 @@ out:
 
             if (extract == NULL)
             {
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not allocate table for extracted files")
+                EXIT_ON_RUNTIME_ERROR_VERBOSE( "Could not allocate table for extracted files")
             }
 
             extract_list_parsing(extract_args, extract, globals); // first recovering the list of groups and tracks to be extracted
@@ -1779,7 +1795,7 @@ out:
     {
         if (extract_args != NULL)   // sanity test : indir must be known
         {
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "You should use -x (disc or directory) along wth --xlist")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE( "You should use -x (disc or directory) along wth --xlist")
         }
     }
 
@@ -2210,7 +2226,7 @@ out:
         change_directory(globals->settings.datadir, globals);
         snprintf(cl, 500, "%s %s %s", convert, img->blankscreen , img->backgroundpic[0]);
         if (globals->veryverbose) foutput(INF "Launching convert with command line %s\n",  cl);
-        if (system(win32quote(cl)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "System command failed")
+        if (system(win32quote(cl)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE( "System command failed")
         fflush(NULL);
         FREE(convert);
     }
@@ -2300,7 +2316,7 @@ out:
                || ( !dvdv_tracks_given && !mirror_flag ))))
     {
         fprintf(stderr, "ndvdvslides[0]=%d\n", ndvdvslides[0]);
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incoherent command line: slides requested for Lplex"J"...yet no audio tracks or slides given.")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( "Incoherent command line: slides requested for Lplex"J"...yet no audio tracks or slides given.")
     }
 
     if (dvdv_tracks_given)
@@ -2314,7 +2330,7 @@ out:
     }
 
     if ( dvdv_import_flag && mirror_flag )
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "You should not use --mirror along with --import-dvdv: do you really want to resample?\n       Exiting...\n");
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( "You should not use --mirror along with --import-dvdv: do you really want to resample?\n       Exiting...\n");
 
     switch (globals->topmenu)
     {
@@ -2342,7 +2358,7 @@ out:
 
         dest=copy_file2dir(img->blankscreen, globals->settings.tempdir, globals);
 
-        if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Failed to copy background .png blankscreen to temporary directory.")
+        if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE( "Failed to copy background .png blankscreen to temporary directory.")
 
         if (!menupic_input_coherence_test)
         {
@@ -2350,7 +2366,7 @@ out:
         }
             else
         {
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Trop d'incohérences dans l'allocation des éléments du menu.\n")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE( "Trop d'incohérences dans l'allocation des éléments du menu.\n")
         }
 
         change_directory(globals->settings.workdir, globals);
@@ -2809,7 +2825,7 @@ void process_dvd_video_zone(command_t* command, globalData* globals)
         globals->videozone=true;
 
        if (ndvdvtitleset1 == 0)
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "You requested hybridation yet no DVD-Video standard-compliant\n       audio file was found on input.\n")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( "You requested hybridation yet no DVD-Video standard-compliant\n       audio file was found on input.\n")
 
 
        if (delta_titlesets)
@@ -2825,7 +2841,7 @@ void process_dvd_video_zone(command_t* command, globalData* globals)
                    foutput(WAR "%d titlesets will have to be added.\n", delta_titlesets);
 
              if (ndvdvtitleset1+delta_titlesets > 99)
-               EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Exceeded 99 titleset limit.\n       Redesign your audio input so that you do not have more than 99 different audio formats in a row.")
+               EXIT_ON_RUNTIME_ERROR_VERBOSE("Exceeded 99 titleset limit.\n       Redesign your audio input so that you do not have more than 99 different audio formats in a row.")
 
              new_dvdv_track_array=(char***) calloc(ndvdvtitleset1 + delta_titlesets,sizeof(dvdv_track_array));
              new_dvdv_slide_array=(char***) calloc(ndvdvtitleset1 + delta_titlesets, sizeof(dvdv_slide_array));
@@ -2987,7 +3003,7 @@ void process_dvd_video_zone(command_t* command, globalData* globals)
                     int size=strlen(files[group][track].filename);
                     if (strcmp(files[group][track].filename + size-4, ".wav") !=0)
                     {
-                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Automatic mirroring is only supported for wav files.")
+                        EXIT_ON_RUNTIME_ERROR_VERBOSE( "Automatic mirroring is only supported for wav files.")
                     }
 
                     char newpath[size+4];
@@ -3038,7 +3054,7 @@ void process_dvd_video_zone(command_t* command, globalData* globals)
                    foutput(WAR "%d titlesets will have to be added.\n", delta_titlesets);
 
              if (command->ngroups+delta_titlesets > 99)
-               EXIT_ON_RUNTIME_ERROR_VERBOSE("[ERR]  Exceeded 99 titleset limit.\n       Redesign your audio input so that you do not have more than 99 different audio formats in a row.")
+               EXIT_ON_RUNTIME_ERROR_VERBOSE("Exceeded 99 titleset limit.\n       Redesign your audio input so that you do not have more than 99 different audio formats in a row.")
 
              new_dvdv_track_array=(char***) calloc(command->ngroups + delta_titlesets,sizeof(char**));
              new_dvdv_slide_array=(char***) calloc(command->ngroups + delta_titlesets, sizeof(char**));
@@ -3151,7 +3167,7 @@ void aob2wav_parsing(const char *ssopt, const extractlist* extract, globalData* 
     }
     else
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Extraction processor has not valid AOB path input.")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( "Extraction processor has not valid AOB path input.")
     }
 
     int i = 0;
@@ -3162,12 +3178,12 @@ void aob2wav_parsing(const char *ssopt, const extractlist* extract, globalData* 
 
         if (globals->aobpath == NULL)
         {
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Extraction processor failed at input stage.")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE( "Extraction processor failed at input stage.")
         }
     }
     else
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Extraction processor has not valid AOB path input or memory allocation failed.")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( "Extraction processor has not valid AOB path input or memory allocation failed.")
     }
 
     if (extract == NULL)
@@ -3355,7 +3371,7 @@ void extract_list_parsing(const char *arg, extractlist* extract, globalData* glo
         if (groupindex_ == EINVAL || groupindex_ == ERANGE || groupindex_ > 9 || groupindex_ < 1)
         {
             fprintf(stderr, ERR "Group index %lu\n", groupindex);
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect group : rank should be included between 1 and 9.")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE( "Incorrect group : rank should be included between 1 and 9.")
             break;
         }
 
@@ -3418,13 +3434,13 @@ void extract_list_parsing(const char *arg, extractlist* extract, globalData* glo
                           trackindex2 = strtol(trackchunk2, NULL, 10);
                           if (trackindex2 == EINVAL || trackindex2 == ERANGE || trackindex2 > 99 || trackindex2 < 1)
                           {
-                              EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect track number: rank should be included between 1 and 99.");
+                              EXIT_ON_RUNTIME_ERROR_VERBOSE( "Incorrect track number: rank should be included between 1 and 99.");
                           }
                       }
 
                       if (trackindex >= trackindex2 )
                       {
-                          EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect track numbers : ... should be between a and b, a < b");
+                          EXIT_ON_RUNTIME_ERROR_VERBOSE( "Incorrect track numbers : ... should be between a and b, a < b");
                       }
 
                       for (int t = trackindex + 1; t <= trackindex2; ++t)
@@ -3445,7 +3461,7 @@ void extract_list_parsing(const char *arg, extractlist* extract, globalData* glo
                     trackindex = strtol(trackchunk, NULL, 10);
                     if (trackindex == EINVAL || trackindex == ERANGE || trackindex > 99 || trackindex < 1)
                     {
-                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect track number: rank should be included between 1 and 99.");
+                        EXIT_ON_RUNTIME_ERROR_VERBOSE( "Incorrect track number: rank should be included between 1 and 99.");
                     }
 
                     extract->extracttrackintitleset[groupindex - 1][trackindex - 1] = 1;
@@ -3457,7 +3473,7 @@ void extract_list_parsing(const char *arg, extractlist* extract, globalData* glo
 
            if (trackindex == EINVAL || trackindex == ERANGE || trackindex < 1 || trackindex > 99)
             {
-                EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incorrect track number : rank should be included between 1 and 99.");
+                EXIT_ON_RUNTIME_ERROR_VERBOSE( "Incorrect track number : rank should be included between 1 and 99.");
             }
 
            extract->extracttitleset[groupindex - 1] = 1;
@@ -3514,7 +3530,7 @@ void ats2wav_parsing(const char *arg, const extractlist* extract, globalData* gl
 
     if (audiots_chain == NULL)
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not allocate global settings")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( "Could not allocate global settings")
     }
 
     sprintf(audiots_chain, "%s" SEPARATOR "AUDIO_TS", chain);
@@ -3522,7 +3538,7 @@ void ats2wav_parsing(const char *arg, const extractlist* extract, globalData* gl
     if ((dir = opendir(audiots_chain)) == NULL)
     {
         foutput("%s\n", audiots_chain);
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Could not open input directory")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( "Could not open input directory")
     }
 
     change_directory(audiots_chain);

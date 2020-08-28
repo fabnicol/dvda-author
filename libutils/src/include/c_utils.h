@@ -307,6 +307,8 @@ typedef struct
     bool videozone;
     bool videolinking;
     bool decode;
+    bool encode_to_mlp_dvd;
+    bool to_mlp;
     bool pipe;
     bool play;
     bool playlist;
@@ -403,6 +405,7 @@ char* get_fullpath_command_line(char* local_variable, const char* symbolic_const
 char* copy_file2dir(const char *existing_file, const char *new_dir, globalData*);
 void copy_file2dir_rename(const char *existing_file, const char *new_dir, char* newfilename, globalData*);
 path_t *parse_filepath(const char* filepath, globalData*);
+void free_filepath(path_t* p);
 void clean_path(path_t** );
 char* make_absolute(char* filepath);
 char *fn_get_current_dir_name (void);

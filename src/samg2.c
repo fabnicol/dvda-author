@@ -152,7 +152,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors, global
                         samg[i] = 0x22;
                         break;
                     default:
-                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Unsupported bit rate (channels > 2)")
+                        EXIT_ON_RUNTIME_ERROR_VERBOSE( "Unsupported bit rate (channels > 2)")
                 }
             }
             else
@@ -169,7 +169,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors, global
                         samg[i] = 0x2f;
                         break;
                     default:
-                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Unsupported bit rate (channels <= 2)")
+                        EXIT_ON_RUNTIME_ERROR_VERBOSE( "Unsupported bit rate (channels <= 2)")
                 }
             }
 
@@ -198,7 +198,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors, global
                         samg[i] = 0xaa;
                         break;
                     default:
-                        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Unsupported sample rate (channels > 2)")
+                        EXIT_ON_RUNTIME_ERROR_VERBOSE( "Unsupported sample rate (channels > 2)")
                 }
             }
             else
@@ -226,7 +226,7 @@ uint32_t create_samg(char* audiotsdir, command_t *command, sect* sectors, global
                     break;
                 default:
                     fprintf(stderr, ERR "Sample rate : %d - Group %d - Track %d\n", files[g][j].samplerate, g, j);
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Unsupported sample rate (channels <= 2)")
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE( "Unsupported sample rate (channels <= 2)")
                 }
             }
 

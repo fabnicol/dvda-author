@@ -11,7 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters='-g &quot;C:\Users\Public\Dev\dvda-author\Docs\MLP\audio\a2_24_96.mlp&quot; &quot;C:\Users\Public\Dev\dvda-author\Docs\MLP\audio\a2_16_48.mlp&quot; &quot;C:\Users\Public\Dev\dvda-author\Docs\MLP\audio\a3_16_88.mlp&quot; &quot;C:\Users\Public\Dev\dvda-author\Docs\MLP\audio\a3_24_44_Lf_Rf_S.mlp&quot; &quot;C:\Users\Public\Dev\dvda-author\Docs\MLP\audio\a4_16_44_Lf_Rf_Ls_Rs.mlp&quot; &quot;C:\Users\Public\Dev\dvda-author\Docs\MLP\audio\a4_24_44_Lf_Rf_Ls_Rs.mlp&quot; &quot;C:\Users\Public\Dev\dvda-author\Docs\MLP\audio\a6_24_96_Lf_Rf_C_LFE_Ls_Rs.mlp&quot; -P0 -W -o C:\Users\fabrn\output -S --tempdir C:\Users\fabrn\temp --lplex-tempdir C:\Users\fabrn\ltemp --topmenu --datadir C:\Users\Public\dvda-author-package-19.09r2 --bindir C:\Users\Public\dvda-author-package-19.09r2\bin --logrefresh Log.txt --loghtml --veryverbose' />
+				<Option parameters='-g &quot;C:\Users\Public\Dev\dvda-author\Docs\a3_24_88.wav&quot;   -P0 -W -o &quot;C:\Users\Public\Dev\dvda-author\Docs\output_dir&quot;  -S  --workdir C:\Users\Public\Dev\dvd-audio-dvda-author-gui-qt4\windows  --bindir C:\Users\Public\Dev\dvd-audio-dvda-author-gui-qt4\windows\bin --veryverbose --encode --cdrecord=0,0,0' />
 				<Compiler>
 					<Add option="-g" />
 					<Add option="-D_WIN32" />
@@ -22,7 +22,7 @@
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters=' -g &quot;C:\Users\Public\Dev\dvda-author\Docs\a2_24_48.wav&quot; &quot;C:\Users\Public\Dev\dvda-author\Docs\a2_24_44_2.flac&quot; &quot;C:\Users\Public\Dev\dvda-author\Docs\a2_24_44.aiff&quot; &quot;C:\Users\Public\Dev\dvda-author\Docs\MLP\audio\a2_24_96.mlp&quot; -P -W -o &quot;C:\Users\Public\Dev\dvda-author\Docs\output_dir&quot;  -S --tempdir C:\Users\fabrn\temp --lplex-tempdir C:\Users\fabrn\ltemp  --datadir C:\Users\Public\Dev\dvd-audio-dvda-author-gui-qt4\windows --bindir C:\Users\Public\Dev\dvd-audio-dvda-author-gui-qt4\windows\bin --veryverbose' />
+				<Option parameters=' -g &quot;C:\Users\Public\Dev\dvda-author\Docs\a2_24_48.wav&quot; &quot;C:\Users\Public\Dev\dvda-author\Docs\a2_24_44.wav&quot;  -P -W -o &quot;C:\Users\Public\Dev\dvda-author\Docs\output_dir&quot;  -S --tempdir C:\Users\fabrn\temp --lplex-tempdir C:\Users\fabrn\ltemp  --datadir C:\Users\Public\Dev\dvd-audio-dvda-author-gui-qt4\windows --bindir C:\Users\Public\Dev\dvd-audio-dvda-author-gui-qt4\windows\bin --veryverbose --mlp-files' />
 				<Compiler>
 					<Add option="-O2" />
 					<Add option="-D_WIN32" />
@@ -217,6 +217,7 @@
 		<Unit filename="../src/include/lexer.h" />
 		<Unit filename="../src/include/libsoxconvert.h" />
 		<Unit filename="../src/include/menu.h" />
+		<Unit filename="../src/include/mlp.h" />
 		<Unit filename="../src/include/multichannel.h" />
 		<Unit filename="../src/include/ports.h" />
 		<Unit filename="../src/include/samg.h" />
@@ -235,6 +236,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../src/menu.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/mlp.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../src/samg2.c">

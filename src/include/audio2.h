@@ -52,15 +52,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #endif
 #include "multichannel.h"
 #include "file_input_parsing.h"
-#include "mlplayout.h"
-#include "libavutil/opt.h"
-#include "libavcodec/avcodec.h"
-#include "libavformat/avformat.h"
-#include "libswresample/swresample.h"
 #include "c_utils.h"
 #include "ats.h"
 #include "structures.h"
-
 
 
 #define AFMT_WAVE 1

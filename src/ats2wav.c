@@ -185,7 +185,7 @@ inline static void output_path_create(const char* dirpath, WaveData *info, int t
     int L = strlen(extension); // includes the dot
     if (L > 4)
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Only .wav and .mlp extensions are supported")          // a bit paranoid here....
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( "Only .wav and .mlp extensions are supported")          // a bit paranoid here....
     }
     char Title[19 + L];
     memset(Title, 0, 19 +  L);
@@ -236,7 +236,7 @@ inline static void get_audio_format(WaveData *info, bool new_title, bool* status
     int res = fread(buff, 1, 0x3D, info->infile.fp);
     if (res != 0x3D)
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "File is to short to compute audio format")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( "File is to short to compute audio format")
     }
 
     if (buff[0] == 0 && buff[1] == 0 && buff[2] == 1 && buff[3] == 0xBA && buff[4] == 0x44)
@@ -300,7 +300,7 @@ inline static int calc_position(WaveData* info, const uint32_t offset0, globalDa
 
     if (result != 1)
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting packet position.")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( " Error detecting packet position.")
     }
 
 
@@ -432,7 +432,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header,
 
     if (result != 1)
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting continuity counter.")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( " Error detecting continuity counter.")
     }
 
     *continuity = continuity_counter[0];
@@ -443,14 +443,14 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header,
 
     if (result != 1)
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting sample size.")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( " Error detecting sample size.")
     }
 
     result = fread(sample_rate, 1, 1, info->infile.fp);
 
     if (result != 1)
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting sample rate.")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( " Error detecting sample rate.")
     }
 
     uint8_t high_nibble = (sample_rate[0] & 0xf0) >> 4;
@@ -512,7 +512,7 @@ inline static int peek_pes_packet_audio(WaveData *info, WaveHeader* header,
 
     if (result != 1)
     {
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting channel.")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( " Error detecting channel.")
     }
 
     if (channel_assignment[0] > 20) *status = INVALID;
@@ -705,7 +705,7 @@ inline static uint64_t get_pes_packet_audio(WaveData *info,
             result = fread(PES_packet_len_bytes, 1, 2, info->infile.fp);
             if (result != 2)
             {
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR " Error detecting last pack.")
+                    EXIT_ON_RUNTIME_ERROR_VERBOSE( " Error detecting last pack.")
             }
             audio_bytes = (PES_packet_len_bytes[0] << 8 | PES_packet_len_bytes[1]) - lastpack_audiopesheaderquantity;
             /* skipping rest of audio_pes_header, i.e 8 bytes + lpcm_header */

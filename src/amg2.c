@@ -142,7 +142,7 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
        titlelength[group] = calloc(ntitles[group], sizeof(uint64_t));
 
       if (titlelength[group] == NULL || ntitlepics[group] == NULL || ntitletracks[group] == NULL)
-            EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Memory allocation, title track count in AMG")
+            EXIT_ON_RUNTIME_ERROR_VERBOSE( "Memory allocation, title track count in AMG")
 
       track=0;
 
@@ -170,7 +170,7 @@ uint16_t create_tracktables(command_t* command, uint8_t naudio_groups, uint8_t n
       if (track  != ntracks[group])
       {
         fprintf(stderr, "\nCounted %d tracks instead of %d for group %d\n", track, ntracks[group], group);
-        EXIT_ON_RUNTIME_ERROR_VERBOSE(ERR "Incoherent title count")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE( "Incoherent title count")
       }
 
     }
