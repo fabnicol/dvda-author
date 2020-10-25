@@ -106,7 +106,7 @@ manpage: $(PROGRAM).1
 htmlpage: $(PROGRAM).html
 
 pdf: $(PROGRAM).html
-		[ - f "/usr/bin/wkhtmltopdf" ] && /usr/bin/wkhtmltopdf $(PROGRAM).html $(PROGRAM).pdf
+		[ -f "/usr/bin/wkhtmltopdf" ] && /usr/bin/wkhtmltopdf $(PROGRAM).html $(PROGRAM).pdf
 
 $(PROGRAM).1:
 	@if test "no" = "yes"; then
@@ -194,7 +194,7 @@ clean: clean-local
 	$(RM) /home/fab/dvda-author/src/$(PROGRAM)
 
 clean-local:
-	$(RM) $(PROGRAM).1 $(PROGRAM).html
+	$(RM) $(PROGRAM).1 $(PROGRAM).html .dvda-author
 	[ -d /home/fab/dvda-author/depconf ] && $(RM) $(wildcard /home/fab/dvda-author/depconf/*.depconf)
 
 distclean: clean
@@ -204,7 +204,7 @@ distclean: clean
 libiberty/src/Makefile
 
 maintainer-clean: distclean
-	$(RM) configure  sox-libs *.tar.xz *-patch-*
+	$(RM) configure  sox-libs *.tar.xz *-patch-* 
 	$(RM) -rf config/  depconf/
 	$(foreach prog,  sox libogg FLAC ffmpeg dvdauthor lplex mjpegtools cdrtools a52dec libmpeg2 help2man ImageMagick man2html libiberty libfixwav, $(shell $(RM) -rf $(MAYBE_$(prog)))) 
 
