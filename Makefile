@@ -155,7 +155,7 @@ dist_sysconf_DATA=/cygdrive/c/Users/fabrn/dvda-author/dvda-author.desktop /cygdr
 dist_pic_DATA= /cygdrive/c/Users/fabrn/dvda-author/dvda-author_48x48.png /cygdrive/c/Users/fabrn/dvda-author/dvda-author_64x64.png
 # distributed under $docdir, normally $prefix/doc/dvda-author
 
-dist_doc_DATA=/cygdrive/c/Users/fabrn/dvda-author/README  /cygdrive/c/Users/fabrn/dvda-author/BUGS /cygdrive/c/Users/fabrn/dvda-author/EXAMPLES \
+dist_doc_DATA=/cygdrive/c/Users/fabrn/dvda-author/README.md  /cygdrive/c/Users/fabrn/dvda-author/BUGS /cygdrive/c/Users/fabrn/dvda-author/EXAMPLES \
 /cygdrive/c/Users/fabrn/dvda-author/LIMITATIONS /cygdrive/c/Users/fabrn/dvda-author/BUILD.Ubuntu /cygdrive/c/Users/fabrn/dvda-author/COREBUILD \
   /cygdrive/c/Users/fabrn/dvda-author/DEPENDENCIES /cygdrive/c/Users/fabrn/dvda-author/HOWTO.conf /cygdrive/c/Users/fabrn/dvda-author/dvda-author.conf.example
 

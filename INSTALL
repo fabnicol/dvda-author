@@ -36,7 +36,7 @@ as follows:
 If `wkhtmltopdf' has been installed on your platform you can optionally convert the html 
 manpage into a pdf one using:
 
-	make pdf.
+	make pdfpage.
 
 Then install as usual:
 
@@ -300,12 +300,6 @@ See file BUGS for issues with libiberty and SoX (older versions) building.
 
 	./configure --enable-ImageMagick-download  --enable-ImageMagick-build
 
-
-- To avoid repreating -build enable options, you may just add to command line:
-
-	--enable-all-builds
-
-  after the -patch and -download options.
 
 If your libFLAC library is installed in a non-standard directory (i.e. not /usr/lib
 or /usr/local/lib) you may have to use configure options

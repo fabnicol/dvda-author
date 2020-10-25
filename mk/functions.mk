@@ -92,16 +92,20 @@ define configure_lib_package
 endef
 
 define configure_exec_package
-	@if test "$(build_os)" = "mingw32"; then
-	  patchfile=$$(find patches -type f -regex .*$1-patch.* -print0)
-	  echo Found mingw32 OS...patching with local patch $$patchfile
-	  $(if $$patchfile, patch -p0 < $$patchfile && echo "locally patched: $1: using $$patchfile in patches/" >> PATCHED.DOWNLOADS)
-	fi
 	$(call configure_sub_package,$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),,,$2,$3)
 	if test "$$?" = "0" -o "$6" != ""; then 
         touch /cygdrive/c/Users/fabrn/dvda-author/depconf/$1.depconf
     fi
 	@$(call index,$1,$(EXEEXT),binary)
+endef
+
+
+define configure_script_package
+	$(call configure_sub_package,$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),,,$2,$3)
+	if test "$$?" = "0" -o "$6" != ""; then 
+        touch /cygdrive/c/Users/fabrn/dvda-author/depconf/$1.depconf
+    fi
+	@$(call index,$1,"",script)
 endef
 
 define clean_package
@@ -115,7 +119,11 @@ define depconf
 	  else
 	    if test "$($1_CONFIGSPEC)" = "exe"; then
 		  @$(call configure_exec_package,$1,$2,$3)
-	    fi
+	    else
+		 if test "$($1_CONFIGSPEC)" = "script"; then
+		  @$(call configure_script_package,$1,$2,$3)
+         fi
+		fi
 	  fi
 	fi
 endef

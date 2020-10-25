@@ -1,0 +1,13 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libdvdread
+Description: Low level DVD access library
+Version: 6.1.1
+
+Requires.private: 
+
+Cflags: -I${includedir}
+Libs: -L${libdir} -ldvdread
