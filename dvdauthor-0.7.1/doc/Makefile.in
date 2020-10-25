@@ -55,7 +55,10 @@ subdir = doc
 DIST_COMMON = $(dist_pkgdata_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/srcm4/iconv.m4 \
+	$(top_srcdir)/srcm4/lib-ld.m4 $(top_srcdir)/srcm4/lib-link.m4 \
+	$(top_srcdir)/srcm4/lib-prefix.m4 \
+	$(top_srcdir)/srcm4/libxml.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -123,7 +126,6 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FONTCONFIG_CFLAGS = @FONTCONFIG_CFLAGS@
 FONTCONFIG_LIBS = @FONTCONFIG_LIBS@
-FREETYPECONFIG = @FREETYPECONFIG@
 FREETYPE_CPPFLAGS = @FREETYPE_CPPFLAGS@
 FREETYPE_LIBS = @FREETYPE_LIBS@
 FRIBIDI_CFLAGS = @FRIBIDI_CFLAGS@
@@ -209,6 +211,7 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@

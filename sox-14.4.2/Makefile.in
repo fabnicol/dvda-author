@@ -83,8 +83,9 @@ subdir = .
 DIST_COMMON = INSTALL NEWS README AUTHORS ChangeLog \
 	$(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
-	$(srcdir)/sox.pc.in $(dist_man_MANS) COPYING compile \
-	config.guess config.sub depcomp install-sh missing ltmain.sh
+	$(srcdir)/sox.pc.in $(srcdir)/sox-libs.in $(dist_man_MANS) \
+	COPYING compile config.guess config.sub install-sh missing \
+	ltmain.sh
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/gcc_stack_protect.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
@@ -98,7 +99,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/src/soxconfig.h
-CONFIG_CLEAN_FILES = sox.pc
+CONFIG_CLEAN_FILES = sox.pc sox-libs
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -297,6 +298,7 @@ LN_S = @LN_S@
 LPC10_CFLAGS = @LPC10_CFLAGS@
 LPC10_LIBS = @LPC10_LIBS@
 LTLIBOBJS = @LTLIBOBJS@
+LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAGIC_LIBS = @MAGIC_LIBS@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
@@ -395,6 +397,7 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -473,6 +476,8 @@ $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	$(am__cd) $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 $(am__aclocal_m4_deps):
 sox.pc: $(top_builddir)/config.status $(srcdir)/sox.pc.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+sox-libs: $(top_builddir)/config.status $(srcdir)/sox-libs.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:

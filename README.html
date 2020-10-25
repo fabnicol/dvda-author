@@ -1,0 +1,152 @@
+<h1 id="dvda-author-version-20.10-oct-2020">dvda-author version 20.10 (Oct 2020)</h1>
+<p> </p>
+<h2 id="quick-start">1. Quick start</h2>
+<h3 id="building-the-toolchain-from-source">1.1 Building the toolchain from source:</h3>
+<pre><code>    ./autogen   
+    ./configure    </code></pre>
+<p>with elevated rights under *nix platforms:</p>
+<pre><code>    (sudo) make &amp;&amp; (sudo) make install   </code></pre>
+<p>The patched toolchain source code is inlined in the repository downloaded with git. If you would like to refresh the toolchain using the vanilla packages and applying the patches, you can do it by configuring as follows:</p>
+<pre><code>     ./configure --enable-all-all</code></pre>
+<p>You can also download each <a href="https://sourceforge.net/projects/dvd-audio/files/dvda-author/Dependencies/">toolchain package from Sourceforge</a></p>
+<p>Mind to apply the patches in the <strong>patches</strong> subdirectory of this URL.</p>
+<p>The building system has been tested under linux, Free-BSD and Cygwin. For Windows, you can use the codeblocks project to (re)build the target application once the dependencies have been built using Cygwin. It is advised to use the <a href="https://www.msys2.org/">MSYS2 port</a> of the GNU GCC compiler for <code>dvda-author</code> itself, yet most dependencies should be built using Cygwin. Builds with a recent MSYS2 port of gcc and the codeblocks project yield better results than with Cygwin.</p>
+<h3 id="running-dvda-author-dev">1.2 Running dvda-author-dev</h3>
+<p>See file <strong>commandline.txt</strong> for usage examples. See file <strong>dvda-author-(version).html</strong> for usage details.</p>
+<p>As this is a local deployment package, if you create menus or discs, add:</p>
+<pre><code>    --bindir=/path/to/executable/dependencies    
+    </code></pre>
+<p>to your commandline when running <code>dvda-author-dev</code>. If you built the whole toolchain from source using the configure script, this directory is <strong>local/bin</strong> under the package root directory. You may place this directory elsewhere, changing the <code>--bindir</code> path argument accordingly.</p>
+<p>Some common examples for Windows builds:</p>
+<ol type="1">
+<li><p>Simple two-group disc, just the disc system files:</p>
+<pre><code> local\bin\dvda-author.exe -g C:\Docs\a2_24_44.wav \ 
+ -g C:\Docs\a2_24_48.wav -W -o output   </code></pre></li>
+<li><p>Simple two-group disc, just the ISO:</p>
+<pre><code> local\bin\dvda-author.exe -g C:\Docs\a2_24_44.wav \
+ -g C:\Docs\a2_24_48.wav -W --mkisofs</code></pre></li>
+</ol>
+<p><strong>dvd.iso</strong> will be created under <strong>dvda-author\temp</strong> as well as DVD-audio files.</p>
+<ol start="3" type="1">
+<li><p>Simple two-group disc, to be burned on a DVD:</p>
+<pre><code> local\bin\dvda-author.exe -g C:\Docs\a2_24_44.wav \
+ -g C:\Docs\a2_24_48.wav -W --cdrecord</code></pre></li>
+</ol>
+<p>You might have to run this with administrative rights in some cases. If you have several DVD writers, you may have to change your disc to the one that will be automatically selected.</p>
+<ol start="4" type="1">
+<li><p>Three-group disc, just the disc system files, with a variety of audio formats as input (-S), and increased verbosity (-t):</p>
+<pre><code> local\bin\dvda-author.exe -g C:\Docs\a2_24_44.wav \
+ -g C:\Docs\a4_16_96.flac C:\Docs\a.aiff C:\Docs\b.au \
+ -g C:\Docs\a2_24_48.flac -W -S -t</code></pre></li>
+</ol>
+<p>DVD files with be created under <strong>dvda-author\temp</strong></p>
+<ol start="5" type="1">
+<li><p>Simple two-group disc with DVD top menu, burned to disc:</p>
+<pre><code> local\bin\dvda-author.exe -g C:\Docs\a2_24_44.wav \
+ -g C:\Docs\a2_16_192.wav -W --bindir local\bin -t \
+ --topmenu  --cdrecord</code></pre></li>
+</ol>
+<p>You might have to run this with administrative rights in some cases.</p>
+<ol start="6" type="1">
+<li><p>Complex two-group disc with DVD top menu, from a variety of audio formats, and an extra group/track link from the DVD-Audio zone to the pre-authored DVD-Video zone of the disc, and burn it:</p>
+<pre><code> local\bin\dvda-author.exe -g Docs\a2_24_44.wav \
+ -g Docs\a2_16_192.flac Docs\a2_24_44.aiff -S -W \
+ --bindir local\bin --topmenu --cdrecord \
+ --videodir C:\my_DVD\VIDEO_TS -T 1    </code></pre></li>
+<li><p>Complex 1-group disc with DVD top menu, which remains on-screen on playback, and two extra group/track links from the DVD-Audio zone to the pre-authored DVD-Video zone of the disc, just the ISO:</p>
+<pre><code> local\bin\dvda-author.exe -g Docs\a*.{wav,flac,aiff} -S -W \
+ --bindir local\bin --topmenu  --mkisofs \
+ --videodir C:\my_DVD\VIDEO_TS -T 1 -T 2  </code></pre></li>
+</ol>
+<h2 id="details">2. Details</h2>
+<h3 id="description">2.1. Description</h3>
+<p><code>dvda-author</code> creates high-definition DVD-Audio disc structures from either WAV, FLAC/Ogg FLAC, or SoX-supported audio formats (.au, .aiff, .gsm, etc.)</p>
+<p>This version supports multichannel audio up to 5.1 and implements experimental support for MLP (mono, stereo and multichannel), <a href="https://ffmpeg.org">using the <code>ffmpeg</code>API</a>, currently only for 16-bit audio and multichannel up to 6 channels, 88.2 kHz.</p>
+<p>The software also supports <em>hybrid</em> or <em>universal</em> DVD-Audio/Video disc structures, which contain both DVD-Audio and DVD-Video zones.</p>
+<p>A navigation feature makes it possible to start playing a video title from within audio zone or an audio title from within video zone.</p>
+<p>Inctructions for use are given in the following files:</p>
+<ul>
+<li>man page: <strong>dvda-author-(version).1</strong><br />
+</li>
+<li>html page: <strong>dvda-author-(version).html</strong><br />
+</li>
+<li><strong>EXAMPLES</strong><br />
+</li>
+<li><strong>TROUBLESHOOT</strong> (user-mentioned issues)<br />
+</li>
+<li><strong>HOWTO.conf</strong> (for configuration files)<br />
+</li>
+<li><strong>dvda-author.conf.example</strong></li>
+</ul>
+<p>See website for further details.</p>
+<h3 id="website">2.2. Website</h3>
+<p>The latest version of the software is available on the <a href="https://dvd-audio.sourceforge.io">DVD-Audio tools website</a></p>
+<h3 id="build-environment">2.3. Build environment</h3>
+<p>A GNU-style make system is shipped with this package.</p>
+<p>Details on building issues are given in <strong>INSTALL</strong>.</p>
+<h3 id="files">2.4. Files</h3>
+<p>Source code directories are notably:</p>
+<ul>
+<li><p><strong>src</strong>: main source code files</p></li>
+<li><p><strong>libutils</strong>: Source code for the libc_utils static library</p></li>
+<li><p><strong>libats2wav</strong>: Source code for ats2wav, a DVD-Audio titleset extracter that converts .AOB files into .wav audio files.</p></li>
+<li><p><strong>libfixwav</strong>: Source code for a special library that checks and fixes .wav file headers</p></li>
+<li><p><strong>libiberty</strong>: GNU libc code for function replacement(alternative to -liberty). Mainly for aging building systems. Will probably be deprecated in the near future.</p></li>
+<li><p><strong>m4, m4.extra, m4.extra.dvdauthor</strong> M4 macros, especially:</p>
+<ul>
+<li><strong>dvda.m4</strong>: general-purpose macros that could be reused in other projects.<br />
+</li>
+<li><strong>auxiliary.m4</strong>: shorter general-purpose macros.<br />
+</li>
+<li><strong>dependencies.m4</strong>: dvda-author-specific parameters submitted to other M4 macros (using lists).<br />
+</li>
+<li>Other third-party macros may be copied here as some platforms may not include them and they are used by nested configure scripts.</li>
+</ul></li>
+</ul>
+<p>Builds are provided in directory <strong>local.xyz</strong> for various platforms.</p>
+<p>Important DATA-type files are:</p>
+<ul>
+<li><strong>dvda-author(version).1</strong>: Man(1) page<br />
+</li>
+<li><strong>dvda-author(verion).html</strong>: HTML version of the man page<br />
+</li>
+<li><strong>dvda-author.desktop</strong>: KDE/gnome desktop configuration file<br />
+</li>
+<li><strong>dvda-author.conf</strong>: configuration file (default command-line options)<br />
+</li>
+<li><strong>dvda-author.png or .ico</strong> images for desktop.<br />
+</li>
+<li><strong>dvda-author.nsi</strong>: NSIS script for generating Windows installer.<br />
+</li>
+<li><strong>BUGS</strong><br />
+</li>
+<li><strong>LIMITATIONS</strong><br />
+</li>
+<li><strong>HOWTO.conf</strong>: Help file on how to generate a configuration file and use it<br />
+</li>
+<li><strong>dvda-author.conf.example</strong>: Example of a complex configuration file project<br />
+</li>
+<li><strong>commandline.txt</strong>: Complex command line examples</li>
+</ul>
+<h3 id="installation">2.5. Installation</h3>
+<p>This application performs limited patching of other open source utilities used for creating audio and video menus (<code>dvdauthor</code>), analyzing audio content (<code>sox</code>) or creating a special ISO dic image (<code>mkisofs</code>). The patch against <code>mkisofs</code> was integrated into recent code by its author and maintainer (J. Schilling). A Cygwin patch has been added to <code>help2man</code>.</p>
+<p>The special patches used in this process are automatically downloaded and applied by the autotools configure script.</p>
+<p>If you do not use the GNU build system, check that the configuration file <strong>dvda-author.conf</strong> is in the same directory as the main executable (see <strong>INSTALL</strong> for other options).</p>
+<h3 id="credits">2.6. Credits</h3>
+<p>The core application for stereo audio authoring was created by David Champan in 2005.<br />
+It was extented to multichannel (with T&amp;L Feldkamp’s help), by Fabrice Nicol between 2008 and 2020. Menu-authoring capabilities were added by Fabrice Nicol in 2010.<br />
+A complete redesign of DVD-Audio extraction to PCM, initially written by D. Chapman (ats2wav, archived) was performed in 2019 by Fabrice Nicol.<br />
+Authoring of DVD-Audio with MLP tracks, with experimental encoding/decoding of PCM files to/from MLP was added in 2020.</p>
+<p>Thanks to:</p>
+<p>Bahman Negahban for useful hints on FLAC 1.2.1 integration<br />
+Tomasz Belinea for testing version 08.07.<br />
+Lee Feldkamp for testing Windows executables and adding experimental audio options (-j,-s)<br />
+Lee and Tim Feldkamp for authoring experimental multichannel support in 2008 (corrected and redesigned by F. Nicol in 2018-2020).<br />
+Jörg Schilling for adding the <code>-dvd-audio/-dvd-hybrid</code> feature patch to <strong>cdrtools</strong><br />
+and all other authors (see file <strong>AUTHORS</strong> for details).</p>
+<h3 id="news">2.7. News</h3>
+<p>See file <strong>NEWS</strong></p>
+<h3 id="bugs">2.8. Bugs</h3>
+<p>See file <strong>BUGS</strong></p>
+<h3 id="mailing-list">2.9. Mailing list</h3>
+<p><strong>dvd-audio-devel@lists.sourceforge.net</strong></p>

@@ -20,9 +20,9 @@ CAT=/bin/cat
 SHELL=/bin/sh
 SHELLFLAGS=-ec
 
-include /home/fab/dvda-author/mk/FLAC.global.mk
-include /home/fab/dvda-author/mk/sox.global.mk
-include /home/fab/dvda-author/mk/libogg.global.mk
+include /cygdrive/c/Users/fabrn/dvda-author/mk/FLAC.global.mk
+include /cygdrive/c/Users/fabrn/dvda-author/mk/sox.global.mk
+include /cygdrive/c/Users/fabrn/dvda-author/mk/libogg.global.mk
 
 DEBUG_FLAGS ?= 
 
@@ -33,10 +33,10 @@ ifeq "$(DEBUG_FLAGS)" ""
    LDFLAGS += -s
 endif
 
-CPPFLAGS :=-I/home/fab/dvda-author/libutils/src/include -I/home/fab/dvda-author/src/include
+CPPFLAGS :=-I/cygdrive/c/Users/fabrn/dvda-author/libutils/src/include -I/cygdrive/c/Users/fabrn/dvda-author/src/include
 # for config.h
-CPPFLAGS += -I/home/fab/dvda-author
-LDLIBS := -lm /home/fab/dvda-author/libutils/src/libc_utils.a /home/fab/dvda-author/libfixwav/src/libfixwav.a
+CPPFLAGS += -I/cygdrive/c/Users/fabrn/dvda-author
+LDLIBS := -lm /cygdrive/c/Users/fabrn/dvda-author/libutils/src/libc_utils.a /cygdrive/c/Users/fabrn/dvda-author/libfixwav/src/libfixwav.a
 
 OBJECTS=amg2.o ats.o atsi2.o audio.o auxiliary.o dvda-author.o  \
 	     file_input_parsing.o samg2.o launch_manager.o command_line_parsing.o  \
@@ -52,15 +52,15 @@ else
     CPPFLAGS += -DWITHOUT_sox
 endif
 
-CPPFLAGS +=-I/home/fab/dvda-author/libfixwav/src/include
+CPPFLAGS +=-I/cygdrive/c/Users/fabrn/dvda-author/libfixwav/src/include
 
 ifneq "libiberty/src" ""
-     LDLIBS+=/home/fab/dvda-author/libiberty/src/libiberty.a
-     CPPFLAGS +=-I/home/fab/dvda-author/libiberty/src/include
+     LDLIBS+=/cygdrive/c/Users/fabrn/dvda-author/libiberty/src/libiberty.a
+     CPPFLAGS +=-I/cygdrive/c/Users/fabrn/dvda-author/libiberty/src/include
 endif
 
 ifeq "$(sox_BUILD)" "yes"
-     LDLIBS  += SOX_LIB_DEPS -pthread -ldl
+     LDLIBS  +=    -lid3tag -lz     -lwinmm   -lao     -lwavpack    -lvorbisenc -lvorbisfile -lvorbis  -logg  -lpng -lz -pthread -ldl
 endif
 
 STATIC_LIBS=FLAC libogg sox
@@ -69,8 +69,8 @@ STATIC_LIBS=FLAC libogg sox
 
 all:    dvda-author
 	@mv -f dvda-author $(PROGRAM)
-	echo [dvda-author] >> /home/fab/dvda-author/depconf/BUILD.TRACE
-	echo "     Build successful." >> /home/fab/dvda-author/depconf/BUILD.TRACE
+	echo [dvda-author] >> /cygdrive/c/Users/fabrn/dvda-author/depconf/BUILD.TRACE
+	echo "     Build successful." >> /cygdrive/c/Users/fabrn/dvda-author/depconf/BUILD.TRACE
 	echo Built with : $(CC)
 	echo -----------------------------------------------
 	echo Finished building $(PROGRAM)
@@ -81,21 +81,21 @@ all:    dvda-author
 	echo
 
 
-CPPFLAGS += $(foreach prog,$(STATIC_LIBS),$(if $(MAYBE_$(prog)),-I/home/fab/dvda-author/$(MAYBE_$(prog))/src))
+CPPFLAGS += $(foreach prog,$(STATIC_LIBS),$(if $(MAYBE_$(prog)),-I/cygdrive/c/Users/fabrn/dvda-author/$(MAYBE_$(prog))/src))
 CPPFLAGS += $(foreach prog,$(STATIC_LIBS),$$(if test "$($(prog)_LIB)" = "" -a "$($(prog)_LINK)" = ""; then echo -DWITHOUT_$(prog); fi))
-CPPFLAGS += -I/home/fab/dvda-author/local/include
+CPPFLAGS += -I/cygdrive/c/Users/fabrn/dvda-author/local/include
 
-$(OBJECTS): %.o: /home/fab/dvda-author/src/%.c
+$(OBJECTS): %.o: /cygdrive/c/Users/fabrn/dvda-author/src/%.c
 	$(CC)  -c -DHAVE_CONFIG_H $(CFLAGS) $(CPPFLAGS)  $< -o $@
 
 LDLIBS_append += $(foreach prog,$(STATIC_LIBS),$($(prog)_LIB) $($(prog)_LINK)) 
 
 LDLIBS += $(LDLIBS_append) \
-	  /home/fab/dvda-author/local/lib/libswresample.a \
-	  /home/fab/dvda-author/local/lib/libavformat.a \
-	  /home/fab/dvda-author/local/lib/libavfilter.a \
-	  /home/fab/dvda-author/local/lib/libavcodec.a \
-	  /home/fab/dvda-author/local/lib/libavutil.a 
+	  /cygdrive/c/Users/fabrn/dvda-author/local/lib/libswresample.a \
+	  /cygdrive/c/Users/fabrn/dvda-author/local/lib/libavformat.a \
+	  /cygdrive/c/Users/fabrn/dvda-author/local/lib/libavfilter.a \
+	  /cygdrive/c/Users/fabrn/dvda-author/local/lib/libavcodec.a \
+	  /cygdrive/c/Users/fabrn/dvda-author/local/lib/libavutil.a -lwinmm -lbcrypt
 
 dvda-author: $(OBJECTS) $(LDLIBS_append)
 
@@ -105,5 +105,5 @@ install: $(PROGRAM)
 clean:
 	$(RM) $(wildcard *.o) dvda-author-dev dvda-author
 
-# Symbol SOX_LIB_DEPS will be replaced by sox dependencies after configure in libsox by target do_sox_lib_deps_subst
+# Symbol    -lid3tag -lz     -lwinmm   -lao     -lwavpack    -lvorbisenc -lvorbisfile -lvorbis  -logg  -lpng -lz will be replaced by sox dependencies after configure in libsox by target do_sox_lib_deps_subst
 # left-align if conditions

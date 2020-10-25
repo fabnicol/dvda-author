@@ -161,9 +161,9 @@ foreach my $delegate (@tested_delegates) {
 }
 
 # defaults for LIBS & INC & CCFLAGS params that we later pass to Writemakefile
-my $INC_magick = '-I../../ -I../..   -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16  -I"' . $Config{'usrinc'} . '/ImageMagick"';
+my $INC_magick = '-I../../ -I../..  -I/cygdrive/c/Users/fabrn/dvda-author/local/include -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16  -I"' . $Config{'usrinc'} . '/ImageMagick"';
 my $LIBS_magick = '-L../../MagickCore/.libs -lMagickCore-7.Q16HDRI -lperl -lm';
-my $CCFLAGS_magick = "$Config{'ccflags'} -I/usr/include/libxml2     -I/usr/include/libpng15    -I/usr/include/pango-1.0 -I/usr/include/cairo -I/usr/include/harfbuzz -I/usr/include/freetype2 -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/fribidi -I/usr/include/libpng15 -I/usr/include/uuid -I/usr/include/pixman-1 -I/usr/include/libdrm   -pthread -I/usr/include/OpenEXR -I/usr/include/libdrm     -I/usr/include/openjpeg-2.3     -I/usr/include/freetype2 -I/usr/include/libpng15   -I/usr/include/uuid -I/usr/include/freetype2 -I/usr/include/libpng15   -pthread        -fopenmp -g -O2 -Wall -mtune=generic -fexceptions -pthread -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16";
+my $CCFLAGS_magick = "$Config{'ccflags'} -I/usr/include/libpng16   -I/usr/include/graphviz  -I/usr/include/freetype2 -I/usr/include/libpng16  -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/uuid    -fopenmp -g -O2 -g -O2 -std=c99 -Wall -mtune=haswell -fexceptions -pthread -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16";
 my $LDFLAGS_magick   = "-L../../MagickCore/.libs -lMagickCore-7.Q16HDRI $Config{'ldflags'}  ";
 my $LDDLFLAGS_magick = "-L../../MagickCore/.libs -lMagickCore-7.Q16HDRI $Config{'lddlflags'}  ";
 
@@ -203,16 +203,16 @@ WriteMakefile
    'INC'	=> $INC_magick,
 
    # C compiler
-   #'CC' => 'gcc -std=gnu99 -std=gnu99',
+   #'CC' => 'gcc',
 
    # C pre-processor flags (e.g. -I & -D options)
-   # 'CPPFLAGS' => "$Config{'cppflags'}   -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16 ",
+   # 'CPPFLAGS' => "$Config{'cppflags'}  -I/cygdrive/c/Users/fabrn/dvda-author/local/include -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16 ",
 
    # C compiler flags (e.g. -O -g)
    'CCFLAGS' => $CCFLAGS_magick,
 
    # Linker
-   #'LD' => $Config{'ld'} == $Config{'cc'} ? 'gcc -std=gnu99 -std=gnu99' : $Config{'ld'},
+   #'LD' => $Config{'ld'} == $Config{'cc'} ? 'gcc' : $Config{'ld'},
 
    # Linker flags for building an executable
    'LDFLAGS' =>  $LDFLAGS_magick,
@@ -221,7 +221,7 @@ WriteMakefile
    'LDDLFLAGS' => $LDDLFLAGS_magick,
 
    # Install PerlMagick binary into ImageMagick bin directory
-   'INSTALLBIN'	=> '/usr/bin',
+   'INSTALLBIN'	=> '/cygdrive/c/Users/fabrn/dvda-author/local/bin',
 
    # Library specification
    'LIBS' => [ $LIBS_magick ],
@@ -233,14 +233,14 @@ WriteMakefile
    # 'OPTIMIZE'	=> '',
 
    # Use same compiler as ImageMagick
-   'PERLMAINCC'	=> ' -fopenmp',
+   'PERLMAINCC'	=> 'g++ -fopenmp',
    'PM' => { 'Q16HDRI.pm' => '$(INST_LIBDIR)/Q16HDRI.pm' },
    'XS' => { 'Q16HDRI.xs' => 'Q16HDRI.xs' },
    'AR' => 'ar',
-   'LD' => '',
+   'LD' => 'g++',
 
    # Set Perl installation prefix to ImageMagick installation prefix
-#   'PREFIX'	=> '/usr',
+#   'PREFIX'	=> '/cygdrive/c/Users/fabrn/dvda-author/local',
 
    # Include delegate directories in tests
    test	=> { TESTS	=>	$delegate_tests},
@@ -265,6 +265,6 @@ sub MY::makeaperl {
      # tries to insert our library path first. Also, use the same compiler used
      # to build perlmain.c to link so that a C++ compiler may be used if
      # necessary.
-     $inherited =~ s:MAP_LINKCMD\s.*\s*\$\(CC\):MAP_LINKCMD   = \$(PERLMAINCC) -L/usr/lib: ;
+     $inherited =~ s:MAP_LINKCMD\s.*\s*\$\(CC\):MAP_LINKCMD   = \$(PERLMAINCC) -L/cygdrive/c/Users/fabrn/dvda-author/local/lib: ;
      $inherited;
  }

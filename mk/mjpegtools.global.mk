@@ -3,7 +3,7 @@ mjpegtools_LINK=
 MAYBE_mjpegtools=mjpegtools-2.1.0
 HAVE_mjpegtools=@HAVE_mjpegtools@
 HAVE_EXTERNAL_mjpegtools=@HAVE_EXTERNAL_mjpegtools@
-CONFIGURE_mjpegtools_FLAGS=--without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime   --disable-shared --enable-static-build --enable-static  --disable-fast-install  --prefix=/home/fab/dvda-author/local  CXXFLAGS=-fPIC  CFLAGS=-fPIC 
+CONFIGURE_mjpegtools_FLAGS=--without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime   --disable-shared --enable-static-build --enable-static  --disable-fast-install  --prefix=/cygdrive/c/Users/fabrn/dvda-author/local  CXXFLAGS=-fPIC  CFLAGS=-fPIC 
 mjpegtools_BUILD=yes
 WITH_mjpegtools=@WITH_mjpegtools@
-mjpegtools_DEPENDENCY=Makefile /home/fab/dvda-author/mjpegtools-2.1.0
+mjpegtools_DEPENDENCY=Makefile /cygdrive/c/Users/fabrn/dvda-author/mjpegtools-2.1.0

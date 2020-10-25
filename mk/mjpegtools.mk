@@ -1,9 +1,9 @@
-include /home/fab/dvda-author/mk/mjpegtools.global.mk
+include /cygdrive/c/Users/fabrn/dvda-author/mk/mjpegtools.global.mk
 
 mjpegtools_MAKESPEC=auto
 mjpegtools_CONFIGSPEC=exe
-mjpegtools_TESTBINARY=mplex
+mjpegtools_TESTBINARY=mplex.exe
 
-/home/fab/dvda-author/depconf/mjpegtools.depconf: $(mjpegtools_DEPENDENCY)
+/cygdrive/c/Users/fabrn/dvda-author/depconf/mjpegtools.depconf: $(mjpegtools_DEPENDENCY)
 	$(call depconf,mjpegtools)  
 	 

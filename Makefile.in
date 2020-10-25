@@ -58,7 +58,7 @@ ALL_TARGETS += $(ALL_TARGETS_EXTERNAL) $(BUILD_SUBDIRS)
 
 .PHONY: all    libutils
 
-all:  $(ALL_TARGETS) $(PROGRAM).1 $(PROGRAM).html
+all:  $(ALL_TARGETS) manpage htmlpage pdfpage
 
 include @ROOTDIR@/mk/functions.mk
 include $(PROGRAM_TARGET_MAKEFILES)
@@ -105,10 +105,10 @@ manpage: $(PROGRAM).1
 
 htmlpage: $(PROGRAM).html
 
-pdf: $(PROGRAM).html
+pdfpage: $(PROGRAM).html
 		[ -f "@WKHTMLTOPDF@" ] && @WKHTMLTOPDF@ $(PROGRAM).html $(PROGRAM).pdf
 
-$(PROGRAM).1:
+manpage:
 	@if test "@HAVE_help2man@" = "yes"; then
 	  if test -f @BUILDDIR@/src/$(PROGRAM); then
 		@HELP2MAN@ -s 1 -N -o $(PROGRAM).1 @BUILDDIR@/src/$(PROGRAM)
@@ -123,7 +123,7 @@ $(PROGRAM).1:
 	$(call docfollow,  $@)
 
 
-$(PROGRAM).html: $(PROGRAM).1
+htmlpage: manpage
 	@if test "@HAVE_man2html@" = "yes"; then
 		@MAN2HTML@ < $(PROGRAM).1 > $@
 		$(call docfollow, $@)
@@ -194,7 +194,7 @@ clean: clean-local
 	$(RM) @BUILDDIR@/src/$(PROGRAM)
 
 clean-local:
-	$(RM) $(PROGRAM).1 $(PROGRAM).html .dvda-author
+	$(RM) $(PROGRAM).1 $(PROGRAM).html $(PROGRAM).pdf .dvda-author
 	[ -d @BUILDDIR@/depconf ] && $(RM) $(wildcard @BUILDDIR@/depconf/*.depconf)
 
 distclean: clean

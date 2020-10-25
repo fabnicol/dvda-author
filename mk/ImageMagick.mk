@@ -1,8 +1,8 @@
-include /home/fab/dvda-author/mk/ImageMagick.global.mk
+include /cygdrive/c/Users/fabrn/dvda-author/mk/ImageMagick.global.mk
 
 ImageMagick_MAKESPEC=auto
 ImageMagick_CONFIGSPEC=exe
-ImageMagick_TESTBINARY=magick
+ImageMagick_TESTBINARY=magick.exe
 
-/home/fab/dvda-author/depconf/ImageMagick.depconf: $(ImageMagick_DEPENDENCY)
+/cygdrive/c/Users/fabrn/dvda-author/depconf/ImageMagick.depconf: $(ImageMagick_DEPENDENCY)
 	$(call depconf,ImageMagick)
