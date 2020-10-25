@@ -1,0 +1,15 @@
+prefix=/Users/fab/dvda-author/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/ImageMagick-7
+includearchdir=/Users/fab/dvda-author/local/include/ImageMagick-7
+libname=MagickWand-7.Q16HDRI
+ 
+Name: MagickWand
+Description: MagickWand - C API for ImageMagick (ABI Q16HDRI)
+URL: https://github.com/ImageMagick
+Version: 7.0.8
+Requires: MagickCore
+Cflags: -I${includearchdir} -I${includedir} -fopenmp -DMAGICKCORE_HDRI_ENABLE=1 -DMAGICKCORE_QUANTUM_DEPTH=16
+Libs: -L${libdir} -l${libname}
+Libs.private: -L${libdir} -l${libname}   -L/usr/local/Cellar/little-cms2/2.9/lib -llcms2  -L/usr/local/opt/freetype/lib -lfreetype  -ljpeg   -L/usr/local/Cellar/libpng/1.6.37/lib -lpng16 -lz      -L/usr/local/Cellar/fontconfig/2.13.1/lib -L/usr/local/opt/freetype/lib -lfontconfig -lfreetype  -L/usr/local/Cellar/webp/1.0.3/lib -lwebpmux -lwebp -L/usr/local/Cellar/webp/1.0.3/lib -lwebp        -lbz2  -L/usr/local/Cellar/openjpeg/2.3.1/lib -lopenjp2      -lz     -lm     -lgomp -lm

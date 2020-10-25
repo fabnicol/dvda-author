@@ -1,0 +1,10 @@
+Directory local.osx is here to shorten build times.
+To only build the core application, use ./mcore.sh
+after configuring (see INSTALL) instead of `make'.
+To rebuild the whole toolchain, use ./m.sh instead
+of `make'.
+When using the included local.osx directory:
+- rename it into local/ (archive the linux local is necessary)
+- change PATH to point to local/bin and DYLD_LIBRARY_PATH 
+  to point to local/lib
+

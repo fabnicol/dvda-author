@@ -1,0 +1,48 @@
+IMMEDIATE
+
+Fix all the BUGS (see BUGS) of course!
+
+TASKS OUTSTANDING
+
+Documentation.
+
+	- Maybe an FAQ to complement Bernhard's HOWTO 
+	all those standard questions about MPEG, VCD, SVCD
+	all those standard questions about busted audio drivers
+
+Code hygiene  basically: GNU guidelines!
+Basically if you want a nice example of how it should be done take
+a look at the source code for vcdimager!
+
+- A lot of the code is in fairly poor shape layout and stylistically.
+	Minimally, some needs running through a C prettifier and having
+	stuff like "unsigned char" replaced with appropriate types from
+	stdint.h via utils/mjpeg_types.h.
+
+- Need to test and build scripts for in-line multiplexing.
+
+- The filtering / decimation code in the lav* utilities is now redundant
+  with yuvscale in place... it should be removed once we're happy with
+  yuvscale.
+
+Major
+
+-	Continuation of frozen encoding sessions.
+
+- 	Try switching to the somewhat faster transposed fDCT from libavcodec.
+
+-	"Back-up and try again" and/or "two pass" bit-allocation / quantisation 
+	control on a frame by frame basis.   
+
+Maybe sometime
+
+- Find a proper SSE fDCT and iDCT.
+
+- Test support for field pictures to mplex. Not urgent since for most
+  sources frame pictures with field DCT/motion compensation seems to
+  give better results.
+
+- Improve the appearance of dark scenes.  At the present time dark scenes
+  are very prone to splotchy or grey blockiness.  Locally reduce quantisation 
+  and, if necessary, switch to a different matrix if the dark is long enough.
+  The dark scenes don't use many bits anyway so its not too greedy..

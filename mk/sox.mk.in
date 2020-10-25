@@ -1,0 +1,34 @@
+include @BUILDDIR@/mk/sox.global.mk
+
+sox_MAKESPEC=manual
+ifeq "@HAVE_autoconf@" "yes"
+ifeq "@HAVE_automake@" "yes"
+ifeq "@HAVE_libtoolize@" "yes"
+
+@BUILDDIR@/depconf/sox.depconf: $(sox_DEPENDENCY)
+	@if test  "$(MAYBE_sox)" != ""; then
+		if test -d "@ROOTDIR@/$(MAYBE_sox)" ; then
+			cp "@ROOTDIR@/sox-libs" "@ROOTDIR@/$(MAYBE_sox)/sox-libs.in"
+			else
+			echo "@ROOTDIR@/$(MAYBE_sox) is not a directory"
+			exit -1
+		fi
+	fi
+	$(call configure_lib_package,sox,"/usr/bin/autoreconf",-if,CFLAGS=)
+else
+@BUILDDIR@/depconf/sox.depconf: 
+	echo "Please install libtoolize"
+	exit -1
+
+endif
+else
+@BUILDDIR@/depconf/sox.depconf:
+	echo "Please install automake"
+	exit -1
+
+endif
+else
+@BUILDDIR@/depconf/sox.depconf:
+	echo "Please install autoconf"
+	exit -1
+endif

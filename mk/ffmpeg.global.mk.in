@@ -1,0 +1,9 @@
+ffmpeg_LIB=@ffmpeg_LIB@
+ffmpeg_LINK=@ffmpeg_LINK@
+MAYBE_ffmpeg=@MAYBE_ffmpeg@
+HAVE_ffmpeg=@HAVE_ffmpeg@
+HAVE_EXTERNAL_ffmpeg=@HAVE_EXTERNAL_ffmpeg@
+CONFIGURE_ffmpeg_FLAGS=@CONFIGURE_ffmpeg_FLAGS@
+ffmpeg_BUILD=@ffmpeg_BUILD@
+WITH_ffmpeg=@WITH_ffmpeg@
+ffmpeg_DEPENDENCY=Makefile @ROOTDIR@/@MAYBE_ffmpeg@

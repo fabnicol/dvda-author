@@ -1,0 +1,50 @@
+## dvda-author configuration file version 09.10
+
+# Important syntactic changes wrt priori versions
+# Use command line switches between brackets: [switch]
+# You may skip any number of blank characters and lines excep when indicated
+# You may comment with character #
+
+# I/O parameters
+## audio input directory
+
+#[logrefresh]
+#      /home/fab/log
+
+[g]
+       /home/fab/audionew/a.wav
+       /home/fab/audionew/a.wav
+
+[g]
+       /home/fab/audionew/a.wav
+
+[output]
+       /home/fab/DVD
+[nmenus]
+ 2
+[soundtracks]
+  /home/fab/audionew/a.wav,/home/fab/audionew/a.wav,/home/fab/audionew/a.wav:/home/fab/audionew/a.wav
+
+[topmenu-slides]
+  /home/fab/C.jpg,/home/fab/B.jpg,/home/fab/C.jpg:/home/fab/B.jpg
+
+[norm]
+  pal
+
+[veryverbose]
+
+[tempdir]
+  /home/fab/tempdir3
+
+[duration]
+  0:3:51
+
+[datadir]
+ /home/fab/Dev/dvda-author-10.06
+
+# [bindir]
+# /usr/bin
+
+[cdrecord]
+
+## end of config file

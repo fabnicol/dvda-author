@@ -1,0 +1,8 @@
+include @BUILDDIR@/mk/ImageMagick.global.mk
+
+ImageMagick_MAKESPEC=auto
+ImageMagick_CONFIGSPEC=exe
+ImageMagick_TESTBINARY=magick@EXEEXTENSION@
+
+@BUILDDIR@/depconf/ImageMagick.depconf: $(ImageMagick_DEPENDENCY)
+	$(call depconf,ImageMagick)

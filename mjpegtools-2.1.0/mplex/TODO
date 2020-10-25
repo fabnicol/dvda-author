@@ -1,0 +1,48 @@
+TODO
+
+-Fix the bug with excessibe run-in in AC3 with small packets (no buffering time limit) validate using stereo-96-1min-1st-five.tar.gz
+
+
+- Replace the stream-specific ReadPacketPayload stuff with
+  proper AUMuxed StreamHeaderSize based stuff
+
+- Replace the current peak rate estimation with one based on
+monitoring SCR and position in original stream every so-and-so many
+muxed out frames...
+
+- Support for muxing subtitles...
+
+
+- Reduce use of muxinto.<global> by encapsulating run-out info...
+
+- Complete encapsulation by utilising stream interface rather than
+  direct access to C-style file I/O 
+
+- Need to add general facility for enforcing max STD buffer delay for audio
+  and for warning if constraints for particular formats are exceeded.
+
+- Add checking for changed sequence parameters in mid-sequence
+	sequence headers.
+
+- Currently the VCD HR Stills muxing stuff assumes *all* HR stills
+  are the same size which is given in the initial vbv_buffer_size...
+  This will work with mpeg2enc (which does this) but will fail fail fail
+  with other streams.
+
+- Rebuild initial delay / sequence splitting DTS adjustment stuff so
+  different streams can have different starting delays based on
+  *stream* parameters.  I.e. delay should be delegated to the elementary
+  streams with only a sector_prefix offset set centrally.
+
+- Tidy code so Elementary streams handle their mux parameter initialisation
+	from cmd-line parameters *not* the output stream.
+
+
+Eventually:
+
+- Multi-channel SVCD (MPEG audio extension) support. N.b. multi-track
+  two-channel audio already works.
+
+- DVD muxing and generation of info to help authoring tools produce .IFO's etc.
+
+

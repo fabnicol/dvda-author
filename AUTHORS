@@ -1,0 +1,19 @@
+Original 2005 source code by Dave Chapman
+-----------------------------------------
+
+This sofwtare is under copyright by Dave Chapman and Fabrice Nicol for versions 08-06, and later.
+
+Versions 08-12 and later are under copyright by Dave Chapman, Fabrice Nicol, Lee Feldkamp and Tim Feldkamp.
+
+See file COPYING for license.
+See https://dvd-audio.sourceforge.io for project history and status.
+
+Acknowledgments
+---------------
+
+Several users have contributed patches or insightful remarks/tests, which are hereby ackowledged:
+
+2009  Kai-Uwe Behrmann  libsox build patch
+2009  Norbert Tognino   -i qsort patch 
+2008  Tomasz Belina     testing and debugging 08.12
+2007  Kai-Uwe Behrmann  file size patch

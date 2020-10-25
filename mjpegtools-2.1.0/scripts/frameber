@@ -1,0 +1,63 @@
+#! /bin/sh
+#
+# frameber berechnet die Frames einer editliste.
+# Im Falle mehrerer editlists wird filename-substitution
+# verwendet.
+# Zudem wird die Gesamtlänge bei einer SVCD-Komprimierung
+# mit 2500 Kbit/s in MB ausgegeben.
+# Damit lässt sich die Länge einer Video-CD besser vor
+# der Komprimierung abschätzen.
+# Die Schätzung der MB wurde an Hand der Längenangaben von
+# vcdimager gemacht.
+#
+direct="/video" #!!!!!!!!
+#
+cd $direct
+#
+# Das muss geändert werden, wenn es kein Verzeichnis dieses Namens gibt
+#
+# CHANGE if you don't have a directory named /video"
+#
+if [ -z "$1" ]
+then
+echo -e "\nWelche Liste berechnen? \c"
+# English: echo -e "\nProcess which editlist? \c"
+read teil
+else
+teil="$1"
+fi
+rm $direct/total
+cat ${teil}* 2>/dev/null | grep -v LAV | grep -v PAL | grep -v NTSC | grep -v video | cut -d" " -s -f2,3 >$direct/total
+#
+#
+tot=0 ;
+if [ -s $direct/total ]
+  then
+  cat total 2>/dev/null |  while read a b
+ do
+ tot=$(expr $tot + $(expr $b - $a))
+ echo $tot >erg
+ done
+else
+echo -e "\nKeine Liste zur Bearbeitung gefunden\n"
+#English echo -e "\nNo editlist to calculate\n"
+exit 0
+fi
+tot=$(cat erg)
+totM=`expr $tot \* 13980` # Experimental value: That long will be a frame
+                          # after compression (including CD-Headers)
+                          # Again: PAL - based values.
+                          # Your mileage my vary if you use NTSC or SECAM
+                          #
+
+totM=$( expr $totM \/ 1048576 ) # convert Bytes to Mega
+#
+# This is were it's important whether you use PAL or NTSC or SECAM.
+#
+Sek=$( expr $tot \/ 25 + 1 )
+Min=$( expr $Sek \/ 60 + 1)
+echo -e "\n61870 Frames passen auf die 700MB-CD, 825 MB, 2475 Sekunden\n"
+echo -e "$tot Frames sind bei 2500 Kbit/s ca. $totM MB  $Sek Sek  ->  $Min Min\n"
+# English: echo -e "61870 Frames will fill a 700MB-CD   825 MB  2475 sec  \n"
+# English: echo -e "$tot Frames at 2500 Kbit/s about $totM MB  $Sek sec  ->  $Min min"
+

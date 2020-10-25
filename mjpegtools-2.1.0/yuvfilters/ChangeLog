@@ -1,0 +1,109 @@
+2001-08-29  Kawamata/Hitoshi  <kwmt@din.or.jp>
+
+	* README.2-3pulldown: added.
+
+2001-08-28  Kawamata/Hitoshi  <kwmt@din.or.jp>
+
+	* timecode.c, timecode.h: moved to ../utils/mpegtimecode.[ch].
+	* yuvkineco.c: use mpegtimecode.h.
+	* all: add copyright(GPL) comment, use config.h, use mjpeg_logging.h.
+
+2001-08-02  Kawamata/Hitoshi  <kwmt@din.or.jp>
+
+	* yuvycsnoise: chroma noise detection case increased.
+
+2001-07-31  Kawamata/Hitoshi  <kwmt@din.or.jp>
+
+	* yuvycsnoise: reduce noise detection miss.
+	  Chroma noise reduction added.
+	  New luma noise reduction method 'triframe' added.
+	  Methods called 'interfield', 'intrafield' are
+	  now called 'biframe', 'infield'.
+	  Some options changed.
+	  Options(new/changed):
+	    -m tbi: Select method (default: tbic).
+	       t: 'triframe' method.
+	       b: 'biframe'  method (replace old option '-x').
+	       i: 'infield'  method (replace old option '-i').
+	       c: chroma noise reduction.
+	    -S min:
+	    -T errt,maxt:
+	    -B errb,maxb:
+	    -I erri,maxi:
+	    -C errc,maxc:
+	       error and max difference of each method.
+
+2001-07-29  Kawamata/Hitoshi  <kwmt@din.or.jp>
+
+	* timecode.c: Name of environment variable fixed.
+	  To use drop frame timecode, set MJPEG_DROP_FRAME_TIME_CODE=1.
+
+2001-07-28  Kawamata/Hitoshi  <kwmt@din.or.jp>
+
+	* yuvkineco: Always drop frame#0 fixed.
+	  Now frame#0 will always output.
+	* yuvycsnoise: Abort at last frame fixed.
+
+2001-07-27  Kawamata/Hitoshi  <kwmt@din.or.jp>
+
+	* yuvycsnoise: Almost rewrote.
+	  Options:
+	    -t: test (unchanged).
+	    -i: disable 'intrafield' method.
+	    -x: disable 'interfield' method.
+	    -S min,maxi,maxx: threshold of luma difference is noise or not.
+	       min:  minimum (unchagend).
+	       maxi: maximum in 'intrafiled' method.
+	       maxx: maximum in 'interfiled' method.
+	* yuvkineco: Bug when -N CycleList and InputFPSCODE < 4 fixed.
+
+2001-07-24  Kawamata/Hitoshi  <kwmt@din.or.jp>
+
+	* addtask.c: Wrong parent after initialize task fixed.
+	* putframe.c: remove cast which need not.
+
+2001-07-23  Kawamata/Hitoshi  <kwmt@din.or.jp>
+
+	* addtask.c: Wrong parent of initializing task fixed.
+	* timecode.h: Added. Separated from yuvfilters.h.
+	* all: Names of types and functions changed and clarified.
+	  files renamed:
+	    addfilter.c -> addtask.c
+	    allochandle.c -> alloctask.c
+
+2001-07-22  Kawamata/Hitoshi  <kwmt@din.or.jp>
+
+	* allochandle.c: Added.
+	* all filters: replace malloc()/free() with allochandle()/freehandle().
+	* main.c: Now chained filter can be used.
+	* addfilter.c: Added.
+	* yuvycsnoise.c: Added.
+	* yuvkineco.c: New option -S to insert filter yuvycsnoise.
+	* yuvtemplate.c: Added.
+
+2001-07-20  Kawamata/Hitoshi  <kwmt@din.or.jp>
+
+	* main.c: Pass argv[0] to filter.
+	  (OLD: pass argv+1 to filter as argv)
+	* all filters: Skip argv[0]
+	* timecode.c: Added.
+	  mpeg_timecode() supports NTSC drop frame timecode.
+	  To use drop frame timecode, set environment variable:
+	    MJPEG_DROP_FRAME_TIME_CODE=1
+	* yuvctrlbytty: Use mpeg_timecode().
+	* yuvkineco: Use mpeg_timecode().
+	* yuvkineco: Add cycle list read / write.
+	  Command line arguments completely changed.
+	* TODO: Added.
+
+2001-07-17  Kawamata/Hitoshi  <kwmt@din.or.jp>
+
+	* GNUmakefile: Deleted.
+	* Makefile.am: Added.
+	  Automake only do about install and dist.
+	  Building binaries almost done by GNU make.
+
+2001-07-12  Kawamata/Hitoshi  <kwmt@din.or.jp>
+
+	* yuvkineco: Fix U,V merge when interlaced.
+

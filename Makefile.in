@@ -1,0 +1,237 @@
+# file: Makefile.in Copyright Fabrice Nicol 2013
+# do not use automake
+# Caution: you need GNU make, version 3.82 and higher, preferably 3.99+
+
+# Do not use bash. It would cause subtle issues with libtool in the flac
+# package, probably a libtool bug.
+
+PROGRAM=@PACKAGE_NAME@-@PACKAGE_VERSION@
+export PROGRAM
+INSTALL=$(SHELL) @ROOTDIR@/config/install-sh
+INSTALL_DATA=$(SHELL) @ROOTDIR@/config/install-sh  -m 644
+export INSTALL
+export INSTALL_DATA
+MKDIR_P=mkdir$(EXEEXT) -p
+
+SHELL=/bin/sh
+
+.SHELLFLAGS=-ec
+
+#Using ONESHELL, version make 3.82+, possibly higher with windows ports
+.ONESHELL:
+
+CFLAGS ?= @CFLAGS@
+export CFLAGS
+CPPFLAGS = @DEFS@
+
+PROGRAM_TARGETS := @PROGRAM_TARGETS@ 
+PROGRAM_TARGET_MAKEFILES := $(foreach prog,$(PROGRAM_TARGETS), \
+$(shell if test -f @ROOTDIR@/mk/$(prog).mk; then \
+echo @ROOTDIR@/mk/$(prog).mk; fi))
+PROGRAM_TARGET_CONFIGS := $(foreach prog,$(PROGRAM_TARGETS), \
+$(shell if test  -f @ROOTDIR@/mk/$(prog).mk ; then echo $(prog).config; fi))
+PROGRAM_TARGET_DEPCONFS := $(PROGRAM_TARGET_CONFIGS:.config=.depconf)
+
+ifneq "@WITH_libiberty@" "no"
+  ifneq "@MAYBE_libiberty@" ""
+    BUILD_SUBDIRS += @BUILDDIR@/@MAYBE_libiberty@
+  endif
+else
+  CPPFLAGS += -DWITHOUT_libiberty
+endif
+
+BUILD_SUBDIRS += @BUILDDIR@/libfixwav/src
+
+BUILD_SUBDIRS += @BUILDDIR@/src
+
+.SUFFIXES: .config .depconf
+
+ALL_TARGETS_EXTERNAL=erase_build.trace
+
+ALL_TARGETS_EXTERNAL += $(PROGRAM_TARGET_CONFIGS)
+
+ifeq "@sox_BUILD@" "yes"
+ ALL_TARGETS_EXTERNAL += do_sox_lib_deps_subst
+endif
+
+ALL_TARGETS += $(ALL_TARGETS_EXTERNAL) $(BUILD_SUBDIRS)
+
+.PHONY: all    libutils
+
+all:  $(ALL_TARGETS) $(PROGRAM).1 $(PROGRAM).html
+
+include @ROOTDIR@/mk/functions.mk
+include $(PROGRAM_TARGET_MAKEFILES)
+
+help2man.config: @BUILDDIR@/depconf/help2man.depconf
+man2html.config: @BUILDDIR@/depconf/man2html.depconf
+
+export CPPFLAGS
+export PARALLEL
+
+libutils:
+	$(MAKE) --directory=@BUILDDIR@/libutils/src
+
+$(BUILD_SUBDIRS): $(ALL_TARGETS_EXTERNAL) libutils
+	@echo Running make in directory $@...
+	$(MAKE) $(PARALLEL) --directory=$@
+
+$(PROGRAM_TARGET_CONFIGS): %.config: @BUILDDIR@/depconf/%.depconf
+	@echo
+	echo Finished building $*...
+
+erase_build.trace:
+	@echo PROGRAM_TARGETS=$(PROGRAM_TARGETS)
+	if test -f @BUILDDIR@/depconf/BUILD.TRACE; then
+	  mv @BUILDDIR@/depconf/BUILD.TRACE @BUILDDIR@/depconf/BUILD.TRACE~
+	fi
+
+# directly patching the Makefile appears to be more efficient. You need a
+# GNU-compliant make.
+
+#this must be lazy-evaluation otherwise will not work
+pkgconfig_style_libs=$(if $(MAYBE_sox),$(shell cat						\
+@BUILDDIR@/$(MAYBE_sox)/sox-libs | @SED@ -e "s/^.*\.a//g ; s/@.*@//g;	\
+s,\/,\\\/,g"))
+
+do_sox_lib_deps_subst: @BUILDDIR@/src/Makefile  @BUILDDIR@/$(MAYBE_sox)/sox-libs
+	@echo Processing dependencies for sox...
+	@SED@ -i -e 's/SOX_LIB_DEPS/$(pkgconfig_style_libs)/g' \
+@BUILDDIR@/src/Makefile
+	echo "[sox] done sox library substitution with libs: $(pkgconfig_style_libs)"\
+>> @BUILDDIR@/depconf/BUILD.TRACE
+
+manpage: $(PROGRAM).1
+
+htmlpage: $(PROGRAM).html
+
+pdf: $(PROGRAM).html
+		[ - f "@WKHTMLTOPDF@" ] && @WKHTMLTOPDF@ $(PROGRAM).html $(PROGRAM).pdf
+
+$(PROGRAM).1:
+	@if test "@HAVE_help2man@" = "yes"; then
+	  if test -f @BUILDDIR@/src/$(PROGRAM); then
+		@HELP2MAN@ -s 1 -N -o $(PROGRAM).1 @BUILDDIR@/src/$(PROGRAM)
+	  fi
+	else
+	  if test -f src/$(PROGRAM) && test -d "@MAYBE_help2man@" \
+&& test -f "@MAYBE_help2man@"/help2man; then
+		"@BUILDDIR@/@MAYBE_help2man@"/help2man -s 1 -N \
+-o $(PROGRAM).1 @BUILDDIR@/src/$(PROGRAM)
+	  fi
+	fi
+	$(call docfollow,  $@)
+
+
+$(PROGRAM).html: $(PROGRAM).1
+	@if test "@HAVE_man2html@" = "yes"; then
+		@MAN2HTML@ < $(PROGRAM).1 > $@
+		$(call docfollow, $@)
+	else
+	  if test -f "@BUILDDIR@/local/bin/man2html" ; then
+		"@BUILDDIR@/local/bin/man2html" < $(PROGRAM).1 > $@
+		$(call docfollow, $@)
+	  fi
+	fi
+
+.PHONY: DISFORMATS $(FORMATS) \
+	install-data-local install clean clean-local distclean infodir
+
+infodir:
+	$(MKDIR_P)  $(DESTDIR)@infodir@/$(PROGRAM)
+
+
+#normally is ${prefix}/share/applications/dvda-author-${VERSION}
+sysconfdir=@SHORTLINKDIR@
+
+# distributed under $sysconfdir, normally
+
+dist_sysconf_DATA=@BUILDDIR@/dvda-author.desktop @ROOTDIR@/dvda-author.conf
+
+# distributed under $menudir=$sysconfdir/menu
+# normally $prefix/share/pixmaps/dvda-author
+# distributed under $pixdir
+
+dist_pic_DATA= @ROOTDIR@/dvda-author_48x48.png @ROOTDIR@/dvda-author_64x64.png
+# distributed under $docdir, normally $prefix/doc/dvda-author
+
+dist_doc_DATA=@ROOTDIR@/README  @ROOTDIR@/BUGS @BUILDDIR@/EXAMPLES \
+@ROOTDIR@/LIMITATIONS @ROOTDIR@/BUILD.Ubuntu @BUILDDIR@/COREBUILD \
+  @ROOTDIR@/DEPENDENCIES @ROOTDIR@/HOWTO.conf @ROOTDIR@/dvda-author.conf.example
+
+# GNU build system regeneration script and others
+
+install-sys: $(dist_sysconf_DATA)
+	$(MKDIR_P) $(DESTDIR)$(sysconfdir)
+	$(INSTALL_DATA) $^ $(DESTDIR)$(sysconfdir)
+
+install-pic:  $(wildcard @ROOTDIR@/menu/*)
+	$(MKDIR_P) $(DESTDIR)@MENUDIR@
+	$(INSTALL_DATA) $^ $(DESTDIR)@MENUDIR@
+
+install-man:
+	@ [ -f $(PROGRAM).1 ] && $(INSTALL_DATA) $(PROGRAM).1 @mandir@/man1
+
+install-data-local:  $(dist_doc_DATA) $(dist_pic_DATA)
+	$(MKDIR_P)  $(DESTDIR)@infodir@/$(PROGRAM)
+	$(INSTALL_DATA) $^ $(DESTDIR)@infodir@/$(PROGRAM)
+	@ [ -f $(PROGRAM).html ] && $(INSTALL_DATA) \
+                           		$(PROGRAM).html \
+					$(DESTDIR)@infodir@/$(PROGRAM)
+
+# redefining install is necessary to rename nested package directories for later
+# builds with --enable-all-builds, which request lib* labelling
+
+install-strip: install
+
+install:  @BUILDDIR@/src/$(PROGRAM) install-data-local install-pic install-sys \
+install-man
+	$(MKDIR_P) $(DESTDIR)@bindir@
+	@$(foreach dir,src $(subdirs), $(MAKE) --directory=$(dir) install)
+
+clean: clean-local
+	$(call clean_directory,@BUILDDIR@/libutils/src $(BUILD_SUBDIRS))
+	$(RM) @BUILDDIR@/src/$(PROGRAM)
+
+clean-local:
+	$(RM) $(PROGRAM).1 $(PROGRAM).html
+	[ -d @BUILDDIR@/depconf ] && $(RM) $(wildcard @BUILDDIR@/depconf/*.depconf)
+
+distclean: clean
+	$(RM) -rf $(wildcard @ROOTDIR@/autom4te*)
+	$(RM) -rf config.*
+	$(RM) Makefile src/Makefile libfixwav/src/Makefile libutils/src/Makefile \
+libiberty/src/Makefile
+
+maintainer-clean: distclean
+	$(RM) configure  sox-libs *.tar.xz *-patch-*
+	$(RM) -rf config/  depconf/
+	$(foreach prog, @PROGRAM_TARGETS@, $(shell $(RM) -rf $(MAYBE_$(prog)))) 
+
+FORMATS=xz gz bz2 zip
+DISTFORMATS=$(FORMATS:%=dist-%)
+
+$(FORMATS): ;
+
+#master by default, can be overridden on commandline e.g. make dist-xz
+#BRANCH=win32
+
+$(DISTFORMATS):dist-%: %
+	@if test "@HAVE_git@" = "yes"; then
+		BRANCH=master
+		CURRRENTBRANCH=`@GIT@ status -bs -u no -z | sed -e 's/[# ]*//g'`
+		if test "$(BRANCH)" != "$(CURRENTBRANCH)"; then
+		  @GIT@ checkout $(BRANCH)
+		fi
+		@GIT@ archive --prefix=$(PROGRAM)/  -o $(PROGRAM).tar HEAD $(BRANCH)
+		tar cJvf $(PROGRAM).tar.xz $(PROGRAM).tar && rm -f $(PROGRAM).tar
+		if test "$(BRANCH)" != "$(CURRENTBRANCH)"; then
+		  @GIT@ checkout $(CURRENTBRANCH)
+		fi
+	else
+		echo Please install git to make a distribution package.
+	fi
+
+dist: dist-xz
+
+force: ;

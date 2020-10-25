@@ -1,0 +1,213 @@
+Source: mjpegtools
+Section: graphics
+Priority: extra
+Maintainer: KAWAMATA Hitoshi <hitoshi.kawamata@nifty.com>
+Build-Depends: debhelper (>= 4), libpopt-dev,
+ libdv-dev, libquicktime-dev, libjpeg62-dev,
+ libsdl1.2-dev, libgtk2.0-dev, libfreetype6-dev, libxrender-dev | xlibs-dev
+Standards-Version: 3.5.2
+
+Package: libmjpegtools-@LT_RELEASE@
+Section: libs
+Architecture: any
+Replaces: libmjpegtools0
+Conflicts: libmjpegtools0, libmjpegtools-i6860
+Depends: ${shlibs:Depends}
+Description: MJPEG video capture/editting/playback runtime libraries
+ This package contains shared libraries for mjpeg programs.
+ .
+ The mjpeg programs are a set of tools that can do recording of videos
+ and playback, simple cut-and-paste editing and the MPEG compression of
+ audio and video under Linux.  This package combines them with
+ important supporting libraries required for their use.
+ .
+ The "lavrec" utility supplied supports capture from
+ Zoran based MJPEG capture/playback cards like the Buz
+ (Iomega), DC10 (MIRO, Pinnacle) and the LML33 (Linux Media Labs).
+ Compatible MJPEG avi files can also be created using any frame-grabbing
+ card supported by the xawtv tool.
+ .
+ Videos recorded in this can be filtered, editted, and converted to
+ MPEG streams. The MPEG encoder is optimised for high quality results
+ at medium to high bit-rates (1Mbps upwards) and supports MMX/SSE/3D-Now
+ and SMP.  A Duron 700 can deliver around 15-20 352x288 frames per second.
+ .
+ A key design objective of the tools is interoperability with other
+ video tools: currently xawtv, bcast2000, nuppelvideo and vcdimager
+ are known to interoperate. The MJPEG utilities can read AVI, Quicktime,
+ and movtar streams. The MPEG encoder can produce streams
+ suitable for buring to VCD/SVCD using vcdimager or similar tools.
+ The software playback of MPEG streams works with almost
+ every player and every OS. SSE/MMX and 3D-Now!  are supported permitting
+ a 700Mhz CPU to deliver arond 15-20 VCD frames/second.
+
+Package: libmjpegtools-dev
+Section: libdevel
+Architecture: any
+Depends: libmjpegtools-@LT_RELEASE@ (= ${Source-Version})
+Description: MJPEG video capture/editting/playback development files
+ This package contains header files and static libraries for programs
+ using mjpeg runtime libraries.
+ .
+ The mjpeg programs are a set of tools that can do recording of videos
+ and playback, simple cut-and-paste editing and the MPEG compression of
+ audio and video under Linux.  This package combines them with
+ important supporting libraries required for their use.
+ .
+ The "lavrec" utility supplied supports capture from
+ Zoran based MJPEG capture/playback cards like the Buz
+ (Iomega), DC10 (MIRO, Pinnacle) and the LML33 (Linux Media Labs).
+ Compatible MJPEG avi files can also be created using any frame-grabbing
+ card supported by the xawtv tool.
+ .
+ Videos recorded in this can be filtered, editted, and converted to
+ MPEG streams. The MPEG encoder is optimised for high quality results
+ at medium to high bit-rates (1Mbps upwards) and supports MMX/SSE/3D-Now
+ and SMP.  A Duron 700 can deliver around 15-20 352x288 frames per second.
+ .
+ A key design objective of the tools is interoperability with other
+ video tools: currently xawtv, bcast2000, nuppelvideo and vcdimager
+ are known to interoperate. The MJPEG utilities can read AVI, Quicktime,
+ and movtar streams. The MPEG encoder can produce streams
+ suitable for buring to VCD/SVCD using vcdimager or similar tools.
+ The software playback of MPEG streams works with almost
+ every player and every OS. SSE/MMX and 3D-Now!  are supported permitting
+ a 700Mhz CPU to deliver arond 15-20 VCD frames/second.
+
+Package: mjpegtools
+Section: graphics
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: MJPEG video capture/editting/playback MPEG encoding
+ The mjpeg programs are a set of tools that can do recording of videos
+ and playback, simple cut-and-paste editing and the MPEG compression of
+ audio and video under Linux.  This package combines them with
+ important supporting libraries required for their use.
+ .
+ The "lavrec" utility supplied supports capture from
+ Zoran based MJPEG capture/playback cards like the Buz
+ (Iomega), DC10 (MIRO, Pinnacle) and the LML33 (Linux Media Labs).
+ Compatible MJPEG avi files can also be created using any frame-grabbing
+ card supported by the xawtv tool.
+ .
+ Videos recorded in this can be filtered, editted, and converted to
+ MPEG streams. The MPEG encoder is optimised for high quality results
+ at medium to high bit-rates (1Mbps upwards) and supports MMX/SSE/3D-Now
+ and SMP.  A Duron 700 can deliver around 15-20 352x288 frames per second.
+ .
+ A key design objective of the tools is interoperability with other
+ video tools: currently xawtv, bcast2000, nuppelvideo and vcdimager
+ are known to interoperate. The MJPEG utilities can read AVI, Quicktime,
+ and movtar streams. The MPEG encoder can produce streams
+ suitable for buring to VCD/SVCD using vcdimager or similar tools.
+ The software playback of MPEG streams works with almost
+ every player and every OS. SSE/MMX and 3D-Now!  are supported permitting
+ a 700Mhz CPU to deliver arond 15-20 VCD frames/second.
+
+Package: libmjpegtools-i686-@LT_RELEASE@
+Section: libs
+Architecture: any
+Replaces: libmjpegtools-@LT_RELEASE@, libmjpegtools-i6860, libmjpegtools0
+Provides: libmjpegtools-@LT_RELEASE@
+Conflicts: libmjpegtools-@LT_RELEASE@, libmjpegtools-i6860, libmjpegtools0
+Depends: ${shlibs:Depends}
+Description: MJPEG video capture/editting/playback runtime libraries (i686)
+ This package contains shared libraries for mjpeg programs.
+ You CANNOT use this with CPU other than i686 or later.
+ .
+ The mjpeg programs are a set of tools that can do recording of videos
+ and playback, simple cut-and-paste editing and the MPEG compression of
+ audio and video under Linux.  This package combines them with
+ important supporting libraries required for their use.
+ .
+ The "lavrec" utility supplied supports capture from
+ Zoran based MJPEG capture/playback cards like the Buz
+ (Iomega), DC10 (MIRO, Pinnacle) and the LML33 (Linux Media Labs).
+ Compatible MJPEG avi files can also be created using any frame-grabbing
+ card supported by the xawtv tool.
+ .
+ Videos recorded in this can be filtered, editted, and converted to
+ MPEG streams. The MPEG encoder is optimised for high quality results
+ at medium to high bit-rates (1Mbps upwards) and supports MMX/SSE/3D-Now
+ and SMP.  A Duron 700 can deliver around 15-20 352x288 frames per second.
+ .
+ A key design objective of the tools is interoperability with other
+ video tools: currently xawtv, bcast2000, nuppelvideo and vcdimager
+ are known to interoperate. The MJPEG utilities can read AVI, Quicktime,
+ and movtar streams. The MPEG encoder can produce streams
+ suitable for buring to VCD/SVCD using vcdimager or similar tools.
+ The software playback of MPEG streams works with almost
+ every player and every OS. SSE/MMX and 3D-Now!  are supported permitting
+ a 700Mhz CPU to deliver arond 15-20 VCD frames/second.
+
+Package: libmjpegtools-i686-dev
+Section: libdevel
+Architecture: any
+Replaces: ibmjpegtools-dev
+Provides: ibmjpegtools-dev
+Conflicts: ibmjpegtools-dev
+Depends: libmjpegtools-i686-@LT_RELEASE@ (= ${Source-Version})
+Description: MJPEG video capture/editting/playback development files (i686)
+ This package contains header files and static libraries for programs
+ using mjpeg runtime libraries.
+ You CANNOT use this with CPU other than i686 or later.
+ .
+ The mjpeg programs are a set of tools that can do recording of videos
+ and playback, simple cut-and-paste editing and the MPEG compression of
+ audio and video under Linux.  This package combines them with
+ important supporting libraries required for their use.
+ .
+ The "lavrec" utility supplied supports capture from
+ Zoran based MJPEG capture/playback cards like the Buz
+ (Iomega), DC10 (MIRO, Pinnacle) and the LML33 (Linux Media Labs).
+ Compatible MJPEG avi files can also be created using any frame-grabbing
+ card supported by the xawtv tool.
+ .
+ Videos recorded in this can be filtered, editted, and converted to
+ MPEG streams. The MPEG encoder is optimised for high quality results
+ at medium to high bit-rates (1Mbps upwards) and supports MMX/SSE/3D-Now
+ and SMP.  A Duron 700 can deliver around 15-20 352x288 frames per second.
+ .
+ A key design objective of the tools is interoperability with other
+ video tools: currently xawtv, bcast2000, nuppelvideo and vcdimager
+ are known to interoperate. The MJPEG utilities can read AVI, Quicktime,
+ and movtar streams. The MPEG encoder can produce streams
+ suitable for buring to VCD/SVCD using vcdimager or similar tools.
+ The software playback of MPEG streams works with almost
+ every player and every OS. SSE/MMX and 3D-Now!  are supported permitting
+ a 700Mhz CPU to deliver arond 15-20 VCD frames/second.
+
+Package: mjpegtools-i686
+Section: graphics
+Architecture: any
+Replaces: mjpegtools
+Provides: mjpegtools
+Conflicts: mjpegtools
+Depends: ${shlibs:Depends}
+Description: MJPEG video capture/editting/playback MPEG encoding (i686)
+ You CANNOT use this with CPU other than i686 or later.
+ .
+ The mjpeg programs are a set of tools that can do recording of videos
+ and playback, simple cut-and-paste editing and the MPEG compression of
+ audio and video under Linux.  This package combines them with
+ important supporting libraries required for their use.
+ .
+ The "lavrec" utility supplied supports capture from
+ Zoran based MJPEG capture/playback cards like the Buz
+ (Iomega), DC10 (MIRO, Pinnacle) and the LML33 (Linux Media Labs).
+ Compatible MJPEG avi files can also be created using any frame-grabbing
+ card supported by the xawtv tool.
+ .
+ Videos recorded in this can be filtered, editted, and converted to
+ MPEG streams. The MPEG encoder is optimised for high quality results
+ at medium to high bit-rates (1Mbps upwards) and supports MMX/SSE/3D-Now
+ and SMP.  A Duron 700 can deliver around 15-20 352x288 frames per second.
+ .
+ A key design objective of the tools is interoperability with other
+ video tools: currently xawtv, bcast2000, nuppelvideo and vcdimager
+ are known to interoperate. The MJPEG utilities can read AVI, Quicktime,
+ and movtar streams. The MPEG encoder can produce streams
+ suitable for buring to VCD/SVCD using vcdimager or similar tools.
+ The software playback of MPEG streams works with almost
+ every player and every OS. SSE/MMX and 3D-Now!  are supported permitting
+ a 700Mhz CPU to deliver arond 15-20 VCD frames/second.

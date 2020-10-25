@@ -1,0 +1,14 @@
+prefix=/home/fab/dvda-author/local
+exec_prefix=${prefix}
+libdir=/home/fab/dvda-author/local/lib
+includedir=/home/fab/dvda-author/local/include
+
+Name: libavfilter
+Description: FFmpeg audio/video filtering library
+Version: 7.57.100
+Requires: libswresample >= 3.5.100, libavutil >= 56.31.100
+Requires.private: 
+Conflicts:
+Libs: -L${libdir}  -lavfilter -pthread -lm
+Libs.private: 
+Cflags: -I${includedir}

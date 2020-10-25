@@ -1,0 +1,50 @@
+Ubuntu 10.04 builds
+===================
+
+Starting from a basic live CDROM install of (K)ubuntu-10.04, the following packages
+should be added using apt-get install:
+
+for basic build (--enable-core-build):
+
+gcc
+g++
+binutils-dev
+
+to enable source code dependency building:
+
+curl
+patch
+autoconf
+libtool
+
+to enable sox build add:
+
+libavformat52
+libavformat-dev
+libsndfile1-dev
+
+optionally, to speed up building avoiding source code dependency building, add:
+
+libogg-dev libflac-dev libsox-dev
+
+to enable dvdauthor (patched) build, add:
+
+zlib1g-dev (for libz-dev)
+libpng-dev
+libxml2-dev
+flex
+bison
+
+to enable lplex build, add:
+
+libflac++-dev
+libdvdread-dev
+
+
+To build documentation and repack a distribution tarball using make dist, add:
+
+help2man
+
+however do not use package man2html, which is broken.
+Use rather ./configure --enable-man2html-download --enable-man2html-build to build
+man2html as an auxiliary tool.

@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<project>
+ <system>
+  <switch label="startsector">
+    <value></value>
+  </switch>
+  <switch label="sox">
+    <value>1</value>
+  </switch>
+  <switch label="log">
+    <value>0</value>
+  </switch>
+  <switch label="runMkisofs">
+    <value>1</value>
+  </switch>
+  <switch label="mkisofsPath">
+    <value>/home/fab/dvd.iso</value>
+  </switch>
+  <switch label="burnDisc">
+    <value>1</value>
+  </switch>
+  <switch label="dvdwriterPath">
+    <value>10,0,0</value>
+  </switch>
+  <switch label="debug">
+    <value>0</value>
+  </switch>
+ </system>
+ <data>
+  <switch label="videodir">
+    <value></value>
+  </switch>
+  <switch label="videoTitleRank">
+    <value>0</value>
+  </switch>
+  <switch label="sourceDir">
+    <value></value>
+  </switch>
+  <switch label="group 1">
+    <file>/home/fab/Dev/dvda-author/Docs/a2_16_44.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a2_16_48.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a2_16_88.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a2_16_96.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a2_16_176.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a2_16_192.wav</file>
+  </switch>
+  <switch label="group 2">
+    <file>/home/fab/Dev/dvda-author/Docs/a2_24_44.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a2_24_48.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a2_24_88.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a2_24_96.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a2_24_176.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a2_24_192.wav</file>
+  </switch>
+  <switch label="group 3">
+    <file>/home/fab/Dev/dvda-author/Docs/a3_16_44.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a3_16_48.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a3_16_88.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a3_16_96.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a3_24_44.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a3_24_48.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a3_24_88.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a3_24_96.wav</file>
+  </switch>
+  <switch label="group 4">
+    <file>/home/fab/Dev/dvda-author/Docs/a4_16_44.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a4_16_48.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a4_16_88.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a4_16_96.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a4_24_44.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a4_24_48.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a4_24_88.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a4_24_96.wav</file>
+  </switch>
+  <switch label="group 5">
+    <file>/home/fab/Dev/dvda-author/Docs/a5_16_44.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a5_16_48.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a5_16_88.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a5_16_96.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a5_24_48.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a5_24_44.wav</file>
+  </switch>
+  <switch label="group 6">
+    <file>/home/fab/Dev/dvda-author/Docs/a6_16_44.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a6_16_48.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a6_16_88.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a6_16_96.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a6_24_44.wav</file>
+    <file>/home/fab/Dev/dvda-author/Docs/a6_24_48.wav</file>
+  </switch>
+  <switch label="parent->recentFiles[0]">
+    <value>/home/fab/Téléchargements/gnu-linux/dvda-author3.dvp</value>
+  </switch>
+  <switch label="targetDir">
+    <value>/home/fab/output</value>
+  </switch>
+ </data>
+</project>

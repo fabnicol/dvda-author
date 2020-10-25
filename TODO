@@ -1,0 +1,27 @@
+
+FIX BUGS:
+
+Possibly qfact extended headers not supported for 2/24 by players, however ffplay and ffprobe react this way too.
+
+Short term
+----------
+
+lplex:
+fix 24-bit issue
+
+check relative paths for -x -o
+add sanity check if -o . ! (avoid cur dir erasure...)
+
+Long term
+---------
+
+-add options for swift reencoding of VOBS (video import)
+-possibly make blank screen subvobs in the event of no pics in some slideshow tracks.
+-add multi-vid
+
+link groups
+-add automatic import of mono or stereo wavs for multichannel authoring.
+
+
+
+

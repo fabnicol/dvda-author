@@ -1,0 +1,58 @@
+What is 2-3 pulldown?
+
+Frame rate of FILM is 24fps.
+PAL video is 25fps.
+When we play FILM thru PAL video, 25fps.
+So motion is quicker and playing time is shorter 96% (24/25).
+
+NTSC video is 30fps (to be exact, 30/1.001fps).
+If we play FILM thru NTSC video as PAL
+(1 frame on FILM is 1 frame on video),
+motion will be quicker and playing time be shorter 80% (24/30).
+It is too quick so it will not seem natural motion,
+when we play FILM thru NTSC video, 1 frame on FILM is played
+2 or 3 fields on video, so motion and playing time is same as FILM.
+
+FILM frames  0--.  1--.--.  2--.  3--.--.
+             |  |  |  |  |  |  |  |  |  |
+NTSC fields  0T |  1T |  2T |  3T |  4T |
+                0B    1B    2B    3B    4B
+
+In analog video world, this process is called 2-3 pulldown,
+because NTSC video is repeating of 2 fields from original 1 frame
+and 3 fields from original 1 frame.
+
+
+What is 3:2 pulldown?
+
+FILM is recorded in MPEG2 / DVD video for NTSC at 24fps
+(to be exact, 24/1.001fps).  Some flags are also recorded on each frame.
+DVD video player use top_field_first flag and repeat_first_field flag
+to play 30fps (to be exact, 30/1.001fps) for NTSC monitor.
+
+FILM frames         0     1        2     3
+ top_field_first    1     1        0     0
+ repeat_first_field 0     1        0     1
+ FILM fields        0T    1T----.     2T    3T
+                    |  0B |  1B |  2B |  3B-+--.
+                    |  |  |  |  |  |  |  |  |  |
+NTSC fields         0T |  1T |  2T |  3T |  4T |
+                       0B    1B    2B    3B    4B
+
+This process is called 3:2 pulldown.
+
+
+What is different 2-3 pulldown and 3:2 pulldown?
+
+Results seem same.
+Difference of name is maybe where to start counting:
+2 fields or 3 fields.
+2-3 pulldown is processed before recording and recorded at 30fps.
+3:2 pulldown is processed at playing and recorded at 24fps.
+If we play with progressive (60 frames/seconds) monitor,
+2-3 pulldown video need rather complex process at progressive monitor
+to display beautifully.  This process isn't reliable perfectly.
+When we play DVD 24fps video for 3:2 pulldown with progressive monitor,
+if player and monitor connected with cable which support progressive,
+player may directly generate progressive frames instead of normal
+3:2 pulldown process.  This is simple and reliable perfectly.

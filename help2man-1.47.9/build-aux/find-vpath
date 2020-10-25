@@ -1,0 +1,38 @@
+#!/bin/sh
+
+# Locate file in $VPATH.
+
+if [ $# != 1 ]
+then
+    echo "Usage: find-vpath FILE" >&2
+    exit 2
+fi
+
+file="$1"
+IFS=:
+for dir in ${VPATH:-.}
+do
+    if [ x"$dir" = x ] || [ x"$dir" = x. ]
+    then
+	path=$file
+    else
+	path="$dir/$file"
+    fi
+
+    if [ -f "$path" ]
+    then
+	echo "$path"
+	exit 0
+    fi
+done
+
+# This is typically called from make like:
+#
+#   $(INSTALL_DATA) `build-aux/find-file-vpath something` $(DESTDIR)$(somedir)
+#
+# so we should return something which will result in a useful error
+# message from the install program ("can't find something"), rather
+# than a usage message since it was called with the wrong number of
+# arguments.
+
+echo "$file"

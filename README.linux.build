@@ -1,0 +1,58 @@
+ 
+This package contains:
+
+- all source code, including build of dependencies in directory "external packages"
+- a linux build of all packages with dependencies under local/, with all developer files (headers, extra libs, docs etc.).
+  Dependencies have been patched when needed (dvdauthor, cdrtools)
+- a linux build of dvda-author-dev, using:
+
+ ./configure --enable-all-all; sudo make PARALLEL=-j4 (or without sudo with elevated rights)
+
+
+See file INSTALL for proper installation of dependencies.
+
+Static builds use :
+
+#libsox.a compiled using: ./configure --disable-symlinks --disable-fast-install --without-libltdl  --without-magic --without-png --without-ladspa --without-mad --without-lame --without-twolame
+#libpulse compiles using: --enable-static --disable-shared --disable-webrtc-aec --disable-asyncns
+
+
+LIBS =	  "/usr/lib/libgsm.a"  \
+          "/usr/lib/libMagick++-7.Q16.a"  \
+          "/usr/lib/libMagickCore-7.Q16.a"  \
+          "/usr/lib/libMagickWand-7.Q16.a" \
+          $$SRCDIR"local/lib/liblavfile.a" \
+          $$SRCDIR"local/lib/liblavjpeg.a" \
+          $$SRCDIR"local/lib/libsox.a" \
+            "/usr/lib/libsndfile.a" \
+            "/usr/lib/libvorbisenc.a" \
+            "/usr/lib/libvorbisfile.a"  \
+            "/usr/lib/libvorbis.a" \
+            "/usr/lib/libwavpack.a" \
+            "/usr/lib/libFLAC.a" \
+            "/usr/lib/libogg.a" \
+            "/usr/lib/libopusfile.a" \
+            "/usr/lib/libopus.a" \
+            "/usr/lib/libopusurl.a" \
+            "/usr/lib/libpng.a" \
+            "/usr/lib/libz.a" \
+            "/usr/local/lib/libao.a" \
+            "/usr/lib/libasound.a" \
+            "/usr/lib/libdvdread.a" \
+            "/usr/lib/libjpeg.a" \
+            "/usr/lib/libwebp.a" \
+            "/usr/lib/gcc/x86_64-pc-linux-gnu/9.1.0/libgomp.a" \
+            "/usr/local/lib/libpulse-simple.a" \
+            "/usr/local/lib/libpulse.a" \
+            "/usr/local/lib/pulseaudio/libpulsecommon-12.2.a" \
+            "/usr/lib/libxcb.a" \
+            "/usr/lib/libXdmcp.a" \
+            "/usr/lib/libXau.a" \
+            "/usr/lib/libdbus-1.a" \
+            "/usr/lib/libSDL.a" \
+            "/usr/lib/gcc/x86_64-pc-linux-gnu/9.1.0/libgcc_eh.a" \
+            -static -static-libgcc \
+            "/usr/lib/librt.a" \
+            "/usr/lib/libresolv.a" \
+            -pthread \
+            -ldl

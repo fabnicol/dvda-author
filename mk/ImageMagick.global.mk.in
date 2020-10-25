@@ -1,0 +1,9 @@
+ImageMagick_LIB=@ImageMagick_LIB@
+ImageMagick_LINK=@ImageMagick_LINK@
+MAYBE_ImageMagick=@MAYBE_ImageMagick@
+HAVE_ImageMagick=@HAVE_ImageMagick@
+HAVE_EXTERNAL_ImageMagick=@HAVE_EXTERNAL_ImageMagick@
+CONFIGURE_ImageMagick_FLAGS=@CONFIGURE_ImageMagick_FLAGS@
+imagemagick_BUILD=@imagemagick_BUILD@
+WITH_ImageMagick=@WITH_ImageMagick@
+ImageMagick_DEPENDENCY=Makefile @ROOTDIR@/@MAYBE_ImageMagick@

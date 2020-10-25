@@ -1,0 +1,108 @@
+#!/usr/bin/perl
+
+# Post-process the translated texinfo page to add the correct path for
+# install-info, and to correct the alignment of the main menu.
+
+use strict;
+use warnings;
+use open qw(:std :utf8);  # assume utf8 encoding
+use Text::Wrap;
+
+$Text::Wrap::columns = 72;
+
+*OUT = *STDOUT;
+if (@ARGV and $ARGV[0] =~ /^-o(.*)/)
+{
+    shift;
+    my $out = $1 || shift || die "$0: missing output file\n";
+    open OUT, '>', $out or die "$0: can't open $out ($!)\n";
+}
+
+my %fixed;
+my $encoding = 'none';
+my $lang;
+my $last = '';
+
+$/ = '';  # read paragraphs
+while (<>)
+{
+    if (!$lang and /^This is help2man-(.*)\.info\b/)
+    {
+	$lang = $1;
+	next;
+    }
+
+    if (!$fixed{menu} and $last =~ /^\* Menu:\n*$/)
+    {
+	my @entries;
+	my $width = 0;
+	for (split /\n/)
+	{
+	    if (/^\* (.*)::\s+(.*)/)
+	    {
+		my $w = length $1;
+		push @entries, [$w, $1, $2];
+		# Stash the largest width (within limits) to use when
+		# calculating the indent.
+		$width = $w if $w > $width and $w < 40;
+	    }
+	    else
+	    {
+		# Append to previous entry.
+		s/^\s*//;
+		$entries[-1][-1] .= $_;
+	    }
+	}
+
+	$_ = join "\n", (map {
+	    my ($w, $node, $description) = @$_;
+	    my $prefix = "* ${node}::";
+	    # 6 for leading *, trailing ::, and spaces.
+	    my $indent = ' ' x ($width + 6);
+	    my $first;
+	    if ($w > $width)
+	    {
+		$first = $indent;
+		$prefix .= "\n";
+	    }
+	    else
+	    {
+		$first = sprintf "%-*s", length $indent, $prefix;
+		$prefix = '';
+	    }
+
+	    $prefix . wrap $first, "  $indent", $description;
+	} @entries), "\n";
+
+	$fixed{menu}++;
+	next;
+    }
+
+    if (!$fixed{info_dir} and /^START-INFO-DIR-ENTRY/m and $lang)
+    {
+	my $first = "* help2man-$lang: (help2man-$lang).  ";
+	my $indent = ' ' x ((length $first) + 2);
+	s/^\* help2man: \(help2man\)\.\s*(.*)\nEND-INFO-DIR-ENTRY/
+	    (my $t = $1) =~ s#\s+# #g;  # normalise spaces
+	    (wrap $first, $indent, $t) . "\nEND-INFO-DIR-ENTRY"/mse or next;
+
+	$fixed{info_dir}++;
+	next;
+    }
+
+    if (/^Local Variables:/m and /^coding: (\S+)/m)
+    {
+	$encoding = $1;
+	next;
+    }
+}
+continue
+{
+    $last = $_;
+    print OUT;
+}
+
+warn "$0: didn't find menu to correct\n" unless $fixed{menu};
+warn "$0: didn't find info dir entry to correct\n" unless $fixed{info_dir};
+warn "$0: expected utf-8 encoding, found $encoding\n"
+    unless $encoding eq 'utf-8';

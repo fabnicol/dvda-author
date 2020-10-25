@@ -1,0 +1,14 @@
+
+OBJECTS=getsubopt.o  strchrnul.o  strnlen.o 
+ifneq "@WITH_sox@" "no"
+ OBJECTS+= getopt.o getopt1.o
+endif
+
+CPPFLAGS += -I@ROOTDIR@/@MAYBE_libiberty@/include
+#for config.h
+CPPFLAGS += -I@BUILDDIR@
+
+libiberty.a: libiberty.a($(OBJECTS))
+
+$(OBJECTS):%.o: @ROOTDIR@/@MAYBE_libiberty@/%.c
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@

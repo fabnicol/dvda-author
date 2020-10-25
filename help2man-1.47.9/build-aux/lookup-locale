@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# Return the full locale using the $(srcdir)/locales map.
+
+case $# in
+    1) MAP=locales;;
+    2) MAP="$2";;
+    *) echo "Usage: lookup-locale ABBR [MAP]" >&2; exit 2
+esac
+
+while read abbr locale
+do
+    [ x"$abbr" = "x$1" ] && exec echo "$locale"
+done < "$MAP"
+
+# Punt.
+echo "$1"
+

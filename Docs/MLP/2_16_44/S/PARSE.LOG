@@ -1,0 +1,23 @@
+DVD-Audio Creator
+3.0(05)
+SFF.dll compiled at DATE(Jun 21 2002),TIME(11:25:34) 
+ 
+Starting SFF Read. 
+  Parsing [Z:\home\nicol\Dev\dvda-author\Docs\MLP\SFF.XML]
+   Succeeded Parsing.
+	
+ Reading -PTR in [Z:\home\nicol\Dev\dvda-author\Docs\MLP\SFF.XML] 
+  Parsing [Z:\home\nicol\Dev\dvda-author\Docs\MLP\Album_VAttr.XML]
+   Succeeded Parsing.
+  Parsing [Z:\home\nicol\Dev\dvda-author\Docs\MLP\Group 1_Group.XML]
+   Succeeded Parsing.
+  Succeeded reading -PTR
+ 
+ Reading -PTR in [Z:\home\nicol\Dev\dvda-author\Docs\MLP\Group 1_Group.XML] 
+  Parsing [Z:\home\nicol\Dev\dvda-author\Docs\MLP\Audio Track 1_Track.XML]
+   Succeeded Parsing.
+  Succeeded reading -PTR
+ 
+ Reading -PTR in [Z:\home\nicol\Dev\dvda-author\Docs\MLP\Audio Track 1_Track.XML] 
+  Parsing [Z:\home\nicol\Dev\dvda-author\Docs\MLP\a2_16_44_tr01.XML]
+Invalid tag [TEXT] in [Z:\home\nicol\Dev\dvda-author\Docs\MLP\a2_16_44_tr01.XML].   Succeeded Parsing.

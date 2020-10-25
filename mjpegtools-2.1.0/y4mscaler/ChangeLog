@@ -1,0 +1,256 @@
+2005-12-11  Matto Marjanovic <maddog@mir.com>
+
+	* Makefile, TODO: Update TODO.
+	Set owner/group to root/root within distribution tarballs.
+
+2005-11-28  Matto Marjanovic  <maddog@mir.com>
+
+	* Makefile:
+	o Add arch-specific targets.
+	o Set chmod-bits appropriately when creating dist tarballs.
+	o Bump version to 9.0.
+
+2005-11-27  Matto Marjanovic  <maddog@mir.com>
+
+	* TODO, y4mscaler.1, ysTarget.C, ysTarget.H:
+	Add presets for ATSC's 720p, 1080i, 1080p.
+
+	* graphics.H, ysTarget.C:
+	Use floats for ratio simplification; doubles are overkill.
+
+	* ysTarget.C: Use double FP for scoring when simplifying ratios.
+
+2005-06-04  Matto Marjanovic  <maddog@mir.com>
+
+	* graphics.C, graphics.H:
+	Reimplement ysRatio * and / operations using 64-bit intermediate
+	 values, to try to avoid overflow.
+
+2005-01-24  Matto Marjanovic  <maddog@mir.com>
+
+	* Makefile, TODO, scaler-matto.H, y4mscaler.1:
+	o add sms's PPC CPU opt flags to Makefile.
+	o bump rev to 8.1
+	o make 'cubicK4' the default kernel.
+
+2005-01-17  Matto Marjanovic  <maddog@mir.com>
+
+	* kernels.C: change name of cubicK to cubicK4...
+
+	* TODO: update todo
+
+	* kernels.C, scaler-matto.H:
+	o Actually change default kernel to DEFAULT_KERNEL.
+	o Add "Keys 4th-order Cubic" kernel, as requested by Nicholas Boos.
+	o Add that 'cubicK' kernel to tests; compare against sinc:4
+	  (same support).
+
+2005-01-10  Matto Marjanovic  <maddog@mir.com>
+
+	* Makefile: Change name of binary tarball to include "x86".
+
+2005-01-09  Matto Marjanovic  <maddog@mir.com>
+
+	* TODO, y4mscaler.1, ysSource.C, ysTarget.C:
+	o update manpage with new YUV4MPEG2 functionality.
+	o prettify bg color keyword help output
+
+	* Makefile, TODO, kernels.C, notes.txt, scaler-matto.C, scaler-matto.H, y4mscaler.1, y4mscaler.C:
+	o Changed to MAJOR.MINOR version numbers, instead of MAJOR.MINOR.PATCH.
+	o Made 'sinc:6' the default kernel.
+
+	* y4mscaler.1: Add notes on anomalous interlacing modes.
+
+	* ysTarget.C: better printing of chromass keyword help
+
+	* ysStreamInfo.C: clean up comment - danger has passed.
+
+	* ysScaling.C, ysScaling.H:
+	o error out if fatal anomalous frames are detected.
+	o only process alpha planes if both src and tgt have them.
+
+	* ysSource.C, ysSource.H: o Disallow fake-ilace on mixed-mode streams.
+	o Better chromass help output.
+	o Comment out read_frame_or_fields().
+
+	* graphics.C, graphics.H: Added alpha-channel to ysYCbCr class.
+
+	* y4mscaler.1: Updated manpage; include preset table.
+
+2004-12-19  Matto Marjanovic  <maddog@mir.com>
+
+	* TODO, graphics.C, graphics.H, notes.txt, ysScaling.C, ysScaling.H, ysSource.C, ysSource.H, ysStreamInfo.C, ysStreamInfo.H, ysTarget.C:
+	All kinds of work done a while back to incorporate new YUV4MPEG2 stream
+	 functionality (e.g. alpha channels and mono streams and liby4m support
+	 for chroma/sampling tags).
+
+2004-08-02  Matto Marjanovic  <maddog@mir.com>
+
+	* Makefile, graphics.H, kernels.C, scaler-matto.C, ysScaling.C, ysStreamInfo.H:
+	o Version bumped to 0.7.1 (last commit actually)
+	o Fix some syntax buglets, to allow compiling with gcc-3.4.
+
+	* Makefile, TODO, y4mscaler.1, y4mscaler.C:
+	o Explicitly process '-I' options before '-O' options.
+	o Improve documentation.
+	o Update Makefile to use "pkg-config" instead of "mjpegtools-config".
+
+2004-04-09  Matto Marjanovic  <maddog@mir.com>
+
+	* y4mscaler.C, ysScaling.C, ysStreamInfo.C: Quick hack/update to
+	work with updated YUV4MPEG2 API.  Static build, for
+	ez-distribution sake.  Comment out the experimental stuff
+	(which doesn't ship anyway).
+
+	* Makefile: Upped version to 0.7.0.
+
+2004-03-31  Matto Marjanovic  <maddog@mir.com>
+
+	* scaler-exp.C, scaler-exp.H, scaler-jit.C, scaler-jit.H: Added
+	the failed "just-in-time" engine and the "experimental" engine
+	(which will be useful for experimenting in the future).
+
+	* scaler-matto.C: a non-change --- the commented out "more clever"
+	C code actually is treated much less cleverly by gcc-3.3 --- it's
+	slower!
+
+	* ysSource.C, ysTarget.C: Some fixes so that it compiles with the
+	new YUV4MPEG2 library in MJPEGtools CVS.  (Still no use of
+	extended library functionality yet.)
+
+2004-02-16  Matto Marjanovic  <maddog@mir.com>
+
+	* TODO:
+	Rearrange, so that one can see in which version items were completed...
+
+2004-02-15  Matto Marjanovic  <maddog@mir.com>
+
+	* y4mscaler.C: tiny fix to version number printout.
+
+2003-12-05  Matto Marjanovic  <maddog@mir.com>
+
+	* ysTarget.C (set_prefab_target): Ugh... used wrong SAR in CVD preset.
+
+	* Makefile:  Upped version to 0.6.1.
+
+2003-12-04  Matto Marjanovic  <maddog@mir.com>
+
+	* Makefile: Added "dbg" target to Makefile.  Upped version to 0.6.0.
+
+2003-11-07  Matto Marjanovic  <maddog@mir.com>
+
+	* Tests/create-graphs2.sh, Tests/create-steps2.sh:
+	Replaced sinc4hann, sinc4lan, sinc8lan with sinc:4 and sinc:8 and
+	updated text appropriately.
+
+	* Makefile: Another intra-source dependency in Makefile.
+
+	* kernels.C, kernels.H, scaler-matto.C, scaler-matto.H, scaler.H, ysScaling.C, ysScaling.H:
+	Kernels can now be parameterized (e.g. "sinc:8"). Independent x and y
+	kernels can be specified.  Tells user what scaling-engine (kernel)
+	parameters are being used.
+
+	* y4mscaler.1: Update to reflect changes.
+
+2003-10-19  Matto Marjanovic  <maddog@mir.com>
+
+	* ysSource.H: Norm detection now recognizes NTSC field and film
+	(60000/1001, 24000/1001) and PAL field (50/1) framerates.
+
+	* ysTarget.C: Added "CVD" (Chaoji Video Disk) preset.
+
+2003-05-29  Matto Marjanovic  <maddog@mir.com>
+
+	* y4mscaler.1: Document this new behavior (see next entry).  Document
+	the subsampling X-tags.
+
+	* ysTarget.C, ysSource.C, graphics.H, graphics.C: Allow geometry
+	strings for active and matte regions to specify offset only; the
+	dimensions are then inherited from the framesize.
+
+	* scaler-matto.C (CLIP_PIXEL): Clip values to [1,254] when converting
+	back to uint8_t from signed, fixed-point calculations.  Fixes a bug
+	of noise-induced defects in the output.
+
+2003-02-22  Matto Marjanovic  <maddog@mir.com>
+
+	* ysScaling.C:
+	Error message for "cannot make progressive from interleaved" should
+	suggest using 'ilace=XXX_only' modes.
+
+	* ysSource.H:
+	Warn about chroma-mangling when casting interlaced input to
+	progressive, and vice-versa, when chroma is vertically subsampled.
+
+	* ysSource.C: Inform when fake progressive mode is used.
+
+	* scaler-matto.C: Small fixes to fix-point related code (proper 
+	rounding of negative kernel coeffs when fixing; correct rounding
+	offset for double-fixed ops).  Also changed fprintf's to DBG's.
+
+2003-02-21  Matto Marjanovic  <maddog@mir.com>
+
+	* kernels.C: Cleaned up calcs; removed some cruft.
+
+2003-02-21  Matto Marjanovic  <maddog@mir.com>
+
+	* scaler-matto.C: Small fixes to fix-point related code (proper 
+	rounding of negative kernel coeffs when fixing; correct rounding
+	offset for double-fixed ops).  Also changed fprintf's to DBG's.
+
+2003-02-18  Matto Marjanovic  <maddog@mir.com>
+
+	* ysTarget.C: Add DVD_WIDE, DV, DV_WIDE presets.  Add methods for
+	writing frame and fields.  Actually parse the STILL_IMAGE presets.
+
+	* ysTarget.H: Add DVD_WIDE, DV, DV_WIDE presets.  Add methods for
+	writing frame and fields.  Choose matte bg color depending on
+	DEV branch flag or not.
+
+	* ysSource.C: Add functions to read frames/fields with non-standard
+	non-4:2:0 chroma subsampling modes.
+
+2003-02-17  Matto Marjanovic  <maddog@mir.com>
+
+	* ysScaling.C: Ooops -- take chroma subsampling ratios into account
+	when computing scaling ratios for chroma planes.  Use target methods
+	to write frames/fields instead of straight yuv4mpeg -- handles non-
+	standard chroma SS modes.
+
+2003-01-26  Matto Marjanovic  <maddog@mir.com>
+
+	* ysStreamInfo.H (read_stream_header): Preliminary code to handle
+	a "YSCSS" X-tag in header (for chroma subsampling mode).
+
+	* scaler-matto.C (new_scaler): Default scaler is now "linear",
+	matching the manpage.
+
+	* kernels.C: Added Lanczos-windowed sinc kernels.
+
+2003-01-08  Matto Marjanovic  <maddog@mir.com>
+
+	* general: Now compiling with g++-3.2; this uncovered a couple of 
+	little buglets/discrepencies.
+
+	* Makefile (CXXFLAGS): Added "-W" to get even more warnings.
+
+2002-12-24  Matto Marjanovic  <maddog@mir.com>
+
+	* ysTarget.C (score_ratios): Changed from int to int64_t to try to
+	avoid overflows from big numerators/denominators.
+
+	* general: Added VCD/SVCD still image presets.
+
+	* graphics.C (parse_string): proper rounding in R'G'B'->Y'CbCr conv.
+
+	* kernels.C: add math.h/string.h includes.
+
+	* ysScaling.C (parse_keyword): add (int) casts, because strlen()
+	returns size_t, not necessarily int...
+
+	* y4mscaler.C (parse_args): optind should initialize to 1, not 0.
+
+2002-12-02  Matto Marjanovic  <maddog@mir.com>
+
+	* ChangeLog: created this file.
+

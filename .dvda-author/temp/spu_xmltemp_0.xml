@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<subpictures>
+  <stream>
+    <spu  highlight="/home/fab/dvda-author/.dvda-author/temp/hlpic0.png" force="yes" start="00:00:00.00" select="/home/fab/dvda-author/.dvda-author/temp/slpic0.png" image="/home/fab/dvda-author/.dvda-author/temp/impic0.png">
+       <button x0="33" y0="143" x1="266" name="button01" y1="239"/>
+    </spu>
+  </stream>
+</subpictures>
+

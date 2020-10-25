@@ -1,0 +1,133 @@
+#!/bin/sh
+# berechne
+#
+# Dieses shell-sript berechnet, welche Dateien auf eine CD passen.
+# Es geht von Annahmen aus, die fuer nur fuer mich gelten.
+# Änderungen sind leicht möglich.
+#
+# This shell-script calculates, which files will fit on a CD.
+# it makes some assumptions that might be wrong for your
+# you can easily change it according to your needs.
+#
+#
+direct=/video #!!!!!!!!!!!
+#
+cd $direct
+#
+# 850000000  Platinum CD 700 MB
+#
+# 770917120 = 735 MB
+#
+# Blocks: 336000 blocks - 650 MB
+#         360000 blocks - 700 MB
+#         409600 blocks - 800 MB - kann nicht jeder DVD-Player!!
+# Not every DVD-Player can do 800 MB CDs. Test it at your own risk.
+#
+#
+mach=`basename $0`
+echo -e "A = 650MB-CD   B = 700MB-CD  C = 800MB-CD   A | B | C  (Enter=B) \c"
+read a
+if [ -z "$a" ]
+then
+max=850000000
+else
+	if [ "$a" = "a" ] || [ "$b" = "A" ]
+	then
+	max="760000000"
+	fi
+	if [ "$a" = "b" ] || [ "$a" = "B" ]
+	then
+	max="850000000" # Rechnet bereits mit leichter Überkapazität
+	# assumes the size according to my CD - yours might vary!
+	fi
+	if [ "$a" = "c" ] || [ "$a" = "C" ]
+	then
+	max="963000000"
+	fi
+fi
+zahl="0"
+tun=""
+if [ "$mach" = "berechne" ]
+then
+echo -e "Welche Dateien berechnen? \c"
+# English: echo -e "What files should be calculated? \c"
+else
+echo -e "Welche Dateien mit vcdimager bearbeiten? \c"
+# English: echo -e "What files should vcdimager process?"
+fi
+read a
+echo -e "\n Ab welcher Datei? \c"
+# English: echo -e "\n Starting from? \c"
+read ab
+echo -e "\nWelche Datei-extension?   (2500_xvcd usw.) \c"
+# English: echo -e "\n Which file-extension? (e.g. 2500_xvcd) \c"
+read add
+# Annahme: XVCD muss als SVCD gebrannt werden.
+# dann gilt folgendes:
+#
+# I must burn XVCD like SVCD so the following 8 lines are correct.
+# Otherwise: comment them with hash and uncomment the 8 lines
+# that follow later.
+#
+SV=`echo ${a}*_${add}.mpg | grep _vcd`
+if [ -z "$SV" ]
+then
+form="-t svcd"
+else
+form=""
+fi
+# Ende der Abfrage. End of SVCD=XVCD
+# Die 8 Zeilen muessen kommentiert werden
+# wenn XVCD alv VCD gebrannt werden muss:
+# The following 8 lines should be uncommented, if you
+# have to burn XVCD as VCD.
+# Start:
+# SV=`echo ${a}*_${add}.mpg | grep vcd`
+# if [ -z "$SV" ]
+# then
+# form="-t svcd"
+# else
+# form=""
+# fi
+# End
+# Ende der Änderung XVCD als VCD
+#
+for i in ${a}*_${add}.mpg
+do
+if [ $i \< ${a}${ab}_${add}.mpg ]
+then
+continue
+fi
+z=`du -b $i | cut -f 1`
+old=$zahl
+zahl=`expr $zahl + $z`
+b=`expr $zahl \> $max`
+if [ $b = "1" ]
+then
+if [ "$mach" = "berechne" ]
+then
+echo "Ist jetzt: $old  wäre sonst: $zahl"
+# English: echo "Now: $old would be otherwise: $zahl"
+echo $tun $old
+fi
+if [ "$mach" = "mache" ]
+then
+echo "Länge = $old evtl. $zahl"
+# English: echo "Length = $old otherwise $zahl"
+vcdimager $form $tun
+fi
+exit 0
+else
+echo $i
+tun="$tun $i"
+fi
+done
+if [ "$mach" = "berechne" ]
+then
+echo $tun $old $zahl
+else
+echo "Länge = $old evtl. $zahl"
+# English: echo "Length = $old otherwise $zahl"
+vcdimager $form $tun
+fi
+

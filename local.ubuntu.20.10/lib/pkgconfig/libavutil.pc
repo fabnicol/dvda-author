@@ -1,0 +1,14 @@
+prefix=/home/fab/dvda-author/local
+exec_prefix=${prefix}
+libdir=/home/fab/dvda-author/local/lib
+includedir=/home/fab/dvda-author/local/include
+
+Name: libavutil
+Description: FFmpeg utility library
+Version: 56.31.100
+Requires: 
+Requires.private: 
+Conflicts:
+Libs: -L${libdir}  -lavutil -pthread -lm
+Libs.private: 
+Cflags: -I${includedir}

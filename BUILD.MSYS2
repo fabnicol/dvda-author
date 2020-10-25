@@ -1,0 +1,95 @@
+MSYS2 builds
+============
+
+As of Aug. 2016 the dvda-author and runtime dependencies (dvda-author and friends) entirely 
+builds on MSYS2, as well as some building dependences like libicu.
+
+Unless otherwise indicated, software needs compiling on the MSYS2 console (pink icon), not the Mingw64 one (blue icon).
+
+Some patching is occasionally needed and overall it is necessary, when compiling on the MSYS2 console, to point configure 
+or CPPLFAGS/LDFLAGS to mingw64 paths resulting from builds using the Mingw64 console or pacman x86_64 specific installs.
+
+First of all, set:
+
+export ROOTDIR=$PWD before configuring
+
+Dependencies and building specifics
+===================================
+
+	* a52dec, libFLAC, libogg and libsox: use correct config.sub file. Replacement provided.
+	
+	* lplex: a patched source of lplex-0.3: either use wxWidgets 2.92-2.9.5 or redefine some system paths ;
+       Following patches applied:
+		forward --> _forward
+		standard pathnames hard-encoded (wx-widgets3 issues)
+		A char[]/LWPTR change.
+      Tricky issues related to __CYGWIN__ and __MSYS__ defines. 
+	  The application only builds on the Mingw64 specific console, not MSYS2.
+	  
+	* auxiliary tools: man2html and help2man, the latter with possible issues due to exclusion of codechunks using RTL_NEXT
+			
+	* libmpeg2: undefine libvo symbols (LIBVO_DX, LIBVO_SDL, LIBVO_X11, LIBVO_XV) linked to MS directx proprietary software.
+	  This is done using --enable-direct=no
+	  
+	* dvdauthor: patch for dvda-author specific modifications and also specify :
+	  export FREETYPECONFIG=/c/.../mingw64/bin/freetype-config
+	  export LIBPNG_LIBS=/c/.../mingw64/lib/libpng.dll.a
+	  export LIBPNG_CFLAGS=/c/.../mingw64/lib/libpng.dll.a (les deux exports sont nécessaires)
+	  with freetype and libpng installed
+	  
+	* mjpegtools: first build and install libjpeg62 (alias 6b). Build with LIBS=/usr/lib/libjpeg.a and change of config.sub.
+	  ICU dependency: version 55-1. Only builds on Mingw64 specific console, not MSYS2. Should be built prior to mjpegtools.
+	  
+	* ImageMagick : no issue.
+
+Others: a function perl setup, version 5.1+ on MSYS2 or other (not provided). Must be in PATH.
+		
+Minimal building options
+========================
+
+a52dec, libogg, libsox: None necessary
+
+dvdauthor:
+	At least:  --disable-dvdunauthor --disable-xmltest  CPPFLAGS=-I/c/.../msys2/mingw64/include
+
+man2html, help2man: just a makefile, no configure stage. Usage: make install prefix=...
+
+libFLAC: 
+	export BUILDDIR=/d/dvda-author-dev && ./configure --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg"  --prefix="$BUILDDIR/local" CPPFLAGS="-I$BUILDDIR/local/include" CFLAGS="-U__CYGWIN__ -D__MSYS__" (oddly putting -U/-D in CPPFLAGS as should be does not work. Or use the specific Mingw64 console)
+
+cdrtools: preferably use Jorg Schilling's smake tool.
+	Build using: export CFLAGS=-DNO_ACL && /opt/schily/bin/smake.exe -e
+	
+libmpeg2: --enable-directx=no
+
+lplex: indicate all paths explicitly (to libraries and wx-config)
+
+To use local FLAC libraries:
+
+	export BUILDDIR=/d/dvda-author-dev && ./configure CPPFLAGS=-I"/c/Users/Public/Dev/msys2/mingw64/include" ROOTDIR=$ROOTDIR/lplex-0.3 --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"
+ 
+	Outside the Mingw64 console, add  
+	LDFLAGS="-L/mingw64/lib -ldvdread" --with-wx-config=/mingw64/bin/wx-config. 
+	
+	The application builds yet has a wx-related segfault on launch, due to libtool. 
+	Using libtool howevr avoids symbol issues at link time.
+	
+	A manual way out is to relink without libtool after all objects have been built:
+	
+	cd src && g++ -I../redist -I../../redist -IC:/.../msys2/mingw64/lib/wx/include/msw-unicode-XVERSION.YY -IC:/.../msys2/mingw64/include/wx-XVERSION.YY -D_FILE_OFFSET_BITS=64 -DWXUSINGDLL -D__WXMSW__ -w -Wall -O3 -pipe -o lplex.exe lplex.o dvd.o flac.o layout.o lpcm.o main.o reader.o util.o exec.o video.o writer.o wx.o lgzip.o desktop/lplex.o  -LC:/Users/Public/Dev/msys2/mingw64/lib -lwx_mswu_core-3.0 -lwx_baseu-3.0 -L/mingw64/lib -lFLAC++ -lFLAC -lwsock32 ../redist/md5/libmd5.a -ldvdread
+ 
+mpegtools:  a streamlined build is preferable. 
+
+	export BUILDDIR=/d/dvda-author-dev && ./configure --prefix="$BUILDDIR/local"  --disable-shared  --enable-static --enable-static-build --disable-fast-install --prefix="$BUILDDIR/local" --without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime --disable-simd-accel LIBDIR=/mingw64/lib LDFLAGS=-L/mingw64/lib CPPFLAGS=-I/mingw64/include
+
+	ISSUES:
+	segfault on lplex launch.
+ 
+MXE builds
+
+Cross-building from MXE is an option for all tools except for ImageMagick executables (needs other compiler) and cdrtools (probably fixable).
+
+
+
+	
+	

@@ -1,0 +1,183 @@
+Version 1.47		June 9, 2015
+
+  * Set document language for localised info pages.
+  * Add French and Spanish translation of info documentation.
+  * Add Spanish and Danish translations.
+  * Add support for reproducible builds by using $SOURCE_DATE_EPOCH as the
+    date for the generated pages.
+
+Version 1.46		July 7, 2014
+
+  * Add German, Ukranian and Polish translations of info documentation.
+  * Add Hungarian and Norwegian Bokmaal translations.
+
+Version 1.45		March 24, 2014
+
+  * Add recognition of explicit section headings indicated with *Heading*.
+  * Improve handling of tagged paragraphs when body is on a following line.
+  * Add escapes to adjust spacing of italic text at roman/italic boundaries.
+
+Version 1.44		February 2, 2014
+
+  * Parse option lines in the header section of include files using shell word
+    splitting which allows quoting of multiple words and backslash-escaping of
+    spaces.
+
+Version 1.43		Jun 4, 2013
+
+  * Add explicit include syntax for prepending, replacing or appending to
+    generated output for a section.
+
+Version 1.42		May 28, 2013
+
+  * Consistently strip path and/or libtool `lt-' prefix from program
+    name.
+
+Version 1.41		December 31, 2012
+
+  * Set filenames in italics.
+  * Suppress option/filename handling in EXAMPLES section.
+  * Add Croatian translation.
+  * Add Serbian translation.
+
+Version 1.40		May 28, 2011
+
+  * Update texinfo docs.
+  * Document --libtool option.
+  * Allow date format to be localised.
+  * Add Japanese translation.
+
+Version 1.39		March 8, 2011
+
+  * Add --libtool option to remove `lt-' prefix for libtool programs.
+  * Add Ukranian translation.
+  * Add Esperanto translation.
+
+Version 1.38		April 26, 2010
+
+  * Support ENVIRONMENT and FILES sections.
+  * Move all translated text into .po files (previously .h2m include
+    files were handled seperately).
+  * Submit package to the Translation Project (translationproject.org).
+  * Add Vietnamese translation.
+  * Add some comments for translators.
+
+Version 1.37		November 14, 2009
+
+  * Update GPL to v3.
+  * Add --version-string option.
+  * Add --no-discard-stderr option.
+  * Add line breaks into bug reporting section.
+  * Add Brazilian Portuguese and German translations.
+  * Select a reasonable configure default for --enable-nls.
+  * Revise preload mechanism to not require preloadable libintl.
+
+Version 1.36		October 17, 2005
+
+  * Add default territory to --locale option.
+  * Add Finnish translations.
+
+Version 1.35		November 25, 2004
+
+  * Set program name to the first word of NAME paragraph in --include
+    file if given.
+
+Version 1.34		November 20, 2004
+
+  * Escape all unescaped hyphens in output.
+  * Convert parenthesised options, eg (-F).
+  * Fix info section in SEE ALSO to use $program rather than
+    $info_page when referring to the program.
+
+Version 1.33		July 18, 2003
+
+  * Add Polish translations.
+  * Support for localised "Usage:" output.
+  * configure: add --disable-nls option; verify gettext support.
+
+Version 1.32		July 10, 2003
+
+ * Set modification time on generated help2man script so that generation
+   of man pages is dependent only on changes to the source help2man.PL
+   script.
+
+Version 1.31		July 9, 2003
+
+ * Check for errors writing to output page.
+
+Version 1.30		July 9, 2003
+
+ * Support for localised manual pages has been added (--locale option).
+
+Version 1.29		September 7, 2002
+
+ * Change info category to "GNU programming support".
+
+Version 1.28		June 4, 2002
+
+ * Add --info-page option.
+
+Version 1.27		March 19, 2002
+
+ * Allow short and long options to be separated by multiple spaces
+   rather than a comma.
+
+Version 1.26		March 9, 2002
+
+ * Documentation updates giving suggested --help output.
+
+Version 1.25		December 3, 2001
+
+ * New --source and --manual options to allow the page headers and
+   footers to be specified.
+
+ * New --help-option and --version-option options to cater for programs
+   which don't support the standard --help and --version.
+
+Version 1.24		December 22, 2000
+
+ * Allow options to be specified in the initial block of include files.
+
+Version 1.23		October 31, 2000
+
+ * Escape leading apostrophes.
+
+Version 1.022		July 7, 2000
+
+ * help2man is now officially a GNU program.  Add bug reporting
+   address and `GNU' prefix.
+
+ * configure now checks for `perl5' as well as `perl'.
+
+Version 1.021		April 16, 2000
+
+ * Create directories if required (Makefile).
+
+Version 1.020		December 30, 1999
+
+ * Remove directory from command name(s) in synopsis.
+
+Version 1.019		November 3, 1999
+
+ * Sadly, 2+ spaces *are* required to unambiguously separate options
+   from descriptions.
+
+Version 1.018		November 1, 1999
+
+ * Recognise additional synopsis lines without requiring `or:' prefix.
+ * Adjust option tagged paragraph matching so that the first option
+   argument does not require an `='.
+
+Version 1.017		October 27, 1999
+
+ * Allow --include to be used multiple times.
+ * Include files may now contain `/pattern/' which will append the text
+   following to any paragraph which matches the pattern.
+
+Version 1.016		October 25, 1999
+
+ * Handle indenting/continuation of things which look like options
+   separately.  This removes the requirement for 2+ spaces between
+   option and description, allows the description to occur on the line
+   below the option and relaxes the indent matching rules for continued
+   lines.

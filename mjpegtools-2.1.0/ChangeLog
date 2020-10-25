@@ -1,0 +1,214 @@
+2000-08-15  Gernot Ziegler  <gz@lysator.liu.se>
+
+	* Created intial automake & autoconf files (still lot of bugs, I
+	guess ;) )
+
+	* Created libmovtar (read/write support not complete yet)
+
+	* Created libmjpeg
+
+2000-12-07 Andrew Stevens (as@comlab.ox.ac.uk)
+
+	* 1.3b2 release.  Tag: Rel1_3Beta2
+
+	* Initial support for Software-only mjpeg playback.
+
+	* Seperated mpeg encoding tools from tools used to extract raw
+	audio/video from mjpeg.
+
+	* Initial support for transcoding using patched mpeg2dec and
+	ac3dec packages.
+
+	* Further speed and quality improvements to MPEG-1 encoding with
+	mpeg2enc. Bugs fixed. Run-time selection of MMX/extended
+	MMX/SSE/3D-Now! routines as appropriate.
+
+	* mplex now much faster, debugged, and supports correct VCD
+	compatible multiplexing and splitting of streams into multiple files.
+	Initial MPEG-2 video support.  Supports layer 3 audio and (hopefully)
+	MPEG audio V2 and V2.5 though these don't look too useful...
+
+        * Bug fixes and support for software-only playback of mjpeg.
+
+2001-01-25 Andrew Stevens (as@comlab.ox.ac.uk)
+
+	* 1.3b3 release.  Tag: Rel1_3Beta3
+
+	* Refinement if field based motion compensation type selection.
+	Replacing sad with variance as selection criterion.
+       
+	* Initial SVCD support in mplex and mpeg2enc.  Initial support for
+	handling poor chrominance matching in motion compensation.
+
+	* Support for new combined LML33/buz/DC10/DC10+ driver.
+
+	* Support for 422 MJPEG from xawtv capture tool.
+
+	* More robust audio driver handling (SB-Live now works!).
+
+2001-01-25 Andrew Stevens (as@comlab.ox.ac.uk)
+
+	* 1.4 release Tag: Rel1_4
+	
+	* Dynamic GOP sizing and SMP support in mpeg2enc.  Minor refinements to
+	  motion compensation.
+
+	* Signficant enhancement and bug-fixing of lavrec and lavtools.
+
+	* Addition of yuvscaler and yuvplay, ypipe and yuv2lav utilities
+
+	* Unified output logging format and consistent command line flags.
+
+	* Lots of bug fixes.
+
+	* Man pages.
+	
+	* Binary packages.
+
+2001-06-21 Andrew Stevens (as@comlab.ox.ac.uk)
+	
+        * 1.5 series
+
+        * Single pass multiplexer. VBR audio multiplexing support.
+
+        * Splitting mpeg encoder into re-entrant library and front-end(s).
+
+	* Switch to multi-frame ppm
+
+CVS log:
+$Log: ChangeLog,v $
+Revision 1.16  2011/05/14 11:59:36  waldviertler
+documented some (hopefully most to all) changes since the last release
+
+Revision 1.15  2008/11/29 19:31:20  wackston2
+Trial fix: stop sampling frames at Q floor (where Actual bits *expected* to be
+           < Target bits) to compute mean Target/Actual ratio after pass2
+           reencoding.
+Tidying:  remove some redundant inclusion of config.h
+
+Revision 1.14  2001/07/08 21:21:15  wackston
+Added VBR audio support.
+Fixed wav headers so they indicate a long not a short stream
+if header is aborted...
+
+Revision 1.13  2001/06/23 14:14:41  wackston
+First stage of single-pass muxing.  Video now single-pass.
+
+Revision 1.12  2001/05/26 12:37:50  wackston
+Tidying doco for packaging...
+
+Revision 1.11  2001/05/10 19:52:36  wackston
+Tidyings and fixing up to the 1.4 release.
+
+Revision 1.10  2001/05/06 15:59:15  wackston
+Bug fix for m/c type select in motion.c  also made field M/C use
+chroma info.
+
+Minor fixes elewhere related consistenct logging / command lines.
+
+Revision 1.9  2001/02/07 14:45:05  wackston
+Minor tidyings and bug-fixes ready for 1.3b3 release.
+
+Revision 1.8  2001/01/25 20:11:29  wackston
+Initial SVCD support in mplex. Update TODO files..
+
+Revision 1.7  2000/12/19 14:34:06  wackston
+*** empty log message ***
+
+Revision 1.6  2000/12/19 14:29:14  wackston
+Tagging for beta2 release.
+
+Revision 1.5  2000/12/15 19:34:09  wackston
+MPEG-2 encoding has been restored to working order. Still some doubts about
+whether its 100% correct again but as far as I can tell any remaining bugs are just sub-optimality rather than crass errors.
+
+mplex now support MPEG-2 mux-ing *and* layer 3 audio.
+
+Revision 1.4  2000/12/07 19:09:04  wackston
+*** empty log message ***
+
+Revision 1.3  2000/12/07 16:44:50  wackston
+Still more minor updates to doco files for release.
+
+Revision 1.2  2000/12/05 09:34:05  wackston
+
+
+Put Log substiution into ChangeLog
+
+Changes to lavtools-1.2
+
+- A.Stevens Merged in improvements to mpeg2enc plus useful additional
+tools.
+
+- G.Ziegler Initial merge of mmx-ed JPEG libs and movtar support.
+            Detached jpeg-6b-mmx and libmovtar into own packages.
+
+Changes to lavtools-1.1
+
+- added MPEG video and audi encoders for usage with
+  AVI/Quicktime files and Edit lists
+
+- lavplay now can not more output files from edit lists,
+  this is taken over by lavtrans in the utils directory
+
+- lavrec: different decimations in x and y direction
+          possibility to capture sub areas
+          time lapse
+
+- lavplay: "zoom to fit"
+
+- xlav: better user interface
+
+- device names for video/audio/mixer device may be set
+  by environment variables
+
+- much more small things
+
+
+Changes to lavtools-1.0
+
+- Full Quicktime support in recording and playing
+
+- Support of multiple files to overcome 2 GB limit
+
+- perfect audio/video synchronization in recording and playback
+  for lip-synchronous videos even after hours of playing.
+
+- single frame (is it called stop motion?) capture
+
+- GUI to lavplay - use your linux PC as a great video recorder
+
+- support of (simple) editing in the GUI: cut your video clips
+  as you like
+
+- lavplay supports concatenating video clips, splitting off audio
+  separating video into single images
+
+- option in lavrec to wait for user input before starting
+
+- support for other audio input sources in lavrec
+
+- steering of lavplay (forward, backward, pause etc.) with commands
+  (for real command line hardliners)
+
+Changes to lavtools 1.9.0 (in no particular order)
+
+- added changes to support the compiling for new CPUs
+
+- some autoconf/configure fixes (x11 and other libs
+- patch to compile png2yuv with newer png lib
+- clean upf for vrious compiling problems
+- jpegutil fix for neser libjpeg
+
+- mpeg2enc some more two-pass encoding support
+- mpeg2enc fixes for bit rate problems
+
+- mplex added support for subtitle streams from tcextract 
+- mplex small fixes
+
+- y4mdenoise better, faster, fixed the problem in dark/cloudy areas
+
+- fixes for the __progname problem
+
+- yuvdenoise god speed up by a SSE2 ASM version of some code
+

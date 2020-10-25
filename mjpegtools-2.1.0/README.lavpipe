@@ -1,0 +1,257 @@
+
+This README describes the lavpipe tools: how to use them,
+and how they work (partially).
+The current implementation still is not tested very well, so be
+warned (and please report any errors you encounter).
+
+At the moment, there are only two filters for lavpipe,
+transist.flt and matteblend.flt, which means that you can
+use it only to make simple blending transistions between two
+movies or to blend one video over another using a predefined
+matte (yuv image or lav movie). But it is very easy to code
+new filters or extend existing ones. Read on.
+
+Contents:
+1. What are the tools?
+2. What can we do with it?
+3. What else can we do with it?
+4. That's all?! How can we make them do more?
+_____________________________________________________________________________
+                                                                             \
+1. What are the tools?                                                       /
+____________________________________________________________________________/
+
+The tools that are involved so far are:
+ - lav2yuv, which decompresses the given input files (or any portions
+            of them) and gives us raw yuv frame streams that can be
+            piped through the several tools.
+ - lavpipe, which reads out a "LAV Pipe List" (e.g. *.pli) file, a
+            "recipe" which tells it how to combine several input
+            movies using several yuv stream filters.
+ - transist.flt and matteblend.flt, all the filters that already exist.
+ - yuv2lav or mpeg2enc, which compress the resulting yuv stream
+                        into an mjpeg or mpeg file.
+
+_____________________________________________________________________________
+                                                                             \
+2. So hat can we do with it?                                                 /
+____________________________________________________________________________/
+
+Example one: Make a transistion from one movie to another one.
+
+Let's assume that we have got two 352x288 PAL files:
+intro.avi (1040 frames) and epilogue.qt (3920 frames). Now we want
+to make a transistion between them that lasts for two seconds
+(2 sec = 50 frames, as they are PAL movies).
+We also have to take care that both share the same dimensions - if
+they are of different sizes, we can use lavscale once it is finished.
+
+Our task now is to write a "recipe" for lavpipe and thus tell it how
+to do the work. If we store our work as trans.pli, the final call will
+simply be: "lavpipe trans.pli | yuv2lav -o result.avi" (lavpipe
+writes a yuv stream to stdout as lav2yuv does).
+
+The first line of trans.pli must be "LAV Pipe List".
+
+The second line contains one single number, the number of input
+streams that we will use. (In our case: "2")
+
+Now for each of the two input streams a line containing the
+command that produces the stream is added. First for intro.avi:
+"lav2yuv -o $o -f $n -n 1 intro.avi"
+The -o $o and -f $n parameters are necessary as lavpipe somehow
+has to inform lav2yuv which frames it should output. $o will
+be replaced by the offset and $n will be replaced by the number
+of frames that lavpipe wants lav2yuv to output. The -n 1
+parameter is of course optional, and any other parameters to
+lav2yuv could be added. The second line for epilogue.qt might
+look like this: "lav2yuv -o $o -f $n epilogue.qt"
+
+Now follow all the sequences of the Pipe List, each of which
+consists of a listing of the input streams used and a command
+line to the filter program.
+
+The first sequence will simply reproduce all but the last 50
+frames of intro.avi (that are 1040 - 50 = 990 frames). Its
+first line only contains "990", the number of frames. The
+second line is "1", the number of streams used.
+The next line contains the index of the stream to use and the
+offset (how many frames to skip in the beginning).
+In our case both index and offset are 0, so the line would be:
+"0 0"
+Now we would add the command line of the filter program, but
+as we don't want to invoke any filter here, this line only
+contains "-", which causes lavpipe to simply output the contents
+of the stream.
+
+The second sequence is the actual transistion. So the first
+line is "50" (two seconds), the second one "2" (we use both streams).
+The following line will be "0 990" (intro.avi will be continued
+at frame 990) and then "1 0" follows (epilogue.qt starts with
+frame 0).
+The next line is the filter command, in our case
+"transist.flt -s $o -n $n -o 0 -O 255 -d 50"
+The -s $o -n $n parameters equal to the -o $o -f $n parameters
+of lav2yuv, -o 0 means that at the beginning of the transistion,
+only intro.avi is visible (opacity of epilogue.qt = 0).
+As you would have expected, -O 255 means that at the end of
+the transistion, only epilogue.qt is visible (opacity of
+epilogue.qt = 255 = 100%) - the opacity will be linearly
+interpolated inbetween. And finally -d 50 is the duration
+of the transistion in frames and should be equal to the
+first line (duration in frames) of the sequence in most cases.
+
+The last sequence continues with only epilogue.qt (the last
+3870 frames), thus the first line is "3870". The second line
+is "1" (only one stream), then "1 50" follows (epilogue.qt,
+beginning with frame 50). The filter command line is "-" again.
+
+Finally, our Pipe List file should look like this:
+
+--------------------< trans.pli >--------------------------
+LAV Pipe List
+2
+lav2yuv -o $o -f $n -n 1 intro.avi
+lav2yuv -o $o -f $n epilogue.qt
+990
+1
+0 0
+-
+50
+2
+0 990
+1 0
+transist.flt -s $o -n $n -o 0 -O 255 -d 25
+3870
+1
+1 50
+-
+--------------------< end of file >------------------------
+
+Remember the call? "lavpipe trans.pli | yuv2lav -o result.avi"
+should now produce a nice avi file with a nice transistion.
+
+_____________________________________________________________________________
+                                                                             \
+3. And what else can we do with it?                                          /
+____________________________________________________________________________/
+
+Example two: Blend one movie over another one, using a third one's luminance
+             channel as a matte (alpha channel) for the second one.
+
+matteblend.flt has no parameters until now, as its output is independent of
+the actual position in the stream (only depends on the input frames it is fed).
+
+If you read the first example and have understood the pipe list format, it
+will be easy to write a pipe list for this task. As there still is no
+bluescreen.flt filter, and it is very time consuming to build an animated
+matte channel for a given input movie by hand, I will only describe how to
+blend a static picture (a title or static logo) over a movie.
+
+For this you need your input.avi, a picture with an alpha channel. Use for
+example the GIMP to save the image as plain yuv (pic.yuv) and save its
+alpha channel as a grayscale plain yuv (matte.yuv - its chrominance channels
+will be ignored). Of course the must be of the right size.
+Now create this simple shell script that will output an infinite yuv stream
+that only contains the given plain yuv picture:
+
+--------------------< foreveryuv >-------------------------
+#!/bin/sh
+echo "YUV4MPEG 352 288 3"
+while true
+do
+       echo "FRAME"
+       cat $1
+done
+--------------------< end of file >------------------------
+
+And write the pipe list:
+
+--------------------< title.pli >--------------------------
+LAV Pipe List
+3
+lav2yuv -o $o -f $n input.avi
+foreveryuv pic.yuv
+foreveryuv matte.yuv
+75
+3
+0 0
+1 0
+2 0
+1000000
+1
+0 75
+matteblend.flt
+--------------------< end of file >------------------------
+
+As long as your input.avi is shorter than 1000076 frames,
+"lavpipe title.pli | yuv2lav -o result.avi" will output
+the whole movie with the given picture blended over it
+for the first three seconds.
+
+_____________________________________________________________________________
+                                                                             \
+4. That's all?! How can we make them do more?                                /
+____________________________________________________________________________/
+
+The solution is of course to code new filter programs. And of course this
+is very easy. I want to annote here, that the whole system is not very
+fool proof at the moment. So if you feed matteblend.flt the wrong number
+of input streams via lavpipe, you will get funny results, if you get
+any results at all (without any hint from the programs). Perhaps this
+could be improved by adding additional (optional) parameters to the
+YUV4MPEG header line.
+
+A filter program consists only of 4 parts:
+
+1. Read input parameters (especially -o and -n, if the output is not only
+   dependent on the input frames but also on some variable parameters that
+   change over time) - optional.
+
+2. Read in and write out the YUV headers, could look like this:
+
+   int fd_in = 0, fd_out = 1; /* stdin, stdout */
+   y4m_stream_info_t istream, ostream;
+   int res, width, height, frame_rate_code;
+
+   y4m_init_stream_info(&istream);
+   y4m_init_frame_info(&iframe);
+
+   if (y4m_read_stream_header (fd_in, &istream) != Y4M_OK)
+      exit (1);
+
+   y4m_init_stream_info(&ostream);
+   y4m_copy_stream_info(&ostream,&istream);
+   y4m_write_stream_header (fd_out, width, heigth, frame_rate_code);
+   
+3. Allocate the YUV buffer(s) - one for each input stream and perhaps one
+   for the output or an arbitrary number of temporary buffers (no bloated
+   code, please ;-) )
+   
+   char *yuv_buffer[3]; /* this is one yuv buffer */
+   yuv_buffer[0] = (char *) malloc(y4m_si_get_plane_length(&istream, 0)); /* Y' */
+   yuv_buffer[1] = (char *) malloc(y4m_si_get_plane_length(&istream, 1)); /* Cr */
+   yuv_buffer[2] = (char *) malloc(y4m_si_get_plane_length(&istream, 2)); /* Cb */
+
+4. The loop - while (number of frames processed) < (-n parameter)
+
+4.1. Read the input frames, one of those for each input stream (e.g. yuv_buffer[123])
+
+   while (y4m_read_frame (fd_in, &istream, &iframe, yuv_buffer) == Y4M_OK)
+         {
+4.2. Process the input buffers in any way you want.
+
+5. Write out the result:
+
+         y4m_write_frame(fd_out, &ostream, &iframe, yuv_buffer);
+         }
+
+6. Clean up:
+     y4m_fini_frame(&iframe);
+     y4m_fini_stream_info(&istream);
+     y4m_fini_stream_info(&ostream);
+
+That's all. You should in any case have a look at the existing filters,
+transist.flt.c and matteblend.flt.c.
+
+- pHilipp Zabel <pzabel@gmx.de>

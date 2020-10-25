@@ -1,0 +1,5 @@
+commit b71137c43683191084bb07e3bcaa5a5880f7acaf
+Author: Francois Cartegnie <fcvlcdev@free.fr>
+Date:   Thu May 7 16:22:26 2020 +0200
+
+    autoconf: require C99
