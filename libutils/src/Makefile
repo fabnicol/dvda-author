@@ -2,7 +2,7 @@
 CPPFLAGS +=-I/cygdrive/c/Users/fabrn/dvda-author/libutils/src/include -I/cygdrive/c/Users/fabrn/dvda-author/libutils/src/private -I/cygdrive/c/Users/fabrn/dvda-author/src/include -I/cygdrive/c/Users/fabrn/dvda-author/libfixwav/src/include
 #for config.h
 CPPFLAGS += -I/cygdrive/c/Users/fabrn/dvda-author
-
+CFLAGS=-g
 ifeq "" "yes"
      LDLIBS   += /cygdrive/c/Users/fabrn/dvda-author/libiberty/src/libiberty.a
      CPPFLAGS +=-I/cygdrive/c/Users/fabrn/dvda-author/libiberty/src/include

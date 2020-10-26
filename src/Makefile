@@ -26,12 +26,12 @@ include /cygdrive/c/Users/fabrn/dvda-author/mk/libogg.global.mk
 
 DEBUG_FLAGS ?= 
 
-CFLAGS += -D_GNU_SOURCE
+CFLAGS += -D_GNU_SOURCE -g
 LDFLAGS :=-L/usr/local/lib64 -L/usr/lib64
 
-ifeq "$(DEBUG_FLAGS)" ""
-   LDFLAGS += -s
-endif
+#ifeq "$(DEBUG_FLAGS)" ""
+#   LDFLAGS += -s
+#endif
 
 CPPFLAGS :=-I/cygdrive/c/Users/fabrn/dvda-author/libutils/src/include -I/cygdrive/c/Users/fabrn/dvda-author/src/include
 # for config.h

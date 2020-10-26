@@ -51,6 +51,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <time.h>
 #include <ctype.h>
 #include <sys/stat.h>
+#ifdef _POSIX_C_SOURCE
+#undef _POSIX_C_SOURCE
+#endif
+#define _POSIX_C_SOURCE 1
 #include <limits.h>
 
 #ifdef __unix__
@@ -174,20 +178,21 @@ return "";
 
 char* make_absolute(char* filepath)
 {
+    char* buf;
+    #if defined _WIN32
 
-    char* buf = (char*) calloc(MAX_PATH, sizeof(char));
-    if (buf == NULL) return NULL;
-    #ifdef _WIN32
-
+            buf = (char*) calloc(MAX_PATH, sizeof(char));
+            if (buf == NULL) return NULL;
             GetFullPathName (filepath,
                          MAX_PATH,
                          buf,
                          NULL);
 
-     #else
-           realpath(strdup(optarg), buf);
+     #else 
+            buf = realpath(filepath, NULL);
 
      #endif
+
      return (char*) buf;
     // it is up to the user to deallocate filepath string input
 }

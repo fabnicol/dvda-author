@@ -1389,7 +1389,7 @@ out:
             }
             else
             {
-                foutput("%s\n",PAR "  Automatic generation of top menu...");
+                foutput("%s\n",PAR "Automatic generation of top menu...");
                 globals->topmenu=Min(globals->topmenu, AUTOMATIC_MENU);
             }
 
@@ -1398,7 +1398,7 @@ out:
         case 'M' :
 
             globals->xml=make_absolute(optarg);
-            foutput("%s%s\n",PAR "  dvdauthor Xml project: ", globals->xml);
+            foutput("%s%s\n",PAR "dvdauthor Xml project: ", globals->xml);
             globals->topmenu=Min(globals->topmenu, RUN_DVDAUTHOR);
             break;
 
@@ -1408,25 +1408,25 @@ out:
             if (img->nmenus) globals->spu_xml=realloc(globals->spu_xml, img->nmenus*sizeof(char*));
             globals->spu_xml[spurank]=make_absolute(optarg);
             globals->topmenu=Min(globals->topmenu, RUN_SPUMUX_DVDAUTHOR);
-            foutput("%s%s\n",PAR "  spumux Xml project: ", globals->spu_xml[spurank]);
+            foutput("%s%s\n",PAR "spumux Xml project: ", globals->spu_xml[spurank]);
             spurank++;
             break;
 
         case 'B':
-            foutput("%s%s\n",PAR "  background mpg video(s): ", optarg);
+            foutput("%s%s\n",PAR "background mpg video(s): ", optarg);
 
             free(img->backgroundmpg[0]);
             free(img->backgroundmpg);
             img->backgroundmpg=fn_strtok(optarg, ',' , img->backgroundmpg, &globals->backgroundmpgsize, 0,NULL,NULL, globals);
 
-            foutput(PAR "  Top background mpg file(s) %s will be used\n", optarg);
+            foutput(PAR "Top background mpg file(s) %s will be used\n", optarg);
 
             globals->topmenu=Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
             break;
 
         case 'u':
 
-            foutput("%s%s\n",PAR "  duration of background mpg video: ", optarg);
+            foutput("%s%s\n",PAR "duration of background mpg video: ", optarg);
             durationchain=strdup(optarg);
 
             h=strtok(durationchain, ":");

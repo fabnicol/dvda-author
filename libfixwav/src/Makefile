@@ -19,4 +19,4 @@ libfixwav.a: libfixwav.a($(OBJECTS))
 
 #implicit rules won't work here
 /cygdrive/c/Users/fabrn/dvda-author/libfixwav/src/%.o: /cygdrive/c/Users/fabrn/dvda-author/libfixwav/src/%.c
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+	$(CC) -c $(CFLAGS) -g $(CPPFLAGS) $< -o $@

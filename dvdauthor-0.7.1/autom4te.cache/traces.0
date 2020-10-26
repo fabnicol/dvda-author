@@ -1,35 +1,4 @@
-# generated automatically by aclocal 1.11.6 -*- Autoconf -*-
-
-# Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-# 2005, 2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation,
-# Inc.
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
-
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
-# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-# PARTICULAR PURPOSE.
-
-m4_ifndef([AC_AUTOCONF_VERSION],
-  [m4_copy([m4_PACKAGE_VERSION], [AC_AUTOCONF_VERSION])])dnl
-m4_if(m4_defn([AC_AUTOCONF_VERSION]), [2.69],,
-[m4_warning([this file was generated for autoconf 2.69.
-You have another version of autoconf.  It may work, but is not guaranteed to.
-If you have problems, you may need to regenerate the build system entirely.
-To do so, use the procedure documented by the package, typically `autoreconf'.])])
-
-# iconv.m4 serial 19 (gettext-0.18.2)
-dnl Copyright (C) 2000-2002, 2007-2014, 2016 Free Software Foundation, Inc.
-dnl This file is free software; the Free Software Foundation
-dnl gives unlimited permission to copy and/or distribute it,
-dnl with or without modifications, as long as this notice is preserved.
-
-dnl From Bruno Haible.
-
-AC_DEFUN([AM_ICONV_LINKFLAGS_BODY],
-[
+m4trace:/usr/share/aclocal/iconv.m4:9: -1- AC_DEFUN([AM_ICONV_LINKFLAGS_BODY], [
   dnl Prerequisites of AC_LIB_LINKFLAGS_BODY.
   AC_REQUIRE([AC_LIB_PREPARE_PREFIX])
   AC_REQUIRE([AC_LIB_RPATH])
@@ -38,9 +7,7 @@ AC_DEFUN([AM_ICONV_LINKFLAGS_BODY],
   dnl accordingly.
   AC_LIB_LINKFLAGS_BODY([iconv])
 ])
-
-AC_DEFUN([AM_ICONV_LINK],
-[
+m4trace:/usr/share/aclocal/iconv.m4:20: -1- AC_DEFUN([AM_ICONV_LINK], [
   dnl Some systems have iconv in libc, some have it in libiconv (OSF/1 and
   dnl those with the standalone portable GNU libiconv installed).
   AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
@@ -233,27 +200,7 @@ AC_DEFUN([AM_ICONV_LINK],
   AC_SUBST([LIBICONV])
   AC_SUBST([LTLIBICONV])
 ])
-
-dnl Define AM_ICONV using AC_DEFUN_ONCE for Autoconf >= 2.64, in order to
-dnl avoid warnings like
-dnl "warning: AC_REQUIRE: `AM_ICONV' was expanded before it was required".
-dnl This is tricky because of the way 'aclocal' is implemented:
-dnl - It requires defining an auxiliary macro whose name ends in AC_DEFUN.
-dnl   Otherwise aclocal's initial scan pass would miss the macro definition.
-dnl - It requires a line break inside the AC_DEFUN_ONCE and AC_DEFUN expansions.
-dnl   Otherwise aclocal would emit many "Use of uninitialized value $1"
-dnl   warnings.
-m4_define([gl_iconv_AC_DEFUN],
-  m4_version_prereq([2.64],
-    [[AC_DEFUN_ONCE(
-        [$1], [$2])]],
-    [m4_ifdef([gl_00GNULIB],
-       [[AC_DEFUN_ONCE(
-           [$1], [$2])]],
-       [[AC_DEFUN(
-           [$1], [$2])]])]))
-gl_iconv_AC_DEFUN([AM_ICONV],
-[
+m4trace:/usr/share/aclocal/iconv.m4:233: -1- AC_DEFUN_ONCE([AM_ICONV], [
   AM_ICONV_LINK
   if test "$am_cv_func_iconv" = yes; then
     AC_MSG_CHECKING([for iconv declaration])
@@ -291,20 +238,7 @@ size_t iconv();
       ])
   fi
 ])
-
-# lib-ld.m4 serial 6
-dnl Copyright (C) 1996-2003, 2009-2016 Free Software Foundation, Inc.
-dnl This file is free software; the Free Software Foundation
-dnl gives unlimited permission to copy and/or distribute it,
-dnl with or without modifications, as long as this notice is preserved.
-
-dnl Subroutines of libtool.m4,
-dnl with replacements s/_*LT_PATH/AC_LIB_PROG/ and s/lt_/acl_/ to avoid
-dnl collision with libtool.m4.
-
-dnl From libtool-2.4. Sets the variable with_gnu_ld to yes or no.
-AC_DEFUN([AC_LIB_PROG_LD_GNU],
-[AC_CACHE_CHECK([if the linker ($LD) is GNU ld], [acl_cv_prog_gnu_ld],
+m4trace:/usr/share/aclocal/lib-ld.m4:12: -1- AC_DEFUN([AC_LIB_PROG_LD_GNU], [AC_CACHE_CHECK([if the linker ($LD) is GNU ld], [acl_cv_prog_gnu_ld],
 [# I'd rather use --version here, but apparently some GNU lds only accept -v.
 case `$LD -v 2>&1 </dev/null` in
 *GNU* | *'with BFD'*)
@@ -316,10 +250,7 @@ case `$LD -v 2>&1 </dev/null` in
 esac])
 with_gnu_ld=$acl_cv_prog_gnu_ld
 ])
-
-dnl From libtool-2.4. Sets the variable LD.
-AC_DEFUN([AC_LIB_PROG_LD],
-[AC_REQUIRE([AC_PROG_CC])dnl
+m4trace:/usr/share/aclocal/lib-ld.m4:27: -1- AC_DEFUN([AC_LIB_PROG_LD], [AC_REQUIRE([AC_PROG_CC])dnl
 AC_REQUIRE([AC_CANONICAL_HOST])dnl
 
 AC_ARG_WITH([gnu-ld],
@@ -411,25 +342,7 @@ fi
 test -z "$LD" && AC_MSG_ERROR([no acceptable ld found in \$PATH])
 AC_LIB_PROG_LD_GNU
 ])
-
-# lib-link.m4 serial 26 (gettext-0.18.2)
-dnl Copyright (C) 2001-2016 Free Software Foundation, Inc.
-dnl This file is free software; the Free Software Foundation
-dnl gives unlimited permission to copy and/or distribute it,
-dnl with or without modifications, as long as this notice is preserved.
-
-dnl From Bruno Haible.
-
-AC_PREREQ([2.54])
-
-dnl AC_LIB_LINKFLAGS(name [, dependencies]) searches for libname and
-dnl the libraries corresponding to explicit and implicit dependencies.
-dnl Sets and AC_SUBSTs the LIB${NAME} and LTLIB${NAME} variables and
-dnl augments the CPPFLAGS variable.
-dnl Sets and AC_SUBSTs the LIB${NAME}_PREFIX variable to nonempty if libname
-dnl was found in ${LIB${NAME}_PREFIX}/$acl_libdirstem.
-AC_DEFUN([AC_LIB_LINKFLAGS],
-[
+m4trace:/usr/share/aclocal/lib-link.m4:17: -1- AC_DEFUN([AC_LIB_LINKFLAGS], [
   AC_REQUIRE([AC_LIB_PREPARE_PREFIX])
   AC_REQUIRE([AC_LIB_RPATH])
   pushdef([Name],[m4_translit([$1],[./+-], [____])])
@@ -456,20 +369,7 @@ AC_DEFUN([AC_LIB_LINKFLAGS],
   popdef([NAME])
   popdef([Name])
 ])
-
-dnl AC_LIB_HAVE_LINKFLAGS(name, dependencies, includes, testcode, [missing-message])
-dnl searches for libname and the libraries corresponding to explicit and
-dnl implicit dependencies, together with the specified include files and
-dnl the ability to compile and link the specified testcode. The missing-message
-dnl defaults to 'no' and may contain additional hints for the user.
-dnl If found, it sets and AC_SUBSTs HAVE_LIB${NAME}=yes and the LIB${NAME}
-dnl and LTLIB${NAME} variables and augments the CPPFLAGS variable, and
-dnl #defines HAVE_LIB${NAME} to 1. Otherwise, it sets and AC_SUBSTs
-dnl HAVE_LIB${NAME}=no and LIB${NAME} and LTLIB${NAME} to empty.
-dnl Sets and AC_SUBSTs the LIB${NAME}_PREFIX variable to nonempty if libname
-dnl was found in ${LIB${NAME}_PREFIX}/$acl_libdirstem.
-AC_DEFUN([AC_LIB_HAVE_LINKFLAGS],
-[
+m4trace:/usr/share/aclocal/lib-link.m4:57: -1- AC_DEFUN([AC_LIB_HAVE_LINKFLAGS], [
   AC_REQUIRE([AC_LIB_PREPARE_PREFIX])
   AC_REQUIRE([AC_LIB_RPATH])
   pushdef([Name],[m4_translit([$1],[./+-], [____])])
@@ -526,18 +426,7 @@ AC_DEFUN([AC_LIB_HAVE_LINKFLAGS],
   popdef([NAME])
   popdef([Name])
 ])
-
-dnl Determine the platform dependent parameters needed to use rpath:
-dnl   acl_libext,
-dnl   acl_shlibext,
-dnl   acl_libname_spec,
-dnl   acl_library_names_spec,
-dnl   acl_hardcode_libdir_flag_spec,
-dnl   acl_hardcode_libdir_separator,
-dnl   acl_hardcode_direct,
-dnl   acl_hardcode_minus_L.
-AC_DEFUN([AC_LIB_RPATH],
-[
+m4trace:/usr/share/aclocal/lib-link.m4:125: -1- AC_DEFUN([AC_LIB_RPATH], [
   dnl Tell automake >= 1.10 to complain if config.rpath is missing.
   m4_ifdef([AC_REQUIRE_AUX_FILE], [AC_REQUIRE_AUX_FILE([config.rpath])])
   AC_REQUIRE([AC_PROG_CC])                dnl we use $CC, $GCC, $LDFLAGS
@@ -565,15 +454,7 @@ AC_DEFUN([AC_LIB_RPATH],
     [  --disable-rpath         do not hardcode runtime library paths],
     :, enable_rpath=yes)
 ])
-
-dnl AC_LIB_FROMPACKAGE(name, package)
-dnl declares that libname comes from the given package. The configure file
-dnl will then not have a --with-libname-prefix option but a
-dnl --with-package-prefix option. Several libraries can come from the same
-dnl package. This declaration must occur before an AC_LIB_LINKFLAGS or similar
-dnl macro call that searches for libname.
-AC_DEFUN([AC_LIB_FROMPACKAGE],
-[
+m4trace:/usr/share/aclocal/lib-link.m4:161: -1- AC_DEFUN([AC_LIB_FROMPACKAGE], [
   pushdef([NAME],[m4_translit([$1],[abcdefghijklmnopqrstuvwxyz./+-],
                                    [ABCDEFGHIJKLMNOPQRSTUVWXYZ____])])
   define([acl_frompackage_]NAME, [$2])
@@ -586,14 +467,7 @@ AC_DEFUN([AC_LIB_FROMPACKAGE],
   popdef([PACKUP])
   popdef([PACK])
 ])
-
-dnl AC_LIB_LINKFLAGS_BODY(name [, dependencies]) searches for libname and
-dnl the libraries corresponding to explicit and implicit dependencies.
-dnl Sets the LIB${NAME}, LTLIB${NAME} and INC${NAME} variables.
-dnl Also, sets the LIB${NAME}_PREFIX variable to nonempty if libname was found
-dnl in ${LIB${NAME}_PREFIX}/$acl_libdirstem.
-AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
-[
+m4trace:/usr/share/aclocal/lib-link.m4:181: -1- AC_DEFUN([AC_LIB_LINKFLAGS_BODY], [
   AC_REQUIRE([AC_LIB_PREPARE_MULTILIB])
   pushdef([NAME],[m4_translit([$1],[abcdefghijklmnopqrstuvwxyz./+-],
                                    [ABCDEFGHIJKLMNOPQRSTUVWXYZ____])])
@@ -1090,13 +964,7 @@ AC_DEFUN([AC_LIB_LINKFLAGS_BODY],
   popdef([PACK])
   popdef([NAME])
 ])
-
-dnl AC_LIB_APPENDTOVAR(VAR, CONTENTS) appends the elements of CONTENTS to VAR,
-dnl unless already present in VAR.
-dnl Works only for CPPFLAGS, not for LIB* variables because that sometimes
-dnl contains two or three consecutive elements that belong together.
-AC_DEFUN([AC_LIB_APPENDTOVAR],
-[
+m4trace:/usr/share/aclocal/lib-link.m4:684: -1- AC_DEFUN([AC_LIB_APPENDTOVAR], [
   for element in [$2]; do
     haveit=
     for x in $[$1]; do
@@ -1111,16 +979,7 @@ AC_DEFUN([AC_LIB_APPENDTOVAR],
     fi
   done
 ])
-
-dnl For those cases where a variable contains several -L and -l options
-dnl referring to unknown libraries and directories, this macro determines the
-dnl necessary additional linker options for the runtime path.
-dnl AC_LIB_LINKFLAGS_FROM_LIBS([LDADDVAR], [LIBSVALUE], [USE-LIBTOOL])
-dnl sets LDADDVAR to linker options needed together with LIBSVALUE.
-dnl If USE-LIBTOOL evaluates to non-empty, linking with libtool is assumed,
-dnl otherwise linking without libtool is assumed.
-AC_DEFUN([AC_LIB_LINKFLAGS_FROM_LIBS],
-[
+m4trace:/usr/share/aclocal/lib-link.m4:708: -1- AC_DEFUN([AC_LIB_LINKFLAGS_FROM_LIBS], [
   AC_REQUIRE([AC_LIB_RPATH])
   AC_REQUIRE([AC_LIB_PREPARE_MULTILIB])
   $1=
@@ -1189,30 +1048,8 @@ AC_DEFUN([AC_LIB_LINKFLAGS_FROM_LIBS],
   fi
   AC_SUBST([$1])
 ])
-
-# lib-prefix.m4 serial 7 (gettext-0.18)
-dnl Copyright (C) 2001-2005, 2008-2016 Free Software Foundation, Inc.
-dnl This file is free software; the Free Software Foundation
-dnl gives unlimited permission to copy and/or distribute it,
-dnl with or without modifications, as long as this notice is preserved.
-
-dnl From Bruno Haible.
-
-dnl AC_LIB_ARG_WITH is synonymous to AC_ARG_WITH in autoconf-2.13, and
-dnl similar to AC_ARG_WITH in autoconf 2.52...2.57 except that is doesn't
-dnl require excessive bracketing.
-ifdef([AC_HELP_STRING],
-[AC_DEFUN([AC_LIB_ARG_WITH], [AC_ARG_WITH([$1],[[$2]],[$3],[$4])])],
-[AC_DEFUN([AC_][LIB_ARG_WITH], [AC_ARG_WITH([$1],[$2],[$3],[$4])])])
-
-dnl AC_LIB_PREFIX adds to the CPPFLAGS and LDFLAGS the flags that are needed
-dnl to access previously installed libraries. The basic assumption is that
-dnl a user will want packages to use other packages he previously installed
-dnl with the same --prefix option.
-dnl This macro is not needed if only AC_LIB_LINKFLAGS is used to locate
-dnl libraries, but is otherwise very convenient.
-AC_DEFUN([AC_LIB_PREFIX],
-[
+m4trace:/usr/share/aclocal/lib-prefix.m4:12: -1- AC_DEFUN([AC_LIB_ARG_WITH], [AC_ARG_WITH([$1],[[$2]],[$3],[$4])])
+m4trace:/usr/share/aclocal/lib-prefix.m4:22: -1- AC_DEFUN([AC_LIB_PREFIX], [
   AC_BEFORE([$0], [AC_LIB_LINKFLAGS])
   AC_REQUIRE([AC_PROG_CC])
   AC_REQUIRE([AC_CANONICAL_HOST])
@@ -1307,12 +1144,7 @@ AC_DEFUN([AC_LIB_PREFIX],
     fi
   fi
 ])
-
-dnl AC_LIB_PREPARE_PREFIX creates variables acl_final_prefix,
-dnl acl_final_exec_prefix, containing the values to which $prefix and
-dnl $exec_prefix will expand at the end of the configure script.
-AC_DEFUN([AC_LIB_PREPARE_PREFIX],
-[
+m4trace:/usr/share/aclocal/lib-prefix.m4:122: -1- AC_DEFUN([AC_LIB_PREPARE_PREFIX], [
   dnl Unfortunately, prefix and exec_prefix get only finally determined
   dnl at the end of configure.
   if test "X$prefix" = "XNONE"; then
@@ -1330,12 +1162,7 @@ AC_DEFUN([AC_LIB_PREPARE_PREFIX],
   eval acl_final_exec_prefix=\"$acl_final_exec_prefix\"
   prefix="$acl_save_prefix"
 ])
-
-dnl AC_LIB_WITH_FINAL_PREFIX([statement]) evaluates statement, with the
-dnl variables prefix and exec_prefix bound to the values they will have
-dnl at the end of the configure script.
-AC_DEFUN([AC_LIB_WITH_FINAL_PREFIX],
-[
+m4trace:/usr/share/aclocal/lib-prefix.m4:145: -1- AC_DEFUN([AC_LIB_WITH_FINAL_PREFIX], [
   acl_save_prefix="$prefix"
   prefix="$acl_final_prefix"
   acl_save_exec_prefix="$exec_prefix"
@@ -1344,15 +1171,7 @@ AC_DEFUN([AC_LIB_WITH_FINAL_PREFIX],
   exec_prefix="$acl_save_exec_prefix"
   prefix="$acl_save_prefix"
 ])
-
-dnl AC_LIB_PREPARE_MULTILIB creates
-dnl - a variable acl_libdirstem, containing the basename of the libdir, either
-dnl   "lib" or "lib64" or "lib/64",
-dnl - a variable acl_libdirstem2, as a secondary possible value for
-dnl   acl_libdirstem, either the same as acl_libdirstem or "lib/sparcv9" or
-dnl   "lib/amd64".
-AC_DEFUN([AC_LIB_PREPARE_MULTILIB],
-[
+m4trace:/usr/share/aclocal/lib-prefix.m4:162: -1- AC_DEFUN([AC_LIB_PREPARE_MULTILIB], [
   dnl There is no formal standard regarding lib and lib64.
   dnl On glibc systems, the current practice is that on a system supporting
   dnl 32-bit and 64-bit instruction sets or ABIs, 64-bit libraries go under
@@ -1414,19 +1233,7 @@ sixtyfour bits
   esac
   test -n "$acl_libdirstem2" || acl_libdirstem2="$acl_libdirstem"
 ])
-
-# Configure paths for LIBXML2
-# Mike Hommey 2004-06-19
-# use CPPFLAGS instead of CFLAGS
-# Toshio Kuratomi 2001-04-21
-# Adapted from:
-# Configure paths for GLIB
-# Owen Taylor     97-11-3
-
-dnl AM_PATH_XML2([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
-dnl Test for XML, and define XML_CPPFLAGS and XML_LIBS
-dnl
-AC_DEFUN([AM_PATH_XML2],[ 
+m4trace:/usr/share/aclocal/libxml.m4:12: -1- AC_DEFUN([AM_PATH_XML2], [ 
 AC_ARG_WITH(xml-prefix,
             [  --with-xml-prefix=PFX   Prefix where libxml is installed (optional)],
             xml_config_prefix="$withval", xml_config_prefix="")
@@ -1603,66 +1410,7 @@ main()
   AC_SUBST(XML_LIBS)
   rm -f conf.xmltest
 ])
-
-# pkg.m4 - Macros to locate and utilise pkg-config.   -*- Autoconf -*-
-# serial 11 (pkg-config-0.29.1)
-
-dnl Copyright © 2004 Scott James Remnant <scott@netsplit.com>.
-dnl Copyright © 2012-2015 Dan Nicholson <dbn.lists@gmail.com>
-dnl
-dnl This program is free software; you can redistribute it and/or modify
-dnl it under the terms of the GNU General Public License as published by
-dnl the Free Software Foundation; either version 2 of the License, or
-dnl (at your option) any later version.
-dnl
-dnl This program is distributed in the hope that it will be useful, but
-dnl WITHOUT ANY WARRANTY; without even the implied warranty of
-dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-dnl General Public License for more details.
-dnl
-dnl You should have received a copy of the GNU General Public License
-dnl along with this program; if not, write to the Free Software
-dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-dnl 02111-1307, USA.
-dnl
-dnl As a special exception to the GNU General Public License, if you
-dnl distribute this file as part of a program that contains a
-dnl configuration script generated by Autoconf, you may include it under
-dnl the same distribution terms that you use for the rest of that
-dnl program.
-
-dnl PKG_PREREQ(MIN-VERSION)
-dnl -----------------------
-dnl Since: 0.29
-dnl
-dnl Verify that the version of the pkg-config macros are at least
-dnl MIN-VERSION. Unlike PKG_PROG_PKG_CONFIG, which checks the user's
-dnl installed version of pkg-config, this checks the developer's version
-dnl of pkg.m4 when generating configure.
-dnl
-dnl To ensure that this macro is defined, also add:
-dnl m4_ifndef([PKG_PREREQ],
-dnl     [m4_fatal([must install pkg-config 0.29 or later before running autoconf/autogen])])
-dnl
-dnl See the "Since" comment for each macro you use to see what version
-dnl of the macros you require.
-m4_defun([PKG_PREREQ],
-[m4_define([PKG_MACROS_VERSION], [0.29.1])
-m4_if(m4_version_compare(PKG_MACROS_VERSION, [$1]), -1,
-    [m4_fatal([pkg.m4 version $1 or higher is required but ]PKG_MACROS_VERSION[ found])])
-])dnl PKG_PREREQ
-
-dnl PKG_PROG_PKG_CONFIG([MIN-VERSION])
-dnl ----------------------------------
-dnl Since: 0.16
-dnl
-dnl Search for the pkg-config tool and set the PKG_CONFIG variable to
-dnl first found in the path. Checks that the version of pkg-config found
-dnl is at least MIN-VERSION. If MIN-VERSION is not specified, 0.9.0 is
-dnl used since that's the first version where most current features of
-dnl pkg-config existed.
-AC_DEFUN([PKG_PROG_PKG_CONFIG],
-[m4_pattern_forbid([^_?PKG_[A-Z_]+$])
+m4trace:/usr/share/aclocal/pkg.m4:58: -1- AC_DEFUN([PKG_PROG_PKG_CONFIG], [m4_pattern_forbid([^_?PKG_[A-Z_]+$])
 m4_pattern_allow([^PKG_CONFIG(_(PATH|LIBDIR|SYSROOT_DIR|ALLOW_SYSTEM_(CFLAGS|LIBS)))?$])
 m4_pattern_allow([^PKG_CONFIG_(DISABLE_UNINSTALLED|TOP_BUILD_DIR|DEBUG_SPEW)$])
 AC_ARG_VAR([PKG_CONFIG], [path to pkg-config utility])
@@ -1682,68 +1430,22 @@ if test -n "$PKG_CONFIG"; then
 		PKG_CONFIG=""
 	fi
 fi[]dnl
-])dnl PKG_PROG_PKG_CONFIG
-
-dnl PKG_CHECK_EXISTS(MODULES, [ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND])
-dnl -------------------------------------------------------------------
-dnl Since: 0.18
-dnl
-dnl Check to see whether a particular set of modules exists. Similar to
-dnl PKG_CHECK_MODULES(), but does not set variables or print errors.
-dnl
-dnl Please remember that m4 expands AC_REQUIRE([PKG_PROG_PKG_CONFIG])
-dnl only at the first occurence in configure.ac, so if the first place
-dnl it's called might be skipped (such as if it is within an "if", you
-dnl have to call PKG_CHECK_EXISTS manually
-AC_DEFUN([PKG_CHECK_EXISTS],
-[AC_REQUIRE([PKG_PROG_PKG_CONFIG])dnl
+])
+m4trace:/usr/share/aclocal/pkg.m4:92: -1- AC_DEFUN([PKG_CHECK_EXISTS], [AC_REQUIRE([PKG_PROG_PKG_CONFIG])dnl
 if test -n "$PKG_CONFIG" && \
     AC_RUN_LOG([$PKG_CONFIG --exists --print-errors "$1"]); then
   m4_default([$2], [:])
 m4_ifvaln([$3], [else
   $3])dnl
 fi])
-
-dnl _PKG_CONFIG([VARIABLE], [COMMAND], [MODULES])
-dnl ---------------------------------------------
-dnl Internal wrapper calling pkg-config via PKG_CONFIG and setting
-dnl pkg_failed based on the result.
-m4_define([_PKG_CONFIG],
-[if test -n "$$1"; then
-    pkg_cv_[]$1="$$1"
- elif test -n "$PKG_CONFIG"; then
-    PKG_CHECK_EXISTS([$3],
-                     [pkg_cv_[]$1=`$PKG_CONFIG --[]$2 "$3" 2>/dev/null`
-		      test "x$?" != "x0" && pkg_failed=yes ],
-		     [pkg_failed=yes])
- else
-    pkg_failed=untried
-fi[]dnl
-])dnl _PKG_CONFIG
-
-dnl _PKG_SHORT_ERRORS_SUPPORTED
-dnl ---------------------------
-dnl Internal check to see if pkg-config supports short errors.
-AC_DEFUN([_PKG_SHORT_ERRORS_SUPPORTED],
-[AC_REQUIRE([PKG_PROG_PKG_CONFIG])
+m4trace:/usr/share/aclocal/pkg.m4:121: -1- AC_DEFUN([_PKG_SHORT_ERRORS_SUPPORTED], [AC_REQUIRE([PKG_PROG_PKG_CONFIG])
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
         _pkg_short_errors_supported=yes
 else
         _pkg_short_errors_supported=no
 fi[]dnl
-])dnl _PKG_SHORT_ERRORS_SUPPORTED
-
-
-dnl PKG_CHECK_MODULES(VARIABLE-PREFIX, MODULES, [ACTION-IF-FOUND],
-dnl   [ACTION-IF-NOT-FOUND])
-dnl --------------------------------------------------------------
-dnl Since: 0.4.0
-dnl
-dnl Note that if there is a possibility the first call to
-dnl PKG_CHECK_MODULES might not happen, you should be sure to include an
-dnl explicit call to PKG_PROG_PKG_CONFIG in your configure.ac
-AC_DEFUN([PKG_CHECK_MODULES],
-[AC_REQUIRE([PKG_PROG_PKG_CONFIG])dnl
+])
+m4trace:/usr/share/aclocal/pkg.m4:139: -1- AC_DEFUN([PKG_CHECK_MODULES], [AC_REQUIRE([PKG_PROG_PKG_CONFIG])dnl
 AC_ARG_VAR([$1][_CFLAGS], [C compiler flags for $1, overriding pkg-config])dnl
 AC_ARG_VAR([$1][_LIBS], [linker flags for $1, overriding pkg-config])dnl
 
@@ -1795,42 +1497,14 @@ else
         AC_MSG_RESULT([yes])
 	$3
 fi[]dnl
-])dnl PKG_CHECK_MODULES
-
-
-dnl PKG_CHECK_MODULES_STATIC(VARIABLE-PREFIX, MODULES, [ACTION-IF-FOUND],
-dnl   [ACTION-IF-NOT-FOUND])
-dnl ---------------------------------------------------------------------
-dnl Since: 0.29
-dnl
-dnl Checks for existence of MODULES and gathers its build flags with
-dnl static libraries enabled. Sets VARIABLE-PREFIX_CFLAGS from --cflags
-dnl and VARIABLE-PREFIX_LIBS from --libs.
-dnl
-dnl Note that if there is a possibility the first call to
-dnl PKG_CHECK_MODULES_STATIC might not happen, you should be sure to
-dnl include an explicit call to PKG_PROG_PKG_CONFIG in your
-dnl configure.ac.
-AC_DEFUN([PKG_CHECK_MODULES_STATIC],
-[AC_REQUIRE([PKG_PROG_PKG_CONFIG])dnl
+])
+m4trace:/usr/share/aclocal/pkg.m4:208: -1- AC_DEFUN([PKG_CHECK_MODULES_STATIC], [AC_REQUIRE([PKG_PROG_PKG_CONFIG])dnl
 _save_PKG_CONFIG=$PKG_CONFIG
 PKG_CONFIG="$PKG_CONFIG --static"
 PKG_CHECK_MODULES($@)
 PKG_CONFIG=$_save_PKG_CONFIG[]dnl
-])dnl PKG_CHECK_MODULES_STATIC
-
-
-dnl PKG_INSTALLDIR([DIRECTORY])
-dnl -------------------------
-dnl Since: 0.27
-dnl
-dnl Substitutes the variable pkgconfigdir as the location where a module
-dnl should install pkg-config .pc files. By default the directory is
-dnl $libdir/pkgconfig, but the default can be changed by passing
-dnl DIRECTORY. The user can override through the --with-pkgconfigdir
-dnl parameter.
-AC_DEFUN([PKG_INSTALLDIR],
-[m4_pushdef([pkg_default], [m4_default([$1], ['${libdir}/pkgconfig'])])
+])
+m4trace:/usr/share/aclocal/pkg.m4:226: -1- AC_DEFUN([PKG_INSTALLDIR], [m4_pushdef([pkg_default], [m4_default([$1], ['${libdir}/pkgconfig'])])
 m4_pushdef([pkg_description],
     [pkg-config installation directory @<:@]pkg_default[@:>@])
 AC_ARG_WITH([pkgconfigdir],
@@ -1839,20 +1513,8 @@ AC_ARG_WITH([pkgconfigdir],
 AC_SUBST([pkgconfigdir], [$with_pkgconfigdir])
 m4_popdef([pkg_default])
 m4_popdef([pkg_description])
-])dnl PKG_INSTALLDIR
-
-
-dnl PKG_NOARCH_INSTALLDIR([DIRECTORY])
-dnl --------------------------------
-dnl Since: 0.27
-dnl
-dnl Substitutes the variable noarch_pkgconfigdir as the location where a
-dnl module should install arch-independent pkg-config .pc files. By
-dnl default the directory is $datadir/pkgconfig, but the default can be
-dnl changed by passing DIRECTORY. The user can override through the
-dnl --with-noarch-pkgconfigdir parameter.
-AC_DEFUN([PKG_NOARCH_INSTALLDIR],
-[m4_pushdef([pkg_default], [m4_default([$1], ['${datadir}/pkgconfig'])])
+])
+m4trace:/usr/share/aclocal/pkg.m4:248: -1- AC_DEFUN([PKG_NOARCH_INSTALLDIR], [m4_pushdef([pkg_default], [m4_default([$1], ['${datadir}/pkgconfig'])])
 m4_pushdef([pkg_description],
     [pkg-config arch-independent installation directory @<:@]pkg_default[@:>@])
 AC_ARG_WITH([noarch-pkgconfigdir],
@@ -1861,35 +1523,16 @@ AC_ARG_WITH([noarch-pkgconfigdir],
 AC_SUBST([noarch_pkgconfigdir], [$with_noarch_pkgconfigdir])
 m4_popdef([pkg_default])
 m4_popdef([pkg_description])
-])dnl PKG_NOARCH_INSTALLDIR
-
-
-dnl PKG_CHECK_VAR(VARIABLE, MODULE, CONFIG-VARIABLE,
-dnl [ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND])
-dnl -------------------------------------------
-dnl Since: 0.28
-dnl
-dnl Retrieves the value of the pkg-config variable for the given module.
-AC_DEFUN([PKG_CHECK_VAR],
-[AC_REQUIRE([PKG_PROG_PKG_CONFIG])dnl
+])
+m4trace:/usr/share/aclocal/pkg.m4:267: -1- AC_DEFUN([PKG_CHECK_VAR], [AC_REQUIRE([PKG_PROG_PKG_CONFIG])dnl
 AC_ARG_VAR([$1], [value of $3 for $2, overriding pkg-config])dnl
 
 _PKG_CONFIG([$1], [variable="][$3]["], [$2])
 AS_VAR_COPY([$1], [pkg_cv_][$1])
 
 AS_VAR_IF([$1], [""], [$5], [$4])dnl
-])dnl PKG_CHECK_VAR
-
-dnl PKG_WITH_MODULES(VARIABLE-PREFIX, MODULES,
-dnl   [ACTION-IF-FOUND],[ACTION-IF-NOT-FOUND],
-dnl   [DESCRIPTION], [DEFAULT])
-dnl ------------------------------------------
-dnl
-dnl Prepare a "--with-" configure option using the lowercase
-dnl [VARIABLE-PREFIX] name, merging the behaviour of AC_ARG_WITH and
-dnl PKG_CHECK_MODULES in a single macro.
-AC_DEFUN([PKG_WITH_MODULES],
-[
+])
+m4trace:/usr/share/aclocal/pkg.m4:285: -1- AC_DEFUN([PKG_WITH_MODULES], [
 m4_pushdef([with_arg], m4_tolower([$1]))
 
 m4_pushdef([description],
@@ -1917,147 +1560,35 @@ m4_popdef([with_arg])
 m4_popdef([description])
 m4_popdef([def_arg])
 
-])dnl PKG_WITH_MODULES
-
-dnl PKG_HAVE_WITH_MODULES(VARIABLE-PREFIX, MODULES,
-dnl   [DESCRIPTION], [DEFAULT])
-dnl -----------------------------------------------
-dnl
-dnl Convenience macro to trigger AM_CONDITIONAL after PKG_WITH_MODULES
-dnl check._[VARIABLE-PREFIX] is exported as make variable.
-AC_DEFUN([PKG_HAVE_WITH_MODULES],
-[
+])
+m4trace:/usr/share/aclocal/pkg.m4:322: -1- AC_DEFUN([PKG_HAVE_WITH_MODULES], [
 PKG_WITH_MODULES([$1],[$2],,,[$3],[$4])
 
 AM_CONDITIONAL([HAVE_][$1],
                [test "$AS_TR_SH([with_]m4_tolower([$1]))" = "yes"])
-])dnl PKG_HAVE_WITH_MODULES
-
-dnl PKG_HAVE_DEFINE_WITH_MODULES(VARIABLE-PREFIX, MODULES,
-dnl   [DESCRIPTION], [DEFAULT])
-dnl ------------------------------------------------------
-dnl
-dnl Convenience macro to run AM_CONDITIONAL and AC_DEFINE after
-dnl PKG_WITH_MODULES check. HAVE_[VARIABLE-PREFIX] is exported as make
-dnl and preprocessor variable.
-AC_DEFUN([PKG_HAVE_DEFINE_WITH_MODULES],
-[
+])
+m4trace:/usr/share/aclocal/pkg.m4:337: -1- AC_DEFUN([PKG_HAVE_DEFINE_WITH_MODULES], [
 PKG_HAVE_WITH_MODULES([$1],[$2],[$3],[$4])
 
 AS_IF([test "$AS_TR_SH([with_]m4_tolower([$1]))" = "yes"],
         [AC_DEFINE([HAVE_][$1], 1, [Enable ]m4_tolower([$1])[ support])])
-])dnl PKG_HAVE_DEFINE_WITH_MODULES
-
-# Copyright (C) 2002, 2003, 2005, 2006, 2007, 2008, 2011 Free Software
-# Foundation, Inc.
-#
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
-
-# serial 1
-
-# AM_AUTOMAKE_VERSION(VERSION)
-# ----------------------------
-# Automake X.Y traces this macro to ensure aclocal.m4 has been
-# generated from the m4 files accompanying Automake X.Y.
-# (This private macro should not be called outside this file.)
-AC_DEFUN([AM_AUTOMAKE_VERSION],
-[am__api_version='1.11'
+])
+m4trace:/usr/share/aclocal-1.11/amversion.m4:17: -1- AC_DEFUN([AM_AUTOMAKE_VERSION], [am__api_version='1.11'
 dnl Some users find AM_AUTOMAKE_VERSION and mistake it for a way to
 dnl require some minimum version.  Point them to the right macro.
 m4_if([$1], [1.11.6], [],
       [AC_FATAL([Do not call $0, use AM_INIT_AUTOMAKE([$1]).])])dnl
 ])
-
-# _AM_AUTOCONF_VERSION(VERSION)
-# -----------------------------
-# aclocal traces this macro to find the Autoconf version.
-# This is a private macro too.  Using m4_define simplifies
-# the logic in aclocal, which can simply ignore this definition.
-m4_define([_AM_AUTOCONF_VERSION], [])
-
-# AM_SET_CURRENT_AUTOMAKE_VERSION
-# -------------------------------
-# Call AM_AUTOMAKE_VERSION and AM_AUTOMAKE_VERSION so they can be traced.
-# This function is AC_REQUIREd by AM_INIT_AUTOMAKE.
-AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION],
-[AM_AUTOMAKE_VERSION([1.11.6])dnl
+m4trace:/usr/share/aclocal-1.11/amversion.m4:36: -1- AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION], [AM_AUTOMAKE_VERSION([1.11.6])dnl
 m4_ifndef([AC_AUTOCONF_VERSION],
   [m4_copy([m4_PACKAGE_VERSION], [AC_AUTOCONF_VERSION])])dnl
 _AM_AUTOCONF_VERSION(m4_defn([AC_AUTOCONF_VERSION]))])
-
-# AM_AUX_DIR_EXPAND                                         -*- Autoconf -*-
-
-# Copyright (C) 2001, 2003, 2005, 2011 Free Software Foundation, Inc.
-#
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
-
-# serial 1
-
-# For projects using AC_CONFIG_AUX_DIR([foo]), Autoconf sets
-# $ac_aux_dir to `$srcdir/foo'.  In other projects, it is set to
-# `$srcdir', `$srcdir/..', or `$srcdir/../..'.
-#
-# Of course, Automake must honor this variable whenever it calls a
-# tool from the auxiliary directory.  The problem is that $srcdir (and
-# therefore $ac_aux_dir as well) can be either absolute or relative,
-# depending on how configure is run.  This is pretty annoying, since
-# it makes $ac_aux_dir quite unusable in subdirectories: in the top
-# source directory, any form will work fine, but in subdirectories a
-# relative path needs to be adjusted first.
-#
-# $ac_aux_dir/missing
-#    fails when called from a subdirectory if $ac_aux_dir is relative
-# $top_srcdir/$ac_aux_dir/missing
-#    fails if $ac_aux_dir is absolute,
-#    fails when called from a subdirectory in a VPATH build with
-#          a relative $ac_aux_dir
-#
-# The reason of the latter failure is that $top_srcdir and $ac_aux_dir
-# are both prefixed by $srcdir.  In an in-source build this is usually
-# harmless because $srcdir is `.', but things will broke when you
-# start a VPATH build or use an absolute $srcdir.
-#
-# So we could use something similar to $top_srcdir/$ac_aux_dir/missing,
-# iff we strip the leading $srcdir from $ac_aux_dir.  That would be:
-#   am_aux_dir='\$(top_srcdir)/'`expr "$ac_aux_dir" : "$srcdir//*\(.*\)"`
-# and then we would define $MISSING as
-#   MISSING="\${SHELL} $am_aux_dir/missing"
-# This will work as long as MISSING is not called from configure, because
-# unfortunately $(top_srcdir) has no meaning in configure.
-# However there are other variables, like CC, which are often used in
-# configure, and could therefore not use this "fixed" $ac_aux_dir.
-#
-# Another solution, used here, is to always expand $ac_aux_dir to an
-# absolute PATH.  The drawback is that using absolute paths prevent a
-# configured tree to be moved without reconfiguration.
-
-AC_DEFUN([AM_AUX_DIR_EXPAND],
-[dnl Rely on autoconf to set up CDPATH properly.
+m4trace:/usr/share/aclocal-1.11/auxdir.m4:49: -1- AC_DEFUN([AM_AUX_DIR_EXPAND], [dnl Rely on autoconf to set up CDPATH properly.
 AC_PREREQ([2.50])dnl
 # expand $ac_aux_dir to an absolute path
 am_aux_dir=`cd $ac_aux_dir && pwd`
 ])
-
-# AM_CONDITIONAL                                            -*- Autoconf -*-
-
-# Copyright (C) 1997, 2000, 2001, 2003, 2004, 2005, 2006, 2008
-# Free Software Foundation, Inc.
-#
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
-
-# serial 9
-
-# AM_CONDITIONAL(NAME, SHELL-CONDITION)
-# -------------------------------------
-# Define a conditional.
-AC_DEFUN([AM_CONDITIONAL],
-[AC_PREREQ(2.52)dnl
+m4trace:/usr/share/aclocal-1.11/cond.m4:15: -1- AC_DEFUN([AM_CONDITIONAL], [AC_PREREQ(2.52)dnl
  ifelse([$1], [TRUE],  [AC_FATAL([$0: invalid condition: $1])],
 	[$1], [FALSE], [AC_FATAL([$0: invalid condition: $1])])dnl
 AC_SUBST([$1_TRUE])dnl
@@ -2077,35 +1608,7 @@ AC_CONFIG_COMMANDS_PRE(
   AC_MSG_ERROR([[conditional "$1" was never defined.
 Usually this means the macro was only invoked conditionally.]])
 fi])])
-
-# Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2009,
-# 2010, 2011 Free Software Foundation, Inc.
-#
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
-
-# serial 12
-
-# There are a few dirty hacks below to avoid letting `AC_PROG_CC' be
-# written in clear, in which case automake, when reading aclocal.m4,
-# will think it sees a *use*, and therefore will trigger all it's
-# C support machinery.  Also note that it means that autoscan, seeing
-# CC etc. in the Makefile, will ask for an AC_PROG_CC use...
-
-
-# _AM_DEPENDENCIES(NAME)
-# ----------------------
-# See how the compiler implements dependency checking.
-# NAME is "CC", "CXX", "GCJ", or "OBJC".
-# We try a few techniques and use that to set a single cache variable.
-#
-# We don't AC_REQUIRE the corresponding AC_PROG_CC since the latter was
-# modified to invoke _AM_DEPENDENCIES(CC); we would have a circular
-# dependency, and given that the user is not expected to run this macro,
-# just rely on AC_PROG_CC.
-AC_DEFUN([_AM_DEPENDENCIES],
-[AC_REQUIRE([AM_SET_DEPDIR])dnl
+m4trace:/usr/share/aclocal-1.11/depend.m4:28: -1- AC_DEFUN([_AM_DEPENDENCIES], [AC_REQUIRE([AM_SET_DEPDIR])dnl
 AC_REQUIRE([AM_OUTPUT_DEPENDENCY_COMMANDS])dnl
 AC_REQUIRE([AM_MAKE_INCLUDE])dnl
 AC_REQUIRE([AM_DEP_TRACK])dnl
@@ -2234,22 +1737,10 @@ AM_CONDITIONAL([am__fastdep$1], [
   test "x$enable_dependency_tracking" != xno \
   && test "$am_cv_$1_dependencies_compiler_type" = gcc3])
 ])
-
-
-# AM_SET_DEPDIR
-# -------------
-# Choose a directory name for dependency files.
-# This macro is AC_REQUIREd in _AM_DEPENDENCIES
-AC_DEFUN([AM_SET_DEPDIR],
-[AC_REQUIRE([AM_SET_LEADING_DOT])dnl
+m4trace:/usr/share/aclocal-1.11/depend.m4:164: -1- AC_DEFUN([AM_SET_DEPDIR], [AC_REQUIRE([AM_SET_LEADING_DOT])dnl
 AC_SUBST([DEPDIR], ["${am__leading_dot}deps"])dnl
 ])
-
-
-# AM_DEP_TRACK
-# ------------
-AC_DEFUN([AM_DEP_TRACK],
-[AC_ARG_ENABLE(dependency-tracking,
+m4trace:/usr/share/aclocal-1.11/depend.m4:172: -1- AC_DEFUN([AM_DEP_TRACK], [AC_ARG_ENABLE(dependency-tracking,
 [  --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors])
 if test "x$enable_dependency_tracking" != xno; then
@@ -2263,22 +1754,7 @@ _AM_SUBST_NOTMAKE([AMDEPBACKSLASH])dnl
 AC_SUBST([am__nodep])dnl
 _AM_SUBST_NOTMAKE([am__nodep])dnl
 ])
-
-# Generate code to set up dependency tracking.              -*- Autoconf -*-
-
-# Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2008
-# Free Software Foundation, Inc.
-#
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
-
-#serial 5
-
-# _AM_OUTPUT_DEPENDENCY_COMMANDS
-# ------------------------------
-AC_DEFUN([_AM_OUTPUT_DEPENDENCY_COMMANDS],
-[{
+m4trace:/usr/share/aclocal-1.11/depout.m4:14: -1- AC_DEFUN([_AM_OUTPUT_DEPENDENCY_COMMANDS], [{
   # Autoconf 2.62 quotes --file arguments for eval, but not when files
   # are listed without --file.  Let's play safe and only enable the eval
   # if we detect the quoting.
@@ -2328,61 +1804,16 @@ AC_DEFUN([_AM_OUTPUT_DEPENDENCY_COMMANDS],
     done
   done
 }
-])# _AM_OUTPUT_DEPENDENCY_COMMANDS
-
-
-# AM_OUTPUT_DEPENDENCY_COMMANDS
-# -----------------------------
-# This macro should only be invoked once -- use via AC_REQUIRE.
-#
-# This code is only required when automatic dependency tracking
-# is enabled.  FIXME.  This creates each `.P' file that we will
-# need in order to bootstrap the dependency handling code.
-AC_DEFUN([AM_OUTPUT_DEPENDENCY_COMMANDS],
-[AC_CONFIG_COMMANDS([depfiles],
+])
+m4trace:/usr/share/aclocal-1.11/depout.m4:75: -1- AC_DEFUN([AM_OUTPUT_DEPENDENCY_COMMANDS], [AC_CONFIG_COMMANDS([depfiles],
      [test x"$AMDEP_TRUE" != x"" || _AM_OUTPUT_DEPENDENCY_COMMANDS],
      [AMDEP_TRUE="$AMDEP_TRUE" ac_aux_dir="$ac_aux_dir"])
 ])
-
-# Copyright (C) 1996, 1997, 2000, 2001, 2003, 2005
-# Free Software Foundation, Inc.
-#
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
-
-# serial 8
-
-# AM_CONFIG_HEADER is obsolete.  It has been replaced by AC_CONFIG_HEADERS.
-AU_DEFUN([AM_CONFIG_HEADER], [AC_CONFIG_HEADERS($@)])
-
-# Do all the work for Automake.                             -*- Autoconf -*-
-
-# Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-# 2005, 2006, 2008, 2009 Free Software Foundation, Inc.
-#
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
-
-# serial 16
-
-# This macro actually does too much.  Some checks are only needed if
-# your package does certain things.  But this isn't really a big deal.
-
-# AM_INIT_AUTOMAKE(PACKAGE, VERSION, [NO-DEFINE])
-# AM_INIT_AUTOMAKE([OPTIONS])
-# -----------------------------------------------
-# The call with PACKAGE and VERSION arguments is the old style
-# call (pre autoconf-2.50), which is being phased out.  PACKAGE
-# and VERSION should now be passed to AC_INIT and removed from
-# the call to AM_INIT_AUTOMAKE.
-# We support both call styles for the transition.  After
-# the next Automake release, Autoconf can make the AC_INIT
-# arguments mandatory, and then we can depend on a new Autoconf
-# release and drop the old call support.
-AC_DEFUN([AM_INIT_AUTOMAKE],
-[AC_PREREQ([2.62])dnl
+m4trace:/usr/share/aclocal-1.11/header.m4:12: -1- AU_DEFUN([AM_CONFIG_HEADER], [AC_CONFIG_HEADERS($@)])
+m4trace:/usr/share/aclocal-1.11/header.m4:12: -1- AC_DEFUN([AM_CONFIG_HEADER], [AC_DIAGNOSE([obsolete], [The macro `AM_CONFIG_HEADER' is obsolete.
+You should run autoupdate.])dnl
+AC_CONFIG_HEADERS($@)])
+m4trace:/usr/share/aclocal-1.11/init.m4:26: -1- AC_DEFUN([AM_INIT_AUTOMAKE], [AC_PREREQ([2.62])dnl
 dnl Autoconf wants to disallow AM_ names.  We explicitly allow
 dnl the ones we care about.
 m4_pattern_allow([^AM_[A-Z]+FLAGS$])dnl
@@ -2466,23 +1897,7 @@ AC_CONFIG_COMMANDS_PRE(dnl
 [m4_provide_if([_AM_COMPILER_EXEEXT],
   [AM_CONDITIONAL([am__EXEEXT], [test -n "$EXEEXT"])])])dnl
 ])
-
-dnl Hook into `_AC_COMPILER_EXEEXT' early to learn its expansion.  Do not
-dnl add the conditional right here, as _AC_COMPILER_EXEEXT may be further
-dnl mangled by Autoconf and run in a shell conditional statement.
-m4_define([_AC_COMPILER_EXEEXT],
-m4_defn([_AC_COMPILER_EXEEXT])[m4_provide([_AM_COMPILER_EXEEXT])])
-
-
-# When config.status generates a header, we must update the stamp-h file.
-# This file resides in the same directory as the config header
-# that is generated.  The stamp files are numbered to have different names.
-
-# Autoconf calls _AC_AM_CONFIG_HEADER_HOOK (when defined) in the
-# loop where config.status creates the headers, so we can generate
-# our stamp files there.
-AC_DEFUN([_AC_AM_CONFIG_HEADER_HOOK],
-[# Compute $1's index in $config_headers.
+m4trace:/usr/share/aclocal-1.11/init.m4:126: -1- AC_DEFUN([_AC_AM_CONFIG_HEADER_HOOK], [# Compute $1's index in $config_headers.
 _am_arg=$1
 _am_stamp_count=1
 for _am_header in $config_headers :; do
@@ -2494,21 +1909,7 @@ for _am_header in $config_headers :; do
   esac
 done
 echo "timestamp for $_am_arg" >`AS_DIRNAME(["$_am_arg"])`/stamp-h[]$_am_stamp_count])
-
-# Copyright (C) 2001, 2003, 2005, 2008, 2011 Free Software Foundation,
-# Inc.
-#
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
-
-# serial 1
-
-# AM_PROG_INSTALL_SH
-# ------------------
-# Define $install_sh.
-AC_DEFUN([AM_PROG_INSTALL_SH],
-[AC_REQUIRE([AM_AUX_DIR_EXPAND])dnl
+m4trace:/usr/share/aclocal-1.11/install-sh.m4:14: -1- AC_DEFUN([AM_PROG_INSTALL_SH], [AC_REQUIRE([AM_AUX_DIR_EXPAND])dnl
 if test x"${install_sh}" != xset; then
   case $am_aux_dir in
   *\ * | *\	*)
@@ -2518,19 +1919,7 @@ if test x"${install_sh}" != xset; then
   esac
 fi
 AC_SUBST(install_sh)])
-
-# Copyright (C) 2003, 2005  Free Software Foundation, Inc.
-#
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
-
-# serial 2
-
-# Check whether the underlying file-system supports filenames
-# with a leading dot.  For instance MS-DOS doesn't.
-AC_DEFUN([AM_SET_LEADING_DOT],
-[rm -rf .tst 2>/dev/null
+m4trace:/usr/share/aclocal-1.11/lead-dot.m4:12: -1- AC_DEFUN([AM_SET_LEADING_DOT], [rm -rf .tst 2>/dev/null
 mkdir .tst 2>/dev/null
 if test -d .tst; then
   am__leading_dot=.
@@ -2539,22 +1928,7 @@ else
 fi
 rmdir .tst 2>/dev/null
 AC_SUBST([am__leading_dot])])
-
-# Check to see how 'make' treats includes.	            -*- Autoconf -*-
-
-# Copyright (C) 2001, 2002, 2003, 2005, 2009  Free Software Foundation, Inc.
-#
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
-
-# serial 4
-
-# AM_MAKE_INCLUDE()
-# -----------------
-# Check to see how make treats includes.
-AC_DEFUN([AM_MAKE_INCLUDE],
-[am_make=${MAKE-make}
+m4trace:/usr/share/aclocal-1.11/make.m4:14: -1- AC_DEFUN([AM_MAKE_INCLUDE], [am_make=${MAKE-make}
 cat > confinc << 'END'
 am__doit:
 	@echo this is the am__doit target
@@ -2591,32 +1965,10 @@ AC_SUBST([am__quote])
 AC_MSG_RESULT([$_am_result])
 rm -f confinc confmf
 ])
-
-# Fake the existence of programs that GNU maintainers use.  -*- Autoconf -*-
-
-# Copyright (C) 1997, 1999, 2000, 2001, 2003, 2004, 2005, 2008
-# Free Software Foundation, Inc.
-#
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
-
-# serial 6
-
-# AM_MISSING_PROG(NAME, PROGRAM)
-# ------------------------------
-AC_DEFUN([AM_MISSING_PROG],
-[AC_REQUIRE([AM_MISSING_HAS_RUN])
+m4trace:/usr/share/aclocal-1.11/missing.m4:14: -1- AC_DEFUN([AM_MISSING_PROG], [AC_REQUIRE([AM_MISSING_HAS_RUN])
 $1=${$1-"${am_missing_run}$2"}
 AC_SUBST($1)])
-
-
-# AM_MISSING_HAS_RUN
-# ------------------
-# Define MISSING if not defined so far and test if it supports --run.
-# If it does, set am_missing_run to use it, otherwise, to nothing.
-AC_DEFUN([AM_MISSING_HAS_RUN],
-[AC_REQUIRE([AM_AUX_DIR_EXPAND])dnl
+m4trace:/usr/share/aclocal-1.11/missing.m4:24: -1- AC_DEFUN([AM_MISSING_HAS_RUN], [AC_REQUIRE([AM_AUX_DIR_EXPAND])dnl
 AC_REQUIRE_AUX_FILE([missing])dnl
 if test x"${MISSING+set}" != xset; then
   case $am_aux_dir in
@@ -2634,21 +1986,7 @@ else
   AC_MSG_WARN([`missing' script is too old or missing])
 fi
 ])
-
-# Copyright (C) 2003, 2004, 2005, 2006, 2011 Free Software Foundation,
-# Inc.
-#
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
-
-# serial 1
-
-# AM_PROG_MKDIR_P
-# ---------------
-# Check for `mkdir -p'.
-AC_DEFUN([AM_PROG_MKDIR_P],
-[AC_PREREQ([2.60])dnl
+m4trace:/usr/share/aclocal-1.11/mkdirp.m4:14: -1- AC_DEFUN([AM_PROG_MKDIR_P], [AC_PREREQ([2.60])dnl
 AC_REQUIRE([AC_PROG_MKDIR_P])dnl
 dnl Automake 1.8 to 1.9.6 used to define mkdir_p.  We now use MKDIR_P,
 dnl while keeping a definition of mkdir_p for backward compatibility.
@@ -2663,56 +2001,16 @@ case $mkdir_p in
   */*) mkdir_p="\$(top_builddir)/$mkdir_p" ;;
 esac
 ])
-
-# Helper functions for option handling.                     -*- Autoconf -*-
-
-# Copyright (C) 2001, 2002, 2003, 2005, 2008, 2010 Free Software
-# Foundation, Inc.
-#
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
-
-# serial 5
-
-# _AM_MANGLE_OPTION(NAME)
-# -----------------------
-AC_DEFUN([_AM_MANGLE_OPTION],
-[[_AM_OPTION_]m4_bpatsubst($1, [[^a-zA-Z0-9_]], [_])])
-
-# _AM_SET_OPTION(NAME)
-# --------------------
-# Set option NAME.  Presently that only means defining a flag for this option.
-AC_DEFUN([_AM_SET_OPTION],
-[m4_define(_AM_MANGLE_OPTION([$1]), 1)])
-
-# _AM_SET_OPTIONS(OPTIONS)
-# ------------------------
-# OPTIONS is a space-separated list of Automake options.
-AC_DEFUN([_AM_SET_OPTIONS],
-[m4_foreach_w([_AM_Option], [$1], [_AM_SET_OPTION(_AM_Option)])])
-
-# _AM_IF_OPTION(OPTION, IF-SET, [IF-NOT-SET])
-# -------------------------------------------
-# Execute IF-SET if OPTION is set, IF-NOT-SET otherwise.
-AC_DEFUN([_AM_IF_OPTION],
-[m4_ifset(_AM_MANGLE_OPTION([$1]), [$2], [$3])])
-
-# Check to make sure that the build environment is sane.    -*- Autoconf -*-
-
-# Copyright (C) 1996, 1997, 2000, 2001, 2003, 2005, 2008
-# Free Software Foundation, Inc.
-#
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
-
-# serial 5
-
-# AM_SANITY_CHECK
-# ---------------
-AC_DEFUN([AM_SANITY_CHECK],
-[AC_MSG_CHECKING([whether build environment is sane])
+m4trace:/usr/share/aclocal-1.11/options.m4:14: -1- AC_DEFUN([_AM_MANGLE_OPTION], [[_AM_OPTION_]m4_bpatsubst($1, [[^a-zA-Z0-9_]], [_])])
+m4trace:/usr/share/aclocal-1.11/options.m4:20: -1- AC_DEFUN([_AM_SET_OPTION], [m4_define(_AM_MANGLE_OPTION([$1]), 1)])
+m4trace:/usr/share/aclocal-1.11/options.m4:26: -1- AC_DEFUN([_AM_SET_OPTIONS], [m4_foreach_w([_AM_Option], [$1], [_AM_SET_OPTION(_AM_Option)])])
+m4trace:/usr/share/aclocal-1.11/options.m4:32: -1- AC_DEFUN([_AM_IF_OPTION], [m4_ifset(_AM_MANGLE_OPTION([$1]), [$2], [$3])])
+m4trace:/usr/share/aclocal-1.11/runlog.m4:14: -1- AC_DEFUN([AM_RUN_LOG], [{ echo "$as_me:$LINENO: $1" >&AS_MESSAGE_LOG_FD
+   ($1) >&AS_MESSAGE_LOG_FD 2>&AS_MESSAGE_LOG_FD
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&AS_MESSAGE_LOG_FD
+   (exit $ac_status); }])
+m4trace:/usr/share/aclocal-1.11/sanity.m4:14: -1- AC_DEFUN([AM_SANITY_CHECK], [AC_MSG_CHECKING([whether build environment is sane])
 # Just in case
 sleep 1
 echo timestamp > conftest.file
@@ -2762,26 +2060,50 @@ else
 Check your system clock])
 fi
 AC_MSG_RESULT(yes)])
-
-# Copyright (C) 2001, 2003, 2005, 2011 Free Software Foundation, Inc.
-#
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
-
-# serial 1
-
-# AM_PROG_INSTALL_STRIP
-# ---------------------
-# One issue with vendor `install' (even GNU) is that you can't
-# specify the program used to strip binaries.  This is especially
-# annoying in cross-compiling environments, where the build's strip
-# is unlikely to handle the host's binaries.
-# Fortunately install-sh will honor a STRIPPROG variable, so we
-# always use install-sh in `make install-strip', and initialize
-# STRIPPROG with the value of the STRIP variable (set by the user).
-AC_DEFUN([AM_PROG_INSTALL_STRIP],
-[AC_REQUIRE([AM_PROG_INSTALL_SH])dnl
+m4trace:/usr/share/aclocal-1.11/silent.m4:14: -1- AC_DEFUN([AM_SILENT_RULES], [AC_ARG_ENABLE([silent-rules],
+[  --enable-silent-rules          less verbose build output (undo: `make V=1')
+  --disable-silent-rules         verbose build output (undo: `make V=0')])
+case $enable_silent_rules in
+yes) AM_DEFAULT_VERBOSITY=0;;
+no)  AM_DEFAULT_VERBOSITY=1;;
+*)   AM_DEFAULT_VERBOSITY=m4_if([$1], [yes], [0], [1]);;
+esac
+dnl
+dnl A few `make' implementations (e.g., NonStop OS and NextStep)
+dnl do not support nested variable expansions.
+dnl See automake bug#9928 and bug#10237.
+am_make=${MAKE-make}
+AC_CACHE_CHECK([whether $am_make supports nested variables],
+   [am_cv_make_support_nested_variables],
+   [if AS_ECHO([['TRUE=$(BAR$(V))
+BAR0=false
+BAR1=true
+V=1
+am__doit:
+	@$(TRUE)
+.PHONY: am__doit']]) | $am_make -f - >/dev/null 2>&1; then
+  am_cv_make_support_nested_variables=yes
+else
+  am_cv_make_support_nested_variables=no
+fi])
+if test $am_cv_make_support_nested_variables = yes; then
+  dnl Using `$V' instead of `$(V)' breaks IRIX make.
+  AM_V='$(V)'
+  AM_DEFAULT_V='$(AM_DEFAULT_VERBOSITY)'
+else
+  AM_V=$AM_DEFAULT_VERBOSITY
+  AM_DEFAULT_V=$AM_DEFAULT_VERBOSITY
+fi
+AC_SUBST([AM_V])dnl
+AM_SUBST_NOTMAKE([AM_V])dnl
+AC_SUBST([AM_DEFAULT_V])dnl
+AM_SUBST_NOTMAKE([AM_DEFAULT_V])dnl
+AC_SUBST([AM_DEFAULT_VERBOSITY])dnl
+AM_BACKSLASH='\'
+AC_SUBST([AM_BACKSLASH])dnl
+_AM_SUBST_NOTMAKE([AM_BACKSLASH])dnl
+])
+m4trace:/usr/share/aclocal-1.11/strip.m4:19: -1- AC_DEFUN([AM_PROG_INSTALL_STRIP], [AC_REQUIRE([AM_PROG_INSTALL_SH])dnl
 # Installed binaries are usually stripped using `strip' when the user
 # run `make install-strip'.  However `strip' might not be the right
 # tool to use in cross-compilation environments, therefore Automake
@@ -2792,51 +2114,9 @@ if test "$cross_compiling" != no; then
 fi
 INSTALL_STRIP_PROGRAM="\$(install_sh) -c -s"
 AC_SUBST([INSTALL_STRIP_PROGRAM])])
-
-# Copyright (C) 2006, 2008, 2010 Free Software Foundation, Inc.
-#
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
-
-# serial 3
-
-# _AM_SUBST_NOTMAKE(VARIABLE)
-# ---------------------------
-# Prevent Automake from outputting VARIABLE = @VARIABLE@ in Makefile.in.
-# This macro is traced by Automake.
-AC_DEFUN([_AM_SUBST_NOTMAKE])
-
-# AM_SUBST_NOTMAKE(VARIABLE)
-# --------------------------
-# Public sister of _AM_SUBST_NOTMAKE.
-AC_DEFUN([AM_SUBST_NOTMAKE], [_AM_SUBST_NOTMAKE($@)])
-
-# Check how to create a tarball.                            -*- Autoconf -*-
-
-# Copyright (C) 2004, 2005, 2012 Free Software Foundation, Inc.
-#
-# This file is free software; the Free Software Foundation
-# gives unlimited permission to copy and/or distribute it,
-# with or without modifications, as long as this notice is preserved.
-
-# serial 2
-
-# _AM_PROG_TAR(FORMAT)
-# --------------------
-# Check how to create a tarball in format FORMAT.
-# FORMAT should be one of `v7', `ustar', or `pax'.
-#
-# Substitute a variable $(am__tar) that is a command
-# writing to stdout a FORMAT-tarball containing the directory
-# $tardir.
-#     tardir=directory && $(am__tar) > result.tar
-#
-# Substitute a variable $(am__untar) that extract such
-# a tarball read from stdin.
-#     $(am__untar) < result.tar
-AC_DEFUN([_AM_PROG_TAR],
-[# Always define AMTAR for backward compatibility.  Yes, it's still used
+m4trace:/usr/share/aclocal-1.11/substnot.m4:14: -1- AC_DEFUN([_AM_SUBST_NOTMAKE])
+m4trace:/usr/share/aclocal-1.11/substnot.m4:19: -1- AC_DEFUN([AM_SUBST_NOTMAKE], [_AM_SUBST_NOTMAKE($@)])
+m4trace:/usr/share/aclocal-1.11/tar.m4:24: -1- AC_DEFUN([_AM_PROG_TAR], [# Always define AMTAR for backward compatibility.  Yes, it's still used
 # in the wild :-(  We should find a proper way to deprecate it ...
 AC_SUBST([AMTAR], ['$${TAR-tar}'])
 m4_if([$1], [v7],
@@ -2907,5 +2187,296 @@ AC_CACHE_VAL([am_cv_prog_tar_$1], [am_cv_prog_tar_$1=$_am_tool])
 AC_MSG_RESULT([$am_cv_prog_tar_$1])])
 AC_SUBST([am__tar])
 AC_SUBST([am__untar])
-]) # _AM_PROG_TAR
-
+])
+m4trace:configure.ac:1: -1- m4_pattern_forbid([^_?A[CHUM]_])
+m4trace:configure.ac:1: -1- m4_pattern_forbid([_AC_])
+m4trace:configure.ac:1: -1- m4_pattern_forbid([^LIBOBJS$], [do not use LIBOBJS directly, use AC_LIBOBJ (see section `AC_LIBOBJ vs LIBOBJS'])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^AS_FLAGS$])
+m4trace:configure.ac:1: -1- m4_pattern_forbid([^_?m4_])
+m4trace:configure.ac:1: -1- m4_pattern_forbid([^dnl$])
+m4trace:configure.ac:1: -1- m4_pattern_forbid([^_?AS_])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^SHELL$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^PATH_SEPARATOR$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^PACKAGE_NAME$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^PACKAGE_TARNAME$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^PACKAGE_VERSION$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^PACKAGE_STRING$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^PACKAGE_BUGREPORT$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^PACKAGE_URL$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^exec_prefix$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^prefix$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^program_transform_name$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^bindir$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^sbindir$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^libexecdir$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^datarootdir$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^datadir$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^sysconfdir$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^sharedstatedir$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^localstatedir$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^runstatedir$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^includedir$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^oldincludedir$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^docdir$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^infodir$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^htmldir$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^dvidir$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^pdfdir$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^psdir$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^libdir$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^localedir$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^mandir$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^PACKAGE_NAME$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^PACKAGE_TARNAME$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^PACKAGE_VERSION$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^PACKAGE_STRING$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^PACKAGE_BUGREPORT$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^PACKAGE_URL$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^DEFS$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^ECHO_C$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^ECHO_N$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^ECHO_T$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^LIBS$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^build_alias$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^host_alias$])
+m4trace:configure.ac:1: -1- m4_pattern_allow([^target_alias$])
+m4trace:configure.ac:3: -1- AM_CONFIG_HEADER([src/config.h])
+m4trace:configure.ac:3: -1- _m4_warn([obsolete], [The macro `AM_CONFIG_HEADER' is obsolete.
+You should run autoupdate.], [/usr/share/aclocal-1.11/header.m4:12: AM_CONFIG_HEADER is expanded from...
+configure.ac:3: the top level])
+m4trace:configure.ac:9: -1- AM_INIT_AUTOMAKE
+m4trace:configure.ac:9: -1- m4_pattern_allow([^AM_[A-Z]+FLAGS$])
+m4trace:configure.ac:9: -1- AM_SET_CURRENT_AUTOMAKE_VERSION
+m4trace:configure.ac:9: -1- AM_AUTOMAKE_VERSION([1.11.6])
+m4trace:configure.ac:9: -1- _AM_AUTOCONF_VERSION([2.69])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^INSTALL_PROGRAM$])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^INSTALL_SCRIPT$])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^INSTALL_DATA$])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^am__isrc$])
+m4trace:configure.ac:9: -1- _AM_SUBST_NOTMAKE([am__isrc])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^CYGPATH_W$])
+m4trace:configure.ac:9: -1- _AM_SET_OPTIONS([])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^PACKAGE$])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^VERSION$])
+m4trace:configure.ac:9: -1- _AM_IF_OPTION([no-define], [], [AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of package])
+ AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])])
+m4trace:configure.ac:9: -2- _AM_MANGLE_OPTION([no-define])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^PACKAGE$])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^VERSION$])
+m4trace:configure.ac:9: -1- AM_SANITY_CHECK
+m4trace:configure.ac:9: -1- AM_MISSING_PROG([ACLOCAL], [aclocal-${am__api_version}])
+m4trace:configure.ac:9: -1- AM_MISSING_HAS_RUN
+m4trace:configure.ac:9: -1- AM_AUX_DIR_EXPAND
+m4trace:configure.ac:9: -1- m4_pattern_allow([^ACLOCAL$])
+m4trace:configure.ac:9: -1- AM_MISSING_PROG([AUTOCONF], [autoconf])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^AUTOCONF$])
+m4trace:configure.ac:9: -1- AM_MISSING_PROG([AUTOMAKE], [automake-${am__api_version}])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^AUTOMAKE$])
+m4trace:configure.ac:9: -1- AM_MISSING_PROG([AUTOHEADER], [autoheader])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^AUTOHEADER$])
+m4trace:configure.ac:9: -1- AM_MISSING_PROG([MAKEINFO], [makeinfo])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^MAKEINFO$])
+m4trace:configure.ac:9: -1- AM_PROG_INSTALL_SH
+m4trace:configure.ac:9: -1- m4_pattern_allow([^install_sh$])
+m4trace:configure.ac:9: -1- AM_PROG_INSTALL_STRIP
+m4trace:configure.ac:9: -1- m4_pattern_allow([^STRIP$])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^INSTALL_STRIP_PROGRAM$])
+m4trace:configure.ac:9: -1- AM_PROG_MKDIR_P
+m4trace:configure.ac:9: -1- m4_pattern_allow([^MKDIR_P$])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^mkdir_p$])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^AWK$])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^SET_MAKE$])
+m4trace:configure.ac:9: -1- AM_SET_LEADING_DOT
+m4trace:configure.ac:9: -1- m4_pattern_allow([^am__leading_dot$])
+m4trace:configure.ac:9: -1- _AM_IF_OPTION([tar-ustar], [_AM_PROG_TAR([ustar])], [_AM_IF_OPTION([tar-pax], [_AM_PROG_TAR([pax])],
+			     [_AM_PROG_TAR([v7])])])
+m4trace:configure.ac:9: -2- _AM_MANGLE_OPTION([tar-ustar])
+m4trace:configure.ac:9: -1- _AM_IF_OPTION([tar-pax], [_AM_PROG_TAR([pax])], [_AM_PROG_TAR([v7])])
+m4trace:configure.ac:9: -2- _AM_MANGLE_OPTION([tar-pax])
+m4trace:configure.ac:9: -1- _AM_PROG_TAR([v7])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^AMTAR$])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^am__tar$])
+m4trace:configure.ac:9: -1- m4_pattern_allow([^am__untar$])
+m4trace:configure.ac:9: -1- _AM_IF_OPTION([no-dependencies], [], [AC_PROVIDE_IFELSE([AC_PROG_CC],
+		  [_AM_DEPENDENCIES(CC)],
+		  [define([AC_PROG_CC],
+			  defn([AC_PROG_CC])[_AM_DEPENDENCIES(CC)])])dnl
+AC_PROVIDE_IFELSE([AC_PROG_CXX],
+		  [_AM_DEPENDENCIES(CXX)],
+		  [define([AC_PROG_CXX],
+			  defn([AC_PROG_CXX])[_AM_DEPENDENCIES(CXX)])])dnl
+AC_PROVIDE_IFELSE([AC_PROG_OBJC],
+		  [_AM_DEPENDENCIES(OBJC)],
+		  [define([AC_PROG_OBJC],
+			  defn([AC_PROG_OBJC])[_AM_DEPENDENCIES(OBJC)])])dnl
+])
+m4trace:configure.ac:9: -2- _AM_MANGLE_OPTION([no-dependencies])
+m4trace:configure.ac:9: -1- _AM_IF_OPTION([silent-rules], [AC_REQUIRE([AM_SILENT_RULES])])
+m4trace:configure.ac:9: -2- _AM_MANGLE_OPTION([silent-rules])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^CFLAGS$])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^LDFLAGS$])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^LIBS$])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^CPPFLAGS$])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^CC$])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^ac_ct_CC$])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^EXEEXT$])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^OBJEXT$])
+m4trace:configure.ac:13: -1- _AM_DEPENDENCIES([CC])
+m4trace:configure.ac:13: -1- AM_SET_DEPDIR
+m4trace:configure.ac:13: -1- m4_pattern_allow([^DEPDIR$])
+m4trace:configure.ac:13: -1- AM_OUTPUT_DEPENDENCY_COMMANDS
+m4trace:configure.ac:13: -1- AM_MAKE_INCLUDE
+m4trace:configure.ac:13: -1- m4_pattern_allow([^am__include$])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^am__quote$])
+m4trace:configure.ac:13: -1- AM_DEP_TRACK
+m4trace:configure.ac:13: -1- AM_CONDITIONAL([AMDEP], [test "x$enable_dependency_tracking" != xno])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^AMDEP_TRUE$])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^AMDEP_FALSE$])
+m4trace:configure.ac:13: -1- _AM_SUBST_NOTMAKE([AMDEP_TRUE])
+m4trace:configure.ac:13: -1- _AM_SUBST_NOTMAKE([AMDEP_FALSE])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^AMDEPBACKSLASH$])
+m4trace:configure.ac:13: -1- _AM_SUBST_NOTMAKE([AMDEPBACKSLASH])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^am__nodep$])
+m4trace:configure.ac:13: -1- _AM_SUBST_NOTMAKE([am__nodep])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^CCDEPMODE$])
+m4trace:configure.ac:13: -1- AM_CONDITIONAL([am__fastdepCC], [
+  test "x$enable_dependency_tracking" != xno \
+  && test "$am_cv_CC_dependencies_compiler_type" = gcc3])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^am__fastdepCC_TRUE$])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^am__fastdepCC_FALSE$])
+m4trace:configure.ac:13: -1- _AM_SUBST_NOTMAKE([am__fastdepCC_TRUE])
+m4trace:configure.ac:13: -1- _AM_SUBST_NOTMAKE([am__fastdepCC_FALSE])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^_FILE_OFFSET_BITS$])
+m4trace:configure.ac:13: -1- m4_pattern_allow([^_LARGE_FILES$])
+m4trace:configure.ac:15: -1- m4_pattern_allow([^CPP$])
+m4trace:configure.ac:15: -1- m4_pattern_allow([^CPPFLAGS$])
+m4trace:configure.ac:15: -1- m4_pattern_allow([^CPP$])
+m4trace:configure.ac:15: -1- m4_pattern_allow([^GREP$])
+m4trace:configure.ac:15: -1- m4_pattern_allow([^EGREP$])
+m4trace:configure.ac:15: -1- m4_pattern_allow([^STDC_HEADERS$])
+m4trace:configure.ac:15: -1- m4_pattern_allow([^HAVE__BOOL$])
+m4trace:configure.ac:15: -1- m4_pattern_allow([^HAVE_STDBOOL_H$])
+m4trace:configure.ac:18: -1- m4_pattern_allow([^HAVE_NESTED_ROUTINES$])
+m4trace:configure.ac:27: -1- m4_pattern_allow([^HAVE_LIBGNUGETOPT$])
+m4trace:configure.ac:41: -1- PKG_CHECK_MODULES([LIBPNG], [libpng])
+m4trace:configure.ac:41: -1- PKG_PROG_PKG_CONFIG
+m4trace:configure.ac:41: -1- m4_pattern_forbid([^_?PKG_[A-Z_]+$])
+m4trace:configure.ac:41: -1- m4_pattern_allow([^PKG_CONFIG(_(PATH|LIBDIR|SYSROOT_DIR|ALLOW_SYSTEM_(CFLAGS|LIBS)))?$])
+m4trace:configure.ac:41: -1- m4_pattern_allow([^PKG_CONFIG_(DISABLE_UNINSTALLED|TOP_BUILD_DIR|DEBUG_SPEW)$])
+m4trace:configure.ac:41: -1- m4_pattern_allow([^PKG_CONFIG$])
+m4trace:configure.ac:41: -1- m4_pattern_allow([^PKG_CONFIG_PATH$])
+m4trace:configure.ac:41: -1- m4_pattern_allow([^PKG_CONFIG_LIBDIR$])
+m4trace:configure.ac:41: -1- m4_pattern_allow([^PKG_CONFIG$])
+m4trace:configure.ac:41: -1- m4_pattern_allow([^LIBPNG_CFLAGS$])
+m4trace:configure.ac:41: -1- m4_pattern_allow([^LIBPNG_LIBS$])
+m4trace:configure.ac:41: -1- PKG_CHECK_EXISTS([libpng], [pkg_cv_[]LIBPNG_CFLAGS=`$PKG_CONFIG --[]cflags "libpng" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
+m4trace:configure.ac:41: -1- PKG_CHECK_EXISTS([libpng], [pkg_cv_[]LIBPNG_LIBS=`$PKG_CONFIG --[]libs "libpng" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
+m4trace:configure.ac:41: -1- _PKG_SHORT_ERRORS_SUPPORTED
+m4trace:configure.ac:42: -1- m4_pattern_allow([^LIBPNG_CFLAGS$])
+m4trace:configure.ac:43: -1- m4_pattern_allow([^LIBPNG_LIBS$])
+m4trace:configure.ac:47: -1- m4_pattern_allow([^MAGICKCONFIG$])
+m4trace:configure.ac:60: -1- m4_pattern_allow([^HAVE_MAGICK$])
+m4trace:configure.ac:65: -1- m4_pattern_allow([^GMAGICKCONFIG$])
+m4trace:configure.ac:77: -1- m4_pattern_allow([^HAVE_GMAGICK$])
+m4trace:configure.ac:87: -1- m4_pattern_allow([^MAGICK_CPPFLAGS$])
+m4trace:configure.ac:88: -1- m4_pattern_allow([^MAGICK_LIBS$])
+m4trace:configure.ac:90: -1- PKG_CHECK_MODULES([FONTCONFIG], [fontconfig], [AC_DEFINE(HAVE_FONTCONFIG, 1, [whether Fontconfig is available])], [:])
+m4trace:configure.ac:90: -1- m4_pattern_allow([^FONTCONFIG_CFLAGS$])
+m4trace:configure.ac:90: -1- m4_pattern_allow([^FONTCONFIG_LIBS$])
+m4trace:configure.ac:90: -1- PKG_CHECK_EXISTS([fontconfig], [pkg_cv_[]FONTCONFIG_CFLAGS=`$PKG_CONFIG --[]cflags "fontconfig" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
+m4trace:configure.ac:90: -1- PKG_CHECK_EXISTS([fontconfig], [pkg_cv_[]FONTCONFIG_LIBS=`$PKG_CONFIG --[]libs "fontconfig" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
+m4trace:configure.ac:90: -1- _PKG_SHORT_ERRORS_SUPPORTED
+m4trace:configure.ac:90: -1- m4_pattern_allow([^HAVE_FONTCONFIG$])
+m4trace:configure.ac:91: -1- m4_pattern_allow([^FONTCONFIG_CFLAGS$])
+m4trace:configure.ac:92: -1- m4_pattern_allow([^FONTCONFIG_LIBS$])
+m4trace:configure.ac:94: -1- PKG_CHECK_MODULES([FRIBIDI], [fribidi], [AC_DEFINE(HAVE_FRIBIDI, 1, [whether FriBidi is available])], [:])
+m4trace:configure.ac:94: -1- m4_pattern_allow([^FRIBIDI_CFLAGS$])
+m4trace:configure.ac:94: -1- m4_pattern_allow([^FRIBIDI_LIBS$])
+m4trace:configure.ac:94: -1- PKG_CHECK_EXISTS([fribidi], [pkg_cv_[]FRIBIDI_CFLAGS=`$PKG_CONFIG --[]cflags "fribidi" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
+m4trace:configure.ac:94: -1- PKG_CHECK_EXISTS([fribidi], [pkg_cv_[]FRIBIDI_LIBS=`$PKG_CONFIG --[]libs "fribidi" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes ], [pkg_failed=yes])
+m4trace:configure.ac:94: -1- _PKG_SHORT_ERRORS_SUPPORTED
+m4trace:configure.ac:94: -1- m4_pattern_allow([^HAVE_FRIBIDI$])
+m4trace:configure.ac:95: -1- m4_pattern_allow([^FRIBIDI_CFLAGS$])
+m4trace:configure.ac:96: -1- m4_pattern_allow([^FRIBIDI_LIBS$])
+m4trace:configure.ac:98: -1- m4_pattern_allow([^HAVE_FREETYPE$])
+m4trace:configure.ac:98: -1- m4_pattern_allow([^HAVE_FT2BUILD_H$])
+m4trace:configure.ac:98: -1- m4_pattern_allow([^FREETYPE_CPPFLAGS$])
+m4trace:configure.ac:98: -1- m4_pattern_allow([^FREETYPE_LIBS$])
+m4trace:configure.ac:110: -1- m4_pattern_allow([^DEFAULT_VIDEO_FORMAT$])
+m4trace:configure.ac:110: -1- m4_pattern_allow([^DEFAULT_VIDEO_FORMAT$])
+m4trace:configure.ac:122: -1- m4_pattern_allow([^LOCALIZE_FILENAMES$])
+m4trace:configure.ac:138: -1- AM_CONDITIONAL([HAVE_DVDREAD], [$have_dvdread])
+m4trace:configure.ac:138: -1- m4_pattern_allow([^HAVE_DVDREAD_TRUE$])
+m4trace:configure.ac:138: -1- m4_pattern_allow([^HAVE_DVDREAD_FALSE$])
+m4trace:configure.ac:138: -1- _AM_SUBST_NOTMAKE([HAVE_DVDREAD_TRUE])
+m4trace:configure.ac:138: -1- _AM_SUBST_NOTMAKE([HAVE_DVDREAD_FALSE])
+m4trace:configure.ac:142: -1- AM_ICONV
+m4trace:configure.ac:142: -1- AM_ICONV_LINK
+m4trace:configure.ac:142: -1- m4_pattern_allow([^build$])
+m4trace:configure.ac:142: -1- m4_pattern_allow([^build_cpu$])
+m4trace:configure.ac:142: -1- m4_pattern_allow([^build_vendor$])
+m4trace:configure.ac:142: -1- m4_pattern_allow([^build_os$])
+m4trace:configure.ac:142: -1- m4_pattern_allow([^host$])
+m4trace:configure.ac:142: -1- m4_pattern_allow([^host_cpu$])
+m4trace:configure.ac:142: -1- m4_pattern_allow([^host_vendor$])
+m4trace:configure.ac:142: -1- m4_pattern_allow([^host_os$])
+m4trace:configure.ac:142: -1- AM_ICONV_LINKFLAGS_BODY
+m4trace:configure.ac:142: -1- AC_LIB_PREPARE_PREFIX
+m4trace:configure.ac:142: -1- AC_LIB_RPATH
+m4trace:configure.ac:142: -1- AC_LIB_PROG_LD
+m4trace:configure.ac:142: -1- AC_LIB_PROG_LD_GNU
+m4trace:configure.ac:142: -1- AC_LIB_LINKFLAGS_BODY([iconv])
+m4trace:configure.ac:142: -1- AC_LIB_PREPARE_MULTILIB
+m4trace:configure.ac:142: -1- AC_LIB_WITH_FINAL_PREFIX([
+    eval additional_includedir=\"$includedir\"
+    eval additional_libdir=\"$libdir\"
+  ])
+m4trace:configure.ac:142: -1- AC_LIB_WITH_FINAL_PREFIX([
+          eval additional_includedir=\"$includedir\"
+          eval additional_libdir=\"$libdir\"
+        ])
+m4trace:configure.ac:142: -1- AC_LIB_WITH_FINAL_PREFIX([eval x=\"$x\"])
+m4trace:configure.ac:142: -1- AC_LIB_WITH_FINAL_PREFIX([eval x=\"$x\"])
+m4trace:configure.ac:142: -1- AC_LIB_WITH_FINAL_PREFIX([eval x=\"$x\"])
+m4trace:configure.ac:142: -1- AC_LIB_WITH_FINAL_PREFIX([eval x=\"$x\"])
+m4trace:configure.ac:142: -1- AC_LIB_WITH_FINAL_PREFIX([eval x=\"$x\"])
+m4trace:configure.ac:142: -1- AC_LIB_APPENDTOVAR([CPPFLAGS], [$INCICONV])
+m4trace:configure.ac:142: -1- AC_LIB_WITH_FINAL_PREFIX([eval x=\"$x\"])
+m4trace:configure.ac:142: -1- m4_pattern_allow([^HAVE_ICONV$])
+m4trace:configure.ac:142: -1- m4_pattern_allow([^LIBICONV$])
+m4trace:configure.ac:142: -1- m4_pattern_allow([^LTLIBICONV$])
+m4trace:configure.ac:142: -1- m4_pattern_allow([^ICONV_CONST$])
+m4trace:configure.ac:144: -1- AM_PATH_XML2([2.6.0], [], [as_fn_error $? "You must have libxml2 >= 2.6.0 installed" "$LINENO" 5])
+m4trace:configure.ac:144: -1- m4_pattern_allow([^XML2_CONFIG$])
+m4trace:configure.ac:144: -1- _m4_warn([obsolete], [The macro `AC_TRY_RUN' is obsolete.
+You should run autoupdate.], [/usr/src/ports/autoconf2.5/autoconf2.5-2.69-4.noarch/src/autoconf-2.69/lib/autoconf/general.m4:2775: AC_TRY_RUN is expanded from...
+/usr/share/aclocal/libxml.m4:12: AM_PATH_XML2 is expanded from...
+configure.ac:144: the top level])
+m4trace:configure.ac:144: -1- _m4_warn([obsolete], [The macro `AC_TRY_LINK' is obsolete.
+You should run autoupdate.], [/usr/src/ports/autoconf2.5/autoconf2.5-2.69-4.noarch/src/autoconf-2.69/lib/autoconf/general.m4:2698: AC_TRY_LINK is expanded from...
+/usr/share/aclocal/libxml.m4:12: AM_PATH_XML2 is expanded from...
+configure.ac:144: the top level])
+m4trace:configure.ac:144: -1- m4_pattern_allow([^XML_CPPFLAGS$])
+m4trace:configure.ac:144: -1- m4_pattern_allow([^XML_LIBS$])
+m4trace:configure.ac:149: -1- m4_pattern_allow([^HAVE_DECL_O_BINARY$])
+m4trace:configure.ac:151: -1- _m4_warn([obsolete], [AC_OUTPUT should be used without arguments.
+You should run autoupdate.], [])
+m4trace:configure.ac:151: -1- m4_pattern_allow([^LIB@&t@OBJS$])
+m4trace:configure.ac:151: -1- m4_pattern_allow([^LTLIBOBJS$])
+m4trace:configure.ac:151: -1- AM_CONDITIONAL([am__EXEEXT], [test -n "$EXEEXT"])
+m4trace:configure.ac:151: -1- m4_pattern_allow([^am__EXEEXT_TRUE$])
+m4trace:configure.ac:151: -1- m4_pattern_allow([^am__EXEEXT_FALSE$])
+m4trace:configure.ac:151: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_TRUE])
+m4trace:configure.ac:151: -1- _AM_SUBST_NOTMAKE([am__EXEEXT_FALSE])
+m4trace:configure.ac:151: -1- _AC_AM_CONFIG_HEADER_HOOK(["$ac_file"])
+m4trace:configure.ac:151: -1- _AM_OUTPUT_DEPENDENCY_COMMANDS
