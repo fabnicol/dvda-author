@@ -122,8 +122,7 @@ $(PROGRAM).1:
 	fi
 	$(call docfollow,  $@)
 
-
-htmlpage: manpage
+$(PROGRAM).html: manpage
 	@if test "@HAVE_man2html@" = "yes"; then
 		@MAN2HTML@ < $(PROGRAM).1 > $@
 		$(call docfollow, $@)
@@ -139,7 +138,6 @@ htmlpage: manpage
 
 infodir:
 	$(MKDIR_P)  $(DESTDIR)@infodir@/$(PROGRAM)
-
 
 #normally is ${prefix}/share/applications/dvda-author-${VERSION}
 sysconfdir=@SHORTLINKDIR@
