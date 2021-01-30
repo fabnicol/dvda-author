@@ -108,7 +108,7 @@ htmlpage: $(PROGRAM).html
 pdfpage: $(PROGRAM).html
 		[ -f "@WKHTMLTOPDF@" ] && @WKHTMLTOPDF@ $(PROGRAM).html $(PROGRAM).pdf
 
-manpage:
+$(PROGRAM).1:
 	@if test "@HAVE_help2man@" = "yes"; then
 	  if test -f @BUILDDIR@/src/$(PROGRAM); then
 		@HELP2MAN@ -s 1 -N -o $(PROGRAM).1 @BUILDDIR@/src/$(PROGRAM)
