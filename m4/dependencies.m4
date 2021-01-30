@@ -236,7 +236,7 @@ m4_map([DVDA_TEST_AUX],[
 		[74b3156fb5ba68a48b07b568d181e771]
 	    ],
 	    [
-		[ImageMagick-download],
+		[imagemagick-download],
 		[7.0.10-35],
 		[],
 		[],

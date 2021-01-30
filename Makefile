@@ -7,8 +7,8 @@
 
 PROGRAM=dvda-author-dev
 export PROGRAM
-INSTALL=$(SHELL) /cygdrive/c/Users/fabrn/dvda-author/config/install-sh
-INSTALL_DATA=$(SHELL) /cygdrive/c/Users/fabrn/dvda-author/config/install-sh  -m 644
+INSTALL=$(SHELL) /home/fab/Documents/dvda-author/config/install-sh
+INSTALL_DATA=$(SHELL) /home/fab/Documents/dvda-author/config/install-sh  -m 644
 export INSTALL
 export INSTALL_DATA
 MKDIR_P=mkdir$(EXEEXT) -p
@@ -26,23 +26,23 @@ CPPFLAGS = -DHAVE_CONFIG_H
 
 PROGRAM_TARGETS :=  sox libogg FLAC ffmpeg dvdauthor lplex mjpegtools cdrtools a52dec libmpeg2 help2man ImageMagick man2html libiberty libfixwav 
 PROGRAM_TARGET_MAKEFILES := $(foreach prog,$(PROGRAM_TARGETS), \
-$(shell if test -f /cygdrive/c/Users/fabrn/dvda-author/mk/$(prog).mk; then \
-echo /cygdrive/c/Users/fabrn/dvda-author/mk/$(prog).mk; fi))
+$(shell if test -f /home/fab/Documents/dvda-author/mk/$(prog).mk; then \
+echo /home/fab/Documents/dvda-author/mk/$(prog).mk; fi))
 PROGRAM_TARGET_CONFIGS := $(foreach prog,$(PROGRAM_TARGETS), \
-$(shell if test  -f /cygdrive/c/Users/fabrn/dvda-author/mk/$(prog).mk ; then echo $(prog).config; fi))
+$(shell if test  -f /home/fab/Documents/dvda-author/mk/$(prog).mk ; then echo $(prog).config; fi))
 PROGRAM_TARGET_DEPCONFS := $(PROGRAM_TARGET_CONFIGS:.config=.depconf)
 
 ifneq "" "no"
   ifneq "libiberty/src" ""
-    BUILD_SUBDIRS += /cygdrive/c/Users/fabrn/dvda-author/libiberty/src
+    BUILD_SUBDIRS += /home/fab/Documents/dvda-author/libiberty/src
   endif
 else
   CPPFLAGS += -DWITHOUT_libiberty
 endif
 
-BUILD_SUBDIRS += /cygdrive/c/Users/fabrn/dvda-author/libfixwav/src
+BUILD_SUBDIRS += /home/fab/Documents/dvda-author/libfixwav/src
 
-BUILD_SUBDIRS += /cygdrive/c/Users/fabrn/dvda-author/src
+BUILD_SUBDIRS += /home/fab/Documents/dvda-author/src
 
 .SUFFIXES: .config .depconf
 
@@ -58,30 +58,29 @@ ALL_TARGETS += $(ALL_TARGETS_EXTERNAL) $(BUILD_SUBDIRS)
 
 .PHONY: all    libutils
 
-all:  $(ALL_TARGETS) $(PROGRAM).1 $(PROGRAM).html
+all:  $(ALL_TARGETS) manpage htmlpage pdfpage
 
-include /cygdrive/c/Users/fabrn/dvda-author/mk/functions.mk
+include /home/fab/Documents/dvda-author/mk/functions.mk
 include $(PROGRAM_TARGET_MAKEFILES)
-
 
 export CPPFLAGS
 export PARALLEL
 
 libutils:
-	$(MAKE) --directory=/cygdrive/c/Users/fabrn/dvda-author/libutils/src
+	$(MAKE) --directory=/home/fab/Documents/dvda-author/libutils/src
 
 $(BUILD_SUBDIRS): $(ALL_TARGETS_EXTERNAL) libutils
 	@echo Running make in directory $@...
 	$(MAKE) $(PARALLEL) --directory=$@
 
-$(PROGRAM_TARGET_CONFIGS): %.config: /cygdrive/c/Users/fabrn/dvda-author/depconf/%.depconf
+$(PROGRAM_TARGET_CONFIGS): %.config: /home/fab/Documents/dvda-author/depconf/%.depconf
 	@echo
 	echo Finished building $*...
 
 erase_build.trace:
 	@echo PROGRAM_TARGETS=$(PROGRAM_TARGETS)
-	if test -f /cygdrive/c/Users/fabrn/dvda-author/depconf/BUILD.TRACE; then
-	  mv /cygdrive/c/Users/fabrn/dvda-author/depconf/BUILD.TRACE /cygdrive/c/Users/fabrn/dvda-author/depconf/BUILD.TRACE~
+	if test -f /home/fab/Documents/dvda-author/depconf/BUILD.TRACE; then
+	  mv /home/fab/Documents/dvda-author/depconf/BUILD.TRACE /home/fab/Documents/dvda-author/depconf/BUILD.TRACE~
 	fi
 
 # directly patching the Makefile appears to be more efficient. You need a
@@ -89,45 +88,44 @@ erase_build.trace:
 
 #this must be lazy-evaluation otherwise will not work
 pkgconfig_style_libs=$(if $(MAYBE_sox),$(shell cat						\
-/cygdrive/c/Users/fabrn/dvda-author/$(MAYBE_sox)/sox-libs | /usr/bin/sed -e "s/^.*\.a//g ; s/@.*@//g;	\
+/home/fab/Documents/dvda-author/$(MAYBE_sox)/sox-libs | /usr/bin/sed -e "s/^.*\.a//g ; s/@.*@//g;	\
 s,\/,\\\/,g"))
 
-do_sox_lib_deps_subst: /cygdrive/c/Users/fabrn/dvda-author/src/Makefile  /cygdrive/c/Users/fabrn/dvda-author/$(MAYBE_sox)/sox-libs
+do_sox_lib_deps_subst: /home/fab/Documents/dvda-author/src/Makefile  /home/fab/Documents/dvda-author/$(MAYBE_sox)/sox-libs
 	@echo Processing dependencies for sox...
 	/usr/bin/sed -i -e 's/SOX_LIB_DEPS/$(pkgconfig_style_libs)/g' \
-/cygdrive/c/Users/fabrn/dvda-author/src/Makefile
+/home/fab/Documents/dvda-author/src/Makefile
 	echo "[sox] done sox library substitution with libs: $(pkgconfig_style_libs)"\
->> /cygdrive/c/Users/fabrn/dvda-author/depconf/BUILD.TRACE
+>> /home/fab/Documents/dvda-author/depconf/BUILD.TRACE
 
 manpage: $(PROGRAM).1
 
 htmlpage: $(PROGRAM).html
 
-pdf: $(PROGRAM).html
-		[ -f "" ] &&  $(PROGRAM).html $(PROGRAM).pdf
+pdfpage: $(PROGRAM).html
+		[ -f "/usr/bin/wkhtmltopdf" ] && /usr/bin/wkhtmltopdf $(PROGRAM).html $(PROGRAM).pdf
 
 $(PROGRAM).1:
-	@if test "yes" = "yes"; then
-	  if test -f /cygdrive/c/Users/fabrn/dvda-author/src/$(PROGRAM); then
-		/usr/bin/help2man -s 1 -N -o $(PROGRAM).1 /cygdrive/c/Users/fabrn/dvda-author/src/$(PROGRAM)
+	@if test "no" = "yes"; then
+	  if test -f /home/fab/Documents/dvda-author/src/$(PROGRAM); then
+		 -s 1 -N -o $(PROGRAM).1 /home/fab/Documents/dvda-author/src/$(PROGRAM)
 	  fi
 	else
-	  if test -f src/$(PROGRAM) && test -d "help2man-1.47.9" \
-&& test -f "help2man-1.47.9"/help2man; then
-		"/cygdrive/c/Users/fabrn/dvda-author/help2man-1.47.9"/help2man -s 1 -N \
--o $(PROGRAM).1 /cygdrive/c/Users/fabrn/dvda-author/src/$(PROGRAM)
+	  if test -f src/$(PROGRAM) && test -d "help2man-1.47.16" \
+&& test -f "help2man-1.47.16"/help2man; then
+		"/home/fab/Documents/dvda-author/help2man-1.47.16"/help2man -s 1 -N \
+-o $(PROGRAM).1 /home/fab/Documents/dvda-author/src/$(PROGRAM)
 	  fi
 	fi
 	$(call docfollow,  $@)
 
-
-$(PROGRAM).html: $(PROGRAM).1
+$(PROGRAM).html: manpage
 	@if test "no" = "yes"; then
 		 < $(PROGRAM).1 > $@
 		$(call docfollow, $@)
 	else
-	  if test -f "/cygdrive/c/Users/fabrn/dvda-author/local/bin/man2html" ; then
-		"/cygdrive/c/Users/fabrn/dvda-author/local/bin/man2html" < $(PROGRAM).1 > $@
+	  if test -f "/home/fab/Documents/dvda-author/local/bin/man2html" ; then
+		"/home/fab/Documents/dvda-author/local/bin/man2html" < $(PROGRAM).1 > $@
 		$(call docfollow, $@)
 	  fi
 	fi
@@ -138,24 +136,23 @@ $(PROGRAM).html: $(PROGRAM).1
 infodir:
 	$(MKDIR_P)  $(DESTDIR)/usr/local/share/info/$(PROGRAM)
 
-
 #normally is ${prefix}/share/applications/dvda-author-${VERSION}
 sysconfdir=/usr/local/share/applications/dvda-author-dev
 
 # distributed under $sysconfdir, normally
 
-dist_sysconf_DATA=/cygdrive/c/Users/fabrn/dvda-author/dvda-author.desktop /cygdrive/c/Users/fabrn/dvda-author/dvda-author.conf
+dist_sysconf_DATA=/home/fab/Documents/dvda-author/dvda-author.desktop /home/fab/Documents/dvda-author/dvda-author.conf
 
 # distributed under $menudir=$sysconfdir/menu
 # normally $prefix/share/pixmaps/dvda-author
 # distributed under $pixdir
 
-dist_pic_DATA= /cygdrive/c/Users/fabrn/dvda-author/dvda-author_48x48.png /cygdrive/c/Users/fabrn/dvda-author/dvda-author_64x64.png
+dist_pic_DATA= /home/fab/Documents/dvda-author/dvda-author_48x48.png /home/fab/Documents/dvda-author/dvda-author_64x64.png
 # distributed under $docdir, normally $prefix/doc/dvda-author
 
-dist_doc_DATA=/cygdrive/c/Users/fabrn/dvda-author/README.md  /cygdrive/c/Users/fabrn/dvda-author/BUGS /cygdrive/c/Users/fabrn/dvda-author/EXAMPLES \
-/cygdrive/c/Users/fabrn/dvda-author/LIMITATIONS /cygdrive/c/Users/fabrn/dvda-author/BUILD.Ubuntu /cygdrive/c/Users/fabrn/dvda-author/COREBUILD \
-  /cygdrive/c/Users/fabrn/dvda-author/DEPENDENCIES /cygdrive/c/Users/fabrn/dvda-author/HOWTO.conf /cygdrive/c/Users/fabrn/dvda-author/dvda-author.conf.example
+dist_doc_DATA=/home/fab/Documents/dvda-author/README.md  /home/fab/Documents/dvda-author/BUGS /home/fab/Documents/dvda-author/EXAMPLES \
+/home/fab/Documents/dvda-author/LIMITATIONS /home/fab/Documents/dvda-author/BUILD.Ubuntu /home/fab/Documents/dvda-author/COREBUILD \
+  /home/fab/Documents/dvda-author/DEPENDENCIES /home/fab/Documents/dvda-author/HOWTO.conf /home/fab/Documents/dvda-author/dvda-author.conf.example
 
 # GNU build system regeneration script and others
 
@@ -163,7 +160,7 @@ install-sys: $(dist_sysconf_DATA)
 	$(MKDIR_P) $(DESTDIR)$(sysconfdir)
 	$(INSTALL_DATA) $^ $(DESTDIR)$(sysconfdir)
 
-install-pic:  $(wildcard /cygdrive/c/Users/fabrn/dvda-author/menu/*)
+install-pic:  $(wildcard /home/fab/Documents/dvda-author/menu/*)
 	$(MKDIR_P) $(DESTDIR)/usr/local/share/applications/dvda-author-dev/menu
 	$(INSTALL_DATA) $^ $(DESTDIR)/usr/local/share/applications/dvda-author-dev/menu
 
@@ -182,21 +179,21 @@ install-data-local:  $(dist_doc_DATA) $(dist_pic_DATA)
 
 install-strip: install
 
-install:  /cygdrive/c/Users/fabrn/dvda-author/src/$(PROGRAM) install-data-local install-pic install-sys \
+install:  /home/fab/Documents/dvda-author/src/$(PROGRAM) install-data-local install-pic install-sys \
 install-man
 	$(MKDIR_P) $(DESTDIR)/usr/local/bin
 	@$(foreach dir,src $(subdirs), $(MAKE) --directory=$(dir) install)
 
 clean: clean-local
-	$(call clean_directory,/cygdrive/c/Users/fabrn/dvda-author/libutils/src $(BUILD_SUBDIRS))
-	$(RM) /cygdrive/c/Users/fabrn/dvda-author/src/$(PROGRAM)
+	$(call clean_directory,/home/fab/Documents/dvda-author/libutils/src $(BUILD_SUBDIRS))
+	$(RM) /home/fab/Documents/dvda-author/src/$(PROGRAM)
 
 clean-local:
-	$(RM) $(PROGRAM).1 $(PROGRAM).html .dvda-author
-	[ -d /cygdrive/c/Users/fabrn/dvda-author/depconf ] && $(RM) $(wildcard /cygdrive/c/Users/fabrn/dvda-author/depconf/*.depconf)
+	$(RM) $(PROGRAM).1 $(PROGRAM).html $(PROGRAM).pdf .dvda-author
+	[ -d /home/fab/Documents/dvda-author/depconf ] && $(RM) $(wildcard /home/fab/Documents/dvda-author/depconf/*.depconf)
 
 distclean: clean
-	$(RM) -rf $(wildcard /cygdrive/c/Users/fabrn/dvda-author/autom4te*)
+	$(RM) -rf $(wildcard /home/fab/Documents/dvda-author/autom4te*)
 	$(RM) -rf config.*
 	$(RM) Makefile src/Makefile libfixwav/src/Makefile libutils/src/Makefile \
 libiberty/src/Makefile

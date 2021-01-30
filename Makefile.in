@@ -63,9 +63,6 @@ all:  $(ALL_TARGETS) manpage htmlpage pdfpage
 include @ROOTDIR@/mk/functions.mk
 include $(PROGRAM_TARGET_MAKEFILES)
 
-help2man.config: @BUILDDIR@/depconf/help2man.depconf
-man2html.config: @BUILDDIR@/depconf/man2html.depconf
-
 export CPPFLAGS
 export PARALLEL
 

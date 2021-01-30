@@ -1,4 +1,4 @@
-prefix=/cygdrive/c/Users/fabrn/dvda-author/local
+prefix=/home/fab/Documents/dvda-author/local
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include/mjpegtools

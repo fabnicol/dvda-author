@@ -19,7 +19,10 @@ using the vanilla packages and applying the patches, you can do
 it by configuring as follows:
 
          ./configure --enable-all-all
-	
+
+Running ./configure should not be necessary under a recent Ubuntu platform
+(and possibly most GNU/Linux platforms) as a Makefile is provided:  
+just run sudo make && sudo make install.   
 You can also download each 
 [toolchain package from 
 Sourceforge](https://sourceforge.net/projects/dvd-audio/files/dvda-author/Dependencies/)

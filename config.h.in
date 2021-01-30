@@ -94,10 +94,7 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Whether ImageMagick source code will be downloaded for build. */
-#undef HAVE_ImageMagick
-
-/* download ImageMagick from source code */
+/* configure, build and install ImageMagick from source code */
 #undef HAVE_ImageMagick_BUILD
 
 /* Define to 1 if you have the <locale.h> header file. */
@@ -332,6 +329,12 @@
 /* download and patch help2man from source code */
 #undef HAVE_help2man_BUILD
 
+/* Whether imagemagick source code will be downloaded for build. */
+#undef HAVE_imagemagick
+
+/* download imagemagick from source code */
+#undef HAVE_imagemagick_BUILD
+
 /* Found jpeg2yuv */
 #undef HAVE_jpeg2yuv
 
@@ -426,7 +429,7 @@
 /* Defining help2man filepath. */
 #undef HELP2MAN
 
-/* Defining ImageMagick filepath. */
+/* Defining imagemagick filepath. */
 #undef IMAGEMAGICK
 
 /* Defines directory of .desktop and .conf files */
