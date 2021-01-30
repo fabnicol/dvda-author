@@ -1,0 +1,436 @@
+# Translation of help2man to Croatian.
+# Copyright © 2012 Free Software Foundation, Inc.
+# This file is distributed under the same license as the help2man package.
+# Tomislav Krznar <tomislav.krznar@gmail.com>, 2012, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: help2man 1.41.2\n"
+"Report-Msgid-Bugs-To: Brendan O'Dea <bug-help2man@gnu.org>\n"
+"POT-Creation-Date: 2020-03-15 22:10+1100\n"
+"PO-Revision-Date: 2017-09-23 13:57+1000\n"
+"Last-Translator: Tomislav Krznar <tomislav.krznar@gmail.com>\n"
+"Language-Team: Croatian <lokalizacija@linux.hr>\n"
+"Language: hr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Gtranslator 2.91.6\n"
+
+#: help2man:75
+#, perl-format
+msgid ""
+"GNU %s %s\n"
+"\n"
+"Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2009, "
+"2010,\n"
+"2011, 2012, 2013, 2014, 2015, 2016, 2017, 2020 Free Software Foundation, "
+"Inc.\n"
+"This is free software; see the source for copying conditions.  There is NO\n"
+"warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
+"\n"
+"Written by Brendan O'Dea <bod@debian.org>\n"
+msgstr ""
+"GNU %s %s\n"
+"\n"
+"Copyright © 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2009, "
+"2010,\n"
+"2011, 2012, 2013, 2014, 2015, 2016, 2017, 2020 Free Software Foundation, Inc.\n"
+"Ovo je slobodan softver, pogledajte kod za upute o kopiranju. NEMA "
+"jamstava,\n"
+"čak ni za TRGOVINSKU PRIKLADNOST ili ODGOVARANJE ODREĐENOJ SVRSI.\n"
+"\n"
+"Napisao Brendan O'Dea <bod@debian.org>\n"
+
+#: help2man:86
+#, perl-format
+msgid ""
+"`%s' generates a man page out of `--help' and `--version' output.\n"
+"\n"
+"Usage: %s [OPTION]... EXECUTABLE\n"
+"\n"
+" -n, --name=STRING       description for the NAME paragraph\n"
+" -s, --section=SECTION   section number for manual page (1, 6, 8)\n"
+" -m, --manual=TEXT       name of manual (User Commands, ...)\n"
+" -S, --source=TEXT       source of program (FSF, Debian, ...)\n"
+" -L, --locale=STRING     select locale (default \"C\")\n"
+" -i, --include=FILE      include material from `FILE'\n"
+" -I, --opt-include=FILE  include material from `FILE' if it exists\n"
+" -o, --output=FILE       send output to `FILE'\n"
+" -p, --info-page=TEXT    name of Texinfo manual\n"
+" -N, --no-info           suppress pointer to Texinfo manual\n"
+" -l, --libtool           exclude the `lt-' from the program name\n"
+"     --help              print this help, then exit\n"
+"     --version           print version number, then exit\n"
+"\n"
+"EXECUTABLE should accept `--help' and `--version' options and produce output "
+"on\n"
+"stdout although alternatives may be specified using:\n"
+"\n"
+" -h, --help-option=STRING     help option string\n"
+" -v, --version-option=STRING  version option string\n"
+" --version-string=STRING      version string\n"
+" --no-discard-stderr          include stderr when parsing option output\n"
+"\n"
+"Report bugs to <bug-help2man@gnu.org>.\n"
+msgstr ""
+"„%s” koristi ispis opcija „--help” i „--version” za izradu\n"
+"stranice priručnika.\n"
+"\n"
+"Uporaba: %s [OPCIJA]... IZVRŠNADATOTEKA\n"
+"\n"
+" -n, --name=NIZ          opis za odlomak IME\n"
+" -s, --section=SKUPINA   broj skupine za stranicu priručnika (1, 6, 8)\n"
+" -m, --manual=TEKST      ime priručnika (Korisničke naredbe, ...)\n"
+" -S, --source=TEKST      izvor programa (FSF, Debian, ...)\n"
+" -L, --locale=NIZ        izaberi lokalne postavke (zadano \"C\")\n"
+" -i, --include=DATOEKA   uključi materijal iz „DATOTEKE”\n"
+" -I, --opt-include=DATOTEKA  uključi materijal iz „DATOTEKE” ako postoji\n"
+" -o, --output=DATOTEKA   spremi izlaz u „DATOTEKU”\n"
+" -p, --info-page=TEKST   ime Texinfo priručnika\n"
+" -N, --no-info           izostavi pokazivač na Texinfo priručnik\n"
+" -l, --libtool           isključi „lt-” iz imena programa\n"
+"     --help              ispiši ovu pomoć, zatim izađi\n"
+"     --version           ispiši broj inačice, zatim izađi\n"
+"\n"
+"IZVRŠNADATOTEKA bi trebala prihvaćati opcije „--help” i „--version” te "
+"ispisati\n"
+"rezultat na standardni izlaz iako se mogu navesti alternative:\n"
+"\n"
+" -h, --help-option=NIZ        niz opcije pomoći\n"
+" -v, --version-option=NIZ     niz opcije inačice\n"
+" --version-string=NIZ         niz inačice\n"
+" --no-discard-stderr          uključi standardni izlaz za greške pri obradi\n"
+"                              izlaza opcija\n"
+"\n"
+"Prijavite greške na <bug-help2man@gnu.org>.\n"
+
+#: help2man:184
+#, perl-format
+msgid "%s: can't open `%s' (%s)"
+msgstr "%s: ne mogu otvoriti „%s” (%s)"
+
+#. Translators: "NAME", "SYNOPSIS" and other one or two word strings in all
+#. upper case are manual page section headings.  The man(1) manual page in your
+#. language, if available should provide the conventional translations.
+#: help2man:210 help2man:341 help2man:347 help2man:698 help2man.h2m.PL:88
+#: help2man.h2m.PL:138
+msgid "NAME"
+msgstr "IME"
+
+#: help2man:210 help2man:416 help2man:698 help2man.h2m.PL:139
+msgid "SYNOPSIS"
+msgstr "PREGLED"
+
+#: help2man:260
+#, perl-format
+msgid "%s: no valid information found in `%s'"
+msgstr "%s: nisu pronađene ispravne informacije u „%s”"
+
+#. Translators: the following message is a strftime(3) format string, which in
+#. the English version expands to the month as a word and the full year.  It
+#. is used on the footer of the generated manual pages.  If in doubt, you may
+#. just use %x as the value (which should be the full locale-specific date).
+#: help2man:290
+msgid "%B %Y"
+msgstr "%B %Y"
+
+#: help2man:297
+#, perl-format
+msgid "%s: can't unlink %s (%s)"
+msgstr "%s: ne mogu ukloniti vezu %s (%s)"
+
+#: help2man:301
+#, perl-format
+msgid "%s: can't create %s (%s)"
+msgstr "%s: ne mogu napraviti %s (%s)"
+
+#: help2man:355
+#, perl-format
+msgid "%s \\- manual page for %s %s"
+msgstr "%s \\- stranica priručnika za %s %s"
+
+#: help2man:369
+msgid "System Administration Utilities"
+msgstr "Alati za administraciju sustava"
+
+#: help2man:370
+msgid "Games"
+msgstr "Igre"
+
+#: help2man:371
+msgid "User Commands"
+msgstr "Korisničke naredbe"
+
+#. Translators: "Usage" and "or" here are patterns (regular expressions) which
+#. are used to match the usage synopsis in program output.  An example from cp
+#. (GNU coreutils) which contains both strings:
+#. Usage: cp [OPTION]... [-T] SOURCE DEST
+#. or:  cp [OPTION]... SOURCE... DIRECTORY
+#. or:  cp [OPTION]... -t DIRECTORY SOURCE...
+#: help2man:382
+msgid "Usage"
+msgstr "Uporaba"
+
+#: help2man:383
+msgid "or"
+msgstr "ili"
+
+#: help2man:420 help2man:698 help2man.h2m.PL:140
+msgid "DESCRIPTION"
+msgstr "OPIS"
+
+#. Translators: patterns are used to match common program output. In the source
+#. these strings are all of the form of "my $PAT_something = _('...');" and are
+#. regular expressions.  If there is more than one commonly used string, you
+#. may separate alternatives with "|".  Spaces in these expressions are written
+#. as " +" to indicate that more than one space may be matched.  The string
+#. "(?:[\\w-]+ +)?" in the bug reporting pattern is used to indicate an
+#. optional word, so that either "Report bugs" or "Report _program_ bugs" will
+#. be matched.
+#: help2man:445
+msgid "Report +(?:[\\w-]+ +)?bugs|Email +bug +reports +to"
+msgstr "Prijavite +(?:[\\w-]+ +)?greške|Prijavite +greške +E-poštom +na"
+
+#: help2man:446
+msgid "Written +by"
+msgstr "Napisao"
+
+#: help2man:447
+msgid "Options"
+msgstr "Opcije"
+
+#: help2man:448
+msgid "Environment"
+msgstr "Okolina"
+
+#: help2man:449
+msgid "Files"
+msgstr "Datoteke"
+
+#: help2man:450
+msgid "Examples"
+msgstr "Primjeri"
+
+#: help2man:451
+msgid "This +is +free +software"
+msgstr "Ovo +je +slobodan +softver"
+
+#: help2man:465 help2man:698 help2man.h2m.PL:141
+msgid "OPTIONS"
+msgstr "OPCIJE"
+
+#: help2man:470 help2man:699 help2man.h2m.PL:143
+msgid "ENVIRONMENT"
+msgstr "OKOLINA"
+
+#: help2man:475 help2man:699 help2man.h2m.PL:144
+msgid "FILES"
+msgstr "DATOTEKE"
+
+#: help2man:480 help2man:603 help2man:699 help2man.h2m.PL:145
+msgid "EXAMPLES"
+msgstr "PRIMJERI"
+
+#: help2man:496 help2man:624 help2man:700 help2man.h2m.PL:148
+msgid "COPYRIGHT"
+msgstr "COPYRIGHT"
+
+#: help2man:502 help2man:630 help2man:700 help2man.h2m.PL:147
+msgid "REPORTING BUGS"
+msgstr "PRIJAVA GREŠAKA"
+
+#: help2man:508 help2man:699 help2man.h2m.PL:146
+msgid "AUTHOR"
+msgstr "AUTOR"
+
+#: help2man:662 help2man:700 help2man.h2m.PL:149
+msgid "SEE ALSO"
+msgstr "TAKOĐER POGLEDAJTE"
+
+#: help2man:665
+#, perl-format
+msgid ""
+"The full documentation for\n"
+".B %s\n"
+"is maintained as a Texinfo manual.  If the\n"
+".B info\n"
+"and\n"
+".B %s\n"
+"programs are properly installed at your site, the command\n"
+".IP\n"
+".B info %s\n"
+".PP\n"
+"should give you access to the complete manual.\n"
+msgstr ""
+"Potpuna dokumentacija za\n"
+".B %s\n"
+"se održava kao Texinfo priručnik.  Ako su programi\n"
+".B info\n"
+"i\n"
+".B %s\n"
+"pravilno instalirani na vašem sustavu, naredbom\n"
+".IP\n"
+".B info %s\n"
+".PP\n"
+"biste trebali dobiti pristup potpunom priručniku.\n"
+
+#: help2man:731
+#, perl-format
+msgid "%s: error writing to %s (%s)"
+msgstr "%s: greška pri pisanju u %s (%s)"
+
+#: help2man:757
+#, perl-format
+msgid "%s: can't get `%s' info from %s%s"
+msgstr "%s: ne mogu preuzeti podatke o „%s” iz %s%s"
+
+#: help2man:759
+msgid "Try `--no-discard-stderr' if option outputs to stderr"
+msgstr ""
+"Pokušajte „--no-discard-stderr” ako opcija ispisuje na standardni izlaz za "
+"greške"
+
+#: help2man.h2m.PL:83
+msgid "Include file for help2man man page"
+msgstr "Uključi datoteku za help2man stranicu priručnika"
+
+#: help2man.h2m.PL:89
+msgid "help2man \\- generate a simple manual page"
+msgstr "help2man \\- napravi jednostavnu stranicu priručnika"
+
+#: help2man.h2m.PL:92
+msgid "INCLUDE FILES"
+msgstr "UKLJUČI DATOTEKE"
+
+#: help2man.h2m.PL:94
+msgid ""
+"Additional material may be included in the generated output with the\n"
+".B \\-\\-include\n"
+"and\n"
+".B \\-\\-opt\\-include\n"
+"options.  The format is simple:\n"
+"\n"
+"    [section]\n"
+"    text\n"
+"\n"
+"    /pattern/\n"
+"    text\n"
+msgstr ""
+"Dodatni materijali mogu se uključiti u napravljeni izlaz opcijama\n"
+".B \\-\\-include\n"
+"i\n"
+".B \\-\\-opt\\-include\n"
+"Oblik je jednostavan:\n"
+"\n"
+"    [odjeljak]\n"
+"    tekst\n"
+"\n"
+"    /uzorak/\n"
+"    tekst\n"
+
+#: help2man.h2m.PL:109
+msgid ""
+"Blocks of verbatim *roff text are inserted into the output either at\n"
+"the start of the given\n"
+".BI [ section ]\n"
+"(case insensitive), or after a paragraph matching\n"
+".BI / pattern /\\fR.\n"
+msgstr ""
+"Blokovi doslovnog *roff teksta umeću se u izlaz ili na početku zadanog\n"
+".BI [ odjeljka ]\n"
+"(veličina slova nevažna), ili nakon odlomka koji odgovara\n"
+".BI / uzorku /\\fR.\n"
+
+#: help2man.h2m.PL:118
+msgid ""
+"Patterns use the Perl regular expression syntax and may be followed by\n"
+"the\n"
+".IR i ,\n"
+".I s\n"
+"or\n"
+".I m\n"
+"modifiers (see\n"
+".BR perlre (1)).\n"
+msgstr ""
+"Uzorci koriste Perl sintaksu regularnih izraza i nakon njih mogu slijediti\n"
+".IR i ,\n"
+".I s\n"
+"ili\n"
+".I m\n"
+"modifikatori (pogledajte\n"
+".BR perlre (1)).\n"
+
+#: help2man.h2m.PL:130
+msgid ""
+"Lines before the first section or pattern which begin with `\\-' are\n"
+"processed as options.  Anything else is silently ignored and may be\n"
+"used for comments, RCS keywords and the like.\n"
+msgstr ""
+"Retci prije prvog odjeljka ili uzorka koji počinju s „\\-” se\n"
+"obrađuju kao opcije. Sve ostalo se prešutno zanemaruje i može se\n"
+"koristiti za komentare, RCS ključne riječi i slično.\n"
+
+#: help2man.h2m.PL:136
+msgid "The section output order (for those included) is:"
+msgstr "Izlazni redoslijed skupina (za one uključene):"
+
+#: help2man.h2m.PL:142
+msgid "other"
+msgstr "ostalo"
+
+#: help2man.h2m.PL:153
+msgid ""
+"Any\n"
+".B [NAME]\n"
+"or\n"
+".B [SYNOPSIS]\n"
+"sections appearing in the include file will replace what would have\n"
+"automatically been produced (although you can still override the\n"
+"former with\n"
+".B \\-\\-name\n"
+"if required).\n"
+msgstr ""
+"Bilo koja\n"
+".B [IME]\n"
+"ili\n"
+".B [PREGLED]\n"
+"skupina koja se pojavljuje u uključenoj datoteci će zamijeniti ono što\n"
+"bi se automatski stvorilo (iako to još uvijek možete zaobići s\n"
+".B \\-\\-name\n"
+"ako je potrebno).\n"
+
+#: help2man.h2m.PL:166
+msgid ""
+"Other sections are prepended to the automatically produced output for\n"
+"the standard sections given above, or included at\n"
+".I other\n"
+"(above) in the order they were encountered in the include file.\n"
+msgstr ""
+"Ostale skupine se dodaju prije automatski stvorenog izlaza za\n"
+"standardne gore prikazane skupine ili se dodaju u\n"
+".I ostalo\n"
+"(iznad) redoslijedom kojim su pronađene u uključenoj datoteci.\n"
+
+#: help2man.h2m.PL:174
+msgid ""
+"Placement of the text within the section may be explicitly requested by "
+"using\n"
+"the syntax\n"
+".RI [< section ],\n"
+".RI [= section ]\n"
+"or\n"
+".RI [> section ]\n"
+"to place the additional text before, in place of, or after the default\n"
+"output respectively.\n"
+msgstr ""
+
+#: help2man.h2m.PL:185
+msgid "AVAILABILITY"
+msgstr "DOSTUPNOST"
+
+#: help2man.h2m.PL:186
+msgid "The latest version of this distribution is available on-line from:"
+msgstr "Najnovija inačica ove distribucije je dostupna na internetu na:"

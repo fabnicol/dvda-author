@@ -1,0 +1,534 @@
+This is help2man-sv.info.tmp, produced by makeinfo version 6.7 from
+help2man-sv.texi.
+
+Denna fil dokumenterar GNU ‘help2man’-kommandot som producerar enkla
+manualsidor givet utmatningen från ‘--help’ och ‘--version’ från andra
+kommandon.
+
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2009, 2010,
+2011, 2012, 2013, 2014, 2015, 2020 Free Software Foundation, Inc.
+
+   Tillstånd ges till att skapa och distribuera ordagranna kopior av
+denna manual givet att upphovsrättsinformationen och denna tillåtelsenot
+bevaras i alla kopior.
+
+   Tillstånd ges till att kopia och distribuera modifierade versioner av
+denna manual under villkoren för ordagrann kopiering, givet att hela det
+resultatet distribueras under en med denna identisk tillåtelsenot.
+
+   Tillstånd ges till att kopiera och distribuera översättningar av
+denna manual till andra språk, under ovanstående villkor för modifierade
+versioner, förutom att denna tillåtelsenotis måste uttryckas i en
+översättning som godkänts av Stiftelsen.
+INFO-DIR-SECTION Mjukvaruutveckling
+START-INFO-DIR-ENTRY
+* help2man-sv: (help2man-sv).  Automatisk generering av manualsida.
+END-INFO-DIR-ENTRY
+
+
+File: help2man-sv.info.tmp,  Node: Top,  Next: Översikt,  Up: (dir)
+
+‘help2man’
+**********
+
+‘help2man’ producerar enkal manualsidor givet utmatningen från ‘--help’
+och ‘--version’ från andra kommandon.
+
+* Menu:
+
+* Översikt::		      Översikt av ‘help2man’.
+* Anropa help2man::	      Hur man kör ‘help2man’.
+* --help-rekommendationer::   Rekommenderad formatering av
+				–help-utmatning.
+* Inkludera text::	      Inkludera ytterligare text i utmatningen.
+* Användning av Makefiler::   Användning av ‘help2man’ med‘make’.
+* Lokaliserade manualsidor::  Att producera manualsidor på
+				olikamodersmål.
+* Exempel::		      Exempel på ‘help2man’-utmatning.
+* Rapportering::	      Att rapportera fel eller förslag.
+* Tillgänglighet::	      Att få tag i ‘help2man’.
+
+
+File: help2man-sv.info.tmp,  Node: Översikt,  Next: Anropa help2man,  Prev: Top,  Up: Top
+
+1 Översikt över ‘help2man’
+**************************
+
+‘help2man’ är ett verktyg som automatiskt genererar enkla manualsidor
+från programutmatning.
+
+   Även om manualsidor är valfria för GNU program så kräver andra
+projekt så som Debian dem (*note (standards)Man Pages::)
+
+   Detta program är avsett att tillhandahålla ett enkelt sätt för
+programvaruutvecklare att inkludera en manualsidor i deras distribution
+utan att behöva underhålla det dokumentet.
+
+   Givet ett program som producerar rimlig standardlik utdata från
+‘--help’ och ‘--version’ kan ‘help2man’ omarrangera utmatningen till
+något som liknar en manualsida.
+
+
+File: help2man-sv.info.tmp,  Node: Anropa help2man,  Next: --help-rekommendationer,  Prev: Översikt,  Up: Top
+
+2 Hur man kör ‘help2man’
+************************
+
+Formatet för att köra programmet ‘help2man’ är:
+
+     help2man [FLAGGA]... KÖRBAR FIL
+
+   ‘help2man’ har stöd för följande flaggor:
+
+‘-n STRÄNG’
+‘--name=STRÄNG’
+     Använd STRÄNG som en beskrivning för ‘NAMN’-avsnittet i
+     manualsidan.
+
+     Som standard (i brist på något bättre) innehåller detta avsitt
+     ‘manualsida för PROGRAM VERSION’.
+
+     Denna flagga åsidosätter en inkluderingsfil ‘[namn]’-avsnitt (*note
+     Inkludera text::).
+
+‘-s AVSNITT’
+‘--section AVSNITT’
+     Använd AVSNITT som avsnittet för manualsidan.  Standardavsnittet är
+     1.
+
+‘-m MANUAL’
+‘--manual=MANUAL’
+     Ställ in namnet på manualavsnittet till AVSNITT, används som en
+     centrerad rubrik för manualsidan.  Som standard används
+     ‘Användarkommandon’ för sidor i avsnitt 1, ‘Spel’ för avsnitt 6 och
+     ‘Systemadministrationsverktyg’ för avsnitt 8 och 1M.
+
+‘-S KÄLLA’
+‘--source=KÄLLA’
+     Prorgramkällan används som en sidfot och innehåller ofta namnet på
+     organisationen eller sviten som programmet är en del av.  Som
+     standard är värdet paketnamnet och versionen.
+
+‘-L LOKAL’
+‘--locale=LOKAL’
+     Välj utmatningslokal (standardvärdet är ‘C’).  Både programmet och
+     ‘help2man’ måste ha stöd för den angivna LOKALEN (*note
+     Lokaliserade manualsidor::).
+
+‘-i FIL’
+‘--include=FIL’
+     Inkludera material från FIL (*note Inkludera text::).
+
+‘-I FIL’
+‘--opt-include=FIL’
+     En variant av ‘--include’ för användning i Makefile-mönsterregler
+     som inte kräver att FIL existerar.
+
+‘-o FIL’
+‘--output=FIL’
+     Skicka utmatning till FIL snarare än ‘stdout’.
+
+‘-p TEXT’
+‘--info-page=TEXT’
+     Namn för Texinfo-manualen.
+
+‘-N’
+‘--no-info’
+     Undertryck inkludering av ett ‘SE OCKSÅ’-stycke som dirigerar
+     läsaren till Textinfo-dokumentationen.
+
+‘-l’
+‘--libtool’
+     Skippa ‘lt-’-prefix från instanser av programnamnet i synopsis
+     (‘libtool’ skapar omslagsskript i byggkatalogen vilka startar ‘foo’
+     som ‘.libs/lt-foo’).
+
+‘--help’
+‘--version’
+     Visa hjälp eller versionsinformation.
+
+   Som standard skickar ‘help2man’ standardflaggor som ‘--help’ och
+‘--version’ till den körbara filen trots att alternativ kan anges via:
+
+‘-h FLAGGA’
+‘--help-option=FLAGGA’
+     Sträng för hjälpflagga.
+
+‘-v FLAGGA’
+‘--version-option=FLAGGA’
+     Sträng för versionsflagga.
+
+‘--version-string=STRÄNG’
+     Versionssträng.
+
+‘--no-discard-stderr’
+     Inkludera stderr när flaggutmatning tolkas.
+
+
+File: help2man-sv.info.tmp,  Node: --help-rekommendationer,  Next: Inkludera text,  Prev: Anropa help2man,  Up: Top
+
+3 ‘--help’ Rekommendationer
+***************************
+
+Här följer några rekommendationer för vad som bör inkluderas i din
+‘--help’-utmatning.  Att inkludera dessa ger ‘help2man’ bästa möjliga
+chans att generera en respektabel manualsida, samtidigt som det direkt
+gynnar användarna.
+
+   Se *note (standards)Command-Line Interfaces:: och *note
+(standards)Man Pages::, för den officiella GNU standarden som relaterat
+till ‘--help’ och manualsidor.
+
+   • En sammanfattning om hur programmet kan startas.  Om olika
+     användningar av programmet har olika sätt att starta dem på, då
+     listas allihop.  Till exempel (redigerad för korthet):
+
+          Användning: cp [FLAGGA]… KÄLLA DEST
+            eller:  cp [FLAGGA]… KÄLLA… KATALOG
+          ...
+
+     Använd ‘argv[0]’ för programnamnet i dessa synopsisar, precis som
+     det är, utan katalogstrippning.  Detta står i kontrast till det
+     kanoniska (konstanta) namnet för programmet vilket används i
+     ‘--version’.
+
+   • En väldig kort förklaring av vad programmet gör, inklusive
+     standard- och/eller typiskt beteende.  Här är till exempel ‘cp’’s:
+
+          Kopiera KÄLLA till DEST, eller flera KÄLL(or) till KATALOG.
+
+   • En lista över flaggor, indenterade till kolumn 2.  Om programmet
+     har stöd för enteckensflaggor, lägg dessa först och sedan den
+     ekvivalenta långa flaggan (om en sådan finns).  Om flaggan tar ett
+     argument, inkludera det också, ge det ett meningsfullt namn.
+     Justera beskrivningarna längs en lämplig kolumn om önskat.  Notera
+     att för att detekteras korrekt av ‘help2man’ måste beskrivningen
+     separeras från flaggorna med åtminstone två blanksteg och
+     beskrivningar som fortsätter på efterföljande rader måste börja på
+     samma kolumn.
+
+     Här är igen ett (redigerat) utdrag från ‘cp’, vilket visar en kort
+     flagga med en ekvivalent lång flagga, enbart en lång flagga, samt
+     enbart en kort flagga:
+
+            -a, --archive                samma som -dpR
+                --backup[=KONTROLL]      gör en säkerhets kopia av varje…
+            -b                           som --backup men…
+
+     För ett program som tar många flaggor kan det vara önskvärt att
+     dela upp flagglistan i avsnitt så som ‘Globala’,
+     ‘Utmatningskontroll’, eller vad som verkar vara vettigt i det
+     enskilda fallet.  Det är vanligvis bäst att sortera alfabetiskt
+     (först efter korta flaggnamn, sedan långa) inom varje avsnitt,
+     eller hela listan om det inte finns några avsnitt.
+
+   • Ytterligare användbart information om programmets beteende så som
+     miljövariabler som påverkar, vidare förklaring av flaggor, etc.
+     Till exempel diskuterar ‘cp’ ‘VERSION_CONTROL’ och glesa filer.
+
+   • Ett par exempel på typisk användning.  Ett bra exempel är
+     vanligtvis värt en beskrivning om tusen ord, så detta rekommenderas
+     starkt.
+
+   • Sammanfattningsvis, en rad som beskriver hur man skickar
+     felrapporter per e-post.  Vanligtvis kommer MAILING-ADDRESS att
+     vara ‘bugPROGRAM@gnu.org’; använd denna format för GNU-program när
+     det är möjligt.  Det är också bra att nämna hemsidan för
+     programmer, andra sändlistor, etc.
+
+   Programmeringsgränssnitten ‘argp’ och ‘popt’ låter dig ange
+flaggbeskrivningar för ‘--help’ på samma struktur som resten av
+flaggdefinitionen; möjligen bör du överväga att använda dessa rutiner
+för flaggtolkning instället för ‘getopt’.
+
+   Som standard har ‘help2text’ samma heuristik för att identifiera
+avsnitt på manualsidor: en rad som består av ‘Flaggor:’ kommer till
+exempel att orsaka att följande text dyka upp i avsnittet ‘FLAGGOR’, och
+en rad som börjar med ‘Copyright’ kommer att dyka upp i avsnittet
+‘UPPHOVSRÄTT’.  Utöver denna heuristik kommer en rad som består av
+‘*Ord*’ att påbörja ett nytt avsnitt och ‘Ord:’ ett nytt underavsnitt.
+
+
+File: help2man-sv.info.tmp,  Node: Inkludera text,  Next: Användning av Makefiler,  Prev: --help-rekommendationer,  Up: Top
+
+4 Inkludera ytterligare text i utmatningen
+******************************************
+
+Ytterligare statisk text kan inkluderas i den genererade manualsidan
+genom att använda flaggorna ‘--include’ och ‘--opt-include’ (*note
+Anropa help2man::).  Även om dessa filer kan heta vad som helst,
+föreslår vi för att vara konsekventa att använda filändelsen ‘.h2m’ för
+inkluderingsfiler för ‘help2man’.
+
+   Formatet för för filer som inkluderas via dessa flaggor är enkelt:
+
+     [avsnitt]
+     text
+
+     /mönster/
+     text
+
+   Block av ordagrann *roff-text infogas i utmatningen antingen vid
+början av det angivna ‘[avsnittet]’ (skiftlägeskänsligt), eller efter
+ett styck som matchar mönstret ‘/mönster/’.
+
+   Mönster använder Perls syntax för reguljärauttryck och kan följas av
+modifierarna ‘i’, ‘s’ eller ‘m’ (*note pelre(1): (*manualsidor*)perlre.)
+
+   Rader innan det första avsnittet eller mönstret vilket börjar med ‘-’
+hanteras som flaggor.  Allting annars hoppas över utan anmärkning och
+kan användas för kommentarer, RCS-nyckelord och liknande.
+
+   Utmatningsordningen för (de inkluderade) avsnitten är:
+
+     NAMN
+     SAMMANFATTNING
+     BESKRIVNING
+     FLAGGOR
+     _annat_
+     MILJÖ
+     FILER
+     EXEMPEL
+     UPPHOVSMAN
+     RAPPORTERA BUGGA
+     UPPHOVSRÄTT
+     SE VIDARE
+
+   De ‘[namn]’- eller ‘[synopsis]’-avsnitt som förekommer i
+inkluderingsfilen kommer att ersätta vad som automatiskt hade
+producerats (även om du fortfarande kan åsidosätta den föregående med
+‘--namn’ om så behövs).
+
+   Andra avsnitt läggs före den automatiskt producerade utmatningen för
+standardavsnitt angivna ovan, eller inkluderade vid _annat_ (ovan) i den
+ordning de påträffades i inkluderingsfilen.
+
+   Placering av text inom avsnitt kan uttryckligen begäras med syntaxen
+‘[<avsnitt]’, ‘[=avsnitt]’ eller ‘[>avsnitt]’ för att placera den extra
+texten före, istället för, respektive efter standardutmatningen.
+
+
+File: help2man-sv.info.tmp,  Node: Användning av Makefiler,  Next: Lokaliserade manualsidor,  Prev: Inkludera text,  Up: Top
+
+5 Att använda ‘help2man’ med ‘make’
+***********************************
+
+En föreslagen användning av ‘help2man’ i Makefiler är att låta
+manualsidan bero in på binären, men på källkodsfilerna i vilka ‘--help’
+och ‘--version’-utmatningen definieras.
+
+   Denna användning tillåter en manualsida att genereras av
+upphovsmannen och inkluderas i distributionen utan att kräva att
+slutanvändaren har ‘help2man’ installerat.
+
+   En exempelregel för programmet ‘prog’ kunde vara:
+
+     prog.1: $(srcdir)/main.c
+             -$(HELP2MAN) --output=$@ --name='ett exempelprogram' ./prog
+
+   Värdet på ‘HELP2MAN’ kan sättas i ‘configure.in’ via endera av:
+
+     AM_MISSING_PROG(HELP2MAN, help2man)
+
+   för ‘automake’, eller något liknande:
+
+     AC_PATH_PROG(HELP2MAN, help2man, false // No help2man //)
+
+   endast för ‘autoconf’.
+
+
+File: help2man-sv.info.tmp,  Node: Lokaliserade manualsidor,  Next: Exempel,  Prev: Användning av Makefiler,  Up: Top
+
+6 Att producera manualsidor på modersmål
+****************************************
+
+Manualsidor kan produceras för vilken lokal som stöds av både programmet
+och ‘help2man’ med flaggan ‘--locale’ (‘-L’).
+
+     help2man -L fr_FR@euro -o cp.fr.1 cp
+
+   Se <http://translationproject.org/domain/help2man.html> för språken
+som för närvarande stöds av ‘help2man’, och *note Rapportering:: för hur
+man skickar in andra översättningar.
+
+6.1 Att ändra platsen för meddelandekataloger
+=============================================
+
+När du skapar lokaliserade manualsidor från ett program byggkatalog är
+det sannolikt att översättningarna installerade på standardplatsen (om
+de ens är installerade) inte kommer att vara korrekt för versionen av
+programmet som byggs.
+
+   Ett förinläsningsbart bibliotek tillhandahålls tillsammans med
+‘help2man’, vilket kommer att fånga upp anrop till ‘bindtextdomain’ som
+konfigurerar platsen för meddelande kataloger för domänen som anges av
+‘$TEXTDOMAIN’ och åsidosätter platsen för sökvägen given av
+‘$LOCALEDIR’.
+
+   Så, till exempel:
+
+     mkdir -p tmp/fr/LC_MESSAGES
+     cp po/fr.gmo tmp/fr/LC_MESSAGES/PROG.mo
+     LD_PRELOAD="/usr/lib/help2man/bindtextdomain.so" \
+       LOCALEDIR=tmp \
+       TEXTDOMAIN=PROG \
+       help2man -L fr_FR@euro -i PROG.fr.h2m -o PROG.fr.1 PROG
+     rm -rf tmp
+
+   koller att orsaka att PROG läser in meddelandekatalogen från ‘tmp’
+snarare än ‘/usr/share/local’.
+
+   Noteringar:
+   • Generaliseringen av ‘fr_FR@euro’ till ‘fr’ i exemplet ovan görs av
+     ‘gettext’, om en mer specifik matchning fanns tillgänglig hade det
+     också blivit ommappat.
+
+   • Denna förinläsning har endast testats mot ‘eglibc’ 2.11.2 och
+     ‘gettext’ 0.18.1.1 på ett GNU/Linux-system; låt mig vet om det
+     fungerar (eller ej) för dig (*note Rapportering::).
+
+
+File: help2man-sv.info.tmp,  Node: Exempel,  Next: Rapportering,  Prev: Lokaliserade manualsidor,  Up: Top
+
+7 Exempel på ‘help2man’-utdata
+******************************
+
+Givet ett hypotetiskt program ‘foo’ vilket producerar följande
+utmatning:
+
+     $ foo --version
+     GNU foo 1.1
+
+     Copyright (C) 2011 Free Software Foundation, Inc.
+     Detta är fri programvara; se källkoden för kopieringsvillkor. Det finns INGEN
+     garanti; inte ens underförstådd garanti om SÄLJBARHET eller LÄMPLIGHET För NÅGOT SPECIELLT ÄNDAMÅL.
+
+     Skrivet av E. N. Programmerare.
+     $ foo --help
+     GNU `foo' gör ingenting intressant förutom att fungera som ett exempel för
+     `help2man'.
+
+     Användning: foo [FLAGGA]…
+
+     Flagga:
+       -a, --flagga      en flagga
+       -b, --annan-flagga[=VÄRDE]
+                         en annan flagga
+
+           --help        visa den hjälp och avsluta
+           --version     mata ut versionsinformation och avsluta
+
+     Exempel:
+       foo               gör ingenting
+       foo --flagga      samma sak, men ange `--flagga'
+
+     Rapportera fel till <bug-gnu-utils@gnu.org>.
+
+   ‘help2man’ kommer att producera ‘nroff’-indata för en manualsida som
+kommer att formateras enligt något som liknar:
+
+     FOO(1)                         Användarkommandon                    FOO(1)
+
+     NAMN
+            foo - manualsida för foo 1.1
+
+     SAMMANFATTNING
+            foo [FLAGGOR]…
+
+     BESKRIVNING
+            GNU ”foo” gör ingenting intressant förutom att fungera som exempel
+            för ”help2man”.
+
+     FLAGGOT
+            -a, --flagga
+                   en flagga
+
+            -b, --annan-flagga[=VÄRDE]
+                   en annan flagga
+
+            --help visar denna hjälptext och avslutar
+
+            --version
+                   skriv ut versionsinformation och avsluta
+
+     EXEMPEL
+            foo    gör ingenting
+
+            foo --flagga
+                   samma sak, anger ”--flagga”
+
+     UPPHOVSMAN
+            Skrivet av E. N. Programmerare.
+
+     RAPPORTERA FEL
+            Rapportera fel till <bug-gnu-utils@gnu.org>.
+
+     UPPHOVSRÄTT
+            Copyright © 2011 Free Software Foundation, Inc.
+            This is free software;  see  the  source  for  copying  conditions.
+            There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+            PARTICULAR PURPOSE.
+
+     SE VIDARE
+            Den fullständiga dokumentationen för foo upprätthålls som en Texinfo-manual.
+            Om info och foo programmen är korrekt installerade hos dig,
+            bör kommandot
+
+                   info foo
+
+            ge dig tillgång till den fullständiga manualen.
+
+     foo 1.1                          Maj 2011                           FOO(1)
+
+
+File: help2man-sv.info.tmp,  Node: Rapportering,  Next: Tillgänglighet,  Prev: Exempel,  Up: Top
+
+8 Rapportera fel elelr förslag
+******************************
+
+Om du hittar problem eller har förslag om detta program eller denna
+manual, rapportera dem till <bug-help2man@gnu.org>.
+
+   Not till översättare: Översättningar hanteras via Translation Project
+(http://translationproject.org/) se
+<http://translationproject.org/html/translators.html> för vidare
+detaljer.
+
+
+File: help2man-sv.info.tmp,  Node: Tillgänglighet,  Prev: Rapportering,  Up: Top
+
+9 Få tag i ‘help2man’
+*********************
+
+Den senaste versionen av denna distribution är tillgänglig på nätet från
+GNU-speglar:
+
+     <http://ftpmirror.gnu.org/help2man/>
+
+   Om automatisk omdirigering misslyckas så finns listan över speglar
+på:
+
+     <http://www.gnu.org/order/ftp.html>
+
+   Eller om det behövs så kan du använda GNU:s huvudsakliga ftp-server:
+     <http://ftp.gnu.org/gnu/help2man/>
+
+
+Tag Table:
+Node: Top1180
+Node: Översikt2086
+Node: Anropa help2man2842
+Node: --help-rekommendationer5688
+Node: Inkludera text9864
+Node: Användning av Makefiler12013
+Node: Lokaliserade manualsidor13025
+Node: Exempel15065
+Node: Rapportering17868
+Node: Tillgänglighet18345
+
+End Tag Table
+
+
+Local Variables:
+coding: utf-8
+End:

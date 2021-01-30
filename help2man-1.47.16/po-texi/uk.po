@@ -1,0 +1,1600 @@
+# Ukrainian translation for help2man-texi.
+# Copyright (C) 2014 Free Software Foundation, Inc.
+# This file is distributed under the same license as the help2man-texi package.
+#
+# Yuri Chornoivan <yurchor@ukr.net>, 2014, 2015.
+msgid ""
+msgstr ""
+"Project-Id-Version: help2man-texi 1.46.6\n"
+"Report-Msgid-Bugs-To: Brendan O'Dea <bug-help2man@gnu.org>\n"
+"POT-Creation-Date: 2020-07-02 21:56+1000\n"
+"PO-Revision-Date: 2020-07-02 22:22+1000\n"
+"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
+"Language-Team: Ukrainian <translation-team-uk@lists.sourceforge.net>\n"
+"Language: uk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Lokalize 1.5\n"
+
+#. type: settitle
+#: help2man.texi:3
+#, no-wrap
+msgid "@command{help2man} Reference Manual"
+msgstr "Підручник з @command{help2man}"
+
+#. type: Plain text
+#: help2man.texi:7
+msgid "@documentencoding UTF-8"
+msgstr "@documentencoding UTF-8"
+
+#. type: dircategory
+#: help2man.texi:8
+#, no-wrap
+msgid "Software development"
+msgstr "Розробка програмного забезпечення"
+
+#. type: menuentry
+#: help2man.texi:11
+msgid "Automatic manual page generation."
+msgstr "Програма для автоматичного створення сторінок підручника (man)."
+
+#. type: copying
+#: help2man.texi:17
+msgid ""
+"This file documents the GNU @command{help2man} command which produces simple "
+"manual pages from the @samp{--help} and @samp{--version} output of other "
+"commands."
+msgstr ""
+"У цьому файлі міститься документація до програми GNU @command{help2man}. "
+"Програму призначено для створення простих сторінок довідника (man) на основі "
+"даних, виведених певною програмою, запущеною із параметрами @samp{--help} та "
+"@samp{--version}."
+
+#. type: copying
+#: help2man.texi:20
+msgid ""
+"Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2009, 2010, 2011, "
+"2012, 2013, 2014, 2015, 2020 Free Software Foundation, Inc."
+msgstr "© Free Software Foundation, Inc., 1999–2020"
+
+#. type: titlepage
+#: help2man.texi:24 help2man.texi:56
+msgid ""
+"Permission is granted to make and distribute verbatim copies of this manual "
+"provided the copyright notice and this permission notice are preserved on "
+"all copies."
+msgstr ""
+"Цей підручник можна копіювати без змін і поширювати, якщо в усіх копіях "
+"збережено запис про авторські права та цей запис про можливість копіювання."
+
+#. type: titlepage
+#: help2man.texi:36 help2man.texi:61
+msgid ""
+"Permission is granted to copy and distribute modified versions of this "
+"manual under the conditions for verbatim copying, provided that the entire "
+"resulting derived work is distributed under the terms of a permission notice "
+"identical to this one."
+msgstr ""
+"Цей підручник можна копіювати, вносити до копії зміни і поширювати створені "
+"копії, якщо виконано умови копіювання без змін, а уся похідна робота повинна "
+"поширюватися за тих самих умов, що і цей підручник."
+
+#. type: titlepage
+#: help2man.texi:41 help2man.texi:66
+msgid ""
+"Permission is granted to copy and distribute translations of this manual "
+"into another language, under the above conditions for modified versions, "
+"except that this permission notice may be stated in a translation approved "
+"by the Foundation."
+msgstr ""
+"Переклади цього підручника іншими мовами можна копіювати і поширювати "
+"відповідно до викладених вище умов щодо змінених версій, окрім того, що ці "
+"умови може бути перекладено, якщо переклад офіційно затверджено Фундацією "
+"вільного програмного забезпечення."
+
+#. type: subtitle
+#: help2man.texi:45
+#, no-wrap
+msgid "A utility for generating simple manual pages"
+msgstr "Програма для створення простих сторінок підручника (man)."
+
+#. type: titlepage
+#: help2man.texi:52
+msgid ""
+"Copyright @copyright{} 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2009, 2010, "
+"2011, 2012, 2013, 2014, 2015, 2020 Free Software Foundation, Inc."
+msgstr "@copyright{} Free Software Foundation, Inc., 1999–2020."
+
+#. type: ifnottex
+#: help2man.texi:76
+msgid ""
+"@command{help2man} produces simple manual pages from the @samp{--help} and "
+"@samp{--version} output of other commands."
+msgstr ""
+"@command{help2man} призначено для створення простих сторінок довідника (man) "
+"на основі даних, виведених певною програмою, запущеною із параметрами "
+"@samp{--help} та @samp{--version}."
+
+#. type: node
+#: help2man.texi:87 help2man.texi:90
+#, no-wrap
+msgid "Overview"
+msgstr "Огляд"
+
+#. type: menuentry
+#: help2man.texi:87
+msgid "Overview of @command{help2man}."
+msgstr "Огляд @command{help2man}."
+
+#. type: node
+#: help2man.texi:87 help2man.texi:108
+#, no-wrap
+msgid "Invoking help2man"
+msgstr "Як викликати help2man"
+
+#. type: menuentry
+#: help2man.texi:87
+msgid "How to run @command{help2man}."
+msgstr "Як запустити @command{help2man}."
+
+#. type: node
+#: help2man.texi:87 help2man.texi:208
+#, no-wrap
+msgid "--help recommendations"
+msgstr "Рекомендації щодо --help"
+
+#. type: menuentry
+#: help2man.texi:87
+msgid "Recommended formatting for --help output."
+msgstr "Рекомендоване форматування даних, виведених за допомогою --help."
+
+#. type: node
+#: help2man.texi:87 help2man.texi:304
+#, no-wrap
+msgid "Including text"
+msgstr "Включення тексту"
+
+#. type: menuentry
+#: help2man.texi:87
+msgid "Including additional text in the output."
+msgstr "Включення додаткового тексту до виведених програмою даних."
+
+#. type: node
+#: help2man.texi:87 help2man.texi:366
+#, no-wrap
+msgid "Makefile usage"
+msgstr "Використання Makefile"
+
+#. type: menuentry
+#: help2man.texi:87
+msgid "Using @command{help2man} with @command{make}."
+msgstr "Використання @command{help2man} у поєднанні з @command{make}."
+
+#. type: node
+#: help2man.texi:87 help2man.texi:401
+#, no-wrap
+msgid "Localised man pages"
+msgstr "Локалізовані сторінки man"
+
+#. type: menuentry
+#: help2man.texi:87
+msgid "Producing native language manual pages."
+msgstr "Створення сторінок підручника мовами, відмінними від англійської."
+
+#. type: node
+#: help2man.texi:87 help2man.texi:456
+#, no-wrap
+msgid "Example"
+msgstr "Приклад"
+
+#. type: menuentry
+#: help2man.texi:87
+msgid "Example @command{help2man} output."
+msgstr "Приклад роботи @command{help2man}."
+
+#. type: node
+#: help2man.texi:87 help2man.texi:572
+#, no-wrap
+msgid "Reports"
+msgstr "Звіти"
+
+#. type: menuentry
+#: help2man.texi:87
+msgid "Reporting bugs or suggestions."
+msgstr "Як повідомити про вади та запропонувати удосконалення."
+
+#. type: node
+#: help2man.texi:87 help2man.texi:582
+#, no-wrap
+msgid "Availability"
+msgstr "Доступність"
+
+#. type: menuentry
+#: help2man.texi:87
+msgid "Obtaining @command{help2man}."
+msgstr "Як отримати @command{help2man}."
+
+#. type: chapter
+#: help2man.texi:91
+#, no-wrap
+msgid "Overview of @command{help2man}"
+msgstr "Огляд @command{help2man}"
+
+#. type: Plain text
+#: help2man.texi:95
+msgid ""
+"@command{help2man} is a tool for automatically generating simple manual "
+"pages from program output."
+msgstr ""
+"@command{help2man} призначено для автоматизованого створення простих "
+"сторінок довідника (mna) на основі даних, виведених програмою, для якої "
+"створюється відповідна сторінка."
+
+#. type: Plain text
+#: help2man.texi:99
+msgid ""
+"Although manual pages are optional for GNU programs other projects, such as "
+"Debian require them (@pxref{Man Pages, , , standards, GNU Coding Standards})"
+msgstr ""
+"Хоча сторінки підручника і не є обов’язковими для програм GNU, у інших "
+"проектах, зокрема Debian, наявність таких сторінок є обов’язковою "
+"(@pxref{Сторінки man, , , стандарти, Стандарти щодо програмування GNU})"
+
+#. type: Plain text
+#: help2man.texi:103
+msgid ""
+"This program is intended to provide an easy way for software authors to "
+"include a manual page in their distribution without having to maintain that "
+"document."
+msgstr ""
+"Цю програму призначено для спрощення для авторів програмного забезпечення "
+"створення сторінки підручника для дистрибутива з програмою без потреби у "
+"постійній роботі з підтримання її актуальності."
+
+#. type: Plain text
+#: help2man.texi:107
+msgid ""
+"Given a program which produces reasonably standard @samp{--help} and @samp{--"
+"version} outputs, @command{help2man} can re-arrange that output into "
+"something which resembles a manual page."
+msgstr ""
+"Якщо програма здатна виводити достатньо коректні дані у відповідь на "
+"додавання до команди стандартних параметрів @samp{--help} та @samp{--"
+"version}, @command{help2man} може упорядкувати виведені програмою дані у "
+"щось, що є достатньо якісною сторінкою підручника."
+
+#. type: chapter
+#: help2man.texi:109
+#, no-wrap
+msgid "How to Run @command{help2man}"
+msgstr "Як запустити @command{help2man}"
+
+#. type: Plain text
+#: help2man.texi:112
+msgid "The format for running the @command{help2man} program is:"
+msgstr "Формат команди запуску @command{help2man}:"
+
+#. type: example
+#: help2man.texi:115
+#, no-wrap
+msgid "@command{help2man} [@var{option}]@dots{} @var{executable}\n"
+msgstr "@command{help2man} [@var{параметр}]@dots{} @var{виконуваний файл}\n"
+
+#. type: Plain text
+#: help2man.texi:118
+msgid "@command{help2man} supports the following options:"
+msgstr "У @command{help2man} передбачено підтримку таких параметрів:"
+
+#. type: item
+#: help2man.texi:120
+#, no-wrap
+msgid "-n @var{string}"
+msgstr "-n @var{рядок}"
+
+#. type: itemx
+#: help2man.texi:121
+#, no-wrap
+msgid "--name=@var{string}"
+msgstr "--name=@var{рядок}"
+
+#. type: table
+#: help2man.texi:124
+msgid ""
+"Use @var{string} as the description for the @samp{NAME} paragraph of the "
+"manual page."
+msgstr ""
+"Використовувати @var{рядок} як опис для розділу @samp{NAME} сторінки "
+"підручника."
+
+#. type: table
+#: help2man.texi:127
+msgid ""
+"By default (for want of anything better) this paragraph contains "
+"@samp{manual page for @var{program} @var{version}}."
+msgstr ""
+"Типово, якщо немає нічого кращого, відповідний абзац буде таким: "
+"@samp{manual page for @var{програма} @var{номер версії}}."
+
+#. Translators: the translated cross-reference "Including text" here must
+#. match the  target (type: node) translation elsewhere in this file.
+#. type: table
+#: help2man.texi:130
+msgid ""
+"This option overrides an include file @samp{[name]} section "
+"(@pxref{Including text})."
+msgstr ""
+"За допомогою цього параметра можна перевизначити розділ @samp{[name]} файла "
+"включення (@pxref{Включення тексту})."
+
+#. type: item
+#: help2man.texi:131
+#, no-wrap
+msgid "-s @var{section}"
+msgstr "-s @var{розділ}"
+
+#. type: itemx
+#: help2man.texi:132
+#, no-wrap
+msgid "--section @var{section}"
+msgstr "--section @var{розділ}"
+
+#. type: table
+#: help2man.texi:135
+msgid ""
+"Use @var{section} as the section for the man page.  The default section is 1."
+msgstr ""
+"Використовувати для сторінки man розділ, вказаний аргументом @var{розділ}. "
+"Типовим розділом є 1."
+
+#. type: item
+#: help2man.texi:136
+#, no-wrap
+msgid "-m @var{manual}"
+msgstr "-m @var{підручник}"
+
+#. type: itemx
+#: help2man.texi:137
+#, no-wrap
+msgid "--manual=@var{manual}"
+msgstr "--manual=@var{підручник}"
+
+#. type: table
+#: help2man.texi:142
+msgid ""
+"Set the name of the manual section to @var{section}, used as a centred "
+"heading for the manual page.  By default @samp{User Commands} is used for "
+"pages in section 1, @samp{Games} for section 6 and @samp{System "
+"Administration Utilities} for sections 8 and 1M."
+msgstr ""
+"Встановити назву для розділу підручника @var{розділ}, яка буде центральною "
+"частиною заголовка сторінки. Типово для @samp{команд користувача} "
+"використовується розділ 1, для @samp{ігор} використовується розділ 6, а для "
+"@samp{програм для адміністрування системи} використовуються розділи 8 та 1M."
+
+#. type: item
+#: help2man.texi:143
+#, no-wrap
+msgid "-S @var{source}"
+msgstr "-S @var{джерело}"
+
+#. type: itemx
+#: help2man.texi:144
+#, no-wrap
+msgid "--source=@var{source}"
+msgstr "--source=@var{джерело}"
+
+#. type: table
+#: help2man.texi:148
+msgid ""
+"The program source is used as a page footer, and often contains the name of "
+"the organisation or a suite of which the program is part.  By default the "
+"value is the package name and version."
+msgstr ""
+"Запис джерела програми використовується як нижній колонтитул сторінки і "
+"містить назву організації або комплекту програм, частиною якого є програма. "
+"Типовим значенням запису є назва пакунка і номер версії."
+
+#. type: item
+#: help2man.texi:149
+#, no-wrap
+msgid "-L @var{locale}"
+msgstr "-L @var{локаль}"
+
+#. type: itemx
+#: help2man.texi:150
+#, no-wrap
+msgid "--locale=@var{locale}"
+msgstr "--locale=@var{локаль}"
+
+#. Translators: the translated cross-reference "Localised man pages" here
+#. must match the  target (type: node) translation elsewhere in this file.
+#. type: table
+#: help2man.texi:154
+msgid ""
+"Select output locale (default @samp{C}).  Both the program and "
+"@command{help2man} must support the given @var{locale} (@pxref{Localised man "
+"pages})."
+msgstr ""
+"Вибрати локаль для виведення результатів (типовою є локаль @samp{C}). "
+"Підтримку вказаної @var{локалі} має бути передбачено одночасно у самій "
+"програмі і у @command{help2man} (@pxref{Локалізовані сторінки man})."
+
+#. type: item
+#: help2man.texi:155
+#, no-wrap
+msgid "-i @var{file}"
+msgstr "-i @var{файл}"
+
+#. type: itemx
+#: help2man.texi:156
+#, no-wrap
+msgid "--include=@var{file}"
+msgstr "--include=@var{файл}"
+
+#. Translators: the translated cross-reference "Including text" here must
+#. match the  target (type: node) translation elsewhere in this file.
+#. type: table
+#: help2man.texi:158
+msgid "Include material from @var{file} (@pxref{Including text})."
+msgstr "Включити матеріал з файла @var{файл} (@pxref{Включення тексту})."
+
+#. type: item
+#: help2man.texi:159
+#, no-wrap
+msgid "-I @var{file}"
+msgstr "-I @var{файл}"
+
+#. type: itemx
+#: help2man.texi:160
+#, no-wrap
+msgid "--opt-include=@var{file}"
+msgstr "--opt-include=@var{файл}"
+
+#. type: table
+#: help2man.texi:163
+msgid ""
+"A variant of @samp{--include} for use in Makefile pattern rules which does "
+"not require @var{file} to exist."
+msgstr ""
+"Варіант @samp{--include} для використання у шаблонних правилах Makefile, для "
+"якого не потрібне існування файла @var{файл}."
+
+#. type: item
+#: help2man.texi:164
+#, no-wrap
+msgid "-o @var{file}"
+msgstr "-o @var{файл}"
+
+#. type: itemx
+#: help2man.texi:165
+#, no-wrap
+msgid "--output=@var{file}"
+msgstr "--output=@var{файл}"
+
+#. type: table
+#: help2man.texi:167
+msgid "Send output to @var{file} rather than @code{stdout}."
+msgstr "Вивести результат до файла @var{файл}, а не до @code{stdout}."
+
+#. type: item
+#: help2man.texi:168
+#, no-wrap
+msgid "-p @var{text}"
+msgstr "-p @var{текст}"
+
+#. type: itemx
+#: help2man.texi:169
+#, no-wrap
+msgid "--info-page=@var{text}"
+msgstr "--info-page=@var{текст}"
+
+#. type: table
+#: help2man.texi:171
+msgid "Name of Texinfo manual."
+msgstr "Назва підручника Texinfo."
+
+#. type: table
+#: help2man.texi:176
+msgid ""
+"Suppress inclusion of a @samp{SEE ALSO} paragraph directing the reader to "
+"the Texinfo documentation."
+msgstr ""
+"Придушити включення абзацу розділу @samp{SEE ALSO}, який спрямовував би "
+"читача до документації з Texinfo."
+
+#. type: table
+#: help2man.texi:182
+msgid ""
+"Drop @file{lt-} prefix from instances of the program name in the synopsis "
+"(@command{libtool} creates wrapper scripts in the build directory which "
+"invoke @command{foo} as @command{.libs/lt-foo})."
+msgstr ""
+"Викинути префікс @file{lt-} з екземплярів назви програми у короткому описі "
+"(@command{libtool} створює скрипти-обгортки у каталозі збирання, які "
+"викликають програму @command{foo} як @command{.libs/lt-foo})."
+
+#. type: table
+#: help2man.texi:186
+msgid "Show help or version information."
+msgstr "Вивести довідкові дані або дані щодо версії."
+
+#. type: Plain text
+#: help2man.texi:191
+msgid ""
+"By default @command{help2man} passes the standard @samp{--help} and @samp{--"
+"version} options to the executable although alternatives may be specified "
+"using:"
+msgstr ""
+"Типово @command{help2man} передає виконуваному файлу стандартні параметри "
+"@samp{--help} та @samp{--version}. Альтернативні параметри можна вказати так:"
+
+#. type: item
+#: help2man.texi:193
+#, no-wrap
+msgid "-h @var{option}"
+msgstr "-h @var{параметр}"
+
+#. type: itemx
+#: help2man.texi:194
+#, no-wrap
+msgid "--help-option=@var{option}"
+msgstr "--help-option=@var{параметр}"
+
+#. type: table
+#: help2man.texi:196
+msgid "Help option string."
+msgstr "Рядок параметра довідки."
+
+#. type: item
+#: help2man.texi:197
+#, no-wrap
+msgid "-v @var{option}"
+msgstr "-v @var{параметр}"
+
+#. type: itemx
+#: help2man.texi:198
+#, no-wrap
+msgid "--version-option=@var{option}"
+msgstr "--version-option=@var{параметр}"
+
+#. type: table
+#: help2man.texi:200
+msgid "Version option string."
+msgstr "Рядок параметра версії."
+
+#. type: item
+#: help2man.texi:201
+#, no-wrap
+msgid "--version-string=@var{string}"
+msgstr "--version-string=@var{рядок}"
+
+#. type: table
+#: help2man.texi:203
+msgid "Version string."
+msgstr "Рядок версії."
+
+#. type: table
+#: help2man.texi:206
+msgid "Include stderr when parsing option output."
+msgstr ""
+"Включити дані із stderr під час обробки результатів додавання параметра."
+
+#. type: chapter
+#: help2man.texi:209
+#, no-wrap
+msgid "@option{--help} Recommendations"
+msgstr "Рекомендації щодо @option{--help}"
+
+#. type: Plain text
+#: help2man.texi:215
+msgid ""
+"Here are some recommendations for what to include in your @option{--help} "
+"output.  Including these gives @command{help2man} the best chance at "
+"generating a respectable man page, as well as benefitting users directly."
+msgstr ""
+"У цьому розділі наведено рекомендації щодо того, що слід включати у дані, "
+"які має виводити ваша програма у відповідь на додавання до команди, якою "
+"вона запускається, параметра @option{--help}. Виконання цих рекомендацій "
+"надасть змогу @command{help2man} вивести якісну сторінку man, а також "
+"надасть користувачам кориснішу інформацію."
+
+#. type: Plain text
+#: help2man.texi:219
+msgid ""
+"See @ref{Command-Line Interfaces, , , standards, GNU Coding Standards} and "
+"@ref{Man Pages, , , standards, GNU Coding Standards}, for the official GNU "
+"standards relating to @option{--help} and man pages."
+msgstr ""
+"Див. @ref{Інтерфейси командного рядка, , , стандарти, Стандарти "
+"програмування GNU} та @ref{Сторінки man, , , стандарти, Стандарти "
+"програмування GNU}, щоб ознайомитися з офіційними стандартами GNU щодо "
+"використання параметра @option{--help} та сторінок man."
+
+#. type: itemize
+#: help2man.texi:225
+msgid ""
+"A synopsis of how to invoke the program.  If different usages of the program "
+"have different invocations, then list them all.  For example (edited for "
+"brevity):"
+msgstr ""
+"Коротке резюме щодо того, як запускати програму. Якщо різні режими роботи "
+"програми потребують використання різних способів запуску, наведіть повний "
+"список варіантів. Приклад (для зручності скорочено):"
+
+#. type: smallexample
+#: help2man.texi:230
+#, no-wrap
+msgid ""
+"Usage: cp [OPTION]... SOURCE DEST\n"
+"  or:  cp [OPTION]... SOURCE... DIRECTORY\n"
+"@dots{}\n"
+msgstr ""
+"Usage: cp [OPTION]... SOURCE DEST\n"
+"  or:  cp [OPTION]... SOURCE... DIRECTORY\n"
+"@dots{}\n"
+
+#. type: itemize
+#: help2man.texi:235
+msgid ""
+"Use @code{argv[0]} for the program name in these synopses, just as it is, "
+"with no directory stripping.  This is in contrast to the canonical "
+"(constant) name of the program which is used in @option{--version}."
+msgstr ""
+"У цих коротких описах використовуйте замість назви програми @code{argv[0]}, "
+"як є, без вилучення частини із записами каталогів. Це не збігається із "
+"канонічною (сталою) назвою програми, яка використовується у команді з "
+"параметром @option{--version}."
+
+#. type: itemize
+#: help2man.texi:239
+msgid ""
+"A very brief explanation of what the program does, including default and/or "
+"typical behaviour.  For example, here is @command{cp}'s:"
+msgstr ""
+"Дуже короткий опис призначення програми, зокрема типової поведінки. Приклад "
+"для програми @command{cp}:"
+
+#. type: example
+#: help2man.texi:242
+#, no-wrap
+msgid "Copy SOURCE to DEST, or multiple SOURCE(s) to DIRECTORY.\n"
+msgstr "Копіює ДЖЕРЕЛО у ЦІЛЬ, або декілька ДЖЕРЕЛ у КАТАЛОГ.\n"
+
+#. type: itemize
+#: help2man.texi:253
+msgid ""
+"A list of options, indented to column 2.  If the program supports one-"
+"character options, put those first, then the equivalent long option (if "
+"any).  If the option takes an argument, include that too, giving it a "
+"meaningful name.  Align the descriptions in a convenient column, if "
+"desired.  Note that to be correctly recognised by @command{help2man} the "
+"description must be separated from the options by at least two spaces and "
+"descriptions continued on subsequent lines must start at the same column."
+msgstr ""
+"Список параметрів з відступом до позиції 2 у рядку. Якщо у програмі "
+"передбачено використання однолітерних параметрів, пункти цих параметрів "
+"мають бути на початку рядка, а далі вже має бути розширений еквівалентний "
+"запис (якщо такий передбачено). Якщо до параметра потрібно додавати "
+"аргумент, включіть його до опису, надавши йому зрозумілої користувачеві "
+"назви.  Вирівняйте описи за певною позицією у рядку. Зауважте, що для того, "
+"щоб програма @command{help2man} могла належним чином розпізнати опис, його "
+"слід відокремити від запису параметра принаймні двома пробілами, а у "
+"багаторядковому описі другий і наступні рядки мають починатися з однієї "
+"позиції у рядку."
+
+#. type: itemize
+#: help2man.texi:257
+msgid ""
+"Here again is an (edited) excerpt from @command{cp}, showing a short option "
+"with an equivalent long option, a long option only, and a short option only:"
+msgstr ""
+"Нижче наведено (редагований) приклад з опису параметрів програми "
+"@command{cp}, з коротким і довгим варіантом параметра, лише довгим варіантом "
+"параметра і лише коротким варіантом параметра:"
+
+#. type: smallexample
+#: help2man.texi:262
+#, no-wrap
+msgid ""
+"  -a, --archive                same as -dpR\n"
+"      --backup[=CONTROL]       make a backup of each ...\n"
+"  -b                           like --backup but ...\n"
+msgstr ""
+"  -a, --archive                same as -dpR\n"
+"      --backup[=CONTROL]       make a backup of each ...\n"
+"  -b                           like --backup but ...\n"
+
+#. type: itemize
+#: help2man.texi:269
+msgid ""
+"For programs that take many options, it may be desirable to split the option "
+"list into sections such as @samp{Global}, @samp{Output control}, or whatever "
+"makes sense in the particular case.  It is usually best to alphabetise (by "
+"short option name first, then long) within each section, or the entire list "
+"if there are no sections."
+msgstr ""
+"Якщо програмі можна передавати багато параметрів, варто розділити список "
+"параметрів на частини, наприклад, @samp{Загальні}, @samp{Керування "
+"виведенням} тощо. Зазвичай, параметри варто упорядковувати за абеткою "
+"(спершу за короткими варіантами записів параметрів, потім за довгими) у "
+"межах кожної з частин або у межах усього списку, якщо у ньому нема частин."
+
+#. type: itemize
+#: help2man.texi:275
+msgid ""
+"Any useful additional information about program behaviour, such as "
+"influential environment variables, further explanation of options, etc.  For "
+"example, @command{cp} discusses @env{VERSION_CONTROL} and sparse files."
+msgstr ""
+"Будь-які додаткові дані щодо поведінки програми, зокрема важливі для роботи "
+"змінні середовища, додаткові відомості щодо параметрів тощо. Наприклад, для "
+"програми @command{cp} можна навести дані щодо змінної середовища "
+"@env{VERSION_CONTROL} та розріджених файлів."
+
+#. type: itemize
+#: help2man.texi:280
+msgid ""
+"A few examples of typical usage, at your discretion.  One good example is "
+"usually worth a thousand words of description, so this is highly recommended."
+msgstr ""
+"Декілька прикладів типового використання, за вашим вибором. Один хороший "
+"приклад, зазвичай, вартий тисячі слів опису, отже варто завжди включати до "
+"довідки приклади."
+
+#. type: cindex
+#: help2man.texi:282
+#, no-wrap
+msgid "address for bug reports"
+msgstr "адреса для звітування щодо помилок"
+
+#. type: cindex
+#: help2man.texi:283
+#, no-wrap
+msgid "bug reports"
+msgstr "звітування про вади"
+
+#. type: itemize
+#: help2man.texi:288
+msgid ""
+"In closing, a line stating how to email bug reports.  Typically, "
+"@var{mailing-address} will be @samp{bug-@var{program}@@gnu.org}; please use "
+"this form for GNU programs whenever possible.  It's also good to mention the "
+"home page of the program, other mailing lists, etc."
+msgstr ""
+"На завершення, слід навести настанови щодо адреси, на яку слід надсилати "
+"повідомлення про вади. Типовою @var{поштовою адресою} є @samp{bug-"
+"@var{програма}@@gnu.org}. Варто дотримуватися саме цієї форми, якщо йдеться "
+"про програму GNU. Також варто згадати адресу домашньої сторінки програми, "
+"пов’язані із її обговоренням списки листування тощо."
+
+#. type: Plain text
+#: help2man.texi:295
+msgid ""
+"The @code{argp} and @code{popt} programming interfaces let you specify "
+"option descriptions for @option{--help} in the same structure as the rest of "
+"the option definition; you may wish to consider using these routines for "
+"option parsing instead of @code{getopt}."
+msgstr ""
+"Інтерфейси програмування @code{argp} та @code{popt} надають вам змогу "
+"вказати описи параметрів для @option{--help} з тією самою структурою, що "
+"решта описів параметрів; вам варто скористатися цими підпрограмами для "
+"обробки параметрів замість @code{getopt}."
+
+#. type: Plain text
+#: help2man.texi:303
+msgid ""
+"By default @command{help2man} has some heuristics for identifying manual "
+"page sections: a line consisting of @samp{Options:} for example will cause "
+"the following text to appear in the @code{OPTIONS} section, and a line "
+"beginning with @samp{Copyright} will appear in the @code{COPYRIGHT} "
+"section.  Outside of these heuristics, a line consisting of @samp{*Words*} "
+"will start a new section, and @samp{Words:} a new sub-section."
+msgstr ""
+"Типово, у @command{help2man} для виявлення розділів сторінки підручника "
+"використовується певна евристика: наприклад, рядок із записом "
+"@samp{Параметри:} призведе до того, що наступну за ним частину тексту буде "
+"додано до розділу @code{ПАРАМЕТРИ}, а рядок, що починається зі слова "
+"@samp{Copyright} стане частиною розділу @code{COPYRIGHT}. Окрім цього, "
+"рядок, що містить, наприклад, @samp{*Слова*} стане початком нового розділу, "
+"а рядок @samp{Слова:} — нового підрозділу."
+
+#. type: chapter
+#: help2man.texi:305
+#, no-wrap
+msgid "Including Additional Text in the Output"
+msgstr "Включення додаткового тексту до виведених програмою даних"
+
+#. Translators: the translated cross-reference "Invoking help2man" here
+#. must match the  target (type: node) translation elsewhere in this file.
+#. type: Plain text
+#: help2man.texi:312
+msgid ""
+"Additional static text may be included in the generated manual page by using "
+"the @samp{--include} and @samp{--opt-include} options (@pxref{Invoking "
+"help2man}).  While these files can be named anything, for consistency we "
+"suggest to use the extension @code{.h2m} for @command{help2man} include "
+"files."
+msgstr ""
+"До створеної сторінки підручника можна додати статичний текст за допомогою "
+"параметрів @samp{--include} та @samp{--opt-include} (@pxref{Як викликати "
+"help2man}). Хоча можна використовувати файли з довільними назвами, для "
+"певності ми рекомендуємо використовувати для файлів включень "
+"@command{help2man} суфікс назви @code{.h2m}."
+
+#. type: Plain text
+#: help2man.texi:314
+msgid "The format for files included with these option is simple:"
+msgstr ""
+"Формат даних у файлі, який додається за допомогою цього параметра, має бути "
+"простим:"
+
+#. type: example
+#: help2man.texi:318
+#, no-wrap
+msgid ""
+"[section]\n"
+"text\n"
+"\n"
+msgstr ""
+"[розділ]\n"
+"текст\n"
+"\n"
+
+#. type: example
+#: help2man.texi:321
+#, no-wrap
+msgid ""
+"/pattern/\n"
+"text\n"
+msgstr ""
+"/шаблон/\n"
+"текст\n"
+
+#. type: Plain text
+#: help2man.texi:326
+msgid ""
+"Blocks of verbatim *roff text are inserted into the output either at the "
+"start of the given @samp{[section]} (case insensitive), or after a paragraph "
+"matching @samp{/pattern/}."
+msgstr ""
+"Блоки тексту *roff вставляються до виведених даних або на початку вказаного "
+"@samp{[розділу]} (без врахування регістру), або після абзацу, що відповідає "
+"@samp{/шаблону/}."
+
+#. type: Plain text
+#: help2man.texi:330
+msgid ""
+"Patterns use the Perl regular expression syntax and may be followed by the "
+"@samp{i}, @samp{s} or @samp{m} modifiers (@pxref{perlre, , perlre(1), "
+"*manpages*, The @code{perlre(1)} manual page})"
+msgstr ""
+"У шаблонах використовується синтаксис формальних виразів Perl, можна "
+"використовувати модифікатори @samp{i}, @samp{s} або @samp{m} "
+"(@pxref{perlre, , perlre(1), *manpages*, Сторінка підручника з "
+"@code{perlre(1)}})"
+
+#. type: Plain text
+#: help2man.texi:334
+msgid ""
+"Lines before the first section or pattern which begin with @samp{-} are "
+"processed as options.  Anything else is silently ignored and may be used for "
+"comments, RCS keywords and the like."
+msgstr ""
+"Рядки перед першим розділом або шаблоном, які починаються з набору символів "
+"@samp{-}, вважаються визначеннями параметрів. Всі інші такі рядки буде "
+"проігноровано, ними можна скористатися для коментування, ключових слів RCS "
+"тощо."
+
+#. type: Plain text
+#: help2man.texi:336
+msgid "The section output order (for those included) is:"
+msgstr "Порядок виведення розділів (для включених розділів):"
+
+#. type: example
+#: help2man.texi:350
+#, no-wrap
+msgid ""
+"NAME\n"
+"SYNOPSIS\n"
+"DESCRIPTION\n"
+"OPTIONS\n"
+"@emph{other}\n"
+"ENVIRONMENT\n"
+"FILES\n"
+"EXAMPLES\n"
+"AUTHOR\n"
+"REPORTING BUGS\n"
+"COPYRIGHT\n"
+"SEE ALSO\n"
+msgstr ""
+"NAME\n"
+"SYNOPSIS\n"
+"DESCRIPTION\n"
+"OPTIONS\n"
+"@emph{інше}\n"
+"ENVIRONMENT\n"
+"FILES\n"
+"EXAMPLES\n"
+"AUTHOR\n"
+"REPORTING BUGS\n"
+"COPYRIGHT\n"
+"SEE ALSO\n"
+
+#. type: Plain text
+#: help2man.texi:356
+msgid ""
+"Any @samp{[name]} or @samp{[synopsis]} sections appearing in the include "
+"file will replace what would have automatically been produced (although you "
+"can still override the former with @samp{--name} if required)."
+msgstr ""
+"Будь-які розділи @samp{[name]} or @samp{[synopsis]} вказані у включеному "
+"файлі, замінять собою відповідні розділи, створені у автоматичному режимі. "
+"Ви можете зберегти перший з цих розділів за допомогою параметра @samp{--"
+"name}, якщо захочете."
+
+#. type: Plain text
+#: help2man.texi:360
+msgid ""
+"Other sections are prepended to the automatically produced output for the "
+"standard sections given above, or included at @emph{other} (above)  in the "
+"order they were encountered in the include file."
+msgstr ""
+"Інші розділи буде додано перед автоматично створеними даними стандартних "
+"розділів, вказаних вище, або буде включено до @emph{іншого} (вище) у "
+"порядку, у якому їх вказано у файлі-включенні."
+
+#. type: Plain text
+#: help2man.texi:365
+msgid ""
+"Placement of the text within the section may be explicitly requested by "
+"using the syntax @samp{[<section]}, @samp{[=section]} or @samp{[>section]} "
+"to place the additional text before, in place of, or after the default "
+"output respectively."
+msgstr ""
+"Можна явним чином вимагати розташовування тексту у розділі за допомогою "
+"синтаксичної конструкції @samp{[<розділ]}, @samp{[=розділ]} або "
+"@samp{[>розділ]} для розташовування тексту перед, замість або після типових "
+"виведених даних, відповідно."
+
+#. type: chapter
+#: help2man.texi:367
+#, no-wrap
+msgid "Using @command{help2man} With @command{make}"
+msgstr "Використання @command{help2man} у поєднанні з @command{make}"
+
+#. type: Plain text
+#: help2man.texi:372
+msgid ""
+"A suggested use of @command{help2man} in Makefiles is to have the manual "
+"page depend not on the binary, but on the source file(s) in which the "
+"@samp{--help} and @samp{--version} output are defined."
+msgstr ""
+"Рекомендованим випадком використання @command{help2man} у файлах Makefile є "
+"випадок, коли сторінка довідника має залежати не від наявності виконуваного "
+"файла, а від файлів початкових даних, у яких визначено текст, який "
+"виводиться у відповідь на додавання параметрів @samp{--help} та @samp{--"
+"version} до команди."
+
+#. type: Plain text
+#: help2man.texi:376
+msgid ""
+"This usage allows a manual page to be generated by the maintainer and "
+"included in the distribution without requiring the end-user to have "
+"@command{help2man} installed."
+msgstr ""
+"У такий спосіб можна забезпечити створення сторінки довідника супровідником "
+"пакунка із включенням його до дистрибутива програми, без потреби для "
+"користувача пакунка у встановленні програми @command{help2man}."
+
+#. type: Plain text
+#: help2man.texi:378
+msgid "An example rule for the program @code{prog} could be:"
+msgstr "Приклад правила для програми @code{prog}:"
+
+#. type: group
+#: help2man.texi:383
+#, no-wrap
+msgid ""
+"prog.1: $(srcdir)/main.c\n"
+"        -$(HELP2MAN) --output=$@@ --name='an example program' ./prog\n"
+msgstr ""
+"prog.1: $(srcdir)/main.c\n"
+"        -$(HELP2MAN) --output=$@@ --name='an example program' ./prog\n"
+
+#. type: Plain text
+#: help2man.texi:388
+msgid ""
+"The value of @code{HELP2MAN} may be set in @code{configure.in} using either "
+"of:"
+msgstr ""
+"Значення змінної @code{HELP2MAN} можна встановити у @code{configure.in} у "
+"один з таких способів:"
+
+#. type: example
+#: help2man.texi:391
+#, no-wrap
+msgid "AM_MISSING_PROG(HELP2MAN, help2man)\n"
+msgstr "AM_MISSING_PROG(HELP2MAN, help2man)\n"
+
+#. type: Plain text
+#: help2man.texi:394
+msgid "for @command{automake}, or something like:"
+msgstr "для @command{automake} або чимось таким:"
+
+#. type: example
+#: help2man.texi:397
+#, no-wrap
+msgid "AC_PATH_PROG(HELP2MAN, help2man, false // No help2man //)\n"
+msgstr "AC_PATH_PROG(HELP2MAN, help2man, false // No help2man //)\n"
+
+#. type: Plain text
+#: help2man.texi:400
+msgid "for @command{autoconf} alone."
+msgstr "для @command{autoconf}."
+
+#. type: chapter
+#: help2man.texi:402
+#, no-wrap
+msgid "Producing Native Language Manual Pages"
+msgstr "Створення сторінок підручника мовами, відмінними від англійської"
+
+#. type: Plain text
+#: help2man.texi:407
+msgid ""
+"Manual pages may be produced for any locale supported by both the program "
+"and @command{help2man} with the @samp{--locale} (@samp{-L})  option."
+msgstr ""
+"Сторінки підручника можна створити для будь-якої локалі, підтримку якої "
+"передбачено у програмі та у @command{help2man} за допомогою параметра "
+"@samp{--locale} (@samp{-L})."
+
+#. type: example
+#: help2man.texi:410
+#, no-wrap
+msgid "help2man -L fr_FR@@euro -o cp.fr.1 cp\n"
+msgstr "help2man -L uk_UA@@euro -o cp.uk.1 cp\n"
+
+#. Translators: the translated cross-reference "Reports" here must match
+#. the	target (type: node) translation elsewhere in this file.
+#. type: Plain text
+#: help2man.texi:415
+msgid ""
+"See @url{http://translationproject.org/domain/help2man.html} for the "
+"languages currently supported by @command{help2man}, and @pxref{Reports} for "
+"how to submit other translations."
+msgstr ""
+"Із поточним списком підтримуваних @command{help2man} мов можна ознайомитися "
+"тут: @url{http://translationproject.org/domain/help2man.html}. Довідку щодо "
+"надсилання нових перекладів наведено у розділі @pxref{Звіти}."
+
+#. type: section
+#: help2man.texi:416
+#, no-wrap
+msgid "Changing the Location of Message Catalogs"
+msgstr "Як змінити розташування каталогів повідомлень"
+
+#. type: Plain text
+#: help2man.texi:422
+msgid ""
+"When creating localised manual pages from a program's build directory it is "
+"probable that the translations installed in the standard location will not "
+"be (if installed at all) correct for the version of the program being built."
+msgstr ""
+"Якщо локалізовані сторінки підручника створюються з каталогу збирання "
+"програми, ймовірно, встановлені до стандартного каталогу сторінки не "
+"відповідатимуть (якщо їх взагалі буде встановлено) версії програми, яка "
+"встановлюватиметься."
+
+#. type: Plain text
+#: help2man.texi:427
+msgid ""
+"A preloadable library is provided with @command{help2man} which will "
+"intercept @code{bindtextdomain} calls configuring the location of message "
+"catalogs for the domain given by @env{$TEXTDOMAIN} and override the location "
+"to the path given by @env{$LOCALEDIR}."
+msgstr ""
+"Разом з @command{help2man} постачається попередньо завантажувана бібліотека, "
+"яка перехоплюватиме виклики @code{bindtextdomain}, налаштовуючи адресу для "
+"каталогів перекладів для домену, вказаного змінною @env{$TEXTDOMAIN}, і "
+"перевизначаючи адресу каталогу, вказаного за допомогою змінної "
+"@env{$LOCALEDIR}."
+
+#. type: Plain text
+#: help2man.texi:429
+msgid "So for example:"
+msgstr "Приклад:"
+
+#. type: example
+#: help2man.texi:438
+#, no-wrap
+msgid ""
+"mkdir -p tmp/fr/LC_MESSAGES\n"
+"cp po/fr.gmo tmp/fr/LC_MESSAGES/@var{prog}.mo\n"
+"LD_PRELOAD=\"/usr/lib/help2man/bindtextdomain.so\" \\\n"
+"  LOCALEDIR=tmp \\\n"
+"  TEXTDOMAIN=@var{prog} \\\n"
+"  help2man -L fr_FR@@euro -i @var{prog}.fr.h2m -o @var{prog}.fr.1 @var{prog}\n"
+"rm -rf tmp\n"
+msgstr ""
+"mkdir -p tmp/uk/LC_MESSAGES\n"
+"cp po/uk.gmo tmp/uk/LC_MESSAGES/@var{програма}.mo\n"
+"LD_PRELOAD=\"/usr/lib/help2man/bindtextdomain.so\" \\\n"
+"  LOCALEDIR=tmp \\\n"
+"  TEXTDOMAIN=@var{програма} \\\n"
+"  help2man -L uk_UA@@euro -i @var{програма}.uk.h2m -o @var{програма}.uk.1 @var{програма}\n"
+"rm -rf tmp\n"
+
+#. type: Plain text
+#: help2man.texi:442
+msgid ""
+"will cause @var{prog} to load the message catalog from @samp{tmp} rather "
+"than @samp{/usr/share/locale}."
+msgstr ""
+"накаже програмі @var{програма} завантажити каталог повідомлень із "
+"перекладами з @samp{tmp}, а не з @samp{/usr/share/locale}."
+
+#. type: Plain text
+#: help2man.texi:444
+msgid "Notes:"
+msgstr "Примітки:"
+
+#. type: itemize
+#: help2man.texi:449
+msgid ""
+"The generalisation of @samp{fr_FR@@euro} to @samp{fr} in the example above "
+"is done by @code{gettext}, if a more specific match were available it would "
+"also have been re-mapped."
+msgstr ""
+"Узагальнення локалі @samp{uk_UA@@euro} до @samp{uk} у наведеному вище "
+"прикладі виконується засобами @code{gettext}. Якщо буде виявлено "
+"специфічнішу відповідність, її також буде використано."
+
+#. Translators: the translated cross-reference "Reports" here must match
+#. the	target (type: node) translation elsewhere in this file.
+#. type: itemize
+#: help2man.texi:454
+msgid ""
+"This preload has only been tested against @command{eglibc} 2.11.2 and "
+"@command{gettext} 0.18.1.1 on a GNU/Linux system; let me know if it does (or "
+"doesn't) work for you (@pxref{Reports})."
+msgstr ""
+"Цей спосіб попереднього завантаження було перевірено лише для "
+"@command{eglibc} 2.11.2 та @command{gettext} 0.18.1.1 у системі GNU/Linux. "
+"Повідомте авторові, якщо цей спосіб працює або не працює у вашій системі "
+"(@pxref{Звіти})."
+
+#. type: chapter
+#: help2man.texi:457
+#, no-wrap
+msgid "Example @command{help2man} Output"
+msgstr "Приклад роботи @command{help2man}"
+
+#. type: Plain text
+#: help2man.texi:460
+msgid ""
+"Given a hypothetical program @command{foo} which produces the following "
+"output:"
+msgstr ""
+"Припустімо, що якась програма з назвою @command{foo} виводить такі дані:"
+
+#. type: example
+#: help2man.texi:485
+#, no-wrap
+msgid ""
+"@exstrong{$ foo --version}\n"
+"GNU foo 1.1\n"
+"\n"
+msgstr ""
+"@exstrong{$ foo --version}\n"
+"GNU foo 1.1\n"
+"\n"
+
+#. type: example
+#: help2man.texi:489
+#, no-wrap
+msgid ""
+"Copyright (C) 2011 Free Software Foundation, Inc.\n"
+"This is free software; see the source for copying conditions.  There is NO\n"
+"warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
+"\n"
+msgstr ""
+"Copyright (C) 2011 Free Software Foundation, Inc.\n"
+"This is free software; see the source for copying conditions.  There is NO\n"
+"warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
+"\n"
+
+#. type: example
+#: help2man.texi:494
+#, no-wrap
+msgid ""
+"Written by A. Programmer.\n"
+"@exstrong{$ foo --help}\n"
+"GNU `foo' does nothing interesting except serve as an example for\n"
+"`help2man'.\n"
+"\n"
+msgstr ""
+"Written by A. Programmer.\n"
+"@exstrong{$ foo --help}\n"
+"GNU `foo' does nothing interesting except serve as an example for\n"
+"`help2man'.\n"
+"\n"
+
+#. type: example
+#: help2man.texi:496
+#, no-wrap
+msgid ""
+"Usage: foo [OPTION]...\n"
+"\n"
+msgstr ""
+"Usage: foo [OPTION]...\n"
+"\n"
+
+#. type: example
+#: help2man.texi:501
+#, no-wrap
+msgid ""
+"Options:\n"
+"  -a, --option      an option\n"
+"  -b, --another-option[=VALUE]\n"
+"                    another option\n"
+"\n"
+msgstr ""
+"Options:\n"
+"  -a, --option      an option\n"
+"  -b, --another-option[=VALUE]\n"
+"                    another option\n"
+"\n"
+
+#. type: example
+#: help2man.texi:504
+#, no-wrap
+msgid ""
+"      --help        display this help and exit\n"
+"      --version     output version information and exit\n"
+"\n"
+msgstr ""
+"      --help        display this help and exit\n"
+"      --version     output version information and exit\n"
+"\n"
+
+#. type: example
+#: help2man.texi:508
+#, no-wrap
+msgid ""
+"Examples:\n"
+"  foo               do nothing\n"
+"  foo --option      the same thing, giving `--option'\n"
+"\n"
+msgstr ""
+"Examples:\n"
+"  foo               do nothing\n"
+"  foo --option      the same thing, giving `--option'\n"
+"\n"
+
+#. type: example
+#: help2man.texi:510
+#, no-wrap
+msgid "Report bugs to <bug-gnu-utils@@gnu.org>.\n"
+msgstr "Про вади слід повідомляти на адресу <bug-gnu-utils@@gnu.org>.\n"
+
+#. type: Plain text
+#: help2man.texi:514
+msgid ""
+"@command{help2man} will produce @command{nroff} input for a manual page "
+"which will be formatted something like this:"
+msgstr ""
+"@command{help2man} створити вхідні дані для програми @command{nroff} для "
+"показу сторінки підручника, формат яких буде приблизно таким:"
+
+#. type: example
+#: help2man.texi:517
+#, no-wrap
+msgid ""
+"FOO(1)                         User Commands                        FOO(1)\n"
+"\n"
+msgstr ""
+"FOO(1)                         User Commands                        FOO(1)\n"
+"\n"
+
+#. type: example
+#: help2man.texi:521
+#, no-wrap
+msgid ""
+"@exstrong{NAME}\n"
+"       foo - manual page for foo 1.1\n"
+"\n"
+msgstr ""
+"@exstrong{NAME}\n"
+"       foo - manual page for foo 1.1\n"
+"\n"
+
+#. type: example
+#: help2man.texi:524
+#, no-wrap
+msgid ""
+"@exstrong{SYNOPSIS}\n"
+"       foo [OPTION]...\n"
+"\n"
+msgstr ""
+"@exstrong{SYNOPSIS}\n"
+"       foo [OPTION]...\n"
+"\n"
+
+#. type: example
+#: help2man.texi:528
+#, no-wrap
+msgid ""
+"@exstrong{DESCRIPTION}\n"
+"       GNU  `foo'  does nothing interesting except serve as an example for\n"
+"       `help2man'.\n"
+"\n"
+msgstr ""
+"@exstrong{DESCRIPTION}\n"
+"       GNU  `foo'  does nothing interesting except serve as an example for\n"
+"       `help2man'.\n"
+"\n"
+
+#. type: example
+#: help2man.texi:532
+#, no-wrap
+msgid ""
+"@exstrong{OPTIONS}\n"
+"       @exstrong{-a}, @exstrong{--option}\n"
+"              an option\n"
+"\n"
+msgstr ""
+"@exstrong{OPTIONS}\n"
+"       @exstrong{-a}, @exstrong{--option}\n"
+"              an option\n"
+"\n"
+
+#. type: example
+#: help2man.texi:535
+#, no-wrap
+msgid ""
+"       @exstrong{-b}, @exstrong{--another-option}[=@exemph{VALUE}]\n"
+"              another option\n"
+"\n"
+msgstr ""
+"       @exstrong{-b}, @exstrong{--another-option}[=@exemph{VALUE}]\n"
+"              another option\n"
+"\n"
+
+#. type: example
+#: help2man.texi:537
+#, no-wrap
+msgid ""
+"       @exstrong{--help} display this help and exit\n"
+"\n"
+msgstr ""
+"       @exstrong{--help} display this help and exit\n"
+"\n"
+
+#. type: example
+#: help2man.texi:540
+#, no-wrap
+msgid ""
+"       @exstrong{--version}\n"
+"              output version information and exit\n"
+"\n"
+msgstr ""
+"       @exstrong{--version}\n"
+"              output version information and exit\n"
+"\n"
+
+#. type: example
+#: help2man.texi:543
+#, no-wrap
+msgid ""
+"@exstrong{EXAMPLES}\n"
+"       foo    do nothing\n"
+"\n"
+msgstr ""
+"@exstrong{EXAMPLES}\n"
+"       foo    do nothing\n"
+"\n"
+
+#. type: example
+#: help2man.texi:546
+#, no-wrap
+msgid ""
+"       foo @exstrong{--option}\n"
+"              the same thing, giving `--option'\n"
+"\n"
+msgstr ""
+"       foo @exstrong{--option}\n"
+"              the same thing, giving `--option'\n"
+"\n"
+
+#. type: example
+#: help2man.texi:549
+#, no-wrap
+msgid ""
+"@exstrong{AUTHOR}\n"
+"       Written by A. Programmer.\n"
+"\n"
+msgstr ""
+"@exstrong{AUTHOR}\n"
+"       Written by A. Programmer.\n"
+"\n"
+
+#. type: example
+#: help2man.texi:552
+#, no-wrap
+msgid ""
+"@exstrong{REPORTING BUGS}\n"
+"       Report bugs to <bug-gnu-utils@@gnu.org>.\n"
+"\n"
+msgstr ""
+"@exstrong{REPORTING BUGS}\n"
+"       Report bugs to <bug-gnu-utils@@gnu.org>.\n"
+"\n"
+
+#. type: example
+#: help2man.texi:558
+#, no-wrap
+msgid ""
+"@exstrong{COPYRIGHT}\n"
+"       Copyright @copyright{} 2011 Free Software Foundation, Inc.\n"
+"       This is free software;  see  the  source  for  copying  conditions.\n"
+"       There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n"
+"       PARTICULAR PURPOSE.\n"
+"\n"
+msgstr ""
+"@exstrong{COPYRIGHT}\n"
+"       Copyright @copyright{} 2011 Free Software Foundation, Inc.\n"
+"       This is free software;  see  the  source  for  copying  conditions.\n"
+"       There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n"
+"       PARTICULAR PURPOSE.\n"
+"\n"
+
+#. type: example
+#: help2man.texi:563
+#, no-wrap
+msgid ""
+"@exstrong{SEE ALSO}\n"
+"       The full documentation for @exstrong{foo} is maintained as a  Texinfo  manual.\n"
+"       If  the  @exstrong{info} and @exstrong{foo} programs are properly installed at your site,\n"
+"       the command\n"
+"\n"
+msgstr ""
+"@exstrong{SEE ALSO}\n"
+"       The full documentation for @exstrong{foo} is maintained as a  Texinfo  manual.\n"
+"       If  the  @exstrong{info} and @exstrong{foo} programs are properly installed at your site,\n"
+"       the command\n"
+"\n"
+
+#. type: example
+#: help2man.texi:565
+#, no-wrap
+msgid ""
+"              @exstrong{info foo}\n"
+"\n"
+msgstr ""
+"              @exstrong{info foo}\n"
+"\n"
+
+#. type: example
+#: help2man.texi:567
+#, no-wrap
+msgid ""
+"       should give you access to the complete manual.\n"
+"\n"
+msgstr ""
+"       should give you access to the complete manual.\n"
+"\n"
+
+#. type: example
+#: help2man.texi:570
+#, no-wrap
+msgid "foo 1.1                          May 2011                           FOO(1)\n"
+msgstr "foo 1.1                          May 2011                           FOO(1)\n"
+
+#. type: chapter
+#: help2man.texi:573
+#, no-wrap
+msgid "Reporting Bugs or Suggestions"
+msgstr "Як повідомити про вади та запропонувати удосконалення"
+
+#. type: Plain text
+#: help2man.texi:577
+msgid ""
+"If you find problems or have suggestions about this program or manual, "
+"please report them to @email{bug-help2man@@gnu.org}."
+msgstr ""
+"Якщо вами буде виявлено вади або у вас виникнуть пропозиції щодо "
+"удосконалення цієї програми або підручника до неї, будь ласка, повідомте про "
+"це, надіславши повідомлення на адресу @email{bug-help2man@@gnu.org}."
+
+#. type: Plain text
+#: help2man.texi:581
+msgid ""
+"Note to translators: Translations are handled though the @uref{http://"
+"translationproject.org/, Translation Project} see @url{http://"
+"translationproject.org/html/translators.html} for details."
+msgstr ""
+"Зауваження для перекладачів: переклади здійснюються за допомогою the "
+"@uref{http://translationproject.org/, Translation Project}, докладніший опис "
+"можна знайти тут: @url{http://translationproject.org/html/translators.html}."
+
+#. type: chapter
+#: help2man.texi:583
+#, no-wrap
+msgid "Obtaining @command{help2man}"
+msgstr "Як отримати @command{help2man}"
+
+#. type: Plain text
+#: help2man.texi:587
+msgid ""
+"The latest version of this distribution is available online from GNU mirrors:"
+msgstr ""
+"Найсвіжішу версію цього пакунка можна знайти у інтернеті на дзеркалі "
+"пакунків GNU:"
+
+#. type: Plain text
+#: help2man.texi:593
+msgid "If automatic redirection fails, the list of mirrors is at:"
+msgstr ""
+"Якщо автоматичне переспрямовування не спрацює, список дзеркал можна знайти "
+"тут:"
+
+#. type: Plain text
+#: help2man.texi:599
+msgid "Or if need be you can use the main GNU ftp server:"
+msgstr ""
+"Крім того, якщо це потрібно, ви можете скористатися основним дзеркалом FTP "
+"GNU:"
+
+#~ msgid "help2man"
+#~ msgstr "help2man"
+
+#~ msgid "Brendan O'Dea @email{bod@@debian.org}"
+#~ msgstr "Brendan O'Dea @email{bod@@debian.org}"
+
+#~ msgid "-N"
+#~ msgstr "-N"
+
+#~ msgid "--no-info"
+#~ msgstr "--no-info"
+
+#~ msgid "-l"
+#~ msgstr "-l"
+
+#~ msgid "--libtool"
+#~ msgstr "--libtool"
+
+#~ msgid "--help"
+#~ msgstr "--help"
+
+#~ msgid "--version"
+#~ msgstr "--version"
+
+#~ msgid "--no-discard-stderr"
+#~ msgstr "--no-discard-stderr"
+
+#~ msgid "@url{http://ftpmirror.gnu.org/help2man/}\n"
+#~ msgstr "@url{http://ftpmirror.gnu.org/help2man/}\n"
+
+#~ msgid "@url{http://www.gnu.org/order/ftp.html}\n"
+#~ msgstr "@url{http://www.gnu.org/order/ftp.html}\n"
+
+#~ msgid "@url{http://ftp.gnu.org/gnu/help2man/}\n"
+#~ msgstr "@url{http://ftp.gnu.org/gnu/help2man/}\n"
+
+#~ msgid "help2man: (help2man)"
+#~ msgstr "help2man: (help2man)"
+
+#~ msgid "Top"
+#~ msgstr "Top"
+
+#~ msgid "\\text\\"
+#~ msgstr "\\text\\"
+
+#~ msgid "@unmacro exstrong"
+#~ msgstr "@unmacro exstrong"
+
+#~ msgid "@unmacro exemph"
+#~ msgstr "@unmacro exemph"

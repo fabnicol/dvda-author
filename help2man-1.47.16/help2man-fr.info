@@ -1,0 +1,555 @@
+This is help2man-fr.info.tmp, produced by makeinfo version 6.7 from
+help2man-fr.texi.
+
+Ce fichier documente la commande GNU ‘help2man’ qui produit de simples
+pages de manuel à partir de la sortie d’autres commandes avec les
+options ‘--help’ et ‘--version’.
+
+   Copyright © 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2009, 2010,
+2011, 2012, 2013, 2014, 2015, 2020 Free Software Foundation, Inc.
+
+   Produire et distribuer des copies conformes de ce manuel est permis à
+condition que la présente notice de droit d’auteur et la présente notice
+d’autorisation soient préservées sur toutes les copies.
+
+   Copier et distribuer des versions modifiées de ce manuel est permis
+selon les conditions d’une copie conforme, à condition que le travail
+dérivé résultant soit entièrement distribué selon les termes d’une
+notice d’autorisation identique à celle-ci.
+
+   Copier et distribuer des traductions de ce manuel dans d’autres
+langues est permis, selon les conditions pour versions modifiées
+ci-dessus, sauf que cette notice d’autorisation peut être déclarée sous
+forme d’une traduction approuvée par la Free Software Foundation.
+INFO-DIR-SECTION Développement du logiciel
+START-INFO-DIR-ENTRY
+* help2man-fr: (help2man-fr).  Création automatique de page de manuel.
+END-INFO-DIR-ENTRY
+
+
+File: help2man-fr.info.tmp,  Node: Top,  Next: Vue d’ensemble,  Up: (dir)
+
+‘help2man’
+**********
+
+‘help2man’ produit de simples pages de manuel à partir de la sortie
+d’autres commandes avec les options ‘--help’ et ‘--version’.
+
+* Menu:
+
+* Vue d’ensemble::		 Vue d’ensemble de ‘help2man’.
+* Appeler help2man::		 Façons d’exécuter ‘help2man’.
+* Recommandations pour --help::  Formatage recommandé pour la sortie
+				   avec–help.
+* Texte inclus::		 Inclusion de texte supplémentaire dans
+				   lasortie.
+* Utilisation de Makefile::	 Utilisation de ‘help2man’ avec‘make’.
+* Pages de manuel traduites::	 Production de pages de manuel dans la
+				   languematernelle.
+* Exemple::			 Exemple de sortie de ‘help2man’.
+* Signalements::		 Signaler des bogues ou des
+				   suggestions.
+* Disponibilité::		 Obtention de ‘help2man’.
+
+
+File: help2man-fr.info.tmp,  Node: Vue d’ensemble,  Next: Appeler help2man,  Prev: Top,  Up: Top
+
+1 Vue d’ensemble de ‘help2man’
+******************************
+
+‘help2man’ est un outil pour créer automatiquement de simples pages de
+manuel à partir de la sortie d’un programme.
+
+   Bien que les pages de manuel soient facultatives pour les programmes
+GNU, d’autres projets comme Debian les exigent (*note (standards)Man
+Pages::).
+
+   Ce programme est destiné aux auteurs de logiciels.  Il a pour but de
+simplifier l’inclusion d’une page de manuel dans leur distribution sans
+avoir à maintenir ce document.
+
+   À partir d’un programme qui produit des sorties pour ‘--help’ et
+‘--version’ suffisamment standard, ‘help2man’ peut réarranger cette
+sortie en quelque chose qui ressemble à une page de manuel.
+
+
+File: help2man-fr.info.tmp,  Node: Appeler help2man,  Next: Recommandations pour --help,  Prev: Vue d’ensemble,  Up: Top
+
+2 Façons d’exécuter ‘help2man’
+******************************
+
+La forme pour exécuter le programme ‘help2man’ est :
+
+     help2man [OPTION]... EXÉCUTABLE
+
+   ‘help2man’ reconnaît les options suivantes :
+
+‘-n CHAÎNE’
+‘--name=CHAÎNE’
+     Utiliser CHAÎNE comme description du paragraphe ‘NOM’ de la page de
+     manuel.
+
+     Par défaut (en absence de mieux), ce paragraphe contient ‘Page de
+     manuel de PROGRAMME VERSION’.
+
+     Cette option écrase une section ‘[name]’ de fichier d’inclusion
+     (*note Texte inclus::).
+
+‘-s SECTION’
+‘--section SECTION’
+     Utiliser SECTION comme section de la page de manuel.  La section
+     par défaut est 1.
+
+‘-m MANUEL’
+‘--manual=MANUEL’
+     Définir le nom de la section du manuel à SECTION, utilisé comme un
+     en-tête centré pour la page de manuel.  Par défaut, ‘Commandes’ est
+     utilisé pour les pages de la section 1, ‘Jeux’ pour la section 6 et
+     ‘Utilitaires d'administration système’ pour les sections 8 et 1M.
+
+‘-S SOURCE’
+‘--source=SOURCE’
+     La source du programme est utilisée en pied de page et contient
+     souvent le nom de l’organisation ou un ensemble dont le programme
+     fait partie.  Par défaut, la valeur est le nom du paquet et la
+     version.
+
+‘-L LOCALE’
+‘--locale=LOCALE’
+     Définir les paramètres régionaux (‘C’ par défaut).  À la fois le
+     programme et ‘help2man’ doivent prendre en charge la LOCALE donnée
+     (*note Pages de manuel traduites::).
+
+‘-i FICHIER’
+‘--include=FICHIER’
+     Inclure le matériel du FICHIER (*note Texte inclus::).
+
+‘-I FICHIER’
+‘--opt-include=FICHIER’
+     Une variante de ‘--include’ à utiliser dans les règles de motif
+     Makefile qui ne doivent pas nécessiter que FICHIER existe.
+
+‘-o FICHIER’
+‘--output=FICHIER’
+     Envoyer la sortie vers FICHIER au lieu de ‘stdout’.
+
+‘-p TEXTE’
+‘--info-page=TEXTE’
+     Nom du manuel Texinfo.
+
+‘-N’
+‘--no-info’
+     Supprimer l’inclusion d’un paragraphe ‘VOIR AUSSI’ dirigeant le
+     lecteur vers la documentation Texinfo.
+
+‘-l’
+‘--libtool’
+     Supprimer le préfixe ‘lt-’ des instances du nom de programme dans
+     le synopsis (‘libtool’ crée des scripts enveloppe dans le
+     répertoire de construction qui invoquent ‘toto’ comme
+     ‘.libs/lt-toto’).
+
+‘--help’
+‘--version’
+     Afficher l’aide ou des informations de version.
+
+   Par défaut, ‘help2man’ passe les options standards ‘--help’ et
+‘--version’ à l’exécutable, mais des alternatives peuvent être indiquées
+en utilisant les options suivantes.
+
+‘-h OPTION’
+‘--help-option=OPTION’
+     Chaîne pour l’option d’aide.
+
+‘-v OPTION’
+‘--version-option=OPTION’
+     Chaîne pour l’option de version.
+
+‘--version-string=CHAÎNE’
+     Chaîne de version.
+
+‘--no-discard-stderr’
+     Inclure la sortie d’erreur standard lors de l’analyse de la sortie
+     d’option.
+
+
+File: help2man-fr.info.tmp,  Node: Recommandations pour --help,  Next: Texte inclus,  Prev: Appeler help2man,  Up: Top
+
+3 Recommandations pour ‘--help’
+*******************************
+
+Voici quelques recommandations pour ce qui devrait faire partie de la
+sortie avec ‘--help’.  Les intégrer augmente la probabilité pour
+‘help2man’ de créer une page de manuel qui se respecte, afin de servir
+directement aux utilisateurs.
+
+   Consultez *note (standards)Command-Line Interfaces:: et *note
+(standards)Man Pages:: pour les normes officielles de GNU à propos de
+‘--help’ et des pages de manuel.
+
+   • Un synopsis de la façon d’invoquer le programme.  Si plusieurs
+     utilisations différentes du programme ont différentes invocations,
+     alors elles doivent être toutes indiquées.  Par exemple (modifié
+     par brièveté) :
+
+          Utilisation : cp [OPTION]... SOURCE DEST
+                   ou : cp [OPTION]... SOURCE... DIRECTORY
+          ...
+
+     Utiliser ‘argv[0]’ pour le nom de programme dans ces synopsis,
+     simplement tel qu’il est, sans supprimer de répertoire.  C’est en
+     contraste avec le nom canonique (constant) du programme qui est
+     utilisé dans ‘--version’.
+
+   • Une très brève explication de ce que fait ce programme, y compris
+     les comportements par défaut ou typique.  Par exemple, voici celle
+     de ‘cp’ :
+
+          Copier la SOURCE vers DEST, ou plusieurs SOURCEs vers DIRECTORY.
+
+   • Une liste d’options, indentées par deux espaces.  Si le programme
+     prend en charge les options monocaractères, elle est en premier,
+     suivie de l’option longue équivalente (s’il y en a).  Si l’option
+     accepte un argument, l’inclure aussi avec un nom significatif.
+     Aligner éventuellement la description dans une colonne pratique.
+     Remarquez que pour être correctement reconnue par ‘help2man’, la
+     description doit être séparée d’au moins deux espaces et les
+     descriptions continuant sur les lignes suivantes doivent commencer
+     sur la même colonne.
+
+     Voici encore un extrait (modifié) de ‘cp’, montrant une option
+     courte avec une option longue équivalente, une option longue seule
+     et une option courte seule :
+
+            -a, --archive                identique à -dR…
+                --backup[=CONTROL]       archiver chaque…
+            -b                           comme --backup mais…
+
+     Pour les programmes avec de nombreuses options, séparer la liste
+     d’options en sections comme ‘Globales’, ‘Contrôle de sortie’ ou
+     tout ce qui a du sens dans ce cas particulier peut être pratique.
+     Ordonner alphabétiquement (par nom d’option courte d’abord, puis
+     long) est généralement préférable à l’intérieur de chaque section
+     ou pour la liste entière en absence de section.
+
+   • Tous les renseignements supplémentaires sur le comportement du
+     programme, comme les variables d’environnement influentes, des
+     explications supplémentaires sur les options, etc.  Par exemple,
+     ‘cp’ discute de ‘VERSION_CONTROL’ et des fichiers dispersés.
+
+   • Quelques exemples d’utilisation typique, suivant les cas.  Un bon
+     exemple vaut souvent un millier de mots de description, donc c’est
+     sérieusement recommandé.
+
+   • Enfin, une ligne déclarant comment envoyer des rapports de bogue.
+     Typiquement, MAILING-ADDRESS sera ‘bug-PROGRAMME@gnu.org’ ;
+     veuillez utiliser ce format pour les programmes GNU à chaque fois
+     que c’est possible.  Mentionner la page d’accueil du programme,
+     d’autres listes de diffusion, etc., est aussi une bonne idée.
+
+   Les interfaces de programmation ‘argp’ et ‘popt’ permettent
+d’indiquer des descriptions d’options pour ‘--help’ dans la même
+structure que le reste de la définition de l’option ; ces routines
+valent la peine d’être considérées pour analyser l’option au lieu de
+‘getopt’.
+
+   Par défaut, ‘help2man’ a quelques heuristiques pour identifier les
+sections de page de manuel : une ligne constituée d’‘Options :’ par
+exemple forcera le texte suivant à apparaître dans la section ‘OPTIONS’,
+et une ligne commençant par ‘Copyright’ apparaîtra dans la section
+‘COPYRIGHT’.  Hors de ces heuristiques, une ligne constituée de ‘*Mots*’
+commencera une nouvelle section et ‘Mots :’ une nouvelle sous-section.
+
+
+File: help2man-fr.info.tmp,  Node: Texte inclus,  Next: Utilisation de Makefile,  Prev: Recommandations pour --help,  Up: Top
+
+4 Inclusion de texte supplémentaire dans la sortie
+**************************************************
+
+Du texte statique supplémentaire peut être inclus dans la page de manuel
+créée en utilisant les options ‘--include’ et ‘--opt-include’ (*note
+Appeler help2man::).  Bien que ces fichiers puissent être nommés
+librement, par cohérence, l’utilisation de l’extension ‘.h2m’ est
+recommandée pour les fichiers d’inclusion de ‘help2man’.
+
+   Le format des fichiers inclus avec ces options est simple :
+
+     [section]
+     texte
+
+     /motif/
+     texte
+
+   Les blocs de texte (au format *roff) sont insérés tels quels dans la
+sortie, soit au début de la zone désignée par ‘[section]’ (balise
+insensible à la casse), soit après un paragraphe correspondant au
+‘/motif/’.
+
+   Les motifs obéissent à la syntaxe des expressions rationnelles de
+Perl et peuvent être suivis des modificateurs ‘i’, ‘s’ ou ‘m’ (*note
+perlre(1): (*manpages*)perlre.).
+
+   Les lignes précédant la première section (ou le premier motif) et
+commençant par ‘-’ sont traitées comme des options.  Tout le reste est
+ignoré sans aucun avertissement, et peut être utilisé pour des
+commentaires, des mots clefs RCS ou d’autres éléments.
+
+   L’ordre des sections produites est :
+
+     NOM
+     SYNOPSIS
+     DESCRIPTION
+     OPTIONS
+     _autres_
+     ENVIRONNEMENT
+     FICHIERS
+     EXEMPLES
+     AUTEUR
+     BOGUES
+     COPYRIGHT
+     VOIR AUSSI
+
+   Toute section ‘[nom]’ ou ‘[synopsis]’ apparaissant dans le fichier
+inclus va remplacer celle qui aurait été créée automatiquement (mais
+vous pouvez encore remplacer la première avec ‘--name’ si nécessaire).
+
+   Le texte supplémentaire aux autres sections usuelles (celles
+apparaissant dans cette liste) est inséré avant la sortie générée
+automatiquement pour elles.  Les sections non usuelles sont insérées à
+la place marquée _autres_ dans la liste ci-dessus, suivant l’ordre dans
+lequel ces sections apparaissent dans le fichier inclus.
+
+   Le placement du texte au sein de la section peut être explicitement
+indiqué en utilisant la syntaxe ‘[<section]’, ‘[=section]’ ou
+‘[>section]’ pour placer le texte supplémentaire respectivement avant, à
+la place de ou après la sortie par défaut.
+
+
+File: help2man-fr.info.tmp,  Node: Utilisation de Makefile,  Next: Pages de manuel traduites,  Prev: Texte inclus,  Up: Top
+
+5 Utilisation de ‘help2man’ avec ‘make’
+***************************************
+
+Une suggestion d’utilisation de ‘help2man’ dans les fichiers Makefile
+est d’avoir la page de manuel qui ne dépend pas du binaire, mais du ou
+des fichiers source dans lesquels la sortie de ‘--help’ et ‘--version’
+est définie.
+
+   Cette utilisation permet à une page de manuel d’être générée par le
+mainteneur et incluse dans la distribution sans nécessiter
+l’installation de ‘help2man’ pour l’utilisateur final.
+
+   Une règle d’exemple pour le programme ‘prog’ pourrait être :
+
+     prog.1: $(srcdir)/main.c
+             -$(HELP2MAN) --output=$@ --name='Programme d’exemple' ./prog
+
+   La valeur de ‘HELP2MAN’ peut être définie dans ‘configure.in’ en
+utilisant :
+
+     AM_MISSING_PROG(HELP2MAN, help2man)
+
+   pour ‘automake’, ou quelque chose comme :
+
+     AC_PATH_PROG(HELP2MAN, help2man, false // No help2man //)
+
+   pour ‘autoconf’ seul.
+
+
+File: help2man-fr.info.tmp,  Node: Pages de manuel traduites,  Next: Exemple,  Prev: Utilisation de Makefile,  Up: Top
+
+6 Production de pages de manuel dans la langue maternelle
+*********************************************************
+
+Les pages de manuel peuvent être produites pour n’importe quels
+paramètres régionaux pris en charge à la fois par le programme et par
+‘help2man’ avec l’option ‘--locale’ (‘-L’).
+
+     help2man -L fr_FR.UTF-8 -o cp.fr.1 cp
+
+   Consultez <http://translationproject.org/domain/help2man.html> pour
+les langues actuellement prises en charge par ‘help2man’ et *note
+Signalements:: pour la façon de proposer d’autres traductions.
+
+6.1 Modifier l’emplacement des catalogues de messages
+=====================================================
+
+Lors de la création de pages de manuel traduites à partir du répertoire
+de construction d’un programme, les traductions installées à l’endroit
+standard (si le programme est installé) ne seront probablement pas
+correctes pour la version du programme en cours de construction.
+
+   Une bibliothèque de préchargement est fournie avec ‘help2man’ pour
+intercepter les appels de ‘bindtextdomain’ configurant l’emplacement des
+catalogues de messages pour le domaine donné par ‘$TEXTDOMAIN’ et
+remplacer l’emplacement vers le chemin donné par ‘$LOCALEDIR’.
+
+   Ainsi, par exemple :
+
+     mkdir -p tmp/fr/LC_MESSAGES
+     cp po/fr.gmo tmp/fr/LC_MESSAGES/PROG.mo
+     LD_PRELOAD="/usr/lib/help2man/bindtextdomain.so" \
+       LOCALEDIR=tmp \
+       TEXTDOMAIN=PROG \
+       help2man -L fr_FR.UTF-8 -i PROG.fr.h2m -o PROG.fr.1 PROG
+     rm -rf tmp
+
+   forcera PROG à charger le catalogue de messages à partir de ‘tmp’ au
+lieu de ‘/usr/share/locale’.
+
+   Remarques :
+   • La généralisation de ‘fr_FR.UTF-8’ en ‘fr’ dans l’exemple précédent
+     est réalisée par ‘gettext’, si une correspondance plus spécifique
+     était disponible, elle aurait aussi utilisée.
+
+   • Ce préchargement n’a été testé qu’avec ‘eglibc’ 2.11.2 et
+     ‘gettext’ 0.18.1.1 sur un système GNU/Linux ; veuillez signaler si
+     cela fonctionne (ou pas) pour vous (*note Signalements::).
+
+
+File: help2man-fr.info.tmp,  Node: Exemple,  Next: Signalements,  Prev: Pages de manuel traduites,  Up: Top
+
+7 Exemple de sortie de ‘help2man’
+*********************************
+
+À partir d’un programme hypothétique ‘toto’ qui produit la sortie
+suivante :
+
+     $ toto --version
+     GNU toto 1.1
+
+     Copyright © 2011 Free Software Foundation, Inc
+     Ce logiciel est libre ; consultez les sources pour les conditions de
+     reproduction. AUCUNE garantie n'est donnée, pas même la garantie
+     implicite de COMMERCIALISATION ni l'ADÉQUATION À UN BESOIN PARTICULIER.
+
+     Écrit par C. Programmeurs.
+     $ toto --help
+     « toto » de GNU ne fait rien d’intéressant à part servir d’exemple pour
+     « help2man ».
+
+     Utilisation : toto [OPTION] ...
+
+     Options :
+       -a, --option      une option
+       -b, --another-option[=VALEUR]
+                         une autre option
+
+       -h, --help        afficher l'aide-mémoire
+       -v, --version     afficher le nom et la version du logiciel
+
+     Exemples :
+       toto              ne rien faire
+       toto --option     la même chose, avec « --option »
+
+     Signaler toute anomalie à <bug-gnu-utils@gnu.org>.
+
+   ‘help2man’ produira une entrée ‘nroff’ pour une page de manuel qui
+sera formatée en quelque chose comme ceci :
+
+     TOTO(1)                          Commandes                         TOTO(1)
+
+     NOM
+            toto - Page de manuel de toto 1.1
+
+     SYNOPSIS
+            toto [OPTION] ...
+
+     DESCRIPTION
+           « toto »  de  GNU ne fait rien d’intéressant à part servir d’exemple
+           pour « help2man ».
+
+     OPTIONS
+            -a, --option
+                   une option
+
+            -b, --another-option[=VALEUR]
+                   une autre option
+
+            --help afficher l'aide-mémoire
+
+            --version
+                   afficher le nom et la version du logiciel
+
+     EXEMPLES
+            toto   ne rien faire
+
+            foo --option
+                   la même chose, avec « --option »
+
+     AUTEUR
+            Écrit par C. Programmeurs.
+
+     BOGUES
+            Signaler toute anomalie à <bug-gnu-utils@gnu.org>.
+
+     COPYRIGHT
+            Copyright © 2011 Free Software Foundation, Inc
+            Ce logiciel est libre ; consultez les sources pour  les  conditions
+            de reproduction. AUCUNE garantie n'est donnée, pas même la garantie
+            implicite   de   COMMERCIALISATION  ni  l'ADÉQUATION  À  UN  BESOIN
+            PARTICULIER.
+
+     VOIR AUSSI
+            La documentation complète pour toto est mise à jour dans un  manuel
+            Texinfo   (en  anglais).  Si  les  programmes  info  et  toto  sont
+            correctement installés sur le système, la commande
+
+                   info toto
+
+            devrait donner accès au manuel complet (en anglais).
+
+     toto 1.1                         mai 2011                          TOTO(1)
+
+
+File: help2man-fr.info.tmp,  Node: Signalements,  Next: Disponibilité,  Prev: Exemple,  Up: Top
+
+8 Signaler des bogues ou des suggestions
+****************************************
+
+Si vous trouvez des problèmes ou avez des suggestions sur ce programme
+ou ce manuel, veuillez les signaler sur <bug-help2man@gnu.org>.
+
+   Remarque pour les traducteurs : les traductions sont gérées à l’aide
+du projet de traduction (http://translationproject.org/), consultez
+<http://translationproject.org/html/translators.html> pour plus de
+précisions.
+
+
+File: help2man-fr.info.tmp,  Node: Disponibilité,  Prev: Signalements,  Up: Top
+
+9 Obtention de ‘help2man’
+*************************
+
+La dernière version de cette distribution est disponible en ligne sur
+les miroirs de GNU :
+
+     <http://ftpmirror.gnu.org/help2man/>
+
+   Si la redirection automatique échoue, la liste des miroirs est
+disponible :
+
+     <http://www.gnu.org/order/ftp.html>
+
+   Si nécessaire, vous pouvez utiliser le serveur FTP principal de GNU :
+     <http://ftp.gnu.org/gnu/help2man/>
+
+
+Tag Table:
+Node: Top1325
+Node: Vue d’ensemble2369
+Node: Appeler help2man3215
+Node: Recommandations pour --help6398
+Node: Texte inclus10896
+Node: Utilisation de Makefile13354
+Node: Pages de manuel traduites14476
+Node: Exemple16719
+Node: Signalements19699
+Node: Disponibilité20246
+
+End Tag Table
+
+
+Local Variables:
+coding: utf-8
+End:

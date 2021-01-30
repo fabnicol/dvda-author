@@ -1,0 +1,15 @@
+		README for GNU help2man version 1.47.16
+
+help2man is a script to create simple man pages from the --help and
+--version output of programs.
+
+Since most GNU documentation is now in info format, this provides a
+way to generate a placeholder man page pointing to that resource while
+still providing some useful information.
+
+  Home page:    http://www.gnu.org/software/help2man/
+  Distribution: ftp://ftp.gnu.org/gnu/help2man/help2man-1.47.16.tar.xz
+  Repository:   https://salsa.debian.org/bod/help2man.git
+
+-- 
+Brendan O'Dea <bod@debian.org>

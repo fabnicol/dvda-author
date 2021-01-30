@@ -221,11 +221,11 @@ m4_map([DVDA_TEST_AUX],[
 	    ],
 	    [
 		[help2man-patch],
-		[1.47.9],
-		[DEPS/patches/help2man-patch-1.47.9],
+		[1.47.16],
+		[DEPS/patches/help2man-patch-1.47.16],
 		[],
 		[DEPS],
-		[83d7b6645939c76eba4ebd5f652f7c81]
+		[6a67db27ea0b478d49add546a7ad5c68]
 	    ],
     	    [
 		[man2html-download],
@@ -361,7 +361,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	       [[[cdrtools],[cdrtools-3.02]],[--prefix="$BUILDDIR/local"]],
 	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
 	       [[[libmpeg2],[libmpeg2-0.5.1]],[--prefix="$BUILDDIR/local" --disable-directx LDFLAGS="-Wl,--allow-multiple-definition"]],
-	       [[[help2man], [help2man-1.47.9]],[--prefix="$BUILDDIR/local"]],
+	       [[[help2man], [help2man-1.47.16]],[--prefix="$BUILDDIR/local"]],
 	       [[[ImageMagick], [ImageMagick-7.0.8-49]],[--prefix="$BUILDDIR/local" --without-magick-plus-plus --without-pango --without-tiff --without-lzma --without-xml]],
 	       [[[man2html], [man2html-1.6]],[bindir="$BUILDDIR/local/bin"]]])
 	    ],
@@ -372,7 +372,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	       [[[cdrtools],[cdrtools-3.02]],[--prefix="$BUILDDIR/local"]],
 	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
 	       [[[libmpeg2],[libmpeg2-0.5.1]], [--enable-static --disable-shared --prefix="$BUILDDIR/local" --disable-directx]],
-	       [[[help2man], [help2man-1.47.9]],[--prefix="$BUILDDIR/local"]],
+	       [[[help2man], [help2man-1.47.16]],[--prefix="$BUILDDIR/local"]],
 	       [[[ImageMagick], [ImageMagick-7.0.8-49]],[--prefix="$BUILDDIR/local" --without-magick-plus-plus --without-pango --without-tiff --without-lzma --without-xml --enable-static --disable-shared JPEG_LIBS="$ROOTDIR/build/linux/dvda-author-full.build/lib/libjpeg.a"]],
    	       [[[man2html], [man2html]],[bindir="$BUILDDIR/local/bin" mandir="$BUILDDIR/local/share/man"]]])
 	    ])

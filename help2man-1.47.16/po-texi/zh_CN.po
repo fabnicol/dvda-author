@@ -1,0 +1,1384 @@
+# zh_CN translation for help2man texinfo page.
+# Copyright (C) 2015 Free Software Foundation, Inc.
+# This file is distributed under the same license as the help2man-texi package.
+# Mingcong Bai (JeffBai) <jeffbaichina97@gmail.com>, 2015.
+# Mingye Wang <arthur200126@gmail.com>, 2015.
+#
+# Fellow translatiors:
+# Many examples in this text need to be translated to match the strings
+# in `help2man'. A handy translation memory can help you a lot.
+#
+# Some of these are just copypasting and manual indenting. I am kinda
+# lazy now, hence I really don't think it's good to lock the submission
+# to myself. -- Arthur2e5, 2016-05-01.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: help2man-texi 1.47.3\n"
+"Report-Msgid-Bugs-To: Brendan O'Dea <bug-help2man@gnu.org>\n"
+"POT-Creation-Date: 2020-07-02 21:56+1000\n"
+"PO-Revision-Date: 2020-07-02 22:22+1000\n"
+"Last-Translator: Mingye Wang (Arthur2e5) <arthur200126@gmail.com>\n"
+"Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.7\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#. type: settitle
+#: help2man.texi:3
+#, no-wrap
+msgid "@command{help2man} Reference Manual"
+msgstr "@command{help2man} 参考手册"
+
+#. type: Plain text
+#: help2man.texi:7
+msgid "@documentencoding UTF-8"
+msgstr "@documentencoding UTF-8"
+
+#. type: dircategory
+#: help2man.texi:8
+#, no-wrap
+msgid "Software development"
+msgstr "软件开发"
+
+#. type: menuentry
+#: help2man.texi:11
+msgid "Automatic manual page generation."
+msgstr "自动手册页生成。"
+
+#. type: copying
+#: help2man.texi:17
+msgid ""
+"This file documents the GNU @command{help2man} command which produces simple "
+"manual pages from the @samp{--help} and @samp{--version} output of other "
+"commands."
+msgstr ""
+"本文档记载 GNU @command {help2man} 命令，用以从其他命令的 @samp{--help} 和 "
+"@samp{--version} 输出生成简单的手册页。"
+
+#. type: copying
+#: help2man.texi:20
+msgid ""
+"Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2009, 2010, 2011, "
+"2012, 2013, 2014, 2015, 2020 Free Software Foundation, Inc."
+msgstr "版权所有 (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2020 自由软件基金会。"
+
+#. type: titlepage
+#: help2man.texi:24 help2man.texi:56
+#, fuzzy
+msgid ""
+"Permission is granted to make and distribute verbatim copies of this manual "
+"provided the copyright notice and this permission notice are preserved on "
+"all copies."
+msgstr ""
+"授予权限，并将分发本手册的逐字副本提供的版权声明和本许可声明，保留在所有副本"
+"上。"
+
+#. type: titlepage
+#: help2man.texi:36 help2man.texi:61
+#, fuzzy
+msgid ""
+"Permission is granted to copy and distribute modified versions of this "
+"manual under the conditions for verbatim copying, provided that the entire "
+"resulting derived work is distributed under the terms of a permission notice "
+"identical to this one."
+msgstr ""
+"授予权限复制和分发本手册为逐字复制条件下的修改的版本提供，就是整个的结果导出"
+"的工作分配根据权限通知这一相同的条款。"
+
+#. type: titlepage
+#: help2man.texi:41 help2man.texi:66
+#, fuzzy
+msgid ""
+"Permission is granted to copy and distribute translations of this manual "
+"into another language, under the above conditions for modified versions, "
+"except that this permission notice may be stated in a translation approved "
+"by the Foundation."
+msgstr ""
+"授予权限复制和分发本手册翻译成另一种语言，根据上述条件为修改后的版本，只是可"
+"能通过基金会翻译中指出本许可声明。"
+
+#. type: subtitle
+#: help2man.texi:45
+#, no-wrap
+msgid "A utility for generating simple manual pages"
+msgstr "用于生成简单的手册页的实用程序"
+
+#. type: titlepage
+#: help2man.texi:52
+msgid ""
+"Copyright @copyright{} 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2009, 2010, "
+"2011, 2012, 2013, 2014, 2015, 2020 Free Software Foundation, Inc."
+msgstr "版权所有 @copyright{} 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2020 自由软件基金会。"
+
+#. type: ifnottex
+#: help2man.texi:76
+msgid ""
+"@command{help2man} produces simple manual pages from the @samp{--help} and "
+"@samp{--version} output of other commands."
+msgstr ""
+"@command{help2man} 可从 @samp{--help} 和 @samp{--version} 其他命令的输出生成"
+"简单的手册页。"
+
+#. type: node
+#: help2man.texi:87 help2man.texi:90
+#, no-wrap
+msgid "Overview"
+msgstr "概览"
+
+#. type: menuentry
+#: help2man.texi:87
+msgid "Overview of @command{help2man}."
+msgstr "@command{help2man} 概览。"
+
+#. type: node
+#: help2man.texi:87 help2man.texi:108
+#, no-wrap
+msgid "Invoking help2man"
+msgstr "调用 help2man"
+
+#. type: menuentry
+#: help2man.texi:87
+msgid "How to run @command{help2man}."
+msgstr "如何运行 @command{help2man}。"
+
+#. type: node
+#: help2man.texi:87 help2man.texi:208
+#, no-wrap
+msgid "--help recommendations"
+msgstr "--help 建议"
+
+#. type: menuentry
+#: help2man.texi:87
+msgid "Recommended formatting for --help output."
+msgstr "建议的 --help 输出排版。"
+
+#. type: node
+#: help2man.texi:87 help2man.texi:304
+#, no-wrap
+msgid "Including text"
+msgstr "包含文字"
+
+#. type: menuentry
+#: help2man.texi:87
+msgid "Including additional text in the output."
+msgstr "在输出中包括附加文本。"
+
+#. type: node
+#: help2man.texi:87 help2man.texi:366
+#, no-wrap
+msgid "Makefile usage"
+msgstr "Makefile 用法"
+
+#. type: menuentry
+#: help2man.texi:87
+msgid "Using @command{help2man} with @command{make}."
+msgstr "同 @command{make} 一起使用 @command{help2man}。"
+
+#. type: node
+#: help2man.texi:87 help2man.texi:401
+#, no-wrap
+msgid "Localised man pages"
+msgstr "本地化手册页"
+
+#. type: menuentry
+#: help2man.texi:87
+msgid "Producing native language manual pages."
+msgstr "生成原生语言手册页。"
+
+#. type: node
+#: help2man.texi:87 help2man.texi:456
+#, no-wrap
+msgid "Example"
+msgstr "示例"
+
+#. type: menuentry
+#: help2man.texi:87
+msgid "Example @command{help2man} output."
+msgstr "@command{help2man} 示例输出。"
+
+#. type: node
+#: help2man.texi:87 help2man.texi:572
+#, no-wrap
+msgid "Reports"
+msgstr "报告"
+
+#. type: menuentry
+#: help2man.texi:87
+msgid "Reporting bugs or suggestions."
+msgstr "报告程序缺陷或建议。"
+
+#. type: node
+#: help2man.texi:87 help2man.texi:582
+#, no-wrap
+msgid "Availability"
+msgstr "可用性"
+
+#. type: menuentry
+#: help2man.texi:87
+msgid "Obtaining @command{help2man}."
+msgstr "获取 @command{help2man}。"
+
+#. type: chapter
+#: help2man.texi:91
+#, no-wrap
+msgid "Overview of @command{help2man}"
+msgstr "@command{help2man} 概览"
+
+#. type: Plain text
+#: help2man.texi:95
+msgid ""
+"@command{help2man} is a tool for automatically generating simple manual "
+"pages from program output."
+msgstr "@command{help2man} 是一种从程序输出自动生成简单的手册页的工具。"
+
+#. type: Plain text
+#: help2man.texi:99
+#, fuzzy
+msgid ""
+"Although manual pages are optional for GNU programs other projects, such as "
+"Debian require them (@pxref{Man Pages, , , standards, GNU Coding Standards})"
+msgstr ""
+"虽然都是可选的 GNU 程序的手册页其他项目，如 Debian 要求他们 (@pxref {手册"
+"页、 标准，GNU 编码标准})"
+
+#. type: Plain text
+#: help2man.texi:103
+msgid ""
+"This program is intended to provide an easy way for software authors to "
+"include a manual page in their distribution without having to maintain that "
+"document."
+msgstr ""
+"本程序旨在为软件作者提供一个简单的方法，使得他们可以无需认真维护却可以在软件"
+"发行中包含手册页。"
+
+#. type: Plain text
+#: help2man.texi:107
+msgid ""
+"Given a program which produces reasonably standard @samp{--help} and @samp{--"
+"version} outputs, @command{help2man} can re-arrange that output into "
+"something which resembles a manual page."
+msgstr ""
+"给定一个程序，若其能提供合理标准的 @samp{--help} 和 @samp{--version} 输出，"
+"@command{help2man} 可以将那些信息整理成像手册页一样的东西。"
+
+#. type: chapter
+#: help2man.texi:109
+#, no-wrap
+msgid "How to Run @command{help2man}"
+msgstr "如何运行 @command{help2man}。"
+
+#. type: Plain text
+#: help2man.texi:112
+msgid "The format for running the @command{help2man} program is:"
+msgstr "运行 @command{help2man} 程序的格式为:"
+
+#. type: example
+#: help2man.texi:115
+#, no-wrap
+msgid "@command{help2man} [@var{option}]@dots{} @var{executable}\n"
+msgstr "@command{help2man} [@var{选项}]@dots{} @var{可执行文件}\n"
+
+#. type: Plain text
+#: help2man.texi:118
+msgid "@command{help2man} supports the following options:"
+msgstr "@command{help2man} 支持以下选项: "
+
+#. type: item
+#: help2man.texi:120
+#, no-wrap
+msgid "-n @var{string}"
+msgstr "-n @var{字符串}"
+
+#. type: itemx
+#: help2man.texi:121
+#, no-wrap
+msgid "--name=@var{string}"
+msgstr "--name=@var{字符串}"
+
+#. type: table
+#: help2man.texi:124
+msgid ""
+"Use @var{string} as the description for the @samp{NAME} paragraph of the "
+"manual page."
+msgstr "使用 @var{字符串} 作为手册页的 @samp{名称} 段的描述。"
+
+#. type: table
+#: help2man.texi:127
+#, fuzzy
+msgid ""
+"By default (for want of anything better) this paragraph contains "
+"@samp{manual page for @var{program} @var{version}}."
+msgstr ""
+"默认情况下，(为想要更好的东西) 这一段包含 @samp {{程序} {版本} @var @var 的手"
+"册页}。"
+
+#. Translators: the translated cross-reference "Including text" here must
+#. match the  target (type: node) translation elsewhere in this file.
+#. type: table
+#: help2man.texi:130
+msgid ""
+"This option overrides an include file @samp{[name]} section "
+"(@pxref{Including text})."
+msgstr "此选项覆盖一个包含文件 @samp{[名称]} 章节 (@pxref{包含文字})."
+
+#. type: item
+#: help2man.texi:131
+#, no-wrap
+msgid "-s @var{section}"
+msgstr "-s @var{章节}"
+
+#. type: itemx
+#: help2man.texi:132
+#, no-wrap
+msgid "--section @var{section}"
+msgstr "--section @var{章节}"
+
+#. type: table
+#: help2man.texi:135
+msgid ""
+"Use @var{section} as the section for the man page.  The default section is 1."
+msgstr "将 @var{章节} 作为手册页的分类号。默认值为 1。"
+
+#. type: item
+#: help2man.texi:136
+#, no-wrap
+msgid "-m @var{manual}"
+msgstr "-m @var{manual}"
+
+#. type: itemx
+#: help2man.texi:137
+#, no-wrap
+msgid "--manual=@var{manual}"
+msgstr "--manual=@var{manual}"
+
+#. type: table
+#: help2man.texi:142
+msgid ""
+"Set the name of the manual section to @var{section}, used as a centred "
+"heading for the manual page.  By default @samp{User Commands} is used for "
+"pages in section 1, @samp{Games} for section 6 and @samp{System "
+"Administration Utilities} for sections 8 and 1M."
+msgstr ""
+
+#. type: item
+#: help2man.texi:143
+#, no-wrap
+msgid "-S @var{source}"
+msgstr "-S @var{source}"
+
+#. type: itemx
+#: help2man.texi:144
+#, no-wrap
+msgid "--source=@var{source}"
+msgstr "--source=@var{source}"
+
+#. type: table
+#: help2man.texi:148
+msgid ""
+"The program source is used as a page footer, and often contains the name of "
+"the organisation or a suite of which the program is part.  By default the "
+"value is the package name and version."
+msgstr ""
+
+#. type: item
+#: help2man.texi:149
+#, no-wrap
+msgid "-L @var{locale}"
+msgstr "-L @var{locale}"
+
+#. type: itemx
+#: help2man.texi:150
+#, no-wrap
+msgid "--locale=@var{locale}"
+msgstr "-L @var{locale}"
+
+#. Translators: the translated cross-reference "Localised man pages" here
+#. must match the  target (type: node) translation elsewhere in this file.
+#. type: table
+#: help2man.texi:154
+msgid ""
+"Select output locale (default @samp{C}).  Both the program and "
+"@command{help2man} must support the given @var{locale} (@pxref{Localised man "
+"pages})."
+msgstr ""
+"设置输出语区（默认为 @samp{C}）。程序本身和 @command{help2man} 都必须支持给定"
+"的 @var{语区}（@pxref{本地化手册页}）。"
+
+#. type: item
+#: help2man.texi:155
+#, no-wrap
+msgid "-i @var{file}"
+msgstr "-i @var{file}"
+
+#. type: itemx
+#: help2man.texi:156
+#, no-wrap
+msgid "--include=@var{file}"
+msgstr "--include=@var{file}"
+
+#. Translators: the translated cross-reference "Including text" here must
+#. match the  target (type: node) translation elsewhere in this file.
+#. type: table
+#: help2man.texi:158
+msgid "Include material from @var{file} (@pxref{Including text})."
+msgstr "从 @var{文件} 包含内容（@pxref{包含文字}）。"
+
+#. type: item
+#: help2man.texi:159
+#, no-wrap
+msgid "-I @var{file}"
+msgstr "-I @var{file}"
+
+#. type: itemx
+#: help2man.texi:160
+#, no-wrap
+msgid "--opt-include=@var{file}"
+msgstr "--opt-include=@var{file}"
+
+#. type: table
+#: help2man.texi:163
+msgid ""
+"A variant of @samp{--include} for use in Makefile pattern rules which does "
+"not require @var{file} to exist."
+msgstr ""
+
+#. type: item
+#: help2man.texi:164
+#, no-wrap
+msgid "-o @var{file}"
+msgstr "-o @var{file}"
+
+#. type: itemx
+#: help2man.texi:165
+#, no-wrap
+msgid "--output=@var{file}"
+msgstr "--output=@var{file}"
+
+#. type: table
+#: help2man.texi:167
+msgid "Send output to @var{file} rather than @code{stdout}."
+msgstr "将输出写入到 @var{file} 而非 @code{stdout}。"
+
+#. type: item
+#: help2man.texi:168
+#, no-wrap
+msgid "-p @var{text}"
+msgstr "-p @var{text}"
+
+#. type: itemx
+#: help2man.texi:169
+#, no-wrap
+msgid "--info-page=@var{text}"
+msgstr "--info-page=@var{text}"
+
+#. type: table
+#: help2man.texi:171
+msgid "Name of Texinfo manual."
+msgstr "Texinfo 手册名称。"
+
+#. type: table
+#: help2man.texi:176
+msgid ""
+"Suppress inclusion of a @samp{SEE ALSO} paragraph directing the reader to "
+"the Texinfo documentation."
+msgstr ""
+
+#. type: table
+#: help2man.texi:182
+msgid ""
+"Drop @file{lt-} prefix from instances of the program name in the synopsis "
+"(@command{libtool} creates wrapper scripts in the build directory which "
+"invoke @command{foo} as @command{.libs/lt-foo})."
+msgstr ""
+
+#. type: table
+#: help2man.texi:186
+msgid "Show help or version information."
+msgstr "显示帮助或版本信息。"
+
+#. type: Plain text
+#: help2man.texi:191
+msgid ""
+"By default @command{help2man} passes the standard @samp{--help} and @samp{--"
+"version} options to the executable although alternatives may be specified "
+"using:"
+msgstr ""
+
+#. type: item
+#: help2man.texi:193
+#, no-wrap
+msgid "-h @var{option}"
+msgstr "-h @var{option}"
+
+#. type: itemx
+#: help2man.texi:194
+#, no-wrap
+msgid "--help-option=@var{option}"
+msgstr "--help-option=@var{option}"
+
+#. type: table
+#: help2man.texi:196
+msgid "Help option string."
+msgstr "帮助选项字串。"
+
+#. type: item
+#: help2man.texi:197
+#, no-wrap
+msgid "-v @var{option}"
+msgstr "-v @var{option}"
+
+#. type: itemx
+#: help2man.texi:198
+#, no-wrap
+msgid "--version-option=@var{option}"
+msgstr "-h @var{option}"
+
+#. type: table
+#: help2man.texi:200
+msgid "Version option string."
+msgstr "版本选项字串。"
+
+#. type: item
+#: help2man.texi:201
+#, no-wrap
+msgid "--version-string=@var{string}"
+msgstr "--version-string=@var{string}"
+
+#. type: table
+#: help2man.texi:203
+msgid "Version string."
+msgstr "版本字串。"
+
+#. type: table
+#: help2man.texi:206
+msgid "Include stderr when parsing option output."
+msgstr ""
+
+#. type: chapter
+#: help2man.texi:209
+#, no-wrap
+msgid "@option{--help} Recommendations"
+msgstr "@option{--help} 建议"
+
+#. type: Plain text
+#: help2man.texi:215
+msgid ""
+"Here are some recommendations for what to include in your @option{--help} "
+"output.  Including these gives @command{help2man} the best chance at "
+"generating a respectable man page, as well as benefitting users directly."
+msgstr ""
+
+#. type: Plain text
+#: help2man.texi:219
+msgid ""
+"See @ref{Command-Line Interfaces, , , standards, GNU Coding Standards} and "
+"@ref{Man Pages, , , standards, GNU Coding Standards}, for the official GNU "
+"standards relating to @option{--help} and man pages."
+msgstr ""
+
+#. type: itemize
+#: help2man.texi:225
+msgid ""
+"A synopsis of how to invoke the program.  If different usages of the program "
+"have different invocations, then list them all.  For example (edited for "
+"brevity):"
+msgstr ""
+
+#. type: smallexample
+#: help2man.texi:230
+#, no-wrap
+msgid ""
+"Usage: cp [OPTION]... SOURCE DEST\n"
+"  or:  cp [OPTION]... SOURCE... DIRECTORY\n"
+"@dots{}\n"
+msgstr ""
+
+#. type: itemize
+#: help2man.texi:235
+msgid ""
+"Use @code{argv[0]} for the program name in these synopses, just as it is, "
+"with no directory stripping.  This is in contrast to the canonical "
+"(constant) name of the program which is used in @option{--version}."
+msgstr ""
+
+#. type: itemize
+#: help2man.texi:239
+msgid ""
+"A very brief explanation of what the program does, including default and/or "
+"typical behaviour.  For example, here is @command{cp}'s:"
+msgstr ""
+
+#. type: example
+#: help2man.texi:242
+#, no-wrap
+msgid "Copy SOURCE to DEST, or multiple SOURCE(s) to DIRECTORY.\n"
+msgstr "将 SOURCE 拷贝到 DEST，或将多个 SOURCE 拷贝到 DIRECTORY。\n"
+
+#. type: itemize
+#: help2man.texi:253
+msgid ""
+"A list of options, indented to column 2.  If the program supports one-"
+"character options, put those first, then the equivalent long option (if "
+"any).  If the option takes an argument, include that too, giving it a "
+"meaningful name.  Align the descriptions in a convenient column, if "
+"desired.  Note that to be correctly recognised by @command{help2man} the "
+"description must be separated from the options by at least two spaces and "
+"descriptions continued on subsequent lines must start at the same column."
+msgstr ""
+
+#. type: itemize
+#: help2man.texi:257
+msgid ""
+"Here again is an (edited) excerpt from @command{cp}, showing a short option "
+"with an equivalent long option, a long option only, and a short option only:"
+msgstr ""
+
+#. type: smallexample
+#: help2man.texi:262
+#, no-wrap
+msgid ""
+"  -a, --archive                same as -dpR\n"
+"      --backup[=CONTROL]       make a backup of each ...\n"
+"  -b                           like --backup but ...\n"
+msgstr ""
+"  -a, --archive                相当于 -dpR\n"
+"      --backup[=CONTROL]       对每个文件备份 ...\n"
+"  -b                           就像 --backup 不过 ...\n"
+
+#. type: itemize
+#: help2man.texi:269
+msgid ""
+"For programs that take many options, it may be desirable to split the option "
+"list into sections such as @samp{Global}, @samp{Output control}, or whatever "
+"makes sense in the particular case.  It is usually best to alphabetise (by "
+"short option name first, then long) within each section, or the entire list "
+"if there are no sections."
+msgstr ""
+
+#. type: itemize
+#: help2man.texi:275
+msgid ""
+"Any useful additional information about program behaviour, such as "
+"influential environment variables, further explanation of options, etc.  For "
+"example, @command{cp} discusses @env{VERSION_CONTROL} and sparse files."
+msgstr ""
+
+#. type: itemize
+#: help2man.texi:280
+msgid ""
+"A few examples of typical usage, at your discretion.  One good example is "
+"usually worth a thousand words of description, so this is highly recommended."
+msgstr ""
+
+#. type: cindex
+#: help2man.texi:282
+#, no-wrap
+msgid "address for bug reports"
+msgstr "错误报告地址"
+
+#. type: cindex
+#: help2man.texi:283
+#, no-wrap
+msgid "bug reports"
+msgstr "错误报告"
+
+#. type: itemize
+#: help2man.texi:288
+msgid ""
+"In closing, a line stating how to email bug reports.  Typically, "
+"@var{mailing-address} will be @samp{bug-@var{program}@@gnu.org}; please use "
+"this form for GNU programs whenever possible.  It's also good to mention the "
+"home page of the program, other mailing lists, etc."
+msgstr ""
+
+#. type: Plain text
+#: help2man.texi:295
+msgid ""
+"The @code{argp} and @code{popt} programming interfaces let you specify "
+"option descriptions for @option{--help} in the same structure as the rest of "
+"the option definition; you may wish to consider using these routines for "
+"option parsing instead of @code{getopt}."
+msgstr ""
+
+#. type: Plain text
+#: help2man.texi:303
+msgid ""
+"By default @command{help2man} has some heuristics for identifying manual "
+"page sections: a line consisting of @samp{Options:} for example will cause "
+"the following text to appear in the @code{OPTIONS} section, and a line "
+"beginning with @samp{Copyright} will appear in the @code{COPYRIGHT} "
+"section.  Outside of these heuristics, a line consisting of @samp{*Words*} "
+"will start a new section, and @samp{Words:} a new sub-section."
+msgstr ""
+
+#. type: chapter
+#: help2man.texi:305
+#, no-wrap
+msgid "Including Additional Text in the Output"
+msgstr "在输出中包括附加文本"
+
+#. Translators: the translated cross-reference "Invoking help2man" here
+#. must match the  target (type: node) translation elsewhere in this file.
+#. type: Plain text
+#: help2man.texi:312
+msgid ""
+"Additional static text may be included in the generated manual page by using "
+"the @samp{--include} and @samp{--opt-include} options (@pxref{Invoking "
+"help2man}).  While these files can be named anything, for consistency we "
+"suggest to use the extension @code{.h2m} for @command{help2man} include "
+"files."
+msgstr ""
+"额外的静态文字可用 @samp{--include} 和 @samp{--opt-include}（@pxref{调用 "
+"help2man}）加入生成的手册页中。尽管这些文件可以任意命名，我们还是推荐使用将 "
+"@code{.h2m} 拓展名用于 @command{help2man} 包含文件以保证一致性。"
+
+#. type: Plain text
+#: help2man.texi:314
+msgid "The format for files included with these option is simple:"
+msgstr ""
+
+#. type: example
+#: help2man.texi:318
+#, no-wrap
+msgid ""
+"[section]\n"
+"text\n"
+"\n"
+msgstr ""
+"[章节]\n"
+"文本\n"
+"\n"
+
+#. type: example
+#: help2man.texi:321
+#, no-wrap
+msgid ""
+"/pattern/\n"
+"text\n"
+msgstr ""
+"/正则表达式/\n"
+"文本\n"
+
+#. type: Plain text
+#: help2man.texi:326
+msgid ""
+"Blocks of verbatim *roff text are inserted into the output either at the "
+"start of the given @samp{[section]} (case insensitive), or after a paragraph "
+"matching @samp{/pattern/}."
+msgstr ""
+"逐字 *roff 文字块将在给定的 @samp{[章节]}（大小写不敏感）开始处，或在匹配 "
+"@samp{/正则表达式/} 的段后加入。"
+
+#. type: Plain text
+#: help2man.texi:330
+msgid ""
+"Patterns use the Perl regular expression syntax and may be followed by the "
+"@samp{i}, @samp{s} or @samp{m} modifiers (@pxref{perlre, , perlre(1), "
+"*manpages*, The @code{perlre(1)} manual page})"
+msgstr ""
+
+#. type: Plain text
+#: help2man.texi:334
+msgid ""
+"Lines before the first section or pattern which begin with @samp{-} are "
+"processed as options.  Anything else is silently ignored and may be used for "
+"comments, RCS keywords and the like."
+msgstr ""
+"第一节前的行，或由 @samp{-} 开始的模式，将被认为是选项。其他的都将被安静地忽"
+"略，可被用作注释、RCS 关键字等。"
+
+#. type: Plain text
+#: help2man.texi:336
+msgid "The section output order (for those included) is:"
+msgstr "章节输出（包含的）顺序为："
+
+#. type: example
+#: help2man.texi:350
+#, no-wrap
+msgid ""
+"NAME\n"
+"SYNOPSIS\n"
+"DESCRIPTION\n"
+"OPTIONS\n"
+"@emph{other}\n"
+"ENVIRONMENT\n"
+"FILES\n"
+"EXAMPLES\n"
+"AUTHOR\n"
+"REPORTING BUGS\n"
+"COPYRIGHT\n"
+"SEE ALSO\n"
+msgstr ""
+
+#. type: Plain text
+#: help2man.texi:356
+msgid ""
+"Any @samp{[name]} or @samp{[synopsis]} sections appearing in the include "
+"file will replace what would have automatically been produced (although you "
+"can still override the former with @samp{--name} if required)."
+msgstr ""
+
+#. type: Plain text
+#: help2man.texi:360
+msgid ""
+"Other sections are prepended to the automatically produced output for the "
+"standard sections given above, or included at @emph{other} (above)  in the "
+"order they were encountered in the include file."
+msgstr ""
+"其他章节会自动附加到以上自动生成章节之上，或按照它们在包含文件中出现的顺序包"
+"含于 @emph{其他}（以上）章节上。"
+
+#. type: Plain text
+#: help2man.texi:365
+msgid ""
+"Placement of the text within the section may be explicitly requested by "
+"using the syntax @samp{[<section]}, @samp{[=section]} or @samp{[>section]} "
+"to place the additional text before, in place of, or after the default "
+"output respectively."
+msgstr ""
+
+#. type: chapter
+#: help2man.texi:367
+#, no-wrap
+msgid "Using @command{help2man} With @command{make}"
+msgstr "同 @command{make} 一起使用 @command{help2man}。"
+
+#. type: Plain text
+#: help2man.texi:372
+msgid ""
+"A suggested use of @command{help2man} in Makefiles is to have the manual "
+"page depend not on the binary, but on the source file(s) in which the "
+"@samp{--help} and @samp{--version} output are defined."
+msgstr ""
+
+#. type: Plain text
+#: help2man.texi:376
+msgid ""
+"This usage allows a manual page to be generated by the maintainer and "
+"included in the distribution without requiring the end-user to have "
+"@command{help2man} installed."
+msgstr ""
+
+#. type: Plain text
+#: help2man.texi:378
+msgid "An example rule for the program @code{prog} could be:"
+msgstr ""
+
+#. type: group
+#: help2man.texi:383
+#, no-wrap
+msgid ""
+"prog.1: $(srcdir)/main.c\n"
+"        -$(HELP2MAN) --output=$@@ --name='an example program' ./prog\n"
+msgstr ""
+
+#. type: Plain text
+#: help2man.texi:388
+msgid ""
+"The value of @code{HELP2MAN} may be set in @code{configure.in} using either "
+"of:"
+msgstr ""
+
+#. type: example
+#: help2man.texi:391
+#, no-wrap
+msgid "AM_MISSING_PROG(HELP2MAN, help2man)\n"
+msgstr "AM_MISSING_PROG(HELP2MAN, help2man)\n"
+
+#. type: Plain text
+#: help2man.texi:394
+msgid "for @command{automake}, or something like:"
+msgstr "@command{automake}，或类似如下例子："
+
+#. type: example
+#: help2man.texi:397
+#, no-wrap
+msgid "AC_PATH_PROG(HELP2MAN, help2man, false // No help2man //)\n"
+msgstr "AC_PATH_PROG(HELP2MAN, help2man, false // No help2man //)\n"
+
+#. type: Plain text
+#: help2man.texi:400
+msgid "for @command{autoconf} alone."
+msgstr "仅为 @command{autoconf} 专用。"
+
+#. type: chapter
+#: help2man.texi:402
+#, no-wrap
+msgid "Producing Native Language Manual Pages"
+msgstr "生成原生语言手册页"
+
+#. type: Plain text
+#: help2man.texi:407
+msgid ""
+"Manual pages may be produced for any locale supported by both the program "
+"and @command{help2man} with the @samp{--locale} (@samp{-L})  option."
+msgstr ""
+
+#. type: example
+#: help2man.texi:410
+#, no-wrap
+msgid "help2man -L fr_FR@@euro -o cp.fr.1 cp\n"
+msgstr "help2man -L fr_FR@@euro -o cp.fr.1 cp\n"
+
+#. Translators: the translated cross-reference "Reports" here must match
+#. the	target (type: node) translation elsewhere in this file.
+#. type: Plain text
+#: help2man.texi:415
+msgid ""
+"See @url{http://translationproject.org/domain/help2man.html} for the "
+"languages currently supported by @command{help2man}, and @pxref{Reports} for "
+"how to submit other translations."
+msgstr ""
+"参见 @url{http://translationproject.org/domain/help2man.html} 以获取 "
+"@command{help2man} 目前支持的语言列表，以及 @pxref{报告} 以学习如何提交其它翻"
+"译。"
+
+#. type: section
+#: help2man.texi:416
+#, no-wrap
+msgid "Changing the Location of Message Catalogs"
+msgstr ""
+
+#. type: Plain text
+#: help2man.texi:422
+msgid ""
+"When creating localised manual pages from a program's build directory it is "
+"probable that the translations installed in the standard location will not "
+"be (if installed at all) correct for the version of the program being built."
+msgstr ""
+
+#. type: Plain text
+#: help2man.texi:427
+msgid ""
+"A preloadable library is provided with @command{help2man} which will "
+"intercept @code{bindtextdomain} calls configuring the location of message "
+"catalogs for the domain given by @env{$TEXTDOMAIN} and override the location "
+"to the path given by @env{$LOCALEDIR}."
+msgstr ""
+
+#. type: Plain text
+#: help2man.texi:429
+msgid "So for example:"
+msgstr "举个例子:"
+
+#. type: example
+#: help2man.texi:438
+#, no-wrap
+msgid ""
+"mkdir -p tmp/fr/LC_MESSAGES\n"
+"cp po/fr.gmo tmp/fr/LC_MESSAGES/@var{prog}.mo\n"
+"LD_PRELOAD=\"/usr/lib/help2man/bindtextdomain.so\" \\\n"
+"  LOCALEDIR=tmp \\\n"
+"  TEXTDOMAIN=@var{prog} \\\n"
+"  help2man -L fr_FR@@euro -i @var{prog}.fr.h2m -o @var{prog}.fr.1 @var{prog}\n"
+"rm -rf tmp\n"
+msgstr ""
+"mkdir -p tmp/fr/LC_MESSAGES\n"
+"cp po/fr.gmo tmp/fr/LC_MESSAGES/@var{prog}.mo\n"
+"LD_PRELOAD=\"/usr/lib/help2man/bindtextdomain.so\" \\\n"
+"  LOCALEDIR=tmp \\\n"
+"  TEXTDOMAIN=@var{prog} \\\n"
+"  help2man -L fr_FR@@euro -i @var{prog}.fr.h2m -o @var{prog}.fr.1 @var{prog}\n"
+"rm -rf tmp\n"
+
+#. type: Plain text
+#: help2man.texi:442
+msgid ""
+"will cause @var{prog} to load the message catalog from @samp{tmp} rather "
+"than @samp{/usr/share/locale}."
+msgstr ""
+
+#. type: Plain text
+#: help2man.texi:444
+msgid "Notes:"
+msgstr "注："
+
+#. type: itemize
+#: help2man.texi:449
+msgid ""
+"The generalisation of @samp{fr_FR@@euro} to @samp{fr} in the example above "
+"is done by @code{gettext}, if a more specific match were available it would "
+"also have been re-mapped."
+msgstr ""
+
+#. Translators: the translated cross-reference "Reports" here must match
+#. the	target (type: node) translation elsewhere in this file.
+#. type: itemize
+#: help2man.texi:454
+msgid ""
+"This preload has only been tested against @command{eglibc} 2.11.2 and "
+"@command{gettext} 0.18.1.1 on a GNU/Linux system; let me know if it does (or "
+"doesn't) work for you (@pxref{Reports})."
+msgstr ""
+"此预加载库只配合 @command{eglibc} 2.11.2 和 @command{gettext} 0.18.1.1 在一"
+"个 GNU/Linux 系统上测试过；请告诉我们它是否对你有用（@pxref{报告}）。"
+
+#. type: chapter
+#: help2man.texi:457
+#, no-wrap
+msgid "Example @command{help2man} Output"
+msgstr "@command{help2man} 示例输出。"
+
+#. type: Plain text
+#: help2man.texi:460
+msgid ""
+"Given a hypothetical program @command{foo} which produces the following "
+"output:"
+msgstr ""
+
+#. type: example
+#: help2man.texi:485
+#, no-wrap
+msgid ""
+"@exstrong{$ foo --version}\n"
+"GNU foo 1.1\n"
+"\n"
+msgstr ""
+"@exstrong{$ foo --version}\n"
+"GNU foo 1.1\n"
+"\n"
+
+#. type: example
+#: help2man.texi:489
+#, no-wrap
+msgid ""
+"Copyright (C) 2011 Free Software Foundation, Inc.\n"
+"This is free software; see the source for copying conditions.  There is NO\n"
+"warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
+"\n"
+msgstr ""
+"版权所有 (C) 2011 自由软件基金会。\n"
+"本软件为自由软件；请参阅源代码以获取许可条款。此软件不对包括商业使用以及其他\n"
+"特殊用途提供任何担保。\n"
+"\n"
+
+#. type: example
+#: help2man.texi:494
+#, no-wrap
+msgid ""
+"Written by A. Programmer.\n"
+"@exstrong{$ foo --help}\n"
+"GNU `foo' does nothing interesting except serve as an example for\n"
+"`help2man'.\n"
+"\n"
+msgstr ""
+
+#. type: example
+#: help2man.texi:496
+#, no-wrap
+msgid ""
+"Usage: foo [OPTION]...\n"
+"\n"
+msgstr ""
+"用法: foo [选项] ...\n"
+"\n"
+"\n"
+
+#. type: example
+#: help2man.texi:501
+#, no-wrap
+msgid ""
+"Options:\n"
+"  -a, --option      an option\n"
+"  -b, --another-option[=VALUE]\n"
+"                    another option\n"
+"\n"
+msgstr ""
+
+#. type: example
+#: help2man.texi:504
+#, no-wrap
+msgid ""
+"      --help        display this help and exit\n"
+"      --version     output version information and exit\n"
+"\n"
+msgstr ""
+"      --help           显示此帮助信息并退出\n"
+"      --version     输出版本信息并退出\n"
+"\n"
+
+#. type: example
+#: help2man.texi:508
+#, no-wrap
+msgid ""
+"Examples:\n"
+"  foo               do nothing\n"
+"  foo --option      the same thing, giving `--option'\n"
+"\n"
+msgstr ""
+"示例:\n"
+"  foo               什么都不做\n"
+"  foo --option      效果一致，传入参数 `--option'\n"
+"\n"
+
+#. type: example
+#: help2man.texi:510
+#, no-wrap
+msgid "Report bugs to <bug-gnu-utils@@gnu.org>.\n"
+msgstr "请将问题报告给 <bug-gnu-utils@@gnu.org>。\n"
+
+#. type: Plain text
+#: help2man.texi:514
+msgid ""
+"@command{help2man} will produce @command{nroff} input for a manual page "
+"which will be formatted something like this:"
+msgstr ""
+
+#. type: example
+#: help2man.texi:517
+#, no-wrap
+msgid ""
+"FOO(1)                         User Commands                        FOO(1)\n"
+"\n"
+msgstr ""
+"FOO(1)                         用户命令                        FOO(1)\n"
+"\n"
+
+#. type: example
+#: help2man.texi:521
+#, no-wrap
+msgid ""
+"@exstrong{NAME}\n"
+"       foo - manual page for foo 1.1\n"
+"\n"
+msgstr ""
+
+#. type: example
+#: help2man.texi:524
+#, no-wrap
+msgid ""
+"@exstrong{SYNOPSIS}\n"
+"       foo [OPTION]...\n"
+"\n"
+msgstr ""
+"@exstrong{SYNOPSIS}\n"
+"       foo [OPTION]...\n"
+"\n"
+
+#. type: example
+#: help2man.texi:528
+#, no-wrap
+msgid ""
+"@exstrong{DESCRIPTION}\n"
+"       GNU  `foo'  does nothing interesting except serve as an example for\n"
+"       `help2man'.\n"
+"\n"
+msgstr ""
+
+#. type: example
+#: help2man.texi:532
+#, no-wrap
+msgid ""
+"@exstrong{OPTIONS}\n"
+"       @exstrong{-a}, @exstrong{--option}\n"
+"              an option\n"
+"\n"
+msgstr ""
+
+#. type: example
+#: help2man.texi:535
+#, no-wrap
+msgid ""
+"       @exstrong{-b}, @exstrong{--another-option}[=@exemph{VALUE}]\n"
+"              another option\n"
+"\n"
+msgstr ""
+
+#. type: example
+#: help2man.texi:537
+#, no-wrap
+msgid ""
+"       @exstrong{--help} display this help and exit\n"
+"\n"
+msgstr ""
+"\t@exstrong{--help} 显示此帮助信息并推出\n"
+"\n"
+
+#. type: example
+#: help2man.texi:540
+#, no-wrap
+msgid ""
+"       @exstrong{--version}\n"
+"              output version information and exit\n"
+"\n"
+msgstr ""
+"      @exstrong{--version}\n"
+"              输出版本信息并退出\n"
+"\n"
+
+#. type: example
+#: help2man.texi:543
+#, no-wrap
+msgid ""
+"@exstrong{EXAMPLES}\n"
+"       foo    do nothing\n"
+"\n"
+msgstr ""
+
+#. type: example
+#: help2man.texi:546
+#, no-wrap
+msgid ""
+"       foo @exstrong{--option}\n"
+"              the same thing, giving `--option'\n"
+"\n"
+msgstr ""
+
+#. type: example
+#: help2man.texi:549
+#, no-wrap
+msgid ""
+"@exstrong{AUTHOR}\n"
+"       Written by A. Programmer.\n"
+"\n"
+msgstr ""
+
+#. type: example
+#: help2man.texi:552
+#, no-wrap
+msgid ""
+"@exstrong{REPORTING BUGS}\n"
+"       Report bugs to <bug-gnu-utils@@gnu.org>.\n"
+"\n"
+msgstr ""
+
+#. type: example
+#: help2man.texi:558
+#, no-wrap
+msgid ""
+"@exstrong{COPYRIGHT}\n"
+"       Copyright @copyright{} 2011 Free Software Foundation, Inc.\n"
+"       This is free software;  see  the  source  for  copying  conditions.\n"
+"       There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n"
+"       PARTICULAR PURPOSE.\n"
+"\n"
+msgstr ""
+"@exstrong{COPYRIGHT}\n"
+"       版权所有 (C) 2011 自由软件基金会。\n"
+"      本软件为自由软件；请参阅源代码以获取许可条款。\n"
+"       此软件不对提供任何担保，甚至不保证适销性或对某一特定用途的适用性的保证。\n"
+
+#. type: example
+#: help2man.texi:563
+#, no-wrap
+msgid ""
+"@exstrong{SEE ALSO}\n"
+"       The full documentation for @exstrong{foo} is maintained as a  Texinfo  manual.\n"
+"       If  the  @exstrong{info} and @exstrong{foo} programs are properly installed at your site,\n"
+"       the command\n"
+"\n"
+msgstr ""
+
+#. type: example
+#: help2man.texi:565
+#, no-wrap
+msgid ""
+"              @exstrong{info foo}\n"
+"\n"
+msgstr ""
+"              @exstrong{info foo}\n"
+"\n"
+
+#. type: example
+#: help2man.texi:567
+#, no-wrap
+msgid ""
+"       should give you access to the complete manual.\n"
+"\n"
+msgstr ""
+"       应可给您显示完整的手册页。\n"
+"\n"
+
+#. type: example
+#: help2man.texi:570
+#, no-wrap
+msgid "foo 1.1                          May 2011                           FOO(1)\n"
+msgstr "foo 1.1                          2011 五月                           FOO(1)\n"
+
+#. type: chapter
+#: help2man.texi:573
+#, no-wrap
+msgid "Reporting Bugs or Suggestions"
+msgstr "报告程序缺陷或建议"
+
+#. type: Plain text
+#: help2man.texi:577
+msgid ""
+"If you find problems or have suggestions about this program or manual, "
+"please report them to @email{bug-help2man@@gnu.org}."
+msgstr ""
+"如果你在此程序或本手册中发现了问题，或是有什么意见或建议，都请一并报告到 "
+"@email{bug-help2man@@gnu.org}。"
+
+#. type: Plain text
+#: help2man.texi:581
+msgid ""
+"Note to translators: Translations are handled though the @uref{http://"
+"translationproject.org/, Translation Project} see @url{http://"
+"translationproject.org/html/translators.html} for details."
+msgstr ""
+"翻译员们请注意: 软件翻译通过 @uref{http://translationproject.org/, "
+"Translation Project} 管理，请访问 @url{http://translationproject.org/html/"
+"translators.html} 以获取更多信息。"
+
+#. type: chapter
+#: help2man.texi:583
+#, no-wrap
+msgid "Obtaining @command{help2man}"
+msgstr "获取 @command{help2man}。"
+
+#. type: Plain text
+#: help2man.texi:587
+msgid ""
+"The latest version of this distribution is available online from GNU mirrors:"
+msgstr "此发行的最新版本可从 GNU 在线镜像获取: "
+
+#. type: Plain text
+#: help2man.texi:593
+msgid "If automatic redirection fails, the list of mirrors is at:"
+msgstr "如自动重定向失败，镜像列表位于: "
+
+#. type: Plain text
+#: help2man.texi:599
+msgid "Or if need be you can use the main GNU ftp server:"
+msgstr "必要时可以使用 GNU 主 FTP 服务器: "
+
+#~ msgid "help2man"
+#~ msgstr "help2man"
+
+#~ msgid "Brendan O'Dea @email{bod@@debian.org}"
+#~ msgstr "Brendan O'Dea @email{bod@@debian.org}"
+
+#~ msgid "-N"
+#~ msgstr "-N"
+
+#~ msgid "--no-info"
+#~ msgstr "--no-info"
+
+#~ msgid "-l"
+#~ msgstr "-l"
+
+#~ msgid "--libtool"
+#~ msgstr "--libtool"
+
+#~ msgid "--help"
+#~ msgstr "--help"
+
+#~ msgid "--version"
+#~ msgstr "--version"
+
+#~ msgid "--no-discard-stderr"
+#~ msgstr "--no-discard-stderr"
+
+#~ msgid "@url{http://ftpmirror.gnu.org/help2man/}\n"
+#~ msgstr "@url{http://ftpmirror.gnu.org/help2man/}\n"
+
+#~ msgid "@url{http://www.gnu.org/order/ftp.html}\n"
+#~ msgstr "@url{http://www.gnu.org/order/ftp.html}\n"
+
+#~ msgid "@url{http://ftp.gnu.org/gnu/help2man/}\n"
+#~ msgstr "@url{http://ftp.gnu.org/gnu/help2man/}\n"

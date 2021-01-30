@@ -1,0 +1,876 @@
+help2man (1.47.16) unstable; urgency=medium
+
+  * Move table of contents to the top of the texi file so that it appears
+    in the correct location in the html page (thanks to Michael Siegel).
+  * Update debian/rules maint-prep warning about $version mismatch.
+  * Update help2man.html.PL for new GNU boilerplate.
+
+ -- Brendan O'Dea <bod@debian.org>  Thu, 02 Jul 2020 23:21:58 +1000
+
+help2man (1.47.15) unstable; urgency=medium
+
+  * Use the package name and version as the default for --source (was
+    program).
+  * Support packages in version strings without the GNU or Free prefix.
+  * Allow an optional second dash to separate the package name from the
+    version for multi-word packages: "program - package name - version".
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 27 Apr 2020 15:34:29 +1000
+
+help2man (1.47.14) unstable; urgency=medium
+
+  * Revert --version parsing change from 1.47.13, which had unintended
+    consequences for some version strings.  In short, it is not possible
+    to unambiguously determine the split between the package/program name
+    and version in some of the supported formats.  Multi-word package
+    names are supported only in the "program (GNU package) version"
+    variant (closes: #958345).
+
+ -- Brendan O'Dea <bod@debian.org>  Fri, 24 Apr 2020 23:58:17 +1000
+
+help2man (1.47.13) unstable; urgency=medium
+
+  * Merge change from Po-Chuan Hsieh to suppress creation of an empty
+    pkglibdir when nls is disabled.
+  * Remove install_dirs target entirely, add explicit $(MKINSTALLDIRS)
+    before each $(INSTALL_{DATA,PROGRAM}) call.
+  * Update parsing of --version to allow multi-word programs when
+    constructing the placeholder NAME paragraph (thanks to Jarno Suni).
+
+ -- Brendan O'Dea <bod@debian.org>  Sun, 15 Mar 2020 22:05:41 +1100
+
+help2man (1.47.12) unstable; urgency=medium
+
+  * Fix minor error in po/es.po .
+  * Fix ordering of "other" sections in manual page (as reported by Reuben
+    Thomas).
+
+ -- Brendan O'Dea <bod@debian.org>  Sat, 04 Jan 2020 17:02:33 +1100
+
+help2man (1.47.11) unstable; urgency=medium
+
+  * Adjust maintainer sanity check again, this time to handle binary NMUs
+    (closes: #934601).
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 12 Aug 2019 22:52:07 +1000
+
+help2man (1.47.10) unstable; urgency=medium
+
+  * Change maintainer sanity check in debian/rules to use the contents
+    of README rather than the mtime, which may be have been modified by
+    dpkg-source (closes: #925136).
+
+ -- Brendan O'Dea <bod@debian.org>  Sat, 23 Mar 2019 12:18:57 +1100
+
+help2man (1.47.9) unstable; urgency=medium
+
+  * Add Tamil translation (thanks to Arun Isaac).
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 18 Mar 2019 19:10:35 +1100
+
+help2man (1.47.8) unstable; urgency=medium
+
+  * Use $(DEB_VERSION) from pkg-info.mk [lintian].
+  * Fix git repository link in generated README.
+  * Update debian/copyright to machine readable format [lintian].
+  * Update standards version to 4.2.1 (no changes).
+
+ -- Brendan O'Dea <bod@debian.org>  Sat, 13 Oct 2018 15:16:45 +1100
+
+help2man (1.47.7) unstable; urgency=medium
+
+  * Remove trailing spaces from changelog [lintian].
+  * Update years in debian/copyright.
+  * Reference version-specific /usr/share/common-licenses/GPL-3 in
+    copyright rather than the unversioned GPL symlink [lintian].
+  * Add Swedish translation of info page (thanks to Sebastian Rasmussen).
+
+ -- Brendan O'Dea <bod@debian.org>  Sun, 23 Sep 2018 15:01:18 +1000
+
+help2man (1.47.6) unstable; urgency=medium
+
+  * Update to debhelper v11.
+  * Move repository to salsa.debian.org.
+  * Update Vcs-Git/Vcs-Browser.
+  * Update standards version to 4.1.3:
+    + update config.{guess,sub} at build time
+  * Add Brazilian Portuguese translation of info page (thanks to Rafael
+    Fontenelle).
+  * Update Hungarian translation (thanks to Balázs Úr).
+  * Update Brazilian Portuguese translation (thanks to Rafael Fontenelle).
+
+ -- Brendan O'Dea <bod@debian.org>  Wed, 28 Feb 2018 22:32:32 +1100
+
+help2man (1.47.5) unstable; urgency=medium
+
+  * Refresh Brazilian Portuguese translation from translation project copy
+    (trivial date change).
+  * Update Swedish translation (thanks to Sebastian Rasmussen).
+  * Use POSIX compliant TZ when setting UTC (thanks to Paul Eggert).
+  * Update copyright years.
+
+ -- Brendan O'Dea <bod@debian.org>  Sat, 23 Sep 2017 13:38:28 +1000
+
+help2man (1.47.4) unstable; urgency=medium
+
+  * Update Serbian translation (thanks to Мирослав Николић).
+  * Add Chinese (simplified) translation of info page (thanks to Mingye Wang).
+  * Update Brazilian Portuguese translation (thanks to Rafael Fontenelle).
+  * Reduce the minimum translation to 60% for info files.
+  * Extract version from dpkg-parsechangelog using the new flag, rather
+    than sed.
+  * Add hardening flags via DEB_BUILD_MAINT_OPTIONS.
+  * Use secure VCS URIs.
+  * Update standards version to 3.9.8.
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 09 May 2016 17:20:39 +1000
+
+help2man (1.47.3) unstable; urgency=medium
+
+  * Filter more untranslatable strings from help2man-texi.pot, and add a
+    note to translators about translation of cross-references.
+
+ -- Brendan O'Dea <bod@debian.org>  Wed, 18 Nov 2015 21:41:15 +1100
+
+help2man (1.47.2) unstable; urgency=medium
+
+  * Update Esperanto translation (thanks to Felipe Castro).
+  * Add Chinese (simplified) translation (thanks to Mingye Wang).
+
+ -- Brendan O'Dea <bod@debian.org>  Fri, 11 Sep 2015 21:25:08 +1000
+
+help2man (1.47.1) unstable; urgency=medium
+
+  * Set document language for localised info pages.
+  * Update German translations (thanks to Mario Blättermann).
+  * Update Ukranian translations (thanks to Yuri Chornoivan).
+  * Update French translations (thanks to David Prévot).
+  * Update Vietnamese translation (thanks to Trần Ngọc Quân).
+  * Update Norwegian Bokmaal translation (thanks to Johnny A. Solbu).
+  * Update Russian translation (thanks to Yuri Kozlov).
+  * Update Danish translation (thanks to Joe Hansen).
+  * Update Polish translations (thanks to Jakub Bogusz).
+  * Update Spanish translation and add translation of the info page
+    (thanks to Antonio Ceballos).
+  * Add support for reproducible builds by using $SOURCE_DATE_EPOCH as the
+    date for the generated pages (closes: #787444).
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 15 Jun 2015 23:06:35 +1000
+
+help2man (1.46.6) unstable; urgency=medium
+
+  * Add Danish translation (thanks to Joe Hansen).
+  * Update Finnish translation (thanks to Jorma Karvonen).
+
+ -- Brendan O'Dea <bod@debian.org>  Sun, 26 Apr 2015 13:52:49 +1000
+
+help2man (1.46.5) unstable; urgency=medium
+
+  * Fix a problem with LC_ALL being imported twice with different
+    prototypes from POSIX and Locale::gettext (thanks to Gavin Smith for
+    the report).
+  * Update copyright years.
+
+ -- Brendan O'Dea <bod@debian.org>  Sat, 31 Jan 2015 00:34:50 +1100
+
+help2man (1.46.4) unstable; urgency=medium
+
+  * Include architecture.mk and buildflags.mk into rules to replace the
+    multiple calls to dpkg-architecture and to pick up the correct
+    hardening flags.
+  * Add $(LDFLAGS) when building preload to pick up -z relro (see
+    https://wiki.debian.org/Hardening).
+  * Minor correction to Norwegian Bokmaal translation.
+  * Minor correction to Brazilian Portuguese translation.
+  * Escape dashes in --name flag for groff (see lintian tag:
+    hyphen-used-as-minus-sign).
+  * Fix example using AM_MISSING_PROG in documentation: this macro no
+    longer requires the third argument.
+
+ -- Brendan O'Dea <bod@debian.org>  Fri, 10 Oct 2014 09:08:17 +1100
+
+help2man (1.46.3) unstable; urgency=medium
+
+  * Update Serbian translation (thanks to Мирослав Николић).
+  * Add Spanish translation (thanks to Antonio Ceballos).
+
+ -- Brendan O'Dea <bod@debian.org>  Sun, 21 Sep 2014 19:01:16 +1000
+
+help2man (1.46.2) unstable; urgency=medium
+
+  * Update French translation, and add translation of info page (thanks to
+    David Prévot).
+
+ -- Brendan O'Dea <bod@debian.org>  Sat, 06 Sep 2014 14:17:45 +1000
+
+help2man (1.46.1) unstable; urgency=medium
+
+  * Apply texinfo patch from Mario Blätterman.
+  * Rename aclocal macros with LOCAL_ prefix.
+  * Include "missing" program from automake in distribution.
+  * Add LOCAL_PROG_OR_MISSING macro.
+  * Add German translation of info page (thanks to Mario Blätterman).
+  * Change reference to standards to avoid spurious comma.
+  * Merge updates into texinfo translations.
+  * Update German translation (thanks to Mario Blättermann).
+  * Update Brazilian Portuguese translation (thanks to Rafael Ferreira).
+  * Update Vietnamese translation (thanks to Trần Ngọc Quân).
+  * Update Ukranian translation, and add translation of info page (thanks
+    to Yuri Chornoivan).
+  * Update Esperanto translation (thanks to Felipe Castro).
+  * Update French translation (thanks to David Prévot).
+  * Update Russian translation (thanks to Yuri Kozlov).
+  * Add Hungarian translation (thanks to Balázs Úr).
+  * Update Polish translation, and add translation of info page (thanks to
+    Jakub Bogusz).
+  * Move automake helper scripts into a build-aux sub-directory.
+  * Add a helper script to locate files in $VPATH.
+  * Add helper scripts to clean up texinfo translations:
+    + fixup-tex-pot: remove entries from template which should not be
+        translated.
+    + fixup-texi-trans: add the correct path for install-info and correct the
+        alignment of the main menu.
+  * Add Norwegian Bokmaal translation (thanks to Johnny A. Solbu).
+
+ -- Brendan O'Dea <bod@debian.org>  Sat, 26 Jul 2014 23:25:48 +1000
+
+help2man (1.45.1) unstable; urgency=low
+
+  * Skip additional blank lines following sections, and provide an
+    explicit method of adding sections (thanks to Mischa Williamson).
+  * Improve handling of tagged paragraphs when the body is on a following
+    line (thanks to Brian Campbell).
+  * Add escapes to adjust spacing of italic text at roman/italic
+    boundaries (thanks to Bjarni Ingi Gislason, closes: #742289)
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 24 Mar 2014 21:45:24 +1100
+
+help2man (1.44.1) unstable; urgency=low
+
+  * Perform shell word splitting on option lines in include files.
+  * Update Serbian translation (thanks to Мирослав Николић).
+  * Update German translation (thanks to Mario Blättermann).
+  * Update copyright years.
+  * Change distribution filename in README to help2man-VERSION.tar.xz
+  * Fix gitweb URL in README.
+
+ -- Brendan O'Dea <bod@debian.org>  Sun, 02 Feb 2014 15:07:59 +1100
+
+help2man (1.43.3) unstable; urgency=low
+
+  * Update Ukranian translation (thanks to Yuri Chornoivan).
+  * Update Esperanto translation (thanks to Felipe Castro).
+  * Update Polish translation (thanks to Jakub Bogusz).
+  * Update Russian translation (thanks to Yuri Kozlov).
+  * Update Japanese translation (thanks to Yasumichi Akahoshi).
+  * Update Vietnamese translation (thanks to Trần Ngọc Quân).
+  * Update French translation (thanks to David Prévot).
+
+ -- Brendan O'Dea <bod@debian.org>  Sat, 08 Jun 2013 22:31:52 +1000
+
+help2man (1.43.2) unstable; urgency=low
+
+  * Use the generic term "section" in the documentation rather than "name",
+    which could be confused to mean only the literal "NAME" section.
+
+ -- Brendan O'Dea <bod@debian.org>  Thu, 06 Jun 2013 07:13:29 +1000
+
+help2man (1.43.1) unstable; urgency=low
+
+  * Add explicit include syntax for prepending, replacing or appending to
+    generated output for a section (thanks to Daniil Baturin for the idea).
+  * Update Vietnamese translation (thanks to Trần Ngọc Quân).
+  * Update Esperanto translation (thanks to Felipe Castro).
+
+ -- Brendan O'Dea <bod@debian.org>  Tue, 04 Jun 2013 22:22:39 +1000
+
+help2man (1.42.1) unstable; urgency=low
+
+  * Update Vietnamese translation (thanks to Trần Ngọc Quân).
+  * Update Croatian translation (thanks to Tomislav Krznar).
+  * Consistently strip path and/or libtool "lt-" prefix from any instance
+    of $program derived from --help or --version (thanks to Eric Shattow
+    for identifying the issue).
+
+ -- Brendan O'Dea <bod@debian.org>  Tue, 28 May 2013 21:49:20 +1000
+
+help2man (1.41.2) unstable; urgency=low
+
+  * Update Vietnamese translation (thanks to Trần Ngọc Quân).
+  * Update Croatian translation (thanks to Tomislav Krznar).
+  * Update Brazilian Portuguese translation (thanks to Rodolfo Ribeiro
+    Gomes).
+
+ -- Brendan O'Dea <bod@debian.org>  Sun, 14 Apr 2013 07:05:43 +1000
+
+help2man (1.41.1) unstable; urgency=low
+
+  * Rename configure.in to .ac, and revise use of AC_INIT/AC_OUTPUT macros
+    to meet current autoconf guidelines.
+  * Add copyright headers to supporting files (GNU All-Permissive License).
+  * Fix section name comparisons ($sect is localised).
+  * Set filenames in italics (as suggested by Yann Soubeyrand).
+  * Suppress option/filename handling in EXAMPLES section.
+
+ -- Brendan O'Dea <bod@debian.org>  Sun, 30 Dec 2012 12:24:33 +1100
+
+help2man (1.40.13) unstable; urgency=low
+
+  * Add "Multi-Arch: foreign" control field to permit any installable
+    architecture to satisfy a build dependency when cross-building
+    packages (closes: #694586).
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 03 Dec 2012 23:01:36 +1100
+
+help2man (1.40.12) unstable; urgency=low
+
+  * Update Croatian translation (thanks to Tomislav Krznar).
+  * Fix updating of help2man.pot to occur only when help2man.PL is
+    changed, not help2man generated.
+
+ -- Brendan O'Dea <bod@debian.org>  Thu, 23 Aug 2012 11:43:05 +1000
+
+help2man (1.40.11) unstable; urgency=low
+
+  * Add Croatian translation (thanks to Tomislav Krznar).
+
+ -- Brendan O'Dea <bod@debian.org>  Sat, 28 Jul 2012 19:29:43 +1000
+
+help2man (1.40.10) unstable; urgency=low
+
+  * Update Greek translation (thanks to Savvas Radevic).
+  * Update Serbian translation (thanks to Мирослав Николић).
+  * Update German translation (thanks to Arun Persaud).
+
+ -- Brendan O'Dea <bod@debian.org>  Sat, 12 May 2012 13:54:58 +1000
+
+help2man (1.40.9) unstable; urgency=low
+
+  * Update Japanese translation (thanks to Yasumichi Akahoshi).
+  * Update Esperanto translation (thanks to Felipe Castro).
+  * Update Vietnamese translation (thanks to Trần Ngọc Quân).
+  * Update German translation (thanks to Chris Leick, closes: #669564).
+
+ -- Brendan O'Dea <bod@debian.org>  Fri, 20 Apr 2012 21:35:43 +1000
+
+help2man (1.40.8) unstable; urgency=low
+
+  * Update French translation (thanks to David Prévot).
+  * Update Italian translation (thanks to Sergio Zanchetta).
+  * Update Polish translation (thanks to Jakub Bogusz).
+  * Update Russian translation (thanks to Yuri Kozlov).
+  * Update Ukranian translation (thanks to Yuri Chornoivan).
+  * Modify self-extracting scripts to output to a temporary file.
+  * Ensure that help2man exists before building manual pages (as reported
+    by Richard Maw).
+
+ -- Brendan O'Dea <bod@debian.org>  Sun, 08 Apr 2012 23:10:20 +1000
+
+help2man (1.40.7) unstable; urgency=low
+
+  * Update Greek translation (thanks to Savvas Radevic).
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 19 Mar 2012 21:28:41 +1100
+
+help2man (1.40.6) unstable; urgency=low
+
+  * Update years in debian/copyright.
+  * Fix FSF address in comments (thanks to Paul Eggert).
+
+ -- Brendan O'Dea <bod@debian.org>  Sun, 12 Feb 2012 22:39:25 +1100
+
+help2man (1.40.5) unstable; urgency=low
+
+  * Clean up some lintian warnings: build-targets, source format and
+    standards version.
+  * Add Serbian translation (thanks to Miroslav Nikolic).
+  * Fix trivial translation changes due to additional copyright year.
+  * Minor fix to Italian translation.
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 02 Jan 2012 20:50:50 +1100
+
+help2man (1.40.4) unstable; urgency=low
+
+  * Update Brazilian Portuguese translation (thanks to Rodolfo Ribeiro
+    Gomes).
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 20 Jun 2011 11:29:04 +1000
+
+help2man (1.40.3) unstable; urgency=low
+
+  * Update Esperanto translation (thanks to Felipe Castro).
+  * Update links to git repository.
+
+ -- Brendan O'Dea <bod@debian.org>  Tue, 14 Jun 2011 10:08:53 +1000
+
+help2man (1.40.2) unstable; urgency=low
+
+  * Remove a superfluous period from texinfo doc.
+  * Change footnote about supported languages to a simple paragraph.
+  * Update Italian translation (thanks to Sergio Zanchetta).
+  * Update Ukrainian translation (thanks to Yuri Chornoivan).
+  * Update French translation (thanks to David Prévot).
+  * Update Japanese translation (thanks to Yasumichi Akahoshi).
+  * Update Russian translation (thanks to Yuri Kozlov).
+  * Update Polish translation (thanks to Jakub Bogusz).
+
+ -- Brendan O'Dea <bod@debian.org>  Wed, 01 Jun 2011 08:04:45 +1000
+
+help2man (1.40.1) unstable; urgency=low
+
+  * Update texinfo docs with recommendations kindly provided by Karl
+    Berry.
+  * Document --libtool option.
+  * Fixup references to GNU Standards.
+  * Allow date format to be localised (thanks to Yasumichi Akahoshi).
+  * Add Japanese translation (thanks to Yasumichi Akahoshi).
+
+ -- Brendan O'Dea <bod@debian.org>  Sun, 29 May 2011 11:31:14 +1000
+
+help2man (1.39.4) unstable; urgency=low
+
+  * Update Italian translation (thanks to Sergio Zanchetta).
+
+ -- Brendan O'Dea <bod@debian.org>  Wed, 11 May 2011 22:58:55 +1000
+
+help2man (1.39.3) unstable; urgency=low
+
+  * Update French translation (thanks to David Prévot, closes: #620250).
+  * Update the "Localised man pages" section of the Texinfo docs and note that
+    translations are now handled through the Translation Project.
+  * Update German translation (thanks to Chris Leick, closes: #624401).
+  * Minor update to German translation as suggested by Werner Lemberg in
+    http://sourceforge.net/mailarchive/message.php?msg_id=26828512
+
+ -- Brendan O'Dea <bod@debian.org>  Sun, 01 May 2011 10:35:38 +1000
+
+help2man (1.39.2) unstable; urgency=low
+
+  * Update Russian translation (thanks to Yuri Kozlov).
+  * Update Ukranian translation (thanks to Yuri Chornoivan).
+  * Update Polish translation (thanks to Jakub Bogusz).
+  * Add Esperanto translation (thanks to Felipe Castro).
+  * Update Finnish translation (thanks to Tommi Vainikainen).
+
+ -- Brendan O'Dea <bod@debian.org>  Tue, 08 Mar 2011 22:33:01 +1100
+
+help2man (1.39.1) unstable; urgency=low
+
+  * Add option to remove `lt-' prefix for libtool programs (thanks to
+    Ben Asselstine).
+  * Add Ukranian translation (thanks to Yuri Chornoivan).
+  * Update Russian translation (thanks to Yuri Kozlov).
+  * Update Polish translation (thanks to Jakub Bogusz).
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 28 Feb 2011 11:15:44 +1100
+
+help2man (1.38.4) unstable; urgency=low
+
+  * Add Italian translation (thanks to Sergio Zanchetta).
+  * Don't double encode $date in the header.
+  * Use UTF-8 encoding for all manual pages.
+  * Add Greek translation (thanks to Michael Kotsarinis).
+  * Update French translation (thanks to David Prévot, closes: #590580).
+  * Update German translation (thanks to Helge Kreutzmann, closes: #590975).
+  * Use INSTALL_SCRIPT to install Perl script.
+  * Remove deprecated DH_COMPAT in debian/rules, adding debian/compat.
+  * Add ${misc:Depends}.
+  * Don't ignore errors from distclean.
+  * Fix Brazilian, Russian and Italian translations (placement of period was
+    causing text to be interpreted as a macro).
+  * Update standards version to 3.9.1.
+  * Add missing dependency on dpkg/install-info.
+  * Strip bindtextdomain.so preload.
+  * Install preload into $(libdir)/help2man.
+
+ -- Brendan O'Dea <bod@debian.org>  Tue, 28 Dec 2010 15:43:36 +1100
+
+help2man (1.38.3) unstable; urgency=low
+
+  * Apply patch from Mike Frysinger to allow "make install -j" to work.
+
+ -- Brendan O'Dea <bod@debian.org>  Sun, 04 Jul 2010 12:17:17 +1000
+
+help2man (1.38.2) unstable; urgency=low
+
+  * Update Finnish translation (thanks to Tommi Vainikainen).
+  * Add Russian translation (thanks to Yuri Kozlov).
+
+ -- Brendan O'Dea <bod@debian.org>  Tue, 27 Apr 2010 19:00:04 +1000
+
+help2man (1.38.1) unstable; urgency=low
+
+  * Add support for ENVIRONMENT and FILES sections (Sven Utcke).
+  * Ensure THANKS file includes translators.
+  * Fix handling of translated --no-discard-stderr instruction.
+  * Move tranlsated .h2m contents into .po files.
+  * Update Polish translation (thanks to Jakub Bogusz).
+  * Add Vietnamese translation (thanks to Clytie Siddall).
+  * Add some comments for translators.
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 26 Apr 2010 15:59:32 +1000
+
+help2man (1.37.1) unstable; urgency=low
+
+  * Fix typo in comment (Paul Eggert).
+  * Move cvs repository to git.
+  * Remove extraneous whitespace from debian/rules.
+  * Sanity check that version in help2man.PL matches debian/changelog.
+  * Handle automake directory with explicit version number.
+  * Integrate NMU, thanks Stefano.
+  * Add @datarootdir@ used by new autoconf.
+  * Add --no-discard-stderr option, suggest use if no stdout (closes: #138752).
+  * Add VCS fields to debian/control.
+  * Update copyright years.
+  * Anchor [section] and /pattern/ matches for include files so that
+    pathnames are not matched by the latter (Reuben Thomas).
+  * Add line breaks into bug reporting section (Jim Meyering).
+  * Clarify that the section output order contains optional items (Rueben).
+  * Match "Report <prog> bugs to ..." (Jim).
+  * Add Brazilian Portuguese translation (Rodolfo Ribeiro Gomes).
+  * Add German translation (Chris Leick, closes: #547154).
+  * Remove addition of default territory to locale (closes: #336298).
+  * Set locale via argument embedded in .h2m files.
+  * Select a reasonable configure default for --enable-nls.
+  * Parse program output and include files in the chartset given by --locale.
+  * Conditionally include gettext support at extraction, rather than run-time.
+  * Revise preload mechanism to not require preloadable libintl.
+  * Document recommended suffixes for --include files (Simon Josefsson).
+
+ -- Brendan O'Dea <bod@debian.org>  Wed, 09 Dec 2009 08:35:45 +1100
+
+help2man (1.36.4+nmu1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Bump debhelper compatibility level to 5 (4 is deprecated now), move
+    the setting to debian/compat
+  * Add missing dependency on ${shlibs:Depends}, neede by the .so file
+    shipped by help2man
+  * Add --version-string option to support programs which are missing some
+    sort of --version option. Thanks to Lionel Elie Mamane for the patch.
+    (Closes: #494739)
+
+ -- Stefano Zacchiroli <zack@debian.org>  Fri, 17 Apr 2009 12:35:34 +0200
+
+help2man (1.36.4) unstable; urgency=low
+
+  * Add sv translation from Daniel Nylander (closes: #349568).
+
+ -- Brendan O'Dea <bod@debian.org>  Tue, 28 Feb 2006 00:42:19 +1100
+
+help2man (1.36.3) unstable; urgency=low
+
+  * Updated fr translation from Denis Barbier (closes: #338995).
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 14 Nov 2005 22:57:23 +1100
+
+help2man (1.36.2) unstable; urgency=low
+
+  * Updated po translation from Jakub Bogusz.
+  * Makefile.in: $(srcdir) fix from Paul Eggert (closes: #335741).
+
+ -- Brendan O'Dea <bod@debian.org>  Sat, 29 Oct 2005 16:46:16 +1000
+
+help2man (1.36.1) unstable; urgency=low
+
+  * Add default territory to --locale option.
+  * Add Finnish translations (thanks to Tommi Vainikainen,
+    closes #332444).
+  * Correctly update .pot and .po files (thanks to Thomas Huriaux,
+    closes: #331678).
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 17 Oct 2005 01:38:59 +1000
+
+help2man (1.35.2) unstable; urgency=low
+
+  * help2man.texi: spelling corrections (closes: #328671).
+  * debian/rules: configure --host on cross build (closes: #284701).
+  * debian/rules: set DH_COMPAT to 4.
+
+ -- Brendan O'Dea <bod@debian.org>  Tue,  4 Oct 2005 22:14:26 +1000
+
+help2man (1.35.1) unstable; urgency=low
+
+  * Set program name to the first word of NAME paragraph in --include
+    file if given.
+
+ -- Brendan O'Dea <bod@debian.org>  Thu, 25 Nov 2004 21:06:58 +1100
+
+help2man (1.34.2) unstable; urgency=low
+
+  * Update Polish translation (thanks to Jakub Bogusz).
+
+ -- Brendan O'Dea <bod@debian.org>  Wed, 24 Nov 2004 00:28:29 +1100
+
+help2man (1.34.1) unstable; urgency=low
+
+  * Escape all unescaped hyphens in output (closes: #263803).
+  * Convert parenthesised options, eg (-F).
+  * info section in SEE ALSO should use $program rather than $info_page
+    when referring to the program (thanks to Jim Mayering).
+
+ -- Brendan O'Dea <bod@debian.org>  Sat, 20 Nov 2004 09:54:13 +1100
+
+help2man (1.33.1) unstable; urgency=low
+
+  * Allow "Usage" to be localised.
+  * Add Polish translations (thanks to Jakub Bogusz).
+  * Add --enable-nls/--disable-nls configure option.
+  * Add back gettext and libgettext-perl build-depends (for configure).
+  * Check for Locale::gettext, gettext and usability of
+    preloadable_libintl.so.
+
+ -- Brendan O'Dea <bod@debian.org>  Fri, 18 Jul 2003 00:14:25 +1000
+
+help2man (1.32.2) unstable; urgency=low
+
+  * Build preload with -fPIC.  Closes: #200632.
+
+ -- Brendan O'Dea <bod@debian.org>  Thu, 10 Jul 2003 07:57:56 +1000
+
+help2man (1.32.1) unstable; urgency=low
+
+  * Set times on generated help2man so pages don't need to be
+    regenerated.  Remove some associated build-deps.
+
+ -- Brendan O'Dea <bod@debian.org>  Thu, 10 Jul 2003 00:13:42 +1000
+
+help2man (1.31.2) unstable; urgency=low
+
+  * Fix quoting in generation of README file.
+  * Changed to arch=any due to inclusion of the LD_PRELOAD library.
+
+ -- Brendan O'Dea <bod@debian.org>  Wed,  9 Jul 2003 22:59:28 +1000
+
+help2man (1.31.1) unstable; urgency=low
+
+  * Oops, might help to actually *install* the message catalog.
+  * Check for errors writing output (suggested by Jim Meyering).
+  * Work around an odd regex bug under perl 5.6+ where /^ {0}(\S.*)\n/
+    doesn't match correctly.
+
+ -- Brendan O'Dea <bod@debian.org>  Wed,  9 Jul 2003 20:20:02 +1000
+
+help2man (1.30.1) unstable; urgency=low
+
+  * Add support for localised manual pages (closes #183671).  Many
+    thanks to Denis Barbier for patches, advice and French
+    translations.
+
+  * Import RCS files to CVS.
+  * Convert to native Debian package.
+
+ -- Brendan O'Dea <bod@debian.org>  Tue,  8 Jul 2003 23:57:44 +1000
+
+Sat Sep  7 02:13:05 2002  Brendan O'Dea  <bod@debian.org>
+
+	* help2man.texi: Change @dircategory to "GNU programming support"
+	  (Karl Berry). Change @setchapternewpage to "on" (Peter Moulder).
+
+	* Makefile.in: Added some more GNU standard targets (Peter
+	  Moulder).
+
+	* Makefile.in, help2man.h2m: Rename help2man.aux to .h2m to avoid
+	  clashing with tex.
+
+	* help2man.PL: version bump
+
+Tue Jun  4 00:53:18 2002  Brendan O'Dea  <bod@debian.org>
+
+	* help2man.PL: Expand copyright years (Paul Eggert).  Provide
+	  --info-page option (Bonzini).
+
+	* README.sh: hrm, different awk...
+
+Tue Mar 19 23:52:37 2002  Brendan O'Dea  <bod@debian.org>
+
+	* help2man.PL: Allow short and long options to be separated by
+	  multiple spaces (Paul Eggert).
+
+Sat Mar  9 23:54:01 2002  Brendan O'Dea  <bod@debian.org>
+
+	* help2man.PL: version bump for doc changes
+	* help2man.texi: Add --help recommendations from Karl Berry (& co.)
+
+Mon Dec  3 19:02:26 2001  Brendan O'Dea  <bod@debian.org>
+
+	* README.sh: Change email address
+	* configure.in: Require perl 5.005
+	* help2man.PL, help2man.texi: Add --source, --manual, --help-option
+	  and --version-option; change email address; update copyright
+
+Fri Dec 22 23:17:11 2000  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Process options given in the block before the first
+	  section of an include file (suggested by Akim Demaille).
+
+	* help2man.aux: Document option parsing of initial include file
+	  segment.
+
+	* help2man.texi: Use @pxref rather than @xref (Karl Berry).
+	  Document option parsing of initial include file segment.
+
+Tue Oct 31 17:07:30 2000  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Add protection for leading apostrophes (reported by
+	  Matt Kraai). Don't zero-pad version.
+
+Fri Jul  7 16:16:18 2000  Brendan O'Dea  <bod@compusol.com.au>
+
+	* README.sh: Add GNU prefix
+	* aclocal.m4: (add) autoconf support
+	* configure.in: Use AC_PROG_PERL from aclocal.m4 to find perl
+	  (checks for perl and perl5)
+
+	* help2man.PL: Add GNU prefix, bug reporting address
+	* help2man.aux: Remove ozemail URL
+	* help2man.texi: Add GNU prefix, bug reporting address. Remove
+	  ozemail URL
+
+Sun Apr 16 00:18:41 2000  Brendan O'Dea  <bod@compusol.com.au>
+
+	* Makefile.in: Add mkinstalldirs (as reqested by Dave Morrison,
+	  Patrick Tullmann and Mo DeJong)
+
+	* help2man.PL: Version bump
+
+Thu Dec 30 01:29:12 1999  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.texi: Correct typo
+
+Thu Nov 11 03:16:25 1999  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Remove directories from synopsis
+
+Wed Nov  3 17:39:50 1999  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Revise tagged paragraph matching *again*
+
+Mon Nov  1 21:50:36 1999  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Allow multiple synopsis entries (w/- `or:'). Single
+	  options may have argument w/- `='.
+
+	* help2man.texi: Add /pattern/
+	* configure.in: Add MAKEINFO/INSTALL_INFO
+	* Makefile.in: Install help2man.info
+
+Wed Oct 27 16:02:00 1999  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Allow --include to be specified multiple times. Add
+	  /pattern/.
+
+	* help2man.aux: Document /pattern/ syntax
+
+Mon Oct 25 22:36:16 1999  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Fix odd /^x|^y/ pre-5.005 perl bug. Split tagged
+	  paragraph logic into option/other. Protect leading periods in
+	  continuation lines.
+
+	* THANKS to Roland Huebner for extensive bug report.
+	* Add NEWS file
+
+Tue Oct 12 16:25:23 1999  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Protect leading dots (1.14: not released)
+
+	* README.sh, help2man.aux: Add ftp.gnu.org URL
+	* help2man.PL: Allow fixed-pitch examples where prefixed by $,
+	  % or > (for Akim)
+
+Thu Sep  2 19:43:02 1999  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Fix typo in --help (Jim Meyering)
+	  Escape backslashes (Andreas Schwab/Peter Moulder)
+
+	* help2man.texi: (add) Texinfo docs for help2man
+
+Thu Jun 24 12:17:50 1999  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Add --section option (from Okuji Yoshinori). Fixes
+	  to option handling and inter-paragraph breaks.
+
+Thu Jun 17 19:45:08 1999  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Defer option formatting until after paragraph
+	  continuation handling
+
+	* Makefile.in, configure.in: (add) autoconf support
+        * configure, makefile.dist: (remove) autoconf support
+	* README.in: Rename to README.sh (so as not to be confused with
+	  autoconf files)
+
+Wed Mar 24 21:47:18 1999  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Improved tagged paragraph/continuation handling
+
+Thu Feb 25 15:58:30 1999  Brendan O'Dea  <bod@compusol.com.au>
+
+	* README.in, help2man.aux: Add URL for distribution
+	* help2man.PL: Increment revision (changes to help2man.aux)
+
+Thu Jan 21 14:46:48 1999  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Update copyright
+	* makefile.dist: Add help2man.1 to `all' target
+
+Mon Jan 11 10:42:04 1999  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Handle version output with `Free' as well as `GNU'.
+	  Missing backslash in initial comment (from Andreas Schwab)
+
+Thu Dec 10 12:50:10 1998  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Experimental NLS version on main trunk (1.6-1.8)
+	  pruned, rejoined branch 1.5.1.4 as 1.6
+
+	  Cleaned up version format and removed François' name from
+	  the code (at his suggestion).
+
+	* README.in: (add) Description for help2man
+	* configure: (add) Dodgy configure script for help2man
+	* help2man.aux: (add) Include file for help2man man page
+	* makefile.dist: (add) Dodgy makefile for help2man
+
+Wed Nov 25 11:31:09 1998  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Join hyphenated lines in --version output
+
+Tue Oct 20 20:44:46 1998  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Fix strftime locale (from Akim Demaille), add
+	  --no-info option
+
+Tue Oct  6 10:05:20 1998  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Remove --manhelp/oneliner mechanism
+
+Sat Aug 29 04:50:02 1998  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Add --include/--opt-include options and Clark
+	  Morgan's --manhelp/oneliner parsing. Merged changes from Karl
+	  Berry.
+
+Thu Feb 26 10:38:34 1998  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Fix synopsis and revert `use version' to `require
+	  version' as perl5.003 doesn't grok the former
+
+Mon Feb 23 11:54:13 1998  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Add --output
+
+Fri Feb 20 15:14:22 1998  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Made self-extracting .PL for portability; Some
+	  enhancements to work with a2ps for Akim
+
+Thu Feb 19 10:16:58 1998  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: Fix DESCRIPTION mis-spell (from Akim Demaille)
+
+Thu Jan 22 16:53:32 1998  Brendan O'Dea  <bod@compusol.com.au>
+
+	* help2man.PL: (add) Generate man page from a program's --version
+	  and --help output

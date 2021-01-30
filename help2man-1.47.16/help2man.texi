@@ -1,0 +1,603 @@
+\input texinfo @c -*-texinfo-*-
+@setfilename help2man.info
+@settitle @command{help2man} Reference Manual
+@finalout
+
+@documentencoding UTF-8
+
+@dircategory Software development
+@direntry
+* help2man: (help2man).      Automatic manual page generation.
+@end direntry
+
+@copying
+This file documents the GNU @command{help2man} command which produces
+simple manual pages from the @samp{--help} and @samp{--version} output
+of other commands.
+
+Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2009, 2010, 2011, 2012,
+2013, 2014, 2015, 2020 Free Software Foundation, Inc.
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+@ignore
+Permission is granted to process this file through TeX and print the
+results, provided the printed document carries copying permission
+notice identical to this one except for the removal of this paragraph
+(this paragraph not being relevant to the printed manual).
+
+@end ignore
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be stated in a translation approved
+by the Foundation.
+@end copying
+
+@titlepage
+@title help2man
+@subtitle A utility for generating simple manual pages
+@author Brendan O'Dea @email{bod@@debian.org}
+
+@page
+@vskip 0pt plus 1filll
+Copyright @copyright{} 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2009, 2010,
+2011, 2012, 2013, 2014, 2015, 2020 Free Software Foundation, Inc.
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be stated in a translation approved
+by the Foundation.
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top
+@top @command{help2man}
+
+@command{help2man} produces simple manual pages from the @samp{--help}
+and @samp{--version} output of other commands.
+
+@menu
+* Overview::                    Overview of @command{help2man}.
+* Invoking help2man::           How to run @command{help2man}.
+* --help recommendations::      Recommended formatting for --help output.
+* Including text::              Including additional text in the output.
+* Makefile usage::              Using @command{help2man} with @command{make}.
+* Localised man pages::         Producing native language manual pages.
+* Example::                     Example @command{help2man} output.
+* Reports::                     Reporting bugs or suggestions.
+* Availability::                Obtaining @command{help2man}.
+@end menu
+@end ifnottex
+
+@node Overview
+@chapter Overview of @command{help2man}
+
+@command{help2man} is a tool for automatically generating simple
+manual pages from program output.
+
+Although manual pages are optional for GNU programs other projects,
+such as Debian require them (@pxref{Man Pages, , , standards, GNU
+Coding Standards})
+
+This program is intended to provide an easy way for software authors
+to include a manual page in their distribution without having to
+maintain that document.
+
+Given a program which produces reasonably standard @samp{--help} and
+@samp{--version} outputs, @command{help2man} can re-arrange that
+output into something which resembles a manual page.
+
+@node Invoking help2man
+@chapter How to Run @command{help2man}
+
+The format for running the @command{help2man} program is:
+
+@example
+@command{help2man} [@var{option}]@dots{} @var{executable}
+@end example
+
+@command{help2man} supports the following options:
+
+@table @samp
+@item -n @var{string}
+@itemx --name=@var{string}
+Use @var{string} as the description for the @samp{NAME} paragraph of
+the manual page.
+
+By default (for want of anything better) this paragraph contains
+@samp{manual page for @var{program} @var{version}}.
+
+This option overrides an include file @samp{[name]} section
+(@pxref{Including text}).
+
+@item -s @var{section}
+@itemx --section @var{section}
+Use @var{section} as the section for the man page.  The default
+section is 1.
+
+@item -m @var{manual}
+@itemx --manual=@var{manual}
+Set the name of the manual section to @var{section}, used as a centred
+heading for the manual page.  By default @samp{User Commands} is used
+for pages in section 1, @samp{Games} for section 6 and @samp{System
+Administration Utilities} for sections 8 and 1M.
+
+@item -S @var{source}
+@itemx --source=@var{source}
+The program source is used as a page footer, and often contains the name
+of the organisation or a suite of which the program is part.  By default
+the value is the package name and version.
+
+@item -L @var{locale}
+@itemx --locale=@var{locale}
+Select output locale (default @samp{C}).  Both the program and
+@command{help2man} must support the given @var{locale}
+(@pxref{Localised man pages}).
+
+@item -i @var{file}
+@itemx --include=@var{file}
+Include material from @var{file} (@pxref{Including text}).
+
+@item -I @var{file}
+@itemx --opt-include=@var{file}
+A variant of @samp{--include} for use in Makefile pattern rules which
+does not require @var{file} to exist.
+
+@item -o @var{file}
+@itemx --output=@var{file}
+Send output to @var{file} rather than @code{stdout}.
+
+@item -p @var{text}
+@itemx --info-page=@var{text}
+Name of Texinfo manual.
+
+@item -N
+@itemx --no-info
+Suppress inclusion of a @samp{SEE ALSO} paragraph directing the reader
+to the Texinfo documentation.
+
+@item -l
+@itemx --libtool
+Drop @file{lt-} prefix from instances of the program name in the
+synopsis (@command{libtool} creates wrapper scripts in the build
+directory which invoke @command{foo} as @command{.libs/lt-foo}).
+
+@item --help
+@itemx --version
+Show help or version information.
+@end table
+
+By default @command{help2man} passes the standard @samp{--help} and
+@samp{--version} options to the executable although alternatives may
+be specified using:
+
+@table @samp
+@item -h @var{option}
+@itemx --help-option=@var{option}
+Help option string.
+
+@item -v @var{option}
+@itemx --version-option=@var{option}
+Version option string.
+
+@item --version-string=@var{string}
+Version string.
+
+@item --no-discard-stderr
+Include stderr when parsing option output.
+@end table
+
+@node --help recommendations
+@chapter @option{--help} Recommendations
+
+Here are some recommendations for what to include in your
+@option{--help} output.  Including these gives @command{help2man} the
+best chance at generating a respectable man page, as well as
+benefitting users directly.
+
+See @ref{Command-Line Interfaces, , , standards, GNU Coding Standards}
+and @ref{Man Pages, , , standards, GNU Coding Standards}, for the
+official GNU standards relating to @option{--help} and man pages.
+
+@itemize @bullet
+@item
+A synopsis of how to invoke the program.  If different usages of the
+program have different invocations, then list them all.  For example
+(edited for brevity):
+
+@smallexample
+Usage: cp [OPTION]... SOURCE DEST
+  or:  cp [OPTION]... SOURCE... DIRECTORY
+@dots{}
+@end smallexample
+
+Use @code{argv[0]} for the program name in these synopses, just as it
+is, with no directory stripping.  This is in contrast to the canonical
+(constant) name of the program which is used in @option{--version}.
+
+@item
+A very brief explanation of what the program does, including default
+and/or typical behaviour.  For example, here is @command{cp}'s:
+
+@example
+Copy SOURCE to DEST, or multiple SOURCE(s) to DIRECTORY.
+@end example
+
+@item
+A list of options, indented to column 2.  If the program supports
+one-character options, put those first, then the equivalent long option
+(if any).  If the option takes an argument, include that too, giving it
+a meaningful name.  Align the descriptions in a convenient column, if
+desired.  Note that to be correctly recognised by @command{help2man}
+the description must be separated from the options by at least two
+spaces and descriptions continued on subsequent lines must start at
+the same column.
+
+Here again is an (edited) excerpt from @command{cp}, showing a short
+option with an equivalent long option, a long option only, and a short
+option only:
+
+@smallexample
+  -a, --archive                same as -dpR
+      --backup[=CONTROL]       make a backup of each ...
+  -b                           like --backup but ...
+@end smallexample
+
+For programs that take many options, it may be desirable to split the
+option list into sections such as @samp{Global}, @samp{Output control}, or
+whatever makes sense in the particular case.  It is usually best to
+alphabetise (by short option name first, then long) within each section,
+or the entire list if there are no sections.
+
+@item
+Any useful additional information about program behaviour, such as
+influential environment variables, further explanation of options, etc.
+For example, @command{cp} discusses @env{VERSION_CONTROL} and sparse
+files.
+
+@item
+A few examples of typical usage, at your discretion.  One good example
+is usually worth a thousand words of description, so this is
+highly recommended.
+
+@item
+@cindex address for bug reports
+@cindex bug reports
+In closing, a line stating how to email bug reports.  Typically,
+@var{mailing-address} will be @samp{bug-@var{program}@@gnu.org}; please
+use this form for GNU programs whenever possible.  It's also good to
+mention the home page of the program, other mailing lists, etc.
+
+@end itemize
+
+The @code{argp} and @code{popt} programming interfaces let you specify
+option descriptions for @option{--help} in the same structure as the
+rest of the option definition; you may wish to consider using these
+routines for option parsing instead of @code{getopt}.
+
+By default @command{help2man} has some heuristics for identifying
+manual page sections: a line consisting of @samp{Options:} for example
+will cause the following text to appear in the @code{OPTIONS} section,
+and a line beginning with @samp{Copyright} will appear in the
+@code{COPYRIGHT} section.  Outside of these heuristics, a line
+consisting of @samp{*Words*} will start a new section, and
+@samp{Words:} a new sub-section.
+
+@node Including text
+@chapter Including Additional Text in the Output
+
+Additional static text may be included in the generated manual page by
+using the @samp{--include} and @samp{--opt-include} options
+(@pxref{Invoking help2man}).  While these files can be named anything,
+for consistency we suggest to use the extension @code{.h2m} for
+@command{help2man} include files.
+
+The format for files included with these option is simple:
+
+@example
+[section]
+text
+
+/pattern/
+text
+@end example
+
+Blocks of verbatim *roff text are inserted into the output either at
+the start of the given @samp{[section]} (case insensitive), or after a
+paragraph matching @samp{/pattern/}.
+
+Patterns use the Perl regular expression syntax and may be followed by
+the @samp{i}, @samp{s} or @samp{m} modifiers (@pxref{perlre, ,
+perlre(1), *manpages*, The @code{perlre(1)} manual page})
+
+Lines before the first section or pattern which begin with @samp{-}
+are processed as options.  Anything else is silently ignored and may
+be used for comments, RCS keywords and the like.
+
+The section output order (for those included) is:
+
+@example
+NAME
+SYNOPSIS
+DESCRIPTION
+OPTIONS
+@emph{other}
+ENVIRONMENT
+FILES
+EXAMPLES
+AUTHOR
+REPORTING BUGS
+COPYRIGHT
+SEE ALSO
+@end example
+
+Any @samp{[name]} or @samp{[synopsis]} sections appearing in the
+include file will replace what would have automatically been produced
+(although you can still override the former with @samp{--name} if
+required).
+
+Other sections are prepended to the automatically produced output for
+the standard sections given above, or included at @emph{other} (above)
+in the order they were encountered in the include file.
+
+Placement of the text within the section may be explicitly requested
+by using the syntax @samp{[<section]}, @samp{[=section]} or
+@samp{[>section]} to place the additional text before, in place of, or
+after the default output respectively.
+
+@node Makefile usage
+@chapter Using @command{help2man} With @command{make}
+
+A suggested use of @command{help2man} in Makefiles is to have the
+manual page depend not on the binary, but on the source file(s) in
+which the @samp{--help} and @samp{--version} output are defined.
+
+This usage allows a manual page to be generated by the maintainer and
+included in the distribution without requiring the end-user to have
+@command{help2man} installed.
+
+An example rule for the program @code{prog} could be:
+
+@example
+@group
+prog.1: $(srcdir)/main.c
+        -$(HELP2MAN) --output=$@@ --name='an example program' ./prog
+@end group
+@end example
+
+The value of @code{HELP2MAN} may be set in @code{configure.in} using
+either of:
+
+@example
+AM_MISSING_PROG(HELP2MAN, help2man)
+@end example
+
+for @command{automake}, or something like:
+
+@example
+AC_PATH_PROG(HELP2MAN, help2man, false // No help2man //)
+@end example
+
+for @command{autoconf} alone.
+
+@node Localised man pages
+@chapter Producing Native Language Manual Pages
+
+Manual pages may be produced for any locale supported by both the
+program and @command{help2man} with the @samp{--locale} (@samp{-L})
+option.
+
+@example
+help2man -L fr_FR@@euro -o cp.fr.1 cp
+@end example
+
+See @url{http://translationproject.org/domain/help2man.html} for the
+languages currently supported by @command{help2man}, and
+@pxref{Reports} for how to submit other translations.
+
+@section Changing the Location of Message Catalogs
+
+When creating localised manual pages from a program's build directory it
+is probable that the translations installed in the standard location
+will not be (if installed at all) correct for the version of the
+program being built.
+
+A preloadable library is provided with @command{help2man} which will
+intercept @code{bindtextdomain} calls configuring the location of message
+catalogs for the domain given by @env{$TEXTDOMAIN} and override the
+location to the path given by @env{$LOCALEDIR}.
+
+So for example:
+
+@example
+mkdir -p tmp/fr/LC_MESSAGES
+cp po/fr.gmo tmp/fr/LC_MESSAGES/@var{prog}.mo
+LD_PRELOAD="/usr/lib/help2man/bindtextdomain.so" \
+  LOCALEDIR=tmp \
+  TEXTDOMAIN=@var{prog} \
+  help2man -L fr_FR@@euro -i @var{prog}.fr.h2m -o @var{prog}.fr.1 @var{prog}
+rm -rf tmp
+@end example
+
+will cause @var{prog} to load the message catalog from @samp{tmp}
+rather than @samp{/usr/share/locale}.
+
+Notes:
+@itemize @bullet
+@item
+The generalisation of @samp{fr_FR@@euro} to @samp{fr} in the example
+above is done by @code{gettext}, if a more specific match were available
+it would also have been re-mapped.
+
+@item
+This preload has only been tested against @command{eglibc} 2.11.2 and
+@command{gettext} 0.18.1.1 on a GNU/Linux system; let me know if it
+does (or doesn't) work for you (@pxref{Reports}).
+@end itemize
+
+@node Example
+@chapter Example @command{help2man} Output
+
+Given a hypothetical program @command{foo} which produces the following output:
+
+@c Default values strong/em to be used in Examples, these are
+@c overridden for info, which doesn't have real bold/italic.
+@macro exstrong{text}
+@strong{\text\}
+@end macro
+@macro exemph{text}
+@emph{\text\}
+@end macro
+
+@c No-op version for info:
+@ifinfo
+@unmacro exstrong
+@macro exstrong{text}
+\text\
+@end macro
+@unmacro exemph
+@macro exemph{text}
+\text\
+@end macro
+@end ifinfo
+
+@example
+@exstrong{$ foo --version}
+GNU foo 1.1
+
+Copyright (C) 2011 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+Written by A. Programmer.
+@exstrong{$ foo --help}
+GNU `foo' does nothing interesting except serve as an example for
+`help2man'.
+
+Usage: foo [OPTION]...
+
+Options:
+  -a, --option      an option
+  -b, --another-option[=VALUE]
+                    another option
+
+      --help        display this help and exit
+      --version     output version information and exit
+
+Examples:
+  foo               do nothing
+  foo --option      the same thing, giving `--option'
+
+Report bugs to <bug-gnu-utils@@gnu.org>.
+@end example
+
+@command{help2man} will produce @command{nroff} input for a manual
+page which will be formatted something like this:
+
+@example
+FOO(1)                         User Commands                        FOO(1)
+
+
+@exstrong{NAME}
+       foo - manual page for foo 1.1
+
+@exstrong{SYNOPSIS}
+       foo [OPTION]...
+
+@exstrong{DESCRIPTION}
+       GNU  `foo'  does nothing interesting except serve as an example for
+       `help2man'.
+
+@exstrong{OPTIONS}
+       @exstrong{-a}, @exstrong{--option}
+              an option
+
+       @exstrong{-b}, @exstrong{--another-option}[=@exemph{VALUE}]
+              another option
+
+       @exstrong{--help} display this help and exit
+
+       @exstrong{--version}
+              output version information and exit
+
+@exstrong{EXAMPLES}
+       foo    do nothing
+
+       foo @exstrong{--option}
+              the same thing, giving `--option'
+
+@exstrong{AUTHOR}
+       Written by A. Programmer.
+
+@exstrong{REPORTING BUGS}
+       Report bugs to <bug-gnu-utils@@gnu.org>.
+
+@exstrong{COPYRIGHT}
+       Copyright @copyright{} 2011 Free Software Foundation, Inc.
+       This is free software;  see  the  source  for  copying  conditions.
+       There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+       PARTICULAR PURPOSE.
+
+@exstrong{SEE ALSO}
+       The full documentation for @exstrong{foo} is maintained as a  Texinfo  manual.
+       If  the  @exstrong{info} and @exstrong{foo} programs are properly installed at your site,
+       the command
+
+              @exstrong{info foo}
+
+       should give you access to the complete manual.
+
+
+foo 1.1                          May 2011                           FOO(1)
+@end example
+
+@node Reports
+@chapter Reporting Bugs or Suggestions
+
+If you find problems or have suggestions about this program or
+manual, please report them to @email{bug-help2man@@gnu.org}.
+
+Note to translators: Translations are handled though the
+@uref{http://translationproject.org/, Translation Project} see
+@url{http://translationproject.org/html/translators.html} for details.
+
+@node Availability
+@chapter Obtaining @command{help2man}
+
+The latest version of this distribution is available online from GNU
+mirrors:
+
+@example
+@url{http://ftpmirror.gnu.org/help2man/}
+@end example
+
+If automatic redirection fails, the list of mirrors is at:
+
+@example
+@url{http://www.gnu.org/order/ftp.html}
+@end example
+
+Or if need be you can use the main GNU ftp server:
+@example
+@url{http://ftp.gnu.org/gnu/help2man/}
+@end example
+
+@bye

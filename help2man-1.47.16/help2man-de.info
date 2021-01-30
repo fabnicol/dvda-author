@@ -1,0 +1,568 @@
+This is help2man-de.info.tmp, produced by makeinfo version 6.7 from
+help2man-de.texi.
+
+Diese Datei dokumentiert den GNU-Befehl ‘help2man’, der einfache
+Handbuchseiten aus der Ausgabe von ‘--help’ und ‘--version’ anderer
+Befehle erzeugt.
+
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2009, 2010,
+2011, 2012, 2013, 2014, 2015, 2020 Free Software Foundation, Inc.
+
+   Es ist Ihnen gestattet, wortwörtliche Kopien dieses Handbuchs
+anzufertigen und weiterzugeben, sofern der Urheberrechtshinweis und
+dieser Lizenzhinweis in allen Kopien enthalten ist.
+
+   Es ist Ihnen gestattet, veränderte Kopien dieses Handbuchs
+anzufertigen und unter den Bedingungen des wortwörtlichen Kopierens
+weiterzugeben, sofern das gesamte sich ergebende Werk unter den
+Bedingungen eines Lizenzhinweises steht, welche zu denen des
+ursprünglichen Werkes identisch sind.
+
+   Es ist Ihnen gestattet, Übersetzungen dieses Handbuchs in eine andere
+Sprache anzufertigen und unter den oben genannten Bedingungen für
+veränderte Versionen weiterzugeben, mit der Ausnahme, dass dieser
+Lizenzhinweis in einer von der Foundation genehmigten Version angegeben
+werden darf.
+INFO-DIR-SECTION Software-Entwicklung
+START-INFO-DIR-ENTRY
+* help2man-de: (help2man-de).  Automatische Erstellung von
+				 Unix-Handbuchseiten.
+END-INFO-DIR-ENTRY
+
+
+File: help2man-de.info.tmp,  Node: Top,  Next: Überblick,  Up: (dir)
+
+‘help2man’
+**********
+
+‘help2man’ erzeugt einfache Handbuchseiten aus der Ausgabe von ‘--help’
+und ‘--version’ anderer Befehle.
+
+* Menu:
+
+* Überblick::			 Überblick über ‘help2man’.
+* Aufruf von help2man:: 	 Ausführen von ‘help2man’.
+* Empfehlungen für --help::	 Empfohlene Formatierung für die
+				   Ausgabe von–help.
+* Einbeziehen von Text::	 Verarbeitung von zusätzlichem Text in
+				   derAusgabe.
+* Verwendung in Makefiles::	 Verwendung von ‘help2man’ mit‘make’.
+* Lokalisierte Handbuchseiten::  Erstellen von Handbuchseiten
+				   inverschiedenen Sprachen.
+* Beispiel::			 Beispiel für die Ausgabe
+				   von‘help2man’.
+* Rückmeldungen::		 Fehler melden oder Vorschläge
+				   einbringen.
+* Bezugsquellen::		 ‘help2man’ beziehen.
+
+
+File: help2man-de.info.tmp,  Node: Überblick,  Next: Aufruf von help2man,  Prev: Top,  Up: Top
+
+1 Überblick über ‘help2man’
+***************************
+
+‘help2man’ ist ein Werkzeug zum automatischen Erzeugen einfacher
+Handbuchseiten aus Programmausgaben.
+
+   Zwar sind Unix-Handbuchseiten optional für GNU-Programme, doch andere
+Projekte, wie Debian, fordern sie (*note (standards)Man Pages::)
+
+   Dieses Programm will Software-Entwicklern eine einfache Möglichkeit
+bereitstellen, eine Handbuchseite in ihren Veröffentlichungen
+mitzuliefern, ohne das Dokument selbst pflegen zu müssen.
+
+   Aus einem Programm, das mit den Argumenten ‘--help’ und ‘--version’
+standardkonforme Ausgaben erzeugt, kann ‘help2man’ diese Ausgaben so neu
+arrangieren, dass eine Unix-Handbuchseite entsteht.
+
+
+File: help2man-de.info.tmp,  Node: Aufruf von help2man,  Next: Empfehlungen für --help,  Prev: Überblick,  Up: Top
+
+2 Ausführen von ‘help2man’
+**************************
+
+Das Format zur Ausführung von ‘help2man’ lautet:
+
+     help2man [OPTION]... AUSFÜHRBARE_DATEI
+
+   ‘help2man’ unterstützt die folgenden Optionen:
+
+‘-n ZEICHENKETTE’
+‘--name=ZEICHENKETTE’
+     verwendet die ZEICHENKETTE als Kurzbeschreibung im ‘NAME’-Abschnitt
+     der Handbuchseite.
+
+     Per Vorgabe – in Ermangelung von etwas Besserem – enthält dieser
+     Abschnitt die Deklaration ‘manual page for PROGRAM VERSION’.
+
+     Diese Option übergeht eine einzubeziehende Datei ‘[Name]’ Abschnitt
+     (*note Einbeziehen von Text::).
+
+‘-s ABSCHNITT’
+‘--section ABSCHNITT’
+     ABSCHNITT wird als Abschnittsbezeichnung der Handbuchseite
+     verwendet.  Der vorgegebene Abschnitt ist 1.
+
+‘-m HANDBUCH’
+‘--manual=HANDBUCH’
+     setzt den Namen des Abschnitts der Handbuchsammlung auf ABSCHNITT,
+     welcher dann als zentrierte Überschrift der Handbuchseite verwendet
+     wird.  Als Vorgabe wird ‘User Commands’ für Seiten in Abschnitt 1,
+     ‘Games’ für Abschnitt 6 und ‘System Administration Utilities’ für
+     die Abschnitte 8 und 1M verwendet.
+
+‘-S QUELLE’
+‘--source=QUELLE’
+     Die Programmquelle wird als Fußzeile der Seite verwendet und
+     enthält außerdem oft den Namen der Organisation oder der
+     Programmsammlung, zu der das Programm gehört.  Als Vorgaben werden
+     hier der Name des Pakets und die Versionsnummer verwendet.
+
+‘-L SPRACHEINSTELLUNG’
+‘--locale=SPRACHEINSTELLUNG’
+     Wählt die Spracheinstellung für die Ausgabe (Vorgabe ist ‘C’).
+     Sowohl das Programm als auch ‘help2man’ müssen die gewählte
+     Spracheinstellung unterstützen (*note Lokalisierte
+     Handbuchseiten::).
+
+‘-i DATEI’
+‘--include=DATEI’
+     Bezieht Material aus DATEI ein (*note Einbeziehen von Text::).
+
+‘-I DATEI’
+‘--opt-include=DATEI’
+     Eine Variante von ‘--include’ zur Verwendung in Makefile-Regeln,
+     die die Existenz der DATEI nicht zwingend voraussetzt.
+
+‘-o DATEI’
+‘--output=DATEI’
+     Die Ausgabe wird in die DATEI geschrieben, anstatt sie in die
+     Standardausgabe (‘stdout’) zu schreiben.
+
+‘-p TEXT’
+‘--info-page=TEXT’
+     Name des Texinfo-Handbuchs.
+
+‘-N’
+‘--no-info’
+     Der ‘SEE ALSO’-Abschnitt, der den Leser auf ein Texinfo-Handbuch
+     verweist, wird unterdrückt.
+
+‘-l’
+‘--libtool’
+     Entfernt das ‘lt-’-Präfix aus den Instanzen des Programmnamens in
+     der Synopsis (der Befehl ‘libtool’ erstellt Wrapper-Skripte im
+     Build-Verzeichnis, die den Befehl ‘foo’ als ‘.libs/lt-foo’
+     aufrufen).
+
+‘--help’
+‘--version’
+     Zeigt die Hilfe oder Versionsinformationen an.
+
+   Per Vorgabe übergibt ‘help2man’ die Standardoptionen ‘--help’ und
+‘--version’ an die ausführbare Datei.  Alternativen können wie folgt
+angegeben werden:
+
+‘-h OPTION’
+‘--help-option=OPTION’
+     Zeichenkette für die Hilfe-Option.
+
+‘-v OPTION’
+‘--version-option=OPTION’
+     Zeichenkette für die Versionsausgabe.
+
+‘--version-string=ZEICHENKETTE’
+     Versions-Zeichenkette.
+
+‘--no-discard-stderr’
+     Dies bezieht die an die Standardfehlerausgabe (stderr) geleiteten
+     Ausgaben beim Einlesen der Optionen ein.
+
+
+File: help2man-de.info.tmp,  Node: Empfehlungen für --help,  Next: Einbeziehen von Text,  Prev: Aufruf von help2man,  Up: Top
+
+3 Empfehlungen für ‘--help’
+***************************
+
+Nachfolgend finden Sie Empfehlungen dafür, was in der Ausgabe der Option
+‘--help’ Ihres Programms enthalten sein sollte.  Wenn Sie diesen
+Empfehlungen folgen, hat ‘help2man’ bessere Chancen, eine respektable
+Handbuchseite zu erzeugen, was wiederum den Benutzern zugute kommt.
+
+   Siehe *note (standards)Command-Line Interfaces:: und *note
+(standards)Man Pages:: für die offiziellen GNU-Standards bezüglich der
+Option ‘--help’ und Handbuchseiten.
+
+   • Ein Überblick darüber, wie das Programm aufgerufen werden kann.
+     Falls unterschiedliche Anwendungsfälle unterschiedliche Aufrufe
+     erfordern, dann listen Sie diese alle auf.  Beispiel (gekürzt):
+
+          Usage: cp [OPTION]... SOURCE DEST
+            or:  cp [OPTION]... SOURCE... DIRECTORY
+          ...
+
+     Verwenden Sie ‘argv[0]’ für den Programmnamen in diesen
+     Übersichten, so wie es ist, ohne Entfernen der Pfadkomponenten.
+     Dies steht im Gegensatz zum kanonischen (konstanten) Namen des
+     Programms, wie er in ‘--version’ verwendet wird.
+
+   • Eine sehr knappe Erklärung der Funktion des Programms,
+     einschließlich Vorgabe- oder typisches Verhalten.  Hier als
+     Beispiel für ‘cp’:
+
+          Copy SOURCE to DEST, or multiple SOURCE(s) to DIRECTORY.
+
+   • Eine Liste von Optionen, die in Spalte 2 eingerückt wird.  Falls
+     das Programm aus einem einzelnen Zeichen bestehende Kurzoptionen
+     unterstützt, führen Sie diese zuerst auf, gefolgt von den
+     entsprechenden Langoptionen (falls vorhanden).  Wenn die Option ein
+     Argument akzeptiert, fügen Sie dieses hinzu und geben ihm einen
+     aussagekräftigen Namen.  Ordnen Sie die Beschreibungen in einer
+     übersichtlichen Spalte an, falls gewünscht.  Damit ‘help2man’ die
+     Beschreibungen korrekt erkennen kann, müssen diese durch mindestens
+     zwei Leerzeichen von den Optionen getrennt werden.  Die
+     Fortsetzungen in weiteren Zeilen müssen an der gleichen
+     Zeichenposition (in der gleichen Spalte) wie in der ersten Zeile
+     beginnen.
+
+     Nachfolgend ein (bearbeiteter) Auszug aus ‘cp’, der eine Kurzoption
+     mit der entsprechenden Langoption, eine Nur-Langoption und eine
+     Nur-Kurzoption zeigt:
+
+            -a, --archive                same as -dpR
+                --backup[=CONTROL]       make a backup of each ...
+            -b                           like --backup but ...
+
+     Falls Ihr Programm zahlreiche Optionen akzeptiert, ist es
+     wünschenswert, die Optionsliste in Abschnitte wie ‘Global’, ‘Output
+     control’ oder was auch immer für den Einzelfall sinnvoll erscheint,
+     zu gliedern.  Praktischerweise sollten die Optionen innerhalb der
+     Abschnitte alphabetisch geordnet werden (zuerst nach den Namen der
+     Kurz-, dann der Langoptionen) oder auch innerhalb der Gesamtliste,
+     wenn keine Abschnitte vorgesehen sind.
+
+   • Zusätzliche Informationen zum Verhalten des Programms, zum Beispiel
+     anwendbare Umgebungsvariablen, weitere Erklärungen der Optionen
+     usw.  Für das Programm ‘cp’ wären das etwa die Umgebungsvariable
+     ‘VERSION_CONTROL’ und Erklärungen zur Behandlung von
+     Sparse-Dateien.
+
+   • Ein oder mehrere Beispiele zur üblichen Anwendung, nach Ihrem
+     Ermessen.  Ein gutes Beispiel erspart Ihnen tausend beschreibende
+     Worte, daher ist dies ausdrücklich zu empfehlen.
+
+   • Abschließend eine Zeile, die eine E-Mail-Adresse zum Melden von
+     Fehlern enthält.  Typischerweise hat diese E-MAIL-ADRESSE die Form
+     ‘bug-PROGRAMM@gnu.org’.  Verwenden Sie diese Form, wo immer es
+     möglich ist.  Es ist außerdem sinnvoll, die Adresse der Homepage
+     des Programms, andere Mailinglisten u.a.  zu erwähnen.
+
+   In den Programmierschnittstellen ‘argp’ und ‘popt’ können Sie
+Optionsbeschreibungen für ‘--help’ in der gleichen Struktur angeben wie
+für den Rest der Optionsdefinition.  Ziehen Sie in Erwägung, diese
+Routinen für das Parsen von Optionen anstelle von ‘getopt’ zu verwenden.
+
+   Standardmäßig versucht ‘help2man’ mittels heuristischer Analysen die
+entsprechenden Abschnitte der Handbuchseite zu ermitteln.  Wenn eine
+Zeile ‘Options:’ enthält, wird der darauf folgende Text dem Abschnitt
+‘OPTIONS’ zugeordnet, auf die gleiche Weise wird eine Zeile, die mit
+‘Copyright’ beginnt, im Abschnitt ‘COPYRIGHT’ verarbeitet.  Außerdem
+beginnt mit einer Zeile, die ‘*Wörter*’ enthält, ein neuer Abschnitt,
+und mit ‘Wörter:’ ein neuer Unterabschnitt.
+
+
+File: help2man-de.info.tmp,  Node: Einbeziehen von Text,  Next: Verwendung in Makefiles,  Prev: Empfehlungen für --help,  Up: Top
+
+4 Verarbeitung von zusätzlichem Text in der Ausgabe
+***************************************************
+
+Zusätzlicher statischer Text kann mit den Optionen ‘--include’ und
+‘--opt-include’ in die erzeugte Handbuchseite einbezogen werden (*note
+Aufruf von help2man::).  Zwar sind die Namen dieser Dateien frei
+wählbar, jedoch sollten sie aus Konsistenzgründen die Endung ‘.h2m’ (für
+Include-Dateien für ‘help2man’) erhalten.
+
+   Das Format der mit dieser Option einzubeziehenden Dateien ist simpel:
+
+     [Abschnitt]
+     Text
+
+     /Muster/
+     Text
+
+   Blöcke aus wörtlichem *roff-Text werden entweder beim Start durch
+Angabe von ‘[Abschnitt]’ (unabhängig von Groß-/Kleinschreibung) in die
+Ausgabe eingefügt oder nach einem passenden Absatz-‘/Muster/’.
+
+   Die Muster benutzen reguläre Ausdrücke in Perl-Syntax, auf die die
+Modifikatoren ‘i’, ‘s’ oder ‘m’ folgen können (*note perlre(1):
+(*manpages*)perlre.).
+
+   Zeilen vor dem ersten Abschnitt oder Muster, die mit ‘-’ beginnen,
+werden als Optionen verarbeitet.  Alles andere wird stillschweigend
+ignoriert und kann für Kommentare, RCS-Schlüsselwörter und ähnliches
+verwendet werden.
+
+   Die Abschnitte werden (sofern vorhanden) in dieser Reihenfolge
+ausgegeben:
+
+     NAME
+     SYNOPSIS
+     DESCRIPTION
+     OPTIONS
+     _andere_
+     ENVIRONMENT
+     FILES
+     EXAMPLES
+     AUTHOR
+     REPORTING BUGS
+     COPYRIGHT
+     SEE ALSO
+
+   Alle in der Include-Datei aufgeführten ‘[name]’- oder
+‘[synopsis]’-Abschnitte ersetzen jene, die automatisch generiert werden.
+Sie können jedoch dieses Verhalten bei Bedarf außer Kraft setzen,
+beispielsweise mit der Option ‘--name’.
+
+   Andere Abschnitte werden der automatisch erzeugten Ausgabe für die
+oben angegebenen Standardabschnitte vorangestellt oder unter _other_
+(oben) in der Reihenfolge, in der sie in der eingefügten Datei
+vorgefunden werden, eingefügt.
+
+   Die Textplatzierung innerhalb des Abschnitts kann mit der Syntax
+‘[<Abschnitt]’, ‘[=Abschnitt]’ oder ‘[>Abschnitt]’ explizit angegeben
+werden.  Diese Angaben beziehen sich auf die Platzierung vor, die
+Ersetzung durch beziehungsweise die Platzierung nach dem standardmäßig
+erzeugten Inhalt.
+
+
+File: help2man-de.info.tmp,  Node: Verwendung in Makefiles,  Next: Lokalisierte Handbuchseiten,  Prev: Einbeziehen von Text,  Up: Top
+
+5 Verwendung von ‘help2man’ mit ‘make’
+**************************************
+
+Eine empfehlenswerte Vorgehensweise für die Verwendung von ‘help2man’ in
+Makefiles ist es, die Handbuchseite nicht aus der Binärdatei, sondern
+aus den Inhalten der Quelldateien zu erzeugen, in denen die Ausgaben von
+‘--help’ und ‘--version’ definiert sind.
+
+   Dieser Weg ermöglicht es, dass die Handbuchseite von den
+Projektbetreuern erzeugt und in die Veröffentlichungen integriert wird,
+ohne dass ‘help2man’ auf dem System des Endnutzers installiert sein
+muss.
+
+   Beispiel für eine Regel für das fiktive Programm ‘prog’:
+
+     prog.1: $(srcdir)/main.c
+             -$(HELP2MAN) --output=$@ --name='an example program' ./prog
+
+   Der Wert von ‘HELP2MAN’ kann in ‘configure.in’ entweder
+folgendermaßen festgelegt werden:
+
+     AM_MISSING_PROG(HELP2MAN, help2man)
+
+   für ‘automake’, oder etwa so:
+
+     AC_PATH_PROG(HELP2MAN, help2man, false // No help2man //)
+
+   für ‘autoconf’ allein.
+
+
+File: help2man-de.info.tmp,  Node: Lokalisierte Handbuchseiten,  Next: Beispiel,  Prev: Verwendung in Makefiles,  Up: Top
+
+6 Erstellen von Handbuchseiten in verschiedenen Sprachen
+********************************************************
+
+Handbuchseiten können für jede Sprache erzeugt werden, für die sowohl
+für das Programm selbst als auch für ‘help2man’ Übersetzungen verfügbar
+sind.  Verwenden Sie hierzu die Option ‘--locale’ (‘-L’).
+
+     help2man -L fr_FR@euro -o cp.fr.1 cp
+
+   Auf <http://translationproject.org/domain/help2man.html> finden Sie
+die gegenwärtig von ‘help2man’ unterstützten Sprachen.  In *note
+Rückmeldungen:: ist beschrieben, wie Sie weitere Übersetzungen
+einbringen können.
+
+6.1 Ändern des Ortes der Übersetzungskataloge
+=============================================
+
+Beim Erzeugen lokalisierter Handbuchseiten aus dem Build-Verzeichnis
+eines Programms ist es sehr wahrscheinlich, dass die in den
+Standardpfaden installierten Übersetzungen (sofern diese überhaupt
+installiert sind) für die Version des zu erstellenden Programms nicht
+korrekt sind.
+
+   ‘help2man’ liefert eine vorladbare Bibliotheksdatei mit, die die
+Aufrufe von ‘bindtextdomain’ abfängt.  Der Ort der Meldungskataloge wird
+dann über die Variable ‘$TEXTDOMAIN’ eingelesen und übergeht dabei den
+durch ‘$LOCALEDIR’ bezeichneten Ort.
+
+   Beispielsweise können Sie mit
+
+     mkdir -p tmp/fr/LC_MESSAGES
+     cp po/fr.gmo tmp/fr/LC_MESSAGES/PROGRAMM.mo
+     LD_PRELOAD="/usr/lib/help2man/bindtextdomain.so" \
+       LOCALEDIR=tmp \
+       TEXTDOMAIN=PROGRAMM \
+       help2man -L fr_FR@euro -i PROGRAMM.fr.h2m -o PROGRAMM.fr.1 PROGRAMM
+     rm -rf tmp
+
+   das PROGRAMM veranlassen, den Meldungskatalog aus ‘tmp’ und nicht wie
+üblich aus ‘/usr/share/locale’ einzulesen.
+
+   Hinweise:
+   • Die Verallgemeinerung von ‘fr_FR@euro’ zu ‘fr’ im obigen Beispiel
+     wird durch ‘gettext’ vorgenommen.  Falls eine spezifischere
+     Spracheinstellung verfügbar ist, wird diese zugeordnet.
+
+   • Dieser Preload wurde lediglich mit ‘eglibc’ 2.11.2 und ‘gettext’
+     0.18.1.1 auf einem GNU/Linux-System getestet.  Bitte melden Sie es,
+     wenn es für Ihre Zwecke funktioniert, oder auch nicht (*note
+     Rückmeldungen::).
+
+
+File: help2man-de.info.tmp,  Node: Beispiel,  Next: Rückmeldungen,  Prev: Lokalisierte Handbuchseiten,  Up: Top
+
+7 Beispielausgabe von ‘help2man’
+********************************
+
+Nehmen wir an, ein fiktives Programm ‘foo’ erzeugt die folgenden
+Ausgaben:
+
+     $ foo --version
+     GNU foo 1.1
+
+     Copyright (C) 2011 Free Software Foundation, Inc.
+     This is free software; see the source for copying conditions.  There is NO
+     warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+     Written by A. Programmer.
+     $ foo --help
+     GNU `foo' does nothing interesting except serve as an example for
+     `help2man'.
+
+     Usage: foo [OPTION]...
+
+     Options:
+       -a, --option      an option
+       -b, --another-option[=VALUE]
+                         another option
+
+           --help        display this help and exit
+           --version     output version information and exit
+
+     Examples:
+       foo               do nothing
+       foo --option      the same thing, giving `--option'
+
+     Report bugs to <bug-gnu-utils@gnu.org>.
+
+   ‘help2man’ erstellt den ‘nroff’-Quelltext für eine Handbuchseite, die
+etwa folgendermaßen formatiert wird:
+
+     FOO(1)                         User Commands                        FOO(1)
+
+     NAME
+            foo - manual page for foo 1.1
+
+     SYNOPSIS
+            foo [OPTION]...
+
+     DESCRIPTION
+            GNU  `foo'  does nothing interesting except serve as an example for
+            `help2man'.
+
+     OPTIONS
+            -a, --option
+                   an option
+
+            -b, --another-option[=VALUE]
+                   another option
+
+            --help display this help and exit
+
+            --version
+                   output version information and exit
+
+     EXAMPLES
+            foo    do nothing
+
+            foo --option
+                   the same thing, giving `--option'
+
+     AUTHOR
+            Written by A. Programmer.
+
+     REPORTING BUGS
+            Report bugs to <bug-gnu-utils@gnu.org>.
+
+     COPYRIGHT
+            Copyright © 2011 Free Software Foundation, Inc.
+            This is free software;  see  the  source  for  copying  conditions.
+            There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+            PARTICULAR PURPOSE.
+
+     SEE ALSO
+            The full documentation for foo is maintained as a  Texinfo  manual.
+            If  the  info and foo programs are properly installed at your site,
+            the command
+
+                   info foo
+
+            should give you access to the complete manual.
+
+     foo 1.1                          May 2011                           FOO(1)
+
+
+File: help2man-de.info.tmp,  Node: Rückmeldungen,  Next: Bezugsquellen,  Prev: Beispiel,  Up: Top
+
+8 Fehler melden oder Vorschläge einbringen
+******************************************
+
+Falls Sie auf Probleme stoßen oder Vorschläge zum Programm oder zu
+diesem Handbuch haben, melden Sie dies bitte an <bug-help2man@gnu.org>.
+
+   Hinweis an Übersetzer: Die Übersetzungen werden beim Translation
+Project (http://translationproject.org/) betreut.  Auf
+<http://translationproject.org/html/translators.html> finden Sie Details
+hierzu.
+
+
+File: help2man-de.info.tmp,  Node: Bezugsquellen,  Prev: Rückmeldungen,  Up: Top
+
+9 ‘help2man’ beziehen
+*********************
+
+Die neueste Version dieses Programms kann online von den
+GNU-Spiegelservern bezogen werden:
+
+     <http://ftpmirror.gnu.org/help2man/>
+
+   Sollte die automatische Weiterleitung fehlschlagen, finden Sie die
+Liste der Spiegelserver hier:
+
+     <http://www.gnu.org/order/ftp.html>
+
+   Eventuell können Sie den FTP-Hauptserver des GNU-Projekts nutzen:
+     <http://ftp.gnu.org/gnu/help2man/>
+
+
+Tag Table:
+Node: Top1353
+Node: Überblick2393
+Node: Aufruf von help2man3206
+Node: Empfehlungen für --help6638
+Node: Einbeziehen von Text11379
+Node: Verwendung in Makefiles13757
+Node: Lokalisierte Handbuchseiten14917
+Node: Beispiel17210
+Node: Rückmeldungen19874
+Node: Bezugsquellen20413
+
+End Tag Table
+
+
+Local Variables:
+coding: utf-8
+End:

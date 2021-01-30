@@ -1,0 +1,446 @@
+# Norwegian Bokmal translation for help2man package.
+# Copyright © 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
+# This file is distributed under the same license as the help2man package.
+# Johnny A. Solbu <johnny@solbu.net>, 2014, 2015.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: help2man-1.46.6\n"
+"Report-Msgid-Bugs-To: Brendan O'Dea <bug-help2man@gnu.org>\n"
+"POT-Creation-Date: 2020-03-15 22:10+1100\n"
+"PO-Revision-Date: 2017-09-23 13:57+1000\n"
+"Last-Translator: Johnny A. Solbu <johnny@solbu.net>\n"
+"Language-Team: Norwegian Bokmaal <i18n-nb@lister.ping.uio.no>\n"
+"Language: nb_NO\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 1.5.7\n"
+
+#: help2man:75
+#, perl-format
+msgid ""
+"GNU %s %s\n"
+"\n"
+"Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2009, "
+"2010,\n"
+"2011, 2012, 2013, 2014, 2015, 2016, 2017, 2020 Free Software Foundation, "
+"Inc.\n"
+"This is free software; see the source for copying conditions.  There is NO\n"
+"warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
+"\n"
+"Written by Brendan O'Dea <bod@debian.org>\n"
+msgstr ""
+"GNU %s %s\n"
+"\n"
+"Opphavsrett (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2009, "
+"2010,\n"
+"2011, 2012, 2013, 2014, 2015, 2016, 2017, 2020 Free Software Foundation, Inc.\n"
+"Dette er fri programvare; se kildekoden for kopieringsbetingelser. Det er "
+"INGEN\t\n"
+"garanti; ikke engang for SALGBARHET eller EGNETHET FOR ET BESTEMT FORMÅL\t.\n"
+"\n"
+"Skrevet av Brendan O'Dea <bod@debian.org>\n"
+
+#: help2man:86
+#, perl-format
+msgid ""
+"`%s' generates a man page out of `--help' and `--version' output.\n"
+"\n"
+"Usage: %s [OPTION]... EXECUTABLE\n"
+"\n"
+" -n, --name=STRING       description for the NAME paragraph\n"
+" -s, --section=SECTION   section number for manual page (1, 6, 8)\n"
+" -m, --manual=TEXT       name of manual (User Commands, ...)\n"
+" -S, --source=TEXT       source of program (FSF, Debian, ...)\n"
+" -L, --locale=STRING     select locale (default \"C\")\n"
+" -i, --include=FILE      include material from `FILE'\n"
+" -I, --opt-include=FILE  include material from `FILE' if it exists\n"
+" -o, --output=FILE       send output to `FILE'\n"
+" -p, --info-page=TEXT    name of Texinfo manual\n"
+" -N, --no-info           suppress pointer to Texinfo manual\n"
+" -l, --libtool           exclude the `lt-' from the program name\n"
+"     --help              print this help, then exit\n"
+"     --version           print version number, then exit\n"
+"\n"
+"EXECUTABLE should accept `--help' and `--version' options and produce output "
+"on\n"
+"stdout although alternatives may be specified using:\n"
+"\n"
+" -h, --help-option=STRING     help option string\n"
+" -v, --version-option=STRING  version option string\n"
+" --version-string=STRING      version string\n"
+" --no-discard-stderr          include stderr when parsing option output\n"
+"\n"
+"Report bugs to <bug-help2man@gnu.org>.\n"
+msgstr ""
+"«%s» genererer en manual-side ved hjelp av utdata fra «--help» og «--"
+"version».\n"
+"\n"
+"Bruk: %s [VALG] ... KJØRBAR\n"
+"\n"
+" -n, --name=STRENG       beskrivelse for NAVN-paragraf\n"
+" -s, --section=SEKSJON   seksjonsnummer for manualside (1, 6, 8)\n"
+" -m, --manual=TEKST      navn på manual (Brukerkommandoer, ...)\n"
+" -S, --source=TEKST      kilde til program (FSF, Debian, ...)\n"
+" -L, --locale=STRENG     velg «locale» (standard «C»)\n"
+" -i, --include=FIL       inkluder materiale fra «FIL»\n"
+" -I, --opt-include=FIL   inkluder materiale fra «FIL» hvis den finnes\n"
+" -o, --output=FIL        send utdata til «FIL»\n"
+" -p, --info-page=TEKST   navn på Texinfo-manual\n"
+" -N, --no-info           undertrykk peker til Texinfo-manual\n"
+" -l, --libtool           ekskluder «lt-» fra programnavnet\n"
+"     --help              skriv ut denne hjelpen og avslutt\n"
+"     --version           skriv ut versjonsnummer og avslutt\n"
+"\n"
+"KJØRBAR bør akseptere «- help» og «- version» opsjoner og produsere utdata "
+"på\n"
+"standard ut selv om alternativer kan spesifiseres ved hjelp av\n"
+"\n"
+" -h, --help-option=STRENG     hjelpevalg-streng\n"
+" -v, --version-option=STRENG  versjonsvalg-streng\n"
+" --version-string=STRENG      versjonsstreng\n"
+" --no-discard-stderr          inkluder standardfeil under analysering av "
+"output-valget\n"
+"\n"
+"Rapporter feil til <bug-help2man@gnu.org>.\n"
+
+#: help2man:184
+#, perl-format
+msgid "%s: can't open `%s' (%s)"
+msgstr "%s: kan ikke åpne «%s» (%s)"
+
+#. Translators: "NAME", "SYNOPSIS" and other one or two word strings in all
+#. upper case are manual page section headings.  The man(1) manual page in your
+#. language, if available should provide the conventional translations.
+#: help2man:210 help2man:341 help2man:347 help2man:698 help2man.h2m.PL:88
+#: help2man.h2m.PL:138
+msgid "NAME"
+msgstr "NAVN"
+
+#: help2man:210 help2man:416 help2man:698 help2man.h2m.PL:139
+msgid "SYNOPSIS"
+msgstr "OVERSIKT"
+
+#: help2man:260
+#, perl-format
+msgid "%s: no valid information found in `%s'"
+msgstr "%s: ingen gyldig informasjon funnet i «%s»"
+
+#. Translators: the following message is a strftime(3) format string, which in
+#. the English version expands to the month as a word and the full year.  It
+#. is used on the footer of the generated manual pages.  If in doubt, you may
+#. just use %x as the value (which should be the full locale-specific date).
+#: help2man:290
+msgid "%B %Y"
+msgstr "%B %Y"
+
+#: help2man:297
+#, perl-format
+msgid "%s: can't unlink %s (%s)"
+msgstr "%s: kan ikke delinke %s (%s)"
+
+#: help2man:301
+#, perl-format
+msgid "%s: can't create %s (%s)"
+msgstr "%s: kan ikke opprette %s (%s)"
+
+#: help2man:355
+#, perl-format
+msgid "%s \\- manual page for %s %s"
+msgstr "%s \\- manualside for %s %s"
+
+#: help2man:369
+msgid "System Administration Utilities"
+msgstr "Systemadministrasjonsverktøy"
+
+#: help2man:370
+msgid "Games"
+msgstr "Spill"
+
+#: help2man:371
+msgid "User Commands"
+msgstr "Brukerkommandoer"
+
+#. Translators: "Usage" and "or" here are patterns (regular expressions) which
+#. are used to match the usage synopsis in program output.  An example from cp
+#. (GNU coreutils) which contains both strings:
+#. Usage: cp [OPTION]... [-T] SOURCE DEST
+#. or:  cp [OPTION]... SOURCE... DIRECTORY
+#. or:  cp [OPTION]... -t DIRECTORY SOURCE...
+#: help2man:382
+msgid "Usage"
+msgstr "Bruk"
+
+#: help2man:383
+msgid "or"
+msgstr "eller"
+
+#: help2man:420 help2man:698 help2man.h2m.PL:140
+msgid "DESCRIPTION"
+msgstr "BESKRIVELSE"
+
+#. Translators: patterns are used to match common program output. In the source
+#. these strings are all of the form of "my $PAT_something = _('...');" and are
+#. regular expressions.  If there is more than one commonly used string, you
+#. may separate alternatives with "|".  Spaces in these expressions are written
+#. as " +" to indicate that more than one space may be matched.  The string
+#. "(?:[\\w-]+ +)?" in the bug reporting pattern is used to indicate an
+#. optional word, so that either "Report bugs" or "Report _program_ bugs" will
+#. be matched.
+#: help2man:445
+msgid "Report +(?:[\\w-]+ +)?bugs|Email +bug +reports +to"
+msgstr "Rapporter +(?:[\\w-]+ +)?feil|Email +feilrapporter +til"
+
+#: help2man:446
+msgid "Written +by"
+msgstr "Skrevet +av"
+
+#: help2man:447
+msgid "Options"
+msgstr "Valg"
+
+#: help2man:448
+msgid "Environment"
+msgstr "Miljø"
+
+#: help2man:449
+msgid "Files"
+msgstr "Filer"
+
+#: help2man:450
+msgid "Examples"
+msgstr "Eksempler"
+
+#: help2man:451
+msgid "This +is +free +software"
+msgstr "Dette +er +fri +programvare"
+
+#: help2man:465 help2man:698 help2man.h2m.PL:141
+msgid "OPTIONS"
+msgstr "VALG"
+
+#: help2man:470 help2man:699 help2man.h2m.PL:143
+msgid "ENVIRONMENT"
+msgstr "MILJØ"
+
+#: help2man:475 help2man:699 help2man.h2m.PL:144
+msgid "FILES"
+msgstr "FILER"
+
+#: help2man:480 help2man:603 help2man:699 help2man.h2m.PL:145
+msgid "EXAMPLES"
+msgstr "EKSEMPLER"
+
+#: help2man:496 help2man:624 help2man:700 help2man.h2m.PL:148
+msgid "COPYRIGHT"
+msgstr "OPPHAVSRETT"
+
+#: help2man:502 help2man:630 help2man:700 help2man.h2m.PL:147
+msgid "REPORTING BUGS"
+msgstr "RAPPORTERING AV FEIL"
+
+#: help2man:508 help2man:699 help2man.h2m.PL:146
+msgid "AUTHOR"
+msgstr "OPPHAVSMANN"
+
+#: help2man:662 help2man:700 help2man.h2m.PL:149
+msgid "SEE ALSO"
+msgstr "SE OGSÅ"
+
+#: help2man:665
+#, perl-format
+msgid ""
+"The full documentation for\n"
+".B %s\n"
+"is maintained as a Texinfo manual.  If the\n"
+".B info\n"
+"and\n"
+".B %s\n"
+"programs are properly installed at your site, the command\n"
+".IP\n"
+".B info %s\n"
+".PP\n"
+"should give you access to the complete manual.\n"
+msgstr ""
+"Den fullstendige dokumentasjonen for\n"
+".B %s\n"
+"opprettholdes som en Texinfo manual. Dersom\n"
+".B info\n"
+"og\n"
+".B %s\n"
+"programmene er riktig installert på ditt sted burde kommandoen\n"
+".IP\n"
+".B info %s\n"
+".PP\n"
+"gi deg tilgang til hele manualen.\n"
+
+#: help2man:731
+#, perl-format
+msgid "%s: error writing to %s (%s)"
+msgstr "%s: feil ved skriving til %s (%s)"
+
+#: help2man:757
+#, perl-format
+msgid "%s: can't get `%s' info from %s%s"
+msgstr "%s: kan ikke hente «%s»-info fra %s%s"
+
+#: help2man:759
+msgid "Try `--no-discard-stderr' if option outputs to stderr"
+msgstr "Prøv `--no-discard-stderr' Hvis opsjon skriver ut til stderr"
+
+#: help2man.h2m.PL:83
+msgid "Include file for help2man man page"
+msgstr "Inkluder fil for help2man-manualsiden"
+
+#: help2man.h2m.PL:89
+msgid "help2man \\- generate a simple manual page"
+msgstr "help2man \\- generer en enkel manualside"
+
+#: help2man.h2m.PL:92
+msgid "INCLUDE FILES"
+msgstr "INKLUDER-FILER"
+
+#: help2man.h2m.PL:94
+msgid ""
+"Additional material may be included in the generated output with the\n"
+".B \\-\\-include\n"
+"and\n"
+".B \\-\\-opt\\-include\n"
+"options.  The format is simple:\n"
+"\n"
+"    [section]\n"
+"    text\n"
+"\n"
+"    /pattern/\n"
+"    text\n"
+msgstr ""
+"Ytterligere materiale kan være inkludert i den genererte utskriften med\n"
+".B \\-\\-include\n"
+"og\n"
+".B \\-\\-opt\\-include\n"
+"alternativer. Formatet er enkelt\n"
+"\n"
+"    [seksjon]\n"
+"    tekst\n"
+"\n"
+"    /mønster/\n"
+"    tekst\n"
+
+#: help2man.h2m.PL:109
+msgid ""
+"Blocks of verbatim *roff text are inserted into the output either at\n"
+"the start of the given\n"
+".BI [ section ]\n"
+"(case insensitive), or after a paragraph matching\n"
+".BI / pattern /\\fR.\n"
+msgstr ""
+"Blokker av ordrett *roff-tekst er satt inn i utdata enten ved\n"
+"starten på den gitte\n"
+".BI [ seksjon ]\n"
+"(små bokstaver), eller etter et avsnitt matchende\n"
+".BI / mønster /\\fR.\n"
+
+#: help2man.h2m.PL:118
+msgid ""
+"Patterns use the Perl regular expression syntax and may be followed by\n"
+"the\n"
+".IR i ,\n"
+".I s\n"
+"or\n"
+".I m\n"
+"modifiers (see\n"
+".BR perlre (1)).\n"
+msgstr ""
+"Mønstre bruker Perl regulære uttrykk syntaks og kan bli etterfulgt av\n"
+"the\n"
+".IR i ,\n"
+".I s\n"
+"eller\n"
+".I m\n"
+"modifikatorer (se\n"
+".BR perlre (1)).\n"
+
+#: help2man.h2m.PL:130
+msgid ""
+"Lines before the first section or pattern which begin with `\\-' are\n"
+"processed as options.  Anything else is silently ignored and may be\n"
+"used for comments, RCS keywords and the like.\n"
+msgstr ""
+"Linjene før den første seksjon eller mønster som begynner med «\\-» er\n"
+"behandlet som alternativer. Noe annet er stille ignorert og kan\n"
+"brukes for kommentarer, RCS-søkeord og lignende.\n"
+
+#: help2man.h2m.PL:136
+msgid "The section output order (for those included) is:"
+msgstr "Seksjonsutgangsrekkefølgen (for de som er inkludert) er:"
+
+#: help2man.h2m.PL:142
+msgid "other"
+msgstr "andre"
+
+#: help2man.h2m.PL:153
+msgid ""
+"Any\n"
+".B [NAME]\n"
+"or\n"
+".B [SYNOPSIS]\n"
+"sections appearing in the include file will replace what would have\n"
+"automatically been produced (although you can still override the\n"
+"former with\n"
+".B \\-\\-name\n"
+"if required).\n"
+msgstr ""
+"Ethvert\n"
+".B [NAVN]\n"
+"eller\n"
+".B [OVERSIKT]\n"
+"seksjoner som vises i include-filen vil erstatte det som ville\n"
+"automatisk ha blitt produsert (selv om du fortsatt kan overstyre\n"
+"det forrige med\n"
+".B \\-\\-name\n"
+"hvis nødvendig).\n"
+
+#: help2man.h2m.PL:166
+msgid ""
+"Other sections are prepended to the automatically produced output for\n"
+"the standard sections given above, or included at\n"
+".I other\n"
+"(above) in the order they were encountered in the include file.\n"
+msgstr ""
+"Andre seksjoner er forvalgt i automatisk produsert utdata for\n"
+"standard seksjoner gitt ovenfor, eller inkludert ved\n"
+".I andre\n"
+"(ovenfor) i den rekkefølgen de ble påtruffet i inkluder-filen.\n"
+
+#: help2man.h2m.PL:174
+msgid ""
+"Placement of the text within the section may be explicitly requested by "
+"using\n"
+"the syntax\n"
+".RI [< section ],\n"
+".RI [= section ]\n"
+"or\n"
+".RI [> section ]\n"
+"to place the additional text before, in place of, or after the default\n"
+"output respectively.\n"
+msgstr ""
+"Plassering av teksten innenfor seksjonen kan være eksplisitt forespurt ved "
+"hjelp av\n"
+"syntaksen\n"
+".RI [<seksjon],\n"
+".RI [= seksjon]\n"
+"eller\n"
+".RI [> seksjon]\n"
+"for å plassere ytterligere tekst henholdsvis før, i stedet for\n"
+"eller etter standard utdata.\n"
+
+#: help2man.h2m.PL:185
+msgid "AVAILABILITY"
+msgstr "TILGJENGELIGHET"
+
+#: help2man.h2m.PL:186
+msgid "The latest version of this distribution is available on-line from:"
+msgstr ""
+"Den nyeste versjonen av denne distribusjonen er tilgjengelig på nettet fra:"
