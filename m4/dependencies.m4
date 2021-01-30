@@ -237,11 +237,11 @@ m4_map([DVDA_TEST_AUX],[
 	    ],
 	    [
 		[ImageMagick-download],
-		[7.0.8-49],
+		[7.0.10-35],
 		[],
 		[],
 		[DEPS],
-		[d7dd10356979787d1ee26482b38246f0]
+		[656de45e34f04d7fb431b242932d5440]
 	    ],
 	    [
 		[lplex-download],
@@ -362,7 +362,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
 	       [[[libmpeg2],[libmpeg2-0.5.1]],[--prefix="$BUILDDIR/local" --disable-directx LDFLAGS="-Wl,--allow-multiple-definition"]],
 	       [[[help2man], [help2man-1.47.16]],[--prefix="$BUILDDIR/local"]],
-	       [[[ImageMagick], [ImageMagick-7.0.8-49]],[--prefix="$BUILDDIR/local" --without-magick-plus-plus --without-pango --without-tiff --without-lzma --without-xml]],
+	       [[[ImageMagick], [ImageMagick-7.0.10-35]],[--prefix="$BUILDDIR/local" --without-magick-plus-plus --without-pango --without-tiff --without-lzma --without-xml]],
 	       [[[man2html], [man2html-1.6]],[bindir="$BUILDDIR/local/bin"]]])
 	    ],
 	    [
@@ -373,7 +373,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
 	       [[[libmpeg2],[libmpeg2-0.5.1]], [--enable-static --disable-shared --prefix="$BUILDDIR/local" --disable-directx]],
 	       [[[help2man], [help2man-1.47.16]],[--prefix="$BUILDDIR/local"]],
-	       [[[ImageMagick], [ImageMagick-7.0.8-49]],[--prefix="$BUILDDIR/local" --without-magick-plus-plus --without-pango --without-tiff --without-lzma --without-xml --enable-static --disable-shared JPEG_LIBS="$ROOTDIR/build/linux/dvda-author-full.build/lib/libjpeg.a"]],
+	       [[[ImageMagick], [ImageMagick-7.0.10-35]],[--prefix="$BUILDDIR/local" --without-magick-plus-plus --without-pango --without-tiff --without-lzma --without-xml --enable-static --disable-shared JPEG_LIBS="$ROOTDIR/build/linux/dvda-author-full.build/lib/libjpeg.a"]],
    	       [[[man2html], [man2html]],[bindir="$BUILDDIR/local/bin" mandir="$BUILDDIR/local/share/man"]]])
 	    ])
 

@@ -252,7 +252,8 @@
 /* Define to 1 to use internal win32 ltdl */
 #undef HAVE_WIN32_LTDL_H
 
-/* Define to the sub-directory where libtool stores uninstalled libraries. */
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
 #undef LT_OBJDIR
 
 /* Name of package */

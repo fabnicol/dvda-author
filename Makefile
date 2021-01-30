@@ -63,8 +63,6 @@ all:  $(ALL_TARGETS) $(PROGRAM).1 $(PROGRAM).html
 include /cygdrive/c/Users/fabrn/dvda-author/mk/functions.mk
 include $(PROGRAM_TARGET_MAKEFILES)
 
-help2man.config: /cygdrive/c/Users/fabrn/dvda-author/depconf/help2man.depconf
-man2html.config: /cygdrive/c/Users/fabrn/dvda-author/depconf/man2html.depconf
 
 export CPPFLAGS
 export PARALLEL

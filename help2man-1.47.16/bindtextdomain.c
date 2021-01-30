@@ -48,6 +48,7 @@ void setup()
     if (!(e_localedir = getenv("LOCALEDIR")))
 	die("LOCALEDIR not set");
 
+#ifndef __CYGWIN__
     if (!(r_textdomain = dlsym(RTLD_NEXT, "textdomain")))
 	die("can't find symbol \"textdomain\"");
 
@@ -57,6 +58,7 @@ void setup()
     if (!(r_bind_textdomain_codeset = dlsym(RTLD_NEXT,
     					    "bind_textdomain_codeset")))
 	die("can't find symbol \"bind_textdomain_codeset\"");
+#endif
 }
 
 char *textdomain(char const *domainname)
