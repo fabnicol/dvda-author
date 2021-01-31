@@ -1,33 +1,33 @@
 #Do not use bash. It would cause subtle issues with libtool in the flac package, probably a libtool bug.
 
 define docfollow
-	@findstring=$$(find /home/fab/Documents/dvda-author -maxdepth 1 -name $(strip $1) -print0)
-	@echo "[doc]" >> /home/fab/Documents/dvda-author/depconf/BUILD.TRACE
-	@echo "    $1 $$findstring" >> /home/fab/Documents/dvda-author/depconf/BUILD.TRACE 
+	@findstring=$$(find /home/fab/dvda-author -maxdepth 1 -name $(strip $1) -print0)
+	@echo "[doc]" >> /home/fab/dvda-author/depconf/BUILD.TRACE
+	@echo "    $1 $$findstring" >> /home/fab/dvda-author/depconf/BUILD.TRACE 
 endef
 
 define index
-	@echo [$1] >> /home/fab/Documents/dvda-author/depconf/BUILD.TRACE
+	@echo [$1] >> /home/fab/dvda-author/depconf/BUILD.TRACE
 	directory=$(MAYBE_$1)
 	@if test "$3" = "library" ; then
-	   @testvar=$$(find  /home/fab/Documents/dvda-author/$$directory -maxdepth 4 -type f  -wholename "*$1$2" -print0)
+	   @testvar=$$(find  /home/fab/dvda-author/$$directory -maxdepth 4 -type f  -wholename "*$(1_TARGETLIB)$2" -print0)
 	else
-	   @testvar=$$(find  /home/fab/Documents/dvda-author/$$directory -maxdepth 4 -type f  -wholename "*$($1_TESTBINARY)$2" -print0)
+	   @testvar=$$(find  /home/fab/dvda-author/$$directory -maxdepth 4 -type f  -wholename "*$($1_TESTBINARY)$2" -print0)
 	fi
 	@if test "$$testvar" != ""; then
-		@echo "     built $3: $$testvar for $1" >> /home/fab/Documents/dvda-author/depconf/BUILD.TRACE
+		@echo "     built $3: $$testvar for $1" >> /home/fab/dvda-author/depconf/BUILD.TRACE
 		@if test "$3" = "library" ; then
-		  @testvar2=$$(find /home/fab/Documents/dvda-author/local/lib -wholename $($1_LIB) -print0)
+		  @testvar2=$$(find /home/fab/dvda-author/local/lib -wholename $($1_LIB) -print0)
 		else
-		  @testvar2=$$(find /home/fab/Documents/dvda-author/local/bin -name "$($1_TESTBINARY)$(EXEEXT)" -print0)
+		  @testvar2=$$(find /home/fab/dvda-author/local/bin -name "$($1_TESTBINARY)$(EXEEXT)" -print0)
 		fi
 		@if test "$$testvar2" != ""; then
-			@echo "     local $3: $$testvar2 from $(MAYBE_$1)" >> /home/fab/Documents/dvda-author/depconf/BUILD.TRACE
+			@echo "     local $3: $$testvar2 from $(MAYBE_$1)" >> /home/fab/dvda-author/depconf/BUILD.TRACE
 		else
-			@echo "     did not install $3 $1" >> /home/fab/Documents/dvda-author/depconf/BUILD.TRACE
+			@echo "     did not install $3 $1" >> /home/fab/dvda-author/depconf/BUILD.TRACE
 		fi
 	else
-	        @echo "     no $3 $1" >> /home/fab/Documents/dvda-author/depconf/BUILD.TRACE
+	        @echo "     no $3 $1" >> /home/fab/dvda-author/depconf/BUILD.TRACE
 	fi
 endef
 
@@ -40,28 +40,28 @@ define configure_sub_package
 	echo Building $1...
 	configure_flags="$2"
 	@if test "$$target_subdir" != ""; then
-	   @if test -d  "/home/fab/Documents/dvda-author/$$target_subdir"; then
-	      mkdir -p "/home/fab/Documents/dvda-author/$$target_subdir/"
-	      cd "/home/fab/Documents/dvda-author/$$target_subdir/"
+	   @if test -d  "/home/fab/dvda-author/$$target_subdir"; then
+	      mkdir -p "/home/fab/dvda-author/$$target_subdir/"
+	      cd "/home/fab/dvda-author/$$target_subdir/"
 	      @if test "$(findstring noconfigure,$5)" = "" ; then 
-       	       cd "/home/fab/Documents/dvda-author/$$target_subdir"
+       	       cd "/home/fab/dvda-author/$$target_subdir"
 	       if test "$3" != "" ; then echo Running shell command...; $(SHELL) "$3" "$4"; fi
 	       cd -
-	       echo Running configure in /home/fab/Documents/dvda-author/$$target_subdir ...
-	       export CPPFLAGS="-I/home/fab/Documents/dvda-author/local/include" 
+	       echo Running configure in /home/fab/dvda-author/$$target_subdir ...
+	       export CPPFLAGS="-I/home/fab/dvda-author/local/include" 
 		   export has_m4="."
-		   if test -d "/home/fab/Documents/dvda-author/$$target_subdir/m4"; then has_m4=m4; fi
-		   if test ! -f "/home/fab/Documents/dvda-author/$$target_subdir/configure"; then autoreconf -I$$has_m4 -if; fi
-	       $(SHELL) "/home/fab/Documents/dvda-author/$$target_subdir/configure" $$configure_flags --prefix="/home/fab/Documents/dvda-author/local" $6
+		   if test -d "/home/fab/dvda-author/$$target_subdir/m4"; then has_m4=m4; fi
+		   if test ! -f "/home/fab/dvda-author/$$target_subdir/configure"; then autoreconf -I$$has_m4 -if; fi
+	       $(SHELL) "/home/fab/dvda-author/$$target_subdir/configure" $$configure_flags --prefix="/home/fab/dvda-author/local" $6
 	      else
-	       if test "/home/fab/Documents/dvda-author" != "/home/fab/Documents/dvda-author"; then cp -rf "/home/fab/Documents/dvda-author/$$target_subdir" /home/fab/Documents/dvda-author; fi
+	       if test "/home/fab/dvda-author" != "/home/fab/dvda-author"; then cp -rf "/home/fab/dvda-author/$$target_subdir" /home/fab/dvda-author; fi
 	      fi
 	      if test "$$?" = "0"; then  
 	      echo -- *****
 	      echo -- * Now building $1
-	      echo -- * See file /home/fab/Documents/dvda-author/depconf/BUILD.TRACE --
+	      echo -- * See file /home/fab/dvda-author/depconf/BUILD.TRACE --
 	      echo -- *****
-		  echo Now building $1 with command line $(MAKE) $(PARALLEL) MKDIR_P="\"$(MKDIR_P)\""  $(if $6,$6)...  >> /home/fab/Documents/dvda-author/depconf/BUILD.TRACE
+		  echo Now building $1 with command line $(MAKE) $(PARALLEL) MKDIR_P="\"$(MKDIR_P)\""  $(if $6,$6)...  >> /home/fab/dvda-author/depconf/BUILD.TRACE
 		  $(MAKE)  $(if $6,$6) $(PARALLEL) MKDIR_P="$(MKDIR_P)" 
 	      fi
 	      if test "$$?" = "0" -o "$6" != ""; then
@@ -75,7 +75,7 @@ define configure_sub_package
             sleep 1s
 	      fi
 	      if test -f INSTALL.txt; then mv -f INSTALL.txt INSTALL; fi
-	      cd /home/fab/Documents/dvda-author
+	      cd /home/fab/dvda-author
 	   fi
 	fi
 endef
@@ -83,7 +83,7 @@ endef
 define configure_lib_package
 	@$(call configure_sub_package,$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),$2,$3,,$4)
 	if test "$$?" = "0"; then
-	  touch /home/fab/Documents/dvda-author/depconf/$1.depconf
+	  touch /home/fab/dvda-author/depconf/$1.depconf
 	fi
 	@$(call index,$1,.a,library)
 endef
@@ -91,7 +91,7 @@ endef
 define configure_exec_package
 	$(call configure_sub_package,$(MAYBE_$1),$(CONFIGURE_$1_FLAGS),,,$2,$3)
 	if test "$$?" = "0" -o "$6" != ""; then 
-        touch /home/fab/Documents/dvda-author/depconf/$1.depconf
+        touch /home/fab/dvda-author/depconf/$1.depconf
     fi
 	@$(call index,$1,$(EXEEXT),binary)
 endef
@@ -105,7 +105,7 @@ define configure_script_package
 endef
 
 define clean_package
-	@$(if $1,if test -d  /home/fab/Documents/dvda-author/$(MAYBE_$1); then cd /home/fab/Documents/dvda-author/$(MAYBE_$1); $(MAKE)  clean ; cd - ; fi)
+	@$(if $1,if test -d  /home/fab/dvda-author/$(MAYBE_$1); then cd /home/fab/dvda-author/$(MAYBE_$1); $(MAKE)  clean ; cd - ; fi)
 endef
 
 define depconf
@@ -127,7 +127,7 @@ endef
 define clean_directory
 	for dir in $1; do
 	   if test -d "$$dir" ; then
-	     cd "$$dir"; $(RM) *.a *.po *.o *.1 *.html; cd /home/fab/Documents/dvda-author
+	     cd "$$dir"; $(RM) *.a *.po *.o *.1 *.html; cd /home/fab/dvda-author
 	   fi
 	done
 endef

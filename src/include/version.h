@@ -6,7 +6,7 @@
 #endif
 
 #ifndef VERSION
-#define VERSION "2019-dev"
+#define VERSION "2021-dev"
 #endif
 
 #endif // VERSION_H_INCLUDED

@@ -122,27 +122,27 @@ AUTOCONF = /usr/bin/autoconf
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = /usr/bin/automake
 AWK = @AWK@
-BUILDDIR = /home/fab/Documents/dvda-author
+BUILDDIR = /home/fab/dvda-author
 CC = gcc
 CCDEPMODE = @CCDEPMODE@
-CDRECORD = /usr/local/bin/cdrecord
+CDRECORD = /usr/bin/cdrecord
 CDRTOOLS_VERSION = 
 CFLAGS = -g -O2 -g -O2 -std=c99
 CONFIGURE_DVDAUTHOR_FLAGS = @CONFIGURE_DVDAUTHOR_FLAGS@
-CONFIGURE_FLAC_FLAGS = --enable-static --disable-shared --disable-fast-install --with-ogg-libraries=/home/fab/Documents/dvda-author/local/lib --with-ogg-includes=/home/fab/Documents/dvda-author/local/include/ogg        --disable-thorough-tests --disable-oggtest --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix=/home/fab/Documents/dvda-author/local CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS=-I/home/fab/Documents/dvda-author/local/include 
-CONFIGURE_ImageMagick_FLAGS = --prefix=/home/fab/Documents/dvda-author/local --without-magick-plus-plus --without-pango --without-tiff --without-lzma --without-xml --enable-static --disable-shared JPEG_LIBS=/home/fab/Documents/dvda-author/build/linux/dvda-author-full.build/lib/libjpeg.a 
-CONFIGURE_a52dec_FLAGS = --prefix=/home/fab/Documents/dvda-author/local 
-CONFIGURE_cdrtools_FLAGS = --prefix=/home/fab/Documents/dvda-author/local 
-CONFIGURE_dvdauthor_FLAGS = --disable-xmltest --disable-dvdunauthor --enable-default-video-format=PAL --prefix=/home/fab/Documents/dvda-author/local 
+CONFIGURE_FLAC_FLAGS = --enable-static --disable-shared --disable-fast-install --with-ogg-libraries=/home/fab/dvda-author/local/lib --with-ogg-includes=/home/fab/dvda-author/local/include/ogg        --disable-thorough-tests --disable-oggtest --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix=/home/fab/dvda-author/local CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS=-I/home/fab/dvda-author/local/include 
+CONFIGURE_ImageMagick_FLAGS = --prefix=/home/fab/dvda-author/local --without-magick-plus-plus --without-pango --without-tiff --without-lzma --without-xml --enable-static --disable-shared JPEG_LIBS=/home/fab/dvda-author/build/linux/dvda-author-full.build/lib/libjpeg.a 
+CONFIGURE_a52dec_FLAGS = --prefix=/home/fab/dvda-author/local 
+CONFIGURE_cdrtools_FLAGS = --prefix=/home/fab/dvda-author/local 
+CONFIGURE_dvdauthor_FLAGS = --disable-xmltest --disable-dvdunauthor --enable-default-video-format=PAL --prefix=/home/fab/dvda-author/local 
 CONFIGURE_fixwav_FLAGS = @CONFIGURE_fixwav_FLAGS@
-CONFIGURE_help2man_FLAGS = --prefix=/home/fab/Documents/dvda-author/local 
+CONFIGURE_help2man_FLAGS = --prefix=/home/fab/dvda-author/local 
 CONFIGURE_iberty_FLAGS = @CONFIGURE_iberty_FLAGS@
-CONFIGURE_libmpeg2_FLAGS = --enable-static --disable-shared --prefix=/home/fab/Documents/dvda-author/local --disable-directx 
-CONFIGURE_libogg_FLAGS = --enable-static --disable-shared --prefix=/home/fab/Documents/dvda-author/local CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS=-I/home/fab/Documents/dvda-author/local/include 
-CONFIGURE_lplex_FLAGS = --prefix=/home/fab/Documents/dvda-author/local --enable-static --disable-shared ROOTDIR=/home/fab/Documents/dvda-author/lplex-0.3 --with-libFLAC-libraries=/home/fab/Documents/dvda-author/local/lib --with-libFLAC-includes=/home/fab/Documents/dvda-author/local/include CPPFLAGS=-I/home/fab/Documents/dvda-author/lplex-0.3/redist 
-CONFIGURE_mjpegtools_FLAGS = --without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime   --disable-shared --enable-static-build --enable-static  --disable-fast-install  --prefix=/home/fab/Documents/dvda-author/local  CXXFLAGS=-fPIC  CFLAGS=-fPIC 
-CONFIGURE_sox_FLAGS = --without-libltdl --without-sndfile --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-magic --disable-fast-install --enable-static --disable-shared --prefix=/home/fab/Documents/dvda-author/local CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS=-I/home/fab/Documents/dvda-author/local/include 
-CONVERT = /usr/local/bin/convert
+CONFIGURE_libmpeg2_FLAGS = --enable-static --disable-shared --prefix=/home/fab/dvda-author/local --disable-directx 
+CONFIGURE_libogg_FLAGS = --enable-static --disable-shared --prefix=/home/fab/dvda-author/local CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS=-I/home/fab/dvda-author/local/include 
+CONFIGURE_lplex_FLAGS = --prefix=/home/fab/dvda-author/local --enable-static --disable-shared ROOTDIR=/home/fab/dvda-author/lplex-0.3 --with-libFLAC-libraries=/home/fab/dvda-author/local/lib --with-libFLAC-includes=/home/fab/dvda-author/local/include CPPFLAGS=-I/home/fab/dvda-author/lplex-0.3/redist 
+CONFIGURE_mjpegtools_FLAGS = --without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime   --disable-shared --enable-static-build --enable-static  --disable-fast-install  --prefix=/home/fab/dvda-author/local  CXXFLAGS=-fPIC  CFLAGS=-fPIC 
+CONFIGURE_sox_FLAGS = --without-libltdl --without-sndfile --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-magic --disable-fast-install --enable-static --disable-shared --prefix=/home/fab/dvda-author/local CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS=-I/home/fab/dvda-author/local/include 
+CONVERT = /usr/bin/convert
 CPP = gcc -E
 CPPFLAGS =  -I/usr/include -I/usr/local/include
 CURL = /usr/bin/curl
@@ -157,14 +157,14 @@ DVDAUTHOR_VERSION =
 ECHO_C = 
 ECHO_N = -n
 ECHO_T = 
-EGREP = /usr/bin/grep -E
+EGREP = /bin/grep -E
 EXEEXT = 
 FLAC = 
 FLAC_CONFIGURE_FILE = flac-1.3.3/configure
-FLAC_LIB = /home/fab/Documents/dvda-author/local/lib/libFLAC.a
+FLAC_LIB = /home/fab/dvda-author/local/lib/libFLAC.a
 FLAC_VERSION = 
-GREP = /usr/bin/grep
-HELP2MAN = 
+GREP = /bin/grep
+HELP2MAN = /usr/bin/help2man
 HELP2MAN_VERSION = 
 IMAGEMAGICK_VERSION = 
 INSTALL = /usr/bin/install -c
@@ -175,7 +175,7 @@ INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 ImageMagick = 
 ImageMagick_CONFIGURE_FILE = ImageMagick-7.0.10-35/configure
 ImageMagick_LIB = 
-JPEG2YUV = /usr/bin/jpeg2yuv
+JPEG2YUV = 
 LDFLAGS = 
 LEX = flex
 LEXLIB = -lfl
@@ -189,9 +189,9 @@ LN_S = ln -s
 LPLEX = 
 LPLEX_VERSION = 
 LTLIBOBJS = 
-MAKE = /bin/make
+MAKE = /usr/bin/make
 MAKEINFO = @MAKEINFO@
-MAKE_PATH = /bin/make
+MAKE_PATH = /usr/bin/make
 MAN2HTML = 
 MAYBE_DVDAUTHOR = @MAYBE_DVDAUTHOR@
 MAYBE_FLAC = flac-1.3.3
@@ -213,11 +213,11 @@ MINIMAL_VERSION =
 MJPEGTOOLS_VERSION = 
 MKDIR_P = @MKDIR_P@
 MKISOFS = /usr/bin/mkisofs
-MOGRIFY = /usr/local/bin/mogrify
-MP2ENC = /usr/bin/mp2enc
+MOGRIFY = /usr/bin/mogrify
+MP2ENC = 
 MPEG2DEC = 
-MPEG2ENC = /usr/bin/mpeg2enc
-MPLEX = /usr/bin/mplex
+MPEG2ENC = 
+MPLEX = 
 OBJEXT = o
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = fabnicol@users.sourceforge.net
@@ -231,24 +231,24 @@ PATH_SEPARATOR = :
 PIXDIR = /usr/local/share/pixmaps
 PROGRAM_TARGETS =  sox libogg FLAC ffmpeg dvdauthor lplex mjpegtools cdrtools a52dec libmpeg2 help2man ImageMagick man2html libiberty libfixwav
 RANLIB = @RANLIB@
-ROOTDIR = /home/fab/Documents/dvda-author
-SED = /usr/bin/sed
+ROOTDIR = /home/fab/dvda-author
+SED = /bin/sed
 SET_MAKE = 
-SHELL = /bin/bash
+SHELL = /bin/sh
 SHORTLINKDIR = /usr/local/share/applications/dvda-author-dev
-SOFTWARE_PATH = /usr/bin/dvdauthor
+SOFTWARE_PATH = 
 SOX_VERSION = 
-SPUMUX = /usr/bin/spumux
+SPUMUX = 
 STRIP = @STRIP@
 TAR = 
 VERSION = 
 a52dec = 
 a52dec_CONFIGURE_FILE = a52dec-0.7.4/configure
 a52dec_LIB = 
-abs_builddir = /home/fab/Documents/dvda-author/images
-abs_srcdir = /home/fab/Documents/dvda-author/images
-abs_top_builddir = /home/fab/Documents/dvda-author
-abs_top_srcdir = /home/fab/Documents/dvda-author
+abs_builddir = /home/fab/dvda-author/images
+abs_srcdir = /home/fab/dvda-author/images
+abs_top_builddir = /home/fab/dvda-author
+abs_top_srcdir = /home/fab/dvda-author
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = gcc
 am__include = @am__include@
@@ -299,7 +299,7 @@ libmpeg2_CONFIGURE_FILE = libmpeg2-0.5.1/configure
 libmpeg2_LIB = 
 libogg = 
 libogg_CONFIGURE_FILE = libogg-1.3.4/configure
-libogg_LIB = /home/fab/Documents/dvda-author/local/lib/libogg.a
+libogg_LIB = /home/fab/dvda-author/local/lib/libogg.a
 localedir = ${datarootdir}/locale
 localstatedir = ${prefix}/var
 lplex = 
@@ -319,7 +319,7 @@ sbindir = ${exec_prefix}/sbin
 sharedstatedir = ${prefix}/com
 sox = 
 sox_CONFIGURE_FILE = sox-14.4.2/configure
-sox_LIB = /home/fab/Documents/dvda-author/local/lib/libsox.a
+sox_LIB = /home/fab/dvda-author/local/lib/libsox.a
 srcdir = .
 sysconfdir = ${prefix}/etc
 target_alias = 

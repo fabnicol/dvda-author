@@ -103,7 +103,12 @@ manpage: $(PROGRAM).1
 htmlpage: $(PROGRAM).html
 
 pdfpage: $(PROGRAM).html
-		[ -f "@WKHTMLTOPDF@" ] && @WKHTMLTOPDF@ $(PROGRAM).html $(PROGRAM).pdf
+		@if test -n "@WKHTMLTOPDF@" -a -f "@WKHTMLTOPDF@"; then 
+		  @WKHTMLTOPDF@ $(PROGRAM).html $(PROGRAM).pdf
+		else
+		  echo "No pdf help file can be created as wkhtmltopdf has not \
+		  been installed"
+		fi  
 
 $(PROGRAM).1:
 	@if test "@HAVE_help2man@" = "yes"; then
@@ -189,7 +194,8 @@ clean: clean-local
 	$(RM) @BUILDDIR@/src/$(PROGRAM)
 
 clean-local:
-	$(RM) $(PROGRAM).1 $(PROGRAM).html $(PROGRAM).pdf .dvda-author
+	$(RM) $(PROGRAM).1 $(PROGRAM).html $(PROGRAM).pdf 
+	$(RM) -rf .dvda-author
 	[ -d @BUILDDIR@/depconf ] && $(RM) $(wildcard @BUILDDIR@/depconf/*.depconf)
 
 distclean: clean

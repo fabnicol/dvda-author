@@ -56,10 +56,10 @@ FILE* aob_log;
 void version(globalData* globals)
 {
 
-    foutput("%s%s%s", "dvda-author version ", VERSION, "\nCopyright  2005 Dave Chapman; 2008-2009 Lee and Tim Feldkamp; 2007-2016 Fabrice Nicol.\n\n");
-    foutput("%s","See file AUTHORS for other contributors.\n\n");
-    foutput("%s","Latest version available from http://dvd-audio.sourceforge.net/\n\n");
-    foutput("%s","This is free software; see the source for copying conditions.\n\nWritten by Dave Chapman, Fabrice Nicol, Lee and Tim Feldkamp.\n");
+    foutput("%s%s%s", "dvda-author version ", VERSION, "\nFirst 2005 version: Copyright  2005 Dave Chapman.\nFirst multichannel implementation: Copyright 2008-2009 Lee and Tim Feldkamp.\nMenu creation, video linking and\nrevised multichannel capability: Copyright 2007-2021 Fabrice Nicol.\nAudio extraction and MLP capability: Copyright 2020 Fabrice Nicol.\n");
+    foutput("%s","See file AUTHORS for other contributors.\n");
+    foutput("%s","Latest version available from http://dvd-audio.sourceforge.net/\n");
+    foutput("%s","This is free software; see the source for copying conditions.\nWritten by Dave Chapman, Fabrice Nicol, Lee and Tim Feldkamp.\n\n");
     return;
 }
 

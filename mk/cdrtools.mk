@@ -1,12 +1,12 @@
-include /home/fab/Documents/dvda-author/mk/cdrtools.global.mk
+include /home/fab/dvda-author/mk/cdrtools.global.mk
 
 cdrtools_MAKESPEC=auto
 cdrtools_CONFIGSPEC=exe
 cdrtools_TESTBINARY=cdrecord
-INS_BASE="/home/fab/Documents/dvda-author/local"
+INS_BASE="/home/fab/dvda-author/local"
 
 
-/home/fab/Documents/dvda-author/depconf/cdrtools.depconf: $(cdrtools_DEPENDENCY)
+/home/fab/dvda-author/depconf/cdrtools.depconf: $(cdrtools_DEPENDENCY)
 	$(call depconf,cdrtools,noconfigure,"-k")
 
 

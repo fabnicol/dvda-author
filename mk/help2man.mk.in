@@ -11,3 +11,4 @@ help2man_TESTBINARY=help2man
 	./configure --prefix=@ROOTDIR@/local
 	make && make install
 	cd @ROOTDIR@
+	touch depconf/help2man.depconf
