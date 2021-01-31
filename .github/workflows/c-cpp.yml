@@ -1,0 +1,23 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: configure
+      run: ./configure
+    - name: make 
+      run: make -j2
+    - name: copy_menu
+      run: cp -rf menu local/ && cp -f src/dvda-author-dev dvda-author-dev.1 local/
+    - name: tar_build
+      run: tar xpJf dvda-author local/
