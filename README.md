@@ -20,14 +20,13 @@ it by configuring as follows:
 
          ./configure --enable-all-all
 
-Running ./configure should not be necessary under a recent Ubuntu platform
-(and possibly most GNU/Linux platforms) as a Makefile is provided:  
-just run sudo make && sudo make install.   
 You can also download each 
 [toolchain package from 
-Sourceforge](https://sourceforge.net/projects/dvd-audio/files/dvda-author/Dependencies/)
-
-Mind to apply the patches in the **patches** subdirectory of this URL.
+Sourceforge](https://sourceforge.net/projects/dvd-audio/files/dvda-author/Dependencies/)   
+    
+If you do not run ./configure and build the toolchain dependencies 
+by hand, please mind to apply the patches in the **patches** 
+subdirectory of this URL.
 	
 The building system has been tested under linux, Free-BSD
 and Cygwin. For Windows, you can use the codeblocks project to (re)build
