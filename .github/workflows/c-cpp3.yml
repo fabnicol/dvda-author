@@ -26,10 +26,10 @@ jobs:
       run: sudo make PARALLEL=-j2
     - name: copy_menu
       run: | 
-        cp -rf menu local/ 
-        cp -f src/dvda-author-dev dvda-author-dev.1 local/
+        sudo cp -rf menu local/ 
+        sudo cp -f src/dvda-author-dev dvda-author-dev.1 local/
     - name: tar_build
-      run: tar cpJvf dvda-author-${tag_name}.tar.xz local/
+      run: sudo tar cpJvf dvda-author-${tag_name}.tar.xz local/
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
