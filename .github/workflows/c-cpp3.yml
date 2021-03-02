@@ -17,7 +17,7 @@ jobs:
       run: | 
        sudo apt -yq update
        sudo apt -yq upgrade
-       sudo apt -yq install nasm util-linux curl xz-utils
+       sudo apt -yq install nasm util-linux curl xz-utils wkhtmltopdf
     - name: autogen
       run: chmod +x autogen && /bin/bash autogen
     - name: configure
@@ -29,23 +29,20 @@ jobs:
         sudo cp -rf menu local/ 
         sudo cp -f src/dvda-author-dev dvda-author-dev.1 local/
     - name: tar_build
-      run: sudo tar cpJvf dvda-author-${tag_name}.tar.xz local/
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
-    - name: Upload Release Asset
-      id: upload-release-asset 
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
+      run: |
+        export tag_name="${GITHUB_REF##*/}"
+        sudo tar cpJvf dvda-author-${tag_name}.tar.xz local/
+        
+    - name: Upload Release Assets
+      run: |
+        set -x
+        assets=()
+        for asset in "dvda-author-${tag_name}.tar.xz" "./dvda-author-dev.{1,html,pdf}"; do
+        assets+=("-a" "$asset")
+        done
+        tag_name="${GITHUB_REF##*/}"
+        hub release create  "${assets[@]}" \
+        -m "Release ${tag_name}" \
           upload_url: ${{ steps.create_release.outputs.upload_url }} 
           asset_path: ./dvda-author-${tag_name}.tar.xz
           asset_name: dvda-author-${tag_name}.tar.xz
