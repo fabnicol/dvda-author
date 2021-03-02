@@ -17,7 +17,7 @@ jobs:
       run: | 
        sudo apt -yq update
        sudo apt -yq upgrade
-       sudo apt -yq install nasm util curl xz-utils
+       sudo apt -yq install nasm util-linux curl xz-utils
     - name: autogen
       run: chmod +x autogen && /bin/bash autogen
     - name: configure
