@@ -16,7 +16,7 @@ jobs:
     - name: prepare
       run: | 
        sudo apt -yq update
-       sudo apt -yg upgrade
+       sudo apt -yq upgrade
        sudo apt -yq install nasm util curl xz-utils
     - name: autogen
       run: chmod +x autogen && /bin/bash autogen
