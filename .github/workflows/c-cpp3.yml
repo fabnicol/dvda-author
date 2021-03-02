@@ -37,13 +37,11 @@ jobs:
       run: |
         set -x
         assets=()
-        for asset in "dvda-author-${tag_name}.tar.xz" "./dvda-author-dev.{1,html,pdf}"; do
+        export tag_name="${GITHUB_REF##*/}"
+        for asset in "dvda-author-$tag_name.tar.xz" "./dvda-author-dev.{1,html,pdf}"; do
         assets+=("-a" "$asset")
         done
-        tag_name="${GITHUB_REF##*/}"
         hub release create  "${assets[@]}" \
-        -m "Release ${tag_name}" \
-          upload_url: ${{ steps.create_release.outputs.upload_url }} 
-          asset_path: ./dvda-author-${tag_name}.tar.xz
-          asset_name: dvda-author-${tag_name}.tar.xz
-          asset_content_type: application/x-xz-compressed
+        -m "Release $tag_name" 
+      env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
