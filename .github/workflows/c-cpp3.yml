@@ -1,25 +1,46 @@
-name: C/C++ CI
+name: dvda-author
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    tags:
+      - 'v*' 
+
+  workflow_dispatch:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
     - name: autogen
-      run: /bin/bash autogen
+      run: chmod +x autogen && /bin/bash autogen
     - name: configure
       run: ./configure
     - name: make 
-      run: make PARALLEL=-j2
+      run: sudo make PARALLEL=-j2
     - name: copy_menu
-      run: cp -rf menu local/ && cp -f src/dvda-author-dev dvda-author-dev.1 local/
+      run: | 
+        cp -rf menu local/ 
+        cp -f src/dvda-author-dev dvda-author-dev.1 local/
     - name: tar_build
-      run: tar xpJf dvda-author local/
+      run: tar cpJvf dvda-author-${tag_name}.tar.xz local/
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+    - name: Upload Release Asset
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} 
+          asset_path: ./dvda-author-${tag_name}.tar.xz
+          asset_name: dvda-author-${tag_name}.tar.xz
