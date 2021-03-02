@@ -38,7 +38,7 @@ jobs:
         set -x
         assets=()
         export tag_name="${GITHUB_REF##*/}"
-        for asset in "dvda-author-$tag_name.tar.xz" "./dvda-author-dev.{1,html,pdf}"; do
+        for asset in "dvda-author-$tag_name.tar.xz" ./dvda-author-dev.{1,html,pdf}; do
         assets+=("-a" "$asset")
         done
         hub release create  "${assets[@]}" \
