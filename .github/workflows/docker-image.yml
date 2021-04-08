@@ -24,6 +24,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build the Docker image
       run: |
+        sudo apt update -yq && sudo apt upgrade -yq
         sudo apt install coreutils util-linux xz-utils
         echo $'{\n  "experimental": true\n}' | sudo tee /etc/docker/daemon.json
         mkdir -p ~/.docker
