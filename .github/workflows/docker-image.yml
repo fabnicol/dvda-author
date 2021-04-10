@@ -25,7 +25,7 @@ jobs:
     - name: Build the Docker image
       run: |
         sudo apt -yq update && DEBIAN_FRONTEND=noninteractive sudo apt -yq upgrade
-        sudo apt install coreutils util-linux xz-utils
+        DEBIAN_FRONTEND=noninteractive sudo apt install coreutils util-linux xz-utils
         echo $'{\n  "experimental": true\n}' | sudo tee /etc/docker/daemon.json
         mkdir -p ~/.docker
         echo $'{\n  "experimental": "enabled"\n}' | sudo tee ~/.docker/config.json
