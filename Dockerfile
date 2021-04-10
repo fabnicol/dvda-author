@@ -9,9 +9,9 @@ WORKDIR dvda-author
 RUN chmod +x autogen && /bin/bash autogen
 RUN ./configure
 RUN make PARALLEL=-j2
-RUN make install
 RUN cp -rf menu local/ 
 RUN rm -rf /usr/local/* && cp -rf local/* /usr/local && rm -rf local
+RUN make install
 RUN find . -maxdepth 1 -type d -exec rm -rf {} \;
 RUN ldconfig
 RUN echo "Build completed."
