@@ -62,7 +62,7 @@ jobs:
         -m "Download, check the control sums and uncompress it using **xz -d**." \
         -m "Run as follows: " \
         -m "      sudo docker run -it --privileged -v /dev/cdrom:/dev/cdrom -v /dev/sr0:/dev/sr0 dvda-author:release-master [your options]" \
-        -m "Then enter \`exit\` when to exit the Docker container."  \
+        -m "Then after completion enter \`exit\`."  \
         "$tag_name"
       env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}        
