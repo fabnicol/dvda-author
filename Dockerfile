@@ -11,6 +11,6 @@ RUN ./configure
 RUN make PARALLEL=-j2
 RUN make install
 RUN cp -rf menu local/ 
-RUN cp -a -f local/* /usr/local
+RUN rm -rf /usr/local/* && cp -rf local/* /usr/local
 RUN ldconfig
 RUN echo "Build completed."
