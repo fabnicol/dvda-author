@@ -57,7 +57,7 @@ jobs:
         hub release create  "${assets[@]}" \
         -m "Release $tag_name" \
         -m "This release was automatically created by the Git Actions workflow corresponding to directory .github in the repository." \
-        -m "The output are a checksum file and a compressed Docker image for the corresponding branch." \
+        -m "The output is a checksum file and a compressed Docker image for the corresponding branch." \
         -m "File **dvda-author-${tag_name}.tar.xz** is the compressed custom MKG Docker image built from latest repository sources." \
         -m "Download, check the control sums and uncompress it using **xz -d**." \
         -m "Run as follows: " \
