@@ -15,3 +15,4 @@ RUN make install
 RUN find . -maxdepth 1 -type d -exec rm -rf {} \;
 RUN ldconfig
 RUN echo "Build completed."
+ENTRYPOINT ["dvda-author-dev"]
