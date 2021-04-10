@@ -24,6 +24,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build the Docker image
       run: |
+        DEBIAN_FRONTEND=noninteractive sudo apt update
+        DEBIAN_FRONTEND=noninteractive sudo apt upgrade
         DEBIAN_FRONTEND=noninteractive sudo apt install coreutils util-linux xz-utils
         echo $'{\n  "experimental": true\n}' | sudo tee /etc/docker/daemon.json
         mkdir -p ~/.docker
@@ -36,8 +38,6 @@ jobs:
         sudo xz -9 dvda-author-release-master.tar
         echo "b2sum: $(b2sum dvda-author-release-master.tar.xz)" > checksums.txt
         echo "sha512sum: $(sha512sum dvda-author-release-master.tar.xz)" >> checksums.txt
-        
-        
       
     - uses: dev-drprasad/delete-tag-and-release@v0.2.0
       with:
