@@ -34,9 +34,9 @@ jobs:
         docker version -f '{{.Client.Experimental}}'
         docker version -f '{{.Server.Experimental}}'
         docker build --squash --file Dockerfile --tag dvda-author:release-master .
-        sudo docker save -o dvda-author-release-master.tar dvda-author:release-master
+        docker save -o dvda-author-release-master.tar dvda-author:release-master
         [ -f dvda-author-release-master.tar ] && echo "Saved tar image." || "Could not tar."
-        sudo xz -9 dvda-author-release-master.tar
+        xz -9 dvda-author-release-master.tar
         [ -f dvda-author-release-master.tar.xz ] && echo "Saved tar.xz image." || "Could not tar.xz."
         echo "b2sum: $(b2sum dvda-author-release-master.tar.xz)" > checksums.txt
         echo "sha512sum: $(sha512sum dvda-author-release-master.tar.xz)" >> checksums.txt
