@@ -62,7 +62,7 @@ static char ***picks_per_track_double_array=NULL;
 
 void parse_double_entry_command_line(char* input_string, char**** DOUBLE_ARRAY,
                                      uint8_t** COUNTER_ARRAY, uint8_t* TOTAL,
-                                     short int audit_flag, char separator, globalData* globals)
+                                     short int audit_flag, char separator, globalData *globals)
 {
     errno=0;
     char** array=NULL;
@@ -860,6 +860,7 @@ out:
             k += m-1;
             break;
 
+#ifndef WITHOUT_sox
         case '-':
             if (! user_command_line || strcmp(argv[k], "--resample") != 0) break;
               // -g file1...fileN... --resample 2 24 96000 2 16 44100...
@@ -890,6 +891,7 @@ out:
             k += m-1;
 
             break;
+#endif
 
         }
     }

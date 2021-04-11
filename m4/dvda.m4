@@ -187,6 +187,8 @@ AC_DEFUN([DVDA_DOWNLOAD],
 	     ])
 	   ])
 
+# Example: #define FFMPEG=/usr/bin/ffmpeg
+#          #define HAVE_ffmpeg=1 or 1 if downloaded or not
 
 AS_IF([test "$errorcode" = "1"],[errorcode_boolean=0],[errorcode_boolean=1])
 AC_DEFINE_UNQUOTED(upper, ["${prefix}/bin/bn"], [Defining ]bn[ filepath.])
@@ -381,6 +383,9 @@ AC_DEFINE_UNQUOTED([HAVE_]bn[_BUILD],[$indic_boolean],msg)
 
 AC_SUBST([HAVE_]bn[_BUILD])
 
+# Example: #define HAVE_ffmpeg_BUILD   in .c file
+#          @HAVE_ffmpeg_BUILD@ in Makefile.in
+
 ])# DVDA_ARG_ENABLE
 
 
@@ -406,12 +411,20 @@ AS_IF([test x$CAPNAME = x ],
    DVDA_INF([$2])
    auxbool=1
   ])
-
+ 
+  
 AC_DEFINE_UNQUOTED([HAVE_]$1, [$auxbool], [Found $1])
 AC_DEFINE_UNQUOTED(CAPNAME, "$CAPNAME", [Pathname of $1])
 AS_IF([test $auxbool = 1],[[HAVE_]$1=yes],[[HAVE_]$1=no])
 AC_SUBST([HAVE_]$1)
 m4_undefine([CAPNAME])
+
+# Only for auxiliary tools
+# Example:  #define HAVE_ffmpeg 0 or 1 if found executable ffmpeg as existing in filesystem
+#           #define FFMPEG /usr/bin/ffmpeg  in .c file
+#           @HAVE_ffmpeg@ in Makefile.in
+#        
+# Note: may run into conflicts with HAVE_... resulting from DOWNLOAD
 ]) #DVDA_TEST_AUX
 
 

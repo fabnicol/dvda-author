@@ -1,6 +1,6 @@
-#line 2 "dvdvml.c"
+#line 1 "dvdvml.c"
 
-#line 4 "dvdvml.c"
+#line 3 "dvdvml.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -859,8 +859,8 @@ char *yytext;
 #include "dvdvmy.h"
 
 
+#line 862 "dvdvml.c"
 #line 863 "dvdvml.c"
-#line 864 "dvdvml.c"
 
 #define INITIAL 0
 
@@ -1078,7 +1078,7 @@ YY_DECL
 #line 42 "dvdvml.l"
 
 
-#line 1082 "dvdvml.c"
+#line 1081 "dvdvml.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1621,7 +1621,7 @@ YY_RULE_SETUP
 #line 201 "dvdvml.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 1625 "dvdvml.c"
+#line 1624 "dvdvml.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 

@@ -1,6 +1,8 @@
 #ifndef MLP_H_INCLUDED
 #define MLP_H_INCLUDED
 
+#ifdef HAVE_ffmpeg
+
 #include "libavcodec/avcodec.h"
 #include "libavutil/channel_layout.h"
 #include "libavutil/common.h"
@@ -20,4 +22,5 @@ int decode_mlp_file(fileinfo_t* info, globalData* globals);
 int encode_mlp_file(fileinfo_t* info, globalData* globals);
 
 void transport_to_mlp(fileinfo_t* info, globalData* globals);
+#endif
 #endif // MLP_H_INCLUDED

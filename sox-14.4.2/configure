@@ -15240,8 +15240,8 @@ See \`config.log' for more details" "$LINENO" 5; }
   if test _$with_opus != _no; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for opusfile" >&5
-$as_echo_n "checking for opusfile... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for OPUS" >&5
+$as_echo_n "checking for OPUS... " >&6; }
 
 if test -n "$OPUS_CFLAGS"; then
     pkg_cv_OPUS_CFLAGS="$OPUS_CFLAGS"
@@ -15281,7 +15281,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -15299,7 +15299,7 @@ fi
 
 	using_opus=no
 elif test $pkg_failed = untried; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	using_opus=no
 else
@@ -16546,8 +16546,8 @@ ac_sox_save_SNDFILE_LIBS="$SNDFILE_LIBS"
 # PKG_CHECK_MODULES available
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for sndfile" >&5
-$as_echo_n "checking for sndfile... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for SNDFILE" >&5
+$as_echo_n "checking for SNDFILE... " >&6; }
 
 if test -n "$SNDFILE_CFLAGS"; then
     pkg_cv_SNDFILE_CFLAGS="$SNDFILE_CFLAGS"
@@ -16587,7 +16587,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -16605,7 +16605,7 @@ fi
 
 	have_sndfile="no"
 elif test $pkg_failed = untried; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	have_sndfile="no"
 else

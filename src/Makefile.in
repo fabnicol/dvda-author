@@ -88,14 +88,16 @@ CPPFLAGS += -I@ROOTDIR@/local/include
 $(OBJECTS): %.o: @ROOTDIR@/src/%.c
 	$(CC)  -c @DEFS@ $(CFLAGS) $(CPPFLAGS)  $< -o $@
 
-LDLIBS_append += $(foreach prog,$(STATIC_LIBS),$($(prog)_LIB) $($(prog)_LINK)) 
+LDLIBS_append += $(foreach prog,$(STATIC_LIBS),$($(prog)_LIB) $($(prog)_LINK))
 
+ifeq "@ffmpeg_BUILD@" "yes"
 LDLIBS += $(LDLIBS_append) \
 	  @ROOTDIR@/local/lib/libswresample.a \
 	  @ROOTDIR@/local/lib/libavformat.a \
 	  @ROOTDIR@/local/lib/libavfilter.a \
 	  @ROOTDIR@/local/lib/libavcodec.a \
 	  @ROOTDIR@/local/lib/libavutil.a @WINLIBS@
+endif
 
 @PACKAGE_NAME@: $(OBJECTS) $(LDLIBS_append)
 

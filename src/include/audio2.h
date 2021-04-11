@@ -81,8 +81,9 @@ uint8_t wav2cga_channels(fileinfo_t *info, globalData*);
 uint8_t get_cga_index(const char* cga);
 uint8_t check_cga_assignment(long cgaint);
 int calc_info(fileinfo_t* info, globalData*);
+#if HAVE_ffmpeg
 int decode_mlp_file(fileinfo_t* info, globalData* globals);
 bool audit_mlp_header(uint8_t* header, fileinfo_t* info, bool, globalData*);
-
+#endif
 char* replace_file_extension(const char * filename, const char* infix, const char* new_extension, globalData*);
 #endif
