@@ -1,0 +1,16 @@
+**/*.pro
+**/*.md
+!README.md
+**/*.gz
+**/*.bz2
+**/*.xz
+**/*.tar
+**/*.tar.gz
+**/*.tar.bz2
+**/*.tar.xz
+**/*.1
+**/*.pdf
+!dvda-author*.1
+!dvda-author*.pdf
+**/*.m4
+**/*.zip
