@@ -69,7 +69,10 @@ jobs:
         -m "File **dvda-author-${tag_name}.tar.xz** is the compressed custom MKG Docker image built from latest repository sources." \
         -m "Download, check the control sums and uncompress it using **xz -d dvda-author-release-master.tar.xz**.  " \
         -m "Then load the image:" \
-        -m "**sudo docker load -i dvda-author-release-master.tar**" \
+        -m "    sudo docker load -i dvda-author-release-master.tar" \
+        -m "Run as follows, if **audio** is your local directory containing audio files: " \
+        -m "    sudo docker run -it --privileged -v path/to/audio:/audio -v /dev/cdrom:/dev/cdrom -v /dev/sr0:/dev/sr0 dvda-author:release-master -g /audio/file.wav ... your options..." \
+        -m "Then after completion enter \'exit\'."  \
         "$tag_name"
       env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}        
