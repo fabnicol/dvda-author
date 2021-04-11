@@ -21,7 +21,7 @@ RUN make install
 RUN find . -maxdepth 1 -type d -exec rm -rf {} \;
 RUN cp -rf /usr/local/menu .
 RUN rm -rf /var/*
-RUN rm -rf /usr/src/*
+RUN rm -rf /usr/src/* /usr/include/* usr/local/include/* 
 RUN ldconfig
 RUN echo "Build completed."
 ENTRYPOINT ["dvda-author-dev"]
