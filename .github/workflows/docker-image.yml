@@ -63,7 +63,7 @@ jobs:
         -m "Then load the image:  "\
         -m "      sudo docker load -i dvda-author-release-master.tar  " \
         -m "Run as follows, if **audio** is your local directory containing audio files: " \
-        -m "      sudo docker run -it --privileged -v $PWD/audio:/audio -v /dev/cdrom:/dev/cdrom -v /dev/sr0:/dev/sr0 dvda-author:release-master -g /audio/file.wav [... your options...]" \
+        -m "      sudo docker run -it --privileged -v \$PWD/audio:/audio -v /dev/cdrom:/dev/cdrom -v /dev/sr0:/dev/sr0 dvda-author:release-master -g /audio/file.wav [... your options...]" \
         -m "Then after completion enter \`exit\`."  \
         "$tag_name"
       env:
