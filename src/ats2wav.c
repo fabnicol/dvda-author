@@ -1406,7 +1406,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info, globalData
                 }
 
                 S_CLOSE(info->outfile)
-#if HAVE_ffmpeg
+
                 if (info->infile.type == AFMT_MLP && globals->decode)
                 {
                     if (file_exists(info->outfile.filename))
@@ -1421,7 +1421,7 @@ int get_ats_audio_i(int i, fileinfo_t* files[81][99], WaveData *info, globalData
                         fprintf(stderr, ERR "File '%s' could not be extracted.\n", info->outfile.filename);
                     }
                 }
-#endif
+
                 if (position == LAST_PACK || position == CUT_PACK_RMDR)
                 {
                     if (globals->veryverbose)

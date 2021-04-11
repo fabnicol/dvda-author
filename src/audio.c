@@ -557,7 +557,6 @@ int calc_info(fileinfo_t* info, globalData* globals)
 
     info->samplesperframe *= 8;
 
-#ifndef ffmpeg_BUILD
     if (info->type == AFMT_MLP)
     {
         foutput(INF "Searching MLP layout for file %s. Please wait...\n", info->filename);
@@ -589,7 +588,6 @@ int calc_info(fileinfo_t* info, globalData* globals)
     }
     else
     {
-#endif
       info->numsamples
             = info->numbytes / (info->channels * (info->bitspersample / 8));
     }
