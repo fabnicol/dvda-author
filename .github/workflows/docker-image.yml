@@ -60,8 +60,8 @@ jobs:
         -m "The output is a checksum file and a compressed Docker image for the corresponding branch." \
         -m "File **dvda-author-${tag_name}.tar.xz** is the compressed custom MKG Docker image built from latest repository sources." \
         -m "Download, check the control sums and uncompress it using **xz -d**." \
-        -m "Run as follows: " \
-        -m "      sudo docker run -it --privileged -v /dev/cdrom:/dev/cdrom -v /dev/sr0:/dev/sr0 dvda-author:release-master [your options]" \
+        -m "Run as follows, if **audio** is your local directory containing audio files: " \
+        -m "      sudo docker run -it --privileged -v $PWD/audio:/audio -v /dev/cdrom:/dev/cdrom -v /dev/sr0:/dev/sr0 dvda-author:release-master -g /audio/file.wav [... your options...]" \
         -m "Then after completion enter \`exit\`."  \
         "$tag_name"
       env:
