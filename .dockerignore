@@ -5,9 +5,11 @@
 **/*.bz2
 **/*.xz
 **/*.tar
+**/*.tar.xz
+!dvda-author*.tar
+!dvda-author*.tar.xz
 **/*.tar.gz
 **/*.tar.bz2
-**/*.tar.xz
 **/*.1
 **/*.pdf
 !dvda-author*.1
