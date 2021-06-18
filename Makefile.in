@@ -170,7 +170,7 @@ install-pic:  $(wildcard @ROOTDIR@/menu/*)
 	$(INSTALL_DATA) $^ $(DESTDIR)@MENUDIR@
 
 install-man:
-	@ [ -f $(PROGRAM).1 ] && $(INSTALL_DATA) $(PROGRAM).1 @mandir@/man1
+	@ [ -f $(PROGRAM).1 ] && $(INSTALL_DATA) $(PROGRAM).1 $(DESTDIR)@mandir@/man1
 
 install-data-local:  $(dist_doc_DATA) $(dist_pic_DATA)
 	$(MKDIR_P)  $(DESTDIR)@infodir@/$(PROGRAM)
