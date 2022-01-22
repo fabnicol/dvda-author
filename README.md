@@ -1,7 +1,16 @@
 # dvda-author version 20.10 (Oct 2020)  
 
 &nbsp;  
-        	   
+**Note**: For updated builds of dvda-author and its companion tools, its is 
+advised to pull Docker images:
+
+    # (sudo) docker pull fabnicol/dvda-author:latest
+
+Please read the [Docker repository webpage](https://hub.docker.com/repository/docker/fabnicol/dvda-author)
+for usage tips and examples.   
+   
+&nbsp;  
+  
 ## 1. Quick start  
 
 ### 1.1 Building the toolchain from source:
