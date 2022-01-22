@@ -81,7 +81,9 @@ jobs:
       uses: actions/upload-artifact@v2.3.1
       with:
         name: dvda-author
-        path: ${{ github.workspace }}/dvda-author-release-master.tar ${{ github.workspace }}/Dockerfile2
+        path: |
+          ${{ github.workspace }}/dvda-author-release-master.tar
+          ${{ github.workspace }}/Dockerfile2
        
   push:
     runs-on: ubuntu-latest
