@@ -49,7 +49,9 @@
 #include "pixblockdsp.h"
 #include "put_bits.h"
 #include "ratecontrol.h"
+#if FF_API_FLAG_TRUNCATED
 #include "parser.h"
+#endif
 #include "mpegutils.h"
 #include "mpeg12data.h"
 #include "qpeldsp.h"
@@ -62,18 +64,6 @@
 #define MAX_THREADS 32
 
 #define MAX_B_FRAMES 16
-
-/* Start codes. */
-#define SEQ_END_CODE            0x000001b7
-#define SEQ_START_CODE          0x000001b3
-#define GOP_START_CODE          0x000001b8
-#define PICTURE_START_CODE      0x00000100
-#define SLICE_MIN_START_CODE    0x00000101
-#define SLICE_MAX_START_CODE    0x000001af
-#define EXT_START_CODE          0x000001b5
-#define USER_START_CODE         0x000001b2
-#define SLICE_START_CODE        0x000001b7
-
 
 /**
  * MpegEncContext.
@@ -137,7 +127,7 @@ typedef struct MpegEncContext {
     Picture **input_picture;   ///< next pictures on display order for encoding
     Picture **reordered_input_picture; ///< pointer to the next pictures in coded order for encoding
 
-    int64_t user_specified_pts; ///< last non-zero pts from AVFrame which was passed into avcodec_encode_video2()
+    int64_t user_specified_pts; ///< last non-zero pts from AVFrame which was passed into avcodec_send_frame()
     /**
      * pts difference between the first and second input frame, used for
      * calculating dts of the first frame when there's a delay */
@@ -276,7 +266,7 @@ typedef struct MpegEncContext {
     int mv[2][4][2];
     int field_select[2][2];
     int last_mv[2][2][2];             ///< last MV, used for MV prediction in MPEG-1 & B-frame MPEG-4
-    uint8_t *fcode_tab;               ///< smallest fcode needed for each MV
+    const uint8_t *fcode_tab;         ///< smallest fcode needed for each MV
     int16_t direct_scale_mv[2][64];   ///< precomputed to avoid divisions in ff_mpeg4_set_direct_mv
 
     MotionEstContext me;
@@ -359,7 +349,9 @@ typedef struct MpegEncContext {
     int mb_num_left;                 ///< number of MBs left in this video packet (for partitioned Slices only)
     int next_p_frame_damaged;        ///< set if the next p frame is damaged, to avoid showing trashed B-frames
 
+#if FF_API_FLAG_TRUNCATED
     ParseContext parse_context;
+#endif
 
     /* H.263 specific */
     int gob_index;
@@ -369,7 +361,6 @@ typedef struct MpegEncContext {
     uint8_t *mb_info_ptr;
     int mb_info_size;
     int ehc_mode;
-    int rc_strategy;                ///< deprecated
 
     /* H.263+ specific */
     int umvplus;                    ///< == H.263+ && unrestricted_mv
@@ -443,6 +434,9 @@ typedef struct MpegEncContext {
     int (*ac_stats)[2][MAX_LEVEL+1][MAX_RUN+1][2];
     int inter_intra_pred;
     int mspel;
+
+    /* SpeedHQ specific */
+    int slice_start;
 
     /* decompression specific */
     GetBitContext gb;
@@ -580,6 +574,8 @@ typedef struct MpegEncContext {
 
     int scenechange_threshold;
     int noise_reduction;
+
+    int intra_penalty;
 } MpegEncContext;
 
 /* mpegvideo_enc common options */
@@ -643,30 +639,40 @@ FF_MPV_OPT_CMP_FUNC, \
 {"lmax", "maximum Lagrange factor (VBR)",                           FF_MPV_OFFSET(lmax), AV_OPT_TYPE_INT, {.i64 = 31*FF_QP2LAMBDA }, 0, INT_MAX, FF_MPV_OPT_FLAGS },            \
 {"ibias", "intra quant bias",                                       FF_MPV_OFFSET(intra_quant_bias), AV_OPT_TYPE_INT, {.i64 = FF_DEFAULT_QUANT_BIAS }, INT_MIN, INT_MAX, FF_MPV_OPT_FLAGS },   \
 {"pbias", "inter quant bias",                                       FF_MPV_OFFSET(inter_quant_bias), AV_OPT_TYPE_INT, {.i64 = FF_DEFAULT_QUANT_BIAS }, INT_MIN, INT_MAX, FF_MPV_OPT_FLAGS },   \
-{"rc_strategy", "ratecontrol method",                               FF_MPV_OFFSET(rc_strategy), AV_OPT_TYPE_INT, {.i64 = 0 }, 0, 1, FF_MPV_OPT_FLAGS | AV_OPT_FLAG_DEPRECATED, "rc_strategy" },   \
-    { "ffmpeg", "deprecated, does nothing", 0, AV_OPT_TYPE_CONST, { .i64 = 0 }, 0, 0, FF_MPV_OPT_FLAGS | AV_OPT_FLAG_DEPRECATED, "rc_strategy" }, \
-    { "xvid",   "deprecated, does nothing", 0, AV_OPT_TYPE_CONST, { .i64 = 0 }, 0, 0, FF_MPV_OPT_FLAGS | AV_OPT_FLAG_DEPRECATED, "rc_strategy" }, \
 {"motion_est", "motion estimation algorithm",                       FF_MPV_OFFSET(motion_est), AV_OPT_TYPE_INT, {.i64 = FF_ME_EPZS }, FF_ME_ZERO, FF_ME_XONE, FF_MPV_OPT_FLAGS, "motion_est" },   \
 { "zero", NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FF_ME_ZERO }, 0, 0, FF_MPV_OPT_FLAGS, "motion_est" }, \
 { "epzs", NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FF_ME_EPZS }, 0, 0, FF_MPV_OPT_FLAGS, "motion_est" }, \
 { "xone", NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FF_ME_XONE }, 0, 0, FF_MPV_OPT_FLAGS, "motion_est" }, \
-{ "force_duplicated_matrix", "Always write luma and chroma matrix for mjpeg, useful for rtp streaming.", FF_MPV_OFFSET(force_duplicated_matrix), AV_OPT_TYPE_BOOL, {.i64 = 0 }, 0, 1, FF_MPV_OPT_FLAGS },   \
-{"b_strategy", "Strategy to choose between I/P/B-frames",           FF_MPV_OFFSET(b_frame_strategy), AV_OPT_TYPE_INT, {.i64 = 0 }, 0, 2, FF_MPV_OPT_FLAGS }, \
-{"b_sensitivity", "Adjust sensitivity of b_frame_strategy 1",       FF_MPV_OFFSET(b_sensitivity), AV_OPT_TYPE_INT, {.i64 = 40 }, 1, INT_MAX, FF_MPV_OPT_FLAGS }, \
-{"brd_scale", "Downscale frames for dynamic B-frame decision",      FF_MPV_OFFSET(brd_scale), AV_OPT_TYPE_INT, {.i64 = 0 }, 0, 3, FF_MPV_OPT_FLAGS }, \
 {"skip_threshold", "Frame skip threshold",                          FF_MPV_OFFSET(frame_skip_threshold), AV_OPT_TYPE_INT, {.i64 = 0 }, INT_MIN, INT_MAX, FF_MPV_OPT_FLAGS }, \
 {"skip_factor", "Frame skip factor",                                FF_MPV_OFFSET(frame_skip_factor), AV_OPT_TYPE_INT, {.i64 = 0 }, INT_MIN, INT_MAX, FF_MPV_OPT_FLAGS }, \
 {"skip_exp", "Frame skip exponent",                                 FF_MPV_OFFSET(frame_skip_exp), AV_OPT_TYPE_INT, {.i64 = 0 }, INT_MIN, INT_MAX, FF_MPV_OPT_FLAGS }, \
 {"skip_cmp", "Frame skip compare function",                         FF_MPV_OFFSET(frame_skip_cmp), AV_OPT_TYPE_INT, {.i64 = FF_CMP_DCTMAX }, INT_MIN, INT_MAX, FF_MPV_OPT_FLAGS, "cmp_func" }, \
 {"sc_threshold", "Scene change threshold",                          FF_MPV_OFFSET(scenechange_threshold), AV_OPT_TYPE_INT, {.i64 = 0 }, INT_MIN, INT_MAX, FF_MPV_OPT_FLAGS }, \
 {"noise_reduction", "Noise reduction",                              FF_MPV_OFFSET(noise_reduction), AV_OPT_TYPE_INT, {.i64 = 0 }, INT_MIN, INT_MAX, FF_MPV_OPT_FLAGS }, \
-{"mpeg_quant", "Use MPEG quantizers instead of H.263",              FF_MPV_OFFSET(mpeg_quant), AV_OPT_TYPE_INT, {.i64 = 0 }, 0, 1, FF_MPV_OPT_FLAGS }, \
 {"ps", "RTP payload size in bytes",                             FF_MPV_OFFSET(rtp_payload_size), AV_OPT_TYPE_INT, {.i64 = 0 }, INT_MIN, INT_MAX, FF_MPV_OPT_FLAGS }, \
 {"mepc", "Motion estimation bitrate penalty compensation (1.0 = 256)", FF_MPV_OFFSET(me_penalty_compensation), AV_OPT_TYPE_INT, {.i64 = 256 }, INT_MIN, INT_MAX, FF_MPV_OPT_FLAGS }, \
 {"mepre", "pre motion estimation", FF_MPV_OFFSET(me_pre), AV_OPT_TYPE_INT, {.i64 = 0 }, INT_MIN, INT_MAX, FF_MPV_OPT_FLAGS }, \
-{"a53cc", "Use A53 Closed Captions (if available)", FF_MPV_OFFSET(a53_cc), AV_OPT_TYPE_BOOL, {.i64 = 1}, 0, 1, FF_MPV_OPT_FLAGS }, \
+{"intra_penalty", "Penalty for intra blocks in block decision", FF_MPV_OFFSET(intra_penalty), AV_OPT_TYPE_INT, {.i64 = 0 }, 0, INT_MAX/2, FF_MPV_OPT_FLAGS }, \
 
-extern const AVOption ff_mpv_generic_options[];
+#define FF_MPV_COMMON_BFRAME_OPTS \
+{"b_strategy", "Strategy to choose between I/P/B-frames",      FF_MPV_OFFSET(b_frame_strategy), AV_OPT_TYPE_INT, {.i64 = 0 }, 0, 2, FF_MPV_OPT_FLAGS }, \
+{"b_sensitivity", "Adjust sensitivity of b_frame_strategy 1",  FF_MPV_OFFSET(b_sensitivity), AV_OPT_TYPE_INT, {.i64 = 40 }, 1, INT_MAX, FF_MPV_OPT_FLAGS }, \
+{"brd_scale", "Downscale frames for dynamic B-frame decision", FF_MPV_OFFSET(brd_scale), AV_OPT_TYPE_INT, {.i64 = 0 }, 0, 3, FF_MPV_OPT_FLAGS },
+
+#if FF_API_MPEGVIDEO_OPTS
+#define FF_MPV_DEPRECATED_MPEG_QUANT_OPT \
+    { "mpeg_quant", "Deprecated, does nothing", FF_MPV_OFFSET(mpeg_quant), AV_OPT_TYPE_INT, {.i64 = 0 }, 0, 0, FF_MPV_OPT_FLAGS | AV_OPT_FLAG_DEPRECATED },
+#define FF_MPV_DEPRECATED_A53_CC_OPT \
+    { "a53cc",      "Deprecated, does nothing", FF_MPV_OFFSET(a53_cc),     AV_OPT_TYPE_BOOL, { .i64 = 1 }, 0, 1, FF_MPV_OPT_FLAGS | AV_OPT_FLAG_DEPRECATED },
+#define FF_MPV_DEPRECATED_MATRIX_OPT \
+   { "force_duplicated_matrix", "Deprecated, does nothing", FF_MPV_OFFSET(force_duplicated_matrix), AV_OPT_TYPE_BOOL, {.i64 = 0 }, 0, 1, FF_MPV_OPT_FLAGS | AV_OPT_FLAG_DEPRECATED },
+#define FF_MPV_DEPRECATED_BFRAME_OPTS \
+   { "b_strategy",    "Deprecated, does nothing", FF_MPV_OFFSET(b_frame_strategy), AV_OPT_TYPE_INT, { .i64 =  0 }, 0, 2, FF_MPV_OPT_FLAGS | AV_OPT_FLAG_DEPRECATED }, \
+   { "b_sensitivity", "Deprecated, does nothing", FF_MPV_OFFSET(b_sensitivity),    AV_OPT_TYPE_INT, { .i64 = 40 }, 1, INT_MAX, FF_MPV_OPT_FLAGS | AV_OPT_FLAG_DEPRECATED }, \
+   { "brd_scale",     "Deprecated, does nothing", FF_MPV_OFFSET(brd_scale),        AV_OPT_TYPE_INT, { .i64 =  0 }, 0, 3, FF_MPV_OPT_FLAGS | AV_OPT_FLAG_DEPRECATED },
+#endif
+
+extern const AVClass ff_mpv_enc_class;
 
 /**
  * Set the given MpegEncContext to common defaults (same for encoding
@@ -688,7 +694,6 @@ void ff_mpv_common_init_mips(MpegEncContext *s);
 int ff_mpv_common_frame_size_change(MpegEncContext *s);
 void ff_mpv_common_end(MpegEncContext *s);
 
-void ff_mpv_decode_defaults(MpegEncContext *s);
 void ff_mpv_decode_init(MpegEncContext *s, AVCodecContext *avctx);
 void ff_mpv_reconstruct_mb(MpegEncContext *s, int16_t block[12][64]);
 void ff_mpv_report_decode_progress(MpegEncContext *s);

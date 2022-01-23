@@ -18,7 +18,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/opt.h"
@@ -69,21 +68,21 @@ static int query_formats(AVFilterContext *ctx)
     int ret;
 
     formats = ff_make_format_list(sample_fmts);
-    if ((ret = ff_formats_ref(formats, &inlink->out_formats)) < 0)
+    if ((ret = ff_formats_ref(formats, &inlink->outcfg.formats)) < 0)
         return ret;
 
     layouts = ff_all_channel_counts();
     if (!layouts)
         return AVERROR(ENOMEM);
-    if ((ret = ff_channel_layouts_ref(layouts, &inlink->out_channel_layouts)) < 0)
+    if ((ret = ff_channel_layouts_ref(layouts, &inlink->outcfg.channel_layouts)) < 0)
         return ret;
 
     formats = ff_all_samplerates();
-    if ((ret = ff_formats_ref(formats, &inlink->out_samplerates)) < 0)
+    if ((ret = ff_formats_ref(formats, &inlink->outcfg.samplerates)) < 0)
         return ret;
 
     formats = ff_make_format_list(pix_fmts);
-    if ((ret = ff_formats_ref(formats, &outlink->in_formats)) < 0)
+    if ((ret = ff_formats_ref(formats, &outlink->incfg.formats)) < 0)
         return ret;
 
     return 0;
@@ -142,7 +141,7 @@ static void count_bits(AudioBitScopeContext *s, uint32_t sample, int max)
     int i;
 
     for (i = 0; i < max; i++) {
-        if (sample & (1 << i))
+        if (sample & (1U << i))
             s->counter[i]++;
     }
 }
@@ -249,7 +248,6 @@ static const AVFilterPad inputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad outputs[] = {
@@ -258,16 +256,15 @@ static const AVFilterPad outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_output,
     },
-    { NULL }
 };
 
-AVFilter ff_avf_abitscope = {
+const AVFilter ff_avf_abitscope = {
     .name          = "abitscope",
     .description   = NULL_IF_CONFIG_SMALL("Convert input audio to audio bit scope video output."),
-    .query_formats = query_formats,
     .priv_size     = sizeof(AudioBitScopeContext),
-    .inputs        = inputs,
-    .outputs       = outputs,
+    FILTER_INPUTS(inputs),
+    FILTER_OUTPUTS(outputs),
+    FILTER_QUERY_FUNC(query_formats),
     .activate      = activate,
     .priv_class    = &abitscope_class,
 };

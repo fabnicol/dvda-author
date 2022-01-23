@@ -59,7 +59,7 @@ avs_decode_frame(AVCodecContext * avctx,
     AvsBlockType type;
     GetBitContext change_map = {0}; //init to silence warning
 
-    if ((ret = ff_reget_buffer(avctx, p)) < 0)
+    if ((ret = ff_reget_buffer(avctx, p, 0)) < 0)
         return ret;
     p->pict_type = AV_PICTURE_TYPE_P;
     p->key_frame = 0;
@@ -176,7 +176,7 @@ static av_cold int avs_decode_end(AVCodecContext *avctx)
 }
 
 
-AVCodec ff_avs_decoder = {
+const AVCodec ff_avs_decoder = {
     .name           = "avs",
     .long_name      = NULL_IF_CONFIG_SMALL("AVS (Audio Video Standard) video"),
     .type           = AVMEDIA_TYPE_VIDEO,

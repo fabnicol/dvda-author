@@ -33,7 +33,6 @@
  */
 
 #define FFT_FLOAT 1
-#define FFT_FIXED_32 0
 #define USE_FIXED 0
 
 #include "libavutil/float_dsp.h"
@@ -68,6 +67,11 @@
 #elif ARCH_MIPS
 #   include "mips/aacdec_mips.h"
 #endif
+
+DECLARE_ALIGNED(32, static INTFLOAT, AAC_RENAME(sine_120))[120];
+DECLARE_ALIGNED(32, static INTFLOAT, AAC_RENAME(sine_960))[960];
+DECLARE_ALIGNED(32, static INTFLOAT, AAC_RENAME(aac_kbd_long_960))[960];
+DECLARE_ALIGNED(32, static INTFLOAT, AAC_RENAME(aac_kbd_short_120))[120];
 
 static av_always_inline void reset_predict_state(PredictorState *ps)
 {
@@ -548,7 +552,7 @@ static av_cold int latm_decode_init(AVCodecContext *avctx)
     return ret;
 }
 
-AVCodec ff_aac_decoder = {
+const AVCodec ff_aac_decoder = {
     .name            = "aac",
     .long_name       = NULL_IF_CONFIG_SMALL("AAC (Advanced Audio Coding)"),
     .type            = AVMEDIA_TYPE_AUDIO,
@@ -573,7 +577,7 @@ AVCodec ff_aac_decoder = {
     in MPEG transport streams which only contain one program.
     To do a more complex LATM demuxing a separate LATM demuxer should be used.
 */
-AVCodec ff_aac_latm_decoder = {
+const AVCodec ff_aac_latm_decoder = {
     .name            = "aac_latm",
     .long_name       = NULL_IF_CONFIG_SMALL("AAC LATM (Advanced Audio Coding LATM syntax)"),
     .type            = AVMEDIA_TYPE_AUDIO,

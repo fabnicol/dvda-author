@@ -332,7 +332,7 @@ static const chunk_decoder decoder[8] = {
     decode_tdlt, decode_dsw1, decode_blck, decode_dds1,
 };
 
-static const char * const chunk_name[8] = {
+static const char chunk_name[8][5] = {
     "COPY", "TSW1", "BDLT", "WDLT", "TDLT", "DSW1", "BLCK", "DDS1"
 };
 
@@ -414,7 +414,7 @@ static av_cold int dfa_decode_end(AVCodecContext *avctx)
     return 0;
 }
 
-AVCodec ff_dfa_decoder = {
+const AVCodec ff_dfa_decoder = {
     .name           = "dfa",
     .long_name      = NULL_IF_CONFIG_SMALL("Chronomaster DFA"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -424,4 +424,5 @@ AVCodec ff_dfa_decoder = {
     .close          = dfa_decode_end,
     .decode         = dfa_decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

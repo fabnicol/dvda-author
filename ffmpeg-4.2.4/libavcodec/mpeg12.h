@@ -25,7 +25,15 @@
 #include "mpeg12vlc.h"
 #include "mpegvideo.h"
 
-extern uint8_t ff_mpeg12_static_rl_table_store[2][2][2*MAX_RUN + MAX_LEVEL + 3];
+/* Start codes. */
+#define SEQ_END_CODE            0x000001b7
+#define SEQ_START_CODE          0x000001b3
+#define GOP_START_CODE          0x000001b8
+#define PICTURE_START_CODE      0x00000100
+#define SLICE_MIN_START_CODE    0x00000101
+#define SLICE_MAX_START_CODE    0x000001af
+#define EXT_START_CODE          0x000001b5
+#define USER_START_CODE         0x000001b2
 
 void ff_mpeg12_common_init(MpegEncContext *s);
 
@@ -37,6 +45,7 @@ void ff_mpeg12_common_init(MpegEncContext *s);
 }
 
 void ff_init_2d_vlc_rl(RLTable *rl, unsigned static_size, int flags);
+void ff_mpeg1_init_uni_ac_vlc(const RLTable *rl, uint8_t *uni_ac_vlc_len);
 
 static inline int decode_dc(GetBitContext *gb, int component)
 {
@@ -46,10 +55,6 @@ static inline int decode_dc(GetBitContext *gb, int component)
         code = get_vlc2(gb, ff_dc_lum_vlc.table, DC_VLC_BITS, 2);
     } else {
         code = get_vlc2(gb, ff_dc_chroma_vlc.table, DC_VLC_BITS, 2);
-    }
-    if (code < 0){
-        av_log(NULL, AV_LOG_ERROR, "invalid dc code at\n");
-        return 0xffff;
     }
     if (code == 0) {
         diff = 0;
@@ -65,7 +70,9 @@ int ff_mpeg1_decode_block_intra(GetBitContext *gb,
                                 int16_t *block, int index, int qscale);
 
 void ff_mpeg1_clean_buffers(MpegEncContext *s);
+#if FF_API_FLAG_TRUNCATED
 int ff_mpeg1_find_frame_end(ParseContext *pc, const uint8_t *buf, int buf_size, AVCodecParserContext *s);
+#endif
 
 void ff_mpeg1_encode_picture_header(MpegEncContext *s, int picture_number);
 void ff_mpeg1_encode_mb(MpegEncContext *s, int16_t block[8][64],

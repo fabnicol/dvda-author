@@ -42,10 +42,12 @@ typedef struct GraphMonitorContext {
     AVRational frame_rate;
 
     int64_t pts;
+    int64_t next_pts;
     uint8_t white[4];
     uint8_t yellow[4];
     uint8_t red[4];
     uint8_t green[4];
+    uint8_t blue[4];
     uint8_t bg[4];
 } GraphMonitorContext;
 
@@ -59,6 +61,9 @@ enum {
     MODE_FMT   = 1 << 6,
     MODE_SIZE  = 1 << 7,
     MODE_RATE  = 1 << 8,
+    MODE_EOF   = 1 << 9,
+    MODE_SCIN  = 1 << 10,
+    MODE_SCOUT = 1 << 11,
 };
 
 #define OFFSET(x) offsetof(GraphMonitorContext, x)
@@ -84,6 +89,9 @@ static const AVOption graphmonitor_options[] = {
         { "format",           NULL, 0, AV_OPT_TYPE_CONST, {.i64=MODE_FMT},     0, 0, VF, "flags" },
         { "size",             NULL, 0, AV_OPT_TYPE_CONST, {.i64=MODE_SIZE},    0, 0, VF, "flags" },
         { "rate",             NULL, 0, AV_OPT_TYPE_CONST, {.i64=MODE_RATE},    0, 0, VF, "flags" },
+        { "eof",              NULL, 0, AV_OPT_TYPE_CONST, {.i64=MODE_EOF},     0, 0, VF, "flags" },
+        { "sample_count_in",  NULL, 0, AV_OPT_TYPE_CONST, {.i64=MODE_SCOUT},   0, 0, VF, "flags" },
+        { "sample_count_out", NULL, 0, AV_OPT_TYPE_CONST, {.i64=MODE_SCIN},    0, 0, VF, "flags" },
     { "rate", "set video rate", OFFSET(frame_rate), AV_OPT_TYPE_VIDEO_RATE, {.str = "25"}, 0, INT_MAX, VF },
     { "r",    "set video rate", OFFSET(frame_rate), AV_OPT_TYPE_VIDEO_RATE, {.str = "25"}, 0, INT_MAX, VF },
     { NULL }
@@ -99,7 +107,7 @@ static int query_formats(AVFilterContext *ctx)
     int ret;
 
     AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if ((ret = ff_formats_ref(fmts_list, &outlink->in_formats)) < 0)
+    if ((ret = ff_formats_ref(fmts_list, &outlink->incfg.formats)) < 0)
         return ret;
 
     return 0;
@@ -225,6 +233,16 @@ static void draw_items(AVFilterContext *ctx, AVFrame *out,
         drawtext(out, xpos, ypos, buffer, s->white);
         xpos += strlen(buffer) * 8;
     }
+    if (s->flags & MODE_SCIN) {
+        snprintf(buffer, sizeof(buffer)-1, " | sin: %"PRId64, l->sample_count_in);
+        drawtext(out, xpos, ypos, buffer, s->white);
+        xpos += strlen(buffer) * 8;
+    }
+    if (s->flags & MODE_SCOUT) {
+        snprintf(buffer, sizeof(buffer)-1, " | sout: %"PRId64, l->sample_count_out);
+        drawtext(out, xpos, ypos, buffer, s->white);
+        xpos += strlen(buffer) * 8;
+    }
     if (s->flags & MODE_PTS) {
         snprintf(buffer, sizeof(buffer)-1, " | pts: %s", av_ts2str(l->current_pts_us));
         drawtext(out, xpos, ypos, buffer, s->white);
@@ -233,6 +251,11 @@ static void draw_items(AVFilterContext *ctx, AVFrame *out,
     if (s->flags & MODE_TIME) {
         snprintf(buffer, sizeof(buffer)-1, " | time: %s", av_ts2timestr(l->current_pts_us, &AV_TIME_BASE_Q));
         drawtext(out, xpos, ypos, buffer, s->white);
+        xpos += strlen(buffer) * 8;
+    }
+    if (s->flags & MODE_EOF && ff_outlink_get_status(l)) {
+        snprintf(buffer, sizeof(buffer)-1, " | eof");
+        drawtext(out, xpos, ypos, buffer, s->blue);
         xpos += strlen(buffer) * 8;
     }
 }
@@ -300,7 +323,7 @@ static int create_frame(AVFilterContext *ctx, int64_t pts)
     }
 
     out->pts = pts;
-    s->pts = pts;
+    s->pts = pts + 1;
     return ff_filter_frame(outlink, out);
 }
 
@@ -328,9 +351,13 @@ static int activate(AVFilterContext *ctx)
 
     if (pts != AV_NOPTS_VALUE) {
         pts = av_rescale_q(pts, inlink->time_base, outlink->time_base);
-        if (s->pts < pts && ff_outlink_frame_wanted(outlink))
-            return create_frame(ctx, pts);
+        if (s->pts == AV_NOPTS_VALUE)
+            s->pts = pts;
+        s->next_pts = pts;
     }
+
+    if (s->pts < s->next_pts && ff_outlink_frame_wanted(outlink))
+        return create_frame(ctx, s->pts);
 
     FF_FILTER_FORWARD_STATUS(inlink, outlink);
     FF_FILTER_FORWARD_WANTED(outlink, inlink);
@@ -347,6 +374,9 @@ static int config_output(AVFilterLink *outlink)
     s->yellow[0] = s->yellow[1] = 255;
     s->red[0] = 255;
     s->green[1] = 255;
+    s->blue[2] = 255;
+    s->pts = AV_NOPTS_VALUE;
+    s->next_pts = AV_NOPTS_VALUE;
     outlink->w = s->w;
     outlink->h = s->h;
     outlink->sample_aspect_ratio = (AVRational){1,1};
@@ -356,16 +386,15 @@ static int config_output(AVFilterLink *outlink)
     return 0;
 }
 
-#if CONFIG_GRAPHMONITOR_FILTER
+AVFILTER_DEFINE_CLASS_EXT(graphmonitor, "(a)graphmonitor", graphmonitor_options);
 
-AVFILTER_DEFINE_CLASS(graphmonitor);
+#if CONFIG_GRAPHMONITOR_FILTER
 
 static const AVFilterPad graphmonitor_inputs[] = {
     {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 static const AVFilterPad graphmonitor_outputs[] = {
@@ -374,33 +403,28 @@ static const AVFilterPad graphmonitor_outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_output,
     },
-    { NULL }
 };
 
-AVFilter ff_vf_graphmonitor = {
+const AVFilter ff_vf_graphmonitor = {
     .name          = "graphmonitor",
     .description   = NULL_IF_CONFIG_SMALL("Show various filtergraph stats."),
     .priv_size     = sizeof(GraphMonitorContext),
     .priv_class    = &graphmonitor_class,
-    .query_formats = query_formats,
     .activate      = activate,
-    .inputs        = graphmonitor_inputs,
-    .outputs       = graphmonitor_outputs,
+    FILTER_INPUTS(graphmonitor_inputs),
+    FILTER_OUTPUTS(graphmonitor_outputs),
+    FILTER_QUERY_FUNC(query_formats),
 };
 
 #endif // CONFIG_GRAPHMONITOR_FILTER
 
 #if CONFIG_AGRAPHMONITOR_FILTER
 
-#define agraphmonitor_options graphmonitor_options
-AVFILTER_DEFINE_CLASS(agraphmonitor);
-
 static const AVFilterPad agraphmonitor_inputs[] = {
     {
         .name = "default",
         .type = AVMEDIA_TYPE_AUDIO,
     },
-    { NULL }
 };
 
 static const AVFilterPad agraphmonitor_outputs[] = {
@@ -409,17 +433,16 @@ static const AVFilterPad agraphmonitor_outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_output,
     },
-    { NULL }
 };
 
-AVFilter ff_avf_agraphmonitor = {
+const AVFilter ff_avf_agraphmonitor = {
     .name          = "agraphmonitor",
     .description   = NULL_IF_CONFIG_SMALL("Show various filtergraph stats."),
+    .priv_class    = &graphmonitor_class,
     .priv_size     = sizeof(GraphMonitorContext),
-    .priv_class    = &agraphmonitor_class,
-    .query_formats = query_formats,
     .activate      = activate,
-    .inputs        = agraphmonitor_inputs,
-    .outputs       = agraphmonitor_outputs,
+    FILTER_INPUTS(agraphmonitor_inputs),
+    FILTER_OUTPUTS(agraphmonitor_outputs),
+    FILTER_QUERY_FUNC(query_formats),
 };
 #endif // CONFIG_AGRAPHMONITOR_FILTER

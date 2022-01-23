@@ -94,8 +94,8 @@ static int read_packet(AVFormatContext *s,
     if(ret != 8 * packet_size * sizeof(uint16_t))
         return AVERROR(EIO);
 
-    if (av_new_packet(pkt, packet_size) < 0)
-        return AVERROR(ENOMEM);
+    if ((ret = av_new_packet(pkt, packet_size)) < 0)
+        return ret;
 
     init_put_bits(&pbo, pkt->data, packet_size);
     for(j=0; j < packet_size; j++)
@@ -109,7 +109,7 @@ static int read_packet(AVFormatContext *s,
     return 0;
 }
 
-AVInputFormat ff_bit_demuxer = {
+const AVInputFormat ff_bit_demuxer = {
     .name        = "bit",
     .long_name   = NULL_IF_CONFIG_SMALL("G.729 BIT file format"),
     .read_probe  = probe,
@@ -155,7 +155,7 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
     return 0;
 }
 
-AVOutputFormat ff_bit_muxer = {
+const AVOutputFormat ff_bit_muxer = {
     .name         = "bit",
     .long_name    = NULL_IF_CONFIG_SMALL("G.729 BIT file format"),
     .mime_type    = "audio/bit",

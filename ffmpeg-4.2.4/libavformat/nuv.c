@@ -24,6 +24,7 @@
 #include "libavutil/intreadwrite.h"
 #include "libavutil/intfloat.h"
 #include "avformat.h"
+#include "avio_internal.h"
 #include "internal.h"
 #include "riff.h"
 
@@ -74,7 +75,7 @@ static int get_codec_data(AVFormatContext *s, AVIOContext *pb, AVStream *vst,
     if (!vst && !myth)
         return 1; // no codec data needed
     while (!avio_feof(pb)) {
-        int size, subtype;
+        int size, subtype, ret;
 
         frametype = avio_r8(pb);
         switch (frametype) {
@@ -83,12 +84,8 @@ static int get_codec_data(AVFormatContext *s, AVIOContext *pb, AVStream *vst,
             avio_skip(pb, 6);
             size = PKTSIZE(avio_rl32(pb));
             if (vst && subtype == 'R') {
-                if (vst->codecpar->extradata) {
-                    av_freep(&vst->codecpar->extradata);
-                    vst->codecpar->extradata_size = 0;
-                }
-                if (ff_get_extradata(NULL, vst->codecpar, pb, size) < 0)
-                    return AVERROR(ENOMEM);
+                if ((ret = ff_get_extradata(NULL, vst->codecpar, pb, size)) < 0)
+                    return ret;
                 size = 0;
                 if (!myth)
                     return 0;
@@ -121,6 +118,10 @@ static int get_codec_data(AVFormatContext *s, AVIOContext *pb, AVStream *vst,
                 ast->codecpar->bits_per_coded_sample = avio_rl32(pb);
                 ast->codecpar->channels              = avio_rl32(pb);
                 ast->codecpar->channel_layout        = 0;
+                if (ast->codecpar->channels <= 0) {
+                    av_log(s, AV_LOG_ERROR, "Invalid channels %d\n", ast->codecpar->channels);
+                    return AVERROR_INVALIDDATA;
+                }
 
                 id = ff_wav_codec_get_id(ast->codecpar->codec_tag,
                                          ast->codecpar->bits_per_coded_sample);
@@ -132,7 +133,7 @@ static int get_codec_data(AVFormatContext *s, AVIOContext *pb, AVStream *vst,
                 }
                 ast->codecpar->codec_id = id;
 
-                ast->need_parsing = AVSTREAM_PARSE_FULL;
+                ffstream(ast)->need_parsing = AVSTREAM_PARSE_FULL;
             } else
                 avio_skip(pb, 4 * 4);
 
@@ -258,9 +259,9 @@ static int nuv_packet(AVFormatContext *s, AVPacket *pkt)
         int copyhdrsize = ctx->rtjpg_video ? HDRSIZE : 0;
         uint64_t pos    = avio_tell(pb);
 
-        ret = avio_read(pb, hdr, HDRSIZE);
-        if (ret < HDRSIZE)
-            return ret < 0 ? ret : AVERROR(EIO);
+        ret = ffio_read_size(pb, hdr, HDRSIZE);
+        if (ret < 0)
+            return ret;
 
         frametype = hdr[0];
         size      = PKTSIZE(AV_RL32(&hdr[8]));
@@ -288,7 +289,6 @@ static int nuv_packet(AVFormatContext *s, AVPacket *pkt)
             memcpy(pkt->data, hdr, copyhdrsize);
             ret = avio_read(pb, pkt->data + copyhdrsize, size);
             if (ret < 0) {
-                av_packet_unref(pkt);
                 return ret;
             }
             if (ret < size)
@@ -395,7 +395,7 @@ static int64_t nuv_read_dts(AVFormatContext *s, int stream_index,
 }
 
 
-AVInputFormat ff_nuv_demuxer = {
+const AVInputFormat ff_nuv_demuxer = {
     .name           = "nuv",
     .long_name      = NULL_IF_CONFIG_SMALL("NuppelVideo"),
     .priv_data_size = sizeof(NUVContext),

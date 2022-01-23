@@ -129,6 +129,7 @@ typedef struct MOVFragmentStreamInfo {
     int64_t sidx_pts;
     int64_t first_tfra_pts;
     int64_t tfdt_dts;
+    int64_t next_trun_dts;
     int index_entry;
     MOVEncryptionIndex *encryption_index;
 } MOVFragmentStreamInfo;
@@ -163,6 +164,8 @@ typedef struct MOVStreamContext {
     int64_t *chunk_offsets;
     unsigned int stts_count;
     MOVStts *stts_data;
+    unsigned int sdtp_count;
+    uint8_t *sdtp_data;
     unsigned int ctts_count;
     unsigned int ctts_allocated_size;
     MOVStts *ctts_data;
@@ -234,6 +237,8 @@ typedef struct MOVStreamContext {
     int has_sidx;  // If there is an sidx entry for this stream.
     struct {
         struct AVAESCTR* aes_ctr;
+        struct AVAES *aes_ctx;
+        unsigned int frag_index_entry_base;
         unsigned int per_sample_iv_size;  // Either 0, 8, or 16.
         AVEncryptionInfo *default_encrypted_sample;
         MOVEncryptionIndex *encryption_index;
@@ -274,6 +279,7 @@ typedef struct MOVContext {
     int moov_retry;
     int use_mfra_for;
     int has_looked_for_mfra;
+    int use_tfdt;
     MOVFragmentIndex frag_index;
     int atom_depth;
     unsigned int aax_mode;  ///< 'aax' file has been detected
@@ -283,11 +289,17 @@ typedef struct MOVContext {
     int activation_bytes_size;
     void *audible_fixed_key;
     int audible_fixed_key_size;
+    void *audible_key;
+    int audible_key_size;
+    void *audible_iv;
+    int audible_iv_size;
     struct AVAES *aes_decrypt;
     uint8_t *decryption_key;
     int decryption_key_len;
     int enable_drefs;
     int32_t movie_display_matrix[3][3]; ///< display matrix from mvhd
+    int have_read_mfra_size;
+    uint32_t mfra_size;
 } MOVContext;
 
 int ff_mp4_read_descr_len(AVIOContext *pb);
@@ -376,5 +388,20 @@ static inline enum AVCodecID ff_mov_get_lpcm_codec_id(int bps, int flags)
      */
     return ff_get_pcm_codec_id(bps, flags & 1, flags & 2, flags & 4 ? -1 : 0);
 }
+
+#define MOV_ISMV_TTML_TAG MKTAG('d', 'f', 'x', 'p')
+#define MOV_MP4_TTML_TAG  MKTAG('s', 't', 'p', 'p')
+
+struct MP4TrackKindValueMapping {
+    int         disposition;
+    const char *value;
+};
+
+struct MP4TrackKindMapping {
+    const char   *scheme_uri;
+    const struct  MP4TrackKindValueMapping *value_maps;
+};
+
+extern const struct MP4TrackKindMapping ff_mov_track_kind_table[];
 
 #endif /* AVFORMAT_ISOM_H */

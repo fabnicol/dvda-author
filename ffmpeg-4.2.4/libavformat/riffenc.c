@@ -19,6 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/channel_layout.h"
 #include "libavutil/dict.h"
 #include "libavutil/log.h"
 #include "libavutil/mathematics.h"
@@ -64,6 +65,12 @@ int ff_put_wav_header(AVFormatContext *s, AVIOContext *pb,
 
     if (!par->codec_tag || par->codec_tag > 0xffff)
         return -1;
+
+    if (par->codec_id == AV_CODEC_ID_ADPCM_SWF && par->block_align == 0) {
+        av_log(s, AV_LOG_ERROR, "%s can only be written to WAVE with a constant frame size\n",
+               avcodec_get_name(par->codec_id));
+        return AVERROR(EINVAL);
+    }
 
     /* We use the known constant frame size for the codec if known, otherwise
      * fall back on using AVCodecContext.frame_size, which is not as reliable
@@ -184,10 +191,10 @@ int ff_put_wav_header(AVFormatContext *s, AVIOContext *pb,
         if (par->codec_id == AV_CODEC_ID_EAC3) {
             ff_put_guid(pb, ff_get_codec_guid(par->codec_id, ff_codec_wav_guids));
         } else {
-        avio_wl32(pb, par->codec_tag);
-        avio_wl32(pb, 0x00100000);
-        avio_wl32(pb, 0xAA000080);
-        avio_wl32(pb, 0x719B3800);
+            avio_wl32(pb, par->codec_tag);
+            avio_wl32(pb, 0x00100000);
+            avio_wl32(pb, 0xAA000080);
+            avio_wl32(pb, 0x719B3800);
         }
     } else if ((flags & FF_PUT_WAV_HEADER_FORCE_WAVEFORMATEX) ||
                par->codec_tag != 0x0001 /* PCM */ ||
@@ -207,11 +214,12 @@ int ff_put_wav_header(AVFormatContext *s, AVIOContext *pb,
 
 /* BITMAPINFOHEADER header */
 void ff_put_bmp_header(AVIOContext *pb, AVCodecParameters *par,
-                       int for_asf, int ignore_extradata)
+                       int for_asf, int ignore_extradata, int rgb_frame_is_flipped)
 {
-    int keep_height = par->extradata_size >= 9 &&
-                      !memcmp(par->extradata + par->extradata_size - 9, "BottomUp", 9);
-    int extradata_size = par->extradata_size - 9*keep_height;
+    int flipped_extradata = (par->extradata_size >= 9 &&
+                            !memcmp(par->extradata + par->extradata_size - 9, "BottomUp", 9));
+    int keep_height = flipped_extradata || rgb_frame_is_flipped;
+    int extradata_size = par->extradata_size - 9*flipped_extradata;
     enum AVPixelFormat pix_fmt = par->format;
     int pal_avi;
 

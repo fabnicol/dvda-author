@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/channel_layout.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/opt.h"
 #include "libavutil/log.h"
@@ -218,13 +219,14 @@ static const AVClass s302m_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_s302m_decoder = {
+const AVCodec ff_s302m_decoder = {
     .name           = "s302m",
     .long_name      = NULL_IF_CONFIG_SMALL("SMPTE 302M"),
     .type           = AVMEDIA_TYPE_AUDIO,
     .id             = AV_CODEC_ID_S302M,
     .priv_data_size = sizeof(S302Context),
     .decode         = s302m_decode_frame,
-    .capabilities   = AV_CODEC_CAP_DR1,
+    .capabilities   = AV_CODEC_CAP_CHANNEL_CONF |
+                      AV_CODEC_CAP_DR1,
     .priv_class     = &s302m_class,
 };

@@ -1,351 +1,556 @@
 #include "mlp.h"
+#include "structures.h"
 
-static  const uint8_t default_cga[6] = {0,  1,  7,  3,   9,   12};  //default channel assignment
-static uint32_t cga2wav_channels[21] = {0x4, 0x3, 0x103, 0x33, 0xB, 0x10B, 0x3B, 0x7, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x3B, 0x37, 0x3B };
+static  const uint8_t default_cga[6] = {0, 1, 7, 3, 9, 12};  //default channel assignment
+static uint32_t cga2wav_channels[21] = {0x4, 0x3, 0x103, 0x33, 0xB, 0x10B, 0x3B, 0x7, 0x107, 0x37, 0xF,
+                                        0x10F, 0x3F, 0x107, 0x37, 0xF, 0x10F, 0x3F, 0x3B, 0x37, 0x3B
+                                       };
+
+#define AUDIO_INBUF_SIZE 20480
+#define AUDIO_REFILL_THRESH 4096
+
+
+uint64_t decode(AVCodecContext *context,
+                const AVCodec *codec,
+                AVCodecParameters *codecpar,
+                AVPacket *packet,
+                AVFrame *frame,
+                FILE *fp,
+                fileinfo_t *info,
+                int64_t cumbytes_written,
+                globalData* globals)
+{
+    // Send the packet with the compressed data to the decoder
+
+    if (context == NULL || codec == NULL) return 0;
+
+    static int64_t bytes_written;
+    static uint64_t counter;
+    ++counter;
+
+    int ret = avcodec_send_packet(context, packet);
+
+    if (ret < 0)
+    {
+        fprintf(stderr, "%s", "Error submitting the packet to the decoder\n");
+        fprintf(stderr, "%s%llu\n", "Nth call of function decode: ", counter);
+        return 0;
+    }
+
+    // Read all the output frames (in general there may be any number of them
+
+    while (ret >= 0)
+    {
+        ret = avcodec_receive_frame(context, frame);
+        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+            break;
+        else if (ret < 0)
+        {
+            fprintf(stderr, ERR "Error decoding audio frame (%s)\n", av_err2str(ret));
+            errno = 0;
+
+            if (fp) fclose(fp);
+
+            if (errno)
+                fprintf(stderr, ERR "Could not close file %s\n", info->out_filename);
+            else
+                fprintf(stderr, MSG_TAG "Extracted %ld bytes from file %s to file %s\n",
+                        cumbytes_written,
+                        info->filename,
+                        info->out_filename);
+
+            exit(1);
+        }
+
+        int data_size = av_get_bytes_per_sample(context->sample_fmt);
+
+        if (data_size < 0)
+        {
+            // This should not occur, checking just for paranoia
+            fprintf(stderr,"%s", ERR "Failed to calculate data size\n");
+            exit(1);
+        }
+
+        if (globals->decode && fp)
+        {
+            size_t unpadded_linesize = 0;
+
+            int sampleSize = av_get_bytes_per_sample(codec->sample_fmts[0]);
+
+            if (sampleSize == 2)
+            {
+                unpadded_linesize = frame->channels * sampleSize * frame->nb_samples;
+                bytes_written = fwrite(frame->extended_data[0], 1, unpadded_linesize, fp);
+            }
+            else if (sampleSize == 4)   // 32 bits -> 24 bits (codec->bits_per_raw_sample)
+            {
+                uint32_t bytes_written_sample = 0;
+
+                for (int s = 0; s < frame->nb_samples; ++s)
+                {
+                    for (int c = 0; c < codecpar->channels; ++c)
+                    {
+                        uint32_t val = ((int32_t*) frame->extended_data[0])[s * codecpar->channels + c];
+                        val  >>= 8; // sampleSize * 8 - codec->bits_per_raw_sample
+
+                        bytes_written_sample += fwrite(&val, 1, 3, fp);
+                    }
+                }
+
+                bytes_written = bytes_written_sample;
+            }
+            else
+            {
+                fprintf(stderr, "Invalid sample size %d.\n", sampleSize);
+                fclose(fp);
+                break;
+            }
+        }
+
+        cumbytes_written += bytes_written;
+
+        if (globals->maxverbose)
+        {
+            fprintf(stderr,
+                    "Bytes_written: %d Nb samples: %d FR_PTS: %ld PKT_POS: %ld PKT_DURATION: %ld FR_PKT_SIZE; %ld\n",
+                    cumbytes_written,
+                    frame->nb_samples,
+                    frame->pts,
+                    frame->pkt_pos,
+                    frame->pkt_duration,
+                    frame->pkt_size);
+        }
+    }
+
+    return cumbytes_written;
+}
+
 
 int decode_mlp_file(fileinfo_t* info, globalData* globals)
 {
-    // initialize all muxers, demuxers and protocols for libavformat
-    // (does nothing if called twice during the course of one program execution)
+    uint8_t inbuf[AUDIO_INBUF_SIZE + AV_INPUT_BUFFER_PADDING_SIZE];
+    uint8_t *data;
+    size_t   data_size;
 
-  av_register_all();
+    const AVCodec *codec;
+    AVCodecParserContext *parser = NULL;
+    AVFrame* frame = NULL;
+    AVFormatContext* format;
+    AVCodecContext *context;
+    AVStream *stream;
+    AVCodecParameters *codecpar;
+    AVPacket packet;
 
-  const char* path = info->filename;
+    FILE* fp_in = NULL;
+    FILE* fp_out = NULL;
 
     // get format from audio file
-  AVFormatContext* format = avformat_alloc_context();
+    format = avformat_alloc_context();
 
-  if (avformat_open_input(&format, path, NULL, NULL) != 0)
-  {
-        fprintf(stderr, ERR "Could not open file '%s'\n", path);
-        EXIT_ON_RUNTIME_ERROR
-  }
-
-  if (avformat_find_stream_info(format, NULL) < 0)
-  {
-        fprintf(stderr, ERR "Could not retrieve stream info from file '%s'\n", path);
-        EXIT_ON_RUNTIME_ERROR
-  }
-   errno = 0;  // hushes up an ioctl report
- // Find the index of the first audio stream
-
-  int stream_index = -1;
-  for (int i = 0; i < format->nb_streams; ++i)
-  {
-      if (format->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO)
-      {
-          stream_index = i;
-          break;
-      }
-  }
-
-  if (stream_index == -1)
-  {
-        fprintf(stderr, ERR "Could not retrieve audio stream from file '%s'\n", path);
-        EXIT_ON_RUNTIME_ERROR
-  }
-
-  AVStream* stream = format->streams[stream_index];
-
-  // find & open codec
-
-  AVCodecContext* codec = stream->codec;
-
-  codec->request_sample_fmt = av_get_alt_sample_fmt(codec->sample_fmt, 0);
-
-  if (avcodec_open2(codec, avcodec_find_decoder(codec->codec_id), NULL) < 0)
+    if (avformat_open_input(&format, info->filename, NULL, NULL) != 0)
     {
-        fprintf(stderr, ERR "Failed to open decoder for stream #%u in file '%s'\n", stream_index, path);
+        fprintf(stderr,
+                ERR "Could not open file '%s'\n",
+                info->filename);
+
+        EXIT_ON_RUNTIME_ERROR
+    }
+
+    if (avformat_find_stream_info(format, NULL) < 0)
+    {
+        fprintf(stderr,
+                ERR "Could not retrieve stream info from file '%s'\n",
+                info->filename);
+
+        EXIT_ON_RUNTIME_ERROR
+    }
+
+    errno = 0;  // hushes up an ioctl report
+    // Find the index of the first audio stream
+
+    int stream_index = -1;
+    for (int i = 0; i < format->nb_streams; ++i)
+    {
+        if (format->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
+        {
+            stream_index = i;
+            break;
+        }
+    }
+
+    if (stream_index == -1)
+    {
+        fprintf(stderr,
+                ERR "Could not retrieve audio stream from file '%s'\n",
+                info->filename);
+
+        EXIT_ON_RUNTIME_ERROR
+    }
+
+    stream = format->streams[stream_index];
+    codecpar = stream->codecpar;
+
+    // find & open codec
+
+    codec = avcodec_find_decoder(AV_CODEC_ID_MLP);
+    if (!codec)
+    {
+        fprintf(stderr, "MLP codec not found\n");
+        exit(1);
+    }
+
+    context = avcodec_alloc_context3(codec);
+
+    if (!context)
+    {
+        fprintf(stderr, "Could not allocate audio codec context\n");
+        exit(1);
+    }
+
+    if (avcodec_open2(context, codec, NULL) < 0)
+    {
+        fprintf(stderr,
+                ERR "Failed to open decoder for stream #%u in file '%s'\n",
+                stream_index,
+                info->filename);
+
         EXIT_ON_RUNTIME_ERROR
     }
 
     // prepare to read data
-  AVPacket packet;
 
-  av_init_packet(&packet);
+    av_init_packet(&packet);
 
-  AVFrame* frame = av_frame_alloc();
+    int64_t cumbytes_written = 0;
 
-  if (!frame)
+    parser = av_parser_init(codec->id);
+    if (!parser)
     {
-        fprintf(stderr, ERR "Error allocating the frame\n");
-        EXIT_ON_RUNTIME_ERROR
+        fprintf(stderr, "Parser not found\n");
+        exit(1);
     }
 
-  FILE* fp = NULL;
-  WaveData   info2;
-  WaveHeader header;
-
- int32_t cumbytes_written = 0;
-
- if (globals->decode)
- {
-   int32_t bytes_written = 0;
-   errno = 0;
-   while (av_read_frame(format, &packet) >= 0)
+    fp_in = fopen(info->filename, "rb");
+    if (fp_in == NULL)
     {
-        // decode one frame
-        int gotFrame;
-        int ret;
-        if ((ret = avcodec_decode_audio4(codec, frame, &gotFrame, &packet)) < 0)
-        {
-            fprintf(stderr, ERR "Error decoding audio frame (%s)\n", av_err2str(ret));
-            errno = 0;
-            if (fp) fclose(fp);
-            if (errno)
-                fprintf(stderr, ERR "Could not close file %s\n", info->out_filename);
-            else
-                fprintf(stderr, MSG_TAG "Extracted %ld bytes from file %s to file %s\n", cumbytes_written, path, info->out_filename);
-            break;
-        }
-
-        if (gotFrame)
-        {
-
-            if (globals->decode && bytes_written == 0)
-            {
-              if (info->out_filename && globals->fixwav_prepend)
-              {
-                    fprintf(stderr, INF "Decoding file %s  to raw data in path: %s\n", info->filename, info->out_filename);
-                    int debug = globals->debugging;
-
-                    // Hush it up as there will be spurious error mmsg
-
-                    globals->debugging = false;
-
-                    // initializ
-
-                    memset(&info2, 0, sizeof (WaveData));
-                    memset(&header, 0, sizeof (WaveHeader));
-
-                    // WaveData info: file and header prepending characteristics
-
-                    info2.prepend = true;
-                    info2.in_place = true;
-                    info2.cautious = false;
-                    info2.automatic = true;
-                    info2.interactive = false;
-                    info2.prunedbytes = 0;
-                    info2.padbytes = 0;
-                    info2.virtual = false;
-                    info2.outfile.filename = info->out_filename;
-                    info2.outfile.fp = fp;
-                    info2.infile = info2.outfile;
-                    info2.infile.isopen = false;
-
-                    // WaveHeader info : audio and header characteristics
-
-
-                    header.header_size_out = 80;
-                    header.channels = frame->channels;
-                    header.is_extensible = header.channels > 2;
-                    header.nBlockAlign = frame->channels * codec->bits_per_raw_sample / 8 ;
-                    header.wBitsPerSample = codec->bits_per_raw_sample;
-                    header.dwChannelMask = (frame->channel_layout < 21 && frame->channel_layout > 0) ? cga2wav_channels[frame->channel_layout] : 0;
-                    header.dwSamplesPerSec = frame->sample_rate;
-
-                    // Prepend header to empty file. Will close files.
-
-                    fixwav(&info2, &header, globals);
-
-                    // Restore verbosity levels
-
-                    globals->debugging = debug;
-
-
-              }
-
-              fp = fopen(info->out_filename, "ab+");
-              if (fp == NULL)
-               {
-                   fprintf(stderr, ERR "Could not open destination file %s\n", info->out_filename);
-                   info->out_filename = NULL;
-                   globals->decode = false;
-               }
-
-            }
-
-            if (globals->decode && fp)
-            {
-                size_t unpadded_linesize = 0;
-
-                int sampleSize = av_get_bytes_per_sample(codec->sample_fmt);
-
-                if (sampleSize == 2)
-                {
-                    unpadded_linesize = frame->channels *  sampleSize * frame->nb_samples;
-                    bytes_written = fwrite(frame->extended_data[0], 1, unpadded_linesize, fp);
-                }
-                else
-                if (sampleSize == 4)    // 32 bits -> 24 bits (codec->bits_per_raw_sample)
-                {
-
-                  uint32_t bytes_written_sample = 0;
-                   for(int s = 0; s < frame->nb_samples; ++s)
-                   {
-                    for(int c = 0; c < codec->channels; ++c)
-                     {
-                        uint32_t val = ((int32_t*) frame->extended_data[0])[s * codec->channels + c];
-                        val  >>= 8; // sampleSize * 8 - codec->bits_per_raw_sample
-
-                       bytes_written_sample += fwrite(&val, 1, 3, fp);
-                     }
-                   }
-
-                   bytes_written = bytes_written_sample;
-                }
-                else
-                {
-                        fprintf(stderr, "Invalid sample size %d.\n", sampleSize);
-                        fclose(fp);
-                        break;
-                }
-
-            }
-
-            cumbytes_written += bytes_written;
-
-            if (globals->maxverbose)
-            {
-                    fprintf(stderr, "Bytes_written: %d Nb samples: %d FR_PTS: %ld PKT_POS: %ld PKT_DURATION: %ld FR_PKT_SIZE; %ld\n",
-                                cumbytes_written,
-                                frame->nb_samples,
-                                frame->pts,
-                                frame->pkt_pos,
-                                frame->pkt_duration,
-                                frame->pkt_size);
-            }
-
-        }
-        else
-        {
-           continue;
-        }
+        fprintf(stderr, "Could not open %s\n", info->filename);
+        exit(1);
     }
 
-    if (globals->decode && info->out_filename && globals->fixwav_prepend)
+    data      = inbuf;
+    data_size = fread(inbuf, 1, AUDIO_INBUF_SIZE, fp_in);
+
+    if (globals->decode)
     {
-//         WAV output is now OK except for the wav file size-based header data.
-//         ckSize, data_ckSize and nBlockAlign must be readjusted by computing
-//         the exact audio content bytesize. Also we no longer prepend the header
-//         but overwrite the existing one
+        errno = 0;
 
-        fp = fopen(info->out_filename, "rb+");
-        if (fp == NULL)
-         {
-             fprintf(stderr, ERR "Could not open destination file %s\n", info->out_filename);
-             info->out_filename = NULL;
-             globals->decode = false;
-         }
-         else
-         {
-            info2.infile.fp = fp;
-            info2.infile.isopen = true;
+        fp_out = fopen(info->out_filename, "ab+");
+        if (fp_out == NULL)
+        {
+            fprintf(stderr,
+                    ERR "Could not open destination file %s\n",
+                    info->out_filename);
+            info->out_filename = NULL;
+            fclose(fp_in);
+            exit(1);
+        }
 
-            // No longer prepend to empty file but overwrite in place
+        WaveData   info2;
+        WaveHeader header;
 
-            info2.prepend = false;
+        if (info->out_filename && globals->fixwav_prepend)
+        {
+            fprintf(stderr,
+                    INF "Decoding file %s to raw data in path: %s\n",
+                    info->filename,
+                    info->out_filename);
+
+            int debug = globals->debugging;
+
+            // Hush it up as there will be spurious error mmsg
+
+            globals->debugging = false;
+
+            // initialize
+
+            memset(&info2, 0, sizeof (WaveData));
+            memset(&header, 0, sizeof (WaveHeader));
+
+            // WaveData info: file and header prepending characteristics
+            // Note in_place value
+
+            info2.prepend = true;
             info2.in_place = true;
+            info2.cautious = false;
+            info2.automatic = true;
+            info2.interactive = false;
+            info2.prunedbytes = 0;
+            info2.padbytes = 0;
+            info2.virtual = false;
+            info2.outfile.filename = info->out_filename;
+            info2.outfile.fp = fp_out;
+            info2.infile = info2.outfile;
+            info2.infile.isopen = false;
 
-            errno = 0;
+            // WaveHeader info : audio and header characteristics
+
+            header.header_size_out = 80;
+            header.channels        = codecpar->channels;
+            header.is_extensible   = header.channels > 2;
+            header.nBlockAlign     = (codecpar->channels * codecpar->bits_per_raw_sample) / 8 ;
+            header.wBitsPerSample  = codecpar->bits_per_raw_sample;
+            header.dwChannelMask   = (codecpar->channel_layout < 21
+                                      && codecpar->channel_layout > 0) ?
+                                     cga2wav_channels[codecpar->channel_layout] : 0;
+            header.dwSamplesPerSec = codecpar->sample_rate;
+
+            // Prepend header to empty file. Will close files.
 
             fixwav(&info2, &header, globals);
 
-            if (errno)
-                fprintf(stderr, ERR "Error detected in header correction  for %s\n", info->out_filename);
-            else
-                fprintf(stderr, MSG_TAG "Extracted %ld bytes to file %s\n", cumbytes_written, info->out_filename);
-         }
-    }
- }
- else
- {
-    uint32_t rank = 0;
-    uint32_t totnbsamples = 0;
-    unsigned long PKT_POS_SECT = 0;
-    unsigned long HEADER_OFFSET = 0;
-    unsigned long SECT_RANK = 0;
-    unsigned long SECT_RANK_OLD = 0;
+            // Restore verbosity levels
 
-    if (info->file_size && info->lpcm_payload)
-    {
-        uint32_t size = info->file_size / info->lpcm_payload + 4;
-        info->mlp_layout = (struct MLP_LAYOUT *) calloc(size, sizeof (struct MLP_LAYOUT));
+            globals->debugging = debug;
+        }
+
+        fp_out = fopen(info->out_filename, "ab+");
+        if (fp_out == NULL)
+        {
+            fprintf(stderr,
+                    ERR "Could not open destination file %s\n",
+                    info->out_filename);
+            info->out_filename = NULL;
+            globals->decode = false;
+            fclose(fp_in);
+            exit(1);
+        }
+
+        while (data_size > 0)
+        {
+            if (! frame)
+            {
+                if (!( frame = av_frame_alloc()))
+                {
+                    fprintf(stderr, "Could not allocate audio frame\n");
+                    EXIT_ON_RUNTIME_ERROR
+                }
+            }
+
+            int ret;
+
+            ret = av_parser_parse2(parser, context,
+                                   &packet.data, &packet.size,
+                                   data, data_size,
+                                   AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
+
+            if (ret < 0)
+            {
+                fprintf(stderr, "Error while parsing\n");
+                exit(1);
+            }
+
+            data      += ret;
+            data_size -= ret;
+
+            if (packet.size)
+                cumbytes_written = decode(context, codec,
+                                          codecpar, &packet,
+                                          frame, fp_out,
+                                          info, cumbytes_written,
+                                          globals);
+
+            if (data_size < AUDIO_REFILL_THRESH)
+            {
+                memmove(inbuf, data, data_size);
+                data = inbuf;
+                int len = fread(data + data_size, 1,
+                                AUDIO_INBUF_SIZE - data_size, fp_in);
+                if (len > 0)
+                    data_size += len;
+            }
+        }
+
+        // Flush
+
+        packet.data = NULL;
+        packet.size = 0;
+
+        decode(context, codec,
+               codecpar, &packet,
+               frame, fp_out,
+               info, cumbytes_written,
+               globals);
+
+        fclose(fp_out);
+
+        if (info->out_filename
+                && globals->fixwav_prepend)
+        {
+            //   WAV output is now OK except for the wav file size-based header data.
+            //   ckSize, data_ckSize and nBlockAlign must be readjusted by computing
+            //   the exact audio content bytesize. Also we no longer prepend the header
+            //   but overwrite the existing one
+
+            fp_out = fopen(info->out_filename, "rb+");
+            if (fp_out == NULL)
+            {
+                fprintf(stderr,
+                        ERR "Could not open destination file %s\n",
+                        info->out_filename);
+                info->out_filename = NULL;
+                globals->decode = false;
+            }
+            else
+            {
+                info2.infile.fp = fp_out;
+                info2.infile.isopen = true;
+
+                // No longer prepend to empty file but overwrite in place
+
+                info2.prepend = false;
+                info2.in_place = true;
+
+                errno = 0;
+
+                // will close files
+
+                fixwav(&info2, &header, globals);
+
+                if (errno)
+                    fprintf(stderr,
+                            ERR "Error detected in header correction  for %s\n",
+                            info->out_filename);
+                else
+                    fprintf(stderr,
+                            MSG_TAG "Extracted %ld bytes to file %s\n",
+                            cumbytes_written,
+                            info->out_filename);
+            }
+        }
     }
     else
     {
-        goto clean_up; // do sth more verbose
-    }
+        uint32_t rank = 0;
+        uint32_t totnbsamples = 0;
+        unsigned long PKT_POS_SECT = 0;
+        unsigned long HEADER_OFFSET = 0;
+        unsigned long SECT_RANK = 0;
+        unsigned long SECT_RANK_OLD = 0;
 
-    while (av_read_frame(format, &packet) >= 0)
-    {
-      // decode one frame
-      int gotFrame;
-      if (avcodec_decode_audio4(codec, frame, &gotFrame, &packet) < 0)
-      {
-           break;
-      }
+        if (info->file_size && info->lpcm_payload)
+        {
+            uint32_t size    = info->file_size / info->lpcm_payload + 4;
+            info->mlp_layout = (struct MLP_LAYOUT *) calloc(size, sizeof (struct MLP_LAYOUT));
+        }
+        else
+        {
+            goto clean_up; // do sth more verbose
+        }
 
-      if (gotFrame)
-      {
-              if (HEADER_OFFSET == 0) HEADER_OFFSET = 64;
+        while (data_size > 0)
+        {
+            if (! frame)
+            {
+                if (!( frame = av_frame_alloc()))
+                {
+                    fprintf(stderr, "Could not allocate audio frame\n");
+                    EXIT_ON_RUNTIME_ERROR
+                }
+            }
 
-              PKT_POS_SECT = frame->pkt_pos + HEADER_OFFSET;
+            int ret;
 
-              SECT_RANK_OLD = SECT_RANK;
-              SECT_RANK = (PKT_POS_SECT - 1)/ 2048;
+            ret = av_parser_parse2(parser, context,
+                                   &packet.data, &packet.size,
+                                   data, data_size,
+                                   AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
 
-              bool new_sector = (SECT_RANK != SECT_RANK_OLD);
+            if (ret < 0)
+            {
+                fprintf(stderr, "Error while parsing\n");
+                exit(1);
+            }
 
-              if (new_sector || rank == 0)
-              {
-                    if (new_sector) HEADER_OFFSET += 43;
-                    info->mlp_layout[rank].pkt_pos = frame->pkt_pos;
+            data      += ret;
+            data_size -= ret;
+
+            if (packet.size)
+                cumbytes_written = decode(context, codec, codecpar,
+                                          &packet, frame, NULL,
+                                          info, cumbytes_written,
+                                          globals);
+
+            if (data_size < AUDIO_REFILL_THRESH)
+            {
+                if (info->file_size > AUDIO_INBUF_SIZE)
+                {
+                    if (data_size < AUDIO_INBUF_SIZE)
+                        data_size += AUDIO_INBUF_SIZE - data_size;
+                }
+                else
+                   data_size += AUDIO_INBUF_SIZE - info->file_size;
+            }
+
+            if (frame)
+            {
+                if (HEADER_OFFSET == 0) HEADER_OFFSET = 64;
+
+                PKT_POS_SECT = frame->pkt_pos + HEADER_OFFSET;
+
+                SECT_RANK_OLD = SECT_RANK;
+                SECT_RANK = (PKT_POS_SECT - 1) / 2048;
+
+                bool new_sector = (SECT_RANK != SECT_RANK_OLD);
+
+                if (new_sector || rank == 0)
+                {
+                    if (new_sector) HEADER_OFFSET     += 43;
+                    info->mlp_layout[rank].pkt_pos    = frame->pkt_pos;
                     info->mlp_layout[rank].nb_samples = totnbsamples;
-                    info->mlp_layout[rank].rank = SECT_RANK;
+                    info->mlp_layout[rank].rank       = SECT_RANK;
 
                     ++rank;
-              }
+                }
 
-              totnbsamples += frame->nb_samples;
+                totnbsamples += frame->nb_samples;
 
-              if (globals->maxverbose)
-              {
-                  fprintf(stderr, "Sect: %lu samples_written: %d Nb samples: %d FR_PTS: %ld PKT_POS: %ld PKT_DURATION: %ld FR_PKT_SIZE; %ld\n",
-                              SECT_RANK,
-                              totnbsamples,
-                              frame->nb_samples,
-                              frame->pts,
-                              frame->pkt_pos,
-                              frame->pkt_duration,
-                              frame->pkt_size);
-              }
-      }
-      else
-      {
-          continue;
-      }
+                if (globals->maxverbose)
+                {
+                    fprintf(stderr, "Sect: %lu samples_written: %d Nb samples: %d FR_PTS: %ld PKT_POS: %ld PKT_DURATION: %ld FR_PKT_SIZE; %ld\n",
+                            SECT_RANK,
+                            totnbsamples,
+                            frame->nb_samples,
+                            frame->pts,
+                            frame->pkt_pos,
+                            frame->pkt_duration,
+                            frame->pkt_size);
+                }
+            }
+            else
+            {
+                continue;
+            }
 
+        }
+
+        info->mlp_layout[rank].pkt_pos = frame->pkt_pos;
+        info->mlp_layout[rank].nb_samples = totnbsamples;
+        info->mlp_layout[rank].rank = SECT_RANK;
+        info->mlp_layout_size = rank + 1;
+
+        if (globals->maxverbose)
+        {
+            fprintf(stderr, "** \n Layout size: %d **\n", info->mlp_layout_size);
+        }
     }
-
-    info->mlp_layout[rank].pkt_pos = frame->pkt_pos;
-    info->mlp_layout[rank].nb_samples = totnbsamples;
-    info->mlp_layout[rank].rank = SECT_RANK;
-    info->mlp_layout_size = rank + 1;
-
-    if (globals->maxverbose)
-    {
-        fprintf(stderr, "** \n Layout size: %d **\n", info->mlp_layout_size);
-    }
-  }
 
 clean_up:
 
-  av_frame_free(&frame);
-  avcodec_close(codec);
-  avformat_free_context(format);
+    av_frame_free(&frame);
+    avcodec_close(context);
+    avformat_free_context(format);
 
-  return errno;
+    return errno;
 }
 
 
@@ -356,7 +561,8 @@ static int check_sample_fmt(const AVCodec *codec, enum AVSampleFormat sample_fmt
 {
     const enum AVSampleFormat *p = codec->sample_fmts;
 
-    while (*p != AV_SAMPLE_FMT_NONE) {
+    while (*p != AV_SAMPLE_FMT_NONE)
+    {
         if (*p == sample_fmt)
             return 1;
         p++;
@@ -415,17 +621,17 @@ static int check_sample_fmt(const AVCodec *codec, enum AVSampleFormat sample_fmt
 
 for MLP these are the layouts allowed by mlp.c:58
 
-    AV_CH_LAYOUT_MONO            0x00000004  SPEAKER_FRONT_CENTER
-    AV_CH_LAYOUT_STEREO          0x00000003  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT
-    AV_CH_LAYOUT_2_1             0x00000103  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_BACK_CENTER
-    AV_CH_LAYOUT_QUAD            0x00000033  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT
-    AV_CH_LAYOUT_2POINT1         0x0000000B  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_LOW_FREQUENCY
-    AV_CH_LAYOUT_SURROUND        0x00000007  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER
-    AV_CH_LAYOUT_4POINT0         0x00000107  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_CENTER
-    AV_CH_LAYOUT_5POINT0_BACK    0x00000037  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT
-    AV_CH_LAYOUT_3POINT1         0x0000000F  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_LOW_FREQUENCY
-    AV_CH_LAYOUT_4POINT1         0x0000010F  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_CENTER | SPEAKER_LOW_FREQUENCY
-    AV_CH_LAYOUT_5POINT1_BACK    0x0000003F  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT | SPEAKER_LOW_FREQUENCY
+AV_CH_LAYOUT_MONO            0x00000004  SPEAKER_FRONT_CENTER
+AV_CH_LAYOUT_STEREO          0x00000003  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT
+AV_CH_LAYOUT_2_1             0x00000103  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_BACK_CENTER
+AV_CH_LAYOUT_QUAD            0x00000033  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT
+AV_CH_LAYOUT_2POINT1         0x0000000B  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_LOW_FREQUENCY
+AV_CH_LAYOUT_SURROUND        0x00000007  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER
+AV_CH_LAYOUT_4POINT0         0x00000107  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_CENTER
+AV_CH_LAYOUT_5POINT0_BACK    0x00000037  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT
+AV_CH_LAYOUT_3POINT1         0x0000000F  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_LOW_FREQUENCY
+AV_CH_LAYOUT_4POINT1         0x0000010F  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_CENTER | SPEAKER_LOW_FREQUENCY
+AV_CH_LAYOUT_5POINT1_BACK    0x0000003F  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT | SPEAKER_LOW_FREQUENCY
 
 which can be rewrittent without deps fo ffmpeg and keeping to MS defines as follows:
 
@@ -452,41 +658,41 @@ which can be rewrittent without deps fo ffmpeg and keeping to MS defines as foll
 #endif // 0
 
 static int  channels2layout[6] = { SPEAKER_FRONT_CENTER,
-                                   SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT,
-                                   SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_BACK_CENTER,
-                                   SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT,
-                                   SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT,
-                                   SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT | SPEAKER_LOW_FREQUENCY
-                                 };
+                                       SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT,
+                                       SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_BACK_CENTER,
+                                       SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT,
+                                       SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT,
+                                       SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT | SPEAKER_LOW_FREQUENCY
+                                     };
 
 inline static int select_channel_layout(fileinfo_t* info, globalData* globals)
 {
     switch(info->dw_channel_mask)
     {
-         // do nothing
-         case  SPEAKER_FRONT_CENTER:
-         case  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT:
-         case  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_BACK_CENTER:
-         case  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT:
-         case  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_LOW_FREQUENCY:
-         case  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER:
-         case  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_CENTER:
-         case  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT:
-         case  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_LOW_FREQUENCY:
-         case  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_CENTER | SPEAKER_LOW_FREQUENCY:
-         case  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT | SPEAKER_LOW_FREQUENCY:
-               return (info->dw_channel_mask);
-         default:
-               if (info->channels > 0)
-                  return channels2layout[info->channels - 1];  // reassign
-               else
-               {
-                  foutput(ERR "File %s has neither channels or channel layout.", info->filename);
-                  EXITING
-               }
+    // do nothing
+    case  SPEAKER_FRONT_CENTER:
+    case  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT:
+    case  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_BACK_CENTER:
+    case  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT:
+    case  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_LOW_FREQUENCY:
+    case  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER:
+    case  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_CENTER:
+    case  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT:
+    case  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_LOW_FREQUENCY:
+    case  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_CENTER | SPEAKER_LOW_FREQUENCY:
+    case  SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT | SPEAKER_LOW_FREQUENCY:
+        return (info->dw_channel_mask);
+    default:
+        if (info->channels > 0)
+            return channels2layout[info->channels - 1];  // reassign
+        else
+        {
+            foutput(ERR "File %s has neither channels or channel layout.", info->filename);
+            EXITING
+        }
     }
 
-  return 0;
+    return 0;
 }
 
 static void encode(AVCodecContext *ctx, AVFrame *frame, AVPacket *pkt, FILE *output, globalData* globals)
@@ -521,64 +727,64 @@ static void encode(AVCodecContext *ctx, AVFrame *frame, AVPacket *pkt, FILE *out
 
 inline static uint64_t encode_fmt_s32(AVCodecContext* c, AVFrame* frame, AVPacket *pkt, FILE* in_fp, FILE* out_fp, globalData* globals)
 {
-        int load = c->channels * 4 * c->frame_size;
+    int load = c->channels * 4 * c->frame_size;
 
-        uint16_t samples[load];
-        memset(samples, 0, load);
+    uint16_t samples[load];
+    memset(samples, 0, load);
 
-        int res = -1, bytes_read_per_sample = -1, bytes_read_per_frame = -1;
-        static uint64_t bytes_read;
+    int res = -1, bytes_read_per_sample = -1, bytes_read_per_frame = -1;
+    static uint64_t bytes_read;
 
-        for (int s = 0; res != 0 && s < c->frame_size; ++s)
+    for (int s = 0; res != 0 && s < c->frame_size; ++s)
+    {
+        for (int ch = 0; res != 0 && ch < c->channels; ++ch)
         {
-           for (int ch = 0; res != 0 && ch < c->channels; ++ch)
-           {
 
-             res = fread(&samples[(s * c->channels + ch)* 4 + 1], 1, 3, in_fp);
+            res = fread(&samples[(s * c->channels + ch)* 4 + 1], 1, 3, in_fp);
 
-             bytes_read_per_sample += res;
-           }
+            bytes_read_per_sample += res;
+        }
 
-           bytes_read_per_frame += bytes_read_per_sample;
+        bytes_read_per_frame += bytes_read_per_sample;
 
-           if (globals->maxverbose)
+        if (globals->maxverbose)
             foutput(MSG_TAG "Bytes read per sample: %d Bytes read per frame: %d\n",
-                                                  bytes_read_per_sample,
-                                                  bytes_read_per_frame);
-        }
+                    bytes_read_per_sample,
+                    bytes_read_per_frame);
+    }
 
-        memcpy((uint16_t*) frame->data[0], samples, load);
+    memcpy((uint16_t*) frame->data[0], samples, load);
 
-        if (bytes_read_per_frame > 0)
-        {
-           encode(c, frame, pkt, out_fp, globals);
-           bytes_read += bytes_read_per_frame;
-        }
+    if (bytes_read_per_frame > 0)
+    {
+        encode(c, frame, pkt, out_fp, globals);
+        bytes_read += bytes_read_per_frame;
+    }
 
-        return bytes_read;
+    return bytes_read;
 }
 
 inline static uint64_t encode_fmt_s16(AVCodecContext* c, AVFrame* frame, AVPacket *pkt, FILE* in_fp, FILE* out_fp, globalData* globals)
 {
-        int load = c->channels * 2 * c->frame_size;
+    int load = c->channels * 2 * c->frame_size;
 
-        uint16_t * samples = (uint16_t*) frame->data[0];
-        static uint64_t bytes_read;
-        uint16_t bytes_read_per_frame;
+    uint16_t * samples = (uint16_t*) frame->data[0];
+    static uint64_t bytes_read;
+    uint16_t bytes_read_per_frame;
 
-        bytes_read_per_frame = fread(samples, 1, load, in_fp);
+    bytes_read_per_frame = fread(samples, 1, load, in_fp);
 
-        if (bytes_read_per_frame)
-        {
-            encode(c, frame, pkt, out_fp, globals);
+    if (bytes_read_per_frame)
+    {
+        encode(c, frame, pkt, out_fp, globals);
 
-           if (globals->maxverbose)
+        if (globals->maxverbose)
             foutput(MSG_TAG "Bytes read per frame: %d\n", bytes_read_per_frame);
-        }
+    }
 
-        bytes_read += bytes_read_per_frame;
+    bytes_read += bytes_read_per_frame;
 
-        return bytes_read;
+    return bytes_read;
 }
 
 int encode_mlp_file(fileinfo_t* info, globalData* globals)
@@ -595,7 +801,7 @@ int encode_mlp_file(fileinfo_t* info, globalData* globals)
     if (globals->debugging)
         foutput(INF "Encoding %s to MLP\n", info->filename);
 
-    av_register_all();
+    //av_register_all();
 
     const AVCodec *codec;
     AVCodecContext *c= NULL;
@@ -609,9 +815,9 @@ int encode_mlp_file(fileinfo_t* info, globalData* globals)
 
     codec = avcodec_find_encoder(AV_CODEC_ID_MLP);
     if (! codec)
-     {
+    {
         EXIT_ON_RUNTIME_ERROR_VERBOSE( "MLP codec not found\n");
-     }
+    }
 
     c = avcodec_alloc_context3(codec);
     if (!c)
@@ -626,7 +832,7 @@ int encode_mlp_file(fileinfo_t* info, globalData* globals)
     if (!check_sample_fmt(codec, c->sample_fmt))
     {
         foutput(ERR "Encoder does not support sample format %s",
-                  av_get_sample_fmt_name(c->sample_fmt));
+                av_get_sample_fmt_name(c->sample_fmt));
         EXITING
     }
 
@@ -671,7 +877,8 @@ int encode_mlp_file(fileinfo_t* info, globalData* globals)
     // packet for holding encoded output
 
     pkt = av_packet_alloc();
-    if (!pkt) {
+    if (!pkt)
+    {
         fprintf(stderr, "could not allocate the packet\n");
         exit(1);
     }
@@ -679,7 +886,8 @@ int encode_mlp_file(fileinfo_t* info, globalData* globals)
     // frame containing input raw audio
 
     frame = av_frame_alloc();
-    if (!frame) {
+    if (!frame)
+    {
         fprintf(stderr, "Could not allocate audio frame\n");
         exit(1);
     }
@@ -691,7 +899,8 @@ int encode_mlp_file(fileinfo_t* info, globalData* globals)
     // allocate the data buffers
 
     int res = av_frame_get_buffer(frame, 0);
-    if (res < 0) {
+    if (res < 0)
+    {
         fprintf(stderr, "Could not allocate audio data buffers\n");
         exit(2);
     }
@@ -715,8 +924,8 @@ int encode_mlp_file(fileinfo_t* info, globalData* globals)
 
     if (bytes_read == info->file_size)
         if (globals->debugging) foutput(MSG_TAG "File %s was entirely read (%llu B)", info->filename, info->file_size);
-    else
-        foutput(MSG_TAG "File %s was not entirely read (%llu B / %llu B)", info->filename, bytes_read, info->file_size);
+        else
+            foutput(MSG_TAG "File %s was not entirely read (%llu B / %llu B)", info->filename, bytes_read, info->file_size);
 
     // flush the encoder
 
@@ -736,29 +945,29 @@ int encode_mlp_file(fileinfo_t* info, globalData* globals)
         foutput(MSG_TAG "MLP encoding performed:\n     %s --> %s\n", info->filename, out_filename);
     }
 
-  return errno;
+    return errno;
 }
 
 
 void transport_to_mlp(fileinfo_t* info, globalData* globals)
 {
 
-     info->filename = strdup(info->mlp_filename);
-     if (info->filename == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE("Could not copy MLP filename.")
+    info->filename = strdup(info->mlp_filename);
+    if (info->filename == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE("Could not copy MLP filename.")
 
-     int res = audiofile_getinfo(info, globals);
+        int res = audiofile_getinfo(info, globals);
 
-     if (res == AFMT_MLP)
-     {
-          if (globals->debugging)
+    if (res == AFMT_MLP)
+    {
+        if (globals->debugging)
             foutput(MSG_TAG "Found MLP format for %s\n", info->filename);
 
-         info->type = AFMT_MLP;
-     }
-     else
-     {
-         foutput(MSG_TAG "Unfortunately did not find MLP format for file %s\n", info->filename);
-         EXITING
-     }
+        info->type = AFMT_MLP;
+    }
+    else
+    {
+        foutput(MSG_TAG "Unfortunately did not find MLP format for file %s\n", info->filename);
+        EXITING
+    }
 }
 

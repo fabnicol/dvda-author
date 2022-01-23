@@ -168,7 +168,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
             GetBitContext gb;
             init_get_bits(&gb, buf, 8 * video_size);
 
-            if ((ret = ff_reget_buffer(avctx, s->frame)) < 0)
+            if ((ret = ff_reget_buffer(avctx, s->frame, 0)) < 0)
                 return ret;
 
             if (avctx->height/8 * (avctx->width/8) > 4 * video_size) {
@@ -233,7 +233,7 @@ static av_cold int decode_close(AVCodecContext *avctx)
     return 0;
 }
 
-AVCodec ff_jv_decoder = {
+const AVCodec ff_jv_decoder = {
     .name           = "jv",
     .long_name      = NULL_IF_CONFIG_SMALL("Bitmap Brothers JV video"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -243,4 +243,5 @@ AVCodec ff_jv_decoder = {
     .close          = decode_close,
     .decode         = decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

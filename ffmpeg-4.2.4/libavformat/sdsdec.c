@@ -43,7 +43,7 @@ static void byte2_read(const uint8_t *src, uint32_t *dst)
     int i;
 
     for (i = 0; i < 120; i += 2) {
-        unsigned sample = (src[i + 0] << 25) + (src[i + 1] << 18);
+        unsigned sample = ((unsigned)src[i + 0] << 25) + ((unsigned)src[i + 1] << 18);
 
         dst[i / 2] = sample;
     }
@@ -56,7 +56,7 @@ static void byte3_read(const uint8_t *src, uint32_t *dst)
     for (i = 0; i < 120; i += 3) {
         unsigned sample;
 
-        sample = (src[i + 0] << 25) | (src[i + 1] << 18) | (src[i + 2] << 11);
+        sample = ((unsigned)src[i + 0] << 25) | ((unsigned)src[i + 1] << 18) | ((unsigned)src[i + 2] << 11);
         dst[i / 3] = sample;
     }
 }
@@ -68,7 +68,7 @@ static void byte4_read(const uint8_t *src, uint32_t *dst)
     for (i = 0; i < 120; i += 4) {
         unsigned sample;
 
-        sample = (src[i + 0] << 25) | (src[i + 1] << 18) | (src[i + 2] << 11) | (src[i + 3] << 4);
+        sample = ((unsigned)src[i + 0] << 25) | ((unsigned)src[i + 1] << 18) | ((unsigned)src[i + 2] << 11) | ((unsigned)src[i + 3] << 4);
         dst[i / 4] = sample;
     }
 }
@@ -153,7 +153,7 @@ static int sds_read_packet(AVFormatContext *ctx, AVPacket *pkt)
     return ret;
 }
 
-AVInputFormat ff_sds_demuxer = {
+const AVInputFormat ff_sds_demuxer = {
     .name           = "sds",
     .long_name      = NULL_IF_CONFIG_SMALL("MIDI Sample Dump Standard"),
     .priv_data_size = sizeof(SDSContext),

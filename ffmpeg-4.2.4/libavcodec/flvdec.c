@@ -30,7 +30,7 @@ int ff_flv_decode_picture_header(MpegEncContext *s)
     int format, width, height;
 
     /* picture header */
-    if (get_bits_long(&s->gb, 17) != 1) {
+    if (get_bits(&s->gb, 17) != 1) {
         av_log(s->avctx, AV_LOG_ERROR, "Bad picture start code\n");
         return AVERROR_INVALIDDATA;
     }
@@ -113,7 +113,7 @@ int ff_flv_decode_picture_header(MpegEncContext *s)
     return 0;
 }
 
-AVCodec ff_flv_decoder = {
+const AVCodec ff_flv_decoder = {
     .name           = "flv",
     .long_name      = NULL_IF_CONFIG_SMALL("FLV / Sorenson Spark / Sorenson H.263 (Flash Video)"),
     .type           = AVMEDIA_TYPE_VIDEO,

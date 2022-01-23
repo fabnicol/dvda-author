@@ -313,7 +313,6 @@ static int idcin_read_packet(AVFormatContext *s,
             return ret;
         else if (ret != chunk_size) {
             av_log(s, AV_LOG_ERROR, "incomplete packet\n");
-            av_packet_unref(pkt);
             return AVERROR(EIO);
         }
         if (command == 1) {
@@ -322,7 +321,6 @@ static int idcin_read_packet(AVFormatContext *s,
             pal = av_packet_new_side_data(pkt, AV_PKT_DATA_PALETTE,
                                           AVPALETTE_SIZE);
             if (!pal) {
-                av_packet_unref(pkt);
                 return AVERROR(ENOMEM);
             }
             memcpy(pal, palette, AVPALETTE_SIZE);
@@ -360,7 +358,7 @@ static int idcin_read_seek(AVFormatContext *s, int stream_index,
         int64_t ret = avio_seek(s->pb, idcin->first_pkt_pos, SEEK_SET);
         if (ret < 0)
             return ret;
-        ff_update_cur_dts(s, s->streams[idcin->video_stream_index], 0);
+        avpriv_update_cur_dts(s, s->streams[idcin->video_stream_index], 0);
         idcin->next_chunk_is_video = 1;
         idcin->current_audio_chunk = 0;
         return 0;
@@ -368,7 +366,7 @@ static int idcin_read_seek(AVFormatContext *s, int stream_index,
     return -1;
 }
 
-AVInputFormat ff_idcin_demuxer = {
+const AVInputFormat ff_idcin_demuxer = {
     .name           = "idcin",
     .long_name      = NULL_IF_CONFIG_SMALL("id Cinematic"),
     .priv_data_size = sizeof(IdcinDemuxContext),

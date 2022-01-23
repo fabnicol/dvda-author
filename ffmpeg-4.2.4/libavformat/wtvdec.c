@@ -71,7 +71,7 @@ static int wtvfile_read_packet(void *opaque, uint8_t *buf, int buf_size)
 {
     WtvFile *wf = opaque;
     AVIOContext *pb = wf->pb_filesystem;
-    int nread = 0;
+    int nread = 0, n = 0;
 
     if (wf->error || pb->error)
         return -1;
@@ -80,7 +80,6 @@ static int wtvfile_read_packet(void *opaque, uint8_t *buf, int buf_size)
 
     buf_size = FFMIN(buf_size, wf->length - wf->position);
     while(nread < buf_size) {
-        int n;
         int remaining_in_sector = (1 << wf->sector_bits) - (wf->position & ((1 << wf->sector_bits) - 1));
         int read_request        = FFMIN(buf_size - nread, remaining_in_sector);
 
@@ -100,7 +99,7 @@ static int wtvfile_read_packet(void *opaque, uint8_t *buf, int buf_size)
             }
         }
     }
-    return nread;
+    return nread ? nread : n;
 }
 
 /**
@@ -274,6 +273,11 @@ static AVIOContext * wtvfile_open2(AVFormatContext *s, const uint8_t *buf, int b
                    "bad filename length, remaining directory entries ignored\n");
             break;
         }
+        if (dir_length == 0) {
+            av_log(s, AV_LOG_ERROR,
+                   "bad dir length, remaining directory entries ignored\n");
+            break;
+        }
         if (48 + (int64_t)name_size > buf_end - buf) {
             av_log(s, AV_LOG_ERROR, "filename exceeds buffer size; remaining directory entries ignored\n");
             break;
@@ -290,7 +294,7 @@ static AVIOContext * wtvfile_open2(AVFormatContext *s, const uint8_t *buf, int b
 
         buf += dir_length;
     }
-    return 0;
+    return NULL;
 }
 
 #define wtvfile_open(s, buf, buf_size, filename) \
@@ -430,7 +434,6 @@ static void get_attachment(AVFormatContext *s, AVIOContext *pb, int length)
     char description[1024];
     unsigned int filesize;
     AVStream *st;
-    int ret;
     int64_t pos = avio_tell(pb);
 
     avio_get_str16le(pb, INT_MAX, mime, sizeof(mime));
@@ -443,19 +446,12 @@ static void get_attachment(AVFormatContext *s, AVIOContext *pb, int length)
     if (!filesize)
         goto done;
 
-    st = avformat_new_stream(s, NULL);
-    if (!st)
+    if (ff_add_attached_pic(s, NULL, pb, NULL, filesize) < 0)
         goto done;
+    st = s->streams[s->nb_streams - 1];
     av_dict_set(&st->metadata, "title", description, 0);
-    st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id   = AV_CODEC_ID_MJPEG;
     st->id = -1;
-    ret = av_get_packet(pb, &st->attached_pic, filesize);
-    if (ret < 0)
-        goto done;
-    st->attached_pic.stream_index = st->index;
-    st->attached_pic.flags       |= AV_PKT_FLAG_KEY;
-    st->disposition              |= AV_DISPOSITION_ATTACHED_PIC;
 done:
     avio_seek(pb, pos + length, SEEK_SET);
 }
@@ -622,7 +618,7 @@ static AVStream * new_stream(AVFormatContext *s, AVStream *st, int sid, int code
         st->priv_data = wst;
     }
     st->codecpar->codec_type = codec_type;
-    st->need_parsing      = AVSTREAM_PARSE_FULL;
+    ffstream(st)->need_parsing = AVSTREAM_PARSE_FULL;
     avpriv_set_pts_info(st, 64, 1, 10000000);
     return st;
 }
@@ -656,6 +652,8 @@ static AVStream * parse_media_type(AVFormatContext *s, AVStream *st, int sid,
         avio_skip(pb, size - 32);
         ff_get_guid(pb, &actual_subtype);
         ff_get_guid(pb, &actual_formattype);
+        if (avio_feof(pb))
+            return NULL;
         avio_seek(pb, -size, SEEK_CUR);
 
         st = parse_media_type(s, st, sid, mediatype, actual_subtype, actual_formattype, size - 32);
@@ -790,7 +788,7 @@ static int parse_chunks(AVFormatContext *s, int mode, int64_t seekts, int *len_p
 
         ff_get_guid(pb, &g);
         len = avio_rl32(pb);
-        if (len < 32) {
+        if (len < 32 || len > INT_MAX - 7) {
             int ret;
             if (avio_feof(pb))
                 return AVERROR_EOF;
@@ -813,6 +811,8 @@ static int parse_chunks(AVFormatContext *s, int mode, int64_t seekts, int *len_p
                 avio_skip(pb, 12);
                 ff_get_guid(pb, &formattype);
                 size = avio_rl32(pb);
+                if (size < 0 || size > INT_MAX - 92 - consumed)
+                    return AVERROR_INVALIDDATA;
                 parse_media_type(s, 0, sid, mediatype, subtype, formattype, size);
                 consumed += 92 + size;
             }
@@ -827,6 +827,8 @@ static int parse_chunks(AVFormatContext *s, int mode, int64_t seekts, int *len_p
                 avio_skip(pb, 12);
                 ff_get_guid(pb, &formattype);
                 size = avio_rl32(pb);
+                if (size < 0 || size > INT_MAX - 76 - consumed)
+                    return AVERROR_INVALIDDATA;
                 parse_media_type(s, s->streams[stream_index], sid, mediatype, subtype, formattype, size);
                 consumed += 76 + size;
             }
@@ -904,10 +906,10 @@ static int parse_chunks(AVFormatContext *s, int mode, int64_t seekts, int *len_p
                     wtv->last_valid_pts = wtv->pts;
                     if (wtv->epoch == AV_NOPTS_VALUE || wtv->pts < wtv->epoch)
                         wtv->epoch = wtv->pts;
-                if (mode == SEEK_TO_PTS && wtv->pts >= seekts) {
-                    avio_skip(pb, WTV_PAD8(len) - consumed);
-                    return 0;
-                }
+                    if (mode == SEEK_TO_PTS && wtv->pts >= seekts) {
+                        avio_skip(pb, WTV_PAD8(len) - consumed);
+                        return 0;
+                    }
                 }
             }
         } else if (!ff_guidcmp(g, ff_data_guid)) {
@@ -948,6 +950,9 @@ static int parse_chunks(AVFormatContext *s, int mode, int64_t seekts, int *len_p
             //ignore known guids
         } else
             av_log(s, AV_LOG_WARNING, "unsupported chunk:"FF_PRI_GUID"\n", FF_ARG_GUID(g));
+
+        if (avio_feof(pb))
+            break;
 
         avio_skip(pb, WTV_PAD8(len) - consumed);
     }
@@ -1121,7 +1126,7 @@ static int read_close(AVFormatContext *s)
     return 0;
 }
 
-AVInputFormat ff_wtv_demuxer = {
+const AVInputFormat ff_wtv_demuxer = {
     .name           = "wtv",
     .long_name      = NULL_IF_CONFIG_SMALL("Windows Television (WTV)"),
     .priv_data_size = sizeof(WtvContext),

@@ -27,12 +27,14 @@
  */
 
 #include "avcodec.h"
+#include "encode.h"
 #include "hpeldsp.h"
 #include "me_cmp.h"
 #include "mpegvideo.h"
 #include "h263.h"
 #include "internal.h"
 #include "mpegutils.h"
+#include "packet_internal.h"
 #include "svq1.h"
 #include "svq1enc.h"
 #include "svq1enc_cb.h"
@@ -345,7 +347,7 @@ static int svq1_encode_plane(SVQ1EncContext *s, int plane,
             s->m.first_slice_line = 0;
         }
 
-        ff_fix_long_p_mvs(&s->m);
+        ff_fix_long_p_mvs(&s->m, CANDIDATE_MB_TYPE_INTRA);
         ff_fix_long_mvs(&s->m, NULL, 0, s->m.p_mv_table, s->m.f_code,
                         CANDIDATE_MB_TYPE_INTER, 0);
     }
@@ -371,8 +373,7 @@ static int svq1_encode_plane(SVQ1EncContext *s, int plane,
             int score[4]     = { 0, 0, 0, 0 }, best;
             uint8_t *temp    = s->scratchbuf;
 
-            if (s->pb.buf_end - s->pb.buf -
-                (put_bits_count(&s->pb) >> 3) < 3000) { // FIXME: check size
+            if (put_bytes_left(&s->pb, 0) < 3000) { // FIXME: check size
                 av_log(s->avctx, AV_LOG_ERROR, "encoded frame too large\n");
                 return -1;
             }
@@ -471,7 +472,7 @@ static int svq1_encode_plane(SVQ1EncContext *s, int plane,
 
             if (best != 2)
             for (i = 5; i >= 0; i--)
-                avpriv_copy_bits(&s->pb, reorder_buffer[best][i],
+                ff_copy_bits(&s->pb, reorder_buffer[best][i],
                                  count[best][i]);
             if (best == 0)
                 s->hdsp.put_pixels_tab[0][0](decoded, temp, stride, 16);
@@ -486,9 +487,10 @@ static av_cold int svq1_encode_end(AVCodecContext *avctx)
     SVQ1EncContext *const s = avctx->priv_data;
     int i;
 
-    av_log(avctx, AV_LOG_DEBUG, "RD: %f\n",
-           s->rd_total / (double)(avctx->width * avctx->height *
-                                  avctx->frame_number));
+    if (avctx->frame_number)
+        av_log(avctx, AV_LOG_DEBUG, "RD: %f\n",
+               s->rd_total / (double)(avctx->width * avctx->height *
+                                      avctx->frame_number));
 
     s->m.mb_type = NULL;
     ff_mpv_common_end(&s->m);
@@ -528,7 +530,6 @@ static av_cold int svq1_encode_init(AVCodecContext *avctx)
     s->current_picture = av_frame_alloc();
     s->last_picture    = av_frame_alloc();
     if (!s->current_picture || !s->last_picture) {
-        svq1_encode_end(avctx);
         return AVERROR(ENOMEM);
     }
 
@@ -545,7 +546,6 @@ static av_cold int svq1_encode_init(AVCodecContext *avctx)
     s->m.avctx             = avctx;
 
     if ((ret = ff_mpv_common_init(&s->m)) < 0) {
-        svq1_encode_end(avctx);
         return ret;
     }
 
@@ -563,7 +563,6 @@ static av_cold int svq1_encode_init(AVCodecContext *avctx)
 
     if (!s->m.me.temp || !s->m.me.scratchpad || !s->m.me.map ||
         !s->m.me.score_map || !s->mb_type || !s->dummy) {
-        svq1_encode_end(avctx);
         return AVERROR(ENOMEM);
     }
 
@@ -583,8 +582,9 @@ static int svq1_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     SVQ1EncContext *const s = avctx->priv_data;
     int i, ret;
 
-    if ((ret = ff_alloc_packet2(avctx, pkt, s->y_block_width * s->y_block_height *
-                             MAX_MB_BYTES*3 + AV_INPUT_BUFFER_MIN_SIZE, 0)) < 0)
+    ret = ff_alloc_packet(avctx, pkt, s->y_block_width * s->y_block_height *
+                          MAX_MB_BYTES * 3 + AV_INPUT_BUFFER_MIN_SIZE);
+    if (ret < 0)
         return ret;
 
     if (avctx->pix_fmt != AV_PIX_FMT_YUV410P) {
@@ -618,13 +618,6 @@ static int svq1_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         s->pict_type = AV_PICTURE_TYPE_I;
     s->quality = pict->quality;
 
-#if FF_API_CODED_FRAME
-FF_DISABLE_DEPRECATION_WARNINGS
-    avctx->coded_frame->pict_type = s->pict_type;
-    avctx->coded_frame->key_frame = s->pict_type == AV_PICTURE_TYPE_I;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
-
     ff_side_data_set_encoder_stats(pkt, pict->quality, NULL, 0, s->pict_type);
 
     svq1_write_header(s, s->pict_type);
@@ -649,13 +642,13 @@ FF_ENABLE_DEPRECATION_WARNINGS
         }
     }
 
-    // avpriv_align_put_bits(&s->pb);
+    // align_put_bits(&s->pb);
     while (put_bits_count(&s->pb) & 31)
         put_bits(&s->pb, 1, 0);
 
     flush_put_bits(&s->pb);
 
-    pkt->size = put_bits_count(&s->pb) / 8;
+    pkt->size = put_bytes_output(&s->pb);
     if (s->pict_type == AV_PICTURE_TYPE_I)
         pkt->flags |= AV_PKT_FLAG_KEY;
     *got_packet = 1;
@@ -681,7 +674,7 @@ static const AVClass svq1enc_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_svq1_encoder = {
+const AVCodec ff_svq1_encoder = {
     .name           = "svq1",
     .long_name      = NULL_IF_CONFIG_SMALL("Sorenson Vector Quantizer 1 / Sorenson Video 1 / SVQ1"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -693,4 +686,5 @@ AVCodec ff_svq1_encoder = {
     .close          = svq1_encode_end,
     .pix_fmts       = (const enum AVPixelFormat[]) { AV_PIX_FMT_YUV410P,
                                                      AV_PIX_FMT_NONE },
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

@@ -40,6 +40,8 @@ const IdStrMap ff_img_tags[] = {
     { AV_CODEC_ID_PGMYUV,     "pgmyuv"   },
     { AV_CODEC_ID_PBM,        "pbm"      },
     { AV_CODEC_ID_PAM,        "pam"      },
+    { AV_CODEC_ID_PFM,        "pfm"      },
+    { AV_CODEC_ID_CRI,        "cri"      },
     { AV_CODEC_ID_ALIAS_PIX,  "pix"      },
     { AV_CODEC_ID_DDS,        "dds"      },
     { AV_CODEC_ID_MPEG1VIDEO, "mpg1-img" },
@@ -54,6 +56,7 @@ const IdStrMap ff_img_tags[] = {
     { AV_CODEC_ID_TIFF,       "dng"      },
     { AV_CODEC_ID_SGI,        "sgi"      },
     { AV_CODEC_ID_PTX,        "ptx"      },
+    { AV_CODEC_ID_PHOTOCD,    "pcd"      },
     { AV_CODEC_ID_PCX,        "pcx"      },
     { AV_CODEC_ID_QDRAW,      "pic"      },
     { AV_CODEC_ID_QDRAW,      "pct"      },
@@ -81,6 +84,9 @@ const IdStrMap ff_img_tags[] = {
     { AV_CODEC_ID_XPM,        "xpm"      },
     { AV_CODEC_ID_XFACE,      "xface"    },
     { AV_CODEC_ID_XWD,        "xwd"      },
+    { AV_CODEC_ID_GEM,        "img"      },
+    { AV_CODEC_ID_GEM,        "ximg"     },
+    { AV_CODEC_ID_GEM,        "timg"     },
     { AV_CODEC_ID_NONE,       NULL       }
 };
 

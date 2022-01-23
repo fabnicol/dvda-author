@@ -25,7 +25,12 @@
 #include "libavutil/common.h"
 #include "libavutil/opt.h"
 #include "avcodec.h"
+#include "encode.h"
 #include "internal.h"
+
+#ifndef LIBILBC_VERSION_MAJOR
+#define LIBILBC_VERSION_MAJOR 2
+#endif
 
 static int get_mode(AVCodecContext *avctx)
 {
@@ -41,7 +46,11 @@ static int get_mode(AVCodecContext *avctx)
 
 typedef struct ILBCDecContext {
     const AVClass *class;
+#if LIBILBC_VERSION_MAJOR < 3
     iLBC_Dec_Inst_t decoder;
+#else
+    IlbcDecoder decoder;
+#endif
     int enhance;
 } ILBCDecContext;
 
@@ -87,7 +96,12 @@ static int ilbc_decode_frame(AVCodecContext *avctx, void *data,
     int ret;
 
     if (s->decoder.no_of_bytes > buf_size) {
+#if LIBILBC_VERSION_MAJOR < 3
         av_log(avctx, AV_LOG_ERROR, "iLBC frame too short (%u, should be %u)\n",
+#else
+        av_log(avctx, AV_LOG_ERROR, "iLBC frame too short (%u, should be "
+                                    "%"SIZE_SPECIFIER")\n",
+#endif
                buf_size, s->decoder.no_of_bytes);
         return AVERROR_INVALIDDATA;
     }
@@ -103,7 +117,7 @@ static int ilbc_decode_frame(AVCodecContext *avctx, void *data,
     return s->decoder.no_of_bytes;
 }
 
-AVCodec ff_libilbc_decoder = {
+const AVCodec ff_libilbc_decoder = {
     .name           = "libilbc",
     .long_name      = NULL_IF_CONFIG_SMALL("iLBC (Internet Low Bitrate Codec)"),
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -111,13 +125,17 @@ AVCodec ff_libilbc_decoder = {
     .priv_data_size = sizeof(ILBCDecContext),
     .init           = ilbc_decode_init,
     .decode         = ilbc_decode_frame,
-    .capabilities   = AV_CODEC_CAP_DR1,
+    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
     .priv_class     = &ilbc_dec_class,
 };
 
 typedef struct ILBCEncContext {
     const AVClass *class;
+#if LIBILBC_VERSION_MAJOR < 3
     iLBC_Enc_Inst_t encoder;
+#else
+    IlbcEncoder encoder;
+#endif
     int mode;
 } ILBCEncContext;
 
@@ -166,7 +184,7 @@ static int ilbc_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     ILBCEncContext *s = avctx->priv_data;
     int ret;
 
-    if ((ret = ff_alloc_packet2(avctx, avpkt, 50, 0)) < 0)
+    if ((ret = ff_alloc_packet(avctx, avpkt, 50)) < 0)
         return ret;
 
     WebRtcIlbcfix_EncodeImpl((uint16_t *) avpkt->data, (const int16_t *) frame->data[0], &s->encoder);
@@ -181,7 +199,7 @@ static const AVCodecDefault ilbc_encode_defaults[] = {
     { NULL }
 };
 
-AVCodec ff_libilbc_encoder = {
+const AVCodec ff_libilbc_encoder = {
     .name           = "libilbc",
     .long_name      = NULL_IF_CONFIG_SMALL("iLBC (Internet Low Bitrate Codec)"),
     .type           = AVMEDIA_TYPE_AUDIO,

@@ -30,8 +30,6 @@
 
 #include "libavutil/internal.h"
 
-#include "libavcodec/avcodec.h"
-
 #include "avdevice.h"
 #include "libavformat/internal.h"
 
@@ -90,13 +88,13 @@ static int audio_write_trailer(AVFormatContext *s1)
 }
 
 static const AVClass oss_muxer_class = {
-    .class_name     = "OSS muxer",
+    .class_name     = "OSS outdev",
     .item_name      = av_default_item_name,
     .version        = LIBAVUTIL_VERSION_INT,
     .category       = AV_CLASS_CATEGORY_DEVICE_AUDIO_OUTPUT,
 };
 
-AVOutputFormat ff_oss_muxer = {
+const AVOutputFormat ff_oss_muxer = {
     .name           = "oss",
     .long_name      = NULL_IF_CONFIG_SMALL("OSS (Open Sound System) playback"),
     .priv_data_size = sizeof(OSSAudioData),

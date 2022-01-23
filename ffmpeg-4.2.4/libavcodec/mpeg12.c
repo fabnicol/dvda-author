@@ -30,6 +30,7 @@
 #include "libavutil/attributes.h"
 #include "libavutil/avassert.h"
 #include "libavutil/timecode.h"
+#include "libavutil/thread.h"
 
 #include "internal.h"
 #include "avcodec.h"
@@ -40,8 +41,6 @@
 #include "mpegvideodata.h"
 #include "bytestream.h"
 #include "thread.h"
-
-uint8_t ff_mpeg12_static_rl_table_store[2][2][2*MAX_RUN + MAX_LEVEL + 3];
 
 static const uint8_t table_mb_ptype[7][2] = {
     { 3, 5 }, // 0x01 MB_INTRA
@@ -134,43 +133,42 @@ VLC ff_mb_ptype_vlc;
 VLC ff_mb_btype_vlc;
 VLC ff_mb_pat_vlc;
 
-av_cold void ff_mpeg12_init_vlcs(void)
+static av_cold void mpeg12_init_vlcs(void)
 {
-    static int done = 0;
+    INIT_VLC_STATIC(&ff_dc_lum_vlc, DC_VLC_BITS, 12,
+                    ff_mpeg12_vlc_dc_lum_bits, 1, 1,
+                    ff_mpeg12_vlc_dc_lum_code, 2, 2, 512);
+    INIT_VLC_STATIC(&ff_dc_chroma_vlc,  DC_VLC_BITS, 12,
+                    ff_mpeg12_vlc_dc_chroma_bits, 1, 1,
+                    ff_mpeg12_vlc_dc_chroma_code, 2, 2, 514);
+    INIT_VLC_STATIC(&ff_mv_vlc, MV_VLC_BITS, 17,
+                    &ff_mpeg12_mbMotionVectorTable[0][1], 2, 1,
+                    &ff_mpeg12_mbMotionVectorTable[0][0], 2, 1, 266);
+    INIT_VLC_STATIC(&ff_mbincr_vlc, MBINCR_VLC_BITS, 36,
+                    &ff_mpeg12_mbAddrIncrTable[0][1], 2, 1,
+                    &ff_mpeg12_mbAddrIncrTable[0][0], 2, 1, 538);
+    INIT_VLC_STATIC(&ff_mb_pat_vlc, MB_PAT_VLC_BITS, 64,
+                    &ff_mpeg12_mbPatTable[0][1], 2, 1,
+                    &ff_mpeg12_mbPatTable[0][0], 2, 1, 512);
 
-    if (!done) {
-        done = 1;
+    INIT_VLC_STATIC(&ff_mb_ptype_vlc, MB_PTYPE_VLC_BITS, 7,
+                    &table_mb_ptype[0][1], 2, 1,
+                    &table_mb_ptype[0][0], 2, 1, 64);
+    INIT_VLC_STATIC(&ff_mb_btype_vlc, MB_BTYPE_VLC_BITS, 11,
+                    &table_mb_btype[0][1], 2, 1,
+                    &table_mb_btype[0][0], 2, 1, 64);
 
-        INIT_VLC_STATIC(&ff_dc_lum_vlc, DC_VLC_BITS, 12,
-                        ff_mpeg12_vlc_dc_lum_bits, 1, 1,
-                        ff_mpeg12_vlc_dc_lum_code, 2, 2, 512);
-        INIT_VLC_STATIC(&ff_dc_chroma_vlc,  DC_VLC_BITS, 12,
-                        ff_mpeg12_vlc_dc_chroma_bits, 1, 1,
-                        ff_mpeg12_vlc_dc_chroma_code, 2, 2, 514);
-        INIT_VLC_STATIC(&ff_mv_vlc, MV_VLC_BITS, 17,
-                        &ff_mpeg12_mbMotionVectorTable[0][1], 2, 1,
-                        &ff_mpeg12_mbMotionVectorTable[0][0], 2, 1, 518);
-        INIT_VLC_STATIC(&ff_mbincr_vlc, MBINCR_VLC_BITS, 36,
-                        &ff_mpeg12_mbAddrIncrTable[0][1], 2, 1,
-                        &ff_mpeg12_mbAddrIncrTable[0][0], 2, 1, 538);
-        INIT_VLC_STATIC(&ff_mb_pat_vlc, MB_PAT_VLC_BITS, 64,
-                        &ff_mpeg12_mbPatTable[0][1], 2, 1,
-                        &ff_mpeg12_mbPatTable[0][0], 2, 1, 512);
-
-        INIT_VLC_STATIC(&ff_mb_ptype_vlc, MB_PTYPE_VLC_BITS, 7,
-                        &table_mb_ptype[0][1], 2, 1,
-                        &table_mb_ptype[0][0], 2, 1, 64);
-        INIT_VLC_STATIC(&ff_mb_btype_vlc, MB_BTYPE_VLC_BITS, 11,
-                        &table_mb_btype[0][1], 2, 1,
-                        &table_mb_btype[0][0], 2, 1, 64);
-        ff_rl_init(&ff_rl_mpeg1, ff_mpeg12_static_rl_table_store[0]);
-        ff_rl_init(&ff_rl_mpeg2, ff_mpeg12_static_rl_table_store[1]);
-
-        INIT_2D_VLC_RL(ff_rl_mpeg1, 680, 0);
-        INIT_2D_VLC_RL(ff_rl_mpeg2, 674, 0);
-    }
+    INIT_2D_VLC_RL(ff_rl_mpeg1, 680, 0);
+    INIT_2D_VLC_RL(ff_rl_mpeg2, 674, 0);
 }
 
+av_cold void ff_mpeg12_init_vlcs(void)
+{
+    static AVOnce init_static_once = AV_ONCE_INIT;
+    ff_thread_once(&init_static_once, mpeg12_init_vlcs);
+}
+
+#if FF_API_FLAG_TRUNCATED
 /**
  * Find the end of the current frame in the bitstream.
  * @return the position of the first byte of the next frame, or -1
@@ -234,6 +232,7 @@ int ff_mpeg1_find_frame_end(ParseContext *pc, const uint8_t *buf, int buf_size, 
     pc->state = state;
     return END_NOT_FOUND;
 }
+#endif
 
 #define MAX_INDEX (64 - 1)
 

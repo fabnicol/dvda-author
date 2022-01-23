@@ -27,7 +27,6 @@
 #include "libavutil/colorspace.h"
 #include "libavutil/opt.h"
 #include "libavutil/imgutils.h"
-#include "libavutil/avstring.h"
 #include "libavutil/bswap.h"
 
 typedef struct DVDSubContext
@@ -410,15 +409,6 @@ static int decode_dvd_subtitles(DVDSubContext *ctx, AVSubtitle *sub_header,
                 sub_header->rects[0]->type = SUBTITLE_BITMAP;
                 sub_header->rects[0]->linesize[0] = w;
                 sub_header->rects[0]->flags = is_menu ? AV_SUBTITLE_FLAG_FORCED : 0;
-
-#if FF_API_AVPICTURE
-FF_DISABLE_DEPRECATION_WARNINGS
-                for (i = 0; i < 4; i++) {
-                    sub_header->rects[0]->pict.data[i] = sub_header->rects[0]->data[i];
-                    sub_header->rects[0]->pict.linesize[i] = sub_header->rects[0]->linesize[i];
-                }
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
             }
         }
         if (next_cmd_pos < cmd_pos) {
@@ -504,15 +494,6 @@ static int find_smallest_bounding_rectangle(DVDSubContext *ctx, AVSubtitle *s)
     s->rects[0]->h = h;
     s->rects[0]->x += x1;
     s->rects[0]->y += y1;
-
-#if FF_API_AVPICTURE
-FF_DISABLE_DEPRECATION_WARNINGS
-    for (i = 0; i < 4; i++) {
-        s->rects[0]->pict.data[i] = s->rects[0]->data[i];
-        s->rects[0]->pict.linesize[i] = s->rects[0]->linesize[i];
-    }
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
 
     return 1;
 }
@@ -626,18 +607,6 @@ static int dvdsub_decode(AVCodecContext *avctx,
     return buf_size;
 }
 
-static void parse_palette(DVDSubContext *ctx, char *p)
-{
-    int i;
-
-    ctx->has_palette = 1;
-    for(i=0;i<16;i++) {
-        ctx->palette[i] = strtoul(p, &p, 16);
-        while(*p == ',' || av_isspace(*p))
-            p++;
-    }
-}
-
 static int parse_ifo_palette(DVDSubContext *ctx, char *p)
 {
     FILE *ifo;
@@ -719,7 +688,8 @@ static int dvdsub_parse_extradata(AVCodecContext *avctx)
             break;
 
         if (strncmp("palette:", data, 8) == 0) {
-            parse_palette(ctx, data + 8);
+            ctx->has_palette = 1;
+            ff_dvdsub_parse_palette(ctx->palette, data + 8);
         } else if (strncmp("size:", data, 5) == 0) {
             int w, h;
             if (sscanf(data + 5, "%dx%d", &w, &h) == 2) {
@@ -748,8 +718,10 @@ static av_cold int dvdsub_init(AVCodecContext *avctx)
 
     if (ctx->ifo_str)
         parse_ifo_palette(ctx, ctx->ifo_str);
-    if (ctx->palette_str)
-        parse_palette(ctx, ctx->palette_str);
+    if (ctx->palette_str) {
+        ctx->has_palette = 1;
+        ff_dvdsub_parse_palette(ctx->palette, ctx->palette_str);
+    }
     if (ctx->has_palette) {
         int i;
         av_log(avctx, AV_LOG_DEBUG, "palette:");
@@ -767,12 +739,6 @@ static void dvdsub_flush(AVCodecContext *avctx)
     ctx->buf_size = 0;
 }
 
-static av_cold int dvdsub_close(AVCodecContext *avctx)
-{
-    dvdsub_flush(avctx);
-    return 0;
-}
-
 #define OFFSET(field) offsetof(DVDSubContext, field)
 #define SD AV_OPT_FLAG_SUBTITLE_PARAM | AV_OPT_FLAG_DECODING_PARAM
 static const AVOption options[] = {
@@ -788,7 +754,7 @@ static const AVClass dvdsub_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_dvdsub_decoder = {
+const AVCodec ff_dvdsub_decoder = {
     .name           = "dvdsub",
     .long_name      = NULL_IF_CONFIG_SMALL("DVD subtitles"),
     .type           = AVMEDIA_TYPE_SUBTITLE,
@@ -797,6 +763,6 @@ AVCodec ff_dvdsub_decoder = {
     .init           = dvdsub_init,
     .decode         = dvdsub_decode,
     .flush          = dvdsub_flush,
-    .close          = dvdsub_close,
     .priv_class     = &dvdsub_class,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

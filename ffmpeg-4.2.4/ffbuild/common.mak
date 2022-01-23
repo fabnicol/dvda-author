@@ -12,10 +12,13 @@ endif
 
 ifndef SUBDIR
 
+BIN2CEXE = ffbuild/bin2c$(HOSTEXESUF)
+BIN2C = $(BIN2CEXE)
+
 ifndef V
 Q      = @
 ECHO   = printf "$(1)\t%s\n" $(2)
-BRIEF  = CC CXX OBJCC HOSTCC HOSTLD AS X86ASM AR LD STRIP CP WINDRES NVCC
+BRIEF  = CC CXX OBJCC HOSTCC HOSTLD AS X86ASM AR LD STRIP CP WINDRES NVCC BIN2C
 SILENT = DEPCC DEPHOSTCC DEPAS DEPX86ASM RANLIB RM
 
 MSG    = $@
@@ -26,7 +29,7 @@ $(foreach VAR,$(SILENT),$(eval override $(VAR) = @$($(VAR))))
 $(eval INSTALL = @$(call ECHO,INSTALL,$$(^:$(SRC_DIR)/%=%)); $(INSTALL))
 endif
 
-ALLFFLIBS = avcodec avdevice avfilter avformat avresample avutil postproc swscale swresample
+ALLFFLIBS = avcodec avdevice avfilter avformat avutil postproc swscale swresample
 
 # NASM requires -I path terminated with /
 IFLAGS     := -I. -I$(SRC_LINK)/
@@ -44,7 +47,7 @@ LDFLAGS    := $(ALLFFLIBS:%=$(LD_PATH)lib%) $(LDFLAGS)
 
 define COMPILE
        $(call $(1)DEP,$(1))
-       $($(1)) $($(1)FLAGS) $($(1)_DEPFLAGS) $($(1)_C) $($(1)_O) $(patsubst $(SRC_PATH)/%,$(SRC_LINK)/%,$<)
+       $($(1)) $($(1)FLAGS) $($(2)) $($(1)_DEPFLAGS) $($(1)_C) $($(1)_O) $(patsubst $(SRC_PATH)/%,$(SRC_LINK)/%,$<)
 endef
 
 COMPILE_C = $(call COMPILE,CC)
@@ -54,6 +57,14 @@ COMPILE_M = $(call COMPILE,OBJCC)
 COMPILE_X86ASM = $(call COMPILE,X86ASM)
 COMPILE_HOSTC = $(call COMPILE,HOSTCC)
 COMPILE_NVCC = $(call COMPILE,NVCC)
+COMPILE_MMI = $(call COMPILE,CC,MMIFLAGS)
+COMPILE_MSA = $(call COMPILE,CC,MSAFLAGS)
+
+%_mmi.o: %_mmi.c
+	$(COMPILE_MMI)
+
+%_msa.o: %_msa.c
+	$(COMPILE_MSA)
 
 %.o: %.c
 	$(COMPILE_C)
@@ -82,7 +93,7 @@ COMPILE_NVCC = $(call COMPILE,NVCC)
 	-$(if $(ASMSTRIPFLAGS), $(STRIP) $(ASMSTRIPFLAGS) $@)
 
 %.o: %.rc
-	$(WINDRES) $(IFLAGS) --preprocessor "$(DEPWINDRES) -E -xc-header -DRC_INVOKED $(CC_DEPFLAGS)" -o $@ $<
+	$(WINDRES) $(IFLAGS) $(foreach ARG,$(CC_DEPFLAGS),--preprocessor-arg "$(ARG)") -o $@ $<
 
 %.i: %.c
 	$(CC) $(CCFLAGS) $(CC_E) $<
@@ -90,16 +101,31 @@ COMPILE_NVCC = $(call COMPILE,NVCC)
 %.h.c:
 	$(Q)echo '#include "$*.h"' >$@
 
+$(BIN2CEXE): ffbuild/bin2c_host.o
+	$(HOSTLD) $(HOSTLDFLAGS) $(HOSTLD_O) $^ $(HOSTEXTRALIBS)
+
 %.ptx: %.cu $(SRC_PATH)/compat/cuda/cuda_runtime.h
 	$(COMPILE_NVCC)
 
-%.ptx.c: %.ptx
-	$(Q)sh $(SRC_PATH)/compat/cuda/ptx2c.sh $@ $(patsubst $(SRC_PATH)/%,$(SRC_LINK)/%,$<)
+ifdef CONFIG_PTX_COMPRESSION
+%.ptx.gz: TAG = GZIP
+%.ptx.gz: %.ptx
+	$(M)gzip -c9 $(patsubst $(SRC_PATH)/%,$(SRC_LINK)/%,$<) >$@
+
+%.ptx.c: %.ptx.gz $(BIN2CEXE)
+	$(BIN2C) $(patsubst $(SRC_PATH)/%,$(SRC_LINK)/%,$<) $@ $(subst .,_,$(basename $(notdir $@)))
+else
+%.ptx.c: %.ptx $(BIN2CEXE)
+	$(BIN2C) $(patsubst $(SRC_PATH)/%,$(SRC_LINK)/%,$<) $@ $(subst .,_,$(basename $(notdir $@)))
+endif
+
+clean::
+	$(RM) $(BIN2CEXE)
 
 %.c %.h %.pc %.ver %.version: TAG = GEN
 
 # Dummy rule to stop make trying to rebuild removed or renamed headers
-%.h:
+%.h %_template.c:
 	@:
 
 # Disable suffix rules.  Most of the builtin rules are suffix rules,
@@ -143,7 +169,7 @@ HOBJS        = $(filter-out $(SKIPHEADERS:.h=.h.o),$(ALLHEADERS:.h=.h.o))
 PTXOBJS      = $(filter %.ptx.o,$(OBJS))
 $(HOBJS):     CCFLAGS += $(CFLAGS_HEADERS)
 checkheaders: $(HOBJS)
-.SECONDARY:   $(HOBJS:.o=.c) $(PTXOBJS:.o=.c) $(PTXOBJS:.o=)
+.SECONDARY:   $(HOBJS:.o=.c) $(PTXOBJS:.o=.c) $(PTXOBJS:.o=.gz) $(PTXOBJS:.o=)
 
 alltools: $(TOOLS)
 
@@ -162,7 +188,7 @@ $(TOOLOBJS): | tools
 
 OUTDIRS := $(OUTDIRS) $(dir $(OBJS) $(HOBJS) $(HOSTOBJS) $(SLIBOBJS) $(TESTOBJS))
 
-CLEANSUFFIXES     = *.d *.gcda *.gcno *.h.c *.ho *.map *.o *.pc *.ptx *.ptx.c *.ver *.version *$(DEFAULT_X86ASMD).asm *~
+CLEANSUFFIXES     = *.d *.gcda *.gcno *.h.c *.ho *.map *.o *.pc *.ptx *.ptx.gz *.ptx.c *.ver *.version *$(DEFAULT_X86ASMD).asm *~ *.ilk *.pdb
 LIBSUFFIXES       = *.a *.lib *.so *.so.* *.dylib *.dll *.def *.dll.a
 
 define RULES

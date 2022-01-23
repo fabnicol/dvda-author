@@ -1,4 +1,4 @@
-This is help2man-pt_BR.info.tmp, produced by makeinfo version 6.7 from
+This is help2man-pt_BR.info.tmp, produced by makeinfo version 6.8 from
 help2man-pt_BR.texi.
 
 Esse arquivo documenta o comando GNU ‘help2man’ que produz páginas de
@@ -53,8 +53,8 @@ File: help2man-pt_BR.info.tmp,  Node: Top,  Next: Visão geral,  Up: (dir)
 
 File: help2man-pt_BR.info.tmp,  Node: Visão geral,  Next: Chamando help2man,  Prev: Top,  Up: Top
 
-1, Visão geral do ‘help2man’
-****************************
+1 Visão geral do ‘help2man’
+***************************
 
 ‘help2man’ é uma ferramenta para geração automática de páginas de manual
 simples a partir da saída de programa.
@@ -73,8 +73,8 @@ parece uma página de manual.
 
 File: help2man-pt_BR.info.tmp,  Node: Chamando help2man,  Next: Recomendações do --help,  Prev: Visão geral,  Up: Top
 
-2, Como executar o ‘help2man’
-*****************************
+2 Como executar o ‘help2man’
+****************************
 
 O formato para executar o programa ‘help2man’ é:
 
@@ -169,8 +169,8 @@ especificadas usando:
 
 File: help2man-pt_BR.info.tmp,  Node: Recomendações do --help,  Next: Incluindo texto,  Prev: Chamando help2man,  Up: Top
 
-3, Recomendações para ‘--help’
-******************************
+3 Recomendações para ‘--help’
+*****************************
 
 Aqui estão algumas recomendações para o que incluir na saída de seu
 ‘--help’.  Incluir tais recomendações fornece ao ‘help2man’ a melhor
@@ -265,8 +265,8 @@ nova seção, e ‘Palavras:’ uma nova subseção.
 
 File: help2man-pt_BR.info.tmp,  Node: Incluindo texto,  Next: Uso de Makefile,  Prev: Recomendações do --help,  Up: Top
 
-4, Incluindo texto adicional na saída
-*************************************
+4 Incluindo texto adicional na saída
+************************************
 
 Texto de estatística adicional pode ser incluído na página de manual
 gerada usando as opções ‘--include’ e ‘--opt-include’ (*note Chamando
@@ -327,8 +327,8 @@ padrão, respectivamente.
 
 File: help2man-pt_BR.info.tmp,  Node: Uso de Makefile,  Next: Páginas man localizadas,  Prev: Incluindo texto,  Up: Top
 
-5, Usando ‘help2man’ com ‘make’
-*******************************
+5 Usando ‘help2man’ com ‘make’
+******************************
 
 Um uso sugerido do ‘help2man’ em Makefiles é que a página do manual
 dependa não do binário, mas do(s) arquivo(s) fonte nos quais a saída de
@@ -357,8 +357,8 @@ dentre:
 
 File: help2man-pt_BR.info.tmp,  Node: Páginas man localizadas,  Next: Exemplo,  Prev: Uso de Makefile,  Up: Top
 
-6, Produzindo páginas de manual de idioma nativo
-************************************************
+6 Produzindo páginas de manual de idioma nativo
+***********************************************
 
 As páginas de manual podem ser produzidas para qualquer localidade que
 tem suporte no programa e no ‘help2man’ com a opção ‘--locale’ (‘-L’).
@@ -369,8 +369,8 @@ tem suporte no programa e no ‘help2man’ com a opção ‘--locale’ (‘-L�
 relação de suporte a idiomas pelo ‘help2man’ e *note Relatórios:: para
 como enviar outras traduções.
 
-6.1, Alterando a localização dos catálogos de mensagens
-=======================================================
+6.1 Alterando a localização dos catálogos de mensagens
+======================================================
 
 Ao criar páginas de manual localizadas a partir do diretório de
 compilação de um programa, é provável que as traduções instaladas no
@@ -407,8 +407,8 @@ substituir o local pelo caminho fornecido por ‘$LOCALEDIR’.
 
 File: help2man-pt_BR.info.tmp,  Node: Exemplo,  Next: Relatórios,  Prev: Páginas man localizadas,  Up: Top
 
-7, Exemplo de saída do ‘help2man’
-*********************************
+7 Exemplo de saída do ‘help2man’
+********************************
 
 Dado um programa hipotético ‘foo’ que produz a seguinte saída:
 
@@ -500,8 +500,8 @@ que será formatada em algo como:
 
 File: help2man-pt_BR.info.tmp,  Node: Relatórios,  Next: Disponibilidade,  Prev: Exemplo,  Up: Top
 
-8, Reportando erros ou sugestões
-********************************
+8 Reportando erros ou sugestões
+*******************************
 
 Se você encontrar problemas ou tiver sugestões sobre este programa ou
 manual, informe-os para <bug-help2man@gnu.org>.
@@ -513,8 +513,8 @@ Project (http://translationproject.org/) veja
 
 File: help2man-pt_BR.info.tmp,  Node: Disponibilidade,  Prev: Relatórios,  Up: Top
 
-9, Obtendo ‘help2man’
-*********************
+9 Obtendo ‘help2man’
+********************
 
 A versão mais recente desta distribuição está disponível on-line a
 partir de espelhos GNU:
@@ -532,14 +532,14 @@ partir de espelhos GNU:
 Tag Table:
 Node: Top1240
 Node: Visão geral2143
-Node: Chamando help2man2934
-Node: Recomendações do --help5935
-Node: Incluindo texto10498
-Node: Uso de Makefile12710
-Node: Páginas man localizadas13716
-Node: Exemplo15781
-Node: Relatórios18474
-Node: Disponibilidade18957
+Node: Chamando help2man2932
+Node: Recomendações do --help5931
+Node: Incluindo texto10492
+Node: Uso de Makefile12702
+Node: Páginas man localizadas13706
+Node: Exemplo15767
+Node: Relatórios18458
+Node: Disponibilidade18939
 
 End Tag Table
 

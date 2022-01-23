@@ -52,10 +52,10 @@ void ff_thread_flush(AVCodecContext *avctx);
  * Returns the next available frame in picture. *got_picture_ptr
  * will be 0 if none is available.
  * The return value on success is the size of the consumed packet for
- * compatibility with avcodec_decode_video2(). This means the decoder
+ * compatibility with AVCodec.decode. This means the decoder
  * has to consume the full packet.
  *
- * Parameters are the same as avcodec_decode_video2().
+ * Parameters are the same as AVCodec.decode.
  */
 int ff_thread_decode_frame(AVCodecContext *avctx, AVFrame *picture,
                            int *got_picture_ptr, AVPacket *avpkt);
@@ -96,6 +96,7 @@ void ff_thread_report_progress(ThreadFrame *f, int progress, int field);
  */
 void ff_thread_await_progress(ThreadFrame *f, int progress, int field);
 
+#if FF_API_THREAD_SAFE_CALLBACKS
 /**
  * Wrapper around get_format() for frame-multithreaded codecs.
  * Call this function instead of avctx->get_format().
@@ -105,6 +106,9 @@ void ff_thread_await_progress(ThreadFrame *f, int progress, int field);
  * @param fmt The list of available formats.
  */
 enum AVPixelFormat ff_thread_get_format(AVCodecContext *avctx, const enum AVPixelFormat *fmt);
+#else
+#define ff_thread_get_format ff_get_format
+#endif
 
 /**
  * Wrapper around get_buffer() for frame-multithreaded codecs.
@@ -129,7 +133,7 @@ int ff_thread_get_buffer(AVCodecContext *avctx, ThreadFrame *f, int flags);
  */
 void ff_thread_release_buffer(AVCodecContext *avctx, ThreadFrame *f);
 
-int ff_thread_ref_frame(ThreadFrame *dst, ThreadFrame *src);
+int ff_thread_ref_frame(ThreadFrame *dst, const ThreadFrame *src);
 
 int ff_thread_init(AVCodecContext *s);
 int ff_slice_thread_execute_with_mainfunc(AVCodecContext *avctx,

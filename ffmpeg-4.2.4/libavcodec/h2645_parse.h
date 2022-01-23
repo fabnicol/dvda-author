@@ -24,7 +24,9 @@
 #include <stdint.h>
 
 #include "libavutil/buffer.h"
-#include "avcodec.h"
+#include "libavutil/error.h"
+#include "libavutil/log.h"
+#include "codec_id.h"
 #include "get_bits.h"
 
 #define MAX_MBPAIR_SIZE (256*1024) // a tighter bound could be calculated if someone cares about a few bytes
@@ -56,6 +58,11 @@ typedef struct H2645NAL {
      */
     int temporal_id;
 
+    /*
+     * HEVC only, identifier of layer to which nal unit belongs
+     */
+    int nuh_layer_id;
+
     int skipped_bytes;
     int skipped_bytes_pos_size;
     int *skipped_bytes_pos;
@@ -78,6 +85,7 @@ typedef struct H2645Packet {
     H2645RBSP rbsp;
     int nb_nals;
     int nals_allocated;
+    unsigned nal_buffer_size;
 } H2645Packet;
 
 /**

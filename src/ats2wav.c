@@ -1480,7 +1480,7 @@ static inline int scan_ats_ifo(fileinfo_t **files, uint8_t *buf, globalData* glo
 {
     int i, title, track;
     static int group;
-    uint32_t titlelength = 0;
+
     i = 2048;
 
     int numtitles = uint16_read(buf + i);
@@ -1499,7 +1499,7 @@ static inline int scan_ats_ifo(fileinfo_t **files, uint8_t *buf, globalData* glo
 
         i += 2;
 
-        titlelength = uint32_read(buf + i);
+        //titlelength = uint32_read(buf + i);
 
         i += 12;
 

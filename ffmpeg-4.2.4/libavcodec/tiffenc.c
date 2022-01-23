@@ -36,6 +36,7 @@
 #include "libavutil/pixdesc.h"
 #include "avcodec.h"
 #include "bytestream.h"
+#include "encode.h"
 #include "internal.h"
 #include "lzw.h"
 #include "put_bits.h"
@@ -334,7 +335,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     packet_size = avctx->height * bytes_per_row * 2 +
                   avctx->height * 4 + AV_INPUT_BUFFER_MIN_SIZE;
 
-    if ((ret = ff_alloc_packet2(avctx, pkt, packet_size, 0)) < 0)
+    if ((ret = ff_alloc_packet(avctx, pkt, packet_size)) < 0)
         return ret;
     ptr          = pkt->data;
     s->buf_start = pkt->data;
@@ -421,7 +422,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
             if (s->compr == TIFF_LZW) {
                 ff_lzw_encode_init(s->lzws, ptr,
                                    s->buf_size - (*s->buf - s->buf_start),
-                                   12, FF_LZW_TIFF, put_bits);
+                                   12, FF_LZW_TIFF, 0);
             }
             s->strip_offsets[i / s->rps] = ptr - pkt->data;
         }
@@ -440,7 +441,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         ptr                     += ret;
         if (s->compr == TIFF_LZW &&
             (i == s->height - 1 || i % s->rps == s->rps - 1)) {
-            ret = ff_lzw_encode_flush(s->lzws, flush_put_bits);
+            ret = ff_lzw_encode_flush(s->lzws);
             s->strip_sizes[(i / s->rps)] += ret;
             ptr                          += ret;
         }
@@ -514,7 +515,6 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     bytestream_put_le32(&ptr, 0);
 
     pkt->size   = ptr - pkt->data;
-    pkt->flags |= AV_PKT_FLAG_KEY;
     *got_packet = 1;
 
 fail:
@@ -533,12 +533,6 @@ static av_cold int encode_init(AVCodecContext *avctx)
     }
 #endif
 
-#if FF_API_CODED_FRAME
-FF_DISABLE_DEPRECATION_WARNINGS
-    avctx->coded_frame->pict_type = AV_PICTURE_TYPE_I;
-    avctx->coded_frame->key_frame = 1;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
     s->avctx = avctx;
 
     return 0;
@@ -574,7 +568,7 @@ static const AVClass tiffenc_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_tiff_encoder = {
+const AVCodec ff_tiff_encoder = {
     .name           = "tiff",
     .long_name      = NULL_IF_CONFIG_SMALL("TIFF image"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -582,7 +576,7 @@ AVCodec ff_tiff_encoder = {
     .priv_data_size = sizeof(TiffEncoderContext),
     .init           = encode_init,
     .close          = encode_close,
-    .capabilities   = AV_CODEC_CAP_FRAME_THREADS | AV_CODEC_CAP_INTRA_ONLY,
+    .capabilities   = AV_CODEC_CAP_FRAME_THREADS,
     .encode2        = encode_frame,
     .pix_fmts       = (const enum AVPixelFormat[]) {
         AV_PIX_FMT_RGB24, AV_PIX_FMT_RGB48LE, AV_PIX_FMT_PAL8,
@@ -594,4 +588,5 @@ AVCodec ff_tiff_encoder = {
         AV_PIX_FMT_NONE
     },
     .priv_class     = &tiffenc_class,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

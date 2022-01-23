@@ -23,6 +23,7 @@
 
 #include "avcodec.h"
 #include "bytestream.h"
+#include "encode.h"
 #include "internal.h"
 #include "mathops.h"
 
@@ -53,7 +54,6 @@ static av_cold int roq_dpcm_encode_close(AVCodecContext *avctx)
 static av_cold int roq_dpcm_encode_init(AVCodecContext *avctx)
 {
     ROQDPCMContext *context = avctx->priv_data;
-    int ret;
 
     if (avctx->channels > 2) {
         av_log(avctx, AV_LOG_ERROR, "Audio must be mono or stereo\n");
@@ -70,17 +70,12 @@ static av_cold int roq_dpcm_encode_init(AVCodecContext *avctx)
 
     context->frame_buffer = av_malloc(8 * ROQ_FRAME_SIZE * avctx->channels *
                                       sizeof(*context->frame_buffer));
-    if (!context->frame_buffer) {
-        ret = AVERROR(ENOMEM);
-        goto error;
-    }
+    if (!context->frame_buffer)
+        return AVERROR(ENOMEM);
 
     context->lastSample[0] = context->lastSample[1] = 0;
 
     return 0;
-error:
-    roq_dpcm_encode_close(avctx);
-    return ret;
 }
 
 static unsigned char dpcm_predict(short *previous, short current)
@@ -160,7 +155,8 @@ static int roq_dpcm_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     else
         data_size = avctx->channels * avctx->frame_size;
 
-    if ((ret = ff_alloc_packet2(avctx, avpkt, ROQ_HEADER_SIZE + data_size, 0)) < 0)
+    ret = ff_get_encode_buffer(avctx, avpkt, ROQ_HEADER_SIZE + data_size, 0);
+    if (ret < 0)
         return ret;
     out = avpkt->data;
 
@@ -189,16 +185,17 @@ static int roq_dpcm_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     return 0;
 }
 
-AVCodec ff_roq_dpcm_encoder = {
+const AVCodec ff_roq_dpcm_encoder = {
     .name           = "roq_dpcm",
     .long_name      = NULL_IF_CONFIG_SMALL("id RoQ DPCM"),
     .type           = AVMEDIA_TYPE_AUDIO,
     .id             = AV_CODEC_ID_ROQ_DPCM,
+    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY,
     .priv_data_size = sizeof(ROQDPCMContext),
     .init           = roq_dpcm_encode_init,
     .encode2        = roq_dpcm_encode_frame,
     .close          = roq_dpcm_encode_close,
-    .capabilities   = AV_CODEC_CAP_DELAY,
     .sample_fmts    = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_S16,
                                                      AV_SAMPLE_FMT_NONE },
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

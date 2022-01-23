@@ -20,7 +20,6 @@
 #include "libavutil/avassert.h"
 #include "libavutil/common.h"
 #include "libavutil/imgutils.h"
-#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 
@@ -71,12 +70,12 @@ typedef struct TonemapOpenCLContext {
     cl_mem                util_mem;
 } TonemapOpenCLContext;
 
-static const char *linearize_funcs[AVCOL_TRC_NB] = {
+static const char *const linearize_funcs[AVCOL_TRC_NB] = {
     [AVCOL_TRC_SMPTE2084] = "eotf_st2084",
     [AVCOL_TRC_ARIB_STD_B67] = "inverse_oetf_hlg",
 };
 
-static const char *delinearize_funcs[AVCOL_TRC_NB] = {
+static const char *const delinearize_funcs[AVCOL_TRC_NB] = {
     [AVCOL_TRC_BT709]     = "inverse_eotf_bt1886",
     [AVCOL_TRC_BT2020_10] = "inverse_eotf_bt1886",
 };
@@ -91,7 +90,7 @@ static const struct WhitepointCoefficients whitepoint_table[AVCOL_PRI_NB] = {
     [AVCOL_PRI_BT2020] = { 0.3127, 0.3290 },
 };
 
-static const char *tonemap_func[TONEMAP_MAX] = {
+static const char *const tonemap_func[TONEMAP_MAX] = {
     [TONEMAP_NONE]     = "direct",
     [TONEMAP_LINEAR]   = "linear",
     [TONEMAP_GAMMA]    = "gamma",
@@ -528,7 +527,6 @@ static const AVFilterPad tonemap_opencl_inputs[] = {
         .filter_frame = &tonemap_opencl_filter_frame,
         .config_props = &ff_opencl_filter_config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad tonemap_opencl_outputs[] = {
@@ -537,18 +535,17 @@ static const AVFilterPad tonemap_opencl_outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = &tonemap_opencl_config_output,
     },
-    { NULL }
 };
 
-AVFilter ff_vf_tonemap_opencl = {
+const AVFilter ff_vf_tonemap_opencl = {
     .name           = "tonemap_opencl",
-    .description    = NULL_IF_CONFIG_SMALL("perform HDR to SDR conversion with tonemapping"),
+    .description    = NULL_IF_CONFIG_SMALL("Perform HDR to SDR conversion with tonemapping."),
     .priv_size      = sizeof(TonemapOpenCLContext),
     .priv_class     = &tonemap_opencl_class,
     .init           = &ff_opencl_filter_init,
     .uninit         = &tonemap_opencl_uninit,
-    .query_formats  = &ff_opencl_filter_query_formats,
-    .inputs         = tonemap_opencl_inputs,
-    .outputs        = tonemap_opencl_outputs,
+    FILTER_INPUTS(tonemap_opencl_inputs),
+    FILTER_OUTPUTS(tonemap_opencl_outputs),
+    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_OPENCL),
     .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 };

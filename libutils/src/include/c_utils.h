@@ -135,7 +135,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
                                       Y=sizeof(X); \
                                       if    ( ( chres = snprintf(X, Y , Z, __VA_ARGS__) ) >=  Y )  \
                                       foutput("\n"ERR_STRING_LENGTH"\n", Y);\
-                                      else   if (chres < 0 ) fprintf(stderr, "\n"ANSI_COLOR_RED"\n[ERR] Error message:"ANSI_COLOR_RESET"  %s\nCheck source code %s, line %d",  strerror(errno), __FILE__, __LINE__); } while(0);
+                                      else   if (chres < 0) fprintf(stderr, "\n"ANSI_COLOR_RED"\n[ERR] Error message:"ANSI_COLOR_RESET"  %s\nCheck source code %s, line %d",  strerror(errno), __FILE__, __LINE__); } while(0);
 
 
 #define STRING_WRITE_CHAR_BUFSIZ(X,Z,...)	 do { int chres;\
@@ -149,8 +149,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #define foutput(X,...)   do { if (!globals->silence) { printf(X, __VA_ARGS__); } ;   if (globals->logfile) { fprintf(globals->journal, X, __VA_ARGS__);}  } while(0)
 
-
-
 /* ERROR MANAGEMENT
 
     Error management conventions:
@@ -161,11 +159,9 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 	in other contexts (EXIT_SUCCESS, complex EXIT_FAILURE... )  clean_exit is used, see auxiliaray.c
 */
 
-
 #define NOWAIT -1
 
 /* Structures */
-
 
 typedef struct
 {
@@ -187,7 +183,6 @@ typedef struct
     struct rusage *start;
 } compute_t;
 
-
 typedef struct
 {
    bool isopen;
@@ -196,7 +191,6 @@ typedef struct
    char* filename;
    FILE* fp;
 } filestat_t ;
-
 
 uint64_t filesize(filestat_t f);
 char* filename(filestat_t f);

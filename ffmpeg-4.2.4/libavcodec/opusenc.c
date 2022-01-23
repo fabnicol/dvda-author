@@ -19,12 +19,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "encode.h"
 #include "opusenc.h"
 #include "opus_pvq.h"
 #include "opusenc_psy.h"
 #include "opustab.h"
 
+#include "libavutil/channel_layout.h"
 #include "libavutil/float_dsp.h"
+#include "libavutil/mem_internal.h"
 #include "libavutil/opt.h"
 #include "internal.h"
 #include "bytestream.h"
@@ -576,7 +579,7 @@ static int opus_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     /* Worst case toc + the frame lengths if needed */
     alloc_size += 2 + s->packet.frames*2;
 
-    if ((ret = ff_alloc_packet2(avctx, avpkt, alloc_size, 0)) < 0)
+    if ((ret = ff_alloc_packet(avctx, avpkt, alloc_size)) < 0)
         return ret;
 
     /* Assemble packet */
@@ -613,7 +616,6 @@ static av_cold int opus_encode_end(AVCodecContext *avctx)
     ff_af_queue_close(&s->afq);
     ff_opus_psy_end(&s->psyctx);
     ff_bufqueue_discard_all(&s->bufqueue);
-    av_freep(&avctx->extradata);
 
     return 0;
 }
@@ -691,7 +693,7 @@ static av_cold int opus_encode_init(AVCodecContext *avctx)
         s->frame[i].avctx = s->avctx;
         s->frame[i].seed = 0;
         s->frame[i].pvq = s->pvq;
-        s->frame[i].apply_phase_inv = 1;
+        s->frame[i].apply_phase_inv = s->options.apply_phase_inv;
         s->frame[i].block[0].emph_coeff = s->frame[i].block[1].emph_coeff = 0.0f;
     }
 
@@ -701,6 +703,7 @@ static av_cold int opus_encode_init(AVCodecContext *avctx)
 #define OPUSENC_FLAGS AV_OPT_FLAG_ENCODING_PARAM | AV_OPT_FLAG_AUDIO_PARAM
 static const AVOption opusenc_options[] = {
     { "opus_delay", "Maximum delay in milliseconds", offsetof(OpusEncContext, options.max_delay_ms), AV_OPT_TYPE_FLOAT, { .dbl = OPUS_MAX_LOOKAHEAD }, 2.5f, OPUS_MAX_LOOKAHEAD, OPUSENC_FLAGS, "max_delay_ms" },
+    { "apply_phase_inv", "Apply intensity stereo phase inversion", offsetof(OpusEncContext, options.apply_phase_inv), AV_OPT_TYPE_BOOL, { .i64 = 1 }, 0, 1, OPUSENC_FLAGS, "apply_phase_inv" },
     { NULL },
 };
 
@@ -717,7 +720,7 @@ static const AVCodecDefault opusenc_defaults[] = {
     { NULL },
 };
 
-AVCodec ff_opus_encoder = {
+const AVCodec ff_opus_encoder = {
     .name           = "opus",
     .long_name      = NULL_IF_CONFIG_SMALL("Opus"),
     .type           = AVMEDIA_TYPE_AUDIO,

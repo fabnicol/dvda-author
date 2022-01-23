@@ -21,8 +21,10 @@ HEADERS = adler32.h                                                     \
           cpu.h                                                         \
           crc.h                                                         \
           des.h                                                         \
+          detection_bbox.h                                              \
           dict.h                                                        \
           display.h                                                     \
+          dovi_meta.h                                                   \
           downmix_info.h                                                \
           encryption_info.h                                             \
           error.h                                                       \
@@ -40,9 +42,11 @@ HEADERS = adler32.h                                                     \
           hwcontext_dxva2.h                                             \
           hwcontext_qsv.h                                               \
           hwcontext_mediacodec.h                                        \
+          hwcontext_opencl.h                                            \
           hwcontext_vaapi.h                                             \
           hwcontext_videotoolbox.h                                      \
           hwcontext_vdpau.h                                             \
+          hwcontext_vulkan.h                                            \
           imgutils.h                                                    \
           intfloat.h                                                    \
           intreadwrite.h                                                \
@@ -77,9 +81,11 @@ HEADERS = adler32.h                                                     \
           tree.h                                                        \
           twofish.h                                                     \
           version.h                                                     \
+          video_enc_params.h                                            \
           xtea.h                                                        \
           tea.h                                                         \
           tx.h                                                          \
+          film_grain_params.h                                           \
 
 HEADERS-$(CONFIG_LZO)                   += lzo.h
 
@@ -108,8 +114,10 @@ OBJS = adler32.o                                                        \
        cpu.o                                                            \
        crc.o                                                            \
        des.o                                                            \
+       detection_bbox.o                                                 \
        dict.o                                                           \
        display.o                                                        \
+       dovi_meta.o                                                      \
        downmix_info.o                                                   \
        encryption_info.o                                                \
        error.o                                                          \
@@ -161,18 +169,26 @@ OBJS = adler32.o                                                        \
        xtea.o                                                           \
        tea.o                                                            \
        tx.o                                                             \
+       tx_float.o                                                       \
+       tx_double.o                                                      \
+       tx_int32.o                                                       \
+       video_enc_params.o                                               \
+       film_grain_params.o                                              \
+
 
 OBJS-$(CONFIG_CUDA)                     += hwcontext_cuda.o
 OBJS-$(CONFIG_D3D11VA)                  += hwcontext_d3d11va.o
 OBJS-$(CONFIG_DXVA2)                    += hwcontext_dxva2.o
 OBJS-$(CONFIG_LIBDRM)                   += hwcontext_drm.o
 OBJS-$(CONFIG_LZO)                      += lzo.o
+OBJS-$(CONFIG_MACOS_KPERF)              += macos_kperf.o
 OBJS-$(CONFIG_MEDIACODEC)               += hwcontext_mediacodec.o
 OBJS-$(CONFIG_OPENCL)                   += hwcontext_opencl.o
 OBJS-$(CONFIG_QSV)                      += hwcontext_qsv.o
 OBJS-$(CONFIG_VAAPI)                    += hwcontext_vaapi.o
 OBJS-$(CONFIG_VIDEOTOOLBOX)             += hwcontext_videotoolbox.o
 OBJS-$(CONFIG_VDPAU)                    += hwcontext_vdpau.o
+OBJS-$(CONFIG_VULKAN)                   += hwcontext_vulkan.o
 
 OBJS += $(COMPAT_OBJS:%=../compat/%)
 
@@ -189,6 +205,7 @@ SKIPHEADERS-$(CONFIG_OPENCL)           += hwcontext_opencl.h
 SKIPHEADERS-$(CONFIG_VAAPI)            += hwcontext_vaapi.h
 SKIPHEADERS-$(CONFIG_VIDEOTOOLBOX)     += hwcontext_videotoolbox.h
 SKIPHEADERS-$(CONFIG_VDPAU)            += hwcontext_vdpau.h
+SKIPHEADERS-$(CONFIG_VULKAN)           += hwcontext_vulkan.h
 
 TESTPROGS = adler32                                                     \
             aes                                                         \
@@ -245,6 +262,6 @@ TESTPROGS-$(HAVE_LZO1X_999_COMPRESS) += lzo
 TOOLS = crypto_bench ffhash ffeval ffescape
 
 tools/crypto_bench$(EXESUF): ELIBS += $(if $(VERSUS),$(subst +, -l,+$(VERSUS)),)
-tools/crypto_bench$(EXESUF): CFLAGS += -DUSE_EXT_LIBS=0$(if $(VERSUS),$(subst +,+USE_,+$(VERSUS)),)
+tools/crypto_bench.o: CFLAGS += -DUSE_EXT_LIBS=0$(if $(VERSUS),$(subst +,+USE_,+$(VERSUS)),)
 
 $(SUBDIR)tests/lzo$(EXESUF): ELIBS = -llzo2

@@ -68,7 +68,7 @@ typedef struct ACrusherContext {
 } ACrusherContext;
 
 #define OFFSET(x) offsetof(ACrusherContext, x)
-#define A AV_OPT_FLAG_AUDIO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
+#define A AV_OPT_FLAG_AUDIO_PARAM|AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_RUNTIME_PARAM
 
 static const AVOption acrusher_options[] = {
     { "level_in", "set level in",         OFFSET(level_in),  AV_OPT_TYPE_DOUBLE, {.dbl=1},    0.015625, 64, A },
@@ -263,36 +263,6 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     return ff_filter_frame(outlink, out);
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    AVFilterFormats *formats;
-    AVFilterChannelLayouts *layouts;
-    static const enum AVSampleFormat sample_fmts[] = {
-        AV_SAMPLE_FMT_DBL,
-        AV_SAMPLE_FMT_NONE
-    };
-    int ret;
-
-    layouts = ff_all_channel_counts();
-    if (!layouts)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_channel_layouts(ctx, layouts);
-    if (ret < 0)
-        return ret;
-
-    formats = ff_make_format_list(sample_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_formats(ctx, formats);
-    if (ret < 0)
-        return ret;
-
-    formats = ff_all_samplerates();
-    if (!formats)
-        return AVERROR(ENOMEM);
-    return ff_set_common_samplerates(ctx, formats);
-}
-
 static av_cold void uninit(AVFilterContext *ctx)
 {
     ACrusherContext *s = ctx->priv;
@@ -325,11 +295,25 @@ static int config_input(AVFilterLink *inlink)
     s->lfo.srate = inlink->sample_rate;
     s->lfo.amount = .5;
 
-    s->sr = av_calloc(inlink->channels, sizeof(*s->sr));
+    if (!s->sr)
+        s->sr = av_calloc(inlink->channels, sizeof(*s->sr));
     if (!s->sr)
         return AVERROR(ENOMEM);
 
     return 0;
+}
+
+static int process_command(AVFilterContext *ctx, const char *cmd, const char *args,
+                           char *res, int res_len, int flags)
+{
+    AVFilterLink *inlink = ctx->inputs[0];
+    int ret;
+
+    ret = ff_filter_process_command(ctx, cmd, args, res, res_len, flags);
+    if (ret < 0)
+        return ret;
+
+    return config_input(inlink);
 }
 
 static const AVFilterPad avfilter_af_acrusher_inputs[] = {
@@ -339,7 +323,6 @@ static const AVFilterPad avfilter_af_acrusher_inputs[] = {
         .config_props = config_input,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad avfilter_af_acrusher_outputs[] = {
@@ -347,16 +330,16 @@ static const AVFilterPad avfilter_af_acrusher_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_AUDIO,
     },
-    { NULL }
 };
 
-AVFilter ff_af_acrusher = {
+const AVFilter ff_af_acrusher = {
     .name          = "acrusher",
     .description   = NULL_IF_CONFIG_SMALL("Reduce audio bit resolution."),
     .priv_size     = sizeof(ACrusherContext),
     .priv_class    = &acrusher_class,
     .uninit        = uninit,
-    .query_formats = query_formats,
-    .inputs        = avfilter_af_acrusher_inputs,
-    .outputs       = avfilter_af_acrusher_outputs,
+    FILTER_INPUTS(avfilter_af_acrusher_inputs),
+    FILTER_OUTPUTS(avfilter_af_acrusher_outputs),
+    FILTER_SINGLE_SAMPLEFMT(AV_SAMPLE_FMT_DBL),
+    .process_command = process_command,
 };

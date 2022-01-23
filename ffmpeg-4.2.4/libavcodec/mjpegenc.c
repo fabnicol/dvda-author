@@ -35,10 +35,200 @@
 #include "avcodec.h"
 #include "jpegtables.h"
 #include "mjpegenc_common.h"
+#include "mjpegenc_huffman.h"
 #include "mpegvideo.h"
 #include "mjpeg.h"
 #include "mjpegenc.h"
 #include "profiles.h"
+
+static av_cold void init_uni_ac_vlc(const uint8_t huff_size_ac[256],
+                                    uint8_t *uni_ac_vlc_len)
+{
+    for (int i = 0; i < 128; i++) {
+        int level = i - 64;
+        if (!level)
+            continue;
+        for (int run = 0; run < 64; run++) {
+            int len, code, nbits;
+            int alevel = FFABS(level);
+
+            len = (run >> 4) * huff_size_ac[0xf0];
+
+            nbits= av_log2_16bit(alevel) + 1;
+            code = ((15&run) << 4) | nbits;
+
+            len += huff_size_ac[code] + nbits;
+
+            uni_ac_vlc_len[UNI_AC_ENC_INDEX(run, i)] = len;
+            // We ignore EOB as its just a constant which does not change generally
+        }
+    }
+}
+
+#if CONFIG_MJPEG_ENCODER
+/**
+ * Encodes and outputs the entire frame in the JPEG format.
+ *
+ * @param s The MpegEncContext.
+ */
+static void mjpeg_encode_picture_frame(MpegEncContext *s)
+{
+    int nbits, code, table_id;
+    MJpegContext *m = s->mjpeg_ctx;
+    uint8_t  *huff_size[4] = { m->huff_size_dc_luminance,
+                               m->huff_size_dc_chrominance,
+                               m->huff_size_ac_luminance,
+                               m->huff_size_ac_chrominance };
+    uint16_t *huff_code[4] = { m->huff_code_dc_luminance,
+                               m->huff_code_dc_chrominance,
+                               m->huff_code_ac_luminance,
+                               m->huff_code_ac_chrominance };
+    size_t total_bits = 0;
+    size_t bytes_needed;
+
+    s->header_bits = get_bits_diff(s);
+    // Estimate the total size first
+    for (int i = 0; i < m->huff_ncode; i++) {
+        table_id = m->huff_buffer[i].table_id;
+        code = m->huff_buffer[i].code;
+        nbits = code & 0xf;
+
+        total_bits += huff_size[table_id][code] + nbits;
+    }
+
+    bytes_needed = (total_bits + 7) / 8;
+    ff_mpv_reallocate_putbitbuffer(s, bytes_needed, bytes_needed);
+
+    for (int i = 0; i < m->huff_ncode; i++) {
+        table_id = m->huff_buffer[i].table_id;
+        code = m->huff_buffer[i].code;
+        nbits = code & 0xf;
+
+        put_bits(&s->pb, huff_size[table_id][code], huff_code[table_id][code]);
+        if (nbits != 0) {
+            put_sbits(&s->pb, nbits, m->huff_buffer[i].mant);
+        }
+    }
+
+    m->huff_ncode = 0;
+    s->i_tex_bits = get_bits_diff(s);
+}
+
+/**
+ * Builds all 4 optimal Huffman tables.
+ *
+ * Uses the data stored in the JPEG buffer to compute the tables.
+ * Stores the Huffman tables in the bits_* and val_* arrays in the MJpegContext.
+ *
+ * @param m MJpegContext containing the JPEG buffer.
+ */
+static void mjpeg_build_optimal_huffman(MJpegContext *m)
+{
+    MJpegEncHuffmanContext dc_luminance_ctx;
+    MJpegEncHuffmanContext dc_chrominance_ctx;
+    MJpegEncHuffmanContext ac_luminance_ctx;
+    MJpegEncHuffmanContext ac_chrominance_ctx;
+    MJpegEncHuffmanContext *ctx[4] = { &dc_luminance_ctx,
+                                       &dc_chrominance_ctx,
+                                       &ac_luminance_ctx,
+                                       &ac_chrominance_ctx };
+    for (int i = 0; i < 4; i++)
+        ff_mjpeg_encode_huffman_init(ctx[i]);
+
+    for (int i = 0; i < m->huff_ncode; i++) {
+        int table_id = m->huff_buffer[i].table_id;
+        int code     = m->huff_buffer[i].code;
+
+        ff_mjpeg_encode_huffman_increment(ctx[table_id], code);
+    }
+
+    ff_mjpeg_encode_huffman_close(&dc_luminance_ctx,
+                                  m->bits_dc_luminance,
+                                  m->val_dc_luminance, 12);
+    ff_mjpeg_encode_huffman_close(&dc_chrominance_ctx,
+                                  m->bits_dc_chrominance,
+                                  m->val_dc_chrominance, 12);
+    ff_mjpeg_encode_huffman_close(&ac_luminance_ctx,
+                                  m->bits_ac_luminance,
+                                  m->val_ac_luminance, 256);
+    ff_mjpeg_encode_huffman_close(&ac_chrominance_ctx,
+                                  m->bits_ac_chrominance,
+                                  m->val_ac_chrominance, 256);
+
+    ff_mjpeg_build_huffman_codes(m->huff_size_dc_luminance,
+                                 m->huff_code_dc_luminance,
+                                 m->bits_dc_luminance,
+                                 m->val_dc_luminance);
+    ff_mjpeg_build_huffman_codes(m->huff_size_dc_chrominance,
+                                 m->huff_code_dc_chrominance,
+                                 m->bits_dc_chrominance,
+                                 m->val_dc_chrominance);
+    ff_mjpeg_build_huffman_codes(m->huff_size_ac_luminance,
+                                 m->huff_code_ac_luminance,
+                                 m->bits_ac_luminance,
+                                 m->val_ac_luminance);
+    ff_mjpeg_build_huffman_codes(m->huff_size_ac_chrominance,
+                                 m->huff_code_ac_chrominance,
+                                 m->bits_ac_chrominance,
+                                 m->val_ac_chrominance);
+}
+#endif
+
+/**
+ * Writes the complete JPEG frame when optimal huffman tables are enabled,
+ * otherwise writes the stuffing.
+ *
+ * Header + values + stuffing.
+ *
+ * @param s The MpegEncContext.
+ * @return int Error code, 0 if successful.
+ */
+int ff_mjpeg_encode_stuffing(MpegEncContext *s)
+{
+    PutBitContext *pbc = &s->pb;
+    int mb_y = s->mb_y - !s->mb_x;
+    int ret;
+
+#if CONFIG_MJPEG_ENCODER
+    if (s->huffman == HUFFMAN_TABLE_OPTIMAL) {
+        MJpegContext *m = s->mjpeg_ctx;
+
+        mjpeg_build_optimal_huffman(m);
+
+        // Replace the VLCs with the optimal ones.
+        // The default ones may be used for trellis during quantization.
+        init_uni_ac_vlc(m->huff_size_ac_luminance,   m->uni_ac_vlc_len);
+        init_uni_ac_vlc(m->huff_size_ac_chrominance, m->uni_chroma_ac_vlc_len);
+        s->intra_ac_vlc_length      =
+        s->intra_ac_vlc_last_length = m->uni_ac_vlc_len;
+        s->intra_chroma_ac_vlc_length      =
+        s->intra_chroma_ac_vlc_last_length = m->uni_chroma_ac_vlc_len;
+
+        ff_mjpeg_encode_picture_header(s->avctx, &s->pb, &s->intra_scantable,
+                                       s->pred, s->intra_matrix, s->chroma_intra_matrix);
+        mjpeg_encode_picture_frame(s);
+    }
+#endif
+
+    ret = ff_mpv_reallocate_putbitbuffer(s, put_bits_count(&s->pb) / 8 + 100,
+                                            put_bits_count(&s->pb) / 4 + 1000);
+    if (ret < 0) {
+        av_log(s->avctx, AV_LOG_ERROR, "Buffer reallocation failed\n");
+        goto fail;
+    }
+
+    ff_mjpeg_escape_FF(pbc, s->esc_pos);
+
+    if ((s->avctx->active_thread_type & FF_THREAD_SLICE) && mb_y < s->mb_height - 1)
+        put_marker(pbc, RST0 + (mb_y&7));
+    s->esc_pos = put_bytes_count(pbc, 0);
+
+fail:
+    for (int i = 0; i < 3; i++)
+        s->last_dc[i] = 128 << s->intra_dc_precision;
+
+    return ret;
+}
 
 static int alloc_huffman(MpegEncContext *s)
 {
@@ -71,8 +261,15 @@ static int alloc_huffman(MpegEncContext *s)
 av_cold int ff_mjpeg_encode_init(MpegEncContext *s)
 {
     MJpegContext *m;
+    int ret;
 
     av_assert0(s->slice_context_count == 1);
+
+    /* The following check is automatically true for AMV,
+     * but it doesn't hurt either. */
+    ret = ff_mjpeg_encode_check_pix_fmt(s->avctx);
+    if (ret < 0)
+        return ret;
 
     if (s->width > 65500 || s->height > 65500) {
         av_log(s, AV_LOG_ERROR, "JPEG does not support resolutions above 65500x65500\n");
@@ -106,8 +303,8 @@ av_cold int ff_mjpeg_encode_init(MpegEncContext *s)
                                  avpriv_mjpeg_bits_ac_chrominance,
                                  avpriv_mjpeg_val_ac_chrominance);
 
-    ff_init_uni_ac_vlc(m->huff_size_ac_luminance,   m->uni_ac_vlc_len);
-    ff_init_uni_ac_vlc(m->huff_size_ac_chrominance, m->uni_chroma_ac_vlc_len);
+    init_uni_ac_vlc(m->huff_size_ac_luminance,   m->uni_ac_vlc_len);
+    init_uni_ac_vlc(m->huff_size_ac_chrominance, m->uni_chroma_ac_vlc_len);
     s->intra_ac_vlc_length      =
     s->intra_ac_vlc_last_length = m->uni_ac_vlc_len;
     s->intra_chroma_ac_vlc_length      =
@@ -125,8 +322,10 @@ av_cold int ff_mjpeg_encode_init(MpegEncContext *s)
 
 av_cold void ff_mjpeg_encode_close(MpegEncContext *s)
 {
-    av_freep(&s->mjpeg_ctx->huff_buffer);
-    av_freep(&s->mjpeg_ctx);
+    if (s->mjpeg_ctx) {
+        av_freep(&s->mjpeg_ctx->huff_buffer);
+        av_freep(&s->mjpeg_ctx);
+    }
 }
 
 /**
@@ -394,6 +593,12 @@ FF_MPV_COMMON_OPTS
 { "huffman", "Huffman table strategy", OFFSET(huffman), AV_OPT_TYPE_INT, { .i64 = HUFFMAN_TABLE_OPTIMAL }, 0, NB_HUFFMAN_TABLE_OPTION - 1, VE, "huffman" },
     { "default", NULL, 0, AV_OPT_TYPE_CONST, { .i64 = HUFFMAN_TABLE_DEFAULT }, INT_MIN, INT_MAX, VE, "huffman" },
     { "optimal", NULL, 0, AV_OPT_TYPE_CONST, { .i64 = HUFFMAN_TABLE_OPTIMAL }, INT_MIN, INT_MAX, VE, "huffman" },
+{ "force_duplicated_matrix", "Always write luma and chroma matrix for mjpeg, useful for rtp streaming.", OFFSET(force_duplicated_matrix), AV_OPT_TYPE_BOOL, {.i64 = 0 }, 0, 1, VE },
+#if FF_API_MPEGVIDEO_OPTS
+FF_MPV_DEPRECATED_MPEG_QUANT_OPT
+FF_MPV_DEPRECATED_A53_CC_OPT
+FF_MPV_DEPRECATED_BFRAME_OPTS
+#endif
 { NULL},
 };
 
@@ -405,7 +610,7 @@ static const AVClass mjpeg_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_mjpeg_encoder = {
+const AVCodec ff_mjpeg_encoder = {
     .name           = "mjpeg",
     .long_name      = NULL_IF_CONFIG_SMALL("MJPEG (Motion JPEG)"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -414,9 +619,12 @@ AVCodec ff_mjpeg_encoder = {
     .init           = ff_mpv_encode_init,
     .encode2        = ff_mpv_encode_picture,
     .close          = ff_mpv_encode_end,
-    .capabilities   = AV_CODEC_CAP_SLICE_THREADS | AV_CODEC_CAP_FRAME_THREADS | AV_CODEC_CAP_INTRA_ONLY,
+    .capabilities   = AV_CODEC_CAP_SLICE_THREADS | AV_CODEC_CAP_FRAME_THREADS,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
     .pix_fmts       = (const enum AVPixelFormat[]) {
-        AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_NONE
+        AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ444P,
+        AV_PIX_FMT_YUV420P,  AV_PIX_FMT_YUV422P,  AV_PIX_FMT_YUV444P,
+        AV_PIX_FMT_NONE
     },
     .priv_class     = &mjpeg_class,
     .profiles       = NULL_IF_CONFIG_SMALL(ff_mjpeg_profiles),
@@ -431,7 +639,7 @@ static const AVClass amv_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_amv_encoder = {
+const AVCodec ff_amv_encoder = {
     .name           = "amv",
     .long_name      = NULL_IF_CONFIG_SMALL("AMV Video"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -440,6 +648,7 @@ AVCodec ff_amv_encoder = {
     .init           = ff_mpv_encode_init,
     .encode2        = amv_encode_picture,
     .close          = ff_mpv_encode_end,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
     .pix_fmts       = (const enum AVPixelFormat[]) {
         AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_NONE
     },

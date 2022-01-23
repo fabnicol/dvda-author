@@ -19,12 +19,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/avassert.h"
 #include "libavutil/dict.h"
 #include "libavutil/error.h"
+#include "libavutil/intreadwrite.h"
 #include "libavutil/log.h"
-#include "libavutil/mathematics.h"
-#include "libavcodec/avcodec.h"
-#include "libavcodec/bytestream.h"
 #include "avformat.h"
 #include "avio_internal.h"
 #include "riff.h"
@@ -33,10 +32,10 @@ int ff_get_guid(AVIOContext *s, ff_asf_guid *g)
 {
     int ret;
     av_assert0(sizeof(*g) == 16); //compiler will optimize this out
-    ret = avio_read(s, *g, sizeof(*g));
-    if (ret < (int)sizeof(*g)) {
+    ret = ffio_read_size(s, *g, sizeof(*g));
+    if (ret < 0) {
         memset(*g, 0, sizeof(*g));
-        return ret < 0 ? ret : AVERROR_INVALIDDATA;
+        return ret;
     }
     return 0;
 }
@@ -145,7 +144,6 @@ int ff_get_wav_header(AVFormatContext *s, AVIOContext *pb,
             size   -= 22;
         }
         if (cbSize > 0) {
-            av_freep(&par->extradata);
             if (ff_get_extradata(s, par, pb, cbSize) < 0)
                 return AVERROR(ENOMEM);
             size -= cbSize;
@@ -158,7 +156,6 @@ int ff_get_wav_header(AVFormatContext *s, AVIOContext *pb,
         int nb_streams, i;
 
         size -= 4;
-        av_freep(&par->extradata);
         if (ff_get_extradata(s, par, pb, size) < 0)
             return AVERROR(ENOMEM);
         nb_streams         = AV_RL16(par->extradata + 4);
@@ -204,7 +201,7 @@ enum AVCodecID ff_wav_codec_get_id(unsigned int tag, int bps)
         id = ff_get_pcm_codec_id(bps, 1, 0,  0);
 
     if (id == AV_CODEC_ID_ADPCM_IMA_WAV && bps == 8)
-        id = AV_CODEC_ID_PCM_ZORK;
+        id = AV_CODEC_ID_ADPCM_ZORK;
     return id;
 }
 

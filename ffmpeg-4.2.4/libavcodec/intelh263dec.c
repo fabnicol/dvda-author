@@ -33,7 +33,7 @@ int ff_intel_h263_decode_picture_header(MpegEncContext *s)
     }
 
     /* picture header */
-    if (get_bits_long(&s->gb, 22) != 0x20) {
+    if (get_bits(&s->gb, 22) != 0x20) {
         av_log(s->avctx, AV_LOG_ERROR, "Bad picture start code\n");
         return -1;
     }
@@ -128,7 +128,7 @@ int ff_intel_h263_decode_picture_header(MpegEncContext *s)
     return 0;
 }
 
-AVCodec ff_h263i_decoder = {
+const AVCodec ff_h263i_decoder = {
     .name           = "h263i",
     .long_name      = NULL_IF_CONFIG_SMALL("Intel H.263"),
     .type           = AVMEDIA_TYPE_VIDEO,

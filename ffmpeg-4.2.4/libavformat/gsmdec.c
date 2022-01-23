@@ -62,7 +62,6 @@ static int gsm_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     ret = av_get_packet(s->pb, pkt, size);
     if (ret < GSM_BLOCK_SIZE) {
-        av_packet_unref(pkt);
         return ret < 0 ? ret : AVERROR(EIO);
     }
     pkt->duration = 1;
@@ -104,7 +103,7 @@ static const AVClass gsm_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVInputFormat ff_gsm_demuxer = {
+const AVInputFormat ff_gsm_demuxer = {
     .name           = "gsm",
     .long_name      = NULL_IF_CONFIG_SMALL("raw GSM"),
     .priv_data_size = sizeof(GSMDemuxerContext),

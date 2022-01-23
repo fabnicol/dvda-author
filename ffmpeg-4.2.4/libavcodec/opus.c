@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 
+#include "libavutil/channel_layout.h"
 #include "libavutil/error.h"
 #include "libavutil/ffmath.h"
 
@@ -399,7 +400,7 @@ av_cold int ff_opus_parse_extradata(AVCodecContext *avctx,
         return AVERROR_PATCHWELCOME;
     }
 
-    s->channel_maps = av_mallocz_array(channels, sizeof(*s->channel_maps));
+    s->channel_maps = av_calloc(channels, sizeof(*s->channel_maps));
     if (!s->channel_maps)
         return AVERROR(ENOMEM);
 
@@ -613,6 +614,8 @@ void ff_celt_bitalloc(CeltFrame *f, OpusRangeCoder *rc, int encode)
     }
 
     /* Allocation trim */
+    if (!encode)
+        f->alloc_trim = 5;
     if (opus_rc_tell_frac(rc) + (6 << 3) <= tbits_8ths)
         if (encode)
             ff_opus_rc_enc_cdf(rc, f->alloc_trim, ff_celt_model_alloc_trim);

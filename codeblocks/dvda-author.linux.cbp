@@ -11,7 +11,7 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters=' -g &quot;/home/fab/Dev/dvda-author/Docs/a2_16_48.wav&quot; &quot;/home/fab/Dev/dvda-author/Docs/a2_16_48.wav&quot; -P -W -o /home/fab/output -S --tempdir /home/fab/temp --lplex-tempdir /home/fab/ltemp  ---topmenu --datadir /home/fab/Dev/dvda-author-gui/gnu-linux --bindir /home/fab/Dev/dvda-author-gui/gnu-linux/linux -t --encode' />
+				<Option parameters="./dvda-author -g /home/fab/Dev/dvda-author/Docs/a2_16_44.mlp   --veryverbose -W  -P -W " />
 				<Compiler>
 					<Add option="-Og" />
 					<Add option="-g" />
@@ -71,7 +71,6 @@
 			<Add library="../local/lib/libswresample.a" />
 			<Add library="../local/lib/libavfilter.a" />
 			<Add library="../local/lib/libavformat.a" />
-			<Add library="../local/lib/libavfilter.a" />
 			<Add library="../local/lib/libavcodec.a" />
 			<Add library="../local/lib/libavutil.a" />
 		</Linker>

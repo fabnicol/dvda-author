@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "libavutil/avassert.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/opt.h"
 
@@ -70,6 +69,9 @@ static void clear_plane(AVCodecContext *avctx, AVFrame *frame)
     RASCContext *s = avctx->priv_data;
     uint8_t *dst = frame->data[0];
 
+    if (!dst)
+        return;
+
     for (int y = 0; y < avctx->height; y++) {
         memset(dst, 0, avctx->width * s->bpp);
         dst += frame->linesize[0];
@@ -109,7 +111,7 @@ static int init_frames(AVCodecContext *avctx)
 }
 
 static int decode_fint(AVCodecContext *avctx,
-                       AVPacket *avpkt, unsigned size)
+                       const AVPacket *avpkt, unsigned size)
 {
     RASCContext *s = avctx->priv_data;
     GetByteContext *gb = &s->gb;
@@ -124,6 +126,8 @@ static int decode_fint(AVCodecContext *avctx,
         clear_plane(avctx, s->frame1);
         return 0;
     }
+    if (bytestream2_get_bytes_left(gb) < 72)
+        return AVERROR_INVALIDDATA;
 
     bytestream2_skip(gb, 8);
     w = bytestream2_get_le32(gb);
@@ -166,7 +170,7 @@ static int decode_fint(AVCodecContext *avctx,
     return 0;
 }
 
-static int decode_zlib(AVCodecContext *avctx, AVPacket *avpkt,
+static int decode_zlib(AVCodecContext *avctx, const AVPacket *avpkt,
                        unsigned size, unsigned uncompressed_size)
 {
     RASCContext *s = avctx->priv_data;
@@ -200,7 +204,7 @@ static int decode_zlib(AVCodecContext *avctx, AVPacket *avpkt,
 }
 
 static int decode_move(AVCodecContext *avctx,
-                       AVPacket *avpkt, unsigned size)
+                       const AVPacket *avpkt, unsigned size)
 {
     RASCContext *s = avctx->priv_data;
     GetByteContext *gb = &s->gb;
@@ -324,7 +328,7 @@ static int decode_move(AVCodecContext *avctx,
     len--;
 
 static int decode_dlta(AVCodecContext *avctx,
-                       AVPacket *avpkt, unsigned size)
+                       const AVPacket *avpkt, unsigned size)
 {
     RASCContext *s = avctx->priv_data;
     GetByteContext *gb = &s->gb;
@@ -466,7 +470,7 @@ static int decode_dlta(AVCodecContext *avctx,
 }
 
 static int decode_kfrm(AVCodecContext *avctx,
-                       AVPacket *avpkt, unsigned size)
+                       const AVPacket *avpkt, unsigned size)
 {
     RASCContext *s = avctx->priv_data;
     GetByteContext *gb = &s->gb;
@@ -529,7 +533,7 @@ static int decode_kfrm(AVCodecContext *avctx,
 }
 
 static int decode_mous(AVCodecContext *avctx,
-                       AVPacket *avpkt, unsigned size)
+                       const AVPacket *avpkt, unsigned size)
 {
     RASCContext *s = avctx->priv_data;
     GetByteContext *gb = &s->gb;
@@ -569,7 +573,7 @@ static int decode_mous(AVCodecContext *avctx,
 }
 
 static int decode_mpos(AVCodecContext *avctx,
-                       AVPacket *avpkt, unsigned size)
+                       const AVPacket *avpkt, unsigned size)
 {
     RASCContext *s = avctx->priv_data;
     GetByteContext *gb = &s->gb;
@@ -717,6 +721,7 @@ static int decode_frame(AVCodecContext *avctx,
             break;
         default:
             bytestream2_skip(gb, size);
+            ret = 0;
         }
 
         if (ret < 0)
@@ -800,7 +805,7 @@ static const AVClass rasc_decoder_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_rasc_decoder = {
+const AVCodec ff_rasc_decoder = {
     .name             = "rasc",
     .long_name        = NULL_IF_CONFIG_SMALL("RemotelyAnywhere Screen Capture"),
     .type             = AVMEDIA_TYPE_VIDEO,

@@ -24,7 +24,7 @@
  * E-AC-3 encoder
  */
 
-#define CONFIG_AC3ENC_FLOAT 1
+#define AC3ENC_FLOAT 1
 
 #include "libavutil/attributes.h"
 #include "ac3enc.h"
@@ -32,13 +32,10 @@
 #include "eac3_data.h"
 
 
-#define AC3ENC_TYPE AC3ENC_TYPE_EAC3
-#include "ac3enc_opts_template.c"
-
 static const AVClass eac3enc_class = {
     .class_name = "E-AC-3 Encoder",
     .item_name  = av_default_item_name,
-    .option     = ac3_options,
+    .option     = &ff_ac3_enc_options[2], /* First two options are AC-3 only. */
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
@@ -196,8 +193,8 @@ void ff_eac3_output_frame_header(AC3EncodeContext *s)
 
     /* frame header */
     if (s->num_blocks == 6) {
-    put_bits(&s->pb, 1, !s->use_frame_exp_strategy);/* exponent strategy syntax */
-    put_bits(&s->pb, 1, 0);                         /* aht enabled = no */
+        put_bits(&s->pb, 1, !s->use_frame_exp_strategy); /* exponent strategy syntax */
+        put_bits(&s->pb, 1, 0);                     /* aht enabled = no */
     }
     put_bits(&s->pb, 2, 0);                         /* snr offset strategy = 1 */
     put_bits(&s->pb, 1, 0);                         /* transient pre-noise processing enabled = no */
@@ -235,12 +232,12 @@ void ff_eac3_output_frame_header(AC3EncodeContext *s)
     if (s->num_blocks != 6) {
         put_bits(&s->pb, 1, 0);
     } else {
-    for (ch = 1; ch <= s->fbw_channels; ch++) {
-        if (s->use_frame_exp_strategy)
-            put_bits(&s->pb, 5, s->frame_exp_strategy[ch]);
-        else
-            put_bits(&s->pb, 5, 0);
-    }
+        for (ch = 1; ch <= s->fbw_channels; ch++) {
+            if (s->use_frame_exp_strategy)
+                put_bits(&s->pb, 5, s->frame_exp_strategy[ch]);
+            else
+                put_bits(&s->pb, 5, 0);
+        }
     }
     /* snr offsets */
     put_bits(&s->pb, 6, s->coarse_snr_offset);
@@ -251,11 +248,12 @@ void ff_eac3_output_frame_header(AC3EncodeContext *s)
 }
 
 
-AVCodec ff_eac3_encoder = {
+const AVCodec ff_eac3_encoder = {
     .name            = "eac3",
     .long_name       = NULL_IF_CONFIG_SMALL("ATSC A/52 E-AC-3"),
     .type            = AVMEDIA_TYPE_AUDIO,
     .id              = AV_CODEC_ID_EAC3,
+    .capabilities    = AV_CODEC_CAP_DR1,
     .priv_data_size  = sizeof(AC3EncodeContext),
     .init            = ff_ac3_float_encode_init,
     .encode2         = ff_ac3_float_encode_frame,
@@ -263,6 +261,8 @@ AVCodec ff_eac3_encoder = {
     .sample_fmts     = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_FLTP,
                                                       AV_SAMPLE_FMT_NONE },
     .priv_class      = &eac3enc_class,
+    .supported_samplerates = ff_ac3_sample_rate_tab,
     .channel_layouts = ff_ac3_channel_layouts,
-    .defaults        = ac3_defaults,
+    .defaults        = ff_ac3_enc_defaults,
+    .caps_internal   = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

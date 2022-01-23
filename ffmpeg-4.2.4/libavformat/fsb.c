@@ -41,6 +41,7 @@ static int fsb_read_header(AVFormatContext *s)
     int64_t offset;
     AVCodecParameters *par;
     AVStream *st = avformat_new_stream(s, NULL);
+    int ret;
 
     avio_skip(pb, 3); // "FSB"
     version = avio_r8(pb) - '0';
@@ -86,9 +87,9 @@ static int fsb_read_header(AVFormatContext *s)
             par->block_align = 8 * par->channels;
             if (par->channels > INT_MAX / 32)
                 return AVERROR_INVALIDDATA;
-            ff_alloc_extradata(par, 32 * par->channels);
-            if (!par->extradata)
-                return AVERROR(ENOMEM);
+            ret = ff_alloc_extradata(par, 32 * par->channels);
+            if (ret < 0)
+                return ret;
             avio_seek(pb, 0x68, SEEK_SET);
             for (c = 0; c < par->channels; c++) {
                 avio_read(pb, par->extradata + 32 * c, 32);
@@ -130,18 +131,18 @@ static int fsb_read_header(AVFormatContext *s)
 
         switch (par->codec_id) {
         case AV_CODEC_ID_XMA2:
-            ff_alloc_extradata(par, 34);
-            if (!par->extradata)
-                return AVERROR(ENOMEM);
+            ret = ff_alloc_extradata(par, 34);
+            if (ret < 0)
+                return ret;
             memset(par->extradata, 0, 34);
             par->block_align = 2048;
             break;
         case AV_CODEC_ID_ADPCM_THP:
             if (par->channels > INT_MAX / 32)
                 return AVERROR_INVALIDDATA;
-            ff_alloc_extradata(par, 32 * par->channels);
-            if (!par->extradata)
-                return AVERROR(ENOMEM);
+            ret = ff_alloc_extradata(par, 32 * par->channels);
+            if (ret < 0)
+                return ret;
             avio_seek(pb, 0x80, SEEK_SET);
             for (c = 0; c < par->channels; c++) {
                 avio_read(pb, par->extradata + 32 * c, 32);
@@ -155,7 +156,7 @@ static int fsb_read_header(AVFormatContext *s)
     }
 
     avio_skip(pb, offset - avio_tell(pb));
-    s->internal->data_offset = avio_tell(pb);
+    ffformatcontext(s)->data_offset = avio_tell(pb);
 
     avpriv_set_pts_info(st, 64, 1, par->sample_rate);
 
@@ -199,7 +200,7 @@ static int fsb_read_packet(AVFormatContext *s, AVPacket *pkt)
     return ret;
 }
 
-AVInputFormat ff_fsb_demuxer = {
+const AVInputFormat ff_fsb_demuxer = {
     .name        = "fsb",
     .long_name   = NULL_IF_CONFIG_SMALL("FMOD Sample Bank"),
     .read_probe  = fsb_probe,

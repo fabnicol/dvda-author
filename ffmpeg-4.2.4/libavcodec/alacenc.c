@@ -22,6 +22,7 @@
 #include "libavutil/opt.h"
 
 #include "avcodec.h"
+#include "encode.h"
 #include "put_bits.h"
 #include "internal.h"
 #include "lpc.h"
@@ -485,7 +486,7 @@ static int write_frame(AlacEncodeContext *s, AVPacket *avpkt,
     put_bits(pb, 3, TYPE_END);
     flush_put_bits(pb);
 
-    return put_bits_count(pb) >> 3;
+    return put_bytes_output(pb);
 }
 
 static av_always_inline int get_max_frame_size(int frame_size, int ch, int bps)
@@ -498,8 +499,6 @@ static av_cold int alac_encode_close(AVCodecContext *avctx)
 {
     AlacEncodeContext *s = avctx->priv_data;
     ff_lpc_end(&s->lpc_ctx);
-    av_freep(&avctx->extradata);
-    avctx->extradata_size = 0;
     return 0;
 }
 
@@ -537,10 +536,8 @@ static av_cold int alac_encode_init(AVCodecContext *avctx)
                                                  avctx->bits_per_raw_sample);
 
     avctx->extradata = av_mallocz(ALAC_EXTRADATA_SIZE + AV_INPUT_BUFFER_PADDING_SIZE);
-    if (!avctx->extradata) {
-        ret = AVERROR(ENOMEM);
-        goto error;
-    }
+    if (!avctx->extradata)
+        return AVERROR(ENOMEM);
     avctx->extradata_size = ALAC_EXTRADATA_SIZE;
 
     alac_extradata = avctx->extradata;
@@ -561,40 +558,11 @@ static av_cold int alac_encode_init(AVCodecContext *avctx)
         AV_WB8(alac_extradata+20, s->rc.k_modifier);
     }
 
-#if FF_API_PRIVATE_OPT
-FF_DISABLE_DEPRECATION_WARNINGS
-    if (avctx->min_prediction_order >= 0) {
-        if (avctx->min_prediction_order < MIN_LPC_ORDER ||
-           avctx->min_prediction_order > ALAC_MAX_LPC_ORDER) {
-            av_log(avctx, AV_LOG_ERROR, "invalid min prediction order: %d\n",
-                   avctx->min_prediction_order);
-            ret = AVERROR(EINVAL);
-            goto error;
-        }
-
-        s->min_prediction_order = avctx->min_prediction_order;
-    }
-
-    if (avctx->max_prediction_order >= 0) {
-        if (avctx->max_prediction_order < MIN_LPC_ORDER ||
-            avctx->max_prediction_order > ALAC_MAX_LPC_ORDER) {
-            av_log(avctx, AV_LOG_ERROR, "invalid max prediction order: %d\n",
-                   avctx->max_prediction_order);
-            ret = AVERROR(EINVAL);
-            goto error;
-        }
-
-        s->max_prediction_order = avctx->max_prediction_order;
-    }
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
-
     if (s->max_prediction_order < s->min_prediction_order) {
         av_log(avctx, AV_LOG_ERROR,
                "invalid prediction orders: min=%d max=%d\n",
                s->min_prediction_order, s->max_prediction_order);
-        ret = AVERROR(EINVAL);
-        goto error;
+        return AVERROR(EINVAL);
     }
 
     s->avctx = avctx;
@@ -602,13 +570,10 @@ FF_ENABLE_DEPRECATION_WARNINGS
     if ((ret = ff_lpc_init(&s->lpc_ctx, avctx->frame_size,
                            s->max_prediction_order,
                            FF_LPC_TYPE_LEVINSON)) < 0) {
-        goto error;
+        return ret;
     }
 
     return 0;
-error:
-    alac_encode_close(avctx);
-    return ret;
 }
 
 static int alac_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
@@ -625,7 +590,7 @@ static int alac_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     else
         max_frame_size = s->max_coded_frame_size;
 
-    if ((ret = ff_alloc_packet2(avctx, avpkt, 4 * max_frame_size, 0)) < 0)
+    if ((ret = ff_alloc_packet(avctx, avpkt, 4 * max_frame_size)) < 0)
         return ret;
 
     /* use verbatim mode for compression_level 0 */
@@ -667,7 +632,7 @@ static const AVClass alacenc_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVCodec ff_alac_encoder = {
+const AVCodec ff_alac_encoder = {
     .name           = "alac",
     .long_name      = NULL_IF_CONFIG_SMALL("ALAC (Apple Lossless Audio Codec)"),
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -682,4 +647,5 @@ AVCodec ff_alac_encoder = {
     .sample_fmts    = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_S32P,
                                                      AV_SAMPLE_FMT_S16P,
                                                      AV_SAMPLE_FMT_NONE },
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

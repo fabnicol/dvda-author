@@ -28,6 +28,7 @@
 #ifndef AVCODEC_AACENCTAB_H
 #define AVCODEC_AACENCTAB_H
 
+#include "libavutil/channel_layout.h"
 #include "aac.h"
 
 /** Total number of usable codebooks **/
@@ -38,9 +39,9 @@
 
 #define AAC_MAX_CHANNELS 16
 
-extern const uint8_t *ff_aac_swb_size_1024[];
+extern const uint8_t *const ff_aac_swb_size_1024[];
 extern const int      ff_aac_swb_size_1024_len;
-extern const uint8_t *ff_aac_swb_size_128[];
+extern const uint8_t *const ff_aac_swb_size_128[];
 extern const int      ff_aac_swb_size_128_len;
 
 /* Supported layouts without using a PCE */

@@ -45,25 +45,30 @@ using namespace std;
 class flacHeader
 {
 public:
-	static inline uint64_t bytesUncompressed(FLAC__StreamMetadata *meta)
-		{return
-			meta->data.stream_info.total_samples *
-			meta->data.stream_info.channels *
-			meta->data.stream_info.bits_per_sample / 8 ;}
+    static inline uint64_t bytesUncompressed(FLAC__StreamMetadata *meta)
+    {
+        return
+            meta->data.stream_info.total_samples *
+            meta->data.stream_info.channels *
+            meta->data.stream_info.bits_per_sample / 8 ;
+    }
 
-	static void zeroStreamInfo( FLAC__StreamMetadata *meta );
-	static void readStreamInfo( uint8_t* buf, FLAC__StreamMetadata *meta );
-	static void readStreamInfo( waveHeader::canonical *wave, FLAC__StreamMetadata *meta );
-	static void readStreamInfo( PES_packet::LPCM_header *LPCM, FLAC__StreamMetadata *meta );
-	static void writeStreamInfo( uint8_t* buf, FLAC__StreamMetadata *meta );
-	static int write( fstream &out, FLAC__StreamMetadata *meta );
-	static int write( uint8_t *buf, FLAC__StreamMetadata *meta );
+    static void zeroStreamInfo(FLAC__StreamMetadata *meta);
+    static void readStreamInfo(uint8_t *buf, FLAC__StreamMetadata *meta);
+    static void readStreamInfo(waveHeader::canonical *wave, FLAC__StreamMetadata *meta);
+    static void readStreamInfo(PES_packet::LPCM_header *LPCM, FLAC__StreamMetadata *meta);
+    static void writeStreamInfo(uint8_t *buf, FLAC__StreamMetadata *meta);
+    static int write(fstream &out, FLAC__StreamMetadata *meta);
+    static int write(uint8_t *buf, FLAC__StreamMetadata *meta);
 
-	static int audit( const char *filename, FLAC__StreamMetadata *fmeta );
-	static void display( const FLAC__StreamMetadata *meta, const char* prefix="", ostream &stream=cerr );
+    static int audit(const char *filename, FLAC__StreamMetadata *fmeta);
+    static void display(const FLAC__StreamMetadata *meta, const char *prefix = "", ostream &stream = cerr);
 
-	friend ostream& operator << ( ostream& stream, const FLAC__StreamMetadata& f )
-		{ display( &f, "", stream ); return stream; }
+    friend ostream &operator << (ostream &stream, const FLAC__StreamMetadata &f)
+    {
+        display(&f, "", stream);
+        return stream;
+    }
 
 };
 

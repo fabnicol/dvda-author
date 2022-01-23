@@ -1,6 +1,6 @@
 /*
  * MMAL Video Decoder
- * Copyright (c) 2015 Rodger Combs
+ * Copyright (c) 2015 rcombs
  *
  * This file is part of FFmpeg.
  *
@@ -34,7 +34,8 @@
 #include <stdatomic.h>
 
 #include "avcodec.h"
-#include "hwaccel.h"
+#include "decode.h"
+#include "hwconfig.h"
 #include "internal.h"
 #include "libavutil/avassert.h"
 #include "libavutil/buffer.h"
@@ -655,11 +656,6 @@ static int ffmal_copy_frame(AVCodecContext *avctx,  AVFrame *frame,
     }
 
     frame->pts = buffer->pts == MMAL_TIME_UNKNOWN ? AV_NOPTS_VALUE : buffer->pts;
-#if FF_API_PKT_PTS
-FF_DISABLE_DEPRECATION_WARNINGS
-    frame->pkt_pts = frame->pts;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
     frame->pkt_dts = AV_NOPTS_VALUE;
 
 done:
@@ -808,7 +804,7 @@ static int ffmmal_decode(AVCodecContext *avctx, void *data, int *got_frame,
     return ret;
 }
 
-static const AVCodecHWConfigInternal *mmal_hw_configs[] = {
+static const AVCodecHWConfigInternal *const mmal_hw_configs[] = {
     HW_CONFIG_INTERNAL(MMAL),
     NULL
 };
@@ -829,7 +825,7 @@ static const AVOption options[]={
 
 #define FFMMAL_DEC(NAME, ID) \
     FFMMAL_DEC_CLASS(NAME) \
-    AVCodec ff_##NAME##_mmal_decoder = { \
+    const AVCodec ff_##NAME##_mmal_decoder = { \
         .name           = #NAME "_mmal", \
         .long_name      = NULL_IF_CONFIG_SMALL(#NAME " (mmal)"), \
         .type           = AVMEDIA_TYPE_VIDEO, \

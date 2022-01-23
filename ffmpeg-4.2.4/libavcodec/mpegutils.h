@@ -26,7 +26,6 @@
 #include "libavutil/frame.h"
 
 #include "avcodec.h"
-#include "version.h"
 
 /**
  * Return value for header parsers if frame is not coded.
@@ -125,6 +124,7 @@ enum OutputFormat {
     FMT_H261,
     FMT_H263,
     FMT_MJPEG,
+    FMT_SPEEDHQ,
 };
 
 
@@ -142,7 +142,6 @@ void ff_draw_horiz_band(AVCodecContext *avctx, AVFrame *cur, AVFrame *last,
  */
 void ff_print_debug_info2(AVCodecContext *avctx, AVFrame *pict, uint8_t *mbskip_table,
                          uint32_t *mbtype_table, int8_t *qscale_table, int16_t (*motion_val[2])[2],
-                         int *low_delay,
                          int mb_width, int mb_height, int mb_stride, int quarter_sample);
 
 #endif /* AVCODEC_MPEGUTILS_H */

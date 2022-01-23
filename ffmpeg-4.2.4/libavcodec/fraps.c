@@ -31,6 +31,10 @@
  * Version 2 files support by Konstantin Shishkov
  */
 
+#include "config.h"
+
+#define CACHED_BITSTREAM_READER HAVE_FAST_64BIT
+#define UNCHECKED_BITSTREAM_READER 1
 #include "avcodec.h"
 #include "get_bits.h"
 #include "huffman.h"
@@ -338,7 +342,7 @@ static av_cold int decode_end(AVCodecContext *avctx)
 }
 
 
-AVCodec ff_fraps_decoder = {
+const AVCodec ff_fraps_decoder = {
     .name           = "fraps",
     .long_name      = NULL_IF_CONFIG_SMALL("Fraps"),
     .type           = AVMEDIA_TYPE_VIDEO,

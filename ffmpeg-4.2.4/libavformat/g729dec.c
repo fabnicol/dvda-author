@@ -61,8 +61,7 @@ static int g729_read_header(AVFormatContext *s)
         return AVERROR(EINVAL);
     }
 
-    avpriv_set_pts_info(st, st->codecpar->block_align << 3, 1,
-                        st->codecpar->sample_rate);
+    avpriv_set_pts_info(st, 64, 80, st->codecpar->sample_rate);
 
     return 0;
 }
@@ -76,6 +75,7 @@ static int g729_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     pkt->stream_index = 0;
     pkt->dts = pkt->pts = pkt->pos / st->codecpar->block_align;
+    pkt->duration = 1;
 
     return 0;
 }
@@ -93,7 +93,7 @@ static const AVClass g729_demuxer_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-AVInputFormat ff_g729_demuxer = {
+const AVInputFormat ff_g729_demuxer = {
     .name           = "g729",
     .long_name      = NULL_IF_CONFIG_SMALL("G.729 raw format demuxer"),
     .priv_data_size = sizeof(G729DemuxerContext),

@@ -79,7 +79,7 @@ static int bethsoftvid_decode_frame(AVCodecContext *avctx,
     int code, ret;
     int yoffset;
 
-    if ((ret = ff_reget_buffer(avctx, vid->frame)) < 0)
+    if ((ret = ff_reget_buffer(avctx, vid->frame, 0)) < 0)
         return ret;
     wrap_to_next_line = vid->frame->linesize[0] - avctx->width;
 
@@ -158,7 +158,7 @@ static av_cold int bethsoftvid_decode_end(AVCodecContext *avctx)
     return 0;
 }
 
-AVCodec ff_bethsoftvid_decoder = {
+const AVCodec ff_bethsoftvid_decoder = {
     .name           = "bethsoftvid",
     .long_name      = NULL_IF_CONFIG_SMALL("Bethesda VID video"),
     .type           = AVMEDIA_TYPE_VIDEO,

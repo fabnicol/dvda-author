@@ -39,10 +39,12 @@ ogm_header(AVFormatContext *s, int idx)
     struct ogg *ogg = s->priv_data;
     struct ogg_stream *os = ogg->streams + idx;
     AVStream *st = s->streams[idx];
+    FFStream *const sti = ffstream(st);
     GetByteContext p;
     uint64_t time_unit;
     uint64_t spu;
     uint32_t size;
+    int ret;
 
     bytestream2_init(&p, os->buf + os->pstart, os->psize);
     if (!(bytestream2_peek_byte(&p) & 1))
@@ -59,7 +61,7 @@ ogm_header(AVFormatContext *s, int idx)
             st->codecpar->codec_id = ff_codec_get_id(ff_codec_bmp_tags, tag);
             st->codecpar->codec_tag = tag;
             if (st->codecpar->codec_id == AV_CODEC_ID_MPEG4)
-                st->need_parsing = AVSTREAM_PARSE_HEADERS;
+                sti->need_parsing = AVSTREAM_PARSE_HEADERS;
         } else if (bytestream2_peek_byte(&p) == 't') {
             st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
             st->codecpar->codec_id = AV_CODEC_ID_TEXT;
@@ -75,7 +77,7 @@ ogm_header(AVFormatContext *s, int idx)
             st->codecpar->codec_id = ff_codec_get_id(ff_codec_wav_tags, cid);
             // our parser completely breaks AAC in Ogg
             if (st->codecpar->codec_id != AV_CODEC_ID_AAC)
-                st->need_parsing = AVSTREAM_PARSE_FULL;
+                sti->need_parsing = AVSTREAM_PARSE_FULL;
         }
 
         size        = bytestream2_get_le32(&p);
@@ -108,15 +110,14 @@ ogm_header(AVFormatContext *s, int idx)
                 size -= 52;
                 if (bytestream2_get_bytes_left(&p) < size)
                     return AVERROR_INVALIDDATA;
-                av_freep(&st->codecpar->extradata);
-                if (ff_alloc_extradata(st->codecpar, size) < 0)
-                    return AVERROR(ENOMEM);
+                if ((ret = ff_alloc_extradata(st->codecpar, size)) < 0)
+                    return ret;
                 bytestream2_get_buffer(&p, st->codecpar->extradata, st->codecpar->extradata_size);
             }
         }
 
         // Update internal avctx with changes to codecpar above.
-        st->internal->need_context_update = 1;
+        sti->need_context_update = 1;
     } else if (bytestream2_peek_byte(&p) == 3) {
         bytestream2_skip(&p, 7);
         if (bytestream2_get_bytes_left(&p) > 1)

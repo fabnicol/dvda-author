@@ -1,7 +1,7 @@
 /*
  * Audio Toolbox system codecs
  *
- * copyright (c) 2016 Rodger Combs
+ * copyright (c) 2016 rcombs
  *
  * This file is part of FFmpeg.
  *
@@ -29,9 +29,11 @@
 #include "audio_frame_queue.h"
 #include "avcodec.h"
 #include "bytestream.h"
+#include "encode.h"
 #include "internal.h"
 #include "libavformat/isom.h"
 #include "libavutil/avassert.h"
+#include "libavutil/channel_layout.h"
 #include "libavutil/opt.h"
 #include "libavutil/log.h"
 
@@ -536,7 +538,7 @@ static int ffat_encode(AVCodecContext *avctx, AVPacket *avpkt,
         at->eof = 1;
     }
 
-    if ((ret = ff_alloc_packet2(avctx, avpkt, at->pkt_size, 0)) < 0)
+    if ((ret = ff_alloc_packet(avctx, avpkt, at->pkt_size)) < 0)
         return ret;
 
 
@@ -616,7 +618,7 @@ static const AVOption options[] = {
 
 #define FFAT_ENC(NAME, ID, PROFILES, ...) \
     FFAT_ENC_CLASS(NAME) \
-    AVCodec ff_##NAME##_at_encoder = { \
+    const AVCodec ff_##NAME##_at_encoder = { \
         .name           = #NAME "_at", \
         .long_name      = NULL_IF_CONFIG_SMALL(#NAME " (AudioToolbox)"), \
         .type           = AVMEDIA_TYPE_AUDIO, \
@@ -627,7 +629,8 @@ static const AVOption options[] = {
         .encode2        = ffat_encode, \
         .flush          = ffat_encode_flush, \
         .priv_class     = &ffat_##NAME##_enc_class, \
-        .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY __VA_ARGS__, \
+        .capabilities   = AV_CODEC_CAP_DELAY | \
+                          AV_CODEC_CAP_ENCODER_FLUSH __VA_ARGS__, \
         .sample_fmts    = (const enum AVSampleFormat[]) { \
             AV_SAMPLE_FMT_S16, \
             AV_SAMPLE_FMT_U8,  AV_SAMPLE_FMT_NONE \
@@ -655,7 +658,7 @@ static const uint64_t aac_at_channel_layouts[] = {
 
 FFAT_ENC(aac,          AV_CODEC_ID_AAC,          aac_profiles, , .channel_layouts = aac_at_channel_layouts)
 //FFAT_ENC(adpcm_ima_qt, AV_CODEC_ID_ADPCM_IMA_QT, NULL)
-FFAT_ENC(alac,         AV_CODEC_ID_ALAC,         NULL, | AV_CODEC_CAP_VARIABLE_FRAME_SIZE | AV_CODEC_CAP_LOSSLESS)
+FFAT_ENC(alac,         AV_CODEC_ID_ALAC,         NULL, | AV_CODEC_CAP_VARIABLE_FRAME_SIZE)
 FFAT_ENC(ilbc,         AV_CODEC_ID_ILBC,         NULL)
 FFAT_ENC(pcm_alaw,     AV_CODEC_ID_PCM_ALAW,     NULL)
 FFAT_ENC(pcm_mulaw,    AV_CODEC_ID_PCM_MULAW,    NULL)

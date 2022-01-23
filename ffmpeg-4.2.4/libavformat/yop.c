@@ -125,14 +125,11 @@ static int yop_read_packet(AVFormatContext *s, AVPacket *pkt)
     yop->video_packet.stream_index = 1;
 
     if (yop->video_packet.data) {
-        *pkt                   =  yop->video_packet;
-        yop->video_packet.data =  NULL;
-        yop->video_packet.buf  =  NULL;
-        yop->video_packet.size =  0;
+        av_packet_move_ref(pkt, &yop->video_packet);
         pkt->data[0]           =  yop->odd_frame;
         pkt->flags             |= AV_PKT_FLAG_KEY;
         yop->odd_frame         ^= 1;
-        return pkt->size;
+        return 0;
     }
     ret = av_new_packet(&yop->video_packet,
                         yop->frame_size - yop->audio_block_length);
@@ -166,7 +163,7 @@ static int yop_read_packet(AVFormatContext *s, AVPacket *pkt)
         av_shrink_packet(&yop->video_packet, yop->palette_size + ret);
 
     // Arbitrarily return the audio data first
-    return yop->audio_block_length;
+    return 0;
 
 err_out:
     av_packet_unref(&yop->video_packet);
@@ -190,7 +187,7 @@ static int yop_read_seek(AVFormatContext *s, int stream_index,
     if (!stream_index)
         return -1;
 
-    pos_min        = s->internal->data_offset;
+    pos_min        = ffformatcontext(s)->data_offset;
     pos_max        = avio_size(s->pb) - yop->frame_size;
     frame_count    = (pos_max - pos_min) / yop->frame_size;
 
@@ -207,7 +204,7 @@ static int yop_read_seek(AVFormatContext *s, int stream_index,
     return 0;
 }
 
-AVInputFormat ff_yop_demuxer = {
+const AVInputFormat ff_yop_demuxer = {
     .name           = "yop",
     .long_name      = NULL_IF_CONFIG_SMALL("Psygnosis YOP"),
     .priv_data_size = sizeof(YopDecContext),

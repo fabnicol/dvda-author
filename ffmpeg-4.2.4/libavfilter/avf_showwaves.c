@@ -57,6 +57,12 @@ enum ShowWavesDrawMode {
     DRAW_NB,
 };
 
+enum ShowWavesFilterMode {
+    FILTER_AVERAGE,
+    FILTER_PEAK,
+    FILTER_NB,
+};
+
 struct frame_node {
     AVFrame *frame;
     struct frame_node *next;
@@ -77,6 +83,7 @@ typedef struct ShowWavesContext {
     int scale;                  ///< ShowWavesScale
     int draw_mode;              ///< ShowWavesDrawMode
     int split_channels;
+    int filter_mode;
     uint8_t *fg;
 
     int (*get_h)(int16_t sample, int height);
@@ -154,20 +161,20 @@ static int query_formats(AVFilterContext *ctx)
 
     /* set input audio formats */
     formats = ff_make_format_list(sample_fmts);
-    if ((ret = ff_formats_ref(formats, &inlink->out_formats)) < 0)
+    if ((ret = ff_formats_ref(formats, &inlink->outcfg.formats)) < 0)
         return ret;
 
     layouts = ff_all_channel_layouts();
-    if ((ret = ff_channel_layouts_ref(layouts, &inlink->out_channel_layouts)) < 0)
+    if ((ret = ff_channel_layouts_ref(layouts, &inlink->outcfg.channel_layouts)) < 0)
         return ret;
 
     formats = ff_all_samplerates();
-    if ((ret = ff_formats_ref(formats, &inlink->out_samplerates)) < 0)
+    if ((ret = ff_formats_ref(formats, &inlink->outcfg.samplerates)) < 0)
         return ret;
 
     /* set output video format */
     formats = ff_make_format_list(pix_fmts);
-    if ((ret = ff_formats_ref(formats, &outlink->in_formats)) < 0)
+    if ((ret = ff_formats_ref(formats, &outlink->incfg.formats)) < 0)
         return ret;
 
     return 0;
@@ -420,7 +427,7 @@ static int config_output(AVFilterLink *outlink)
         showwaves->n = FFMAX(1, av_rescale_q(inlink->sample_rate, av_make_q(1, showwaves->w), showwaves->rate));
 
     showwaves->buf_idx = 0;
-    if (!(showwaves->buf_idy = av_mallocz_array(nb_channels, sizeof(*showwaves->buf_idy)))) {
+    if (!FF_ALLOCZ_TYPED_ARRAY(showwaves->buf_idy, nb_channels)) {
         av_log(ctx, AV_LOG_ERROR, "Could not allocate showwaves buffer\n");
         return AVERROR(ENOMEM);
     }
@@ -590,12 +597,21 @@ static int push_single_pic(AVFilterLink *outlink)
             int64_t max_samples = col == outlink->w - 1 ? last_column_samples: column_max_samples;
             int ch;
 
-            for (ch = 0; ch < nb_channels; ch++)
-                sum[ch] += abs(p[ch + i*nb_channels]) << 1;
+            switch (showwaves->filter_mode) {
+            case FILTER_AVERAGE:
+                for (ch = 0; ch < nb_channels; ch++)
+                    sum[ch] += abs(p[ch + i*nb_channels]);
+                break;
+            case FILTER_PEAK:
+                for (ch = 0; ch < nb_channels; ch++)
+                    sum[ch] = FFMAX(sum[ch], abs(p[ch + i*nb_channels]));
+                break;
+            }
+
             n++;
             if (n == max_samples) {
                 for (ch = 0; ch < nb_channels; ch++) {
-                    int16_t sample = sum[ch] / max_samples;
+                    int16_t sample = sum[ch] / (showwaves->filter_mode == FILTER_AVERAGE ? max_samples : 1);
                     uint8_t *buf = out->data[0] + col * pixstep;
                     int h;
 
@@ -747,7 +763,6 @@ static const AVFilterPad showwaves_inputs[] = {
         .name         = "default",
         .type         = AVMEDIA_TYPE_AUDIO,
     },
-    { NULL }
 };
 
 static const AVFilterPad showwaves_outputs[] = {
@@ -756,19 +771,18 @@ static const AVFilterPad showwaves_outputs[] = {
         .type          = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
-AVFilter ff_avf_showwaves = {
+const AVFilter ff_avf_showwaves = {
     .name          = "showwaves",
     .description   = NULL_IF_CONFIG_SMALL("Convert input audio to a video output."),
     .init          = init,
     .uninit        = uninit,
-    .query_formats = query_formats,
     .priv_size     = sizeof(ShowWavesContext),
-    .inputs        = showwaves_inputs,
+    FILTER_INPUTS(showwaves_inputs),
     .activate      = activate,
-    .outputs       = showwaves_outputs,
+    FILTER_OUTPUTS(showwaves_outputs),
+    FILTER_QUERY_FUNC(query_formats),
     .priv_class    = &showwaves_class,
 };
 
@@ -792,6 +806,9 @@ static const AVOption showwavespic_options[] = {
     { "draw", "set draw mode", OFFSET(draw_mode), AV_OPT_TYPE_INT, {.i64 = DRAW_SCALE}, 0, DRAW_NB-1, FLAGS, .unit="draw" },
         { "scale", "scale pixel values for each drawn sample", 0, AV_OPT_TYPE_CONST, {.i64=DRAW_SCALE}, .flags=FLAGS, .unit="draw"},
         { "full",  "draw every pixel for sample directly",     0, AV_OPT_TYPE_CONST, {.i64=DRAW_FULL},  .flags=FLAGS, .unit="draw"},
+    { "filter", "set filter mode", OFFSET(filter_mode), AV_OPT_TYPE_INT, {.i64 = FILTER_AVERAGE}, 0, FILTER_NB-1, FLAGS, .unit="filter" },
+        { "average", "use average samples", 0, AV_OPT_TYPE_CONST, {.i64=FILTER_AVERAGE}, .flags=FLAGS, .unit="filter"},
+        { "peak",    "use peak samples",    0, AV_OPT_TYPE_CONST, {.i64=FILTER_PEAK},    .flags=FLAGS, .unit="filter"},
     { NULL }
 };
 
@@ -803,7 +820,7 @@ static int showwavespic_config_input(AVFilterLink *inlink)
     ShowWavesContext *showwaves = ctx->priv;
 
     if (showwaves->single_pic) {
-        showwaves->sum = av_mallocz_array(inlink->channels, sizeof(*showwaves->sum));
+        showwaves->sum = av_calloc(inlink->channels, sizeof(*showwaves->sum));
         if (!showwaves->sum)
             return AVERROR(ENOMEM);
     }
@@ -858,7 +875,6 @@ static const AVFilterPad showwavespic_inputs[] = {
         .config_props = showwavespic_config_input,
         .filter_frame = showwavespic_filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad showwavespic_outputs[] = {
@@ -868,18 +884,17 @@ static const AVFilterPad showwavespic_outputs[] = {
         .config_props  = config_output,
         .request_frame = request_frame,
     },
-    { NULL }
 };
 
-AVFilter ff_avf_showwavespic = {
+const AVFilter ff_avf_showwavespic = {
     .name          = "showwavespic",
     .description   = NULL_IF_CONFIG_SMALL("Convert input audio to a video output single picture."),
     .init          = init,
     .uninit        = uninit,
-    .query_formats = query_formats,
     .priv_size     = sizeof(ShowWavesContext),
-    .inputs        = showwavespic_inputs,
-    .outputs       = showwavespic_outputs,
+    FILTER_INPUTS(showwavespic_inputs),
+    FILTER_OUTPUTS(showwavespic_outputs),
+    FILTER_QUERY_FUNC(query_formats),
     .priv_class    = &showwavespic_class,
 };
 

@@ -43,6 +43,8 @@ static int dcstr_read_header(AVFormatContext *s)
     st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
     st->codecpar->channels    = avio_rl32(s->pb);
     st->codecpar->sample_rate = avio_rl32(s->pb);
+    if (st->codecpar->sample_rate <= 0)
+        return AVERROR_INVALIDDATA;
     codec                  = avio_rl32(s->pb);
     align                  = avio_rl32(s->pb);
     avio_skip(s->pb, 4);
@@ -76,7 +78,7 @@ static int dcstr_read_packet(AVFormatContext *s, AVPacket *pkt)
     return av_get_packet(s->pb, pkt, par->block_align);
 }
 
-AVInputFormat ff_dcstr_demuxer = {
+const AVInputFormat ff_dcstr_demuxer = {
     .name           = "dcstr",
     .long_name      = NULL_IF_CONFIG_SMALL("Sega DC STR"),
     .read_probe     = dcstr_probe,

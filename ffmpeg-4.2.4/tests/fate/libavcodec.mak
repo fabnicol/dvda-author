@@ -53,7 +53,7 @@ fate-h264-levels: REF = /dev/null
 
 FATE_LIBAVCODEC-$(CONFIG_HEVC_METADATA_BSF) += fate-h265-levels
 fate-h265-levels: libavcodec/tests/h265_levels$(EXESUF)
-fate-h265-levels: CMD = run libavcodec/tests/h265_levels
+fate-h265-levels: CMD = run libavcodec/tests/h265_levels$(EXESUF)
 fate-h265-levels: REF = /dev/null
 
 FATE_LIBAVCODEC-$(CONFIG_IIRFILTER) += fate-iirfilter
@@ -64,10 +64,6 @@ FATE_LIBAVCODEC-$(CONFIG_MPEGVIDEO) += fate-mpeg12framerate
 fate-mpeg12framerate: libavcodec/tests/mpeg12framerate$(EXESUF)
 fate-mpeg12framerate: CMD = run libavcodec/tests/mpeg12framerate$(EXESUF)
 fate-mpeg12framerate: REF = /dev/null
-
-FATE_LIBAVCODEC-yes += fate-libavcodec-options
-fate-libavcodec-options: libavcodec/tests/options$(EXESUF)
-fate-libavcodec-options: CMD = run libavcodec/tests/options$(EXESUF)
 
 FATE_LIBAVCODEC-$(CONFIG_RANGECODER) += fate-rangecoder
 fate-rangecoder: libavcodec/tests/rangecoder$(EXESUF)
@@ -83,10 +79,10 @@ FATE_LIBAVCODEC-$(CONFIG_JPEG2000_ENCODER) += fate-j2k-dwt
 fate-j2k-dwt: libavcodec/tests/jpeg2000dwt$(EXESUF)
 fate-j2k-dwt: CMD = run libavcodec/tests/jpeg2000dwt$(EXESUF)
 
-FATE_LIBAVCODEC-yes += fate-libavcodec-utils
-fate-libavcodec-utils: libavcodec/tests/utils$(EXESUF)
-fate-libavcodec-utils: CMD = run libavcodec/tests/utils$(EXESUF)
-fate-libavcodec-utils: CMP = null
+FATE_LIBAVCODEC-yes += fate-libavcodec-avcodec
+fate-libavcodec-avcodec: libavcodec/tests/avcodec$(EXESUF)
+fate-libavcodec-avcodec: CMD = run libavcodec/tests/avcodec$(EXESUF)
+fate-libavcodec-avcodec: CMP = null
 
 FATE_LIBAVCODEC-yes += fate-libavcodec-huffman
 fate-libavcodec-huffman: libavcodec/tests/mjpegenc_huffman$(EXESUF)

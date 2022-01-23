@@ -26,6 +26,7 @@
  */
 
 #include "libavutil/internal.h"
+#include "libavutil/mem_internal.h"
 #include "libavutil/samplefmt.h"
 
 #define BITSTREAM_READER_LE
@@ -915,13 +916,6 @@ static int tak_decode_frame(AVCodecContext *avctx, void *data,
 }
 
 #if HAVE_THREADS
-static int init_thread_copy(AVCodecContext *avctx)
-{
-    TAKDecContext *s = avctx->priv_data;
-    s->avctx = avctx;
-    return 0;
-}
-
 static int update_thread_context(AVCodecContext *dst,
                                  const AVCodecContext *src)
 {
@@ -944,7 +938,7 @@ static av_cold int tak_decode_close(AVCodecContext *avctx)
     return 0;
 }
 
-AVCodec ff_tak_decoder = {
+const AVCodec ff_tak_decoder = {
     .name             = "tak",
     .long_name        = NULL_IF_CONFIG_SMALL("TAK (Tom's lossless Audio Kompressor)"),
     .type             = AVMEDIA_TYPE_AUDIO,
@@ -953,11 +947,11 @@ AVCodec ff_tak_decoder = {
     .init             = tak_decode_init,
     .close            = tak_decode_close,
     .decode           = tak_decode_frame,
-    .init_thread_copy = ONLY_IF_THREADS_ENABLED(init_thread_copy),
     .update_thread_context = ONLY_IF_THREADS_ENABLED(update_thread_context),
-    .capabilities     = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS,
+    .capabilities     = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS | AV_CODEC_CAP_CHANNEL_CONF,
     .sample_fmts      = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_U8P,
                                                         AV_SAMPLE_FMT_S16P,
                                                         AV_SAMPLE_FMT_S32P,
                                                         AV_SAMPLE_FMT_NONE },
+    .caps_internal    = FF_CODEC_CAP_INIT_THREADSAFE,
 };

@@ -75,14 +75,18 @@ static int read_close(AVFormatContext *s)
     return 0;
 }
 
-static void read_table(AVFormatContext *s, uint32_t *table, uint32_t count)
+static int read_table(AVFormatContext *s, uint32_t *table, uint32_t count)
 {
     int i;
 
-    for (i = 0; i < count; i++)
+    for (i = 0; i < count; i++) {
+        if (avio_feof(s->pb))
+            return AVERROR_INVALIDDATA;
         table[i] = avio_rl32(s->pb);
+    }
 
     avio_skip(s->pb, 4 * (FFALIGN(count, 512) - count));
+    return 0;
 }
 
 static int read_header(AVFormatContext *s)
@@ -90,7 +94,7 @@ static int read_header(AVFormatContext *s)
     PAFDemuxContext *p  = s->priv_data;
     AVIOContext     *pb = s->pb;
     AVStream        *ast, *vst;
-    int ret = 0;
+    int frame_ms, ret = 0;
 
     avio_skip(pb, 132);
 
@@ -102,7 +106,9 @@ static int read_header(AVFormatContext *s)
     vst->nb_frames  =
     vst->duration   =
     p->nb_frames    = avio_rl32(pb);
-    avio_skip(pb, 4);
+    frame_ms        = avio_rl32(pb);
+    if (frame_ms < 1)
+        return AVERROR_INVALIDDATA;
 
     vst->codecpar->width  = avio_rl32(pb);
     vst->codecpar->height = avio_rl32(pb);
@@ -111,7 +117,7 @@ static int read_header(AVFormatContext *s)
     vst->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     vst->codecpar->codec_tag  = 0;
     vst->codecpar->codec_id   = AV_CODEC_ID_PAF_VIDEO;
-    avpriv_set_pts_info(vst, 64, 1, 10);
+    avpriv_set_pts_info(vst, 64, frame_ms, 1000);
 
     ast = avformat_new_stream(s, 0);
     if (!ast)
@@ -132,6 +138,10 @@ static int read_header(AVFormatContext *s)
     p->start_offset   = avio_rl32(pb);
     p->max_video_blks = avio_rl32(pb);
     p->max_audio_blks = avio_rl32(pb);
+
+    if (avio_feof(pb))
+        return AVERROR_INVALIDDATA;
+
     if (p->buffer_size    < 175  ||
         p->max_audio_blks < 2    ||
         p->max_video_blks < 1    ||
@@ -145,11 +155,11 @@ static int read_header(AVFormatContext *s)
         p->frame_blks     > INT_MAX / sizeof(uint32_t))
         return AVERROR_INVALIDDATA;
 
-    p->blocks_count_table  = av_mallocz(p->nb_frames *
+    p->blocks_count_table  = av_malloc_array(p->nb_frames,
                                         sizeof(*p->blocks_count_table));
-    p->frames_offset_table = av_mallocz(p->nb_frames *
+    p->frames_offset_table = av_malloc_array(p->nb_frames,
                                         sizeof(*p->frames_offset_table));
-    p->blocks_offset_table = av_mallocz(p->frame_blks *
+    p->blocks_offset_table = av_malloc_array(p->frame_blks,
                                         sizeof(*p->blocks_offset_table));
 
     p->video_size  = p->max_video_blks * p->buffer_size;
@@ -164,16 +174,20 @@ static int read_header(AVFormatContext *s)
         !p->blocks_offset_table ||
         !p->video_frame         ||
         !p->audio_frame         ||
-        !p->temp_audio_frame) {
-        ret = AVERROR(ENOMEM);
-        goto fail;
-    }
+        !p->temp_audio_frame)
+        return AVERROR(ENOMEM);
 
     avio_seek(pb, p->buffer_size, SEEK_SET);
 
-    read_table(s, p->blocks_count_table,  p->nb_frames);
-    read_table(s, p->frames_offset_table, p->nb_frames);
-    read_table(s, p->blocks_offset_table, p->frame_blks);
+    ret = read_table(s, p->blocks_count_table,  p->nb_frames);
+    if (ret < 0)
+        return ret;
+    ret = read_table(s, p->frames_offset_table, p->nb_frames);
+    if (ret < 0)
+        return ret;
+    ret = read_table(s, p->blocks_offset_table, p->frame_blks);
+    if (ret < 0)
+        return ret;
 
     p->got_audio = 0;
     p->current_frame = 0;
@@ -182,11 +196,6 @@ static int read_header(AVFormatContext *s)
     avio_seek(pb, p->start_offset, SEEK_SET);
 
     return 0;
-
-fail:
-    read_close(s);
-
-    return ret;
 }
 
 static int read_packet(AVFormatContext *s, AVPacket *pkt)
@@ -194,7 +203,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
     PAFDemuxContext *p  = s->priv_data;
     AVIOContext     *pb = s->pb;
     uint32_t        count, offset;
-    int             size, i;
+    int             size, i, ret;
 
     if (p->current_frame >= p->nb_frames)
         return AVERROR_EOF;
@@ -203,8 +212,8 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
         return AVERROR_EOF;
 
     if (p->got_audio) {
-        if (av_new_packet(pkt, p->audio_size) < 0)
-            return AVERROR(ENOMEM);
+        if ((ret = av_new_packet(pkt, p->audio_size)) < 0)
+            return ret;
 
         memcpy(pkt->data, p->temp_audio_frame, p->audio_size);
         pkt->duration     = PAF_SOUND_SAMPLES * (p->audio_size / PAF_SOUND_FRAME_SIZE);
@@ -244,8 +253,8 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
 
     size = p->video_size - p->frames_offset_table[p->current_frame];
 
-    if (av_new_packet(pkt, size) < 0)
-        return AVERROR(ENOMEM);
+    if ((ret = av_new_packet(pkt, size)) < 0)
+        return ret;
 
     pkt->stream_index = 0;
     pkt->duration     = 1;
@@ -257,10 +266,11 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
     return pkt->size;
 }
 
-AVInputFormat ff_paf_demuxer = {
+const AVInputFormat ff_paf_demuxer = {
     .name           = "paf",
     .long_name      = NULL_IF_CONFIG_SMALL("Amazing Studio Packed Animation File"),
     .priv_data_size = sizeof(PAFDemuxContext),
+    .flags_internal = FF_FMT_INIT_CLEANUP,
     .read_probe     = read_probe,
     .read_header    = read_header,
     .read_packet    = read_packet,

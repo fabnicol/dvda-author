@@ -28,6 +28,7 @@
  */
 
 #include "libavutil/channel_layout.h"
+#include "libavutil/imgutils.h"
 #include "libavutil/intreadwrite.h"
 #include "avformat.h"
 #include "internal.h"
@@ -49,7 +50,8 @@ typedef struct BVID_DemuxContext
     int bethsoft_global_delay;
     int video_index;        /**< video stream index */
     int audio_index;        /**< audio stream index */
-    uint8_t *palette;
+    int has_palette;
+    uint8_t palette[BVID_PALETTE_SIZE];
 
     int is_finished;
 
@@ -71,6 +73,7 @@ static int vid_read_header(AVFormatContext *s)
 {
     BVID_DemuxContext *vid = s->priv_data;
     AVIOContext *pb = s->pb;
+    int ret;
 
     /* load main header. Contents:
     *    bytes: 'V' 'I' 'D'
@@ -82,6 +85,10 @@ static int vid_read_header(AVFormatContext *s)
     vid->height  = avio_rl16(pb);
     vid->bethsoft_global_delay = avio_rl16(pb);
     avio_rl16(pb);
+
+    ret = av_image_check_size(vid->width, vid->height, 0, s);
+    if (ret < 0)
+        return ret;
 
     // wait until the first packet to create each stream
     vid->video_index = -1;
@@ -192,7 +199,7 @@ static int read_frame(BVID_DemuxContext *vid, AVIOContext *pb, AVPacket *pkt,
         pkt->flags |= AV_PKT_FLAG_KEY;
 
     /* if there is a new palette available, add it to packet side data */
-    if (vid->palette) {
+    if (vid->has_palette) {
         uint8_t *pdata = av_packet_new_side_data(pkt, AV_PKT_DATA_PALETTE,
                                                  BVID_PALETTE_SIZE);
         if (!pdata) {
@@ -201,8 +208,7 @@ static int read_frame(BVID_DemuxContext *vid, AVIOContext *pb, AVPacket *pkt,
             goto fail;
         }
         memcpy(pdata, vid->palette, BVID_PALETTE_SIZE);
-
-        av_freep(&vid->palette);
+        vid->has_palette = 0;
     }
 
     vid->nframes--;  // used to check if all the frames were read
@@ -226,17 +232,14 @@ static int vid_read_packet(AVFormatContext *s,
     block_type = avio_r8(pb);
     switch(block_type){
         case PALETTE_BLOCK:
-            if (vid->palette) {
+            if (vid->has_palette) {
                 av_log(s, AV_LOG_WARNING, "discarding unused palette\n");
-                av_freep(&vid->palette);
+                vid->has_palette = 0;
             }
-            vid->palette = av_malloc(BVID_PALETTE_SIZE);
-            if (!vid->palette)
-                return AVERROR(ENOMEM);
             if (avio_read(pb, vid->palette, BVID_PALETTE_SIZE) != BVID_PALETTE_SIZE) {
-                av_freep(&vid->palette);
                 return AVERROR(EIO);
             }
+            vid->has_palette = 1;
             return vid_read_packet(s, pkt);
 
         case FIRST_AUDIO_BLOCK:
@@ -288,19 +291,11 @@ static int vid_read_packet(AVFormatContext *s,
     }
 }
 
-static int vid_read_close(AVFormatContext *s)
-{
-    BVID_DemuxContext *vid = s->priv_data;
-    av_freep(&vid->palette);
-    return 0;
-}
-
-AVInputFormat ff_bethsoftvid_demuxer = {
+const AVInputFormat ff_bethsoftvid_demuxer = {
     .name           = "bethsoftvid",
     .long_name      = NULL_IF_CONFIG_SMALL("Bethesda Softworks VID"),
     .priv_data_size = sizeof(BVID_DemuxContext),
     .read_probe     = vid_probe,
     .read_header    = vid_read_header,
     .read_packet    = vid_read_packet,
-    .read_close     = vid_read_close,
 };

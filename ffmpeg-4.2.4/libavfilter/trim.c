@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#include "libavutil/avassert.h"
 #include "libavutil/channel_layout.h"
 #include "libavutil/common.h"
 #include "libavutil/log.h"
@@ -196,7 +195,6 @@ static const AVFilterPad trim_inputs[] = {
         .filter_frame = trim_filter_frame,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad trim_outputs[] = {
@@ -204,17 +202,16 @@ static const AVFilterPad trim_outputs[] = {
         .name         = "default",
         .type         = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
-AVFilter ff_vf_trim = {
+const AVFilter ff_vf_trim = {
     .name        = "trim",
     .description = NULL_IF_CONFIG_SMALL("Pick one continuous section from the input, drop the rest."),
     .init        = init,
     .priv_size   = sizeof(TrimContext),
     .priv_class  = &trim_class,
-    .inputs      = trim_inputs,
-    .outputs     = trim_outputs,
+    FILTER_INPUTS(trim_inputs),
+    FILTER_OUTPUTS(trim_outputs),
 };
 #endif // CONFIG_TRIM_FILTER
 
@@ -300,7 +297,8 @@ static int atrim_filter_frame(AVFilterLink *inlink, AVFrame *frame)
     s->nb_samples += frame->nb_samples;
     start_sample   = FFMAX(0, start_sample);
     end_sample     = FFMIN(frame->nb_samples, end_sample);
-    av_assert0(start_sample < end_sample || (start_sample == end_sample && !frame->nb_samples));
+    if (start_sample >= end_sample || !frame->nb_samples)
+        goto drop;
 
     if (start_sample) {
         AVFrame *out = ff_get_audio_buffer(ctx->outputs[0], end_sample - start_sample);
@@ -350,7 +348,6 @@ static const AVFilterPad atrim_inputs[] = {
         .filter_frame = atrim_filter_frame,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad atrim_outputs[] = {
@@ -358,16 +355,15 @@ static const AVFilterPad atrim_outputs[] = {
         .name         = "default",
         .type         = AVMEDIA_TYPE_AUDIO,
     },
-    { NULL }
 };
 
-AVFilter ff_af_atrim = {
+const AVFilter ff_af_atrim = {
     .name        = "atrim",
     .description = NULL_IF_CONFIG_SMALL("Pick one continuous section from the input, drop the rest."),
     .init        = init,
     .priv_size   = sizeof(TrimContext),
     .priv_class  = &atrim_class,
-    .inputs      = atrim_inputs,
-    .outputs     = atrim_outputs,
+    FILTER_INPUTS(atrim_inputs),
+    FILTER_OUTPUTS(atrim_outputs),
 };
 #endif // CONFIG_ATRIM_FILTER

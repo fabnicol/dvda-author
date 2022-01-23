@@ -32,6 +32,7 @@ extern "C" {
 
 extern "C" {
 #include "libavformat/avformat.h"
+#include "libavutil/internal.h"
 #include "libavutil/imgutils.h"
 #include "avdevice.h"
 }
@@ -312,7 +313,8 @@ static void construct_cc(AVFormatContext *avctx, struct decklink_ctx *ctx,
     uint16_t *cdp_words;
     uint16_t len;
     uint8_t cc_count;
-    int size, ret, i;
+    size_t size;
+    int ret, i;
 
     const uint8_t *data = av_packet_get_side_data(pkt, AV_PKT_DATA_A53_CC, &size);
     if (!data)
@@ -436,7 +438,7 @@ static int decklink_write_video_packet(AVFormatContext *avctx, AVPacket *pkt)
     AVFrame *avframe = NULL, *tmp = (AVFrame *)pkt->data;
     AVPacket *avpacket = NULL;
     decklink_frame *frame;
-    buffercount_type buffered;
+    uint32_t buffered;
     HRESULT hr;
 
     if (st->codecpar->codec_id == AV_CODEC_ID_WRAPPED_AVFRAME) {
@@ -525,7 +527,7 @@ static int decklink_write_audio_packet(AVFormatContext *avctx, AVPacket *pkt)
     struct decklink_cctx *cctx = (struct decklink_cctx *)avctx->priv_data;
     struct decklink_ctx *ctx = (struct decklink_ctx *)cctx->ctx;
     int sample_count = pkt->size / (ctx->channels << 1);
-    buffercount_type buffered;
+    uint32_t buffered;
 
     ctx->dlo->GetBufferedAudioSampleFrameCount(&buffered);
     if (pkt->pts > 1 && !buffered)
@@ -557,6 +559,8 @@ av_cold int ff_decklink_write_header(AVFormatContext *avctx)
     ctx->list_formats = cctx->list_formats;
     ctx->preroll      = cctx->preroll;
     ctx->duplex_mode  = cctx->duplex_mode;
+    if (cctx->link > 0 && (unsigned int)cctx->link < FF_ARRAY_ELEMS(decklink_link_conf_map))
+        ctx->link = decklink_link_conf_map[cctx->link];
     cctx->ctx = ctx;
 #if CONFIG_LIBKLVANC
     if (klvanc_context_create(&ctx->vanc_ctx) < 0) {

@@ -280,28 +280,18 @@ static av_cold int channelmap_init(AVFilterContext *ctx)
 static int channelmap_query_formats(AVFilterContext *ctx)
 {
     ChannelMapContext *s = ctx->priv;
-    AVFilterChannelLayouts *layouts;
     AVFilterChannelLayouts *channel_layouts = NULL;
     int ret;
 
-    layouts = ff_all_channel_counts();
-    if (!layouts) {
-        ret = AVERROR(ENOMEM);
-        goto fail;
-    }
-    if ((ret = ff_add_channel_layout     (&channel_layouts, s->output_layout                    )) < 0 ||
-        (ret = ff_set_common_formats     (ctx             , ff_planar_sample_fmts()             )) < 0 ||
-        (ret = ff_set_common_samplerates (ctx             , ff_all_samplerates()                )) < 0 ||
-        (ret = ff_channel_layouts_ref    (layouts         , &ctx->inputs[0]->out_channel_layouts)) < 0 ||
-        (ret = ff_channel_layouts_ref    (channel_layouts , &ctx->outputs[0]->in_channel_layouts)) < 0)
-            goto fail;
+    if ((ret = ff_set_common_formats    (ctx,  ff_planar_sample_fmts()))  < 0 ||
+        (ret = ff_set_common_all_samplerates(ctx                              )) < 0 ||
+        (ret = ff_add_channel_layout(&channel_layouts, s->output_layout)) < 0 ||
+        (ret = ff_channel_layouts_ref(channel_layouts,
+                                      &ctx->outputs[0]->incfg.channel_layouts)) < 0)
+        return ret;
 
-    return 0;
-fail:
-    if (layouts)
-        av_freep(&layouts->channel_layouts);
-    av_freep(&layouts);
-    return ret;
+    return ff_channel_layouts_ref(ff_all_channel_counts(),
+                                  &ctx->inputs[0]->outcfg.channel_layouts);
 }
 
 static int channelmap_filter_frame(AVFilterLink *inlink, AVFrame *buf)
@@ -320,7 +310,7 @@ static int channelmap_filter_frame(AVFilterLink *inlink, AVFrame *buf)
     if (nch_out > nch_in) {
         if (nch_out > FF_ARRAY_ELEMS(buf->data)) {
             uint8_t **new_extended_data =
-                av_mallocz_array(nch_out, sizeof(*buf->extended_data));
+                av_calloc(nch_out, sizeof(*buf->extended_data));
             if (!new_extended_data) {
                 av_frame_free(&buf);
                 return AVERROR(ENOMEM);
@@ -393,11 +383,10 @@ static const AVFilterPad avfilter_af_channelmap_inputs[] = {
     {
         .name           = "default",
         .type           = AVMEDIA_TYPE_AUDIO,
+        .flags          = AVFILTERPAD_FLAG_NEEDS_WRITABLE,
         .filter_frame   = channelmap_filter_frame,
         .config_props   = channelmap_config_input,
-        .needs_writable = 1,
     },
-    { NULL }
 };
 
 static const AVFilterPad avfilter_af_channelmap_outputs[] = {
@@ -405,16 +394,15 @@ static const AVFilterPad avfilter_af_channelmap_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_AUDIO
     },
-    { NULL }
 };
 
-AVFilter ff_af_channelmap = {
+const AVFilter ff_af_channelmap = {
     .name          = "channelmap",
     .description   = NULL_IF_CONFIG_SMALL("Remap audio channels."),
     .init          = channelmap_init,
-    .query_formats = channelmap_query_formats,
     .priv_size     = sizeof(ChannelMapContext),
     .priv_class    = &channelmap_class,
-    .inputs        = avfilter_af_channelmap_inputs,
-    .outputs       = avfilter_af_channelmap_outputs,
+    FILTER_INPUTS(avfilter_af_channelmap_inputs),
+    FILTER_OUTPUTS(avfilter_af_channelmap_outputs),
+    FILTER_QUERY_FUNC(channelmap_query_formats),
 };

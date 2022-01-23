@@ -151,13 +151,13 @@ static int audio_get_device_list(AVFormatContext *h, AVDeviceInfoList *device_li
 }
 
 static const AVClass alsa_muxer_class = {
-    .class_name     = "ALSA muxer",
+    .class_name     = "ALSA outdev",
     .item_name      = av_default_item_name,
     .version        = LIBAVUTIL_VERSION_INT,
     .category       = AV_CLASS_CATEGORY_DEVICE_AUDIO_OUTPUT,
 };
 
-AVOutputFormat ff_alsa_muxer = {
+const AVOutputFormat ff_alsa_muxer = {
     .name           = "alsa",
     .long_name      = NULL_IF_CONFIG_SMALL("ALSA audio output"),
     .priv_data_size = sizeof(AlsaData),

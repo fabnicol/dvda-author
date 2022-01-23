@@ -95,7 +95,7 @@ static int voc_write_trailer(AVFormatContext *s)
     return 0;
 }
 
-AVOutputFormat ff_voc_muxer = {
+const AVOutputFormat ff_voc_muxer = {
     .name              = "voc",
     .long_name         = NULL_IF_CONFIG_SMALL("Creative Voice"),
     .mime_type         = "audio/x-voc",
@@ -106,6 +106,6 @@ AVOutputFormat ff_voc_muxer = {
     .write_header      = voc_write_header,
     .write_packet      = voc_write_packet,
     .write_trailer     = voc_write_trailer,
-    .codec_tag         = (const AVCodecTag* const []){ ff_voc_codec_tags, 0 },
+    .codec_tag         = ff_voc_codec_tags_list,
     .flags             = AVFMT_NOTIMESTAMPS,
 };

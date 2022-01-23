@@ -74,7 +74,7 @@ typedef struct LIBVMAFContext {
 static const AVOption libvmaf_options[] = {
     {"model_path",  "Set the model to be used for computing vmaf.",                     OFFSET(model_path), AV_OPT_TYPE_STRING, {.str="/usr/local/share/model/vmaf_v0.6.1.pkl"}, 0, 1, FLAGS},
     {"log_path",  "Set the file path to be used to store logs.",                        OFFSET(log_path), AV_OPT_TYPE_STRING, {.str=NULL}, 0, 1, FLAGS},
-    {"log_fmt",  "Set the format of the log (xml or json).",                            OFFSET(log_fmt), AV_OPT_TYPE_STRING, {.str=NULL}, 0, 1, FLAGS},
+    {"log_fmt",  "Set the format of the log (csv, json or xml).",                       OFFSET(log_fmt), AV_OPT_TYPE_STRING, {.str=NULL}, 0, 1, FLAGS},
     {"enable_transform",  "Enables transform for computing vmaf.",                      OFFSET(enable_transform), AV_OPT_TYPE_BOOL, {.i64=0}, 0, 1, FLAGS},
     {"phone_model",  "Invokes the phone model that will generate higher VMAF scores.",  OFFSET(phone_model), AV_OPT_TYPE_BOOL, {.i64=0}, 0, 1, FLAGS},
     {"psnr",  "Enables computing psnr along with vmaf.",                                OFFSET(psnr), AV_OPT_TYPE_BOOL, {.i64=0}, 0, 1, FLAGS},
@@ -110,6 +110,7 @@ FRAMESYNC_DEFINE_CLASS(libvmaf, LIBVMAFContext, fs);
         const type *main_ptr = (const type *) s->gmain->data[0];                \
         \
         float *ptr = ref_data;                                                  \
+        float factor = 1.f / (1 << (bits - 8));                                 \
         \
         int h = s->height;                                                      \
         int w = s->width;                                                       \
@@ -118,7 +119,7 @@ FRAMESYNC_DEFINE_CLASS(libvmaf, LIBVMAFContext, fs);
         \
         for (i = 0; i < h; i++) {                                               \
             for ( j = 0; j < w; j++) {                                          \
-                ptr[j] = (float)ref_ptr[j];                                     \
+                ptr[j] = ref_ptr[j] * factor;                                   \
             }                                                                   \
             ref_ptr += ref_stride / sizeof(*ref_ptr);                           \
             ptr += stride / sizeof(*ptr);                                       \
@@ -128,7 +129,7 @@ FRAMESYNC_DEFINE_CLASS(libvmaf, LIBVMAFContext, fs);
         \
         for (i = 0; i < h; i++) {                                               \
             for (j = 0; j < w; j++) {                                           \
-                ptr[j] = (float)main_ptr[j];                                    \
+                ptr[j] = main_ptr[j] * factor;                                  \
             }                                                                   \
             main_ptr += main_stride / sizeof(*main_ptr);                        \
             ptr += stride / sizeof(*ptr);                                       \
@@ -234,6 +235,9 @@ static av_cold int init(AVFilterContext *ctx)
 
     s->gref = av_frame_alloc();
     s->gmain = av_frame_alloc();
+    if (!s->gref || !s->gmain)
+        return AVERROR(ENOMEM);
+
     s->error = 0;
 
     s->vmaf_thread_created = 0;
@@ -244,20 +248,11 @@ static av_cold int init(AVFilterContext *ctx)
     return 0;
 }
 
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_YUV444P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUV420P,
-        AV_PIX_FMT_YUV444P10LE, AV_PIX_FMT_YUV422P10LE, AV_PIX_FMT_YUV420P10LE,
-        AV_PIX_FMT_NONE
-    };
-
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
-}
-
+static const enum AVPixelFormat pix_fmts[] = {
+    AV_PIX_FMT_YUV444P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUV420P,
+    AV_PIX_FMT_YUV444P10LE, AV_PIX_FMT_YUV422P10LE, AV_PIX_FMT_YUV420P10LE,
+    AV_PIX_FMT_NONE
+};
 
 static int config_input_ref(AVFilterLink *inlink)
 {
@@ -268,10 +263,6 @@ static int config_input_ref(AVFilterLink *inlink)
     if (ctx->inputs[0]->w != ctx->inputs[1]->w ||
         ctx->inputs[0]->h != ctx->inputs[1]->h) {
         av_log(ctx, AV_LOG_ERROR, "Width and height of input videos must be same.\n");
-        return AVERROR(EINVAL);
-    }
-    if (ctx->inputs[0]->format != ctx->inputs[1]->format) {
-        av_log(ctx, AV_LOG_ERROR, "Inputs must be of same pixel format.\n");
         return AVERROR(EINVAL);
     }
 
@@ -349,7 +340,6 @@ static const AVFilterPad libvmaf_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_input_ref,
     },
-    { NULL }
 };
 
 static const AVFilterPad libvmaf_outputs[] = {
@@ -358,19 +348,18 @@ static const AVFilterPad libvmaf_outputs[] = {
         .type          = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
-AVFilter ff_vf_libvmaf = {
+const AVFilter ff_vf_libvmaf = {
     .name          = "libvmaf",
     .description   = NULL_IF_CONFIG_SMALL("Calculate the VMAF between two video streams."),
     .preinit       = libvmaf_framesync_preinit,
     .init          = init,
     .uninit        = uninit,
-    .query_formats = query_formats,
     .activate      = activate,
     .priv_size     = sizeof(LIBVMAFContext),
     .priv_class    = &libvmaf_class,
-    .inputs        = libvmaf_inputs,
-    .outputs       = libvmaf_outputs,
+    FILTER_INPUTS(libvmaf_inputs),
+    FILTER_OUTPUTS(libvmaf_outputs),
+    FILTER_PIXFMTS_ARRAY(pix_fmts),
 };

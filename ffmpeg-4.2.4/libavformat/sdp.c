@@ -212,7 +212,7 @@ static char *extradata2psets(AVFormatContext *s, AVCodecParameters *par)
         p += strlen(p);
         r = r1;
     }
-    if (sps && sps_end - sps >= 4) {
+    if (sps && sps_end - sps >= 4 && p - psets <= MAX_PSET_SIZE - strlen(profile_string) - 7) {
         memcpy(p, profile_string, strlen(profile_string));
         p += strlen(p);
         ff_data_to_hex(p, sps + 1, 3, 0);
@@ -704,20 +704,6 @@ static char *sdp_write_media_attributes(char *buff, int size, AVStream *st, int 
         case AV_CODEC_ID_SPEEX:
             av_strlcatf(buff, size, "a=rtpmap:%d speex/%d\r\n",
                                      payload_type, p->sample_rate);
-            if (st->codec) {
-                const char *mode;
-                uint64_t vad_option;
-
-                if (st->codec->flags & AV_CODEC_FLAG_QSCALE)
-                      mode = "on";
-                else if (!av_opt_get_int(st->codec, "vad", AV_OPT_FLAG_ENCODING_PARAM, &vad_option) && vad_option)
-                      mode = "vad";
-                else
-                      mode = "off";
-
-                av_strlcatf(buff, size, "a=fmtp:%d vbr=%s\r\n",
-                                        payload_type, mode);
-            }
             break;
         case AV_CODEC_ID_OPUS:
             /* The opus RTP draft says that all opus streams MUST be declared

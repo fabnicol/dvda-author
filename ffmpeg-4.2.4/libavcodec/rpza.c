@@ -108,7 +108,7 @@ static int rpza_decode_stream(RpzaContext *s)
     if (total_blocks / 32 > bytestream2_get_bytes_left(&s->gb))
         return AVERROR_INVALIDDATA;
 
-    if ((ret = ff_reget_buffer(s->avctx, s->frame)) < 0)
+    if ((ret = ff_reget_buffer(s->avctx, s->frame, 0)) < 0)
         return ret;
     pixels = (uint16_t *)s->frame->data[0];
     stride = s->frame->linesize[0] / 2;
@@ -286,7 +286,7 @@ static av_cold int rpza_decode_end(AVCodecContext *avctx)
     return 0;
 }
 
-AVCodec ff_rpza_decoder = {
+const AVCodec ff_rpza_decoder = {
     .name           = "rpza",
     .long_name      = NULL_IF_CONFIG_SMALL("QuickTime video (RPZA)"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -296,4 +296,5 @@ AVCodec ff_rpza_decoder = {
     .close          = rpza_decode_end,
     .decode         = rpza_decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

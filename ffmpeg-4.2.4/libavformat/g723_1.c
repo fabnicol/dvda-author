@@ -69,14 +69,13 @@ static int g723_1_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     ret = avio_read(s->pb, pkt->data + 1, size - 1);
     if (ret < size - 1) {
-        av_packet_unref(pkt);
         return ret < 0 ? ret : AVERROR_EOF;
     }
 
     return pkt->size;
 }
 
-AVInputFormat ff_g723_1_demuxer = {
+const AVInputFormat ff_g723_1_demuxer = {
     .name        = "g723_1",
     .long_name   = NULL_IF_CONFIG_SMALL("G.723.1"),
     .read_header = g723_1_init,

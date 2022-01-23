@@ -30,6 +30,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "libavutil/channel_layout.h"
 #include "avcodec.h"
 #include "internal.h"
 #include "get_bits.h"
@@ -1477,13 +1478,14 @@ static av_cold int ilbc_decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-AVCodec ff_ilbc_decoder = {
+const AVCodec ff_ilbc_decoder = {
     .name           = "ilbc",
     .long_name      = NULL_IF_CONFIG_SMALL("iLBC (Internet Low Bitrate Codec)"),
     .type           = AVMEDIA_TYPE_AUDIO,
     .id             = AV_CODEC_ID_ILBC,
     .init           = ilbc_decode_init,
     .decode         = ilbc_decode_frame,
-    .capabilities   = AV_CODEC_CAP_DR1,
+    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
     .priv_data_size = sizeof(ILBCContext),
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

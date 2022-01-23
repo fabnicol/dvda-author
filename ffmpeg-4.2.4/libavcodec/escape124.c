@@ -252,7 +252,7 @@ static int escape124_decode_frame(AVCodecContext *avctx,
             if (i == 2) {
                 // This codebook can be cut off at places other than
                 // powers of 2, leaving some of the entries undefined.
-                cb_size = get_bits_long(&gb, 20);
+                cb_size = get_bits(&gb, 20);
                 if (!cb_size) {
                     av_log(avctx, AV_LOG_ERROR, "Invalid codebook size 0.\n");
                     return AVERROR_INVALIDDATA;
@@ -376,7 +376,7 @@ static int escape124_decode_frame(AVCodecContext *avctx,
 }
 
 
-AVCodec ff_escape124_decoder = {
+const AVCodec ff_escape124_decoder = {
     .name           = "escape124",
     .long_name      = NULL_IF_CONFIG_SMALL("Escape 124"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -386,4 +386,5 @@ AVCodec ff_escape124_decoder = {
     .close          = escape124_decode_close,
     .decode         = escape124_decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

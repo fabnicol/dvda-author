@@ -90,7 +90,7 @@ static int sox_read_header(AVFormatContext *s)
                sample_rate_frac);
 
     if ((header_size + 4) & 7 || header_size < SOX_FIXED_HDR + comment_size
-        || st->codecpar->channels > 65535) /* Reserve top 16 bits */ {
+        || st->codecpar->channels > 65535 || st->codecpar->channels <= 0) /* Reserve top 16 bits */ {
         av_log(s, AV_LOG_ERROR, "invalid header\n");
         return AVERROR_INVALIDDATA;
     }
@@ -124,7 +124,7 @@ static int sox_read_header(AVFormatContext *s)
     return 0;
 }
 
-AVInputFormat ff_sox_demuxer = {
+const AVInputFormat ff_sox_demuxer = {
     .name           = "sox",
     .long_name      = NULL_IF_CONFIG_SMALL("SoX native"),
     .read_probe     = sox_probe,

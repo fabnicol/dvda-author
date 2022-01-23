@@ -241,14 +241,14 @@ static const AVOption options[] = {
 };
 
 static const AVClass class = {
-    .class_name = "openal",
+    .class_name = "openal indev",
     .item_name = av_default_item_name,
     .option = options,
     .version = LIBAVUTIL_VERSION_INT,
     .category = AV_CLASS_CATEGORY_DEVICE_AUDIO_INPUT,
 };
 
-AVInputFormat ff_openal_demuxer = {
+const AVInputFormat ff_openal_demuxer = {
     .name = "openal",
     .long_name = NULL_IF_CONFIG_SMALL("OpenAL audio capture device"),
     .priv_data_size = sizeof(al_data),

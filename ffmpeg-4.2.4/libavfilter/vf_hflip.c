@@ -46,10 +46,10 @@ AVFILTER_DEFINE_CLASS(hflip);
 static int query_formats(AVFilterContext *ctx)
 {
     AVFilterFormats *pix_fmts = NULL;
+    const AVPixFmtDescriptor *desc;
     int fmt, ret;
 
-    for (fmt = 0; av_pix_fmt_desc_get(fmt); fmt++) {
-        const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(fmt);
+    for (fmt = 0; desc = av_pix_fmt_desc_get(fmt); fmt++) {
         if (!(desc->flags & AV_PIX_FMT_FLAG_HWACCEL ||
               desc->flags & AV_PIX_FMT_FLAG_BITSTREAM ||
               (desc->log2_chroma_w != desc->log2_chroma_h &&
@@ -138,6 +138,7 @@ static int config_props(AVFilterLink *inlink)
     s->planewidth[1]  = s->planewidth[2]  = AV_CEIL_RSHIFT(inlink->w, hsub);
     s->planeheight[0] = s->planeheight[3] = inlink->h;
     s->planeheight[1] = s->planeheight[2] = AV_CEIL_RSHIFT(inlink->h, vsub);
+    s->bayer_plus1    = !!(pix_desc->flags & AV_PIX_FMT_FLAG_BAYER) + 1;
 
     nb_planes = av_pix_fmt_count_planes(inlink->format);
 
@@ -149,6 +150,7 @@ int ff_hflip_init(FlipContext *s, int step[4], int nb_planes)
     int i;
 
     for (i = 0; i < nb_planes; i++) {
+        step[i] *= s->bayer_plus1;
         switch (step[i]) {
         case 1: s->flip_line[i] = hflip_byte_c;  break;
         case 2: s->flip_line[i] = hflip_short_c; break;
@@ -180,7 +182,7 @@ static int filter_slice(AVFilterContext *ctx, void *arg, int job, int nb_jobs)
     int i, plane, step;
 
     for (plane = 0; plane < 4 && in->data[plane] && in->linesize[plane]; plane++) {
-        const int width  = s->planewidth[plane];
+        const int width  = s->planewidth[plane] / s->bayer_plus1;
         const int height = s->planeheight[plane];
         const int start = (height *  job   ) / nb_jobs;
         const int end   = (height * (job+1)) / nb_jobs;
@@ -219,7 +221,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         memcpy(out->data[1], in->data[1], AVPALETTE_SIZE);
 
     td.in = in, td.out = out;
-    ctx->internal->execute(ctx, filter_slice, &td, NULL, FFMIN(outlink->h, ff_filter_get_nb_threads(ctx)));
+    ff_filter_execute(ctx, filter_slice, &td, NULL,
+                      FFMIN(outlink->h, ff_filter_get_nb_threads(ctx)));
 
     av_frame_free(&in);
     return ff_filter_frame(outlink, out);
@@ -232,7 +235,6 @@ static const AVFilterPad avfilter_vf_hflip_inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_props,
     },
-    { NULL }
 };
 
 static const AVFilterPad avfilter_vf_hflip_outputs[] = {
@@ -240,16 +242,15 @@ static const AVFilterPad avfilter_vf_hflip_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
-AVFilter ff_vf_hflip = {
+const AVFilter ff_vf_hflip = {
     .name          = "hflip",
     .description   = NULL_IF_CONFIG_SMALL("Horizontally flip the input video."),
     .priv_size     = sizeof(FlipContext),
     .priv_class    = &hflip_class,
-    .query_formats = query_formats,
-    .inputs        = avfilter_vf_hflip_inputs,
-    .outputs       = avfilter_vf_hflip_outputs,
+    FILTER_INPUTS(avfilter_vf_hflip_inputs),
+    FILTER_OUTPUTS(avfilter_vf_hflip_outputs),
+    FILTER_QUERY_FUNC(query_formats),
     .flags         = AVFILTER_FLAG_SLICE_THREADS | AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };

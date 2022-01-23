@@ -29,8 +29,6 @@
 
 #include "config.h"
 #include "common.h"
-#include "mem.h"
-#include "avassert.h"
 #include "avstring.h"
 #include "bprint.h"
 
@@ -113,7 +111,7 @@ static int ffshgetc(FFFILE *f)
 }
 
 #define shlim(f, lim) ffshlim((f), (lim))
-#define shgetc(f) (((f)->rpos != (f)->shend) ? *(f)->rpos++ : ffshgetc(f))
+#define shgetc(f) (((f)->rpos < (f)->shend) ? *(f)->rpos++ : ffshgetc(f))
 #define shunget(f) ((f)->shend ? (void)(f)->rpos-- : (void)0)
 
 static const unsigned char table[] = { -1,
