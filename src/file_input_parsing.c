@@ -41,127 +41,127 @@ static int check_ignored_extension(void *);
 
 
 
-int read_tracks(char  *full_path, uint8_t *ntracks, char * parent_directory, char* filename, uint8_t ngroups_scan, globalData* globals)
+int read_tracks(char  *full_path, uint8_t *ntracks, char *parent_directory, char *filename, uint8_t ngroups_scan, globalData *globals)
 {
 
-    if (ntracks[ngroups_scan] < MAX_GROUP_ITEMS)
+  if (ntracks[ngroups_scan] < MAX_GROUP_ITEMS)
     {
 
-        if (parent_directory != NULL)
+      if (parent_directory != NULL)
         {
 
-            snprintf(full_path, CHAR_BUFSIZ, "%s%s%s%s%s", globals->settings.indir, SEPARATOR, parent_directory,SEPARATOR, filename);
+          snprintf(full_path, CHAR_BUFSIZ, "%s%s%s%s%s", globals->settings.indir, SEPARATOR, parent_directory, SEPARATOR, filename);
         }
-        else
-            STRING_WRITE_CHAR_BUFSIZ(full_path, "%s", filename)
+      else
+        STRING_WRITE_CHAR_BUFSIZ(full_path, "%s", filename)
 
-        }
-    else
+      }
+  else
     {
-        foutput(MSG_TAG "Error: Too many input files specified - group %d, track %d\n",ngroups_scan,ntracks[ngroups_scan]);
-        clean_exit(EXIT_SUCCESS, globals);
+      foutput(MSG_TAG "Error: Too many input files specified - group %d, track %d\n", ngroups_scan, ntracks[ngroups_scan]);
+      clean_exit(EXIT_SUCCESS, globals);
     }
 
-    return(ntracks[ngroups_scan]);
+  return (ntracks[ngroups_scan]);
 }
 
 
 
 parse_t
-parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fileinfo_t **files, globalData* globals)
+parse_directory(DIR *dir,  uint8_t *ntracks, uint8_t n_g_groups, int action, fileinfo_t **files, globalData *globals)
 {
 
-    int ngroups_scan=0, ngroups=0, control=0;
-    struct dirent *rootdirent;
+  int ngroups_scan = 0, ngroups = 0, control = 0;
+  struct dirent *rootdirent;
 
-    parse_t audiodir;
+  parse_t audiodir;
 
-    char gnames[MAX_GROUPS][CHAR_BUFSIZ];
-    int totng;
-    int ng = 0;
+  char gnames[MAX_GROUPS][CHAR_BUFSIZ];
+  int totng;
+  int ng = 0;
 
-    if (globals->debugging) foutput("%s\n", INF "Parsing audio input directory");
+  if (globals->debugging) foutput("%s\n", INF "Parsing audio input directory");
 
 
-    while ((rootdirent=readdir(dir) )!= NULL)
+  while ((rootdirent = readdir(dir)) != NULL)
     {
-        if (rootdirent->d_name[0] == '.') continue;
+      if (rootdirent->d_name[0] == '.') continue;
 
-        if (ng > (MAX_GROUPS-1))
+      if (ng > (MAX_GROUPS - 1))
         {
-            foutput("%s\n", MSG_TAG "Warning: Too many groups ( > 9 ) specified in directory, rest ignored.");
-            break;
+          foutput("%s\n", MSG_TAG "Warning: Too many groups ( > 9 ) specified in directory, rest ignored.");
+          break;
         }
-        strcpy(gnames[ng], rootdirent->d_name);
-        ng++;
+      strcpy(gnames[ng], rootdirent->d_name);
+      ng++;
     }
 
-    if (ng > 1)
+  if (ng > 1)
     {
-        qsort(gnames,
-              (size_t) ng,
-              (size_t) CHAR_BUFSIZ,
-              (int (*) (const void *, const void *)) strcmp);
+      qsort(gnames,
+            (size_t) ng,
+            (size_t) CHAR_BUFSIZ,
+            (int (*)(const void *, const void *)) strcmp);
     }
 
-    totng = ng;
-    ng = 0;
+  totng = ng;
+  ng = 0;
 
-    while (ng < totng)
+  while (ng < totng)
     {
-        /* ngroups_scan is the rank of the parsed group read from the user's index in the directory name */
+      /* ngroups_scan is the rank of the parsed group read from the user's index in the directory name */
 
-        ngroups_scan= atoi(gnames[ng]+1);
+      ngroups_scan = atoi(gnames[ng] + 1);
 
-        if ((ngroups_scan > MAX_GROUPS) || (ngroups_scan < 1))
+      if ((ngroups_scan > MAX_GROUPS) || (ngroups_scan < 1))
         {
-            EXIT_ON_RUNTIME_ERROR_VERBOSE( "Subdirectories must be labelled ljm, with l, m any letters and j a number of 1 - 9")
+          EXIT_ON_RUNTIME_ERROR_VERBOSE("Subdirectories must be labelled ljm, with l, m any letters and j a number of 1 - 9")
         }
 
-        change_directory(gnames[ng], globals);
+      change_directory(gnames[ng], globals);
 
-        DIR *subdir;
+      DIR *subdir;
 
-        if ((subdir = opendir(".")) == NULL)
+      if ((subdir = opendir(".")) == NULL)
         {
-            EXIT_ON_RUNTIME_ERROR_VERBOSE( "Input directory could not be opened")
+          EXIT_ON_RUNTIME_ERROR_VERBOSE("Input directory could not be opened")
         }
 
-        struct dirent * subdirent;
-        ++control;
+      struct dirent *subdirent;
+      ++control;
 
-        /* Memory allocation will be based on user input ngroups = Max {ngroups_scan}  */
+      /* Memory allocation will be based on user input ngroups = Max {ngroups_scan}  */
 
-        ngroups = MAX(ngroups_scan, ngroups);
+      ngroups = MAX(ngroups_scan, ngroups);
 
-        ntracks[n_g_groups+ngroups_scan-1]=0;
+      ntracks[n_g_groups + ngroups_scan - 1] = 0;
 
-        char tnames[MAX_GROUP_ITEMS][CHAR_BUFSIZ];
-        int totnt;
-        int nt = 0;
+      char tnames[MAX_GROUP_ITEMS][CHAR_BUFSIZ];
+      int totnt;
+      int nt = 0;
 
-        while ((subdirent = readdir(subdir) )!= NULL)
+      while ((subdirent = readdir(subdir)) != NULL)
         {
-            if (subdirent->d_name[0] == '.') continue;
-            /* filter extensions, which are known not to be processed in this context */
-            if (check_ignored_extension(subdirent->d_name) == 1) continue;
+          if (subdirent->d_name[0] == '.') continue;
+          /* filter extensions, which are known not to be processed in this context */
+          if (check_ignored_extension(subdirent->d_name) == 1) continue;
 
-            if (nt > (MAX_GROUP_ITEMS-1))
+          if (nt > (MAX_GROUP_ITEMS - 1))
             {
-                foutput(MSG_TAG "Warning: Too many input files (>99) specified in group %d, rest ignored.\n",ngroups_scan);
-                break;
+              foutput(MSG_TAG "Warning: Too many input files (>99) specified in group %d, rest ignored.\n", ngroups_scan);
+              break;
             }
 
-            strcpy(tnames[nt], subdirent->d_name);
-            ++nt;
+          strcpy(tnames[nt], subdirent->d_name);
+          ++nt;
         }
 
-        if ((action == READTRACKS) && (nt))
-            qsort(tnames, (size_t) nt, (size_t) CHAR_BUFSIZ,
-                  (int (*) (const void *, const void *)) strcmp);
+      if ((action == READTRACKS) && (nt))
+        qsort(tnames, (size_t) nt, (size_t) CHAR_BUFSIZ,
+              (int (*)(const void *, const void *)) strcmp);
 
-        totnt = nt - 1;
-        nt = 0;
+      totnt = nt - 1;
+      nt = 0;
 
 //        FILE* cgafile;
 //        //bool read_cga_file=0;
@@ -173,36 +173,36 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
 //        }
 //        else
 //        {
-            if (globals->debugging) foutput("%s", MSG_TAG "Automatic channel assignment.\n");
+      if (globals->debugging) foutput("%s", MSG_TAG "Automatic channel assignment.\n");
 //        }
 
 
-        do
+      do
         {
-            if (nt > totnt)
+          if (nt > totnt)
             {
-                closedir(subdir);
-                change_directory(globals->settings.indir, globals);
-                break;
+              closedir(subdir);
+              change_directory(globals->settings.indir, globals);
+              break;
             }
 
-            /* assignment of values is based on ngroups_scan */
+          /* assignment of values is based on ngroups_scan */
 
-            ++ntracks[n_g_groups+ngroups_scan-1];
+          ++ntracks[n_g_groups + ngroups_scan - 1];
 
-            if (action == READTRACKS)
+          if (action == READTRACKS)
             {
-                char buf[CHAR_BUFSIZ];
-                memset(buf, 0, CHAR_BUFSIZ);
+              char buf[CHAR_BUFSIZ];
+              memset(buf, 0, CHAR_BUFSIZ);
 
-                // builds trak names
-                read_tracks(buf, ntracks, gnames[ng], tnames[nt], ngroups_scan, globals);
+              // builds trak names
+              read_tracks(buf, ntracks, gnames[ng], tnames[nt], ngroups_scan, globals);
 
-                if (globals->debugging)
-                    foutput(INF "Copying directory files[%d][%d]\n", n_g_groups+ngroups_scan-1, ntracks[n_g_groups+ngroups_scan-1]-1);
+              if (globals->debugging)
+                foutput(INF "Copying directory files[%d][%d]\n", n_g_groups + ngroups_scan - 1, ntracks[n_g_groups + ngroups_scan - 1] - 1);
 
-                // reads in filenames
-                memmove(files[n_g_groups+ngroups_scan-1][ntracks[n_g_groups+ngroups_scan-1]-1].filename, buf, CHAR_BUFSIZ);
+              // reads in filenames
+              memmove(files[n_g_groups + ngroups_scan - 1][ntracks[n_g_groups + ngroups_scan - 1] - 1].filename, buf, CHAR_BUFSIZ);
 
 //                if (read_cga_file)
 //                {
@@ -235,116 +235,116 @@ parse_directory(DIR* dir,  uint8_t* ntracks, uint8_t n_g_groups, int action, fil
 
             }
 
-            ++nt;
+          ++nt;
         }
 
-        while (1);
+      while (1);
 
-        ++ng;
+      ++ng;
     }
 
-    if (action != READTRACKS) foutput(MSG_TAG "%d groups/subdirectories were parsed; ngroups=%d\n", control, ngroups);
+  if (action != READTRACKS) foutput(MSG_TAG "%d groups/subdirectories were parsed; ngroups=%d\n", control, ngroups);
 
-    /* Controlling for contiguousness of ngroups_scan values; a crash may occur if not ensured; letting it go however */
+  /* Controlling for contiguousness of ngroups_scan values; a crash may occur if not ensured; letting it go however */
 
-    /* with sort, the above comment and the next code could be removed. */
-    if (ngroups != control) foutput("%s", WAR "Critical -- Groups are not labelled contiguously (g1, ... ,gn).\n");
+  /* with sort, the above comment and the next code could be removed. */
+  if (ngroups != control) foutput("%s", WAR "Critical -- Groups are not labelled contiguously (g1, ... ,gn).\n");
 
-    audiodir.ngroups=ngroups+n_g_groups;
-    audiodir.ntracks=ntracks;
+  audiodir.ngroups = ngroups + n_g_groups;
+  audiodir.ntracks = ntracks;
 
-    return audiodir;
+  return audiodir;
 }
 
 static int check_ignored_extension(void *path)
 {
-    char *ign_extension[] =
-    {
-        ".cdindex",
-        ".cddb",
-        ".inf",
-        ".asc",
-        ".txt"
-        ".cga",
-    };
+  char *ign_extension[] =
+  {
+    ".cdindex",
+    ".cddb",
+    ".inf",
+    ".asc",
+    ".txt"
+    ".cga",
+  };
 #define NUMCHAR (sizeof(ign_extension[1]))
 #define NUMEXT (sizeof ign_extension / NUMCHAR)
 
-    void *dotloc;
-    int num = NUMEXT;
+  void *dotloc;
+  int num = NUMEXT;
 
-    /* if no extension, ignored ! */
-    if ((dotloc =  strrchr(path, '.')) == NULL) return (1);
+  /* if no extension, ignored ! */
+  if ((dotloc =  strrchr(path, '.')) == NULL) return (1);
 
-    while (num--)
+  while (num--)
     {
-        if (strncmp(dotloc, ign_extension[num], NUMCHAR) == 0)
-            return (1);
+      if (strncmp(dotloc, ign_extension[num], NUMCHAR) == 0)
+        return (1);
     }
 
-    return (0);
+  return (0);
 }
 
 #if 0 // DEPRECATED
-int parse_disk(const DIR* dir, mode_t mode, extractlist  *extract)
+int parse_disk(const DIR *dir, mode_t mode, extractlist  *extract)
 {
-    char ngroups_scan=0;
-    struct dirent *rootdirent;
+  char ngroups_scan = 0;
+  struct dirent *rootdirent;
 
-    if (globals->debugging && ! globals->nooutput)
-        foutput(INF "Extracting to %s\n",
-                globals->settings.outdir);
+  if (globals->debugging && ! globals->nooutput)
+    foutput(INF "Extracting to %s\n",
+            globals->settings.outdir);
 
-    globals->fixwav_prepend = true;
+  globals->fixwav_prepend = true;
 
-    while (true)
+  while (true)
     {
-        rootdirent = readdir(dir);
-        if (rootdirent == NULL)
-            break;
-        if (rootdirent->d_name[0] == '.') continue;
+      rootdirent = readdir(dir);
+      if (rootdirent == NULL)
+        break;
+      if (rootdirent->d_name[0] == '.') continue;
 
-        char *d_name_duplicate = strdup(rootdirent->d_name);
+      char *d_name_duplicate = strdup(rootdirent->d_name);
 
-        // duplicating is necessary as strtok alters its first argument
+      // duplicating is necessary as strtok alters its first argument
 
-        if (d_name_duplicate == NULL)
+      if (d_name_duplicate == NULL)
         {
-            EXIT_ON_RUNTIME_ERROR_VERBOSE( "strdup error while parsing disk")
+          EXIT_ON_RUNTIME_ERROR_VERBOSE("strdup error while parsing disk")
         }
 
-        // filenames must end in "_0.IFO" and begin in "ATS_"
+      // filenames must end in "_0.IFO" and begin in "ATS_"
 
-        if (strcmp(strtok(d_name_duplicate , "_"), "ATS"))
+      if (strcmp(strtok(d_name_duplicate, "_"), "ATS"))
         continue;
 
-        /* ngroups_scan is XX in ATS_XX_0.IFO  */
+      /* ngroups_scan is XX in ATS_XX_0.IFO  */
 
-        char buffer[3]= {0, 0, 0};
+      char buffer[3] = {0, 0, 0};
 
-        memcpy(buffer, strtok(NULL , "_"), 3);
-        ngroups_scan = (char) atoi(buffer);
+      memcpy(buffer, strtok(NULL, "_"), 3);
+      ngroups_scan = (char) atoi(buffer);
 
-        // does not extract when an extract list (!=NULL) is given and buffer != a list member.
+      // does not extract when an extract list (!=NULL) is given and buffer != a list member.
 
-        if (ngroups_scan < 1  || ngroups_scan > 9)
+      if (ngroups_scan < 1  || ngroups_scan > 9)
         {
-           EXIT_ON_RUNTIME_ERROR_VERBOSE("Erreur de nommage des fichiers ATS :  le premier chiffre doit être compris entre 01 et 09.")
+          EXIT_ON_RUNTIME_ERROR_VERBOSE("Erreur de nommage des fichiers ATS :  le premier chiffre doit être compris entre 01 et 09.")
         }
 
-        if (extract->extracttitleset[ngroups_scan - 1] != 1)
+      if (extract->extracttitleset[ngroups_scan - 1] != 1)
         continue;
 
-        // Selecting IFO files only
+      // Selecting IFO files only
 
-        if (strcmp(strtok(NULL , "_"), "0.IFO"))
+      if (strcmp(strtok(NULL, "_"), "0.IFO"))
         continue;
 
-        FREE(d_name_duplicate)
+      FREE(d_name_duplicate)
 
-        char  mesg[11] = "Extracting";
+      char  mesg[11] = "Extracting";
 
-        if (globals->debugging && ! globals->nooutput)
+      if (globals->debugging && ! globals->nooutput)
         {
           foutput(INF "%s%s%s%s",
                   mesg,
@@ -353,46 +353,46 @@ int parse_disk(const DIR* dir, mode_t mode, extractlist  *extract)
                   " ...\n");
         }
 
-        char output_buf[strlen(globals->settings.outdir) + 3 + 1];
+      char output_buf[strlen(globals->settings.outdir) + 3 + 1];
 
-        STRING_WRITE_CHAR_BUFSIZ(output_buf,
-                                 "%s%s%d",
-                                 globals->settings.outdir,
-                                 "/g",
-                                 ngroups_scan)
+      STRING_WRITE_CHAR_BUFSIZ(output_buf,
+                               "%s%s%d",
+                               globals->settings.outdir,
+                               "/g",
+                               ngroups_scan)
 
-        change_directory(globals->settings.workdir);
+      change_directory(globals->settings.workdir);
 
-        if (! globals->nooutput)
+      if (! globals->nooutput)
         {
-            secure_mkdir(output_buf, mode);
+          secure_mkdir(output_buf, mode);
         }
 
-        if (globals->debugging && ! globals->nooutput)
+      if (globals->debugging && ! globals->nooutput)
         {
-            foutput(INF "Extracting to directory %s ...\n",
-                    output_buf);
+          foutput(INF "Extracting to directory %s ...\n",
+                  output_buf);
         }
 
-        if (ats2wav(ngroups_scan,
-                    dir,
-                    output_buf,
-                    extract) == EXIT_SUCCESS)
+      if (ats2wav(ngroups_scan,
+                  dir,
+                  output_buf,
+                  extract) == EXIT_SUCCESS)
         {
-            if  (globals->debugging)
-                foutput("%s\n",
-                        INF "Extraction completed.");
+          if (globals->debugging)
+            foutput("%s\n",
+                    INF "Extraction completed.");
         }
-        else
+      else
         {
-            foutput(INF "Error extracting audio in titleset %d\n",
-                    ngroups_scan);
+          foutput(INF "Error extracting audio in titleset %d\n",
+                  ngroups_scan);
 
-            continue;
+          continue;
         }
     }
 
-    closedir(dir);
-    return ngroups_scan;
+  closedir(dir);
+  return ngroups_scan;
 }
 #endif

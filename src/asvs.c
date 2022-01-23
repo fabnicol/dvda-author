@@ -126,10 +126,10 @@ int create_asvs(char *audiotsdir,
   int loop = 0;
   int index = 0;
 
-  while((titleset < naudio_groups) && (title < numtitles[titleset]))
+  while ((titleset < naudio_groups) && (title < numtitles[titleset]))
     {
       npics = ntitlepics[titleset][title];
-      if(npics)
+      if (npics)
         {
           asvs[k] = npics;
           k += 2;
@@ -137,16 +137,16 @@ int create_asvs(char *audiotsdir,
           pict += npics;
           k += 2;
           uint32_copy(&asvs[k], totpicsectors);
-          for(j = 0; j < npics; ++j)
+          for (j = 0; j < npics; ++j)
             {
-              if(j)
+              if (j)
                 uint16_copy(&asvs[t], totpicsectors);
               t += 2;
 
               //pict [] is 0-based: pict[0] for first track
 
               totpicsectors += img->stillpicvobsize[index + j];
-              if(totpicsectors > 1024)
+              if (totpicsectors > 1024)
                 foutput(ERR "Exceeding stillpic buffer limit (2 MB) \
 at pict #%d.\n", j);
             }
@@ -157,7 +157,7 @@ at pict #%d.\n", j);
 
       ++title;
 
-      if(title == numtitles[titleset])
+      if (title == numtitles[titleset])
         {
           ++titleset;
           title = 0;
