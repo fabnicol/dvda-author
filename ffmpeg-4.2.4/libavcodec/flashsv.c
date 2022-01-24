@@ -126,7 +126,7 @@ static av_cold int flashsv_decode_init(AVCodecContext *avctx)
     zret = inflateInit(&s->zstream);
     if (zret != Z_OK) {
         av_log(avctx, AV_LOG_ERROR, "Inflate init error: %d\n", zret);
-        return AVERROR_EXTERNAL;
+        return 1;
     }
     avctx->pix_fmt = AV_PIX_FMT_BGR24;
 
@@ -179,7 +179,7 @@ static int flashsv2_prime(FlashSVContext *s, uint8_t *src, int size)
     return 0;
 }
 
-static int flashsv_decode_block(AVCodecContext *avctx, const AVPacket *avpkt,
+static int flashsv_decode_block(AVCodecContext *avctx, AVPacket *avpkt,
                                 GetBitContext *gb, int block_size,
                                 int width, int height, int x_pos, int y_pos,
                                 int blk_idx)
@@ -368,7 +368,7 @@ static int flashsv_decode_frame(AVCodecContext *avctx, void *data,
             s->image_width, s->image_height, s->block_width, s->block_height,
             h_blocks, v_blocks, h_part, v_part);
 
-    if ((ret = ff_reget_buffer(avctx, s->frame, 0)) < 0)
+    if ((ret = ff_reget_buffer(avctx, s->frame)) < 0)
         return ret;
 
     /* loop over all block columns */
@@ -507,7 +507,7 @@ static int flashsv_decode_frame(AVCodecContext *avctx, void *data,
 }
 
 #if CONFIG_FLASHSV_DECODER
-const AVCodec ff_flashsv_decoder = {
+AVCodec ff_flashsv_decoder = {
     .name           = "flashsv",
     .long_name      = NULL_IF_CONFIG_SMALL("Flash Screen Video v1"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -517,7 +517,7 @@ const AVCodec ff_flashsv_decoder = {
     .close          = flashsv_decode_end,
     .decode         = flashsv_decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
     .pix_fmts       = (const enum AVPixelFormat[]) { AV_PIX_FMT_BGR24, AV_PIX_FMT_NONE },
 };
 #endif /* CONFIG_FLASHSV_DECODER */
@@ -575,7 +575,7 @@ static av_cold int flashsv2_decode_end(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_flashsv2_decoder = {
+AVCodec ff_flashsv2_decoder = {
     .name           = "flashsv2",
     .long_name      = NULL_IF_CONFIG_SMALL("Flash Screen Video v2"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -585,7 +585,7 @@ const AVCodec ff_flashsv2_decoder = {
     .close          = flashsv2_decode_end,
     .decode         = flashsv_decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
     .pix_fmts       = (const enum AVPixelFormat[]) { AV_PIX_FMT_BGR24, AV_PIX_FMT_NONE },
 };
 #endif /* CONFIG_FLASHSV2_DECODER */

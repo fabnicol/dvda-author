@@ -18,7 +18,9 @@
 
 #include <string.h>
 
+#include "libavutil/avassert.h"
 #include "libavutil/common.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 
@@ -237,7 +239,7 @@ static int deint_vaapi_filter_frame(AVFilterLink *inlink, AVFrame *input_frame)
 
         err = av_frame_copy_props(output_frame, input_frame);
         if (err < 0)
-            goto fail;
+            return err;
 
         err = ff_vaapi_vpp_init_params(avctx, &params,
                                        input_frame, output_frame);
@@ -369,6 +371,7 @@ static const AVFilterPad deint_vaapi_inputs[] = {
         .filter_frame = &deint_vaapi_filter_frame,
         .config_props = &ff_vaapi_vpp_config_input,
     },
+    { NULL }
 };
 
 static const AVFilterPad deint_vaapi_outputs[] = {
@@ -377,17 +380,18 @@ static const AVFilterPad deint_vaapi_outputs[] = {
         .type = AVMEDIA_TYPE_VIDEO,
         .config_props = &deint_vaapi_config_output,
     },
+    { NULL }
 };
 
-const AVFilter ff_vf_deinterlace_vaapi = {
+AVFilter ff_vf_deinterlace_vaapi = {
     .name           = "deinterlace_vaapi",
     .description    = NULL_IF_CONFIG_SMALL("Deinterlacing of VAAPI surfaces"),
     .priv_size      = sizeof(DeintVAAPIContext),
     .init           = &deint_vaapi_init,
     .uninit         = &ff_vaapi_vpp_ctx_uninit,
-    FILTER_INPUTS(deint_vaapi_inputs),
-    FILTER_OUTPUTS(deint_vaapi_outputs),
-    FILTER_QUERY_FUNC(&ff_vaapi_vpp_query_formats),
+    .query_formats  = &ff_vaapi_vpp_query_formats,
+    .inputs         = deint_vaapi_inputs,
+    .outputs        = deint_vaapi_outputs,
     .priv_class     = &deint_vaapi_class,
     .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 };

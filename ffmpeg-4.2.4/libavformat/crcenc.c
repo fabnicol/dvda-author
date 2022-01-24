@@ -48,13 +48,15 @@ static int crc_write_packet(struct AVFormatContext *s, AVPacket *pkt)
 static int crc_write_trailer(struct AVFormatContext *s)
 {
     CRCState *crc = s->priv_data;
+    char buf[64];
 
-    avio_printf(s->pb, "CRC=0x%08"PRIx32"\n", crc->crcval);
+    snprintf(buf, sizeof(buf), "CRC=0x%08"PRIx32"\n", crc->crcval);
+    avio_write(s->pb, buf, strlen(buf));
 
     return 0;
 }
 
-const AVOutputFormat ff_crc_muxer = {
+AVOutputFormat ff_crc_muxer = {
     .name              = "crc",
     .long_name         = NULL_IF_CONFIG_SMALL("CRC testing"),
     .priv_data_size    = sizeof(CRCState),

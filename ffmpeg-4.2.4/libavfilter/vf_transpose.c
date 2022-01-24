@@ -40,6 +40,14 @@
 #include "video.h"
 #include "transpose.h"
 
+typedef struct TransVtable {
+    void (*transpose_8x8)(uint8_t *src, ptrdiff_t src_linesize,
+                          uint8_t *dst, ptrdiff_t dst_linesize);
+    void (*transpose_block)(uint8_t *src, ptrdiff_t src_linesize,
+                            uint8_t *dst, ptrdiff_t dst_linesize,
+                            int w, int h);
+} TransVtable;
+
 typedef struct TransContext {
     const AVClass *class;
     int hsub, vsub;
@@ -55,10 +63,10 @@ typedef struct TransContext {
 static int query_formats(AVFilterContext *ctx)
 {
     AVFilterFormats *pix_fmts = NULL;
-    const AVPixFmtDescriptor *desc;
     int fmt, ret;
 
-    for (fmt = 0; desc = av_pix_fmt_desc_get(fmt); fmt++) {
+    for (fmt = 0; av_pix_fmt_desc_get(fmt); fmt++) {
+        const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(fmt);
         if (!(desc->flags & AV_PIX_FMT_FLAG_PAL ||
               desc->flags & AV_PIX_FMT_FLAG_HWACCEL ||
               desc->flags & AV_PIX_FMT_FLAG_BITSTREAM ||
@@ -235,14 +243,6 @@ static int config_props_output(AVFilterLink *outlink)
         }
     }
 
-    if (ARCH_X86) {
-        for (int i = 0; i < 4; i++) {
-            TransVtable *v = &s->vtables[i];
-
-            ff_transpose_init_x86(v, s->pixsteps[i]);
-        }
-    }
-
     av_log(ctx, AV_LOG_VERBOSE,
            "w:%d h:%d dir:%d -> w:%d h:%d rotation:%s vflip:%d\n",
            inlink->w, inlink->h, s->dir, outlink->w, outlink->h,
@@ -352,8 +352,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     }
 
     td.in = in, td.out = out;
-    ff_filter_execute(ctx, filter_slice, &td, NULL,
-                      FFMIN(outlink->h, ff_filter_get_nb_threads(ctx)));
+    ctx->internal->execute(ctx, filter_slice, &td, NULL, FFMIN(outlink->h, ff_filter_get_nb_threads(ctx)));
     av_frame_free(&in);
     return ff_filter_frame(outlink, out);
 }
@@ -383,9 +382,10 @@ static const AVFilterPad avfilter_vf_transpose_inputs[] = {
     {
         .name         = "default",
         .type         = AVMEDIA_TYPE_VIDEO,
-        .get_buffer.video = get_video_buffer,
+        .get_video_buffer = get_video_buffer,
         .filter_frame = filter_frame,
     },
+    { NULL }
 };
 
 static const AVFilterPad avfilter_vf_transpose_outputs[] = {
@@ -394,15 +394,16 @@ static const AVFilterPad avfilter_vf_transpose_outputs[] = {
         .config_props = config_props_output,
         .type         = AVMEDIA_TYPE_VIDEO,
     },
+    { NULL }
 };
 
-const AVFilter ff_vf_transpose = {
+AVFilter ff_vf_transpose = {
     .name          = "transpose",
     .description   = NULL_IF_CONFIG_SMALL("Transpose input video."),
     .priv_size     = sizeof(TransContext),
     .priv_class    = &transpose_class,
-    FILTER_INPUTS(avfilter_vf_transpose_inputs),
-    FILTER_OUTPUTS(avfilter_vf_transpose_outputs),
-    FILTER_QUERY_FUNC(query_formats),
+    .query_formats = query_formats,
+    .inputs        = avfilter_vf_transpose_inputs,
+    .outputs       = avfilter_vf_transpose_outputs,
     .flags         = AVFILTER_FLAG_SLICE_THREADS,
 };

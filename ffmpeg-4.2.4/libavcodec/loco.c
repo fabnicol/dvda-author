@@ -337,7 +337,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_loco_decoder = {
+AVCodec ff_loco_decoder = {
     .name           = "loco",
     .long_name      = NULL_IF_CONFIG_SMALL("LOCO"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -346,5 +346,4 @@ const AVCodec ff_loco_decoder = {
     .init           = decode_init,
     .decode         = decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

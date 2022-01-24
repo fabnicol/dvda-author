@@ -39,7 +39,6 @@
 
 #include "avcodec.h"
 #include "bytestream.h"
-#include "encode.h"
 #include "hap.h"
 #include "internal.h"
 #include "texturedsp.h"
@@ -201,7 +200,7 @@ static int hap_encode(AVCodecContext *avctx, AVPacket *pkt,
     int pktsize = FFMAX(ctx->tex_size, ctx->max_snappy * ctx->chunk_count) + header_length;
 
     /* Allocate maximum size packet, shrink later. */
-    ret = ff_alloc_packet(avctx, pkt, pktsize);
+    ret = ff_alloc_packet2(avctx, pkt, pktsize, header_length);
     if (ret < 0)
         return ret;
 
@@ -229,6 +228,7 @@ static int hap_encode(AVCodecContext *avctx, AVPacket *pkt,
     hap_write_frame_header(ctx, pkt->data, final_data_size + header_length);
 
     av_shrink_packet(pkt, final_data_size + header_length);
+    pkt->flags |= AV_PKT_FLAG_KEY;
     *got_packet = 1;
     return 0;
 }
@@ -349,7 +349,7 @@ static const AVClass hapenc_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const AVCodec ff_hap_encoder = {
+AVCodec ff_hap_encoder = {
     .name           = "hap",
     .long_name      = NULL_IF_CONFIG_SMALL("Vidvox Hap"),
     .type           = AVMEDIA_TYPE_VIDEO,

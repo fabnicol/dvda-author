@@ -23,6 +23,7 @@
 #define AVCODEC_GSMDEC_DATA_H
 
 #include <stdint.h>
+#include "avcodec.h"
 
 typedef struct GSMContext {
     // Contains first 120 elements from the previous frame

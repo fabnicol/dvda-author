@@ -60,7 +60,8 @@ static int sap_write_close(AVFormatContext *s)
     }
 
     av_freep(&sap->ann);
-    ffurl_closep(&sap->ann_fd);
+    if (sap->ann_fd)
+        ffurl_close(sap->ann_fd);
     ff_network_close();
     return 0;
 }
@@ -133,7 +134,7 @@ static int sap_write_header(AVFormatContext *s)
         freeaddrinfo(ai);
     }
 
-    contexts = av_calloc(s->nb_streams, sizeof(*contexts));
+    contexts = av_mallocz_array(s->nb_streams, sizeof(AVFormatContext*));
     if (!contexts) {
         ret = AVERROR(ENOMEM);
         goto fail;
@@ -267,7 +268,7 @@ static int sap_write_packet(AVFormatContext *s, AVPacket *pkt)
     return ff_write_chained(rtpctx, 0, pkt, s, 0);
 }
 
-const AVOutputFormat ff_sap_muxer = {
+AVOutputFormat ff_sap_muxer = {
     .name              = "sap",
     .long_name         = NULL_IF_CONFIG_SMALL("SAP output"),
     .priv_data_size    = sizeof(struct SAPState),

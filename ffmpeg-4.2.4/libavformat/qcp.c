@@ -93,8 +93,7 @@ static int qcp_read_header(AVFormatContext *s)
     QCPContext    *c  = s->priv_data;
     AVStream      *st = avformat_new_stream(s, NULL);
     uint8_t       buf[16];
-    int           i;
-    unsigned      nb_rates;
+    int           i, nb_rates;
 
     if (!st)
         return AVERROR(ENOMEM);
@@ -196,7 +195,7 @@ static int qcp_read_packet(AVFormatContext *s, AVPacket *pkt)
     return AVERROR_EOF;
 }
 
-const AVInputFormat ff_qcp_demuxer = {
+AVInputFormat ff_qcp_demuxer = {
     .name           = "qcp",
     .long_name      = NULL_IF_CONFIG_SMALL("QCP"),
     .priv_data_size = sizeof(QCPContext),

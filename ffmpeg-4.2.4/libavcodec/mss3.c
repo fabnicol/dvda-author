@@ -737,7 +737,7 @@ static int mss3_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         return buf_size;
     c->got_error = 0;
 
-    if ((ret = ff_reget_buffer(avctx, c->pic, 0)) < 0)
+    if ((ret = ff_reget_buffer(avctx, c->pic)) < 0)
         return ret;
     c->pic->key_frame = keyframe;
     c->pic->pict_type = keyframe ? AV_PICTURE_TYPE_I : AV_PICTURE_TYPE_P;
@@ -844,13 +844,20 @@ static av_cold int mss3_decode_init(AVCodecContext *avctx)
                                             b_width * b_height);
         if (!c->dct_coder[i].prev_dc) {
             av_log(avctx, AV_LOG_ERROR, "Cannot allocate buffer\n");
+            av_frame_free(&c->pic);
+            while (i >= 0) {
+                av_freep(&c->dct_coder[i].prev_dc);
+                i--;
+            }
             return AVERROR(ENOMEM);
         }
     }
 
     c->pic = av_frame_alloc();
-    if (!c->pic)
+    if (!c->pic) {
+        mss3_decode_end(avctx);
         return AVERROR(ENOMEM);
+    }
 
     avctx->pix_fmt     = AV_PIX_FMT_YUV420P;
 
@@ -859,7 +866,7 @@ static av_cold int mss3_decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_msa1_decoder = {
+AVCodec ff_msa1_decoder = {
     .name           = "msa1",
     .long_name      = NULL_IF_CONFIG_SMALL("MS ATC Screen"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -869,5 +876,4 @@ const AVCodec ff_msa1_decoder = {
     .close          = mss3_decode_end,
     .decode         = mss3_decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

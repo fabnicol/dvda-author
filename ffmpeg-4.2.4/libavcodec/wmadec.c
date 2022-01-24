@@ -70,7 +70,7 @@ static void dump_floats(WMACodecContext *s, const char *name,
 static av_cold int wma_decode_init(AVCodecContext *avctx)
 {
     WMACodecContext *s = avctx->priv_data;
-    int i, flags2, ret;
+    int i, flags2;
     uint8_t *extradata;
 
     if (!avctx->block_align) {
@@ -102,40 +102,27 @@ static av_cold int wma_decode_init(AVCodecContext *avctx)
     for (i=0; i<MAX_CHANNELS; i++)
         s->max_exponent[i] = 1.0;
 
-    if ((ret = ff_wma_init(avctx, flags2)) < 0)
-        return ret;
+    if (ff_wma_init(avctx, flags2) < 0)
+        return -1;
 
     /* init MDCT */
-    for (i = 0; i < s->nb_block_sizes; i++) {
-        ret = ff_mdct_init(&s->mdct_ctx[i], s->frame_len_bits - i + 1,
-                           1, 1.0 / 32768.0);
-        if (ret < 0)
-            return ret;
-    }
+    for (i = 0; i < s->nb_block_sizes; i++)
+        ff_mdct_init(&s->mdct_ctx[i], s->frame_len_bits - i + 1, 1, 1.0 / 32768.0);
 
     if (s->use_noise_coding) {
-        ret = ff_init_vlc_from_lengths(&s->hgain_vlc, HGAINVLCBITS,
-                                       FF_ARRAY_ELEMS(ff_wma_hgain_hufftab),
-                                       &ff_wma_hgain_hufftab[0][1], 2,
-                                       &ff_wma_hgain_hufftab[0][0], 2, 1,
-                                       -18, 0, avctx);
-        if (ret < 0)
-            return ret;
+        init_vlc(&s->hgain_vlc, HGAINVLCBITS, sizeof(ff_wma_hgain_huffbits),
+                 ff_wma_hgain_huffbits, 1, 1,
+                 ff_wma_hgain_huffcodes, 2, 2, 0);
     }
 
-    if (s->use_exp_vlc) {
-        // FIXME move out of context
-        ret = init_vlc(&s->exp_vlc, EXPVLCBITS, sizeof(ff_aac_scalefactor_bits),
-                       ff_aac_scalefactor_bits, 1, 1,
-                       ff_aac_scalefactor_code, 4, 4, 0);
-        if (ret < 0)
-            return ret;
-    } else
+    if (s->use_exp_vlc)
+        init_vlc(&s->exp_vlc, EXPVLCBITS, sizeof(ff_aac_scalefactor_bits), // FIXME move out of context
+                 ff_aac_scalefactor_bits, 1, 1,
+                 ff_aac_scalefactor_code, 4, 4, 0);
+    else
         wma_lsp_to_curve_init(s, s->frame_len);
 
     avctx->sample_fmt = AV_SAMPLE_FMT_FLTP;
-
-    avctx->internal->skip_samples = s->frame_len * 2;
 
     return 0;
 }
@@ -358,6 +345,10 @@ static int decode_exp_vlc(WMACodecContext *s, int ch)
 
     while (q < q_end) {
         code = get_vlc2(&s->gb, s->exp_vlc.table, EXPVLCBITS, EXPMAX);
+        if (code < 0) {
+            av_log(s->avctx, AV_LOG_ERROR, "Exponent vlc invalid\n");
+            return -1;
+        }
         /* NOTE: this offset is the same as MPEG-4 AAC! */
         last_exp += code - 60;
         if ((unsigned) last_exp + 60 >= FF_ARRAY_ELEMS(pow_tab)) {
@@ -558,7 +549,7 @@ static int wma_decode_block(WMACodecContext *s)
         }
         for (ch = 0; ch < s->avctx->channels; ch++) {
             if (s->channel_coded[ch]) {
-                int i, n, val;
+                int i, n, val, code;
 
                 n   = s->exponent_high_sizes[bsize];
                 val = (int) 0x80000000;
@@ -567,8 +558,14 @@ static int wma_decode_block(WMACodecContext *s)
                         if (val == (int) 0x80000000) {
                             val = get_bits(&s->gb, 7) - 19;
                         } else {
-                            val += get_vlc2(&s->gb, s->hgain_vlc.table,
+                            code = get_vlc2(&s->gb, s->hgain_vlc.table,
                                             HGAINVLCBITS, HGAINMAX);
+                            if (code < 0) {
+                                av_log(s->avctx, AV_LOG_ERROR,
+                                       "hgain vlc invalid\n");
+                                return -1;
+                            }
+                            val += code - 18;
                         }
                         s->high_band_values[ch][i] = val;
                     }
@@ -603,18 +600,15 @@ static int wma_decode_block(WMACodecContext *s)
         if (s->channel_coded[ch]) {
             int tindex;
             WMACoef *ptr = &s->coefs1[ch][0];
-            int ret;
 
             /* special VLC tables are used for ms stereo because
              * there is potentially less energy there */
             tindex = (ch == 1 && s->ms_stereo);
             memset(ptr, 0, s->block_len * sizeof(WMACoef));
-            ret = ff_wma_run_level_decode(s->avctx, &s->gb, &s->coef_vlc[tindex],
-                                          s->level_table[tindex], s->run_table[tindex],
-                                          0, ptr, 0, nb_coefs[ch],
-                                          s->block_len, s->frame_len_bits, coef_nb_bits);
-            if (ret < 0)
-                return ret;
+            ff_wma_run_level_decode(s->avctx, &s->gb, &s->coef_vlc[tindex],
+                                    s->level_table[tindex], s->run_table[tindex],
+                                    0, ptr, 0, nb_coefs[ch],
+                                    s->block_len, s->frame_len_bits, coef_nb_bits);
         }
         if (s->version == 1 && s->avctx->channels >= 2)
             align_get_bits(&s->gb);
@@ -831,20 +825,7 @@ static int wma_decode_superframe(AVCodecContext *avctx, void *data,
     ff_tlog(avctx, "***decode_superframe:\n");
 
     if (buf_size == 0) {
-        if (s->eof_done)
-            return 0;
-
-        frame->nb_samples = s->frame_len;
-        if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
-            return ret;
-
-        for (i = 0; i < s->avctx->channels; i++)
-            memcpy(frame->extended_data[i], &s->frame_out[i][0],
-                   frame->nb_samples * sizeof(s->frame_out[i][0]));
-
         s->last_superframe_len = 0;
-        s->eof_done = 1;
-        *got_frame_ptr = 1;
         return 0;
     }
     if (buf_size < avctx->block_align) {
@@ -914,11 +895,11 @@ static int wma_decode_superframe(AVCodecContext *avctx, void *data,
             q   = s->last_superframe + s->last_superframe_len;
             len = bit_offset;
             while (len > 7) {
-                *q++ = get_bits(&s->gb, 8);
+                *q++ = (get_bits) (&s->gb, 8);
                 len -= 8;
             }
             if (len > 0)
-                *q++ = get_bits(&s->gb, len) << (8 - len);
+                *q++ = (get_bits) (&s->gb, len) << (8 - len);
             memset(q, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 
             /* XXX: bit_offset bits into last frame */
@@ -990,13 +971,10 @@ static av_cold void flush(AVCodecContext *avctx)
 
     s->last_bitoffset      =
     s->last_superframe_len = 0;
-
-    s->eof_done = 0;
-    avctx->internal->skip_samples = s->frame_len * 2;
 }
 
 #if CONFIG_WMAV1_DECODER
-const AVCodec ff_wmav1_decoder = {
+AVCodec ff_wmav1_decoder = {
     .name           = "wmav1",
     .long_name      = NULL_IF_CONFIG_SMALL("Windows Media Audio 1"),
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -1006,14 +984,13 @@ const AVCodec ff_wmav1_decoder = {
     .close          = ff_wma_end,
     .decode         = wma_decode_superframe,
     .flush          = flush,
-    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY,
+    .capabilities   = AV_CODEC_CAP_DR1,
     .sample_fmts    = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_FLTP,
                                                       AV_SAMPLE_FMT_NONE },
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };
 #endif
 #if CONFIG_WMAV2_DECODER
-const AVCodec ff_wmav2_decoder = {
+AVCodec ff_wmav2_decoder = {
     .name           = "wmav2",
     .long_name      = NULL_IF_CONFIG_SMALL("Windows Media Audio 2"),
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -1023,9 +1000,8 @@ const AVCodec ff_wmav2_decoder = {
     .close          = ff_wma_end,
     .decode         = wma_decode_superframe,
     .flush          = flush,
-    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY,
+    .capabilities   = AV_CODEC_CAP_DR1,
     .sample_fmts    = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_FLTP,
                                                       AV_SAMPLE_FMT_NONE },
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };
 #endif

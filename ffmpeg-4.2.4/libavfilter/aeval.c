@@ -23,6 +23,7 @@
  * eval audio source
  */
 
+#include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
 #include "libavutil/channel_layout.h"
 #include "libavutil/eval.h"
@@ -30,7 +31,6 @@
 #include "libavutil/parseutils.h"
 #include "avfilter.h"
 #include "audio.h"
-#include "filters.h"
 #include "internal.h"
 
 static const char * const var_names[] = {
@@ -89,8 +89,8 @@ static const AVOption aevalsrc_options[]= {
     { "exprs",       "set the '|'-separated list of channels expressions", OFFSET(exprs), AV_OPT_TYPE_STRING, {.str = NULL}, .flags = FLAGS },
     { "nb_samples",  "set the number of samples per requested frame", OFFSET(nb_samples),      AV_OPT_TYPE_INT,    {.i64 = 1024},    0,        INT_MAX, FLAGS },
     { "n",           "set the number of samples per requested frame", OFFSET(nb_samples),      AV_OPT_TYPE_INT,    {.i64 = 1024},    0,        INT_MAX, FLAGS },
-    { "sample_rate", "set the sample rate",                           OFFSET(sample_rate_str), AV_OPT_TYPE_STRING, {.str = "44100"}, 0, 0, FLAGS },
-    { "s",           "set the sample rate",                           OFFSET(sample_rate_str), AV_OPT_TYPE_STRING, {.str = "44100"}, 0, 0, FLAGS },
+    { "sample_rate", "set the sample rate",                           OFFSET(sample_rate_str), AV_OPT_TYPE_STRING, {.str = "44100"}, CHAR_MIN, CHAR_MAX, FLAGS },
+    { "s",           "set the sample rate",                           OFFSET(sample_rate_str), AV_OPT_TYPE_STRING, {.str = "44100"}, CHAR_MIN, CHAR_MAX, FLAGS },
     { "duration",    "set audio duration", OFFSET(duration), AV_OPT_TYPE_DURATION, {.i64 = -1}, -1, INT64_MAX, FLAGS },
     { "d",           "set audio duration", OFFSET(duration), AV_OPT_TYPE_DURATION, {.i64 = -1}, -1, INT64_MAX, FLAGS },
     { "channel_layout", "set channel layout", OFFSET(chlayout_str), AV_OPT_TYPE_STRING, {.str = NULL}, 0, 0, FLAGS },
@@ -124,10 +124,11 @@ static int parse_channel_expressions(AVFilterContext *ctx,
     }
 
 #define ADD_EXPRESSION(expr_) do {                                      \
-        ret = av_dynarray_add_nofree(&eval->expr,                       \
-                                     &eval->nb_channels, NULL);         \
-        if (ret < 0)                                                    \
+        if (!av_dynarray2_add((void **)&eval->expr, &eval->nb_channels, \
+                              sizeof(*eval->expr), NULL)) {             \
+            ret = AVERROR(ENOMEM);                                      \
             goto end;                                                   \
+        }                                                               \
         eval->expr[eval->nb_channels-1] = NULL;                         \
         ret = av_expr_parse(&eval->expr[eval->nb_channels - 1], expr_,  \
                             var_names, func1_names, func1,              \
@@ -246,42 +247,45 @@ static int query_formats(AVFilterContext *ctx)
     static const enum AVSampleFormat sample_fmts[] = { AV_SAMPLE_FMT_DBLP, AV_SAMPLE_FMT_NONE };
     int64_t chlayouts[] = { eval->chlayout ? eval->chlayout : FF_COUNT2LAYOUT(eval->nb_channels) , -1 };
     int sample_rates[] = { eval->sample_rate, -1 };
+    AVFilterFormats *formats;
+    AVFilterChannelLayouts *layouts;
     int ret;
 
-    ret = ff_set_common_formats_from_list(ctx, sample_fmts);
+    formats = ff_make_format_list(sample_fmts);
+    if (!formats)
+        return AVERROR(ENOMEM);
+    ret = ff_set_common_formats (ctx, formats);
     if (ret < 0)
         return ret;
 
-    ret = ff_set_common_channel_layouts_from_list(ctx, chlayouts);
+    layouts = avfilter_make_format64_list(chlayouts);
+    if (!layouts)
+        return AVERROR(ENOMEM);
+    ret = ff_set_common_channel_layouts(ctx, layouts);
     if (ret < 0)
         return ret;
 
-    return ff_set_common_samplerates_from_list(ctx, sample_rates);
+    formats = ff_make_format_list(sample_rates);
+    if (!formats)
+        return AVERROR(ENOMEM);
+    return ff_set_common_samplerates(ctx, formats);
 }
 
-static int activate(AVFilterContext *ctx)
+static int request_frame(AVFilterLink *outlink)
 {
-    AVFilterLink *outlink = ctx->outputs[0];
     EvalContext *eval = outlink->src->priv;
     AVFrame *samplesref;
     int i, j;
     int64_t t = av_rescale(eval->n, AV_TIME_BASE, eval->sample_rate);
     int nb_samples;
 
-    if (!ff_outlink_frame_wanted(outlink))
-        return FFERROR_NOT_READY;
-
-    if (eval->duration >= 0 && t >= eval->duration) {
-        ff_outlink_set_status(outlink, AVERROR_EOF, eval->pts);
-        return 0;
-    }
+    if (eval->duration >= 0 && t >= eval->duration)
+        return AVERROR_EOF;
 
     if (eval->duration >= 0) {
         nb_samples = FFMIN(eval->nb_samples, av_rescale(eval->duration, eval->sample_rate, AV_TIME_BASE) - eval->pts);
-        if (!nb_samples) {
-            ff_outlink_set_status(outlink, AVERROR_EOF, eval->pts);
-            return 0;
-        }
+        if (!nb_samples)
+            return AVERROR_EOF;
     } else {
         nb_samples = eval->nb_samples;
     }
@@ -313,19 +317,20 @@ static const AVFilterPad aevalsrc_outputs[] = {
         .name          = "default",
         .type          = AVMEDIA_TYPE_AUDIO,
         .config_props  = config_props,
+        .request_frame = request_frame,
     },
+    { NULL }
 };
 
-const AVFilter ff_asrc_aevalsrc = {
+AVFilter ff_asrc_aevalsrc = {
     .name          = "aevalsrc",
     .description   = NULL_IF_CONFIG_SMALL("Generate an audio signal generated by an expression."),
+    .query_formats = query_formats,
     .init          = init,
     .uninit        = uninit,
-    .activate      = activate,
     .priv_size     = sizeof(EvalContext),
     .inputs        = NULL,
-    FILTER_OUTPUTS(aevalsrc_outputs),
-    FILTER_QUERY_FUNC(query_formats),
+    .outputs       = aevalsrc_outputs,
     .priv_class    = &aevalsrc_class,
 };
 
@@ -345,6 +350,7 @@ AVFILTER_DEFINE_CLASS(aeval);
 
 static int aeval_query_formats(AVFilterContext *ctx)
 {
+    AVFilterFormats *formats = NULL;
     AVFilterChannelLayouts *layouts;
     AVFilterLink *inlink  = ctx->inputs[0];
     AVFilterLink *outlink  = ctx->outputs[0];
@@ -356,11 +362,12 @@ static int aeval_query_formats(AVFilterContext *ctx)
 
     // inlink supports any channel layout
     layouts = ff_all_channel_counts();
-    if ((ret = ff_channel_layouts_ref(layouts, &inlink->outcfg.channel_layouts)) < 0)
+    if ((ret = ff_channel_layouts_ref(layouts, &inlink->out_channel_layouts)) < 0)
         return ret;
 
     if (eval->same_chlayout) {
-        if ((ret = ff_set_common_all_channel_counts(ctx)) < 0)
+        layouts = ff_all_channel_counts();
+        if ((ret = ff_set_common_channel_layouts(ctx, layouts)) < 0)
             return ret;
     } else {
         // outlink supports only requested output channel layout
@@ -369,14 +376,16 @@ static int aeval_query_formats(AVFilterContext *ctx)
                               eval->out_channel_layout ? eval->out_channel_layout :
                               FF_COUNT2LAYOUT(eval->nb_channels))) < 0)
             return ret;
-        if ((ret = ff_channel_layouts_ref(layouts, &outlink->incfg.channel_layouts)) < 0)
+        if ((ret = ff_channel_layouts_ref(layouts, &outlink->in_channel_layouts)) < 0)
             return ret;
     }
 
-    if ((ret = ff_set_common_formats_from_list(ctx, sample_fmts)) < 0)
+    formats = ff_make_format_list(sample_fmts);
+    if ((ret = ff_set_common_formats(ctx, formats)) < 0)
         return ret;
 
-    return ff_set_common_all_samplerates(ctx);
+    formats = ff_all_samplerates();
+    return ff_set_common_samplerates(ctx, formats);
 }
 
 static int aeval_config_output(AVFilterLink *outlink)
@@ -406,6 +415,8 @@ static int aeval_config_output(AVFilterLink *outlink)
 
     return 0;
 }
+
+#define TS2T(ts, tb) ((ts) == AV_NOPTS_VALUE ? NAN : (double)(ts)*av_q2d(tb))
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
@@ -452,6 +463,7 @@ static const AVFilterPad aeval_inputs[] = {
         .type           = AVMEDIA_TYPE_AUDIO,
         .filter_frame   = filter_frame,
     },
+    { NULL }
 };
 
 static const AVFilterPad aeval_outputs[] = {
@@ -460,19 +472,19 @@ static const AVFilterPad aeval_outputs[] = {
         .type          = AVMEDIA_TYPE_AUDIO,
         .config_props  = aeval_config_output,
     },
+    { NULL }
 };
 
-const AVFilter ff_af_aeval = {
+AVFilter ff_af_aeval = {
     .name          = "aeval",
     .description   = NULL_IF_CONFIG_SMALL("Filter audio signal according to a specified expression."),
+    .query_formats = aeval_query_formats,
     .init          = init,
     .uninit        = uninit,
     .priv_size     = sizeof(EvalContext),
-    FILTER_INPUTS(aeval_inputs),
-    FILTER_OUTPUTS(aeval_outputs),
-    FILTER_QUERY_FUNC(aeval_query_formats),
+    .inputs        = aeval_inputs,
+    .outputs       = aeval_outputs,
     .priv_class    = &aeval_class,
-    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };
 
 #endif /* CONFIG_AEVAL_FILTER */

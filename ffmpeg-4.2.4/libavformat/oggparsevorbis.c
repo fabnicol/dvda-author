@@ -39,7 +39,7 @@
 #include "vorbiscomment.h"
 #include "replaygain.h"
 
-static int ogm_chapter(AVFormatContext *as, const uint8_t *key, const uint8_t *val)
+static int ogm_chapter(AVFormatContext *as, uint8_t *key, uint8_t *val)
 {
     int i, cnum, h, m, s, ms, keylen = strlen(key);
     AVChapter *chapter = NULL;
@@ -54,6 +54,7 @@ static int ogm_chapter(AVFormatContext *as, const uint8_t *key, const uint8_t *v
         avpriv_new_chapter(as, cnum, (AVRational) { 1, 1000 },
                            ms + 1000 * (s + 60 * (m + 60 * h)),
                            AV_NOPTS_VALUE, NULL);
+        av_free(val);
     } else if (!av_strcasecmp(key + keylen - 4, "NAME")) {
         for (i = 0; i < as->nb_chapters; i++)
             if (as->chapters[i]->id == cnum) {
@@ -63,10 +64,11 @@ static int ogm_chapter(AVFormatContext *as, const uint8_t *key, const uint8_t *v
         if (!chapter)
             return 0;
 
-        av_dict_set(&chapter->metadata, "title", val, 0);
+        av_dict_set(&chapter->metadata, "title", val, AV_DICT_DONT_STRDUP_VAL);
     } else
         return 0;
 
+    av_free(key);
     return 1;
 }
 
@@ -82,69 +84,6 @@ int ff_vorbis_stream_comment(AVFormatContext *as, AVStream *st,
     return updates;
 }
 
-/**
- * This function temporarily modifies the (const qualified) input buffer
- * and reverts its changes before return. The input buffer needs to have
- * at least one byte of padding.
- */
-static int vorbis_parse_single_comment(AVFormatContext *as, AVDictionary **m,
-                                       const uint8_t *buf, uint32_t size,
-                                       int *updates, int parse_picture)
-{
-    char *t = (char*)buf, *v = memchr(t, '=', size);
-    int tl, vl;
-    char backup;
-
-    if (!v)
-        return 0;
-
-    tl = v - t;
-    vl = size - tl - 1;
-    v++;
-
-    if (!tl || !vl)
-        return 0;
-
-    t[tl]  = 0;
-
-    backup = v[vl];
-    v[vl]  = 0;
-
-    /* The format in which the pictures are stored is the FLAC format.
-     * Xiph says: "The binary FLAC picture structure is base64 encoded
-     * and placed within a VorbisComment with the tag name
-     * 'METADATA_BLOCK_PICTURE'. This is the preferred and
-     * recommended way of embedding cover art within VorbisComments."
-     */
-    if (!av_strcasecmp(t, "METADATA_BLOCK_PICTURE") && parse_picture) {
-        int ret, len = AV_BASE64_DECODE_SIZE(vl);
-        uint8_t *pict = av_malloc(len + AV_INPUT_BUFFER_PADDING_SIZE);
-
-        if (!pict) {
-            av_log(as, AV_LOG_WARNING, "out-of-memory error. Skipping cover art block.\n");
-            goto end;
-        }
-        ret = av_base64_decode(pict, v, len);
-        if (ret > 0)
-            ret = ff_flac_parse_picture(as, &pict, ret, 0);
-        av_freep(&pict);
-        if (ret < 0) {
-            av_log(as, AV_LOG_WARNING, "Failed to parse cover art block.\n");
-            goto end;
-        }
-    } else if (!ogm_chapter(as, t, v)) {
-        (*updates)++;
-        if (av_dict_get(*m, t, NULL, 0))
-            av_dict_set(m, t, ";", AV_DICT_APPEND);
-        av_dict_set(m, t, v, AV_DICT_APPEND);
-    }
-end:
-    t[tl] = '=';
-    v[vl] = backup;
-
-    return 0;
-}
-
 int ff_vorbis_comment(AVFormatContext *as, AVDictionary **m,
                       const uint8_t *buf, int size,
                       int parse_picture)
@@ -153,7 +92,7 @@ int ff_vorbis_comment(AVFormatContext *as, AVDictionary **m,
     const uint8_t *end = buf + size;
     int updates        = 0;
     unsigned n;
-    int s, ret;
+    int s;
 
     /* must have vendor_length and user_comment_list_length */
     if (size < 8)
@@ -169,16 +108,80 @@ int ff_vorbis_comment(AVFormatContext *as, AVDictionary **m,
     n = bytestream_get_le32(&p);
 
     while (end - p >= 4 && n > 0) {
+        const char *t, *v;
+        int tl, vl;
+
         s = bytestream_get_le32(&p);
 
         if (end - p < s || s < 0)
             break;
 
-        ret = vorbis_parse_single_comment(as, m, p, s, &updates, parse_picture);
-        if (ret < 0)
-            return ret;
+        t  = p;
         p += s;
         n--;
+
+        v = memchr(t, '=', s);
+        if (!v)
+            continue;
+
+        tl = v - t;
+        vl = s - tl - 1;
+        v++;
+
+        if (tl && vl) {
+            char *tt, *ct;
+
+            tt = av_malloc(tl + 1);
+            ct = av_malloc(vl + 1);
+            if (!tt || !ct) {
+                av_freep(&tt);
+                av_freep(&ct);
+                return AVERROR(ENOMEM);
+            }
+
+            memcpy(tt, t, tl);
+            tt[tl] = 0;
+
+            memcpy(ct, v, vl);
+            ct[vl] = 0;
+
+            /* The format in which the pictures are stored is the FLAC format.
+             * Xiph says: "The binary FLAC picture structure is base64 encoded
+             * and placed within a VorbisComment with the tag name
+             * 'METADATA_BLOCK_PICTURE'. This is the preferred and
+             * recommended way of embedding cover art within VorbisComments."
+             */
+            if (!strcmp(tt, "METADATA_BLOCK_PICTURE") && parse_picture) {
+                int ret, len = AV_BASE64_DECODE_SIZE(vl);
+                char *pict = av_malloc(len);
+
+                if (!pict) {
+                    av_log(as, AV_LOG_WARNING, "out-of-memory error. Skipping cover art block.\n");
+                    av_freep(&tt);
+                    av_freep(&ct);
+                    continue;
+                }
+                ret = av_base64_decode(pict, ct, len);
+                av_freep(&tt);
+                av_freep(&ct);
+                if (ret > 0)
+                    ret = ff_flac_parse_picture(as, pict, ret);
+                av_freep(&pict);
+                if (ret < 0) {
+                    av_log(as, AV_LOG_WARNING, "Failed to parse cover art block.\n");
+                    continue;
+                }
+            } else if (!ogm_chapter(as, tt, ct)) {
+                updates++;
+                if (av_dict_get(*m, tt, NULL, 0)) {
+                    av_dict_set(m, tt, ";", AV_DICT_APPEND);
+                }
+                av_dict_set(m, tt, ct,
+                            AV_DICT_DONT_STRDUP_KEY |
+                            AV_DICT_APPEND);
+                av_freep(&ct);
+            }
+        }
     }
 
     if (p != end)
@@ -285,7 +288,7 @@ static int vorbis_update_metadata(AVFormatContext *s, int idx)
         os->new_metadata = av_packet_pack_dictionary(st->metadata, &os->new_metadata_size);
     /* Send an empty dictionary to indicate that metadata has been cleared. */
     } else {
-        os->new_metadata = av_mallocz(1);
+        os->new_metadata = av_malloc(1);
         os->new_metadata_size = 0;
     }
 
@@ -490,12 +493,8 @@ static int vorbis_packet(AVFormatContext *s, int idx)
             priv->final_pts      = os->lastpts;
             priv->final_duration = 0;
         }
-        if (os->segp == os->nsegs) {
-            int64_t skip = priv->final_pts + priv->final_duration + os->pduration - os->granule;
-            if (skip > 0)
-                os->end_trimming = skip;
+        if (os->segp == os->nsegs)
             os->pduration = os->granule - priv->final_pts - priv->final_duration;
-        }
         priv->final_duration += os->pduration;
     }
 

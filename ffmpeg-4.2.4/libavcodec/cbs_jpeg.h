@@ -80,8 +80,8 @@ typedef struct JPEGRawScanHeader {
 typedef struct JPEGRawScan {
     JPEGRawScanHeader header;
     uint8_t          *data;
-    AVBufferRef      *data_ref;
     size_t            data_size;
+    AVBufferRef      *data_ref;
 } JPEGRawScan;
 
 typedef struct JPEGRawQuantisationTable {

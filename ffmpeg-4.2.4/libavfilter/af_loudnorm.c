@@ -453,9 +453,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                 true_peak = tmp;
         }
 
-        offset    = pow(10., (s->target_i - global) / 20.);
-        offset_tp = true_peak * offset;
+        offset    = s->target_i - global;
+        offset_tp = true_peak + offset;
         s->offset = offset_tp < s->target_tp ? offset : s->target_tp - true_peak;
+        s->offset = pow(10., s->offset / 20.);
         s->frame_type = LINEAR_MODE;
     }
 
@@ -504,7 +505,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         s->pts +=
         out->nb_samples =
         inlink->min_samples =
-        inlink->max_samples = subframe_length;
+        inlink->max_samples =
+        inlink->partial_buf_size = subframe_length;
 
         s->frame_type = INNER_FRAME;
         break;
@@ -685,6 +687,7 @@ static int query_formats(AVFilterContext *ctx)
 {
     LoudNormContext *s = ctx->priv;
     AVFilterFormats *formats;
+    AVFilterChannelLayouts *layouts;
     AVFilterLink *inlink = ctx->inputs[0];
     AVFilterLink *outlink = ctx->outputs[0];
     static const int input_srate[] = {192000, -1};
@@ -692,11 +695,19 @@ static int query_formats(AVFilterContext *ctx)
         AV_SAMPLE_FMT_DBL,
         AV_SAMPLE_FMT_NONE
     };
-    int ret = ff_set_common_all_channel_counts(ctx);
+    int ret;
+
+    layouts = ff_all_channel_counts();
+    if (!layouts)
+        return AVERROR(ENOMEM);
+    ret = ff_set_common_channel_layouts(ctx, layouts);
     if (ret < 0)
         return ret;
 
-    ret = ff_set_common_formats_from_list(ctx, sample_fmts);
+    formats = ff_make_format_list(sample_fmts);
+    if (!formats)
+        return AVERROR(ENOMEM);
+    ret = ff_set_common_formats(ctx, formats);
     if (ret < 0)
         return ret;
 
@@ -704,10 +715,10 @@ static int query_formats(AVFilterContext *ctx)
         formats = ff_make_format_list(input_srate);
         if (!formats)
             return AVERROR(ENOMEM);
-        ret = ff_formats_ref(formats, &inlink->outcfg.samplerates);
+        ret = ff_formats_ref(formats, &inlink->out_samplerates);
         if (ret < 0)
             return ret;
-        ret = ff_formats_ref(formats, &outlink->incfg.samplerates);
+        ret = ff_formats_ref(formats, &outlink->in_samplerates);
         if (ret < 0)
             return ret;
     }
@@ -751,7 +762,8 @@ static int config_input(AVFilterLink *inlink)
 
     if (s->frame_type != LINEAR_MODE) {
         inlink->min_samples =
-        inlink->max_samples = frame_size(inlink->sample_rate, 3000);
+        inlink->max_samples =
+        inlink->partial_buf_size = frame_size(inlink->sample_rate, 3000);
     }
 
     s->pts = AV_NOPTS_VALUE;
@@ -896,6 +908,7 @@ static const AVFilterPad avfilter_af_loudnorm_inputs[] = {
         .config_props = config_input,
         .filter_frame = filter_frame,
     },
+    { NULL }
 };
 
 static const AVFilterPad avfilter_af_loudnorm_outputs[] = {
@@ -904,16 +917,17 @@ static const AVFilterPad avfilter_af_loudnorm_outputs[] = {
         .request_frame = request_frame,
         .type          = AVMEDIA_TYPE_AUDIO,
     },
+    { NULL }
 };
 
-const AVFilter ff_af_loudnorm = {
+AVFilter ff_af_loudnorm = {
     .name          = "loudnorm",
     .description   = NULL_IF_CONFIG_SMALL("EBU R128 loudness normalization"),
     .priv_size     = sizeof(LoudNormContext),
     .priv_class    = &loudnorm_class,
+    .query_formats = query_formats,
     .init          = init,
     .uninit        = uninit,
-    FILTER_INPUTS(avfilter_af_loudnorm_inputs),
-    FILTER_OUTPUTS(avfilter_af_loudnorm_outputs),
-    FILTER_QUERY_FUNC(query_formats),
+    .inputs        = avfilter_af_loudnorm_inputs,
+    .outputs       = avfilter_af_loudnorm_outputs,
 };

@@ -27,6 +27,7 @@
 #include "libavutil/opt.h"
 #include "libavutil/parseutils.h"
 #include "libavutil/pixdesc.h"
+#include "libavutil/avassert.h"
 #include "libavutil/intreadwrite.h"
 
 #define RAW_PACKET_SIZE 1024
@@ -38,8 +39,8 @@ int ff_raw_read_partial_packet(AVFormatContext *s, AVPacket *pkt)
 
     size = raw->raw_packet_size;
 
-    if ((ret = av_new_packet(pkt, size)) < 0)
-        return ret;
+    if (av_new_packet(pkt, size) < 0)
+        return AVERROR(ENOMEM);
 
     pkt->pos= avio_tell(s->pb);
     pkt->stream_index = 0;
@@ -59,7 +60,7 @@ int ff_raw_audio_read_header(AVFormatContext *s)
         return AVERROR(ENOMEM);
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id = s->iformat->raw_codec_id;
-    ffstream(st)->need_parsing = AVSTREAM_PARSE_FULL_RAW;
+    st->need_parsing = AVSTREAM_PARSE_FULL_RAW;
     st->start_time = 0;
     /* the parameters will be extracted from the compressed bitstream */
 
@@ -70,7 +71,6 @@ int ff_raw_audio_read_header(AVFormatContext *s)
 int ff_raw_video_read_header(AVFormatContext *s)
 {
     AVStream *st;
-    FFStream *sti;
     FFRawVideoDemuxerContext *s1 = s->priv_data;
     int ret = 0;
 
@@ -80,13 +80,12 @@ int ff_raw_video_read_header(AVFormatContext *s)
         ret = AVERROR(ENOMEM);
         goto fail;
     }
-    sti = ffstream(st);
 
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id = s->iformat->raw_codec_id;
-    sti->need_parsing = AVSTREAM_PARSE_FULL_RAW;
+    st->need_parsing = AVSTREAM_PARSE_FULL_RAW;
 
-    sti->avctx->framerate = s1->framerate;
+    st->internal->avctx->framerate = s1->framerate;
     avpriv_set_pts_info(st, 64, 1, 1200000);
 
 fail:
@@ -104,7 +103,7 @@ int ff_raw_subtitle_read_header(AVFormatContext *s)
     return 0;
 }
 
-static int raw_data_read_header(AVFormatContext *s)
+int ff_raw_data_read_header(AVFormatContext *s)
 {
     AVStream *st = avformat_new_stream(s, NULL);
     if (!st)
@@ -119,43 +118,30 @@ static int raw_data_read_header(AVFormatContext *s)
 
 #define OFFSET(x) offsetof(FFRawVideoDemuxerContext, x)
 #define DEC AV_OPT_FLAG_DECODING_PARAM
-static const AVOption rawvideo_options[] = {
+const AVOption ff_rawvideo_options[] = {
     { "framerate", "", OFFSET(framerate), AV_OPT_TYPE_VIDEO_RATE, {.str = "25"}, 0, INT_MAX, DEC},
     { "raw_packet_size", "", OFFSET(raw_packet_size), AV_OPT_TYPE_INT, {.i64 = RAW_PACKET_SIZE }, 1, INT_MAX, DEC},
     { NULL },
 };
 #undef OFFSET
-
-const AVClass ff_rawvideo_demuxer_class = {
-    .class_name = "generic raw video demuxer",
-    .item_name  = av_default_item_name,
-    .option     = rawvideo_options,
-    .version    = LIBAVUTIL_VERSION_INT,
-};
-
 #define OFFSET(x) offsetof(FFRawDemuxerContext, x)
-static const AVOption raw_options[] = {
+const AVOption ff_raw_options[] = {
     { "raw_packet_size", "", OFFSET(raw_packet_size), AV_OPT_TYPE_INT, {.i64 = RAW_PACKET_SIZE }, 1, INT_MAX, DEC},
     { NULL },
 };
 
-const AVClass ff_raw_demuxer_class = {
-    .class_name = "generic raw demuxer",
-    .item_name  = av_default_item_name,
-    .option     = raw_options,
-    .version    = LIBAVUTIL_VERSION_INT,
-};
-
 #if CONFIG_DATA_DEMUXER
-const AVInputFormat ff_data_demuxer = {
+FF_RAW_DEMUXER_CLASS(raw_data)
+
+AVInputFormat ff_data_demuxer = {
     .name           = "data",
     .long_name      = NULL_IF_CONFIG_SMALL("raw data"),
-    .read_header    = raw_data_read_header,
+    .read_header    = ff_raw_data_read_header,
     .read_packet    = ff_raw_read_partial_packet,
     .raw_codec_id   = AV_CODEC_ID_NONE,
     .flags          = AVFMT_NOTIMESTAMPS,
     .priv_data_size = sizeof(FFRawDemuxerContext),\
-    .priv_class     = &ff_raw_demuxer_class,
+    .priv_class     = &raw_data_demuxer_class,\
 };
 #endif
 
@@ -222,8 +208,6 @@ static int mjpeg_probe(const AVProbeData *p)
             return AVPROBE_SCORE_EXTENSION / 2;
         return AVPROBE_SCORE_EXTENSION / 4;
     }
-    if (!nb_invalid && nb_frames)
-        return AVPROBE_SCORE_EXTENSION / 4;
 
     return 0;
 }

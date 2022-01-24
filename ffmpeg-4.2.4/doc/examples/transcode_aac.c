@@ -38,7 +38,6 @@
 #include "libavutil/audio_fifo.h"
 #include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
-#include "libavutil/channel_layout.h"
 #include "libavutil/frame.h"
 #include "libavutil/opt.h"
 
@@ -61,7 +60,7 @@ static int open_input_file(const char *filename,
                            AVCodecContext **input_codec_context)
 {
     AVCodecContext *avctx;
-    const AVCodec *input_codec;
+    AVCodec *input_codec;
     int error;
 
     /* Open the input file to read from it. */
@@ -145,7 +144,7 @@ static int open_output_file(const char *filename,
     AVCodecContext *avctx          = NULL;
     AVIOContext *output_io_context = NULL;
     AVStream *stream               = NULL;
-    const AVCodec *output_codec    = NULL;
+    AVCodec *output_codec          = NULL;
     int error;
 
     /* Open the output file to write to it. */
@@ -246,16 +245,14 @@ cleanup:
 
 /**
  * Initialize one data packet for reading or writing.
- * @param[out] packet Packet to be initialized
- * @return Error code (0 if successful)
+ * @param packet Packet to be initialized
  */
-static int init_packet(AVPacket **packet)
+static void init_packet(AVPacket *packet)
 {
-    if (!(*packet = av_packet_alloc())) {
-        fprintf(stderr, "Could not allocate packet\n");
-        return AVERROR(ENOMEM);
-    }
-    return 0;
+    av_init_packet(packet);
+    /* Set the packet data and size so that it is recognized as being empty. */
+    packet->data = NULL;
+    packet->size = 0;
 }
 
 /**
@@ -374,31 +371,28 @@ static int decode_audio_frame(AVFrame *frame,
                               int *data_present, int *finished)
 {
     /* Packet used for temporary storage. */
-    AVPacket *input_packet;
+    AVPacket input_packet;
     int error;
-
-    error = init_packet(&input_packet);
-    if (error < 0)
-        return error;
+    init_packet(&input_packet);
 
     /* Read one audio frame from the input file into a temporary packet. */
-    if ((error = av_read_frame(input_format_context, input_packet)) < 0) {
+    if ((error = av_read_frame(input_format_context, &input_packet)) < 0) {
         /* If we are at the end of the file, flush the decoder below. */
         if (error == AVERROR_EOF)
             *finished = 1;
         else {
             fprintf(stderr, "Could not read frame (error '%s')\n",
                     av_err2str(error));
-            goto cleanup;
+            return error;
         }
     }
 
     /* Send the audio frame stored in the temporary packet to the decoder.
      * The input audio stream decoder is used to do this. */
-    if ((error = avcodec_send_packet(input_codec_context, input_packet)) < 0) {
+    if ((error = avcodec_send_packet(input_codec_context, &input_packet)) < 0) {
         fprintf(stderr, "Could not send packet for decoding (error '%s')\n",
                 av_err2str(error));
-        goto cleanup;
+        return error;
     }
 
     /* Receive one frame from the decoder. */
@@ -424,7 +418,7 @@ static int decode_audio_frame(AVFrame *frame,
     }
 
 cleanup:
-    av_packet_free(&input_packet);
+    av_packet_unref(&input_packet);
     return error;
 }
 
@@ -667,12 +661,9 @@ static int encode_audio_frame(AVFrame *frame,
                               int *data_present)
 {
     /* Packet used for temporary storage. */
-    AVPacket *output_packet;
+    AVPacket output_packet;
     int error;
-
-    error = init_packet(&output_packet);
-    if (error < 0)
-        return error;
+    init_packet(&output_packet);
 
     /* Set a timestamp based on the sample rate for the container. */
     if (frame) {
@@ -690,11 +681,11 @@ static int encode_audio_frame(AVFrame *frame,
     } else if (error < 0) {
         fprintf(stderr, "Could not send packet for encoding (error '%s')\n",
                 av_err2str(error));
-        goto cleanup;
+        return error;
     }
 
     /* Receive one encoded frame from the encoder. */
-    error = avcodec_receive_packet(output_codec_context, output_packet);
+    error = avcodec_receive_packet(output_codec_context, &output_packet);
     /* If the encoder asks for more data to be able to provide an
      * encoded frame, return indicating that no data is present. */
     if (error == AVERROR(EAGAIN)) {
@@ -715,14 +706,14 @@ static int encode_audio_frame(AVFrame *frame,
 
     /* Write one audio frame from the temporary packet to the output file. */
     if (*data_present &&
-        (error = av_write_frame(output_format_context, output_packet)) < 0) {
+        (error = av_write_frame(output_format_context, &output_packet)) < 0) {
         fprintf(stderr, "Could not write frame (error '%s')\n",
                 av_err2str(error));
         goto cleanup;
     }
 
 cleanup:
-    av_packet_free(&output_packet);
+    av_packet_unref(&output_packet);
     return error;
 }
 

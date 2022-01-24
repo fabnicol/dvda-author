@@ -32,8 +32,6 @@
 
 #include <stdatomic.h>
 
-#include "libavutil/avassert.h"
-#include "libavutil/avstring.h"
 #include "v4l2-common.h"
 #include <dirent.h>
 
@@ -540,10 +538,11 @@ static int mmap_read_frame(AVFormatContext *ctx, AVPacket *pkt)
             s->frame_size = buf.bytesused;
 
         if (s->frame_size > 0 && buf.bytesused != s->frame_size) {
-            av_log(ctx, AV_LOG_WARNING,
+            av_log(ctx, AV_LOG_ERROR,
                    "Dequeued v4l2 buffer contains %d bytes, but %d were expected. Flags: 0x%08X.\n",
                    buf.bytesused, s->frame_size, buf.flags);
-            buf.bytesused = 0;
+            enqueue_buffer(s, &buf);
+            return AVERROR_INVALIDDATA;
         }
     }
 
@@ -813,8 +812,7 @@ static int device_try_init(AVFormatContext *ctx,
     }
 
     *codec_id = ff_fmt_v4l2codec(*desired_format);
-    if (*codec_id == AV_CODEC_ID_NONE)
-        av_assert0(ret == AVERROR(EINVAL));
+    av_assert0(*codec_id != AV_CODEC_ID_NONE);
     return ret;
 }
 
@@ -963,7 +961,7 @@ static int v4l2_read_header(AVFormatContext *ctx)
         st->codecpar->codec_tag =
             avcodec_pix_fmt_to_codec_tag(st->codecpar->format);
     else if (codec_id == AV_CODEC_ID_H264) {
-        avpriv_stream_set_need_parsing(st, AVSTREAM_PARSE_FULL_ONCE);
+        st->need_parsing = AVSTREAM_PARSE_FULL_ONCE;
     }
     if (desired_format == V4L2_PIX_FMT_YVU420)
         st->codecpar->codec_tag = MKTAG('Y', 'V', '1', '2');
@@ -983,11 +981,26 @@ fail:
 
 static int v4l2_read_packet(AVFormatContext *ctx, AVPacket *pkt)
 {
+#if FF_API_CODED_FRAME && FF_API_LAVF_AVCTX
+FF_DISABLE_DEPRECATION_WARNINGS
+    struct video_data *s = ctx->priv_data;
+    AVFrame *frame = ctx->streams[0]->codec->coded_frame;
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
     int res;
 
     if ((res = mmap_read_frame(ctx, pkt)) < 0) {
         return res;
     }
+
+#if FF_API_CODED_FRAME && FF_API_LAVF_AVCTX
+FF_DISABLE_DEPRECATION_WARNINGS
+    if (frame && s->interlaced) {
+        frame->interlaced_frame = 1;
+        frame->top_field_first = s->top_field_first;
+    }
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
 
     return pkt->size;
 }
@@ -1119,7 +1132,7 @@ static const AVClass v4l2_class = {
     .category   = AV_CLASS_CATEGORY_DEVICE_VIDEO_INPUT,
 };
 
-const AVInputFormat ff_v4l2_demuxer = {
+AVInputFormat ff_v4l2_demuxer = {
     .name           = "video4linux2,v4l2",
     .long_name      = NULL_IF_CONFIG_SMALL("Video4Linux2 device grab"),
     .priv_data_size = sizeof(struct video_data),

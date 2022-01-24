@@ -180,7 +180,7 @@ static int smjpeg_read_packet(AVFormatContext *s, AVPacket *pkt)
     return ret;
 }
 
-const AVInputFormat ff_smjpeg_demuxer = {
+AVInputFormat ff_smjpeg_demuxer = {
     .name           = "smjpeg",
     .long_name      = NULL_IF_CONFIG_SMALL("Loki SDL MJPEG"),
     .priv_data_size = sizeof(SMJPEGContext),

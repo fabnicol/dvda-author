@@ -23,7 +23,6 @@
 
 #include "config.h"
 
-#include "libavutil/attributes.h"
 #include "libavutil/cpu.h"
 #if   ARCH_AARCH64
 #   include "libavutil/aarch64/cpu.h"

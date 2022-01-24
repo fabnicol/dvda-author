@@ -29,7 +29,6 @@
 
 typedef struct VTContext {
     AVFrame *tmp_frame;
-    int log_once;
 } VTContext;
 
 char *videotoolbox_pixfmt;
@@ -45,13 +44,6 @@ static int videotoolbox_retrieve_data(AVCodecContext *s, AVFrame *frame)
     int linesize[4] = { 0 };
     int planes, ret, i;
 
-    if (frame->format == ist->hwaccel_output_format) {
-        av_log_once(s, AV_LOG_INFO, AV_LOG_TRACE, &vt->log_once,
-            "There is no video filter for videotoolbox pix_fmt now, remove the "
-            "-hwaccel_output_format option if video filter doesn't work\n");
-        return 0;
-    }
-
     av_frame_unref(vt->tmp_frame);
 
     switch (pixel_format) {
@@ -59,12 +51,10 @@ static int videotoolbox_retrieve_data(AVCodecContext *s, AVFrame *frame)
     case kCVPixelFormatType_422YpCbCr8:       vt->tmp_frame->format = AV_PIX_FMT_UYVY422; break;
     case kCVPixelFormatType_32BGRA:           vt->tmp_frame->format = AV_PIX_FMT_BGRA; break;
 #ifdef kCFCoreFoundationVersionNumber10_7
-    case kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange:
-    case kCVPixelFormatType_420YpCbCr8BiPlanarFullRange: vt->tmp_frame->format = AV_PIX_FMT_NV12; break;
+    case kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange: vt->tmp_frame->format = AV_PIX_FMT_NV12; break;
 #endif
 #if HAVE_KCVPIXELFORMATTYPE_420YPCBCR10BIPLANARVIDEORANGE
-    case kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange:
-    case kCVPixelFormatType_420YpCbCr10BiPlanarFullRange: vt->tmp_frame->format = AV_PIX_FMT_P010; break;
+    case kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange: vt->tmp_frame->format = AV_PIX_FMT_P010; break;
 #endif
     default:
         av_log(NULL, AV_LOG_ERROR,
@@ -75,7 +65,7 @@ static int videotoolbox_retrieve_data(AVCodecContext *s, AVFrame *frame)
 
     vt->tmp_frame->width  = frame->width;
     vt->tmp_frame->height = frame->height;
-    ret = av_frame_get_buffer(vt->tmp_frame, 0);
+    ret = av_frame_get_buffer(vt->tmp_frame, 32);
     if (ret < 0)
         return ret;
 

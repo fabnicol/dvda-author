@@ -98,7 +98,7 @@ static int aea_read_packet(AVFormatContext *s, AVPacket *pkt)
     return ret;
 }
 
-const AVInputFormat ff_aea_demuxer = {
+AVInputFormat ff_aea_demuxer = {
     .name           = "aea",
     .long_name      = NULL_IF_CONFIG_SMALL("MD STUDIO audio"),
     .read_probe     = aea_read_probe,

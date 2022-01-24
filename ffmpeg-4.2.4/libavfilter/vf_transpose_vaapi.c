@@ -17,6 +17,8 @@
  */
 #include <string.h>
 
+#include "libavutil/avassert.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 
@@ -143,7 +145,7 @@ static int transpose_vaapi_filter_frame(AVFilterLink *inlink, AVFrame *input_fra
 
     err = av_frame_copy_props(output_frame, input_frame);
     if (err < 0)
-        goto fail;
+        return err;
 
     err = ff_vaapi_vpp_init_params(avctx, &params,
                                    input_frame, output_frame);
@@ -257,9 +259,10 @@ static const AVFilterPad transpose_vaapi_inputs[] = {
         .name         = "default",
         .type         = AVMEDIA_TYPE_VIDEO,
         .filter_frame = &transpose_vaapi_filter_frame,
-        .get_buffer.video = get_video_buffer,
+        .get_video_buffer = get_video_buffer,
         .config_props = &ff_vaapi_vpp_config_input,
     },
+    { NULL }
 };
 
 static const AVFilterPad transpose_vaapi_outputs[] = {
@@ -268,17 +271,18 @@ static const AVFilterPad transpose_vaapi_outputs[] = {
         .type = AVMEDIA_TYPE_VIDEO,
         .config_props = &transpose_vaapi_vpp_config_output,
     },
+    { NULL }
 };
 
-const AVFilter ff_vf_transpose_vaapi = {
+AVFilter ff_vf_transpose_vaapi = {
     .name           = "transpose_vaapi",
     .description    = NULL_IF_CONFIG_SMALL("VAAPI VPP for transpose"),
     .priv_size      = sizeof(TransposeVAAPIContext),
     .init           = &transpose_vaapi_init,
     .uninit         = &ff_vaapi_vpp_ctx_uninit,
-    FILTER_INPUTS(transpose_vaapi_inputs),
-    FILTER_OUTPUTS(transpose_vaapi_outputs),
-    FILTER_QUERY_FUNC(&ff_vaapi_vpp_query_formats),
+    .query_formats  = &ff_vaapi_vpp_query_formats,
+    .inputs         = transpose_vaapi_inputs,
+    .outputs        = transpose_vaapi_outputs,
     .priv_class     = &transpose_vaapi_class,
     .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 };

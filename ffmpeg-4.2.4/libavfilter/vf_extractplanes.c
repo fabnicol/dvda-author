@@ -115,22 +115,16 @@ AVFILTER_DEFINE_CLASS(extractplanes);
         AV_PIX_FMT_YUV422P14##suf,                             \
         AV_PIX_FMT_YUV444P14##suf
 
-#define FLOAT_FORMATS(suf)                                     \
-        AV_PIX_FMT_GRAYF32##suf,                               \
-        AV_PIX_FMT_GBRPF32##suf, AV_PIX_FMT_GBRAPF32##suf      \
-
 static int query_formats(AVFilterContext *ctx)
 {
     static const enum AVPixelFormat in_pixfmts_le[] = {
         EIGHTBIT_FORMATS,
         HIGHDEPTH_FORMATS(LE),
-        FLOAT_FORMATS(LE),
         AV_PIX_FMT_NONE,
     };
     static const enum AVPixelFormat in_pixfmts_be[] = {
         EIGHTBIT_FORMATS,
         HIGHDEPTH_FORMATS(BE),
-        FLOAT_FORMATS(BE),
         AV_PIX_FMT_NONE,
     };
     static const enum AVPixelFormat out8_pixfmts[] = { AV_PIX_FMT_GRAY8, AV_PIX_FMT_NONE };
@@ -144,19 +138,17 @@ static int query_formats(AVFilterContext *ctx)
     static const enum AVPixelFormat out14be_pixfmts[] = { AV_PIX_FMT_GRAY14BE, AV_PIX_FMT_NONE };
     static const enum AVPixelFormat out16le_pixfmts[] = { AV_PIX_FMT_GRAY16LE, AV_PIX_FMT_NONE };
     static const enum AVPixelFormat out16be_pixfmts[] = { AV_PIX_FMT_GRAY16BE, AV_PIX_FMT_NONE };
-    static const enum AVPixelFormat out32le_pixfmts[] = { AV_PIX_FMT_GRAYF32LE, AV_PIX_FMT_NONE };
-    static const enum AVPixelFormat out32be_pixfmts[] = { AV_PIX_FMT_GRAYF32BE, AV_PIX_FMT_NONE };
     const enum AVPixelFormat *out_pixfmts, *in_pixfmts;
     const AVPixFmtDescriptor *desc;
     AVFilterFormats *avff;
     int i, ret, depth = 0, be = 0;
 
-    if (!ctx->inputs[0]->incfg.formats ||
-        !ctx->inputs[0]->incfg.formats->nb_formats) {
+    if (!ctx->inputs[0]->in_formats ||
+        !ctx->inputs[0]->in_formats->nb_formats) {
         return AVERROR(EAGAIN);
     }
 
-    avff = ctx->inputs[0]->incfg.formats;
+    avff = ctx->inputs[0]->in_formats;
     desc = av_pix_fmt_desc_get(avff->formats[0]);
     depth = desc->comp[0].depth;
     be = desc->flags & AV_PIX_FMT_FLAG_BE;
@@ -165,8 +157,8 @@ static int query_formats(AVFilterContext *ctx)
     } else {
         in_pixfmts = in_pixfmts_le;
     }
-    if (!ctx->inputs[0]->outcfg.formats)
-        if ((ret = ff_formats_ref(ff_make_format_list(in_pixfmts), &ctx->inputs[0]->outcfg.formats)) < 0)
+    if (!ctx->inputs[0]->out_formats)
+        if ((ret = ff_formats_ref(ff_make_format_list(in_pixfmts), &ctx->inputs[0]->out_formats)) < 0)
             return ret;
 
     for (i = 1; i < avff->nb_formats; i++) {
@@ -195,17 +187,13 @@ static int query_formats(AVFilterContext *ctx)
         out_pixfmts = out14le_pixfmts;
     else if (be && depth == 14)
         out_pixfmts = out14be_pixfmts;
-    else if (be && depth == 16)
+    else if (be)
         out_pixfmts = out16be_pixfmts;
-    else if (!be && depth == 16)
-        out_pixfmts = out16le_pixfmts;
-    else if (be && depth == 32)
-        out_pixfmts = out32be_pixfmts;
     else
-        out_pixfmts = out32le_pixfmts;
+        out_pixfmts = out16le_pixfmts;
 
     for (i = 0; i < ctx->nb_outputs; i++)
-        if ((ret = ff_formats_ref(ff_make_format_list(out_pixfmts), &ctx->outputs[i]->incfg.formats)) < 0)
+        if ((ret = ff_formats_ref(ff_make_format_list(out_pixfmts), &ctx->outputs[i]->in_formats)) < 0)
             return ret;
     return 0;
 }
@@ -352,11 +340,21 @@ static av_cold int init(AVFilterContext *ctx)
         pad.type = AVMEDIA_TYPE_VIDEO;
         pad.config_props = config_output;
 
-        if ((ret = ff_append_outpad_free_name(ctx, &pad)) < 0)
+        if ((ret = ff_insert_outpad(ctx, ctx->nb_outputs, &pad)) < 0) {
+            av_freep(&pad.name);
             return ret;
+        }
     }
 
     return 0;
+}
+
+static av_cold void uninit(AVFilterContext *ctx)
+{
+    int i;
+
+    for (i = 0; i < ctx->nb_outputs; i++)
+        av_freep(&ctx->output_pads[i].name);
 }
 
 static const AVFilterPad extractplanes_inputs[] = {
@@ -366,17 +364,19 @@ static const AVFilterPad extractplanes_inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_input,
     },
+    { NULL }
 };
 
-const AVFilter ff_vf_extractplanes = {
+AVFilter ff_vf_extractplanes = {
     .name          = "extractplanes",
     .description   = NULL_IF_CONFIG_SMALL("Extract planes as grayscale frames."),
     .priv_size     = sizeof(ExtractPlanesContext),
     .priv_class    = &extractplanes_class,
     .init          = init,
-    FILTER_INPUTS(extractplanes_inputs),
+    .uninit        = uninit,
+    .query_formats = query_formats,
+    .inputs        = extractplanes_inputs,
     .outputs       = NULL,
-    FILTER_QUERY_FUNC(query_formats),
     .flags         = AVFILTER_FLAG_DYNAMIC_OUTPUTS,
 };
 
@@ -387,27 +387,20 @@ static av_cold int init_alphaextract(AVFilterContext *ctx)
     ExtractPlanesContext *s = ctx->priv;
 
     s->requested_planes = PLANE_A;
-    s->map[0] = 3;
 
-    return 0;
+    return init(ctx);
 }
 
-static const AVFilterPad alphaextract_outputs[] = {
-    {
-        .name         = "default",
-        .type         = AVMEDIA_TYPE_VIDEO,
-        .config_props = config_output,
-    },
-};
-
-const AVFilter ff_vf_alphaextract = {
+AVFilter ff_vf_alphaextract = {
     .name           = "alphaextract",
     .description    = NULL_IF_CONFIG_SMALL("Extract an alpha channel as a "
                       "grayscale image component."),
     .priv_size      = sizeof(ExtractPlanesContext),
     .init           = init_alphaextract,
-    FILTER_INPUTS(extractplanes_inputs),
-    FILTER_OUTPUTS(alphaextract_outputs),
-    FILTER_QUERY_FUNC(query_formats),
+    .uninit         = uninit,
+    .query_formats  = query_formats,
+    .inputs         = extractplanes_inputs,
+    .outputs        = NULL,
+    .flags          = AVFILTER_FLAG_DYNAMIC_OUTPUTS,
 };
 #endif  /* CONFIG_ALPHAEXTRACT_FILTER */

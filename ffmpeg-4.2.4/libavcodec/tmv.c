@@ -86,7 +86,7 @@ static av_cold int tmv_decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_tmv_decoder = {
+AVCodec ff_tmv_decoder = {
     .name           = "tmv",
     .long_name      = NULL_IF_CONFIG_SMALL("8088flex TMV"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -94,5 +94,4 @@ const AVCodec ff_tmv_decoder = {
     .init           = tmv_decode_init,
     .decode         = tmv_decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

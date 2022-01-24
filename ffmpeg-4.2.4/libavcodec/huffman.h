@@ -26,8 +26,7 @@
 #ifndef AVCODEC_HUFFMAN_H
 #define AVCODEC_HUFFMAN_H
 
-#include <stdint.h>
-
+#include "avcodec.h"
 #include "vlc.h"
 
 typedef struct Node {
@@ -41,7 +40,7 @@ typedef struct Node {
 #define FF_HUFFMAN_BITS 10
 
 typedef int (*HuffCmp)(const void *va, const void *vb);
-int ff_huff_build_tree(void *logctx, VLC *vlc, int nb_codes, int nb_bits,
+int ff_huff_build_tree(AVCodecContext *avctx, VLC *vlc, int nb_codes, int nb_bits,
                        Node *nodes, HuffCmp cmp, int flags);
 
 int ff_huff_gen_len_table(uint8_t *dst, const uint64_t *stats, int n, int skip0);

@@ -57,6 +57,7 @@ static int webvtt_write_header(AVFormatContext *ctx)
     avpriv_set_pts_info(s, 64, 1, 1000);
 
     avio_printf(pb, "WEBVTT\n");
+    avio_flush(pb);
 
     return 0;
 }
@@ -64,8 +65,7 @@ static int webvtt_write_header(AVFormatContext *ctx)
 static int webvtt_write_packet(AVFormatContext *ctx, AVPacket *pkt)
 {
     AVIOContext  *pb = ctx->pb;
-    size_t id_size, settings_size;
-    int id_size_int, settings_size_int;
+    int id_size, settings_size;
     uint8_t *id, *settings;
 
     avio_printf(pb, "\n");
@@ -73,12 +73,8 @@ static int webvtt_write_packet(AVFormatContext *ctx, AVPacket *pkt)
     id = av_packet_get_side_data(pkt, AV_PKT_DATA_WEBVTT_IDENTIFIER,
                                  &id_size);
 
-    if (id_size > INT_MAX)
-        return AVERROR(EINVAL);
-
-    id_size_int = id_size;
-    if (id && id_size_int > 0)
-        avio_printf(pb, "%.*s\n", id_size_int, id);
+    if (id && id_size > 0)
+        avio_printf(pb, "%.*s\n", id_size, id);
 
     webvtt_write_time(pb, pkt->pts);
     avio_printf(pb, " --> ");
@@ -87,12 +83,8 @@ static int webvtt_write_packet(AVFormatContext *ctx, AVPacket *pkt)
     settings = av_packet_get_side_data(pkt, AV_PKT_DATA_WEBVTT_SETTINGS,
                                        &settings_size);
 
-    if (settings_size > INT_MAX)
-        return AVERROR(EINVAL);
-
-    settings_size_int = settings_size;
-    if (settings && settings_size_int > 0)
-        avio_printf(pb, " %.*s", settings_size_int, settings);
+    if (settings && settings_size > 0)
+        avio_printf(pb, " %.*s", settings_size, settings);
 
     avio_printf(pb, "\n");
 
@@ -102,7 +94,7 @@ static int webvtt_write_packet(AVFormatContext *ctx, AVPacket *pkt)
     return 0;
 }
 
-const AVOutputFormat ff_webvtt_muxer = {
+AVOutputFormat ff_webvtt_muxer = {
     .name              = "webvtt",
     .long_name         = NULL_IF_CONFIG_SMALL("WebVTT subtitle"),
     .extensions        = "vtt",

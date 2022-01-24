@@ -31,7 +31,6 @@
 #include "libavutil/bprint.h"
 #include "avcodec.h"
 #include "ass.h"
-#include "internal.h"
 
 static int indexof(const char *s, int c)
 {
@@ -369,7 +368,7 @@ static int microdvd_init(AVCodecContext *avctx)
                                   alignment);
 }
 
-const AVCodec ff_microdvd_decoder = {
+AVCodec ff_microdvd_decoder = {
     .name         = "microdvd",
     .long_name    = NULL_IF_CONFIG_SMALL("MicroDVD subtitle"),
     .type         = AVMEDIA_TYPE_SUBTITLE,
@@ -378,5 +377,4 @@ const AVCodec ff_microdvd_decoder = {
     .decode       = microdvd_decode_frame,
     .flush        = ff_ass_decoder_flush,
     .priv_data_size = sizeof(FFASSDecoderContext),
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

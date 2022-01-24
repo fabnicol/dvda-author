@@ -28,8 +28,6 @@
  * http://wiki.multimedia.cx/index.php?title=Electronic_Arts_MAD
  */
 
-#include "libavutil/mem_internal.h"
-
 #include "avcodec.h"
 #include "blockdsp.h"
 #include "bytestream.h"
@@ -341,7 +339,7 @@ static av_cold int decode_end(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_eamad_decoder = {
+AVCodec ff_eamad_decoder = {
     .name           = "eamad",
     .long_name      = NULL_IF_CONFIG_SMALL("Electronic Arts Madcow Video"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -351,5 +349,4 @@ const AVCodec ff_eamad_decoder = {
     .close          = decode_end,
     .decode         = decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

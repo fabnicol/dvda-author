@@ -24,6 +24,7 @@
  * GIF parser
  */
 
+#include "libavutil/avassert.h"
 #include "libavutil/bswap.h"
 #include "libavutil/common.h"
 
@@ -179,7 +180,7 @@ static int gif_parse(AVCodecParserContext *s, AVCodecContext *avctx,
     return next;
 }
 
-const AVCodecParser ff_gif_parser = {
+AVCodecParser ff_gif_parser = {
     .codec_ids      = { AV_CODEC_ID_GIF },
     .priv_data_size = sizeof(GIFParseContext),
     .parser_parse   = gif_parse,

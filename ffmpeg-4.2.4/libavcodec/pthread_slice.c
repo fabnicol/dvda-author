@@ -130,7 +130,7 @@ int ff_slice_thread_init(AVCodecContext *avctx)
 {
     SliceThreadContext *c;
     int thread_count = avctx->thread_count;
-    void (*mainfunc)(void *);
+    static void (*mainfunc)(void *);
 
     // We cannot do this in the encoder init as the threads are created before
     if (av_codec_is_encoder(avctx->codec) &&
@@ -211,7 +211,7 @@ int ff_alloc_entries(AVCodecContext *avctx, int count)
         }
 
         p->thread_count  = avctx->thread_count;
-        p->entries       = av_calloc(count, sizeof(*p->entries));
+        p->entries       = av_mallocz_array(count, sizeof(int));
 
         if (!p->progress_mutex) {
             p->progress_mutex = av_malloc_array(p->thread_count, sizeof(pthread_mutex_t));

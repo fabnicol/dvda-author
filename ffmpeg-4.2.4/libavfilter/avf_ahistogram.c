@@ -99,17 +99,17 @@ static int query_formats(AVFilterContext *ctx)
     int ret = AVERROR(EINVAL);
 
     formats = ff_make_format_list(sample_fmts);
-    if ((ret = ff_formats_ref         (formats, &inlink->outcfg.formats        )) < 0 ||
+    if ((ret = ff_formats_ref         (formats, &inlink->out_formats        )) < 0 ||
         (layouts = ff_all_channel_counts()) == NULL ||
-        (ret = ff_channel_layouts_ref (layouts, &inlink->outcfg.channel_layouts)) < 0)
+        (ret = ff_channel_layouts_ref (layouts, &inlink->out_channel_layouts)) < 0)
         return ret;
 
     formats = ff_all_samplerates();
-    if ((ret = ff_formats_ref(formats, &inlink->outcfg.samplerates)) < 0)
+    if ((ret = ff_formats_ref(formats, &inlink->out_samplerates)) < 0)
         return ret;
 
     formats = ff_make_format_list(pix_fmts);
-    if ((ret = ff_formats_ref(formats, &outlink->incfg.formats)) < 0)
+    if ((ret = ff_formats_ref(formats, &outlink->in_formats)) < 0)
         return ret;
 
     return 0;
@@ -163,7 +163,6 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     const int w = s->w;
     int c, y, n, p, bin;
     uint64_t acmax = 1;
-    AVFrame *clone;
 
     if (!s->out || s->out->width  != outlink->w ||
                    s->out->height != outlink->h) {
@@ -364,11 +363,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
             s->ypos = H;
     }
 
-    clone = av_frame_clone(s->out);
-    if (!clone)
-        return AVERROR(ENOMEM);
-
-    return ff_filter_frame(outlink, clone);
+    return ff_filter_frame(outlink, av_frame_clone(s->out));
 }
 
 static int activate(AVFilterContext *ctx)
@@ -412,6 +407,7 @@ static const AVFilterPad ahistogram_inputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .config_props = config_input,
     },
+    { NULL }
 };
 
 static const AVFilterPad ahistogram_outputs[] = {
@@ -420,16 +416,17 @@ static const AVFilterPad ahistogram_outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_output,
     },
+    { NULL }
 };
 
-const AVFilter ff_avf_ahistogram = {
+AVFilter ff_avf_ahistogram = {
     .name          = "ahistogram",
     .description   = NULL_IF_CONFIG_SMALL("Convert input audio to histogram video output."),
     .uninit        = uninit,
+    .query_formats = query_formats,
     .priv_size     = sizeof(AudioHistogramContext),
     .activate      = activate,
-    FILTER_INPUTS(ahistogram_inputs),
-    FILTER_OUTPUTS(ahistogram_outputs),
-    FILTER_QUERY_FUNC(query_formats),
+    .inputs        = ahistogram_inputs,
+    .outputs       = ahistogram_outputs,
     .priv_class    = &ahistogram_class,
 };

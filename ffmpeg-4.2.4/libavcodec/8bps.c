@@ -37,7 +37,6 @@
 #include "libavutil/internal.h"
 #include "libavutil/intreadwrite.h"
 #include "avcodec.h"
-#include "decode.h"
 #include "internal.h"
 
 
@@ -123,7 +122,16 @@ static int decode_frame(AVCodecContext *avctx, void *data,
     }
 
     if (avctx->bits_per_coded_sample <= 8) {
-        frame->palette_has_changed = ff_copy_palette(c->pal, avpkt, avctx);
+        int size;
+        const uint8_t *pal = av_packet_get_side_data(avpkt,
+                                                     AV_PKT_DATA_PALETTE,
+                                                     &size);
+        if (pal && size == AVPALETTE_SIZE) {
+            frame->palette_has_changed = 1;
+            memcpy(c->pal, pal, AVPALETTE_SIZE);
+        } else if (pal) {
+            av_log(avctx, AV_LOG_ERROR, "Palette size %d is wrong\n", size);
+        }
 
         memcpy (frame->data[1], c->pal, AVPALETTE_SIZE);
     }
@@ -173,7 +181,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_eightbps_decoder = {
+AVCodec ff_eightbps_decoder = {
     .name           = "8bps",
     .long_name      = NULL_IF_CONFIG_SMALL("QuickTime 8BPS video"),
     .type           = AVMEDIA_TYPE_VIDEO,

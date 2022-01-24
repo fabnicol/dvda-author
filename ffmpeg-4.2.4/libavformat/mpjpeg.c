@@ -34,6 +34,7 @@ static int mpjpeg_write_header(AVFormatContext *s)
 {
     MPJPEGContext *mpj = s->priv_data;
     avio_printf(s->pb, "--%s\r\n", mpj->boundary_tag);
+    avio_flush(s->pb);
     return 0;
 }
 
@@ -49,6 +50,11 @@ static int mpjpeg_write_packet(AVFormatContext *s, AVPacket *pkt)
     return 0;
 }
 
+static int mpjpeg_write_trailer(AVFormatContext *s)
+{
+    return 0;
+}
+
 static const AVOption options[] = {
     { "boundary_tag",    "Boundary tag", offsetof(MPJPEGContext, boundary_tag),   AV_OPT_TYPE_STRING, {.str = BOUNDARY_TAG}, .flags = AV_OPT_FLAG_ENCODING_PARAM },
     { NULL },
@@ -61,7 +67,7 @@ static const AVClass mpjpeg_muxer_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const AVOutputFormat ff_mpjpeg_muxer = {
+AVOutputFormat ff_mpjpeg_muxer = {
     .name              = "mpjpeg",
     .long_name         = NULL_IF_CONFIG_SMALL("MIME multipart JPEG"),
     .mime_type         = "multipart/x-mixed-replace;boundary=" BOUNDARY_TAG,
@@ -71,6 +77,7 @@ const AVOutputFormat ff_mpjpeg_muxer = {
     .video_codec       = AV_CODEC_ID_MJPEG,
     .write_header      = mpjpeg_write_header,
     .write_packet      = mpjpeg_write_packet,
+    .write_trailer     = mpjpeg_write_trailer,
     .flags             = AVFMT_NOTIMESTAMPS,
     .priv_class        = &mpjpeg_muxer_class,
 };

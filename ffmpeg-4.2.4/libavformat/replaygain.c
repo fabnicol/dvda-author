@@ -29,6 +29,7 @@
 #include "libavutil/dict.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/mathematics.h"
+#include "libavutil/mem.h"
 #include "libavutil/replaygain.h"
 
 #include "avformat.h"

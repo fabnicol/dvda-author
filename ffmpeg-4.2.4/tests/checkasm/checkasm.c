@@ -42,7 +42,7 @@
 #include <io.h>
 #endif
 
-#if HAVE_SETCONSOLETEXTATTRIBUTE && HAVE_GETSTDHANDLE
+#if HAVE_SETCONSOLETEXTATTRIBUTE
 #include <windows.h>
 #define COLOR_RED    FOREGROUND_RED
 #define COLOR_GREEN  FOREGROUND_GREEN
@@ -116,7 +116,6 @@ static const struct {
     #if CONFIG_HEVC_DECODER
         { "hevc_add_res", checkasm_check_hevc_add_res },
         { "hevc_idct", checkasm_check_hevc_idct },
-        { "hevc_pel", checkasm_check_hevc_pel },
         { "hevc_sao", checkasm_check_hevc_sao },
     #endif
     #if CONFIG_HUFFYUV_DECODER
@@ -130,9 +129,6 @@ static const struct {
     #endif
     #if CONFIG_LLVIDENCDSP
         { "llviddspenc", checkasm_check_llviddspenc },
-    #endif
-    #if CONFIG_OPUS_DECODER
-        { "opusdsp", checkasm_check_opusdsp },
     #endif
     #if CONFIG_PIXBLOCKDSP
         { "pixblockdsp", checkasm_check_pixblockdsp },
@@ -166,9 +162,6 @@ static const struct {
     #if CONFIG_COLORSPACE_FILTER
         { "vf_colorspace", checkasm_check_colorspace },
     #endif
-    #if CONFIG_EQ_FILTER
-        { "vf_eq", checkasm_check_vf_eq },
-    #endif
     #if CONFIG_GBLUR_FILTER
         { "vf_gblur", checkasm_check_vf_gblur },
     #endif
@@ -184,12 +177,10 @@ static const struct {
 #endif
 #if CONFIG_SWSCALE
     { "sw_rgb", checkasm_check_sw_rgb },
-    { "sw_scale", checkasm_check_sw_scale },
 #endif
 #if CONFIG_AVUTIL
         { "fixed_dsp", checkasm_check_fixed_dsp },
         { "float_dsp", checkasm_check_float_dsp },
-        { "av_tx",     checkasm_check_av_tx },
 #endif
     { NULL }
 };
@@ -215,9 +206,6 @@ static const struct {
     { "ALTIVEC",  "altivec",  AV_CPU_FLAG_ALTIVEC },
     { "VSX",      "vsx",      AV_CPU_FLAG_VSX },
     { "POWER8",   "power8",   AV_CPU_FLAG_POWER8 },
-#elif ARCH_MIPS
-    { "MMI",      "mmi",      AV_CPU_FLAG_MMI },
-    { "MSA",      "msa",      AV_CPU_FLAG_MSA },
 #elif ARCH_X86
     { "MMX",      "mmx",      AV_CPU_FLAG_MMX|AV_CPU_FLAG_CMOV },
     { "MMXEXT",   "mmxext",   AV_CPU_FLAG_MMXEXT },
@@ -274,7 +262,6 @@ static struct {
     int cpu_flag;
     const char *cpu_flag_name;
     const char *test_name;
-    int verbose;
 } state;
 
 /* PRNG state */
@@ -381,7 +368,7 @@ static void color_printf(int color, const char *fmt, ...)
     static int use_color = -1;
     va_list arg;
 
-#if HAVE_SETCONSOLETEXTATTRIBUTE && HAVE_GETSTDHANDLE
+#if HAVE_SETCONSOLETEXTATTRIBUTE
     static HANDLE con;
     static WORD org_attributes;
 
@@ -410,7 +397,7 @@ static void color_printf(int color, const char *fmt, ...)
     va_end(arg);
 
     if (use_color) {
-#if HAVE_SETCONSOLETEXTATTRIBUTE && HAVE_GETSTDHANDLE
+#if HAVE_SETCONSOLETEXTATTRIBUTE
         SetConsoleTextAttribute(con, org_attributes);
 #else
         fprintf(stderr, "\x1b[0m");
@@ -629,13 +616,9 @@ static int bench_init_linux(void)
     }
     return 0;
 }
-#elif CONFIG_MACOS_KPERF
-static int bench_init_kperf(void)
-{
-    ff_kperf_init();
-    return 0;
-}
-#else
+#endif
+
+#if !CONFIG_LINUX_PERF
 static int bench_init_ffmpeg(void)
 {
 #ifdef AV_READ_TIME
@@ -652,8 +635,6 @@ static int bench_init(void)
 {
 #if CONFIG_LINUX_PERF
     int ret = bench_init_linux();
-#elif CONFIG_MACOS_KPERF
-    int ret = bench_init_kperf();
 #else
     int ret = bench_init_ffmpeg();
 #endif
@@ -699,8 +680,6 @@ int main(int argc, char *argv[])
                 state.bench_pattern = "";
         } else if (!strncmp(argv[1], "--test=", 7)) {
             state.test_name = argv[1] + 7;
-        } else if (!strcmp(argv[1], "--verbose") || !strcmp(argv[1], "-v")) {
-            state.verbose = 1;
         } else {
             seed = strtoul(argv[1], NULL, 10);
         }
@@ -851,42 +830,3 @@ void checkasm_report(const char *name, ...)
             max_length = length;
     }
 }
-
-#define DEF_CHECKASM_CHECK_FUNC(type, fmt) \
-int checkasm_check_##type(const char *const file, const int line, \
-                          const type *buf1, ptrdiff_t stride1, \
-                          const type *buf2, ptrdiff_t stride2, \
-                          const int w, int h, const char *const name) \
-{ \
-    int y = 0; \
-    stride1 /= sizeof(*buf1); \
-    stride2 /= sizeof(*buf2); \
-    for (y = 0; y < h; y++) \
-        if (memcmp(&buf1[y*stride1], &buf2[y*stride2], w*sizeof(*buf1))) \
-            break; \
-    if (y == h) \
-        return 0; \
-    checkasm_fail_func("%s:%d", file, line); \
-    if (!state.verbose) \
-        return 1; \
-    fprintf(stderr, "%s:\n", name); \
-    while (h--) { \
-        for (int x = 0; x < w; x++) \
-            fprintf(stderr, " " fmt, buf1[x]); \
-        fprintf(stderr, "    "); \
-        for (int x = 0; x < w; x++) \
-            fprintf(stderr, " " fmt, buf2[x]); \
-        fprintf(stderr, "    "); \
-        for (int x = 0; x < w; x++) \
-            fprintf(stderr, "%c", buf1[x] != buf2[x] ? 'x' : '.'); \
-        buf1 += stride1; \
-        buf2 += stride2; \
-        fprintf(stderr, "\n"); \
-    } \
-    return 1; \
-}
-
-DEF_CHECKASM_CHECK_FUNC(uint8_t,  "%02x")
-DEF_CHECKASM_CHECK_FUNC(uint16_t, "%04x")
-DEF_CHECKASM_CHECK_FUNC(int16_t,  "%6d")
-DEF_CHECKASM_CHECK_FUNC(int32_t,  "%9d")

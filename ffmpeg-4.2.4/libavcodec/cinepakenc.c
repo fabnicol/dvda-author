@@ -45,7 +45,6 @@
 
 #include "avcodec.h"
 #include "elbg.h"
-#include "encode.h"
 #include "internal.h"
 
 #define CVID_HEADER_SIZE 10
@@ -127,7 +126,6 @@ typedef struct CinepakEncContext {
     int min_min_strips;
     int max_max_strips;
     int strip_number_delta_range;
-    struct ELBGContext *elbg;
 } CinepakEncContext;
 
 #define OFFSET(x) offsetof(CinepakEncContext, x)
@@ -173,22 +171,22 @@ static av_cold int cinepak_encode_init(AVCodecContext *avctx)
     if (!(s->last_frame = av_frame_alloc()))
         return AVERROR(ENOMEM);
     if (!(s->best_frame = av_frame_alloc()))
-        return AVERROR(ENOMEM);
+        goto enomem;
     if (!(s->scratch_frame = av_frame_alloc()))
-        return AVERROR(ENOMEM);
+        goto enomem;
     if (avctx->pix_fmt == AV_PIX_FMT_RGB24)
         if (!(s->input_frame = av_frame_alloc()))
-            return AVERROR(ENOMEM);
+            goto enomem;
 
     if (!(s->codebook_input = av_malloc_array((avctx->pix_fmt == AV_PIX_FMT_RGB24 ? 6 : 4) * (avctx->width * avctx->height) >> 2, sizeof(*s->codebook_input))))
-        return AVERROR(ENOMEM);
+        goto enomem;
 
     if (!(s->codebook_closest = av_malloc_array((avctx->width * avctx->height) >> 2, sizeof(*s->codebook_closest))))
-        return AVERROR(ENOMEM);
+        goto enomem;
 
     for (x = 0; x < (avctx->pix_fmt == AV_PIX_FMT_RGB24 ? 4 : 3); x++)
         if (!(s->pict_bufs[x] = av_malloc((avctx->pix_fmt == AV_PIX_FMT_RGB24 ? 6 : 4) * (avctx->width * avctx->height) >> 2)))
-            return AVERROR(ENOMEM);
+            goto enomem;
 
     mb_count = avctx->width * avctx->height / MB_AREA;
 
@@ -201,13 +199,13 @@ static av_cold int cinepak_encode_init(AVCodecContext *avctx)
     frame_buf_size = CVID_HEADER_SIZE + s->max_max_strips * strip_buf_size;
 
     if (!(s->strip_buf = av_malloc(strip_buf_size)))
-        return AVERROR(ENOMEM);
+        goto enomem;
 
     if (!(s->frame_buf = av_malloc(frame_buf_size)))
-        return AVERROR(ENOMEM);
+        goto enomem;
 
     if (!(s->mb = av_malloc_array(mb_count, sizeof(mb_info))))
-        return AVERROR(ENOMEM);
+        goto enomem;
 
     av_lfg_init(&s->randctx, 1);
     s->avctx          = avctx;
@@ -254,6 +252,23 @@ static av_cold int cinepak_encode_init(AVCodecContext *avctx)
     s->max_strips = s->max_max_strips;
 
     return 0;
+
+enomem:
+    av_frame_free(&s->last_frame);
+    av_frame_free(&s->best_frame);
+    av_frame_free(&s->scratch_frame);
+    if (avctx->pix_fmt == AV_PIX_FMT_RGB24)
+        av_frame_free(&s->input_frame);
+    av_freep(&s->codebook_input);
+    av_freep(&s->codebook_closest);
+    av_freep(&s->strip_buf);
+    av_freep(&s->frame_buf);
+    av_freep(&s->mb);
+
+    for (x = 0; x < (avctx->pix_fmt == AV_PIX_FMT_RGB24 ? 4 : 3); x++)
+        av_freep(&s->pict_bufs[x]);
+
+    return AVERROR(ENOMEM);
 }
 
 static int64_t calculate_mode_score(CinepakEncContext *s, int h,
@@ -709,7 +724,6 @@ static int quantize(CinepakEncContext *s, int h, uint8_t *data[4],
     uint8_t vq_pict_buf[(MB_AREA * 3) / 2];
     uint8_t     *sub_data[4],     *vq_data[4];
     int      sub_linesize[4],  vq_linesize[4];
-    int ret;
 
     for (mbn = i = y = 0; y < h; y += MB_SIZE) {
         for (x = 0; x < s->w; x += MB_SIZE, ++mbn) {
@@ -763,10 +777,8 @@ static int quantize(CinepakEncContext *s, int h, uint8_t *data[4],
     if (i < size)
         size = i;
 
-    ret = avpriv_elbg_do(&s->elbg, s->codebook_input, entry_size, i, codebook,
-                         size, 1, s->codebook_closest, &s->randctx, 0);
-    if (ret < 0)
-        return ret;
+    avpriv_init_elbg(s->codebook_input, entry_size, i, codebook, size, 1, s->codebook_closest, &s->randctx);
+    avpriv_do_elbg(s->codebook_input, entry_size, i, codebook, size, 1, s->codebook_closest, &s->randctx);
 
     // set up vq_data, which contains a single MB
     vq_data[0]     = vq_pict_buf;
@@ -891,10 +903,8 @@ static int rd_strip(CinepakEncContext *s, int y, int h, int keyframe,
                 if (mode == MODE_V1_ONLY) {
                     info.v1_size = v1_size;
                     // the size may shrink even before optimizations if the input is short:
-                    if ((new_v1_size = quantize(s, h, data, linesize, 1,
-                                                &info, ENC_UNCERTAIN)) < 0)
-                        return new_v1_size;
-                    info.v1_size = new_v1_size;
+                    info.v1_size = quantize(s, h, data, linesize, 1,
+                                            &info, ENC_UNCERTAIN);
                     if (info.v1_size < v1_size)
                         // too few eligible blocks, no sense in trying bigger sizes
                         v1enough = 1;
@@ -907,11 +917,8 @@ static int rd_strip(CinepakEncContext *s, int y, int h, int keyframe,
 
                     if (mode == MODE_V1_V4) {
                         info.v4_size = v4_size;
-                        new_v4_size = quantize(s, h, data, linesize, 0,
-                                               &info, ENC_UNCERTAIN);
-                        if (new_v4_size < 0)
-                            return new_v4_size;
-                        info.v4_size = new_v4_size;
+                        info.v4_size = quantize(s, h, data, linesize, 0,
+                                                &info, ENC_UNCERTAIN);
                         if (info.v4_size < v4_size)
                             // too few eligible blocks, no sense in trying bigger sizes
                             v4enough = 1;
@@ -929,15 +936,11 @@ static int rd_strip(CinepakEncContext *s, int y, int h, int keyframe,
                     // we assume we _may_ come here with more blocks to encode than before
                     info.v1_size = v1_size;
                     new_v1_size = quantize(s, h, data, linesize, 1, &info, ENC_V1);
-                    if (new_v1_size < 0)
-                        return new_v1_size;
                     if (new_v1_size < info.v1_size)
                         info.v1_size = new_v1_size;
                     // we assume we _may_ come here with more blocks to encode than before
                     info.v4_size = v4_size;
                     new_v4_size = quantize(s, h, data, linesize, 0, &info, ENC_V4);
-                    if (new_v4_size < 0)
-                        return new_v4_size;
                     if (new_v4_size < info.v4_size)
                         info.v4_size = new_v4_size;
                     // calculate the resulting score
@@ -954,16 +957,12 @@ static int rd_strip(CinepakEncContext *s, int y, int h, int keyframe,
                         if (v1shrunk) {
                             info.v1_size = v1_size;
                             new_v1_size = quantize(s, h, data, linesize, 1, &info, ENC_V1);
-                            if (new_v1_size < 0)
-                                return new_v1_size;
                             if (new_v1_size < info.v1_size)
                                 info.v1_size = new_v1_size;
                         }
                         if (v4shrunk) {
                             info.v4_size = v4_size;
                             new_v4_size = quantize(s, h, data, linesize, 0, &info, ENC_V4);
-                            if (new_v4_size < 0)
-                                return new_v4_size;
                             if (new_v4_size < info.v4_size)
                                 info.v4_size = new_v4_size;
                         }
@@ -1158,7 +1157,7 @@ static int cinepak_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
 
     s->lambda = frame->quality ? frame->quality - 1 : 2 * FF_LAMBDA_SCALE;
 
-    if ((ret = ff_alloc_packet(avctx, pkt, s->frame_buf_size)) < 0)
+    if ((ret = ff_alloc_packet2(avctx, pkt, s->frame_buf_size, 0)) < 0)
         return ret;
     ret       = rd_frame(s, frame, (s->curframe == 0), pkt->data, s->frame_buf_size);
     pkt->size = ret;
@@ -1179,7 +1178,6 @@ static av_cold int cinepak_encode_end(AVCodecContext *avctx)
     CinepakEncContext *s = avctx->priv_data;
     int x;
 
-    avpriv_elbg_free(&s->elbg);
     av_frame_free(&s->last_frame);
     av_frame_free(&s->best_frame);
     av_frame_free(&s->scratch_frame);
@@ -1197,7 +1195,7 @@ static av_cold int cinepak_encode_end(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_cinepak_encoder = {
+AVCodec ff_cinepak_encoder = {
     .name           = "cinepak",
     .long_name      = NULL_IF_CONFIG_SMALL("Cinepak"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -1208,5 +1206,4 @@ const AVCodec ff_cinepak_encoder = {
     .close          = cinepak_encode_end,
     .pix_fmts       = (const enum AVPixelFormat[]) { AV_PIX_FMT_RGB24, AV_PIX_FMT_GRAY8, AV_PIX_FMT_NONE },
     .priv_class     = &cinepak_class,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

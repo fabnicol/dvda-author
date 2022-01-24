@@ -120,6 +120,18 @@ static const H265ProfileDescriptor h265_profiles[] = {
 };
 
 
+const H265LevelDescriptor *ff_h265_get_level(int level_idc)
+{
+    int i;
+
+    for (i = 0; i < FF_ARRAY_ELEMS(h265_levels); i++) {
+        if (h265_levels[i].level_idc == level_idc)
+            return &h265_levels[i];
+    }
+
+    return NULL;
+}
+
 const H265ProfileDescriptor *ff_h265_get_profile(const H265RawProfileTierLevel *ptl)
 {
     int i;
@@ -176,7 +188,7 @@ const H265LevelDescriptor *ff_h265_guess_level(const H265RawProfileTierLevel *pt
         profile = NULL;
     if (!profile) {
         // Default to using multiplication factors for Main profile.
-        profile = &h265_profiles[4];
+        profile = &h265_profiles[3];
     }
 
     pic_size = width * height;

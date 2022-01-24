@@ -3,7 +3,6 @@ OBJS += x86/cpu.o                                                       \
         x86/float_dsp_init.o                                            \
         x86/imgutils_init.o                                             \
         x86/lls_init.o                                                  \
-        x86/tx_float_init.o                                             \
 
 OBJS-$(CONFIG_PIXELUTILS) += x86/pixelutils_init.o                      \
 
@@ -15,6 +14,5 @@ X86ASM-OBJS += x86/cpuid.o                                              \
              x86/float_dsp.o                                            \
              x86/imgutils.o                                             \
              x86/lls.o                                                  \
-             x86/tx_float.o                                             \
 
 X86ASM-OBJS-$(CONFIG_PIXELUTILS) += x86/pixelutils.o                    \

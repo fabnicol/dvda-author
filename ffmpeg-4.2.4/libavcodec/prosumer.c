@@ -365,7 +365,7 @@ static av_cold int decode_close(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_prosumer_decoder = {
+AVCodec ff_prosumer_decoder = {
     .name           = "prosumer",
     .long_name      = NULL_IF_CONFIG_SMALL("Brooktree ProSumer Video"),
     .type           = AVMEDIA_TYPE_VIDEO,

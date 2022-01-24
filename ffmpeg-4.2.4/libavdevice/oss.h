@@ -19,9 +19,8 @@
 #ifndef AVDEVICE_OSS_H
 #define AVDEVICE_OSS_H
 
-#include <stdint.h>
-#include "libavutil/log.h"
-#include "libavcodec/codec_id.h"
+#include "libavcodec/avcodec.h"
+
 #include "libavformat/avformat.h"
 
 #define OSS_AUDIO_BLOCK_SIZE 4096

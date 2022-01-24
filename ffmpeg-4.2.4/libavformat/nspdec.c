@@ -96,7 +96,7 @@ static int nsp_read_header(AVFormatContext *s)
     return 0;
 }
 
-const AVInputFormat ff_nsp_demuxer = {
+AVInputFormat ff_nsp_demuxer = {
     .name           = "nsp",
     .long_name      = NULL_IF_CONFIG_SMALL("Computerized Speech Lab NSP"),
     .read_probe     = nsp_probe,

@@ -126,16 +126,8 @@ foreach my $command (keys(%Texinfo::Common::sectioning_commands), 'node') {
     texinfo_register_command_formatting($command, \&ffmpeg_heading_command);
 }
 
-# determine if texinfo is at least version 6.8
-my $program_version_num = version->declare(get_conf('PACKAGE_VERSION'))->numify;
-my $program_version_6_8 = $program_version_num >= 6.008000;
-
 # print the TOC where @contents is used
-if ($program_version_6_8) {
-    set_from_init_file('CONTENTS_OUTPUT_LOCATION', 'inline');
-} else {
-    set_from_init_file('INLINE_CONTENTS', 1);
-}
+set_from_init_file('INLINE_CONTENTS', 1);
 
 # make chapters <h2>
 set_from_init_file('CHAPTER_HEADER_LEVEL', 2);
@@ -192,11 +184,7 @@ EOT
 
     return $head1 . $head_title . $head2 . $head_title . $head3;
 }
-if ($program_version_6_8) {
-    texinfo_register_formatting_function('format_begin_file', \&ffmpeg_begin_file);
-} else {
-    texinfo_register_formatting_function('begin_file', \&ffmpeg_begin_file);
-}
+texinfo_register_formatting_function('begin_file', \&ffmpeg_begin_file);
 
 sub ffmpeg_program_string($)
 {
@@ -213,11 +201,7 @@ sub ffmpeg_program_string($)
       $self->gdt('This document was generated automatically.'));
   }
 }
-if ($program_version_6_8) {
-    texinfo_register_formatting_function('format_program_string', \&ffmpeg_program_string);
-} else {
-    texinfo_register_formatting_function('program_string', \&ffmpeg_program_string);
-}
+texinfo_register_formatting_function('program_string', \&ffmpeg_program_string);
 
 # Customized file ending
 sub ffmpeg_end_file($)
@@ -236,11 +220,7 @@ EOT
 EOT
     return $program_text . $footer;
 }
-if ($program_version_6_8) {
-    texinfo_register_formatting_function('format_end_file', \&ffmpeg_end_file);
-} else {
-    texinfo_register_formatting_function('end_file', \&ffmpeg_end_file);
-}
+texinfo_register_formatting_function('end_file', \&ffmpeg_end_file);
 
 # Dummy title command
 # Ignore title. Title is handled through ffmpeg_begin_file().

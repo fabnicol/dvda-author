@@ -29,7 +29,6 @@
 
 #include <limits.h>
 
-#include "libavutil/channel_layout.h"
 #include "libavutil/crc.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/opt.h"
@@ -107,8 +106,7 @@ static int allocate_buffers(AVCodecContext *avctx)
     TTAContext *s = avctx->priv_data;
 
     if (s->bps < 3) {
-        s->decode_buffer = av_calloc(s->frame_length,
-                                     sizeof(*s->decode_buffer) * s->channels);
+        s->decode_buffer = av_mallocz_array(sizeof(int32_t)*s->frame_length, s->channels);
         if (!s->decode_buffer)
             return AVERROR(ENOMEM);
     } else
@@ -131,7 +129,7 @@ static av_cold int tta_decode_init(AVCodecContext * avctx)
 
     s->avctx = avctx;
 
-    // 22 bytes for a TTA1 header
+    // 30bytes includes TTA1 header
     if (avctx->extradata_size < 22)
         return AVERROR_INVALIDDATA;
 
@@ -391,6 +389,13 @@ error:
     return ret;
 }
 
+static int init_thread_copy(AVCodecContext *avctx)
+{
+    TTAContext *s = avctx->priv_data;
+    s->avctx = avctx;
+    return allocate_buffers(avctx);
+}
+
 static av_cold int tta_decode_close(AVCodecContext *avctx) {
     TTAContext *s = avctx->priv_data;
 
@@ -416,7 +421,7 @@ static const AVClass tta_decoder_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const AVCodec ff_tta_decoder = {
+AVCodec ff_tta_decoder = {
     .name           = "tta",
     .long_name      = NULL_IF_CONFIG_SMALL("TTA (True Audio)"),
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -425,7 +430,7 @@ const AVCodec ff_tta_decoder = {
     .init           = tta_decode_init,
     .close          = tta_decode_close,
     .decode         = tta_decode_frame,
-    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS | AV_CODEC_CAP_CHANNEL_CONF,
+    .init_thread_copy = ONLY_IF_THREADS_ENABLED(init_thread_copy),
+    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS,
     .priv_class     = &tta_decoder_class,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

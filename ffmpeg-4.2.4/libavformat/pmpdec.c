@@ -183,7 +183,7 @@ static int pmp_close(AVFormatContext *s)
     return 0;
 }
 
-const AVInputFormat ff_pmp_demuxer = {
+AVInputFormat ff_pmp_demuxer = {
     .name           = "pmp",
     .long_name      = NULL_IF_CONFIG_SMALL("Playstation Portable PMP"),
     .priv_data_size = sizeof(PMPContext),

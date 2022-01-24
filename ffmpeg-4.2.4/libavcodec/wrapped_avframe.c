@@ -109,7 +109,7 @@ static int wrapped_avframe_decode(AVCodecContext *avctx, void *data,
     return 0;
 }
 
-const AVCodec ff_wrapped_avframe_encoder = {
+AVCodec ff_wrapped_avframe_encoder = {
     .name           = "wrapped_avframe",
     .long_name      = NULL_IF_CONFIG_SMALL("AVFrame to AVPacket passthrough"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -118,7 +118,7 @@ const AVCodec ff_wrapped_avframe_encoder = {
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };
 
-const AVCodec ff_wrapped_avframe_decoder = {
+AVCodec ff_wrapped_avframe_decoder = {
     .name           = "wrapped_avframe",
     .long_name      = NULL_IF_CONFIG_SMALL("AVPacket to AVFrame passthrough"),
     .type           = AVMEDIA_TYPE_VIDEO,

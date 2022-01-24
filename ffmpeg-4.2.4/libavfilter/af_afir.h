@@ -74,12 +74,10 @@ typedef struct AudioFIRContext {
     int ir_channel;
     int minp;
     int maxp;
-    int nb_irs;
-    int selir;
 
     float gain;
 
-    int eof_coeffs[32];
+    int eof_coeffs;
     int have_coeffs;
     int nb_taps;
     int nb_channels;
@@ -89,8 +87,7 @@ typedef struct AudioFIRContext {
     AudioFIRSegment seg[1024];
     int nb_segments;
 
-    AVFrame *in;
-    AVFrame *ir[32];
+    AVFrame *in[2];
     AVFrame *video;
     int min_part_size;
     int64_t pts;

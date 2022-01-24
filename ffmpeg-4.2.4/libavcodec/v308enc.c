@@ -22,7 +22,6 @@
 
 #include "libavutil/intreadwrite.h"
 #include "avcodec.h"
-#include "encode.h"
 #include "internal.h"
 
 static av_cold int v308_encode_init(AVCodecContext *avctx)
@@ -45,8 +44,7 @@ static int v308_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     uint8_t *y, *u, *v;
     int i, j, ret;
 
-    ret = ff_get_encode_buffer(avctx, pkt, avctx->width * avctx->height * 3, 0);
-    if (ret < 0)
+    if ((ret = ff_alloc_packet2(avctx, pkt, avctx->width * avctx->height * 3, 0)) < 0)
         return ret;
     dst = pkt->data;
 
@@ -65,18 +63,24 @@ static int v308_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         v += pic->linesize[2];
     }
 
+    pkt->flags |= AV_PKT_FLAG_KEY;
     *got_packet = 1;
     return 0;
 }
 
-const AVCodec ff_v308_encoder = {
+static av_cold int v308_encode_close(AVCodecContext *avctx)
+{
+    return 0;
+}
+
+AVCodec ff_v308_encoder = {
     .name         = "v308",
     .long_name    = NULL_IF_CONFIG_SMALL("Uncompressed packed 4:4:4"),
     .type         = AVMEDIA_TYPE_VIDEO,
     .id           = AV_CODEC_ID_V308,
-    .capabilities = AV_CODEC_CAP_DR1,
     .init         = v308_encode_init,
     .encode2      = v308_encode_frame,
+    .close        = v308_encode_close,
     .pix_fmts     = (const enum AVPixelFormat[]){ AV_PIX_FMT_YUV444P, AV_PIX_FMT_NONE },
-    .caps_internal = FF_CODEC_CAP_INIT_THREADSAFE,
+    .capabilities = AV_CODEC_CAP_INTRA_ONLY,
 };

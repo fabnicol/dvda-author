@@ -387,6 +387,15 @@ static void hnm_update_palette(AVCodecContext *avctx, uint8_t *src,
     }
 }
 
+static void hnm_flip_buffers(Hnm4VideoContext *hnm)
+{
+    uint8_t *temp;
+
+    temp          = hnm->current;
+    hnm->current  = hnm->previous;
+    hnm->previous = temp;
+}
+
 static int hnm_decode_frame(AVCodecContext *avctx, void *data,
                             int *got_frame, AVPacket *avpkt)
 {
@@ -441,7 +450,7 @@ static int hnm_decode_frame(AVCodecContext *avctx, void *data,
         frame->key_frame = 0;
         memcpy(frame->data[1], hnm->palette, 256 * 4);
         *got_frame = 1;
-        FFSWAP(uint8_t *, hnm->current, hnm->previous);
+        hnm_flip_buffers(hnm);
     } else {
         av_log(avctx, AV_LOG_ERROR, "invalid chunk id: %d\n", chunk_id);
         return AVERROR_INVALIDDATA;
@@ -464,8 +473,6 @@ static av_cold int hnm_decode_init(AVCodecContext *avctx)
     ret = av_image_check_size(avctx->width, avctx->height, 0, avctx);
     if (ret < 0)
         return ret;
-    if (avctx->height & 1)
-        return AVERROR(EINVAL);
 
     hnm->version   = avctx->extradata[0];
     avctx->pix_fmt = AV_PIX_FMT_PAL8;
@@ -475,8 +482,13 @@ static av_cold int hnm_decode_init(AVCodecContext *avctx)
     hnm->buffer2   = av_mallocz(avctx->width * avctx->height);
     hnm->processed = av_mallocz(avctx->width * avctx->height);
 
-    if (!hnm->buffer1 || !hnm->buffer2 || !hnm->processed) {
+    if (   !hnm->buffer1 || !hnm->buffer2 || !hnm->processed
+        || avctx->width * avctx->height == 0
+        || avctx->height % 2) {
         av_log(avctx, AV_LOG_ERROR, "av_mallocz() failed\n");
+        av_freep(&hnm->buffer1);
+        av_freep(&hnm->buffer2);
+        av_freep(&hnm->processed);
         return AVERROR(ENOMEM);
     }
 
@@ -497,7 +509,7 @@ static av_cold int hnm_decode_end(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_hnm4_video_decoder = {
+AVCodec ff_hnm4_video_decoder = {
     .name           = "hnm4video",
     .long_name      = NULL_IF_CONFIG_SMALL("HNM 4 video"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -507,5 +519,4 @@ const AVCodec ff_hnm4_video_decoder = {
     .close          = hnm_decode_end,
     .decode         = hnm_decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

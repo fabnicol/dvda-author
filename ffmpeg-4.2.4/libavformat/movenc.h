@@ -26,7 +26,6 @@
 
 #include "avformat.h"
 #include "movenccenc.h"
-#include "libavcodec/packet_internal.h"
 
 #define MOV_FRAG_INFO_ALLOC_INCREMENT 64
 #define MOV_INDEX_CLUSTER_SIZE 1024
@@ -57,7 +56,6 @@ typedef struct MOVIentry {
 #define MOV_PARTIAL_SYNC_SAMPLE 0x0002
 #define MOV_DISPOSABLE_SAMPLE   0x0004
     uint32_t     flags;
-    AVProducerReferenceTime prft;
 } MOVIentry;
 
 typedef struct HintSample {
@@ -135,10 +133,11 @@ typedef struct MOVTrack {
     uint32_t    default_size;
 
     HintSampleQueue sample_queue;
-    AVPacket *cover_image;
+    AVPacket cover_image;
 
     AVIOContext *mdat_buf;
     int64_t     data_offset;
+    int64_t     frag_start;
     int         frag_discont;
     int         entries_flushed;
 
@@ -164,10 +163,6 @@ typedef struct MOVTrack {
     int pal_done;
 
     int is_unaligned_qt_rgb;
-
-    unsigned int squash_fragment_samples_to_one; //< flag to note formats where all samples for a fragment are to be squashed
-
-    PacketList *squashed_packet_queue, *squashed_packet_queue_end;
 } MOVTrack;
 
 typedef enum {
@@ -219,8 +214,6 @@ typedef struct MOVMuxContext {
     int per_stream_grouping;
     AVFormatContext *fc;
 
-    AVPacket *pkt;
-
     int use_editlist;
     float gamma;
 
@@ -241,7 +234,6 @@ typedef struct MOVMuxContext {
     int write_tmcd;
     MOVPrftBox write_prft;
     int empty_hdlr_name;
-    int movie_timescale;
 } MOVMuxContext;
 
 #define FF_MOV_FLAG_RTP_HINT              (1 <<  0)
@@ -266,8 +258,6 @@ typedef struct MOVMuxContext {
 #define FF_MOV_FLAG_NEGATIVE_CTS_OFFSETS  (1 << 19)
 #define FF_MOV_FLAG_FRAG_EVERY_FRAME      (1 << 20)
 #define FF_MOV_FLAG_SKIP_SIDX             (1 << 21)
-#define FF_MOV_FLAG_CMAF                  (1 << 22)
-#define FF_MOV_FLAG_PREFER_ICC            (1 << 23)
 
 int ff_mov_write_packet(AVFormatContext *s, AVPacket *pkt);
 

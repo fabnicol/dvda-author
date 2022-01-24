@@ -249,7 +249,7 @@ end:
     return ret;
 }
 
-const AVCodec ff_pcx_decoder = {
+AVCodec ff_pcx_decoder = {
     .name         = "pcx",
     .long_name    = NULL_IF_CONFIG_SMALL("PC Paintbrush PCX image"),
     .type         = AVMEDIA_TYPE_VIDEO,

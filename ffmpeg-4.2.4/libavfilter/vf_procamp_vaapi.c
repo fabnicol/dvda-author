@@ -17,6 +17,8 @@
  */
 #include <string.h>
 
+#include "libavutil/avassert.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 
@@ -148,7 +150,7 @@ static int procamp_vaapi_filter_frame(AVFilterLink *inlink, AVFrame *input_frame
 
     err = av_frame_copy_props(output_frame, input_frame);
     if (err < 0)
-        goto fail;
+        return err;
 
     err = ff_vaapi_vpp_init_params(avctx, &params,
                                    input_frame, output_frame);
@@ -219,6 +221,7 @@ static const AVFilterPad procamp_vaapi_inputs[] = {
         .filter_frame = &procamp_vaapi_filter_frame,
         .config_props = &ff_vaapi_vpp_config_input,
     },
+    { NULL }
 };
 
 static const AVFilterPad procamp_vaapi_outputs[] = {
@@ -227,17 +230,18 @@ static const AVFilterPad procamp_vaapi_outputs[] = {
         .type = AVMEDIA_TYPE_VIDEO,
         .config_props = &ff_vaapi_vpp_config_output,
     },
+    { NULL }
 };
 
-const AVFilter ff_vf_procamp_vaapi = {
+AVFilter ff_vf_procamp_vaapi = {
     .name          = "procamp_vaapi",
     .description   = NULL_IF_CONFIG_SMALL("ProcAmp (color balance) adjustments for hue, saturation, brightness, contrast"),
     .priv_size     = sizeof(ProcampVAAPIContext),
     .init          = &procamp_vaapi_init,
     .uninit        = &ff_vaapi_vpp_ctx_uninit,
-    FILTER_INPUTS(procamp_vaapi_inputs),
-    FILTER_OUTPUTS(procamp_vaapi_outputs),
-    FILTER_QUERY_FUNC(&ff_vaapi_vpp_query_formats),
+    .query_formats = &ff_vaapi_vpp_query_formats,
+    .inputs        = procamp_vaapi_inputs,
+    .outputs       = procamp_vaapi_outputs,
     .priv_class    = &procamp_vaapi_class,
     .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 };

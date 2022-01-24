@@ -89,6 +89,7 @@ static const AVFilterPad field_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .filter_frame = filter_frame,
     },
+    { NULL }
 };
 
 static const AVFilterPad field_outputs[] = {
@@ -97,13 +98,14 @@ static const AVFilterPad field_outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_props_output,
     },
+    { NULL }
 };
 
-const AVFilter ff_vf_field = {
+AVFilter ff_vf_field = {
     .name        = "field",
     .description = NULL_IF_CONFIG_SMALL("Extract a field from the input video."),
     .priv_size   = sizeof(FieldContext),
-    FILTER_INPUTS(field_inputs),
-    FILTER_OUTPUTS(field_outputs),
+    .inputs      = field_inputs,
+    .outputs     = field_outputs,
     .priv_class  = &field_class,
 };

@@ -176,7 +176,7 @@ static av_cold int decode_end(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_kgv1_decoder = {
+AVCodec ff_kgv1_decoder = {
     .name           = "kgv1",
     .long_name      = NULL_IF_CONFIG_SMALL("Kega Game Video"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -187,5 +187,4 @@ const AVCodec ff_kgv1_decoder = {
     .decode         = decode_frame,
     .flush          = decode_flush,
     .capabilities   = AV_CODEC_CAP_DR1,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

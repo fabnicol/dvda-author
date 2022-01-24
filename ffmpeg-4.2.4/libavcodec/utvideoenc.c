@@ -29,7 +29,6 @@
 #include "libavutil/opt.h"
 
 #include "avcodec.h"
-#include "encode.h"
 #include "internal.h"
 #include "bswapdsp.h"
 #include "bytestream.h"
@@ -37,19 +36,6 @@
 #include "mathops.h"
 #include "utvideo.h"
 #include "huffman.h"
-
-typedef struct HuffEntry {
-    uint16_t sym;
-    uint8_t  len;
-    uint32_t code;
-} HuffEntry;
-
-/* Compare huffman tree nodes */
-static int ut_huff_cmp_len(const void *a, const void *b)
-{
-    const HuffEntry *aa = a, *bb = b;
-    return (aa->len - bb->len)*256 + aa->sym - bb->sym;
-}
 
 /* Compare huffentry symbols */
 static int huff_cmp_sym(const void *a, const void *b)
@@ -135,6 +121,28 @@ static av_cold int utvideo_encode_init(AVCodecContext *avctx)
     ff_bswapdsp_init(&c->bdsp);
     ff_llvidencdsp_init(&c->llvidencdsp);
 
+#if FF_API_PRIVATE_OPT
+FF_DISABLE_DEPRECATION_WARNINGS
+    /* Check the prediction method, and error out if unsupported */
+    if (avctx->prediction_method < 0 || avctx->prediction_method > 4) {
+        av_log(avctx, AV_LOG_WARNING,
+               "Prediction method %d is not supported in Ut Video.\n",
+               avctx->prediction_method);
+        return AVERROR_OPTION_NOT_FOUND;
+    }
+
+    if (avctx->prediction_method == FF_PRED_PLANE) {
+        av_log(avctx, AV_LOG_ERROR,
+               "Plane prediction is not supported in Ut Video.\n");
+        return AVERROR_OPTION_NOT_FOUND;
+    }
+
+    /* Convert from libavcodec prediction type to Ut Video's */
+    if (avctx->prediction_method)
+        c->frame_pred = ff_ut_pred_order[avctx->prediction_method];
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
+
     if (c->frame_pred == PRED_GRADIENT) {
         av_log(avctx, AV_LOG_ERROR, "Gradient prediction is not supported.\n");
         return AVERROR_OPTION_NOT_FOUND;
@@ -168,6 +176,7 @@ static av_cold int utvideo_encode_init(AVCodecContext *avctx)
 
     if (!avctx->extradata) {
         av_log(avctx, AV_LOG_ERROR, "Could not allocate extradata.\n");
+        utvideo_encode_close(avctx);
         return AVERROR(ENOMEM);
     }
 
@@ -176,6 +185,7 @@ static av_cold int utvideo_encode_init(AVCodecContext *avctx)
                                        AV_INPUT_BUFFER_PADDING_SIZE);
         if (!c->slice_buffer[i]) {
             av_log(avctx, AV_LOG_ERROR, "Cannot allocate temporary buffer 1.\n");
+            utvideo_encode_close(avctx);
             return AVERROR(ENOMEM);
         }
     }
@@ -330,13 +340,13 @@ static void calculate_codes(HuffEntry *he)
     int last, i;
     uint32_t code;
 
-    qsort(he, 256, sizeof(*he), ut_huff_cmp_len);
+    qsort(he, 256, sizeof(*he), ff_ut_huff_cmp_len);
 
     last = 255;
     while (he[last].len == 255 && last)
         last--;
 
-    code = 0;
+    code = 1;
     for (i = last; i >= 0; i--) {
         he[i].code  = code >> (32 - he[i].len);
         code       += 0x80000000u >> (he[i].len - 1);
@@ -369,11 +379,13 @@ static int write_huff_codes(uint8_t *src, uint8_t *dst, int dst_size,
     if (count)
         put_bits(&pb, 32 - count, 0);
 
+    /* Get the amount of bits written */
+    count = put_bits_count(&pb);
+
     /* Flush the rest with zeroes */
     flush_put_bits(&pb);
 
-    /* Return the amount of bytes written */
-    return put_bytes_output(&pb);
+    return count;
 }
 
 static int encode_plane(AVCodecContext *avctx, uint8_t *src,
@@ -481,11 +493,11 @@ static int encode_plane(AVCodecContext *avctx, uint8_t *src,
 
         /*
          * Write the huffman codes to a buffer,
-         * get the offset in bytes.
+         * get the offset in bits and convert to bytes.
          */
         offset += write_huff_codes(dst + sstart * width, c->slice_bits,
                                    width * height + 4, width,
-                                   send - sstart, he);
+                                   send - sstart, he) >> 3;
 
         slice_len = offset - slice_len;
 
@@ -531,8 +543,8 @@ static int utvideo_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     int i, ret = 0;
 
     /* Allocate a new packet if needed, and set it to the pointer dst */
-    ret = ff_alloc_packet(avctx, pkt, (256 + 4 * c->slices + width * height)
-                                      * c->planes + 4);
+    ret = ff_alloc_packet2(avctx, pkt, (256 + 4 * c->slices + width * height) *
+                           c->planes + 4, 0);
 
     if (ret < 0)
         return ret;
@@ -616,7 +628,19 @@ static int utvideo_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     frame_info = c->frame_pred << 8;
     bytestream2_put_le32(&pb, frame_info);
 
+    /*
+     * At least currently Ut Video is IDR only.
+     * Set flags accordingly.
+     */
+#if FF_API_CODED_FRAME
+FF_DISABLE_DEPRECATION_WARNINGS
+    avctx->coded_frame->key_frame = 1;
+    avctx->coded_frame->pict_type = AV_PICTURE_TYPE_I;
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
+
     pkt->size   = bytestream2_tell_p(&pb);
+    pkt->flags |= AV_PKT_FLAG_KEY;
 
     /* Packet should be done */
     *got_packet = 1;
@@ -643,7 +667,7 @@ static const AVClass utvideo_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const AVCodec ff_utvideo_encoder = {
+AVCodec ff_utvideo_encoder = {
     .name           = "utvideo",
     .long_name      = NULL_IF_CONFIG_SMALL("Ut Video"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -653,10 +677,9 @@ const AVCodec ff_utvideo_encoder = {
     .init           = utvideo_encode_init,
     .encode2        = utvideo_encode_frame,
     .close          = utvideo_encode_close,
-    .capabilities   = AV_CODEC_CAP_FRAME_THREADS,
+    .capabilities   = AV_CODEC_CAP_FRAME_THREADS | AV_CODEC_CAP_INTRA_ONLY,
     .pix_fmts       = (const enum AVPixelFormat[]) {
                           AV_PIX_FMT_GBRP, AV_PIX_FMT_GBRAP, AV_PIX_FMT_YUV422P,
                           AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV444P, AV_PIX_FMT_NONE
                       },
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

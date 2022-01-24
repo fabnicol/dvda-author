@@ -26,6 +26,7 @@
 #include "libavutil/imgutils.h"
 #include "libavutil/internal.h"
 #include "libavutil/intreadwrite.h"
+#include "libavutil/mem.h"
 
 #include "avcodec.h"
 #include "bytestream.h"
@@ -211,7 +212,7 @@ static av_cold int decode_close(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_arbc_decoder = {
+AVCodec ff_arbc_decoder = {
     .name           = "arbc",
     .long_name      = NULL_IF_CONFIG_SMALL("Gryphon's Anim Compressor"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -222,5 +223,5 @@ const AVCodec ff_arbc_decoder = {
     .flush          = decode_flush,
     .close          = decode_close,
     .capabilities   = AV_CODEC_CAP_DR1,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
 };

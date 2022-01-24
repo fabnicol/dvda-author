@@ -703,7 +703,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
 }
 
 
-const AVCodec ff_indeo4_decoder = {
+AVCodec ff_indeo4_decoder = {
     .name           = "indeo4",
     .long_name      = NULL_IF_CONFIG_SMALL("Intel Indeo Video Interactive 4"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -713,5 +713,4 @@ const AVCodec ff_indeo4_decoder = {
     .close          = ff_ivi_decode_close,
     .decode         = ff_ivi_decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

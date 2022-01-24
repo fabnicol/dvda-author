@@ -50,7 +50,7 @@ static int ircam_write_header(AVFormatContext *s)
     return 0;
 }
 
-const AVOutputFormat ff_ircam_muxer = {
+AVOutputFormat ff_ircam_muxer = {
     .name           = "ircam",
     .extensions     = "sf,ircam",
     .long_name      = NULL_IF_CONFIG_SMALL("Berkeley/IRCAM/CARL Sound Format"),

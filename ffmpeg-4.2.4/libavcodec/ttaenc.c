@@ -22,7 +22,6 @@
 #include "ttadata.h"
 #include "ttaencdsp.h"
 #include "avcodec.h"
-#include "encode.h"
 #include "put_bits.h"
 #include "internal.h"
 #include "libavutil/crc.h"
@@ -93,7 +92,7 @@ static int tta_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
 
 pkt_alloc:
     cur_chan = 0, res = 0, samples = 0;
-    if ((ret = ff_alloc_packet(avctx, avpkt, pkt_size)) < 0)
+    if ((ret = ff_alloc_packet2(avctx, avpkt, pkt_size, 0)) < 0)
         return ret;
     init_put_bits(&pb, avpkt->data, avpkt->size);
 
@@ -183,7 +182,7 @@ pkt_alloc:
     }
 
     flush_put_bits(&pb);
-    out_bytes = put_bytes_output(&pb);
+    out_bytes = put_bits_count(&pb) >> 3;
     put_bits32(&pb, av_crc(s->crc_table, UINT32_MAX, avpkt->data, out_bytes) ^ UINT32_MAX);
     flush_put_bits(&pb);
 
@@ -201,7 +200,7 @@ static av_cold int tta_encode_close(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_tta_encoder = {
+AVCodec ff_tta_encoder = {
     .name           = "tta",
     .long_name      = NULL_IF_CONFIG_SMALL("TTA (True Audio)"),
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -210,10 +209,9 @@ const AVCodec ff_tta_encoder = {
     .init           = tta_encode_init,
     .close          = tta_encode_close,
     .encode2        = tta_encode_frame,
-    .capabilities   = AV_CODEC_CAP_SMALL_LAST_FRAME,
+    .capabilities   = AV_CODEC_CAP_SMALL_LAST_FRAME | AV_CODEC_CAP_LOSSLESS,
     .sample_fmts    = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_U8,
                                                      AV_SAMPLE_FMT_S16,
                                                      AV_SAMPLE_FMT_S32,
                                                      AV_SAMPLE_FMT_NONE },
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

@@ -77,7 +77,7 @@ static int rv34_parse(AVCodecParserContext *s,
 }
 
 #if CONFIG_RV30_PARSER
-const AVCodecParser ff_rv30_parser = {
+AVCodecParser ff_rv30_parser = {
     .codec_ids      = { AV_CODEC_ID_RV30 },
     .priv_data_size = sizeof(RV34ParseContext),
     .parser_parse   = rv34_parse,
@@ -85,7 +85,7 @@ const AVCodecParser ff_rv30_parser = {
 #endif
 
 #if CONFIG_RV40_PARSER
-const AVCodecParser ff_rv40_parser = {
+AVCodecParser ff_rv40_parser = {
     .codec_ids      = { AV_CODEC_ID_RV40 },
     .priv_data_size = sizeof(RV34ParseContext),
     .parser_parse   = rv34_parse,

@@ -28,7 +28,6 @@
 #include "libavutil/opt.h"
 
 #include "avcodec.h"
-#include "encode.h"
 #include "internal.h"
 #include "put_bits.h"
 
@@ -57,8 +56,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
          return AVERROR_EXPERIMENTAL;
     }
 
-    ret = ff_get_encode_buffer(avctx, pkt, 4 * avctx->height * ((avctx->width + 3) / 4), 0);
-    if (ret < 0)
+    if ((ret = ff_alloc_packet2(avctx, pkt, 32*avctx->height*avctx->width/4, 0)) < 0)
         return ret;
 
     init_put_bits(&pb, pkt->data, pkt->size);
@@ -91,6 +89,8 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
 
     flush_put_bits(&pb);
 
+    pkt->size   = put_bits_count(&pb) / 8;
+    pkt->flags |= AV_PKT_FLAG_KEY;
     *got_packet = 1;
     return 0;
 }
@@ -109,12 +109,11 @@ static const AVClass cljr_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const AVCodec ff_cljr_encoder = {
+AVCodec ff_cljr_encoder = {
     .name           = "cljr",
     .long_name      = NULL_IF_CONFIG_SMALL("Cirrus Logic AccuPak"),
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = AV_CODEC_ID_CLJR,
-    .capabilities   = AV_CODEC_CAP_DR1,
     .priv_data_size = sizeof(CLJRContext),
     .encode2        = encode_frame,
     .pix_fmts       = (const enum AVPixelFormat[]) { AV_PIX_FMT_YUV411P,

@@ -472,6 +472,11 @@ static int gif_decode_frame(AVCodecContext *avctx, void *data, int *got_frame, A
     bytestream2_init(&s->gb, avpkt->data, avpkt->size);
 
     s->frame->pts     = avpkt->pts;
+#if FF_API_PKT_PTS
+FF_DISABLE_DEPRECATION_WARNINGS
+    s->frame->pkt_pts = avpkt->pts;
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
     s->frame->pkt_dts = avpkt->dts;
     s->frame->pkt_duration = avpkt->duration;
 
@@ -508,7 +513,7 @@ static int gif_decode_frame(AVCodecContext *avctx, void *data, int *got_frame, A
             return AVERROR_INVALIDDATA;
         }
 
-        if ((ret = ff_reget_buffer(avctx, s->frame, 0)) < 0)
+        if ((ret = ff_reget_buffer(avctx, s->frame)) < 0)
             return ret;
 
         s->frame->pict_type = AV_PICTURE_TYPE_P;
@@ -554,7 +559,7 @@ static const AVClass decoder_class = {
     .category   = AV_CLASS_CATEGORY_DECODER,
 };
 
-const AVCodec ff_gif_decoder = {
+AVCodec ff_gif_decoder = {
     .name           = "gif",
     .long_name      = NULL_IF_CONFIG_SMALL("GIF (Graphics Interchange Format)"),
     .type           = AVMEDIA_TYPE_VIDEO,

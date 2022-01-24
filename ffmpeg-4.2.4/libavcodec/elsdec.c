@@ -31,6 +31,7 @@
 #include "libavutil/common.h"
 #include "libavutil/intreadwrite.h"
 
+#include "avcodec.h"
 #include "elsdec.h"
 
 /* ELS coder constants and structures. */

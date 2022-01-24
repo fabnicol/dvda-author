@@ -182,6 +182,7 @@ static int gdv_read_packet(AVFormatContext *ctx, AVPacket *pkt)
             pal = av_packet_new_side_data(pkt, AV_PKT_DATA_PALETTE,
                                           AVPALETTE_SIZE);
             if (!pal) {
+                av_packet_unref(pkt);
                 return AVERROR(ENOMEM);
             }
             memcpy(pal, gdv->pal, AVPALETTE_SIZE);
@@ -193,7 +194,7 @@ static int gdv_read_packet(AVFormatContext *ctx, AVPacket *pkt)
     return 0;
 }
 
-const AVInputFormat ff_gdv_demuxer = {
+AVInputFormat ff_gdv_demuxer = {
     .name           = "gdv",
     .long_name      = NULL_IF_CONFIG_SMALL("Gremlin Digital Video"),
     .priv_data_size = sizeof(GDVContext),

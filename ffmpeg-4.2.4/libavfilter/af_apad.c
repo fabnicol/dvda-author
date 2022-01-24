@@ -155,6 +155,7 @@ static const AVFilterPad apad_inputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .filter_frame = filter_frame,
     },
+    { NULL }
 };
 
 static const AVFilterPad apad_outputs[] = {
@@ -164,15 +165,16 @@ static const AVFilterPad apad_outputs[] = {
         .config_props  = config_output,
         .type          = AVMEDIA_TYPE_AUDIO,
     },
+    { NULL }
 };
 
-const AVFilter ff_af_apad = {
+AVFilter ff_af_apad = {
     .name          = "apad",
     .description   = NULL_IF_CONFIG_SMALL("Pad audio with silence."),
     .init          = init,
     .priv_size     = sizeof(APadContext),
-    FILTER_INPUTS(apad_inputs),
-    FILTER_OUTPUTS(apad_outputs),
+    .inputs        = apad_inputs,
+    .outputs       = apad_outputs,
     .priv_class    = &apad_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
 };

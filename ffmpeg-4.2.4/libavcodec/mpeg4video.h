@@ -115,6 +115,10 @@ typedef struct Mpeg4DecContext {
     int cplx_estimation_trash_p;
     int cplx_estimation_trash_b;
 
+    VLC studio_intra_tab[12];
+    VLC studio_luma_dc;
+    VLC studio_chroma_dc;
+
     int rgb;
 } Mpeg4DecContext;
 
@@ -129,13 +133,12 @@ extern const int8_t ff_mpeg4_intra_level[102];
 extern const int8_t ff_mpeg4_intra_run[102];
 
 extern RLTable ff_mpeg4_rl_intra;
-void ff_mpeg4_init_rl_intra(void);
 
 /* Note this is identical to the intra rvlc except that it is reordered. */
 extern RLTable ff_rvlc_rl_inter;
 extern RLTable ff_rvlc_rl_intra;
 
-extern const uint8_t ff_sprite_trajectory_lens[15];
+extern const uint16_t ff_sprite_trajectory_tab[15][2];
 extern const uint8_t ff_mb_type_b_tab[4][2];
 
 /* these matrixes will be permuted for the idct */
@@ -148,9 +151,9 @@ extern const uint16_t ff_mpeg4_resync_prefix[8];
 
 extern const uint8_t ff_mpeg4_dc_threshold[8];
 
-extern const uint8_t ff_mpeg4_studio_dc_luma[19][2];
-extern const uint8_t ff_mpeg4_studio_dc_chroma[19][2];
-extern const uint8_t ff_mpeg4_studio_intra[12][24][2];
+extern const uint16_t ff_mpeg4_studio_dc_luma[19][2];
+extern const uint16_t ff_mpeg4_studio_dc_chroma[19][2];
+extern const uint16_t ff_mpeg4_studio_intra[12][22][2];
 
 void ff_mpeg4_encode_mb(MpegEncContext *s,
                         int16_t block[6][64],
@@ -180,6 +183,8 @@ int ff_mpeg4_frame_end(AVCodecContext *avctx, const uint8_t *buf, int buf_size);
  * @return the mb_type
  */
 int ff_mpeg4_set_direct_mv(MpegEncContext *s, int mx, int my);
+
+extern uint8_t ff_mpeg4_static_rl_table_store[3][2][2 * MAX_RUN + MAX_LEVEL + 3];
 
 #if 0 //3IV1 is quite rare and it slows things down a tiny bit
 #define IS_3IV1 s->codec_tag == AV_RL32("3IV1")

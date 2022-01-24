@@ -92,6 +92,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 
 static int query_formats(AVFilterContext *ctx)
 {
+    AVFilterFormats *formats = NULL;
     AVFilterChannelLayouts *layouts = NULL;
 
     static const enum AVSampleFormat sample_fmts[] = {
@@ -110,11 +111,17 @@ static int query_formats(AVFilterContext *ctx)
     if (ret < 0)
         return ret;
 
-    ret = ff_set_common_formats_from_list(ctx, sample_fmts);
+    formats = ff_make_format_list(sample_fmts);
+    if (!formats)
+        return AVERROR(ENOMEM);
+    ret = ff_set_common_formats(ctx, formats);
     if (ret < 0)
         return ret;
 
-    return ff_set_common_all_samplerates(ctx);
+    formats = ff_all_samplerates();
+    if (!formats)
+        return AVERROR(ENOMEM);
+    return ff_set_common_samplerates(ctx, formats);
 }
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
@@ -192,6 +199,7 @@ static const AVFilterPad bs2b_inputs[] = {
         .type           = AVMEDIA_TYPE_AUDIO,
         .filter_frame   = filter_frame,
     },
+    { NULL }
 };
 
 static const AVFilterPad bs2b_outputs[] = {
@@ -200,16 +208,17 @@ static const AVFilterPad bs2b_outputs[] = {
         .type           = AVMEDIA_TYPE_AUDIO,
         .config_props   = config_output,
     },
+    { NULL }
 };
 
-const AVFilter ff_af_bs2b = {
+AVFilter ff_af_bs2b = {
     .name           = "bs2b",
     .description    = NULL_IF_CONFIG_SMALL("Bauer stereo-to-binaural filter."),
+    .query_formats  = query_formats,
     .priv_size      = sizeof(Bs2bContext),
     .priv_class     = &bs2b_class,
     .init           = init,
     .uninit         = uninit,
-    FILTER_INPUTS(bs2b_inputs),
-    FILTER_OUTPUTS(bs2b_outputs),
-    FILTER_QUERY_FUNC(query_formats),
+    .inputs         = bs2b_inputs,
+    .outputs        = bs2b_outputs,
 };

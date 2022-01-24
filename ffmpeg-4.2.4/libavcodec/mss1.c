@@ -154,7 +154,7 @@ static int mss1_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
 
     arith_init(&acoder, &gb);
 
-    if ((ret = ff_reget_buffer(avctx, ctx->pic, 0)) < 0)
+    if ((ret = ff_reget_buffer(avctx, ctx->pic)) < 0)
         return ret;
 
     c->pal_pic    =  ctx->pic->data[0] + ctx->pic->linesize[0] * (avctx->height - 1);
@@ -218,7 +218,7 @@ static av_cold int mss1_decode_end(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_mss1_decoder = {
+AVCodec ff_mss1_decoder = {
     .name           = "mss1",
     .long_name      = NULL_IF_CONFIG_SMALL("MS Screen 1"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -228,5 +228,4 @@ const AVCodec ff_mss1_decoder = {
     .close          = mss1_decode_end,
     .decode         = mss1_decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

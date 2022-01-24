@@ -23,7 +23,6 @@
 #include "libavutil/ffmath.h"
 
 #include "avcodec.h"
-#include "encode.h"
 #include "internal.h"
 #include "wma.h"
 #include "libavutil/avassert.h"
@@ -89,11 +88,8 @@ static av_cold int encode_init(AVCodecContext *avctx)
         return ret;
 
     /* init MDCT */
-    for (i = 0; i < s->nb_block_sizes; i++) {
-        ret = ff_mdct_init(&s->mdct_ctx[i], s->frame_len_bits - i + 1, 0, 1.0);
-        if (ret < 0)
-            return ret;
-    }
+    for (i = 0; i < s->nb_block_sizes; i++)
+        ff_mdct_init(&s->mdct_ctx[i], s->frame_len_bits - i + 1, 0, 1.0);
 
     block_align        = avctx->bit_rate * (int64_t) s->frame_len /
                          (avctx->sample_rate * 8);
@@ -347,7 +343,7 @@ static int encode_block(WMACodecContext *s, float (*src_coefs)[BLOCK_MAX_SIZE],
                          s->coef_vlcs[tindex]->huffcodes[1]);
         }
         if (s->version == 1 && s->avctx->channels >= 2)
-            align_put_bits(&s->pb);
+            avpriv_align_put_bits(&s->pb);
     }
     return 0;
 }
@@ -362,7 +358,7 @@ static int encode_frame(WMACodecContext *s, float (*src_coefs)[BLOCK_MAX_SIZE],
     else if (encode_block(s, src_coefs, total_gain) < 0)
         return INT_MAX;
 
-    align_put_bits(&s->pb);
+    avpriv_align_put_bits(&s->pb);
 
     return put_bits_count(&s->pb) / 8 - s->avctx->block_align;
 }
@@ -393,7 +389,7 @@ static int encode_superframe(AVCodecContext *avctx, AVPacket *avpkt,
         }
     }
 
-    if ((ret = ff_alloc_packet(avctx, avpkt, 2 * MAX_CODED_SUPERFRAME_SIZE)) < 0)
+    if ((ret = ff_alloc_packet2(avctx, avpkt, 2 * MAX_CODED_SUPERFRAME_SIZE, 0)) < 0)
         return ret;
 
     total_gain = 128;
@@ -412,7 +408,7 @@ static int encode_superframe(AVCodecContext *avctx, AVPacket *avpkt,
         return AVERROR(EINVAL);
     }
     av_assert0((put_bits_count(&s->pb) & 7) == 0);
-    i = avctx->block_align - put_bytes_count(&s->pb, 0);
+    i= avctx->block_align - (put_bits_count(&s->pb)+7)/8;
     av_assert0(i>=0);
     while(i--)
         put_bits(&s->pb, 8, 'N');
@@ -429,7 +425,7 @@ static int encode_superframe(AVCodecContext *avctx, AVPacket *avpkt,
 }
 
 #if CONFIG_WMAV1_ENCODER
-const AVCodec ff_wmav1_encoder = {
+AVCodec ff_wmav1_encoder = {
     .name           = "wmav1",
     .long_name      = NULL_IF_CONFIG_SMALL("Windows Media Audio 1"),
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -440,11 +436,10 @@ const AVCodec ff_wmav1_encoder = {
     .close          = ff_wma_end,
     .sample_fmts    = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_FLTP,
                                                       AV_SAMPLE_FMT_NONE },
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };
 #endif
 #if CONFIG_WMAV2_ENCODER
-const AVCodec ff_wmav2_encoder = {
+AVCodec ff_wmav2_encoder = {
     .name           = "wmav2",
     .long_name      = NULL_IF_CONFIG_SMALL("Windows Media Audio 2"),
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -455,6 +450,5 @@ const AVCodec ff_wmav2_encoder = {
     .close          = ff_wma_end,
     .sample_fmts    = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_FLTP,
                                                       AV_SAMPLE_FMT_NONE },
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };
 #endif

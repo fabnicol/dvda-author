@@ -18,11 +18,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "libavutil/channel_layout.h"
 #include "libavutil/opt.h"
 #include "audio.h"
 #include "avfilter.h"
-#include "filters.h"
 #include "internal.h"
 #include "libavutil/lfg.h"
 #include "libavutil/random_seed.h"
@@ -32,13 +30,13 @@ typedef struct ANoiseSrcContext {
     int sample_rate;
     double amplitude;
     int64_t duration;
-    int color;
+    int64_t color;
     int64_t seed;
     int nb_samples;
 
     int64_t pts;
     int infinite;
-    double (*filter)(double white, double *buf, double half_amplitude);
+    double (*filter)(double white, double *buf);
     double buf[7];
     AVLFG c;
 } ANoiseSrcContext;
@@ -49,7 +47,6 @@ enum NoiseMode {
     NM_BROWN,
     NM_BLUE,
     NM_VIOLET,
-    NM_VELVET,
     NM_NB
 };
 
@@ -71,7 +68,6 @@ static const AVOption anoisesrc_options[] = {
     {     "brown",    0,                  0,                    AV_OPT_TYPE_CONST,     {.i64 = NM_BROWN},   0,  0,          FLAGS, "color" },
     {     "blue",     0,                  0,                    AV_OPT_TYPE_CONST,     {.i64 = NM_BLUE},    0,  0,          FLAGS, "color" },
     {     "violet",   0,                  0,                    AV_OPT_TYPE_CONST,     {.i64 = NM_VIOLET},  0,  0,          FLAGS, "color" },
-    {     "velvet",   0,                  0,                    AV_OPT_TYPE_CONST,     {.i64 = NM_VELVET},  0,  0,          FLAGS, "color" },
     { "seed",         "set random seed",  OFFSET(seed),         AV_OPT_TYPE_INT64,     {.i64 = -1},        -1,  UINT_MAX,   FLAGS },
     { "s",            "set random seed",  OFFSET(seed),         AV_OPT_TYPE_INT64,     {.i64 = -1},        -1,  UINT_MAX,   FLAGS },
     { "nb_samples",   "set the number of samples per requested frame", OFFSET(nb_samples), AV_OPT_TYPE_INT, {.i64 = 1024}, 1, INT_MAX, FLAGS },
@@ -90,23 +86,37 @@ static av_cold int query_formats(AVFilterContext *ctx)
         AV_SAMPLE_FMT_DBL,
         AV_SAMPLE_FMT_NONE
     };
-    int ret = ff_set_common_formats_from_list(ctx, sample_fmts);
+
+    AVFilterFormats *formats;
+    AVFilterChannelLayouts *layouts;
+    int ret;
+
+    formats = ff_make_format_list(sample_fmts);
+    if (!formats)
+        return AVERROR(ENOMEM);
+    ret = ff_set_common_formats (ctx, formats);
     if (ret < 0)
         return ret;
 
-    ret = ff_set_common_channel_layouts_from_list(ctx, chlayouts);
+    layouts = avfilter_make_format64_list(chlayouts);
+    if (!layouts)
+        return AVERROR(ENOMEM);
+    ret = ff_set_common_channel_layouts(ctx, layouts);
     if (ret < 0)
         return ret;
 
-    return ff_set_common_samplerates_from_list(ctx, sample_rates);
+    formats = ff_make_format_list(sample_rates);
+    if (!formats)
+        return AVERROR(ENOMEM);
+    return ff_set_common_samplerates(ctx, formats);
 }
 
-static double white_filter(double white, double *buf, double ha)
+static double white_filter(double white, double *buf)
 {
     return white;
 }
 
-static double pink_filter(double white, double *buf, double ha)
+static double pink_filter(double white, double *buf)
 {
     double pink;
 
@@ -122,7 +132,7 @@ static double pink_filter(double white, double *buf, double ha)
     return pink * 0.11;
 }
 
-static double blue_filter(double white, double *buf, double ha)
+static double blue_filter(double white, double *buf)
 {
     double blue;
 
@@ -138,7 +148,7 @@ static double blue_filter(double white, double *buf, double ha)
     return blue * 0.11;
 }
 
-static double brown_filter(double white, double *buf, double ha)
+static double brown_filter(double white, double *buf)
 {
     double brown;
 
@@ -147,18 +157,13 @@ static double brown_filter(double white, double *buf, double ha)
     return brown * 3.5;
 }
 
-static double violet_filter(double white, double *buf, double ha)
+static double violet_filter(double white, double *buf)
 {
     double violet;
 
     violet = ((0.02 * white) - buf[0]) / 1.02;
     buf[0] = violet;
     return violet * 3.5;
-}
-
-static double velvet_filter(double white, double *buf, double ha)
-{
-    return 2. * ha * ((white > ha) - (white < -ha));
 }
 
 static av_cold int config_props(AVFilterLink *outlink)
@@ -180,26 +185,21 @@ static av_cold int config_props(AVFilterLink *outlink)
     case NM_BROWN:  s->filter = brown_filter;  break;
     case NM_BLUE:   s->filter = blue_filter;   break;
     case NM_VIOLET: s->filter = violet_filter; break;
-    case NM_VELVET: s->filter = velvet_filter; break;
     }
 
     return 0;
 }
 
-static int activate(AVFilterContext *ctx)
+static int request_frame(AVFilterLink *outlink)
 {
-    AVFilterLink *outlink = ctx->outputs[0];
+    AVFilterContext *ctx = outlink->src;
     ANoiseSrcContext *s = ctx->priv;
     AVFrame *frame;
     int nb_samples, i;
     double *dst;
 
-    if (!ff_outlink_frame_wanted(outlink))
-        return FFERROR_NOT_READY;
-
     if (!s->infinite && s->duration <= 0) {
-        ff_outlink_set_status(outlink, AVERROR_EOF, s->pts);
-        return 0;
+        return AVERROR_EOF;
     } else if (!s->infinite && s->duration < s->nb_samples) {
         nb_samples = s->duration;
     } else {
@@ -213,7 +213,7 @@ static int activate(AVFilterContext *ctx)
     for (i = 0; i < nb_samples; i++) {
         double white;
         white = s->amplitude * ((2 * ((double) av_lfg_get(&s->c) / 0xffffffff)) - 1);
-        dst[i] = s->filter(white, s->buf, s->amplitude * 0.5);
+        dst[i] = s->filter(white, s->buf);
     }
 
     if (!s->infinite)
@@ -228,17 +228,18 @@ static const AVFilterPad anoisesrc_outputs[] = {
     {
         .name          = "default",
         .type          = AVMEDIA_TYPE_AUDIO,
+        .request_frame = request_frame,
         .config_props  = config_props,
     },
+    { NULL }
 };
 
-const AVFilter ff_asrc_anoisesrc = {
+AVFilter ff_asrc_anoisesrc = {
     .name          = "anoisesrc",
     .description   = NULL_IF_CONFIG_SMALL("Generate a noise audio signal."),
+    .query_formats = query_formats,
     .priv_size     = sizeof(ANoiseSrcContext),
     .inputs        = NULL,
-    .activate      = activate,
-    FILTER_OUTPUTS(anoisesrc_outputs),
-    FILTER_QUERY_FUNC(query_formats),
+    .outputs       = anoisesrc_outputs,
     .priv_class    = &anoisesrc_class,
 };

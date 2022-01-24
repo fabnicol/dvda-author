@@ -110,7 +110,7 @@ static int ast_read_packet(AVFormatContext *s, AVPacket *pkt)
     return ret;
 }
 
-const AVInputFormat ff_ast_demuxer = {
+AVInputFormat ff_ast_demuxer = {
     .name           = "ast",
     .long_name      = NULL_IF_CONFIG_SMALL("AST (Audio Stream)"),
     .read_probe     = ast_probe,
@@ -118,5 +118,5 @@ const AVInputFormat ff_ast_demuxer = {
     .read_packet    = ast_read_packet,
     .extensions     = "ast",
     .flags          = AVFMT_GENERIC_INDEX,
-    .codec_tag      = ff_ast_codec_tags_list,
+    .codec_tag      = (const AVCodecTag* const []){ff_codec_ast_tags, 0},
 };

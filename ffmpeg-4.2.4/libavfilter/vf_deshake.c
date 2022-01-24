@@ -330,9 +330,8 @@ static int deshake_transform_c(AVFilterContext *ctx,
 
     for (i = 0; i < 3; i++) {
         // Transform the luma and chroma planes
-        ret = ff_affine_transform(in->data[i], out->data[i], in->linesize[i],
-                                  out->linesize[i], plane_w[i], plane_h[i],
-                                  matrixs[i], interpolate, fill);
+        ret = avfilter_transform(in->data[i], out->data[i], in->linesize[i], out->linesize[i],
+                                 plane_w[i], plane_h[i], matrixs[i], interpolate, fill);
         if (ret < 0)
             return ret;
     }
@@ -355,7 +354,7 @@ static av_cold int init(AVFilterContext *ctx)
     if (deshake->filename)
         deshake->fp = fopen(deshake->filename, "w");
     if (deshake->fp)
-        fwrite("Ori x, Avg x, Fin x, Ori y, Avg y, Fin y, Ori angle, Avg angle, Fin angle, Ori zoom, Avg zoom, Fin zoom\n", 1, 104, deshake->fp);
+        fwrite("Ori x, Avg x, Fin x, Ori y, Avg y, Fin y, Ori angle, Avg angle, Fin angle, Ori zoom, Avg zoom, Fin zoom\n", sizeof(char), 104, deshake->fp);
 
     // Quadword align left edge of box for MMX code, adjust width if necessary
     // to keep right margin
@@ -372,11 +371,18 @@ static av_cold int init(AVFilterContext *ctx)
     return 0;
 }
 
-static const enum AVPixelFormat pix_fmts[] = {
-    AV_PIX_FMT_YUV420P,  AV_PIX_FMT_YUV422P,  AV_PIX_FMT_YUV444P,  AV_PIX_FMT_YUV410P,
-    AV_PIX_FMT_YUV411P,  AV_PIX_FMT_YUV440P,  AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ422P,
-    AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ440P, AV_PIX_FMT_NONE
-};
+static int query_formats(AVFilterContext *ctx)
+{
+    static const enum AVPixelFormat pix_fmts[] = {
+        AV_PIX_FMT_YUV420P,  AV_PIX_FMT_YUV422P,  AV_PIX_FMT_YUV444P,  AV_PIX_FMT_YUV410P,
+        AV_PIX_FMT_YUV411P,  AV_PIX_FMT_YUV440P,  AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ422P,
+        AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ440P, AV_PIX_FMT_NONE
+    };
+    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
+    if (!fmts_list)
+        return AVERROR(ENOMEM);
+    return ff_set_common_formats(ctx, fmts_list);
+}
 
 static int config_props(AVFilterLink *link)
 {
@@ -415,7 +421,6 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
     const int chroma_width  = AV_CEIL_RSHIFT(link->w, desc->log2_chroma_w);
     const int chroma_height = AV_CEIL_RSHIFT(link->h, desc->log2_chroma_h);
     int aligned;
-    float transform_zoom;
 
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
@@ -479,7 +484,7 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
     // Write statistics to file
     if (deshake->fp) {
         snprintf(tmp, 256, "%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f\n", orig.vec.x, deshake->avg.vec.x, t.vec.x, orig.vec.y, deshake->avg.vec.y, t.vec.y, orig.angle, deshake->avg.angle, t.angle, orig.zoom, deshake->avg.zoom, t.zoom);
-        fwrite(tmp, 1, strlen(tmp), deshake->fp);
+        fwrite(tmp, sizeof(char), strlen(tmp), deshake->fp);
     }
 
     // Turn relative current frame motion into absolute by adding it to the
@@ -500,12 +505,10 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
     deshake->last.angle = t.angle;
     deshake->last.zoom = t.zoom;
 
-    transform_zoom = 1.0 + t.zoom / 100.0;
-
     // Generate a luma transformation matrix
-    ff_get_matrix(t.vec.x, t.vec.y, t.angle, transform_zoom, transform_zoom, matrix_y);
+    avfilter_get_matrix(t.vec.x, t.vec.y, t.angle, 1.0 + t.zoom / 100.0, matrix_y);
     // Generate a chroma transformation matrix
-    ff_get_matrix(t.vec.x / (link->w / chroma_width), t.vec.y / (link->h / chroma_height), t.angle, transform_zoom, transform_zoom, matrix_uv);
+    avfilter_get_matrix(t.vec.x / (link->w / chroma_width), t.vec.y / (link->h / chroma_height), t.angle, 1.0 + t.zoom / 100.0, matrix_uv);
     // Transform the luma and chroma planes
     ret = deshake->transform(link->dst, link->w, link->h, chroma_width, chroma_height,
                              matrix_y, matrix_uv, INTERPOLATE_BILINEAR, deshake->edge, in, out);
@@ -533,6 +536,7 @@ static const AVFilterPad deshake_inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_props,
     },
+    { NULL }
 };
 
 static const AVFilterPad deshake_outputs[] = {
@@ -540,16 +544,17 @@ static const AVFilterPad deshake_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
+    { NULL }
 };
 
-const AVFilter ff_vf_deshake = {
+AVFilter ff_vf_deshake = {
     .name          = "deshake",
     .description   = NULL_IF_CONFIG_SMALL("Stabilize shaky video."),
     .priv_size     = sizeof(DeshakeContext),
     .init          = init,
     .uninit        = uninit,
-    FILTER_INPUTS(deshake_inputs),
-    FILTER_OUTPUTS(deshake_outputs),
-    FILTER_PIXFMTS_ARRAY(pix_fmts),
+    .query_formats = query_formats,
+    .inputs        = deshake_inputs,
+    .outputs       = deshake_outputs,
     .priv_class    = &deshake_class,
 };

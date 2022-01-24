@@ -102,7 +102,12 @@ void ff_mqc_encode(MqcState *mqc, uint8_t *cxstate, int d)
     }
 }
 
-static int mqc_flush(MqcState *mqc)
+int ff_mqc_length(MqcState *mqc)
+{
+    return mqc->bp - mqc->bpstart;
+}
+
+int ff_mqc_flush(MqcState *mqc)
 {
     setbits(mqc);
     mqc->c = mqc->c << mqc->ct;
@@ -120,7 +125,7 @@ int ff_mqc_flush_to(MqcState *mqc, uint8_t *dst, int *dst_len)
     mqc2.bpstart=
     mqc2.bp = dst;
     *mqc2.bp = *mqc->bp;
-    mqc_flush(&mqc2);
+    ff_mqc_flush(&mqc2);
     *dst_len = mqc2.bp - dst;
     if (mqc->bp < mqc->bpstart) {
         av_assert1(mqc->bpstart - mqc->bp == 1);

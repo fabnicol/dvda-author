@@ -22,6 +22,7 @@
 #include "internal.h"
 #include "libavutil/bswap.h"
 #include "libavutil/internal.h"
+#include "libavutil/mem.h"
 
 static av_cold int decode_init(AVCodecContext *avctx)
 {
@@ -119,7 +120,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     return avpkt->size;
 }
 
-const AVCodec ff_v210x_decoder = {
+AVCodec ff_v210x_decoder = {
     .name           = "v210x",
     .long_name      = NULL_IF_CONFIG_SMALL("Uncompressed 4:2:2 10-bit"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -127,5 +128,4 @@ const AVCodec ff_v210x_decoder = {
     .init           = decode_init,
     .decode         = decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

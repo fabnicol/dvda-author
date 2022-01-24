@@ -25,7 +25,6 @@
  * @author Thilo Borgmann <thilo.borgmann _at_ mail.de>
  */
 
-#include "libavutil/bprint.h"
 #include "tiff_common.h"
 
 
@@ -80,26 +79,11 @@ static const char *auto_sep(int count, const char *sep, int i, int columns)
         return columns < count ? "\n" : "";
 }
 
-static int bprint_to_avdict(AVBPrint *bp, const char *name,
-                            AVDictionary **metadata)
-{
-    char *ap;
-    int ret;
-
-    if (!av_bprint_is_complete(bp)) {
-        av_bprint_finalize(bp, NULL);
-        return AVERROR(ENOMEM);
-    }
-    if ((ret = av_bprint_finalize(bp, &ap)) < 0)
-        return ret;
-
-    return av_dict_set(metadata, name, ap, AV_DICT_DONT_STRDUP_VAL);
-}
-
 int ff_tadd_rational_metadata(int count, const char *name, const char *sep,
                               GetByteContext *gb, int le, AVDictionary **metadata)
 {
     AVBPrint bp;
+    char *ap;
     int32_t nom, denom;
     int i;
 
@@ -116,7 +100,16 @@ int ff_tadd_rational_metadata(int count, const char *name, const char *sep,
         av_bprintf(&bp, "%s%7"PRId32":%-7"PRId32, auto_sep(count, sep, i, 4), nom, denom);
     }
 
-    return bprint_to_avdict(&bp, name, metadata);
+    if ((i = av_bprint_finalize(&bp, &ap))) {
+        return i;
+    }
+    if (!ap) {
+        return AVERROR(ENOMEM);
+    }
+
+    av_dict_set(metadata, name, ap, AV_DICT_DONT_STRDUP_VAL);
+
+    return 0;
 }
 
 
@@ -124,6 +117,7 @@ int ff_tadd_long_metadata(int count, const char *name, const char *sep,
                           GetByteContext *gb, int le, AVDictionary **metadata)
 {
     AVBPrint bp;
+    char *ap;
     int i;
 
     if (count >= INT_MAX / sizeof(int32_t) || count <= 0)
@@ -137,7 +131,16 @@ int ff_tadd_long_metadata(int count, const char *name, const char *sep,
         av_bprintf(&bp, "%s%7i", auto_sep(count, sep, i, 8), ff_tget_long(gb, le));
     }
 
-    return bprint_to_avdict(&bp, name, metadata);
+    if ((i = av_bprint_finalize(&bp, &ap))) {
+        return i;
+    }
+    if (!ap) {
+        return AVERROR(ENOMEM);
+    }
+
+    av_dict_set(metadata, name, ap, AV_DICT_DONT_STRDUP_VAL);
+
+    return 0;
 }
 
 
@@ -145,6 +148,7 @@ int ff_tadd_doubles_metadata(int count, const char *name, const char *sep,
                              GetByteContext *gb, int le, AVDictionary **metadata)
 {
     AVBPrint bp;
+    char *ap;
     int i;
 
     if (count >= INT_MAX / sizeof(int64_t) || count <= 0)
@@ -158,7 +162,16 @@ int ff_tadd_doubles_metadata(int count, const char *name, const char *sep,
         av_bprintf(&bp, "%s%.15g", auto_sep(count, sep, i, 4), ff_tget_double(gb, le));
     }
 
-    return bprint_to_avdict(&bp, name, metadata);
+    if ((i = av_bprint_finalize(&bp, &ap))) {
+        return i;
+    }
+    if (!ap) {
+        return AVERROR(ENOMEM);
+    }
+
+    av_dict_set(metadata, name, ap, AV_DICT_DONT_STRDUP_VAL);
+
+    return 0;
 }
 
 
@@ -166,6 +179,7 @@ int ff_tadd_shorts_metadata(int count, const char *name, const char *sep,
                             GetByteContext *gb, int le, int is_signed, AVDictionary **metadata)
 {
     AVBPrint bp;
+    char *ap;
     int i;
 
     if (count >= INT_MAX / sizeof(int16_t) || count <= 0)
@@ -180,7 +194,16 @@ int ff_tadd_shorts_metadata(int count, const char *name, const char *sep,
         av_bprintf(&bp, "%s%5i", auto_sep(count, sep, i, 8), v);
     }
 
-    return bprint_to_avdict(&bp, name, metadata);
+    if ((i = av_bprint_finalize(&bp, &ap))) {
+        return i;
+    }
+    if (!ap) {
+        return AVERROR(ENOMEM);
+    }
+
+    av_dict_set(metadata, name, ap, AV_DICT_DONT_STRDUP_VAL);
+
+    return 0;
 }
 
 
@@ -188,6 +211,7 @@ int ff_tadd_bytes_metadata(int count, const char *name, const char *sep,
                            GetByteContext *gb, int le, int is_signed, AVDictionary **metadata)
 {
     AVBPrint bp;
+    char *ap;
     int i;
 
     if (count >= INT_MAX / sizeof(int8_t) || count < 0)
@@ -202,7 +226,16 @@ int ff_tadd_bytes_metadata(int count, const char *name, const char *sep,
         av_bprintf(&bp, "%s%3i", auto_sep(count, sep, i, 16), v);
     }
 
-    return bprint_to_avdict(&bp, name, metadata);
+    if ((i = av_bprint_finalize(&bp, &ap))) {
+        return i;
+    }
+    if (!ap) {
+        return AVERROR(ENOMEM);
+    }
+
+    av_dict_set(metadata, name, ap, AV_DICT_DONT_STRDUP_VAL);
+
+    return 0;
 }
 
 int ff_tadd_string_metadata(int count, const char *name,

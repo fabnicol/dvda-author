@@ -49,6 +49,7 @@ typedef struct Fragment {
 
 typedef struct OutputStream {
     AVFormatContext *ctx;
+    int ctx_inited;
     char dirname[1024];
     uint8_t iobuf[32768];
     URLContext *out;  // Current output stream where all output is written
@@ -98,9 +99,14 @@ static int64_t ism_seek(void *opaque, int64_t offset, int whence)
     if (whence != SEEK_SET)
         return AVERROR(ENOSYS);
     if (os->tail_out) {
-        ffurl_closep(&os->out);
-        ffurl_closep(&os->out2);
+        if (os->out) {
+            ffurl_close(os->out);
+        }
+        if (os->out2) {
+            ffurl_close(os->out2);
+        }
         os->out = os->tail_out;
+        os->out2 = NULL;
         os->tail_out = NULL;
     }
     if (offset >= os->cur_start_pos) {
@@ -169,12 +175,16 @@ static void ism_free(AVFormatContext *s)
         return;
     for (i = 0; i < s->nb_streams; i++) {
         OutputStream *os = &c->streams[i];
-        ffurl_closep(&os->out);
-        ffurl_closep(&os->out2);
-        ffurl_closep(&os->tail_out);
+        ffurl_close(os->out);
+        ffurl_close(os->out2);
+        ffurl_close(os->tail_out);
+        os->out = os->out2 = os->tail_out = NULL;
+        if (os->ctx && os->ctx_inited)
+            av_write_trailer(os->ctx);
         if (os->ctx && os->ctx->pb)
             avio_context_free(&os->ctx->pb);
-        avformat_free_context(os->ctx);
+        if (os->ctx)
+            avformat_free_context(os->ctx);
         av_freep(&os->private_str);
         for (j = 0; j < os->nb_fragments; j++)
             av_freep(&os->fragments[j]);
@@ -283,21 +293,24 @@ static int ism_write_header(AVFormatContext *s)
 {
     SmoothStreamingContext *c = s->priv_data;
     int ret = 0, i;
-    const AVOutputFormat *oformat;
+    ff_const59 AVOutputFormat *oformat;
 
     if (mkdir(s->url, 0777) == -1 && errno != EEXIST) {
+        ret = AVERROR(errno);
         av_log(s, AV_LOG_ERROR, "mkdir failed\n");
-        return AVERROR(errno);
+        goto fail;
     }
 
     oformat = av_guess_format("ismv", NULL, NULL);
     if (!oformat) {
-        return AVERROR_MUXER_NOT_FOUND;
+        ret = AVERROR_MUXER_NOT_FOUND;
+        goto fail;
     }
 
-    c->streams = av_calloc(s->nb_streams, sizeof(*c->streams));
+    c->streams = av_mallocz_array(s->nb_streams, sizeof(*c->streams));
     if (!c->streams) {
-        return AVERROR(ENOMEM);
+        ret = AVERROR(ENOMEM);
+        goto fail;
     }
 
     for (i = 0; i < s->nb_streams; i++) {
@@ -315,21 +328,22 @@ static int ism_write_header(AVFormatContext *s)
         }
 
         if (mkdir(os->dirname, 0777) == -1 && errno != EEXIST) {
+            ret = AVERROR(errno);
             av_log(s, AV_LOG_ERROR, "mkdir failed\n");
-            return AVERROR(errno);
+            goto fail;
         }
 
         os->ctx = ctx = avformat_alloc_context();
-        if (!ctx) {
-            return AVERROR(ENOMEM);
+        if (!ctx || ff_copy_whiteblacklists(ctx, s) < 0) {
+            ret = AVERROR(ENOMEM);
+            goto fail;
         }
-        if ((ret = ff_copy_whiteblacklists(ctx, s)) < 0)
-            return ret;
         ctx->oformat = oformat;
         ctx->interrupt_callback = s->interrupt_callback;
 
         if (!(st = avformat_new_stream(ctx, NULL))) {
-            return AVERROR(ENOMEM);
+            ret = AVERROR(ENOMEM);
+            goto fail;
         }
         avcodec_parameters_copy(st->codecpar, s->streams[i]->codecpar);
         st->sample_aspect_ratio = s->streams[i]->sample_aspect_ratio;
@@ -337,7 +351,8 @@ static int ism_write_header(AVFormatContext *s)
 
         ctx->pb = avio_alloc_context(os->iobuf, sizeof(os->iobuf), AVIO_FLAG_WRITE, os, NULL, ism_write, ism_seek);
         if (!ctx->pb) {
-            return AVERROR(ENOMEM);
+            ret = AVERROR(ENOMEM);
+            goto fail;
         }
 
         av_dict_set_int(&opts, "ism_lookahead", c->lookahead_count, 0);
@@ -345,8 +360,9 @@ static int ism_write_header(AVFormatContext *s)
         ret = avformat_write_header(ctx, &opts);
         av_dict_free(&opts);
         if (ret < 0) {
-             return ret;
+             goto fail;
         }
+        os->ctx_inited = 1;
         avio_flush(ctx->pb);
         s->streams[i]->time_base = st->time_base;
         if (st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
@@ -358,7 +374,8 @@ static int ism_write_header(AVFormatContext *s)
                 os->fourcc = "WVC1";
             } else {
                 av_log(s, AV_LOG_ERROR, "Unsupported video codec\n");
-                return AVERROR(EINVAL);
+                ret = AVERROR(EINVAL);
+                goto fail;
             }
         } else {
             c->has_audio = 1;
@@ -371,7 +388,8 @@ static int ism_write_header(AVFormatContext *s)
                 os->audio_tag = 0x0162;
             } else {
                 av_log(s, AV_LOG_ERROR, "Unsupported audio codec\n");
-                return AVERROR(EINVAL);
+                ret = AVERROR(EINVAL);
+                goto fail;
             }
             os->packet_size = st->codecpar->block_align ? st->codecpar->block_align : 4;
         }
@@ -380,13 +398,15 @@ static int ism_write_header(AVFormatContext *s)
 
     if (!c->has_video && c->min_frag_duration <= 0) {
         av_log(s, AV_LOG_WARNING, "no video stream and no min frag duration set\n");
-        return AVERROR(EINVAL);
+        ret = AVERROR(EINVAL);
+        goto fail;
     }
     ret = write_manifest(s, 0);
-    if (ret < 0)
-        return ret;
 
-    return 0;
+fail:
+    if (ret)
+        ism_free(s);
+    return ret;
 }
 
 static int parse_fragment(AVFormatContext *s, const char *filename, int64_t *start_ts, int64_t *duration, int64_t *moof_size, int64_t size)
@@ -445,7 +465,7 @@ static int add_fragment(OutputStream *os, const char *file, const char *infofile
     Fragment *frag;
     if (os->nb_fragments >= os->fragments_size) {
         os->fragments_size = (os->fragments_size + 1) * 2;
-        if ((err = av_reallocp_array(&os->fragments, sizeof(*os->fragments),
+        if ((err = av_reallocp(&os->fragments, sizeof(*os->fragments) *
                                os->fragments_size)) < 0) {
             os->fragments_size = 0;
             os->nb_fragments = 0;
@@ -518,7 +538,8 @@ static int ism_flush(AVFormatContext *s, int final)
         if (!os->out || os->tail_out)
             return AVERROR(EIO);
 
-        ffurl_closep(&os->out);
+        ffurl_close(os->out);
+        os->out = NULL;
         size = os->tail_pos - os->cur_start_pos;
         if ((ret = parse_fragment(s, filename, &start_ts, &duration, &moof_size, size)) < 0)
             break;
@@ -582,16 +603,15 @@ static int ism_write_packet(AVFormatContext *s, AVPacket *pkt)
 {
     SmoothStreamingContext *c = s->priv_data;
     AVStream *st = s->streams[pkt->stream_index];
-    FFStream *const sti = ffstream(st);
     OutputStream *os = &c->streams[pkt->stream_index];
     int64_t end_dts = (c->nb_fragments + 1) * (int64_t) c->min_frag_duration;
     int ret;
 
-    if (sti->first_dts == AV_NOPTS_VALUE)
-        sti->first_dts = pkt->dts;
+    if (st->first_dts == AV_NOPTS_VALUE)
+        st->first_dts = pkt->dts;
 
     if ((!c->has_video || st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) &&
-        av_compare_ts(pkt->dts - sti->first_dts, st->time_base,
+        av_compare_ts(pkt->dts - st->first_dts, st->time_base,
                       end_dts, AV_TIME_BASE_Q) >= 0 &&
         pkt->flags & AV_PKT_FLAG_KEY && os->packets_written) {
 
@@ -616,6 +636,7 @@ static int ism_write_trailer(AVFormatContext *s)
         rmdir(s->url);
     }
 
+    ism_free(s);
     return 0;
 }
 
@@ -638,7 +659,7 @@ static const AVClass ism_class = {
 };
 
 
-const AVOutputFormat ff_smoothstreaming_muxer = {
+AVOutputFormat ff_smoothstreaming_muxer = {
     .name           = "smoothstreaming",
     .long_name      = NULL_IF_CONFIG_SMALL("Smooth Streaming Muxer"),
     .priv_data_size = sizeof(SmoothStreamingContext),
@@ -648,6 +669,5 @@ const AVOutputFormat ff_smoothstreaming_muxer = {
     .write_header   = ism_write_header,
     .write_packet   = ism_write_packet,
     .write_trailer  = ism_write_trailer,
-    .deinit         = ism_free,
     .priv_class     = &ism_class,
 };

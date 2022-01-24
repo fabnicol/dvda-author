@@ -26,7 +26,6 @@
  * @author Marco Gerards <marco@gnu.org>, David Conrad, Jordi Ortiz <nenjordi@gmail.com>
  */
 
-#include "libavutil/mem_internal.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/thread.h"
 #include "avcodec.h"
@@ -37,7 +36,7 @@
 #include "dirac_arith.h"
 #include "dirac_vlc.h"
 #include "mpeg12data.h"
-#include "mpegpicture.h"
+#include "libavcodec/mpegvideo.h"
 #include "mpegvideoencdsp.h"
 #include "dirac_dwt.h"
 #include "dirac.h"
@@ -137,6 +136,7 @@ typedef struct DiracContext {
     MpegvideoEncDSPContext mpvencdsp;
     VideoDSPContext vdsp;
     DiracDSPContext diracdsp;
+    DiracGolombLUT *reader_ctx;
     DiracVersionInfo version;
     GetBitContext gb;
     AVDiracSeqHeader seq;
@@ -304,7 +304,7 @@ static int alloc_sequence_buffers(DiracContext *s)
         w = FFALIGN(CALC_PADDING(w, MAX_DWT_LEVELS), 8); /* FIXME: Should this be 16 for SSE??? */
         h = top_padding + CALC_PADDING(h, MAX_DWT_LEVELS) + max_yblen/2;
 
-        s->plane[i].idwt.buf_base = av_calloc(w + max_xblen, h * (2 << s->pshift));
+        s->plane[i].idwt.buf_base = av_mallocz_array((w+max_xblen), h * (2 << s->pshift));
         s->plane[i].idwt.tmp      = av_malloc_array((w+16), 2 << s->pshift);
         s->plane[i].idwt.buf      = s->plane[i].idwt.buf_base + (top_padding*w)*(2 << s->pshift);
         if (!s->plane[i].idwt.buf_base || !s->plane[i].idwt.tmp)
@@ -395,6 +395,7 @@ static av_cold int dirac_decode_init(AVCodecContext *avctx)
     s->threads_num_buf = -1;
     s->thread_buf_size = -1;
 
+    ff_dirac_golomb_reader_init(&s->reader_ctx);
     ff_diracdsp_init(&s->diracdsp);
     ff_mpegvideoencdsp_init(&s->mpvencdsp, avctx);
     ff_videodsp_init(&s->vdsp, 8);
@@ -426,6 +427,8 @@ static av_cold int dirac_decode_end(AVCodecContext *avctx)
 {
     DiracContext *s = avctx->priv_data;
     int i;
+
+    ff_dirac_golomb_reader_end(&s->reader_ctx);
 
     dirac_decode_flush(avctx);
     for (i = 0; i < MAX_FRAMES; i++)
@@ -878,11 +881,11 @@ static int decode_hq_slice(DiracContext *s, DiracSlice *slice, uint8_t *tmp_buf)
         coef_num = subband_coeffs(s, slice->slice_x, slice->slice_y, i, coeffs_num);
 
         if (s->pshift)
-            coef_par = ff_dirac_golomb_read_32bit(addr, length,
-                                                  tmp_buf, coef_num);
+            coef_par = ff_dirac_golomb_read_32bit(s->reader_ctx, addr,
+                                                  length, tmp_buf, coef_num);
         else
-            coef_par = ff_dirac_golomb_read_16bit(addr, length,
-                                                  tmp_buf, coef_num);
+            coef_par = ff_dirac_golomb_read_16bit(s->reader_ctx, addr,
+                                                  length, tmp_buf, coef_num);
 
         if (coef_num > coef_par) {
             const int start_b = coef_par * (1 << (s->pshift + 1));
@@ -2355,7 +2358,7 @@ static int dirac_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     return buf_idx;
 }
 
-const AVCodec ff_dirac_decoder = {
+AVCodec ff_dirac_decoder = {
     .name           = "dirac",
     .long_name      = NULL_IF_CONFIG_SMALL("BBC Dirac VC-2"),
     .type           = AVMEDIA_TYPE_VIDEO,

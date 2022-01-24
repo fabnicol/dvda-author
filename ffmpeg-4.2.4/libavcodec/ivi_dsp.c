@@ -26,8 +26,7 @@
  * for Indeo Video Interactive codecs.
  */
 
-#include <string.h>
-#include "libavutil/common.h"
+#include "avcodec.h"
 #include "ivi.h"
 #include "ivi_dsp.h"
 

@@ -52,7 +52,7 @@ static int g723_1_parse(AVCodecParserContext *s1, AVCodecContext *avctx,
     return next;
 }
 
-const AVCodecParser ff_g723_1_parser = {
+AVCodecParser ff_g723_1_parser = {
     .codec_ids      = { AV_CODEC_ID_G723_1 },
     .priv_data_size = sizeof(G723_1ParseContext),
     .parser_parse   = g723_1_parse,

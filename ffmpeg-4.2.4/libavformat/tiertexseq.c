@@ -202,16 +202,20 @@ static int seq_read_header(AVFormatContext *s)
 
     /* init internal buffers */
     rc = seq_init_frame_buffers(seq, pb);
-    if (rc < 0)
+    if (rc) {
+        seq_read_close(s);
         return rc;
+    }
 
     seq->current_frame_offs = 0;
 
     /* preload (no audio data, just buffer operations related data) */
     for (i = 1; i <= 100; i++) {
         rc = seq_parse_frame_data(seq, pb);
-        if (rc < 0)
+        if (rc) {
+            seq_read_close(s);
             return rc;
+        }
     }
 
     seq->current_frame_pts = 0;
@@ -220,8 +224,10 @@ static int seq_read_header(AVFormatContext *s)
 
     /* initialize the video decoder stream */
     st = avformat_new_stream(s, NULL);
-    if (!st)
+    if (!st) {
+        seq_read_close(s);
         return AVERROR(ENOMEM);
+    }
 
     avpriv_set_pts_info(st, 32, 1, SEQ_FRAME_RATE);
     seq->video_stream_index = st->index;
@@ -233,8 +239,10 @@ static int seq_read_header(AVFormatContext *s)
 
     /* initialize the audio decoder stream */
     st = avformat_new_stream(s, NULL);
-    if (!st)
+    if (!st) {
+        seq_read_close(s);
         return AVERROR(ENOMEM);
+    }
 
     st->start_time = 0;
     avpriv_set_pts_info(st, 32, 1, SEQ_SAMPLE_RATE);
@@ -265,10 +273,8 @@ static int seq_read_packet(AVFormatContext *s, AVPacket *pkt)
 
         /* video packet */
         if (seq->current_pal_data_size + seq->current_video_data_size != 0) {
-            rc = av_new_packet(pkt, 1 + seq->current_pal_data_size
-                                      + seq->current_video_data_size);
-            if (rc < 0)
-                return rc;
+            if (av_new_packet(pkt, 1 + seq->current_pal_data_size + seq->current_video_data_size))
+                return AVERROR(ENOMEM);
 
             pkt->data[0] = 0;
             if (seq->current_pal_data_size) {
@@ -308,11 +314,10 @@ static int seq_read_packet(AVFormatContext *s, AVPacket *pkt)
     return 0;
 }
 
-const AVInputFormat ff_tiertexseq_demuxer = {
+AVInputFormat ff_tiertexseq_demuxer = {
     .name           = "tiertexseq",
     .long_name      = NULL_IF_CONFIG_SMALL("Tiertex Limited SEQ"),
     .priv_data_size = sizeof(SeqDemuxContext),
-    .flags_internal = FF_FMT_INIT_CLEANUP,
     .read_probe     = seq_probe,
     .read_header    = seq_read_header,
     .read_packet    = seq_read_packet,

@@ -89,10 +89,13 @@ static const AVCodecDefault qsv_enc_defaults[] = {
     { "bf",        "3"     },
     { "trellis",   "-1"    },
     { "flags",     "+cgop" },
+#if FF_API_PRIVATE_OPT
+    { "b_strategy", "-1"   },
+#endif
     { NULL },
 };
 
-const AVCodec ff_mpeg2_qsv_encoder = {
+AVCodec ff_mpeg2_qsv_encoder = {
     .name           = "mpeg2_qsv",
     .long_name      = NULL_IF_CONFIG_SMALL("MPEG-2 video (Intel Quick Sync Video acceleration)"),
     .priv_data_size = sizeof(QSVMpeg2EncContext),
@@ -109,5 +112,4 @@ const AVCodec ff_mpeg2_qsv_encoder = {
     .defaults       = qsv_enc_defaults,
     .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
     .wrapper_name   = "qsv",
-    .hw_configs     = ff_qsv_enc_hw_configs,
 };

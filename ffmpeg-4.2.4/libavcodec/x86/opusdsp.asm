@@ -64,7 +64,7 @@ cglobal opus_deemphasis, 4, 4, 8, out, in, coeff, len
 
     add inq,  mmsize
     add outq, mmsize
-    sub lend, mmsize >> 2
+    sub lenq, mmsize >> 2
     jg .loop
 
 %if ARCH_X86_64 == 0
@@ -80,8 +80,7 @@ cglobal opus_postfilter, 4, 4, 8, data, period, gains, len
     VBROADCASTSS m1, [gainsq + 4]
     VBROADCASTSS m2, [gainsq + 8]
 
-    shl periodd, 2
-    add periodq, 8
+    lea periodq, [periodq*4 + 8]
     neg periodq
 
     movups  m3, [dataq + periodq]
@@ -105,7 +104,7 @@ cglobal opus_postfilter, 4, 4, 8, data, period, gains, len
     movaps  [dataq], m5
 
     add dataq, mmsize
-    sub lend,  mmsize >> 2
+    sub lenq,  mmsize >> 2
     jg .loop
 
     RET

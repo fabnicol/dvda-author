@@ -23,7 +23,6 @@
 #include "libavutil/common.h"
 #include "libavutil/intreadwrite.h"
 #include "avcodec.h"
-#include "encode.h"
 #include "internal.h"
 
 static av_cold int v410_encode_init(AVCodecContext *avctx)
@@ -47,10 +46,17 @@ static int v410_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     uint32_t val;
     int i, j, ret;
 
-    ret = ff_get_encode_buffer(avctx, pkt, avctx->width * avctx->height * 4, 0);
-    if (ret < 0)
+    if ((ret = ff_alloc_packet2(avctx, pkt, avctx->width * avctx->height * 4,
+                                            avctx->width * avctx->height * 4)) < 0)
         return ret;
     dst = pkt->data;
+
+#if FF_API_CODED_FRAME
+FF_DISABLE_DEPRECATION_WARNINGS
+    avctx->coded_frame->key_frame = 1;
+    avctx->coded_frame->pict_type = AV_PICTURE_TYPE_I;
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
 
     y = (uint16_t *)pic->data[0];
     u = (uint16_t *)pic->data[1];
@@ -69,18 +75,17 @@ static int v410_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         v += pic->linesize[2] >> 1;
     }
 
+    pkt->flags |= AV_PKT_FLAG_KEY;
     *got_packet = 1;
     return 0;
 }
 
-const AVCodec ff_v410_encoder = {
+AVCodec ff_v410_encoder = {
     .name         = "v410",
     .long_name    = NULL_IF_CONFIG_SMALL("Uncompressed 4:4:4 10-bit"),
     .type         = AVMEDIA_TYPE_VIDEO,
     .id           = AV_CODEC_ID_V410,
-    .capabilities = AV_CODEC_CAP_DR1,
     .init         = v410_encode_init,
     .encode2      = v410_encode_frame,
     .pix_fmts     = (const enum AVPixelFormat[]){ AV_PIX_FMT_YUV444P10, AV_PIX_FMT_NONE },
-    .caps_internal = FF_CODEC_CAP_INIT_THREADSAFE,
 };

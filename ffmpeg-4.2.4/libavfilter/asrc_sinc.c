@@ -20,14 +20,12 @@
  */
 
 #include "libavutil/avassert.h"
-#include "libavutil/channel_layout.h"
 #include "libavutil/opt.h"
 
 #include "libavcodec/avfft.h"
 
 #include "audio.h"
 #include "avfilter.h"
-#include "filters.h"
 #include "internal.h"
 
 typedef struct SincContext {
@@ -45,22 +43,17 @@ typedef struct SincContext {
     RDFTContext *rdft, *irdft;
 } SincContext;
 
-static int activate(AVFilterContext *ctx)
+static int request_frame(AVFilterLink *outlink)
 {
-    AVFilterLink *outlink = ctx->outputs[0];
+    AVFilterContext *ctx = outlink->src;
     SincContext *s = ctx->priv;
     const float *coeffs = s->coeffs;
     AVFrame *frame = NULL;
     int nb_samples;
 
-    if (!ff_outlink_frame_wanted(outlink))
-        return FFERROR_NOT_READY;
-
     nb_samples = FFMIN(s->nb_samples, s->n - s->pts);
-    if (nb_samples <= 0) {
-        ff_outlink_set_status(outlink, AVERROR_EOF, s->pts);
-        return 0;
-    }
+    if (nb_samples <= 0)
+        return AVERROR_EOF;
 
     if (!(frame = ff_get_audio_buffer(outlink, nb_samples)))
         return AVERROR(ENOMEM);
@@ -80,15 +73,28 @@ static int query_formats(AVFilterContext *ctx)
     int sample_rates[] = { s->sample_rate, -1 };
     static const enum AVSampleFormat sample_fmts[] = { AV_SAMPLE_FMT_FLT,
                                                        AV_SAMPLE_FMT_NONE };
-    int ret = ff_set_common_formats_from_list(ctx, sample_fmts);
+    AVFilterFormats *formats;
+    AVFilterChannelLayouts *layouts;
+    int ret;
+
+    formats = ff_make_format_list(sample_fmts);
+    if (!formats)
+        return AVERROR(ENOMEM);
+    ret = ff_set_common_formats (ctx, formats);
     if (ret < 0)
         return ret;
 
-    ret = ff_set_common_channel_layouts_from_list(ctx, chlayouts);
+    layouts = avfilter_make_format64_list(chlayouts);
+    if (!layouts)
+        return AVERROR(ENOMEM);
+    ret = ff_set_common_channel_layouts(ctx, layouts);
     if (ret < 0)
         return ret;
 
-    return ff_set_common_samplerates_from_list(ctx, sample_rates);
+    formats = ff_make_format_list(sample_rates);
+    if (!formats)
+        return AVERROR(ENOMEM);
+    return ff_set_common_samplerates(ctx, formats);
 }
 
 static float bessel_I_0(float x)
@@ -221,11 +227,10 @@ static int fir_to_phase(SincContext *s, float **h, int *len, int *post_len, floa
 
     for (i = *len, work_len = 2 * 2 * 8; i > 1; work_len <<= 1, i >>= 1);
 
-    /* The first part is for work (+2 for (UN)PACK), the latter for pi_wraps. */
-    work = av_calloc((work_len + 2) + (work_len / 2 + 1), sizeof(float));
-    if (!work)
+    work = av_calloc(work_len + 2, sizeof(*work));    /* +2: (UN)PACK */
+    pi_wraps = av_calloc(((work_len + 2) / 2), sizeof(*pi_wraps));
+    if (!work || !pi_wraps)
         return AVERROR(ENOMEM);
-    pi_wraps = &work[work_len + 2];
 
     memcpy(work, *h, *len * sizeof(*work));
 
@@ -234,10 +239,8 @@ static int fir_to_phase(SincContext *s, float **h, int *len, int *post_len, floa
     s->rdft = s->irdft = NULL;
     s->rdft  = av_rdft_init(av_log2(work_len), DFT_R2C);
     s->irdft = av_rdft_init(av_log2(work_len), IDFT_C2R);
-    if (!s->rdft || !s->irdft) {
-        av_free(work);
+    if (!s->rdft || !s->irdft)
         return AVERROR(ENOMEM);
-    }
 
     av_rdft_calc(s->rdft, work);   /* Cepstral: */
     UNPACK(work, work_len);
@@ -317,6 +320,7 @@ static int fir_to_phase(SincContext *s, float **h, int *len, int *post_len, floa
         *len = end - begin;
         *h = av_realloc_f(*h, *len, sizeof(**h));
         if (!*h) {
+            av_free(pi_wraps);
             av_free(work);
             return AVERROR(ENOMEM);
         }
@@ -331,6 +335,7 @@ static int fir_to_phase(SincContext *s, float **h, int *len, int *post_len, floa
            work_len, pi_wraps[work_len >> 1] / M_PI, peak, peak_imp_sum, imp_peak,
            work[imp_peak], *len, *post_len, 100.f - 100.f * *post_len / (*len - 1));
 
+    av_free(pi_wraps);
     av_free(work);
 
     return 0;
@@ -412,7 +417,9 @@ static const AVFilterPad sinc_outputs[] = {
         .name          = "default",
         .type          = AVMEDIA_TYPE_AUDIO,
         .config_props  = config_output,
+        .request_frame = request_frame,
     },
+    { NULL }
 };
 
 #define AF AV_OPT_FLAG_AUDIO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
@@ -436,14 +443,13 @@ static const AVOption sinc_options[] = {
 
 AVFILTER_DEFINE_CLASS(sinc);
 
-const AVFilter ff_asrc_sinc = {
+AVFilter ff_asrc_sinc = {
     .name          = "sinc",
     .description   = NULL_IF_CONFIG_SMALL("Generate a sinc kaiser-windowed low-pass, high-pass, band-pass, or band-reject FIR coefficients."),
     .priv_size     = sizeof(SincContext),
     .priv_class    = &sinc_class,
+    .query_formats = query_formats,
     .uninit        = uninit,
-    .activate      = activate,
     .inputs        = NULL,
-    FILTER_OUTPUTS(sinc_outputs),
-    FILTER_QUERY_FUNC(query_formats),
+    .outputs       = sinc_outputs,
 };

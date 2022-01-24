@@ -461,6 +461,15 @@ HQX_FUNC(2)
 HQX_FUNC(3)
 HQX_FUNC(4)
 
+static int query_formats(AVFilterContext *ctx)
+{
+    static const enum AVPixelFormat pix_fmts[] = {AV_PIX_FMT_RGB32, AV_PIX_FMT_NONE};
+    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
+    if (!fmts_list)
+        return AVERROR(ENOMEM);
+    return ff_set_common_formats(ctx, fmts_list);
+}
+
 static int config_output(AVFilterLink *outlink)
 {
     AVFilterContext *ctx = outlink->src;
@@ -493,8 +502,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     td.in = in;
     td.out = out;
     td.rgbtoyuv = hqx->rgbtoyuv;
-    ff_filter_execute(ctx, hqx->func, &td, NULL,
-                      FFMIN(inlink->h, ff_filter_get_nb_threads(ctx)));
+    ctx->internal->execute(ctx, hqx->func, &td, NULL, FFMIN(inlink->h, ff_filter_get_nb_threads(ctx)));
 
     av_frame_free(&in);
     return ff_filter_frame(outlink, out);
@@ -533,6 +541,7 @@ static const AVFilterPad hqx_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .filter_frame = filter_frame,
     },
+    { NULL }
 };
 
 static const AVFilterPad hqx_outputs[] = {
@@ -541,16 +550,17 @@ static const AVFilterPad hqx_outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_output,
     },
+    { NULL }
 };
 
-const AVFilter ff_vf_hqx = {
+AVFilter ff_vf_hqx = {
     .name          = "hqx",
     .description   = NULL_IF_CONFIG_SMALL("Scale the input by 2, 3 or 4 using the hq*x magnification algorithm."),
     .priv_size     = sizeof(HQXContext),
     .init          = init,
-    FILTER_INPUTS(hqx_inputs),
-    FILTER_OUTPUTS(hqx_outputs),
-    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_RGB32),
+    .query_formats = query_formats,
+    .inputs        = hqx_inputs,
+    .outputs       = hqx_outputs,
     .priv_class    = &hqx_class,
     .flags         = AVFILTER_FLAG_SLICE_THREADS,
 };

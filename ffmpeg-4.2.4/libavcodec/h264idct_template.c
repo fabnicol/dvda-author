@@ -171,10 +171,7 @@ void FUNCC(ff_h264_idct8_dc_add)(uint8_t *_dst, int16_t *_block, int stride){
     }
 }
 
-void FUNCC(ff_h264_idct_add16)(uint8_t *dst, const int *block_offset,
-                               int16_t *block, int stride,
-                               const uint8_t nnzc[5 * 8])
-{
+void FUNCC(ff_h264_idct_add16)(uint8_t *dst, const int *block_offset, int16_t *block, int stride, const uint8_t nnzc[15*8]){
     int i;
     for(i=0; i<16; i++){
         int nnz = nnzc[ scan8[i] ];
@@ -185,10 +182,7 @@ void FUNCC(ff_h264_idct_add16)(uint8_t *dst, const int *block_offset,
     }
 }
 
-void FUNCC(ff_h264_idct_add16intra)(uint8_t *dst, const int *block_offset,
-                                    int16_t *block, int stride,
-                                    const uint8_t nnzc[5 * 8])
-{
+void FUNCC(ff_h264_idct_add16intra)(uint8_t *dst, const int *block_offset, int16_t *block, int stride, const uint8_t nnzc[15*8]){
     int i;
     for(i=0; i<16; i++){
         if(nnzc[ scan8[i] ])             FUNCC(ff_h264_idct_add   )(dst + block_offset[i], block + i*16*sizeof(pixel), stride);
@@ -196,10 +190,7 @@ void FUNCC(ff_h264_idct_add16intra)(uint8_t *dst, const int *block_offset,
     }
 }
 
-void FUNCC(ff_h264_idct8_add4)(uint8_t *dst, const int *block_offset,
-                               int16_t *block, int stride,
-                               const uint8_t nnzc[5 * 8])
-{
+void FUNCC(ff_h264_idct8_add4)(uint8_t *dst, const int *block_offset, int16_t *block, int stride, const uint8_t nnzc[15*8]){
     int i;
     for(i=0; i<16; i+=4){
         int nnz = nnzc[ scan8[i] ];
@@ -287,13 +278,13 @@ void FUNCC(ff_h264_chroma422_dc_dequant_idct)(int16_t *_block, int qmul){
     const int stride= 16*2;
     const int xStride= 16;
     int i;
-    unsigned temp[8];
+    int temp[8];
     static const uint8_t x_offset[2]={0, 16};
     dctcoef *block = (dctcoef*)_block;
 
     for(i=0; i<4; i++){
-        temp[2*i+0] = block[stride*i + xStride*0] + (unsigned)block[stride*i + xStride*1];
-        temp[2*i+1] = block[stride*i + xStride*0] - (unsigned)block[stride*i + xStride*1];
+        temp[2*i+0] = block[stride*i + xStride*0] + block[stride*i + xStride*1];
+        temp[2*i+1] = block[stride*i + xStride*0] - block[stride*i + xStride*1];
     }
 
     for(i=0; i<2; i++){

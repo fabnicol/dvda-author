@@ -21,14 +21,21 @@
 
 #include "bsf.h"
 #include "cbs.h"
-#include "cbs_bsf.h"
 #include "cbs_av1.h"
 
+enum {
+    PASS,
+    INSERT,
+    REMOVE,
+};
+
 typedef struct AV1MetadataContext {
-    CBSBSFContext common;
+    const AVClass *class;
+
+    CodedBitstreamContext *cbc;
+    CodedBitstreamFragment access_unit;
 
     int td;
-    AV1RawOBU td_obu;
 
     int color_primaries;
     int transfer_characteristics;
@@ -54,7 +61,12 @@ static int av1_metadata_update_sequence_header(AVBSFContext *bsf,
     if (ctx->color_primaries >= 0          ||
         ctx->transfer_characteristics >= 0 ||
         ctx->matrix_coefficients >= 0) {
-        clc->color_description_present_flag = 1;
+        if (!clc->color_description_present_flag) {
+            clc->color_description_present_flag = 1;
+            clc->color_primaries          = AVCOL_PRI_UNSPECIFIED;
+            clc->transfer_characteristics = AVCOL_TRC_UNSPECIFIED;
+            clc->matrix_coefficients      = AVCOL_SPC_UNSPECIFIED;
+        }
 
         if (ctx->color_primaries >= 0)
             clc->color_primaries = ctx->color_primaries;
@@ -104,67 +116,138 @@ static int av1_metadata_update_sequence_header(AVBSFContext *bsf,
     return 0;
 }
 
-static int av1_metadata_update_fragment(AVBSFContext *bsf, AVPacket *pkt,
-                                        CodedBitstreamFragment *frag)
+static int av1_metadata_filter(AVBSFContext *bsf, AVPacket *pkt)
 {
     AV1MetadataContext *ctx = bsf->priv_data;
+    CodedBitstreamFragment *frag = &ctx->access_unit;
+    AV1RawOBU td, *obu;
     int err, i;
+
+    err = ff_bsf_get_packet_ref(bsf, pkt);
+    if (err < 0)
+        return err;
+
+    err = ff_cbs_read_packet(ctx->cbc, frag, pkt);
+    if (err < 0) {
+        av_log(bsf, AV_LOG_ERROR, "Failed to read packet.\n");
+        goto fail;
+    }
+
+    if (frag->nb_units == 0) {
+        av_log(bsf, AV_LOG_ERROR, "No OBU in packet.\n");
+        err = AVERROR_INVALIDDATA;
+        goto fail;
+    }
 
     for (i = 0; i < frag->nb_units; i++) {
         if (frag->units[i].type == AV1_OBU_SEQUENCE_HEADER) {
-            AV1RawOBU *obu = frag->units[i].content;
+            obu = frag->units[i].content;
             err = av1_metadata_update_sequence_header(bsf, &obu->obu.sequence_header);
             if (err < 0)
-                return err;
+                goto fail;
         }
     }
 
     // If a Temporal Delimiter is present, it must be the first OBU.
-    if (frag->nb_units && frag->units[0].type == AV1_OBU_TEMPORAL_DELIMITER) {
-        if (ctx->td == BSF_ELEMENT_REMOVE)
-            ff_cbs_delete_unit(frag, 0);
-    } else if (pkt && ctx->td == BSF_ELEMENT_INSERT) {
-        err = ff_cbs_insert_unit_content(frag, 0, AV1_OBU_TEMPORAL_DELIMITER,
-                                         &ctx->td_obu, NULL);
+    if (frag->units[0].type == AV1_OBU_TEMPORAL_DELIMITER) {
+        if (ctx->td == REMOVE)
+            ff_cbs_delete_unit(ctx->cbc, frag, 0);
+    } else if (ctx->td == INSERT) {
+        td = (AV1RawOBU) {
+            .header.obu_type = AV1_OBU_TEMPORAL_DELIMITER,
+        };
+
+        err = ff_cbs_insert_unit_content(ctx->cbc, frag, 0, AV1_OBU_TEMPORAL_DELIMITER,
+                                         &td, NULL);
         if (err < 0) {
             av_log(bsf, AV_LOG_ERROR, "Failed to insert Temporal Delimiter.\n");
-            return err;
+            goto fail;
         }
     }
 
     if (ctx->delete_padding) {
         for (i = frag->nb_units - 1; i >= 0; i--) {
             if (frag->units[i].type == AV1_OBU_PADDING)
-                ff_cbs_delete_unit(frag, i);
+                ff_cbs_delete_unit(ctx->cbc, frag, i);
         }
     }
 
-    return 0;
-}
+    err = ff_cbs_write_packet(ctx->cbc, pkt, frag);
+    if (err < 0) {
+        av_log(bsf, AV_LOG_ERROR, "Failed to write packet.\n");
+        goto fail;
+    }
 
-static const CBSBSFType av1_metadata_type = {
-    .codec_id        = AV_CODEC_ID_AV1,
-    .fragment_name   = "temporal unit",
-    .unit_name       = "OBU",
-    .update_fragment = &av1_metadata_update_fragment,
-};
+    err = 0;
+fail:
+    ff_cbs_fragment_reset(ctx->cbc, frag);
+
+    if (err < 0)
+        av_packet_unref(pkt);
+
+    return err;
+}
 
 static int av1_metadata_init(AVBSFContext *bsf)
 {
     AV1MetadataContext *ctx = bsf->priv_data;
+    CodedBitstreamFragment *frag = &ctx->access_unit;
+    AV1RawOBU *obu;
+    int err, i;
 
-    ctx->td_obu = (AV1RawOBU) {
-        .header.obu_type = AV1_OBU_TEMPORAL_DELIMITER,
-    };
+    err = ff_cbs_init(&ctx->cbc, AV_CODEC_ID_AV1, bsf);
+    if (err < 0)
+        return err;
 
-    return ff_cbs_bsf_generic_init(bsf, &av1_metadata_type);
+    if (bsf->par_in->extradata) {
+        err = ff_cbs_read_extradata(ctx->cbc, frag, bsf->par_in);
+        if (err < 0) {
+            av_log(bsf, AV_LOG_ERROR, "Failed to read extradata.\n");
+            goto fail;
+        }
+
+        for (i = 0; i < frag->nb_units; i++) {
+            if (frag->units[i].type == AV1_OBU_SEQUENCE_HEADER) {
+                obu = frag->units[i].content;
+                err = av1_metadata_update_sequence_header(bsf, &obu->obu.sequence_header);
+                if (err < 0)
+                    goto fail;
+            }
+        }
+
+        err = ff_cbs_write_extradata(ctx->cbc, bsf->par_out, frag);
+        if (err < 0) {
+            av_log(bsf, AV_LOG_ERROR, "Failed to write extradata.\n");
+            goto fail;
+        }
+    }
+
+    err = 0;
+fail:
+    ff_cbs_fragment_reset(ctx->cbc, frag);
+    return err;
+}
+
+static void av1_metadata_close(AVBSFContext *bsf)
+{
+    AV1MetadataContext *ctx = bsf->priv_data;
+
+    ff_cbs_fragment_free(ctx->cbc, &ctx->access_unit);
+    ff_cbs_close(&ctx->cbc);
 }
 
 #define OFFSET(x) offsetof(AV1MetadataContext, x)
 #define FLAGS (AV_OPT_FLAG_VIDEO_PARAM|AV_OPT_FLAG_BSF_PARAM)
 static const AVOption av1_metadata_options[] = {
-    BSF_ELEMENT_OPTIONS_PIR("td", "Temporal Delimiter OBU",
-                            td, FLAGS),
+    { "td", "Temporal Delimiter OBU",
+        OFFSET(td), AV_OPT_TYPE_INT,
+        { .i64 = PASS }, PASS, REMOVE, FLAGS, "td" },
+    { "pass",   NULL, 0, AV_OPT_TYPE_CONST,
+        { .i64 = PASS   }, .flags = FLAGS, .unit = "td" },
+    { "insert", NULL, 0, AV_OPT_TYPE_CONST,
+        { .i64 = INSERT }, .flags = FLAGS, .unit = "td" },
+    { "remove", NULL, 0, AV_OPT_TYPE_CONST,
+        { .i64 = REMOVE }, .flags = FLAGS, .unit = "td" },
 
     { "color_primaries", "Set color primaries (section 6.4.2)",
         OFFSET(color_primaries), AV_OPT_TYPE_INT,
@@ -224,7 +307,7 @@ const AVBitStreamFilter ff_av1_metadata_bsf = {
     .priv_data_size = sizeof(AV1MetadataContext),
     .priv_class     = &av1_metadata_class,
     .init           = &av1_metadata_init,
-    .close          = &ff_cbs_bsf_generic_close,
-    .filter         = &ff_cbs_bsf_generic_filter,
+    .close          = &av1_metadata_close,
+    .filter         = &av1_metadata_filter,
     .codec_ids      = av1_metadata_codec_ids,
 };

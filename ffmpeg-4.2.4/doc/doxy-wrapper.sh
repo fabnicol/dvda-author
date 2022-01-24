@@ -1,13 +1,10 @@
 #!/bin/sh
 
 OUT_DIR="${1}"
-SRC_DIR="${2}"
-DOXYFILE="${3}"
-DOXYGEN="${4}"
+DOXYFILE="${2}"
+DOXYGEN="${3}"
 
-shift 4
-
-cd ${SRC_DIR}
+shift 3
 
 if [ -e "VERSION" ]; then
     VERSION=`cat "VERSION"`

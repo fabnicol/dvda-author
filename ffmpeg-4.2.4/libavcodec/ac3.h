@@ -27,9 +27,7 @@
 #ifndef AVCODEC_AC3_H
 #define AVCODEC_AC3_H
 
-#include <math.h>
-#include <stdint.h>
-
+#define AC3_MAX_CODED_FRAME_SIZE 3840 /* in bytes */
 #define EAC3_MAX_CHANNELS 16          /**< maximum number of channels in EAC3 */
 #define AC3_MAX_CHANNELS 7            /**< maximum number of channels, including coupling channel */
 #define CPL_CH 0                      /**< coupling channel index */
@@ -42,6 +40,8 @@
 #define AC3_CRITICAL_BANDS 50
 #define AC3_MAX_CPL_BANDS  18
 
+#include "libavutil/opt.h"
+#include "avcodec.h"
 #include "ac3tab.h"
 
 /* exponent encoding strategy */

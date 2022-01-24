@@ -22,7 +22,6 @@
  */
 
 #include "libavutil/common.h"
-#include "libavutil/mem_internal.h"
 #include "libavutil/opt.h"
 #include "avcodec.h"
 #include "internal.h"
@@ -279,7 +278,7 @@ static int fic_decode_frame(AVCodecContext *avctx, void *data,
     int skip_cursor = ctx->skip_cursor;
     uint8_t *sdata;
 
-    if ((ret = ff_reget_buffer(avctx, ctx->frame, 0)) < 0)
+    if ((ret = ff_reget_buffer(avctx, ctx->frame)) < 0)
         return ret;
 
     /* Header + at least one slice (4) */
@@ -422,7 +421,7 @@ static int fic_decode_frame(AVCodecContext *avctx, void *data,
     }
 
     /* Make sure we use a user-supplied buffer. */
-    if ((ret = ff_reget_buffer(avctx, ctx->final_frame, 0)) < 0) {
+    if ((ret = ff_reget_buffer(avctx, ctx->final_frame)) < 0) {
         av_log(avctx, AV_LOG_ERROR, "Could not make frame writable.\n");
         return ret;
     }
@@ -483,7 +482,7 @@ static const AVClass fic_decoder_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const AVCodec ff_fic_decoder = {
+AVCodec ff_fic_decoder = {
     .name           = "fic",
     .long_name      = NULL_IF_CONFIG_SMALL("Mirillis FIC"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -494,5 +493,4 @@ const AVCodec ff_fic_decoder = {
     .close          = fic_decode_close,
     .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_SLICE_THREADS,
     .priv_class     = &fic_decoder_class,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

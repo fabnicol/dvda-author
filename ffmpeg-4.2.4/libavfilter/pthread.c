@@ -24,6 +24,7 @@
 #include "config.h"
 
 #include "libavutil/common.h"
+#include "libavutil/cpu.h"
 #include "libavutil/mem.h"
 #include "libavutil/thread.h"
 #include "libavutil/slicethread.h"

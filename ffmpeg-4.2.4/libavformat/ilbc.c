@@ -21,7 +21,6 @@
 
 #include "avformat.h"
 #include "internal.h"
-#include "rawenc.h"
 
 static const char mode20_header[] = "#!iLBC20\n";
 static const char mode30_header[] = "#!iLBC30\n";
@@ -50,6 +49,13 @@ static int ilbc_write_header(AVFormatContext *s)
         av_log(s, AV_LOG_ERROR, "Unsupported mode\n");
         return AVERROR(EINVAL);
     }
+    avio_flush(pb);
+    return 0;
+}
+
+static int ilbc_write_packet(AVFormatContext *s, AVPacket *pkt)
+{
+    avio_write(s->pb, pkt->data, pkt->size);
     return 0;
 }
 
@@ -99,16 +105,21 @@ static int ilbc_read_packet(AVFormatContext *s,
     AVCodecParameters *par = s->streams[0]->codecpar;
     int ret;
 
-    if ((ret = av_get_packet(s->pb, pkt, par->block_align)) != par->block_align)
-        return ret < 0 ? ret : AVERROR_INVALIDDATA;
+    if ((ret = av_new_packet(pkt, par->block_align)) < 0)
+        return ret;
 
     pkt->stream_index = 0;
+    pkt->pos = avio_tell(s->pb);
     pkt->duration = par->block_align == 38 ? 160 : 240;
+    if ((ret = avio_read(s->pb, pkt->data, par->block_align)) != par->block_align) {
+        av_packet_unref(pkt);
+        return ret < 0 ? ret : AVERROR(EIO);
+    }
 
     return 0;
 }
 
-const AVInputFormat ff_ilbc_demuxer = {
+AVInputFormat ff_ilbc_demuxer = {
     .name         = "ilbc",
     .long_name    = NULL_IF_CONFIG_SMALL("iLBC storage"),
     .read_probe   = ilbc_probe,
@@ -117,15 +128,13 @@ const AVInputFormat ff_ilbc_demuxer = {
     .flags        = AVFMT_GENERIC_INDEX,
 };
 
-#if CONFIG_ILBC_MUXER
-const AVOutputFormat ff_ilbc_muxer = {
+AVOutputFormat ff_ilbc_muxer = {
     .name         = "ilbc",
     .long_name    = NULL_IF_CONFIG_SMALL("iLBC storage"),
     .mime_type    = "audio/iLBC",
     .extensions   = "lbc",
     .audio_codec  = AV_CODEC_ID_ILBC,
     .write_header = ilbc_write_header,
-    .write_packet = ff_raw_write_packet,
+    .write_packet = ilbc_write_packet,
     .flags        = AVFMT_NOTIMESTAMPS,
 };
-#endif

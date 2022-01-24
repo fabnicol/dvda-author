@@ -77,6 +77,7 @@ static const AVFilterPad framestep_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .filter_frame = filter_frame,
     },
+    { NULL }
 };
 
 static const AVFilterPad framestep_outputs[] = {
@@ -85,14 +86,15 @@ static const AVFilterPad framestep_outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_output_props,
     },
+    { NULL }
 };
 
-const AVFilter ff_vf_framestep = {
+AVFilter ff_vf_framestep = {
     .name        = "framestep",
     .description = NULL_IF_CONFIG_SMALL("Select one frame every N frames."),
     .priv_size   = sizeof(FrameStepContext),
     .priv_class  = &framestep_class,
-    FILTER_INPUTS(framestep_inputs),
-    FILTER_OUTPUTS(framestep_outputs),
+    .inputs      = framestep_inputs,
+    .outputs     = framestep_outputs,
     .flags       = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };

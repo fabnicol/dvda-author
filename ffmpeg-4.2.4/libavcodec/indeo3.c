@@ -31,7 +31,6 @@
 
 #include "libavutil/imgutils.h"
 #include "libavutil/intreadwrite.h"
-#include "libavutil/thread.h"
 #include "avcodec.h"
 #include "copy_block.h"
 #include "bytestream.h"
@@ -172,7 +171,7 @@ static av_cold int allocate_frame_buffers(Indeo3DecodeContext *ctx,
 
     if (luma_width  < 16 || luma_width  > 640 ||
         luma_height < 16 || luma_height > 480 ||
-        luma_width  &  1 || luma_height &   1) {
+        luma_width  &  3 || luma_height &   3) {
         av_log(avctx, AV_LOG_ERROR, "Invalid picture dimensions: %d x %d!\n",
                luma_width, luma_height);
         return AVERROR_INVALIDDATA;
@@ -204,8 +203,10 @@ static av_cold int allocate_frame_buffers(Indeo3DecodeContext *ctx,
         ctx->planes[p].buffers[0] = av_malloc(!p ? luma_size : chroma_size);
         ctx->planes[p].buffers[1] = av_malloc(!p ? luma_size : chroma_size);
 
-        if (!ctx->planes[p].buffers[0] || !ctx->planes[p].buffers[1])
+        if (!ctx->planes[p].buffers[0] || !ctx->planes[p].buffers[1]) {
+            free_frame_buffers(ctx);
             return AVERROR(ENOMEM);
+        }
 
         /* fill the INTRA prediction lines with the middle pixel value = 64 */
         memset(ctx->planes[p].buffers[0], 0x40, ctx->planes[p].pitch);
@@ -1050,13 +1051,12 @@ static void output_plane(const Plane *plane, int buf_sel, uint8_t *dst,
 
 static av_cold int decode_init(AVCodecContext *avctx)
 {
-    static AVOnce init_static_once = AV_ONCE_INIT;
     Indeo3DecodeContext *ctx = avctx->priv_data;
 
     ctx->avctx     = avctx;
     avctx->pix_fmt = AV_PIX_FMT_YUV410P;
 
-    ff_thread_once(&init_static_once, build_requant_tab);
+    build_requant_tab();
 
     ff_hpeldsp_init(&ctx->hdsp, avctx->flags);
 
@@ -1133,7 +1133,7 @@ static av_cold int decode_close(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_indeo3_decoder = {
+AVCodec ff_indeo3_decoder = {
     .name           = "indeo3",
     .long_name      = NULL_IF_CONFIG_SMALL("Intel Indeo 3"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -1143,5 +1143,4 @@ const AVCodec ff_indeo3_decoder = {
     .close          = decode_close,
     .decode         = decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

@@ -21,8 +21,12 @@
  */
 
 #include "avcodec.h"
-#include "encode.h"
 #include "internal.h"
+
+static av_cold int yuv4_encode_init(AVCodecContext *avctx)
+{
+    return 0;
+}
 
 static int yuv4_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
                              const AVFrame *pic, int *got_packet)
@@ -31,9 +35,7 @@ static int yuv4_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
     uint8_t *y, *u, *v;
     int i, j, ret;
 
-    ret = ff_get_encode_buffer(avctx, pkt, 6 * (avctx->width  + 1 >> 1)
-                                             * (avctx->height + 1 >> 1), 0);
-    if (ret < 0)
+    if ((ret = ff_alloc_packet2(avctx, pkt, 6 * (avctx->width + 1 >> 1) * (avctx->height + 1 >> 1), 0)) < 0)
         return ret;
     dst = pkt->data;
 
@@ -55,16 +57,24 @@ static int yuv4_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         v +=     pic->linesize[2];
     }
 
+    pkt->flags |= AV_PKT_FLAG_KEY;
     *got_packet = 1;
     return 0;
 }
 
-const AVCodec ff_yuv4_encoder = {
+static av_cold int yuv4_encode_close(AVCodecContext *avctx)
+{
+    return 0;
+}
+
+AVCodec ff_yuv4_encoder = {
     .name         = "yuv4",
     .long_name    = NULL_IF_CONFIG_SMALL("Uncompressed packed 4:2:0"),
     .type         = AVMEDIA_TYPE_VIDEO,
     .id           = AV_CODEC_ID_YUV4,
-    .capabilities = AV_CODEC_CAP_DR1,
+    .init         = yuv4_encode_init,
     .encode2      = yuv4_encode_frame,
+    .close        = yuv4_encode_close,
     .pix_fmts     = (const enum AVPixelFormat[]){ AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE },
+    .capabilities = AV_CODEC_CAP_INTRA_ONLY,
 };

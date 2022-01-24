@@ -308,9 +308,6 @@ static av_cold int psy_3gpp_init(FFPsyContext *ctx) {
     const int bandwidth    = ctx->cutoff ? ctx->cutoff : AAC_CUTOFF(ctx->avctx);
     const float num_bark   = calc_bark((float)bandwidth);
 
-    if (bandwidth <= 0)
-        return AVERROR(EINVAL);
-
     ctx->model_priv_data = av_mallocz(sizeof(AacPsyContext));
     if (!ctx->model_priv_data)
         return AVERROR(ENOMEM);
@@ -370,7 +367,7 @@ static av_cold int psy_3gpp_init(FFPsyContext *ctx) {
         }
     }
 
-    pctx->ch = av_calloc(ctx->avctx->channels, sizeof(*pctx->ch));
+    pctx->ch = av_mallocz_array(ctx->avctx->channels, sizeof(AacPsyChannel));
     if (!pctx->ch) {
         av_freep(&ctx->model_priv_data);
         return AVERROR(ENOMEM);
@@ -797,7 +794,7 @@ static void psy_3gpp_analyze_channel(FFPsyContext *ctx, int channel,
 
         if (pe < 1.15f * desired_pe) {
             /* 6.6.1.3.6 "Final threshold modification by linearization" */
-            norm_fac = norm_fac ? 1.0f / norm_fac : 0;
+            norm_fac = 1.0f / norm_fac;
             for (w = 0; w < wi->num_windows*16; w += 16) {
                 for (g = 0; g < num_bands; g++) {
                     AacPsyBand *band = &pch->band[w+g];
@@ -858,8 +855,7 @@ static void psy_3gpp_analyze(FFPsyContext *ctx, int channel,
 static av_cold void psy_3gpp_end(FFPsyContext *apc)
 {
     AacPsyContext *pctx = (AacPsyContext*) apc->model_priv_data;
-    if (pctx)
-        av_freep(&pctx->ch);
+    av_freep(&pctx->ch);
     av_freep(&apc->model_priv_data);
 }
 

@@ -21,12 +21,12 @@
 #ifndef AVFILTER_SHOWCQT_H
 #define AVFILTER_SHOWCQT_H
 
-#include "libavutil/tx.h"
+#include "libavcodec/avfft.h"
 #include "avfilter.h"
 #include "internal.h"
 
 typedef struct Coeffs {
-    float *val;
+    FFTSample *val;
     int start, len;
 } Coeffs;
 
@@ -58,13 +58,11 @@ typedef struct ShowCQTContext {
     int                 remaining_fill_max;
     int64_t             next_pts;
     double              *freq;
-    AVTXContext         *fft_ctx;
-    av_tx_fn            tx_fn;
+    FFTContext          *fft_ctx;
     Coeffs              *coeffs;
-    AVComplexFloat      *fft_data;
-    AVComplexFloat      *fft_input;
-    AVComplexFloat      *fft_result;
-    AVComplexFloat      *cqt_result;
+    FFTComplex          *fft_data;
+    FFTComplex          *fft_result;
+    FFTComplex          *cqt_result;
     float               *attack_data;
     int                 fft_bits;
     int                 fft_len;
@@ -78,7 +76,7 @@ typedef struct ShowCQTContext {
     float               cmatrix[3][3];
     float               cscheme_v[6];
     /* callback */
-    void                (*cqt_calc)(AVComplexFloat *dst, const AVComplexFloat *src, const Coeffs *coeffs,
+    void                (*cqt_calc)(FFTComplex *dst, const FFTComplex *src, const Coeffs *coeffs,
                                     int len, int fft_len);
     void                (*permute_coeffs)(float *v, int len);
     void                (*draw_bar)(AVFrame *out, const float *h, const float *rcp_h,

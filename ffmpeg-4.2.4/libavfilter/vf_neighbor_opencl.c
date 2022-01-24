@@ -20,6 +20,7 @@
 
 #include "libavutil/common.h"
 #include "libavutil/imgutils.h"
+#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/avstring.h"
@@ -245,6 +246,7 @@ static const AVFilterPad neighbor_opencl_inputs[] = {
         .filter_frame = &neighbor_opencl_filter_frame,
         .config_props = &ff_opencl_filter_config_input,
     },
+    { NULL }
 };
 
 static const AVFilterPad neighbor_opencl_outputs[] = {
@@ -253,6 +255,7 @@ static const AVFilterPad neighbor_opencl_outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = &ff_opencl_filter_config_output,
     },
+    { NULL }
 };
 
 #define OFFSET(x) offsetof(NeighborOpenCLContext, x)
@@ -271,16 +274,16 @@ static const AVOption erosion_opencl_options[] = {
 
 AVFILTER_DEFINE_CLASS(erosion_opencl);
 
-const AVFilter ff_vf_erosion_opencl = {
+AVFilter ff_vf_erosion_opencl = {
     .name           = "erosion_opencl",
     .description    = NULL_IF_CONFIG_SMALL("Apply erosion effect"),
     .priv_size      = sizeof(NeighborOpenCLContext),
     .priv_class     = &erosion_opencl_class,
     .init           = &ff_opencl_filter_init,
     .uninit         = &neighbor_opencl_uninit,
-    FILTER_INPUTS(neighbor_opencl_inputs),
-    FILTER_OUTPUTS(neighbor_opencl_outputs),
-    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_OPENCL),
+    .query_formats  = &ff_opencl_filter_query_formats,
+    .inputs         = neighbor_opencl_inputs,
+    .outputs        = neighbor_opencl_outputs,
     .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 };
 
@@ -299,16 +302,16 @@ static const AVOption dilation_opencl_options[] = {
 
 AVFILTER_DEFINE_CLASS(dilation_opencl);
 
-const AVFilter ff_vf_dilation_opencl = {
+AVFilter ff_vf_dilation_opencl = {
     .name           = "dilation_opencl",
     .description    = NULL_IF_CONFIG_SMALL("Apply dilation effect"),
     .priv_size      = sizeof(NeighborOpenCLContext),
     .priv_class     = &dilation_opencl_class,
     .init           = &ff_opencl_filter_init,
     .uninit         = &neighbor_opencl_uninit,
-    FILTER_INPUTS(neighbor_opencl_inputs),
-    FILTER_OUTPUTS(neighbor_opencl_outputs),
-    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_OPENCL),
+    .query_formats  = &ff_opencl_filter_query_formats,
+    .inputs         = neighbor_opencl_inputs,
+    .outputs        = neighbor_opencl_outputs,
     .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 };
 

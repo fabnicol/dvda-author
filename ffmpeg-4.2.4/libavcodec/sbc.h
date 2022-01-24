@@ -33,10 +33,8 @@
 #ifndef AVCODEC_SBC_H
 #define AVCODEC_SBC_H
 
-#include <stddef.h>
-#include <stdint.h>
+#include "avcodec.h"
 #include "libavutil/crc.h"
-#include "libavutil/mem_internal.h"
 
 #define MSBC_BLOCKS 15
 

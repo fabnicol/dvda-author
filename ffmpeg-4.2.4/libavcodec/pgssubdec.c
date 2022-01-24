@@ -518,7 +518,7 @@ static int display_end_segment(AVCodecContext *avctx, void *data,
     // Blank if last object_count was 0.
     if (!ctx->presentation.object_count)
         return 1;
-    sub->rects = av_calloc(ctx->presentation.object_count, sizeof(*sub->rects));
+    sub->rects = av_mallocz_array(ctx->presentation.object_count, sizeof(*sub->rects));
     if (!sub->rects) {
         return AVERROR(ENOMEM);
     }
@@ -596,11 +596,25 @@ static int display_end_segment(AVCodecContext *avctx, void *data,
 
         if (!ctx->forced_subs_only || ctx->presentation.objects[i].composition_flag & 0x40)
         memcpy(sub->rects[i]->data[1], palette->clut, sub->rects[i]->nb_colors * sizeof(uint32_t));
+
+#if FF_API_AVPICTURE
+FF_DISABLE_DEPRECATION_WARNINGS
+{
+        AVSubtitleRect *rect;
+        int j;
+        rect = sub->rects[i];
+        for (j = 0; j < 4; j++) {
+            rect->pict.data[j] = rect->data[j];
+            rect->pict.linesize[j] = rect->linesize[j];
+        }
+}
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
     }
     return 1;
 }
 
-static int decode(AVCodecContext *avctx, void *data, int *got_sub_ptr,
+static int decode(AVCodecContext *avctx, void *data, int *data_size,
                   AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
@@ -622,7 +636,7 @@ static int decode(AVCodecContext *avctx, void *data, int *got_sub_ptr,
     if (i & 15)
         ff_dlog(avctx, "\n");
 
-    *got_sub_ptr = 0;
+    *data_size = 0;
 
     /* Ensure that we have received at a least a segment code and segment length */
     if (buf_size < 3)
@@ -662,14 +676,14 @@ static int decode(AVCodecContext *avctx, void *data, int *got_sub_ptr,
              */
             break;
         case DISPLAY_SEGMENT:
-            if (*got_sub_ptr) {
+            if (*data_size) {
                 av_log(avctx, AV_LOG_ERROR, "Duplicate display segment\n");
                 ret = AVERROR_INVALIDDATA;
                 break;
             }
             ret = display_end_segment(avctx, data, buf, segment_length);
             if (ret >= 0)
-                *got_sub_ptr = ret;
+                *data_size = ret;
             break;
         default:
             av_log(avctx, AV_LOG_ERROR, "Unknown subtitle segment type 0x%x, length %d\n",
@@ -679,7 +693,7 @@ static int decode(AVCodecContext *avctx, void *data, int *got_sub_ptr,
         }
         if (ret < 0 && (avctx->err_recognition & AV_EF_EXPLODE)) {
             avsubtitle_free(data);
-            *got_sub_ptr = 0;
+            *data_size = 0;
             return ret;
         }
 
@@ -703,7 +717,7 @@ static const AVClass pgsdec_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const AVCodec ff_pgssub_decoder = {
+AVCodec ff_pgssub_decoder = {
     .name           = "pgssub",
     .long_name      = NULL_IF_CONFIG_SMALL("HDMV Presentation Graphic Stream subtitles"),
     .type           = AVMEDIA_TYPE_SUBTITLE,
@@ -713,5 +727,4 @@ const AVCodec ff_pgssub_decoder = {
     .close          = close_decoder,
     .decode         = decode,
     .priv_class     = &pgsdec_class,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

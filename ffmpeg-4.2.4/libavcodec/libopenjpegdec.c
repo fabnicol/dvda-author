@@ -502,7 +502,7 @@ static const AVClass openjpeg_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const AVCodec ff_libopenjpeg_decoder = {
+AVCodec ff_libopenjpeg_decoder = {
     .name           = "libopenjpeg",
     .long_name      = NULL_IF_CONFIG_SMALL("OpenJPEG JPEG 2000"),
     .type           = AVMEDIA_TYPE_VIDEO,

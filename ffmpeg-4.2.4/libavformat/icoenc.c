@@ -26,11 +26,7 @@
 
 #include "libavutil/intreadwrite.h"
 #include "libavutil/pixdesc.h"
-
-#include "libavcodec/codec_id.h"
-
 #include "avformat.h"
-#include "avio_internal.h"
 
 typedef struct {
     int offset;
@@ -65,7 +61,8 @@ static int ico_check_attributes(AVFormatContext *s, const AVCodecParameters *p)
             return AVERROR(EINVAL);
         }
     } else {
-        av_log(s, AV_LOG_ERROR, "Unsupported codec %s\n", avcodec_get_name(p->codec_id));
+        const AVCodecDescriptor *codesc = avcodec_descriptor_get(p->codec_id);
+        av_log(s, AV_LOG_ERROR, "Unsupported codec %s\n", codesc ? codesc->name : "");
         return AVERROR(EINVAL);
     }
 
@@ -105,9 +102,11 @@ static int ico_write_header(AVFormatContext *s)
         avio_skip(pb, 16);
     }
 
-    ico->images = av_calloc(ico->nb_images, sizeof(*ico->images));
+    ico->images = av_mallocz_array(ico->nb_images, sizeof(IcoMuxContext));
     if (!ico->images)
         return AVERROR(ENOMEM);
+
+    avio_flush(pb);
 
     return 0;
 }
@@ -118,6 +117,7 @@ static int ico_write_packet(AVFormatContext *s, AVPacket *pkt)
     IcoImage *image;
     AVIOContext *pb = s->pb;
     AVCodecParameters *par = s->streams[pkt->stream_index]->codecpar;
+    int i;
 
     if (ico->current_image >= ico->nb_images) {
         av_log(s, AV_LOG_ERROR, "ICO already contains %d images\n", ico->current_image);
@@ -148,8 +148,8 @@ static int ico_write_packet(AVFormatContext *s, AVPacket *pkt)
         avio_wl32(pb, AV_RL32(pkt->data + 22) * 2); // rewrite height as 2 * height
         avio_write(pb, pkt->data + 26, pkt->size - 26);
 
-        // Write bitmask (opaque)
-        ffio_fill(pb, 0x00, par->height * (par->width + 7) / 8);
+        for (i = 0; i < par->height * (par->width + 7) / 8; ++i)
+            avio_w8(pb, 0x00); // Write bitmask (opaque)
     }
 
     return 0;
@@ -183,17 +183,12 @@ static int ico_write_trailer(AVFormatContext *s)
         avio_wl32(pb, ico->images[i].offset);
     }
 
+    av_freep(&ico->images);
+
     return 0;
 }
 
-static void ico_deinit(AVFormatContext *s)
-{
-    IcoMuxContext *ico = s->priv_data;
-
-    av_freep(&ico->images);
-}
-
-const AVOutputFormat ff_ico_muxer = {
+AVOutputFormat ff_ico_muxer = {
     .name           = "ico",
     .long_name      = NULL_IF_CONFIG_SMALL("Microsoft Windows ICO"),
     .priv_data_size = sizeof(IcoMuxContext),
@@ -204,6 +199,5 @@ const AVOutputFormat ff_ico_muxer = {
     .write_header   = ico_write_header,
     .write_packet   = ico_write_packet,
     .write_trailer  = ico_write_trailer,
-    .deinit         = ico_deinit,
     .flags          = AVFMT_NOTIMESTAMPS,
 };

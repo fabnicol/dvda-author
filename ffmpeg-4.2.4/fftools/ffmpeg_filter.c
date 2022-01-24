@@ -26,6 +26,8 @@
 #include "libavfilter/buffersink.h"
 #include "libavfilter/buffersrc.h"
 
+#include "libavresample/avresample.h"
+
 #include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
 #include "libavutil/bprint.h"
@@ -37,23 +39,28 @@
 #include "libavutil/imgutils.h"
 #include "libavutil/samplefmt.h"
 
-// FIXME: YUV420P etc. are actually supported with full color range,
-// yet the latter information isn't available here.
-static const enum AVPixelFormat *get_compliance_normal_pix_fmts(const AVCodec *codec, const enum AVPixelFormat default_formats[])
+static const enum AVPixelFormat *get_compliance_unofficial_pix_fmts(enum AVCodecID codec_id, const enum AVPixelFormat default_formats[])
 {
     static const enum AVPixelFormat mjpeg_formats[] =
         { AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ444P,
+          AV_PIX_FMT_YUV420P,  AV_PIX_FMT_YUV422P,  AV_PIX_FMT_YUV444P,
           AV_PIX_FMT_NONE };
+    static const enum AVPixelFormat ljpeg_formats[] =
+        { AV_PIX_FMT_BGR24   , AV_PIX_FMT_BGRA    , AV_PIX_FMT_BGR0,
+          AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ422P,
+          AV_PIX_FMT_YUV420P , AV_PIX_FMT_YUV444P , AV_PIX_FMT_YUV422P,
+          AV_PIX_FMT_NONE};
 
-    if (!strcmp(codec->name, "mjpeg")) {
+    if (codec_id == AV_CODEC_ID_MJPEG) {
         return mjpeg_formats;
+    } else if (codec_id == AV_CODEC_ID_LJPEG) {
+        return ljpeg_formats;
     } else {
         return default_formats;
     }
 }
 
-static enum AVPixelFormat choose_pixel_fmt(AVStream *st, AVCodecContext *enc_ctx,
-                                    const AVCodec *codec, enum AVPixelFormat target)
+enum AVPixelFormat choose_pixel_fmt(AVStream *st, AVCodecContext *enc_ctx, AVCodec *codec, enum AVPixelFormat target)
 {
     if (codec && codec->pix_fmts) {
         const enum AVPixelFormat *p = codec->pix_fmts;
@@ -62,11 +69,11 @@ static enum AVPixelFormat choose_pixel_fmt(AVStream *st, AVCodecContext *enc_ctx
         int has_alpha = desc ? desc->nb_components % 2 == 0 : 0;
         enum AVPixelFormat best= AV_PIX_FMT_NONE;
 
-        if (enc_ctx->strict_std_compliance > FF_COMPLIANCE_UNOFFICIAL) {
-            p = get_compliance_normal_pix_fmts(codec, p);
+        if (enc_ctx->strict_std_compliance <= FF_COMPLIANCE_UNOFFICIAL) {
+            p = get_compliance_unofficial_pix_fmts(enc_ctx->codec_id, p);
         }
         for (; *p != AV_PIX_FMT_NONE; p++) {
-            best = av_find_best_pix_fmt_of_2(best, *p, target, has_alpha, NULL);
+            best= avcodec_find_best_pix_fmt_of_2(best, *p, target, has_alpha, NULL);
             if (*p == target)
                 break;
         }
@@ -81,6 +88,28 @@ static enum AVPixelFormat choose_pixel_fmt(AVStream *st, AVCodecContext *enc_ctx
         }
     }
     return target;
+}
+
+void choose_sample_fmt(AVStream *st, AVCodec *codec)
+{
+    if (codec && codec->sample_fmts) {
+        const enum AVSampleFormat *p = codec->sample_fmts;
+        for (; *p != -1; p++) {
+            if (*p == st->codecpar->format)
+                break;
+        }
+        if (*p == -1) {
+            if((codec->capabilities & AV_CODEC_CAP_LOSSLESS) && av_get_sample_fmt_name(st->codecpar->format) > av_get_sample_fmt_name(codec->sample_fmts[0]))
+                av_log(NULL, AV_LOG_ERROR, "Conversion will not be lossless.\n");
+            if(av_get_sample_fmt_name(st->codecpar->format))
+            av_log(NULL, AV_LOG_WARNING,
+                   "Incompatible sample format '%s' for codec '%s', auto-selecting format '%s'\n",
+                   av_get_sample_fmt_name(st->codecpar->format),
+                   codec->name,
+                   av_get_sample_fmt_name(codec->sample_fmts[0]));
+            st->codecpar->format = codec->sample_fmts[0];
+        }
+    }
 }
 
 static char *choose_pix_fmts(OutputFilter *ofilter)
@@ -110,8 +139,8 @@ static char *choose_pix_fmts(OutputFilter *ofilter)
             exit_program(1);
 
         p = ost->enc->pix_fmts;
-        if (ost->enc_ctx->strict_std_compliance > FF_COMPLIANCE_UNOFFICIAL) {
-            p = get_compliance_normal_pix_fmts(ost->enc, p);
+        if (ost->enc_ctx->strict_std_compliance <= FF_COMPLIANCE_UNOFFICIAL) {
+            p = get_compliance_unofficial_pix_fmts(ost->enc_ctx->codec_id, p);
         }
 
         for (; *p != AV_PIX_FMT_NONE; p++) {
@@ -125,39 +154,45 @@ static char *choose_pix_fmts(OutputFilter *ofilter)
         return NULL;
 }
 
-/* Define a function for appending a list of allowed formats
- * to an AVBPrint. If nonempty, the list will have a header. */
-#define DEF_CHOOSE_FORMAT(name, type, var, supported_list, none, printf_format, get_name) \
-static void choose_ ## name (OutputFilter *ofilter, AVBPrint *bprint)          \
+/* Define a function for building a string containing a list of
+ * allowed formats. */
+#define DEF_CHOOSE_FORMAT(suffix, type, var, supported_list, none, get_name)   \
+static char *choose_ ## suffix (OutputFilter *ofilter)                         \
 {                                                                              \
-    if (ofilter->var == none && !ofilter->supported_list)                      \
-        return;                                                                \
-    av_bprintf(bprint, #name "=");                                             \
     if (ofilter->var != none) {                                                \
-        av_bprintf(bprint, printf_format, get_name(ofilter->var));             \
-    } else {                                                                   \
+        get_name(ofilter->var);                                                \
+        return av_strdup(name);                                                \
+    } else if (ofilter->supported_list) {                                      \
         const type *p;                                                         \
+        AVIOContext *s = NULL;                                                 \
+        uint8_t *ret;                                                          \
+        int len;                                                               \
+                                                                               \
+        if (avio_open_dyn_buf(&s) < 0)                                         \
+            exit_program(1);                                                           \
                                                                                \
         for (p = ofilter->supported_list; *p != none; p++) {                   \
-            av_bprintf(bprint, printf_format "|", get_name(*p));               \
+            get_name(*p);                                                      \
+            avio_printf(s, "%s|", name);                                       \
         }                                                                      \
-        if (bprint->len > 0)                                                   \
-            bprint->str[--bprint->len] = '\0';                                 \
-    }                                                                          \
-    av_bprint_chars(bprint, ':', 1);                                           \
+        len = avio_close_dyn_buf(s, &ret);                                     \
+        ret[len - 1] = 0;                                                      \
+        return ret;                                                            \
+    } else                                                                     \
+        return NULL;                                                           \
 }
 
 //DEF_CHOOSE_FORMAT(pix_fmts, enum AVPixelFormat, format, formats, AV_PIX_FMT_NONE,
 //                  GET_PIX_FMT_NAME)
 
 DEF_CHOOSE_FORMAT(sample_fmts, enum AVSampleFormat, format, formats,
-                  AV_SAMPLE_FMT_NONE, "%s", av_get_sample_fmt_name)
+                  AV_SAMPLE_FMT_NONE, GET_SAMPLE_FMT_NAME)
 
 DEF_CHOOSE_FORMAT(sample_rates, int, sample_rate, sample_rates, 0,
-                  "%d", )
+                  GET_SAMPLE_RATE_NAME)
 
 DEF_CHOOSE_FORMAT(channel_layouts, uint64_t, channel_layout, channel_layouts, 0,
-                  "0x%"PRIx64, )
+                  GET_CH_LAYOUT_NAME)
 
 int init_simple_filtergraph(InputStream *ist, OutputStream *ost)
 {
@@ -434,7 +469,7 @@ static int configure_output_video_filter(FilterGraph *fg, OutputFilter *ofilter,
     if (ret < 0)
         return ret;
 
-    if ((ofilter->width || ofilter->height) && ofilter->ost->autoscale) {
+    if (ofilter->width || ofilter->height) {
         char args[255];
         AVFilterContext *filter;
         AVDictionaryEntry *e = NULL;
@@ -461,7 +496,8 @@ static int configure_output_video_filter(FilterGraph *fg, OutputFilter *ofilter,
 
     if ((pix_fmts = choose_pix_fmts(ofilter))) {
         AVFilterContext *filter;
-
+        snprintf(name, sizeof(name), "format_out_%d_%d",
+                 ost->file_index, ost->index);
         ret = avfilter_graph_create_filter(&filter,
                                            avfilter_get_by_name("format"),
                                            "format", pix_fmts, NULL, fg->graph);
@@ -516,7 +552,7 @@ static int configure_output_audio_filter(FilterGraph *fg, OutputFilter *ofilter,
     AVCodecContext *codec  = ost->enc_ctx;
     AVFilterContext *last_filter = out->filter_ctx;
     int pad_idx = out->pad_idx;
-    AVBPrint args;
+    char *sample_fmts, *sample_rates, *channel_layouts;
     char name[255];
     int ret;
 
@@ -539,58 +575,79 @@ static int configure_output_audio_filter(FilterGraph *fg, OutputFilter *ofilter,
                                        avfilter_get_by_name(filter_name),   \
                                        filter_name, arg, NULL, fg->graph);  \
     if (ret < 0)                                                            \
-        goto fail;                                                          \
+        return ret;                                                         \
                                                                             \
     ret = avfilter_link(last_filter, pad_idx, filt_ctx, 0);                 \
     if (ret < 0)                                                            \
-        goto fail;                                                          \
+        return ret;                                                         \
                                                                             \
     last_filter = filt_ctx;                                                 \
     pad_idx = 0;                                                            \
 } while (0)
-    av_bprint_init(&args, 0, AV_BPRINT_SIZE_UNLIMITED);
     if (ost->audio_channels_mapped) {
         int i;
-        av_bprintf(&args, "0x%"PRIx64,
+        AVBPrint pan_buf;
+        av_bprint_init(&pan_buf, 256, 8192);
+        av_bprintf(&pan_buf, "0x%"PRIx64,
                    av_get_default_channel_layout(ost->audio_channels_mapped));
         for (i = 0; i < ost->audio_channels_mapped; i++)
             if (ost->audio_channels_map[i] != -1)
-                av_bprintf(&args, "|c%d=c%d", i, ost->audio_channels_map[i]);
+                av_bprintf(&pan_buf, "|c%d=c%d", i, ost->audio_channels_map[i]);
 
-        AUTO_INSERT_FILTER("-map_channel", "pan", args.str);
-        av_bprint_clear(&args);
+        AUTO_INSERT_FILTER("-map_channel", "pan", pan_buf.str);
+        av_bprint_finalize(&pan_buf, NULL);
     }
 
     if (codec->channels && !codec->channel_layout)
         codec->channel_layout = av_get_default_channel_layout(codec->channels);
 
-    choose_sample_fmts(ofilter,     &args);
-    choose_sample_rates(ofilter,    &args);
-    choose_channel_layouts(ofilter, &args);
-    if (!av_bprint_is_complete(&args)) {
-        ret = AVERROR(ENOMEM);
-        goto fail;
-    }
-    if (args.len) {
+    sample_fmts     = choose_sample_fmts(ofilter);
+    sample_rates    = choose_sample_rates(ofilter);
+    channel_layouts = choose_channel_layouts(ofilter);
+    if (sample_fmts || sample_rates || channel_layouts) {
         AVFilterContext *format;
+        char args[256];
+        args[0] = 0;
+
+        if (sample_fmts)
+            av_strlcatf(args, sizeof(args), "sample_fmts=%s:",
+                            sample_fmts);
+        if (sample_rates)
+            av_strlcatf(args, sizeof(args), "sample_rates=%s:",
+                            sample_rates);
+        if (channel_layouts)
+            av_strlcatf(args, sizeof(args), "channel_layouts=%s:",
+                            channel_layouts);
+
+        av_freep(&sample_fmts);
+        av_freep(&sample_rates);
+        av_freep(&channel_layouts);
 
         snprintf(name, sizeof(name), "format_out_%d_%d",
                  ost->file_index, ost->index);
         ret = avfilter_graph_create_filter(&format,
                                            avfilter_get_by_name("aformat"),
-                                           name, args.str, NULL, fg->graph);
+                                           name, args, NULL, fg->graph);
         if (ret < 0)
-            goto fail;
+            return ret;
 
         ret = avfilter_link(last_filter, pad_idx, format, 0);
         if (ret < 0)
-            goto fail;
+            return ret;
 
         last_filter = format;
         pad_idx = 0;
     }
 
+    if (audio_volume != 256 && 0) {
+        char args[256];
+
+        snprintf(args, sizeof(args), "%f", audio_volume / 256.);
+        AUTO_INSERT_FILTER("-vol", "volume", args);
+    }
+
     if (ost->apad && of->shortest) {
+        char args[256];
         int i;
 
         for (i=0; i<of->ctx->nb_streams; i++)
@@ -598,7 +655,8 @@ static int configure_output_audio_filter(FilterGraph *fg, OutputFilter *ofilter,
                 break;
 
         if (i<of->ctx->nb_streams) {
-            AUTO_INSERT_FILTER("-apad", "apad", ost->apad);
+            snprintf(args, sizeof(args), "%s", ost->apad);
+            AUTO_INSERT_FILTER("-apad", "apad", args);
         }
     }
 
@@ -607,18 +665,15 @@ static int configure_output_audio_filter(FilterGraph *fg, OutputFilter *ofilter,
     ret = insert_trim(of->start_time, of->recording_time,
                       &last_filter, &pad_idx, name);
     if (ret < 0)
-        goto fail;
+        return ret;
 
     if ((ret = avfilter_link(last_filter, pad_idx, ofilter->filter, 0)) < 0)
-        goto fail;
-fail:
-    av_bprint_finalize(&args, NULL);
+        return ret;
 
-    return ret;
+    return 0;
 }
 
-static int configure_output_filter(FilterGraph *fg, OutputFilter *ofilter,
-                                   AVFilterInOut *out)
+int configure_output_filter(FilterGraph *fg, OutputFilter *ofilter, AVFilterInOut *out)
 {
     if (!ofilter->ost) {
         av_log(NULL, AV_LOG_FATAL, "Filter %s has an unconnected output\n", ofilter->name);
@@ -628,7 +683,7 @@ static int configure_output_filter(FilterGraph *fg, OutputFilter *ofilter,
     switch (avfilter_pad_get_type(out->filter_ctx->output_pads, out->pad_idx)) {
     case AVMEDIA_TYPE_VIDEO: return configure_output_video_filter(fg, ofilter, out);
     case AVMEDIA_TYPE_AUDIO: return configure_output_audio_filter(fg, ofilter, out);
-    default: av_assert0(0); return 0;
+    default: av_assert0(0);
     }
 }
 
@@ -685,12 +740,6 @@ static int sub2video_prepare(InputStream *ist, InputFilter *ifilter)
         return AVERROR(ENOMEM);
     ist->sub2video.last_pts = INT64_MIN;
     ist->sub2video.end_pts  = INT64_MIN;
-
-    /* sub2video structure has been (re-)initialized.
-       Mark it as such so that the system will be
-       initialized with the first received heartbeat. */
-    ist->sub2video.initialize = 1;
-
     return 0;
 }
 
@@ -699,7 +748,6 @@ static int configure_input_video_filter(FilterGraph *fg, InputFilter *ifilter,
 {
     AVFilterContext *last_filter;
     const AVFilter *buffer_filt = avfilter_get_by_name("buffer");
-    const AVPixFmtDescriptor *desc;
     InputStream *ist = ifilter->ist;
     InputFile     *f = input_files[ist->file_index];
     AVRational tb = ist->framerate.num ? av_inv_q(ist->framerate) :
@@ -738,9 +786,10 @@ static int configure_input_video_filter(FilterGraph *fg, InputFilter *ifilter,
     av_bprint_init(&args, 0, AV_BPRINT_SIZE_AUTOMATIC);
     av_bprintf(&args,
              "video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:"
-             "pixel_aspect=%d/%d",
+             "pixel_aspect=%d/%d:sws_param=flags=%d",
              ifilter->width, ifilter->height, ifilter->format,
-             tb.num, tb.den, sar.num, sar.den);
+             tb.num, tb.den, sar.num, sar.den,
+             SWS_BILINEAR + ((ist->dec_ctx->flags&AV_CODEC_FLAG_BITEXACT) ? SWS_BITEXACT:0));
     if (fr.num && fr.den)
         av_bprintf(&args, ":frame_rate=%d/%d", fr.num, fr.den);
     snprintf(name, sizeof(name), "graph %d input from stream %d:%d", fg->index,
@@ -757,49 +806,22 @@ static int configure_input_video_filter(FilterGraph *fg, InputFilter *ifilter,
     av_freep(&par);
     last_filter = ifilter->filter;
 
-    desc = av_pix_fmt_desc_get(ifilter->format);
-    av_assert0(desc);
-
-    // TODO: insert hwaccel enabled filters like transpose_vaapi into the graph
-    if (ist->autorotate && !(desc->flags & AV_PIX_FMT_FLAG_HWACCEL)) {
-        int32_t *displaymatrix = ifilter->displaymatrix;
-        double theta;
-
-        if (!displaymatrix)
-            displaymatrix = (int32_t *)av_stream_get_side_data(ist->st, AV_PKT_DATA_DISPLAYMATRIX, NULL);
-        theta = get_rotation(displaymatrix);
+    if (ist->autorotate) {
+        double theta = get_rotation(ist->st);
 
         if (fabs(theta - 90) < 1.0) {
-            if (displaymatrix[3] > 0) {
-                ret = insert_filter(&last_filter, &pad_idx, "hflip", NULL);
-                if (ret < 0)
-                    return ret;
-            }
             ret = insert_filter(&last_filter, &pad_idx, "transpose", "clock");
         } else if (fabs(theta - 180) < 1.0) {
-            if (displaymatrix[0] < 0) {
-                ret = insert_filter(&last_filter, &pad_idx, "hflip", NULL);
-                if (ret < 0)
-                    return ret;
-            }
-            if (displaymatrix[4] < 0) {
-                ret = insert_filter(&last_filter, &pad_idx, "vflip", NULL);
-            }
+            ret = insert_filter(&last_filter, &pad_idx, "hflip", NULL);
+            if (ret < 0)
+                return ret;
+            ret = insert_filter(&last_filter, &pad_idx, "vflip", NULL);
         } else if (fabs(theta - 270) < 1.0) {
-            if (displaymatrix[3] < 0) {
-                ret = insert_filter(&last_filter, &pad_idx, "hflip", NULL);
-                if (ret < 0)
-                    return ret;
-            }
             ret = insert_filter(&last_filter, &pad_idx, "transpose", "cclock");
         } else if (fabs(theta) > 1.0) {
             char rotate_buf[64];
             snprintf(rotate_buf, sizeof(rotate_buf), "%f*PI/180", theta);
             ret = insert_filter(&last_filter, &pad_idx, "rotate", rotate_buf);
-        } else if (fabs(theta) < 1.0) {
-            if (displaymatrix && displaymatrix[4] < 0) {
-                ret = insert_filter(&last_filter, &pad_idx, "vflip", NULL);
-            }
         }
         if (ret < 0)
             return ret;
@@ -966,7 +988,7 @@ static int configure_input_filter(FilterGraph *fg, InputFilter *ifilter,
     switch (avfilter_pad_get_type(in->filter_ctx->input_pads, in->pad_idx)) {
     case AVMEDIA_TYPE_VIDEO: return configure_input_video_filter(fg, ifilter, in);
     case AVMEDIA_TYPE_AUDIO: return configure_input_audio_filter(fg, ifilter, in);
-    default: av_assert0(0); return 0;
+    default: av_assert0(0);
     }
 }
 
@@ -996,29 +1018,18 @@ int configure_filtergraph(FilterGraph *fg)
         char args[512];
         AVDictionaryEntry *e = NULL;
 
-        if (filter_nbthreads) {
-            ret = av_opt_set(fg->graph, "threads", filter_nbthreads, 0);
-            if (ret < 0)
-                goto fail;
-        } else {
-            e = av_dict_get(ost->encoder_opts, "threads", NULL, 0);
-            if (e)
-                av_opt_set(fg->graph, "threads", e->value, 0);
-        }
+        fg->graph->nb_threads = filter_nbthreads;
 
         args[0] = 0;
-        e       = NULL;
         while ((e = av_dict_get(ost->sws_dict, "", e,
                                 AV_DICT_IGNORE_SUFFIX))) {
             av_strlcatf(args, sizeof(args), "%s=%s:", e->key, e->value);
         }
-        if (strlen(args)) {
+        if (strlen(args))
             args[strlen(args)-1] = 0;
-            fg->graph->scale_sws_opts = av_strdup(args);
-        }
+        fg->graph->scale_sws_opts = av_strdup(args);
 
         args[0] = 0;
-        e       = NULL;
         while ((e = av_dict_get(ost->swr_opts, "", e,
                                 AV_DICT_IGNORE_SUFFIX))) {
             av_strlcatf(args, sizeof(args), "%s=%s:", e->key, e->value);
@@ -1026,6 +1037,18 @@ int configure_filtergraph(FilterGraph *fg)
         if (strlen(args))
             args[strlen(args)-1] = 0;
         av_opt_set(fg->graph, "aresample_swr_opts", args, 0);
+
+        args[0] = '\0';
+        while ((e = av_dict_get(fg->outputs[0]->ost->resample_opts, "", e,
+                                AV_DICT_IGNORE_SUFFIX))) {
+            av_strlcatf(args, sizeof(args), "%s=%s:", e->key, e->value);
+        }
+        if (strlen(args))
+            args[strlen(args) - 1] = '\0';
+
+        e = av_dict_get(ost->encoder_opts, "threads", NULL, 0);
+        if (e)
+            av_opt_set(fg->graph, "threads", e->value, 0);
     } else {
         fg->graph->nb_threads = filter_complex_nbthreads;
     }
@@ -1033,9 +1056,17 @@ int configure_filtergraph(FilterGraph *fg)
     if ((ret = avfilter_graph_parse2(fg->graph, graph_desc, &inputs, &outputs)) < 0)
         goto fail;
 
-    ret = hw_device_setup_for_filter(fg);
-    if (ret < 0)
-        goto fail;
+    if (filter_hw_device || hw_device_ctx) {
+        AVBufferRef *device = filter_hw_device ? filter_hw_device->device_ref
+                                               : hw_device_ctx;
+        for (i = 0; i < fg->graph->nb_filters; i++) {
+            fg->graph->filters[i]->hw_device_ctx = av_buffer_ref(device);
+            if (!fg->graph->filters[i]->hw_device_ctx) {
+                ret = AVERROR(ENOMEM);
+                goto fail;
+            }
+        }
+    }
 
     if (simple && (!inputs || inputs->next || !outputs || outputs->next)) {
         const char *num_inputs;
@@ -1075,8 +1106,6 @@ int configure_filtergraph(FilterGraph *fg)
         configure_output_filter(fg, fg->outputs[i], cur);
     avfilter_inout_free(&outputs);
 
-    if (!auto_conversion_filters)
-        avfilter_graph_set_auto_convert(fg->graph, AVFILTER_AUTO_CONVERT_NONE);
     if ((ret = avfilter_graph_config(fg->graph, NULL)) < 0)
         goto fail;
 
@@ -1140,7 +1169,7 @@ int configure_filtergraph(FilterGraph *fg)
             while (av_fifo_size(ist->sub2video.sub_queue)) {
                 AVSubtitle tmp;
                 av_fifo_generic_read(ist->sub2video.sub_queue, &tmp, sizeof(tmp), NULL);
-                sub2video_update(ist, INT64_MIN, &tmp);
+                sub2video_update(ist, &tmp);
                 avsubtitle_free(&tmp);
             }
         }
@@ -1155,8 +1184,6 @@ fail:
 
 int ifilter_parameters_from_frame(InputFilter *ifilter, const AVFrame *frame)
 {
-    AVFrameSideData *sd;
-
     av_buffer_unref(&ifilter->hw_frames_ctx);
 
     ifilter->format = frame->format;
@@ -1169,17 +1196,21 @@ int ifilter_parameters_from_frame(InputFilter *ifilter, const AVFrame *frame)
     ifilter->channels            = frame->channels;
     ifilter->channel_layout      = frame->channel_layout;
 
-    av_freep(&ifilter->displaymatrix);
-    sd = av_frame_get_side_data(frame, AV_FRAME_DATA_DISPLAYMATRIX);
-    if (sd)
-        ifilter->displaymatrix = av_memdup(sd->data, sizeof(int32_t) * 9);
-
     if (frame->hw_frames_ctx) {
         ifilter->hw_frames_ctx = av_buffer_ref(frame->hw_frames_ctx);
         if (!ifilter->hw_frames_ctx)
             return AVERROR(ENOMEM);
     }
 
+    return 0;
+}
+
+int ist_in_filtergraph(FilterGraph *fg, InputStream *ist)
+{
+    int i;
+    for (i = 0; i < fg->nb_inputs; i++)
+        if (fg->inputs[i]->ist == ist)
+            return 1;
     return 0;
 }
 

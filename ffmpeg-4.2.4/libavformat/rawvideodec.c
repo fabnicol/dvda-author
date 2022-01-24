@@ -100,7 +100,7 @@ static const AVClass rawvideo_demuxer_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const AVInputFormat ff_rawvideo_demuxer = {
+AVInputFormat ff_rawvideo_demuxer = {
     .name           = "rawvideo",
     .long_name      = NULL_IF_CONFIG_SMALL("raw video"),
     .priv_data_size = sizeof(RawVideoDemuxerContext),

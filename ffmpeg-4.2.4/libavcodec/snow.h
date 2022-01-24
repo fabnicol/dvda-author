@@ -186,7 +186,6 @@ typedef struct SnowContext{
     uint8_t *emu_edge_buffer;
 
     AVMotionVector *avmv;
-    unsigned avmv_size;
     int avmv_index;
     uint64_t encoding_error[AV_NUM_DATA_POINTERS];
 
@@ -195,7 +194,7 @@ typedef struct SnowContext{
 
 /* Tables */
 extern const uint8_t * const ff_obmc_tab[4];
-extern const uint8_t ff_qexp[QROOT];
+extern uint8_t ff_qexp[QROOT];
 extern int ff_scale_mv_ref[MAX_REF_FRAMES][MAX_REF_FRAMES];
 
 /* C bits used by mmx/sse2/altivec */

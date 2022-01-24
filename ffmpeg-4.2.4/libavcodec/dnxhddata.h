@@ -58,7 +58,9 @@ typedef struct CIDEntry {
     AVRational packet_scale;
 } CIDEntry;
 
-const CIDEntry *ff_dnxhd_get_cid_table(int cid);
+extern const CIDEntry ff_dnxhd_cid_table[];
+
+int ff_dnxhd_get_cid_table(int cid);
 int ff_dnxhd_find_cid(AVCodecContext *avctx, int bit_depth);
 void ff_dnxhd_print_profiles(AVCodecContext *avctx, int loglevel);
 

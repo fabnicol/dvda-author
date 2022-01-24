@@ -18,8 +18,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "libavutil/attributes.h"
-#include "libavutil/mips/cpu.h"
 #include "config.h"
 #include "libavutil/common.h"
 #include "libavcodec/vp9dsp.h"
@@ -211,17 +209,10 @@ static av_cold void vp9dsp_init_mmi(VP9DSPContext *dsp, int bpp)
 
 av_cold void ff_vp9dsp_init_mips(VP9DSPContext *dsp, int bpp)
 {
-#if HAVE_MSA || HAVE_MMI
-    int cpu_flags = av_get_cpu_flags();
-#endif
-
 #if HAVE_MMI
-    if (have_mmi(cpu_flags))
-        vp9dsp_init_mmi(dsp, bpp);
-#endif
-
+    vp9dsp_init_mmi(dsp, bpp);
+#endif  // #if HAVE_MMI
 #if HAVE_MSA
-    if (have_msa(cpu_flags))
-        vp9dsp_init_msa(dsp, bpp);
-#endif
+    vp9dsp_init_msa(dsp, bpp);
+#endif  // #if HAVE_MSA
 }

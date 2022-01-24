@@ -239,10 +239,13 @@ av_cold int av_sha512_init(AVSHA512 *ctx, int bits)
     return 0;
 }
 
+#if FF_API_CRYPTO_SIZE_T
+void av_sha512_update(AVSHA512* ctx, const uint8_t* data, unsigned int len)
+#else
 void av_sha512_update(AVSHA512* ctx, const uint8_t* data, size_t len)
+#endif
 {
-    unsigned int j;
-    size_t i;
+    unsigned int i, j;
 
     j = ctx->count & 127;
     ctx->count += len;
@@ -255,19 +258,15 @@ void av_sha512_update(AVSHA512* ctx, const uint8_t* data, size_t len)
         }
     }
 #else
-    if (len >= 128 - j) {
-        const uint8_t *end;
+    if ((j + len) > 127) {
         memcpy(&ctx->buffer[j], data, (i = 128 - j));
         sha512_transform(ctx->state, ctx->buffer);
-        data += i;
-        len  -= i;
-        end   = data + (len & ~127);
-        len   = len % 128;
-        for (; data < end; data += 128)
-            sha512_transform(ctx->state, data);
+        for (; i + 127 < len; i += 128)
+            sha512_transform(ctx->state, &data[i]);
         j = 0;
-    }
-    memcpy(&ctx->buffer[j], data, len);
+    } else
+        i = 0;
+    memcpy(&ctx->buffer[j], &data[i], len - i);
 #endif
 }
 

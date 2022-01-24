@@ -36,7 +36,6 @@
 #include "get_bits.h"
 #include "huffyuv.h"
 #include "huffyuvdsp.h"
-#include "internal.h"
 #include "lossless_videodsp.h"
 #include "thread.h"
 #include "libavutil/imgutils.h"
@@ -349,7 +348,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
 
         if ((ret = read_huffman_tables(s, avctx->extradata + 4,
                                        avctx->extradata_size - 4)) < 0)
-            return ret;
+            goto error;
     } else {
         switch (avctx->bits_per_coded_sample & 7) {
         case 1:
@@ -377,7 +376,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
         s->context       = 0;
 
         if ((ret = read_old_huffman_tables(s)) < 0)
-            return ret;
+            goto error;
     }
 
     if (s->version <= 2) {
@@ -405,7 +404,8 @@ static av_cold int decode_init(AVCodecContext *avctx)
             s->alpha = 1;
             break;
         default:
-            return AVERROR_INVALIDDATA;
+            ret = AVERROR_INVALIDDATA;
+            goto error;
         }
         av_pix_fmt_get_chroma_sub_sample(avctx->pix_fmt,
                                          &s->chroma_h_shift,
@@ -539,7 +539,8 @@ static av_cold int decode_init(AVCodecContext *avctx)
             avctx->pix_fmt = AV_PIX_FMT_YUVA420P16;
             break;
         default:
-            return AVERROR_INVALIDDATA;
+            ret = AVERROR_INVALIDDATA;
+            goto error;
         }
     }
 
@@ -547,20 +548,56 @@ static av_cold int decode_init(AVCodecContext *avctx)
 
     if ((avctx->pix_fmt == AV_PIX_FMT_YUV422P || avctx->pix_fmt == AV_PIX_FMT_YUV420P) && avctx->width & 1) {
         av_log(avctx, AV_LOG_ERROR, "width must be even for this colorspace\n");
-        return AVERROR_INVALIDDATA;
+        ret = AVERROR_INVALIDDATA;
+        goto error;
     }
     if (s->predictor == MEDIAN && avctx->pix_fmt == AV_PIX_FMT_YUV422P &&
         avctx->width % 4) {
         av_log(avctx, AV_LOG_ERROR, "width must be a multiple of 4 "
                "for this combination of colorspace and predictor type.\n");
-        return AVERROR_INVALIDDATA;
+        ret = AVERROR_INVALIDDATA;
+        goto error;
     }
 
-    if ((ret = ff_huffyuv_alloc_temp(s)) < 0)
+    if ((ret = ff_huffyuv_alloc_temp(s)) < 0) {
+        ff_huffyuv_common_end(s);
+        goto error;
+    }
+
+    return 0;
+  error:
+    decode_end(avctx);
+    return ret;
+}
+
+#if HAVE_THREADS
+static av_cold int decode_init_thread_copy(AVCodecContext *avctx)
+{
+    HYuvContext *s = avctx->priv_data;
+    int i, ret;
+
+    s->avctx = avctx;
+
+    if ((ret = ff_huffyuv_alloc_temp(s)) < 0) {
+        ff_huffyuv_common_end(s);
         return ret;
+    }
+
+    for (i = 0; i < 8; i++)
+        s->vlc[i].table = NULL;
+
+    if (s->version >= 2) {
+        if ((ret = read_huffman_tables(s, avctx->extradata + 4,
+                                       avctx->extradata_size)) < 0)
+            return ret;
+    } else {
+        if ((ret = read_old_huffman_tables(s)) < 0)
+            return ret;
+    }
 
     return 0;
 }
+#endif
 
 /** Subset of GET_VLC for use in hand-roller VLC code */
 #define VLC_INTERN(dst, table, gb, name, bits, max_depth)   \
@@ -1262,7 +1299,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     return (get_bits_count(&s->gb) + 31) / 32 * 4 + table_size;
 }
 
-const AVCodec ff_huffyuv_decoder = {
+AVCodec ff_huffyuv_decoder = {
     .name             = "huffyuv",
     .long_name        = NULL_IF_CONFIG_SMALL("Huffyuv / HuffYUV"),
     .type             = AVMEDIA_TYPE_VIDEO,
@@ -1273,11 +1310,11 @@ const AVCodec ff_huffyuv_decoder = {
     .decode           = decode_frame,
     .capabilities     = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DRAW_HORIZ_BAND |
                         AV_CODEC_CAP_FRAME_THREADS,
-    .caps_internal    = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
+    .init_thread_copy = ONLY_IF_THREADS_ENABLED(decode_init_thread_copy),
 };
 
 #if CONFIG_FFVHUFF_DECODER
-const AVCodec ff_ffvhuff_decoder = {
+AVCodec ff_ffvhuff_decoder = {
     .name             = "ffvhuff",
     .long_name        = NULL_IF_CONFIG_SMALL("Huffyuv FFmpeg variant"),
     .type             = AVMEDIA_TYPE_VIDEO,
@@ -1288,12 +1325,12 @@ const AVCodec ff_ffvhuff_decoder = {
     .decode           = decode_frame,
     .capabilities     = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DRAW_HORIZ_BAND |
                         AV_CODEC_CAP_FRAME_THREADS,
-    .caps_internal    = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
+    .init_thread_copy = ONLY_IF_THREADS_ENABLED(decode_init_thread_copy),
 };
 #endif /* CONFIG_FFVHUFF_DECODER */
 
 #if CONFIG_HYMT_DECODER
-const AVCodec ff_hymt_decoder = {
+AVCodec ff_hymt_decoder = {
     .name             = "hymt",
     .long_name        = NULL_IF_CONFIG_SMALL("HuffYUV MT"),
     .type             = AVMEDIA_TYPE_VIDEO,
@@ -1304,6 +1341,6 @@ const AVCodec ff_hymt_decoder = {
     .decode           = decode_frame,
     .capabilities     = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DRAW_HORIZ_BAND |
                         AV_CODEC_CAP_FRAME_THREADS,
-    .caps_internal    = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
+    .init_thread_copy = ONLY_IF_THREADS_ENABLED(decode_init_thread_copy),
 };
 #endif /* CONFIG_HYMT_DECODER */

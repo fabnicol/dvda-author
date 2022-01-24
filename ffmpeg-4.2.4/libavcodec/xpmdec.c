@@ -341,6 +341,9 @@ static int xpm_decode_frame(AVCodecContext *avctx, void *data,
     if ((ret = ff_set_dimensions(avctx, width, height)) < 0)
         return ret;
 
+    if ((ret = ff_get_buffer(avctx, p, 0)) < 0)
+        return ret;
+
     if (cpp <= 0 || cpp >= 5) {
         av_log(avctx, AV_LOG_ERROR, "unsupported/invalid number of chars per pixel: %d\n", cpp);
         return AVERROR_INVALIDDATA;
@@ -357,16 +360,13 @@ static int xpm_decode_frame(AVCodecContext *avctx, void *data,
 
     size *= 4;
 
-    ptr += mod_strcspn(ptr, ",") + 1;
-    if (end - ptr < 1)
-        return AVERROR_INVALIDDATA;
-
-    if ((ret = ff_get_buffer(avctx, p, 0)) < 0)
-        return ret;
-
     av_fast_padded_malloc(&x->pixels, &x->pixels_size, size);
     if (!x->pixels)
         return AVERROR(ENOMEM);
+
+    ptr += mod_strcspn(ptr, ",") + 1;
+    if (end - ptr < 1)
+        return AVERROR_INVALIDDATA;
 
     for (i = 0; i < ncolors; i++) {
         const uint8_t *index;
@@ -436,7 +436,7 @@ static av_cold int xpm_decode_close(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_xpm_decoder = {
+AVCodec ff_xpm_decoder = {
     .name           = "xpm",
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = AV_CODEC_ID_XPM,

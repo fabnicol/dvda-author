@@ -214,7 +214,7 @@ repeat:
     return 0;
 }
 
-const AVInputFormat ff_anm_demuxer = {
+AVInputFormat ff_anm_demuxer = {
     .name           = "anm",
     .long_name      = NULL_IF_CONFIG_SMALL("Deluxe Paint Animation"),
     .priv_data_size = sizeof(AnmDemuxContext),

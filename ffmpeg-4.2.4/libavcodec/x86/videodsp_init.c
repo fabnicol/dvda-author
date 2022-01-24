@@ -24,6 +24,7 @@
 #include "libavutil/avassert.h"
 #include "libavutil/common.h"
 #include "libavutil/cpu.h"
+#include "libavutil/mem.h"
 #include "libavutil/x86/asm.h"
 #include "libavutil/x86/cpu.h"
 #include "libavcodec/videodsp.h"

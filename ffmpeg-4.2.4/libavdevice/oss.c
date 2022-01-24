@@ -32,6 +32,7 @@
 
 #include "libavutil/log.h"
 
+#include "libavcodec/avcodec.h"
 #include "avdevice.h"
 
 #include "oss.h"

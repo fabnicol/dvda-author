@@ -19,7 +19,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "libavutil/channel_layout.h"
 #include "libavutil/intreadwrite.h"
 #include "libavcodec/internal.h"
 #include "avformat.h"
@@ -88,9 +87,7 @@ static int genh_read_header(AVFormatContext *s)
     case  5: st->codecpar->codec_id = st->codecpar->block_align > 0 ?
                                    AV_CODEC_ID_PCM_S8_PLANAR :
                                    AV_CODEC_ID_PCM_S8;           break;
-    case  6: if (st->codecpar->block_align > INT_MAX/1024)
-                 return AVERROR_INVALIDDATA;
-             st->codecpar->codec_id = AV_CODEC_ID_SDX2_DPCM;        break;
+    case  6: st->codecpar->codec_id = AV_CODEC_ID_SDX2_DPCM;        break;
     case  7: ret = ff_alloc_extradata(st->codecpar, 2);
              if (ret < 0)
                  return ret;
@@ -147,9 +144,6 @@ static int genh_read_header(AVFormatContext *s)
         }
     }
 
-    if (st->codecpar->block_align <= 0)
-        return AVERROR_INVALIDDATA;
-
     avio_skip(s->pb, start_offset - avio_tell(s->pb));
 
     avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
@@ -190,7 +184,7 @@ static int genh_read_packet(AVFormatContext *s, AVPacket *pkt)
     return ret;
 }
 
-const AVInputFormat ff_genh_demuxer = {
+AVInputFormat ff_genh_demuxer = {
     .name           = "genh",
     .long_name      = NULL_IF_CONFIG_SMALL("GENeric Header"),
     .priv_data_size = sizeof(GENHDemuxContext),

@@ -25,9 +25,7 @@
  * JPEG-LS common code.
  */
 
-#include <stddef.h>
-#include "libavutil/internal.h"
-#include "libavutil/intmath.h"
+#include "internal.h"
 #include "jpegls.h"
 
 void ff_jpegls_init_state(JLSState *state)

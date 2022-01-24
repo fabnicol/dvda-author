@@ -97,7 +97,7 @@ static int aura_decode_frame(AVCodecContext *avctx,
     return pkt->size;
 }
 
-const AVCodec ff_aura2_decoder = {
+AVCodec ff_aura2_decoder = {
     .name           = "aura2",
     .long_name      = NULL_IF_CONFIG_SMALL("Auravision Aura 2"),
     .type           = AVMEDIA_TYPE_VIDEO,

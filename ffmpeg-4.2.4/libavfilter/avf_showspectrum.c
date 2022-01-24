@@ -26,15 +26,13 @@
  * (by Michael Niedermayer) and lavfi/avf_showwaves (by Stefano Sabatini).
  */
 
-#include <float.h>
 #include <math.h>
 
-#include "libavutil/tx.h"
+#include "libavcodec/avfft.h"
 #include "libavutil/audio_fifo.h"
 #include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
 #include "libavutil/channel_layout.h"
-#include "libavutil/cpu.h"
 #include "libavutil/opt.h"
 #include "libavutil/parseutils.h"
 #include "libavutil/xga_font_data.h"
@@ -46,11 +44,11 @@
 #include "window_func.h"
 
 enum DisplayMode  { COMBINED, SEPARATE, NB_MODES };
-enum DataMode     { D_MAGNITUDE, D_PHASE, D_UPHASE, NB_DMODES };
+enum DataMode     { D_MAGNITUDE, D_PHASE, NB_DMODES };
 enum FrequencyScale { F_LINEAR, F_LOG, NB_FSCALES };
 enum DisplayScale { LINEAR, SQRT, CBRT, LOG, FOURTHRT, FIFTHRT, NB_SCALES };
 enum ColorMode    { CHANNEL, INTENSITY, RAINBOW, MORELAND, NEBULAE, FIRE, FIERY, FRUIT, COOL, MAGMA, GREEN, VIRIDIS, PLASMA, CIVIDIS, TERRAIN, NB_CLMODES };
-enum SlideMode    { REPLACE, SCROLL, FULLFRAME, RSCROLL, LREPLACE, NB_SLIDES };
+enum SlideMode    { REPLACE, SCROLL, FULLFRAME, RSCROLL, NB_SLIDES };
 enum Orientation  { VERTICAL, HORIZONTAL, NB_ORIENTATIONS };
 
 typedef struct ShowSpectrumContext {
@@ -74,14 +72,11 @@ typedef struct ShowSpectrumContext {
     int start, stop;            ///< zoom mode
     int data;
     int xpos;                   ///< x position (current column)
-    AVTXContext **fft;          ///< Fast Fourier Transform context
-    AVTXContext **ifft;         ///< Inverse Fast Fourier Transform context
-    av_tx_fn tx_fn;
-    av_tx_fn itx_fn;
-    int fft_size;               ///< number of coeffs (FFT window size)
-    AVComplexFloat **fft_in;    ///< input FFT coeffs
-    AVComplexFloat **fft_data;  ///< bins holder for each (displayed) channels
-    AVComplexFloat **fft_scratch;///< scratch buffers
+    FFTContext **fft;           ///< Fast Fourier Transform context
+    FFTContext **ifft;          ///< Inverse Fast Fourier Transform context
+    int fft_bits;               ///< number of bits (FFT window size = 1<<fft_bits)
+    FFTComplex **fft_data;      ///< bins holder for each (displayed) channels
+    FFTComplex **fft_scratch;   ///< scratch buffers
     float *window_func_lut;     ///< Window function LUT
     float **magnitudes;
     float **phases;
@@ -102,8 +97,6 @@ typedef struct ShowSpectrumContext {
     int single_pic;
     int legend;
     int start_x, start_y;
-    float drange, limit;
-    float dmin, dmax;
     int (*plot_channel)(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs);
 } ShowSpectrumContext;
 
@@ -118,7 +111,6 @@ static const AVOption showspectrum_options[] = {
         { "scroll", "scroll from right to left", 0, AV_OPT_TYPE_CONST, {.i64=SCROLL}, 0, 0, FLAGS, "slide" },
         { "fullframe", "return full frames", 0, AV_OPT_TYPE_CONST, {.i64=FULLFRAME}, 0, 0, FLAGS, "slide" },
         { "rscroll", "scroll from left to right", 0, AV_OPT_TYPE_CONST, {.i64=RSCROLL}, 0, 0, FLAGS, "slide" },
-        { "lreplace", "replace from right to left", 0, AV_OPT_TYPE_CONST, {.i64=LREPLACE}, 0, 0, FLAGS, "slide" },
     { "mode", "set channel display mode", OFFSET(mode), AV_OPT_TYPE_INT, {.i64=COMBINED}, COMBINED, NB_MODES-1, FLAGS, "mode" },
         { "combined", "combined mode", 0, AV_OPT_TYPE_CONST, {.i64=COMBINED}, 0, 0, FLAGS, "mode" },
         { "separate", "separate mode", 0, AV_OPT_TYPE_CONST, {.i64=SEPARATE}, 0, 0, FLAGS, "mode" },
@@ -149,7 +141,28 @@ static const AVOption showspectrum_options[] = {
         { "lin",  "linear",      0, AV_OPT_TYPE_CONST, {.i64=F_LINEAR}, 0, 0, FLAGS, "fscale" },
         { "log",  "logarithmic", 0, AV_OPT_TYPE_CONST, {.i64=F_LOG},    0, 0, FLAGS, "fscale" },
     { "saturation", "color saturation multiplier", OFFSET(saturation), AV_OPT_TYPE_FLOAT, {.dbl = 1}, -10, 10, FLAGS },
-    WIN_FUNC_OPTION("win_func", OFFSET(win_func), FLAGS, WFUNC_HANNING),
+    { "win_func", "set window function", OFFSET(win_func), AV_OPT_TYPE_INT, {.i64 = WFUNC_HANNING}, 0, NB_WFUNC-1, FLAGS, "win_func" },
+        { "rect",     "Rectangular",      0, AV_OPT_TYPE_CONST, {.i64=WFUNC_RECT},     0, 0, FLAGS, "win_func" },
+        { "bartlett", "Bartlett",         0, AV_OPT_TYPE_CONST, {.i64=WFUNC_BARTLETT}, 0, 0, FLAGS, "win_func" },
+        { "hann",     "Hann",             0, AV_OPT_TYPE_CONST, {.i64=WFUNC_HANNING},  0, 0, FLAGS, "win_func" },
+        { "hanning",  "Hanning",          0, AV_OPT_TYPE_CONST, {.i64=WFUNC_HANNING},  0, 0, FLAGS, "win_func" },
+        { "hamming",  "Hamming",          0, AV_OPT_TYPE_CONST, {.i64=WFUNC_HAMMING},  0, 0, FLAGS, "win_func" },
+        { "blackman", "Blackman",         0, AV_OPT_TYPE_CONST, {.i64=WFUNC_BLACKMAN}, 0, 0, FLAGS, "win_func" },
+        { "welch",    "Welch",            0, AV_OPT_TYPE_CONST, {.i64=WFUNC_WELCH},    0, 0, FLAGS, "win_func" },
+        { "flattop",  "Flat-top",         0, AV_OPT_TYPE_CONST, {.i64=WFUNC_FLATTOP},  0, 0, FLAGS, "win_func" },
+        { "bharris",  "Blackman-Harris",  0, AV_OPT_TYPE_CONST, {.i64=WFUNC_BHARRIS},  0, 0, FLAGS, "win_func" },
+        { "bnuttall", "Blackman-Nuttall", 0, AV_OPT_TYPE_CONST, {.i64=WFUNC_BNUTTALL}, 0, 0, FLAGS, "win_func" },
+        { "bhann",    "Bartlett-Hann",    0, AV_OPT_TYPE_CONST, {.i64=WFUNC_BHANN},    0, 0, FLAGS, "win_func" },
+        { "sine",     "Sine",             0, AV_OPT_TYPE_CONST, {.i64=WFUNC_SINE},     0, 0, FLAGS, "win_func" },
+        { "nuttall",  "Nuttall",          0, AV_OPT_TYPE_CONST, {.i64=WFUNC_NUTTALL},  0, 0, FLAGS, "win_func" },
+        { "lanczos",  "Lanczos",          0, AV_OPT_TYPE_CONST, {.i64=WFUNC_LANCZOS},  0, 0, FLAGS, "win_func" },
+        { "gauss",    "Gauss",            0, AV_OPT_TYPE_CONST, {.i64=WFUNC_GAUSS},    0, 0, FLAGS, "win_func" },
+        { "tukey",    "Tukey",            0, AV_OPT_TYPE_CONST, {.i64=WFUNC_TUKEY},    0, 0, FLAGS, "win_func" },
+        { "dolph",    "Dolph-Chebyshev",  0, AV_OPT_TYPE_CONST, {.i64=WFUNC_DOLPH},    0, 0, FLAGS, "win_func" },
+        { "cauchy",   "Cauchy",           0, AV_OPT_TYPE_CONST, {.i64=WFUNC_CAUCHY},   0, 0, FLAGS, "win_func" },
+        { "parzen",   "Parzen",           0, AV_OPT_TYPE_CONST, {.i64=WFUNC_PARZEN},   0, 0, FLAGS, "win_func" },
+        { "poisson",  "Poisson",          0, AV_OPT_TYPE_CONST, {.i64=WFUNC_POISSON},  0, 0, FLAGS, "win_func" },
+        { "bohman",   "Bohman",           0, AV_OPT_TYPE_CONST, {.i64=WFUNC_BOHMAN},   0, 0, FLAGS, "win_func" },
     { "orientation", "set orientation", OFFSET(orientation), AV_OPT_TYPE_INT, {.i64=VERTICAL}, 0, NB_ORIENTATIONS-1, FLAGS, "orientation" },
         { "vertical",   NULL, 0, AV_OPT_TYPE_CONST, {.i64=VERTICAL},   0, 0, FLAGS, "orientation" },
         { "horizontal", NULL, 0, AV_OPT_TYPE_CONST, {.i64=HORIZONTAL}, 0, 0, FLAGS, "orientation" },
@@ -158,14 +171,11 @@ static const AVOption showspectrum_options[] = {
     { "data", "set data mode", OFFSET(data), AV_OPT_TYPE_INT, {.i64 = 0}, 0, NB_DMODES-1, FLAGS, "data" },
         { "magnitude", NULL, 0, AV_OPT_TYPE_CONST, {.i64=D_MAGNITUDE}, 0, 0, FLAGS, "data" },
         { "phase",     NULL, 0, AV_OPT_TYPE_CONST, {.i64=D_PHASE},     0, 0, FLAGS, "data" },
-        { "uphase",    NULL, 0, AV_OPT_TYPE_CONST, {.i64=D_UPHASE},    0, 0, FLAGS, "data" },
     { "rotation", "color rotation", OFFSET(rotation), AV_OPT_TYPE_FLOAT, {.dbl = 0}, -1, 1, FLAGS },
     { "start", "start frequency", OFFSET(start), AV_OPT_TYPE_INT, {.i64 = 0}, 0, INT32_MAX, FLAGS },
     { "stop",  "stop frequency",  OFFSET(stop),  AV_OPT_TYPE_INT, {.i64 = 0}, 0, INT32_MAX, FLAGS },
     { "fps",   "set video rate",  OFFSET(rate_str), AV_OPT_TYPE_STRING, {.str = "auto"}, 0, 0, FLAGS },
     { "legend", "draw legend", OFFSET(legend), AV_OPT_TYPE_BOOL, {.i64 = 0}, 0, 1, FLAGS },
-    { "drange", "set dynamic range in dBFS", OFFSET(drange), AV_OPT_TYPE_FLOAT, {.dbl = 120}, 10, 200, FLAGS },
-    { "limit", "set upper limit in dBFS", OFFSET(limit), AV_OPT_TYPE_FLOAT, {.dbl = 0}, -100, 100, FLAGS },
     { NULL }
 };
 
@@ -295,12 +305,12 @@ static av_cold void uninit(AVFilterContext *ctx)
     av_freep(&s->combine_buffer);
     if (s->fft) {
         for (i = 0; i < s->nb_display_channels; i++)
-            av_tx_uninit(&s->fft[i]);
+            av_fft_end(s->fft[i]);
     }
     av_freep(&s->fft);
     if (s->ifft) {
         for (i = 0; i < s->nb_display_channels; i++)
-            av_tx_uninit(&s->ifft[i]);
+            av_fft_end(s->ifft[i]);
     }
     av_freep(&s->ifft);
     if (s->fft_data) {
@@ -308,11 +318,6 @@ static av_cold void uninit(AVFilterContext *ctx)
             av_freep(&s->fft_data[i]);
     }
     av_freep(&s->fft_data);
-    if (s->fft_in) {
-        for (i = 0; i < s->nb_display_channels; i++)
-            av_freep(&s->fft_in[i]);
-    }
-    av_freep(&s->fft_in);
     if (s->fft_scratch) {
         for (i = 0; i < s->nb_display_channels; i++)
             av_freep(&s->fft_scratch[i]);
@@ -350,20 +355,20 @@ static int query_formats(AVFilterContext *ctx)
 
     /* set input audio formats */
     formats = ff_make_format_list(sample_fmts);
-    if ((ret = ff_formats_ref(formats, &inlink->outcfg.formats)) < 0)
+    if ((ret = ff_formats_ref(formats, &inlink->out_formats)) < 0)
         return ret;
 
     layouts = ff_all_channel_layouts();
-    if ((ret = ff_channel_layouts_ref(layouts, &inlink->outcfg.channel_layouts)) < 0)
+    if ((ret = ff_channel_layouts_ref(layouts, &inlink->out_channel_layouts)) < 0)
         return ret;
 
     formats = ff_all_samplerates();
-    if ((ret = ff_formats_ref(formats, &inlink->outcfg.samplerates)) < 0)
+    if ((ret = ff_formats_ref(formats, &inlink->out_samplerates)) < 0)
         return ret;
 
     /* set output video format */
     formats = ff_make_format_list(pix_fmts);
-    if ((ret = ff_formats_ref(formats, &outlink->incfg.formats)) < 0)
+    if ((ret = ff_formats_ref(formats, &outlink->in_formats)) < 0)
         return ret;
 
     return 0;
@@ -381,19 +386,18 @@ static int run_channel_fft(AVFilterContext *ctx, void *arg, int jobnr, int nb_jo
     /* fill FFT input with the number of samples available */
     const float *p = (float *)fin->extended_data[ch];
 
+    for (n = 0; n < s->win_size; n++) {
+        s->fft_data[ch][n].re = p[n] * window_func_lut[n];
+        s->fft_data[ch][n].im = 0;
+    }
+
     if (s->stop) {
         float theta, phi, psi, a, b, S, c;
-        AVComplexFloat *f = s->fft_in[ch];
-        AVComplexFloat *g = s->fft_data[ch];
-        AVComplexFloat *h = s->fft_scratch[ch];
+        FFTComplex *g = s->fft_data[ch];
+        FFTComplex *h = s->fft_scratch[ch];
         int L = s->buf_size;
         int N = s->win_size;
         int M = s->win_size / 2;
-
-        for (n = 0; n < s->win_size; n++) {
-            s->fft_data[ch][n].re = p[n] * window_func_lut[n];
-            s->fft_data[ch][n].im = 0;
-        }
 
         phi = 2.f * M_PI * (s->stop - s->start) / (float)inlink->sample_rate / (M - 1);
         theta = 2.f * M_PI * s->start / (float)inlink->sample_rate;
@@ -413,6 +417,11 @@ static int run_channel_fft(AVFilterContext *ctx, void *arg, int jobnr, int nb_jo
             h[n].im = sinf((L - n) * (L - n) / 2.f * phi);
         }
 
+        for (int n = 0; n < N; n++) {
+            g[n].re = s->fft_data[ch][n].re;
+            g[n].im = s->fft_data[ch][n].im;
+        }
+
         for (int n = N; n < L; n++) {
             g[n].re = 0.f;
             g[n].im = 0.f;
@@ -428,11 +437,11 @@ static int run_channel_fft(AVFilterContext *ctx, void *arg, int jobnr, int nb_jo
             g[n].im = b;
         }
 
-        memcpy(f, h, s->buf_size * sizeof(*f));
-        s->tx_fn(s->fft[ch], h, f, sizeof(float));
+        av_fft_permute(s->fft[ch], h);
+        av_fft_calc(s->fft[ch], h);
 
-        memcpy(f, g, s->buf_size * sizeof(*f));
-        s->tx_fn(s->fft[ch], g, f, sizeof(float));
+        av_fft_permute(s->fft[ch], g);
+        av_fft_calc(s->fft[ch], g);
 
         for (int n = 0; n < L; n++) {
             c = g[n].re;
@@ -444,8 +453,8 @@ static int run_channel_fft(AVFilterContext *ctx, void *arg, int jobnr, int nb_jo
             g[n].im = b / L;
         }
 
-        memcpy(f, g, s->buf_size * sizeof(*f));
-        s->itx_fn(s->ifft[ch], g, f, sizeof(float));
+        av_fft_permute(s->ifft[ch], g);
+        av_fft_calc(s->ifft[ch], g);
 
         for (int k = 0; k < M; k++) {
             psi = k * k / 2.f * phi;
@@ -457,13 +466,9 @@ static int run_channel_fft(AVFilterContext *ctx, void *arg, int jobnr, int nb_jo
             s->fft_data[ch][k].im = b;
         }
     } else {
-        for (n = 0; n < s->win_size; n++) {
-            s->fft_in[ch][n].re = p[n] * window_func_lut[n];
-            s->fft_in[ch][n].im = 0;
-        }
-
         /* run FFT on each samples set */
-        s->tx_fn(s->fft[ch], s->fft_data[ch], s->fft_in[ch], sizeof(float));
+        av_fft_permute(s->fft[ch], s->fft_data[ch]);
+        av_fft_calc(s->fft[ch], s->fft_data[ch]);
     }
 
     return 0;
@@ -624,106 +629,54 @@ static char *get_time(AVFilterContext *ctx, float seconds, int x)
     return units;
 }
 
-static float log_scale(const float bin,
-                       const float bmin, const float bmax,
-                       const float min, const float max)
+static float log_scale(const float value, const float min, const float max)
 {
-    return exp2f(((bin - bmin) / (bmax - bmin)) * (log2f(max) - log2f(min)) + log2f(min));
-}
+    if (value < min)
+        return min;
+    if (value > max)
+        return max;
 
-static float get_hz(const float bin, const float bmax,
-                    const float min, const float max,
-                    int fscale)
-{
-    switch (fscale) {
-    case F_LINEAR:
-        return min + (bin / bmax) * (max - min);
-    case F_LOG:
-        return min + log_scale(bin, 0, bmax, 20.f, max - min);
-    default:
-        return 0.f;
+    {
+        const float b = logf(max / min) / (max - min);
+        const float a = max / expf(max * b);
+
+        return expf(value * b) * a;
     }
 }
 
-static float inv_log_scale(float bin,
-                           float bmin, float bmax,
-                           float min, float max)
+static float get_log_hz(const int bin, const int num_bins, const float sample_rate)
 {
-    return (min * exp2f((bin * (log2f(max) - log2f(20.f))) / bmax) + min) * bmax / max;
+    const float max_freq = sample_rate / 2;
+    const float hz_per_bin = max_freq / num_bins;
+    const float freq = hz_per_bin * bin;
+    const float scaled_freq = log_scale(freq + 1, 21, max_freq) - 1;
+
+    return num_bins * scaled_freq / max_freq;
 }
 
-static float bin_pos(const int bin, const int num_bins, const float min, const float max)
+static float inv_log_scale(const float value, const float min, const float max)
 {
-    return inv_log_scale(bin, 0.f, num_bins, 20.f, max - min);
-}
+    if (value < min)
+        return min;
+    if (value > max)
+        return max;
 
-static float get_scale(AVFilterContext *ctx, int scale, float a)
-{
-    ShowSpectrumContext *s = ctx->priv;
-    const float dmin = s->dmin;
-    const float dmax = s->dmax;
+    {
+        const float b = logf(max / min) / (max - min);
+        const float a = max / expf(max * b);
 
-    a = av_clipf(a, dmin, dmax);
-    if (scale != LOG)
-        a = (a - dmin) / (dmax - dmin);
-
-    switch (scale) {
-    case LINEAR:
-        break;
-    case SQRT:
-        a = sqrtf(a);
-        break;
-    case CBRT:
-        a = cbrtf(a);
-        break;
-    case FOURTHRT:
-        a = sqrtf(sqrtf(a));
-        break;
-    case FIFTHRT:
-        a = powf(a, 0.2f);
-        break;
-    case LOG:
-        a = (s->drange - s->limit + log10f(a) * 20.f) / s->drange;
-        break;
-    default:
-        av_assert0(0);
+        return logf(value / a) / b;
     }
-
-    return a;
 }
 
-static float get_iscale(AVFilterContext *ctx, int scale, float a)
+static float bin_pos(const int bin, const int num_bins, const float sample_rate)
 {
-    ShowSpectrumContext *s = ctx->priv;
-    const float dmin = s->dmin;
-    const float dmax = s->dmax;
+    const float max_freq = sample_rate / 2;
+    const float hz_per_bin = max_freq / num_bins;
+    const float freq = hz_per_bin * bin;
+    const float scaled_freq = inv_log_scale(freq + 1, 21, max_freq) - 1;
 
-    switch (scale) {
-    case LINEAR:
-        break;
-    case SQRT:
-        a = a * a;
-        break;
-    case CBRT:
-        a = a * a * a;
-        break;
-    case FOURTHRT:
-        a = a * a * a * a;
-        break;
-    case FIFTHRT:
-        a = a * a * a * a * a;
-        break;
-    case LOG:
-        a = expf(M_LN10 * (a * s->drange - s->drange + s->limit) / 20.f);
-        break;
-    default:
-        av_assert0(0);
-    }
-
-    if (scale != LOG)
-        a = a * (dmax - dmin) + dmin;
-
-    return a;
+    return num_bins * scaled_freq / max_freq;
 }
 
 static int draw_legend(AVFilterContext *ctx, int samples)
@@ -742,19 +695,16 @@ static int draw_legend(AVFilterContext *ctx, int samples)
                                  inlink->channel_layout);
 
     text = av_asprintf("%d Hz | %s", inlink->sample_rate, chlayout_str);
-    if (!text)
-        return AVERROR(ENOMEM);
 
     drawtext(s->outpicref, 2, outlink->h - 10, "CREATED BY LIBAVFILTER", 0);
     drawtext(s->outpicref, outlink->w - 2 - strlen(text) * 10, outlink->h - 10, text, 0);
-    av_freep(&text);
     if (s->stop) {
-        text = av_asprintf("Zoom: %d Hz - %d Hz", s->start, s->stop);
-        if (!text)
-            return AVERROR(ENOMEM);
+        char *text = av_asprintf("Zoom: %d Hz - %d Hz", s->start, s->stop);
         drawtext(s->outpicref, outlink->w - 2 - strlen(text) * 10, 3, text, 0);
         av_freep(&text);
     }
+
+    av_freep(&text);
 
     dst = s->outpicref->data[0] + (s->start_y - 1) * s->outpicref->linesize[0] + s->start_x - 1;
     for (x = 0; x < s->w + 1; x++)
@@ -797,7 +747,8 @@ static int draw_legend(AVFilterContext *ctx, int samples)
             }
             for (y = 0; y < h; y += 40) {
                 float range = s->stop ? s->stop - s->start : inlink->sample_rate / 2;
-                float hertz = get_hz(y, h, s->start, s->start + range, s->fscale);
+                float bin = s->fscale == F_LINEAR ? y : get_log_hz(y, h, inlink->sample_rate);
+                float hertz = s->start + bin * range / (float)(1 << (int)ceil(log2(h)));
                 char *units;
 
                 if (hertz == 0)
@@ -815,8 +766,6 @@ static int draw_legend(AVFilterContext *ctx, int samples)
         for (x = 0; x < s->w && s->single_pic; x+=80) {
             float seconds = x * spp / inlink->sample_rate;
             char *units = get_time(ctx, seconds, x);
-            if (!units)
-                return AVERROR(ENOMEM);
 
             drawtext(s->outpicref, s->start_x + x - 4 * strlen(units), s->h + s->start_y + 6, units, 0);
             drawtext(s->outpicref, s->start_x + x - 4 * strlen(units), s->start_y - 12, units, 0);
@@ -854,7 +803,8 @@ static int draw_legend(AVFilterContext *ctx, int samples)
             }
             for (x = 0; x < w - 79; x += 80) {
                 float range = s->stop ? s->stop - s->start : inlink->sample_rate / 2;
-                float hertz = get_hz(x, w, s->start, s->start + range, s->fscale);
+                float bin = s->fscale == F_LINEAR ? x : get_log_hz(x, w, inlink->sample_rate);
+                float hertz = s->start + bin * range / (float)(1 << (int)ceil(log2(w)));
                 char *units;
 
                 if (hertz == 0)
@@ -872,8 +822,6 @@ static int draw_legend(AVFilterContext *ctx, int samples)
         for (y = 0; y < s->h && s->single_pic; y+=40) {
             float seconds = y * spp / inlink->sample_rate;
             char *units = get_time(ctx, seconds, x);
-            if (!units)
-                return AVERROR(ENOMEM);
 
             drawtext(s->outpicref, s->start_x - 8 * strlen(units) - 4, s->start_y + y - 4, units, 0);
             av_free(units);
@@ -905,23 +853,19 @@ static int draw_legend(AVFilterContext *ctx, int samples)
             memset(s->outpicref->data[2]+(s->start_y + h * (ch + 1) - y - 1) * s->outpicref->linesize[2] + s->w + s->start_x + 20, av_clip_uint8(out[2]), 10);
         }
 
-        for (y = 0; ch == 0 && y < h + 5; y += 25) {
-            static const char *log_fmt = "%.0f";
-            static const char *lin_fmt = "%.3f";
-            const float a = av_clipf(1.f - y / (float)(h - 1), 0.f, 1.f);
-            const float value = s->scale == LOG ? log10f(get_iscale(ctx, s->scale, a)) * 20.f : get_iscale(ctx, s->scale, a);
+        for (y = 0; ch == 0 && y < h; y += h / 10) {
+            float value = 120.f * log10f(1.f - y / (float)h);
             char *text;
 
-            text = av_asprintf(s->scale == LOG ? log_fmt : lin_fmt, value);
+            if (value < -120)
+                break;
+            text = av_asprintf("%.0f dB", value);
             if (!text)
                 continue;
-            drawtext(s->outpicref, s->w + s->start_x + 35, s->start_y + y - 3, text, 0);
+            drawtext(s->outpicref, s->w + s->start_x + 35, s->start_y + y - 5, text, 0);
             av_free(text);
         }
     }
-
-    if (s->scale == LOG)
-        drawtext(s->outpicref, s->w + s->start_x + 22, s->start_y + s->h + 20, "dBFS", 0);
 
     return 0;
 }
@@ -938,7 +882,6 @@ static float get_value(AVFilterContext *ctx, int ch, int y)
         /* get magnitude */
         a = magnitudes[y];
         break;
-    case D_UPHASE:
     case D_PHASE:
         /* get phase */
         a = phases[y];
@@ -947,7 +890,31 @@ static float get_value(AVFilterContext *ctx, int ch, int y)
         av_assert0(0);
     }
 
-    return av_clipf(get_scale(ctx, s->scale, a), 0.f, 1.f);
+    /* apply scale */
+    switch (s->scale) {
+    case LINEAR:
+        a = av_clipf(a, 0, 1);
+        break;
+    case SQRT:
+        a = av_clipf(sqrtf(a), 0, 1);
+        break;
+    case CBRT:
+        a = av_clipf(cbrtf(a), 0, 1);
+        break;
+    case FOURTHRT:
+        a = av_clipf(sqrtf(sqrtf(a)), 0, 1);
+        break;
+    case FIFTHRT:
+        a = av_clipf(powf(a, 0.20), 0, 1);
+        break;
+    case LOG:
+        a = 1.f + log10f(av_clipf(a, 1e-6, 1)) / 6.f; // zero = -120dBFS
+        break;
+    default:
+        av_assert0(0);
+    }
+
+    return a;
 }
 
 static int plot_channel_lin(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs)
@@ -979,26 +946,29 @@ static int plot_channel_log(AVFilterContext *ctx, void *arg, int jobnr, int nb_j
     AVFilterLink *inlink = ctx->inputs[0];
     const int h = s->orientation == VERTICAL ? s->channel_height : s->channel_width;
     const int ch = jobnr;
-    float yf, uf, vf;
+    float y, yf, uf, vf;
+    int yy = 0;
 
     /* decide color range */
     color_range(s, ch, &yf, &uf, &vf);
 
     /* draw the channel */
-    for (int yy = 0; yy < h; yy++) {
-        float range = s->stop ? s->stop - s->start : inlink->sample_rate / 2;
-        float pos = bin_pos(yy, h, s->start, s->start + range);
-        float delta = pos - floorf(pos);
+    for (y = 0; y < h && yy < h; yy++) {
+        float pos0 = bin_pos(yy+0, h, inlink->sample_rate);
+        float pos1 = bin_pos(yy+1, h, inlink->sample_rate);
+        float delta = pos1 - pos0;
         float a0, a1;
 
-        a0 = get_value(ctx, ch, av_clip(pos, 0, h-1));
-        a1 = get_value(ctx, ch, av_clip(pos+1, 0, h-1));
-        {
-            int row = (s->mode == COMBINED) ? yy : ch * h + yy;
-            float *out = &s->color_buffer[ch][3 * row];
+        a0 = get_value(ctx, ch, yy+0);
+        a1 = get_value(ctx, ch, FFMIN(yy+1, h-1));
+        for (float j = pos0; j < pos1 && y + j - pos0 < h; j++) {
+            float row = (s->mode == COMBINED) ? y + j - pos0 : ch * h + y + j - pos0;
+            float *out = &s->color_buffer[ch][3 * FFMIN(lrintf(row), h-1)];
+            float lerpfrac = (j - pos0) / delta;
 
-            pick_color(s, yf, uf, vf, delta * a1 + (1.f - delta) * a0, out);
+            pick_color(s, yf, uf, vf, lerpfrac * a1 + (1.f-lerpfrac) * a0, out);
         }
+        y += delta;
     }
 
     return 0;
@@ -1009,11 +979,8 @@ static int config_output(AVFilterLink *outlink)
     AVFilterContext *ctx = outlink->src;
     AVFilterLink *inlink = ctx->inputs[0];
     ShowSpectrumContext *s = ctx->priv;
-    int i, fft_size, h, w, ret;
+    int i, fft_bits, h, w;
     float overlap;
-
-    s->dmax = expf(s->limit * M_LN10 / 20.f);
-    s->dmin = expf((s->limit - s->drange) * M_LN10 / 20.f);
 
     switch (s->fscale) {
     case F_LINEAR: s->plot_channel = plot_channel_lin; break;
@@ -1022,7 +989,7 @@ static int config_output(AVFilterLink *outlink)
     }
 
     s->stop = FFMIN(s->stop, inlink->sample_rate / 2);
-    if ((s->stop || s->start) && s->stop <= s->start) {
+    if (s->stop && s->stop <= s->start) {
         av_log(ctx, AV_LOG_ERROR, "Stop frequency should be greater than start.\n");
         return AVERROR(EINVAL);
     }
@@ -1048,14 +1015,14 @@ static int config_output(AVFilterLink *outlink)
 
     if (s->orientation == VERTICAL) {
         /* FFT window size (precision) according to the requested output frame height */
-        fft_size = h * 2;
+        for (fft_bits = 1; 1 << fft_bits < 2 * h; fft_bits++);
     } else {
         /* FFT window size (precision) according to the requested output frame width */
-        fft_size = w * 2;
+        for (fft_bits = 1; 1 << fft_bits < 2 * w; fft_bits++);
     }
 
-    s->win_size = fft_size;
-    s->buf_size = FFALIGN(s->win_size << (!!s->stop), av_cpu_max_align());
+    s->win_size = 1 << fft_bits;
+    s->buf_size = s->win_size << !!s->stop;
 
     if (!s->fft) {
         s->fft = av_calloc(inlink->channels, sizeof(*s->fft));
@@ -1072,42 +1039,39 @@ static int config_output(AVFilterLink *outlink)
     }
 
     /* (re-)configuration if the video output changed (or first init) */
-    if (fft_size != s->fft_size) {
+    if (fft_bits != s->fft_bits) {
         AVFrame *outpicref;
 
-        s->fft_size = fft_size;
+        s->fft_bits = fft_bits;
 
         /* FFT buffers: x2 for each (display) channel buffer.
          * Note: we use free and malloc instead of a realloc-like function to
          * make sure the buffer is aligned in memory for the FFT functions. */
         for (i = 0; i < s->nb_display_channels; i++) {
             if (s->stop) {
-                av_tx_uninit(&s->ifft[i]);
+                av_fft_end(s->ifft[i]);
                 av_freep(&s->fft_scratch[i]);
             }
-            av_tx_uninit(&s->fft[i]);
-            av_freep(&s->fft_in[i]);
+            av_fft_end(s->fft[i]);
             av_freep(&s->fft_data[i]);
         }
         av_freep(&s->fft_data);
 
         s->nb_display_channels = inlink->channels;
         for (i = 0; i < s->nb_display_channels; i++) {
-            float scale;
-
-            ret = av_tx_init(&s->fft[i], &s->tx_fn, AV_TX_FLOAT_FFT, 0, fft_size << (!!s->stop), &scale, 0);
+            s->fft[i] = av_fft_init(fft_bits + !!s->stop, 0);
             if (s->stop) {
-                ret = av_tx_init(&s->ifft[i], &s->itx_fn, AV_TX_FLOAT_FFT, 1, fft_size << (!!s->stop), &scale, 0);
-                if (ret < 0) {
+                s->ifft[i] = av_fft_init(fft_bits + !!s->stop, 1);
+                if (!s->ifft[i]) {
                     av_log(ctx, AV_LOG_ERROR, "Unable to create Inverse FFT context. "
                            "The window size might be too high.\n");
-                    return ret;
+                    return AVERROR(EINVAL);
                 }
             }
-            if (ret < 0) {
+            if (!s->fft[i]) {
                 av_log(ctx, AV_LOG_ERROR, "Unable to create FFT context. "
                        "The window size might be too high.\n");
-                return ret;
+                return AVERROR(EINVAL);
             }
         }
 
@@ -1139,9 +1103,6 @@ static int config_output(AVFilterLink *outlink)
                 return AVERROR(ENOMEM);
         }
 
-        s->fft_in = av_calloc(s->nb_display_channels, sizeof(*s->fft_in));
-        if (!s->fft_in)
-            return AVERROR(ENOMEM);
         s->fft_data = av_calloc(s->nb_display_channels, sizeof(*s->fft_data));
         if (!s->fft_data)
             return AVERROR(ENOMEM);
@@ -1149,10 +1110,6 @@ static int config_output(AVFilterLink *outlink)
         if (!s->fft_scratch)
             return AVERROR(ENOMEM);
         for (i = 0; i < s->nb_display_channels; i++) {
-            s->fft_in[i] = av_calloc(s->buf_size, sizeof(**s->fft_in));
-            if (!s->fft_in[i])
-                return AVERROR(ENOMEM);
-
             s->fft_data[i] = av_calloc(s->buf_size, sizeof(**s->fft_data));
             if (!s->fft_data[i])
                 return AVERROR(ENOMEM);
@@ -1204,18 +1161,11 @@ static int config_output(AVFilterLink *outlink)
         (s->orientation == HORIZONTAL && s->xpos >= s->h))
         s->xpos = 0;
 
-    if (s->sliding == LREPLACE) {
-        if (s->orientation == VERTICAL)
-            s->xpos = s->w - 1;
-        if (s->orientation == HORIZONTAL)
-            s->xpos = s->h - 1;
-    }
-
     s->auto_frame_rate = av_make_q(inlink->sample_rate, s->hop_size);
     if (s->orientation == VERTICAL && s->sliding == FULLFRAME)
-        s->auto_frame_rate = av_mul_q(s->auto_frame_rate, av_make_q(1, s->w));
+        s->auto_frame_rate.den *= s->w;
     if (s->orientation == HORIZONTAL && s->sliding == FULLFRAME)
-        s->auto_frame_rate = av_mul_q(s->auto_frame_rate, av_make_q(1, s->h));
+        s->auto_frame_rate.den *= s->h;
     if (!s->single_pic && strcmp(s->rate_str, "auto")) {
         int ret = av_parse_video_rate(&s->frame_rate, s->rate_str);
         if (ret < 0)
@@ -1280,46 +1230,6 @@ static int calc_channel_phases(AVFilterContext *ctx, void *arg, int jobnr, int n
     return 0;
 }
 
-static void unwrap(float *x, int N, float tol, float *mi, float *ma)
-{
-    const float rng = 2.f * M_PI;
-    float prev_p = 0.f;
-    float max = -FLT_MAX;
-    float min = FLT_MAX;
-
-    for (int i = 0; i < N; i++) {
-        const float d = x[FFMIN(i + 1, N)] - x[i];
-        const float p = ceilf(fabsf(d) / rng) * rng * (((d < tol) > 0.f) - ((d > -tol) > 0.f));
-
-        x[i] += p + prev_p;
-        prev_p += p;
-        max = fmaxf(x[i], max);
-        min = fminf(x[i], min);
-    }
-
-    *mi = min;
-    *ma = max;
-}
-
-static int calc_channel_uphases(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs)
-{
-    ShowSpectrumContext *s = ctx->priv;
-    const int h = s->orientation == VERTICAL ? s->h : s->w;
-    const int ch = jobnr;
-    float *phases = s->phases[ch];
-    float min, max, scale;
-    int y;
-
-    for (y = 0; y < h; y++)
-        phases[y] = PHASE(y, ch);
-    unwrap(phases, h, M_PI, &min, &max);
-    scale = 1.f / (max - min + FLT_MIN);
-    for (y = 0; y < h; y++)
-        phases[y] = fabsf((phases[y] - min) * scale);
-
-    return 0;
-}
-
 static void acalc_magnitudes(ShowSpectrumContext *s)
 {
     const double w = s->win_scale * (s->scale == LOG ? s->win_scale : 1);
@@ -1369,7 +1279,7 @@ static int plot_spectrum_column(AVFilterLink *inlink, AVFrame *insamples)
     /* initialize buffer for combining to black */
     clear_combine_buffer(s, z);
 
-    ff_filter_execute(ctx, s->plot_channel, NULL, NULL, s->nb_display_channels);
+    ctx->internal->execute(ctx, s->plot_channel, NULL, NULL, s->nb_display_channels);
 
     for (y = 0; y < z * 3; y++) {
         for (x = 0; x < s->nb_display_channels; x++) {
@@ -1441,28 +1351,15 @@ static int plot_spectrum_column(AVFilterLink *inlink, AVFrame *insamples)
     if (s->sliding != FULLFRAME || s->xpos == 0)
         outpicref->pts = av_rescale_q(insamples->pts, inlink->time_base, outlink->time_base);
 
-    if (s->sliding == LREPLACE) {
-        s->xpos--;
-        if (s->orientation == VERTICAL && s->xpos < 0)
-            s->xpos = s->w - 1;
-        if (s->orientation == HORIZONTAL && s->xpos < 0)
-            s->xpos = s->h - 1;
-    } else {
-        s->xpos++;
-        if (s->orientation == VERTICAL && s->xpos >= s->w)
-            s->xpos = 0;
-        if (s->orientation == HORIZONTAL && s->xpos >= s->h)
-            s->xpos = 0;
-    }
-
+    s->xpos++;
+    if (s->orientation == VERTICAL && s->xpos >= s->w)
+        s->xpos = 0;
+    if (s->orientation == HORIZONTAL && s->xpos >= s->h)
+        s->xpos = 0;
     if (!s->single_pic && (s->sliding != FULLFRAME || s->xpos == 0)) {
         if (s->old_pts < outpicref->pts) {
-            AVFrame *clone;
-
             if (s->legend) {
                 char *units = get_time(ctx, insamples->pts /(float)inlink->sample_rate, x);
-                if (!units)
-                    return AVERROR(ENOMEM);
 
                 if (s->orientation == VERTICAL) {
                     for (y = 0; y < 10; y++) {
@@ -1487,10 +1384,7 @@ static int plot_spectrum_column(AVFilterLink *inlink, AVFrame *insamples)
                 av_free(units);
             }
             s->old_pts = outpicref->pts;
-            clone = av_frame_clone(s->outpicref);
-            if (!clone)
-                return AVERROR(ENOMEM);
-            ret = ff_filter_frame(outlink, clone);
+            ret = ff_filter_frame(outlink, av_frame_clone(s->outpicref));
             if (ret < 0)
                 return ret;
             return 0;
@@ -1526,8 +1420,7 @@ static int activate(AVFilterContext *ctx)
         }
     }
 
-    if (s->outpicref && (av_audio_fifo_size(s->fifo) >= s->win_size ||
-        ff_outlink_get_status(inlink))) {
+    if (s->outpicref && av_audio_fifo_size(s->fifo) >= s->win_size) {
         AVFrame *fin = ff_get_audio_buffer(inlink, s->win_size);
         if (!fin)
             return AVERROR(ENOMEM);
@@ -1543,22 +1436,19 @@ static int activate(AVFilterContext *ctx)
 
         av_assert0(fin->nb_samples == s->win_size);
 
-        ff_filter_execute(ctx, run_channel_fft, fin, NULL, s->nb_display_channels);
+        ctx->internal->execute(ctx, run_channel_fft, fin, NULL, s->nb_display_channels);
 
         if (s->data == D_MAGNITUDE)
-            ff_filter_execute(ctx, calc_channel_magnitudes, NULL, NULL, s->nb_display_channels);
+            ctx->internal->execute(ctx, calc_channel_magnitudes, NULL, NULL, s->nb_display_channels);
 
         if (s->data == D_PHASE)
-            ff_filter_execute(ctx, calc_channel_phases, NULL, NULL, s->nb_display_channels);
-
-        if (s->data == D_UPHASE)
-            ff_filter_execute(ctx, calc_channel_uphases, NULL, NULL, s->nb_display_channels);
+            ctx->internal->execute(ctx, calc_channel_phases, NULL, NULL, s->nb_display_channels);
 
         ret = plot_spectrum_column(inlink, fin);
 
         av_frame_free(&fin);
         av_audio_fifo_drain(s->fifo, s->hop_size);
-        if (ret <= 0 && !ff_outlink_get_status(inlink))
+        if (ret <= 0)
             return ret;
     }
 
@@ -1580,7 +1470,7 @@ static int activate(AVFilterContext *ctx)
                 memset(s->outpicref->data[2] + i * s->outpicref->linesize[2], 128, outlink->w);
             }
         }
-        s->outpicref->pts += av_rescale_q(s->consumed, inlink->time_base, outlink->time_base);
+        s->outpicref->pts += s->consumed;
         pts = s->outpicref->pts;
         ret = ff_filter_frame(outlink, s->outpicref);
         s->outpicref = NULL;
@@ -1589,20 +1479,15 @@ static int activate(AVFilterContext *ctx)
     }
 
     FF_FILTER_FORWARD_STATUS(inlink, outlink);
-    if (av_audio_fifo_size(s->fifo) >= s->win_size ||
-        ff_inlink_queued_frames(inlink) > 0 ||
-        ff_outlink_get_status(inlink) == AVERROR_EOF) {
-        ff_filter_set_ready(ctx, 10);
-        return 0;
-    }
-
-    if (ff_outlink_frame_wanted(outlink) && av_audio_fifo_size(s->fifo) < s->win_size &&
-        ff_inlink_queued_frames(inlink) == 0 &&
-        ff_outlink_get_status(inlink) != AVERROR_EOF) {
+    if (ff_outlink_frame_wanted(outlink) && av_audio_fifo_size(s->fifo) < s->win_size) {
         ff_inlink_request_frame(inlink);
         return 0;
     }
 
+    if (av_audio_fifo_size(s->fifo) >= s->win_size) {
+        ff_filter_set_ready(ctx, 10);
+        return 0;
+    }
     return FFERROR_NOT_READY;
 }
 
@@ -1611,6 +1496,7 @@ static const AVFilterPad showspectrum_inputs[] = {
         .name         = "default",
         .type         = AVMEDIA_TYPE_AUDIO,
     },
+    { NULL }
 };
 
 static const AVFilterPad showspectrum_outputs[] = {
@@ -1619,16 +1505,17 @@ static const AVFilterPad showspectrum_outputs[] = {
         .type          = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_output,
     },
+    { NULL }
 };
 
-const AVFilter ff_avf_showspectrum = {
+AVFilter ff_avf_showspectrum = {
     .name          = "showspectrum",
     .description   = NULL_IF_CONFIG_SMALL("Convert input audio to a spectrum video output."),
     .uninit        = uninit,
+    .query_formats = query_formats,
     .priv_size     = sizeof(ShowSpectrumContext),
-    FILTER_INPUTS(showspectrum_inputs),
-    FILTER_OUTPUTS(showspectrum_outputs),
-    FILTER_QUERY_FUNC(query_formats),
+    .inputs        = showspectrum_inputs,
+    .outputs       = showspectrum_outputs,
     .activate      = activate,
     .priv_class    = &showspectrum_class,
     .flags         = AVFILTER_FLAG_SLICE_THREADS,
@@ -1670,7 +1557,28 @@ static const AVOption showspectrumpic_options[] = {
         { "lin",  "linear",      0, AV_OPT_TYPE_CONST, {.i64=F_LINEAR}, 0, 0, FLAGS, "fscale" },
         { "log",  "logarithmic", 0, AV_OPT_TYPE_CONST, {.i64=F_LOG},    0, 0, FLAGS, "fscale" },
     { "saturation", "color saturation multiplier", OFFSET(saturation), AV_OPT_TYPE_FLOAT, {.dbl = 1}, -10, 10, FLAGS },
-    WIN_FUNC_OPTION("win_func", OFFSET(win_func), FLAGS, WFUNC_HANNING),
+    { "win_func", "set window function", OFFSET(win_func), AV_OPT_TYPE_INT, {.i64 = WFUNC_HANNING}, 0, NB_WFUNC-1, FLAGS, "win_func" },
+        { "rect",     "Rectangular",      0, AV_OPT_TYPE_CONST, {.i64=WFUNC_RECT},     0, 0, FLAGS, "win_func" },
+        { "bartlett", "Bartlett",         0, AV_OPT_TYPE_CONST, {.i64=WFUNC_BARTLETT}, 0, 0, FLAGS, "win_func" },
+        { "hann",     "Hann",             0, AV_OPT_TYPE_CONST, {.i64=WFUNC_HANNING},  0, 0, FLAGS, "win_func" },
+        { "hanning",  "Hanning",          0, AV_OPT_TYPE_CONST, {.i64=WFUNC_HANNING},  0, 0, FLAGS, "win_func" },
+        { "hamming",  "Hamming",          0, AV_OPT_TYPE_CONST, {.i64=WFUNC_HAMMING},  0, 0, FLAGS, "win_func" },
+        { "blackman", "Blackman",         0, AV_OPT_TYPE_CONST, {.i64=WFUNC_BLACKMAN}, 0, 0, FLAGS, "win_func" },
+        { "welch",    "Welch",            0, AV_OPT_TYPE_CONST, {.i64=WFUNC_WELCH},    0, 0, FLAGS, "win_func" },
+        { "flattop",  "Flat-top",         0, AV_OPT_TYPE_CONST, {.i64=WFUNC_FLATTOP},  0, 0, FLAGS, "win_func" },
+        { "bharris",  "Blackman-Harris",  0, AV_OPT_TYPE_CONST, {.i64=WFUNC_BHARRIS},  0, 0, FLAGS, "win_func" },
+        { "bnuttall", "Blackman-Nuttall", 0, AV_OPT_TYPE_CONST, {.i64=WFUNC_BNUTTALL}, 0, 0, FLAGS, "win_func" },
+        { "bhann",    "Bartlett-Hann",    0, AV_OPT_TYPE_CONST, {.i64=WFUNC_BHANN},    0, 0, FLAGS, "win_func" },
+        { "sine",     "Sine",             0, AV_OPT_TYPE_CONST, {.i64=WFUNC_SINE},     0, 0, FLAGS, "win_func" },
+        { "nuttall",  "Nuttall",          0, AV_OPT_TYPE_CONST, {.i64=WFUNC_NUTTALL},  0, 0, FLAGS, "win_func" },
+        { "lanczos",  "Lanczos",          0, AV_OPT_TYPE_CONST, {.i64=WFUNC_LANCZOS},  0, 0, FLAGS, "win_func" },
+        { "gauss",    "Gauss",            0, AV_OPT_TYPE_CONST, {.i64=WFUNC_GAUSS},    0, 0, FLAGS, "win_func" },
+        { "tukey",    "Tukey",            0, AV_OPT_TYPE_CONST, {.i64=WFUNC_TUKEY},    0, 0, FLAGS, "win_func" },
+        { "dolph",    "Dolph-Chebyshev",  0, AV_OPT_TYPE_CONST, {.i64=WFUNC_DOLPH},    0, 0, FLAGS, "win_func" },
+        { "cauchy",   "Cauchy",           0, AV_OPT_TYPE_CONST, {.i64=WFUNC_CAUCHY},   0, 0, FLAGS, "win_func" },
+        { "parzen",   "Parzen",           0, AV_OPT_TYPE_CONST, {.i64=WFUNC_PARZEN},   0, 0, FLAGS, "win_func" },
+        { "poisson",  "Poisson",          0, AV_OPT_TYPE_CONST, {.i64=WFUNC_POISSON},  0, 0, FLAGS, "win_func" },
+        { "bohman",   "Bohman",           0, AV_OPT_TYPE_CONST, {.i64=WFUNC_BOHMAN},   0, 0, FLAGS, "win_func" },
     { "orientation", "set orientation", OFFSET(orientation), AV_OPT_TYPE_INT, {.i64=VERTICAL}, 0, NB_ORIENTATIONS-1, FLAGS, "orientation" },
         { "vertical",   NULL, 0, AV_OPT_TYPE_CONST, {.i64=VERTICAL},   0, 0, FLAGS, "orientation" },
         { "horizontal", NULL, 0, AV_OPT_TYPE_CONST, {.i64=HORIZONTAL}, 0, 0, FLAGS, "orientation" },
@@ -1679,8 +1587,6 @@ static const AVOption showspectrumpic_options[] = {
     { "rotation", "color rotation", OFFSET(rotation), AV_OPT_TYPE_FLOAT, {.dbl = 0}, -1, 1, FLAGS },
     { "start", "start frequency", OFFSET(start), AV_OPT_TYPE_INT, {.i64 = 0}, 0, INT32_MAX, FLAGS },
     { "stop",  "stop frequency",  OFFSET(stop),  AV_OPT_TYPE_INT, {.i64 = 0}, 0, INT32_MAX, FLAGS },
-    { "drange", "set dynamic range in dBFS", OFFSET(drange), AV_OPT_TYPE_FLOAT, {.dbl = 120}, 10, 200, FLAGS },
-    { "limit", "set upper limit in dBFS", OFFSET(limit), AV_OPT_TYPE_FLOAT, {.dbl = 0}, -100, 100, FLAGS },
     { NULL }
 };
 
@@ -1726,7 +1632,7 @@ static int showspectrumpic_request_frame(AVFilterLink *outlink)
                 }
             }
 
-            ff_filter_execute(ctx, run_channel_fft, fin, NULL, s->nb_display_channels);
+            ctx->internal->execute(ctx, run_channel_fft, fin, NULL, s->nb_display_channels);
             acalc_magnitudes(s);
 
             consumed += spf;
@@ -1772,6 +1678,7 @@ static const AVFilterPad showspectrumpic_inputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .filter_frame = showspectrumpic_filter_frame,
     },
+    { NULL }
 };
 
 static const AVFilterPad showspectrumpic_outputs[] = {
@@ -1781,16 +1688,17 @@ static const AVFilterPad showspectrumpic_outputs[] = {
         .config_props  = config_output,
         .request_frame = showspectrumpic_request_frame,
     },
+    { NULL }
 };
 
-const AVFilter ff_avf_showspectrumpic = {
+AVFilter ff_avf_showspectrumpic = {
     .name          = "showspectrumpic",
     .description   = NULL_IF_CONFIG_SMALL("Convert input audio to a spectrum video output single picture."),
     .uninit        = uninit,
+    .query_formats = query_formats,
     .priv_size     = sizeof(ShowSpectrumContext),
-    FILTER_INPUTS(showspectrumpic_inputs),
-    FILTER_OUTPUTS(showspectrumpic_outputs),
-    FILTER_QUERY_FUNC(query_formats),
+    .inputs        = showspectrumpic_inputs,
+    .outputs       = showspectrumpic_outputs,
     .priv_class    = &showspectrumpic_class,
     .flags         = AVFILTER_FLAG_SLICE_THREADS,
 };

@@ -111,9 +111,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     return ret;
 }
 
-AVFILTER_DEFINE_CLASS_EXT(perms, "(a)perms", options);
-
 #if CONFIG_APERMS_FILTER
+
+#define aperms_options options
+AVFILTER_DEFINE_CLASS(aperms);
 
 static const AVFilterPad aperms_inputs[] = {
     {
@@ -121,6 +122,7 @@ static const AVFilterPad aperms_inputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .filter_frame = filter_frame,
     },
+    { NULL }
 };
 
 static const AVFilterPad aperms_outputs[] = {
@@ -128,21 +130,24 @@ static const AVFilterPad aperms_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_AUDIO,
     },
+    { NULL }
 };
 
-const AVFilter ff_af_aperms = {
+AVFilter ff_af_aperms = {
     .name        = "aperms",
     .description = NULL_IF_CONFIG_SMALL("Set permissions for the output audio frame."),
-    .priv_class  = &perms_class,
     .init        = init,
     .priv_size   = sizeof(PermsContext),
-    FILTER_INPUTS(aperms_inputs),
-    FILTER_OUTPUTS(aperms_outputs),
-    .flags       = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
+    .inputs      = aperms_inputs,
+    .outputs     = aperms_outputs,
+    .priv_class  = &aperms_class,
 };
 #endif /* CONFIG_APERMS_FILTER */
 
 #if CONFIG_PERMS_FILTER
+
+#define perms_options options
+AVFILTER_DEFINE_CLASS(perms);
 
 static const AVFilterPad perms_inputs[] = {
     {
@@ -150,6 +155,7 @@ static const AVFilterPad perms_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .filter_frame = filter_frame,
     },
+    { NULL }
 };
 
 static const AVFilterPad perms_outputs[] = {
@@ -157,16 +163,16 @@ static const AVFilterPad perms_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
+    { NULL }
 };
 
-const AVFilter ff_vf_perms = {
+AVFilter ff_vf_perms = {
     .name        = "perms",
     .description = NULL_IF_CONFIG_SMALL("Set permissions for the output video frame."),
     .init        = init,
     .priv_size   = sizeof(PermsContext),
-    FILTER_INPUTS(perms_inputs),
-    FILTER_OUTPUTS(perms_outputs),
+    .inputs      = perms_inputs,
+    .outputs     = perms_outputs,
     .priv_class  = &perms_class,
-    .flags       = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };
 #endif /* CONFIG_PERMS_FILTER */

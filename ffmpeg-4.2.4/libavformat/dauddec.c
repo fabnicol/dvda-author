@@ -50,7 +50,7 @@ static int daud_packet(AVFormatContext *s, AVPacket *pkt) {
     return ret;
 }
 
-const AVInputFormat ff_daud_demuxer = {
+AVInputFormat ff_daud_demuxer = {
     .name           = "daud",
     .long_name      = NULL_IF_CONFIG_SMALL("D-Cinema audio"),
     .read_header    = daud_header,

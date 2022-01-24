@@ -24,12 +24,12 @@
  * JPEG 2000 encoder using libopenjpeg
  */
 
+#include "libavutil/avassert.h"
 #include "libavutil/common.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/opt.h"
 #include "avcodec.h"
-#include "encode.h"
 #include "internal.h"
 #include <openjpeg.h>
 
@@ -661,8 +661,9 @@ static int libopenjpeg_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         goto done;
     }
 
-    if ((ret = ff_alloc_packet(avctx, pkt, 1024)) < 0)
+    if ((ret = ff_alloc_packet2(avctx, pkt, 1024, 0)) < 0) {
         goto done;
+    }
 
     compress = opj_create_compress(ctx->format);
     if (!compress) {
@@ -708,6 +709,7 @@ static int libopenjpeg_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
 
     av_shrink_packet(pkt, writer.pos);
 
+    pkt->flags |= AV_PKT_FLAG_KEY;
     *got_packet = 1;
     ret = 0;
 
@@ -753,7 +755,7 @@ static const AVClass openjpeg_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const AVCodec ff_libopenjpeg_encoder = {
+AVCodec ff_libopenjpeg_encoder = {
     .name           = "libopenjpeg",
     .long_name      = NULL_IF_CONFIG_SMALL("OpenJPEG JPEG 2000"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -761,7 +763,7 @@ const AVCodec ff_libopenjpeg_encoder = {
     .priv_data_size = sizeof(LibOpenJPEGContext),
     .init           = libopenjpeg_encode_init,
     .encode2        = libopenjpeg_encode_frame,
-    .capabilities   = AV_CODEC_CAP_FRAME_THREADS,
+    .capabilities   = AV_CODEC_CAP_FRAME_THREADS | AV_CODEC_CAP_INTRA_ONLY,
     .pix_fmts       = (const enum AVPixelFormat[]) {
         AV_PIX_FMT_RGB24, AV_PIX_FMT_RGBA, AV_PIX_FMT_RGB48,
         AV_PIX_FMT_RGBA64, AV_PIX_FMT_GBR24P,

@@ -100,7 +100,7 @@ static int cpia_decode_frame(AVCodecContext *avctx,
     }
 
     // Get buffer filled with previous frame
-    if ((ret = ff_reget_buffer(avctx, frame, 0)) < 0)
+    if ((ret = ff_reget_buffer(avctx, frame)) < 0)
         return ret;
 
 
@@ -111,7 +111,6 @@ static int cpia_decode_frame(AVCodecContext *avctx,
         // Read line length, two byte little endian
         linelength = AV_RL16(src);
         src += 2;
-        src_size -= 2;
 
         if (src_size < linelength) {
             frame->decode_error_flags = FF_DECODE_ERROR_INVALID_BITSTREAM;
@@ -221,7 +220,7 @@ static av_cold int cpia_decode_end(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_cpia_decoder = {
+AVCodec ff_cpia_decoder = {
     .name           = "cpia",
     .long_name      = NULL_IF_CONFIG_SMALL("CPiA video format"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -231,5 +230,4 @@ const AVCodec ff_cpia_decoder = {
     .close          = cpia_decode_end,
     .decode         = cpia_decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

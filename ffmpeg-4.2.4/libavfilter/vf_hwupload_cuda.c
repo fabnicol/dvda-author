@@ -57,12 +57,9 @@ static int cudaupload_query_formats(AVFilterContext *ctx)
     int ret;
 
     static const enum AVPixelFormat input_pix_fmts[] = {
-        AV_PIX_FMT_NV12, AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUVA420P, AV_PIX_FMT_YUV444P,
+        AV_PIX_FMT_NV12, AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV444P,
         AV_PIX_FMT_P010, AV_PIX_FMT_P016, AV_PIX_FMT_YUV444P16,
         AV_PIX_FMT_0RGB32, AV_PIX_FMT_0BGR32,
-#if CONFIG_VULKAN
-        AV_PIX_FMT_VULKAN,
-#endif
         AV_PIX_FMT_NONE,
     };
     static const enum AVPixelFormat output_pix_fmts[] = {
@@ -71,13 +68,13 @@ static int cudaupload_query_formats(AVFilterContext *ctx)
     AVFilterFormats *in_fmts  = ff_make_format_list(input_pix_fmts);
     AVFilterFormats *out_fmts;
 
-    ret = ff_formats_ref(in_fmts, &ctx->inputs[0]->outcfg.formats);
+    ret = ff_formats_ref(in_fmts, &ctx->inputs[0]->out_formats);
     if (ret < 0)
         return ret;
 
     out_fmts = ff_make_format_list(output_pix_fmts);
 
-    ret = ff_formats_ref(out_fmts, &ctx->outputs[0]->incfg.formats);
+    ret = ff_formats_ref(out_fmts, &ctx->outputs[0]->in_formats);
     if (ret < 0)
         return ret;
 
@@ -100,12 +97,7 @@ static int cudaupload_config_output(AVFilterLink *outlink)
 
     hwframe_ctx            = (AVHWFramesContext*)s->hwframe->data;
     hwframe_ctx->format    = AV_PIX_FMT_CUDA;
-    if (inlink->hw_frames_ctx) {
-        AVHWFramesContext *in_hwframe_ctx = (AVHWFramesContext*)inlink->hw_frames_ctx->data;
-        hwframe_ctx->sw_format = in_hwframe_ctx->sw_format;
-    } else {
-        hwframe_ctx->sw_format = inlink->format;
-    }
+    hwframe_ctx->sw_format = inlink->format;
     hwframe_ctx->width     = inlink->w;
     hwframe_ctx->height    = inlink->h;
 
@@ -171,6 +163,7 @@ static const AVFilterPad cudaupload_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .filter_frame = cudaupload_filter_frame,
     },
+    { NULL }
 };
 
 static const AVFilterPad cudaupload_outputs[] = {
@@ -179,22 +172,23 @@ static const AVFilterPad cudaupload_outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = cudaupload_config_output,
     },
+    { NULL }
 };
 
-const AVFilter ff_vf_hwupload_cuda = {
+AVFilter ff_vf_hwupload_cuda = {
     .name        = "hwupload_cuda",
     .description = NULL_IF_CONFIG_SMALL("Upload a system memory frame to a CUDA device."),
 
     .init      = cudaupload_init,
     .uninit    = cudaupload_uninit,
 
+    .query_formats = cudaupload_query_formats,
+
     .priv_size  = sizeof(CudaUploadContext),
     .priv_class = &cudaupload_class,
 
-    FILTER_INPUTS(cudaupload_inputs),
-    FILTER_OUTPUTS(cudaupload_outputs),
-
-    FILTER_QUERY_FUNC(cudaupload_query_formats),
+    .inputs    = cudaupload_inputs,
+    .outputs   = cudaupload_outputs,
 
     .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 };

@@ -19,7 +19,6 @@
 #ifndef AVCODEC_DV_PROFILE_INTERNAL_H
 #define AVCODEC_DV_PROFILE_INTERNAL_H
 
-#include "avcodec.h"
 #include "dv_profile.h"
 
 /**

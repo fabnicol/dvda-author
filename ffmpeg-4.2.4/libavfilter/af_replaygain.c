@@ -359,6 +359,7 @@ static int config_input(AVFilterLink *inlink)
 
     s->yule_hist_i   = 20;
     s->butter_hist_i = 4;
+    inlink->partial_buf_size =
     inlink->min_samples =
     inlink->max_samples = inlink->sample_rate / 20;
 
@@ -428,7 +429,7 @@ static void butter_filter_stereo_samples(ReplayGainContext *s,
     // (slowing us down).
 
     for (j = -4; j < 0; ++j)
-        if (fabsf(hist_a[i + j]) > 1e-10f || fabsf(hist_b[i + j]) > 1e-10f)
+        if (fabs(hist_a[i + j]) > 1e-10 || fabs(hist_b[i + j]) > 1e-10)
             break;
 
     if (!j) {
@@ -477,7 +478,7 @@ static void yule_filter_stereo_samples(ReplayGainContext *s, const float *src,
     // (slowing us down).
 
     for (j = -20; j < 0; ++j)
-        if (fabsf(hist_a[i + j]) > 1e-10f || fabsf(hist_b[i + j]) > 1e-10f)
+        if (fabs(hist_a[i + j]) > 1e-10 || fabs(hist_b[i + j]) > 1e-10)
             break;
 
     if (!j) {
@@ -550,7 +551,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     AVFilterContext *ctx = inlink->dst;
     AVFilterLink *outlink = ctx->outputs[0];
     ReplayGainContext *s = ctx->priv;
-    int64_t level;
+    uint32_t level;
     AVFrame *out;
 
     out = ff_get_audio_buffer(outlink, in->nb_samples);
@@ -566,9 +567,9 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                                                  out->nb_samples);
     butter_filter_stereo_samples(s, (float *)out->data[0],
                                              out->nb_samples);
-    level = lrint(floor(100 * calc_stereo_rms((float *)out->data[0],
-                                                           out->nb_samples)));
-    level = av_clip64(level, 0, HISTOGRAM_SLOTS - 1);
+    level = (uint32_t)floor(100 * calc_stereo_rms((float *)out->data[0],
+                                                           out->nb_samples));
+    level = av_clip(level, 0, HISTOGRAM_SLOTS - 1);
 
     s->histogram[level]++;
 
@@ -592,6 +593,7 @@ static const AVFilterPad replaygain_inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_input,
     },
+    { NULL }
 };
 
 static const AVFilterPad replaygain_outputs[] = {
@@ -599,14 +601,15 @@ static const AVFilterPad replaygain_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_AUDIO,
     },
+    { NULL }
 };
 
-const AVFilter ff_af_replaygain = {
+AVFilter ff_af_replaygain = {
     .name          = "replaygain",
     .description   = NULL_IF_CONFIG_SMALL("ReplayGain scanner."),
+    .query_formats = query_formats,
     .uninit        = uninit,
     .priv_size     = sizeof(ReplayGainContext),
-    FILTER_INPUTS(replaygain_inputs),
-    FILTER_OUTPUTS(replaygain_outputs),
-    FILTER_QUERY_FUNC(query_formats),
+    .inputs        = replaygain_inputs,
+    .outputs       = replaygain_outputs,
 };

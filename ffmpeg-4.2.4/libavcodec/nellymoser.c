@@ -31,11 +31,9 @@
  * implementors. The original code is available from http://code.google.com/p/nelly2pcm/
  */
 
-#include <stdlib.h>
-
-#include "libavutil/intmath.h"
 #include "libavutil/common.h"
 
+#include "avcodec.h"
 #include "nellymoser.h"
 
 const float ff_nelly_dequantization_table[127] = {

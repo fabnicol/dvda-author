@@ -54,6 +54,7 @@ static int write_header(AVFormatContext *s)
     avio_write(s->pb, ID_STRING, sizeof(ID_STRING) - 1);
     avio_w8(s->pb, '1');          // version
     avio_w8(s->pb, '\n');
+    avio_flush(s->pb);
     return 0;
 }
 
@@ -87,7 +88,7 @@ static int write_packet(AVFormatContext *s, AVPacket *pkt)
     return 0;
 }
 
-const AVOutputFormat ff_ffmetadata_muxer = {
+AVOutputFormat ff_ffmetadata_muxer = {
     .name          = "ffmetadata",
     .long_name     = NULL_IF_CONFIG_SMALL("FFmpeg metadata in text"),
     .extensions    = "ffmeta",

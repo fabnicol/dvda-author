@@ -562,7 +562,7 @@ static int sipr_decode_frame(AVCodecContext *avctx, void *data,
     return mode_par->bits_per_frame >> 3;
 }
 
-const AVCodec ff_sipr_decoder = {
+AVCodec ff_sipr_decoder = {
     .name           = "sipr",
     .long_name      = NULL_IF_CONFIG_SMALL("RealAudio SIPR / ACELP.NET"),
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -570,6 +570,5 @@ const AVCodec ff_sipr_decoder = {
     .priv_data_size = sizeof(SiprContext),
     .init           = sipr_decoder_init,
     .decode         = sipr_decode_frame,
-    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
+    .capabilities   = AV_CODEC_CAP_DR1,
 };

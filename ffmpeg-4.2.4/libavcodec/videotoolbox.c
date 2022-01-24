@@ -91,11 +91,6 @@ static int videotoolbox_postproc_frame(void *avctx, AVFrame *frame)
         return AVERROR_EXTERNAL;
     }
 
-    frame->crop_right = 0;
-    frame->crop_left = 0;
-    frame->crop_top = 0;
-    frame->crop_bottom = 0;
-
     frame->data[3] = (uint8_t*)ref->pixbuf;
 
     if (ref->hw_frames_ctx) {
@@ -617,7 +612,7 @@ static void videotoolbox_decoder_callback(void *opaque,
     }
 
     if (!image_buffer) {
-        av_log(avctx, AV_LOG_DEBUG, "vt decoder cb: output image buffer is null\n");
+        av_log(NULL, AV_LOG_DEBUG, "vt decoder cb: output image buffer is null\n");
         return;
     }
 
@@ -903,6 +898,11 @@ static int videotoolbox_common_end_frame(AVCodecContext *avctx, AVFrame *frame)
     AVVideotoolboxContext *videotoolbox = videotoolbox_get_context(avctx);
     VTContext *vtctx = avctx->internal->hwaccel_priv_data;
 
+    frame->crop_right = 0;
+    frame->crop_left = 0;
+    frame->crop_top = 0;
+    frame->crop_bottom = 0;
+
     if (vtctx->reconfig_needed == true) {
         vtctx->reconfig_needed = false;
         av_log(avctx, AV_LOG_VERBOSE, "VideoToolbox decoder needs reconfig, restarting..\n");
@@ -1084,17 +1084,10 @@ static int videotoolbox_common_init(AVCodecContext *avctx)
         goto fail;
     }
 
-    bool full_range = avctx->color_range == AVCOL_RANGE_JPEG;
     vtctx->vt_ctx->cv_pix_fmt_type =
-        av_map_videotoolbox_format_from_pixfmt2(hw_frames->sw_format, full_range);
+        av_map_videotoolbox_format_from_pixfmt(hw_frames->sw_format);
     if (!vtctx->vt_ctx->cv_pix_fmt_type) {
-        const AVPixFmtDescriptor *attempted_format =
-            av_pix_fmt_desc_get(hw_frames->sw_format);
-        av_log(avctx, AV_LOG_ERROR,
-               "Failed to map underlying FFmpeg pixel format %s (%s range) to "
-               "a VideoToolbox format!\n",
-               attempted_format ? attempted_format->name : "<unknown>",
-               av_color_range_name(avctx->color_range));
+        av_log(avctx, AV_LOG_ERROR, "Unknown sw_format.\n");
         err = AVERROR(EINVAL);
         goto fail;
     }
@@ -1150,7 +1143,7 @@ const AVHWAccel ff_hevc_videotoolbox_hwaccel = {
     .end_frame      = videotoolbox_hevc_end_frame,
     .frame_params   = videotoolbox_frame_params,
     .init           = videotoolbox_common_init,
-    .uninit         = videotoolbox_uninit,
+    .uninit         = ff_videotoolbox_uninit,
     .priv_data_size = sizeof(VTContext),
 };
 
@@ -1215,15 +1208,14 @@ const AVHWAccel ff_mpeg4_videotoolbox_hwaccel = {
     .priv_data_size = sizeof(VTContext),
 };
 
-static AVVideotoolboxContext *av_videotoolbox_alloc_context_with_pix_fmt(enum AVPixelFormat pix_fmt,
-                                                                         bool full_range)
+static AVVideotoolboxContext *av_videotoolbox_alloc_context_with_pix_fmt(enum AVPixelFormat pix_fmt)
 {
     AVVideotoolboxContext *ret = av_mallocz(sizeof(*ret));
 
     if (ret) {
         ret->output_callback = videotoolbox_decoder_callback;
 
-        OSType cv_pix_fmt_type = av_map_videotoolbox_format_from_pixfmt2(pix_fmt, full_range);
+        OSType cv_pix_fmt_type = av_map_videotoolbox_format_from_pixfmt(pix_fmt);
         if (cv_pix_fmt_type == 0) {
             cv_pix_fmt_type = kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange;
         }
@@ -1235,7 +1227,7 @@ static AVVideotoolboxContext *av_videotoolbox_alloc_context_with_pix_fmt(enum AV
 
 AVVideotoolboxContext *av_videotoolbox_alloc_context(void)
 {
-    return av_videotoolbox_alloc_context_with_pix_fmt(AV_PIX_FMT_NONE, false);
+    return av_videotoolbox_alloc_context_with_pix_fmt(AV_PIX_FMT_NONE);
 }
 
 int av_videotoolbox_default_init(AVCodecContext *avctx)
@@ -1245,9 +1237,7 @@ int av_videotoolbox_default_init(AVCodecContext *avctx)
 
 int av_videotoolbox_default_init2(AVCodecContext *avctx, AVVideotoolboxContext *vtctx)
 {
-    enum AVPixelFormat pix_fmt = videotoolbox_best_pixel_format(avctx);
-    bool full_range = avctx->color_range == AVCOL_RANGE_JPEG;
-    avctx->hwaccel_context = vtctx ?: av_videotoolbox_alloc_context_with_pix_fmt(pix_fmt, full_range);
+    avctx->hwaccel_context = vtctx ?: av_videotoolbox_alloc_context_with_pix_fmt(videotoolbox_best_pixel_format(avctx));
     if (!avctx->hwaccel_context)
         return AVERROR(ENOMEM);
     return videotoolbox_start(avctx);

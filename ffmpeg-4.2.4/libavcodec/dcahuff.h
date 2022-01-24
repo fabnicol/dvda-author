@@ -23,12 +23,11 @@
 #ifndef AVCODEC_DCAHUFF_H
 #define AVCODEC_DCAHUFF_H
 
-#include <stdint.h>
+#include "libavutil/common.h"
 
-#include "libavutil/attributes.h"
-
+#include "avcodec.h"
+#include "get_bits.h"
 #include "put_bits.h"
-#include "vlc.h"
 
 #define DCA_CODE_BOOKS      10
 #define DCA_BITALLOC_12_COUNT    5

@@ -32,6 +32,7 @@ static const AVFilterPad avfilter_af_anull_inputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_AUDIO,
     },
+    { NULL }
 };
 
 static const AVFilterPad avfilter_af_anull_outputs[] = {
@@ -39,11 +40,12 @@ static const AVFilterPad avfilter_af_anull_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_AUDIO,
     },
+    { NULL }
 };
 
-const AVFilter ff_af_anull = {
+AVFilter ff_af_anull = {
     .name          = "anull",
     .description   = NULL_IF_CONFIG_SMALL("Pass the source unchanged to the output."),
-    FILTER_INPUTS(avfilter_af_anull_inputs),
-    FILTER_OUTPUTS(avfilter_af_anull_outputs),
+    .inputs        = avfilter_af_anull_inputs,
+    .outputs       = avfilter_af_anull_outputs,
 };

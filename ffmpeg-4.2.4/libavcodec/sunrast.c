@@ -205,7 +205,7 @@ static int sunrast_decode_frame(AVCodecContext *avctx, void *data,
     return buf - bufstart;
 }
 
-const AVCodec ff_sunrast_decoder = {
+AVCodec ff_sunrast_decoder = {
     .name           = "sunrast",
     .long_name      = NULL_IF_CONFIG_SMALL("Sun Rasterfile image"),
     .type           = AVMEDIA_TYPE_VIDEO,

@@ -25,8 +25,8 @@
  * ISO/IEC 14496-3 Part 3 Subpart 10: Technical description of lossless coding of oversampled audio
  */
 
+#include "libavutil/avassert.h"
 #include "libavutil/intreadwrite.h"
-#include "libavutil/mem_internal.h"
 #include "internal.h"
 #include "get_bits.h"
 #include "avcodec.h"
@@ -268,7 +268,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
         skip_bits1(gb);
         if (get_bits(gb, 6))
             return AVERROR_INVALIDDATA;
-        memcpy(frame->data[0], avpkt->data + 1, FFMIN(avpkt->size - 1, frame->nb_samples * channels));
+        memcpy(frame->data[0], avpkt->data + 1, FFMIN(avpkt->size - 1, frame->nb_samples * avctx->channels));
         goto dsd;
     }
 
@@ -293,7 +293,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
 
     same_map = get_bits1(gb);
 
-    if ((ret = read_map(gb, &s->fsets, map_ch_to_felem, channels)) < 0)
+    if ((ret = read_map(gb, &s->fsets, map_ch_to_felem, avctx->channels)) < 0)
         return ret;
 
     if (same_map) {
@@ -301,13 +301,13 @@ static int decode_frame(AVCodecContext *avctx, void *data,
         memcpy(map_ch_to_pelem, map_ch_to_felem, sizeof(map_ch_to_felem));
     } else {
         avpriv_request_sample(avctx, "Not Same Mapping");
-        if ((ret = read_map(gb, &s->probs, map_ch_to_pelem, channels)) < 0)
+        if ((ret = read_map(gb, &s->probs, map_ch_to_pelem, avctx->channels)) < 0)
             return ret;
     }
 
     /* Half Probability (10.10) */
 
-    for (ch = 0; ch < channels; ch++)
+    for (ch = 0; ch < avctx->channels; ch++)
         half_prob[ch] = get_bits1(gb);
 
     /* Filter Coef Sets (10.12) */
@@ -331,7 +331,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
     build_filter(s->filter, &s->fsets);
 
     memset(s->status, 0xAA, sizeof(s->status));
-    memset(dsd, 0, frame->nb_samples * 4 * channels);
+    memset(dsd, 0, frame->nb_samples * 4 * avctx->channels);
 
     ac_get(ac, gb, prob_dst_x_bit(s->fsets.coeff[0][0]), &dst_x_bit);
 
@@ -367,10 +367,10 @@ static int decode_frame(AVCodecContext *avctx, void *data,
     }
 
 dsd:
-    for (i = 0; i < channels; i++) {
+    for (i = 0; i < avctx->channels; i++) {
         ff_dsd2pcm_translate(&s->dsdctx[i], frame->nb_samples, 0,
                              frame->data[0] + i * 4,
-                             channels * 4, pcm + i, channels);
+                             avctx->channels * 4, pcm + i, avctx->channels);
     }
 
     *got_frame_ptr = 1;
@@ -378,7 +378,7 @@ dsd:
     return avpkt->size;
 }
 
-const AVCodec ff_dst_decoder = {
+AVCodec ff_dst_decoder = {
     .name           = "dst",
     .long_name      = NULL_IF_CONFIG_SMALL("DST (Digital Stream Transfer)"),
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -389,5 +389,4 @@ const AVCodec ff_dst_decoder = {
     .capabilities   = AV_CODEC_CAP_DR1,
     .sample_fmts    = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_FLT,
                                                       AV_SAMPLE_FMT_NONE },
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

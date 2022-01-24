@@ -43,7 +43,7 @@ static int get_scale_factor(H264SliceContext *sl,
     int td = av_clip_int8(pocdiff);
 
     if (pocdiff != (int)pocdiff)
-        avpriv_request_sample(sl->h264->avctx, "pocdiff overflow");
+        avpriv_request_sample(sl->h264->avctx, "pocdiff overflow\n");
 
     if (td == 0 || sl->ref_list[0][i].parent->long_ref) {
         return 256;

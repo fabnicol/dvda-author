@@ -75,7 +75,7 @@ static int loas_read_header(AVFormatContext *s)
 
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id = s->iformat->raw_codec_id;
-    ffstream(st)->need_parsing = AVSTREAM_PARSE_FULL_RAW;
+    st->need_parsing = AVSTREAM_PARSE_FULL_RAW;
 
     //LCM of all possible AAC sample rates
     avpriv_set_pts_info(st, 64, 1, 28224000);
@@ -83,7 +83,8 @@ static int loas_read_header(AVFormatContext *s)
     return 0;
 }
 
-const AVInputFormat ff_loas_demuxer = {
+FF_RAW_DEMUXER_CLASS(loas)
+AVInputFormat ff_loas_demuxer = {
     .name           = "loas",
     .long_name      = NULL_IF_CONFIG_SMALL("LOAS AudioSyncStream"),
     .read_probe     = loas_probe,
@@ -92,5 +93,5 @@ const AVInputFormat ff_loas_demuxer = {
     .flags= AVFMT_GENERIC_INDEX,
     .raw_codec_id = AV_CODEC_ID_AAC_LATM,
     .priv_data_size = sizeof(FFRawDemuxerContext),
-    .priv_class     = &ff_raw_demuxer_class,
+    .priv_class     = &loas_demuxer_class,
 };

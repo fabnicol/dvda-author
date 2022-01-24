@@ -22,8 +22,6 @@
 
 #include <inttypes.h>
 
-#include "libavutil/mem_internal.h"
-
 #include "avcodec.h"
 #include "bytestream.h"
 #include "internal.h"
@@ -496,7 +494,7 @@ static av_cold int aic_decode_close(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_aic_decoder = {
+AVCodec ff_aic_decoder = {
     .name           = "aic",
     .long_name      = NULL_IF_CONFIG_SMALL("Apple Intermediate Codec"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -506,5 +504,6 @@ const AVCodec ff_aic_decoder = {
     .close          = aic_decode_close,
     .decode         = aic_decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS,
+    .init_thread_copy = ONLY_IF_THREADS_ENABLED(aic_decode_init),
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

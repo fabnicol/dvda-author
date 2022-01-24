@@ -68,9 +68,13 @@
 #define RANGE 1.0
 #define REF_SCALE(x, bits)  (x)
 #define FMT "%10.6f"
-#else
+#elif FFT_FIXED_32
 #define RANGE 8388608
 #define REF_SCALE(x, bits) (x)
+#define FMT "%6d"
+#else
+#define RANGE 16384
+#define REF_SCALE(x, bits) ((x) / (1 << (bits)))
 #define FMT "%6d"
 #endif
 

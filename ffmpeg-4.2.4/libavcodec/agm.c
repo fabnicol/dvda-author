@@ -26,8 +26,6 @@
 
 #define BITSTREAM_READER_LE
 
-#include "libavutil/mem_internal.h"
-
 #include "avcodec.h"
 #include "bytestream.h"
 #include "copy_block.h"
@@ -425,8 +423,8 @@ static int decode_inter_plane(AGMContext *s, GetBitContext *gb, int size,
                 int map = s->map[x];
 
                 if (orig_mv_x >= -32) {
-                    if (y * 8 + mv_y < 0 || y * 8 + mv_y + 8 > h ||
-                        x * 8 + mv_x < 0 || x * 8 + mv_x + 8 > w)
+                    if (y * 8 + mv_y < 0 || y * 8 + mv_y + 8 >= h ||
+                        x * 8 + mv_x < 0 || x * 8 + mv_x + 8 >= w)
                         return AVERROR_INVALIDDATA;
 
                     copy_block8(frame->data[plane] + (s->blocks_h - 1 - y) * 8 * frame->linesize[plane] + x * 8,
@@ -593,7 +591,7 @@ static int decode_raw_intra_rgb(AVCodecContext *avctx, GetByteContext *gbyte, AV
     return 0;
 }
 
-av_always_inline static int fill_pixels(uint8_t **y0, uint8_t **y1,
+static int fill_pixels(uint8_t **y0, uint8_t **y1,
                        uint8_t **u, uint8_t **v,
                        int ylinesize, int ulinesize, int vlinesize,
                        uint8_t *fill,
@@ -1285,7 +1283,7 @@ static av_cold int decode_close(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_agm_decoder = {
+AVCodec ff_agm_decoder = {
     .name             = "agm",
     .long_name        = NULL_IF_CONFIG_SMALL("Amuse Graphics Movie"),
     .type             = AVMEDIA_TYPE_VIDEO,

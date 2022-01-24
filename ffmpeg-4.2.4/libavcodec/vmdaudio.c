@@ -228,7 +228,7 @@ static int vmdaudio_decode_frame(AVCodecContext *avctx, void *data,
     return avpkt->size;
 }
 
-const AVCodec ff_vmdaudio_decoder = {
+AVCodec ff_vmdaudio_decoder = {
     .name           = "vmdaudio",
     .long_name      = NULL_IF_CONFIG_SMALL("Sierra VMD audio"),
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -237,5 +237,4 @@ const AVCodec ff_vmdaudio_decoder = {
     .init           = vmdaudio_decode_init,
     .decode         = vmdaudio_decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

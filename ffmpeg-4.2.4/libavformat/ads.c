@@ -34,9 +34,8 @@ static int ads_probe(const AVProbeData *p)
 
 static int ads_read_header(AVFormatContext *s)
 {
-    int align, codec;
+    int align, codec, size;
     AVStream *st;
-    int64_t size;
 
     st = avformat_new_stream(s, NULL);
     if (!st)
@@ -63,7 +62,7 @@ static int ads_read_header(AVFormatContext *s)
     st->codecpar->block_align = st->codecpar->channels * align;
     avio_skip(s->pb, 12);
     size = avio_rl32(s->pb);
-    if (st->codecpar->codec_id == AV_CODEC_ID_ADPCM_PSX && size >= 0x40)
+    if (st->codecpar->codec_id == AV_CODEC_ID_ADPCM_PSX)
         st->duration = (size - 0x40) / 16 / st->codecpar->channels * 28;
     avpriv_set_pts_info(st, 64, 1, st->codecpar->sample_rate);
 
@@ -80,7 +79,7 @@ static int ads_read_packet(AVFormatContext *s, AVPacket *pkt)
     return ret;
 }
 
-const AVInputFormat ff_ads_demuxer = {
+AVInputFormat ff_ads_demuxer = {
     .name           = "ads",
     .long_name      = NULL_IF_CONFIG_SMALL("Sony PS2 ADS"),
     .read_probe     = ads_probe,

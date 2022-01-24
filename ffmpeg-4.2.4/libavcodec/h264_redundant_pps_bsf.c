@@ -19,17 +19,19 @@
 #include <string.h>
 
 #include "libavutil/common.h"
+#include "libavutil/mem.h"
 
 #include "bsf.h"
-#include "bsf_internal.h"
 #include "cbs.h"
-#include "cbs_bsf.h"
 #include "cbs_h264.h"
 #include "h264.h"
 
 
 typedef struct H264RedundantPPSContext {
-    CBSBSFContext common;
+    CodedBitstreamContext *input;
+    CodedBitstreamContext *output;
+
+    CodedBitstreamFragment access_unit;
 
     int global_pic_init_qp;
     int current_pic_init_qp;
@@ -38,19 +40,8 @@ typedef struct H264RedundantPPSContext {
 
 
 static int h264_redundant_pps_fixup_pps(H264RedundantPPSContext *ctx,
-                                        CodedBitstreamUnit *unit)
+                                        H264RawPPS *pps)
 {
-    H264RawPPS *pps;
-    int err;
-
-    // The changes we are about to perform affect the parsing process,
-    // so we must make sure that the PPS is writable, otherwise the
-    // parsing of future slices will be incorrect and even raise errors.
-    err = ff_cbs_make_unit_writable(ctx->common.input, unit);
-    if (err < 0)
-        return err;
-    pps = unit->content;
-
     // Record the current value of pic_init_qp in order to fix up
     // following slices, then overwrite with the global value.
     ctx->current_pic_init_qp = pps->pic_init_qp_minus26 + 26;
@@ -75,13 +66,20 @@ static int h264_redundant_pps_fixup_slice(H264RedundantPPSContext *ctx,
     return 0;
 }
 
-static int h264_redundant_pps_update_fragment(AVBSFContext *bsf,
-                                              AVPacket *pkt,
-                                              CodedBitstreamFragment *au)
+static int h264_redundant_pps_filter(AVBSFContext *bsf, AVPacket *pkt)
 {
     H264RedundantPPSContext *ctx = bsf->priv_data;
+    CodedBitstreamFragment *au = &ctx->access_unit;
     int au_has_sps;
     int err, i;
+
+    err = ff_bsf_get_packet_ref(bsf, pkt);
+    if (err < 0)
+        return err;
+
+    err = ff_cbs_read_packet(ctx->input, au, pkt);
+    if (err < 0)
+        goto fail;
 
     au_has_sps = 0;
     for (i = 0; i < au->nb_units; i++) {
@@ -90,13 +88,13 @@ static int h264_redundant_pps_update_fragment(AVBSFContext *bsf,
         if (nal->type == H264_NAL_SPS)
             au_has_sps = 1;
         if (nal->type == H264_NAL_PPS) {
-            err = h264_redundant_pps_fixup_pps(ctx, nal);
+            err = h264_redundant_pps_fixup_pps(ctx, nal->content);
             if (err < 0)
-                return err;
+                goto fail;
             if (!au_has_sps) {
                 av_log(bsf, AV_LOG_VERBOSE, "Deleting redundant PPS "
                        "at %"PRId64".\n", pkt->pts);
-                ff_cbs_delete_unit(au, i);
+                ff_cbs_delete_unit(ctx->input, au, i);
                 i--;
                 continue;
             }
@@ -108,7 +106,62 @@ static int h264_redundant_pps_update_fragment(AVBSFContext *bsf,
         }
     }
 
-    return 0;
+    err = ff_cbs_write_packet(ctx->output, pkt, au);
+    if (err < 0)
+        goto fail;
+
+    err = 0;
+fail:
+    ff_cbs_fragment_reset(ctx->output, au);
+    if (err < 0)
+        av_packet_unref(pkt);
+
+    return err;
+}
+
+static int h264_redundant_pps_init(AVBSFContext *bsf)
+{
+    H264RedundantPPSContext *ctx = bsf->priv_data;
+    CodedBitstreamFragment *au = &ctx->access_unit;
+    int err, i;
+
+    err = ff_cbs_init(&ctx->input, AV_CODEC_ID_H264, bsf);
+    if (err < 0)
+        return err;
+
+    err = ff_cbs_init(&ctx->output, AV_CODEC_ID_H264, bsf);
+    if (err < 0)
+        return err;
+
+    ctx->global_pic_init_qp = 26;
+
+    if (bsf->par_in->extradata) {
+        err = ff_cbs_read_extradata(ctx->input, au, bsf->par_in);
+        if (err < 0) {
+            av_log(bsf, AV_LOG_ERROR, "Failed to read extradata.\n");
+            goto fail;
+        }
+
+        for (i = 0; i < au->nb_units; i++) {
+            if (au->units[i].type == H264_NAL_PPS) {
+                err = h264_redundant_pps_fixup_pps(ctx, au->units[i].content);
+                if (err < 0)
+                    goto fail;
+            }
+        }
+
+        ctx->extradata_pic_init_qp = ctx->current_pic_init_qp;
+        err = ff_cbs_write_extradata(ctx->output, bsf->par_out, au);
+        if (err < 0) {
+            av_log(bsf, AV_LOG_ERROR, "Failed to write extradata.\n");
+            goto fail;
+        }
+    }
+
+    err = 0;
+fail:
+    ff_cbs_fragment_reset(ctx->output, au);
+    return err;
 }
 
 static void h264_redundant_pps_flush(AVBSFContext *bsf)
@@ -117,20 +170,13 @@ static void h264_redundant_pps_flush(AVBSFContext *bsf)
     ctx->current_pic_init_qp = ctx->extradata_pic_init_qp;
 }
 
-static const CBSBSFType h264_redundant_pps_type = {
-    .codec_id        = AV_CODEC_ID_H264,
-    .fragment_name   = "access unit",
-    .unit_name       = "NAL unit",
-    .update_fragment = &h264_redundant_pps_update_fragment,
-};
-
-static int h264_redundant_pps_init(AVBSFContext *bsf)
+static void h264_redundant_pps_close(AVBSFContext *bsf)
 {
     H264RedundantPPSContext *ctx = bsf->priv_data;
 
-    ctx->global_pic_init_qp = 26;
-
-    return ff_cbs_bsf_generic_init(bsf, &h264_redundant_pps_type);
+    ff_cbs_fragment_free(ctx->input, &ctx->access_unit);
+    ff_cbs_close(&ctx->input);
+    ff_cbs_close(&ctx->output);
 }
 
 static const enum AVCodecID h264_redundant_pps_codec_ids[] = {
@@ -142,7 +188,7 @@ const AVBitStreamFilter ff_h264_redundant_pps_bsf = {
     .priv_data_size = sizeof(H264RedundantPPSContext),
     .init           = &h264_redundant_pps_init,
     .flush          = &h264_redundant_pps_flush,
-    .close          = &ff_cbs_bsf_generic_close,
-    .filter         = &ff_cbs_bsf_generic_filter,
+    .close          = &h264_redundant_pps_close,
+    .filter         = &h264_redundant_pps_filter,
     .codec_ids      = h264_redundant_pps_codec_ids,
 };

@@ -211,9 +211,11 @@ static int decode_header(PSDContext * s)
     case 2:
         avpriv_request_sample(s->avctx, "ZIP without predictor compression");
         return AVERROR_PATCHWELCOME;
+        break;
     case 3:
         avpriv_request_sample(s->avctx, "ZIP with predictor compression");
         return AVERROR_PATCHWELCOME;
+        break;
     default:
         av_log(s->avctx, AV_LOG_ERROR, "Unknown compression %d.\n", s->compression);
         return AVERROR_INVALIDDATA;
@@ -545,7 +547,7 @@ static int decode_frame(AVCodecContext *avctx, void *data,
     return avpkt->size;
 }
 
-const AVCodec ff_psd_decoder = {
+AVCodec ff_psd_decoder = {
     .name             = "psd",
     .long_name        = NULL_IF_CONFIG_SMALL("Photoshop PSD file"),
     .type             = AVMEDIA_TYPE_VIDEO,

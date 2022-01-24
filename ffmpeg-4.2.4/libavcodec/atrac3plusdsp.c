@@ -29,8 +29,6 @@
 
 #include "libavutil/float_dsp.h"
 #include "libavutil/libm.h"
-#include "libavutil/mem_internal.h"
-
 #include "avcodec.h"
 #include "sinewin.h"
 #include "fft.h"
@@ -81,6 +79,9 @@ const float ff_atrac3p_mant_tab[8] = {
 
 av_cold void ff_atrac3p_init_imdct(AVCodecContext *avctx, FFTContext *mdct_ctx)
 {
+    ff_init_ff_sine_windows(7);
+    ff_init_ff_sine_windows(6);
+
     /* Initialize the MDCT transform. */
     ff_mdct_init(mdct_ctx, 8, 1, -1.0);
 }
@@ -93,7 +94,7 @@ static DECLARE_ALIGNED(32, float, sine_table)[2048]; ///< wave table
 static DECLARE_ALIGNED(32, float, hann_window)[256]; ///< Hann windowing function
 static float amp_sf_tab[64];   ///< scalefactors for quantized amplitudes
 
-av_cold void ff_atrac3p_init_dsp_static(void)
+av_cold void ff_atrac3p_init_wave_synth(void)
 {
     int i;
 
@@ -108,9 +109,6 @@ av_cold void ff_atrac3p_init_dsp_static(void)
     /* generate amplitude scalefactors table */
     for (i = 0; i < 64; i++)
         amp_sf_tab[i] = exp2f((i - 3) / 4.0f);
-
-    ff_init_ff_sine_windows(7);
-    ff_init_ff_sine_windows(6);
 }
 
 /**

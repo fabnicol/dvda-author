@@ -19,6 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/avassert.h"
 #include "libavutil/opt.h"
 #include "libavutil/parseutils.h"
 #include "libavutil/pixdesc.h"
@@ -36,12 +37,6 @@ typedef struct ThreadData {
     int offset_x;
 } ThreadData;
 
-enum FitMode {
-    FM_NONE,
-    FM_SIZE,
-    NB_FITMODES
-};
-
 enum FilterType {
     LOWPASS,
     FLAT,
@@ -50,7 +45,6 @@ enum FilterType {
     COLOR,
     ACOLOR,
     XFLAT,
-    YFLAT,
     NB_FILTERS
 };
 
@@ -66,14 +60,6 @@ enum ScaleType {
     MILLIVOLTS,
     IRE,
     NB_SCALES
-};
-
-enum GraticuleType {
-    GRAT_NONE,
-    GRAT_GREEN,
-    GRAT_ORANGE,
-    GRAT_INVERT,
-    NB_GRATICULES
 };
 
 typedef struct GraticuleLine {
@@ -117,18 +103,10 @@ typedef struct WaveformContext {
     GraticuleLines *glines;
     int            nb_glines;
     int            rgb;
-    float          ftint[2];
-    int            tint[2];
-    int            fitmode;
 
     int (*waveform_slice)(AVFilterContext *ctx, void *arg,
                           int jobnr, int nb_jobs);
     void (*graticulef)(struct WaveformContext *s, AVFrame *out);
-    void (*blend_line)(uint8_t *dst, int size, int linesize, float o1, float o2,
-                       int v, int step);
-    void (*draw_text)(AVFrame *out, int x, int y, int mult,
-                      float o1, float o2, const char *txt,
-                      const uint8_t color[4]);
     const AVPixFmtDescriptor *desc;
     const AVPixFmtDescriptor *odesc;
 } WaveformContext;
@@ -167,13 +145,11 @@ static const AVOption waveform_options[] = {
         { "color",   NULL, 0, AV_OPT_TYPE_CONST, {.i64=COLOR},   0, 0, FLAGS, "filter" },
         { "acolor",  NULL, 0, AV_OPT_TYPE_CONST, {.i64=ACOLOR},  0, 0, FLAGS, "filter" },
         { "xflat",   NULL, 0, AV_OPT_TYPE_CONST, {.i64=XFLAT},   0, 0, FLAGS, "filter" },
-        { "yflat",   NULL, 0, AV_OPT_TYPE_CONST, {.i64=YFLAT},   0, 0, FLAGS, "filter" },
-    { "graticule", "set graticule", OFFSET(graticule), AV_OPT_TYPE_INT, {.i64=0}, 0, NB_GRATICULES-1, FLAGS, "graticule" },
-    { "g",         "set graticule", OFFSET(graticule), AV_OPT_TYPE_INT, {.i64=0}, 0, NB_GRATICULES-1, FLAGS, "graticule" },
-        { "none",   NULL, 0, AV_OPT_TYPE_CONST, {.i64=GRAT_NONE},   0, 0, FLAGS, "graticule" },
-        { "green",  NULL, 0, AV_OPT_TYPE_CONST, {.i64=GRAT_GREEN},  0, 0, FLAGS, "graticule" },
-        { "orange", NULL, 0, AV_OPT_TYPE_CONST, {.i64=GRAT_ORANGE}, 0, 0, FLAGS, "graticule" },
-        { "invert", NULL, 0, AV_OPT_TYPE_CONST, {.i64=GRAT_INVERT}, 0, 0, FLAGS, "graticule" },
+    { "graticule", "set graticule", OFFSET(graticule), AV_OPT_TYPE_INT, {.i64=0}, 0, 2, FLAGS, "graticule" },
+    { "g",         "set graticule", OFFSET(graticule), AV_OPT_TYPE_INT, {.i64=0}, 0, 2, FLAGS, "graticule" },
+        { "none",   NULL, 0, AV_OPT_TYPE_CONST, {.i64=0}, 0, 0, FLAGS, "graticule" },
+        { "green",  NULL, 0, AV_OPT_TYPE_CONST, {.i64=1}, 0, 0, FLAGS, "graticule" },
+        { "orange", NULL, 0, AV_OPT_TYPE_CONST, {.i64=2}, 0, 0, FLAGS, "graticule" },
     { "opacity", "set graticule opacity", OFFSET(opacity), AV_OPT_TYPE_FLOAT, {.dbl=0.75}, 0, 1, FLAGS },
     { "o",       "set graticule opacity", OFFSET(opacity), AV_OPT_TYPE_FLOAT, {.dbl=0.75}, 0, 1, FLAGS },
     { "flags", "set graticule flags", OFFSET(flags), AV_OPT_TYPE_FLAGS, {.i64=1}, 0, 3, FLAGS, "flags" },
@@ -187,14 +163,6 @@ static const AVOption waveform_options[] = {
         { "ire",        NULL, 0, AV_OPT_TYPE_CONST, {.i64=IRE},        0, 0, FLAGS, "scale" },
     { "bgopacity", "set background opacity", OFFSET(bgopacity), AV_OPT_TYPE_FLOAT, {.dbl=0.75}, 0, 1, FLAGS },
     { "b",         "set background opacity", OFFSET(bgopacity), AV_OPT_TYPE_FLOAT, {.dbl=0.75}, 0, 1, FLAGS },
-    { "tint0", "set 1st tint", OFFSET(ftint[0]), AV_OPT_TYPE_FLOAT, {.dbl=0}, -1, 1, FLAGS},
-    { "t0",    "set 1st tint", OFFSET(ftint[0]), AV_OPT_TYPE_FLOAT, {.dbl=0}, -1, 1, FLAGS},
-    { "tint1", "set 2nd tint", OFFSET(ftint[1]), AV_OPT_TYPE_FLOAT, {.dbl=0}, -1, 1, FLAGS},
-    { "t1",    "set 2nd tint", OFFSET(ftint[1]), AV_OPT_TYPE_FLOAT, {.dbl=0}, -1, 1, FLAGS},
-    { "fitmode", "set fit mode", OFFSET(fitmode), AV_OPT_TYPE_INT, {.i64=0}, 0, NB_FITMODES-1, FLAGS, "fitmode" },
-    { "fm", "set fit mode", OFFSET(fitmode), AV_OPT_TYPE_INT, {.i64=0}, 0, NB_FITMODES-1, FLAGS, "fitmode" },
-        { "none", NULL, 0, AV_OPT_TYPE_CONST, {.i64=FM_NONE}, 0, 0, FLAGS, "fitmode" },
-        { "size", NULL, 0, AV_OPT_TYPE_CONST, {.i64=FM_SIZE}, 0, 0, FLAGS, "fitmode" },
     { NULL }
 };
 
@@ -215,7 +183,6 @@ static const enum AVPixelFormat in_lowpass_pix_fmts[] = {
     AV_PIX_FMT_YUV444P10, AV_PIX_FMT_YUV422P10, AV_PIX_FMT_YUV420P10,
     AV_PIX_FMT_YUVA444P10, AV_PIX_FMT_YUVA422P10, AV_PIX_FMT_YUVA420P10,
     AV_PIX_FMT_YUV444P12, AV_PIX_FMT_YUV422P12, AV_PIX_FMT_YUV420P12, AV_PIX_FMT_YUV440P12,
-    AV_PIX_FMT_YUVA444P12, AV_PIX_FMT_YUVA422P12,
     AV_PIX_FMT_NONE
 };
 
@@ -233,7 +200,6 @@ static const enum AVPixelFormat in_color_pix_fmts[] = {
     AV_PIX_FMT_YUV444P10, AV_PIX_FMT_YUV422P10, AV_PIX_FMT_YUV420P10,
     AV_PIX_FMT_YUVA444P10, AV_PIX_FMT_YUVA422P10, AV_PIX_FMT_YUVA420P10,
     AV_PIX_FMT_YUV444P12, AV_PIX_FMT_YUV422P12, AV_PIX_FMT_YUV420P12, AV_PIX_FMT_YUV440P12,
-    AV_PIX_FMT_YUVA444P12, AV_PIX_FMT_YUVA422P12,
     AV_PIX_FMT_NONE
 };
 
@@ -249,7 +215,6 @@ static const enum AVPixelFormat in_flat_pix_fmts[] = {
     AV_PIX_FMT_YUV444P10, AV_PIX_FMT_YUV422P10, AV_PIX_FMT_YUV420P10,
     AV_PIX_FMT_YUVA444P10, AV_PIX_FMT_YUVA422P10, AV_PIX_FMT_YUVA420P10,
     AV_PIX_FMT_YUV444P12, AV_PIX_FMT_YUV422P12, AV_PIX_FMT_YUV420P12, AV_PIX_FMT_YUV440P12,
-    AV_PIX_FMT_YUVA444P12, AV_PIX_FMT_YUVA422P12,
     AV_PIX_FMT_NONE
 };
 
@@ -289,7 +254,7 @@ static const enum AVPixelFormat out_yuv10_lowpass_pix_fmts[] = {
 };
 
 static const enum AVPixelFormat out_yuv12_lowpass_pix_fmts[] = {
-    AV_PIX_FMT_YUV444P12, AV_PIX_FMT_YUVA444P12,
+    AV_PIX_FMT_YUV444P12,
     AV_PIX_FMT_NONE
 };
 
@@ -313,17 +278,24 @@ static const enum AVPixelFormat out_gray12_lowpass_pix_fmts[] = {
     AV_PIX_FMT_NONE
 };
 
+static const enum AVPixelFormat flat_pix_fmts[] = {
+    AV_PIX_FMT_YUV444P, AV_PIX_FMT_YUVJ444P,
+    AV_PIX_FMT_YUV444P9, AV_PIX_FMT_YUV444P10,
+    AV_PIX_FMT_YUV444P12,
+    AV_PIX_FMT_NONE
+};
+
 static int query_formats(AVFilterContext *ctx)
 {
     WaveformContext *s = ctx->priv;
     const enum AVPixelFormat *out_pix_fmts;
     const enum AVPixelFormat *in_pix_fmts;
-    const AVPixFmtDescriptor *desc, *desc2;
-    AVFilterFormats *avff, *avff2;
-    int depth, depth2, rgb, i, ret, ncomp, ncomp2;
+    const AVPixFmtDescriptor *desc;
+    AVFilterFormats *avff;
+    int depth, rgb, i, ret, ncomp;
 
-    if (!ctx->inputs[0]->incfg.formats ||
-        !ctx->inputs[0]->incfg.formats->nb_formats) {
+    if (!ctx->inputs[0]->in_formats ||
+        !ctx->inputs[0]->in_formats->nb_formats) {
         return AVERROR(EAGAIN);
     }
 
@@ -331,7 +303,6 @@ static int query_formats(AVFilterContext *ctx)
     case LOWPASS: in_pix_fmts = in_lowpass_pix_fmts; break;
     case CHROMA:
     case XFLAT:
-    case YFLAT:
     case AFLAT:
     case FLAT:    in_pix_fmts = in_flat_pix_fmts;    break;
     case ACOLOR:
@@ -339,22 +310,16 @@ static int query_formats(AVFilterContext *ctx)
     default: return AVERROR_BUG;
     }
 
-    if (!ctx->inputs[0]->outcfg.formats) {
-        if ((ret = ff_formats_ref(ff_make_format_list(in_pix_fmts), &ctx->inputs[0]->outcfg.formats)) < 0)
+    if (!ctx->inputs[0]->out_formats) {
+        if ((ret = ff_formats_ref(ff_make_format_list(in_pix_fmts), &ctx->inputs[0]->out_formats)) < 0)
             return ret;
     }
 
-    avff = ctx->inputs[0]->incfg.formats;
-    avff2 = ctx->inputs[0]->outcfg.formats;
+    avff = ctx->inputs[0]->in_formats;
     desc = av_pix_fmt_desc_get(avff->formats[0]);
-    desc2 = av_pix_fmt_desc_get(avff2->formats[0]);
     ncomp = desc->nb_components;
-    ncomp2 = desc2->nb_components;
     rgb = desc->flags & AV_PIX_FMT_FLAG_RGB;
     depth = desc->comp[0].depth;
-    depth2 = desc2->comp[0].depth;
-    if (ncomp != ncomp2 || depth != depth2)
-        return AVERROR(EAGAIN);
     for (i = 1; i < avff->nb_formats; i++) {
         desc = av_pix_fmt_desc_get(avff->formats[i]);
         if (rgb != (desc->flags & AV_PIX_FMT_FLAG_RGB) ||
@@ -388,7 +353,7 @@ static int query_formats(AVFilterContext *ctx)
         out_pix_fmts = out_yuv12_lowpass_pix_fmts;
     else
         return AVERROR(EAGAIN);
-    if ((ret = ff_formats_ref(ff_make_format_list(out_pix_fmts), &ctx->outputs[0]->incfg.formats)) < 0)
+    if ((ret = ff_formats_ref(ff_make_format_list(out_pix_fmts), &ctx->outputs[0]->in_formats)) < 0)
         return ret;
 
     return 0;
@@ -690,11 +655,10 @@ static av_always_inline void lowpass16(WaveformContext *s,
                                        int jobnr, int nb_jobs)
 {
     const int plane = s->desc->comp[component].plane;
-    const int dplane = (s->rgb || s->display == OVERLAY) ? plane : 0;
     const int shift_w = s->shift_w[component];
     const int shift_h = s->shift_h[component];
     const int src_linesize = in->linesize[plane] / 2;
-    const int dst_linesize = out->linesize[dplane] / 2;
+    const int dst_linesize = out->linesize[plane] / 2;
     const int dst_signed_linesize = dst_linesize * (mirror == 1 ? -1 : 1);
     const int limit = s->max - 1;
     const int max = limit - intensity;
@@ -706,7 +670,7 @@ static av_always_inline void lowpass16(WaveformContext *s,
     const int slicew_end = column ? (src_w * (jobnr+1)) / nb_jobs : src_w;
     const int step = column ? 1 << shift_w : 1 << shift_h;
     const uint16_t *src_data = (const uint16_t *)in->data[plane] + sliceh_start * src_linesize;
-    uint16_t *dst_data = (uint16_t *)out->data[dplane] + (offset_y + sliceh_start * step) * dst_linesize + offset_x;
+    uint16_t *dst_data = (uint16_t *)out->data[plane] + (offset_y + sliceh_start * step) * dst_linesize + offset_x;
     uint16_t * const dst_bottom_line = dst_data + dst_linesize * (s->size - 1);
     uint16_t * const dst_line = (mirror ? dst_bottom_line : dst_data);
     const uint16_t *p;
@@ -743,56 +707,6 @@ static av_always_inline void lowpass16(WaveformContext *s,
         src_data += src_linesize;
         dst_data += dst_linesize * step;
     }
-
-    if (s->display != OVERLAY && column && !s->rgb) {
-        const int mult = s->max / 256;
-        const int bg = s->bg_color[0] * mult;
-        const int t0 = s->tint[0];
-        const int t1 = s->tint[1];
-        uint16_t *dst0, *dst1;
-        const uint16_t *src;
-        int x;
-
-        src  = (const uint16_t *)(out->data[0]) + offset_y * dst_linesize + offset_x;
-        dst0 = (uint16_t *)(out->data[1]) + offset_y * dst_linesize + offset_x;
-        dst1 = (uint16_t *)(out->data[2]) + offset_y * dst_linesize + offset_x;
-        for (y = 0; y < s->max; y++) {
-            for (x = slicew_start * step; x < slicew_end * step; x++) {
-                if (src[x] != bg) {
-                    dst0[x] = t0;
-                    dst1[x] = t1;
-                }
-            }
-
-            src  += dst_linesize;
-            dst0 += dst_linesize;
-            dst1 += dst_linesize;
-        }
-    } else if (s->display != OVERLAY && !s->rgb) {
-        const int mult = s->max / 256;
-        const int bg = s->bg_color[0] * mult;
-        const int t0 = s->tint[0];
-        const int t1 = s->tint[1];
-        uint16_t *dst0, *dst1;
-        const uint16_t *src;
-        int x;
-
-        src  = (const uint16_t *)out->data[0] + (offset_y + sliceh_start * step) * dst_linesize + offset_x;
-        dst0 = (uint16_t *)(out->data[1]) + (offset_y + sliceh_start * step) * dst_linesize + offset_x;
-        dst1 = (uint16_t *)(out->data[2]) + (offset_y + sliceh_start * step) * dst_linesize + offset_x;
-        for (y = sliceh_start * step; y < sliceh_end * step; y++) {
-            for (x = 0; x < s->max; x++) {
-                if (src[x] != bg) {
-                    dst0[x] = t0;
-                    dst1[x] = t1;
-                }
-            }
-
-            src  += dst_linesize;
-            dst0 += dst_linesize;
-            dst1 += dst_linesize;
-        }
-    }
 }
 
 #define LOWPASS16_FUNC(name, column, mirror)        \
@@ -828,11 +742,10 @@ static av_always_inline void lowpass(WaveformContext *s,
                                      int jobnr, int nb_jobs)
 {
     const int plane = s->desc->comp[component].plane;
-    const int dplane = (s->rgb || s->display == OVERLAY) ? plane : 0;
     const int shift_w = s->shift_w[component];
     const int shift_h = s->shift_h[component];
     const int src_linesize = in->linesize[plane];
-    const int dst_linesize = out->linesize[dplane];
+    const int dst_linesize = out->linesize[plane];
     const int dst_signed_linesize = dst_linesize * (mirror == 1 ? -1 : 1);
     const int max = 255 - intensity;
     const int src_h = AV_CEIL_RSHIFT(in->height, shift_h);
@@ -843,7 +756,7 @@ static av_always_inline void lowpass(WaveformContext *s,
     const int slicew_end = column ? (src_w * (jobnr+1)) / nb_jobs : src_w;
     const int step = column ? 1 << shift_w : 1 << shift_h;
     const uint8_t *src_data = in->data[plane] + sliceh_start * src_linesize;
-    uint8_t *dst_data = out->data[dplane] + (offset_y + sliceh_start * step) * dst_linesize + offset_x;
+    uint8_t *dst_data = out->data[plane] + (offset_y + sliceh_start * step) * dst_linesize + offset_x;
     uint8_t * const dst_bottom_line = dst_data + dst_linesize * (s->size - 1);
     uint8_t * const dst_line = (mirror ? dst_bottom_line : dst_data);
     const uint8_t *p;
@@ -858,76 +771,48 @@ static av_always_inline void lowpass(WaveformContext *s,
 
         for (p = src_data + slicew_start; p < src_data_end; p++) {
             uint8_t *target;
-            int i = 0;
-
             if (column) {
-                do {
-                    target = dst++ + dst_signed_linesize * *p;
-                    update(target, max, intensity);
-                } while (++i < step);
+                target = dst + dst_signed_linesize * *p;
+                dst += step;
+                update(target, max, intensity);
             } else {
                 uint8_t *row = dst_data;
-                do {
-                    if (mirror)
-                        target = row - *p - 1;
-                    else
-                        target = row + *p;
-                    update(target, max, intensity);
-                    row += dst_linesize;
-                } while (++i < step);
+                if (mirror)
+                    target = row - *p - 1;
+                else
+                    target = row + *p;
+                update(target, max, intensity);
+                row += dst_linesize;
             }
         }
         src_data += src_linesize;
         dst_data += dst_linesize * step;
     }
 
-    if (s->display != OVERLAY && column && !s->rgb) {
-        const int bg = s->bg_color[0];
+    if (column && step > 1) {
         const int dst_h = 256;
-        const int t0 = s->tint[0];
-        const int t1 = s->tint[1];
-        uint8_t *dst0, *dst1;
-        const uint8_t *src;
-        int x;
+        uint8_t *dst;
+        int x, z;
 
-        src  = out->data[0] + offset_y * dst_linesize + offset_x;
-        dst0 = out->data[1] + offset_y * dst_linesize + offset_x;
-        dst1 = out->data[2] + offset_y * dst_linesize + offset_x;
+        dst = out->data[plane] + offset_y * dst_linesize + offset_x;
         for (y = 0; y < dst_h; y++) {
-            for (x = slicew_start * step; x < slicew_end * step; x++) {
-                if (src[x] != bg) {
-                    dst0[x] = t0;
-                    dst1[x] = t1;
+            for (x = slicew_start * step; x < slicew_end * step; x+=step) {
+                for (z = 1; z < step; z++) {
+                    dst[x + z] = dst[x];
                 }
             }
-
-            src  += dst_linesize;
-            dst0 += dst_linesize;
-            dst1 += dst_linesize;
+            dst += dst_linesize;
         }
-    } else if (s->display != OVERLAY && !s->rgb) {
-        const int bg = s->bg_color[0];
+    } else if (step > 1) {
         const int dst_w = 256;
-        const int t0 = s->tint[0];
-        const int t1 = s->tint[1];
-        uint8_t *dst0, *dst1;
-        const uint8_t *src;
-        int x;
+        uint8_t *dst;
+        int z;
 
-        src  = out->data[0] + (offset_y + sliceh_start * step) * dst_linesize + offset_x;
-        dst0 = out->data[1] + (offset_y + sliceh_start * step) * dst_linesize + offset_x;
-        dst1 = out->data[2] + (offset_y + sliceh_start * step) * dst_linesize + offset_x;
-        for (y = sliceh_start * step; y < sliceh_end * step; y++) {
-            for (x = 0; x < dst_w; x++) {
-                if (src[x] != bg) {
-                    dst0[x] = t0;
-                    dst1[x] = t1;
-                }
-            }
-
-            src  += dst_linesize;
-            dst0 += dst_linesize;
-            dst1 += dst_linesize;
+        dst = out->data[plane] + (offset_y + sliceh_start * step) * dst_linesize + offset_x;
+        for (y = sliceh_start * step; y < sliceh_end * step; y+=step) {
+            for (z = 1; z < step; z++)
+                memcpy(dst + dst_linesize * z, dst, dst_w);
+            dst += dst_linesize * step;
         }
     }
 }
@@ -1233,7 +1118,7 @@ FLAT_FUNC(column,        1, 0)
 FLAT_FUNC(row_mirror,    0, 1)
 FLAT_FUNC(row,           0, 0)
 
-#define AFLAT16(name, update_cb, update_cr, column, mirror)                                                        \
+#define AFLAT16(name, update_cr, column, mirror)                                                                   \
 static int name(AVFilterContext *ctx,                                                                              \
                 void *arg, int jobnr,                                                                              \
                 int nb_jobs)                                                                                       \
@@ -1299,7 +1184,7 @@ static int name(AVFilterContext *ctx,                                           
                 update16(target, max, intensity, limit);                                                           \
                                                                                                                    \
                 target = d1 + x + d1_signed_linesize * (c0 + c1);                                                  \
-                update_cb(target, max, intensity, limit);                                                          \
+                update16(target, max, intensity, limit);                                                           \
                                                                                                                    \
                 target = d2 + x + d2_signed_linesize * (c0 + c2);                                                  \
                 update_cr(target, max, intensity, limit);                                                          \
@@ -1340,14 +1225,14 @@ static int name(AVFilterContext *ctx,                                           
                     target = d0_data - c0;                                                                         \
                     update16(target, max, intensity, limit);                                                       \
                     target = d1_data - (c0 + c1);                                                                  \
-                    update_cb(target, max, intensity, limit);                                                      \
+                    update16(target, max, intensity, limit);                                                       \
                     target = d2_data - (c0 + c2);                                                                  \
                     update_cr(target, max, intensity, limit);                                                      \
                 } else {                                                                                           \
                     target = d0_data + c0;                                                                         \
                     update16(target, max, intensity, limit);                                                       \
                     target = d1_data + (c0 + c1);                                                                  \
-                    update_cb(target, max, intensity, limit);                                                      \
+                    update16(target, max, intensity, limit);                                                       \
                     target = d2_data + (c0 + c2);                                                                  \
                     update_cr(target, max, intensity, limit);                                                      \
                 }                                                                                                  \
@@ -1367,7 +1252,7 @@ static int name(AVFilterContext *ctx,                                           
     return 0;                                                                                                      \
 }
 
-#define AFLAT(name, update_cb, update_cr, column, mirror)                                             \
+#define AFLAT(name, update_cr, column, mirror)                                                        \
 static int name(AVFilterContext *ctx,                                                                 \
                 void *arg, int jobnr,                                                                 \
                 int nb_jobs)                                                                          \
@@ -1431,7 +1316,7 @@ static int name(AVFilterContext *ctx,                                           
                 update(target, max, intensity);                                                       \
                                                                                                       \
                 target = d1 + x + d1_signed_linesize * (c0 + c1);                                     \
-                update_cb(target, max, intensity);                                                    \
+                update(target, max, intensity);                                                       \
                                                                                                       \
                 target = d2 + x + d2_signed_linesize * (c0 + c2);                                     \
                 update_cr(target, max, intensity);                                                    \
@@ -1440,8 +1325,8 @@ static int name(AVFilterContext *ctx,                                           
                     c0_data += c0_linesize;                                                           \
                 if (!c1_shift_h || (y & c1_shift_h))                                                  \
                     c1_data += c1_linesize;                                                           \
-                if (!c2_shift_h || (y & c2_shift_h))                                                  \
-                    c2_data += c2_linesize;                                                           \
+                if (!c1_shift_h || (y & c1_shift_h))                                                  \
+                    c2_data += c1_linesize;                                                           \
                 d0_data += d0_linesize;                                                               \
                 d1_data += d1_linesize;                                                               \
                 d2_data += d2_linesize;                                                               \
@@ -1472,14 +1357,14 @@ static int name(AVFilterContext *ctx,                                           
                     target = d0_data - c0;                                                            \
                     update(target, max, intensity);                                                   \
                     target = d1_data - (c0 + c1);                                                     \
-                    update_cb(target, max, intensity);                                                \
+                    update(target, max, intensity);                                                   \
                     target = d2_data - (c0 + c2);                                                     \
                     update_cr(target, max, intensity);                                                \
                 } else {                                                                              \
                     target = d0_data + c0;                                                            \
                     update(target, max, intensity);                                                   \
                     target = d1_data + (c0 + c1);                                                     \
-                    update_cb(target, max, intensity);                                                \
+                    update(target, max, intensity);                                                   \
                     target = d2_data + (c0 + c2);                                                     \
                     update_cr(target, max, intensity);                                                \
                 }                                                                                     \
@@ -1499,31 +1384,23 @@ static int name(AVFilterContext *ctx,                                           
     return 0;                                                                                         \
 }
 
-AFLAT16(aflat16_row,           update16, update16,    0, 0)
-AFLAT16(aflat16_row_mirror,    update16, update16,    0, 1)
-AFLAT16(aflat16_column,        update16, update16,    1, 0)
-AFLAT16(aflat16_column_mirror, update16, update16,    1, 1)
-AFLAT16(xflat16_row,           update16, update16_cr, 0, 0)
-AFLAT16(xflat16_row_mirror,    update16, update16_cr, 0, 1)
-AFLAT16(xflat16_column,        update16, update16_cr, 1, 0)
-AFLAT16(xflat16_column_mirror, update16, update16_cr, 1, 1)
-AFLAT16(yflat16_row,           update16_cr, update16_cr, 0, 0)
-AFLAT16(yflat16_row_mirror,    update16_cr, update16_cr, 0, 1)
-AFLAT16(yflat16_column,        update16_cr, update16_cr, 1, 0)
-AFLAT16(yflat16_column_mirror, update16_cr, update16_cr, 1, 1)
+AFLAT16(aflat16_row,           update16,    0, 0)
+AFLAT16(aflat16_row_mirror,    update16,    0, 1)
+AFLAT16(aflat16_column,        update16,    1, 0)
+AFLAT16(aflat16_column_mirror, update16,    1, 1)
+AFLAT16(xflat16_row,           update16_cr, 0, 0)
+AFLAT16(xflat16_row_mirror,    update16_cr, 0, 1)
+AFLAT16(xflat16_column,        update16_cr, 1, 0)
+AFLAT16(xflat16_column_mirror, update16_cr, 1, 1)
 
-AFLAT(aflat_row,           update, update,    0, 0)
-AFLAT(aflat_row_mirror,    update, update,    0, 1)
-AFLAT(aflat_column,        update, update,    1, 0)
-AFLAT(aflat_column_mirror, update, update,    1, 1)
-AFLAT(xflat_row,           update, update_cr, 0, 0)
-AFLAT(xflat_row_mirror,    update, update_cr, 0, 1)
-AFLAT(xflat_column,        update, update_cr, 1, 0)
-AFLAT(xflat_column_mirror, update, update_cr, 1, 1)
-AFLAT(yflat_row,           update_cr, update_cr, 0, 0)
-AFLAT(yflat_row_mirror,    update_cr, update_cr, 0, 1)
-AFLAT(yflat_column,        update_cr, update_cr, 1, 0)
-AFLAT(yflat_column_mirror, update_cr, update_cr, 1, 1)
+AFLAT(aflat_row,           update,    0, 0)
+AFLAT(aflat_row_mirror,    update,    0, 1)
+AFLAT(aflat_column,        update,    1, 0)
+AFLAT(aflat_column_mirror, update,    1, 1)
+AFLAT(xflat_row,           update_cr, 0, 0)
+AFLAT(xflat_row_mirror,    update_cr, 0, 1)
+AFLAT(xflat_column,        update_cr, 1, 0)
+AFLAT(xflat_column_mirror, update_cr, 1, 1)
 
 static av_always_inline void chroma16(WaveformContext *s,
                                       AVFrame *in, AVFrame *out,
@@ -2593,9 +2470,8 @@ static void blend_vline(uint8_t *dst, int height, int linesize, float o1, float 
     }
 }
 
-static void blend_vline16(uint8_t *ddst, int height, int linesize, float o1, float o2, int v, int step)
+static void blend_vline16(uint16_t *dst, int height, int linesize, float o1, float o2, int v, int step)
 {
-    uint16_t *dst = (uint16_t *)ddst;
     int y;
 
     for (y = 0; y < height; y += step) {
@@ -2605,7 +2481,7 @@ static void blend_vline16(uint8_t *ddst, int height, int linesize, float o1, flo
     }
 }
 
-static void blend_hline(uint8_t *dst, int width, int unused, float o1, float o2, int v, int step)
+static void blend_hline(uint8_t *dst, int width, float o1, float o2, int v, int step)
 {
     int x;
 
@@ -2614,9 +2490,8 @@ static void blend_hline(uint8_t *dst, int width, int unused, float o1, float o2,
     }
 }
 
-static void blend_hline16(uint8_t *ddst, int width, int unused, float o1, float o2, int v, int step)
+static void blend_hline16(uint16_t *dst, int width, float o1, float o2, int v, int step)
 {
-    uint16_t *dst = (uint16_t *)ddst;
     int x;
 
     for (x = 0; x < width; x += step) {
@@ -2624,7 +2499,7 @@ static void blend_hline16(uint8_t *ddst, int width, int unused, float o1, float 
     }
 }
 
-static void draw_htext(AVFrame *out, int x, int y, int mult, float o1, float o2, const char *txt, const uint8_t color[4])
+static void draw_htext(AVFrame *out, int x, int y, float o1, float o2, const char *txt, const uint8_t color[4])
 {
     const uint8_t *font;
     int font_height;
@@ -2676,7 +2551,7 @@ static void draw_htext16(AVFrame *out, int x, int y, int mult, float o1, float o
     }
 }
 
-static void draw_vtext(AVFrame *out, int x, int y, int mult, float o1, float o2, const char *txt, const uint8_t color[4])
+static void draw_vtext(AVFrame *out, int x, int y, float o1, float o2, const char *txt, const uint8_t color[4])
 {
     const uint8_t *font;
     int font_height;
@@ -2726,150 +2601,6 @@ static void draw_vtext16(AVFrame *out, int x, int y, int mult, float o1, float o
     }
 }
 
-static void iblend_vline(uint8_t *dst, int height, int linesize, float o1, float o2, int v, int step)
-{
-    int y;
-
-    for (y = 0; y < height; y += step) {
-        dst[0] = (v - dst[0]) * o1 + dst[0] * o2;
-
-        dst += linesize * step;
-    }
-}
-
-static void iblend_vline16(uint8_t *ddst, int height, int linesize, float o1, float o2, int v, int step)
-{
-    uint16_t *dst = (uint16_t *)ddst;
-    int y;
-
-    for (y = 0; y < height; y += step) {
-        dst[0] = (v - dst[0]) * o1 + dst[0] * o2;
-
-        dst += (linesize / 2) * step;
-    }
-}
-
-static void iblend_hline(uint8_t *dst, int width, int unused, float o1, float o2, int v, int step)
-{
-    int x;
-
-    for (x = 0; x < width; x += step) {
-        dst[x] = (v - dst[x]) * o1 + dst[x] * o2;
-    }
-}
-
-static void iblend_hline16(uint8_t *ddst, int width, int unused, float o1, float o2, int v, int step)
-{
-    uint16_t *dst = (uint16_t *)ddst;
-    int x;
-
-    for (x = 0; x < width; x += step) {
-        dst[x] = (v - dst[x]) * o1 + dst[x] * o2;
-    }
-}
-
-static void idraw_htext(AVFrame *out, int x, int y, int mult, float o1, float o2, const char *txt, const uint8_t color[4])
-{
-    const uint8_t *font;
-    int font_height;
-    int i, plane;
-
-    font = avpriv_cga_font,   font_height =  8;
-
-    for (plane = 0; plane < 4 && out->data[plane]; plane++) {
-        for (i = 0; txt[i]; i++) {
-            int char_y, mask;
-            int v = color[plane];
-
-            uint8_t *p = out->data[plane] + y * out->linesize[plane] + (x + i * 8);
-            for (char_y = 0; char_y < font_height; char_y++) {
-                for (mask = 0x80; mask; mask >>= 1) {
-                    if (font[txt[i] * font_height + char_y] & mask)
-                        p[0] = p[0] * o2 + (v - p[0]) * o1;
-                    p++;
-                }
-                p += out->linesize[plane] - 8;
-            }
-        }
-    }
-}
-
-static void idraw_htext16(AVFrame *out, int x, int y, int mult, float o1, float o2, const char *txt, const uint8_t color[4])
-{
-    const uint8_t *font;
-    int font_height;
-    int i, plane;
-
-    font = avpriv_cga_font,   font_height =  8;
-
-    for (plane = 0; plane < 4 && out->data[plane]; plane++) {
-        for (i = 0; txt[i]; i++) {
-            int char_y, mask;
-            int v = color[plane] * mult;
-
-            uint16_t *p = (uint16_t *)(out->data[plane] + y * out->linesize[plane]) + (x + i * 8);
-            for (char_y = 0; char_y < font_height; char_y++) {
-                for (mask = 0x80; mask; mask >>= 1) {
-                    if (font[txt[i] * font_height + char_y] & mask)
-                        p[0] = p[0] * o2 + (v - p[0]) * o1;
-                    p++;
-                }
-                p += out->linesize[plane] / 2 - 8;
-            }
-        }
-    }
-}
-
-static void idraw_vtext(AVFrame *out, int x, int y, int mult, float o1, float o2, const char *txt, const uint8_t color[4])
-{
-    const uint8_t *font;
-    int font_height;
-    int i, plane;
-
-    font = avpriv_cga_font,   font_height =  8;
-
-    for (plane = 0; plane < 4 && out->data[plane]; plane++) {
-        for (i = 0; txt[i]; i++) {
-            int char_y, mask;
-            int v = color[plane];
-
-            for (char_y = font_height - 1; char_y >= 0; char_y--) {
-                uint8_t *p = out->data[plane] + (y + i * 10) * out->linesize[plane] + x;
-                for (mask = 0x80; mask; mask >>= 1) {
-                    if (font[txt[i] * font_height + font_height - 1 - char_y] & mask)
-                        p[char_y] = p[char_y] * o2 + (v - p[char_y]) * o1;
-                    p += out->linesize[plane];
-                }
-            }
-        }
-    }
-}
-
-static void idraw_vtext16(AVFrame *out, int x, int y, int mult, float o1, float o2, const char *txt, const uint8_t color[4])
-{
-    const uint8_t *font;
-    int font_height;
-    int i, plane;
-
-    font = avpriv_cga_font,   font_height =  8;
-
-    for (plane = 0; plane < 4 && out->data[plane]; plane++) {
-        for (i = 0; txt[i]; i++) {
-            int char_y, mask;
-            int v = color[plane] * mult;
-
-            for (char_y = 0; char_y < font_height; char_y++) {
-                uint16_t *p = (uint16_t *)(out->data[plane] + (y + i * 10) * out->linesize[plane]) + x;
-                for (mask = 0x80; mask; mask >>= 1) {
-                    if (font[txt[i] * font_height + font_height - 1 - char_y] & mask)
-                        p[char_y] = p[char_y] * o2 + (v - p[char_y]) * o1;
-                    p += out->linesize[plane] / 2;
-                }
-            }
-        }
-    }
-}
-
 static void graticule_none(WaveformContext *s, AVFrame *out)
 {
 }
@@ -2895,7 +2626,7 @@ static void graticule_row(WaveformContext *s, AVFrame *out)
                 int x = offset_x + (s->mirror ? s->size - 1 - pos : pos);
                 uint8_t *dst = out->data[p] + offset_y * out->linesize[p] + x;
 
-                s->blend_line(dst, height, out->linesize[p], o1, o2, v, step);
+                blend_vline(dst, height, out->linesize[p], o1, o2, v, step);
             }
         }
 
@@ -2907,7 +2638,7 @@ static void graticule_row(WaveformContext *s, AVFrame *out)
             if (x < 0)
                 x = 4;
 
-            s->draw_text(out, x, offset_y + 2, 1, o1, o2, name, s->grat_yuva_color);
+            draw_vtext(out, x, offset_y + 2, o1, o2, name, s->grat_yuva_color);
         }
 
         offset_x += s->size * (s->display == STACK);
@@ -2935,9 +2666,9 @@ static void graticule16_row(WaveformContext *s, AVFrame *out)
             for (l = 0; l < s->nb_glines ; l++) {
                 const uint16_t pos = s->glines[l].line[C].pos;
                 int x = offset_x + (s->mirror ? s->size - 1 - pos : pos);
-                uint8_t *dst = (uint8_t *)(out->data[p] + offset_y * out->linesize[p]) + x * 2;
+                uint16_t *dst = (uint16_t *)(out->data[p] + offset_y * out->linesize[p]) + x;
 
-                s->blend_line(dst, height, out->linesize[p], o1, o2, v, step);
+                blend_vline16(dst, height, out->linesize[p], o1, o2, v, step);
             }
         }
 
@@ -2949,7 +2680,7 @@ static void graticule16_row(WaveformContext *s, AVFrame *out)
             if (x < 0)
                 x = 4;
 
-            s->draw_text(out, x, offset_y + 2, mult, o1, o2, name, s->grat_yuva_color);
+            draw_vtext16(out, x, offset_y + 2, mult, o1, o2, name, s->grat_yuva_color);
         }
 
         offset_x += s->size * (s->display == STACK);
@@ -2978,7 +2709,7 @@ static void graticule_column(WaveformContext *s, AVFrame *out)
                 int y = offset_y + (s->mirror ? s->size - 1 - pos : pos);
                 uint8_t *dst = out->data[p] + y * out->linesize[p] + offset_x;
 
-                s->blend_line(dst, width, 1, o1, o2, v, step);
+                blend_hline(dst, width, o1, o2, v, step);
             }
         }
 
@@ -2990,7 +2721,7 @@ static void graticule_column(WaveformContext *s, AVFrame *out)
             if (y < 0)
                 y = 4;
 
-            s->draw_text(out, 2 + offset_x, y, 1, o1, o2, name, s->grat_yuva_color);
+            draw_htext(out, 2 + offset_x, y, o1, o2, name, s->grat_yuva_color);
         }
 
         offset_y += s->size * (s->display == STACK);
@@ -3018,9 +2749,9 @@ static void graticule16_column(WaveformContext *s, AVFrame *out)
             for (l = 0; l < s->nb_glines ; l++) {
                 const uint16_t pos = s->glines[l].line[C].pos;
                 int y = offset_y + (s->mirror ? s->size - 1 - pos : pos);
-                uint8_t *dst = (uint8_t *)(out->data[p] + y * out->linesize[p]) + offset_x * 2;
+                uint16_t *dst = (uint16_t *)(out->data[p] + y * out->linesize[p]) + offset_x;
 
-                s->blend_line(dst, width, 1, o1, o2, v, step);
+                blend_hline16(dst, width, o1, o2, v, step);
             }
         }
 
@@ -3032,7 +2763,7 @@ static void graticule16_column(WaveformContext *s, AVFrame *out)
             if (y < 0)
                 y = 4;
 
-            s->draw_text(out, 2 + offset_x, y, mult, o1, o2, name, s->grat_yuva_color);
+            draw_htext16(out, 2 + offset_x, y, mult, o1, o2, name, s->grat_yuva_color);
         }
 
         offset_y += s->size * (s->display == STACK);
@@ -3060,7 +2791,6 @@ static int config_input(AVFilterLink *inlink)
 
     switch (s->filter) {
     case XFLAT:
-    case YFLAT:
     case AFLAT: s->size = 256 * 2; break;
     case FLAT:  s->size = 256 * 3; break;
     default:    s->size = 256;     break;
@@ -3124,34 +2854,11 @@ static int config_input(AVFilterLink *inlink)
     case 0x1016: s->waveform_slice = xflat16_row_mirror;    break;
     case 0x0116: s->waveform_slice = xflat16_column;        break;
     case 0x0016: s->waveform_slice = xflat16_row;           break;
-    case 0x1107: s->waveform_slice = yflat_column_mirror; break;
-    case 0x1007: s->waveform_slice = yflat_row_mirror;    break;
-    case 0x0107: s->waveform_slice = yflat_column;        break;
-    case 0x0007: s->waveform_slice = yflat_row;           break;
-    case 0x1117: s->waveform_slice = yflat16_column_mirror; break;
-    case 0x1017: s->waveform_slice = yflat16_row_mirror;    break;
-    case 0x0117: s->waveform_slice = yflat16_column;        break;
-    case 0x0017: s->waveform_slice = yflat16_row;           break;
     }
 
     s->grat_yuva_color[0] = 255;
-    s->grat_yuva_color[1] = s->graticule == GRAT_INVERT ? 255 : 0;
-    s->grat_yuva_color[2] = s->graticule == GRAT_ORANGE || s->graticule == GRAT_INVERT ? 255 : 0;
+    s->grat_yuva_color[2] = s->graticule == 2 ? 255 : 0;
     s->grat_yuva_color[3] = 255;
-
-    if (s->mode == 0 && s->graticule != GRAT_INVERT) {
-        s->blend_line = s->bits <= 8 ? blend_vline : blend_vline16;
-        s->draw_text  = s->bits <= 8 ? draw_vtext  : draw_vtext16;
-    } else if (s->graticule != GRAT_INVERT) {
-        s->blend_line = s->bits <= 8 ? blend_hline : blend_hline16;
-        s->draw_text  = s->bits <= 8 ? draw_htext  : draw_htext16;
-    } else if (s->mode == 0 && s->graticule == GRAT_INVERT) {
-        s->blend_line = s->bits <= 8 ? iblend_vline : iblend_vline16;
-        s->draw_text  = s->bits <= 8 ? idraw_vtext  : idraw_vtext16;
-    } else if (s->graticule == GRAT_INVERT) {
-        s->blend_line = s->bits <= 8 ? iblend_hline : iblend_hline16;
-        s->draw_text  = s->bits <= 8 ? idraw_htext  : idraw_htext16;
-    }
 
     switch (s->filter) {
     case LOWPASS:
@@ -3160,11 +2867,10 @@ static int config_input(AVFilterLink *inlink)
     case CHROMA:
     case AFLAT:
     case XFLAT:
-    case YFLAT:
     case FLAT:
-        if (s->graticule > GRAT_NONE && s->mode == 1)
+        if (s->graticule && s->mode == 1)
             s->graticulef = s->bits > 8 ? graticule16_column : graticule_column;
-        else if (s->graticule > GRAT_NONE && s->mode == 0)
+        else if (s->graticule && s->mode == 0)
             s->graticulef = s->bits > 8 ? graticule16_row : graticule_row;
         break;
     }
@@ -3229,7 +2935,6 @@ static int config_input(AVFilterLink *inlink)
         }
         break;
     case XFLAT:
-    case YFLAT:
     case AFLAT:
         switch (s->scale) {
         case DIGITAL:
@@ -3289,9 +2994,6 @@ static int config_input(AVFilterLink *inlink)
     }
 
     s->size = s->size << (s->bits - 8);
-
-    s->tint[0] = .5f * (s->ftint[0] + 1.f) * (s->size - 1);
-    s->tint[1] = .5f * (s->ftint[1] + 1.f) * (s->size - 1);
 
     switch (inlink->format) {
     case AV_PIX_FMT_GBRAP:
@@ -3368,20 +3070,7 @@ static int config_output(AVFilterLink *outlink)
         }
     }
 
-    switch (s->fitmode) {
-    case FM_NONE:
-        outlink->sample_aspect_ratio = (AVRational){ 1, 1 };
-        break;
-    case FM_SIZE:
-        if (s->mode)
-            outlink->sample_aspect_ratio = (AVRational){ s->size * comp, inlink->h };
-        else
-            outlink->sample_aspect_ratio = (AVRational){ inlink->w, s->size * comp };
-        break;
-    }
-
-    av_reduce(&outlink->sample_aspect_ratio.num, &outlink->sample_aspect_ratio.den,
-               outlink->sample_aspect_ratio.num,  outlink->sample_aspect_ratio.den, INT_MAX);
+    outlink->sample_aspect_ratio = (AVRational){1,1};
 
     return 0;
 }
@@ -3440,18 +3129,12 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
             td.component = k;
             td.offset_y = offset_y;
             td.offset_x = offset_x;
-            ff_filter_execute(ctx, s->waveform_slice, &td, NULL,
-                              ff_filter_get_nb_threads(ctx));
+            ctx->internal->execute(ctx, s->waveform_slice, &td, NULL, ff_filter_get_nb_threads(ctx));
             switch (s->filter) {
-            case LOWPASS:
-                if (s->bits <= 8)
-                    envelope(s, out, plane, s->rgb || s->display == OVERLAY ? plane : 0, s->mode ? offset_x : offset_y);
-                else
-                    envelope16(s, out, plane, s->rgb || s->display == OVERLAY ? plane : 0, s->mode ? offset_x : offset_y);
-                break;
             case ACOLOR:
             case CHROMA:
             case COLOR:
+            case LOWPASS:
                 if (s->bits <= 8)
                     envelope(s, out, plane, plane, s->mode ? offset_x : offset_y);
                 else
@@ -3468,7 +3151,6 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                 break;
             case AFLAT:
             case XFLAT:
-            case YFLAT:
                 if (s->bits <= 8) {
                     envelope(s, out, plane, (plane + 0) % s->ncomp, s->mode ? offset_x : offset_y);
                     envelope(s, out, plane, (plane + 1) % s->ncomp, s->mode ? offset_x : offset_y);
@@ -3485,7 +3167,6 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     s->graticulef(s, out);
 
     av_frame_free(&in);
-    out->sample_aspect_ratio = outlink->sample_aspect_ratio;
     return ff_filter_frame(outlink, out);
 }
 
@@ -3503,6 +3184,7 @@ static const AVFilterPad inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_input,
     },
+    { NULL }
 };
 
 static const AVFilterPad outputs[] = {
@@ -3511,16 +3193,17 @@ static const AVFilterPad outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_output,
     },
+    { NULL }
 };
 
-const AVFilter ff_vf_waveform = {
+AVFilter ff_vf_waveform = {
     .name          = "waveform",
     .description   = NULL_IF_CONFIG_SMALL("Video waveform monitor."),
     .priv_size     = sizeof(WaveformContext),
     .priv_class    = &waveform_class,
+    .query_formats = query_formats,
     .uninit        = uninit,
-    FILTER_INPUTS(inputs),
-    FILTER_OUTPUTS(outputs),
-    FILTER_QUERY_FUNC(query_formats),
+    .inputs        = inputs,
+    .outputs       = outputs,
     .flags         = AVFILTER_FLAG_SLICE_THREADS,
 };

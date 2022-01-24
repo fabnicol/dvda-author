@@ -20,20 +20,105 @@
 #include "avassert.h"
 #include "buffer.h"
 #include "common.h"
-#include "cpu.h"
 #include "dict.h"
 #include "frame.h"
 #include "imgutils.h"
 #include "mem.h"
 #include "samplefmt.h"
-#include "hwcontext.h"
+
+#if FF_API_FRAME_GET_SET
+MAKE_ACCESSORS(AVFrame, frame, int64_t, best_effort_timestamp)
+MAKE_ACCESSORS(AVFrame, frame, int64_t, pkt_duration)
+MAKE_ACCESSORS(AVFrame, frame, int64_t, pkt_pos)
+MAKE_ACCESSORS(AVFrame, frame, int64_t, channel_layout)
+MAKE_ACCESSORS(AVFrame, frame, int,     channels)
+MAKE_ACCESSORS(AVFrame, frame, int,     sample_rate)
+MAKE_ACCESSORS(AVFrame, frame, AVDictionary *, metadata)
+MAKE_ACCESSORS(AVFrame, frame, int,     decode_error_flags)
+MAKE_ACCESSORS(AVFrame, frame, int,     pkt_size)
+MAKE_ACCESSORS(AVFrame, frame, enum AVColorSpace, colorspace)
+MAKE_ACCESSORS(AVFrame, frame, enum AVColorRange, color_range)
+#endif
 
 #define CHECK_CHANNELS_CONSISTENCY(frame) \
     av_assert2(!(frame)->channel_layout || \
                (frame)->channels == \
                av_get_channel_layout_nb_channels((frame)->channel_layout))
 
-#if FF_API_COLORSPACE_NAME
+#if FF_API_FRAME_QP
+struct qp_properties {
+    int stride;
+    int type;
+};
+
+int av_frame_set_qp_table(AVFrame *f, AVBufferRef *buf, int stride, int qp_type)
+{
+    struct qp_properties *p;
+    AVFrameSideData *sd;
+    AVBufferRef *ref;
+
+FF_DISABLE_DEPRECATION_WARNINGS
+    av_buffer_unref(&f->qp_table_buf);
+
+    f->qp_table_buf = buf;
+    f->qscale_table = buf->data;
+    f->qstride      = stride;
+    f->qscale_type  = qp_type;
+FF_ENABLE_DEPRECATION_WARNINGS
+
+    av_frame_remove_side_data(f, AV_FRAME_DATA_QP_TABLE_PROPERTIES);
+    av_frame_remove_side_data(f, AV_FRAME_DATA_QP_TABLE_DATA);
+
+    ref = av_buffer_ref(buf);
+    if (!av_frame_new_side_data_from_buf(f, AV_FRAME_DATA_QP_TABLE_DATA, ref)) {
+        av_buffer_unref(&ref);
+        return AVERROR(ENOMEM);
+    }
+
+    sd = av_frame_new_side_data(f, AV_FRAME_DATA_QP_TABLE_PROPERTIES,
+                                sizeof(struct qp_properties));
+    if (!sd)
+        return AVERROR(ENOMEM);
+
+    p = (struct qp_properties *)sd->data;
+    p->stride = stride;
+    p->type = qp_type;
+
+    return 0;
+}
+
+int8_t *av_frame_get_qp_table(AVFrame *f, int *stride, int *type)
+{
+    AVBufferRef *buf = NULL;
+
+    *stride = 0;
+    *type   = 0;
+
+FF_DISABLE_DEPRECATION_WARNINGS
+    if (f->qp_table_buf) {
+        *stride = f->qstride;
+        *type   = f->qscale_type;
+        buf     = f->qp_table_buf;
+FF_ENABLE_DEPRECATION_WARNINGS
+    } else {
+        AVFrameSideData *sd;
+        struct qp_properties *p;
+        sd = av_frame_get_side_data(f, AV_FRAME_DATA_QP_TABLE_PROPERTIES);
+        if (!sd)
+            return NULL;
+        p = (struct qp_properties *)sd->data;
+        sd = av_frame_get_side_data(f, AV_FRAME_DATA_QP_TABLE_DATA);
+        if (!sd)
+            return NULL;
+        *stride = p->stride;
+        *type   = p->type;
+        buf     = sd->buf;
+    }
+
+    return buf ? buf->data : NULL;
+}
+#endif
+
 const char *av_get_colorspace_name(enum AVColorSpace val)
 {
     static const char * const name[] = {
@@ -49,7 +134,7 @@ const char *av_get_colorspace_name(enum AVColorSpace val)
         return NULL;
     return name[val];
 }
-#endif
+
 static void get_frame_defaults(AVFrame *frame)
 {
     if (frame->extended_data != frame->data)
@@ -59,6 +144,11 @@ static void get_frame_defaults(AVFrame *frame)
 
     frame->pts                   =
     frame->pkt_dts               = AV_NOPTS_VALUE;
+#if FF_API_PKT_PTS
+FF_DISABLE_DEPRECATION_WARNINGS
+    frame->pkt_pts               = AV_NOPTS_VALUE;
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
     frame->best_effort_timestamp = AV_NOPTS_VALUE;
     frame->pkt_duration        = 0;
     frame->pkt_pos             = -1;
@@ -121,10 +211,8 @@ void av_frame_free(AVFrame **frame)
 static int get_video_buffer(AVFrame *frame, int align)
 {
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(frame->format);
-    int ret, i, padded_height, total_size;
+    int ret, i, padded_height;
     int plane_padding = FFMAX(16 + 16/*STRIDE_ALIGN*/, align);
-    ptrdiff_t linesizes[4];
-    size_t sizes[4];
 
     if (!desc)
         return AVERROR(EINVAL);
@@ -149,22 +237,12 @@ static int get_video_buffer(AVFrame *frame, int align)
             frame->linesize[i] = FFALIGN(frame->linesize[i], align);
     }
 
-    for (i = 0; i < 4; i++)
-        linesizes[i] = frame->linesize[i];
-
     padded_height = FFALIGN(frame->height, 32);
-    if ((ret = av_image_fill_plane_sizes(sizes, frame->format,
-                                         padded_height, linesizes)) < 0)
+    if ((ret = av_image_fill_pointers(frame->data, frame->format, padded_height,
+                                      NULL, frame->linesize)) < 0)
         return ret;
 
-    total_size = 4*plane_padding;
-    for (i = 0; i < 4; i++) {
-        if (sizes[i] > INT_MAX - total_size)
-            return AVERROR(EINVAL);
-        total_size += sizes[i];
-    }
-
-    frame->buf[0] = av_buffer_alloc(total_size);
+    frame->buf[0] = av_buffer_alloc(ret + 4*plane_padding);
     if (!frame->buf[0]) {
         ret = AVERROR(ENOMEM);
         goto fail;
@@ -210,9 +288,9 @@ static int get_audio_buffer(AVFrame *frame, int align)
     }
 
     if (planes > AV_NUM_DATA_POINTERS) {
-        frame->extended_data = av_calloc(planes,
+        frame->extended_data = av_mallocz_array(planes,
                                           sizeof(*frame->extended_data));
-        frame->extended_buf  = av_calloc(planes - AV_NUM_DATA_POINTERS,
+        frame->extended_buf  = av_mallocz_array((planes - AV_NUM_DATA_POINTERS),
                                           sizeof(*frame->extended_buf));
         if (!frame->extended_data || !frame->extended_buf) {
             av_freep(&frame->extended_data);
@@ -258,7 +336,7 @@ int av_frame_get_buffer(AVFrame *frame, int align)
 
 static int frame_copy_props(AVFrame *dst, const AVFrame *src, int force_copy)
 {
-    int ret, i;
+    int i;
 
     dst->key_frame              = src->key_frame;
     dst->pict_type              = src->pict_type;
@@ -274,6 +352,11 @@ static int frame_copy_props(AVFrame *dst, const AVFrame *src, int force_copy)
     dst->palette_has_changed    = src->palette_has_changed;
     dst->sample_rate            = src->sample_rate;
     dst->opaque                 = src->opaque;
+#if FF_API_PKT_PTS
+FF_DISABLE_DEPRECATION_WARNINGS
+    dst->pkt_pts                = src->pkt_pts;
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
     dst->pkt_dts                = src->pkt_dts;
     dst->pkt_pos                = src->pkt_pos;
     dst->pkt_size               = src->pkt_size;
@@ -292,6 +375,12 @@ static int frame_copy_props(AVFrame *dst, const AVFrame *src, int force_copy)
     dst->chroma_location        = src->chroma_location;
 
     av_dict_copy(&dst->metadata, src->metadata, 0);
+
+#if FF_API_ERROR_FRAME
+FF_DISABLE_DEPRECATION_WARNINGS
+    memcpy(dst->error, src->error, sizeof(dst->error));
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
 
     for (i = 0; i < src->nb_side_data; i++) {
         const AVFrameSideData *sd_src = src->side_data[i];
@@ -319,9 +408,36 @@ static int frame_copy_props(AVFrame *dst, const AVFrame *src, int force_copy)
         av_dict_copy(&sd_dst->metadata, sd_src->metadata, 0);
     }
 
-    ret = av_buffer_replace(&dst->opaque_ref, src->opaque_ref);
-    ret |= av_buffer_replace(&dst->private_ref, src->private_ref);
-    return ret;
+#if FF_API_FRAME_QP
+FF_DISABLE_DEPRECATION_WARNINGS
+    dst->qscale_table = NULL;
+    dst->qstride      = 0;
+    dst->qscale_type  = 0;
+    av_buffer_unref(&dst->qp_table_buf);
+    if (src->qp_table_buf) {
+        dst->qp_table_buf = av_buffer_ref(src->qp_table_buf);
+        if (dst->qp_table_buf) {
+            dst->qscale_table = dst->qp_table_buf->data;
+            dst->qstride      = src->qstride;
+            dst->qscale_type  = src->qscale_type;
+        }
+    }
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
+
+    av_buffer_unref(&dst->opaque_ref);
+    av_buffer_unref(&dst->private_ref);
+    if (src->opaque_ref) {
+        dst->opaque_ref = av_buffer_ref(src->opaque_ref);
+        if (!dst->opaque_ref)
+            return AVERROR(ENOMEM);
+    }
+    if (src->private_ref) {
+        dst->private_ref = av_buffer_ref(src->private_ref);
+        if (!dst->private_ref)
+            return AVERROR(ENOMEM);
+    }
+    return 0;
 }
 
 int av_frame_ref(AVFrame *dst, const AVFrame *src)
@@ -340,19 +456,19 @@ int av_frame_ref(AVFrame *dst, const AVFrame *src)
 
     ret = frame_copy_props(dst, src, 0);
     if (ret < 0)
-        goto fail;
+        return ret;
 
     /* duplicate the frame data if it's not refcounted */
     if (!src->buf[0]) {
-        ret = av_frame_get_buffer(dst, 0);
+        ret = av_frame_get_buffer(dst, 32);
         if (ret < 0)
-            goto fail;
+            return ret;
 
         ret = av_frame_copy(dst, src);
         if (ret < 0)
-            goto fail;
+            av_frame_unref(dst);
 
-        return 0;
+        return ret;
     }
 
     /* ref the buffers */
@@ -367,8 +483,8 @@ int av_frame_ref(AVFrame *dst, const AVFrame *src)
     }
 
     if (src->extended_buf) {
-        dst->extended_buf = av_calloc(src->nb_extended_buf,
-                                      sizeof(*dst->extended_buf));
+        dst->extended_buf = av_mallocz_array(sizeof(*dst->extended_buf),
+                                       src->nb_extended_buf);
         if (!dst->extended_buf) {
             ret = AVERROR(ENOMEM);
             goto fail;
@@ -449,6 +565,11 @@ void av_frame_unref(AVFrame *frame)
         av_buffer_unref(&frame->extended_buf[i]);
     av_freep(&frame->extended_buf);
     av_dict_free(&frame->metadata);
+#if FF_API_FRAME_QP
+FF_DISABLE_DEPRECATION_WARNINGS
+    av_buffer_unref(&frame->qp_table_buf);
+FF_ENABLE_DEPRECATION_WARNINGS
+#endif
 
     av_buffer_unref(&frame->hw_frames_ctx);
 
@@ -505,11 +626,7 @@ int av_frame_make_writable(AVFrame *frame)
     tmp.channels       = frame->channels;
     tmp.channel_layout = frame->channel_layout;
     tmp.nb_samples     = frame->nb_samples;
-
-    if (frame->hw_frames_ctx)
-        ret = av_hwframe_get_buffer(frame->hw_frames_ctx, &tmp, 0);
-    else
-        ret = av_frame_get_buffer(&tmp, 0);
+    ret = av_frame_get_buffer(&tmp, 32);
     if (ret < 0)
         return ret;
 
@@ -604,7 +721,7 @@ AVFrameSideData *av_frame_new_side_data_from_buf(AVFrame *frame,
 
 AVFrameSideData *av_frame_new_side_data(AVFrame *frame,
                                         enum AVFrameSideDataType type,
-                                        size_t size)
+                                        int size)
 {
     AVFrameSideData *ret;
     AVBufferRef *buf = av_buffer_alloc(size);
@@ -634,9 +751,6 @@ static int frame_copy_video(AVFrame *dst, const AVFrame *src)
     if (dst->width  < src->width ||
         dst->height < src->height)
         return AVERROR(EINVAL);
-
-    if (src->hw_frames_ctx || dst->hw_frames_ctx)
-        return av_hwframe_transfer_data(dst, src, 0);
 
     planes = av_pix_fmt_count_planes(dst->format);
     for (i = 0; i < planes; i++)
@@ -692,7 +806,7 @@ void av_frame_remove_side_data(AVFrame *frame, enum AVFrameSideDataType type)
 {
     int i;
 
-    for (i = frame->nb_side_data - 1; i >= 0; i--) {
+    for (i = 0; i < frame->nb_side_data; i++) {
         AVFrameSideData *sd = frame->side_data[i];
         if (sd->type == type) {
             free_side_data(&frame->side_data[i]);
@@ -722,12 +836,12 @@ const char *av_frame_side_data_name(enum AVFrameSideDataType type)
     case AV_FRAME_DATA_S12M_TIMECODE:               return "SMPTE 12-1 timecode";
     case AV_FRAME_DATA_SPHERICAL:                   return "Spherical Mapping";
     case AV_FRAME_DATA_ICC_PROFILE:                 return "ICC profile";
+#if FF_API_FRAME_QP
+    case AV_FRAME_DATA_QP_TABLE_PROPERTIES:         return "QP table properties";
+    case AV_FRAME_DATA_QP_TABLE_DATA:               return "QP table data";
+#endif
     case AV_FRAME_DATA_DYNAMIC_HDR_PLUS: return "HDR Dynamic Metadata SMPTE2094-40 (HDR10+)";
     case AV_FRAME_DATA_REGIONS_OF_INTEREST: return "Regions Of Interest";
-    case AV_FRAME_DATA_VIDEO_ENC_PARAMS:            return "Video encoding parameters";
-    case AV_FRAME_DATA_SEI_UNREGISTERED:            return "H.26[45] User Data Unregistered SEI message";
-    case AV_FRAME_DATA_FILM_GRAIN_PARAMS:           return "Film grain parameters";
-    case AV_FRAME_DATA_DETECTION_BBOXES:            return "Bounding boxes for object detection and classification";
     }
     return NULL;
 }
@@ -742,7 +856,7 @@ static int calc_cropping_offsets(size_t offsets[4], const AVFrame *frame,
         int shift_x = (i == 1 || i == 2) ? desc->log2_chroma_w : 0;
         int shift_y = (i == 1 || i == 2) ? desc->log2_chroma_h : 0;
 
-        if (desc->flags & AV_PIX_FMT_FLAG_PAL && i == 1) {
+        if (desc->flags & (AV_PIX_FMT_FLAG_PAL | FF_PSEUDOPAL) && i == 1) {
             offsets[i] = 0;
             break;
         }

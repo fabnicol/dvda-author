@@ -26,6 +26,7 @@
 
 #include "libavutil/common.h"
 #include "libavutil/intreadwrite.h"
+#include "avcodec.h"
 #include "h264qpel.h"
 #include "mathops.h"
 #include "pixels.h"

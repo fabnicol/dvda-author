@@ -113,7 +113,7 @@ int main(int argc, char **argv)
     FILE *outfile           = NULL;
     FILE *infile            = NULL;
     char *graph_string      = NULL;
-    AVFilterGraph *graph    = NULL;
+    AVFilterGraph *graph = av_mallocz(sizeof(AVFilterGraph));
     char c;
 
     av_log_set_level(AV_LOG_DEBUG);
@@ -187,12 +187,6 @@ int main(int argc, char **argv)
             p += l;
         }
         *p = '\0';
-    }
-
-    graph = avfilter_graph_alloc();
-    if (!graph) {
-        fprintf(stderr, "Memory allocation failure\n");
-        return 1;
     }
 
     if (avfilter_graph_parse(graph, graph_string, NULL, NULL, NULL) < 0) {

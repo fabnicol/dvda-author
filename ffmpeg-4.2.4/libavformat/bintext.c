@@ -177,14 +177,14 @@ static int bintext_read_header(AVFormatContext *s)
 {
     BinDemuxContext *bin = s->priv_data;
     AVIOContext *pb = s->pb;
-    int ret;
+
     AVStream *st = init_stream(s);
     if (!st)
         return AVERROR(ENOMEM);
     st->codecpar->codec_id    = AV_CODEC_ID_BINTEXT;
 
-    if ((ret = ff_alloc_extradata(st->codecpar, 2)) < 0)
-        return ret;
+    if (ff_alloc_extradata(st->codecpar, 2))
+        return AVERROR(ENOMEM);
     st->codecpar->extradata[0] = 16;
     st->codecpar->extradata[1] = 0;
 
@@ -222,7 +222,7 @@ static int xbin_read_header(AVFormatContext *s)
     BinDemuxContext *bin = s->priv_data;
     AVIOContext *pb = s->pb;
     char fontheight, flags;
-    int ret;
+
     AVStream *st = init_stream(s);
     if (!st)
         return AVERROR(ENOMEM);
@@ -241,9 +241,8 @@ static int xbin_read_header(AVFormatContext *s)
         st->codecpar->extradata_size += fontheight * (flags & 0x10 ? 512 : 256);
     st->codecpar->codec_id    = flags & 4 ? AV_CODEC_ID_XBIN : AV_CODEC_ID_BINTEXT;
 
-    ret = ff_alloc_extradata(st->codecpar, st->codecpar->extradata_size);
-    if (ret < 0)
-        return ret;
+    if (ff_alloc_extradata(st->codecpar, st->codecpar->extradata_size))
+        return AVERROR(ENOMEM);
     st->codecpar->extradata[0] = fontheight;
     st->codecpar->extradata[1] = flags;
     if (avio_read(pb, st->codecpar->extradata + 2, st->codecpar->extradata_size - 2) < 0)
@@ -265,7 +264,6 @@ static int adf_read_header(AVFormatContext *s)
     BinDemuxContext *bin = s->priv_data;
     AVIOContext *pb = s->pb;
     AVStream *st;
-    int ret;
 
     if (avio_r8(pb) != 1)
         return AVERROR_INVALIDDATA;
@@ -275,8 +273,8 @@ static int adf_read_header(AVFormatContext *s)
         return AVERROR(ENOMEM);
     st->codecpar->codec_id    = AV_CODEC_ID_BINTEXT;
 
-    if ((ret = ff_alloc_extradata(st->codecpar, 2 + 48 + 4096)) < 0)
-        return ret;
+    if (ff_alloc_extradata(st->codecpar, 2 + 48 + 4096))
+        return AVERROR(ENOMEM);
     st->codecpar->extradata[0] = 16;
     st->codecpar->extradata[1] = BINTEXT_PALETTE|BINTEXT_FONT;
 
@@ -293,8 +291,6 @@ static int adf_read_header(AVFormatContext *s)
         bin->fsize = avio_size(pb) - 1 - 192 - 4096;
         st->codecpar->width = 80<<3;
         ff_sauce_read(s, &bin->fsize, &got_width, 0);
-        if (st->codecpar->width < 8)
-            return AVERROR_INVALIDDATA;
         if (!bin->width)
             calculate_height(st->codecpar, bin->fsize);
         avio_seek(pb, 1 + 192 + 4096, SEEK_SET);
@@ -322,7 +318,7 @@ static int idf_read_header(AVFormatContext *s)
     BinDemuxContext *bin = s->priv_data;
     AVIOContext *pb = s->pb;
     AVStream *st;
-    int got_width = 0, ret;
+    int got_width = 0;
 
     if (!(pb->seekable & AVIO_SEEKABLE_NORMAL))
         return AVERROR(EIO);
@@ -332,8 +328,8 @@ static int idf_read_header(AVFormatContext *s)
         return AVERROR(ENOMEM);
     st->codecpar->codec_id    = AV_CODEC_ID_IDF;
 
-    if ((ret = ff_alloc_extradata(st->codecpar, 2 + 48 + 4096)) < 0)
-        return ret;
+    if (ff_alloc_extradata(st->codecpar, 2 + 48 + 4096))
+        return AVERROR(ENOMEM);
     st->codecpar->extradata[0] = 16;
     st->codecpar->extradata[1] = BINTEXT_PALETTE|BINTEXT_FONT;
 
@@ -346,8 +342,6 @@ static int idf_read_header(AVFormatContext *s)
 
     bin->fsize = avio_size(pb) - 12 - 4096 - 48;
     ff_sauce_read(s, &bin->fsize, &got_width, 0);
-    if (st->codecpar->width < 8)
-        return AVERROR_INVALIDDATA;
     if (!bin->width)
         calculate_height(st->codecpar, bin->fsize);
     avio_seek(pb, 12, SEEK_SET);
@@ -394,7 +388,7 @@ static const AVOption options[] = {
 }}
 
 #if CONFIG_BINTEXT_DEMUXER
-const AVInputFormat ff_bintext_demuxer = {
+AVInputFormat ff_bintext_demuxer = {
     .name           = "bin",
     .long_name      = NULL_IF_CONFIG_SMALL("Binary text"),
     .priv_data_size = sizeof(BinDemuxContext),
@@ -406,7 +400,7 @@ const AVInputFormat ff_bintext_demuxer = {
 #endif
 
 #if CONFIG_XBIN_DEMUXER
-const AVInputFormat ff_xbin_demuxer = {
+AVInputFormat ff_xbin_demuxer = {
     .name           = "xbin",
     .long_name      = NULL_IF_CONFIG_SMALL("eXtended BINary text (XBIN)"),
     .priv_data_size = sizeof(BinDemuxContext),
@@ -418,7 +412,7 @@ const AVInputFormat ff_xbin_demuxer = {
 #endif
 
 #if CONFIG_ADF_DEMUXER
-const AVInputFormat ff_adf_demuxer = {
+AVInputFormat ff_adf_demuxer = {
     .name           = "adf",
     .long_name      = NULL_IF_CONFIG_SMALL("Artworx Data Format"),
     .priv_data_size = sizeof(BinDemuxContext),
@@ -430,7 +424,7 @@ const AVInputFormat ff_adf_demuxer = {
 #endif
 
 #if CONFIG_IDF_DEMUXER
-const AVInputFormat ff_idf_demuxer = {
+AVInputFormat ff_idf_demuxer = {
     .name           = "idf",
     .long_name      = NULL_IF_CONFIG_SMALL("iCE Draw File"),
     .priv_data_size = sizeof(BinDemuxContext),

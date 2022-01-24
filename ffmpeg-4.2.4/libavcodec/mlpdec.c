@@ -30,8 +30,6 @@
 #include "libavutil/internal.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/channel_layout.h"
-#include "libavutil/mem_internal.h"
-#include "libavutil/thread.h"
 #include "get_bits.h"
 #include "internal.h"
 #include "libavutil/crc.h"
@@ -53,8 +51,6 @@
 typedef struct SubStream {
     /// Set if a valid restart header has been read. Otherwise the substream cannot be decoded.
     uint8_t     restart_seen;
-    /// Set if end of stream is encountered
-    uint8_t     end_of_stream;
 
     //@{
     /** restart header data */
@@ -73,7 +69,6 @@ typedef struct SubStream {
     uint64_t    mask;
     /// The matrix encoding mode for this substream
     enum AVMatrixEncoding matrix_encoding;
-    enum AVMatrixEncoding prev_matrix_encoding;
 
     /// Channel coding parameters for channels in the substream
     ChannelParams channel_params[MAX_CHANNELS];
@@ -210,13 +205,16 @@ static VLC huff_vlc[3];
 
 static av_cold void init_static(void)
 {
-    for (int i = 0; i < 3; i++) {
-        static VLC_TYPE vlc_buf[3 * VLC_STATIC_SIZE][2];
-        huff_vlc[i].table           = &vlc_buf[i * VLC_STATIC_SIZE];
-        huff_vlc[i].table_allocated = VLC_STATIC_SIZE;
-        init_vlc(&huff_vlc[i], VLC_BITS, 18,
-                 &ff_mlp_huffman_tables[i][0][1], 2, 1,
-                 &ff_mlp_huffman_tables[i][0][0], 2, 1, INIT_VLC_USE_NEW_STATIC);
+    if (!huff_vlc[0].bits) {
+        INIT_VLC_STATIC(&huff_vlc[0], VLC_BITS, 18,
+                    &ff_mlp_huffman_tables[0][0][1], 2, 1,
+                    &ff_mlp_huffman_tables[0][0][0], 2, 1, VLC_STATIC_SIZE);
+        INIT_VLC_STATIC(&huff_vlc[1], VLC_BITS, 16,
+                    &ff_mlp_huffman_tables[1][0][1], 2, 1,
+                    &ff_mlp_huffman_tables[1][0][0], 2, 1, VLC_STATIC_SIZE);
+        INIT_VLC_STATIC(&huff_vlc[2], VLC_BITS, 15,
+                    &ff_mlp_huffman_tables[2][0][1], 2, 1,
+                    &ff_mlp_huffman_tables[2][0][0], 2, 1, VLC_STATIC_SIZE);
     }
 
     ff_mlp_init_crc();
@@ -268,7 +266,7 @@ static inline int read_huff_channels(MLPDecodeContext *m, GetBitContext *gbp,
             return AVERROR_INVALIDDATA;
 
         if (lsb_bits > 0)
-            result = (result << lsb_bits) + get_bits_long(gbp, lsb_bits);
+            result = (result << lsb_bits) + get_bits(gbp, lsb_bits);
 
         result  += cp->sign_huff_offset;
         result *= 1 << quant_step_size;
@@ -281,16 +279,14 @@ static inline int read_huff_channels(MLPDecodeContext *m, GetBitContext *gbp,
 
 static av_cold int mlp_decode_init(AVCodecContext *avctx)
 {
-    static AVOnce init_static_once = AV_ONCE_INIT;
     MLPDecodeContext *m = avctx->priv_data;
     int substr;
 
+    init_static();
     m->avctx = avctx;
     for (substr = 0; substr < MAX_SUBSTREAMS; substr++)
         m->substream[substr].lossless_check_data = 0xffffffff;
     ff_mlpdsp_init(&m->dsp);
-
-    ff_thread_once(&init_static_once, init_static);
 
     return 0;
 }
@@ -392,7 +388,7 @@ static int read_major_sync(MLPDecodeContext *m, GetBitContext *gb)
      * substream is Stereo. Subsequent substreams' layouts are indicated in the
      * major sync. */
     if (m->avctx->codec_id == AV_CODEC_ID_MLP) {
-        if (mh.stream_type != SYNC_MLP) {
+        if (mh.stream_type != 0xbb) {
             avpriv_request_sample(m->avctx,
                         "unexpected stream_type %X in MLP",
                         mh.stream_type);
@@ -402,14 +398,12 @@ static int read_major_sync(MLPDecodeContext *m, GetBitContext *gb)
             m->substream[0].mask = AV_CH_LAYOUT_STEREO;
         m->substream[substr].mask = mh.channel_layout_mlp;
     } else {
-        if (mh.stream_type != SYNC_TRUEHD) {
+        if (mh.stream_type != 0xba) {
             avpriv_request_sample(m->avctx,
                         "unexpected stream_type %X in !MLP",
                         mh.stream_type);
             return AVERROR_PATCHWELCOME;
         }
-        if (mh.channel_modifier_thd_stream0 == THD_CH_MODIFIER_STEREO)
-            m->substream[0].mask = AV_CH_LAYOUT_STEREO;
         if ((substr = (mh.num_substreams > 1)))
             m->substream[0].mask = AV_CH_LAYOUT_STEREO;
         if (mh.num_substreams > 2)
@@ -417,8 +411,7 @@ static int read_major_sync(MLPDecodeContext *m, GetBitContext *gb)
                 m->substream[2].mask = mh.channel_layout_thd_stream2;
             else
                 m->substream[2].mask = mh.channel_layout_thd_stream1;
-        if (m->avctx->channels > 2)
-            m->substream[mh.num_substreams > 1].mask = mh.channel_layout_thd_stream1;
+        m->substream[substr].mask = mh.channel_layout_thd_stream1;
 
         if (m->avctx->channels<=2 && m->substream[substr].mask == AV_CH_LAYOUT_MONO && m->max_decoded_substream == 1) {
             av_log(m->avctx, AV_LOG_DEBUG, "Mono stream with 2 substreams, ignoring 2nd\n");
@@ -836,7 +829,7 @@ static int read_channel_params(MLPDecodeContext *m, unsigned int substr,
     cp->codebook  = get_bits(gbp, 2);
     cp->huff_lsbs = get_bits(gbp, 5);
 
-    if (cp->codebook > 0 && cp->huff_lsbs > 24) {
+    if (cp->huff_lsbs > 24) {
         av_log(m->avctx, AV_LOG_ERROR, "Invalid huff_lsbs.\n");
         cp->huff_lsbs = 0;
         return AVERROR_INVALIDDATA;
@@ -926,7 +919,7 @@ fail:
     return ret;
 }
 
-#define MSB_MASK(bits)  (-(1 << (bits)))
+#define MSB_MASK(bits)  (-1u << (bits))
 
 /** Generate PCM samples using the prediction filters and residual values
  *  read from the data stream, and update the filter state. */
@@ -1125,12 +1118,8 @@ static int output_data(MLPDecodeContext *m, unsigned int substr,
                                                     is32);
 
     /* Update matrix encoding side data */
-    if (s->matrix_encoding != s->prev_matrix_encoding) {
-        if ((ret = ff_side_data_update_matrix_encoding(frame, s->matrix_encoding)) < 0)
-            return ret;
-
-        s->prev_matrix_encoding = s->matrix_encoding;
-    }
+    if ((ret = ff_side_data_update_matrix_encoding(frame, s->matrix_encoding)) < 0)
+        return ret;
 
     *got_frame_ptr = 1;
 
@@ -1250,12 +1239,6 @@ static int read_access_unit(AVCodecContext *avctx, void* data,
 
     for (substr = 0; substr <= m->max_decoded_substream; substr++) {
         SubStream *s = &m->substream[substr];
-
-        if (substr != m->max_decoded_substream &&
-            m->substream[m->max_decoded_substream].min_channel == 0 &&
-            m->substream[m->max_decoded_substream].max_channel == avctx->channels - 1)
-            goto skip_substr;
-
         init_get_bits(&gb, buf, substream_data_len[substr] * 8);
 
         m->matrix_changed = 0;
@@ -1302,8 +1285,8 @@ static int read_access_unit(AVCodecContext *avctx, void* data,
             else if (m->avctx->codec_id == AV_CODEC_ID_MLP    && shorten_by != 0xD234)
                 return AVERROR_INVALIDDATA;
 
-            av_log(m->avctx, AV_LOG_DEBUG, "End of stream indicated.\n");
-            s->end_of_stream = 1;
+            if (substr == m->max_decoded_substream)
+                av_log(m->avctx, AV_LOG_INFO, "End of stream indicated.\n");
         }
 
         if (substream_parity_present[substr]) {
@@ -1329,22 +1312,11 @@ next_substr:
             av_log(m->avctx, AV_LOG_ERROR,
                    "No restart header present in substream %d.\n", substr);
 
-skip_substr:
         buf += substream_data_len[substr];
     }
 
     if ((ret = output_data(m, m->max_decoded_substream, data, got_frame_ptr)) < 0)
         return ret;
-
-    for (substr = 0; substr <= m->max_decoded_substream; substr++){
-        SubStream *s = &m->substream[substr];
-
-        if (s->end_of_stream) {
-            s->lossless_check_data = 0xffffffff;
-            s->end_of_stream = 0;
-            m->params_valid = 0;
-        }
-    }
 
     return length;
 
@@ -1357,21 +1329,8 @@ error:
     return AVERROR_INVALIDDATA;
 }
 
-static void mlp_decode_flush(AVCodecContext *avctx)
-{
-    MLPDecodeContext *m = avctx->priv_data;
-
-    m->params_valid = 0;
-    for (int substr = 0; substr <= m->max_decoded_substream; substr++){
-        SubStream *s = &m->substream[substr];
-
-        s->lossless_check_data = 0xffffffff;
-        s->prev_matrix_encoding = 0;
-    }
-}
-
 #if CONFIG_MLP_DECODER
-const AVCodec ff_mlp_decoder = {
+AVCodec ff_mlp_decoder = {
     .name           = "mlp",
     .long_name      = NULL_IF_CONFIG_SMALL("MLP (Meridian Lossless Packing)"),
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -1379,13 +1338,11 @@ const AVCodec ff_mlp_decoder = {
     .priv_data_size = sizeof(MLPDecodeContext),
     .init           = mlp_decode_init,
     .decode         = read_access_unit,
-    .flush          = mlp_decode_flush,
-    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
+    .capabilities   = AV_CODEC_CAP_DR1,
 };
 #endif
 #if CONFIG_TRUEHD_DECODER
-const AVCodec ff_truehd_decoder = {
+AVCodec ff_truehd_decoder = {
     .name           = "truehd",
     .long_name      = NULL_IF_CONFIG_SMALL("TrueHD"),
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -1393,8 +1350,6 @@ const AVCodec ff_truehd_decoder = {
     .priv_data_size = sizeof(MLPDecodeContext),
     .init           = mlp_decode_init,
     .decode         = read_access_unit,
-    .flush          = mlp_decode_flush,
-    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
+    .capabilities   = AV_CODEC_CAP_DR1,
 };
 #endif /* CONFIG_TRUEHD_DECODER */

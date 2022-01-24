@@ -26,7 +26,6 @@
 #include <stdio.h>
 
 #include "libavutil/attributes.h"
-#include "libavutil/avstring.h"
 #include "libavutil/internal.h"
 #include "libavutil/mem.h"
 #include "libavutil/opt.h"
@@ -49,18 +48,30 @@ static av_cold int split_init(AVFilterContext *ctx)
     int i, ret;
 
     for (i = 0; i < s->nb_outputs; i++) {
+        char name[32];
         AVFilterPad pad = { 0 };
 
+        snprintf(name, sizeof(name), "output%d", i);
         pad.type = ctx->filter->inputs[0].type;
-        pad.name = av_asprintf("output%d", i);
+        pad.name = av_strdup(name);
         if (!pad.name)
             return AVERROR(ENOMEM);
 
-        if ((ret = ff_append_outpad_free_name(ctx, &pad)) < 0)
+        if ((ret = ff_insert_outpad(ctx, i, &pad)) < 0) {
+            av_freep(&pad.name);
             return ret;
+        }
     }
 
     return 0;
+}
+
+static av_cold void split_uninit(AVFilterContext *ctx)
+{
+    int i;
+
+    for (i = 0; i < ctx->nb_outputs; i++)
+        av_freep(&ctx->output_pads[i].name);
 }
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
@@ -94,7 +105,11 @@ static const AVOption options[] = {
     { NULL }
 };
 
-AVFILTER_DEFINE_CLASS_EXT(split, "(a)split", options);
+#define split_options options
+AVFILTER_DEFINE_CLASS(split);
+
+#define asplit_options options
+AVFILTER_DEFINE_CLASS(asplit);
 
 static const AVFilterPad avfilter_vf_split_inputs[] = {
     {
@@ -102,15 +117,17 @@ static const AVFilterPad avfilter_vf_split_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .filter_frame = filter_frame,
     },
+    { NULL }
 };
 
-const AVFilter ff_vf_split = {
+AVFilter ff_vf_split = {
     .name        = "split",
     .description = NULL_IF_CONFIG_SMALL("Pass on the input to N video outputs."),
     .priv_size   = sizeof(SplitContext),
     .priv_class  = &split_class,
     .init        = split_init,
-    FILTER_INPUTS(avfilter_vf_split_inputs),
+    .uninit      = split_uninit,
+    .inputs      = avfilter_vf_split_inputs,
     .outputs     = NULL,
     .flags       = AVFILTER_FLAG_DYNAMIC_OUTPUTS,
 };
@@ -121,15 +138,17 @@ static const AVFilterPad avfilter_af_asplit_inputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .filter_frame = filter_frame,
     },
+    { NULL }
 };
 
-const AVFilter ff_af_asplit = {
+AVFilter ff_af_asplit = {
     .name        = "asplit",
     .description = NULL_IF_CONFIG_SMALL("Pass on the audio input to N audio outputs."),
-    .priv_class  = &split_class,
     .priv_size   = sizeof(SplitContext),
+    .priv_class  = &asplit_class,
     .init        = split_init,
-    FILTER_INPUTS(avfilter_af_asplit_inputs),
+    .uninit      = split_uninit,
+    .inputs      = avfilter_af_asplit_inputs,
     .outputs     = NULL,
     .flags       = AVFILTER_FLAG_DYNAMIC_OUTPUTS,
 };

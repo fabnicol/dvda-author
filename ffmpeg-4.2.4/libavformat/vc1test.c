@@ -51,7 +51,7 @@ static int vc1t_read_header(AVFormatContext *s)
 {
     AVIOContext *pb = s->pb;
     AVStream *st;
-    int frames, ret;
+    int frames;
     uint32_t fps;
     uint32_t size;
 
@@ -67,8 +67,8 @@ static int vc1t_read_header(AVFormatContext *s)
     st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
     st->codecpar->codec_id = AV_CODEC_ID_WMV3;
 
-    if ((ret = ff_get_extradata(s, st->codecpar, pb, VC1_EXTRADATA_SIZE)) < 0)
-        return ret;
+    if (ff_get_extradata(s, st->codecpar, pb, VC1_EXTRADATA_SIZE) < 0)
+        return AVERROR(ENOMEM);
 
     avio_skip(pb, size - 4);
     st->codecpar->height = avio_rl32(pb);
@@ -116,7 +116,7 @@ static int vc1t_read_packet(AVFormatContext *s,
     return pkt->size;
 }
 
-const AVInputFormat ff_vc1t_demuxer = {
+AVInputFormat ff_vc1t_demuxer = {
     .name           = "vc1test",
     .long_name      = NULL_IF_CONFIG_SMALL("VC-1 test bitstream"),
     .read_probe     = vc1t_probe,

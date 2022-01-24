@@ -38,7 +38,7 @@ static int hcom_probe(const AVProbeData *p)
 static int hcom_read_header(AVFormatContext *s)
 {
     AVStream *st;
-    av_unused unsigned data_size, rsrc_size, huffcount;
+    unsigned data_size, rsrc_size, huffcount;
     unsigned compresstype, divisor;
     unsigned dict_entries;
     int ret;
@@ -82,7 +82,7 @@ static int hcom_read_header(AVFormatContext *s)
     return 0;
 }
 
-const AVInputFormat ff_hcom_demuxer = {
+AVInputFormat ff_hcom_demuxer = {
     .name           = "hcom",
     .long_name      = NULL_IF_CONFIG_SMALL("Macintosh HCOM"),
     .read_probe     = hcom_probe,

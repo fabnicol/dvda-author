@@ -58,6 +58,7 @@ static av_cold int allocate_buffers(CinVideoContext *cin)
         cin->bitmap_table[i] = av_mallocz(cin->bitmap_size);
         if (!cin->bitmap_table[i]) {
             av_log(cin->avctx, AV_LOG_ERROR, "Can't allocate bitmap buffers.\n");
+            destroy_buffers(cin);
             return AVERROR(ENOMEM);
         }
     }
@@ -289,7 +290,7 @@ static int cinvideo_decode_frame(AVCodecContext *avctx,
         break;
     }
 
-    if ((res = ff_reget_buffer(avctx, cin->frame, 0)) < 0)
+    if ((res = ff_reget_buffer(avctx, cin->frame)) < 0)
         return res;
 
     memcpy(cin->frame->data[1], cin->palette, sizeof(cin->palette));
@@ -321,7 +322,7 @@ static av_cold int cinvideo_decode_end(AVCodecContext *avctx)
     return 0;
 }
 
-const AVCodec ff_dsicinvideo_decoder = {
+AVCodec ff_dsicinvideo_decoder = {
     .name           = "dsicinvideo",
     .long_name      = NULL_IF_CONFIG_SMALL("Delphine Software International CIN video"),
     .type           = AVMEDIA_TYPE_VIDEO,
@@ -330,6 +331,6 @@ const AVCodec ff_dsicinvideo_decoder = {
     .init           = cinvideo_decode_init,
     .close          = cinvideo_decode_end,
     .decode         = cinvideo_decode_frame,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
     .capabilities   = AV_CODEC_CAP_DR1,
 };

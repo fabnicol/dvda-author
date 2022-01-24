@@ -20,11 +20,9 @@
 
 #define BITSTREAM_WRITER_LE
 
-#include "libavutil/channel_layout.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/opt.h"
 #include "avcodec.h"
-#include "encode.h"
 #include "internal.h"
 #include "put_bits.h"
 #include "bytestream.h"
@@ -646,9 +644,9 @@ static uint32_t log2sample(uint32_t v, int limit, uint32_t *result)
     uint32_t dbits = count_bits(v);
 
     if ((v += v >> 9) < (1 << 8)) {
-        *result += (dbits << 8) + ff_wp_log2_table[(v << (9 - dbits)) & 0xff];
+        *result += (dbits << 8) + wp_log2_table[(v << (9 - dbits)) & 0xff];
     } else {
-        *result += dbits = (dbits << 8) + ff_wp_log2_table[(v >> (dbits - 9)) & 0xff];
+        *result += dbits = (dbits << 8) + wp_log2_table[(v >> (dbits - 9)) & 0xff];
 
         if (limit && dbits >= limit)
             return 1;
@@ -2779,7 +2777,7 @@ static int wavpack_encode_block(WavPackEncodeContext *s,
     }
     encode_flush(s);
     flush_put_bits(&s->pb);
-    data_size = put_bytes_output(&s->pb);
+    data_size = put_bits_count(&s->pb) >> 3;
     bytestream2_put_le24(&pb, (data_size + 1) >> 1);
     bytestream2_skip_p(&pb, data_size);
     if (data_size & 1)
@@ -2793,7 +2791,7 @@ static int wavpack_encode_block(WavPackEncodeContext *s,
         else
             pack_int32(s, s->orig_l, s->orig_r, nb_samples);
         flush_put_bits(&s->pb);
-        data_size = put_bytes_output(&s->pb);
+        data_size = put_bits_count(&s->pb) >> 3;
         bytestream2_put_le24(&pb, (data_size + 5) >> 1);
         bytestream2_put_le32(&pb, s->crc_x);
         bytestream2_skip_p(&pb, data_size);
@@ -2871,7 +2869,7 @@ static int wavpack_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
 
     buf_size = s->block_samples * avctx->channels * 8
              + 200 * avctx->channels /* for headers */;
-    if ((ret = ff_alloc_packet(avctx, avpkt, buf_size)) < 0)
+    if ((ret = ff_alloc_packet2(avctx, avpkt, buf_size, 0)) < 0)
         return ret;
     buf = avpkt->data;
 
@@ -2959,7 +2957,7 @@ static const AVClass wavpack_encoder_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-const AVCodec ff_wavpack_encoder = {
+AVCodec ff_wavpack_encoder = {
     .name           = "wavpack",
     .long_name      = NULL_IF_CONFIG_SMALL("WavPack"),
     .type           = AVMEDIA_TYPE_AUDIO,
@@ -2975,5 +2973,4 @@ const AVCodec ff_wavpack_encoder = {
                                                      AV_SAMPLE_FMT_S32P,
                                                      AV_SAMPLE_FMT_FLTP,
                                                      AV_SAMPLE_FMT_NONE },
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

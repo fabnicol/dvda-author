@@ -24,7 +24,6 @@
  */
 
 #include "libavutil/avassert.h"
-#include "libavutil/mem_internal.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/pixfmt.h"
@@ -180,7 +179,6 @@ static const struct TransferCharacteristics transfer_characteristics[AVCOL_TRC_N
     [AVCOL_TRC_GAMMA28]   = { 1.0,    0.0,    1.0 / 2.8, 0.0 },
     [AVCOL_TRC_SMPTE170M] = { 1.099,  0.018,  0.45, 4.5 },
     [AVCOL_TRC_SMPTE240M] = { 1.1115, 0.0228, 0.45, 4.0 },
-    [AVCOL_TRC_LINEAR]    = { 1.0,    0.0,    1.0,  0.0 },
     [AVCOL_TRC_IEC61966_2_1] = { 1.055, 0.0031308, 1.0 / 2.4, 12.92 },
     [AVCOL_TRC_IEC61966_2_4] = { 1.099, 0.018, 0.45, 4.5 },
     [AVCOL_TRC_BT2020_10] = { 1.099,  0.018,  0.45, 4.5 },
@@ -333,15 +331,15 @@ static void apply_lut(int16_t *buf[3], ptrdiff_t stride,
     }
 }
 
-typedef struct ThreadData {
+struct ThreadData {
     AVFrame *in, *out;
     ptrdiff_t in_linesize[3], out_linesize[3];
     int in_ss_h, out_ss_h;
-} ThreadData;
+};
 
 static int convert(AVFilterContext *ctx, void *data, int job_nr, int n_jobs)
 {
-    const ThreadData *td = data;
+    struct ThreadData *td = data;
     ColorSpaceContext *s = ctx->priv;
     uint8_t *in_data[3], *out_data[3];
     int16_t *rgb[3];
@@ -734,7 +732,7 @@ static int create_filtergraph(AVFilterContext *ctx,
     return 0;
 }
 
-static av_cold int init(AVFilterContext *ctx)
+static int init(AVFilterContext *ctx)
 {
     ColorSpaceContext *s = ctx->priv;
 
@@ -773,7 +771,7 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
     int res;
     ptrdiff_t rgb_stride = FFALIGN(in->width * sizeof(int16_t), 32);
     unsigned rgb_sz = rgb_stride * in->height;
-    ThreadData td;
+    struct ThreadData td;
 
     if (!out) {
         av_frame_free(&in);
@@ -782,7 +780,6 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
     res = av_frame_copy_props(out, in);
     if (res < 0) {
         av_frame_free(&in);
-        av_frame_free(&out);
         return res;
     }
 
@@ -842,18 +839,13 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
             !s->dither_scratch_base[1][0] || !s->dither_scratch_base[1][1] ||
             !s->dither_scratch_base[2][0] || !s->dither_scratch_base[2][1]) {
             uninit(ctx);
-            av_frame_free(&in);
-            av_frame_free(&out);
             return AVERROR(ENOMEM);
         }
         s->rgb_sz = rgb_sz;
     }
     res = create_filtergraph(ctx, in, out);
-    if (res < 0) {
-        av_frame_free(&in);
-        av_frame_free(&out);
+    if (res < 0)
         return res;
-    }
     s->rgb_stride = rgb_stride / sizeof(int16_t);
     td.in = in;
     td.out = out;
@@ -867,14 +859,11 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
     td.out_ss_h = av_pix_fmt_desc_get(out->format)->log2_chroma_h;
     if (s->yuv2yuv_passthrough) {
         res = av_frame_copy(out, in);
-        if (res < 0) {
-            av_frame_free(&in);
-            av_frame_free(&out);
+        if (res < 0)
             return res;
-        }
     } else {
-        ff_filter_execute(ctx, convert, &td, NULL,
-                          FFMIN((in->height + 1) >> 1, ff_filter_get_nb_threads(ctx)));
+        ctx->internal->execute(ctx, convert, &td, NULL,
+                               FFMIN((in->height + 1) >> 1, ff_filter_get_nb_threads(ctx)));
     }
     av_frame_free(&in);
 
@@ -898,7 +887,7 @@ static int query_formats(AVFilterContext *ctx)
         return AVERROR(ENOMEM);
     if (s->user_format == AV_PIX_FMT_NONE)
         return ff_set_common_formats(ctx, formats);
-    res = ff_formats_ref(formats, &ctx->inputs[0]->outcfg.formats);
+    res = ff_formats_ref(formats, &ctx->inputs[0]->out_formats);
     if (res < 0)
         return res;
     formats = NULL;
@@ -906,7 +895,7 @@ static int query_formats(AVFilterContext *ctx)
     if (res < 0)
         return res;
 
-    return ff_formats_ref(formats, &ctx->outputs[0]->incfg.formats);
+    return ff_formats_ref(formats, &ctx->outputs[0]->in_formats);
 }
 
 static int config_props(AVFilterLink *outlink)
@@ -980,7 +969,6 @@ static const AVOption colorspace_options[] = {
     ENUM("smpte432",     AVCOL_PRI_SMPTE432,   "prm"),
     ENUM("bt2020",       AVCOL_PRI_BT2020,     "prm"),
     ENUM("jedec-p22",    AVCOL_PRI_JEDEC_P22,  "prm"),
-    ENUM("ebu3213",      AVCOL_PRI_EBU3213,    "prm"),
 
     { "trc",        "Output transfer characteristics",
       OFFSET(user_trc),   AV_OPT_TYPE_INT, { .i64 = AVCOL_TRC_UNSPECIFIED },
@@ -992,7 +980,6 @@ static const AVOption colorspace_options[] = {
     ENUM("gamma28",      AVCOL_TRC_GAMMA28,      "trc"),
     ENUM("smpte170m",    AVCOL_TRC_SMPTE170M,    "trc"),
     ENUM("smpte240m",    AVCOL_TRC_SMPTE240M,    "trc"),
-    ENUM("linear",       AVCOL_TRC_LINEAR,       "trc"),
     ENUM("srgb",         AVCOL_TRC_IEC61966_2_1, "trc"),
     ENUM("iec61966-2-1", AVCOL_TRC_IEC61966_2_1, "trc"),
     ENUM("xvycc",        AVCOL_TRC_IEC61966_2_4, "trc"),
@@ -1057,6 +1044,7 @@ static const AVFilterPad inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .filter_frame = filter_frame,
     },
+    { NULL }
 };
 
 static const AVFilterPad outputs[] = {
@@ -1065,17 +1053,18 @@ static const AVFilterPad outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_props,
     },
+    { NULL }
 };
 
-const AVFilter ff_vf_colorspace = {
+AVFilter ff_vf_colorspace = {
     .name            = "colorspace",
     .description     = NULL_IF_CONFIG_SMALL("Convert between colorspaces."),
     .init            = init,
     .uninit          = uninit,
+    .query_formats   = query_formats,
     .priv_size       = sizeof(ColorSpaceContext),
     .priv_class      = &colorspace_class,
-    FILTER_INPUTS(inputs),
-    FILTER_OUTPUTS(outputs),
-    FILTER_QUERY_FUNC(query_formats),
+    .inputs          = inputs,
+    .outputs         = outputs,
     .flags           = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
 };

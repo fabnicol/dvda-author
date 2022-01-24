@@ -35,6 +35,7 @@
 #endif
 #include <linux/videodev2.h>
 #endif
+#include "libavutil/avassert.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/log.h"
 #include "libavutil/opt.h"
