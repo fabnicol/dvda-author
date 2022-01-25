@@ -359,8 +359,10 @@ command_t *command_line_parsing(int argc, char *const argv[],
   for (k = 0; k < argc; ++k)
     {
       if ((argv_scan[k] = strdup(argv[k])) == NULL)
-        EXIT_ON_RUNTIME_ERROR
-      }
+        {
+          EXIT_ON_RUNTIME_ERROR
+        }
+    }
 
   /* COMMAND-LINE PARSING: first pass for global behaviour option: log, help,
      version, verbosity */
@@ -1579,8 +1581,11 @@ an integer between 1 and 16");
         case 'm' :
           if (optarg)
             {
-              foutput(PAR "  File(s) %s will be used as (spumuxed) top menu\n", optarg);
-              img->topmenu = fn_strtok(optarg, ',', img->topmenu, &globals->topmenusize, 0, NULL, NULL, globals);
+              foutput(PAR "  File(s) %s will be used as (spumuxed) top menu\n",
+                      optarg);
+              img->topmenu = fn_strtok(optarg, ',', img->topmenu,
+                                       &globals->topmenusize, 0,
+                                       NULL, NULL, globals);
               globals->topmenu = Min(globals->topmenu, RUN_DVDAUTHOR);
             }
           else
@@ -1600,21 +1605,31 @@ an integer between 1 and 16");
         case 'H' :
           while (spurank >= img->nmenus) 	img->nmenus++;
 
-          if (img->nmenus) globals->spu_xml = realloc(globals->spu_xml, img->nmenus * sizeof(char *));
+          if (img->nmenus)
+            globals->spu_xml = realloc(globals->spu_xml,
+                                       img->nmenus * sizeof(char *));
 
           globals->spu_xml[spurank] = make_absolute(optarg);
+
           globals->topmenu = Min(globals->topmenu, RUN_SPUMUX_DVDAUTHOR);
-          foutput("%s%s\n", PAR "spumux Xml project: ", globals->spu_xml[spurank]);
-          spurank++;
+
+          foutput("%s%s\n",
+                  PAR "spumux Xml project: ", globals->spu_xml[spurank]);
+          ++spurank;
           break;
 
         case 'B':
           foutput("%s%s\n", PAR "background mpg video(s): ", optarg);
           free(img->backgroundmpg[0]);
           free(img->backgroundmpg);
-          img->backgroundmpg = fn_strtok(optarg, ',', img->backgroundmpg, &globals->backgroundmpgsize, 0, NULL, NULL, globals);
+          img->backgroundmpg = fn_strtok(optarg, ',',
+                                         img->backgroundmpg,
+                                         &globals->backgroundmpgsize,
+                                         0, NULL, NULL, globals);
           foutput(PAR "Top background mpg file(s) %s will be used\n", optarg);
-          globals->topmenu = Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+
+          globals->topmenu = Min(globals->topmenu,
+                                 RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
           break;
 
         case 'u':
@@ -1646,27 +1661,53 @@ an integer between 1 and 16");
               img->highlightcolor_palette = strdup(strtok(NULL, ":"));
               img->selectfgcolor_palette = strdup(strtok(NULL, ":"));
 
-              if ((img->selectfgcolor_palette == NULL) || (img->highlightcolor_palette == NULL) || (img->textcolor_palette == NULL))
-                EXIT_ON_RUNTIME_ERROR_VERBOSE("Color chain is illegal: enter text:highlight:select color separated by a colon");
+              if ((img->selectfgcolor_palette == NULL)
+                  || (img->highlightcolor_palette == NULL)
+                  || (img->textcolor_palette == NULL))
+                EXIT_ON_RUNTIME_ERROR_VERBOSE("Color chain is illegal: "
+                                              "enter text:highlight:"
+                                              "select color separated"
+                                              " by a colon");
 
               errno = 0;
 
-              if (img->textcolor_palette) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Top menu palette text color: %s %lx\n", img->textcolor_palette, strtoul(img->textcolor_palette, NULL, 16));
+              if (img->textcolor_palette)
+                foutput(ANSI_COLOR_MAGENTA
+                        "[PAR]" ANSI_COLOR_RESET
+                        "  Top menu palette text color: %s %lx\n",
+                        img->textcolor_palette,
+                        strtoul(img->textcolor_palette, NULL, 16));
 
-              //if (img->textcolor_palette) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Top menu palette background color: %s %lx\n", img->bgcolor_palette, strtoul(img->bgcolor_palette,NULL,16));
-              if (img->textcolor_palette) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Top menu palette highlight color: %s %lx\n", img->highlightcolor_palette, strtoul(img->highlightcolor_palette, NULL, 16));
+              //if (img->textcolor_palette)
+              //foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET" Top menu
+              //palette background color: %s %lx\n", img->bgcolor_palette,
+              //strtoul(img->bgcolor_palette,NULL,16));
 
-              if (img->textcolor_palette) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Top menu palette select action color: %s %lx\n", img->selectfgcolor_palette, strtoul(img->selectfgcolor_palette, NULL, 16));
+              if (img->textcolor_palette)
+                foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                        "  Top menu palette highlight color: %s %lx\n",
+                        img->highlightcolor_palette,
+                        strtoul(img->highlightcolor_palette, NULL, 16));
+
+              if (img->textcolor_palette)
+                foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                        "  Top menu palette select action color: %s %lx\n",
+                        img->selectfgcolor_palette,
+                        strtoul(img->selectfgcolor_palette, NULL, 16));
 
               if (errno == ERANGE)
                 {
-                  EXIT_ON_RUNTIME_ERROR_VERBOSE("At least one YCrCb coding overflows: check switch --palette")
+                  EXIT_ON_RUNTIME_ERROR_VERBOSE("At least one YCrCb coding"
+                                                " overflows: check switch"
+                                                " --palette")
                 }
               else
                 {
                   if (errno)
-                    EXIT_ON_RUNTIME_ERROR_VERBOSE("Check switch --palette")
-                  }
+                    {
+                      EXIT_ON_RUNTIME_ERROR_VERBOSE("Check switch --palette")
+                    }
+                }
             }
           else
             EXIT_ON_RUNTIME_ERROR_VERBOSE("Color chain could not be allocated");
@@ -1691,23 +1732,45 @@ an integer between 1 and 16");
               img->highlightcolor_pic = strdup(strtok(NULL, ":"));
               img->selectfgcolor_pic = strdup(strtok(NULL, ":"));
 
-              if ((img->selectfgcolor_pic == NULL) || (img->highlightcolor_pic == NULL) || (img->bgcolor_pic == NULL) || (img->textcolor_pic == NULL))
-                EXIT_ON_RUNTIME_ERROR_VERBOSE("Picture color chain is illegal: enter text,background,highlight,select color\n        separated by a colon, with rgb components by commas");
+              if (img->selectfgcolor_pic == NULL
+                  || img->highlightcolor_pic == NULL
+                  || img->bgcolor_pic == NULL
+                  || img->textcolor_pic == NULL)
+                {
+                  EXIT_ON_RUNTIME_ERROR_VERBOSE("Picture color chain is illegal:\
+ enter text,background,highlight,select color\n\
+ separated by a colon, with rgb components by commas");
+                }
 
-              if (img->textcolor_pic) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Top menu text color: rgb(%s)\n", img->textcolor_pic);
+              if (img->textcolor_pic)
+                foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                        "  Top menu text color: rgb(%s)\n", img->textcolor_pic);
 
-              if (img->bgcolor_pic) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Top menu background color: rgb(%s)\n", img->bgcolor_pic);
+              if (img->bgcolor_pic)
+                foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                        "  Top menu background color: rgb(%s)\n",
+                        img->bgcolor_pic);
 
-              if (img->highlightcolor_pic) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Top menu highlight color: rgb(%s)\n", img->highlightcolor_pic);
+              if (img->highlightcolor_pic)
+                foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                        "  Top menu highlight color: rgb(%s)\n",
+                        img->highlightcolor_pic);
 
-              if (img->selectfgcolor_pic) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Top menu select action color: rgb(%s)\n", img->selectfgcolor_pic);
+              if (img->selectfgcolor_pic)
+                foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                        "  Top menu select action color: rgb(%s)\n",
+                        img->selectfgcolor_pic);
             }
           else
-            EXIT_ON_RUNTIME_ERROR_VERBOSE("Picture color chain could not be allocated");
+            EXIT_ON_RUNTIME_ERROR_VERBOSE("Picture color chain could "
+                                          "not be allocated");
 
-          if ((strcmp(img->selectfgcolor_pic, img->highlightcolor_pic) == 0) || (strcmp(img->textcolor_pic, img->highlightcolor_pic) == 0) || (strcmp(img->textcolor_pic, img->selectfgcolor_pic) == 0))
+          if (strcmp(img->selectfgcolor_pic, img->highlightcolor_pic) == 0
+              || strcmp(img->textcolor_pic, img->highlightcolor_pic) == 0
+              || strcmp(img->textcolor_pic, img->selectfgcolor_pic) == 0)
             {
-              foutput("%s\n", WAR "You should use different color values for menu pics: resetting to defaults");
+              foutput("%s\n", WAR "You should use different color values"
+                      " for menu pics: resetting to defaults");
               free(img->textcolor_pic);
               free(img->highlightcolor_pic);
               free(img->selectfgcolor_pic);
@@ -1716,7 +1779,8 @@ an integer between 1 and 16");
               img->selectfgcolor_pic = strdup(DEFAULT_SELCOLOR_PIC);
             }
 
-          globals->topmenu = Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+          globals->topmenu = Min(globals->topmenu,
+                                 RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
           img->refresh = 1;
           break;
 
@@ -1728,7 +1792,8 @@ an integer between 1 and 16");
               if (strcmp(activepiccolorchain, "norefresh") == 0)
                 {
                   img->refresh = 0;
-                  foutput("%s\n", PAR "  Active menu pics will not be refreshed...");
+                  foutput("%s\n",
+                          PAR "  Active menu pics will not be refreshed...");
                   break;
                 }
 
@@ -1738,47 +1803,83 @@ an integer between 1 and 16");
               img->activehighlightcolor_palette = strdup(strtok(NULL, ":"));
               img->activeselectfgcolor_palette = strdup(strtok(NULL, ":"));
 
-              if ((img->activeselectfgcolor_palette == NULL) || (img->activehighlightcolor_palette == NULL) || (img->activebgcolor_palette == NULL) || (img->activetextcolor_palette == NULL))
-                EXIT_ON_RUNTIME_ERROR_VERBOSE("Active picture color chain is illegal: enter text,background,highlight,select color\n        separated by a colon, with rgb components by commas");
+              if (img->activeselectfgcolor_palette == NULL
+                  || img->activehighlightcolor_palette == NULL
+                  || img->activebgcolor_palette == NULL
+                  || img->activetextcolor_palette == NULL)
+                {
+                  EXIT_ON_RUNTIME_ERROR_VERBOSE("Active picture color chain"
+                                                " is illegal: \
+enter text,background,highlight,select color\n\
+separated by a colon, with rgb components by commas");
+                }
 
-              if (img->activetextcolor_palette) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Active menu text color: rgb(%s)\n", img->activetextcolor_palette);
+              if (img->activetextcolor_palette)
+                foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                        "  Active menu text color: rgb(%s)\n",
+                        img->activetextcolor_palette);
 
-              if (img->activebgcolor_palette) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Active menu background color: rgb(%s)\n", img->activebgcolor_palette);
+              if (img->activebgcolor_palette)
+                foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                        "  Active menu background color: rgb(%s)\n",
+                        img->activebgcolor_palette);
 
-              if (img->activehighlightcolor_palette) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Active menu highlight color: rgb(%s)\n", img->activehighlightcolor_palette);
+              if (img->activehighlightcolor_palette)
+                foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                        "  Active menu highlight color: rgb(%s)\n",
+                        img->activehighlightcolor_palette);
 
-              if (img->activeselectfgcolor_palette) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Active menu select action color: rgb(%s)\n", img->activeselectfgcolor_palette);
+              if (img->activeselectfgcolor_palette)
+                foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                        "  Active menu select action color: rgb(%s)\n",
+                        img->activeselectfgcolor_palette);
             }
           else
-            EXIT_ON_RUNTIME_ERROR_VERBOSE("Active picture color chain could not be allocated");
+            EXIT_ON_RUNTIME_ERROR_VERBOSE("Active picture color chain"
+                                          " could not be allocated");
 
-          if ((strcmp(img->activeselectfgcolor_palette, img->activehighlightcolor_palette) == 0) || (strcmp(img->activetextcolor_palette, img->activehighlightcolor_palette) == 0) || (strcmp(img->activetextcolor_palette, img->activeselectfgcolor_palette) == 0))
+          if (strcmp(img->activeselectfgcolor_palette,
+                     img->activehighlightcolor_palette) == 0
+              || strcmp(img->activetextcolor_palette,
+                        img->activehighlightcolor_palette) == 0
+              || strcmp(img->activetextcolor_palette,
+                        img->activeselectfgcolor_palette) == 0)
             {
-              foutput("%s\n", WAR "You should use different color values for active menu pics: resetting to defaults");
+              foutput("%s\n", WAR "You should use different "
+                      "color values for active menu pics: "
+                      "resetting to defaults");
               free(img->activetextcolor_palette);
               free(img->activehighlightcolor_palette);
               free(img->activeselectfgcolor_palette);
-              img->activetextcolor_palette = strdup(DEFAULT_ACTIVETEXTCOLOR_PALETTE);
-              img->activehighlightcolor_palette = strdup(DEFAULT_ACTIVEHCOLOR_PALETTE);
-              img->activeselectfgcolor_palette = strdup(DEFAULT_ACTIVESELCOLOR_PALETTE);
+              img->activetextcolor_palette
+                = strdup(DEFAULT_ACTIVETEXTCOLOR_PALETTE);
+              img->activehighlightcolor_palette
+                = strdup(DEFAULT_ACTIVEHCOLOR_PALETTE);
+              img->activeselectfgcolor_palette
+                = strdup(DEFAULT_ACTIVESELCOLOR_PALETTE);
             }
 
-          globals->topmenu = Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+          globals->topmenu = Min(globals->topmenu,
+                                 RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
           img->refresh = 1;
           break;
 
         case 'O':
           img->screentextchain = strdup(optarg);
 
-          if (globals->veryverbose) foutput("%s %s\n", PAR "  Screen textchain is:", img->screentextchain);
+          if (globals->veryverbose)
+            foutput("%s %s\n",
+                    PAR "  Screen textchain is:", img->screentextchain);
 
-          globals->topmenu = Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+          globals->topmenu = Min(globals->topmenu,
+                                 RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
           img->refresh = 1;
           break;
 
         case 'K':
           img->highlightformat = (int8_t) atoi(optarg);
-          globals->topmenu = Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+          globals->topmenu = Min(globals->topmenu,
+                                 RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
           img->refresh = 1;
           break;
 
@@ -1796,16 +1897,27 @@ an integer between 1 and 16");
               img->pointsize = (int8_t) atoi(strtok(NULL, ","));
               img->fontwidth = (int8_t) atoi(strtok(NULL, ","));
 
-              if ((img->textfont == NULL) || (img->pointsize < 1) || (img->fontwidth < 1))
-                EXIT_ON_RUNTIME_ERROR_VERBOSE("Font chain is illegal: enter font,font size,font width (width in pixels for size=10)");
+              if (img->textfont == NULL
+                  || img->pointsize < 1
+                  || img->fontwidth < 1)
+                {
+                  EXIT_ON_RUNTIME_ERROR_VERBOSE("Font chain is illegal: \n"
+                                                "Enter font,font size,font width"
+                                                "(width in pixels for size=10)");
+                }
 
-              if (img->textfont) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Font: %s\n", img->textfont);
+              if (img->textfont)
+                foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                        "  Font: %s\n", img->textfont);
 
-              foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Point size: %d\n", img->pointsize);
-              foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Font width: %d\n", img->fontwidth);
+              foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                      "  Point size: %d\n", img->pointsize);
+              foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                      "  Font width: %d\n", img->fontwidth);
             }
 
-          globals->topmenu = Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+          globals->topmenu = Min(globals->topmenu,
+                                 RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
           img->refresh = 1;
           break;
 
@@ -1817,10 +1929,13 @@ an integer between 1 and 16");
               free(img->textfont);
               img->textfont = fontchain;
 
-              if (img->textfont) foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Fontname: %s\n", img->textfont);
+              if (img->textfont) foutput(ANSI_COLOR_MAGENTA "[PAR]"
+                                         ANSI_COLOR_RESET "  Fontname: %s\n",
+                                         img->textfont);
             }
 
-          globals->topmenu = Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+          globals->topmenu = Min(globals->topmenu,
+                                 RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
           img->refresh = 1;
           break;
 
@@ -1830,10 +1945,12 @@ an integer between 1 and 16");
           if (fontchain)
             {
               img->pointsize = (int8_t) atoi(fontchain);
-              foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Point size: %d\n", img->pointsize);
+              foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                      "  Point size: %d\n", img->pointsize);
             }
 
-          globals->topmenu = Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+          globals->topmenu = Min(globals->topmenu,
+                                 RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
           img->refresh = 1;
           break;
 
@@ -1843,10 +1960,12 @@ an integer between 1 and 16");
           if (fontchain)
             {
               img->fontwidth = (int8_t) atoi(fontchain);
-              foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Font width: %d\n", img->fontwidth);
+              foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                      "  Font width: %d\n", img->fontwidth);
             }
 
-          globals->topmenu = Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+          globals->topmenu = Min(globals->topmenu,
+                                 RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
           img->refresh = 1;
           break;
 
@@ -1866,11 +1985,13 @@ an integer between 1 and 16");
               img->blankscreen = strdup(DEFAULT_BLANKSCREEN_NTSC);
               free(img->backgroundpic[0]);
               img->backgroundpic[0] = strdup(DEFAULT_BACKGROUNDPIC_NTSC);
-              foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Video standard is %s", img->norm);
+              foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                      "  Video standard is %s", img->norm);
             }
-          else if ((strcmp(optarg, "pal") != 0) && (strcmp(optarg, "secam") != 0))
+          else if (strcmp(optarg, "pal") != 0 && strcmp(optarg, "secam") != 0)
             {
-              foutput("%s\n", ERR "Only options are 'ntsc', 'secam' or (default) 'pal'.");
+              foutput("%s\n", ERR "Only options are 'ntsc',"
+                      " 'secam' or (default) 'pal'.");
               clean_exit(EXIT_FAILURE, globals);
             }
 
@@ -1888,44 +2009,56 @@ an integer between 1 and 16");
           else if (optarg[0] == '4')
             img->aspectratio = strdup("2.21:1");
           else
-            foutput("%s\n", ERR "Only aspect ratios are 1 (1:1), 2 (4:3), 3 (16:9) or 4 (2.21:1).");
+            foutput("%s\n", ERR "Only aspect ratios are 1 (1:1),"
+                    " 2 (4:3), 3 (16:9) or 4 (2.21:1).");
 
-          foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Using aspect ratio: %s\n", img->aspectratio);
+          foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                  "  Using aspect ratio: %s\n", img->aspectratio);
           break;
 
         case '6':
           img->nmenus = atoi(optarg);
-          foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Using %d menu screens.\n", img->nmenus);
+          foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                  "  Using %d menu screens.\n", img->nmenus);
           break;
 
         case '7':
           img->ncolumns = atoi(optarg);
-          foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Using %d menu columns.\n", img->ncolumns);
+          foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                  "  Using %d menu columns.\n", img->ncolumns);
           break;
 
         case 3:
           free(globals->settings.bindir);
           globals->settings.bindir = make_absolute(optarg);
-          foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Using directory %s for auxiliary binaries.\n", globals->settings.bindir);
+          foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                  "  Using directory %s for auxiliary binaries.\n",
+                  globals->settings.bindir);
           break;
 
         case 9:
           import_topmenu_flag = 1;
           import_topmenu_path = make_absolute(optarg);
-          foutput(ANSI_COLOR_MAGENTA"[PAR]"ANSI_COLOR_RESET"  Using pre-authored top menu %s .\n", import_topmenu_path);
+          foutput(ANSI_COLOR_MAGENTA "[PAR]" ANSI_COLOR_RESET
+                  "  Using pre-authored top menu %s .\n", import_topmenu_path);
           globals->topmenu = RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR;
           break;
 #endif
         }
     }
 
-  if (globals->videolinking == 1 && (globals->videozone == 0 || globals->settings.linkdir == NULL))
+  if (globals->videolinking == 1 && (globals->videozone == 0
+                                     || globals->settings.linkdir == NULL))
     {
-      EXIT_ON_RUNTIME_ERROR_VERBOSE("You should provide --videodir when using -T (video-linking)")
+      EXIT_ON_RUNTIME_ERROR_VERBOSE("You should provide"
+      "--videodir when using -T (video-linking)")
     }
 
   change_directory(globals->settings.workdir, globals);
-  /* Here it is necessary to check and normalize: temporary directory, number of menus before copying files and allocating new memory */
+
+  /* Here it is necessary to check and normalize: temporary directory, number of
+     menus before copying files and allocating new memory */
+
   // Cleaning operations
 
   if (user_command_line)
@@ -1937,12 +2070,14 @@ an integer between 1 and 16");
           clean_directory(globals->settings.outdir, globals);
           clean_directory(globals->settings.lplexoutdir, globals);
 
-          if (errno) foutput("%s\n", MSG_TAG "No output directory to be cleaned");
+          if (errno)
+            foutput("%s\n", MSG_TAG "No output directory to be cleaned");
         }
       else
         {
           if ((globals->debugging) && (!globals->nooutput))
-            foutput(MSG_TAG "Output directory %s has been preserved.\n", globals->settings.outdir);
+            foutput(MSG_TAG "Output directory %s has been preserved.\n",
+                    globals->settings.outdir);
         }
 
       if (!globals->nooutput)
@@ -1954,11 +2089,14 @@ an integer between 1 and 16");
             {
               clean_directory(globals->settings.tempdir, globals);
 
-              if (errno && globals->veryverbose) perror("\n"ERR "Found errors while cleaning directory");
+              if (errno && globals->veryverbose)
+                perror("\n"ERR "Found errors while cleaning directory");
             }
 
-          errno = secure_mkdir(globals->settings.tempdir, globals->access_rights, globals);
-          errno += secure_mkdir(globals->settings.lplextempdir, globals->access_rights, globals);
+          errno = secure_mkdir(globals->settings.tempdir,
+                               globals->access_rights, globals);
+          errno += secure_mkdir(globals->settings.lplextempdir,
+                                globals->access_rights, globals);
 
           if (errno)
             {
@@ -1970,12 +2108,15 @@ an integer between 1 and 16");
           else if (refresh_tempdir)
             {
               if (globals->debugging)
-                foutput(PAR "DVD-Audio temporary directory %s has been removed and recreated.\n", globals->settings.tempdir);
+                foutput(PAR "DVD-Audio temporary directory %s "
+                        "has been removed and recreated.\n",
+                        globals->settings.tempdir);
             }
           else
             {
               if (globals->debugging)
-                foutput(PAR "DVD-Audio temporary directory %s has been preserved.\n", globals->settings.tempdir);
+                foutput(PAR "DVD-Audio temporary directory %s "
+                        "has been preserved.\n", globals->settings.tempdir);
             }
 
           errno = 0;
@@ -1990,44 +2131,56 @@ an integer between 1 and 16");
 
           if (extract == NULL)
             {
-              EXIT_ON_RUNTIME_ERROR_VERBOSE("Could not allocate table for extracted files")
+              EXIT_ON_RUNTIME_ERROR_VERBOSE("Could not allocate table"
+                                            " for extracted files")
             }
 
-          extract_list_parsing(extract_args, extract, globals); // first recovering the list of groups and tracks to be extracted
+
+          // first recovering the list of groups and tracks to be extracted
+
+          extract_list_parsing(extract_args, extract, globals);
         }
 
-      ats2wav_parsing(globals->settings.indir, extract, globals); // then extracting them
+
+      // then extracting them
+
+      ats2wav_parsing(globals->settings.indir, extract, globals);
     }
   else
     {
       if (extract_args != NULL)   // sanity test : indir must be known
         {
-          EXIT_ON_RUNTIME_ERROR_VERBOSE("You should use -x (disc or directory) along wth --xlist")
+          EXIT_ON_RUNTIME_ERROR_VERBOSE("You should use -x"
+                                        " (disc or directory) along wth --xlist")
         }
     }
 
   // Coherence checks
   // You first have to test here.
+
 #if !defined HAVE_core_BUILD || !HAVE_core_BUILD
   menu_characteristics_coherence_test(img, ngroups, globals);
 #ifndef __CB__
 #if !HAVE_mpeg2enc || !HAVE_mplex  || !HAVE_jpeg2yuv
-  //    if (globals->topmenu <= RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR)
-  //    {
-  //        foutput("%s\n", ERR "You need mplex, mpeg2enc and jpeg2yuv to author\n       a background screen, please install these applications.");
-  //        foutput("%s\n", WAR "Continuing without menu authoring...");
-  //        globals->topmenu = NO_MENU;
+  //    if (globals->topmenu <= RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR) {
+  //    foutput("%s\n", ERR "You need mplex, mpeg2enc and jpeg2yuv to author\n a
+  //    background screen, please install these applications."); foutput("%s\n",
+  //    WAR "Continuing without menu authoring..."); globals->topmenu = NO_MENU;
   //    }
 #endif
 #endif
-  /* Fifth pass: it is now possible to safely copy files to temporary directory for menu and still pic creation  */
-  // First parsing for input files (pics and mpgs)
+
+  /* Fifth pass: it is now possible to safely copy files to temporary directory
+     for menu and still pic creation.  First parsing for input files (pics and
+     mpgs) */
+
   char *str = NULL;
   optind = 0;
   opterr = 1;
 #ifdef LONG_OPTIONS
 
-  while ((c = getopt_long(argc, argv, ALLOWED_OPTIONS, longopts, &longindex)) != -1)
+  while ((c = getopt_long(argc, argv, ALLOWED_OPTIONS,
+                          longopts, &longindex)) != -1)
 #else
   while ((c = getopt(argc, argv, ALLOWED_OPTIONS)) != -1)
 #endif
@@ -2035,18 +2188,23 @@ an integer between 1 and 16");
       switch (c)
         {
         case 'Q':
-#if  (defined HAVE_lplex  && HAVE_lplex == 1) || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
+#if  (defined HAVE_lplex  && HAVE_lplex == 1) \
+          || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
+
           if (img->backgroundmpg)
             {
-              foutput("%s\n", ERR "Background mpg file already specified, skipping...");
+              foutput("%s\n",
+                      ERR "Background mpg file already specified, skipping...");
               break;
             }
 
-          foutput("%s%s\n", PAR "Soundtrack(s) to be muxed into background mpg video: ", optarg);
+          foutput("%s%s\n", PAR "Soundtrack(s) to be muxed "
+                  "into background mpg video: ", optarg);
 
           if (!optarg)
             {
-              foutput("%s", WAR "Resetting soundtrack input to default soundtrack...\n");
+              foutput("%s", WAR "Resetting soundtrack input"
+                      " to default soundtrack...\n");
             }
           else
             {
@@ -2056,130 +2214,166 @@ an integer between 1 and 16");
               errno = 0;
               char **array = NULL;
               uint32_t size = 0;
-              array = fn_strtok(optarg, ':', array, &size, img->nmenus, cutloop, NULL, globals);
+              array = fn_strtok(optarg, ':', array, &size, img->nmenus,
+                                cutloop, NULL, globals);
               img->soundtrack = (char ***) calloc(img->nmenus, sizeof(char **));
 
               if (!img->soundtrack) break;
 
               for (u = 0; u < img->nmenus; u++)
                 {
-                  img->soundtrack[u]  = fn_strtok(array[u], ',', img->soundtrack[u], &globals->soundtracksize[u], 0, NULL, NULL, globals);
+                  img->soundtrack[u]  = fn_strtok(array[u], ',',
+                                                  img->soundtrack[u],
+                                                  &globals->soundtracksize[u],
+                                                  0, NULL, NULL, globals);
                 }
 
               int v;
 
-              for (u = 0; u < img->nmenus; u++)
-                for (v = 0; v < arraylength(img->soundtrack[u]); v++)
-                  errno += audit_soundtrack(img->soundtrack[u][v], AUDIT_STRICT_TOPMENU_AUDIO_FORMAT, globals);
+              for (u = 0; u < img->nmenus; ++u)
+                for (v = 0; v < arraylength(img->soundtrack[u]); ++v)
+                  errno += audit_soundtrack(img->soundtrack[u][v],
+                                            AUDIT_STRICT_TOPMENU_AUDIO_FORMAT,
+                                            globals);
             }
 
           soundtracks_flag = 1;
-          globals->topmenu = Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+          globals->topmenu = Min(globals->topmenu,
+                                 RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
 #else
-          foutput("%s", ERR "Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+          foutput("%s", ERR "Feature is unsupported.");
 #endif
           break;
 
         case 17:
-#if  (defined HAVE_lplex  && HAVE_lplex == 1) || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
+#if  (defined HAVE_lplex  && HAVE_lplex == 1) \
+  || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
           foutput("%s\n", PAR "Generate DVD-VIDEO audio tracks");
 
           if (globals->veryverbose)
             {
-              foutput("%s\n", PAR "Will create DVD-VIDEO from following audio files:");
+              foutput("%s\n", PAR "Will create DVD-VIDEO"
+                      " from following audio files:");
             }
 
           if (!optarg)
             {
-              foutput("%s", ERR "No audio valid file paths were given on command line\n");
+              foutput("%s", ERR "No audio valid file paths"
+                      " were given on command line\n");
               EXIT_ON_RUNTIME_ERROR
             }
           else
             {
-              parse_double_entry_command_line(optarg, &dvdv_track_array, &ndvdvtracks, &ndvdvtitleset1, AUDIT_DVD_VIDEO_AUDIO_FORMAT, ':', globals);
+              parse_double_entry_command_line(optarg,
+                                              &dvdv_track_array,
+                                              &ndvdvtracks,
+                                              &ndvdvtitleset1,
+                                              AUDIT_DVD_VIDEO_AUDIO_FORMAT,
+                                              ':', globals);
 
-              if (ndvdvtracks == NULL) EXIT_ON_RUNTIME_ERROR_VERBOSE("ndvdtracks null")
+              if (ndvdvtracks == NULL)
+                EXIT_ON_RUNTIME_ERROR_VERBOSE("ndvdtracks null")
                 dvdv_tracks_given = 1;
             }
 
 #else
-          foutput("%s", ERR "Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+          foutput("%s", ERR "Feature is unsupported.");
 #endif
           break;
 
         case 18:
-#if (defined HAVE_lplex  && HAVE_lplex == 1) || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
+#if (defined HAVE_lplex  && HAVE_lplex == 1) \
+  || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
+
           foutput("%s\n", PAR "Generate DVD-VIDEO slides");
 
           if (globals->veryverbose)
             {
-              foutput("%s\n", PAR "Will create DVD-VIDEO slides from following files:");
+              foutput("%s\n", PAR "Will create DVD-VIDEO slides"
+                                  " from following files:");
             }
 
           if (!optarg)
             {
-              foutput("%s", ERR "No audio file paths were given on command line\n");
+              foutput("%s", ERR "No audio file paths"
+                      " were given on command line\n");
               EXIT_ON_RUNTIME_ERROR
             }
           else
             {
-              parse_double_entry_command_line(optarg, &dvdv_slide_array, &ndvdvslides, &ndvdvtitleset2, NO_FIXWAV_AUDIT, ':', globals);
+              parse_double_entry_command_line(optarg,
+                                              &dvdv_slide_array,
+                                              &ndvdvslides,
+                                              &ndvdvtitleset2,
+                                              NO_FIXWAV_AUDIT,
+                                              ':', globals);
               lplex_slides_flag = 1;
             }
 
 #else
-          foutput("%s", ERR "Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+          foutput("%s", ERR "Feature is unsupported.");
 #endif
           break;
 
         case 21:
-#if (defined HAVE_lplex  && HAVE_lplex == 1) || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
+#if (defined HAVE_lplex  && HAVE_lplex == 1) \
+          || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
           foutput("%s\n", PAR "  Import DVD-Audio tracks to DVD-Video zone.");
           dvdv_import_flag = 1;
 #else
-          foutput("%s", ERR "Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+          foutput("%s", ERR "Feature is unsupported. ");
 #endif
           break;
 
         case 22:
-#if (defined HAVE_lplex  && HAVE_lplex == 1) || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
-          foutput("%s\n", PAR "  Make mirror: import DVD-Audio tracks into DVD-Video zone\n       and resample them if necessary.");
+#if (defined HAVE_lplex  && HAVE_lplex == 1) \
+  || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
+          foutput("%s\n", PAR "  Make mirror: import DVD-Audio"
+                  " tracks into DVD-Video zone\n"
+                  "       and resample them if necessary.");
           mirror_flag = 1;
 #else
-          foutput("%s", ERR "Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+          foutput("%s", ERR "Feature is unsupported.");
 #endif
           break;
 
         case 23:
-#if (defined HAVE_lplex  && HAVE_lplex == 1) || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
-          foutput("%s\n", PAR "  Make mirror: import DVD-Audio tracks into DVD-Video zone\n       and resample them if necessary.");
+#if (defined HAVE_lplex  && HAVE_lplex == 1) \
+  || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
+
+          foutput("%s\n", PAR "  Make mirror: import DVD-Audio "
+                  "tracks into DVD-Video zone\n"
+                  "       and resample them if necessary.");
+
           foutput(PAR "Mirroring strategy: %s\n", optarg);
           mirror_flag = 1;
 
           if (strcmp(optarg, "high") == 0) mirror_st_flag = HIGH;
 
 #else
-          foutput("%s", ERR "Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+          foutput("%s", ERR "Feature is unsupported.");
 #endif
           break;
 
         case 24:
-#if (defined HAVE_lplex  && HAVE_lplex == 1) || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
+#if (defined HAVE_lplex  && HAVE_lplex == 1)\
+  || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
           foutput("%s\n", PAR "Will create minimal hybrid disk.");
           foutput(PAR "Mirroring strategy: %s\n", "high");
           hybridate_flag = 1;
 #else
-          foutput("%s", ERR "Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+          foutput("%s", ERR "Feature is unsupported.");
 #endif
           break;
 
         case 25:
-#if (defined HAVE_lplex  && HAVE_lplex == 1) || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
+#if (defined HAVE_lplex  && HAVE_lplex == 1) \
+  || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
           foutput("%s\n", PAR "Will create full hybrid disk.");
           foutput(PAR "Mirroring strategy: %s\n", "high");
           full_hybridate_flag = 1;
 #else
-          foutput("%s", ERR "Feature is unsupported. Install lplex from http://audioplex.sourceforge.net to activate it.\n");
+          foutput("%s", ERR "Feature is unsupported.");
 #endif
           break;
 
@@ -2508,20 +2702,26 @@ an integer between 1 and 16");
          || (!dvdv_tracks_given && !mirror_flag))))
     {
       fprintf(stderr, "ndvdvslides[0]=%d\n", ndvdvslides[0]);
-      EXIT_ON_RUNTIME_ERROR_VERBOSE("Incoherent command line: slides requested for Lplex"J"...yet no audio tracks or slides given.")
+      EXIT_ON_RUNTIME_ERROR_VERBOSE("Incoherent command line: "
+                                    "slides requested for Lplex"
+                                    J "...yet no audio tracks or slides given.")
     }
 
   if (dvdv_tracks_given)
     {
       if (ndvdvtitleset1 != ndvdvtitleset2)
         {
-          fprintf(stderr, ERR "Titleset count for slides (%d) and tracks (%d) is not the same.\n Fix the issue and relaunch.\n", ndvdvtitleset1, ndvdvtitleset2);
+          fprintf(stderr, ERR "Titleset count for slides (%d) and tracks (%d)"
+                  " is not the same.\n Fix the issue and relaunch.\n"
+                  ndvdvtitleset1, ndvdvtitleset2);
           EXIT_ON_RUNTIME_ERROR
         }
     }
 
   if (dvdv_import_flag && mirror_flag)
-    EXIT_ON_RUNTIME_ERROR_VERBOSE("You should not use --mirror along with --import-dvdv: do you really want to resample?\n       Exiting...\n");
+    EXIT_ON_RUNTIME_ERROR_VERBOSE("You should not use --mirror along"
+                                  " with --import-dvdv: do you really"
+                                  " want to resample?\n       Exiting...\n");
 
   switch (globals->topmenu)
     {
@@ -2529,14 +2729,16 @@ an integer between 1 and 16");
     case AUTOMATIC_MENU:
     case RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR :
       change_directory(globals->settings.datadir, globals);
-      copy_file2dir_rename(img->backgroundpic[0], globals->settings.tempdir, "bgpic0.jpg", globals);
+      copy_file2dir_rename(img->backgroundpic[0],
+                           globals->settings.tempdir, "bgpic0.jpg", globals);
 
       if (img->nmenus > 1)
         for (u = 1; u < img->nmenus; u++)
           {
             char name[13];
             sprintf(name, "%s%d%s", "bgpic", u, ".jpg");
-            copy_file2dir_rename(img->backgroundpic[0], globals->settings.tempdir, name, globals);
+            copy_file2dir_rename(img->backgroundpic[0],
+                                 globals->settings.tempdir, name, globals);
           }
 
       /* fall through */
@@ -3549,7 +3751,8 @@ void extract_list_parsing(const char *arg,
     {
       chain = strdup(arg);
 
-      if (globals->veryverbose) fprintf(stderr, DBG "Extract list : %s\n", chain);
+      if (globals->veryverbose) fprintf(stderr,
+                                        DBG "Extract list : %s\n", chain);
     }
 
   bool cutgroups = false, cuttracks = false;
