@@ -196,9 +196,14 @@ command_t *command_line_parsing(int argc, char *const argv[],
   bool allocate_files = false;
   bool logrefresh = false;
   bool refresh_tempdir = true;
-  bool refresh_outdir = true; // refreshing output and temporary directories by
+
+  // refreshing output and temporary directories by
+
+  bool refresh_outdir = true;
+
   // default
   DIR *dir;
+
   parse_t  audiodir;
   extractlist *extract = NULL;
   downmix downmixtable[16];
@@ -209,13 +214,19 @@ command_t *command_line_parsing(int argc, char *const argv[],
 #ifdef img
 #undef img
 #endif
-#define img command->img  // already allocated, just for notational purposes
+
+  // already allocated, just for notational purposes
+
+#define img command->img
   char **argv_scan = (char **) calloc((unsigned long)argc, sizeof(char *));
 
-  if (argv_scan == NULL)   EXIT_ON_RUNTIME_ERROR
-    startsector = -1; /* triggers automatic computing of startsector (Lee and Tim
+  if (argv_scan == NULL)
+    {
+      EXIT_ON_RUNTIME_ERROR
+    }
 
-                                                Feldman) */
+  startsector = -1;
+  /* triggers automatic computing of startsector (Lee and Tim Feldman) */
 
   /* Initialisation: default group values are overridden if and only if groups
    * are added on command line Other values are left statically determined by
@@ -650,7 +661,8 @@ Fin du programme...\n", argv[k]);
         case 'w':
           /* input must be in octal form */
           globals->access_rights = (mode_t) strtol(optarg, NULL, 8);
-          foutput(PAR "Access rights (octal mode)=%o\n", globals->access_rights);
+          foutput(PAR "Access rights (octal mode)=%o\n",
+                  globals->access_rights);
           break;
 
         case 35:
@@ -666,7 +678,8 @@ Fin du programme...\n", argv[k]);
           allocate_files = true;
           free(globals->settings.indir);
           globals->settings.indir = make_absolute(optarg);
-          foutput("%s%s\n", PAR "Input directory is: ", globals->settings.indir);
+          foutput("%s%s\n",
+                  PAR "Input directory is: ", globals->settings.indir);
 
           if ((dir = opendir(optarg)) == NULL)
             EXIT_ON_RUNTIME_ERROR_VERBOSE("Input directory could not be opened")
@@ -765,8 +778,8 @@ of 99 video titlesets in video zone. Try again...\n\n")
 out:
 
   /* Here the group parameters are known: ngroups (total), n_g_groups (legacy -g
-     syntax), nvideolinking_groups
-     command line copy is now useless: freeing space */
+     syntax), nvideolinking_groups command line copy is now useless: freeing
+     space */
 
 #ifdef DEBUG_MEMORY
   FREE(argv_scan[k])
@@ -908,8 +921,11 @@ out:
                     foutput("Group %d Track %d Channel assignment %s\n",
                             ngroups_scan - 1, m, argv[m + k]);
 
-                  if (argv[m + k][0] == '0' || strcmp(argv[m + k], "Mono") == 0)
-                    continue; // mono case
+                  if (argv[m + k][0] == '0'
+                      || strcmp(argv[m + k], "Mono") == 0)
+                    {
+                      continue; // mono case
+                    }
 
                   char *endptr = NULL;
 
@@ -943,6 +959,7 @@ assignement value, using standard settings.");
           if (! user_command_line || strcmp(argv[k], "--resample") != 0) break;
 
           // -g file1...fileN... --resample 2 24 96000 2 16 44100...
+
           globals->sox_enable = 1;
 
           if (argc < k + 5) break;
@@ -1170,36 +1187,47 @@ and no more.");
 
           if (downmixsize < 12)
             {
-              EXIT_ON_RUNTIME_ERROR_VERBOSE("Downmix coefficients should be 12. \
-See dvda-author --help.")
+              EXIT_ON_RUNTIME_ERROR_VERBOSE("Downmix coefficients should be 12.\
+ See dvda-author --help.")
             }
 
           downmixtable[dbtable].custom_table = true;
 
-          downmixtable[dbtable].Lf_l  = strtof(downmixtexttable[dbtable][0],
-                                               NULL);
-          downmixtable[dbtable].Lf_r  = strtof(downmixtexttable[dbtable][1],
-                                               NULL);
-          downmixtable[dbtable].Rf_l  = strtof(downmixtexttable[dbtable][2],
-                                               NULL);
-          downmixtable[dbtable].Rf_r  = strtof(downmixtexttable[dbtable][3],
-                                               NULL);
-          downmixtable[dbtable].C_l   = strtof(downmixtexttable[dbtable][4],
-                                               NULL);
-          downmixtable[dbtable].C_r   = strtof(downmixtexttable[dbtable][5],
-                                               NULL);
-          downmixtable[dbtable].S_l   = strtof(downmixtexttable[dbtable][6],
-                                               NULL);
-          downmixtable[dbtable].S_r   = strtof(downmixtexttable[dbtable][7],
-                                               NULL);
-          downmixtable[dbtable].Rs_l  = strtof(downmixtexttable[dbtable][8],
-                                               NULL);
-          downmixtable[dbtable].Rs_r  = strtof(downmixtexttable[dbtable][9],
-                                               NULL);
-          downmixtable[dbtable].LFE_l = strtof(downmixtexttable[dbtable][10],
-                                               NULL);
-          downmixtable[dbtable].LFE_r = strtof(downmixtexttable[dbtable][11],
-                                               NULL);
+          downmixtable[dbtable].Lf_l  =
+            strtof(downmixtexttable[dbtable][0], NULL);
+
+          downmixtable[dbtable].Lf_r  =
+            strtof(downmixtexttable[dbtable][1], NULL);
+
+          downmixtable[dbtable].Rf_l  =
+            strtof(downmixtexttable[dbtable][2], NULL);
+
+          downmixtable[dbtable].Rf_r  =
+            strtof(downmixtexttable[dbtable][3], NULL);
+
+          downmixtable[dbtable].C_l   =
+            strtof(downmixtexttable[dbtable][4], NULL);
+
+          downmixtable[dbtable].C_r   =
+            strtof(downmixtexttable[dbtable][5], NULL);
+
+          downmixtable[dbtable].S_l   =
+            strtof(downmixtexttable[dbtable][6], NULL);
+
+          downmixtable[dbtable].S_r   =
+            strtof(downmixtexttable[dbtable][7], NULL);
+
+          downmixtable[dbtable].Rs_l  =
+            strtof(downmixtexttable[dbtable][8], NULL);
+
+          downmixtable[dbtable].Rs_r  =
+            strtof(downmixtexttable[dbtable][9], NULL);
+
+          downmixtable[dbtable].LFE_l =
+            strtof(downmixtexttable[dbtable][10], NULL);
+          downmixtable[dbtable].LFE_r =
+            strtof(downmixtexttable[dbtable][11], NULL);
+
           ++dbtable;
           break;
 
@@ -1930,8 +1958,8 @@ separated by a colon, with rgb components by commas");
               img->textfont = fontchain;
 
               if (img->textfont) foutput(ANSI_COLOR_MAGENTA "[PAR]"
-                                         ANSI_COLOR_RESET "  Fontname: %s\n",
-                                         img->textfont);
+                                           ANSI_COLOR_RESET "  Fontname: %s\n",
+                                           img->textfont);
             }
 
           globals->topmenu = Min(globals->topmenu,
@@ -2051,7 +2079,7 @@ separated by a colon, with rgb components by commas");
                                      || globals->settings.linkdir == NULL))
     {
       EXIT_ON_RUNTIME_ERROR_VERBOSE("You should provide"
-      "--videodir when using -T (video-linking)")
+                                    "--videodir when using -T (video-linking)")
     }
 
   change_directory(globals->settings.workdir, globals);
@@ -2290,7 +2318,7 @@ separated by a colon, with rgb components by commas");
           if (globals->veryverbose)
             {
               foutput("%s\n", PAR "Will create DVD-VIDEO slides"
-                                  " from following files:");
+                      " from following files:");
             }
 
           if (!optarg)
@@ -2395,13 +2423,17 @@ separated by a colon, with rgb components by commas");
           if (strstr(optarg, ".AOB") != NULL)
             {
               foutput("%s %s %s\n", PAR "Extracting AOB to",
-                      globals->decode ? "raw signed-integer PCM: " : "original audio format (headerless WAV or MLP):", optarg);
+                      globals->decode ? "raw signed-integer PCM: " :
+                      "original audio format (headerless WAV or MLP):", optarg);
               aob2wav_parsing(optarg, NULL, globals);
             }
           else     // using the directory with file structure
             {
-              // filter_dir_files finds all AOBs in dir optarg, and returns list of AOBs separated by commas if several.
-              aob2wav_parsing(filter_dir_files(optarg, ".AOB", globals), NULL, globals);
+              // filter_dir_files finds all AOBs in dir optarg, and returns list
+              // of AOBs separated by commas if several.
+
+              aob2wav_parsing(filter_dir_files(optarg, ".AOB", globals),
+                              NULL, globals);
             }
 
           break;
@@ -2412,29 +2444,37 @@ separated by a colon, with rgb components by commas");
           if (strstr(optarg, ".AOB") != NULL)
             {
               foutput("%s %s %s\n", PAR "Extracting AOB to",
-                      globals->decode ? "WAV format: " : "original audio format (WAV or MLP):", optarg);
+                      globals->decode ? "WAV format: " :
+                      "original audio format (WAV or MLP):", optarg);
               aob2wav_parsing(optarg, NULL, globals);
             }
           else     // using the directory with file structure
             {
-              aob2wav_parsing(filter_dir_files(optarg, ".AOB", globals), NULL, globals);
+              aob2wav_parsing(filter_dir_files(optarg, ".AOB", globals),
+                              NULL, globals);
             }
 
           use_ifo_files = false;
+
           // using IFO files is not mature yet.
           break;
 
         case 12:
-          foutput("%s\n", PAR "Using forensic mode: *IFO system files will not be used.");
-          foutput("%s\n", PAR "Use this mode if IFO files are missing or mangled, or AOB files have been partially restored using recovery tools.");
+          foutput("%s\n", PAR "Using forensic mode: *IFO system "
+                  "files will not be used.");
+          foutput("%s\n", PAR "Use this mode if IFO files are missing "
+                  "or mangled, or AOB files have been partially"
+                  " restored using recovery tools.");
           use_ifo_files = false;
           break;
 
         case 30:
           globals->settings.outfile = make_absolute(optarg);
-          foutput("%s%s\n", PAR "AOB log filepath: ", globals->settings.outfile);
+          foutput("%s%s\n", PAR "AOB log filepath: ",
+                  globals->settings.outfile);
 
-          if (file_exists(globals->settings.outfile)) unlink(globals->settings.outfile);
+          if (file_exists(globals->settings.outfile))
+            unlink(globals->settings.outfile);
 
           break;
 
@@ -2448,7 +2488,8 @@ separated by a colon, with rgb components by commas");
               errno = 0;
               char **array = NULL;
               uint32_t size = 0;
-              array = fn_strtok(optarg, ':', array, &size, img->nmenus, cutloop, NULL, globals);
+              array = fn_strtok(optarg, ':', array, &size,
+                                img->nmenus, cutloop, NULL, globals);
 
               if (!array)
                 {
@@ -2460,12 +2501,16 @@ separated by a colon, with rgb components by commas");
 
               for (u = 0; u < img->nmenus; u++)
                 {
-                  img->topmenu_slide[u]  = fn_strtok(array[u], ',', img->topmenu_slide[u], &globals->topmenu_slidesize, 0, NULL, NULL, globals);
+                  img->topmenu_slide[u]  =
+                    fn_strtok(array[u], ',', img->topmenu_slide[u],
+                              &globals->topmenu_slidesize, 0,
+                              NULL, NULL, globals);
                   img->topmenu_nslides[u] = arraylength(img->topmenu_slide[u]);
                 }
             }
 
-          globals->topmenu = Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+          globals->topmenu = Min(globals->topmenu,
+                                 RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
           break;
 
         case 'b':
@@ -2473,21 +2518,30 @@ separated by a colon, with rgb components by commas");
 
           if (img->backgroundmpg)
             {
-              foutput("%s\n", ERR "Background mpg file already specified, skipping...");
+              foutput("%s\n", ERR "Background mpg file already"
+                      " specified, skipping...");
               break;
             }
 
-          foutput("%s%s\n", PAR "  background jpg file(s) for generating mpg video: ", str);
+          foutput("%s%s\n",
+                  PAR "  background jpg file(s) for "
+                  "generating mpg video: ", str);
           free(img->backgroundpic);
-          img->backgroundpic = fn_strtok(str, ',', img->backgroundpic, &globals->backgroundpicsize, 0, NULL, NULL, globals);
+          img->backgroundpic = fn_strtok(str, ',', img->backgroundpic,
+                                         &globals->backgroundpicsize, 0, NULL,
+                                         NULL, globals);
           int backgroundpic_arraylength = 0;
 
-          if ((backgroundpic_arraylength = arraylength(img->backgroundpic)) < img->nmenus)
+          if ((backgroundpic_arraylength = arraylength(img->backgroundpic))
+              < img->nmenus)
             {
-              foutput("%s\n", WAR "You did not give enough filenames, completing with last one");
+              foutput("%s\n", WAR "You did not give enough filenames,"
+                      " completing with last one");
 
-              for (u = 0; u + backgroundpic_arraylength < img->nmenus; u++)
-                copy_file(img->backgroundpic[backgroundpic_arraylength - 1], img->backgroundpic[u + backgroundpic_arraylength], globals);
+              for (u = 0; u + backgroundpic_arraylength < img->nmenus; ++u)
+                copy_file(img->backgroundpic[backgroundpic_arraylength - 1],
+                          img->backgroundpic[u + backgroundpic_arraylength],
+                          globals);
             }
 
           free(str);
@@ -2497,148 +2551,200 @@ separated by a colon, with rgb components by commas");
 
         case 'N':
           img->blankscreen = make_absolute(optarg);
-          foutput(PAR "Using %s top menu background picture.\n", img->blankscreen);
+          foutput(PAR "Using %s top menu background picture.\n",
+                  img->blankscreen);
           int len, len2;
           len = strlen(img->blankscreen);
           len2 = strlen(img->backgroundpic[0]);
 
-          if ((img->blankscreen[len - 1] != 'g') || (img->blankscreen[len - 2] != 'n') || (img->blankscreen[len - 3] != 'p'))
+          if (img->blankscreen[len - 1] != 'g'
+              || img->blankscreen[len - 2] != 'n'
+              || img->blankscreen[len - 3] != 'p')
             {
-              foutput("%s\n", ERR "You should use a .png background picture... exiting.");
+              foutput("%s\n", ERR "You should use a .png"
+                      " background picture... exiting.");
               clean_exit(EXIT_FAILURE, globals);
             }
 
-          // note that within a switch, some compilers do not authorize char dest[len+1]
+          // note that within a switch, some compilers do not authorize char
+          // dest[len+1]
+
           img->backgroundpic[0][len2 - 2] = 'p';
           img->backgroundpic[0][len2 - 3] = 'j';
-          globals->topmenu = Min(globals->topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+          globals->topmenu = Min(globals->topmenu,
+                                 RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
           break;
 
         case 'E':
-          foutput("%s%s\n", PAR "  highlight png file(s) for generating mpg video: ", optarg);
-          foutput("%s\n", WAR "Check that your image doe not have more than 4 colors, including transparency.");
+          foutput("%s%s\n", PAR "  highlight png file(s) for "
+                  "generating mpg video: ", optarg);
+          foutput("%s\n", WAR "Check that your image doe not"
+                  " have more than 4 colors, including transparency.");
           str = optarg;
           free(img->highlightpic);
-          img->highlightpic = fn_strtok(str, ',', img->highlightpic, &globals->highlightpicsize, 0, NULL, NULL, globals);
+          img->highlightpic = fn_strtok(str, ',', img->highlightpic,
+                                        &globals->highlightpicsize, 0,
+                                        NULL, NULL, globals);
           int highlight_arraylength = 0;
 
-          if ((highlight_arraylength = arraylength(img->highlightpic)) < img->nmenus)
+          if ((highlight_arraylength = arraylength(img->highlightpic))
+              < img->nmenus)
             {
-              foutput("%s\n", WAR "You did not give enough filenames, completing with last one");
+              foutput("%s\n", WAR "You did not give enough filenames,"
+                      " completing with last one");
 
-              for (u = 0; u + highlight_arraylength < img->nmenus; u++)
-                copy_file(img->highlightpic[highlight_arraylength - 1], img->highlightpic[u + highlight_arraylength], globals);
+              for (u = 0; u + highlight_arraylength < img->nmenus; ++u)
+                copy_file(img->highlightpic[highlight_arraylength - 1],
+                          img->highlightpic[u + highlight_arraylength],
+                          globals);
             }
 
           free(str);
-          globals->topmenu = Min(globals->topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+          globals->topmenu = Min(globals->topmenu,
+                                 RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
           img->refresh = 1;
           break;
 
         case 'e' :
-          foutput("%s%s\n", PAR "select png file(s) for generating mpg video: ", optarg);
-          foutput("%s\n", WAR "Check that your image does not have more than 4 colors, including transparency.");
+          foutput("%s%s\n", PAR "select png file(s) "
+                  "for generating mpg video: ", optarg);
+          foutput("%s\n", WAR "Check that your image does not have"
+                  " more than 4 colors, including transparency.");
           str = optarg;
-          img->selectpic = fn_strtok(str, ',', img->selectpic, &globals->selectpicsize, 0, NULL, NULL, globals);
+          img->selectpic = fn_strtok(str, ',', img->selectpic,
+                                     &globals->selectpicsize, 0, NULL, NULL,
+                                     globals);
           int select_arraylength = 0;
 
           if ((select_arraylength = arraylength(img->selectpic)) < img->nmenus)
             {
-              foutput("%s\n", WAR "You did not give enough filenames, completing with last one");
+              foutput("%s\n", WAR "You did not give enough filenames,"
+                      " completing with last one");
 
               for (u = 0; u + select_arraylength < img->nmenus; u++)
-                copy_file(img->selectpic[select_arraylength - 1], img->selectpic[u + select_arraylength], globals);
+                copy_file(img->selectpic[select_arraylength - 1],
+                          img->selectpic[u + select_arraylength], globals);
             }
 
           free(str);
-          globals->topmenu = Min(globals->topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+          globals->topmenu = Min(globals->topmenu,
+                                 RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
           img->refresh = 1;
           break;
 
         case 'G' :
-          foutput("%s%s\n", PAR "image png file(s) for generating mpg video: ", optarg);
-          foutput("%s\n", WAR "Check that your image doe not have more than 4 colors, including transparency.");
+          foutput("%s%s\n",
+                  PAR "image png file(s) for generating mpg video: ", optarg);
+          foutput("%s\n",
+                  WAR "Check that your image doe not have more than 4 colors,"
+                  " including transparency.");
           str = optarg;
-          img->imagepic = fn_strtok(str, ',', img->imagepic, &globals->imagepicsize, 0, NULL, NULL, globals);
+          img->imagepic = fn_strtok(str, ',', img->imagepic,
+                                    &globals->imagepicsize, 0, NULL, NULL,
+                                    globals);
           int image_arraylength = 0;
 
           if ((image_arraylength = arraylength(img->imagepic)) < img->nmenus)
             {
-              foutput("%s\n", WAR "You did not give enough filenames, completing with last one");
+              foutput("%s\n", WAR "You did not give enough filenames,"
+                      " completing with last one");
 
               for (u = 0; u + image_arraylength < img->nmenus; u++)
-                copy_file(img->imagepic[image_arraylength - 1], img->imagepic[u + image_arraylength ], globals);
+                copy_file(img->imagepic[image_arraylength - 1],
+                          img->imagepic[u + image_arraylength ], globals);
             }
 
           free(str);
-          globals->topmenu = Min(globals->topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+          globals->topmenu = Min(globals->topmenu,
+                                 RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
           img->refresh = 1;
           break;
 
         case 2:
-          foutput("%s%s\n", PAR "Background color(s) for top (and active) menus : ", optarg);
+          foutput("%s%s\n", PAR "Background color(s) for top"
+                  " (and active) menus : ", optarg);
           str = strdup(optarg);
-          img->backgroundcolors = fn_strtok(str, ':', img->backgroundcolors, &globals->backgroundcolorssize, 0, NULL, NULL, globals);
+          img->backgroundcolors = fn_strtok(str, ':', img->backgroundcolors,
+                                            &globals->backgroundcolorssize, 0,
+                                            NULL, NULL, globals);
           int bgcolors_arraylength = 0;
 
-          if ((bgcolors_arraylength = arraylength(img->backgroundcolors)) < img->nmenus)
+          if ((bgcolors_arraylength = arraylength(img->backgroundcolors))
+              < img->nmenus)
             {
-              foutput("%s\n", WAR "You did not give enough colors, completing with last one");
+              foutput("%s\n", WAR "You did not give enough colors,"
+                      " completing with last one");
 
-              for (u = 0; u + bgcolors_arraylength < img->nmenus; u++)
-                img->backgroundcolors[u + bgcolors_arraylength] = img->backgroundcolors[bgcolors_arraylength - 1];
+              for (u = 0; u + bgcolors_arraylength < img->nmenus; ++u)
+                img->backgroundcolors[u + bgcolors_arraylength] =
+                  img->backgroundcolors[bgcolors_arraylength - 1];
             }
 
           free(str);
-          globals->topmenu = Min(globals->topmenu, RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+          globals->topmenu = Min(globals->topmenu,
+                                 RUN_MJPEG_GENERATE_PICS_SPUMUX_DVDAUTHOR);
           break;
         }
     }
 
   if (img->nmenus && img->blankscreen && globals->topmenu < NO_MENU)
     {
-      if (globals->veryverbose) foutput("%s\n", INF "Converting overlay .png blankscreen to .jg blankscreen for mpg authoring...");
+      if (globals->veryverbose)
+        foutput("%s\n", INF "Converting overlay .png blankscreen"
+                " to .jg blankscreen for mpg authoring...");
 
       char *convert = NULL;
       char cl[500]; //do not use command as an array name !
-      convert = create_binary_path(convert, CONVERT, SEPARATOR CONVERT_BASENAME, globals);
+      convert = create_binary_path(convert, CONVERT,
+                                   SEPARATOR CONVERT_BASENAME, globals);
 
       if (file_exists(img->backgroundpic[0])) unlink(img->backgroundpic[0]);
 
       errno = 0;
       change_directory(globals->settings.datadir, globals);
-      snprintf(cl, 500, "%s %s %s", convert, img->blankscreen, img->backgroundpic[0]);
+      snprintf(cl, 500, "%s %s %s", convert, img->blankscreen,
+               img->backgroundpic[0]);
 
-      if (globals->veryverbose) foutput(INF "Launching convert with command line %s\n",  cl);
+      if (globals->veryverbose)
+        foutput(INF "Launching convert with command line %s\n",  cl);
 
-      if (system(win32quote(cl)) == -1) EXIT_ON_RUNTIME_ERROR_VERBOSE("System command failed")
-        fflush(NULL);
+      if (system(win32quote(cl)) == -1)
+        {
+          EXIT_ON_RUNTIME_ERROR_VERBOSE("System command failed")
+        }
+
+      fflush(NULL);
 
       FREE(convert);
     }
 
   bool menupic_input_coherence_test = 0;
 
-  if ((img->imagepic) && (img->highlightpic) && (img->selectpic) && globals->topmenu < NO_MENU)
+  if (img->imagepic && img->highlightpic && img->selectpic
+      && (globals->topmenu < NO_MENU))
     {
-      for (u = 0;  u < img->nmenus; u++)
+      for (u = 0;  u < img->nmenus; ++u)
         {
-          if ((img->imagepic[u]) && (img->highlightpic[u]) && (img->selectpic[u]))
+          if (img->imagepic[u] && img->highlightpic[u] && img->selectpic[u])
             {
               path_t *i, *h, *s;
               i = parse_filepath(img->imagepic[u], globals);
               h = parse_filepath(img->highlightpic[u], globals);
               s = parse_filepath(img->selectpic[u], globals);
 
-              if ((i->isfile) && (h->isfile) && (s->isfile))
+              if (i->isfile && h->isfile && s->isfile)
                 menupic_input_coherence_test = 1;
             }
           else
             {
-              if ((img->imagepic[u]) || (img->highlightpic[u]) || (img->selectpic[u]))
+              if (img->imagepic[u] || img->highlightpic[u] || img->selectpic[u])
                 {
-                  foutput("%s", WAR "You should enter three menu-authoring custom-made .png pictures, for main image, highlight and select action.\nn       Reverting to automatic mode.\n\n");
-                  globals->topmenu = Min(globals->topmenu, RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
+                  foutput("%s", WAR "You should enter three menu-authoring"
+                          " custom-made .png pictures, for main image, "
+                          "highlight and select action.\n"
+                          "       Reverting to automatic mode.\n\n");
+                  globals->topmenu = Min(globals->topmenu,
+                                         RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR);
                 }
             }
         }
@@ -2662,7 +2768,9 @@ separated by a colon, with rgb components by commas");
       clean_exit(EXIT_SUCCESS, globals);
     }
 
-  // Now copying to temporary directory, depending on type of menu creation, trying to minimize work, depending of type of disc build.
+  // Now copying to temporary directory, depending on type of menu creation,
+  // trying to minimize work, depending of type of disc build.
+
   char *dest;
 
   // Operations related to top menu creation
@@ -2741,34 +2849,42 @@ separated by a colon, with rgb components by commas");
                                  globals->settings.tempdir, name, globals);
           }
 
-      /* fall through */
       __attribute__((fallthrough));
 
     case RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR:
       change_directory(globals->settings.datadir, globals);
       dest = copy_file2dir(img->blankscreen, globals->settings.tempdir, globals);
 
-      if (dest == NULL)  EXIT_ON_RUNTIME_ERROR_VERBOSE("Failed to copy background .png blankscreen to temporary directory.")
-        if (!menupic_input_coherence_test)
-          {
-            normalize_temporary_paths(img, globals);
-          }
-        else
-          {
-            EXIT_ON_RUNTIME_ERROR_VERBOSE("Trop d'incohérences dans l'allocation des éléments du menu.\n")
-          }
+      if (dest == NULL)
+        {
+          EXIT_ON_RUNTIME_ERROR_VERBOSE("Failed to copy background .png"
+                                        " blankscreen to temporary directory.")
+        }
+
+      if (!menupic_input_coherence_test)
+        {
+          normalize_temporary_paths(img, globals);
+        }
+      else
+        {
+          EXIT_ON_RUNTIME_ERROR_VERBOSE("Too mamny inconsistencies"
+                                        " in menu authoring.\n")
+        }
 
       change_directory(globals->settings.workdir, globals);
+
       free(dest);
-      /* fall through */
+
       __attribute__((fallthrough));
 
     case RUN_SPUMUX_DVDAUTHOR:
-      if ((img->imagepic == NULL) && (img->selectpic == NULL) && (img->highlightpic == NULL))
+      if (img->imagepic == NULL && img->selectpic == NULL
+          && img->highlightpic == NULL)
         {
           foutput("%s\n", WAR "You need all subtitle images");
           foutput("%s\n", WAR "Continuing with menu picture authoring...");
-          globals->topmenu = Min(RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR, globals->topmenu);
+          globals->topmenu = Min(RUN_GENERATE_PICS_SPUMUX_DVDAUTHOR,
+                                 globals->topmenu);
         }
 
       break;
@@ -2811,7 +2927,9 @@ separated by a colon, with rgb components by commas");
 
   if ((errno) && (user_command_line))
     {
-      foutput("%s\n", WAR "Not enough information. Continuing with automatic menu authoring...");
+      foutput("%s\n", WAR "Not enough information. "
+
+              "Continuing with automatic menu authoring...");
       globals->topmenu = AUTOMATIC_MENU;
       // retest now
       menu_characteristics_coherence_test(img, ngroups, globals);
@@ -2826,7 +2944,9 @@ separated by a colon, with rgb components by commas");
 
       // heap-allocations is not possible if char** is not returned by function
       // A simple char* would well be allocated by function, not a char**.
-      if (globals->debugging) fprintf(stderr, DBG "stillpic_string=%s\n", stillpic_string);
+
+      if (globals->debugging)
+        fprintf(stderr, DBG "stillpic_string=%s\n", stillpic_string);
 
       bool indir = true;
       errno = 0;
@@ -2837,12 +2957,15 @@ separated by a colon, with rgb components by commas");
 
           pics_per_track = calloc(999, sizeof(char *));
           globals->settings.stillpicdir = make_absolute(stillpic_string);
-          traverse_directory(stillpic_string, fill_pics, true, (void *) pics_per_track, NULL, globals);
+          traverse_directory(stillpic_string, fill_pics, true,
+                             (void *) pics_per_track, NULL, globals);
         }
       else
         {
           uint32_t size = 0;
-          pics_per_track = fn_strtok(stillpic_string, ':', pics_per_track, &size, 0, NULL, NULL, globals);
+          pics_per_track = fn_strtok(stillpic_string, ':',
+                                     pics_per_track, &size, 0,
+                                     NULL, NULL, globals);
           indir = false;
         }
 
@@ -2870,7 +2993,10 @@ separated by a colon, with rgb components by commas");
         }
       else if (w < totntracks)
         {
-          fprintf(stderr, "\n"ERR "You forgot at least one track on --stillpics:\n  total number of tracks:%d whilst pic string array has length %d\n", totntracks, w);
+          fprintf(stderr, "\n"ERR "You forgot at least"
+                  " one track on --stillpics:\n"
+                  "  total number of tracks:%d whilst pic string array"
+                  " has length %d\n", totntracks, w);
           goto standard_checks;
         }
 
@@ -2923,11 +3049,14 @@ separated by a colon, with rgb components by commas");
           img->npics[k] = dim;
           DIM += dim;
 
-          if (globals->debugging) fprintf(stderr, "\n"DBG "number of pics for track %d: npics[%d] = %d\n", k, k, dim);
+          if (globals->debugging)
+            fprintf(stderr, "\n"DBG "number of pics for"
+                    " track %d: npics[%d] = %d\n", k, k, dim);
 
           if (img->npics[k] > 99)
             {
-              foutput("%s", "\n"ERR "The maximum number of pics per track is 99.\n");
+              foutput("%s", "\n"ERR "The maximum number of pics"
+                      " per track is 99.\n");
               EXIT_ON_RUNTIME_ERROR_VERBOSE("Exiting...");
             }
         }
@@ -2943,7 +3072,8 @@ separated by a colon, with rgb components by commas");
 
       img->count = DIM;
 
-      if (globals->debugging) fprintf(stderr, DBG "Total of %d pictures\n", img->count);
+      if (globals->debugging)
+        fprintf(stderr, DBG "Total of %d pictures\n", img->count);
     }
 
   // or allocate img->blankscreen for dvdv slides by default.
@@ -2957,16 +3087,21 @@ standard_checks:
 
   if (nplaygroups > ngroups - nvideolinking_groups)
     {
-      if (globals->debugging) foutput(ERR "There cannot be more copy groups than audio groups. Limiting to %d groups...\n", ngroups - nvideolinking_groups);
+      if (globals->debugging)
+        foutput(ERR "There cannot be more copy groups than audio groups."
+                " Limiting to %d groups...\n", ngroups - nvideolinking_groups);
 
       nplaygroups = ngroups - nvideolinking_groups;
     }
 
   if (nplaygroups + ngroups > 8)
     {
-      if (globals->debugging) foutput("%s\n", ERR "There cannot be more copy groups than audio groups. Limiting to 9 groups...");
+      if (globals->debugging)
+        foutput("%s\n", ERR "There cannot be more copy"
+                " groups than audio groups. Limiting to 9 groups...");
 
-      nplaygroups = MAX(0, 9 - ngroups);
+      nplaygroups = MAX(0, 9 - ngroups)
+                    ;
     }
 
   // Completing downmix tables up to 16...
@@ -2982,10 +3117,10 @@ standard_checks:
         }
     }
 
-  // ngroups does not include copy groups from then on -- nplaygroups are just virtual (no added bytes to disc)
-  // number of groups=ngroups+nplaygroups
-  // number of audio groups=ngroups-nvideolinking_groups
-  // End of coherence checks
+  // ngroups does not include copy groups from then on -- nplaygroups are just
+  // virtual (no added bytes to disc) number of groups=ngroups+nplaygroups
+  // number of audio groups=ngroups-nvideolinking_groups End of coherence checks
+
   command_t command0 =
   {
     0,
@@ -3019,7 +3154,8 @@ standard_checks:
 void process_dvd_video_zone(command_t *command, globalData *globals)
 {
 #if !defined HAVE_core_BUILD || !HAVE_core_BUILD
-#if (defined HAVE_lplex  && HAVE_lplex == 1) || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
+#if (defined HAVE_lplex  && HAVE_lplex == 1) \
+  || (defined HAVE_lplex_BUILD && HAVE_lplex_BUILD == 1)
 
   if (hybridate_flag || full_hybridate_flag)
     {
@@ -3034,14 +3170,15 @@ void process_dvd_video_zone(command_t *command, globalData *globals)
       if (dvdv_slide_array[0] == NULL) EXIT_ON_RUNTIME_ERROR
 
         // Group counter of dvd-video slides
-        if (ndvdvslides == NULL) ndvdvslides = calloc(command->ngroups, sizeof(uint8_t));
+        if (ndvdvslides == NULL)
+          ndvdvslides = calloc(command->ngroups, sizeof(uint8_t));
 
       if (ndvdvslides == NULL) EXIT_ON_RUNTIME_ERROR
         int N = command->ntracks[0];
 
       int T = 0, TT = 0;
 
-      for (int t = 0;  t < totntracks; t++)
+      for (int t = 0;  t < totntracks; ++t)
         {
           // Create a double array for slides, as many as groups and ntracks
           if (g < command->ngroups - 1 && t >= N)
@@ -3055,25 +3192,33 @@ void process_dvd_video_zone(command_t *command, globalData *globals)
               if (dvdv_slide_array[g] == NULL) EXIT_ON_RUNTIME_ERROR
               }
 
-          if (full_hybridate_flag || (hybridate_flag && files[g][T].dvdv_compliant))
+          if (full_hybridate_flag
+              || (hybridate_flag && files[g][T].dvdv_compliant))
             {
               if (picks_per_track_double_array == NULL  ||
                   picks_per_track_double_array[t] == NULL ||
                   picks_per_track_double_array[t][0] == NULL)
                 {
-                  char slide[strlen(globals->settings.workdir) + STRLEN_SEPARATOR + strlen(img->blankscreen) + 1];
-                  sprintf(slide, "%s%s%s", globals->settings.workdir, SEPARATOR, img->blankscreen);
-                  // Assign a default slide if an explicit pic is not given on command line
+                  char slide[strlen(globals->settings.workdir)
+                             + STRLEN_SEPARATOR + strlen(img->blankscreen) + 1];
+                  sprintf(slide, "%s%s%s", globals->settings.workdir,
+                          SEPARATOR, img->blankscreen);
+
+                  // Assign a default slide if an explicit pic is not given on
+                  // command line
+
                   dvdv_slide_array[g][TT] = strdup(slide);
                 }
               else
                 {
                   // Assign explicit pic given on command line
-                  dvdv_slide_array[g][TT] = strdup(picks_per_track_double_array[t][0]);
+
+                  dvdv_slide_array[g][TT] =
+                    strdup(picks_per_track_double_array[t][0]);
                 }
 
-              ndvdvslides[g]++;
-              TT++;
+              ++ndvdvslides[g];
+              ++TT;
             }
 
           T++;
@@ -3081,18 +3226,22 @@ void process_dvd_video_zone(command_t *command, globalData *globals)
 
       // Print out count of slides per group
 
-      for (int u = 0; u <= g ; u++) fprintf(stderr, "\n[PICS]  %d\n", ndvdvslides[u]);
+      for (int u = 0; u <= g ; ++u)
+        fprintf(stderr, "\n[PICS]  %d\n", ndvdvslides[u]);
     }
 
   FREE(picks_per_track_double_array)
   FREE(stillpic_string);
 
-  // When dvd-video tracks are provided, just create the VIDEO_TS folder using lplex whith given tracks and above slides
+  // When dvd-video tracks are provided, just create the VIDEO_TS folder using
+  // lplex whith given tracks and above slides
 
   if (dvdv_tracks_given)
     {
       globals->videozone = 0;
-      foutput("%s\n", MSG_TAG "With --dvdv-tracks, no testing of audio file compliance will be performed!");
+      foutput("%s\n", MSG_TAG "With --dvdv-tracks, no testing"
+              " of audio file compliance will be performed!");
+
       launch_lplex_hybridate(img,
                              "dvd",
                              (const char ***) dvdv_track_array,
@@ -3106,16 +3255,23 @@ void process_dvd_video_zone(command_t *command, globalData *globals)
       FREE(ndvdvtracks);
     }
 
-  // when dvd-video tracks should be imported from dvd-audio zone
-  // First case: sheer import, no modification of files, so files that do not conform to dvd-video standards are excluded
+  // when dvd-video tracks should be imported from dvd-audio zone First case:
+  // sheer import, no modification of files, so files that do not conform to
+  // dvd-video standards are excluded
 
   if (dvdv_import_flag)
     {
       ndvdvtitleset1 = 0;
+
       // create dvd-video track double array per group, track
-      dvdv_track_array = (char ***) calloc(command->ngroups, sizeof(char **)); // is a maximum
+
+      dvdv_track_array = (char ***) calloc(command->ngroups, sizeof(char **));
+
+      // is a maximum
+
       // counter of tracks per group
       ndvdvtracks = (uint8_t *) calloc(command->ngroups, sizeof(uint8_t));
+
       int *cut_table[command->ngroups];
       int delta_titlesets = 0;
 
@@ -3125,13 +3281,17 @@ void process_dvd_video_zone(command_t *command, globalData *globals)
             {
               if (ndvdvtracks == NULL) EXIT_ON_RUNTIME_ERROR
 
-                // check if file indexed group, track could be imported to dvd-video zone
+                // check if file indexed group, track could be imported to
+                // dvd-video zone
+
                 if (files[group][track].dvdv_compliant)
                   {
                     if (globals->veryverbose)
                       {
-                        foutput(MSG_TAG "Tested DVD-Video compliant: %s\n", files[group][track].filename);
-                        foutput(MSG_TAG "group %d track %d: bits per sample=%d samplerate=%d\n",
+                        foutput(MSG_TAG "Tested DVD-Video compliant: %s\n",
+                                files[group][track].filename);
+                        foutput(MSG_TAG "group %d track %d: "
+                                "bits per sample=%d samplerate=%d\n",
                                 group,
                                 track,
                                 files[group][track].bitspersample,
@@ -3139,15 +3299,18 @@ void process_dvd_video_zone(command_t *command, globalData *globals)
                       }
 
                     // add it to group counter
+
                     ++ndvdvtracks[group];
                   }
                 else
                   {
                     if (globals->veryverbose)
                       {
-                        foutput(MSG_TAG "Failed to be tested DVD-Video compliant: %s\n",
+                        foutput(MSG_TAG "Failed to be tested"
+                                " DVD-Video compliant: %s\n",
                                 command->files[group][track].filename);
-                        foutput(MSG_TAG "group %d track %d: bits per sample=%d samplerate=%d\n",
+                        foutput(MSG_TAG "group %d track %d: bits per sample=%d "
+                                "samplerate=%d\n",
                                 group, track,
                                 command->files[group][track].bitspersample,
                                 command->files[group][track].samplerate);
@@ -3156,7 +3319,9 @@ void process_dvd_video_zone(command_t *command, globalData *globals)
             }
 
           // group counter is used to dimension the double track array
-          dvdv_track_array[group] = (char **) calloc(ndvdvtracks[group], sizeof(char *));
+
+          dvdv_track_array[group] = (char **) calloc(ndvdvtracks[group],
+                                                     sizeof(char *));
           uint32_t lplex_audio_characteristics_test[ndvdvtracks[group]];
           memset(lplex_audio_characteristics_test, '0', ndvdvtracks[group]);
           cut_table[group] = (int *) calloc(ndvdvtracks[group], sizeof(int));
@@ -3167,27 +3332,45 @@ void process_dvd_video_zone(command_t *command, globalData *globals)
             {
               if (command->files[group][track].dvdv_compliant)
                 {
-                  // Now fill in the dvd-video track array with dvd-video compliant files
-                  dvdv_track_array[group][TT] = strdup(command->files[group][track].filename);
+                  // Now fill in the dvd-video track array with dvd-video
+                  // compliant files
+
+                  dvdv_track_array[group][TT] =
+                    strdup(command->files[group][track].filename);
+
                   // array designed to gather audio characteristics of each file
-                  lplex_audio_characteristics_test[TT] = (((uint8_t)files[group][track].bitspersample) << 16)
-                                                         | (((uint8_t)(files[group][track].samplerate / 1000)) << 8)
-                                                         | files[group][track].channels;
 
-                  // checking if audio characteristics differ from one track to the following
-                  // this to ensure that the specific lplex contraint (same audio char in a given titleset) is respected
-                  // add titleset in this case. Which is not a big constraint as dvd-video allows 99 titlesets
+                  lplex_audio_characteristics_test[TT] =
+                    (((uint8_t)files[group][track].bitspersample) << 16)
+                     | (((uint8_t)(files[group][track].samplerate / 1000)) << 8)
+                     | files[group][track].channels;
 
-                  if (TT && lplex_audio_characteristics_test[TT] != lplex_audio_characteristics_test[TT - 1])
+                  // checking if audio characteristics differ from one track to
+                  // the following this to ensure that the specific lplex
+                  // contraint (same audio char in a given titleset) is
+                  // respected add titleset in this case.
+                  // Which is not a big constraint as dvd-video allows
+                  // 99 titlesets
+
+                  if (TT && lplex_audio_characteristics_test[TT] !=
+                      lplex_audio_characteristics_test[TT - 1])
                     {
-                      foutput(ANSI_COLOR_RED"\n[WAR]"ANSI_COLOR_RESET
-                              "  Lplex requests that tracks have same audio-characteristics for in a given titleset.\n       Found different audio for tracks %s and %s",
+                      foutput(ANSI_COLOR_RED "\n[WAR]" ANSI_COLOR_RESET
+                              "  Lplex requests that tracks have same "
+                              "audio-characteristics for in a given titleset.\n"
+                              "       Found different audio "
+                              "for tracks %s and %s",
                               dvdv_track_array[group][TT],
                               dvdv_track_array[group][TT - 1]);
-                      foutput("  %d, %d\n", lplex_audio_characteristics_test[TT], lplex_audio_characteristics_test[TT - 1]);
-                      foutput("%s\n", ANSI_COLOR_RED"\n[WAR]"ANSI_COLOR_RESET"  Adding titleset");
+                      foutput("  %d, %d\n", lplex_audio_characteristics_test[TT],
+                              lplex_audio_characteristics_test[TT - 1]);
+                      foutput("%s\n", ANSI_COLOR_RED "\n[WAR]" ANSI_COLOR_RESET
+                              "  Adding titleset");
                       ++delta_titlesets;
-                      // array cut_table is used to mark where a new ts should be added
+
+                      // array cut_table is used to mark where a new ts should
+                      // be added
+
                       cut_table[group][TT] = 1;
                     }
 
@@ -3196,60 +3379,85 @@ void process_dvd_video_zone(command_t *command, globalData *globals)
             }
 
           // adjust dvd-video titleset counter
+
           if (ndvdvtracks[group]) ndvdvtitleset1++;
         }
 
       globals->videozone = true;
 
       if (ndvdvtitleset1 == 0)
-        EXIT_ON_RUNTIME_ERROR_VERBOSE("You requested hybridation yet no DVD-Video standard-compliant\n       audio file was found on input.\n")
+        EXIT_ON_RUNTIME_ERROR_VERBOSE("You requested hybridation"
+                                      " yet no DVD-Video standard-compliant\n"
+                                      "       audio file was found on input.\n")
         if (delta_titlesets)
           {
-            // This is the exception case in which extra titlesets should be added because of differing audio characteristics
+            // This is the exception case in which extra titlesets should be
+            // added because of differing audio characteristics
+
             uint8_t new_ntracks[9] = {0};
             uint8_t ndvdvslides[9] = {0};
             char ***new_dvdv_track_array;
             char ***new_dvdv_slide_array;
 
             if (globals->veryverbose)
-              foutput(WAR "%d titlesets will have to be added.\n", delta_titlesets);
+              foutput(WAR "%d titlesets will have to be added.\n",
+                      delta_titlesets);
 
             if (ndvdvtitleset1 + delta_titlesets > 99)
-              EXIT_ON_RUNTIME_ERROR_VERBOSE("Exceeded 99 titleset limit.\n       Redesign your audio input so that you do not have more than 99 different audio formats in a row.")
-              new_dvdv_track_array = (char ***) calloc(ndvdvtitleset1 + delta_titlesets, sizeof(dvdv_track_array));
+              EXIT_ON_RUNTIME_ERROR_VERBOSE("Exceeded 99 titleset limit.\n"
+                                            "       Redesign your audio input"
+                                            " so that you do not have more"
+                                            " than 99 different audio formats"
+                                            " in a row.")
 
-            new_dvdv_slide_array = (char ***) calloc(ndvdvtitleset1 + delta_titlesets, sizeof(dvdv_slide_array));
+              new_dvdv_track_array = (char ***) calloc(ndvdvtitleset1
+                                                       + delta_titlesets,
+                                                       sizeof(dvdv_track_array));
+
+            new_dvdv_slide_array = (char ***) calloc(ndvdvtitleset1
+                                                     + delta_titlesets,
+                                                     sizeof(dvdv_slide_array));
             int newgroup = -1;
 
-            for (int group = 0; group < ndvdvtitleset1 && newgroup < ndvdvtitleset1 + delta_titlesets; group++)
+            for (int group = 0; group < ndvdvtitleset1
+                   && newgroup < ndvdvtitleset1 + delta_titlesets; ++group)
               {
-                for (int track = 0; track < ndvdvtracks[group]; track++)
+                for (int track = 0; track < ndvdvtracks[group]; ++track)
                   {
-                    if (cut_table[group][track]) newgroup++;
+                    if (cut_table[group][track]) ++newgroup;
 
                     ++new_ntracks[newgroup];
                   }
               }
 
-            for (int newgroup = 0; newgroup < ndvdvtitleset1 + delta_titlesets; newgroup++)
+            for (int newgroup = 0;
+                 newgroup < ndvdvtitleset1 + delta_titlesets;
+                 ++newgroup)
               {
-                new_dvdv_track_array[newgroup] = calloc(new_ntracks[newgroup], sizeof(dvdv_track_array[newgroup]));
-                new_dvdv_slide_array[newgroup] = calloc(new_ntracks[newgroup], sizeof(dvdv_slide_array[newgroup]));
+                new_dvdv_track_array[newgroup] =
+                  calloc(new_ntracks[newgroup],
+                         sizeof(dvdv_track_array[newgroup]));
+
+                new_dvdv_slide_array[newgroup] =
+                  calloc(new_ntracks[newgroup],
+                         sizeof(dvdv_slide_array[newgroup]));
                 ndvdvslides[newgroup] = 0;
               }
 
             newgroup = 0;
 
-            for (int group = 0; group < ndvdvtitleset1 ; group++)
+            for (int group = 0; group < ndvdvtitleset1 ; ++group)
               {
                 int N = 0;
 
                 while (N < ndvdvtracks[group])
                   {
-                    for (int track = 0; track < new_ntracks[newgroup]; track++)
+                    for (int track = 0; track < new_ntracks[newgroup]; ++track)
                       {
-                        new_dvdv_track_array[newgroup][track] = strdup(dvdv_track_array[group][track + N]);
-                        new_dvdv_slide_array[newgroup][track] = strdup(dvdv_slide_array[group][track + N]);
+                        new_dvdv_track_array[newgroup][track] =
+                          strdup(dvdv_track_array[group][track + N]);
+                        new_dvdv_slide_array[newgroup][track] =
+                          strdup(dvdv_slide_array[group][track + N]);
                         ndvdvslides[newgroup]++;
                         FREE(dvdv_slide_array[group][track + N]);
                         FREE(dvdv_track_array[group][track + N]);
@@ -3269,11 +3477,16 @@ void process_dvd_video_zone(command_t *command, globalData *globals)
                                    (const uint8_t *) new_ntracks,
                                    (const char ***) new_dvdv_slide_array,
                                    ndvdvslides,
-                                   (const int) ndvdvtitleset1 + delta_titlesets, globals);
+                                   (const int) ndvdvtitleset1 + delta_titlesets,
+                                   globals);
 
-            for (int group = 0; group < ndvdvtitleset1 + delta_titlesets; group++)
+            for (int group = 0;
+                 group < ndvdvtitleset1 + delta_titlesets;
+                 ++group)
               {
-                for (int track = 0; track < new_ntracks[group]; track++)
+                for (int track = 0;
+                     track < new_ntracks[group];
+                     ++track)
                   {
                     FREE(new_dvdv_track_array[group][track]);
                     FREE(new_dvdv_slide_array[group][track]);
@@ -3287,7 +3500,9 @@ void process_dvd_video_zone(command_t *command, globalData *globals)
           }
         else
           {
-            // This is the common case: same audio characteristics in each titleset
+            // This is the common case: same audio characteristics in each
+            // titleset
+
             launch_lplex_hybridate(img,
                                    "dvd",
                                    (const char ***) dvdv_track_array,
@@ -3298,9 +3513,9 @@ void process_dvd_video_zone(command_t *command, globalData *globals)
 
             // apparent memory management issue
 
-            for (int group = 0; group < ndvdvtitleset1; group++)
+            for (int group = 0; group < ndvdvtitleset1; ++group)
               {
-                for (int track = 0; track < ndvdvtracks[group]; track++)
+                for (int track = 0; track < ndvdvtracks[group]; ++track)
                   {
                     //    free(dvdv_track_array[group][track]);y
                     // free(dvdv_slide_array[group][track]);
@@ -3313,28 +3528,37 @@ void process_dvd_video_zone(command_t *command, globalData *globals)
           }
     }
 
-  // Second case: when files do not conform to rhe dvd-video standard, resample them and add them to dvd-video zone
+  // Second case: when files do not conform to rhe dvd-video standard, resample
+  // them and add them to dvd-video zone
 
   if (mirror_flag)
     {
       ndvdvtitleset1 = 0;
-      dvdv_track_array = (char ***) calloc(command->ngroups, sizeof(char **)); // now lo longer a maximum
+
+      // now lo longer a maximum
+
+      dvdv_track_array = (char ***) calloc(command->ngroups, sizeof(char **));
       int *cut_table[command->ngroups];
       int delta_titlesets = 0;
 
       for (int group = 0; group < command->ngroups; group++)
         {
-          dvdv_track_array[group] = (char **) calloc(command->ntracks[group], sizeof(char *));
+          dvdv_track_array[group] = (char **) calloc(command->ntracks[group],
+                                                     sizeof(char *));
           uint32_t lplex_audio_characteristics_test[command->ntracks[group]];
           memset(lplex_audio_characteristics_test, '0', command->ntracks[group]);
-          cut_table[group] = (int *) calloc(command->ntracks[group], sizeof(int));
+          cut_table[group] =
+            (int *) calloc(command->ntracks[group], sizeof(int));
 
-          for (int track = 0; track < command->ntracks[group]; track++)
+          for (int track = 0; track < command->ntracks[group]; ++track)
             {
               if (files[group][track].dvdv_compliant)
                 {
-                  dvdv_track_array[group][track] = strdup(files[group][track].filename);
-                  lplex_audio_characteristics_test[track] = (((uint8_t)files[group][track].bitspersample) << 16)
+                  dvdv_track_array[group][track] =
+                    strdup(files[group][track].filename);
+
+                  lplex_audio_characteristics_test[track] =
+                    (((uint8_t)files[group][track].bitspersample) << 16)
                       | (((uint8_t)(files[group][track].samplerate / 1000)) << 8)
                       | files[group][track].channels;
                 }
@@ -3345,7 +3569,8 @@ void process_dvd_video_zone(command_t *command, globalData *globals)
                   unsigned sample_floor;
                   unsigned bps_floor;
 
-                  // mirror_st_flag indicates the strategy used: if HIGH, upsample, otherwise downsample
+                  // mirror_st_flag indicates the strategy used: if HIGH,
+                  // upsample, otherwise downsample
 
                   if (mirror_st_flag == HIGH)
                     {
@@ -3358,34 +3583,50 @@ void process_dvd_video_zone(command_t *command, globalData *globals)
                       bps_floor    = 24;
                     }
 
-                  // e.g: with LOW, 88200 kHz/96000 kHz is resampled 48000d kHz, with HIGH is resampled 96000 kHz
-                  // e.g: with LOW, 24-bit/20-bit (to be implemented) is resampled to 16-bit, with HIGH left at or upsampled to 24-bit.
-                  new_sample_rate = (files[group][track].samplerate <= sample_floor) ? 48000 : 96000;
-                  new_bit_rate = (files[group][track].bitspersample <= bps_floor) ? 16 : 24;
+                  // e.g: with LOW, 88200 kHz/96000 kHz is resampled 48000d kHz,
+                  // with HIGH is resampled 96000 kHz e.g: with LOW,
+                  // 24-bit/20-bit (to be implemented) is resampled to 16-bit,
+                  // with HIGH left at or upsampled to 24-bit.
+
+                  new_sample_rate = (files[group][track].samplerate
+                                     <= sample_floor) ? 48000 : 96000;
+                  new_bit_rate = (files[group][track].bitspersample
+                                  <= bps_floor) ? 16 : 24;
 
                   // DVD-Video only authorizes 9-kHz with Mono/Stereo
 
-                  if (new_sample_rate == 96000 && files[group][track].channels > 2)
+                  if (new_sample_rate == 96000
+                      && files[group][track].channels > 2)
                     {
                       files[group][track].channels = 2;
-                      foutput(INF "Resampling %d channels to stereo...\n", files[group][track].channels);
+                      foutput(INF "Resampling %d channels to stereo...\n",
+                              files[group][track].channels);
                     }
 
-                  lplex_audio_characteristics_test[track] = new_bit_rate << 16 | ((new_sample_rate / 1000) << 8 | files[group][track].channels);
+                  lplex_audio_characteristics_test[track] =
+                    new_bit_rate << 16
+                    | ((new_sample_rate / 1000) << 8
+                    | files[group][track].channels);
+
                   int size = strlen(files[group][track].filename);
 
-                  if (strcmp(files[group][track].filename + size - 4, ".wav") != 0)
+                  if (strcmp(files[group][track].filename + size - 4, ".wav"))
                     {
-                      EXIT_ON_RUNTIME_ERROR_VERBOSE("Automatic mirroring is only supported for wav files.")
+                      EXIT_ON_RUNTIME_ERROR_VERBOSE("Automatic mirroring"
+                                                    " is only supported for"
+                                                    " wav files.")
                     }
 
                   char newpath[size + 4];
                   strncpy(newpath, files[group][track].filename, size - 4);
                   sprintf(newpath + size - 4, "%s", ".res.wav");
                   dvdv_track_array[group][track] = strdup(newpath);
+
+                  // DVD-Video supports up to 8 channels yet check if lplex does
+
                   resample(files[group][track].filename,
                            dvdv_track_array[group][track],
-                           files[group][track].channels,   // DVD-Video supports up to 8 channels yet check if lplex does
+                           files[group][track].channels,
                            new_bit_rate,
                            new_sample_rate);
                 }
@@ -3438,22 +3679,31 @@ void process_dvd_video_zone(command_t *command, globalData *globals)
                                           "       Redesign your audio input so "
                                           "that you do not have more than "
                                           "99 different audio formats in a row.")
-            new_dvdv_track_array = (char ***) calloc(command->ngroups + delta_titlesets, sizeof(char **));
 
-          new_dvdv_slide_array = (char ***) calloc(command->ngroups + delta_titlesets, sizeof(char **));
+            new_dvdv_track_array = (char ***) calloc(command->ngroups +
+                                                     delta_titlesets,
+                                                     sizeof(char **));
+
+          new_dvdv_slide_array = (char ***) calloc(command->ngroups +
+                                                   delta_titlesets,
+                                                   sizeof(char **));
           int newgroup = -1;
 
-          for (int group = 0; group < command->ngroups && newgroup < command->ngroups + delta_titlesets; group++)
+          for (int group = 0;
+               group < command->ngroups
+                 && newgroup < command->ngroups + delta_titlesets; ++group)
             {
-              for (int track = 0; track < command->ntracks[group]; track++)
+              for (int track = 0; track < command->ntracks[group]; ++track)
                 {
-                  if (cut_table[group][track]) newgroup++;
+                  if (cut_table[group][track]) ++newgroup;
 
-                  new_ntracks[newgroup]++;
+                  ++new_ntracks[newgroup];
                 }
             }
 
-          for (int newgroup = 0; newgroup < command->ngroups + delta_titlesets; newgroup++)
+          for (int newgroup = 0;
+               newgroup < command->ngroups + delta_titlesets;
+               ++newgroup)
             {
               new_dvdv_track_array[newgroup] = calloc(new_ntracks[newgroup],
                                                       sizeof(char *));
@@ -3503,7 +3753,9 @@ void process_dvd_video_zone(command_t *command, globalData *globals)
                                  (const int) command->ngroups
                                  + delta_titlesets, globals);
 
-          for (int group = 0; group < command->ngroups + delta_titlesets; group++)
+          for (int group = 0;
+               group < command->ngroups + delta_titlesets;
+               ++group)
             {
               for (int track = 0; track < new_ntracks[group]; track++)
                 {
@@ -3571,13 +3823,15 @@ void aob2wav_parsing(const char *ssopt,
   if (chain != NULL)
     {
 
-      // groups may not be successive so extract->nextractgroups is not the appropriate counter
+      // groups may not be successive so extract->nextractgroups is not the
+      // appropriate counter
 
       globals->aobpath = (char **) calloc(81, sizeof(char *));
 
       if (globals->aobpath == NULL)
         {
-          EXIT_ON_RUNTIME_ERROR_VERBOSE("Extraction processor failed at input stage.")
+          EXIT_ON_RUNTIME_ERROR_VERBOSE("Extraction processor"
+                                        " failed at input stage.")
         }
     }
   else
@@ -3752,7 +4006,7 @@ void extract_list_parsing(const char *arg,
       chain = strdup(arg);
 
       if (globals->veryverbose) fprintf(stderr,
-                                        DBG "Extract list : %s\n", chain);
+                                          DBG "Extract list : %s\n", chain);
     }
 
   bool cutgroups = false, cuttracks = false;
@@ -3937,7 +4191,9 @@ void extract_list_parsing(const char *arg,
                 }
 
               extract->extracttitleset[groupindex - 1] = 1;
-              extract->extracttrackintitleset[groupindex - 1][trackindex - 1] = 1;
+              extract->extracttrackintitleset
+                [groupindex - 1]
+                [trackindex - 1] = 1;
             }
         }
     }
