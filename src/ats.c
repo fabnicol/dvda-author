@@ -6,7 +6,8 @@ Purpose: Create an Audio Titleset
 dvda-author  - Author a DVD-Audio DVD
 
 (C) Dave Chapman <dave@dchapman.com> 2005
-(C) Fabrice Nicol <fabnicol@users.sourceforge.net> 20015-2019 for multichannel and MLP capabilities
+(C) Fabrice Nicol <fabnicol@users.sourceforge.net> 20015-2019 for multichannel
+and MLP capabilities
 
 The latest version can be found at http://dvd-audio.sourceforge.net
 
@@ -47,8 +48,8 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "c_utils.h"
 #include "structures.h"
 
-static const uint8_t channels[21] = {1, 2, 3, 4, 3, 4, 5, 3, 4, 5, 4, 5, 6, 4, 5, 4, 5, 6, 5, 5, 6};
-
+static const uint8_t channels[21] =
+  {1, 2, 3, 4, 3, 4, 5, 3, 4, 5, 4, 5, 6, 4, 5, 4, 5, 6, 5, 5, 6};
 
 /* pack_scr was taken from mplex (part of the mjpegtools) */
 #define MARKER_MPEG2_SCR 1
@@ -59,7 +60,8 @@ inline void pack_scr(uint8_t scr_bytes[6], uint64_t SCR_base, uint16_t SCR_ext)
 
   msb = (SCR_base >> 32) & 1;
   lsb = SCR_base & (0xFFFFFFFF);
-  temp = (MARKER_MPEG2_SCR << 6) | (msb << 5) | ((lsb >> 27) & 0x18) | 0x4 | ((lsb >> 28) & 0x3);
+  temp = (MARKER_MPEG2_SCR << 6) | (msb << 5)
+    | ((lsb >> 27) & 0x18) | 0x4 | ((lsb >> 28) & 0x3);
   scr_bytes[0] = temp;
   temp = (lsb & 0x0ff00000) >> 20;
   scr_bytes[1] = temp;
@@ -73,18 +75,24 @@ inline void pack_scr(uint8_t scr_bytes[6], uint64_t SCR_base, uint16_t SCR_ext)
   scr_bytes[5] = temp;
 }
 
-inline static void decode_SCR(uint8_t *scr_bytes, uint64_t *SCRint_ptr, globalData *globals)
+inline static void decode_SCR(uint8_t *scr_bytes,
+                              uint64_t *SCRint_ptr,
+                              globalData *globals)
 {
-  uint64_t SCR_base = (scr_bytes[0] >> 3 & 0x7) << 30 | (scr_bytes[0] & 0x3) << 28 |
-                      scr_bytes[1] << 20 | (scr_bytes[2] >> 3 & 0x1F) << 15 | (scr_bytes[2] & 0x3) << 13 |
-                      scr_bytes[3] << 5  | scr_bytes[4] >> 3;
+  uint64_t SCR_base = (scr_bytes[0] >> 3 & 0x7) << 30
+    | (scr_bytes[0] & 0x3) << 28
+    | scr_bytes[1] << 20 | (scr_bytes[2] >> 3 & 0x1F) << 15
+    | (scr_bytes[2] & 0x3) << 13
+    | scr_bytes[3] << 5  | scr_bytes[4] >> 3;
 
   uint64_t SCR_ext = (scr_bytes[4] & 0x3) << 7 | scr_bytes[5] >> 1;
 
   *SCRint_ptr = SCR_base * 300 + SCR_ext;
 
   if (globals->logdecode)
-    fprintf(aob_log, "INF;SCR_base: ;%" PRIu64 ";SCR_ext: ;%" PRIu64 ";SCR_int: ;%" PRIu64 ";\n", SCR_base, SCR_ext, *SCRint_ptr);
+    fprintf(aob_log, "INF;SCR_base: ;%" PRIu64
+            ";SCR_ext: ;%" PRIu64 ";SCR_int: ;%" PRIu64 ";\n",
+            SCR_base, SCR_ext, *SCRint_ptr);
 }
 
 inline void pack_pts_dts(uint8_t PTS_DTS_data[10], uint32_t pts, uint32_t dts)
@@ -100,16 +108,45 @@ inline void pack_pts_dts(uint8_t PTS_DTS_data[10], uint32_t pts, uint32_t dts)
   d1 = (dts & 0x0000ff00) >> 8;
   d0 = dts & 0xff;
 
-  PTS_DTS_data[0] = 0x31 | ((p3 & 0xc0) >> 5);                    // [32],31,30
-  PTS_DTS_data[1] = ((p3 & 0x3f) << 2) | ((p2 & 0xc0) >> 6);      // 29,28,27,26,25,24,23,22
-  PTS_DTS_data[2] = ((p2 & 0x3f) << 2) | ((p1 & 0x80) >> 6) | 1;  // 21,20,19,18,17,16,15
-  PTS_DTS_data[3] = ((p1 & 0x7f) << 1) | ((p0 & 0x80) >> 7);      // 14,13,12,11,10,9,8,7
-  PTS_DTS_data[4] = ((p0 & 0x7f) << 1) | 1;                       // 6,5,4,3,2,1,0
-  PTS_DTS_data[5] = 0x11 | ((d3 & 0xc0) >> 5);                    // [32],31,30
-  PTS_DTS_data[6] = ((d3 & 0x3f) << 2) | ((d2 & 0xc0) >> 6);      // 29,28,27,26,25,24,23,22
-  PTS_DTS_data[7] = ((d2 & 0x3f) << 2) | ((d1 & 0x80) >> 6) | 1;  // 21,20,19,18,17,16,15
-  PTS_DTS_data[8] = ((d1 & 0x7f) << 1) | ((d0 & 0x80) >> 7);      // 14,13,12,11,10,9,8,7
-  PTS_DTS_data[9] = ((d0 & 0x7f) << 1) | 1;                       // 6,5,4,3,2,1,0
+  // [32],31,30
+
+  PTS_DTS_data[0] = 0x31 | ((p3 & 0xc0) >> 5);
+
+  // 29,28,27,26,25,24,23,22
+
+  PTS_DTS_data[1] = ((p3 & 0x3f) << 2) | ((p2 & 0xc0) >> 6);
+
+  // 21,20,19,18,17,16,15
+
+  PTS_DTS_data[2] = ((p2 & 0x3f) << 2) | ((p1 & 0x80) >> 6) | 1;
+
+  // 14,13,12,11,10,9,8,7
+
+  PTS_DTS_data[3] = ((p1 & 0x7f) << 1) | ((p0 & 0x80) >> 7);
+
+  // 6,5,4,3,2,1,0
+
+  PTS_DTS_data[4] = ((p0 & 0x7f) << 1) | 1;
+
+  // [32],31,30
+
+  PTS_DTS_data[5] = 0x11 | ((d3 & 0xc0) >> 5);
+
+  // 29,28,27,26,25,24,23,22
+
+  PTS_DTS_data[6] = ((d3 & 0x3f) << 2) | ((d2 & 0xc0) >> 6);
+
+  // 21,20,19,18,17,16,15
+
+  PTS_DTS_data[7] = ((d2 & 0x3f) << 2) | ((d1 & 0x80) >> 6) | 1;
+
+  // 14,13,12,11,10,9,8,7
+
+  PTS_DTS_data[8] = ((d1 & 0x7f) << 1) | ((d0 & 0x80) >> 7);
+
+  // 6,5,4,3,2,1,0
+
+  PTS_DTS_data[9] = ((d0 & 0x7f) << 1) | 1;
 }
 
 inline static void pack_pts(uint8_t PTS_DTS_data[5], uint32_t pts)
@@ -121,17 +158,34 @@ inline static void pack_pts(uint8_t PTS_DTS_data[5], uint32_t pts)
   p1 = (pts & 0x0000ff00) >> 8;
   p0 = pts & 0xff;
 
-  PTS_DTS_data[0] = 0x21 | ((p3 & 0xc0) >> 5);                    // [32],31,30
-  PTS_DTS_data[1] = ((p3 & 0x3f) << 2) | ((p2 & 0xc0) >> 6);      // 29,28,27,26,25,24,23,22
-  PTS_DTS_data[2] = ((p2 & 0x3f) << 2) | ((p1 & 0x80) >> 6) | 1;  // 21,20,19,18,17,16,15
-  PTS_DTS_data[3] = ((p1 & 0x7f) << 1) | ((p0 & 0x80) >> 7);      // 14,13,12,11,10,9,8,7
-  PTS_DTS_data[4] = ((p0 & 0x7f) << 1) | 1;                       // 6,5,4,3,2,1,0
+  // [32],31,30
+
+  PTS_DTS_data[0] = 0x21 | ((p3 & 0xc0) >> 5);
+
+  // 29,28,27,26,25,24,23,22
+
+  PTS_DTS_data[1] = ((p3 & 0x3f) << 2) | ((p2 & 0xc0) >> 6);
+
+  // 21,20,19,18,17,16,15
+
+  PTS_DTS_data[2] = ((p2 & 0x3f) << 2) | ((p1 & 0x80) >> 6) | 1;
+
+  // 14,13,12,11,10,9,8,7
+
+  PTS_DTS_data[3] = ((p1 & 0x7f) << 1) | ((p0 & 0x80) >> 7);
+
+  // 6,5,4,3,2,1,0
+
+  PTS_DTS_data[4] = ((p0 & 0x7f) << 1) | 1;
 }
 
-inline static void decode_pts(uint8_t P[5], uint32_t *pts_ptr, globalData *globals)
+inline static void decode_pts(uint8_t P[5],
+                              uint32_t *pts_ptr,
+                              globalData *globals)
 {
 
-  *pts_ptr = (P[0] >> 1 & 0x3) << 30 | P[1] << 22 | (P[2] >> 1) << 15 | P[3] << 7 | P[4] >> 1;
+  *pts_ptr = (P[0] >> 1 & 0x3) << 30 | P[1] << 22
+    | (P[2] >> 1) << 15 | P[3] << 7 | P[4] >> 1;
 
   if (globals->logdecode)
     fprintf(aob_log, "INF;PTS décode;%08X ;;;;\n", *pts_ptr);
@@ -147,15 +201,24 @@ inline static void write_pack_header(FILE *fp,  uint64_t SCRint)
 
   uint8_t scr_bytes[6];
 
-  /* offset_count += 4 */ fwrite(pack_start_code, 4, 1, fp);        // PCM or MLP
+  /* offset_count += 4 */
+  fwrite(pack_start_code, 4, 1, fp);        // PCM or MLP
   pack_scr(scr_bytes, (SCRint / 300), (SCRint % 300));
-  /* offset_count += 6 */ fwrite(scr_bytes, 6, 1, fp);
-  /* offset_count += 3 */ fwrite(program_mux_rate_bytes, 3, 1, fp); // PCM or MLP
-  /* offset_count += */   fwrite(pack_stuffing_length_byte, 1, 1, fp); // PCM or MLP
+
+  /* offset_count += 6 */
+  fwrite(scr_bytes, 6, 1, fp);
+
+  /* offset_count += 3 */
+
+  fwrite(program_mux_rate_bytes, 3, 1, fp); // PCM or MLP
+
+  /* offset_count += */
+  fwrite(pack_stuffing_length_byte, 1, 1, fp); // PCM or MLP
 }
 
-
-inline static void read_pack_header(FILE *fp,  uint64_t *SCRint_ptr, globalData *globals)
+inline static void read_pack_header(FILE *fp,
+                                    uint64_t *SCRint_ptr,
+                                    globalData *globals)
 {
   uint8_t scr_bytes[6] = {0};
   open_aob_log(globals);
@@ -178,14 +241,24 @@ uint8_t stream_info2[3] = {0xbd, 0xe0, 0x0a};
 inline static void write_system_header(FILE *fp)
 {
 
-  /* offset_count += 4 */ fwrite(system_header_start_code, 4, 1, fp); // PCM or MLP
-  /* offset_count += 2 */ fwrite(header_length, 2, 1, fp);          // PCM or MLP
-  /* offset_count += 3 */ fwrite(rate_bound, 3, 1, fp);             // PCM or MLP
-  /* offset_count += */   fwrite(audio_bound, 1, 1, fp);            // PCM or MLP
-  /* offset_count += */   fwrite(video_bound, 1, 1, fp);            // PCM or MLP
-  /* offset_count += */   fwrite(packet_rate_restriction_flag, 1, 1, fp); // PCM or MLP
-  /* offset_count += 3 */ fwrite(stream_info1, 3, 1, fp);           // PCM or MLP
-  /* offset_count += 3 */ fwrite(stream_info2, 3, 1, fp);           // PCM or MLP
+
+  // PCM or MLP
+
+  /* offset_count += 4 */ fwrite(system_header_start_code, 4, 1, fp);
+
+  /* offset_count += 2 */ fwrite(header_length, 2, 1, fp);
+
+  /* offset_count += 3 */ fwrite(rate_bound, 3, 1, fp);
+
+  /* offset_count += */   fwrite(audio_bound, 1, 1, fp);
+
+  /* offset_count += */   fwrite(video_bound, 1, 1, fp);
+
+  /* offset_count += */   fwrite(packet_rate_restriction_flag, 1, 1, fp);
+
+  /* offset_count += 3 */ fwrite(stream_info1, 3, 1, fp);
+
+  /* offset_count += 3 */ fwrite(stream_info2, 3, 1, fp);
 }
 
 inline static void read_system_header(FILE *fp, globalData *globals)
@@ -208,7 +281,9 @@ uint8_t packet_start_code_prefix[3] = {0x00, 0x00, 0x01};
 uint8_t stream_id_padding[1] = {0xbe};
 uint8_t length_bytes[2];
 
-inline static void write_pes_padding(FILE *fp, uint16_t length, globalData *globals)
+inline static void write_pes_padding(FILE *fp,
+                                     uint16_t length,
+                                     globalData *globals)
 {
   if (length == 0)
     {
@@ -234,7 +309,6 @@ inline static void write_pes_padding(FILE *fp, uint16_t length, globalData *glob
       return;
     }
 
-
   length_bytes[0] = (length & 0xFF00) >> 8;
 
   /* Take number of bytes to pad in sector (=2048-length)
@@ -253,7 +327,9 @@ inline static void write_pes_padding(FILE *fp, uint16_t length, globalData *glob
 
 }
 
-inline static void read_pes_padding(FILE *fp, uint16_t length, globalData *globals)
+inline static void read_pes_padding(FILE *fp,
+                                    uint16_t length,
+                                    globalData *globals)
 {
   if (length == 0)
     {
@@ -298,7 +374,10 @@ inline static void read_pes_padding(FILE *fp, uint16_t length, globalData *globa
 uint8_t stream_id[1] = {0xbd};
 uint8_t PES_packet_len_bytes[2];
 uint8_t flags1[1] = {0x81}; // various flags - original_or_copy=1
-uint8_t flags2[1] = {0}; // various flags - contains pts_dts_flags and extension_flag
+
+// various flags - contains pts_dts_flags and extension_flag
+
+uint8_t flags2[1] = {0};
 uint8_t PES_header_data_length[1] = {0};
 uint8_t PES_extension_flags[1] = {0x1e}; // PSTD_buffer_flag=1
 uint8_t PTS_data[5];
@@ -306,8 +385,12 @@ uint8_t PTS_DTS_data[10];
 uint8_t PSTD_buffer_scalesize[2];
 const uint16_t PSTD = 10;
 
-inline static void write_audio_pes_header(FILE *fp, uint16_t PES_packet_len,
-    uint8_t mlp_flag, uint8_t extension_flag, uint32_t PTS, uint32_t DTS, globalData *globals)
+inline static void write_audio_pes_header(FILE *fp,
+                                          uint16_t PES_packet_len,
+                                          uint8_t mlp_flag,
+                                          uint8_t extension_flag,
+                                          uint32_t PTS,
+                                          uint32_t DTS, globalData *globals)
 {
   switch (mlp_flag)
     {
@@ -329,7 +412,10 @@ inline static void write_audio_pes_header(FILE *fp, uint16_t PES_packet_len,
       PES_header_data_length[0] += 3; // 8 (uncompressed) or 0xD (mlp)
     }
 
-  flags2[0] = mlp_flag | extension_flag;  // PES_extension_flag = 1 marks pack_in_title = 0
+
+  // PES_extension_flag = 1 marks pack_in_title = 0
+
+  flags2[0] = mlp_flag | extension_flag;
 
   PES_packet_len_bytes[0] = (PES_packet_len & 0xff00) >> 8;
   PES_packet_len_bytes[1] = PES_packet_len & 0xff;
@@ -337,13 +423,18 @@ inline static void write_audio_pes_header(FILE *fp, uint16_t PES_packet_len,
   /* offset_count += 3 */ fwrite(packet_start_code_prefix, 3, 1, fp);
   /* offset_count += */   fwrite(stream_id, 1, 1, fp);
 
-  if (globals->maxverbose) fprintf(stderr, DBG "Writing PES_plb at offset: %" PRIu64 ", with value PES_packet_len = %d (%d, %d)\n",
+  if (globals->maxverbose) fprintf(stderr,
+                                   DBG "Writing PES_plb at offset: %" PRIu64
+                                   ", with value PES_packet_len = %d (%d, %d)\n",
                                      ftello(fp),
                                      PES_packet_len,
                                      PES_packet_len_bytes[0],
                                      PES_packet_len_bytes[1]);
 
-  /* offset_count += 2 */ fwrite(PES_packet_len_bytes, 2, 1, fp);  //PCM and also works for MLP (!)
+
+  //PCM and also works for MLP (!)
+
+  /* offset_count += 2 */ fwrite(PES_packet_len_bytes, 2, 1, fp);
   /* offset_count += */   fwrite(flags1, 1, 1, fp); // PCM or MLP
 
   // yields 0xC10D (first pack)  then 0xC00A (following packs) for MLP
@@ -356,7 +447,11 @@ inline static void write_audio_pes_header(FILE *fp, uint16_t PES_packet_len,
     {
       if (mlp_flag)
         {
-          pack_pts_dts(PTS_DTS_data, PTS, DTS);                                  // TODO: recover very last PTS-DTS data of last sector to fill in the 10 missing bytes of last sector header.
+
+          // TODO: recover very last PTS-DTS data of last sector to fill in the
+          // 10 missing bytes of last sector header.
+
+          pack_pts_dts(PTS_DTS_data, PTS, DTS);
           /* offset_count += 10 */ fwrite(PTS_DTS_data, 10, 1, fp);
         }
     }
@@ -366,7 +461,10 @@ inline static void write_audio_pes_header(FILE *fp, uint16_t PES_packet_len,
       /* offset_count += 5 */ fwrite(PTS_data, 5, 1, fp);
     }
 
-  if (extension_flag)  // only there at start of first pack. Looks correct for both MLP and PCM
+
+  // only there at start of first pack. Looks correct for both MLP and PCM
+
+  if (extension_flag)
     {
       PSTD_buffer_scalesize[0] = 0x60 | ((PSTD & 0x1f00) >> 8);
       PSTD_buffer_scalesize[1] = PSTD & 0xff;
@@ -376,7 +474,10 @@ inline static void write_audio_pes_header(FILE *fp, uint16_t PES_packet_len,
     }
 }
 
-inline static uint16_t read_audio_pes_header(FILE *fp, uint8_t mlp_flag, uint8_t extension_flag, uint32_t *PTS_ptr,
+inline static uint16_t read_audio_pes_header(FILE *fp,
+                                             uint8_t mlp_flag,
+                                             uint8_t extension_flag,
+                                             uint32_t *PTS_ptr,
     uint32_t *DTS_ptr,
     globalData *globals)
 {
@@ -431,27 +532,44 @@ uint8_t sub_stream_id[1]      = {0xa0};
 uint8_t continuity_counter[1] = {0x00};
 uint8_t LPCM_header_length[2];
 uint8_t first_access_unit_pointer[2];
-uint8_t downmix_index[1]      = {0x00};   // 0x10 for stereo or mono, 0x00 for surround or rank of downmix table (0-based)
-uint8_t sample_size[1]        = {0x0f};   // 0x0f=16-bit, 0x1f=20-bit, 0x2f=24-bit
-uint8_t sample_rate[1]        = {0x00};   // 0x0f=48KHz, 0x1f=96KHz, 0x2f=192KHz,0x8f=44.1KHz, 0x9f=88.2KHz, 0xaf=176.4KHz
+
+// 0x10 for stereo or mono, 0x00 for surround or rank of downmix table (0-based)
+
+uint8_t downmix_index[1]      = {0x00};
+
+// 0x0f=16-bit, 0x1f=20-bit, 0x2f=24-bit
+
+uint8_t sample_size[1]        = {0x0f};
+
+// 0x0f=48KHz, 0x1f=96KHz, 0x2f=192KHz,0x8f=44.1KHz, 0x9f=88.2KHz, 0xaf=176.4KHz
+
+uint8_t sample_rate[1]        = {0x00};
 uint8_t unknown2[1]           = {0x00};
-uint8_t channel_assignment[1] = {0};      // The channel assignment - 0=C; 1=L,R; 17=L,R,C,lfe,Ls,Rs
+
+// The channel assignment - 0=C; 1=L,R; 17=L,R,C,lfe,Ls,Rs
+
+uint8_t channel_assignment[1] = {0};
 uint8_t unknown3[1]           = {0x80};
 uint8_t zero[16]              = {0};
 
-inline static void write_lpcm_header(FILE *fp, uint8_t header_length, fileinfo_t *info, int64_t pack_in_title, uint8_t counter, bool last_pack)
+inline static void write_lpcm_header(FILE *fp,
+                                     uint8_t header_length,
+                                     fileinfo_t *info,
+                                     int64_t pack_in_title,
+                                     uint8_t counter,
+                                     bool last_pack)
 {
 // Except for first MLP "AOB" headers are 43 bytes long
 // Examples
 
-//    00 00 01 BA 44 00 04 B8 75 83 01 89 C3 F8 00 00 01 BD 07 EC 81 C0 0A 31 00 01 2F 61 11 00 01 2E BF A1 01 00 06 00 17 07 FF 00 00
-//...
-//    00 00 01 BA 44 00 DD 56 85 83 01 89 C3 F8 00 00 01 BD 07 EC 81 C0 0A 31 00 37 56 E9 11 00 37 56 47 A1 07 00 06 00 33 FF 09 00 00
-//                                                                               +5224           +5224
-//    00 00 01 BA 44 00 DD A8 34 AB 01 89 C3 F8 00 00 01 BD 05 D0 81 C0 0A 31 00 37 6B 51 11 00 37 6A AF A1 08 00 06 00 1C FF 09 00 00
-//    Offsets 25-30 (0 based) differ by 162
-//    Offsets 25 and 30 increase by 5224 each sector
-// Rest of sector is just MLP bytes without any permutation involved.
+//    00 00 01 BA 44 00 04 B8 75 83 01 89 C3 F8 00 00 01 BD 07 EC 81 C0 0A 31 00
+//01 2F 61 11 00 01 2E BF A1 01 00 06 00 17 07 FF 00 00 ...  00 00 01 BA 44 00
+//DD 56 85 83 01 89 C3 F8 00 00 01 BD 07 EC 81 C0 0A 31 00 37 56 E9 11 00 37 56
+//47 A1 07 00 06 00 33 FF 09 00 00 +5224 +5224 00 00 01 BA 44 00 DD A8 34 AB 01
+//89 C3 F8 00 00 01 BD 05 D0 81 C0 0A 31 00 37 6B 51 11 00 37 6A AF A1 08 00 06
+//00 1C FF 09 00 00 Offsets 25-30 (0 based) differ by 162 Offsets 25 and 30
+//increase by 5224 each sector Rest of sector is just MLP bytes without any
+//permutation involved.
 
   int frame_offset;
   uint64_t bytes_written;
@@ -508,7 +626,8 @@ inline static void write_lpcm_header(FILE *fp, uint8_t header_length, fileinfo_t
         }
       else
         {
-          // rank of downmix table if there is one: 0 for 1st table, 1 for 2nd etc. up to 15 for the 16th table (0x0F)
+          // rank of downmix table if there is one: 0 for 1st table, 1 for 2nd
+          // etc. up to 15 for the 16th table (0x0F)
 
           if (info->downmix_table_rank)
             downmix_index[0] = info->downmix_table_rank - 1;
@@ -534,10 +653,14 @@ inline static void write_lpcm_header(FILE *fp, uint8_t header_length, fileinfo_t
   else sample_size[0] = 0xFF;
 
   // TODO: assign real channel !!
-  channel_assignment[0] = info->cga;  // defaults to default_cga[info->channels -1];
+
+  // defaults to default_cga[info->channels -1];
+
+  channel_assignment[0] = info->cga;
   // TODO
 
-  bytes_written = pack_in_title == 0 ? 0 : (pack_in_title * info->lpcm_payload) - info->firstpackdecrement;
+  bytes_written = pack_in_title == 0 ? 0 :
+    (pack_in_title * info->lpcm_payload) - info->firstpackdecrement;
 
   // e.g., for 4ch, First pack is 1984, rest are 2000
   // for MLP header_lengh looks like constant 6 and is adjusted in audio.c
@@ -547,7 +670,8 @@ inline static void write_lpcm_header(FILE *fp, uint8_t header_length, fileinfo_t
       if (last_pack) frame_offset = 0;
       else
         frame_offset = info->mlp_layout[pack_in_title].pkt_pos
-                       - (pack_in_title ? ((pack_in_title - 1) * 2005 + 1984) : 0)
+                       - (pack_in_title ? ((pack_in_title - 1) * 2005 + 1984)
+                          : 0)
                        + header_length - 1;
     }
   else
@@ -559,7 +683,8 @@ inline static void write_lpcm_header(FILE *fp, uint8_t header_length, fileinfo_t
           frames_written++;
         }
 
-      frame_offset = (frames_written * info->bytesperframe) - bytes_written + header_length - 1;
+      frame_offset = (frames_written * info->bytesperframe)
+        - bytes_written + header_length - 1;
     }
 
   LPCM_header_length[0] = (header_length & 0xff00) >> 8;
@@ -570,12 +695,28 @@ inline static void write_lpcm_header(FILE *fp, uint8_t header_length, fileinfo_t
 
   if (info->type == AFMT_MLP) sub_stream_id[0] = 0xa1;
 
-  /* offset_count += */   fwrite(sub_stream_id, 1, 1, fp);  // MLP change: PCM 0xa0 -> 0xa1 (offset: 0x31 / 33)
-  /* offset_count += */   fwrite(continuity_counter, 1, 1, fp);  // PCM MLP
-  /* offset_count += 2 */ fwrite(LPCM_header_length, 2, 1, fp);  // MLP looks constant for all packs at 0x06, tested for 2/16-24/44 and 3/16/96(offset 0x39 at  first pack and 0x24 at following packs).
-  /* offset_count += 2 */ fwrite(first_access_unit_pointer, 2, 1, fp); // PCM: uses PCM frames as defined in audio.c
-  // MLP: very different, uses pkt_pos of first packet after cumulative sector payload,
-  // exactly as in calc_PCM_DTS_MLP() with m[sector].pkt_pos from get_mlp_layout
+
+  // MLP change: PCM 0xa0 -> 0xa1 (offset: 0x31 / 33)
+
+  /* offset_count += */   fwrite(sub_stream_id, 1, 1, fp);
+
+  // PCM MLP
+
+  /* offset_count += */   fwrite(continuity_counter, 1, 1, fp);
+
+  // MLP looks constant for all packs at 0x06, tested for 2/16-24/44 and
+  // 3/16/96(offset 0x39 at first pack and 0x24 at following packs).
+
+  /* offset_count += 2 */ fwrite(LPCM_header_length, 2, 1, fp);
+
+  // PCM: uses PCM frames as defined in audio.c
+
+  /* offset_count += 2 */ fwrite(first_access_unit_pointer, 2, 1, fp);
+
+  // MLP: very different, uses pkt_pos of first packet after cumulative sector
+  // payload, exactly as in calc_PCM_DTS_MLP() with m[sector].pkt_pos from
+  // get_mlp_layout
+
   if (info->type == AFMT_MLP)
     {
       uint8_t unknown_mlp[2] = {0, 0};
@@ -601,9 +742,12 @@ inline static void write_lpcm_header(FILE *fp, uint8_t header_length, fileinfo_t
 
 }
 
-inline static int read_lpcm_header(FILE *fp, fileinfo_t *info, uint32_t pack_in_title, uint8_t position, globalData *globals)
+inline static int read_lpcm_header(FILE *fp,
+                                   fileinfo_t *info,
+                                   uint32_t pack_in_title,
+                                   uint8_t position,
+                                   globalData *globals)
 {
-
   int frame_offset = 0;
   uint64_t bytes_written = 0;
   uint64_t frames_written = 0;
@@ -614,7 +758,8 @@ inline static int read_lpcm_header(FILE *fp, fileinfo_t *info, uint32_t pack_in_
   /* offset_count += */   RW_FIELD(continuity_counter);
   /* offset_count += 2 */ RW_FIELD(LPCM_header_length);
 
-  uint8_t header_length =  /* LPCM_header_length[0] << 8 | */ LPCM_header_length[1];
+  uint8_t header_length =  /* LPCM_header_length[0] << 8 | */
+    LPCM_header_length[1];
 
   /* offset_count += 2 */ RW_FIELD(first_access_unit_pointer);
 
@@ -654,7 +799,8 @@ inline static int read_lpcm_header(FILE *fp, fileinfo_t *info, uint32_t pack_in_
       if ((sample_rate[0] & 0xf) != 0xf)
         {
           if (globals->logdecode)
-            fprintf(aob_log, "%s", "ERR;coherence_test;sample_rate and sample_size are incoherent (no 0xf lower nibble);;;;;\n");
+            fprintf(aob_log, "%s", "ERR;coherence_test;sample_rate and"
+                    " sample_size are incoherent (no 0xf lower nibble);;;;;\n");
         }
 
     }
@@ -662,7 +808,10 @@ inline static int read_lpcm_header(FILE *fp, fileinfo_t *info, uint32_t pack_in_
     {
       if ((sample_rate[0] & 0xf) != high_nibble)
         {
-          if (globals->logdecode) fprintf(aob_log, "%s", "ERR;coherence_test;sample_rate and sample_size are incoherent (lower nibble != higher nibble);;;;;\n");
+          if (globals->logdecode)
+            fprintf(aob_log, "%s", "ERR;coherence_test;sample_rate "
+                    "and sample_size are incoherent "
+                    "(lower nibble != higher nibble);;;;;\n");
         }
     }
 
@@ -676,23 +825,29 @@ inline static int read_lpcm_header(FILE *fp, fileinfo_t *info, uint32_t pack_in_
 
   info->cga = channel_assignment[0];
 
-  info->channels = (channel_assignment[0] < 21) ? channels[channel_assignment[0]] : 0;
+  info->channels = (channel_assignment[0] < 21) ?
+    channels[channel_assignment[0]] : 0;
 
   if (globals->logdecode)
     {
       if (info->channels <= 2)
         {
           if (downmix_index[0] != 0x10)
-            fprintf(aob_log, "%s%d%s", "ERR;incorrect unknown1 lpcm header value: ;", downmix_index[0], "; instead of expected 0x10;;;;\n");
+            fprintf(aob_log, "%s%d%s",
+                    "ERR;incorrect unknown1 lpcm header value: ;",
+                    downmix_index[0], "; instead of expected 0x10;;;;\n");
         }
       else
 
         if (downmix_index[0] > 0xF)
-          fprintf(aob_log, "%s%d%s", "ERR;incorrect downmix index lpcm header value: ;", downmix_index[0], "; instead of expected 0-0xF;;;;\n");
+          fprintf(aob_log, "%s%d%s",
+                  "ERR;incorrect downmix index lpcm header value: ;",
+                  downmix_index[0], "; instead of expected 0-0xF;;;;\n");
 
     }
 
-  // info->PTS_length, info->numsamples and info->numbytes will be unusable, other info fileds OK
+  // info->PTS_length, info->numsamples and info->numbytes will be unusable,
+  // other info fileds OK
 
   calc_info(info, globals);
 
@@ -728,48 +883,82 @@ inline static int read_lpcm_header(FILE *fp, fileinfo_t *info, uint32_t pack_in_
 
       if (header_length != info->firstpack_lpcm_headerquantity)
         {
-          if (globals->logdecode) fprintf(aob_log, "WAR;info->firstpack_lpcm_headerquantity;Disk: ; %d; Computed: ; %d;;\n", header_length, info->firstpack_lpcm_headerquantity);
+          if (globals->logdecode)
+            fprintf(aob_log,
+                    "WAR;info->firstpack_lpcm_headerquantity;"
+                    "Disk: ; %d; Computed: ; %d;;\n",
+                    header_length,
+                    info->firstpack_lpcm_headerquantity);
         }
       break;
 
     case  LAST_PACK:
       if (header_length != info->lastpack_lpcm_headerquantity)
         {
-          if (globals->logdecode) fprintf(aob_log, "WAR;info->lastpack_lpcm_headerquantity;Disk: ;%d; Computed: ; %d;;\n", header_length, info->lastpack_lpcm_headerquantity);
+          if (globals->logdecode)
+            fprintf(aob_log,
+                    "WAR;info->lastpack_lpcm_headerquantity;"
+                    "Disk: ;%d; Computed: ; %d;;\n",
+                    header_length,
+                    info->lastpack_lpcm_headerquantity);
         }
       break;
 
     case  MIDDLE_PACK:
       if (header_length != info->midpack_lpcm_headerquantity)
         {
-          if (globals->logdecode) fprintf(aob_log, "WAR;info->midpack_lpcm_headerquantity;Disk: ; %d; Computed: ; %d;;\n", header_length, info->midpack_lpcm_headerquantity);
+          if (globals->logdecode)
+            fprintf(aob_log,
+                    "WAR;info->midpack_lpcm_headerquantity;"
+                    "Disk: ; %d; Computed: ; %d;;\n",
+                    header_length,
+                    info->midpack_lpcm_headerquantity);
         }
     }
 
-  bytes_written = pack_in_title == 0 ? 0 : (pack_in_title * info->lpcm_payload) - info->firstpackdecrement;
+  bytes_written = pack_in_title == 0 ? 0 :
+    (pack_in_title * info->lpcm_payload) - info->firstpackdecrement;
+
   // e.g., for 4ch, First pack is 1984, rest are 2000
+
   frames_written = bytes_written / info->bytesperframe;
   if (frames_written * info->bytesperframe < bytes_written)
     {
-      frames_written++;
+      ++frames_written;
     }
 
-  frame_offset = (frames_written * info->bytesperframe) - bytes_written + header_length - 1;
+  frame_offset = (frames_written * info->bytesperframe) - bytes_written
+    + header_length - 1;
 
   if (globals->veryverbose)
-    foutput("titlepack: %u bytes written: %lu\nsample rate: %d bit rate: %d channel asignment: %d\n",
-            pack_in_title, bytes_written, info->samplerate, info->bitspersample, info->cga);
+    foutput("titlepack: %u bytes written: %lu\nsample rate:"
+            " %d bit rate: %d channel asignment: %d\n",
+            pack_in_title,
+            bytes_written,
+            info->samplerate,
+            info->bitspersample,
+            info->cga);
 
   if (first_access_unit_pointer[0] != (frame_offset & 0xff00) >> 8)
     {
       foutput("%s\n", "first_access_unit_pointer: inaccurate bit 0");
-      if (globals->logdecode) fprintf(aob_log, "ERR;first_access_unit_pointer byte 0 inaccurate; %d ; instead of;  %d;;;\n", first_access_unit_pointer[0], (frame_offset & 0xff00) >> 8);
+      if (globals->logdecode)
+        fprintf(aob_log,
+                "ERR;first_access_unit_pointer byte 0 inaccurate;"
+                " %d ; instead of;  %d;;;\n",
+                first_access_unit_pointer[0],
+                (frame_offset & 0xff00) >> 8);
     }
 
   if (first_access_unit_pointer[1] != (frame_offset & 0xff))
     {
-      foutput("%s\n", "first_access_unit_pointer: inaccurate bit 1");
-      if (globals->logdecode) fprintf(aob_log, "ERR;first_access_unit_pointer byte 1 inaccurate; %d ; instead of; %d;;;\n", first_access_unit_pointer[1], frame_offset & 0xff);
+      foutput("%s\n",
+              "first_access_unit_pointer: inaccurate bit 1");
+      if (globals->logdecode)
+        fprintf(aob_log, "ERR;first_access_unit_pointer byte 1 inaccurate;"
+                " %d ; instead of; %d;;;\n",
+                first_access_unit_pointer[1],
+                frame_offset & 0xff);
     }
 
   /* offset_count += */   CHECK_FIELD(unknown3);
@@ -787,7 +976,6 @@ inline static int read_lpcm_header(FILE *fp, fileinfo_t *info, uint32_t pack_in_
   return header_length;
 }
 
-
 inline static uint64_t calc_SCR(fileinfo_t *info, uint64_t pack_in_title)
 {
   static double SCR;
@@ -802,10 +990,14 @@ inline static uint64_t calc_SCR(fileinfo_t *info, uint64_t pack_in_title)
     case 0:
       return 0;
     case 1:
-      SCR = (info->lpcm_payload - info->firstpackdecrement) * 300.0 * (90000.0 / info->bytespersecond);
+      SCR = (info->lpcm_payload - info->firstpackdecrement)
+        * 300.0 * (90000.0 / info->bytespersecond);
       break;
+
+      // do not compute each time ! Once is enough
     case 2:
-      SCR1 = info->lpcm_payload * 300.0 * (90000.0 / info->bytespersecond);  // do not compute each time ! Once is enough
+      SCR1 = info->lpcm_payload
+        * 300.0 * (90000.0 / info->bytespersecond);
       SCR += SCR1;
       break;
 
@@ -823,11 +1015,13 @@ inline static uint64_t calc_SCR(fileinfo_t *info, uint64_t pack_in_title)
 
   return (uint64_t) floor(SCR);
 
-  // For MLP seems to be : in sector count as many raw (not counting AOB headers) MLP bytes, see corresponding PCM bytes output (using get_mlp_layout)
-  // then use PCM bytespersecond so that duration = PCM byte output (sector) / bytespersecond * 90000 * 300
-  // SCR starts after 000001BA, normally with 0x44 at lower offsets, on 6 bytes.
+  // For MLP seems to be : in sector count as many raw (not counting AOB
+  // headers) MLP bytes, see corresponding PCM bytes output (using
+  // get_mlp_layout) then use PCM bytespersecond so that
+  // duration = PCM byte output (sector) / bytespersecond * 90000 * 300 SCR
+  // starts after 000001BA,
+  // normally with 0x44 at lower offsets, on 6 bytes.
 }
-
 
 inline static void calc_PTS_DTS_MLP(fileinfo_t *info, globalData *globals)
 {
@@ -836,40 +1030,50 @@ inline static void calc_PTS_DTS_MLP(fileinfo_t *info, globalData *globals)
       EXIT_ON_RUNTIME_ERROR_VERBOSE("MLP requested")
     }
 
-  // now m[i].pkt_pos indicates offset of MLP packet in mlp file that is just after sector m[i].rank in "mlp-type" AOB
-  // m[i].nb_samples gives number of corresponding PCM samples after decoding.
-  // PTS must be computed using this.
+  // now m[i].pkt_pos indicates offset of MLP packet in mlp file that is just
+  // after sector m[i].rank in "mlp-type" AOB m[i].nb_samples gives number of
+  // corresponding PCM samples after decoding.  PTS must be computed using this.
 
   // Algorithm : at each sector of rank (1-based) N of 2048 B, compute :
   // - sum of header size S before N in B
   // - total byte size = 2048  * (N-1) - S   (0xE is where header starts for PTS)
-  // - run parallel count of PKT pos through MLP decoder, gives Rank of packet and POS of packet
-  // - take Rank such that POS (0-based) of MLP packet strictly superior to total byte size
-  // - Rank * {40,80,160} = NPCMsamples		(Rank 0-based, numer of frames of {40,80,160} samples)
+  // - run parallel count of PKT pos through MLP decoder, gives Rank of packet
+  //   and POS of packet
+  // - take Rank such that POS (0-based) of MLP packet strictly superior to
+  //   total byte size
+  // - Rank * {40,80,160} = NPCMsamples		(Rank 0-based, numer of frames
+  //   of {40,80,160} samples)
   // - NPCMsamples * c * br / 8 = Nbyteswritten
   // - Nbyteswritten / (c * sr * br / 8 ) = duration
   // Or : duration = NPCMsamples /sr
-  // PTS = ceiling(duration * 90000)		   = ceiling(Rank * {40,80,160}  / sr * 90000) = ceiling(Rank / sr * 360000)
+  // PTS = ceiling(duration * 90000)
+  //     = ceiling(Rank * {40,80,160} / sr * 90000) = ceiling(Rank / sr * 360000)
   // DTS = floor(duration * 90000)
   // Add :
   // PTS = PTS + PTS0
   // DTS = DTS + DTS0
-  // PTS0 = floor of PTS tick duration of playing samples in 1 frame = floor(samplesperframe/samplerate x 90000) + 24
+  // PTS0 = floor of PTS tick duration of playing samples in 1 frame
+  //      = floor(samplesperframe/samplerate x 90000) + 24
   // DTS0 = 24 or 23 (?)
   // Write PTS at offset 23 on 5 bytes in sector header
   // Write DTS at offset 28 on 5 bytes in sector header
 
   // Variant below that looks slightly closer avoiding rounding errors
-  // START_MLP_BYTESHIFT is a constant that may be software-specific (DW is 23 and Sonic is 584). Choosing DW value by default.
+  // START_MLP_BYTESHIFT is a constant that may be software-specific
+  // (DW is 23 and Sonic is 584). Choosing DW value by default.
 
   const uint32_t start_byteshift = START_MLP_BYTESHIFT;
 
   for (int i = 0; i < info->mlp_layout_size && i < MAX_AOB_SECTORS; ++i)
     {
-      double ptsint = ceil((double)(info->mlp_layout[i].nb_samples  + info->samplesperframe) / (double) info->samplerate * 90000.0);
-      double dtsint = ceil((double) info->mlp_layout[i].nb_samples / (double) info->samplerate * 90000.0);
+      double ptsint = ceil((double)(info->mlp_layout[i].nb_samples
+                                    + info->samplesperframe)
+                           / (double) info->samplerate * 90000.0);
+      double dtsint = ceil((double) info->mlp_layout[i].nb_samples
+                           / (double) info->samplerate * 90000.0);
 
-      // Here rounding to the next bytesperframe does not seem to be necessary unlike in the PCM case. TODO: check.
+      // Here rounding to the next bytesperframe does not seem to be necessary
+      // unlike in the PCM case. TODO: check.
 
       info->pts[i] = (uint32_t) lrint(ptsint);
       info->dts[i] = (uint32_t) lrint(dtsint);
@@ -879,25 +1083,32 @@ inline static void calc_PTS_DTS_MLP(fileinfo_t *info, globalData *globals)
 
   ++info->dts[0] ;
 
-  // now for sector 0-ranked i, use PST[i] and DTS[i] in write_pes_header at offset 23/28
-  // there may be 1 to 3 remaining useless indexes used for complete audio data description in m[]
-  // There seems to be 1 PTS tick less for about 1/3rd of PTS ticks
-  // and 1 DTS tick more very occasionnaly (~2%)
-  // This looks negligible.
-  // Note: these spreads are 1/90000 th of a second ~ 0.5 (1ch 44.1 kHz) to 40 bytes (6 ch. 192 KHz) of pcm at worst
+  // now for sector 0-ranked i, use PST[i] and DTS[i] in write_pes_header at
+  // offset 23/28 there may be 1 to 3 remaining useless indexes used for
+  // complete audio data description in m[]
+  //
+  // There seems to be 1 PTS tick less for about 1/3rd of PTS ticks and 1 DTS
+  // tick more very occasionnaly (~2%)
+  // This looks negligible.  Note: these spreads are 1/90000 th of a second ~
+  // 0.5 (1ch 44.1 kHz) to 40 bytes (6 ch. 192 KHz) of pcm at worst
 
 }
 
 // SCR for MLP is poorly understood and very software-specific.
-// Sonic has a different start slope for the first four sectors then the steep one thereafter at 90000 * 300 / samplerate
+// Sonic has a different start slope for the first four sectors then the steep
+// one thereafter at 90000 * 300 / samplerate
 // wrt PCM (nb_samples) - PCM (nb_samples) samples of first 4 sectors
 // But this is approximative so the nb_samples used may be quite different.
 //
-// DW has an closer system to ffmpeg nb_samples yet only SCR_int can be approximately guessed with more or less confidence.
-// I do not know if these differences arise from flexibility of specifications, hardware concerns or sheer code / software obfuscation.
-// one would prefer a simpler way of computing SCR as for calc_SCR above (PCM case):
+// DW has an closer system to ffmpeg nb_samples yet only SCR_int
+// can be approximately guessed with more or less confidence.
+// I do not know if these differences arise from flexibility of specifications,
+// hardware concerns or sheer code / software obfuscation.
+// one would prefer a simpler way of computing SCR as for calc_SCR above
+// (PCM case):
 //
-// inline static uint64_t calc_SCR_MLP_v2(fileinfo_t* info, const struct MLP_LAYOUT* m, uint64_t* res)
+// inline static uint64_t calc_SCR_MLP_v2(fileinfo_t* info,
+// const struct MLP_LAYOUT* m, uint64_t* res)
 // {
 //   if (info->type != AFMT_MLP)
 //   {
@@ -906,7 +1117,8 @@ inline static void calc_PTS_DTS_MLP(fileinfo_t *info, globalData *globals)
 //
 //   for (int i = 1; i < MAX_AOB_SECTORS && m[i].pkt_pos != 0; ++i)
 //   {
-//    double temp = (double) (m[i].nb_samples - {40.0,80.0,160.0}) / (double) info->samplerate * 90000.0 * 300.0
+//    double temp = (double) (m[i].nb_samples - {40.0,80.0,160.0})
+//                       / (double) info->samplerate * 90000.0 * 300.0
 //
 //    double res = ceil(temp);
 //
@@ -922,7 +1134,8 @@ inline static void calc_PTS_DTS_MLP(fileinfo_t *info, globalData *globals)
 //
 // To be tested
 
-// MLP files always start a new title. They are not "gapless" to date, so SCR = 0 on title start.
+// MLP files always start a new title. They are not "gapless" to date, so SCR =
+// 0 on title start.
 
 inline static void calc_SCR_MLP(fileinfo_t *info, globalData *globals)
 {
@@ -957,15 +1170,24 @@ inline static void calc_SCR_MLP(fileinfo_t *info, globalData *globals)
 
   for (int i = 1; i < info->mlp_layout_size && i < MAX_AOB_SECTORS; ++i)
     {
-      double temp = (double)(info->mlp_layout[i].nb_samples - pcm_sample_lag) / (double) info->samplerate * 90000;   // PTS ticks first
+      double temp = (double)(info->mlp_layout[i].nb_samples - pcm_sample_lag)
+        / (double) info->samplerate * 90000;   // PTS ticks first
       sectorbytes += 2005;
-      double byteshift = info->mlp_layout[i].pkt_pos - sectorbytes;  // very wild guess through regression
-      temp += 26.0 - byteshift / 14.0;                     // that looks like close at a handful PTS ticks off
-      info->scr[i] = ((uint64_t) round(temp)) * 300 ;  // giving up on SCR_ext ticks
+
+      // very wild guess through regression
+
+      double byteshift = info->mlp_layout[i].pkt_pos - sectorbytes;
+
+      // that looks like close at a handful PTS ticks off
+
+      temp += 26.0 - byteshift / 14.0;
+
+      // giving up on SCR_ext ticks
+
+      info->scr[i] = ((uint64_t) round(temp)) * 300 ;
     }
   return;
 }
-
 
 uint32_t convert_to_PTS(fileinfo_t *info)
 {
@@ -977,7 +1199,10 @@ uint32_t convert_to_PTS(fileinfo_t *info)
   return (uint32_t) round(ptsl);
 }
 
-inline static uint32_t calc_PTS(fileinfo_t *info, uint64_t pack_in_title, uint32_t *totpayload, globalData *globals)
+inline static uint32_t calc_PTS(fileinfo_t *info,
+                                uint64_t pack_in_title,
+                                uint32_t *totpayload,
+                                globalData *globals)
 {
   double PTS;
   uint32_t PTSint;
@@ -1008,10 +1233,13 @@ inline static uint32_t calc_PTS(fileinfo_t *info, uint64_t pack_in_title, uint32
   return (PTSint);
 }
 
-
-inline static int write_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_buf,
-                                   uint32_t bytesinbuffer, uint64_t pack_in_title,
-                                   bool start_of_file, globalData *globals)
+inline static int write_pes_packet(FILE *fp,
+                                   fileinfo_t *info,
+                                   uint8_t *audio_buf,
+                                   uint32_t bytesinbuffer,
+                                   uint64_t pack_in_title,
+                                   bool start_of_file,
+                                   globalData *globals)
 {
   int audio_bytes;
   static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
@@ -1061,17 +1289,21 @@ inline static int write_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_bu
   if (pack_in_title == 0)
     {
       cc = 0;          // First packet in title
-      foutput(INF "Writing first packet - pack=%"PRIu64", bytesinbuffer=%d\n", pack_in_title, bytesinbuffer);
+      foutput(INF "Writing first packet - pack=%"PRIu64", bytesinbuffer=%d\n",
+              pack_in_title, bytesinbuffer);
 
       write_pack_header(fp, SCR); //+14
 
       write_system_header(fp); //+18
 
-      write_audio_pes_header(fp, info->firstpack_audiopesheaderquantity, mlp_flag, 1, PTS, DTS, globals); //+17 for PCM, 22 for MLP
+      //+17 for PCM, 22 for MLP
+      write_audio_pes_header(fp, info->firstpack_audiopesheaderquantity,
+                             mlp_flag, 1, PTS, DTS, globals);
 
       audio_bytes = info->lpcm_payload - info->firstpackdecrement;
 
-      write_lpcm_header(fp, info->firstpack_lpcm_headerquantity, info, pack_in_title, cc, false);
+      write_lpcm_header(fp, info->firstpack_lpcm_headerquantity,
+                        info, pack_in_title, cc, false);
       //info->firstpack_lpcm_headerquantity+4 and MLP always 64
 
       /* offset_count+= */
@@ -1079,52 +1311,67 @@ inline static int write_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_bu
       uint64_t offset = ftello(fp);
 
       int res = fwrite(audio_buf, 1, audio_bytes, fp);
-      if (globals->maxverbose) fprintf(stderr, DBG "\n%" PRIu64 ": Writing %d bytes\n", offset, res);
+      if (globals->maxverbose)
+        fprintf(stderr, DBG "\n%" PRIu64 ": Writing %d bytes\n", offset, res);
 
       // Apparently no padding for MLP files
 
+      //+6+info->firstpack_pes_padding
+
       if (info->type != AFMT_MLP)
-        write_pes_padding(fp, info->firstpack_pes_padding, globals);//+6+info->firstpack_pes_padding
+        write_pes_padding(fp, info->firstpack_pes_padding, globals);
     }
   else if (bytesinbuffer < info->lpcm_payload)
     {
-      foutput(INF "Writing last packet - pack=%" PRIu64 ", bytesinbuffer=%d\n", pack_in_title, bytesinbuffer);
+      foutput(INF "Writing last packet - pack=%" PRIu64
+              ", bytesinbuffer=%d\n", pack_in_title, bytesinbuffer);
       audio_bytes = bytesinbuffer;
 
       write_pack_header(fp, SCR); //+14
 
       if (globals->maxverbose)
-        fprintf(stderr, DBG "LAST PACK: audio_bytes: %d, info->lastpack_audiopesheaderquantity %d \n",
+        fprintf(stderr, DBG "LAST PACK: audio_bytes: %d,"
+                " info->lastpack_audiopesheaderquantity %d \n",
                 audio_bytes, info->lastpack_audiopesheaderquantity);
 
       if (info->type == AFMT_MLP)
         {
-          //DTS = 0;
-          //PTS = 0;
-          //mlp_flag = 0;  Contradictory input: not nul for 6/15/44100... null for other audio formats...
+          //DTS = 0; PTS = 0;
+          //mlp_flag = 0; Contradictory input: not nul for
+          //6/15/44100... null for other audio formats...
         }
 
-      write_audio_pes_header(fp, info->lastpack_audiopesheaderquantity + audio_bytes, mlp_flag, 0, PTS, DTS, globals);  // +14 for PCM or +19 for MLP
+      // +14 for PCM or +19 for MLP
 
-      write_lpcm_header(fp, info->lastpack_lpcm_headerquantity, info, pack_in_title, cc, true);
+      write_audio_pes_header(fp, info->lastpack_audiopesheaderquantity
+                             + audio_bytes, mlp_flag, 0, PTS, DTS, globals);
 
-      // +info->lastpack_lpcm_headerquantity +4 (PCM) or +10 (MLP), headers always 43 B
+      write_lpcm_header(fp, info->lastpack_lpcm_headerquantity,
+                        info, pack_in_title, cc, true);
+
+      // +info->lastpack_lpcm_headerquantity +4 (PCM) or +10 (MLP), headers
+      // always 43 B
       /* offset_count+= */
 
       uint64_t offset = ftello(fp);
 
       int res = fwrite(audio_buf, 1, audio_bytes, fp);
-      if (globals->maxverbose) fprintf(stderr, DBG "%" PRIu64 ": Writing %d bytes\n", offset, res);
+      if (globals->maxverbose)
+        fprintf(stderr, DBG "%" PRIu64 ": Writing %d bytes\n", offset, res);
 
       if (info->type != AFMT_MLP)
         {
           // PATCH Dec. 2013
           // PATCH Sept 2016
 
-          int16_t padding_quantity = 2016 - info->lastpack_lpcm_headerquantity - audio_bytes;
+          int16_t padding_quantity = 2016 - info->lastpack_lpcm_headerquantity
+            - audio_bytes;
+
           if (padding_quantity < 0)
             {
-              foutput(ERR "Padding quantity error (last title packet): lastpack_lpcm_headerquantity %d; audio_bytes %d\n", info->lastpack_lpcm_headerquantity, audio_bytes);
+              foutput(ERR "Padding quantity error (last title packet):"
+                      " lastpack_lpcm_headerquantity %d; audio_bytes %d\n",
+                      info->lastpack_lpcm_headerquantity, audio_bytes);
               return audio_bytes;
             }
           write_pes_padding(fp, (uint16_t) padding_quantity, globals);
@@ -1140,9 +1387,11 @@ inline static int write_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_bu
 
       write_pack_header(fp, SCR); //+14
 
-      write_audio_pes_header(fp, info->midpack_audiopesheaderquantity, mlp_flag, 0, PTS, DTS, globals); //+14
+      write_audio_pes_header(fp, info->midpack_audiopesheaderquantity,
+                             mlp_flag, 0, PTS, DTS, globals); //+14
 
-      write_lpcm_header(fp, info->midpack_lpcm_headerquantity, info, pack_in_title, cc, false);
+      write_lpcm_header(fp, info->midpack_lpcm_headerquantity, info,
+                        pack_in_title, cc, false);
 
       //info->midpack_lpcm_headerquantity+4 (PCM) or again 43 (MLP)
 
@@ -1153,10 +1402,16 @@ inline static int write_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_bu
       uint64_t offset = ftello(fp);
 
       int res = fwrite(audio_buf, 1, audio_bytes, fp);
-      if (globals->maxverbose) fprintf(stderr, DBG "%" PRIu64 ": Writing %d bytes bytesinbuffer %d payload %d\n", offset, res, bytesinbuffer, info->lpcm_payload);
+      if (globals->maxverbose)
+        fprintf(stderr,
+                DBG "%" PRIu64 ": Writing %d bytes"
+                " bytesinbuffer %d payload %d\n",
+                offset, res, bytesinbuffer, info->lpcm_payload);
+
+      //info->midpack_pes_padding +6
 
       if (info->type != AFMT_MLP)
-        write_pes_padding(fp, info->midpack_pes_padding, globals); //info->midpack_pes_padding +6
+        write_pes_padding(fp, info->midpack_pes_padding, globals);
     }
 
   if (cc == 0x1f)
@@ -1165,17 +1420,20 @@ inline static int write_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_bu
     }
   else
     {
-      cc++;
+      ++cc;
     }
-
 
   return (audio_bytes);
 }
 
-int read_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_buf, globalData *globals)
+int read_pes_packet(FILE *fp,
+                    fileinfo_t *info,
+                    uint8_t *audio_buf,
+                    globalData *globals)
 {
   uint8_t position;
-  //static int cc;  // Continuity counter - reset to 0 when pack_in_title=0
+  //static int cc;
+  // Continuity counter - reset to 0 when pack_in_title=0
   char *POS;
   uint32_t PTS = 0;
   uint32_t DTS = 0;
@@ -1199,7 +1457,8 @@ int read_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_buf, globalData *
         {
           if (globals->maxverbose)
             {
-              foutput("%s %s.\n", MSG_TAG "Detected MLP format for", info->filename);
+              foutput("%s %s.\n", MSG_TAG "Detected MLP format for",
+                      info->filename);
             }
 
           info->type = AFMT_MLP;
@@ -1237,7 +1496,8 @@ int read_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_buf, globalData *
         {
           int n = (int) fread(buf, 1, 4, fp);
 
-          if (n != 4 || (n == 4 && buf[0] == 0 && buf[1] == 0 && buf[2] == 1 && buf[3] == 0xBB))
+          if (n != 4 || (n == 4 && buf[0] == 0 && buf[1] == 0
+                         && buf[2] == 1 && buf[3] == 0xBB))
             {
               position = LAST_PACK;
               POS = "last";
@@ -1256,7 +1516,8 @@ int read_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_buf, globalData *
   if (globals->logdecode)
     {
       open_aob_log(globals);
-      fprintf(aob_log, ";;;;;;;\nNEW;Reading; %s ; packet - pack;%" PRIu32 ";title;%d;\n",
+      fprintf(aob_log, ";;;;;;;\nNEW;Reading; %s ; packet - pack;%" PRIu32
+              ";title;%d;\n",
               POS,
               pack_in_title,
               title);
@@ -1283,22 +1544,32 @@ int read_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_buf, globalData *
 
       fseek(fp, 14 + (position == FIRST_PACK ? 3 : 0), SEEK_CUR);
 
-      /***       info->first/mid/last/pack_lpcm_headerquantity + 4    ***/
-      header_length = read_lpcm_header(fp, info, pack_in_title, position, globals);
+      /***  info->first/mid/last/pack_lpcm_headerquantity + 4    ***/
+
+      header_length = read_lpcm_header(fp, info, pack_in_title,
+                                       position, globals);
 
       offset1 = (uint32_t) ftello(fp);
 
       fseek(fp, offset, SEEK_SET);
 
-      /* 14 + (3) + 4 + header_length = 18 + (3) + header_length = offset1-offset */
+      /* 14 + (3) + 4 + header_length = 18 + (3) + header_length
+         = offset1-offset */
 
-      if ((uint32_t) 18 + (position == FIRST_PACK ? 3 : 0) + (uint32_t) header_length != offset1 - offset)
+      if ((uint32_t) 18 + (position == FIRST_PACK ? 3 : 0)
+          + (uint32_t) header_length != offset1 - offset)
         {
           if (globals->logdecode)
             {
               open_aob_log(globals);
-              fprintf(aob_log, "ERR;header_length issue in read_lpcm_header at pack: ; %" PRIu32 "; position %d;;;;\n", pack_in_title, position);
-              fprintf(aob_log, "ERR;header_length: ; %d; expected: %" PRIu32 ";;;;\n", header_length, (uint32_t) offset1 - offset - 18 - (position == FIRST_PACK ? 3 : 0));
+              fprintf(aob_log,
+                      "ERR;header_length issue in read_lpcm_header at pack: ; %"
+                      PRIu32 "; position %d;;;;\n", pack_in_title, position);
+              fprintf(aob_log,
+                      "ERR;header_length: ; %d; expected: %" PRIu32 ";;;;\n",
+                      header_length,
+                      (uint32_t) offset1 - offset - 18
+                      - (position == FIRST_PACK ? 3 : 0));
               close_aob_log();
             }
         }
@@ -1321,14 +1592,17 @@ int read_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_buf, globalData *
 
           audio_bytes = info->lpcm_payload - info->firstpackdecrement;
 
-          PES_packet_len = read_audio_pes_header(fp, mlp_flag, 1, &PTS, &DTS, globals); //+17
+          PES_packet_len =
+            read_audio_pes_header(fp, mlp_flag, 1, &PTS, &DTS, globals); //+17
+
           if (info->firstpack_audiopesheaderquantity != PES_packet_len)
             {
               if (globals->logdecode)
                 {
                   open_aob_log(globals);
                   fprintf(aob_log,
-                          "ERR;firstpack_audiopesheaderquantity issue in read_audio_pes_header at pack: ; %" PRIu32 "; title: ;%d; position: ;%d;\n",
+                          "ERR;firstpack_audiopesheaderquantity issue in \
+read_audio_pes_header at pack: ; %" PRIu32 "; title: ;%d; position: ;%d;\n",
                           pack_in_title,
                           title,
                           position);
@@ -1343,14 +1617,16 @@ int read_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_buf, globalData *
 
           /***   +14   ***/
 
-          PES_packet_len = read_audio_pes_header(fp, mlp_flag, 0, &PTS, &DTS, globals);
+          PES_packet_len =
+            read_audio_pes_header(fp, mlp_flag, 0, &PTS, &DTS, globals);
 
           if (info->midpack_audiopesheaderquantity != PES_packet_len)
             {
               if (globals->logdecode)
                 {
                   open_aob_log(globals);
-                  fprintf(aob_log, "NA;midpack_audiopesheaderquantity issue in read_audio_pes_header at pack %" PRIu32 ";Disk/computed;%d;%d\n",
+                  fprintf(aob_log, "NA;midpack_audiopesheaderquantity issue in \
+read_audio_pes_header at pack %" PRIu32 ";Disk/computed;%d;%d\n",
                           pack_in_title,
                           PES_packet_len,
                           info->midpack_audiopesheaderquantity);
@@ -1362,7 +1638,8 @@ int read_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_buf, globalData *
 
         case LAST_PACK :
 
-          PES_packet_len = read_audio_pes_header(fp, mlp_flag, 0, &PTS, &DTS, globals); //+14
+          PES_packet_len =
+            read_audio_pes_header(fp, mlp_flag, 0, &PTS, &DTS, globals); //+14
 
           audio_bytes = PES_packet_len - info->lastpack_audiopesheaderquantity;
 
@@ -1375,18 +1652,25 @@ int read_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_buf, globalData *
     {
       if (header_length > 2040)
         {
-          EXIT_ON_RUNTIME_ERROR_VERBOSE("Could not compute reasonable header length (< 2040)")
+          EXIT_ON_RUNTIME_ERROR_VERBOSE("Could not compute reasonable header \
+length (< 2040)")
         }
 
-      audio_bytes = 2048 - (uint32_t) header_length;  // sureley false for last pack but well
+      // sureley false for last pack but well
 
-      read_audio_pes_header(fp, mlp_flag, position == FIRST_PACK, &PTS, &DTS, globals);  // extension for first pack only
+      audio_bytes = 2048 - (uint32_t) header_length;
 
+      // extension for first pack only
+
+      read_audio_pes_header(fp, mlp_flag, position == FIRST_PACK,
+                            &PTS, &DTS, globals);
 
       if (globals->logdecode)
         {
           open_aob_log(globals);
-          fprintf(aob_log, "%s\n",  "WAR;MLP case, PTS not calculated / supported in --log-decoded, just read from input.");
+          fprintf(aob_log, "%s\n",
+                  "WAR;MLP case, PTS not calculated / supported in \
+--log-decoded, just read from input.");
           fprintf(aob_log, "INF;bitspersample %d;samplerate %d\n",
                   info->bitspersample,
                   info->samplerate);
@@ -1400,7 +1684,10 @@ int read_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_buf, globalData *
         {
           open_aob_log(globals);
           if (DTS == 0)
-            fprintf(aob_log, "ERR;PTS issue at pack: ; %" PRIu32 "; position: %d; Disc: ;%" PRIu32 "; Computed: ;%" PRIu32 "\n",
+            fprintf(aob_log,
+                    "ERR;PTS issue at pack: ; %" PRIu32
+                    "; position: %d; Disc: ;%" PRIu32
+                    "; Computed: ;%" PRIu32 "\n",
                     pack_in_title,
                     position,
                     PTS,
@@ -1408,7 +1695,9 @@ int read_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_buf, globalData *
 
           else
             {
-              fprintf(aob_log, "ERR;PTS issue at pack: ; %" PRIu32 "; position: %d; PTS: ;%" PRIu32 "; DTS: ;%" PRIu32 "\n",
+              fprintf(aob_log,
+                      "ERR;PTS issue at pack: ; %" PRIu32
+                      "; position: %d; PTS: ;%" PRIu32 "; DTS: ;%" PRIu32 "\n",
                       pack_in_title,
                       position,
                       PTS,
@@ -1426,7 +1715,10 @@ int read_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_buf, globalData *
       if (globals->logdecode)
         {
           open_aob_log(globals);
-          fprintf(aob_log, "ERR; SCR issue at pack: ; %" PRIu32 "; position: %d; Disc: ;%" PRIu64 "; Computed: ;%" PRIu64 "\n",
+          fprintf(aob_log,
+                  "ERR; SCR issue at pack: ; %" PRIu32
+                  "; position: %d; Disc: ;%" PRIu64
+                  "; Computed: ;%" PRIu64 "\n",
                   pack_in_title,
                   position,
                   SCR,
@@ -1459,7 +1751,8 @@ int read_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_buf, globalData *
       close_aob_log();
     }
 
-  // info->midpack_pes_padding + info->lpcm_payload + 38 + info->first/mid/last/pack_lpcm_headerquantity
+  // info->midpack_pes_padding + info->lpcm_payload + 38 +
+  // info->first/mid/last/pack_lpcm_headerquantity
 
   int16_t padding_quantity;
 
@@ -1468,17 +1761,25 @@ int read_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_buf, globalData *
     case FIRST_PACK :
       if (info->firstpack_pes_padding > 0)
         {
-          read_pes_padding(fp, info->firstpack_pes_padding, globals); // 0 or  info->firstpack_pes_padding
+
+          // 0 or  info->firstpack_pes_padding
+
+          read_pes_padding(fp, info->firstpack_pes_padding, globals);
         }
       break;
 
     case MIDDLE_PACK :
-      read_pes_padding(fp, info->midpack_pes_padding, globals); // 0 or info->midpack_pes_padding
+
+      // 0 or info->midpack_pes_padding
+
+      read_pes_padding(fp, info->midpack_pes_padding, globals);
       break;
 
     case LAST_PACK :
       // 2016- info->lastpack_lpcm_headerquantity - audio_bytes
-      padding_quantity = (int16_t)(2016 - info->lastpack_lpcm_headerquantity - audio_bytes);
+
+      padding_quantity =
+        (int16_t)(2016 - info->lastpack_lpcm_headerquantity - audio_bytes);
 
       if (padding_quantity > 0)
         read_pes_padding(fp, (uint16_t) padding_quantity, globals);
@@ -1501,13 +1802,17 @@ int read_pes_packet(FILE *fp, fileinfo_t *info, uint8_t *audio_buf, globalData *
     {
       open_aob_log(globals);
 
-      fprintf(aob_log, "INF;midpack_lpcm_headerquantity;%d;midpack_pes_padding;%d;bitspersample;%d;samplerate;%d\n",
+      fprintf(aob_log,
+              "INF;midpack_lpcm_headerquantity;%d;"
+              "midpack_pes_padding;%d;bitspersample;%d;samplerate;%d\n",
               info->midpack_lpcm_headerquantity,
               info->midpack_pes_padding,
               info->bitspersample,
               info->samplerate);
 
-      fprintf(aob_log, "INF;sector length: ; %u  bytes;------;title pack: ; %u ; title: ;%d\n",
+      fprintf(aob_log,
+              "INF;sector length: ; %u  bytes;------;"
+              "title pack: ; %u ; title: ;%d\n",
               sector_length,
               pack_in_title,
               title);
@@ -1531,21 +1836,24 @@ int decode_ats(globalData *globals)
 
   if (fp == NULL)
     {
-      foutput("%s%s%s", ERR "Could not open AOB file *", globals->aobpath[0], "*\n");
+      foutput("%s%s%s", ERR "Could not open AOB file *",
+              globals->aobpath[0], "*\n");
       return (-1);
     }
 
   do
     {
       result  = read_pes_packet(fp, &files, audio_buf, globals);
-      if (result  == LAST_PACK || result  == FIRST_PACK || result  == MIDDLE_PACK)
+      if (result  == LAST_PACK || result  == FIRST_PACK
+          || result  == MIDDLE_PACK)
         {
           ++pack;
         }
     }
   while (result != LAST_PACK);
 
-  if (globals->maxverbose) fprintf(stderr, DBG "Read %" PRIu64 " PES packets.\n", pack);
+  if (globals->maxverbose)
+    fprintf(stderr, DBG "Read %" PRIu64 " PES packets.\n", pack);
   return (0);
 }
 
@@ -1564,7 +1872,6 @@ static inline void free_mlp_tracktable(fileinfo_t *info)
     }
 }
 
-
 static inline void allocate_mlp_tracktable(fileinfo_t *info, globalData *globals)
 {
   if (info->type == AFMT_MLP)
@@ -1578,7 +1885,8 @@ static inline void allocate_mlp_tracktable(fileinfo_t *info, globalData *globals
 
       if (info->pts == NULL || info->dts == NULL || info->scr == NULL)
         {
-          EXIT_ON_RUNTIME_ERROR_VERBOSE("Could not allocate memory for PTS / DTS / SCR computation .")
+          EXIT_ON_RUNTIME_ERROR_VERBOSE("Could not allocate memory for PTS \
+/ DTS / SCR computation .")
         }
 
       calc_PTS_DTS_MLP(info, globals);
@@ -1586,7 +1894,11 @@ static inline void allocate_mlp_tracktable(fileinfo_t *info, globalData *globals
     }
 }
 
-int create_ats(char *audiotsdir, int titleset, fileinfo_t *files, int ntracks, globalData *globals)
+int create_ats(char *audiotsdir,
+               int titleset,
+               fileinfo_t *files,
+               int ntracks,
+               globalData *globals)
 {
   FILE *fpout;
   char outfile[CHAR_BUFSIZ + 13 + 1];
@@ -1596,7 +1908,8 @@ int create_ats(char *audiotsdir, int titleset, fileinfo_t *files, int ntracks, g
   uint8_t audio_buf[AUDIO_BUFFER_SIZE];
   uint64_t pack_in_title = 0;
 
-  STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/ATS_%02d_%d.AOB", audiotsdir, titleset, fileno)
+  STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/ATS_%02d_%d.AOB", audiotsdir,
+                           titleset, fileno)
 
   fpout = fopen(outfile, "wb+");
 
@@ -1620,7 +1933,8 @@ int create_ats(char *audiotsdir, int titleset, fileinfo_t *files, int ntracks, g
     {
       if (bytesinbuf >= lpcm_payload)
         {
-          n = write_pes_packet(fpout, &files[i], audio_buf, bytesinbuf, pack_in_title, start_of_file, globals);
+          n = write_pes_packet(fpout, &files[i], audio_buf, bytesinbuf,
+                               pack_in_title, start_of_file, globals);
 
           memmove(audio_buf, &audio_buf[n], bytesinbuf - n);
           bytesinbuf -= n;
@@ -1633,7 +1947,8 @@ int create_ats(char *audiotsdir, int titleset, fileinfo_t *files, int ntracks, g
         {
           fclose(fpout);
           ++fileno;
-          STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/ATS_%02d_%d.AOB", audiotsdir, titleset, fileno)
+          STRING_WRITE_CHAR_BUFSIZ(outfile, "%s/ATS_%02d_%d.AOB",
+                                   audiotsdir, titleset, fileno)
           fpout = fopen(outfile, "wb+");
           start_of_file = true;
         }
@@ -1649,12 +1964,10 @@ int create_ats(char *audiotsdir, int titleset, fileinfo_t *files, int ntracks, g
                       bytesinbuf);
             }
 
-
           n = audio_read(&files[i],
                          audio_buf,
                          &bytesinbuf,
                          globals);
-
 
           if (n == 0)   /* We have reached the end of the input file */
             {
@@ -1664,7 +1977,8 @@ int create_ats(char *audiotsdir, int titleset, fileinfo_t *files, int ntracks, g
 
               if (i < ntracks)
                 {
-                  /* If the current track is a different audio format, we must start a new title. */
+                  /* If the current track is a different audio format, we must
+                     start a new title. */
 
                   if (files[i].newtitle)
                     {
@@ -1703,7 +2017,6 @@ int create_ats(char *audiotsdir, int titleset, fileinfo_t *files, int ntracks, g
                             "for count: ",
                             AUDIO_BUFFER_SIZE - bytesinbuf);
 
-
                   audio_read(&files[i], audio_buf, &bytesinbuf, globals);
 
                   foutput(INF "Processing %s\n", files[i].filename);
@@ -1735,8 +2048,9 @@ int create_ats(char *audiotsdir, int titleset, fileinfo_t *files, int ntracks, g
         }
     }
 
-  // Under W10 (msys64 compiler), unlike Linux, deallocating MLP tables should be done once the loop is completed.
-  // Iterative deallocation yields stack violation issues which are poorly understood.
+  // Under W10 (msys64 compiler), unlike Linux, deallocating MLP tables should
+  // be done once the loop is completed.  Iterative deallocation yields stack
+  // violation issues which are poorly understood.
 
   for (int j = 0; j <= i; ++j) free_mlp_tracktable(&files[i]);
   return (fileno);
