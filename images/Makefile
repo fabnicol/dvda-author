@@ -125,7 +125,7 @@ AWK = @AWK@
 BUILDDIR = /home/fab/Dev/dvda-author
 CC = gcc
 CCDEPMODE = @CCDEPMODE@
-CDRECORD = 
+CDRECORD = /usr/bin/cdrecord
 CDRTOOLS_VERSION = 
 CFLAGS = -g -O2 -g -O2 -std=c99
 CONFIGURE_DVDAUTHOR_FLAGS = @CONFIGURE_DVDAUTHOR_FLAGS@
@@ -212,7 +212,7 @@ MENUDIR = /usr/local/share/applications/dvda-author-dev/menu
 MINIMAL_VERSION = 
 MJPEGTOOLS_VERSION = 
 MKDIR_P = @MKDIR_P@
-MKISOFS = 
+MKISOFS = /usr/bin/mkisofs
 MOGRIFY = /usr/bin/mogrify
 MP2ENC = /usr/bin/mp2enc
 MPEG2DEC = /usr/bin/mpeg2dec

@@ -2820,8 +2820,8 @@ separated by a colon, with rgb components by commas");
       if (ndvdvtitleset1 != ndvdvtitleset2)
         {
           fprintf(stderr, ERR "Titleset count for slides (%d) and tracks (%d)"
-                  " is not the same.\n Fix the issue and relaunch.\n"
-                  ndvdvtitleset1, ndvdvtitleset2);
+                         " is not the same.\n Fix the issue and relaunch.\n",
+                         ndvdvtitleset1, ndvdvtitleset2);
           EXIT_ON_RUNTIME_ERROR
         }
     }
