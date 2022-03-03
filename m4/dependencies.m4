@@ -205,11 +205,11 @@ m4_map([DVDA_TEST_AUX],[
 	    ],
 	    [
 		[flac-download],
-		[1.3.3],
+		[1.3.4],
 		[],
 		[],
 		[DEPS],
-		[26703ed2858c1fc9ffc05136d13daa69]
+		[9422d35889d7e33f7966c6c2ee5c6417]
 	    ],
 	    [
 		[libogg-download],
@@ -226,8 +226,8 @@ m4_map([DVDA_TEST_AUX],[
 		[],
 		[DEPS],
 		[6a67db27ea0b478d49add546a7ad5c68]
-	    ],
-    	    [
+        ],
+        [
 		[man2html-download],
 		[1.6],
 		[],
@@ -288,11 +288,11 @@ m4_map([DVDA_TEST_AUX],[
 m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	    [
 		[flac-download],
-		[1.3.3],
+		[1.3.4],
 		[],
 		[],
 		[DEPS],
-		[26703ed2858c1fc9ffc05136d13daa69]
+		[9422d35889d7e33f7966c6c2ee5c6417]
 	    ],
 	    [
 		[libogg-download],
@@ -340,7 +340,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
     DVDA_CONFIG_LIBRARY_LOCAL_INSTALL([
      [[[sox],[sox-14.4.2]],  [--without-libltdl --without-sndfile --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-magic --disable-fast-install --enable-static --disable-shared --prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]],
      [[[libogg],[libogg-1.3.4]],  [--enable-static --disable-shared --prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]],
-     [[[FLAC],[flac-1.3.3]],[--enable-static --disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg" \
+     [[[FLAC],[flac-1.3.4]],[--enable-static --disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg" \
        --disable-thorough-tests --disable-oggtest --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]],
      [[[ffmpeg], [ffmpeg-4.2.4]], [--prefix="$BUILDDIR/local"--disable-demuxers --disable-decoders --disable-muxers --disable-parsers --disable-encoders --disable-devices --disable-protocols --enable-protocol=file --enable-protocol=data --disable-bsfs --disable-hwaccels  --disable-filters   --enable-decoder=mlp --enable-encoder=mlp --enable-encoder=pcm_s16le --enable-encoder=pcm_s24le --enable-encoder=pcm_s32le --enable-decoder=pcm_s16le --enable-decoder=pcm_s24le --enable-decoder=pcm_s24le  --enable-parser=mlp --enable-muxer=wav --enable-muxer=null --enable-muxer=truehd --enable-muxer=mlp --enable-demuxer=mlp --enable-muxer=pcm_s16le --enable-muxer=pcm_s24le --enable-muxer=pcm_s32le --enable-demuxer=pcm_s16le --enable-demuxer=pcm_s24le --enable-demuxer=pcm_s32le  --enable-filter=aresample --disable-bzlib --disable-iconv --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape --disable-sndio --disable-sdl2 --disable-zlib --disable-xlib --disable-libdrm --disable-vaapi --disable-vdpau --disable-videotoolbox  --enable-static --disable-shared   --enable-demuxer=wav --enable-demuxer=truehd  --disable-swscale  --disable-network --disable-postproc --disable-pixelutils --disable-avdevice --disable-alsa --disable-lzma --disable-doc --disable-d3d11va --disable-amd3dnow --disable-amd3dnowext  --disable-dxva2]]])
        
@@ -353,7 +353,6 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
     AS_CASE([${build}],
 	    [*-*-mingw32*],
 	    [
-
 	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --enable-default-video-format=$VIDEO_FORMAT --prefix="$BUILDDIR/local" CPPFLAGS=-I$ROOTDIR/lplex-0.3/redist]],
 	       [[[lplex], [lplex-0.3]], [--prefix="$BUILDDIR/local" --disable-shared ROOTDIR=$ROOTDIR/lplex-0.3 --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
 	       [[[mjpegtools], [mjpegtools-2.1.0]],
