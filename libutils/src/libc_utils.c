@@ -71,7 +71,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "private_c_utils.h"
 // here include your main application's header containing a globalData structure with main application globals->
 #include "structures.h"
-#include "libiberty.h"
 #include "winport.h"
 
 #undef __MS_types__

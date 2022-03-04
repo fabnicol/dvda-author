@@ -26,12 +26,8 @@
 #include "c_utils.h"
 #include "winport.h"
 #include "structures.h"
-#include "libiberty.h"
+
 /* global data */
-
-
-
-
 /*********************************************************************
 * Function: repair_wav
 *

@@ -54,11 +54,6 @@ endif
 
 CPPFLAGS +=-I@ROOTDIR@/libfixwav/src/include
 
-ifneq "@MAYBE_libiberty@" ""
-     LDLIBS+=@libiberty_LIB@
-     CPPFLAGS +=-I@ROOTDIR@/@MAYBE_libiberty@/include
-endif
-
 ifeq "$(sox_BUILD)" "yes"
      LDLIBS  += SOX_LIB_DEPS -pthread -ldl
 endif

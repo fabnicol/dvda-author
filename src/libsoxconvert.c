@@ -17,7 +17,6 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-#ifndef WITHOUT_sox
 
 #include <stdio.h>
 #include <errno.h>
@@ -33,17 +32,6 @@
  * E.g. example1 monkey.au monkey.aiff
  */
 
-/* NOTE: SoX API noticeably changed as of v. 14.3.0 */
-
-
-
-
-#if ((SOX_LIB_VERSION_CODE >>8 & 0xff) < 3)
-#error ---------------------------------------------------------------------------------
-#error "ERR "Build: SoX lib is too old --  version must be higher or equal to 14.3.0.
-#error       Either reinstall new lib or build from source code with --enable-sox-patch.
-#error ---------------------------------------------------------------------------------
-#endif
 
 // arcane issue with assert() that justifies this workaround
 #define check(X) do { if ((X)==0) { foutput("%s%d\n", ERR "SoX runtime failure, stage ", stage); return -1;} } while(0);
@@ -188,4 +176,3 @@ int resample(char *infile, char *outfile, unsigned int channels, unsigned int bi
   return 0;
 }
 
-#endif

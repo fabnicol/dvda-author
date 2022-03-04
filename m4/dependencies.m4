@@ -253,11 +253,11 @@ m4_map([DVDA_TEST_AUX],[
 	    ],
 	    [
 		[mjpegtools-download],
-		[2.1.0],
+		[2.2.1],
 		[],
 		[],
 		[DEPS],
-		[1fef8a52bc925a3dec05db963a0e70c8]
+		[]
 	    ],
 	    [
 		[libmpeg2-download],
@@ -338,11 +338,11 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
  # auxiliary libs installed under local/ within package to avoid possible versioning issues with system-installed libs
 
     DVDA_CONFIG_LIBRARY_LOCAL_INSTALL([
-     [[[sox],[sox-14.4.2]],  [--without-libltdl --without-sndfile --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-magic --disable-fast-install --enable-static --disable-shared --prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]],
+     [[[sox],[sox-14.4.2]],  [--without-libltdl --without-sndfile --without-mad --with-pkgconfigdir=no --without-flac --without-ladspa --without-twolame --without-lame --without-magic --disable-fast-install --enable-static --with-pic --disable-shared --prefix="$BUILDDIR/local" CFLAGS=-fPIE CXXFLAGS=-fPIE CPPFLAGS="-I$BUILDDIR/local/include"]],
      [[[libogg],[libogg-1.3.4]],  [--enable-static --disable-shared --prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]],
      [[[FLAC],[flac-1.3.4]],[--enable-static --disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg" \
        --disable-thorough-tests --disable-oggtest --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]],
-     [[[ffmpeg], [ffmpeg-4.2.4]], [--prefix="$BUILDDIR/local"--disable-demuxers --disable-decoders --disable-muxers --disable-parsers --disable-encoders --disable-devices --disable-protocols --enable-protocol=file --enable-protocol=data --disable-bsfs --disable-hwaccels  --disable-filters   --enable-decoder=mlp --enable-encoder=mlp --enable-encoder=pcm_s16le --enable-encoder=pcm_s24le --enable-encoder=pcm_s32le --enable-decoder=pcm_s16le --enable-decoder=pcm_s24le --enable-decoder=pcm_s24le  --enable-parser=mlp --enable-muxer=wav --enable-muxer=null --enable-muxer=truehd --enable-muxer=mlp --enable-demuxer=mlp --enable-muxer=pcm_s16le --enable-muxer=pcm_s24le --enable-muxer=pcm_s32le --enable-demuxer=pcm_s16le --enable-demuxer=pcm_s24le --enable-demuxer=pcm_s32le  --enable-filter=aresample --disable-bzlib --disable-iconv --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape --disable-sndio --disable-sdl2 --disable-zlib --disable-xlib --disable-libdrm --disable-vaapi --disable-vdpau --disable-videotoolbox  --enable-static --disable-shared   --enable-demuxer=wav --enable-demuxer=truehd  --disable-swscale  --disable-network --disable-postproc --disable-pixelutils --disable-avdevice --disable-alsa --disable-lzma --disable-doc --disable-d3d11va --disable-amd3dnow --disable-amd3dnowext  --disable-dxva2]]])
+     [[[ffmpeg], [ffmpeg-4.2.4]], [--prefix="$BUILDDIR/local"--disable-demuxers --disable-decoders --disable-muxers --disable-parsers --disable-encoders --disable-devices --disable-protocols --enable-protocol=file --enable-protocol=data --disable-bsfs --disable-hwaccels  --disable-filters   --enable-decoder=mlp --enable-encoder=mlp --enable-encoder=pcm_s16le --enable-encoder=pcm_s24le --enable-encoder=pcm_s32le --enable-decoder=pcm_s16le --enable-decoder=pcm_s24le --enable-decoder=pcm_s24le  --enable-parser=mlp --enable-muxer=wav --enable-muxer=null --enable-muxer=truehd --enable-muxer=mlp --enable-demuxer=mlp --enable-muxer=pcm_s16le --enable-muxer=pcm_s24le --enable-muxer=pcm_s32le --enable-demuxer=pcm_s16le --enable-demuxer=pcm_s24le --enable-demuxer=pcm_s32le  --enable-filter=aresample --disable-bzlib --disable-iconv --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape --disable-sndio --disable-sdl2 --disable-zlib --disable-xlib --disable-libdrm --disable-vaapi --disable-vdpau --disable-videotoolbox  --enable-static --disable-shared   --enable-demuxer=wav --enable-demuxer=truehd  --disable-swscale  --disable-network --disable-postproc --disable-pixelutils --disable-avdevice --disable-alsa --disable-lzma --disable-doc --disable-d3d11va --disable-amd3dnow --disable-amd3dnowext  --disable-dxva2 --enable-pic]]])
        
      # installing binaries, normally executables
 
@@ -355,7 +355,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	    [
 	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --enable-default-video-format=$VIDEO_FORMAT --prefix="$BUILDDIR/local" CPPFLAGS=-I$ROOTDIR/lplex-0.3/redist]],
 	       [[[lplex], [lplex-0.3]], [--prefix="$BUILDDIR/local" --disable-shared ROOTDIR=$ROOTDIR/lplex-0.3 --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
-	       [[[mjpegtools], [mjpegtools-2.1.0]],
+	       [[[mjpegtools], [mjpegtools-2.2.1]],
 			       [ --prefix="$BUILDDIR/local" --disable-shared  --enable-static --enable-static-build --disable-fast-install --prefix="$BUILDDIR/local" --without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime --disable-simd-accel LIBDIR=/lib LDFLAGS=-L/lib CXXFLAGS=-fPIC  CFLAGS=-fPIC CPPFLAGS=-I/include ]],
 	       [[[cdrtools],[cdrtools-3.02]],[--prefix="$BUILDDIR/local"]],
 	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
@@ -367,7 +367,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	    [
 	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --enable-default-video-format=$VIDEO_FORMAT --prefix="$BUILDDIR/local"]],
 	       [[[lplex], [lplex-0.3]], [--prefix="$BUILDDIR/local" --enable-static --disable-shared ROOTDIR=$ROOTDIR/lplex-0.3 --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include" CPPFLAGS=-I$ROOTDIR/lplex-0.3/redist]],
-	       [[[mjpegtools], [mjpegtools-2.1.0]],[--without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime   --disable-shared --enable-static-build --enable-static  --disable-fast-install  --prefix="$BUILDDIR/local"  CXXFLAGS=-fPIC  CFLAGS=-fPIC]],
+	       [[[mjpegtools], [mjpegtools-2.2.1]],[--without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime   --disable-shared --enable-static-build --enable-static  --disable-fast-install  --prefix="$BUILDDIR/local"  CXXFLAGS=-fPIC  CFLAGS=-fPIC]],
 	       [[[cdrtools],[cdrtools-3.02]],[--prefix="$BUILDDIR/local"]],
 	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
 	       [[[libmpeg2],[libmpeg2-0.5.1]], [--enable-static --disable-shared --prefix="$BUILDDIR/local" --disable-directx]],
@@ -380,7 +380,5 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
     # libjpeg package could as well be added to downloaded source...
     # auxiliary libs that remain within package, not installed
 
-    DVDA_CONFIG_LIBRARY_NO_INSTALL([[[[libiberty],[libiberty/src]]], [[[libfixwav],[libfixwav/src]]]])
-
+    DVDA_CONFIG_LIBRARY_NO_INSTALL([[[[libfixwav],[libfixwav/src]]]])
 ])
-

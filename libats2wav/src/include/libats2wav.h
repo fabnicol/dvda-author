@@ -12,7 +12,6 @@
 #include <inttypes.h>
 #include <stdint.h>
 #include "structures.h"
-#include "libiberty.h"
 
 typedef struct
 {

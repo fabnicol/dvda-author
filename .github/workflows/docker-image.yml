@@ -66,7 +66,8 @@ jobs:
         -m "Release $tag_name" \
         -m "This release was automatically created by the GitHub Actions workflow corresponding to directory .github in the repository." \
         -m "The output is a checksum file and a compressed Docker image for the corresponding branch." \
-        -m "File **dvda-author-${tag_name}.tar.xz** is the compressed custom MKG Docker image built from latest repository sources." \
+        -m "File **dvda-author-${tag_name}.tar.xz** is the compressed custom MKG Docker image for GNU/Linux built from latest repository sources.  " \
+        -m "This image should work on any GNU/Linux distribution provided that Docker was previously installed.  " \
         -m "Download, check the control sums and uncompress it using **xz -d dvda-author-release-master.tar.xz**.  " \
         -m "Then load the image:" \
         -m "    sudo docker load -i dvda-author-release-master.tar" \

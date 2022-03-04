@@ -278,7 +278,6 @@ for a configuration with FLAC and SoX dependencies enabled.
 
 More specifically, from the top source directory:
 
-See file BUGS for issues with libiberty and SoX (older versions) building.
 
 - To build and patch dvdauthor (only necessary if you need DVD-Audio menus):
 

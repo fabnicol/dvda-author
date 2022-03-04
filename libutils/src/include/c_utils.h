@@ -316,10 +316,7 @@ typedef struct
     bool padding_continuous;
     bool lossy_rounding;
     bool rungrowisofs;
-#ifndef WITHOUT_sox
     bool sox_enable;
-#endif
-
     bool fixwav_enable;
     bool fixwav_virtual_enable;
     bool fixwav_automatic; /* automatic behaviour */

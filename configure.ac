@@ -181,7 +181,6 @@ AC_FUNC_REALLOC
 #checks only
 AC_CHECK_FUNCS([strcasecmp select getcwd floor memmove memset mkdir rmdir setlocale strerror strtol strtoul snprintf fseek setlocale strchr strdup strndup strstr strnlen getsubopt memchr dup2 strncasecmp strrchr])
 
-# using -liberty to bootstrap GNU libc usage
 
 AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],
  [
@@ -255,7 +254,7 @@ AC_MSG_NOTICE([Configuring ${PACKAGE_TARNAME}...])
 
 AS_MKDIR_P([$BUILDDIR/depconf])
 
-AC_CONFIG_FILES([COREBUILD images/Makefile libutils/src/Makefile libfixwav/src/Makefile libiberty/src/Makefile Makefile])
+AC_CONFIG_FILES([COREBUILD libutils/src/Makefile libfixwav/src/Makefile Makefile])
 AC_CONFIG_FILES([$ROOTDIR/mk/functions.mk sox-libs src/Makefile EXAMPLES])
 
 GENERATE_GLOBAL_MKS
@@ -287,7 +286,6 @@ A ${PACKAGE_TARNAME} man page will be installed on Unix system
 		    libogg .........$libogg_BUILD
 		    libsox  ........$sox_BUILD
 
-		    gnu libc .......$libiberty_BUILD
 		    libutils .......yes
  
     Ogg FLAC support:
@@ -311,14 +309,6 @@ AS_IF([ test x$ac_cv_c_compiler_gnu = xyes ],[
     LDFLAGS=$LDFLAGS
 ])
 ])
-
-AS_IF([ test x$libiberty_LIB -o x$libiberty_LINK != x ],[AC_MSG_RESULT([  libiberty.a will be linked to])])
-
-AS_IF([ test x$libiberty_BUILD = xyes ],
- [
-  AC_MSG_RESULT([  GNU lib sources in libiberty/ will be recompiled for enhanced portability.])
- ])
-
 
 
 

@@ -19,7 +19,6 @@
 #include <inttypes.h>
 #include <stdint.h>
 #include "structures.h"
-#include "libiberty.h"
 #include "fixwav_manager.h"
 
 #define BUFFER_SIZE 3*2048

@@ -19,8 +19,6 @@
 #include "fixwav_manager.h"
 #include "c_utils.h"
 #include "structures.h"
-#include "libiberty.h"
-
 
 
 int readHeader(FILE * infile, WaveHeader *header, globalData *globals)

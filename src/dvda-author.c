@@ -222,10 +222,7 @@ int main(int argc,  char *const argv[])
     /*padding_continuous*/   false,  // no continuous padding
     /*lossy_rounding*/  false,  // No audio loss
     /*rungrowisofs*/    false,  // Do not burn with growisofs
-#ifndef WITHOUT_sox
     /*sox_enable*/      false,  // no use of SoX
-#endif
-
     /*fixwav_enable*/               true,  // use of fixwav
     /*fixwav_virtual_enable*/       true,  // use of fixwav (virtual headers)
     /* automatic behaviour */       true,

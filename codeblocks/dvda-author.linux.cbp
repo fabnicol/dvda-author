@@ -48,7 +48,6 @@
 			<Add option="-DHAVE_sox" />
 			<Add option='-DVERSION=\\\&quot;dev-9999\\\&quot;' />
 			<Add directory="../src/include" />
-			<Add directory="../libiberty/src/include" />
 			<Add directory="../libfixwav/src/include" />
 			<Add directory="../" />
 			<Add directory="../libutils/src/include" />
@@ -100,28 +99,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../libfixwav/src/repair.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="../libiberty/src/getopt.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="../libiberty/src/getopt1.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="../libiberty/src/getsubopt.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="../libiberty/src/include/getopt.h" />
-		<Unit filename="../libiberty/src/include/getopt_int.h" />
-		<Unit filename="../libiberty/src/include/getsubopt.h" />
-		<Unit filename="../libiberty/src/include/strchrnul.h" />
-		<Unit filename="../libiberty/src/include/strdup.h" />
-		<Unit filename="../libiberty/src/include/strndup.h" />
-		<Unit filename="../libiberty/src/include/strnlen.h" />
-		<Unit filename="../libiberty/src/strchrnul.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="../libiberty/src/strnlen.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../libutils/src/include/c_utils.h" />

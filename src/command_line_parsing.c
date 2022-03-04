@@ -1462,7 +1462,6 @@ an integer between 1 and 16");
             }
 
           break;
-#ifndef WITHOUT_sox
 
         case 'S':
           /* Uses sox to convert different input formats */
@@ -1471,7 +1470,6 @@ an integer between 1 and 16");
                   PAR "Audio formats other than WAV and FLAC"
                   "will be converted by sox tool.");
           break;
-#endif
 
         case 36:
           foutput("%s\n",

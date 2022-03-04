@@ -38,9 +38,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 static int check_ignored_extension(void *);
 
-
-
-
 int read_tracks(char  *full_path, uint8_t *ntracks, char *parent_directory, char *filename, uint8_t ngroups_scan, globalData *globals)
 {
 

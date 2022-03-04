@@ -54,16 +54,6 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #endif
 
-#if (!defined HAVE_STRNDUP  || HAVE_STRNDUP ==0) || defined __CB__ ||  GLIBC_REPLACEMENT
-#include "libiberty/src/include/strndup.h"
-#endif
-#if (!defined HAVE_GETSUBOPT  || HAVE_GETSUBOPT == 0) || defined __CB__ || GLIBC_REPLACEMENT
-#include "libiberty/src/include/getsubopt.h"
-#endif
-// Replace strdup even if present (notably on FreeBSD)
-#if defined __CB__ || GLIBC_REPLACEMENT
-#include "libiberty/src/include/strdup.h"
-#endif
 
 
 

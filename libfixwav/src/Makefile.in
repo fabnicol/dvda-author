@@ -1,5 +1,3 @@
-
-
 SOURCES:=$(wildcard @ROOTDIR@/libfixwav/src/*.c)
 OBJECTS:=$(SOURCES:.c=.o)
 
@@ -7,13 +5,6 @@ CPPFLAGS += -I@ROOTDIR@/libfixwav/src/include -I@ROOTDIR@/libutils/src/include -
 #for config.h
 CPPFLAGS += -I@BUILDDIR@
 
-
-ifeq "@HAVE_libiberty_BUILD@" "yes"
-	CPPFLAGS +=-I@ROOTDIR@/@MAYBE_libiberty@/include
-	ifeq  "@HAVE_EXTERNAL_iberty@" "yes"
-	  CPPFLAGS +=-I@ROOTDIR@/@MAYBE_libiberty@/include
-	endif
-endif
 
 libfixwav.a: libfixwav.a($(OBJECTS))
 

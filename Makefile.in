@@ -32,13 +32,6 @@ PROGRAM_TARGET_CONFIGS := $(foreach prog,$(PROGRAM_TARGETS), \
 $(shell if test  -f @ROOTDIR@/mk/$(prog).mk ; then echo $(prog).config; fi))
 PROGRAM_TARGET_DEPCONFS := $(PROGRAM_TARGET_CONFIGS:.config=.depconf)
 
-ifneq "@WITH_libiberty@" "no"
-  ifneq "@MAYBE_libiberty@" ""
-    BUILD_SUBDIRS += @BUILDDIR@/@MAYBE_libiberty@
-  endif
-else
-  CPPFLAGS += -DWITHOUT_libiberty
-endif
 
 BUILD_SUBDIRS += @BUILDDIR@/libutils/src
 
@@ -194,7 +187,7 @@ install-man
 	@$(foreach dir,src $(subdirs), $(MAKE) --directory=$(dir) install)
 
 clean: clean-local
-	$(call clean_directory,@BUILDDIR@/libfixwav/src @BUILDDIR@/libutils/src @BUILDDIR@/libiberty/src $(BUILD_SUBDIRS))
+	$(call clean_directory,@BUILDDIR@/libfixwav/src @BUILDDIR@/libutils/src $(BUILD_SUBDIRS))
 	$(RM) @BUILDDIR@/src/$(PROGRAM)
 
 clean-local:
@@ -205,10 +198,7 @@ clean-local:
 distclean: clean
 	$(RM) -rf $(wildcard @ROOTDIR@/autom4te*)
 	$(RM) -rf config.*
-	$(RM) Makefile src/Makefile libfixwav/src/Makefile libutils/src/Makefile \
-libiberty/src/Makefile
-
-maintainer-clean: distclean
+	$(RM) Makefile src/Makefile libfixwav/src/Makefile libutils/src/Makefile maintainer-clean: distclean
 	$(RM) configure  sox-libs *.tar.xz *-patch-* 
 	$(RM) -rf config/  depconf/
 	$(foreach prog, @PROGRAM_TARGETS@, $(shell $(RM) -rf $(MAYBE_$(prog)))) 

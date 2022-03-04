@@ -94,12 +94,7 @@ SOURCES += \
     libfixwav/src/readHeader.c \
     libfixwav/src/repair.c \
     src/dvda-author.c \
-    libfixwav/src/fixwav_auxiliary.c \
-    libiberty/src/getopt.c \
-    libiberty/src/getsubopt.c \
-    libiberty/src/strchrnul.c \
-    libiberty/src/strnlen.c
-
+    libfixwav/src/fixwav_auxiliary.c
 
 OTHER_FILES += \
     src/dvda-author.conf \
@@ -256,13 +251,6 @@ HEADERS += \
     libs/include/libsoxconvert/win32-ltdl.h \
     libs/include/libsoxconvert/xmalloc.h \
     libutils/src/private/private_c_utils.h \
-    libiberty/src/include/getopt_int.h \
-    libiberty/src/include/getopt.h \
-    libiberty/src/include/getsubopt.h \
-    libiberty/src/include/strchrnul.h \
-    libiberty/src/include/strdup.h \
-    libiberty/src/include/strndup.h \
-    libiberty/src/include/strnlen.h \
     src/include/mlplayout.h
 
 DISTFILES += \
