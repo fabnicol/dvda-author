@@ -1,7 +1,7 @@
 
 
 SOURCES:=$(wildcard @ROOTDIR@/libfixwav/src/*.c)
-OBJECTS:=$(subst @ROOTDIR@/libfixwav/src,@BUILDDIR@/libfixwav/src, $(SOURCES:.c=.o) )
+OBJECTS:=$(SOURCES:.c=.o)
 
 CPPFLAGS += -I@ROOTDIR@/libfixwav/src/include -I@ROOTDIR@/libutils/src/include -I@ROOTDIR@/src/include 
 #for config.h

@@ -40,7 +40,7 @@ else
   CPPFLAGS += -DWITHOUT_libiberty
 endif
 
-BUILD_SUBDIRS += @BUILDDIR@/libfixwav/src
+BUILD_SUBDIRS += @BUILDDIR@/libutils/src
 
 BUILD_SUBDIRS += @BUILDDIR@/src
 
@@ -56,9 +56,9 @@ endif
 
 ALL_TARGETS += $(ALL_TARGETS_EXTERNAL) $(BUILD_SUBDIRS)
 
-.PHONY: all    libutils
+.PHONY: all
 
-all:  $(ALL_TARGETS) manpage htmlpage pdfpage
+all:  libfixwav $(ALL_TARGETS) manpage htmlpage pdfpage
 
 include @ROOTDIR@/mk/functions.mk
 include $(PROGRAM_TARGET_MAKEFILES)
@@ -66,10 +66,14 @@ include $(PROGRAM_TARGET_MAKEFILES)
 export CPPFLAGS
 export PARALLEL
 
-libutils:
-	$(MAKE) --directory=@BUILDDIR@/libutils/src
+.PHONY: libfixwav
 
-$(BUILD_SUBDIRS): $(ALL_TARGETS_EXTERNAL) libutils
+libfixwav: 
+	cd libfixwav/src
+	$(MAKE)
+	cd -
+	
+$(BUILD_SUBDIRS): $(ALL_TARGETS_EXTERNAL)
 	@echo Running make in directory $@...
 	$(MAKE) $(PARALLEL) --directory=$@
 
@@ -190,7 +194,7 @@ install-man
 	@$(foreach dir,src $(subdirs), $(MAKE) --directory=$(dir) install)
 
 clean: clean-local
-	$(call clean_directory,@BUILDDIR@/libutils/src $(BUILD_SUBDIRS))
+	$(call clean_directory,@BUILDDIR@/libfixwav/src @BUILDDIR@/libutils/src @BUILDDIR@/libiberty/src $(BUILD_SUBDIRS))
 	$(RM) @BUILDDIR@/src/$(PROGRAM)
 
 clean-local:
