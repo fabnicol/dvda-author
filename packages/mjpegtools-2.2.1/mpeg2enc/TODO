@@ -1,0 +1,98 @@
+IN PROGRESS
+
+	- Remove obsolete i,j in macroblocks in favour of Coord....
+	- Replace appending subsampled luminance to luminance data with a 5-plane
+	  picture data model (YUVHQ)
+	- MotionEst should be called 'MacroBlockCodingMode'
+
+	- Set satlim and scale type in quantizer during init
+
+	- Move to a buffering output model where a frame can be aborted/restarted
+	with different quantisation if it is coming out too large or too small.
+
+	- Dynamic B/P selection and selection of I frames 
+	without memory-expensive look-ahead.
+
+	- Improve memory management.  Selecting Picture's from a single pool
+	rather than seperate B / I|P pools will save memory buffers.  Also,
+	really there is no need for DCT blocks for every picture as encoding
+	is basically serial!!
+
+
+Near Future improvements
+
+0.  Replace current variance based motion estimation mode selection
+	with DCT based selection.  
+	Next Step: split predictors from Picture state and build a
+	new QuantiseAndPutEncoding that predict's and transforms and
+	quantisatises forall the motion estimates and selects the one that
+	worked best for encoding.
+
+	- Modify the on-the-fly rate controller so it can handle adjusting
+	  quantisation at select Macroblock's and not at *every* macroblock
+	  if no fancy per-block quantisation fiddles are active...
+
+1. Add single coefficient dropping to DCT...
+
+2.	Split into front-end and library (for gstreamer etc) 
+	This will require removal of lots of nasty global scratch variables
+
+3.	Add accurate (GOP-structure based) decoder buffer modelling for more
+	aggresive bit-rate optimisation.
+
+4.	Seperate the transformation phase (ME, pred, DCT) from the bit allocation
+	and coding phases. 
+	This will provide the basis for two-pass encoding and pipelined encoding.
+
+
+5.	The rate control code is now a mess of int64_t , double and int. Needs
+	tidying... 
+
+6.  Add support for the ATSC Active Format Description and Bar Data extenstions
+
+
+Minor Tidying
+
+1.	A lot of parameter passing could be removed from motionest.cc routines
+	by creating an 'MacroBlockMotionModes' object carrying parameters fixed
+	for a block...
+
+2.	The order of return from block_dist1_MMXE is silly.  Why not
+	retune in the order it is held and adjust find_best_one_pel_MMXE to
+	suit.  
+
+3.	For Motion estimation in -I 1 we really need both field *and* frame
+	sub-sampled images for motion estimation to be optimal.
+
+
+5.	The code for scene-change gop sizing and ending sequences can in
+	some circumstances mess up as the sizing takes no account of
+	the fact the when a sequence split occurs the I-frame tempref is
+	0 not M-1.
+
+
+Sometime....
+
+
+
+1.  	Bring field sequence MC/prediction to same level as progressive	
+	sequence.
+
+	
+2.	Improve locality of reference by motion-estimating entire 4x4, 2x2, 1x1
+phases in a single pass rather doing each for each Macroblock.
+
+3.  Check out using dist2 for initial MC calculations as well as final
+	selection?
+
+
+5.	Add low-passing for high-activity regions when a specified quantisation
+	level is exceeded (or block boundary edge energy exceeds some threshold?).
+
+6.	Sort out that wretched vbv verification code.
+
+	The mblockq_ sub-routines intended specification should be documented...
+
+
+
+

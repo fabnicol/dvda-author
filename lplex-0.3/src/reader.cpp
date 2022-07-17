@@ -19,7 +19,10 @@
 	Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 */
 
+
+
 #include "processor.hpp"
+
 
 // ----------------------------------------------------------------------------
 //    lpcmReader::adjust :
@@ -35,32 +38,34 @@
 //    Returns number of bytes to be padded at end of stream.
 // ----------------------------------------------------------------------------
 
-int lpcmReader::adjust(int prepend, bool pad)
+
+int lpcmReader::adjust( int prepend, bool pad )
 {
-    int padding = 0;
+	int padding = 0;
 
-    if (prepend)
-        {
-            ct.now += prepend;
-            if (alignment)
-                {
-                    surplus += prepend;
-                    surplus %= alignment;
-                }
-            state |= prepended;
-        }
+	if( prepend )
+	{
+		ct.now += prepend;
+		if( alignment )
+		{
+			surplus += prepend;
+			surplus %= alignment;
+		}
+		state |= prepended;
+	}
 
-    if (pad)
-        {
-            padding = (surplus ? alignment - surplus : 0);
-            if (padding)
-                state |= padded;
-            else
-                clearbits(state, padded);
-        }
+	if( pad )
+	{
+		padding = ( surplus ? alignment - surplus : 0 );
+		if( padding )
+			state |= padded;
+		else
+			clearbits( state, padded );
+	}
 
-    return padding;
+	return padding;
 }
+
 
 // ----------------------------------------------------------------------------
 //    lpcmReader::read :
@@ -74,68 +79,70 @@ int lpcmReader::adjust(int prepend, bool pad)
 //    Returns number of bytes actually transferred
 // ----------------------------------------------------------------------------
 
-uint64_t lpcmReader::read(unsigned char *buf, uint64_t len)
+
+uint64_t lpcmReader::read( unsigned char *buf, uint64_t len )
 {
-    int64_t avail = ct.now - bufPos;
+	int64_t avail = ct.now - bufPos;
 
-    if (avail < (int64_t) len && !(state & _eoi))
-        {
-            memmove(bigBuf, bigBuf + bufPos, avail);
+	if( avail < (int64_t) len && ! ( state & _eoi ) )
+	{
+		memmove( bigBuf, bigBuf + bufPos, avail );
 
-            counter<uint64_t> c(0, avail, 0);
-            fillBuf(0, &c);
-            if (state & _eof)
-                {
-                    clearbits(state, _eof);
-                    state |= _eoi;
-                    if (surplus && state & padded)
-                        {
-                            int padding = alignment - surplus;
-                            memset(bigBuf + ct.now, 0, padding);
-                            gcount += padding;
-                            ct.now += padding;
-                            surplus = 0;
-                        }
-                    else
-                        {
-                            gcount -= surplus;
-                            ct.now -= surplus;
-                        }
-                }
+		counter<uint64_t> c( 0, avail, 0 );
+		fillBuf( 0, &c );
+		if( state & _eof )
+		{
+			clearbits( state, _eof );
+			state |= _eoi;
+			if( surplus && state & padded )
+			{
+				int padding = alignment - surplus;
+				memset( bigBuf + ct.now, 0, padding );
+				gcount += padding;
+				ct.now += padding;
+				surplus = 0;
+			}
+			else
+			{
+				gcount -= surplus;
+				ct.now -= surplus;
+			}
+		}
 
-            if (state & prepended)
-                {
-                    gcount += avail;
-                    avail = 0;
-                    clearbits(state, prepended);
-                }
+		if( state & prepended )
+		{
+			gcount += avail;
+			avail = 0;
+			clearbits( state, prepended );
+		}
 
-            swap2dvd(bigBuf + avail, gcount,
-                     fmeta.data.stream_info.channels,
-                     fmeta.data.stream_info.bits_per_sample);
+		swap2dvd( bigBuf + avail, gcount,
+			fmeta.data.stream_info.channels,
+			fmeta.data.stream_info.bits_per_sample );
 
-            bufPos = 0;
-            avail = ct.now;
-        }
+		bufPos = 0;
+		avail = ct.now;
+	}
 
-    else if (! avail && state & _eoi)
-        {
-            state |= _eof;
-            memmove(bigBuf, bigBuf + bufPos, surplus);
-        }
+	else if( ! avail && state & _eoi )
+	{
+		state |= _eof;
+		memmove( bigBuf, bigBuf + bufPos, surplus );
+	}
 
-    len = (avail < (int64_t) len) ? avail : len;
-    memcpy(buf, bigBuf + bufPos, len);
-    bufPos += len;
-    pos.now += len;
+	len = ( avail < (int64_t) len ) ? avail : len;
+	memcpy( buf, bigBuf + bufPos, len );
+	bufPos += len;
+	pos.now += len;
 
-    return len;
+	return len;
 }
 
-#if 0
+#if 0 // testing Lee Feldkamp's permutation() framework
 #define READER_CPP
 #include "multichannel.cpp"
 #else
+
 
 // ----------------------------------------------------------------------------
 //    lpcmReader::swap2dvd :
@@ -153,73 +160,75 @@ uint64_t lpcmReader::read(unsigned char *buf, uint64_t len)
 // ----------------------------------------------------------------------------
 // (more or less verbatim from Dave Chapman's dvda-author::audio.c::audio_read())
 
-int lpcmReader::swap2dvd(unsigned char *data, uint32_t count,
-                         int channels, int bitspersample)
+
+int lpcmReader::swap2dvd( unsigned char *data, uint32_t count,
+	int channels, int bitspersample )
 {
-    uint32_t i = 0;
-    int x;
-    // Convert little-endian WAV samples to big-endian MPEG LPCM samples
-    if (bitspersample == 16)
-        for (i = 0; i < count; i += 2)
-            {
-                x = data[i + 1];
-                data[i + 1] = data[i];
-                data[i] = x;
-            }
+	uint32_t i = 0;
+	int x;
+	// Convert little-endian WAV samples to big-endian MPEG LPCM samples
+	if ( bitspersample == 16 )
+		for( i=0; i < count; i+=2 )
+		{
+			x = data[i+1];
+			data[i+1] = data[i];
+			data[i] = x;
+		}
 
-    else if (bitspersample == 24)
-        {
-            if (channels == 1)
-                {
-                    /* 24-bit mono samples are packed as follows:
+	else if( bitspersample == 24 )
+	{
+		if( channels == 1 )
+		{
+			/* 24-bit mono samples are packed as follows:
 
-                    		0  1  2  3  4  5
-                    WAV: 01 23 45 12 34 56
-                    DVD: 45 23 56 34 01 12
+					0  1  2  3  4  5
+			WAV: 01 23 45 12 34 56
+			DVD: 45 23 56 34 01 12
 
-                    */
-                    for (i = 0; i < count; i += 6)
-                        {
-                            x = data[i];
-                            data[i] = data[i + 2];
-                            data[i + 2] = data[i + 5];
-                            data[i + 5] = data[i + 3];
-                            data[i + 3] = data[i + 4];
-                            data[i + 4] = x;
-                        }
-                }
-            else /*if( channels == 2 )*/
-                {
-                    /* 24-bit Stereo samples are packed as follows:
+			*/
+			for( i=0; i < count; i+=6 )
+			{
+				x = data[i];
+				data[i] = data[i+2];
+				data[i+2] = data[i+5];
+				data[i+5] = data[i+3];
+				data[i+3] = data[i+4];
+				data[i+4] = x;
+			}
+		}
+		else /*if( channels == 2 )*/
+		{
+			/* 24-bit Stereo samples are packed as follows:
 
-                    		0  1  2  3  4  5  6  7  8  9 10 11
-                    WAV: 01 23 45 bf 60 8c 67 89 ab b7 d4 e3
-                    DVD: 45 23 8c 60 ab 89 e3 d4 01 bf 67 b7
+					0  1  2  3  4  5  6  7  8  9 10 11
+			WAV: 01 23 45 bf 60 8c 67 89 ab b7 d4 e3
+			DVD: 45 23 8c 60 ab 89 e3 d4 01 bf 67 b7
 
-                    */
+			*/
 
-                    for (i = 0; i < count; i += 12)
-                        {
-                            x = data[i];
-                            data[i] = data[i + 2];
-                            data[i + 2] = data[i + 5];
-                            data[i + 5] = data[i + 7];
-                            data[i + 7] = data[i + 10];
-                            data[i + 10] = data[i + 6];
-                            data[i + 6] = data[i + 11];
-                            data[i + 11] = data[i + 9];
-                            data[i + 9] = data[i + 3];
-                            data[i + 3] = data[i + 4];
-                            data[i + 4] = data[i + 8];
-                            data[i + 8] = x;
-                        }
-                }
-        }
+			for( i=0; i < count; i+=12 )
+			{
+				x = data[i];
+				data[i] = data[i+2];
+				data[i+2] = data[i+5];
+				data[i+5] = data[i+7];
+				data[i+7] = data[i+10];
+				data[i+10] = data[i+6];
+				data[i+6] = data[i+11];
+				data[i+11] = data[i+9];
+				data[i+9] = data[i+3];
+				data[i+3] = data[i+4];
+				data[i+4] = data[i+8];
+				data[i+8] = x;
+			}
+		}
+	}
 
-    return count - i;
+	return count - i;
 }
 
 #endif
+
 
 // ----------------------------------------------------------------------------
 //    waveReader::reset :
@@ -235,41 +244,44 @@ int lpcmReader::swap2dvd(unsigned char *data, uint32_t count,
 //    Returns 0 on success
 // ----------------------------------------------------------------------------
 
-uint16_t waveReader::reset(const string &filename, int alignUnit)
+
+uint16_t waveReader::reset( const string& filename, int alignUnit )
 {
 #if 0
-    waveHeader::canonical header;
+	waveHeader::canonical header;
 #endif
-    if (waveFile.is_open())
-        waveFile.close();
+	if( waveFile.is_open() )
+		waveFile.close();
 
-    state = 0;
+	state = 0;
 
-    waveFile.open(filename, ios::binary);
+	waveFile.open( filename, ios::binary );
 
-    if (! waveFile.is_open())
-        FATAL("Can't find input file " + string(filename));
+	if( ! waveFile.is_open() )
+        FATAL( "Can't find input file " + string(filename) );
 
-    fName = filename;
-    state |= named;
+	fName = filename;
+	state |= named;
 
-    if (! waveHeader::open(waveFile, &fmeta))
-        FATAL("Can't open wave file " + filename);
+	if( ! waveHeader::open( waveFile, &fmeta ) )
+        FATAL( "Can't open wave file " + filename );
 
-    pos.max = unread = flacHeader::bytesUncompressed(&fmeta);
-    surplus = (alignment ? unread % alignment : 0);
-    gcount = bufPos = 0;
+	pos.max = unread = flacHeader::bytesUncompressed( &fmeta );
+	surplus = ( alignment ? unread % alignment : 0 );
+	gcount = bufPos = 0;
 
-    alignment = alignUnit ? alignUnit :
-                fmeta.data.stream_info.channels *
-                fmeta.data.stream_info.bits_per_sample / 8;
+	alignment = alignUnit ? alignUnit :
+		fmeta.data.stream_info.channels *
+		fmeta.data.stream_info.bits_per_sample / 8;
 
-    md5_init(&md5);
+	md5_init( &md5 );
 
-    soundCheck(this);
+	soundCheck( this );
 
-    return 0;
+	return 0;
 }
+
+
 
 // ----------------------------------------------------------------------------
 //    waveReader::fillBuf :
@@ -284,37 +296,42 @@ uint16_t waveReader::reset(const string &filename, int alignUnit)
 //    Returns number of bytes processed.
 // ----------------------------------------------------------------------------
 
-uint64_t waveReader::fillBuf(uint64_t limit, counter<uint64_t> *midCount)
+
+
+uint64_t waveReader::fillBuf( uint64_t limit, counter<uint64_t> *midCount )
 {
 //   uint64_t bytesRead;
 
-    if (midCount)
-        ct = *midCount;
-    else
-        ct.start = ct.now = 0;
+	if( midCount )
+		ct = *midCount;
+	else
+		ct.start = ct.now = 0;
 
-    ct.max = sizeofbigBuf / alignment * alignment;
+	ct.max = sizeofbigBuf / alignment * alignment;
 
-    if (limit && limit < ct.max)
-        ct.max = limit;
+	if( limit && limit < ct.max )
+		ct.max = limit;
 
-    waveFile.read((char *) bigBuf + ct.now, ct.max - ct.now);
+	waveFile.read( (char *) bigBuf + ct.now, ct.max - ct.now );
 
-    if ((gcount = waveFile.gcount()))
-        {
-            md5_append(&md5, bigBuf + ct.now, gcount);
-            ct.now += gcount;
-            unread -= gcount;
-        }
+	if( (gcount = waveFile.gcount()) )
+	{
+		md5_append( &md5, bigBuf + ct.now, gcount );
+		ct.now += gcount;
+		unread -= gcount;
+	}
 
-    if (unread <= 0 || waveFile.eof() || waveFile.peek() == EOF)
-        {
-            state |= _eof;
-            md5_finish(&md5, (md5_byte_t *) &fmeta.data.stream_info.md5sum);
-        }
+	if( unread <= 0 || waveFile.eof() || waveFile.peek() == EOF )
+	{
+		state |= _eof;
+		md5_finish( &md5, (md5_byte_t*) &fmeta.data.stream_info.md5sum );
+	}
 
-    return ct.now;
+	return ct.now;
 }
+
+
+
 
 // ----------------------------------------------------------------------------
 //    flacReader::reset :
@@ -330,53 +347,55 @@ uint64_t waveReader::fillBuf(uint64_t limit, counter<uint64_t> *midCount)
 //    Returns 0 on success
 // ----------------------------------------------------------------------------
 
-uint16_t flacReader::reset(const string  &filename, int alignUnit)
-{
-    if (is_valid())
-        finish();
 
-    state = 0;
+uint16_t flacReader::reset( const string&  filename, int alignUnit )
+{
+	if( is_valid() )
+		finish();
+
+	state = 0;
 
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
-    set_filename(filename);
-    if (init() != FLAC__FILE_DECODER_OK)
+	set_filename( filename );
+	if ( init() != FLAC__FILE_DECODER_OK )
 #else // flac 1.1.3+
-    if (init(filename) != FLAC__STREAM_DECODER_INIT_STATUS_OK)
+	if ( init( filename ) != FLAC__STREAM_DECODER_INIT_STATUS_OK )
 #endif
-        {
-            ERR("Failed to initialize flac decoder\n");
-            return (1);
-        }
+	{
+		ERR( "Failed to initialize flac decoder\n" );
+		return( 1 );
+	}
 
-    fName = filename;
-    state |= named;
+	fName = filename;
+	state |= named;
 
-    if (! process_until_end_of_metadata())
-        {
-            ERR("Failed to read flac file metadata\n");
-            return (1);
-        }
+	if ( ! process_until_end_of_metadata() )
+	{
+		ERR( "Failed to read flac file metadata\n" );
+		return( 1 );
+	}
 
-    soundCheck(this);
+	soundCheck( this );
 
-    unsent = 0;
-    alignment = alignUnit ? alignUnit :
-                fmeta.data.stream_info.channels *
-                fmeta.data.stream_info.bits_per_sample / 8;
+	unsent = 0;
+	alignment = alignUnit ? alignUnit :
+		fmeta.data.stream_info.channels *
+		fmeta.data.stream_info.bits_per_sample / 8;
 
-    maxFrame = fmeta.data.stream_info.max_blocksize *
-               fmeta.data.stream_info.channels *
-               fmeta.data.stream_info.bits_per_sample / 8;
+	maxFrame = fmeta.data.stream_info.max_blocksize *
+		fmeta.data.stream_info.channels *
+		fmeta.data.stream_info.bits_per_sample / 8;
 
-    if (reserve) delete reserve;
-    reserve = new char[ maxFrame ];
+	if( reserve ) delete reserve;
+	reserve = new char[ maxFrame ];
 
-    pos.max = unread = flacHeader::bytesUncompressed(&fmeta);
-    surplus = (alignment ? unread % alignment : 0);
-    gcount = bufPos = 0;
+	pos.max = unread = flacHeader::bytesUncompressed( &fmeta );
+	surplus = ( alignment ? unread % alignment : 0 );
+	gcount = bufPos = 0;
 
-    return 0;
+	return 0;
 }
+
 
 // ----------------------------------------------------------------------------
 //    flacReader::fillBuf :
@@ -393,57 +412,62 @@ uint16_t flacReader::reset(const string  &filename, int alignUnit)
 //    Returns number of bytes processed.
 // ----------------------------------------------------------------------------
 
-uint64_t flacReader::fillBuf(uint64_t limit, counter<uint64_t> *midCount)
+
+
+uint64_t flacReader::fillBuf( uint64_t limit, counter<uint64_t> *midCount )
 {
-    if (midCount)
-        ct = *midCount;
-    else
-        ct.start = ct.now = 0;
+	if( midCount )
+		ct = *midCount;
+	else
+		ct.start = ct.now = 0;
 
-    ct.max = (sizeofbigBuf - maxFrame) / 12 * 12;
-    gcount = ct.now;
+	ct.max = ( sizeofbigBuf - maxFrame ) / 12 * 12;
+	gcount = ct.now;
 
-    if (unsent)
-        {
-            memcpy(bigBuf + ct.now, reserve, unsent);
-            ct.now += unsent;
-            unsent = 0;
-        }
+	if( unsent )
+	{
+		memcpy( bigBuf + ct.now, reserve, unsent );
+		ct.now += unsent;
+		unsent = 0;
+	}
 
-    if (limit && limit < ct.max)
-        ct.max = limit;
+	if( limit && limit < ct.max )
+		ct.max = limit;
 
-    while (ct.now < ct.max)
-        {
-            if (process_single() == 0)
-                FATAL("Unable to decode flac file.");
+
+	while ( ct.now < ct.max )
+	{
+		if ( process_single() == 0 )
+			FATAL( "Unable to decode flac file." );
 
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7
-            if (get_state() == FLAC__FILE_DECODER_END_OF_FILE)
+		if( get_state() == FLAC__FILE_DECODER_END_OF_FILE )
 #else // flac 1.1.3+
-            if (get_state() == FLAC__STREAM_DECODER_END_OF_STREAM)
+		if( get_state() == FLAC__STREAM_DECODER_END_OF_STREAM )
 #endif
-                {
-                    state |= _eof;
-                    break;
-                }
-        }
+		{
+			state |= _eof;
+			break;
+		}
+	}
 
-    if (unread == 0)
-        state |= _eof;
+	if( unread == 0 )
+		state |= _eof;
 
-    if (/* limit && */ ct.now > ct.max)
-        {
-            if ((unsent = ct.now - ct.max))
-                clearbits(state, _eof);
-            memcpy(reserve, bigBuf + ct.max, unsent);
-            ct.now = ct.max;
-        }
+	if( /* limit && */ ct.now > ct.max )
+	{
+		if( (unsent = ct.now - ct.max ))
+			clearbits( state, _eof );
+		memcpy( reserve, bigBuf + ct.max, unsent );
+		ct.now = ct.max;
+	}
 
-    gcount = ct.now - gcount;
+	gcount = ct.now - gcount;
 
-    return ct.now;
+	return ct.now;
 }
+
+
 
 // ----------------------------------------------------------------------------
 //    flacReader::write_callback :
@@ -456,40 +480,42 @@ uint64_t flacReader::fillBuf(uint64_t limit, counter<uint64_t> *midCount)
 // ----------------------------------------------------------------------------
 // (more or less verbatim from Dave Chapman's dvda-author::audio.c::flac_write_callback())
 
+
 ::FLAC__StreamDecoderWriteStatus flacReader::write_callback(
-    const ::FLAC__Frame *frame, const FLAC__int32 *const buf[])
+	const ::FLAC__Frame *frame, const FLAC__int32 * const buf[] )
 {
 
-    uint64_t i;
-    uint32_t frameLen = frame->header.blocksize * frame->header.channels *
-                        frame->header.bits_per_sample / 8;
+	uint64_t i;
+	uint32_t frameLen = frame->header.blocksize * frame->header.channels *
+		frame->header.bits_per_sample / 8;
 
-    if (ct.now + frameLen > sizeofbigBuf)
-        FATAL("Flac read buffer overflow.");
+	if( ct.now + frameLen > sizeofbigBuf )
+		FATAL( "Flac read buffer overflow." );
 
-    i = ct.now;
+	i = ct.now;
 
-    if (frame->header.bits_per_sample == 24)
-        for (uint samp = 0; samp < frame->header.blocksize; samp++)
-            for (uint chan = 0; chan < frame->header.channels; chan++)
-                {
-                    bigBuf[i++] = (buf[chan][samp] & 0xff);
-                    bigBuf[i++] = (buf[chan][samp] & 0xff00) >> 8;
-                    bigBuf[i++] = (buf[chan][samp] & 0xff0000) >> 16;
-                }
-    else
-        for (uint samp = 0; samp < frame->header.blocksize; samp++)
-            for (uint chan = 0; chan < frame->header.channels; chan++)
-                {
-                    bigBuf[i++] = (buf[chan][samp] & 0xff);
-                    bigBuf[i++] = (buf[chan][samp] & 0xff00) >> 8;
-                }
+	if( frame->header.bits_per_sample == 24 )
+		for( uint samp = 0; samp < frame->header.blocksize; samp++ )
+			for( uint chan = 0; chan < frame->header.channels; chan++ )
+			{
+				bigBuf[i++] = ( buf[chan][samp] & 0xff );
+				bigBuf[i++] = ( buf[chan][samp] & 0xff00 ) >> 8;
+				bigBuf[i++] = ( buf[chan][samp] & 0xff0000 ) >> 16;
+			}
+	else
+		for( uint samp = 0; samp < frame->header.blocksize; samp++ )
+			for( uint chan = 0; chan < frame->header.channels; chan++ )
+			{
+				bigBuf[i++] = ( buf[chan][samp] & 0xff );
+				bigBuf[i++] = ( buf[chan][samp] & 0xff00 ) >> 8;
+			}
 
-    unread -= (i - ct.now);
-    ct.now = i;
+	unread -= ( i - ct.now );
+	ct.now = i;
 
-    return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
+	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
+
 
 // ----------------------------------------------------------------------------
 //    flacReader::metadata_callback :
@@ -500,11 +526,13 @@ uint64_t flacReader::fillBuf(uint64_t limit, counter<uint64_t> *midCount)
 //    Arguments: see flac API documentation
 // ----------------------------------------------------------------------------
 
-void flacReader::metadata_callback(const ::FLAC__StreamMetadata *meta)
+
+void flacReader::metadata_callback( const ::FLAC__StreamMetadata *meta )
 {
-    if (meta->type == FLAC__METADATA_TYPE_STREAMINFO)
-        memcpy(&fmeta, meta, sizeof(FLAC__StreamMetadata));
+	if( meta->type == FLAC__METADATA_TYPE_STREAMINFO )
+		memcpy( &fmeta, meta, sizeof( FLAC__StreamMetadata ) );
 }
+
 
 // ----------------------------------------------------------------------------
 //    flacReader::error_callback :
@@ -515,15 +543,17 @@ void flacReader::metadata_callback(const ::FLAC__StreamMetadata *meta)
 //    Arguments: see flac API documentation
 // ----------------------------------------------------------------------------
 
-void flacReader::error_callback(::FLAC__StreamDecoderErrorStatus status)
+
+void flacReader::error_callback( ::FLAC__StreamDecoderErrorStatus status )
 {
-    ERR(_f("flac %s API error %d: '%s'\n", FLAC__VERSION_STRING, status,
-           (const char *[])
-    {
-        // from FLAC/stream_decoder.h
-        "FLAC__STREAM_DECODER_ERROR_STATUS_LOST_SYNC",
-        "FLAC__STREAM_DECODER_ERROR_STATUS_BAD_HEADER",
-        "FLAC__STREAM_DECODER_ERROR_STATUS_FRAME_CRC_MISMATCH",
-        "FLAC__STREAM_DECODER_ERROR_STATUS_UNPARSEABLE_STREAM"
-    } [status]));
+	ERR( _f( "flac %s API error %d: '%s'\n", FLAC__VERSION_STRING, status,
+		(const char*[]){
+			// from FLAC/stream_decoder.h
+			"FLAC__STREAM_DECODER_ERROR_STATUS_LOST_SYNC",
+			"FLAC__STREAM_DECODER_ERROR_STATUS_BAD_HEADER",
+			"FLAC__STREAM_DECODER_ERROR_STATUS_FRAME_CRC_MISMATCH",
+			"FLAC__STREAM_DECODER_ERROR_STATUS_UNPARSEABLE_STREAM"
+		} [status] ) );
 }
+
+

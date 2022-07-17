@@ -1,0 +1,159 @@
+
+x Xtag for chroma subsampling mode
+x document Xtag in manpage
+
+x Error message for "cannot make progressive from interleaved" should 
+  suggest using 'ilace=XXX_only' modes.
+
+x 7-9 tap Lanczos-windowed sinc kernel
+x independent kernels for X and Y scaling
+
+- Instead of simple matte-padding of off-frame pixels (for large kernels),
+   do proper tiling --- tile the matte+frame, as bounded by the projection
+   of the target back to the source.
+  (i.e. Source size is the tile size, even though some of the tile may be
+   filled with matte.)
+  [hmm... on second/third thought, this is probably unnecessary and a poorer
+   way to do it anyway.]
+
+x Fix subsampling for NTSC DV  ---- horizontal shift in chroma.
+  [...unless Poynton's book is *wrong*.]
+  [Yes, Poynton's was wrong.  See his errata.]
+
+- Fix the rounding errors in scaler-matto fixed-point calculations:
+
+x   1)  Negative doubles should get "- 0.5" to round properly when
+        being converted to fixed-point.
+x   2)  When unfixing, stuff with ">>(2*FSHIFT)" should have had an
+        offset of "(1<<(2*FSHIFT-1))" pre-applied, *not* "2*(1<<(FSHIFT-1))"
+        (i.e. *not* just "2*FHALF").
+-   3)  Shouldn't negative fixed-point quantities, like <128 chroma samples,
+        get rounded inward (upward), not downward?  (When UNFIXing after
+   	the convolution)
+       [not right now --- would make UNFIX op much slower?]
+
+  (See if these fixes have any affect on the chirp tests....)
+
+x Warn about chroma-mangling when casting interlaced input to progressive,
+   when chroma is vertically subsampled.  (But TOP_ONLY or BOTTOM_ONLY is ok.)
+
+x Warn about chroma-mangling when casting progressive input to interlaced,
+   when chroma is vertically subsampled.
+
+x Warn/Inform when fake progressive mode being used.
+
+x Both read and write streams in extra chroma ss modes.
+
+x Add more presets:  DVD_WIDE, DV, DV_WIDE
+
+x let active region geometry strings use framesize as a default region size,
+   so that one can specify "active=+4+0" to just do shifting.
+
+x recognize other XXX:1001 framerates as NTSC norm (and similar for PAL).
+
+x add CVD preset
+
+x (add note to aspect webpage about pedantic square pixel issues.)
+
+x display more/better info about scaler engine configuration to user.
+
+---------------- v 0.6.1 -------------------
+
+x Update to work with YUV4MPEG2(v1).
+
+---------------- v 0.7.0 -------------------
+
+x Make it clear that cl options are evaluated in order, and that some need
+   to be evaluated before others (-I before -O...).
+x (Maybe it would be better to evaluate all -I before all -O ??)
+   [Yes, eval -I arguments before -O arguments.]
+
+x Create a JIT-assembled scaling engine using GNU Lightning.
+   [Tried it --- instruction stream was too long and blows out
+     instruction cache for larger framesizes.]
+
+x Improve description/explanation of "-I ilace=TOP/BOTTOM_ONLY" in manpage.
+
+---------------- v 0.7.1 -------------------
+
+x Document the CVD preset in manpage.
+
+x Describe the preset settings in detail (what options do they set?) in
+  the manpage.
+
+x Change version numbering from a.b.c to b.c.
+
+x change default scaler options to high-quality sinc.
+    --> sinc:6
+
+x Finish *proper* update to work with YUV4MPEG2(v2).
+
+---------------- v 8.0 -------------------
+
+x Nicholas Boos wants a gaussian kernel and "fourth-order cubic" (?)
+   --> well, he gets the 4th-order cubic so far.
+
+x 'cubicK4' is the *new* default kernel, and really make it so.
+
+---------------- v 8.1 -------------------
+
+x Use 64-bit intermediate values in ratio operations (to avoid overflow).
+
+x Use floats in ratio simplification (to avoid overflow).
+
+x Remove eXecute bit from manpage (reported by Don Mullis).
+
+x Add presets for ATSC 720p, 1080i, 1080p.
+
+---------------- v 9.0 -------------------
+
+o non-fake ilace options should undo preceding fake ilace options.
+
+o fix bug:  box kernel coefficients are not correctly normalized.
+
+o fix bug:  coefficients with two maximum should share any norm correction
+
+o add 'blur' option to scaling engine.
+
+o Nicholas Boos wants a gaussian kernel and "fourth-order cubic" (?)
+
+o check the behavior of kernel support calculation in scaler-matto.C
+   ...currently, 'supp' refers to 1/2 of support (one side or other);
+      perhaps calcs should deal with 2.0*supp instead, to alleviate
+      rounding down too much???
+
+o add presets for (S)VCD stills which accounts for overscan...
+  (perhaps do same for DVD/etc... "full-frame" mode?)
+   -O preset=VCD_STILL,hi,ovscan:10%
+   -O preset=SVCD_STILL,lo
+
+o add "-O dar=XXX:YYY" option; calculate SAR from framesize + DAR.
+
+o take out the CPU_OPT flag in Makefile, or at least condition it on the
+   actual processor/compile environment.  (powerpc -> uname -m = "ppc")
+
+o figure out what "3rd order", etc, really means and straighten out comments.
+
+o Make the norm-from-framerate calculation/heuristic more lenient.
+   (Try guess_mpeg_framerate, and see if any of those match.)
+
+o Double-check the interlacing/chroma-subsampling constraints (has this
+   been done already?).  Vertical subsampling must be either frame-based
+   or field-based.
+
+o Add a "-X" expert flag; turn certain conditions (chroma-mangling) into
+   fatal errors.
+
+o Make the "Target frame size defaulting to scaled source size" more
+   lenient --- i.e. if scaled source size is non-integral, round it.
+
+o Don't create (alpha) scalers if they will never be used.
+
+o Warn (in messages and manpage) about loss of 1-field duration when
+   swapping-interlacing.
+
+o Should bg chroma be used in output when input is MONO or -S mode=mono??
+   (Currently, it is in first case, but is not in second case!)
+   ...and should it be the src BG chroma, or the tgt BG chroma?
+
+

@@ -33,27 +33,27 @@ using namespace std;
 #include "util.h"
 
 
-bool fs_MakeDirs(const fs::path &dirName);
+bool fs_MakeDirs( const fs::path& dirName );
 string fs_GetTempDir();
-bool fs_DeleteDir(const fs::path &dirName);
-size_t fs_GetAllDirs(const string &dirName, vector<string> &dirs);
-size_t fs_DirSize(const fs::path &dirName);
-bool fs_validPath(const fs::path   &filename);
-void fs_fixSeparators(char *path);
+bool fs_DeleteDir( const fs::path& dirName );
+size_t fs_GetAllDirs( const string& dirName, vector<string>& dirs );
+size_t fs_DirSize( const fs::path& dirName );
+bool fs_validPath( const fs::path&  filename );
+void fs_fixSeparators( char * path );
 
 class _wxStopWatch
 {
 public:
-    int m, s;
+	int m, s;
 
-    void pause()
-    {
-        // Pause();
-        // m = Time() / 60000;
-        // s = ( Time() % 60000 ) / 1000;
-        // INFO( _f( "Elapsed time=%d:%02d\n", m, s ) );
-        // SCRN( INFO_TAG << _f( "Done - %d min %02d sec.\n", m, s ) );
-    }
+	void pause()
+	{
+		// Pause();
+		// m = Time() / 60000;
+		// s = ( Time() % 60000 ) / 1000;
+		// INFO( _f( "Elapsed time=%d:%02d\n", m, s ) );
+		// SCRN( INFO_TAG << _f( "Done - %d min %02d sec.\n", m, s ) );
+	}
 
     void Start() {}
 };

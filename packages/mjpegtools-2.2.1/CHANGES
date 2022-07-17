@@ -1,0 +1,55 @@
+Changes to lavtools-1.2
+
+- A.Stevens Merged in improvements to mpeg2enc plus useful additional
+tools.
+
+- G.Ziegler Initial merge of mmx-ed JPEG libs and movtar support.
+            Detached jpeg-6b-mmx and libmovtar into own packages.
+
+Changes to lavtools-1.1
+
+- added MPEG video and audi encoders for usage with
+  AVI/Quicktime files and Edit lists
+
+- lavplay now can not more output files from edit lists,
+  this is taken over by lavtrans in the utils directory
+
+- lavrec: different decimations in x and y direction
+          possibility to capture sub areas
+          time lapse
+
+- lavplay: "zoom to fit"
+
+- xlav: better user interface
+
+- device names for video/audio/mixer device may be set
+  by environment variables
+
+- much more small things
+
+
+Changes to lavtools-1.0
+
+- Full Quicktime support in recording and playing
+
+- Support of multiple files to overcome 2 GB limit
+
+- perfect audio/video synchronization in recording and playback
+  for lip-synchronous videos even after hours of playing.
+
+- single frame (is it called stop motion?) capture
+
+- GUI to lavplay - use your linux PC as a great video recorder
+
+- support of (simple) editing in the GUI: cut your video clips
+  as you like
+
+- lavplay supports concatenating video clips, splitting off audio
+  separating video into single images
+
+- option in lavrec to wait for user input before starting
+
+- support for other audio input sources in lavrec
+
+- steering of lavplay (forward, backward, pause etc.) with commands
+  (for real command line hardliners)

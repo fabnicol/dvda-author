@@ -1,0 +1,18 @@
+aenc encodes WAV Files to MPEG-1 layer 2 audio streams.
+
+DISCLAIMER:
+
+This software is from the MPEG/audio software simulation group
+I have only changed the input routine so that Edit List
+input is accepted and introduced command line params
+
+USAGE:
+
+Usage: aenc [params] inputfiles
+   where possible params are:
+   -b num     Bitrate in KBit/sec (default: 224 KBit/s)
+   -o name    Outputfile name (REQUIRED!)
+
+Input files MUST have a sampling frequency of 48 KHz, 44.1 KHz or 32 KHz
+
+Sampling rate and mono/stereo setting is taken from the input WAV file

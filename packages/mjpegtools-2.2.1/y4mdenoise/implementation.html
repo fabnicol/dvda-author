@@ -1,0 +1,369 @@
+<html>
+<title>Design and implementation of the new denoiser</title>
+<body bgcolor=ffffff text=000000 link=ff0000 vlink=ff00ff alink=33ff00>
+<center><h1>Design and implementation of the new denoiser</h1></center>
+<p>In theory, the design of the denoiser is pretty simple; getting it
+  to perform was the hard part.
+<p>It maintains a list of the last several frames, called <i>reference
+  frames</i>.  Each reference frame is composed of <i>reference
+  pixels</i>, which accumulate the values of several pixels.
+  Every time a pixel in one frame is proven to be a moved instance of a
+  pixel in another frame, the reference-pixel incorporates its value,
+  and produces an average value for the pixel.  The oldest reference
+  frame, therefore, gets a pretty good idea of the real value of every
+  pixel, but of course output is delayed by the number of reference
+  frames.
+<p>It compares every pixel in the current frame with all pixels
+  in the previous frame, within a given search-radius, and any pixels
+  that are equal within the given error tolerance are assumed to be the
+  same pixel.  It builds contiguous regions of matched pixels, with
+  the motion vector that's common to the region.
+<p>If there are too many matches for a particular area of the image, or
+  if the largest contiguous match in the area is too large, it's applied
+  to the image right then, and then searching continues.  Applying a
+  region means to flood-fill the region (to make it the largest size
+  possible, and to flesh out its borders to pixel accuracy), then
+  hooking up the corresponding reference-frame pixels to the new frame
+  at their new location, and incorporating the values of all the new
+  pixels into the corresponding reference pixels.  Doing this before
+  the end of searching the frame means the affected areas don't have
+  to be part of the search any more, helping to reduce the amount of
+  work needed to search the rest of the frame.
+<p>At the end of the frame, matches are applied to the new frame, from
+  the largest to the smallest, discounting any areas that have
+  already been resolved.  Any new-frame pixels not resolved by now
+  are considered to be new information, and a new reference-pixel is
+  generated for each one.
+<p>The search is not actually done one pixel at a time; it's done in
+  terms of pixel groups.  An entire pixel-group has to match for any
+  match to be found, but all possible pixel-groups are tested (i.e. all
+  possible overlaps are checked).  Using pixel-groups helps to establish
+  a minimum standard for what may be considered a match, in order to
+  avoid finding lots of really small (and really useless) matches.
+  The flood-fill still extends the matches out to pixel accuracy,
+  so the only details that can't be found by motion-detection are the
+  ones smaller than a pixel-group, which is not a bad sacrifice for
+  performance's sake.
+<p><br>Table of contents:
+<ul>
+  <li><a href="#Overview">Overview</a>
+  <li><a href="#Implementation">Implementation</a>
+  <ul>
+	<li><a href="#ImplementationSkipList">SkipList, Set</a>
+	<li><a href="#ImplementationRegion2D">Region2D, SetRegion2D,
+	  BitmapRegion2D</a>
+	<li><a href="#ImplementationReferenceFrame">Pixel, ReferencePixel,
+		ReferenceFrame</a>
+	<li><a href="#ImplementationMotionSearcher">MotionSearcher,
+	  SearchWindow, SearchBorder</a>
+    <ul>
+	  <li><a href="#ImplementationMotionSearcherVersion1">Version 1</a>
+	  <li><a href="#ImplementationMotionSearcherVersion2">Version 2</a>
+    </ul>
+  </ul>
+  <li><a href="#FutureExtensions">Future Extensions</a>
+  <!-- <li><a href="#XXX">XXX</a> -->
+</ul>
+
+<a name="Overview"><h1>Overview</h1>
+<p><tt>main.c</tt> parses command-line options and the YUV stream header.
+  <tt>newdenoise.cc</tt> converts between YUV format and the denoiser's
+  internal format, and calls the denoiser.  <tt>MotionSearcher.hh</tt> is
+  the denoiser's top-level file.  <tt>SearchWindow.hh</tt> and
+  <tt>SearchBorder.hh</tt> are two high-level pieces of the denoiser that
+  were broken out into their own classes, for use in other contexts.
+  <tt>ReferenceFrame.hh</tt> contains the definitions for pixels,
+  reference pixels, and reference frames.
+  <tt>Region2D.hh</tt> is the base class for 2-dimensional region classes;
+  <tt>SetRegion2D.hh</tt> implements a region using a Set of horizontal
+  extents, and <tt>BitmapRegion2D.hh</tt> uses an array of integers to
+  implement a bitmap.  <tt>Set.hh</tt> is much like the STL "set" class,
+  except that it's based on <tt>SkipList.hh</tt>.  <tt>Allocator.hh</tt>,
+  <tt>DoublyLinkedList.hh</tt>, <tt>Limits.hh</tt>, <tt>Status_t.h</tt>, and
+  <tt>TemplateLib.hh</tt> contain other basic definitions, most of which
+  should be standardly available; I'm just not sure they're standardly
+  available on all supported platforms.
+<p>The denoiser classes are highly templated and highly reconfigurable;
+  <tt>newdenoise.cc</tt> uses them in a way suited to YUV420P video.
+  Intensity pixels are one 8-bit unsigned integer, color pixels are
+  two 8-bit unsigned integers, intensity pixel-groups are 4x2, color
+  pixel-groups are 2x2, intensity is denoised separately from color, and
+  the search-radius used for color is proportional to the relative size
+  of the intensity and color planes (and may, in effect, be
+  rectangular).
+<br>
+
+<a name="Implementation"><h1>Implementation</h1></a>
+<p><tt>newdenoise.cc</tt> gives a good top-level view of how to use the
+  denoiser for YUV420P video.  Although the top-level class of the
+  denoiser is <tt>MotionSearcher</tt>, a small army of classes is
+  responsible for implementing all the necessary pieces.
+
+<a name="ImplementationSkipList"><h2>SkipList, Set</h2></a>
+<p><tt>SkipList</tt> is a highly optimized version of the famous
+  probabilistically-balanced logarithmic-complexity sorted list
+  structure.  Skip lists are well-described in other documents.  Note
+  that this skip-list uses the "fix the dice" and "search finger"
+  extensions described in the literature, and its p value is
+  <sup>1</sup>/e, which maximizes speed &amp; causes nodes to have an
+  average of 1.71 forward pointers.  (A tree node would have to have
+  2 pointers, one for left and one for right, so a skip-list is more
+  space-efficient than a tree structure also.)
+<p>One big advantage of skip-lists over tree structures, given the way
+  the denoiser uses them, is that iterator forward/backward operations
+  are small-constant complexity; they're implemented by a single pointer
+  dereference.  The typical tree-structure iterator forward/backward is
+  logarithmic.  Iterator forward/backward is used constantly throughout
+  the denoiser.
+<p><tt>Set</tt> is much like STL's <tt>set</tt> class, except that it's
+  based on <tt>SkipList</tt>.
+
+<a name="ImplementationRegion2D"><h2>Region2D, SetRegion2D,
+	BitmapRegion2D</h2></a>
+<p><tt>SetRegion2D</tt> was the first region class written for the
+  denoiser; later, <tt>Region2D</tt> and <tt>SetRegion2D</tt> were split
+  into two classes, and <tt>BitmapRegion2D</tt> was made a subclass of
+  <tt>Region2D</tt>.  It was not a perfect separation, and <tt>Region2D</tt>
+  remains a sketch of what I'd like to see, rather than a completed
+  product.  I could solve its problem using virtual methods, but that
+  would prevent a lot of function-inlining from happening, and for
+  performance reasons I don't want to do that.
+<p><tt>SetRegion2D</tt> uses <tt>Set</tt> to implement regions as a set of
+  horizontal extents, i.e. as y/x-start/x-end triplets.  Quite a bit of
+  work went into writing efficient union/subtraction methods.
+<p><tt>BitmapRegion2D</tt> uses an array of integers, treated like a bit
+  field, to implement regions.  It's faster to use them in some cases,
+  though they're a lot less memory-efficient than <tt>SetRegion2D</tt>,
+  and have to be created with a maximum size.
+
+<a name="ImplementationReferenceFrame"><h2>Pixel, ReferencePixel,
+	ReferenceFrame</h2></a>
+<p>The <tt>Pixel</tt> class is templated with a numeric type for storing
+  pixel values, the number of dimensions in the pixel's value, and
+  a numeric type to use when doing tolerance calculations.  The rule of
+  thumb is, the tolerance type should be able to hold the value of two
+  pixel-value types multiplied together.
+<p>For YUV420P video, a Y pixel is
+  <tt>Pixel&lt;uint_8,1,int32_t&gt;</tt> and a color (i.e. CbCr) pixel
+  is <tt>Pixel&lt;uint8_t,2,int32_t&gt;</tt>.
+<p>The <tt>Pixel</tt> class contains methods to get and set the value of
+  pixels, and to compare two pixels within a given tolerance.  It also
+  contains methods to generate tolerance values from integers, in case
+  the pixel type has special rules.  (For instance, the tolerance value
+  for a color pixel is the square of its integer counterpart, since CbCr
+  color is 2-dimensional.)
+<p>The <tt>ReferencePixel</tt> is templated much like the <tt>Pixel</tt>
+  class.  It holds a sum of pixel values, and the number of pixel values
+  summed so far.  It also counts the number of reference-frames that
+  point to it.  It's intended to represent a single pixel that's found
+  to exist over several frames, and to produce an average value for the
+  pixel, so as to smooth away errors.
+<p>The <tt>ReferenceFrame</tt> is a rectangular array of
+  <tt>ReferencePixel</tt>s, representing each frame and the parts of the
+  image that it has in common with other frames.
+
+<a name="ImplementationMotionSearcher"><h2>MotionSearcher,
+	SearchWindow, SearchBorder</h2></a>
+<p>OK, so much for the easy part.
+<p><tt>MotionSearcher</tt> maintains a circular list of
+  <tt>ReferenceFrame</tt>s.  To make space for a new frame, the oldest
+  frame is returned to the client.
+<p><tt>AddFrame()</tt> is responsible for processing new frames.  It does
+  so in several stages.  First, it looks for pixels that haven't moved,
+  i.e. new pixels whose corresponding reference-pixels are within the
+  error tolerance.  That resolves most of the average frame.
+<p>Next, it detects moved areas, i.e. parts of the new frame that match
+  parts of the previous frame except that they've moved.
+<p>It could iterate through the frame in any order, but to keep the
+  implementation of <tt>SearchWindow</tt> and <tt>SearchBorder</tt> simple
+  and efficient, it iterates through the frame in a zigzag pattern,
+  i.e. starting at the upper-left corner, it moves right to the edge,
+  then down a line, then left to the edge, then down a line, and so on
+  to the end of the frame.
+<p>The search-window consists of the reference-frame's pixels,
+  partitioned into search-window cells.  Each cell contains a
+  pixel-group (i.e. a rectangular array of pixels, containing the
+  minimum pixel pattern that can be searched for).  The pixel-groups
+  in each cell overlap other cells; although the motion-search is done
+  in terms of pixel-groups, it still looks at all all possible
+  combinations of pixels that could form a pixel-group.
+<p>The pixel-sorter is a tree structure that partitions pixel-groups
+  (actually, search-window cells, which contain a pixel-group).
+  The total number of dimensions of a pixel-group is the number of
+  pixels in the group, times the dimension of a pixel.  For the
+  YUV420 implementation, 4x2 pixel-groups are used for intensity pixels,
+  which consist of 1 dimension, for a total of 8, and 2x2 pixel groups
+  are used for color pixels, which consist of 2 dimensions, again for a
+  total of 8.  Partitioning n dimensions requires 2<sup>n</sup>
+  branches per tree node; in this example, that's 256.  (So if the
+  pixel-sorter tree is well-balanced, then descending to a child branch
+  cuts out all but <sup>1</sup>/256 of the remaining pixel-groups, which
+  is supposed to make searching for matching pixel-groups very efficient.)
+  Search-window cells are inserted into the pixel-sorter tree, and
+  descend into child branches based on their value.  But if any of the
+  pixel-group's pixel dimension values are within the error tolerance of
+  the split-point for that dimension in the current pixel-sorter branch
+  node, then that pixel-group won't fit neatly into any of the children
+  nodes, and thus the search-window cell has to stay at that level of
+  the tree.  (Alternately, a copy of it could be placed in multiple
+  children, but this design opts not to do that.)  Each pixel-sorter
+  branch node maintains a doubly-linked list of search-window cells that
+  are attached to it.  As an optimization, once a search-window cell is
+  inserted into the pixel-sorter, that result is used for the rest of
+  the frame, as the search-window cell is added to and removed from the
+  pixel-sorter, depending on whether that search-window cell is within
+  the search radius of the current new-frame pixel-group.
+<p>To look for matches between the current pixel-group from the new
+  frame, and all pixel-groups from the previous frame within the search
+  radius, one just matches the current pixel-group to every
+  search-window cell attached to the pixel-sorter branch nodes, and
+  descend the tree according to the new pixel-group's values.  (One
+  optimization is possible here: If the search-window cell was forced
+  to stop at that level of the pixel-sorter because one of its pixel
+  values was within the tolerance of the split value of that
+  pixel-sorter branch node, and none of the current pixel-group's
+  pixel values are within twice the tolerance of the split value
+  of that pixel-sorter branch node, then we can save time and avoid the
+  comparison, for no search-window cell that had to stop at that level
+  could possibly intersect the new pixel-group.  This especially helps
+  in the presence of low error thresholds.)
+<p>As matches are found, the search-border builds contiguous regions of
+  matches that all have the same motion-vector.  (The "border" is the
+  border between the searched area and the not-yet-searched area.)
+  It's designed to move through the regions of matches in a zigzag
+  pattern, and constantly maintain a list of all regions that would
+  be contiguous with the current new-frame pixel-group.  When a match
+  is found, all such regions with the same motion-vector are now
+  contiguous, once the current pixel-group's area is added.
+<p>The search-border is implemented by sets of startpoints/endpoints.
+  Every horizontal extent (that could potentially intersect a
+  new-frame pixel-group) of every region under construction along the
+  border is represented in the set of startpoints/endpoints.  The
+  search-border also has two arrays of set iterators, one for
+  startpoints, one for endpoints.  As the search zig-zags across the
+  new frame, these two arrays of iterators keep track of all regions
+  that will be contiguous with the current new-frame pixel-group, and
+  all regions that are no longer contiguous with the current new-frame
+  pixel-group; by doing this, it's very efficient to maintain the set
+  of border regions that would be contiguous with the current new-frame
+  pixel-group.
+<p>The general idea is to analyze the entire frame like this, then run
+  through the found regions from largest to smallest, and apply them to
+  the new frame.  This can be a lot of data, too much in fact.  To
+  limit the search to a reasonable complexity, two throttles exist --
+  one on the number of matches in the area of the current pixel-group,
+  and one on the size of the the largest match in the area of the
+  current pixel-group.  If there are too many regions in the area,
+  or if the biggest region in the area is too large, then the best
+  region found so far is chosen, all other regions in the area are
+  thrown away, and that best region is applied to the new frame right
+  then.  This will eliminate pixel-groups from consideration in the
+  search-window and pixel-sorter, which will save time in the search.
+  This will also resolve new-frame pixels; only pixel-groups that
+  contain nothing but unresolved pixels can be searched for in the
+  pixel-sorter, which also saves time in the remainder of the search.
+  Only after the entire frame is analyzed are regions applied from
+  largest to smallest.
+<p>Before a match is applied to the new frame, it's flood-filled in
+  order to resolve its entire extent.  Searching is done in terms of
+  pixel-groups, so it won't be able to find any detail that's smaller
+  than a pixel-group.  Also, the region may not have been completed, if
+  it was chosen because a throttle value was exceeded, so its full
+  extent is not known.  Plus, parts of that match may have already
+  been resolved.  The flood-fill takes care of all of these situations.
+<p>Any pixels not found by the above searches are declared to be new
+  information, and new reference-pixels are allocated for all such
+  new-frame pixels.
+<p>The whole point of this design is to use as many high-level-design
+  features as possible to reduce the amount of work necessary to perform
+  the job.  It attempts to accomplish this with a heavy reliance on
+  data structures over more mathematical algorithms, a drive to
+  locate sub-linear/sub-quadratic algorithms for common tasks (e.g.
+  the pixel-sorter tree, which reduced quadratic to logarithmic, and
+  the iterator arrays in the search-border, which reduced logarithmic
+  to small-constant), and to use data structure design to understand
+  the problem in ways that directly lead to efficient implementations.
+
+<a name="ImplementationMotionSearcherVersion1"><h3>Version 1</h3></a>
+<p>The above discussion describes the intent of the first version of
+  the denoiser (which I'm calling version 0).  However, the very last
+  high-level change I made to it, right before releasing it under GPL,
+  was defective!  In effect, the match-count throttle was always 1, and
+  the best match was applied every pixel-group!  It was intended
+  to be a performance increase, and it was, but obviously it broke the
+  code...except that this bugged change also vastly increased the
+  quality!  There is every reason in the world to believe that such a
+  bug should have broken the denoiser's quality, except that it didn't.
+  What a stroke of luck!
+<p>I decided to take the implications of this accidental discovery to
+  the next logical level.  Before, I wouldn't have believed that the
+  best match could be found without amassing a large list of
+  possibilities from several pixel-group searches.  Now, each match
+  found is flood-filled, and the first one to exceed the match-size
+  throttle is applied to the image right then and there, and all other
+  possibilities aren't considered.  So there is no big list of regions
+  to try at the end.
+<p>This version performed better than the bugged version, which is
+  surprising enough, but the quality was vastly improved too.
+<p>Parallel processing was added at this time too.  Color can be
+  denoised in a thread separate from intensity denoising, and
+  reading/writing frames can be moved into separate threads too.
+
+<a name="ImplementationMotionSearcherVersion2"><h3>Version 2</h3></a>
+<p>If match-size-throttling is in use (which is usually is), now it
+  picks the largest such match, instead of the first match that's larger
+  than the throttle size.  This led to a pretty serious increase in quality!
+<p>Parallel processing was modified so that the reader/writer threads can be
+  used independently of the denoiser threads.  This may not be very useful,
+  but there was no good reason to prevent it.
+
+<!--
+<a name="ImplementationXXX"><h2>XXX</h2></a>
+<p>
+-->
+
+<a name="FutureExtensions"><h1>Future Extensions</h1></a>
+<p>The motion-detector is highly parallel, and a better multi-threaded
+  version should be written.  So far, color and intensity can be
+  analyzed separately.  But a thread could conceivably denoise one half of
+  the remaining area of an image plane.  The pixel-sorter would have to
+  become its own class for this to work, since there'd now be more than
+  one per search-window, and the search-window would have to keep
+  pixel-sorters from colliding with each other (i.e. the areas being
+  searched by each can't overlap).  Also, depending on how efficient
+  the thread-synchronization methods are, the pixel-sorter could feed
+  results to the flood-filling stage.  Perhaps both approaches can be
+  taken.  Anything that allows the denoiser to fill up processors is
+  probably worth trying.
+<p>The motion-detector should probably be able to find matches in
+  more than one previous frame.  I'd probably want to avoid later-frame
+  matches that occur in earlier frames, for efficiency's sake.
+<p>The search-border should allow the insertion of new regions.  It
+  would need a method, implemented somewhat like <tt>AddNewMatch()</tt>,
+  to generate a startpoint/endpoint for every horizontal extent in the
+  region that intersected the border area.  This could be used to make
+  a <tt>ChooseBestActiveRegion()</tt> that eliminated flood-filled areas
+  from the other regions on the border and then put those regions back
+  into the border.  I don't know if this would speed things up, though.
+<p>I think the search-border can be used to implement removal of
+  transient phenomena, e.g. film lint/scratches, LaserDisc rot,
+  analog-broadcast static, etc.  After the new frame has had motion
+  detection run on it, look at the 2nd-to-oldest frame, and build
+  contiguous regions of pixels that have the same reference count.
+  (Film lint/scratches will be limited to 1 reference count; I think
+  LaserDisc rot can extend over several frames.)  If a region has
+  the right shape and the expected contents for a known sort of
+  artifact, it's declared to be an instance of that artifact, and a
+  blend involving the next/previous frame is used to generate the values
+  of pixels affected by the artifact.  We'll probably want to take the
+  result of motion-detection into account too.
+<p>I think the search-window could replace the radius-search in
+  yuvmedianfilter.  It could even do motion-detection for mpeg2enc.
+
+<p>Copyright (C) 2004-2009 by
+  <a href="mailto:ulatec@users.sourceforge.net">Steven Boswell</a>.
+  All rights reserved, and all that stuff.
+<br>Released to the public under the GNU General Public License v2.
+  See the file COPYING for more information.
+</body>
+</html>

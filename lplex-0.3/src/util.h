@@ -58,9 +58,9 @@ namespace fs = std::filesystem;
 
 
 template <typename... Args>
-static inline string _f(const char *format, Args... args)
+static inline string _f(const char* format, Args... args)
 {
-    char buffer[5128] = {0};
+    char buffer[5128]={0};
     sprintf(buffer, format, args...);
     return string(buffer);
 }
@@ -75,26 +75,21 @@ string toUpper(const string &s);
 #define Right(X, Y)  (Y < X.length() ? X.substr( X.length() - Y) : string(""))
 
 // trim from start (in place)
-static inline void ltrim(std::string &s)
-{
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch)
-    {
+static inline void ltrim(std::string &s) {
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
         return !std::isspace(ch);
     }));
 }
 
 // trim from end (in place)
-static inline void rtrim(std::string &s)
-{
-    s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch)
-    {
+static inline void rtrim(std::string &s) {
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
         return !std::isspace(ch);
     }).base(), s.end());
 }
 
 // trim from both ends (in place)
-static inline void trim(std::string &s)
-{
+static inline void trim(std::string &s) {
     ltrim(s);
     rtrim(s);
 }
@@ -106,71 +101,71 @@ static inline void trim(std::string &s)
 
 struct byteRange
 {
-    uint8_t *start;
-    uint16_t len;
+	uint8_t *start;
+	uint16_t len;
 };
 
-void outputhexraw(unsigned char *buf, int n);
-void outputhex(unsigned char *buf, int n, char *title, int address);
-int otherThan(const char c, unsigned char *buf, int n);
-string hexToStr(const unsigned char *buf, int n, int w = 16);
-int strtomd5(md5_byte_t *md5Str, const char *txt);
-size_t filesize(const char *filename);
-string sizeStr(uint64_t size);
+void outputhexraw(unsigned char *buf,int n);
+void outputhex(unsigned char *buf,int n,char *title, int address);
+int otherThan( const char c, unsigned char *buf, int n);
+string hexToStr( const unsigned char *buf, int n, int w=16 );
+int strtomd5( md5_byte_t *md5Str, const char *txt );
+size_t filesize( const char * filename );
+string sizeStr( uint64_t size );
 //char device( const char * filename );
-dev_t deviceNum(const char *filename);
-size_t statsize(const char *filename);
+dev_t deviceNum( const char * filename );
+size_t statsize( const char * filename );
 void _pause();
 int progress(int val, int action);
 
-// generic contexts for incremental processes
+											// generic contexts for incremental processes
 enum
 {
-    _none,
-    _isNew,
-    _openIt,
-    _initIt,
-    _isOpen,
-    _reopen,
-    _addThis,
-    _setThis,
-    _endIt,
-    _closeIt
+	_none,
+	_isNew,
+	_openIt,
+	_initIt,
+	_isOpen,
+	_reopen,
+	_addThis,
+	_setThis,
+	_endIt,
+	_closeIt
 };
 
 
 class hexStr
 {
 public:
-    const unsigned char *data;
-    int len;
+	const unsigned char *data;
+	int len;
 
-    hexStr(const void *buf, int n) :
-        data((const unsigned char *)buf), len(n) {};
+	hexStr( const void *buf, int n ) :
+		data((const unsigned char *)buf), len(n) {};
 
-    friend ostream &operator << (ostream &stream, const hexStr &x)
-    {
-        _Ios_Fmtflags fl = stream.flags();
+	friend ostream& operator << ( ostream& stream, const hexStr& x )
+	{
+		_Ios_Fmtflags fl = stream.flags();
 
-        for (int i = 0; i < x.len; i++)
-            stream << hex << noskipws << setw(2) << setfill('0') << (short)x.data[i];
+		for ( int i=0; i < x.len; i++ )
+			stream << hex << noskipws << setw(2) << setfill('0')<< (short)x.data[i];
 
-        stream << dec;
-        stream.setf(fl);
-        return stream;
-    }
+		stream << dec;
+		stream.setf( fl );
+		return stream;
+	}
 };
 
 
-template<class T> void sortUnique(vector<T> &things)
+template<class T> void sortUnique( vector<T> &things )
 {
-    std::sort(things.begin(), things.end());
-    things.erase(std::unique(things.begin(), things.end()), things.end());
+	std::sort( things.begin(), things.end() );
+	things.erase( std::unique( things.begin(), things.end() ), things.end() );
 }
 
 
-// logging and messaging. Gets a little convoluted...
-// ...log & message macros
+											// logging and messaging. Gets a little convoluted...
+											// ...log & message macros
 #define lplex_console
 
 #ifdef lplex_console
@@ -184,17 +179,14 @@ template<class T> void sortUnique(vector<T> &things)
 class messenger
 {
 public:
-    enum { _info, _stat, _warn, _err, _fatal };
-    messenger() {}
-    virtual bool err(const string &msg) = 0;
-    virtual bool setMsgMode(int m)
-    {
-        msgMode = m;
-    }
-    virtual bool update(int val, const string &msg, bool *skip = false) = 0;
-    virtual bool pulse(const string &msg, bool *skip = false) = 0;
+	enum { _info, _stat, _warn, _err, _fatal };
+	messenger() {}
+	virtual bool err( const string& msg ) = 0;
+	virtual bool setMsgMode( int m ) { msgMode = m; }
+	virtual bool update( int val, const string& msg, bool* skip=false ) = 0;
+	virtual bool pulse( const string& msg, bool* skip=false ) = 0;
 protected:
-    int msgMode;
+	int msgMode;
 };
 extern messenger *myMessenger;
 #define gui_err(m) myMessenger->err(_s<<m)
@@ -212,8 +204,8 @@ extern ofstream xlog;
 #ifdef _ERR2LOG
 
 extern string xlogName;
-void logInit(const string &logFilename = "");
-int logCopy(const fs::path &filename = "");
+void logInit( const string& logFilename = "" );
+int logCopy( const fs::path& filename ="");
 int logClose();
 int logDelete();
 int logReopen();
@@ -222,11 +214,11 @@ int logReopen();
 
 #else
 #define XLOG(t) 0
-int logInit(const string &logFilename = "") {}
-int logCopy(const fs::path &filename = "") {}
-int logClose() {}
-int logDelete() {}
-int logReopen() {}
+int logInit( const string& logFilename = "" ){}
+int logCopy( const fs::path& filename =""){}
+int logClose(){}
+int logDelete(){}
+int logReopen(){}
 
 #endif
 
@@ -253,8 +245,8 @@ extern colorval tintColor;
 extern colorval errColor;
 extern colorval warnColor;
 extern colorval blipColor;
-enum { bright = 1, dark };
-void setcolors(int scheme = bright);
+enum { bright=1, dark };
+void setcolors( int scheme = bright );
 #define TINT(t) "" //(colorText){t,tintColor}
 #define TINT_ERR(t) (colorText){t,errColor}
 #define TINT_STAT(t) t
@@ -311,75 +303,71 @@ void setcolors(int scheme = bright);
 
 #define DBUG(t) _ERR( (string(DBUG_TAG) + string(t)).c_str() )
 
-// ...screen log & message functions:
+											// ...screen log & message functions:
 
 extern uint16_t blip_len, blip_ct;
 extern string _blip, _affirm;
 extern char propellor[];
 
-const char *scrub();
-void blip(const char *msg = NULL);
-void blip(const string &msg);
+const char * scrub();
+void blip( const char *msg = NULL );
+void blip(const string& msg);
 
 void normalize_windows_paths(string &path);
-char  *normalize_windows_paths(const char *path);
+char*  normalize_windows_paths(const char* path);
 void   normalize_windows_paths(fs::path &path);
-void unblip(bool clear = true);
+void unblip( bool clear = true );
 
-// ...standardized counter with progress reporting
+											// ...standardized counter with progress reporting
 
 template<class T> struct counter
 {
-    T start, now, max;
-    counter<T>(T s = 0,  T n = 0,  T m = 0) : start(s), now(n), max(m) {}
-    void operator = (const counter<T> &other)
-    {
-        start = other.start;
-        now = other.now;
-        max = other.max;
-    }
+	T start, now, max;
+	counter<T>( T s=0,  T n=0,  T m=0 ) : start(s), now(n), max(m) {}
+	void operator = (const counter<T> & other)
+	{ start = other.start; now = other.now; max = other.max; }
 };
 
 template<class T>
-static inline void blip(counter<T> *ct,
-                        int skip = 1, const char *suffix = "", const char *prefix = "")
+static inline void blip( counter<T> *ct,
+	int skip = 1, const char *suffix="", const char *prefix=""  )
 {
-    static string pref;
-    if (blip_ct == 0)
-        {
-            if (_verbose)
-                {
-                    _blip = "";
-                    pref = string(prefix);
-                }
-            else
-                pref = "";
-        }
+	static string pref;
+	if( blip_ct == 0 )
+    {
+		if( _verbose )
+		{
+			_blip = "";
+			pref = string(prefix);
+		}
+		else
+				pref = "";
+    }
 
-    if (!(blip_ct % skip))
-        {
-            if (ct->max && ct->max - ct->now)
-                {
-                    int val = (int)((ct->now - ct->start) * 1000 / (ct->max - ct->start));
-                    blip(_f("%s%2d.%d%% %s", pref.c_str(), val / 10, val % 10, suffix));
+	if( ! ( blip_ct % skip ) )
+	{
+		if( ct->max && ct->max - ct->now )
+		{
+			int val = (int)(( ct->now - ct->start ) * 1000 / ( ct->max - ct->start ));
+			blip( _f( "%s%2d.%d%% %s", pref.c_str(), val / 10, val % 10, suffix ) );
 
-                }
+		}
 
-            else
-                {
-                    string msg = _f("%s%d %s", pref.c_str(), ct->now, suffix);
-                    blip(msg);
+		else
+		{
+			string msg = _f( "%s%d %s", pref.c_str(), ct->now, suffix );
+			blip( msg );
 
-                }
-        }
-    else
-        blip_ct++;
+		}
+	}
+	else
+		blip_ct++;
 
 }
 
-long execute(const string &application, const vector<const char *> &command, int verbose = _verbose);
+long execute( const string& application, const vector<const char*>& command, int verbose = _verbose);
 
-long execute(const string &application,  const vector<const char *> &args,
-             const string &application2, const vector<const char *> &args2,
-             int verbose);
+long execute( const string& application,  const vector<const char*>& args,
+              const string& application2, const vector<const char*>& args2,
+              int verbose);
 #endif

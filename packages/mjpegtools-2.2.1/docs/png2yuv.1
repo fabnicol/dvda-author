@@ -1,0 +1,97 @@
+.TH "png2yuv" "1" "22 January 2020" "MJPEG Tools Team" "MJPEG tools manual"
+.SH "NAME"
+png2yuv \- Convert PNG images to the YUV4MPEG stream format. 
+
+.SH "SYNOPSIS"
+.B png2yuv
+.RB [ \-b
+.IR num ]
+.RB [ \-f
+.IR num ]
+.RB [ \-I
+.IR num ]
+.RB [ \-L
+.IR num ]
+.RB [ \-n 
+.RB num ]
+.RB [ \-j
+.IR filename ]
+
+.SH "DESCRIPTION"
+\fBpng2yuv\fP decompresses a sequence of PNG files
+and pipes the image data to stdout as a YUV4MPEG2 stream.
+Any 8bit/pixel PNG format supported by libpng can be read.
+stdout will be filled with the YUV4MPEG movie data stream,
+so be prepared to pipe it on to mpeg2enc or to write it into a file.
+
+\fBThis tool is incomplete.\fP  
+The alternative utility you are probably looking for is \fBppmtoy4m\fP(1), 
+which is also included in MJPEGtools.
+
+.SH "OPTIONS"
+\fBpng2yuv\fP accepts the following options:
+
+.TP 5
+.BI \-b " num" 
+Frame offset:  skip output of the first 'num' frames.  (default: 0)
+.TP 5
+.BI \-f " num"
+Set the frame rate of stream accepts the same numbers. Not default, this option has to be specified.
+.TP 5
+.BI \-I " num"
+interlacing mode:
+p = none / progressive
+.br
+t = top field first
+.br
+b = bottom field first
+.br
+No default, this option has to be specified.
+.TP 5
+.BI \-L " num"
+0 = non-interleaved (two successive fields per PNG file)
+.br
+1 = interleaved fields
+.TP 5
+.BI \-S " samp_mode"
+chroma subsampling mode, only for professionals, for more info see ppmtoy4m and
+the YUV guide on http://www.mir.com/DMG/.
+.br
+default: 420_jpeg
+.TP 5
+.BI \-n " num"
+Specifies the nummber of frames to process. (default: all = -1)
+.TP 5 
+.BI \-j " {1}%{2}d{3}"
+Read PNG frames with the name components as follows:
+ {1} PNG filename prefix (e g: picture_ )
+ {2} Counting placeholder (like in C, printf, eg 06 ))
+ {3} File extension. Something like this: .png
+A correct description of the files could look like this: picture_%06d.png
+.TP 5
+.BI \-v " num"
+Verbosity level (0, 1 or 2)
+
+.SH BUGS
+The frame rate description does not seem to be up to date. The NTSC integer ratios are not supported (use floating point instead). As workaround specify a PAL (25) or native FILM (24) and set the right frame rate in mpeg2enc with the -F option.
+Interlaced handling is not implemented yet.
+
+.SH "AUTHOR"
+This man page was written by Gernot Ziegler.
+.br
+If you have questions, remarks, problems or you just want to contact
+the developers, the main mailing list for the MJPEG\-tools is:
+  \fImjpeg\-users@lists.sourceforge.net\fP
+
+.TP
+For more info, see our website at
+.I http://mjpeg.sourceforge.net
+
+.SH "SEE ALSO"
+.BR mjpegtools (1),
+.BR mpeg2enc (1),
+.BR ppmtoy4m (1),
+.BR yuv2lav (1),
+.BR yuvdenoise (1),
+.BR yuvmedianfilter (1),
+.BR yuvscaler (1)

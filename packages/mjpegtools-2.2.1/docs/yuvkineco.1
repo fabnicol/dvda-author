@@ -1,0 +1,114 @@
+.TH "yuvkineco" "1" "5 February 2002" "MJPEG Tools Team" "MJPEG tools manual"
+
+.SH NAME
+yuvkineco \- revert 2\-3 pulldown movie
+
+.SH SYNOPSIS
+.br
+.B yuvkineco
+.RI [ options ]
+.RB [ \-C
+.IR PATH ]
+.br
+.B yuvkineco
+.RI [ options ]
+.BR \-O | N
+.I PATH
+
+.SH DESCRIPTION
+.br
+\fByuvkineco\fP reverts to original non\-interlaced frames,
+from NTSC video which was film sourced and 2\-3 pulled down.
+Input fps code must be 4(29.97fps), output fps code can be selected
+from 1(23.97fps) to 4(29.97fps). If 2, 3 or 4 selected, duplicated 
+frames remain but they are reverted to non\-interlaced.
+If input was non\-interlaced only remove duplicate frames.
+Interlaced frame detection may fail in conditions like:
+    Pull down cycle changed (video editing).
+    Low quality pull down.
+    Motionless scene.
+.br
+If \fB\-C\fP \fIPATH\fP was specified, \fByuvkineco\fP outputs 2\-3 pull down
+cycle list to the file.  You can edit this file by hand and feed it
+to \fByuvkineco\fP with \fB\-O\fP or \fB\-N\fP option to correct mistake 
+of 1st \fByuvkineco\fP.
+Try \fB\-C\fP and see cycle list.
+  EXAMPLE #1: for 24p movie / automatically
+    \fBlav2yuv 60i.eli | \\
+        yuvkineco \-F 1 | yuv2lav \-f a \-I 0 \-o 24p.avi\fP
+  EXAMPLE #2: for 30p/24p mix / automatically
+    \fBlav2yuv 60i.eli | \\
+        yuvkineco \-F 4 | yuv2lav \-f a \-I 0 \-o 30p.avi\fP
+  EXAMPLE #3: for 24p movie / check and repair
+    \fBlav2yuv 60i.eli | \\
+        yuvkineco \-F 1 \-C 60i.23c | \\
+        yuv2lav \-f a \-I 1 \-o take1.avi
+    glav \-F +n take1.avi\fP \ # check and edit 60i.23c
+    \fBlav2yuv take1.avi | \\
+        yuvkineco \-F 1 \-N 60i.23c | \\
+        yuv2lav \-f a \-I 0 \-o take2.avi\fP
+  EXAMPLE #4: for 24p movie / check and retry
+    \fBlav2yuv 60i.eli | \\
+        yuvkineco \-F 1 \-C 60i.23c | \\
+        yuv2lav \-f a \-I 0 \-o take1.avi
+    glav \-F +n take1.avi\fP \ # check and edit 60i.23c
+    \fBlav2yuv 60i.eli | \\
+        yuvkineco \-F 1 \-O 60i.23c | \\
+        yuv2lav \-f a \-I 0 \-o take2.avi\fP
+
+.SH OPTIONS
+\fByuvkineco\fP accepts the following options:
+.TP 8
+.BI \-F \ FPSCODE
+Set output fps code (default: same as input).
+.TP 8
+.BI \-C \ PATH
+Specify 2-3 pull down cycle list file name to write.
+.TP 8
+.BI \-O \ PATH
+Specify cycle list name to read with old yuv stream to retry.
+.TP 8
+.BI \-N \ PATH
+Specify cycle list name to read with new yuv stream to repair.
+.TP 8
+.BI \-n \ LEVEL
+Specify noise level of input (default: 10).
+This affects both pulldown cycle detection and deinterlacing.
+.TP 8
+.BI \-c \ THRESHOLD
+Specify threshold to decide pictures in 2 frames are same (default: 4).
+\fByuvkineco\fP compares several frames,
+searches pair of frame they contain same pictures,
+to decide which frame should be dropped.
+If \fITHRESHOLD\fP is 0,
+pair which has smallest difference will be selected.
+If 16, selected from pairs those have differences smaller than average.
+.TP 8
+.BI \-i \ PERMIL
+\fByuvkineco\fP deinterlaces each frame after 2\-3 pulldown reverting
+process, specify how much pixels deinterlaced to decide to use
+or not use deinterlacing result (default: 10). 
+If \fIPERMIL\fP is 10 and 1% or more of pixels deinterlaced, 
+deinterlacing result will be used.
+If 0, always deinterlacing result will be used.
+If 1000, deinterlacing result will not be used,
+but deinterlacing process will run on all of frames.
+To disable deinterlacing process, specify negative value.
+.TP 8
+.BI \-u
+Set interlace information in header of output to unknown
+(default: non\-interlaced).
+
+.SH AUTHOR
+\fByuvkineco\fP was written by Kawamata/Hitoshi.
+.br
+If you have questions, remarks, problems or you just want to contact
+the developers, the main mailing list for the MJPEG\-tools is:
+  \fImjpeg\-users@lists.sourceforge.net\fP
+
+.TP
+For more info, see our website at
+.I http://mjpeg.sourceforge.net/
+
+.SH SEE ALSO
+.BR mjpegtools (1),

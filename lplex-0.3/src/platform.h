@@ -35,7 +35,7 @@ using namespace std;
 namespace  fs = std::filesystem;
 
 
-#if defined _WIN32 || defined _WIN64
+#if defined _WIN32 || defined _WIN64 
 #  define SEPARATOR  "\\"
 #  define USER  "USERNAME"
 #  define HOME  "C:\\Users"
@@ -63,29 +63,29 @@ extern fs::path lplexConfig, configDir, dataDir, binDir, tempDir, isoPath, readO
 
 inline uint64_t bswap(uint64_t i)
 {
-    return (
-               (((i) & 0xff00000000000000LL) >> 56) |
-               (((i) & 0x00ff000000000000LL) >> 40) |
-               (((i) & 0x0000ff0000000000LL) >> 24) |
-               (((i) & 0x000000ff00000000LL) >>  8) |
-               (((i) & 0x00000000ff000000LL) <<  8) |
-               (((i) & 0x0000000000ff0000LL) << 24) |
-               (((i) & 0x000000000000ff00LL) << 40) |
-               (((i) & 0x00000000000000ffLL) << 56));
+	return (
+		(((i) & 0xff00000000000000LL) >> 56) |
+		(((i) & 0x00ff000000000000LL) >> 40) |
+		(((i) & 0x0000ff0000000000LL) >> 24) |
+		(((i) & 0x000000ff00000000LL) >>  8) |
+		(((i) & 0x00000000ff000000LL) <<  8) |
+		(((i) & 0x0000000000ff0000LL) << 24) |
+		(((i) & 0x000000000000ff00LL) << 40) |
+		(((i) & 0x00000000000000ffLL) << 56));
 }
 inline uint32_t bswap(uint32_t i)
 {
-    return (
-               (((i) & 0xff000000) >> 24) |
-               (((i) & 0x00ff0000) >>  8) |
-               (((i) & 0x0000ff00) <<  8) |
-               (((i) & 0x000000ff) << 24));
+	return (
+		(((i) & 0xff000000) >> 24) |
+		(((i) & 0x00ff0000) >>  8) |
+		(((i) & 0x0000ff00) <<  8) |
+		(((i) & 0x000000ff) << 24));
 }
 inline uint16_t bswap(uint16_t i)
 {
-    return (
-               (((i) & 0xff00) >> 8) |
-               (((i) & 0x00ff) << 8));
+	return (
+		(((i) & 0xff00) >> 8) |
+		(((i) & 0x00ff) << 8));
 }
 
 // ----------------------------------------------------------------------------
@@ -132,19 +132,13 @@ inline uint16_t bswap(uint16_t i)
 #endif
 
 extern int endPause;
-inline void _pause()
-{
-    cerr << "\npress <enter> to close...";
-    cin.get();
-}
+inline void _pause() { cerr << "\npress <enter> to close..."; cin.get(); }
 //inline void _pause() { system( "echo press any key to close; read -n 1" ); }
 #define device(d) d
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-inline string volumeLabel(const char *path, bool mustBeRoot)
-{
-    return "";
-}
+inline string volumeLabel( const char *path, bool mustBeRoot )
+	{ return ""; }
 #pragma GCC diagnostic pop
 
 
@@ -160,8 +154,8 @@ inline bool initPlatform()
     readOnlyPath = home;
     tempDir = home / "temp";
     fs::create_directories(tempDir);
-    shebang = "#!/usr/local/bin/lplex -P 1\n";
-    endPause = true;
+	shebang = "#!/usr/local/bin/lplex -P 1\n";
+	endPause = true;
     return true;
 }
 
@@ -189,17 +183,11 @@ inline bool initPlatform()
 
 extern int endPause;
 inline void _pause()
-{
-    cerr << "\npress any key to close...";
-    system("pause>nul");
-}
+	{ cerr << "\npress any key to close..."; system( "pause>nul" ); }
 //inline void _pause() { cerr << "\npress <enter> to close..."; cin.get(); }
 #if 0
-inline const char *device(dev_t device)
-{
-    char dev[] = { 'A' + device, '\0' };
-    return dev;
-}
+inline const char* device( dev_t device )
+	{ char dev[] = { 'A' + device, '\0' }; return dev; }
 #endif
 
 inline bool initPlatform()
@@ -213,9 +201,9 @@ inline bool initPlatform()
     binDir =  fs::path("bin");
     dataDir = appdata /  fs::path("lplex/data");
     readOnlyPath = home;
-    tempDir = fs::temp_directory_path() / fs::path("lplex");
+    tempDir = fs::temp_directory_path()/fs::path("lplex");
     if (! fs::exists(tempDir))
-        fs::create_directories(tempDir);
+      fs::create_directories(tempDir);
 
     shebang = "#!/usr/local/bin/lplex -P 1\n";
     endPause = true;
@@ -230,7 +218,7 @@ inline bool initPlatform()
 // ----------------------------------------------------------------------------
 
 
-inline string volumeLabel(const char *path, bool mustBeRoot = false)
+inline string volumeLabel( const char * path, bool mustBeRoot=false )
 {
     return fs::path(path).root_path().string();
 }
