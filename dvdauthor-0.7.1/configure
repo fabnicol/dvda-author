@@ -5253,8 +5253,8 @@ printf "%s\n" "no" >&6; }
 fi
 
 pkg_failed=no
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for LIBPNG" >&5
-printf %s "checking for LIBPNG... " >&6; }
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libpng" >&5
+printf %s "checking for libpng... " >&6; }
 
 if test -n "$LIBPNG_CFLAGS"; then
     pkg_cv_LIBPNG_CFLAGS="$LIBPNG_CFLAGS"
@@ -5294,7 +5294,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -5321,7 +5321,7 @@ Alternatively, you may set the environment variables LIBPNG_CFLAGS
 and LIBPNG_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details." "$LINENO" 5
 elif test $pkg_failed = untried; then
-     	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 	{ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
@@ -5502,8 +5502,8 @@ fi
 
 
 pkg_failed=no
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for FONTCONFIG" >&5
-printf %s "checking for FONTCONFIG... " >&6; }
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for fontconfig" >&5
+printf %s "checking for fontconfig... " >&6; }
 
 if test -n "$FONTCONFIG_CFLAGS"; then
     pkg_cv_FONTCONFIG_CFLAGS="$FONTCONFIG_CFLAGS"
@@ -5543,7 +5543,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -5561,7 +5561,7 @@ fi
 
 	:
 elif test $pkg_failed = untried; then
-     	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 	:
 else
@@ -5578,8 +5578,8 @@ fi
 
 
 pkg_failed=no
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for FRIBIDI" >&5
-printf %s "checking for FRIBIDI... " >&6; }
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for fribidi" >&5
+printf %s "checking for fribidi... " >&6; }
 
 if test -n "$FRIBIDI_CFLAGS"; then
     pkg_cv_FRIBIDI_CFLAGS="$FRIBIDI_CFLAGS"
@@ -5619,7 +5619,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -5637,7 +5637,7 @@ fi
 
 	:
 elif test $pkg_failed = untried; then
-     	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 	:
 else
