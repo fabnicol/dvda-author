@@ -41,7 +41,7 @@ jobs:
         echo "b2sum: $(b2sum dvda-author-release-master.tar.xz)" > checksums.txt
         echo "sha512sum: $(sha512sum dvda-author-release-master.tar.xz)" >> checksums.txt
       
-    - uses: dev-drprasad/delete-tag-and-release@v0.2.0
+    - uses: dev-drprasad/delete-tag-and-release@v0.2.1
       with:
         delete_release: true # default: false
         tag_name: release-master # tag name to delete
