@@ -21,7 +21,7 @@ AC_LANG([C])
 # Path to auxiliary configuration files
 
 AC_CONFIG_AUX_DIR([config])
-AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_MACRO_DIRS([m4 m4.arch])
 
 # standard init macros
 AC_PROG_LEX

@@ -1,6 +1,17 @@
---- /a/b/c/sox-14.4.2/configure.ac	2015-02-22 21:48:57.000000000 +0100
-+++ /a/b/c/new/configure.ac	2016-08-08 02:50:28.547711234 +0200
-@@ -45,7 +45,7 @@
+diff -Nau3r -Bdw sox-14.4.2/configure.ac sox-14.4.2b/configure.ac
+--- sox-14.4.2/configure.ac	2015-02-22 21:48:57.000000000 +0100
++++ sox-14.4.2b/configure.ac	2026-10-22 21:31:09.023948949 +0200
+@@ -4,7 +4,8 @@
+ 
+ AC_INIT(SoX, 14.4.2, sox-devel@lists.sourceforge.net)
+ 
+-AC_CONFIG_MACRO_DIR([m4])
++AC_CONFIG_MACRO_DIRS([m4 ../m4.arch])
++AX_PROG_NASM()
+ 
+ dnl Find target architecture
+ AC_CANONICAL_TARGET
+@@ -45,7 +46,7 @@
      using_libltdl=$with_libltdl
  fi
  
@@ -9,7 +20,7 @@
  AC_SUBST(LIBTOOL_DEPS)
  
  AC_ARG_WITH(dyn-default,AS_HELP_STRING([--with-dyn-default],[Default to loading optional formats dynamically]),opt_default=dyn,opt_default=yes)
-@@ -671,6 +671,7 @@
+@@ -671,6 +672,7 @@
  
  dnl Generate output files.
  AC_CONFIG_FILES(Makefile src/Makefile libgsm/Makefile lpc10/Makefile msvc9/Makefile msvc10/Makefile sox.pc)
@@ -17,3 +28,39 @@
  AC_OUTPUT
  
  if test "$using_gsm" != "no"; then
+diff -Nau3r -Bdw sox-14.4.2/sox-libs.in sox-14.4.2b/sox-libs.in
+--- sox-14.4.2/sox-libs.in	1970-01-01 01:00:00.000000000 +0100
++++ sox-14.4.2b/sox-libs.in	2026-10-22 21:33:37.380023195 +0200
+@@ -0,0 +1,21 @@
++@LPC10_LIBS@
++@GSM_LIBS@
++@MP3_LIBS@
++@SUN_AUDIO_LIBS@
++@OSS_LIBS@
++@FFMPEG_LIBS@
++@WAVEAUDIO_LIBS@
++@PULSEAUDIO_LIBS@
++@AO_LIBS@
++@ALSA_LIBS@
++@COREAUDIO_LIBS@
++@SNDIO_LIBS@
++@WAVPACK_LIBS@
++@AMRNB_LIBS@
++@AMRWB_LIBS@
++@FLAC_LIBS@
++@OGG_VORBIS_LIBS@
++@PNG_LIBS@
++@MAGIC_LIBS@
++@GOMP_LIBS@
++@LIBLTDL@
+diff -Nau3r -Bdw sox-14.4.2/src/sox_sample_test.h sox-14.4.2b/src/sox_sample_test.h
+--- sox-14.4.2/src/sox_sample_test.h	2012-01-23 23:27:33.000000000 +0100
++++ sox-14.4.2b/src/sox_sample_test.h	2026-10-22 21:35:19.543164425 +0200
+@@ -20,6 +20,7 @@
+ #endif
+ #include <assert.h>
+ #include "sox.h"
++#include <math.h>
+ 
+ #define TEST_UINT(bits) \
+   uint##bits = 0; \

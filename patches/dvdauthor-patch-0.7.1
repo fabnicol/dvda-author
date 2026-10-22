@@ -1,6 +1,6 @@
-diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' /home/fab/dvda-author/dvdauthor/configure.ac /home/fab/dvda-author/dvdauthor-0.7.1b/configure.ac
---- /home/fab/dvda-author/dvdauthor/configure.ac	2012-08-20 06:09:51.000000000 +0200
-+++ /home/fab/dvda-author/dvdauthor-0.7.1b/configure.ac	2019-06-10 20:18:52.380636549 +0200
+diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' dvdauthor/configure.ac dvdauthor-0.7.1b/configure.ac
+--- dvdauthor/configure.ac	2012-08-20 06:09:51.000000000 +0200
++++ dvdauthor-0.7.1b/configure.ac	2019-06-10 20:18:52.380636549 +0200
 @@ -1,8 +1,11 @@
 -AC_INIT(DVDAuthor,0.7.1,dvdauthor-users@lists.sourceforge.net)
 +AC_INIT(DVDAuthor,0.7.1-patched,dvdauthor-users@lists.sourceforge.net)
@@ -44,9 +44,9 @@ diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--e
  
  AC_ARG_ENABLE([default-video-format],
  AS_HELP_STRING([--enable-default-video-format=format], [specify a default video format, either NTSC or PAL, to be used if no configuration or input setting is given]),
-diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' /home/fab/dvda-author/dvdauthor/src/da-internal.h /home/fab/dvda-author/dvdauthor-0.7.1b/src/da-internal.h
---- /home/fab/dvda-author/dvdauthor/src/da-internal.h	2012-04-03 05:36:44.000000000 +0200
-+++ /home/fab/dvda-author/dvdauthor-0.7.1b/src/da-internal.h	2019-06-10 19:38:58.889750915 +0200
+diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' dvdauthor/src/da-internal.h dvdauthor-0.7.1b/src/da-internal.h
+--- dvdauthor/src/da-internal.h	2012-04-03 05:36:44.000000000 +0200
++++ dvdauthor-0.7.1b/src/da-internal.h	2019-06-10 19:38:58.889750915 +0200
 @@ -205,6 +205,7 @@
      int numgroups; /* length of groups array */
      struct langgroup *groups; /* array, one entry per <menus> directive */
@@ -89,9 +89,9 @@ diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--e
  int calcaudiogap(const struct vobgroup *va,int vcid0,int vcid1,int ach);
  
  #endif
-diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' /home/fab/dvda-author/dvdauthor/src/dvdauthor.c /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdauthor.c
---- /home/fab/dvda-author/dvdauthor/src/dvdauthor.c	2011-05-31 09:12:24.000000000 +0200
-+++ /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdauthor.c	2019-06-10 19:38:58.893750878 +0200
+diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' dvdauthor/src/dvdauthor.c dvdauthor-0.7.1b/src/dvdauthor.c
+--- dvdauthor/src/dvdauthor.c	2011-05-31 09:12:24.000000000 +0200
++++ dvdauthor-0.7.1b/src/dvdauthor.c	2019-06-10 19:38:58.893750878 +0200
 @@ -37,6 +37,7 @@
  #include "dvdvm.h"
  
@@ -310,9 +310,9 @@ diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--e
 +        FixVobus(fbase, menus->mg_vg, &ws, VTYPE_VTSM,1);
 +    FixVobus(fbase, titles->pg_vg, &ws, VTYPE_VTS,1);
    } /*dvdauthor_vts_gen*/
-diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' /home/fab/dvda-author/dvdauthor/src/dvdauthor.h /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdauthor.h
---- /home/fab/dvda-author/dvdauthor/src/dvdauthor.h	2010-05-02 07:44:36.000000000 +0200
-+++ /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdauthor.h	2019-06-10 19:38:58.893750878 +0200
+diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' dvdauthor/src/dvdauthor.h dvdauthor-0.7.1b/src/dvdauthor.h
+--- dvdauthor/src/dvdauthor.h	2010-05-02 07:44:36.000000000 +0200
++++ dvdauthor-0.7.1b/src/dvdauthor.h	2019-06-10 19:38:58.893750878 +0200
 @@ -36,6 +36,7 @@
      VTYPE_VTS = 0, /* title in titleset */
      VTYPE_VTSM = 1, /* menu in titleset */
@@ -329,9 +329,9 @@ diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--e
  
  #ifdef __cplusplus
  }
-diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' /home/fab/dvda-author/dvdauthor/src/dvdcli.c /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdcli.c
---- /home/fab/dvda-author/dvdauthor/src/dvdcli.c	2011-08-12 07:19:37.000000000 +0200
-+++ /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdcli.c	2019-06-10 19:38:58.893750878 +0200
+diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' dvdauthor/src/dvdcli.c dvdauthor-0.7.1b/src/dvdcli.c
+--- dvdauthor/src/dvdcli.c	2011-08-12 07:19:37.000000000 +0200
++++ dvdauthor-0.7.1b/src/dvdcli.c	2019-06-10 19:38:58.893750878 +0200
 @@ -40,6 +40,9 @@
  
  #define RGB2YCrCb(R,G,B) ((((int)RGB2Y(R,G,B))<<16)|(((int)RGB2Cr(R,G,B))<<8)|(((int)RGB2Cb(R,G,B))))
@@ -498,9 +498,9 @@ diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--e
      {"vmgm",      DA_ROOT,    DA_SET,     vmgm_start,      vmgm_end},
      {"fpc",       DA_SET,     DA_NOSUB,   fpc_start,       fpc_end},
      {"titles",    DA_SET,     DA_PGCGROUP,titles_start,    0},
-diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' /home/fab/dvda-author/dvdauthor/src/dvdcompile.c /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdcompile.c
---- /home/fab/dvda-author/dvdauthor/src/dvdcompile.c	2010-11-04 05:23:17.000000000 +0100
-+++ /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdcompile.c	2019-06-10 19:38:58.897750842 +0200
+diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' dvdauthor/src/dvdcompile.c dvdauthor-0.7.1b/src/dvdcompile.c
+--- dvdauthor/src/dvdcompile.c	2010-11-04 05:23:17.000000000 +0100
++++ dvdauthor-0.7.1b/src/dvdcompile.c	2019-06-10 19:38:58.897750842 +0200
 @@ -29,7 +29,7 @@
  #include "da-internal.h"
  #include "dvdvm.h"
@@ -622,9 +622,9 @@ diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--e
      if (!end) /* error */
          return end;
      // fix goto references
-diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' /home/fab/dvda-author/dvdauthor/src/dvdifo.c /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdifo.c
---- /home/fab/dvda-author/dvdauthor/src/dvdifo.c	2011-05-31 07:49:59.000000000 +0200
-+++ /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdifo.c	2019-06-10 19:38:58.897750842 +0200
+diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' dvdauthor/src/dvdifo.c dvdauthor-0.7.1b/src/dvdifo.c
+--- dvdauthor/src/dvdifo.c	2011-05-31 07:49:59.000000000 +0200
++++ dvdauthor-0.7.1b/src/dvdifo.c	2019-06-10 19:38:58.897750842 +0200
 @@ -84,30 +84,32 @@
      bigbuf[o + 3] = l & 255;
    } /*buf_write4*/
@@ -740,9 +740,9 @@ diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--e
  
    /* VMG_VTS_ATRT contains copies of menu and title attributes from all titlesets */
    /* output immediately following IFO header, as promised above */
-diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' /home/fab/dvda-author/dvdauthor/src/dvdpgc.c /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdpgc.c
---- /home/fab/dvda-author/dvdauthor/src/dvdpgc.c	2011-05-31 07:51:52.000000000 +0200
-+++ /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdpgc.c	2019-06-10 19:38:58.901750806 +0200
+diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' dvdauthor/src/dvdpgc.c dvdauthor-0.7.1b/src/dvdpgc.c
+--- dvdauthor/src/dvdpgc.c	2011-05-31 07:51:52.000000000 +0200
++++ dvdauthor-0.7.1b/src/dvdpgc.c	2019-06-10 19:38:58.901750806 +0200
 @@ -156,7 +156,7 @@
      return offs;
    } /*jumppgc*/
@@ -833,9 +833,9 @@ diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--e
          if (len < 0)
              goto retry;
          ph = len;
-diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' /home/fab/dvda-author/dvdauthor/src/dvdvm.h /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdvm.h
---- /home/fab/dvda-author/dvdauthor/src/dvdvm.h	2010-05-01 13:18:42.000000000 +0200
-+++ /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdvm.h	2019-06-10 19:38:58.905750770 +0200
+diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' dvdauthor/src/dvdvm.h dvdauthor-0.7.1b/src/dvdvm.h
+--- dvdauthor/src/dvdvm.h	2010-05-01 13:18:42.000000000 +0200
++++ dvdauthor-0.7.1b/src/dvdvm.h	2019-06-10 19:38:58.905750770 +0200
 @@ -19,7 +19,7 @@
    {
      int op;
@@ -855,9 +855,9 @@ diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--e
  };
  
  /* Utility routines used during parse */
-diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' /home/fab/dvda-author/dvdauthor/src/dvdvml.l /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdvml.l
---- /home/fab/dvda-author/dvdauthor/src/dvdvml.l	2010-05-01 12:52:27.000000000 +0200
-+++ /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdvml.l	2019-06-10 19:38:58.905750770 +0200
+diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' dvdauthor/src/dvdvml.l dvdauthor-0.7.1b/src/dvdvml.l
+--- dvdauthor/src/dvdvml.l	2010-05-01 12:52:27.000000000 +0200
++++ dvdauthor-0.7.1b/src/dvdvml.l	2019-06-10 19:38:58.905750770 +0200
 @@ -57,6 +57,7 @@
            } /*for*/
      }
@@ -882,9 +882,9 @@ diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--e
  titleset    { return TITLESET_TOK; }
  top             { return TOP_TOK; }
  up             { return UP_TOK; }
-diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' /home/fab/dvda-author/dvdauthor/src/dvdvmy.h /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdvmy.h
---- /home/fab/dvda-author/dvdauthor/src/dvdvmy.h	2012-08-20 06:41:52.000000000 +0200
-+++ /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdvmy.h	2019-06-10 20:19:45.620219439 +0200
+diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' dvdauthor/src/dvdvmy.h dvdauthor-0.7.1b/src/dvdvmy.h
+--- dvdauthor/src/dvdvmy.h	2012-08-20 06:41:52.000000000 +0200
++++ dvdauthor-0.7.1b/src/dvdvmy.h	2019-06-10 20:19:45.620219439 +0200
 @@ -1,8 +1,9 @@
 -/* A Bison parser, made by GNU Bison 2.5.  */
 +/* A Bison parser, made by GNU Bison 3.3.2.  */
@@ -1034,9 +1034,9 @@ diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--e
 +int dvdvmparse (void);
  
 +#endif /* !YY_DVDVM_DVDVMY_H_INCLUDED  */
-diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' /home/fab/dvda-author/dvdauthor/src/dvdvmy.y /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdvmy.y
---- /home/fab/dvda-author/dvdauthor/src/dvdvmy.y	2010-04-27 10:02:07.000000000 +0200
-+++ /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdvmy.y	2019-06-10 19:38:58.909750733 +0200
+diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' dvdauthor/src/dvdvmy.y dvdauthor-0.7.1b/src/dvdvmy.y
+--- dvdauthor/src/dvdvmy.y	2010-04-27 10:02:07.000000000 +0200
++++ dvdauthor-0.7.1b/src/dvdvmy.y	2019-06-10 19:38:58.909750733 +0200
 @@ -72,7 +72,9 @@
  %token TOP_TOK
  %token UP_TOK
@@ -1107,9 +1107,9 @@ diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--e
  | JUMP_TOK PROGRAM_TOK NUM_TOK SEMICOLON_TOK {
      if ($3 < 1 || $3 > 65535)
        {
-diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' /home/fab/dvda-author/dvdauthor/src/dvdvob.c /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdvob.c
---- /home/fab/dvda-author/dvdauthor/src/dvdvob.c	2012-04-03 04:54:52.000000000 +0200
-+++ /home/fab/dvda-author/dvdauthor-0.7.1b/src/dvdvob.c	2019-06-10 19:38:58.909750733 +0200
+diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' dvdauthor/src/dvdvob.c dvdauthor-0.7.1b/src/dvdvob.c
+--- dvdauthor/src/dvdvob.c	2012-04-03 04:54:52.000000000 +0200
++++ dvdauthor-0.7.1b/src/dvdvob.c	2019-06-10 19:38:58.909750733 +0200
 @@ -2195,7 +2195,7 @@
      return 1;
  }
@@ -1128,9 +1128,9 @@ diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--e
                          if (rbuf - compilebuf == 8)
                            {
                              memcpy(boffs + 10, compilebuf, 8);
-diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' /home/fab/dvda-author/dvdauthor/src/mpeg2desc.c /home/fab/dvda-author/dvdauthor-0.7.1b/src/mpeg2desc.c
---- /home/fab/dvda-author/dvdauthor/src/mpeg2desc.c	2012-04-06 02:33:14.000000000 +0200
-+++ /home/fab/dvda-author/dvdauthor-0.7.1b/src/mpeg2desc.c	2019-06-10 19:38:58.909750733 +0200
+diff -Nau3r -Bdw '--exclude=*.m4' '--exclude=config.h*' '--exclude=INSTALL' '--exclude=autotools' '--exclude=configure' '--exclude=Makefile*' '--exclude=*spec' '--exclude=dvdvml.c' '--exclude=dvdvmy.c' dvdauthor/src/mpeg2desc.c dvdauthor-0.7.1b/src/mpeg2desc.c
+--- dvdauthor/src/mpeg2desc.c	2012-04-06 02:33:14.000000000 +0200
++++ dvdauthor-0.7.1b/src/mpeg2desc.c	2019-06-10 19:38:58.909750733 +0200
 @@ -972,4 +972,5 @@
            } /*for*/
        }

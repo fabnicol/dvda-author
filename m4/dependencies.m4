@@ -16,6 +16,7 @@ AC_DEFINE([WEBSITE],["https://dvd-audio.sourceforge.io"],["Project website"])
 # sftp path is /home/frs/project/dvd-audio after logging to frs.sourceforge.net
 
 m4_define([DEPS],[https://sourceforge.net/projects/dvd-audio/files/dvda-author/Dependencies])
+m4_define([PATCHES],[https://raw.githubusercontent.com/fabnicol/dvda-author/master/patches])
 
 # ====== Auxiliary tools: man page and html doc, mjpegtools, ImageMagick ========= #
 
@@ -182,7 +183,7 @@ m4_map([DVDA_TEST_AUX],[
 	    [
 		[dvdauthor-patch],
 		[0.7.1],
-		[DEPS/patches/dvdauthor-patch-0.7.1],
+		[PATCHES/dvdauthor-patch-0.7.1],
 		[],
 		[DEPS],
 		[fafb6291c423e6db6b7d0b219a3b6641]
@@ -198,7 +199,7 @@ m4_map([DVDA_TEST_AUX],[
 	    [
 		[sox-patch],
 		[14.4.2],
-		[DEPS/patches/sox-patch-14.4.2],
+		[PATCHES/sox-patch-14.4.2],
 		[],
 		[DEPS],
 		[a44b293232d8068feeb07f10fe7b7574]
@@ -222,7 +223,7 @@ m4_map([DVDA_TEST_AUX],[
 	    [
 		[help2man-patch],
 		[1.47.16],
-		[DEPS/patches/help2man-patch-1.47.16],
+		[PATCHES/help2man-patch-1.47.16],
 		[],
 		[DEPS],
 		[6a67db27ea0b478d49add546a7ad5c68]
@@ -305,7 +306,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	    [
 		[sox-patch],
 		[14.4.2],
-		[DEPS/patches/sox-patch-14.4.2],
+		[PATCHES/sox-patch-14.4.2],
 		[],
 		[DEPS],
 		[a44b293232d8068feeb07f10fe7b7574]

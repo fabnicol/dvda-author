@@ -71,7 +71,7 @@ m4_map([m4_define],[
                         AS_IF([test $exitcode = 0], [echo "Patched:  $1" >> PATCHED.DOWNLOADS], [echo "Not patched:  $1" >> PATCHED.DOWNLOADS])
                       ]],
 [[DVDA_PATCH],        [
-                        DVDA_PATCH_LEVEL([$1],[4]) 
+                        DVDA_PATCH_LEVEL([$1],[0])
                       ]],
 [[MD5_CHECK],         [$($MD5SUM -b $1 | $SED "s/ .*//g")]],
 [[MD5_BREAK],         [m4_ifval([$1],
