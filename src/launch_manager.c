@@ -109,7 +109,7 @@ int launch_manager(command_t *command, globalData *globals)
 
   if (!globals->nooutput) secure_mkdir(audiotsdir, globals->access_rights, globals);
   errno = 0;
-  STRING_WRITE_CHAR_BUFSIZ(videotsdir, "%s"SEPARATOR"VIDEO_TS", globals->settings.outdir)
+  snprintf(videotsdir, sizeof videotsdir, "%s"SEPARATOR"VIDEO_TS", globals->settings.outdir);
   if (globals->videozone && !globals->nooutput) secure_mkdir(videotsdir, globals->access_rights, globals);
   errno = 0;
 
