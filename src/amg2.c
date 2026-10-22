@@ -428,7 +428,7 @@ uint8_t *decode_amg(const char *audiotsdir, command_t *command, sect *sectors, u
   bool menusector = (globals->topmenu <= TS_VOB_TYPE);  // there is a _TS.VOB in these cases
   uint8_t naudio_groups = ngroups - vgroups - nplaygroups; // CHECK
 
-  uint32_t  sectoroffset[naudio_groups];
+  uint32_t  sectoroffset[naudio_groups + 1];
 
   totalaudiotitles = totaltitles;
   totaltitles += vgroups;
@@ -1021,7 +1021,7 @@ int create_amg(char *audiotsdir, command_t *command, sect *sectors, uint32_t *vi
   uint8_t naudio_groups = ngroups - vgroups - nplaygroups;  // CHECK
 
   uint8_t amg[sectors->amg * 2048];
-  uint32_t  sectoroffset[naudio_groups];
+  uint32_t  sectoroffset[naudio_groups + 1];
 
   totalaudiotitles = totaltitles;
   totaltitles += vgroups;

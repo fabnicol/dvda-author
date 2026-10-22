@@ -1654,10 +1654,12 @@ int get_ats_audio(bool use_ifo_files, const extractlist *extract, globalData *gl
 
           if (globals->play)
             {
+#            ifdef _WIN32
               close_handles(g_hChildStd_IN_Rd,
                             g_hChildStd_IN_Wr,
                             g_hChildStd_ERR_Rd,
                             g_hChildStd_ERR_Wr);
+#            endif // _WIN32
 
               // + child process handles commented out
 

@@ -147,7 +147,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #undef foutput
 #endif
 
-#define foutput(X,...)   do { if (!globals->silence) { printf(X, __VA_ARGS__); } ;   if (globals->logfile) { fprintf(globals->journal, X, __VA_ARGS__);}  } while(0)
+#define foutput(X,...)   do { if (!globals->silence) { printf(X, __VA_ARGS__); } ;   if (globals->journal) { fprintf(globals->journal, X, __VA_ARGS__);}  } while(0)
 
 /* ERROR MANAGEMENT
 

@@ -277,7 +277,7 @@ static const uint8_t  S[2][6][36] =
     {8,  7,  11,  10,  20,  19,  23,  22,  6,  9,  18,  21,  2,  1,  5,  4,  14,  13,  17,  16,  0,  3,  12,  15}, //24 OK for all sampling rates <= 96 kHz
     {11, 10, 14, 13, 26, 25, 29, 28, 9, 12, 24, 27, 2, 1, 5, 4, 8, 7, 17, 16, 20, 19, 23, 22, 0, 3, 6, 15, 18, 21},  // 30, out for 88.1 kHz and 96 kHz.
 
-    {8, 7, 11, 10, 26, 25, 29, 28, 6, 9, 24, 27, 2, 1, 5, 4, 14, 13, 17, 16, 20, 19, 23, 22, 32, 31, 35, 34, 0, 3, 12, 15, 18, 21, 30, 33 }  // 36, out for 88.1 kHz and 96 kHz.
+    {8, 7, 11, 10, 14, 13, 17, 16, 26, 25, 29, 28, 32, 31, 35, 34, 6, 9, 12, 15, 24, 27, 30, 33, 2, 1, 5, 4, 20, 19, 23, 22, 0, 3, 18, 21}  // 36, cga 12 grouping: channel group 2 (c2..c5) first, then group 1 (c0,c1); byte planes preserved
   }
 };
 
@@ -1865,8 +1865,7 @@ inline static void interleave_sample_extended_merged(int channels, int count, ui
       for (i = 0; i < count; i += size)
         {
           // TODO: fix bug here, S is not the right table, need 1 more dim
-          permutation_merged(buf, _buf, 0, channels, S, size);
-          for (int w = 0; w < channels; ++w) buf[w] += i;
+          permutation(buf + i, _buf, 0, channels, S, size);
         }
       break;
     }
@@ -1900,17 +1899,13 @@ inline static void interleave_sample_extended(int channels, int count, uint8_t *
     }
 }
 
-inline static void interleave_24_bit_sample_extended_merged(int channels, int count, uint8_t **buf)
+inline static void interleave_24_bit_sample_extended_merged(int channels, int count, uint8_t *buf)
 {
   int i, size = channels * 6;
   uint8_t _buf[size];
 
   for (i = 0; i < count; i += size)
-    {
-      permutation_merged(buf, _buf, 1, channels, S, size);
-      for (int w = 0; w < channels; ++w) buf[w] += size;
-
-    }
+    permutation(buf + i, _buf, 1, channels, S, size);
 }
 
 inline static void interleave_24_bit_sample_extended(int channels, int count, uint8_t *buf)
@@ -2168,9 +2163,11 @@ out:
   return (buffer_increment);
 }
 
+int audio_close_merged(fileinfo_t *info, globalData *globals);
+
 int audio_close(fileinfo_t *info, globalData *globals)
 {
-  if (info->mergeflag) return audio_close_merged(info);
+  if (info->mergeflag) return audio_close_merged(info, globals);
 
   if (globals->debugging) foutput("%s %s\n", INF "Closing audio file", info->filename);
   if (info->type == AFMT_WAVE)
