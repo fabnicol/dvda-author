@@ -254,11 +254,11 @@ m4_map([DVDA_TEST_AUX],[
 	    ],
 	    [
 		[mjpegtools-download],
-		[2.2.1],
+		[snapshot],
 		[],
 		[],
 		[DEPS],
-		[875fffd2dcdd6913e121340fa7424ba4]
+		[c34cd2fe690575279e6fbc01348258e4]
 	    ],
 	    [
 		[libmpeg2-download],
@@ -356,7 +356,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	    [
 	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --enable-default-video-format=$VIDEO_FORMAT --prefix="$BUILDDIR/local" CPPFLAGS=-I$ROOTDIR/lplex-0.3/redist]],
 	       [[[lplex], [lplex-0.3]], [--prefix="$BUILDDIR/local" --disable-shared ROOTDIR=$ROOTDIR/lplex-0.3 --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include"]],
-	       [[[mjpegtools], [mjpegtools-2.2.1]],
+	       [[[mjpegtools], [mjpegtools-snapshot]],
 			       [ --prefix="$BUILDDIR/local" --disable-shared  --enable-static --enable-static-build --disable-fast-install --prefix="$BUILDDIR/local" --without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime --disable-simd-accel LIBDIR=/lib LDFLAGS=-L/lib CXXFLAGS=-fPIC  CFLAGS=-fPIC CPPFLAGS=-I/include ]],
 	       [[[cdrtools],[cdrtools-3.02]],[--prefix="$BUILDDIR/local"]],
 	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
@@ -368,7 +368,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
 	    [
 	     DVDA_CONFIG_EXECUTABLE_INSTALL([[[[dvdauthor],[dvdauthor-0.7.1]],[--disable-xmltest --disable-dvdunauthor --enable-default-video-format=$VIDEO_FORMAT --prefix="$BUILDDIR/local"]],
 	       [[[lplex], [lplex-0.3]], [--prefix="$BUILDDIR/local" --enable-static --disable-shared ROOTDIR=$ROOTDIR/lplex-0.3 --with-libFLAC-libraries="$BUILDDIR/local/lib" --with-libFLAC-includes="$BUILDDIR/local/include" CPPFLAGS=-I$ROOTDIR/lplex-0.3/redist]],
-	       [[[mjpegtools], [mjpegtools-2.2.1]],[--without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime --disable-shared --enable-static-build --enable-static  --disable-fast-install  --prefix="$BUILDDIR/local"  CXXFLAGS=-fPIC  CFLAGS=-fPIC]],
+	       [[[mjpegtools], [mjpegtools-snapshot]],[--without-gtk  --without-libdv --without-dga --without-libsdl --without-libquicktime --disable-shared --enable-static-build --enable-static  --disable-fast-install  --prefix="$BUILDDIR/local"  CXXFLAGS=-fPIC  CFLAGS=-fPIC]],
 	       [[[cdrtools],[cdrtools-3.02]],[--prefix="$BUILDDIR/local"]],
 	       [[[a52dec],[a52dec-0.7.4]],[--prefix="$BUILDDIR/local"]],
 	       [[[libmpeg2],[libmpeg2-0.5.1]], [--enable-static --disable-shared --prefix="$BUILDDIR/local" --disable-directx]],
