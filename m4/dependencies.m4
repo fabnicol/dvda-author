@@ -278,12 +278,12 @@ m4_map([DVDA_TEST_AUX],[
 	    ],
 		[
 			[ffmpeg-download],
-			[4.2.4],
+			[9.0.2],
 			[],
 			[],
 			[DEPS],
-			[9d4cdecb811bb5f14b53498568481e7f]
-		]])
+			[4c47fa111bd791da246ec07748ba5e04]
+	  ]])
 
 
 m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
@@ -343,7 +343,7 @@ m4_define([DOWNLOAD_MINIMAL_OPTIONS],[
      [[[libogg],[libogg-1.3.4]],  [--enable-static --disable-shared --prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]],
      [[[FLAC],[flac-1.3.4]],[--enable-static --disable-shared --disable-fast-install --with-ogg-libraries="$BUILDDIR/local/lib" --with-ogg-includes="$BUILDDIR/local/include/ogg" \
        --disable-thorough-tests --disable-oggtest --disable-doxygen-docs --disable-xmms-plugin --disable-doxygen-docs --prefix="$BUILDDIR/local" CFLAGS=-fPIC CXXFLAGS=-fPIC CPPFLAGS="-I$BUILDDIR/local/include"]],
-     [[[ffmpeg], [ffmpeg-4.2.4]], [--prefix="$BUILDDIR/local" --disable-demuxers --disable-decoders --disable-muxers --disable-parsers --disable-encoders --disable-devices --disable-protocols --enable-protocol=file --enable-protocol=data --disable-bsfs --disable-hwaccels  --disable-filters   --enable-decoder=mlp --enable-encoder=mlp --enable-encoder=pcm_s16le --enable-encoder=pcm_s24le --enable-encoder=pcm_s32le --enable-decoder=pcm_s16le --enable-decoder=pcm_s24le --enable-decoder=pcm_s24le  --enable-parser=mlp --enable-muxer=wav --enable-muxer=null --enable-muxer=truehd --enable-muxer=mlp --enable-demuxer=mlp --enable-muxer=pcm_s16le --enable-muxer=pcm_s24le --enable-muxer=pcm_s32le --enable-demuxer=pcm_s16le --enable-demuxer=pcm_s24le --enable-demuxer=pcm_s32le  --enable-filter=aresample --disable-bzlib --disable-iconv --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape --disable-sndio --disable-sdl2 --disable-zlib --disable-xlib --disable-libdrm --disable-vaapi --disable-vdpau --disable-videotoolbox  --enable-static --disable-shared   --enable-demuxer=wav --enable-demuxer=truehd  --disable-swscale  --disable-network --disable-postproc --disable-pixelutils --disable-avdevice --disable-alsa --disable-lzma --disable-doc --disable-d3d11va --disable-amd3dnow --disable-amd3dnowext  --disable-dxva2 --enable-pic]]])
+     [[[ffmpeg], [ffmpeg-9.0.2]], [--prefix="$BUILDDIR/local" --disable-demuxers --disable-decoders --disable-muxers --disable-parsers --disable-encoders --disable-devices --disable-protocols --enable-protocol=file --enable-protocol=data --disable-bsfs --disable-hwaccels  --disable-filters   --enable-decoder=mlp --enable-encoder=mlp --enable-encoder=pcm_s16le --enable-encoder=pcm_s24le --enable-encoder=pcm_s32le --enable-decoder=pcm_s16le --enable-decoder=pcm_s24le --enable-decoder=pcm_s24le  --enable-parser=mlp --enable-muxer=wav --enable-muxer=null --enable-muxer=truehd --enable-muxer=mlp --enable-demuxer=mlp --enable-muxer=pcm_s16le --enable-muxer=pcm_s24le --enable-muxer=pcm_s32le --enable-demuxer=pcm_s16le --enable-demuxer=pcm_s24le --enable-demuxer=pcm_s32le  --enable-filter=aresample --disable-bzlib --disable-iconv --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape --disable-sndio --disable-sdl2 --disable-zlib --disable-xlib --disable-libdrm --disable-vaapi --disable-vdpau --disable-videotoolbox  --enable-static --disable-shared   --enable-demuxer=wav --enable-demuxer=truehd  --disable-swscale  --disable-network --disable-postproc --disable-pixelutils --disable-avdevice --disable-alsa --disable-lzma --disable-doc --disable-d3d11va --disable-amd3dnow --disable-amd3dnowext  --disable-dxva2 --enable-pic]]])
        
      # installing binaries, normally executables
 
