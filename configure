@@ -244606,7 +244606,7 @@ printf '%s\n' "configure:  Adding cdrtools to PROGRAM_TARGETS..." >&6; }
 		      cdrtools_CONFIGURE_FILE="$MAYBE_cdrtools"/configure
 		      #executable_install
  #do not quote VAR. It is necessary to lower case as base names are uniform
-		      CONFIGURE_cdrtools_FLAGS="CFLAGS="$CFLAGS -std=gnu89 -fno-strict-aliasing" --prefix="$BUILDDIR/local" $CDRTOOLS_FLAGS"
+		      CONFIGURE_cdrtools_FLAGS="--prefix="$BUILDDIR/local" $CDRTOOLS_FLAGS"
 		      if test -d  $BUILDDIR/$MAYBE_cdrtools && ! test -d  $MAYBE_cdrtools
 then :
   cp -r $BUILDDIR/$MAYBE_cdrtools  $PWD
@@ -244833,7 +244833,7 @@ printf '%s\n' "configure:  Adding cdrtools to PROGRAM_TARGETS..." >&6; }
 		      cdrtools_CONFIGURE_FILE="$MAYBE_cdrtools"/configure
 		      #executable_install
  #do not quote VAR. It is necessary to lower case as base names are uniform
-		      CONFIGURE_cdrtools_FLAGS="CFLAGS="$CFLAGS -std=gnu89 -fno-strict-aliasing" --prefix="$BUILDDIR/local" $CDRTOOLS_FLAGS"
+		      CONFIGURE_cdrtools_FLAGS="--prefix="$BUILDDIR/local" $CDRTOOLS_FLAGS"
 		      if test -d  $BUILDDIR/$MAYBE_cdrtools && ! test -d  $MAYBE_cdrtools
 then :
   cp -r $BUILDDIR/$MAYBE_cdrtools  $PWD
