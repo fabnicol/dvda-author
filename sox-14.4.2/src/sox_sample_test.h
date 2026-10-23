@@ -20,6 +20,7 @@
 #endif
 #include <assert.h>
 #include "sox.h"
+#include <math.h>
 
 #define TEST_UINT(bits) \
   uint##bits = 0; \

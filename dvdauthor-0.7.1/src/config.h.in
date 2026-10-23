@@ -3,7 +3,7 @@
 /* Default video format, 1 => NTSC, 2 => PAL */
 #undef DEFAULT_VIDEO_FORMAT
 
-/* Define to 1 if you have the declaration of `O_BINARY', and to 0 if you
+/* Define to 1 if you have the declaration of 'O_BINARY', and to 0 if you
    don't. */
 #undef HAVE_DECL_O_BINARY
 
@@ -22,7 +22,7 @@
 /* Define to 1 if you have the <getopt.h> header file. */
 #undef HAVE_GETOPT_H
 
-/* Define to 1 if you have the `getopt_long' function. */
+/* Define to 1 if you have the 'getopt_long' function. */
 #undef HAVE_GETOPT_LONG
 
 /* Whether the GraphicsMagick libraries are available */
@@ -37,7 +37,7 @@
 /* Define to 1 if you have the <io.h> header file. */
 #undef HAVE_IO_H
 
-/* Define to 1 if you have the `gnugetopt' library (-lgnugetopt). */
+/* Define to 1 if you have the 'gnugetopt' library (-lgnugetopt). */
 #undef HAVE_LIBGNUGETOPT
 
 /* Whether the ImageMagick libraries are available */
@@ -46,7 +46,7 @@
 /* define to 1 if C compiler allows nested routines */
 #undef HAVE_NESTED_ROUTINES
 
-/* Define to 1 if you have the `setmode' function. */
+/* Define to 1 if you have the 'setmode' function. */
 #undef HAVE_SETMODE
 
 /* Define to 1 if stdbool.h conforms to C99. */
@@ -67,7 +67,7 @@
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
-/* Define to 1 if you have the `strndup' function. */
+/* Define to 1 if you have the 'strndup' function. */
 #undef HAVE_STRNDUP
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
@@ -79,7 +79,7 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
-/* Define to 1 if the system has the type `_Bool'. */
+/* Define to 1 if the system has the type '_Bool'. */
 #undef HAVE__BOOL
 
 /* Define as const if the declaration of iconv() needs const. */
@@ -109,7 +109,7 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* Define to 1 if all of the C90 standard headers exist (not just the ones
+/* Define to 1 if all of the C89 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for
    backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
@@ -120,5 +120,11 @@
 /* Number of bits in a file offset, on hosts where this is settable. */
 #undef _FILE_OFFSET_BITS
 
-/* Define for large files, on AIX-style hosts. */
+/* Define to 1 on platforms where this makes off_t a 64-bit type. */
 #undef _LARGE_FILES
+
+/* Number of bits in time_t, on hosts where this is settable. */
+#undef _TIME_BITS
+
+/* Define to 1 on platforms where this makes time_t a 64-bit type. */
+#undef __MINGW_USE_VC2005_COMPAT

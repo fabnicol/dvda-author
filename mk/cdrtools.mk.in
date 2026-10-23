@@ -7,7 +7,7 @@ INS_BASE="@BUILDDIR@/local"
 
 
 @BUILDDIR@/depconf/cdrtools.depconf: $(cdrtools_DEPENDENCY)
-	$(call depconf,cdrtools,noconfigure,"-k")
+	$(call depconf,cdrtools,noconfigure,"-k","CFLAGS=-std=gnu89 -fno-strict-aliasing")
 
 
 # symlink issues with cdrtools under gmake make it almost necessary to use -k to avoid blocking the whole build chain
